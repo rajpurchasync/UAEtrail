@@ -39,7 +39,7 @@ describe('list discovery routing', () => {
     expect(
       exploreMapPathFromListSearch('listCat=venues&topics=spots&filter=hiking&regions=Dubai')
     ).toBe(
-      '/explore?topics=spots%2Cshops&filter=hiking&regions=Dubai&pinKind=places&listCat=venues'
+      '/explore?topics=spots%2Cshops&filter=hiking&regions=Dubai&pinKind=places&panel=venues&listCat=venues'
     );
   });
 
@@ -53,6 +53,18 @@ describe('list discovery routing', () => {
     expect(
       listDiscoveryPathFromExploreSearch('?q=hatta&topics=trips&filter=hiking&date=week&regions=Dubai')
     ).toBe('/list?q=hatta&topics=trips%2Clooking&filter=hiking&date=week&regions=Dubai&listCat=activities');
+  });
+
+  it('listDiscoveryPathFromExploreSearch scopes trips from panel=activities', () => {
+    expect(listDiscoveryPathFromExploreSearch('?panel=activities&filter=hiking&topics=spots')).toBe(
+      '/list?topics=trips%2Clooking&filter=hiking&listCat=activities'
+    );
+  });
+
+  it('listDiscoveryPathFromExploreSearch scopes venues from panel=venues', () => {
+    expect(listDiscoveryPathFromExploreSearch('?panel=venues&filter=camping&topics=trips')).toBe(
+      '/list?topics=spots%2Cshops&filter=camping&listCat=venues'
+    );
   });
 
   it('listDiscoveryPathFromExploreSearch keeps explicit listCat from explore', () => {

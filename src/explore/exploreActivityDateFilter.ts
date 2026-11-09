@@ -2,7 +2,15 @@ import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { isGeographyMapSource } from '@uaetrail/shared-types';
 import { resolveExploreItemScheduleDate } from './ui/exploreMapPinModel';
 
-export type ExploreActivityDateNamedPreset = 'anyday' | 'today' | 'tomorrow' | 'week' | 'month';
+export type ExploreActivityDateNamedPreset =
+  | 'anyday'
+  | 'today'
+  | 'tomorrow'
+  | 'week'
+  | 'month'
+  | 'nextmonth'
+  | 'thisyear'
+  | 'nextyear';
 /** Named windows, or a custom inclusive ISO range `YYYY-MM-DD..YYYY-MM-DD`. */
 export type ExploreActivityDatePreset = ExploreActivityDateNamedPreset | (string & {});
 
@@ -15,6 +23,9 @@ export const EXPLORE_ACTIVITY_DATE_PRESET_OPTIONS: ReadonlyArray<{
   { value: 'tomorrow', label: 'Tomorrow' },
   { value: 'week', label: 'This week' },
   { value: 'month', label: 'This month' },
+  { value: 'nextmonth', label: 'Next month' },
+  { value: 'thisyear', label: 'This year' },
+  { value: 'nextyear', label: 'Next year' },
 ];
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -62,6 +73,25 @@ const endOfMonthIso = (referenceIso: string): string => {
   return formatIsoDate(date);
 };
 
+const startOfNextMonthIso = (referenceIso: string): string => {
+  const date = parseIsoDate(referenceIso);
+  date.setDate(1);
+  date.setMonth(date.getMonth() + 1);
+  return formatIsoDate(date);
+};
+
+const endOfNextMonthIso = (referenceIso: string): string => {
+  const date = parseIsoDate(referenceIso);
+  date.setMonth(date.getMonth() + 2, 0);
+  return formatIsoDate(date);
+};
+
+const startOfYearIso = (year: number): string => `${year}-01-01`;
+
+const endOfYearIso = (year: number): string => `${year}-12-31`;
+
+const calendarYearFromIso = (referenceIso: string): number => parseIsoDate(referenceIso).getFullYear();
+
 const isIsoInInclusiveRange = (iso: string, start: string, end: string): boolean => iso >= start && iso <= end;
 
 const CUSTOM_ACTIVITY_DATE_RANGE = /^(\d{4}-\d{2}-\d{2})\.\.(\d{4}-\d{2}-\d{2})$/;
@@ -100,7 +130,15 @@ export const formatCustomActivityDateRangeLabel = (from: string, to: string): st
 /** Parse `?date=` — presets, `YYYY-MM-DD..YYYY-MM-DD`, plus legacy `YYYY-MM-DD` deep links. */
 export const parseExploreActivityDatePreset = (value: string | null): ExploreActivityDatePreset => {
   if (!value || value === 'anyday') return 'anyday';
-  if (value === 'today' || value === 'tomorrow' || value === 'week' || value === 'month') {
+  if (
+    value === 'today' ||
+    value === 'tomorrow' ||
+    value === 'week' ||
+    value === 'month' ||
+    value === 'nextmonth' ||
+    value === 'thisyear' ||
+    value === 'nextyear'
+  ) {
     return value;
   }
   const custom = parseCustomActivityDateRange(value);
@@ -129,6 +167,9 @@ export const exploreActivityDatePresetCompactLabel = (
   if (preset === 'tomorrow') return 'Tmrw';
   if (preset === 'week') return 'Week';
   if (preset === 'month') return 'Month';
+  if (preset === 'nextmonth') return 'Next mo';
+  if (preset === 'thisyear') return 'This yr';
+  if (preset === 'nextyear') return 'Next yr';
   return 'Today';
 };
 
@@ -153,6 +194,14 @@ export const exploreActivityDatePresetToInclusiveRange = (
       return { from: startOfWeekIso(today), to: endOfWeekIso(today) };
     case 'month':
       return { from: startOfMonthIso(today), to: endOfMonthIso(today) };
+    case 'nextmonth':
+      return { from: startOfNextMonthIso(today), to: endOfNextMonthIso(today) };
+    case 'thisyear':
+      return { from: startOfYearIso(calendarYearFromIso(today)), to: endOfYearIso(calendarYearFromIso(today)) };
+    case 'nextyear': {
+      const year = calendarYearFromIso(today) + 1;
+      return { from: startOfYearIso(year), to: endOfYearIso(year) };
+    }
     case 'anyday':
     default:
       return { from: today, to: addDaysIso(today, 13) };
@@ -183,6 +232,18 @@ export const matchesActivityDateFilter = (
       return isIsoInInclusiveRange(schedule, startOfWeekIso(today), endOfWeekIso(today));
     case 'month':
       return isIsoInInclusiveRange(schedule, startOfMonthIso(today), endOfMonthIso(today));
+    case 'nextmonth':
+      return isIsoInInclusiveRange(schedule, startOfNextMonthIso(today), endOfNextMonthIso(today));
+    case 'thisyear':
+      return isIsoInInclusiveRange(
+        schedule,
+        startOfYearIso(calendarYearFromIso(today)),
+        endOfYearIso(calendarYearFromIso(today))
+      );
+    case 'nextyear': {
+      const year = calendarYearFromIso(today) + 1;
+      return isIsoInInclusiveRange(schedule, startOfYearIso(year), endOfYearIso(year));
+    }
     default:
       return true;
   }

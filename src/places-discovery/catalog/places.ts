@@ -1,16 +1,18 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { sortExploreVenues } from '../../explore/exploreListSort';
-import type { MapFilterKey } from '../../explore/routing';
-import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
+import type { MapFilterKey, VenueListFilterKey } from '../../explore/routing';
 import {
-  isPlacesMapItem,
-  isShopListItem,
-  matchesPlacesMapFilter,
-} from '../../explore/ui/exploreMapPinModel';
+  matchesPlaceMapTopicFilter,
+  type PlaceMapTopicKey,
+} from '../../explore/exploreMapQuickTopicFilters';
+import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
+import { isPlacesMapItem, isShopListItem } from '../../explore/ui/exploreMapPinModel';
 
 export type ExplorePlacesCatalogFilters = {
   mapFilter: MapFilterKey;
+  venueFilter?: VenueListFilterKey;
   venueRegions: string[];
+  placeMapTopics?: PlaceMapTopicKey[];
 };
 
 /** Venue + catalog place pins from the explore map read (`GET /explore/map`). */
@@ -21,7 +23,14 @@ export const selectPlacesFromExploreCatalog = (
   sortExploreVenues(
     exploreCatalogItems
       .filter(isPlacesMapItem)
-      .filter((item) => matchesPlacesMapFilter(item, filters.mapFilter))
+      .filter((item) =>
+        matchesPlaceMapTopicFilter(
+          item,
+          filters.placeMapTopics ?? [],
+          filters.mapFilter,
+          filters.venueFilter ?? 'all'
+        )
+      )
       .filter((item) => venueItemMatchesRegions(item, filters.venueRegions))
   );
 

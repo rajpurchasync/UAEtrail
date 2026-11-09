@@ -17,6 +17,7 @@ import {
   memberPublishGateInputFromMemberStatus,
 } from '../utils/memberPublishGate';
 import { browseListFilterPatchForSearchScope } from './listDiscoverySearchCommit';
+import type { BrowseListFilterState } from './browseListFilters';
 import { countExploreSearchScopes } from '../explore/exploreSearchMatches';
 import type { ExploreSearchScopeKey } from '../explore/exploreBrowseTaxonomy';
 import { useBrowseListFeed } from './useBrowseListFeed';
@@ -37,7 +38,9 @@ import {
   parseListExplorerBucket,
   serializeListExplorerBucket,
 } from './explorer/listExplorerBucket';
+import { listCatForListExplorerBucket, scopeBrowseListStateForListCat } from './browseListMapHandoff';
 import { ListExplorer } from './explorer/ListExplorer';
+import { ListCrewsExplorer } from './explorer/ListCrewsExplorer';
 import { ListDiscoveryMapColumn } from './explorer/ListDiscoveryMapColumn';
 import { ListSideMapResizeHandle } from './explorer/ListSideMapResizeHandle';
 import { useBindExploreListMapHover } from '../explore/ExploreMapChromeContext';
@@ -51,6 +54,12 @@ import {
   LIST_DISCOVERY_MAP_OPEN_STORAGE_KEY,
 } from './listDiscoveryMapLayout';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type { ExploreActivityDatePreset } from '../explore/exploreActivityDateFilter';
+import {
+  toggleBrowseTripTopicInList,
+  type BrowseTripTopicKey,
+} from './browseListTripTopics';
+import { toggleListVenuePlaceTopic, type ListVenuePlaceTopicKey } from './listVenuePlaceTopics';
 
 type ListDiscoveryExperienceProps = {
   surface: ListDiscoverySurface;
@@ -256,7 +265,11 @@ export const ListDiscoveryExperience = ({
       return;
     }
     if (scope === 'activities') {
-      syncUrl({ query: draftQuery, listCat: null, categories: [] });
+      syncUrl({
+        query: draftQuery,
+        listCat: 'activities',
+        ...scopeBrowseListStateForListCat(filters, 'activities'),
+      });
       return;
     }
     if (scope === 'places' || scope === 'shops') {
@@ -264,10 +277,10 @@ export const ListDiscoveryExperience = ({
       syncUrl({
         query: draftQuery,
         listCat: 'venues',
-        categories: [],
-        tripTopics: [],
-        tripLookingOnly: false,
-        placeTopics: patch?.placeTopics ?? [],
+        ...scopeBrowseListStateForListCat(
+          { ...filters, placeTopics: patch?.placeTopics ?? [] },
+          'venues'
+        ),
       });
       return;
     }
@@ -275,24 +288,61 @@ export const ListDiscoveryExperience = ({
       syncUrl({ query: draftQuery, listCat: 'agencies', categories: ['agencies'] });
       return;
     }
-    syncUrl({ query: draftQuery, listCat: serializeListExplorerBucket(explorerBucket) });
+    const cat = listCat ?? listCatForListExplorerBucket(explorerBucket);
+    syncUrl({
+      query: draftQuery,
+      listCat: cat,
+      ...scopeBrowseListStateForListCat(filters, cat === 'venues' ? 'venues' : 'activities'),
+    });
   };
 
   const clearAllFilters = () => {
-    syncUrl({
+    const cat = listCat ?? listCatForListExplorerBucket(explorerBucket);
+    const emptyBase: BrowseListFilterState = {
       query: '',
       categories: [],
-      listCat: null,
       tripTopics: [],
       placeTopics: [],
       tripLookingOnly: false,
       price: 'all',
       when: 'any',
       activityDatePreset: 'anyday',
-      regions: [],
-    });
+      buddiesSegment: filters.buddiesSegment,
+    };
+  const scoped =
+      cat === 'venues' || cat === 'activities'
+        ? scopeBrowseListStateForListCat(emptyBase, cat)
+        : emptyBase;
+    syncUrl({ ...scoped, listCat: cat, regions: [] });
     setDraftQuery('');
   };
+
+  const handleToggleTripTopic = useCallback(
+    (key: BrowseTripTopicKey) => {
+      syncUrl({
+        tripTopics: toggleBrowseTripTopicInList(filters.tripTopics, key),
+        tripLookingOnly: false,
+      });
+    },
+    [filters.tripTopics, syncUrl]
+  );
+
+  const handleTogglePlaceTopic = useCallback(
+    (key: ListVenuePlaceTopicKey) => {
+      syncUrl({ placeTopics: toggleListVenuePlaceTopic(filters.placeTopics, key) });
+    },
+    [filters.placeTopics, syncUrl]
+  );
+
+  const handleActivityDatePresetChange = useCallback(
+    (preset: ExploreActivityDatePreset) => syncUrl({ activityDatePreset: preset }),
+    [syncUrl]
+  );
+
+  const handleVenueRegionsChange = useCallback(
+    (regions: string[]) => syncUrl({ regions }),
+    [syncUrl]
+  );
 
   useEffect(() => {
     onImmersiveSubtitleChange?.(null);
@@ -356,39 +406,67 @@ export const ListDiscoveryExperience = ({
   return (
     <>
       {isPeopleCategory ? (
-        <PeopleBrowsePanel
-          embedded
-          isDesktop={surface === 'exploreSidebar'}
-          query={draftQuery}
-          onQueryChange={setDraftQuery}
-          onQuerySync={commitQuery}
-          onClose={() => syncUrl({ listCat: null, categories: [] })}
-          peopleBrowseTab={filters.buddiesSegment}
-          onPeopleBrowseTabChange={(tab) => syncUrl({ buddiesSegment: tab })}
-          memberPeopleNetwork={[]}
-          memberPeopleLoading={false}
-          memberPeopleError={null}
-          onRefreshMemberPeople={() => {}}
-          discoveryFriendsGoing={memberRoster.friendsGoing}
-          discoveryHostsGoing={memberRoster.hostsGoing}
-          discoverySeekingOnMap={memberRoster.seekingOnMap}
-          discoveryFollowed={memberRoster.followed}
-          discoveryDirectory={memberRoster.directory}
-          discoveryQuota={memberRoster.quota}
-          discoveryLoading={memberRoster.loading}
-          discoveryError={memberRoster.error}
-          onRefreshMemberDiscovery={() => void memberRoster.refresh()}
-          availabilityPeople={memberAvailability.people}
-          availabilityLoading={memberAvailability.loading}
-          availabilityError={memberAvailability.error}
-          onRefreshAvailability={() => void memberAvailability.refresh()}
-          isSignedIn={Boolean(user)}
-          userRole={user?.role}
-          seekingActivities={seekingActivities}
-          exploreCatalogItems={items}
-          exploreCatalogLoading={isLoading}
-          onOpenSeekingActivity={handleOpenSeekingActivity}
-        />
+        embeddedOnExplore ? (
+          <PeopleBrowsePanel
+            embedded
+            isDesktop={surface === 'exploreSidebar'}
+            query={draftQuery}
+            onQueryChange={setDraftQuery}
+            onQuerySync={commitQuery}
+            onClose={() => syncUrl({ listCat: null, categories: [] })}
+            peopleBrowseTab={filters.buddiesSegment}
+            onPeopleBrowseTabChange={(tab) => syncUrl({ buddiesSegment: tab })}
+            memberPeopleNetwork={[]}
+            memberPeopleLoading={false}
+            memberPeopleError={null}
+            onRefreshMemberPeople={() => {}}
+            discoveryFriendsGoing={memberRoster.friendsGoing}
+            discoveryHostsGoing={memberRoster.hostsGoing}
+            discoverySeekingOnMap={memberRoster.seekingOnMap}
+            discoveryFollowed={memberRoster.followed}
+            discoveryDirectory={memberRoster.directory}
+            discoveryQuota={memberRoster.quota}
+            discoveryLoading={memberRoster.loading}
+            discoveryError={memberRoster.error}
+            onRefreshMemberDiscovery={() => void memberRoster.refresh()}
+            availabilityPeople={memberAvailability.people}
+            availabilityLoading={memberAvailability.loading}
+            availabilityError={memberAvailability.error}
+            onRefreshAvailability={() => void memberAvailability.refresh()}
+            isSignedIn={Boolean(user)}
+            userRole={user?.role}
+            seekingActivities={seekingActivities}
+            exploreCatalogItems={items}
+            exploreCatalogLoading={isLoading}
+            onOpenSeekingActivity={handleOpenSeekingActivity}
+          />
+        ) : (
+          <ListCrewsExplorer
+            query={draftQuery}
+            onQueryChange={setDraftQuery}
+            onQuerySync={commitQuery}
+            onSearchCommit={handleSearchCommit}
+            onClearQuery={() => syncUrl({ query: '' })}
+            searchScopeCounts={searchScopeCounts}
+            mapHref={mapHref}
+            peopleBrowseTab={filters.buddiesSegment}
+            onPeopleBrowseTabChange={(tab) => syncUrl({ buddiesSegment: tab })}
+            isSignedIn={Boolean(user)}
+            seekingActivities={seekingActivities}
+            exploreCatalogItems={items}
+            exploreCatalogLoading={isLoading}
+            onOpenSeekingActivity={handleOpenSeekingActivity}
+            availabilityPeople={memberAvailability.people}
+            availabilityLoading={memberAvailability.loading}
+            availabilityError={memberAvailability.error}
+            discoveryFriendsGoing={memberRoster.friendsGoing}
+            discoveryHostsGoing={memberRoster.hostsGoing}
+            discoveryDirectory={memberRoster.directory}
+            discoveryQuota={memberRoster.quota}
+            discoveryLoading={memberRoster.loading}
+            discoveryError={memberRoster.error}
+          />
+        )
       ) : (
         <div ref={sideMapWidth.splitRef} className="flex h-full min-h-0 min-w-0 flex-1 flex-row">
           <ListExplorer
@@ -408,14 +486,17 @@ export const ListDiscoveryExperience = ({
             layout={layout}
             onLayoutChange={(next) => syncUrl({ layout: next })}
             bucket={explorerBucket}
-            onBucketChange={(next) =>
+            onBucketChange={(next) => {
+              const cat = listCatForListExplorerBucket(next);
               syncUrl({
                 query: draftQuery,
-                listCat: serializeListExplorerBucket(next),
-                categories: [],
+                listCat: cat,
+                ...scopeBrowseListStateForListCat(filters, cat),
+                regions: cat === 'venues' ? venueRegions : [],
                 ...(next === 'places' && layout === 'calendar' ? { layout: 'thumbnails' as const } : {}),
-              })
-            }
+              });
+            }}
+            hideBucketToggleOnMobile={!embeddedOnExplore}
             filters={filters}
             regions={venueRegions}
             filterCount={filterCount}
@@ -429,6 +510,10 @@ export const ListDiscoveryExperience = ({
             onSortChange={(next) => syncUrl({ sort: next })}
             showGuestCatalogPreview={!user && !embeddedOnExplore && !isPeopleCategory}
             listPanelWidthPx={showListMapColumn ? sideMapWidth.listPanelWidth : undefined}
+            onToggleTripTopic={handleToggleTripTopic}
+            onTogglePlaceTopic={handleTogglePlaceTopic}
+            onActivityDatePresetChange={handleActivityDatePresetChange}
+            onVenueRegionsChange={handleVenueRegionsChange}
           />
           {showListMapColumn ? (
             <>

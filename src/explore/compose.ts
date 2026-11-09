@@ -28,20 +28,20 @@ export const COMPOSE_MENU_OPTIONS: Array<{
 }> = [
   {
     top: 'host',
-    label: 'Host',
+    label: 'Publish an event',
     hint: 'Publish an outing you lead — hike, camp, ride, event',
     emoji: '🧭',
   },
   {
     top: 'seek',
     label: 'Find crew',
-    hint: 'Post on the map or share when you are free',
+    hint: 'Post what you would like to do or mark available days',
     emoji: '🙋',
   },
   {
     top: 'add',
     label: 'Add on map',
-    hint: 'Trail, camp, outdoor spot, or facility',
+    hint: 'Contribute to the community by adding places and facilities',
     emoji: '📍',
   },
 ];

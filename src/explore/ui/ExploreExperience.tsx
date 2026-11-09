@@ -52,8 +52,6 @@ export const ExploreExperience = () => {
               loadError={model.loadError}
               reloadMap={model.reloadMap}
               handleMapPinClick={model.handleMapPinClick}
-              openPeopleBrowsePanel={model.openPeopleBrowsePanel}
-              peopleBrowseMapChip={model.peopleBrowseMapChip}
               joinInvitePeekBanner={model.joinInvitePeekBanner}
               handleCloseMapSelection={model.handleCloseMapSelection}
               handleOfferRideshareForSeeking={model.handleOfferRideshareForSeeking}

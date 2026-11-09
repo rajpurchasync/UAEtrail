@@ -31,8 +31,6 @@ type Props = Pick<
   | 'loadError'
   | 'reloadMap'
   | 'handleMapPinClick'
-  | 'openPeopleBrowsePanel'
-  | 'peopleBrowseMapChip'
   | 'joinInvitePeekBanner'
   | 'handleCloseMapSelection'
   | 'handleOfferRideshareForSeeking'
@@ -67,8 +65,6 @@ export const ExploreMapShell = ({
   loadError,
   reloadMap,
   handleMapPinClick,
-  openPeopleBrowsePanel,
-  peopleBrowseMapChip,
   joinInvitePeekBanner,
   handleCloseMapSelection,
   handleOfferRideshareForSeeking: _handleOfferRideshareForSeeking,
@@ -104,12 +100,12 @@ export const ExploreMapShell = ({
     desktopRightPanelOverlay = (
       <aside
         className="pointer-events-auto flex h-full min-h-0 w-[min(400px,32vw)] max-w-full shrink-0 flex-col overflow-hidden border-l border-neutral-200 bg-white px-5 py-4 shadow-[-12px_0_32px_rgba(15,23,42,0.08)]"
-        aria-label="Find crew"
+        aria-label="Crews"
       >
         <PeopleBrowsePanel
           {...peopleBrowsePanelProps}
           onClose={browse.closePeopleBrowsePanel}
-          closePanelAriaLabel="Close Find crew"
+          closePanelAriaLabel="Close Crews"
           closeButtonVariant="dismiss"
         />
       </aside>
@@ -156,13 +152,10 @@ export const ExploreMapShell = ({
       onVenueRegionsChange={browse.applyVenueRegions}
       venueFilter={browse.venueFilter}
       onVenueFilterChange={browse.applyVenueFilter}
-      onOpenPeopleBrowsePanel={
-        user ? openPeopleBrowsePanel : () => selection.handleGuestGatedAction('view_detail')
-      }
-      peopleBrowsePanelAvatars={user ? peopleBrowseMapChip.avatars : []}
-      peopleBrowsePanelFriendCount={peopleBrowseMapChip.friendCount}
-      peopleBrowseGuest={!user}
-      peopleBrowsePossibleCrewCount={peopleBrowseMapChip.crewCount}
+      tripMapTopics={browse.tripMapTopics}
+      placeMapTopics={browse.placeMapTopics}
+      onToggleTripMapTopic={browse.toggleTripMapTopic}
+      onTogglePlaceMapTopic={browse.togglePlaceMapTopic}
       searchQuery={browse.query}
       onSearchQueryChange={browse.setQuery}
       onOpenExploreSearch={() => {

@@ -6,6 +6,9 @@ import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../../explore/exploreBrowseTaxonomy';
 import { BROWSE_LIST_CLEAR_FILTERS, BROWSE_LIST_EMPTY } from '../browseListCopy';
 import type { BrowseListFilterState } from '../browseListFilters';
+import type { BrowseTripTopicKey } from '../browseListTripTopics';
+import type { ListVenuePlaceTopicKey } from '../listVenuePlaceTopics';
+import type { ExploreActivityDatePreset } from '../../explore/exploreActivityDateFilter';
 import { ListExplorerCalendar } from './ListExplorerCalendar';
 import { ListExplorerFilterFab } from './ListExplorerFilterFab';
 import { ListExplorerHeader } from './ListExplorerHeader';
@@ -57,6 +60,12 @@ type ListExplorerProps = {
   onSortChange: (mode: ListExplorerSortMode) => void;
   showGuestCatalogPreview?: boolean;
   listPanelWidthPx?: number;
+  onToggleTripTopic: (key: BrowseTripTopicKey) => void;
+  onTogglePlaceTopic: (key: ListVenuePlaceTopicKey) => void;
+  onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
+  onVenueRegionsChange: (regions: string[]) => void;
+  /** Standalone `/list` on mobile — Trips/Venues use bottom nav instead of in-page toggle. */
+  hideBucketToggleOnMobile?: boolean;
 };
 
 const thumbGridClass = (sideMap: boolean) =>
@@ -206,6 +215,11 @@ export const ListExplorer = ({
   onSortChange,
   showGuestCatalogPreview = false,
   listPanelWidthPx,
+  onToggleTripTopic,
+  onTogglePlaceTopic,
+  onActivityDatePresetChange,
+  onVenueRegionsChange,
+  hideBucketToggleOnMobile = false,
 }: ListExplorerProps) => {
   const [scrollElement, setScrollElement] = useState<HTMLElement | null>(null);
   const stickySearch = query.trim().length > 0;
@@ -262,6 +276,13 @@ export const ListExplorer = ({
         onSortChange={onSortChange}
         locationPending={locationPending}
         locationDenied={locationDenied}
+        filters={filters}
+        regions={regions}
+        onToggleTripTopic={onToggleTripTopic}
+        onTogglePlaceTopic={onTogglePlaceTopic}
+        onActivityDatePresetChange={onActivityDatePresetChange}
+        onVenueRegionsChange={onVenueRegionsChange}
+        hideBucketToggleOnMobile={hideBucketToggleOnMobile}
       />
       <div
         ref={setScrollElement}

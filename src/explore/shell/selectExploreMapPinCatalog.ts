@@ -4,7 +4,8 @@ import {
   selectPlacesFromExploreCatalog,
   selectShopsFromExploreCatalog,
 } from '@/places-discovery/catalog/places';
-import type { ExploreActivityDatePreset, ExplorePanel, MapFilterKey } from '../routing';
+import type { ExploreActivityDatePreset, ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
+import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
@@ -18,6 +19,9 @@ export type ExploreMapPinCatalogArgs = {
   desktopBrowseTab: DesktopBrowseTab;
   sidebarPanel: ExplorePanel;
   mapFilter: MapFilterKey;
+  venueFilter: VenueListFilterKey;
+  tripMapTopics: TripMapTopicKey[];
+  placeMapTopics: PlaceMapTopicKey[];
   venueRegions: string[];
   activityDatePreset: ExploreActivityDatePreset;
   buddySubtype: ExploreBuddySubtypeKey;
@@ -27,11 +31,19 @@ export type ExploreMapPinCatalogArgs = {
 
 const activityCatalogFilters = (args: ExploreMapPinCatalogArgs) => ({
   mapFilter: args.mapFilter,
+  tripMapTopics: args.tripMapTopics,
   buddySubtype: args.buddySubtype,
   outingTopic: args.outingTopic,
   query: '',
   activityDatePreset: args.activityDatePreset,
   activityModeFilter: args.activityModeFilter,
+});
+
+const placesCatalogFilters = (args: ExploreMapPinCatalogArgs) => ({
+  mapFilter: args.mapFilter,
+  venueFilter: args.venueFilter,
+  placeMapTopics: args.placeMapTopics,
+  venueRegions: args.venueRegions,
 });
 
 /**
@@ -44,10 +56,7 @@ export const selectExploreMapPinCatalog = (args: ExploreMapPinCatalogArgs): Expl
   if (isDesktop) {
     const pool = catalog.filter((item) => mapItemMatchesFilterPills(item, []));
     if (desktopBrowseTab === 'venues') {
-      return selectPlacesFromExploreCatalog(pool, {
-        mapFilter: args.mapFilter,
-        venueRegions: args.venueRegions,
-      });
+      return selectPlacesFromExploreCatalog(pool, placesCatalogFilters(args));
     }
     const activities = selectActivitiesFromExploreCatalog(pool, activityCatalogFilters(args));
     if (args.venueRegions.length === 0) return activities;
@@ -55,10 +64,7 @@ export const selectExploreMapPinCatalog = (args: ExploreMapPinCatalogArgs): Expl
   }
 
   if (sidebarPanel === 'venues') {
-    return selectPlacesFromExploreCatalog(catalog, {
-      mapFilter: args.mapFilter,
-      venueRegions: args.venueRegions,
-    });
+    return selectPlacesFromExploreCatalog(catalog, placesCatalogFilters(args));
   }
 
   if (sidebarPanel === 'shops') {

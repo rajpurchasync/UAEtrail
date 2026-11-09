@@ -2,7 +2,8 @@ import { useMemo } from 'react';
 import { isTimeBoundExploreMapItem, type ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { sortExploreActivities, sortExploreVenues } from '../exploreListSort';
 import { selectExploreMapPinCatalog } from '../shell/selectExploreMapPinCatalog';
-import type { ExploreActivityDatePreset, ExplorePanel, MapFilterKey } from '../routing';
+import type { ExploreActivityDatePreset, ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
+import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
 import type { DesktopBrowseTab } from './exploreBrowsePanelCopy';
@@ -33,6 +34,9 @@ type UseExploreBrowseListArgs = {
   /** Link-only activities — show on map for peek, not in public browse lists. */
   ephemeralMapItems?: ExploreMapItemDTO[];
   mapFilter: MapFilterKey;
+  venueFilter: VenueListFilterKey;
+  tripMapTopics: TripMapTopicKey[];
+  placeMapTopics: PlaceMapTopicKey[];
   venueRegions: string[];
   query: string;
   activityDatePreset: ExploreActivityDatePreset;
@@ -72,6 +76,9 @@ export const useExploreBrowseList = ({
   items,
   ephemeralMapItems = [],
   mapFilter,
+  venueFilter,
+  tripMapTopics,
+  placeMapTopics,
   venueRegions,
   query,
   activityDatePreset,
@@ -96,6 +103,9 @@ export const useExploreBrowseList = ({
       desktopBrowseTab,
       sidebarPanel,
       mapFilter,
+      venueFilter,
+      tripMapTopics,
+      placeMapTopics,
       venueRegions,
       activityDatePreset,
       buddySubtype,
@@ -114,6 +124,9 @@ export const useExploreBrowseList = ({
     desktopBrowseTab,
     sidebarPanel,
     mapFilter,
+    venueFilter,
+    tripMapTopics,
+    placeMapTopics,
     activityDatePreset,
     venueRegions,
     buddySubtype,
@@ -129,6 +142,7 @@ export const useExploreBrowseList = ({
     const timeBoundActivitiesForList = (catalog: ExploreMapItemDTO[]) => {
       const selected = selectActivitiesFromExploreCatalog(catalog, {
         mapFilter,
+        tripMapTopics,
         buddySubtype,
         outingTopic,
         query: '',
@@ -144,13 +158,23 @@ export const useExploreBrowseList = ({
         return dedupeExploreListById(timeBoundActivitiesForList(items));
       }
       return dedupeExploreListById(
-        selectPlacesFromExploreCatalog(items, { mapFilter, venueRegions })
+        selectPlacesFromExploreCatalog(items, {
+          mapFilter,
+          venueFilter,
+          placeMapTopics,
+          venueRegions,
+        })
       );
     }
 
     if (sidebarPanel === 'venues') {
       return dedupeExploreListById(
-        selectPlacesFromExploreCatalog(items, { mapFilter, venueRegions })
+        selectPlacesFromExploreCatalog(items, {
+          mapFilter,
+          venueFilter,
+          placeMapTopics,
+          venueRegions,
+        })
       );
     }
 
@@ -162,6 +186,9 @@ export const useExploreBrowseList = ({
   }, [
     items,
     mapFilter,
+    venueFilter,
+    tripMapTopics,
+    placeMapTopics,
     activityDatePreset,
     venueRegions,
     isDesktop,

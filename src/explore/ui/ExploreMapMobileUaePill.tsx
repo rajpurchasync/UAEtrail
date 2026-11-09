@@ -1,6 +1,7 @@
 import { createPortal } from 'react-dom';
 import { useId, useState } from 'react';
 import { Check, MapPin } from 'lucide-react';
+import { EXPLORE_MAP_MOBILE_FLOAT_CHIP_MARK } from '../../config/exploreTheme';
 import { getVenueStateFilterOptions } from '../../config/regions';
 import { UiTooltip } from '../../components/ui/UiTooltip';
 import { UaeFlagIcon } from '../../components/ui/UaeFlagIcon';
@@ -13,6 +14,7 @@ type ExploreMapMobileUaePillProps = {
   pillClassName: string;
   compact?: boolean;
   wrapClassName?: string;
+  triggerFullWidth?: boolean;
   onOpen?: () => void;
 };
 
@@ -23,6 +25,7 @@ export const ExploreMapMobileUaePill = ({
   pillClassName,
   compact = false,
   wrapClassName = 'relative flex min-w-0 flex-1 basis-0',
+  triggerFullWidth = true,
   onOpen,
 }: ExploreMapMobileUaePillProps) => {
   const [open, setOpen] = useState(false);
@@ -105,7 +108,7 @@ export const ExploreMapMobileUaePill = ({
         setOpen(next);
         if (next) onOpen?.();
       }}
-      className={`w-full ${pillClassName} ${
+      className={`${triggerFullWidth ? 'w-full' : 'w-auto'} ${pillClassName} ${
         open ? 'bg-white shadow-sm ring-1 ring-sky-400/70' : ''
       }`}
       aria-expanded={open}
@@ -115,8 +118,12 @@ export const ExploreMapMobileUaePill = ({
     >
       {compact ? (
         <span className="inline-flex items-center gap-1">
-          <MapPin className="explore-map-chrome-stroke h-5 w-5 shrink-0" strokeWidth={1.5} aria-hidden />
-          <UaeFlagIcon className="h-3.5 w-[1.3125rem] shrink-0" aria-hidden />
+          <span
+            className={`explore-filter-mark ${EXPLORE_MAP_MOBILE_FLOAT_CHIP_MARK} explore-filter-mark--uae-flag`}
+            aria-hidden
+          >
+            <UaeFlagIcon className="explore-map-float-chip-uae-flag shrink-0" aria-hidden />
+          </span>
           {active ? (
             <span className="text-[12px] font-semibold leading-none tabular-nums">
               {venueRegions.length}
@@ -125,8 +132,12 @@ export const ExploreMapMobileUaePill = ({
         </span>
       ) : (
         <>
-          <MapPin className="explore-map-chrome-stroke h-5 w-5 shrink-0" strokeWidth={1.5} aria-hidden />
-          <UaeFlagIcon />
+          <span
+            className={`explore-filter-mark ${EXPLORE_MAP_MOBILE_FLOAT_CHIP_MARK} explore-filter-mark--uae-flag`}
+            aria-hidden
+          >
+            <UaeFlagIcon className="explore-map-float-chip-uae-flag shrink-0" aria-hidden />
+          </span>
           <span>UAE</span>
           {active ? (
             <span className="text-sm font-bold leading-none">({venueRegions.length})</span>

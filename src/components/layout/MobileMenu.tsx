@@ -41,6 +41,7 @@ import { useAuth } from '../../context/AuthContext';
 import { persistAuthSessionTokens, switchMeRoleSession } from '../../hooks/accountSessionApi';
 import { accountRouteByRole } from '../../utils/authRouting';
 import { buildSignInRedirect, signInPathForReturn } from '../../utils/authReturnContext';
+import { resolveMobileFiveTab } from '../../config/mobileFiveTabNav';
 
 type ConsumerHamburgerLinkItem = Extract<ConsumerHamburgerMenuItem, { kind: 'link' }>;
 
@@ -49,16 +50,23 @@ const isConsumerHamburgerLinkActive = (
   pathname: string,
   search: string
 ): boolean => {
+  const activeTab = resolveMobileFiveTab(pathname, search);
   if (item.label === 'Explore') {
     const params = new URLSearchParams(search);
     return (
       (pathname === EXPLORE_MAP_PATH || pathname === '/discovery') &&
       !isDiscoverBrowseRoute(pathname, search) &&
-      params.get('list') !== '1'
+      params.get('list') !== '1' &&
+      activeTab === 'trips'
     );
   }
-  if (item.label === 'Browse') {
-    return isDiscoverBrowseRoute(pathname, search) || pathname === LIST_DISCOVERY_PATH;
+  if (item.label === 'Trips') {
+    if (pathname === LIST_DISCOVERY_PATH && activeTab === 'trips') return true;
+    return isDiscoverBrowseRoute(pathname, search) && activeTab === 'trips';
+  }
+  if (item.label === 'Venues') {
+    if (pathname === LIST_DISCOVERY_PATH && activeTab === 'venues') return true;
+    return pathname === EXPLORE_MAP_PATH && activeTab === 'venues';
   }
   return item.match.some((prefix) =>
     prefix === '/' ? pathname === '/' : pathname === prefix || pathname.startsWith(`${prefix}/`)

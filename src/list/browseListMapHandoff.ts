@@ -1,4 +1,5 @@
 import { parseExplorePinKindFilter, serializeExplorePinKindFilter } from '../explore/explorePinKindFilter';
+import { parseExplorePanel } from '../explore/routing';
 import type { ExplorePinKindFilter } from '../explore/explorePinKindFilter';
 import type { BrowseListFilterState } from './browseListFilters';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
@@ -49,10 +50,45 @@ export const inferListCatFromExploreHandoff = (
   if (pinKind === 'shops') return 'venues';
   if (pinKind === 'activities' || pinKind === 'looking') return 'activities';
 
+  const panel = parseExplorePanel(searchParams.get('panel'));
+  if (panel === 'venues' || panel === 'shops') return 'venues';
+  if (panel === 'activities') return 'activities';
+
   const cats = state.categories;
   if (cats.length === 1) return cats[0];
   return null;
 };
+
+/** Keep list handoff single-scope for mobile Trips vs Venues tabs. */
+export const scopeBrowseListStateForListCat = (
+  state: BrowseListFilterState,
+  listCat: BrowseMainCategoryKey
+): BrowseListFilterState => {
+  if (listCat === 'activities') {
+    return {
+      ...state,
+      categories: ['activities'],
+      placeTopics: [],
+      tripLookingOnly: state.tripLookingOnly,
+    };
+  }
+  if (listCat === 'venues') {
+    return {
+      ...state,
+      categories: ['venues'],
+      tripTopics: [],
+      tripLookingOnly: false,
+      activityDatePreset: 'anyday',
+      when: 'any',
+      price: 'all',
+    };
+  }
+  return state;
+};
+
+export const listCatForListExplorerBucket = (
+  bucket: 'events' | 'places'
+): 'activities' | 'venues' => (bucket === 'places' ? 'venues' : 'activities');
 
 /** Shared browse params for `/explore` — drops list-only keys, adds `pinKind` when scoped. */
 export const serializeBrowseListToExploreSearchParams = (
@@ -84,6 +120,12 @@ export const serializeBrowseListToExploreSearchParams = (
     params.set('list', '1');
     params.delete('date');
     params.delete('when');
+  } else if (listCat === 'venues') {
+    params.set('panel', 'venues');
+    params.set(LIST_CAT_PARAM, listCat);
+  } else if (listCat === 'activities') {
+    params.set('panel', 'activities');
+    params.set(LIST_CAT_PARAM, listCat);
   } else if (listCat) {
     params.set(LIST_CAT_PARAM, listCat);
   }

@@ -273,6 +273,9 @@ export const useExploreExperienceModel = () => {
     items: mapItems,
     ephemeralMapItems: linkOnlyPeekItems,
     mapFilter: browse.mapFilter,
+    venueFilter: browse.venueFilter,
+    tripMapTopics: browse.tripMapTopics,
+    placeMapTopics: browse.placeMapTopics,
     venueRegions: browse.venueRegions,
     query: browse.query,
     activityDatePreset: browse.activityDatePreset,
@@ -286,8 +289,7 @@ export const useExploreExperienceModel = () => {
     activityModeFilter: browse.activityModeFilter,
   });
 
-  const { peopleBrowsePanelProps, openPeopleBrowsePanel, peopleBrowseMapChip } =
-    useExplorePeopleBrowseBundle({
+  const { peopleBrowsePanelProps } = useExplorePeopleBrowseBundle({
       user,
       hostStatus,
       browse,
@@ -384,8 +386,6 @@ export const useExploreExperienceModel = () => {
     loadError,
     reloadMap,
     handleMapPinClick,
-    openPeopleBrowsePanel,
-    peopleBrowseMapChip,
     joinInvitePeekBanner,
     handleCloseMapSelection,
     handleOfferRideshareForSeeking: hostingLauncher.handleOfferRideshareForSeeking,

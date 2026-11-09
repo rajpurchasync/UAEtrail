@@ -27,6 +27,8 @@ interface ExploreFilterIconProps {
   /** Venue tab / venue list → trail feet & camp spot; activities → boot & camp outing. */
   context?: ExploreFilterEmojiContext;
   className?: string;
+  /** e.g. `explore-filter-mark--chip` for mobile map float pills */
+  markClassName?: string;
 }
 
 const EmojiIcon = ({ emoji, className }: { emoji: string; className: string }) => (
@@ -80,11 +82,13 @@ export const ExploreFilterIcon = ({
   filter,
   context = 'activity',
   className = '',
+  markClassName = '',
 }: ExploreFilterIconProps) => {
   const mark = glyphFor(filter, context, className);
   if (!mark) return null;
+  const markClass = ['explore-filter-mark', markClassName].filter(Boolean).join(' ');
   return (
-    <span className="explore-filter-mark" aria-hidden>
+    <span className={markClass} aria-hidden>
       {mark}
     </span>
   );

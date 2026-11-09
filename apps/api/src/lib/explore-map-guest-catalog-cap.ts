@@ -38,8 +38,9 @@ export const compareGuestPreviewPlaces = (a: ExploreMapItemDTO, b: ExploreMapIte
 };
 
 /**
- * Anonymous `GET /explore/map` preview — on by default to limit scrape/load.
- * Set `EXPLORE_MAP_GUEST_CATALOG_CAP=0` only for local/integration overrides.
+ * Legacy pin-list cap (3 places + 3 events) — used by `GET /explore/seeking-activities` for guests.
+ * `GET /explore/map` returns the full catalog for guests; peek depth is enforced in the client.
+ * Set `EXPLORE_MAP_GUEST_CATALOG_CAP=0` to disable caps on auxiliary guest reads.
  */
 export const isGuestExploreMapCatalogCapEnabled = (): boolean =>
   process.env.EXPLORE_MAP_GUEST_CATALOG_CAP !== '0';

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { MOBILE_FIVE_TAB_ORDER } from './mobileFiveTabNav';
 import {
   LIST_DISCOVERY_PATH,
   MOBILE_BOTTOM_NAV_TAB_PATHS,
@@ -8,21 +9,25 @@ import {
 } from '../config/platform';
 
 describe('mobile bottom nav contract', () => {
-  it('has exactly three tabs and never includes list discovery as a tab', () => {
-    expect(MOBILE_BOTTOM_NAV_TAB_PATHS).toHaveLength(3);
-    expect(MOBILE_BOTTOM_NAV_TAB_PATHS as readonly string[]).not.toContain(LIST_DISCOVERY_PATH);
+  it('exposes five tab ids and four shell route roots (explore + list + plan + chat)', () => {
+    expect(MOBILE_FIVE_TAB_ORDER).toHaveLength(5);
+    expect(MOBILE_BOTTOM_NAV_TAB_PATHS).toEqual(['/explore', '/list', '/plan', '/chat']);
+    expect(MOBILE_BOTTOM_NAV_TAB_PATHS as readonly string[]).toContain(LIST_DISCOVERY_PATH);
   });
 
-  it('does not link to /list from the tab bar component', () => {
+  it('wires tab targets through mobileFiveTabHomePath', () => {
     const source = readFileSync(join(process.cwd(), 'src/components/layout/MobileBottomNav.tsx'), 'utf8');
-    expect(source).not.toMatch(/to=\{LIST_DISCOVERY_PATH\}/);
-    expect(source).not.toMatch(/to=["']\/list["']/);
+    expect(source).toContain('mobileFiveTabHomePath');
+    expect(source).toContain('resolveMobileFiveTab');
+    expect(source).toContain('grid-cols-5');
   });
 });
 
 describe('shouldShowMobileBottomNav', () => {
   it('shows on signed-in root tabs', () => {
     expect(shouldShowMobileBottomNav('/explore', '', true)).toBe(true);
+    expect(shouldShowMobileBottomNav('/list', '', true)).toBe(true);
+    expect(shouldShowMobileBottomNav('/list', '?listCat=venues', true)).toBe(true);
     expect(shouldShowMobileBottomNav('/plan', '?view=plans&role=joined', true)).toBe(true);
     expect(shouldShowMobileBottomNav('/chat', '', true)).toBe(true);
   });
@@ -38,6 +43,7 @@ describe('shouldShowMobileBottomNav', () => {
 
   it('hides for guests and other routes', () => {
     expect(shouldShowMobileBottomNav('/explore', '', false)).toBe(true);
+    expect(shouldShowMobileBottomNav('/list', '', false)).toBe(true);
     expect(shouldShowMobileBottomNav('/plan', '', false)).toBe(true);
     expect(shouldShowMobileBottomNav('/chat', '', false)).toBe(true);
     expect(shouldShowMobileBottomNav('/profile', '', false)).toBe(false);
@@ -46,6 +52,10 @@ describe('shouldShowMobileBottomNav', () => {
 
   it('hides in message threads', () => {
     expect(shouldShowMobileBottomNav('/chat', '?to=user-1', true)).toBe(false);
+  });
+
+  it('hides embedded list drawer on explore', () => {
+    expect(shouldShowMobileBottomNav('/explore', '?list=1', true)).toBe(false);
   });
 });
 

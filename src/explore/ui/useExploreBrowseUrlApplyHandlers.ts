@@ -1,4 +1,6 @@
 import { useCallback } from 'react';
+import type { NavigateFunction } from 'react-router-dom';
+import { listDiscoveryPath } from '../../list/routing';
 import {
   activityFilterToMapFilter,
   mapFilterToActivityListFilter,
@@ -28,6 +30,14 @@ import type { ExplorePinKindFilter } from '../explorePinKindFilter';
 import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
 import type { ExploreBrowseListMode } from '../exploreBrowseUrlSync';
+import {
+  effectivePlaceMapTopics,
+  effectiveTripMapTopics,
+  togglePlaceMapTopic as togglePlaceMapTopicInList,
+  toggleTripMapTopic as toggleTripMapTopicInList,
+  type PlaceMapTopicKey,
+  type TripMapTopicKey,
+} from '../exploreMapQuickTopicFilters';
 
 type SyncExploreUrl = (patch: ExploreBrowseUrlSyncPatch) => void;
 
@@ -51,11 +61,14 @@ type Setters = {
   setActivityModeFilter: (v: ExploreActivityModeFilter) => void;
   setVenueRegions: (v: string[]) => void;
   setSearchScope: (v: ExploreSearchScopeKey | null) => void;
+  setTripMapTopics: (v: TripMapTopicKey[]) => void;
+  setPlaceMapTopics: (v: PlaceMapTopicKey[]) => void;
 };
 
 export type UseExploreBrowseUrlApplyHandlersArgs = {
   isDesktop: boolean;
   isSignedIn: boolean;
+  navigate: NavigateFunction;
   clearSelection: () => void;
   syncExploreUrl: SyncExploreUrl;
   listOpen: boolean;
@@ -65,6 +78,10 @@ export type UseExploreBrowseUrlApplyHandlersArgs = {
   buddySubtype: ExploreBuddySubtypeKey;
   outingTopic: ExploreOutingTopicKey;
   topicPills: ExploreMapFilterPillKey[];
+  tripMapTopics: TripMapTopicKey[];
+  placeMapTopics: PlaceMapTopicKey[];
+  activityFilter: ActivityListFilterKey;
+  venueFilter: VenueListFilterKey;
   query: string;
   searchScope: ExploreSearchScopeKey | null;
   listMode: ExploreBrowseListMode;
@@ -76,6 +93,7 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
   const {
     isDesktop,
     isSignedIn,
+    navigate,
     clearSelection,
     syncExploreUrl,
     listOpen,
@@ -85,15 +103,78 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
     buddySubtype,
     outingTopic,
     topicPills,
+    tripMapTopics,
+    placeMapTopics,
+    activityFilter,
+    venueFilter,
     query,
     searchScope,
     listMode,
     setters,
   } = args;
 
+  const tripTopicToActivityFilter = (topics: TripMapTopicKey[]): ActivityListFilterKey => {
+    if (topics.length !== 1) return 'all';
+    const only = topics[0];
+    if (only === 'others') return 'event';
+    return only === 'rideshare' ? 'rideshare' : only;
+  };
+
+  const placeTopicToVenueFilter = (topics: PlaceMapTopicKey[]): VenueListFilterKey => {
+    if (topics.length !== 1) return 'all';
+    const only = topics[0];
+    if (only === 'shops') return 'shop';
+    if (only === 'facilities') return 'facilities';
+    return only;
+  };
+
+  const toggleTripMapTopic = useCallback(
+    (key: TripMapTopicKey) => {
+      const current = effectiveTripMapTopics(mapFilter, tripMapTopics);
+      const next = toggleTripMapTopicInList(current, key);
+      const nextActivityFilter = tripTopicToActivityFilter(next);
+      setters.setTripMapTopics(next);
+      setters.setMapFilter('all');
+      setters.setActivityFilter(nextActivityFilter);
+      setters.setBuddySubtype('all');
+      setters.setOutingTopic('all');
+      clearSelection();
+      syncExploreUrl({
+        filter: 'all',
+        tripMapTopics: next,
+        activityFilter: nextActivityFilter,
+        buddySubtype: 'all',
+        outingTopic: 'all',
+        list: listOpen,
+      });
+    },
+    [clearSelection, listOpen, mapFilter, setters, syncExploreUrl, tripMapTopics]
+  );
+
+  const togglePlaceMapTopic = useCallback(
+    (key: PlaceMapTopicKey) => {
+      const current = effectivePlaceMapTopics(mapFilter, venueFilter, placeMapTopics);
+      const next = togglePlaceMapTopicInList(current, key);
+      const nextVenueFilter = placeTopicToVenueFilter(next);
+      setters.setPlaceMapTopics(next);
+      setters.setMapFilter('all');
+      setters.setVenueFilter(nextVenueFilter);
+      clearSelection();
+      syncExploreUrl({
+        filter: 'all',
+        placeMapTopics: next,
+        placesFilter: nextVenueFilter,
+        list: listOpen,
+      });
+    },
+    [clearSelection, listOpen, mapFilter, placeMapTopics, setters, syncExploreUrl, venueFilter]
+  );
+
   const applyMapFilter = useCallback(
     (next: MapFilterKey) => {
       setters.setMapFilter(next);
+      setters.setTripMapTopics([]);
+      setters.setPlaceMapTopics([]);
       const nextSubtype = next === 'others' ? buddySubtype : 'all';
       const nextTopic = next === 'others' && nextSubtype === 'activities' ? outingTopic : 'all';
       if (next !== 'others') {
@@ -111,6 +192,8 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
         placesFilter: syncedVenue,
         buddySubtype: nextSubtype,
         outingTopic: nextTopic,
+        tripMapTopics: [],
+        placeMapTopics: [],
         list: listOpen,
       });
     },
@@ -219,18 +302,18 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
         });
         return;
       }
-      setters.setListMode('people');
-      setters.setListOpen(true);
-      setters.setBrowseOpen(false);
-      syncExploreUrl({
-        listMode: 'people',
-        peopleBrowseTab: initialTab,
-        panel: 'activities',
-        list: true,
-        browse: false,
-      });
+      setters.setPeopleBrowseTab(initialTab);
+      navigate(
+        listDiscoveryPath({
+          listCat: 'people',
+          categories: ['people'],
+          buddiesSegment: initialTab,
+          query,
+          activityDatePreset: 'anyday',
+        })
+      );
     },
-    [isDesktop, isSignedIn, clearSelection, setters, syncExploreUrl]
+    [isDesktop, isSignedIn, clearSelection, navigate, query, setters, syncExploreUrl]
   );
 
   const closePeopleBrowsePanel = useCallback(() => {
@@ -530,5 +613,7 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
     applyActivityModeFilter,
     applyVenueRegions,
     commitExploreSearch,
+    toggleTripMapTopic,
+    togglePlaceMapTopic,
   };
 };

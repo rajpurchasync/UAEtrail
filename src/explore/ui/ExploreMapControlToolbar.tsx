@@ -4,6 +4,7 @@ import {
   EXPLORE_MAP_OVERLAY_ICON,
   EXPLORE_MAP_OVERLAY_ICON_BTN,
   EXPLORE_MAP_OVERLAY_ICON_STROKE,
+  EXPLORE_MAP_OVERLAY_STANDALONE,
 } from '../../config/exploreTheme';
 import { UiTooltip } from '../../components/ui/UiTooltip';
 import { ExploreMapLocateButton } from './ExploreMapLocateButton';
@@ -18,9 +19,11 @@ type ExploreMapControlToolbarProps = {
   locating?: boolean;
   mapStyle: ExploreMapStyle;
   onToggleMapStyle: () => void;
+  /** Mobile map — frosted icon buttons, no shared tray. Desktop keeps tray with zoom. */
+  layout?: 'tray' | 'standalone';
 };
 
-/** Vertical map chrome — zoom, locate, and basemap, one frosted tray. */
+/** Vertical map chrome — zoom, locate, and basemap. */
 export const ExploreMapControlToolbar = ({
   showZoom = false,
   onZoomIn,
@@ -29,9 +32,12 @@ export const ExploreMapControlToolbar = ({
   locating = false,
   mapStyle,
   onToggleMapStyle,
+  layout = showZoom ? 'tray' : 'standalone',
 }: ExploreMapControlToolbarProps) => (
   <div
-    className={`pointer-events-auto flex flex-col items-center gap-0.5 ${EXPLORE_MAP_FROST_TRAY}`}
+    className={`pointer-events-auto flex flex-col items-center ${
+      layout === 'tray' ? `gap-0.5 ${EXPLORE_MAP_FROST_TRAY}` : 'gap-2'
+    }`}
     role="toolbar"
     aria-label="Map controls"
   >
@@ -59,7 +65,15 @@ export const ExploreMapControlToolbar = ({
         </UiTooltip>
       </>
     ) : null}
-    <ExploreMapLocateButton onLocate={onLocate} locating={locating} />
-    <ExploreMapStyleToggle style={mapStyle} onToggle={onToggleMapStyle} />
+    <ExploreMapLocateButton
+      onLocate={onLocate}
+      locating={locating}
+      className={layout === 'standalone' ? EXPLORE_MAP_OVERLAY_STANDALONE : ''}
+    />
+    <ExploreMapStyleToggle
+      style={mapStyle}
+      onToggle={onToggleMapStyle}
+      className={layout === 'standalone' ? EXPLORE_MAP_OVERLAY_STANDALONE : ''}
+    />
   </div>
 );

@@ -79,10 +79,17 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(isPublishingConsolePath('/explore')).toBe(false);
   });
 
-  it('G-lang: mobile tab bar labels My Plans (not Trips hub)', () => {
+  it('G-lang: mobile tab bar labels Trips · Venues · Crews · Plan · Chat', () => {
     const nav = read('src/components/layout/MobileBottomNav.tsx');
-    expect(nav).toContain('PRODUCT_PLAN_SURFACE_TITLE');
-    expect(nav).not.toMatch(/aria-label="Trips"/);
+    const labels = read('src/config/mobileFiveTabNav.ts');
+    expect(nav).toContain('MOBILE_FIVE_TAB_UI_LABELS');
+    expect(nav).toContain('grid-cols-5');
+    expect(labels).toContain("trips: 'Trips'");
+    expect(labels).toContain("venues: 'Venues'");
+    expect(labels).toContain("crews: 'Crews'");
+    expect(labels).toContain("plan: 'Plan'");
+    expect(labels).toContain("chat: 'Chat'");
+    expect(nav).not.toContain('PRODUCT_PLAN_SURFACE_TITLE');
     const northStar = read('src/content/productNorthStar.ts');
     expect(northStar).toContain("PRODUCT_PLAN_SURFACE_TITLE = 'My Plans'");
   });

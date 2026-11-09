@@ -6,9 +6,13 @@ export const BROWSE_TRIP_TOPIC_FILTERS: ReadonlyArray<{ key: MapFilterKey; label
   { key: 'hiking', label: 'Hiking' },
   { key: 'camping', label: 'Camping' },
   { key: 'rideshare', label: 'Rideshare' },
+  { key: 'others', label: 'Other' },
 ];
 
 export type BrowseTripTopicKey = (typeof BROWSE_TRIP_TOPIC_FILTERS)[number]['key'];
+
+export const isBrowseTripTopicKey = (key: string): key is BrowseTripTopicKey =>
+  BROWSE_TRIP_TOPIC_FILTERS.some((t) => t.key === key);
 
 /** Trips category type dropdown — topics plus demand-only “looking for”. */
 export type BrowseTripPlanTypeKey = 'all' | BrowseTripTopicKey | 'looking';

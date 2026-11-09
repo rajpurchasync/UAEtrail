@@ -3,10 +3,10 @@ import {
   Bell,
   CalendarDays,
   ClipboardList,
-  Compass,
   History,
   Map,
   MapPin,
+  Mountain,
   MessageCircle,
   PlusCircle,
   Search,
@@ -36,6 +36,8 @@ import {
 } from './routingCatalog';
 import { PRODUCT_PLAN_SURFACE_TITLE, PRODUCT_PLAN_MEMBER_NAV_HINT } from '../content/productNorthStar';
 import { LIST_CAT_PARAM } from '../list/browseListUrlState';
+import { tripsListHomePath, venuesListHomePath } from '../list/routing';
+import { resolveMobileFiveTab } from './mobileFiveTabNav';
 
 /** Wide app chrome (Tailwind `md`, ≥768px) — left sidebar + slim top bar. Mobile uses bottom nav + drawer. */
 export const DESKTOP_MIN_WIDTH_PX = 768;
@@ -60,11 +62,18 @@ export type DesktopNavItem = {
 export const DESKTOP_PRIMARY_NAV: readonly DesktopNavItem[] = [
   { key: 'explore', label: 'Explore', to: EXPLORE_MAP_PATH, icon: Map, match: [EXPLORE_MAP_PATH] },
   {
-    key: 'browse',
-    label: 'Browse',
-    to: LIST_DISCOVERY_PATH,
-    icon: Compass,
+    key: 'trips',
+    label: 'Trips',
+    to: tripsListHomePath(),
+    icon: Mountain,
     match: [LIST_DISCOVERY_PATH, EXPLORE_DISCOVER_BROWSE_PATH],
+  },
+  {
+    key: 'venues',
+    label: 'Venues',
+    to: venuesListHomePath(),
+    icon: MapPin,
+    match: [LIST_DISCOVERY_PATH, EXPLORE_MAP_PATH],
   },
   {
     key: 'plan',
@@ -112,7 +121,7 @@ export type DesktopSideNavSection = {
 export const DESKTOP_MAP_NAV: readonly DesktopNavItem[] = [
   {
     key: 'findCrew',
-    label: 'Find Crew',
+    label: 'Crews',
     to: explorePeopleBrowsePath({ list: false }),
     icon: Users,
     match: [],
@@ -185,16 +194,25 @@ const matchesPrefix = (pathname: string, prefix: string) =>
   pathname === prefix || pathname.startsWith(`${prefix}/`);
 
 export const isDesktopNavItemActive = (item: DesktopNavItem, pathname: string, search: string): boolean => {
+  const activeTab = resolveMobileFiveTab(pathname, search);
   if (item.key === 'explore') {
     return (
-      (pathname === EXPLORE_MAP_PATH || pathname === '/discovery') && !isDiscoverBrowseRoute(pathname, search)
+      (pathname === EXPLORE_MAP_PATH || pathname === '/discovery') &&
+      !isDiscoverBrowseRoute(pathname, search) &&
+      activeTab === 'trips'
     );
   }
   const params = new URLSearchParams(search);
   const peopleLens =
     pathname === LIST_DISCOVERY_PATH && params.get(LIST_CAT_PARAM) === 'people';
-  if (item.key === 'browse') {
-    return (pathname === LIST_DISCOVERY_PATH && !peopleLens) || isDiscoverBrowseRoute(pathname, search);
+  if (item.key === 'trips') {
+    if (peopleLens) return false;
+    if (pathname === LIST_DISCOVERY_PATH && activeTab === 'trips') return true;
+    return isDiscoverBrowseRoute(pathname, search) && activeTab === 'trips';
+  }
+  if (item.key === 'venues') {
+    if (pathname === LIST_DISCOVERY_PATH && activeTab === 'venues') return true;
+    return pathname === EXPLORE_MAP_PATH && activeTab === 'venues';
   }
   if (item.key === 'findCrew') {
     const view = params.get('view');

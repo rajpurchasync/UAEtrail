@@ -4,8 +4,9 @@ type ExploreMapFilterMenuShellProps = {
   menuRef: Ref<HTMLDivElement>;
   menuStyle: CSSProperties;
   caretLeftPx: number;
-  label: string;
-  icon: ReactNode;
+  /** Omitted or empty — no header row (mobile date menu). */
+  label?: string;
+  icon?: ReactNode;
   children: ReactNode;
   extraListProps?: {
     id?: string;
@@ -38,12 +39,14 @@ export const ExploreMapFilterMenuShell = ({
       style={{ left: caretLeftPx, transform: 'translateX(-50%) rotate(45deg)' }}
     />
     <div className="max-h-[inherit] overflow-y-auto overflow-x-hidden rounded-2xl border border-neutral-200/90 bg-white shadow-[0_12px_40px_rgba(15,23,42,.18)]">
-      <div className="flex items-center gap-2 border-b border-neutral-100 px-3 py-2">
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-neutral-50 text-neutral-700">
-          {icon}
-        </span>
-        <p className="text-[12px] font-semibold text-neutral-600">{label}</p>
-      </div>
+      {label?.trim() ? (
+        <div className="flex items-center gap-2 border-b border-neutral-100 px-3 py-2">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-neutral-50 text-neutral-700">
+            {icon}
+          </span>
+          <p className="text-[12px] font-semibold text-neutral-600">{label}</p>
+        </div>
+      ) : null}
       <div className="py-1">{children}</div>
     </div>
   </div>

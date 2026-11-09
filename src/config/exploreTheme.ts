@@ -215,6 +215,9 @@ export const EXPLORE_FLOATING_CONTROL =
 export const EXPLORE_MAP_OVERLAY_ICON_BTN =
   'explore-map-overlay-icon-btn pointer-events-auto inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition active:scale-95 disabled:opacity-60';
 
+/** Per-icon frost on the map (no shared toolbar tray). */
+export const EXPLORE_MAP_OVERLAY_STANDALONE = 'explore-map-overlay-icon-btn--standalone';
+
 export const EXPLORE_MAP_OVERLAY_ICON =
   'h-6 w-6 shrink-0';
 
@@ -334,6 +337,29 @@ export const exploreMapChildChipClass = (
 /** “All” is text-only in the mark — min width on lg+ matches icon + label chips (e.g. Rideshare). */
 export const EXPLORE_MAP_FILTER_ALL_CHIP_CLASS = 'lg:min-w-[6.5rem]';
 
+const MAP_MOBILE_FLOAT_CHIP_BASE =
+  'inline-flex h-8 max-w-[9.5rem] shrink-0 items-center justify-center gap-1 rounded-full px-2.5 py-0 text-[11px] font-semibold leading-none whitespace-nowrap transition [-webkit-tap-highlight-color:transparent] lg:h-9 lg:max-w-none lg:min-h-[2.375rem] lg:gap-1.5 lg:px-3 lg:py-[0.45rem] lg:text-[12px]';
+
+/** Icon scale for mobile map float pills (matches `.explore-filter-mark--chip`). */
+export const EXPLORE_MAP_MOBILE_FLOAT_CHIP_MARK = 'explore-filter-mark--chip';
+
+/** Lucide / flag icons paired with float pills. */
+export const EXPLORE_MAP_MOBILE_FLOAT_CHIP_GLYPH_CLASS = 'explore-map-float-chip-glyph shrink-0';
+
+/** Mobile map quick filters — individual frosted pills (no shared tray). */
+export const exploreMapMobileFloatChipClass = (
+  selected: boolean,
+  filterKey: MapFilterKey = 'all',
+  layer: 'activity' | 'places' = 'activity'
+): string => {
+  const activeClass =
+    layer === 'places' ? exploreMapPlacesFilterActiveClass(filterKey) : exploreMapFilterActiveClass(filterKey);
+  const frost = `${EXPLORE_MAP_CHROME_FROST} ring-1 ring-black/5 shadow-[0_2px_12px_rgba(15,23,42,.08)]`;
+  return selected
+    ? `${MAP_MOBILE_FLOAT_CHIP_BASE} ${activeClass} border-0`
+    : `${MAP_MOBILE_FLOAT_CHIP_BASE} ${frost} text-neutral-900 hover:bg-white/80 active:bg-white/95`;
+};
+
 export const exploreMapScopeSegmentClass = (selected: boolean, layer: 'activity' | 'places'): string => {
   const base =
     'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold leading-none transition [-webkit-tap-highlight-color:transparent]';
@@ -346,7 +372,7 @@ export const exploreMapScopeSegmentClass = (selected: boolean, layer: 'activity'
 /** Mobile explore — offsets for floating map chrome below the solid header. */
 export const EXPLORE_MOBILE_MAP_CHROME = {
   filterTop: 'max-lg:top-0',
-  noticeTop: 'max-lg:top-[11.25rem]',
+  noticeTop: 'max-lg:top-[11.625rem]',
 } as const;
 
 /** Bottom sheets over the map (Find crew list, compose peek) — leave filters visible. */

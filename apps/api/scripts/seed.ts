@@ -395,6 +395,8 @@ const db = () => getMongoClient()!.db();
 
 const demoAccount = (email: keyof typeof DEMO_ACCOUNTS) => DEMO_ACCOUNTS[email];
 
+const demoPassword = (email: keyof typeof DEMO_ACCOUNTS) => resolveDemoAccountPassword(email);
+
 const upsertDemoUser = (email: keyof typeof DEMO_ACCOUNTS) => {
   const { role, displayName } = DEMO_ACCOUNTS[email];
   const password = resolveDemoAccountPassword(email);
@@ -1031,7 +1033,8 @@ async function main() {
   const pendingParticipant = await upsertDemoUser('visitor2@uaetrails.app');
 
   const suspendedDemo = demoAccount('suspended@uaetrails.app');
-  const suspendedHash = await bcrypt.hash(suspendedDemo.password, 10);
+  const suspendedPassword = demoPassword('suspended@uaetrails.app');
+  const suspendedHash = await bcrypt.hash(suspendedPassword, 10);
   const suspendedExisting = await findAuthUserByEmail('suspended@uaetrails.app');
   if (suspendedExisting) {
     await updateAuthUserCore({
@@ -2213,14 +2216,14 @@ Share your live location and carry extra water in summer months.`
   console.log(`Seeking demo schedule refresh: updated=${seekingScheduleRefresh.updated}`);
 
   console.log('Seed complete.');
-  console.log(`Admin: admin@uaetrails.app (${admin.profile?.displayName ?? demoAccount('admin@uaetrails.app').displayName}) / ${demoAccount('admin@uaetrails.app').password}`);
-  console.log(`Participant: visitor@uaetrails.app (${participant.profile?.displayName ?? demoAccount('visitor@uaetrails.app').displayName}) / ${demoAccount('visitor@uaetrails.app').password}`);
-  console.log(`Individual host: host@uaetrails.app (${individualHost.profile?.displayName ?? demoAccount('host@uaetrails.app').displayName}) / ${demoAccount('host@uaetrails.app').password}`);
-  console.log(`Agency owner: organizer@uaetrails.app (${agencyOwner.profile?.displayName ?? demoAccount('organizer@uaetrails.app').displayName}) / ${demoAccount('organizer@uaetrails.app').password}`);
-  console.log(`Agency guide: guide@uaetrails.app (${agencyGuide.profile?.displayName ?? demoAccount('guide@uaetrails.app').displayName}) / ${demoAccount('guide@uaetrails.app').password}`);
-  console.log(`Shop owner: shop@uaetrails.app (${shopOwner.profile?.displayName ?? demoAccount('shop@uaetrails.app').displayName}) / ${demoAccount('shop@uaetrails.app').password}`);
-  console.log(`Pending participant: visitor2@uaetrails.app (${pendingParticipant.profile?.displayName ?? demoAccount('visitor2@uaetrails.app').displayName}) / ${demoAccount('visitor2@uaetrails.app').password} — incomplete signup profile (welcome wizard demo)`);
-  console.log(`Suspended: suspended@uaetrails.app / ${suspendedDemo.password}`);
+  console.log(`Admin: admin@uaetrails.app (${admin.profile?.displayName ?? demoAccount('admin@uaetrails.app').displayName}) / ${demoPassword('admin@uaetrails.app')}`);
+  console.log(`Participant: visitor@uaetrails.app (${participant.profile?.displayName ?? demoAccount('visitor@uaetrails.app').displayName}) / ${demoPassword('visitor@uaetrails.app')}`);
+  console.log(`Individual host: host@uaetrails.app (${individualHost.profile?.displayName ?? demoAccount('host@uaetrails.app').displayName}) / ${demoPassword('host@uaetrails.app')}`);
+  console.log(`Agency owner: organizer@uaetrails.app (${agencyOwner.profile?.displayName ?? demoAccount('organizer@uaetrails.app').displayName}) / ${demoPassword('organizer@uaetrails.app')}`);
+  console.log(`Agency guide: guide@uaetrails.app (${agencyGuide.profile?.displayName ?? demoAccount('guide@uaetrails.app').displayName}) / ${demoPassword('guide@uaetrails.app')}`);
+  console.log(`Shop owner: shop@uaetrails.app (${shopOwner.profile?.displayName ?? demoAccount('shop@uaetrails.app').displayName}) / ${demoPassword('shop@uaetrails.app')}`);
+  console.log(`Pending participant: visitor2@uaetrails.app (${pendingParticipant.profile?.displayName ?? demoAccount('visitor2@uaetrails.app').displayName}) / ${demoPassword('visitor2@uaetrails.app')} — incomplete signup profile (welcome wizard demo)`);
+  console.log(`Suspended: suspended@uaetrails.app / ${suspendedPassword}`);
   console.log(`Agency tenant: ${agencyTenant.id} — ${agencyTenant.slug} (${agencyTenant.businessMode})`);
   console.log(`Individual host tenant: ${individualHostTenant.id} — ${individualHostTenant.slug}`);
   console.log(`Shop tenant: ${shopTenant.id} — ${shopTenant.slug} (${shopTenant.businessMode})`);

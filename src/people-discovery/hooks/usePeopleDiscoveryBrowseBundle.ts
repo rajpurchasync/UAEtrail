@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { memberHasUnlimitedDiscovery } from '@uaetrail/shared-types';
 import { usePeopleDiscoverySeekingActivities } from './usePeopleDiscoverySeekingActivities';
 import { useMemberPeopleNetworkPreview } from './useMemberPeopleNetworkPreview';
 import { useMemberDiscoveryRoster } from './useMemberDiscoveryRoster';
 import { useExplorePeopleAvailability } from './usePeopleAvailability';
-import { buildExploreMemberPeopleMapChip } from '../lib/exploreMemberPeopleMapChip';
 import type { useExploreBrowseUrlState } from '@/explore/ui/useExploreBrowseUrlState';
 import type { MemberStatusDTO, UserRole } from '@uaetrail/shared-types';
 
@@ -37,32 +36,13 @@ export const useExplorePeopleBrowseBundle = ({
   onOpenSeekingActivity,
   searchFocusNonce,
 }: Args) => {
-  const [peoplePreviewEnabled, setPeoplePreviewEnabled] = useState(false);
-  useEffect(() => {
-    if (!user) {
-      setPeoplePreviewEnabled(false);
-      return;
-    }
-    let idleId = 0;
-    let timeoutId = 0;
-    const enable = () => setPeoplePreviewEnabled(true);
-    if (typeof requestIdleCallback !== 'undefined') {
-      idleId = requestIdleCallback(enable, { timeout: 2000 });
-    } else {
-      timeoutId = window.setTimeout(enable, 800);
-    }
-    return () => {
-      if (idleId && typeof cancelIdleCallback !== 'undefined') cancelIdleCallback(idleId);
-      if (timeoutId) window.clearTimeout(timeoutId);
-    };
-  }, [user]);
-  const memberPeoplePreview = useMemberPeopleNetworkPreview(Boolean(user) && peoplePreviewEnabled);
+  const peopleBrowsePanelOpen =
+    browse.listMode === 'people' || (isDesktop && browse.peopleBrowseOpen);
+  const memberPeoplePreview = useMemberPeopleNetworkPreview(Boolean(user) && peopleBrowsePanelOpen);
   const buddyUserIds = useMemo(
     () => (user ? new Set(memberPeoplePreview.preview?.friendUserIds ?? []) : undefined),
     [user, memberPeoplePreview.preview?.friendUserIds]
   );
-  const peopleBrowsePanelOpen =
-    browse.listMode === 'people' || (isDesktop && browse.peopleBrowseOpen);
   const memberAvailabilityEnabled =
     peopleBrowsePanelOpen && browse.peopleBrowseTab === 'available' && Boolean(user);
   const memberDiscoveryEnabled =
@@ -83,10 +63,6 @@ export const useExplorePeopleBrowseBundle = ({
     mapFilter: browse.mapFilter,
   });
 
-  const openPeopleBrowsePanel = useCallback(() => {
-    browse.openPeopleBrowsePanel('looking');
-  }, [browse]);
-
   const peopleLookingTabActive =
     peopleBrowsePanelOpen && browse.peopleBrowseTab === 'looking';
 
@@ -102,17 +78,6 @@ export const useExplorePeopleBrowseBundle = ({
   });
 
   const seekingActivities = seekingDiscovery.seekingActivities;
-
-  const peopleBrowseMapChip = useMemo(
-    () =>
-      buildExploreMemberPeopleMapChip({
-        preview: memberPeoplePreview.preview,
-        mapItems: exploreCatalogItems,
-        viewerUserId: user?.id,
-        activityDatePreset: browse.activityDatePreset,
-      }),
-    [memberPeoplePreview.preview, exploreCatalogItems, user?.id, browse.activityDatePreset]
-  );
 
   const canBrowseAllMembers = memberHasUnlimitedDiscovery(
     hostStatus ? { hostTiers: hostStatus.publish.hostTiers } : null
@@ -161,8 +126,6 @@ export const useExplorePeopleBrowseBundle = ({
 
   return {
     peopleBrowsePanelProps,
-    openPeopleBrowsePanel,
-    peopleBrowseMapChip,
     memberPeoplePreview,
     canBrowseAllMembers,
   };

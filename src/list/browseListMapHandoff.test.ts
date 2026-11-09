@@ -84,4 +84,9 @@ describe('browseListMapHandoff', () => {
     const listCat = inferListCatFromExploreHandoff(baseState, new URLSearchParams('view=people&peopleTab=discover'));
     expect(listCat).toBe('people');
   });
+
+  it('infers listCat from explore panel when pinKind omitted', () => {
+    expect(inferListCatFromExploreHandoff(baseState, new URLSearchParams('panel=venues'))).toBe('venues');
+    expect(inferListCatFromExploreHandoff(baseState, new URLSearchParams('panel=activities'))).toBe('activities');
+  });
 });

@@ -112,7 +112,7 @@ const LINE_ALLOW_SUBSTRINGS = [
   'host_join_queue',
   'host console`',
   'admin hosts',
-  "label: 'Host',", // FAB v3 branch — CREATE_FLOW.md (host = lead an outing; not publishing workspace)
+  "label: 'Publish an event',", // FAB menu only — wire intent remains `host`
 ];
 
 const BANNED_LINE_PATTERNS: Array<{ pattern: RegExp; hint: string }> = [

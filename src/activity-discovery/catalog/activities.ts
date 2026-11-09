@@ -6,7 +6,11 @@ import {
   exploreMapItemMatchesActivityModeFilter,
   type ExploreActivityModeFilter,
 } from '../../explore/exploreActivityModeFilter';
-import { isBuddyMapItem, matchesBuddyMapFilter } from '../../explore/ui/exploreMapPinModel';
+import {
+  matchesTripMapTopicFilter,
+  type TripMapTopicKey,
+} from '../../explore/exploreMapQuickTopicFilters';
+import { isBuddyMapItem } from '../../explore/ui/exploreMapPinModel';
 import {
   selectSeekingActivitiesFromExploreCatalog,
   type ExploreSeekingCatalogFilters,
@@ -14,6 +18,7 @@ import {
 
 export type ExploreActivityCatalogFilters = ExploreSeekingCatalogFilters & {
   activityModeFilter?: ExploreActivityModeFilter;
+  tripMapTopics?: TripMapTopicKey[];
 };
 
 /**
@@ -36,7 +41,13 @@ export const selectActivitiesFromExploreCatalog = (
     exploreCatalogItems
       .filter(isBuddyMapItem)
       .filter((item) =>
-        matchesBuddyMapFilter(item, filters.mapFilter, filters.buddySubtype, filters.outingTopic)
+        matchesTripMapTopicFilter(
+          item,
+          filters.tripMapTopics ?? [],
+          filters.mapFilter,
+          filters.buddySubtype,
+          filters.outingTopic
+        )
       )
       .filter((item) => {
         if (datePreset === 'anyday') return true;

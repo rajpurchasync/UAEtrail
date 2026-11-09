@@ -23,6 +23,8 @@ nginx/certs/*.key
 postgress_ca.pem
 qr-local.png
 dev-mobile-qr.png
+.dev-mobile-tunnel.url
+.dev-mobile-tunnel.url
 
 .vscode/*
 !.vscode/extensions.json

@@ -41,6 +41,14 @@ import {
   serializeExploreActivityModeFilter,
   type ExploreActivityModeFilter,
 } from './exploreActivityModeFilter';
+import {
+  EXPLORE_PLACE_TYPES_PARAM,
+  EXPLORE_TRIP_TYPES_PARAM,
+  serializePlaceMapTopicsParam,
+  serializeTripMapTopicsParam,
+  type PlaceMapTopicKey,
+  type TripMapTopicKey,
+} from './exploreMapQuickTopicFilters';
 export type ExploreBrowseListMode = 'default' | 'people';
 
 export type ExploreBrowseUrlSyncPatch = {
@@ -64,6 +72,8 @@ export type ExploreBrowseUrlSyncPatch = {
   peopleBrowseTab?: PeopleBrowseTab;
   buddiesDiscoverSegment?: BuddiesDiscoverySegment;
   listCat?: BrowseMainCategoryKey | null;
+  tripMapTopics?: TripMapTopicKey[];
+  placeMapTopics?: PlaceMapTopicKey[];
 };
 
 export type ExploreBrowseUrlSyncState = {
@@ -85,6 +95,8 @@ export type ExploreBrowseUrlSyncState = {
   peopleBrowseOpen: boolean;
   searchScope: ExploreSearchScopeKey | null;
   peopleBrowseTab: PeopleBrowseTab;
+  tripMapTopics: TripMapTopicKey[];
+  placeMapTopics: PlaceMapTopicKey[];
 };
 
 /** Merge browse UI state + patch into explore URL search params (R2 / C18). */
@@ -116,6 +128,8 @@ export const buildExploreBrowseSearchParams = (input: {
   const topicValue = patch.outingTopic ?? state.outingTopic;
   const pinKindValue = patch.pinKind ?? state.pinKind;
   const topicPillsValue = patch.topicPills ?? state.topicPills;
+  const tripMapTopicsValue = patch.tripMapTopics ?? state.tripMapTopics;
+  const placeMapTopicsValue = patch.placeMapTopics ?? state.placeMapTopics;
   const listModeValue = patch.listMode ?? state.listMode;
   const peopleBrowseOpenValue = patch.peopleBrowseOpen ?? state.peopleBrowseOpen;
   const peoplePanelActive = peopleBrowseOpenValue || listModeValue === 'people';
@@ -166,6 +180,14 @@ export const buildExploreBrowseSearchParams = (input: {
   const serializedTopics = serializeExploreMapFilterPillsParam(topicPillsValue);
   if (serializedTopics) params.set('topics', serializedTopics);
   else params.delete('topics');
+
+  const serializedTripTypes = serializeTripMapTopicsParam(tripMapTopicsValue);
+  if (serializedTripTypes) params.set(EXPLORE_TRIP_TYPES_PARAM, serializedTripTypes);
+  else params.delete(EXPLORE_TRIP_TYPES_PARAM);
+
+  const serializedPlaceTypes = serializePlaceMapTopicsParam(placeMapTopicsValue);
+  if (serializedPlaceTypes) params.set(EXPLORE_PLACE_TYPES_PARAM, serializedPlaceTypes);
+  else params.delete(EXPLORE_PLACE_TYPES_PARAM);
 
   const peopleBrowseTabValue = patch.peopleBrowseTab ?? state.peopleBrowseTab;
   if (peoplePanelActive) {

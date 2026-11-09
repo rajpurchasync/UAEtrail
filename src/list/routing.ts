@@ -2,6 +2,7 @@ import { EXPLORE_MAP_PATH, LIST_DISCOVERY_PATH } from '../config/platform';
 import type { BrowseListFilterState } from './browseListFilters';
 import {
   inferListCatFromExploreHandoff,
+  scopeBrowseListStateForListCat,
   serializeBrowseListToExploreSearchParams,
 } from './browseListMapHandoff';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
@@ -27,6 +28,13 @@ export const listPeopleDiscoveryPath = (): string =>
     buddiesSegment: 'looking',
   });
 
+/** Scoped list homes — mobile five-tab + drawer (import here, not `platform.ts`, to avoid cycles). */
+export const tripsListHomePath = (): string =>
+  listDiscoveryPath({ listCat: 'activities', categories: ['activities'] });
+
+export const venuesListHomePath = (): string =>
+  listDiscoveryPath({ listCat: 'venues', categories: ['venues'] });
+
 /** Full-screen list discovery — query aligned with explore browse where possible. */
 export const listDiscoveryPath = (options?: ListDiscoveryPathOptions): string => {
   const state: BrowseListFilterState = {
@@ -48,9 +56,12 @@ export const listDiscoveryPath = (options?: ListDiscoveryPathOptions): string =>
 
 export const exploreMapPathFromListSearch = (search: string): string => {
   const params = new URLSearchParams(search.replace(/^\?/, '').trim());
-  const state = parseBrowseListFilterState(params);
+  let state = parseBrowseListFilterState(params);
   const regions = parseBrowseListVenueRegions(params);
   const listCat = parseListCatParam(params.get(LIST_CAT_PARAM));
+  if (listCat === 'activities' || listCat === 'venues') {
+    state = scopeBrowseListStateForListCat(state, listCat);
+  }
   const exploreParams = serializeBrowseListToExploreSearchParams(state, regions, { listCat });
   const qs = exploreParams.toString();
   return qs ? `${EXPLORE_MAP_PATH}?${qs}` : EXPLORE_MAP_PATH;
@@ -62,12 +73,15 @@ export const exploreMapPathFromList = (search: string): string => exploreMapPath
 /** Build `/list` from current explore query (`q`, `topics`, `date`, `regions`, `price`). */
 export const listDiscoveryPathFromExploreSearch = (search: string): string => {
   const params = new URLSearchParams(search.replace(/^\?/, '').trim());
-  const state = parseBrowseListFilterState(params);
+  let state = parseBrowseListFilterState(params);
   const regions = parseBrowseListVenueRegions(params);
-  const listParams = serializeBrowseListSearchParams(state, regions);
   const explicitListCat = parseListCatParam(params.get(LIST_CAT_PARAM));
   const inferredListCat = inferListCatFromExploreHandoff(state, params);
   const listCat = explicitListCat ?? inferredListCat;
+  if (listCat === 'activities' || listCat === 'venues') {
+    state = scopeBrowseListStateForListCat(state, listCat);
+  }
+  const listParams = serializeBrowseListSearchParams(state, regions);
   if (listCat) listParams.set(LIST_CAT_PARAM, listCat);
   const qs = listParams.toString();
   return qs ? `${LIST_DISCOVERY_PATH}?${qs}` : LIST_DISCOVERY_PATH;

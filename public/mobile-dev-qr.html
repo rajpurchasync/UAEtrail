@@ -27,8 +27,9 @@
       box-shadow: 0 20px 50px rgba(0,0,0,.35);
     }
     h1 { font-size: 1.25rem; margin: 0 0 8px; }
-    p { margin: 0 0 20px; color: #94a3b8; font-size: 0.9rem; line-height: 1.5; }
+    p { margin: 0 0 16px; color: #94a3b8; font-size: 0.9rem; line-height: 1.5; }
     .warn { color: #fbbf24; }
+    .err { color: #f87171; }
     .qr-wrap {
       background: #fff;
       border-radius: 12px;
@@ -44,7 +45,27 @@
       height: 280px;
     }
     a { color: #38bdf8; word-break: break-all; font-size: 0.95rem; }
-    .hint { margin-top: 20px; font-size: 0.8rem; color: #64748b; }
+    .hint { margin-top: 20px; font-size: 0.8rem; color: #64748b; text-align: left; }
+    .hint li { margin-bottom: 6px; }
+    button {
+      margin-top: 8px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: none;
+      background: #38bdf8;
+      color: #0f172a;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    select {
+      margin: 8px 0;
+      max-width: 100%;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid #475569;
+      background: #0f172a;
+      color: #e2e8f0;
+    }
   </style>
 </head>
 <body>
@@ -55,15 +76,24 @@
       <img id="qr" alt="" width="280" height="280" hidden />
     </div>
     <a id="url" href="#"></a>
-    <p class="hint">
-      Run <code>npm run dev:all</code> so the API is available. If the page does not load on your phone, allow Node/Vite
-      through Windows Firewall on port 5175.
-    </p>
-    <p class="hint">
-      <strong>Add to home screen / Install app</strong> does not work on this HTTP Wi‑Fi URL — browsers require HTTPS.
-      Test install on <a href="https://uaetrail.com/">https://uaetrail.com</a> on your phone, or use an HTTPS tunnel to
-      your dev server (see <code>docs/DEV_RUN.md</code>).
-    </p>
+    <div id="alt" hidden>
+      <p class="warn">Wrong network? Pick another address:</p>
+      <select id="pick" aria-label="LAN URL"></select>
+    </div>
+    <button type="button" id="copy" hidden>Copy URL</button>
+    <p id="qrErr" class="err" hidden></p>
+    <ul class="hint">
+      <li>Run <code>npm run dev:all</code> so the API is available.</li>
+      <li>Open this page on your laptop: <strong>http://localhost:5175/mobile-dev-qr.html</strong> (do not scan <code>dev-mobile-qr.png</code> from the repo — it can be stale).</li>
+      <li>Phone and PC must be on the <strong>same Wi‑Fi</strong> (not mobile data).</li>
+      <li>Windows: run <code>npm run dev:firewall</code> once (Admin) if the page never loads on your phone.</li>
+      <li>Override: set <code>DEV_MOBILE_URL=http://your-ip:5175/</code> in <code>.env</code> and restart dev.</li>
+      <li>
+        <strong>Add to home screen / Install app</strong> does not work on this HTTP Wi‑Fi URL — browsers require HTTPS.
+        Test install on <a href="https://uaetrail.com/">https://uaetrail.com</a> on your phone, or use an HTTPS tunnel
+        (see <code>docs/DEV_RUN.md</code>).
+      </li>
+    </ul>
   </main>
   <script>
     const host = window.location.hostname;
@@ -71,40 +101,41 @@
     const link = document.getElementById('url');
     const lead = document.getElementById('lead');
     const qrImg = document.getElementById('qr');
-
-    async function resolveTarget() {
-      if (!isLocal) {
-        return window.location.origin + '/';
-      }
-      try {
-        const res = await fetch('/__dev/mobile-url.json', { cache: 'no-store' });
-        if (!res.ok) throw new Error('dev url unavailable');
-        const data = await res.json();
-        if (data.url) return data.url;
-      } catch (_) {
-        /* fall through */
-      }
-      return null;
-    }
+    const qrErr = document.getElementById('qrErr');
+    const copyBtn = document.getElementById('copy');
+    const alt = document.getElementById('alt');
+    const pick = document.getElementById('pick');
 
     let lastTarget = null;
+    let manualUrl = null;
 
-    async function render() {
-      const target = await resolveTarget();
+    async function fetchDevMeta() {
+      if (!isLocal) {
+        return {
+          url: window.location.origin + '/',
+          candidates: [{ url: window.location.origin + '/', source: 'current' }],
+        };
+      }
+      const res = await fetch('/__dev/mobile-url.json', { cache: 'no-store' });
+      if (!res.ok) throw new Error('dev url unavailable');
+      return res.json();
+    }
 
+    function applyTarget(target) {
       if (!target) {
         lead.innerHTML =
-          '<span class="warn">Could not detect your Wi‑Fi URL. Start <code>npm run dev</code>, then open ' +
-          'the <strong>Network</strong> link from the terminal (not localhost), e.g. ' +
-          '<code>http://192.168.x.x:5175/mobile-dev-qr.html</code></span>';
+          '<span class="warn">Could not detect your Wi‑Fi URL. Start <code>npm run dev</code>, then reload this page.</span>';
         link.textContent = 'Waiting for dev server…';
         link.removeAttribute('href');
         qrImg.hidden = true;
+        copyBtn.hidden = true;
+        alt.hidden = true;
         return;
       }
 
       link.href = target;
       link.textContent = target;
+      copyBtn.hidden = false;
 
       if (target !== lastTarget) {
         lastTarget = target;
@@ -113,10 +144,50 @@
         }
       }
 
+      qrErr.hidden = true;
       qrImg.hidden = false;
       qrImg.alt = 'QR code: ' + target;
-      qrImg.src = '/__dev/mobile-qr.png?t=' + Date.now();
+      qrImg.onerror = () => {
+        qrErr.hidden = false;
+        qrErr.textContent = 'Could not load QR image — is the dev server running?';
+      };
+      qrImg.src = '/__dev/mobile-qr.png?t=' + encodeURIComponent(target);
     }
+
+    async function render() {
+      try {
+        const data = await fetchDevMeta();
+        const candidates = data.candidates || [];
+        if (pick.options.length === 0 && candidates.length > 1) {
+          alt.hidden = false;
+          for (const c of candidates) {
+            const opt = document.createElement('option');
+            opt.value = c.url;
+            opt.textContent = c.url + ' (' + c.source + ')';
+            pick.appendChild(opt);
+          }
+          pick.addEventListener('change', () => {
+            manualUrl = pick.value;
+            applyTarget(manualUrl);
+          });
+        }
+        const target = manualUrl || data.url;
+        applyTarget(target);
+      } catch (_) {
+        applyTarget(null);
+      }
+    }
+
+    copyBtn.addEventListener('click', async () => {
+      if (!lastTarget) return;
+      try {
+        await navigator.clipboard.writeText(lastTarget);
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => { copyBtn.textContent = 'Copy URL'; }, 2000);
+      } catch (_) {
+        copyBtn.textContent = 'Copy failed';
+      }
+    });
 
     void render();
     setInterval(() => { void render(); }, 5000);

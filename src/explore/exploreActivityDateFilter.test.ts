@@ -72,5 +72,25 @@ describe('exploreActivityDateFilter', () => {
       from: '2026-09-07',
       to: '2026-09-13',
     });
+    expect(exploreActivityDatePresetToInclusiveRange('nextmonth')).toEqual({
+      from: '2026-10-01',
+      to: '2026-10-31',
+    });
+    expect(exploreActivityDatePresetToInclusiveRange('thisyear')).toEqual({
+      from: '2026-01-01',
+      to: '2026-12-31',
+    });
+    expect(exploreActivityDatePresetToInclusiveRange('nextyear')).toEqual({
+      from: '2027-01-01',
+      to: '2027-12-31',
+    });
+  });
+
+  it('matches extended date presets', () => {
+    expect(matchesActivityDateFilter(activityOn('2026-10-15'), 'nextmonth')).toBe(true);
+    expect(matchesActivityDateFilter(activityOn('2026-09-15'), 'nextmonth')).toBe(false);
+    expect(matchesActivityDateFilter(activityOn('2026-11-01'), 'thisyear')).toBe(true);
+    expect(matchesActivityDateFilter(activityOn('2027-01-02'), 'nextyear')).toBe(true);
+    expect(parseExploreActivityDatePreset('nextmonth')).toBe('nextmonth');
   });
 });

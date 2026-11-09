@@ -7,31 +7,47 @@ import {
   EXPLORE_DISCOVER_BROWSE_PATH,
   MOBILE_LANDING_USER_MENU,
 } from './platform';
+import { TRIPS_LIST_NAV_PATH, VENUES_LIST_NAV_PATH } from './platform';
+import { tripsListHomePath, venuesListHomePath } from '../list/routing';
 
 describe('discover browse navigation contract', () => {
-  it('hamburger opens discover browse; desktop top nav does not duplicate Browse', () => {
+  it('hamburger exposes Trips/Venues list homes; desktop top nav does not duplicate list', () => {
     const exploreLink = CONSUMER_HAMBURGER_MENU.find(
       (item) => item.kind === 'link' && item.label === 'Explore'
     );
-    const hamburgerLink = CONSUMER_HAMBURGER_MENU.find(
-      (item) => item.kind === 'link' && item.label === 'Browse'
+    const tripsLink = CONSUMER_HAMBURGER_MENU.find(
+      (item) => item.kind === 'link' && item.label === 'Trips'
+    );
+    const venuesLink = CONSUMER_HAMBURGER_MENU.find(
+      (item) => item.kind === 'link' && item.label === 'Venues'
     );
     expect(exploreLink?.kind).toBe('link');
     if (exploreLink?.kind === 'link') {
       expect(exploreLink.to).toBe('/explore');
     }
-    expect(hamburgerLink?.kind).toBe('link');
-    if (hamburgerLink?.kind === 'link') {
-      expect(hamburgerLink.to).toBe('/list');
+    expect(tripsLink?.kind).toBe('link');
+    if (tripsLink?.kind === 'link') {
+      expect(tripsLink.to).toBe(TRIPS_LIST_NAV_PATH);
+      expect(tripsListHomePath()).toContain('listCat=activities');
     }
+    expect(venuesLink?.kind).toBe('link');
+    if (venuesLink?.kind === 'link') {
+      expect(venuesLink.to).toBe(VENUES_LIST_NAV_PATH);
+      expect(venuesListHomePath()).toContain('listCat=venues');
+    }
+    expect(CONSUMER_HAMBURGER_MENU.some((item) => item.kind === 'link' && item.label === 'Browse')).toBe(
+      false
+    );
     expect(DESKTOP_NAV_LINKS.some((link) => link.to === EXPLORE_DISCOVER_BROWSE_PATH)).toBe(false);
   });
 
-  it('guest landing drawer exposes map and discover browse separately', () => {
+  it('guest landing drawer exposes map and scoped list homes separately', () => {
     const explore = MOBILE_LANDING_USER_MENU.find((item) => item.label === 'Explore');
-    const browse = MOBILE_LANDING_USER_MENU.find((item) => item.label === 'Browse');
+    const trips = MOBILE_LANDING_USER_MENU.find((item) => item.label === 'Trips');
+    const venues = MOBILE_LANDING_USER_MENU.find((item) => item.label === 'Venues');
     expect(explore?.to).toBe('/explore');
-    expect(browse?.to).toBe('/list');
+    expect(trips?.to).toBe(TRIPS_LIST_NAV_PATH);
+    expect(venues?.to).toBe(VENUES_LIST_NAV_PATH);
   });
 
   it('ExploreExperience wires map list and discover browse separately', () => {

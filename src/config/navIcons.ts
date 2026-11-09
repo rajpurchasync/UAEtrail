@@ -5,6 +5,7 @@ import {
   History,
   LogIn,
   Map,
+  MapPin,
   MessageCircle,
   Settings,
   ShoppingBag,
@@ -23,6 +24,8 @@ export const NAV_ICONS = {
 export const MOBILE_NAV_ICON_MAP: Record<
   | 'Explore'
   | 'Browse'
+  | 'Trips'
+  | 'Venues'
   | 'Activities'
   | 'Shop'
   | 'Profile'
@@ -47,6 +50,8 @@ export const MOBILE_NAV_ICON_MAP: Record<
   'Explore Map': NAV_ICONS.explore,
   Explore: NAV_ICONS.explore,
   Browse: NAV_ICONS.activities,
+  Trips: NAV_ICONS.activities,
+  Venues: MapPin,
   Join: NAV_ICONS.activities,
   'Join free': NAV_ICONS.activities,
   'Log in': LogIn,

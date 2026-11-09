@@ -16,7 +16,11 @@ import {
 import type { ListExplorerLayout } from './listExplorerLayout';
 import type { ListExplorerSortMode } from './listExplorerSort';
 import { ListExplorerSortControl } from './ListExplorerSortControl';
-
+import type { BrowseListFilterState } from '../browseListFilters';
+import type { BrowseTripTopicKey } from '../browseListTripTopics';
+import type { ListVenuePlaceTopicKey } from '../listVenuePlaceTopics';
+import type { ExploreActivityDatePreset } from '../../explore/exploreActivityDateFilter';
+import { ListExplorerQuickFilters } from './ListExplorerQuickFilters';
 type ListExplorerHeaderProps = {
   query: string;
   onQueryChange: (value: string) => void;
@@ -39,6 +43,13 @@ type ListExplorerHeaderProps = {
   onSortChange: (mode: ListExplorerSortMode) => void;
   locationPending?: boolean;
   locationDenied?: boolean;
+  filters: BrowseListFilterState;
+  regions: string[];
+  onToggleTripTopic: (key: BrowseTripTopicKey) => void;
+  onTogglePlaceTopic: (key: ListVenuePlaceTopicKey) => void;
+  onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
+  onVenueRegionsChange: (regions: string[]) => void;
+  hideBucketToggleOnMobile?: boolean;
 };
 
 export const ListExplorerHeader = ({
@@ -63,6 +74,13 @@ export const ListExplorerHeader = ({
   onSortChange,
   locationPending,
   locationDenied,
+  filters,
+  regions,
+  onToggleTripTopic,
+  onTogglePlaceTopic,
+  onActivityDatePresetChange,
+  onVenueRegionsChange,
+  hideBucketToggleOnMobile = false,
 }: ListExplorerHeaderProps) => {
   const hideSideMapChrome = mapColumnVisible || showMapColumnPrompt;
   const standaloneListSurface = !onClose;
@@ -95,14 +113,14 @@ export const ListExplorerHeader = ({
               type="button"
               onClick={onClose}
               className="inline-flex min-h-8 items-center gap-0.5 pl-0 text-sm font-medium text-emerald-700/90 hover:text-emerald-800"
-              aria-label="Back to Explore"
+              aria-label="Back to map"
             >
               <ChevronLeft className="h-5 w-5 shrink-0" strokeWidth={2.25} aria-hidden />
-              <span className="truncate">Explore</span>
+              <span className="truncate">Map</span>
             </button>
           ) : (
             <div className="md:hidden">
-              <MobileBackButton fallbackTo={mapHref} label="Explore" className="!min-h-10 pl-0" />
+              <MobileBackButton fallbackTo={mapHref} label="Map" className="!min-h-10 pl-0" />
             </div>
           )}
         </div>
@@ -160,12 +178,19 @@ export const ListExplorerHeader = ({
         }`}
       >
         <div className={`flex min-w-0 items-center ${mapColumnVisible ? 'gap-1' : 'gap-2'}`}>
-          <ListExplorerBucketToggle
-            bucket={bucket}
-            onChange={onBucketChange}
-            bucketCounts={bucketTabCounts}
-            compact={mapColumnVisible}
-          />
+          {hideBucketToggleOnMobile ? (
+            <p className="truncate text-sm font-semibold text-neutral-900 md:hidden">
+              {bucket === 'places' ? 'Venues' : 'Trips'}
+            </p>
+          ) : null}
+          <div className={hideBucketToggleOnMobile ? 'hidden md:block' : ''}>
+            <ListExplorerBucketToggle
+              bucket={bucket}
+              onChange={onBucketChange}
+              bucketCounts={bucketTabCounts}
+              compact={mapColumnVisible}
+            />
+          </div>
         </div>
         <div className="flex min-w-0 shrink-0 items-center justify-end gap-1">
           {onClose ? null : showMapColumnPrompt && onOpenMapColumn ? (
@@ -210,6 +235,15 @@ export const ListExplorerHeader = ({
           />
         </div>
       </div>
+      <ListExplorerQuickFilters
+        bucket={bucket}
+        filters={filters}
+        regions={regions}
+        onToggleTripTopic={onToggleTripTopic}
+        onTogglePlaceTopic={onTogglePlaceTopic}
+        onActivityDatePresetChange={onActivityDatePresetChange}
+        onVenueRegionsChange={onVenueRegionsChange}
+      />
     </div>
   </header>
   );

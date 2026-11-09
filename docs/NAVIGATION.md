@@ -12,9 +12,9 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 | **Browse** | `/explore` | Map-first discovery — activities (`activity-discovery`), places/shops (`places-discovery`), people (`people-discovery`); map/list/search are projections |
 | **List discovery** | `/list` | Full-screen explorer (thumbnails · list · calendar, date-sorted; same filters as explore; `listDiscoveryPath()` ↔ map via `exploreMapPathFromListSearch()`) |
 | **Personal hub** | `/profile`, `/profile/settings`, `/profile/edit`, `/profile/history` | Account hub, settings stack, outing **history** + journey map |
-| **Plan tab** | `/plan` | Active layer — goals, upcoming outings (bottom nav middle tab; UI label **My Plans** — `PRODUCT_PLAN_SURFACE_TITLE`) |
-| **Mobile tabs (signed-in)** | `/explore`, `/plan`, `/chat` | **Three tabs only** — **Explore** · **My Plans** · **Chat** (`md:hidden`). **No List tab.** List explorer from the **List** pill or hamburger **Browse** (`/list`, `listDiscoveryPathFromExploreSearch()`), not bottom nav. **Facebook / Instagram / WhatsApp** icon row above tabs (`src/config/socialLinks.ts`); same bar on **`/profile`**, settings stack, **Friends**, **Submissions**, and related profile stack routes |
-| **Mobile tabs (guests)** | `/explore`, `/plan`, `/chat` | Same three tabs; **Explore** is the live map. **My Plans** and **Chat** show the **right-rail feature explainer** (not the full auth page). **Profile** is not a tab; guests reach account flows via sign-in CTAs. |
+| **Plan tab** | `/plan` | Active layer — goals, upcoming outings. Page title **`PRODUCT_PLAN_SURFACE_TITLE`** (**My Plans**); bottom nav label **Plan**. |
+| **Mobile tabs (`md:hidden`)** | `/explore`, `/list`, `/plan`, `/chat` | **Five tabs** — **Trips** · **Venues** · **Crews** · **Plan** · **Chat**. Trips/Venues use map (`/explore`) + list (`/list`) projections via `mobileFiveTabHomePath()` · `resolveMobileFiveTab()`. Crews → `listPeopleDiscoveryPath()`. Contract: `src/config/mobileFiveTabNav.ts` · § **Mobile five-tab bottom nav** below. |
+| **Mobile tabs (guests)** | Same five-tab row | **Trips** / **Venues** on `/explore` and `/list`; **Crews** · **Plan** · **Chat** → feature explainer when gated. **Profile** is not a tab. |
 | **Entity detail** | `/trail`, `/camp`, `/venue`, `/activity`, `/shop`, `/agency`, `/partner`, `/member/:userId`, `/area/:slug` | Place, scheduled outing, shop, brand profile, person card, or curated **area** hub |
 
 ### Profile hub (`/profile`)
@@ -179,7 +179,7 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 - **Desktop (`lg+`) and mobile:** map-first. Catalog list is the full-screen `/list` explorer (not a map sidebar).
 - **Map framing:** upper-UAE overview (zoom ~8); optional GPS / **Locate** recenters at the same regional zoom (not street-level).
 - Landing on `/explore` is map-only. **List** pill and hamburger **Browse** open `/list` (`listDiscoveryPathFromExploreSearch()`), keeping current filters. Inbound `/explore?list=1` / `browse=1` (except People) rewrite to `/list`.
-- **List explorer (`/list`):** Windows Explorer-style **Thumbnails · List · Calendar** (`?layout=`), always sorted by date. Sticky search when a query is applied. Draggable filter FAB (snap to corners) with applied-count badge. Mobile thumbnails are **two columns**. Type icon sits on the cover. Tapping a plan opens entity detail; **Back** returns to this list URL (nested chat/location return to detail first). Do not add `/list` to `MOBILE_BOTTOM_NAV_TAB_PATHS`. **Desktop map List** opens the same explorer as a full-height resizable left drawer on `/explore?list=1` (close returns to the map; full screen hides the map). Thumbnail cards keep a fixed size and add columns as the drawer widens. Hamburger **Browse** and the mobile List pill still go to `/list`. Schedule chips use the coming weekday within six days, otherwise `Sat 09 Nov 26`, then the clock from Display settings (`7:00 AM` or `07:00`). Place rows show distance from the viewer’s location when the browser provides a fix.
+- **List explorer (`/list`):** Windows Explorer-style **Thumbnails · List · Calendar** (`?layout=`), always sorted by date. Sticky search when a query is applied. Draggable filter FAB (snap to corners) with applied-count badge. Mobile thumbnails are **two columns**. Type icon sits on the cover. Tapping a plan opens entity detail; **Back** returns to this list URL (nested chat/location return to detail first). **`/list` is a mobile tab-shell root** (`MOBILE_BOTTOM_NAV_TAB_PATHS`) for Trips/Venues/Crews list projections — not a duplicate sixth tab. **Desktop map List** opens the same explorer as a full-height resizable left drawer on `/explore?list=1` (close returns to the map; full screen hides the map). Thumbnail cards keep a fixed size and add columns as the drawer widens. Hamburger **Browse** and the mobile List pill still go to `/list`. Schedule chips use the coming weekday within six days, otherwise `Sat 09 Nov 26`, then the clock from Display settings (`7:00 AM` or `07:00`). Place rows show distance from the viewer’s location when the browser provides a fix.
 - **Mobile map filters:** **Activities · Places · Search** intent pill (`ExploreMapMobileLayerChrome`) expands a **frosted segmented CTA bar** (shared `EXPLORE_MAP_CHROME_FROST` with List / Find crew) — activities: All · Anyday · Hiking · Camping · Rideshare · Others; places: All · UAE · Trails · Spots · Shops · Camping · Others (spots vs camping share wire `filter=camping`; highlight uses `placesMenuKey`). List explorer filters live in the floating filter pop on `/list`.
 - **Guest join:** tapping Join on an activity opens a signup sheet (returns to map after auth).
 - First map visit shows a 3-step coach (localStorage `uaetrail:explore-coach-seen`); guest join banner appears after coach is dismissed.
@@ -205,7 +205,7 @@ Cards show city, outings attended, and a subtle upcoming outing hint (link opens
 
 ## Explore FAB (+)
 
-**Shipped (CPC v3):** **Host** · **Find crew** · **Add on map** — see [`CREATE_FLOW.md`](./CREATE_FLOW.md). **Not** the bottom nav **My Plans** tab (`/plan`). Domain lens: **What** (Host / fixed seek → activity) · **Where** (Add → place/facility) · **Who** / **How** on detail only — [`DOMAIN.md`](./DOMAIN.md) § What · Where · Who · How.
+**Shipped (CPC v3):** **Host** · **Find crew** · **Add on map** — see [`CREATE_FLOW.md`](./CREATE_FLOW.md). **Not** the bottom nav **Plan** tab (`/plan`). Domain lens: **What** (Host / fixed seek → activity) · **Where** (Add → place/facility) · **Who** / **How** on detail only — [`DOMAIN.md`](./DOMAIN.md) § What · Where · Who · How.
 
 Signed-in members tap **+** on `/explore` (or list FAB) to compose. **Guests** → sign-in sheet, then the same compose URL. Closing the wizard returns to the explore or list surface the member opened it from (scroll and the control that opened compose are restored). Community rideshare **To** uses `GET /geo/rideshare-destinations` (see [`API_ROUTING.md`](./API_ROUTING.md) § Geo search). **My cars** and **Safety** opened from that step use the same back stack as the profile hub.
 
@@ -299,7 +299,7 @@ Canonical paths only in **new UI**. Bookmark aliases mount in `src/App.tsx` and 
 | **My Plans** | `/plan` | `ConsumerShell` — Upcoming · Wishlist (`planTab.ts`); goals block on Wishlist |
 | **Chat** | `/chat` | Inbox filters (people · groups · outings); legacy `/messages` → `/chat` |
 
-- **Three bottom tabs only** — Profile is **not** a tab; open via header avatar / hamburger (`MOBILE_BOTTOM_NAV_TAB_PATHS`).
+- **Five bottom tabs** — Profile is **not** a tab; open via header avatar / hamburger (`MOBILE_FIVE_TAB_UI_LABELS` · `MOBILE_BOTTOM_NAV_TAB_PATHS`).
 - Sub-routes (e.g. `/profile/settings`, `/chat?group=`, entity detail) use **back** chrome (`MobileDetailShell` or stack `ConsumerShell`).
 - User groups and activity outing chats appear in Chat inbox (Groups / Outings filters).
 
@@ -356,8 +356,110 @@ After seed, the API logs a **Connections QA** playbook (buddies, incoming/outgoi
 
 API integration coverage: `apps/api/tests/connections-flow.test.ts`.
 
+## Mobile five-tab bottom nav (implementation plan)
+
+**Status:** **Phases 0–5 shipped in code** — five-tab shell, scoped map↔list, Crews list, drawer/sidebar **Trips · Venues** (no standalone **Browse**). Run **`npm run verify:system`** before release; close **`MIG-SURFACE-MOBILE-FIVE-TAB`** in `refactor-program.json` when verify is green. **Contexts:** `discovery`, `people-discovery`, `member_identity`.
+
+### Target (mobile-first)
+
+| Tab (label) | Product scope | Map projection | List projection |
+|-------------|---------------|----------------|-----------------|
+| **Trips** | Activities + seeking on the map catalog | `tripsMapHomePath()` → `/explore` activities scope | `tripsListHomePath()` → `/list` trips bucket (`listCat=activities` when scoped) |
+| **Venues** | Places, trails, camps, shops, facilities | `venuesMapHomePath()` → `/explore` venues scope | `venuesListHomePath()` → `/list?listCat=venues` |
+| **Crews** | Friends, available, going, directory (`peopleTab`) | *Not a tab home* — full-screen people list only for v1 | `crewsHomePath()` → `listPeopleDiscoveryPath()` (`/list?listCat=people`) |
+| **Plan** | Upcoming, wishlist, availability editor | — | `/plan` only |
+| **Chat** | Inbox | — | `/chat` only (hide tab in thread `?to=` / `?group=`) |
+
+**Engines stay shared:** `/explore` + `/list` — tabs are **section entry + highlight**, not five duplicate page trees. Map ↔ list handoff: `browseListMapHandoff.ts`, `listDiscoveryPathFromExploreSearch()`, `exploreMapPathFromListSearch()`.
+
+### Locked product defaults (`MOBILE_FIVE_TAB_DEFAULTS`)
+
+| Decision | Value |
+|----------|--------|
+| Trips default projection | **Map** |
+| Venues default projection | **Map** |
+| Remember map/list per tab | **Yes** (`sessionStorage` `uaetrail:nav.trips.projection` / `…venues…`) |
+| Mobile list mode | **Full `/list`** (not `/explore?list=1` as tab home) |
+| Switch Trips ↔ Venues tab | **Clear** the other section’s browse scope (filters/topics) |
+| Guests | All **five labels** visible; **Crews** · **Plan** · **Chat** gated |
+| Optional later | `/crew` redirect alias → same as `crewsHomePath()` |
+
+### Code contract (use for all new links)
+
+| Helper | Role |
+|--------|------|
+| `mobileFiveTabHomePath(tab)` | Tab bar `to=` — respects remembered projection for Trips/Venues |
+| `resolveMobileFiveTab(pathname, search)` | Active tab highlight; `null` off-tab routes (detail, threads, admin, …) |
+| `readMobileFiveTabProjection` / `writeMobileFiveTabProjection` | Map \| List persistence |
+| `MOBILE_FIVE_TAB_UI_LABELS` | Tab copy: Trips · Venues · Crews · Plan · Chat |
+
+Import from `src/config/mobileFiveTabNav.ts` (re-export via `routingCatalog` when UI ships). Tests: `src/config/mobileFiveTabNav.test.ts`.
+
+### Active-tab rules (summary)
+
+- **`/list`** — `listCat=people` → **Crews**; `venues` → **Venues**; else **Trips**.
+- **`/explore`** — `view=people` \| `social` \| `going` → **Crews**; `panel=venues` \| `shops` or `pinKind=places` \| `shops` → **Venues**; else **Trips**.
+- **`/plan`** → **Plan**; **`/chat`** (no thread params) → **Chat**.
+
+### In-tab Map \| List UX
+
+- Mobile keeps the floating **List** FAB on the map (scoped handoff via `listDiscoveryPathFromExploreSearch` / `exploreMapPathFromListSearch` + `panel` / `listCat`). Optional header toggle is **not** required for v1.
+- **Crews:** bottom tab + `/list?listCat=people` only — no map **Crews** chip (desktop people rail via nav/deep links unchanged).
+- **5-column tab bar:** icons + short labels; verify touch targets (`--bottom-nav-height`).
+
+### Implementation phases (check off in PRs)
+
+**Phase 0 — Contract (done when tests green)**  
+- [x] `mobileFiveTabNav.ts` path builders + resolver + defaults  
+- [x] `mobileFiveTabNav.test.ts`  
+- [x] Documented in Tier-1 + `MIG-SURFACE-MOBILE-FIVE-TAB`
+
+**Phase 1 — Tab shell**  
+- [x] `MobileBottomNav.tsx` — 5 tabs, `mobileFiveTabHomePath`, active via `resolveMobileFiveTab`  
+- [x] `MOBILE_BOTTOM_NAV_TAB_PATHS` — `/explore` · `/list` · `/plan` · `/chat`  
+- [x] `shouldShowMobileBottomNav` — show on `/list`; hide `?list=1` explore drawer  
+- [x] `mobileBottomNav.test.ts` + `memberSurfacesAcceptance` tab copy guards  
+- [x] Five-column tab grid (`grid-cols-5`, compact labels)
+
+**Phase 2 — Trips & Venues projections**  
+- [x] Tab tap applies scoped defaults (`mobileFiveTabHomePath`)  
+- [x] Map **List** FAB → scoped `/list`; list → map sets `panel` + `pinKind` (single-scope handoff)  
+- [x] Desktop `list=1` drawer unchanged; mobile full-screen `/list` for catalog
+
+**Phase 3 — Crews tab**  
+- [x] Tab → `crewsHomePath()`; guest → feature explainer (map chip guest gate)  
+- [x] Map Crews chip removed (Crews tab is the entry)  
+- [x] People overlay on map: deep link redirect to `/list` (signed-in mobile); desktop rail unchanged
+
+**Phase 4 — Auth & redirects**  
+- [x] Post-auth default remains `/explore` (Trips map) unless return URL set  
+- [x] Signed-in `/` → Trips map (today `/explore`)  
+- [x] Hamburger + landing drawer **Trips · Venues** (not a standalone **Browse** IA)
+
+**Phase 5 — Desktop + doc closure**  
+- [x] `desktopNav.ts` primary **Trips · Venues** list homes (+ existing hub sections)  
+- [x] Tier-1 aligned (`NAVIGATION`, `ARCHITECTURE`, `SYSTEM_COHERENCE`, `DOMAIN_CANONICALS`)  
+- [ ] `npm run verify:system` (run before merge)
+
+### Verification gates
+
+| Gate | Command / file |
+|------|----------------|
+| Contract | `npx vitest run src/config/mobileFiveTabNav.test.ts` |
+| Nav hygiene | `src/config/mobileBottomNav.test.ts`, `src/member/memberSurfacesAcceptance.test.ts` |
+| List ↔ map handoff | `src/list/routing.test.ts`, `browseListMapHandoff` callers |
+| Full system | `npm run verify:system` before merge |
+
+### Out of scope (later)
+
+- Unified `/trips/*` route tree shell (same engines, new chrome host) — only if Capacitor stack nav requires it.  
+- Sixth tab or burying Plan/Chat.  
+- Tier-1 doc duplication — this section is the single plan; do not add `ALIGNMENT_*` / `NAVIGATION_FIVE_TAB.md`.
+
+---
+
 ## Adding new links
 
 1. Pick the surface (browse / personal / detail).
-2. Use helpers from `src/explore/routing.ts` (or `routingCatalog`) — no raw `/explore?…` strings outside those modules and `platform.ts`.
+2. Use helpers from `src/explore/routing.ts`, `src/list/routing.ts`, and (mobile tabs) `src/config/mobileFiveTabNav.ts` — no raw `/explore?…` strings outside those modules and `platform.ts`.
 3. Detail pages pass `backTo={detailBackPath('…')}` unless a tighter parent context exists.

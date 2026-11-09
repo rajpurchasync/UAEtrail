@@ -42,6 +42,21 @@ export const EXPLORE_MOBILE_PLACES_MENU: ReadonlyArray<{
   { key: 'uae', label: 'UAE' },
 ];
 
+/** Mobile map quick filter row (no “All”). */
+export const EXPLORE_MOBILE_ACTIVITY_QUICK_FILTERS: readonly ExploreMobileActivityMenuKey[] = [
+  'hiking',
+  'camping',
+  'rideshare',
+  'others',
+];
+
+export const EXPLORE_MOBILE_PLACES_QUICK_FILTERS: readonly ExploreMobilePlacesMenuKey[] = [
+  'hiking',
+  'camping',
+  'facilities',
+  'shops',
+];
+
 /** Same `mapFilter` axis as list panel + desktop browse (Activities / Places tabs). */
 export const mobileActivityMenuToMapFilter = (
   key: ExploreMobileActivityMenuKey

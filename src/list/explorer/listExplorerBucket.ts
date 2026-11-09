@@ -7,8 +7,8 @@ export const LIST_EXPLORER_BUCKETS: ReadonlyArray<{
   key: ListExplorerBucket;
   label: string;
 }> = [
-  { key: 'events', label: 'Events' },
-  { key: 'places', label: 'Places' },
+  { key: 'events', label: 'Trips' },
+  { key: 'places', label: 'Venues' },
 ];
 
 /** Default catalog is events. Places is `listCat=venues`. */
@@ -29,6 +29,6 @@ export const listExplorerSearchBucketCounts = (
 });
 
 export const listExplorerBucketTotalLabel = (bucket: ListExplorerBucket, count: number): string => {
-  if (bucket === 'events') return count === 1 ? '1 event' : `${count.toLocaleString()} events`;
-  return count === 1 ? '1 place' : `${count.toLocaleString()} places`;
+  if (bucket === 'events') return count === 1 ? '1 trip' : `${count.toLocaleString()} trips`;
+  return count === 1 ? '1 venue' : `${count.toLocaleString()} venues`;
 };

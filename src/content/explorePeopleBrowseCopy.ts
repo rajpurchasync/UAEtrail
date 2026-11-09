@@ -13,17 +13,17 @@ import {
 
 export const EXPLORE_PEOPLE_BROWSE_PANEL_TITLE = 'Find your crew';
 
-export const EXPLORE_PEOPLE_BROWSE_MAP_BUTTON_LABEL = 'Find Crew';
+export const EXPLORE_PEOPLE_BROWSE_MAP_BUTTON_LABEL = 'Crews';
 
 export const explorePeopleBrowseMapButtonAriaLabel = (friendCount: number): string =>
   friendCount > 0
-    ? `Find crew. ${friendCount} friends`
-    : 'Find crew. Browse members free to get outside';
+    ? `Crews. ${friendCount} friends`
+    : 'Crews. Browse members free to get outside';
 
 export const explorePeopleBrowseGuestMapButtonAriaLabel = (crewCount: number): string =>
   crewCount > 0
-    ? `Find crew. ${crewCount} possible crew on outings`
-    : 'Find crew. Join free to meet people going outside';
+    ? `Crews. ${crewCount} possible crew on outings`
+    : 'Crews. Join free to meet people going outside';
 
 export const EXPLORE_PEOPLE_BROWSE_LOADING = 'Loading your people…';
 export const EXPLORE_PEOPLE_BROWSE_LOOKING_LOADING = 'Loading outings…';

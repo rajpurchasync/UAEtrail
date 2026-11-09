@@ -16,7 +16,7 @@ import type { MapBounds, PlaceMapPin } from '../../components/ui/PlacesMap';
 import { getMapBounds } from '../../config/regions';
 import { MAP_CONFIG, getExploreMapTiles, type ExploreMapStyle } from '../../config/platform';
 import { hasSessionExpiredQuery } from '../../config/surfacePaths';
-import { EXPLORE_MAP_FLOATING_CHROME_BTN, EXPLORE_Z } from '../../config/exploreTheme';
+import { EXPLORE_MAP_CHROME_FROST, EXPLORE_MAP_CHROME_LABEL, EXPLORE_Z } from '../../config/exploreTheme';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import type { JoinRequestUiState } from '../../utils/joinRequestUi';
 import { ExploreCoachMarks } from './ExploreCoachMarks';
@@ -59,11 +59,10 @@ export type ExploreMapStageProps = {
   onVenueRegionsChange: (regions: string[]) => void;
   venueFilter?: VenueListFilterKey;
   onVenueFilterChange?: (filter: VenueListFilterKey) => void;
-  onOpenPeopleBrowsePanel?: () => void;
-  peopleBrowsePanelAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
-  peopleBrowsePanelFriendCount?: number;
-  peopleBrowseGuest?: boolean;
-  peopleBrowsePossibleCrewCount?: number;
+  tripMapTopics?: import('../exploreMapQuickTopicFilters').TripMapTopicKey[];
+  placeMapTopics?: import('../exploreMapQuickTopicFilters').PlaceMapTopicKey[];
+  onToggleTripMapTopic?: (key: import('../exploreMapQuickTopicFilters').TripMapTopicKey) => void;
+  onTogglePlaceMapTopic?: (key: import('../exploreMapQuickTopicFilters').PlaceMapTopicKey) => void;
   exploreMapStyle: ExploreMapStyle;
   exploreMapTiles: ExploreMapTiles;
   onToggleMapStyle: () => void;
@@ -133,11 +132,10 @@ export const ExploreMapStage = ({
   onVenueRegionsChange,
   venueFilter,
   onVenueFilterChange,
-  onOpenPeopleBrowsePanel,
-  peopleBrowsePanelAvatars,
-  peopleBrowsePanelFriendCount,
-  peopleBrowseGuest = false,
-  peopleBrowsePossibleCrewCount = 0,
+  tripMapTopics = [],
+  placeMapTopics = [],
+  onToggleTripMapTopic,
+  onTogglePlaceMapTopic,
   exploreMapStyle,
   exploreMapTiles,
   onToggleMapStyle,
@@ -260,11 +258,10 @@ export const ExploreMapStage = ({
         onVenueRegionsChange={onVenueRegionsChange}
         venueFilter={venueFilter}
         onVenueFilterChange={onVenueFilterChange}
-        onOpenPeopleBrowsePanel={onOpenPeopleBrowsePanel}
-        peopleBrowsePanelAvatars={peopleBrowsePanelAvatars}
-        peopleBrowsePanelFriendCount={peopleBrowsePanelFriendCount}
-        peopleBrowseGuest={peopleBrowseGuest}
-        peopleBrowsePossibleCrewCount={peopleBrowsePossibleCrewCount}
+        tripMapTopics={tripMapTopics}
+        placeMapTopics={placeMapTopics}
+        onToggleTripMapTopic={onToggleTripMapTopic}
+        onTogglePlaceMapTopic={onTogglePlaceMapTopic}
         searchQuery={searchQuery}
         onSearchQueryChange={onSearchQueryChange}
         onSearchCommit={onSearchCommit}
@@ -321,46 +318,46 @@ export const ExploreMapStage = ({
       {loading && mapPins.length === 0 ? <ExploreMapLoadingSkeleton /> : null}
 
       {!listOpen ? (
-        <div
-          className="pointer-events-none absolute inset-x-0 bottom-[calc(var(--explore-float-base)+var(--explore-map-fab-inset))] z-[1100] grid grid-cols-[1fr_auto] grid-rows-[auto_auto] items-center gap-x-3 px-4 md:hidden"
-          style={{ rowGap: 'var(--explore-map-fab-stack-gap)' }}
-        >
-          <div className="pointer-events-auto col-start-1 row-start-1 self-center justify-self-start">
-            <button
-              type="button"
-              onClick={onOpenBrowse}
-              className={EXPLORE_MAP_FLOATING_CHROME_BTN}
-            >
-              <List
-                className="h-6 w-6 shrink-0 text-current"
-                strokeWidth={1.25}
-                absoluteStrokeWidth
-                aria-hidden
-              />
-              List
-            </button>
-          </div>
-          <div className="pointer-events-auto col-start-2 row-start-1">
+        <>
+          <div
+            className="pointer-events-none absolute right-4 z-[1100] md:hidden"
+            style={{
+              bottom:
+                'calc(var(--explore-float-base) + var(--explore-map-fab-inset) + var(--explore-map-mobile-primary-fab-height) + var(--explore-map-fab-stack-gap))',
+            }}
+          >
             <ExploreMapControlToolbar
+              layout="standalone"
               onLocate={onLocateMe}
               locating={locatingDevice}
               mapStyle={exploreMapStyle}
               onToggleMapStyle={onToggleMapStyle}
             />
           </div>
-          <div className="pointer-events-auto col-start-2 row-start-2 justify-self-center">
+          <div className="pointer-events-none absolute inset-x-0 bottom-[calc(var(--explore-float-base)+var(--explore-map-fab-inset))] z-[1100] flex items-center justify-between gap-3 px-4 md:hidden">
+            <UiTooltip label="Open list view">
+              <button
+                type="button"
+                onClick={onOpenBrowse}
+                className={`pointer-events-auto inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-full px-3.5 ring-1 ring-black/5 transition hover:bg-white/80 active:scale-[0.98] ${EXPLORE_MAP_CHROME_FROST} ${EXPLORE_MAP_CHROME_LABEL} text-neutral-900`}
+                aria-label="Open list view"
+              >
+                <List className="h-[1.125rem] w-[1.125rem] shrink-0" strokeWidth={2} aria-hidden />
+                List
+              </button>
+            </UiTooltip>
             <UiTooltip label={primaryFabLabel}>
-            <button
-              type="button"
-              onClick={onPrimaryFab}
-              className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white shadow-[0_4px_20px_rgba(5,150,105,.45)] hover:bg-emerald-700 active:scale-[0.98]"
-              aria-label={primaryFabLabel}
-            >
-              <Plus className="h-6 w-6 shrink-0" strokeWidth={2.5} aria-hidden />
-            </button>
+              <button
+                type="button"
+                onClick={onPrimaryFab}
+                className="pointer-events-auto inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white shadow-[0_4px_20px_rgba(5,150,105,.45)] hover:bg-emerald-700 active:scale-[0.98]"
+                aria-label={primaryFabLabel}
+              >
+                <Plus className="h-6 w-6 shrink-0" strokeWidth={2.5} aria-hidden />
+              </button>
             </UiTooltip>
           </div>
-        </div>
+        </>
       ) : null}
 
       <div

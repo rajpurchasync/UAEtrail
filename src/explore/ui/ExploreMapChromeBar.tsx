@@ -1,8 +1,8 @@
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import { EXPLORE_MOBILE_MAP_CHROME, EXPLORE_Z } from '../../config/exploreTheme';
-import { ExploreMapPeopleBrowseButton } from '@/people-discovery/panel/ExploreMapPeopleBrowseButton';
 import { ExploreMapMobileLayerChrome } from './ExploreMapMobileLayerChrome';
 import type { ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
+import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
 
 type ExploreMapChromeBarProps = {
@@ -20,11 +20,10 @@ type ExploreMapChromeBarProps = {
   onVenueRegionsChange: (regions: string[]) => void;
   venueFilter?: VenueListFilterKey;
   onVenueFilterChange?: (filter: VenueListFilterKey) => void;
-  onOpenPeopleBrowsePanel?: () => void;
-  peopleBrowsePanelAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
-  peopleBrowsePanelFriendCount?: number;
-  peopleBrowseGuest?: boolean;
-  peopleBrowsePossibleCrewCount?: number;
+  tripMapTopics?: TripMapTopicKey[];
+  placeMapTopics?: PlaceMapTopicKey[];
+  onToggleTripMapTopic?: (key: TripMapTopicKey) => void;
+  onTogglePlaceMapTopic?: (key: PlaceMapTopicKey) => void;
   onOpenExploreSearch?: () => void;
 };
 
@@ -44,19 +43,17 @@ export const ExploreMapChromeBar = ({
   onVenueRegionsChange,
   venueFilter,
   onVenueFilterChange,
-  onOpenPeopleBrowsePanel,
-  peopleBrowsePanelAvatars = [],
-  peopleBrowsePanelFriendCount = 0,
-  peopleBrowseGuest = false,
-  peopleBrowsePossibleCrewCount = 0,
+  tripMapTopics = [],
+  placeMapTopics = [],
+  onToggleTripMapTopic,
+  onTogglePlaceMapTopic,
   onOpenExploreSearch,
-}: ExploreMapChromeBarProps) => {
-  return (
+}: ExploreMapChromeBarProps) => (
   <div
     data-explore-map-chrome
     className={`pointer-events-none absolute inset-x-0 top-0 px-3 pt-2 lg:px-3 lg:pt-3 ${EXPLORE_MOBILE_MAP_CHROME.filterTop} ${EXPLORE_Z.mapFilters}`}
   >
-    <div className="pointer-events-auto w-full lg:flex lg:justify-center">
+    <div className="pointer-events-auto flex w-full max-w-none flex-col items-stretch gap-2">
       <ExploreMapMobileLayerChrome
         panel={panel}
         mapFilter={mapFilter}
@@ -68,25 +65,16 @@ export const ExploreMapChromeBar = ({
         onVenueRegionsChange={onVenueRegionsChange}
         venueFilter={venueFilter}
         onVenueFilterChange={onVenueFilterChange}
+        tripMapTopics={tripMapTopics}
+        placeMapTopics={placeMapTopics}
+        onToggleTripMapTopic={onToggleTripMapTopic}
+        onTogglePlaceMapTopic={onTogglePlaceMapTopic}
         searchQuery={searchQuery}
         onSearchQueryChange={onSearchQueryChange}
         onSearchCommit={onSearchCommit}
         searchScopeCounts={searchScopeCounts}
         onOpenExploreSearch={onOpenExploreSearch}
-        trailing={
-          onOpenPeopleBrowsePanel ? (
-            <ExploreMapPeopleBrowseButton
-              avatars={peopleBrowsePanelAvatars}
-              friendCount={peopleBrowsePanelFriendCount}
-              guest={peopleBrowseGuest}
-              possibleCrewCount={peopleBrowsePossibleCrewCount}
-              onClick={onOpenPeopleBrowsePanel}
-              className="md:hidden"
-            />
-          ) : null
-        }
       />
     </div>
   </div>
-  );
-};
+);

@@ -16,11 +16,13 @@ export const useExploreBrowseUrlInboundMigrations = (input: {
   searchParams: URLSearchParams;
   setSearchParams: SetURLSearchParams;
   isDesktop: boolean;
+  isSignedIn: boolean;
 }) => {
   const navigate = useNavigate();
   const search = input.searchParams.toString();
   const setSearchParams = input.setSearchParams;
   const isDesktop = input.isDesktop;
+  const isSignedIn = input.isSignedIn;
 
   useEffect(() => {
     const params = new URLSearchParams(search);
@@ -28,6 +30,11 @@ export const useExploreBrowseUrlInboundMigrations = (input: {
     const list = params.get('list') === '1';
     const people = isPeopleView(params.get('view'));
     const pin = params.get(EXPLORE_PIN_QUERY_KEY)?.trim();
+
+    if (!isDesktop && isSignedIn && people) {
+      navigate(listDiscoveryPathFromExploreSearch(search), { replace: true });
+      return;
+    }
 
     if (people) return;
 
@@ -48,5 +55,5 @@ export const useExploreBrowseUrlInboundMigrations = (input: {
     if (browse || list) {
       navigate(listDiscoveryPathFromExploreSearch(search), { replace: true });
     }
-  }, [search, setSearchParams, navigate, isDesktop]);
+  }, [search, setSearchParams, navigate, isDesktop, isSignedIn]);
 };

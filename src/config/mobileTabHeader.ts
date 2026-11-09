@@ -38,6 +38,7 @@ export type MobileTabHeaderCenter =
 
 const TAB_HEADER_ROUTES = new Set([
   '/explore',
+  '/list',
   PROFILE_PATH,
   PLAN_PATH,
   PROFILE_HISTORY_PATH,

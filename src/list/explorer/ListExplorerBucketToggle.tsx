@@ -27,7 +27,7 @@ export const ListExplorerBucketToggle = ({
       compact ? 'p-px' : 'p-0.5'
     }`}
     role="tablist"
-    aria-label="Events or places"
+    aria-label="Trips or venues"
   >
     {LIST_EXPLORER_BUCKETS.map(({ key, label }) => {
       const active = bucket === key;

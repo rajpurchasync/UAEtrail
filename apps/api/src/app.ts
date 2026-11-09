@@ -63,6 +63,8 @@ export const createApp = async (): Promise<Express> => {
       const url = new URL(origin);
       if (env.NODE_ENV === 'production') return false;
       if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') return true;
+      // Cloudflare quick tunnel (`npm run dev:mobile`) — same-origin /api via Vite proxy.
+      if (url.hostname.endsWith('.trycloudflare.com')) return true;
       // Allow phone/tablet testing on the same Wi‑Fi (private LAN IPs).
       if (/^192\.168\./.test(url.hostname)) return true;
       if (/^10\./.test(url.hostname)) return true;

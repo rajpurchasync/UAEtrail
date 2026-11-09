@@ -35,6 +35,14 @@ import {
   parseExploreActivityModeFilter,
   type ExploreActivityModeFilter,
 } from './exploreActivityModeFilter';
+import {
+  EXPLORE_PLACE_TYPES_PARAM,
+  EXPLORE_TRIP_TYPES_PARAM,
+  parsePlaceMapTopicsParam,
+  parseTripMapTopicsParam,
+  type PlaceMapTopicKey,
+  type TripMapTopicKey,
+} from './exploreMapQuickTopicFilters';
 
 const readPeopleBrowseTabParam = (params: URLSearchParams): string | null =>
   params.get('peopleTab') ?? params.get('socialTab');
@@ -64,6 +72,8 @@ export type ExploreBrowseUrlHydratedState = {
   buddiesDiscoverSegment: BuddiesDiscoverySegment;
   desktopBrowseTab: DesktopBrowseTab;
   expandSearch: boolean;
+  tripMapTopics: TripMapTopicKey[];
+  placeMapTopics: PlaceMapTopicKey[];
 };
 
 /** Guests do not open the people browse rail from a shared URL. */
@@ -138,5 +148,7 @@ export const parseExploreBrowseStateFromSearchParams = (
     buddiesDiscoverSegment: parseBuddiesDiscoverySegment(searchParams.get(BUDDIES_SEGMENT_URL_PARAM)),
     desktopBrowseTab: parseDesktopBrowseTab(nextPanel),
     expandSearch: Boolean(isDesktop && searchParams.get('q')?.trim()),
+    tripMapTopics: parseTripMapTopicsParam(searchParams.get(EXPLORE_TRIP_TYPES_PARAM)),
+    placeMapTopics: parsePlaceMapTopicsParam(searchParams.get(EXPLORE_PLACE_TYPES_PARAM)),
   };
 };

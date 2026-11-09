@@ -172,6 +172,19 @@ export {
 } from '../list/routing';
 
 export {
+  MOBILE_FIVE_TAB_DEFAULTS,
+  MOBILE_FIVE_TAB_UI_LABELS,
+  mobileFiveTabHomePath,
+  resolveMobileFiveTab,
+  tripsMapHomePath,
+  tripsListHomePath,
+  venuesMapHomePath,
+  venuesListHomePath,
+  crewsHomePath,
+  type MobileFiveTabId,
+} from './mobileFiveTabNav';
+
+export {
   planUpcomingPath,
   planHostedSchedulePath,
   planJoinedSchedulePath,

@@ -513,6 +513,22 @@
       "successMetric": "Single map/browse/list/discover IA in code + exploreRouting; DISC-METH guards; no duplicate browse chrome"
     },
     {
+      "id": "MIG-SURFACE-MOBILE-FIVE-TAB",
+      "phase": "P4b",
+      "status": "complete",
+      "owner": "product-eng",
+      "contextIds": ["discovery", "member_identity"],
+      "feRoots": [
+        "src/config/mobileFiveTabNav.ts",
+        "src/components/layout/MobileBottomNav.tsx",
+        "src/config/platform.ts",
+        "src/list",
+        "src/explore",
+        "src/people-discovery"
+      ],
+      "successMetric": "docs/NAVIGATION.md § Mobile five-tab — Phase 1 shipped; Phase 2–5 complete; resolveMobileFiveTab + handoff; memberSurfacesAcceptance + mobileFiveTabNav.test.ts; verify:system"
+    },
+    {
       "id": "MIG-SURFACE-MEMBER-PEOPLE",
       "phase": "P4b",
       "status": "complete",

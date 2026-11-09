@@ -13,6 +13,7 @@
     --explore-float-base: var(--safe-bottom);
     /** Extra lift for map “+” FAB above bottom nav / safe area */
     --explore-map-fab-inset: 2.75rem;
+    --explore-map-mobile-primary-fab-height: 3rem;
     /** Mobile explore tab header (safe area + avatar row). */
     --explore-mobile-tab-header-stack: calc(var(--safe-top, 0px) + 2.75rem);
     /** Map intent + activity filter toolbar — peek sheets start below this stack. */
@@ -1705,6 +1706,18 @@
     background: rgba(255, 255, 255, 0.5) !important;
   }
 
+  .explore-map-overlay-icon-btn.explore-map-overlay-icon-btn--standalone {
+    background: rgba(255, 255, 255, 0.55) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-color: rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.12) !important;
+  }
+
+  .explore-map-overlay-icon-btn.explore-map-overlay-icon-btn--standalone:hover {
+    background: rgba(255, 255, 255, 0.85) !important;
+  }
+
   html[data-theme='dark'] .explore-map-overlay-icon-btn,
   html[data-theme='dark'] .explore-map-chrome-stroke {
     color: #f4fff8 !important;
@@ -1712,6 +1725,16 @@
 
   html[data-theme='dark'] .explore-map-overlay-icon-btn:hover {
     background: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  html[data-theme='dark'] .explore-map-overlay-icon-btn.explore-map-overlay-icon-btn--standalone {
+    background: rgba(16, 24, 30, 0.58) !important;
+    border-color: rgba(255, 255, 255, 0.18) !important;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.34) !important;
+  }
+
+  html[data-theme='dark'] .explore-map-overlay-icon-btn.explore-map-overlay-icon-btn--standalone:hover {
+    background: rgba(24, 34, 42, 0.72) !important;
   }
 
   html[data-theme='dark'] button.explore-map-floating-chrome-btn,
@@ -1888,6 +1911,66 @@ html[data-theme='dark'] .explore-filter-quote-stroke--places {
 .explore-filter-mark svg.explore-other-glyph {
   height: 2rem;
   width: 2rem;
+}
+
+/* h-9 mobile map quick-filter pills — icon + 11px label */
+/* Mobile map quick-filter pills — 18px marks */
+.explore-filter-mark.explore-filter-mark--chip {
+  height: 18px;
+  width: 18px;
+  font-size: 18px;
+}
+
+.explore-filter-mark.explore-filter-mark--chip svg {
+  height: 18px;
+  width: 18px;
+}
+
+.explore-filter-mark.explore-filter-mark--chip .font-emoji {
+  font-size: 18px;
+  transform: translateY(-0.04em);
+}
+
+.explore-filter-mark.explore-filter-mark--chip .explore-filter-emoji-camp {
+  transform: translateY(-0.1em);
+}
+
+.explore-filter-mark.explore-filter-mark--chip:has(.explore-facility-glyph),
+.explore-filter-mark.explore-filter-mark--chip:has(.explore-hiking-glyph),
+.explore-filter-mark.explore-filter-mark--chip:has(.explore-other-glyph) {
+  height: 20px;
+  width: 20px;
+}
+
+.explore-filter-mark.explore-filter-mark--chip svg.explore-facility-glyph,
+.explore-filter-mark.explore-filter-mark--chip svg.explore-hiking-glyph,
+.explore-filter-mark.explore-filter-mark--chip svg.explore-other-glyph {
+  height: 18px;
+  width: 18px;
+}
+
+.explore-map-float-chip-glyph {
+  height: 18px;
+  width: 18px;
+}
+
+.explore-filter-mark.explore-filter-mark--chip.explore-filter-mark--uae-flag {
+  width: 25px;
+  height: 18px;
+}
+
+.explore-map-float-chip-uae-flag {
+  height: 18px;
+  width: 25px;
+  border-radius: 1px;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.08);
+  outline: 1px solid rgb(0 0 0 / 0.1);
+  outline-offset: 0;
+}
+
+.explore-filter-mark.explore-filter-mark--uae-flag svg {
+  height: 18px;
+  width: 25px;
 }
 
 .list-explorer-bucket-count--active {

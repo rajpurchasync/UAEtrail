@@ -6,7 +6,7 @@ import {
 import { parseMapFilter, type MapFilterKey } from '../explore/routing';
 import { parseVenueRegionsParam } from '../explore/routing';
 import type { BrowseListFilterState, BrowsePriceFilter, BrowseWhenFilter } from './browseListFilters';
-import type { BrowseTripTopicKey } from './browseListTripTopics';
+import { isBrowseTripTopicKey, type BrowseTripTopicKey } from './browseListTripTopics';
 import { isListVenuePlaceTopicKey } from './listVenuePlaceTopicFilter';
 import type { ListVenuePlaceTopicKey } from './listVenuePlaceTopics';
 import {
@@ -64,9 +64,6 @@ export const browseWhenToExploreDatePreset = (when: BrowseWhenFilter): ExploreAc
   if (when === 'week') return 'week';
   return 'anyday';
 };
-
-const isBrowseTripTopicKey = (key: MapFilterKey): key is BrowseTripTopicKey =>
-  key === 'hiking' || key === 'camping' || key === 'rideshare';
 
 const parseTripAndPlaceTopics = (
   filterParam: string | null,

@@ -11,7 +11,11 @@ const GlyphFrame = ({
 }) => (
   <svg
     viewBox={viewBox}
-    className={`block h-[1.15em] w-[1.15em] shrink-0 overflow-visible ${className}`}
+    className={
+      className.trim()
+        ? `block shrink-0 overflow-visible ${className}`
+        : 'block h-[1.15em] w-[1.15em] shrink-0 overflow-visible'
+    }
     aria-hidden
   >
     {children}

@@ -2,10 +2,6 @@ import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { buildExploreMapPayload } from './explore-map.js';
 import { readExploreMapMemoryCacheGeneration } from './explore-map-cache.js';
 import {
-  applyGuestExploreMapCatalogCap,
-  isGuestExploreMapCatalogCapEnabled,
-} from './explore-map-guest-catalog-cap.js';
-import {
   assertExploreMapBboxQueryAllowed,
   buildExploreMapBboxPage,
   isExploreMapBboxEnabled,
@@ -29,7 +25,7 @@ export type ExploreMapRouteResult = {
   nextCursor?: string | null;
   region?: { slug: string | null; bbox: { south: number; west: number; north: number; east: number } };
   cacheGeneration?: number | null;
-  /** Anonymous map preview — capped places/events per session policy. */
+  /** Anonymous map — full pin catalog; peek depth gated in the client (3 unique items). */
   guestCatalogPreview?: boolean;
 };
 
@@ -75,14 +71,10 @@ export const loadExploreMapForRequest = async (input: {
   const capGuestCatalogItems = (
     items: ExploreMapItemDTO[]
   ): { items: ExploreMapItemDTO[]; guestCatalogPreview: boolean } => {
-    if (!applyGuestCap || !isGuestExploreMapCatalogCapEnabled()) {
+    if (!applyGuestCap) {
       return { items, guestCatalogPreview: false };
     }
-    const capped = applyGuestExploreMapCatalogCap(items);
-    return {
-      items: capped,
-      guestCatalogPreview: true,
-    };
+    return { items, guestCatalogPreview: true };
   };
 
   const { items: catalogItems, pageMeta } = await resolveExploreMapCatalogItemsForQuery(input.query);

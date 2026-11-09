@@ -10,6 +10,8 @@ const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const apiTarget = process.env.API_BASE_URL || env.API_BASE_URL || 'http://127.0.0.1:4000';
+  const devTunnel =
+    process.env.DEV_TUNNEL === '1' || process.env.DEV_TUNNEL?.toLowerCase() === 'true';
 
   return {
     plugins: [tailwindcss(), react(), devQrPlugin()],
@@ -27,6 +29,7 @@ export default defineConfig(({ mode }) => {
       port: 5175,
       strictPort: true,
       host: true,
+      allowedHosts: devTunnel ? true : undefined,
       warmup: {
         clientFiles: ['./src/main.tsx', './src/pages/Home.tsx', './src/App.tsx'],
       },
