@@ -158,12 +158,14 @@ describe('member surfaces §11 acceptance (automated)', () => {
   it('S13-W4: MemberProfileView sections gate on canViewFullProfile from viewerAccess', () => {
     const page = read('src/pages/MemberProfile.tsx');
     const profilePageData = read('src/hooks/useMemberProfilePage.ts');
-    expect(page).toMatch(/canViewFullProfile=\{viewerAccess\?\.canViewFullProfile/);
+    expect(page).toMatch(/canViewMemberPublicCardFields/);
     expect(profilePageData).toMatch(/viewerAccess\?\.canViewFullProfile/);
     const view = read('src/components/profile/MemberProfileView.tsx');
-    expect(view).toMatch(/canViewFullProfile && profile\.yearGoal/);
-    expect(view).toMatch(/canViewFullProfile && profile\.bio/);
-    expect(view).toMatch(/canViewFullProfile && upcomingActivities/);
+    expect(view).toMatch(/canViewTrustedFields && profile\.yearGoal/);
+    expect(view).toMatch(/canViewPublicCardFields && profile\.bio/);
+    expect(view).toMatch(/canViewTrustedFields && upcomingActivities/);
+    expect(view).toMatch(/MemberProfileHostReviews/);
+    expect(view).toMatch(/MemberProfileHostGuidePanel/);
   });
 
   it('S13: member profile links use memberProfileLink (single FE entry)', () => {
@@ -335,7 +337,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(route).not.toMatch(/<ActivityDetailView/);
 
     const manage = read('src/components/activity/ActivityManageSheet.tsx');
-    expect(manage).toContain('ActivityDetailView');
+    expect(manage).toContain('ActivityDetailByKind');
     expect(manage).not.toContain('HostActivityDetailView');
     expect(() => read('src/components/activity/HostActivityDetailView.tsx')).toThrow();
     expect(() => read('src/explore/activityMapPeekActions.ts')).toThrow();

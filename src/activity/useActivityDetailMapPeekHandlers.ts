@@ -63,19 +63,15 @@ export const useActivityDetailMapPeekHandlers = (
       requestJoin: () => input.onJoin?.(),
       shareActivity: () => input.onHostShareOuting?.(),
       manageActivity: () => {
+        if (input.isHostUser && input.onOpenHostManage) {
+          input.onOpenHostManage(activity, 'participants');
+          return;
+        }
         if (
           !input.isHostUser &&
           input.consumerDetailLayout &&
           input.onOpenParticipationManage
         ) {
-          input.onOpenParticipationManage();
-          return;
-        }
-        if (input.isHostUser && input.onOpenHostManage) {
-          input.onOpenHostManage(activity, 'participants');
-          return;
-        }
-        if (input.consumerDetailLayout && input.onOpenParticipationManage) {
           input.onOpenParticipationManage();
           return;
         }

@@ -4,14 +4,11 @@ import { GuestGatedSurfaceLayout } from '../components/auth/GuestGatedSurfaceLay
 import { useAuth } from '../context/AuthContext';
 import { PRODUCT_PLAN_SURFACE_TITLE } from '../content/productNorthStar';
 import { explorePath, inboundCreateParamToHostPath, parseActivityListFilter } from '../explore/routing';
+import { AsyncLoadingState } from '../components/ui/AsyncLoadingState';
 
 const PlanPage = lazy(() => import('../plan/PlanPage').then((m) => ({ default: m.PlanPage })));
 
-const PlanRouteFallback = () => (
-  <div className="app-page-center">
-    <div className="h-8 w-8 animate-spin rounded-full border-t-2 border-b-2 border-emerald-600" />
-  </div>
-);
+const PlanRouteFallback = () => <AsyncLoadingState variant="page" label="Loading your plan" />;
 
 /** `/plan` — signed-in plan hub, or a guest handoff. Not part of the home bundle. */
 export const PlanBrowseRoute = () => {

@@ -14,6 +14,7 @@ import {
   placeCoverFallbackClass,
   resolvePlaceRegistryCoverUrl,
 } from '../../../../place/peek/resolvePlaceRegistryCoverImage';
+import { EXPLORE_PEEK } from '../../../../config/exploreTheme';
 
 type PlacePeekHeroProps = {
   card: DiscoveryCardModel;
@@ -52,23 +53,20 @@ export const PlacePeekHero = ({
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-black/20" />
 
       <div className="absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-2 px-3 pt-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-black/35 text-2xl backdrop-blur-sm">
-          {emoji}
-        </span>
-        <div className="flex shrink-0 items-start gap-1.5">
-          <ExploreWishlistSaveButton card={card} light />
+        <span className={EXPLORE_PEEK.mediaEmojiBadge}>{emoji}</span>
+        <div className="flex shrink-0 items-center gap-1.5">
+          <ExploreWishlistSaveButton card={card} />
           <ShareButton
             title={card.shareTitle}
             text={card.shareText ?? undefined}
             path={card.sharePath}
             iconOnly
-            light
           />
           {!embedMode ? (
             <button
               type="button"
               onClick={onClose}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm"
+              className={EXPLORE_PEEK.mediaIconBtn}
               aria-label="Close"
             >
               <X className="h-4 w-4" />

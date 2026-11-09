@@ -34,6 +34,8 @@ import {
 } from '../hooks/groupClientApi';
 import { groupWallPostPolicyLabel, resolveGroupWallPostPolicy } from '../utils/groupWallPostPolicy';
 import { GROUPS_PATH, PROFILE_PATH, groupsManagePath } from '../config/routingCatalog';
+import { PRODUCT_SOCIAL_SURFACE_TITLE } from '../content/productNorthStar';
+import { SocialHubNav } from '../components/social/SocialHubNav';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { activityGroupChatPath, MESSAGES_CHAT_RETURN_TO_KEY } from '../utils/activityGroupChatNav';
 import { useChatStream } from '../hooks/useChatStream';
@@ -826,6 +828,7 @@ export const Groups = () => {
 
   const listBody = (
     <div className="space-y-4 pb-6">
+        <SocialHubNav active="groups" />
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm text-neutral-600">
             Create groups, invite members, and chat together.
@@ -968,7 +971,7 @@ export const Groups = () => {
         >
           <ConsumerShell
             layout="tab"
-            title="My Groups"
+            title={PRODUCT_SOCIAL_SURFACE_TITLE}
             maxWidth="4xl"
             flush
             showJourney

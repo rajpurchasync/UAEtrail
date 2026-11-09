@@ -9,6 +9,7 @@ import {
   Settings,
   ShoppingBag,
   User,
+  Users,
   type LucideIcon
 } from 'lucide-react';
 
@@ -22,6 +23,7 @@ export const NAV_ICONS = {
 
 export const MOBILE_NAV_ICON_MAP: Record<
   | 'Explore'
+  | 'Social'
   | 'Browse'
   | 'Activities'
   | 'Shop'
@@ -46,6 +48,7 @@ export const MOBILE_NAV_ICON_MAP: Record<
 > = {
   'Explore Map': NAV_ICONS.explore,
   Explore: NAV_ICONS.explore,
+  Social: Users,
   Browse: NAV_ICONS.activities,
   Join: NAV_ICONS.activities,
   'Join free': NAV_ICONS.activities,

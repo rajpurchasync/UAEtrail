@@ -73,42 +73,54 @@ export const ChatComposeBar = forwardRef<ChatComposeBarHandle, ChatComposeBarPro
   };
 
   const fieldClass =
-    'flex-1 min-w-0 border border-gray-200 rounded-2xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white resize-none';
+    'min-w-0 flex-1 border border-gray-200 rounded-2xl bg-white px-4 py-2.5 text-base resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent md:rounded-none md:border-0 md:bg-transparent md:px-0 md:py-2 md:text-[15px] md:focus:ring-0';
 
   return (
     <form
       onSubmit={handleSubmit}
-      className={`chat-compose box-border flex w-full max-w-full shrink-0 items-end gap-1 gap-x-1.5 overflow-hidden border-t border-neutral-200 bg-white px-2 pb-safe pt-2 sm:px-3 ${className}`}
+      className={`chat-compose box-border flex w-full max-w-full shrink-0 items-end gap-1.5 overflow-hidden border-t border-neutral-200 bg-white px-2 pb-safe pt-2 sm:px-3 md:items-center md:gap-2 md:px-4 md:py-3 ${className}`}
     >
-      <EmojiPickerButton onPick={insertEmoji} disabled={sending} />
-      {multiline ? (
-        <textarea
-          ref={inputRef as React.RefObject<HTMLTextAreaElement>}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          rows={1}
-          className={`${fieldClass} max-h-28`}
+      <EmojiPickerButton
+        onPick={insertEmoji}
+        disabled={sending}
+        className="md:hidden"
+      />
+      <div className="chat-compose-field relative flex min-w-0 flex-1 items-end max-md:contents md:items-center md:rounded-lg md:border md:border-neutral-200 md:bg-[#f0f2f5] md:py-1 md:pl-1 md:pr-2 dark:md:border-neutral-700 dark:md:bg-neutral-800">
+        <EmojiPickerButton
+          onPick={insertEmoji}
+          disabled={sending}
+          variant="compact"
+          className="hidden md:flex"
         />
-      ) : (
-        <input
-          ref={inputRef as React.RefObject<HTMLInputElement>}
-          type="text"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          className={fieldClass}
-          enterKeyHint="send"
-          autoComplete="off"
-        />
-      )}
+        {multiline ? (
+          <textarea
+            ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder}
+            rows={1}
+            className={`${fieldClass} max-h-28 md:pl-1`}
+          />
+        ) : (
+          <input
+            ref={inputRef as React.RefObject<HTMLInputElement>}
+            type="text"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder}
+            className={`${fieldClass} md:pl-1`}
+            enterKeyHint="send"
+            autoComplete="off"
+          />
+        )}
+      </div>
       <button
         type="button"
         disabled={sending || !value.trim()}
         onClick={submitMessage}
-        className="min-h-[44px] min-w-[44px] mb-0.5 flex items-center justify-center bg-emerald-600 text-white rounded-full hover:bg-emerald-700 disabled:opacity-40 transition-colors shrink-0"
+        className="mb-0.5 flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white transition-colors hover:bg-emerald-700 disabled:opacity-40 md:mb-0"
         aria-label="Send"
       >
         {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}

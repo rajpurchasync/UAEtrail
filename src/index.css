@@ -2,6 +2,7 @@
 @import './styles/home-tokens.css';
 @import 'tailwindcss';
 @config '../tailwind.config.js';
+@custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
   :root {
@@ -24,7 +25,7 @@
     --explore-map-fab-stack-gap: 1.25rem;
     /** Desktop explore — right rail (Add New + locate + style) */
     --explore-map-desktop-fab-bottom: 3rem;
-    --explore-map-desktop-primary-fab-height: 3.5rem;
+    --explore-map-desktop-primary-fab-height: 2.5rem;
     --explore-map-desktop-layer-toggle-size: 2.75rem;
     --explore-map-desktop-zoom-clearance: 2.75rem;
     --sticky-top: var(--safe-top);
@@ -175,6 +176,31 @@
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
     scrollbar-color: rgba(15, 23, 42, 0.35) transparent;
+  }
+
+  /** Browse/Explore list column — always a real scrollport with a visible thin rail. */
+  .list-explorer-scroll {
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(15, 23, 42, 0.45) rgba(15, 23, 42, 0.08);
+  }
+
+  .list-explorer-scroll::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .list-explorer-scroll::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.06);
+  }
+
+  .list-explorer-scroll::-webkit-scrollbar-thumb {
+    background: rgba(15, 23, 42, 0.45);
+    border-radius: 999px;
   }
 
   /* Product scrollbars stay thin. Hidden rails (scrollbar-none) override this. */
@@ -508,6 +534,10 @@
 
   .ios-input {
     @apply w-full min-h-[48px] px-4 py-2.5 rounded-2xl bg-white/65 backdrop-blur-xl border border-white/70 text-[16px] text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-shadow;
+  }
+
+  .auth-card .ios-input {
+    @apply border-neutral-200/90 bg-white shadow-sm backdrop-blur-none focus:border-emerald-400;
   }
 
   .ios-search,
@@ -884,28 +914,28 @@
     scrollbar-color: rgba(15, 23, 42, 0.35) transparent;
   }
 
-  /** Vertical chrome sidebars — neutral thumb (overrides dark-theme mint scrollbars). */
+  /** Vertical chrome sidebars — thin visible rail (light and dark). */
   .product-sidebar-scroll {
     scrollbar-width: thin;
-    scrollbar-color: rgba(15, 23, 42, 0.28) transparent;
+    scrollbar-color: rgba(15, 23, 42, 0.45) rgba(15, 23, 42, 0.08);
   }
 
   .product-sidebar-scroll::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
   }
 
   .product-sidebar-scroll::-webkit-scrollbar-track {
-    background: transparent;
+    background: rgba(15, 23, 42, 0.06);
   }
 
   .product-sidebar-scroll::-webkit-scrollbar-thumb {
-    background: rgba(15, 23, 42, 0.28);
+    background: rgba(15, 23, 42, 0.45);
     border-radius: 999px;
   }
 
   .product-sidebar-scroll::-webkit-scrollbar-thumb:hover {
-    background: rgba(15, 23, 42, 0.4);
+    background: rgba(15, 23, 42, 0.6);
   }
 
   /* Shop featured marquee — scrolls right to left */
@@ -993,7 +1023,7 @@
 
   @media (min-width: 1024px) {
     .list-explorer-thumb-grid {
-      grid-template-columns: repeat(auto-fill, minmax(9.5rem, 11.25rem)) !important;
+      grid-template-columns: repeat(auto-fill, minmax(10.5rem, 12.25rem)) !important;
     }
 
     .list-explorer-thumb-grid--side-map {
@@ -1013,6 +1043,31 @@
     background: transparent !important;
     border: none !important;
     overflow: visible !important;
+  }
+
+  .explore-map-rich .leaflet-tooltip.uaetrail-map-pin-tooltip {
+    margin-top: 0;
+    padding: 0.28rem 0.65rem;
+    border: 1px solid rgba(255, 255, 255, 0.78);
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.58) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    color: #475569 !important;
+    box-shadow:
+      0 4px 18px rgba(15, 23, 42, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    font-size: 10px !important;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    line-height: 1.25;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  .explore-map-rich .leaflet-tooltip.uaetrail-map-pin-tooltip::before {
+    border-top-color: rgba(255, 255, 255, 0.58) !important;
+    margin-bottom: -1px;
   }
 
   .uaetrail-map-pin-hit {
@@ -1291,9 +1346,15 @@
   }
 
   .map-peek-bubble {
+    overflow: hidden;
     transform-origin: var(--peek-origin-x, 50%) var(--peek-origin-y, 100%);
     animation: map-peek-bubble-in 0.42s cubic-bezier(0.22, 1.18, 0.36, 1) both;
     will-change: transform, opacity;
+  }
+
+  .map-peek-fit {
+    --peek-fit: 1;
+    zoom: var(--peek-fit);
   }
 
   .map-peek-bubble-card {
@@ -1415,6 +1476,64 @@
     animation: uaetrail-pin-ring-pulse 1.6s ease-out infinite;
   }
 
+  .explore-map-rich .uaetrail-map-user-location {
+    background: transparent !important;
+    border: none !important;
+  }
+
+  .uaetrail-map-user-location-dot {
+    display: block;
+    width: 28px;
+    height: 28px;
+    position: relative;
+  }
+
+  .uaetrail-map-user-location-dot::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: rgba(37, 99, 235, 0.2);
+    animation: uaetrail-user-loc-halo 2.2s ease-out infinite;
+  }
+
+  .uaetrail-map-user-location-dot::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 14px;
+    height: 14px;
+    margin: -7px 0 0 -7px;
+    border-radius: 50%;
+    background: #2563eb;
+    border: 3px solid #ffffff;
+    box-shadow: 0 1px 6px rgba(15, 23, 42, 0.35);
+  }
+
+  @keyframes uaetrail-user-loc-halo {
+    0% {
+      transform: scale(0.65);
+      opacity: 0.85;
+    }
+    70% {
+      transform: scale(1);
+      opacity: 0.15;
+    }
+    100% {
+      transform: scale(1.05);
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .uaetrail-map-user-location-dot::before {
+      animation: none;
+      opacity: 0.35;
+      transform: scale(0.9);
+    }
+  }
+
   .uaetrail-map-cluster-marker {
     position: relative;
   }
@@ -1493,6 +1612,43 @@
     box-shadow:
       0 4px 14px rgba(5, 150, 105, 0.35),
       0 1px 3px rgba(15, 23, 42, 0.12);
+  }
+
+  .uaetrail-map-geo-bubble-wrap {
+    background: transparent !important;
+    border: none !important;
+  }
+
+  .uaetrail-map-geo-bubble {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    pointer-events: auto;
+  }
+
+  .uaetrail-map-geo-bubble-count {
+    min-width: 40px;
+    height: 40px;
+    padding: 0 8px;
+    font-size: 13px;
+  }
+
+  .uaetrail-map-geo-bubble-label {
+    max-width: 9.5rem;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.92);
+    color: #065f46;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.16);
   }
 
   .marker-cluster-small,
@@ -1738,6 +1894,26 @@ html[data-theme='dark'] .explore-map-filter-tray {
   -webkit-backdrop-filter: blur(18px) saturate(1.28);
 }
 
+/* Unlayered — beats Leaflet default tooltip text/background. */
+html[data-theme='dark'] .explore-map-rich .leaflet-tooltip.uaetrail-map-pin-tooltip {
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  border-radius: 9999px !important;
+  padding: 0.28rem 0.65rem !important;
+  background: rgba(16, 24, 30, 0.92) !important;
+  color: #f4fff8 !important;
+  font-size: 10px !important;
+  line-height: 1.25 !important;
+  box-shadow:
+    0 4px 18px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(18px) saturate(1.28);
+  -webkit-backdrop-filter: blur(18px) saturate(1.28);
+}
+
+html[data-theme='dark'] .explore-map-rich .leaflet-tooltip.uaetrail-map-pin-tooltip::before {
+  border-top-color: rgba(16, 24, 30, 0.92) !important;
+}
+
 html[data-theme='dark'] button.explore-map-filter-tray {
   color: #f4fff8 !important;
 }
@@ -1787,37 +1963,44 @@ html[data-theme='dark'] .explore-map-filter-tray-sep {
   animation: explore-filter-quote-in 220ms ease-out;
 }
 
-.explore-filter-quote-fill--events {
-  fill: rgb(236 253 245);
+.explore-filter-quote-caret-shape {
+  stroke-width: 1;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
 }
-.explore-filter-quote-stroke--events {
+
+.explore-filter-quote-caret-shape--events {
+  fill: rgb(236 253 245);
   stroke: rgb(167 243 208 / 0.8);
 }
-.explore-filter-quote-fill--places {
+
+.explore-filter-quote-caret-shape--places {
   fill: rgb(240 249 255);
-}
-.explore-filter-quote-stroke--places {
   stroke: rgb(186 230 253 / 0.8);
 }
 
-html[data-theme='dark'] .explore-filter-quote-well--events.bg-emerald-50,
-html[data-theme='dark'] .explore-filter-quote-seam--events {
+html[data-theme='dark'] .explore-filter-quote-well--events.bg-emerald-50 {
   background: rgba(16, 24, 30, 0.58) !important;
   border-color: rgba(255, 255, 255, 0.18);
   backdrop-filter: blur(18px) saturate(1.28);
   -webkit-backdrop-filter: blur(18px) saturate(1.28);
 }
-html[data-theme='dark'] .explore-filter-quote-fill--events {
-  fill: rgba(16, 24, 30, 0.58);
+
+html[data-theme='dark'] .explore-filter-quote-well--places.bg-sky-50 {
+  background: rgba(16, 24, 30, 0.58) !important;
+  border-color: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(18px) saturate(1.28);
+  -webkit-backdrop-filter: blur(18px) saturate(1.28);
 }
-html[data-theme='dark'] .explore-filter-quote-stroke--events {
+
+html[data-theme='dark'] .explore-filter-quote-caret-shape--events {
+  fill: rgba(16, 24, 30, 0.58);
   stroke: rgba(255, 255, 255, 0.18);
 }
-html[data-theme='dark'] .explore-filter-quote-fill--places {
-  fill: #1c2430;
-}
-html[data-theme='dark'] .explore-filter-quote-stroke--places {
-  stroke: rgba(186, 230, 253, 0.28);
+
+html[data-theme='dark'] .explore-filter-quote-caret-shape--places {
+  fill: rgba(16, 24, 30, 0.58);
+  stroke: rgba(255, 255, 255, 0.18);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1939,23 +2122,49 @@ html[data-theme='dark'] .md\:bg-white\/90 {
   color: #eef6f1;
 }
 
+html[data-theme='dark'] .api-status-banner {
+  background-color: #1c1810;
+  border-bottom-color: rgba(251, 191, 36, 0.35);
+  color: #fde68a;
+}
+
+html[data-theme='dark'] .api-status-banner .text-amber-700,
+html[data-theme='dark'] .api-status-banner .text-amber-950,
+html[data-theme='dark'] .api-status-banner .text-amber-900 {
+  color: #fde68a;
+}
+
+html[data-theme='dark'] .api-status-banner code,
+html[data-theme='dark'] .api-status-banner button {
+  background-color: #2a2418;
+  color: #fef3c7;
+}
+
 html[data-theme='dark'] .bg-ios-bg {
   background-color: #0a0a0a;
 }
 
-html[data-theme='dark'] .auth-card.bg-white {
-  background-color: #1c1c1c;
-  border: 1px solid rgba(196, 232, 210, 0.34);
-  box-shadow: none;
+html[data-theme='dark'] .auth-card.bg-white,
+html[data-theme='dark'] .auth-card {
   color: #f4fff8;
 }
 
 html[data-theme='dark'] .auth-card .text-neutral-900,
 html[data-theme='dark'] .auth-card .text-neutral-800,
-html[data-theme='dark'] .auth-card .text-gray-700,
-html[data-theme='dark'] .auth-card .text-emerald-600,
-html[data-theme='dark'] .auth-card .text-emerald-700 {
+html[data-theme='dark'] .auth-card .text-gray-700 {
   color: #f4fff8;
+}
+
+html[data-theme='dark'] .auth-card a.text-emerald-700,
+html[data-theme='dark'] .auth-card a.text-emerald-800,
+html[data-theme='dark'] .auth-card a[class*='text-emerald-700'],
+html[data-theme='dark'] .auth-card a[class*='text-emerald-800'] {
+  color: #34d399;
+}
+
+html[data-theme='dark'] .auth-card a.text-emerald-700:hover,
+html[data-theme='dark'] .auth-card a.text-emerald-800:hover {
+  color: #6ee7b7;
 }
 
 html[data-theme='dark'] .auth-card .text-neutral-500,
@@ -1964,10 +2173,10 @@ html[data-theme='dark'] .auth-card .text-gray-500 {
 }
 
 html[data-theme='dark'] .auth-card .ios-input,
-html[data-theme='dark'] .auth-card input {
+html[data-theme='dark'] .auth-card input.ios-input {
   background-color: #2a2a2a;
   color: #f7fff9;
-  border-color: rgba(167, 220, 190, 0.4);
+  border: 1px solid rgba(167, 220, 190, 0.45);
 }
 
 html[data-theme='dark'] .auth-card input::placeholder {
@@ -1989,7 +2198,8 @@ html[data-theme='dark'] .bg-white\/95,
 html[data-theme='dark'] .bg-white\/65,
 html[data-theme='dark'] .bg-white\/55,
 html[data-theme='dark'] .bg-white\/40,
-html[data-theme='dark'] .bg-white\/30 {
+html[data-theme='dark'] .bg-white\/30,
+html[data-theme='dark'] .bg-white\/92 {
   background-color: #141414;
 }
 
@@ -2132,6 +2342,7 @@ html[data-theme='dark'] .bg-neutral-50\/95 {
   background-color: #2a2a2a;
 }
 
+html[data-theme='dark'] .hover\:bg-slate-50:hover,
 html[data-theme='dark'] .hover\:bg-neutral-50:hover,
 html[data-theme='dark'] .hover\:bg-neutral-50\/80:hover,
 html[data-theme='dark'] .hover\:bg-neutral-100:hover,
@@ -2334,7 +2545,9 @@ html[data-theme='dark'] .border-neutral-200\/75,
 html[data-theme='dark'] .border-neutral-200\/80,
 html[data-theme='dark'] .border-gray-100,
 html[data-theme='dark'] .border-gray-200,
-html[data-theme='dark'] .divide-neutral-100 > :not([hidden]) ~ :not([hidden]) {
+html[data-theme='dark'] .border-slate-200,
+html[data-theme='dark'] .divide-neutral-100 > :not([hidden]) ~ :not([hidden]),
+html[data-theme='dark'] .divide-y.border-slate-200 {
   border-color: rgba(167, 220, 190, 0.28);
 }
 
@@ -2496,26 +2709,26 @@ html[data-theme='dark'] .scrollbar-hide::-webkit-scrollbar {
 }
 
 html[data-theme='dark'] .product-sidebar-scroll {
-  scrollbar-color: rgba(15, 23, 42, 0.38) transparent;
+  scrollbar-color: #c5ddd0 rgba(255, 255, 255, 0.1);
 }
 
 html[data-theme='dark'] .product-sidebar-scroll::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 html[data-theme='dark'] .product-sidebar-scroll::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 html[data-theme='dark'] .product-sidebar-scroll::-webkit-scrollbar-thumb {
-  background: rgba(15, 23, 42, 0.38);
-  border: none;
+  background: #c5ddd0;
+  border: 2px solid #0a0a0a;
   border-radius: 999px;
 }
 
 html[data-theme='dark'] .product-sidebar-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(15, 23, 42, 0.52);
+  background: #d7ebe2;
 }
 
 header.home-marketing-header {
@@ -2686,6 +2899,11 @@ html[data-theme='dark'] .chat-app .chat-compose {
   background-image: none;
   border-color: rgba(255, 255, 255, 0.06);
   color: #e9edef;
+}
+
+html[data-theme='dark'] .chat-app .chat-compose-field {
+  background-color: #2a3942;
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 html[data-theme='dark'] .chat-app .chat-thread-scroll {

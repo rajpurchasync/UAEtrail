@@ -15,6 +15,11 @@ export const CURATED_AREA_SEED_IDS = {
   dibba: 'area-seed-dibba',
   remahDunes: 'area-seed-remah-dunes',
   kalba: 'area-seed-kalba',
+  jbr: 'area-seed-jbr',
+  downtown: 'area-seed-downtown',
+  dubaiMarina: 'area-seed-dubai-marina',
+  warsan4: 'area-seed-warsan-4',
+  alAin: 'geo-area-ae-abu-dhabi-al-ain',
 } as const;
 
 export type CuratedAreaSeedKey = keyof typeof CURATED_AREA_SEED_IDS;
@@ -34,4 +39,9 @@ export const CURATED_AREA_SEED_SLUGS: Record<CuratedAreaSeedKey, string> = {
   dibba: 'dibba',
   remahDunes: 'remah-dunes',
   kalba: 'kalba',
+  jbr: 'jbr',
+  downtown: 'downtown',
+  dubaiMarina: 'dubai-marina',
+  warsan4: 'warsan-4',
+  alAin: 'al-ain',
 };

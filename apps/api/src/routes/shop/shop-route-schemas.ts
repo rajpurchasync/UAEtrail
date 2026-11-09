@@ -26,6 +26,8 @@ export const merchantProfileSchema = z.object({
   latitude: z.number().min(-90).max(90).optional().nullable(),
   longitude: z.number().min(-180).max(180).optional().nullable(),
   region: z.string().max(80).optional().nullable(),
+  allowInboundChat: z.boolean().optional(),
+  showContactPhone: z.boolean().optional(),
 });
 
 export const merchantProfilePatchSchema = merchantProfileSchema.partial();
@@ -45,6 +47,8 @@ export const serializeMerchantProfile = (profile: {
   latitude?: number | null;
   longitude?: number | null;
   region?: string | null;
+  allowInboundChat?: boolean;
+  showContactPhone?: boolean;
 }) => ({
   id: profile.id,
   shopId: profile.id,
@@ -59,7 +63,26 @@ export const serializeMerchantProfile = (profile: {
   latitude: profile.latitude ?? null,
   longitude: profile.longitude ?? null,
   region: profile.region ?? null,
+  allowInboundChat: profile.allowInboundChat === true,
+  showContactPhone: profile.showContactPhone === true,
 });
+
+export const serializeMerchantPublicProfile = (
+  profile: Parameters<typeof serializeMerchantProfile>[0] & {
+    contactPersonName?: string | null;
+    contactPersonAvatar?: string | null;
+    contactPersonUserId?: string | null;
+  }
+) => {
+  const owner = serializeMerchantProfile(profile);
+  return {
+    ...owner,
+    contactPhone: owner.showContactPhone ? owner.contactPhone : null,
+    contactPersonName: profile.contactPersonName ?? null,
+    contactPersonAvatar: profile.contactPersonAvatar ?? null,
+    contactPersonUserId: profile.contactPersonUserId ?? null,
+  };
+};
 
 export async function getManagedMerchantProfile(userId: string, scope?: ShopManageScope | string) {
   const resolvedScope: ShopManageScope = typeof scope === 'string' ? { merchantId: scope } : (scope ?? {});

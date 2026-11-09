@@ -8,6 +8,7 @@ import {
   BROWSE_DISCOVER_PARAM,
   LIST_CAT_PARAM,
   parseBrowseListFilterState,
+  parseBrowseListGeoIds,
   parseBrowseListVenueRegions,
   parseListCatParam,
   serializeBrowseListSearchParams,
@@ -35,6 +36,7 @@ const LIST_FILTER_PARAM_KEYS = [
   'when',
   'date',
   'regions',
+  'geo',
   LIST_CAT_PARAM,
   BUDDIES_SEGMENT_URL_PARAM,
   LIST_LAYOUT_PARAM,
@@ -48,8 +50,6 @@ const EXPLORE_PRESERVE_PARAM_KEYS = [
   'panel',
   'pinKind',
   'view',
-  'places',
-  'activity',
   'subtype',
   'outingTopic',
   'pin',
@@ -71,6 +71,7 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
 
   const filters = useMemo(() => parseBrowseListFilterState(searchParams), [searchParams]);
   const venueRegions = useMemo(() => parseBrowseListVenueRegions(searchParams), [searchParams]);
+  const geoIds = useMemo(() => parseBrowseListGeoIds(searchParams), [searchParams]);
 
   const listCat = useMemo(
     () => parseListCatParam(searchParams.get(LIST_CAT_PARAM)),
@@ -91,6 +92,7 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
     (
       patch: Partial<BrowseListFilterState> & {
         regions?: string[];
+        geoIds?: string[];
         listCat?: BrowseMainCategoryKey | null;
         layout?: ListExplorerLayout;
         sort?: ListExplorerSortMode;
@@ -101,7 +103,8 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
         ...patch,
       };
       const regions = patch.regions ?? venueRegions;
-      const listParams = serializeBrowseListSearchParams(next, regions);
+      const nextGeoIds = patch.geoIds ?? geoIds;
+      const listParams = serializeBrowseListSearchParams(next, regions, nextGeoIds);
       const nextLayout = patch.layout ?? layout;
       const layoutParam = serializeListExplorerLayout(nextLayout);
       if (layoutParam) listParams.set(LIST_LAYOUT_PARAM, layoutParam);
@@ -140,6 +143,10 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
       if (mapOverlay) {
         params.set('list', '1');
         params.delete(BROWSE_DISCOVER_PARAM);
+        if (patch.listCat !== undefined) {
+          if (patch.listCat === 'venues') params.set('panel', 'venues');
+          else params.set('panel', 'activities');
+        }
       }
       const qs = params.toString();
       navigate(
@@ -147,7 +154,7 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
         { replace: true, state: location.state }
       );
     },
-    [filters, venueRegions, listCat, layout, sort, location.pathname, location.state, mapOverlay, navigate, searchParams]
+    [filters, venueRegions, geoIds, listCat, layout, sort, location.pathname, location.state, mapOverlay, navigate, searchParams]
   );
 
   const setQuery = useCallback((query: string) => syncUrl({ query }), [syncUrl]);
@@ -172,6 +179,7 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
   return {
     filters,
     venueRegions,
+    geoIds,
     listCat,
     layout,
     sort,

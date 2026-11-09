@@ -197,14 +197,15 @@ export const openApiSpec = swaggerJsdoc({
           tags: ['Engagement', 'Members'],
           summary: 'List wishlist items',
           description:
-            'Private venue and activity saves (`user_wishlist` collection). Not demand bookmarks or entity follows.',
+            'Private venue, area, and activity saves (`user_wishlist` collection). Not demand bookmarks or entity follows.',
           security: [{ bearerAuth: [] }],
           responses: { 200: { description: 'Hydrated wishlist rows.' } }
         },
         post: {
           tags: ['Engagement', 'Members'],
           summary: 'Add wishlist item',
-          description: 'Body: exactly one of `locationId` or `activityId`. Optional match-alert watch fields.',
+          description:
+            'Body: exactly one of `locationId`, `areaId`, or `activityId`. Optional match-alert watch fields.',
           security: [{ bearerAuth: [] }],
           responses: { 201: { description: 'Created or existing row.' } }
         }

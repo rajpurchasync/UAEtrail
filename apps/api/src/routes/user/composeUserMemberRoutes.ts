@@ -20,7 +20,9 @@ import { registerMeDiscoverOverlayRoutes } from './registerMeDiscoverOverlayRout
 import { registerMeWishlistRoutes } from './registerMeWishlistRoutes.js';
 import { registerMeCoordinationAttentionRoutes } from './registerMeCoordinationAttentionRoutes.js';
 import { registerMemberStatusRoutes } from './registerMemberStatusRoutes.js';
+import { registerMeVerificationRoutes } from './registerMeVerificationRoutes.js';
 import { registerMeSubmittedPlaceRoutes } from './registerMeSubmittedPlaceRoutes.js';
+import { registerMeSubmissionRoutes } from './registerMeSubmissionRoutes.js';
 import { registerMeFacilityRoutes } from './registerMeFacilityRoutes.js';
 import { registerMemberDiscoveryRoutes } from './registerMemberDiscoveryRoutes.js';
 import { registerNotificationRoutes } from './registerNotificationRoutes.js';
@@ -44,8 +46,10 @@ export const composeUserMemberRoutes = (userRouter: Router): void => {
   registerHostApplicationRoutes(userRouter);
 
   registerMemberStatusRoutes(userRouter);
+  registerMeVerificationRoutes(userRouter);
   registerMeAccountSessionRoutes(userRouter);
   registerMeSubmittedPlaceRoutes(userRouter);
+  registerMeSubmissionRoutes(userRouter);
   registerMeFacilityRoutes(userRouter);
   registerMeSeekingPostRoutes(userRouter);
   registerMeBadgesRoutes(userRouter);

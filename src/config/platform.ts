@@ -16,6 +16,7 @@ import {
   JOURNEY_MAP_PATH,
   PROFILE_HISTORY_PATH,
   PLAN_PATH,
+  PLAN_TODAY_PATH,
   PROFILE_SETTINGS_PATH,
   ADMIN_PLACES_PATH,
   PUBLISHING_PLACES_PATH,
@@ -113,11 +114,10 @@ export const joinAuthPath = (
 
 /** Right-side user menu on landing (mobile/PWA) — Explore, Join free, Contact (+ Log in in drawer). */
 export const MOBILE_LANDING_USER_MENU = [
-  { label: 'Explore', to: EXPLORE_MAP_PATH, match: [EXPLORE_MAP_PATH] as const },
   {
-    label: 'Browse',
-    to: LIST_DISCOVERY_PATH,
-    match: [EXPLORE_DISCOVER_BROWSE_PATH, LIST_DISCOVERY_PATH, '/discovery'] as const,
+    label: 'Explore',
+    to: EXPLORE_MAP_PATH,
+    match: [EXPLORE_MAP_PATH, LIST_DISCOVERY_PATH, EXPLORE_DISCOVER_BROWSE_PATH, '/discovery'] as const,
   },
   { label: 'Join free', to: joinAuthPath(), match: ['/signin', '/signup'] as const },
   { label: 'Contact', href: 'mailto:support@uaetrail.com' },
@@ -156,14 +156,7 @@ export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
     label: 'Explore',
     emoji: '🗺️',
     to: EXPLORE_MAP_PATH,
-    match: [EXPLORE_MAP_PATH, '/discovery'],
-  },
-  {
-    kind: 'link',
-    label: 'Browse',
-    emoji: '🧭',
-    to: LIST_DISCOVERY_PATH,
-    match: [EXPLORE_DISCOVER_BROWSE_PATH, LIST_DISCOVERY_PATH, '/discovery'],
+    match: [EXPLORE_MAP_PATH, LIST_DISCOVERY_PATH, EXPLORE_DISCOVER_BROWSE_PATH, '/discovery'],
   },
   {
     kind: 'link',
@@ -171,6 +164,14 @@ export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
     emoji: '📅',
     to: PLAN_PATH,
     match: [PLAN_PATH],
+    authGate: true,
+  },
+  {
+    kind: 'link',
+    label: 'Social',
+    emoji: '👥',
+    to: BUDDIES_PATH,
+    match: [BUDDIES_PATH, GROUPS_PATH],
     authGate: true,
   },
   {
@@ -369,6 +370,9 @@ export const isMobileDetailRoute = (pathname: string): boolean =>
 export const isConsumerEntityDetailRoute = (pathname: string): boolean =>
   isMobileDetailRoute(pathname) ||
   pathname.startsWith('/area/') ||
+  pathname === '/geo' ||
+  pathname.startsWith('/geo/') ||
+  pathname === '/plan/today' ||
   /^\/shop\/[^/]+/.test(pathname) ||
   pathname.startsWith('/agency/') ||
   pathname.startsWith('/partner/');
@@ -382,6 +386,7 @@ export const CONSUMER_SELF_HEADER_EXACT = [
   '/explore',
   LIST_DISCOVERY_PATH,
   PLAN_PATH,
+  PLAN_TODAY_PATH,
   PROFILE_HISTORY_PATH,
   JOURNEY_MAP_PATH,
   '/shop',

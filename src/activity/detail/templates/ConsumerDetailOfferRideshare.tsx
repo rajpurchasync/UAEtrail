@@ -13,6 +13,24 @@ export type ConsumerDetailOfferRideshareProps = {
   onRideshareLinked?: () => void;
 };
 
+export const consumerDetailOfferRideshareVisible = ({
+  activity,
+  viewerAccess,
+  tenantId,
+  onCreateRideshare,
+}: Pick<
+  ConsumerDetailOfferRideshareProps,
+  'activity' | 'viewerAccess' | 'tenantId' | 'onCreateRideshare'
+>): boolean => {
+  const entitlements = viewerAccess?.entitlements;
+  const canAddLinkedRide = Boolean(entitlements?.canAddLinkedRide);
+  const canOfferTransport = Boolean(entitlements?.canOfferTransport);
+  const showHostLinkPanel =
+    canLinkRideshareToActivity(activity) && Boolean(tenantId?.trim()) && canAddLinkedRide;
+  const showCreateOnly = Boolean(onCreateRideshare) && canOfferTransport && !showHostLinkPanel;
+  return showHostLinkPanel || showCreateOnly;
+};
+
 /** Host / entitled members — create or paste-link a rideshare for this outing. */
 export const ConsumerDetailOfferRideshare = ({
   activity,
@@ -22,14 +40,17 @@ export const ConsumerDetailOfferRideshare = ({
   onRideshareLinked,
 }: ConsumerDetailOfferRideshareProps) => {
   const [notice, setNotice] = useState<string | null>(null);
+
+  if (!consumerDetailOfferRideshareVisible({ activity, viewerAccess, tenantId, onCreateRideshare })) {
+    return null;
+  }
+
   const entitlements = viewerAccess?.entitlements;
   const canAddLinkedRide = Boolean(entitlements?.canAddLinkedRide);
   const canOfferTransport = Boolean(entitlements?.canOfferTransport);
   const showHostLinkPanel =
     canLinkRideshareToActivity(activity) && Boolean(tenantId?.trim()) && canAddLinkedRide;
   const showCreateOnly = Boolean(onCreateRideshare) && canOfferTransport && !showHostLinkPanel;
-
-  if (!showHostLinkPanel && !showCreateOnly) return null;
 
   if (showHostLinkPanel && tenantId) {
     return (
@@ -48,6 +69,10 @@ export const ConsumerDetailOfferRideshare = ({
         />
       </section>
     );
+  }
+
+  if (!showCreateOnly || !onCreateRideshare) {
+    return null;
   }
 
   return (

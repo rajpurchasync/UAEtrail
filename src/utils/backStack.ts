@@ -194,7 +194,7 @@ const isAuthTransientPath = (pathname: string): boolean => TRANSIENT_EXACT.has(p
  */
 export const inferBackParent = (pathKey: string): string | null => {
   const pathname = pathnameOf(pathKey);
-  if (isAuthTransientPath(pathname)) return '/explore';
+  if (isAuthTransientPath(pathname)) return '/';
   if (pathname === '/profile/edit') return '/profile';
   if (pathname === '/profile/vehicles/new' || /^\/profile\/vehicles\/[^/]+\/edit$/.test(pathname)) {
     return '/profile/vehicles';

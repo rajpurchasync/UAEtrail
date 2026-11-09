@@ -11,7 +11,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { ActivityType, LocationPremiumSummaryDTO } from '@uaetrail/shared-types';
-import { MeetingPointMap } from './MeetingPointMap';
+import { LazyMeetingPointMap } from '../../detail/shared/LazyMeetingPointMap';
 import { capitalize } from '../../utils';
 import { splitPlacePracticalTags } from '../../utils/placePracticalInfo';
 import { signInPath } from '../../config/routingCatalog';
@@ -357,7 +357,7 @@ export const PlaceDetailTabs = ({
                     />
                     <div className="space-y-2 w-full">
                       <p className="text-sm font-semibold text-neutral-900">{venuePinLabel}</p>
-                      <MeetingPointMap lat={lat!} lng={lng!} label={data.name} hideExternalLink />
+                      <LazyMeetingPointMap lat={lat!} lng={lng!} label={data.name} hideExternalLink />
                       <p className="text-xs text-neutral-400 font-mono">
                         {lat!.toFixed(5)}, {lng!.toFixed(5)}
                       </p>
@@ -383,7 +383,7 @@ export const PlaceDetailTabs = ({
                       <p className="text-sm font-semibold text-neutral-900">Parking</p>
                       {hasParkingCoordinates && (
                         <>
-                          <MeetingPointMap lat={parkingLat!} lng={parkingLng!} label="Parking" hideExternalLink />
+                          <LazyMeetingPointMap lat={parkingLat!} lng={parkingLng!} label="Parking" hideExternalLink />
                           <p className="text-xs text-neutral-400 font-mono">
                             {parkingLat!.toFixed(5)}, {parkingLng!.toFixed(5)}
                           </p>

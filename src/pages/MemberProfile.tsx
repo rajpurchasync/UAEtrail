@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Loader2, Lock } from 'lucide-react';
 import type { BuddyRelationshipDTO } from '@uaetrail/shared-types';
@@ -33,6 +33,18 @@ import {
 } from '../content/exploreGoingPanelCopy';
 import { profileHubMobileBackState, resolveMobileBackChrome } from '../utils/mobileBackNav';
 import { ExploreGuestSignInCard } from '../explore/ui/ExploreGuestSignInCard';
+import {
+  browseLensForPresentation,
+  memberProfileCanTogglePresentation,
+  parseMemberProfileBrowseLens,
+  presentationFromBrowseLens,
+  type MemberProfilePresentationMode,
+} from '../member/memberProfilePresentation';
+import { memberProfilePath } from '@uaetrail/shared-types';
+import {
+  canViewMemberPublicCardFields,
+  canViewMemberTrustedProfileFields,
+} from '../member/memberProfileFieldAccess';
 
 const isFullProfile = (
   profile: PersonPublicProfileDTO
@@ -59,6 +71,8 @@ export const MemberProfile = () => {
   );
   const [buddyBusy, setBuddyBusy] = useState(false);
   const [buddyMessage, setBuddyMessage] = useState<string | null>(null);
+  const browseLens = useMemo(() => parseMemberProfileBrowseLens(location.search), [location.search]);
+  const [presentation, setPresentation] = useState<MemberProfilePresentationMode>('social');
 
   const {
     profile,
@@ -154,18 +168,58 @@ export const MemberProfile = () => {
 
   const fullProfile = profile && isFullProfile(profile) ? profile : null;
 
+  const showPresentationSwitch = Boolean(
+    fullProfile &&
+      memberProfileCanTogglePresentation({
+        canViewFullProfile: viewerAccess?.canViewFullProfile ?? false,
+        isHost: fullProfile.isHost,
+        activitiesHosted: fullProfile.stats.activitiesHosted,
+        publishingTenantId: fullProfile.publishingTenantId,
+      })
+  );
+
+  useEffect(() => {
+    if (!fullProfile) return;
+    setPresentation(presentationFromBrowseLens(browseLens, fullProfile.isHost));
+  }, [userId, browseLens, fullProfile?.isHost, fullProfile]);
+
+  const handlePresentationChange = (next: MemberProfilePresentationMode) => {
+    setPresentation(next);
+    if (!userId) return;
+    const lens = browseLensForPresentation(next);
+    const path = memberProfilePath(userId, {
+      lens,
+      discover: fromDiscover,
+      publicPreview: previewAsPublic,
+    });
+    if (path) {
+      navigate(path, { replace: true, state: location.state });
+    }
+  };
+
   const guestSignInRequired = viewerAccess?.gateReason === 'sign_in' && !user;
   const isPrivate =
     profile?.visibilityState === 'private' && viewerAccess?.exposure === 'none' && !guestSignInRequired;
   const pageTitle = fullProfile?.displayName ?? (isSelf ? user?.displayName || 'Profile' : 'Member');
+  /** Shell chrome only — name lives in `MemberProfileView`. */
+  const shellTitle = isSelf ? 'Profile' : 'Member';
+
+  useEffect(() => {
+    if (!fullProfile || location.hash !== '#reviews') return;
+    const timer = window.setTimeout(() => {
+      document.getElementById('reviews')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 120);
+    return () => window.clearTimeout(timer);
+  }, [fullProfile, location.hash]);
 
   return (
     <ConsumerShell
       layout="stack"
-      title={pageTitle}
-      navTitle={pageTitle.length > 18 ? `${pageTitle.slice(0, 16)}…` : pageTitle}
+      title={shellTitle}
+      navTitle={shellTitle}
       showJourney={false}
       back={backChrome}
+      closeTo={isSelf ? undefined : EXPLORE_MAP_PATH}
     >
       <PageMeta title={pageTitle} noIndex />
 
@@ -236,7 +290,8 @@ export const MemberProfile = () => {
       ) : fullProfile && userId ? (
         <MemberProfileView
           profile={fullProfile}
-          canViewFullProfile={viewerAccess?.canViewFullProfile ?? false}
+          canViewPublicCardFields={canViewMemberPublicCardFields(viewerAccess)}
+          canViewTrustedFields={canViewMemberTrustedProfileFields(viewerAccess)}
           isSelf={Boolean(isSelf)}
           userId={userId}
           userLoggedIn={Boolean(user)}
@@ -250,6 +305,9 @@ export const MemberProfile = () => {
           onCancelBuddyRequest={() => void handleCancelBuddyRequest()}
           onMessage={() => navigate(messagesRouteForRole(user!.role, fullProfile.id))}
           upcomingActivities={upcomingActivities}
+          presentation={presentation}
+          onPresentationChange={showPresentationSwitch ? handlePresentationChange : undefined}
+          showPresentationSwitch={showPresentationSwitch}
         />
       ) : null}
     </ConsumerShell>

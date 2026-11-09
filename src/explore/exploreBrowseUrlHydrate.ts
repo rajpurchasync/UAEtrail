@@ -1,10 +1,12 @@
 import {
+  activityFilterToMapFilter,
   parseActivityListFilter,
   parseExploreActivityDatePreset,
   parseExplorePanel,
   parseMapFilter,
   parseVenueListFilter,
   parseVenueRegionsParam,
+  venueFilterToMapFilter,
   type ActivityListFilterKey,
   type ExploreActivityDatePreset,
   type ExplorePanel,
@@ -21,7 +23,7 @@ import {
   type ExploreMapFilterPillKey,
   type ExploreSearchScopeKey,
 } from './exploreBrowseTaxonomy';
-import { BROWSE_DISCOVER_PARAM } from '../list/browseListUrlState';
+import { BROWSE_DISCOVER_PARAM, LIST_CAT_PARAM, parseListCatParam } from '../list/browseListUrlState';
 import type { ExploreBrowseListMode } from './exploreBrowseUrlSync';
 import {
   BUDDIES_SEGMENT_URL_PARAM,
@@ -85,23 +87,43 @@ export const parseExploreBrowseStateFromSearchParams = (
   isDesktop: boolean
 ): ExploreBrowseUrlHydratedState => {
   const nextMapFilterRaw = parseMapFilter(searchParams.get('filter'));
-  const nextPanel = parseExplorePanel(searchParams.get('panel'));
+  let nextPanel = parseExplorePanel(searchParams.get('panel'));
+  const listCat = parseListCatParam(searchParams.get(LIST_CAT_PARAM));
+  if (isDesktop) {
+    if (listCat === 'venues') {
+      nextPanel = 'venues';
+    } else if (listCat === null && searchParams.get('list') === '1') {
+      nextPanel = 'activities';
+    }
+  }
   const nextBrowseTab = parseDesktopBrowseTab(nextPanel);
   const allowedForPlaces = MAP_FILTERS_BY_BROWSE_TAB.venues;
   const allowedForActivities = MAP_FILTERS_BY_BROWSE_TAB.activities;
   const inPlacesContext = isDesktop ? nextBrowseTab === 'venues' : nextPanel === 'venues';
   const inActivitiesContext = !inPlacesContext;
+  const activityFilter = parseActivityListFilter(searchParams.get('activity'), searchParams.get('filter'));
+  const venueFilter = parseVenueListFilter(
+    searchParams.get('places'),
+    searchParams.get('filter'),
+    searchParams.get('activity')
+  );
   let nextMapFilter = nextMapFilterRaw;
-  if (inPlacesContext && !allowedForPlaces.includes(nextMapFilterRaw)) {
+  if (nextMapFilter === 'all') {
+    const lifted = inPlacesContext
+      ? venueFilterToMapFilter(venueFilter)
+      : activityFilterToMapFilter(activityFilter);
+    if (lifted) nextMapFilter = lifted;
+  }
+  if (inPlacesContext && !allowedForPlaces.includes(nextMapFilter)) {
     nextMapFilter = 'all';
-  } else if (inActivitiesContext && !allowedForActivities.includes(nextMapFilterRaw)) {
+  } else if (inActivitiesContext && !allowedForActivities.includes(nextMapFilter)) {
     nextMapFilter = 'all';
   }
   const nextSubtype = parseExploreBuddySubtype(searchParams.get('subtype'), nextMapFilter);
 
   return {
     mapFilter: nextMapFilter,
-    activityFilter: parseActivityListFilter(searchParams.get('activity'), searchParams.get('filter')),
+    activityFilter,
     panel: nextPanel,
     listOpen: parseListOpen(
       searchParams.get('list'),
@@ -111,11 +133,7 @@ export const parseExploreBrowseStateFromSearchParams = (
     ),
     browseOpen: false,
     query: searchParams.get('q') ?? '',
-    venueFilter: parseVenueListFilter(
-      searchParams.get('places'),
-      searchParams.get('filter'),
-      searchParams.get('activity')
-    ),
+    venueFilter,
     venueRegions: parseVenueRegionsParam(searchParams),
     activityDatePreset: parseExploreActivityDatePreset(searchParams.get('date')),
     activityModeFilter: parseExploreActivityModeFilter(

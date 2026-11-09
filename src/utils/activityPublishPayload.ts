@@ -11,6 +11,7 @@ import type {
   OutingCategory,
   OutingTopic,
   ParticipationMode,
+  PublishingActivityPrivateCrewBodyFields,
 } from '@uaetrail/shared-types';
 import {
   APPROVAL_PARTICIPATION_REQUIREMENT,
@@ -65,6 +66,7 @@ export type ActivityPublishInput = {
   endDate?: string;
   endTime?: string;
   capacity: number;
+  waitlist?: boolean;
   pricing: ActivityPublishPricing;
   location: ActivityPublishLocation;
   requirements: string[];
@@ -86,7 +88,7 @@ export type ActivityPublishInput = {
   originLabel?: string;
   originLat?: number;
   originLng?: number;
-};
+} & PublishingActivityPrivateCrewBodyFields;
 
 export const defaultParticipationModeForActivityType = (activityType: string): ParticipationMode =>
   activityType === 'event' ? 'rsvp' : 'approval';
@@ -152,6 +154,7 @@ export const buildHostActivityPublishPayload = (input: ActivityPublishInput): Re
     ...(input.endDate ? { endDate: input.endDate } : {}),
     ...(input.endTime ? { endTime: input.endTime } : {}),
     capacity: input.capacity,
+    waitlist: input.waitlist !== false,
     price: Math.round(Math.max(0, pricing.price)),
     pricingMode: pricing.pricingMode,
     ...(paymentTerms ? { paymentTerms } : {}),
@@ -204,6 +207,16 @@ export const buildHostActivityPublishPayload = (input: ActivityPublishInput): Re
     if (rideshare.rideshareSeats !== undefined) payload.rideshareSeats = rideshare.rideshareSeats;
     if (rideshare.rideshareDetails !== undefined) payload.rideshareDetails = rideshare.rideshareDetails;
     if (rideshare.rideshareVehicleId) payload.rideshareVehicleId = rideshare.rideshareVehicleId;
+  }
+
+  if (input.privateEmergencyContactName !== undefined) {
+    payload.privateEmergencyContactName = input.privateEmergencyContactName;
+  }
+  if (input.privateEmergencyContactPhone !== undefined) {
+    payload.privateEmergencyContactPhone = input.privateEmergencyContactPhone;
+  }
+  if (input.privateVehiclePlateNumber !== undefined) {
+    payload.privateVehiclePlateNumber = input.privateVehiclePlateNumber;
   }
 
   return payload;

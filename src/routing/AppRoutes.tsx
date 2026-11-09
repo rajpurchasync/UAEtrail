@@ -27,7 +27,7 @@ import {
   INBOUND_JOURNEY_MAP_ALIAS_PATH,
   INBOUND_PROFILE_HISTORY_ALIAS_PATH,
 } from '../config/inboundBookmarkPaths';
-import { ProtectedRoute, Home, ExploreExperience, BrowseListPage, DiscoveryRedirect, InboundCanonicalPlaceRedirect, InboundMerchantPublicRedirect, InboundProductPathRedirect, InboundMessagesRedirect, InboundProMembershipRedirect, InboundProfileWishlistRedirect, InboundRetiredPublishingConsoleRedirect, InboundProfileHistoryAliasRedirect, InboundJourneyMapAliasRedirect, ShopBrowseRoute, CalendarRedirect, PeopleRedirect, PlanBrowseRoute, CanonicalPlaceDetailPage, FacilityDetailPage, ProfileProMembership, ShopPublic, ActivityDetail, OrganisationProfile, MemberProfile, SignUp, SignIn, VerifyOTP, WelcomeSignup, ForgotPassword, AdminOverview, AdminPlaces, AdminAreas, AreaDetailPage, AdminOrganisations, AdminActivities, AdminMembers, AdminGroups, AdminAuditLog, AdminReports, AdminSettings, AdminAccount, AdminNotifications, PublishingOverview, PublishingActivities, PublishingJoinRequests, PublishingTeam, PublishingPublicProfileEdit, PublishingPlaces, PublishingHistory, UserRequests, MessagesGate, ShopManageRedirect, AgencyManageRedirect, PublishingManage, ProfileHistoryPage, JourneyMapPage, Profile, ProfileSettings, ProfileSettingsAccount, ProfileSettingsPrivacy, ProfileSettingsNotifications, ProfileSettingsSafety, ProfileVehiclesPage, ProfileVehicleNewPage, ProfileVehicleEditPage, ProfileEdit, ProfileBadges, Submissions, ProfileReviews, JoinRequestDetail, Notifications, Groups, Buddies, SecurityPrivacy, Terms, Privacy, Faq, About, Contact, SiteMap, NotFound, DashboardRedirect } from './appLazyPages';
+import { ProtectedRoute, Home, ExploreExperience, BrowseListPage, DiscoveryRedirect, InboundCanonicalPlaceRedirect, InboundMerchantPublicRedirect, InboundProductPathRedirect, InboundMessagesRedirect, InboundProMembershipRedirect, InboundProfileWishlistRedirect, InboundRetiredPublishingConsoleRedirect, InboundProfileHistoryAliasRedirect, InboundJourneyMapAliasRedirect, ShopBrowseRoute, CalendarRedirect, PeopleRedirect, PlanBrowseRoute, CanonicalPlaceDetailPage, VenuePlaceDetailPage, FacilityDetailPage, ProfileProMembership, ShopPublic, ActivityDetail, OrganisationProfile, MemberProfile, SignUp, SignIn, VerifyOTP, WelcomeSignup, ForgotPassword, AdminOverview, AdminPlaces, AdminAreas, AreaDetailPage, AdminOrganisations, AdminActivities, AdminMembers, AdminGroups, AdminAuditLog, AdminReports, AdminSettings, AdminAccount, AdminNotifications, AdminAlerts, GeoTreePage, GeoCountryPage, GeoNodePage, PlanTodayPage, PublishingOverview, PublishingActivities, PublishingJoinRequests, PublishingTeam, PublishingPublicProfileEdit, PublishingPlaces, PublishingHistory, UserRequests, MessagesGate, ShopManageRedirect, AgencyManageRedirect, PublishingManage, ProfileHistoryPage, JourneyMapPage, Profile, ProfileSettings, ProfileSettingsAccount, ProfileSettingsPrivacy, ProfileSettingsNotifications, ProfileSettingsSafety, ProfileVehiclesPage, ProfileVehicleNewPage, ProfileVehicleEditPage, ProfileEdit, ProfileBadges, Submissions, ProfileReviews, JoinRequestDetail, Notifications, Groups, Buddies, SecurityPrivacy, Terms, Privacy, Faq, About, Contact, SiteMap, NotFound, DashboardRedirect } from './appLazyPages';
 import { PageLoader, AuthAliasRedirect } from './appRouteChrome';
 
 export const AppRoutes = () => (
@@ -44,7 +44,7 @@ export const AppRoutes = () => (
           <Route path="/facility/:id" element={<FacilityDetailPage />} />
           <Route path="/trail/:id" element={<InboundCanonicalPlaceRedirect />} />
           <Route path="/camp/:id" element={<InboundCanonicalPlaceRedirect />} />
-          <Route path="/venue/:id" element={<InboundCanonicalPlaceRedirect />} />
+          <Route path="/venue/:id" element={<VenuePlaceDetailPage />} />
           <Route path="/event/:id" element={<InboundCanonicalPlaceRedirect />} />
           <Route path="/event-spot/:id" element={<InboundCanonicalPlaceRedirect />} />
           <Route path="/community-activity/:id" element={<InboundCanonicalPlaceRedirect />} />
@@ -58,7 +58,41 @@ export const AppRoutes = () => (
               </Suspense>
             }
           />
+          <Route
+            path="/plan/today"
+            element={
+              <ProtectedRoute>
+                <Suspense fallback={<PageLoader />}>
+                  <PlanTodayPage />
+                </Suspense>
+              </ProtectedRoute>
+            }
+          />
           <Route path="/plan" element={<PlanBrowseRoute />} />
+          <Route
+            path="/geo"
+            element={
+              <Suspense fallback={<PageLoader />}>
+                <GeoTreePage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/geo/country/:code"
+            element={
+              <Suspense fallback={<PageLoader />}>
+                <GeoCountryPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/geo/n/:id"
+            element={
+              <Suspense fallback={<PageLoader />}>
+                <GeoNodePage />
+              </Suspense>
+            }
+          />
           <Route
             path="/profile/history"
             element={
@@ -398,6 +432,14 @@ export const AppRoutes = () => (
             element={
               <ProtectedRoute roles={['platform_admin']}>
                 <AdminReports />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/alerts"
+            element={
+              <ProtectedRoute roles={['platform_admin']}>
+                <AdminAlerts />
               </ProtectedRoute>
             }
           />

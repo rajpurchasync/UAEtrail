@@ -24,6 +24,7 @@ import {
   type ExploreBrowseUrlHydratedState,
 } from '../exploreBrowseUrlHydrate';
 import { useExploreBrowseUrlInboundMigrations } from './useExploreBrowseUrlInboundMigrations';
+import { useExploreBrowsePeekDismissOnFilterChange } from './useExploreBrowsePeekDismissOnFilterChange';
 import { useExploreBrowseUrlApplyHandlers } from './useExploreBrowseUrlApplyHandlers';
 import type { BuddiesDiscoverySegment } from '../../list/buddiesDiscoverySegment';
 import type { ExplorePinKindFilter } from '../explorePinKindFilter';
@@ -164,6 +165,7 @@ export const useExploreBrowseUrlState = ({
   useEffect(() => {
     applyHydratedState(clampGuestPeopleBrowse(parseExploreBrowseStateFromSearchParams(searchParams, isDesktop), isSignedIn));
   }, [searchParams, isDesktop, isSignedIn, applyHydratedState]);
+  useExploreBrowsePeekDismissOnFilterChange(searchParams, clearSelection);
   useExploreBrowseUrlInboundMigrations({ searchParams, setSearchParams, isDesktop });
   const browseSetters = useMemo(
     () => ({
@@ -223,7 +225,7 @@ export const useExploreBrowseUrlState = ({
   }, [clearSelection, isDesktop, location.pathname, location.search, navigate, searchParams, syncExploreUrl]);
 
   const showListPanel = listOpen && listMode === 'people';
-  const showDesktopCatalogDrawer = isDesktop && listOpen && listMode !== 'people';
+  const showDesktopCatalogDrawer = isDesktop && !peopleBrowseOpen;
   const sidebarPanel: ExplorePanel = isDesktop
     ? panel === 'venues'
       ? 'venues'

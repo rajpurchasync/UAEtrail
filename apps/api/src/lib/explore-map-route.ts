@@ -14,12 +14,16 @@ import {
 } from './explore-map-bbox.js';
 import { enrichExploreMapItemsDiscoveryProjection } from './explore-map-discovery-projection.js';
 import { applyExploreMapHttpProjection } from './explore-map-list-projection.js';
+import { filterExploreMapItemsByGeoSearch } from './explore-geo-search.js';
 
 export type ExploreMapRouteQuery = {
   bbox?: string;
   cursor?: string;
   limit?: string;
   area?: string;
+  q?: string;
+  country?: string;
+  venue?: string;
   /** `full` keeps nested activity/venue payloads; default is slim pin projection. */
   projection?: string;
 };
@@ -86,7 +90,13 @@ export const loadExploreMapForRequest = async (input: {
   };
 
   const { items: catalogItems, pageMeta } = await resolveExploreMapCatalogItemsForQuery(input.query);
-  const { items: cappedCatalog, guestCatalogPreview } = capGuestCatalogItems(catalogItems);
+  const geoFiltered = filterExploreMapItemsByGeoSearch(catalogItems, {
+    q: input.query.q,
+    country: input.query.country,
+    area: input.query.area,
+    venue: input.query.venue,
+  });
+  const { items: cappedCatalog, guestCatalogPreview } = capGuestCatalogItems(geoFiltered);
   const projected = applyExploreMapHttpProjection(
     enrichExploreMapItemsDiscoveryProjection(cappedCatalog),
     input.query.projection

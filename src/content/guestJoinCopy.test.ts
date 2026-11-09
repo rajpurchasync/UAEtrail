@@ -1,28 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { GUEST_GATE_OOPS_TITLE, guestJoinSheetBody, guestJoinSheetHeadline } from './guestJoinCopy';
+import { guestBrowseGateCopy } from './guestBrowseGateCopy';
+import {
+  GUEST_ACTIVITY_DETAIL_PREVIEW_TITLE,
+  guestActivityDetailPreviewBody,
+} from './guestJoinCopy';
 
-describe('guestJoinCopy', () => {
-  it('uses a single guest gate headline', () => {
-    expect(guestJoinSheetHeadline({ participationMode: 'rsvp', activityTitle: 'Trail run' })).toBe(
-      GUEST_GATE_OOPS_TITLE
-    );
-    expect(guestJoinSheetHeadline({ activityTitle: 'Sunrise hike' })).toBe(GUEST_GATE_OOPS_TITLE);
-  });
-
-  it('uses RSVP tone in body when participationMode is rsvp', () => {
-    const body = guestJoinSheetBody({ participationMode: 'rsvp', activityTitle: 'Trail run' });
-    expect(body).toContain('you’re going');
-    expect(body).toContain('Trail run');
-  });
-
-  it('uses approval tone in body by default', () => {
-    expect(guestJoinSheetBody({ activityTitle: 'Sunrise hike' })).toContain('request');
-    expect(guestJoinSheetBody({ activityTitle: 'Weekend camp' })).toContain('request');
-  });
-
-  it('uses RSVP body for hiking and camping when host chose open RSVP', () => {
-    expect(guestJoinSheetBody({ participationMode: 'rsvp', activityTitle: 'Desert camp' })).toContain(
-      'you’re going'
-    );
+describe('guest activity detail preview copy', () => {
+  it('frames listed outing detail as preview until sign-in', () => {
+    const gate = guestBrowseGateCopy('join-activity', {
+      intent: 'activity',
+      activityTitle: 'Baqal Caves',
+      detailPreview: true,
+    });
+    expect(gate.title).toBe(GUEST_ACTIVITY_DETAIL_PREVIEW_TITLE);
+    expect(gate.body).toContain('Baqal Caves');
+    expect(gate.title).toMatch(/Log in to view details/i);
+    expect(gate.body).toMatch(/Log in/i);
+    expect(guestActivityDetailPreviewBody({ activityTitle: 'Dawn hike' })).toContain('Dawn hike');
   });
 });

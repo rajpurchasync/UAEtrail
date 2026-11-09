@@ -24,7 +24,9 @@ export const ActivityDetailLinkedPlaceLink = ({
     <>
       <MapPin className="h-5 w-5 shrink-0 text-emerald-800" aria-hidden />
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800/70">{eyebrow}</p>
+        <p className="text-[11px] font-semibold tracking-wide text-emerald-950 dark:text-emerald-200 lg:text-[10px]">
+          {eyebrow}
+        </p>
         <p className="truncate text-sm font-semibold text-neutral-950">{name}</p>
       </div>
       {to ? <ChevronRight className="h-5 w-5 shrink-0 text-neutral-400" aria-hidden /> : null}

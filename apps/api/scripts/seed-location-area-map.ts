@@ -26,6 +26,22 @@ export const SEED_CATALOG_LOCATION_AREA_KEYS: Record<string, CuratedAreaSeedKey>
   'kalba-mangrove-kayak': 'kalba',
   'mleiha-desert-camp': 'fossilRock',
   'al-badayer-desert-camp': 'fossilRock',
+  'stairway-to-heaven-rak': 'jebelJais',
+  'wadi-ghallila-loop': 'wadiShawka',
+  'mleiha-fossil-rock-hike': 'fossilRock',
+  'wadi-wurayah-lower-trail': 'khorfakkan',
+  'nad-al-sheba-sand-dune-hike': 'alQudra',
+  'al-rabi-khorfakkan-trail': 'khorfakkan',
+  'jebel-jais-zipline-plateau-walk': 'jebelJais',
+  'lehbab-platinum-dunes-walk': 'fossilRock',
+  'sir-baniyas-salt-dome-walk': 'jebelHafeet',
+  'liwa-dunes-overnight': 'remahDunes',
+  'wadi-shawka-dam-camp': 'wadiShawka',
+  'lehbab-red-dunes-camp': 'alQudra',
+  'fujairah-sandy-beach-camp': 'dibba',
+  'kalba-creek-camp': 'kalba',
+  'jebel-jais-base-camp': 'jebelJais',
+  'rak-beach-camp': 'jebelJais',
 };
 
 export const seedLocationAreaId = (locationId: string): string | null => {

@@ -1,6 +1,7 @@
 import {
   ADMIN_ACTIVITIES_PATH,
   ADMIN_AUDIT_LOG_PATH,
+  ADMIN_ALERTS_PATH,
   ADMIN_REPORTS_PATH,
   ADMIN_GROUPS_PATH,
   ADMIN_HOSTS_PATH,
@@ -57,6 +58,7 @@ export const ADMIN_LINKS = [
   { to: ADMIN_HOSTS_PATH, label: 'Operators' },
   { to: ADMIN_GROUPS_PATH, label: 'Groups' },
   { to: ADMIN_REPORTS_PATH, label: 'Reports' },
+  { to: ADMIN_ALERTS_PATH, label: 'Alerts' },
   { to: ADMIN_AUDIT_LOG_PATH, label: 'Audit Log' },
   { to: ADMIN_SETTINGS_PATH, label: 'Broadcast' },
   { to: ADMIN_ACCOUNT_PATH, label: 'Account' },

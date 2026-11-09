@@ -1,6 +1,12 @@
 import { useMemo, useState } from 'react';
 import { Check, Link as LinkIcon, Mail, Share2, UserPlus } from 'lucide-react';
 import { ACTIVITY_INVITE_FRIENDS_CTA } from '../../content/activityInviteCopy';
+import {
+  SHARE_SHEET_IN_APP_GENERIC_CTA,
+  SHARE_SHEET_IN_APP_GENERIC_HINT,
+  SHARE_SHEET_SECTION_EXTERNAL,
+  SHARE_SHEET_SECTION_IN_APP,
+} from '../../content/shareSheetCopy';
 import { FacebookIcon } from '../icons/FacebookIcon';
 import { WhatsAppIcon } from '../icons/WhatsAppIcon';
 import { buildShareText, buildShareUrl } from '../../utils/share';
@@ -73,27 +79,48 @@ export const ActivityOutingShareMenuBody = ({
     }
   };
 
+  const showActivityInvite = Boolean(showInviteOnApp && onInviteOnApp);
+
+  const handleInAppShare = () => {
+    if (showActivityInvite && onInviteOnApp) {
+      onInviteOnApp();
+      return;
+    }
+    if (canNativeShare) {
+      void handleNativeShare();
+      return;
+    }
+    void handleCopyLink();
+  };
+
   return (
     <ul className="space-y-1 px-2 pb-safe-plus-2 pt-1">
-      {showInviteOnApp && onInviteOnApp ? (
-        <li>
-          <button type="button" className={rowButtonClass} onClick={onInviteOnApp}>
-            <span className={`${iconWrapClass} bg-emerald-50 text-emerald-700`} aria-hidden>
-              <UserPlus className="h-5 w-5" strokeWidth={2} />
+      <li className="px-3 pt-1 pb-1">
+        <p className="text-[11px] font-bold uppercase tracking-wide text-neutral-400">
+          {SHARE_SHEET_SECTION_IN_APP}
+        </p>
+      </li>
+      <li>
+        <button type="button" className={rowButtonClass} onClick={handleInAppShare}>
+          <span className={`${iconWrapClass} bg-emerald-50 text-emerald-700`} aria-hidden>
+            <UserPlus className="h-5 w-5" strokeWidth={2} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-semibold text-neutral-900">
+              {showActivityInvite ? ACTIVITY_INVITE_FRIENDS_CTA : SHARE_SHEET_IN_APP_GENERIC_CTA}
             </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-sm font-semibold text-neutral-900">
-                {ACTIVITY_INVITE_FRIENDS_CTA}
-              </span>
-              <span className="block text-xs text-neutral-500">
-                Invite buddies and groups on UAE Trail
-              </span>
+            <span className="block text-xs text-neutral-500">
+              {showActivityInvite
+                ? 'Invite buddies and groups on UAE Trail'
+                : SHARE_SHEET_IN_APP_GENERIC_HINT}
             </span>
-          </button>
-        </li>
-      ) : null}
+          </span>
+        </button>
+      </li>
       <li className="px-3 pt-2 pb-1">
-        <p className="text-[11px] font-bold uppercase tracking-wide text-neutral-400">Share link</p>
+        <p className="text-[11px] font-bold uppercase tracking-wide text-neutral-400">
+          {SHARE_SHEET_SECTION_EXTERNAL}
+        </p>
       </li>
       {canNativeShare ? (
         <li>

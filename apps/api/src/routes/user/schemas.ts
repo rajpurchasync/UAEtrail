@@ -11,6 +11,8 @@ export const createRequestSchema = z.object({
   note: z.string().max(1000).optional(),
   packingCheckedIds: z.array(z.string().min(1).max(80)).max(40).optional(),
   packingSignature: z.string().max(80).optional(),
+  adults: z.coerce.number().int().min(1).max(20).optional(),
+  kids: z.coerce.number().int().min(0).max(20).optional(),
 });
 
 export const rsvpSchema = createRequestSchema;
@@ -158,6 +160,10 @@ export const listFilterSchema = z.object({
   lng: z.coerce.number().optional(),
   radius: z.coerce.number().min(1).max(500).default(50).optional(),
   countryCode: z.string().length(2).optional(),
+  q: z.string().max(120).optional(),
+  country: z.string().max(80).optional(),
+  area: z.string().max(80).optional(),
+  venue: z.string().max(80).optional(),
   page: z.coerce.number().int().min(1).default(1).optional(),
   pageSize: z.coerce.number().int().min(1).max(100).default(20).optional()
 });

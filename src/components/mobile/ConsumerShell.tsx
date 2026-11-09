@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { MOBILE_PRODUCT_HEADER_FROSTED } from '../../config/consumerScrollChrome';
 import { APP_PAGE_MIN_H_CLASS, APP_SCROLL_BODY_CLASS } from '../../config/layoutScroll';
@@ -38,6 +39,8 @@ interface ConsumerShellProps {
   leading?: 'profile';
   showJourney?: boolean;
   journey?: { fallbackTo?: string; label?: string };
+  /** Close (X) — e.g. member profile → explore map. */
+  closeTo?: string;
 }
 
 const maxWidthClass = {
@@ -63,6 +66,7 @@ export const ConsumerShell = ({
   leading,
   showJourney = true,
   journey,
+  closeTo,
 }: ConsumerShellProps) => {
   const { pathname, search } = useLocation();
   const { user } = useAuth();
@@ -151,7 +155,17 @@ export const ConsumerShell = ({
                   ) : (
                     <span aria-hidden />
                   )}
-                  <div className="justify-self-end flex items-center justify-end min-w-[44px]">
+                  <div className="justify-self-end flex items-center justify-end gap-0.5 min-w-[44px]">
+                    {closeTo ? (
+                      <Link
+                        to={closeTo}
+                        replace
+                        aria-label="Close"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-full text-neutral-700 hover:bg-neutral-100"
+                      >
+                        <X className="h-5 w-5" aria-hidden />
+                      </Link>
+                    ) : null}
                     {headerTrailing}
                   </div>
                 </div>
@@ -165,24 +179,29 @@ export const ConsumerShell = ({
             )}
             {layout === 'stack' && (
               <>
-                <div className={`relative hidden md:flex items-center min-h-[44px] pb-2 md:pt-4 ${showJourney && !banner ? 'pt-1' : 'pt-safe-plus-2'}`}>
-                  {back && !showJourney && (
-                    <div className="absolute left-0 z-10 md:hidden">
+                <div
+                  className={`relative hidden md:flex min-h-[44px] items-center pb-2 md:pt-4 ${showJourney && !banner ? 'pt-1' : 'pt-safe-plus-2'}`}
+                >
+                  <div className="relative z-10 flex min-w-[5.5rem] shrink-0 items-center gap-1">
+                    {back ? (
                       <MobileBackButton
                         fallbackTo={back.fallbackTo ?? '/'}
                         label={back.label ?? 'Back'}
-                        backBehavior="fallback"
+                        backBehavior={back.backBehavior ?? 'fallback'}
+                        className="-ml-1"
                       />
+                    ) : null}
+                  </div>
+                  {barTitle ? (
+                    <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center px-28">
+                      <h1 className="min-w-0 max-w-full truncate text-center text-xl font-bold text-neutral-900">
+                        {barTitle}
+                      </h1>
                     </div>
-                  )}
-                  {barTitle && (
-                    <h1 className="flex-1 text-center text-[17px] font-semibold text-neutral-900 truncate px-14 md:px-0 md:text-left md:text-xl md:font-bold">
-                      {barTitle}
-                    </h1>
-                  )}
-                  {action && (
-                    <div className="absolute right-0 z-10 shrink-0 md:relative md:ml-auto">{action}</div>
-                  )}
+                  ) : null}
+                  <div className="relative z-10 ms-auto flex min-w-[5.5rem] shrink-0 items-center justify-end">
+                    {action ?? null}
+                  </div>
                 </div>
                 {toolbar && <div className="pb-3 md:pb-4">{toolbar}</div>}
               </>

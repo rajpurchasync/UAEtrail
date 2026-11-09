@@ -82,7 +82,7 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 | `community` | Buddy host (no brand page) | Via activities/seeking only | Host on map | `/member/:userId` only |
 | `pro_guide` | Pro individual — same person as community, plus Pro membership | **No** person pin | Activity join / request | **`/member/:userId`** |
 | `agency` | Tour **operator** (company profile) | **No** agency pin | Activities + paid trips | `/agency/:slug`; linked users show **operator name** on member profile |
-| `shop` | Shop **operator** | **Yes** (shop pin) | Directions, contact, outbound website | `/shop/:id`; linked users show **operator name** on member profile |
+| `shop` | Shop **operator** | **Yes** (shop pin) | Directions, **opt-in** phone / in-app chat, outbound website | `/shop/:id`; linked users show **operator name** on member profile |
 | `hospitality` | Business Pro — hotels, venues | Often **yes** | Stays + linked campaigns (future) | TBD |
 | `partner` | **Partner** Pro path (top-level) | Often **yes** (campaign pin) | Campaigns + linked Activities (future) | `/partner/:slug` |
 
@@ -165,12 +165,14 @@ Member **Add** → typically `pending` + `unlisted`; public `/place` or `/facili
 | Activity | `/activity/:id` |
 | Submissions inventory | `/profile/submissions` |
 
-Redirects: `/trail`, `/camp`, `/venue`, `/event`, `/contributions` → canonical paths.
+Redirects: `/trail`, `/camp` → `/place/:id`. Event aliases (`/event`, `/event-spot`, `/community-activity`) → `/venue/:id`. `/place/:id` still serves any catalog place.
 
 #### Catalog reads (target)
 
 - `GET /places/catalog` — **places** only (`segment=place`); `purpose=organize_picker` \| `map` \| …
 - `GET /facilities/catalog` — amenities; filters `areaId`, `parentPlaceId`, `facilityKind`
+- `GET /explore/map?q=&country=&area=&venue=` — find spots/events by country, area, and venue **name** (`geoRef` + title text)
+- `GET /geo/tree` — hierarchy for explore search hints and **`/geo`** tree page; country URLs at `/geo/country/:code`; area hubs stay `/area/:slug`; geo node pages at `/geo/n/:id` (country / state / venue summaries). Event-venue consumer URL is **`/venue/:id`** (`placeDetailPath('event', id)`); `/place/:id` remains a working hub for all place kinds.
 
 Evolve from today’s `GET /places/registry` → **`GET /places/catalog`** (places only). Implementation map: `SYSTEM_COHERENCE.md` §8.4.9.
 

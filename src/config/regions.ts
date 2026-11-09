@@ -14,7 +14,7 @@ export const DEFAULT_COUNTRY: CountryCode = 'AE';
 
 /** Regions per country — used in explore filters and venue forms. */
 const REGIONS_BY_COUNTRY: Record<CountryCode, string[]> = {
-  AE: ['Dubai', 'RAK', 'Fujairah', 'Abu Dhabi', 'Al Ain', 'Sharjah'],
+  AE: ['Dubai', 'RAK', 'Fujairah', 'Abu Dhabi', 'Sharjah', 'Ajman', 'Umm Al Quwain'],
   SA: ['Riyadh', 'Jeddah', 'Abha', 'AlUla', 'Taif', 'Dammam'],
   OM: ['Muscat', 'Nizwa', 'Salalah', 'Jebel Shams', 'Wahiba Sands'],
   QA: ['Doha', 'Al Khor', 'Mesaieed', 'Inland Sea'],
@@ -55,8 +55,9 @@ export const EXPLORE_REGION_PILL_LABELS: Record<string, string> = {
   Dubai: 'Dubai',
   RAK: 'Ras Al Khaimah',
   Fujairah: 'Fujairah',
-  'Al Ain': 'Al Ain',
   Sharjah: 'Sharjah',
+  Ajman: 'Ajman',
+  'Umm Al Quwain': 'Umm Al Quwain',
 };
 
 export const getExploreRegionPillOptions = (code: CountryCode = DEFAULT_COUNTRY) => [
@@ -77,8 +78,6 @@ export const getVenueStateFilterOptions = (code: CountryCode = DEFAULT_COUNTRY) 
 /** Emirate picker when a pin cannot be matched — same labels as search/Home, plus Ajman / UAQ. */
 export const EMIRATE_SELECT_OPTIONS: Array<{ key: string; label: string }> = [
   ...getVenueStateFilterOptions('AE'),
-  { key: 'Ajman', label: 'Ajman' },
-  { key: 'Umm Al Quwain', label: 'Umm Al Quwain' },
 ];
 
 export const getMapBounds = (code: CountryCode = DEFAULT_COUNTRY): { west: number; south: number; east: number; north: number } => {

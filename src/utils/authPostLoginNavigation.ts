@@ -1,5 +1,6 @@
 import type { UserRole } from '@uaetrail/shared-types';
 import type { NavigateFunction } from 'react-router-dom';
+import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
 import { canReturnAfterAuth } from './authRedirect';
 import { armViewReturn, seedViewReturnSnapshot } from './viewReturnMemory';
 import {
@@ -8,11 +9,15 @@ import {
   saveAuthReturnContext,
 } from './authReturnContext';
 
+export const AUTH_UNAVAILABLE_STATE = { authUnavailable: true } as const;
+
 export const resolvePostAuthReturnPath = (
   from: string | undefined,
   role: UserRole | string
 ): string | undefined => {
   if (!from) return undefined;
+  const pathname = from.split('?')[0]?.split('#')[0] ?? from;
+  if (pathname === '/') return EXPLORE_MAP_PATH;
   if (!canReturnAfterAuth(from, role)) return undefined;
   return from;
 };

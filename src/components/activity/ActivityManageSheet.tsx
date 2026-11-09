@@ -1,12 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { afterHostJoinDecisionClientRefresh } from '../../hooks/activityJoinClientEffects';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { LinkRidesharePanel } from '../../explore/ui/LinkRidesharePanel';
 import { activityManageCapabilities } from '../../activity/activityManageCapabilities';
-import { ActivityJoinRequestCard } from '../../console/ActivityJoinRequestCard';
 import { ActivityJoinRequestDeclineDialog } from '../../console/ActivityJoinRequestDeclineDialog';
-import { ActivityParticipantsPanel } from './ActivityParticipantsPanel';
+import { ActivityRollcallView } from './ActivityRollcallView';
 import { HostActivityManageCancelDialogs } from './HostActivityManageCancelDialogs';
 import type { ActivityRequestView } from '../../hooks/publishingJoinQueueClientApi';
 import {
@@ -25,8 +24,7 @@ import type {
   ActivityViewerEntitlementsDTO,
 } from '@uaetrail/shared-types';
 import { resolveActivityDetailWirePresentation } from '../../activity/resolveActivityDetailWirePresentation';
-import { ActivityDetailView } from './ActivityDetailView';
-import type { ActivityDetailTabId } from '../../activity/activityDetailTab';
+import { ActivityDetailByKind } from '../../activity/detail/templates/ActivityDetailByKind';
 import { CONSUMER_MAIN_OVERLAY_INSET } from '../../config/consumerOverlayInset';
 import { HostActivityManageFooterActions } from './HostActivityManageFooterActions';
 import { HostActivityManageOptionsSheet } from './HostActivityManageOptionsSheet';
@@ -80,10 +78,18 @@ export const ActivityManageSheet = ({
 }: ActivityManageSheetProps) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const headerRef = useRef<HTMLElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const scrollContentRef = useRef<HTMLDivElement>(null);
   const { headerFrosted } = useConsumerDetailScrollChrome(panelRef, scrollContentRef);
   const [view, setView] = useState<ActivityManageSubview>('overview');
+
+  /** Embedded consumer detail uses `--detail-header-pad` for modal underlap — manage header is outside scroll. */
+  useLayoutEffect(() => {
+    const scroll = panelRef.current;
+    if (!scroll) return;
+    scroll.style.setProperty('--detail-header-pad', '0px');
+  }, [open]);
   const [manageOptionsOpen, setManageOptionsOpen] = useState(false);
   const [returnToManageMenu, setReturnToManageMenu] = useState(false);
   const [editWizardOpen, setEditWizardOpen] = useState(false);
@@ -92,7 +98,6 @@ export const ActivityManageSheet = ({
   const [rideshareNotice, setRideshareNotice] = useState<string | null>(null);
   const [activityRequests, setActivityRequests] = useState<ActivityRequestView[]>([]);
   const [requestsLoading, setRequestsLoading] = useState(false);
-  const [detailTab, setDetailTab] = useState<ActivityDetailTabId>('plan');
   const [sheetActivity, setSheetActivity] = useState<ActivityDTO | null>(activity);
   const [taggedPlace, setTaggedPlace] = useState<ActivityDetailDTO['location']>(undefined);
   const [viewerEntitlements, setViewerEntitlements] = useState<ActivityViewerEntitlementsDTO | null>(null);
@@ -129,8 +134,6 @@ export const ActivityManageSheet = ({
       });
   }, [open, activity?.id]);
 
-  useModalA11y(open, onClose, panelRef);
-
   const embeddedWirePresentation = useMemo(() => {
     if (wirePresentation) return wirePresentation;
     if (!sheetActivity) return null;
@@ -148,7 +151,7 @@ export const ActivityManageSheet = ({
       activity: sheetActivity as ActivityDetailDTO,
       viewerAccess,
       isHostUser: true,
-      isEmbedded: true,
+      isEmbedded: false,
       joinUiState: { kind: 'open' },
     });
   }, [wirePresentation, sheetActivity, viewerEntitlements]);
@@ -160,7 +163,6 @@ export const ActivityManageSheet = ({
     setManageOptionsOpen(false);
     setReturnToManageMenu(false);
     setEditWizardOpen(false);
-    setDetailTab('plan');
   }, [open, initialView, activity?.id]);
 
   useEffect(() => {
@@ -210,6 +212,20 @@ export const ActivityManageSheet = ({
     }
     setView('overview');
   };
+
+  const manageSheetActive = Boolean(open && activity && tenantId && caps);
+
+  useModalA11y(
+    manageSheetActive,
+    () => {
+      if (view !== 'overview') {
+        handleHeaderBack();
+        return;
+      }
+      handleClose();
+    },
+    panelRef
+  );
 
   const openManageSubviewFromMenu = (subview: ActivityManageSubview) => {
     setReturnToManageMenu(true);
@@ -267,13 +283,16 @@ export const ActivityManageSheet = ({
 
   return (
     <>
-      <div className={`${CONSUMER_MAIN_OVERLAY_INSET} z-[1500] flex flex-col bg-neutral-50`}>
+      <div
+        className={`${CONSUMER_MAIN_OVERLAY_INSET} z-[1500] flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-neutral-50`}
+      >
         <header
-          className={`pointer-events-none fixed inset-x-0 top-0 z-20 pt-safe-plus-2 ${
+          ref={headerRef}
+          className={`relative z-20 shrink-0 pt-safe-plus-2 ${
             headerFrosted ? MOBILE_PRODUCT_HEADER_FROSTED : MOBILE_PRODUCT_HEADER_REST
           }`}
         >
-          <div className="pointer-events-auto grid grid-cols-[minmax(72px,auto)_1fr_auto] items-center gap-2 px-3 pb-2">
+          <div className="grid grid-cols-[minmax(72px,auto)_1fr_auto] items-center gap-2 px-3 pb-2">
             <MobileBackButton
               onPress={handleHeaderBack}
               label="Back"
@@ -295,10 +314,11 @@ export const ActivityManageSheet = ({
 
         <div
           ref={panelRef}
+          data-consumer-detail-scroll
           role="dialog"
           aria-modal="true"
           aria-label={headerTitle}
-          className="min-h-0 flex-1 overflow-y-auto scroll-touch px-4 pb-4 pt-[calc(var(--safe-top)+3.5rem)]"
+          className="min-h-0 flex-1 overflow-y-auto scroll-touch px-4 pb-4"
         >
           <div ref={scrollContentRef} className="py-4">
           {actions.error ? (
@@ -308,40 +328,17 @@ export const ActivityManageSheet = ({
           ) : null}
 
           {view === 'participants' ? (
-            <div className="mx-auto w-full max-w-2xl space-y-5">
-              <p className="text-sm leading-relaxed text-neutral-600">
-                See who is going and check people in on the day. Checked-in joiners can leave reviews and it counts
-                toward their goals.
-              </p>
-              <ActivityParticipantsPanel
+            <div className="mx-auto w-full max-w-2xl">
+              <ActivityRollcallView
                 tenantId={tenantId}
                 activityId={activity.id}
-                activityTitle={title}
-                onError={(message) => actions.setError(message)}
+                pendingRequests={activityRequests}
+                busyRequestId={busyRequestId}
+                onParticipantsError={(message) => actions.setError(message)}
+                onApproveJoinRequest={(requestId) => void decideRequest(requestId, 'approved')}
+                onRejectJoinRequest={(request) => setDeclineRequest(request)}
+                className="min-h-[min(60dvh,28rem)]"
               />
-              {caps.showJoinRequests ? (
-                <section className="space-y-2 rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-sm">
-                  <h3 className="text-sm font-bold text-neutral-800">
-                    Join requests
-                    {activityRequests.length > 0 ? ` (${activityRequests.length})` : ''}
-                  </h3>
-                  {requestsLoading ? (
-                    <p className="text-sm text-neutral-500">Loading requests…</p>
-                  ) : activityRequests.length === 0 ? (
-                    <p className="text-sm text-neutral-500">No pending requests for this outing.</p>
-                  ) : (
-                    activityRequests.map((request) => (
-                      <ActivityJoinRequestCard
-                        key={request.id}
-                        request={request}
-                        busy={busyRequestId === request.id}
-                        onApprove={() => void decideRequest(request.id, 'approved')}
-                        onReject={() => setDeclineRequest(request)}
-                      />
-                    ))
-                  )}
-                </section>
-              ) : null}
             </div>
           ) : null}
 
@@ -374,13 +371,31 @@ export const ActivityManageSheet = ({
           ) : null}
 
           {view === 'overview' && sheetActivity ? (
-            <div className="mx-auto w-full max-w-2xl">
-              <ActivityDetailView
-                layout="embedded"
-                activity={{ ...(sheetActivity as ActivityDetailDTO), location: taggedPlace ?? (sheetActivity as ActivityDetailDTO).location }}
-                mobileTab={detailTab}
-                onMobileTabChange={setDetailTab}
+            <div className="min-w-0 w-full">
+              <ActivityDetailByKind
+                layout="page"
+                inlineConsumerDetail
+                activity={{
+                  ...(sheetActivity as ActivityDetailDTO),
+                  location: taggedPlace ?? (sheetActivity as ActivityDetailDTO).location,
+                }}
                 canAccessCrewSurfaces
+                consumerLayout={embeddedWirePresentation?.consumerLayout ?? null}
+                viewerAccess={
+                  embeddedWirePresentation
+                    ? {
+                        exposure: 'full',
+                        level: 'host',
+                        gateReason: null,
+                        canViewFullActivity: true,
+                        canOpenDetailPage: true,
+                        joinMode: sheetActivity.joinMode ?? 'open',
+                        canAccessCrewSurfaces: true,
+                        entitlements: viewerEntitlements ?? undefined,
+                      }
+                    : null
+                }
+                viewerEntitlements={viewerEntitlements}
                 hostCrewChatPolicy={
                   tenantId
                     ? {
@@ -391,27 +406,66 @@ export const ActivityManageSheet = ({
                       }
                     : undefined
                 }
+                hostBuddiesHub={{
+                  joinRequests: activityRequests,
+                  requestsLoading,
+                  onRequestsChanged,
+                }}
                 wireFooterByTab={embeddedWirePresentation?.footerByTab ?? null}
                 wireTabs={embeddedWirePresentation?.tabs ?? null}
+                wireStrips={embeddedWirePresentation?.strips ?? null}
+                linkRideshareTenantId={tenantId}
+                onHostShareOuting={showShareFooter && onShare ? () => onShare(activity) : undefined}
+                hostManageSurface={{
+                  activity,
+                  caps,
+                  tenantId,
+                  busy: actions.busy,
+                  joinRequests: activityRequests,
+                  requestsLoading,
+                  busyRequestId,
+                  onParticipantsError: (message) => actions.setError(message),
+                  onApproveJoinRequest: (requestId) => void decideRequest(requestId, 'approved'),
+                  onRejectJoinRequest: (request) => setDeclineRequest(request),
+                  onSelectSubview: openManageSubviewFromMenu,
+                  onEdit: () => {
+                    setReturnToManageMenu(true);
+                    setEditWizardOpen(true);
+                  },
+                  onDuplicate: () => actions.hostFromExistingActivity(activity),
+                  onDelete: handleDelete,
+                  onShare: showShareFooter && onShare ? () => onShare(activity) : undefined,
+                  onChat: caps.showGroupChat
+                    ? () => {
+                        void actions
+                          .openGroupChat(activity.id, activity.groupChatId, { returnTo: chatReturnTo })
+                          .then((opened) => {
+                            if (opened) handleClose();
+                          });
+                      }
+                    : undefined,
+                }}
               />
             </div>
           ) : null}
           </div>
         </div>
 
-        <HostActivityManageFooterActions
-          caps={caps}
-          busy={actions.busy}
-          showShare={showShareFooter}
-          onOpenShare={onShare ? () => onShare(activity) : undefined}
-          onChat={async () => {
-            const opened = await actions.openGroupChat(activity.id, activity.groupChatId, {
-              returnTo: chatReturnTo,
-            });
-            if (opened) handleClose();
-          }}
-          onManage={() => setManageOptionsOpen(true)}
-        />
+        <div className="shrink-0">
+          <HostActivityManageFooterActions
+            caps={caps}
+            busy={actions.busy}
+            showShare={showShareFooter}
+            onOpenShare={onShare ? () => onShare(activity) : undefined}
+            onChat={async () => {
+              const opened = await actions.openGroupChat(activity.id, activity.groupChatId, {
+                returnTo: chatReturnTo,
+              });
+              if (opened) handleClose();
+            }}
+            onManage={() => setManageOptionsOpen(true)}
+          />
+        </div>
       </div>
 
       <HostActivityManageOptionsSheet

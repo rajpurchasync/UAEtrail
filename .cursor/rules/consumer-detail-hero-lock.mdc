@@ -1,0 +1,41 @@
+---
+description: Locked activity consumer detail hero — confirm with Husnain before layout changes (place/area heroes not locked)
+globs: src/activity/detail/templates/ActivityConsumerDetailPage.tsx,src/detail/shared/detailHeroMobileTopChrome.ts,src/activity/detail/ConsumerDetailLeadDateChip.tsx,src/detail/shared/collectActivityDetailHeroPhotos.ts
+alwaysApply: false
+---
+
+# Activity consumer detail hero (LOCKED — activity only)
+
+**Owner:** Husnain. **Scope:** `/activity/:id` consumer photo hero (`ConsumerDetailHeroBanner`). **Not locked:** place, area, shop, and other surfaces using `DetailHeroPhotoStrip` on their own.
+
+## Before editing (required for activity hero layout)
+
+1. **Stop** — do not change activity hero **layout, spacing, alignment, heights, or chrome placement** without approval.
+2. **Warn** — say which files and what would change on mobile vs `lg+`.
+3. **Confirm** — proceed only after Husnain explicitly approves **that** change.
+
+If you must edit **`DetailHeroPhotoStrip.tsx`** (shared with place/area): **warn and get confirmation** when the diff would alter activity hero behavior (centered row, trail bottom-right, mobile height, date placement). Place-only strip tweaks may proceed without activity lock approval **only if** activity props/overlay stay unchanged — still call out the shared-file risk in chat.
+
+Copy-only / non-layout on activity hero (e.g. chip labels) is OK without unlock.
+
+## Locked baseline — activity photo hero (confirmed Nov 2026)
+
+| Area | Behavior |
+|------|----------|
+| Strip props | `mobileOverlayLayout="centered"`, `bottomEndOverlay` = lead date chip, `topEndAction` = share |
+| Mobile height | Strip uses `h-[min(31dvh,252px)]`, `max-md:min-h-[14.75rem]` while activity uses centered layout |
+| Mobile row | `justify-between`: left copy block intrinsic width, date right, vertical center |
+| Overlay | Badge row + title + time (`items-stretch` on copy column); **no** guest-only preview badge |
+| Trail chip | **Off** on activity (`showLinkedPhotoSourceLink={false}`) — venue is in hero + Where |
+| Guest vs member | **Same hero** — guest gate lives below hero (`ActivityDetailGuestGate`), not on the strip |
+| Detail modal header | `showMenu` → close (X) `max-lg:hidden` (back + notifications + menu on mobile) |
+
+## Primary files
+
+- `ActivityConsumerDetailPage.tsx` → `ConsumerDetailHeroBanner`
+- Activity wiring: `detailHeroMobileTopChrome.ts`, `ConsumerDetailLeadDateChip.tsx`, `collectActivityDetailHeroPhotos.ts`
+
+## Not in this lock
+
+- `PlaceConsumerDetailPage.tsx`, `AreaDetailView.tsx`, and other non-activity `DetailHeroPhotoStrip` call sites
+- Guest preview gate, sections below the hero

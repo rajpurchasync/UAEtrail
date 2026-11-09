@@ -21,7 +21,8 @@ import { SecureAvatar } from '../components/ui/SecureAvatar';
 import { useAuth } from '../context/AuthContext';
 import { useProfileHubBackChrome } from '../hooks/useProfileHubBackChrome';
 
-import { PRODUCT_EXPLORE_CTA } from '../content/productNorthStar';
+import { PRODUCT_EXPLORE_CTA, PRODUCT_SOCIAL_SURFACE_TITLE } from '../content/productNorthStar';
+import { SocialHubNav } from '../components/social/SocialHubNav';
 import { memberProfileLink } from '../member/memberProfileLink';
 import { mobileBackNavState } from '../utils/mobileBackNav';
 type FriendsTab = 'friends' | 'requests' | 'following';
@@ -221,12 +222,13 @@ export const Buddies = () => {
   return (
     <ConsumerShell
       layout="stack"
-      title="Friends"
+      title={PRODUCT_SOCIAL_SURFACE_TITLE}
       maxWidth="7xl"
       showJourney={false}
       back={backChrome}
     >
       <div className="min-w-0 max-w-full space-y-3 pb-nav-safe animate-fade-up lg:space-y-2">
+        <SocialHubNav active="friends" />
         <FormTabBar tabs={tabDefs} activeId={activeTab} onChange={(id) => setTab(parseFriendsTab(id))} />
 
         {showFindRow && (
@@ -317,7 +319,7 @@ export const Buddies = () => {
                       <button
                         type="button"
                         onClick={() => navigate(EXPLORE_MAP_PATH)}
-                        className="mt-4 w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white"
+                        className="mt-4 inline-flex w-full items-center justify-center rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white md:w-auto md:rounded-lg md:px-5 md:py-2"
                       >
                         {PRODUCT_EXPLORE_CTA}
                       </button>

@@ -115,9 +115,11 @@ export const JoinRequests = () => {
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">Join requests</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">Join requests</h2>
             {pendingCount > 0 && (
-              <p className="text-sm text-amber-700 mt-0.5">{pendingCount} waiting for your response</p>
+              <p className="mt-0.5 text-sm text-amber-700 dark:text-amber-400">
+                {pendingCount} waiting for your response
+              </p>
             )}
           </div>
           <AppSegmented

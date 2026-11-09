@@ -82,6 +82,8 @@ export interface TeamMember {
 export interface ActivityRequestView {
   id: string;
   status: string;
+  adults?: number;
+  kids?: number;
   note?: string;
   hostNote?: string;
   cancelReason?: string | null;
@@ -166,6 +168,8 @@ export type PublicMemberProfileDTO =
       hostProfileKind: 'shop' | 'agency' | 'guide' | null;
       hostProfilePath: string | null;
       linkedOperatorName?: string | null;
+      /** Publishing tenant for community host reviews (`targetType=tenant`). */
+      publishingTenantId?: string | null;
       badges: Array<{
         key: string;
         name: string;

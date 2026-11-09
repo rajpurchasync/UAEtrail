@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Mail, Lock } from 'lucide-react';
 import { AuthFunnelShell } from '../components/auth/AuthFunnelShell';
+import {
+  AUTH_FUNNEL_INPUT_WITH_ICON_CLASS,
+  AUTH_FUNNEL_LABEL_CLASS,
+} from '../components/auth/authFieldStyles';
 import { setActiveTenantId } from '../api/tenant';
 import { fetchMeProfile } from '../hooks/memberProfileApi';
 import { fetchMemberStatus } from '../hooks/memberStatusApi';
@@ -10,11 +14,17 @@ import { useAuth } from '../context/AuthContext';
 import { accountRouteByRole, defaultRouteByRole } from '../utils/authRouting';
 import { isPlatformAdmin } from '../utils/roles';
 import {
+  AUTH_UNAVAILABLE_COPY,
+  isRejectedAuthRedirectParam,
   navigateAuthBack,
   navigateAuthClose,
   resolveAuthRedirect
 } from '../utils/authRedirect';
-import { navigateToPostAuthReturn, resolvePostAuthReturnPath } from '../utils/authPostLoginNavigation';
+import {
+  AUTH_UNAVAILABLE_STATE,
+  navigateToPostAuthReturn,
+  resolvePostAuthReturnPath,
+} from '../utils/authPostLoginNavigation';
 import { isPendingEmailVerification } from '../utils/authVerification';
 import { SIGNUP_PATH, hasSessionExpiredQuery } from '../config/routingCatalog';
 import { sessionExpiredLandingPath } from '../utils/authSessionLanding';
@@ -50,10 +60,12 @@ export const SignIn = () => {
     isTestMode ||
     isNonProdRuntime;
 
+  const rawRedirect = searchParams.get('redirect');
   const from = resolveAuthRedirect(
     (location.state as { from?: string } | null)?.from,
-    searchParams.get('redirect')
+    rawRedirect
   );
+  const redirectUnavailable = isRejectedAuthRedirectParam(rawRedirect);
 
   const handleBack = () => navigateAuthBack(navigate, from);
   const handleClose = () => navigateAuthClose(navigate, from);
@@ -101,6 +113,12 @@ export const SignIn = () => {
     }
 
     if (navigateToPostAuthReturn(navigate, from, signedInUser.role, searchParams)) {
+      return;
+    }
+
+    if (from && !resolvePostAuthReturnPath(from, signedInUser.role)) {
+      clearAuthReturnContext();
+      navigate(postAuthDefault, { replace: true, state: AUTH_UNAVAILABLE_STATE });
       return;
     }
 
@@ -158,8 +176,6 @@ export const SignIn = () => {
     }
   };
 
-  const fieldClass = 'ios-input text-[17px] border border-neutral-300 bg-white';
-
   return (
     <AuthFunnelShell
       title="Welcome"
@@ -176,13 +192,19 @@ export const SignIn = () => {
           disabled={loading}
         />
 
-        <form className="space-y-3" onSubmit={handleSubmit}>
+        {redirectUnavailable ? (
+          <p className="mb-3 text-sm text-red-600 dark:text-red-400" role="status">
+            {AUTH_UNAVAILABLE_COPY}
+          </p>
+        ) : null}
+
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label className={AUTH_FUNNEL_LABEL_CLASS}>Email</label>
             <div className="relative">
-              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-neutral-500 pointer-events-none" />
+              <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-neutral-500 dark:text-neutral-400" />
               <input
-                className={`${fieldClass} pl-11`}
+                className={AUTH_FUNNEL_INPUT_WITH_ICON_CLASS}
                 type="email"
                 placeholder="you@example.com"
                 value={email}
@@ -192,16 +214,19 @@ export const SignIn = () => {
             </div>
           </div>
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="block text-sm font-medium text-gray-700">Password</label>
-              <Link to="/forgot-password" className="text-xs text-emerald-600 hover:text-emerald-700 font-medium">
+            <div className="mb-1 flex items-center justify-between gap-2">
+              <label className={AUTH_FUNNEL_LABEL_CLASS}>Password</label>
+              <Link
+                to="/forgot-password"
+                className="shrink-0 text-xs font-semibold text-emerald-700 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300"
+              >
                 Forgot password?
               </Link>
             </div>
             <div className="relative">
-              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-neutral-500 pointer-events-none" />
+              <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-neutral-500 dark:text-neutral-400" />
               <input
-                className={`${fieldClass} pl-11`}
+                className={AUTH_FUNNEL_INPUT_WITH_ICON_CLASS}
                 type="password"
                 placeholder="Enter your password"
                 value={password}
@@ -210,33 +235,34 @@ export const SignIn = () => {
               />
             </div>
           </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="ios-btn w-full bg-emerald-600 text-white mt-1"
-          >
+          {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+          <button type="submit" disabled={loading} className="ios-btn mt-1 w-full bg-emerald-600 text-white">
             {loading ? 'Signing in…' : 'Log In'}
           </button>
         </form>
 
-        <p className="text-sm text-gray-500 mt-5 text-center md:text-left">
+        <p className="mt-6 text-center text-sm text-neutral-600 md:text-left dark:text-neutral-400">
           Don&apos;t have an account?{' '}
-          <Link className="text-emerald-700 hover:text-emerald-900 font-medium" to={signUpHref}>
+          <Link
+            className="font-semibold text-emerald-700 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300"
+            to={signUpHref}
+          >
             Sign up
           </Link>
         </p>
 
         {showRoleQuickAccess && (
-          <div className="mt-5 pt-4 border-t">
-            <p className="text-xs font-medium text-gray-700 mb-2">Role quick access (non-production)</p>
+          <div className="mt-6 border-t border-neutral-200/80 pt-4 dark:border-neutral-700">
+            <p className="mb-2 text-xs font-medium text-neutral-600 dark:text-neutral-400">
+              Role quick access (non-production)
+            </p>
             <div className="flex flex-wrap gap-2">
               {demoAccounts.map((account) => (
                 <button
                   key={account.label}
                   type="button"
                   onClick={() => void quickLogin(account)}
-                  className="px-2 py-1 text-xs rounded bg-gray-100 hover:bg-gray-200 text-gray-700 disabled:opacity-60"
+                  className="rounded-lg bg-neutral-100 px-2.5 py-1.5 text-xs font-medium text-neutral-700 active:bg-neutral-200 disabled:opacity-60 dark:bg-neutral-800 dark:text-neutral-200"
                   disabled={loading}
                 >
                   {account.label}

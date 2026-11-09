@@ -18,6 +18,36 @@ const formatInstantLocalDate = (instant: Date, countryCode?: string | null): str
   return instant.toLocaleDateString('en-CA', { timeZone: tz });
 };
 
+const YMD_PREFIX = /^(\d{4}-\d{2}-\d{2})/;
+
+/**
+ * Calendar day in GCC local time (`en-CA` → `YYYY-MM-DD`).
+ * `null`/`undefined` → today. Instant strings convert in the country timezone
+ * so UTC midnight is not a different calendar day. Unparseable non-empty strings
+ * are returned unchanged so callers can reject them.
+ */
+export const gccCalendarDate = (
+  input?: string | Date | null,
+  countryCode?: string | null,
+  now: Date = new Date()
+): string => {
+  if (input instanceof Date && !Number.isNaN(input.getTime())) {
+    return formatInstantLocalDate(input, countryCode);
+  }
+  if (typeof input === 'string') {
+    const trimmed = input.trim();
+    if (!trimmed) return '';
+    const ymd = trimmed.match(YMD_PREFIX)?.[1];
+    const hasClockOrZone = /T|\d{2}:\d{2}|Z|[+-]\d{2}:?\d{2}/.test(trimmed.slice(10));
+    if (ymd && !hasClockOrZone) return ymd;
+    const parsed = Date.parse(trimmed);
+    if (!Number.isNaN(parsed)) return formatInstantLocalDate(new Date(parsed), countryCode);
+    if (ymd) return ymd;
+    return trimmed;
+  }
+  return formatInstantLocalDate(now, countryCode);
+};
+
 export const parseActivityLocalDateTime = (
   date: string,
   time: string,

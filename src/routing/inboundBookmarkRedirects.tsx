@@ -1,5 +1,5 @@
 import { Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom';
-import { canonicalPlaceDetailPath } from '@uaetrail/shared-types';
+import { canonicalPlaceDetailPath, inboundKindPlaceDetailPath } from '@uaetrail/shared-types';
 import {
   PRO_MEMBERSHIP_PATH,
   discoveryToExploreSearch,
@@ -22,10 +22,14 @@ export const InboundMessagesRedirect = () => {
   return <Navigate to={`/chat${search}${hash}`} replace />;
 };
 
-/** Inbound place URLs (`/trail`, `/camp`, `/venue`, `/event`, …) → `/place/:id`. */
+/** Inbound `/trail` `/camp` → `/place/:id`. Event aliases → `/venue/:id` (live hub, not `/place`). */
 export const InboundCanonicalPlaceRedirect = () => {
   const { id } = useParams<{ id: string }>();
+  const { pathname } = useLocation();
   if (!id) return <Navigate to={EXPLORE_MAP_PATH} replace />;
+  if (/^\/(event|event-spot|community-activity)(\/|$)/.test(pathname)) {
+    return <Navigate to={inboundKindPlaceDetailPath('event', id)} replace />;
+  }
   return <Navigate to={canonicalPlaceDetailPath(id)} replace />;
 };
 

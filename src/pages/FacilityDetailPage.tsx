@@ -3,7 +3,7 @@ import { FacilityConsumerDetailPage } from '../facility/detail/templates/Facilit
 import { PageMeta } from '../components/seo/PageMeta';
 import { facilityDetailPath, detailBackPath } from '../config/routingCatalog';
 import { usePublicFacilityDetail } from '../hooks/usePublicFacilityDetail';
-import { DetailPageLoadingState } from '../components/ui/DetailPageLoadingState';
+import { AsyncLoadingState } from '../components/ui/AsyncLoadingState';
 import { DETAIL_LOADING_FACILITY } from '../content/detailLoadingCopy';
 
 export const FacilityDetailPage = () => {
@@ -16,7 +16,12 @@ export const FacilityDetailPage = () => {
     return (
       <>
         <PageMeta title="Loading facility" path={detailPath} />
-        <DetailPageLoadingState label={DETAIL_LOADING_FACILITY} accent="violet" variant="page" />
+        <AsyncLoadingState
+          variant="detail"
+          label={DETAIL_LOADING_FACILITY}
+          accent="violet"
+          detailLayout="page"
+        />
       </>
     );
   }

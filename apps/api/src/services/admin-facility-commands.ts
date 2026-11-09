@@ -27,6 +27,7 @@ export type AdminFacilityWriteInput = {
   featured?: boolean;
   status?: 'draft' | 'active' | 'inactive';
   countryCode?: string;
+  partnerReferralUrl?: string | null;
 };
 
 const toPrismaLocationStatus = (status?: 'draft' | 'active' | 'inactive'): LocationStatus => {
@@ -60,6 +61,7 @@ export const createAdminFacilityRecord = async (input: {
     featured: body.featured ?? false,
     status: toPrismaLocationStatus(body.status),
     countryCode: body.countryCode?.toUpperCase() ?? 'AE',
+    partnerReferralUrl: body.partnerReferralUrl?.trim() || null,
     createdByUserId: input.actorId,
   });
 
@@ -115,6 +117,9 @@ export const updateAdminFacilityRecord = async (input: {
     ...(body.status !== undefined ? { status: toPrismaLocationStatus(body.status) } : {}),
     ...(tags ? { tags } : {}),
     ...(body.countryCode !== undefined ? { countryCode: body.countryCode.toUpperCase() } : {}),
+    ...(body.partnerReferralUrl !== undefined
+      ? { partnerReferralUrl: body.partnerReferralUrl?.trim() || null }
+      : {}),
   });
 
   if (!refreshed) {

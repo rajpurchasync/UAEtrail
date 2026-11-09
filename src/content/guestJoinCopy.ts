@@ -5,6 +5,16 @@ import {
 
 export const GUEST_GATE_OOPS_TITLE = 'Oops — you are not signed in';
 
+/** Guest `/activity/:id` — listed outings are intentionally redacted until sign-in. */
+export const GUEST_ACTIVITY_DETAIL_PREVIEW_TITLE = 'Log in to view details';
+
+/** Guest `/place/:id` — map-listed trails/camps redact directions and track until sign-in. */
+export const GUEST_PLACE_DETAIL_PREVIEW_TITLE = 'Join free to view full details';
+
+/** Sticky footer + hero — short line when the body gate is off-screen. */
+export const GUEST_ACTIVITY_DETAIL_PREVIEW_FOOTER_HINT =
+  'Sign in to see the full plan and join this outing.';
+
 /** Mobile explore dismissible banner (after coach marks). */
 export const guestJoinBannerBody = (): string =>
   'Save outings, message hosts, and show up with a crew — free to join.';
@@ -19,6 +29,23 @@ export type GuestJoinCopyInput = {
 };
 
 export const guestJoinSheetHeadline = (_input: GuestJoinCopyInput): string => GUEST_GATE_OOPS_TITLE;
+
+export const guestPlaceDetailPreviewBody = (placeName?: string | null): string => {
+  const title = placeName?.trim();
+  return title
+    ? `Sign in to open “${title}” — map and elevation, parking, community reviews, guided notes, and outings linked to this spot.`
+    : 'Sign in to open the full trail or camp page — map, directions, reviews, and linked outings.';
+};
+
+export const GUEST_PLACE_DETAIL_PREVIEW_FOOTER_HINT =
+  'Join free to see map, directions, reviews, and more on this page.';
+
+export const guestActivityDetailPreviewBody = (input: GuestJoinCopyInput): string => {
+  const title = input.activityTitle?.trim();
+  return title
+    ? `Log in to see full details for “${title}” — photos, who’s going, directions, and how to join.`
+    : 'Log in to see the full outing — photos, who’s going, directions, and how to join.';
+};
 
 export const guestJoinSheetBody = (input: GuestJoinCopyInput): string => {
   if (input.intent === 'place') {

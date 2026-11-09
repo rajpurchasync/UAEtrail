@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronDown, ChevronUp, Star } from 'lucide-react';
-import { ReviewDTO } from '@uaetrail/shared-types';
+import { ReviewDTO, formatExploreCalendarDateShort } from '@uaetrail/shared-types';
 import { submitEntityReview } from '../../hooks/entityReviewsClientApi';
 import { useAuth } from '../../context/AuthContext';
 import { MembershipTierBadge } from '../ui/MembershipTierBadge';
@@ -29,6 +29,10 @@ interface ReviewSectionProps {
   /** Tap header to expand/collapse (e.g. activity detail). */
   collapsible?: boolean;
   defaultExpanded?: boolean;
+  /** Parent `ConsumerDetailSection` already shows the title — skip duplicate header/chrome. */
+  hideHeader?: boolean;
+  /** No outer `#reviews` section — parent owns scroll anchor and section shell. */
+  embedded?: boolean;
 }
 
 const reviewWireTargetType = (
@@ -48,6 +52,8 @@ export const ReviewSection = ({
   activityAwaitingCompletion = false,
   collapsible = false,
   defaultExpanded = true,
+  hideHeader = false,
+  embedded = false,
 }: ReviewSectionProps) => {
   const { user } = useAuth();
   const [expanded, setExpanded] = useState(defaultExpanded);
@@ -131,7 +137,7 @@ export const ReviewSection = ({
       ? ACTIVITY_DETAIL_REVIEWS_EMPTY_NEUTRAL
       : ACTIVITY_DETAIL_REVIEWS_EMPTY_INVITE;
 
-  const header = collapsible ? (
+  const header = hideHeader ? null : collapsible ? (
     <button
       type="button"
       onClick={() => setExpanded((open) => !open)}
@@ -151,16 +157,9 @@ export const ReviewSection = ({
     <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4">Reviews{reviewCountLabel}</h2>
   );
 
-  return (
-    <section
-      id="reviews"
-      className="scroll-mt-24 scroll-mb-28 pb-2 md:scroll-mb-0"
-      tabIndex={-1}
-    >
-      {header}
-
-      {collapsible && !expanded ? null : (
-        <>
+  const body =
+    collapsible && !expanded ? null : (
+      <>
       {user && !existingReview && !success && !canWriteReview && targetType === 'activity' ? (
         <p className="mb-4 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm text-neutral-700">
           {activityAwaitingCompletion
@@ -275,7 +274,7 @@ export const ReviewSection = ({
               <p className="text-gray-600">{review.comment}</p>
               <div className="flex items-center justify-between mt-2 gap-2">
                 <div className="text-sm text-gray-500">
-                  {new Date(review.createdAt).toLocaleDateString()}
+                  {formatExploreCalendarDateShort(review.createdAt) ?? review.createdAt}
                 </div>
                 {user && review.userId !== user.id && (
                   <ReportContentButton targetType="review" targetId={review.id} label="Report" />
@@ -286,8 +285,26 @@ export const ReviewSection = ({
           })}
         </div>
       )}
-        </>
-      )}
+      </>
+    );
+
+  if (embedded) {
+    return (
+      <div className="min-w-0">
+        {header}
+        {body}
+      </div>
+    );
+  }
+
+  return (
+    <section
+      id="reviews"
+      className="scroll-mt-24 scroll-mb-28 pb-2 md:scroll-mb-0"
+      tabIndex={-1}
+    >
+      {header}
+      {body}
     </section>
   );
 };

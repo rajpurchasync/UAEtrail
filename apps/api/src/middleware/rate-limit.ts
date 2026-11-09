@@ -6,6 +6,10 @@ export interface RateLimiters {
   globalLimiter: RateLimitRequestHandler;
   authLimiter: RateLimitRequestHandler;
   viewLimiter: RateLimitRequestHandler;
+  /** Public weather proxy — avoid hammering upstream + DB. */
+  weatherLimiter: RateLimitRequestHandler;
+  /** Fire-and-forget referral / partner click intake. */
+  referralClickLimiter: RateLimitRequestHandler;
   sensitiveDataLimiter: RateLimitRequestHandler;
   clientErrorLimiter: RateLimitRequestHandler;
 }
@@ -64,6 +68,30 @@ export const createRateLimiters = async (): Promise<RateLimiters> => {
       keyGenerator: (req) => `${ipKeyGenerator(req.ip ?? 'unknown')}-${req.params?.id ?? 'unknown'}`,
       message: {
         error: { code: 'rate_limit_exceeded', message: 'Too many view requests. Please try again later.' }
+      }
+    }),
+    weatherLimiter: rateLimit({
+      windowMs: 60_000,
+      max: 30,
+      standardHeaders: true,
+      legacyHeaders: false,
+      store: store('weather'),
+      skip: () => process.env.NODE_ENV === 'test',
+      keyGenerator: (req) => ipKeyGenerator(req.ip ?? 'unknown'),
+      message: {
+        error: { code: 'rate_limit_exceeded', message: 'Too many weather requests. Please try again later.' }
+      }
+    }),
+    referralClickLimiter: rateLimit({
+      windowMs: 60_000,
+      max: 60,
+      standardHeaders: true,
+      legacyHeaders: false,
+      store: store('referral-click'),
+      skip: () => process.env.NODE_ENV === 'test',
+      keyGenerator: (req) => ipKeyGenerator(req.ip ?? 'unknown'),
+      message: {
+        error: { code: 'rate_limit_exceeded', message: 'Too many referral clicks. Please try again later.' }
       }
     }),
     sensitiveDataLimiter: rateLimit({

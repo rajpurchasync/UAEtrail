@@ -83,4 +83,26 @@ describe('exploreItemMatchesQuery', () => {
     expect(exploreItemMatchesQuery(baseActivity(), '')).toBe(true);
     expect(exploreItemMatchesQuery(baseActivity(), '   ')).toBe(true);
   });
+
+  it('matches country, area, and venue names on geoRef', () => {
+    const item = baseActivity({
+      geoRef: {
+        chain: ['geo-country-ae', 'geo-state-ae-dubai'],
+        countryId: 'geo-country-ae',
+        stateId: 'geo-state-ae-dubai',
+        areaId: 'geo-area-other-geo-state-ae-dubai',
+        path: 'ae/dubai/hatnub',
+        names: {
+          country: 'United Arab Emirates',
+          state: 'Dubai',
+          area: 'Hatta',
+          venue: 'Hatnub Ridge',
+        },
+        searchTokens: ['united arab emirates', 'dubai', 'hatta', 'hatnub', 'ridge'],
+      },
+    });
+    expect(exploreItemMatchesQuery(item, 'united arab emirates')).toBe(true);
+    expect(exploreItemMatchesQuery(item, 'hatta')).toBe(true);
+    expect(exploreItemMatchesQuery(item, 'hatnub ridge')).toBe(true);
+  });
 });

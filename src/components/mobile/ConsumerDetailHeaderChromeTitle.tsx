@@ -31,24 +31,48 @@ const HeaderChromeLucideMark = ({ mark }: { mark: ConsumerDetailHeaderMark }) =>
   }
 };
 
+const HeaderChromeLucideMarkHero = ({ mark }: { mark: ConsumerDetailHeaderMark }) => {
+  const stroke = iconStroke.active;
+  const heroClass = 'h-4 w-4 shrink-0 text-white';
+  switch (mark) {
+    case 'rideshare':
+      return <Car className={heroClass} strokeWidth={stroke} aria-hidden />;
+    case 'hiking':
+    case 'trail':
+      return <Mountain className={heroClass} strokeWidth={stroke} aria-hidden />;
+    case 'camping':
+      return <Tent className={heroClass} strokeWidth={stroke} aria-hidden />;
+  }
+};
+
 /** Type / place pin mark for sheet headers (not the outing photo). */
 export const ConsumerDetailHeaderTypeMark = ({
   emoji,
   mark,
   sizeClass = 'h-9 w-9',
+  variant = 'default',
 }: {
   emoji: string;
   mark?: ConsumerDetailHeaderMark;
   sizeClass?: string;
+  variant?: 'default' | 'hero';
 }) => (
   <span
-    className={`flex shrink-0 items-center justify-center rounded-lg bg-neutral-100 ring-1 ring-black/5 ${sizeClass}`}
+    className={`flex shrink-0 items-center justify-center rounded-lg ring-1 ${
+      variant === 'hero'
+        ? `bg-white/15 ring-white/30 ${sizeClass}`
+        : `bg-neutral-100 ring-black/5 ${sizeClass}`
+    }`}
     aria-hidden
   >
     {mark ? (
-      <HeaderChromeLucideMark mark={mark} />
+      variant === 'hero' ? (
+        <HeaderChromeLucideMarkHero mark={mark} />
+      ) : (
+        <HeaderChromeLucideMark mark={mark} />
+      )
     ) : (
-      <span className="font-emoji text-xl leading-none">{emoji}</span>
+      <span className={`font-emoji leading-none ${variant === 'hero' ? 'text-base' : 'text-xl'}`}>{emoji}</span>
     )}
   </span>
 );

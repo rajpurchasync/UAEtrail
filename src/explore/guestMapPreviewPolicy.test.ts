@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
   GUEST_EXPLORE_PREVIEW_MAX_VIEWS,
@@ -22,5 +24,11 @@ describe('guestMapPreviewPolicy', () => {
     expect(guestExplorePreviewCanSearch()).toBe(false);
     expect(recordGuestExplorePreviewView('d').allowed).toBe(false);
     expect(recordGuestExplorePreviewView('a').allowed).toBe(true);
+  });
+
+  it('explore map suppresses guest preview chrome when map load failed', () => {
+    const stage = readFileSync(join(process.cwd(), 'src/explore/ui/ExploreMapStage.tsx'), 'utf8');
+    expect(stage).toMatch(/showGuestMapPreviewNotice[\s\S]*!loadError/);
+    expect(stage).toMatch(/!loadError && guestExplorePreviewLimitReached\(\)/);
   });
 });

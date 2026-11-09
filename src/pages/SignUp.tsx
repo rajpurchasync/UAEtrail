@@ -2,12 +2,24 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Mail, Gift } from 'lucide-react';
 import { AuthFunnelShell } from '../components/auth/AuthFunnelShell';
+import {
+  AUTH_FUNNEL_INPUT_CLASS,
+  AUTH_FUNNEL_INPUT_WITH_ICON_CLASS,
+  AUTH_FUNNEL_LABEL_CLASS,
+} from '../components/auth/authFieldStyles';
 import { GoogleAuthSection } from '../components/auth/GoogleAuthSection';
 import { PasswordRequirements } from '../components/auth/PasswordRequirements';
 import { useAuth } from '../context/AuthContext';
 import { defaultRouteByRole } from '../utils/authRouting';
-import { navigateAuthBack, navigateAuthClose, resolveAuthRedirect } from '../utils/authRedirect';
 import {
+  AUTH_UNAVAILABLE_COPY,
+  isRejectedAuthRedirectParam,
+  navigateAuthBack,
+  navigateAuthClose,
+  resolveAuthRedirect,
+} from '../utils/authRedirect';
+import {
+  AUTH_UNAVAILABLE_STATE,
   navigateToPostAuthReturn,
   resolvePostAuthReturnPath,
 } from '../utils/authPostLoginNavigation';
@@ -26,10 +38,12 @@ export const SignUp = () => {
   const [searchParams] = useSearchParams();
   const referralCode = searchParams.get('ref')?.trim().toUpperCase() ?? undefined;
   const groupInviteToken = searchParams.get('groupInvite')?.trim() ?? undefined;
+  const rawRedirect = searchParams.get('redirect');
   const redirectTo = resolveAuthRedirect(
     (location.state as { from?: string } | null)?.from,
-    searchParams.get('redirect')
+    rawRedirect
   );
+  const redirectUnavailable = isRejectedAuthRedirectParam(rawRedirect);
   const [formData, setFormData] = useState({
     givenName: '',
     surname: '',
@@ -59,6 +73,10 @@ export const SignUp = () => {
         return;
       }
       if (navigateToPostAuthReturn(navigate, redirectTo, user.role, searchParams)) {
+        return;
+      }
+      if (redirectTo && !resolvePostAuthReturnPath(redirectTo, user.role)) {
+        navigate(postAuthDefault, { replace: true, state: AUTH_UNAVAILABLE_STATE });
         return;
       }
       navigate(postAuthDefault, { replace: true });
@@ -133,8 +151,6 @@ export const SignUp = () => {
 
   const signInHref = signInPath(redirectTo ? { redirect: redirectTo } : undefined);
 
-  const fieldClass = 'ios-input text-[17px] border border-neutral-300 bg-white';
-
   return (
     <AuthFunnelShell
       title="Create Account"
@@ -144,8 +160,14 @@ export const SignUp = () => {
     >
       <PageMeta title="Create account" noIndex />
 
+        {redirectUnavailable ? (
+          <p className="mb-3 text-sm text-red-600 dark:text-red-400" role="status">
+            {AUTH_UNAVAILABLE_COPY}
+          </p>
+        ) : null}
+
         {referralCode && (
-          <div className="mb-4 flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-100 px-3 py-2.5 text-sm text-emerald-800">
+          <div className="mb-4 flex items-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2.5 text-sm text-emerald-800 dark:border-emerald-800/50 dark:bg-emerald-950/40 dark:text-emerald-100">
             <Gift className="w-4 h-4 shrink-0" />
             <span>
               You were invited with code <strong>{referralCode}</strong> — welcome to the crew.
@@ -154,7 +176,7 @@ export const SignUp = () => {
         )}
 
         {groupInviteToken && (
-          <div className="mb-4 rounded-xl bg-sky-50 border border-sky-100 px-3 py-2.5 text-sm text-sky-800">
+          <div className="mb-4 rounded-xl border border-sky-100 bg-sky-50 px-3 py-2.5 text-sm text-sky-800 dark:border-sky-800/50 dark:bg-sky-950/40 dark:text-sky-100">
             You were invited to join a group. Create your account and you&apos;ll be added automatically.
           </div>
         )}
@@ -166,12 +188,12 @@ export const SignUp = () => {
           disabled={loading}
         />
 
-        <form className="space-y-3" onSubmit={handleSubmit}>
-          <div className="grid gap-3 md:grid-cols-2">
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          <div className="grid gap-3 max-md:grid-cols-1 md:grid-cols-2">
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Name</label>
+              <label className={AUTH_FUNNEL_LABEL_CLASS}>Name</label>
               <input
-                className={fieldClass}
+                className={AUTH_FUNNEL_INPUT_CLASS}
                 placeholder="First name"
                 value={formData.givenName}
                 onChange={(e) =>
@@ -184,9 +206,9 @@ export const SignUp = () => {
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Surname</label>
+              <label className={AUTH_FUNNEL_LABEL_CLASS}>Surname</label>
               <input
-                className={fieldClass}
+                className={AUTH_FUNNEL_INPUT_CLASS}
                 placeholder="Surname"
                 value={formData.surname}
                 onChange={(e) =>
@@ -200,12 +222,12 @@ export const SignUp = () => {
             </div>
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Email</label>
+            <label className={AUTH_FUNNEL_LABEL_CLASS}>Email</label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-neutral-500 dark:text-neutral-400" />
               <input
                 type="email"
-                className={`${fieldClass} pl-10`}
+                className={AUTH_FUNNEL_INPUT_WITH_ICON_CLASS}
                 placeholder="you@example.com"
                 value={formData.email}
                 onChange={(e) => setFormData((c) => ({ ...c, email: e.target.value }))}
@@ -214,10 +236,10 @@ export const SignUp = () => {
             </div>
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Password</label>
+            <label className={AUTH_FUNNEL_LABEL_CLASS}>Password</label>
             <input
               type="password"
-              className={fieldClass}
+              className={AUTH_FUNNEL_INPUT_CLASS}
               placeholder="Create a password"
               value={formData.password}
               onChange={(e) => setFormData((c) => ({ ...c, password: e.target.value }))}
@@ -228,10 +250,10 @@ export const SignUp = () => {
             <PasswordRequirements password={formData.password} className="mt-2" />
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Confirm password</label>
+            <label className={AUTH_FUNNEL_LABEL_CLASS}>Confirm password</label>
             <input
               type="password"
-              className={fieldClass}
+              className={AUTH_FUNNEL_INPUT_CLASS}
               placeholder="Re-enter password"
               value={formData.confirmPassword}
               onChange={(e) => setFormData((c) => ({ ...c, confirmPassword: e.target.value }))}
@@ -240,7 +262,7 @@ export const SignUp = () => {
               autoComplete="new-password"
             />
             {formData.confirmPassword && formData.password !== formData.confirmPassword && (
-              <p className="text-xs text-red-600 mt-1">Passwords do not match.</p>
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400">Passwords do not match.</p>
             )}
           </div>
 
@@ -251,29 +273,32 @@ export const SignUp = () => {
               onChange={(e) => setAgreedToTerms(e.target.checked)}
               className="mt-0.5 rounded text-emerald-600 focus:ring-emerald-500"
             />
-            <span className="text-xs text-gray-600 leading-relaxed">
+            <span className="text-xs leading-relaxed text-gray-600 dark:text-neutral-400">
               By signing up, I agree to UAE Trail{' '}
-              <Link to="/terms" className="text-emerald-700 hover:underline">
+              <Link to="/terms" className="text-emerald-700 hover:underline dark:text-emerald-400">
                 Terms and Conditions
               </Link>{' '}
               and{' '}
-              <Link to="/privacy" className="text-emerald-700 hover:underline">
+              <Link to="/privacy" className="text-emerald-700 hover:underline dark:text-emerald-400">
                 Privacy Policy
               </Link>
               .
             </span>
           </label>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
           <button type="submit" disabled={loading} className="ios-btn w-full bg-emerald-600 text-white">
             {loading ? 'Creating account...' : 'Sign Up'}
           </button>
         </form>
 
-        <p className="text-sm text-gray-500 mt-5 text-center md:text-left">
+        <p className="mt-6 text-center text-sm text-neutral-600 md:text-left dark:text-neutral-400">
           Already have an account?{' '}
-          <Link to={signInHref} className="text-emerald-700 hover:text-emerald-900 font-medium">
+          <Link
+            to={signInHref}
+            className="font-semibold text-emerald-700 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300"
+          >
             Log in
           </Link>
         </p>

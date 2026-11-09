@@ -7,6 +7,7 @@ import {
 } from '../lib/rideshare-destination-search.js';
 import { optionalAuth } from '../middleware/optional-auth.js';
 import { validate } from '../middleware/validate.js';
+import { registerPublicGeoHierarchyRoutes } from './user/registerPublicGeoHierarchyRoutes.js';
 
 const searchQuerySchema = z.object({
   q: z.string().min(2).max(200),
@@ -110,3 +111,5 @@ geoSearchRouter.post('/resolve', optionalAuth, validate({ body: resolveBodySchem
     next(error);
   }
 });
+
+registerPublicGeoHierarchyRoutes(geoSearchRouter);

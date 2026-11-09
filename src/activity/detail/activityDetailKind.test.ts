@@ -6,6 +6,6 @@ describe('resolveActivityDetailKind', () => {
     expect(resolveActivityDetailKind({ activityType: 'hiking' })).toBe('hiking');
     expect(resolveActivityDetailKind({ activityType: 'camping' })).toBe('camping');
     expect(resolveActivityDetailKind({ activityType: 'rideshare' })).toBe('rideshare');
-    expect(resolveActivityDetailKind({ activityType: 'event' })).toBe('other');
+    expect(resolveActivityDetailKind({ activityType: 'event' })).toBe('event');
   });
 });

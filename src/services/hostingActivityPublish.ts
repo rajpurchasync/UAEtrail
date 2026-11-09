@@ -269,9 +269,16 @@ export const buildHostingActivityPublishInput = (
           : draft.description.trim() || defaultDescription(kind),
     date: draft.date,
     time: startTime,
-    endDate: hiking && draft.timeMode === 'specific' ? draft.date : undefined,
-    endTime: hiking && draft.timeMode === 'specific' ? draft.endTime : undefined,
+    endDate: (() => {
+      const end = draft.endDate.trim();
+      if (end && end > draft.date) return end;
+      if (draft.timeMode === 'specific' && draft.endTime.trim()) return draft.date;
+      return undefined;
+    })(),
+    endTime:
+      draft.timeMode === 'specific' && draft.endTime.trim() ? draft.endTime.trim() : undefined,
     capacity: draft.capacity,
+    waitlist: draft.waitlist !== false,
     pricing: {
       pricingMode: isPaid ? 'paid' : isShared ? 'shared' : 'free',
       price: isPaid || isShared ? priceAmount : 0,

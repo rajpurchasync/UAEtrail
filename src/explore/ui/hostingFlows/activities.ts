@@ -25,8 +25,11 @@ const validateStep = (step: CreateFlowStepId, draft: CreateActivityDraft): strin
   if (step === 'activity_type' && !draft.activityTopic) return 'Choose an activity type.';
   if (step === 'title') return validateHostingTitle(draft, 'Give your outing a title.');
   if (step === 'audience') return validateHostingAudienceOthers(draft);
-  if (step === 'when' && draft.timeMode === 'specific' && !draft.time) {
-    return 'Choose a start time.';
+  if (step === 'when') {
+    if (draft.timeMode === 'specific' && !draft.time) return 'Choose a start time.';
+    const end = draft.endDate.trim();
+    if (end && end < draft.date) return 'End date must be on or after the start date.';
+    return null;
   }
   if (step === 'meeting') {
     if (draft.latitude == null || draft.longitude == null) {

@@ -3,6 +3,7 @@ import { recordNavigation, resetBackStack } from './backStack';
 import {
   canReturnAfterAuth,
   isAuthGatedPath,
+  isRejectedAuthRedirectParam,
   navigateAuthBack,
   navigateAuthClose,
   resolveAuthExitFallback,
@@ -17,6 +18,12 @@ describe('canReturnAfterAuth', () => {
 
   it('blocks host roles from returning to admin routes', () => {
     expect(canReturnAfterAuth('/admin/overview', 'tenant_owner')).toBe(false);
+  });
+
+  it('blocks participants from operator and admin consoles', () => {
+    expect(canReturnAfterAuth('/admin/overview', 'participant')).toBe(false);
+    expect(canReturnAfterAuth('/publishing/overview', 'participant')).toBe(false);
+    expect(canReturnAfterAuth('/profile', 'participant')).toBe(true);
   });
 });
 
@@ -34,13 +41,24 @@ describe('resolveAuthRedirect', () => {
     expect(resolveAuthRedirect(null, '//evil.com')).toBeUndefined();
     expect(resolveAuthRedirect(null, 'https://evil.com')).toBeUndefined();
   });
+
+  it('keeps guest home as a dismiss parent', () => {
+    expect(resolveAuthRedirect(null, '/')).toBe('/');
+  });
+
+  it('flags unsafe redirect query params', () => {
+    expect(isRejectedAuthRedirectParam('/signin')).toBe(true);
+    expect(isRejectedAuthRedirectParam('https://evil.com')).toBe(true);
+    expect(isRejectedAuthRedirectParam('/explore')).toBe(false);
+    expect(isRejectedAuthRedirectParam(null)).toBe(false);
+  });
 });
 
 describe('resolveAuthExitFallback', () => {
-  it('falls back to explore when redirect is missing or unsafe', () => {
-    expect(resolveAuthExitFallback()).toBe('/explore');
-    expect(resolveAuthExitFallback('/signin')).toBe('/explore');
-    expect(resolveAuthExitFallback('/profile')).toBe('/explore');
+  it('falls back to guest home when redirect is missing or unsafe', () => {
+    expect(resolveAuthExitFallback()).toBe('/');
+    expect(resolveAuthExitFallback('/signin')).toBe('/');
+    expect(resolveAuthExitFallback('/profile')).toBe('/');
   });
 
   it('keeps public redirect targets', () => {
@@ -71,11 +89,11 @@ describe('navigateAuthBack', () => {
     expect(navigate).toHaveBeenCalledWith(-1);
   });
 
-  it('falls back to explore for gated routes without in-app history', () => {
+  it('falls back to guest home for gated routes without in-app history', () => {
     recordNavigation('k1', '/signin', 'POP');
     const navigate = vi.fn();
     navigateAuthBack(navigate, '/profile');
-    expect(navigate).toHaveBeenCalledWith('/explore', { replace: true });
+    expect(navigate).toHaveBeenCalledWith('/', { replace: true });
   });
 
   it('skips the sign-up step underneath and returns to the opener', () => {
@@ -89,15 +107,23 @@ describe('navigateAuthBack', () => {
 });
 
 describe('navigateAuthClose', () => {
-  it('replaces to explore by default', () => {
+  beforeEach(() => {
+    resetBackStack();
+    window.history.replaceState(null, '', '/signin');
+  });
+
+  it('returns to the opener when in-app history exists', () => {
+    recordNavigation('k1', '/shop/abc', 'POP');
+    recordNavigation('k2', '/signin', 'PUSH');
     const navigate = vi.fn();
-    navigateAuthClose(navigate);
-    expect(navigate).toHaveBeenCalledWith('/explore', { replace: true });
+    navigateAuthClose(navigate, '/shop/abc');
+    expect(navigate).toHaveBeenCalledWith(-1);
   });
 
   it('never returns to protected routes', () => {
+    recordNavigation('k1', '/signin', 'POP');
     const navigate = vi.fn();
     navigateAuthClose(navigate, '/notifications');
-    expect(navigate).toHaveBeenCalledWith('/explore', { replace: true });
+    expect(navigate).toHaveBeenCalledWith('/', { replace: true });
   });
 });

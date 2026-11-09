@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { useHorizontalDragScroll } from '../../../hooks/useHorizontalDragScroll';
 import { useIsMobile } from '../../../hooks/useIsMobile';
 import { stepCarouselIndex } from '../../../utils/heroCarouselState';
 import { ReviewCard, type ReviewCardProps } from './ReviewCard';
@@ -19,6 +20,7 @@ export interface ReviewCardCarouselProps {
 export const ReviewCardCarousel = ({ reviews }: ReviewCardCarouselProps) => {
   const isMobile = useIsMobile();
   const trackRef = useRef<HTMLDivElement>(null);
+  useHorizontalDragScroll(trackRef);
   const total = reviews.length;
   const multi = total > 1;
 

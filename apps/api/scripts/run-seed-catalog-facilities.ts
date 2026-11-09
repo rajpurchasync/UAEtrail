@@ -1,4 +1,5 @@
 import { connectMongo, disconnectMongo } from '../src/lib/mongo.js';
+import { disconnectRedis } from '../src/lib/redis.js';
 import { invalidateExploreMapCache } from '../src/lib/explore-map-cache.js';
 import { ensureFacilityParentPlaces, seedCatalogFacilities } from './seed-catalog-facilities.js';
 import { seedCuratedAreas } from '../src/lib/seed-areas.js';
@@ -22,4 +23,5 @@ main()
   })
   .finally(async () => {
     await disconnectMongo();
+    await disconnectRedis();
   });

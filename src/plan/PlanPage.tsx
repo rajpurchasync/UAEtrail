@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Plus } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { FloatingActionButton } from '../components/mobile/FloatingActionButton';
@@ -20,7 +20,7 @@ import {
 import { PlanPageTabs } from '../components/plan/PlanPageTabs';
 import { PlanUpcomingView } from '../components/plan/PlanUpcomingView';
 import { PlanWishlistView } from '../components/plan/PlanWishlistView';
-import { JOURNEY_MAP_PATH, PROFILE_HISTORY_PATH } from '../config/surfacePaths';
+import { JOURNEY_MAP_PATH, PLAN_TODAY_PATH, PROFILE_HISTORY_PATH } from '../config/surfacePaths';
 import {
   parsePlanCommitmentFilter,
   parsePlanMainTab,
@@ -216,6 +216,11 @@ export const PlanPage = () => {
                   onSummaryFocus={handleSummaryFocus}
                 />
                 <PlanPageTabs active={mainTab} onChange={setMainTab} />
+                <p className="px-1 text-sm">
+                  <Link to={PLAN_TODAY_PATH} className="font-semibold text-emerald-800 hover:underline">
+                    Today — next outing briefing
+                  </Link>
+                </p>
                 {mainTab === 'upcoming' ? (
                   <PlanUpcomingView
                     refreshKey={refreshKey}

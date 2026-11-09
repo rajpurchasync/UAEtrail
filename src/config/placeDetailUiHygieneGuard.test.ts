@@ -15,7 +15,7 @@ describe('placeDetailUiHygieneGuard', () => {
 
   it('PLACE-HYG-02: consumer detail uses modal shell + peek parity modules', () => {
     const consumer = read('src/place/detail/templates/PlaceConsumerDetailPage.tsx');
-    expect(consumer).toMatch(/ActivityConsumerDetailModalShell/);
+    expect(consumer).toMatch(/DetailPageShell/);
     expect(consumer).toMatch(/PlaceConsumerKindFacts/);
     expect(consumer).toMatch(/PlacePremiumGuidePanel/);
     expect(consumer).toMatch(/PLACE_PEEK_ARRANGE_TRIP/);

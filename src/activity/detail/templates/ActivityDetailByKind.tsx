@@ -4,6 +4,7 @@ import { resolveActivityDetailKind } from '../activityDetailKind';
 import type { ActivityDetailViewProps } from '../../../components/activity/ActivityDetailView';
 import { HikingActivityDetailPage } from './HikingActivityDetailPage';
 import { CampingActivityDetailPage } from './CampingActivityDetailPage';
+import { EventActivityDetailPage } from './EventActivityDetailPage';
 import { RideshareActivityDetailPage } from './RideshareActivityDetailPage';
 import { OtherActivityDetailPage } from './OtherActivityDetailPage';
 
@@ -15,6 +16,7 @@ const PAGE_BY_KIND: Record<
 > = {
   hiking: HikingActivityDetailPage,
   camping: CampingActivityDetailPage,
+  event: EventActivityDetailPage,
   rideshare: RideshareActivityDetailPage,
   other: OtherActivityDetailPage,
 };

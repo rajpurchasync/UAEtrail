@@ -18,7 +18,7 @@ import {
 } from '../lib/activity-engagement-store.js';
 import { normalizeProfileVisibility } from '../lib/media-access.js';
 import { listActiveTenantMembershipsByUser } from '../lib/tenant-access.js';
-import { listTenantsByOwnerId, type TenantRecord } from '../lib/tenant-store.js';
+import { listTenantsByOwnerId, pickActivityTenant, type TenantRecord } from '../lib/tenant-store.js';
 import { findLatestHostApplicationByApplicant } from '../lib/host-applications-store.js';
 import {
   USER_CITY_LABELS,
@@ -156,6 +156,8 @@ export type PublicMemberProfileData =
       hostProfilePath: string | null;
       /** Business operator display name — pairs with `hostProfilePath` (agency / shop only). */
       linkedOperatorName: string | null;
+      /** Buddy / guide publishing tenant — host reviews and ratings attach here. */
+      publishingTenantId: string | null;
       badges: Array<{
         key: string;
         name: string;
@@ -255,6 +257,7 @@ export async function buildPublicMemberProfile(
 
   const linkedTenants = mergeLinkedTenants(ownedTenants, tenantMemberships);
   const businessOperatorTenant = pickBusinessOperatorTenant(linkedTenants);
+  const publishingTenant = pickActivityTenant(linkedTenants);
   const hostProfileKind = businessOperatorTenant
     ? resolveHostProfileKind(businessOperatorTenant)
     : null;
@@ -298,6 +301,7 @@ export async function buildPublicMemberProfile(
     hostProfileKind,
     hostProfilePath: businessOperatorTenant ? resolveHostProfilePath(businessOperatorTenant) : null,
     linkedOperatorName: businessOperatorTenant?.name?.trim() ? businessOperatorTenant.name.trim() : null,
+    publishingTenantId: publishingTenant?.id ?? null,
     badges: showTrustedFields ? badges : earnedBadges,
     stats: {
       activitiesAttended,

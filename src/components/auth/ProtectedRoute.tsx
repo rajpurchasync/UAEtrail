@@ -17,6 +17,7 @@ import {
   meProfileSignupGateKey,
   needsSignupProfileGate,
 } from '../../utils/signupProfileGate';
+import { AsyncLoadingState } from '../ui/AsyncLoadingState';
 
 interface ProtectedRouteProps {
   roles?: UserRole[];
@@ -43,11 +44,7 @@ export const ProtectedRoute = ({ roles, children }: ProtectedRouteProps) => {
   });
 
   if (initializing) {
-    return (
-      <div className="app-page-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
-      </div>
-    );
+    return <AsyncLoadingState variant="page" label="Checking your session" />;
   }
 
   if (!user) {
@@ -84,11 +81,7 @@ export const ProtectedRoute = ({ roles, children }: ProtectedRouteProps) => {
 
   if (gateEnabled) {
     if (signupGateLoading) {
-      return (
-        <div className="app-page-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
-        </div>
-      );
+      return <AsyncLoadingState variant="page" label="Loading your profile" />;
     }
     if (signupComplete === false) {
       return (

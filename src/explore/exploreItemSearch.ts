@@ -158,6 +158,12 @@ export const exploreItemSearchHaystack = (item: ExploreMapItemDTO): string => {
     item.featuredPerson?.displayName,
     item.priceDisplay,
     item.areaSlug,
+    item.areaName,
+    item.geoRef?.names.country,
+    item.geoRef?.names.state,
+    item.geoRef?.names.area,
+    item.geoRef?.names.venue,
+    item.geoRef?.path,
   ]);
 
   const activity = item.activity;
@@ -179,6 +185,9 @@ export const exploreItemSearchHaystack = (item: ExploreMapItemDTO): string => {
     ]);
     if (activity.requirements?.length) parts.push(activity.requirements.join(' '));
     if (activity.itinerary?.length) parts.push(activity.itinerary.join(' '));
+    if (activity.itinerarySteps?.length) {
+      parts.push(activity.itinerarySteps.map((s) => [s.title, s.note, s.at].filter(Boolean).join(' ')).join(' '));
+    }
   }
 
   const card = item.locationCard;

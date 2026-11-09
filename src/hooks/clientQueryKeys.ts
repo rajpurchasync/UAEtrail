@@ -48,8 +48,14 @@ export const meNotificationsPageQueryKey = (page: number): QueryKey => ['me', 'n
 
 export const wishlistTargetStateQueryKey = (
   userId: string,
-  target: { locationId?: string; activityId?: string }
-): QueryKey => ['wishlist-target-state', userId, target.activityId ?? '', target.locationId ?? ''];
+  target: { locationId?: string; areaId?: string; activityId?: string }
+): QueryKey => [
+  'wishlist-target-state',
+  userId,
+  target.activityId ?? '',
+  target.locationId ?? '',
+  target.areaId ?? '',
+];
 
 export const shopPublicPageQueryKey = (id: string): QueryKey => ['shop-public-page', id];
 

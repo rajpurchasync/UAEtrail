@@ -1,13 +1,17 @@
-import type { Db, Document, ObjectId } from 'mongodb';
+import type { AnyBulkWriteOperation, Db, Document, ObjectId } from 'mongodb';
 import { randomUUID } from 'crypto';
 import { COLLECTIONS } from './collections.js';
 import { slugify } from './slug.js';
 import {
+  inferFitnessFromPlaceDifficulty,
   isEmbeddedPersonaSeekingTitle,
   normalizeEmbeddedPersonaSeekingTitle,
   type SeekingTitleKind,
 } from '@uaetrail/shared-types';
 import { runCatalogCpcMigrations } from './catalog-cpc-migrations.js';
+import { buildDetailRevampSnapshotFromLegacy } from './entity-builders.js';
+import { roundMeetingCoordForShell } from './activity-meeting-shell.js';
+import { loadTrackPreviewFieldsFromGpxKey } from './gpx-track-preview.js';
 
 const migrateRetiredCollectionToCanonicalAndDrop = async (db: Db, from: string, to: string): Promise<void> => {
   const collections = await db.listCollections().toArray();
@@ -282,6 +286,30 @@ const backfillMerchantProfileTenantLinks = async (db: Db): Promise<void> => {
   }
 };
 
+/** Public chat is opt-in. Keep existing phone numbers visible until the owner turns them off. */
+const backfillShopPublicContactFlags = async (db: Db): Promise<void> => {
+  const merchants = db.collection(COLLECTIONS.MERCHANT_PROFILES);
+  const chat = await merchants.updateMany(
+    { allowInboundChat: { $exists: false } },
+    { $set: { allowInboundChat: false } }
+  );
+  const keepPhone = await merchants.updateMany(
+    {
+      showContactPhone: { $exists: false },
+      contactPhone: { $type: 'string', $nin: [''] },
+    },
+    { $set: { showContactPhone: true } }
+  );
+  const hideEmptyPhone = await merchants.updateMany(
+    { showContactPhone: { $exists: false } },
+    { $set: { showContactPhone: false } }
+  );
+  const n = chat.modifiedCount + keepPhone.modifiedCount + hideEmptyPhone.modifiedCount;
+  if (n > 0) {
+    console.log(`[mongo] Backfilled merchant_profiles contact flags (${n} docs)`);
+  }
+};
+
 /** Keep at most one merchant_profiles row per tenantId so the sparse unique index can build. */
 const dedupeMerchantProfileTenantIds = async (db: Db): Promise<void> => {
   const merchants = db.collection(COLLECTIONS.MERCHANT_PROFILES);
@@ -493,6 +521,301 @@ const migrateParticipantIntentIdsToString = async (db: Db): Promise<void> => {
   }
 };
 
+/**
+ * Move embedded `gpxKey` / `guideMarkdown` off `locations` into `place_tracks` / `place_guides` (plan §13.5).
+ * Idempotent: side docs are upserted; parents are $unset even if side already had a row.
+ */
+const migrateLocationHeavyFieldsToSideCollections = async (db: Db): Promise<void> => {
+  type LocationHeavyMigrateDoc = Document & {
+    _id: string;
+    gpxKey?: string | null;
+    guideMarkdown?: string | null;
+  };
+  const locations = db.collection<LocationHeavyMigrateDoc>(COLLECTIONS.LOCATIONS);
+  type SideIdDoc = { _id: string; gpxKey?: string; updatedAt?: Date };
+  type SideGuideDoc = { _id: string; markdown?: string; updatedAt?: Date };
+  const placeTracks = db.collection<SideIdDoc>(COLLECTIONS.PLACE_TRACKS);
+  const placeGuides = db.collection<SideGuideDoc>(COLLECTIONS.PLACE_GUIDES);
+
+  const cursor = locations.find({
+    $or: [{ gpxKey: { $exists: true, $nin: [null, ''] } }, { guideMarkdown: { $exists: true, $nin: [null, ''] } }],
+  });
+  const batchSize = 150;
+  let batch: LocationHeavyMigrateDoc[] = [];
+  let movedTracks = 0;
+  let movedGuides = 0;
+  let clearedParents = 0;
+
+  const flush = async (): Promise<void> => {
+    if (batch.length === 0) return;
+    const now = new Date();
+    for (const doc of batch) {
+      const id = doc._id as string;
+      const gpxKey = typeof doc.gpxKey === 'string' ? doc.gpxKey.trim() : '';
+      const guideMd = typeof doc.guideMarkdown === 'string' ? doc.guideMarkdown.trim() : '';
+
+      if (gpxKey) {
+        await placeTracks.updateOne(
+          { _id: id },
+          { $set: { gpxKey, updatedAt: now } },
+          { upsert: true }
+        );
+        movedTracks += 1;
+      }
+      if (guideMd) {
+        await placeGuides.updateOne(
+          { _id: id },
+          { $set: { markdown: guideMd, updatedAt: now } },
+          { upsert: true }
+        );
+        movedGuides += 1;
+      }
+
+      await locations.updateOne(
+        { _id: id },
+        { $unset: { gpxKey: '', guideMarkdown: '' } }
+      );
+      clearedParents += 1;
+    }
+    batch = [];
+  };
+
+  for await (const doc of cursor) {
+    batch.push(doc);
+    if (batch.length >= batchSize) {
+      await flush();
+    }
+  }
+  await flush();
+
+  if (clearedParents > 0) {
+    console.log(
+      `[mongo] Migrated location heavy fields → place_tracks (${movedTracks} upserts) / place_guides (${movedGuides} upserts); stripped ${clearedParents} location doc(s)`
+    );
+  }
+};
+
+/** Parse GPX files for rows that only have `gpxKey` (e.g. after legacy migration). Idempotent when geometry already set. */
+const backfillPlaceTrackGeometryFromGpx = async (db: Db): Promise<void> => {
+  const placeTracks = db.collection(COLLECTIONS.PLACE_TRACKS);
+  const cursor = placeTracks.find({
+    gpxKey: { $exists: true, $nin: [null, ''] },
+    $or: [
+      { polyline: { $exists: false } },
+      { polyline: null },
+      { polyline: '' },
+      { bbox: { $exists: false } },
+      { bbox: null },
+    ],
+  });
+  let updated = 0;
+  for await (const doc of cursor) {
+    const gpxKey = typeof doc.gpxKey === 'string' ? doc.gpxKey.trim() : '';
+    if (!gpxKey) continue;
+    const preview = await loadTrackPreviewFieldsFromGpxKey(gpxKey);
+    if (!preview) continue;
+    const now = new Date();
+    await placeTracks.updateOne(
+      { _id: doc._id },
+      {
+        $set: {
+          bbox: preview.bbox,
+          polyline: preview.polyline,
+          profile: preview.profile.length >= 2 ? preview.profile : [],
+          updatedAt: now,
+        },
+      }
+    );
+    updated += 1;
+  }
+  if (updated > 0) {
+    console.log(`[mongo] Backfilled place_tracks bbox/polyline/profile from GPX (${updated} doc(s))`);
+  }
+};
+
+/**
+ * Exact meeting pin → `activity_private` collection; `activities.meetingLat` / `meetingLng` stay as ~1 km shell (2 decimals).
+ * Idempotent: uses `activity_private.exactGeo` as source of truth when present.
+ */
+const migrateActivityMeetingCoordsToPrivateAndShell = async (db: Db): Promise<void> => {
+  const activities = db.collection(COLLECTIONS.ACTIVITIES);
+  const activityPrivate = db.collection(COLLECTIONS.ACTIVITY_PRIVATE);
+
+  const cursor = activities.find({
+    meetingLat: { $type: 'number', $gte: -90, $lte: 90 },
+    meetingLng: { $type: 'number', $gte: -180, $lte: 180 },
+  });
+
+  let updatedShell = 0;
+  let insertedPrivate = 0;
+
+  for await (const doc of cursor) {
+    const id = String(doc._id);
+    const priv = await activityPrivate.findOne({ _id: id } as Document);
+    const now = new Date();
+
+    if (priv?.exactGeo?.coordinates && Array.isArray(priv.exactGeo.coordinates)) {
+      const [plng, plat] = priv.exactGeo.coordinates as [number, number];
+      if (typeof plat === 'number' && typeof plng === 'number' && !Number.isNaN(plat) && !Number.isNaN(plng)) {
+        const shellLat = roundMeetingCoordForShell(plat);
+        const shellLng = roundMeetingCoordForShell(plng);
+        await activities.updateOne(
+          { _id: id } as Document,
+          { $set: { meetingLat: shellLat, meetingLng: shellLng } }
+        );
+        updatedShell += 1;
+        continue;
+      }
+    }
+
+    const lat = doc.meetingLat as number;
+    const lng = doc.meetingLng as number;
+    if (Number.isNaN(lat) || Number.isNaN(lng)) continue;
+
+    const meetingPoint = typeof doc.meetingPoint === 'string' ? doc.meetingPoint.trim() || null : null;
+    await activityPrivate.updateOne(
+      { _id: id } as Document,
+      {
+        $set: {
+          exactGeo: { type: 'Point', coordinates: [lng, lat] },
+          meetingNotes: meetingPoint,
+          updatedAt: now,
+        },
+      },
+      { upsert: true }
+    );
+    insertedPrivate += 1;
+
+    await activities.updateOne(
+      { _id: id } as Document,
+      {
+        $set: {
+          meetingLat: roundMeetingCoordForShell(lat),
+          meetingLng: roundMeetingCoordForShell(lng),
+        },
+      }
+    );
+    updatedShell += 1;
+  }
+
+  if (insertedPrivate > 0 || updatedShell > 0) {
+    console.log(
+      `[mongo] Activity meeting coords: shell rows aligned ${updatedShell}, new activity_private ${insertedPrivate}`
+    );
+  }
+};
+
+/** Detail pages revamp — embed v2 shell fields; legacy string `itinerary` → `itinerarySteps` + empty `itinerary`. */
+const migrateActivityDetailSchemaV2 = async (db: Db): Promise<void> => {
+  const activities = db.collection(COLLECTIONS.ACTIVITIES);
+  const locations = db.collection(COLLECTIONS.LOCATIONS);
+  const requests = db.collection(COLLECTIONS.ACTIVITY_REQUESTS);
+  const participants = db.collection(COLLECTIONS.ACTIVITY_PARTICIPANTS);
+
+  const cursor = activities.find({
+    $or: [{ schemaVersion: { $ne: 2 } }, { schemaVersion: { $exists: false } }],
+  });
+
+  const ops: AnyBulkWriteOperation<Document>[] = [];
+  let migrated = 0;
+
+  for await (const doc of cursor) {
+    const id = doc._id;
+    const itineraryLines = Array.isArray(doc.itinerary) ? (doc.itinerary as string[]) : [];
+    const requirements = Array.isArray(doc.requirements) ? (doc.requirements as string[]) : [];
+    const description = typeof doc.description === 'string' ? doc.description : '';
+    const priceAed = typeof doc.priceAed === 'number' ? doc.priceAed : 0;
+    const pricingMode =
+      doc.pricingMode === 'free' || doc.pricingMode === 'shared' || doc.pricingMode === 'paid'
+        ? doc.pricingMode
+        : null;
+
+    const loc =
+      doc.locationId && typeof doc.locationId === 'string'
+        ? await locations.findOne(
+            { _id: doc.locationId } as Document,
+            { projection: { difficulty: 1, childFriendly: 1 } }
+          )
+        : null;
+
+    let going =
+      typeof doc.participantSlotsUsed === 'number'
+        ? doc.participantSlotsUsed
+        : await participants.countDocuments({ activityId: id });
+    going = Math.min(going, typeof doc.capacity === 'number' ? doc.capacity : going);
+
+    const waitlisted = await requests.countDocuments({ activityId: id, status: 'WAITLISTED' });
+    const pending = await requests.countDocuments({ activityId: id, status: 'PENDING' });
+
+    const revamp = buildDetailRevampSnapshotFromLegacy({
+      itineraryLines,
+      requirements,
+      description,
+      priceAed,
+      pricingMode,
+    });
+
+    const fitness = inferFitnessFromPlaceDifficulty(loc?.difficulty as string | undefined);
+    const audience = {
+      ...revamp.audience!,
+      fitness,
+      kidsWelcome: Boolean(revamp.audience?.kidsWelcome) || Boolean(loc?.childFriendly),
+    };
+
+    const needsReview: string[] = [];
+    if (!description.trim()) needsReview.push('description');
+    if (!doc.endAt) needsReview.push('endAt');
+
+    const confidence: Record<string, 'migrated'> = {
+      itinerarySteps: 'migrated',
+      gear: 'migrated',
+      priceBreakdown: 'migrated',
+      policyKey: 'migrated',
+      summary: 'migrated',
+      audience: 'migrated',
+      counts: 'migrated',
+    };
+
+    ops.push({
+      updateOne: {
+        filter: { _id: id } as Document,
+        update: {
+          $set: {
+            schemaVersion: revamp.schemaVersion,
+            itinerary: revamp.itinerary,
+            summary: revamp.summary,
+            itinerarySteps: revamp.itinerarySteps,
+            gear: revamp.gear,
+            priceBreakdown: revamp.priceBreakdown,
+            policyKey: revamp.policyKey,
+            audience,
+            waiverRequired: revamp.waiverRequired ?? false,
+            waitlist: typeof doc.waitlist === 'boolean' ? doc.waitlist : true,
+            counts: { going, waitlisted, pending },
+            needsReview,
+            confidence,
+          },
+        },
+      },
+    });
+
+    if (ops.length >= 200) {
+      await activities.bulkWrite(ops, { ordered: false });
+      migrated += ops.length;
+      ops.length = 0;
+    }
+  }
+
+  if (ops.length > 0) {
+    await activities.bulkWrite(ops, { ordered: false });
+    migrated += ops.length;
+  }
+
+  if (migrated > 0) {
+    console.log(`[mongo] Detail schema v2 migration applied (${migrated} activity documents)`);
+  }
+};
+
 const backfillParticipantSlotsUsed = async (db: Db): Promise<void> => {
   const activities = db.collection<{ _id: string; participantSlotsUsed?: number }>(COLLECTIONS.ACTIVITIES);
   const participants = db.collection<{ activityId: string }>(COLLECTIONS.ACTIVITY_PARTICIPANTS);
@@ -609,8 +932,148 @@ const purgeRetiredWishlistTargetRows = async (db: Db): Promise<void> => {
   }
 };
 
+/**
+ * Product waitlist default is true. Only fill when the field is missing so a host
+ * who later set `waitlist: false` is preserved (legacy false-from-default already
+ * written during schema v2 cannot be distinguished and is left as-is).
+ */
+const backfillActivityWaitlistAndCounts = async (db: Db): Promise<void> => {
+  const activities = db.collection(COLLECTIONS.ACTIVITIES);
+  const requests = db.collection(COLLECTIONS.ACTIVITY_REQUESTS);
+  const participants = db.collection(COLLECTIONS.ACTIVITY_PARTICIPANTS);
+
+  const waitlistResult = await activities.updateMany(
+    { waitlist: { $exists: false } },
+    { $set: { waitlist: true } }
+  );
+
+  const missingCounts = activities.find({
+    $or: [{ counts: { $exists: false } }, { 'counts.going': { $exists: false } }],
+  });
+  const ops: AnyBulkWriteOperation<Document>[] = [];
+  let countBackfill = 0;
+  for await (const doc of missingCounts) {
+    const id = doc._id;
+    let going =
+      typeof doc.participantSlotsUsed === 'number'
+        ? doc.participantSlotsUsed
+        : await participants.countDocuments({ activityId: id });
+    if (typeof doc.capacity === 'number') going = Math.min(going, doc.capacity);
+    const waitlisted = await requests.countDocuments({ activityId: id, status: 'WAITLISTED' });
+    const pending = await requests.countDocuments({ activityId: id, status: 'PENDING' });
+    ops.push({
+      updateOne: {
+        filter: { _id: id } as Document,
+        update: { $set: { counts: { going, waitlisted, pending } } },
+      },
+    });
+    if (ops.length >= 200) {
+      await activities.bulkWrite(ops, { ordered: false });
+      countBackfill += ops.length;
+      ops.length = 0;
+    }
+  }
+  if (ops.length > 0) {
+    await activities.bulkWrite(ops, { ordered: false });
+    countBackfill += ops.length;
+  }
+
+  if (waitlistResult.modifiedCount > 0 || countBackfill > 0) {
+    console.log(
+      `[mongo] Backfilled waitlist default (${waitlistResult.modifiedCount}) and counts (${countBackfill})`
+    );
+  }
+};
+
+/** Finish schemaVersion 2 shell fields when v2 migration ran but left gaps. */
+const backfillIncompleteActivityRevampFields = async (db: Db): Promise<void> => {
+  const activities = db.collection(COLLECTIONS.ACTIVITIES);
+  const cursor = activities.find({
+    $or: [
+      { schemaVersion: { $ne: 2 } },
+      { schemaVersion: { $exists: false } },
+      { priceBreakdown: { $exists: false } },
+      { policyKey: { $exists: false } },
+      { audience: { $exists: false } },
+      { gear: { $exists: false } },
+      { itinerarySteps: { $exists: false } },
+    ],
+  });
+  const ops: AnyBulkWriteOperation<Document>[] = [];
+  let migrated = 0;
+  for await (const doc of cursor) {
+    const itineraryLines = Array.isArray(doc.itinerary) ? (doc.itinerary as string[]) : [];
+    const requirements = Array.isArray(doc.requirements) ? (doc.requirements as string[]) : [];
+    const description = typeof doc.description === 'string' ? doc.description : '';
+    const priceAed = typeof doc.priceAed === 'number' ? doc.priceAed : 0;
+    const pricingMode =
+      doc.pricingMode === 'free' || doc.pricingMode === 'shared' || doc.pricingMode === 'paid'
+        ? doc.pricingMode
+        : null;
+    const revamp = buildDetailRevampSnapshotFromLegacy({
+      itineraryLines,
+      requirements,
+      description,
+      priceAed,
+      pricingMode,
+    });
+    const set: Record<string, unknown> = {
+      schemaVersion: 2,
+    };
+    if (doc.priceBreakdown == null) set.priceBreakdown = revamp.priceBreakdown;
+    if (doc.policyKey == null) set.policyKey = revamp.policyKey;
+    if (doc.audience == null) set.audience = revamp.audience;
+    if (doc.gear == null) set.gear = revamp.gear;
+    if (doc.itinerarySteps == null) set.itinerarySteps = revamp.itinerarySteps;
+    if (doc.summary == null) set.summary = revamp.summary;
+    if (doc.waiverRequired == null) set.waiverRequired = revamp.waiverRequired ?? false;
+    ops.push({
+      updateOne: { filter: { _id: doc._id } as Document, update: { $set: set } },
+    });
+    if (ops.length >= 200) {
+      await activities.bulkWrite(ops, { ordered: false });
+      migrated += ops.length;
+      ops.length = 0;
+    }
+  }
+  if (ops.length > 0) {
+    await activities.bulkWrite(ops, { ordered: false });
+    migrated += ops.length;
+  }
+  if (migrated > 0) {
+    console.log(`[mongo] Completed incomplete activity revamp fields (${migrated} documents)`);
+  }
+};
+
+/** Ensure reserved / side collections exist even before the first write. */
+const ensureRevampCollectionsExist = async (db: Db): Promise<void> => {
+  const names = new Set((await db.listCollections().toArray()).map((c) => c.name));
+  const required = [
+    COLLECTIONS.VERIFICATION_DOCUMENTS,
+    COLLECTIONS.PAYMENTS,
+    COLLECTIONS.WEATHER_CACHE,
+    COLLECTIONS.ACTIVITY_PRIVATE,
+    COLLECTIONS.GEO_NODES,
+    COLLECTIONS.GEO_STATS,
+    COLLECTIONS.GEO_OUTBOX,
+    COLLECTIONS.GEO_META,
+    COLLECTIONS.SUBMISSIONS,
+    COLLECTIONS.AMENITY_REPORTS,
+    COLLECTIONS.MERGES,
+    COLLECTIONS.CATALOGS,
+    COLLECTIONS.PLACE_TRACKS,
+    COLLECTIONS.PLACE_GUIDES,
+    COLLECTIONS.REFERRAL_CLICKS,
+    COLLECTIONS.PLATFORM_ALERTS,
+  ];
+  for (const name of required) {
+    if (names.has(name)) continue;
+    await db.createCollection(name);
+  }
+};
+
 /** Bump when adding a new migration step so existing deployments run it once. */
-export const MONGO_MIGRATION_VERSION = 2025110501;
+export const MONGO_MIGRATION_VERSION = 2025110607;
 
 /** One-time migrations for activity terminology and role model alignment. */
 export const runMongoMigrations = async (db: Db): Promise<void> => {
@@ -651,6 +1114,13 @@ export const runMongoMigrations = async (db: Db): Promise<void> => {
   await provisionShopTenantsForOrphanMerchants(db);
   await dedupeMerchantProfileTenantIds(db);
   await backfillParticipantSlotsUsed(db);
+  await migrateActivityDetailSchemaV2(db);
+  await backfillIncompleteActivityRevampFields(db);
+  await backfillActivityWaitlistAndCounts(db);
+  await ensureRevampCollectionsExist(db);
+  await migrateLocationHeavyFieldsToSideCollections(db);
+  await backfillPlaceTrackGeometryFromGpx(db);
+  await migrateActivityMeetingCoordsToPrivateAndShell(db);
   await migrateParticipantIntentIdsToString(db);
   await migrateActivityTerminologyValues(db);
   await backfillLocationRegistryListed(db);
@@ -661,6 +1131,11 @@ export const runMongoMigrations = async (db: Db): Promise<void> => {
   await migrateOrganizerNoteToHostNote(db);
   await migrateDemandExplorePinPaths(db);
   await dropRemovedCommerceCollections(db);
+  await backfillShopPublicContactFlags(db);
+  const { backfillGeoRefOnPins } = await import('./geo-backfill.js');
+  await backfillGeoRefOnPins(db);
+  const { seedCatalogsIfEmpty } = await import('./catalogs-store.js');
+  await seedCatalogsIfEmpty();
 
   await meta.updateOne(
     { _id: 'migrations' },

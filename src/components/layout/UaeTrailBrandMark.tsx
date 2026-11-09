@@ -21,7 +21,7 @@ export const UaeTrailBrandMark = ({
   const icon = size === 'md' ? 'h-[18px] w-[18px]' : size === 'inline' ? 'h-3 w-3' : 'h-4 w-4';
   const text = size === 'md' ? 'text-base' : size === 'inline' ? 'text-[0.95em] leading-none' : 'text-sm';
   const gap = size === 'inline' ? 'gap-1' : 'gap-2';
-  const wordmarkClass = tone === 'light' ? 'text-white' : 'text-gray-900';
+  const wordmarkClass = tone === 'light' ? 'text-white' : 'text-gray-900 dark:text-neutral-50';
 
   return (
     <span className={`inline-flex min-w-0 items-center ${gap} ${className}`}>

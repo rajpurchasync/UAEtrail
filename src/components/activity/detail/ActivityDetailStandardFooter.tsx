@@ -1,33 +1,102 @@
-import type { ActivityDetailFooterButton } from './activityDetailFooterSlots';
+import {
+  LogOut,
+  MessageCircle,
+  MessageSquare,
+  Settings2,
+  Share2,
+  UserPlus,
+  type LucideIcon,
+} from 'lucide-react';
+import type {
+  ActivityDetailFooterAction,
+  ActivityDetailFooterButton,
+} from './activityDetailFooterSlots';
 
-const primaryClass =
-  'flex min-h-[3.25rem] flex-1 items-center justify-center rounded-2xl bg-emerald-600 px-3 text-center text-sm font-bold text-white shadow-sm active:bg-emerald-700 disabled:opacity-60 lg:min-h-9 lg:rounded-lg lg:text-[13px] lg:font-semibold';
+const FOOTER_BTN_BASE =
+  'flex flex-1 items-center justify-center text-center shadow-sm disabled:opacity-60';
+const FOOTER_BTN_MOBILE = `${FOOTER_BTN_BASE} min-h-10 min-w-0 shrink-0 rounded-xl px-2.5 text-xs font-semibold`;
+const FOOTER_BTN_DESKTOP =
+  'flex min-h-[3.25rem] flex-1 items-center justify-center rounded-2xl px-3 text-center text-sm font-bold shadow-sm disabled:opacity-60 lg:min-h-9 lg:rounded-lg lg:text-[13px] lg:font-semibold';
 
-const secondaryClass =
-  'flex min-h-[3.25rem] flex-1 items-center justify-center rounded-2xl border border-neutral-200 bg-white px-3 text-center text-sm font-bold text-neutral-800 shadow-sm active:bg-neutral-50 lg:min-h-9 lg:rounded-lg lg:text-[13px] lg:font-semibold';
+const primaryClass = `${FOOTER_BTN_DESKTOP} bg-emerald-600 text-white active:bg-emerald-700`;
+const primaryClassCompact = `${FOOTER_BTN_MOBILE} bg-emerald-600 text-white active:bg-emerald-700`;
 
-const statusClass =
-  'flex min-h-[3.25rem] flex-1 items-center justify-center rounded-2xl bg-amber-100 px-3 text-center text-sm font-bold text-amber-900 disabled:opacity-100 lg:min-h-9 lg:rounded-lg lg:text-[13px] lg:font-semibold';
+export const activityDetailFooterPrimaryButtonClass = (compact = false): string =>
+  compact ? primaryClassCompact : primaryClass;
 
-const mutedClass =
-  'flex min-h-[3.25rem] flex-1 items-center justify-center rounded-2xl bg-neutral-200 px-3 text-center text-sm font-bold text-neutral-500 lg:min-h-9 lg:rounded-lg lg:text-[13px] lg:font-semibold';
+const secondaryClass = `${FOOTER_BTN_DESKTOP} border border-neutral-200 bg-white text-neutral-800 active:bg-neutral-50`;
+const secondaryClassCompact = `${FOOTER_BTN_MOBILE} border border-neutral-200 bg-white text-neutral-800 active:bg-neutral-50`;
 
-const dangerClass =
-  'flex min-h-[3.25rem] flex-1 items-center justify-center rounded-2xl border border-red-100 bg-red-50 px-2 text-center text-sm font-bold text-red-800 shadow-sm active:bg-red-100/80 disabled:opacity-60 lg:min-h-9 lg:rounded-lg lg:text-[13px] lg:font-semibold';
+const statusClass = `${FOOTER_BTN_DESKTOP} bg-amber-100 text-amber-900 disabled:opacity-100`;
+const statusClassCompact = `${FOOTER_BTN_MOBILE} bg-amber-100 text-amber-900 disabled:opacity-100`;
 
-const toneClass = (tone: ActivityDetailFooterButton['tone']): string => {
+const mutedClass = `${FOOTER_BTN_DESKTOP} bg-neutral-200 text-neutral-500`;
+const mutedClassCompact = `${FOOTER_BTN_MOBILE} bg-neutral-200 text-neutral-500`;
+
+const dangerClass = `${FOOTER_BTN_DESKTOP} border border-red-100 bg-red-50 text-red-800 active:bg-red-100/80`;
+const dangerClassCompact = `${FOOTER_BTN_MOBILE} border border-red-100 bg-red-50 text-red-800 active:bg-red-100/80`;
+
+const toneClass = (tone: ActivityDetailFooterButton['tone'], compact: boolean): string => {
   switch (tone) {
     case 'primary':
-      return primaryClass;
+      return compact ? primaryClassCompact : primaryClass;
     case 'secondary':
-      return secondaryClass;
+      return compact ? secondaryClassCompact : secondaryClass;
     case 'status':
-      return statusClass;
+      return compact ? statusClassCompact : statusClass;
     case 'muted':
-      return mutedClass;
+      return compact ? mutedClassCompact : mutedClass;
     case 'danger':
-      return dangerClass;
+      return compact ? dangerClassCompact : dangerClass;
   }
+};
+
+const footerActionIcon = (action: ActivityDetailFooterAction): LucideIcon | null => {
+  switch (action) {
+    case 'open_crew_chat':
+      return MessageCircle;
+    case 'message_host':
+      return MessageSquare;
+    case 'participant_invite':
+    case 'invite_crew':
+      return UserPlus;
+    case 'participant_withdraw':
+      return LogOut;
+    case 'share_activity':
+      return Share2;
+    case 'host_manage':
+      return Settings2;
+    case 'request_join':
+    case 'open_pending_manage':
+    case 'open_participation_manage':
+      return null;
+    default: {
+      const _exhaustive: never = action;
+      return _exhaustive;
+    }
+  }
+};
+
+const FooterButtonLabel = ({
+  button,
+  showDesktopIcons,
+  compactButtons = false,
+}: {
+  button: ActivityDetailFooterButton;
+  showDesktopIcons: boolean;
+  compactButtons?: boolean;
+}) => {
+  const showIcons = showDesktopIcons || compactButtons;
+  const Icon = showIcons ? footerActionIcon(button.action) : null;
+  const iconClass = compactButtons
+    ? 'h-3.5 w-3.5 shrink-0 opacity-90'
+    : 'hidden h-4 w-4 shrink-0 md:block';
+  return (
+    <span className={`inline-flex items-center justify-center ${compactButtons ? 'gap-1' : 'gap-1.5'}`}>
+      {Icon ? <Icon className={iconClass} aria-hidden /> : null}
+      <span className="min-w-0 truncate">{button.label}</span>
+    </span>
+  );
 };
 
 type ActivityDetailStandardFooterProps = {
@@ -36,6 +105,14 @@ type ActivityDetailStandardFooterProps = {
   right: ActivityDetailFooterButton;
   center?: ActivityDetailFooterButton;
   onPress: (action: ActivityDetailFooterButton['action']) => void;
+  /** Icon before label on large screens (desktop aside column). */
+  showDesktopIcons?: boolean;
+  /** Sticky aside — stack buttons vertically (no horizontal scroll). */
+  stackActions?: boolean;
+  /** Join CTA rendered inside party card — hide duplicate primary slot. */
+  hideLeft?: boolean;
+  /** Mobile sticky footer — shorter buttons in one row. */
+  compactButtons?: boolean;
 };
 
 /** One row — two or three buttons on activity detail sticky footer. */
@@ -45,33 +122,54 @@ export const ActivityDetailStandardFooter = ({
   right,
   center,
   onPress,
+  showDesktopIcons = false,
+  stackActions = false,
+  hideLeft = false,
+  compactButtons = false,
 }: ActivityDetailStandardFooterProps) => (
-  <div className="flex w-full min-w-0 gap-2 overflow-x-auto" data-activity-detail-standard-footer={mode}>
-    <button
-      type="button"
-      disabled={left.disabled}
-      onClick={() => onPress(left.action)}
-      className={toneClass(left.tone)}
-    >
-      {left.label}
-    </button>
+  <div
+    className={`flex w-full min-w-0 gap-1.5 ${stackActions ? 'flex-col gap-2' : compactButtons ? 'flex-row' : 'overflow-x-auto gap-2'}`}
+    data-activity-detail-standard-footer={mode}
+  >
+    {!hideLeft ? (
+      <button
+        type="button"
+        disabled={left.disabled}
+        onClick={() => onPress(left.action)}
+        className={toneClass(left.tone, compactButtons)}
+      >
+        <FooterButtonLabel
+          button={left}
+          showDesktopIcons={showDesktopIcons}
+          compactButtons={compactButtons}
+        />
+      </button>
+    ) : null}
     {center ? (
       <button
         type="button"
         disabled={center.disabled}
         onClick={() => onPress(center.action)}
-        className={toneClass(center.tone)}
+        className={toneClass(center.tone, compactButtons)}
       >
-        {center.label}
+        <FooterButtonLabel
+          button={center}
+          showDesktopIcons={showDesktopIcons}
+          compactButtons={compactButtons}
+        />
       </button>
     ) : null}
     <button
       type="button"
       disabled={right.disabled}
       onClick={() => onPress(right.action)}
-      className={toneClass(right.tone)}
+      className={toneClass(right.tone, compactButtons)}
     >
-      {right.label}
+      <FooterButtonLabel
+        button={right}
+        showDesktopIcons={showDesktopIcons}
+        compactButtons={compactButtons}
+      />
     </button>
   </div>
 );

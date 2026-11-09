@@ -17,15 +17,35 @@ export const COLLECTIONS = {
 
   // Places & premium unlocks
   LOCATIONS: 'locations',
+  /** Trail polyline, elevation profile, GPX key — `_id` = location id (plan §13.5). */
+  PLACE_TRACKS: 'place_tracks',
+  /** Pro-gated guide markdown — `_id` = location id. */
+  PLACE_GUIDES: 'place_guides',
   /** Amenity POIs (toilet, parking, outdoor_shop, …) — Program CPC. */
   FACILITIES: 'facilities',
+  /** Platform-wide safety / ops banners for public detail surfaces. */
+  PLATFORM_ALERTS: 'platform_alerts',
+  /** Fire-and-forget partner / referral outbound clicks (commercial facilities). */
+  REFERRAL_CLICKS: 'referral_clicks',
   LOCATION_UNLOCKS: 'location_unlocks',
   AREAS: 'areas',
+  GEO_NODES: 'geo_nodes',
+  GEO_STATS: 'geo_stats',
+  GEO_OUTBOX: 'geo_outbox',
+  GEO_META: 'geo_meta',
+  SUBMISSIONS: 'submissions',
+  AMENITY_REPORTS: 'amenity_reports',
+  MERGES: 'merges',
+  CATALOGS: 'catalogs',
+  VERIFICATION_DOCUMENTS: 'verification_documents',
+  PAYMENTS: 'payments',
 
   // Activities & engagement
   ACTIVITIES: 'activities',
   ACTIVITY_REQUESTS: 'activity_requests',
   ACTIVITY_PARTICIPANTS: 'activity_participants',
+  /** Exact meeting pin, emergency contact — `_id` = activity id (plan §13.4). */
+  ACTIVITY_PRIVATE: 'activity_private',
   PARTICIPANT_INTENTS: 'participant_intents',
   PARTICIPANT_INTENT_REQUESTS: 'participant_intent_requests',
 
@@ -50,6 +70,8 @@ export const COLLECTIONS = {
 
   // User data
   USER_WISHLIST: 'user_wishlist',
+  /** Cached third-party weather payloads — `_id` = `lat|lng|date` (plan §13.6). */
+  WEATHER_CACHE: 'weather_cache',
   NOTIFICATIONS: 'notifications',
   /** Durable async work queue (MIG-OUTBOX); default path remains fire-and-forget until flag on. */
   SIDE_EFFECT_OUTBOX: 'side_effect_outbox',
@@ -66,6 +88,8 @@ export const COLLECTIONS = {
   // Platform
   MEDIA_ASSETS: 'media_assets',
   AUDIT_LOGS: 'audit_logs',
+  /** Batched web-vitals RUM — one document per flush, never per sample. */
+  WEB_VITALS_BATCHES: 'web_vitals_batches',
 } as const;
 
 export type CollectionName = (typeof COLLECTIONS)[keyof typeof COLLECTIONS];

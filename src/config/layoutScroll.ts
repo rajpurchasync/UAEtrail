@@ -42,6 +42,15 @@ export const resetAppScroll = (): void => {
   window.scrollTo(0, 0);
 };
 
+/**
+ * In-page tab/filter query changes (`?tab=location`) must not jump the form to the top.
+ * Map panning is unaffected — it does not go through this helper.
+ */
+export const shouldResetAppScrollOnNavigation = (
+  previousPathname: string | null,
+  nextPathname: string
+): boolean => previousPathname !== nextPathname;
+
 export const scrollAppScrollRootTo = (top: number): void => {
   const container = getAppScrollContainer();
   if (container) {

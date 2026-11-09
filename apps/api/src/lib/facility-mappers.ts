@@ -7,12 +7,15 @@ export const toFacilityDto = (facility: Facility): FacilityDTO => ({
   region: facility.region,
   areaLabel: facility.areaLabel,
   areaId: facility.areaId,
+  geoRef: facility.geoRef ?? null,
   facilityKind: facility.facilityKind,
   parentPlaceId: facility.parentPlaceId ?? null,
+  venueId: facility.venueId ?? null,
   description: facility.description,
   latitude: facility.latitude,
   longitude: facility.longitude,
   images: facility.images,
+  partnerReferralUrl: facility.partnerReferralUrl ?? null,
   tags: facility.tags,
   status: facility.status,
   moderationStatus: facility.moderationStatus,
@@ -21,4 +24,8 @@ export const toFacilityDto = (facility: Facility): FacilityDTO => ({
   submittedById: facility.submittedById ?? null,
   createdAt: facility.createdAt.toISOString(),
   updatedAt: facility.updatedAt.toISOString(),
+  amenityState: facility.amenityState,
+  amenityLastCheckedAt: facility.amenityLastCheckedAt
+    ? facility.amenityLastCheckedAt.toISOString()
+    : null,
 });

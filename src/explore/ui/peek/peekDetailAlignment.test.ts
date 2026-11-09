@@ -32,7 +32,7 @@ describe('peek ↔ detail template alignment', () => {
 
   it('PEEK-ARCH-03: place consumer detail aligns with peek CTAs and shell', () => {
     const consumer = read('src/place/detail/templates/PlaceConsumerDetailPage.tsx');
-    expect(consumer).toMatch(/ActivityConsumerDetailModalShell/);
+    expect(consumer).toMatch(/DetailPageShell/);
     expect(consumer).toMatch(/PLACE_PEEK_ARRANGE_TRIP/);
     expect(read('src/explore/ui/peek/place/PlacePeekActions.tsx')).toMatch(/PLACE_PEEK_FOOTER_PLAN_TRIP/);
     expect(read('src/explore/ui/peek/place/PlacePeekActions.tsx')).toMatch(/PeekDetailLink/);

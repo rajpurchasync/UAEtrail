@@ -5,6 +5,7 @@ import { bootstrapTestApp } from './helpers/bootstrap.js';
 import {
   cleanupEventFixture,
   cleanupTestUsers,
+  createFullEventFixture,
   createPublishedEventFixture,
   registerVerifiedVisitor,
   type PublishedEventFixture,
@@ -67,7 +68,7 @@ describe('activity RSVP flow integration', () => {
     expect(rsvpRes.body.data.participation.status).toBe('confirmed');
 
     const detailRes = await request(app)
-      .get(`/api/activities/${rsvpFixture.activityId}`)
+      .get(`/api/activities/${rsvpFixture.activityId}/me/state`)
       .set('Authorization', `Bearer ${token}`);
 
     expect(detailRes.status).toBe(200);
@@ -118,6 +119,72 @@ describe('activity RSVP flow integration', () => {
 
     expect(rsvpRes.status).toBe(400);
     expect(rsvpRes.body.error.code).toBe('approval_required');
+  });
+
+  it('waitlists RSVP joiners when the outing is full', async () => {
+    const fullRsvp = await createFullEventFixture(`${suffix}-rsvp-full`);
+    await getMongoClient()!
+      .db()
+      .collection('activities')
+      .updateOne(
+        { _id: fullRsvp.activityId },
+        {
+          $set: {
+            participationMode: 'rsvp',
+            requirements: [RSVP_PARTICIPATION_REQUIREMENT],
+            waitlist: true,
+          },
+        }
+      );
+
+    const waitlistVisitor = await registerVerifiedVisitor(app, `${suffix}-rsvp-wait`);
+    const login = await request(app)
+      .post('/api/auth/login')
+      .send({ email: waitlistVisitor.email, password: waitlistVisitor.password });
+    const token = login.body.tokens.accessToken as string;
+
+    const rsvpRes = await request(app)
+      .post(`/api/activities/${fullRsvp.activityId}/rsvp`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({});
+
+    expect(rsvpRes.status).toBe(201);
+    expect(rsvpRes.body.data.waitlisted).toBe(true);
+    expect(rsvpRes.body.data.request.status).toBe('waitlisted');
+    expect(rsvpRes.body.data.participation).toBeNull();
+    await cleanupEventFixture(fullRsvp);
+  });
+
+  it('rejects RSVP when full and waitlist is off', async () => {
+    const closedRsvp = await createFullEventFixture(`${suffix}-rsvp-closed`);
+    await getMongoClient()!
+      .db()
+      .collection('activities')
+      .updateOne(
+        { _id: closedRsvp.activityId },
+        {
+          $set: {
+            participationMode: 'rsvp',
+            requirements: [RSVP_PARTICIPATION_REQUIREMENT],
+            waitlist: false,
+          },
+        }
+      );
+
+    const blocked = await registerVerifiedVisitor(app, `${suffix}-rsvp-full-block`);
+    const login = await request(app)
+      .post('/api/auth/login')
+      .send({ email: blocked.email, password: blocked.password });
+    const token = login.body.tokens.accessToken as string;
+
+    const rsvpRes = await request(app)
+      .post(`/api/activities/${closedRsvp.activityId}/rsvp`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({});
+
+    expect(rsvpRes.status).toBe(400);
+    expect(rsvpRes.body.error.code).toBe('activity_full');
+    await cleanupEventFixture(closedRsvp);
   });
 
   it('lists RSVP activity in /me/activities', async () => {

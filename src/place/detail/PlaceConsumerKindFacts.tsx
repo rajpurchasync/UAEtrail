@@ -7,24 +7,48 @@ import {
   resolvePlacePeekEventFactsFromPlace,
   resolvePlacePeekTrailFactsFromPlace,
 } from '../peek/resolvePlacePeekCatalogFacts';
+import { StatGrid, StatTile } from '../../detail/shell';
+import { keyFactIconFromLabel } from '../../detail/shell/keyFactIcons';
 
-const factCellClass =
-  'rounded-xl border border-neutral-100 bg-neutral-50/90 px-3 py-2.5 text-sm text-neutral-900 lg:rounded-lg lg:px-2.5 lg:py-1.5 lg:text-[13px]';
-const factLabelClass = 'text-[11px] font-semibold uppercase tracking-wide text-neutral-500';
 const labelChipClass =
   'inline-flex rounded-lg border border-neutral-200 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-800';
 
-export const PlaceConsumerKindFacts = ({ kind, place }: { kind: PlaceDetailKind; place: Place }) => {
+const factGrid = (cells: { label: string; value: string }[]) =>
+  cells.length > 0 ? (
+    <StatGrid label="">
+      {cells.map((cell) => (
+        <StatTile
+          key={cell.label}
+          label={cell.label}
+          value={cell.value}
+          icon={keyFactIconFromLabel(cell.label)}
+        />
+      ))}
+    </StatGrid>
+  ) : null;
+
+export const PlaceConsumerKindFacts = ({
+  kind,
+  place,
+  showAudience = true,
+}: {
+  kind: PlaceDetailKind;
+  place: Place;
+  showAudience?: boolean;
+}) => {
   const catalogKind = placeKindFromLocationRow({
     activityType: place.activityType,
     tags: place.tags,
   });
   if (isFacilityPlaceKind(catalogKind)) {
     return (
-      <div className={factCellClass}>
-        <p className={factLabelClass}>Facility</p>
-        <p className="mt-0.5 font-semibold">{PLACE_KIND_LABELS[catalogKind]}</p>
-      </div>
+      <StatGrid label="">
+        <StatTile
+          label="Facility"
+          value={PLACE_KIND_LABELS[catalogKind]}
+          icon={keyFactIconFromLabel('Facility')}
+        />
+      </StatGrid>
     );
   }
 
@@ -40,20 +64,13 @@ export const PlaceConsumerKindFacts = ({ kind, place }: { kind: PlaceDetailKind;
     if (cells.length === 0 && audience.length === 0) return null;
     return (
       <div className="space-y-2">
-        {cells.length > 0 ? (
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {cells.map((cell) => (
-              <div key={cell.label} className={factCellClass}>
-                <p className={factLabelClass}>{cell.label}</p>
-                <p className="mt-0.5 font-semibold">{cell.value}</p>
-              </div>
-            ))}
-          </div>
-        ) : null}
-        {audience.length > 0 ? (
+        {factGrid(cells)}
+        {showAudience && audience.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
             {audience.map((label) => (
-              <span key={label} className={labelChipClass}>{label}</span>
+              <span key={label} className={labelChipClass}>
+                {label}
+              </span>
             ))}
           </div>
         ) : null}
@@ -69,20 +86,13 @@ export const PlaceConsumerKindFacts = ({ kind, place }: { kind: PlaceDetailKind;
     if (cells.length === 0 && audience.length === 0) return null;
     return (
       <div className="space-y-2">
-        {cells.length > 0 ? (
-          <div className="grid grid-cols-2 gap-2">
-            {cells.map((cell) => (
-              <div key={cell.label} className={factCellClass}>
-                <p className={factLabelClass}>{cell.label}</p>
-                <p className="mt-0.5 font-semibold">{cell.value}</p>
-              </div>
-            ))}
-          </div>
-        ) : null}
-        {audience.length > 0 ? (
+        {factGrid(cells)}
+        {showAudience && audience.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
             {audience.map((label) => (
-              <span key={label} className={labelChipClass}>{label}</span>
+              <span key={label} className={labelChipClass}>
+                {label}
+              </span>
             ))}
           </div>
         ) : null}
@@ -99,20 +109,13 @@ export const PlaceConsumerKindFacts = ({ kind, place }: { kind: PlaceDetailKind;
     if (cells.length === 0 && audience.length === 0) return null;
     return (
       <div className="space-y-2">
-        {cells.length > 0 ? (
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {cells.map((cell) => (
-              <div key={cell.label} className={factCellClass}>
-                <p className={factLabelClass}>{cell.label}</p>
-                <p className="mt-0.5 font-semibold">{cell.value}</p>
-              </div>
-            ))}
-          </div>
-        ) : null}
-        {audience.length > 0 ? (
+        {factGrid(cells)}
+        {showAudience && audience.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
             {audience.map((label) => (
-              <span key={label} className={labelChipClass}>{label}</span>
+              <span key={label} className={labelChipClass}>
+                {label}
+              </span>
             ))}
           </div>
         ) : null}
@@ -124,7 +127,9 @@ export const PlaceConsumerKindFacts = ({ kind, place }: { kind: PlaceDetailKind;
   return (
     <div className="flex flex-wrap gap-1.5">
       {audience.map((label) => (
-        <span key={label} className={labelChipClass}>{label}</span>
+        <span key={label} className={labelChipClass}>
+          {label}
+        </span>
       ))}
     </div>
   );

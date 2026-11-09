@@ -31,6 +31,8 @@ export const shopApi = {
     contactEmail?: string;
     contactPhone?: string;
     region?: string | null;
+    allowInboundChat?: boolean;
+    showContactPhone?: boolean;
   }) =>
     apiRequest<{ data: MerchantProfileDTO }>('/shop/organisation/profile', {
       method: 'POST',
@@ -46,6 +48,8 @@ export const shopApi = {
     contactEmail?: string;
     contactPhone?: string;
     region?: string | null;
+    allowInboundChat?: boolean;
+    showContactPhone?: boolean;
   }) =>
     apiRequest<{ data: MerchantProfileDTO }>('/shop/merchant/profile', {
       method: 'POST',
@@ -63,6 +67,8 @@ export const shopApi = {
       contactEmail?: string;
       contactPhone?: string;
       region?: string | null;
+      allowInboundChat?: boolean;
+      showContactPhone?: boolean;
     }>
   ) =>
     apiRequest<{ data: MerchantProfileDTO }>(
@@ -84,6 +90,8 @@ export const shopApi = {
       contactEmail?: string;
       contactPhone?: string;
       region?: string | null;
+      allowInboundChat?: boolean;
+      showContactPhone?: boolean;
     }>
   ) =>
     apiRequest<{ data: MerchantProfileDTO }>(

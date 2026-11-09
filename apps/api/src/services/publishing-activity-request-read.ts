@@ -16,6 +16,8 @@ const mapTenantRequestRow = (
   return {
     id: request.id,
     status: request.status.toLowerCase(),
+    adults: request.adults,
+    kids: request.kids,
     note: request.note,
     hostNote: request.hostNote,
     cancelReason: request.cancelReason,

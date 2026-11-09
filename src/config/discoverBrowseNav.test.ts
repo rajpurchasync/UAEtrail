@@ -5,33 +5,36 @@ import {
   CONSUMER_HAMBURGER_MENU,
   DESKTOP_NAV_LINKS,
   EXPLORE_DISCOVER_BROWSE_PATH,
+  EXPLORE_MAP_PATH,
+  LIST_DISCOVERY_PATH,
   MOBILE_LANDING_USER_MENU,
 } from './platform';
+import { DESKTOP_PRIMARY_NAV } from './desktopNav';
 
 describe('discover browse navigation contract', () => {
-  it('hamburger opens discover browse; desktop top nav does not duplicate Browse', () => {
+  it('hamburger Explore lands on the map; list catalog is not a sibling Browse item', () => {
     const exploreLink = CONSUMER_HAMBURGER_MENU.find(
       (item) => item.kind === 'link' && item.label === 'Explore'
     );
-    const hamburgerLink = CONSUMER_HAMBURGER_MENU.find(
+    const hamburgerBrowse = CONSUMER_HAMBURGER_MENU.find(
       (item) => item.kind === 'link' && item.label === 'Browse'
     );
     expect(exploreLink?.kind).toBe('link');
     if (exploreLink?.kind === 'link') {
-      expect(exploreLink.to).toBe('/explore');
+      expect(exploreLink.to).toBe(EXPLORE_MAP_PATH);
+      expect(exploreLink.match).toContain(LIST_DISCOVERY_PATH);
     }
-    expect(hamburgerLink?.kind).toBe('link');
-    if (hamburgerLink?.kind === 'link') {
-      expect(hamburgerLink.to).toBe('/list');
-    }
+    expect(hamburgerBrowse).toBeUndefined();
     expect(DESKTOP_NAV_LINKS.some((link) => link.to === EXPLORE_DISCOVER_BROWSE_PATH)).toBe(false);
+    expect(DESKTOP_PRIMARY_NAV.some((item) => item.label === 'Browse')).toBe(false);
+    expect(DESKTOP_PRIMARY_NAV.find((item) => item.key === 'explore')?.to).toBe(EXPLORE_MAP_PATH);
   });
 
-  it('guest landing drawer exposes map and discover browse separately', () => {
+  it('guest landing drawer exposes map-first Explore only (list stays an in-page projection)', () => {
     const explore = MOBILE_LANDING_USER_MENU.find((item) => item.label === 'Explore');
     const browse = MOBILE_LANDING_USER_MENU.find((item) => item.label === 'Browse');
-    expect(explore?.to).toBe('/explore');
-    expect(browse?.to).toBe('/list');
+    expect(explore?.to).toBe(EXPLORE_MAP_PATH);
+    expect(browse).toBeUndefined();
   });
 
   it('ExploreExperience wires map list and discover browse separately', () => {

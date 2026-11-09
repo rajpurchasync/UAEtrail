@@ -68,7 +68,7 @@ export const isPlanHostingFilterRoute = (pathname: string, search: string): bool
   isPlanPath(pathname) && new URLSearchParams(search).get('filter') === 'hosting';
 
 /**
- * Desktop sidebar “My Plans” target when Organise → Hosting schedule is shown:
+ * Desktop sidebar “My Plans” target when Hosting → Hosting schedule is shown:
  * participant view (joined) so the two links are not the same landing.
  */
 export const planMemberNavPath = (showOrganiserShortcut: boolean): string =>

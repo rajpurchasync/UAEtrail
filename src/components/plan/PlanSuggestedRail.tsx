@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { HorizontalDragScroll } from '../ui/HorizontalDragScroll';
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { planWishlistMatchFocusId } from '../../plan/planWishlistReturnCapture';
 import { usePlanWishlistSuggestions } from '../../hooks/usePlanWishlistSuggestions';
@@ -28,7 +29,8 @@ export const PlanSuggestedRail = ({ refreshKey = 0 }: PlanSuggestedRailProps) =>
         ) : null}
       </div>
       <p className="text-xs text-neutral-500">Outings on the map that match what you saved.</p>
-      <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-1 scrollbar-none snap-x snap-mandatory">
+      <HorizontalDragScroll className="-mx-1 overflow-x-auto overscroll-x-contain px-1 pb-1 scrollbar-none snap-x snap-mandatory [-webkit-overflow-scrolling:touch]">
+        <div className="flex w-max gap-3">
         {suggestions.map((row) => (
           <PlanWishlistDetailLink
             key={row.wishlistItemId}
@@ -58,7 +60,8 @@ export const PlanSuggestedRail = ({ refreshKey = 0 }: PlanSuggestedRailProps) =>
         >
           Explore more
         </Link>
-      </div>
+        </div>
+      </HorizontalDragScroll>
     </section>
   );
 };

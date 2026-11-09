@@ -5,11 +5,11 @@ import { join } from 'node:path';
 const read = (relativePath: string) => readFileSync(join(process.cwd(), relativePath), 'utf8');
 
 describe('public entity shell (S9 Phase 5)', () => {
-  it('shop public page uses EntityPublicDetailShell and shop tab wire ids', () => {
+  it('shop public page uses DetailPageShell and shop tab wire ids', () => {
     const shop = read('src/components/shop/ShopPublicPage.tsx');
-    expect(shop).toMatch(/EntityPublicDetailShell/);
+    expect(shop).toMatch(/DetailPageShell/);
     expect(shop).toMatch(/shopPublicDetailTab/);
-    expect(shop).toMatch(/ConsumerEntityTabBar/);
+    expect(shop).toMatch(/ConsumerDetailSectionJumpNav/);
   });
 
   it('organisation public route uses EntityPublicDetailShell and tab layout', () => {

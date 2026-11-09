@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, type MutableRefObject } from '
 import { isGeographyMapSource } from '@uaetrail/shared-types';
 import { Link } from 'react-router-dom';
 import L from 'leaflet';
-import { MapContainer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
+import { MapContainer, Marker, Popup, Tooltip, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
@@ -45,6 +45,10 @@ import type {
 } from './placesMapTypes';
 export type { ColocatedMapPinEntry, MapBounds, MapPinKind, MapPinSource, PlaceMapPin };
 import { exploreMapClusterRadiusPx, EXPLORE_MAP_CLUSTER_DISABLE_AT_ZOOM } from '../../explore/ui/exploreMapCluster';
+import {
+  formatExploreMapClusterTooltipLabel,
+  formatExploreMapPinTooltipLabel,
+} from '../../explore/exploreMapPinTooltip';
 
 const toMapPinRingSource = (source: MapPinSource, seeking: boolean): MapPinRingSource | undefined => {
   if (seeking) return 'seeking';
@@ -62,6 +66,68 @@ const toMapPinRingSource = (source: MapPinSource, seeking: boolean): MapPinRingS
     default:
       return undefined;
   }
+};
+
+const MAP_PIN_TOOLTIP_OPTIONS = {
+  direction: 'top' as const,
+  offset: [0, -14] as [number, number],
+  className: 'uaetrail-map-pin-tooltip',
+  opacity: 1,
+  sticky: true,
+};
+
+const colocatedEntriesForTooltip = (
+  pin: PlaceMapPin
+): ColocatedPinIconEntry[] | null => {
+  if (!pin.colocatedEntries?.length) return null;
+  return pin.colocatedEntries.map((entry) => {
+    const source = entry.source ?? 'activity';
+    return {
+      kind: entry.activityType,
+      source,
+      ringColor: exploreMapPinRingColor(
+        entry.activityType,
+        toMapPinRingSource(source, entry.activityMode === 'seeking')
+      ),
+      exploreItemId: entry.exploreItemId,
+      stackCount: entry.stackCount ?? 1,
+      activityMode: entry.activityMode ?? null,
+    };
+  });
+};
+
+const resolveExploreMapPinTooltipLabel = (pin: PlaceMapPin): string | null => {
+  const colocated = colocatedEntriesForTooltip(pin);
+  if (colocated?.length) return formatExploreMapClusterTooltipLabel(colocated);
+  if ((pin.stackCount ?? 1) > 1) {
+    return formatExploreMapClusterTooltipLabel([
+      { kind: pin.activityType, stackCount: pin.stackCount ?? 1 },
+    ]);
+  }
+  return formatExploreMapPinTooltipLabel(pin);
+};
+
+const attachExploreMapPinTooltip = (marker: L.Marker, pin: PlaceMapPin) => {
+  const label = resolveExploreMapPinTooltipLabel(pin);
+  if (!label) return;
+  marker.bindTooltip(label, MAP_PIN_TOOLTIP_OPTIONS);
+};
+
+const attachExploreMapClusterTooltip = (
+  cluster: L.MarkerCluster,
+  clusterPins: PlaceMapPin[],
+  entries: ColocatedPinIconEntry[]
+) => {
+  cluster.unbindTooltip();
+  const totalStacked = entries.reduce((sum, entry) => sum + (entry.stackCount ?? 1), 0);
+  const useBreakdown = clusterPins.length > 1 || entries.length > 1 || totalStacked > 1;
+  if (useBreakdown) {
+    const label = formatExploreMapClusterTooltipLabel(entries);
+    if (label) cluster.bindTooltip(label, MAP_PIN_TOOLTIP_OPTIONS);
+    return;
+  }
+  const pin = clusterPins[0];
+  if (pin) attachExploreMapPinTooltip(cluster, pin);
 };
 
 const padBounds = (bounds: MapBounds, padding = 0.08): MapBounds => ({
@@ -708,10 +774,22 @@ const FlyToSelectedPin = ({
   selectedExploreItemId?: string;
 }) => {
   const map = useMap();
+  const lastPannedSelectionRef = useRef<string | null>(null);
+  const pendingSelectionRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!selectedExploreItemId) return;
-    const related = pins.filter((entry) => pinMatchesSelection(entry, selectedExploreItemId));
+    if (!selectedExploreItemId) {
+      lastPannedSelectionRef.current = null;
+      pendingSelectionRef.current = null;
+      return;
+    }
+    if (selectedExploreItemId !== lastPannedSelectionRef.current) {
+      pendingSelectionRef.current = selectedExploreItemId;
+    }
+    const target = pendingSelectionRef.current;
+    if (!target) return;
+
+    const related = pins.filter((entry) => pinMatchesSelection(entry, target));
     if (related.length === 0) return;
 
     const focus =
@@ -721,8 +799,14 @@ const FlyToSelectedPin = ({
     const point = map.latLngToContainerPoint([focus.lat, focus.lng]);
     const size = map.getSize();
     const delta = panDeltaToShowPinWithPopup(point, size);
-    if (!delta) return;
+    if (!delta) {
+      lastPannedSelectionRef.current = target;
+      pendingSelectionRef.current = null;
+      return;
+    }
     map.panBy([delta.x, delta.y], { animate: true, duration: 0.35 });
+    lastPannedSelectionRef.current = target;
+    pendingSelectionRef.current = null;
   }, [map, pins, selectedExploreItemId]);
 
   return null;
@@ -791,7 +875,7 @@ const SidecarSessionZoom = ({
   return null;
 };
 
-/** Pan at session zoom when hover/select targets a pin off-screen or near an edge; idle keeps the current view. */
+/** List side map — fly at session zoom when hover or selection targets a pin outside the comfortable inset. */
 const ListSidecarMapViewportSync = ({
   pins,
   highlightedExploreItemId,
@@ -806,17 +890,63 @@ const ListSidecarMapViewportSync = ({
   const map = useMap();
 
   useEffect(() => {
-    if (!highlightedExploreItemId && !selectedExploreItemId) return;
+    const focusId = highlightedExploreItemId ?? selectedExploreItemId;
+    if (!focusId) return;
 
     const zoom = resolveSidecarSessionZoom(sessionZoomRef.current, map.getZoom());
-    const focusId = highlightedExploreItemId ?? selectedExploreItemId;
-    const related = pins.filter((entry) => pinMatchesSelection(entry, focusId!));
+    const related = pins.filter((entry) => pinMatchesSelection(entry, focusId));
     if (related.length === 0) return;
     const coords = related.map((entry) => ({ lat: entry.latitude, lng: entry.longitude }));
     if (!anyPinOutsideComfortableView(map, coords)) return;
     const target = sidecarFocusCenter(coords);
     map.flyTo([target.lat, target.lng], zoom, { duration: 0.4 });
   }, [map, pins, highlightedExploreItemId, selectedExploreItemId, sessionZoomRef]);
+
+  return null;
+};
+
+const EXPLORE_DEVICE_LOCATION_ICON: L.DivIcon = L.divIcon({
+  className: 'uaetrail-map-user-location',
+  html: '<span class="uaetrail-map-user-location-dot" aria-hidden="true"></span>',
+  iconSize: [28, 28],
+  iconAnchor: [14, 14],
+});
+
+const ExploreDeviceLocationMarker = ({
+  location,
+}: {
+  location: { lat: number; lng: number };
+}) => (
+  <Marker
+    position={[location.lat, location.lng]}
+    icon={EXPLORE_DEVICE_LOCATION_ICON}
+    zIndexOffset={2500}
+    interactive={false}
+    keyboard={false}
+    alt="Your location"
+  />
+);
+
+/** Explore map behind browse drawer — pan to hovered pin only when it is outside the comfortable inset. */
+const ExploreListHoverViewportSync = ({
+  pins,
+  highlightedExploreItemId,
+}: {
+  pins: PlaceMapPin[];
+  highlightedExploreItemId?: string;
+}) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!highlightedExploreItemId) return;
+
+    const related = pins.filter((entry) => pinMatchesSelection(entry, highlightedExploreItemId));
+    if (related.length === 0) return;
+    const coords = related.map((entry) => ({ lat: entry.latitude, lng: entry.longitude }));
+    if (!anyPinOutsideComfortableView(map, coords)) return;
+    const target = sidecarFocusCenter(coords);
+    map.flyTo([target.lat, target.lng], map.getZoom(), { duration: 0.4 });
+  }, [map, pins, highlightedExploreItemId]);
 
   return null;
 };
@@ -838,6 +968,37 @@ const ClusteredMarkers = ({
   const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
   const pinsKeyValue = useMemo(() => pinsKey(pins), [pins]);
   const onPinClickRef = useRef(onPinClick);
+  const selectedRef = useRef(selectedExploreItemId);
+  const highlightedRef = useRef(highlightedExploreItemId);
+  selectedRef.current = selectedExploreItemId;
+  highlightedRef.current = highlightedExploreItemId;
+
+  const refreshClusterPinEmphasis = useCallback(() => {
+    const group = clusterGroupRef.current;
+    if (!group) return;
+    const activeSelected = selectedRef.current;
+    const activeHighlighted = highlightedRef.current;
+    let index = 0;
+    group.eachLayer((layer) => {
+      const marker = layer as MarkerWithPin;
+      const pin = marker.options.uaetrailPin;
+      if (!pin) return;
+      marker.setIcon(
+        pinIcon(
+          pin.activityType,
+          isPinEmphasized(pin, activeSelected, activeHighlighted),
+          pin,
+          pin.rideshareEndpoint,
+          activeSelected,
+          mapZoomRef.current,
+          activeHighlighted
+        )
+      );
+      marker.setZIndexOffset(markerZIndex(pin, activeSelected, activeHighlighted) + index);
+      index += 1;
+    });
+    group.refreshClusters();
+  }, []);
 
   useMapEvents({
     zoomend: () => {
@@ -852,6 +1013,10 @@ const ClusteredMarkers = ({
   useEffect(() => {
     onPinClickRef.current = onPinClick;
   }, [onPinClick]);
+
+  useEffect(() => {
+    refreshClusterPinEmphasis();
+  }, [highlightedExploreItemId, selectedExploreItemId, refreshClusterPinEmphasis]);
 
   useEffect(() => {
     if (!map?.getContainer()) return;
@@ -871,9 +1036,10 @@ const ClusteredMarkers = ({
           const clusterPins = pinsFromCluster(cluster);
           const entries = aggregateClusterPinEntries(
             clusterPins,
-            selectedExploreItemId,
-            highlightedExploreItemId
+            selectedRef.current,
+            highlightedRef.current
           );
+          attachExploreMapClusterTooltip(cluster, clusterPins, entries);
 
           if (clusterPins.length > 1) {
             return clusterCollidedLeafIcon(entries, clusterPins.length, mapZoomRef.current);
@@ -949,8 +1115,8 @@ const ClusteredMarkers = ({
 
         const entries = aggregateClusterPinEntries(
           clusterPins,
-          selectedExploreItemId,
-          highlightedExploreItemId
+          selectedRef.current,
+          highlightedRef.current
         );
         const exploreItemId = resolveClusterClickExploreItemId(
           entries,
@@ -967,22 +1133,24 @@ const ClusteredMarkers = ({
         const marker = L.marker([pin.latitude, pin.longitude], {
           icon: pinIcon(
             pin.activityType,
-            isPinEmphasized(pin, selectedExploreItemId, highlightedExploreItemId),
+            isPinEmphasized(pin, selectedRef.current, highlightedRef.current),
             pin,
             pin.rideshareEndpoint,
-            selectedExploreItemId,
+            selectedRef.current,
             mapZoomRef.current,
-            highlightedExploreItemId
+            highlightedRef.current
           ),
-          zIndexOffset: markerZIndex(pin, selectedExploreItemId, highlightedExploreItemId) + index,
+          zIndexOffset: markerZIndex(pin, selectedRef.current, highlightedRef.current) + index,
         }) as MarkerWithPin;
         marker.options.uaetrailPin = pin;
         marker.on('click', (event) => onPinClickRef.current?.(resolvePinClick(pin, event)));
+        attachExploreMapPinTooltip(marker, pin);
         group.addLayer(marker);
       }
 
       map.addLayer(group);
       clusterGroupRef.current = group;
+      refreshClusterPinEmphasis();
     } catch (error) {
       console.error('[ClusteredMarkers] failed to mount cluster layer', error);
       return;
@@ -1000,7 +1168,7 @@ const ClusteredMarkers = ({
         // Map may already be torn down during route changes / StrictMode.
       }
     };
-  }, [map, pins, pinsKeyValue, selectedExploreItemId, highlightedExploreItemId]);
+  }, [map, pins, pinsKeyValue, refreshClusterPinEmphasis]);
 
   return null;
 };
@@ -1036,6 +1204,8 @@ interface PlacesMapProps {
   flyToHighlightedPin?: boolean;
   /** Map-container pixels of the selected pin — peek bubble origin. */
   onSelectedPinScreenPoint?: (point: { x: number; y: number } | null) => void;
+  /** Shown after Locate me / allow location — blue dot at device coordinates. */
+  deviceLocation?: { lat: number; lng: number } | null;
 };
 
 /** Interactive map with location pins anchored to coordinates (Leaflet map tiles). */
@@ -1064,6 +1234,7 @@ export const PlacesMap = ({
   layoutRevision,
   flyToHighlightedPin = false,
   onSelectedPinScreenPoint,
+  deviceLocation = null,
 }: PlacesMapProps) => {
   const sidecarSessionZoomRef = useRef<number | null>(null);
   const mapBounds = useMemo(() => boundsFromPins(pins, bounds), [pins, bounds]);
@@ -1088,7 +1259,9 @@ export const PlacesMap = ({
   const resolvedFillMinHeight = fill ? Math.max(minHeight || 0, exploreFillMinPx) : minHeight;
   const activeSelection = selectedExploreItemId ?? selectedPinId;
 
-  const renderMarker = (pin: PlaceMapPin) => (
+  const renderMarker = (pin: PlaceMapPin) => {
+    const tooltipLabel = resolveExploreMapPinTooltipLabel(pin);
+    return (
     <Marker
       key={pin.id}
       position={[pin.latitude, pin.longitude]}
@@ -1110,6 +1283,9 @@ export const PlacesMap = ({
           : undefined
       }
     >
+      {tooltipLabel ? (
+        <Tooltip {...MAP_PIN_TOOLTIP_OPTIONS}>{tooltipLabel}</Tooltip>
+      ) : null}
       {onPinClick ? null : (
         <Popup>
           <div className="min-w-[140px]">
@@ -1131,7 +1307,8 @@ export const PlacesMap = ({
         </Popup>
       )}
     </Marker>
-  );
+    );
+  };
 
   const resolvedMinZoom = minZoom ?? (exploreMode ? MAP_CONFIG.exploreMinZoom : 9);
   const tileLoad = mapTileLoadOptions(exploreMode);
@@ -1193,7 +1370,13 @@ export const PlacesMap = ({
             />
           </>
         ) : (
-          <FlyToSelectedPin pins={pins} selectedExploreItemId={activeSelection} />
+          <>
+            <FlyToSelectedPin pins={pins} selectedExploreItemId={activeSelection} />
+            <ExploreListHoverViewportSync
+              pins={pins}
+              highlightedExploreItemId={highlightedExploreItemId}
+            />
+          </>
         )}
         {onSelectedPinScreenPoint ? (
           <SelectedPinScreenReporter
@@ -1213,6 +1396,9 @@ export const PlacesMap = ({
         ) : (
           pins.map(renderMarker)
         )}
+        {exploreMode && deviceLocation ? (
+          <ExploreDeviceLocationMarker location={deviceLocation} />
+        ) : null}
       </MapContainer>
       {showLegend && (
         <div className="pointer-events-none absolute bottom-3 left-3 z-[1000] flex flex-wrap gap-2">

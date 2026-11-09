@@ -1,4 +1,4 @@
-import type { Collection } from 'mongodb';
+import type { Collection, Filter } from 'mongodb';
 import type { Location } from '../domain/types.js';
 import { LocationStatus } from '../domain/enums.js';
 import { getMongoClient } from './mongo.js';
@@ -6,11 +6,17 @@ import { locationGeoIndexFields } from './geo-index-fields.js';
 import { radiusKmToRadians, withLocationGeoFields } from './location-geo.js';
 import { withQueryTiming } from './query-timing.js';
 import { registryCoverImageMongoFilter } from './catalog-registry-cover.js';
+import { enrichLocationsWithHeavyReadsBatch } from './place-heavy-store.js';
+import { mongoGeoSearchFilter } from './explore-geo-search.js';
 
 export interface LocationListFilters {
   activityType?: 'hiking' | 'camping' | 'event';
   featured?: boolean;
   countryCode?: string;
+  q?: string;
+  country?: string;
+  area?: string;
+  venue?: string;
   lat?: number;
   lng?: number;
   radius?: number;
@@ -66,6 +72,20 @@ const buildMongoFilter = (filters: LocationListFilters): Record<string, unknown>
   return query;
 };
 
+const mergeGeoSearch = async (
+  query: Record<string, unknown>,
+  filters: LocationListFilters
+): Promise<Record<string, unknown>> => {
+  const geo = await mongoGeoSearchFilter({
+    q: filters.q,
+    country: filters.country,
+    area: filters.area,
+    venue: filters.venue,
+  });
+  if (!geo) return query;
+  return { $and: [query, geo] };
+};
+
 export const appendLocationRegionKeysToFilter = (
   query: Record<string, unknown>,
   regionBrowseKeys: string[]
@@ -79,14 +99,17 @@ const listActiveLocationsFromMongoGeo = async (
   offset: number
 ): Promise<{ items: Location[]; total: number }> => {
   const radiusKm = filters.radius ?? 50;
-  const query = {
-    ...buildMongoFilter(filters),
-    geo: {
-      $geoWithin: {
-        $centerSphere: [[filters.lng!, filters.lat!], radiusKmToRadians(radiusKm)]
+  const query = (await mergeGeoSearch(
+    {
+      ...buildMongoFilter(filters),
+      geo: {
+        $geoWithin: {
+          $centerSphere: [[filters.lng!, filters.lat!], radiusKmToRadians(radiusKm)]
+        }
       }
-    }
-  };
+    },
+    filters
+  )) as Filter<MongoLocationDoc>;
 
   const [items, total] = await Promise.all([
     locationsCollection()
@@ -98,7 +121,8 @@ const listActiveLocationsFromMongoGeo = async (
     locationsCollection().countDocuments(query)
   ]);
 
-  return { items: items.map(mapMongoLocation), total };
+  const enriched = await enrichLocationsWithHeavyReadsBatch(items.map(mapMongoLocation));
+  return { items: enriched, total };
 };
 
 const listActiveLocationsFromMongo = async (
@@ -106,7 +130,7 @@ const listActiveLocationsFromMongo = async (
   offset: number,
   projection?: Record<string, 0 | 1>
 ): Promise<{ items: Location[]; total: number }> => {
-  const query = buildMongoFilter(filters);
+  const query = (await mergeGeoSearch(buildMongoFilter(filters), filters)) as Filter<MongoLocationDoc>;
 
   const [items, total] = await Promise.all([
     locationsCollection()
@@ -118,7 +142,8 @@ const listActiveLocationsFromMongo = async (
     locationsCollection().countDocuments(query)
   ]);
 
-  return { items: items.map(mapMongoLocation), total };
+  const enriched = await enrichLocationsWithHeavyReadsBatch(items.map(mapMongoLocation));
+  return { items: enriched, total };
 };
 
 /** Fields required by explore map base assembly (not full location documents). */
@@ -140,6 +165,7 @@ const EXPLORE_MAP_LOCATION_PROJECTION = {
   season: 1,
   status: 1,
   registryListed: 1,
+  geoRef: 1,
 } as const;
 
 export async function listActiveLocationsForExploreMap(

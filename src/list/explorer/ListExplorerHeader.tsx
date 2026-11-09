@@ -1,4 +1,4 @@
-import { ChevronLeft, Map, Maximize2, Minimize2, X } from 'lucide-react';
+import { ChevronLeft, Map, Maximize2, Minimize2, PanelLeftClose, X } from 'lucide-react';
 import { UiTooltip } from '../../components/ui/UiTooltip';
 import { useExploreDesktopListDrawerChrome } from '../../explore/ui/ExploreDesktopListDrawer';
 import { Link } from 'react-router-dom';
@@ -39,6 +39,8 @@ type ListExplorerHeaderProps = {
   onSortChange: (mode: ListExplorerSortMode) => void;
   locationPending?: boolean;
   locationDenied?: boolean;
+  /** Explore map + browse split — no separate map CTA. */
+  embedded?: boolean;
 };
 
 export const ListExplorerHeader = ({
@@ -63,6 +65,7 @@ export const ListExplorerHeader = ({
   onSortChange,
   locationPending,
   locationDenied,
+  embedded = false,
 }: ListExplorerHeaderProps) => {
   const hideSideMapChrome = mapColumnVisible || showMapColumnPrompt;
   const standaloneListSurface = !onClose;
@@ -90,7 +93,9 @@ export const ListExplorerHeader = ({
     >
       <div className={`${LIST_APP_BAR.row} mb-1 ${onClose ? '' : 'md:hidden'}`}>
         <div className="flex min-w-0 items-center gap-1">
-          {onClose ? (
+          {onClose && drawer ? (
+            <p className="truncate text-sm font-semibold text-neutral-900">Browse</p>
+          ) : onClose ? (
             <button
               type="button"
               onClick={onClose}
@@ -126,14 +131,18 @@ export const ListExplorerHeader = ({
                 </button>
                 </UiTooltip>
               ) : null}
-              <UiTooltip label="Close list">
+              <UiTooltip label={drawer ? 'Hide browse' : 'Close list'}>
               <button
                 type="button"
-                onClick={onClose}
+                onClick={drawer ? drawer.toggleCollapsed : onClose}
                 className={`${LIST_SEARCH.sideAction} ${LIST_SEARCH.sideActionMap} !h-10 !w-10 text-neutral-700`}
-                aria-label="Close list"
+                aria-label={drawer ? 'Hide browse' : 'Close list'}
               >
-                <X className="h-5 w-5 stroke-[2.25]" aria-hidden />
+                {drawer ? (
+                  <PanelLeftClose className="h-5 w-5 stroke-[2.25]" aria-hidden />
+                ) : (
+                  <X className="h-5 w-5 stroke-[2.25]" aria-hidden />
+                )}
               </button>
               </UiTooltip>
             </>
@@ -150,7 +159,7 @@ export const ListExplorerHeader = ({
         onClearQuery={onClearQuery}
         searchScopeCounts={searchScopeCounts}
         mapHref={mapHref}
-        hideMapLink={hideSideMapChrome || standaloneListSurface}
+        hideMapLink={embedded || hideSideMapChrome || standaloneListSurface}
         compactTop
         className="!mt-0"
       />

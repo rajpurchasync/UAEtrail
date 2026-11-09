@@ -52,7 +52,7 @@ export const GuestFeatureUnlockPanel = ({
     <div
       className={`flex flex-col text-left ${
         framed
-          ? `rounded-3xl border border-emerald-100/80 bg-gradient-to-b from-emerald-50/90 via-white to-white shadow-sm ${
+          ? `rounded-3xl border border-emerald-100/80 bg-gradient-to-b from-emerald-50/90 via-white to-white shadow-sm dark:border-emerald-900/50 dark:from-neutral-900 dark:via-neutral-900 dark:to-neutral-950 ${
               dialog ? 'explore-popup-adaptive p-5' : 'p-6'
             }`
           : 'explore-popup-adaptive'
@@ -96,13 +96,17 @@ export const GuestFeatureUnlockPanel = ({
         className={
           dialog
             ? 'explore-popup-adaptive-actions mt-4 flex flex-row gap-2'
-            : 'mt-6 space-y-2'
+            : 'mt-6 flex flex-col items-stretch gap-2 md:flex-row md:items-center'
         }
       >
         <AppButtonLink
           to={signUpHref}
           fullWidth={!dialog}
-          className={dialog ? 'min-h-11 min-w-0 flex-1 px-3 py-2.5 text-sm' : ''}
+          className={
+            dialog
+              ? 'min-h-11 min-w-0 flex-1 px-3 py-2.5 text-sm'
+              : 'md:!w-auto md:min-w-[9.5rem] md:px-5 md:py-2 md:text-sm'
+          }
         >
           {copy.signUpLabel}
         </AppButtonLink>

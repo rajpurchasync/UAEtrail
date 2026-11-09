@@ -24,6 +24,8 @@ const emptyProfile = {
   contactEmail: '',
   contactPhone: '',
   region: '',
+  allowInboundChat: false,
+  showContactPhone: false,
 };
 
 export const ShopOrganisationPanel = () => {
@@ -63,6 +65,8 @@ export const ShopOrganisationPanel = () => {
       contactEmail: profile.contactEmail ?? '',
       contactPhone: profile.contactPhone ?? '',
       region: profile.region ?? '',
+      allowInboundChat: profile.allowInboundChat === true,
+      showContactPhone: profile.showContactPhone === true,
     });
   };
 
@@ -219,6 +223,40 @@ export const ShopOrganisationPanel = () => {
                 className="mt-1 w-full rounded-xl border border-neutral-200 px-3 py-2.5 text-sm"
               />
             </div>
+          </div>
+          <div className="space-y-2">
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-neutral-200 px-3.5 py-3">
+              <input
+                type="checkbox"
+                checked={profileForm.showContactPhone}
+                onChange={(event) =>
+                  setProfileForm((prev) => ({ ...prev, showContactPhone: event.target.checked }))
+                }
+                className="mt-0.5 size-5 rounded border-neutral-300 text-emerald-600 focus:ring-emerald-500"
+              />
+              <span>
+                <span className="block text-sm font-semibold text-neutral-900">Show phone on shop page</span>
+                <span className="mt-0.5 block text-xs text-neutral-500">
+                  Visitors can call this number from the public shop page and map peek.
+                </span>
+              </span>
+            </label>
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-neutral-200 px-3.5 py-3">
+              <input
+                type="checkbox"
+                checked={profileForm.allowInboundChat}
+                onChange={(event) =>
+                  setProfileForm((prev) => ({ ...prev, allowInboundChat: event.target.checked }))
+                }
+                className="mt-0.5 size-5 rounded border-neutral-300 text-emerald-600 focus:ring-emerald-500"
+              />
+              <span>
+                <span className="block text-sm font-semibold text-neutral-900">Allow messages in chat</span>
+                <span className="mt-0.5 block text-xs text-neutral-500">
+                  Visitors can start an in-app chat with the shop contact. Leave off if you only want phone or email.
+                </span>
+              </span>
+            </label>
           </div>
           <AppButton type="submit" disabled={saving} className="w-full">
             {saving ? 'Saving…' : 'Save shop info'}

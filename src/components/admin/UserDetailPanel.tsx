@@ -431,13 +431,21 @@ const ActivityDrillDown = ({ activity, loading }: { activity: ActivityDTO | null
         </Section>
       )}
 
-      {activity.itinerary && activity.itinerary.length > 0 && (
+      {(activity.itinerary && activity.itinerary.length > 0) ||
+      (activity.itinerarySteps && activity.itinerarySteps.length > 0) ? (
         <Section title="Itinerary">
           <ul className="text-sm text-gray-700 list-disc list-inside space-y-1">
-            {activity.itinerary.map((step, i) => <li key={i}>{step}</li>)}
+            {(activity.itinerarySteps && activity.itinerarySteps.length > 0
+              ? activity.itinerarySteps.map((s) =>
+                  [s.at, s.title, s.note].filter(Boolean).join(' — ')
+                )
+              : activity.itinerary ?? []
+            ).map((step, i) => (
+              <li key={i}>{step}</li>
+            ))}
           </ul>
         </Section>
-      )}
+      ) : null}
 
       <Link to={`/activity/${activity.id}`} target="_blank" className="inline-flex text-sm font-medium text-emerald-700 hover:text-emerald-800">
         View public activity page ↗

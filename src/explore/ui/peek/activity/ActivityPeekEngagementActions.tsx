@@ -49,16 +49,16 @@ const prominenceClass = (prominence: ActivityMapPeekAction['prominence']): strin
 };
 
 const dualPrimaryClass =
-  'flex min-h-[3.25rem] flex-1 items-center justify-center rounded-xl bg-emerald-600 px-3 text-center text-sm font-bold text-white shadow-sm hover:bg-emerald-700';
+  'flex min-h-[3.25rem] flex-1 items-center justify-center rounded-xl bg-emerald-600 px-3 text-center text-sm font-bold text-white shadow-sm hover:bg-emerald-700 md:min-h-9 md:text-[13px] md:font-semibold';
 
 const dualSecondaryClass =
-  'flex min-h-[3.25rem] flex-1 items-center justify-center rounded-xl border border-neutral-200 bg-white px-3 text-center text-sm font-bold text-neutral-800';
+  'flex min-h-[3.25rem] flex-1 items-center justify-center rounded-xl border border-neutral-200 bg-white px-3 text-center text-sm font-bold text-neutral-800 md:min-h-9 md:text-[13px] md:font-semibold dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100';
 
 const detailDualPrimaryClass =
-  'flex min-h-[3.25rem] flex-1 items-center justify-center rounded-2xl bg-emerald-600 px-4 text-center text-sm font-bold text-white shadow-sm active:bg-emerald-700';
+  'flex min-h-[3.25rem] flex-1 items-center justify-center rounded-2xl bg-emerald-600 px-4 text-center text-sm font-bold text-white shadow-sm active:bg-emerald-700 lg:min-h-9 lg:rounded-lg lg:text-[13px] lg:font-semibold';
 
 const detailDualSecondaryClass =
-  'flex min-h-[3.25rem] flex-1 items-center justify-center rounded-2xl border border-white/70 bg-white/75 px-4 text-center text-sm font-bold text-neutral-800 shadow-sm backdrop-blur-sm active:bg-white/90';
+  'flex min-h-[3.25rem] flex-1 items-center justify-center rounded-2xl border border-white/70 bg-white/75 px-4 text-center text-sm font-bold text-neutral-800 shadow-sm backdrop-blur-sm active:bg-white/90 lg:min-h-9 lg:rounded-lg lg:text-[13px] lg:font-semibold dark:border-neutral-700 dark:bg-neutral-900/80 dark:text-neutral-100';
 
 const joinPhaseFromUi = (
   joinUiState?: JoinRequestUiState
@@ -127,8 +127,8 @@ export const ActivityPeekEngagementActions = ({
   };
   const joinFull = discoveryCardActivityJoinIsFull(card);
   const joinPrimaryClass = joinFull
-    ? 'w-full rounded-2xl bg-neutral-200 py-3.5 text-base font-bold text-neutral-500 cursor-not-allowed'
-    : 'w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white';
+    ? 'w-full cursor-not-allowed rounded-2xl bg-neutral-200 py-3.5 text-base font-bold text-neutral-500 md:py-2 md:text-sm dark:bg-neutral-800 dark:text-neutral-400'
+    : 'w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white md:py-2 md:text-sm';
 
   const pendingJoinLabel =
     joinUiState?.kind === 'pending' ? pendingApprovalLabel(joinUiState.status) : null;

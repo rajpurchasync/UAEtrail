@@ -4,8 +4,11 @@ import { Briefcase, PanelLeft, PanelLeftClose, Shield } from 'lucide-react';
 import { UiTooltip } from '../../ui/UiTooltip';
 import {
   DESKTOP_MAP_NAV,
-  DESKTOP_PRIMARY_NAV,
+  DESKTOP_MAP_SECTION_TITLE,
+  DESKTOP_PEOPLE_NAV,
+  DESKTOP_PEOPLE_SECTION_TITLE,
   DESKTOP_SIDE_NAV_SECTIONS,
+  desktopPrimaryNavForSession,
   isDesktopNavItemActive,
   type DesktopNavBadge,
   type DesktopNavItem,
@@ -55,17 +58,17 @@ const SideNavLink = ({ to, label, icon: Icon, active, compact, badge = 0, navHin
     to={to}
     aria-label={compact ? label : undefined}
     aria-current={active ? 'page' : undefined}
-    className={`group relative flex items-center gap-3 rounded-xl py-2 text-sm transition-colors ${
-      compact ? 'justify-center px-0' : 'justify-start px-3'
+    className={`group relative flex min-h-8 items-center gap-2 rounded-lg py-1 text-sm leading-snug transition-colors ${
+      compact ? 'justify-center px-0' : 'justify-start px-2.5'
     } ${
       active
-        ? 'bg-emerald-50 font-semibold text-emerald-800'
-        : 'font-medium text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900'
+        ? 'bg-emerald-50 font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200'
+        : 'font-medium text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-50'
     }`}
   >
-    <span className="relative flex h-9 w-9 shrink-0 items-center justify-center">
+    <span className="relative flex h-7 w-7 shrink-0 items-center justify-center">
       <Icon
-        className={`h-5 w-5 ${active ? 'text-emerald-700' : 'text-neutral-500 group-hover:text-neutral-700'}`}
+        className={`h-4 w-4 ${active ? 'text-emerald-700 dark:text-emerald-300' : 'text-neutral-500 group-hover:text-neutral-700 dark:text-neutral-400'}`}
         strokeWidth={active ? 2.25 : 2}
         aria-hidden
       />
@@ -136,9 +139,10 @@ export const DesktopSideNav = () => {
   const profileActive = pathname === PROFILE_PATH;
   const sectionTitleClass = compact
     ? 'sr-only'
-    : 'block px-3 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-500';
+    : 'block px-2.5 pb-0.5 pt-2.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-neutral-500';
 
   const showOrganiserPlanShortcut = Boolean(user && canAccessPublishingWorkspace);
+  const primaryNav = desktopPrimaryNavForSession(Boolean(user));
 
   const renderItems = (items: readonly DesktopNavItem[]) =>
     items.map((item) => {
@@ -168,9 +172,9 @@ export const DesktopSideNav = () => {
       aria-label="App navigation"
       data-desktop-side-nav
       style={{ width }}
-      className="relative z-[6800] hidden shrink-0 flex-col border-r border-neutral-200 bg-white md:flex md:overflow-visible"
+      className="relative z-[6800] hidden min-h-0 shrink-0 flex-col border-r border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950 md:flex md:overflow-visible"
     >
-      <nav aria-label="Primary" className="flex min-h-0 flex-1 flex-col overflow-y-auto px-2 py-3 scroll-touch product-sidebar-scroll">
+      <div className="shrink-0 px-2 pt-3 pb-1">
         {user ? (
           <Link
             to={PROFILE_PATH}
@@ -197,8 +201,8 @@ export const DesktopSideNav = () => {
             ) : null}
             <Link
               to={joinAuthPath(EXPLORE_MAP_PATH)}
-              className={`rounded-full bg-emerald-600 text-center text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 ${
-                compact ? 'px-3 py-2' : 'px-4 py-2'
+              className={`w-fit rounded-full bg-emerald-600 text-center text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 ${
+                compact ? 'px-3 py-1.5' : 'px-3.5 py-1.5'
               }`}
             >
               Join free
@@ -213,20 +217,32 @@ export const DesktopSideNav = () => {
             </Link>
           </div>
         )}
+      </div>
 
-        <div role="group" aria-label="Go" className="mt-1">
-          <p className={sectionTitleClass}>Go</p>
-          <div className={`space-y-0.5 ${compact ? 'mt-2 border-t border-neutral-100 pt-2' : 'mt-1'}`}>
-            {renderItems(DESKTOP_PRIMARY_NAV)}
+      <nav
+        aria-label="Primary"
+        className="flex min-h-0 flex-1 flex-col overflow-y-auto px-2 pb-2 scroll-touch product-sidebar-scroll"
+      >
+        <div role="group" aria-label="Go">
+          <p className={compact ? sectionTitleClass : `${sectionTitleClass} pt-1`}>Go</p>
+          <div className={compact ? 'mt-1.5 border-t border-neutral-100 pt-1.5' : undefined}>
+            {renderItems(primaryNav)}
           </div>
         </div>
 
-        <div role="group" aria-label="On the map" className="mt-1">
-          <p className={sectionTitleClass}>On the map</p>
-          <div className={`space-y-0.5 ${compact ? 'mt-2 border-t border-neutral-100 pt-2' : 'mt-0'}`}>
-            {renderItems(
-              user ? DESKTOP_MAP_NAV : DESKTOP_MAP_NAV.filter((item) => item.key !== 'findCrew')
-            )}
+        {user ? (
+          <div role="group" aria-label={DESKTOP_PEOPLE_SECTION_TITLE}>
+            <p className={sectionTitleClass}>{DESKTOP_PEOPLE_SECTION_TITLE}</p>
+            <div className={compact ? 'mt-1.5 border-t border-neutral-100 pt-1.5' : undefined}>
+              {renderItems(DESKTOP_PEOPLE_NAV)}
+            </div>
+          </div>
+        ) : null}
+
+        <div role="group" aria-label={DESKTOP_MAP_SECTION_TITLE}>
+          <p className={sectionTitleClass}>{DESKTOP_MAP_SECTION_TITLE}</p>
+          <div className={compact ? 'mt-1.5 border-t border-neutral-100 pt-1.5' : undefined}>
+            {renderItems(DESKTOP_MAP_NAV)}
           </div>
         </div>
 
@@ -237,27 +253,18 @@ export const DesktopSideNav = () => {
               items: section.items.filter((item) => item.key === 'settings'),
             })).filter((section) => section.items.length > 0)
         ).map((section) => (
-          <div key={section.key} role="group" aria-label={section.title} className="mt-1">
+          <div key={section.key} role="group" aria-label={section.title}>
             <p className={sectionTitleClass}>{section.title}</p>
-            <div
-              className={`space-y-0.5 ${compact ? 'mt-2 border-t border-neutral-100 pt-2' : 'mt-0'}`}
-            >
+            <div className={compact ? 'mt-1.5 border-t border-neutral-100 pt-1.5' : undefined}>
               {renderItems(section.items)}
             </div>
           </div>
         ))}
 
         {user && (canAccessPublishingWorkspace || user.role === 'platform_admin') ? (
-          <div role="group" aria-label="Organise" className="mt-1">
-            <p className={sectionTitleClass}>Organise</p>
-            {!compact && canAccessPublishingWorkspace ? (
-              <p className="px-3 pb-1 text-[11px] leading-snug text-neutral-500">
-                For hosts — manage outings you publish.
-              </p>
-            ) : null}
-            <div
-              className={`space-y-0.5 ${compact ? 'mt-2 border-t border-neutral-100 pt-2' : 'mt-0'}`}
-            >
+          <div role="group" aria-label="Hosting">
+            <p className={sectionTitleClass}>Hosting</p>
+            <div className={compact ? 'mt-1.5 border-t border-neutral-100 pt-1.5' : undefined}>
               {canAccessPublishingWorkspace ? (
                 <SideNavLink
                   to={planHostedSchedulePath()}
@@ -280,34 +287,32 @@ export const DesktopSideNav = () => {
             </div>
           </div>
         ) : null}
-
-        {compact ? null : (
-          <footer className="mt-auto px-2 pb-1 pt-6 text-center">
-            <ul className="flex flex-col items-center gap-1 text-xs text-neutral-500">
-              {[FOOTER_LINKS.slice(0, 3), FOOTER_LINKS.slice(3)].map((row) => (
-                <li key={row[0].to}>
-                  <ul className="flex items-center justify-center">
-                    {row.map((link, index) => (
-                      <li key={link.to} className="flex items-center">
-                        {index > 0 ? (
-                          <span className="mx-1.5 text-neutral-300" aria-hidden>
-                            ·
-                          </span>
-                        ) : null}
-                        <Link to={link.to} className="hover:text-neutral-800 hover:underline">
-                          {link.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-2 text-center text-[11px] text-neutral-400">© {new Date().getFullYear()} UAE Trail</p>
-          </footer>
-        )}
       </nav>
-      <div className="shrink-0 border-t border-neutral-100 p-2">
+      {compact ? null : (
+        <footer className="shrink-0 border-t border-neutral-100 px-2 py-2.5 text-center dark:border-neutral-800">
+          <ul className="flex flex-col items-center gap-1 text-xs text-neutral-500">
+            {[FOOTER_LINKS.slice(0, 3), FOOTER_LINKS.slice(3)].map((row) => (
+              <li key={row[0].to}>
+                <ul className="flex items-center justify-center">
+                  {row.map((link, index) => (
+                    <li key={link.to} className="flex items-center">
+                      {index > 0 ? (
+                        <span className="mx-1.5 text-neutral-300" aria-hidden>
+                          ·
+                        </span>
+                      ) : null}
+                      <Link to={link.to} className="hover:text-neutral-800 hover:underline">
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            ))}
+          </ul>
+        </footer>
+      )}
+      <div className="shrink-0 border-t border-neutral-100 p-2 dark:border-neutral-800">
         <UiTooltip
           label={expanded ? 'Collapse navigation' : 'Expand navigation'}
           className="block"

@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { activityInstantHasEnded, activityScheduleHasEnded } from './activity-schedule.js';
+import {
+  activityInstantHasEnded,
+  activityScheduleHasEnded,
+  gccCalendarDate,
+} from './activity-schedule.js';
 
 describe('activity-schedule', () => {
   it('activityInstantHasEnded uses endAt when present', () => {
@@ -51,5 +55,12 @@ describe('activity-schedule', () => {
         countryCode: 'AE',
       })
     ).toBe(true);
+  });
+
+  it('gccCalendarDate keeps YYYY-MM-DD and converts ISO instants in Asia/Dubai', () => {
+    expect(gccCalendarDate('2026-11-06', 'AE')).toBe('2026-11-06');
+    expect(gccCalendarDate('2026-11-05T22:00:00.000Z', 'AE')).toBe('2026-11-06');
+    expect(gccCalendarDate(new Date('2026-11-05T22:00:00.000Z'), 'AE')).toBe('2026-11-06');
+    expect(gccCalendarDate('not-a-date', 'AE')).toBe('not-a-date');
   });
 });

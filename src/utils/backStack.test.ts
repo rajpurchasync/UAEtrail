@@ -216,7 +216,7 @@ describe('inferBackParent', () => {
   it('maps form and hub screens to their item/parent', () => {
     expect(inferBackParent('/profile/vehicles/car-1/edit')).toBe('/profile/vehicles');
     expect(inferBackParent('/profile/edit')).toBe('/profile');
-    expect(inferBackParent('/signin')).toBe('/explore');
+    expect(inferBackParent('/signin')).toBe('/');
     expect(inferBackParent('/profile/settings/account')).toBe('/profile/settings');
     expect(inferBackParent('/my-requests/req-1')).toBe('/my-requests');
   });

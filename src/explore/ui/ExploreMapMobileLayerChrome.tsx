@@ -257,12 +257,10 @@ export const ExploreMapMobileLayerChrome = ({
     layer === 'places'
       ? 'explore-filter-quote-well--places bg-sky-50 border border-sky-200/80'
       : 'explore-filter-quote-well--events bg-emerald-50 border border-emerald-200/80';
-  const quoteDropFill =
-    layer === 'places' ? 'explore-filter-quote-fill--places' : 'explore-filter-quote-fill--events';
-  const quoteDropStroke =
-    layer === 'places' ? 'explore-filter-quote-stroke--places' : 'explore-filter-quote-stroke--events';
-  const quoteSeamFill =
-    layer === 'places' ? 'bg-sky-50' : 'explore-filter-quote-seam--events bg-emerald-50';
+  const quoteCaretShapeClass =
+    layer === 'places'
+      ? 'explore-filter-quote-caret-shape explore-filter-quote-caret-shape--places'
+      : 'explore-filter-quote-caret-shape explore-filter-quote-caret-shape--events';
 
   useLayoutEffect(() => {
     const placeQuoteTail = () => {
@@ -366,39 +364,24 @@ export const ExploreMapMobileLayerChrome = ({
         >
         <svg
           aria-hidden
-          viewBox="0 0 20 14"
-          width="20"
-          height="14"
-          className="pointer-events-none absolute z-0 overflow-visible"
+          viewBox="0 0 18 10"
+          width="18"
+          height="10"
+          className="explore-filter-quote-caret pointer-events-none absolute z-[2] overflow-visible"
           style={{
             left: quoteCaret.left,
             top: 0,
-            transform: 'translate(-50%, calc(-100% + 2px))',
+            transform: 'translate(-50%, calc(-100% + 1px))',
           }}
         >
-          <path
-            className={quoteDropFill}
-            d="M1.2 14C1.2 9.2 3.1 6.4 10 1.35C16.9 6.4 18.8 9.2 18.8 14Z"
-          />
-          <path
-            className={`${quoteDropStroke} fill-none`}
-            d="M2.05 9C2.05 9 3.4 6.15 10 1.35C16.6 6.15 17.95 9 17.95 9"
-            strokeWidth="1.25"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+          <path className={quoteCaretShapeClass} d="M9 1.25L16.25 9.5H1.75Z" />
         </svg>
         <div
           className={`relative z-[1] flex min-h-9 w-full min-w-0 items-center overflow-x-auto scrollbar-none rounded-xl pt-1 ${quoteWell}`}
           role="toolbar"
           aria-label={layer === 'places' ? 'Place filters' : 'Event filters'}
         >
-        <span
-          aria-hidden
-          className={`pointer-events-none absolute left-0 top-0 z-[2] h-[3px] w-5 -translate-x-1/2 ${quoteSeamFill}`}
-          style={{ left: quoteCaret.left }}
-        />
-        <div className="relative z-[3] flex min-w-0 flex-1 items-stretch justify-evenly gap-0.5 lg:justify-start lg:gap-1">
+        <div className="relative z-[1] flex min-w-0 flex-1 items-stretch justify-evenly gap-0.5 lg:justify-start lg:gap-1">
           {layer === 'places' ? placesChips : activityChips}
         </div>
         <span className={TRAY_SEP} aria-hidden />

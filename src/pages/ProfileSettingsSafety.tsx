@@ -1,6 +1,7 @@
 import { Navigate, useNavigate } from 'react-router-dom';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { ProfileSafetyForm } from '../components/profile/ProfileSafetyForm';
+import { ProfileVerificationDocs } from '../components/profile/ProfileVerificationDocs';
 import { useProfileHubBackChrome } from '../hooks/useProfileHubBackChrome';
 import { useMinWidthLg } from '../hooks/useMinWidthLg';
 import { desktopSettingsSectionPath } from '../config/desktopSettings';
@@ -21,6 +22,7 @@ export const ProfileSettingsSafety = () => {
       back={backChrome}
     >
       <ProfileSafetyForm onSaved={() => navigateWithBackChrome(navigate, backChrome)} />
+      <ProfileVerificationDocs />
     </ConsumerShell>
   );
 };

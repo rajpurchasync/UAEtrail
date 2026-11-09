@@ -2,12 +2,9 @@ import { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { scrollAppScrollRootTo } from '../config/layoutScroll';
 import { clearAuthReturnContext, loadAuthReturnContext } from '../utils/authReturnContext';
+import { AsyncLoadingState } from '../components/ui/AsyncLoadingState';
 
-export const PageLoader = () => (
-  <div className="app-page-center">
-    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
-  </div>
-);
+export const PageLoader = () => <AsyncLoadingState variant="page" />;
 
 export const AuthAliasRedirect = ({ to }: { to: string }) => {
   const { search } = useLocation();

@@ -4,6 +4,9 @@ import { APP_PAGE_MIN_H_CLASS, APP_SCROLL_BODY_CLASS } from '../../config/layout
 import { createPortal } from 'react-dom';
 import { resolveMobileBackChrome } from '../../utils/mobileBackNav';
 import { ConsumerHeaderActions } from '../layout/ConsumerHeaderActions';
+import {
+  ConsumerDetailHeaderTypeMark,
+} from './ConsumerDetailHeaderChromeTitle';
 import { ConsumerHeroBanner } from './ConsumerHeroBanner';
 import { MobileBackButton } from './MobileBackButton';
 import { EnvironmentImage } from '../ui/EnvironmentImage';
@@ -72,6 +75,11 @@ interface MobileDetailShellProps {
   overlayMobileHeaderOnHero?: boolean;
   /** Full-bleed white page (public activity consumer template). */
   whitePageChrome?: boolean;
+  /** Page owns an inner scroller (hero stays put). */
+  lockBodyScroll?: boolean;
+  /** Type chrome in the sticky header (geo / area hubs on desktop). */
+  headerChrome?: { emoji: string; label: string };
+  preferDeclaredBackLabel?: boolean;
 }
 
 /** Mobile detail page with back navigation and optional sticky footer CTA. */
@@ -87,6 +95,9 @@ export const MobileDetailShell = ({
   flushStickyFooter = false,
   overlayMobileHeaderOnHero = false,
   whitePageChrome = false,
+  lockBodyScroll = false,
+  headerChrome,
+  preferDeclaredBackLabel = false,
 }: MobileDetailShellProps) => {
   const location = useLocation();
   const backChrome = resolveMobileBackChrome(location.state, {
@@ -94,6 +105,42 @@ export const MobileDetailShell = ({
     label: backLabel,
   });
   const mobileHeaderOverlay = Boolean(mobileHero && overlayMobileHeaderOnHero);
+
+  const stickyEntityHeader = headerChrome ? (
+    <div
+      className={`relative mx-auto flex max-w-6xl items-center gap-1 px-4 pb-2 pt-safe-plus-2 md:px-6 lg:min-h-9 lg:py-1.5 ${
+        mobileHeaderOverlay ? 'bg-white/75 backdrop-blur-md' : whitePageChrome ? 'border-b border-neutral-100 bg-white/95 backdrop-blur-md' : 'glass-header'
+      }`}
+    >
+      <MobileBackButton
+        fallbackTo={backChrome.fallbackTo}
+        label={backChrome.label}
+        backBehavior={backChrome.backBehavior}
+        preferDeclaredLabel={preferDeclaredBackLabel}
+        className="relative z-10 min-w-0 shrink-0 max-lg:flex-1 lg:min-h-9 lg:min-w-9 lg:justify-center lg:gap-0 lg:rounded-full lg:px-0 lg:[&_span]:hidden"
+      />
+      <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center px-16">
+        <div className="flex min-w-0 max-w-full items-center justify-center gap-2">
+          <ConsumerDetailHeaderTypeMark
+            emoji={headerChrome.emoji}
+            mark={undefined}
+            sizeClass="h-8 w-8 lg:h-6 lg:w-6"
+          />
+          <p className="min-w-0 truncate text-center text-[15px] font-bold leading-tight text-neutral-900 lg:text-[13px] lg:font-semibold">
+            {headerChrome.label}
+          </p>
+        </div>
+      </div>
+      <div className="relative z-10 ms-auto flex shrink-0 items-center gap-0.5">
+        {headerAction}
+        {showMenu ? (
+          <div className="md:hidden">
+            <ConsumerHeaderActions showOnDesktop={false} />
+          </div>
+        ) : null}
+      </div>
+    </div>
+  ) : null;
 
   const mobileHeaderChrome = (
     <div
@@ -169,15 +216,17 @@ export const MobileDetailShell = ({
       </div>
     ) : null}
     {!mobileHeaderOverlay ? (
-      <div
-        className={`md:hidden shrink-0 z-30 ${
-          whitePageChrome ? 'border-b border-neutral-100 bg-white/95 backdrop-blur-md' : 'glass-header'
-        }`}
-      >
-        {mobileHeaderChrome}
+      <div className={`shrink-0 z-30 ${headerChrome && lockBodyScroll ? '' : 'md:hidden'}`}>
+        {stickyEntityHeader ?? mobileHeaderChrome}
       </div>
     ) : null}
-    <div className={`${APP_SCROLL_BODY_CLASS} min-h-0 flex-1`}>{children}</div>
+    <div
+      className={`${APP_SCROLL_BODY_CLASS} min-h-0 flex-1 ${
+        lockBodyScroll ? 'flex h-full flex-col !overflow-hidden' : ''
+      }`}
+    >
+      {children}
+    </div>
     {footer ? (
       <MobileDetailFooterPortal flush={flushStickyFooter}>{footer}</MobileDetailFooterPortal>
     ) : null}

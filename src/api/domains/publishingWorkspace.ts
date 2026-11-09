@@ -4,6 +4,7 @@ import {
   LocationDTO,
   ParticipantDTO,
   PlaceDTO,
+  type PublishingActivityUpsertBody,
 } from '@uaetrail/shared-types';
 import { apiRequest } from '../client';
 import { organisationRequestHeaders } from '../orgHeaders';
@@ -105,7 +106,7 @@ export const publishingWorkspaceApi = {
       headers: organisationRequestHeaders(tenantId),
     }),
 
-  createActivity: (tenantId: string, payload: Record<string, unknown>) =>
+  createActivity: (tenantId: string, payload: PublishingActivityUpsertBody) =>
     apiRequest<{ data: ActivityDTO }>('/publishing/activities', {
       method: 'POST',
       auth: true,
@@ -113,7 +114,7 @@ export const publishingWorkspaceApi = {
       body: JSON.stringify(payload),
     }),
 
-  updateActivity: (tenantId: string, activityId: string, payload: Record<string, unknown>) =>
+  updateActivity: (tenantId: string, activityId: string, payload: PublishingActivityUpsertBody) =>
     apiRequest<{ data: ActivityDTO }>(`/publishing/activities/${activityId}`, {
       method: 'PATCH',
       auth: true,

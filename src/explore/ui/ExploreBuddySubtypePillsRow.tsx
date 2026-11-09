@@ -1,3 +1,5 @@
+import { useRef } from 'react';
+import { useHorizontalDragScroll } from '../../hooks/useHorizontalDragScroll';
 import {
   BUDDY_SUBTYPE_PILLS,
   type ExploreBuddySubtypeKey,
@@ -23,13 +25,15 @@ export const ExploreBuddySubtypePillsRow = ({
   layout = 'map',
   className = '',
 }: ExploreBuddySubtypePillsRowProps) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useHorizontalDragScroll(scrollRef);
   const scrollClass =
     layout === 'list'
       ? EXPLORE_LIST_PILLS_SCROLL
       : 'min-w-0 overflow-x-auto scroll-smooth scrollbar-none py-0.5 [-webkit-overflow-scrolling:touch]';
 
   return (
-  <div className={`${scrollClass} ${className}`}>
+  <div ref={scrollRef} className={`${scrollClass} ${className}`}>
     <div
       className={`flex w-max max-w-full flex-nowrap items-center gap-2 ${layout === 'map' ? 'min-w-full pr-2 lg:pr-0' : ''}`}
     >

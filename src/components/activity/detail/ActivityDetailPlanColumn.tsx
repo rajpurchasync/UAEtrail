@@ -11,6 +11,12 @@ import { ActivityDetailPlanExtras } from './tabs/ActivityDetailPlanExtras';
 import { ActivityDetailPlaceTabPanels } from './tabs/ActivityDetailPlaceTabPanels';
 import { ActivityDetailTransportTabPanels } from './tabs/ActivityDetailTransportTabPanels';
 import type { useActivityDetailViewModel } from './useActivityDetailViewModel';
+import {
+  ActivityDetailCostPolicySection,
+  activityShowsCostPolicySection,
+} from './ActivityDetailCostPolicySection';
+import { ActivityDetailAudienceSection } from './ActivityDetailAudienceSection';
+import { ActivityDetailSafetySection } from './ActivityDetailSafetySection';
 
 type Model = ReturnType<typeof useActivityDetailViewModel>;
 
@@ -35,6 +41,10 @@ export const ActivityDetailPlanColumn = ({
 }: ActivityDetailPlanColumnProps) => {
   const KindPlanSections = planSections;
   const consumerRideshare = consumerInline && model.activity.activityType === 'rideshare';
+  const consumerCostPolicy =
+    consumerInline &&
+    !model.requiresSignIn &&
+    activityShowsCostPolicySection(model.activity);
 
   if (model.consumerDetailLayout && !consumerInline) {
     return null;
@@ -80,13 +90,22 @@ export const ActivityDetailPlanColumn = ({
         </p>
       ) : null}
 
-      {!consumerRideshare ? (
+      {!consumerRideshare && !consumerInline ? (
         <ActivityDetailPlanAboutCard
           panelClassName={model.mobilePlanPanel}
           activity={model.activity}
           showMobileTabs={model.showMobileTabs}
           hideScheduleFactsGrid={consumerInline}
           hideAboutBody={false}
+          contentId={consumerInline ? 'activity-detail-about' : undefined}
+        />
+      ) : null}
+
+      {!consumerRideshare ? (
+        <ActivityDetailAudienceSection
+          activity={model.activity}
+          panelClassName={model.mobilePlanPanel}
+          consumerSection={consumerInline}
         />
       ) : null}
 
@@ -107,8 +126,16 @@ export const ActivityDetailPlanColumn = ({
         </div>
       ) : null}
 
-      {!model.requiresSignIn && KindPlanSections && !consumerRideshare ? (
-        <KindPlanSections model={model} />
+      {KindPlanSections && !consumerRideshare ? (
+        <KindPlanSections model={model} consumerInline={consumerInline} />
+      ) : null}
+
+      {consumerCostPolicy ? (
+        <ActivityDetailCostPolicySection
+          activity={model.activity}
+          panelClassName={model.mobilePlanPanel}
+          consumerSection={consumerInline}
+        />
       ) : null}
 
       {!model.requiresSignIn ? (
@@ -120,8 +147,20 @@ export const ActivityDetailPlanColumn = ({
           activityReviews={model.activityReviews}
           canWriteActivityReview={model.canWriteActivityReview}
           onActivityReviewSubmitted={model.onActivityReviewSubmitted}
-          hideActivityReviews={consumerRideshare}
+          hideActivityReviews={consumerRideshare || consumerInline}
           hidePackingList={consumerInline}
+          hideGearList={consumerInline}
+          hideCostPolicy={consumerInline}
+          isHostViewer={Boolean(model.hostCrewChatPolicy)}
+          consumerSection={consumerInline}
+        />
+      ) : null}
+
+      {!consumerInline ? (
+        <ActivityDetailSafetySection
+          activity={model.activity}
+          panelClassName={model.mobilePlanPanel}
+          showBaseline={false}
         />
       ) : null}
 

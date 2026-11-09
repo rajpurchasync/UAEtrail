@@ -3,7 +3,19 @@
  * Use instead of `@prisma/client` model types in store layers.
  */
 
-import type { MemberVehicleColor, OutingCategory, OutingTopic } from '@uaetrail/shared-types';
+import type {
+  ActivityAudienceFitnessDTO,
+  ActivityCountsDTO,
+  ActivityDetailSchemaVersion,
+  ActivityGearItemDTO,
+  ActivityItineraryStepDTO,
+  ActivityPolicyKeyDTO,
+  ActivityPriceBreakdownDTO,
+  DetailRevampConfidence,
+  MemberVehicleColor,
+  OutingCategory,
+  OutingTopic,
+} from '@uaetrail/shared-types';
 import type {
   Accessibility,
   ActivityType,
@@ -77,6 +89,7 @@ export interface Location {
   parkingLat: number | null;
   parkingLng: number | null;
   groupRegionLevels: import('@uaetrail/shared-types').GroupRegionLevels | null;
+  geoRef?: import('@uaetrail/shared-types').GeoRef | null;
   premiumImages: string[];
   accessibleBy: string[];
   viewCount: number;
@@ -140,6 +153,7 @@ export interface Activity {
   linkedRideshareActivityId: string | null;
   paymentTerms: string | null;
   pricingMode: 'free' | 'shared' | 'paid' | null;
+  /** @deprecated v2 shell uses {@link itinerarySteps}; kept empty after Mongo migration. */
   itinerary: string[];
   requirements: string[];
   joinMode?: 'open' | 'private' | null;
@@ -160,10 +174,34 @@ export interface Activity {
   outingTopic?: OutingTopic | null;
   /** Curated area slug target — set on publish from place or point-in-polygon. */
   areaId?: string | null;
+  geoRef?: import('@uaetrail/shared-types').GeoRef | null;
   activityMode?: 'hosted' | 'seeking' | null;
   participantIntentId?: string | null;
   /** On-ground guides. Pending rows stay off public DTOs. */
   guides?: ActivityGuideRecord[];
+  /** Detail revamp — `2` after `migrateActivityDetailSchemaV2`. */
+  schemaVersion?: ActivityDetailSchemaVersion;
+  summary?: string | null;
+  itinerarySteps?: ActivityItineraryStepDTO[];
+  gear?: ActivityGearItemDTO[];
+  waitlist?: boolean;
+  counts?: ActivityCountsDTO;
+  priceBreakdown?: ActivityPriceBreakdownDTO;
+  policyKey?: ActivityPolicyKeyDTO;
+  customPolicy?: string | null;
+  audience?: {
+    kidsWelcome: boolean;
+    minAge?: number | null;
+    petsAllowed: boolean;
+    womenOnly: boolean;
+    fitness: ActivityAudienceFitnessDTO;
+    fitnessNote?: string | null;
+    languages: string[];
+    accessibility?: string | null;
+  };
+  waiverRequired?: boolean;
+  needsReview?: string[];
+  confidence?: Record<string, DetailRevampConfidence>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -183,6 +221,8 @@ export interface ActivityRequest {
   activityId: string;
   userId: string;
   status: RequestStatus;
+  adults?: number;
+  kids?: number;
   note: string | null;
   selectedPackageIndex: number | null;
   hostNote: string | null;
@@ -252,6 +292,8 @@ export interface MerchantProfile {
   latitude: number | null;
   longitude: number | null;
   region: string | null;
+  allowInboundChat: boolean;
+  showContactPhone: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

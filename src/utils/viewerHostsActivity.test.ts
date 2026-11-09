@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { viewerIsActivityHostUser } from './viewerHostsActivity';
+import { viewerCanManageActivityOuting, viewerIsActivityHostUser } from './viewerHostsActivity';
 
 describe('viewerIsActivityHostUser', () => {
   it('is true only for the host user id', () => {
@@ -14,6 +14,15 @@ describe('viewerIsActivityHostUser', () => {
     expect(
       viewerIsActivityHostUser({ hostUserId: 'other', tenantId: 't1' }, 'u2')
     ).toBe(false);
+  });
+});
+
+describe('viewerCanManageActivityOuting', () => {
+  it('allows the host user and platform admin only', () => {
+    const activity = { hostUserId: 'u1', tenantId: 't1' };
+    expect(viewerCanManageActivityOuting(activity, 'u1', 'participant')).toBe(true);
+    expect(viewerCanManageActivityOuting(activity, 'u2', 'participant')).toBe(false);
+    expect(viewerCanManageActivityOuting(activity, 'u2', 'platform_admin')).toBe(true);
   });
 });
 

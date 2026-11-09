@@ -54,10 +54,23 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
     db.collection(COLLECTIONS.FACILITIES).createIndexes([
       { key: { areaId: 1, facilityKind: 1, status: 1 }, sparse: true },
       { key: { parentPlaceId: 1, facilityKind: 1 }, sparse: true },
+      { key: { venueId: 1, facilityKind: 1 }, sparse: true },
       { key: { moderationStatus: 1, publicationStatus: 1 } },
       { key: { registeredByUserId: 1, createdAt: -1 }, sparse: true },
       { key: { submittedById: 1, createdAt: -1 }, sparse: true },
       { key: { geo: '2dsphere' }, sparse: true },
+    ]),
+    db.collection(COLLECTIONS.PLATFORM_ALERTS).createIndexes([
+      {
+        key: { active: 1, startsAt: 1, endsAt: 1 },
+        name: 'platform_alerts_active_window',
+      },
+      { key: { region: 1 }, sparse: true },
+      { key: { geo: '2dsphere' }, sparse: true },
+    ]),
+    db.collection(COLLECTIONS.REFERRAL_CLICKS).createIndexes([
+      { key: { entityKind: 1, entityId: 1, createdAt: -1 } },
+      { key: { createdAt: -1 } },
     ]),
     db.collection(COLLECTIONS.LOCATIONS).createIndexes([
       { key: { status: 1, featured: -1, createdAt: -1 } },
@@ -94,6 +107,17 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
         key: { locationId: 1 },
         name: 'wishlist_locationId',
         partialFilterExpression: { locationId: { $type: 'string' } }
+      },
+      {
+        key: { userId: 1, areaId: 1 },
+        unique: true,
+        name: 'userId_areaId_unique',
+        partialFilterExpression: { areaId: { $type: 'string' } }
+      },
+      {
+        key: { areaId: 1 },
+        name: 'wishlist_areaId',
+        partialFilterExpression: { areaId: { $type: 'string' } }
       },
       {
         key: { watchOutingCategory: 1 },
@@ -197,7 +221,12 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
     ]),
     db.collection(COLLECTIONS.SOCIAL_REVIEWS).createIndexes([
       { key: { targetType: 1, targetId: 1, createdAt: -1 } },
+      { key: { targetType: 1, targetId: 1, userId: 1 }, name: 'one_per_user', unique: true },
       { key: { userId: 1, createdAt: -1 } }
+    ]),
+    db.collection(COLLECTIONS.CONTENT_REPORTS).createIndexes([
+      { key: { createdAt: -1 }, name: 'reports_queue' },
+      { key: { targetType: 1, createdAt: -1 }, name: 'reports_by_type' },
     ]),
     db.collection(COLLECTIONS.MERCHANT_PROFILES).createIndexes([
       { key: { adminIds: 1 } },
@@ -267,6 +296,116 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
     db.collection(COLLECTIONS.ACTIVITY_INVITES).createIndexes([
       { key: { activityId: 1, fromUserId: 1, toUserId: 1, status: 1 } },
       { key: { toUserId: 1, status: 1, createdAt: -1 } }
+    ]),
+    db.collection(COLLECTIONS.PLACE_TRACKS).createIndexes([{ key: { updatedAt: -1 } }]),
+    db.collection(COLLECTIONS.PLACE_GUIDES).createIndexes([{ key: { updatedAt: -1 } }]),
+    db.collection(COLLECTIONS.WEATHER_CACHE).createIndexes([
+      { key: { expiresAt: 1 }, expireAfterSeconds: 0, name: 'weather_cache_ttl' },
+    ]),
+    db.collection(COLLECTIONS.ACTIVITY_PRIVATE).createIndexes([
+      { key: { updatedAt: -1 } },
+      /** Sparse so docs without `exactGeo` are omitted (Mongo forbids sparse + partial on one index). */
+      { key: { exactGeo: '2dsphere' }, sparse: true },
+    ]),
+    db.collection(COLLECTIONS.GEO_NODES).createIndexes([
+      { key: { path: 1 }, name: 'path_unique', unique: true },
+      { key: { parentId: 1, sort: 1 }, name: 'children' },
+      { key: { ancestors: 1, level: 1 }, name: 'subtree' },
+      {
+        key: { geometry: '2dsphere' },
+        name: 'geometry',
+        partialFilterExpression: { geometry: { $exists: true } },
+      },
+      { key: { center: '2dsphere' }, name: 'center' },
+      { key: { 'dedupe.nameKey': 1, parentId: 1 }, name: 'dedupe_name' },
+      { key: { isoCode: 1 }, name: 'iso_unique', unique: true, sparse: true },
+    ]),
+    db.collection(COLLECTIONS.GEO_OUTBOX).createIndexes([{ key: { batch: 1, _id: 1 }, name: 'claim' }]),
+    db.collection(COLLECTIONS.LOCATIONS).createIndexes([
+      {
+        key: { updatedAt: 1 },
+        name: 'needs_review',
+        partialFilterExpression: { 'needsReview.0': { $exists: true } },
+      },
+      {
+        key: { 'geoRef.chain': 1, activityType: 1, status: 1 },
+        name: 'by_chain',
+      },
+      {
+        key: { 'geoRef.searchTokens': 1, status: 1 },
+        name: 'geo_search_tokens',
+      },
+      {
+        key: { 'dedupe.cells': 1, activityType: 1 },
+        name: 'dedupe_cells',
+      },
+    ]),
+    db.collection(COLLECTIONS.ACTIVITIES).createIndexes([
+      {
+        key: { 'geoRef.chain': 1, activityType: 1, status: 1, startAt: 1 },
+        name: 'by_chain_active',
+      },
+      {
+        key: { 'geoRef.searchTokens': 1, status: 1 },
+        name: 'geo_search_tokens',
+      },
+      { key: { status: 1, endAt: 1 }, name: 'expiry_sweep' },
+      {
+        key: { status: 1, activityType: 1, startAt: 1, _id: 1 },
+        name: 'browse_upcoming',
+      },
+      {
+        key: { locationId: 1, status: 1, startAt: 1 },
+        name: 'by_place_upcoming',
+      },
+      { key: { hostId: 1, startAt: -1 }, name: 'by_host', sparse: true },
+      {
+        key: { updatedAt: 1 },
+        name: 'needs_review',
+        partialFilterExpression: { 'needsReview.0': { $exists: true } },
+      },
+    ]),
+    db.collection(COLLECTIONS.FACILITIES).createIndexes([
+      {
+        key: { 'geoRef.chain': 1, facilityKind: 1, status: 1 },
+        name: 'by_chain',
+      },
+      {
+        key: { 'geoRef.searchTokens': 1, status: 1 },
+        name: 'geo_search_tokens',
+      },
+      {
+        key: { 'dedupe.cells': 1, facilityKind: 1 },
+        name: 'dedupe_cells',
+      },
+    ]),
+    db.collection(COLLECTIONS.AMENITY_REPORTS).createIndexes([
+      { key: { status: 1, createdAt: 1 }, name: 'amenity_reports_queue' },
+      { key: { facilityId: 1, createdAt: -1 }, name: 'amenity_reports_by_facility' },
+    ]),
+    db.collection(COLLECTIONS.SUBMISSIONS).createIndexes([
+      {
+        key: { kind: 1, facilityType: 1, 'dedupe.nameKey': 1, 'dedupe.cells.0': 1 },
+        name: 'pending_unique',
+        unique: true,
+        partialFilterExpression: { status: 'pending' },
+      },
+      { key: { status: 1, kind: 1, createdAt: 1 }, name: 'queue' },
+      { key: { submittedBy: 1, createdAt: -1 }, name: 'by_user' },
+      {
+        key: { 'dedupe.cells': 1, status: 1 },
+        name: 'pending_near',
+        partialFilterExpression: { status: 'pending' },
+      },
+    ]),
+    db.collection(COLLECTIONS.CATALOGS).createIndexes([{ key: { kind: 1, key: 1 }, unique: true }]),
+    db.collection(COLLECTIONS.VERIFICATION_DOCUMENTS).createIndexes([
+      { key: { organizerId: 1, createdAt: -1 }, name: 'by_organizer' },
+      { key: { status: 1, createdAt: 1 }, name: 'verification_queue' },
+    ]),
+    db.collection(COLLECTIONS.PAYMENTS).createIndexes([
+      { key: { activityId: 1, createdAt: -1 }, name: 'by_activity' },
+      { key: { userId: 1, createdAt: -1 }, name: 'by_user' },
     ])
   ]);
 };

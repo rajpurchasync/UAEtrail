@@ -63,7 +63,7 @@ export const Dialog = ({
         onClick={(e) => e.stopPropagation()}
       >
         <div className={headerClass}>
-          <h3 id={titleId} className="text-lg font-bold text-neutral-900">
+          <h3 id={titleId} className="text-lg font-bold text-neutral-900 dark:text-neutral-100">
             {title}
           </h3>
           <button

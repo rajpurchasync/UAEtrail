@@ -2,6 +2,7 @@ import type { ActivityDTO, JourneyMapEntryCategory, JourneyMapEntryDTO } from '@
 import { activityDetailPath } from '@uaetrail/shared-types';
 import { listHostedActivityIdsForUser, listActivitiesForRequestViews } from '../lib/activities-store.js';
 import { buildActivityDto } from '../lib/mappers.js';
+import { findActivityPrivateByIds } from '../lib/activity-private-store.js';
 import { listUserActivityParticipantsBasic } from '../lib/activity-engagement-store.js';
 import type { MemberMapPinDTO } from '@uaetrail/shared-types';
 import {
@@ -140,7 +141,10 @@ export const buildJourneyMapEntries = async (
   const participants = await listUserActivityParticipantsBasic(userId, 200);
   const joinedIds = [...new Set(participants.map((p) => p.activityId))];
   const joinedEvents = joinedIds.length > 0 ? await listActivitiesForRequestViews(joinedIds) : [];
-  const joinedActivities = joinedEvents.map((event) => buildActivityDto(event));
+  const joinedPrivate = joinedIds.length > 0 ? await findActivityPrivateByIds(joinedIds) : new Map();
+  const joinedActivities = joinedEvents.map((event) =>
+    buildActivityDto(event, { activityPrivate: joinedPrivate.get(event.id) ?? null })
+  );
   const participantByActivity = new Map(participants.map((p) => [p.activityId, p]));
 
   for (const activity of joinedActivities) {
@@ -159,7 +163,10 @@ export const buildJourneyMapEntries = async (
 
   const hostedIds = await listHostedActivityIdsForUser(userId);
   const hostedEvents = hostedIds.length > 0 ? await listActivitiesForRequestViews(hostedIds) : [];
-  const hostedActivities = hostedEvents.map((event) => buildActivityDto(event));
+  const hostedPrivate = hostedIds.length > 0 ? await findActivityPrivateByIds(hostedIds) : new Map();
+  const hostedActivities = hostedEvents.map((event) =>
+    buildActivityDto(event, { activityPrivate: hostedPrivate.get(event.id) ?? null })
+  );
 
   for (const activity of hostedActivities) {
     const entry = entryFromHostedActivity(activity);

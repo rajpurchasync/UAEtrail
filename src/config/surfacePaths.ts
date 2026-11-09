@@ -13,6 +13,14 @@ export const PROFILE_VEHICLES_PATH = '/profile/vehicles' as const;
 
 /** Active member tab — goals, upcoming, plan attention (`docs/NAVIGATION.md`). */
 export const PLAN_PATH = '/plan' as const;
+/** Signed-in “today” briefing for the next joined outing. */
+export const PLAN_TODAY_PATH = '/plan/today' as const;
+
+export const GEO_TREE_PATH = '/geo' as const;
+export const geoNodePath = (idOrPath: string): string =>
+  `/geo/n/${encodeURIComponent(idOrPath)}`;
+export const geoCountryPath = (code: string): string =>
+  `/geo/country/${encodeURIComponent(code.toLowerCase())}`;
 
 /** Profile outing history (joined / hosted / self past) — canonical URL. */
 export const PROFILE_HISTORY_PATH = '/profile/history' as const;

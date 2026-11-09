@@ -19,6 +19,7 @@ import { DisplayPreferencesSection } from './DisplayPreferencesSection';
 import { ProfileAccountSettingsSections } from './ProfileAccountSettingsSections';
 import { ProfileMapPresenceSection } from './ProfileMapPresenceSection';
 import { ProfileSafetyForm } from './ProfileSafetyForm';
+import { ProfileVerificationDocs } from './ProfileVerificationDocs';
 import { ProfileVisibilitySection } from './ProfileVisibilitySection';
 
 const SettingsSection = ({
@@ -120,7 +121,7 @@ export const DesktopSettingsPage = () => {
   return (
     <>
     <PageMeta title="Settings" noIndex />
-    <ConsumerShell layout="stack" title="Settings" showJourney={false} maxWidth="4xl">
+    <ConsumerShell layout="stack" title="Settings" showJourney={false} maxWidth="7xl">
       <div className="grid grid-cols-[200px_minmax(0,1fr)] gap-10 pb-10 animate-fade-up">
         <nav aria-label="Settings sections" className="sticky top-0 self-start">
           <ul className="space-y-0.5">
@@ -233,6 +234,7 @@ export const DesktopSettingsPage = () => {
                   </p>
                 ) : null}
                 <ProfileSafetyForm className="space-y-3" onSaved={() => setSafetySaved(true)} />
+                <ProfileVerificationDocs />
               </>
             ) : (
               <p className="rounded-2xl border border-neutral-200/80 bg-neutral-50 px-4 py-3 text-sm text-neutral-600">

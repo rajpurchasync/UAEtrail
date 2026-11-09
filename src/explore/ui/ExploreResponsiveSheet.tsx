@@ -110,7 +110,7 @@ export const ExploreResponsiveSheet = ({
     : mobileComposeChrome
       ? composePanelClass
       : pullDismissGestures
-        ? `relative flex w-full max-h-[min(90dvh,640px)] flex-col overflow-hidden explore-sheet-panel ${exploreSheetPanelClass} ${maxWidthClass} ${panelClassName} ${
+        ? `relative flex w-full max-h-[min(90dvh,640px)] flex-col overflow-hidden explore-sheet-panel max-md:animate-fade-up ${exploreSheetPanelClass} ${maxWidthClass} ${panelClassName} ${
             centered
               ? 'rounded-2xl shadow-2xl'
               : 'shadow-[0_-8px_40px_rgba(15,23,42,.12)] sm:shadow-2xl'
@@ -200,7 +200,10 @@ export const ExploreResponsiveSheet = ({
     </div>
   );
 
-  if (mobileComposeChrome && typeof document !== 'undefined') {
+  const portalToBody =
+    typeof document !== 'undefined' && (mobileComposeChrome || overlayFixed);
+
+  if (portalToBody) {
     return createPortal(sheetTree, document.body);
   }
 

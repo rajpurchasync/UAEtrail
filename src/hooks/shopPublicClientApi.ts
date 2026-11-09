@@ -56,6 +56,7 @@ export const fetchShopPublicPage = async (id: string): Promise<ShopPublicPageRes
         contactPersonName: merchant.contactPersonName ?? null,
         contactPersonAvatar: merchant.contactPersonAvatar ?? null,
         contactPersonUserId: merchant.contactPersonUserId ?? null,
+        allowInboundChat: merchant.allowInboundChat === true,
         presence: resolvePresence(merchant.latitude, merchant.longitude),
       },
     };

@@ -18,6 +18,7 @@ import { mapItemMatchesBrowseMainCategories } from './browseListTaxonomy';
 import type { BrowseTripTopicKey } from './browseListTripTopics';
 import { matchesListVenuePlaceTopic } from './listVenuePlaceTopicFilter';
 import type { ListVenuePlaceTopicKey } from './listVenuePlaceTopics';
+import { exploreItemMatchesBrowseGeoPath } from './browseGeoPath';
 import type { BuddiesDiscoverySegment } from './buddiesDiscoverySegment';
 /** @deprecated Use BrowseMainCategoryKey — kept for imports migrating */
 export type BrowseCategoryKey = BrowseMainCategoryKey;
@@ -77,7 +78,8 @@ const matchesWeekendBrowseFilter = (item: ExploreMapItemDTO): boolean => {
 export const filterExploreMapItemsForList = (
   items: ExploreMapItemDTO[],
   state: BrowseListFilterState,
-  venueRegions: string[]
+  venueRegions: string[],
+  geoIds: readonly string[] = []
 ): ExploreMapItemDTO[] => {
   let pool = items;
 
@@ -117,6 +119,9 @@ export const filterExploreMapItemsForList = (
   }
 
   pool = filterListCatalogByVenueRegions(pool, venueRegions);
+  if (geoIds.length > 0) {
+    pool = pool.filter((item) => exploreItemMatchesBrowseGeoPath(item, geoIds));
+  }
 
   return mergeListCatalogPlansAndPlaces(pool);
 };

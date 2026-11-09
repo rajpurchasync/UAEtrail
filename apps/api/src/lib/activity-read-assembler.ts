@@ -5,11 +5,12 @@ import {
 import type { Collection } from 'mongodb';
 import type { Activity, ActivityParticipant, Location } from '../domain/types.js';
 import { resolveJoinMode, shouldHideActivityFromExploreMap } from '../domain/activity-join-mode.js';
-import { ActivityStatus, LocationStatus } from '../domain/enums.js';
+import { ActivityStatus, ActivityType, LocationStatus } from '../domain/enums.js';
 import { findAuthUsersByIds, type AuthUserRecord } from './auth-users-store.js';
 import type { MongoActivityDoc } from './entity-builders.js';
 import { getMongoClient } from './mongo.js';
 import { findTenantBySlug, findTenantsByIds, type TenantRecord } from './tenant-store.js';
+import { enrichLocationsWithHeavyReadsBatch } from './place-heavy-store.js';
 
 const tenantMapForIds = async (tenantIds: string[]): Promise<Map<string, TenantRecord>> => {
   const unique = [...new Set(tenantIds.filter(Boolean))];
@@ -117,7 +118,10 @@ const mongoEventToEvent = (doc: MongoActivityDoc): Activity => {
     retired.linkedRideshareActivityId ?? retired.linkedCarpoolActivityId ?? null,
   paymentTerms: doc.paymentTerms,
   pricingMode: doc.pricingMode ?? null,
-  itinerary: doc.itinerary,
+  itinerary:
+    (doc.itinerary?.length ?? 0) > 0
+      ? doc.itinerary
+      : (doc.itinerarySteps?.map((s) => s.title).filter(Boolean) ?? []),
   requirements: doc.requirements,
   joinMode: resolveJoinMode(doc.joinMode, doc.requirements),
   images: doc.images,
@@ -137,6 +141,19 @@ const mongoEventToEvent = (doc: MongoActivityDoc): Activity => {
   participantIntentId: doc.participantIntentId ?? null,
   groupChatPostPolicy: doc.groupChatPostPolicy ?? null,
   guides: doc.guides ?? [],
+  schemaVersion: doc.schemaVersion,
+  summary: doc.summary ?? null,
+  itinerarySteps: doc.itinerarySteps,
+  gear: doc.gear,
+  waitlist: doc.waitlist,
+  counts: doc.counts,
+  priceBreakdown: doc.priceBreakdown,
+  policyKey: doc.policyKey,
+  customPolicy: doc.customPolicy ?? null,
+  audience: doc.audience,
+  waiverRequired: doc.waiverRequired,
+  needsReview: doc.needsReview,
+  confidence: doc.confidence,
   createdAt: doc.createdAt,
   updatedAt: doc.updatedAt,
   };
@@ -201,8 +218,10 @@ const loadLocationsByIds = async (
     : { _id: { $in: uniqueIds } };
 
   const docs = await locationsCollection().find(query).toArray();
-  for (const doc of docs) {
-    map.set(doc._id, mapMongoLocation(doc));
+  const bases = docs.map((doc) => mapMongoLocation(doc));
+  const enriched = await enrichLocationsWithHeavyReadsBatch(bases);
+  for (const loc of enriched) {
+    map.set(loc.id, loc);
   }
 
   return map;
@@ -417,6 +436,39 @@ export const findPublishedActivityWithPreviewsFromMongo = async (
   return event ?? null;
 };
 
+/** Published upcoming rideshare rows targeting a catalog place or linked parent outing at that place. */
+export const listPublishedReachableRidesByPlaceFromMongo = async (
+  placeId: string,
+  destPlaceRequirementLines: string[]
+): Promise<ActivityWithPublicRelations[]> => {
+  const parentAtPlace = await activitiesCollection()
+    .find({ locationId: placeId, status: ActivityStatus.PUBLISHED })
+    .project({ _id: 1 })
+    .toArray();
+  const parentIds = parentAtPlace.map((row) => String(row._id));
+
+  const orClause: Record<string, unknown>[] = [{ requirements: { $in: destPlaceRequirementLines } }];
+  if (parentIds.length > 0) {
+    orClause.push({ linkedActivityId: { $in: parentIds } });
+  }
+
+  const docs = await activitiesCollection()
+    .find({
+      activityType: ActivityType.RIDESHARE,
+      status: ActivityStatus.PUBLISHED,
+      startAt: { $gte: new Date() },
+      $or: orClause,
+    })
+    .sort({ startAt: 1 })
+    .limit(200)
+    .toArray();
+
+  const visible = docs.filter(
+    (doc) => !shouldHideActivityFromExploreMap(doc.joinMode, doc.requirements)
+  );
+  return assembleEventsWithPublicRelations(visible);
+};
+
 export const listPublishedUpcomingActivitiesByLocationFromMongo = async (
   locationId: string,
   take: number
@@ -508,7 +560,7 @@ export const listActiveCatalogPlacesByAreaFromMongo = async (
     .limit(Math.max(take, 1))
     .toArray();
 
-  return docs.map((doc) => mapMongoLocation(doc));
+  return enrichLocationsWithHeavyReadsBatch(docs.map((doc) => mapMongoLocation(doc)));
 };
 
 export type ActivityWithTenantRelations = Activity & {

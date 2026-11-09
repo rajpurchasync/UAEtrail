@@ -12,24 +12,28 @@ const idParamSchema = z.object({ id: z.string().min(1) });
 
 const outingCategorySchema = z.enum(['hiking', 'camping', 'events', 'rideshare', 'activities']);
 
+const wishlistTargetCount = (d: { locationId?: string; areaId?: string; activityId?: string }) =>
+  [d.locationId, d.areaId, d.activityId].filter(Boolean).length;
+
 const wishlistCreateSchema = z
   .object({
     locationId: z.string().optional(),
+    areaId: z.string().optional(),
     activityId: z.string().optional(),
     alertOnMatch: z.boolean().optional(),
     watchOutingCategory: outingCategorySchema.optional(),
     watchLatitude: z.number().min(-90).max(90).optional(),
     watchLongitude: z.number().min(-180).max(180).optional(),
   })
-  .refine((d) => Boolean(d.locationId) !== Boolean(d.activityId), {
-    message: 'Wishlist saves a single venue (locationId) or activity (activityId).',
+  .refine((d) => wishlistTargetCount(d) === 1, {
+    message: 'Wishlist saves a single venue (locationId), area (areaId), or activity (activityId).',
   });
 
 const wishlistPatchSchema = z.object({
   alertOnMatch: z.boolean(),
 });
 
-/** Personal wishlist — venues and activities only (`user_wishlist` Mongo collection). */
+/** Personal wishlist — venues, areas, and activities (`user_wishlist` Mongo collection). */
 export const registerMeWishlistRoutes = (router: Router): void => {
   router.get('/me/wishlist', async (req, res, next) => {
     try {
@@ -46,6 +50,7 @@ export const registerMeWishlistRoutes = (router: Router): void => {
       const data = await createMeWishlistItem({
         userId: req.auth!.userId,
         locationId: body.locationId,
+        areaId: body.areaId,
         activityId: body.activityId,
         alertOnMatch: body.alertOnMatch,
         watchOutingCategory: body.watchOutingCategory ?? null,
@@ -90,10 +95,12 @@ export const registerMeWishlistRoutes = (router: Router): void => {
   router.get('/me/wishlist/check', async (req, res, next) => {
     try {
       const locationId = req.query.locationId as string | undefined;
+      const areaId = req.query.areaId as string | undefined;
       const activityId = req.query.activityId as string | undefined;
       const data = await checkMeWishlistTarget({
         userId: req.auth!.userId,
         locationId,
+        areaId,
         activityId,
       });
       res.json({ data });

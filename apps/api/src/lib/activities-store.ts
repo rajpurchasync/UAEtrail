@@ -5,6 +5,7 @@ import { resolveParticipationMode } from '../domain/activity-participation-mode.
 import { ActivityStatus, ActivityType, LocationStatus } from '../domain/enums.js';
 import {
   buildActivityFromCreateInput,
+  buildDetailRevampSnapshotFromLegacy,
   buildLocationFromCreateInput,
   newEntityId,
   type ActivityCreateInput,
@@ -48,6 +49,7 @@ import {
   writeLocationToMongo
 } from './entity-sync.js';
 import { getMongoClient } from './mongo.js';
+import { enrichLocationsWithHeavyReadsBatch } from './place-heavy-store.js';
 import {
   findTenantById,
   findTenantByOwnerId,
@@ -127,6 +129,7 @@ export const updateActivityDetailed = async (
   if (data.endAt !== undefined) patch.endAt = data.endAt;
   if (data.status !== undefined) patch.status = data.status as ActivityStatus;
   if (data.capacity !== undefined) patch.capacity = data.capacity;
+  if (data.waitlist !== undefined) patch.waitlist = data.waitlist;
   if (data.priceAed !== undefined) patch.priceAed = data.priceAed;
   if (data.featured !== undefined) patch.featured = data.featured;
   if (data.description !== undefined) patch.description = data.description;
@@ -171,6 +174,34 @@ export const updateActivityDetailed = async (
       'disconnect' in data.host && data.host.disconnect ? null : data.host.connect?.id ?? null;
   }
   if (data.location?.connect?.id !== undefined) patch.locationId = data.location.connect.id;
+
+  const revampTouched =
+    data.itinerary !== undefined ||
+    data.requirements !== undefined ||
+    data.description !== undefined ||
+    data.priceAed !== undefined ||
+    data.pricingMode !== undefined;
+
+  if (revampTouched) {
+    const existingDoc = await findActivityDocInMongo(activityId);
+    if (existingDoc) {
+      const nextItinerary = data.itinerary ?? existingDoc.itinerary ?? [];
+      const nextRequirements = data.requirements ?? existingDoc.requirements ?? [];
+      const nextDescription = data.description ?? existingDoc.description ?? '';
+      const nextPriceAed = data.priceAed ?? existingDoc.priceAed ?? 0;
+      const nextPricingMode = data.pricingMode ?? existingDoc.pricingMode ?? null;
+      Object.assign(
+        patch,
+        buildDetailRevampSnapshotFromLegacy({
+          itineraryLines: nextItinerary,
+          requirements: nextRequirements,
+          description: nextDescription,
+          priceAed: nextPriceAed,
+          pricingMode: nextPricingMode,
+        })
+      );
+    }
+  }
 
   await patchActivityInMongo(activityId, patch);
 
@@ -287,7 +318,10 @@ export const duplicateTenantActivity = async (
     rideshareSeats: source.rideshareEnabled ? source.rideshareSeats ?? null : null,
     rideshareDetails: source.rideshareEnabled ? source.rideshareDetails ?? undefined : undefined,
     paymentTerms: source.paymentTerms ?? undefined,
-    itinerary: source.itinerary ?? [],
+    itinerary:
+      source.itinerary?.length > 0
+        ? source.itinerary
+        : (source.itinerarySteps?.map((s) => s.title) ?? []),
     requirements: source.requirements ?? [],
     joinMode: resolveJoinMode(source.joinMode, source.requirements),
     participationMode: resolveParticipationMode(source.participationMode, source.requirements),
@@ -412,7 +446,7 @@ export const listSubmittedLocationsByUser = async (userId: string) => {
     .find({ submittedById: userId })
     .sort({ createdAt: -1 })
     .toArray();
-  return items.map(mapMongoLocation);
+  return enrichLocationsWithHeavyReadsBatch(items.map(mapMongoLocation));
 };
 
 export const createLocationRecord = async (data: Parameters<typeof buildLocationFromCreateInput>[0]) => {
@@ -453,7 +487,7 @@ export const listPopularActiveLocations = async (limit: number) => {
     .sort({ featured: -1, viewCount: -1, createdAt: -1 })
     .limit(limit)
     .toArray();
-  return items.map(mapMongoLocation);
+  return enrichLocationsWithHeavyReadsBatch(items.map(mapMongoLocation));
 };
 
 export const listPublishedUpcomingActivitiesByLocation = async (locationId: string, take: number) =>
@@ -461,7 +495,9 @@ export const listPublishedUpcomingActivitiesByLocation = async (locationId: stri
 
 export const findActiveLocationById = async (locationId: string) => {
   const item = await locationsCollection().findOne({ _id: locationId, status: LocationStatus.ACTIVE });
-  return item ? mapMongoLocation(item) : null;
+  if (!item) return null;
+  const [enriched] = await enrichLocationsWithHeavyReadsBatch([mapMongoLocation(item)]);
+  return enriched ?? null;
 };
 
 /** Active venues for everyone; draft venues for submitter or platform admin (pending preview). */

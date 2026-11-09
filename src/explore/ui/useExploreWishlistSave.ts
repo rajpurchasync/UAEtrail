@@ -71,7 +71,7 @@ export const useExploreWishlistSave = (card: DiscoveryCardModel): ExploreWishlis
         const item = await addWishlistTarget(target);
         queryClient.setQueryData(wishlistQueryKey, { saved: true, wishlistItemId: item.id });
         setNotice(
-          target.locationId
+          target.locationId || target.areaId
             ? 'Saved — we will notify you when outings are planned here.'
             : 'Saved to your wishlist — we can alert you when similar plans show up.'
         );

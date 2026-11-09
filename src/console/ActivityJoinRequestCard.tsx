@@ -39,23 +39,39 @@ export const ActivityJoinRequestCard = ({
   const activityTitle = activity?.title || activity?.locationName || 'Activity';
   const activityDate = formatDate(activity?.date || activity?.startAt);
   const hostNote = resolveHostNote(request);
+  const partyLine =
+    request.adults != null || request.kids != null
+      ? (() => {
+          const a = request.adults ?? 1;
+          const k = request.kids ?? 0;
+          if (a === 1 && k === 0) return null;
+          return `Group: ${a} adult${a === 1 ? '' : 's'}${
+            k > 0 ? `, ${k} kid${k === 1 ? '' : 's'}` : ''
+          }`;
+        })()
+      : null;
+  const guestNote = request.note?.trim() || '';
+  const showGuestNote = Boolean(guestNote) && guestNote !== partyLine;
 
   return (
     <GlassCard padding className="!p-3.5">
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-neutral-900 truncate">
+          <p className="truncate text-sm font-semibold text-neutral-900 dark:text-neutral-100">
             {request.user?.displayName ?? 'Guest'}
           </p>
-          <p className="text-xs text-neutral-500 mt-0.5 truncate">
+          <p className="mt-0.5 truncate text-xs text-neutral-500 dark:text-neutral-400">
             {activityTitle}
             {activityDate ? ` · ${activityDate}` : ''}
           </p>
-          {request.note && (
-            <p className={`text-xs text-neutral-600 mt-1 ${expanded ? '' : 'line-clamp-2'}`}>
-              {request.note}
+          {partyLine ? (
+            <p className="mt-1 text-xs font-medium text-neutral-700 dark:text-neutral-300">{partyLine}</p>
+          ) : null}
+          {showGuestNote ? (
+            <p className={`mt-1 text-xs text-neutral-600 dark:text-neutral-400 ${expanded ? '' : 'line-clamp-2'}`}>
+              {guestNote}
             </p>
-          )}
+          ) : null}
           {request.rideshareRiderReputation ? (
             <RideshareRiderReputationSummary
               reputation={request.rideshareRiderReputation}
@@ -82,11 +98,11 @@ export const ActivityJoinRequestCard = ({
         </span>
       </div>
 
-      {(request.note || hostNote) && (
+      {(showGuestNote || hostNote) && (
         <button
           type="button"
           onClick={() => setExpanded((open) => !open)}
-          className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-emerald-700"
+          className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400"
         >
           {expanded ? 'Show less' : 'View details'}
           {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
@@ -94,11 +110,11 @@ export const ActivityJoinRequestCard = ({
       )}
 
       {isPending && showActions && onApprove && onReject && (
-        <div className="mt-3 flex gap-2">
+        <div className="mt-3 flex flex-wrap items-center gap-2 md:justify-end">
           <AppButton
             type="button"
             variant="primary"
-            className="flex-1 min-h-[40px] px-3 text-sm"
+            className="min-h-10 w-full px-3 text-sm md:w-auto md:min-h-9 md:min-w-[5.5rem] md:px-4"
             disabled={busy}
             onClick={onApprove}
           >
@@ -107,7 +123,7 @@ export const ActivityJoinRequestCard = ({
           <AppButton
             type="button"
             variant="secondary"
-            className="flex-1 min-h-[40px] px-3 text-sm"
+            className="min-h-10 w-full border border-neutral-200 px-3 text-sm dark:border-neutral-600 dark:text-neutral-100 md:w-auto md:min-h-9 md:min-w-[5.5rem] md:px-4"
             disabled={busy}
             onClick={onReject}
           >

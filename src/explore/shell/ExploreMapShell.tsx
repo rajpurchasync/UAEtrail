@@ -103,7 +103,7 @@ export const ExploreMapShell = ({
   if (isDesktop && browse.peopleBrowseOpen) {
     desktopRightPanelOverlay = (
       <aside
-        className="pointer-events-auto flex h-full min-h-0 w-[min(400px,32vw)] max-w-full shrink-0 flex-col overflow-hidden border-l border-neutral-200 bg-white px-5 py-4 shadow-[-12px_0_32px_rgba(15,23,42,0.08)]"
+        className="pointer-events-auto flex h-full min-h-0 w-[min(400px,32vw)] max-w-full shrink-0 flex-col overflow-hidden border-l border-neutral-200 bg-white px-5 py-4 shadow-[-12px_0_32px_rgba(15,23,42,0.08)] dark:border-neutral-800 dark:bg-neutral-950"
         aria-label="Find crew"
       >
         <PeopleBrowsePanel
@@ -177,11 +177,15 @@ export const ExploreMapShell = ({
       exploreMapTiles={exploreMapTiles}
       onToggleMapStyle={viewport.toggleExploreMapStyle}
       onLocateMe={viewport.handleLocateMe}
-      mapPins={mapPins}
+      mapPins={
+        browse.peopleBrowseOpen ? mapPins.filter((pin) => pin.activityMode === 'seeking') : mapPins
+      }
+      peopleMap={browse.peopleBrowseOpen}
       selectedId={selectedId}
       highlightedExploreItemId={highlightedExploreItemId}
       recenterTo={viewport.recenterTo}
       exploreMapCenter={viewport.exploreMapCenter}
+      deviceLocation={viewport.deviceLocationPointer}
       onPinClick={handleMapPinClick}
       onVisibleBoundsChange={onVisibleMapBoundsChange}
       loading={mapLoading}

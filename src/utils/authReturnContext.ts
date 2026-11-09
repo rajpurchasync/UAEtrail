@@ -22,6 +22,9 @@ export const AUTH_RESUME_JOIN_QUERY = 'join';
 /** After auth, open invite-friends sheet on activity detail. */
 export const AUTH_RESUME_INVITE_FRIENDS_QUERY = 'inviteFriends';
 
+/** After auth, open outing share sheet (in-app invite + external link). */
+export const AUTH_RESUME_SHARE_QUERY = 'share';
+
 /** On `/chat`, resolve activity crew thread when `1` (with `activity` id). */
 export const AUTH_RESUME_CREW_CHAT_QUERY = 'crewChat';
 
@@ -37,9 +40,9 @@ const buildPathFromLocation = (location: LocationLike, overrideHash?: string): s
 
 const withAuthResumeFlags = (
   path: string,
-  flags: { join?: boolean; inviteFriends?: boolean }
+  flags: { join?: boolean; inviteFriends?: boolean; share?: boolean }
 ): string => {
-  if (!flags.join && !flags.inviteFriends) return path;
+  if (!flags.join && !flags.inviteFriends && !flags.share) return path;
   const hashIndex = path.indexOf('#');
   const withoutHash = hashIndex >= 0 ? path.slice(0, hashIndex) : path;
   const hash = hashIndex >= 0 ? path.slice(hashIndex) : '';
@@ -49,6 +52,7 @@ const withAuthResumeFlags = (
   const params = new URLSearchParams(search);
   if (flags.join) params.set(AUTH_RESUME_JOIN_QUERY, '1');
   if (flags.inviteFriends) params.set(AUTH_RESUME_INVITE_FRIENDS_QUERY, '1');
+  if (flags.share) params.set(AUTH_RESUME_SHARE_QUERY, '1');
   const qs = params.toString();
   return `${pathname}${qs ? `?${qs}` : ''}${hash}`;
 };
@@ -58,6 +62,9 @@ export const withAuthResumeQuery = (path: string, options?: { join?: boolean }):
 
 export const withAuthResumeInviteFriends = (path: string): string =>
   withAuthResumeFlags(path, { inviteFriends: true });
+
+export const withAuthResumeShare = (path: string): string =>
+  withAuthResumeFlags(path, { share: true });
 
 /** Build sign-in URL for a known return path (no scroll capture). */
 export const signInPathForReturn = (

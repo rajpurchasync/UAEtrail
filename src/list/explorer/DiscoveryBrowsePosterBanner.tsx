@@ -1,6 +1,12 @@
 import type { ReactNode } from 'react';
 import { Clock, MapPin } from 'lucide-react';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
+import {
+  discoveryCardCanOpenHostProfile,
+  resolveDiscoveryCardHostProfilePath,
+  resolveDiscoveryCardLocationDetailPath,
+} from '../../discovery/discoveryCardModel';
+import { DiscoveryPosterOverlayNav } from './DiscoveryPosterOverlayNav';
 import { EnvironmentImage } from '../../components/ui/EnvironmentImage';
 import { SecureAvatar } from '../../components/ui/SecureAvatar';
 import { DiscoveryCardTypeIcon } from '../../explore/ui/DiscoveryCardTypeIcon';
@@ -20,10 +26,13 @@ export type DiscoveryBrowsePosterBannerProps = {
   leadingActions?: ReactNode;
   /** List thumbnail hover zoom on cover image. */
   imageHoverZoom?: boolean;
+  embedInItemLink?: boolean;
+  onGuestGatedAction?: () => void;
+  onBeforeNavigate?: () => void;
 };
 
 const DEFAULT_IMAGE_HEIGHT =
-  'h-[9.75rem] w-full shrink-0 sm:h-[8.75rem] md:h-32 lg:h-[7.25rem]';
+  'h-[11rem] w-full shrink-0 sm:h-[10.25rem] md:h-36 lg:h-[8.5rem]';
 
 /** Shared poster hero — list thumbnails and map pin summary banner. */
 export const DiscoveryBrowsePosterBanner = ({
@@ -33,12 +42,22 @@ export const DiscoveryBrowsePosterBanner = ({
   headerActions = null,
   leadingActions = null,
   imageHoverZoom = false,
+  embedInItemLink = false,
+  onGuestGatedAction,
+  onBeforeNavigate,
 }: DiscoveryBrowsePosterBannerProps) => {
   const cover = resolveBrowsePosterCoverUrl(card);
   const meta = listExplorerCardMeta(card);
+  const hostProfilePath = resolveDiscoveryCardHostProfilePath(card);
+  const isGuest = Boolean(onGuestGatedAction);
+  const canOpenHostProfile = discoveryCardCanOpenHostProfile(card, { isGuest });
+  const hostNavPath = hostProfilePath && canOpenHostProfile ? hostProfilePath : null;
+  const hostGuestGated = Boolean(hostProfilePath) && !canOpenHostProfile;
+  const locationDetailPath = meta.location ? resolveDiscoveryCardLocationDetailPath(card) : null;
   const distance = usePlaceDistanceLabel(card.mapLatitude, card.mapLongitude);
+  const showWhenBlock = Boolean(meta.whenDay || meta.whenDate || meta.whenTime || meta.when);
   const showBottom = Boolean(
-    meta.location || meta.when || meta.price || distance || (showDistance && distance)
+    meta.location || showWhenBlock || meta.price || distance || (showDistance && distance)
   );
   /** Bottom of peek share/close row (top-2.5 + h-8 controls). */
   const PEEK_CTA_BOTTOM = 'top-[calc(0.625rem+2rem)]';
@@ -48,6 +67,8 @@ export const DiscoveryBrowsePosterBanner = ({
   const PEEK_META_ROW_TOP = 'bottom-[calc(0.375rem+1.75rem)]';
 
   const showHostBand = Boolean(meta.hostName || meta.soldOut);
+  /** List thumbs have no close/share row — pin host at top-right instead of mid-poster band. */
+  const hostChipAtTop = !headerActions;
   const hostAnchorTop = headerActions ? PEEK_CTA_BOTTOM : 'top-9';
   const hostAnchorBottom = showBottom
     ? meta.price
@@ -93,9 +114,32 @@ export const DiscoveryBrowsePosterBanner = ({
       ) : null}
       {showHostBand ? (
         <div
-          className={`pointer-events-auto absolute right-2 z-10 flex max-w-[min(78%,13rem)] flex-col items-end justify-center gap-1 ${hostAnchorTop} ${hostAnchorBottom}`}
+          className={
+            hostChipAtTop
+              ? 'pointer-events-auto absolute right-2 top-2.5 z-10 flex max-w-[min(70%,11rem)] flex-col items-end gap-1'
+              : `pointer-events-auto absolute right-2 z-10 flex max-w-[min(78%,13rem)] flex-col items-end justify-center gap-1 ${hostAnchorTop} ${hostAnchorBottom}`
+          }
         >
-          {meta.hostName ? (
+          {meta.hostName && (hostNavPath || hostGuestGated) ? (
+            <DiscoveryPosterOverlayNav
+              to={hostNavPath ?? hostProfilePath ?? card.path}
+              embedInItemLink={embedInItemLink}
+              onBeforeNavigate={onBeforeNavigate}
+              guestGated={hostGuestGated}
+              onGuestGatedAction={onGuestGatedAction}
+              ariaLabel={`View ${meta.hostName} profile`}
+              className="flex max-w-full items-center gap-1 rounded-full bg-black/55 py-0.5 pl-0.5 pr-1.5 shadow-sm ring-1 ring-white/15 transition hover:bg-black/65 active:opacity-90"
+            >
+              <SecureAvatar
+                src={meta.hostAvatar}
+                name={meta.hostName}
+                className="h-5 w-5 shrink-0 text-[8px] ring-1 ring-white/80"
+              />
+              <span className="min-w-0 truncate text-[10px] font-semibold leading-none text-white">
+                {meta.hostName}
+              </span>
+            </DiscoveryPosterOverlayNav>
+          ) : meta.hostName ? (
             <div className="flex max-w-full items-center gap-1 rounded-full bg-black/55 py-0.5 pl-0.5 pr-1.5 shadow-sm ring-1 ring-white/15">
               <SecureAvatar
                 src={meta.hostAvatar}
@@ -115,25 +159,55 @@ export const DiscoveryBrowsePosterBanner = ({
         </div>
       ) : null}
       {showBottom ? (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/40 to-transparent px-2 pb-1.5 pt-8">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/40 to-transparent px-2 pb-1.5 pt-10">
           <div className="flex items-end gap-1.5">
             <div className="min-w-0 flex-1">
               {meta.location || distance ? (
-                <p className="flex flex-wrap items-center gap-1 text-[10px] font-semibold leading-tight text-white">
-                  {meta.location ? (
-                    <>
-                      <MapPin className="h-3 w-3 shrink-0 text-emerald-300" aria-hidden />
+                <p className="pointer-events-auto flex flex-wrap items-center gap-1 text-[10px] font-semibold leading-tight text-white">
+                  {meta.location && locationDetailPath ? (
+                    <DiscoveryPosterOverlayNav
+                      to={locationDetailPath}
+                      embedInItemLink={embedInItemLink}
+                      onBeforeNavigate={onBeforeNavigate}
+                      ariaLabel={`Open ${meta.location}`}
+                      className="flex min-w-0 max-w-full items-start gap-1 rounded-md text-left transition hover:underline active:opacity-90"
+                    >
+                      <MapPin className="mt-0.5 h-3 w-3 shrink-0 text-emerald-300" aria-hidden />
                       <span className="min-w-0 line-clamp-2">{meta.location}</span>
-                    </>
+                    </DiscoveryPosterOverlayNav>
+                  ) : meta.location ? (
+                    <span className="flex min-w-0 items-start gap-1">
+                      <MapPin className="mt-0.5 h-3 w-3 shrink-0 text-emerald-300" aria-hidden />
+                      <span className="min-w-0 line-clamp-2">{meta.location}</span>
+                    </span>
                   ) : null}
                   {distance ? <ListExplorerDistanceChip label={distance} variant="dark" /> : null}
                 </p>
               ) : null}
-              {meta.when ? (
-                <p className="mt-0.5 flex items-center gap-1 text-[10px] font-medium leading-tight text-white/90">
-                  <Clock className="h-3 w-3 shrink-0 text-white/80" aria-hidden />
-                  <span className="truncate">{meta.when}</span>
-                </p>
+              {showWhenBlock ? (
+                <div className="mt-0.5 space-y-0.5">
+                  {meta.whenDay || meta.whenDate ? (
+                    <p className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0 text-[10px] font-semibold leading-tight text-white">
+                      {meta.whenDay ? (
+                        <span className="shrink-0 uppercase tracking-wide text-white/95">{meta.whenDay}</span>
+                      ) : null}
+                      {meta.whenDate ? (
+                        <span className="min-w-0 font-medium text-white/90">{meta.whenDate}</span>
+                      ) : null}
+                    </p>
+                  ) : null}
+                  {meta.whenTime ? (
+                    <p className="flex items-center gap-1 text-[10px] font-medium leading-tight text-white/90">
+                      <Clock className="h-3 w-3 shrink-0 text-white/80" aria-hidden />
+                      <span className="truncate">{meta.whenTime}</span>
+                    </p>
+                  ) : !meta.whenDay && !meta.whenDate && meta.when ? (
+                    <p className="flex items-center gap-1 text-[10px] font-medium leading-tight text-white/90">
+                      <Clock className="h-3 w-3 shrink-0 text-white/80" aria-hidden />
+                      <span className="truncate">{meta.when}</span>
+                    </p>
+                  ) : null}
+                </div>
               ) : null}
             </div>
             {meta.price ? (

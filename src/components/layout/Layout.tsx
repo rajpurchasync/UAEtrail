@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef, type ReactNode } from 'react';
 import { useLocation, useNavigate, useNavigationType } from 'react-router-dom';
-import { APP_SCROLL_ROOT_ID, resetAppScroll } from '../../config/layoutScroll';
+import { APP_SCROLL_ROOT_ID, resetAppScroll, shouldResetAppScrollOnNavigation } from '../../config/layoutScroll';
 import {
   applyViewReturnSnapshot,
   installViewReturnFocusCapture,
@@ -13,6 +13,7 @@ import {
 } from '../../utils/viewReturnMemory';
 import { HomeDeferredMount } from '../home/marketing/HomeDeferredMount';
 import { getBackStack, recordNavigation, skipTransientIfPoppedOnto } from '../../utils/backStack';
+import { resetModalA11yState } from '../../hooks/useModalA11y';
 
 const ProductShell = lazy(() => import('./ProductShell').then((m) => ({ default: m.ProductShell })));
 const Footer = lazy(() => import('./Footer').then((m) => ({ default: m.Footer })));
@@ -61,6 +62,7 @@ export const Layout = ({ children }: LayoutProps) => {
   }, [location.pathname, location.search]);
 
   useLayoutEffect(() => {
+    resetModalA11yState();
     const pathKey = viewReturnPathKey(location.pathname, location.search);
     const leaving = previousPath.current;
     if (leaving && leaving !== pathKey) sealLeavingView(leaving);
@@ -102,7 +104,10 @@ export const Layout = ({ children }: LayoutProps) => {
 
     if (!shouldRestore || !snapshot) {
       restoringRef.current = null;
-      resetAppScroll();
+      const previousPathname = leaving?.split('?')[0] ?? null;
+      if (shouldResetAppScrollOnNavigation(previousPathname, location.pathname)) {
+        resetAppScroll();
+      }
       return;
     }
     restoringRef.current = { pathname: location.pathname, snapshot, focusSelector, at: Date.now() };

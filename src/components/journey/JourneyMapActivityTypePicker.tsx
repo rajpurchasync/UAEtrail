@@ -1,3 +1,4 @@
+import { HorizontalDragScroll } from '../ui/HorizontalDragScroll';
 import type { MemberMapPinActivityType } from '@uaetrail/shared-types';
 import { JOURNEY_MAP_ACTIVITY_OPTIONS } from '../../member-plan/journeyMapActivityTypes';
 
@@ -15,7 +16,8 @@ export const JourneyMapActivityTypePicker = ({
 }: JourneyMapActivityTypePickerProps) => (
   <div>
     <p className="mb-2 text-sm font-medium text-neutral-800">What kind of outdoor moment?</p>
-    <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 scrollbar-hide snap-x snap-mandatory">
+    <HorizontalDragScroll className="-mx-1 overflow-x-auto overscroll-x-contain px-1 pb-1 scrollbar-hide snap-x snap-mandatory [-webkit-overflow-scrolling:touch]">
+      <div className="flex w-max gap-2">
       {JOURNEY_MAP_ACTIVITY_OPTIONS.map((opt) => {
         const selected = value === opt.id;
         return (
@@ -36,6 +38,7 @@ export const JourneyMapActivityTypePicker = ({
           </button>
         );
       })}
-    </div>
+      </div>
+    </HorizontalDragScroll>
   </div>
 );

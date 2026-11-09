@@ -1,5 +1,7 @@
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { isDiscoverBrowseRoute } from '../../explore/exploreDiscoverBrowse';
+import { isDesktopExploreNavActive, isDesktopSocialNavActive } from '../../config/desktopNav';
+import { isPlanHostingFilterRoute } from '../../plan/planRouting';
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -50,15 +52,16 @@ const isConsumerHamburgerLinkActive = (
   search: string
 ): boolean => {
   if (item.label === 'Explore') {
-    const params = new URLSearchParams(search);
-    return (
-      (pathname === EXPLORE_MAP_PATH || pathname === '/discovery') &&
-      !isDiscoverBrowseRoute(pathname, search) &&
-      params.get('list') !== '1'
-    );
+    return isDesktopExploreNavActive(pathname, search);
   }
-  if (item.label === 'Browse') {
-    return isDiscoverBrowseRoute(pathname, search) || pathname === LIST_DISCOVERY_PATH;
+  if (item.label === 'Social') {
+    return isDesktopSocialNavActive(pathname, search);
+  }
+  if (item.label === 'My Plans') {
+    return (
+      (pathname === item.to || pathname.startsWith(`${item.to}/`)) &&
+      !isPlanHostingFilterRoute(pathname, search)
+    );
   }
   return item.match.some((prefix) =>
     prefix === '/' ? pathname === '/' : pathname === prefix || pathname.startsWith(`${prefix}/`)
@@ -337,6 +340,16 @@ export const MobileMenuProvider = ({ children }: MobileMenuProviderProps) => {
   }, [pathname, closeMenu]);
 
   useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px)');
+    const onChange = () => {
+      if (mq.matches) closeMenu();
+    };
+    onChange();
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, [closeMenu]);
+
+  useEffect(() => {
     if (!open) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') closeMenu();
@@ -475,14 +488,11 @@ export const MobileUserMenuButton = ({
             ) : null}
             {MOBILE_LANDING_USER_MENU.map((item) => {
               const active =
-                'match' in item && item.label === 'Browse'
-                  ? isDiscoverBrowseRoute(pathname, search)
-                  : 'match' in item && item.label === 'Explore'
-                    ? (pathname === EXPLORE_MAP_PATH || pathname === '/discovery') &&
-                      !isDiscoverBrowseRoute(pathname, search)
-                    : 'match' in item
-                      ? isActive(item.match)
-                      : false;
+                'match' in item && item.label === 'Explore'
+                  ? isDesktopExploreNavActive(pathname, search)
+                  : 'match' in item
+                    ? isActive(item.match)
+                    : false;
               const Icon = MOBILE_NAV_ICON_MAP[item.label] ?? User;
 
               if ('href' in item) {
@@ -658,7 +668,12 @@ const MobileMenuPanel = () => {
     <MobileDrawer open={open} closeMenu={closeMenu} ariaLabel="Main menu">
       <div className={MOBILE_DRAWER.stack}>
         <div className={MOBILE_DRAWER.group}>
-          {CONSUMER_HAMBURGER_MENU.filter((item) => item.kind === 'link').map((item) => {
+          {CONSUMER_HAMBURGER_MENU.filter((item) => {
+            if (item.kind !== 'link') return false;
+            if (user) return true;
+            if (!item.authGate) return true;
+            return item.label === 'Chat';
+          }).map((item) => {
             const linkItem = item as ConsumerHamburgerLinkItem;
             const active = isConsumerHamburgerLinkActive(linkItem, pathname, search);
             const label = user || !linkItem.labelGuest ? linkItem.label : linkItem.labelGuest;
@@ -673,7 +688,7 @@ const MobileMenuPanel = () => {
             const linkState = resolveConsumerHamburgerLinkState(linkItem, pathname, search);
             return (
               <Link
-                key={item.label}
+                key={linkItem.label}
                 to={destination}
                 state={linkState}
                 onClick={closeMenu}

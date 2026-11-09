@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate, useSearchParams, useLocation } from 'reac
 import { useQueryClient } from '@tanstack/react-query';
 import { Lock } from 'lucide-react';
 import {
+  activityJoinIsFull,
   activityScheduleHasEnded,
   type ReviewDTO,
 } from '@uaetrail/shared-types';
@@ -16,9 +17,11 @@ import {
   ACTIVITY_JOIN_CTA_SELECTOR,
   AUTH_RESUME_INVITE_FRIENDS_QUERY,
   AUTH_RESUME_JOIN_QUERY,
+  AUTH_RESUME_SHARE_QUERY,
   navigateToAuthGate,
   signInPathForReturn,
   withAuthResumeQuery,
+  withAuthResumeShare,
 } from '../utils/authReturnContext';
 import { useAuth } from '../context/AuthContext';
 import { useActivityJoinActions } from '../hooks/useActivityJoinFlow';
@@ -35,8 +38,9 @@ import { activityPublicMetaDescription } from '../utils/activityPublicSeo';
 import { resolveActivityHeroImage } from '../utils/activityHeroImage';
 import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
 import { JoinRequestModal, WithdrawRequestModal } from '../components/ui';
-import { DetailPageLoadingState } from '../components/ui/DetailPageLoadingState';
 import { DETAIL_LOADING_ACTIVITY } from '../content/detailLoadingCopy';
+import { ConsumerEntityDetailLoading } from '../detail/shell/ConsumerEntityDetailLoading';
+import { parseMobileBackNavState } from '../utils/mobileBackNav';
 import { ActivityChatCallout } from '../components/ui/ActivityChatCallout';
 import { PushEnableBanner } from '../components/ui/PushEnableBanner';
 import { ActivityDetailByKind } from '../activity/detail/templates/ActivityDetailByKind';
@@ -47,7 +51,7 @@ import {
 } from '../activity/detail/activityDetailConsumerAnchors';
 import { resolveJoinRequestUiState } from '../utils/joinRequestUi';
 import { useMemberStatus } from '../hooks/useMemberStatus';
-import { viewerIsActivityHostUser } from '../utils/viewerHostsActivity';
+import { viewerCanManageActivityOuting, viewerIsActivityHostUser } from '../utils/viewerHostsActivity';
 import { activityJoinInviteBanner } from '../content/exploreGoingPanelCopy';
 import { useHostActivitySheetBundle } from '../hooks/useHostActivitySheetBundle';
 import { navigateToCreateLinkedRideshare } from '../explore/navigateCreateLinkedRideshare';
@@ -81,9 +85,11 @@ export const ActivityDetail = () => {
   const resumeJoinAfterAuth = searchParams.get(AUTH_RESUME_JOIN_QUERY) === '1';
   const resumeInviteFriendsAfterAuth =
     searchParams.get(AUTH_RESUME_INVITE_FRIENDS_QUERY) === '1';
+  const resumeShareAfterAuth = searchParams.get(AUTH_RESUME_SHARE_QUERY) === '1';
   const joinInviteAutoOpenRef = useRef(false);
   const resumeJoinHandledRef = useRef(false);
   const resumeInviteHandledRef = useRef(false);
+  const resumeShareHandledRef = useRef(false);
   const joinedWelcomeHandledRef = useRef(false);
   const {
     activity,
@@ -168,6 +174,13 @@ export const ActivityDetail = () => {
       viewerIsActivityHostUser(activity, user.id)
   );
 
+  const canManageActivityOuting = Boolean(
+    activity &&
+      user &&
+      detailExposure !== 'none' &&
+      viewerCanManageActivityOuting(activity, user.id, user.role)
+  );
+
   const {
     joinRequests: hostJoinRequests,
     loading: hostJoinRequestsLoading,
@@ -214,7 +227,13 @@ export const ActivityDetail = () => {
     return engagement;
   }, [wireEngagement]);
 
-  const requiresSignIn = viewerAccess?.gateReason === 'sign_in' && !user;
+  const requiresSignIn = Boolean(
+    !user &&
+      (viewerAccess?.gateReason === 'sign_in' ||
+        (viewerAccess?.exposure === 'none' &&
+          viewerAccess.gateReason !== 'invite_only' &&
+          !viewerAccess.canViewFullActivity))
+  );
   const showJoinRequiredHint =
     Boolean(user) &&
     viewerAccess?.gateReason === 'join_required' &&
@@ -264,6 +283,40 @@ export const ActivityDetail = () => {
     if (!activity || activity.status !== 'published') return;
     inviteShare.openShareFromActivity(activity, { canSendBuddyInvites: true });
   }, [activity, inviteShare]);
+
+  const onGuestShareAuth = useCallback(() => {
+    if (!id) return;
+    navigateToAuthGate(navigate, location, {
+      returnPath: withAuthResumeShare(`/activity/${id}`),
+    });
+  }, [id, navigate, location]);
+
+  const openActivityShareSheet = useCallback(() => {
+    if (!activity || activity.status !== 'published') return;
+    inviteShare.openShareFromActivity(activity, {
+      canSendBuddyInvites: Boolean(user),
+    });
+  }, [activity, inviteShare, user]);
+
+  const handleShareOutingPress = useCallback(() => {
+    if (!activity || activity.status !== 'published') return;
+    if (!user) {
+      onGuestShareAuth();
+      return;
+    }
+    if (isActivityHostUser) {
+      onHostShareOuting();
+    } else {
+      openActivityShareSheet();
+    }
+  }, [
+    activity,
+    user,
+    onGuestShareAuth,
+    isActivityHostUser,
+    onHostShareOuting,
+    openActivityShareSheet,
+  ]);
 
   const canInviteFriendsToActivity =
     isConfirmedParticipant || joinUiState.kind === 'pending';
@@ -341,11 +394,35 @@ export const ActivityDetail = () => {
     setSearchParams,
   ]);
 
+  useEffect(() => {
+    if (!resumeShareAfterAuth || loading || !activity || resumeShareHandledRef.current) return;
+    if (!user) return;
+    if (activity.status !== 'published') return;
+    resumeShareHandledRef.current = true;
+    openActivityShareSheet();
+    const next = new URLSearchParams(searchParams);
+    next.delete(AUTH_RESUME_SHARE_QUERY);
+    setSearchParams(next, { replace: true });
+  }, [
+    resumeShareAfterAuth,
+    loading,
+    activity,
+    user,
+    openActivityShareSheet,
+    searchParams,
+    setSearchParams,
+  ]);
+
   if (loading) {
     return (
       <>
         <PageMeta title="Loading activity" path={id ? `/activity/${id}` : undefined} />
-        <DetailPageLoadingState label={DETAIL_LOADING_ACTIVITY} variant="page" />
+        <ConsumerEntityDetailLoading
+          backTo={detailBackTo ?? detailBackPath('activity')}
+          backLabel={parseMobileBackNavState(location.state)?.backLabel ?? 'Explore'}
+          headerChrome={{ emoji: '🥾', label: 'Outing' }}
+          label={DETAIL_LOADING_ACTIVITY}
+        />
       </>
     );
   }
@@ -510,8 +587,9 @@ export const ActivityDetail = () => {
         }
         consumerLayout={effectiveWirePresentation?.consumerLayout ?? null}
         wireStrips={effectiveWirePresentation?.strips ?? null}
-        onHostShareOuting={isActivityHostUser ? onHostShareOuting : undefined}
-        onOpenHostManage={isActivityHostUser ? hostSheets.openHostManage : undefined}
+        onHostShareOuting={handleShareOutingPress}
+        onGuestShareAuth={onGuestShareAuth}
+        onOpenHostManage={canManageActivityOuting ? hostSheets.openHostManage : undefined}
         viewerAccess={viewerAccess}
         onOfferLinkedRideshare={
           canOpenLinkedRideshareFlow && activity
@@ -550,7 +628,10 @@ export const ActivityDetail = () => {
         open={joinActions.joinModalOpen}
         onClose={joinActions.closeJoinModal}
         activity={activity}
-        isFull={activity.slotsAvailable <= 0}
+        isFull={activityJoinIsFull({
+          slotsTotal: activity.slotsTotal,
+          slotsAvailable: activity.slotsAvailable,
+        })}
         onSuccess={handleJoinSuccess}
       />
       {hostSheets.hostManageSheet}

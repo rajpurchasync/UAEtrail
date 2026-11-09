@@ -1,23 +1,28 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { areaDetailQueryKey, areaAvailabilityQueryKey } from '../hooks/clientQueryKeys';
 import { fetchAreaDetailBySlug } from '../hooks/areaHubClientApi';
 import { fetchExplorePeopleAvailability } from '../hooks/memberPeopleClientApi';
 import { detailBackPath, EXPLORE_MAP_PATH } from '../config/routingCatalog';
 import { PRODUCT_EXPLORE_CTA } from '../content/productNorthStar';
-import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
+import { DetailPageShell } from '../detail/shared/DetailPageShell';
 import { AreaDetailView } from '../components/area/AreaDetailView';
+import { AreaDetailPageShell } from './area/AreaDetailPageShell';
+import { resolveAreaConsumerDetailHeaderChrome } from '../area/detail/resolveAreaConsumerDetailHeaderChrome';
 import {
   AREA_DETAIL_TAB_QUERY,
   parseAreaDetailTabParam,
   type AreaDetailTabId,
 } from '../area/areaDetailTab';
-import { DetailPageLoadingState } from '../components/ui/DetailPageLoadingState';
 import { DETAIL_LOADING_AREA } from '../content/detailLoadingCopy';
+import { ConsumerEntityDetailLoading } from '../detail/shell/ConsumerEntityDetailLoading';
+import { readDetailBackToFromLocation } from '../explore/mapPeekDetailNavState';
+import { parseMobileBackNavState } from '../utils/mobileBackNav';
 
 /** Curated area hub — tabbed shell + explore deep links (S9 Phase 4). */
 export const AreaDetailPage = () => {
+  const location = useLocation();
   const { slug = '' } = useParams<{ slug: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = parseAreaDetailTabParam(searchParams.get(AREA_DETAIL_TAB_QUERY));
@@ -54,51 +59,59 @@ export const AreaDetailPage = () => {
   });
 
   const shellBack = detailBackPath('explore');
+  const headerChrome = resolveAreaConsumerDetailHeaderChrome();
 
   if (!slug) {
     return (
-      <MobileDetailShell backTo={shellBack} backLabel="Explore">
+      <AreaDetailPageShell>
+      <DetailPageShell backTo={shellBack} backLabel="Explore" headerChrome={headerChrome}>
         <main className="mx-auto max-w-lg px-4 py-10">
           <p className="text-slate-600">Missing area.</p>
           <Link to={EXPLORE_MAP_PATH} className="mt-4 inline-block font-semibold text-emerald-800">
             Back to map
           </Link>
         </main>
-      </MobileDetailShell>
+      </DetailPageShell>
+      </AreaDetailPageShell>
     );
   }
 
   if (isLoading) {
     return (
-      <MobileDetailShell backTo={shellBack} backLabel="Explore">
-        <main className="mx-auto max-w-lg px-2 py-4">
-          <DetailPageLoadingState label={DETAIL_LOADING_AREA} accent="emerald" variant="embedded" />
-        </main>
-      </MobileDetailShell>
+      <ConsumerEntityDetailLoading
+        backTo={readDetailBackToFromLocation(location.state) ?? shellBack}
+        backLabel={parseMobileBackNavState(location.state)?.backLabel ?? 'Explore'}
+        headerChrome={headerChrome}
+        label={DETAIL_LOADING_AREA}
+      />
     );
   }
 
   if (isError || !data) {
     return (
-      <MobileDetailShell backTo={shellBack} backLabel="Explore">
+      <AreaDetailPageShell>
+      <DetailPageShell backTo={shellBack} backLabel="Explore" headerChrome={headerChrome}>
         <main className="mx-auto max-w-lg px-4 py-10">
           <p className="text-slate-600">We could not find this area.</p>
           <Link to={EXPLORE_MAP_PATH} className="mt-4 inline-block font-semibold text-emerald-800">
             {PRODUCT_EXPLORE_CTA}
           </Link>
         </main>
-      </MobileDetailShell>
+      </DetailPageShell>
+      </AreaDetailPageShell>
     );
   }
 
   return (
-    <AreaDetailView
-      slug={slug}
-      data={data}
-      availabilityIndex={availabilityIndex}
-      activeTab={activeTab}
-      onTabChange={onTabChange}
-    />
+    <AreaDetailPageShell>
+      <AreaDetailView
+        slug={slug}
+        data={data}
+        availabilityIndex={availabilityIndex}
+        activeTab={activeTab}
+        onTabChange={onTabChange}
+      />
+    </AreaDetailPageShell>
   );
 };
 

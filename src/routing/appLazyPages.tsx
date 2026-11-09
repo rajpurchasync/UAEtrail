@@ -66,6 +66,9 @@ export const PlanBrowseRoute = lazy(() =>
 );
 
 // ─── Lazy-loaded pages ───────────────────────────────────────────────────────
+export const VenuePlaceDetailPage = lazy(() =>
+  import('../pages/PlaceDetailPage').then((m) => ({ default: m.VenuePlaceDetailPage }))
+);
 export const CanonicalPlaceDetailPage = lazy(() =>
   import('../pages/PlaceDetailPage').then((m) => ({ default: m.CanonicalPlaceDetailPage }))
 );
@@ -102,6 +105,13 @@ export const AdminAccount = lazy(() => import('../pages/admin/Account').then((m)
 export const AdminNotifications = lazy(() =>
   import('../pages/admin/Notifications').then((m) => ({ default: m.Notifications }))
 );
+export const AdminAlerts = lazy(() => import('../pages/admin/Alerts').then((m) => ({ default: m.Alerts })));
+export const GeoTreePage = lazy(() => import('../pages/GeoTreePage').then((m) => ({ default: m.GeoTreePage })));
+export const GeoCountryPage = lazy(() =>
+  import('../pages/GeoCountryPage').then((m) => ({ default: m.GeoCountryPage }))
+);
+export const GeoNodePage = lazy(() => import('../pages/GeoNodePage').then((m) => ({ default: m.GeoNodePage })));
+export const PlanTodayPage = lazy(() => import('../plan/PlanTodayPage').then((m) => ({ default: m.PlanTodayPage })));
 export const PublishingOverview = lazy(() =>
   import('../pages/publishing/Overview').then((m) => ({ default: m.Overview }))
 );

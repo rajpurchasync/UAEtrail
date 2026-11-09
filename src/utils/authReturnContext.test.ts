@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   AUTH_RESUME_INVITE_FRIENDS_QUERY,
   AUTH_RESUME_JOIN_QUERY,
+  AUTH_RESUME_SHARE_QUERY,
   withAuthResumeInviteFriends,
   withAuthResumeQuery,
+  withAuthResumeShare,
   buildAuthGateUrls,
 } from './authReturnContext';
 
@@ -25,6 +27,14 @@ describe('withAuthResumeInviteFriends', () => {
   it('appends inviteFriends=1', () => {
     expect(withAuthResumeInviteFriends('/activity/abc')).toBe(
       `/activity/abc?${AUTH_RESUME_INVITE_FRIENDS_QUERY}=1`
+    );
+  });
+});
+
+describe('withAuthResumeShare', () => {
+  it('appends share=1', () => {
+    expect(withAuthResumeShare('/activity/abc')).toBe(
+      `/activity/abc?${AUTH_RESUME_SHARE_QUERY}=1`
     );
   });
 });

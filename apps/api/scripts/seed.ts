@@ -72,7 +72,13 @@ import {
 } from '../src/lib/social-groups-store.js';
 import { ensureActivityGroupChat } from '../src/services/activity-group-chat.js';
 import { logConnectionsDemoPlaybook, seedConnectionsDemo } from './seedConnectionsDemo.js';
-import { ensureDemoExploreActivities, seedDemoScheduledActivities } from './seed-demo-scheduled-activities.js';
+import {
+  ensureDemoExploreActivities,
+  resolveDemoActivitySeedContext,
+  seedDemoScheduledActivities,
+} from './seed-demo-scheduled-activities.js';
+import { seedDevRichCatalog } from './seed-dev-rich-catalog.js';
+import { seedDevMonthlyActivities } from './seed-dev-monthly-activities.js';
 import { refreshSeedParticipantSeekingSchedules } from './seed-demo-seeking-schedules.js';
 import { seedCatalogFacilities } from './seed-catalog-facilities.js';
 
@@ -704,6 +710,8 @@ const upsertMerchantProfile = async (
           latitude: data.latitude ?? null,
           longitude: data.longitude ?? null,
           region: data.region ?? null,
+          showContactPhone: Boolean(data.contactPhone),
+          allowInboundChat: false,
           updatedAt: now
         }
       }
@@ -721,6 +729,8 @@ const upsertMerchantProfile = async (
         latitude: data.latitude ?? null,
         longitude: data.longitude ?? null,
         region: data.region ?? null,
+        showContactPhone: Boolean(data.contactPhone),
+        allowInboundChat: false,
         updatedAt: new Date()
       }
     }
@@ -869,6 +879,28 @@ const SEED_MARKER_LOCATION_ID = 'jebel-jais-summit-trail';
 
 const isProductionEnv = (): boolean => process.env.NODE_ENV === 'production';
 
+const isSeedDevRichEnabled = (): boolean => {
+  const raw = process.env.SEED_DEV_RICH?.trim().toLowerCase();
+  return raw === '1' || raw === 'true' || raw === 'yes';
+};
+
+const runDevRichCalendarSeed = async (options?: { force?: boolean }): Promise<void> => {
+  if (!options?.force && !isSeedDevRichEnabled()) return;
+  const ctx = await resolveDemoActivitySeedContext();
+  if (!ctx) {
+    console.warn('[seed] SEED_DEV_RICH set but demo users/tenants missing — skip monthly calendar seed');
+    return;
+  }
+  const participant = await findAuthUserByEmail('visitor@uaetrails.app');
+  const visitor2 = await findAuthUserByEmail('visitor2@uaetrails.app');
+  const participantIds = [participant?._id, visitor2?._id].filter((id): id is string => Boolean(id));
+  const monthly = await seedDevMonthlyActivities(ctx, participantIds);
+  console.log(
+    `[seed] Dev rich calendar: ${monthly.published} published outings across ${monthly.months} months ` +
+      `(participants=${monthly.participantsSeeded}, pending=${monthly.pendingRequests}, reviews=${monthly.reviews})`
+  );
+};
+
 const isSeedDataEnabled = (): boolean => {
   const values = [
     process.env.SEED_DATA,
@@ -1003,7 +1035,12 @@ async function main() {
     const { invalidateExploreMapCache } = await import('../src/lib/explore-map-cache.js');
     await invalidateExploreMapCache();
     console.log('[seed] Curated areas upserted and catalog place areaIds backfilled');
+    const richCatalog = await seedDevRichCatalog(upsertLocation);
+    console.log(
+      `[seed] Dev rich catalog: +${richCatalog.hiking} hiking, +${richCatalog.camping} camping rows upserted`
+    );
     await ensureDemoExploreActivities();
+    await runDevRichCalendarSeed();
     if (isMobileInboxSeedEnabled()) {
       await runMobileInboxDemoSeed();
     }
@@ -1031,7 +1068,8 @@ async function main() {
   const pendingParticipant = await upsertDemoUser('visitor2@uaetrails.app');
 
   const suspendedDemo = demoAccount('suspended@uaetrails.app');
-  const suspendedHash = await bcrypt.hash(suspendedDemo.password, 10);
+  const suspendedPassword = resolveDemoAccountPassword('suspended@uaetrails.app');
+  const suspendedHash = await bcrypt.hash(suspendedPassword, 10);
   const suspendedExisting = await findAuthUserByEmail('suspended@uaetrails.app');
   if (suspendedExisting) {
     await updateAuthUserCore({
@@ -1820,7 +1858,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
       id: 'jebel-hafeet-viewpoint-hike',
       data: {
         name: 'Jebel Hafeet Summit Walk',
-        region: 'Al Ain',
+        region: 'Abu Dhabi',
         areaLabel: 'Jebel Hafeet summit',
         areaId: curatedAreaSeedId('jebelHafeet'),
         activityType: ActivityType.HIKING,
@@ -1881,7 +1919,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
       id: 'al-ain-desert-camp',
       data: {
         name: 'Al Ain Desert Camp',
-        region: 'Al Ain',
+        region: 'Abu Dhabi',
         areaLabel: 'Remah dune field',
         activityType: ActivityType.CAMPING,
         description:
@@ -1921,6 +1959,11 @@ Share your live location and carry extra water in summer months.`
     await upsertLocation(location.id, location.data);
   }
 
+  const richCatalog = await seedDevRichCatalog(upsertLocation);
+  console.log(
+    `[seed] Dev rich catalog: +${richCatalog.hiking} hiking, +${richCatalog.camping} camping rows upserted`
+  );
+
   await backfillSeedCatalogLocationAreaIds();
   await deactivateOrphanActiveLocations();
 
@@ -1936,6 +1979,8 @@ Share your live location and carry extra water in summer months.`
     agencyGuideId: agencyGuide._id,
     individualHostId: individualHost._id,
   });
+
+  await runDevRichCalendarSeed({ force: true });
 
   await seedParticipant(jaisActivityId, participant._id, agencyOwner._id);
 
@@ -2213,14 +2258,15 @@ Share your live location and carry extra water in summer months.`
   console.log(`Seeking demo schedule refresh: updated=${seekingScheduleRefresh.updated}`);
 
   console.log('Seed complete.');
-  console.log(`Admin: admin@uaetrails.app (${admin.profile?.displayName ?? demoAccount('admin@uaetrails.app').displayName}) / ${demoAccount('admin@uaetrails.app').password}`);
-  console.log(`Participant: visitor@uaetrails.app (${participant.profile?.displayName ?? demoAccount('visitor@uaetrails.app').displayName}) / ${demoAccount('visitor@uaetrails.app').password}`);
-  console.log(`Individual host: host@uaetrails.app (${individualHost.profile?.displayName ?? demoAccount('host@uaetrails.app').displayName}) / ${demoAccount('host@uaetrails.app').password}`);
-  console.log(`Agency owner: organizer@uaetrails.app (${agencyOwner.profile?.displayName ?? demoAccount('organizer@uaetrails.app').displayName}) / ${demoAccount('organizer@uaetrails.app').password}`);
-  console.log(`Agency guide: guide@uaetrails.app (${agencyGuide.profile?.displayName ?? demoAccount('guide@uaetrails.app').displayName}) / ${demoAccount('guide@uaetrails.app').password}`);
-  console.log(`Shop owner: shop@uaetrails.app (${shopOwner.profile?.displayName ?? demoAccount('shop@uaetrails.app').displayName}) / ${demoAccount('shop@uaetrails.app').password}`);
-  console.log(`Pending participant: visitor2@uaetrails.app (${pendingParticipant.profile?.displayName ?? demoAccount('visitor2@uaetrails.app').displayName}) / ${demoAccount('visitor2@uaetrails.app').password} — incomplete signup profile (welcome wizard demo)`);
-  console.log(`Suspended: suspended@uaetrails.app / ${suspendedDemo.password}`);
+  const demoPassword = (email: keyof typeof DEMO_ACCOUNTS) => resolveDemoAccountPassword(email);
+  console.log(`Admin: admin@uaetrails.app (${admin.profile?.displayName ?? demoAccount('admin@uaetrails.app').displayName}) / ${demoPassword('admin@uaetrails.app')}`);
+  console.log(`Participant: visitor@uaetrails.app (${participant.profile?.displayName ?? demoAccount('visitor@uaetrails.app').displayName}) / ${demoPassword('visitor@uaetrails.app')}`);
+  console.log(`Individual host: host@uaetrails.app (${individualHost.profile?.displayName ?? demoAccount('host@uaetrails.app').displayName}) / ${demoPassword('host@uaetrails.app')}`);
+  console.log(`Agency owner: organizer@uaetrails.app (${agencyOwner.profile?.displayName ?? demoAccount('organizer@uaetrails.app').displayName}) / ${demoPassword('organizer@uaetrails.app')}`);
+  console.log(`Agency guide: guide@uaetrails.app (${agencyGuide.profile?.displayName ?? demoAccount('guide@uaetrails.app').displayName}) / ${demoPassword('guide@uaetrails.app')}`);
+  console.log(`Shop owner: shop@uaetrails.app (${shopOwner.profile?.displayName ?? demoAccount('shop@uaetrails.app').displayName}) / ${demoPassword('shop@uaetrails.app')}`);
+  console.log(`Pending participant: visitor2@uaetrails.app (${pendingParticipant.profile?.displayName ?? demoAccount('visitor2@uaetrails.app').displayName}) / ${demoPassword('visitor2@uaetrails.app')} — incomplete signup profile (welcome wizard demo)`);
+  console.log(`Suspended: suspended@uaetrails.app / ${suspendedPassword}`);
   console.log(`Agency tenant: ${agencyTenant.id} — ${agencyTenant.slug} (${agencyTenant.businessMode})`);
   console.log(`Individual host tenant: ${individualHostTenant.id} — ${individualHostTenant.slug}`);
   console.log(`Shop tenant: ${shopTenant.id} — ${shopTenant.slug} (${shopTenant.businessMode})`);

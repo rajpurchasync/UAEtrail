@@ -1,4 +1,5 @@
 import { useRef, type ReactNode } from 'react';
+import { useHorizontalDragScroll } from '../../../hooks/useHorizontalDragScroll';
 import { useIsMobile } from '../../../hooks/useIsMobile';
 import { stepCarouselIndex } from '../../../utils/heroCarouselState';
 import type { ActivityCardProps } from './ActivityCard';
@@ -28,6 +29,7 @@ export const ActivityCardCarousel = ({
 }: ActivityCardCarouselProps) => {
   const isMobile = useIsMobile();
   const trackRef = useRef<HTMLDivElement>(null);
+  useHorizontalDragScroll(trackRef);
   const itemCount = loading ? skeletonCount : cards.length;
   const multi = itemCount > 1;
 

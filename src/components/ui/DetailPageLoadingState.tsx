@@ -1,4 +1,4 @@
-import { Loader2 } from 'lucide-react';
+import { LoadingLabelRow } from './loadingPrimitives';
 
 export type DetailLoadingAccent = 'emerald' | 'amber' | 'violet' | 'sky' | 'neutral';
 
@@ -35,22 +35,10 @@ const accentClasses: Record<
 
 const pulseBar = (className: string, delayMs: number) => (
   <div
-    className={`animate-pulse rounded-lg bg-neutral-200/90 ${className}`}
+    className={`animate-pulse rounded-lg bg-neutral-200/90 dark:bg-neutral-700 ${className}`}
     style={{ animationDelay: `${delayMs}ms` }}
     aria-hidden
   />
-);
-
-const LoadingDots = () => (
-  <span className="inline-flex items-end gap-0.5 pb-0.5" aria-hidden>
-    {[0, 1, 2].map((index) => (
-      <span
-        key={index}
-        className="inline-block h-1 w-1 rounded-full bg-current opacity-80 animate-bounce"
-        style={{ animationDelay: `${index * 140}ms`, animationDuration: '0.85s' }}
-      />
-    ))}
-  </span>
 );
 
 export type DetailPageLoadingStateProps = {
@@ -71,12 +59,12 @@ export const DetailPageLoadingState = ({
   const tone = accentClasses[accent];
   const rootClass =
     variant === 'page'
-      ? 'app-page-center flex-col bg-gray-50 px-4 py-10'
-      : 'max-w-6xl mx-auto px-4 pt-4 pb-8';
+      ? 'app-page-center flex-col bg-gray-50 px-4 py-10 dark:bg-neutral-950'
+      : 'w-full max-w-6xl mx-auto';
 
   return (
     <div className={rootClass} role="status" aria-live="polite" aria-busy="true" aria-label={label}>
-      <div className="relative w-full max-w-sm mx-auto overflow-hidden rounded-2xl border border-neutral-100 bg-white p-4 shadow-sm">
+      <div className="relative mx-auto w-full max-w-sm overflow-hidden rounded-2xl border border-neutral-100 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 md:max-w-3xl">
         <div
           className={`pointer-events-none absolute inset-0 bg-gradient-to-r animate-shimmer ${tone.shimmer}`}
           aria-hidden
@@ -109,13 +97,7 @@ export const DetailPageLoadingState = ({
         </div>
       </div>
 
-      <p className="mt-5 flex items-center justify-center gap-2 text-sm font-semibold text-neutral-600">
-        <Loader2 className={`h-4 w-4 animate-spin ${tone.spinner}`} aria-hidden />
-        <span className="inline-flex items-center gap-1">
-          {label}
-          <LoadingDots />
-        </span>
-      </p>
+      <LoadingLabelRow label={label} accent={accent} className="mt-5" />
     </div>
   );
 };

@@ -4,6 +4,7 @@ import { findAuthUserById } from '../lib/auth-users-store.js';
 import { listPublishedUpcomingActivitiesByMember } from '../lib/activities-store.js';
 import { normalizeProfileVisibility } from '../lib/media-access.js';
 import { buildActivityDto } from '../lib/mappers.js';
+import { findActivityPrivateByIds } from '../lib/activity-private-store.js';
 import { stripRideshareVehicleFromActivityDto } from '../lib/rideshare-vehicle-crew.js';
 import { recordMemberProfileView } from '../lib/member-profile-views-store.js';
 import { assertAndRecordMemberDiscoveryProfileOpen } from './member-discovery-quota.js';
@@ -98,5 +99,10 @@ export const listPublicMemberUpcomingActivities = async (input: {
   }
 
   const events = await listPublishedUpcomingActivitiesByMember(input.userId, input.limit);
-  return events.map((event) => stripRideshareVehicleFromActivityDto(buildActivityDto(event)));
+  const privateById = await findActivityPrivateByIds(events.map((e) => e.id));
+  return events.map((event) =>
+    stripRideshareVehicleFromActivityDto(
+      buildActivityDto(event, { activityPrivate: privateById.get(event.id) ?? null })
+    )
+  );
 };

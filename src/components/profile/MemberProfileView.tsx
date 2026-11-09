@@ -14,6 +14,11 @@ import { parseLanguagesList } from '../../utils/profileLanguages';
 import { resolvePublicMemberRoleLabel } from '../../utils/profileRoleLabel';
 import { formatMemberJoinedLabel } from '../../utils/formatMemberSince';
 import { PublicMemberYearGoal } from './PublicMemberYearGoal';
+import { MemberProfileHostGuidePanel } from './MemberProfileHostGuidePanel';
+import { MemberProfileHostReviews } from './MemberProfileHostReviews';
+import { TenantHostRatingInline } from '../reviews/TenantHostRatingInline';
+import { MemberProfilePresentationSwitch } from './MemberProfilePresentationSwitch';
+import type { MemberProfilePresentationMode } from '../../member/memberProfilePresentation';
 
 export type FullMemberProfile = Extract<PersonPublicProfileDTO, { visibilityState: 'full' }>;
 
@@ -49,7 +54,8 @@ const DetailRow = ({
 interface MemberProfileViewProps {
   profile: FullMemberProfile;
   /** From `ProfileViewerAccessDTO` — trusted fields (goal, bio, upcoming), not page routing. */
-  canViewFullProfile: boolean;
+  canViewPublicCardFields: boolean;
+  canViewTrustedFields: boolean;
   isSelf: boolean;
   userId: string;
   userLoggedIn: boolean;
@@ -63,11 +69,15 @@ interface MemberProfileViewProps {
   onCancelBuddyRequest: () => void;
   onMessage: () => void;
   upcomingActivities?: ActivityDTO[];
+  presentation?: MemberProfilePresentationMode;
+  onPresentationChange?: (mode: MemberProfilePresentationMode) => void;
+  showPresentationSwitch?: boolean;
 }
 
 export const MemberProfileView = ({
   profile,
-  canViewFullProfile,
+  canViewPublicCardFields,
+  canViewTrustedFields,
   isSelf,
   userId,
   userLoggedIn,
@@ -81,6 +91,9 @@ export const MemberProfileView = ({
   onCancelBuddyRequest,
   onMessage,
   upcomingActivities = [],
+  presentation = 'social',
+  onPresentationChange,
+  showPresentationSwitch = false,
 }: MemberProfileViewProps) => {
   const roleLabel = resolvePublicMemberRoleLabel(profile);
   const languages = parseLanguagesList(profile.languages);
@@ -88,9 +101,15 @@ export const MemberProfileView = ({
   const showConnectActions = !isSelf && userLoggedIn;
   const joinedLabel = formatMemberJoinedLabel(profile.memberSince);
   const profileLink = memberProfileLink(userId);
+  const publishingTenantId = profile.publishingTenantId?.trim() || null;
+  const showHostSurfaces = profile.isHost || profile.isGuideStaff || profile.stats.activitiesHosted > 0;
+  const hostView = presentation === 'host';
   return (
     <div className="min-h-0 space-y-3 overflow-y-auto pb-nav-safe animate-fade-up">
       <div className="space-y-3">
+      {showPresentationSwitch && onPresentationChange ? (
+        <MemberProfilePresentationSwitch mode={presentation} onChange={onPresentationChange} />
+      ) : null}
       <GlassCard padding className="!p-0 overflow-hidden">
         <div className="relative bg-gradient-to-b from-emerald-50/90 to-white px-5 pb-5 pt-6 text-center lg:flex lg:items-start lg:gap-5 lg:px-5 lg:py-4 lg:text-left">
           <div className="absolute right-3 top-3 flex items-center gap-1">
@@ -121,6 +140,11 @@ export const MemberProfileView = ({
           ) : null}
           {joinedLabel ? (
             <p className="mt-1.5 text-xs font-semibold text-neutral-500">{joinedLabel}</p>
+          ) : null}
+          {canViewTrustedFields && publishingTenantId && hostView ? (
+            <div className="mt-2 flex justify-center lg:justify-start">
+              <TenantHostRatingInline tenantId={publishingTenantId} variant="host" linkToReviews />
+            </div>
           ) : null}
 
           {showConnectActions ? (
@@ -159,18 +183,28 @@ export const MemberProfileView = ({
         </div>
       </GlassCard>
 
-      {canViewFullProfile && profile.bio && (
+      {canViewPublicCardFields && profile.bio && (
         <GlassCard padding>
           <SectionHeading>About</SectionHeading>
           <p className="text-[15px] leading-7 text-neutral-700 whitespace-pre-line">{profile.bio}</p>
         </GlassCard>
       )}
 
-      {canViewFullProfile && profile.yearGoal ? (
+      {canViewPublicCardFields &&
+      profile.badges.some((badge) => badge.earned) ? (
+        <MemberProfileHostGuidePanel
+          profile={profile}
+          showHostingDetails={canViewTrustedFields && showHostSurfaces && hostView}
+        />
+      ) : canViewTrustedFields && showHostSurfaces && hostView ? (
+        <MemberProfileHostGuidePanel profile={profile} showHostingDetails />
+      ) : null}
+
+      {canViewTrustedFields && profile.yearGoal ? (
         <PublicMemberYearGoal goal={profile.yearGoal} />
       ) : null}
 
-      {canViewFullProfile && hasDetails && (
+      {canViewPublicCardFields && hasDetails && (
         <GlassCard padding>
           <SectionHeading>Details</SectionHeading>
           <div className="space-y-4">
@@ -197,9 +231,11 @@ export const MemberProfileView = ({
         </GlassCard>
       )}
 
-      {canViewFullProfile && upcomingActivities.length > 0 && (
+      {canViewTrustedFields && upcomingActivities.length > 0 && (!showHostSurfaces || hostView) && (
         <GlassCard padding className="space-y-3">
-          <AccountSectionHeader title="Upcoming activities" />
+          <AccountSectionHeader
+            title={hostView && showHostSurfaces ? 'Upcoming on the map' : 'Upcoming activities'}
+          />
           <div className="space-y-2">
             {upcomingActivities.map((activity) => (
               <ProfileActivityListRow key={activity.id} activity={activity} />
@@ -208,7 +244,19 @@ export const MemberProfileView = ({
         </GlassCard>
       )}
 
-      {showConnectActions ? (
+      {hostView && canViewTrustedFields && publishingTenantId ? (
+        <MemberProfileHostReviews publishingTenantId={publishingTenantId} />
+      ) : hostView && canViewTrustedFields && showHostSurfaces ? (
+        <GlassCard padding id="reviews" className="scroll-mt-24">
+          <SectionHeading>Host reviews</SectionHeading>
+          <p className="text-sm leading-relaxed text-neutral-600">
+            No community host reviews yet. Ratings show up here after people join their outings on
+            the map.
+          </p>
+        </GlassCard>
+      ) : null}
+
+      {showConnectActions && !hostView ? (
         <GlassCard padding className="space-y-3">
           <SectionHeading>More</SectionHeading>
           <MemberFollowControls targetUserId={userId} onStatusMessage={onBuddyMessage} />

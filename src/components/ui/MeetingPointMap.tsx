@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import L from 'leaflet';
 import { MapContainer, Marker, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -6,6 +6,9 @@ import { MapTileLayers } from './MapTileLayers';
 import { MapPlacePicker } from './MapPlacePicker';
 import { parseCoord } from '../../utils/coords';
 import { ViewOnMapLink } from './ViewOnMapLink';
+import { ExploreMapStyleToggle } from '../../explore/ui/ExploreMapStyleToggle';
+import { getExploreMapTiles, type ExploreMapStyle } from '../../config/platform';
+
 const previewIcon = L.divIcon({
   className: '',
   html: `<span style="display:flex;width:32px;height:32px;align-items:center;justify-content:center;border-radius:9999px;background:#059669;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.2);border:2px solid #fff;font-size:16px;line-height:1;">📍</span>`,
@@ -41,6 +44,8 @@ interface MeetingPointMapProps {
   hideExternalLink?: boolean;
   /** Tap the map preview to open the pin in Google Maps (view). */
   clickable?: boolean;
+  /** Satellite default on detail surfaces; toggle in the corner. */
+  showStyleToggle?: boolean;
 }
 
 /** Lightweight map preview + external maps link for meeting points. */
@@ -49,8 +54,11 @@ export const MeetingPointMap = ({
   lng,
   hideExternalLink = false,
   clickable = false,
+  showStyleToggle = true,
 }: MeetingPointMapProps) => {
   const [mapReady, setMapReady] = useState(false);
+  const [mapStyle, setMapStyle] = useState<ExploreMapStyle>('satellite');
+  const tiles = useMemo(() => getExploreMapTiles(mapStyle), [mapStyle]);
 
   useEffect(() => {
     setMapReady(true);
@@ -59,7 +67,16 @@ export const MeetingPointMap = ({
   if (lat == null || lng == null) return null;
 
   const mapPreview = (
-    <div className="rounded-xl overflow-hidden border border-gray-200 aspect-[16/10] bg-gray-100">
+    <div className="relative overflow-hidden rounded-xl border border-gray-200 aspect-[16/10] bg-gray-100">
+      {showStyleToggle ? (
+        <div className="pointer-events-auto absolute right-2 top-2 z-[500]">
+          <ExploreMapStyleToggle
+            style={mapStyle}
+            onToggle={() => setMapStyle((current) => (current === 'satellite' ? 'map' : 'satellite'))}
+            className="!h-8 !w-8 !rounded-lg bg-white/95 shadow-md ring-1 ring-black/10"
+          />
+        </div>
+      ) : null}
       {mapReady ? (
         <MapContainer
           center={[lat, lng]}
@@ -70,7 +87,13 @@ export const MeetingPointMap = ({
           className="z-0 h-full w-full"
           style={{ height: '100%', width: '100%' }}
         >
-          <MapTileLayers attribution="" />
+          <MapTileLayers
+            key={mapStyle}
+            tileUrl={tiles.tileUrl}
+            labelTileUrl={tiles.labelTileUrl}
+            attribution={tiles.labelTileUrl ? MAP_ATTRIBUTION : ''}
+            deferLabels
+          />
           <MapResize />
           <Marker position={[lat, lng]} icon={previewIcon} />
         </MapContainer>
@@ -111,6 +134,9 @@ export const MeetingPointMap = ({
     </div>
   );
 };
+
+const MAP_ATTRIBUTION =
+  'Tiles &copy; <a href="https://www.esri.com/">Esri</a> &mdash; Esri, TomTom, Garmin, FAO, NOAA, USGS';
 
 interface MapPinFieldsProps {
   lat: string;

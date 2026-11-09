@@ -26,7 +26,7 @@ describe('publisher canonical guard (COH-07)', () => {
         tenantSlug: 'omar-guides',
         hostUserId: 'u-omar',
       })
-    ).toBe('/member/u-omar');
+    ).toBe('/member/u-omar?source=host');
   });
 
   it('SPA does not register /guide', () => {
