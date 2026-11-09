@@ -128,21 +128,19 @@ export const resolveMobileTabHeaderLeadingBack = (
     if (sub && PLAN_DRILL_SUBS.has(sub)) {
       return flowBack(PLAN_PATH, PRODUCT_PLAN_SURFACE_TITLE);
     }
-    return resolveMobileBackChrome(locationState, {
-      fallbackTo: EXPLORE_MAP_PATH,
-      label: 'Explore',
-    });
+    return null;
   }
 
   if (pathname === MESSAGES_PATH) {
     const params = searchParamsOf(search);
     const inThread = Boolean(params.get('to') || params.get('group'));
-    if (!parseMobileBackNavState(locationState) && inThread) {
+    if (!inThread) return null;
+    if (!parseMobileBackNavState(locationState)) {
       return flowBack(MESSAGES_PATH, 'Chat');
     }
     return resolveMobileBackChrome(locationState, {
-      fallbackTo: EXPLORE_MAP_PATH,
-      label: 'Explore',
+      fallbackTo: MESSAGES_PATH,
+      label: 'Chat',
     });
   }
 

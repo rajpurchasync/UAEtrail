@@ -31,6 +31,7 @@ import {
 import { detectAndroidWebBrowser, resolveAndroidInstallSteps, resolveIosInstallSteps } from '../../utils/pwaInstallGuide';
 import { promptAndroidInstall } from '../../utils/pwaInstallPrompt';
 import { PROFILE_SETTINGS_PATH } from '../../config/routingCatalog';
+import { PLAN_PATH } from '../../config/surfacePaths';
 import { resolveMobileTabHeaderTitle } from '../../config/mobileTabHeader';
 import { exploreMapMobileBackState, mobileBackNavState, type MobileBackNavState } from '../../utils/mobileBackNav';
 import { isPublishingConsolePath } from '../../config/surfacePaths';
@@ -51,22 +52,23 @@ const isConsumerHamburgerLinkActive = (
   search: string
 ): boolean => {
   const activeTab = resolveMobileFiveTab(pathname, search);
-  if (item.label === 'Explore') {
-    const params = new URLSearchParams(search);
-    return (
-      (pathname === EXPLORE_MAP_PATH || pathname === '/discovery') &&
-      !isDiscoverBrowseRoute(pathname, search) &&
-      params.get('list') !== '1' &&
-      activeTab === 'trips'
-    );
-  }
   if (item.label === 'Trips') {
     if (pathname === LIST_DISCOVERY_PATH && activeTab === 'trips') return true;
+    if ((pathname === EXPLORE_MAP_PATH || pathname === '/discovery') && activeTab === 'trips') {
+      const params = new URLSearchParams(search);
+      if (params.get('list') !== '1' && !isDiscoverBrowseRoute(pathname, search)) return true;
+    }
     return isDiscoverBrowseRoute(pathname, search) && activeTab === 'trips';
   }
   if (item.label === 'Venues') {
     if (pathname === LIST_DISCOVERY_PATH && activeTab === 'venues') return true;
     return pathname === EXPLORE_MAP_PATH && activeTab === 'venues';
+  }
+  if (item.label === 'Crews') {
+    return pathname === LIST_DISCOVERY_PATH && activeTab === 'crews';
+  }
+  if (item.label === 'Plans') {
+    return pathname === PLAN_PATH || pathname.startsWith(`${PLAN_PATH}/`);
   }
   return item.match.some((prefix) =>
     prefix === '/' ? pathname === '/' : pathname === prefix || pathname.startsWith(`${prefix}/`)
@@ -90,7 +92,7 @@ const resolveConsumerHamburgerLinkState = (
   pathname: string,
   search: string
 ): MobileBackNavState | undefined => {
-  if (item.label !== 'My Plans') return undefined;
+  if (item.label !== 'Plans' && item.label !== 'My Plans') return undefined;
   const onExplore =
     pathname === EXPLORE_MAP_PATH ||
     pathname === '/discovery' ||
@@ -101,6 +103,7 @@ const resolveConsumerHamburgerLinkState = (
   return exploreMapMobileBackState(returnTo);
 };
 import {
+  MOBILE_CONSUMER_MENU_Z,
   MOBILE_DRAWER,
   mobileDrawerIconTone,
   mobileDrawerIconWell,
@@ -114,8 +117,7 @@ import { DisplayPreferencesSection } from '../profile/DisplayPreferencesSection'
 
 export type MobileMenuTone = 'default' | 'light';
 
-/** Above map filters (4200). Header with the burger sits at 5100 while open. */
-const MOBILE_MENU_OVERLAY_Z = 'z-[5000]';
+const MOBILE_MENU_OVERLAY_Z = MOBILE_CONSUMER_MENU_Z.overlay;
 
 const AnimatedBurgerIcon = ({ open }: { open: boolean }) => (
   <svg
@@ -207,8 +209,10 @@ const isPathActive = (pathname: string, to: string) =>
   pathname === to || pathname.startsWith(`${to}/`);
 
 type MobileDrawerHeader = {
+  /** Consumer hub — close control only (identity row stays in the tab header). */
+  closeOnly?: boolean;
   eyebrow?: string;
-  title: string;
+  title?: string;
   /** Show gradient logo + wordmark (guest landing / consoles without app brand chrome). */
   showBrandMark?: boolean;
 };
@@ -218,10 +222,7 @@ type MobileDrawerProps = {
   closeMenu: () => void;
   ariaLabel: string;
   children: ReactNode;
-  /**
-   * In-panel title + close. Omit on the consumer map/hub — the tab header already
-   * shows brand and the morphing burger.
-   */
+  /** In-panel title + close, or {@link MobileDrawerHeader.closeOnly} on consumer tabs. */
   header?: MobileDrawerHeader;
 };
 
@@ -236,46 +237,64 @@ const MobileDrawer = ({
 
   const overlay = (
     <div
-      className={`fixed inset-0 ${MOBILE_MENU_OVERLAY_Z} transition-opacity duration-200 ${
-        open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+      className={`fixed inset-0 ${MOBILE_MENU_OVERLAY_Z} pointer-events-none transition-opacity duration-200 ${
+        open ? 'opacity-100' : 'opacity-0'
       }`}
       aria-hidden={!open}
     >
       <button
         type="button"
-        className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"
+        className={`absolute inset-x-0 bottom-0 top-[var(--consumer-mobile-header-stack,3.625rem)] bg-black/50 backdrop-blur-[2px] ${
+          open ? 'pointer-events-auto' : 'pointer-events-none'
+        }`}
         aria-label="Close menu"
+        aria-hidden={!open}
+        tabIndex={open ? 0 : -1}
         onClick={closeMenu}
       />
       <aside
         role="dialog"
         aria-modal="true"
         aria-label={ariaLabel}
-        className={`${MOBILE_DRAWER.aside} ${open ? 'translate-x-0' : 'translate-x-full'}`}
+        aria-hidden={!open}
+        className={`${MOBILE_DRAWER.aside} ${open ? 'pointer-events-auto translate-x-0' : 'pointer-events-none translate-x-full'}`}
       >
         {header ? (
-          <div className="flex items-center justify-between gap-3 border-b border-neutral-200/80 bg-white/95 px-3 py-2 backdrop-blur-sm">
-            <div className="min-w-0">
-              {header.eyebrow ? (
-                <p className="mb-0.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-600/90">
-                  {header.eyebrow}
-                </p>
-              ) : null}
-              {header.showBrandMark ? (
-                <UaeTrailBrandMark size="md" />
-              ) : (
-                <p className="truncate text-lg font-semibold text-neutral-900">{header.title}</p>
-              )}
+          header.closeOnly ? (
+            <div className="flex shrink-0 items-center justify-end border-b border-neutral-200/80 bg-white/95 px-2 py-1 backdrop-blur-sm">
+              <button
+                type="button"
+                onClick={closeMenu}
+                className={MOBILE_DRAWER.closeBtn}
+                aria-label="Close menu"
+              >
+                <X className="h-5 w-5" />
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={closeMenu}
-              className={MOBILE_DRAWER.closeBtn}
-              aria-label="Close menu"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
+          ) : (
+            <div className="flex items-center justify-between gap-3 border-b border-neutral-200/80 bg-white/95 px-3 py-2 backdrop-blur-sm">
+              <div className="min-w-0">
+                {header.eyebrow ? (
+                  <p className="mb-0.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-600/90">
+                    {header.eyebrow}
+                  </p>
+                ) : null}
+                {header.showBrandMark ? (
+                  <UaeTrailBrandMark size="md" />
+                ) : (
+                  <p className="truncate text-lg font-semibold text-neutral-900">{header.title}</p>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={closeMenu}
+                className={MOBILE_DRAWER.closeBtn}
+                aria-label="Close menu"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+          )
         ) : null}
         <nav className={MOBILE_DRAWER.nav} aria-label={ariaLabel}>
           {children}
@@ -386,14 +405,14 @@ export const MobileMenuButton = ({ tone = 'default', className = '', showOnDeskt
   const toneClass =
     tone === 'light'
       ? 'text-white bg-white/15 backdrop-blur-sm border border-white/25 hover:bg-white/25'
-      : 'text-emerald-700 bg-emerald-50 border border-emerald-100 hover:bg-emerald-100';
+      : 'text-neutral-600 bg-transparent border border-transparent hover:bg-neutral-100 hover:text-neutral-900';
 
   return (
     <UiTooltip label={open ? 'Close menu' : 'Menu'}>
     <button
       type="button"
       onClick={toggleMenu}
-      className={`${showOnDesktop ? '' : 'md:hidden'} relative z-[5100] h-11 w-11 shrink-0 inline-flex items-center justify-center rounded-full transition-colors active:scale-95 ${toneClass} ${className}`}
+      className={`${showOnDesktop ? '' : 'md:hidden'} relative ${MOBILE_CONSUMER_MENU_Z.menuButton} h-11 w-11 shrink-0 inline-flex items-center justify-center rounded-full transition-colors active:scale-95 ${toneClass} ${className}`}
       aria-label={open ? 'Close menu' : 'Open menu'}
       aria-expanded={open}
     >
@@ -416,7 +435,7 @@ export const MobileUserMenuButton = ({
   const toneClass =
     tone === 'light'
       ? 'text-white bg-white/15 backdrop-blur-sm border border-white/25 hover:bg-white/25'
-      : 'text-emerald-700 bg-emerald-50 border border-emerald-100 hover:bg-emerald-100';
+      : 'text-neutral-600 bg-transparent border border-transparent hover:bg-neutral-100 hover:text-neutral-900';
 
   useEffect(() => {
     setOpen(false);
@@ -664,13 +683,19 @@ const MobileMenuPanel = () => {
 
   return (
     <MobileDrawer open={open} closeMenu={closeMenu} ariaLabel="Main menu">
-      <div className={MOBILE_DRAWER.stack}>
-        <div className={MOBILE_DRAWER.group}>
+      <div className={MOBILE_DRAWER.menuStack}>
+        <DisplayPreferencesSection compact themeOnly />
+
+        <div aria-labelledby="hamburger-actions">
+          <p id="hamburger-actions" className={MOBILE_DRAWER.sectionLabel}>
+            Actions
+          </p>
+          <div className={MOBILE_DRAWER.group}>
           {CONSUMER_HAMBURGER_MENU.filter((item) => item.kind === 'link').map((item) => {
             const linkItem = item as ConsumerHamburgerLinkItem;
             const active = isConsumerHamburgerLinkActive(linkItem, pathname, search);
-            const label = user || !linkItem.labelGuest ? linkItem.label : linkItem.labelGuest;
-            const iconKey = linkItem.profileLink && !user ? 'Log in' : linkItem.label;
+            const label = linkItem.label;
+            const iconKey = linkItem.label;
             const Icon = MOBILE_NAV_ICON_MAP[iconKey as keyof typeof MOBILE_NAV_ICON_MAP] ?? User;
             const destination = resolveConsumerHamburgerDestination(
               linkItem,
@@ -693,16 +718,8 @@ const MobileMenuPanel = () => {
               </Link>
             );
           })}
-        </div>
-
-        {!user ? (
-          <div>
-            <p className={MOBILE_DRAWER.sectionLabel}>Display</p>
-            <div className={MOBILE_DRAWER.group}>
-              <DisplayPreferencesSection compact />
-            </div>
           </div>
-        ) : null}
+        </div>
 
         {CONSUMER_HAMBURGER_MENU.filter((item) => item.kind === 'download').map((item) => (
           <div key={item.title} role="group" aria-label={item.title}>
@@ -800,37 +817,44 @@ const MobileMenuPanel = () => {
           </div>
         ) : null}
 
-        {(canSwitchBack || user) && (
-          <div className={MOBILE_DRAWER.group}>
-            {canSwitchBack ? (
-              <button
-                type="button"
-                onClick={() => void switchRole('original')}
-                className={mobileDrawerRowClass(false)}
-              >
-                <DrawerNavIcon active={false} icon={RefreshCw} />
-                <span className={`${drawerNavLabelClass(false)} text-emerald-800`}>
-                  {user?.switchedFromRole === 'platform_admin'
-                    ? 'Switch to admin'
-                    : `Restore ${user?.switchedFromRole?.replace(/_/g, ' ')}`}
-                </span>
-              </button>
-            ) : null}
-            {user ? (
-              <button
-                type="button"
-                onClick={async () => {
-                  closeMenu();
-                  await signOut();
-                }}
-                className={mobileDrawerRowClass(false)}
-              >
-                <DrawerNavIcon active={false} icon={LogOut} />
-                <span className={drawerNavLabelClass(false)}>Sign Out</span>
-              </button>
-            ) : null}
-          </div>
-        )}
+        <div className={MOBILE_DRAWER.group}>
+          {canSwitchBack ? (
+            <button
+              type="button"
+              onClick={() => void switchRole('original')}
+              className={mobileDrawerRowClass(false)}
+            >
+              <DrawerNavIcon active={false} icon={RefreshCw} />
+              <span className={`${drawerNavLabelClass(false)} text-emerald-800`}>
+                {user?.switchedFromRole === 'platform_admin'
+                  ? 'Switch to admin'
+                  : `Restore ${user?.switchedFromRole?.replace(/_/g, ' ')}`}
+              </span>
+            </button>
+          ) : null}
+          {user ? (
+            <button
+              type="button"
+              onClick={async () => {
+                closeMenu();
+                await signOut();
+              }}
+              className={mobileDrawerRowClass(false)}
+            >
+              <DrawerNavIcon active={false} icon={LogOut} />
+              <span className={drawerNavLabelClass(false)}>Sign out</span>
+            </button>
+          ) : (
+            <Link
+              to={signInHref}
+              onClick={closeMenu}
+              className={mobileDrawerRowClass(pathname.startsWith('/signin'))}
+            >
+              <DrawerNavIcon active={pathname.startsWith('/signin')} icon={LogIn} />
+              <span className={drawerNavLabelClass(pathname.startsWith('/signin'))}>Sign in</span>
+            </Link>
+          )}
+        </div>
       </div>
     </MobileDrawer>
   );

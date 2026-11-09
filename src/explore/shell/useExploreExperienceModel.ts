@@ -33,6 +33,8 @@ import { useExplorePeopleBrowseBundle } from './useExplorePeopleBrowseBundle';
 import { useExplorePinDeepLink } from './useExplorePinDeepLink';
 import { useExploreMapCatalog } from './useExploreMapCatalog';
 import { resolveExploreItemIdFromMapPin } from '../ui/exploreMapPinModel';
+import { resolveBrowseListCreateFabLabel } from '../../list/browseListCopy';
+import { resolveCreateFabComposeEntry } from '../create/composeFabEntry';
 
 /** Explore map + browse + compose + selection orchestration (R2). */
 export const useExploreExperienceModel = () => {
@@ -176,6 +178,15 @@ export const useExploreExperienceModel = () => {
   });
   const { inviteShare, shareHostedActivity, openHostManage, hostManageSheet } =
     hostSheets;
+
+  const primaryFabLabel = useMemo(
+    () => resolveBrowseListCreateFabLabel(pathname, search),
+    [pathname, search]
+  );
+
+  const handlePrimaryFabTap = useCallback(() => {
+    compose.handleCreateTap(resolveCreateFabComposeEntry(pathname, search));
+  }, [compose, pathname, search]);
 
   const planWithBuddyUserId = parsePlanWithUserId(searchParams);
   const [joinInvitePeekActivityId, setJoinInvitePeekActivityId] = useState<string | null>(null);
@@ -390,7 +401,8 @@ export const useExploreExperienceModel = () => {
     handleCloseMapSelection,
     handleOfferRideshareForSeeking: hostingLauncher.handleOfferRideshareForSeeking,
     handleCreateLinkedRideshare: hostingLauncher.handleCreateLinkedRideshare,
-    primaryFabLabel: 'Add New' as const,
+    primaryFabLabel,
+    handlePrimaryFabTap,
     hostWizardOpen: hostingLauncher.hostWizardOpen,
     hostingWizardPrefill: hostingLauncher.hostingWizardPrefill,
     onHostingBackToIntent: hostingLauncher.onHostingBackToIntent,

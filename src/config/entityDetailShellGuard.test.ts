@@ -41,7 +41,7 @@ describe('entityDetailShellGuard', () => {
         violations.push(`${path}: missing delegated shell/view`);
       }
       const hasShellDelegate =
-        /MobileDetailShell|EntityPublicDetailShell|ActivityDetailByKind|ActivityDetailPageShell|ActivityDetailView|ActivityConsumerDetailModalShell|PlaceDetailPageShell|AreaDetailView|ShopPublicPage/.test(
+        /MobileDetailShell|MobileDetailScrollShell|EntityPublicDetailShell|ActivityDetailByKind|ActivityDetailPageShell|ActivityDetailView|PlaceDetailPageShell|AreaDetailView|ShopPublicPage/.test(
           source
         );
       if (!hasShellDelegate) {

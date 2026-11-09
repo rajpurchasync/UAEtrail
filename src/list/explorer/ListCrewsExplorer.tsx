@@ -2,9 +2,14 @@ import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../../expl
 import { APP_SCROLL_BODY_CLASS } from '../../config/layoutScroll';
 import type { ExploreAvailablePersonDTO, ExploreMapItemDTO, MemberDiscoveryQuotaDTO } from '@uaetrail/shared-types';
 import type { MemberBrowseCardDTO, SocialPersonRowDTO } from '@uaetrail/shared-types';
-import { PeopleBrowseTabContent } from '@/people-discovery/panel/peopleBrowse';
 import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
 import { ListCrewsExplorerHeader } from './ListCrewsExplorerHeader';
+import { CrewsTabBody } from '../crews/CrewsTabBody';
+import type { CrewsStatCounts } from '../crews/CrewsStatsTabs';
+import type { CrewsAvailableOpenLens } from '../crews/crewsOpenSegment';
+import type { CrewsStatTab } from '../crews/crewsStatTab';
+import { segmentFromCrewsStatTab } from '../crews/crewsStatTab';
+import { SeekFlexibleComposeSheet } from '@/explore/ui/SeekFlexibleComposeSheet';
 
 type ListCrewsExplorerProps = {
   query: string;
@@ -16,7 +21,13 @@ type ListCrewsExplorerProps = {
   mapHref: string;
   peopleBrowseTab: PeopleBrowseTab;
   onPeopleBrowseTabChange: (tab: PeopleBrowseTab) => void;
+  crewsOpenLens: CrewsAvailableOpenLens;
+  onCrewsOpenLensChange: (lens: CrewsAvailableOpenLens) => void;
+  availabilitySheetOpen: boolean;
+  onAvailabilitySheetOpenChange: (open: boolean) => void;
   isSignedIn: boolean;
+  filterCount: number;
+  statCounts: CrewsStatCounts;
   seekingActivities: ExploreMapItemDTO[];
   exploreCatalogItems: ExploreMapItemDTO[];
   exploreCatalogLoading: boolean;
@@ -31,6 +42,7 @@ type ListCrewsExplorerProps = {
   discoveryQuota: MemberDiscoveryQuotaDTO | null;
   discoveryLoading: boolean;
   discoveryError: string | null;
+  exploreAreaSlug?: string | null;
 };
 
 export const ListCrewsExplorer = ({
@@ -43,7 +55,13 @@ export const ListCrewsExplorer = ({
   mapHref,
   peopleBrowseTab,
   onPeopleBrowseTabChange,
+  crewsOpenLens,
+  onCrewsOpenLensChange,
+  availabilitySheetOpen,
+  onAvailabilitySheetOpenChange,
   isSignedIn,
+  filterCount,
+  statCounts,
   seekingActivities,
   exploreCatalogItems,
   exploreCatalogLoading,
@@ -58,8 +76,13 @@ export const ListCrewsExplorer = ({
   discoveryQuota,
   discoveryLoading,
   discoveryError,
+  exploreAreaSlug = null,
 }: ListCrewsExplorerProps) => {
   const stickySearch = query.trim().length > 0;
+
+  const onSelectStatTab = (tab: CrewsStatTab) => {
+    onPeopleBrowseTabChange(segmentFromCrewsStatTab(tab));
+  };
 
   return (
     <div className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-neutral-50">
@@ -74,13 +97,24 @@ export const ListCrewsExplorer = ({
         peopleBrowseTab={peopleBrowseTab}
         onPeopleBrowseTabChange={onPeopleBrowseTabChange}
         stickySearch={stickySearch}
+        isSignedIn={isSignedIn}
+        statCounts={statCounts}
+        onOpenAvailability={() => onAvailabilitySheetOpenChange(true)}
+        filterCount={filterCount}
       />
       <div
         className={`${APP_SCROLL_BODY_CLASS} min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain pb-[calc(var(--bottom-nav-height,56px)+var(--safe-bottom,0px)+24px)]`}
       >
         <div className="mx-auto w-full max-w-6xl px-4 py-3 md:px-6 md:py-5">
-          <PeopleBrowseTabContent
-            tab={peopleBrowseTab}
+          <CrewsTabBody
+            segment={peopleBrowseTab}
+            crewsOpenLens={crewsOpenLens}
+            onCrewsOpenLensChange={onCrewsOpenLensChange}
+            onSelectStatTab={onSelectStatTab}
+            onBrowseGuides={() => onPeopleBrowseTabChange('hub')}
+            buddiesCount={statCounts.buddies ?? 0}
+            availableCount={statCounts.available ?? 0}
+            everyoneCount={statCounts.everyone ?? 0}
             isSignedIn={isSignedIn}
             seekingActivities={seekingActivities}
             exploreCatalogItems={exploreCatalogItems}
@@ -96,9 +130,15 @@ export const ListCrewsExplorer = ({
             discoveryQuota={discoveryQuota}
             discoveryLoading={discoveryLoading}
             discoveryError={discoveryError}
+            onOpenAvailability={() => onAvailabilitySheetOpenChange(true)}
           />
         </div>
       </div>
+      <SeekFlexibleComposeSheet
+        open={availabilitySheetOpen}
+        onClose={() => onAvailabilitySheetOpenChange(false)}
+        exploreAreaSlug={exploreAreaSlug}
+      />
     </div>
   );
 };

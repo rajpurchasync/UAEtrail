@@ -129,9 +129,7 @@ export const NotificationBellPopover = ({
   const toneClass =
     tone === 'light'
       ? 'text-white bg-white/15 backdrop-blur-sm border border-white/25 hover:bg-white/25'
-      : triggerVariant === 'desktop'
-        ? 'text-gray-600 bg-transparent border border-transparent hover:bg-gray-50 hover:text-gray-900'
-        : 'text-emerald-700 bg-emerald-50 border border-emerald-100 hover:bg-emerald-100';
+      : 'text-neutral-600 bg-transparent border border-transparent hover:bg-neutral-100 hover:text-neutral-900';
 
   const bellSizeClass = triggerVariant === 'desktop' ? 'h-10 w-10' : 'h-11 w-11';
 

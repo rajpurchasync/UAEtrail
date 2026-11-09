@@ -72,7 +72,7 @@ context/        AuthContext
 utils/          authRouting, shopPaths — explore URL builders live in `src/explore/routing.ts` (`routingCatalog`)
 ```
 
-**Mobile IA:** Bottom tabs **Trips · Venues · Crews · Plan · Chat** — shell routes `/explore`, `/list`, `/plan`, `/chat` (`src/config/mobileFiveTabNav.ts`); Profile via header avatar. Signed-in default landing is `/explore` (Trips map). Guest marketing is `/` only — see [`NAVIGATION.md`](./NAVIGATION.md), [`LANDING.md`](./LANDING.md), [`NORTHSTAR.md`](./NORTHSTAR.md). Plan manage surfaces link to Chat for crew threads — not embedded chat on `/plan`.
+**Mobile IA:** Bottom tabs **Trips · Venues · Plans · Crews · Chat** — shell routes `/explore`, `/list`, `/plan`, `/chat` (`src/config/mobileFiveTabNav.ts`); Profile via header avatar. Signed-in default landing is `/explore` (Trips map). Guest marketing is `/` only — see [`NAVIGATION.md`](./NAVIGATION.md), [`LANDING.md`](./LANDING.md), [`NORTHSTAR.md`](./NORTHSTAR.md). Plan manage surfaces link to Chat for crew threads — not embedded chat on `/plan`.
 
 **SEO & agents:** `PageMeta` updates title/description/canonical per route; static `robots.txt`, `sitemap.xml`, `llms.txt`, and `/.well-known/agent.json` in `public/`. Public agent discovery: `GET /api/agent/manifest.json` and `GET /api/agent/discover` (see [`API_ROUTING.md`](./API_ROUTING.md)).
 

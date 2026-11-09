@@ -8,7 +8,7 @@ import type {
   ActivityDetailDTO,
   ActivityEngagementStripsDTO,
   ActivityGroupChatPostPolicy,
-  ActivityPresentationConsumerLayoutDTO,
+  ActivityPresentationSectionsDTO,
   ActivityPresentationTabsDTO,
   MyActivityRequestDTO,
   ActivityParticipationDTO,
@@ -27,10 +27,10 @@ import type { ActivityDetailPlanSectionsComponent } from '../../activity/detail/
 import { activityDetailPlanSectionsForKind } from '../../activity/detail/composers';
 import type { ActivityDetailTabFooterKind } from '../../activity/activityDetailTabFooters';
 import { ActivityDetailBody } from './detail/ActivityDetailBody';
-import { ActivityConsumerDetailPage } from '../../activity/detail/templates/ActivityConsumerDetailPage';
-import { ActivityConsumerDetailModalShell } from '../../activity/detail/templates/ActivityConsumerDetailModalShell';
+import { ActivityDetailSections } from '../../activity/detail/templates/ActivityDetailSections';
+import { MobileDetailScrollShell } from '../mobile/MobileDetailScrollShell';
 import { MobileDetailShell } from '../mobile/MobileDetailShell';
-import { resolveActivityConsumerDetailHeaderChrome } from '../../activity/activityConsumerDetailHeader';
+import { resolveActivityDetailHeaderChrome } from '../../activity/activityDetailHeaderChrome';
 import { useActivityDetailViewModel } from './detail/useActivityDetailViewModel';
 import type { ActivityRequestView } from '../../api/types';
 
@@ -91,15 +91,13 @@ export interface ActivityDetailViewProps {
   wireTabs?: ActivityPresentationTabsDTO | null;
   /** Wire `presentation.strips` — host invited chip on hero, etc. */
   wireStrips?: ActivityEngagementStripsDTO | null;
-  /** Wire `presentation.consumerLayout` — public scroll template slots. */
-  consumerLayout?: ActivityPresentationConsumerLayoutDTO | null;
+  /** Wire `presentation.sections` — section visibility for the public page and embed. */
+  wireSections?: ActivityPresentationSectionsDTO | null;
   onHostShareOuting?: () => void;
   /** Consumer page template (`HikingActivityDetailPage`, …) — set by `ActivityDetailByKind`. */
   detailKind?: ActivityDetailKind;
   /** Consumer kind composer — defaults from `detailKind` when host embed omits template. */
   planSections?: ActivityDetailPlanSectionsComponent;
-  /** Public route scroll layout (`ActivityDetailPageShell` only). */
-  consumerDetailLayout?: boolean;
   viewerAccess?: ActivityViewerAccessDTO | null;
   onOfferLinkedRideshare?: () => void;
   linkRideshareTenantId?: string | null;
@@ -144,11 +142,10 @@ export const ActivityDetailView = ({
   wireFooterByTab = null,
   wireTabs = null,
   wireStrips = null,
-  consumerLayout = null,
+  wireSections = null,
   onHostShareOuting,
   detailKind,
   planSections,
-  consumerDetailLayout = false,
   viewerAccess = null,
   onOfferLinkedRideshare,
   linkRideshareTenantId = null,
@@ -186,7 +183,7 @@ export const ActivityDetailView = ({
     onChatError: onMapPeekChatError,
     isHostUser,
     onOpenHostManage,
-    consumerDetailLayout,
+    publicDetail: !previewMode && layout !== 'embedded',
     onOpenParticipationManage: () => openParticipationManageRef.current(),
   });
 
@@ -221,9 +218,8 @@ export const ActivityDetailView = ({
     wireFooterByTab,
     wireTabs,
     wireStrips,
-    consumerLayout,
+    wireSections,
     onHostShareOuting,
-    consumerDetailLayout,
     viewerAccess,
     onOfferLinkedRideshare,
     detailKind,
@@ -252,8 +248,8 @@ export const ActivityDetailView = ({
     return <ActivityDetailBody {...model} planSections={PlanSections} />;
   }
 
-  if (consumerDetailLayout) {
-    const headerChrome = resolveActivityConsumerDetailHeaderChrome(
+  if (model.publicDetail) {
+    const headerChrome = resolveActivityDetailHeaderChrome(
       model.activity,
       model.peekParityCard
     );
@@ -262,19 +258,19 @@ export const ActivityDetailView = ({
         className="flex h-full min-h-0 flex-1 flex-col overflow-hidden"
         data-activity-detail-template={detailKind ?? undefined}
       >
-        <ActivityConsumerDetailModalShell
+        <MobileDetailScrollShell
           backTo={backTo}
           backLabel={backLabel}
           headerChrome={headerChrome}
           headerAction={shareControl}
           footer={model.stickyFooter}
         >
-          <ActivityConsumerDetailPage
+          <ActivityDetailSections
             model={model}
             planSections={PlanSections}
             onRideshareParentLinked={onRideshareParentLinked}
           />
-        </ActivityConsumerDetailModalShell>
+        </MobileDetailScrollShell>
       </div>
     );
   }

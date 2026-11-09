@@ -20,7 +20,7 @@ import {
 export { tripsListHomePath, venuesListHomePath } from '../list/routing';
 import { LIST_CAT_PARAM, parseListCatParam } from '../list/browseListUrlState';
 
-export const MOBILE_FIVE_TAB_ORDER = ['trips', 'venues', 'crews', 'plan', 'chat'] as const;
+export const MOBILE_FIVE_TAB_ORDER = ['trips', 'venues', 'plan', 'crews', 'chat'] as const;
 
 export type MobileFiveTabId = (typeof MOBILE_FIVE_TAB_ORDER)[number];
 
@@ -43,7 +43,7 @@ export const MOBILE_FIVE_TAB_UI_LABELS: Record<MobileFiveTabId, string> = {
   trips: 'Trips',
   venues: 'Venues',
   crews: 'Crews',
-  plan: 'Plan',
+  plan: 'Plans',
   chat: 'Chat',
 };
 

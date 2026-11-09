@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import type { ReactNode } from 'react';
 import type {
   ExploreAvailablePersonDTO,
   ExploreMapItemDTO,
@@ -12,7 +12,7 @@ import {
   EXPLORE_PEOPLE_BROWSE_FRIENDS_GOING_EMPTY,
   EXPLORE_PEOPLE_BROWSE_LOADING,
 } from '../../../content/explorePeopleBrowseCopy';
-import { planAvailabilityPath } from '../../../plan/planRouting';
+import type { CrewsAvailableOpenLens } from '@/list/crews/crewsOpenSegment';
 import {
   buildMemberBrowseRowFromAvailability,
   buildMemberBrowseRowFromGoing,
@@ -48,6 +48,9 @@ export type PeopleBrowseTabContentProps = {
   exploreCatalogLoading: boolean;
   onOpenSeekingActivity: (item: ExploreMapItemDTO) => void;
   buddyUserIds?: Set<string>;
+  /** Crews list — filter Available combined lanes. */
+  crewsOpenLens?: CrewsAvailableOpenLens;
+  onOpenAvailability?: () => void;
 };
 
 const MemberBrowseRowList = ({ rows }: { rows: MemberBrowseRowVm[] }) => (
@@ -80,6 +83,8 @@ export const PeopleBrowseTabContent = ({
   exploreCatalogLoading,
   onOpenSeekingActivity,
   buddyUserIds,
+  crewsOpenLens = 'all',
+  onOpenAvailability,
 }: PeopleBrowseTabContentProps) => {
   if (tab === 'looking') {
     return (
@@ -98,27 +103,69 @@ export const PeopleBrowseTabContent = ({
   }
 
   if (tab === 'available') {
-    if (availabilityLoading) {
-      return <PeopleBrowseListLoading label={EXPLORE_PEOPLE_BROWSE_LOADING} />;
-    }
-    if (availabilityError) {
-      if (peopleBrowseAuthError(availabilityError)) {
-        return <ExploreGuestSignInCard intent="explore-people-browse" compact />;
+  const showLooking = crewsOpenLens === 'all' || crewsOpenLens === 'looking';
+    const showMarked = crewsOpenLens === 'all' || crewsOpenLens === 'marked';
+
+    const lookingBlock =
+      showLooking ? (
+        <PeopleBrowseLookingList
+          seekingActivities={seekingActivities}
+          exploreCatalogItems={exploreCatalogItems}
+          loading={exploreCatalogLoading}
+          onOpenSeekingActivity={onOpenSeekingActivity}
+          buddyUserIds={buddyUserIds}
+        />
+      ) : null;
+
+    const markedRows = availabilityPeople.map(buildMemberBrowseRowFromAvailability);
+    let markedBlock: ReactNode = null;
+    if (showMarked) {
+      if (availabilityLoading) {
+        markedBlock = <PeopleBrowseListLoading label={EXPLORE_PEOPLE_BROWSE_LOADING} />;
+      } else if (availabilityError) {
+        if (peopleBrowseAuthError(availabilityError)) {
+          markedBlock = <ExploreGuestSignInCard intent="explore-people-browse" compact />;
+        } else {
+          markedBlock = <PeopleBrowseListError message={availabilityError} />;
+        }
+      } else if (markedRows.length === 0) {
+        markedBlock = (
+          <PeopleBrowseListEmpty>
+            <p>{EXPLORE_PEOPLE_BROWSE_AVAILABILITY_EMPTY}</p>
+            {onOpenAvailability ? (
+              <button
+                type="button"
+                className="mt-3 inline-block font-semibold text-emerald-700"
+                onClick={onOpenAvailability}
+              >
+                Add or edit your dates
+              </button>
+            ) : null}
+          </PeopleBrowseListEmpty>
+        );
+      } else {
+        markedBlock = <MemberBrowseRowList rows={markedRows} />;
       }
-      return <PeopleBrowseListError message={availabilityError} />;
     }
-    if (availabilityPeople.length === 0) {
-      return (
-        <PeopleBrowseListEmpty>
-          <p>{EXPLORE_PEOPLE_BROWSE_AVAILABILITY_EMPTY}</p>
-          <Link to={planAvailabilityPath()} className="mt-3 inline-block font-semibold text-emerald-700">
-            Add yours on Plan
-          </Link>
-        </PeopleBrowseListEmpty>
-      );
-    }
+
+    if (!showLooking) return <>{markedBlock}</>;
+    if (!showMarked) return <>{lookingBlock}</>;
+
     return (
-      <MemberBrowseRowList rows={availabilityPeople.map(buildMemberBrowseRowFromAvailability)} />
+      <div className="space-y-6">
+        <section aria-labelledby="crews-looking-heading">
+          <h3 id="crews-looking-heading" className="mb-2 text-sm font-bold uppercase tracking-wide text-neutral-500">
+            Looking for crew
+          </h3>
+          {lookingBlock}
+        </section>
+        <section aria-labelledby="crews-marked-heading">
+          <h3 id="crews-marked-heading" className="mb-2 text-sm font-bold uppercase tracking-wide text-neutral-500">
+            Marked available
+          </h3>
+          {markedBlock}
+        </section>
+      </div>
     );
   }
 

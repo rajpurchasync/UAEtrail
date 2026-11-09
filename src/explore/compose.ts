@@ -54,6 +54,18 @@ export const HOST_COMPOSE_OPTIONS: Array<{ kind: HostComposeKind; label: string;
   { kind: 'activity', label: 'Other activities', emoji: '✨' },
 ];
 
+/** Trips create FAB — host kind grid (Hiking · Camping · Rideshare · Others). */
+export const CREATE_TRIP_HOST_COMPOSE_OPTIONS: Array<{
+  kind: HostComposeKind;
+  label: string;
+  emoji: string;
+}> = [
+  { kind: 'hiking', label: 'Hiking', emoji: '🥾' },
+  { kind: 'camping', label: 'Camping', emoji: '⛺' },
+  { kind: 'rideshare', label: 'Rideshare', emoji: '🚗' },
+  { kind: 'activity', label: 'Others', emoji: '✨' },
+];
+
 export const SEEK_FIXED_COMPOSE_OPTIONS: Array<{
   kind: SeekingComposeKind;
   label: string;

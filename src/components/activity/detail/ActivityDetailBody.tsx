@@ -22,7 +22,7 @@ export const ActivityDetailBody = ({ planSections = null, ...model }: ActivityDe
         visibleTabs={model.visibleMobileTabs}
       />
     ) : null}
-    {model.showMobileTabs && !model.isEmbedded && !model.consumerDetailLayout ? (
+    {model.showMobileTabs && !model.isEmbedded && !model.publicDetail ? (
       <ActivityDetailMobileHero
         date={model.activity.date}
         title={model.activityTitle}
@@ -38,7 +38,7 @@ export const ActivityDetailBody = ({ planSections = null, ...model }: ActivityDe
         }
       />
     ) : null}
-    {model.consumerDetailLayout ? null : (
+    {model.publicDetail ? null : (
       <div
         className={`max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 ${
           model.isEmbedded ? 'px-0 py-2' : 'px-4 py-6'

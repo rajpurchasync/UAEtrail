@@ -19,7 +19,6 @@ import { hasSessionExpiredQuery } from '../../config/surfacePaths';
 import { EXPLORE_MAP_CHROME_FROST, EXPLORE_MAP_CHROME_LABEL, EXPLORE_Z } from '../../config/exploreTheme';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import type { JoinRequestUiState } from '../../utils/joinRequestUi';
-import { ExploreCoachMarks } from './ExploreCoachMarks';
 import { ExploreDismissibleNotice } from './ExploreDismissibleNotice';
 import { ExploreGuestPreviewLimitBanner } from './ExploreGuestPreviewLimitBanner';
 import { ActivityMapPeekHost } from './ActivityMapPeekHost';
@@ -244,8 +243,6 @@ export const ExploreMapStage = ({
         </ExploreMapLoadErrorBoundary>
       </div>
 
-      {!listOpen && !isDesktop && user ? <ExploreCoachMarks /> : null}
-
       {!(isDesktop && listOpen) ? (
       <ExploreMapChromeBar
         panel={panel}
@@ -350,10 +347,11 @@ export const ExploreMapStage = ({
               <button
                 type="button"
                 onClick={onPrimaryFab}
-                className="pointer-events-auto inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white shadow-[0_4px_20px_rgba(5,150,105,.45)] hover:bg-emerald-700 active:scale-[0.98]"
+                className="pointer-events-auto inline-flex min-h-12 max-w-[min(100%,calc(100vw-7rem))] shrink items-center gap-2 rounded-full bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white shadow-[0_4px_20px_rgba(5,150,105,.45)] hover:bg-emerald-700 active:scale-[0.98]"
                 aria-label={primaryFabLabel}
               >
-                <Plus className="h-6 w-6 shrink-0" strokeWidth={2.5} aria-hidden />
+                <Plus className="h-5 w-5 shrink-0" strokeWidth={2.5} aria-hidden />
+                <span className="truncate">{primaryFabLabel}</span>
               </button>
             </UiTooltip>
           </div>

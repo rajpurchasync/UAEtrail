@@ -1,5 +1,5 @@
-/** People panel — Looking for · Free · Friends · Everyone (directory). */
-export type PeopleBrowseTab = 'looking' | 'available' | 'going' | 'connect';
+/** People panel — Looking for · Free · Friends · Everyone (directory). List crews adds `hub` overview. */
+export type PeopleBrowseTab = 'hub' | 'looking' | 'available' | 'going' | 'connect';
 
 export const PEOPLE_BROWSE_TAB_ORDER: PeopleBrowseTab[] = [
   'looking',
@@ -9,6 +9,7 @@ export const PEOPLE_BROWSE_TAB_ORDER: PeopleBrowseTab[] = [
 ];
 
 export const PEOPLE_BROWSE_TAB_LABELS: Record<PeopleBrowseTab, string> = {
+  hub: 'Overview',
   looking: 'Looking for',
   available: 'Free',
   going: 'Friends',
@@ -16,6 +17,7 @@ export const PEOPLE_BROWSE_TAB_LABELS: Record<PeopleBrowseTab, string> = {
 };
 
 export const parsePeopleBrowseTab = (raw: string | null): PeopleBrowseTab => {
+  if (raw === 'hub') return 'hub';
   if (raw === 'looking' || raw === 'available' || raw === 'going' || raw === 'connect') return raw;
   if (raw === 'all') return 'connect';
   if (raw === 'friends' || raw === 'buddies' || raw === 'followed') return 'going';

@@ -197,7 +197,7 @@ Canonical navigation: [`NAVIGATION.md`](./NAVIGATION.md). Structural rules:
 
 Aligned with [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §4.1 and [`NORTHSTAR.md`](./NORTHSTAR.md):
 
-- **Few browse surfaces, many filterable views** — `/explore` map-first; **list explorer** (`/list`) shares filter vocabulary (`src/list/routing.ts` ↔ `explorePath()`). **Mobile bottom nav — five tabs** — Trips · Venues · Crews · Plan · Chat; tab contract `src/config/mobileFiveTabNav.ts` ([`NAVIGATION.md`](./NAVIGATION.md) § Mobile five-tab).
+- **Few browse surfaces, many filterable views** — `/explore` map-first; **list explorer** (`/list`) shares filter vocabulary (`src/list/routing.ts` ↔ `explorePath()`). **Mobile bottom nav — five tabs** — Trips · Venues · Plans · Crews · Chat; tab contract `src/config/mobileFiveTabNav.ts` ([`NAVIGATION.md`](./NAVIGATION.md) § Mobile five-tab).
 - **One discovery catalog on the server** — `GET /explore/map` (+ query). Map stage, explore list sheet, and list discovery UI are **projections**; avoid separate “catalog” endpoints per category unless a new bounded context is approved in Tier-1. Signed-in peek/engagement is **`GET /me/discover/overlay`** (`viewerAccess` by item id) — not a second catalog. Product writes bust the Redis map via **`scheduleExploreMapCacheInvalidation`** (durable outbox in production — §8.9).
 - **Many entity URLs where identity matters** — `/activity`, place paths, `/shop`, brand paths: sharing, notifications, per-id cache and `viewerAccess`. These are **not** browse department homepages.
 - **Private engagement off the public map** — wishlist, entity follow, member follow, goals: `/me/*` and trips/profile UI ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Follow · Wishlist · Goal).
@@ -342,7 +342,7 @@ One **person account**; **one consumer profile page** (`/member/:userId` — `Me
 | Context | L1 (card VM) | L2 (peek / row) | L3 (detail composer) |
 |---------|--------------|-----------------|----------------------|
 | Activity (hosted + seeking) | `discoveryCardModel` | `peek/activity/*` | Kind **page composers** (`*ActivityDetailPage` → shell) — **not** one `ActivityDetailBody` with kind `if` chains |
-| Place | L1 place slice | `peek/place/*` (`PlacePeekHero`, `PlacePeekBody`, …) | `buildPlaceDetailPageModel` → `PlaceDetailPage` → `PlaceDetailPageShell` → `PlaceConsumerDetailPage` |
+| Place | L1 place slice | `peek/place/*` (`PlacePeekHero`, `PlacePeekBody`, …) | `buildPlaceDetailPageModel` → `PlaceDetailPage` → `PlaceDetailPageShell` → `PlaceScrollDetailPage` |
 | Area | **Not a pin** — `areaId` / `areaSlug` on Place/Facility (and activity via place) | Hub chrome / `peek/area/*` (hub page only — do not emit `source: area` on the map) | `AreaDetailPage` sections/tabs |
 | Shop | L1 shop pin | `peek/shop/*` | `ShopPublicPage` |
 | Member (browse) | `memberPeople*` row VM | Optional mini-card in people panel | `MemberProfile` |
@@ -358,12 +358,12 @@ One methodology for catalog **detail templates** — not one URL for every entit
 | Kind key | `ActivityDetailKind` from `activityType` | `PlaceDetailKind` from route wrapper |
 | Kind route file | `*ActivityDetailPage` → `ActivityDetailPageShell` | `*PlaceDetailPage` → `PlaceDetailPageShell` |
 | L1 | `buildActivityDetailPageModel` | `buildPlaceDetailPageModel` |
-| Public body | `ActivityConsumerDetailBody` (scroll; peek L1 card) | `PlaceConsumerDetailPage` (scroll; peek-native hero parity) |
-| **Presentation wire** | `GET /activities/:id` → `presentation.consumerLayout` (+ `engagement`, `mapPeekActions` via `viewerAccess`) | Place: catalog fields on `GET /places/:id` (no `consumerLayout` yet — scroll sections local) |
-| Kind-specific facts / plan | `*ActivityDetailPlanSections` → `ActivityDetailBody` (hiking / camping / rideshare / other) | `PlaceConsumerKindFacts` + shared scroll (`PlaceConsumerDetailPage`); contribute preview still uses `PlaceDetailTabs` |
-| Shared core | `ActivityDetailView` + `MobileDetailShell` | `MobileDetailShell` via `PlaceConsumerDetailPage` |
+| Public body | `ActivityDetailSections` (peek L1 card) | `PlaceScrollDetailPage` (peek-native hero parity) |
+| **Presentation wire** | `GET /activities/:id` → `presentation.sections` (+ `engagement`, `mapPeekActions` via `viewerAccess`) | Place: catalog fields on `GET /places/:id` (no `sections` wire yet — page sections local) |
+| Kind-specific facts / plan | `*ActivityDetailPlanSections` → `ActivityDetailBody` (hiking / camping / rideshare / other) | `PlaceScrollKindFacts` + shared scroll (`PlaceScrollDetailPage`); contribute preview still uses `PlaceDetailTabs` |
+| Shared core | `ActivityDetailView` + `MobileDetailShell` | `MobileDetailShell` via `PlaceScrollDetailPage` |
 
-Host preview / `ActivityManageSheet` embed `ActivityDetailView` with `isEmbedded: true` → `presentation.tabs` + `footerByTab` (no `consumerLayout`). They skip `ActivityDetailByKind`.
+Host preview (`previewMode`) and `ActivityManageSheet` (`isEmbedded: true`) use `ActivityDetailView` with the same `presentation.sections`, plus `tabs` + `footerByTab` for embed chrome. They skip `ActivityDetailByKind`.
 
 #### 6.2.5 Cross-cutting kits (one implementation per concern)
 
@@ -460,7 +460,7 @@ Ordered for **coherence**, not feature count:
 | **L0 Wire** | API DTO + `viewerAccess` / entitlements | Server only — [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15 |
 | **L1 Projection** | Card/row view model | `discoveryCardModel` (catalog pins) · `memberPeople*` (people browse) · future `activityDetailPageModel` (L3) |
 | **L2 Peek / row / explorer card** | Minimized engagement | `MapPeekShell` + `peek/{entity}/*` · list explorer cards |
-| **L3 Page composer** | Sections + tabs for one id | `*ActivityDetailPage`, `PlaceConsumerDetailPage`, `MemberProfile`, `ShopPublicPage`, … |
+| **L3 Page composer** | Sections + tabs for one id | `*ActivityDetailPage`, `PlaceScrollDetailPage`, `MemberProfile`, `ShopPublicPage`, … |
 | **L3 Shell** | Shared chrome (hero, tabs, sticky footer) | `MobileDetailShell`, `EntityPublicDetailShell`, `ActivityDetailPageShell` |
 
 ```mermaid
@@ -495,7 +495,7 @@ flowchart LR
 |------|--------|--------|
 | Discovery L1 + unified activity peek (hosted + seeking) | Done | S8, §6.1, `discoveryUiMethodologyGuard` |
 | `viewerAccess` on activity detail + peek parity | Done | S7, `mapDetailEngagementParity` |
-| Place L3 (`PlaceConsumerDetailPage` + kind routes) | Done | S6, `placeDetailCore.test.ts`, `placeDetailUiHygieneGuard` |
+| Place L3 (`PlaceScrollDetailPage` + kind routes) | Done | S6, `placeDetailCore.test.ts`, `placeDetailUiHygieneGuard` |
 | Consumer detail shells (shop/agency/area/activity chrome) | Eng done | S9, `consumerDetailAntiDriftGuard` |
 | Single member route `/member/:userId` + API profile access | Done | `MemberProfile`, `profile-viewer-access` |
 | `/buddies` list → `/member` links | Done | `Buddies.tsx` |
@@ -737,8 +737,8 @@ Mark `[x]` in the PR that completes the item. **Gate:** `npm run verify:system:q
 **CPC-6 — FE: routes, detail shells, redirects**  
 *Depends: CPC-3, CPC-5.*
 
-- [x] Canonical `/place/:id` — single `PlaceConsumerDetailPage`
-- [x] `/facility/:id` — `FacilityConsumerDetailPage`
+- [x] Canonical `/place/:id` — single `PlaceScrollDetailPage`
+- [x] `/facility/:id` — `FacilityScrollDetailPage`
 - [x] Client redirects: `/trail`, `/camp`, `/venue`, `/event` → `/place/:id`
 - [x] `/profile/submissions` + redirect `/contributions`
 - [x] `routingCatalog.ts`, `entity-path.ts` (`placeDetailPath` → `/place/:id`)

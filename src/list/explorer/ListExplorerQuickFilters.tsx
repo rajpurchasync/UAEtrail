@@ -171,7 +171,7 @@ export const ListExplorerQuickFilters = ({
 
   return (
     <div
-      className="mt-3 flex w-full min-w-0 items-center gap-2 overflow-x-auto scrollbar-none py-0.5"
+      className="mt-2 flex w-full min-w-0 items-center gap-2 overflow-x-auto scrollbar-none py-0.5 md:mt-3"
       role="toolbar"
       aria-label={onTrips ? 'Trip filters' : 'Venue filters'}
     >

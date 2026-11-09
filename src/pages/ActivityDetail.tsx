@@ -42,9 +42,9 @@ import { PushEnableBanner } from '../components/ui/PushEnableBanner';
 import { ActivityDetailByKind } from '../activity/detail/templates/ActivityDetailByKind';
 import { resolveActivityDetailMobileTab } from '../activity/detail/buildActivityDetailPageModel';
 import {
-  scrollActivityDetailConsumerSection,
+  scrollActivityDetailSection,
   scrollActivityDetailMeetingPoint,
-} from '../activity/detail/activityDetailConsumerAnchors';
+} from '../activity/detail/activityDetailScrollAnchors';
 import { resolveJoinRequestUiState } from '../utils/joinRequestUi';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { viewerIsActivityHostUser } from '../utils/viewerHostsActivity';
@@ -137,7 +137,7 @@ export const ActivityDetail = () => {
 
   /** Public scroll layout — legacy `?tab=` deep links scroll to anchors (embed/manage still use tab state). */
   const onConsumerSectionNav = useCallback((tab: ActivityDetailTabId) => {
-    scrollActivityDetailConsumerSection(tab);
+    scrollActivityDetailSection(tab);
   }, []);
 
   useEffect(() => {
@@ -145,7 +145,7 @@ export const ActivityDetail = () => {
     const tabParam = searchParams.get(ACTIVITY_DETAIL_TAB_QUERY);
     if (!tabParam) return;
     const tab = resolveActivityDetailMobileTab(activity, { tabParam });
-    scrollActivityDetailConsumerSection(tab);
+    scrollActivityDetailSection(tab);
     const next = new URLSearchParams(searchParams);
     next.delete(ACTIVITY_DETAIL_TAB_QUERY);
     setSearchParams(next, { replace: true });
@@ -508,7 +508,7 @@ export const ActivityDetail = () => {
               }
             : undefined
         }
-        consumerLayout={effectiveWirePresentation?.consumerLayout ?? null}
+        wireSections={effectiveWirePresentation?.sections ?? null}
         wireStrips={effectiveWirePresentation?.strips ?? null}
         onHostShareOuting={isActivityHostUser ? onHostShareOuting : undefined}
         onOpenHostManage={isActivityHostUser ? hostSheets.openHostManage : undefined}

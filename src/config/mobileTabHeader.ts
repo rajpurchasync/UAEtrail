@@ -32,10 +32,6 @@ import {
   PROFILE_SETTINGS_SAFETY_PATH,
 } from './surfacePaths';
 
-export type MobileTabHeaderCenter =
-  | { kind: 'brand' }
-  | { kind: 'title'; text: string };
-
 const TAB_HEADER_ROUTES = new Set([
   '/explore',
   '/list',
@@ -90,7 +86,7 @@ export const resolveMobileTabHeaderTitle = (pathname: string, search: string): s
     if (subTitle) return subTitle;
     return PRODUCT_PLAN_SURFACE_TITLE;
   }
-  if (pathname === MESSAGES_PATH) return 'Chat';
+  if (pathname === MESSAGES_PATH) return null;
   if (pathname === PROFILE_HISTORY_PATH) return 'History';
   if (pathname === JOURNEY_MAP_PATH) return 'My Map';
   if (pathname === NOTIFICATIONS_PATH) return 'Notifications';

@@ -8,6 +8,8 @@ export const LIST_CHROME = {
   chromeBorder: 'border-b border-neutral-200/60 shadow-[0_1px_0_rgba(15,23,42,.04)]',
   maxWidth: 'mx-auto w-full max-w-lg md:max-w-xl lg:max-w-lg',
   horizontalPad: 'px-4 md:px-6',
+  /** Standalone `/list` — layout supplies identity row; light top pad only. */
+  standaloneMobileInset: 'pt-1 pb-2 md:pt-1',
   menuButton:
     '!bg-neutral-100/90 !text-neutral-700 !border-neutral-200/70 hover:!bg-neutral-200/80',
 } as const;
@@ -129,10 +131,14 @@ export const LIST_MAP_FLOAT =
   `${LIST_FLOAT_FIXED} inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-neutral-900 shadow-[0_4px_20px_rgba(15,23,42,.12)] ring-1 ring-black/[0.06] backdrop-blur-sm`;
 
 export const LIST_CREATE_FAB =
-  `${LIST_FLOAT_FIXED} inline-flex h-12 w-12 items-center justify-center rounded-full bg-emerald-600 p-0 text-white shadow-[0_4px_20px_rgba(5,150,105,.45)] hover:bg-emerald-700`;
+  `${LIST_FLOAT_FIXED} inline-flex min-h-12 max-w-[calc(100vw-5.5rem)] items-center gap-2 rounded-full bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white shadow-[0_4px_20px_rgba(5,150,105,.45)] hover:bg-emerald-700`;
 
 export const LIST_MAP_FLOAT_POSITION =
   'right-4 bottom-[calc(var(--bottom-nav-height,56px)+var(--safe-bottom,0px)+16px)]';
+
+/** Mirrors explore map **List** pill — list trips/venues return to map (left). */
+export const LIST_VIEW_MAP_FLOAT_POSITION =
+  'left-4 bottom-[calc(var(--bottom-nav-height,56px)+var(--safe-bottom,0px)+16px)]';
 
 export const LIST_DESKTOP_MAP_LINK =
   'hidden min-h-10 items-center rounded-full bg-neutral-100 px-4 text-sm font-semibold text-neutral-900 md:inline-flex active:bg-neutral-200';

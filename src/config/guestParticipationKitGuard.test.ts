@@ -25,7 +25,7 @@ describe('guestParticipationKitGuard', () => {
     expect(gate).toMatch(/ExploreGuestSignInCard/);
     expect(gate).toMatch(/intent="join-activity"/);
     expect(gate).not.toMatch(/guestJoinSheetHeadline/);
-    const template = read('src/activity/detail/templates/ActivityConsumerDetailPage.tsx');
+    const template = read('src/activity/detail/templates/ActivityDetailSections.tsx');
     expect(template).toMatch(/requiresSignIn[\s\S]*ActivityDetailGuestGate/);
   });
 

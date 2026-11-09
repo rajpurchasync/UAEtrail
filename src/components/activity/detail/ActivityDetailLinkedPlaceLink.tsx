@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ChevronRight, MapPin } from 'lucide-react';
-import { CONSUMER_DETAIL_PANEL } from '../../../activity/detail/templates/activityConsumerDetailSectionStyles';
+import { DETAIL_SCROLL_PANEL } from '../../../components/mobile/detailScrollSectionStyles';
 import { activityPlaceReturnState } from '../../../explore/mapPeekDetailNavState';
 
 type ActivityDetailLinkedPlaceLinkProps = {
@@ -31,7 +31,7 @@ export const ActivityDetailLinkedPlaceLink = ({
     </>
   );
 
-  const className = `${CONSUMER_DETAIL_PANEL.place} text-left`;
+  const className = `${DETAIL_SCROLL_PANEL.place} text-left`;
 
   if (!to) {
     return <div className={className}>{body}</div>;

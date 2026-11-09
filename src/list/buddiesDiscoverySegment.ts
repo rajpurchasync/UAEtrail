@@ -20,9 +20,14 @@ export const BUDDIES_DISCOVERY_SEGMENTS: ReadonlyArray<{
 
 export const BUDDIES_SEGMENT_URL_PARAM = 'buddies';
 
-export const parseBuddiesDiscoverySegment = (raw: string | null): BuddiesDiscoverySegment =>
-  parsePeopleBrowseTab(raw);
+/** Full-screen crews list — default hub when `buddies` is omitted. */
+export const parseBuddiesDiscoverySegment = (raw: string | null): BuddiesDiscoverySegment => {
+  if (!raw) return 'hub';
+  return parsePeopleBrowseTab(raw);
+};
 
-export const serializeBuddiesDiscoverySegment = (
-  segment: BuddiesDiscoverySegment
-): string | null => serializePeopleBrowseTab(segment);
+export const serializeBuddiesDiscoverySegment = (segment: BuddiesDiscoverySegment): string | null => {
+  if (segment === 'hub') return null;
+  if (segment === 'looking') return 'looking';
+  return serializePeopleBrowseTab(segment);
+};

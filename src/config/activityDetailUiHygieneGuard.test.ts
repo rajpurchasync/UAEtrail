@@ -17,8 +17,7 @@ const RETIRED_ACTIVITY_DETAIL_MODULES = [
   'src/components/activity/detail/ActivityDetailParticipantsAffordance.tsx',
   'src/components/activity/detail/ActivityDetailParticipationAffordances.tsx',
   'src/components/activity/detail/ActivityDetailParticipantRosterSection.tsx',
-  'src/components/activity/detail/ActivityConsumerDetailBody.tsx',
-  'src/activity/activityDetailConsumerEssentialChips.ts',
+  'src/activity/activityDetailScrollEssentialChips.ts',
 ];
 
 describe('activityDetailUiHygieneGuard', () => {
@@ -28,9 +27,9 @@ describe('activityDetailUiHygieneGuard', () => {
   });
 
   it('AD-HYG-02: public route uses consumer template; embed keeps tab body', () => {
-    expect(read('src/activity/detail/templates/ActivityDetailPageShell.tsx')).toMatch(/consumerDetailLayout/);
-    expect(read('src/components/activity/ActivityDetailView.tsx')).toMatch(/ActivityConsumerDetailPage/);
-    expect(read('src/components/activity/detail/ActivityDetailBody.tsx')).toMatch(/consumerDetailLayout/);
+    expect(read('src/activity/detail/templates/ActivityDetailPageShell.tsx')).not.toMatch(/scrollDetailLayout/);
+    expect(read('src/components/activity/ActivityDetailView.tsx')).toMatch(/ActivityDetailSections/);
+    expect(read('src/components/activity/detail/ActivityDetailBody.tsx')).toMatch(/publicDetail/);
   });
 
   it('AD-HYG-03: view model resolves via .tsx (Vite extensionless shim only)', () => {

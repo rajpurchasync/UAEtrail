@@ -8,7 +8,7 @@ describe('map peek naming', () => {
   it('PEEK-NAME-02: entity pin modules use object names (not Explore*Peek*)', () => {
     expect(read('src/explore/ui/peek/activity/ActivityPeekStrips.tsx')).toMatch(/ActivityPeekStrips/);
     expect(read('src/explore/ui/peek/place/PlacePeekBody.tsx')).toMatch(/PlacePeekBody/);
-    expect(read('src/activity/detail/templates/ActivityConsumerDetailPage.tsx')).toMatch(
+    expect(read('src/activity/detail/templates/ActivityDetailSections.tsx')).toMatch(
       /ActivityPeekLinkedTransport/
     );
   });

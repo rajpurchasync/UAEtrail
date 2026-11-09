@@ -8,9 +8,9 @@ import { searchMembersByQuery } from '../hooks/memberPeopleClientApi';
 import type { SocialGroupView, SocialGroupWallMessageView } from '../api/types';
 import { useAuth } from '../context/AuthContext';
 import { GuestGatedSurfaceLayout } from '../components/auth/GuestGatedSurfaceLayout';
-import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { ConsumerErrorCard } from '../components/mobile/ConsumerFeedback';
 import {
+  ChatInboxLayout,
   ChatThreadRouter,
   MessagesComposeSheet,
   MessagesInboxList,
@@ -286,8 +286,7 @@ export const Messages = () => {
     [threads, inboxFilter, inboxQuery]
   );
 
-  const hasInboxThreads = threads.length > 0 || inboxFilter !== 'all';
-  const openCompose = hasInboxThreads ? () => setShowNewChat(true) : undefined;
+  const openCompose = useCallback(() => setShowNewChat(true), []);
 
   const startConversation = (userResult: SearchUser) => {
     directChat.seedPartnerBrief({
@@ -458,13 +457,7 @@ export const Messages = () => {
       <div
         className={`${inThread ? 'hidden md:flex' : 'flex'} h-full min-h-0 w-full min-w-0 flex-col md:w-[22.5rem] md:max-w-[40%] md:shrink-0 md:border-r md:border-neutral-200`}
       >
-        <ConsumerShell
-          layout="tab"
-          title="Chat"
-          suppressMobileHeader
-          suppressMobileToolbarBorder
-          maxWidth="4xl"
-          flush
+        <ChatInboxLayout
           toolbar={
             <MessagesInboxToolbar
               query={inboxQuery}
@@ -476,22 +469,20 @@ export const Messages = () => {
             />
           }
         >
-          {error ? <ConsumerErrorCard message={error} className="mb-3" /> : null}
-          <div className="pb-bottom-nav-safe md:pb-0">
-            <MessagesInboxList
-              threads={visibleThreads}
-              loading={loading}
-              unavailable={unavailable}
-              inboxFilter={inboxFilter}
-              inboxQuery={inboxQuery}
-              selectedDirectId={selectedUserId}
-              selectedGroupId={selectedGroupId}
-              onSelectDirect={selectConversation}
-              onSelectGroup={openGroupChat}
-              formatTime={formatTime}
-            />
-          </div>
-        </ConsumerShell>
+          {error ? <ConsumerErrorCard message={error} className="mb-2 px-4 md:px-0" /> : null}
+          <MessagesInboxList
+            threads={visibleThreads}
+            loading={loading}
+            unavailable={unavailable}
+            inboxFilter={inboxFilter}
+            inboxQuery={inboxQuery}
+            selectedDirectId={selectedUserId}
+            selectedGroupId={selectedGroupId}
+            onSelectDirect={selectConversation}
+            onSelectGroup={openGroupChat}
+            formatTime={formatTime}
+          />
+        </ChatInboxLayout>
       </div>
 
       <div

@@ -65,13 +65,13 @@ describe('detailSurfaceWiringAcceptance', () => {
     );
   });
 
-  it('DS-WIRE-05: activity public detail uses API consumerLayout (embed uses tab wire)', () => {
+  it('DS-WIRE-05: activity detail uses one presentation.sections (embed still uses tabs)', () => {
     const presentation = read('packages/shared-types/src/activity-detail-presentation.ts');
-    expect(presentation).toMatch(/ActivityPresentationConsumerLayoutDTO/);
-    expect(presentation).toMatch(/consumerLayout/);
-    expect(read('src/pages/ActivityDetail.tsx')).toMatch(/consumerLayout=/);
-    expect(read('src/activity/detail/templates/ActivityConsumerDetailPage.tsx')).toMatch(
-      /model\.consumerLayout/
+    expect(presentation).toMatch(/ActivityPresentationSectionsDTO/);
+    expect(presentation).not.toMatch(/scrollLayout/);
+    expect(read('src/pages/ActivityDetail.tsx')).toMatch(/wireSections=/);
+    expect(read('src/activity/detail/templates/ActivityDetailSections.tsx')).toMatch(
+      /model\.sections/
     );
     const manage = read('src/components/activity/ActivityManageSheet.tsx');
     expect(manage).toMatch(/isEmbedded:\s*true/);

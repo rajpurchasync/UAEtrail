@@ -144,7 +144,7 @@ Avoid narrowing marketing to “hiking & camping platform” unless SEO metadata
 | Auth | `SignUp.tsx`, `SignIn.tsx`, `WelcomeSignup.tsx` |
 | Profile empty | `Profile.tsx` hub sections; joined upcoming on `/plan` → `PlanJoinedUpcoming.tsx` |
 | Explore FAB + wizards | `CreateIntentSheet.tsx`, `hostingFlowEngine.ts`, `seekingFlowEngine.ts`, `addFlow.ts` · spec: [`CREATE_FLOW.md`](./CREATE_FLOW.md) |
-| Explore chrome | `ExploreCoachMarks.tsx`, `ExploreExperience.tsx` |
+| Explore chrome | `ExploreExperience.tsx` |
 | Explore cards | `packages/shared-types/src/explore-presentation.ts` |
 | Activity blurbs | `src/config/activityTypes.ts` |
 | FAQs | `src/content/platformFaqs.ts` |

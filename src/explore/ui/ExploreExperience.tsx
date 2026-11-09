@@ -56,6 +56,7 @@ export const ExploreExperience = () => {
               handleCloseMapSelection={model.handleCloseMapSelection}
               handleOfferRideshareForSeeking={model.handleOfferRideshareForSeeking}
               primaryFabLabel={model.primaryFabLabel}
+              handlePrimaryFabTap={model.handlePrimaryFabTap}
               handleOpenExploreItem={model.handleOpenExploreItem}
               searchScopeCounts={model.searchScopeCounts}
               setExploreSearchModalOpen={model.setExploreSearchModalOpen}

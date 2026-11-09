@@ -26,15 +26,22 @@ export type ActivityPresentationEngagementDTO = {
   joinEngagement: 'open' | 'pending' | 'confirmed';
 };
 
-export type ActivityPresentationPlanTabDTO = {
-  /** Consumer mobile tabs hide the Plan date/time grid when true. */
-  useTabChrome: boolean;
-  showTransportTeaser: boolean;
+export type ActivityDetailParticipantsSlot = 'hidden' | 'preview' | 'roster';
+
+/**
+ * Section visibility for `/activity/:id`.
+ * Public page and embed both read this. Tab objects only group embed chrome.
+ */
+export type ActivityPresentationSectionsDTO = {
+  showHostProfile: boolean;
+  participants: ActivityDetailParticipantsSlot;
+  /** Crew meeting map. Embed place panels use this same flag. */
+  showMeetingPoint: boolean;
+  canOpenParticipantRoster: boolean;
 };
 
 export type ActivityPresentationPlaceTabDTO = {
   showLockedPlaceholder: boolean;
-  showCrewMapAndMeeting: boolean;
   hasDirections: boolean;
 };
 
@@ -52,29 +59,18 @@ export type ActivityPresentationTransportTabDTO = {
 };
 
 export type ActivityPresentationTabsDTO = {
-  plan: ActivityPresentationPlanTabDTO;
   place: ActivityPresentationPlaceTabDTO;
   buddies: ActivityPresentationBuddiesTabDTO;
   transport: ActivityPresentationTransportTabDTO;
 };
 
-/** Public `/activity/:id` scroll template slots — built with tabs in one pass (embed uses `tabs` + `footerByTab`). */
-export type ActivityPresentationConsumerLayoutDTO = {
-  showPublishedCatalog: boolean;
-  showHostProfile: boolean;
-  participants: 'hidden' | 'preview' | 'roster';
-  showMeetingPoint: boolean;
-  showTransportSection: boolean;
-  showHostManageHub: boolean;
-  canOpenParticipantRoster: boolean;
-};
-
 export type ActivityPresentationDTO = {
   engagement: ActivityPresentationEngagementDTO;
+  /** One section policy for the public page and embed. */
+  sections: ActivityPresentationSectionsDTO;
+  /** Embed chrome. Public `/activity/:id` does not render a tab bar. */
   tabs: ActivityPresentationTabsDTO;
   footerByTab: Record<ActivityDetailTabId, ActivityDetailTabFooterKind>;
-  /** Scroll consumer page only (`!previewMode && !isEmbedded && published`). */
-  consumerLayout?: ActivityPresentationConsumerLayoutDTO;
   /** Peek-parity strip flags (detail hero invited chip, etc.). */
   strips?: ActivityEngagementStripsDTO;
 };
@@ -139,7 +135,8 @@ export const buildActivityPresentationDTO = (
 
   const previewMode = input.previewMode ?? false;
   const isEmbedded = input.isEmbedded ?? false;
-  const useTabChrome = input.activityPublished && !previewMode && !isEmbedded;
+  /** Public route only. Embed and preview keep tab chrome flags off. */
+  const publicDetail = input.activityPublished && !previewMode && !isEmbedded;
   const coordinates = hasMeetingCoordinates(input);
   const linkedRideshareId = input.linkedRideshareActivityId ?? null;
   const rideshareEnabled = Boolean(input.rideshareEnabled);
@@ -165,46 +162,24 @@ export const buildActivityPresentationDTO = (
     {} as Record<ActivityDetailTabId, ActivityDetailTabFooterKind>
   );
 
-  const placeTab = {
-    showLockedPlaceholder: useTabChrome && !canAccessCrewSurfaces,
-    showCrewMapAndMeeting: canAccessCrewSurfaces,
-    hasDirections: coordinates,
-  };
-  const transportTab = {
-    reachByLineCount,
-    linkedRideshareActivityId: linkedRideshareId,
-    showLinkedRide: Boolean(linkedRideshareId) || rideshareEnabled,
-    showParticipantEmptyEncouragement:
-      useTabChrome && !input.isHostUser && !linkedRideshareId && !rideshareEnabled,
-  };
-
-  const consumerScrollPage = useTabChrome;
   const rosterCount = input.confirmedParticipantCount ?? 0;
   const previewCount = input.participantPreviewCount ?? 0;
   const showParticipantsRoster =
     canAccessCrewSurfaces && (isConfirmedParticipant || input.isHostUser);
-  let participantsSlot: ActivityPresentationConsumerLayoutDTO['participants'] = 'hidden';
+  let participants: ActivityPresentationSectionsDTO['participants'] = 'hidden';
   if (showParticipantsRoster) {
-    participantsSlot = 'roster';
+    participants = 'roster';
   } else if (previewCount > 0 || rosterCount > 0) {
-    participantsSlot = 'preview';
+    participants = 'preview';
   }
 
-  const consumerLayout: ActivityPresentationConsumerLayoutDTO | undefined = consumerScrollPage
-    ? {
-        showPublishedCatalog: input.activityPublished,
-        showHostProfile: input.activityPublished,
-        participants: participantsSlot,
-        showMeetingPoint: placeTab.showCrewMapAndMeeting,
-        showTransportSection:
-          transportTab.reachByLineCount > 0 ||
-          transportTab.showLinkedRide ||
-          coordinates,
-        showHostManageHub: input.isHostUser,
-        canOpenParticipantRoster:
-          canAccessCrewSurfaces || input.isHostUser || isConfirmedParticipant,
-      }
-    : undefined;
+  const sections: ActivityPresentationSectionsDTO = {
+    showHostProfile: input.activityPublished,
+    participants,
+    showMeetingPoint: canAccessCrewSurfaces,
+    canOpenParticipantRoster:
+      canAccessCrewSurfaces || input.isHostUser || isConfirmedParticipant,
+  };
 
   return {
     engagement: {
@@ -215,20 +190,25 @@ export const buildActivityPresentationDTO = (
       showCrewLockedHint,
       joinEngagement,
     },
+    sections,
     tabs: {
-      plan: {
-        useTabChrome,
-        showTransportTeaser: useTabChrome,
+      place: {
+        showLockedPlaceholder: publicDetail && !canAccessCrewSurfaces,
+        hasDirections: coordinates,
       },
-      place: placeTab,
       buddies: {
-        showCrewLockedHint: showCrewLockedHint && useTabChrome,
+        showCrewLockedHint: showCrewLockedHint && publicDetail,
         showParticipantShortcuts: showParticipantFooterShortcuts,
-        showHostManageHub: input.isHostUser && useTabChrome,
+        showHostManageHub: input.isHostUser && publicDetail,
       },
-      transport: transportTab,
+      transport: {
+        reachByLineCount,
+        linkedRideshareActivityId: linkedRideshareId,
+        showLinkedRide: Boolean(linkedRideshareId) || rideshareEnabled,
+        showParticipantEmptyEncouragement:
+          publicDetail && !input.isHostUser && !linkedRideshareId && !rideshareEnabled,
+      },
     },
     footerByTab,
-    consumerLayout,
   };
 };

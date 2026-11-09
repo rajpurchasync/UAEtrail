@@ -3,7 +3,7 @@ import type {
   ActivityDetailDTO,
   ActivityEngagementStripsDTO,
   ActivityGroupChatPostPolicy,
-  ActivityPresentationConsumerLayoutDTO,
+  ActivityPresentationSectionsDTO,
   ActivityPresentationTabsDTO,
   ActivityViewerAccessDTO,
   MyActivityRequestDTO,
@@ -51,7 +51,6 @@ import {
 } from '../../../activity/activityDetailHeroStatus';
 import { buildActivityDetailPageShellCard } from '../../../activity/detail/activityDetailPageShellCard';
 import { resolveActivityDetailHeroImage } from '../../../activity/resolveActivityDetailHeroImage';
-import { resolveActivityDetailWirePresentation } from '../../../activity/resolveActivityDetailWirePresentation';
 import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 import { activityDetailTabPanelClass } from './activityDetailTabPanelClass';
 import { useActivityDetailJoinSurfaces } from './useActivityDetailJoinSurfaces';
@@ -104,10 +103,9 @@ export type ActivityDetailViewModelInput = {
   wireFooterByTab?: Record<ActivityDetailTabId, ActivityDetailTabFooterKind> | null;
   wireTabs?: ActivityPresentationTabsDTO | null;
   wireStrips?: ActivityEngagementStripsDTO | null;
-  consumerLayout?: ActivityPresentationConsumerLayoutDTO | null;
+  /** Wire `presentation.sections` — one section policy for public page and embed. */
+  wireSections?: ActivityPresentationSectionsDTO | null;
   onHostShareOuting?: () => void;
-  /** Public `/activity/:id` scroll layout (`ActivityDetailPageShell`). */
-  consumerDetailLayout?: boolean;
   viewerAccess?: ActivityViewerAccessDTO | null;
   onOfferLinkedRideshare?: () => void;
   /** Consumer kind template (`ActivityDetailByKind`) — drives tab visibility + plan facts. */
@@ -149,9 +147,8 @@ export const useActivityDetailViewModel = ({
   wireFooterByTab = null,
   wireTabs = null,
   wireStrips = null,
-  consumerLayout = null,
+  wireSections = null,
   onHostShareOuting,
-  consumerDetailLayout = false,
   viewerAccess = null,
   onOfferLinkedRideshare,
   detailKind,
@@ -161,6 +158,7 @@ export const useActivityDetailViewModel = ({
 }: ActivityDetailViewModelInput) => {
   const { user } = useAuth();
   const isEmbedded = layout === 'embedded';
+  const publicDetail = !isEmbedded && !previewMode;
 
   const pageModel = useMemo(
     () => buildActivityDetailPageModel(activity, { detailKind }),
@@ -173,6 +171,8 @@ export const useActivityDetailViewModel = ({
     () =>
       resolveActivityDetailTabUi({
         wireTabs,
+        publicDetail,
+        showMeetingPoint: wireSections?.showMeetingPoint ?? canAccessCrewSurfaces,
         previewMode,
         isEmbedded,
         onMobileTabChange,
@@ -186,6 +186,8 @@ export const useActivityDetailViewModel = ({
       }),
     [
       wireTabs,
+      publicDetail,
+      wireSections,
       previewMode,
       isEmbedded,
       onMobileTabChange,
@@ -208,7 +210,7 @@ export const useActivityDetailViewModel = ({
     showTransportEncouragementOnTab,
   } = tabUi;
 
-  const showMobileTabs = wireShowMobileTabs && !consumerDetailLayout;
+  const showMobileTabs = wireShowMobileTabs;
   const guestViewer = requiresSignIn && !previewMode && !isEmbedded;
   const showPlaceCrewBody = guestViewer ? false : wireShowPlaceCrewBody;
   const showPlaceLockedOnMobile = guestViewer ? true : wireShowPlaceLockedOnMobile;
@@ -317,7 +319,7 @@ export const useActivityDetailViewModel = ({
   const mobilePlacePanel = activityDetailTabPanelClass('place', mobileTab);
   const mobileBuddiesPanel = activityDetailTabPanelClass('buddies', mobileTab);
   const mobileTransportPanel = activityDetailTabPanelClass('transport', mobileTab);
-  const mobileSidebarPanel = consumerDetailLayout
+  const mobileSidebarPanel = publicDetail
     ? 'hidden md:block'
     : mobileTab === 'plan' || mobileTab === 'buddies'
       ? 'block'
@@ -335,42 +337,15 @@ export const useActivityDetailViewModel = ({
     Boolean(hostUserId)
   );
 
+  const sections = wireSections;
+
   const joinUiStateForSurfaces = useMemo(
     () => resolveJoinRequestUiState({ myRequest, participation }),
     [myRequest, participation]
   );
 
-  const resolvedConsumerLayout = useMemo(() => {
-    if (consumerLayout || !consumerDetailLayout || previewMode || isEmbedded) {
-      return consumerLayout;
-    }
-    if (!viewerAccess || activity.status !== 'published') return null;
-    const wire = resolveActivityDetailWirePresentation({
-      activity,
-      viewerAccess,
-      isHostUser: Boolean(hostCrewChatPolicy),
-      joinUiState: joinUiStateForSurfaces,
-      myParticipation: participation ?? null,
-      myRequest: myRequest
-        ? { status: myRequest.status, canWithdraw: myRequest.canWithdraw }
-        : null,
-    });
-    return wire?.consumerLayout ?? null;
-  }, [
-    consumerLayout,
-    consumerDetailLayout,
-    previewMode,
-    isEmbedded,
-    viewerAccess,
-    activity,
-    hostCrewChatPolicy,
-    joinUiStateForSurfaces,
-    participation,
-    myRequest,
-  ]);
-
   const consumerWireEngagementCta =
-    consumerDetailLayout && !guestViewer && mapPeekActionHandlers
+    publicDetail && !guestViewer && mapPeekActionHandlers
       ? (
           <ActivityDetailEngagementActions
             model={
@@ -416,7 +391,7 @@ export const useActivityDetailViewModel = ({
     accessLat,
     accessLng,
     requiresSignIn: guestViewer,
-    consumerWireEngagement: consumerDetailLayout,
+    consumerWireEngagement: publicDetail,
     isHostViewer: Boolean(hostCrewChatPolicy),
     consumerWireEngagementCta,
   });
@@ -432,13 +407,13 @@ export const useActivityDetailViewModel = ({
     confirmedParticipantCount: activity.participants?.length ?? 0,
   });
   const peekParityCard = useMemo((): DiscoveryCardModel | null => {
-    if (!consumerDetailLayout || previewMode) return null;
+    if (!publicDetail || previewMode) return null;
     return buildActivityDetailPageShellCard({
       activity,
       viewerAccess: viewerAccess ?? null,
       wireStrips: wireStrips ?? null,
     });
-  }, [activity, previewMode, consumerDetailLayout, viewerAccess, wireStrips]);
+  }, [activity, previewMode, publicDetail, viewerAccess, wireStrips]);
 
   const consumerStatusChips = resolveActivityDetailMarketingStatusChips({
     joinUiState,
@@ -450,7 +425,7 @@ export const useActivityDetailViewModel = ({
     confirmedParticipantCount: activity.participants?.length ?? 0,
   });
 
-  const heroFactChips = consumerDetailLayout
+  const heroFactChips = publicDetail
     ? consumerStatusChips
     : showMobileTabs
       ? [
@@ -544,8 +519,8 @@ export const useActivityDetailViewModel = ({
     participants,
     rosterParticipants,
     showRosterProUpsell,
-    consumerDetailLayout,
-    consumerLayout: resolvedConsumerLayout,
+    publicDetail,
+    sections,
     viewerAccess,
     wireStrips,
     joinUiState,

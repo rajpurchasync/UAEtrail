@@ -1,5 +1,5 @@
 import { Link, useParams } from 'react-router-dom';
-import { FacilityConsumerDetailPage } from '../facility/detail/templates/FacilityConsumerDetailPage';
+import { FacilityScrollDetailPage } from '../facility/detail/templates/FacilityScrollDetailPage';
 import { PageMeta } from '../components/seo/PageMeta';
 import { facilityDetailPath, detailBackPath } from '../config/routingCatalog';
 import { usePublicFacilityDetail } from '../hooks/usePublicFacilityDetail';
@@ -35,5 +35,5 @@ export const FacilityDetailPage = () => {
     );
   }
 
-  return <FacilityConsumerDetailPage facility={facility} facilityId={id} />;
+  return <FacilityScrollDetailPage facility={facility} facilityId={id} />;
 };

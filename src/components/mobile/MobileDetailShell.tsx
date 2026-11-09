@@ -40,7 +40,7 @@ interface MobileDetailShellProps {
   children: ReactNode;
   /** Optional right-side header action (e.g. cart button) */
   headerAction?: ReactNode;
-  /** Show the global mobile menu button in the header (default true). */
+  /** Notifications + hamburger (default off on entity detail). */
   showMenu?: boolean;
   /** Optional clickable hero banner above the sticky header. */
   banner?: {
@@ -80,7 +80,7 @@ export const MobileDetailShell = ({
   backLabel = 'Back',
   children,
   headerAction,
-  showMenu = true,
+  showMenu = false,
   banner,
   footer,
   mobileHero,

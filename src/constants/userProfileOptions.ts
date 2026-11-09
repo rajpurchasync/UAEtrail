@@ -46,6 +46,12 @@ export const USER_CITY_LABELS = Object.fromEntries(
   USER_CITY_OPTIONS.map((option) => [option.value, option.label])
 ) as Record<UserCity, string>;
 
+export const resolveMemberCityLabel = (city: string | null | undefined): string | null => {
+  if (!city?.trim()) return null;
+  if (city in USER_CITY_LABELS) return USER_CITY_LABELS[city as UserCity];
+  return city.trim();
+};
+
 export const maxDateOfBirthForMember = (): string => {
   const cutoff = new Date();
   cutoff.setFullYear(cutoff.getFullYear() - 5);

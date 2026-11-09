@@ -6,10 +6,10 @@ describe('composeRouteRequiresAuth', () => {
     expect(composeRouteRequiresAuth({ surface: 'menu' })).toBe(false);
   });
 
-  it('requires auth for FAB submenu picks (host / seek / add)', () => {
-    expect(composeRouteRequiresAuth({ surface: 'menu', intent: 'host' })).toBe(true);
-    expect(composeRouteRequiresAuth({ surface: 'menu', intent: 'seek' })).toBe(true);
-    expect(composeRouteRequiresAuth({ surface: 'menu', intent: 'add' })).toBe(true);
+  it('keeps FAB menu drill-down public until a wizard opens', () => {
+    expect(composeRouteRequiresAuth({ surface: 'menu', intent: 'host' })).toBe(false);
+    expect(composeRouteRequiresAuth({ surface: 'menu', intent: 'seek' })).toBe(false);
+    expect(composeRouteRequiresAuth({ surface: 'menu', intent: 'add' })).toBe(false);
   });
 
   it('requires auth for create wizards', () => {
@@ -71,14 +71,12 @@ describe('resolveComposeRouteChange', () => {
     ).toEqual({ type: 'blocked' });
   });
 
-  it('requires sign-in when guest picks Host / Find crew / Add from FAB menu', () => {
+  it('lets guests open FAB menu drill-down; gates on wizard routes', () => {
     for (const intent of ['host', 'seek', 'add'] as const) {
-      const decision = resolveComposeRouteChange({ surface: 'menu', intent }, signedOut);
-      expect(decision.type).toBe('sign-in');
-      if (decision.type === 'sign-in') {
-        expect(decision.href).toContain('/signin');
-        expect(decision.href).toContain('compose');
-      }
+      expect(resolveComposeRouteChange({ surface: 'menu', intent }, signedOut)).toEqual({
+        type: 'set',
+        route: { surface: 'menu', intent },
+      });
     }
   });
 

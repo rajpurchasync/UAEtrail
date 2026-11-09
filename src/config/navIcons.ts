@@ -2,6 +2,7 @@ import {
   Bell,
   CalendarDays,
   Compass,
+  Route,
   History,
   LogIn,
   Map,
@@ -10,6 +11,7 @@ import {
   Settings,
   ShoppingBag,
   User,
+  Users,
   type LucideIcon
 } from 'lucide-react';
 
@@ -17,8 +19,10 @@ import {
 export const NAV_ICONS = {
   explore: Map,
   activities: Compass,
+  /** Outings / trips — distinct from map (`explore`) and venues pin. */
+  trips: Route,
   shop: ShoppingBag,
-  profile: User
+  profile: User,
 } satisfies Record<string, LucideIcon>;
 
 export const MOBILE_NAV_ICON_MAP: Record<
@@ -52,7 +56,7 @@ export const MOBILE_NAV_ICON_MAP: Record<
   Browse: NAV_ICONS.activities,
   Trips: NAV_ICONS.activities,
   Venues: MapPin,
-  Join: NAV_ICONS.activities,
+  Trips: NAV_ICONS.trips,
   'Join free': NAV_ICONS.activities,
   'Log in': LogIn,
   Contact: MessageCircle,

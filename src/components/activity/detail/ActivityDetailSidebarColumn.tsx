@@ -52,8 +52,8 @@ export const ActivityDetailSidebarColumn = ({ model }: ActivityDetailSidebarColu
       participants={model.participants}
       rosterParticipants={model.rosterParticipants}
       showRosterProUpsell={model.showRosterProUpsell}
-      hideHostProfile={model.consumerDetailLayout || model.requiresSignIn}
-      hideParticipantsRoster={model.consumerDetailLayout}
+      hideHostProfile={model.publicDetail || model.requiresSignIn}
+      hideParticipantsRoster={model.publicDetail}
     />
   </div>
 );

@@ -16,6 +16,8 @@
     --explore-map-mobile-primary-fab-height: 3rem;
     /** Mobile explore tab header (safe area + avatar row). */
     --explore-mobile-tab-header-stack: calc(var(--safe-top, 0px) + 2.75rem);
+    /** Fixed consumer identity header (safe inset + row) — mobile drawer aligns below identity row. */
+    --consumer-mobile-header-stack: calc(var(--safe-top, 0px) + 3.625rem);
     /** Map intent + activity filter toolbar — peek sheets start below this stack. */
     --explore-mobile-map-filter-stack: 5.75rem;
     --explore-browse-peek-top: calc(
@@ -2943,6 +2945,7 @@ html.uaetrail-panel-resizing * {
   cursor: ew-resize !important;
 }
 
-html[data-mobile-menu='open'] [data-consumer-chrome-header] {
-  z-index: 5100;
+html[data-mobile-menu='open'] [data-consumer-identity-row] {
+  position: relative;
+  z-index: 6410;
 }

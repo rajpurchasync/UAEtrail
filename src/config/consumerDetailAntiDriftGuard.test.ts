@@ -11,7 +11,7 @@ const DETAIL_BACK_VIA_CATALOG: Array<{ path: string; pattern: RegExp }> = [
   { path: 'src/pages/ActivityDetail.tsx', pattern: /ActivityDetailByKind/ },
   { path: 'src/activity/detail/templates/ActivityDetailPageShell.tsx', pattern: /ActivityDetailView/ },
   { path: 'src/components/activity/ActivityDetailView.tsx', pattern: /detailBackPath/ },
-  { path: 'src/place/detail/templates/PlaceConsumerDetailPage.tsx', pattern: /detailBackPath/ },
+  { path: 'src/place/detail/templates/PlaceScrollDetailPage.tsx', pattern: /detailBackPath/ },
   { path: 'src/pages/AreaDetailPage.tsx', pattern: /detailBackPath/ },
   { path: 'src/components/shop/ShopPublicPage.tsx', pattern: /detailBackPath\(['"]shop['"]\)/ },
   { path: 'src/components/organisation-console/OrganisationPublicProfile.tsx', pattern: /detailBackPath/ },
@@ -34,6 +34,14 @@ describe('consumerDetailAntiDriftGuard (plan §15.3)', () => {
       }
     }
     expect(violations).toEqual([]);
+  });
+
+  it('entity detail sticky headers omit bell and hamburger by default', () => {
+    expect(read('src/components/mobile/MobileDetailScrollShell.tsx')).toMatch(/showMenu = false/);
+    expect(read('src/components/mobile/MobileDetailShell.tsx')).toMatch(/showMenu = false/);
+    const platform = read('src/config/platform.ts');
+    expect(platform).toMatch(/isConsumerEntityDetailRoute\(pathname\)\) return false/);
+    expect(platform).toMatch(/pathname\.startsWith\('\/member\/'\)\) return false/);
   });
 
   it('member public profile uses ConsumerShell hub layout (not entity detail shell)', () => {

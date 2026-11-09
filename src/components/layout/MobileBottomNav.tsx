@@ -1,14 +1,8 @@
 import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import {
-  ClipboardList,
-  Map,
-  MapPin,
-  MessageSquare,
-  Users,
-  type LucideIcon,
-} from 'lucide-react';
+import { ClipboardList, MapPin, MessageSquare, Users, type LucideIcon } from 'lucide-react';
 
+import { NAV_ICONS } from '../../config/navIcons';
 import {
   MOBILE_FIVE_TAB_UI_LABELS,
   MOBILE_FIVE_TAB_ORDER,
@@ -20,7 +14,7 @@ import { useInboxUnreadCount } from '../../hooks/useInboxUnreadCount';
 import { useMobileBottomNav } from '../../hooks/useMobileBottomNav';
 
 const TAB_ICONS: Record<MobileFiveTabId, LucideIcon> = {
-  trips: Map,
+  trips: NAV_ICONS.trips,
   venues: MapPin,
   crews: Users,
   plan: ClipboardList,
@@ -47,7 +41,7 @@ const TabIcon = ({ icon: Icon, active }: { icon: LucideIcon; active: boolean }) 
   />
 );
 
-/** Mobile tab bar — Trips · Venues · Crews · Plan · Chat (`mobileFiveTabHomePath`). */
+/** Mobile tab bar — Trips · Venues · Plans · Crews · Chat (`mobileFiveTabHomePath`). */
 export const MobileBottomNav = () => {
   const visible = useMobileBottomNav();
   const { pathname, search } = useLocation();

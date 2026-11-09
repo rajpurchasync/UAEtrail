@@ -30,11 +30,11 @@ describe('buildActivityPresentationDTO', () => {
     expect(presentation.engagement.joinEngagement).toBe('open');
     expect(presentation.tabs.place.showLockedPlaceholder).toBe(true);
     expect(presentation.footerByTab.place).toBe('plan_join');
-    expect(presentation.tabs.plan.useTabChrome).toBe(true);
-    expect(presentation.consumerLayout?.showMeetingPoint).toBe(false);
+    expect(presentation.sections.showMeetingPoint).toBe(false);
+    expect(presentation.tabs.place.showLockedPlaceholder).toBe(true);
   });
 
-  it('exposes consumerLayout on public scroll page (not embed/tabs IA)', () => {
+  it('exposes one sections policy for the public page and embed', () => {
     const presentation = buildActivityPresentationDTO({
       viewerAccess: {
         ...guestAccess,
@@ -52,18 +52,16 @@ describe('buildActivityPresentationDTO', () => {
       participantPreviewCount: 1,
     });
 
-    expect(presentation.consumerLayout).toEqual({
-      showPublishedCatalog: true,
+    expect(presentation.sections).toEqual({
       showHostProfile: true,
       participants: 'roster',
       showMeetingPoint: true,
-      showTransportSection: true,
-      showHostManageHub: false,
       canOpenParticipantRoster: true,
     });
+    expect(presentation.tabs.place.showLockedPlaceholder).toBe(false);
   });
 
-  it('omits consumerLayout for embedded manage/preview (tabs + footerByTab only)', () => {
+  it('keeps section policy when embedded (tab chrome flags stay off)', () => {
     const presentation = buildActivityPresentationDTO({
       viewerAccess: {
         ...guestAccess,
@@ -80,8 +78,10 @@ describe('buildActivityPresentationDTO', () => {
       myRequest: null,
     });
 
-    expect(presentation.consumerLayout).toBeUndefined();
-    expect(presentation.tabs.plan.useTabChrome).toBe(false);
+    expect(presentation.sections.showMeetingPoint).toBe(true);
+    expect(presentation.sections.showHostProfile).toBe(true);
+    expect(presentation.tabs.place.showLockedPlaceholder).toBe(false);
+    expect(presentation.tabs.buddies.showHostManageHub).toBe(false);
     expect(presentation.footerByTab.plan).toBeDefined();
   });
 

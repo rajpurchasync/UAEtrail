@@ -271,12 +271,10 @@ describe('detail surface lineage (host publish → activity detail)', () => {
       exposure: expect.stringMatching(/^(full|redacted)$/),
     });
     expect(res.body.presentation).toBeTruthy();
-    expect(res.body.presentation.consumerLayout).toMatchObject({
-      showPublishedCatalog: true,
+    expect(res.body.presentation.sections).toMatchObject({
       showHostProfile: true,
       participants: expect.stringMatching(/^(hidden|preview|roster)$/),
       showMeetingPoint: expect.any(Boolean),
-      showTransportSection: expect.any(Boolean),
       canOpenParticipantRoster: expect.any(Boolean),
     });
     expect(res.body.presentation.tabs).toBeTruthy();

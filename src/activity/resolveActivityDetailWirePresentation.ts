@@ -2,6 +2,7 @@ import {
   resolveActivityEngagementPolicy,
   type ActivityDetailDTO,
   type ActivityPresentationDTO,
+  type ActivityPresentationSectionsDTO,
   type ActivityViewerAccessDTO,
   type MapPeekJoinRequestStatus,
 } from '@uaetrail/shared-types';
@@ -44,21 +45,23 @@ const joinRequestStatusFromUi = (
 
 /**
  * Prefer API `presentation`, but backfill fields the client resolver always knows
- * (e.g. `consumerLayout` when an older API build omitted it).
+ * (e.g. `sections` when an older API build omitted it).
  */
 export const mergeActivityDetailWirePresentation = (
-  fromApi: ActivityPresentationDTO | null | undefined,
+  fromApi: (Omit<ActivityPresentationDTO, 'sections'> & { sections?: ActivityPresentationSectionsDTO }) | null | undefined,
   resolved: ActivityPresentationDTO | null
 ): ActivityPresentationDTO | null => {
   if (!fromApi && !resolved) return null;
   if (!fromApi) return resolved;
-  if (!resolved) return fromApi;
+  if (!resolved) {
+    return fromApi.sections ? (fromApi as ActivityPresentationDTO) : null;
+  }
   return {
     ...fromApi,
     engagement: fromApi.engagement ?? resolved.engagement,
     tabs: fromApi.tabs ?? resolved.tabs,
     footerByTab: fromApi.footerByTab ?? resolved.footerByTab,
-    consumerLayout: fromApi.consumerLayout ?? resolved.consumerLayout,
+    sections: fromApi.sections ?? resolved.sections,
     strips: fromApi.strips ?? resolved.strips,
   };
 };

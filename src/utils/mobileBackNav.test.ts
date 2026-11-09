@@ -34,13 +34,8 @@ describe('mobileBackNav', () => {
     expect(chrome.backBehavior).toBe('fallback');
   });
 
-  it('sends My Plans back to Explore when nothing else in the flow is recorded', () => {
-    const chrome = resolveMobileTabHeaderLeadingBack(PLAN_PATH, null);
-    expect(chrome).toEqual({
-      fallbackTo: EXPLORE_MAP_PATH,
-      label: 'Explore',
-      backBehavior: 'fallback',
-    });
+  it('uses identity header on My Plans tab root (no back)', () => {
+    expect(resolveMobileTabHeaderLeadingBack(PLAN_PATH, null)).toBeNull();
   });
 
   it('sends a My Plans drill-in back to My Plans', () => {
@@ -98,11 +93,19 @@ describe('mobileBackNav', () => {
     });
   });
 
-  it('respects custom return state on messages', () => {
-    const chrome = resolveMobileTabHeaderLeadingBack(MESSAGES_PATH, {
-      from: '/activity/abc',
-      backLabel: 'Outing',
-    });
+  it('uses identity header on chat inbox (no back)', () => {
+    expect(resolveMobileTabHeaderLeadingBack(MESSAGES_PATH, null)).toBeNull();
+  });
+
+  it('respects custom return state when a chat thread is open', () => {
+    const chrome = resolveMobileTabHeaderLeadingBack(
+      MESSAGES_PATH,
+      {
+        from: '/activity/abc',
+        backLabel: 'Outing',
+      },
+      '?to=member-1'
+    );
     expect(chrome?.label).toBe('Outing');
     expect(chrome?.fallbackTo).toBe('/activity/abc');
     expect(chrome?.backBehavior).toBe('fallback');

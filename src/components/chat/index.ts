@@ -7,6 +7,7 @@ export { GroupChatHubPanel } from './GroupChatHubPanel';
 export { type DirectChatThreadProps } from './DirectChatThread';
 export { useDirectChatThread } from './useDirectChatThread';
 export { MessagesComposeSheet } from './MessagesComposeSheet';
+export { ChatInboxLayout } from './ChatInboxLayout';
 export { MessagesInboxList } from './MessagesInboxList';
 export { MessagesInboxToolbar } from './MessagesInboxToolbar';
 export { ConversationListPanel, NewChatModal, MessageAvatar } from './MessagePanels';

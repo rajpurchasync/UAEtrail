@@ -1,10 +1,18 @@
 /** Consumer mobile drawer — aligned with settings groups + explore emerald chrome. */
 
+/** Above map filters (4200) and browse sheet (5500); below compose sheets (6500). */
+export const MOBILE_CONSUMER_MENU_Z = {
+  overlay: 'z-[6400]',
+  menuButton: 'z-[6410]',
+  identityRow: 6410,
+} as const;
+
 export const MOBILE_DRAWER = {
   aside:
-    'absolute bottom-0 right-0 top-[calc(var(--safe-top,0px)+3.25rem)] flex w-[min(100vw-3rem,20rem)] max-w-full flex-col border-l border-t border-neutral-200/80 bg-neutral-50 shadow-2xl transition-transform duration-300 ease-out',
-  nav: 'flex-1 overflow-y-auto px-2.5 py-2 pb-safe',
+    'absolute bottom-0 right-0 top-[var(--consumer-mobile-header-stack)] flex w-[min(100vw-3rem,20rem)] max-w-full flex-col border-l border-t border-neutral-200/80 bg-neutral-50 shadow-2xl transition-transform duration-300 ease-out',
+  nav: 'flex-1 overflow-y-auto overscroll-y-contain px-2.5 pt-1.5 pb-2 pb-safe',
   stack: 'space-y-2',
+  menuStack: 'space-y-1',
   group:
     'overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-sm',
   sectionLabel: 'px-1 pb-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-500',

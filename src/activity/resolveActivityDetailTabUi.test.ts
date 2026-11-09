@@ -31,6 +31,8 @@ describe('resolveActivityDetailTabUi', () => {
 
     const ui = resolveActivityDetailTabUi({
       wireTabs: presentation.tabs,
+      publicDetail: true,
+      showMeetingPoint: presentation.sections.showMeetingPoint,
       previewMode: false,
       isEmbedded: false,
       onMobileTabChange: () => {},
@@ -41,17 +43,15 @@ describe('resolveActivityDetailTabUi', () => {
       hasLinkedRideshare: false,
     });
 
-    expect(ui.showMobileTabs).toBe(true);
-    expect(ui.showPlaceLockedOnMobile).toBe(true);
-    expect(ui.showPlaceCrewBody).toBe(false);
+    expect(ui.showMobileTabs).toBe(false);
+    expect(ui.showPlaceLockedOnMobile).toBe(false);
+    expect(ui.showPlaceCrewBody).toBe(presentation.sections.showMeetingPoint);
     expect(ui.showCrewLockedHint).toBe(presentation.tabs.buddies.showCrewLockedHint);
-    expect(ui.showTransportEncouragementOnTab('transport')).toBe(
-      presentation.tabs.transport.showParticipantEmptyEncouragement
-    );
+    expect(ui.showTransportEncouragementOnTab('transport')).toBe(false);
     expect(ui.showTransportEncouragementOnTab('plan')).toBe(false);
   });
 
-  it('disables tab chrome when embedded even if wire says useTabChrome', () => {
+  it('does not show a tab bar when embedded', () => {
     const presentation = buildActivityPresentationDTO({
       viewerAccess: guestAccess,
       isHostUser: false,
@@ -62,6 +62,8 @@ describe('resolveActivityDetailTabUi', () => {
 
     const ui = resolveActivityDetailTabUi({
       wireTabs: presentation.tabs,
+      publicDetail: false,
+      showMeetingPoint: presentation.sections.showMeetingPoint,
       previewMode: false,
       isEmbedded: true,
       onMobileTabChange: () => {},
@@ -78,6 +80,8 @@ describe('resolveActivityDetailTabUi', () => {
   it('falls back to local crew flags when wire tabs are missing', () => {
     const ui = resolveActivityDetailTabUi({
       wireTabs: null,
+      publicDetail: true,
+      showMeetingPoint: true,
       previewMode: false,
       isEmbedded: false,
       onMobileTabChange: () => {},
@@ -88,9 +92,9 @@ describe('resolveActivityDetailTabUi', () => {
       hasLinkedRideshare: false,
     });
 
-    expect(ui.showMobileTabs).toBe(true);
+    expect(ui.showMobileTabs).toBe(false);
     expect(ui.showPlaceCrewBody).toBe(true);
     expect(ui.showParticipantFooterShortcuts).toBe(true);
-    expect(ui.showTransportEncouragementOnTab('transport')).toBe(true);
+    expect(ui.showTransportEncouragementOnTab('transport')).toBe(false);
   });
 });

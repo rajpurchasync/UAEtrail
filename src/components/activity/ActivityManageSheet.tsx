@@ -42,10 +42,10 @@ import {
   MOBILE_PRODUCT_HEADER_FROSTED,
   MOBILE_PRODUCT_HEADER_REST,
 } from '../../config/consumerScrollChrome';
-import { useConsumerDetailScrollChrome } from '../../activity/detail/templates/useConsumerDetailScrollChrome';
-import { resolveActivityConsumerDetailHeaderChrome } from '../../activity/activityConsumerDetailHeader';
+import { useDetailScrollChrome } from '../mobile/useDetailScrollChrome';
+import { resolveActivityDetailHeaderChrome } from '../../activity/activityDetailHeaderChrome';
 import { ConsumerHeaderActions } from '../layout/ConsumerHeaderActions';
-import { ConsumerDetailHeaderTypeMark } from '../mobile/ConsumerDetailHeaderChromeTitle';
+import { DetailHeaderTypeMark } from '../mobile/DetailHeaderChrome';
 import { MobileBackButton } from '../mobile/MobileBackButton';
 import { CreateHostingActivityFlow } from '../../explore/ui/CreateHostingActivityFlow';
 import { hostingFlowForComposeKind } from '../../explore/ui/hostingFlows';
@@ -82,7 +82,7 @@ export const ActivityManageSheet = ({
   const queryClient = useQueryClient();
   const panelRef = useRef<HTMLDivElement>(null);
   const scrollContentRef = useRef<HTMLDivElement>(null);
-  const { headerFrosted } = useConsumerDetailScrollChrome(panelRef, scrollContentRef);
+  const { headerFrosted } = useDetailScrollChrome(panelRef, scrollContentRef);
   const [view, setView] = useState<ActivityManageSubview>('overview');
   const [manageOptionsOpen, setManageOptionsOpen] = useState(false);
   const [returnToManageMenu, setReturnToManageMenu] = useState(false);
@@ -263,7 +263,7 @@ export const ActivityManageSheet = ({
     locationName: activity.locationName,
   });
   const showShareFooter = activity.status === 'published' && Boolean(onShare);
-  const typeChrome = resolveActivityConsumerDetailHeaderChrome(activity, null);
+  const typeChrome = resolveActivityDetailHeaderChrome(activity, null);
 
   return (
     <>
@@ -280,7 +280,7 @@ export const ActivityManageSheet = ({
               className="min-h-[36px] py-0 -ml-1"
             />
             <div className="flex min-w-0 items-center justify-center gap-2 px-1">
-              <ConsumerDetailHeaderTypeMark
+              <DetailHeaderTypeMark
                 emoji={typeChrome.emoji}
                 mark={typeChrome.mark}
                 sizeClass="h-8 w-8"
@@ -393,6 +393,7 @@ export const ActivityManageSheet = ({
                 }
                 wireFooterByTab={embeddedWirePresentation?.footerByTab ?? null}
                 wireTabs={embeddedWirePresentation?.tabs ?? null}
+                wireSections={embeddedWirePresentation?.sections ?? null}
               />
             </div>
           ) : null}

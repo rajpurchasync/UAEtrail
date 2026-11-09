@@ -4,9 +4,9 @@ type ChatThreadScrollVariant = 'direct' | 'group';
 
 const SCROLL_AREA_CLASS: Record<ChatThreadScrollVariant, string> = {
   direct:
-    'chat-thread-scroll min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-3 py-3 sm:px-6 bg-gray-50/50',
+    'chat-thread-scroll min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto bg-neutral-50 px-3 py-3 sm:px-6',
   group:
-    'chat-thread-scroll min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-3 py-3 sm:px-6 bg-gray-50/50',
+    'chat-thread-scroll min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto bg-neutral-50 px-3 py-3 sm:px-6',
 };
 
 type ChatThreadShellProps = {

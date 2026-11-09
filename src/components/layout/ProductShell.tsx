@@ -28,6 +28,7 @@ import { useAuth } from '../../context/AuthContext';
 import { isConsumerProfilePath, isPlatformAdmin, isPlatformAdminConsolePath } from '../../utils/roles';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import { shouldShowDesktopSideNav } from '../../config/desktopNav';
+import { shouldShowMobileUnifiedTabHeader } from '../../config/mobileTabHeader';
 import { DesktopSideNav } from './desktop/DesktopSideNav';
 
 const productViewportShellClass =
@@ -92,10 +93,16 @@ export const ProductShell = ({ children }: { children: ReactNode }) => {
     );
   }
 
+  const layoutUnifiedMobileHeader = shouldShowMobileUnifiedTabHeader(
+    location.pathname,
+    location.search,
+    Boolean(user)
+  );
   const showMobileConsumerNavBar =
     showConsumerChrome &&
     !hasConsumerSelfHeader(location.pathname) &&
-    !isConsumerEntityDetailRoute(location.pathname);
+    !isConsumerEntityDetailRoute(location.pathname) &&
+    !(isMobile && layoutUnifiedMobileHeader);
   const showDesktopSideNav =
     !isMobile && showConsumerChrome && shouldShowDesktopSideNav(location.pathname, Boolean(user));
 

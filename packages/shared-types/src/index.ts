@@ -1413,11 +1413,11 @@ export {
 export {
   buildActivityPresentationDTO,
   type ActivityPresentationBuddiesTabDTO,
-  type ActivityPresentationConsumerLayoutDTO,
+  type ActivityPresentationSectionsDTO,
+  type ActivityDetailParticipantsSlot,
   type ActivityPresentationDTO,
   type ActivityPresentationEngagementDTO,
   type ActivityPresentationPlaceTabDTO,
-  type ActivityPresentationPlanTabDTO,
   type ActivityPresentationTabsDTO,
   type ActivityPresentationTransportTabDTO,
   type BuildActivityPresentationInput,

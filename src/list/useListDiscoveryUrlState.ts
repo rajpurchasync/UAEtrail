@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { scopeBrowseListStateForListCat } from './browseListMapHandoff';
+import { inferListCatFromExploreHandoff, scopeBrowseListStateForListCat } from './browseListMapHandoff';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { LIST_DISCOVERY_PATH } from '../config/platform';
 import type { BrowseTripTopicKey } from './browseListTripTopics';
@@ -15,6 +15,14 @@ import {
 } from './browseListUrlState';
 
 import { BUDDIES_SEGMENT_URL_PARAM } from './buddiesDiscoverySegment';
+import {
+  CREWS_AVAILABILITY_SHEET_PARAM,
+  CREWS_OPEN_URL_PARAM,
+  parseCrewsAvailabilitySheetOpen,
+  parseCrewsAvailableOpenLens,
+  serializeCrewsAvailableOpenLens,
+  type CrewsAvailableOpenLens,
+} from './crews/crewsOpenSegment';
 import {
   LIST_LAYOUT_PARAM,
   parseListExplorerLayout,
@@ -40,6 +48,8 @@ const LIST_FILTER_PARAM_KEYS = [
   BUDDIES_SEGMENT_URL_PARAM,
   LIST_LAYOUT_PARAM,
   LIST_SORT_PARAM,
+  CREWS_OPEN_URL_PARAM,
+  CREWS_AVAILABILITY_SHEET_PARAM,
 ] as const;
 
 /** Explore-only keys — keep when list overlay updates browse filters. */
@@ -79,8 +89,10 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
     if (mapOverlay) return rawListCat;
     if (rawListCat === 'people' || rawListCat === 'agencies') return rawListCat;
     if (rawListCat) return rawListCat;
+    const inferred = inferListCatFromExploreHandoff(parseBrowseListFilterState(searchParams), searchParams);
+    if (inferred) return inferred;
     return 'activities';
-  }, [mapOverlay, rawListCat]);
+  }, [mapOverlay, rawListCat, searchParams]);
 
   const filters = useMemo(() => {
     const raw = parseBrowseListFilterState(searchParams);
@@ -113,6 +125,8 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
         listCat?: BrowseMainCategoryKey | null;
         layout?: ListExplorerLayout;
         sort?: ListExplorerSortMode;
+        crewsOpen?: CrewsAvailableOpenLens | null;
+        availabilitySheet?: boolean | null;
       }
     ) => {
       const patchedListCat =
@@ -152,6 +166,15 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
       listParams.forEach((value, key) => {
         params.set(key, value);
       });
+      if (patch.crewsOpen !== undefined) {
+        const serializedOpen = patch.crewsOpen ? serializeCrewsAvailableOpenLens(patch.crewsOpen) : null;
+        if (serializedOpen) params.set(CREWS_OPEN_URL_PARAM, serializedOpen);
+        else params.delete(CREWS_OPEN_URL_PARAM);
+      }
+      if (patch.availabilitySheet !== undefined) {
+        if (patch.availabilitySheet) params.set(CREWS_AVAILABILITY_SHEET_PARAM, '1');
+        else params.delete(CREWS_AVAILABILITY_SHEET_PARAM);
+      }
       if (mapOverlay) {
         preserved.forEach((value, key) => {
           params.set(key, value);
@@ -184,6 +207,12 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
   const scopeRepairRef = useRef<string | null>(null);
   useEffect(() => {
     if (mapOverlay) return;
+    if (listCat === 'people' || listCat === 'agencies') {
+      const paramCat = parseListCatParam(searchParams.get(LIST_CAT_PARAM));
+      if (paramCat === listCat) return;
+      syncUrl({ listCat });
+      return;
+    }
     if (listCat !== 'activities' && listCat !== 'venues') return;
     const raw = parseBrowseListFilterState(searchParams);
     const scoped = scopeBrowseListStateForListCat(raw, listCat);
@@ -222,8 +251,20 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
 
   const searchString = searchParams.toString();
 
+  const crewsOpenLens = useMemo(
+    () => parseCrewsAvailableOpenLens(searchParams.get(CREWS_OPEN_URL_PARAM)),
+    [searchParams]
+  );
+
+  const availabilitySheetOpen = useMemo(
+    () => parseCrewsAvailabilitySheetOpen(searchParams.get(CREWS_AVAILABILITY_SHEET_PARAM)),
+    [searchParams]
+  );
+
   return {
     filters,
+    crewsOpenLens,
+    availabilitySheetOpen,
     venueRegions,
     listCat,
     layout,

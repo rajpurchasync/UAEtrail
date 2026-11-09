@@ -18,7 +18,7 @@ import {
 
   SEEK_FIXED_COMPOSE_OPTIONS,
 
-  HOST_COMPOSE_OPTIONS,
+  CREATE_TRIP_HOST_COMPOSE_OPTIONS,
 
   SEEK_MODE_OPTIONS,
 
@@ -258,7 +258,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
               <div className={EXPLORE_FLOW.choiceGrid2}>
 
-                {HOST_COMPOSE_OPTIONS.map((option, index) => (
+                {CREATE_TRIP_HOST_COMPOSE_OPTIONS.map((option, index) => (
 
                   <button
 
@@ -269,7 +269,8 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
                     onClick={() => onRouteChange(hostCompose(option.kind))}
 
                     className={`${exploreFlowKindTileClass(false)}${
-                      index === HOST_COMPOSE_OPTIONS.length - 1 && HOST_COMPOSE_OPTIONS.length % 2 === 1
+                      index === CREATE_TRIP_HOST_COMPOSE_OPTIONS.length - 1 &&
+                      CREATE_TRIP_HOST_COMPOSE_OPTIONS.length % 2 === 1
                         ? ' col-span-2'
                         : ''
                     }`}

@@ -33,12 +33,12 @@ describe('resolveActivityDetailWirePresentation', () => {
     });
 
     expect(presentation?.footerByTab.plan).toBe('plan_join');
-    expect(presentation?.tabs.plan.useTabChrome).toBe(true);
     expect(presentation?.engagement.joinEngagement).toBe('open');
-    expect(presentation?.consumerLayout?.showPublishedCatalog).toBe(true);
+    expect(presentation?.sections.showHostProfile).toBe(true);
+    expect(presentation?.sections.showMeetingPoint).toBe(false);
   });
 
-  it('omits consumerLayout when isEmbedded (manage sheet fallback)', () => {
+  it('keeps sections when isEmbedded and turns tab chrome flags off', () => {
     const presentation = resolveActivityDetailWirePresentation({
       activity: {
         status: 'published',
@@ -58,11 +58,11 @@ describe('resolveActivityDetailWirePresentation', () => {
       joinUiState: { kind: 'open' },
     });
 
-    expect(presentation?.consumerLayout).toBeUndefined();
-    expect(presentation?.tabs.plan.useTabChrome).toBe(false);
+    expect(presentation?.sections.showHostProfile).toBe(true);
+    expect(presentation?.tabs.buddies.showHostManageHub).toBe(false);
   });
 
-  it('mergeActivityDetailWirePresentation backfills consumerLayout from resolver', () => {
+  it('mergeActivityDetailWirePresentation backfills sections from resolver', () => {
     const openJoin: JoinRequestUiState = { kind: 'open' };
     const resolved = resolveActivityDetailWirePresentation({
       activity: {
@@ -83,7 +83,7 @@ describe('resolveActivityDetailWirePresentation', () => {
       strips: resolved!.strips,
     };
     const merged = mergeActivityDetailWirePresentation(staleApi, resolved);
-    expect(merged?.consumerLayout?.showPublishedCatalog).toBe(true);
+    expect(merged?.sections.showHostProfile).toBe(true);
   });
 
   it('returns null without viewerAccess', () => {

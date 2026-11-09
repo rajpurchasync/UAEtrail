@@ -1,5 +1,6 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import {
+  MOBILE_FIVE_TAB_ORDER,
   MOBILE_FIVE_TAB_UI_LABELS,
   crewsHomePath,
   mobileFiveTabHomePath,
@@ -12,12 +13,16 @@ import {
 } from './mobileFiveTabNav';
 
 describe('mobile five-tab nav contract', () => {
-  it('exposes UI labels Trips · Venues · Crews · Plan · Chat', () => {
+  it('orders tabs Trips · Venues · Plans · Crews · Chat', () => {
+    expect(MOBILE_FIVE_TAB_ORDER).toEqual(['trips', 'venues', 'plan', 'crews', 'chat']);
+  });
+
+  it('exposes UI labels Trips · Venues · Plans · Crews · Chat', () => {
     expect(MOBILE_FIVE_TAB_UI_LABELS).toEqual({
       trips: 'Trips',
       venues: 'Venues',
       crews: 'Crews',
-      plan: 'Plan',
+      plan: 'Plans',
       chat: 'Chat',
     });
   });

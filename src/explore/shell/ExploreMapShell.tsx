@@ -35,6 +35,7 @@ type Props = Pick<
   | 'handleCloseMapSelection'
   | 'handleOfferRideshareForSeeking'
   | 'primaryFabLabel'
+  | 'handlePrimaryFabTap'
   | 'handleOpenExploreItem'
   | 'searchScopeCounts'
   | 'setExploreSearchModalOpen'

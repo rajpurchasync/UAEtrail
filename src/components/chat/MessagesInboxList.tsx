@@ -1,5 +1,11 @@
-import { MessageSquare, Users } from 'lucide-react';
-import { inboxThreadBadgeLabel, type InboxFilter, type InboxThread } from '../../utils/inboxThreads';
+import { Calendar, MessageSquare, Users } from 'lucide-react';
+import {
+  inboxThreadBadgeLabel,
+  partitionInboxThreadsForHub,
+  type InboxFilter,
+  type InboxThread,
+} from '../../utils/inboxThreads';
+import { CHAT_CHROME } from './chatChrome';
 import { MessageAvatar } from './ChatMessageAvatar';
 import { ChatLoadingState } from './ChatLoadingState';
 
@@ -16,13 +22,21 @@ interface MessagesInboxListProps {
   formatTime: (dateStr: string) => string;
 }
 
-const GroupAvatar = ({ url }: { url?: string }) => {
-  if (url) {
-    return <img src={url} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" />;
+const ThreadLeadingVisual = ({ thread }: { thread: InboxThread }) => {
+  if (thread.kind === 'direct') {
+    return <MessageAvatar name={thread.title} url={thread.avatarUrl} size="md" />;
   }
+  if (thread.avatarUrl) {
+    return <img src={thread.avatarUrl} alt="" className="h-11 w-11 shrink-0 rounded-full object-cover" />;
+  }
+  const shell =
+    thread.kind === 'activity-chat'
+      ? 'bg-emerald-50 text-emerald-700'
+      : 'bg-sky-50 text-sky-700';
+  const Icon = thread.kind === 'activity-chat' ? Calendar : Users;
   return (
-    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-700">
-      <Users className="h-5 w-5" aria-hidden />
+    <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${shell}`}>
+      <Icon className="h-5 w-5" strokeWidth={2.25} aria-hidden />
     </div>
   );
 };
@@ -34,7 +48,7 @@ const ThreadRow = ({
   onSelectDirect,
   onSelectGroup,
   formatTime,
-  showTypeBadge = true,
+  showTypeBadge = false,
 }: {
   thread: InboxThread;
   selectedDirectId?: string | null;
@@ -54,33 +68,27 @@ const ThreadRow = ({
       type="button"
       onClick={() => (isDirect ? onSelectDirect(thread.id) : onSelectGroup(thread.id))}
       data-nav-focus={`chat-thread-${thread.id}`}
-      className={`chat-row consumer-list-row-interactive flex w-full items-center gap-2.5 px-3 py-2 text-left lg:gap-2 lg:py-1.5 ${
+      className={`chat-row consumer-list-row-interactive flex w-full items-center gap-3 border-b border-neutral-100 px-4 py-3 text-left last:border-b-0 md:px-3 md:py-2.5 ${
         isSelected ? 'chat-row-selected consumer-list-row-selected' : ''
       }`}
     >
-      {isDirect ? (
-        <MessageAvatar name={thread.title} url={thread.avatarUrl} size="md" />
-      ) : (
-        <GroupAvatar url={thread.avatarUrl} />
-      )}
-      <div className="min-w-0 flex-1 border-b border-neutral-100 py-1">
+      <ThreadLeadingVisual thread={thread} />
+      <div className="min-w-0 flex-1">
         <div className="flex items-baseline justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-2">
-            <p className={`truncate text-[15px] font-semibold ${unread ? 'text-neutral-950' : 'text-neutral-900'}`}>
-              {thread.title}
-            </p>
-            {badge ? (
-              <span className="chat-kind-pill shrink-0 rounded-full bg-neutral-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-neutral-600">
-                {badge}
-              </span>
-            ) : null}
-          </div>
+          <p className={`min-w-0 truncate text-[15px] font-semibold ${unread ? 'text-neutral-950' : 'text-neutral-900'}`}>
+            {thread.title}
+          </p>
           <span className={`shrink-0 text-xs ${unread ? 'font-semibold text-emerald-600' : 'text-neutral-400'}`}>
             {formatTime(thread.lastMessageAt)}
           </span>
         </div>
         <div className="mt-0.5 flex items-center justify-between gap-2">
-          <p className={`truncate text-[13px] font-emoji ${unread ? 'font-medium text-neutral-700' : 'text-neutral-500'}`}>
+          <p
+            className={`min-w-0 truncate text-[13px] font-emoji ${unread ? 'font-medium text-neutral-700' : 'text-neutral-500'}`}
+          >
+            {badge && showTypeBadge ? (
+              <span className="sr-only">{badge}. </span>
+            ) : null}
             {thread.lastMessage}
           </p>
           {unread ? (
@@ -93,6 +101,31 @@ const ThreadRow = ({
     </button>
   );
 };
+
+const HubEmpty = ({
+  filteredEmpty,
+}: {
+  filteredEmpty: boolean;
+}) => (
+  <div className="px-4 py-16 text-center">
+    <MessageSquare className="mx-auto mb-3 h-10 w-10 text-neutral-300" strokeWidth={1.75} aria-hidden />
+    <p className="text-sm font-medium text-neutral-700">{filteredEmpty ? 'No matches' : 'Your inbox is quiet'}</p>
+    <p className="mt-2 text-xs leading-relaxed text-neutral-500">
+      {filteredEmpty
+        ? 'Try another filter or clear search.'
+        : 'Crew chats show up when you join an outing. Direct messages land here too.'}
+    </p>
+  </div>
+);
+
+const renderThreadRows = (
+  threads: InboxThread[],
+  props: Omit<Parameters<typeof ThreadRow>[0], 'thread' | 'showTypeBadge'>,
+  showTypeBadge: boolean
+) =>
+  threads.map((thread) => (
+    <ThreadRow key={`${thread.kind}-${thread.id}`} thread={thread} showTypeBadge={showTypeBadge} {...props} />
+  ));
 
 export const MessagesInboxList = ({
   threads,
@@ -112,7 +145,7 @@ export const MessagesInboxList = ({
 
   if (unavailable) {
     return (
-      <div role="alert" className="rounded-2xl border border-neutral-200 bg-white px-4 py-12 text-center shadow-ios-sm">
+      <div role="alert" className="px-4 py-16 text-center">
         <p className="text-sm font-medium text-neutral-800">Couldn’t load chats</p>
         <p className="mt-2 text-xs leading-relaxed text-neutral-500">Check your connection and open Chat again.</p>
       </div>
@@ -121,35 +154,36 @@ export const MessagesInboxList = ({
 
   if (threads.length === 0) {
     const filteredEmpty = inboxFilter !== 'all' || inboxQuery.trim().length > 0;
-    return (
-      <div className="rounded-2xl border border-neutral-200 bg-white px-4 py-12 text-center shadow-ios-sm">
-        <MessageSquare className="mx-auto mb-3 h-12 w-12 text-neutral-300" />
-        <p className="text-sm font-medium text-neutral-700">
-          {filteredEmpty ? 'No matches' : 'Your inbox is quiet'}
-        </p>
-        <p className="mt-2 text-xs leading-relaxed text-neutral-500">
-          {filteredEmpty
-            ? 'Try another filter or clear search.'
-            : 'Crew chats show up when you join an outing. Host and buddy messages land here too.'}
-        </p>
-      </div>
-    );
+    return <HubEmpty filteredEmpty={filteredEmpty} />;
   }
 
-  const showGrouped = inboxFilter === 'all' && !inboxQuery.trim();
+  const rowProps = {
+    selectedDirectId,
+    selectedGroupId,
+    onSelectDirect,
+    onSelectGroup,
+    formatTime,
+  };
 
-  const rows = (showGrouped ? threads : threads).map((thread) => (
-    <ThreadRow
-      key={`${thread.kind}-${thread.id}`}
-      thread={thread}
-      selectedDirectId={selectedDirectId}
-      selectedGroupId={selectedGroupId}
-      onSelectDirect={onSelectDirect}
-      onSelectGroup={onSelectGroup}
-      formatTime={formatTime}
-      showTypeBadge={!showGrouped || thread.kind !== 'direct'}
-    />
-  ));
+  const sectioned = inboxFilter === 'all' && !inboxQuery.trim();
+  const { outings, rest } = sectioned ? partitionInboxThreadsForHub(threads) : { outings: [], rest: threads };
 
-  return <div className="chat-inbox overflow-hidden">{rows}</div>;
+  return (
+    <div className={`chat-inbox ${CHAT_CHROME.hubListSurface}`}>
+      {sectioned && outings.length > 0 ? (
+        <>
+          <p className={CHAT_CHROME.sectionLabel}>Community</p>
+          {renderThreadRows(outings, rowProps, false)}
+          {rest.length > 0 ? (
+            <>
+              <p className={CHAT_CHROME.sectionLabel}>Messages</p>
+              {renderThreadRows(rest, rowProps, false)}
+            </>
+          ) : null}
+        </>
+      ) : (
+        renderThreadRows(threads, rowProps, inboxFilter === 'all')
+      )}
+    </div>
+  );
 };

@@ -23,6 +23,7 @@ import type { ExploreSearchScopeKey } from '../explore/exploreBrowseTaxonomy';
 import { useBrowseListFeed } from './useBrowseListFeed';
 import { useListDiscoveryUrlState } from './useListDiscoveryUrlState';
 import { BrowseListCreateFab } from './ui/BrowseListCreateFab';
+import { BrowseListMapFab } from './ui/BrowseListMapFab';
 import { PeopleBrowsePanel } from '@/people-discovery/panel/PeopleBrowsePanel';
 import { usePeopleDiscoverySeekingActivities } from '@/people-discovery/hooks/usePeopleDiscoverySeekingActivities';
 import { useHostActivitySheetBundle } from '../hooks/useHostActivitySheetBundle';
@@ -60,6 +61,8 @@ import {
   type BrowseTripTopicKey,
 } from './browseListTripTopics';
 import { toggleListVenuePlaceTopic, type ListVenuePlaceTopicKey } from './listVenuePlaceTopics';
+import { resolveBrowseListCreateFabLabel } from './browseListCopy';
+import { resolveCreateFabComposeEntry } from '../explore/create/composeFabEntry';
 
 type ListDiscoveryExperienceProps = {
   surface: ListDiscoverySurface;
@@ -170,26 +173,60 @@ export const ListDiscoveryExperience = ({
   }, [queryClient, refreshHostGate]);
 
   const browseUrl = useListDiscoveryUrlState({ mapOverlay: embeddedOnExplore });
-  const { filters, syncUrl, venueRegions, listCat, layout, sort } = browseUrl;
+  const {
+    filters,
+    syncUrl,
+    venueRegions,
+    listCat,
+    layout,
+    sort,
+    crewsOpenLens,
+    availabilitySheetOpen,
+  } = browseUrl;
   const isPeopleCategory = listCat === 'people';
   const explorerBucket = parseListExplorerBucket(listCat);
+  const createFabContext = useMemo(
+    () => ({
+      isPeopleCategory,
+      explorerBucket,
+    }),
+    [isPeopleCategory, explorerBucket]
+  );
+
+  const createFabLabel = useMemo(
+    () => resolveBrowseListCreateFabLabel(location.pathname, location.search, createFabContext),
+    [location.pathname, location.search, createFabContext]
+  );
+
+  const handleCreateFabTap = useCallback(() => {
+    compose.handleCreateTap(
+      resolveCreateFabComposeEntry(location.pathname, location.search, createFabContext)
+    );
+  }, [compose, location.pathname, location.search, createFabContext]);
   const [draftQuery, setDraftQuery] = useState(filters.query);
   useEffect(() => {
     setDraftQuery(filters.query);
   }, [filters.query]);
   const areaSlug = parseExploreAreaSlug(searchParams);
   const peopleSegment = filters.buddiesSegment;
+  const crewsNeedsRoster =
+    peopleSegment === 'hub' ||
+    peopleSegment === 'going' ||
+    peopleSegment === 'connect' ||
+    peopleSegment === 'available' ||
+    peopleSegment === 'looking';
+  const crewsNeedsAvailability =
+    peopleSegment === 'hub' ||
+    peopleSegment === 'available' ||
+    peopleSegment === 'looking';
   const memberRoster = useMemberDiscoveryRoster({
-    enabled:
-      isPeopleCategory &&
-      Boolean(user) &&
-      (peopleSegment === 'looking' || peopleSegment === 'going' || peopleSegment === 'connect'),
+    enabled: isPeopleCategory && Boolean(user) && crewsNeedsRoster,
     search: draftQuery,
     activityDatePreset: filters.activityDatePreset,
-    omitDirectory: peopleSegment !== 'connect',
+    omitDirectory: !(peopleSegment === 'connect' || peopleSegment === 'hub'),
   });
   const memberAvailability = useExplorePeopleAvailability({
-    enabled: isPeopleCategory && Boolean(user) && peopleSegment === 'available',
+    enabled: isPeopleCategory && Boolean(user) && crewsNeedsAvailability,
     search: draftQuery,
     activityDatePreset: filters.activityDatePreset,
     areaSlug,
@@ -216,12 +253,16 @@ export const ListDiscoveryExperience = ({
             listCat === 'agencies' ? ['agencies'] : listExplorerBucketCategories(explorerBucket),
         },
     venueRegions,
-    mapEnabled: !isPeopleCategory || peopleSegment === 'looking',
+    mapEnabled:
+      !isPeopleCategory ||
+      peopleSegment === 'looking' ||
+      ((peopleSegment === 'available' || peopleSegment === 'hub') &&
+        (crewsOpenLens === 'all' || crewsOpenLens === 'looking')),
     catalogItems: embeddedOnExplore ? prefetchedCatalogItems : undefined,
   });
 
   const { seekingActivities } = usePeopleDiscoverySeekingActivities({
-    enabled: isPeopleCategory && peopleSegment === 'looking',
+    enabled: isPeopleCategory && crewsNeedsAvailability,
     exploreCatalogFallback: items,
     filters: {
       mapFilter: 'all',
@@ -244,7 +285,32 @@ export const ListDiscoveryExperience = ({
     [items, draftQuery, filters.activityDatePreset, venueRegions]
   );
 
-  const filterCount = countListExplorerFilters(filters, venueRegions, explorerBucket);
+  const filterCount = isPeopleCategory
+    ? filters.activityDatePreset !== 'anyday'
+      ? 1
+      : 0
+    : countListExplorerFilters(filters, venueRegions, explorerBucket);
+
+  const crewsStatCounts = useMemo(() => {
+    const buddiesCount = memberRoster.loading ? null : memberRoster.friendsGoing.length;
+    const markedCount = memberAvailability.loading ? 0 : memberAvailability.people.length;
+    const lookingCount = isLoading ? 0 : seekingActivities.length;
+    const availableCount = markedCount + lookingCount;
+    const everyoneCount = memberRoster.loading ? null : memberRoster.directory.length;
+    return {
+      buddies: buddiesCount,
+      available: memberRoster.loading || memberAvailability.loading || isLoading ? null : availableCount,
+      everyone: everyoneCount,
+    };
+  }, [
+    memberRoster.loading,
+    memberRoster.friendsGoing.length,
+    memberRoster.directory.length,
+    memberAvailability.loading,
+    memberAvailability.people.length,
+    isLoading,
+    seekingActivities.length,
+  ]);
 
   const commitQuery = () => {
     syncUrl({ query: draftQuery });
@@ -414,7 +480,7 @@ export const ListDiscoveryExperience = ({
             onQueryChange={setDraftQuery}
             onQuerySync={commitQuery}
             onClose={() => syncUrl({ listCat: null, categories: [] })}
-            peopleBrowseTab={filters.buddiesSegment}
+            peopleBrowseTab={filters.buddiesSegment === 'hub' ? 'looking' : filters.buddiesSegment}
             onPeopleBrowseTabChange={(tab) => syncUrl({ buddiesSegment: tab })}
             memberPeopleNetwork={[]}
             memberPeopleLoading={false}
@@ -450,8 +516,14 @@ export const ListDiscoveryExperience = ({
             searchScopeCounts={searchScopeCounts}
             mapHref={mapHref}
             peopleBrowseTab={filters.buddiesSegment}
-            onPeopleBrowseTabChange={(tab) => syncUrl({ buddiesSegment: tab })}
+            onPeopleBrowseTabChange={(tab) => syncUrl({ buddiesSegment: tab, crewsOpen: null })}
+            crewsOpenLens={crewsOpenLens}
+            onCrewsOpenLensChange={(lens) => syncUrl({ crewsOpen: lens })}
+            availabilitySheetOpen={availabilitySheetOpen}
+            onAvailabilitySheetOpenChange={(open) => syncUrl({ availabilitySheet: open })}
             isSignedIn={Boolean(user)}
+            filterCount={filterCount}
+            statCounts={crewsStatCounts}
             seekingActivities={seekingActivities}
             exploreCatalogItems={items}
             exploreCatalogLoading={isLoading}
@@ -465,6 +537,7 @@ export const ListDiscoveryExperience = ({
             discoveryQuota={memberRoster.quota}
             discoveryLoading={memberRoster.loading}
             discoveryError={memberRoster.error}
+            exploreAreaSlug={areaSlug}
           />
         )
       ) : (
@@ -538,7 +611,12 @@ export const ListDiscoveryExperience = ({
         </div>
       )}
 
-      {embeddedOnExplore || overlayImmersive ? null : <BrowseListCreateFab onClick={compose.handleCreateTap} />}
+      {embeddedOnExplore || overlayImmersive ? null : (
+        <>
+          {!isPeopleCategory ? <BrowseListMapFab mapHref={mapHref} /> : null}
+          <BrowseListCreateFab onClick={handleCreateFabTap} label={createFabLabel} />
+        </>
+      )}
 
       {hostManageSheet}
 

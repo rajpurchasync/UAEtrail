@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Map, Search, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -23,6 +24,8 @@ type ListDiscoverySearchFieldProps = {
   compactTop?: boolean;
   hideMapLink?: boolean;
   className?: string;
+  /** Filters control — rendered beside search (standalone mobile list). */
+  filterSlot?: ReactNode;
   placeholder?: string;
   /** When false, Enter commits query only — no multi-scope dropdown (e.g. Buddies category). */
   enableScopeHints?: boolean;
@@ -40,6 +43,7 @@ export const ListDiscoverySearchField = ({
   compactTop = false,
   hideMapLink = false,
   className = '',
+  filterSlot,
   placeholder = EXPLORE_SEARCH_OPEN_PLACEHOLDER,
   enableScopeHints = true,
 }: ListDiscoverySearchFieldProps) => {
@@ -82,7 +86,7 @@ export const ListDiscoverySearchField = ({
   return (
     <div className={`${compactTop ? 'mt-2' : 'mt-3'} ${className}`.trim()}>
       <form
-        className="flex gap-2"
+        className="relative z-30 flex gap-2"
         onSubmit={(event) => {
           event.preventDefault();
           commitSearch(null);
@@ -154,10 +158,11 @@ export const ListDiscoverySearchField = ({
             </div>
           ) : null}
         </div>
+        {filterSlot}
         {hideMapLink ? null : (
           <Link
             to={mapHref}
-            className={`${LIST_SEARCH.sideAction} ${LIST_SEARCH.sideActionMap} text-emerald-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/35`}
+            className={`${LIST_SEARCH.sideAction} ${LIST_SEARCH.sideActionMap} shrink-0 text-emerald-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/35`}
             aria-label={BROWSE_LIST_MAP_CTA}
           >
             <Map className="h-5 w-5 stroke-[2.25]" aria-hidden />

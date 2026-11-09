@@ -185,6 +185,7 @@ export const ActivityPreviewOverlay = (props: ActivityPreviewOverlayProps) => {
         backLabel={backLabel}
         wireFooterByTab={previewWirePresentation?.footerByTab ?? null}
         wireTabs={previewWirePresentation?.tabs ?? null}
+        wireSections={previewWirePresentation?.sections ?? null}
         sidebarJoinOverride={
           footerOverride ? <div className="hidden md:block mt-4">{footerOverride}</div> : undefined
         }

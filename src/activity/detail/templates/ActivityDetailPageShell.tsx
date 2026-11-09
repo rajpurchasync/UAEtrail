@@ -7,9 +7,9 @@ import type { ActivityDetailTemplateProps } from './activityDetailTemplateProps'
  * Route loader: `src/pages/ActivityDetail.tsx` (data, modals, SEO) — same role as
  * `PlaceDetailPage` + thin `*PlaceDetailPage` kind wrappers.
  *
- * Sets `consumerDetailLayout` on `ActivityDetailView` → `ActivityConsumerDetailPage`.
- * Host **preview** / **manage sheet** embed `ActivityDetailView` (`layout=embedded`) — no kind route, tabbed `ActivityDetailBody`.
+ * Public `/activity/:id` is the default of `ActivityDetailView` (`!preview && layout !== embedded`).
+ * Host **preview** passes `previewMode`. **Manage sheet** passes `layout="embedded"`.
  */
 export const ActivityDetailPageShell = (props: ActivityDetailTemplateProps) => (
-  <ActivityDetailView {...props} consumerDetailLayout />
+  <ActivityDetailView {...props} />
 );

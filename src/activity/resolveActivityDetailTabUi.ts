@@ -13,6 +13,10 @@ export type ActivityDetailTabUi = {
 
 export type ResolveActivityDetailTabUiInput = {
   wireTabs: ActivityPresentationTabsDTO | null;
+  /** Public `/activity/:id` — no tab bar. */
+  publicDetail: boolean;
+  /** Crew meeting map from `presentation.sections`. */
+  showMeetingPoint: boolean;
   previewMode: boolean;
   isEmbedded: boolean;
   onMobileTabChange?: (tab: ActivityDetailTabId) => void;
@@ -29,9 +33,10 @@ export const resolveActivityDetailTabUi = (
 ): ActivityDetailTabUi => {
   const tabNavEligible = Boolean(input.onMobileTabChange) && !input.previewMode;
 
+  const showMobileTabs = !input.publicDetail && tabNavEligible && !input.isEmbedded;
+  const showPlaceCrewBody = input.showMeetingPoint;
+
   if (!input.wireTabs) {
-    const showMobileTabs = tabNavEligible && !input.isEmbedded;
-    const showPlaceCrewBody = input.canAccessCrewSurfaces;
     return {
       showMobileTabs,
       showPlaceCrewBody,
@@ -47,12 +52,9 @@ export const resolveActivityDetailTabUi = (
     };
   }
 
-  const showMobileTabs =
-    input.wireTabs.plan.useTabChrome && tabNavEligible && !input.isEmbedded;
-
   return {
     showMobileTabs,
-    showPlaceCrewBody: input.wireTabs.place.showCrewMapAndMeeting,
+    showPlaceCrewBody,
     showPlaceLockedOnMobile: input.wireTabs.place.showLockedPlaceholder && showMobileTabs,
     showCrewLockedHint: input.wireTabs.buddies.showCrewLockedHint,
     showParticipantFooterShortcuts: input.wireTabs.buddies.showParticipantShortcuts,

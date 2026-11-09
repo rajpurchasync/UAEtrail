@@ -10,12 +10,20 @@ describe('browseListUrlState trip topics', () => {
     expect(parseListCatParam('guides')).toBe('people');
   });
 
-  it('parses buddies segment for people list', () => {
+  it('defaults crews list to hub when buddies is omitted', () => {
+    const params = new URLSearchParams('listCat=people');
+    const state = parseBrowseListFilterState(params);
+    expect(state.buddiesSegment).toBe('hub');
+    const serialized = serializeBrowseListSearchParams(state, []);
+    expect(serialized.get('buddies')).toBeNull();
+  });
+
+  it('parses explicit buddies=looking on people list', () => {
     const params = new URLSearchParams('listCat=people&buddies=looking');
     const state = parseBrowseListFilterState(params);
     expect(state.buddiesSegment).toBe('looking');
     const serialized = serializeBrowseListSearchParams(state, []);
-    expect(serialized.get('buddies')).toBeNull();
+    expect(serialized.get('buddies')).toBe('looking');
   });
 
   it('round-trips multiple filter topics', () => {

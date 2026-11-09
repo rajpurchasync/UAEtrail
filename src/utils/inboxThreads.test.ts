@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_INBOX_FILTER,
-  INBOX_FILTER_OPTIONS,
+  INBOX_QUICK_SORT_PILLS,
   filterInboxThreads,
   groupThreadFromSocialGroup,
   inboxFilterCountsFromThreads,
+  partitionInboxThreadsForHub,
   type InboxThread,
 } from './inboxThreads';
 import type { SocialGroupView } from '../api/types';
@@ -59,16 +60,23 @@ describe('groupThreadFromSocialGroup', () => {
   });
 });
 
-describe('INBOX_FILTER_OPTIONS', () => {
-  it('leads with unread, then direct, and keeps all last', () => {
-    expect(INBOX_FILTER_OPTIONS.map((option) => option.key)).toEqual([
+describe('INBOX_QUICK_SORT_PILLS', () => {
+  it('lists quick-sort keys in hub order', () => {
+    expect(INBOX_QUICK_SORT_PILLS.map((option) => option.key)).toEqual([
+      'all',
       'unread',
-      'people',
       'groups',
       'outings',
-      'all',
+      'people',
     ]);
-    expect(DEFAULT_INBOX_FILTER).toBe('people');
+    expect(INBOX_QUICK_SORT_PILLS.map((option) => option.label)).toEqual([
+      'All',
+      'Unread',
+      'Groups',
+      'Community',
+      'Friends',
+    ]);
+    expect(DEFAULT_INBOX_FILTER).toBe('all');
   });
 });
 
@@ -95,6 +103,15 @@ describe('inboxFilterCountsFromThreads', () => {
       },
     ]);
     expect(counted).toEqual({ unread: 7, people: 2, groups: 4, outings: 1, all: 7 });
+  });
+});
+
+describe('partitionInboxThreadsForHub', () => {
+  it('splits activity crew from other threads', () => {
+    const { outings, rest } = partitionInboxThreadsForHub(threads);
+    expect(outings).toHaveLength(1);
+    expect(outings[0]?.title).toBe('Fossil Rock hike');
+    expect(rest).toHaveLength(2);
   });
 });
 

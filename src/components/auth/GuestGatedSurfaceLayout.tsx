@@ -143,7 +143,6 @@ export const GuestGatedSurfaceLayout = ({
     >
       <PageMeta title={title} noIndex />
       <MobileUnifiedTabHeader
-        center={{ kind: 'title', text: title }}
         leadingBack={{ fallbackTo: EXPLORE_MAP_PATH, label: 'Explore' }}
         trailing={<ConsumerHeaderActions />}
       />

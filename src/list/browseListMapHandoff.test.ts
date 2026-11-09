@@ -53,7 +53,7 @@ describe('browseListMapHandoff', () => {
   it('omits pinKind for Buddies list category', () => {
     expect(resolveListBrowseExplorePinKind({ ...baseState, categories: ['people'] }, 'people')).toBeNull();
     const params = serializeBrowseListToExploreSearchParams(
-      { ...baseState, categories: ['people'] },
+      { ...baseState, categories: ['people'], buddiesSegment: 'hub' },
       [],
       { listCat: 'people' }
     );

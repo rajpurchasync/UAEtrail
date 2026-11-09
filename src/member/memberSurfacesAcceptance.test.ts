@@ -79,7 +79,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(isPublishingConsolePath('/explore')).toBe(false);
   });
 
-  it('G-lang: mobile tab bar labels Trips · Venues · Crews · Plan · Chat', () => {
+  it('G-lang: mobile tab bar labels Trips · Venues · Crews · Plans · Chat', () => {
     const nav = read('src/components/layout/MobileBottomNav.tsx');
     const labels = read('src/config/mobileFiveTabNav.ts');
     expect(nav).toContain('MOBILE_FIVE_TAB_UI_LABELS');
@@ -328,11 +328,12 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(catalog).not.toMatch(/from '\.\.\/trips\//);
   });
 
-  it('G-chat: empty inbox is coordination-first (no Start a conversation CTA)', () => {
+  it('G-chat: empty inbox uses toolbar compose, not inline Start CTA', () => {
     const list = read('src/components/chat/MessagesInboxList.tsx');
     expect(list).not.toMatch(/Start a conversation/);
     const messages = read('src/pages/Messages.tsx');
-    expect(messages).toMatch(/hasInboxThreads/);
+    expect(messages).toMatch(/openCompose/);
+    expect(messages).not.toMatch(/hasInboxThreads/);
   });
 
   it('AD-arch: activity detail uses single shell (no HostActivityDetailView shim)', () => {
@@ -351,7 +352,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
   it('AD-arch: Tier-1 documents consumer transport strip (organize capture)', () => {
     const nav = read('docs/NAVIGATION.md');
     expect(nav).toMatch(/Transport.*strip/i);
-    expect(nav).toMatch(/consumerDetailLayout|scroll layout/i);
+    expect(nav).toMatch(/presentation\.sections/);
     const create = read('docs/CREATE_FLOW.md');
     expect(create).toMatch(/resolveActivityEngagementPolicy|buildActivityDetailPageShellCard/);
   });

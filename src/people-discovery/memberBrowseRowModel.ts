@@ -17,6 +17,7 @@ import { memberProfileLink } from '../member/memberProfileLink';
 import { memberProfileRoleBadgeLabel } from '../member/memberProfileRoleBadge';
 import { memberProfileRoleLabel } from '../member/memberProfileRoleLabel';
 import { exploreMapItemPathFromSeekingRow } from '../explore/memberDiscoverySeekingRow';
+import { explorePath } from '../explore/routing';
 import type { PeopleBrowseMemberRowProps } from './panel/peopleBrowse/PeopleBrowseMemberRow';
 import { availabilityKindLabels } from './panel/peopleBrowse/peopleBrowseAvailabilityKinds';
 
@@ -70,6 +71,10 @@ export const buildMemberBrowseRowFromGoing = (person: SocialPersonRowDTO): Membe
       ? person.cityLabel
       : person.cityLabel ?? EXPLORE_PEOPLE_BROWSE_FRIEND_NO_OUTING_FOR_FILTER,
     titleClamp: 'line-clamp-2',
+    actionHref:
+      hasTrip && person.upcomingTrip
+        ? explorePath({ pin: person.upcomingTrip.exploreItemId, list: true })
+        : undefined,
   };
 };
 

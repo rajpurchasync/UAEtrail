@@ -1,5 +1,6 @@
 import { ArrowLeft } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 
 type ChatThreadHeaderBarProps = {
   onBack: () => void;
@@ -10,8 +11,8 @@ type ChatThreadHeaderBarProps = {
   title: ReactNode;
   subtitle?: ReactNode;
   trailing?: ReactNode;
-  /** Wrap title block in a button (group info tap). */
-  titleButton?: { onClick: () => void };
+  /** Tappable title — profile route or custom handler (group info). */
+  titleButton?: { onClick?: () => void; to?: string; state?: unknown };
 };
 
 export const ChatThreadHeaderBar = ({
@@ -26,8 +27,8 @@ export const ChatThreadHeaderBar = ({
 }: ChatThreadHeaderBarProps) => {
   const backClass =
     backVisibility === 'mobile-only'
-      ? 'flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg hover:bg-gray-100 text-gray-600 md:hidden'
-      : 'flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 md:min-h-8 md:min-w-8';
+      ? 'flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 md:hidden'
+      : 'flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 md:min-h-8 md:min-w-8';
 
   const titleBlock = (
     <>
@@ -50,13 +51,23 @@ export const ChatThreadHeaderBar = ({
       </button>
 
       {titleButton ? (
-        <button
-          type="button"
-          onClick={titleButton.onClick}
-          className="flex min-w-0 flex-1 items-center gap-3 rounded-lg text-left hover:bg-neutral-50 pr-1"
-        >
-          {titleBlock}
-        </button>
+        titleButton.to ? (
+          <Link
+            to={titleButton.to}
+            state={titleButton.state}
+            className="flex min-w-0 flex-1 items-center gap-3 rounded-lg text-left hover:bg-neutral-50 pr-1"
+          >
+            {titleBlock}
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={titleButton.onClick}
+            className="flex min-w-0 flex-1 items-center gap-3 rounded-lg text-left hover:bg-neutral-50 pr-1"
+          >
+            {titleBlock}
+          </button>
+        )
       ) : (
         <div className="flex min-w-0 flex-1 items-center gap-3">{titleBlock}</div>
       )}

@@ -5,15 +5,22 @@ import { formatWallInboxPreview } from './wallMessagePreview';
 
 export type InboxFilter = 'unread' | 'people' | 'groups' | 'outings' | 'all';
 
-export const INBOX_FILTER_OPTIONS: Array<{ key: InboxFilter; label: string }> = [
-  { key: 'unread', label: 'Unread' },
-  { key: 'people', label: 'Direct' },
-  { key: 'groups', label: 'Groups' },
-  { key: 'outings', label: 'Outings' },
+/** Inbox quick-sort pills — order is canonical for Chat hub toolbar. */
+export const INBOX_QUICK_SORT_PILLS: Array<{ key: InboxFilter; label: string }> = [
   { key: 'all', label: 'All' },
+  { key: 'unread', label: 'Unread' },
+  { key: 'groups', label: 'Groups' },
+  { key: 'outings', label: 'Community' },
+  { key: 'people', label: 'Friends' },
 ];
 
-export const DEFAULT_INBOX_FILTER: InboxFilter = 'people';
+/** @deprecated Use {@link INBOX_QUICK_SORT_PILLS}. */
+export const INBOX_FILTER_OPTIONS = INBOX_QUICK_SORT_PILLS;
+
+/** @deprecated Use {@link INBOX_QUICK_SORT_PILLS}. */
+export const INBOX_FILTER_OPTIONS_COMPACT = INBOX_QUICK_SORT_PILLS;
+
+export const DEFAULT_INBOX_FILTER: InboxFilter = 'all';
 
 export type InboxFilterCounts = Record<InboxFilter, number>;
 
@@ -162,15 +169,28 @@ export const filterInboxThreads = (
   });
 };
 
+/** Hub inbox — outings first when filter is All and list is unfiltered. */
+export const partitionInboxThreadsForHub = (
+  threads: InboxThread[]
+): { outings: InboxThread[]; rest: InboxThread[] } => {
+  const outings: InboxThread[] = [];
+  const rest: InboxThread[] = [];
+  for (const thread of threads) {
+    if (thread.kind === 'activity-chat') outings.push(thread);
+    else rest.push(thread);
+  }
+  return { outings, rest };
+};
+
 export const inboxThreadBadgeLabel = (thread: InboxThread): string | null => {
   if (thread.kind === 'direct') {
-    return 'Direct';
+    return 'Friends';
   }
   if (thread.kind === 'user-group') {
-    return thread.groupType === 'family' ? 'Family' : 'Friends';
+    return 'Groups';
   }
   if (thread.kind === 'activity-chat') {
-    return 'Outing chat';
+    return 'Community';
   }
   return null;
 };

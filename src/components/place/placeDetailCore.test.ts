@@ -18,7 +18,7 @@ describe('placeDetailCore (R3 consumer)', () => {
     expect(facts).toMatch(/resolvePlacePeekTrailFactsFromPlace/);
     expect(facts).toMatch(/resolvePlacePeekCampFactsFromPlace/);
     expect(facts).toMatch(/resolvePlacePeekEventFactsFromPlace/);
-    expect(read('src/place/detail/PlaceConsumerKindFacts.tsx')).toMatch(/PlaceConsumerKindFacts/);
+    expect(read('src/place/detail/PlaceScrollKindFacts.tsx')).toMatch(/PlaceScrollKindFacts/);
     expect(read('src/explore/ui/peek/place/PlacePeekKindFacts.tsx')).toMatch(/PlacePeekKindFacts/);
     expect(existsSync(join(root, 'src/components/place/PlaceDetailCore.tsx'))).toBe(false);
     expect(existsSync(join(root, 'src/place/detail/composers/index.ts'))).toBe(false);
@@ -26,11 +26,11 @@ describe('placeDetailCore (R3 consumer)', () => {
 
   it('PLACE-PAGE-MODEL-01 (S13-W8): L1 page model on consumer template', () => {
     expect(read('src/place/detail/buildPlaceDetailPageModel.ts')).toMatch(/buildPlaceDetailPageModel/);
-    expect(read('src/place/detail/templates/PlaceConsumerDetailPage.tsx')).toMatch(
+    expect(read('src/place/detail/templates/PlaceScrollDetailPage.tsx')).toMatch(
       /buildPlaceDetailPageModel/
     );
-    expect(read('src/place/detail/templates/PlaceConsumerDetailPage.tsx')).toMatch(
-      /PlaceConsumerKindFacts/
+    expect(read('src/place/detail/templates/PlaceScrollDetailPage.tsx')).toMatch(
+      /PlaceScrollKindFacts/
     );
   });
 
@@ -47,7 +47,7 @@ describe('placeDetailCore (R3 consumer)', () => {
     expect(inboundPlace).toMatch(/InboundCanonicalPlaceRedirect/);
     expect(inboundPlace).toMatch(/canonicalPlaceDetailPath/);
     expect(read('src/pages/PlaceDetailPage.tsx')).toMatch(/CanonicalPlaceDetailPage/);
-    expect(read('src/pages/FacilityDetailPage.tsx')).toMatch(/FacilityConsumerDetailPage/);
+    expect(read('src/pages/FacilityDetailPage.tsx')).toMatch(/FacilityScrollDetailPage/);
   });
 
   it('usePlaceDetailCore centralizes fetch in hooks layer', () => {

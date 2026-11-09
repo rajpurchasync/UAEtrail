@@ -168,11 +168,6 @@ export const useComposeRoute = ({
     setGuestComposeSignInOpen(false);
   }, [user, composeRoute, setComposeRoute]);
 
-  const handleCreateTap = useCallback(() => {
-    if (hostGateLoading && user) return;
-    setComposeRoute({ surface: 'menu' });
-  }, [user, hostGateLoading, setComposeRoute]);
-
   const handleComposeRouteChange = useCallback(
     (route: ExploreCompose | null) => {
       const decision = resolveComposeRouteChange(route, {
@@ -211,6 +206,18 @@ export const useComposeRoute = ({
       composeRoute,
       blockGuestComposeWizard,
     ]
+  );
+
+  const handleCreateTap = useCallback(
+    (entry: ExploreCompose = { surface: 'menu' }) => {
+      if (isComposeMenu(entry)) {
+        setComposeRoute(entry);
+        return;
+      }
+      if (hostGateLoading && user) return;
+      handleComposeRouteChange(entry);
+    },
+    [user, hostGateLoading, handleComposeRouteChange, setComposeRoute]
   );
 
   const guestComposeSignInReturnPath = useMemo(() => {

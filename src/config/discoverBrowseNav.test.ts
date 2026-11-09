@@ -11,20 +11,19 @@ import { TRIPS_LIST_NAV_PATH, VENUES_LIST_NAV_PATH } from './platform';
 import { tripsListHomePath, venuesListHomePath } from '../list/routing';
 
 describe('discover browse navigation contract', () => {
-  it('hamburger exposes Trips/Venues list homes; desktop top nav does not duplicate list', () => {
-    const exploreLink = CONSUMER_HAMBURGER_MENU.find(
-      (item) => item.kind === 'link' && item.label === 'Explore'
-    );
+  it('hamburger exposes Trips/Venues/Crews list homes; desktop top nav does not duplicate list', () => {
+    expect(
+      CONSUMER_HAMBURGER_MENU.some((item) => item.kind === 'link' && item.label === 'Explore')
+    ).toBe(false);
     const tripsLink = CONSUMER_HAMBURGER_MENU.find(
       (item) => item.kind === 'link' && item.label === 'Trips'
     );
     const venuesLink = CONSUMER_HAMBURGER_MENU.find(
       (item) => item.kind === 'link' && item.label === 'Venues'
     );
-    expect(exploreLink?.kind).toBe('link');
-    if (exploreLink?.kind === 'link') {
-      expect(exploreLink.to).toBe('/explore');
-    }
+    const crewsLink = CONSUMER_HAMBURGER_MENU.find(
+      (item) => item.kind === 'link' && item.label === 'Crews'
+    );
     expect(tripsLink?.kind).toBe('link');
     if (tripsLink?.kind === 'link') {
       expect(tripsLink.to).toBe(TRIPS_LIST_NAV_PATH);
@@ -34,6 +33,10 @@ describe('discover browse navigation contract', () => {
     if (venuesLink?.kind === 'link') {
       expect(venuesLink.to).toBe(VENUES_LIST_NAV_PATH);
       expect(venuesListHomePath()).toContain('listCat=venues');
+    }
+    expect(crewsLink?.kind).toBe('link');
+    if (crewsLink?.kind === 'link') {
+      expect(crewsLink.to).toContain('listCat=people');
     }
     expect(CONSUMER_HAMBURGER_MENU.some((item) => item.kind === 'link' && item.label === 'Browse')).toBe(
       false

@@ -23,7 +23,7 @@ const linkedPlaceEyebrow = (kind: string | null | undefined): string => {
 type ActivityDetailPlanColumnProps = {
   model: Model;
   planSections?: ActivityDetailPlanSectionsComponent | null;
-  /** Embedded in `ActivityConsumerDetailPage` — skip tab panels already on the scroll template. */
+  /** Inside `ActivityDetailSections` — skip tab panels already on the public page. */
   consumerInline?: boolean;
 };
 
@@ -36,7 +36,7 @@ export const ActivityDetailPlanColumn = ({
   const KindPlanSections = planSections;
   const consumerRideshare = consumerInline && model.activity.activityType === 'rideshare';
 
-  if (model.consumerDetailLayout && !consumerInline) {
+  if (model.publicDetail && !consumerInline) {
     return null;
   }
 

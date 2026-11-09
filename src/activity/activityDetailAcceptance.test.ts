@@ -150,16 +150,16 @@ describe('activity detail program — wiring', () => {
   });
 
   it('AD-PRES-04: consumer detail wire CTAs — modal sheet footer (peek parity)', () => {
-    const consumerBody = read('src/activity/detail/templates/ActivityConsumerDetailPage.tsx');
+    const consumerBody = read('src/activity/detail/templates/ActivityDetailSections.tsx');
     const view = read('src/components/activity/ActivityDetailView.tsx');
-    expect(view).toMatch(/ActivityConsumerDetailModalShell/);
+    expect(view).toMatch(/MobileDetailScrollShell/);
     expect(view).toMatch(/footer=\{model\.stickyFooter\}/);
-    expect(consumerBody).toMatch(/ConsumerDetailHostRow/);
+    expect(consumerBody).toMatch(/ActivityScrollDetailHostRow/);
     const joinSurfaces = read('src/components/activity/detail/useActivityDetailJoinSurfaces.tsx');
     expect(joinSurfaces).toMatch(/consumerWireEngagementCta/);
-    expect(consumerBody).toMatch(/ConsumerDetailGettingThere/);
-    expect(consumerBody).toMatch(/ConsumerDetailLead/);
-    expect(consumerBody).toMatch(/ConsumerDetailSocialRow/);
+    expect(consumerBody).toMatch(/ActivityScrollDetailGettingThere/);
+    expect(consumerBody).toMatch(/ActivityScrollDetailLead/);
+    expect(consumerBody).toMatch(/ActivityScrollDetailSocialRow/);
     expect(consumerBody).toMatch(/activity-detail-meeting-point/);
     const actions = read('src/components/activity/detail/ActivityDetailEngagementActions.tsx');
     expect(actions).toMatch(/resolveActivityMapPeekActions/);
@@ -168,7 +168,7 @@ describe('activity detail program — wiring', () => {
   });
 
   it('AD-GUEST-01: guests get in-page sign-in gate on the consumer template (map peek uses browse gate)', () => {
-    const template = read('src/activity/detail/templates/ActivityConsumerDetailPage.tsx');
+    const template = read('src/activity/detail/templates/ActivityDetailSections.tsx');
     expect(template).toMatch(/ActivityDetailGuestGate/);
     expect(template).toMatch(/requiresSignIn/);
     const peekJoin = read('src/explore/ui/useExploreSelectionPeekJoin.ts');
@@ -182,9 +182,9 @@ describe('activity detail program — wiring', () => {
     expect(page).not.toMatch(/previewMode=\{isRedactedPreview\}/);
     expect(page).toMatch(/requiresSignIn/);
     const shell = read('src/activity/detail/templates/ActivityDetailPageShell.tsx');
-    expect(shell).toMatch(/consumerDetailLayout/);
+    expect(shell).not.toMatch(/scrollDetailLayout/);
     const handlers = read('src/activity/useActivityDetailMapPeekHandlers.ts');
-    expect(handlers).toMatch(/consumerDetailLayout/);
+    expect(handlers).toMatch(/publicDetail/);
     expect(handlers).toMatch(/onOpenParticipationManage/);
   });
 
@@ -192,12 +192,12 @@ describe('activity detail program — wiring', () => {
     const page = read('src/pages/ActivityDetail.tsx');
     expect(page).toMatch(/inviteOnlyLock/);
     expect(page).toMatch(/backLabel=""/);
-    const template = read('src/activity/detail/templates/ActivityConsumerDetailPage.tsx');
+    const template = read('src/activity/detail/templates/ActivityDetailSections.tsx');
     expect(template).toMatch(/ActivityDetailGuestGate/);
     expect(template).toMatch(/compact/);
     const view = read('src/components/activity/ActivityDetailView.tsx');
     expect(view).toMatch(/backLabel = ''/);
-    expect(view).toMatch(/ActivityConsumerDetailModalShell/);
+    expect(view).toMatch(/MobileDetailScrollShell/);
   });
 
   it('AD-PRIVATE-01: private hosted plans stay off Explore/Browse and invite-only on detail', () => {
@@ -221,7 +221,7 @@ describe('activity detail program — wiring', () => {
     expect(page).toMatch(/ActivityDetailByKind/);
     expect(page).not.toMatch(/demand:/);
     expect(page).not.toMatch(/ParticipantIntentManageSheet/);
-    const header = read('src/activity/activityConsumerDetailHeader.ts');
+    const header = read('src/activity/activityDetailHeaderChrome.ts');
     expect(header).toMatch(/activityMode === 'seeking'/);
     expect(header).toMatch(/Looking for company/);
     const app = readAppRouteRegistry();
@@ -311,12 +311,12 @@ describe('activity detail program — wiring', () => {
 
   it('AD-FOLD-01: consumer shell uses scroll layout (no tab body on public route)', () => {
     const shell = read('src/activity/detail/templates/ActivityDetailPageShell.tsx');
-    expect(shell).toMatch(/consumerDetailLayout/);
-    const consumerBody = read('src/activity/detail/templates/ActivityConsumerDetailPage.tsx');
-    expect(consumerBody).toMatch(/ConsumerDetailGettingThere/);
-    expect(consumerBody).toMatch(/ConsumerDetailLead/);
+    expect(shell).toMatch(/ActivityDetailView/);
+    const consumerBody = read('src/activity/detail/templates/ActivityDetailSections.tsx');
+    expect(consumerBody).toMatch(/ActivityScrollDetailGettingThere/);
+    expect(consumerBody).toMatch(/ActivityScrollDetailLead/);
     const view = read('src/components/activity/ActivityDetailView.tsx');
-    expect(view).toMatch(/ActivityConsumerDetailPage/);
+    expect(view).toMatch(/ActivityDetailSections/);
     expect(read('src/activity/detail/activityDetailPageShellCard.ts')).toMatch(
       /buildActivityDetailPageShellCard/
     );
@@ -327,9 +327,9 @@ describe('activity detail program — wiring', () => {
     const aboutIdx = body.indexOf('<ActivityDetailPlanAboutCard');
     const extrasIdx = body.indexOf('<ActivityDetailPlanExtras');
     const placeIdx = body.indexOf('<ActivityDetailPlaceTabPanels');
-    const consumerBody = read('src/activity/detail/templates/ActivityConsumerDetailPage.tsx');
-    const hostIdx = consumerBody.indexOf('<ConsumerDetailHostRow');
-    const publishedFactsIdx = consumerBody.indexOf('<ConsumerDetailLead');
+    const consumerBody = read('src/activity/detail/templates/ActivityDetailSections.tsx');
+    const hostIdx = consumerBody.indexOf('<ActivityScrollDetailHostRow');
+    const publishedFactsIdx = consumerBody.indexOf('<ActivityScrollDetailLead');
     const sidebarColumn = read('src/components/activity/detail/ActivityDetailSidebarColumn.tsx');
     const sidebar = read('src/components/activity/detail/ActivityDetailPricingSidebar.tsx');
     const model = read('src/components/activity/detail/useActivityDetailViewModel.tsx');
@@ -342,11 +342,11 @@ describe('activity detail program — wiring', () => {
     expect(extrasIdx).toBeGreaterThan(aboutIdx);
     expect(placeIdx).toBeGreaterThan(extrasIdx);
     expect(sidebarColumn).toMatch(
-      /hideHostProfile=\{model\.consumerDetailLayout \|\| model\.requiresSignIn\}/
+      /hideHostProfile=\{model\.publicDetail \|\| model\.requiresSignIn\}/
     );
     expect(sidebar).toMatch(/hideHostProfile/);
     expect(sidebar).toMatch(/ActivityDetailHostProfileCard/);
-    expect(view).toMatch(/ActivityConsumerDetailModalShell/);
+    expect(view).toMatch(/MobileDetailScrollShell/);
   });
 
   it('AD-CHROME-01: mobile chrome uses emoji + activity title (AD-2b, not kind-only chrome)', () => {
@@ -367,15 +367,16 @@ describe('activity detail program — engagement wire (AD-PRO-01, AD-PRES-02)', 
     expect(peopleRow).toMatch(/buddyUserIdsOnActivity/);
   });
 
-  it('AD-PRES-02: public route uses presentation.consumerLayout; embed keeps tab wire', () => {
+  it('AD-PRES-02: public route uses presentation.sections; embed keeps tab wire', () => {
     const page = read('src/pages/ActivityDetail.tsx');
-    expect(page).toMatch(/consumerLayout/);
+    expect(page).toMatch(/wireSections=/);
     expect(page).not.toMatch(/wireFooterByTab/);
     expect(page).not.toMatch(/wireTabs=/);
-    const consumerBody = read('src/activity/detail/templates/ActivityConsumerDetailPage.tsx');
-    expect(consumerBody).toMatch(/consumerLayout/);
+    const consumerBody = read('src/activity/detail/templates/ActivityDetailSections.tsx');
+    expect(consumerBody).toMatch(/model\.sections/);
+    expect(consumerBody).not.toMatch(/showPublishedCatalog: true/);
     expect(read('packages/shared-types/src/activity-detail-presentation.ts')).toMatch(
-      /consumerLayout/
+      /sections: ActivityPresentationSectionsDTO/
     );
     const manage = read('src/components/activity/ActivityManageSheet.tsx');
     expect(manage).toMatch(/wireTabs/);

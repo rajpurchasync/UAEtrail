@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { EXPLORE_BRAND_ACTIVE, EXPLORE_SHAPE } from '../../config/exploreTheme';
 import { getVenueStateFilterOptions } from '../../config/regions';
 import {
@@ -22,17 +23,29 @@ import {
   toggleListVenuePlaceTopic,
   type ListVenuePlaceTopicKey,
 } from '../listVenuePlaceTopics';
-import { LIST_FILTER_POP, listFilterPopChipClass, listFilterPopGridChipClass } from '../listChromeTheme';
+import { LIST_FILTER_POP, LIST_OVERLAY_Z, listFilterPopChipClass, listFilterPopGridChipClass } from '../listChromeTheme';
 import type { ListExplorerBucket } from './listExplorerBucket';
+import type { ListFilterFabCorner } from './listExplorerFabSnap';
+
+export type ListFilterPopPlacement = ListFilterFabCorner | 'below-end';
+
+export type ListFilterPopFixedLayout = {
+  top: number;
+  left: number;
+  width: number;
+  maxHeight: number;
+};
 
 type ListExplorerFilterPopProps = {
   open: boolean;
-  corner: 'tl' | 'tr' | 'bl' | 'br';
+  corner: ListFilterPopPlacement;
   bucket: ListExplorerBucket;
   applied: BrowseListFilterState;
   regions: string[];
   onApply: (state: BrowseListFilterState, regions: string[]) => void;
   onClose: () => void;
+  /** Portaled fixed menu below an inline trigger (escapes header stacking). */
+  fixedLayout?: ListFilterPopFixedLayout | null;
 };
 
 const ChipRow = <T extends string>({
@@ -86,6 +99,7 @@ export const ListExplorerFilterPop = ({
   regions,
   onApply,
   onClose,
+  fixedLayout = null,
 }: ListExplorerFilterPopProps) => {
   const [draft, setDraft] = useState(applied);
   const [draftRegions, setDraftRegions] = useState(regions);
@@ -102,21 +116,20 @@ export const ListExplorerFilterPop = ({
   if (!open) return null;
 
   const origin =
-    corner === 'tl'
-      ? 'top-14 left-0 md:top-11'
-      : corner === 'tr'
-        ? 'top-14 right-0 md:top-11'
-        : corner === 'bl'
-          ? 'bottom-14 left-0 md:bottom-11'
-          : 'bottom-14 right-0 md:bottom-11';
+    corner === 'below-end'
+      ? 'top-full right-0 mt-1.5 max-h-[min(70dvh,calc(100dvh-var(--safe-top)-12rem))] overflow-y-auto'
+      : corner === 'tl'
+        ? 'top-14 left-0 md:top-11'
+        : corner === 'tr'
+          ? 'top-14 right-0 md:top-11'
+          : corner === 'bl'
+            ? 'bottom-14 left-0 md:bottom-11'
+            : 'bottom-14 right-0 md:bottom-11';
 
-  return (
-    <div
-      className={`absolute z-[20] ${LIST_FILTER_POP.shell} ${origin}`}
-      role="dialog"
-      aria-label="Filters"
-    >
-      <div className={`${EXPLORE_SHAPE.control} ${LIST_FILTER_POP.panel}`}>
+  const zClass = corner === 'below-end' ? LIST_OVERLAY_Z : 'z-[20]';
+
+  const panel = (
+    <div className={`${EXPLORE_SHAPE.control} ${LIST_FILTER_POP.panel}`}>
         <div className={LIST_FILTER_POP.headerRow}>
           <p className={LIST_FILTER_POP.title}>Filters</p>
           <button
@@ -273,6 +286,35 @@ export const ListExplorerFilterPop = ({
           </button>
         </div>
       </div>
+  );
+
+  if (fixedLayout) {
+    return createPortal(
+      <div
+        id="list-explorer-filter-menu"
+        role="dialog"
+        aria-label="Filters"
+        className={`fixed ${LIST_OVERLAY_Z} overflow-y-auto overscroll-contain scroll-touch ${LIST_FILTER_POP.shell}`}
+        style={{
+          top: fixedLayout.top,
+          left: fixedLayout.left,
+          width: fixedLayout.width,
+          maxHeight: fixedLayout.maxHeight,
+        }}
+      >
+        {panel}
+      </div>,
+      document.body
+    );
+  }
+
+  return (
+    <div
+      className={`absolute ${zClass} ${LIST_FILTER_POP.shell} ${origin}`}
+      role="dialog"
+      aria-label="Filters"
+    >
+      {panel}
     </div>
   );
 };

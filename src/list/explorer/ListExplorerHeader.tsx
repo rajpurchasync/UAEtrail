@@ -2,8 +2,6 @@ import { ChevronLeft, Map, Maximize2, Minimize2, X } from 'lucide-react';
 import { UiTooltip } from '../../components/ui/UiTooltip';
 import { useExploreDesktopListDrawerChrome } from '../../explore/ui/ExploreDesktopListDrawer';
 import { Link } from 'react-router-dom';
-import { MobileBackButton } from '../../components/mobile/MobileBackButton';
-import { MobileMenuButton } from '../../components/layout/MobileMenu';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../../explore/exploreBrowseTaxonomy';
 import { LIST_APP_BAR, LIST_CHROME, LIST_SEARCH } from '../listChromeTheme';
 import { ListDiscoverySearchField } from '../ui/ListDiscoverySearchField';
@@ -21,6 +19,7 @@ import type { BrowseTripTopicKey } from '../browseListTripTopics';
 import type { ListVenuePlaceTopicKey } from '../listVenuePlaceTopics';
 import type { ExploreActivityDatePreset } from '../../explore/exploreActivityDateFilter';
 import { ListExplorerQuickFilters } from './ListExplorerQuickFilters';
+import { ListExplorerFilterFab } from './ListExplorerFilterFab';
 type ListExplorerHeaderProps = {
   query: string;
   onQueryChange: (value: string) => void;
@@ -50,6 +49,8 @@ type ListExplorerHeaderProps = {
   onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
   onVenueRegionsChange: (regions: string[]) => void;
   hideBucketToggleOnMobile?: boolean;
+  filterCount?: number;
+  onApplyFilters?: (state: BrowseListFilterState, regions: string[]) => void;
 };
 
 export const ListExplorerHeader = ({
@@ -81,6 +82,8 @@ export const ListExplorerHeader = ({
   onActivityDatePresetChange,
   onVenueRegionsChange,
   hideBucketToggleOnMobile = false,
+  filterCount = 0,
+  onApplyFilters,
 }: ListExplorerHeaderProps) => {
   const hideSideMapChrome = mapColumnVisible || showMapColumnPrompt;
   const standaloneListSurface = !onClose;
@@ -104,11 +107,11 @@ export const ListExplorerHeader = ({
     <div
       className={`${onClose ? 'px-3' : LIST_CHROME.horizontalPad} mx-auto w-full ${
         onClose || mapColumnVisible ? 'max-w-none' : 'max-w-6xl'
-      } pb-2.5 pt-1`}
+      } ${standaloneListSurface ? LIST_CHROME.standaloneMobileInset : 'pb-2.5 pt-1'}`}
     >
-      <div className={`${LIST_APP_BAR.row} mb-1 ${onClose ? '' : 'md:hidden'}`}>
-        <div className="flex min-w-0 items-center gap-1">
-          {onClose ? (
+      {standaloneListSurface ? null : (
+        <div className={`${LIST_APP_BAR.row} mb-1`}>
+          <div className="flex min-w-0 items-center gap-1">
             <button
               type="button"
               onClick={onClose}
@@ -118,17 +121,10 @@ export const ListExplorerHeader = ({
               <ChevronLeft className="h-5 w-5 shrink-0" strokeWidth={2.25} aria-hidden />
               <span className="truncate">Map</span>
             </button>
-          ) : (
-            <div className="md:hidden">
-              <MobileBackButton fallbackTo={mapHref} label="Map" className="!min-h-10 pl-0" />
-            </div>
-          )}
-        </div>
-        <div className="flex items-center gap-1">
-          {onClose ? (
-            <>
-              {drawer ? (
-                <UiTooltip label={drawer.maximized ? 'Exit full screen' : 'Full screen'}>
+          </div>
+          <div className="flex items-center gap-1">
+            {drawer ? (
+              <UiTooltip label={drawer.maximized ? 'Exit full screen' : 'Full screen'}>
                 <button
                   type="button"
                   onClick={drawer.toggleMaximized}
@@ -142,9 +138,9 @@ export const ListExplorerHeader = ({
                     <Maximize2 className="h-5 w-5 stroke-[2.25]" aria-hidden />
                   )}
                 </button>
-                </UiTooltip>
-              ) : null}
-              <UiTooltip label="Close list">
+              </UiTooltip>
+            ) : null}
+            <UiTooltip label="Close list">
               <button
                 type="button"
                 onClick={onClose}
@@ -153,13 +149,10 @@ export const ListExplorerHeader = ({
               >
                 <X className="h-5 w-5 stroke-[2.25]" aria-hidden />
               </button>
-              </UiTooltip>
-            </>
-          ) : (
-            <MobileMenuButton className={LIST_CHROME.menuButton} />
-          )}
+            </UiTooltip>
+          </div>
         </div>
-      </div>
+      )}
       <ListDiscoverySearchField
         query={query}
         onQueryChange={onQueryChange}
@@ -169,28 +162,33 @@ export const ListExplorerHeader = ({
         searchScopeCounts={searchScopeCounts}
         mapHref={mapHref}
         hideMapLink={hideSideMapChrome || standaloneListSurface}
+        filterSlot={
+          hideBucketToggleOnMobile && onApplyFilters ? (
+            <ListExplorerFilterFab
+              placement="inline"
+              bucket={bucket}
+              applied={filters}
+              regions={regions}
+              filterCount={filterCount}
+              onApply={onApplyFilters}
+            />
+          ) : null
+        }
         compactTop
         className="!mt-0"
       />
       <div
         className={`mt-1.5 flex min-w-0 flex-row items-center justify-between gap-1 ${
           mapColumnVisible ? '' : 'gap-2 sm:gap-3'
-        }`}
+        } ${hideBucketToggleOnMobile ? 'max-md:hidden' : ''}`}
       >
         <div className={`flex min-w-0 items-center ${mapColumnVisible ? 'gap-1' : 'gap-2'}`}>
-          {hideBucketToggleOnMobile ? (
-            <p className="truncate text-sm font-semibold text-neutral-900 md:hidden">
-              {bucket === 'places' ? 'Venues' : 'Trips'}
-            </p>
-          ) : null}
-          <div className={hideBucketToggleOnMobile ? 'hidden md:block' : ''}>
-            <ListExplorerBucketToggle
-              bucket={bucket}
-              onChange={onBucketChange}
-              bucketCounts={bucketTabCounts}
-              compact={mapColumnVisible}
-            />
-          </div>
+          <ListExplorerBucketToggle
+            bucket={bucket}
+            onChange={onBucketChange}
+            bucketCounts={bucketTabCounts}
+            compact={mapColumnVisible}
+          />
         </div>
         <div className="flex min-w-0 shrink-0 items-center justify-end gap-1">
           {onClose ? null : showMapColumnPrompt && onOpenMapColumn ? (
@@ -230,7 +228,7 @@ export const ListExplorerHeader = ({
           <ListExplorerViewSwitch
             layout={bucket === 'places' && layout === 'calendar' ? 'thumbnails' : layout}
             onChange={onLayoutChange}
-            showCalendar={bucket !== 'places'}
+            showCalendar={false}
             compact={mapColumnVisible}
           />
         </div>

@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef } from 'react';
 import {
   applyChatScrollPreserveAnchor,
   type ChatScrollPreserveAnchor,
@@ -20,8 +20,9 @@ import { ChatThreadHeaderBar } from './ChatThreadHeaderBar';
 import { MessageAvatar } from './ChatMessageAvatar';
 import { ChatThreadLoadMore } from './ChatThreadLoadMore';
 import { ChatLoadingState } from './ChatLoadingState';
-import { ChatPeerSummarySheet } from './ChatPeerSummarySheet';
 import { messagesToUserPath } from '../../config/routingCatalog';
+import { memberProfileLink } from '../../member/memberProfileLink';
+import { profileReturnNavState } from '../../utils/profileReturnNav';
 import type { DirectChatScrollMode } from './useDirectChatThread';
 
 export type DirectChatThreadProps = {
@@ -65,7 +66,6 @@ export const DirectChatThread = ({
   onLoadMoreOlder,
   consumeScrollMode,
 }: DirectChatThreadProps) => {
-  const [peerSummaryOpen, setPeerSummaryOpen] = useState(false);
   const prevCountRef = useRef(0);
   const skipInitialScrollRef = useRef(true);
   const preserveScrollAnchorRef = useRef<ChatScrollPreserveAnchor | null>(null);
@@ -171,7 +171,10 @@ export const DirectChatThread = ({
               onBack={onBack}
               backLabel="Back to chat list"
               backVisibility="mobile-only"
-              titleButton={{ onClick: () => setPeerSummaryOpen(true) }}
+              titleButton={{
+                to: memberProfileLink(partnerUserId),
+                state: profileReturnNavState(messagesToUserPath(partnerUserId), 'Back to chat'),
+              }}
               leading={<MessageAvatar name={partnerName} url={partnerAvatar} />}
               title={partnerName}
               trailing={
@@ -238,16 +241,6 @@ export const DirectChatThread = ({
           )}
         </ChatThreadShell>
       )}
-      {partnerUserId ? (
-        <ChatPeerSummarySheet
-          open={peerSummaryOpen}
-          onClose={() => setPeerSummaryOpen(false)}
-          userId={partnerUserId}
-          displayName={partnerName}
-          avatarUrl={partnerAvatar}
-          chatReturnTo={messagesToUserPath(partnerUserId)}
-        />
-      ) : null}
     </div>
   );
 };

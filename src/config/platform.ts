@@ -53,6 +53,7 @@ export const LIST_DISCOVERY_PATH = '/list' as const;
 /** Drawer / landing list entry paths (aligned with `tripsListHomePath` / `venuesListHomePath` scoping). */
 export const TRIPS_LIST_NAV_PATH = `${LIST_DISCOVERY_PATH}?listCat=activities` as const;
 export const VENUES_LIST_NAV_PATH = `${LIST_DISCOVERY_PATH}?listCat=venues` as const;
+export const CREWS_LIST_NAV_PATH = `${LIST_DISCOVERY_PATH}?listCat=people` as const;
 
 
 /**
@@ -162,17 +163,10 @@ export type ConsumerHamburgerMenuItem =
 export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
   {
     kind: 'link',
-    label: 'Explore',
-    emoji: '🗺️',
-    to: EXPLORE_MAP_PATH,
-    match: [EXPLORE_MAP_PATH, '/discovery'],
-  },
-  {
-    kind: 'link',
     label: 'Trips',
     emoji: '🥾',
     to: TRIPS_LIST_NAV_PATH,
-    match: [EXPLORE_DISCOVER_BROWSE_PATH, LIST_DISCOVERY_PATH, '/discovery'],
+    match: [EXPLORE_DISCOVER_BROWSE_PATH, LIST_DISCOVERY_PATH, '/discovery', EXPLORE_MAP_PATH],
   },
   {
     kind: 'link',
@@ -183,7 +177,7 @@ export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
   },
   {
     kind: 'link',
-    label: 'My Plans',
+    label: 'Plans',
     emoji: '📅',
     to: PLAN_PATH,
     match: [PLAN_PATH],
@@ -191,10 +185,10 @@ export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
   },
   {
     kind: 'link',
-    label: 'Outing history',
-    emoji: '🧳',
-    to: PROFILE_HISTORY_PATH,
-    match: [PROFILE_HISTORY_PATH, JOURNEY_MAP_PATH, INBOUND_PROFILE_HISTORY_ALIAS_PATH],
+    label: 'Crews',
+    emoji: '👥',
+    to: CREWS_LIST_NAV_PATH,
+    match: [LIST_DISCOVERY_PATH, BUDDIES_PATH],
     authGate: true,
   },
   {
@@ -207,12 +201,10 @@ export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
   },
   {
     kind: 'link',
-    label: 'Profile',
-    labelGuest: 'Sign in',
+    label: 'My Profile',
     emoji: '👤',
-    emojiGuest: '👤',
     to: PROFILE_PATH,
-    match: [PROFILE_PATH, MY_REQUESTS_PATH, '/signin', '/signup'],
+    match: [PROFILE_PATH, MY_REQUESTS_PATH],
     profileLink: true,
   },
   {
@@ -441,12 +433,13 @@ export const hasConsumerSelfHeader = (pathname: string): boolean =>
 /** Profile stack + help pages — inject hamburger in ConsumerShell when Layout tab header is absent. */
 export const shouldShowConsumerShellHamburger = (pathname: string): boolean => {
   if (isConsumerChromeHidden(pathname)) return false;
+  if (isConsumerEntityDetailRoute(pathname)) return false;
+  if (pathname.startsWith('/member/')) return false;
   if (pathname === EXPLORE_MAP_PATH || pathname === LIST_DISCOVERY_PATH) return false;
   if (pathname === '/profile' || pathname === PLAN_PATH || pathname === MESSAGES_PATH) return false;
   if (pathname === PROFILE_HISTORY_PATH || pathname === JOURNEY_MAP_PATH) return false;
   if (pathname.startsWith('/profile/')) return true;
   if (pathname === '/faq' || pathname === '/terms' || pathname === '/privacy') return true;
-  if (pathname.startsWith('/member/')) return true;
   if (pathname === NOTIFICATIONS_PATH) return true;
   if ((MOBILE_BOTTOM_NAV_PROFILE_PATHS as readonly string[]).includes(pathname)) return true;
   return MOBILE_BOTTOM_NAV_PROFILE_PREFIXES.some((prefix) => pathname.startsWith(prefix));

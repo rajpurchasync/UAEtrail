@@ -225,7 +225,12 @@ export const ListExplorer = ({
   const stickySearch = query.trim().length > 0;
   const resultCount = loading ? null : cards.length;
   const showCalendar = bucket !== 'places';
-  const effectiveLayout = showCalendar ? layout : layout === 'calendar' ? 'thumbnails' : layout;
+  const calendarLayoutAllowed = showCalendar && !hideBucketToggleOnMobile;
+  const effectiveLayout = calendarLayoutAllowed
+    ? layout
+    : layout === 'calendar'
+      ? 'thumbnails'
+      : layout;
   const locationEnabled = bucket === 'places' || listExplorerSortUsesViewerLocation(sort);
   const { fix: viewer, pending: locationPending, denied: locationDenied } = useViewerLocation(locationEnabled);
   const { units } = useDisplayPreferences();
@@ -283,6 +288,8 @@ export const ListExplorer = ({
         onActivityDatePresetChange={onActivityDatePresetChange}
         onVenueRegionsChange={onVenueRegionsChange}
         hideBucketToggleOnMobile={hideBucketToggleOnMobile}
+        filterCount={filterCount}
+        onApplyFilters={onApplyFilters}
       />
       <div
         ref={setScrollElement}
@@ -342,13 +349,16 @@ export const ListExplorer = ({
           )}
         </div>
       </div>
-      <ListExplorerFilterFab
-        bucket={bucket}
-        applied={filters}
-        regions={regions}
-        filterCount={filterCount}
-        onApply={onApplyFilters}
-      />
+      {hideBucketToggleOnMobile ? null : (
+        <ListExplorerFilterFab
+          bucket={bucket}
+          applied={filters}
+          regions={regions}
+          filterCount={filterCount}
+          onApply={onApplyFilters}
+          placement="floating"
+        />
+      )}
     </div>
   );
 };

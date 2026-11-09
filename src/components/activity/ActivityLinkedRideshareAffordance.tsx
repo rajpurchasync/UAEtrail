@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { activityDetailPath } from '../../config/routingCatalog';
 import { EXPLORE_RIDESHARE_AVAILABLE_LABEL, EXPLORE_VIEW_LINKED_PLAN_CTA } from '../../explore/createFlowCopy';
 import type { ActivityLinkagePlanSummary } from '../../activity/resolveActivityLinkageSummaries';
-import { formatActivityDetailConsumerLeadDate } from '../../activity/formatActivityDetailConsumerLead';
+import { formatActivityScrollDetailLeadDate } from '../../activity/formatActivityScrollDetailLead';
 import { ActivityLinkageAffordanceBody } from './activityLinkageAffordanceLayout';
 
 const panelClass =
@@ -24,7 +24,7 @@ export const ActivityLinkedRideshareAffordance = ({
   const href = activityDetailPath(rideshare.id);
   const schedule =
     rideshare.date || rideshare.time
-      ? formatActivityDetailConsumerLeadDate(rideshare.date ?? '', rideshare.time ?? null)
+      ? formatActivityScrollDetailLeadDate(rideshare.date ?? '', rideshare.time ?? null)
       : null;
   const scheduleLine = schedule?.time ?? null;
   const blurb = rideshare.description?.trim();
