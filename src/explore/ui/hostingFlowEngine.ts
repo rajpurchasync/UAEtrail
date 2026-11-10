@@ -105,10 +105,14 @@ export type CreateActivityDraft = {
   toLabel: string;
   locationPrecision: LocationPrecision;
   date: string;
+  /** Last day when the outing spans multiple days (inclusive). Empty or same as `date` = one day. */
+  endDate: string;
   timeMode: TimeMode;
   time: string;
   meetingTime: string;
   capacity: number;
+  /** When false, joiners cannot waitlist if the outing is full. */
+  waitlist: boolean;
   priceMode: PriceMode;
   priceAmount: number;
   sharedCostNote: string;
@@ -468,6 +472,7 @@ export const emptyCreateActivityDraft = (): CreateActivityDraft => ({
   toLabel: '',
   locationPrecision: 'general',
   date: todayIso(),
+  endDate: '',
   timeMode: 'flexible',
   time: '09:00',
   meetingTime: '09:00',
@@ -488,6 +493,7 @@ export const emptyCreateActivityDraft = (): CreateActivityDraft => ({
   meetingLongitude: null,
   meetingPointLabel: '',
   capacity: 6,
+  waitlist: true,
   priceMode: 'free',
   priceAmount: 0,
   sharedCostNote: '',

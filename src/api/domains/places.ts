@@ -5,6 +5,8 @@ import {
   LocationDetailResponse,
   LocationGuideDTO,
   LocationPremiumSummaryDTO,
+  PlaceTrackPreviewResponse,
+  PlaceReachableRidesResponse,
 } from '@uaetrail/shared-types';
 import { apiRequest, downloadAuthenticatedFile } from '../client';
 import { ADMIN_TABLE_PAGE_SIZE, LIST_PAGE_SIZE, fetchAllPages } from '../listAllPages';
@@ -28,7 +30,11 @@ const getPlacesPage = (page = 1, pageSize = LIST_PAGE_SIZE, countryCode?: string
 export const placeApi = {
   getPublicPlaces: listAllPublicPlaces,
   getPlacesPage,
-  getPublicPlaceDetail: (id: string) => apiRequest<LocationDetailResponse>(`/places/${id}`, { auth: true }),
+  getPublicPlaceDetail: (id: string) => apiRequest<LocationDetailResponse>(`/places/${id}`, { auth: false }),
+  getPublicPlaceMeState: (id: string) =>
+    apiRequest<LocationDetailResponse>(`/places/${id}/me/state`, { auth: true }),
+  getPublicPlaceTrackPreview: (id: string) =>
+    apiRequest<PlaceTrackPreviewResponse>(`/places/${id}/track`, { auth: true }),
   getPlaceGuide: (id: string) =>
     apiRequest<{ data: LocationGuideDTO }>(`/places/${id}/premium/guide`, { auth: true }),
   checkoutPlacePremium: (id: string) =>
@@ -48,6 +54,11 @@ export const placeApi = {
   downloadPlaceGuidePdf: (id: string) => downloadAuthenticatedFile(`/places/${id}/premium/guide/pdf`),
   getPlaceActivities: (placeId: string) =>
     apiRequest<{ data: ActivityDTO[] }>(`/places/${placeId}/activities`),
+  getPlaceReachableRides: (placeId: string, page = 1, pageSize = 10) =>
+    apiRequest<PlaceReachableRidesResponse>(
+      `/places/${placeId}/reachable-rides?page=${page}&pageSize=${pageSize}`,
+      { auth: false }
+    ),
   getPopularPlaces: (limit = 6) => apiRequest<{ data: LocationDTO[] }>(`/places/popular?limit=${limit}`),
   trackPlaceView: (id: string) => apiRequest('/places/' + id + '/view', { method: 'POST' }),
 

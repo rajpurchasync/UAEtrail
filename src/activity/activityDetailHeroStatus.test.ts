@@ -25,6 +25,17 @@ describe('resolveActivityDetailHeroStatusChips', () => {
     ).toEqual([]);
   });
 
+  it('shows no hero chip for open participant when spots remain', () => {
+    const chips = resolveActivityDetailHeroStatusChips({
+      joinUiState: { kind: 'open' },
+      slotsAvailable: 7,
+      slotsTotal: 10,
+      previewMode: false,
+      isHostUser: false,
+    });
+    expect(chips).toEqual([]);
+  });
+
   it('shows join requested for pending participant', () => {
     const chips = resolveActivityDetailHeroStatusChips({
       joinUiState: { kind: 'pending', requestId: 'r1', status: 'pending' },
@@ -36,7 +47,7 @@ describe('resolveActivityDetailHeroStatusChips', () => {
     expect(chips[0]).toEqual({ label: 'Join requested', tone: 'warning' });
   });
 
-  it('shows host capacity and invited chips', () => {
+  it('shows hosting for host viewer', () => {
     const chips = resolveActivityDetailHeroStatusChips({
       joinUiState: { kind: 'open' },
       slotsAvailable: 5,
@@ -46,6 +57,6 @@ describe('resolveActivityDetailHeroStatusChips', () => {
       confirmedParticipantCount: 0,
       pendingJoinInviteCount: 2,
     });
-    expect(chips.map((c) => c.label)).toEqual(['0/5 going', '2 invited']);
+    expect(chips).toEqual([{ label: 'Hosting', tone: 'success' }]);
   });
 });

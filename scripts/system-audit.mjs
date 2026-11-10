@@ -224,8 +224,8 @@ const integrations = [
   { id: 'jwt', type: 'auth', env: ['JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET'] },
 ];
 
-const appTs = readFileSync(join(root, 'src/App.tsx'), 'utf8');
-const spaRoutes = (appTs.match(/<Route\b/g) ?? []).length;
+const appRoutesTs = readFileSync(join(root, 'src/routing/AppRoutes.tsx'), 'utf8');
+const spaRoutes = (appRoutesTs.match(/<Route\b/g) ?? []).length;
 
 const feDomainFiles = readdirSync(join(root, 'src/api/domains')).filter(
   (f) => f.endsWith('.ts') && !f.endsWith('.test.ts') && f !== 'index.ts'

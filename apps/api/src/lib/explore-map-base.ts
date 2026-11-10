@@ -167,6 +167,8 @@ const attachLinkedRideshareMetadata = (items: ExploreMapItemDTO[]): void => {
         activityType: parentItem.activity.activityType,
         date: parentItem.activity.date,
         time: parentItem.activity.time,
+        endDate: parentItem.activity.endDate ?? null,
+        endTime: parentItem.activity.endTime ?? null,
         description: parentItem.activity.description?.trim()
           ? parentItem.activity.description.trim().slice(0, 220)
           : null,
@@ -191,6 +193,7 @@ const attachExploreItemArea = (
     areaId: areaId ?? null,
     areaSlug: slug,
     areaName: hubName ?? label,
+    geoRef: item.geoRef ?? item.activity?.geoRef ?? null,
   };
 };
 
@@ -291,6 +294,8 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
           hostAvatar: resolveActivityHostAvatar(activity),
           date: activity.date,
           time: activity.time,
+          endDate: activity.endDate ?? null,
+          endTime: activity.endTime ?? null,
           slotsAvailable: activity.slotsAvailable,
           slotsTotal: activity.slotsTotal,
           participantPreviews: activity.participantPreviews,
@@ -344,6 +349,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
             image: dto.images?.[0] ?? null,
             about: dto.description,
             catalogProfileExposure: 'peek',
+            geoRef: dto.geoRef ?? null,
             ...catalogUpdatedAtField(catalogLocation.updatedAt, catalogLocation.createdAt),
           },
           dto.areaId,
@@ -391,6 +397,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
             image: dto.images?.[0] ?? null,
             about: dto.description,
             placeKind: 'outdoor_other',
+            geoRef: dto.geoRef ?? null,
             locationCard: {
               id: dto.id,
               activityType: 'event',
@@ -436,6 +443,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
           path: placeDetailPath(dto.activityType, dto.id),
           image: dto.images?.[0] ?? null,
           about: dto.description,
+          geoRef: dto.geoRef ?? null,
           locationCard: {
             id: dto.id,
             activityType: kind,
@@ -491,6 +499,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
           image: facility.images[0] ?? null,
           about: facility.description,
           placeKind,
+          geoRef: facility.geoRef ?? null,
           locationCard: {
             id: facility.id,
             activityType: 'event',
@@ -547,7 +556,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
           merchantId: merchant?.id,
           tenantId: shop.id,
           websiteUrl,
-          contactPhone: merchant?.contactPhone ?? null,
+          contactPhone: merchant?.showContactPhone ? merchant.contactPhone ?? null : null,
           shopPresence,
           catalogProfileExposure: 'full',
           discoverFeatured: shop.discoverFeatured ?? false,

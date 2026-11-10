@@ -8,7 +8,7 @@ import type { ActivityDetailTemplateProps } from './activityDetailTemplateProps'
  * `PlaceDetailPage` + thin `*PlaceDetailPage` kind wrappers.
  *
  * Sets `consumerDetailLayout` on `ActivityDetailView` → `ActivityConsumerDetailPage`.
- * Host **preview** / **manage sheet** embed `ActivityDetailView` (`layout=embedded`) — no kind route, tabbed `ActivityDetailBody`.
+ * Host **manage sheet** uses `ActivityDetailByKind` + `inlineConsumerDetail` (consumer scroll, hosting section).
  */
 export const ActivityDetailPageShell = (props: ActivityDetailTemplateProps) => (
   <ActivityDetailView {...props} consumerDetailLayout />

@@ -214,4 +214,58 @@ export const adminApi = {
         method: 'DELETE',
         auth: true,
       }),
+
+    listAdminPlatformAlerts: () =>
+      apiRequest<{ data: import('@uaetrail/shared-types').AdminPlatformAlertDTO[] }>('/admin/alerts', {
+        auth: true,
+      }),
+
+    createAdminPlatformAlert: (body: Record<string, unknown>) =>
+      apiRequest<{ data: import('@uaetrail/shared-types').AdminPlatformAlertDTO }>('/admin/alerts', {
+        method: 'POST',
+        auth: true,
+        body: JSON.stringify(body),
+      }),
+
+    expireAdminPlatformAlert: (id: string) =>
+      apiRequest<{ data: import('@uaetrail/shared-types').AdminPlatformAlertDTO }>(
+        `/admin/alerts/${id}/expire`,
+        { method: 'POST', auth: true }
+      ),
+
+    listAdminAmenityReports: () =>
+      apiRequest<{
+        data: Array<{
+          id: string;
+          facilityId: string;
+          amenityState: import('@uaetrail/shared-types').AmenityState;
+          note?: string;
+          photoUrl?: string;
+          createdAt: string;
+        }>;
+      }>('/admin/amenity-reports', { auth: true }),
+
+    confirmAdminAmenityReport: (id: string) =>
+      apiRequest<{ data: { id: string; status: string } }>(`/admin/amenity-reports/${id}/confirm`, {
+        method: 'POST',
+        auth: true,
+      }),
+
+    listAdminVerificationDocuments: () =>
+      apiRequest<{
+        data: Array<{
+          id: string;
+          organizerId: string;
+          docType: string;
+          status: 'pending' | 'accepted' | 'rejected';
+          createdAt: string;
+        }>;
+      }>('/admin/verification-documents', { auth: true }),
+
+    reviewAdminVerificationDocument: (id: string, status: 'accepted' | 'rejected') =>
+      apiRequest<{ data: { id: string; status: string } }>(`/admin/verification-documents/${id}`, {
+        method: 'PATCH',
+        auth: true,
+        body: JSON.stringify({ status }),
+      }),
 } as const;

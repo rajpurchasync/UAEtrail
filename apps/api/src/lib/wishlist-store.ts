@@ -8,6 +8,7 @@ type MongoWishlistDoc = {
   _id: string;
   userId: string;
   locationId: string | null;
+  areaId: string | null;
   activityId: string | null;
   alertOnMatch?: boolean;
   watchOutingCategory?: string | null;
@@ -23,6 +24,7 @@ export type WishlistRecord = {
   id: string;
   userId: string;
   locationId: string | null;
+  areaId: string | null;
   activityId: string | null;
   alertOnMatch: boolean;
   watchOutingCategory: string | null;
@@ -33,6 +35,7 @@ export type WishlistRecord = {
 
 export type WishlistItemWithDetails = WishlistRecord & {
   location: { id: string; name: string; images: string[]; activityType: string } | null;
+  area: { id: string; slug: string; name: string; imageUrl: string | null } | null;
   activity: { id: string; title: string; locationName: string | null; activityType: string } | null;
 };
 
@@ -48,7 +51,8 @@ const activitiesCollection = (): Collection<MongoActivityDoc> =>
 const mapWishlistRecord = (doc: MongoWishlistDoc): WishlistRecord => ({
   id: doc._id,
   userId: doc.userId,
-  locationId: doc.locationId,
+  locationId: doc.locationId ?? null,
+  areaId: doc.areaId ?? null,
   activityId: doc.activityId,
   alertOnMatch: doc.alertOnMatch !== false,
   watchOutingCategory: doc.watchOutingCategory ?? null,
@@ -60,9 +64,11 @@ const mapWishlistRecord = (doc: MongoWishlistDoc): WishlistRecord => ({
 const buildWishlistSelector = (input: {
   userId: string;
   locationId?: string;
+  areaId?: string;
   activityId?: string;
 }): Record<string, string> | null => {
   if (input.locationId) return { userId: input.userId, locationId: input.locationId };
+  if (input.areaId) return { userId: input.userId, areaId: input.areaId };
   if (input.activityId) return { userId: input.userId, activityId: input.activityId };
   return null;
 };
@@ -75,6 +81,7 @@ export const listUserWishlistItems = async (userId: string): Promise<WishlistRec
 export const createWishlistItem = async (input: {
   userId: string;
   locationId?: string;
+  areaId?: string;
   activityId?: string;
   alertOnMatch?: boolean;
   watchOutingCategory?: string | null;
@@ -84,7 +91,7 @@ export const createWishlistItem = async (input: {
   const selector = buildWishlistSelector(input);
 
   if (!selector) {
-    throw new Error('Wishlist saves a single venue (locationId) or activity (activityId).');
+    throw new Error('Wishlist saves a single venue (locationId), area (areaId), or activity (activityId).');
   }
 
   const existing = await wishlistCollection().findOne(selector);
@@ -96,6 +103,7 @@ export const createWishlistItem = async (input: {
     _id: randomUUID(),
     userId: input.userId,
     locationId: input.locationId ?? null,
+    areaId: input.areaId ?? null,
     activityId: input.activityId ?? null,
     alertOnMatch: input.alertOnMatch !== false,
     watchOutingCategory: input.watchOutingCategory ?? null,
@@ -133,9 +141,10 @@ export const updateWishlistItem = async (input: {
 export const findWishlistItem = async (input: {
   userId: string;
   locationId?: string;
+  areaId?: string;
   activityId?: string;
 }): Promise<WishlistRecord | null> => {
-  if (!input.locationId && !input.activityId) {
+  if (!input.locationId && !input.areaId && !input.activityId) {
     return null;
   }
 
@@ -153,12 +162,24 @@ export const listWishlistItemsWithDetails = async (userId: string): Promise<Wish
   }
 
   const locationIds = [...new Set(wishlistRows.map((f) => f.locationId).filter((id): id is string => Boolean(id)))];
+  const areaIds = [...new Set(wishlistRows.map((f) => f.areaId).filter((id): id is string => Boolean(id)))];
   const activityIds = [...new Set(wishlistRows.map((f) => f.activityId).filter((id): id is string => Boolean(id)))];
 
-  const [locationDocs, activityDocs] = await Promise.all([
+  const areasCollection = (): Collection<{ _id: string; slug: string; name: string; imageUrl?: string | null }> =>
+    getMongoClient()!.db().collection(COLLECTIONS.AREAS);
+
+  const [locationDocs, areaDocs, activityDocs] = await Promise.all([
     locationIds.length > 0
       ? locationsCollection()
           .find({ _id: { $in: locationIds } }, { projection: { name: 1, images: 1, activityType: 1 } })
+          .toArray()
+      : Promise.resolve([]),
+    areaIds.length > 0
+      ? areasCollection()
+          .find(
+            { _id: { $in: areaIds }, status: 'published' },
+            { projection: { slug: 1, name: 1, imageUrl: 1 } }
+          )
           .toArray()
       : Promise.resolve([]),
     activityIds.length > 0
@@ -172,6 +193,7 @@ export const listWishlistItemsWithDetails = async (userId: string): Promise<Wish
   ]);
 
   const locationMap = new Map(locationDocs.map((location) => [location._id, location]));
+  const areaMap = new Map(areaDocs.map((area) => [area._id, area]));
   const activityLocationIds = [...new Set(activityDocs.map((activity) => activity.locationId))];
   const activityLocationDocs =
     activityLocationIds.length > 0
@@ -193,6 +215,19 @@ export const listWishlistItemsWithDetails = async (userId: string): Promise<Wish
                 name: location.name,
                 images: location.images,
                 activityType: location.activityType,
+              }
+            : null;
+        })()
+      : null,
+    area: item.areaId
+      ? (() => {
+          const area = areaMap.get(item.areaId);
+          return area
+            ? {
+                id: area._id,
+                slug: area.slug,
+                name: area.name,
+                imageUrl: area.imageUrl ?? null,
               }
             : null;
         })()
@@ -228,6 +263,22 @@ export const listWishlistSaversForLocation = async (
     .find(
       {
         locationId,
+        alertOnMatch: { $ne: false },
+      },
+      { projection: { userId: 1 } }
+    )
+    .toArray();
+  return rows.map((doc) => ({ userId: doc.userId, wishlistItemId: doc._id }));
+};
+
+/** Members who saved this curated area and want trip alerts (`areaId` on wishlist row). */
+export const listWishlistSaversForArea = async (
+  areaId: string
+): Promise<Array<{ userId: string; wishlistItemId: string }>> => {
+  const rows = await wishlistCollection()
+    .find(
+      {
+        areaId,
         alertOnMatch: { $ne: false },
       },
       { projection: { userId: 1 } }

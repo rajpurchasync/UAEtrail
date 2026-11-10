@@ -1,3 +1,5 @@
+import { useRef } from 'react';
+import { useHorizontalDragScroll } from '../../hooks/useHorizontalDragScroll';
 import {
   EXPLORE_FILTER_PILL,
   EXPLORE_MAP_FILTER_INACTIVE,
@@ -18,8 +20,12 @@ export const ExplorePinKindPillsRow = ({
   onPinKindChange,
   layout = 'map',
   className = '',
-}: ExplorePinKindPillsRowProps) => (
+}: ExplorePinKindPillsRowProps) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useHorizontalDragScroll(scrollRef);
+  return (
   <div
+    ref={scrollRef}
     className={`min-w-0 overflow-x-auto scroll-smooth scrollbar-none py-0.5 [-webkit-overflow-scrolling:touch] ${className}`}
   >
     <div
@@ -42,4 +48,5 @@ export const ExplorePinKindPillsRow = ({
       })}
     </div>
   </div>
-);
+  );
+};

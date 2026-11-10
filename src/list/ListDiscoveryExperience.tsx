@@ -38,6 +38,10 @@ import {
   serializeListExplorerBucket,
 } from './explorer/listExplorerBucket';
 import { ListExplorer } from './explorer/ListExplorer';
+import { BrowsePanelCollapsedRail } from './explorer/BrowsePanelCollapsedRail';
+import { browseAppliedFilterLabels } from './explorer/browseAppliedFilterLabels';
+import { useExploreDesktopListDrawerChrome } from '../explore/ui/ExploreDesktopListDrawer';
+import { SocialHubNav } from '../components/social/SocialHubNav';
 import { ListDiscoveryMapColumn } from './explorer/ListDiscoveryMapColumn';
 import { ListSideMapResizeHandle } from './explorer/ListSideMapResizeHandle';
 import { useBindExploreListMapHover } from '../explore/ExploreMapChromeContext';
@@ -161,7 +165,7 @@ export const ListDiscoveryExperience = ({
   }, [queryClient, refreshHostGate]);
 
   const browseUrl = useListDiscoveryUrlState({ mapOverlay: embeddedOnExplore });
-  const { filters, syncUrl, venueRegions, listCat, layout, sort } = browseUrl;
+  const { filters, syncUrl, venueRegions, geoIds, listCat, layout, sort } = browseUrl;
   const isPeopleCategory = listCat === 'people';
   const explorerBucket = parseListExplorerBucket(listCat);
   const [draftQuery, setDraftQuery] = useState(filters.query);
@@ -207,6 +211,7 @@ export const ListDiscoveryExperience = ({
             listCat === 'agencies' ? ['agencies'] : listExplorerBucketCategories(explorerBucket),
         },
     venueRegions,
+    geoIds,
     mapEnabled: !isPeopleCategory || peopleSegment === 'looking',
     catalogItems: embeddedOnExplore ? prefetchedCatalogItems : undefined,
   });
@@ -235,7 +240,7 @@ export const ListDiscoveryExperience = ({
     [items, draftQuery, filters.activityDatePreset, venueRegions]
   );
 
-  const filterCount = countListExplorerFilters(filters, venueRegions, explorerBucket);
+  const filterCount = countListExplorerFilters(filters, venueRegions, explorerBucket, geoIds);
 
   const commitQuery = () => {
     syncUrl({ query: draftQuery });
@@ -290,6 +295,7 @@ export const ListDiscoveryExperience = ({
       when: 'any',
       activityDatePreset: 'anyday',
       regions: [],
+      geoIds: [],
     });
     setDraftQuery('');
   };
@@ -320,7 +326,7 @@ export const ListDiscoveryExperience = ({
     !showListMapColumn &&
     (listMapDismissed || !wideListMapSplit);
 
-  useBindExploreListMapHover(setListMapHighlightedId);
+  useBindExploreListMapHover(showListMapColumn ? setListMapHighlightedId : null);
 
   const openListMapColumn = useCallback(() => {
     collapseDesktopSideNav();
@@ -346,17 +352,33 @@ export const ListDiscoveryExperience = ({
     }
   }, [wideListMapSplit, listMapDismissed]);
 
+  useEffect(() => {
+    if (showListMapColumn) collapseDesktopSideNav();
+  }, [showListMapColumn]);
+
   const handleListMapSelectItem = useCallback((item: ExploreMapItemDTO) => {
     setListMapSelectedId(item.id);
     setListMapHighlightedId(item.id);
   }, []);
 
   const sideMapWidth = useListSideMapWidth(showListMapColumn);
+  const drawerChrome = useExploreDesktopListDrawerChrome();
+
+  if (embeddedOnExplore && drawerChrome?.collapsed) {
+    return (
+      <BrowsePanelCollapsedRail
+        labels={browseAppliedFilterLabels(filters, venueRegions, explorerBucket)}
+        onExpand={drawerChrome.toggleCollapsed}
+      />
+    );
+  }
 
   return (
     <>
       {isPeopleCategory ? (
-        <PeopleBrowsePanel
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          {embeddedOnExplore ? null : <SocialHubNav active="people" />}
+          <PeopleBrowsePanel
           embedded
           isDesktop={surface === 'exploreSidebar'}
           query={draftQuery}
@@ -389,14 +411,22 @@ export const ListDiscoveryExperience = ({
           exploreCatalogLoading={isLoading}
           onOpenSeekingActivity={handleOpenSeekingActivity}
         />
+        </div>
       ) : (
-        <div ref={sideMapWidth.splitRef} className="flex h-full min-h-0 min-w-0 flex-1 flex-row">
+        <div
+          ref={sideMapWidth.splitRef}
+          className={`flex h-0 min-h-0 min-w-0 flex-1 flex-row overflow-hidden ${
+            embeddedOnExplore ? 'w-full' : ''
+          }`}
+        >
           <ListExplorer
             cards={cards}
             loading={isLoading}
             error={isError}
             onRetry={() => void reloadMap()}
-            onClose={onCloseMapOverlay}
+            onClose={
+              embeddedOnExplore && drawerChrome ? drawerChrome.toggleCollapsed : onCloseMapOverlay
+            }
             embedded={embeddedOnExplore}
             query={draftQuery}
             onQueryChange={setDraftQuery}
@@ -418,8 +448,11 @@ export const ListDiscoveryExperience = ({
             }
             filters={filters}
             regions={venueRegions}
+            geoIds={geoIds}
             filterCount={filterCount}
-            onApplyFilters={(state, regions) => syncUrl({ ...state, regions })}
+            onApplyFilters={(state, regions, nextGeoIds) =>
+              syncUrl({ ...state, regions, geoIds: nextGeoIds })
+            }
             onClearFilters={clearAllFilters}
             mapColumnVisible={showListMapColumn}
             showMapColumnPrompt={showListMapColumnPrompt}

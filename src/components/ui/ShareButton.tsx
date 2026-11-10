@@ -4,6 +4,7 @@ import { FacebookIcon } from '../icons/FacebookIcon';
 import { WhatsAppIcon } from '../icons/WhatsAppIcon';
 import { useOptionalShareSheet } from '../../context/ShareSheetContext';
 import type { ActivityShareInput } from '../../utils/activityShare';
+import type { ShareSheetSurface } from '../../content/shareSheetCopy';
 import { buildShareText, buildShareUrl } from '../../utils/share';
 import { UiTooltip } from './UiTooltip';
 
@@ -33,6 +34,10 @@ interface ShareButtonProps {
   /** Signed-in in-app invite (friends + groups) when sharing an activity link. */
   canSendBuddyInvites?: boolean;
   activityShare?: ActivityShareInput | null;
+  /** When set, activity share opens sign-in first (full sheet after auth). */
+  gateShareUntilSignedIn?: () => void;
+  shareSurface?: ShareSheetSurface;
+  sheetTitle?: string;
 }
 
 export const ShareButton = ({
@@ -51,6 +56,9 @@ export const ShareButton = ({
   stackAboveModals = false,
   canSendBuddyInvites = false,
   activityShare = null,
+  gateShareUntilSignedIn,
+  shareSurface,
+  sheetTitle,
 }: ShareButtonProps) => {
   const shareSheet = useOptionalShareSheet();
   const [showShareMenu, setShowShareMenu] = useState(false);
@@ -104,12 +112,20 @@ export const ShareButton = ({
     e.preventDefault();
     e.stopPropagation();
     if (disabled) return;
+    if (gateShareUntilSignedIn && activityShare) {
+      gateShareUntilSignedIn();
+      return;
+    }
     if (shareSheet && path) {
+      const resolvedSurface: ShareSheetSurface | undefined =
+        shareSurface ?? (activityShare ? 'activity' : undefined);
       shareSheet.openShare(
         { title, text: text ?? '', path },
         {
           canSendBuddyInvites: Boolean(canSendBuddyInvites && activityShare),
           activity: activityShare,
+          shareSurface: resolvedSurface,
+          sheetTitle,
         }
       );
       return;
@@ -122,7 +138,7 @@ export const ShareButton = ({
       ? 'inline-flex h-9 w-9 items-center justify-center text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.55)] transition-opacity hover:opacity-90'
       : light
         ? 'inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-neutral-700 shadow-sm ring-1 ring-neutral-200/90 transition-colors hover:bg-neutral-50'
-        : 'inline-flex items-center justify-center w-8 h-8 rounded-full bg-black/35 backdrop-blur-sm text-white hover:bg-black/50 transition-colors'
+        : 'inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/30 bg-black/35 text-white shadow-sm backdrop-blur-sm transition-colors hover:bg-black/45'
     : compact
       ? 'inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-full bg-black/40 backdrop-blur-sm text-white hover:bg-black/55 transition-colors'
       : 'inline-flex items-center gap-2 px-3.5 py-2 rounded-full glass text-neutral-800 text-sm font-semibold hover:bg-white/90 transition-colors';
@@ -142,7 +158,7 @@ export const ShareButton = ({
             aria-hidden
           />
         ) : (
-          <Share2 className={iconClassName ?? (iconOnly ? (light ? 'h-5 w-5' : 'h-3.5 w-3.5') : 'h-5 w-5')} aria-hidden />
+          <Share2 className={iconClassName ?? (iconOnly ? (light ? 'h-5 w-5' : 'h-4 w-4') : 'h-5 w-5')} aria-hidden />
         )}
         {!compact && !iconOnly && (label ?? 'Share')}
       </button>

@@ -76,6 +76,7 @@ const publishingTenantActivityFieldsSchema = z.object({
   groupChatPostPolicy: z.enum(['all_participants', 'host_only']).optional(),
   price: z.number().int().min(0).default(0),
   capacity: z.number().int().positive(),
+  waitlist: z.boolean().optional(),
   images: z.array(z.string()).default([]),
   bannerUrl: optionalHttpUrlSchema,
   hostId: z.string().optional(),
@@ -86,6 +87,10 @@ const publishingTenantActivityFieldsSchema = z.object({
   clonedFromActivityId: z.string().uuid().optional(),
   linkedActivityId: z.string().uuid().nullable().optional(),
   linkedRideshareActivityId: z.string().uuid().nullable().optional(),
+  /** Crew-only — stored in `activity_private` (E.164 phone). */
+  privateEmergencyContactName: z.string().trim().min(2).max(80).optional().nullable(),
+  privateEmergencyContactPhone: z.string().trim().min(8).max(30).optional().nullable(),
+  privateVehiclePlateNumber: z.string().trim().max(20).optional().nullable(),
 });
 
 export const publishingTenantActivityCreateSchema = publishingTenantActivityFieldsSchema.superRefine((data, ctx) => {

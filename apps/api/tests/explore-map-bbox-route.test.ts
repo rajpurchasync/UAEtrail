@@ -31,28 +31,37 @@ describe('GET /api/explore/map bbox query (EXPLORE_MAP_BBOX)', () => {
     const suffix = `explore-bbox-${Date.now()}`;
     const fixture = await createPublishedEventFixture(suffix);
 
+    const soonStart = new Date(Date.now() + 2 * 60 * 60 * 1000);
     await getMongoClient()!
       .db()
       .collection('activities')
       .updateOne(
         { _id: fixture.activityId },
-        { $set: { meetingLat: 25.118, meetingLng: 55.201, joinMode: 'open' } }
+        {
+          $set: {
+            meetingLat: 25.118,
+            meetingLng: 55.201,
+            joinMode: 'open',
+            startAt: soonStart,
+            endAt: new Date(soonStart.getTime() + 4 * 60 * 60 * 1000),
+          },
+        }
       );
 
     await invalidateExploreMapCache();
 
-    const bbox = '55.1,25.1,55.3,25.2';
-    const response = await request(app).get('/api/explore/map').query({ bbox });
+    const bbox = '55.195,25.112,55.207,25.124';
+    const response = await request(app).get('/api/explore/map').query({ bbox, limit: 50 });
     expect(response.status).toBe(200);
 
     const items = response.body.data.items as Array<{ id: string }>;
     const pin = items.find((item) => item.id === `activity:${fixture.activityId}`);
     expect(pin).toBeDefined();
     expect(response.body.data.region?.bbox).toMatchObject({
-      west: 55.1,
-      south: 25.1,
-      east: 55.3,
-      north: 25.2,
+      west: 55.195,
+      south: 25.112,
+      east: 55.207,
+      north: 25.124,
     });
     expect(response.body.data).toHaveProperty('nextCursor');
   });

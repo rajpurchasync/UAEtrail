@@ -13,6 +13,7 @@ import {
   startSideEffectOutboxDrain,
   stopSideEffectOutboxDrain
 } from './services/side-effect-outbox-processor.js';
+import { startGeoOutboxWorker, stopGeoOutboxWorker } from './lib/geo-worker.js';
 
 const STARTUP_RETRY_DELAY_MS = 5000;
 
@@ -46,6 +47,7 @@ const start = async () => {
   }
   await connectMongo();
   startSideEffectOutboxDrain();
+  startGeoOutboxWorker();
   if (env.NODE_ENV !== 'production') {
     try {
       const { ensureDemoExploreActivities } = await import('../scripts/seed-demo-scheduled-activities.js');
@@ -71,6 +73,7 @@ const start = async () => {
     server.close();
     await closeChatStreamPubSub();
     stopSideEffectOutboxDrain();
+    stopGeoOutboxWorker();
     await disconnectMongo();
     await disconnectRedis();
     process.exit(0);

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 import { MapPeekShell } from '../map-peek';
+import { FacilityPeekActions } from '../peek/facility/FacilityPeekActions';
 import { PlacePeekActions } from '../peek/place/PlacePeekActions';
 
 export type PlacePeekCardProps = {
@@ -33,13 +34,12 @@ export const PlacePeekCard = ({
     catalogPlaceSummary
     embedMode={embedMode}
     actions={
-      actions ?? (
-        <PlacePeekActions
-          card={card}
-          onClose={onClose}
-          onGuestGatedPlanTrip={onGuestGatedAction}
-        />
-      )
+      actions ??
+      (card.source === 'facility' ? (
+        <FacilityPeekActions card={card} onClose={onClose} onGuestGatedAction={onGuestGatedAction} />
+      ) : (
+        <PlacePeekActions card={card} onClose={onClose} onGuestGatedPlanTrip={onGuestGatedAction} />
+      ))
     }
   />
 );

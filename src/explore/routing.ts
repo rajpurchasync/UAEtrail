@@ -224,6 +224,36 @@ export const parseExplorePanel = (value: string | null): ExplorePanel => {
   return 'activities';
 };
 
+const inferMapFilterFromLegacySubfilter = (raw: string | null): MapFilterKey | null => {
+  if (!raw || raw === 'all') return null;
+  if (raw === 'event' || raw === 'events') return 'others';
+  if (raw === 'shop' || raw === 'shops') return 'shops';
+  const parsed = parseMapFilter(raw);
+  return parsed === 'all' ? null : parsed;
+};
+
+/**
+ * Canonical explore browse query is parent (`panel`) + subfilter (`filter`).
+ * Strips duplicate `places` / `activity` keys; promotes them to `filter` when missing.
+ */
+export const compactExploreParentFilterSearchParams = (params: URLSearchParams): boolean => {
+  const places = params.get('places');
+  const activity = params.get('activity');
+  if (places == null && activity == null) return false;
+
+  if (!params.get('filter')) {
+    const panel = parseExplorePanel(params.get('panel'));
+    const preferred =
+      panel === 'venues' || panel === 'shops' ? places ?? activity : activity ?? places;
+    const inferred = inferMapFilterFromLegacySubfilter(preferred);
+    if (inferred) params.set('filter', inferred);
+  }
+
+  params.delete('places');
+  params.delete('activity');
+  return true;
+};
+
 /** Parse venue state/emirate filters from URL (`regions=Dubai,RAK` or inbound `region=RAK`). */
 export const parseVenueRegionsParam = (searchParams: Pick<URLSearchParams, 'get'>): string[] => {
   const multi = searchParams.get('regions');
@@ -276,9 +306,9 @@ export const explorePath = (options?: {
   const params = new URLSearchParams();
   if (options?.filter && options.filter !== 'all') {
     params.set('filter', options.filter);
-  }
-  if (options?.activity && options.activity !== 'all') {
-    params.set('activity', options.activity);
+  } else if (options?.activity && options.activity !== 'all') {
+    const mapped = activityFilterToMapFilter(options.activity);
+    if (mapped && mapped !== 'all') params.set('filter', mapped);
   }
   if (options?.panel && options.panel !== 'activities') {
     params.set('panel', options.panel);
@@ -433,23 +463,26 @@ export const venueFilterToMapFilter = (filter: VenueListFilterKey): MapFilterKey
   }
 };
 
-/** Parse `?places=` venue catalog filter (trails, spots, shops, …). */
+/** Parse venue catalog filter. Canonical URL uses `?filter=`; `?places=` is inbound-only. */
 export const parseVenueListFilter = (
   placesParam: string | null,
   inboundFilterParam: string | null = null,
-  /** When set, activity uses `?activity=` — do not infer places from inbound `?filter=`. */
+  /** Inbound-only `?activity=` — same camping/hiking key as parent `?filter=`. */
   activityParam: string | null = null
 ): VenueListFilterKey => {
   if (placesParam === 'shops') return 'shop';
   if (placesParam && VENUE_LIST_FILTER_SET.has(placesParam as VenueListFilterKey)) {
     return placesParam as VenueListFilterKey;
   }
-  if (!activityParam && inboundFilterParam) {
+  if (inboundFilterParam) {
     const parsed = parseMapFilter(inboundFilterParam);
-    if (parsed === 'others' || parsed === 'rideshare' || parsed === 'all') {
-      return 'all';
+    if (parsed !== 'others' && parsed !== 'rideshare' && parsed !== 'all') {
+      return mapFilterToVenueListFilter(parsed);
     }
-    return mapFilterToVenueListFilter(parsed);
+  }
+  if (activityParam === 'shops' || activityParam === 'shop') return 'shop';
+  if (activityParam && VENUE_LIST_FILTER_SET.has(activityParam as VenueListFilterKey)) {
+    return activityParam as VenueListFilterKey;
   }
   return 'all';
 };
@@ -569,9 +602,11 @@ export const discoveryToExploreSearch = (search: string): string => {
   const next = new URLSearchParams();
   next.set('panel', 'venues');
 
-  const activity = incoming.get('activity');
-  if (activity === 'hiking' || activity === 'camping' || activity === 'event') {
-    next.set('activity', activity);
+  const activity = incoming.get('activity') ?? incoming.get('filter');
+  if (activity === 'hiking' || activity === 'camping') {
+    next.set('filter', activity);
+  } else if (activity === 'event' || activity === 'events' || activity === 'others') {
+    next.set('filter', 'others');
   }
 
   const region = incoming.get('region');

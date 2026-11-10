@@ -5,6 +5,7 @@ import type {
   ReviewDTO,
 } from '@uaetrail/shared-types';
 import { api } from '../api/index';
+import { getStoredSession } from '../api/client';
 
 export const trackPlaceDetailView = async (placeId: string): Promise<void> => {
   await api.trackPlaceView(placeId);
@@ -28,5 +29,18 @@ export const fetchPublicPlaceDetail = async (placeId: string): Promise<LocationD
 export const fetchPublicPlaceDetailPayload = async (
   placeId: string
 ): Promise<LocationDetailResponse> => {
-  return api.getPublicPlaceDetail(placeId);
+  const shell = await api.getPublicPlaceDetail(placeId);
+  if (!getStoredSession()) return shell;
+  try {
+    const me = await api.getPublicPlaceMeState(placeId);
+    return {
+      ...shell,
+      ...me,
+      data: me.data ?? shell.data,
+      premium: me.premium ?? shell.premium,
+      viewerAccess: me.viewerAccess ?? shell.viewerAccess,
+    };
+  } catch {
+    return shell;
+  }
 };

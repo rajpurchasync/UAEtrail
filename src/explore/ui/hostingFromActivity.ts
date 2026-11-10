@@ -80,11 +80,13 @@ export const createDraftFromPastActivity = (activity: ActivityDTO): CreateActivi
     locationPrecision:
       meetingLat != null && meetingLng != null ? 'specific' : base.locationPrecision,
     date: activity.date?.trim() || todayIso(),
+    endDate: activity.endDate?.trim() || '',
     timeMode: activity.time?.trim() ? 'specific' : 'flexible',
     time: activity.time?.trim() || base.time,
     meetingTime: activity.time?.trim() || base.meetingTime,
     endTime: activity.endTime?.trim() || base.endTime,
     capacity: activity.slotsTotal ?? base.capacity,
+    waitlist: activity.waitlist !== false,
     priceMode: resolvePriceMode(activity),
     priceAmount: activity.price ?? 0,
     joinMode: activity.joinMode ?? base.joinMode,

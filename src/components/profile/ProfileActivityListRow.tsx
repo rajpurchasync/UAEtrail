@@ -12,7 +12,13 @@ const formatActivityRowMeta = (activity: ActivityDTO): string => {
 };
 
 /** Public profile / hub — compact hosted activity row (matches personal profile hosting preview). */
-export const ProfileActivityListRow = ({ activity }: { activity: ActivityDTO }) => {
+export const ProfileActivityListRow = ({
+  activity,
+  variant = 'card',
+}: {
+  activity: ActivityDTO;
+  variant?: 'card' | 'plain';
+}) => {
   const navigate = useNavigate();
 
   return (
@@ -31,6 +37,7 @@ export const ProfileActivityListRow = ({ activity }: { activity: ActivityDTO }) 
         </span>
       }
       onClick={() => navigate(`/activity/${activity.id}`)}
+      variant={variant}
     />
   );
 };

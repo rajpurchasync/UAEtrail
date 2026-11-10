@@ -51,4 +51,18 @@ export const facilityApi = {
 
   deleteAdminFacility: (id: string) =>
     apiRequest(`/admin/facilities/${id}`, { method: 'DELETE', auth: true }),
+
+  submitFacilityAmenityReport: (
+    facilityId: string,
+    body: {
+      amenityState: 'working' | 'not_working' | 'unknown';
+      note?: string;
+      photoUrl: string;
+    }
+  ) =>
+    apiRequest<{ data: { id: string; status: string } }>(`/facilities/${facilityId}/condition-reports`, {
+      method: 'POST',
+      auth: true,
+      body: JSON.stringify(body),
+    }),
 } as const;

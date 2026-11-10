@@ -73,6 +73,7 @@ export type ExploreMapStageProps = {
   highlightedExploreItemId?: string | null;
   recenterTo: MapRecenterTarget | null;
   exploreMapCenter: { lat: number; lng: number };
+  deviceLocation?: { lat: number; lng: number } | null;
   onPinClick: (pin: PlaceMapPin) => void;
   onVisibleBoundsChange?: (bounds: MapBounds) => void;
   loading: boolean;
@@ -106,13 +107,15 @@ export type ExploreMapStageProps = {
   onGuestGatedAction?: (action: import('@uaetrail/shared-types').ActivityMapPeekActionId) => void;
   joinInvitePeekBanner?: string | null;
   onShareActivity?: () => void;
-  /** Desktop overlay — Find crew rail or guest sign-in popup. */
+  /** Desktop overlay — guest sign-in gates centered over the map. */
   desktopRightPanelOverlay?: ReactNode;
-  /** `rail` = right column; `centered` = modal over map (guest gates). */
-  desktopMapOverlayLayout?: 'rail' | 'centered';
+  /** Find crew — people pins only, list docked beside the map, no outing filters. */
+  peopleMap?: boolean;
   /** Search modal + results — scoped to map pane. */
   mapSearchOverlay?: ReactNode;
   mapSearchOpen?: boolean;
+  /** Leaflet invalidateSize when left rails or list/crew modes change width. */
+  mapLayoutRevision?: boolean;
 };
 
 export const ExploreMapStage = ({
@@ -147,6 +150,7 @@ export const ExploreMapStage = ({
   highlightedExploreItemId = null,
   recenterTo,
   exploreMapCenter,
+  deviceLocation = null,
   onPinClick,
   onVisibleBoundsChange,
   loading,
@@ -181,9 +185,10 @@ export const ExploreMapStage = ({
   joinInvitePeekBanner = null,
   onShareActivity,
   desktopRightPanelOverlay = null,
-  desktopMapOverlayLayout = 'rail',
+  peopleMap = false,
   mapSearchOverlay = null,
   mapSearchOpen = false,
+  mapLayoutRevision = false,
 }: ExploreMapStageProps) => {
   const [searchParams] = useSearchParams();
   const [guestPreviewDismissed, setGuestPreviewDismissed] = useState(() =>
@@ -207,6 +212,7 @@ export const ExploreMapStage = ({
     isGuestMapCatalogPreviewLimited() &&
     !user &&
     !listOpen &&
+    !loadError &&
     !guestPreviewDismissed &&
     !guestExplorePreviewLimitReached() &&
     !mapSearchOpen &&
@@ -217,7 +223,7 @@ export const ExploreMapStage = ({
 
   return (
   <div className="explore-map-stage relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-    <div className="relative z-0 min-h-0 flex-1 isolate overflow-hidden">
+    <div className="relative z-0 min-h-0 min-w-0 flex-1 isolate overflow-hidden">
       <div className="absolute inset-0 z-0 min-h-[280px]">
         <ExploreMapLoadErrorBoundary onRetry={onReloadMap}>
         <Suspense fallback={<div className="h-full min-h-[280px] w-full bg-[#2a3441]" aria-hidden />}>
@@ -237,9 +243,10 @@ export const ExploreMapStage = ({
           onVisibleBoundsChange={onVisibleBoundsChange}
           recenterTo={recenterTo}
           exploreMapCenter={exploreMapCenter}
+          deviceLocation={deviceLocation}
           className="h-full w-full min-h-[280px]"
           onMapReady={handleMapReady}
-          layoutRevision={listOpen}
+          layoutRevision={mapLayoutRevision || listOpen || peopleMap}
           onSelectedPinScreenPoint={handleSelectedPinScreenPoint}
         />
         </Suspense>
@@ -248,7 +255,7 @@ export const ExploreMapStage = ({
 
       {!listOpen && !isDesktop && user ? <ExploreCoachMarks /> : null}
 
-      {!(isDesktop && listOpen) ? (
+      {!(isDesktop) && !peopleMap ? (
       <ExploreMapChromeBar
         panel={panel}
         mapFilter={mapFilter}
@@ -301,7 +308,7 @@ export const ExploreMapStage = ({
         />
       ) : null}
 
-      {!user && !listOpen && guestExplorePreviewLimitReached() ? (
+      {!user && !listOpen && !loadError && guestExplorePreviewLimitReached() ? (
         <ExploreGuestPreviewLimitBanner />
       ) : null}
 
@@ -320,7 +327,7 @@ export const ExploreMapStage = ({
 
       {loading && mapPins.length === 0 ? <ExploreMapLoadingSkeleton /> : null}
 
-      {!listOpen ? (
+      {!listOpen && !peopleMap ? (
         <div
           className="pointer-events-none absolute inset-x-0 bottom-[calc(var(--explore-float-base)+var(--explore-map-fab-inset))] z-[1100] grid grid-cols-[1fr_auto] grid-rows-[auto_auto] items-center gap-x-3 px-4 md:hidden"
           style={{ rowGap: 'var(--explore-map-fab-stack-gap)' }}
@@ -366,8 +373,9 @@ export const ExploreMapStage = ({
       <div
         className="pointer-events-none absolute right-4 z-[1100] hidden md:flex md:flex-col md:items-end"
         style={{
-          bottom:
-            'calc(var(--explore-map-desktop-fab-bottom) + var(--explore-map-desktop-primary-fab-height) + var(--explore-map-fab-stack-gap) + var(--explore-map-desktop-zoom-clearance))',
+          bottom: peopleMap
+            ? 'var(--explore-map-desktop-fab-bottom)'
+            : 'calc(var(--explore-map-desktop-fab-bottom) + var(--explore-map-desktop-primary-fab-height) + var(--explore-map-fab-stack-gap) + var(--explore-map-desktop-zoom-clearance))',
         }}
       >
         <ExploreMapControlToolbar
@@ -380,6 +388,7 @@ export const ExploreMapStage = ({
           onToggleMapStyle={onToggleMapStyle}
         />
       </div>
+      {!peopleMap ? (
       <div
         className="pointer-events-none absolute right-4 z-[1100] hidden md:block"
         style={{ bottom: 'var(--explore-map-desktop-fab-bottom)' }}
@@ -387,13 +396,14 @@ export const ExploreMapStage = ({
         <button
           type="button"
           onClick={onPrimaryFab}
-          className="pointer-events-auto inline-flex min-h-14 shrink-0 items-center gap-2 rounded-full bg-emerald-600 px-6 py-3.5 text-base font-bold text-white shadow-[0_4px_20px_rgba(5,150,105,.45)] hover:bg-emerald-700 active:scale-[0.98]"
+          className="pointer-events-auto inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_4px_16px_rgba(5,150,105,.35)] hover:bg-emerald-700 active:scale-[0.98]"
           aria-label={primaryFabLabel}
         >
           <Plus className="h-5 w-5 shrink-0" strokeWidth={2.5} aria-hidden />
           {primaryFabLabel}
         </button>
       </div>
+      ) : null}
 
       {selectedCard && selected && isGeographyMapSource(selected.source) ? (
         <PlaceMapPeekHost
@@ -427,11 +437,7 @@ export const ExploreMapStage = ({
 
     {desktopRightPanelOverlay ? (
       <div
-        className={
-          desktopMapOverlayLayout === 'centered'
-            ? `pointer-events-none absolute inset-0 ${EXPLORE_Z.guestJoinSheet}`
-            : 'pointer-events-none absolute inset-0 z-[1200] flex h-full min-h-0 justify-end'
-        }
+        className={`pointer-events-none absolute inset-0 ${EXPLORE_Z.guestJoinSheet}`}
         role="presentation"
       >
         {desktopRightPanelOverlay}

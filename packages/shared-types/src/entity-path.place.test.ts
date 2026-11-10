@@ -10,7 +10,7 @@ describe('place detail paths (CPC-6)', () => {
   it('links new UI to /place/:id', () => {
     expect(placeDetailPath('hiking', 'abc')).toBe('/place/abc');
     expect(placeDetailPath('camping', 'abc')).toBe('/place/abc');
-    expect(placeDetailPath('event', 'abc')).toBe('/place/abc');
+    expect(placeDetailPath('event', 'abc')).toBe('/venue/abc');
     expect(placeDetailPath('shop', 'shop-1')).toBe('/shop/shop-1');
   });
 

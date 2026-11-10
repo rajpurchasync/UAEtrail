@@ -139,7 +139,7 @@ Pick a **context id** when changing code; touch registrar + `src/api/domains/*` 
 
 | Context | Collections (wire) | Key HTTP | FE domain module | UI roots |
 |---------|-------------------|----------|------------------|----------|
-| discovery | `activities`, `locations`, shop tenants | `GET /explore/map` · `GET /me/discover/overlay` · browse also `/list` | `exploreApi` | `src/discovery` (card VM), `src/explore/shell`, `src/activity-discovery`, `src/places-discovery`, `src/explore/*`, `src/list/*` — pin UI §6.1 |
+| discovery | `activities`, `locations`, shop tenants | `GET /explore/map` (`q`, `country`, `area`, `venue`) · `GET /me/discover/overlay` · browse also `/list` | `exploreApi` | `src/discovery` (card VM), `src/explore/shell`, `src/activity-discovery`, `src/places-discovery`, `src/explore/*`, `src/list/*` — pin UI §6.1 |
 | compose | `activities` (seeking) | `POST /publishing/activities`, `POST /me/seeking-posts` | `exploreApi`, `seekingApi`, `organisationApi` | `src/explore/ui/*` |
 | participation | `activity_requests` (`note`, `hostNote`), `activity_participants`, `activity_invites` | **`POST /activities/:id/requests`** (canonical seeking + hosted); `/me/seeking-posts/.../requests` for Find crew manage; tenant **`GET /publishing/requests`** (console API, also Plan manage) | `activitiesApi`, `seekingApi` | Activity detail, Plan manage sheet, `JoinRequestDetail` |
 | *(cross-cut)* | — | `GET /activities/:id` (`viewerAccess`, `myJoinInvite`) | — | **`activity-viewer-access.ts`**, **`activity-invite.ts`** |
@@ -149,8 +149,9 @@ Pick a **context id** when changing code; touch registrar + `src/api/domains/*` 
 | publishing_workspace | + `activities` | `/publishing/*` + `x-organisation-id` | `organisationApi`, `activitiesApi` | `src/pages/publishing/*`, `src/console/*`, `components/activity/*`, `activity/*` |
 | communication | `chat_messages`, group wall | `/chat/*`, group wall | `messagingApi` (`chatApi` + wall via `groupsApi`) | `Messages.tsx`, `src/messaging` |
 | social_graph | `buddy_*`, `user_follows`, `social_groups*` | `/me/buddies`, `/me/buddy-requests`, `/me/groups`, `/me/following`, … | `buddiesApi`, `groupsApi` | `Buddies`, `Groups` — relationship admin; **not** the explore people browse panel |
-| places | `locations` (places) | `GET /places/catalog`, `/places/:id`, `POST /me/places` | `placeApi`, `placeCatalogClient`, `memberCatalogSubmitClientApi` | `PlaceDetail*`, `memberCatalogSubmitClientApi`, `placeCatalogReadsClientApi` |
+| places | `locations` (places), `submissions` | `GET /places/catalog`, `/places/:id`, `POST /me/places`, `POST /me/submissions` | `placeApi`, `placeCatalogClient`, `memberCatalogSubmitClientApi`, `geoHierarchyApi` | `PlaceDetail*`, `/profile/submissions` suggest form |
 | facilities | `facilities` | `GET /facilities/catalog`, `/facilities/:id`, `POST /me/facilities`, `/admin/facilities` | `facilityApi`, `memberCatalogSubmitClientApi` | Facility submit wizard, `AdminPlaces` (`catalogSegment=facility`) |
+| areas | `areas`, `geo_nodes`, `geo_stats`, `geo_outbox` | `GET /areas/:slug`, `GET /geo/tree`, `GET /geo/:id/summary`, `GET /geo/resolve` | `areasApi`, `geoHierarchyApi` | `/area/:slug`, `/geo` tree, `/geo/n/:id` summaries, IndexedDB + Redis/in-process geo cache, explore country/area/venue search |
 | shop_profiles | `merchant_profiles` | `/shop/*` | `shopApi` | `ShopPublic`, shop UI |
 | engagement | `user_badges`, `user_goals`, `user_wishlist`, `entity_follows`, `social_reviews`, … | `/me/badges`, `/me/goals`, `/me/wishlist`, `/me/entity-follows`, `/reviews` | `badgesApi`, `goalsApi`, `wishlistApi`, `entityFollowApi`, `reviewsApi` | `ProfileBadges`, goals, `entityFollowApi`, wishlist guards |
 | platform_ops | `host_applications`, `audit_logs` | `/admin/*`, `POST/DELETE /admin/platform-admins` (master) | `adminApi` | `src/pages/admin/*`, `DashboardLayout`, `ADMIN_LINKS` — **ops tables**, not discovery L1/L2 |
@@ -291,7 +292,7 @@ Canon table: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) (Discovery UI file
 |--------|-----------------|----------------|----------------------------|
 | **Marketing & auth** | `/`, sign-in, `/welcome` | Marketing layout · guest rules on `/` | No — CTAs hand off to `/explore` |
 | **Discovery shell** | `/explore`, `/list` | `ExploreExperience` + map stage; `ListDiscoveryExperience` explorer | **L1–L2** on pins; list explorer → L3; not L3 on the map |
-| **Personal hub** | `/profile`, `/profile/settings/*` | `ConsumerShell` + profile stack | Launcher only — not a second browse home |
+| **Personal hub** | `/profile`, `/settings/*` | `ConsumerShell` + app settings stack | Launcher only — not a second browse home |
 | **Plan & commitments** | `/plan` | `ConsumerShell` | Embeds manage sheets; may deep-link L3 |
 | **Communication** | `/chat`, `/messages`, `/groups` | Tab chrome / inbox | No peek; people **names** link to `/member` or storefront |
 | **Entity detail (L3)** | `/activity`, place URLs, `/area`, `/shop`, org slugs | `MobileDetailShell` / `EntityPublicDetailShell` | L3 — parity with L2 via `resolvePeekDetailAccess` |

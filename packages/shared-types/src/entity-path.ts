@@ -47,7 +47,7 @@ export const normalizePlaceActivityType = (activityType: string): PlaceVenueKind
   return 'hiking';
 };
 
-/** Inbound kind-specific place URL segments (redirect to {@link canonicalPlaceDetailPath}). */
+/** Kind-specific place URL segments. Event venues are live at `/venue/:id`; trail/camp inbound aliases redirect to `/place/:id`. */
 export const inboundKindPlaceDetailPath = (activityType: string, placeId: string): string => {
   const kind = normalizePlaceActivityType(activityType);
   if (kind === 'shop') return `/shop/${encodeURIComponent(placeId)}`;
@@ -56,10 +56,11 @@ export const inboundKindPlaceDetailPath = (activityType: string, placeId: string
   return `/trail/${encodeURIComponent(placeId)}`;
 };
 
-/** Public URL for a place (trail, camp, or event venue). */
+/** Public URL for a place (trail, camp, or event venue). Event venues use `/venue/:id`; `/place/:id` still serves all kinds. */
 export const placeDetailPath = (activityType: string, placeId: string): string => {
   const kind = normalizePlaceActivityType(activityType);
   if (kind === 'shop') return `/shop/${encodeURIComponent(placeId)}`;
+  if (kind === 'event') return inboundKindPlaceDetailPath('event', placeId);
   return canonicalPlaceDetailPath(placeId);
 };
 

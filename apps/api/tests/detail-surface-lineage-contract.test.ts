@@ -258,11 +258,14 @@ describe('detail surface lineage (host publish → activity detail)', () => {
       exposure: 'none',
       gateReason: 'sign_in',
     });
-    expect(guest.body.presentation).toBeNull();
+    expect(guest.body.presentation).toBeTruthy();
+    expect(guest.body.presentation.consumerLayout).toMatchObject({
+      showPublishedCatalog: true,
+    });
 
     const visitor = await registerVerifiedVisitor(app, `${suffix}-detail-read`);
     const res = await request(app)
-      .get(`/api/activities/${hostFixture!.activityId}`)
+      .get(`/api/activities/${hostFixture!.activityId}/me/state`)
       .set('Authorization', `Bearer ${visitor.accessToken}`);
     expect(res.status).toBe(200);
     expect(res.body.data.id).toBe(hostFixture!.activityId);
@@ -331,11 +334,15 @@ describe('detail surface lineage (host publish → activity detail)', () => {
 
     const visitor = await registerVerifiedVisitor(app, `${suffix}-http-publish-read`);
     const publicDetail = await request(app)
-      .get(`/api/activities/${httpPublishedActivityId}`)
+      .get(`/api/activities/${httpPublishedActivityId}/me/state`)
       .set('Authorization', `Bearer ${visitor.accessToken}`);
     expect(publicDetail.status).toBe(200);
     expect(publicDetail.body.data.title).toBe('Lineage HTTP publish hike');
     expect(publicDetail.body.presentation).toBeTruthy();
+
+    const shell = await request(app).get(`/api/activities/${httpPublishedActivityId}`);
+    expect(shell.status).toBe(200);
+    expect(String(shell.headers['cache-control'] ?? '')).toMatch(/public/);
   });
 
   it('unpublished activity is hidden from public detail', async () => {

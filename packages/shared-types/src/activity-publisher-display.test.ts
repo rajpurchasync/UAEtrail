@@ -25,7 +25,7 @@ describe('activity publisher display', () => {
         tenantSlug: 'desert-explorer',
         hostUserId: 'u-omar',
       })
-    ).toBe('/member/u-omar');
+    ).toBe('/member/u-omar?source=host');
   });
 
   it('pro individual posts use person name and member profile', () => {
@@ -46,7 +46,7 @@ describe('activity publisher display', () => {
         tenantSlug: 'omar-guides',
         hostUserId: 'u-omar',
       })
-    ).toBe('/member/u-omar');
+    ).toBe('/member/u-omar?source=host');
   });
 
   it('agency posts use business name and host storefront URL', () => {

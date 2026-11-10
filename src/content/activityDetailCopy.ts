@@ -20,6 +20,10 @@ export const ACTIVITY_DETAIL_THIS_OUTING_LABEL = 'This scheduled outing';
 export const ACTIVITY_DETAIL_LINKED_OUTING_LABEL = 'Linked outing';
 export const ACTIVITY_DETAIL_LINKED_RIDESHARE_LABEL = 'Shared ride for this outing';
 
+/** Consumer jump nav + scroll anchor for linked rideshare / plan linkage block. */
+export const ACTIVITY_DETAIL_LINKED_RIDES_SECTION_ID = 'activity-detail-linked-rides';
+export const ACTIVITY_DETAIL_LINKED_RIDES_JUMP_LABEL = 'Rides';
+
 export const activityDetailLinkedVenueKindLabel = (
   placeKind: 'hiking' | 'camping' | 'event' | string | null | undefined
 ): string => {

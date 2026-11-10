@@ -31,6 +31,8 @@ import {
 import { findAuthUserById } from '../lib/auth-users-store.js';
 import { parseLocalDateTime } from '../lib/datetime.js';
 import { buildActivityDto } from '../lib/mappers.js';
+import { findActivityPrivateById, mergeActivityPrivateCrewFields } from '../lib/activity-private-store.js';
+import { parseActivityPrivateCrewFieldsFromPublishingBody } from '../lib/activity-private-publishing.js';
 import { activityDetailPath } from '../lib/member-routes.js';
 import { createNotificationsMany } from '../lib/notifications-store.js';
 import { scheduleSideEffect } from '../lib/schedule-side-effect.js';
@@ -67,7 +69,10 @@ export const createPublishingTenantActivity = async (input: {
   platformAdmin: boolean;
   body: OperatorTenantActivityCreateInput;
 }): Promise<{ data: ActivityDTO & { groupChatId: string | null } }> => {
-  await assertMemberCanPublishActivities(input.actorId, { platformAdmin: input.platformAdmin });
+  await assertMemberCanPublishActivities(input.actorId, {
+    platformAdmin: input.platformAdmin,
+    pricingMode: input.body.pricingMode,
+  });
   const body = input.body;
 
   const location = await resolveActivityLocation(body.locationId, input.actorId, {
@@ -179,6 +184,7 @@ export const createPublishingTenantActivity = async (input: {
     pricePackages: [],
     pricingMode: pricing.pricingMode,
     capacity: body.capacity,
+    waitlist: body.waitlist !== false,
     outingCategory: body.outingCategory ?? null,
     outingTopic: body.outingTopic ?? null,
     linkedActivityId: body.linkedActivityId ?? null,
@@ -201,6 +207,11 @@ export const createPublishingTenantActivity = async (input: {
     guideUserIds: body.guideUserIds ?? [],
     publishingProfileKind,
   });
+
+  const privateCrew = parseActivityPrivateCrewFieldsFromPublishingBody(body);
+  if (privateCrew) {
+    await mergeActivityPrivateCrewFields({ activityId: created.id, ...privateCrew });
+  }
 
   const groupChatId = await ensureActivityGroupChat(created.id);
   const refreshed = await findTenantActivityForEdit(created.id, input.tenantId);
@@ -272,6 +283,20 @@ export const updatePublishingTenantActivity = async (input: {
           pricingMode: body.pricingMode ?? existing.pricingMode ?? undefined,
         })
       : null;
+
+  const nextPaidMode =
+    pricing?.pricingMode === 'paid' ||
+    body.pricingMode === 'paid' ||
+    existing.pricingMode === 'paid' ||
+    existing.priceBreakdown?.mode === 'paid'
+      ? 'paid'
+      : pricing?.pricingMode ?? body.pricingMode ?? existing.pricingMode;
+  if (nextPaidMode === 'paid') {
+    await assertMemberCanPublishActivities(input.actorId, {
+      platformAdmin: input.platformAdmin,
+      pricingMode: 'paid',
+    });
+  }
 
   if (pricing) {
     const tenant = await findTenantById(tenantId);
@@ -382,6 +407,7 @@ export const updatePublishingTenantActivity = async (input: {
         : {}),
     ...(body.pricingMode !== undefined ? { pricingMode: body.pricingMode } : {}),
     capacity: body.capacity,
+    waitlist: body.waitlist,
     host: body.hostId
       ? { connect: { id: body.hostId } }
       : body.hostId === null
@@ -432,6 +458,11 @@ export const updatePublishingTenantActivity = async (input: {
       actorUserId: input.actorId,
       guideUserIds: body.guideUserIds,
     });
+  }
+
+  const privateCrew = parseActivityPrivateCrewFieldsFromPublishingBody(body);
+  if (privateCrew) {
+    await mergeActivityPrivateCrewFields({ activityId, ...privateCrew });
   }
 
   const refreshed = await findTenantActivityForEdit(activityId, tenantId);
@@ -510,7 +541,8 @@ export const duplicatePublishingTenantActivity = async (input: {
     metadata: { sourceActivityId: input.activityId },
   });
   const groupChatId = await ensureActivityGroupChat(duplicated.id);
-  return { data: { ...buildActivityDto(duplicated), groupChatId: groupChatId ?? null } };
+  const priv = await findActivityPrivateById(duplicated.id);
+  return { data: { ...buildActivityDto(duplicated, { activityPrivate: priv }), groupChatId: groupChatId ?? null } };
 };
 
 export const publishPublishingTenantActivity = async (input: {
@@ -519,11 +551,16 @@ export const publishPublishingTenantActivity = async (input: {
   platformAdmin: boolean;
   activityId: string;
 }) => {
-  await assertMemberCanPublishActivities(input.actorId, { platformAdmin: input.platformAdmin });
   const event = await findTenantActivityById(input.activityId, input.tenantId);
   if (!event) {
     throw new ApiError(404, 'activity_not_found', 'Activity not found.');
   }
+  const paidMode =
+    event.pricingMode === 'paid' || event.priceBreakdown?.mode === 'paid' ? 'paid' : event.pricingMode;
+  await assertMemberCanPublishActivities(input.actorId, {
+    platformAdmin: input.platformAdmin,
+    pricingMode: paidMode,
+  });
   if (event.status !== ActivityStatus.DRAFT) {
     throw new ApiError(400, 'activity_not_draft', 'Only draft activities can be published.');
   }

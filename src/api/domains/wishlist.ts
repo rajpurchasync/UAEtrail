@@ -5,9 +5,10 @@ import { apiRequest } from '../client';
 export const wishlistApi = {
   getMeWishlist: () => apiRequest<{ data: WishlistItemDTO[] }>('/me/wishlist', { auth: true }),
 
-  checkWishlist: (target: { locationId?: string; activityId?: string }) => {
+  checkWishlist: (target: { locationId?: string; areaId?: string; activityId?: string }) => {
     const params = new URLSearchParams();
     if (target.locationId) params.set('locationId', target.locationId);
+    if (target.areaId) params.set('areaId', target.areaId);
     if (target.activityId) params.set('activityId', target.activityId);
     return apiRequest<{ data: { saved: boolean; wishlistItemId: string | null } }>(
       `/me/wishlist/check?${params.toString()}`,
@@ -17,6 +18,7 @@ export const wishlistApi = {
 
   addWishlistItem: (payload: {
     locationId?: string;
+    areaId?: string;
     activityId?: string;
     alertOnMatch?: boolean;
     watchOutingCategory?: string | null;

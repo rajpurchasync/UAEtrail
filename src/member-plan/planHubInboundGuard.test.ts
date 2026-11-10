@@ -59,6 +59,22 @@ describe('planHubInboundGuard', { timeout: 30_000 }, () => {
     expect(violations).toEqual([]);
   });
 
+  it('consumer UI does not link to legacy /profile/settings (use APP_SETTINGS_PATH)', () => {
+    const violations: string[] = [];
+    const legacySettingsLink =
+      /(?:to|href)=\{?[`"']\/profile\/settings|(?:to|href)=["']\/profile\/settings|navigate\(\s*[`"']\/profile\/settings/;
+
+    for (const file of collectSourceFiles(SCAN_ROOT)) {
+      if (ALLOWLIST.has(file)) continue;
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (legacySettingsLink.test(content)) {
+        violations.push(`${file}: use APP_SETTINGS_PATH from routingCatalog`);
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
   it('consumer UI does not link to legacy /trips hub (use /plan)', () => {
     const violations: string[] = [];
     const legacyTripsLink =

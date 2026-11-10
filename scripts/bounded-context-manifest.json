@@ -12,6 +12,7 @@
         "apps/api/src/lib/explore-map-route.ts",
         "apps/api/src/lib/explore-map-viewer-access.ts",
         "apps/api/src/lib/explore-map-cache-schedule.ts",
+        "apps/api/src/lib/explore-geo-search.ts",
         "apps/api/src/services/explore-map-overlay-read.ts",
         "apps/api/src/lib/discovery-card-projection.ts",
         "apps/api/src/lib/activity-engagement-policy-input.ts",
@@ -20,9 +21,10 @@
       "routeRegistrars": [
         "apps/api/src/routes/user/registerPublicActivityRoutes.ts",
         "apps/api/src/routes/user/registerPublicPlaceRoutes.ts",
-        "apps/api/src/routes/user/registerMeDiscoverOverlayRoutes.ts"
+        "apps/api/src/routes/user/registerMeDiscoverOverlayRoutes.ts",
+        "apps/api/src/routes/user/registerPublicVitalsRoutes.ts"
       ],
-      "feDomains": ["src/api/domains/explore.ts"],
+      "feDomains": ["src/api/domains/explore.ts", "src/api/domains/weather.ts"],
       "feRoots": [
         "src/explore",
         "src/explore/shell",
@@ -68,12 +70,18 @@
         "src/api/domains/seeking.ts"
       ],
       "feRoots": [
+        "src/plan/PlanTodayPage.tsx",
         "src/pages/JoinRequestDetail.tsx",
         "src/pages/ActivityDetail.tsx",
         "src/hooks/useActivityJoinFlow.ts",
         "src/hooks/activityJoinClientApi.ts",
         "src/hooks/usePublicActivityDetail.ts",
-        "src/components/activity/detail"
+        "src/hooks/publicPlatformAlertsClientApi.ts",
+        "src/components/activity/detail",
+        "src/detail",
+        "src/activity/detail",
+        "src/offline",
+        "src/perf"
       ]
     },
     {
@@ -160,16 +168,27 @@
         "apps/api/src/services/place-catalog.ts",
         "apps/api/src/services/place-registry.ts",
         "apps/api/src/services/place-submit.ts",
-        "apps/api/src/services/catalog-submit-notifications.ts"
+        "apps/api/src/services/catalog-submit-notifications.ts",
+        "apps/api/src/services/platform-alerts-read.ts",
+        "apps/api/src/services/platform-alerts-admin.ts",
+        "apps/api/src/services/amenity-reports.ts",
+        "apps/api/src/services/referral-click-write.ts",
+        "apps/api/src/lib/platform-alerts-store.ts",
+        "apps/api/src/lib/amenity-reports-store.ts",
+        "apps/api/src/lib/submissions-store.ts",
+        "apps/api/src/services/submission-commands.ts"
       ],
       "routeRegistrars": [
         "apps/api/src/routes/user/registerPublicPlaceRoutes.ts",
+        "apps/api/src/routes/user/registerPublicAlertsAndReferralRoutes.ts",
         "apps/api/src/routes/user/registerMeSubmittedPlaceRoutes.ts",
+        "apps/api/src/routes/user/registerMeSubmissionRoutes.ts",
         "apps/api/src/routes/admin/registerAdminPlaceRoutes.ts"
       ],
       "feDomains": [
         "src/api/domains/places.ts",
         "src/api/domains/placeCatalogClient.ts",
+        "src/api/domains/platformAlerts.ts",
         "src/hooks/memberCatalogSubmitClientApi.ts",
         "src/hooks/placeCatalogReadsClientApi.ts"
       ],
@@ -181,7 +200,10 @@
         "src/pages/PlaceDetailPage.tsx",
         "src/components/place",
         "src/hooks/usePlaceDetailPage.ts",
-        "src/hooks/placeDetailClientApi.ts"
+        "src/hooks/placeDetailClientApi.ts",
+        "src/detail",
+        "src/pages/Submissions.tsx",
+        "src/place/SuggestCatalogForm.tsx"
       ]
     },
     {
@@ -201,8 +223,8 @@
         "apps/api/src/routes/user/registerMeFacilityRoutes.ts",
         "apps/api/src/routes/admin/registerAdminFacilityRoutes.ts"
       ],
-      "feDomains": ["src/api/domains/facilities.ts", "src/hooks/memberCatalogSubmitClientApi.ts"],
-      "feRoots": ["src/place/adminFacilityPlaceAdapter.ts", "src/pages/admin/Places.tsx"]
+      "feDomains": ["src/api/domains/facilities.ts", "src/hooks/memberCatalogSubmitClientApi.ts", "src/hooks/facilityAmenityReportClientApi.ts"],
+      "feRoots": ["src/place/adminFacilityPlaceAdapter.ts", "src/pages/admin/Places.tsx", "src/facility/detail"]
     },
     {
       "id": "shop_profiles",
@@ -279,18 +301,32 @@
       "label": "Geographic areas",
       "apiFiles": [
         "apps/api/src/lib/areas-store.ts",
-        "apps/api/src/lib/area-resolution.ts"
+        "apps/api/src/lib/area-resolution.ts",
+        "apps/api/src/lib/geo-tree.ts",
+        "apps/api/src/lib/geo-resolve.ts",
+        "apps/api/src/lib/geo-read.ts",
+        "apps/api/src/lib/geo-read-cache.ts",
+        "apps/api/src/lib/geo-write.ts",
+        "apps/api/src/lib/geo-worker.ts",
+        "apps/api/src/lib/geo-backfill.ts",
+        "apps/api/src/services/geo-hierarchy-read.ts"
       ],
       "routeRegistrars": [
         "apps/api/src/routes/user/registerPublicAreaRoutes.ts",
+        "apps/api/src/routes/user/registerPublicGeoHierarchyRoutes.ts",
         "apps/api/src/routes/admin/registerAdminAreaRoutes.ts"
       ],
-      "feDomains": ["src/api/domains/areas.ts"],
+      "feDomains": ["src/api/domains/areas.ts", "src/api/domains/geoHierarchy.ts"],
       "feRoots": [
         "src/pages/AreaDetailPage.tsx",
         "src/components/area/AreaDetailView.tsx",
         "src/hooks/areaHubClientApi.ts",
-        "src/explore/exploreAreaFilter.ts"
+        "src/hooks/geoHierarchyClientApi.ts",
+        "src/explore/exploreAreaFilter.ts",
+        "src/geo",
+        "src/pages/GeoTreePage.tsx",
+        "src/pages/GeoCountryPage.tsx",
+        "src/pages/GeoNodePage.tsx"
       ]
     },
     {
@@ -327,6 +363,9 @@
         "apps/api/src/routes/admin/registerAdminPlaceRoutes.ts",
         "apps/api/src/routes/admin/registerAdminFacilityRoutes.ts",
         "apps/api/src/routes/admin/registerAdminAreaRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminSubmissionRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminAlertRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminAmenityReportRoutes.ts",
         "apps/api/src/routes/admin/registerAdminMetricsRoutes.ts",
         "apps/api/src/routes/admin/registerAdminUserRoutes.ts",
         "apps/api/src/routes/admin/registerAdminTenantRoutes.ts",
@@ -340,6 +379,7 @@
       "feDomains": ["src/api/domains/admin.ts", "src/api/domains/safety.ts"],
       "feRoots": [
         "src/hooks/contentReportClientApi.ts",
+        "src/hooks/adminAlertsClientApi.ts",
         "src/pages/admin/Overview.tsx",
         "src/pages/admin/Places.tsx",
         "src/pages/admin/Areas.tsx",
@@ -349,6 +389,7 @@
         "src/pages/admin/Groups.tsx",
         "src/pages/admin/AuditLog.tsx",
         "src/pages/admin/Reports.tsx",
+        "src/pages/admin/Alerts.tsx",
         "src/pages/admin/Settings.tsx",
         "src/pages/admin/Account.tsx",
         "src/pages/admin/Notifications.tsx",
@@ -382,6 +423,7 @@
     "explore",
     "facilities",
     "goals",
+    "geoHierarchy",
     "groups",
     "media",
     "member",
@@ -394,6 +436,8 @@
     "reviews",
     "shop",
     "safety",
+    "weather",
+    "platformAlerts",
     "wishlist"
   ],
   "removedProducts": {

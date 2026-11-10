@@ -1,8 +1,12 @@
 import { EXPLORE_GUEST_MAP_PREVIEW_MAX_MATCHES } from '../explore/exploreBrowseTaxonomy';
 import {
+  GUEST_ACTIVITY_DETAIL_PREVIEW_TITLE,
   GUEST_GATE_OOPS_TITLE,
+  GUEST_PLACE_DETAIL_PREVIEW_TITLE,
+  guestActivityDetailPreviewBody,
   guestJoinSheetBody,
   guestJoinSheetHeadline,
+  guestPlaceDetailPreviewBody,
   type GuestJoinCopyInput,
 } from './guestJoinCopy';
 
@@ -14,6 +18,7 @@ export type GuestBrowseGateIntent =
   | 'peek-details'
   | 'preview-limit'
   | 'join-activity'
+  | 'place-detail'
   | 'member-profile';
 
 type GateCopy = { title: string; body: string };
@@ -44,12 +49,28 @@ const GATE_COPY: Record<Exclude<GuestBrowseGateIntent, 'join-activity'>, GateCop
     title: GUEST_GATE_OOPS_TITLE,
     body: 'Sign in to view member profiles and connect with people on upcoming outings.',
   },
+  'place-detail': {
+    title: GUEST_PLACE_DETAIL_PREVIEW_TITLE,
+    body: guestPlaceDetailPreviewBody(null),
+  },
 };
 
 export const guestBrowseGateCopy = (
   intent: GuestBrowseGateIntent,
-  joinInput?: GuestJoinCopyInput
+  joinInput?: GuestJoinCopyInput & { detailPreview?: boolean }
 ): GateCopy => {
+  if (intent === 'place-detail' && joinInput?.activityTitle) {
+    return {
+      title: GUEST_PLACE_DETAIL_PREVIEW_TITLE,
+      body: guestPlaceDetailPreviewBody(joinInput.activityTitle),
+    };
+  }
+  if (intent === 'join-activity' && joinInput?.detailPreview) {
+    return {
+      title: GUEST_ACTIVITY_DETAIL_PREVIEW_TITLE,
+      body: guestActivityDetailPreviewBody(joinInput),
+    };
+  }
   if (intent === 'join-activity' && joinInput) {
     return {
       title: guestJoinSheetHeadline(joinInput),

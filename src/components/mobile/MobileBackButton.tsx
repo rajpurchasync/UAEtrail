@@ -13,6 +13,8 @@ interface MobileBackButtonProps {
   backBehavior?: 'history' | 'fallback';
   /** When set, skips built-in back navigation (e.g. list category → home). */
   onPress?: () => void;
+  /** Keep `label` as declared — do not rewrite from the in-app back stack while the view loads. */
+  preferDeclaredLabel?: boolean;
 }
 
 /**
@@ -26,16 +28,19 @@ export const MobileBackButton = ({
   className = '',
   tone = 'default',
   onPress,
+  preferDeclaredLabel = false,
 }: MobileBackButtonProps) => {
   const navigate = useNavigate();
   const { key: locationKey } = useLocation();
 
-  const effectiveLabel = useMemo(
-    () => (label ? resolveBackLabel(peekBackTarget(fallbackTo), fallbackTo, label) : label),
+  const effectiveLabel = useMemo(() => {
+    if (!label) return label;
+    // Local dismiss (sheet / overlay) — do not replace with history destination ("Explore").
+    if (onPress || preferDeclaredLabel) return label;
+    return resolveBackLabel(peekBackTarget(fallbackTo), fallbackTo, label);
     // Recompute whenever the router lands on a new entry.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [fallbackTo, label, locationKey]
-  );
+  }, [fallbackTo, label, locationKey, onPress]);
 
   const handleBack = () => {
     navigateBack(navigate, fallbackTo);

@@ -3,6 +3,7 @@ import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { buildDiscoveryCardViewModelCard } from '../discovery';
 import { buildDiscoveryListMeta } from '../discovery/discoveryCardModel';
 import {
+  buildActivitySpotsLeftLabel,
   buildExplorePeekSpotsLabel,
   buildExploreRouteLabel,
   buildExploreSpotsSegment,
@@ -92,6 +93,14 @@ describe('formatExploreDayShort', () => {
     expect(formatExploreDayShort('2026-09-16')).toBe('Wed');
     expect(formatExploreDayShort('2026-09-12')).toBe('Sat 12 Sep 26');
     expect(formatExploreDayShort('2026-11-09')).toBe('Mon 09 Nov 26');
+  });
+});
+
+describe('formatExploreCalendarDateShort', () => {
+  it('formats review stamps as DD Mon YY without weekday', async () => {
+    const { formatExploreCalendarDateShort } = await import('@uaetrail/shared-types');
+    expect(formatExploreCalendarDateShort('2026-11-08')).toBe('08 Nov 26');
+    expect(formatExploreCalendarDateShort('2026-05-08')).toBe('08 May 26');
   });
 });
 
@@ -335,6 +344,15 @@ describe('buildExplorePeekSpotsLabel', () => {
     expect(buildExplorePeekSpotsLabel(8, 20)).toBe('12/20');
     expect(buildExplorePeekSpotsLabel(3, 3)).toBe('0/3');
     expect(buildExplorePeekSpotsLabel(null, 5, 2)).toBe('2/5');
+  });
+});
+
+describe('buildActivitySpotsLeftLabel', () => {
+  it('shows remaining spots and heals stale slotsAvailable using participants', () => {
+    expect(buildActivitySpotsLeftLabel(20, 20)).toBe('20 of 20 spots left');
+    expect(buildActivitySpotsLeftLabel(19, 20)).toBe('19 of 20 spots left');
+    expect(buildActivitySpotsLeftLabel(20, 20, { participantCount: 1 })).toBe('19 of 20 spots left');
+    expect(buildActivitySpotsLeftLabel(20, 20, { countsGoing: 3 })).toBe('17 of 20 spots left');
   });
 });
 

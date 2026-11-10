@@ -6,7 +6,7 @@ import {
   MyActivityDTO,
   WithdrawReason,
 } from '@uaetrail/shared-types';
-import { apiRequest, getStoredSession } from '../client';
+import { apiRequest } from '../client';
 import { ADMIN_TABLE_PAGE_SIZE } from '../listAllPages';
 import type { ActivityDetail, ActivityRequestView } from '../types';
 
@@ -31,7 +31,16 @@ export const activitiesApi = {
       viewerAccess: ActivityViewerAccessDTO;
       presentation?: ActivityPresentationDTO;
     }>(`/activities/${id}`, {
-      auth: Boolean(getStoredSession()),
+      auth: false,
+    }),
+
+    getPublicActivityMeState: (id: string) =>
+    apiRequest<{
+      data: ActivityDetail;
+      viewerAccess: ActivityViewerAccessDTO;
+      presentation?: ActivityPresentationDTO;
+    }>(`/activities/${id}/me/state`, {
+      auth: true,
     }),
 
     listActivityJoinInvitesSent: (activityId: string) =>
@@ -107,7 +116,7 @@ export const activitiesApi = {
 
     createJoinRequest: (
       activityId: string,
-      body?: { note?: string; packingCheckedIds?: string[]; packingSignature?: string }
+      body?: { note?: string; packingCheckedIds?: string[]; packingSignature?: string; adults?: number; kids?: number }
     ) =>
     apiRequest<{ data: JoinRequestDTO }>(`/activities/${activityId}/requests`, {
       method: 'POST',
@@ -117,9 +126,15 @@ export const activitiesApi = {
 
     rsvpActivity: (
       activityId: string,
-      body?: { note?: string; packingCheckedIds?: string[]; packingSignature?: string }
+      body?: { note?: string; packingCheckedIds?: string[]; packingSignature?: string; adults?: number; kids?: number }
     ) =>
-    apiRequest<{ data: { request: JoinRequestDTO; participation: MyActivityDTO['participation'] } }>(
+    apiRequest<{
+      data: {
+        request: JoinRequestDTO;
+        participation: MyActivityDTO['participation'] | null;
+        waitlisted?: boolean;
+      };
+    }>(
       `/activities/${activityId}/rsvp`,
       {
         method: 'POST',
@@ -145,6 +160,20 @@ export const activitiesApi = {
       auth: true,
       body: JSON.stringify({ note }),
     }),
+
+    updateJoinRequestParty: (
+      activityId: string,
+      requestId: string,
+      body: { note?: string; adults?: number; kids?: number }
+    ) =>
+      apiRequest<{ data: { id: string; note?: string | null; adults?: number; kids?: number } }>(
+        `/activities/${activityId}/requests/${requestId}`,
+        {
+          method: 'PATCH',
+          auth: true,
+          body: JSON.stringify(body),
+        }
+      ),
 
     getMeRequests: () => apiRequest<{ data: ActivityRequestView[] }>('/me/requests?pageSize=100', { auth: true }),
 

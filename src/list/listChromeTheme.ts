@@ -6,7 +6,7 @@ export const LIST_CHROME = {
   pageBg: 'bg-neutral-50',
   chromeBg: 'bg-white/95 backdrop-blur-md',
   chromeBorder: 'border-b border-neutral-200/60 shadow-[0_1px_0_rgba(15,23,42,.04)]',
-  maxWidth: 'mx-auto w-full max-w-lg md:max-w-xl lg:max-w-lg',
+  maxWidth: 'mx-auto w-full max-w-lg md:max-w-3xl lg:max-w-5xl',
   horizontalPad: 'px-4 md:px-6',
   menuButton:
     '!bg-neutral-100/90 !text-neutral-700 !border-neutral-200/70 hover:!bg-neutral-200/80',

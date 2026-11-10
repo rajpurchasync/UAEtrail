@@ -19,7 +19,21 @@ export const BWL_COLLECTIONS = {
   /** Target name (MIG-COH-02 optional) */
   PLACES: 'places',
   FACILITIES: 'facilities',
+  /** Public detail-surface safety / ops banners (plan detail pages). */
+  PLATFORM_ALERTS: 'platform_alerts',
+  /** Partner outbound click telemetry (commercial facilities / shops). */
+  REFERRAL_CLICKS: 'referral_clicks',
   AREAS: 'areas',
+  GEO_NODES: 'geo_nodes',
+  GEO_STATS: 'geo_stats',
+  GEO_OUTBOX: 'geo_outbox',
+  GEO_META: 'geo_meta',
+  SUBMISSIONS: 'submissions',
+  AMENITY_REPORTS: 'amenity_reports',
+  MERGES: 'merges',
+  CATALOGS: 'catalogs',
+  VERIFICATION_DOCUMENTS: 'verification_documents',
+  PAYMENTS: 'payments',
   TENANTS: 'tenants',
   TENANT_MEMBERSHIPS: 'tenant_memberships',
   /** Collection stays `host_applications` until optional rename (MIG-COH-03 / COH-12). */

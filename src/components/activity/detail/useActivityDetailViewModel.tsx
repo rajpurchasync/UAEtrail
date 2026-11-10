@@ -30,6 +30,7 @@ import {
 } from '../../../activity/activityDetailProSocial';
 import { activityDetailPath, proMembershipPath } from '../../../config/routingCatalog';
 import { useAuth } from '../../../context/AuthContext';
+import { viewerCanManageActivityOuting } from '../../../utils/viewerHostsActivity';
 import { activityScheduleHasEnded } from '@uaetrail/shared-types';
 import {
   buildParticipantPostCheckInReviewPrompts,
@@ -160,6 +161,11 @@ export const useActivityDetailViewModel = ({
   onParticipantInviteFriends,
 }: ActivityDetailViewModelInput) => {
   const { user } = useAuth();
+  const isActivityHostViewer = viewerCanManageActivityOuting(
+    activity,
+    user?.id ?? null,
+    user?.role ?? null
+  );
   const isEmbedded = layout === 'embedded';
 
   const pageModel = useMemo(
@@ -263,7 +269,7 @@ export const useActivityDetailViewModel = ({
     Boolean(hostCrewChatPolicy && !previewMode)
   );
   const showHostCheckInPrompt = Boolean(
-    hostCrewChatPolicy && !previewMode && !hostReviewHints.loading
+    isActivityHostViewer && hostCrewChatPolicy && !previewMode && !hostReviewHints.loading
   );
 
   const publishingProfileKind = activity.publishingProfileKind ?? 'community';
@@ -348,7 +354,7 @@ export const useActivityDetailViewModel = ({
     const wire = resolveActivityDetailWirePresentation({
       activity,
       viewerAccess,
-      isHostUser: Boolean(hostCrewChatPolicy),
+      isHostUser: isActivityHostViewer,
       joinUiState: joinUiStateForSurfaces,
       myParticipation: participation ?? null,
       myRequest: myRequest
@@ -363,32 +369,42 @@ export const useActivityDetailViewModel = ({
     isEmbedded,
     viewerAccess,
     activity,
-    hostCrewChatPolicy,
+    isActivityHostViewer,
     joinUiStateForSurfaces,
     participation,
     myRequest,
   ]);
 
-  const consumerWireEngagementCta =
-    consumerDetailLayout && !guestViewer && mapPeekActionHandlers
-      ? (
-          <ActivityDetailEngagementActions
-            model={
-              {
-                activity,
-                viewerAccess: viewerAccess ?? null,
-                wireStrips: wireStrips ?? null,
-                joinUiState: joinUiStateForSurfaces,
-              } satisfies ActivityDetailEngagementModel
-            }
-            handlers={mapPeekActionHandlers}
-            linkRideshareTenantId={linkRideshareTenantId}
-            onParticipantInviteFriends={onParticipantInviteFriends}
-            onWithdraw={onWithdraw}
-            isHostUser={Boolean(hostCrewChatPolicy)}
-          />
-        )
-      : undefined;
+  const engagementModel = {
+    activity,
+    viewerAccess: viewerAccess ?? null,
+    wireStrips: wireStrips ?? null,
+    joinUiState: joinUiStateForSurfaces,
+    myRequest: myRequest ?? null,
+  } satisfies ActivityDetailEngagementModel;
+
+  const engagementActionsBase = consumerDetailLayout && !guestViewer && mapPeekActionHandlers
+    ? {
+        model: engagementModel,
+        handlers: mapPeekActionHandlers,
+        linkRideshareTenantId,
+        onParticipantInviteFriends,
+        onWithdraw,
+        isHostUser: isActivityHostViewer,
+      }
+    : null;
+
+  const consumerWireEngagementCtaMobile = engagementActionsBase ? (
+    <ActivityDetailEngagementActions {...engagementActionsBase} layout="mobile-footer" />
+  ) : undefined;
+
+  const consumerWireEngagementCtaAside = engagementActionsBase ? (
+    <ActivityDetailEngagementActions
+      {...engagementActionsBase}
+      layout="desktop-aside"
+      showDesktopFooterIcons
+    />
+  ) : undefined;
 
   const { joinUiState, sharePayload, stickyFooter, sidebarJoin, planRequestManagePanel } =
     useActivityDetailJoinSurfaces({
@@ -417,11 +433,13 @@ export const useActivityDetailViewModel = ({
     accessLng,
     requiresSignIn: guestViewer,
     consumerWireEngagement: consumerDetailLayout,
-    isHostViewer: Boolean(hostCrewChatPolicy),
-    consumerWireEngagementCta,
+    isHostViewer: isActivityHostViewer,
+    consumerWireEngagementCta: consumerWireEngagementCtaMobile,
   });
 
-  const isHostUser = Boolean(hostCrewChatPolicy);
+  const isHostUser = isActivityHostViewer;
+  const confirmedParticipantCount =
+    activity.participants?.length ?? activity.participantPreviews?.length ?? 0;
   const heroStatusChips = resolveActivityDetailHeroStatusChips({
     joinUiState,
     slotsAvailable: activity.slotsAvailable ?? 0,
@@ -429,7 +447,7 @@ export const useActivityDetailViewModel = ({
     previewMode,
     isHostUser,
     pendingJoinInviteCount: wireStrips?.pendingJoinInviteCount,
-    confirmedParticipantCount: activity.participants?.length ?? 0,
+    confirmedParticipantCount,
   });
   const peekParityCard = useMemo((): DiscoveryCardModel | null => {
     if (!consumerDetailLayout || previewMode) return null;
@@ -447,7 +465,7 @@ export const useActivityDetailViewModel = ({
     previewMode,
     isHostUser,
     pendingJoinInviteCount: wireStrips?.pendingJoinInviteCount,
-    confirmedParticipantCount: activity.participants?.length ?? 0,
+    confirmedParticipantCount,
   });
 
   const heroFactChips = consumerDetailLayout
@@ -549,7 +567,7 @@ export const useActivityDetailViewModel = ({
     viewerAccess,
     wireStrips,
     joinUiState,
-    consumerEngagementActions: consumerWireEngagementCta,
+    consumerEngagementActions: consumerWireEngagementCtaAside,
     onOfferLinkedRideshare,
     linkRideshareTenantId,
     detailKind: pageModel.kind,

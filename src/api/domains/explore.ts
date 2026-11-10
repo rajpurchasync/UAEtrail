@@ -6,6 +6,9 @@ export type ExploreMapQueryParams = {
   cursor?: string | null;
   limit?: number;
   area?: string | null;
+  q?: string | null;
+  country?: string | null;
+  venue?: string | null;
 };
 
 const exploreMapSearch = (params?: ExploreMapQueryParams): string => {
@@ -14,6 +17,9 @@ const exploreMapSearch = (params?: ExploreMapQueryParams): string => {
   if (params?.cursor) search.set('cursor', params.cursor);
   if (params?.limit != null) search.set('limit', String(params.limit));
   if (params?.area) search.set('area', params.area);
+  if (params?.q) search.set('q', params.q);
+  if (params?.country) search.set('country', params.country);
+  if (params?.venue) search.set('venue', params.venue);
   return search.toString();
 };
 

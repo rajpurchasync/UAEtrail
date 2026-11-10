@@ -2,7 +2,7 @@ import { EXPLORE_MAP_PATH, PROFILE_REVIEWS_PATH, signInPath } from '../config/ro
 import { useCallback, useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { ChevronRight, Loader2, Star } from 'lucide-react';
-import type { MyReviewDTO } from '@uaetrail/shared-types';
+import { formatExploreCalendarDateShort, type MyReviewDTO } from '@uaetrail/shared-types';
 import { fetchMyReviews, updateMyReviewById } from '../hooks/memberReviewsApi';
 import { useAuth } from '../context/AuthContext';
 import { useProfileHubBackChrome } from '../hooks/useProfileHubBackChrome';
@@ -138,7 +138,7 @@ const MyReviewCard = ({
           <p className="mt-3 text-sm leading-relaxed text-neutral-700">{review.comment}</p>
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
             <span className="text-xs text-neutral-500">
-              {new Date(review.createdAt).toLocaleDateString()}
+              {formatExploreCalendarDateShort(review.createdAt) ?? review.createdAt}
             </span>
             <div className="flex items-center gap-3">
               <button

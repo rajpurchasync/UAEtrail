@@ -34,6 +34,7 @@ import { MapPinPicker } from '../../components/ui/MapPinPicker';
 import { ImageUpload } from '../../components/ui';
 import { AssetKeyUpload } from '../../components/ui/AssetKeyUpload';
 import { AppSelect, ADMIN_INPUT_CLASS, ADMIN_SELECT_CLASS } from '../../components/ui/AppSelect';
+import { SubmissionsQueue } from '../../components/admin/SubmissionsQueue';
 
 /* ─── Constants ──────────────────────────────────────────────────────────── */
 
@@ -334,6 +335,7 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
       links={ADMIN_LINKS}
     >
       <div className="space-y-4">
+        <SubmissionsQueue />
         <p className="text-sm text-gray-600 max-w-3xl">
           Curated explore pins can be corrected here — open <strong>Edit</strong>, move the map pin, and update name,
           region, and description. Saves refresh the map and are kept when the JSON catalog is re-imported.

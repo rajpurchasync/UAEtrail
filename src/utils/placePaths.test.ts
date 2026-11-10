@@ -11,14 +11,14 @@ describe('placePaths', () => {
   it('builds canonical public URLs for places', () => {
     expect(placeDetailPath('hiking', 'abc')).toBe('/place/abc');
     expect(placeDetailPath('camping', 'abc')).toBe('/place/abc');
-    expect(placeDetailPath('event', 'abc')).toBe('/place/abc');
+    expect(placeDetailPath('event', 'abc')).toBe('/venue/abc');
     expect(placeDetailPath('shop', 'abc')).toBe('/shop/abc');
   });
 
   it('keeps legacy location and venue aliases in sync', () => {
     expect(locationDetailPath('hiking', 'x')).toBe(placeDetailPath('hiking', 'x'));
     expect(venueLocationPath('camping', 'x')).toBe(placeDetailPath('camping', 'x'));
-    expect(placeSharePath('event', 'x')).toBe('/place/x');
+    expect(placeSharePath('event', 'x')).toBe('/venue/x');
   });
 
   it('parses canonical, venue, and legacy event place paths', () => {

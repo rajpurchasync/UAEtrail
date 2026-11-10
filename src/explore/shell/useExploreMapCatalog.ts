@@ -14,8 +14,14 @@ export const useExploreMapCatalog = (input: {
   const myPlanMapMode = parseExploreMyPlanMapMode(input.searchParams);
   const areaSlug = parseExploreAreaSlug(input.searchParams);
   const mapFetch = useExploreMapFetchScope(areaSlug);
+  const geoSearch = {
+    q: input.searchParams.get('q')?.trim() || null,
+    country: input.searchParams.get('country')?.trim() || null,
+    venue: input.searchParams.get('venue')?.trim() || null,
+  };
   const { data: items = [], isLoading: loading, error: mapError } = useExploreMap({
     scope: mapFetch.scope,
+    geoSearch,
   });
   const { ids: myPlanPinIds, loading: myPlanPinsLoading } = useMemberJourneyMapPinIds(
     myPlanMapMode ? input.userId : undefined

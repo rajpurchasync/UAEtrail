@@ -1,6 +1,56 @@
 {
-  "generated": "2026-10-19",
+  "generated": "2026-11-09",
   "endpoints": [
+    {
+      "method": "GET",
+      "path": "/alerts",
+      "registrar": "apps/api/src/routes/admin/registerAdminAlertRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/alerts",
+      "registrar": "apps/api/src/routes/admin/registerAdminAlertRoutes.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/alerts/:id",
+      "registrar": "apps/api/src/routes/admin/registerAdminAlertRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/alerts/:id/expire",
+      "registrar": "apps/api/src/routes/admin/registerAdminAlertRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/amenity-reports",
+      "registrar": "apps/api/src/routes/admin/registerAdminAmenityReportRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/amenity-reports/:id/confirm",
+      "registrar": "apps/api/src/routes/admin/registerAdminAmenityReportRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/submissions",
+      "registrar": "apps/api/src/routes/admin/registerAdminSubmissionRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/submissions/:id/review",
+      "registrar": "apps/api/src/routes/admin/registerAdminSubmissionRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/verification-documents",
+      "registrar": "apps/api/src/routes/admin/registerAdminVerificationRoutes.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/verification-documents/:id",
+      "registrar": "apps/api/src/routes/admin/registerAdminVerificationRoutes.ts"
+    },
     {
       "method": "GET",
       "path": "/shop/${prefix}/stores",
@@ -382,6 +432,11 @@
       "registrar": "apps/api/src/routes/user/registerMemberStatusRoutes.ts"
     },
     {
+      "method": "GET",
+      "path": "/me/participant-hub",
+      "registrar": "apps/api/src/routes/user/registerMeParticipantHubRoutes.ts"
+    },
+    {
       "method": "PATCH",
       "path": "${basePath}/:${idParam}",
       "registrar": "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts"
@@ -420,6 +475,51 @@
       "method": "POST",
       "path": "${basePath}/:${idParam}/${requestSegment}/:requestId/reject",
       "registrar": "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/me/submissions/candidates",
+      "registrar": "apps/api/src/routes/user/registerMeSubmissionRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/me/submissions",
+      "registrar": "apps/api/src/routes/user/registerMeSubmissionRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/me/submissions/:id/second",
+      "registrar": "apps/api/src/routes/user/registerMeSubmissionRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/me/vehicles",
+      "registrar": "apps/api/src/routes/user/registerMeVehiclesRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/me/vehicles",
+      "registrar": "apps/api/src/routes/user/registerMeVehiclesRoutes.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/me/vehicles/:id",
+      "registrar": "apps/api/src/routes/user/registerMeVehiclesRoutes.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/me/vehicles/:id",
+      "registrar": "apps/api/src/routes/user/registerMeVehiclesRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/me/verification-documents",
+      "registrar": "apps/api/src/routes/user/registerMeVerificationRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/me/verification-documents",
+      "registrar": "apps/api/src/routes/user/registerMeVerificationRoutes.ts"
     },
     {
       "method": "GET",
@@ -473,6 +573,11 @@
     },
     {
       "method": "PATCH",
+      "path": "/me/profile/medical-safety",
+      "registrar": "apps/api/src/routes/user/registerProfileRoutes.ts"
+    },
+    {
+      "method": "PATCH",
       "path": "/me/profile",
       "registrar": "apps/api/src/routes/user/registerProfileRoutes.ts"
     },
@@ -498,6 +603,16 @@
     },
     {
       "method": "GET",
+      "path": "/alerts/active",
+      "registrar": "apps/api/src/routes/user/registerPublicAlertsAndReferralRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/referrals/click",
+      "registrar": "apps/api/src/routes/user/registerPublicAlertsAndReferralRoutes.ts"
+    },
+    {
+      "method": "GET",
       "path": "/areas",
       "registrar": "apps/api/src/routes/user/registerPublicAreaRoutes.ts"
     },
@@ -520,6 +635,46 @@
       "method": "GET",
       "path": "/facilities/:id",
       "registrar": "apps/api/src/routes/user/registerPublicFacilityRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/facilities/:id/condition-reports",
+      "registrar": "apps/api/src/routes/user/registerPublicFacilityRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/tree",
+      "registrar": "apps/api/src/routes/user/registerPublicGeoHierarchyRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/counts",
+      "registrar": "apps/api/src/routes/user/registerPublicGeoHierarchyRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/resolve",
+      "registrar": "apps/api/src/routes/user/registerPublicGeoHierarchyRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/:id/summary",
+      "registrar": "apps/api/src/routes/user/registerPublicGeoHierarchyRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/:id/facilities",
+      "registrar": "apps/api/src/routes/user/registerPublicGeoHierarchyRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/:id/places",
+      "registrar": "apps/api/src/routes/user/registerPublicGeoHierarchyRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/:id/activities",
+      "registrar": "apps/api/src/routes/user/registerPublicGeoHierarchyRoutes.ts"
     },
     {
       "method": "GET",
@@ -552,6 +707,16 @@
       "registrar": "apps/api/src/routes/user/registerPublicTenantRoutes.ts"
     },
     {
+      "method": "POST",
+      "path": "/vitals",
+      "registrar": "apps/api/src/routes/user/registerPublicVitalsRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/weather",
+      "registrar": "apps/api/src/routes/user/registerPublicWeatherRoutes.ts"
+    },
+    {
       "method": "GET",
       "path": "/me/reviews",
       "registrar": "apps/api/src/routes/user/registerReviewRoutes.ts"
@@ -580,6 +745,16 @@
       "method": "PATCH",
       "path": "/pro-applications/:id",
       "registrar": "apps/api/src/routes/admin/registerAdminHostApplicationRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/activities/:id/guides/accept",
+      "registrar": "apps/api/src/routes/user/registerActivityGuideRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/activities/:id/guides/decline",
+      "registrar": "apps/api/src/routes/user/registerActivityGuideRoutes.ts"
     },
     {
       "method": "GET",
@@ -634,6 +809,11 @@
     {
       "method": "GET",
       "path": "/activities/:id",
+      "registrar": "apps/api/src/routes/user/registerPublicActivityRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/activities/:id/me/state",
       "registrar": "apps/api/src/routes/user/registerPublicActivityRoutes.ts"
     },
     {
@@ -758,6 +938,11 @@
     },
     {
       "method": "POST",
+      "path": "/media/prepare-image",
+      "registrar": "apps/api/src/routes/media.ts"
+    },
+    {
+      "method": "POST",
       "path": "/media/presign-upload",
       "registrar": "apps/api/src/routes/media.ts"
     },
@@ -791,6 +976,12 @@
     "apps/api/src/routes/admin/registerAdminActivityModerationRoutes.ts": [
       "admin-activity-moderation-commands",
       "admin-activity-moderation-read"
+    ],
+    "apps/api/src/routes/admin/registerAdminAlertRoutes.ts": [
+      "platform-alerts-admin"
+    ],
+    "apps/api/src/routes/admin/registerAdminAmenityReportRoutes.ts": [
+      "amenity-reports"
     ],
     "apps/api/src/routes/admin/registerAdminAreaRoutes.ts": [
       "admin-area-commands",
@@ -826,13 +1017,23 @@
       "admin-place-read"
     ],
     "apps/api/src/routes/admin/registerAdminPlatformStaffRoutes.ts": [],
+    "apps/api/src/routes/admin/registerAdminSubmissionRoutes.ts": [
+      "submission-commands"
+    ],
     "apps/api/src/routes/admin/registerAdminTenantRoutes.ts": [
       "admin-tenant-commands",
-      "admin-tenant-read"
+      "admin-tenant-read",
+      "publishing-team-commands"
     ],
     "apps/api/src/routes/admin/registerAdminUserRoutes.ts": [
       "admin-user-commands",
       "admin-user-read"
+    ],
+    "apps/api/src/routes/admin/registerAdminVerificationRoutes.ts": [
+      "verification-documents"
+    ],
+    "apps/api/src/routes/publishing/registerPublishingActivityGuideRoutes.ts": [
+      "activity-guides"
     ],
     "apps/api/src/routes/publishing/registerPublishingActivityParticipantRoutes.ts": [
       "checkin",
@@ -866,6 +1067,9 @@
     "apps/api/src/routes/user/registerAccountLifecycleRoutes.ts": [
       "account-deletion",
       "data-export"
+    ],
+    "apps/api/src/routes/user/registerActivityGuideRoutes.ts": [
+      "activity-guides"
     ],
     "apps/api/src/routes/user/registerActivityJoinInviteRoutes.ts": [
       "activity-invite"
@@ -910,7 +1114,8 @@
       "activity-group-chat-me-commands",
       "me-account-session-commands",
       "me-account-session-read",
-      "me-activity-participation-read"
+      "me-activity-participation-read",
+      "member-inbox"
     ],
     "apps/api/src/routes/user/registerMeFacilityRoutes.ts": [
       "me-facility-submit-commands"
@@ -934,13 +1139,26 @@
     "apps/api/src/routes/user/registerMemberStatusRoutes.ts": [
       "member-status"
     ],
+    "apps/api/src/routes/user/registerMeParticipantHubRoutes.ts": [
+      "participant-hub-read"
+    ],
     "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts": [
       "participant-intent-me-commands",
       "participant-intent-me-read"
     ],
+    "apps/api/src/routes/user/registerMeSubmissionRoutes.ts": [
+      "submission-commands"
+    ],
     "apps/api/src/routes/user/registerMeSubmittedPlaceRoutes.ts": [
       "me-place-submit-commands",
       "me-place-submit-read"
+    ],
+    "apps/api/src/routes/user/registerMeVehiclesRoutes.ts": [
+      "me-vehicles-commands",
+      "me-vehicles-read"
+    ],
+    "apps/api/src/routes/user/registerMeVerificationRoutes.ts": [
+      "verification-documents"
     ],
     "apps/api/src/routes/user/registerMeWishlistRoutes.ts": [
       "me-wishlist-commands",
@@ -959,6 +1177,10 @@
       "activity-participation-commands",
       "activity-public-read"
     ],
+    "apps/api/src/routes/user/registerPublicAlertsAndReferralRoutes.ts": [
+      "platform-alerts-read",
+      "referral-click-write"
+    ],
     "apps/api/src/routes/user/registerPublicAreaRoutes.ts": [
       "area-public-read"
     ],
@@ -966,15 +1188,23 @@
       "facility-public-read",
       "place-catalog"
     ],
+    "apps/api/src/routes/user/registerPublicGeoHierarchyRoutes.ts": [
+      "geo-hierarchy-read"
+    ],
     "apps/api/src/routes/user/registerPublicMemberRoutes.ts": [
       "member-public-read"
     ],
     "apps/api/src/routes/user/registerPublicPlaceRoutes.ts": [
       "place-premium-commands",
-      "place-public-read"
+      "place-public-read",
+      "place-reachable-rides-read"
     ],
     "apps/api/src/routes/user/registerPublicTenantRoutes.ts": [
       "tenant-public-read"
+    ],
+    "apps/api/src/routes/user/registerPublicVitalsRoutes.ts": [],
+    "apps/api/src/routes/user/registerPublicWeatherRoutes.ts": [
+      "weather-forecast-read"
     ],
     "apps/api/src/routes/user/registerReviewRoutes.ts": [
       "my-reviews",

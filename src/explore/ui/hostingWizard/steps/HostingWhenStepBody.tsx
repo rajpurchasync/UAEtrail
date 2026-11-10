@@ -9,13 +9,24 @@ type PatchDraft = (patch: Partial<CreateActivityDraft>) => void;
 /** Paired with {@link MobileMonthCalendar} on desktop compose when step. */
 const DESKTOP_WHEN_CARD_HEIGHT = 'h-[17.75rem]';
 
+const nextIsoDay = (iso: string): string => {
+  const d = new Date(`${iso.slice(0, 10)}T12:00:00`);
+  d.setDate(d.getDate() + 1);
+  return d.toISOString().slice(0, 10);
+};
+
+const activitySpansMultipleDays = (start: string, end: string): boolean =>
+  Boolean(end.trim() && end.trim() > start);
+
 export const HostingWhenStepBody = ({
   draft,
   patchDraft,
   dateOptions,
   showMonthView,
   setShowMonthView,
-  hikingFlow,
+  hikingFlow: _hikingFlow,
+  multiDayAllowed = false,
+  showEndTime = false,
 }: {
   draft: CreateActivityDraft;
   patchDraft: PatchDraft;
@@ -23,7 +34,10 @@ export const HostingWhenStepBody = ({
   showMonthView: boolean;
   setShowMonthView: (value: boolean | ((prev: boolean) => boolean)) => void;
   hikingFlow: boolean;
+  multiDayAllowed?: boolean;
+  showEndTime?: boolean;
 }) => {
+  const multiDay = multiDayAllowed && activitySpansMultipleDays(draft.date, draft.endDate);
   const timeModeOptions = [
     { key: 'flexible' as TimeMode, title: 'Flexible', subtitle: 'Anytime', icon: CalendarDays },
     { key: 'specific' as TimeMode, title: 'Set time', subtitle: 'Exact start', icon: Clock3 },
@@ -88,10 +102,10 @@ export const HostingWhenStepBody = ({
             className={EXPLORE_FLOW.composeField}
           />
         </label>
-        {hikingFlow ? (
+        {showEndTime ? (
           <label className="block">
             <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
-              End time (approx.)
+              End time{multiDay ? '' : ' (approx.)'}
             </span>
             <input
               type="time"
@@ -104,6 +118,42 @@ export const HostingWhenStepBody = ({
       </div>
     ) : null;
 
+  const multiDayFields = multiDayAllowed ? (
+    <>
+      <label className="mt-3 flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-800 md:mt-0">
+        <input
+          type="checkbox"
+          checked={multiDay}
+          onChange={(event) => {
+            if (event.target.checked) {
+              const next =
+                draft.endDate.trim() && draft.endDate > draft.date
+                  ? draft.endDate
+                  : nextIsoDay(draft.date);
+              patchDraft({ endDate: next });
+            } else {
+              patchDraft({ endDate: '' });
+            }
+          }}
+          className="h-4 w-4 rounded border-gray-300 text-emerald-600 md:h-3.5 md:w-3.5"
+        />
+        <span className="md:text-xs md:font-semibold">Spans multiple days</span>
+      </label>
+      {multiDay ? (
+        <div className="mt-2">
+          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+            End date
+          </span>
+          <MobileMonthCalendar
+            selectedDate={draft.endDate.trim() || nextIsoDay(draft.date)}
+            onSelectDate={(date) => patchDraft({ endDate: date > draft.date ? date : nextIsoDay(draft.date) })}
+            className="md:h-[12.5rem]"
+          />
+        </div>
+      ) : null}
+    </>
+  ) : null;
+
   return (
     <>
       <div className="md:hidden">
@@ -114,7 +164,15 @@ export const HostingWhenStepBody = ({
               <button
                 key={option.iso}
                 type="button"
-                onClick={() => patchDraft({ date: option.iso })}
+                onClick={() => {
+                  const end =
+                    draft.endDate.trim() && draft.endDate < option.iso
+                      ? multiDay
+                        ? nextIsoDay(option.iso)
+                        : ''
+                      : draft.endDate;
+                  patchDraft({ date: option.iso, ...(end ? { endDate: end } : draft.endDate ? { endDate: '' } : {}) });
+                }}
                 className={`flex h-[72px] w-[58px] shrink-0 flex-col items-center justify-center rounded-2xl border-2 text-sm font-semibold ${
                   active
                     ? 'border-emerald-600 bg-emerald-600 text-white'
@@ -136,11 +194,23 @@ export const HostingWhenStepBody = ({
         </button>
         {showMonthView ? (
           <div className="mt-3">
-            <MobileMonthCalendar selectedDate={draft.date} onSelectDate={(date) => patchDraft({ date })} />
+            <MobileMonthCalendar
+              selectedDate={draft.date}
+              onSelectDate={(date) => {
+                const end =
+                  draft.endDate.trim() && draft.endDate < date
+                    ? multiDay
+                      ? nextIsoDay(date)
+                      : ''
+                    : draft.endDate;
+                patchDraft({ date, ...(end ? { endDate: end } : draft.endDate ? { endDate: '' } : {}) });
+              }}
+            />
           </div>
         ) : null}
         <div className={`mt-4 ${EXPLORE_FLOW.choiceGrid2}`}>{timeModeButtons}</div>
         {timeInputs}
+        {multiDayFields}
       </div>
 
       <div className="hidden md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] md:items-start md:gap-6">
@@ -155,7 +225,7 @@ export const HostingWhenStepBody = ({
             <fieldset
               disabled={draft.timeMode === 'flexible'}
               className={`mt-2 grid min-h-0 flex-1 gap-2 border-0 border-t border-neutral-200/80 p-0 pt-2 disabled:opacity-60 ${
-                hikingFlow ? 'grid-cols-2' : 'grid-cols-1'
+                showEndTime ? 'grid-cols-2' : 'grid-cols-1'
               }`}
             >
               <label className="block min-w-0">
@@ -171,10 +241,10 @@ export const HostingWhenStepBody = ({
                   className={`${EXPLORE_FLOW.composeField} py-1.5 text-sm disabled:cursor-not-allowed disabled:bg-neutral-100`}
                 />
               </label>
-              {hikingFlow ? (
+              {showEndTime ? (
                 <label className="block min-w-0">
                   <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-gray-500">
-                    End (approx.)
+                    End{multiDay ? '' : ' (approx.)'}
                   </span>
                   <input
                     type="time"
@@ -188,12 +258,17 @@ export const HostingWhenStepBody = ({
           </div>
         </div>
         <div className="flex flex-col">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Date</p>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Start date</p>
           <MobileMonthCalendar
             selectedDate={draft.date}
-            onSelectDate={(date) => patchDraft({ date })}
-            className={DESKTOP_WHEN_CARD_HEIGHT}
+            onSelectDate={(date) => {
+              const end =
+                draft.endDate.trim() && draft.endDate < date ? date : draft.endDate || '';
+              patchDraft({ date, ...(end ? { endDate: end } : {}) });
+            }}
+            className={multiDayAllowed ? 'h-[12.5rem]' : DESKTOP_WHEN_CARD_HEIGHT}
           />
+          {multiDayAllowed ? multiDayFields : null}
         </div>
       </div>
     </>

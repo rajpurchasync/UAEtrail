@@ -14,10 +14,14 @@ export interface Facility {
   areaId: string;
   facilityKind: FacilityKind;
   parentPlaceId?: string | null;
+  /** Geo-tree venue node id when the amenity is tagged to a venue. */
+  venueId?: string | null;
   description: string;
   latitude: number | null;
   longitude: number | null;
   images: string[];
+  /** Optional partner / referral outbound URL (commercial facilities). */
+  partnerReferralUrl?: string | null;
   tags: string[];
   status: LocationStatus;
   moderationStatus: CatalogModerationStatus;
@@ -26,8 +30,11 @@ export interface Facility {
   /** @deprecated Dual-read during CPC migration. */
   submittedById?: string | null;
   countryCode: string;
+  geoRef?: import('@uaetrail/shared-types').GeoRef | null;
   featured: boolean;
   registryListed?: boolean;
+  amenityState?: import('@uaetrail/shared-types').AmenityState;
+  amenityLastCheckedAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { EXPLORE_SHEET, EXPLORE_TYPE } from '../../config/exploreTheme';
+import { EXPLORE_DESKTOP_BROWSE_RAIL_SCROLL_CLASS } from '../../explore/ui/exploreDesktopBrowseRailChrome';
 import type { PeopleBrowseTab } from '../peopleBrowseTab';
 import { PeopleBrowsePanelTabs } from './PeopleBrowsePanelTabs';
 import type { ExploreAvailablePersonDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
@@ -159,7 +160,11 @@ export const PeopleBrowsePanel = ({
 
       <div
         className={`min-h-0 flex-1 overflow-y-auto overscroll-y-contain ${
-          embedded ? `${chromePad} pb-4` : `${EXPLORE_SHEET.browseList} ${isDesktop ? 'lg:pb-8' : ''}`
+          isDesktop
+            ? `${EXPLORE_DESKTOP_BROWSE_RAIL_SCROLL_CLASS} explore-browse-rail-scroll w-full min-w-0 ${embedded ? `${chromePad} pr-1.5 pb-4` : 'px-1 pb-4'}`
+            : embedded
+              ? `${chromePad} pb-4`
+              : `${EXPLORE_SHEET.browseList} lg:pb-8`
         }`}
       >
         <PeopleBrowseTabContent

@@ -12,6 +12,10 @@ import { registerAdminNotificationRoutes } from './admin/registerAdminNotificati
 import { registerAdminPlaceRoutes } from './admin/registerAdminPlaceRoutes.js';
 import { registerAdminFacilityRoutes } from './admin/registerAdminFacilityRoutes.js';
 import { registerAdminAreaRoutes } from './admin/registerAdminAreaRoutes.js';
+import { registerAdminSubmissionRoutes } from './admin/registerAdminSubmissionRoutes.js';
+import { registerAdminAlertRoutes } from './admin/registerAdminAlertRoutes.js';
+import { registerAdminAmenityReportRoutes } from './admin/registerAdminAmenityReportRoutes.js';
+import { registerAdminVerificationRoutes } from './admin/registerAdminVerificationRoutes.js';
 import { registerAdminPlatformStaffRoutes } from './admin/registerAdminPlatformStaffRoutes.js';
 import { registerAdminTenantRoutes } from './admin/registerAdminTenantRoutes.js';
 import { registerAdminUserRoutes } from './admin/registerAdminUserRoutes.js';
@@ -24,6 +28,10 @@ registerAdminHostApplicationRoutes(adminRouter);
 registerAdminPlaceRoutes(adminRouter);
 registerAdminFacilityRoutes(adminRouter);
 registerAdminAreaRoutes(adminRouter);
+registerAdminSubmissionRoutes(adminRouter);
+registerAdminAlertRoutes(adminRouter);
+registerAdminAmenityReportRoutes(adminRouter);
+registerAdminVerificationRoutes(adminRouter);
 // Outing publish for tenants is POST/PATCH /publishing/activities — admin only moderates.
 registerAdminActivityModerationRoutes(adminRouter);
 registerAdminMetricsRoutes(adminRouter);

@@ -13,12 +13,14 @@ import type {
   CatalogProfileExposure,
 } from '@uaetrail/shared-types';
 import {
+  activityJoinIsFull,
   buildDiscoveryCardPresentation,
   canonicalizeMapComposeIntent,
   exploreMapItemIsSeeking,
   isGeographyMapSource,
   isPeekOnlyCatalogProfile,
   memberProfilePath,
+  placeDetailPath,
   resolveActivityPublisherProfilePath,
   resolveExploreFeaturedPerson,
 } from '@uaetrail/shared-types';
@@ -167,7 +169,13 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
   const whenSuffix = seeking ? 'flexible' : kind === 'rideshare' ? 'fixed' : null;
   const whenLabel =
     presentation.whenLabel ??
-    buildExploreWhenSegment(item.date, item.time ?? activity?.time ?? null, whenSuffix);
+    buildExploreWhenSegment(
+      item.date,
+      item.time ?? activity?.time ?? null,
+      whenSuffix,
+      item.endDate ?? activity?.endDate ?? null,
+      item.endTime ?? activity?.endTime ?? null
+    );
 
   const headline = presentation.headline;
   const sections = presentation.sections;
@@ -326,6 +334,27 @@ const discoveryCardHostUserId = (card: DiscoveryCardModel): string | null =>
   card.profileUserId ??
   null;
 
+/** Consumer detail for the venue/spot line on poster banners (trail, camp, activity, shop). */
+export const resolveDiscoveryCardLocationDetailPath = (card: DiscoveryCardModel): string => {
+  if (isGeographyMapSource(card.source)) return card.path;
+  if (card.source === 'activity' && card.locationId) {
+    const at =
+      card.activity?.activityType?.trim() ||
+      card.outingCategory ||
+      (card.kind === 'camping' || card.kind === 'event' ? card.kind : 'hiking');
+    const placeKind =
+      at === 'camping'
+        ? 'camping'
+        : at === 'event'
+          ? 'event'
+          : at === 'shop'
+            ? 'shop'
+            : 'hiking';
+    return placeDetailPath(placeKind, card.locationId);
+  }
+  return card.path;
+};
+
 /** Profile href for the host / requester row on explore cards and map peek. */
 export const resolveDiscoveryCardHostProfilePath = (card: DiscoveryCardModel): string | null => {
   if (card.source === 'activity' && card.activity) {
@@ -357,13 +386,11 @@ export const discoveryCardPeekShowsFollow = (card: DiscoveryCardModel): boolean 
   card.source !== 'activity';
 
 /** Hosted activity with a capacity cap and no open spots left. */
-export const discoveryCardActivityJoinIsFull = (card: DiscoveryCardModel): boolean => {
-  const total = card.activity?.slotsTotal ?? 0;
-  if (total <= 0) return false;
-  const available = card.activity?.slotsAvailable;
-  if (available == null) return false;
-  return available <= 0;
-};
+export const discoveryCardActivityJoinIsFull = (card: DiscoveryCardModel): boolean =>
+  activityJoinIsFull({
+    slotsTotal: card.activity?.slotsTotal,
+    slotsAvailable: card.activity?.slotsAvailable,
+  });
 
 export const discoveryCardActivityShowsPeekSpots = (card: DiscoveryCardModel): boolean =>
   (card.activity?.slotsTotal ?? 0) > 0 && Boolean(card.sections.partyLabel);
@@ -416,6 +443,7 @@ export const resolveExploreEntityFollowTarget = (
 
 export type ExploreWishlistTarget = {
   locationId?: string;
+  areaId?: string;
   activityId?: string;
   alertOnMatch?: boolean;
   watchOutingCategory?: OutingCategory | null;
@@ -438,11 +466,12 @@ const watchMetaFromCard = (card: DiscoveryCardModel) => ({
   watchLongitude: card.mapLongitude ?? null,
 });
 
-/** Wishlist = private venue or activity save — not demand, shops, or people (use Follow). */
+/** Wishlist = private venue, area, or activity save — not demand, shops, or people (use Follow). */
 export const resolveExploreWishlistTarget = (card: DiscoveryCardModel): ExploreWishlistTarget | null => {
   const watch = watchMetaFromCard(card);
   if (discoveryCardIsSeeking(card)) return null;
   if (card.source === 'activity' && card.activityId) return { activityId: card.activityId, ...watch };
+  if (card.source === 'area' && card.areaId) return { areaId: card.areaId, ...watch };
   if (isGeographyMapSource(card.source) && card.locationId) return { locationId: card.locationId, ...watch };
   return null;
 };

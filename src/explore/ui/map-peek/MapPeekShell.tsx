@@ -4,7 +4,7 @@ import { isGeographyMapSource } from '@uaetrail/shared-types';
 import { Share2, X } from 'lucide-react';
 import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 import { EXPLORE_PEEK } from '../../../config/exploreTheme';
-import { layoutMapPeekBubble, type MapPeekPinAnchor } from '../../mapPeekBubbleLayout';
+import { layoutMapPeekBubble, mapPeekFitScale, type MapPeekPinAnchor } from '../../mapPeekBubbleLayout';
 import { EnvironmentImage } from '../../../components/ui/EnvironmentImage';
 import { ShareButton } from '../../../components/ui/ShareButton';
 import { ExploreFollowButton } from '../ExploreFollowButton';
@@ -25,6 +25,7 @@ import { activityPeekHasMapWireActions } from '../../../activity/activityPeekEng
 import { resolvePeekDetailAccess } from '../../../access/resolvePeekDetailAccess';
 import { mapPeekDetailNavState } from '../../mapPeekDetailNavState';
 import { UiTooltip } from '../../../components/ui/UiTooltip';
+import { shareSurfaceFromDiscoveryCard } from '../../../content/shareSheetCopy';
 
 export type MapPeekShellProps = {
   card: DiscoveryCardModel;
@@ -74,19 +75,18 @@ export const MapPeekShell = ({
   const showCoverHero =
     !browseBannerPeek && Boolean(card.coverImage) && !catalogPlaceSummary;
   const showPlaceCatalogHero = catalogPlaceSummary && isGeographyMapSource(card.source);
-  const peekBannerIconBtn =
-    'inline-flex h-8 w-8 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm hover:bg-black/50 transition-colors';
+  const peekBannerIconBtn = EXPLORE_PEEK.mediaIconBtn;
   const shareIconButtonClass = browseBannerPeek
     ? peekBannerIconBtn
     : showCoverHero
       ? peekBannerIconBtn
-      : 'inline-flex items-center justify-center w-8 h-8 rounded-full bg-white text-neutral-700 shadow-sm ring-1 ring-neutral-200/90 hover:bg-neutral-50 transition-colors';
+      : 'inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-neutral-700 shadow-sm ring-1 ring-neutral-200/90 hover:bg-neutral-50 transition-colors';
 
   const peekLeadingActions =
     isGeographyMapSource(card.source) ? (
-      <ExploreWishlistSaveButton card={card} light />
+      <ExploreWishlistSaveButton card={card} />
     ) : discoveryCardPeekShowsFollow(card) ? (
-      <ExploreFollowButton card={card} light />
+      <ExploreFollowButton card={card} />
     ) : null;
 
   const peekHeaderActions = (
@@ -111,8 +111,9 @@ export const MapPeekShell = ({
           title={card.shareTitle}
           text={card.shareText ?? undefined}
           path={card.sharePath}
+          shareSurface={shareSurfaceFromDiscoveryCard(card)}
           iconOnly
-          light={browseBannerPeek || showCoverHero}
+          light={false}
         />
       ) : null}
       {dismissVisible ? (
@@ -146,6 +147,8 @@ export const MapPeekShell = ({
           imageHeightClass="h-[7.75rem] w-full shrink-0 sm:h-32"
           leadingActions={peekLeadingActions}
           headerActions={peekHeaderActions}
+          onGuestGatedAction={onGuestGatedAction}
+          onBeforeNavigate={onClose}
         />
       ) : null}
       {showCoverHero ? (
@@ -168,7 +171,7 @@ export const MapPeekShell = ({
             <button
               type="button"
               onClick={onClose}
-              className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm"
+              className={`absolute right-3 top-3 ${EXPLORE_PEEK.mediaIconBtn}`}
               aria-label="Close"
             >
               <X className="h-4 w-4" />
@@ -211,6 +214,7 @@ export const MapPeekShell = ({
                 title={card.shareTitle}
                 text={card.shareText ?? undefined}
                 path={card.sharePath}
+                shareSurface={shareSurfaceFromDiscoveryCard(card)}
                 iconOnly
                 light={!showCoverHero}
               />
@@ -320,8 +324,10 @@ export const MapPeekOverlay = ({
 }) => {
   const overlayRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const fitRef = useRef<HTMLDivElement>(null);
   const [overlaySize, setOverlaySize] = useState({ width: 0, height: 0 });
   const [cardHeight, setCardHeight] = useState(280);
+  const [peekFit, setPeekFit] = useState(1);
   const [insets, setInsets] = useState({ top: 12, bottom: 12 });
 
   useEffect(() => {
@@ -339,8 +345,6 @@ export const MapPeekOverlay = ({
     const overlay = overlayRef.current;
     if (!overlay) return;
     const measure = () => {
-      setOverlaySize({ width: overlay.clientWidth, height: overlay.clientHeight });
-      if (cardRef.current) setCardHeight(cardRef.current.scrollHeight);
       const overlayRect = overlay.getBoundingClientRect();
       const chrome = overlay.closest('.explore-map-stage')?.querySelector('[data-explore-map-chrome]');
       const chromeRect = chrome?.getBoundingClientRect();
@@ -350,12 +354,23 @@ export const MapPeekOverlay = ({
           : 12;
       const compact = overlay.clientWidth < 768;
       const bottom = compact ? 96 : 24;
+      const available = Math.max(0, overlay.clientHeight - top - bottom);
+      const fitEl = fitRef.current;
+      if (fitEl) {
+        fitEl.style.setProperty('--peek-fit', '1');
+        const natural = Math.max(fitEl.scrollHeight, 1);
+        const fit = mapPeekFitScale(natural, available);
+        fitEl.style.setProperty('--peek-fit', String(fit));
+        setPeekFit(fit);
+        setCardHeight(natural * fit);
+      }
+      setOverlaySize({ width: overlay.clientWidth, height: overlay.clientHeight });
       setInsets({ top, bottom });
     };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(overlay);
-    if (cardRef.current) observer.observe(cardRef.current);
+    if (fitRef.current) observer.observe(fitRef.current);
     return () => observer.disconnect();
   }, [pinKey]);
 
@@ -368,27 +383,19 @@ export const MapPeekOverlay = ({
     bottomInset: insets.bottom,
   });
 
-  const bubbleMaxHeight = Math.min(cardHeight, layout.maxHeight || cardHeight);
-
   const bubbleStyle = {
     left: layout.left,
     top: layout.top,
     width: layout.width,
-    maxHeight: bubbleMaxHeight,
     '--peek-origin-x': `${layout.originX}px`,
     '--peek-origin-y': `${layout.originY}px`,
+    '--peek-fit': String(peekFit),
   } as CSSProperties;
 
   return (
     <div ref={overlayRef} className={EXPLORE_PEEK.position}>
       {onClose ? (
-        <button
-          type="button"
-          className={EXPLORE_PEEK.scrim}
-          aria-label="Close"
-          onClick={onClose}
-          style={{ top: insets.top }}
-        />
+        <button type="button" className={EXPLORE_PEEK.scrim} aria-label="Close" onClick={onClose} />
       ) : null}
       <div
         key={pinKey ?? 'peek'}
@@ -396,7 +403,9 @@ export const MapPeekOverlay = ({
         className={`${EXPLORE_PEEK.inner} z-10 ${overlaySize.width > 0 ? '' : 'invisible'}`}
         style={bubbleStyle}
       >
-        {children}
+        <div ref={fitRef} className="map-peek-fit">
+          {children}
+        </div>
       </div>
     </div>
   );

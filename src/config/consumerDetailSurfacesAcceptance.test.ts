@@ -19,7 +19,7 @@ describe('consumerDetailSurfacesAcceptance', () => {
       {
         file: 'src/place/detail/templates/PlaceConsumerDetailPage.tsx',
         wire: 'placeDetailTab',
-        tabChrome: /ActivityConsumerDetailModalShell/,
+        tabChrome: /ConsumerDetailSectionJumpNav/,
       },
       {
         file: 'src/components/ui/PlaceDetailTabs.tsx',
@@ -29,12 +29,12 @@ describe('consumerDetailSurfacesAcceptance', () => {
       {
         file: 'src/components/area/AreaDetailView.tsx',
         wire: 'areaDetailTab',
-        tabChrome: /ConsumerEntityTabBar/,
+        tabChrome: /ConsumerDetailSectionJumpNav/,
       },
       {
         file: 'src/components/shop/ShopPublicPage.tsx',
         wire: 'shopPublicDetailTab',
-        tabChrome: /ConsumerEntityTabBar/,
+        tabChrome: /ConsumerDetailSectionJumpNav/,
       },
       {
         file: 'src/pages/OrganisationProfile.tsx',

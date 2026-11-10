@@ -46,6 +46,35 @@ describe('assertMemberCanPublishActivities', () => {
     });
   });
 
+  it('rejects paid publish without canHostPaidActivities', async () => {
+    mockedStatus.mockResolvedValue({
+      profileComplete: true,
+      canPublish: true,
+      isCommunityHost: true,
+      hostTiers: { community: true, professional: false, business: false },
+      profileRoleLabel: 'community_member',
+      canAccessPublishingWorkspace: true,
+      applicationStatus: 'none',
+      tenantId: 'tenant-1',
+      isHostRole: true,
+      hasTenant: true,
+      tenantType: 'guide_owned',
+      businessMode: null,
+      canHostPaidActivities: false,
+      hasGuideProfile: true,
+      hasAgencyProfile: false,
+      hasShopProfile: false,
+      ownedProfiles: [],
+    });
+
+    await expect(
+      assertMemberCanPublishActivities('user-1', { pricingMode: 'paid' })
+    ).rejects.toMatchObject({
+      statusCode: 403,
+      code: 'paid_publish_not_allowed',
+    });
+  });
+
   it('allows when profile complete and canPublish', async () => {
     mockedStatus.mockResolvedValue({
       profileComplete: true,
@@ -68,5 +97,31 @@ describe('assertMemberCanPublishActivities', () => {
     });
 
     await expect(assertMemberCanPublishActivities('user-1')).resolves.toBeUndefined();
+  });
+
+  it('allows paid publish when canHostPaidActivities', async () => {
+    mockedStatus.mockResolvedValue({
+      profileComplete: true,
+      canPublish: true,
+      isCommunityHost: true,
+      hostTiers: { community: true, professional: false, business: true },
+      profileRoleLabel: 'business',
+      canAccessPublishingWorkspace: true,
+      applicationStatus: 'none',
+      tenantId: 'tenant-1',
+      isHostRole: true,
+      hasTenant: true,
+      tenantType: 'agency',
+      businessMode: 'agency',
+      canHostPaidActivities: true,
+      hasGuideProfile: false,
+      hasAgencyProfile: true,
+      hasShopProfile: false,
+      ownedProfiles: [],
+    });
+
+    await expect(
+      assertMemberCanPublishActivities('user-1', { pricingMode: 'paid' })
+    ).resolves.toBeUndefined();
   });
 });

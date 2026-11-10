@@ -10,6 +10,8 @@ import {
   hasActivityInquiryAccess
 } from '../lib/activity-engagement-store.js';
 import { areAcceptedBuddies, listBuddiesForUser } from '../lib/buddy-store.js';
+import { hasDirectedMessageFromTo, listPartnersWhoSentToUser } from '../lib/chat-messages-store.js';
+import { listInboundChatEnabledShopAdminIds } from '../lib/shop-store.js';
 
 const ACTIVE_REQUEST_STATUSES: RequestStatus[] = [
   RequestStatus.PENDING,
@@ -78,6 +80,10 @@ export async function canMessageUser(
     if (activityInquiry) return true;
   }
 
+  const shopChatAdmins = await listInboundChatEnabledShopAdminIds([senderId, receiverId]);
+  if (shopChatAdmins.has(receiverId)) return true;
+  if (shopChatAdmins.has(senderId) && (await hasDirectedMessageFromTo(receiverId, senderId))) return true;
+
   return false;
 }
 
@@ -125,6 +131,21 @@ export async function filterInboxMessageablePartnerIds(
     });
     for (const partnerId of linked) {
       allowed.add(partnerId);
+    }
+  }
+
+  const remaining = unique.filter((partnerId) => !allowed.has(partnerId));
+  if (remaining.length > 0) {
+    const shopChatAdmins = await listInboundChatEnabledShopAdminIds([viewerId, ...remaining]);
+    for (const partnerId of remaining) {
+      if (shopChatAdmins.has(partnerId)) allowed.add(partnerId);
+    }
+    const shopReplyCandidates = remaining.filter((partnerId) => !allowed.has(partnerId));
+    if (shopChatAdmins.has(viewerId) && shopReplyCandidates.length > 0) {
+      const inbound = await listPartnersWhoSentToUser(viewerId, shopReplyCandidates);
+      for (const partnerId of inbound) {
+        allowed.add(partnerId);
+      }
     }
   }
 

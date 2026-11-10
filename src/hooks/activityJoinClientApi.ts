@@ -21,6 +21,14 @@ export const updateJoinRequestNote = async (
   await api.updateJoinRequestNote(activityId, requestId, note);
 };
 
+export const updateJoinRequestParty = async (
+  activityId: string,
+  requestId: string,
+  payload: { adults?: number; kids?: number; note?: string }
+): Promise<void> => {
+  await api.updateJoinRequestParty(activityId, requestId, payload);
+};
+
 export const cancelJoinRequest = async (
   activityId: string,
   requestId: string,
@@ -41,16 +49,25 @@ export const submitActivityJoin = async (
     note?: string;
     packingCheckedIds?: string[];
     packingSignature?: string;
+    adults?: number;
+    kids?: number;
   }
 ): Promise<ActivityJoinSubmitResult> => {
   const joinBody = {
     note: input.note?.trim() || undefined,
     packingCheckedIds: input.packingCheckedIds,
     packingSignature: input.packingSignature?.trim() || undefined,
+    adults: input.adults,
+    kids: input.kids,
   };
   if (input.participationMode === 'rsvp') {
-    await api.rsvpActivity(activityId, joinBody);
-    return { successMessage: "You're going! Find it on your Plan." };
+    const res = await api.rsvpActivity(activityId, joinBody);
+    const waitlisted = res.data.waitlisted || res.data.request?.status === 'waitlisted';
+    return {
+      successMessage: waitlisted
+        ? "Added to the waitlist — we'll let you know when a spot opens."
+        : "You're going! Find it on your Plan.",
+    };
   }
 
   const res = await api.createJoinRequest(activityId, joinBody);

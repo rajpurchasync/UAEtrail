@@ -102,7 +102,7 @@ describe('activity join invite', () => {
     expect(inviteNotif!.body).toMatch(/Tap to view and join/);
 
     const detailRes = await request(app)
-      .get(`/api/activities/${fixture.activityId}`)
+      .get(`/api/activities/${fixture.activityId}/me/state`)
       .set('Authorization', `Bearer ${invitee.accessToken}`);
     expect(detailRes.status).toBe(200);
     expect(detailRes.body.data.myJoinInvite?.fromUserId).toBeTruthy();

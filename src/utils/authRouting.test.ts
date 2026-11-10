@@ -34,6 +34,8 @@ describe('auth routing by role', () => {
     expect(isPlatformAdminConsolePath('/plan')).toBe(false);
     expect(isConsumerProfilePath('/profile')).toBe(true);
     expect(isConsumerProfilePath('/profile/settings')).toBe(true);
+    expect(isConsumerProfilePath('/settings')).toBe(false);
+    expect(isConsumerProfilePath('/settings/safety')).toBe(false);
     expect(isConsumerProfilePath('/admin/account')).toBe(false);
   });
 

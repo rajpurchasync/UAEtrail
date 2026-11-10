@@ -59,7 +59,9 @@ describe('pagesApiGuard (R8.1)', () => {
       const source = readFileSync(join(process.cwd(), file), 'utf8');
       const facadePattern = file.endsWith('admin/Notifications.tsx')
         ? /notificationInboxApi/
-        : /adminConsoleApi/;
+        : file.endsWith('admin/Alerts.tsx')
+          ? /adminAlertsClientApi/
+          : /adminConsoleApi/;
       expect(source, `${file} must import hooks facade`).toMatch(facadePattern);
       expect(source, `${file} must not call api.*`).not.toMatch(/\bapi\./);
     }

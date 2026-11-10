@@ -74,8 +74,9 @@ describe('detailSurfaceWiringAcceptance', () => {
       /model\.consumerLayout/
     );
     const manage = read('src/components/activity/ActivityManageSheet.tsx');
-    expect(manage).toMatch(/isEmbedded:\s*true/);
-    expect(manage).toMatch(/wireTabs=/);
+    expect(manage).toMatch(/inlineConsumerDetail/);
+    expect(manage).toMatch(/ActivityDetailByKind/);
+    expect(manage).toMatch(/hostManageSurface=/);
   });
 
   it('DS-WIRE-04: place/shop/area peek mounts route to detail paths', () => {

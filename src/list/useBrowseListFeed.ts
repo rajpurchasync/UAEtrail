@@ -15,6 +15,7 @@ import {
 type UseBrowseListFeedArgs = {
   filters: BrowseListFilterState;
   venueRegions: string[];
+  geoIds?: string[];
   /** Buddies category uses member-discovery only — skip map fetch. */
   mapEnabled?: boolean;
   /** When embedded on explore, reuse the map catalog instead of a second fetch. */
@@ -24,6 +25,7 @@ type UseBrowseListFeedArgs = {
 export const useBrowseListFeed = ({
   filters,
   venueRegions,
+  geoIds = [],
   mapEnabled = true,
   catalogItems,
 }: UseBrowseListFeedArgs) => {
@@ -33,13 +35,14 @@ export const useBrowseListFeed = ({
   const { data: fetchedItems = [], isError, error, refetch, isFetching, isPending } = useExploreMap({
     enabled: mapEnabled && !useExternalCatalog,
     projection: 'list',
+    geoSearch: { q: filters.query.trim() || null },
   });
   const items = useExternalCatalog ? catalogItems : fetchedItems;
   const feedLoading = mapEnabled && !useExternalCatalog && isPending && items.length === 0;
 
   const filteredItems = useMemo(
-    () => (mapEnabled ? filterExploreMapItemsForList(items, filters, venueRegions) : []),
-    [mapEnabled, items, filters, venueRegions]
+    () => (mapEnabled ? filterExploreMapItemsForList(items, filters, venueRegions, geoIds) : []),
+    [mapEnabled, items, filters, venueRegions, geoIds]
   );
 
   const cards: DiscoveryCardModel[] = useMemo(() => {

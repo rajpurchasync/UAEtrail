@@ -158,12 +158,23 @@ describe('member surfaces §11 acceptance (automated)', () => {
   it('S13-W4: MemberProfileView sections gate on canViewFullProfile from viewerAccess', () => {
     const page = read('src/pages/MemberProfile.tsx');
     const profilePageData = read('src/hooks/useMemberProfilePage.ts');
-    expect(page).toMatch(/canViewFullProfile=\{viewerAccess\?\.canViewFullProfile/);
-    expect(profilePageData).toMatch(/viewerAccess\?\.canViewFullProfile/);
+    expect(page).toMatch(/canViewMemberPublicCardFields/);
+    expect(profilePageData).toMatch(/viewerAccess\?\.canOpenMemberProfile/);
+    expect(profilePageData).toMatch(/embedSocialGraphInProfile/);
+    expect(profilePageData).toMatch(/loadMemberActivities/);
+    expect(profilePageData).toMatch(/mergeMemberProfileSocialGraphParts/);
+    expect(page).toMatch(/loadSocialGraph/);
+    expect(page).toMatch(/loadMemberActivities/);
+    const profileView = read('src/components/profile/MemberProfileView.tsx');
+    expect(profileView).toMatch(/MemberProfileSocialGraphAnchor/);
     const view = read('src/components/profile/MemberProfileView.tsx');
-    expect(view).toMatch(/canViewFullProfile && profile\.yearGoal/);
-    expect(view).toMatch(/canViewFullProfile && profile\.bio/);
-    expect(view).toMatch(/canViewFullProfile && upcomingActivities/);
+    expect(view).toMatch(/canViewTrustedFields && profile\.yearGoal/);
+    expect(view).toMatch(/canViewPublicCardFields && profile\.bio/);
+    expect(view).toMatch(/upcomingActivities\.length/);
+    expect(view).toMatch(/pastActivities/);
+    expect(view).toMatch(/profile\.vehicles/);
+    expect(view).toMatch(/MemberProfileHostReviews/);
+    expect(view).toMatch(/MemberProfileHostGuidePanel/);
   });
 
   it('S13: member profile links use memberProfileLink (single FE entry)', () => {
@@ -219,6 +230,18 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(api).not.toContain('/host/requests');
   });
 
+  it('G-manage: desktop hosting schedule uses dedicated hub (not consumer Plan summary)', () => {
+    const plan = read('src/plan/PlanPage.tsx');
+    expect(plan).toContain('PlanDesktopHostingHub');
+    expect(plan).toContain('useMinWidthLg');
+    const hub = read('src/components/plan/PlanDesktopHostingHub.tsx');
+    expect(hub).not.toContain('PlanGoalsProgressSummary');
+    expect(hub).not.toContain('PlanWishlistView');
+    expect(hub).toContain('HostedActivityListRow');
+    expect(hub).not.toContain('plan-hosting-copy-heading');
+    expect(hub).not.toMatch(/TIME_LENS_TABS/);
+  });
+
   it('G-manage: hosted Plan opens ActivityManageSheet (approve via host API, not /host shell)', () => {
     const plan = read('src/plan/PlanPage.tsx');
     expect(plan).toContain('PlanUpcomingView');
@@ -250,9 +273,11 @@ describe('member surfaces §11 acceptance (automated)', () => {
     const launcher = read('src/components/profile/ProfileQuickLauncher.tsx');
     expect(launcher).toContain('BUDDIES_PATH');
     expect(launcher).toContain('PROFILE_HISTORY_PATH');
+    expect(launcher).toContain('PROFILE_SETTINGS_PATH');
+    expect(launcher).not.toMatch(/\/profile\/settings/);
     expect(launcher).toContain('planHostedSchedulePath()');
     expect(launcher).not.toMatch(/HOST_OVERVIEW_PATH/);
-    const settings = read('src/components/profile/ProfileSettingsIndex.tsx');
+    const settings = read('src/components/profile/AppSettingsBody.tsx');
     expect(settings).toMatch(/visibility/i);
   });
 
@@ -335,7 +360,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(route).not.toMatch(/<ActivityDetailView/);
 
     const manage = read('src/components/activity/ActivityManageSheet.tsx');
-    expect(manage).toContain('ActivityDetailView');
+    expect(manage).toContain('ActivityDetailByKind');
     expect(manage).not.toContain('HostActivityDetailView');
     expect(() => read('src/components/activity/HostActivityDetailView.tsx')).toThrow();
     expect(() => read('src/explore/activityMapPeekActions.ts')).toThrow();

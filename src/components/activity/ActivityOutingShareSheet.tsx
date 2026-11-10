@@ -1,6 +1,6 @@
 import { X } from 'lucide-react';
 import { EXPLORE_SHEET, EXPLORE_Z } from '../../config/exploreTheme';
-import { ACTIVITY_DETAIL_TAB_FOOTER_SHARE_OUTING } from '../../content/activityDetailCopy';
+import { SHARE_SHEET_TITLE_DEFAULT } from '../../content/shareSheetCopy';
 import { ExploreResponsiveSheet } from '../../explore/ui/ExploreResponsiveSheet';
 import {
   ActivityOutingShareMenuBody,
@@ -22,7 +22,7 @@ export const ActivityOutingShareSheet = ({
   open,
   onClose,
   sharePayload,
-  title = ACTIVITY_DETAIL_TAB_FOOTER_SHARE_OUTING,
+  title = SHARE_SHEET_TITLE_DEFAULT,
   onInviteOnApp,
   showInviteOnApp = true,
   zClass = EXPLORE_Z.activityDetailInviteSheet,

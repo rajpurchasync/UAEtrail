@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   discoveryCardCanOpenHostProfile,
   resolveDiscoveryCardHostProfilePath,
+  resolveDiscoveryCardLocationDetailPath,
   type DiscoveryCardModel,
 } from './discoveryCardModel';
 
@@ -26,7 +27,7 @@ const activityCard = (overrides: Partial<DiscoveryCardModel> = {}): DiscoveryCar
 
 describe('resolveDiscoveryCardHostProfilePath', () => {
   it('defaults community publisher to member profile', () => {
-    expect(resolveDiscoveryCardHostProfilePath(activityCard())).toBe('/member/host-1');
+    expect(resolveDiscoveryCardHostProfilePath(activityCard())).toBe('/member/host-1?source=host');
   });
 
   it('routes individual Pro to member profile, not /guide', () => {
@@ -41,7 +42,36 @@ describe('resolveDiscoveryCardHostProfilePath', () => {
           },
         })
       )
-    ).toBe('/member/host-1');
+    ).toBe('/member/host-1?source=host');
+  });
+});
+
+describe('resolveDiscoveryCardLocationDetailPath', () => {
+  it('uses card path for geography pins', () => {
+    expect(
+      resolveDiscoveryCardLocationDetailPath({
+        ...activityCard(),
+        source: 'place',
+        path: '/place/fossil',
+        locationId: 'fossil',
+      } as DiscoveryCardModel)
+    ).toBe('/place/fossil');
+  });
+
+  it('uses place detail when activity has locationId', () => {
+    expect(
+      resolveDiscoveryCardLocationDetailPath(
+        activityCard({
+          locationId: 'loc-1',
+          activity: {
+            id: '1',
+            hostUserId: 'host-1',
+            activityType: 'camping',
+            publishingProfileKind: 'community',
+          },
+        })
+      )
+    ).toBe('/place/loc-1');
   });
 });
 

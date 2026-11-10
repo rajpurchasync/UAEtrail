@@ -54,7 +54,7 @@ export const resolveActivityPublisherProfilePath = (input: {
   hostUserId?: string | null;
 }): string | null => {
   if (publishesActivityAsIndividual(input.publishingProfileKind)) {
-    return memberProfilePath(input.hostUserId);
+    return memberProfilePath(input.hostUserId, { lens: 'host' });
   }
   if (input.publishingProfileKind === 'shop' || input.publishingProfileKind === 'ecommerce') {
     return shopPublicPath({ slug: input.tenantSlug });

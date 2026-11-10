@@ -27,6 +27,9 @@ export const fetchExploreMapItems = async (
   params?: {
     bbox?: string;
     area?: string | null;
+    q?: string | null;
+    country?: string | null;
+    venue?: string | null;
     projection?: 'list';
   },
   etag?: string | null
@@ -34,9 +37,18 @@ export const fetchExploreMapItems = async (
   const search = new URLSearchParams();
   if (params?.bbox) search.set('bbox', params.bbox);
   if (params?.area) search.set('area', params.area);
+  if (params?.q) search.set('q', params.q);
+  if (params?.country) search.set('country', params.country);
+  if (params?.venue) search.set('venue', params.venue);
   if (params?.projection) search.set('projection', params.projection);
   const qs = search.toString();
-  const unscoped = !params?.bbox && !params?.area && !params?.projection;
+  const unscoped =
+    !params?.bbox &&
+    !params?.area &&
+    !params?.projection &&
+    !params?.q &&
+    !params?.country &&
+    !params?.venue;
   // Bearer required for optionalAuth — without it the API keeps the guest 3+3 catalog cap.
   const mapPromise = apiRequestConditional<{ data: { items: ExploreMapItemDTO[] } }>(
     qs ? `/explore/map?${qs}` : '/explore/map',

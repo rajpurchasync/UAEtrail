@@ -8,6 +8,7 @@ import {
 } from '../lib/activity-engagement-store.js';
 import { normalizeProfileVisibility, type ProfileVisibility } from '../lib/media-access.js';
 import { areAcceptedBuddies } from '../lib/buddy-store.js';
+import { getOrSetRequestScoped } from '../lib/request-scope-cache.js';
 import { usersShareActiveGroup } from '../lib/social-groups-store.js';
 
 export type ProfileViewerAccessLevel =
@@ -106,8 +107,7 @@ export const batchShouldHideFromMapMemberDiscovery = async (
   return hideByUserId;
 };
 
-/** Viewer-aware authorization for member profiles and private media. */
-export const resolveProfileViewerAccess = async (input: {
+const resolveProfileViewerAccessCore = async (input: {
   viewerUserId: string | null;
   targetUserId: string;
   targetVisibility: unknown;
@@ -215,6 +215,21 @@ export const resolveProfileViewerAccess = async (input: {
     sharesGroup,
     sharesAcceptedActivity,
   };
+};
+
+/** Viewer-aware authorization for member profiles and private media. */
+export const resolveProfileViewerAccess = async (input: {
+  viewerUserId: string | null;
+  targetUserId: string;
+  targetVisibility: unknown;
+  isPlatformAdmin?: boolean;
+}): Promise<ProfileViewerAccessResult> => {
+  const visibility = normalizeProfileVisibility(input.targetVisibility);
+  const viewerKey = input.viewerUserId ?? 'guest';
+  const cacheKey = `profileViewerAccess:${viewerKey}:${input.targetUserId}:${visibility}:${
+    input.isPlatformAdmin ? 'admin' : 'member'
+  }`;
+  return getOrSetRequestScoped(cacheKey, () => resolveProfileViewerAccessCore(input));
 };
 
 export const canViewProfileField = (

@@ -2,6 +2,7 @@ import {
   countTenantActivityRequests,
   listTenantActivityRequestsDetailed,
 } from '../lib/activity-engagement-store.js';
+import { hostJoinProfileSnippetForActivity } from '../lib/host-join-profile-snippet.js';
 import { hostVisibleMedicalSafety } from '../lib/member-medical-safety-profile.js';
 import type { RideshareRiderReputationDTO } from '@uaetrail/shared-types';
 import { getRideshareRiderReputations } from '../lib/rideshare-rider-reputation.js';
@@ -16,6 +17,8 @@ const mapTenantRequestRow = (
   return {
     id: request.id,
     status: request.status.toLowerCase(),
+    adults: request.adults,
+    kids: request.kids,
     note: request.note,
     hostNote: request.hostNote,
     cancelReason: request.cancelReason,
@@ -27,6 +30,7 @@ const mapTenantRequestRow = (
       email: request.user.email,
       displayName: request.user.profile?.displayName ?? request.user.email,
       medicalSafety: hostVisibleMedicalSafety(request.user.profile),
+      joinProfile: hostJoinProfileSnippetForActivity(request.user.profile, request.activity),
     },
     activity: {
       id: request.activity.id,

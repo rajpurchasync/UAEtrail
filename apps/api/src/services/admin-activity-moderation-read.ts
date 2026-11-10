@@ -10,15 +10,17 @@ import {
 } from '../lib/activity-engagement-store.js';
 import { findAuthUsersByIds } from '../lib/auth-users-store.js';
 import { buildActivityDto } from '../lib/mappers.js';
+import { findActivityPrivateById, findActivityPrivateByIds } from '../lib/activity-private-store.js';
 
 export const listAdminActivityModerationPage = async (input: { page: number; pageSize: number }) => {
   const { items: events, total } = await listAdminModerationEventsPaged({
     skip: (input.page - 1) * input.pageSize,
     take: input.pageSize,
   });
+  const privateById = await findActivityPrivateByIds(events.map((e) => e.id));
   return {
     total,
-    items: events.map((event) => buildActivityDto(event)),
+    items: events.map((event) => buildActivityDto(event, { activityPrivate: privateById.get(event.id) ?? null })),
   };
 };
 
@@ -27,7 +29,8 @@ export const loadAdminActivityModerationDetail = async (activityId: string) => {
   if (!event) {
     throw new ApiError(404, 'activity_not_found', 'Activity not found.');
   }
-  return buildActivityDto(event);
+  const priv = await findActivityPrivateById(activityId);
+  return buildActivityDto(event, { activityPrivate: priv });
 };
 
 export const loadAdminActivityEngagement = async (activityId: string) => {

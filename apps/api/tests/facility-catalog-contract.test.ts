@@ -54,6 +54,7 @@ describe('facility catalog API (CPC-3)', () => {
     const detail = await request(app).get(`/api/facilities/${facility.id}`);
     expect(detail.status).toBe(200);
     expect(detail.body.data.facilityKind).toBe('toilet');
+    expect(detail.body.data.parentPlaceName).toBe(anchor.name);
     expect(detail.body.viewerAccess?.level).toBe('public');
 
     const placeDetail = await request(app).get(`/api/places/${anchor.id}`);

@@ -40,7 +40,7 @@ export const CONSUMER_DETAIL_PANEL = {
   place:
     'flex items-center gap-3.5 rounded-2xl border border-emerald-200/70 bg-white px-4 py-3.5 shadow-[0_6px_24px_rgba(5,150,105,.12)] ring-1 ring-emerald-100/80 active:bg-emerald-50/30 lg:gap-2.5 lg:rounded-xl lg:px-3 lg:py-2.5 lg:shadow-none',
   trust:
-    'flex items-center gap-3 rounded-2xl border-l-4 border-emerald-600 bg-neutral-50 px-3.5 py-3.5 shadow-sm ring-1 ring-neutral-100 lg:gap-2.5 lg:rounded-xl lg:px-3 lg:py-2 lg:shadow-none',
+    'flex items-center gap-3 rounded-2xl border-l-4 border-emerald-600 bg-neutral-50 px-3.5 py-3.5 shadow-sm ring-1 ring-neutral-100 dark:border-emerald-500 dark:bg-neutral-800/90 dark:ring-neutral-700 lg:gap-2.5 lg:rounded-xl lg:px-3 lg:py-2 lg:shadow-none',
   social:
-    'rounded-2xl border border-neutral-200 bg-white px-3.5 py-3.5 shadow-[0_2px_14px_rgba(15,23,42,.06)] lg:rounded-xl lg:px-3 lg:py-2.5 lg:shadow-none',
+    'rounded-2xl border border-neutral-200 bg-white px-3.5 py-3.5 shadow-[0_2px_14px_rgba(15,23,42,.06)] dark:border-neutral-700 dark:bg-neutral-900/80 lg:rounded-xl lg:px-3 lg:py-2.5 lg:shadow-none',
 } as const;

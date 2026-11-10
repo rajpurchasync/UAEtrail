@@ -58,9 +58,9 @@ export const inferListCatFromExploreHandoff = (
 export const serializeBrowseListToExploreSearchParams = (
   state: BrowseListFilterState,
   regions: string[],
-  options?: { listCat?: BrowseMainCategoryKey | null }
+  options?: { listCat?: BrowseMainCategoryKey | null; geoIds?: string[] }
 ): URLSearchParams => {
-  const params = serializeBrowseListSearchParams(state, regions);
+  const params = serializeBrowseListSearchParams(state, regions, options?.geoIds ?? []);
   params.delete(LIST_CAT_PARAM);
   params.delete('price');
 

@@ -1,13 +1,13 @@
 import type { JoinRequestUiState } from '../utils/joinRequestUi';
 import { ACTIVITY_STATUS_JOIN_REQUESTED } from '../content/activityParticipationCopy';
-import { activityPeekPendingInviteChipLabel } from '../content/activityPeekCopy';
+import { HOSTING_LABEL } from '../content/workspaceVocabulary';
 
 export type ActivityDetailHeroStatusChip = {
   label: string;
   tone: 'neutral' | 'success' | 'warning' | 'muted';
 };
 
-/** v3.2 hero strip — join state + capacity (mobile tabs only). */
+/** Hero strip — viewer relationship only (hosting / joined / join requested / full). */
 export const resolveActivityDetailHeroStatusChips = (input: {
   joinUiState: JoinRequestUiState;
   slotsAvailable: number;
@@ -20,25 +20,7 @@ export const resolveActivityDetailHeroStatusChips = (input: {
   if (input.previewMode) return [];
 
   if (input.isHostUser) {
-    const chips: ActivityDetailHeroStatusChip[] = [];
-    const total = input.slotsTotal;
-    const joined =
-      input.confirmedParticipantCount ??
-      (total > 0 ? Math.max(0, total - input.slotsAvailable) : 0);
-    if (total > 0) {
-      chips.push({
-        label: `${joined}/${total} going`,
-        tone: 'neutral',
-      });
-    }
-    const pendingInvites = input.pendingJoinInviteCount ?? 0;
-    if (pendingInvites > 0) {
-      chips.push({
-        label: activityPeekPendingInviteChipLabel(pendingInvites),
-        tone: 'neutral',
-      });
-    }
-    return chips;
+    return [{ label: HOSTING_LABEL, tone: 'success' }];
   }
 
   const chips: ActivityDetailHeroStatusChip[] = [...joinStateChips(input.joinUiState)];

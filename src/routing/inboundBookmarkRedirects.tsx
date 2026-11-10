@@ -1,5 +1,5 @@
 import { Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom';
-import { canonicalPlaceDetailPath } from '@uaetrail/shared-types';
+import { canonicalPlaceDetailPath, inboundKindPlaceDetailPath } from '@uaetrail/shared-types';
 import {
   PRO_MEMBERSHIP_PATH,
   discoveryToExploreSearch,
@@ -13,6 +13,8 @@ import {
   JOURNEY_MAP_PATH,
   PROFILE_HISTORY_PATH,
   PUBLISHING_CONSOLE_PREFIX,
+  inboundNotificationsRedirectTarget,
+  inboundProfileSettingsRedirectTarget,
 } from '../config/surfacePaths';
 import { shopPublicPath } from '../utils/shopPaths';
 
@@ -22,10 +24,14 @@ export const InboundMessagesRedirect = () => {
   return <Navigate to={`/chat${search}${hash}`} replace />;
 };
 
-/** Inbound place URLs (`/trail`, `/camp`, `/venue`, `/event`, …) → `/place/:id`. */
+/** Inbound `/trail` `/camp` → `/place/:id`. Event aliases → `/venue/:id` (live hub, not `/place`). */
 export const InboundCanonicalPlaceRedirect = () => {
   const { id } = useParams<{ id: string }>();
+  const { pathname } = useLocation();
   if (!id) return <Navigate to={EXPLORE_MAP_PATH} replace />;
+  if (/^\/(event|event-spot|community-activity)(\/|$)/.test(pathname)) {
+    return <Navigate to={inboundKindPlaceDetailPath('event', id)} replace />;
+  }
   return <Navigate to={canonicalPlaceDetailPath(id)} replace />;
 };
 
@@ -76,3 +82,15 @@ export const InboundProfileHistoryAliasRedirect = () => (
 
 /** `/profile/my-trips/map` bookmarks → journey map. */
 export const InboundJourneyMapAliasRedirect = () => <Navigate to={JOURNEY_MAP_PATH} replace />;
+
+/** `/profile/settings/*` bookmarks → `/settings/*` (preserve query + hash). */
+export const InboundLegacyProfileSettingsRedirect = () => {
+  const { pathname, search, hash } = useLocation();
+  return <Navigate to={`${inboundProfileSettingsRedirectTarget(pathname)}${search}${hash}`} replace />;
+};
+
+/** `/notifications/*` bookmarks → `/settings/notifications/*` (preserve query + hash). */
+export const InboundLegacyNotificationsRedirect = () => {
+  const { pathname, search, hash } = useLocation();
+  return <Navigate to={`${inboundNotificationsRedirectTarget(pathname)}${search}${hash}`} replace />;
+};

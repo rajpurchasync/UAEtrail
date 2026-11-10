@@ -11,6 +11,7 @@ import { validate } from '../middleware/validate.js';
 import { requireAuth } from '../middleware/auth.js';
 import { env } from '../config/env.js';
 import { isDemoLoginAllowedForRequest } from '../lib/demo-login-policy.js';
+import { listDemoQuickLoginCatalog } from '../lib/demo-accounts.js';
 import { assertPlatformAdminMfaIfRequired } from '../lib/platform-admin-mfa.js';
 import { loginWithDemoAccount } from '../services/auth-demo-commands.js';
 import { authenticateWithGoogleIdToken } from '../services/auth-google-commands.js';
@@ -159,6 +160,14 @@ authRouter.post('/login', validate({ body: loginSchema }), async (req, res, next
   } catch (error) {
     next(error);
   }
+});
+
+authRouter.get('/demo-login-catalog', (req, res) => {
+  if (!isDemoLoginAllowed(req)) {
+    res.status(404).json({ error: 'not_found' });
+    return;
+  }
+  res.json({ accounts: listDemoQuickLoginCatalog() });
 });
 
 authRouter.post('/demo-login', validate({ body: demoLoginSchema }), async (req, res, next) => {

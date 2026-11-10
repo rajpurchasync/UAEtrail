@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { EXPLORE_BRAND_ACTIVE } from '../../config/exploreTheme';
 import { APP_SCROLL_BODY_CLASS } from '../../config/layoutScroll';
@@ -44,8 +44,11 @@ type ListExplorerProps = {
   onBucketChange: (bucket: ListExplorerBucket) => void;
   filters: BrowseListFilterState;
   regions: string[];
+  geoIds?: string[];
+  lockGeoIds?: string[];
+  lockGeoKind?: 'country' | 'state' | 'area' | 'venue' | null;
   filterCount: number;
-  onApplyFilters: (state: BrowseListFilterState, regions: string[]) => void;
+  onApplyFilters: (state: BrowseListFilterState, regions: string[], geoIds: string[]) => void;
   onClearFilters: () => void;
   onClose?: () => void;
   embedded?: boolean;
@@ -57,6 +60,10 @@ type ListExplorerProps = {
   onSortChange: (mode: ListExplorerSortMode) => void;
   showGuestCatalogPreview?: boolean;
   listPanelWidthPx?: number;
+  /** Extra block at the top of the scroll pane (geo child cards, etc.). */
+  scrollLeading?: ReactNode;
+  /** Extra block at the bottom of the scroll pane (geo load-more, etc.). */
+  scrollFooter?: ReactNode;
 };
 
 const thumbGridClass = (sideMap: boolean) =>
@@ -165,7 +172,7 @@ const ThumbnailSkeleton = ({ compactThumbGrid = false }: { compactThumbGrid?: bo
   <div className={thumbGridClass(compactThumbGrid)} aria-hidden>
     {Array.from({ length: 6 }, (_, index) => (
       <div key={index} className="overflow-hidden rounded-2xl bg-neutral-200">
-        <div className="h-[9.75rem] animate-pulse bg-neutral-300/80 sm:h-[8.75rem] md:h-32" />
+        <div className="h-[11rem] animate-pulse bg-neutral-300/80 sm:h-[10.25rem] md:h-36" />
         <div className="space-y-1 p-2">
           <div className="h-2.5 w-4/5 animate-pulse rounded bg-neutral-300/80" />
           <div className="h-3 w-full animate-pulse rounded bg-neutral-300/70" />
@@ -193,6 +200,9 @@ export const ListExplorer = ({
   onBucketChange,
   filters,
   regions,
+  geoIds = [],
+  lockGeoIds = [],
+  lockGeoKind = null,
   filterCount,
   onApplyFilters,
   onClearFilters,
@@ -206,6 +216,8 @@ export const ListExplorer = ({
   onSortChange,
   showGuestCatalogPreview = false,
   listPanelWidthPx,
+  scrollLeading,
+  scrollFooter,
 }: ListExplorerProps) => {
   const [scrollElement, setScrollElement] = useState<HTMLElement | null>(null);
   const stickySearch = query.trim().length > 0;
@@ -227,12 +239,16 @@ export const ListExplorer = ({
 
   return (
     <div
-      className={`relative flex h-full min-h-0 flex-col overflow-hidden bg-neutral-50 ${
+      className={`relative flex h-full min-h-0 flex-col self-stretch overflow-hidden ${
+        embedded ? 'w-full min-w-0 flex-1 bg-white dark:bg-neutral-950' : 'bg-neutral-50'
+      } ${
         mapColumnVisible && listPanelWidthPx != null
           ? 'shrink-0'
           : mapColumnVisible
             ? 'min-w-[360px] max-w-[680px] shrink basis-[450px]'
-            : 'min-w-0 flex-1'
+            : embedded
+              ? ''
+              : 'min-w-0 flex-1'
       }`}
       style={
         mapColumnVisible && listPanelWidthPx != null
@@ -262,22 +278,24 @@ export const ListExplorer = ({
         onSortChange={onSortChange}
         locationPending={locationPending}
         locationDenied={locationDenied}
+        embedded={embedded}
       />
       <div
         ref={setScrollElement}
-        className={`${APP_SCROLL_BODY_CLASS} min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain ${
-          embedded
-            ? 'pb-6'
-            : 'pb-[calc(var(--bottom-nav-height,56px)+var(--safe-bottom,0px)+24px)]'
+        className={`${APP_SCROLL_BODY_CLASS} list-explorer-scroll h-0 min-h-0 w-full min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain ${
+          embedded ? 'explore-browse-rail-scroll pb-6' : 'pb-[calc(var(--bottom-nav-height,56px)+var(--safe-bottom,0px)+24px)]'
         }`}
       >
         <div
-          className={`mx-auto w-full px-3 py-3 ${
-            embedded || mapColumnVisible
-              ? 'max-w-none md:px-4 md:py-4'
-              : 'max-w-6xl md:px-6 md:py-5'
+          className={`mx-auto w-full py-3 ${
+            embedded
+              ? 'max-w-none pl-3 pr-1.5 md:pl-4 md:pr-1.5 md:py-4'
+              : mapColumnVisible
+                ? 'max-w-none px-3 md:px-4 md:py-4'
+                : 'max-w-6xl px-3 md:px-6 md:py-5'
           }`}
         >
+          {scrollLeading}
           {showGuestCatalogPreview ? <ListGuestCatalogPreviewNotice className="mb-3" /> : null}
           {loading ? (
             <ThumbnailSkeleton compactThumbGrid={mapColumnVisible} />
@@ -319,12 +337,16 @@ export const ListExplorer = ({
               />
             </PlaceDistanceProvider>
           )}
+          {scrollFooter}
         </div>
       </div>
       <ListExplorerFilterFab
         bucket={bucket}
         applied={filters}
         regions={regions}
+        geoIds={geoIds}
+        lockGeoIds={lockGeoIds}
+        lockGeoKind={lockGeoKind}
         filterCount={filterCount}
         onApply={onApplyFilters}
       />

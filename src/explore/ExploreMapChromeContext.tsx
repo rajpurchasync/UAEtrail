@@ -8,11 +8,14 @@ import {
   type ReactNode,
 } from 'react';
 
+type ListHoverHandler = (id: string | null) => void;
+
 type ExploreMapChromeContextValue = {
   requestClosePeek: () => void;
   bindClosePeek: (handler: (() => void) | null) => void;
   setListHoverExploreItemId: (id: string | null) => void;
-  bindListHover: (handler: ((id: string | null) => void) | null) => void;
+  /** Subscribe to list hover; returned cleanup removes only this listener. */
+  subscribeListHover: (handler: ListHoverHandler) => () => void;
 };
 
 const ExploreMapChromeContext = createContext<ExploreMapChromeContextValue | null>(null);
@@ -20,22 +23,27 @@ const ExploreMapChromeContext = createContext<ExploreMapChromeContextValue | nul
 /** Lets layout chrome (mobile header) dismiss the map peek owned by ExploreExperience. */
 export const ExploreMapChromeProvider = ({ children }: { children: ReactNode }) => {
   const closeRef = useRef<(() => void) | null>(null);
-  const listHoverRef = useRef<((id: string | null) => void) | null>(null);
+  const listHoverHandlersRef = useRef(new Set<ListHoverHandler>());
   const bindClosePeek = useCallback((handler: (() => void) | null) => {
     closeRef.current = handler;
   }, []);
   const requestClosePeek = useCallback(() => {
     closeRef.current?.();
   }, []);
-  const bindListHover = useCallback((handler: ((id: string | null) => void) | null) => {
-    listHoverRef.current = handler;
+  const subscribeListHover = useCallback((handler: ListHoverHandler) => {
+    listHoverHandlersRef.current.add(handler);
+    return () => {
+      listHoverHandlersRef.current.delete(handler);
+    };
   }, []);
   const setListHoverExploreItemId = useCallback((id: string | null) => {
-    listHoverRef.current?.(id);
+    for (const handler of listHoverHandlersRef.current) {
+      handler(id);
+    }
   }, []);
   const value = useMemo(
-    () => ({ requestClosePeek, bindClosePeek, setListHoverExploreItemId, bindListHover }),
-    [requestClosePeek, bindClosePeek, setListHoverExploreItemId, bindListHover]
+    () => ({ requestClosePeek, bindClosePeek, setListHoverExploreItemId, subscribeListHover }),
+    [requestClosePeek, bindClosePeek, setListHoverExploreItemId, subscribeListHover]
   );
   return (
     <ExploreMapChromeContext.Provider value={value}>{children}</ExploreMapChromeContext.Provider>
@@ -53,11 +61,10 @@ export const useBindExploreMapClosePeek = (closePeek: () => void) => {
   }, [chrome, closePeek]);
 };
 
-export const useBindExploreListMapHover = (onHover: (id: string | null) => void) => {
+export const useBindExploreListMapHover = (onHover: ListHoverHandler | null | undefined) => {
   const chrome = useExploreMapChrome();
   useEffect(() => {
-    if (!chrome) return;
-    chrome.bindListHover(onHover);
-    return () => chrome.bindListHover(null);
+    if (!chrome || !onHover) return;
+    return chrome.subscribeListHover(onHover);
   }, [chrome, onHover]);
 };

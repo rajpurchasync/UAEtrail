@@ -1,4 +1,5 @@
 import { PROFILE_PATH, PROFILE_SETTINGS_PATH } from '../config/routingCatalog';
+import { SETTINGS_SURFACE_TITLE } from '../config/settingsHub';
 import { PROFILE_VEHICLES_PATH } from '../config/surfacePaths';
 import { useMobileBackChrome } from './useMobileBackChrome';
 
@@ -8,7 +9,7 @@ export const useProfileHubBackChrome = () =>
 export const useProfileSettingsBackChrome = () =>
   useMobileBackChrome({
     fallbackTo: PROFILE_SETTINGS_PATH,
-    label: 'Settings',
+    label: SETTINGS_SURFACE_TITLE,
     backBehavior: 'fallback',
   });
 

@@ -133,9 +133,34 @@ export const DirectionsControl = ({
         <span className={className}>{primaryLink}</span>
       ) : (
         <div className={`flex flex-wrap items-center gap-2 ${className}`}>
-          <div className="flex min-w-0 flex-1 gap-2">
-            {primaryButton}
-            {pickerAffordance}
+          <div className="inline-flex min-w-0 max-w-full overflow-hidden rounded-full border border-gray-200 bg-white">
+            <button
+              type="button"
+              onClick={(event) => {
+                stopEvent(event);
+                openPreferredOrPicker();
+              }}
+              onPointerDown={stopEvent}
+              className="inline-flex min-w-0 items-center gap-2 px-3.5 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-100"
+            >
+              {showLeadingIcon ? <Navigation className="h-4 w-4 shrink-0" aria-hidden /> : null}
+              {label}
+            </button>
+            {showAppPickerAffordance ? (
+              <button
+                type="button"
+                onClick={(event) => {
+                  stopEvent(event);
+                  setPickerOpen(true);
+                }}
+                onPointerDown={stopEvent}
+                className="inline-flex w-10 shrink-0 items-center justify-center border-l border-gray-200 text-gray-700 hover:bg-gray-50"
+                aria-label="Choose maps app"
+                title="Choose maps app"
+              >
+                <ChevronDown className="h-5 w-5" aria-hidden />
+              </button>
+            ) : null}
           </div>
           {includeViewOnMap ? (
             <ViewOnMapLink

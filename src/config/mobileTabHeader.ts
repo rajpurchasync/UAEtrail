@@ -17,20 +17,22 @@ import {
   shouldShowMobileBottomNav,
 } from './platform';
 import {
+  isNotificationHubPath,
   MESSAGES_PATH,
-  NOTIFICATIONS_PATH,
   PLAN_PATH,
   PROFILE_HISTORY_PATH,
   JOURNEY_MAP_PATH,
   PROFILE_PATH,
   PROFILE_REVIEWS_PATH,
   PROFILE_VEHICLES_PATH,
-  PROFILE_SETTINGS_PATH,
-  PROFILE_SETTINGS_ACCOUNT_PATH,
-  PROFILE_SETTINGS_PRIVACY_PATH,
-  PROFILE_SETTINGS_NOTIFICATIONS_PATH,
-  PROFILE_SETTINGS_SAFETY_PATH,
+  APP_SETTINGS_PATH,
+  APP_SETTINGS_DISPLAY_PATH,
+  APP_SETTINGS_ACCOUNT_PATH,
+  APP_SETTINGS_PRIVACY_PATH,
+  APP_SETTINGS_NOTIFICATIONS_PATH,
+  APP_SETTINGS_SAFETY_PATH,
 } from './surfacePaths';
+import { SETTINGS_SURFACE_TITLE } from './settingsHub';
 
 export type MobileTabHeaderCenter =
   | { kind: 'brand' }
@@ -48,7 +50,6 @@ const TAB_HEADER_ROUTES = new Set([
 export const isMobileTabHeaderRoute = (pathname: string): boolean => TAB_HEADER_ROUTES.has(pathname);
 
 const LAYOUT_UNIFIED_HEADER_EXACT = new Set([
-  NOTIFICATIONS_PATH,
   '/faq',
   '/terms',
   '/privacy',
@@ -58,11 +59,12 @@ const LAYOUT_UNIFIED_HEADER_EXACT = new Set([
   PROFILE_SUBMISSIONS_PATH,
   INBOUND_CONTRIBUTIONS_PATH,
   MY_REQUESTS_PATH,
-  PROFILE_SETTINGS_PATH,
-  PROFILE_SETTINGS_ACCOUNT_PATH,
-  PROFILE_SETTINGS_PRIVACY_PATH,
-  PROFILE_SETTINGS_NOTIFICATIONS_PATH,
-  PROFILE_SETTINGS_SAFETY_PATH,
+  APP_SETTINGS_PATH,
+  APP_SETTINGS_DISPLAY_PATH,
+  APP_SETTINGS_ACCOUNT_PATH,
+  APP_SETTINGS_PRIVACY_PATH,
+  APP_SETTINGS_NOTIFICATIONS_PATH,
+  APP_SETTINGS_SAFETY_PATH,
   '/profile/edit',
   '/profile/pro-membership',
   '/profile/badges',
@@ -76,6 +78,7 @@ export const isLayoutMobileUnifiedHeaderRoute = (pathname: string): boolean => {
   if (pathname.startsWith('/member/')) return false;
   if (pathname === '/explore' || isMobileTabHeaderRoute(pathname)) return true;
   if (pathname.startsWith('/profile/')) return true;
+  if (isNotificationHubPath(pathname)) return true;
   if (LAYOUT_UNIFIED_HEADER_EXACT.has(pathname)) return true;
   return (MOBILE_BOTTOM_NAV_PROFILE_PATHS as readonly string[]).includes(pathname);
 };
@@ -92,12 +95,16 @@ export const resolveMobileTabHeaderTitle = (pathname: string, search: string): s
   if (pathname === MESSAGES_PATH) return 'Chat';
   if (pathname === PROFILE_HISTORY_PATH) return 'History';
   if (pathname === JOURNEY_MAP_PATH) return 'My Map';
-  if (pathname === NOTIFICATIONS_PATH) return 'Notifications';
-  if (pathname === PROFILE_SETTINGS_PATH) return 'Settings';
-  if (pathname === PROFILE_SETTINGS_ACCOUNT_PATH) return 'Account';
-  if (pathname === PROFILE_SETTINGS_PRIVACY_PATH) return 'Privacy';
-  if (pathname === PROFILE_SETTINGS_NOTIFICATIONS_PATH) return 'Notifications';
-  if (pathname === PROFILE_SETTINGS_SAFETY_PATH) return 'Safety & emergency';
+  if (pathname === APP_SETTINGS_PATH) return SETTINGS_SURFACE_TITLE;
+  if (pathname === APP_SETTINGS_DISPLAY_PATH) return 'Display';
+  if (pathname === APP_SETTINGS_ACCOUNT_PATH) return 'Account';
+  if (pathname === APP_SETTINGS_PRIVACY_PATH) return 'Privacy';
+  if (isNotificationHubPath(pathname)) {
+    if (pathname.includes('/preferences')) return 'Notification settings';
+    if (pathname.includes('/saved')) return 'Saved map & alerts';
+    return 'Notifications';
+  }
+  if (pathname === APP_SETTINGS_SAFETY_PATH) return 'Safety & emergency';
   if (pathname === '/profile/edit') return 'Edit profile';
   if (pathname === '/profile/pro-membership') return 'Pro membership';
   if (pathname === '/profile/badges') return 'Badges';

@@ -24,7 +24,12 @@ export const ActivityLinkedRideshareAffordance = ({
   const href = activityDetailPath(rideshare.id);
   const schedule =
     rideshare.date || rideshare.time
-      ? formatActivityDetailConsumerLeadDate(rideshare.date ?? '', rideshare.time ?? null)
+      ? formatActivityDetailConsumerLeadDate(
+          rideshare.date ?? '',
+          rideshare.time ?? null,
+          rideshare.endDate ?? null,
+          rideshare.endTime ?? null
+        )
       : null;
   const scheduleLine = schedule?.time ?? null;
   const blurb = rideshare.description?.trim();

@@ -17,7 +17,7 @@ describe('signupProfileGate', () => {
   it('exempts welcome path only', () => {
     expect(isSignupProfileGateExemptPath(SIGNUP_PROFILE_WELCOME_PATH)).toBe(true);
     expect(isSignupProfileGateExemptPath('/explore')).toBe(false);
-    expect(isSignupProfileGateExemptPath('/profile/settings')).toBe(false);
+    expect(isSignupProfileGateExemptPath('/settings')).toBe(false);
   });
 
   it('does not re-force welcome when profile stays complete after an edit', () => {

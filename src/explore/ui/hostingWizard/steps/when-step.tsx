@@ -37,6 +37,8 @@ export function renderWhenStep(ctx: HostingWizardContext): ReactNode | null {
         showMonthView={showMonthView}
         setShowMonthView={setShowMonthView}
         hikingFlow={hikingFlow}
+        multiDayAllowed={kind === 'camping' || kind === 'event'}
+        showEndTime={hikingFlow || kind === 'camping' || kind === 'event'}
       />
       <HostingWizardStepError error={error} />
       <HostingWizardStepNext

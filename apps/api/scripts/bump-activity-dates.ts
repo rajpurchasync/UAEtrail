@@ -2,11 +2,11 @@
  * Bump every activity startAt (and endAt when present) to ~2 months from now, staggered by 2 days.
  * Usage: npm --workspace @uaetrail/api run bump-activity-dates
  */
-import { connectMongo, disconnectMongo, getMongoClient } from '../src/lib/mongo.js';
+import { getMongoClient } from '../src/lib/mongo.js';
 import { invalidateExploreMapCache } from '../src/lib/explore-map-cache.js';
+import { resolveCliScriptName, runCliScript } from './cli-script-runner.js';
 
 const bumpActivityDates = async () => {
-  await connectMongo();
   const collection = getMongoClient()!.db().collection('activities');
   const docs = await collection.find({}).sort({ startAt: 1 }).toArray();
 
@@ -44,11 +44,4 @@ const bumpActivityDates = async () => {
   await invalidateExploreMapCache();
 };
 
-bumpActivityDates()
-  .catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
-  })
-  .finally(async () => {
-    await disconnectMongo();
-  });
+runCliScript(resolveCliScriptName(import.meta.url), bumpActivityDates);

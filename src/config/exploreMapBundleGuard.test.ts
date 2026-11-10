@@ -22,6 +22,14 @@ describe('explore map bundle split (P3)', () => {
     expect(vite).toMatch(/vendor-map-leaflet/);
     expect(vite).toMatch(/vendor-map-cluster/);
   });
+
+  it('explore map shows catalog pins, not geo-tree area bubbles', () => {
+    const placesMap = read('src/components/ui/PlacesMap.tsx');
+    expect(placesMap).toMatch(/ClusteredMarkers/);
+    expect(placesMap).not.toMatch(/ExploreMapGeoBubbleLayer/);
+    expect(placesMap).not.toMatch(/exploreGeoBubblesForZoom/);
+    expect(read('src/explore/ui/exploreMapGeoBubbles.ts')).not.toMatch(/from ['"]leaflet['"]/);
+  });
 });
 
 describe('App route modularization (C2)', () => {

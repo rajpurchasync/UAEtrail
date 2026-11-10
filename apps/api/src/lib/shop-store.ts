@@ -27,6 +27,8 @@ type MongoMerchantProfile = {
   latitude?: number | null;
   longitude?: number | null;
   region?: string | null;
+  allowInboundChat?: boolean;
+  showContactPhone?: boolean;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -34,7 +36,16 @@ type MongoMerchantProfile = {
 type MerchantProfileUpdate = Partial<
   Pick<
     MerchantProfile,
-    'shopName' | 'description' | 'logo' | 'contactEmail' | 'contactPhone' | 'latitude' | 'longitude' | 'region'
+    | 'shopName'
+    | 'description'
+    | 'logo'
+    | 'contactEmail'
+    | 'contactPhone'
+    | 'latitude'
+    | 'longitude'
+    | 'region'
+    | 'allowInboundChat'
+    | 'showContactPhone'
   >
 >;
 
@@ -57,9 +68,34 @@ const mapMongoMerchantProfile = (merchant: MongoMerchantProfile): MerchantProfil
   latitude: merchant.latitude ?? null,
   longitude: merchant.longitude ?? null,
   region: merchant.region ?? null,
+  allowInboundChat: merchant.allowInboundChat === true,
+  showContactPhone: merchant.showContactPhone === true,
   createdAt: merchant.createdAt,
   updatedAt: merchant.updatedAt
 });
+
+export const publicMerchantContactPhone = (
+  profile: Pick<MerchantProfile, 'contactPhone' | 'showContactPhone'>
+): string | null => (profile.showContactPhone ? profile.contactPhone : null);
+
+/** Shop contacts who opted in to public inbound DMs. */
+export const listInboundChatEnabledShopAdminIds = async (userIds: string[]): Promise<Set<string>> => {
+  const uniqueIds = [...new Set(userIds.filter(Boolean))];
+  if (uniqueIds.length === 0) return new Set();
+
+  const merchants = await merchantProfilesCollection()
+    .find({ adminIds: { $in: uniqueIds }, allowInboundChat: true }, { projection: { adminIds: 1 } })
+    .toArray();
+
+  const allowed = new Set<string>();
+  const wanted = new Set(uniqueIds);
+  for (const merchant of merchants) {
+    for (const adminId of merchant.adminIds ?? []) {
+      if (wanted.has(adminId)) allowed.add(adminId);
+    }
+  }
+  return allowed;
+};
 
 export const listPublicMerchantsForMap = async () => {
   const merchants = await merchantProfilesCollection()
@@ -279,6 +315,8 @@ export const createMerchantProfileForUser = async (
     latitude?: number | null;
     longitude?: number | null;
     region?: string | null;
+    allowInboundChat?: boolean;
+    showContactPhone?: boolean;
   },
   options?: { tenantId?: string | null; linkShopTenant?: boolean }
 ) => {
@@ -304,6 +342,8 @@ export const createMerchantProfileForUser = async (
     latitude: data.latitude ?? null,
     longitude: data.longitude ?? null,
     region: data.region ?? null,
+    allowInboundChat: data.allowInboundChat === true,
+    showContactPhone: data.showContactPhone === true,
     createdAt: now,
     updatedAt: now
   };

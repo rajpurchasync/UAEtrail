@@ -8,6 +8,7 @@ import { searchMembersByQuery } from '../hooks/memberPeopleClientApi';
 import type { SocialGroupView, SocialGroupWallMessageView } from '../api/types';
 import { useAuth } from '../context/AuthContext';
 import { GuestGatedSurfaceLayout } from '../components/auth/GuestGatedSurfaceLayout';
+import { AsyncLoadingState } from '../components/ui/AsyncLoadingState';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { ConsumerErrorCard } from '../components/mobile/ConsumerFeedback';
 import {
@@ -60,8 +61,8 @@ export const MessagesGate = () => {
   const { user, initializing } = useAuth();
   if (initializing) {
     return (
-      <div className="app-page-center pb-bottom-nav-safe">
-        <div className="h-8 w-8 animate-spin rounded-full border-t-2 border-b-2 border-emerald-600" />
+      <div className="pb-bottom-nav-safe">
+        <AsyncLoadingState variant="page" label="Loading messages" />
       </div>
     );
   }

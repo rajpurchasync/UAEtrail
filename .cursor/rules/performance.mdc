@@ -1,0 +1,22 @@
+---
+description: Performance and detail-page data rules (detailPagesRevampPlan §15–17)
+alwaysApply: true
+---
+
+# Performance rules (detail surfaces)
+
+- Detail pages load in tiers: a small shell first, then lazy sections. Do not put map libraries, full tracks, or large lists in the initial bundle for a detail route.
+- Heavy objects (GPX file download, interactive map if not already loaded, full participant list, long review threads) are separate requests or below-the-fold, triggered when the section nears the viewport where practical.
+- Prefer `IntersectionObserver` with a generous `rootMargin` for deferred fetches; match patterns in `PlaceConsumerDetailPage` / activity weather sections.
+- Reserve space with skeletons that approximate final height to limit layout shift.
+- When adding a new detail query, ensure an index exists on the API path (see `mongo-indexes` and domain contract tests).
+
+# MongoDB (read paths)
+
+- Prefer projections; avoid unbounded joins on hot read paths.
+- Cursor pagination for long lists; avoid unbounded `skip` on production paths.
+
+# Code
+
+- TypeScript strict; shared shapes from `@uaetrail/shared-types`.
+- Empty sections: hide the block, do not render an empty card.

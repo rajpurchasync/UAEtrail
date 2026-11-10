@@ -9,6 +9,7 @@ import { activityDetailPath, resolveActivityDisplayCoordinates } from '@uaetrail
 import { ApiError } from './api-error.js';
 import { COLLECTIONS } from './collections.js';
 import { findActivityDocInMongo, findLocationInMongo } from './entity-sync.js';
+import { findActivityPrivateById } from './activity-private-store.js';
 import { getMongoClient } from './mongo.js';
 import { scheduleSideEffect } from './schedule-side-effect.js';
 import {
@@ -152,9 +153,13 @@ export const upsertVisitedPinFromActivityCheckIn = async (input: {
   const location = await findLocationInMongo(eventDoc.locationId);
   if (!location) return null;
 
+  const priv = await findActivityPrivateById(input.activityId);
+  const exactLat = priv?.exactGeo?.coordinates ? (priv.exactGeo.coordinates[1] as number) : null;
+  const exactLng = priv?.exactGeo?.coordinates ? (priv.exactGeo.coordinates[0] as number) : null;
+
   const { latitude, longitude } = resolveActivityDisplayCoordinates({
-    meetingLat: eventDoc.meetingLat,
-    meetingLng: eventDoc.meetingLng,
+    meetingLat: exactLat ?? eventDoc.meetingLat,
+    meetingLng: exactLng ?? eventDoc.meetingLng,
     startLat: eventDoc.startLat,
     startLng: eventDoc.startLng,
     parkingLat: eventDoc.parkingLat,

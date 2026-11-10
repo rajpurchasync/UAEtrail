@@ -59,6 +59,8 @@ describe('geographyTerminologyGuard (Place · Facility · Area)', () => {
     const placeHost = read('src/explore/ui/peek/place/PlaceMapPeekHost.tsx');
     expect(placeHost).toMatch(/PlacePeekCard/);
     expect(stage).toMatch(/PlaceMapPeekHost/);
+    const peekCard = read('src/explore/ui/peek/PlacePeekCard.tsx');
+    expect(peekCard).toMatch(/FacilityPeekActions/);
   });
 
   it('GEO-04: no new ExploreVenuePeek* implementations under peek/place', () => {

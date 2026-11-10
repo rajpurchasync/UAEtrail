@@ -19,6 +19,8 @@ describe('planRouting', () => {
     expect(isPlanHostingFilterRoute('/plan', '?view=plans&filter=hosting')).toBe(true);
     expect(isPlanMemberNavActive('/plan', '?view=plans&filter=hosting', true)).toBe(false);
     expect(isPlanMemberNavActive('/plan', '?view=plans&filter=joined', true)).toBe(true);
+    expect(isPlanMemberNavActive('/plan/today', '', true)).toBe(false);
+    expect(isPlanMemberNavActive('/plan/today', '', false)).toBe(false);
   });
 
   it('builds canonical upcoming and wishlist paths', () => {

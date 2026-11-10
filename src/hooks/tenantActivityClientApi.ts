@@ -7,6 +7,7 @@ import type {
   ActivityGroupChatPostPolicy,
   ActivityGuideHostDTO,
   ParticipantDTO,
+  PublishingActivityUpsertBody,
 } from '@uaetrail/shared-types';
 import { api } from '../api/index';
 
@@ -118,7 +119,7 @@ export const duplicateActivity = async (
 export const updateActivity = async (
   tenantId: string,
   activityId: string,
-  payload: Record<string, unknown>
+  payload: PublishingActivityUpsertBody
 ): Promise<ActivityDTO> => {
   const res = await api.updateActivity(tenantId, activityId, payload);
   return res.data;
@@ -126,7 +127,7 @@ export const updateActivity = async (
 
 export const createActivity = async (
   tenantId: string,
-  payload: Record<string, unknown>
+  payload: PublishingActivityUpsertBody
 ): Promise<ActivityDTO> => {
   const res = await api.createActivity(tenantId, payload);
   return res.data;

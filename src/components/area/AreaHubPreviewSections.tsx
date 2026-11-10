@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
+import { ConsumerDetailSection } from '../../detail/shell/ConsumerDetailSection';
+import { HorizontalDragScroll } from '../ui/HorizontalDragScroll';
 import type { ActivityDTO, LocationDTO } from '@uaetrail/shared-types';
 import { activityDetailPath, placeDetailPath } from '@uaetrail/shared-types';
 import { explorePath, exploreShopsPath } from '../../explore/routing';
-import { addPlaceCompose, hostCompose, seekFixedCompose } from '../../explore/compose';
+import { addPlaceCompose, hostCompose } from '../../explore/compose';
 import { exploreMapPeekPath } from '@uaetrail/shared-types';
 import { communityShopPlaceToView } from '../../utils/communityShopPlace';
 import {
@@ -31,7 +33,8 @@ type AreaHubPreviewSectionsProps = {
 };
 
 const PREVIEW_PER_GROUP = 5;
-
+const RAIL_CARD_CLASS =
+  'box-border w-[min(16.5rem,calc(100%-2.75rem))] max-w-full shrink-0 snap-start';
 const formatActivityWhen = (activity: ActivityDTO): string => {
   const parts = [activity.date, activity.time].filter(Boolean);
   return parts.join(' · ') || 'Soon';
@@ -61,102 +64,109 @@ export const AreaHubPreviewSections = ({
   const exploreShopsInArea = explorePath({ area: areaSlug, panel: 'shops', filter: 'shops' });
   const placeGroups = groupAreaHubPlaces(places);
   const shopsForRail = placeGroups.find((g) => g.key === 'shops')?.places.slice(0, 8) ?? [];
+  const facilitiesForRail = placeGroups.find((g) => g.key === 'facilities')?.places.slice(0, 8) ?? [];
 
   return (
-    <div className={showAll ? 'mt-8 space-y-8' : 'space-y-8'}>
-      {showActivities ? (
-      <section className="flex flex-wrap gap-2">
-        <Link
-          to={explorePath({
-            area: areaSlug,
-            compose: seekFixedCompose('hiking'),
-          })}
-          className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-900"
-        >
-          Find crew
-        </Link>
-        <Link
-          to={explorePath({
-            area: areaSlug,
-            compose: hostCompose('hiking'),
-          })}
-          className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900"
-        >
-          Host an outing
-        </Link>
-        <Link
-          to={explorePath({
-            area: areaSlug,
-            compose: addPlaceCompose('hiking'),
-          })}
-          className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900"
-        >
-          Add a place
-        </Link>
-      </section>
+    <div className={showAll ? 'mt-3 min-w-0 space-y-3 lg:mt-8 lg:space-y-8' : 'min-w-0 space-y-3 lg:space-y-8'}>
+      {showPlaces && facilitiesForRail.length > 0 ? (
+        <ConsumerDetailSection title="Facilities" tone="slate" collapsible defaultExpanded>
+          <ul className="space-y-2">
+            {facilitiesForRail.map((place) => (
+              <li key={place.id}>
+                <Link
+                  to={placeDetailPath(placeDetailRouteKindForRow(place), place.id)}
+                  className="text-sm font-semibold leading-snug text-emerald-900 [overflow-wrap:anywhere] hover:underline"
+                >
+                  {place.name}
+                </Link>
+                <span className="block text-xs text-slate-500 [overflow-wrap:anywhere]">
+                  {placeKindLabelForRow(place)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </ConsumerDetailSection>
       ) : null}
 
       {showPlaces && shopsForRail.length > 0 ? (
-        <section className="space-y-3">
-          <div className="flex items-end justify-between gap-2">
-            <h2 className="text-lg font-semibold text-slate-900">Gear & shops</h2>
-            <Link to={exploreShopsInArea} className="text-sm font-semibold text-emerald-800">
+        <ConsumerDetailSection title="Gear & shops" tone="amber" collapsible defaultExpanded>
+          <p className="mb-3 text-end">
+            <Link
+              to={exploreShopsInArea}
+              className="text-xs font-semibold text-amber-900 underline-offset-2 hover:underline dark:text-amber-100"
+            >
               On the map
             </Link>
-          </div>
-          <ul className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 snap-x">
+          </p>
+          <HorizontalDragScroll className="pb-1 snap-x snap-mandatory [-webkit-overflow-scrolling:touch]">
+            <ul className="flex w-max max-w-none gap-3">
             {shopsForRail.map((place) => (
-              <li key={place.id} className="w-[min(72vw,220px)] shrink-0 snap-start">
+              <li key={place.id} className={RAIL_CARD_CLASS}>
                 <Link
                   to={shopHrefForPlace(place)}
-                  className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm hover:border-emerald-200"
+                  className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm hover:border-emerald-200 dark:border-neutral-700 dark:bg-neutral-900"
+                  draggable={false}
                 >
-                  <span className="font-medium text-slate-900 line-clamp-2">{place.name}</span>
+                  <span className="font-medium text-slate-900 line-clamp-2 [overflow-wrap:anywhere]">{place.name}</span>
                   <span className="mt-1 text-xs text-slate-500">Shop · {areaSlug}</span>
                 </Link>
               </li>
             ))}
-          </ul>
+            </ul>
+          </HorizontalDragScroll>
           <Link to={exploreShopsPath()} className="text-sm text-slate-600 underline-offset-2 hover:underline">
             Browse all gear shops
           </Link>
-        </section>
+        </ConsumerDetailSection>
       ) : null}
 
       {showPlaces && operators.length > 0 ? (
-        <section className="space-y-3" id="operators">
-          <div className="flex items-end justify-between gap-2">
-            <h2 className="text-lg font-semibold text-slate-900">Guides & operators</h2>
-            <Link to={exploreActivities} className="text-sm font-semibold text-emerald-800">
+        <ConsumerDetailSection
+          id="operators"
+          title="Guides & operators"
+          tone="violet"
+          collapsible
+          defaultExpanded
+        >
+          <p className="mb-3 text-end">
+            <Link
+              to={exploreActivities}
+              className="text-xs font-semibold text-violet-900 underline-offset-2 hover:underline dark:text-violet-100"
+            >
               Outings here
             </Link>
-          </div>
-          <ul className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 snap-x">
+          </p>
+          <HorizontalDragScroll className="pb-1 snap-x snap-mandatory [-webkit-overflow-scrolling:touch]">
+            <ul className="flex w-max max-w-none gap-3">
             {operators.map((operator) => (
-              <li key={operator.id} className="w-[min(72vw,220px)] shrink-0 snap-start">
+              <li key={operator.id} className={RAIL_CARD_CLASS}>
                 <Link
                   to={operator.path}
-                  className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm hover:border-indigo-200"
+                  className="flex h-full min-w-0 flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm hover:border-indigo-200 dark:border-neutral-700 dark:bg-neutral-900"
+                  draggable={false}
                 >
-                  <span className="font-medium text-slate-900 line-clamp-2">{operator.name}</span>
+                  <span className="font-medium text-slate-900 line-clamp-2 [overflow-wrap:anywhere]">{operator.name}</span>
                   <span className="mt-1 text-xs text-slate-500">
                     {operator.profileKind === 'agency' ? 'Tour operator' : 'Pro guide'}
                   </span>
                 </Link>
               </li>
             ))}
-          </ul>
-        </section>
+            </ul>
+          </HorizontalDragScroll>
+        </ConsumerDetailSection>
       ) : null}
 
       {showActivities ? (
-      <section className="space-y-3">
-        <div className="flex items-end justify-between gap-2">
-          <h2 className="text-lg font-semibold text-slate-900">Happening soon</h2>
-          <Link to={exploreActivities} className="text-sm font-semibold text-emerald-800">
+      <ConsumerDetailSection title="Happening soon" tone="emerald" collapsible defaultExpanded>
+        <p className="mb-3 text-end">
+          <Link
+            to={exploreActivities}
+            className="text-xs font-semibold text-emerald-900 underline-offset-2 hover:underline dark:text-emerald-100"
+          >
             All outings
           </Link>
-        </div>
+        </p>
         {activities.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-slate-200 px-4 py-6 text-sm text-slate-600">
             No published outings in this area yet.{' '}
@@ -171,14 +181,14 @@ export const AreaHubPreviewSections = ({
             </Link>
           </p>
         ) : (
-          <ul className="divide-y rounded-2xl border border-slate-200 bg-white">
+          <ul className="divide-y rounded-2xl border border-slate-200 bg-white dark:border-neutral-700 dark:bg-neutral-900">
             {activities.map((activity) => (
               <li key={activity.id}>
                 <Link
                   to={activityDetailPath(activity.id)}
-                  className="flex flex-col gap-0.5 px-4 py-3 hover:bg-slate-50"
+                  className="flex min-w-0 flex-col gap-0.5 px-4 py-3 hover:bg-slate-50"
                 >
-                  <span className="font-medium text-slate-900">{activity.title}</span>
+                  <span className="font-medium leading-snug text-slate-900 [overflow-wrap:anywhere]">{activity.title}</span>
                   <span className="text-xs text-slate-500">
                     {formatActivityWhen(activity)}
                     {activity.activityMode === 'seeking' ? ' · Seeking crew' : ''}
@@ -191,17 +201,26 @@ export const AreaHubPreviewSections = ({
         <Link to={exploreToday} className="inline-block text-sm text-slate-600 underline-offset-2 hover:underline">
           See today on the map
         </Link>
-      </section>
+      </ConsumerDetailSection>
       ) : null}
 
       {showPlaces ? (
-      <section className="space-y-5" id="places-list">
-        <div className="flex items-end justify-between gap-2">
-          <h2 className="text-lg font-semibold text-slate-900">Places in this area</h2>
-          <Link to={explorePlaces} className="text-sm font-semibold text-emerald-800">
+      <ConsumerDetailSection
+        id="places-list"
+        title="Places in this area"
+        tone="sky"
+        collapsible
+        defaultExpanded
+      >
+        <p className="mb-3 text-end">
+          <Link
+            to={explorePlaces}
+            className="text-xs font-semibold text-sky-900 underline-offset-2 hover:underline dark:text-sky-100"
+          >
             All on map
           </Link>
-        </div>
+        </p>
+        <div className="space-y-5">
         {placeGroups.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-slate-200 px-4 py-6 text-sm text-slate-600">
             Catalog places in this area will show here once they are linked with an area tag.{' '}
@@ -221,19 +240,21 @@ export const AreaHubPreviewSections = ({
               <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                 {group.label}
               </h3>
-              <ul className="divide-y rounded-2xl border border-slate-200 bg-white">
+              <ul className="min-w-0 divide-y overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-neutral-700 dark:bg-neutral-900">
                 {group.places.slice(0, PREVIEW_PER_GROUP).map((place) => (
-                  <li key={place.id}>
+                  <li key={place.id} className="min-w-0">
                     <Link
                       to={
                         group.key === 'shops'
                           ? shopHrefForPlace(place)
                           : placeDetailPath(placeDetailRouteKindForRow(place), place.id)
                       }
-                      className="flex items-center justify-between gap-2 px-4 py-3 hover:bg-slate-50"
+                      className="grid min-w-0 grid-cols-1 gap-0.5 px-4 py-3 hover:bg-slate-50 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-baseline sm:gap-3"
                     >
-                      <span className="font-medium text-slate-900">{place.name}</span>
-                      <span className="shrink-0 text-xs text-slate-500">
+                      <span className="min-w-0 break-words font-medium leading-snug text-slate-900">
+                        {place.name}
+                      </span>
+                      <span className="min-w-0 break-words text-xs leading-snug text-slate-500 sm:text-right">
                         {placeKindLabelForRow(place)}
                       </span>
                     </Link>
@@ -248,7 +269,8 @@ export const AreaHubPreviewSections = ({
             </div>
           ))
         )}
-      </section>
+        </div>
+      </ConsumerDetailSection>
       ) : null}
     </div>
   );

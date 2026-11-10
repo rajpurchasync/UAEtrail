@@ -6,6 +6,7 @@ import {
   cancelUserActivityRequestAndPromoteWaitlist,
   findActivityRequestByIdForUser,
   updateActivityRequestNote,
+  updateActivityRequestParty,
 } from '../lib/activity-engagement-store.js';
 import { markNotificationsReadForCancelledJoinRequest } from '../lib/notifications-store.js';
 import { canWithdrawRequest, withdrawReasonSchema } from '../lib/withdraw-reasons.js';
@@ -64,6 +65,8 @@ export const submitPublicActivityJoinRequest = async (input: {
   note?: string | null;
   packingCheckedIds?: string[];
   packingSignature?: string;
+  adults?: number;
+  kids?: number;
 }) => {
   await assertPrivateActivityJoinAllowed({
     activityId: input.activityId,
@@ -77,6 +80,8 @@ export const submitPublicActivityJoinRequest = async (input: {
     note: input.note ?? undefined,
     packingCheckedIds: input.packingCheckedIds,
     packingSignature: input.packingSignature,
+    adults: input.adults,
+    kids: input.kids,
   });
 
   void notifyParticipantJoinRequestSubmitted({
@@ -106,6 +111,8 @@ export const submitPublicActivityRsvp = async (input: {
   note?: string | null;
   packingCheckedIds?: string[];
   packingSignature?: string;
+  adults?: number;
+  kids?: number;
 }) => {
   await assertPrivateActivityJoinAllowed({
     activityId: input.activityId,
@@ -113,13 +120,31 @@ export const submitPublicActivityRsvp = async (input: {
     isPlatformAdmin: input.isPlatformAdmin,
   });
 
-  const { request, participation } = await createRsvpParticipation({
+  const { request, participation, waitlisted } = await createRsvpParticipation({
     activityId: input.activityId,
     userId: input.userId,
     note: input.note ?? undefined,
     packingCheckedIds: input.packingCheckedIds,
     packingSignature: input.packingSignature,
+    adults: input.adults,
+    kids: input.kids,
   });
+
+  const requestDto = {
+    id: request.id,
+    activityId: request.activityId,
+    userId: request.userId,
+    status: request.status.toLowerCase(),
+    waitlisted: Boolean(waitlisted),
+    note: request.note,
+    hostNote: request.hostNote,
+    createdAt: request.createdAt,
+    updatedAt: request.updatedAt,
+  };
+
+  if (!participation) {
+    return { request: requestDto, participation: null, waitlisted: true };
+  }
 
   const eventDoc = await findActivityDocInMongo(input.activityId);
   const participationDto = eventDoc
@@ -130,17 +155,9 @@ export const submitPublicActivityRsvp = async (input: {
       );
 
   return {
-    request: {
-      id: request.id,
-      activityId: request.activityId,
-      userId: request.userId,
-      status: request.status.toLowerCase(),
-      note: request.note,
-      hostNote: request.hostNote,
-      createdAt: request.createdAt,
-      updatedAt: request.updatedAt,
-    },
+    request: requestDto,
     participation: participationDto,
+    waitlisted: false,
   };
 };
 
@@ -197,6 +214,12 @@ export const cancelPublicActivityJoinRequest = async (input: {
   });
 };
 
+const ACTIVE_EDIT_STATUSES: RequestStatus[] = [
+  RequestStatus.PENDING,
+  RequestStatus.WAITLISTED,
+  RequestStatus.APPROVED,
+];
+
 export const updatePublicActivityJoinRequestNote = async (input: {
   requestId: string;
   userId: string;
@@ -211,4 +234,34 @@ export const updatePublicActivityJoinRequestNote = async (input: {
   }
   const updated = await updateActivityRequestNote(request.id, input.note);
   return { id: updated.id, note: updated.note };
+};
+
+export const updatePublicActivityJoinRequestParty = async (input: {
+  requestId: string;
+  userId: string;
+  note?: string;
+  adults?: number;
+  kids?: number;
+}) => {
+  const request = await findActivityRequestByIdForUser(input.requestId, input.userId);
+  if (!request) {
+    throw new ApiError(404, 'request_not_found', 'Request not found.');
+  }
+  if (!ACTIVE_EDIT_STATUSES.includes(request.status)) {
+    throw new ApiError(400, 'request_not_editable', 'This request cannot be updated.');
+  }
+  if (input.note === undefined && input.adults === undefined && input.kids === undefined) {
+    throw new ApiError(400, 'nothing_to_update', 'No party details to update.');
+  }
+  const updated = await updateActivityRequestParty(request.id, {
+    note: input.note,
+    adults: input.adults,
+    kids: input.kids,
+  });
+  return {
+    id: updated.id,
+    note: updated.note,
+    adults: updated.adults,
+    kids: updated.kids,
+  };
 };

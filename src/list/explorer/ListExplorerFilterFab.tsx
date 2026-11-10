@@ -19,8 +19,11 @@ type ListExplorerFilterFabProps = {
   bucket: ListExplorerBucket;
   applied: BrowseListFilterState;
   regions: string[];
+  geoIds?: string[];
+  lockGeoIds?: string[];
+  lockGeoKind?: 'country' | 'state' | 'area' | 'venue' | null;
   filterCount: number;
-  onApply: (state: BrowseListFilterState, regions: string[]) => void;
+  onApply: (state: BrowseListFilterState, regions: string[], geoIds: string[]) => void;
 };
 
 const readCssPx = (value: string, fallback: number): number => {
@@ -32,6 +35,9 @@ export const ListExplorerFilterFab = ({
   bucket,
   applied,
   regions,
+  geoIds = [],
+  lockGeoIds = [],
+  lockGeoKind = null,
   filterCount,
   onApply,
 }: ListExplorerFilterFabProps) => {
@@ -170,6 +176,9 @@ export const ListExplorerFilterFab = ({
           bucket={bucket}
           applied={applied}
           regions={regions}
+          geoIds={geoIds}
+          lockGeoIds={lockGeoIds}
+          lockGeoKind={lockGeoKind}
           onApply={onApply}
           onClose={() => setOpen(false)}
         />

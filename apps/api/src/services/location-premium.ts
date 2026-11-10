@@ -1,7 +1,4 @@
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
 import { randomUUID } from 'crypto';
-import { GetObjectCommand } from '@aws-sdk/client-s3';
 import type { Collection } from 'mongodb';
 import type { Location } from '../domain/types.js';
 import { LocationUnlockSource, MembershipTier, UserRole } from '../domain/enums.js';
@@ -9,11 +6,7 @@ import { ApiError } from '../lib/api-error.js';
 import { findLocationInMongo } from '../lib/entity-sync.js';
 import { getMongoClient } from '../lib/mongo.js';
 import { getAuthUserMembershipTier } from '../lib/auth-users-store.js';
-import { isS3Available, s3Client } from '../lib/s3.js';
-import { safePathUnder } from '../lib/safe-path.js';
-import { env } from '../config/env.js';
-
-const LOCAL_UPLOADS_DIR = join(process.cwd(), 'uploads');
+export { readStoredFile } from '../lib/stored-file-read.js';
 
 type MongoLocationUnlock = {
   _id: string;
@@ -116,38 +109,6 @@ export async function unlockLocationForUser(
 
 export async function deleteLocationUnlocksByUser(userId: string): Promise<void> {
   await locationUnlocksCollection().deleteMany({ userId });
-}
-
-export async function readStoredFile(key: string): Promise<{ buffer: Buffer; mimeType: string; filename: string }> {
-  const filename = key.split('/').pop() ?? 'download';
-  const ext = filename.split('.').pop()?.toLowerCase();
-  const mimeType =
-    ext === 'gpx' ? 'application/gpx+xml' :
-    ext === 'pdf' ? 'application/pdf' :
-    'application/octet-stream';
-
-  if (isS3Available() && s3Client) {
-    const response = await s3Client.send(
-      new GetObjectCommand({ Bucket: env.S3_BUCKET, Key: key })
-    );
-    const body = response.Body;
-    if (!body) {
-      throw new ApiError(404, 'file_not_found', 'File not found in storage.');
-    }
-    const bytes = await body.transformToByteArray();
-    return { buffer: Buffer.from(bytes), mimeType, filename };
-  }
-
-  const filePath = safePathUnder(LOCAL_UPLOADS_DIR, key);
-  if (!filePath) {
-    throw new ApiError(400, 'invalid_path', 'Invalid file path.');
-  }
-  try {
-    const buffer = await readFile(filePath);
-    return { buffer, mimeType, filename };
-  } catch {
-    throw new ApiError(404, 'file_not_found', 'File not found.');
-  }
 }
 
 export function buildPremiumSummary(

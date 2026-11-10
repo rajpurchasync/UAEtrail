@@ -15,12 +15,15 @@ type ActivityPackingListPreviewProps = {
   requirements?: string[] | null;
   className?: string;
   showTitle?: boolean;
+  /** Hide join-time acknowledgement copy (e.g. when the host is previewing their outing). */
+  hideJoinerAcknowledgement?: boolean;
 };
 
 export const ActivityPackingListPreview = ({
   requirements,
   className = '',
   showTitle = true,
+  hideJoinerAcknowledgement = false,
 }: ActivityPackingListPreviewProps) => {
   const packing = parsePackingList(requirements);
   if (packing.items.length === 0) return null;
@@ -31,11 +34,13 @@ export const ActivityPackingListPreview = ({
   return (
     <div className={`rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4 ${className}`}>
       {showTitle ? <p className="text-sm font-semibold text-emerald-950">{PACKING_LIST_TITLE}</p> : null}
-      <p className={`${showTitle ? '' : ''} mb-3 text-xs text-emerald-900/75`}>
-        {strict
-          ? 'You will confirm must-haves and sign your name when you join.'
-          : 'A suggested kit — no confirmation needed to join.'}
-      </p>
+      {hideJoinerAcknowledgement ? null : (
+        <p className="mb-3 text-xs text-emerald-900/75">
+          {strict
+            ? 'You will confirm must-haves and sign your name when you join.'
+            : 'A suggested kit — no confirmation needed to join.'}
+        </p>
+      )}
       {must.length > 0 ? <PreviewGroup title={PACKING_MUST_LABEL} items={must} required /> : null}
       {nice.length > 0 ? <PreviewGroup title={PACKING_NICE_LABEL} items={nice} required={false} /> : null}
     </div>

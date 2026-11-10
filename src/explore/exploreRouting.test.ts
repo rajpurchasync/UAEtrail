@@ -9,6 +9,7 @@ import {
   explorePlacesPath,
   exploreShopsPath,
   inboundCreateParamToHostPath,
+  compactExploreParentFilterSearchParams,
   myActivitiesPath,
   exploreSavedPinPath,
   participantIntentExplorePinPath,
@@ -133,6 +134,22 @@ describe('exploreRouting navigation contract', () => {
   it('parseHostFromActivityId reads hostFrom only', () => {
     expect(parseHostFromActivityId(new URLSearchParams('hostFrom=act-new'))).toBe('act-new');
     expect(parseHostFromActivityId(new URLSearchParams('organizeFrom=act-legacy'))).toBeNull();
+  });
+
+  it('compactExploreParentFilterSearchParams keeps panel + filter only', () => {
+    const params = new URLSearchParams('panel=venues&filter=camping&places=camping&activity=camping');
+    expect(compactExploreParentFilterSearchParams(params)).toBe(true);
+    expect(params.get('panel')).toBe('venues');
+    expect(params.get('filter')).toBe('camping');
+    expect(params.get('places')).toBeNull();
+    expect(params.get('activity')).toBeNull();
+  });
+
+  it('explorePath maps activity option onto filter, not a duplicate activity key', () => {
+    expect(explorePath({ panel: 'venues', filter: 'camping', activity: 'camping' })).toBe(
+      '/explore?filter=camping&panel=venues'
+    );
+    expect(explorePath({ activity: 'camping' })).toBe('/explore?filter=camping');
   });
 
   it('inboundCreateParamToHostPath redirects old activity create URLs', () => {

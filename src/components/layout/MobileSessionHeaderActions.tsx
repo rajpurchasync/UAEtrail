@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Bell, User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
-import { NOTIFICATIONS_PATH } from '../../config/routingCatalog';
+import { APP_SETTINGS_NOTIFICATIONS_PATH } from '../../config/routingCatalog';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
 import { SecureAvatar } from '../ui/SecureAvatar';
 
@@ -57,7 +57,7 @@ export const MobileSessionHeaderActions = ({
     <div className={`flex shrink-0 items-center gap-2.5 ${className}`}>
       {user && !profileOnly && (
         <Link
-          to={NOTIFICATIONS_PATH}
+          to={APP_SETTINGS_NOTIFICATIONS_PATH}
           className={notificationActionClass}
           aria-label="Notifications"
         >

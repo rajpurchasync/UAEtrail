@@ -1,9 +1,7 @@
 import {
   Award,
-  Bell,
   CalendarDays,
   ClipboardList,
-  Compass,
   History,
   Map,
   MapPin,
@@ -11,8 +9,8 @@ import {
   PlusCircle,
   Search,
   Settings,
+  UserSearch,
   Users,
-  UsersRound,
   type LucideIcon,
 } from 'lucide-react';
 import { isDiscoverBrowseRoute } from '../explore/exploreDiscoverBrowse';
@@ -26,7 +24,6 @@ import {
   LIST_DISCOVERY_PATH,
   MESSAGES_PATH,
   MY_REQUESTS_PATH,
-  NOTIFICATIONS_PATH,
   PLAN_PATH,
   PROFILE_BADGES_PATH,
   PROFILE_HISTORY_PATH,
@@ -34,13 +31,18 @@ import {
   PROFILE_SETTINGS_PATH,
   PROFILE_SUBMISSIONS_PATH,
 } from './routingCatalog';
-import { PRODUCT_PLAN_SURFACE_TITLE, PRODUCT_PLAN_MEMBER_NAV_HINT } from '../content/productNorthStar';
+import {
+  PRODUCT_PLAN_SURFACE_TITLE,
+  PRODUCT_PLAN_MEMBER_NAV_HINT,
+  PRODUCT_SOCIAL_NAV_HINT,
+  PRODUCT_SOCIAL_SURFACE_TITLE,
+} from '../content/productNorthStar';
 import { LIST_CAT_PARAM } from '../list/browseListUrlState';
 
 /** Wide app chrome (Tailwind `md`, ≥768px) — left sidebar + slim top bar. Mobile uses bottom nav + drawer. */
 export const DESKTOP_MIN_WIDTH_PX = 768;
 
-export type DesktopNavBadge = 'chat' | 'notifications';
+export type DesktopNavBadge = 'chat';
 
 export type DesktopNavItem = {
   key: string;
@@ -54,17 +56,54 @@ export type DesktopNavItem = {
   badge?: DesktopNavBadge;
   /** Guests are sent to sign-in with return to `to`. */
   authGate?: true;
+  /** Show in the guest sidebar (default: hide auth-gated personal dumps). */
+  guestVisible?: true;
 };
 
-/** Signed-in left nav — Explore first, then stacked destinations. Guests still use the top bar. */
+const matchesPrefix = (pathname: string, prefix: string) =>
+  pathname === prefix || pathname.startsWith(`${prefix}/`);
+
+/** Full-screen people catalog (`/list?listCat=people`) — Social, not Explore. */
+export const isPeopleListDiscoveryRoute = (pathname: string, search: string): boolean =>
+  pathname === LIST_DISCOVERY_PATH && new URLSearchParams(search).get(LIST_CAT_PARAM) === 'people';
+
+/** Explore map URLs owned by a sibling sidebar item (Find crew, Search, Post) — not the Explore hub. */
+const isExploreMapExclusiveNavMode = (pathname: string, search: string): boolean => {
+  if (pathname !== EXPLORE_MAP_PATH) return false;
+  const params = new URLSearchParams(search);
+  const view = params.get('view');
+  if (view === 'people' || view === 'social' || view === 'going') return true;
+  if (params.get('search') === '1') return true;
+  if (params.get('compose')) return true;
+  return false;
+};
+
+/** Map + list catalog (not people list). One GO item; list remains an in-page / `/list` projection. */
+export const isDesktopExploreNavActive = (pathname: string, search: string): boolean => {
+  if (isPeopleListDiscoveryRoute(pathname, search)) return false;
+  if (isExploreMapExclusiveNavMode(pathname, search)) return false;
+  return (
+    pathname === EXPLORE_MAP_PATH ||
+    pathname === '/discovery' ||
+    pathname === LIST_DISCOVERY_PATH ||
+    isDiscoverBrowseRoute(pathname, search)
+  );
+};
+
+export const isDesktopSocialNavActive = (pathname: string, search: string): boolean => {
+  if (matchesPrefix(pathname, BUDDIES_PATH) || matchesPrefix(pathname, GROUPS_PATH)) return true;
+  return isPeopleListDiscoveryRoute(pathname, search);
+};
+
+/** Signed-in left nav — where you go. People live in their own section. */
 export const DESKTOP_PRIMARY_NAV: readonly DesktopNavItem[] = [
-  { key: 'explore', label: 'Explore', to: EXPLORE_MAP_PATH, icon: Map, match: [EXPLORE_MAP_PATH] },
   {
-    key: 'browse',
-    label: 'Browse',
-    to: LIST_DISCOVERY_PATH,
-    icon: Compass,
-    match: [LIST_DISCOVERY_PATH, EXPLORE_DISCOVER_BROWSE_PATH],
+    key: 'explore',
+    label: 'Explore',
+    to: EXPLORE_MAP_PATH,
+    icon: Map,
+    match: [EXPLORE_MAP_PATH, LIST_DISCOVERY_PATH, EXPLORE_DISCOVER_BROWSE_PATH],
+    guestVisible: true,
   },
   {
     key: 'plan',
@@ -76,22 +115,6 @@ export const DESKTOP_PRIMARY_NAV: readonly DesktopNavItem[] = [
     navHint: PRODUCT_PLAN_MEMBER_NAV_HINT,
   },
   {
-    key: 'friends',
-    label: 'Friends',
-    to: BUDDIES_PATH,
-    icon: Users,
-    match: [BUDDIES_PATH],
-    authGate: true,
-  },
-  {
-    key: 'groups',
-    label: 'Groups',
-    to: GROUPS_PATH,
-    icon: UsersRound,
-    match: [GROUPS_PATH],
-    authGate: true,
-  },
-  {
     key: 'chat',
     label: 'Chat',
     to: MESSAGES_PATH,
@@ -99,6 +122,31 @@ export const DESKTOP_PRIMARY_NAV: readonly DesktopNavItem[] = [
     match: [MESSAGES_PATH],
     badge: 'chat',
     authGate: true,
+    guestVisible: true,
+  },
+];
+
+/** Find people and the friends/groups you already have. Members only. */
+export const DESKTOP_PEOPLE_SECTION_TITLE = 'People';
+
+export const DESKTOP_PEOPLE_NAV: readonly DesktopNavItem[] = [
+  {
+    key: 'findCrew',
+    label: 'Find Crew',
+    to: explorePeopleBrowsePath({ list: false }),
+    icon: UserSearch,
+    match: [],
+    authGate: true,
+    navHint: 'People looking to get outside.',
+  },
+  {
+    key: 'social',
+    label: PRODUCT_SOCIAL_SURFACE_TITLE,
+    to: BUDDIES_PATH,
+    icon: Users,
+    match: [BUDDIES_PATH, GROUPS_PATH],
+    authGate: true,
+    navHint: PRODUCT_SOCIAL_NAV_HINT,
   },
 ];
 
@@ -108,15 +156,10 @@ export type DesktopSideNavSection = {
   items: readonly DesktopNavItem[];
 };
 
-/** Map actions that used to live on explore chrome (md+). */
+/** Map tools — search the map and post an outing. */
+export const DESKTOP_MAP_SECTION_TITLE = 'Map';
+
 export const DESKTOP_MAP_NAV: readonly DesktopNavItem[] = [
-  {
-    key: 'findCrew',
-    label: 'Find Crew',
-    to: explorePeopleBrowsePath({ list: false }),
-    icon: Users,
-    match: [],
-  },
   {
     key: 'search',
     label: 'Search',
@@ -134,22 +177,8 @@ export const DESKTOP_MAP_NAV: readonly DesktopNavItem[] = [
   },
 ];
 
-/** Left sidebar — hub destinations below the primary stack (Friends / Groups live in primary). */
+/** Left sidebar — hub destinations below the primary stack. */
 export const DESKTOP_SIDE_NAV_SECTIONS: readonly DesktopSideNavSection[] = [
-  {
-    key: 'crew',
-    title: 'Your crew',
-    items: [
-      {
-        key: 'notifications',
-        label: 'Notifications',
-        to: NOTIFICATIONS_PATH,
-        icon: Bell,
-        match: [NOTIFICATIONS_PATH],
-        badge: 'notifications',
-      },
-    ],
-  },
   {
     key: 'you',
     title: 'You',
@@ -181,21 +210,14 @@ export const DESKTOP_SIDE_NAV_SECTIONS: readonly DesktopSideNavSection[] = [
   },
 ];
 
-const matchesPrefix = (pathname: string, prefix: string) =>
-  pathname === prefix || pathname.startsWith(`${prefix}/`);
+/** Visual catalog (`/list`), not the map and not the people catalog. */
+export const isDesktopExploreBrowseView = (pathname: string, search: string): boolean =>
+  !isPeopleListDiscoveryRoute(pathname, search) && isDiscoverBrowseRoute(pathname, search);
 
 export const isDesktopNavItemActive = (item: DesktopNavItem, pathname: string, search: string): boolean => {
-  if (item.key === 'explore') {
-    return (
-      (pathname === EXPLORE_MAP_PATH || pathname === '/discovery') && !isDiscoverBrowseRoute(pathname, search)
-    );
-  }
+  if (item.key === 'explore') return isDesktopExploreNavActive(pathname, search);
+  if (item.key === 'social') return isDesktopSocialNavActive(pathname, search);
   const params = new URLSearchParams(search);
-  const peopleLens =
-    pathname === LIST_DISCOVERY_PATH && params.get(LIST_CAT_PARAM) === 'people';
-  if (item.key === 'browse') {
-    return (pathname === LIST_DISCOVERY_PATH && !peopleLens) || isDiscoverBrowseRoute(pathname, search);
-  }
   if (item.key === 'findCrew') {
     const view = params.get('view');
     return pathname === EXPLORE_MAP_PATH && (view === 'people' || view === 'social' || view === 'going');
@@ -212,6 +234,9 @@ export const isDesktopNavItemActive = (item: DesktopNavItem, pathname: string, s
   return item.match.some((prefix) => matchesPrefix(pathname, prefix));
 };
 
+export const desktopPrimaryNavForSession = (signedIn: boolean): readonly DesktopNavItem[] =>
+  DESKTOP_PRIMARY_NAV.filter((item) => signedIn || item.guestVisible || !item.authGate);
+
 /** Tablet/desktop chrome — explore map and stacked product views (guests and members). */
 export const shouldShowDesktopSideNav = (pathname: string, _signedIn: boolean): boolean => {
   if (pathname === JOURNEY_MAP_PATH) return false;
@@ -220,11 +245,13 @@ export const shouldShowDesktopSideNav = (pathname: string, _signedIn: boolean): 
 
 const NAV_ROOT_PATHS: readonly string[] = [
   PROFILE_PATH,
+  LIST_DISCOVERY_PATH,
+  GROUPS_PATH,
   ...DESKTOP_PRIMARY_NAV.map((item) => item.to),
+  ...DESKTOP_PEOPLE_NAV.map((item) => item.to.split('?')[0]),
   ...DESKTOP_MAP_NAV.map((item) => item.to.split('?')[0]),
   ...DESKTOP_SIDE_NAV_SECTIONS.flatMap((section) => section.items.map((item) => item.to.split('?')[0])),
 ];
 
 /** Top-bar / sidebar / drawer destinations — tablet & desktop page chrome needs no Back row here. */
 export const isWideNavRootPath = (pathname: string): boolean => NAV_ROOT_PATHS.includes(pathname);
-

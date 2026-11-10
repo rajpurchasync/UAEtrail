@@ -57,3 +57,4 @@ android/keystore.properties
 android/*.keystore
 *.keystore
 .vercel
+.lighthouseci

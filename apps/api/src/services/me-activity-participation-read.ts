@@ -13,12 +13,15 @@ import {
   readUserParticipationRevision,
 } from '../lib/activity-engagement-store.js';
 import { buildActivityDto } from '../lib/mappers.js';
+import { findActivityPrivateByIds } from '../lib/activity-private-store.js';
 import { buildParticipationDto } from './checkin.js';
 
 const mapMeActivityJoinRequest = (
   request: {
     id: string;
     status: RequestStatus;
+    adults?: number;
+    kids?: number;
     note: string | null;
     hostNote: string | null;
     cancelReason: string | null;
@@ -32,6 +35,8 @@ const mapMeActivityJoinRequest = (
   return {
     id: request.id,
     status: request.status.toLowerCase(),
+    adults: request.adults,
+    kids: request.kids,
     note: request.note,
     hostNote: request.hostNote,
     cancelReason: request.cancelReason,
@@ -114,6 +119,7 @@ export const listMyParticipatingActivities = async (input: {
   const eventIds = [...new Set(participantEntries.map((entry) => entry.activityId))];
   const events = eventIds.length > 0 ? await listActivitiesForRequestViews(eventIds) : [];
   const eventMap = new Map(events.map((event) => [event.id, event]));
+  const privateById = eventIds.length > 0 ? await findActivityPrivateByIds(eventIds) : new Map();
 
   const items = participantEntries.reduce<
     Array<ReturnType<typeof buildActivityDto> & { participation: ReturnType<typeof buildParticipationDto> }>
@@ -121,7 +127,7 @@ export const listMyParticipatingActivities = async (input: {
     const event = eventMap.get(entry.activityId);
     if (!event) return acc;
     acc.push({
-      ...buildActivityDto(event),
+      ...buildActivityDto(event, { activityPrivate: privateById.get(event.id) ?? null }),
       participation: buildParticipationDto(event, entry),
     });
     return acc;

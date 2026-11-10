@@ -7,9 +7,16 @@ interface EmojiPickerButtonProps {
   onPick: (emoji: string) => void;
   disabled?: boolean;
   className?: string;
+  /** WhatsApp Web — smaller control inside the compose field on desktop. */
+  variant?: 'default' | 'compact';
 }
 
-export const EmojiPickerButton = ({ onPick, disabled, className = '' }: EmojiPickerButtonProps) => {
+export const EmojiPickerButton = ({
+  onPick,
+  disabled,
+  className = '',
+  variant = 'default',
+}: EmojiPickerButtonProps) => {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -59,7 +66,11 @@ export const EmojiPickerButton = ({ onPick, disabled, className = '' }: EmojiPic
         type="button"
         disabled={disabled}
         onClick={() => setOpen((current) => !current)}
-        className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100 hover:text-emerald-600 disabled:opacity-40 transition-colors"
+        className={`flex items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100 hover:text-emerald-600 disabled:opacity-40 transition-colors ${
+          variant === 'compact'
+            ? 'min-h-[36px] min-w-[36px] md:min-h-[32px] md:min-w-[32px]'
+            : 'min-h-[44px] min-w-[44px]'
+        }`}
         aria-label="Insert emoji"
         title="Emoji"
         aria-expanded={open}

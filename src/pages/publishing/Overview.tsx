@@ -26,7 +26,7 @@ import {
   PUBLISHING_ACTIVITIES_NEW_PATH,
   PUBLISHING_SECURITY_PRIVACY_PATH,
   PRO_MEMBERSHIP_PATH,
-  NOTIFICATIONS_PATH,
+  APP_SETTINGS_NOTIFICATIONS_PATH,
   planJoinedSchedulePath,
 } from '../../config/routingCatalog';
 import { NotificationListItem } from '../../components/notifications/NotificationListItem';
@@ -147,7 +147,7 @@ export const Overview = () => {
             <p className="text-sm font-semibold text-neutral-900">Unread messages &amp; chat</p>
             <div className="flex items-center gap-2">
               <Link
-                to={NOTIFICATIONS_PATH}
+                to={APP_SETTINGS_NOTIFICATIONS_PATH}
                 onClick={() => setShowNotifPopover(false)}
                 className="text-xs font-semibold text-emerald-700"
               >

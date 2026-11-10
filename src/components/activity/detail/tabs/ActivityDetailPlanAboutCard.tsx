@@ -8,6 +8,7 @@ import {
   activityPricingBadge,
   activityPricingModeLabel,
 } from '../../../../utils/activityPricing';
+import { ConsumerDetailSection } from '../../../../detail/shell/ConsumerDetailSection';
 type ActivityDetailPlanAboutCardProps = {
   panelClassName: string;
   activity: ActivityDetailDTO;
@@ -16,6 +17,8 @@ type ActivityDetailPlanAboutCardProps = {
   hideAboutBody?: boolean;
   /** Consumer scroll with L1 peek card — omit duplicate schedule/pricing grid. */
   hideScheduleFactsGrid?: boolean;
+  /** Anchor id for in-page nav (consumer detail). */
+  contentId?: string;
 };
 
 export const ActivityDetailPlanAboutCard = ({
@@ -24,6 +27,7 @@ export const ActivityDetailPlanAboutCard = ({
   showMobileTabs,
   hideAboutBody = false,
   hideScheduleFactsGrid = false,
+  contentId,
 }: ActivityDetailPlanAboutCardProps) => {
   const pricingMode = inferActivityPricingMode(activity);
   const pricingBadge = activityPricingBadge(activity);
@@ -59,6 +63,13 @@ export const ActivityDetailPlanAboutCard = ({
         <p className="text-xs text-gray-500">Spots</p>
         <p className="text-sm font-semibold text-gray-900">
           {activity.slotsAvailable}/{activity.slotsTotal} left
+          {(activity.slotsAvailable ?? 0) === 0 ? (
+            <span className="mt-1 block text-xs font-medium text-amber-800">
+              {activity.waitlist === false ? 'Full — waitlist closed' : 'Waitlist when full'}
+            </span>
+          ) : activity.waitlist !== false ? (
+            <span className="mt-1 block text-xs font-medium text-neutral-500">Waitlist if it fills</span>
+          ) : null}
         </p>
       </div>
       <div className="bg-gray-50 rounded-xl p-3">
@@ -75,35 +86,61 @@ export const ActivityDetailPlanAboutCard = ({
     </div>
   );
 
+  const aboutTitle = activity.activityType === 'event' ? 'About this event' : 'About this activity';
+
+  const inner = (
+    <>
+      {activity.description && !hideAboutBody ? (
+        <p className="whitespace-pre-line leading-relaxed text-gray-600 dark:text-neutral-200 lg:text-[13px] lg:leading-5">
+          {activity.description}
+        </p>
+      ) : null}
+      {scheduleFactsGrid}
+      {pricingMode !== 'free' ? (
+        <p className="mt-4 text-xs leading-relaxed text-gray-500 dark:text-neutral-400">
+          {ACTIVITY_PRICING_INDICATION_NOTE}
+        </p>
+      ) : null}
+    </>
+  );
+
+  if (contentId) {
+    return (
+      <ConsumerDetailSection
+        id={contentId}
+        title={aboutTitle}
+        tone="emerald"
+        ariaLabel={aboutTitle}
+        className={panelClassName}
+      >
+        {inner}
+      </ConsumerDetailSection>
+    );
+  }
+
+  const scrollAnchorClass = '';
+
   if (hideAboutBody) {
     return (
-      <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 lg:rounded-xl lg:p-3 ${panelClassName}`}>
-        <h2 className="text-lg font-bold text-gray-900 mb-3 hidden md:block lg:mb-2 lg:text-[13px] lg:font-semibold lg:uppercase lg:tracking-wide lg:text-neutral-500">
-          About this {activity.activityType === 'event' ? 'event' : 'activity'}
+      <div
+        className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 dark:border-neutral-800 dark:bg-neutral-900 lg:rounded-xl lg:p-3${scrollAnchorClass} ${panelClassName}`}
+      >
+        <h2 className="mb-3 hidden text-lg font-bold text-gray-900 md:block lg:mb-2 lg:text-[13px] lg:font-semibold lg:uppercase lg:tracking-wide lg:text-neutral-500">
+          {aboutTitle}
         </h2>
-        {scheduleFactsGrid}
-        {pricingMode !== 'free' ? (
-          <p className="mt-4 text-xs text-gray-500 leading-relaxed">{ACTIVITY_PRICING_INDICATION_NOTE}</p>
-        ) : null}
+        {inner}
       </div>
     );
   }
 
   return (
-    <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 lg:rounded-xl lg:p-3 ${panelClassName}`}>
-      <h2 className="text-lg font-bold text-gray-900 mb-3 hidden md:block lg:mb-2 lg:text-[13px] lg:font-semibold lg:uppercase lg:tracking-wide lg:text-neutral-500">
-        About this {activity.activityType === 'event' ? 'event' : 'activity'}
+    <div
+      className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 dark:border-neutral-800 dark:bg-neutral-900 lg:rounded-xl lg:p-3${scrollAnchorClass} ${panelClassName}`}
+    >
+      <h2 className="mb-3 text-lg font-bold text-gray-900 md:block lg:mb-2 lg:text-[13px] lg:font-semibold lg:uppercase lg:tracking-wide lg:text-neutral-500">
+        {aboutTitle}
       </h2>
-      {activity.description ? (
-        <p className="text-gray-600 leading-relaxed whitespace-pre-line lg:text-[13px] lg:leading-5">{activity.description}</p>
-      ) : null}
-
-      {scheduleFactsGrid}
-
-      {pricingMode !== 'free' ? (
-        <p className="mt-4 text-xs text-gray-500 leading-relaxed">{ACTIVITY_PRICING_INDICATION_NOTE}</p>
-      ) : null}
-
+      {inner}
     </div>
   );
 };

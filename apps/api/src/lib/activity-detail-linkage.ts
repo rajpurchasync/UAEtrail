@@ -1,5 +1,6 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import type { findPublishedActivityWithPreviewsById } from './activities-store.js';
+import { findActivityPrivateByIds } from './activity-private-store.js';
 import { buildActivityDto } from './mappers.js';
 
 export type ActivityLinkedPlanSummary = NonNullable<ActivityDTO['linkedParentActivity']>;
@@ -40,8 +41,14 @@ export const resolveActivityDetailLinkage = async (
     event.linkedRideshareActivityId ? findById(event.linkedRideshareActivityId) : Promise.resolve(null),
   ]);
 
+  const privateIds = [linkedEvent?.id].filter(Boolean) as string[];
+  const privateById =
+    privateIds.length > 0 ? await findActivityPrivateByIds(privateIds) : new Map();
+
   const linkedParentActivity = parentEvent ? buildLinkedPlanSummary(parentEvent) : null;
-  const linkedRideshare = linkedEvent ? buildActivityDto(linkedEvent) : null;
+  const linkedRideshare = linkedEvent
+    ? buildActivityDto(linkedEvent, { activityPrivate: privateById.get(linkedEvent.id) ?? null })
+    : null;
   const linkedRideshareSummary = linkedEvent ? buildLinkedPlanSummary(linkedEvent) : null;
 
   return { linkedParentActivity, linkedRideshare, linkedRideshareSummary };

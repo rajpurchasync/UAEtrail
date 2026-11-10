@@ -8,7 +8,7 @@ export const wishlistItemMatchesPlanWishlistLayer = (
   item: WishlistItemDTO,
   layer: PlanHubWishlistLayer
 ): boolean => {
-  const isPlace = Boolean(item.locationId);
+  const isPlace = Boolean(item.locationId || item.areaId);
   const isOutingPlan = Boolean(item.activityId || item.activity);
 
   if (layer === 'places') return isPlace;

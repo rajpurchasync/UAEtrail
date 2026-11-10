@@ -34,7 +34,12 @@ export const ActivityLinkedParentPlanAffordance = ({
   const href = detailHref ?? activityDetailPath(parent.id);
   const schedule =
     parent.date || parent.time
-      ? formatActivityDetailConsumerLeadDate(parent.date ?? '', parent.time ?? null)
+      ? formatActivityDetailConsumerLeadDate(
+          parent.date ?? '',
+          parent.time ?? null,
+          parent.endDate ?? null,
+          parent.endTime ?? null
+        )
       : null;
   const scheduleLine = schedule?.time ?? null;
   const blurb = parent.description?.trim();

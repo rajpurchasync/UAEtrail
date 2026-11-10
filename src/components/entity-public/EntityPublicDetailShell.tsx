@@ -33,7 +33,11 @@ export const EntityPublicDetailShell = ({
   maxWidthClass = 'max-w-3xl',
   ...shell
 }: EntityPublicDetailShellProps) => (
-  <MobileDetailShell {...shell}>
-    <div className={`mx-auto min-h-0 overflow-y-auto ${maxWidthClass} px-4 py-4 md:px-6 md:py-6 lg:px-6 pb-10`}>{children}</div>
+  <MobileDetailShell {...shell} lockBodyScroll>
+    <div
+      className={`mx-auto flex h-full min-h-0 flex-1 flex-col overflow-x-clip overflow-y-auto ${maxWidthClass} px-4 py-4 pb-6 md:px-6 md:py-3 md:pb-3 lg:px-6 lg:py-2`}
+    >
+      {children}
+    </div>
   </MobileDetailShell>
 );

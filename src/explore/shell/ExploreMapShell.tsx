@@ -1,6 +1,5 @@
 import { useLocation } from 'react-router-dom';
 import { ExploreMapStage } from '../ui/ExploreMapStage';
-import { PeopleBrowsePanel } from '@/people-discovery/panel/PeopleBrowsePanel';
 import { ExploreDesktopGuestGatePanel } from '../ui/ExploreDesktopGuestGatePanel';
 import { ExploreBrowseSearchModal } from '../ui/ExploreBrowseSearchModal';
 import { guestExplorePreviewCanSearch } from '../guestMapPreviewPolicy';
@@ -46,7 +45,6 @@ type Props = Pick<
   | 'publishedAreas'
   | 'handlePickExploreArea'
   | 'onVisibleMapBoundsChange'
-  | 'peopleBrowsePanelProps'
 >;
 
 /** Map stage: filters chrome, pins, peek sheet (R2). */
@@ -82,7 +80,6 @@ export const ExploreMapShell = ({
   publishedAreas,
   handlePickExploreArea,
   onVisibleMapBoundsChange,
-  peopleBrowsePanelProps,
 }: Props) => {
   const location = useLocation();
   const joinActions = selection.joinActions;
@@ -97,25 +94,12 @@ export const ExploreMapShell = ({
 
   const desktopGuestJoinGateOpen = useDesktopGuestGatePanel && joinActions.guestSheetOpen;
   const desktopGuestComposeGateOpen = useDesktopGuestGatePanel && compose.guestComposeSignInOpen;
+  const desktopBrowseSplit =
+    isDesktop && (browse.showDesktopCatalogDrawer || browse.peopleBrowseOpen);
+  const mapLayoutRevision = desktopBrowseSplit || browse.listOpen || browse.peopleBrowseOpen;
 
   let desktopRightPanelOverlay = null;
-  let desktopMapOverlayLayout: 'rail' | 'centered' = 'rail';
-  if (isDesktop && browse.peopleBrowseOpen) {
-    desktopRightPanelOverlay = (
-      <aside
-        className="pointer-events-auto flex h-full min-h-0 w-[min(400px,32vw)] max-w-full shrink-0 flex-col overflow-hidden border-l border-neutral-200 bg-white px-5 py-4 shadow-[-12px_0_32px_rgba(15,23,42,0.08)]"
-        aria-label="Find crew"
-      >
-        <PeopleBrowsePanel
-          {...peopleBrowsePanelProps}
-          onClose={browse.closePeopleBrowsePanel}
-          closePanelAriaLabel="Close Find crew"
-          closeButtonVariant="dismiss"
-        />
-      </aside>
-    );
-  } else if (desktopGuestComposeGateOpen) {
-    desktopMapOverlayLayout = 'centered';
+  if (desktopGuestComposeGateOpen) {
     desktopRightPanelOverlay = (
       <ExploreDesktopGuestGatePanel
         feature="post-on-map"
@@ -125,7 +109,6 @@ export const ExploreMapShell = ({
       />
     );
   } else if (desktopGuestJoinGateOpen) {
-    desktopMapOverlayLayout = 'centered';
     const browseGateIntent =
       joinActions.guestSheetSurface === 'browse' ? joinActions.guestBrowseGateIntent : null;
     desktopRightPanelOverlay = (
@@ -177,11 +160,16 @@ export const ExploreMapShell = ({
       exploreMapTiles={exploreMapTiles}
       onToggleMapStyle={viewport.toggleExploreMapStyle}
       onLocateMe={viewport.handleLocateMe}
-      mapPins={mapPins}
+      mapPins={
+        browse.peopleBrowseOpen ? mapPins.filter((pin) => pin.activityMode === 'seeking') : mapPins
+      }
+      peopleMap={browse.peopleBrowseOpen}
+      mapLayoutRevision={mapLayoutRevision}
       selectedId={selectedId}
       highlightedExploreItemId={highlightedExploreItemId}
       recenterTo={viewport.recenterTo}
       exploreMapCenter={viewport.exploreMapCenter}
+      deviceLocation={viewport.deviceLocationPointer}
       onPinClick={handleMapPinClick}
       onVisibleBoundsChange={onVisibleMapBoundsChange}
       loading={mapLoading}
@@ -216,7 +204,6 @@ export const ExploreMapShell = ({
       onGuestGatedAction={selection.handleGuestGatedAction}
       onShareActivity={selection.handleSharePeek}
       desktopRightPanelOverlay={desktopRightPanelOverlay}
-      desktopMapOverlayLayout={desktopMapOverlayLayout}
       mapSearchOpen={exploreSearchModalOpen}
       mapSearchOverlay={
         exploreSearchModalOpen ? (

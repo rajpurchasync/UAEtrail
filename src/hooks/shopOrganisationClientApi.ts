@@ -23,6 +23,8 @@ export const updateShopOrganisationProfile = async (
     contactEmail?: string;
     contactPhone?: string;
     region?: string | null;
+    allowInboundChat?: boolean;
+    showContactPhone?: boolean;
   }>
 ): Promise<void> => {
   await api.updateShopOrganisationProfile(shopId, payload);
@@ -36,6 +38,8 @@ export const createShopOrganisationProfile = async (payload: {
   contactEmail?: string;
   contactPhone?: string;
   region?: string | null;
+  allowInboundChat?: boolean;
+  showContactPhone?: boolean;
 }): Promise<ShopOrganisationDTO> => {
   const res = await api.createShopOrganisationProfile(payload);
   return res.data;

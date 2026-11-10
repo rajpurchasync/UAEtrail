@@ -69,6 +69,7 @@ describe('routingHygiene', () => {
     expect(catalog).toMatch(/PRO_MEMBERSHIP_PATH/);
     expect(catalog).toMatch(/INBOUND_COMMUNITY_FEED_PATH/);
     expect(catalog).toMatch(/PROFILE_BADGES_PATH/);
+    expect(catalog).toMatch(/APP_SETTINGS_PATH/);
   });
 
   it('app code does not use raw /explore? outside explore routing allowlist', () => {

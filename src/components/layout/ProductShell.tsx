@@ -22,6 +22,7 @@ import { MobileTabHeader } from '../mobile/MobileTabHeader';
 import { MobileConsumerNavBar } from './MobileConsumerNavBar';
 import { MobileMenuProvider } from './MobileMenu';
 import { ApiStatusBanner } from './ApiStatusBanner';
+import { AuthUnavailableNotice } from '../auth/AuthUnavailableNotice';
 import { ExploreMapChromeProvider } from '../../explore/ExploreMapChromeContext';
 import { ComposeImmersiveChromeProvider } from '../../explore/create/ComposeImmersiveChromeContext';
 import { useAuth } from '../../context/AuthContext';
@@ -73,6 +74,7 @@ export const ProductShell = ({ children }: { children: ReactNode }) => {
           <ExploreMapChromeProvider>
             <div className={`${productViewportShellClass} md:bg-gray-50`}>
               <ApiStatusBanner />
+              <AuthUnavailableNotice />
               {!isMobile ? (
                 <div className="hidden shrink-0 md:block">
                   <Header />
@@ -105,6 +107,7 @@ export const ProductShell = ({ children }: { children: ReactNode }) => {
         <ComposeImmersiveChromeProvider>
         <div className={productViewportShellClass}>
           <ApiStatusBanner />
+          <AuthUnavailableNotice />
           {showMobileConsumerNavBar && <MobileConsumerNavBar />}
           {showConsumerChrome && !isMobile ? (
             <div className="hidden md:block shrink-0">

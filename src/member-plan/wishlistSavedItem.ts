@@ -6,7 +6,12 @@
  */
 
 import type { DiscoveryCardKind, WishlistItemDTO } from '@uaetrail/shared-types';
-import { activityDetailPath, placeDetailPath, resolveMapPinEmoji } from '@uaetrail/shared-types';
+import {
+  activityDetailPath,
+  areaDetailPath,
+  placeDetailPath,
+  resolveMapPinEmoji,
+} from '@uaetrail/shared-types';
 
 const discoveryKindFromStoredActivityType = (activityType: string): DiscoveryCardKind | null => {
   const kind = activityType.toLowerCase();
@@ -18,6 +23,7 @@ const discoveryKindFromStoredActivityType = (activityType: string): DiscoveryCar
 };
 
 export const wishlistItemPinEmoji = (item: WishlistItemDTO): string => {
+  if (item.areaId) return '🗺️';
   const stored = item.activityId ? item.activity?.activityType : item.location?.activityType;
   if (!stored) return '';
   const kind = discoveryKindFromStoredActivityType(stored);
@@ -30,11 +36,14 @@ export const wishlistItemTitle = (item: WishlistItemDTO): string => {
   if (fromActivity) return fromActivity;
   const fromPlace = item.location?.name?.trim();
   if (fromPlace) return fromPlace;
+  const fromArea = item.area?.name?.trim();
+  if (fromArea) return fromArea;
   return 'Saved item';
 };
 
 export const resolveWishlistItemPath = (item: WishlistItemDTO): string | null => {
   if (item.activityId) return activityDetailPath(item.activityId);
+  if (item.areaId && item.area?.slug) return areaDetailPath(item.area.slug);
   if (item.locationId && item.location?.activityType) {
     return placeDetailPath(item.location.activityType, item.locationId);
   }

@@ -54,17 +54,17 @@ export const NotificationInboxFilters = ({
             key={option.id}
             type="button"
             onClick={() => onTopicChange(option.id)}
-            className={`shrink-0 rounded-full border px-3.5 py-2 text-sm font-semibold transition-colors ${
+            className={`shrink-0 rounded-full border px-3.5 py-2 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 md:rounded-xl ${
               active
-                ? 'border-emerald-600 bg-emerald-600 text-white shadow-sm'
-                : 'border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300'
+                ? 'border-emerald-600 bg-emerald-600 text-white shadow-sm md:border-emerald-300 md:bg-emerald-50 md:text-neutral-900 md:shadow-sm'
+                : 'border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300 md:hover:bg-neutral-50'
             }`}
           >
             {option.label}
             {typeof count === 'number' && count > 0 && option.id !== 'all' ? (
               <span
                 className={`ml-1.5 tabular-nums text-xs font-bold ${
-                  active ? 'text-emerald-100' : 'text-emerald-700'
+                  active ? 'text-emerald-100 md:text-emerald-700' : 'text-emerald-700'
                 }`}
               >
                 {count > 99 ? '99+' : count}

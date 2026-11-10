@@ -29,6 +29,7 @@ export interface UserDataExport {
   wishlist: Array<{
     id: string;
     locationId: string | null;
+    areaId: string | null;
     activityId: string | null;
     alertOnMatch: boolean;
     watchOutingCategory: string | null;
@@ -113,10 +114,11 @@ export async function buildUserDataExport(userId: string): Promise<UserDataExpor
   ]);
 
   const wishlist = wishlistRows
-    .filter((row) => row.locationId || row.activityId)
+    .filter((row) => row.locationId || row.areaId || row.activityId)
     .map((row) => ({
       id: row.id,
       locationId: row.locationId,
+      areaId: row.areaId,
       activityId: row.activityId,
       alertOnMatch: row.alertOnMatch,
       watchOutingCategory: row.watchOutingCategory,

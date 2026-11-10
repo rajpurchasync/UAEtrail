@@ -1,4 +1,9 @@
-import { activityInstantHasEnded, type MemberMedicalSafetyDTO, type ParticipantDTO } from '@uaetrail/shared-types';
+import {
+  activityInstantHasEnded,
+  type HostJoinProfileSnippetDTO,
+  type MemberMedicalSafetyDTO,
+  type ParticipantDTO,
+} from '@uaetrail/shared-types';
 import type { ActivityParticipant } from '../domain/types.js';
 
 /** @deprecated Import `activityInstantHasEnded` from `@uaetrail/shared-types`. */
@@ -10,6 +15,7 @@ type ParticipantUserFields = {
   phone: string | null;
   avatarUrl: string | null;
   medicalSafety?: MemberMedicalSafetyDTO | null;
+  joinProfile?: HostJoinProfileSnippetDTO | null;
 };
 
 export const mapHostParticipantToDto = (
@@ -36,6 +42,7 @@ export const mapHostParticipantToDto = (
     phone: user.phone ?? undefined,
     avatarUrl: user.avatarUrl ?? undefined,
     medicalSafety: user.medicalSafety ?? undefined,
+    joinProfile: user.joinProfile ?? undefined,
     checkedInAt: participant.checkedInAt?.toISOString(),
     joinedAt: participant.createdAt.toISOString(),
     status: attended ? 'attended' : 'going',

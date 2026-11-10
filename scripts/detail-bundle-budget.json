@@ -1,0 +1,8 @@
+{
+  "$comment": "Plan §15.1 target is 150 KB gzipped JS on first load of a detail route. This SPA currently shares a large vendor graph; 150 KB is the target, not the current gate. Fail if first-load JS gzip grows more than 5% over firstLoadJsGzipBytes. Re-measure after `npm run build` (dist/assets/index-*.js + entry CSS ignored). Unlazy leaflet/mapbox/gpx/markdown on the initial graph always fails.",
+  "planTargetGzipBytes": 153600,
+  "growthPercent": 5,
+  "firstLoadJsGzipBytes": 73914,
+  "entryGlobs": ["dist/assets/index-*.js"],
+  "bannedInitialModules": ["leaflet", "react-leaflet", "mapbox-gl", "mapbox", "@mapbox", "react-markdown", "gpxparser", "gpx"]
+}

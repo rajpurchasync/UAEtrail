@@ -535,11 +535,19 @@ export const Activities = () => {
                               </ul>
                             </div>
                           )}
-                          {event.itinerary && event.itinerary.length > 0 && (
+                          {((event.itinerary && event.itinerary.length > 0) ||
+                            (event.itinerarySteps && event.itinerarySteps.length > 0)) && (
                             <div className="col-span-2">
                               <p className="text-xs text-gray-500 uppercase font-medium">Itinerary</p>
                               <ol className="text-xs text-gray-700 list-decimal list-inside mt-0.5">
-                                {event.itinerary.map((item, i) => <li key={i}>{item}</li>)}
+                                {(event.itinerarySteps && event.itinerarySteps.length > 0
+                                  ? event.itinerarySteps.map((s) =>
+                                      [s.at, s.title, s.note].filter(Boolean).join(' — ')
+                                    )
+                                  : event.itinerary ?? []
+                                ).map((item, i) => (
+                                  <li key={i}>{item}</li>
+                                ))}
                               </ol>
                             </div>
                           )}

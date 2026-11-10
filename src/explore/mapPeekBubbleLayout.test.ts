@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layoutMapPeekBubble } from './mapPeekBubbleLayout';
+import { layoutMapPeekBubble, mapPeekFitScale } from './mapPeekBubbleLayout';
 
 describe('layoutMapPeekBubble', () => {
   it('centers when the pin is unknown', () => {
@@ -71,5 +71,19 @@ describe('layoutMapPeekBubble', () => {
     expect(layout.left).toBeGreaterThanOrEqual(12);
     expect(layout.top).toBeGreaterThanOrEqual(12);
     expect(layout.left + layout.width).toBeLessThanOrEqual(400 - 12 + 0.5);
+  });
+});
+
+describe('mapPeekFitScale', () => {
+  it('stays at 1 when content already fits', () => {
+    expect(mapPeekFitScale(280, 500)).toBe(1);
+  });
+
+  it('shrinks to the available overlay height', () => {
+    expect(mapPeekFitScale(500, 400)).toBeCloseTo(0.8);
+  });
+
+  it('keeps shrinking until the card fits the overlay', () => {
+    expect(mapPeekFitScale(2000, 200)).toBeCloseTo(0.1);
   });
 });

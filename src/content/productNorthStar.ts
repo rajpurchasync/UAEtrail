@@ -52,9 +52,17 @@ export const PRODUCT_PLAN_GOALS_ON_WISHLIST =
 /** Explore people panel vs friends list (D11). */
 export const PRODUCT_PEOPLE_DISCOVERY_LABEL = 'Find your crew';
 export const PRODUCT_FRIENDS_SURFACE_LABEL = 'Friends';
+/** Combined friends + groups hub (desktop GO + hamburger). */
+export const PRODUCT_SOCIAL_SURFACE_TITLE = 'Social';
+export const PRODUCT_SOCIAL_NAV_HINT =
+  'Friends, groups, and people you can go outside with.';
+export const PRODUCT_GROUPS_SURFACE_LABEL = 'Groups';
 
-/** Join CTA label. */
+/** Join CTA label — marketing / map browse (free account). */
 export const PRODUCT_JOIN_CTA = 'Join free';
+
+/** Activity join gates — account to RSVP, not “this outing is free”. */
+export const GUEST_OUTING_SIGN_UP_CTA = 'Sign up to join';
 
 /** Generic load failure — consumer hub sections. */
 export const PRODUCT_LOAD_ERROR = "Couldn't load — try again.";

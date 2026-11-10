@@ -241,6 +241,7 @@ describe('activity detail program — wiring', () => {
       'src/activity/detail/templates/HikingActivityDetailPage.tsx',
       'src/activity/detail/templates/CampingActivityDetailPage.tsx',
       'src/activity/detail/templates/RideshareActivityDetailPage.tsx',
+      'src/activity/detail/templates/EventActivityDetailPage.tsx',
       'src/activity/detail/templates/OtherActivityDetailPage.tsx',
       'src/activity/detail/templates/ActivityDetailPageShell.tsx',
     ]) {
@@ -298,6 +299,7 @@ describe('activity detail program — wiring', () => {
       'src/activity/detail/templates/HikingActivityDetailPage.tsx',
       'src/activity/detail/templates/CampingActivityDetailPage.tsx',
       'src/activity/detail/templates/RideshareActivityDetailPage.tsx',
+      'src/activity/detail/templates/EventActivityDetailPage.tsx',
       'src/activity/detail/templates/OtherActivityDetailPage.tsx',
     ]) {
       const source = read(file);

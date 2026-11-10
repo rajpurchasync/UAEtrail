@@ -9,6 +9,7 @@ import { PullToRefresh } from '../components/mobile/PullToRefresh';
 import { placeDetailPath } from '@uaetrail/shared-types';
 import { PROFILE_REVIEWS_PATH, PROFILE_SUBMISSIONS_PATH } from '../config/routingCatalog';
 import { useProfileHubBackChrome } from '../hooks/useProfileHubBackChrome';
+import { SuggestCatalogForm } from '../place/SuggestCatalogForm';
 import { mobileBackNavState } from '../utils/mobileBackNav';
 
 export const Submissions = () => {
@@ -58,6 +59,8 @@ export const Submissions = () => {
               </div>
             </GlassCard>
           </Link>
+
+          <SuggestCatalogForm />
 
           <GlassCard padding>
             <h2 className="text-sm font-bold text-neutral-900">Places you added</h2>

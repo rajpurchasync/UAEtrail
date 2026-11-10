@@ -400,7 +400,7 @@ export const seedDemoScheduledActivities = async (
   return { jaisActivityId: event._id };
 };
 
-const resolveDemoActivitySeedContext = async (): Promise<DemoActivitySeedContext | null> => {
+export const resolveDemoActivitySeedContext = async (): Promise<DemoActivitySeedContext | null> => {
   const agencyOwner = await findAuthUserByEmail('organizer@uaetrails.app');
   const agencyGuide = await findAuthUserByEmail('guide@uaetrails.app');
   const individualHost = await findAuthUserByEmail('host@uaetrails.app');

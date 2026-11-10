@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { ApiError } from '../../lib/api-error.js';
 import { validate } from '../../middleware/validate.js';
 import { findMerchantPublicById } from '../../services/shop-public-read.js';
-import { idParamSchema } from './shop-route-schemas.js';
+import { idParamSchema, serializeMerchantPublicProfile } from './shop-route-schemas.js';
 
 async function handleShopPublic(
   req: { params: z.infer<typeof idParamSchema> },
@@ -16,24 +16,7 @@ async function handleShopPublic(
     if (!merchant) throw new ApiError(404, 'merchant_not_found', 'Shop not found.');
 
     res.json({
-      data: {
-        id: merchant.id,
-        shopId: merchant.id,
-        merchantId: merchant.id,
-        tenantId: merchant.tenantId ?? null,
-        shopName: merchant.shopName,
-        description: merchant.description,
-        logo: merchant.logo,
-        contactEmail: merchant.contactEmail,
-        contactPhone: merchant.contactPhone,
-        latitude: merchant.latitude,
-        longitude: merchant.longitude,
-        region: merchant.region,
-        contactPersonName: merchant.contactPersonName ?? null,
-        contactPersonAvatar: merchant.contactPersonAvatar ?? null,
-        contactPersonUserId: merchant.contactPersonUserId ?? null,
-        websiteUrl: merchant.websiteUrl ?? null,
-      },
+      data: serializeMerchantPublicProfile(merchant),
     });
   } catch (error) {
     next(error);

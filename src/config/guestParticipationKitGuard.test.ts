@@ -20,11 +20,22 @@ describe('guestParticipationKitGuard', () => {
     expect(page).toMatch(/viewerAccess\?\.gateReason === 'sign_in'/);
   });
 
+  it('GPK-03b: place L3 guest gate uses place-detail intent', () => {
+    const gate = read('src/components/place/detail/PlaceDetailGuestGate.tsx');
+    expect(gate).toMatch(/intent="place-detail"/);
+    expect(gate).toMatch(/ExploreGuestSignInCard/);
+    expect(read('src/content/guestBrowseGateCopy.ts')).toMatch(/place-detail/);
+  });
+
   it('GPK-03: activity L3 guest gate delegates to shared sign-in card (join-activity)', () => {
     const gate = read('src/components/activity/detail/ActivityDetailGuestGate.tsx');
+    const card = read('src/explore/ui/ExploreGuestSignInCard.tsx');
     expect(gate).toMatch(/ExploreGuestSignInCard/);
     expect(gate).toMatch(/intent="join-activity"/);
+    expect(gate).toMatch(/detailPreview/);
+    expect(read('src/content/guestJoinCopy.ts')).toMatch(/GUEST_ACTIVITY_DETAIL_PREVIEW_FOOTER_HINT/);
     expect(gate).not.toMatch(/guestJoinSheetHeadline/);
+    expect(card).toMatch(/GUEST_OUTING_SIGN_UP_CTA/);
     const template = read('src/activity/detail/templates/ActivityConsumerDetailPage.tsx');
     expect(template).toMatch(/requiresSignIn[\s\S]*ActivityDetailGuestGate/);
   });

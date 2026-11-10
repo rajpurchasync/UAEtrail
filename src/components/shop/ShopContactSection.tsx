@@ -19,6 +19,7 @@ interface ShopContactSectionProps {
     | 'contactPersonUserId'
     | 'contactPhone'
     | 'contactEmail'
+    | 'allowInboundChat'
   >;
 }
 
@@ -33,22 +34,22 @@ export const ShopContactSection = ({ shop }: ShopContactSectionProps) => {
   const hasReachOut = Boolean(shop.contactPhone || shop.contactEmail);
   const hasPerson = Boolean(shop.contactPersonName);
   const contactPersonPath = personProfilePath(shop.contactPersonUserId);
-  const messageShopPath =
-    shop.contactPersonUserId && user
-      ? messagesRouteForRole(user.role, shop.contactPersonUserId)
-      : shop.contactPersonUserId
-        ? buildSignInRedirect(location, { focusSelector: '[data-shop-message]' }).href
-        : null;
+  const canOfferShopChat = Boolean(shop.allowInboundChat && shop.contactPersonUserId);
+  const messageShopPath = !canOfferShopChat
+    ? null
+    : user
+      ? messagesRouteForRole(user.role, shop.contactPersonUserId!)
+      : buildSignInRedirect(location, { focusSelector: '[data-shop-message]' }).href;
   const hasLocation = Boolean(shop.region || hasCoords);
 
-  if (!hasReachOut && !hasPerson && !hasLocation) return null;
+  if (!hasReachOut && !hasPerson && !hasLocation && !messageShopPath) return null;
 
   return (
     <section className="mt-8">
       <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Contact</h2>
 
       <div className="mt-3 overflow-hidden rounded-2xl border border-neutral-100 bg-white shadow-sm">
-        {(hasReachOut || hasPerson) && (
+        {(hasReachOut || hasPerson || messageShopPath) && (
           <div className="p-4 space-y-2">
             {shop.contactPhone && (
               <a href={`tel:${shop.contactPhone}`} className={contactRowClass}>

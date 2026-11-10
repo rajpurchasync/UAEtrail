@@ -1,7 +1,7 @@
-import { connectMongo } from '../src/lib/mongo.js';
 import { backfillSeedCatalogLocationAreaIds } from './seed-location-area-map.js';
+import { resolveCliScriptName, runCliScript } from './cli-script-runner.js';
 
-await connectMongo();
-await backfillSeedCatalogLocationAreaIds();
-console.log('backfillSeedCatalogLocationAreaIds done');
-process.exit(0);
+runCliScript(resolveCliScriptName(import.meta.url), async () => {
+  await backfillSeedCatalogLocationAreaIds();
+  console.log('backfillSeedCatalogLocationAreaIds done');
+});

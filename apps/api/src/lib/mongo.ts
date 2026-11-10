@@ -14,18 +14,29 @@ const mongoSelectionTimeoutMs = env.NODE_ENV === 'production' ? 5_000 : 12_000;
 export const redactMongoUri = (uri: string): string =>
   uri.replace(/\/\/([^@/]+)@/i, '//***@');
 
-const mongoClientOptions = {
+const mongoBaseClientOptions = {
   serverSelectionTimeoutMS: mongoSelectionTimeoutMs,
   connectTimeoutMS: mongoSelectionTimeoutMs,
   maxPoolSize: 20,
   minPoolSize: 2,
   maxIdleTimeMS: 30_000,
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  },
 } as const;
+
+/** Standalone / Docker Mongo — Stable API strict mode rejects `distinct` and other legacy commands used in dev workers. */
+const isLocalMongoUri = (uri: string): boolean =>
+  /^mongodb:\/\/(127\.0\.0\.1|localhost)(:|\/)/i.test(uri);
+
+const mongoClientOptionsForUri = (uri: string) =>
+  isLocalMongoUri(uri)
+    ? mongoBaseClientOptions
+    : {
+        ...mongoBaseClientOptions,
+        serverApi: {
+          version: ServerApiVersion.v1,
+          strict: true,
+          deprecationErrors: true,
+        },
+      };
 
 const isAtlasSrvUri = (uri: string): boolean => uri.startsWith('mongodb+srv://');
 
@@ -71,7 +82,10 @@ export const connectMongo = async (): Promise<MongoClient> => {
   if (!connecting) {
     connecting = (async () => {
       const connectOnce = async (): Promise<MongoClient> => {
-        const mongoClient = new MongoClient(env.MONGODB_URI, mongoClientOptions);
+        const mongoClient = new MongoClient(
+          env.MONGODB_URI,
+          mongoClientOptionsForUri(env.MONGODB_URI)
+        );
 
         const watchdog = new Promise<never>((_, reject) => {
           setTimeout(() => {
@@ -93,10 +107,17 @@ export const connectMongo = async (): Promise<MongoClient> => {
         }
 
         const db = mongoClient.db();
-        await runMongoMigrations(db);
-        await ensureMongoIndexes(db);
-
         client = mongoClient;
+        try {
+          await runMongoMigrations(db);
+          await ensureMongoIndexes(db);
+          const { ensureMongoWarnValidators } = await import('./mongo-warn-validators.js');
+          await ensureMongoWarnValidators(db);
+        } catch (error) {
+          client = null;
+          await mongoClient.close().catch(() => {});
+          throw error;
+        }
         console.log('[mongo] Connected to MongoDB.');
         return client;
       };
