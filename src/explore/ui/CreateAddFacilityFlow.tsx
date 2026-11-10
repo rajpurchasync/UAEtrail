@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin } from 'lucide-react';
-import { placeDetailPath } from '@uaetrail/shared-types';
+import { facilityDetailPath } from '@uaetrail/shared-types';
 import { useAuth } from '../../context/AuthContext';
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
 import { areaIdForExploreAreaSlug } from '../exploreAreaFilter';
@@ -12,8 +12,11 @@ import { EmirateFromPinField } from './EmirateFromPinField';
 import { AddCuratedAreaStep } from './AddCuratedAreaStep';
 import { AddSubmitSuccessSheet } from './AddSubmitSuccessSheet';
 import { AddFacilityPreview } from './AddFacilityPreview';
+import { AddFacilityParentPlaceStep } from './AddFacilityParentPlaceStep';
+import { fetchPublicPlaceDetail } from '../../hooks/placeDetailClientApi';
 import type { AddSubmitResult } from './addFlow';
 import {
+  applyFacilityAddParentPlace,
   emptyFacilityAddDraft,
   FACILITY_ADD_OPTIONS,
   FACILITY_ADD_STEPS,
@@ -30,8 +33,6 @@ import {
 } from './composeWizardSession';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { FlowSheetChrome } from './ExploreFlowSheetChrome';
-import { ComposeWizardItemProvider } from '../create/ComposeWizardItemContext';
-import { composeItemEmoji } from '../compose';
 import { useComposeWizardExitBack } from '../create/useComposeWizardExitBack';
 import {
   composeWizardHasDraftContent,
@@ -57,6 +58,8 @@ type Props = {
   onSubmitted?: (result: AddSubmitResult) => void;
   signInHref: string;
   exploreAreaSlug?: string | null;
+  /** `facilityOnPlace` deep link — prefill `parentPlaceId`. */
+  facilityOnPlaceId?: string | null;
 };
 
 const NextButton = ({
@@ -86,6 +89,7 @@ export const CreateAddFacilityFlow = ({
   onSubmitted,
   signInHref,
   exploreAreaSlug = null,
+  facilityOnPlaceId = null,
 }: Props) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -103,6 +107,7 @@ export const CreateAddFacilityFlow = ({
   const currentStepIndex = flowSteps.indexOf(step);
   const headerTitle = facilityAddStepTitle(step);
   const initializedRef = useRef(false);
+  const parentPrefillRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!open) {
@@ -144,6 +149,27 @@ export const CreateAddFacilityFlow = ({
   const patchDraft = useCallback((patch: Partial<FacilityAddDraft>) => {
     setDraft((prev) => ({ ...prev, ...patch }));
   }, []);
+
+  useEffect(() => {
+    const placeId = facilityOnPlaceId?.trim();
+    if (!open || !placeId || !user) return;
+    if (parentPrefillRef.current === placeId) return;
+    parentPrefillRef.current = placeId;
+    let cancelled = false;
+    void fetchPublicPlaceDetail(placeId)
+      .then((place) => {
+        if (cancelled) return;
+        setDraft((prev) => ({ ...prev, ...applyFacilityAddParentPlace(place) }));
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setError('Could not load the trail for this link. Pick a trail on the next steps.');
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, user, facilityOnPlaceId]);
 
   const finishClose = () => {
     if (submitting) return;
@@ -209,9 +235,7 @@ export const CreateAddFacilityFlow = ({
   const handleSuccessView = async () => {
     if (!submitResult) return;
     onSubmitted?.(submitResult);
-    navigate(
-      placeDetailPath(submitResult.location.activityType, submitResult.location.id)
-    );
+    navigate(facilityDetailPath(submitResult.location.id));
     onClose();
   };
 
@@ -235,9 +259,15 @@ export const CreateAddFacilityFlow = ({
       ? publishedAreas.find((area) => area.id === draft.areaId)?.center
       : null;
     const lat =
-      curatedCenter?.latitude ?? draft.latitude ?? MAP_CONFIG.exploreDefaultCenter.lat;
+      (draft.locationPinPlaced ? draft.latitude : null) ??
+      curatedCenter?.latitude ??
+      draft.latitude ??
+      MAP_CONFIG.exploreDefaultCenter.lat;
     const lng =
-      curatedCenter?.longitude ?? draft.longitude ?? MAP_CONFIG.exploreDefaultCenter.lng;
+      (draft.locationPinPlaced ? draft.longitude : null) ??
+      curatedCenter?.longitude ??
+      draft.longitude ??
+      MAP_CONFIG.exploreDefaultCenter.lng;
 
     return (
       <div className={`fixed inset-0 ${EXPLORE_Z.composeFlow} bg-neutral-100`}>
@@ -281,12 +311,11 @@ export const CreateAddFacilityFlow = ({
       onClose={requestClose}
       zClass={EXPLORE_Z.composeFlow}
       overlayFixed
-      mobileComposeChrome
+      composePresentation="wizard"
       showHandle={false}
       showCloseButton={false}
-      panelClassName="px-5 pb-[calc(var(--safe-bottom)+1rem)] pt-0 lg:px-6 lg:pb-6 lg:pt-2"
+      panelClassName="pb-[calc(var(--safe-bottom)+1rem)] pt-0 lg:pb-6 lg:pt-2"
     >
-      <ComposeWizardItemProvider emoji={composeItemEmoji({ intent: 'add', target: 'facility', kind: 'toilet' })}>
       {step === 'title' && (
         <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <FlowStepTextInput
@@ -332,9 +361,11 @@ export const CreateAddFacilityFlow = ({
             allowNewArea={false}
             onAreaIdChange={(next) => {
               const center = next ? publishedAreas.find((area) => area.id === next)?.center : null;
+              const areaChanged = next !== draft.areaId;
               patchDraft({
                 areaId: next,
                 locationPinPlaced: false,
+                ...(areaChanged ? { parentPlaceId: null, parentPlaceName: null } : {}),
                 ...(center ? { latitude: center.latitude, longitude: center.longitude } : {}),
               });
             }}
@@ -342,6 +373,16 @@ export const CreateAddFacilityFlow = ({
           {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
           <div className="mt-5 pb-2">
             <NextButton disabled={!draft.areaId} onClick={goNext} />
+          </div>
+        </FlowSheetChrome>
+      )}
+
+      {step === 'parentPlace' && (
+        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
+          <AddFacilityParentPlaceStep draft={draft} onChange={patchDraft} />
+          {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+          <div className="mt-5 pb-2">
+            <NextButton onClick={goNext} />
           </div>
         </FlowSheetChrome>
       )}
@@ -434,7 +475,6 @@ export const CreateAddFacilityFlow = ({
           </div>
         </FlowSheetChrome>
       )}
-      </ComposeWizardItemProvider>
     </ExploreResponsiveSheet>
   );
 };

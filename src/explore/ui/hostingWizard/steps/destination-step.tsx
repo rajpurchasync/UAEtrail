@@ -8,6 +8,7 @@ import { CampingDestinationStepBody } from '../../hostingCampingWizardSteps';
 import { EventDestinationStepBody } from '../../hostingEventWizardSteps';
 import type { ReactNode } from 'react';
 import type { HostingWizardContext } from '../hostingWizardContext';
+import { validateStructuredDestination } from '../../hostingFlows/validateShared';
 
 export function renderDestinationStep(ctx: HostingWizardContext): ReactNode | null {
     const {
@@ -17,7 +18,7 @@ export function renderDestinationStep(ctx: HostingWizardContext): ReactNode | nu
     patchDraft,
     error,
     tenantId,
-    registryPlaces,
+    catalogPlaces,
     setWhereMapOpen,
     goNext,
     goBack,
@@ -38,7 +39,7 @@ export function renderDestinationStep(ctx: HostingWizardContext): ReactNode | nu
                 draft={draft}
                 patchDraft={patchDraft}
                 tenantId={tenantId}
-                registryPlaces={registryPlaces}
+                catalogPlaces={catalogPlaces}
                 onOpenSpotMap={() => setWhereMapOpen(true)}
               />
             ) : eventFlow ? (
@@ -46,7 +47,7 @@ export function renderDestinationStep(ctx: HostingWizardContext): ReactNode | nu
                 draft={draft}
                 patchDraft={patchDraft}
                 tenantId={tenantId}
-                registryPlaces={registryPlaces}
+                catalogPlaces={catalogPlaces}
                 onOpenSpotMap={() => setWhereMapOpen(true)}
               />
             ) : (
@@ -54,12 +55,15 @@ export function renderDestinationStep(ctx: HostingWizardContext): ReactNode | nu
                 draft={draft}
                 patchDraft={patchDraft}
                 tenantId={tenantId}
-                registryPlaces={registryPlaces}
+                catalogPlaces={catalogPlaces}
                 onOpenSpotMap={() => setWhereMapOpen(true)}
               />
             )}
             <HostingWizardStepError error={error} />
-            <HostingWizardStepNext onClick={goNext}  />
+            <HostingWizardStepNext
+              disabled={Boolean(validateStructuredDestination(draft))}
+              onClick={goNext}
+            />
           </HostingWizardChrome>
   );
 }

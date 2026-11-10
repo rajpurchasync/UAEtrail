@@ -9,6 +9,7 @@ import { EXPLORE_MAP_PATH, LIST_DISCOVERY_PATH } from '../config/platform';
 import { PLAN_PATH } from '../constants';
 import { planHostedSchedulePath } from '../plan/planRouting';
 import {
+  addFacilityCompose,
   formatComposeQuery,
   hostCompose,
   type ExploreCompose,
@@ -164,6 +165,26 @@ export const clearHostFromActivityParams = (params: URLSearchParams): void => {
   params.delete(HOST_FROM_ACTIVITY_QUERY_KEY);
 };
 
+/** Prefill Add → Facility with `parentPlaceId` (trail / camp catalog row). */
+export const FACILITY_ON_PLACE_QUERY_KEY = 'facilityOnPlace';
+
+export const parseFacilityOnPlaceId = (
+  searchParams: Pick<URLSearchParams, 'get'>
+): string | null => searchParams.get(FACILITY_ON_PLACE_QUERY_KEY)?.trim() || null;
+
+export const clearFacilityOnPlaceParams = (params: URLSearchParams): void => {
+  params.delete(FACILITY_ON_PLACE_QUERY_KEY);
+};
+
+/** Deep link: add toilet / water / … along a trail (`parentPlaceId` on submit). */
+export const exploreAddFacilityOnPlacePath = (placeId: string, facilityKind = 'toilet'): string =>
+  explorePath({
+    compose: addFacilityCompose(facilityKind),
+    facilityOnPlace: placeId,
+    panel: 'venues',
+    pinKind: 'places',
+  });
+
 /** Deep link: host again from a past outing via FAB wizard (not server duplicate). */
 export const exploreHostFromActivityPath = (
   activityId: string,
@@ -272,6 +293,8 @@ export const explorePath = (options?: {
   area?: string;
   /** Map pin-kind row (`activities` | `locations` | `places` | `shops`). */
   pinKind?: ExplorePinKindFilter;
+  /** Prefill facility add wizard — links amenity to this place catalog id. */
+  facilityOnPlace?: string;
 }): string => {
   const params = new URLSearchParams();
   if (options?.filter && options.filter !== 'all') {
@@ -324,6 +347,9 @@ export const explorePath = (options?: {
   }
   if (options?.hostFrom?.trim()) {
     params.set(HOST_FROM_ACTIVITY_QUERY_KEY, options.hostFrom.trim());
+  }
+  if (options?.facilityOnPlace?.trim()) {
+    params.set(FACILITY_ON_PLACE_QUERY_KEY, options.facilityOnPlace.trim());
   }
   if (options?.myPlan) {
     params.set(MY_PLAN_MAP_QUERY_KEY, '1');

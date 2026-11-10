@@ -26,7 +26,6 @@ import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { EXPLORE_Z } from '../../config/exploreTheme';
 import { COMPOSE_DESKTOP_INSET_FIXED } from '../create/composeDesktopInset';
 import { formatCoord } from '../../utils/coords';
-import { ComposeWizardItemProvider } from '../create/ComposeWizardItemContext';
 import { bundleHostingWizardPages, COMPOSE_WIDE_SHEET_MAX_WIDTH, wizardPageContaining } from '../create/composeWideWizard';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import type { MeetingPointPickerIntent } from './hostingWizard/hostingWizardContext';
@@ -62,7 +61,7 @@ import {
   type CreateActivityDraft,
   type CreateActivityKind,
 } from './hostingFlowEngine';
-import { composeItemEmoji, hostingPublishSeed, type HostComposeKind } from '../compose';
+import { hostingPublishSeed, type HostComposeKind } from '../compose';
 import { composeFlowIdFromRoute, defaultParticipationForHostRoute } from '../composeFlowCatalog';
 import {
   clearHostingWizardSession,
@@ -191,9 +190,13 @@ export const CreateHostingActivityFlow = ({
     : kind === 'hiking' || kind === 'camping' || kind === 'event'
       ? kind
       : undefined;
-  const registryPlaces = usePlaceRegistry({
+  const catalogPlaces = usePlaceRegistry({
     enabled: structuredFlow && Boolean(registryPlaceType),
     placeType: registryPlaceType,
+    countryCode:
+      hikingFlow || campingFlow || eventFlow
+        ? draft.customPlaceCountry
+        : undefined,
   });
   const flowSteps = useMemo(() => {
     if (!kind) return [];
@@ -558,7 +561,7 @@ export const CreateHostingActivityFlow = ({
       setError(validation);
       return;
     }
-    const placeAreaValidation = validateHostingPlaceArea(draft, registryPlaces);
+    const placeAreaValidation = validateHostingPlaceArea(draft, catalogPlaces);
     if (placeAreaValidation) {
       setError(placeAreaValidation);
       return;
@@ -617,7 +620,7 @@ export const CreateHostingActivityFlow = ({
     onClose,
     tenantId,
     draft,
-    registryPlaces,
+    catalogPlaces,
     wizardPrefill,
     editActivity,
     hostingFlowId,
@@ -713,7 +716,7 @@ export const CreateHostingActivityFlow = ({
     publishTenantId: tenantId,
     setPublishTenantId,
     memberDisplayName,
-    registryPlaces,
+    catalogPlaces,
     canPublish,
     hostTiers,
     publishingProfileKind,
@@ -765,7 +768,7 @@ export const CreateHostingActivityFlow = ({
     publishTenantOptions,
     setPublishTenantId,
     memberDisplayName,
-    registryPlaces,
+    catalogPlaces,
     canPublish,
     hostTiers,
     publishingProfileKind,
@@ -972,19 +975,13 @@ export const CreateHostingActivityFlow = ({
       onClose={requestClose}
       zClass={EXPLORE_Z.composeFlow}
       overlayFixed
-      mobileComposeChrome
+      composePresentation="wizard"
       showHandle={false}
       showCloseButton={false}
       maxWidthClass={isMobile ? 'lg:max-w-lg' : COMPOSE_WIDE_SHEET_MAX_WIDTH}
-      panelClassName="px-5 pb-[calc(var(--safe-bottom)+1rem)] pt-0 lg:px-6 lg:pb-6 lg:pt-2"
+      panelClassName="pb-[calc(var(--safe-bottom)+1rem)] pt-0 lg:pb-6 lg:pt-2"
     >
-      <ComposeWizardItemProvider
-        emoji={composeItemEmoji(
-          hostComposeKind ? { intent: 'host', kind: hostComposeKind } : { surface: 'menu', intent: 'host' }
-        )}
-      >
-        {renderHostingWizardSteps(wizardCtx)}
-      </ComposeWizardItemProvider>
+      {renderHostingWizardSteps(wizardCtx)}
     </ExploreResponsiveSheet>
   );
 };

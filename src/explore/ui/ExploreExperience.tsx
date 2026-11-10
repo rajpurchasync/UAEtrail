@@ -83,6 +83,7 @@ export const ExploreExperience = () => {
         signInHref={model.signInHref}
         planWithBuddyUserId={model.planWithBuddyUserId}
         composeAreaSlug={model.areaSlug}
+        facilityOnPlaceId={model.facilityOnPlaceId}
         hostRemoveParticipantNotice={model.hostRemoveParticipantNotice}
         rideshareLinkParent={model.rideshareLinkParent}
         rideshareLinkSeeking={model.rideshareLinkSeeking}
@@ -94,7 +95,6 @@ export const ExploreExperience = () => {
         onRefreshHostGate={model.refreshHostGate}
         setRideshareLinkParent={model.setRideshareLinkParent}
         setRideshareLinkSeeking={model.setRideshareLinkSeeking}
-        hostManageSheet={model.hostManageSheet}
         tenantId={model.tenantId}
         useDesktopGuestGatePanel={model.useDesktopGuestGatePanel}
       />

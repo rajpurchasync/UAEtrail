@@ -21,7 +21,7 @@ import {
   writeGuestComposeResumeSession,
 } from '../guestComposeResume';
 import { clearComposeWizardSessionForRoute } from '../../ui/composeWizardSession';
-import { PLAN_WITH_QUERY_KEY } from '../../routing';
+import { clearFacilityOnPlaceParams, PLAN_WITH_QUERY_KEY } from '../../routing';
 import { composeRouteRequiresAuth, resolveComposeRouteChange } from '../composeRouteGuard';
 
 export type UseComposeRouteArgs = {
@@ -88,6 +88,7 @@ export const useComposeRoute = ({
         clearComposeWizardSessionForRoute(parseExploreCompose(prev));
         const params = new URLSearchParams(prev);
         clearExploreComposeParams(params);
+        clearFacilityOnPlaceParams(params);
         params.delete(PLAN_WITH_QUERY_KEY);
         return params;
       },

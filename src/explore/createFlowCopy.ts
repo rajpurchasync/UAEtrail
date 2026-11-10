@@ -134,14 +134,70 @@ export const PARTICIPANTS_WHO_CAN_JOIN = 'Who can join?';
 
 export const PARTICIPANTS_MIN_AGE_LABEL = 'Minimum age';
 
-export const HOSTING_VENUE_REGISTRY_LABEL = 'Select venue';
+/** Host destination ladder: Area → Place hub → catalog leaf (trail / camp / venue). Facilities are Add on map, not here. */
+export const HOSTING_DESTINATION_REGISTRY_LABEL = 'Select from catalog';
 
-export const HOSTING_VENUE_CUSTOM_NAME_TOGGLE = "Can't find it? Add a new spot";
+export const HOSTING_DESTINATION_SELECT_STATE = 'State';
 
-export const HOSTING_VENUE_CUSTOM_NAME_BACK = 'Search the registry again';
+export const HOSTING_DESTINATION_SELECT_AREA = 'Area';
 
-export const HOSTING_VENUE_CUSTOM_REVIEW_NOTE =
+export const HOSTING_DESTINATION_SELECT_PLACE = 'Place';
+
+export const HOSTING_DESTINATION_SELECT_TRAIL = 'Trail';
+
+export const HOSTING_DESTINATION_SELECT_TRAIL_CAMP = 'Camp spot';
+
+export const HOSTING_DESTINATION_SELECT_TRAIL_EVENT = 'Venue name';
+
+export const HOSTING_DESTINATION_SELECT_TRAIL_LABEL = 'Select trail';
+
+export const HOSTING_DESTINATION_SELECT_TRAIL_CAMP_LABEL = 'Select camp spot';
+
+export const HOSTING_DESTINATION_SELECT_TRAIL_EVENT_LABEL = 'Select venue';
+
+export const HOSTING_DESTINATION_ADD_TRAIL_NEW = '+ New';
+
+export const HOSTING_DESTINATION_FIND_PLACEHOLDER = 'e.g. Wadi Shawka, Hatta, Shawka loop';
+
+export const HOSTING_DESTINATION_PICK_PLACE_FIRST =
+  'Choose a place first — then add a new trail or camp spot under it.';
+
+export const HOSTING_DESTINATION_LEAF_HINT =
+  'One place can list several trails, camp spots, or routes — pick the one you’re leading.';
+
+export const HOSTING_DESTINATION_RESET_LABEL = 'Clear selection';
+
+export const HOSTING_DESTINATION_CUSTOM_NAME_TOGGLE = "Can't find it? Add under this place";
+
+export const HOSTING_DESTINATION_CUSTOM_NAME_BACK = 'Back to catalog search';
+
+export const HOSTING_DESTINATION_CUSTOM_REVIEW_NOTE =
   'Pin the spot and add a photo. If this is a new area, we submit the spot and the area together — both stay pending until an admin approves them.';
+
+export const HOSTING_DESTINATION_CATALOG_LEAF_LINK_HIKING = 'Trail';
+export const HOSTING_DESTINATION_CATALOG_LEAF_LINK_CAMPING = 'Camp spot';
+export const HOSTING_DESTINATION_CATALOG_LEAF_LINK_EVENT = 'Venue';
+export const HOSTING_DESTINATION_CATALOG_LEAF_VIEW = 'View on map';
+
+/** @deprecated Use {@link HOSTING_DESTINATION_*} — legacy “venue” mixed hub and catalog leaf. */
+export const HOSTING_VENUE_REGISTRY_LABEL = HOSTING_DESTINATION_REGISTRY_LABEL;
+/** @deprecated */ export const HOSTING_VENUE_SELECT_STATE = HOSTING_DESTINATION_SELECT_STATE;
+/** @deprecated */ export const HOSTING_VENUE_SELECT_AREA = HOSTING_DESTINATION_SELECT_AREA;
+/** @deprecated */ export const HOSTING_VENUE_SELECT_PLACE = HOSTING_DESTINATION_SELECT_PLACE;
+/** @deprecated */ export const HOSTING_VENUE_SELECT_TRAIL = HOSTING_DESTINATION_SELECT_TRAIL;
+/** @deprecated */ export const HOSTING_VENUE_SELECT_TRAIL_CAMP = HOSTING_DESTINATION_SELECT_TRAIL_CAMP;
+/** @deprecated */ export const HOSTING_VENUE_SELECT_TRAIL_EVENT = HOSTING_DESTINATION_SELECT_TRAIL_EVENT;
+/** @deprecated */ export const HOSTING_VENUE_SELECT_TRAIL_LABEL = HOSTING_DESTINATION_SELECT_TRAIL_LABEL;
+/** @deprecated */ export const HOSTING_VENUE_SELECT_TRAIL_CAMP_LABEL = HOSTING_DESTINATION_SELECT_TRAIL_CAMP_LABEL;
+/** @deprecated */ export const HOSTING_VENUE_SELECT_TRAIL_EVENT_LABEL = HOSTING_DESTINATION_SELECT_TRAIL_EVENT_LABEL;
+/** @deprecated */ export const HOSTING_VENUE_ADD_TRAIL_NEW = HOSTING_DESTINATION_ADD_TRAIL_NEW;
+/** @deprecated */ export const HOSTING_VENUE_FIND_PLACEHOLDER = HOSTING_DESTINATION_FIND_PLACEHOLDER;
+/** @deprecated */ export const HOSTING_VENUE_PICK_PLACE_FIRST = HOSTING_DESTINATION_PICK_PLACE_FIRST;
+/** @deprecated */ export const HOSTING_VENUE_TRAIL_ROUTE_HINT = HOSTING_DESTINATION_LEAF_HINT;
+/** @deprecated */ export const HOSTING_VENUE_RESET_LABEL = HOSTING_DESTINATION_RESET_LABEL;
+/** @deprecated */ export const HOSTING_VENUE_CUSTOM_NAME_TOGGLE = HOSTING_DESTINATION_CUSTOM_NAME_TOGGLE;
+/** @deprecated */ export const HOSTING_VENUE_CUSTOM_NAME_BACK = HOSTING_DESTINATION_CUSTOM_NAME_BACK;
+/** @deprecated */ export const HOSTING_VENUE_CUSTOM_REVIEW_NOTE = HOSTING_DESTINATION_CUSTOM_REVIEW_NOTE;
 
 
 

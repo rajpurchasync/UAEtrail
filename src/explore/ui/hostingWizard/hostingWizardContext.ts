@@ -36,7 +36,8 @@ export type HostingWizardContext = {
   publishTenantId: string | null;
   setPublishTenantId: (tenantId: string) => void;
   memberDisplayName: string | null;
-  registryPlaces: PlaceDTO[];
+  /** Place catalog rows from {@link fetchPlaceCatalog}. */
+  catalogPlaces: PlaceDTO[];
   canPublish: boolean;
   hostTiers: HostTierFlags;
   publishingProfileKind: PublishingProfileKind | null;

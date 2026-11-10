@@ -9,6 +9,7 @@ import {
   validateStructuredAboutTrail,
   validateStructuredDestination,
   validateStructuredPublishVenue,
+  validateHostingWhenSchedule,
 } from './validateShared';
 
 const DEFAULT_STEPS: CreateFlowStepId[] = [
@@ -32,14 +33,7 @@ const REGISTRY_OMIT: CreateFlowStepId[] = ['about_trail'];
 const validateStep = (step: CreateFlowStepId, draft: CreateActivityDraft): string | null => {
   if (step === 'title') return validateHostingTitle(draft, 'Give your outing a title.');
   if (step === 'audience') return validateHostingAudienceOthers(draft);
-  if (step === 'when') {
-    if (draft.timeMode === 'specific' && !draft.time) return 'Choose a start time.';
-    if (draft.timeMode === 'specific' && !draft.endTime.trim()) return 'Choose an approximate end time.';
-    if (draft.timeMode === 'specific' && draft.endTime <= (draft.meetingTime || draft.time)) {
-      return 'End time should be after the start time.';
-    }
-    return null;
-  }
+  if (step === 'when') return validateHostingWhenSchedule(draft);
   if (step === 'meeting') {
     if (draft.genericBuddy) {
       if (draft.latitude == null || draft.longitude == null) return 'Drop a pin on the map.';

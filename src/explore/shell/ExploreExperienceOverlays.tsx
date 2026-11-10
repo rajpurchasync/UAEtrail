@@ -7,7 +7,6 @@ import { GuestComposeSignInSheet } from '../ui/GuestComposeSignInSheet';
 import { ExploreJoinOverlays } from '../ui/ExploreJoinOverlays';
 import type { HostingWizardPrefill } from '../ui/hostingWizardPrefill';
 import type { useComposeRoute } from '../create/hooks/useComposeRoute';
-import type { ReactNode } from 'react';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { useExploreSelectionActions } from '../ui/useExploreSelectionActions';
 
@@ -25,6 +24,7 @@ type Props = {
   signInHref: string;
   planWithBuddyUserId: string | null;
   composeAreaSlug: string | null;
+  facilityOnPlaceId: string | null;
   hostRemoveParticipantNotice: string | null;
   rideshareLinkParent: ActivityDTO | null;
   rideshareLinkSeeking: ExploreMapItemDTO | null;
@@ -36,7 +36,6 @@ type Props = {
   onRefreshHostGate: () => void;
   setRideshareLinkParent: (value: ActivityDTO | null) => void;
   setRideshareLinkSeeking: (value: ExploreMapItemDTO | null) => void;
-  hostManageSheet: ReactNode;
   tenantId: string | null;
   useDesktopGuestGatePanel: boolean;
 };
@@ -51,6 +50,7 @@ export const ExploreExperienceOverlays = ({
   signInHref,
   planWithBuddyUserId,
   composeAreaSlug,
+  facilityOnPlaceId,
   hostRemoveParticipantNotice,
   rideshareLinkParent,
   rideshareLinkSeeking,
@@ -62,13 +62,10 @@ export const ExploreExperienceOverlays = ({
   onRefreshHostGate,
   setRideshareLinkParent,
   setRideshareLinkSeeking,
-  hostManageSheet,
   tenantId,
   useDesktopGuestGatePanel,
 }: Props) => (
   <>
-    {hostManageSheet}
-
     <ComposeHost
       composeRoute={compose.composeRoute}
       composeMenuOpen={compose.composeMenuOpen}
@@ -112,6 +109,7 @@ export const ExploreExperienceOverlays = ({
       tenantId={tenantId}
       planWithBuddyUserId={planWithBuddyUserId}
       composeAreaSlug={composeAreaSlug}
+      facilityOnPlaceId={facilityOnPlaceId}
       onOpenHostApplication={onOpenHostApplication}
       onAddSubmitted={selection.handleAddSubmitted}
     />

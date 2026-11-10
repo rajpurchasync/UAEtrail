@@ -4,6 +4,7 @@ import {
   exploreActivitiesPath,
   exploreHostPath,
   exploreHostFromActivityPath,
+  exploreAddFacilityOnPlacePath,
   explorePath,
   parseExploreMyPlanMapMode,
   explorePlacesPath,
@@ -17,6 +18,7 @@ import {
   parseExplorePinMapItemId,
   exploreOfferRideshareForSeekingPath,
   parseHostFromActivityId,
+  parseFacilityOnPlaceId,
 } from './routing';
 import { EXPLORE_MAP_PATH } from '../config/platform';
 import {
@@ -133,6 +135,17 @@ describe('exploreRouting navigation contract', () => {
   it('parseHostFromActivityId reads hostFrom only', () => {
     expect(parseHostFromActivityId(new URLSearchParams('hostFrom=act-new'))).toBe('act-new');
     expect(parseHostFromActivityId(new URLSearchParams('organizeFrom=act-legacy'))).toBeNull();
+  });
+
+  it('exploreAddFacilityOnPlacePath deep-links facility wizard with parentPlace prefill', () => {
+    expect(exploreAddFacilityOnPlacePath('place-trail-1')).toBe(
+      '/explore?panel=venues&compose=add%3Afacility%3Atoilet&facilityOnPlace=place-trail-1&pinKind=places'
+    );
+  });
+
+  it('parseFacilityOnPlaceId reads facilityOnPlace only', () => {
+    expect(parseFacilityOnPlaceId(new URLSearchParams('facilityOnPlace=place-1'))).toBe('place-1');
+    expect(parseFacilityOnPlaceId(new URLSearchParams('parentPlaceId=legacy'))).toBeNull();
   });
 
   it('inboundCreateParamToHostPath redirects old activity create URLs', () => {

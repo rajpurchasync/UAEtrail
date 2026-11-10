@@ -1,4 +1,4 @@
-import { HostingVenuePlaceField } from './HostingVenuePlaceField';
+import { HostingDestinationField } from './HostingDestinationField';
 import type { PlaceDTO } from '@uaetrail/shared-types';
 import { EXPLORE_FLOW } from '../../config/exploreTheme';
 import { exploreFlowChoiceCardClass } from './exploreFlowUi';
@@ -20,20 +20,20 @@ export const CampingDestinationStepBody = ({
   draft,
   patchDraft,
   tenantId,
-  registryPlaces,
+  catalogPlaces,
   onOpenSpotMap,
 }: {
   draft: CreateActivityDraft;
   patchDraft: PatchDraft;
   tenantId?: string | null;
-  registryPlaces: PlaceDTO[];
+  catalogPlaces: PlaceDTO[];
   onOpenSpotMap?: () => void;
 }) => (
-  <HostingVenuePlaceField
+  <HostingDestinationField
     draft={draft}
     patchDraft={patchDraft}
     tenantId={tenantId}
-    registryPlaces={registryPlaces}
+    catalogPlaces={catalogPlaces}
     placeType="camping"
     customNameLabel="Camp or area name"
     customNamePlaceholder="e.g. Al Qudra lakes overnight"

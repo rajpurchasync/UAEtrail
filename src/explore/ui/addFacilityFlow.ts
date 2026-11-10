@@ -1,4 +1,4 @@
-import type { PlaceKind } from '@uaetrail/shared-types';
+import type { PlaceDTO, PlaceKind } from '@uaetrail/shared-types';
 import {
   ADDABLE_FACILITY_PLACE_KINDS,
   PLACE_KIND_LABELS,
@@ -13,6 +13,7 @@ export type FacilityAddStepId =
   | 'title'
   | 'facilityType'
   | 'curatedArea'
+  | 'parentPlace'
   | 'location'
   | 'image'
   | 'description'
@@ -22,6 +23,7 @@ export const FACILITY_ADD_STEPS: FacilityAddStepId[] = [
   'title',
   'facilityType',
   'curatedArea',
+  'parentPlace',
   'location',
   'image',
   'description',
@@ -32,6 +34,9 @@ export type FacilityAddDraft = {
   title: string;
   facilityKind: PlaceKind | null;
   areaId: string | null;
+  /** Trail / camp catalog row this amenity sits along (`POST /me/facilities` `parentPlaceId`). */
+  parentPlaceId: string | null;
+  parentPlaceName: string | null;
   emirate: string;
   countryCode: CountryCode;
   latitude: number | null;
@@ -40,6 +45,11 @@ export type FacilityAddDraft = {
   images: string[];
   description: string;
 };
+
+export const FACILITY_ADD_PARENT_PLACE_TITLE = 'Along a trail?';
+export const FACILITY_ADD_PARENT_PLACE_HINT =
+  'Optional — link toilets, water, or shops to a trail so they show on that route’s page. You’ll still drop a pin on the next step.';
+export const FACILITY_ADD_PARENT_PLACE_SKIP = 'Not along a specific trail';
 
 export const FACILITY_ADD_OPTIONS = ADDABLE_FACILITY_PLACE_KINDS.map((kind) => ({
   kind,
@@ -51,6 +61,8 @@ export const emptyFacilityAddDraft = (): FacilityAddDraft => ({
   title: '',
   facilityKind: null,
   areaId: null,
+  parentPlaceId: null,
+  parentPlaceName: null,
   emirate: '',
   countryCode: 'AE',
   latitude: MAP_CONFIG.exploreDefaultCenter.lat,
@@ -58,6 +70,17 @@ export const emptyFacilityAddDraft = (): FacilityAddDraft => ({
   locationPinPlaced: false,
   images: [],
   description: '',
+});
+
+export const applyFacilityAddParentPlace = (
+  place: Pick<PlaceDTO, 'id' | 'name' | 'areaId' | 'latitude' | 'longitude'>
+): Partial<FacilityAddDraft> => ({
+  parentPlaceId: place.id,
+  parentPlaceName: place.name.trim(),
+  ...(place.areaId?.trim() ? { areaId: place.areaId.trim() } : {}),
+  ...(place.latitude != null && place.longitude != null
+    ? { latitude: place.latitude, longitude: place.longitude }
+    : {}),
 });
 
 export const facilityAddStepTitle = (step: FacilityAddStepId): string => {
@@ -68,6 +91,8 @@ export const facilityAddStepTitle = (step: FacilityAddStepId): string => {
       return 'Facility type';
     case 'curatedArea':
       return 'Area';
+    case 'parentPlace':
+      return FACILITY_ADD_PARENT_PLACE_TITLE;
     case 'location':
       return 'Pin on map';
     case 'image':
@@ -94,6 +119,8 @@ export const validateFacilityAddStep = (
       return null;
     case 'curatedArea':
       if (!draft.areaId?.trim()) return 'Choose which area this facility is in.';
+      return null;
+    case 'parentPlace':
       return null;
     case 'location':
       if (!draft.emirate.trim() && !inferEmirateFromPin(draft.latitude, draft.longitude)) {

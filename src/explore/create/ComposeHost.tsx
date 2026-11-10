@@ -39,6 +39,8 @@ export interface ComposeHostProps {
   planWithBuddyUserId?: string | null;
   /** When map is scoped with `?area=`, prefill seeking/add curated area steps. */
   composeAreaSlug?: string | null;
+  /** `facilityOnPlace` query — link amenity to trail/camp catalog row. */
+  facilityOnPlaceId?: string | null;
   wizardEnteredFromMenu: boolean;
 }
 
@@ -69,6 +71,7 @@ export const ComposeHost = ({
   tenantId = null,
   planWithBuddyUserId = null,
   composeAreaSlug = null,
+  facilityOnPlaceId = null,
   wizardEnteredFromMenu,
 }: ComposeHostProps) => {
   const composeSessionOpen =
@@ -77,10 +80,18 @@ export const ComposeHost = ({
     seekFixedWizardOpen ||
     addWizardOpen ||
     seekFlexibleOpen;
+  const immersiveWizardOpen =
+    hostWizardOpen ||
+    seekFixedWizardOpen ||
+    addWizardOpen ||
+    seekFlexibleOpen;
 
   return (
     <ComposeWizardNavigationProvider value={wizardEnteredFromMenu}>
-    <ComposeSheetExpandedProvider composeSessionOpen={composeSessionOpen}>
+    <ComposeSheetExpandedProvider
+      composeSessionOpen={composeSessionOpen}
+      immersiveWizardOpen={immersiveWizardOpen}
+    >
     {composeMenuOpen && composeRoute && (
       <CreateIntentSheet
         route={composeRoute}
@@ -93,6 +104,7 @@ export const ComposeHost = ({
       <CreateAddFacilityFlow
         open={addWizardOpen}
         exploreAreaSlug={composeAreaSlug}
+        facilityOnPlaceId={facilityOnPlaceId}
         onClose={onCloseCompose}
         onBackToIntent={onAddBackToIntent}
         onSubmitted={onAddSubmitted}

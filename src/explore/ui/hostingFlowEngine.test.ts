@@ -73,7 +73,8 @@ describe('hostingFlowEngine', () => {
     expect(createFlowStepTitle('title', 'hiking', { genericBuddy: true })).toBe('What do you want to do?');
     expect(createFlowStepTitle('title', 'hiking')).toBe('Give it a title');
     expect(createFlowStepTitle('spots', 'hiking')).toBe('Participants');
-    expect(createFlowStepTitle('when', 'hiking')).toBe('When are you going?');
+    expect(createFlowStepTitle('when', 'hiking')).toBe('Date and Time');
+    expect(createFlowStepTitle('destination', 'hiking')).toBe('Where will it be?');
     expect(createFlowStepTitle('meeting', 'hiking')).toBe('Where do you start?');
     expect(createFlowStepTitle('join_kit', 'hiking')).toBe('What to bring');
     expect(createFlowStepTitle('difficulty', 'hiking')).toBe('How difficult is the hike?');
@@ -108,15 +109,15 @@ describe('hostingFlowEngine', () => {
     expect(getCreateFlowSteps('camping', false)).toEqual([
       'title',
       'when',
-      'meeting',
+      'destination',
+      'meeting_point',
       'audience',
       'spots',
       'price',
-      'destination',
       'about_trail',
-      'meeting_point',
       'join_kit',
       'transportation',
+      'meeting',
       'publish',
     ]);
   });
@@ -135,19 +136,19 @@ describe('hostingFlowEngine', () => {
       'publish',
     ]);
     expect(createFlowStepTitle('meeting', 'rideshare')).toBe('Going from');
-    expect(createFlowStepTitle('when', 'rideshare')).toBe('When are you going?');
+    expect(createFlowStepTitle('when', 'rideshare')).toBe('Date and Time');
   });
 
   it('organize event uses structured steps without going-from', () => {
     expect(getCreateFlowSteps('event', false)).toEqual([
       'title',
       'when',
+      'destination',
+      'meeting_point',
       'audience',
       'spots',
       'price',
-      'destination',
       'about_trail',
-      'meeting_point',
       'join_kit',
       'transportation',
       'publish',
@@ -158,7 +159,7 @@ describe('hostingFlowEngine', () => {
   it('uses warm step titles for organize camping', () => {
     expect(createFlowStepTitle('title', 'camping')).toBe('Give it a title');
     expect(createFlowStepTitle('spots', 'camping')).toBe('Participants');
-    expect(createFlowStepTitle('destination', 'camping')).toBe('Where are you camping?');
+    expect(createFlowStepTitle('destination', 'camping')).toBe('Where will it be?');
   });
 
   it('validateDraftStep accepts hiking join_kit when present', () => {
@@ -252,6 +253,9 @@ describe('hostingFlowEngine', () => {
       kind: 'hiking' as const,
       placeLabelSource: 'registry' as const,
       registryPlaceId: 'trail-1',
+      venueCascadeState: 'Dubai',
+      registryPlaceAreaId: 'area-hatta',
+      venueCascadePlaceGroup: 'Hatta Dam',
       aboutTrail: '',
     };
     expect(validateDraftStep('about_trail', draft)).toBeNull();
@@ -328,14 +332,45 @@ describe('hostingFlowEngine', () => {
     expect(validateDraftStep('publish', draft)).toBeNull();
   });
 
-  it('validateDraftStep requires registry trail pick by default', () => {
+  it('validateDraftStep requires registry venue cascade through trail selection', () => {
     const draft = {
       ...emptyCreateActivityDraft(),
       kind: 'hiking' as const,
       placeLabelSource: 'registry' as const,
       registryPlaceId: null,
     };
-    expect(validateDraftStep('destination', draft)).toBe('Choose a trail from the registry.');
+    expect(validateDraftStep('destination', draft)).toBe('Select a state.');
+    expect(
+      validateDraftStep('destination', {
+        ...draft,
+        venueCascadeState: 'Dubai',
+      })
+    ).toBe('Select an area.');
+    expect(
+      validateDraftStep('destination', {
+        ...draft,
+        venueCascadeState: 'Dubai',
+        registryPlaceAreaId: 'area-hatta',
+      })
+    ).toBe('Select a place.');
+    expect(
+      validateDraftStep('destination', {
+        ...draft,
+        venueCascadeState: 'Dubai',
+        registryPlaceAreaId: 'area-hatta',
+        venueCascadePlaceGroup: 'Hatta Dam',
+        registryPlaceId: null,
+      })
+    ).toBe('Select a trail or add a new one.');
+    expect(
+      validateDraftStep('destination', {
+        ...draft,
+        venueCascadeState: 'Dubai',
+        registryPlaceAreaId: 'area-hatta',
+        venueCascadePlaceGroup: 'Hatta Dam',
+        registryPlaceId: 'place-loop',
+      })
+    ).toBeNull();
   });
 
   it('validateDraftStep publish checks structured hiking draft end-to-end', () => {
@@ -349,6 +384,9 @@ describe('hostingFlowEngine', () => {
       meetingLongitude: 55.21,
       registryPlaceId: 'trail-registry-1',
       placeLabelSource: 'registry' as const,
+      venueCascadeState: 'RAK',
+      registryPlaceAreaId: 'area-jais',
+      venueCascadePlaceGroup: 'Summit trail',
       trailName: 'Wadi loop',
       aboutTrail: 'Moderate sunrise loop with steady elevation.',
       capacity: 8,

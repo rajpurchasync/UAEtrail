@@ -27,6 +27,7 @@ export const submitCatalogFacilityFromAddDraft = async (
     emirate,
     region: emirate,
     areaId: draft.areaId.trim(),
+    parentPlaceId: draft.parentPlaceId?.trim() || undefined,
     activityType: 'event',
     facilityKind: draft.facilityKind,
     description: draft.description.trim(),

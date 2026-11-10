@@ -10,11 +10,11 @@ export const mapRegistryPlaceDifficulty = (
   return 'easy';
 };
 
-/** Whether this catalog flow loads venue rows from the place registry on destination. */
+/** Whether this flow picks a catalog leaf (`GET /places/catalog`) on the destination step. */
 export const hostingFlowUsesPlaceRegistry = (flow: HostingKindFlow): boolean =>
   Boolean(flow.registryVenue);
 
-/** Apply a registry venue place onto the organize activity draft. */
+/** Apply a catalog leaf row onto the hosting draft (`registryPlaceId`). */
 export const applyRegistryPlaceToHostingDraft = (
   draft: CreateActivityDraft,
   place: PlaceDTO

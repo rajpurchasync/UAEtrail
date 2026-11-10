@@ -24,6 +24,7 @@ export const AddFacilityPreview = ({ draft, publishedAreas }: Props) => {
         <p className="text-lg font-bold text-neutral-900">{draft.title.trim() || 'Untitled'}</p>
         <p className="mt-1 text-neutral-600">
           <span className="font-emoji" aria-hidden>{emoji}</span> {kindLabel} · {areaName}
+          {draft.parentPlaceName?.trim() ? ` · along ${draft.parentPlaceName.trim()}` : ''}
         </p>
       </div>
       <p className="text-neutral-700 whitespace-pre-line">{draft.description.trim()}</p>

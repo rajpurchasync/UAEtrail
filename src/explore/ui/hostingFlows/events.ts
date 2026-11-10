@@ -9,17 +9,18 @@ import {
   validateStructuredAboutTrail,
   validateStructuredDestination,
   validateStructuredPublishVenue,
+  validateHostingWhenSchedule,
 } from './validateShared';
 
 const DEFAULT_STEPS: CreateFlowStepId[] = [
   'title',
   'when',
+  'destination',
+  'meeting_point',
   'audience',
   'spots',
   'price',
-  'destination',
   'about_trail',
-  'meeting_point',
   'join_kit',
   'transportation',
   'publish',
@@ -30,9 +31,7 @@ const REGISTRY_OMIT: CreateFlowStepId[] = ['about_trail'];
 const validateStep = (step: CreateFlowStepId, draft: CreateActivityDraft): string | null => {
   if (step === 'title') return validateHostingTitle(draft, 'Give your outing a title.');
   if (step === 'audience') return validateHostingAudienceOthers(draft);
-  if (step === 'when' && draft.timeMode === 'specific' && !draft.time) {
-    return 'Choose a start time.';
-  }
+  if (step === 'when') return validateHostingWhenSchedule(draft);
   if (step === 'spots') {
     if (draft.capacity < 1) return 'Choose at least one spot.';
     return validateLimitedMinAge(draft);

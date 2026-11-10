@@ -23,7 +23,7 @@ import {
 } from '../../../components/mobile/detailScrollSectionStyles';
 import { EnvironmentImage } from '../../../components/ui/EnvironmentImage';
 import { ShareButton, ReviewSection, MeetingPointMap, DirectionsControl } from '../../../components/ui';
-import { ProfileActivityListRow } from '../../../components/profile/ProfileActivityListRow';
+import { PlacePlanList } from '../../placePlanList';
 import { PageMeta } from '../../../components/seo/PageMeta';
 import { JsonLd } from '../../../components/seo/JsonLd';
 import { placeSchema } from '../../../components/seo/schemas';
@@ -36,8 +36,11 @@ import { resolvePlaceAreaLabelFromTags } from '../resolvePlaceAreaFromTags';
 import { placeCoverFallbackClass, resolvePlaceCoverFromPlace } from '../../peek/resolvePlaceRegistryCoverImage';
 import { PlaceDetailKindFacts } from '../PlaceDetailKindFacts';
 import { splitPlacePracticalTags } from '../../../utils/placePracticalInfo';
-import { PLACE_PEEK_FOOTER_PLAN_TRIP, PLACE_PEEK_RATE_LABEL, PLACE_PEEK_SCHEDULED } from '../../../content/placePeekCopy';
+import { PLACE_PEEK_FOOTER_PLAN_TRIP, PLACE_PEEK_RATE_LABEL } from '../../../content/placePeekCopy';
 import { navigateHostFromPlace } from '../../peek/navigateHostFromPlaceCard';
+import { useAuth } from '../../../context/AuthContext';
+import { joinAuthPath } from '../../../config/routingCatalog';
+import { exploreAddFacilityOnPlacePath } from '../../../explore/routing';
 import { capitalize } from '../../../utils';
 import type { DiscoveryCardTone } from '../../../discovery/discoveryCardModel';
 import { PLACE_DETAIL_TAB_LABELS } from '../../../place/placeDetailTab';
@@ -81,8 +84,11 @@ export const PlaceDetailSections = ({
   onDismissUnlockNotice,
   onReviewSubmitted,
 }: PlaceDetailSectionsProps) => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const addFacilityAlongRoutePath = exploreAddFacilityOnPlacePath(placeId);
+  const addFacilityHref = user ? addFacilityAlongRoutePath : joinAuthPath(addFacilityAlongRoutePath);
   const [arranging, setArranging] = useState(false);
   const pageModel = useMemo(
     () => buildPlaceDetailPageModel({ kind, place, config }),
@@ -104,8 +110,12 @@ export const PlaceDetailSections = ({
     (place.parkingLat != null && place.parkingLng != null) || Boolean(place.parkingLink);
   const showTransport =
     hasParking || (place.accessibleBy?.length ?? 0) > 0 || Boolean(place.accessibility);
+  const showAmenitiesAlongRoute = kind === 'trail' || kind === 'camp';
   const showNearbySection =
-    nearbyFacilities.length > 0 || practical.facilities.length > 0 || practical.nearby.length > 0;
+    showAmenitiesAlongRoute ||
+    nearbyFacilities.length > 0 ||
+    practical.facilities.length > 0 ||
+    practical.nearby.length > 0;
 
   useEffect(() => {
     if (unlockNotice?.toLowerCase().includes('unlocked')) {
@@ -296,8 +306,24 @@ export const PlaceDetailSections = ({
 
             {showNearbySection ? (
               <section aria-label="Nearby facilities">
-                <h2 className={`mb-3 ${DETAIL_SCROLL_SECTION_TITLE}`}>Nearby facilities</h2>
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <h2 className={DETAIL_SCROLL_SECTION_TITLE}>Along this route</h2>
+                  {showAmenitiesAlongRoute ? (
+                    <Link
+                      to={addFacilityHref}
+                      className="text-sm font-semibold text-emerald-800 underline-offset-2 hover:underline"
+                    >
+                      Add amenity · drop a pin
+                    </Link>
+                  ) : null}
+                </div>
                 <div className={`space-y-3 ${DETAIL_SCROLL_PANEL.social}`}>
+                  {nearbyFacilities.length === 0 && showAmenitiesAlongRoute ? (
+                    <p className="text-sm text-neutral-600">
+                      Toilets, water, rest stops, and gear pins along this route appear here after members add them
+                      on the map.
+                    </p>
+                  ) : null}
                   {nearbyFacilities.length > 0 ? (
                     <ul className="divide-y divide-neutral-100">
                       {nearbyFacilities.map((facility) => (
@@ -343,18 +369,7 @@ export const PlaceDetailSections = ({
             ) : null}
             </div>
 
-            {activities.length > 0 ? (
-              <section aria-label={PLACE_PEEK_SCHEDULED}>
-                <h2 className={`mb-3 ${DETAIL_SCROLL_SECTION_TITLE}`}>{PLACE_PEEK_SCHEDULED}</h2>
-                <ul className="divide-y divide-neutral-100 rounded-xl border border-neutral-100 bg-white">
-                  {activities.map((activity) => (
-                    <li key={activity.id}>
-                      <ProfileActivityListRow activity={activity} />
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            ) : null}
+            <PlacePlanList activities={activities} />
 
             <section id="place-guide" aria-label={PLACE_DETAIL_TAB_LABELS.guide}>
                 <h2 className={`mb-3 ${DETAIL_SCROLL_SECTION_TITLE}`}>{PLACE_DETAIL_TAB_LABELS.guide}</h2>

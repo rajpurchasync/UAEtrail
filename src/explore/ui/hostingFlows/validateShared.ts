@@ -1,4 +1,7 @@
 import type { CreateActivityDraft, CreateFlowStepId } from '../hostingFlowEngine';
+import { validateHostingWhenSchedule } from '../hostingScheduleDraft';
+
+export { validateHostingWhenSchedule };
 import { validateCustomVenueDetails } from '../../hostingPublishArea';
 import { usesRegistryCatalogVenue } from './registry';
 
@@ -43,11 +46,10 @@ export const validateStructuredDestination = (draft: CreateActivityDraft): strin
   if (draft.placeLabelSource === 'custom') {
     return validateCustomVenueDetails(draft);
   }
-  if (!draft.registryPlaceId) {
-    if (draft.kind === 'camping') return 'Choose a camp from the registry.';
-    if (draft.kind === 'event') return 'Choose a venue from the registry.';
-    return 'Choose a trail from the registry.';
-  }
+  if (!draft.venueCascadeState?.trim()) return 'Select a state.';
+  if (!draft.registryPlaceAreaId?.trim()) return 'Select an area.';
+  if (!draft.venueCascadePlaceGroup?.trim()) return 'Select a place.';
+  if (!draft.registryPlaceId?.trim()) return 'Select a trail or add a new one.';
   return null;
 };
 

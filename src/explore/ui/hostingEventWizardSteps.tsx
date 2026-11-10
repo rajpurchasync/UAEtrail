@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { defaultHikingPackingItems, withHikingKitExtras, type PlaceDTO } from '@uaetrail/shared-types';
 import { EXPLORE_FLOW } from '../../config/exploreTheme';
 import { JOIN_RULES_LABEL } from '../createFlowCopy';
-import { HostingVenuePlaceField } from './HostingVenuePlaceField';
+import { HostingDestinationField } from './HostingDestinationField';
 import { HostingPackingListEditor } from './HostingPackingListEditor';
 import type { CreateActivityDraft } from './hostingFlowEngine';
 
@@ -22,20 +22,20 @@ export const EventDestinationStepBody = ({
   draft,
   patchDraft,
   tenantId,
-  registryPlaces,
+  catalogPlaces,
   onOpenSpotMap,
 }: {
   draft: CreateActivityDraft;
   patchDraft: PatchDraft;
   tenantId?: string | null;
-  registryPlaces: PlaceDTO[];
+  catalogPlaces: PlaceDTO[];
   onOpenSpotMap?: () => void;
 }) => (
-  <HostingVenuePlaceField
+  <HostingDestinationField
     draft={draft}
     patchDraft={patchDraft}
     tenantId={tenantId}
-    registryPlaces={registryPlaces}
+    catalogPlaces={catalogPlaces}
     placeType="event"
     customNameLabel="Venue or area name"
     customNamePlaceholder="e.g. Kite beach community run"

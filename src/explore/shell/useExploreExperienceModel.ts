@@ -23,7 +23,7 @@ import { areaDetailPath } from '@uaetrail/shared-types';
 import { activityCancelParticipantNotice } from '../../activity/activityCancelParticipantNotice';
 import { useExploreMapViewport } from '../ui/useExploreMapViewport';
 import { useExploreSelectionActions } from '../ui/useExploreSelectionActions';
-import { parsePlanWithUserId } from '../routing';
+import { parseFacilityOnPlaceId, parsePlanWithUserId } from '../routing';
 import { activityJoinInviteBanner } from '../../content/exploreGoingPanelCopy';
 import type { ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import { guestExplorePreviewCanSearch } from '../guestMapPreviewPolicy';
@@ -81,6 +81,7 @@ export const useExploreExperienceModel = () => {
     }
   }, [user, queryClient]);
   const { pathname, search, state: locationState } = useLocation();
+  const facilityOnPlaceId = parseFacilityOnPlaceId(searchParams);
   const isDesktop = useMinWidthLg();
   /** Side nav + in-map right rail for guest gates (md+), not browse panel layout (lg+). */
   const useDesktopGuestGatePanel = useMinWidthMd() && !user;
@@ -172,12 +173,8 @@ export const useExploreExperienceModel = () => {
     setSelectedId,
   });
 
-  const hostSheets = useHostActivitySheetBundle({
-    tenantId,
-    onMapDataChanged: () => reloadExploreMap(queryClient),
-  });
-  const { inviteShare, shareHostedActivity, openHostManage, hostManageSheet } =
-    hostSheets;
+  const hostSheets = useHostActivitySheetBundle({ tenantId });
+  const { inviteShare, shareHostedActivity, openHostManage } = hostSheets;
 
   const primaryFabLabel = useMemo(
     () => resolveBrowseListCreateFabLabel(pathname, search),
@@ -407,6 +404,7 @@ export const useExploreExperienceModel = () => {
     hostingWizardPrefill: hostingLauncher.hostingWizardPrefill,
     onHostingBackToIntent: hostingLauncher.onHostingBackToIntent,
     planWithBuddyUserId,
+    facilityOnPlaceId,
     hostRemoveParticipantNotice,
     rideshareLinkParent: hostingLauncher.rideshareLinkParent,
     rideshareLinkSeeking: hostingLauncher.rideshareLinkSeeking,
@@ -421,7 +419,6 @@ export const useExploreExperienceModel = () => {
     searchScopeCounts,
     publishedAreas,
     handlePickExploreArea,
-    hostManageSheet,
     signInHref,
     onOpenHostApplication,
     handleOpenExploreItem,
