@@ -15,6 +15,7 @@ import { sortNotificationsNewestFirst } from '../../utils/notificationCategories
 import { NotificationListItem } from '../notifications/NotificationListItem';
 import { inferNotificationPath } from '../../utils/notificationRouting';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
+import { APP_SETTINGS_NOTIFICATIONS_PATH } from '../../config/routingCatalog';
 import { UiTooltip } from '../ui/UiTooltip';
 
 interface NotificationBellPopoverProps {
@@ -32,7 +33,7 @@ export const NotificationBellPopover = ({
   tone = 'default',
   triggerVariant = 'tab',
   className = '',
-  viewAllPath = '/notifications',
+  viewAllPath = APP_SETTINGS_NOTIFICATIONS_PATH,
   preferAdminRoutes = false,
 }: NotificationBellPopoverProps) => {
   const navigate = useNavigate();
@@ -233,7 +234,7 @@ export const NotificationBellPopover = ({
               }}
               className="w-full shrink-0 text-left px-4 py-3 text-sm font-semibold text-emerald-700 hover:bg-emerald-50/60 border-t border-gray-100"
             >
-              View all notifications
+              Notification history & settings
             </button>
           </div>
         </>

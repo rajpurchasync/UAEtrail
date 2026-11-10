@@ -9,6 +9,7 @@ import {
 import { useActivityParticipantsRoster } from './useActivityParticipantsRoster';
 import { MESSAGES_PATH } from '../../config/surfacePaths';
 import { publishingActivitiesCheckInPath } from '../../config/routingCatalog';
+import { MemberJoinProfileHostBlock } from '../profile/MemberJoinProfileHostBlock';
 import { SecureAvatar } from '../ui';
 import { ActivityParticipantRevokeDialog } from './ActivityParticipantRevokeDialog';
 import { ActivityParticipantRateDialog } from './ActivityParticipantRateDialog';
@@ -187,6 +188,9 @@ export const ActivityParticipantsPanel = ({
                           <p className="text-xs text-amber-700">
                             Rated {participant.hostRating.score}/5
                           </p>
+                        ) : null}
+                        {participant.joinProfile ? (
+                          <MemberJoinProfileHostBlock joinProfile={participant.joinProfile} compact />
                         ) : null}
                         {participant.medicalSafety ? (
                           <p className="text-[11px] text-rose-800/90">

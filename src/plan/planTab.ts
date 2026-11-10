@@ -31,7 +31,7 @@ export const parsePlanCommitmentFilter = (
   if (filterRaw === 'hosting' && canHost) return 'hosting';
   if (roleRaw === 'joined') return 'joined';
   if (roleRaw === 'hosted' && canHost) return 'hosting';
-  return canHost ? 'hosting' : 'joined';
+  return 'joined';
 };
 
 export const parsePlanUpcomingLayout = (
@@ -107,7 +107,7 @@ export const normalizePlanMobileParams = (
   } else if (role === 'all') {
     params.delete('role');
     if (!params.get('filter') && params.get('tab') !== 'wishlist') {
-      params.set('filter', canHost ? 'hosting' : 'joined');
+      params.set('filter', 'joined');
       changed = true;
     }
   }
@@ -118,7 +118,7 @@ export const normalizePlanMobileParams = (
     !params.get('filter') &&
     params.get('lens') !== 'availability'
   ) {
-    params.set('filter', canHost ? 'hosting' : 'joined');
+    params.set('filter', 'joined');
     changed = true;
   }
 

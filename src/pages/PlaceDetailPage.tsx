@@ -9,6 +9,7 @@ import { parseMobileBackNavState } from '../utils/mobileBackNav';
 import { MobileBackButton } from '../components/mobile/MobileBackButton';
 import { PLACE_DETAIL_CONFIG, type PlaceDetailKind } from './placeDetailConfig';
 import { ConsumerEntityDetailLoading } from '../detail/shell/ConsumerEntityDetailLoading';
+import { ConsumerErrorCard } from '../components/mobile/ConsumerFeedback';
 import { resolvePlaceConsumerDetailHeaderChrome } from '../place/detail/resolvePlaceConsumerDetailHeaderChrome';
 import {
   DETAIL_LOADING_CAMP,
@@ -67,12 +68,36 @@ export const PlaceDetailPage = ({ kind: kindProp }: PlaceDetailPageProps) => {
     );
   }
 
+  const notFoundTitle = kindProp ? activeConfig.notFoundTitle : 'Place not found';
+
+  if (core.error && !core.loading) {
+    return (
+      <>
+        <PageMeta title="Place unavailable" noIndex path={detailPath} />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <ConsumerErrorCard message={core.error} onRetry={() => core.reload()} />
+          <div className="mt-4 flex justify-center">
+            <MobileBackButton
+              fallbackTo={detailBackTo ?? detailBackPath(backKind)}
+              label={detailBackTo ? 'Browse' : 'Explore'}
+            />
+          </div>
+        </div>
+      </>
+    );
+  }
+
   if (!core.place || !id) {
     return (
       <>
-        <PageMeta title={activeConfig.notFoundTitle} noIndex path={detailPath} />
+        <PageMeta title={notFoundTitle} noIndex path={detailPath} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
-          <h1 className="text-2xl font-bold text-gray-900">{activeConfig.notFoundTitle}</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{notFoundTitle}</h1>
+          <p className="mt-2 text-sm text-neutral-600 max-w-md mx-auto">
+            Listed spots are public for signed-out visitors — this usually means the ID is missing
+            from your database or the row has no cover image (registry rule). Run catalog seed if you
+            are on a fresh dev environment.
+          </p>
           <div className="mt-4 flex justify-center">
             <MobileBackButton
               fallbackTo={detailBackTo ?? detailBackPath(backKind)}

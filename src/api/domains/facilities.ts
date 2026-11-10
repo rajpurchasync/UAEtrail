@@ -54,7 +54,11 @@ export const facilityApi = {
 
   submitFacilityAmenityReport: (
     facilityId: string,
-    body: { amenityState: 'working' | 'not_working' | 'unknown'; note?: string }
+    body: {
+      amenityState: 'working' | 'not_working' | 'unknown';
+      note?: string;
+      photoUrl: string;
+    }
   ) =>
     apiRequest<{ data: { id: string; status: string } }>(`/facilities/${facilityId}/condition-reports`, {
       method: 'POST',

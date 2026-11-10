@@ -6,7 +6,6 @@ import type {
   LocationPremiumSummaryDTO,
   PlaceNearbyFacilityDTO,
   PlaceTrackPreviewDTO,
-  PublicActiveAlertDTO,
   ReviewDTO,
 } from '@uaetrail/shared-types';
 import { activityDetailPath } from '@uaetrail/shared-types';
@@ -67,7 +66,7 @@ import { PlacePremiumGuidePanel } from '../../../components/place/PlacePremiumGu
 import { PlaceElevationProfile } from '../../../components/place/PlaceElevationProfile';
 import { PlaceDetailWeatherSection } from '../../../components/place/PlaceDetailWeatherSection';
 import { fetchPublicPlaceTrackPreview } from '../../../hooks/placeTrackPreviewClientApi';
-import { getActivePlatformAlerts } from '../../../hooks/publicPlatformAlertsClientApi';
+import { useActivePlatformAlerts } from '../../../hooks/useActivePlatformAlerts';
 import { ConsumerDetailPlatformAlertBanner } from '../../../detail/ConsumerDetailPlatformAlertBanner';
 import { PlaceDetailGuestGate } from '../../../components/place/detail/PlaceDetailGuestGate';
 import { GUEST_PLACE_DETAIL_PREVIEW_FOOTER_HINT } from '../../../content/guestJoinCopy';
@@ -126,7 +125,6 @@ export const PlaceConsumerDetailPage = ({
   const [searchParams] = useSearchParams();
   const inboundTab = parsePlaceDetailTabParam(searchParams.get(PLACE_DETAIL_TAB_QUERY));
   const [arranging, setArranging] = useState(false);
-  const [platformAlerts, setPlatformAlerts] = useState<PublicActiveAlertDTO[]>([]);
   const mapSectionRef = useRef<HTMLElement | null>(null);
   const [trackSectionVisible, setTrackSectionVisible] = useState(false);
   const [trackPreview, setTrackPreview] = useState<PlaceTrackPreviewDTO | null | undefined>(undefined);
@@ -173,28 +171,13 @@ export const PlaceConsumerDetailPage = ({
   const showNearbySection =
     nearbyFacilities.length > 0 || practical.facilities.length > 0 || practical.nearby.length > 0;
 
-  useEffect(() => {
-    if (!showPlaceWeather || forecastLat == null || forecastLng == null) {
-      setPlatformAlerts([]);
-      return;
-    }
-    let cancelled = false;
-    void getActivePlatformAlerts({
-        lat: forecastLat,
-        lng: forecastLng,
-        radiusKm: 120,
-        ...(place.region?.trim() ? { region: place.region.trim() } : {}),
-      })
-      .then((res) => {
-        if (!cancelled) setPlatformAlerts(res.data ?? []);
-      })
-      .catch(() => {
-        if (!cancelled) setPlatformAlerts([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [showPlaceWeather, forecastLat, forecastLng, place.region]);
+  const platformAlerts = useActivePlatformAlerts({
+    enabled: showPlaceWeather,
+    lat: forecastLat,
+    lng: forecastLng,
+    radiusKm: 120,
+    region: place.region,
+  });
 
   useEffect(() => {
     if (unlockNotice?.toLowerCase().includes('unlocked')) {

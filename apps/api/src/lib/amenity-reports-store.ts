@@ -11,11 +11,28 @@ export type AmenityReportDoc = {
   facilityId: string;
   amenityState: AmenityState;
   note?: string;
+  photoUrl?: string;
   status: 'pending' | 'confirmed' | 'rejected';
   submittedBy: string;
   reviewedBy?: string;
   createdAt: Date;
   updatedAt: Date;
+};
+
+const amenityStateReportLabel = (state: AmenityState): string => {
+  if (state === 'working') return 'Working';
+  if (state === 'not_working') return 'Not working / dry';
+  return 'Unknown';
+};
+
+export const getFacilityAmenityReportSummary = async (
+  facilityId: string
+): Promise<{ pending: AmenityReportDoc | null; latest: AmenityReportDoc | null }> => {
+  const [pending, latest] = await Promise.all([
+    col().findOne({ facilityId, status: 'pending' }, { sort: { createdAt: -1 } }),
+    col().findOne({ facilityId }, { sort: { createdAt: -1 } }),
+  ]);
+  return { pending, latest };
 };
 
 const col = (): Collection<AmenityReportDoc> =>
@@ -26,15 +43,34 @@ export const createAmenityReport = async (input: {
   userId: string;
   amenityState: AmenityState;
   note?: string;
+  photoUrl: string;
 }): Promise<AmenityReportDoc> => {
   const facility = await facilitiesCollection().findOne({ _id: input.facilityId });
   if (!facility) throw new ApiError(404, 'facility_not_found', 'Facility not found.');
+  const photoUrl = input.photoUrl.trim();
+  if (!photoUrl) {
+    throw new ApiError(400, 'photo_required', 'Add a photo of the condition.');
+  }
+  const duplicatePending = await col().findOne({
+    facilityId: input.facilityId,
+    status: 'pending',
+    amenityState: input.amenityState,
+  });
+  if (duplicatePending) {
+    const label = amenityStateReportLabel(input.amenityState);
+    throw new ApiError(
+      409,
+      'amenity_review_in_progress',
+      `A review is already in progress for “${label}”. You do not need to report again.`
+    );
+  }
   const now = new Date();
   const doc: AmenityReportDoc = {
     _id: randomUUID(),
     facilityId: input.facilityId,
     amenityState: input.amenityState,
     note: input.note,
+    photoUrl,
     status: 'pending',
     submittedBy: input.userId,
     createdAt: now,

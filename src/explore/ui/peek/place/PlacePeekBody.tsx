@@ -1,85 +1,77 @@
 import { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { formatExploreEventDateLabel, type ActivityDTO } from '@uaetrail/shared-types';
+import { Link } from 'react-router-dom';
 import { Star } from 'lucide-react';
 import type { DiscoveryCardModel } from '../../../../discovery/discoveryCardModel';
 import { EXPLORE_TYPE } from '../../../../config/exploreTheme';
 import { fetchPlaceActivities } from '../../../../hooks/placeDetailClientApi';
 import { useSafeAsyncEffect } from '../../../../hooks/useSafeAsyncEffect';
-import { activityDetailPath } from '../../../../config/routingCatalog';
-import { mapPeekDetailNavState } from '../../../mapPeekDetailNavState';
-import { PLACE_PEEK_RATE_LABEL, PLACE_PEEK_SCHEDULED } from '../../../../content/placePeekCopy';
+import { PLACE_PEEK_RATE_LABEL, placePeekScheduledActivitiesCountLabel } from '../../../../content/placePeekCopy';
 import { PlacePeekKindFacts } from './PlacePeekKindFacts';
 
-const formatScheduledMeta = (activity: ActivityDTO): string => {
-  const datePart = formatExploreEventDateLabel(activity.date) ?? activity.date;
-  const timePart = activity.time?.trim();
-  return timePart ? `${datePart} · ${timePart}` : datePart;
-};
+const PLACE_DETAIL_SCHEDULED_SECTION_ID = 'place-detail-scheduled';
 
-const PlacePeekScheduledList = ({
+type PlacePeekScheduledLoadState = 'idle' | 'loading' | 'ready';
+
+const PlacePeekScheduledCount = ({
   locationId,
-  detailPath: _detailPath,
-  mapItemId,
+  detailPath,
   onNavigate,
 }: {
   locationId: string | null | undefined;
   detailPath: string;
-  mapItemId: string;
   onNavigate?: () => void;
 }) => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [activities, setActivities] = useState<ActivityDTO[]>([]);
+  const [loadState, setLoadState] = useState<PlacePeekScheduledLoadState>('idle');
+  const [count, setCount] = useState(0);
 
   useSafeAsyncEffect(
     async (isActive) => {
       const id = locationId?.trim();
       if (!id) {
-        if (isActive()) setActivities([]);
+        if (isActive()) {
+          setCount(0);
+          setLoadState('idle');
+        }
         return;
       }
+      if (isActive()) setLoadState('loading');
       const rows = await fetchPlaceActivities(id).catch(() => []);
       if (!isActive()) return;
-      setActivities(rows.filter((row) => row.status === 'published').slice(0, 6));
+      setCount(rows.filter((row) => row.status === 'published').length);
+      setLoadState('ready');
     },
     [locationId]
   );
 
-  if (activities.length === 0) return null;
+  if (loadState === 'idle') return null;
+
+  if (loadState === 'loading') {
+    return (
+      <p
+        className={`text-sm font-medium ${EXPLORE_TYPE.body}`}
+        aria-busy="true"
+        aria-label="Loading scheduled activities"
+      >
+        <span className="inline-block h-4 w-[10.5rem] max-w-full animate-pulse rounded-md bg-neutral-200/90 dark:bg-neutral-700/80" />
+      </p>
+    );
+  }
+
+  if (count === 0) return null;
+
+  const label = placePeekScheduledActivitiesCountLabel(count);
+  const href = `${detailPath}#${PLACE_DETAIL_SCHEDULED_SECTION_ID}`;
 
   return (
-    <section className="mt-4" aria-label={PLACE_PEEK_SCHEDULED}>
-      <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
-        {PLACE_PEEK_SCHEDULED}
-      </h3>
-      <ul className="divide-y divide-neutral-100 rounded-xl border border-neutral-100 bg-white">
-        {activities.map((activity) => {
-          const title = activity.title?.trim();
-          if (!title) return null;
-          return (
-          <li key={activity.id}>
-            <button
-              type="button"
-              data-nav-focus={`place-${mapItemId}-activity-${activity.id}`}
-              onClick={() => {
-                onNavigate?.();
-                navigate(activityDetailPath(activity.id), {
-                  state: mapPeekDetailNavState(location),
-                });
-              }}
-              className="flex w-full flex-col gap-0.5 px-3 py-2.5 text-left hover:bg-neutral-50 active:bg-neutral-100"
-            >
-              <span className="text-sm font-semibold text-neutral-900 line-clamp-2">
-                {title}
-              </span>
-              <span className={`text-xs ${EXPLORE_TYPE.muted}`}>{formatScheduledMeta(activity)}</span>
-            </button>
-          </li>
-          );
-        })}
-      </ul>
-    </section>
+    <p className={`text-sm font-medium ${EXPLORE_TYPE.body}`}>
+      <Link
+        to={href}
+        className="font-semibold text-emerald-800 underline-offset-2 hover:underline"
+        onClick={() => onNavigate?.()}
+      >
+        {label}
+      </Link>
+    </p>
   );
 };
 
@@ -108,7 +100,7 @@ const PlacePeekRatingsRow = ({ card, detailPath }: { card: DiscoveryCardModel; d
   );
 };
 
-/** Catalog place map peek — kind facts, ratings, scheduled plans (hero in `PlacePeekHero`). */
+/** Catalog place map peek — kind facts, ratings, scheduled count (hero in `PlacePeekHero`). */
 export const PlacePeekBody = ({
   card,
   onBeforeDetailNavigate,
@@ -124,10 +116,9 @@ export const PlacePeekBody = ({
     <div className="space-y-3 pb-1">
       <PlacePeekKindFacts card={card} />
       <PlacePeekRatingsRow card={card} detailPath={detailPath} />
-      <PlacePeekScheduledList
+      <PlacePeekScheduledCount
         locationId={card.locationId}
         detailPath={detailPath}
-        mapItemId={card.id}
         onNavigate={onBeforeDetailNavigate}
       />
     </div>

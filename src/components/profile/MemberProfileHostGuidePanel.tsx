@@ -21,7 +21,8 @@ export const MemberProfileHostGuidePanel = ({
       ? 'Host'
       : null;
   const hostSurface =
-    showHostingDetails && (profile.isHost || profile.isGuideStaff || profile.stats.activitiesHosted > 0);
+    showHostingDetails &&
+    (profile.isHost || profile.isGuideStaff || (profile.stats?.activitiesHosted ?? 0) > 0);
 
   if (!hostSurface && earnedBadges.length === 0) return null;
 
@@ -35,10 +36,10 @@ export const MemberProfileHostGuidePanel = ({
       {hostSurface && roleLabel ? <p className="text-sm font-semibold text-emerald-900">{roleLabel}</p> : null}
       {hostSurface && tenantId ? (
         <TenantHostRatingInline tenantId={tenantId} variant="host" linkToReviews />
-      ) : hostSurface && profile.stats.activitiesHosted > 0 ? (
+      ) : hostSurface && (profile.stats?.activitiesHosted ?? 0) > 0 ? (
         <p className="text-sm text-neutral-600">
-          Hosted {profile.stats.activitiesHosted.toLocaleString()} outing
-          {profile.stats.activitiesHosted === 1 ? '' : 's'} on UAE Trail.
+          Hosted {(profile.stats?.activitiesHosted ?? 0).toLocaleString()} outing
+          {(profile.stats?.activitiesHosted ?? 0) === 1 ? '' : 's'} on UAE Trail.
         </p>
       ) : null}
       {hostSurface && profile.hostProfilePath && profile.linkedOperatorName ? (

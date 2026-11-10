@@ -5,6 +5,7 @@ import { formatExploreEventDateLabel, resolveHostNote } from '@uaetrail/shared-t
 import type { ActivityRequestView } from '../api/types';
 import { resolveJoinRequestActivity } from '../utils/joinRequestActivity';
 import { RideshareRiderReputationSummary } from '../components/rideshare/RideshareRiderReputationSummary';
+import { MemberJoinProfileHostBlock } from '../components/profile/MemberJoinProfileHostBlock';
 import { MemberMedicalSafetyHostBlock } from '../components/profile/MemberMedicalSafetyHostBlock';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { AppButton } from '../components/mobile/AppButton';
@@ -78,6 +79,10 @@ export const ActivityJoinRequestCard = ({
               compact={!expanded && Boolean(request.note)}
             />
           ) : null}
+          <MemberJoinProfileHostBlock
+            joinProfile={request.user?.joinProfile}
+            compact={!expanded}
+          />
           <MemberMedicalSafetyHostBlock
             medicalSafety={request.user?.medicalSafety}
             compact={!expanded}

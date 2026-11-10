@@ -34,7 +34,7 @@ describe('geo hub tabs', () => {
     );
     const explorer = read('src/list/explorer/ListExplorer.tsx');
     expect(explorer).toMatch(/list-explorer-scroll/);
-    expect(explorer).toMatch(/h-0 min-h-0 flex-1 overflow-y-auto/);
+    expect(explorer).toMatch(/h-0 min-h-0[\s\S]{0,48}flex-1 overflow-y-auto/);
     expect(explorer).not.toMatch(/scrollbar-hide/);
     const css = read('src/index.css');
     expect(css).toMatch(/\.list-explorer-scroll\s*\{/);

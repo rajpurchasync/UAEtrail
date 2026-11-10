@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { isConsumerEntityDetailRoute, isMobileDetailRoute } from './platform';
 
 const read = (relativePath: string) => readFileSync(join(process.cwd(), relativePath), 'utf8');
 
@@ -24,6 +25,12 @@ describe('consumerDetailAntiDriftGuard (plan §15.3)', () => {
     const shell = read('src/components/layout/ProductShell.tsx');
     expect(shell).not.toMatch(/<Footer\b/);
     expect(read('src/config/platform.ts')).toMatch(/isConsumerEntityDetailRoute/);
+  });
+
+  it('facility detail is an entity route (hides MobileConsumerNavBar — single detail header)', () => {
+    expect(isMobileDetailRoute('/facility/seed-toilet-01')).toBe(true);
+    expect(isConsumerEntityDetailRoute('/facility/seed-toilet-01')).toBe(true);
+    expect(read('src/components/layout/ProductShell.tsx')).toMatch(/!isConsumerEntityDetailRoute/);
   });
 
   it('entity detail surfaces use detailBackPath from routing catalog for shell back', () => {

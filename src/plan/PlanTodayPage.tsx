@@ -74,7 +74,7 @@ export const PlanTodayPage = () => {
   const packing = Boolean(detail && hasPackingList(detail.requirements));
 
   return (
-    <ConsumerShell layout="stack" back={{ fallbackTo: PLAN_PATH, label: 'My Plans' }}>
+    <ConsumerShell layout="stack" showJourney={false} back={{ fallbackTo: PLAN_PATH, label: 'My Plans' }}>
       <PageMeta title="Today" path={PLAN_TODAY_PATH} />
       <div className="space-y-4 px-4 pb-10 pt-3" dir="inherit">
         <h1 className="text-xl font-bold">Today</h1>

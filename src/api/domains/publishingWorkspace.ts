@@ -106,6 +106,18 @@ export const publishingWorkspaceApi = {
       headers: organisationRequestHeaders(tenantId),
     }),
 
+  listPublishingActivitiesPage: (
+    tenantId: string,
+    queryString: string
+  ) =>
+    apiRequest<{
+      data: ActivityDTO[];
+      meta?: { page: number; pageSize: number; total: number; totalPages: number };
+    }>(`/publishing/activities?${queryString}`, {
+      auth: true,
+      headers: organisationRequestHeaders(tenantId),
+    }),
+
   createActivity: (tenantId: string, payload: PublishingActivityUpsertBody) =>
     apiRequest<{ data: ActivityDTO }>('/publishing/activities', {
       method: 'POST',

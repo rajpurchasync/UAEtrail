@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import L from 'leaflet';
 import { MapContainer, Marker, Popup, Tooltip, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import '../../explore/ui/exploreMapClusterSpiderAnimation';
 import 'leaflet.markercluster';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
@@ -45,6 +46,11 @@ import type {
 } from './placesMapTypes';
 export type { ColocatedMapPinEntry, MapBounds, MapPinKind, MapPinSource, PlaceMapPin };
 import { exploreMapClusterRadiusPx, EXPLORE_MAP_CLUSTER_DISABLE_AT_ZOOM } from '../../explore/ui/exploreMapCluster';
+import {
+  exploreMapClusterSpiderPolylineOptions,
+  scheduleExploreMapClusterSpiderExpand,
+  syncExploreMapClusterSpiderCollapse,
+} from '../../explore/ui/exploreMapClusterSpiderAnimation';
 import {
   formatExploreMapClusterTooltipLabel,
   formatExploreMapPinTooltipLabel,
@@ -1031,6 +1037,7 @@ const ClusteredMarkers = ({
         disableClusteringAtZoom: EXPLORE_MAP_CLUSTER_DISABLE_AT_ZOOM,
         spiderfyOnMaxZoom: false,
         spiderfyDistanceMultiplier: 1.6,
+        spiderLegPolylineOptions: exploreMapClusterSpiderPolylineOptions(),
         zoomToBoundsOnClick: false,
         iconCreateFunction: (cluster) => {
           const clusterPins = pinsFromCluster(cluster);
@@ -1087,6 +1094,22 @@ const ClusteredMarkers = ({
         },
       });
 
+      type SpiderClusterGroup = L.MarkerClusterGroup & {
+        _spiderfied?: L.MarkerCluster | null;
+        _unspiderfy?: (event?: L.LeafletEvent) => void;
+      };
+      const spiderGroup = group as SpiderClusterGroup;
+      const unspiderfy = spiderGroup._unspiderfy?.bind(spiderGroup);
+      if (unspiderfy) {
+        spiderGroup._unspiderfy = (event) => {
+          const expanded = spiderGroup._spiderfied;
+          if (expanded) {
+            syncExploreMapClusterSpiderCollapse(expanded.getAllChildMarkers());
+          }
+          unspiderfy(event);
+        };
+      }
+
       group.on('clusterclick', (event) => {
         L.DomEvent.stopPropagation(event);
         const cluster = event.layer as L.MarkerCluster;
@@ -1109,7 +1132,9 @@ const ClusteredMarkers = ({
           }
 
           cluster.once('spiderfied', panToRing);
+          const ringMarkers = cluster.getAllChildMarkers() as L.Marker[];
           cluster.spiderfy();
+          scheduleExploreMapClusterSpiderExpand(ringMarkers);
           return;
         }
 

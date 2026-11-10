@@ -73,6 +73,15 @@ export const MemberProfile = () => {
   const [buddyMessage, setBuddyMessage] = useState<string | null>(null);
   const browseLens = useMemo(() => parseMemberProfileBrowseLens(location.search), [location.search]);
   const [presentation, setPresentation] = useState<MemberProfilePresentationMode>('social');
+  const [loadSocialGraph, setLoadSocialGraph] = useState(false);
+  const [loadMemberActivities, setLoadMemberActivities] = useState(false);
+
+  useEffect(() => {
+    if (isSelf) {
+      setLoadSocialGraph(true);
+      setLoadMemberActivities(true);
+    }
+  }, [isSelf]);
 
   const {
     profile,
@@ -81,15 +90,24 @@ export const MemberProfile = () => {
     error,
     discoveryUpgradeRequired,
     upcomingActivities,
+    pastActivities,
+    activitiesLoading,
+    socialGraph,
+    socialGraphLoading,
+    socialGraphLoadingFriends,
+    socialGraphLoadingCommon,
     buddyRel,
     setBuddyRel,
     reloadBuddy,
     refreshProfile,
+    refreshSocialGraphFriends,
   } = useMemberProfilePage({
     userId,
     viewerId: user?.id,
     previewAsPublic,
     fromDiscover,
+    loadSocialGraph,
+    loadMemberActivities,
   });
 
   const handleSendBuddyRequest = async () => {
@@ -111,7 +129,9 @@ export const MemberProfile = () => {
       );
       setBuddyMessage(request.status === 'accepted' ? 'You are now friends.' : 'Friend request sent.');
       if (request.status === 'accepted') {
+        setLoadSocialGraph(true);
         await refreshProfile();
+        await refreshSocialGraphFriends();
       }
     } catch (err) {
       setBuddyMessage(err instanceof Error ? err.message : 'Could not send buddy request.');
@@ -128,7 +148,9 @@ export const MemberProfile = () => {
       await acceptMemberBuddyRequest(buddyRel.incomingRequest.id);
       setBuddyMessage('Friend request accepted.');
       await reloadBuddy();
+      setLoadSocialGraph(true);
       await refreshProfile();
+      await refreshSocialGraphFriends();
     } catch (err) {
       setBuddyMessage(err instanceof Error ? err.message : 'Could not accept request.');
     } finally {
@@ -173,7 +195,7 @@ export const MemberProfile = () => {
       memberProfileCanTogglePresentation({
         canViewFullProfile: viewerAccess?.canViewFullProfile ?? false,
         isHost: fullProfile.isHost,
-        activitiesHosted: fullProfile.stats.activitiesHosted,
+        activitiesHosted: fullProfile.stats?.activitiesHosted ?? 0,
         publishingTenantId: fullProfile.publishingTenantId,
       })
   );
@@ -305,6 +327,16 @@ export const MemberProfile = () => {
           onCancelBuddyRequest={() => void handleCancelBuddyRequest()}
           onMessage={() => navigate(messagesRouteForRole(user!.role, fullProfile.id))}
           upcomingActivities={upcomingActivities}
+          pastActivities={pastActivities}
+          activitiesLoading={activitiesLoading}
+          activitiesDeferActive={Boolean(viewerAccess?.canOpenMemberProfile)}
+          onRequestMemberActivities={() => setLoadMemberActivities(true)}
+          socialGraph={socialGraph}
+          socialGraphLoading={socialGraphLoading}
+          socialGraphLoadingFriends={socialGraphLoadingFriends}
+          socialGraphLoadingCommon={socialGraphLoadingCommon}
+          socialGraphDeferActive={Boolean(viewerAccess?.canOpenMemberProfile)}
+          onRequestSocialGraph={() => setLoadSocialGraph(true)}
           presentation={presentation}
           onPresentationChange={showPresentationSwitch ? handlePresentationChange : undefined}
           showPresentationSwitch={showPresentationSwitch}

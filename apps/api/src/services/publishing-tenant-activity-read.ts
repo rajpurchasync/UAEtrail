@@ -9,6 +9,9 @@ import type { ActivityWithTenantRelations } from '../lib/activity-read-assembler
 import { buildActivityDto } from '../lib/mappers.js';
 import { findActivityPrivateByIds } from '../lib/activity-private-store.js';
 import { mapActivityIdsToGroupChatIds } from '../lib/social-groups-store.js';
+import type { PublishingTenantActivitiesListQuery } from '../lib/publishing-tenant-activities-list-query.js';
+import { parsePublishingListDate } from '../lib/publishing-tenant-activities-list-query.js';
+import { ActivityStatus } from '../domain/enums.js';
 
 export const buildPublishingTenantActivityDto = async (
   event: ActivityWithTenantRelations
@@ -33,16 +36,42 @@ export const buildPublishingTenantActivityDto = async (
   };
 };
 
+const activityStatusFromQuery = (
+  status: PublishingTenantActivitiesListQuery['status']
+): ActivityStatus | undefined => {
+  if (!status) return undefined;
+  if (status === 'published') return ActivityStatus.PUBLISHED;
+  if (status === 'draft') return ActivityStatus.DRAFT;
+  if (status === 'cancelled') return ActivityStatus.CANCELLED;
+  return undefined;
+};
+
 export const listPublishingTenantActivitiesPage = async (input: {
   tenantId: string;
   page: number;
   pageSize: number;
+  listQuery?: Pick<
+    PublishingTenantActivitiesListQuery,
+  'status' | 'startAtGte' | 'startAtLt' | 'windowOutside' | 'order' | 'upcomingFromToday'
+  >;
 }) => {
+  const startAtGte = input.listQuery?.startAtGte
+    ? parsePublishingListDate(input.listQuery.startAtGte)
+    : undefined;
+  const startAtLt = input.listQuery?.startAtLt
+    ? parsePublishingListDate(input.listQuery.startAtLt)
+    : undefined;
+
   const { items: events, total } = await listTenantActivitiesDetailed({
     tenantId: input.tenantId,
     skip: (input.page - 1) * input.pageSize,
     take: input.pageSize,
-    orderBy: { startAt: 'asc' },
+    orderBy: { startAt: input.listQuery?.order === 'desc' ? 'desc' : 'asc' },
+    status: activityStatusFromQuery(input.listQuery?.status),
+    startAtGte,
+    startAtLt,
+    windowOutside: input.listQuery?.windowOutside,
+    upcomingFromToday: input.listQuery?.upcomingFromToday,
   });
 
   const groupChatIds = await mapActivityIdsToGroupChatIds(events.map((event) => event.id));

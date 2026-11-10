@@ -20,6 +20,10 @@ describe('place map peek', () => {
     expect(kindFacts).toMatch(/resolvePlacePeekTrailFactsFromCard/);
     expect(hero).toMatch(/resolvePlacePeekCuratedArea/);
     expect(body).toMatch(/fetchPlaceActivities/);
+    expect(body).toMatch(/placePeekScheduledActivitiesCountLabel/);
+    expect(body).toMatch(/loadState === 'loading'/);
+    expect(body).toMatch(/animate-pulse/);
+    expect(body).not.toMatch(/divide-y divide-neutral-100/);
     expect(actions).toMatch(/PLACE_PEEK_FOOTER_PLAN_TRIP/);
     expect(actions).toMatch(/navigateHostFromPlaceCard/);
     expect(actions).toMatch(/grid-cols-3/);

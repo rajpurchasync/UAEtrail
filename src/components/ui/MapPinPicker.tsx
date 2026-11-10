@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { ViewOnMapLink } from './ViewOnMapLink';
 
 interface MapPinPickerProps {
   latitude?: number | null;
@@ -11,6 +12,12 @@ const UAE_CENTER = { lat: 24.4539, lng: 54.3773 };
 export const MapPinPicker = ({ latitude, longitude, onChange }: MapPinPickerProps) => {
   const [manualLat, setManualLat] = useState(latitude?.toString() ?? '');
   const [manualLng, setManualLng] = useState(longitude?.toString() ?? '');
+  const [mapOpen, setMapOpen] = useState(false);
+
+  useEffect(() => {
+    setManualLat(latitude != null ? String(latitude) : '');
+    setManualLng(longitude != null ? String(longitude) : '');
+  }, [latitude, longitude]);
 
   const hasPin = latitude != null && longitude != null;
 
@@ -45,20 +52,6 @@ export const MapPinPicker = ({ latitude, longitude, onChange }: MapPinPickerProp
             Pin set
           </span>
         )}
-      </div>
-
-      {/* Map embed */}
-      <div className="rounded-lg overflow-hidden border border-gray-200 bg-gray-100">
-        <iframe
-          title="Location Map"
-          src={mapSrc}
-          width="100%"
-          height="220"
-          style={{ border: 0 }}
-          allowFullScreen
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-        />
       </div>
 
       {/* Manual coordinate entry */}
@@ -129,6 +122,49 @@ export const MapPinPicker = ({ latitude, longitude, onChange }: MapPinPickerProp
           📌 {latitude!.toFixed(6)}, {longitude!.toFixed(6)}
         </p>
       )}
+
+      {hasPin ? (
+        <ViewOnMapLink
+          lat={latitude!}
+          lng={longitude!}
+          className="inline-flex text-xs font-medium text-emerald-700 hover:text-emerald-800"
+        >
+          Open pin in Google Maps →
+        </ViewOnMapLink>
+      ) : null}
+
+      {mapOpen ? (
+        <div className="rounded-lg overflow-hidden border border-gray-200 bg-gray-100">
+          <iframe
+            title="Location Map"
+            src={mapSrc}
+            width="100%"
+            height="220"
+            style={{ border: 0 }}
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setMapOpen(true)}
+          className="flex min-h-[5.5rem] w-full items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 px-3 py-3 text-sm font-semibold text-emerald-800 hover:border-emerald-300 hover:bg-emerald-50/60"
+          aria-label="Show map preview"
+        >
+          Show map
+        </button>
+      )}
+      {mapOpen ? (
+        <button
+          type="button"
+          onClick={() => setMapOpen(false)}
+          className="text-xs font-medium text-gray-500 hover:text-gray-700"
+        >
+          Hide map
+        </button>
+      ) : null}
     </div>
   );
 };

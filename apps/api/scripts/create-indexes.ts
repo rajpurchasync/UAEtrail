@@ -1,14 +1,9 @@
 /** Calls the same `ensureMongoIndexes` used on API connect. */
-import { connectMongo, disconnectMongo } from '../src/lib/mongo.js';
+import { getMongoClient } from '../src/lib/mongo.js';
 import { ensureMongoIndexes } from '../src/lib/mongo-indexes.js';
+import { resolveCliScriptName, runCliScript } from './cli-script-runner.js';
 
-const run = async () => {
-  const client = await connectMongo();
-  await ensureMongoIndexes(client.db());
-  await disconnectMongo();
-};
-
-run().catch((err) => {
-  console.error(err);
-  process.exit(1);
+runCliScript(resolveCliScriptName(import.meta.url), async () => {
+  await ensureMongoIndexes(getMongoClient()!.db());
+  console.log('[create-indexes] Mongo indexes ensured.');
 });

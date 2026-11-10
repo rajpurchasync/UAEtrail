@@ -28,7 +28,14 @@ const SCOPE = [
 export const Alerts = () => {
   const [rows, setRows] = useState<AdminPlatformAlertDTO[]>([]);
   const [reports, setReports] = useState<
-    Array<{ id: string; facilityId: string; amenityState: AmenityState; note?: string; createdAt: string }>
+    Array<{
+      id: string;
+      facilityId: string;
+      amenityState: AmenityState;
+      note?: string;
+      photoUrl?: string;
+      createdAt: string;
+    }>
   >([]);
   const [verification, setVerification] = useState<
     Array<{ id: string; organizerId: string; docType: string; status: string; createdAt: string }>
@@ -154,6 +161,16 @@ export const Alerts = () => {
                   <p className="text-sm font-semibold">{row.amenityState.replace('_', ' ')}</p>
                   <p className="text-xs text-neutral-500">{row.facilityId}</p>
                   {row.note ? <p className="mt-1 text-sm text-neutral-700">{row.note}</p> : null}
+                  {row.photoUrl ? (
+                    <a
+                      href={row.photoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1 inline-block text-xs font-semibold text-emerald-800"
+                    >
+                      View photo
+                    </a>
+                  ) : null}
                 </div>
                 <button
                   type="button"

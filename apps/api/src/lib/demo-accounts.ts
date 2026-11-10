@@ -1,4 +1,8 @@
 import { UserRole } from '../domain/enums.js';
+import { DEV_QA_PERSONAS } from './dev-demo-personas.js';
+import { withDemoQuickLoginRoleSuffix } from './demo-quick-login-labels.js';
+
+export { DEMO_QUICK_LOGIN_ROLE_SUFFIX, withDemoQuickLoginRoleSuffix } from './demo-quick-login-labels.js';
 
 export interface DemoAccountDefinition {
   role: UserRole;
@@ -11,32 +15,32 @@ export interface DemoAccountDefinition {
 export const DEMO_ACCOUNTS: Record<string, DemoAccountDefinition> = {
   'admin@uaetrails.app': {
     role: UserRole.PLATFORM_ADMIN,
-    displayName: 'UAE Trails Admin',
+    displayName: withDemoQuickLoginRoleSuffix('UAE Trails', UserRole.PLATFORM_ADMIN),
     quickLogin: true,
   },
   'visitor@uaetrails.app': {
     role: UserRole.PARTICIPANT,
-    displayName: 'Samira Khan',
+    displayName: withDemoQuickLoginRoleSuffix('Samira Khan', UserRole.PARTICIPANT),
     quickLogin: true,
   },
   'host@uaetrails.app': {
     role: UserRole.TENANT_OWNER,
-    displayName: 'Omar Al Hosani',
+    displayName: withDemoQuickLoginRoleSuffix('Omar Al Hosani', UserRole.TENANT_OWNER),
     quickLogin: true,
   },
   'organizer@uaetrails.app': {
     role: UserRole.TENANT_OWNER,
-    displayName: 'Khalid Rahman',
+    displayName: withDemoQuickLoginRoleSuffix('Khalid Rahman', UserRole.TENANT_OWNER),
     quickLogin: true,
   },
   'shop@uaetrails.app': {
     role: UserRole.TENANT_OWNER,
-    displayName: 'Priya Sharma',
+    displayName: withDemoQuickLoginRoleSuffix('Priya Sharma', UserRole.TENANT_OWNER),
     quickLogin: true,
   },
   'guide@uaetrails.app': {
     role: UserRole.TENANT_GUIDE,
-    displayName: 'Fatima Al Mazrouei',
+    displayName: withDemoQuickLoginRoleSuffix('Fatima Al Mazrouei', UserRole.TENANT_GUIDE),
     quickLogin: true,
   },
   'visitor2@uaetrails.app': {
@@ -47,7 +51,44 @@ export const DEMO_ACCOUNTS: Record<string, DemoAccountDefinition> = {
     role: UserRole.PARTICIPANT,
     displayName: 'Suspended User',
   },
+  ...Object.fromEntries(
+    DEV_QA_PERSONAS.map((persona) => [
+      persona.email,
+      {
+        role: persona.role,
+        displayName: persona.displayName,
+        quickLogin: persona.quickLogin,
+      } satisfies DemoAccountDefinition,
+    ])
+  ),
 };
+
+const ROLE_LABELS: Record<UserRole, string> = {
+  [UserRole.PLATFORM_ADMIN]: 'Platform admin',
+  [UserRole.MERCHANT_ADMIN]: 'Merchant admin',
+  [UserRole.TENANT_OWNER]: 'Host owner',
+  [UserRole.TENANT_ADMIN]: 'Tenant admin',
+  [UserRole.TENANT_GUIDE]: 'Guide',
+  [UserRole.PARTICIPANT]: 'Participant',
+};
+
+export const listDemoQuickLoginCatalog = (): Array<{
+  email: string;
+  displayName: string;
+  role: UserRole;
+  roleLabel: string;
+}> =>
+  Object.entries(DEMO_ACCOUNTS)
+    .filter(([, account]) => account.quickLogin)
+    .map(([email, account]) => ({
+      email,
+      displayName: account.displayName,
+      role: account.role,
+      roleLabel: ROLE_LABELS[account.role],
+    }))
+    .sort((a, b) =>
+      a.roleLabel.localeCompare(b.roleLabel) || a.displayName.localeCompare(b.displayName)
+    );
 
 /** Fixed password for in-memory API tests only — not used in development seed without env. */
 const TEST_DEMO_PASSWORD = 'Demo@TestPass1';

@@ -9,7 +9,8 @@
 import { LocationStatus } from '../src/domain/enums.js';
 import type { Location } from '../src/domain/types.js';
 import { buildLocationFromCreateInput } from '../src/lib/entity-builders.js';
-import { connectMongo, disconnectMongo, getMongoClient } from '../src/lib/mongo.js';
+import { connectMongo, getMongoClient } from '../src/lib/mongo.js';
+import { resolveCliScriptName, runCliScript } from './cli-script-runner.js';
 import { locationDocForMongo } from '../src/lib/location-query.js';
 import { invalidateExploreMapCache } from '../src/lib/explore-map-cache.js';
 import { isWithinUaeFocusArea } from '../src/lib/uae-bbox.js';
@@ -137,8 +138,6 @@ const importVenueCatalog = async () => {
     await invalidateExploreMapCache();
   }
 
-  if (!dryRun) await disconnectMongo();
-
   console.log('');
   console.log(`Catalog venues: ${catalog.venues.length}`);
   console.log(`Created: ${created}, updated: ${updated}${dryRun ? ' (dry-run)' : ''}`);
@@ -148,7 +147,4 @@ const importVenueCatalog = async () => {
   console.log(`Source tag: externalSource=${VENUE_CATALOG_EXTERNAL_SOURCE}`);
 };
 
-importVenueCatalog().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+runCliScript(resolveCliScriptName(import.meta.url), importVenueCatalog, { connectMongo: false });

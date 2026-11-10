@@ -7,7 +7,10 @@ import { FloatingActionButton } from '../components/mobile/FloatingActionButton'
 import { PullToRefresh } from '../components/mobile/PullToRefresh';
 import { PageMeta } from '../components/seo/PageMeta';
 import { PLAN_PATH } from '../constants';
-import { PRODUCT_PLAN_SURFACE_TITLE } from '../content/productNorthStar';
+import {
+  PRODUCT_HOSTING_SCHEDULE_NAV_LABEL,
+  PRODUCT_PLAN_SURFACE_TITLE,
+} from '../content/productNorthStar';
 import { explorePath } from '../explore/routing';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { memberCanManageHostedActivities } from '../utils/hostedActivitiesGate';
@@ -31,6 +34,9 @@ import {
 } from './planTab';
 import { normalizePlanSearchParams } from './planRouting';
 import { scrollToPlanSummaryFocus } from './planSummaryFocusScroll';
+import { useMinWidthLg } from '../hooks/useMinWidthLg';
+import { PlanDesktopHostingHub } from '../components/plan/PlanDesktopHostingHub';
+import { PlanHostingManageProvider } from './PlanHostingManageContext';
 
 /** My Plans tab — `/plan` (`PLAN_PATH`). */
 export const PlanPage = () => {
@@ -44,6 +50,7 @@ export const PlanPage = () => {
   const [savedSummaryScrollRequest, setSavedSummaryScrollRequest] = useState(0);
   const gate = useMemberStatus({ enabled: Boolean(user) });
   const canHost = memberCanManageHostedActivities(user, gate.canAccessPublishingWorkspace);
+  const isDesktopLg = useMinWidthLg();
   const {
     goals,
     loading: goalsLoading,
@@ -103,11 +110,11 @@ export const PlanPage = () => {
         next.delete('layout');
       } else {
         next.delete('tab');
-        if (!next.get('filter')) next.set('filter', canHost ? 'hosting' : 'joined');
+        if (!next.get('filter')) next.set('filter', 'joined');
       }
       setSearchParams(next, { replace: true });
     },
-    [canHost, searchParams, setSearchParams]
+    [searchParams, setSearchParams]
   );
 
   const setCommitmentFilter = useCallback(
@@ -135,6 +142,14 @@ export const PlanPage = () => {
       const targetTab: PlanMainTab =
         focus === 'hosting' || focus === 'joined' ? 'upcoming' : 'wishlist';
 
+      if (focus === 'hosting') {
+        if (mainTab !== 'upcoming') {
+          setMainTab('upcoming');
+        }
+        setCommitmentFilter('hosting');
+        return;
+      }
+
       if (focus === 'saved') {
         pendingSavedSummaryScrollRef.current = true;
         setSavedSummaryScrollRequest((n) => n + 1);
@@ -149,9 +164,14 @@ export const PlanPage = () => {
         setMainTab(targetTab);
         return;
       }
+      if (focus === 'joined' && commitmentFilter !== 'joined') {
+        setCommitmentFilter('joined');
+        return;
+      }
+
       scrollToPlanSummaryFocus(focus);
     },
-    [canHost, mainTab, setMainTab]
+    [canHost, commitmentFilter, mainTab, setCommitmentFilter, setMainTab]
   );
 
   useEffect(() => {
@@ -185,6 +205,12 @@ export const PlanPage = () => {
   }, [navigate, user]);
 
   const showFab = mainTab === 'upcoming' && upcomingLayout === 'list' && Boolean(user);
+  const showDesktopHostingHub =
+    Boolean(user) &&
+    isDesktopLg &&
+    canHost &&
+    mainTab === 'upcoming' &&
+    commitmentFilter === 'hosting';
 
   return (
     <>
@@ -196,14 +222,31 @@ export const PlanPage = () => {
 
       <ConsumerShell
         layout="tab"
-        title={PRODUCT_PLAN_SURFACE_TITLE}
+        title={showDesktopHostingHub ? PRODUCT_HOSTING_SCHEDULE_NAV_LABEL : PRODUCT_PLAN_SURFACE_TITLE}
         suppressMobileHeader
         suppressMobileToolbarBorder
         maxWidth="4xl"
       >
         <PullToRefresh onRefresh={handleRefresh}>
-          <div className={`space-y-3 pt-0.5 md:space-y-1.5 ${showFab ? 'pb-mobile-fab' : 'pb-bottom-nav-safe'}`}>
+          <div
+            className={`space-y-3 pt-0.5 md:space-y-1.5 ${
+              showFab && !showDesktopHostingHub ? 'pb-mobile-fab' : 'pb-bottom-nav-safe'
+            }`}
+          >
             {user ? (
+              showDesktopHostingHub ? (
+                <PlanHostingManageProvider
+                  refreshKey={refreshKey}
+                  canHost={canHost}
+                  active
+                  scopedActivityLists
+                >
+                  <PlanDesktopHostingHub
+                    refreshKey={refreshKey}
+                    onCreateNew={handleOpenCompose}
+                  />
+                </PlanHostingManageProvider>
+              ) : (
               <>
                 <PlanGoalsProgressSummary
                   goals={goals}
@@ -228,7 +271,6 @@ export const PlanPage = () => {
                     filter={commitmentFilter}
                     layout={upcomingLayout}
                     lensRaw={lensRaw}
-                    onFilterChange={setCommitmentFilter}
                     onLayoutChange={setUpcomingLayout}
                   />
                 ) : (
@@ -247,6 +289,7 @@ export const PlanPage = () => {
                   />
                 )}
               </>
+              )
             ) : (
               <div className="glass-card p-6 text-center text-sm text-neutral-600">
                 Sign in to see what you are planning next and track goals.

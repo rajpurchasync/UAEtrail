@@ -511,6 +511,30 @@ export const listPublishedUpcomingActivitiesByMemberFromMongo = async (
   return assembleEventsWithPublicRelations(visible.slice(0, take));
 };
 
+/** Published past outings hosted or created by a member (public profile trip history). */
+export const listPublishedPastActivitiesByMemberFromMongo = async (
+  userId: string,
+  take: number
+): Promise<ActivityWithPublicRelations[]> => {
+  const now = new Date();
+  const docs = await activitiesCollection()
+    .find({
+      status: ActivityStatus.PUBLISHED,
+      startAt: { $lt: now },
+      activityMode: { $ne: 'seeking' },
+      $or: [{ hostId: userId }, { createdById: userId }],
+    })
+    .sort({ startAt: -1 })
+    .limit(Math.max(take, 1) * 3)
+    .toArray();
+
+  const filtered = await filterPublishedDocs(docs, 'past');
+  const visible = filtered.filter(
+    (doc) => !shouldHideActivityFromExploreMap(doc.joinMode, doc.requirements)
+  );
+  return assembleEventsWithPublicRelations(visible.slice(0, take));
+};
+
 /** Upcoming public map activities tagged with a curated area. */
 export const listPublishedUpcomingActivitiesByAreaFromMongo = async (
   areaId: string,
@@ -726,10 +750,46 @@ export const listTenantActivitiesFromMongo = async (input: {
   sortDirection?: 1 | -1;
   status?: ActivityStatus;
   startBefore?: Date;
+  startAtGte?: Date;
+  startAtLt?: Date;
+  windowOutside?: boolean;
+  upcomingFromToday?: boolean;
 }): Promise<{ items: ActivityWithTenantRelations[]; total: number }> => {
   const filter: Record<string, unknown> = { tenantId: input.tenantId };
   if (input.status) filter.status = input.status;
-  if (input.startBefore) filter.startAt = { $lt: input.startBefore };
+
+  const startOfToday = new Date(new Date().toDateString());
+  const hasWindow =
+    input.windowOutside ||
+    input.startAtGte !== undefined ||
+    input.startAtLt !== undefined ||
+    input.upcomingFromToday;
+
+  if (!hasWindow && input.startBefore) {
+    filter.startAt = { $lt: input.startBefore };
+  } else if (input.windowOutside && input.startAtGte && input.startAtLt) {
+    const outside: Record<string, unknown>[] = [
+      { startAt: { $lt: input.startAtGte } },
+      { startAt: { $gte: input.startAtLt } },
+    ];
+    if (input.upcomingFromToday) {
+      filter.$and = [
+        { $or: outside },
+        { startAt: { $gte: startOfToday } },
+      ];
+    } else {
+      filter.$or = outside;
+    }
+  } else {
+    const startAt: Record<string, Date> = {};
+    let gte = input.startAtGte;
+    if (input.upcomingFromToday) {
+      gte = gte && gte > startOfToday ? gte : startOfToday;
+    }
+    if (gte) startAt.$gte = gte;
+    if (input.startAtLt) startAt.$lt = input.startAtLt;
+    if (Object.keys(startAt).length > 0) filter.startAt = startAt;
+  }
 
   const [docs, total] = await Promise.all([
     activitiesCollection()

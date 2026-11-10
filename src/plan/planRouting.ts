@@ -63,6 +63,9 @@ export const planJoinedSchedulePath = (): string => planJoinedFilterPath();
 const isPlanPath = (pathname: string): boolean =>
   pathname === PLAN_PATH || pathname.startsWith(`${PLAN_PATH}/`);
 
+/** My Plans hub only — not `/plan/today` or other plan sub-surfaces. */
+export const isPlanHubPath = (pathname: string): boolean => pathname === PLAN_PATH;
+
 /** True when upcoming tab is filtered to outings the member hosts. */
 export const isPlanHostingFilterRoute = (pathname: string, search: string): boolean =>
   isPlanPath(pathname) && new URLSearchParams(search).get('filter') === 'hosting';
@@ -80,7 +83,7 @@ export const isPlanMemberNavActive = (
   search: string,
   showOrganiserShortcut: boolean
 ): boolean => {
-  if (!isPlanPath(pathname)) return false;
+  if (!isPlanHubPath(pathname)) return false;
   if (!showOrganiserShortcut) return true;
   return !isPlanHostingFilterRoute(pathname, search);
 };

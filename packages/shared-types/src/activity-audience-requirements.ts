@@ -24,7 +24,7 @@ export const womenOnlyJoinBlockMessage = (eligibility: WomenOnlyJoinEligibility)
     case 'ineligible_gender':
       return 'This outing is for women only.';
     case 'profile_gender_required':
-      return 'This outing is for women only. Set your gender to female in profile settings to join.';
+      return 'This outing is for women only. Set your gender to female in App settings or Edit profile to join.';
     default:
       return 'This outing is for women only.';
   }

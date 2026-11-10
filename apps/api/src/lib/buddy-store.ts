@@ -3,7 +3,13 @@ import { buddyPairKey, sortedBuddyUserIds, type BuddyRequestStatus } from '../do
 import { findAuthUserById, findAuthUsersByIds } from './auth-users-store.js';
 import { newEntityId } from './entity-builders.js';
 import { ApiError } from './api-error.js';
+import { COLLECTIONS } from './collections.js';
 import { getMongoClient } from './mongo.js';
+import {
+  invalidateBuddyIdsCacheForPair,
+  readBuddyAdjacencyIds,
+  writeBuddyAdjacencyIds,
+} from './social-adjacency-read-cache.js';
 import { followUser } from './follow-store.js';
 
 const REQUESTS_COLLECTION = 'buddy_requests';
@@ -86,6 +92,7 @@ const ensurePairForAcceptedRequest = async (request: MongoBuddyRequest): Promise
     },
     { upsert: true }
   );
+  void invalidateBuddyIdsCacheForPair(request.fromUserId, request.toUserId);
 };
 
 export const createBuddyRequest = async (input: {
@@ -267,20 +274,125 @@ export const listBuddyRequestsForUser = async (
   return docs.map((doc) => mapRequestDto(doc, users));
 };
 
-export const listBuddiesForUser = async (userId: string): Promise<BuddySummaryDTO[]> => {
+const BUDDY_ID_LIST_CACHE_CAP = 500;
+
+export const countBuddyPairsForUser = async (userId: string): Promise<number> =>
+  pairsCollection().countDocuments({ userIds: userId });
+
+export const listBuddyIdsForUser = async (userId: string, limit = BUDDY_ID_LIST_CACHE_CAP): Promise<string[]> => {
+  const capped = Math.min(Math.max(limit, 1), BUDDY_ID_LIST_CACHE_CAP);
+  const cached = await readBuddyAdjacencyIds(userId);
+  if (cached) return cached.slice(0, capped);
+
   const pairs = await pairsCollection()
-    .find({ userIds: userId })
+    .find({ userIds: userId }, { projection: { userIds: 1 } })
     .sort({ createdAt: -1 })
-    .limit(200)
+    .limit(BUDDY_ID_LIST_CACHE_CAP)
+    .toArray();
+  const ids = pairs.map((pair) => (pair.userIds[0] === userId ? pair.userIds[1] : pair.userIds[0]));
+  await writeBuddyAdjacencyIds(userId, ids);
+  return ids.slice(0, capped);
+};
+
+type MutualBuddyRow = {
+  buddyId: string;
+  connectedAt: Date;
+};
+
+export const listMutualBuddiesBetween = async (
+  targetUserId: string,
+  viewerUserId: string,
+  limit: number
+): Promise<{ buddies: BuddySummaryDTO[]; totalMutual: number }> => {
+  if (!targetUserId || !viewerUserId || targetUserId === viewerUserId) {
+    return { buddies: [], totalMutual: 0 };
+  }
+
+  const capped = Math.min(Math.max(limit, 1), 200);
+  const [facet] = await pairsCollection()
+    .aggregate<{
+      items: MutualBuddyRow[];
+      total: { n: number }[];
+    }>([
+      { $match: { userIds: targetUserId } },
+      {
+        $addFields: {
+          buddyId: {
+            $cond: {
+              if: { $eq: [{ $arrayElemAt: ['$userIds', 0] }, targetUserId] },
+              then: { $arrayElemAt: ['$userIds', 1] },
+              else: { $arrayElemAt: ['$userIds', 0] },
+            },
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: COLLECTIONS.BUDDY_PAIRS,
+          let: { buddyId: '$buddyId' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $in: ['$$buddyId', '$userIds'] },
+                    { $in: [viewerUserId, '$userIds'] },
+                  ],
+                },
+              },
+            },
+            { $limit: 1 },
+          ],
+          as: 'viewerLink',
+        },
+      },
+      { $match: { 'viewerLink.0': { $exists: true } } },
+      { $sort: { createdAt: -1 } },
+      {
+        $facet: {
+          items: [
+            { $limit: capped },
+            { $project: { _id: 0, buddyId: 1, connectedAt: '$createdAt' } },
+          ],
+          total: [{ $count: 'n' }],
+        },
+      },
+    ])
     .toArray();
 
-  if (pairs.length === 0) return [];
+  const rows = facet?.items ?? [];
+  const totalMutual = facet?.total?.[0]?.n ?? 0;
+  if (rows.length === 0) {
+    return { buddies: [], totalMutual };
+  }
 
-  const buddyIds = pairs.map((pair) => (pair.userIds[0] === userId ? pair.userIds[1] : pair.userIds[0]));
+  const buddyIds = rows.map((row) => row.buddyId);
   const users = await findAuthUsersByIds(buddyIds);
   const userMap = new Map(users.map((user) => [user._id, user]));
+  const connectedById = new Map(rows.map((row) => [row.buddyId, row.connectedAt.toISOString()]));
 
-  return pairs
+  const buddies = buddyIds
+    .map((buddyId) => {
+      const user = userMap.get(buddyId);
+      if (!user) return null;
+      return {
+        userId: buddyId,
+        displayName: user.profile?.displayName ?? user.email.split('@')[0],
+        avatarUrl: user.profile?.avatarUrl ?? null,
+        connectedAt: connectedById.get(buddyId) ?? new Date(0).toISOString(),
+      };
+    })
+    .filter((item): item is BuddySummaryDTO => item !== null);
+
+  return { buddies, totalMutual };
+};
+
+const mapBuddySummaries = (
+  userId: string,
+  pairs: MongoBuddyPair[],
+  userMap: Map<string, Awaited<ReturnType<typeof findAuthUserById>>>
+): BuddySummaryDTO[] =>
+  pairs
     .map((pair) => {
       const buddyId = pair.userIds[0] === userId ? pair.userIds[1] : pair.userIds[0];
       const user = userMap.get(buddyId);
@@ -290,6 +402,52 @@ export const listBuddiesForUser = async (userId: string): Promise<BuddySummaryDT
         displayName: user.profile?.displayName ?? user.email.split('@')[0],
         avatarUrl: user.profile?.avatarUrl ?? null,
         connectedAt: pair.createdAt.toISOString(),
+      };
+    })
+    .filter((item): item is BuddySummaryDTO => item !== null);
+
+export const listBuddiesForUser = async (userId: string, limit = 200): Promise<BuddySummaryDTO[]> => {
+  const capped = Math.min(Math.max(limit, 1), 200);
+  const pairs = await pairsCollection()
+    .find({ userIds: userId })
+    .sort({ createdAt: -1 })
+    .limit(capped)
+    .toArray();
+
+  if (pairs.length === 0) return [];
+
+  const buddyIds = pairs.map((pair) => (pair.userIds[0] === userId ? pair.userIds[1] : pair.userIds[0]));
+  const users = await findAuthUsersByIds(buddyIds);
+  const userMap = new Map(users.map((user) => [user._id, user]));
+  return mapBuddySummaries(userId, pairs, userMap);
+};
+
+export const listBuddySummariesForIds = async (
+  ownerUserId: string,
+  buddyIds: string[]
+): Promise<BuddySummaryDTO[]> => {
+  if (buddyIds.length === 0) return [];
+  const pairIds = buddyIds.map((buddyId) => buddyPairKey(ownerUserId, buddyId));
+  const [pairs, users] = await Promise.all([
+    pairsCollection().find({ _id: { $in: pairIds } }).toArray(),
+    findAuthUsersByIds(buddyIds),
+  ]);
+  const pairByBuddy = new Map(
+    pairs.map((pair) => {
+      const buddyId = pair.userIds[0] === ownerUserId ? pair.userIds[1] : pair.userIds[0];
+      return [buddyId, pair.createdAt.toISOString()] as const;
+    })
+  );
+  const userMap = new Map(users.map((user) => [user._id, user]));
+  return buddyIds
+    .map((buddyId) => {
+      const user = userMap.get(buddyId);
+      if (!user) return null;
+      return {
+        userId: buddyId,
+        displayName: user.profile?.displayName ?? user.email.split('@')[0],
+        avatarUrl: user.profile?.avatarUrl ?? null,
+        connectedAt: pairByBuddy.get(buddyId) ?? new Date(0).toISOString(),
       };
     })
     .filter((item): item is BuddySummaryDTO => item !== null);
@@ -307,6 +465,8 @@ export const unfriendBuddy = async (actorUserId: string, otherMemberUserId: stri
   if (result.deletedCount === 0) {
     throw new ApiError(404, 'buddy_not_found', 'You are not connected with this member.');
   }
+
+  void invalidateBuddyIdsCacheForPair(actorUserId, otherMemberUserId);
 
   const now = new Date();
   await requestsCollection().updateMany(

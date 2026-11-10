@@ -27,7 +27,12 @@ const VISIBILITY_OPTIONS: Array<{
   },
 ];
 
-export const ProfileVisibilitySection = () => {
+type ProfileVisibilitySectionProps = {
+  /** Drop outer card and title when wrapped in {@link ConsumerDetailSection}. */
+  embedded?: boolean;
+};
+
+export const ProfileVisibilitySection = ({ embedded = false }: ProfileVisibilitySectionProps) => {
   const [profileVisibility, setProfileVisibility] = useState<ProfileVisibility>('public');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -53,13 +58,21 @@ export const ProfileVisibilitySection = () => {
     }
   };
 
-  return (
-    <GlassCard padding>
-      <h2 className="text-sm font-semibold text-neutral-900">Profile visibility</h2>
-      <p className="mt-1 text-xs text-neutral-600 leading-relaxed">
-        Who can open your member profile. Guests are always asked to sign in first.
-      </p>
-      <div className="mt-3 space-y-2">
+  const body = (
+    <>
+      {embedded ? (
+        <p className="mb-3 text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">
+          Who can open your member profile. Guests are always asked to sign in first.
+        </p>
+      ) : (
+        <>
+          <h2 className="text-sm font-semibold text-neutral-900">Profile visibility</h2>
+          <p className="mt-1 text-xs text-neutral-600 leading-relaxed">
+            Who can open your member profile. Guests are always asked to sign in first.
+          </p>
+        </>
+      )}
+      <div className={embedded ? 'space-y-2' : 'mt-3 space-y-2'}>
         {VISIBILITY_OPTIONS.map((option) => {
           const selected = profileVisibility === option.value;
           return (
@@ -79,6 +92,12 @@ export const ProfileVisibilitySection = () => {
         })}
       </div>
       {message ? <p className="mt-2 text-xs text-emerald-700">{message}</p> : null}
-    </GlassCard>
+    </>
   );
+
+  if (embedded) {
+    return <div className="min-w-0">{body}</div>;
+  }
+
+  return <GlassCard padding>{body}</GlassCard>;
 };

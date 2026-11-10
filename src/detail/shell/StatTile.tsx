@@ -18,11 +18,11 @@ export const StatTile = ({
           {icon}
         </span>
       ) : null}
-      <div className="min-w-0">
+      <div className="min-w-0 lg:flex-1">
         <p className="text-[10px] font-bold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
           {label}
         </p>
-        <p className="truncate text-base font-semibold tabular-nums text-neutral-900 dark:text-neutral-50 lg:text-sm">
+        <p className="text-base font-semibold tabular-nums leading-snug text-neutral-900 break-words dark:text-neutral-50 lg:text-sm">
           {value}
         </p>
       </div>

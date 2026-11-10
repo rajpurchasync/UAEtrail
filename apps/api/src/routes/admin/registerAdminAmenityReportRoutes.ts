@@ -13,6 +13,7 @@ export const registerAdminAmenityReportRoutes = (router: Router): void => {
           facilityId: r.facilityId,
           amenityState: r.amenityState,
           note: r.note,
+          photoUrl: r.photoUrl,
           submittedBy: r.submittedBy,
           createdAt: r.createdAt.toISOString(),
         })),

@@ -34,6 +34,7 @@ export const PlacePeekHero = ({
   const curated = resolvePlacePeekCuratedArea(card);
   const localLabel = resolvePlacePeekLocalLabel(card);
   const emoji = card.emoji?.trim() || '📍';
+  const isFacility = card.source === 'facility';
   return (
     <div
       className={`relative w-full shrink-0 overflow-hidden bg-neutral-100${
@@ -55,7 +56,7 @@ export const PlacePeekHero = ({
       <div className="absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-2 px-3 pt-3">
         <span className={EXPLORE_PEEK.mediaEmojiBadge}>{emoji}</span>
         <div className="flex shrink-0 items-center gap-1.5">
-          <ExploreWishlistSaveButton card={card} />
+          {!isFacility ? <ExploreWishlistSaveButton card={card} /> : null}
           <ShareButton
             title={card.shareTitle}
             text={card.shareText ?? undefined}

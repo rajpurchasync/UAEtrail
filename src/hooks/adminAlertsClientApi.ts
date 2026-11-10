@@ -13,7 +13,14 @@ export const createAdminPlatformAlert = async (
 export const expireAdminPlatformAlert = async (id: string) => adminApi.expireAdminPlatformAlert(id);
 
 export const fetchAdminAmenityReports = async (): Promise<
-  Array<{ id: string; facilityId: string; amenityState: AmenityState; note?: string; createdAt: string }>
+  Array<{
+    id: string;
+    facilityId: string;
+    amenityState: AmenityState;
+    note?: string;
+    photoUrl?: string;
+    createdAt: string;
+  }>
 > => {
   const res = await adminApi.listAdminAmenityReports();
   return res.data ?? [];

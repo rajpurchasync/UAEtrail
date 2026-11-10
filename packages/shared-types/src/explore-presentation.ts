@@ -417,7 +417,7 @@ export type ExploreClockStyle = '12' | '24';
 
 let exploreClockStyle: ExploreClockStyle = '12';
 
-/** Display preference from profile settings. Defaults to 12-hour with AM/PM. */
+/** Display preference from app settings (`/settings`). Defaults to 12-hour with AM/PM. */
 export const setExploreClockStyle = (style: ExploreClockStyle): void => {
   exploreClockStyle = style;
 };

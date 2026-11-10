@@ -10,6 +10,22 @@ import {
   PLAN_PATH,
   PROFILE_BADGES_PATH,
   PROFILE_SUBMISSIONS_PATH,
+  APP_SETTINGS_PATH,
+  APP_SETTINGS_DISPLAY_PATH,
+  APP_SETTINGS_ACCOUNT_PATH,
+  APP_SETTINGS_PRIVACY_PATH,
+  APP_SETTINGS_NOTIFICATIONS_PATH,
+  APP_SETTINGS_NOTIFICATIONS_PREFERENCES_PATH,
+  APP_SETTINGS_NOTIFICATIONS_SAVED_PATH,
+  APP_SETTINGS_SAFETY_PATH,
+  NOTIFICATIONS_PATH,
+  NOTIFICATIONS_SAVED_PATH,
+  NOTIFICATIONS_SETTINGS_PATH,
+  INBOUND_PROFILE_SETTINGS_PATH,
+  INBOUND_PROFILE_SETTINGS_ACCOUNT_PATH,
+  INBOUND_PROFILE_SETTINGS_PRIVACY_PATH,
+  INBOUND_PROFILE_SETTINGS_NOTIFICATIONS_PATH,
+  INBOUND_PROFILE_SETTINGS_SAFETY_PATH,
   PUBLISHING_ACTIVITIES_NEW_PATH,
   PUBLISHING_ACTIVITIES_PATH,
   PUBLISHING_HISTORY_PATH,
@@ -27,7 +43,7 @@ import {
   INBOUND_JOURNEY_MAP_ALIAS_PATH,
   INBOUND_PROFILE_HISTORY_ALIAS_PATH,
 } from '../config/inboundBookmarkPaths';
-import { ProtectedRoute, Home, ExploreExperience, BrowseListPage, DiscoveryRedirect, InboundCanonicalPlaceRedirect, InboundMerchantPublicRedirect, InboundProductPathRedirect, InboundMessagesRedirect, InboundProMembershipRedirect, InboundProfileWishlistRedirect, InboundRetiredPublishingConsoleRedirect, InboundProfileHistoryAliasRedirect, InboundJourneyMapAliasRedirect, ShopBrowseRoute, CalendarRedirect, PeopleRedirect, PlanBrowseRoute, CanonicalPlaceDetailPage, VenuePlaceDetailPage, FacilityDetailPage, ProfileProMembership, ShopPublic, ActivityDetail, OrganisationProfile, MemberProfile, SignUp, SignIn, VerifyOTP, WelcomeSignup, ForgotPassword, AdminOverview, AdminPlaces, AdminAreas, AreaDetailPage, AdminOrganisations, AdminActivities, AdminMembers, AdminGroups, AdminAuditLog, AdminReports, AdminSettings, AdminAccount, AdminNotifications, AdminAlerts, GeoTreePage, GeoCountryPage, GeoNodePage, PlanTodayPage, PublishingOverview, PublishingActivities, PublishingJoinRequests, PublishingTeam, PublishingPublicProfileEdit, PublishingPlaces, PublishingHistory, UserRequests, MessagesGate, ShopManageRedirect, AgencyManageRedirect, PublishingManage, ProfileHistoryPage, JourneyMapPage, Profile, ProfileSettings, ProfileSettingsAccount, ProfileSettingsPrivacy, ProfileSettingsNotifications, ProfileSettingsSafety, ProfileVehiclesPage, ProfileVehicleNewPage, ProfileVehicleEditPage, ProfileEdit, ProfileBadges, Submissions, ProfileReviews, JoinRequestDetail, Notifications, Groups, Buddies, SecurityPrivacy, Terms, Privacy, Faq, About, Contact, SiteMap, NotFound, DashboardRedirect } from './appLazyPages';
+import { ProtectedRoute, Home, ExploreExperience, BrowseListPage, DiscoveryRedirect, InboundCanonicalPlaceRedirect, InboundMerchantPublicRedirect, InboundProductPathRedirect, InboundMessagesRedirect, InboundProMembershipRedirect, InboundProfileWishlistRedirect, InboundRetiredPublishingConsoleRedirect, InboundProfileHistoryAliasRedirect, InboundJourneyMapAliasRedirect, InboundLegacyProfileSettingsRedirect, InboundLegacyNotificationsRedirect, ShopBrowseRoute, CalendarRedirect, PeopleRedirect, PlanBrowseRoute, CanonicalPlaceDetailPage, VenuePlaceDetailPage, FacilityDetailPage, ProfileProMembership, ShopPublic, ActivityDetail, OrganisationProfile, MemberProfile, SignUp, SignIn, VerifyOTP, WelcomeSignup, ForgotPassword, AdminOverview, AdminPlaces, AdminAreas, AreaDetailPage, AdminOrganisations, AdminActivities, AdminMembers, AdminGroups, AdminAuditLog, AdminReports, AdminSettings, AdminAccount, AdminNotifications, AdminAlerts, GeoTreePage, GeoCountryPage, GeoNodePage, PlanTodayPage, PublishingOverview, PublishingActivities, PublishingJoinRequests, PublishingTeam, PublishingPublicProfileEdit, PublishingPlaces, PublishingHistory, UserRequests, MessagesGate, ShopManageRedirect, AgencyManageRedirect, PublishingManage, ProfileHistoryPage, JourneyMapPage, Profile, ProfileSettings, ProfileSettingsDisplay, ProfileSettingsAccount, ProfileSettingsPrivacy, ProfileSettingsNotifications, ProfileSettingsSafety, ProfileVehiclesPage, ProfileVehicleNewPage, ProfileVehicleEditPage, ProfileEdit, ProfileBadges, Submissions, ProfileReviews, JoinRequestDetail, Groups, Buddies, SecurityPrivacy, Terms, Privacy, Faq, About, Contact, SiteMap, NotFound, DashboardRedirect } from './appLazyPages';
 import { PageLoader, AuthAliasRedirect } from './appRouteChrome';
 
 export const AppRoutes = () => (
@@ -133,7 +149,15 @@ export const AppRoutes = () => (
             }
           />
           <Route
-            path="/profile/settings/account"
+            path={APP_SETTINGS_DISPLAY_PATH}
+            element={
+              <ProtectedRoute>
+                <ProfileSettingsDisplay />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={APP_SETTINGS_ACCOUNT_PATH}
             element={
               <ProtectedRoute>
                 <ProfileSettingsAccount />
@@ -141,7 +165,7 @@ export const AppRoutes = () => (
             }
           />
           <Route
-            path="/profile/settings/privacy"
+            path={APP_SETTINGS_PRIVACY_PATH}
             element={
               <ProtectedRoute>
                 <ProfileSettingsPrivacy />
@@ -149,7 +173,7 @@ export const AppRoutes = () => (
             }
           />
           <Route
-            path="/profile/settings/notifications"
+            path={APP_SETTINGS_NOTIFICATIONS_PREFERENCES_PATH}
             element={
               <ProtectedRoute>
                 <ProfileSettingsNotifications />
@@ -157,14 +181,35 @@ export const AppRoutes = () => (
             }
           />
           <Route
-            path="/profile/settings/safety"
+            path={APP_SETTINGS_NOTIFICATIONS_SAVED_PATH}
+            element={
+              <ProtectedRoute>
+                <ProfileSettingsNotifications />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={APP_SETTINGS_NOTIFICATIONS_PATH}
+            element={
+              <ProtectedRoute>
+                <ProfileSettingsNotifications />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={APP_SETTINGS_SAFETY_PATH}
             element={
               <ProtectedRoute>
                 <ProfileSettingsSafety />
               </ProtectedRoute>
             }
           />
-          <Route path="/profile/settings" element={<ProfileSettings />} />
+          <Route path={APP_SETTINGS_PATH} element={<ProfileSettings />} />
+          <Route path={INBOUND_PROFILE_SETTINGS_ACCOUNT_PATH} element={<InboundLegacyProfileSettingsRedirect />} />
+          <Route path={INBOUND_PROFILE_SETTINGS_PRIVACY_PATH} element={<InboundLegacyProfileSettingsRedirect />} />
+          <Route path={INBOUND_PROFILE_SETTINGS_NOTIFICATIONS_PATH} element={<InboundLegacyProfileSettingsRedirect />} />
+          <Route path={INBOUND_PROFILE_SETTINGS_SAFETY_PATH} element={<InboundLegacyProfileSettingsRedirect />} />
+          <Route path={INBOUND_PROFILE_SETTINGS_PATH} element={<InboundLegacyProfileSettingsRedirect />} />
           <Route
             path="/profile/vehicles/new"
             element={
@@ -261,14 +306,9 @@ export const AppRoutes = () => (
               </Suspense>
             }
           />
-          <Route
-            path="/notifications"
-            element={
-              <ProtectedRoute roles={['participant', 'merchant_admin', 'tenant_owner', 'tenant_admin', 'tenant_guide', 'platform_admin']}>
-                <Notifications />
-              </ProtectedRoute>
-            }
-          />
+          <Route path={NOTIFICATIONS_SETTINGS_PATH} element={<InboundLegacyNotificationsRedirect />} />
+          <Route path={NOTIFICATIONS_SAVED_PATH} element={<InboundLegacyNotificationsRedirect />} />
+          <Route path={NOTIFICATIONS_PATH} element={<InboundLegacyNotificationsRedirect />} />
           <Route
             path="/groups"
             element={

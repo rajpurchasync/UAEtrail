@@ -95,6 +95,7 @@ export interface ActivityRequestView {
     email: string;
     displayName: string;
     medicalSafety?: import('@uaetrail/shared-types').MemberMedicalSafetyDTO | null;
+    joinProfile?: import('@uaetrail/shared-types').HostJoinProfileSnippetDTO | null;
   };
   activity: {
     id: string;
@@ -124,6 +125,9 @@ export interface UserProfile {
   bio?: string;
   avatarUrl?: string;
   profileVisibility?: 'public' | 'group_members' | 'private';
+  fieldPrivacy?: import('@uaetrail/shared-types').ProfileFieldPrivacySettings;
+  dateOfBirthShare?: import('@uaetrail/shared-types').ProfileDateOfBirthShare;
+  friendsListShare?: import('@uaetrail/shared-types').ProfileFriendsListShare;
   dateOfBirth?: string | null;
   gender?: 'male' | 'female' | 'prefer_not_to_say' | null;
   city?:
@@ -161,6 +165,9 @@ export type PublicMemberProfileDTO =
       bio: string | null;
       city: string | null;
       languages: string | null;
+      age: number | null;
+      birthYear?: number | null;
+      dateOfBirth?: string | null;
       memberSince: string;
       isHost: boolean;
       profileRoleLabel?: import('@uaetrail/shared-types').MemberProfileRoleLabel;
@@ -181,7 +188,9 @@ export type PublicMemberProfileDTO =
       stats: {
         activitiesAttended: number;
         activitiesHosted: number;
-      };
+      } | null;
+      vehicles: import('@uaetrail/shared-types').RideshareVehiclePublicDTO[] | null;
+      availability?: import('@uaetrail/shared-types').MemberAvailabilityPublicDTO | null;
       yearGoal: {
         activityFilter: 'hiking' | 'camping' | 'all_outings';
         countMode?: 'join' | 'host';

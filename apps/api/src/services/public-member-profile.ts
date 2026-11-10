@@ -3,15 +3,24 @@ import { resolveHostTiersFromTenants } from '../domain/member-host-tiers.js';
 import { resolveMemberProfileRoleLabel } from '../domain/member-profile-label.js';
 import { isSignupProfileComplete } from '../domain/user-profile.js';
 import { resolveOwnedProfileType } from '../lib/tenant-store.js';
-import type { MemberProfileRoleLabel, ProfileViewerAccessLevel } from '@uaetrail/shared-types';
+import type {
+  MemberProfileRoleLabel,
+  ProfileFieldPrivacyKey,
+  ProfileViewerAccessLevel,
+  RideshareVehiclePublicDTO,
+} from '@uaetrail/shared-types';
 import {
+  canViewProfileField,
   computeProfileDetailExposure,
   hostBrandProfilePath,
   inferHostStorefrontKindFromTenantWire,
+  mergeProfileDateOfBirthShare,
+  mergeProfileFieldPrivacy,
+  resolveMemberCardDateOfBirth,
   shopPublicPath,
 } from '@uaetrail/shared-types';
 import type { ProfileViewerAccessDTO } from '@uaetrail/shared-types';
-import { findAuthUserById } from '../lib/auth-users-store.js';
+import { findAuthUserById, type AuthUserRecord } from '../lib/auth-users-store.js';
 import {
   countPublishedActivitiesHostedByUser,
   countUserCheckedInParticipations,
@@ -34,6 +43,7 @@ import { getMemberAvailabilityPublicSnapshot } from '../lib/member-availability-
 import { countParticipantIntentsByUser } from '../lib/participant-intents-store.js';
 import type { MemberAvailabilityPublicDTO, MemberGoalPublicDTO } from '@uaetrail/shared-types';
 import { listPublicMemberBadges } from './member-badges.js';
+import { listMemberVehicles } from '../lib/member-vehicles-store.js';
 
 const computeAgeFromDateOfBirth = (dateOfBirth: string): number | null => {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth)) return null;
@@ -147,6 +157,9 @@ export type PublicMemberProfileData =
       bio: string | null;
       city: string | null;
       languages: string | null;
+      age: number | null;
+      birthYear: number | null;
+      dateOfBirth: string | null;
       memberSince: string;
       isHost: boolean;
       profileRoleLabel: MemberProfileRoleLabel;
@@ -169,7 +182,8 @@ export type PublicMemberProfileData =
       stats: {
         activitiesAttended: number;
         activitiesHosted: number;
-      };
+      } | null;
+      vehicles: RideshareVehiclePublicDTO[] | null;
       yearGoal: MemberGoalPublicDTO | null;
       availability: MemberAvailabilityPublicDTO | null;
     };
@@ -179,6 +193,8 @@ export type PublicMemberProfileBuildInput = {
   isPlatformAdmin?: boolean;
   /** Owner preview — show signed-in public card, not self full detail. */
   previewAsPublic?: boolean;
+  /** Skip duplicate auth user read when the caller already loaded the target. */
+  preloadedUser?: AuthUserRecord | null;
 };
 
 export type PublicMemberProfileResult = {
@@ -190,7 +206,10 @@ export async function buildPublicMemberProfile(
   userId: string,
   input: PublicMemberProfileBuildInput = {}
 ): Promise<PublicMemberProfileResult | null> {
-  const user = await findAuthUserById(userId);
+  const user =
+    input.preloadedUser && input.preloadedUser._id === userId
+      ? input.preloadedUser
+      : await findAuthUserById(userId);
   if (!user) return null;
 
   const visibility = normalizeProfileVisibility(user.profile?.profileVisibility);
@@ -283,18 +302,59 @@ export async function buildPublicMemberProfile(
   );
   const profileCity = user.profile?.city ?? null;
 
-  const showTrustedFields = viewerAccess.exposure === 'full';
+  const fieldPrivacy = mergeProfileFieldPrivacy(user.profile?.fieldPrivacy);
+  const storedAgeAudience = (
+    user.profile?.fieldPrivacy as { age?: 'hidden' | 'friends' | 'public' } | null | undefined
+  )?.age;
+  const dateOfBirthShare = mergeProfileDateOfBirthShare(
+    user.profile?.dateOfBirthShare,
+    storedAgeAudience ?? null
+  );
+  const exposure = viewerAccess.exposure;
+  const isSelf = accessLevel === 'self' || Boolean(input.previewAsPublic && viewerUserId === userId);
+  const fieldVisible = (key: ProfileFieldPrivacyKey) =>
+    canViewProfileField(fieldPrivacy[key], exposure, isSelf);
+  const dobSlice = resolveMemberCardDateOfBirth({
+    dateOfBirth: user.profile?.dateOfBirth ?? null,
+    share: dateOfBirthShare,
+    exposure,
+    isSelf,
+  });
   const earnedBadges = badges.filter((b) => b.earned);
+
+  let visibleBadges = badges;
+  if (!fieldVisible('badges')) {
+    visibleBadges = [];
+  } else if (exposure !== 'full') {
+    visibleBadges = earnedBadges;
+  }
+
+  let vehicles: RideshareVehiclePublicDTO[] | null = null;
+  if (fieldVisible('vehicles')) {
+    const garage = await listMemberVehicles(userId);
+    const showPlate = fieldVisible('vehiclePlate');
+    vehicles = garage.map((vehicle) => ({
+      id: vehicle.id,
+      make: vehicle.make,
+      model: vehicle.model,
+      color: vehicle.color,
+      year: vehicle.year,
+      ...(showPlate ? { plateNumber: vehicle.plateNumber } : {}),
+    }));
+  }
 
   const data: Extract<PublicMemberProfileData, { visibilityState: 'full' }> = {
     visibilityState: 'full',
     id: user._id,
     displayName: user.profile?.displayName ?? user.email.split('@')[0],
     avatarUrl: user.profile?.avatarUrl ?? null,
-    bio: showTrustedFields || profileVisibility === 'public' ? user.profile?.bio ?? null : null,
-    city: profileCity ? USER_CITY_LABELS[profileCity as UserCity] : null,
+    bio: fieldVisible('bio') ? user.profile?.bio ?? null : null,
+    city: fieldVisible('city') && profileCity ? USER_CITY_LABELS[profileCity as UserCity] : null,
+    age: dobSlice.age,
+    birthYear: dobSlice.birthYear,
+    dateOfBirth: dobSlice.dateOfBirth,
     memberSince: user.createdAt.toISOString(),
-    languages: memberDetails.languages,
+    languages: fieldVisible('languages') ? memberDetails.languages : null,
     isHost,
     profileRoleLabel,
     isGuideStaff,
@@ -302,13 +362,16 @@ export async function buildPublicMemberProfile(
     hostProfilePath: businessOperatorTenant ? resolveHostProfilePath(businessOperatorTenant) : null,
     linkedOperatorName: businessOperatorTenant?.name?.trim() ? businessOperatorTenant.name.trim() : null,
     publishingTenantId: publishingTenant?.id ?? null,
-    badges: showTrustedFields ? badges : earnedBadges,
-    stats: {
-      activitiesAttended,
-      activitiesHosted,
-    },
-    yearGoal: showTrustedFields ? yearGoal : null,
-    availability,
+    badges: visibleBadges,
+    stats: fieldVisible('stats')
+      ? {
+          activitiesAttended,
+          activitiesHosted,
+        }
+      : null,
+    vehicles,
+    yearGoal: fieldVisible('yearGoal') ? yearGoal : null,
+    availability: fieldVisible('availability') ? availability : null,
   };
 
   return { data, viewerAccess };

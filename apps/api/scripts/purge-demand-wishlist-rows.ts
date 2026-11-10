@@ -7,12 +7,12 @@
  *   DRY_RUN=1 npm --workspace @uaetrail/api run purge-demand-wishlist-rows
  */
 import { COLLECTIONS } from '../src/lib/collections.js';
-import { connectMongo, disconnectMongo, getMongoClient } from '../src/lib/mongo.js';
+import { getMongoClient } from '../src/lib/mongo.js';
+import { resolveCliScriptName, runCliScript } from './cli-script-runner.js';
 
 const dryRun = process.env.DRY_RUN === '1' || process.env.DRY_RUN === 'true';
 
 const purgeDemandBookmarkWishlistRows = async () => {
-  await connectMongo();
   const wishlist = getMongoClient()!.db().collection(COLLECTIONS.USER_WISHLIST);
   const filter = { participantIntentId: { $exists: true, $nin: [null, ''] } };
   const count = await wishlist.countDocuments(filter);
@@ -39,11 +39,4 @@ const purgeDemandBookmarkWishlistRows = async () => {
   console.log(`Deleted ${result.deletedCount} legacy demand bookmark row(s).`);
 };
 
-purgeDemandBookmarkWishlistRows()
-  .catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
-  })
-  .finally(async () => {
-    await disconnectMongo();
-  });
+runCliScript(resolveCliScriptName(import.meta.url), purgeDemandBookmarkWishlistRows);

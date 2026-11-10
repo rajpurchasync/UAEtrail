@@ -2,6 +2,7 @@ import type { NavigateFunction } from 'react-router-dom';
 import { PRODUCT_PLAN_SURFACE_TITLE } from '../content/productNorthStar';
 import { planWishlistTabPath } from '../plan/planTab';
 import { EXPLORE_MAP_PATH, MESSAGES_PATH, PLAN_PATH, PROFILE_PATH } from '../config/routingCatalog';
+import { SETTINGS_SURFACE_TITLE } from '../config/settingsHub';
 import { isTransientBackPath, navigateBack } from './backStack';
 import { exploreMapPathAfterPeopleFullScreen } from '../explore/exploreBrowseReturnPath';
 import {
@@ -9,11 +10,13 @@ import {
   GROUPS_PATH,
   isJourneyMapPath,
   MY_REQUESTS_PATH,
-  NOTIFICATIONS_PATH,
   PROFILE_HISTORY_PATH,
   PROFILE_SETTINGS_PATH,
+  PROFILE_SETTINGS_DISPLAY_PATH,
   PROFILE_SETTINGS_ACCOUNT_PATH,
   PROFILE_SETTINGS_PRIVACY_PATH,
+  APP_SETTINGS_NOTIFICATIONS_PREFERENCES_PATH,
+  APP_SETTINGS_NOTIFICATIONS_SAVED_PATH,
   PROFILE_SETTINGS_NOTIFICATIONS_PATH,
   PROFILE_SETTINGS_SAFETY_PATH,
   PROFILE_VEHICLES_PATH,
@@ -153,25 +156,50 @@ export const resolveMobileTabHeaderLeadingBack = (
     });
   }
 
+  if (pathname === PROFILE_SETTINGS_PATH) {
+    return profileStackBack(locationState, {
+      fallbackTo: PROFILE_PATH,
+      label: 'Profile',
+    });
+  }
+
+  if (pathname === PROFILE_SETTINGS_DISPLAY_PATH) {
+    return profileStackBack(locationState, {
+      fallbackTo: PROFILE_SETTINGS_PATH,
+      label: SETTINGS_SURFACE_TITLE,
+    });
+  }
   if (pathname === PROFILE_SETTINGS_ACCOUNT_PATH) {
     return profileStackBack(locationState, {
       fallbackTo: PROFILE_SETTINGS_PATH,
-      label: 'Settings',
+      label: SETTINGS_SURFACE_TITLE,
+    });
+  }
+  if (pathname === PROFILE_SETTINGS_PRIVACY_PATH) {
+    return profileStackBack(locationState, {
+      fallbackTo: PROFILE_SETTINGS_PATH,
+      label: SETTINGS_SURFACE_TITLE,
+    });
+  }
+  if (pathname === PROFILE_SETTINGS_NOTIFICATIONS_PATH) {
+    return profileStackBack(locationState, {
+      fallbackTo: PROFILE_SETTINGS_PATH,
+      label: SETTINGS_SURFACE_TITLE,
     });
   }
   if (
-    pathname === PROFILE_SETTINGS_PRIVACY_PATH ||
-    pathname === PROFILE_SETTINGS_NOTIFICATIONS_PATH
+    pathname === APP_SETTINGS_NOTIFICATIONS_PREFERENCES_PATH ||
+    pathname === APP_SETTINGS_NOTIFICATIONS_SAVED_PATH
   ) {
     return profileStackBack(locationState, {
-      fallbackTo: PROFILE_SETTINGS_PATH,
-      label: 'Settings',
+      fallbackTo: PROFILE_SETTINGS_NOTIFICATIONS_PATH,
+      label: 'Notifications',
     });
   }
   if (pathname === PROFILE_SETTINGS_SAFETY_PATH) {
     return profileStackBack(locationState, {
-      fallbackTo: PROFILE_PATH,
-      label: 'Profile',
+      fallbackTo: PROFILE_SETTINGS_PATH,
+      label: SETTINGS_SURFACE_TITLE,
     });
   }
   if (pathname === PROFILE_VEHICLES_PATH) {
@@ -187,12 +215,6 @@ export const resolveMobileTabHeaderLeadingBack = (
     });
   }
   if (pathname.startsWith('/profile/')) {
-    return profileStackBack(locationState, {
-      fallbackTo: PROFILE_PATH,
-      label: 'Profile',
-    });
-  }
-  if (pathname === NOTIFICATIONS_PATH) {
     return profileStackBack(locationState, {
       fallbackTo: PROFILE_PATH,
       label: 'Profile',

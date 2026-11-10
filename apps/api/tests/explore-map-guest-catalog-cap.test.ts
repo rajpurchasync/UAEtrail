@@ -35,14 +35,26 @@ const event = (id: string, postedAt: string): ExploreMapItemDTO =>
   }) as ExploreMapItemDTO;
 
 describe('applyGuestExploreMapCatalogCap', () => {
-  it('is enabled by default and can be disabled with EXPLORE_MAP_GUEST_CATALOG_CAP=0', () => {
-    const previous = process.env.EXPLORE_MAP_GUEST_CATALOG_CAP;
+  it('is enabled in production and off locally unless forced', () => {
+    const previousCap = process.env.EXPLORE_MAP_GUEST_CATALOG_CAP;
+    const previousNode = process.env.NODE_ENV;
+
+    process.env.NODE_ENV = 'production';
     delete process.env.EXPLORE_MAP_GUEST_CATALOG_CAP;
     expect(isGuestExploreMapCatalogCapEnabled()).toBe(true);
     process.env.EXPLORE_MAP_GUEST_CATALOG_CAP = '0';
     expect(isGuestExploreMapCatalogCapEnabled()).toBe(false);
-    if (previous === undefined) delete process.env.EXPLORE_MAP_GUEST_CATALOG_CAP;
-    else process.env.EXPLORE_MAP_GUEST_CATALOG_CAP = previous;
+
+    process.env.NODE_ENV = 'development';
+    delete process.env.EXPLORE_MAP_GUEST_CATALOG_CAP;
+    expect(isGuestExploreMapCatalogCapEnabled()).toBe(false);
+    process.env.EXPLORE_MAP_GUEST_CATALOG_CAP = '1';
+    expect(isGuestExploreMapCatalogCapEnabled()).toBe(true);
+
+    if (previousCap === undefined) delete process.env.EXPLORE_MAP_GUEST_CATALOG_CAP;
+    else process.env.EXPLORE_MAP_GUEST_CATALOG_CAP = previousCap;
+    if (previousNode === undefined) delete process.env.NODE_ENV;
+    else process.env.NODE_ENV = previousNode;
   });
 
   it('limits guest catalog to 3 oldest-updated places and 3 oldest-posted events', () => {

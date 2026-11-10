@@ -1,11 +1,11 @@
 import { ActivityStatus } from '../src/domain/enums.js';
 import { listPublishedActivitiesForExploreMapFromMongo } from '../src/lib/activity-read-assembler.js';
 import { buildExploreMapBasePayload } from '../src/lib/explore-map.js';
-import { connectMongo, disconnectMongo, getMongoClient } from '../src/lib/mongo.js';
+import { getMongoClient } from '../src/lib/mongo.js';
 import { ensureDemoExploreActivities } from './seed-demo-scheduled-activities.js';
+import { resolveCliScriptName, runCliScript } from './cli-script-runner.js';
 
-const main = async () => {
-  await connectMongo();
+runCliScript(resolveCliScriptName(import.meta.url), async () => {
   const db = getMongoClient()!.db();
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
@@ -39,11 +39,4 @@ const main = async () => {
   for (const a of acts) {
     console.log(' -', a.id, a.kind, a.latitude, a.longitude);
   }
-
-  await disconnectMongo();
-};
-
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
 });

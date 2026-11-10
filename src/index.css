@@ -203,6 +203,17 @@
     border-radius: 999px;
   }
 
+  /** Explore map left rail — scrollport flush to resize gutter (no reserved gutter strip). */
+  [data-explore-browse-rail-content] .explore-browse-rail-scroll {
+    width: 100%;
+    max-width: 100%;
+    scrollbar-gutter: auto;
+  }
+
+  [data-explore-browse-rail-content] .explore-browse-rail-scroll::-webkit-scrollbar {
+    width: 8px;
+  }
+
   /* Product scrollbars stay thin. Hidden rails (scrollbar-none) override this. */
   * {
     scrollbar-width: thin;
@@ -510,6 +521,11 @@
 
   .place-select-panel {
     @apply absolute z-[7000] mt-1 w-full overflow-hidden rounded-2xl border border-neutral-200/90 bg-white shadow-lg shadow-neutral-900/10;
+  }
+
+  /** Portaled AppSelect menu — fixed to viewport so stacked GlassCards do not cover options. */
+  .place-select-panel-fixed {
+    @apply overflow-hidden rounded-2xl border border-neutral-200/90 bg-white shadow-lg shadow-neutral-900/10;
   }
 
   .place-select-option {
@@ -996,6 +1012,36 @@
   .explore-map-rich .uaetrail-map-venue-chip {
     user-select: none;
     -webkit-user-select: none;
+  }
+
+  /*
+   * Spiderfy: markercluster animates icons via .leaflet-cluster-anim; legs use SVG stroke-dashoffset.
+   * Durations / stagger are driven from exploreMapClusterSpiderAnimation.ts (--uaetrail-cluster-spider-*).
+   */
+  .explore-map-rich .leaflet-cluster-anim .leaflet-marker-icon,
+  .explore-map-rich .leaflet-cluster-anim .leaflet-marker-shadow {
+    transition:
+      transform var(--uaetrail-cluster-spider-ms, 320ms) var(--uaetrail-cluster-spider-ease, cubic-bezier(0.32, 0.72, 0, 1)),
+      opacity calc(var(--uaetrail-cluster-spider-ms, 320ms) * 0.88) ease-out;
+    transition-delay: var(--uaetrail-cluster-spider-delay, 0ms);
+  }
+
+  .explore-map-rich .uaetrail-map-cluster-spider-leg,
+  .explore-map-rich .leaflet-cluster-spider-leg {
+    transition:
+      stroke-dashoffset var(--uaetrail-cluster-spider-ms, 320ms) var(--uaetrail-cluster-spider-ease, cubic-bezier(0.32, 0.72, 0, 1)),
+      stroke-opacity calc(var(--uaetrail-cluster-spider-ms, 320ms) * 0.88) ease-out;
+    transition-delay: var(--uaetrail-cluster-spider-delay, 0ms);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .explore-map-rich .leaflet-cluster-anim .leaflet-marker-icon,
+    .explore-map-rich .leaflet-cluster-anim .leaflet-marker-shadow,
+    .explore-map-rich .uaetrail-map-cluster-spider-leg,
+    .explore-map-rich .leaflet-cluster-spider-leg {
+      transition-delay: 0ms !important;
+      transition-duration: 1ms !important;
+    }
   }
 
   @media (max-width: 1023px) {
@@ -2945,7 +2991,8 @@ html[data-theme='dark'] .consumer-list-row-selected {
   background-color: rgba(46, 139, 87, 0.22);
 }
 
-html[data-theme='dark'] .place-select-panel {
+html[data-theme='dark'] .place-select-panel,
+html[data-theme='dark'] .place-select-panel-fixed {
   background-color: #1c1c1c;
   border-color: #333;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);

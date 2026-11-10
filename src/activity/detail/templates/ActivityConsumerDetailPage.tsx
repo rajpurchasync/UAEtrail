@@ -6,7 +6,7 @@
  *
  * Route loader: `pages/ActivityDetail.tsx` · Shell: `ActivityDetailPageShell` · Chrome: `ActivityDetailView`.
  */
-import { forwardRef, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { forwardRef, useMemo, useState, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { consumerDetailChildLinkState } from '../../../explore/mapPeekDetailNavState';
 import { ChevronRight, Clock, CloudSun, MapPin, Car } from 'lucide-react';
@@ -18,7 +18,6 @@ import {
   type ActivityDetailDTO,
   type ActivityEngagementStripsDTO,
   type ActivityViewerAccessDTO,
-  type PublicActiveAlertDTO,
 } from '@uaetrail/shared-types';
 import { extractJoinInstructionLines } from '../../../utils/joinInstructions';
 import { extractActivityPlanDetailLines } from '../../../activity/activityDetailReachBy';
@@ -107,7 +106,7 @@ import {
   activityForecastIsoDates,
   readActivityForecastIsoDate,
 } from '../../../detail/weather/activityForecastDates';
-import { getActivePlatformAlerts } from '../../../hooks/publicPlatformAlertsClientApi';
+import { useActivePlatformAlerts } from '../../../hooks/useActivePlatformAlerts';
 import { ConsumerDetailPlatformAlertBanner } from '../../../detail/ConsumerDetailPlatformAlertBanner';
 import {
   DetailPageShell,
@@ -170,7 +169,6 @@ export const ActivityConsumerDetailPage = ({
   hostManageSurface = null,
 }: ActivityConsumerDetailPageProps) => {
   const { user } = useAuth();
-  const [platformAlerts, setPlatformAlerts] = useState<PublicActiveAlertDTO[]>([]);
 
   const layout = useMemo(
     () =>
@@ -244,7 +242,10 @@ export const ActivityConsumerDetailPage = ({
   const showWhereCard = !(
     isRideshare && Boolean(linkedParentSummary)
   );
-  const forecastCoords = resolveActivityForecastCoordinates(model.activity);
+  const activity = model.activity;
+  const forecastCoords = useMemo(() => resolveActivityForecastCoordinates(activity), [activity]);
+  const forecastLat = forecastCoords?.lat ?? null;
+  const forecastLng = forecastCoords?.lng ?? null;
   const detailsJumpHref = resolveConsumerDetailDetailsJumpHref(model.activity);
   const linkedTransportShownAbove =
     (isRideshare && Boolean(linkedParentSummary)) ||
@@ -293,28 +294,14 @@ export const ActivityConsumerDetailPage = ({
     ]
   );
 
-  const alertRegion = model.activity.region?.trim() || null;
-
-  useEffect(() => {
-    if (!model.consumerDetailLayout || model.isEmbedded) return;
-    if (!forecastCoords) return;
-    let cancelled = false;
-    void getActivePlatformAlerts({
-      lat: forecastCoords.lat,
-      lng: forecastCoords.lng,
-      radiusKm: 120,
-      ...(alertRegion ? { region: alertRegion } : {}),
-    })
-      .then((res) => {
-        if (!cancelled) setPlatformAlerts(res.data ?? []);
-      })
-      .catch(() => {
-        if (!cancelled) setPlatformAlerts([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [model.consumerDetailLayout, model.isEmbedded, forecastCoords, alertRegion]);
+  const alertRegion = activity.region?.trim() || null;
+  const platformAlerts = useActivePlatformAlerts({
+    enabled: Boolean(model.consumerDetailLayout && !model.isEmbedded),
+    lat: forecastLat,
+    lng: forecastLng,
+    radiusKm: 120,
+    region: alertRegion,
+  });
 
   if (!model.consumerDetailLayout || model.isEmbedded) {
     return null;
@@ -1530,6 +1517,8 @@ const ConsumerDetailSocialRow = ({
 
 type ConsumerDetailPanelTone = 'logistics' | 'prep';
 
+const activityDetailSectionPageKey = (activityId: string) => `activity:${activityId}`;
+
 const ConsumerDetailOpenSection = forwardRef<
   HTMLElement,
   {
@@ -1538,8 +1527,9 @@ const ConsumerDetailOpenSection = forwardRef<
     id?: string;
     icon?: ReactNode;
     tone?: ConsumerDetailPanelTone;
+    pageKey: string;
   }
->(function ConsumerDetailOpenSection({ title, children, id, icon, tone = 'logistics' }, ref) {
+>(function ConsumerDetailOpenSection({ title, children, id, icon, tone = 'logistics', pageKey }, ref) {
   return (
     <ConsumerDetailSection
       ref={ref}
@@ -1547,7 +1537,8 @@ const ConsumerDetailOpenSection = forwardRef<
       title={title}
       tone={tone === 'prep' ? consumerDetailPrepTone : consumerDetailLogisticsTone}
       collapsible
-      defaultExpanded={false}
+      defaultExpanded
+      pageKey={pageKey}
     >
       {icon ? <div className="mb-2 flex items-center gap-2">{icon}</div> : null}
       {children}
@@ -1567,7 +1558,12 @@ const ConsumerDetailPacking = ({
   if (!hasPacking && gearItems.length === 0) return null;
 
   return (
-    <ConsumerDetailOpenSection id="activity-detail-packing" title="What to bring" tone="prep">
+    <ConsumerDetailOpenSection
+      id="activity-detail-packing"
+      title="What to bring"
+      tone="prep"
+      pageKey={activityDetailSectionPageKey(activity.id)}
+    >
       {hasPacking ? (
         <ActivityPackingListPreview
           requirements={activity.requirements}
@@ -1599,7 +1595,12 @@ const ConsumerDetailInstructions = ({ activity }: { activity: ActivityDetailDTO 
   const lines = resolveActivityConsumerRequirementLines(activity.requirements);
   if (lines.length === 0) return null;
   return (
-    <ConsumerDetailOpenSection id="activity-detail-instructions" title="Instructions" tone="prep">
+    <ConsumerDetailOpenSection
+      id="activity-detail-instructions"
+      title="Instructions"
+      tone="prep"
+      pageKey={activityDetailSectionPageKey(activity.id)}
+    >
       <ul className="space-y-2">
         {lines.map((line) => (
           <li key={line} className="flex gap-2">
@@ -1638,7 +1639,7 @@ const resolveActivityForecastCoordinates = (
 
 const ConsumerDetailActivityWeather = ({ activity }: { activity: ActivityDetailDTO }) => {
   const forecastDates = useMemo(() => activityForecastIsoDates(activity), [activity]);
-  const coords = resolveActivityForecastCoordinates(activity);
+  const coords = useMemo(() => resolveActivityForecastCoordinates(activity), [activity]);
 
   if (forecastDates.length === 0 || !coords) return null;
 
@@ -1648,6 +1649,7 @@ const ConsumerDetailActivityWeather = ({ activity }: { activity: ActivityDetailD
       title="Weather"
       icon={<CloudSun className="h-4 w-4 shrink-0 text-sky-700" aria-hidden />}
       tone="logistics"
+      pageKey={activityDetailSectionPageKey(activity.id)}
     >
       <ConsumerWeatherMultiDayBlock
         lat={coords.lat}
@@ -1736,6 +1738,7 @@ const ConsumerDetailGettingThere = ({
       id="activity-detail-getting-there"
       title="Getting there"
       icon={<Car className="h-4 w-4 text-sky-700/80" aria-hidden />}
+      pageKey={activityDetailSectionPageKey(activity.id)}
     >
       <div className="space-y-3">
         {accessibleBy ? (

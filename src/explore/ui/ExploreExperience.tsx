@@ -28,7 +28,7 @@ export const ExploreExperience = () => {
         path={EXPLORE_MAP_PATH}
       />
 
-      <div className="relative flex h-full min-h-0 flex-1 max-lg:flex-col lg:flex-row lg:items-stretch">
+      <div className="relative flex h-full min-h-0 flex-1 min-w-0">
         <ExploreExperienceBrowsePanels
           isDesktop={model.isDesktop}
           browse={model.browse}
@@ -67,7 +67,6 @@ export const ExploreExperience = () => {
               publishedAreas={model.publishedAreas}
               handlePickExploreArea={model.handlePickExploreArea}
               onVisibleMapBoundsChange={model.onVisibleMapBoundsChange}
-              peopleBrowsePanelProps={model.peopleBrowsePanelProps}
             />
           }
         />

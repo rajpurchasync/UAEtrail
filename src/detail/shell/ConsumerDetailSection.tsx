@@ -1,4 +1,8 @@
-import { forwardRef, useId, useState, type ReactNode } from 'react';
+import { forwardRef, useCallback, useEffect, useId, useState, type ReactNode } from 'react';
+import {
+  readPersistedDetailSectionExpanded,
+  writePersistedDetailSectionExpanded,
+} from './consumerDetailSectionPersistence';
 import { ChevronDown } from 'lucide-react';
 import {
   CONSUMER_DETAIL_SECTION_LABEL,
@@ -21,6 +25,11 @@ export type ConsumerDetailSectionProps = {
   /** Collapsible on mobile + tablet (`max-lg`); `lg+` always uses bordered section + corner title pill. */
   collapsible?: boolean;
   defaultExpanded?: boolean;
+  /**
+   * With `id`, remembers mobile collapse per section for this page in sessionStorage
+   * (e.g. `activity:${activityId}`). Absent storage → `defaultExpanded`.
+   */
+  pageKey?: string;
 };
 
 /**
@@ -40,12 +49,41 @@ export const ConsumerDetailSection = forwardRef<HTMLElement, ConsumerDetailSecti
       bleedBody: _bleedBody = false,
       collapsible = false,
       defaultExpanded = true,
+      pageKey,
     },
     ref
   ) {
     const token = CONSUMER_DETAIL_SECTION_TONE[tone];
     const bodyId = useId();
-    const [expanded, setExpanded] = useState(defaultExpanded);
+    const persistSectionId = id?.trim() || null;
+    const persist =
+      Boolean(collapsible && pageKey && persistSectionId);
+    const readInitialExpanded = () =>
+      persist && pageKey && persistSectionId
+        ? readPersistedDetailSectionExpanded(pageKey, persistSectionId, defaultExpanded)
+        : defaultExpanded;
+    const [expanded, setExpandedState] = useState(readInitialExpanded);
+
+    useEffect(() => {
+      if (!persist || !pageKey || !persistSectionId) {
+        setExpandedState(defaultExpanded);
+        return;
+      }
+      setExpandedState(readPersistedDetailSectionExpanded(pageKey, persistSectionId, defaultExpanded));
+    }, [pageKey, persistSectionId, defaultExpanded, persist]);
+
+    const setExpanded = useCallback(
+      (value: boolean | ((prev: boolean) => boolean)) => {
+        setExpandedState((prev) => {
+          const next = typeof value === 'function' ? value(prev) : value;
+          if (persist && pageKey && persistSectionId) {
+            writePersistedDetailSectionExpanded(pageKey, persistSectionId, next);
+          }
+          return next;
+        });
+      },
+      [pageKey, persistSectionId, persist]
+    );
     if (!children) return null;
 
     const sectionBodyClass = `text-sm leading-relaxed lg:text-[13px] lg:leading-snug ${token.body} ${bodyClassName}`;
@@ -90,7 +128,7 @@ export const ConsumerDetailSection = forwardRef<HTMLElement, ConsumerDetailSecti
               onToggle={() => setExpanded((v) => !v)}
             />
             {expanded ? (
-              <div id={bodyId} className="min-h-0 flex-1 px-4 pb-3 pt-2">
+              <div id={bodyId} className="min-h-0 min-w-0 flex-1 overflow-x-visible px-4 pb-3 pt-2">
                 {renderSectionBody()}
               </div>
             ) : null}

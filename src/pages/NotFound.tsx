@@ -8,7 +8,13 @@ import { detailBackPath } from '../config/routingCatalog';
 export const NotFound = () => (
   <>
     <PageMeta title="Page not found" noIndex />
-    <ConsumerShell layout="stack" title="Not found" showJourney={false} back={{ fallbackTo: detailBackPath('explore'), label: 'Explore' }}>
+    <ConsumerShell
+      layout="stack"
+      title="Not found"
+      showJourney={false}
+      suppressMobileHeader
+      back={{ fallbackTo: detailBackPath('explore'), label: 'Explore' }}
+    >
       <GlassCard padding className="py-10 text-center">
         <p className="text-5xl font-extrabold text-neutral-200">404</p>
         <h1 className="mt-2 text-lg font-bold text-neutral-900">This page isn&apos;t here</h1>

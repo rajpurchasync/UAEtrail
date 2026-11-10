@@ -58,11 +58,51 @@ export const PUBLISHING_SECURITY_PRIVACY_PATH = '/publishing/security-privacy' a
 
 export const PROFILE_EDIT_PATH = '/profile/edit' as const;
 export const PROFILE_REVIEWS_PATH = '/profile/reviews' as const;
-export const PROFILE_SETTINGS_PATH = '/profile/settings' as const;
-export const PROFILE_SETTINGS_ACCOUNT_PATH = '/profile/settings/account' as const;
-export const PROFILE_SETTINGS_PRIVACY_PATH = '/profile/settings/privacy' as const;
-export const PROFILE_SETTINGS_NOTIFICATIONS_PATH = '/profile/settings/notifications' as const;
-export const PROFILE_SETTINGS_SAFETY_PATH = '/profile/settings/safety' as const;
+
+/** App settings hub (display, account, privacy, safety) — not edit profile (`PROFILE_EDIT_PATH`). */
+export const APP_SETTINGS_PATH = '/settings' as const;
+export const APP_SETTINGS_DISPLAY_PATH = '/settings/display' as const;
+export const APP_SETTINGS_ACCOUNT_PATH = '/settings/account' as const;
+export const APP_SETTINGS_PRIVACY_PATH = '/settings/privacy' as const;
+export const APP_SETTINGS_NOTIFICATIONS_PATH = '/settings/notifications' as const;
+export const APP_SETTINGS_NOTIFICATIONS_PREFERENCES_PATH =
+  '/settings/notifications/preferences' as const;
+export const APP_SETTINGS_NOTIFICATIONS_SAVED_PATH = '/settings/notifications/saved' as const;
+export const APP_SETTINGS_SAFETY_PATH = '/settings/safety' as const;
+
+/** @deprecated Bookmarks only — SPA redirects to {@link APP_SETTINGS_PATH}. */
+export const INBOUND_PROFILE_SETTINGS_PATH = '/profile/settings' as const;
+export const INBOUND_PROFILE_SETTINGS_ACCOUNT_PATH = '/profile/settings/account' as const;
+export const INBOUND_PROFILE_SETTINGS_PRIVACY_PATH = '/profile/settings/privacy' as const;
+export const INBOUND_PROFILE_SETTINGS_NOTIFICATIONS_PATH = '/profile/settings/notifications' as const;
+export const INBOUND_PROFILE_SETTINGS_SAFETY_PATH = '/profile/settings/safety' as const;
+
+/** Prefer `APP_SETTINGS_*` in new code. */
+export const PROFILE_SETTINGS_PATH = APP_SETTINGS_PATH;
+export const PROFILE_SETTINGS_DISPLAY_PATH = APP_SETTINGS_DISPLAY_PATH;
+export const PROFILE_SETTINGS_ACCOUNT_PATH = APP_SETTINGS_ACCOUNT_PATH;
+export const PROFILE_SETTINGS_PRIVACY_PATH = APP_SETTINGS_PRIVACY_PATH;
+export const PROFILE_SETTINGS_NOTIFICATIONS_PATH = APP_SETTINGS_NOTIFICATIONS_PATH;
+export const PROFILE_SETTINGS_NOTIFICATIONS_PREFERENCES_PATH = APP_SETTINGS_NOTIFICATIONS_PREFERENCES_PATH;
+export const PROFILE_SETTINGS_NOTIFICATIONS_SAVED_PATH = APP_SETTINGS_NOTIFICATIONS_SAVED_PATH;
+export const PROFILE_SETTINGS_SAFETY_PATH = APP_SETTINGS_SAFETY_PATH;
+
+export const isAppSettingsPath = (pathname: string): boolean =>
+  pathname === APP_SETTINGS_PATH || pathname.startsWith(`${APP_SETTINGS_PATH}/`);
+
+/** In-app notification hub — history, preferences, saved map alerts (under Settings). */
+export const isNotificationHubPath = (pathname: string): boolean =>
+  pathname === APP_SETTINGS_NOTIFICATIONS_PATH ||
+  pathname.startsWith(`${APP_SETTINGS_NOTIFICATIONS_PATH}/`);
+
+export const isInboundProfileSettingsPath = (pathname: string): boolean =>
+  pathname === INBOUND_PROFILE_SETTINGS_PATH || pathname.startsWith(`${INBOUND_PROFILE_SETTINGS_PATH}/`);
+
+/** Map retired `/profile/settings…` bookmarks to canonical `/settings…` (path only). */
+export const inboundProfileSettingsRedirectTarget = (pathname: string): string => {
+  const suffix = pathname.replace(/^\/profile\/settings/, '') || '';
+  return `${APP_SETTINGS_PATH}${suffix}`;
+};
 
 /** Member achievement badges (no Trail Points wallet) */
 export const PROFILE_BADGES_PATH = '/profile/badges' as const;
@@ -100,8 +140,21 @@ export const groupsManagePath = (
   return `${GROUPS_PATH}?${params.toString()}`;
 };
 
-/** In-app notification inbox */
+/** Inbound bookmarks — SPA redirects to {@link APP_SETTINGS_NOTIFICATIONS_PATH} and sub-routes. */
 export const NOTIFICATIONS_PATH = '/notifications' as const;
+export const NOTIFICATIONS_SETTINGS_PATH = '/notifications/settings' as const;
+export const NOTIFICATIONS_SAVED_PATH = '/notifications/saved' as const;
+
+/** Map retired `/notifications…` bookmarks to canonical settings notification routes. */
+export const inboundNotificationsRedirectTarget = (pathname: string): string => {
+  if (pathname.startsWith(NOTIFICATIONS_SETTINGS_PATH)) {
+    return APP_SETTINGS_NOTIFICATIONS_PREFERENCES_PATH;
+  }
+  if (pathname.startsWith(NOTIFICATIONS_SAVED_PATH)) {
+    return APP_SETTINGS_NOTIFICATIONS_SAVED_PATH;
+  }
+  return APP_SETTINGS_NOTIFICATIONS_PATH;
+};
 
 /** Consumer inbox + threads — keep string literal in sync with `apps/api/src/lib/member-routes.ts`. */
 export const MESSAGES_PATH = '/chat' as const;

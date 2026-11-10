@@ -217,7 +217,9 @@ describe('inferBackParent', () => {
     expect(inferBackParent('/profile/vehicles/car-1/edit')).toBe('/profile/vehicles');
     expect(inferBackParent('/profile/edit')).toBe('/profile');
     expect(inferBackParent('/signin')).toBe('/');
-    expect(inferBackParent('/profile/settings/account')).toBe('/profile/settings');
+    expect(inferBackParent('/settings/account')).toBe('/settings');
+    expect(inferBackParent('/profile/settings/account')).toBe('/settings');
+    expect(inferBackParent('/settings/safety')).toBe('/profile');
     expect(inferBackParent('/my-requests/req-1')).toBe('/my-requests');
   });
 });
@@ -244,7 +246,7 @@ describe('resolveBackLabel', () => {
     expect(
       resolveBackLabel({ kind: 'pop', delta: 1, path: '/plan?tab=upcoming' }, '/explore', 'Explore')
     ).toBe('My Plans');
-    expect(resolveBackLabel({ kind: 'pop', delta: 1, path: '/profile/settings' }, '/profile', 'Profile')).toBe(
+    expect(resolveBackLabel({ kind: 'pop', delta: 1, path: '/settings' }, '/profile', 'Profile')).toBe(
       'Settings'
     );
     expect(resolveBackLabel({ kind: 'pop', delta: 1, path: '/member/u1' }, '/explore', 'Explore')).toBe('Back');

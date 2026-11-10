@@ -31,7 +31,7 @@ export const Privacy = () => (
         </p>
         <h2 className="text-lg font-semibold text-neutral-900">Your choices</h2>
         <p>
-          You may update your profile, disable notifications, export your data, or delete your account from Profile settings.
+          You may update your profile, disable notifications, export your data, or delete your account from App settings (`/settings`).
           For other data requests, email{' '}
           <a href="mailto:privacy@uaetrail.com" className="text-emerald-700 hover:underline">
             privacy@uaetrail.com

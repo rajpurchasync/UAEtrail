@@ -104,7 +104,7 @@ export const MeetingPointMap = ({
   );
 
   return (
-    <div className="mt-3 space-y-2">
+    <div className="min-w-0 space-y-2">
       {clickable ? (
         <ViewOnMapLink
           lat={lat}
@@ -126,7 +126,7 @@ export const MeetingPointMap = ({
         <ViewOnMapLink
           lat={lat}
           lng={lng}
-          className="inline-flex items-center text-sm font-medium text-emerald-700 hover:text-emerald-800"
+          className="inline-flex max-w-full min-w-0 items-center whitespace-normal break-words text-sm font-medium leading-snug text-emerald-700 hover:text-emerald-800"
         >
           Open in Google Maps →
         </ViewOnMapLink>

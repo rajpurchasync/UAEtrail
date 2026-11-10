@@ -7,7 +7,7 @@ const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 /** S5 / C12 — notification tap targets must route via `inferNotificationPath` (not ad-hoc meta.path). */
 const NOTIFICATION_NAV_SURFACES = [
   'src/components/layout/NotificationBellPopover.tsx',
-  'src/pages/Notifications.tsx',
+  'src/components/notifications/NotificationHistoryPanel.tsx',
   'src/pages/admin/Notifications.tsx',
   'src/pages/publishing/Overview.tsx',
 ];

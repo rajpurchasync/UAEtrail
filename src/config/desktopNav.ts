@@ -1,6 +1,5 @@
 import {
   Award,
-  Bell,
   CalendarDays,
   ClipboardList,
   History,
@@ -25,7 +24,6 @@ import {
   LIST_DISCOVERY_PATH,
   MESSAGES_PATH,
   MY_REQUESTS_PATH,
-  NOTIFICATIONS_PATH,
   PLAN_PATH,
   PROFILE_BADGES_PATH,
   PROFILE_HISTORY_PATH,
@@ -44,7 +42,7 @@ import { LIST_CAT_PARAM } from '../list/browseListUrlState';
 /** Wide app chrome (Tailwind `md`, ≥768px) — left sidebar + slim top bar. Mobile uses bottom nav + drawer. */
 export const DESKTOP_MIN_WIDTH_PX = 768;
 
-export type DesktopNavBadge = 'chat' | 'notifications';
+export type DesktopNavBadge = 'chat';
 
 export type DesktopNavItem = {
   key: string;
@@ -69,9 +67,21 @@ const matchesPrefix = (pathname: string, prefix: string) =>
 export const isPeopleListDiscoveryRoute = (pathname: string, search: string): boolean =>
   pathname === LIST_DISCOVERY_PATH && new URLSearchParams(search).get(LIST_CAT_PARAM) === 'people';
 
+/** Explore map URLs owned by a sibling sidebar item (Find crew, Search, Post) — not the Explore hub. */
+const isExploreMapExclusiveNavMode = (pathname: string, search: string): boolean => {
+  if (pathname !== EXPLORE_MAP_PATH) return false;
+  const params = new URLSearchParams(search);
+  const view = params.get('view');
+  if (view === 'people' || view === 'social' || view === 'going') return true;
+  if (params.get('search') === '1') return true;
+  if (params.get('compose')) return true;
+  return false;
+};
+
 /** Map + list catalog (not people list). One GO item; list remains an in-page / `/list` projection. */
 export const isDesktopExploreNavActive = (pathname: string, search: string): boolean => {
   if (isPeopleListDiscoveryRoute(pathname, search)) return false;
+  if (isExploreMapExclusiveNavMode(pathname, search)) return false;
   return (
     pathname === EXPLORE_MAP_PATH ||
     pathname === '/discovery' ||
@@ -173,14 +183,6 @@ export const DESKTOP_SIDE_NAV_SECTIONS: readonly DesktopSideNavSection[] = [
     key: 'you',
     title: 'You',
     items: [
-      {
-        key: 'notifications',
-        label: 'Notifications',
-        to: NOTIFICATIONS_PATH,
-        icon: Bell,
-        match: [NOTIFICATIONS_PATH],
-        badge: 'notifications',
-      },
       {
         key: 'history',
         label: 'Outing history',

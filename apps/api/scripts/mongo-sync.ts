@@ -1,13 +1,6 @@
 /** Migrations + indexes + warn validators — same path as API `connectMongo()`. */
-import { connectMongo, disconnectMongo } from '../src/lib/mongo.js';
+import { resolveCliScriptName, runCliScript } from './cli-script-runner.js';
 
-const run = async () => {
-  await connectMongo();
+runCliScript(resolveCliScriptName(import.meta.url), async () => {
   console.log('[mongo:sync] Migrations, indexes, and validators applied.');
-  await disconnectMongo();
-};
-
-run().catch((err) => {
-  console.error(err);
-  process.exit(1);
 });

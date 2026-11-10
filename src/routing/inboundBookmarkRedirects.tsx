@@ -13,6 +13,8 @@ import {
   JOURNEY_MAP_PATH,
   PROFILE_HISTORY_PATH,
   PUBLISHING_CONSOLE_PREFIX,
+  inboundNotificationsRedirectTarget,
+  inboundProfileSettingsRedirectTarget,
 } from '../config/surfacePaths';
 import { shopPublicPath } from '../utils/shopPaths';
 
@@ -80,3 +82,15 @@ export const InboundProfileHistoryAliasRedirect = () => (
 
 /** `/profile/my-trips/map` bookmarks → journey map. */
 export const InboundJourneyMapAliasRedirect = () => <Navigate to={JOURNEY_MAP_PATH} replace />;
+
+/** `/profile/settings/*` bookmarks → `/settings/*` (preserve query + hash). */
+export const InboundLegacyProfileSettingsRedirect = () => {
+  const { pathname, search, hash } = useLocation();
+  return <Navigate to={`${inboundProfileSettingsRedirectTarget(pathname)}${search}${hash}`} replace />;
+};
+
+/** `/notifications/*` bookmarks → `/settings/notifications/*` (preserve query + hash). */
+export const InboundLegacyNotificationsRedirect = () => {
+  const { pathname, search, hash } = useLocation();
+  return <Navigate to={`${inboundNotificationsRedirectTarget(pathname)}${search}${hash}`} replace />;
+};

@@ -11,13 +11,14 @@ import {
   GROUPS_PATH,
   MESSAGES_PATH,
   MY_REQUESTS_PATH,
-  NOTIFICATIONS_PATH,
   PROFILE_PATH,
   JOURNEY_MAP_PATH,
   PROFILE_HISTORY_PATH,
   PLAN_PATH,
   PLAN_TODAY_PATH,
   PROFILE_SETTINGS_PATH,
+  isAppSettingsPath,
+  isNotificationHubPath,
   ADMIN_PLACES_PATH,
   PUBLISHING_PLACES_PATH,
   signUpPath,
@@ -202,7 +203,7 @@ export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
   },
   {
     kind: 'link',
-    label: 'Settings',
+    label: 'App settings',
     emoji: '⚙️',
     to: PROFILE_SETTINGS_PATH,
     match: [PROFILE_SETTINGS_PATH],
@@ -360,9 +361,9 @@ export const isConsumerChromeHidden = (pathname: string): boolean =>
   CONSUMER_CHROME_HIDDEN_EXACT.includes(pathname as (typeof CONSUMER_CHROME_HIDDEN_EXACT)[number]) ||
   CONSUMER_CHROME_HIDDEN_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 
-/** Mobile detail pages render their own back header (activity, trail, camp, product). */
+/** Mobile detail pages render their own back header (activity, trail, camp, place, facility, …). */
 export const isMobileDetailRoute = (pathname: string): boolean =>
-  /^\/(trail|camp|venue|event|product|activity|event-spot|community-activity|place)\//.test(
+  /^\/(trail|camp|venue|event|product|activity|event-spot|community-activity|place|facility)\//.test(
     pathname
   );
 
@@ -397,7 +398,6 @@ export const CONSUMER_SELF_HEADER_EXACT = [
   INBOUND_CONTRIBUTIONS_PATH,
   PUBLISHING_CONSOLE_PREFIX,
   MESSAGES_PATH,
-  NOTIFICATIONS_PATH,
   MY_REQUESTS_PATH,
   INBOUND_BECOME_HOST_PATH,
   INBOUND_BECOME_ORGANIZER_PATH,
@@ -406,6 +406,9 @@ export const CONSUMER_SELF_HEADER_EXACT = [
   '/terms',
   '/privacy',
   '/security-privacy',
+  '/about',
+  '/contact',
+  '/sitemap',
 ] as const;
 
 export const CONSUMER_SELF_HEADER_PREFIXES = [
@@ -425,6 +428,8 @@ export const CONSUMER_SELF_HEADER_PREFIXES = [
 export const hasConsumerSelfHeader = (pathname: string): boolean =>
   CONSUMER_SELF_HEADER_EXACT.includes(pathname as (typeof CONSUMER_SELF_HEADER_EXACT)[number]) ||
   CONSUMER_SELF_HEADER_PREFIXES.some((prefix) => pathname.startsWith(prefix)) ||
+  isAppSettingsPath(pathname) ||
+  isNotificationHubPath(pathname) ||
   isMobileDetailRoute(pathname);
 
 /** Profile stack + help pages — inject hamburger in ConsumerShell when Layout tab header is absent. */
@@ -433,10 +438,9 @@ export const shouldShowConsumerShellHamburger = (pathname: string): boolean => {
   if (pathname === EXPLORE_MAP_PATH || pathname === LIST_DISCOVERY_PATH) return false;
   if (pathname === '/profile' || pathname === PLAN_PATH || pathname === MESSAGES_PATH) return false;
   if (pathname === PROFILE_HISTORY_PATH || pathname === JOURNEY_MAP_PATH) return false;
-  if (pathname.startsWith('/profile/')) return true;
+  if (pathname.startsWith('/profile/') || pathname === '/settings' || pathname.startsWith('/settings/')) return true;
   if (pathname === '/faq' || pathname === '/terms' || pathname === '/privacy') return true;
   if (pathname.startsWith('/member/')) return true;
-  if (pathname === NOTIFICATIONS_PATH) return true;
   if ((MOBILE_BOTTOM_NAV_PROFILE_PATHS as readonly string[]).includes(pathname)) return true;
   return MOBILE_BOTTOM_NAV_PROFILE_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 };
@@ -461,7 +465,7 @@ export const MOBILE_BOTTOM_NAV_PROFILE_PATHS = [
   MY_REQUESTS_PATH,
 ] as const;
 
-const MOBILE_BOTTOM_NAV_PROFILE_PREFIXES = ['/profile/'] as const;
+const MOBILE_BOTTOM_NAV_PROFILE_PREFIXES = ['/profile/', '/settings'] as const;
 
 const isMobileBottomNavProfilePath = (pathname: string): boolean =>
   (MOBILE_BOTTOM_NAV_PROFILE_PATHS as readonly string[]).includes(pathname) ||

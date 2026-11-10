@@ -39,7 +39,7 @@ import {
   resolveGroupRegionLevelsForActivityDoc,
   stampLocationGroupRegionLevels,
 } from '../src/lib/group-region-resolution.js';
-import { getMongoClient, connectMongo, disconnectMongo } from '../src/lib/mongo.js';
+import { getMongoClient, connectMongo } from '../src/lib/mongo.js';
 import { createSocialReview } from '../src/lib/social-reviews-store.js';
 import {
   createMerchantProfileForUser,
@@ -81,6 +81,8 @@ import { seedDevRichCatalog } from './seed-dev-rich-catalog.js';
 import { seedDevMonthlyActivities } from './seed-dev-monthly-activities.js';
 import { refreshSeedParticipantSeekingSchedules } from './seed-demo-seeking-schedules.js';
 import { seedCatalogFacilities } from './seed-catalog-facilities.js';
+import { runDevQaBundleSeed } from './seed-dev-qa-bundle.js';
+import { resolveCliScriptName, runCliScript } from './cli-script-runner.js';
 
 const seedChatThread = async (
   messages: Array<{
@@ -1024,7 +1026,8 @@ async function main() {
   const client = await connectMongo();
   if (!client) {
     console.error('[seed] MongoDB is not configured. Set MONGODB_URI.');
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   if (!(await shouldRunSeed())) {
@@ -1040,6 +1043,8 @@ async function main() {
       `[seed] Dev rich catalog: +${richCatalog.hiking} hiking, +${richCatalog.camping} camping rows upserted`
     );
     await ensureDemoExploreActivities();
+    const lightCtx = await resolveDemoActivitySeedContext();
+    await runDevQaBundleSeed(lightCtx);
     await runDevRichCalendarSeed();
     if (isMobileInboxSeedEnabled()) {
       await runMobileInboxDemoSeed();
@@ -1972,13 +1977,17 @@ Share your live location and carry extra water in summer months.`
     `[seed] Catalog facilities: upserted=${facilitySeed.upserted} skipped=${facilitySeed.skipped}`
   );
 
-  const { jaisActivityId } = await seedDemoScheduledActivities({
+  const demoActivityCtx = {
     agencyTenantId: agencyTenant.id,
     individualHostTenantId: individualHostTenant.id,
     agencyOwnerId: agencyOwner._id,
     agencyGuideId: agencyGuide._id,
     individualHostId: individualHost._id,
-  });
+  };
+
+  const { jaisActivityId } = await seedDemoScheduledActivities(demoActivityCtx);
+
+  await runDevQaBundleSeed(demoActivityCtx);
 
   await runDevRichCalendarSeed({ force: true });
 
@@ -2290,11 +2299,4 @@ Share your live location and carry extra water in summer months.`
   console.log('Connections demo: see playbook above (buddies / pending / follow notifications)');
 }
 
-main()
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await disconnectMongo();
-  });
+runCliScript(resolveCliScriptName(import.meta.url), main, { connectMongo: false });

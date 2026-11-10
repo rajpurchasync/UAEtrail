@@ -3,6 +3,7 @@ import {
   DESKTOP_MAP_NAV,
   DESKTOP_PEOPLE_NAV,
   DESKTOP_PRIMARY_NAV,
+  DESKTOP_SIDE_NAV_SECTIONS,
   desktopPrimaryNavForSession,
   isDesktopExploreBrowseView,
   isDesktopExploreNavActive,
@@ -13,7 +14,9 @@ import { CONSUMER_HAMBURGER_MENU, MOBILE_LANDING_USER_MENU } from './platform';
 import { EXPLORE_MAP_PATH } from './routingCatalog';
 
 const exploreItem = DESKTOP_PRIMARY_NAV.find((item) => item.key === 'explore');
+const findCrewItem = DESKTOP_PEOPLE_NAV.find((item) => item.key === 'findCrew');
 const socialItem = DESKTOP_PEOPLE_NAV.find((item) => item.key === 'social');
+const searchItem = DESKTOP_MAP_NAV.find((item) => item.key === 'search');
 
 describe('desktop sidebar IA', () => {
   it('has one Explore item and no sibling Browse in Go', () => {
@@ -47,6 +50,16 @@ describe('desktop sidebar IA', () => {
     expect(isDesktopNavItemActive(exploreItem!, '/list', '?layout=list')).toBe(true);
   });
 
+  it('does not mark Explore active when Find crew, Search, or Post own /explore', () => {
+    expect(isDesktopExploreNavActive('/explore', '?view=people')).toBe(false);
+    expect(isDesktopExploreNavActive('/explore', '?view=people&list=1')).toBe(false);
+    expect(isDesktopExploreNavActive('/explore', '?search=1')).toBe(false);
+    expect(isDesktopExploreNavActive('/explore', '?compose=menu')).toBe(false);
+    expect(isDesktopNavItemActive(findCrewItem!, '/explore', '?view=people')).toBe(true);
+    expect(isDesktopNavItemActive(exploreItem!, '/explore', '?view=people')).toBe(false);
+    expect(isDesktopNavItemActive(searchItem!, '/explore', '?search=1')).toBe(true);
+  });
+
   it('marks Social active on friends, groups, and people catalog', () => {
     expect(isDesktopSocialNavActive('/buddies', '')).toBe(true);
     expect(isDesktopSocialNavActive('/groups', '?group=abc')).toBe(true);
@@ -59,6 +72,18 @@ describe('desktop sidebar IA', () => {
     const memberKeys = desktopPrimaryNavForSession(true).map((item) => item.key);
     expect(guestKeys).toEqual(['explore', 'chat']);
     expect(memberKeys).toEqual(['explore', 'plan', 'chat']);
+  });
+
+  it('keeps notification history under Settings, not the You sidebar', () => {
+    const youItems = DESKTOP_SIDE_NAV_SECTIONS.find((section) => section.key === 'you')?.items ?? [];
+    expect(youItems.map((item) => item.key)).toEqual([
+      'history',
+      'requests',
+      'badges',
+      'submissions',
+      'settings',
+    ]);
+    expect(youItems.some((item) => item.key === 'notifications')).toBe(false);
   });
 
   it('hamburger and landing drawer do not keep Explore + Browse as siblings', () => {

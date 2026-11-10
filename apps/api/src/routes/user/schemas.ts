@@ -1,4 +1,4 @@
-import { FACILITY_KINDS } from '@uaetrail/shared-types';
+import { FACILITY_KINDS, PROFILE_FIELD_PRIVACY_KEYS } from '@uaetrail/shared-types';
 import { z } from 'zod';
 import { UserRole } from '../../domain/enums.js';
 import { personNameSchema } from '../../domain/person-name.js';
@@ -51,6 +51,69 @@ export const updateProfileSchema = z
       (body.givenName !== undefined && body.surname !== undefined),
     { message: 'Provide both name and surname.' }
   );
+
+const profileFieldAudienceSchema = z.enum(['hidden', 'friends', 'public']);
+
+const profileDateOfBirthShareSchema = z.enum([
+  'hidden',
+  'year_friends',
+  'year_public',
+  'full_friends',
+  'full_public',
+]);
+
+const profileFriendsListShareSchema = z.enum(['only_me', 'friends_crew', 'mutual_only']);
+
+export const updateProfileFieldPrivacySchema = z
+  .object({
+    fieldPrivacy: z
+      .object(
+        Object.fromEntries(
+          PROFILE_FIELD_PRIVACY_KEYS.map((key) => [key, profileFieldAudienceSchema.optional()])
+        ) as Record<(typeof PROFILE_FIELD_PRIVACY_KEYS)[number], z.ZodOptional<typeof profileFieldAudienceSchema>>
+      )
+      .strict()
+      .optional(),
+    dateOfBirthShare: profileDateOfBirthShareSchema.optional(),
+    friendsListShare: profileFriendsListShareSchema.optional(),
+  })
+  .refine(
+    (body) =>
+      body.fieldPrivacy !== undefined ||
+      body.dateOfBirthShare !== undefined ||
+      body.friendsListShare !== undefined,
+    { message: 'Provide fieldPrivacy, dateOfBirthShare, and/or friendsListShare.' }
+  );
+
+const notificationChannelSchema = z
+  .object({
+    email: z.boolean().optional(),
+    push: z.boolean().optional(),
+    inApp: z.boolean().optional(),
+  })
+  .strict();
+
+export const updateNotificationPreferencesSchema = z
+  .object({
+    topics: z
+      .object({
+        plans: notificationChannelSchema.optional(),
+        social: notificationChannelSchema.optional(),
+        account: notificationChannelSchema.optional(),
+        map_alerts: notificationChannelSchema.optional(),
+      })
+      .strict()
+      .optional(),
+    dnd: z
+      .object({
+        mode: z.enum(['off', 'always', 'schedule']).optional(),
+        fromDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+        toDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
 
 export const requestEmailChangeSchema = z.object({
   newEmail: z.string().email()

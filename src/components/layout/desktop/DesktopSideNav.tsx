@@ -27,7 +27,6 @@ import { planHostedSchedulePath, isPlanHostingFilterRoute, isPlanMemberNavActive
 import { useAuth } from '../../../context/AuthContext';
 import { useInboxUnreadCount } from '../../../hooks/useInboxUnreadCount';
 import { useMemberStatus } from '../../../hooks/useMemberStatus';
-import { useNotificationUnreadCount } from '../../../hooks/useNotificationUnreadCount';
 import { SecureAvatar } from '../../ui/SecureAvatar';
 import { buildSignInRedirect } from '../../../utils/authReturnContext';
 
@@ -124,7 +123,6 @@ export const DesktopSideNav = () => {
   } = useDesktopSideNavExpanded();
   const { canAccessPublishingWorkspace } = useMemberStatus({ enabled: Boolean(user) });
   const unreadChat = useInboxUnreadCount();
-  const unreadNotifications = useNotificationUnreadCount();
 
   useEffect(() => {
     document.documentElement.style.setProperty('--desktop-side-nav-width', `${width}px`);
@@ -133,8 +131,7 @@ export const DesktopSideNav = () => {
     };
   }, [width]);
 
-  const badgeCount = (badge?: DesktopNavBadge) =>
-    badge === 'chat' ? unreadChat : badge === 'notifications' ? unreadNotifications : 0;
+  const badgeCount = (badge?: DesktopNavBadge) => (badge === 'chat' ? unreadChat : 0);
   const displayName = user?.displayName || user?.email || 'Your profile';
   const profileActive = pathname === PROFILE_PATH;
   const sectionTitleClass = compact

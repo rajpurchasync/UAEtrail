@@ -10,7 +10,7 @@ export const GROUPS_PATH = '/groups';
 export const MESSAGES_PATH = '/chat';
 export const MY_REQUESTS_PATH = '/my-requests';
 export const BUDDIES_PATH = '/buddies';
-export const NOTIFICATIONS_PATH = '/notifications';
+export const NOTIFICATIONS_PATH = '/settings/notifications';
 
 export const buddiesIncomingRequestsPath = (): string => `${BUDDIES_PATH}?tab=requests`;
 

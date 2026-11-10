@@ -240,6 +240,7 @@ export const adminApi = {
           facilityId: string;
           amenityState: import('@uaetrail/shared-types').AmenityState;
           note?: string;
+          photoUrl?: string;
           createdAt: string;
         }>;
       }>('/admin/amenity-reports', { auth: true }),

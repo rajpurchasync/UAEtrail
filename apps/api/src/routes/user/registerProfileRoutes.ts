@@ -18,8 +18,15 @@ import {
   confirmEmailChangeSchema,
   requestEmailChangeSchema,
   roleSwitchSchema,
+  updateNotificationPreferencesSchema,
+  updateProfileFieldPrivacySchema,
   updateProfileSchema,
 } from './schemas.js';
+import { patchMemberFieldPrivacy } from '../../services/me-profile-field-privacy.js';
+import {
+  getMemberNotificationPreferences,
+  patchMemberNotificationPreferences,
+} from '../../services/me-notification-preferences.js';
 
 export const registerProfileRoutes = (router: Router): void => {
   router.get('/me/profile-public-preview', async (req, res, next) => {
@@ -55,6 +62,49 @@ export const registerProfileRoutes = (router: Router): void => {
         const data = await patchAuthenticatedMedicalSafetyProfile(
           req.auth!.userId,
           req.body as z.infer<typeof updateMedicalSafetyProfileSchema>
+        );
+        res.json({ data });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  router.patch(
+    '/me/profile/field-privacy',
+    validate({ body: updateProfileFieldPrivacySchema }),
+    async (req, res, next) => {
+      try {
+        const body = req.body as z.infer<typeof updateProfileFieldPrivacySchema>;
+        const data = await patchMemberFieldPrivacy(req.auth!.userId, {
+          fieldPrivacy: body.fieldPrivacy,
+          dateOfBirthShare: body.dateOfBirthShare,
+          friendsListShare: body.friendsListShare,
+        });
+        res.json({ data });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  router.get('/me/notification-preferences', async (req, res, next) => {
+    try {
+      const data = await getMemberNotificationPreferences(req.auth!.userId);
+      res.json({ data });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.patch(
+    '/me/notification-preferences',
+    validate({ body: updateNotificationPreferencesSchema }),
+    async (req, res, next) => {
+      try {
+        const data = await patchMemberNotificationPreferences(
+          req.auth!.userId,
+          req.body as z.infer<typeof updateNotificationPreferencesSchema>
         );
         res.json({ data });
       } catch (error) {

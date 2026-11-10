@@ -181,6 +181,8 @@ export const usePlaceDetailCore = ({
     resolvedKind: effectiveKind,
     place: derived.place,
     loading: query.isLoading,
+    error: query.isError ? (query.error instanceof Error ? query.error.message : 'Could not load this place.') : null,
+    reload: () => void query.refetch(),
     activities: derived.activities,
     reviews: derived.reviews,
     premium: derived.premium,

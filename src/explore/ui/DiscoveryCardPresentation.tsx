@@ -23,7 +23,12 @@ import {
   ACTIVITY_PEEK_SECTION_SPOTS,
 } from '../../content/activityPeekCopy';
 import { EXPLORE_TYPE } from '../../config/exploreTheme';
-import type { DiscoveryCardDetail, DiscoveryCardDetailIcon, DiscoveryCardSections } from '../exploreCopy';
+import {
+  buildActivitySpotsLeftLabel,
+  type DiscoveryCardDetail,
+  type DiscoveryCardDetailIcon,
+  type DiscoveryCardSections,
+} from '../exploreCopy';
 import { DirectionsControl } from '../../components/ui/DirectionsControl';
 import { capitalize } from '../../utils';
 import { SecureAvatar } from '../../components/ui/SecureAvatar';
@@ -680,6 +685,18 @@ export const ExploreVenueImageBadges = ({ card }: { card: DiscoveryCardModel }) 
   );
 };
 
+export const resolveDiscoveryCardCapacityLabel = (card: DiscoveryCardModel): string | null => {
+  const activity = card.source === 'activity' ? card.activity : null;
+  const slotsTotal = activity?.slotsTotal ?? 0;
+  if (activity && slotsTotal > 0) {
+    return buildActivitySpotsLeftLabel(activity.slotsAvailable, activity.slotsTotal, {
+      participantCount: card.participantPreviews?.length,
+      countsGoing: activity.counts?.going,
+    });
+  }
+  return card.sections.partyLabel?.trim() || null;
+};
+
 export const DiscoveryCardCapacityRow = ({
   card,
   compact = false,
@@ -687,15 +704,23 @@ export const DiscoveryCardCapacityRow = ({
   card: DiscoveryCardModel;
   compact?: boolean;
 }) => {
-  const label = card.sections.partyLabel;
+  const label = resolveDiscoveryCardCapacityLabel(card);
   if (!label) return null;
 
+  const activity = card.source === 'activity' && (card.activity?.slotsTotal ?? 0) > 0;
+
   return (
-    <p className={`${compact ? 'text-xs' : 'text-sm'} font-medium ${EXPLORE_TYPE.body}`}>
-      <span className="font-semibold tabular-nums">{label}</span>
-      <span className={`ml-1 ${compact ? 'text-[10px]' : 'ml-1.5 text-xs'} font-medium ${EXPLORE_TYPE.muted}`}>
-        spots
-      </span>
+    <p
+      className={`${compact ? 'text-xs' : 'text-sm'} font-medium break-words leading-snug ${EXPLORE_TYPE.body}`}
+    >
+      <span className={`font-semibold ${activity ? '' : 'tabular-nums'}`}>{label}</span>
+      {!activity && card.sections.partyLabel ? (
+        <span
+          className={`ml-1 ${compact ? 'text-[10px]' : 'ml-1.5 text-xs'} font-medium ${EXPLORE_TYPE.muted}`}
+        >
+          spots
+        </span>
+      ) : null}
     </p>
   );
 };

@@ -1228,7 +1228,17 @@ export const listTenantActivityRequestsDetailed = async (input: {
   }
 
   const tenantEvents = await activitiesCollection()
-    .find(eventFilter, { projection: { _id: 1, title: 1, startAt: 1, locationId: 1, activityType: 1 } })
+    .find(eventFilter, {
+      projection: {
+        _id: 1,
+        title: 1,
+        startAt: 1,
+        locationId: 1,
+        activityType: 1,
+        requirements: 1,
+        audience: 1,
+      },
+    })
     .toArray();
   const eventIds = tenantEvents.map((event) => event._id);
   if (eventIds.length === 0) return [];
@@ -1242,6 +1252,13 @@ export const listTenantActivityRequestsDetailed = async (input: {
         startAt: event.startAt,
         locationId: event.locationId,
         activityType: event.activityType ?? 'hiking',
+        requirements: (() => {
+          const raw = event as unknown as { requirements?: string[] };
+          return Array.isArray(raw.requirements) ? raw.requirements : [];
+        })(),
+        audience:
+          (event as unknown as { audience?: { minAge?: number | null; womenOnly?: boolean } | null })
+            .audience ?? null,
       },
     ])
   );
@@ -1275,8 +1292,10 @@ export const listTenantActivityRequestsDetailed = async (input: {
         title: event.title,
         startAt: event.startAt,
         activityType: event.activityType,
-        location: location ?? { id: event.locationId, name: '' }
-      }
+        requirements: event.requirements,
+        audience: event.audience,
+        location: location ?? { id: event.locationId, name: '' },
+      },
     };
   });
 };

@@ -9,6 +9,7 @@ import type {
   MemberInboxGroupDTO,
   MemberProfileStatsDTO,
   NotificationDTO,
+  NotificationPreferenceSettings,
   ProfileViewerAccessDTO,
   SocialPeopleDTO,
   SocialPeoplePreviewDTO,
@@ -40,12 +41,32 @@ export const accountApi = {
         };
       }>('/me/participant-hub', { auth: true }),
 
-    getPersonPublicProfile: (userId: string, options?: { discover?: boolean }) => {
-      const qs = options?.discover ? '?from=discover' : '';
-      return apiRequest<{ data: PublicMemberProfileDTO; viewerAccess: ProfileViewerAccessDTO }>(
-        `/member/${userId}/profile${qs}`,
-        { auth: Boolean(getStoredSession()) }
-      );
+    getPersonPublicProfile: (
+      userId: string,
+      options?: {
+        discover?: boolean;
+        socialGraph?: boolean;
+        include?: Array<'socialGraph' | 'upcoming' | 'past'>;
+        upcomingLimit?: number;
+        pastLimit?: number;
+      }
+    ) => {
+      const params = new URLSearchParams();
+      if (options?.discover) params.set('from', 'discover');
+      if (options?.socialGraph) params.set('socialGraph', '1');
+      if (options?.include?.length) params.set('include', options.include.join(','));
+      if (options?.upcomingLimit != null) {
+        params.set('upcomingLimit', String(options.upcomingLimit));
+      }
+      if (options?.pastLimit != null) params.set('pastLimit', String(options.pastLimit));
+      const qs = params.toString() ? `?${params.toString()}` : '';
+      return apiRequest<{
+        data: PublicMemberProfileDTO;
+        viewerAccess: ProfileViewerAccessDTO;
+        socialGraph?: import('@uaetrail/shared-types').MemberProfileSocialGraphDTO;
+        upcomingActivities?: ActivityDTO[];
+        pastActivities?: ActivityDTO[];
+      }>(`/member/${userId}/profile${qs}`, { auth: Boolean(getStoredSession()) });
     },
 
     getMeMemberDiscoveryQuota: () =>
@@ -73,6 +94,54 @@ export const accountApi = {
     apiRequest<{ data: ActivityDTO[] }>(
       `/member/${userId}/upcoming-activities?limit=${encodeURIComponent(String(limit))}`
     ),
+
+    getPersonPastActivities: (userId: string, limit = 8) =>
+      apiRequest<{ data: ActivityDTO[] }>(
+        `/member/${userId}/past-activities?limit=${encodeURIComponent(String(limit))}`
+      ),
+
+    getMemberProfileSocialGraph: (
+      userId: string,
+      options?: { parts?: Array<'friends' | 'commonFollows'> }
+    ) => {
+      const params = new URLSearchParams();
+      if (options?.parts?.length) {
+        params.set('parts', options.parts.join(','));
+      }
+      const qs = params.toString() ? `?${params.toString()}` : '';
+      return apiRequest<{ data: import('@uaetrail/shared-types').MemberProfileSocialGraphDTO }>(
+        `/member/${userId}/social-graph${qs}`,
+        { auth: Boolean(getStoredSession()) }
+      );
+    },
+
+    updateMeProfileFieldPrivacy: (patch: {
+      fieldPrivacy?: Partial<import('@uaetrail/shared-types').ProfileFieldPrivacySettings>;
+      dateOfBirthShare?: import('@uaetrail/shared-types').ProfileDateOfBirthShare;
+      friendsListShare?: import('@uaetrail/shared-types').ProfileFriendsListShare;
+    }) =>
+      apiRequest<{
+        data: import('@uaetrail/shared-types').ProfileFieldPrivacySettings & {
+          dateOfBirthShare: import('@uaetrail/shared-types').ProfileDateOfBirthShare;
+          friendsListShare: import('@uaetrail/shared-types').ProfileFriendsListShare;
+        };
+      }>('/me/profile/field-privacy', {
+        method: 'PATCH',
+        auth: true,
+        body: JSON.stringify(patch),
+      }),
+
+    getMeNotificationPreferences: () =>
+      apiRequest<{ data: NotificationPreferenceSettings }>('/me/notification-preferences', {
+        auth: true,
+      }),
+
+    updateMeNotificationPreferences: (patch: Partial<NotificationPreferenceSettings>) =>
+      apiRequest<{ data: NotificationPreferenceSettings }>('/me/notification-preferences', {
+        method: 'PATCH',
+        auth: true,
+        body: JSON.stringify(patch),
+      }),
 
     updateMeProfile: (payload: UserProfile) =>
     apiRequest<{ data: UserProfile }>('/me/profile', {

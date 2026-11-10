@@ -8,6 +8,7 @@ import { shouldShowMobileUnifiedTabHeader } from '../../config/mobileTabHeader';
 import { shouldShowConsumerShellHamburger } from '../../config/platform';
 import { isWideNavRootPath } from '../../config/desktopNav';
 import { useAppScrollFrostedHeader } from '../../hooks/useAppScrollFrostedHeader';
+import { useMinWidthMd } from '../../hooks/useMinWidthMd';
 import { ConsumerHeaderActions } from '../layout/ConsumerHeaderActions';
 import { MobileBackButton } from './MobileBackButton';
 import { MobileProfileHeaderLink } from './MobileProfileHeaderLink';
@@ -71,6 +72,7 @@ export const ConsumerShell = ({
   const { pathname, search } = useLocation();
   const { user } = useAuth();
   const headerFrosted = useAppScrollFrostedHeader();
+  const isDesktopMd = useMinWidthMd();
   const layout: ConsumerLayout = layoutProp ?? (back ? 'stack' : 'tab');
   const layoutUnifiedHeader = shouldShowMobileUnifiedTabHeader(pathname, search, Boolean(user));
   const effectiveSuppressMobileHeader = suppressMobileHeader || layoutUnifiedHeader;
@@ -79,6 +81,8 @@ export const ConsumerShell = ({
   const barTitle = navTitle ?? title;
   const pad = flush ? '' : 'px-4 sm:px-6 lg:px-8';
   const showTabTitleStrip = layout === 'tab' && title && !banner;
+  /** Layout `MobileTabHeader` owns the title on mobile — keep desktop `ConsumerTabBanner` only. */
+  const showTabTitleInChrome = showTabTitleStrip && (!layoutUnifiedHeader || isDesktopMd);
   const showTabActionInStrip = layout === 'tab' && action && !banner;
   const mobileUnifiedTitle = title ?? navTitle;
   const showMobileUnifiedHeader =
@@ -86,7 +90,7 @@ export const ConsumerShell = ({
     Boolean(mobileUnifiedTitle || back || leading || showJourney || action) &&
     (Boolean(banner) || layout === 'tab' || layout === 'editorial' || layout === 'stack');
   const hasTabSticky =
-    layout === 'tab' && Boolean((toolbar && !banner) || showTabTitleStrip || showTabActionInStrip);
+    layout === 'tab' && Boolean((toolbar && !banner) || showTabTitleInChrome || showTabActionInStrip);
   const hasEditorialSticky =
     layout === 'editorial' && !banner && Boolean(toolbar || back || action);
   const hasStackSticky = layout === 'stack' && !banner;
@@ -172,7 +176,10 @@ export const ConsumerShell = ({
               </div>
             )}
 
-            {showJourney && !banner && !(layout === 'tab' && isWideNavRootPath(pathname)) && (
+            {showJourney &&
+              !banner &&
+              !back &&
+              !(layout === 'tab' && isWideNavRootPath(pathname)) && (
               <div className="hidden md:block pt-safe-plus-2 pb-1">
                 <MobileBackButton fallbackTo={journeyFallbackTo} label={journeyLabel} />
               </div>
@@ -227,12 +234,12 @@ export const ConsumerShell = ({
               </>
             )}
 
-            {layout === 'tab' && (
+            {layout === 'tab' && (showTabTitleInChrome || toolbar) && (
               <div className={`hidden md:block pt-safe-plus-2 pb-2 md:py-2 lg:px-3 lg:py-1.5 ${flush ? 'md:px-4' : ''}`}>
-                {showTabTitleStrip && (
+                {showTabTitleInChrome && (
                   <ConsumerTabBanner title={title!} action={showTabActionInStrip ? action : undefined} />
                 )}
-                {toolbar && <div className={showTabTitleStrip ? 'mt-2 lg:mt-1.5' : ''}>{toolbar}</div>}
+                {toolbar && <div className={showTabTitleInChrome ? 'mt-2 lg:mt-1.5' : ''}>{toolbar}</div>}
               </div>
             )}
             {layout === 'tab' && toolbar && (

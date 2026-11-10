@@ -1,6 +1,10 @@
 import { Link } from 'react-router-dom';
+import { formatRideshareVehicleLabel } from '@uaetrail/shared-types';
 import { SIGNIN_PATH, memberProfileLink } from '../../config/routingCatalog';
-import type { ActivityDTO, BuddyRelationshipDTO } from '@uaetrail/shared-types';
+import type { ActivityDTO, BuddyRelationshipDTO, MemberProfileSocialGraphDTO } from '@uaetrail/shared-types';
+import { MemberProfileDeferredSectionAnchor } from './MemberProfileDeferredSectionAnchor';
+import { MemberProfileSocialGraphAnchor } from './MemberProfileSocialGraphAnchor';
+import { MemberProfileSocialSections } from './MemberProfileSocialSections';
 import { MemberFollowControls } from './MemberFollowControls';
 import { MemberProfileBuddyActions } from './MemberProfileBuddyActions';
 import type { PersonPublicProfileDTO } from '../../api/types';
@@ -69,6 +73,16 @@ interface MemberProfileViewProps {
   onCancelBuddyRequest: () => void;
   onMessage: () => void;
   upcomingActivities?: ActivityDTO[];
+  pastActivities?: ActivityDTO[];
+  activitiesLoading?: boolean;
+  activitiesDeferActive?: boolean;
+  onRequestMemberActivities?: () => void;
+  socialGraph?: MemberProfileSocialGraphDTO | null;
+  socialGraphLoading?: boolean;
+  socialGraphLoadingFriends?: boolean;
+  socialGraphLoadingCommon?: boolean;
+  socialGraphDeferActive?: boolean;
+  onRequestSocialGraph?: () => void;
   presentation?: MemberProfilePresentationMode;
   onPresentationChange?: (mode: MemberProfilePresentationMode) => void;
   showPresentationSwitch?: boolean;
@@ -91,18 +105,35 @@ export const MemberProfileView = ({
   onCancelBuddyRequest,
   onMessage,
   upcomingActivities = [],
+  pastActivities = [],
+  activitiesLoading = false,
+  activitiesDeferActive = false,
+  onRequestMemberActivities,
+  socialGraph = null,
+  socialGraphLoading = false,
+  socialGraphLoadingFriends = false,
+  socialGraphLoadingCommon = false,
+  socialGraphDeferActive = false,
+  onRequestSocialGraph,
   presentation = 'social',
   onPresentationChange,
   showPresentationSwitch = false,
 }: MemberProfileViewProps) => {
   const roleLabel = resolvePublicMemberRoleLabel(profile);
   const languages = parseLanguagesList(profile.languages);
-  const hasDetails = Boolean(profile.city || languages.length > 0);
+  const hasDetails = Boolean(
+    profile.city ||
+      languages.length > 0 ||
+      profile.age != null ||
+      profile.birthYear != null ||
+      profile.dateOfBirth
+  );
   const showConnectActions = !isSelf && userLoggedIn;
   const joinedLabel = formatMemberJoinedLabel(profile.memberSince);
   const profileLink = memberProfileLink(userId);
   const publishingTenantId = profile.publishingTenantId?.trim() || null;
-  const showHostSurfaces = profile.isHost || profile.isGuideStaff || profile.stats.activitiesHosted > 0;
+  const showHostSurfaces =
+    profile.isHost || profile.isGuideStaff || (profile.stats?.activitiesHosted ?? 0) > 0;
   const hostView = presentation === 'host';
   return (
     <div className="min-h-0 space-y-3 overflow-y-auto pb-nav-safe animate-fade-up">
@@ -177,10 +208,12 @@ export const MemberProfileView = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 divide-x divide-neutral-100 border-t border-neutral-100">
-          <StatBlock label="Activities joined" value={profile.stats.activitiesAttended} />
-          <StatBlock label="Activities hosted" value={profile.stats.activitiesHosted} />
-        </div>
+        {profile.stats ? (
+          <div className="grid grid-cols-2 divide-x divide-neutral-100 border-t border-neutral-100">
+            <StatBlock label="Activities joined" value={profile.stats.activitiesAttended} />
+            <StatBlock label="Activities hosted" value={profile.stats.activitiesHosted} />
+          </div>
+        ) : null}
       </GlassCard>
 
       {canViewPublicCardFields && profile.bio && (
@@ -213,6 +246,19 @@ export const MemberProfileView = ({
                 <p className="text-[15px] font-semibold text-neutral-900">{profile.city}</p>
               </DetailRow>
             )}
+            {profile.dateOfBirth ? (
+              <DetailRow icon="🎂" label="Date of birth">
+                <p className="text-[15px] font-semibold text-neutral-900">{profile.dateOfBirth}</p>
+              </DetailRow>
+            ) : profile.birthYear != null ? (
+              <DetailRow icon="🎂" label="Birth year">
+                <p className="text-[15px] font-semibold text-neutral-900">{profile.birthYear}</p>
+              </DetailRow>
+            ) : profile.age != null ? (
+              <DetailRow icon="🎂" label="Age">
+                <p className="text-[15px] font-semibold text-neutral-900">{profile.age}</p>
+              </DetailRow>
+            ) : null}
             {languages.length > 0 && (
               <DetailRow icon="🗣️" label="Speaks">
                 <div className="flex flex-wrap gap-1.5">
@@ -231,18 +277,73 @@ export const MemberProfileView = ({
         </GlassCard>
       )}
 
-      {canViewTrustedFields && upcomingActivities.length > 0 && (!showHostSurfaces || hostView) && (
+      <MemberProfileSocialGraphAnchor
+        active={socialGraphDeferActive}
+        onVisible={() => onRequestSocialGraph?.()}
+      >
+        <MemberProfileSocialSections
+          graph={socialGraph}
+          loading={socialGraphLoading}
+          loadingFriends={socialGraphLoadingFriends}
+          loadingCommonFollows={socialGraphLoadingCommon}
+          userLoggedIn={userLoggedIn}
+          isSelf={isSelf}
+        />
+      </MemberProfileSocialGraphAnchor>
+
+      <MemberProfileDeferredSectionAnchor
+        active={activitiesDeferActive}
+        onVisible={() => onRequestMemberActivities?.()}
+      >
+        {activitiesLoading ? (
+          <GlassCard padding>
+            <p className="text-sm text-neutral-500">Loading activities…</p>
+          </GlassCard>
+        ) : null}
+
+        {upcomingActivities.length > 0 && (!showHostSurfaces || hostView) ? (
+          <GlassCard padding className="space-y-3">
+            <AccountSectionHeader
+              title={hostView && showHostSurfaces ? 'Upcoming on the map' : 'Upcoming activities'}
+            />
+            <div className="space-y-2">
+              {upcomingActivities.map((activity) => (
+                <ProfileActivityListRow key={activity.id} activity={activity} />
+              ))}
+            </div>
+          </GlassCard>
+        ) : null}
+
+        {pastActivities.length > 0 ? (
+          <GlassCard padding className="space-y-3">
+            <AccountSectionHeader title="Trip history" />
+            <div className="space-y-2">
+              {pastActivities.map((activity) => (
+                <ProfileActivityListRow key={activity.id} activity={activity} />
+              ))}
+            </div>
+          </GlassCard>
+        ) : null}
+      </MemberProfileDeferredSectionAnchor>
+
+      {profile.vehicles && profile.vehicles.length > 0 ? (
         <GlassCard padding className="space-y-3">
-          <AccountSectionHeader
-            title={hostView && showHostSurfaces ? 'Upcoming on the map' : 'Upcoming activities'}
-          />
-          <div className="space-y-2">
-            {upcomingActivities.map((activity) => (
-              <ProfileActivityListRow key={activity.id} activity={activity} />
+          <SectionHeading>My cars</SectionHeading>
+          <ul className="space-y-2">
+            {profile.vehicles.map((vehicle) => (
+              <li
+                key={vehicle.id}
+                className="rounded-xl border border-neutral-100 bg-neutral-50 px-3 py-2 text-sm text-neutral-800"
+              >
+                <p className="font-semibold text-neutral-900">{formatRideshareVehicleLabel(vehicle)}</p>
+                {vehicle.plateNumber ? (
+                  <p className="mt-0.5 text-xs font-medium text-neutral-500">Plate {vehicle.plateNumber}</p>
+                ) : null}
+              </li>
             ))}
-          </div>
+          </ul>
         </GlassCard>
-      )}
+      ) : null}
 
       {hostView && canViewTrustedFields && publishingTenantId ? (
         <MemberProfileHostReviews publishingTenantId={publishingTenantId} />

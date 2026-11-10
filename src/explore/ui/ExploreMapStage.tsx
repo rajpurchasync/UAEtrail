@@ -107,15 +107,15 @@ export type ExploreMapStageProps = {
   onGuestGatedAction?: (action: import('@uaetrail/shared-types').ActivityMapPeekActionId) => void;
   joinInvitePeekBanner?: string | null;
   onShareActivity?: () => void;
-  /** Desktop overlay — Find crew rail or guest sign-in popup. */
+  /** Desktop overlay — guest sign-in gates centered over the map. */
   desktopRightPanelOverlay?: ReactNode;
-  /** `rail` = right column; `centered` = modal over map (guest gates). */
-  desktopMapOverlayLayout?: 'rail' | 'centered';
   /** Find crew — people pins only, list docked beside the map, no outing filters. */
   peopleMap?: boolean;
   /** Search modal + results — scoped to map pane. */
   mapSearchOverlay?: ReactNode;
   mapSearchOpen?: boolean;
+  /** Leaflet invalidateSize when left rails or list/crew modes change width. */
+  mapLayoutRevision?: boolean;
 };
 
 export const ExploreMapStage = ({
@@ -185,10 +185,10 @@ export const ExploreMapStage = ({
   joinInvitePeekBanner = null,
   onShareActivity,
   desktopRightPanelOverlay = null,
-  desktopMapOverlayLayout = 'rail',
   peopleMap = false,
   mapSearchOverlay = null,
   mapSearchOpen = false,
+  mapLayoutRevision = false,
 }: ExploreMapStageProps) => {
   const [searchParams] = useSearchParams();
   const [guestPreviewDismissed, setGuestPreviewDismissed] = useState(() =>
@@ -217,19 +217,12 @@ export const ExploreMapStage = ({
     !guestExplorePreviewLimitReached() &&
     !mapSearchOpen &&
     !hasSessionExpiredQuery(searchParams);
-  const dockCrewPanel = Boolean(
-    peopleMap && desktopRightPanelOverlay && desktopMapOverlayLayout === 'rail'
-  );
   const guestGatedActionForActivity = user ? undefined : onGuestGatedAction;
   const guestGatedActionForPlace =
     user || !onGuestGatedAction ? undefined : () => onGuestGatedAction('view_detail');
 
   return (
-  <div
-    className={`explore-map-stage relative flex min-h-0 min-w-0 flex-1 overflow-hidden ${
-      dockCrewPanel ? 'flex-row' : 'flex-col'
-    }`}
-  >
+  <div className="explore-map-stage relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
     <div className="relative z-0 min-h-0 min-w-0 flex-1 isolate overflow-hidden">
       <div className="absolute inset-0 z-0 min-h-[280px]">
         <ExploreMapLoadErrorBoundary onRetry={onReloadMap}>
@@ -253,7 +246,7 @@ export const ExploreMapStage = ({
           deviceLocation={deviceLocation}
           className="h-full w-full min-h-[280px]"
           onMapReady={handleMapReady}
-          layoutRevision={listOpen || peopleMap}
+          layoutRevision={mapLayoutRevision || listOpen || peopleMap}
           onSelectedPinScreenPoint={handleSelectedPinScreenPoint}
         />
         </Suspense>
@@ -442,15 +435,9 @@ export const ExploreMapStage = ({
       ) : null}
     </div>
 
-    {dockCrewPanel ? desktopRightPanelOverlay : null}
-
-    {!dockCrewPanel && desktopRightPanelOverlay ? (
+    {desktopRightPanelOverlay ? (
       <div
-        className={
-          desktopMapOverlayLayout === 'centered'
-            ? `pointer-events-none absolute inset-0 ${EXPLORE_Z.guestJoinSheet}`
-            : 'pointer-events-none absolute inset-0 z-[1200] flex h-full min-h-0 justify-end'
-        }
+        className={`pointer-events-none absolute inset-0 ${EXPLORE_Z.guestJoinSheet}`}
         role="presentation"
       >
         {desktopRightPanelOverlay}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Mail, Lock } from 'lucide-react';
 import { AuthFunnelShell } from '../components/auth/AuthFunnelShell';
@@ -32,18 +32,21 @@ import { buildAuthGateUrls, clearAuthReturnContext } from '../utils/authReturnCo
 import { PageMeta } from '../components/seo/PageMeta';
 import { PRODUCT_AUTH_SIGNIN_SUBLINE } from '../content/productNorthStar';
 import { shouldForceSignupWelcome } from '../utils/signupProfileGate';
+import {
+  fetchDemoLoginCatalog,
+  type DemoLoginCatalogAccount,
+} from '../hooks/accountAuthClientApi';
 
 export const SignIn = () => {
   const { signIn, signInDemo, signInWithGoogle, loading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [demoCatalog, setDemoCatalog] = useState<DemoLoginCatalogAccount[]>([]);
+  const [demoPick, setDemoPick] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  if (hasSessionExpiredQuery(searchParams)) {
-    return <Navigate to={sessionExpiredLandingPath()} replace />;
-  }
   const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
   const isPrivateLanHost =
     /^192\.168\./.test(hostname) ||
@@ -59,6 +62,21 @@ export const SignIn = () => {
     (isDevMode && (isLocalDevHost || isPrivateLanHost)) ||
     isTestMode ||
     isNonProdRuntime;
+
+  useEffect(() => {
+    if (!showRoleQuickAccess) return;
+    void fetchDemoLoginCatalog().then(setDemoCatalog);
+  }, [showRoleQuickAccess]);
+
+  const demoAccountsByRole = useMemo(() => {
+    const groups = new Map<string, DemoLoginCatalogAccount[]>();
+    for (const account of demoCatalog) {
+      const list = groups.get(account.roleLabel) ?? [];
+      list.push(account);
+      groups.set(account.roleLabel, list);
+    }
+    return [...groups.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  }, [demoCatalog]);
 
   const rawRedirect = searchParams.get('redirect');
   const from = resolveAuthRedirect(
@@ -138,20 +156,13 @@ export const SignIn = () => {
     );
   };
 
-  const demoAccounts = [
-    { label: 'Admin', email: 'admin@uaetrails.app' },
-    { label: 'Participant', email: 'visitor@uaetrails.app' },
-    { label: 'Individual host', email: 'host@uaetrails.app' },
-    { label: 'Agency', email: 'organizer@uaetrails.app' },
-    { label: 'Shop', email: 'shop@uaetrails.app' },
-  ];
-
-  const quickLogin = async (account: (typeof demoAccounts)[number]) => {
+  const quickLogin = async (pickEmail: string) => {
+    if (!pickEmail) return;
     setError(null);
-    setEmail(account.email);
+    setEmail(pickEmail);
     setPassword('');
     try {
-      await completeAuth(await signInDemo(account.email));
+      await completeAuth(await signInDemo(pickEmail));
     } catch (submissionError) {
       setError(submissionError instanceof Error ? submissionError.message : 'That didn\'t work — double-check your email and password.');
     }
@@ -175,6 +186,10 @@ export const SignIn = () => {
       setError(submissionError instanceof Error ? submissionError.message : 'Google sign-in didn\'t complete — try again.');
     }
   };
+
+  if (hasSessionExpiredQuery(searchParams)) {
+    return <Navigate to={sessionExpiredLandingPath()} replace />;
+  }
 
   return (
     <AuthFunnelShell
@@ -254,21 +269,42 @@ export const SignIn = () => {
         {showRoleQuickAccess && (
           <div className="mt-6 border-t border-neutral-200/80 pt-4 dark:border-neutral-700">
             <p className="mb-2 text-xs font-medium text-neutral-600 dark:text-neutral-400">
-              Role quick access (non-production)
+              Dev quick sign-in (pick a demo user)
             </p>
-            <div className="flex flex-wrap gap-2">
-              {demoAccounts.map((account) => (
-                <button
-                  key={account.label}
-                  type="button"
-                  onClick={() => void quickLogin(account)}
-                  className="rounded-lg bg-neutral-100 px-2.5 py-1.5 text-xs font-medium text-neutral-700 active:bg-neutral-200 disabled:opacity-60 dark:bg-neutral-800 dark:text-neutral-200"
+            {demoCatalog.length > 0 ? (
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <select
+                  className="w-full flex-1 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-800 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100"
+                  value={demoPick}
+                  onChange={(event) => setDemoPick(event.target.value)}
                   disabled={loading}
+                  aria-label="Choose a demo account"
                 >
-                  {account.label}
+                  <option value="">Select name…</option>
+                  {demoAccountsByRole.map(([roleLabel, accounts]) => (
+                    <optgroup key={roleLabel} label={roleLabel}>
+                      {accounts.map((account) => (
+                        <option key={account.email} value={account.email} title={account.email}>
+                          {account.displayName}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => void quickLogin(demoPick)}
+                  className="shrink-0 rounded-lg bg-neutral-100 px-3 py-2 text-sm font-medium text-neutral-800 active:bg-neutral-200 disabled:opacity-60 dark:bg-neutral-800 dark:text-neutral-100"
+                  disabled={loading || !demoPick}
+                >
+                  Sign in
                 </button>
-              ))}
-            </div>
+              </div>
+            ) : (
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                Loading demo accounts… (requires API on localhost)
+              </p>
+            )}
           </div>
         )}
     </AuthFunnelShell>

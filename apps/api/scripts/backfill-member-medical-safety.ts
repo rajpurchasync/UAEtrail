@@ -7,7 +7,8 @@ import {
   MEDICAL_CONDITIONS_NA,
   isMedicalSafetyProfileComplete,
 } from '@uaetrail/shared-types';
-import { connectMongo, getMongoClient } from '../src/lib/mongo.js';
+import { getMongoClient } from '../src/lib/mongo.js';
+import { resolveCliScriptName, runCliScript } from './cli-script-runner.js';
 import { medicalSafetyFieldsFromAuthProfile } from '../src/lib/member-medical-safety-profile.js';
 import type { AuthUserRecord } from '../src/lib/auth-users-store.js';
 
@@ -29,7 +30,6 @@ const randomUaePhone = (): string => {
 };
 
 const main = async () => {
-  await connectMongo();
   const collection = getMongoClient()!.db().collection<AuthUserRecord>('auth_users');
   const docs = await collection.find({}).project({ _id: 1, profile: 1 }).toArray();
 
@@ -61,10 +61,6 @@ const main = async () => {
   }
 
   console.log(`backfill-member-medical-safety: updated=${updated} skipped=${skipped} total=${docs.length}`);
-  process.exit(0);
 };
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+runCliScript(resolveCliScriptName(import.meta.url), main);

@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useState, type ReactNode } from 'react';
 import {
   changeAccountPassword,
   confirmAccountEmailChange,
@@ -14,12 +14,34 @@ interface ProfileAccountSettingsSectionsProps {
   email: string;
   onEmailChanged: () => void | Promise<void>;
   onDeleted: () => void | Promise<void>;
+  /** Flat blocks when nested in {@link ConsumerDetailSection}. */
+  embedded?: boolean;
 }
+
+const AccountBlock = ({
+  embedded,
+  children,
+  className = '',
+}: {
+  embedded: boolean;
+  children: ReactNode;
+  className?: string;
+}) =>
+  embedded ? (
+    <div className={`space-y-3 rounded-xl border border-neutral-200/80 bg-white p-3 dark:border-neutral-700 dark:bg-neutral-900/40 ${className}`}>
+      {children}
+    </div>
+  ) : (
+    <GlassCard padding className={className}>
+      {children}
+    </GlassCard>
+  );
 
 export const ProfileAccountSettingsSections = ({
   email,
   onEmailChanged,
   onDeleted,
+  embedded = false,
 }: ProfileAccountSettingsSectionsProps) => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -112,7 +134,7 @@ export const ProfileAccountSettingsSections = ({
 
   return (
     <div className="space-y-3">
-      <GlassCard padding>
+      <AccountBlock embedded={embedded}>
         <h2 className="text-sm font-semibold text-neutral-900">✉️ Change email</h2>
         <p className="mt-1 text-xs text-neutral-600">Current: {email}</p>
         <div className="mt-3 space-y-3">
@@ -174,9 +196,9 @@ export const ProfileAccountSettingsSections = ({
           {emailMessage && <p className="text-xs text-emerald-700">{emailMessage}</p>}
           {emailError && <p className="text-xs text-red-600">{emailError}</p>}
         </div>
-      </GlassCard>
+      </AccountBlock>
 
-      <GlassCard padding>
+      <AccountBlock embedded={embedded}>
         <h2 className="text-sm font-semibold text-neutral-900">🔒 Change password</h2>
         <p className="mt-1 text-xs text-neutral-600">
           Enter your current password, then choose a new one.
@@ -224,7 +246,7 @@ export const ProfileAccountSettingsSections = ({
             {passwordMessage}
           </p>
         )}
-      </GlassCard>
+      </AccountBlock>
 
       <AccountDeleteSection onDeleted={() => void onDeleted()} />
     </div>

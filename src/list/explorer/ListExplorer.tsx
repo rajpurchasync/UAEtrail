@@ -239,12 +239,16 @@ export const ListExplorer = ({
 
   return (
     <div
-      className={`relative flex h-full min-h-0 flex-col self-stretch overflow-hidden bg-neutral-50 ${
+      className={`relative flex h-full min-h-0 flex-col self-stretch overflow-hidden ${
+        embedded ? 'w-full min-w-0 flex-1 bg-white dark:bg-neutral-950' : 'bg-neutral-50'
+      } ${
         mapColumnVisible && listPanelWidthPx != null
           ? 'shrink-0'
           : mapColumnVisible
             ? 'min-w-[360px] max-w-[680px] shrink basis-[450px]'
-            : 'min-w-0 flex-1'
+            : embedded
+              ? ''
+              : 'min-w-0 flex-1'
       }`}
       style={
         mapColumnVisible && listPanelWidthPx != null
@@ -278,17 +282,17 @@ export const ListExplorer = ({
       />
       <div
         ref={setScrollElement}
-        className={`${APP_SCROLL_BODY_CLASS} list-explorer-scroll h-0 min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain ${
-          embedded
-            ? 'pb-6'
-            : 'pb-[calc(var(--bottom-nav-height,56px)+var(--safe-bottom,0px)+24px)]'
+        className={`${APP_SCROLL_BODY_CLASS} list-explorer-scroll h-0 min-h-0 w-full min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain ${
+          embedded ? 'explore-browse-rail-scroll pb-6' : 'pb-[calc(var(--bottom-nav-height,56px)+var(--safe-bottom,0px)+24px)]'
         }`}
       >
         <div
-          className={`mx-auto w-full px-3 py-3 ${
-            embedded || mapColumnVisible
-              ? 'max-w-none md:px-4 md:py-4'
-              : 'max-w-6xl md:px-6 md:py-5'
+          className={`mx-auto w-full py-3 ${
+            embedded
+              ? 'max-w-none pl-3 pr-1.5 md:pl-4 md:pr-1.5 md:py-4'
+              : mapColumnVisible
+                ? 'max-w-none px-3 md:px-4 md:py-4'
+                : 'max-w-6xl px-3 md:px-6 md:py-5'
           }`}
         >
           {scrollLeading}

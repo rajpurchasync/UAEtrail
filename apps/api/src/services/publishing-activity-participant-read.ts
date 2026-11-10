@@ -6,6 +6,7 @@ import {
   hostVisibleMedicalSafety,
   medicalSafetyFieldsFromAuthProfile,
 } from '../lib/member-medical-safety-profile.js';
+import { hostJoinProfileSnippetForActivity } from '../lib/host-join-profile-snippet.js';
 import { activityTimingHasEnded, mapHostParticipantToDto } from '../lib/participant-roster-dto.js';
 
 export const loadTenantActivityParticipantRoster = async (tenantId: string, activityId: string) => {
@@ -18,6 +19,10 @@ export const loadTenantActivityParticipantRoster = async (tenantId: string, acti
   const activityEnded = eventDoc
     ? activityTimingHasEnded(eventDoc.startAt, eventDoc.endAt ?? null)
     : false;
+  const activityDisclosure = {
+    requirements: eventDoc?.requirements ?? [],
+    audience: eventDoc?.audience ?? null,
+  };
 
   const participants = await listActivityParticipantsWithUsers(activityId);
 
@@ -36,6 +41,14 @@ export const loadTenantActivityParticipantRoster = async (tenantId: string, acti
           avatarUrl: p.user.profile?.avatarUrl ?? null,
           medicalSafety: hostVisibleMedicalSafety(
             medicalSafetyFieldsFromAuthProfile(p.user.profile)
+          ),
+          joinProfile: hostJoinProfileSnippetForActivity(
+            {
+              dateOfBirth: (p.user.profile as { dateOfBirth?: string | null } | null)?.dateOfBirth ?? null,
+              gender: (p.user.profile as { gender?: 'male' | 'female' | 'prefer_not_to_say' | null } | null)
+                ?.gender ?? null,
+            },
+            activityDisclosure
           ),
         },
         activityEnded

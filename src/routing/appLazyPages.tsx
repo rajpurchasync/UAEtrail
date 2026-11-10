@@ -50,6 +50,12 @@ export const InboundProfileHistoryAliasRedirect = lazy(() =>
 export const InboundJourneyMapAliasRedirect = lazy(() =>
   loadInboundRedirects().then((m) => ({ default: m.InboundJourneyMapAliasRedirect }))
 );
+export const InboundLegacyProfileSettingsRedirect = lazy(() =>
+  loadInboundRedirects().then((m) => ({ default: m.InboundLegacyProfileSettingsRedirect }))
+);
+export const InboundLegacyNotificationsRedirect = lazy(() =>
+  loadInboundRedirects().then((m) => ({ default: m.InboundLegacyNotificationsRedirect }))
+);
 
 export const loadExploreEntryRedirects = () => import('./exploreEntryRedirects');
 export const ShopBrowseRoute = lazy(() =>
@@ -140,6 +146,9 @@ export const JourneyMapPage = lazy(() =>
 );
 export const Profile = lazy(() => import('../pages/Profile').then((m) => ({ default: m.Profile })));
 export const ProfileSettings = lazy(() => import('../pages/ProfileSettings').then((m) => ({ default: m.ProfileSettings })));
+export const ProfileSettingsDisplay = lazy(() =>
+  import('../pages/ProfileSettingsDisplay').then((m) => ({ default: m.ProfileSettingsDisplay }))
+);
 export const ProfileSettingsAccount = lazy(() =>
   import('../pages/ProfileSettingsAccount').then((m) => ({ default: m.ProfileSettingsAccount }))
 );
@@ -167,9 +176,6 @@ export const Submissions = lazy(() => import('../pages/Submissions').then((m) =>
 export const ProfileReviews = lazy(() => import('../pages/ProfileReviews').then((m) => ({ default: m.ProfileReviews })));
 export const JoinRequestDetail = lazy(() =>
   import('../pages/JoinRequestDetail').then((m) => ({ default: m.JoinRequestDetail }))
-);
-export const Notifications = lazy(() =>
-  import('../pages/Notifications').then((m) => ({ default: m.Notifications }))
 );
 export const Groups = lazy(() => import('../pages/Groups').then((m) => ({ default: m.Groups })));
 export const Buddies = lazy(() => import('../pages/Buddies').then((m) => ({ default: m.Buddies })));

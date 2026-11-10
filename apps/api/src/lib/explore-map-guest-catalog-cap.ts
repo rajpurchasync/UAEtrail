@@ -38,11 +38,16 @@ export const compareGuestPreviewPlaces = (a: ExploreMapItemDTO, b: ExploreMapIte
 };
 
 /**
- * Anonymous `GET /explore/map` preview — on by default to limit scrape/load.
- * Set `EXPLORE_MAP_GUEST_CATALOG_CAP=0` only for local/integration overrides.
+ * Anonymous `GET /explore/map` preview — limits guest scrape/load in production.
+ * - Production: capped unless `EXPLORE_MAP_GUEST_CATALOG_CAP=0`
+ * - Non-production: full catalog unless `EXPLORE_MAP_GUEST_CATALOG_CAP=1`
  */
-export const isGuestExploreMapCatalogCapEnabled = (): boolean =>
-  process.env.EXPLORE_MAP_GUEST_CATALOG_CAP !== '0';
+export const isGuestExploreMapCatalogCapEnabled = (): boolean => {
+  const raw = process.env.EXPLORE_MAP_GUEST_CATALOG_CAP?.trim().toLowerCase();
+  if (raw === '0' || raw === 'false') return false;
+  if (raw === '1' || raw === 'true') return true;
+  return process.env.NODE_ENV === 'production';
+};
 
 export const applyGuestExploreMapCatalogCap = (items: ExploreMapItemDTO[]): ExploreMapItemDTO[] => {
   const places = items.filter(isGuestMapPlaceItem).sort(compareGuestPreviewPlaces);

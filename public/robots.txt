@@ -9,6 +9,7 @@ Disallow: /verify
 Disallow: /forgot-password
 Disallow: /messages
 Disallow: /notifications
+Disallow: /settings/notifications
 Disallow: /my-requests
 Disallow: /my-rewards
 Disallow: /profile

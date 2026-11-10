@@ -7,13 +7,12 @@ import { useMemberStatus } from '../hooks/useMemberStatus';
 import { useAuth } from '../context/AuthContext';
 import { CATALOG_FRESH_MS } from '../lib/catalogSnapshot';
 
-const consoleHubKey = (tenantId: string) => ['console-hub', tenantId] as const;
+const consoleHubKey = (tenantId: string, fetchActivities: boolean) =>
+  ['console-hub', tenantId, fetchActivities ? 'full' : 'queue'] as const;
 
-async function fetchConsoleHub(tenantId: string) {
-  const [activities, requests] = await Promise.all([
-    listActivities(tenantId),
-    getActivityJoinRequests(tenantId),
-  ]);
+async function fetchConsoleHub(tenantId: string, fetchActivities: boolean) {
+  const requests = await getActivityJoinRequests(tenantId);
+  const activities = fetchActivities ? await listActivities(tenantId) : [];
   return {
     activities,
     requests,
@@ -21,8 +20,14 @@ async function fetchConsoleHub(tenantId: string) {
   };
 }
 
+type ConsoleHubOptions = {
+  /** When false, only join queue loads (plan desktop hosting hub lists use scoped `/publishing/activities` filters). */
+  fetchActivities?: boolean;
+};
+
 /** Publishing workspace hub: activities + join queue for active tenant. */
-export const useConsoleHubData = (enabled = true) => {
+export const useConsoleHubData = (enabled = true, options?: ConsoleHubOptions) => {
+  const fetchActivities = options?.fetchActivities !== false;
   const { user } = useAuth();
   const hostStatus = useMemberStatus({ enabled: Boolean(user) });
   const storedTenantId = getActiveTenantId();
@@ -36,8 +41,8 @@ export const useConsoleHubData = (enabled = true) => {
   }, [hostStatus.tenantId]);
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: tenantId ? consoleHubKey(tenantId) : ['console-hub', 'none'],
-    queryFn: () => fetchConsoleHub(tenantId!),
+    queryKey: tenantId ? consoleHubKey(tenantId, fetchActivities) : ['console-hub', 'none'],
+    queryFn: () => fetchConsoleHub(tenantId!, fetchActivities),
     enabled: enabled && Boolean(tenantId),
     staleTime: CATALOG_FRESH_MS,
   });
@@ -75,7 +80,7 @@ export const useConsoleHubData = (enabled = true) => {
 
   const reload = useCallback(async () => {
     if (tenantId) {
-      await queryClient.invalidateQueries({ queryKey: consoleHubKey(tenantId) });
+      await queryClient.invalidateQueries({ queryKey: ['console-hub', tenantId] });
     }
     await refetch();
   }, [queryClient, refetch, tenantId]);

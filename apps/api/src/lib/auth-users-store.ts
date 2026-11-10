@@ -44,6 +44,12 @@ export type AuthUserRecord = {
     countryCode?: UserCountryCode | null;
     languages?: string | null;
     profileVisibility?: 'public' | 'group_members' | 'private';
+    fieldPrivacy?: Partial<import('@uaetrail/shared-types').ProfileFieldPrivacySettings>;
+    dateOfBirthShare?: import('@uaetrail/shared-types').ProfileDateOfBirthShare;
+    friendsListShare?: import('@uaetrail/shared-types').ProfileFriendsListShare;
+    notificationPreferences?: Partial<
+      import('@uaetrail/shared-types').NotificationPreferenceSettings
+    >;
     switchedFromRole?: 'PLATFORM_ADMIN' | 'MERCHANT_ADMIN' | 'TENANT_OWNER' | 'TENANT_ADMIN' | 'TENANT_GUIDE' | null;
     /** When true, may grant/revoke other `PLATFORM_ADMIN` accounts. */
     platformMasterAdmin?: boolean;
@@ -268,6 +274,18 @@ export const updateAuthUserProfile = async (
   if (patch.languages !== undefined) setFields['profile.languages'] = patch.languages ?? null;
   if (patch.profileVisibility !== undefined) {
     setFields['profile.profileVisibility'] = patch.profileVisibility;
+  }
+  if (patch.fieldPrivacy !== undefined) {
+    setFields['profile.fieldPrivacy'] = patch.fieldPrivacy;
+  }
+  if (patch.dateOfBirthShare !== undefined) {
+    setFields['profile.dateOfBirthShare'] = patch.dateOfBirthShare;
+  }
+  if (patch.friendsListShare !== undefined) {
+    setFields['profile.friendsListShare'] = patch.friendsListShare;
+  }
+  if (patch.notificationPreferences !== undefined) {
+    setFields['profile.notificationPreferences'] = patch.notificationPreferences;
   }
   if (patch.platformMasterAdmin !== undefined) {
     setFields['profile.platformMasterAdmin'] = patch.platformMasterAdmin;

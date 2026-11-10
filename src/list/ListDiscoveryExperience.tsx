@@ -415,7 +415,9 @@ export const ListDiscoveryExperience = ({
       ) : (
         <div
           ref={sideMapWidth.splitRef}
-          className="flex h-0 min-h-0 min-w-0 flex-1 flex-row overflow-hidden"
+          className={`flex h-0 min-h-0 min-w-0 flex-1 flex-row overflow-hidden ${
+            embeddedOnExplore ? 'w-full' : ''
+          }`}
         >
           <ListExplorer
             cards={cards}

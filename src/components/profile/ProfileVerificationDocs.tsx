@@ -21,7 +21,11 @@ const DOC_TYPES: Array<{ value: VerificationDocumentType; label: string }> = [
   { value: 'other', label: 'Other' },
 ];
 
-export const ProfileVerificationDocs = () => {
+type ProfileVerificationDocsProps = {
+  embedded?: boolean;
+};
+
+export const ProfileVerificationDocs = ({ embedded = false }: ProfileVerificationDocsProps) => {
   const [rows, setRows] = useState<MemberVerificationDocumentDTO[]>([]);
   const [docType, setDocType] = useState<VerificationDocumentType>('trade_licence');
   const [error, setError] = useState<string | null>(null);
@@ -49,8 +53,8 @@ export const ProfileVerificationDocs = () => {
     }
   };
 
-  return (
-    <GlassCard className="mt-4 space-y-3 p-4">
+  const body = (
+  <>
       <h2 className="text-sm font-bold">Host verification</h2>
       <p className="text-sm text-neutral-600">
         Paid outings need a verified business profile. Submit a licence or permit for ops review.
@@ -68,6 +72,16 @@ export const ProfileVerificationDocs = () => {
           </li>
         ))}
       </ul>
-    </GlassCard>
+    </>
   );
+
+  if (embedded) {
+    return (
+      <div className="mt-3 space-y-3 rounded-xl border border-neutral-200/80 bg-white p-3 dark:border-neutral-700 dark:bg-neutral-900/40">
+        {body}
+      </div>
+    );
+  }
+
+  return <GlassCard className="mt-4 space-y-3 p-4">{body}</GlassCard>;
 };

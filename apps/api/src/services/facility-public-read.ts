@@ -2,7 +2,25 @@ import type { FacilityDTO, FacilityViewerAccessDTO } from '@uaetrail/shared-type
 import { ApiError } from '../lib/api-error.js';
 import { toFacilityDto } from '../lib/facility-mappers.js';
 import { findFacilityForDetailView, listFacilitiesPaged } from '../lib/facilities-store.js';
+import { getFacilityAmenityReportSummary } from '../lib/amenity-reports-store.js';
+import { findLocationForDetailView } from '../lib/activities-store.js';
 import { buildFacilityViewerAccess } from './facility-viewer-access.js';
+
+const resolveParentPlaceName = async (input: {
+  parentPlaceId: string | null | undefined;
+  viewerUserId: string | null;
+  viewerRole: string | null;
+}): Promise<string | null> => {
+  const parentPlaceId = input.parentPlaceId?.trim();
+  if (!parentPlaceId) return null;
+  const parent = await findLocationForDetailView(
+    parentPlaceId,
+    input.viewerUserId,
+    input.viewerRole
+  );
+  const name = parent?.name?.trim();
+  return name || null;
+};
 
 export type PublicFacilityDetailPayload = {
   data: FacilityDTO;
@@ -34,7 +52,32 @@ export const loadPublicFacilityDetail = async (input: {
     throw new ApiError(404, 'facility_not_found', 'Facility not found.');
   }
 
-  return { data: toFacilityDto(facility), viewerAccess };
+  const base = toFacilityDto(facility);
+  const [amenitySummary, parentPlaceName] = await Promise.all([
+    getFacilityAmenityReportSummary(input.facilityId),
+    resolveParentPlaceName({
+      parentPlaceId: facility.parentPlaceId,
+      viewerUserId: input.viewerUserId,
+      viewerRole: input.viewerRole ?? null,
+    }),
+  ]);
+  const { pending, latest } = amenitySummary;
+
+  return {
+    data: {
+      ...base,
+      parentPlaceName,
+      lastReportedAmenityState: latest?.amenityState ?? null,
+      lastReportedAmenityAt: latest ? latest.createdAt.toISOString() : null,
+      pendingAmenityReview: pending
+        ? {
+            amenityState: pending.amenityState,
+            submittedAt: pending.createdAt.toISOString(),
+          }
+        : null,
+    },
+    viewerAccess,
+  };
 };
 
 export const listPublicFacilitiesPaged = async (input: {

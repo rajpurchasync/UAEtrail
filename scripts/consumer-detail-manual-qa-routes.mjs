@@ -45,10 +45,10 @@ const ROUTES = [
   { surface: 'Shop', path: '/shop/:id' },
   { surface: 'Agency', path: '/agency/:slug' },
   { surface: 'Partner', path: '/partner/:slug' },
-  { surface: 'Notifications', path: '/notifications' },
+  { surface: 'Notifications', path: '/settings/notifications' },
   { surface: 'Badges', path: '/profile/badges' },
   { surface: 'My Map', path: '/profile/history/map' },
-  { surface: 'Settings', path: '/profile/settings' },
+  { surface: 'App settings', path: '/settings' },
   { surface: 'Landing (guest)', path: '/', note: 'signed-in should redirect to /explore' },
 ];
 

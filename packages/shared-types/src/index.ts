@@ -13,6 +13,7 @@ import type {
 } from './explore-plan-projection.js';
 import type { HostParticipantRosterStatus, ParticipantHostRatingDTO } from './participant-roster.js';
 import type { MemberMedicalSafetyDTO } from './member-medical-safety.js';
+import type { HostJoinProfileSnippetDTO } from './join-host-profile-disclosure.js';
 import type { ExploreActivityMode } from './explore-activity-mode.js';
 import type { ActivityGroupChatPostPolicy } from './activity-group-chat-post-policy.js';
 import type { PlaceNearbyFacilityDTO } from './place-kind.js';
@@ -1141,6 +1142,8 @@ export interface ParticipantDTO {
   hostRating?: ParticipantHostRatingDTO | null;
   /** Host-only — member safety profile when join/roster is visible. */
   medicalSafety?: MemberMedicalSafetyDTO | null;
+  /** Host-only — gender/DOB when the outing has women-only or age rules. */
+  joinProfile?: HostJoinProfileSnippetDTO | null;
   canConfirmAttendance: boolean;
   canRevoke: boolean;
   canRate: boolean;
@@ -1495,6 +1498,63 @@ export {
 } from './profile-viewer-access.js';
 
 export {
+  PROFILE_FIELD_AUDIENCES,
+  PROFILE_FIELD_PRIVACY_KEYS,
+  DEFAULT_PROFILE_FIELD_PRIVACY,
+  canViewProfileField,
+  mergeProfileFieldPrivacy,
+  type ProfileFieldAudience,
+  type ProfileFieldPrivacyKey,
+  type ProfileFieldPrivacyPatch,
+  type ProfileFieldPrivacySettings,
+} from './profile-field-privacy.js';
+
+export {
+  PROFILE_DATE_OF_BIRTH_SHARE_LEVELS,
+  DEFAULT_PROFILE_DATE_OF_BIRTH_SHARE,
+  mergeProfileDateOfBirthShare,
+  computeAgeFromIsoDateOfBirth,
+  resolveMemberCardDateOfBirth,
+  type ProfileDateOfBirthShare,
+  type MemberCardDateOfBirthSlice,
+} from './profile-date-of-birth-share.js';
+
+export {
+  PROFILE_FRIENDS_LIST_SHARE_LEVELS,
+  DEFAULT_PROFILE_FRIENDS_LIST_SHARE,
+  mergeProfileFriendsListShare,
+  resolveProfileFriendsListVisibility,
+  type ProfileFriendsListShare,
+  type ProfileFriendsListVisibility,
+} from './profile-friends-list-share.js';
+
+export { type MemberProfileSocialGraphDTO } from './member-profile-social-graph.js';
+
+export {
+  resolveJoinHostProfileDisclosureNeeds,
+  hostJoinProfileSnippetFromProfile,
+  joinHostProfileShareNotice,
+  type JoinHostProfileDisclosureNeeds,
+  type HostJoinProfileSnippetDTO,
+} from './join-host-profile-disclosure.js';
+
+export {
+  NOTIFICATION_PREFERENCE_TOPICS,
+  NOTIFICATION_DND_MODES,
+  DEFAULT_NOTIFICATION_PREFERENCE_SETTINGS,
+  mergeNotificationPreferenceSettings,
+  isNotificationDndActive,
+  resolveNotificationPreferenceTopic,
+  shouldDeliverNotification,
+  type NotificationPreferenceTopic,
+  type NotificationDndMode,
+  type NotificationChannelPrefs,
+  type NotificationDndSettings,
+  type NotificationPreferenceSettings,
+  type NotificationDeliveryChannel,
+} from './notification-preferences.js';
+
+export {
   type BusinessProSubtype,
   type ProMembershipPath,
   type PublishingProfileKind,
@@ -1817,7 +1877,11 @@ export type {
 
 export { FACILITY_KINDS, isFacilityKind, type FacilityKind } from './facility-kind.js';
 
-export type { AmenityState, FacilityDTO } from './facility.js';
+export type {
+  AmenityState,
+  FacilityAmenityReportPendingReview,
+  FacilityDTO,
+} from './facility.js';
 
 export type {
   PlatformAlertScope,

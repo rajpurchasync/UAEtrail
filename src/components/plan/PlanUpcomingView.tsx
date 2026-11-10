@@ -6,7 +6,6 @@ import {
 } from '../../content/productNorthStar';
 import { PlanAvailabilitySection } from './PlanAvailabilitySection';
 import { PlanCalendarSection } from './PlanCalendarSection';
-import { PlanCommitmentFilterChips } from './PlanCommitmentFilter';
 import { PlanHostingUpcoming } from './PlanHostingUpcoming';
 import { PlanJoinedUpcoming } from './PlanJoinedUpcoming';
 import { PlanNeedsYouStrip } from './PlanNeedsYouStrip';
@@ -22,7 +21,6 @@ type PlanUpcomingViewProps = {
   filter: PlanCommitmentFilter;
   layout: PlanUpcomingLayout;
   lensRaw: string | null;
-  onFilterChange: (filter: PlanCommitmentFilter) => void;
   onLayoutChange: (layout: PlanUpcomingLayout) => void;
 };
 
@@ -32,14 +30,11 @@ export const PlanUpcomingView = ({
   filter,
   layout,
   lensRaw,
-  onFilterChange,
   onLayoutChange,
 }: PlanUpcomingViewProps) => {
   const planLens = parsePlanLens(lensRaw);
   const hostingActive = canHost && filter === 'hosting';
   const listSections = planLens !== 'availability' && layout === 'list';
-  const hostingAnchorOnChips = canHost && (!listSections || filter !== 'hosting');
-  const joinedAnchorOnChips = !listSections || filter !== 'joined';
 
   const upcomingBody =
     planLens === 'availability' ? (
@@ -61,30 +56,7 @@ export const PlanUpcomingView = ({
             : PRODUCT_PLAN_UPCOMING_JOINED_CONTEXT}
         </p>
       ) : null}
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          {hostingAnchorOnChips ? (
-            <span
-              id={PLAN_SUMMARY_FOCUS_ELEMENT_IDS.hosting}
-              tabIndex={-1}
-              aria-hidden
-              className={`pointer-events-none block h-0 w-full ${PLAN_SUMMARY_SCROLL_MT}`}
-            />
-          ) : null}
-          <PlanCommitmentFilterChips
-            value={filter}
-            onChange={onFilterChange}
-            showHosting={canHost}
-          />
-          {joinedAnchorOnChips ? (
-            <span
-              id={PLAN_SUMMARY_FOCUS_ELEMENT_IDS.joined}
-              tabIndex={-1}
-              aria-hidden
-              className={`pointer-events-none block h-0 w-full ${PLAN_SUMMARY_SCROLL_MT}`}
-            />
-          ) : null}
-        </div>
+      <div className="flex items-center justify-end gap-3">
         <div className="flex shrink-0 rounded-xl border border-neutral-200/80 bg-white p-0.5">
           <button
             type="button"
@@ -109,11 +81,7 @@ export const PlanUpcomingView = ({
 
       <PlanNeedsYouStrip refreshKey={refreshKey} />
 
-      <PlanHostingManageProvider
-        refreshKey={refreshKey}
-        canHost={canHost}
-        active={hostingActive}
-      >
+      <PlanHostingManageProvider refreshKey={refreshKey} canHost={canHost} active={hostingActive}>
         {listSections && filter === 'hosting' ? (
           <section
             id={PLAN_SUMMARY_FOCUS_ELEMENT_IDS.hosting}

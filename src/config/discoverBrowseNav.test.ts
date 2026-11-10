@@ -51,6 +51,41 @@ describe('discover browse navigation contract', () => {
     expect(browsePanels).not.toMatch(/ExploreBrowsePanel/);
     expect(browsePanels).toMatch(/ListDiscoveryExperience/);
     expect(browsePanels).toMatch(/ExploreDesktopListDrawer/);
+    expect(browsePanels).toMatch(/ExploreDesktopDockedPanelRail/);
+    expect(browsePanels).toMatch(/lg:flex-row lg:items-stretch/);
+    expect(browsePanels).toMatch(
+      /ExploreDesktopDockedPanelRail[\s\S]*ExploreDesktopListDrawer[\s\S]*flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden.*mapStage/
+    );
+    const mapStage = readFileSync(join(process.cwd(), 'src/explore/ui/ExploreMapStage.tsx'), 'utf8');
+    expect(mapStage).toMatch(/explore-map-stage relative flex min-h-0 min-w-0 flex-1 flex-col/);
+    expect(mapStage).not.toMatch(/dockCrewPanel/);
+    expect(mapStage).toMatch(/mapLayoutRevision/);
+    expect(mapShell).toMatch(/mapLayoutRevision/);
+    expect(mapShell).toMatch(/showDesktopCatalogDrawer/);
+    const railWidth = readFileSync(
+      join(process.cwd(), 'src/explore/ui/exploreDesktopBrowseRailWidth.ts'),
+      'utf8'
+    );
+    expect(railWidth).toMatch(
+      /exploreCrewPanelDefaultWidth[\s\S]*EXPLORE_BROWSE_RAIL_DEFAULT_WIDTH/
+    );
+    const dockedRail = readFileSync(
+      join(process.cwd(), 'src/explore/ui/ExploreDesktopDockedPanelRail.tsx'),
+      'utf8'
+    );
+    const listDrawer = readFileSync(join(process.cwd(), 'src/explore/ui/ExploreDesktopListDrawer.tsx'), 'utf8');
+    expect(dockedRail).toMatch(/useExploreDesktopBrowseRailWidth/);
+    expect(dockedRail).toMatch(/ExploreDesktopBrowseRailShell/);
+    expect(listDrawer).toMatch(/useExploreDesktopBrowseRailWidth/);
+    expect(listDrawer).toMatch(/ExploreDesktopBrowseRailShell/);
+    expect(dockedRail).toMatch(/ExploreDesktopBrowseRailShell/);
+    expect(listDrawer).toMatch(/ExploreDesktopBrowseRailShell/);
+    const railShell = readFileSync(
+      join(process.cwd(), 'src/explore/ui/ExploreDesktopBrowseRailShell.tsx'),
+      'utf8'
+    );
+    expect(railShell).toMatch(/data-explore-browse-rail-content/);
+    expect(railShell).not.toMatch(/scrollbar-gutter/);
   });
 
   it('consumer hamburger stays on map for operators (workspace drawer on publishing console paths)', () => {

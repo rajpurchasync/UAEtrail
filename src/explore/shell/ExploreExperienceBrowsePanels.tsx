@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { PeopleBrowsePanel } from '@/people-discovery/panel/PeopleBrowsePanel';
 import { EXPLORE_PEOPLE_BROWSE_PANEL_TITLE } from '../../content/explorePeopleBrowseCopy';
+import { ExploreDesktopDockedPanelRail } from '../ui/ExploreDesktopDockedPanelRail';
 import { ExploreDesktopListDrawer } from '../ui/ExploreDesktopListDrawer';
 import { ExploreMobileBrowseOverlay } from '../ui/ExploreMobileBrowseOverlay';
 import type { ComponentProps, ReactNode } from 'react';
@@ -38,12 +39,23 @@ export const ExploreExperienceBrowsePanels = ({
 }: Props) => {
   const peopleSheet = browse.showListPanel && !isDesktop && browse.listMode === 'people';
   const desktopCatalog = isDesktop && browse.showDesktopCatalogDrawer;
+  const desktopCrewRail = isDesktop && browse.peopleBrowseOpen;
 
   return (
-    <>
+    <div className="flex min-h-0 min-w-0 flex-1 max-lg:flex-col lg:flex-row lg:items-stretch overflow-hidden">
+      {desktopCrewRail ? (
+        <ExploreDesktopDockedPanelRail ariaLabel="Find crew">
+          <PeopleBrowsePanel
+            {...peopleBrowsePanelProps}
+            onClose={browse.closePeopleBrowsePanel}
+            closePanelAriaLabel="Close Find crew"
+            closeButtonVariant="dismiss"
+          />
+        </ExploreDesktopDockedPanelRail>
+      ) : null}
       {desktopCatalog ? (
         <ExploreDesktopListDrawer onClose={browse.closeListPanel}>
-          <Suspense fallback={<div className="h-full min-h-0 flex-1 bg-neutral-50" aria-hidden />}>
+          <Suspense fallback={<div className="h-full min-h-0 flex-1 bg-white dark:bg-neutral-950" aria-hidden />}>
             <ListDiscoveryExperience
               surface="exploreSidebar"
               onCloseMapOverlay={browse.closeListPanel}
@@ -52,7 +64,7 @@ export const ExploreExperienceBrowsePanels = ({
           </Suspense>
         </ExploreDesktopListDrawer>
       ) : null}
-      {mapStage}
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">{mapStage}</div>
       {peopleSheet ? (
         <ExploreMobileBrowseOverlay
           open
@@ -72,6 +84,6 @@ export const ExploreExperienceBrowsePanels = ({
           />
         </ExploreMobileBrowseOverlay>
       ) : null}
-    </>
+    </div>
   );
 };

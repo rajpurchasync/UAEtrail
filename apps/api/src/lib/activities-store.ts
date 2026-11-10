@@ -34,6 +34,7 @@ import {
   listPublishedActivitiesForExploreMapFromMongo,
   listPublishedUpcomingActivitiesByLocationFromMongo,
   listPublishedUpcomingActivitiesByMemberFromMongo,
+  listPublishedPastActivitiesByMemberFromMongo,
   listPublishedUpcomingActivitiesByAreaFromMongo,
   listActiveCatalogPlacesByAreaFromMongo,
   listTenantActivitiesFromMongo,
@@ -86,6 +87,11 @@ export const listTenantActivitiesDetailed = async (input: {
   take: number;
   orderBy?: { startAt?: 'asc' | 'desc' };
   whereExtra?: { status?: ActivityStatus };
+  status?: ActivityStatus;
+  startAtGte?: Date;
+  startAtLt?: Date;
+  windowOutside?: boolean;
+  upcomingFromToday?: boolean;
 }) => {
   const sortDirection = input.orderBy?.startAt === 'desc' ? -1 : 1;
   return listTenantActivitiesFromMongo({
@@ -93,7 +99,11 @@ export const listTenantActivitiesDetailed = async (input: {
     skip: input.skip,
     take: input.take,
     sortDirection,
-    status: input.whereExtra?.status
+    status: input.status ?? input.whereExtra?.status,
+    startAtGte: input.startAtGte,
+    startAtLt: input.startAtLt,
+    windowOutside: input.windowOutside,
+    upcomingFromToday: input.upcomingFromToday,
   });
 };
 
@@ -547,6 +557,9 @@ export const findPublishedActivityWithPreviewsById = async (activityId: string) 
 
 export const listPublishedUpcomingActivitiesByMember = async (userId: string, take = 8) =>
   listPublishedUpcomingActivitiesByMemberFromMongo(userId, take);
+
+export const listPublishedPastActivitiesByMember = async (userId: string, take = 8) =>
+  listPublishedPastActivitiesByMemberFromMongo(userId, take);
 
 export const listPublishedUpcomingActivitiesByArea = async (areaId: string, take = 8) =>
   listPublishedUpcomingActivitiesByAreaFromMongo(areaId, take);

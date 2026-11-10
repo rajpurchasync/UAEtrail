@@ -16,10 +16,15 @@ import { meProfileQueryKey, memberStatusQueryKey } from '../../hooks/clientQuery
 type ProfileSafetyFormProps = {
   onSaved: () => void;
   className?: string;
+  embedded?: boolean;
 };
 
 /** Blood group, medical conditions, ICE contact — required before joining outings. */
-export const ProfileSafetyForm = ({ onSaved, className = 'space-y-3 pb-nav-safe animate-fade-up' }: ProfileSafetyFormProps) => {
+export const ProfileSafetyForm = ({
+  onSaved,
+  className = 'space-y-3 pb-nav-safe animate-fade-up',
+  embedded = false,
+}: ProfileSafetyFormProps) => {
   const { user, refreshUser } = useAuth();
   const queryClient = useQueryClient();
   const { profile, loading } = useMeProfile();
@@ -98,12 +103,8 @@ export const ProfileSafetyForm = ({ onSaved, className = 'space-y-3 pb-nav-safe 
     return <p className="py-10 text-center text-sm text-neutral-500">Loading…</p>;
   }
 
-  return (
-    <form className={className} onSubmit={(e) => void onSubmit(e)}>
-      <p className="px-1 text-sm text-neutral-600">
-        Required before you join outings. Hosts see this when you request a spot or RSVP.
-      </p>
-      <GlassCard padding className="space-y-4">
+  const fields = (
+    <>
         <div>
           <label className="mb-2 block text-sm font-semibold text-neutral-800">Blood group</label>
           <AppSelect
@@ -170,7 +171,15 @@ export const ProfileSafetyForm = ({ onSaved, className = 'space-y-3 pb-nav-safe 
             autoComplete="tel"
           />
         </div>
-      </GlassCard>
+    </>
+  );
+
+  return (
+    <form className={className} onSubmit={(e) => void onSubmit(e)}>
+      <p className={`text-sm text-neutral-600 ${embedded ? 'mb-2' : 'px-1'}`}>
+        Required before you join outings. Hosts see this when you request a spot or RSVP.
+      </p>
+      {embedded ? <div className="space-y-4 rounded-xl border border-neutral-200/80 bg-white p-3 dark:border-neutral-700 dark:bg-neutral-900/40">{fields}</div> : <GlassCard padding className="space-y-4">{fields}</GlassCard>}
       {error ? <p className="text-sm text-red-600 px-1">{error}</p> : null}
       <AppButton type="submit" disabled={saving} className="w-full">
         {saving ? 'Saving…' : 'Save safety profile'}

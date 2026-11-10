@@ -10,6 +10,8 @@ import {
   parsePackingList,
   resolveParticipationMode,
   type ActivityDTO,
+  joinHostProfileShareNotice,
+  resolveJoinHostProfileDisclosureNeeds,
 } from '@uaetrail/shared-types';
 import { JoinPackingAck } from '../activity/JoinPackingAck';
 import { formatDate } from '../../utils';
@@ -97,6 +99,10 @@ export const JoinRequestModal = ({
     !packingStrict ||
     (missingRequiredPackingIds(packing.items, packingCheckedIds).length === 0 &&
       isPackingSignatureValid(packingSignature));
+  const hostProfileDisclosure = useMemo(() => {
+    const needs = resolveJoinHostProfileDisclosureNeeds(activity.requirements);
+    return joinHostProfileShareNotice(needs);
+  }, [activity.requirements]);
 
   const priceInfo = resolveExplorePrice({
     isRideshare: false,
@@ -239,6 +245,15 @@ export const JoinRequestModal = ({
                 }
                 onSignatureChange={setPackingSignature}
               />
+            ) : null}
+
+            {hostProfileDisclosure ? (
+              <div className="rounded-xl border border-sky-200 bg-sky-50 p-4 dark:border-sky-900/50 dark:bg-sky-950/40">
+                <p className="text-sm font-semibold text-sky-900 dark:text-sky-100">Shared with host</p>
+                <p className="mt-1 text-xs leading-relaxed text-sky-900/90 dark:text-sky-100/90">
+                  {hostProfileDisclosure}
+                </p>
+              </div>
             ) : null}
 
             {hasInstructions ? (

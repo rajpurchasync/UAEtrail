@@ -8,6 +8,7 @@ import {
 import { AsyncLoadingState } from '../../components/ui/AsyncLoadingState';
 import { LOADING_FORECAST } from '../../content/detailLoadingCopy';
 import { ConsumerWeatherDayChip } from './ConsumerWeatherDayChip';
+import { serializeIsoDateList } from './serializeIsoDateList';
 
 type Props = {
   lat: number;
@@ -31,6 +32,7 @@ export const ConsumerWeatherMultiDayBlock = ({
   const [resolvedLocationName, setResolvedLocationName] = useState<string | null>(null);
   const [retryKey, setRetryKey] = useState(0);
   const today = gccTodayIsoDate();
+  const datesKey = serializeIsoDateList(dates);
 
   useEffect(() => {
     let cancelled = false;
@@ -59,7 +61,7 @@ export const ConsumerWeatherMultiDayBlock = ({
     return () => {
       cancelled = true;
     };
-  }, [lat, lng, dates, retryKey]);
+  }, [lat, lng, dates, datesKey, retryKey]);
 
   if (dates.length === 0) {
     return null;
