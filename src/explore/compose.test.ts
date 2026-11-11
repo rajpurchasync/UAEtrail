@@ -47,6 +47,14 @@ describe('explore compose routing', () => {
       surface: 'menu',
       intent: 'host',
     });
+    expect(formatComposeQuery({ surface: 'menu', intent: 'add', target: 'place' })).toBe(
+      'add:place'
+    );
+    expect(parseExploreCompose(new URLSearchParams('compose=add:place'))).toEqual({
+      surface: 'menu',
+      intent: 'add',
+      target: 'place',
+    });
     expect(parseExploreCompose(new URLSearchParams('compose=host:activity'))).toEqual({
       intent: 'host',
       kind: 'activity',

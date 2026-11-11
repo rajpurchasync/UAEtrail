@@ -3,12 +3,14 @@ import { Circle, MapContainer, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { ChevronLeft, MapPin, Navigation, Pencil, Search, X } from 'lucide-react';
 import { MAP_CONFIG } from '../../config/platform';
+import { EXPLORE_COMPOSE } from '../../config/exploreTheme';
 import { MapTileLayers } from '../../components/ui/MapTileLayers';
 import { ViewOnMapLink } from '../../components/ui/ViewOnMapLink';
 import { resolvePlaceSelection, searchPlaces, type PlaceSearchResult } from '../../lib/placeSearch';
 import { formatCoord, parseCoord } from '../../utils/coords';
 import type { LocationPrecision } from './createFlowShared';
 import { useComposeWizardEnterSubmit } from './useComposeWizardEnterSubmit';
+import { exploreComposeFlowCloseIconClass } from '../exploreDesktopPopup';
 
 type PickerPhase = 'search' | 'adjust';
 
@@ -223,27 +225,29 @@ export const CreatePlacePicker = ({
   if (phase === 'search') {
     return (
       <div className="flex h-full min-h-0 flex-col bg-white">
-        <header className="flex shrink-0 items-center justify-between gap-3 border-b border-neutral-100 px-4 pb-3 pt-safe-plus-2">
+        <header
+          className={`shrink-0 border-b border-neutral-100 pb-3 pt-safe-plus-2 ${EXPLORE_COMPOSE.wizardStepHeader} mb-0`}
+        >
           <button
             type="button"
             onClick={onBack}
-            className="flex h-10 w-10 items-center justify-center rounded-full text-gray-700 hover:bg-neutral-100"
+            className={EXPLORE_COMPOSE.wizardStepBack}
             aria-label="Back"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
-          <div className="min-w-0 flex-1 text-center">
-            <p className="truncate text-sm font-bold text-gray-900">{headerTitle}</p>
-            <p className="text-xs text-gray-500">Search places</p>
-          </div>
           <button
             type="button"
             onClick={onClose}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-gray-700 shadow-sm ring-1 ring-black/5 hover:bg-neutral-200"
+            className={`${EXPLORE_COMPOSE.wizardStepClose} ${exploreComposeFlowCloseIconClass}`}
             aria-label="Close"
           >
             <X className="h-5 w-5" />
           </button>
+          <div className={`${EXPLORE_COMPOSE.wizardStepTitle} flex-col !items-center gap-0.5`}>
+            <p className="text-pretty">{headerTitle}</p>
+            <p className="text-xs font-normal text-gray-500">Search places</p>
+          </div>
         </header>
 
         <div className="flex min-h-0 flex-1 flex-col px-4 py-4">
@@ -396,7 +400,7 @@ export const CreatePlacePicker = ({
           <button
             type="button"
             onClick={onClose}
-            className="absolute right-0 top-0 flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-gray-700 shadow-md"
+            className={`absolute right-0 top-0 ${exploreComposeFlowCloseIconClass}`}
             aria-label="Close"
           >
             <X className="h-5 w-5" />

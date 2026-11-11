@@ -20,7 +20,6 @@ import { EXPLORE_FLOW } from '../../config/exploreTheme';
 import { MAP_CONFIG } from '../../config/platform';
 import { EXPLORE_Z } from '../../config/exploreTheme';
 import { COMPOSE_DESKTOP_INSET_FIXED } from '../create/composeDesktopInset';
-import { ComposeWizardItemProvider } from '../create/ComposeWizardItemContext';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import { ComposeWidePageSlot } from '../create/ComposeWidePageSlot';
 import { bundleSeekingWizardPages, COMPOSE_WIDE_SHEET_MAX_WIDTH, wizardPageContaining } from '../create/composeWideWizard';
@@ -60,7 +59,7 @@ import {
   type SeekingKind,
 } from './seekingFlowEngine';
 import type { LocationPrecision, TimeMode } from './createFlowShared';
-import { composeItemEmoji, seekFixedCompose, type SeekingComposeKind } from '../compose';
+import { seekFixedCompose, type SeekingComposeKind } from '../compose';
 import { areaLabelForId } from '../hostingPublishArea';
 import { areaIdForExploreAreaSlug } from '../exploreAreaFilter';
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
@@ -555,20 +554,13 @@ export const CreateSeekingFlow = ({
       onClose={requestClose}
       zClass={EXPLORE_Z.composeFlow}
       overlayFixed
-      mobileComposeChrome
+      composePresentation="wizard"
       showHandle={false}
       showCloseButton={false}
       maxWidthClass={isMobile ? 'lg:max-w-lg' : COMPOSE_WIDE_SHEET_MAX_WIDTH}
-      panelClassName="px-5 pb-[calc(var(--safe-bottom)+1rem)] pt-0 lg:px-6 lg:pb-6 lg:pt-2"
+      panelClassName="pb-[calc(var(--safe-bottom)+1rem)] pt-0 lg:pb-6 lg:pt-2"
     >
-      <ComposeWizardItemProvider
-        emoji={composeItemEmoji(
-          seekKind
-            ? { intent: 'seek', mode: 'fixed', kind: seekKind }
-            : { surface: 'menu', intent: 'seek', mode: 'fixed' }
-        )}
-      >
-        {step === 'type' && !seekKind && (
+      {step === 'type' && !seekKind && (
           <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
             <div className="grid grid-cols-2 gap-3">
               {SEEKING_TYPE_OPTIONS.map((option) => {
@@ -1172,7 +1164,6 @@ export const CreateSeekingFlow = ({
             </div>
           </FlowSheetChrome>
         )}
-      </ComposeWizardItemProvider>
     </ExploreResponsiveSheet>
   );
 };

@@ -42,6 +42,7 @@ export const GuestComposeSignInSheet = ({
       overlayFixed
       layout="centered"
       showCloseButton
+      composePlainClose
       showHandle={false}
       ariaLabel="Sign up to post on the map"
       viewportAdaptive={desktopPopup}

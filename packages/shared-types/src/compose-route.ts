@@ -95,12 +95,18 @@ export const parseComposeWire = (value: string): ExploreComposeWire | null => {
     return null;
   }
 
-  if (intent === 'add' && parts.length >= 3) {
-    const target = parts[1] as AddTarget;
-    if (target !== 'place' && target !== 'facility') return null;
-    const kind = parts.slice(2).join(':');
-    if (!kind) return null;
-    return { intent: 'add', target, kind };
+  if (intent === 'add') {
+    if (parts.length === 2 && parts[1] === 'place') {
+      return { surface: 'menu', intent: 'add', target: 'place' };
+    }
+    if (parts.length >= 3) {
+      const target = parts[1] as AddTarget;
+      if (target !== 'place' && target !== 'facility') return null;
+      const kind = parts.slice(2).join(':');
+      if (!kind) return null;
+      return { intent: 'add', target, kind };
+    }
+    return null;
   }
 
   return null;

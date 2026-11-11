@@ -8,7 +8,6 @@ import { areaIdForExploreAreaSlug } from '../exploreAreaFilter';
 import { AvailabilityMatchPreview } from './AvailabilityMatchPreview';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { FlowSheetHeader } from './ExploreFlowSheetChrome';
-import { composeItemEmoji } from '../compose';
 
 type SeekFlexibleComposeSheetProps = {
   open: boolean;
@@ -26,8 +25,6 @@ export const SeekFlexibleComposeSheet = ({
   const publishedAreas = useExplorePublishedAreas();
   const [step, setStep] = useState<'form' | 'preview'>('form');
   const [preview, setPreview] = useState<MemberAvailabilityMatchPreviewDTO | null>(null);
-  const itemEmoji = composeItemEmoji({ intent: 'seek', mode: 'flexible' });
-
   useEffect(() => {
     if (!open) return;
     setStep('form');
@@ -62,7 +59,7 @@ export const SeekFlexibleComposeSheet = ({
       maxWidthClass="lg:max-w-lg"
       zClass={EXPLORE_Z.composeFlow}
       overlayFixed
-      mobileComposeChrome
+      composePresentation="wizard"
       showHandle={false}
       showCloseButton={false}
       panelClassName="overflow-hidden px-0 pb-[calc(var(--safe-bottom)+1.5rem)] pt-0 lg:pb-8 lg:pt-3"
@@ -70,7 +67,6 @@ export const SeekFlexibleComposeSheet = ({
       <div className="px-5 pt-2 lg:px-6 lg:pt-0">
         <FlowSheetHeader
           title={step === 'preview' ? 'Matches for you' : 'When are you free?'}
-          emoji={itemEmoji}
           onClose={onClose}
           onBack={step === 'preview' ? () => setStep('form') : undefined}
         />

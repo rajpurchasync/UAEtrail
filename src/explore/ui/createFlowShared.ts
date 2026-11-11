@@ -17,6 +17,17 @@ export const todayIso = (): string => {
   return `${year}-${month}-${day}`;
 };
 
+/** Next local calendar day — default start for new host outings. */
+export const tomorrowIso = (): string => {
+  const base = new Date();
+  base.setHours(0, 0, 0, 0);
+  base.setDate(base.getDate() + 1);
+  const year = base.getFullYear();
+  const month = String(base.getMonth() + 1).padStart(2, '0');
+  const day = String(base.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export const buildDateOptions = (
   count = 14
 ): Array<{ iso: string; label: string; day: number }> => {

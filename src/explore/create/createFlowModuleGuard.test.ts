@@ -77,4 +77,22 @@ describe('create flow module boundaries (CPC-9b)', () => {
     expect(catalog).toMatch(/wizard: 'hostingFlow'/);
     expect(catalog).toMatch(/wizard: 'seekingFlow'/);
   });
+
+  it('ComposeWizardItemContext emoji provider is retired (wizard chrome uses FlowSheetHeader)', () => {
+    expect(existsSync(join(ROOT, 'src/explore/create/ComposeWizardItemContext.tsx'))).toBe(false);
+  });
+
+  it('FAB wizards use composePresentation, not legacy mobileComposeChrome', () => {
+    for (const file of [
+      'CreateAddFlow.tsx',
+      'CreateHostingActivityFlow.tsx',
+      'CreateSeekingFlow.tsx',
+      'CreateAddFacilityFlow.tsx',
+    ]) {
+      const src = read(`src/explore/ui/${file}`);
+      expect(src).toMatch(/composePresentation="wizard"/);
+      expect(src).not.toMatch(/mobileComposeChrome/);
+    }
+    expect(read('src/explore/ui/CreateIntentSheet.tsx')).toMatch(/composePresentation="menu"/);
+  });
 });

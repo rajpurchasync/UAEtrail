@@ -81,6 +81,24 @@ export const EMIRATE_SELECT_OPTIONS: Array<{ key: string; label: string }> = [
   { key: 'Umm Al Quwain', label: 'Umm Al Quwain' },
 ];
 
+export type CountrySubdivisionOption = { value: string; label: string };
+
+/**
+ * Canonical country → state/emirate/province list for forms (explore filters + hosting venue picker).
+ * Not derived from catalog rows.
+ */
+export const getSubdivisionOptionsForCountry = (
+  code: CountryCode = DEFAULT_COUNTRY
+): CountrySubdivisionOption[] => {
+  if (code === 'AE') {
+    return EMIRATE_SELECT_OPTIONS.map(({ key, label }) => ({ value: key, label }));
+  }
+  return getRegionsForCountry(code).map((region) => ({
+    value: region,
+    label: EXPLORE_REGION_PILL_LABELS[region] ?? region,
+  }));
+};
+
 export const getMapBounds = (code: CountryCode = DEFAULT_COUNTRY): { west: number; south: number; east: number; north: number } => {
   const bounds: Record<CountryCode, { west: number; south: number; east: number; north: number }> = {
     AE: { west: 51.5, south: 22.5, east: 56.5, north: 26.5 },

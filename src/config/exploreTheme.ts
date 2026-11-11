@@ -139,18 +139,39 @@ export const EXPLORE_COMPOSE_IMMERSIVE = {
   scrollPadBottom: 'max-lg:pb-[calc(var(--safe-bottom)+1.25rem)]',
 } as const;
 
+/** Shared h2 styling for Host · Seek · Add sheets (pickers + wizards). */
+export const EXPLORE_COMPOSE_FLOW_TITLE_CLASS =
+  'compose-flow-title text-xl font-bold leading-snug tracking-tight text-neutral-900';
+
 /** Compose FAB sheet — emerald brand (Host · Find crew · Add). */
 export const EXPLORE_COMPOSE = {
   menuIconWrap: 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20',
   kindTile:
     'rounded-2xl border border-emerald-100/90 bg-gradient-to-br from-emerald-50/80 to-white active:border-emerald-300 lg:hover:border-emerald-200',
   kindIconWrap: 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/25',
+  /** Centered FAB picker modal — symmetric gutters match the panel close control. */
+  pickerBody: 'flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-6 pb-6 pt-3',
+  pickerHeader:
+    'grid w-full shrink-0 grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center pb-6',
+  pickerTitle: `col-start-2 text-pretty text-center ${EXPLORE_COMPOSE_FLOW_TITLE_CLASS}`,
+  /** Wizard step body scroll area — keep in sync with {@link EXPLORE_COMPOSE.wizardStepHeader} bleed. */
+  wizardScrollPadX: 'px-7 md:px-8',
+  /** Wizard step — full-bleed header band; back/close in side gutters, title centered on same row. */
+  wizardStepHeader:
+    'relative z-10 mb-4 min-h-10 w-[calc(100%+3.5rem)] shrink-0 -mx-7 md:w-[calc(100%+4rem)] md:-mx-8',
+  wizardStepBack:
+    'pointer-events-auto absolute left-2.5 -top-1 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full text-neutral-700 hover:bg-neutral-100',
+  wizardStepClose:
+    'pointer-events-auto absolute right-2.5 -top-1 z-20 inline-flex h-10 w-10 items-center justify-center',
+  wizardStepTitle: `relative z-0 flex min-h-10 w-full items-center justify-center px-11 text-pretty text-center ${EXPLORE_COMPOSE_FLOW_TITLE_CLASS}`,
+  pickerChoiceGrid: 'grid w-full grid-cols-2 gap-3.5',
 } as const;
 
 /** Create / host / seek / add wizard — shared step titles and choice cards. */
 export const EXPLORE_FLOW = {
-  stepTitle:
-    'text-xl font-bold leading-snug text-neutral-900 md:text-base md:font-semibold lg:text-base',
+  /** @deprecated Use {@link EXPLORE_COMPOSE_FLOW_TITLE_CLASS} */
+  stepTitle: EXPLORE_COMPOSE_FLOW_TITLE_CLASS,
+  sheetTitle: EXPLORE_COMPOSE_FLOW_TITLE_CLASS,
   /** Vertical rhythm around centered step / sheet main title */
   stepHeaderShell: 'relative pt-3 pb-4 mb-3 md:mb-2 md:pb-2 md:pt-2 lg:mb-2 lg:pb-2 lg:pt-2',
   stepTitleBlock: 'flex flex-col items-center px-8 py-1 text-center',
@@ -174,6 +195,8 @@ export const EXPLORE_FLOW = {
   /** Text fields in host / seek / add compose (large touch on mobile, form-like on md+). */
   composeField:
     'w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-neutral-900 outline-none focus:border-emerald-400 md:rounded-md md:border-neutral-300 md:px-3 md:py-1.5 md:text-sm',
+  /** Field labels above compose inputs — sentence case (see meeting / information steps). */
+  composeFieldLabel: 'mb-1 block text-sm font-medium text-neutral-700',
   composeFieldEmoji:
     'w-12 shrink-0 rounded-2xl border border-neutral-200 px-1 py-2 text-center text-lg outline-none focus:border-emerald-400 md:w-10 md:rounded-md md:py-1.5 md:text-base',
   composeBtnSm:

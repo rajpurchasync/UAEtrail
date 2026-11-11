@@ -22,6 +22,9 @@ describe('compose-route wire', () => {
     expect(formatComposeWire({ surface: 'menu', intent: 'seek', mode: 'fixed' })).toBe(
       'seek:fixed'
     );
+    expect(formatComposeWire({ surface: 'menu', intent: 'add', target: 'place' })).toBe(
+      'add:place'
+    );
 
     expect(parseComposeWire('host:hiking')).toEqual({ intent: 'host', kind: 'hiking' });
     expect(parseComposeWire('seek:flexible')).toEqual({ intent: 'seek', mode: 'flexible' });
@@ -34,6 +37,16 @@ describe('compose-route wire', () => {
       surface: 'menu',
       intent: 'seek',
       mode: 'fixed',
+    });
+    expect(parseComposeWire('add:place')).toEqual({
+      surface: 'menu',
+      intent: 'add',
+      target: 'place',
+    });
+    expect(parseComposeWire('add:place:hiking')).toEqual({
+      intent: 'add',
+      target: 'place',
+      kind: 'hiking',
     });
   });
 

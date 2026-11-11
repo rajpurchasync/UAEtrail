@@ -28,7 +28,7 @@
     padding: 1.5rem 1rem 1rem;
   }
 
-  .explore-desktop-popup-panel :where(h2, h3) {
+  .explore-desktop-popup-panel :where(h2, h3):not(.compose-flow-title) {
     font-size: 1.0625rem;
     line-height: 1.35;
   }

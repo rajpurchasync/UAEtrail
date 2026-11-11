@@ -347,7 +347,7 @@ export const ExploreMapStage = ({
             <UiTooltip label={primaryFabLabel}>
               <button
                 type="button"
-                onClick={onPrimaryFab}
+                onClick={() => onPrimaryFab()}
                 className="pointer-events-auto inline-flex min-h-12 max-w-[min(100%,calc(100vw-7rem))] shrink items-center gap-2 rounded-full bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white shadow-[0_4px_20px_rgba(5,150,105,.45)] hover:bg-emerald-700 active:scale-[0.98]"
                 aria-label={primaryFabLabel}
               >
@@ -382,7 +382,7 @@ export const ExploreMapStage = ({
       >
         <button
           type="button"
-          onClick={onPrimaryFab}
+          onClick={() => onPrimaryFab()}
           className="pointer-events-auto inline-flex min-h-14 shrink-0 items-center gap-2 rounded-full bg-emerald-600 px-6 py-3.5 text-base font-bold text-white shadow-[0_4px_20px_rgba(5,150,105,.45)] hover:bg-emerald-700 active:scale-[0.98]"
           aria-label={primaryFabLabel}
         >

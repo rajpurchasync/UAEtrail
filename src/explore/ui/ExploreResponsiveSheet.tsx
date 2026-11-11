@@ -2,6 +2,7 @@ import { type ReactNode, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import {
+  EXPLORE_COMPOSE,
   EXPLORE_COMPOSE_IMMERSIVE,
   EXPLORE_SHAPE,
   EXPLORE_SHEET,
@@ -11,11 +12,16 @@ import { COMPOSE_DESKTOP_INSET_FIXED, CONSUMER_MAIN_OVERLAY_INSET } from '../../
 import {
   exploreCenteredSheetPopupBodyClass,
   exploreCenteredSheetPopupPanelClass,
+  exploreComposeMenuCloseButtonClass,
+  exploreComposeMenuPopupBodyClass,
   exploreDesktopPopupCloseButtonClass,
 } from '../exploreDesktopPopup';
 import { MobileSheetDragHandle } from '../../components/mobile/MobileSheetDragHandle';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { useSheetDragDismiss } from '../../hooks/useSheetDragDismiss';
+
+/** FAB compose — picker steps vs multi-step create wizards. */
+export type ComposeFabPresentation = 'menu' | 'wizard';
 
 interface ExploreResponsiveSheetProps {
   open: boolean;
@@ -37,12 +43,19 @@ interface ExploreResponsiveSheetProps {
   title?: string;
   /** Fallback accessible name when `title` is omitted. */
   ariaLabel?: string;
-  /** FAB create wizard — full screen on mobile/tablet; desktop inset beside side nav. */
+  /**
+   * FAB compose layout on mobile: centered picker (`menu`) or half-height+ bottom wizard (`wizard`).
+   * Desktop uses the consumer main-column inset.
+   */
+  composePresentation?: ComposeFabPresentation;
+  /** @deprecated Use `composePresentation`. */
   mobileComposeChrome?: boolean;
   /** Bottom sheet with drag handle: pull down to dismiss (non-compose sheets). */
   pullToDismiss?: boolean;
   /** Centered dialogs: shared max-height + short-viewport typography (see `.explore-desktop-popup-panel`). */
   viewportAdaptive?: boolean;
+  /** Icon-only close (Host · Seek · Add sheets without chip background). */
+  composePlainClose?: boolean;
 }
 
 /** Bottom sheet on mobile; centered dialog on desktop (lg+). */
@@ -60,18 +73,34 @@ export const ExploreResponsiveSheet = ({
   showCloseButton = false,
   title,
   ariaLabel = 'Panel',
+  composePresentation,
   mobileComposeChrome = false,
   pullToDismiss = false,
   viewportAdaptive = false,
+  composePlainClose = false,
 }: ExploreResponsiveSheetProps) => {
+  const resolvedComposePresentation: ComposeFabPresentation | undefined =
+    composePresentation ?? (mobileComposeChrome ? 'wizard' : undefined);
+
+  const composeMenu = resolvedComposePresentation === 'menu';
+  const composeWizard = resolvedComposePresentation === 'wizard';
+  const composeFab = composeMenu || composeWizard;
+
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
-  const pullDismissGestures = pullToDismiss && showHandle && layout !== 'centered' && layout !== 'fullscreen';
+  const wizardPullDismiss = composeWizard || pullToDismiss;
+  const wizardShowHandle = composeWizard ? true : showHandle;
+  const pullDismissGestures =
+    wizardPullDismiss &&
+    wizardShowHandle &&
+    layout !== 'centered' &&
+    layout !== 'fullscreen' &&
+    !composeMenu;
   const { panelRef: dragPanelRef, panelStyle, overlayStyle, dragZoneProps } = useSheetDragDismiss(
     onClose,
     {
       enabled: open && pullDismissGestures,
-      mode: 'default',
+      mode: composeWizard ? 'default' : 'default',
     }
   );
   const mergePanelRef = (node: HTMLDivElement | null) => {
@@ -84,75 +113,95 @@ export const ExploreResponsiveSheet = ({
 
   const overlayPosition =
     overlayFixed && !overlayContained ? 'fixed' : 'absolute';
-  const centered = layout === 'centered';
+  const centered = layout === 'centered' || composeMenu;
   const fullscreen = layout === 'fullscreen';
-  const centeredPopup = centered && viewportAdaptive;
+  const centeredPopup = (centered && viewportAdaptive) || composeMenu;
   /** Dialog max height minus overlay padding (p-4 / sm:p-6). */
   const centeredPanelMaxHeight =
     '!max-h-[min(calc(100dvh-2rem),640px)] sm:!max-h-[min(calc(100dvh-3rem),640px)] lg:!max-h-[min(calc(100dvh-3rem),640px)]';
 
-  const shellClass = fullscreen || mobileComposeChrome
+  const shellClass = fullscreen
     ? 'items-stretch justify-stretch p-0'
-    : centered
-      ? overlayContained
-        ? `flex min-h-full flex-col items-center justify-center overflow-y-auto overscroll-contain p-4 sm:p-6`
-        : `flex flex-col overflow-y-auto overscroll-contain p-4 sm:p-6`
-      : `flex-col items-center justify-end sm:justify-center sm:p-4 lg:p-6`;
+    : composeMenu
+      ? 'flex min-h-full flex-col items-center justify-center overflow-y-auto overscroll-contain p-4 sm:p-6'
+      : composeWizard
+        ? 'max-md:flex-col max-md:items-stretch max-md:justify-end max-md:p-0 md:flex md:flex-col md:items-stretch md:justify-stretch md:p-0'
+        : centered
+          ? overlayContained
+            ? `flex min-h-full flex-col items-center justify-center overflow-y-auto overscroll-contain p-4 sm:p-6`
+            : `flex flex-col overflow-y-auto overscroll-contain p-4 sm:p-6`
+          : `flex-col items-center justify-end sm:justify-center sm:p-4 lg:p-6`;
 
-  const composePanelClass = mobileComposeChrome
-    ? `fixed inset-0 z-[1] flex w-full max-w-none flex-col overflow-hidden bg-white !px-0 ${panelClassName}`
+  const showBackdropDismiss = !fullscreen && !composeWizard;
+
+  const composeWizardPanelClass = composeWizard
+    ? `relative z-10 flex w-full flex-col overflow-hidden bg-white max-md:compose-sheet-immersive-enter max-md:h-[min(62dvh,720px)] max-md:min-h-[50dvh] max-md:max-h-[min(92dvh,720px)] max-md:rounded-t-3xl max-md:shadow-[0_-8px_40px_rgba(15,23,42,.12)] md:min-h-0 md:max-h-none md:flex-1 md:h-full md:w-full md:max-w-none md:rounded-none md:shadow-none ${maxWidthClass} ${panelClassName}`
     : '';
 
-  const showBackdropDismiss = !fullscreen && !mobileComposeChrome;
+  const composeMenuPanelClass = composeMenu
+    ? `${exploreCenteredSheetPopupPanelClass} w-full shrink-0 ${maxWidthClass} ${panelClassName}`
+    : '';
 
   const panelSurfaceClass = fullscreen
     ? `relative flex h-[100dvh] max-h-[100dvh] w-full max-w-none flex-col overflow-hidden rounded-none bg-neutral-50 shadow-none ${panelClassName}`
-    : mobileComposeChrome
-      ? composePanelClass
-      : pullDismissGestures
-        ? `relative flex w-full max-h-[min(90dvh,640px)] flex-col overflow-hidden explore-sheet-panel ${exploreSheetPanelClass} ${maxWidthClass} ${panelClassName} ${
-            centered
-              ? 'rounded-2xl shadow-2xl'
-              : 'shadow-[0_-8px_40px_rgba(15,23,42,.12)] sm:shadow-2xl'
-          }`
-        : centered
-          ? centeredPopup
-            ? `${exploreCenteredSheetPopupPanelClass}${overlayContained ? ' explore-map-pane-popup-panel' : ''} ${maxWidthClass} ${panelClassName}`
-            : `relative mx-auto my-auto flex w-full flex-col overflow-hidden explore-sheet-panel ${exploreSheetPanelClass} ${maxWidthClass} ${centeredPanelMaxHeight} rounded-2xl shadow-2xl ${panelClassName}`
-          : `relative w-full max-h-[min(90dvh,640px)] overflow-y-auto explore-sheet-panel ${exploreSheetPanelClass} ${maxWidthClass} ${panelClassName} shadow-[0_-8px_40px_rgba(15,23,42,.12)] sm:shadow-2xl`;
+    : composeWizard
+      ? composeWizardPanelClass
+      : composeMenu
+        ? composeMenuPanelClass
+        : pullDismissGestures
+          ? `relative flex w-full max-h-[min(90dvh,640px)] flex-col overflow-hidden explore-sheet-panel ${exploreSheetPanelClass} ${maxWidthClass} ${panelClassName} ${
+              centered
+                ? 'rounded-2xl shadow-2xl'
+                : 'shadow-[0_-8px_40px_rgba(15,23,42,.12)] sm:shadow-2xl'
+            }`
+          : centered
+            ? centeredPopup
+              ? `${exploreCenteredSheetPopupPanelClass}${overlayContained ? ' explore-map-pane-popup-panel' : ''} ${maxWidthClass} ${panelClassName}`
+              : `relative mx-auto my-auto flex w-full flex-col overflow-hidden explore-sheet-panel ${exploreSheetPanelClass} ${maxWidthClass} ${centeredPanelMaxHeight} rounded-2xl shadow-2xl ${panelClassName}`
+            : `relative w-full max-h-[min(90dvh,640px)] overflow-y-auto explore-sheet-panel ${exploreSheetPanelClass} ${maxWidthClass} ${panelClassName} shadow-[0_-8px_40px_rgba(15,23,42,.12)] sm:shadow-2xl`;
 
   const centeredBodyScroll =
-    centered && !mobileComposeChrome && !fullscreen
-      ? centeredPopup
-        ? exploreCenteredSheetPopupBodyClass
-        : 'min-h-0 flex-1 overflow-y-auto overscroll-contain'
+    centered && !composeWizard && !fullscreen
+      ? composeMenu
+        ? exploreComposeMenuPopupBodyClass
+        : centeredPopup
+          ? exploreCenteredSheetPopupBodyClass
+          : 'min-h-0 flex-1 overflow-y-auto overscroll-contain'
       : undefined;
 
-  const composeScrollClass = mobileComposeChrome
-    ? `compose-sheet-scroll compose-form-shell flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-y-auto overscroll-contain px-5 lg:px-6 ${EXPLORE_COMPOSE_IMMERSIVE.scrollPadBottom} lg:overflow-y-auto lg:flex-1 lg:pt-0`
+  const composeScrollClass = composeWizard
+    ? `compose-sheet-scroll compose-form-shell flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-y-auto overscroll-contain ${EXPLORE_COMPOSE.wizardScrollPadX} ${EXPLORE_COMPOSE_IMMERSIVE.scrollPadBottom} md:overflow-y-auto md:flex-1 md:pt-0`
     : pullDismissGestures && !panelClassName.includes('overflow-hidden')
       ? 'flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overscroll-contain'
       : undefined;
 
   const dragHandle = pullDismissGestures ? (
-    <div className="shrink-0 sm:hidden">
+    <div className="shrink-0 max-md:block md:hidden">
       <MobileSheetDragHandle dragZoneProps={dragZoneProps} />
     </div>
-  ) : showHandle && !centered && !mobileComposeChrome ? (
+  ) : showHandle && !centered && !composeFab ? (
     <div className={`mb-2 mt-3 sm:hidden ${EXPLORE_SHAPE.sheetHandle}`} />
+  ) : composeWizard ? (
+    <div className={`mb-2 mt-3 max-md:block md:hidden ${EXPLORE_SHAPE.sheetHandle}`} />
   ) : null;
 
-  const overlayInsetClass = mobileComposeChrome
+  const overlayInsetClass = composeFab
     ? COMPOSE_DESKTOP_INSET_FIXED
     : overlayFixed && !overlayContained
       ? CONSUMER_MAIN_OVERLAY_INSET
       : `${overlayPosition} inset-0`;
 
+  const overlayScrimClass = composeWizard
+    ? `${EXPLORE_SHEET.scrim} md:!bg-white`
+    : EXPLORE_SHEET.scrim;
+
   const sheetTree = (
     <div
       className={`${overlayInsetClass} ${zClass} flex ${shellClass} ${
-        mobileComposeChrome ? 'bg-white' : EXPLORE_SHEET.scrim
-      } ${overlayContained ? 'pointer-events-auto' : ''} ${overlayFixed || fullscreen || mobileComposeChrome || overlayContained ? '' : 'lg:fixed'}`}
+        fullscreen ? '' : overlayScrimClass
+      } ${overlayContained ? 'pointer-events-auto' : ''} ${
+        overlayFixed || fullscreen || composeFab || overlayContained ? '' : 'lg:fixed'
+      }`}
       style={pullDismissGestures ? overlayStyle : undefined}
     >
       {showBackdropDismiss ? (
@@ -162,9 +211,16 @@ export const ExploreResponsiveSheet = ({
           aria-label="Close"
           onClick={onClose}
         />
+      ) : composeWizard ? (
+        <button
+          type="button"
+          className="absolute inset-0 z-0 max-md:block md:hidden"
+          aria-label="Close"
+          onClick={onClose}
+        />
       ) : null}
       <div
-        ref={mobileComposeChrome || pullDismissGestures ? mergePanelRef : panelRef}
+        ref={composeFab || pullDismissGestures ? mergePanelRef : panelRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
@@ -182,7 +238,11 @@ export const ExploreResponsiveSheet = ({
           <button
             type="button"
             onClick={onClose}
-            className={exploreDesktopPopupCloseButtonClass}
+            className={
+              composeMenu || composePlainClose
+                ? exploreComposeMenuCloseButtonClass
+                : exploreDesktopPopupCloseButtonClass
+            }
             aria-label="Close"
           >
             <X className="h-5 w-5" aria-hidden />
@@ -200,7 +260,7 @@ export const ExploreResponsiveSheet = ({
     </div>
   );
 
-  if (mobileComposeChrome && typeof document !== 'undefined') {
+  if (composeFab && typeof document !== 'undefined') {
     return createPortal(sheetTree, document.body);
   }
 

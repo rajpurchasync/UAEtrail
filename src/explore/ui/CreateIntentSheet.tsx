@@ -8,8 +8,6 @@ import {
 
   COMPOSE_MENU_OPTIONS,
 
-  COMPOSE_MENU_THINKING_EMOJI,
-
   COMPOSE_MENU_TITLE,
 
   ADD_PLACE_OPTIONS,
@@ -26,7 +24,6 @@ import {
 
   addPlaceCompose,
 
-  composeItemEmoji,
   composeMenuTitle,
 
   hostCompose,
@@ -100,41 +97,6 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
 
 
-  const handleBack = () => {
-
-    if (isSeekFixedKindStep(route)) {
-
-      onRouteChange({ surface: 'menu', intent: 'seek' });
-
-      return;
-
-    }
-
-    if (
-      route.intent === 'add' &&
-      'target' in route &&
-      route.target === 'place' &&
-      route.surface === 'menu'
-    ) {
-      onRouteChange({ surface: 'menu', intent: 'add' });
-      return;
-    }
-
-    if (
-      route.intent === 'host' ||
-      route.intent === 'seek' ||
-      route.intent === 'add'
-    ) {
-      onRouteChange({ surface: 'menu' });
-      return;
-    }
-
-    requestClose();
-
-  };
-
-
-
   const showTopLevel = !route.intent;
 
   const showHostKinds = route.intent === 'host';
@@ -173,17 +135,19 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
       overlayFixed
 
-      mobileComposeChrome
+      composePresentation="menu"
+
+      viewportAdaptive
 
       showHandle={false}
 
-      showCloseButton={false}
+      showCloseButton
 
       panelClassName="overflow-hidden px-0 pb-[calc(var(--safe-bottom)+1rem)] pt-0 lg:pb-8 lg:pt-3"
 
     >
 
-      <div className="px-5 pt-2 lg:px-6 lg:pt-0">
+      <div className="min-w-0">
 
         {showTopLevel ? (
 
@@ -191,11 +155,11 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
             <FlowSheetHeader
               title={COMPOSE_MENU_TITLE}
-              emoji={COMPOSE_MENU_THINKING_EMOJI}
               onClose={requestClose}
+              pickerTitle
             />
 
-            <div className={`${menuGroupClass} compose-menu-list`}>
+            <div className={`${menuGroupClass} compose-menu-list w-full`}>
 
               {COMPOSE_MENU_OPTIONS.map((option) => (
 
@@ -247,18 +211,17 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
             <FlowSheetHeader
               title={headerTitle}
-              emoji={composeItemEmoji(route)}
               onClose={requestClose}
-              onBack={handleBack}
+              pickerTitle
             />
 
 
 
             {showHostKinds ? (
 
-              <div className={EXPLORE_FLOW.choiceGrid2}>
+              <div className={EXPLORE_COMPOSE.pickerChoiceGrid}>
 
-                {CREATE_TRIP_HOST_COMPOSE_OPTIONS.map((option, index) => (
+                {CREATE_TRIP_HOST_COMPOSE_OPTIONS.map((option) => (
 
                   <button
 
@@ -268,12 +231,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
                     onClick={() => onRouteChange(hostCompose(option.kind))}
 
-                    className={`${exploreFlowKindTileClass(false)}${
-                      index === CREATE_TRIP_HOST_COMPOSE_OPTIONS.length - 1 &&
-                      CREATE_TRIP_HOST_COMPOSE_OPTIONS.length % 2 === 1
-                        ? ' col-span-2'
-                        : ''
-                    }`}
+                    className={exploreFlowKindTileClass(false)}
 
                   >
 
@@ -303,7 +261,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
             {showSeekModes ? (
 
-              <div className={`${menuGroupClass} compose-menu-list`}>
+              <div className={`${menuGroupClass} compose-menu-list w-full`}>
 
                 {SEEK_MODE_OPTIONS.map((option) => (
 
@@ -355,7 +313,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
             {showSeekFixedKinds ? (
 
-              <div className={EXPLORE_FLOW.choiceGrid2}>
+              <div className={EXPLORE_COMPOSE.pickerChoiceGrid}>
 
                 {SEEK_FIXED_COMPOSE_OPTIONS.map((option) => (
 
@@ -397,7 +355,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
             {showAddTargets ? (
 
-              <div className={`${menuGroupClass} compose-menu-list`}>
+              <div className={`${menuGroupClass} compose-menu-list w-full`}>
 
                 {ADD_TARGET_OPTIONS.map((option) => (
 
@@ -449,7 +407,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
             {showAddPlaceKinds ? (
 
-              <div className={EXPLORE_FLOW.choiceGrid2}>
+              <div className={EXPLORE_COMPOSE.pickerChoiceGrid}>
 
                 {ADD_PLACE_OPTIONS.map((option) => (
 
