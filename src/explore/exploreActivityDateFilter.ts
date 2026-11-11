@@ -1,6 +1,10 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { isGeographyMapSource } from '@uaetrail/shared-types';
-import { resolveExploreItemScheduleDate } from './ui/exploreMapPinModel';
+import {
+  activityScheduleIncludesDate,
+  activityScheduleOverlapsRange,
+  isGeographyMapSource,
+} from '@uaetrail/shared-types';
+import { resolveExploreItemScheduleWindow } from './ui/exploreMapPinModel';
 
 export type ExploreActivityDateNamedPreset =
   | 'anyday'
@@ -216,33 +220,59 @@ export const matchesActivityDateFilter = (
   if (preset === 'anyday') return true;
   if (isGeographyMapSource(item.source) || item.source === 'shop' || item.source === 'agency') return true;
 
-  const schedule = resolveExploreItemScheduleDate(item);
-  if (!schedule) return false;
+  const window = resolveExploreItemScheduleWindow(item);
+  if (!window) return false;
 
   const custom = parseCustomActivityDateRange(preset);
-  if (custom) return isIsoInInclusiveRange(schedule, custom.from, custom.to);
+  if (custom) {
+    return activityScheduleOverlapsRange(window.start, window.end, custom.from, custom.to);
+  }
 
   const today = todayIso();
   switch (preset) {
     case 'today':
-      return schedule === today;
+      return activityScheduleIncludesDate({ date: window.start, endDate: window.end }, today);
     case 'tomorrow':
-      return schedule === addDaysIso(today, 1);
+      return activityScheduleIncludesDate(
+        { date: window.start, endDate: window.end },
+        addDaysIso(today, 1)
+      );
     case 'week':
-      return isIsoInInclusiveRange(schedule, startOfWeekIso(today), endOfWeekIso(today));
+      return activityScheduleOverlapsRange(
+        window.start,
+        window.end,
+        startOfWeekIso(today),
+        endOfWeekIso(today)
+      );
     case 'month':
-      return isIsoInInclusiveRange(schedule, startOfMonthIso(today), endOfMonthIso(today));
+      return activityScheduleOverlapsRange(
+        window.start,
+        window.end,
+        startOfMonthIso(today),
+        endOfMonthIso(today)
+      );
     case 'nextmonth':
-      return isIsoInInclusiveRange(schedule, startOfNextMonthIso(today), endOfNextMonthIso(today));
+      return activityScheduleOverlapsRange(
+        window.start,
+        window.end,
+        startOfNextMonthIso(today),
+        endOfNextMonthIso(today)
+      );
     case 'thisyear':
-      return isIsoInInclusiveRange(
-        schedule,
+      return activityScheduleOverlapsRange(
+        window.start,
+        window.end,
         startOfYearIso(calendarYearFromIso(today)),
         endOfYearIso(calendarYearFromIso(today))
       );
     case 'nextyear': {
       const year = calendarYearFromIso(today) + 1;
-      return isIsoInInclusiveRange(schedule, startOfYearIso(year), endOfYearIso(year));
+      return activityScheduleOverlapsRange(
+        window.start,
+        window.end,
+        startOfYearIso(year),
+        endOfYearIso(year)
+      );
     }
     default:
       return true;

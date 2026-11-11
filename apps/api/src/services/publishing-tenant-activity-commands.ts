@@ -30,6 +30,7 @@ import {
 } from '../lib/activities-store.js';
 import { findAuthUserById } from '../lib/auth-users-store.js';
 import { parseLocalDateTime } from '../lib/datetime.js';
+import { resolvePublishedActivityEndAt } from '../lib/activity-publish-schedule.js';
 import { buildActivityDto } from '../lib/mappers.js';
 import { activityDetailPath } from '../lib/member-routes.js';
 import { createNotificationsMany } from '../lib/notifications-store.js';
@@ -122,10 +123,7 @@ export const createPublishingTenantActivity = async (input: {
     title: body.title,
     description: body.description,
     startAt: parseLocalDateTime(body.date, body.time, countryCode),
-    endAt:
-      body.endDate && body.endTime
-        ? parseLocalDateTime(body.endDate, body.endTime, countryCode)
-        : undefined,
+    endAt: resolvePublishedActivityEndAt(body, countryCode),
     meetingPoint: body.meetingPoint,
     meetingLat: body.meetingLat,
     meetingLng: body.meetingLng,
@@ -311,10 +309,7 @@ export const updatePublishingTenantActivity = async (input: {
     title: body.title,
     description: body.description,
     startAt: nextStartAt,
-    endAt:
-      body.endDate && body.endTime
-        ? parseLocalDateTime(body.endDate, body.endTime, countryCode)
-        : undefined,
+    endAt: resolvePublishedActivityEndAt(body, countryCode),
     meetingPoint: body.meetingPoint,
     meetingLat: body.meetingLat,
     meetingLng: body.meetingLng,

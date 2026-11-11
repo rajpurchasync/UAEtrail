@@ -71,4 +71,52 @@ describe('buildHostingActivityPublishInput', () => {
 
     expect('areaId' in input && input.areaId).toBeFalsy();
   });
+
+  it('sends endDate only for multi-day host outings', () => {
+    const draft = {
+      ...emptyCreateActivityDraft(),
+      kind: 'camping' as const,
+      title: 'Weekend camp',
+      date: '2026-11-14',
+      endDate: '2026-11-16',
+      time: '08:00',
+      endTime: '18:00',
+      meetingLatitude: 24.1,
+      meetingLongitude: 55.2,
+    };
+
+    const input = buildHostingActivityPublishInput({
+      draft,
+      tenantId: 'tenant-1',
+      userId: 'user-1',
+      locationId: 'loc-1',
+    });
+
+    expect(input.endDate).toBe('2026-11-16');
+    expect(input.endTime).toBe('18:00');
+  });
+
+  it('omits endDate for same-day host outings but keeps endTime', () => {
+    const draft = {
+      ...emptyCreateActivityDraft(),
+      kind: 'hiking' as const,
+      title: 'Day hike',
+      date: '2026-11-14',
+      endDate: '2026-11-14',
+      time: '06:00',
+      endTime: '14:00',
+      meetingLatitude: 25.1,
+      meetingLongitude: 55.2,
+    };
+
+    const input = buildHostingActivityPublishInput({
+      draft,
+      tenantId: 'tenant-1',
+      userId: 'user-1',
+      locationId: 'loc-1',
+    });
+
+    expect(input.endDate).toBeUndefined();
+    expect(input.endTime).toBe('14:00');
+  });
 });

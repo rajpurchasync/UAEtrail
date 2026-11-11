@@ -47,6 +47,26 @@ describe('exploreActivityDateFilter', () => {
     expect(matchesActivityDateFilter(activityOn('2026-09-17'), range)).toBe(false);
   });
 
+  it('matches multi-day outings when filter day falls inside the window', () => {
+    const multiDay = {
+      ...activityOn('2026-09-10'),
+      activity: {
+        id: 'a1',
+        date: '2026-09-10',
+        endDate: '2026-09-14',
+        time: '09:00',
+        endTime: '18:00',
+      },
+    } as ExploreMapItemDTO;
+    expect(matchesActivityDateFilter(multiDay, 'today')).toBe(true);
+    expect(matchesActivityDateFilter(multiDay, encodeCustomActivityDateRange('2026-09-12', '2026-09-12'))).toBe(
+      true
+    );
+    expect(matchesActivityDateFilter(multiDay, encodeCustomActivityDateRange('2026-09-15', '2026-09-15'))).toBe(
+      false
+    );
+  });
+
   it('matchesActivityDateFilter for today and week', () => {
     const today = '2026-09-12';
     const venue = { ...activityOn(today), source: 'venue', kind: 'hiking' } as ExploreMapItemDTO;

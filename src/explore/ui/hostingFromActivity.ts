@@ -80,7 +80,8 @@ export const createDraftFromPastActivity = (activity: ActivityDTO): CreateActivi
     locationPrecision:
       meetingLat != null && meetingLng != null ? 'specific' : base.locationPrecision,
     date: activity.date?.trim() || todayIso(),
-    timeMode: activity.time?.trim() ? 'specific' : 'flexible',
+    endDate: activity.endDate?.trim() || activity.date?.trim() || todayIso(),
+    timeMode: 'specific',
     time: activity.time?.trim() || base.time,
     meetingTime: activity.time?.trim() || base.meetingTime,
     endTime: activity.endTime?.trim() || base.endTime,

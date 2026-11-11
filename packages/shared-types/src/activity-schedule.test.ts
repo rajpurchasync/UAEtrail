@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { activityInstantHasEnded, activityScheduleHasEnded } from './activity-schedule.js';
+import {
+  activityInstantHasEnded,
+  activityScheduleHasEnded,
+  activityScheduleIncludesDate,
+  activityScheduleOverlapsRange,
+  activityScheduleSpanLabel,
+} from './activity-schedule.js';
 
 describe('activity-schedule', () => {
   it('activityInstantHasEnded uses endAt when present', () => {
@@ -28,6 +34,23 @@ describe('activity-schedule', () => {
         endTime: '18:00',
         countryCode: 'AE',
       })
+    ).toBe(false);
+  });
+
+  it('formats schedule span and overlap helpers', () => {
+    expect(activityScheduleSpanLabel('2026-11-10', '2026-11-10')).toBe('Same day');
+    expect(activityScheduleSpanLabel('2026-11-10', '2026-11-12')).toBe('3 days');
+    expect(activityScheduleIncludesDate({ date: '2026-11-10', endDate: '2026-11-12' }, '2026-11-11')).toBe(
+      true
+    );
+    expect(activityScheduleIncludesDate({ date: '2026-11-10', endDate: '2026-11-12' }, '2026-11-13')).toBe(
+      false
+    );
+    expect(
+      activityScheduleOverlapsRange('2026-11-10', '2026-11-14', '2026-11-12', '2026-11-13')
+    ).toBe(true);
+    expect(
+      activityScheduleOverlapsRange('2026-11-10', '2026-11-14', '2026-11-15', '2026-11-16')
     ).toBe(false);
   });
 

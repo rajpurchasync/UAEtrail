@@ -25,6 +25,7 @@ import { packingItemDisplay } from '@uaetrail/shared-types';
 import { HostingPinReviewLine, HostingPublishPreviewBlock } from '../../hostingPinReview';
 import type { ReactNode } from 'react';
 import type { HostingWizardContext } from '../hostingWizardContext';
+import { formatHostingWhenPreview } from '../../hostingScheduleDraft';
 import { HostingPublishAsField } from '../../HostingPublishAsField';
 import { HostingGuidesField } from '../../HostingGuidesField';
 import { RidesharePublishLogisticsPreview } from '../../hostingRideshareWizardSteps';
@@ -70,14 +71,10 @@ export function renderPublishStep(ctx: HostingWizardContext): ReactNode | null {
 
   const whenLine = `${structuredFlow || activityFlow ? formatHikeCapacityLabel(draft.capacity) : formatCapacityLabel(draft.capacity)} ${
     kind === 'rideshare' ? 'seats' : 'spots'
-  } · ${draft.date}${
-    hikingFlow && draft.timeMode === 'specific' && draft.endTime
-      ? ` · ${draft.time || draft.meetingTime}–${draft.endTime}`
-      : !structuredFlow && draft.meetingTime
-        ? ` · meet ${draft.meetingTime}`
-        : draft.timeMode === 'specific' && draft.time
-          ? ` · ${draft.time}`
-          : ' · flexible time'
+  } · ${
+    kind === 'rideshare'
+      ? `${draft.date}${draft.time ? ` · ${draft.time}` : ''}`
+      : formatHostingWhenPreview(draft)
   }`;
 
   const limitedAudienceParts = [

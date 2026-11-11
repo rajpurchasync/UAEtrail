@@ -21,6 +21,7 @@ import {
   type ActivityPublishInput,
 } from '../utils/activityPublishPayload';
 import type { CreateActivityDraft } from '../explore/ui/hostingFlowEngine';
+import { normalizeHostingEndDate } from '../explore/ui/hostingScheduleDraft';
 import { composeFlowSpecForHostKind } from '../explore/composeFlowCatalog';
 import { linkParentToRideshareActivity } from '../explore/linkActivityRideshareOffer';
 import {
@@ -251,7 +252,7 @@ export const buildHostingActivityPublishInput = (
     requirements.push(`${PENDING_VENUE_PLACE_PREFIX}${locationId}`);
   }
   const startTime =
-    draft.timeMode === 'flexible' ? '09:00' : draft.meetingTime.trim() || draft.time;
+    draft.timeMode === 'flexible' ? '09:00' : draft.meetingTime.trim() || draft.time.trim() || '09:00';
   const planSpec = composeFlowSpecForHostKind(kind);
 
   return {
@@ -269,8 +270,11 @@ export const buildHostingActivityPublishInput = (
           : draft.description.trim() || defaultDescription(kind),
     date: draft.date,
     time: startTime,
-    endDate: hiking && draft.timeMode === 'specific' ? draft.date : undefined,
-    endTime: hiking && draft.timeMode === 'specific' ? draft.endTime : undefined,
+    endDate:
+      !isRideshare && normalizeHostingEndDate(draft.date, draft.endDate) > draft.date
+        ? normalizeHostingEndDate(draft.date, draft.endDate)
+        : undefined,
+    endTime: !isRideshare && draft.endTime?.trim() ? draft.endTime.trim() : undefined,
     capacity: draft.capacity,
     pricing: {
       pricingMode: isPaid ? 'paid' : isShared ? 'shared' : 'free',

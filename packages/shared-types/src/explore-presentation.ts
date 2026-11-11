@@ -21,6 +21,10 @@ import {
 import { exploreMapItemIsSeeking } from './explore-activity-mode.js';
 import type { ExploreActivityMode } from './explore-activity-mode.js';
 import {
+  activityScheduleSpanLabel,
+  isMultiDayActivitySchedule,
+} from './activity-schedule.js';
+import {
   facilityPlaceKindPinEmoji,
   isFacilityPlaceKind,
   outdoorPlaceKindPinEmoji,
@@ -84,7 +88,10 @@ export type DiscoveryCardBuildInput = {
     locationName?: string | null;
     meetingPoint?: string | null;
     startPoint?: string | null;
+    date?: string | null;
     time?: string | null;
+    endDate?: string | null;
+    endTime?: string | null;
     activityType?: string;
     requirements?: string[] | null;
     participationMode?: ParticipationMode | null;
@@ -246,6 +253,8 @@ interface ExploreHeadlineInput extends ExploreFeaturedPersonInput {
   about?: string | null;
   date?: string | null;
   time?: string | null;
+  endDate?: string | null;
+  endTime?: string | null;
   fromLabel?: string | null;
   toLabel?: string | null;
   participantName?: string | null;
@@ -436,6 +445,65 @@ export const formatExploreClockFromDate = (
   return formatExploreTime(`${hours}:${minutes}`, clock) ?? '';
 };
 
+const resolveHostedScheduleFields = (input: ExploreHeadlineInput) => ({
+  date: input.date ?? input.activity?.date ?? null,
+  time: input.time ?? input.activity?.time ?? null,
+  endDate: input.endDate ?? input.activity?.endDate ?? null,
+  endTime: input.endTime ?? input.activity?.endTime ?? null,
+});
+
+const formatExploreScheduleClockRange = (
+  time?: string | null,
+  endTime?: string | null
+): string | null => {
+  const startClock = formatExploreTime(time);
+  const endClock = formatExploreTime(endTime);
+  if (startClock && endClock && endClock !== startClock) return `${startClock}–${endClock}`;
+  return startClock;
+};
+
+/** Hosted outings — date range, clock window, and Same day / N days (map peek, list, detail). */
+export const buildExploreActivityScheduleDetail = (
+  fields: {
+    date?: string | null;
+    time?: string | null;
+    endDate?: string | null;
+    endTime?: string | null;
+  },
+  options: { suffix?: 'flexible' | 'fixed' | null; includeSpan?: boolean } = {}
+): string | null => {
+  const date = fields.date?.trim();
+  if (!date) return null;
+  const endDate = fields.endDate ?? null;
+  const clockRange = formatExploreScheduleClockRange(fields.time, fields.endTime);
+  const span =
+    options.includeSpan === false ? null : activityScheduleSpanLabel(date, endDate);
+
+  let segment: string | null = null;
+  if (isMultiDayActivitySchedule(date, endDate)) {
+    const startDay = formatExploreEventDateLabel(date) ?? formatExploreDayShort(date);
+    const endDay = formatExploreEventDateLabel(endDate) ?? formatExploreDayShort(endDate);
+    if (startDay && endDay) {
+      segment = `${startDay} → ${endDay}`;
+      if (clockRange) segment = `${segment} · ${clockRange}`;
+    }
+  } else {
+    segment = buildExploreWhenSegment(date, fields.time, null);
+    if (clockRange && segment && !segment.includes(clockRange)) {
+      const day = formatExploreDayShort(date);
+      segment = day ? `${day} · ${clockRange}` : clockRange;
+    } else if (clockRange && !segment) {
+      segment = clockRange;
+    }
+  }
+
+  if (!segment) return span;
+  if (options.suffix === 'flexible') segment += ' (flexible)';
+  if (options.suffix === 'fixed') segment += ' (fixed)';
+  if (span) segment += ` · ${span}`;
+  return segment;
+};
+
 export const buildExploreWhenSegment = (
   date?: string | null,
   time?: string | null,
@@ -556,7 +624,20 @@ export const sanitizeExploreLocation = (label?: string | null): string | null =>
   return trimmed;
 };
 
-export const buildExploreListWhen = (date?: string | null, time?: string | null): string | null => {
+export const buildExploreListWhen = (
+  date?: string | null,
+  time?: string | null,
+  schedule?: { endDate?: string | null; endTime?: string | null }
+): string | null => {
+  if (schedule?.endDate || schedule?.endTime) {
+    const detail = buildExploreActivityScheduleDetail({
+      date,
+      time,
+      endDate: schedule.endDate,
+      endTime: schedule.endTime,
+    });
+    if (detail) return detail;
+  }
   const day = date ? formatExploreEventDateLabel(date) : null;
   if (!day) return formatExploreTime(time);
   const clock = formatExploreTime(time);
@@ -729,10 +810,14 @@ const finishDiscoveryCardSections = (
   }
 ): DiscoveryCardSections => {
   const { participantCount, ...rest } = sections;
+  const hostedSchedule = resolveHostedScheduleFields(input);
   return {
     ...rest,
     listTitle: buildExploreListTitle(input),
-    listWhen: buildExploreListWhen(input.date, input.time),
+    listWhen: buildExploreListWhen(hostedSchedule.date, hostedSchedule.time, {
+      endDate: hostedSchedule.endDate,
+      endTime: hostedSchedule.endTime,
+    }),
     listGoing: buildExploreListGoingLabel({ ...input, participantCount }),
   };
 };
@@ -755,7 +840,21 @@ export const buildDiscoveryCardSections = (input: ExploreHeadlineInput): Discove
   const route = buildExploreRouteLabel(input.fromLabel, input.toLabel, input.kind);
   const whenSuffix =
     headlineIsSeeking(input) ? 'flexible' : input.kind === 'rideshare' ? 'fixed' : null;
-  const when = buildExploreWhenSegment(input.date, input.time, whenSuffix);
+  const hostedSchedule = resolveHostedScheduleFields(input);
+  const hostedScheduleDetail =
+    input.source === 'activity' && !headlineIsSeeking(input) && input.kind !== 'rideshare'
+      ? buildExploreActivityScheduleDetail(
+          {
+            date: hostedSchedule.date,
+            time: hostedSchedule.time,
+            endDate: hostedSchedule.endDate,
+            endTime: hostedSchedule.endTime,
+          },
+          { suffix: whenSuffix }
+        )
+      : null;
+  const when =
+    hostedScheduleDetail ?? buildExploreWhenSegment(input.date, input.time, whenSuffix);
   const spots =
     input.source === 'activity' && !headlineIsSeeking(input) && input.kind !== 'rideshare'
       ? buildExploreSpotsSegment(input.slotsAvailable, input.slotsTotal)
@@ -958,7 +1057,18 @@ export const buildDiscoveryCardPresentation = (
   const toLabel = item.toLabel ?? activity?.startPoint ?? activity?.locationName ?? null;
   const routeLabel = buildExploreRouteLabel(fromLabel, toLabel, kind);
   const whenSuffix = isSeekingPin ? 'flexible' : kind === 'rideshare' ? 'fixed' : null;
-  const whenLabel = buildExploreWhenSegment(item.date, item.time ?? activity?.time ?? null, whenSuffix);
+  const whenLabel =
+    source === 'activity' && !isSeekingPin && kind !== 'rideshare'
+      ? buildExploreActivityScheduleDetail(
+          {
+            date: item.date ?? activity?.date ?? null,
+            time: item.time ?? activity?.time ?? null,
+            endDate: activity?.endDate ?? null,
+            endTime: activity?.endTime ?? null,
+          },
+          { suffix: whenSuffix }
+        )
+      : buildExploreWhenSegment(item.date, item.time ?? activity?.time ?? null, whenSuffix);
   const location = sanitizeExploreLocation(
     item.subtitle?.trim() ||
       activity?.locationName?.trim() ||
@@ -979,8 +1089,10 @@ export const buildDiscoveryCardPresentation = (
     location,
     subtitle,
     about: item.about ?? null,
-    date: item.date,
+    date: item.date ?? activity?.date ?? null,
     time: item.time ?? activity?.time ?? null,
+    endDate: activity?.endDate ?? null,
+    endTime: activity?.endTime ?? null,
     fromLabel,
     toLabel,
     slotsAvailable: item.slotsAvailable,

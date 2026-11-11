@@ -5,6 +5,7 @@ import {
   validateHostingAudienceOthers,
   validateHostingPrice,
   validateHostingTitle,
+  validateHostingWhenSchedule,
 } from './validateShared';
 
 const DEFAULT_STEPS: CreateFlowStepId[] = [
@@ -30,9 +31,7 @@ const validateStep = (step: CreateFlowStepId, draft: CreateActivityDraft): strin
     }
     return null;
   }
-  if (step === 'when' && draft.timeMode === 'specific' && !draft.time) {
-    return 'Choose a start time.';
-  }
+  if (step === 'when') return validateHostingWhenSchedule(draft, { rideshare: true });
   if (step === 'meeting' && (draft.latitude == null || draft.longitude == null)) {
     return 'Drop a pin on the map.';
   }

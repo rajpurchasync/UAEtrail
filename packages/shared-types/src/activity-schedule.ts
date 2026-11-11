@@ -74,3 +74,54 @@ export const activityScheduleHasEnded = (activity: ActivityScheduleFields): bool
   const end = resolveActivityScheduleEndFromFields(activity);
   return end.getTime() <= Date.now();
 };
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+const parseIsoCalendarDay = (iso: string): Date => new Date(`${iso.slice(0, 10)}T12:00:00`);
+
+/** Normalized inclusive end calendar day (same as start when unset or same-day). */
+export const normalizeActivityScheduleEndDate = (
+  startDate: string,
+  endDate?: string | null
+): string => {
+  if (!ISO_DATE.test(startDate)) return startDate;
+  if (!endDate?.trim() || !ISO_DATE.test(endDate)) return startDate;
+  return endDate < startDate ? startDate : endDate;
+};
+
+export const isMultiDayActivitySchedule = (
+  startDate: string,
+  endDate?: string | null
+): boolean => Boolean(endDate?.trim() && ISO_DATE.test(endDate) && endDate > startDate);
+
+/** Consumer copy — `Same day` or inclusive `N days` (matches host When step). */
+export const activityScheduleSpanLabel = (startDate: string, endDate?: string | null): string => {
+  const end = normalizeActivityScheduleEndDate(startDate, endDate);
+  if (end <= startDate) return 'Same day';
+  const days =
+    Math.round((parseIsoCalendarDay(end).getTime() - parseIsoCalendarDay(startDate).getTime()) / 86_400_000) +
+    1;
+  return days === 1 ? '1 day' : `${days} days`;
+};
+
+/** Whether `iso` falls on any day of the scheduled outing (inclusive). */
+export const activityScheduleIncludesDate = (
+  schedule: Pick<ActivityScheduleFields, 'date' | 'endDate'>,
+  iso: string
+): boolean => {
+  if (!ISO_DATE.test(schedule.date) || !ISO_DATE.test(iso)) return false;
+  const end = normalizeActivityScheduleEndDate(schedule.date, schedule.endDate);
+  return iso >= schedule.date && iso <= end;
+};
+
+/** Whether the outing window overlaps an inclusive ISO date range. */
+export const activityScheduleOverlapsRange = (
+  startDate: string,
+  endDate: string | null | undefined,
+  rangeFrom: string,
+  rangeTo: string
+): boolean => {
+  if (!ISO_DATE.test(startDate) || !ISO_DATE.test(rangeFrom) || !ISO_DATE.test(rangeTo)) return false;
+  const end = normalizeActivityScheduleEndDate(startDate, endDate);
+  return startDate <= rangeTo && end >= rangeFrom;
+};

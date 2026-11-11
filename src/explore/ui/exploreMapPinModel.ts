@@ -263,6 +263,17 @@ export const resolveExploreItemScheduleDate = (item: ExploreMapItemDTO): string 
   return raw.slice(0, 10);
 };
 
+/** Inclusive host outing window for map date filters (start day … end day). */
+export const resolveExploreItemScheduleWindow = (
+  item: ExploreMapItemDTO
+): { start: string; end: string } | null => {
+  const start = resolveExploreItemScheduleDate(item);
+  if (!start) return null;
+  const rawEnd = item.activity?.endDate?.trim()?.slice(0, 10) ?? null;
+  const end = rawEnd && rawEnd > start ? rawEnd : start;
+  return { start, end };
+};
+
 const mapPinKind = (item: ExploreMapItemDTO): MapPinKind => {
   if (item.source === 'area') return 'area';
   if (exploreMapItemIsSeeking(item)) return item.kind === 'rideshare' ? 'rideshare' : (item.kind as MapPinKind);

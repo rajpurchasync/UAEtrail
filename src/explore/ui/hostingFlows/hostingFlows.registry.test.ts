@@ -48,4 +48,13 @@ describe('organize catalog flows — registry venue step omit', () => {
     expect(steps).toContain('difficulty');
     expect(steps).toContain('about_trail');
   });
+
+  it('hike, camp, and event share title → when → destination (rideshare does not)', () => {
+    const spine = ['title', 'when', 'destination'] as const;
+    for (const flow of [hikingHostingFlow, campingHostingFlow, eventsHostingFlow]) {
+      expect(flow.defaultSteps.slice(0, spine.length)).toEqual([...spine]);
+    }
+    expect(rideshareHostingFlow.defaultSteps).not.toContain('destination');
+    expect(rideshareHostingFlow.defaultSteps.slice(0, 3)).toEqual(['title', 'when', 'meeting']);
+  });
 });

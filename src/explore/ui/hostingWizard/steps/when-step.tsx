@@ -6,6 +6,7 @@ import {
 import type { ReactNode } from 'react';
 import type { HostingWizardContext } from '../hostingWizardContext';
 import { HostingWhenStepBody } from './HostingWhenStepBody';
+import { validateHostingWhenSchedule } from '../../hostingScheduleDraft';
 
 export function renderWhenStep(ctx: HostingWizardContext): ReactNode | null {
   const {
@@ -21,7 +22,7 @@ export function renderWhenStep(ctx: HostingWizardContext): ReactNode | null {
     goNext,
     goBack,
     handleClose,
-    hikingFlow,
+    rideshareFlow,
   } = ctx;
 
   if (!(step === 'when' && kind)) {
@@ -36,11 +37,11 @@ export function renderWhenStep(ctx: HostingWizardContext): ReactNode | null {
         dateOptions={dateOptions}
         showMonthView={showMonthView}
         setShowMonthView={setShowMonthView}
-        hikingFlow={hikingFlow}
+        rideshareFlow={rideshareFlow}
       />
       <HostingWizardStepError error={error} />
       <HostingWizardStepNext
-        disabled={draft.timeMode === 'specific' && !draft.time}
+        disabled={Boolean(validateHostingWhenSchedule(draft, { rideshare: rideshareFlow }))}
         onClick={goNext}
       />
     </HostingWizardChrome>
