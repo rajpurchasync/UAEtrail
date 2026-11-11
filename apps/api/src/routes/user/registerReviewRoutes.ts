@@ -11,7 +11,7 @@ import { listPublicReviews } from '../../services/review-read.js';
 
 const idParamSchema = z.object({ id: z.string().min(1) });
 
-const reviewTargetWireSchema = z.enum(['location', 'tenant', 'activity']);
+const reviewTargetWireSchema = z.enum(['location', 'tenant', 'activity', 'user']);
 
 const reviewListSchema = paginationSchema.extend({
   targetType: reviewTargetWireSchema,
@@ -23,6 +23,8 @@ const reviewCreateSchema = z.object({
   targetId: z.string().min(1),
   rating: z.number().int().min(1).max(5),
   comment: z.string().min(10).max(1000),
+  /** Outing that proves the reviewer went. Required for a person. Optional for an operator profile. */
+  activityId: z.string().min(1).optional(),
 });
 
 const reviewUpdateSchema = z.object({
@@ -110,6 +112,7 @@ export const registerReviewRoutes = (router: Router): void => {
           targetId: body.targetId,
           rating: body.rating,
           comment: body.comment,
+          activityId: body.activityId,
         });
         res.status(201).json({ data });
       } catch (error) {

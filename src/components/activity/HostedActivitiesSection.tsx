@@ -12,6 +12,8 @@ import {
 import { ActivityManageSheet } from '../../components/activity/ActivityManageSheet';
 import { HostedActivityListRow } from '../../components/activity/HostedActivityListRow';
 import {
+  activityCrewPath,
+  activityDetailPath,
   exploreHostPath,
   planHostedSchedulePath,
 } from '../../config/routingCatalog';
@@ -42,7 +44,7 @@ export const HostedActivitiesSection = ({
   searchQuery?: string;
   timeScope?: 'upcoming' | 'past';
   layout?: 'page' | 'embedded';
-  /** Open manage sheet from `?peek=` / `?roster=` / `?checkin=` without rendering the list. */
+  /** Open manage sheet from `?peek=`. `?roster=` and `?checkin=` open the crew page. */
   peekBridgeOnly?: boolean;
 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -54,7 +56,6 @@ export const HostedActivitiesSection = ({
   const inviteShare = useActivityInviteShareSheet();
   const [activityTab, setActivityTab] = useState<ActivityTab>(timeScope ?? 'upcoming');
   const [manageActivity, setManageActivity] = useState<ActivityDTO | null>(null);
-  const [manageInitialView, setManageInitialView] = useState<'overview' | 'checkin'>('overview');
 
   const today = useMemo(() => new Date(new Date().toDateString()), []);
 
@@ -97,8 +98,7 @@ export const HostedActivitiesSection = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- refresh when refreshKey bumps; host.reload is stable
   }, [refreshKey, host.reload]);
 
-  const openManage = (activity: ActivityDTO, view: 'overview' | 'checkin' = 'overview') => {
-    setManageInitialView(view);
+  const openManage = (activity: ActivityDTO) => {
     setManageActivity(activity);
   };
 
@@ -106,19 +106,31 @@ export const HostedActivitiesSection = ({
 
   useEffect(() => {
     const rosterId = searchParams.get('roster') ?? searchParams.get('checkin');
-    const openId = searchParams.get('peek') ?? rosterId;
-    if (!openId || host.loading || !host.tenantId) return;
-    if (openedDeepLinkRef.current === openId) return;
-    const activity = hostedActivities.find((event) => event.id === openId);
+    const peekId = searchParams.get('peek');
+    if (host.loading || !host.tenantId) return;
+
+    if (rosterId) {
+      const activity = hostedActivities.find((event) => event.id === rosterId);
+      if (!activity || openedDeepLinkRef.current === rosterId) return;
+      openedDeepLinkRef.current = rosterId;
+      const next = new URLSearchParams(searchParams);
+      next.delete('peek');
+      next.delete('checkin');
+      next.delete('roster');
+      setSearchParams(next, { replace: true });
+      navigate(activityCrewPath(rosterId));
+      return;
+    }
+
+    if (!peekId || openedDeepLinkRef.current === peekId) return;
+    const activity = hostedActivities.find((event) => event.id === peekId);
     if (!activity) return;
-    openedDeepLinkRef.current = openId;
-    openManage(activity, rosterId ? 'checkin' : 'overview');
+    openedDeepLinkRef.current = peekId;
+    openManage(activity);
     const next = new URLSearchParams(searchParams);
     next.delete('peek');
-    next.delete('checkin');
-    next.delete('roster');
     setSearchParams(next, { replace: true });
-  }, [hostedActivities, host.loading, host.tenantId, searchParams, setSearchParams]);
+  }, [hostedActivities, host.loading, host.tenantId, navigate, searchParams, setSearchParams]);
 
   useEffect(() => {
     if (!manageActivity) return;
@@ -126,7 +138,7 @@ export const HostedActivitiesSection = ({
     if (fresh) setManageActivity(fresh);
   }, [host.activities, manageActivity]);
 
-  const peekId = searchParams.get('peek') ?? searchParams.get('roster') ?? searchParams.get('checkin');
+  const peekId = searchParams.get('peek');
   const showList = !peekBridgeOnly;
 
   if (showList && host.loading) {
@@ -144,12 +156,9 @@ export const HostedActivitiesSection = ({
           open={Boolean(manageActivity)}
           activity={manageActivity}
           tenantId={host.tenantId}
-          pendingRequests={host.pendingRequests}
           actions={hostActions}
-          initialView={manageInitialView}
           onClose={() => {
             setManageActivity(null);
-            setManageInitialView('overview');
           }}
           onRequestsChanged={host.reload}
         />
@@ -230,16 +239,13 @@ export const HostedActivitiesSection = ({
         open={Boolean(manageActivity)}
         activity={manageActivity}
         tenantId={host.tenantId}
-        pendingRequests={host.pendingRequests}
         actions={hostActions}
-        initialView={manageInitialView}
-        onOpenPublicPage={(a) => navigate(`/activity/${a.id}`, { state: historyReturn })}
+        onOpenPublicPage={(a) => navigate(activityDetailPath(a.id), { state: historyReturn })}
         onShare={(a) =>
           inviteShare.openShareFromActivity(a, { canSendBuddyInvites: true })
         }
         onClose={() => {
           setManageActivity(null);
-          setManageInitialView('overview');
         }}
         onRequestsChanged={host.reload}
       />

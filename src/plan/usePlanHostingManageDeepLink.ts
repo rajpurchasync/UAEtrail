@@ -1,9 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { ActivityDTO, ParticipantIntentDTO } from '@uaetrail/shared-types';
+import { activityCrewPath } from '../config/routingCatalog';
 
 export const planHostingDeepLinkId = (searchParams: URLSearchParams): string | null =>
-  searchParams.get('peek') ?? searchParams.get('roster') ?? searchParams.get('checkin');
+  searchParams.get('peek');
+
+/** Roster deep links open `/activity/:id/crew`, not the edit sheet. */
+export const planHostingRosterDeepLinkId = (searchParams: URLSearchParams): string | null =>
+  searchParams.get('roster') ?? searchParams.get('checkin');
 
 type UsePlanHostingManageDeepLinkInput = {
   enabled: boolean;
@@ -12,13 +17,14 @@ type UsePlanHostingManageDeepLinkInput = {
   intents: ParticipantIntentDTO[];
 };
 
-/** Opens hosting manage / seeking intent sheets from `peek` · `roster` · `checkin` (works on list + calendar). */
+/** Opens the edit sheet from `peek`. `roster` and `checkin` open the crew page. */
 export const usePlanHostingManageDeepLink = ({
   enabled,
   activities,
   activitiesLoading,
   intents,
 }: UsePlanHostingManageDeepLinkInput) => {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [manageActivity, setManageActivity] = useState<ActivityDTO | null>(null);
   const [manageIntent, setManageIntent] = useState<ParticipantIntentDTO | null>(null);
@@ -26,13 +32,28 @@ export const usePlanHostingManageDeepLink = ({
 
   useEffect(() => {
     if (!enabled) return;
+    const rosterId = planHostingRosterDeepLinkId(searchParams);
     const openId = planHostingDeepLinkId(searchParams);
-    if (!openId) {
+    if (!rosterId && !openId) {
       openedDeepLinkRef.current = null;
       return;
     }
     if (activitiesLoading) return;
-    if (openedDeepLinkRef.current === openId) return;
+
+    if (rosterId) {
+      const rosterActivity = activities.find((event) => event.id === rosterId);
+      if (!rosterActivity || openedDeepLinkRef.current === rosterId) return;
+      openedDeepLinkRef.current = rosterId;
+      const next = new URLSearchParams(searchParams);
+      next.delete('peek');
+      next.delete('checkin');
+      next.delete('roster');
+      setSearchParams(next, { replace: true });
+      navigate(activityCrewPath(rosterId));
+      return;
+    }
+
+    if (!openId || openedDeepLinkRef.current === openId) return;
 
     const activity = activities.find((event) => event.id === openId);
     if (activity) {
@@ -51,7 +72,7 @@ export const usePlanHostingManageDeepLink = ({
     next.delete('checkin');
     next.delete('roster');
     setSearchParams(next, { replace: true });
-  }, [activities, activitiesLoading, enabled, intents, searchParams, setSearchParams]);
+  }, [activities, activitiesLoading, enabled, intents, navigate, searchParams, setSearchParams]);
 
   return {
     manageActivity,

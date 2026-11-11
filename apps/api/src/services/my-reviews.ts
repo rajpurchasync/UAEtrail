@@ -1,6 +1,7 @@
 import {
   activityDetailPath,
   inferHostStorefrontKindFromTenantWire,
+  memberProfilePath,
   placeDetailPath,
   resolveActivityPublisherProfilePath,
   shopPublicPath,
@@ -74,6 +75,13 @@ const resolveTargetMetaFromContext = (
     return {
       targetLabel: title ?? 'Outing',
       targetPath: `${activityDetailPath(review.targetId)}${reviewsHash}`,
+    };
+  }
+
+  if (review.targetType === ReviewTargetType.USER) {
+    return {
+      targetLabel: 'Host',
+      targetPath: memberProfilePath(review.targetId) ?? EXPLORE_FALLBACK_PATH,
     };
   }
 

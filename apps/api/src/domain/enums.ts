@@ -147,5 +147,6 @@ export const ReviewTargetType = {
   LOCATION: 'LOCATION',
   TENANT: 'TENANT',
   ACTIVITY: 'ACTIVITY',
+  USER: 'USER',
 } as const;
 export type ReviewTargetType = (typeof ReviewTargetType)[keyof typeof ReviewTargetType];

@@ -1,18 +1,9 @@
-import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { afterHostJoinDecisionClientRefresh } from '../../hooks/activityJoinClientEffects';
+import { useNavigate } from 'react-router-dom';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { LinkRidesharePanel } from '../../explore/ui/LinkRidesharePanel';
 import { activityManageCapabilities } from '../../activity/activityManageCapabilities';
-import { ActivityJoinRequestCard } from '../../console/ActivityJoinRequestCard';
-import { ActivityJoinRequestDeclineDialog } from '../../console/ActivityJoinRequestDeclineDialog';
-import { ActivityParticipantsPanel } from './ActivityParticipantsPanel';
 import { HostActivityManageCancelDialogs } from './HostActivityManageCancelDialogs';
-import type { ActivityRequestView } from '../../hooks/publishingJoinQueueClientApi';
-import {
-  decideActivityJoinRequest,
-  getActivityJoinRequests,
-} from '../../hooks/publishingJoinQueueClientApi';
 import { fetchPublicActivityDetail } from '../../hooks/usePublicActivityDetail';
 import { resolveActivityTitle } from '../../utils/activityIdentity';
 import { buildActivitySharePayload } from '../../utils/activityShare';
@@ -49,14 +40,13 @@ import { MobileBackButton } from '../mobile/MobileBackButton';
 import { CreateHostingActivityFlow } from '../../explore/ui/CreateHostingActivityFlow';
 import { hostingFlowForComposeKind } from '../../explore/ui/hostingFlows';
 import { resolveHostComposeKindFromActivity } from '../../explore/ui/hostingFromActivity';
-import { joinAuthPath } from '../../config/routingCatalog';
+import { activityCrewPath, joinAuthPath } from '../../config/routingCatalog';
 import { planHostedActivityManagePath } from '../../plan/planRouting';
 
 export type ActivityManageSheetProps = {
   open: boolean;
   activity: ActivityDTO | null;
   tenantId: string | null;
-  pendingRequests: ActivityRequestView[];
   actions: HostActivityManageActions;
   initialView?: ActivityManageInitialView;
   onClose: () => void;
@@ -70,15 +60,14 @@ export const ActivityManageSheet = ({
   open,
   activity,
   tenantId,
-  pendingRequests,
   actions,
   initialView = 'overview',
   onClose,
   onRequestsChanged,
   onShare,
 }: ActivityManageSheetProps) => {
+  const navigate = useNavigate();
   const { user } = useAuth();
-  const queryClient = useQueryClient();
   const panelRef = useRef<HTMLDivElement>(null);
   const scrollContentRef = useRef<HTMLDivElement>(null);
   const { headerFrosted } = useDetailScrollChrome(panelRef, scrollContentRef);
@@ -86,11 +75,7 @@ export const ActivityManageSheet = ({
   const [manageOptionsOpen, setManageOptionsOpen] = useState(false);
   const [returnToManageMenu, setReturnToManageMenu] = useState(false);
   const [editWizardOpen, setEditWizardOpen] = useState(false);
-  const [busyRequestId, setBusyRequestId] = useState<string | null>(null);
-  const [declineRequest, setDeclineRequest] = useState<ActivityRequestView | null>(null);
   const [rideshareNotice, setRideshareNotice] = useState<string | null>(null);
-  const [activityRequests, setActivityRequests] = useState<ActivityRequestView[]>([]);
-  const [requestsLoading, setRequestsLoading] = useState(false);
   const [sheetActivity, setSheetActivity] = useState<ActivityDTO | null>(activity);
   const [taggedPlace, setTaggedPlace] = useState<ActivityDetailDTO['location']>(undefined);
   const [viewerEntitlements, setViewerEntitlements] = useState<ActivityViewerEntitlementsDTO | null>(null);
@@ -152,31 +137,22 @@ export const ActivityManageSheet = ({
   }, [wirePresentation, sheetActivity, viewerEntitlements]);
 
   useEffect(() => {
+    if (!open || !activity?.id) return;
+    if (normalizeActivityManageView(initialView) !== 'participants') return;
+    navigate(activityCrewPath(activity.id));
+    onClose();
+  }, [open, initialView, activity?.id, navigate, onClose]);
+
+  useEffect(() => {
     if (!open) return;
-    setView(normalizeActivityManageView(initialView));
+    const next = normalizeActivityManageView(initialView);
+    if (next === 'participants') return;
+    setView(next);
     setRideshareNotice(null);
     setManageOptionsOpen(false);
     setReturnToManageMenu(false);
     setEditWizardOpen(false);
   }, [open, initialView, activity?.id]);
-
-  useEffect(() => {
-    if (!open || !activity?.id || !tenantId) {
-      setActivityRequests([]);
-      return;
-    }
-    setRequestsLoading(true);
-    void getActivityJoinRequests(tenantId, { activityId: activity.id })
-      .then((data) => {
-        setActivityRequests(data.filter((request) => request.status === 'pending'));
-      })
-      .catch(() => {
-        setActivityRequests(
-          pendingRequests.filter((request) => request.activity?.id === activity.id && request.status === 'pending')
-        );
-      })
-      .finally(() => setRequestsLoading(false));
-  }, [open, activity?.id, tenantId, pendingRequests]);
 
   const caps = activity
     ? activityManageCapabilities(activity, {
@@ -209,6 +185,12 @@ export const ActivityManageSheet = ({
   };
 
   const openManageSubviewFromMenu = (subview: ActivityManageSubview) => {
+    if (subview === 'participants') {
+      if (!activity) return;
+      navigate(activityCrewPath(activity.id));
+      handleClose();
+      return;
+    }
     setReturnToManageMenu(true);
     setView(subview);
     setManageOptionsOpen(false);
@@ -225,33 +207,11 @@ export const ActivityManageSheet = ({
     }
   };
 
-  const decideRequest = async (
-    requestId: string,
-    status: 'approved' | 'rejected',
-    hostNote?: string
-  ) => {
-    if (!tenantId || !activity) return;
-    setBusyRequestId(requestId);
-    try {
-      await decideActivityJoinRequest(tenantId, requestId, status, hostNote);
-      await afterHostJoinDecisionClientRefresh(queryClient, { activityId: activity.id, status });
-      if (status === 'rejected') setDeclineRequest(null);
-      await onRequestsChanged();
-    } catch (err) {
-      actions.setError(err instanceof Error ? err.message : 'Could not update request.');
-    } finally {
-      setBusyRequestId(null);
-    }
-  };
-
   if (!open || !activity || !tenantId || !caps) return null;
 
   const title = resolveActivityTitle(activity);
   const headerTitle = activityManageSubviewTitle(view, title);
-  const chatReturnTo = planHostedActivityManagePath(
-    activity.id,
-    view === 'participants' ? 'checkin' : 'overview'
-  );
+  const chatReturnTo = planHostedActivityManagePath(activity.id);
   const sharePayload = buildActivitySharePayload({
     id: activity.id,
     title,
@@ -302,44 +262,6 @@ export const ActivityManageSheet = ({
             <p className="mb-3 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
               {actions.error}
             </p>
-          ) : null}
-
-          {view === 'participants' ? (
-            <div className="mx-auto w-full max-w-2xl space-y-5">
-              <p className="text-sm leading-relaxed text-neutral-600">
-                See who is going and check people in on the day. Checked-in joiners can leave reviews and it counts
-                toward their goals.
-              </p>
-              <ActivityParticipantsPanel
-                tenantId={tenantId}
-                activityId={activity.id}
-                activityTitle={title}
-                onError={(message) => actions.setError(message)}
-              />
-              {caps.showJoinRequests ? (
-                <section className="space-y-2 rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-sm">
-                  <h3 className="text-sm font-bold text-neutral-800">
-                    Join requests
-                    {activityRequests.length > 0 ? ` (${activityRequests.length})` : ''}
-                  </h3>
-                  {requestsLoading ? (
-                    <p className="text-sm text-neutral-500">Loading requests…</p>
-                  ) : activityRequests.length === 0 ? (
-                    <p className="text-sm text-neutral-500">No pending requests for this outing.</p>
-                  ) : (
-                    activityRequests.map((request) => (
-                      <ActivityJoinRequestCard
-                        key={request.id}
-                        request={request}
-                        busy={busyRequestId === request.id}
-                        onApprove={() => void decideRequest(request.id, 'approved')}
-                        onReject={() => setDeclineRequest(request)}
-                      />
-                    ))
-                  )}
-                </section>
-              ) : null}
-            </div>
           ) : null}
 
           {view === 'invite' ? (
@@ -422,17 +344,6 @@ export const ActivityManageSheet = ({
         }}
         onDuplicate={() => actions.hostFromExistingActivity(activity)}
         onDelete={handleDelete}
-      />
-
-      <ActivityJoinRequestDeclineDialog
-        open={Boolean(declineRequest)}
-        request={declineRequest}
-        submitting={Boolean(declineRequest && busyRequestId === declineRequest.id)}
-        onClose={() => setDeclineRequest(null)}
-        onConfirm={(hostNote) => {
-          if (!declineRequest) return;
-          return decideRequest(declineRequest.id, 'rejected', hostNote);
-        }}
       />
 
       <HostActivityManageCancelDialogs actions={actions} onAfterConfirm={handleClose} />

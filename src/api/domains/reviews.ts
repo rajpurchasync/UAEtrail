@@ -22,7 +22,7 @@ export const reviewsApi = {
     }),
 
   getReviews: (
-    targetType: 'location' | 'tenant' | 'activity',
+    targetType: 'location' | 'tenant' | 'activity' | 'user',
     targetId: string,
     page = 1,
     pageSize = 20
@@ -46,8 +46,22 @@ export const reviewsApi = {
     }>(`/reviews?targetType=location&targetId=${placeId}&page=${page}&pageSize=20`),
 
   createReview: (payload: {
-    targetType: 'location' | 'tenant' | 'activity';
+    targetType: 'location' | 'tenant' | 'activity' | 'user';
     targetId: string;
+    rating: number;
+    comment: string;
+    activityId?: string;
+  }) =>
+    apiRequest<{ data: ReviewDTO }>('/reviews', {
+      method: 'POST',
+      auth: true,
+      body: JSON.stringify(payload),
+    }),
+
+  createHostReview: (payload: {
+    targetType: 'user' | 'tenant';
+    targetId: string;
+    activityId: string;
     rating: number;
     comment: string;
   }) =>

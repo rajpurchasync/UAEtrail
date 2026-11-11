@@ -78,6 +78,9 @@ export const ProfileProMembership = lazy(() =>
 );
 export const ShopPublic = lazy(() => import('../pages/ShopPublic').then((m) => ({ default: m.ShopPublic })));
 export const ActivityDetail = lazy(() => import('../pages/ActivityDetail').then((m) => ({ default: m.ActivityDetail })));
+export const ActivityCrewPage = lazy(() =>
+  import('../pages/ActivityCrewPage').then((m) => ({ default: m.ActivityCrewPage }))
+);
 export const OrganisationProfile = lazy(() => import('../pages/OrganisationProfile').then((m) => ({ default: m.OrganisationProfile })));
 export const MemberProfile = lazy(() => import('../pages/MemberProfile').then((m) => ({ default: m.MemberProfile })));
 export const SignUp = lazy(() => import('../pages/SignUp').then((m) => ({ default: m.SignUp })));

@@ -6,10 +6,12 @@
  *
  * Route loader: `pages/ActivityDetail.tsx` · Shell: `ActivityDetailPageShell` · Chrome: `ActivityDetailView`.
  */
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronRight, MapPin, Car } from 'lucide-react';
 import {
+  activityScheduleSpanLabel,
+  formatExploreTime,
   hasPackingList,
   type ActivityDetailDTO,
   type ActivityEngagementStripsDTO,
@@ -17,7 +19,7 @@ import {
 } from '@uaetrail/shared-types';
 import type { useActivityDetailViewModel } from '../../../components/activity/detail/useActivityDetailViewModel';
 import { ActivityDetailGuestGate } from '../../../components/activity/detail/ActivityDetailGuestGate';
-import { ActivityDetailParticipantsRosterDialog } from '../../../components/activity/detail/ActivityDetailParticipantsRosterDialog';
+import { activityCrewPendingReviewLabel } from '../../../content/activityParticipantsCopy';
 import { activityDetailParticipantCountLabel } from '../../../components/activity/detail/activityDetailParticipantCountLabel';
 import { formatActivityDetailLeadDate } from '../../../activity/formatActivityDetailLead';
 import { ActivityDetailLeadDateChip } from '../../../activity/detail/ActivityDetailLeadDateChip';
@@ -45,7 +47,7 @@ import { SITE_TITLE_BRAND } from '../../../config/seo';
 import { ActivityDetailRideshareLinkage } from './ActivityDetailRideshareLinkage';
 import { ActivityDetailOfferRideshare } from './ActivityDetailOfferRideshare';
 import { ActivityDetailRideshareEssentials } from './ActivityDetailRideshareEssentials';
-import { ActivityDetailDriverReviews } from './ActivityDetailDriverReviews';
+import { ActivityHostReviewSection } from './ActivityHostReviewSection';
 import { TenantHostRatingInline } from '../../../components/reviews/TenantHostRatingInline';
 import { resolveRideshareSeatsAvailability } from '../../resolveRideshareSeatsAvailability';
 import { rideshareCardCoversDirections } from '../../rideshareCardDirections';
@@ -53,7 +55,7 @@ import { viewerIsActivityHostUser } from '../../../utils/viewerHostsActivity';
 import type { ActivityDetailPlanSectionsComponent } from '../composers';
 import { ActivityDetailPlanColumn } from '../../../components/activity/detail/ActivityDetailPlanColumn';
 import { activityDetailFriendsGoingLabel } from '../../../activity/activityDetailFriendsGoingLabel';
-import { activityDetailPath } from '../../../config/routingCatalog';
+import { activityCrewPath, activityDetailPath } from '../../../config/routingCatalog';
 import { activityPlaceReturnState } from '../../../explore/mapPeekDetailNavState';
 import { buildActivityDetailPageShellCard } from '../activityDetailPageShellCard';
 import {
@@ -138,9 +140,9 @@ export const ActivityDetailSections = ({
           avatar: row.avatar ?? null,
         }));
 
-  const isRideHost = viewerIsActivityHostUser(model.activity, user?.id);
+  const isHostViewer = viewerIsActivityHostUser(model.activity, user?.id);
   const rideHostTenantId =
-    isRideHost ? model.linkRideshareTenantId ?? model.activity.tenantId ?? null : null;
+    isHostViewer ? model.linkRideshareTenantId ?? model.activity.tenantId ?? null : null;
 
   const hostAndSocialBlock = (
       <div className="grid gap-4 md:grid-cols-2 lg:gap-3">
@@ -158,14 +160,18 @@ export const ActivityDetailSections = ({
         {showParticipantsRow ? (
           <ActivityDetailSocialRow
             activity={model.activity}
-            participants={model.participants}
             rosterParticipants={
               participantSlot === 'roster' ? model.rosterParticipants : rosterPreview
             }
             buddyUserIdsOnActivity={
               model.viewerAccess?.entitlements?.buddyUserIdsOnActivity ?? []
             }
-            canOpenFullRoster={canOpenParticipantRoster}
+            crewPath={
+              isHostViewer || canOpenParticipantRoster ? activityCrewPath(model.activity.id) : null
+            }
+            pendingReviewCount={
+              isHostViewer ? (model.hostBuddiesHub?.joinRequests.length ?? 0) : 0
+            }
           />
         ) : null}
       </div>
@@ -184,7 +190,7 @@ export const ActivityDetailSections = ({
       {isRideshare ? (
         <ActivityDetailRideshareLinkage
           activity={model.activity}
-          isRideHost={isRideHost}
+          isRideHost={isHostViewer}
           hostTenantId={rideHostTenantId}
           onParentLinked={onRideshareParentLinked}
         />
@@ -240,9 +246,10 @@ export const ActivityDetailSections = ({
         <ActivityDetailPacking activity={model.activity} />
         <ActivityDetailInstructions activity={model.activity} />
         <ActivityDetailPlanColumn model={model} planSections={planSections} factsOnly />
-        {isRideshare && model.activity.tenantId ? (
-          <ActivityDetailDriverReviews tenantId={model.activity.tenantId} />
-        ) : null}
+        <ActivityHostReviewSection
+          activity={model.activity}
+          canWriteReview={Boolean(model.canWriteActivityReview)}
+        />
       </div>
     </div>
   );
@@ -306,6 +313,16 @@ const ActivityDetailLead = ({
   statusChips: ActivityDetailHeroStatusChip[];
 }) => {
   const leadDate = formatActivityDetailLeadDate(activity.date, activity.time);
+  const scheduleSpan =
+    activity.activityType !== 'rideshare'
+      ? activityScheduleSpanLabel(activity.date, activity.endDate)
+      : null;
+  const scheduleTimeStart = formatExploreTime(activity.time);
+  const scheduleTimeEnd = formatExploreTime(activity.endTime);
+  const scheduleTimeRange =
+    scheduleTimeStart && scheduleTimeEnd && scheduleTimeEnd !== scheduleTimeStart
+      ? `${scheduleTimeStart} – ${scheduleTimeEnd}`
+      : scheduleTimeStart;
   const audienceBadges = resolveActivityDetailAudienceBadges(activity.requirements);
   const participationChip = participationStatusChip(statusChips);
   const isRideshareLead = activity.activityType === 'rideshare';
@@ -319,7 +336,8 @@ const ActivityDetailLead = ({
         : 'border-amber-200 bg-amber-50 text-amber-900';
   const rideshareSeats = isRideshareLead ? resolveRideshareSeatsAvailability(activity) : null;
   const showMetaRow =
-    Boolean(leadDate.time && !isRideshareLead) ||
+    Boolean(scheduleTimeRange && !isRideshareLead) ||
+    Boolean(scheduleSpan && !isRideshareLead) ||
     Boolean(priceBadge) ||
     Boolean(participationChip) ||
     Boolean(rideshareSeats) ||
@@ -339,9 +357,14 @@ const ActivityDetailLead = ({
           className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1.5"
           aria-label="Schedule, price, and who this outing is for"
         >
-          {leadDate.time && !isRideshareLead ? (
+          {scheduleTimeRange && !isRideshareLead ? (
             <span className="inline-flex items-center rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-900">
-              {leadDate.time}
+              {scheduleTimeRange}
+            </span>
+          ) : null}
+          {scheduleSpan && !isRideshareLead ? (
+            <span className="inline-flex items-center rounded-lg border border-sky-200 bg-sky-50 px-2.5 py-1 text-xs font-semibold text-sky-800">
+              {scheduleSpan}
             </span>
           ) : null}
           {priceBadge ? (
@@ -462,61 +485,62 @@ const ActivityDetailVenueLead = ({
 
 const ActivityDetailSocialRow = ({
   activity,
-  participants,
   rosterParticipants,
   buddyUserIdsOnActivity = [],
-  canOpenFullRoster = false,
+  crewPath = null,
+  pendingReviewCount = 0,
 }: {
   activity: ActivityDetailDTO;
-  participants: NonNullable<ActivityDetailDTO['participants']>;
   rosterParticipants: NonNullable<ActivityDetailDTO['participants']>;
   buddyUserIdsOnActivity?: string[];
-  canOpenFullRoster?: boolean;
+  crewPath?: string | null;
+  pendingReviewCount?: number;
 }) => {
-  const [rosterOpen, setRosterOpen] = useState(false);
   const countLabel = activityDetailParticipantCountLabel(activity);
   const friendsGoingLabel = activityDetailFriendsGoingLabel(buddyUserIdsOnActivity);
-  const rosterAriaLabel = [
-    countLabel,
-    friendsGoingLabel,
-    "view who's going",
-  ]
+  const pendingLabel =
+    pendingReviewCount > 0 ? activityCrewPendingReviewLabel(pendingReviewCount) : null;
+  const rosterAriaLabel = [countLabel, friendsGoingLabel, pendingLabel, "view who's going"]
     .filter(Boolean)
     .join(', ');
+  const row = (
+    <>
+      <ParticipantPreview
+        participants={rosterParticipants}
+        size="sm"
+        showNames={false}
+        linkToProfile={false}
+        emptyLabel="Be the first to join"
+      />
+      <div className="flex min-w-0 flex-col gap-0.5">
+        {countLabel ? (
+          <span className="text-sm font-medium tabular-nums text-neutral-500">{countLabel}</span>
+        ) : null}
+        {friendsGoingLabel ? (
+          <span className="text-xs font-semibold text-emerald-700">{friendsGoingLabel}</span>
+        ) : null}
+        {pendingLabel ? (
+          <span className="text-xs font-semibold text-amber-800">{pendingLabel}</span>
+        ) : null}
+      </div>
+    </>
+  );
 
   return (
     <section aria-label="Going">
       <p className={`mb-2 ${DETAIL_SCROLL_SECTION_TITLE}`}>Going</p>
       <div className={`flex items-center gap-3 ${DETAIL_SCROLL_PANEL.social}`}>
-      <button
-        type="button"
-        className={`flex min-w-0 flex-1 items-center gap-3 text-left ${canOpenFullRoster ? 'active:opacity-90' : 'pointer-events-none'}`}
-        onClick={() => canOpenFullRoster && setRosterOpen(true)}
-        disabled={!canOpenFullRoster}
-        aria-label={rosterAriaLabel}
-      >
-        <ParticipantPreview
-          participants={rosterParticipants}
-          size="sm"
-          showNames={false}
-          linkToProfile={false}
-          emptyLabel="Be the first to join"
-        />
-        <div className="flex min-w-0 flex-col gap-0.5">
-          {countLabel ? (
-            <span className="text-sm font-medium tabular-nums text-neutral-500">{countLabel}</span>
-          ) : null}
-          {friendsGoingLabel ? (
-            <span className="text-xs font-semibold text-emerald-700">{friendsGoingLabel}</span>
-          ) : null}
-        </div>
-      </button>
-      <ActivityDetailParticipantsRosterDialog
-        open={rosterOpen}
-        onClose={() => setRosterOpen(false)}
-        participants={participants}
-        titleSuffix={countLabel ?? undefined}
-      />
+        {crewPath ? (
+          <Link
+            to={crewPath}
+            className="flex min-w-0 flex-1 items-center gap-3 text-left active:opacity-90"
+            aria-label={rosterAriaLabel}
+          >
+            {row}
+          </Link>
+        ) : (
+          <div className="flex min-w-0 flex-1 items-center gap-3">{row}</div>
+        )}
       </div>
     </section>
   );

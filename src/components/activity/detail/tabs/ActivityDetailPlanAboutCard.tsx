@@ -1,6 +1,6 @@
 import { Calendar, Clock, Users } from 'lucide-react';
 import type { ActivityDetailDTO } from '@uaetrail/shared-types';
-import { ACTIVITY_PRICING_INDICATION_NOTE } from '@uaetrail/shared-types';
+import { ACTIVITY_PRICING_INDICATION_NOTE, activityScheduleSpanLabel } from '@uaetrail/shared-types';
 import { formatDate } from '../../../../utils';
 import {
   inferActivityPricingMode,
@@ -39,7 +39,7 @@ export const ActivityDetailPlanAboutCard = ({
         <p className="text-xs text-gray-500">Start</p>
         <p className="text-sm font-semibold text-gray-900">{formatDate(activity.date)}</p>
       </div>
-      {activity.endDate ? (
+      {activity.endDate && activity.endDate !== activity.date ? (
         <div className="bg-gray-50 rounded-xl p-3">
           <Calendar className="w-4 h-4 text-emerald-600 mb-1" />
           <p className="text-xs text-gray-500">End</p>
@@ -52,6 +52,9 @@ export const ActivityDetailPlanAboutCard = ({
         <p className="text-sm font-semibold text-gray-900">
           {activity.time}
           {activity.endTime ? ` – ${activity.endTime}` : ''}
+        </p>
+        <p className="mt-1 text-xs font-semibold text-sky-700">
+          {activityScheduleSpanLabel(activity.date, activity.endDate)}
         </p>
       </div>
       <div className="bg-gray-50 rounded-xl p-3">

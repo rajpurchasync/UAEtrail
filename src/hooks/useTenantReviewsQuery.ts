@@ -9,18 +9,31 @@ export type TenantReviewsQueryResult = {
 
 const TENANT_REVIEWS_PAGE_SIZE = 50;
 
-export const tenantReviewsQueryKey = (tenantId: string) => ['tenant-reviews', tenantId] as const;
+export const tenantReviewsQueryKey = (tenantId: string) =>
+  ['target-reviews', 'tenant', tenantId] as const;
 
-export const useTenantReviewsQuery = (tenantId: string | null | undefined) =>
+export const targetReviewsQueryKey = (targetType: 'tenant' | 'user', targetId: string) =>
+  ['target-reviews', targetType, targetId] as const;
+
+export const useTargetReviewsQuery = (
+  targetType: 'tenant' | 'user' | null,
+  targetId: string | null | undefined
+) =>
   useQuery({
-    queryKey: tenantId ? tenantReviewsQueryKey(tenantId) : ['tenant-reviews', 'disabled'],
+    queryKey:
+      targetType && targetId
+        ? targetReviewsQueryKey(targetType, targetId)
+        : ['target-reviews', 'disabled'],
     queryFn: async (): Promise<TenantReviewsQueryResult> => {
-      const res = await reviewsApi.getReviews('tenant', tenantId!, 1, TENANT_REVIEWS_PAGE_SIZE);
+      const res = await reviewsApi.getReviews(targetType!, targetId!, 1, TENANT_REVIEWS_PAGE_SIZE);
       return { reviews: res.data, total: res.meta.total };
     },
-    enabled: Boolean(tenantId),
+    enabled: Boolean(targetType && targetId),
     staleTime: 60_000,
   });
+
+export const useTenantReviewsQuery = (tenantId: string | null | undefined) =>
+  useTargetReviewsQuery('tenant', tenantId);
 
 export const summarizeReviewRatings = (
   reviews: ReviewDTO[],

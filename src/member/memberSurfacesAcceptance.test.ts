@@ -238,7 +238,12 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(hosted).toContain('usePlanHostingManage');
     expect(hosted).not.toMatch(/\/host\/requests|HOST_REQUESTS_PATH/);
     const sheet = read('src/components/activity/ActivityManageSheet.tsx');
-    expect(sheet).toContain('decideActivityJoinRequest');
+    expect(sheet).toContain('activityCrewPath');
+    expect(sheet).not.toContain('ActivityDetailHostBuddiesHub');
+    expect(read('src/pages/ActivityCrewPage.tsx')).toContain('ActivityDetailHostBuddiesHub');
+    expect(read('src/components/activity/detail/ActivityDetailHostBuddiesHub.tsx')).toContain(
+      'decideActivityJoinRequest'
+    );
     expect(sheet).toContain('planHostedActivityManagePath');
   });
 
@@ -398,7 +403,8 @@ describe('member surfaces §11 acceptance (automated)', () => {
       'ActivityDetailStickyFooter'
     );
     const buddiesAside = read('src/components/activity/detail/tabs/ActivityDetailBuddiesAside.tsx');
-    expect(buddiesAside).toContain('ActivityDetailHostBuddiesHub');
+    expect(buddiesAside).toContain('activityCrewPath');
+    expect(buddiesAside).not.toContain('ActivityDetailHostBuddiesHub');
     expect(model).toContain('resolveActivityDetailHeroStatusChips');
     const footersShim = read('src/activity/activityDetailTabFooters.ts');
     expect(footersShim).toContain('@uaetrail/shared-types');

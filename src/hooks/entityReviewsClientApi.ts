@@ -3,8 +3,9 @@ import { api } from '../api/index';
 
 export type ReviewSubmitTarget =
   | { kind: 'activity'; activityId: string }
-  | { kind: 'tenant'; organisationId: string }
-  | { kind: 'place'; placeId: string };
+  | { kind: 'tenant'; organisationId: string; activityId?: string }
+  | { kind: 'place'; placeId: string }
+  | { kind: 'user'; userId: string; activityId: string };
 
 export const submitEntityReview = async (
   target: ReviewSubmitTarget,
@@ -19,8 +20,28 @@ export const submitEntityReview = async (
     return res.data;
   }
   if (target.kind === 'tenant') {
+    if (target.activityId) {
+      const res = await api.createHostReview({
+        targetType: 'tenant',
+        targetId: target.organisationId,
+        activityId: target.activityId,
+        rating: input.rating,
+        comment: input.comment,
+      });
+      return res.data;
+    }
     const res = await api.createOrganisationReview({
       organisationId: target.organisationId,
+      rating: input.rating,
+      comment: input.comment,
+    });
+    return res.data;
+  }
+  if (target.kind === 'user') {
+    const res = await api.createHostReview({
+      targetType: 'user',
+      targetId: target.userId,
+      activityId: target.activityId,
       rating: input.rating,
       comment: input.comment,
     });

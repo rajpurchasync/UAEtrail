@@ -55,7 +55,7 @@ type HostIdentityFields = {
   hostName?: string | null;
 };
 
-type HostUserIdentityFields = {
+export type HostUserIdentityFields = {
   /** Person shown as the host on the activity (`hostId`, or the tenant owner when unset). */
   hostUserId?: string | null;
   hostId?: string | null;

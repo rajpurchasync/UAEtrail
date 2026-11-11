@@ -213,6 +213,7 @@ Built only via **`routingCatalog`** or `@uaetrail/shared-types` `entity-path` he
 | Place (camp) | `/camp/:id` | `placeDetailPath('camping', id)` |
 | Place (event venue) | `/venue/:id` | `placeDetailPath('event', id)` |
 | Activity (all outing types, incl. `activityType: event`) | `/activity/:id` | `activityDetailPath(id)` |
+| Activity crew (roster, host actions) | `/activity/:id/crew` | `activityCrewPath(id)` |
 | Legacy place URL | `/event/:id` → `/venue/:id` | redirect only |
 | Individual (community or Pro) | `/member/:userId` | `memberProfilePath(userId)` · `resolveActivityPublisherProfilePath` |
 | Agency brand | `/agency/:slug` | `agencyProfilePath(slug)` |
@@ -279,7 +280,7 @@ Map/list **peek** and entity **detail** share one engagement contract per viewer
 | Surface | L2 map peek | L3 consumer shell | Detail CTA | Participation / actions on L3 |
 |---------|-------------|-------------------|------------|-------------------------------|
 | **Activity** | `ActivityMapPeekHost` → `ActivityPeekCard` → `peek/activity/*` | `ActivityDetailByKind` → `*ActivityDetailPage` → scroll body + wire CTAs | `PeekDetailLink` + `view_detail` in `mapPeekActions` | Join/RSVP: `POST /activities/:id/requests`; **public** slots from `presentation.sections` + `mapPeekActions`; embed: `footerByTab`; guest: `ActivityDetailGuestGate` |
-| **Place** | `PlaceMapPeekHost` → `PlacePeekCard` (`PlacePeekHero` · `PlacePeekBody` · `PlacePeekActions`) | `*PlaceDetailPage` → `PlaceDetailPageShell` → `PlaceDetailSections` | **Arrange trip** (Organize) · `PeekDetailLink` **View details** | `GET /places/:id/activities`; reviews; transport; `nearbyFacilities`; premium guide `PlacePremiumGuidePanel` |
+| **Place** | `PlaceMapPeekHost` → `PlacePeekCard` (`PlacePeekHero` · `PlacePeekBody` · `PlacePeekActions`) | `*PlaceDetailPage` → `PlaceDetailPageShell` → `PlaceDetailSections` | **Plan trip** · `PeekDetailLink` **View details** | `PlacePlanList` (page and peek) from `GET /places/:id/activities`; reviews; transport; `nearbyFacilities`; premium guide `PlacePremiumGuidePanel` |
 | **Area** | `mapPeekSlots` → `AreaPeekBody` / `AreaPeekActions` | `AreaDetailPage` → `AreaDetailView` (`MobileDetailShell`) | Links to `/area/:slug`, explore `?area=` | Browse-only hub — join on child **activity** rows |
 | **Shop** | `ShopPeekActions` + `PeekDetailLink` | `ShopPublic` → `ShopPublicPage` (`EntityPublicDetailShell`) | `/shop/:id`; guest map rows may gate in peek | Reviews on tenant id; outbound **website** link only (no product grid) |
 | **Agency** | Catalog / activity publisher row (not `source: agency` map rows) | `OrganisationProfile` → `OrganisationPublicProfile` (`EntityPublicDetailShell`) | `resolveActivityPublisherProfilePath` from activity | Message/follow; listed outings → `/activity/:id` |

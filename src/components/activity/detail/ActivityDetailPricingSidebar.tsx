@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
+import { activityCrewPath } from '../../../config/routingCatalog';
 import type { ActivityDetailDTO, ActivityGroupChatPostPolicy } from '@uaetrail/shared-types';
 import type { ReactNode } from 'react';
-import { ShareButton, ParticipantPreview } from '../../ui';
+import { ShareButton } from '../../ui';
 import { activityPriceLabel } from '../../../utils/activityPricing';
 import { PARTICIPANT_PRIVACY } from '../../../config/platform';
 import { ActivityCrewChatPostPolicyCard } from '../ActivityCrewChatPostPolicyCard';
@@ -42,7 +43,6 @@ type Props = {
   };
   canAccessCrewSurfaces: boolean;
   participants: ActivityDetailDTO['participants'];
-  rosterParticipants: NonNullable<ActivityDetailDTO['participants']>;
   showRosterProUpsell: boolean;
   /** Consumer marketing layout — host lives on Plan tab + peek strips. */
   hideHostProfile?: boolean;
@@ -75,7 +75,6 @@ export const ActivityDetailPricingSidebar = ({
   hostCrewChatPolicy,
   canAccessCrewSurfaces,
   participants,
-  rosterParticipants,
   showRosterProUpsell,
   hideHostProfile = false,
   hideParticipantsRoster = false,
@@ -144,19 +143,12 @@ export const ActivityDetailPricingSidebar = ({
 
     {PARTICIPANT_PRIVACY.showPreJoin && !previewMode && canAccessCrewSurfaces && !hideParticipantsRoster && (
       <div className={`mt-5 pt-5 border-t border-gray-100 ${showMobileTabs ? mobileBuddiesPanel : ''}`}>
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+        <Link
+          to={activityCrewPath(activity.id)}
+          className="text-sm font-semibold text-emerald-700 hover:underline"
+        >
           Participants ({participants?.length ?? 0})
-        </p>
-        <ParticipantPreview
-          participants={rosterParticipants}
-          size="md"
-          showNames
-          linkToProfile
-          emptyLabel="No confirmed participants yet — be the first to join!"
-        />
-        {rosterParticipants.length > 0 && (
-          <p className="mt-2 text-[11px] text-gray-400">Tap a name to view profile</p>
-        )}
+        </Link>
         {showRosterProUpsell ? (
           <p className="mt-3 text-xs leading-relaxed text-amber-900/90">
             {ACTIVITY_DETAIL_PRO_ROSTER_HINT}{' '}

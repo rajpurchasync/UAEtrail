@@ -1,13 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { planHostingDeepLinkId } from './usePlanHostingManageDeepLink';
+import { planHostingDeepLinkId, planHostingRosterDeepLinkId } from './usePlanHostingManageDeepLink';
 
 describe('planHostingDeepLinkId', () => {
-  it('prefers peek then roster then checkin', () => {
+  it('opens the edit sheet from peek and the crew page from roster', () => {
     const params = new URLSearchParams('peek=a&roster=b&checkin=c');
     expect(planHostingDeepLinkId(params)).toBe('a');
-    params.delete('peek');
-    expect(planHostingDeepLinkId(params)).toBe('b');
+    expect(planHostingRosterDeepLinkId(params)).toBe('b');
     params.delete('roster');
-    expect(planHostingDeepLinkId(params)).toBe('c');
+    expect(planHostingRosterDeepLinkId(params)).toBe('c');
+    params.delete('checkin');
+    expect(planHostingRosterDeepLinkId(params)).toBeNull();
   });
 });

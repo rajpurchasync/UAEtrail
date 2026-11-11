@@ -17,7 +17,7 @@ import {
 } from '../../content/activityDetailCopy';
 
 interface ReviewSectionProps {
-  targetType: 'location' | 'tenant' | 'place' | 'activity';
+  targetType: 'location' | 'tenant' | 'place' | 'activity' | 'user';
   targetId: string;
   reviews: ReviewDTO[];
   onReviewSubmitted: (review: ReviewDTO) => void;
@@ -29,11 +29,17 @@ interface ReviewSectionProps {
   /** Tap header to expand/collapse (e.g. activity detail). */
   collapsible?: boolean;
   defaultExpanded?: boolean;
+  /** Outing that gates a host review. Sent with the person or the operator. */
+  contextActivityId?: string;
+  heading?: string;
+  sectionId?: string;
+  /** Check-in and end-time gate, including host reviews on an outing. */
+  reviewGate?: 'open' | 'activity';
 }
 
 const reviewWireTargetType = (
   targetType: ReviewSectionProps['targetType']
-): 'location' | 'tenant' | 'activity' => {
+): 'location' | 'tenant' | 'activity' | 'user' => {
   if (targetType === 'place') return 'location';
   return targetType;
 };
@@ -48,6 +54,10 @@ export const ReviewSection = ({
   activityAwaitingCompletion = false,
   collapsible = false,
   defaultExpanded = true,
+  contextActivityId,
+  heading = 'Reviews',
+  sectionId = 'reviews',
+  reviewGate = targetType === 'activity' ? 'activity' : 'open',
 }: ReviewSectionProps) => {
   const { user } = useAuth();
   const [expanded, setExpanded] = useState(defaultExpanded);
@@ -108,8 +118,10 @@ export const ReviewSection = ({
       const review = await submitEntityReview(
         wireTarget === 'activity'
           ? { kind: 'activity', activityId: targetId }
-          : wireTarget === 'tenant'
-            ? { kind: 'tenant', organisationId: targetId }
+          :         wireTarget === 'tenant'
+            ? { kind: 'tenant', organisationId: targetId, activityId: contextActivityId }
+            : wireTarget === 'user' && contextActivityId
+              ? { kind: 'user', userId: targetId, activityId: contextActivityId }
             : { kind: 'place', placeId: targetId },
         { rating, comment: comment.trim() }
       );
@@ -125,9 +137,10 @@ export const ReviewSection = ({
   };
 
   const reviewCountLabel = reviews.length > 0 ? ` (${reviews.length})` : '';
-  const activityReviewsOpen = targetType !== 'activity' || canWriteReview;
+  const gated = reviewGate === 'activity';
+  const activityReviewsOpen = !gated || canWriteReview;
   const emptyReviewsCopy =
-    targetType === 'activity' && !canWriteReview
+    gated && !canWriteReview
       ? ACTIVITY_DETAIL_REVIEWS_EMPTY_NEUTRAL
       : ACTIVITY_DETAIL_REVIEWS_EMPTY_INVITE;
 
@@ -139,7 +152,7 @@ export const ReviewSection = ({
       className="mb-4 flex w-full items-center justify-between gap-2 rounded-xl border border-gray-100 bg-white px-4 py-3 text-left shadow-sm active:bg-gray-50"
     >
       <span className="text-lg md:text-xl font-bold text-gray-900">
-        Reviews{reviewCountLabel}
+        {heading}{reviewCountLabel}
       </span>
       {expanded ? (
         <ChevronUp className="h-5 w-5 shrink-0 text-gray-500" aria-hidden />
@@ -148,12 +161,12 @@ export const ReviewSection = ({
       )}
     </button>
   ) : (
-    <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4">Reviews{reviewCountLabel}</h2>
+    <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4">{heading}{reviewCountLabel}</h2>
   );
 
   return (
     <section
-      id="reviews"
+      id={sectionId}
       className="scroll-mt-24 scroll-mb-28 pb-2 md:scroll-mb-0"
       tabIndex={-1}
     >
@@ -161,7 +174,7 @@ export const ReviewSection = ({
 
       {collapsible && !expanded ? null : (
         <>
-      {user && !existingReview && !success && !canWriteReview && targetType === 'activity' ? (
+      {user && !existingReview && !success && !canWriteReview && gated ? (
         <p className="mb-4 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm text-neutral-700">
           {activityAwaitingCompletion
             ? ACTIVITY_DETAIL_REVIEWS_GATE_AFTER_END

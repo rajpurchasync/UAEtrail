@@ -19,7 +19,7 @@ type ActivityDetailHostBuddiesHubProps = {
   onError?: (message: string) => void;
 };
 
-/** Host primary manage surface on Buddies tab (v3.2 — no fifth Manage tab). */
+/** Host roster: confirmed joiners, attendance, and the pending queue. Rendered on `/activity/:id/crew`. */
 export const ActivityDetailHostBuddiesHub = ({
   tenantId,
   activityId,

@@ -1,7 +1,8 @@
-import type { HostPersonNameInput } from './host-display.js';
+import type { HostPersonNameInput, HostUserIdentityFields } from './host-display.js';
 import {
   isRolePlaceholderDisplayName,
   HOST_FALLBACK_DISPLAY_NAME,
+  resolveActivityHostUserId,
   resolveHostPersonDisplayName,
 } from './host-display.js';
 import { hostBrandProfilePath, memberProfilePath, shopPublicPath } from './entity-path.js';
@@ -10,6 +11,29 @@ import type { PublishingProfileKind } from './publishing-profile-kind.js';
 /** Community and Pro individuals — person name + `/member/:userId`; no `/guide` storefront. */
 export const publishesActivityAsIndividual = (kind: PublishingProfileKind): boolean =>
   kind === 'community' || kind === 'pro_guide';
+
+export type ActivityHostReviewTarget =
+  | { targetType: 'user'; targetId: string }
+  | { targetType: 'tenant'; targetId: string };
+
+/**
+ * Who a completed outing reviews: the person, or the operator.
+ * A buddy host is a user. An agency or shop is the tenant.
+ */
+export const resolveActivityHostReviewTarget = (
+  input: HostUserIdentityFields & {
+    publishingProfileKind?: PublishingProfileKind | null;
+    tenantId?: string | null;
+  }
+): ActivityHostReviewTarget | null => {
+  const kind = input.publishingProfileKind ?? 'community';
+  if (publishesActivityAsIndividual(kind)) {
+    const hostUserId = resolveActivityHostUserId(input);
+    return hostUserId ? { targetType: 'user', targetId: hostUserId } : null;
+  }
+  const tenantId = input.tenantId?.trim();
+  return tenantId ? { targetType: 'tenant', targetId: tenantId } : null;
+};
 
 /** Consumer subtitle under publisher name on cards and list feed. */
 export const exploreActivityPublisherTypeLabel = (

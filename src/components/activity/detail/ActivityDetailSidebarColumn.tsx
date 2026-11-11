@@ -17,12 +17,6 @@ export const ActivityDetailSidebarColumn = ({ model }: ActivityDetailSidebarColu
       showMobileTabs={model.showMobileTabs}
       showCrewLockedHint={model.buddiesCrewLockedHint}
       activityId={model.activity.id}
-      activityTitle={model.activity.title || model.activity.locationName}
-      activityType={model.activity.activityType}
-      rideshareHasPayment={Boolean(
-        !model.activity.rideshareFree &&
-          (model.activity.ridesharePriceAed != null && model.activity.ridesharePriceAed > 0)
-      )}
       hostBuddiesHub={model.requiresSignIn ? undefined : model.showHostManageHub ? model.hostBuddiesHub : undefined}
       hostCrewChatPolicy={model.requiresSignIn ? undefined : model.hostCrewChatPolicy}
     />
@@ -50,7 +44,6 @@ export const ActivityDetailSidebarColumn = ({ model }: ActivityDetailSidebarColu
       hostCrewChatPolicy={model.hostCrewChatPolicy}
       canAccessCrewSurfaces={model.canAccessCrewSurfaces}
       participants={model.participants}
-      rosterParticipants={model.rosterParticipants}
       showRosterProUpsell={model.showRosterProUpsell}
       hideHostProfile={model.publicDetail || model.requiresSignIn}
       hideParticipantsRoster={model.publicDetail}

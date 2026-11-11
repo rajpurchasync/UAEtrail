@@ -9,7 +9,7 @@ import {
 import { activityReviewsQueryKey } from '../hooks/clientQueryKeys';
 import { useActivityReviews } from '../hooks/useActivityReviews';
 import { useActivityHostJoinRequests } from '../hooks/useActivityHostJoinRequests';
-import { activityDetailPath, detailBackPath } from '../config/routingCatalog';
+import { activityCrewPath, activityDetailPath, detailBackPath } from '../config/routingCatalog';
 import { readDetailBackToFromLocation } from '../explore/mapPeekDetailNavState';
 import { MobileBackButton } from '../components/mobile/MobileBackButton';
 import {
@@ -49,7 +49,8 @@ import { resolveJoinRequestUiState } from '../utils/joinRequestUi';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { viewerIsActivityHostUser } from '../utils/viewerHostsActivity';
 import { activityJoinInviteBanner } from '../content/exploreGoingPanelCopy';
-import { useHostActivitySheetBundle } from '../hooks/useHostActivitySheetBundle';
+import { joinActivityGroupChatSession } from '../hooks/activityGroupChatClientApi';
+import { navigateToActivityGroupChat } from '../utils/activityGroupChatNav';
 import { navigateToCreateLinkedRideshare } from '../explore/navigateCreateLinkedRideshare';
 import { useActivityInviteShareSheet } from '../hooks/useActivityInviteShareSheet';
 import {
@@ -104,11 +105,6 @@ export const ActivityDetail = () => {
   const loadActivity = useCallback(() => {
     void refetchActivityDetail();
   }, [refetchActivityDetail]);
-
-  const hostSheets = useHostActivitySheetBundle({
-    tenantId: gate.tenantId,
-    onMapDataChanged: loadActivity,
-  });
 
   useEffect(() => {
     joinedWelcomeHandledRef.current = false;
@@ -244,12 +240,31 @@ export const ActivityDetail = () => {
   const handleJoinSuccess = useCallback(
     (successMessage: string) => {
       joinActions.handleJoinSuccess(successMessage);
-      if (presentation?.showCrewWelcomeAfterInstantJoin) {
-        setJoinWelcomeOpen(true);
-      }
+      if (!presentation?.showCrewWelcomeAfterInstantJoin || !activity) return;
+      void joinActivityGroupChatSession(activity.id)
+        .then((status) => {
+          if (!status.groupId) return;
+          navigateToActivityGroupChat(
+            navigate,
+            status.groupId,
+            activityDetailPath(activity.id),
+            activity.id
+          );
+        })
+        .catch(() => undefined);
     },
-    [joinActions, presentation]
+    [activity, joinActions, navigate, presentation]
   );
+
+  const openHostDesk = useCallback(() => {
+    if (!id) return;
+    navigate(activityCrewPath(id));
+  }, [id, navigate]);
+
+  useEffect(() => {
+    if (!id || location.hash !== '#host-crew') return;
+    navigate(activityCrewPath(id), { replace: true });
+  }, [id, location.hash, navigate]);
 
   const canAddLinkedRide = viewerAccess?.entitlements?.canAddLinkedRide ?? false;
   const canOfferTransport = viewerAccess?.entitlements?.canOfferTransport ?? false;
@@ -511,7 +526,7 @@ export const ActivityDetail = () => {
         wireSections={effectiveWirePresentation?.sections ?? null}
         wireStrips={effectiveWirePresentation?.strips ?? null}
         onHostShareOuting={isActivityHostUser ? onHostShareOuting : undefined}
-        onOpenHostManage={isActivityHostUser ? hostSheets.openHostManage : undefined}
+        onOpenHostManage={isActivityHostUser ? () => openHostDesk() : undefined}
         viewerAccess={viewerAccess}
         onOfferLinkedRideshare={
           canOpenLinkedRideshareFlow && activity
@@ -553,7 +568,6 @@ export const ActivityDetail = () => {
         isFull={activity.slotsAvailable <= 0}
         onSuccess={handleJoinSuccess}
       />
-      {hostSheets.hostManageSheet}
     </>
   );
 };

@@ -122,7 +122,13 @@ describe('activity detail program — wiring', () => {
     expect(sticky).toMatch(/plan_host_share/);
     const page = read('src/pages/ActivityDetail.tsx');
     expect(page).toMatch(/onOpenHostManage/);
-    expect(page).toMatch(/hostSheets\.hostManageSheet/);
+    expect(page).not.toMatch(/hostSheets/);
+    expect(read('src/activity/detail/templates/ActivityDetailSections.tsx')).toMatch(/activityCrewPath/);
+    expect(read('src/activity/detail/templates/ActivityDetailSections.tsx')).not.toMatch(
+      /ActivityDetailHostBuddiesHub/
+    );
+    expect(read('src/pages/ActivityCrewPage.tsx')).toMatch(/ActivityDetailHostBuddiesHub/);
+    expect(read('src/routing/AppRoutes.tsx')).toMatch(/\/activity\/:id\/crew/);
     expect(page).not.toMatch(/CreateHostingActivityFlow/);
     expect(page).not.toMatch(/hostDetailCtas/);
     expect(page).not.toMatch(/footerOverride/);
@@ -422,10 +428,12 @@ describe('activity detail program — structure (R6)', () => {
     }
   });
 
-  it('R6-02: explore host manage uses useHostActivitySheetBundle (no second sheet path)', () => {
+  it('R6-02: map Manage opens the outing host desk', () => {
     expect(read('src/explore/shell/useExploreExperienceModel.ts')).toMatch(/useHostActivitySheetBundle/);
     const bundle = read('src/hooks/useHostActivitySheetBundle.tsx');
-    expect(bundle).toMatch(/ActivityManageSheet/);
+    expect(bundle).toMatch(/activityCrewPath/);
+    expect(read('src/pages/ActivityCrewPage.tsx')).toMatch(/ActivityDetailHostBuddiesHub/);
+    expect(bundle).not.toMatch(/ActivityManageSheet/);
   });
 
   it('R6-03: ActivityDetailView shell under 400 LOC', () => {

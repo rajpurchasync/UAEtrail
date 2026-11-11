@@ -13,7 +13,7 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`M
 | Prefix | Auth | Purpose |
 |--------|------|---------|
 | **`/activities`** | Public read; tenant write via `/publishing` | Published **hosted** outings (join, RSVP, detail) |
-| **`/explore/map`** | Public | Guest discovery catalog (`source`: activity · place · facility · shop · agency). Area is a filter (`areaId`), not a pin. Signed-in peek is **`GET /me/discover/overlay`**. |
+| **`/explore/map`** | Public | Guest discovery catalog (`source`: activity · place · facility · shop · agency). Home map sends `sources` (default `place,activity`) and `includeRideshare=1` only for the rideshare topic. Omit `sources` for the full catalog (`/list`). Area is a filter (`areaId`), not a pin. Signed-in peek is **`GET /me/discover/overlay`**. |
 | **`/agent/manifest.json`**, **`/agent/discover`** | Public (rate-limited) | **AI / agent** entry manifest and text search over published outings + registry places |
 | **`/me/*`** | Signed-in member | Own profile, intents, groups, inbox, activity participation |
 | **`/publishing/*`** | Verified + **tenant** (`x-organisation-id`) | **Publishing workspace** (any tier): publish, roster, **activity** join queue. |
@@ -186,8 +186,8 @@ Registration: `registerMemberDiscoveryRoutes.ts` · `registerPublicPlaceRoutes.t
 
 | Method | Path | Who |
 |--------|------|-----|
-| GET | `/reviews` | Public list. Query: `targetType=location\|tenant\|activity`, `targetId`, pagination |
-| POST | `/reviews` | Signed-in · place, host/shop, or **activity** (activity requires host check-in and a finished schedule — `activityInstantHasEnded` on the place `countryCode`) |
+| GET | `/reviews` | Public list. Query: `targetType=location\|tenant\|activity\|user`, `targetId`, pagination |
+| POST | `/reviews` | Signed-in · place, operator (`tenant`), person (`user`), or **activity**. Activity reviews, and a host review that sends `activityId`, require host check-in and a finished schedule (`activityInstantHasEnded` on the place `countryCode`). A person review requires `activityId`. An operator profile review omits it. |
 | GET | `/me/reviews` | Signed-in member's reviews |
 | PATCH | `/me/reviews/:id` | Edit own review |
 

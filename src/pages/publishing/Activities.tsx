@@ -2,8 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { useSafeAsyncEffect, type IsActiveGuard } from '../../hooks/useSafeAsyncEffect';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import type { ActivityDTO } from '@uaetrail/shared-types';
-import type { ActivityRequestView } from '../../api/types';
-import { getActivityJoinRequests } from '../../hooks/publishingJoinQueueClientApi';
 import { listActivities } from '../../hooks/tenantActivityClientApi';
 import { getActiveTenantId } from '../../api/tenant';
 import { parseActivityTypeParam } from '../../config/activityTypes';
@@ -24,7 +22,7 @@ import { ActivityManageSheet } from '../../components/activity/ActivityManageShe
 import { useHostActivityManageActions } from '../../hooks/useHostActivityManageActions';
 import { useAuth } from '../../context/AuthContext';
 import { hostPublishAvailabilityNoticeMessage } from '../../plan/hostPublishAvailabilityNotice';
-import { PUBLISHING_ACTIVITIES_NEW_PATH } from '../../config/routingCatalog';
+import { activityCrewPath, PUBLISHING_ACTIVITIES_NEW_PATH } from '../../config/routingCatalog';
 import {
   activityTypeBadgeClass,
   formatActivityCapacity,
@@ -42,25 +40,19 @@ export const Activities = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [tenantId, setTenantId] = useState(getActiveTenantId());
   const [events, setEvents] = useState<ActivityDTO[]>([]);
-  const [pendingRequests, setPendingRequests] = useState<ActivityRequestView[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [previewActivity, setPreviewActivity] = useState<ActivityDTO | null>(null);
   const [previewPublishing, setPreviewPublishing] = useState(false);
   const [manageActivity, setManageActivity] = useState<ActivityDTO | null>(null);
-  const [manageInitialView, setManageInitialView] = useState<'overview' | 'checkin'>('overview');
   const [publishNotice, setPublishNotice] = useState<string | null>(null);
   const { user } = useAuth();
 
   const loadEvents = useCallback(async (tid: string, isActive: IsActiveGuard = () => true) => {
     if (!tid) return;
     try {
-      const [activities, requests] = await Promise.all([
-        listActivities(tid),
-        getActivityJoinRequests(tid),
-      ]);
+      const activities = await listActivities(tid);
       if (!isActive()) return;
       setEvents(activities);
-      setPendingRequests(requests.filter((request) => request.status === 'pending'));
       setLoadError(null);
     } catch (err) {
       if (isActive()) {
@@ -89,8 +81,7 @@ export const Activities = () => {
     navigateToExploreHost(navigate, type ? activityTypeToHostComposeKind(type) : null);
   }, [location.pathname, navigate, searchParams]);
 
-  const openManage = (activity: ActivityDTO, view: 'overview' | 'checkin' = 'overview') => {
-    setManageInitialView(view);
+  const openManage = (activity: ActivityDTO) => {
     setManageActivity(activity);
   };
 
@@ -133,12 +124,12 @@ export const Activities = () => {
     const event = events.find((item) => item.id === rosterId);
     if (!event || event.status !== 'published') return;
 
-    openManage(event, 'checkin');
     const nextParams = new URLSearchParams(searchParams);
     nextParams.delete('checkin');
     nextParams.delete('roster');
     setSearchParams(nextParams, { replace: true });
-  }, [events, searchParams, setSearchParams, tenantId]);
+    navigate(activityCrewPath(event.id));
+  }, [events, navigate, searchParams, setSearchParams, tenantId]);
 
   useEffect(() => {
     if (!manageActivity) return;
@@ -231,13 +222,13 @@ export const Activities = () => {
                       <ActivityActionsMenu
                         items={buildHostActivityMenuItems(event, {
                           onPreview: openPreview,
-                          onManage: (e) => openManage(e, 'overview'),
+                          onManage: (e) => openManage(e),
                           onPublish: (e) => void publishActivityWithNotice(e),
                           onDuplicate: (e) => void hostActions.duplicateActivity(e),
                           onHostFromExisting: hostActions.hostFromExistingActivity,
                           onDelete: hostActions.setConfirmDelete,
                           onCancel: hostActions.setConfirmCancel,
-                          onCheckin: (e) => openManage(e, 'checkin'),
+                          onCheckin: (e) => navigate(activityCrewPath(e.id)),
                         })}
                       />
                     </div>
@@ -268,12 +259,9 @@ export const Activities = () => {
         open={Boolean(manageActivity)}
         activity={manageActivity}
         tenantId={tenantId}
-        pendingRequests={pendingRequests}
         actions={hostActions}
-        initialView={manageInitialView}
         onClose={() => {
           setManageActivity(null);
-          setManageInitialView('overview');
         }}
         onRequestsChanged={() => loadEvents(tenantId)}
       />

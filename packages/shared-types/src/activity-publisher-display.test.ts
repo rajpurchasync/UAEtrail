@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   exploreActivityPublisherTypeLabel,
   publishesActivityAsIndividual,
+  resolveActivityHostReviewTarget,
   resolveActivityPublisherDisplayName,
   resolveActivityPublisherProfilePath,
 } from './activity-publisher-display.js';
@@ -64,6 +65,23 @@ describe('activity publisher display', () => {
         hostUserId: 'u1',
       })
     ).toBe('/agency/uae-adventure-co');
+  });
+
+  it('reviews a buddy as a person and an agency as the operator', () => {
+    expect(
+      resolveActivityHostReviewTarget({
+        publishingProfileKind: 'community',
+        hostUserId: 'host-1',
+        tenantId: 'tenant-1',
+      })
+    ).toEqual({ targetType: 'user', targetId: 'host-1' });
+    expect(
+      resolveActivityHostReviewTarget({
+        publishingProfileKind: 'agency',
+        hostUserId: 'owner-1',
+        tenantId: 'tenant-1',
+      })
+    ).toEqual({ targetType: 'tenant', targetId: 'tenant-1' });
   });
 
   it('labels never use organisation wording', () => {

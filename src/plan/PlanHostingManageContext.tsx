@@ -68,7 +68,6 @@ export const PlanHostingManageProvider = ({
       {children}
       <PlanHostingManageSheets
         tenantId={host.tenantId}
-        pendingRequests={host.pendingRequests}
         actions={hostActions}
         onHostReload={host.reload}
         onIntentsChanged={() => void refetchIntents()}

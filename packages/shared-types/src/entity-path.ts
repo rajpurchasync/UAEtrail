@@ -68,6 +68,10 @@ export const facilityDetailPath = (facilityId: string): string => `/facility/${f
 
 export const activityDetailPath = (activityId: string): string => `/activity/${activityId}`;
 
+/** Host roster and crew “who’s going” list. The outing page stays a summary. */
+export const activityCrewPath = (activityId: string): string =>
+  `${activityDetailPath(activityId)}/crew`;
+
 /** Deep link from `activity_join_invite` notifications — nudges join on activity detail. */
 export const activityDetailInvitePath = (activityId: string): string =>
   `${activityDetailPath(activityId)}?invite=1`;

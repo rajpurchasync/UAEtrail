@@ -158,9 +158,9 @@ export const signUpPath = (options?: {
   return qs ? `${SIGNUP_PATH}?${qs}` : SIGNUP_PATH;
 };
 
-/** Publishing console → activity participants roster (`checkin=` still accepted on Plan). */
+/** Host roster page. Same URL as `activityCrewPath` (this module cannot import shared-types). */
 export const publishingActivitiesCheckInPath = (activityId: string): string =>
-  `${PUBLISHING_ACTIVITIES_PATH}?roster=${encodeURIComponent(activityId)}`;
+  `/activity/${activityId}/crew`;
 
 export const messagesToUserPath = (userId: string): string =>
   `${MESSAGES_PATH}?to=${encodeURIComponent(userId)}`;
