@@ -43,7 +43,6 @@
     "src/components/ui/PlaceSelect.tsx": ["exports"],
     "src/components/ui/PlaceDirectionLinks.tsx": ["exports"],
     "src/components/ui/PlacesMap.tsx": ["exports"],
-    "src/explore/ui/ExplorePlaceMapPreview.tsx": ["exports"],
     "src/components/activities/ActivityActionsMenu.tsx": ["exports"],
     "src/components/activities/index.ts": ["exports"],
     "src/utils/activityPublishPayload.ts": ["exports"]
