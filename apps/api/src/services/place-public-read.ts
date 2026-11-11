@@ -36,6 +36,8 @@ export const loadExploreMapForViewer = (input: {
     limit?: string;
     area?: string;
     projection?: string;
+    sources?: string;
+    includeRideshare?: string;
   };
   viewerUserId: string | null;
   userRole?: string | null;

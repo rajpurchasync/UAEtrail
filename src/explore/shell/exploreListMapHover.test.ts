@@ -12,6 +12,8 @@ describe('explore list → map pin hover', () => {
     expect(model).toMatch(/highlightedExploreItemId/);
     expect(model).toMatch(/setHighlightedExploreItemId/);
     expect(mapShell).toMatch(/highlightedExploreItemId=\{highlightedExploreItemId\}/);
+    expect(mapShell).toMatch(/onPrimaryFab=\{handlePrimaryFabTap\}/);
+    expect(mapShell).not.toMatch(/onPrimaryFab=\{compose\.handleCreateTap\}/);
     expect(itemLink).toMatch(/setListHoverExploreItemId/);
   });
 });

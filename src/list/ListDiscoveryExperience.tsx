@@ -26,7 +26,6 @@ import { BrowseListCreateFab } from './ui/BrowseListCreateFab';
 import { BrowseListMapFab } from './ui/BrowseListMapFab';
 import { PeopleBrowsePanel } from '@/people-discovery/panel/PeopleBrowsePanel';
 import { usePeopleDiscoverySeekingActivities } from '@/people-discovery/hooks/usePeopleDiscoverySeekingActivities';
-import { useHostActivitySheetBundle } from '../hooks/useHostActivitySheetBundle';
 import { exploreMapPathFromListSearch } from './routing';
 import { listDiscoveryEmbeddedOnExplore, type ListDiscoverySurface } from './listDiscoverySurface';
 import { useMemberDiscoveryRoster } from '@/people-discovery/hooks/useMemberDiscoveryRoster';
@@ -128,14 +127,7 @@ export const ListDiscoveryExperience = ({
     hostTiers,
     loading: hostGateLoading,
     refresh: refreshHostGate,
-    tenantId,
   } = useMemberStatus({ enabled: Boolean(user) });
-
-  const hostSheets = useHostActivitySheetBundle({
-    tenantId,
-    onMapDataChanged: () => reloadExploreMap(queryClient),
-  });
-  const { hostManageSheet } = hostSheets;
 
   const navigateMemberPublishGate = useCallback(
     (returnPath: string) =>
@@ -617,8 +609,6 @@ export const ListDiscoveryExperience = ({
           <BrowseListCreateFab onClick={handleCreateFabTap} label={createFabLabel} />
         </>
       )}
-
-      {hostManageSheet}
 
       <ComposeHost
         composeRoute={compose.composeRoute}

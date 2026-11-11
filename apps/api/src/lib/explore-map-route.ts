@@ -1,4 +1,4 @@
-import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { isPlaceMapSource, type ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { buildExploreMapPayload } from './explore-map.js';
 import { readExploreMapMemoryCacheGeneration } from './explore-map-cache.js';
 import {
@@ -17,6 +17,34 @@ export type ExploreMapRouteQuery = {
   area?: string;
   /** `full` keeps nested activity/venue payloads; default is slim pin projection. */
   projection?: string;
+  /** Comma-separated map sources. Omitted = full catalog (list and other readers). */
+  sources?: string;
+  /** `1` keeps rideshare activities. Omitted drops them when `sources` is set. */
+  includeRideshare?: string;
+};
+
+const catalogSource = (source: string): string => (isPlaceMapSource(source) ? 'place' : source);
+
+const isRideshareItem = (item: ExploreMapItemDTO): boolean =>
+  item.kind === 'rideshare' || item.activity?.activityType === 'rideshare';
+
+/** Home map asks for the layers it will draw. List omits `sources` and keeps the full catalog. */
+export const filterExploreMapCatalogItems = (
+  items: ExploreMapItemDTO[],
+  query: ExploreMapRouteQuery
+): ExploreMapItemDTO[] => {
+  const sources = query.sources
+    ?.split(',')
+    .map((source) => source.trim())
+    .filter(Boolean);
+  if (!sources?.length) return items;
+  const allowed = new Set(sources);
+  const includeRideshare = query.includeRideshare === '1';
+  return items.filter((item) => {
+    if (!allowed.has(catalogSource(item.source))) return false;
+    if (!includeRideshare && isRideshareItem(item)) return false;
+    return true;
+  });
 };
 
 export type ExploreMapRouteResult = {
@@ -34,6 +62,7 @@ export const resolveExploreMapCatalogItemsForQuery = async (
 ): Promise<{ items: ExploreMapItemDTO[]; pageMeta?: Omit<ExploreMapRouteResult, 'items'> }> => {
   assertExploreMapBboxQueryAllowed(query);
   const cached = await buildExploreMapPayload();
+  const items = filterExploreMapCatalogItems(cached.items, query);
   const bboxRaw = query.bbox?.trim();
 
   if (bboxRaw && isExploreMapBboxEnabled()) {
@@ -41,7 +70,7 @@ export const resolveExploreMapCatalogItemsForQuery = async (
     const limit = parseExploreMapLimitParam(query.limit);
     const areaSlug = query.area?.trim() || null;
     const page = buildExploreMapBboxPage({
-      items: cached.items,
+      items,
       bbox,
       areaSlug,
       limit,
@@ -57,7 +86,7 @@ export const resolveExploreMapCatalogItemsForQuery = async (
     };
   }
 
-  return { items: cached.items };
+  return { items };
 };
 
 export const loadExploreMapForRequest = async (input: {

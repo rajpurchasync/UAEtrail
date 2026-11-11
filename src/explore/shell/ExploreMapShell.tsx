@@ -70,6 +70,7 @@ export const ExploreMapShell = ({
   handleCloseMapSelection,
   handleOfferRideshareForSeeking: _handleOfferRideshareForSeeking,
   primaryFabLabel,
+  handlePrimaryFabTap,
   handleOpenExploreItem,
   searchScopeCounts,
   setExploreSearchModalOpen,
@@ -191,7 +192,7 @@ export const ExploreMapShell = ({
       onAllowMapLocation={viewport.handleAllowMapLocation}
       onDismissLocationPrompt={viewport.dismissLocationPromptUi}
       onOpenBrowse={browse.openMapListPanel}
-      onPrimaryFab={compose.handleCreateTap}
+      onPrimaryFab={handlePrimaryFabTap}
       primaryFabLabel={primaryFabLabel}
       selected={selection.selected}
       selectedCard={selection.selectedCard}

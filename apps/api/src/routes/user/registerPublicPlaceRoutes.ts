@@ -40,7 +40,8 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     try {
       const query = req.query as Record<string, string | undefined>;
       const projection = query.projection?.trim();
-      const unscoped = !query.bbox && !query.cursor && !query.limit && !query.area;
+      const unscoped =
+        !query.bbox && !query.cursor && !query.limit && !query.area && !query.sources;
       const catalogFresh = unscoped && projection !== 'full' && readExploreMapMemoryCache() != null;
       if (catalogFresh && sendNotModifiedIfMatch(req, res, await readCatalogResponseEtag('map'))) return;
       const data = await loadExploreMapForViewer({
@@ -50,6 +51,8 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
           limit: query.limit,
           area: query.area,
           projection,
+          sources: query.sources,
+          includeRideshare: query.includeRideshare,
         },
         viewerUserId: null,
         userRole: null,

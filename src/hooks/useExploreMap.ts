@@ -27,16 +27,22 @@ type UseExploreMapOptions = {
   scope?: ExploreMapFetchScope | null;
   /** `/list` uses the same Redis catalog with a lighter item projection. */
   projection?: 'list';
+  /** Home map layer. Omit for the full catalog (`/list`). */
+  sources?: string;
+  includeRideshare?: boolean;
 };
 
 export const useExploreMap = (options?: UseExploreMapOptions) => {
   const { user, initializing } = useAuth();
   const scope = options?.scope ?? null;
   const projection = options?.projection;
+  const sources = options?.sources;
+  const includeRideshare = options?.includeRideshare ?? false;
   const useVnextFetch = isExploreMapBboxEnabled() && scope != null;
   const catalogKey = [
     ...exploreMapQueryKey(useVnextFetch ? scope : null),
     ...(projection ? [projection] : []),
+    ...(sources ? [sources, includeRideshare ? 'rides' : 'no-rides'] : []),
   ];
   const queryKey = user?.id ? [...catalogKey, user.id] : catalogKey;
   const authSessionReady = !user || !initializing;
@@ -48,10 +54,21 @@ export const useExploreMap = (options?: UseExploreMapOptions) => {
       loadCachedCatalog(queryKey, (etag) =>
         useVnextFetch && scope
           ? fetchExploreMapItems(
-              { bbox: scope.bbox, area: scope.area ?? undefined, projection },
+              {
+                bbox: scope.bbox,
+                area: scope.area ?? undefined,
+                projection,
+                sources,
+                includeRideshare,
+              },
               etag
             )
-          : fetchExploreMapItems(projection ? { projection } : undefined, etag)
+          : fetchExploreMapItems(
+              sources || projection
+                ? { projection, sources, includeRideshare }
+                : undefined,
+              etag
+            )
       ),
     placeholderData: user?.id ? undefined : keepPreviousData,
     refetchOnMount: true,
