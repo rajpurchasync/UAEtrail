@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin } from 'lucide-react';
 import type { AreaPublicDTO, PlaceDTO } from '@uaetrail/shared-types';
@@ -35,6 +35,7 @@ import { applyRegistryPlaceToHostingDraft } from './hostingPlaceRegistryDraft';
 import { exploreFlowChoiceCardClass } from './exploreFlowUi';
 import { HostingDestinationCascade } from './HostingDestinationCascade';
 import {
+  areaRowInCatalogCountry,
   DEFAULT_PLACE_CATALOG_COUNTRY,
   inferPlaceCatalogLadderFromRow,
   placeCatalogPlaceGroupLabelForKey,
@@ -44,6 +45,8 @@ import {
   patchHostingDestinationClearTrailSlot,
   patchHostingDestinationPlaceGroupChange,
   patchHostingDestinationReset,
+  patchHostingDestinationCatalogLeafLadder,
+  patchHostingDestinationCountryChange,
   patchHostingDestinationStartCustomTrail,
   patchHostingDestinationStateChange,
 } from './hostingDestinationDraft';
@@ -89,7 +92,12 @@ export const HostingDestinationField = ({
       : placeType === 'event'
         ? HOSTING_DESTINATION_CATALOG_LEAF_LINK_EVENT
         : HOSTING_DESTINATION_CATALOG_LEAF_LINK_HIKING;
-  const areas = useExplorePublishedAreas();
+  const publishedAreas = useExplorePublishedAreas();
+  const catalogCountry = draft.customPlaceCountry || DEFAULT_PLACE_CATALOG_COUNTRY;
+  const areas = useMemo(
+    () => publishedAreas.filter((row) => areaRowInCatalogCountry(row, catalogCountry)),
+    [publishedAreas, catalogCountry]
+  );
   const spotPinned = draft.trailLatitude != null && draft.trailLongitude != null;
   const inferredArea =
     spotPinned && draft.trailLatitude != null && draft.trailLongitude != null
@@ -153,14 +161,12 @@ export const HostingDestinationField = ({
     patchDraft,
   ]);
 
-  const catalogCountry = draft.customPlaceCountry || DEFAULT_PLACE_CATALOG_COUNTRY;
-
   useEffect(() => {
     if (custom || !draft.registryPlaceId) return;
     if (draft.venueCascadeState?.trim() && draft.venueCascadePlaceGroup?.trim()) return;
     const place = catalogPlaces.find((row) => row.id === draft.registryPlaceId);
     if (!place) return;
-    const inferred = inferPlaceCatalogLadderFromRow(place, areas, catalogCountry);
+    const inferred = inferPlaceCatalogLadderFromRow(place, areas, catalogCountry, catalogPlaces);
     patchDraft({
       venueCascadeState: inferred.state,
       registryPlaceAreaId: draft.registryPlaceAreaId ?? inferred.areaId ?? null,
@@ -188,14 +194,18 @@ export const HostingDestinationField = ({
       });
       return;
     }
-    const inferred = inferPlaceCatalogLadderFromRow(place, areas, catalogCountry);
+    const ladder = patchHostingDestinationCatalogLeafLadder(
+      place,
+      areas,
+      catalogCountry,
+      catalogPlaces
+    );
     const basePatch = applyRegistryPlaceToHostingDraft(draft, place);
     patchDraft({
+      ...ladder,
       ...basePatch,
-      venueCascadeState: inferred.state,
-      venueCascadePlaceGroup: inferred.placeGroup,
       registryPlaceAreaId:
-        basePatch.registryPlaceAreaId ?? inferred.areaId ?? draft.registryPlaceAreaId,
+        basePatch.registryPlaceAreaId ?? ladder.registryPlaceAreaId ?? draft.registryPlaceAreaId,
     });
     if (basePatch.registryPlaceAreaId || inferred.areaId) return;
     const lat = place.latitude;
@@ -248,6 +258,10 @@ export const HostingDestinationField = ({
           onPickTrail={onRegistryPick}
           onClearTrail={() => patchDraft(patchHostingDestinationClearTrailSlot())}
           onAddNewTrail={startCustomTrailUnderPlace}
+          onCountryChange={(next) => {
+            setPlaceGateMessage(null);
+            patchDraft(patchHostingDestinationCountryChange(next));
+          }}
           onReset={() => {
             setPlaceGateMessage(null);
             patchDraft(patchHostingDestinationReset());

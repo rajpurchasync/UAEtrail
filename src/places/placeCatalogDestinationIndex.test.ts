@@ -1,12 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import type { AreaPublicDTO, PlaceDTO } from '@uaetrail/shared-types';
-import { applyHostingDestinationSearchHit } from '../explore/ui/hostingDestinationDraft';
+import {
+  applyHostingDestinationSearchHit,
+  patchHostingDestinationCatalogLeafLadder,
+  patchHostingDestinationCountryChange,
+} from '../explore/ui/hostingDestinationDraft';
 import {
   buildPlaceCatalogAreaOptions,
   buildPlaceCatalogPlaceGroupOptions,
   buildPlaceCatalogStateOptions,
+  collectPlaceCatalogParentHubIds,
   filterPlaceCatalogTrailRowsInGroup,
+  placeCatalogRowIsHostingLeaf,
   inferPlaceCatalogLadderFromRow,
+  placeCatalogPlaceGroupKey,
+  placeCatalogPlaceGroupLabelForKey,
   placeCatalogRegionsMatch,
   searchPlaceCatalogDestination,
   scopePlaceCatalogDestination,
@@ -41,6 +49,36 @@ describe('placeCatalogDestinationIndex', () => {
   it('matches emirate aliases (RAK vs Ras Al Khaimah)', () => {
     expect(placeCatalogRegionsMatch('RAK', 'Ras Al Khaimah')).toBe(true);
     expect(placeCatalogRegionsMatch('Dubai', 'Sharjah')).toBe(false);
+  });
+
+  it('groups leaf rows by parentPlaceId when set', () => {
+    const hubId = 'hub-wadi';
+    const places = [
+      place({
+        id: 'leaf-1',
+        name: 'Loop A',
+        region: 'Dubai',
+        areaId: 'a-hatta',
+        parentPlaceId: hubId,
+        areaLabel: 'ignored when parent set',
+      }),
+      place({
+        id: hubId,
+        name: 'Wadi Shawka',
+        region: 'Dubai',
+        areaId: 'a-hatta',
+        areaLabel: 'Wadi Shawka',
+      }),
+    ];
+    expect(placeCatalogPlaceGroupKey(places[0])).toBe(hubId);
+    expect(placeCatalogPlaceGroupLabelForKey(places, hubId)).toBe('Wadi Shawka');
+    const parentHubIds = collectPlaceCatalogParentHubIds(places);
+    expect(placeCatalogPlaceGroupKey(places[1], parentHubIds)).toBe(hubId);
+    expect(placeCatalogRowIsHostingLeaf(places[1], parentHubIds)).toBe(false);
+    expect(placeCatalogRowIsHostingLeaf(places[0], parentHubIds)).toBe(true);
+    expect(filterPlaceCatalogTrailRowsInGroup(places, hubId, places).map((row) => row.id)).toEqual([
+      'leaf-1',
+    ]);
   });
 
   it('builds state → area → place group → trail options from catalog rows', () => {
@@ -120,6 +158,32 @@ describe('placeCatalogDestinationIndex', () => {
       const patch = applyHostingDestinationSearchHit(group, areas, 'AE');
       expect(patch?.venueCascadePlaceGroup).toBe('Wadi Shawka');
     }
+  });
+
+  it('patchHostingDestinationCountryChange resets ladder and sets country', () => {
+    expect(patchHostingDestinationCountryChange('OM')).toMatchObject({
+      customPlaceCountry: 'OM',
+      venueCascadeState: '',
+      venueCascadePlaceGroup: '',
+      registryPlaceAreaId: null,
+      registryPlaceId: null,
+    });
+  });
+
+  it('patchHostingDestinationCatalogLeafLadder maps infer result to draft fields', () => {
+    const areas = [area({ id: 'a-1', name: 'Hatta', region: 'Dubai' })];
+    const row = place({
+      id: 'p-1',
+      name: 'Dam loop',
+      region: 'Dubai',
+      areaId: 'a-1',
+      areaLabel: 'Hatta Dam',
+    });
+    expect(patchHostingDestinationCatalogLeafLadder(row, areas, 'AE')).toEqual({
+      venueCascadeState: 'Dubai',
+      registryPlaceAreaId: 'a-1',
+      venueCascadePlaceGroup: 'Hatta Dam',
+    });
   });
 
   it('infers ladder from a catalog row', () => {

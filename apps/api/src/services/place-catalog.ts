@@ -39,7 +39,7 @@ export const buildPlaceCatalog = async (query: PlaceCatalogBuildQuery = {}): Pro
   const segment = query.segment ?? 'place';
   if (segment === 'all') return rows;
 
-  return rows.filter(isPlaceCatalogRow);
+  return rows.filter(isPlaceCatalogRow).filter((row) => row.publicationStatus !== 'anchor_only');
 };
 
 export const buildFacilityCatalog = async (query: FacilityCatalogQuery = {}): Promise<FacilityDTO[]> => {

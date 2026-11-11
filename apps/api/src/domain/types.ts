@@ -54,6 +54,8 @@ export interface Location {
   areaLabel: string | null;
   /** Curated geographic area (`areas` collection). */
   areaId?: string | null;
+  /** Leaf rows grouped under a place hub (CPC — optional until admin seeds hubs). */
+  parentPlaceId?: string | null;
   activityType: ActivityType;
   description: string;
   difficulty: Difficulty | null;

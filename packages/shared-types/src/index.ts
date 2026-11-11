@@ -104,6 +104,8 @@ export interface LocationDTO {
   submittedById?: string | null;
   /** Who registered this catalog row (CPC). Dual-read with {@link submittedById}. */
   registeredByUserId?: string | null;
+  /** Catalog leaf → place hub row id when hub/child split ships (organize picker grouping). */
+  parentPlaceId?: string | null;
   moderationStatus?: import('./catalog-lifecycle.js').CatalogModerationStatus;
   publicationStatus?: import('./catalog-lifecycle.js').CatalogPublicationStatus;
   /** Public-safe premium hints (no private file keys on consumer APIs). */
@@ -1150,8 +1152,10 @@ export {
 export {
   exploreActivityPublisherTypeLabel,
   publishesActivityAsIndividual,
+  resolveActivityHostReviewTarget,
   resolveActivityPublisherDisplayName,
   resolveActivityPublisherProfilePath,
+  type ActivityHostReviewTarget,
 } from './activity-publisher-display.js';
 
 export {
@@ -1176,6 +1180,7 @@ export {
   buildDiscoveryCardPresentation,
   buildDiscoveryCardSections,
   buildExploreListWhen,
+  buildExploreActivityScheduleDetail,
   buildExploreRouteLabel,
   normalizeRideshareRouteLabels,
   buildExploreSpotsSegment,
@@ -1576,6 +1581,7 @@ export {
   EXPLORE_SHOPS_LIST_PATH,
   EXPLORE_SHOPS_PATH,
   activityDetailPath,
+  activityCrewPath,
   activityDetailInvitePath,
   exploreActivityInvitePath,
   AGENCY_PROFILE_PATH_PREFIX,
@@ -1754,6 +1760,11 @@ export {
 export {
   activityInstantHasEnded,
   activityScheduleHasEnded,
+  activityScheduleIncludesDate,
+  activityScheduleOverlapsRange,
+  activityScheduleSpanLabel,
+  isMultiDayActivitySchedule,
+  normalizeActivityScheduleEndDate,
   parseActivityLocalDateTime,
   resolveActivityScheduleEndFromFields,
   resolveActivityScheduleEndInstant,

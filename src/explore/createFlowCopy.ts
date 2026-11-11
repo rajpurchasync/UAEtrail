@@ -139,6 +139,8 @@ export const HOSTING_DESTINATION_REGISTRY_LABEL = 'Select from catalog';
 
 export const HOSTING_DESTINATION_SELECT_STATE = 'State';
 
+export const HOSTING_DESTINATION_SELECT_COUNTRY = 'Country';
+
 export const HOSTING_DESTINATION_SELECT_AREA = 'Area';
 
 export const HOSTING_DESTINATION_SELECT_PLACE = 'Place';
@@ -178,6 +180,12 @@ export const HOSTING_DESTINATION_CATALOG_LEAF_LINK_HIKING = 'Trail';
 export const HOSTING_DESTINATION_CATALOG_LEAF_LINK_CAMPING = 'Camp spot';
 export const HOSTING_DESTINATION_CATALOG_LEAF_LINK_EVENT = 'Venue';
 export const HOSTING_DESTINATION_CATALOG_LEAF_VIEW = 'View on map';
+
+export const HOSTING_DESTINATION_SEARCH_GROUP_ROUTE = 'Route';
+export const HOSTING_DESTINATION_SEARCH_GROUP_PLACE = 'Place hub';
+export const HOSTING_DESTINATION_SEARCH_GROUP_AREA = 'Area';
+export const HOSTING_DESTINATION_EMPTY_ROUTES_PROMPT =
+  'No routes listed under this place yet — add the one you lead.';
 
 /** @deprecated Use {@link HOSTING_DESTINATION_*} — legacy “venue” mixed hub and catalog leaf. */
 export const HOSTING_VENUE_REGISTRY_LABEL = HOSTING_DESTINATION_REGISTRY_LABEL;

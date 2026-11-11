@@ -18,6 +18,8 @@ describe('hostingFromPlace', () => {
       id: 'loc-1',
       name: 'Wadi Shawka',
       region: 'Sharjah',
+      areaId: 'area-1',
+      areaLabel: 'Wadi Shawka',
       activityType: 'hiking',
       description: 'Loop with pools.',
       difficulty: 'easy',
@@ -25,10 +27,22 @@ describe('hostingFromPlace', () => {
       longitude: 56.2,
     } as PlaceDTO;
 
-    const draft = createDraftFromRegistryPlace(place, 'hiking');
+    const draft = createDraftFromRegistryPlace(place, 'hiking', [
+      {
+        id: 'area-1',
+        name: 'Hatta',
+        region: 'Dubai',
+        slug: 'hatta',
+        center: { latitude: 24.8, longitude: 56.1 },
+        bounds: [],
+        priority: 1,
+      },
+    ]);
     expect(draft.kind).toBe('hiking');
     expect(draft.registryPlaceId).toBe('loc-1');
     expect(draft.trailName).toBe('Wadi Shawka');
     expect(draft.trailLatitude).toBe(25.1);
+    expect(draft.venueCascadePlaceGroup).toBe('Wadi Shawka');
+    expect(draft.registryPlaceAreaId).toBe('area-1');
   });
 });

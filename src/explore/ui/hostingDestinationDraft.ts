@@ -5,8 +5,10 @@
  */
 import type { AreaPublicDTO } from '@uaetrail/shared-types';
 import type { CountryCode } from '../../config/regions';
+import type { PlaceDTO } from '@uaetrail/shared-types';
 import {
   DEFAULT_PLACE_CATALOG_COUNTRY,
+  inferPlaceCatalogLadderFromRow,
   resolvePlaceCatalogStateFromArea,
   type PlaceCatalogDestinationSearchHit,
 } from '../../places/placeCatalogDestinationIndex';
@@ -51,6 +53,14 @@ export const patchHostingDestinationReset = (): Partial<CreateActivityDraft> => 
   ...patchHostingDestinationClearTrailSlot(),
 });
 
+/** Switch catalog country — refetch places and clear ladder (keeps `customPlaceCountry`). */
+export const patchHostingDestinationCountryChange = (
+  countryCode: CountryCode
+): Partial<CreateActivityDraft> => ({
+  customPlaceCountry: countryCode,
+  ...patchHostingDestinationReset(),
+});
+
 export const patchHostingDestinationStartCustomTrail = (
   draft: Pick<CreateActivityDraft, 'registryPlaceAreaId' | 'customPlaceAreaId'>
 ): Partial<CreateActivityDraft> => ({
@@ -63,6 +73,21 @@ export const patchHostingDestinationStartCustomTrail = (
   meetingLongitude: null,
   meetingPointLabel: '',
 });
+
+/** Ladder fields when picking a catalog leaf row (search or trail dropdown). */
+export const patchHostingDestinationCatalogLeafLadder = (
+  place: PlaceDTO,
+  areas: AreaPublicDTO[],
+  countryCode: CountryCode = DEFAULT_PLACE_CATALOG_COUNTRY,
+  catalogPlaces?: PlaceDTO[]
+): Partial<CreateActivityDraft> => {
+  const ladder = inferPlaceCatalogLadderFromRow(place, areas, countryCode, catalogPlaces);
+  return {
+    venueCascadeState: ladder.state,
+    registryPlaceAreaId: ladder.areaId,
+    venueCascadePlaceGroup: ladder.placeGroup,
+  };
+};
 
 /** Map a catalog search hit to hosting draft ladder fields (trail hits use row pick instead). */
 export const applyHostingDestinationSearchHit = (

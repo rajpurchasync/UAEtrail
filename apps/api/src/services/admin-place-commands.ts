@@ -42,6 +42,7 @@ export type AdminPlaceWriteInput = {
   region: string;
   areaLabel?: string | null;
   areaId?: string | null;
+  parentPlaceId?: string | null;
   activityType: string;
   description: string;
   difficulty?: 'easy' | 'moderate' | 'hard';
@@ -101,15 +102,53 @@ const toPrismaLocationStatus = (status?: 'draft' | 'active' | 'inactive'): Locat
   return status === 'active' ? LocationStatus.ACTIVE : LocationStatus.INACTIVE;
 };
 
+const resolveAdminParentPlaceId = async (input: {
+  parentPlaceId?: string | null;
+  placeId?: string;
+  areaId?: string | null;
+}): Promise<string | null> => {
+  const trimmed = input.parentPlaceId?.trim() || null;
+  if (!trimmed) return null;
+  if (input.placeId && trimmed === input.placeId) {
+    throw new ApiError(400, 'invalid_parent_place', 'A catalog route cannot be its own place hub.');
+  }
+  const parent = await findAdminLocationById(trimmed);
+  if (!parent) {
+    throw new ApiError(404, 'parent_place_not_found', 'Place hub not found.');
+  }
+  if (parent.parentPlaceId?.trim()) {
+    throw new ApiError(
+      400,
+      'invalid_parent_place',
+      'Place hub must be a top-level hub row (no parent hub on the hub row).'
+    );
+  }
+  const areaId = input.areaId?.trim() || null;
+  const parentArea = parent.areaId?.trim() || null;
+  if (areaId && parentArea && areaId !== parentArea) {
+    throw new ApiError(
+      400,
+      'parent_area_mismatch',
+      'Place hub must be in the same curated area as this route.'
+    );
+  }
+  return trimmed;
+};
+
 export const createAdminPlaceRecord = async (input: { actorId: string; body: AdminPlaceWriteInput }) => {
   const body = input.body;
   const areaLabel = body.areaLabel?.trim() || null;
   const baseTags = body.tags ?? [];
+  const parentPlaceId = await resolveAdminParentPlaceId({
+    parentPlaceId: body.parentPlaceId,
+    areaId: body.areaId?.trim() || null,
+  });
   const created = await createAdminLocation({
     name: body.name,
     region: body.region,
     areaLabel,
     areaId: body.areaId?.trim() || null,
+    parentPlaceId,
     activityType: toPrismaActivityType(body.activityType),
     description: body.description,
     difficulty: toPrismaDifficulty(body.difficulty),
@@ -220,11 +259,23 @@ export const updateAdminPlaceRecord = async (input: {
       ? tagsWithArea
       : undefined;
 
+  const nextAreaId =
+    body.areaId !== undefined ? body.areaId?.trim() || null : existing.areaId?.trim() || null;
+  const parentPlaceId =
+    body.parentPlaceId !== undefined
+      ? await resolveAdminParentPlaceId({
+          parentPlaceId: body.parentPlaceId,
+          placeId,
+          areaId: nextAreaId,
+        })
+      : undefined;
+
   const updated = await updateAdminLocation(placeId, {
     name: body.name,
     region: body.region,
     areaLabel: body.areaLabel !== undefined ? nextAreaLabel : undefined,
     areaId: body.areaId !== undefined ? body.areaId?.trim() || null : undefined,
+    parentPlaceId,
     countryCode: body.countryCode?.toUpperCase(),
     activityType: body.activityType ? toPrismaActivityType(body.activityType) : undefined,
     description: body.description,

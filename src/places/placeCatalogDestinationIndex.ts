@@ -60,9 +60,56 @@ export const scopePlaceCatalogDestination = (
   areas: areas.filter((area) => areaRowInCatalogCountry(area, countryCode)),
 });
 
-/** Place hub key — groups catalog leaf rows under one named place (not a Mongo id yet). */
-export const placeCatalogPlaceGroupKey = (place: PlaceDTO): string =>
-  place.areaLabel?.trim() || place.areaName?.trim() || '__main__';
+/** Parent place ids referenced by catalog leaf rows (`parentPlaceId`). */
+export const collectPlaceCatalogParentHubIds = (places: PlaceDTO[]): Set<string> => {
+  const ids = new Set<string>();
+  for (const row of places) {
+    const parent = row.parentPlaceId?.trim();
+    if (parent) ids.add(parent);
+  }
+  return ids;
+};
+
+/**
+ * Place hub key — groups catalog leaf rows (trail, camp, venue).
+ * Prefer `parentPlaceId` when set on the row (CPC hub id); parent hub rows use their own id.
+ */
+export const placeCatalogPlaceGroupKey = (
+  place: PlaceDTO,
+  parentHubIds: Set<string> = new Set()
+): string => {
+  const parent = place.parentPlaceId?.trim();
+  if (parent) return parent;
+  if (parentHubIds.has(place.id)) return place.id;
+  return place.areaLabel?.trim() || place.areaName?.trim() || '__main__';
+};
+
+export const placeCatalogRowIsParentHub = (
+  place: PlaceDTO,
+  parentHubIds: Set<string>
+): boolean => !place.parentPlaceId?.trim() && parentHubIds.has(place.id);
+
+/** Rows selectable as host destination (excludes parent-only hubs and anchor-only rows). */
+export const placeCatalogRowIsHostingLeaf = (
+  place: PlaceDTO,
+  parentHubIds: Set<string>
+): boolean => {
+  if (place.publicationStatus === 'anchor_only') return false;
+  if (placeCatalogRowIsParentHub(place, parentHubIds)) return false;
+  return true;
+};
+
+/** Label for a place hub bucket in the ladder (resolve hub name when `parentPlaceId` is set). */
+export const placeCatalogPlaceGroupLabelFromHub = (
+  places: PlaceDTO[],
+  groupKey: string
+): string => {
+  const hubRow = places.find((row) => row.id === groupKey);
+  if (hubRow) return hubRow.name.trim();
+  const parentHubIds = collectPlaceCatalogParentHubIds(places);
+  const sample = places.find((row) => placeCatalogPlaceGroupKey(row, parentHubIds) === groupKey);
+  return sample ? placeCatalogPlaceGroupLabel(sample) : groupKey;
+};
 
 export const placeCatalogPlaceGroupLabel = (place: PlaceDTO): string => {
   const label = place.areaLabel?.trim() || place.areaName?.trim();
@@ -151,10 +198,11 @@ export const filterPlaceCatalogRowsInArea = (
 export const buildPlaceCatalogPlaceGroupOptions = (
   places: PlaceDTO[]
 ): Array<{ key: string; label: string }> => {
+  const parentHubIds = collectPlaceCatalogParentHubIds(places);
   const byKey = new Map<string, string>();
   for (const place of places) {
-    const key = placeCatalogPlaceGroupKey(place);
-    if (!byKey.has(key)) byKey.set(key, placeCatalogPlaceGroupLabel(place));
+    const key = placeCatalogPlaceGroupKey(place, parentHubIds);
+    if (!byKey.has(key)) byKey.set(key, placeCatalogPlaceGroupLabelFromHub(places, key));
   }
   return [...byKey.entries()]
     .map(([key, label]) => ({ key, label }))
@@ -164,11 +212,19 @@ export const buildPlaceCatalogPlaceGroupOptions = (
 /** Catalog leaf rows under a place hub (trails, camps, event venues — same {@link PlaceDTO} storage). */
 export const filterPlaceCatalogTrailRowsInGroup = (
   places: PlaceDTO[],
-  groupKey: string
-): PlaceDTO[] =>
-  places
-    .filter((place) => placeCatalogPlaceGroupKey(place) === groupKey)
+  groupKey: string,
+  catalogScope?: PlaceDTO[]
+): PlaceDTO[] => {
+  const scope = catalogScope ?? places;
+  const parentHubIds = collectPlaceCatalogParentHubIds(scope);
+  return places
+    .filter(
+      (place) =>
+        placeCatalogPlaceGroupKey(place, parentHubIds) === groupKey &&
+        placeCatalogRowIsHostingLeaf(place, parentHubIds)
+    )
     .sort((a, b) => a.name.localeCompare(b.name));
+};
 
 export const resolvePlaceCatalogStateKeyForRow = (
   place: PlaceDTO,
@@ -191,13 +247,15 @@ export const resolvePlaceCatalogStateKeyForRow = (
 export const inferPlaceCatalogLadderFromRow = (
   place: PlaceDTO,
   areas: AreaPublicDTO[],
-  countryCode: CountryCode = DEFAULT_PLACE_CATALOG_COUNTRY
+  countryCode: CountryCode = DEFAULT_PLACE_CATALOG_COUNTRY,
+  catalogPlaces?: PlaceDTO[]
 ): { state: string; areaId: string; placeGroup: string } => {
   const area = resolvePlaceCatalogAreaForRow(place, areas);
+  const parentHubIds = collectPlaceCatalogParentHubIds(catalogPlaces ?? [place]);
   return {
     state: resolvePlaceCatalogStateKeyForRow(place, areas, countryCode),
     areaId: area?.id ?? '',
-    placeGroup: placeCatalogPlaceGroupKey(place),
+    placeGroup: placeCatalogPlaceGroupKey(place, parentHubIds),
   };
 };
 
@@ -220,10 +278,7 @@ export const resolvePlaceCatalogStateFromArea = (
 export const placeCatalogPlaceGroupLabelForKey = (
   places: PlaceDTO[],
   groupKey: string
-): string => {
-  const row = places.find((place) => placeCatalogPlaceGroupKey(place) === groupKey);
-  return row ? placeCatalogPlaceGroupLabel(row) : groupKey;
-};
+): string => placeCatalogPlaceGroupLabelFromHub(places, groupKey);
 
 /** Search hit for a single catalog leaf row (trail / camp / venue), not a facility. */
 export type PlaceCatalogDestinationSearchTrailHit = {
@@ -283,11 +338,13 @@ export const searchPlaceCatalogDestination = (
   if (q.length < 2) return [];
 
   const scoped = scopePlaceCatalogDestination(places, areas, countryCode);
+  const parentHubIds = collectPlaceCatalogParentHubIds(scoped.places);
   const trails: PlaceCatalogDestinationSearchTrailHit[] = [];
   const placeHits: PlaceCatalogDestinationSearchPlaceHit[] = [];
   const areaHits: PlaceCatalogDestinationSearchAreaHit[] = [];
 
   for (const place of scoped.places) {
+    if (!placeCatalogRowIsHostingLeaf(place, parentHubIds)) continue;
     if (!searchMatches(place.name, q)) continue;
     trails.push({
       kind: 'trail',
@@ -305,13 +362,17 @@ export const searchPlaceCatalogDestination = (
       const key = `${area.id}::${group.key}`;
       if (seenPlaceGroups.has(key)) continue;
       const labelMatch = searchMatches(group.label, q);
-      const trailsInGroup = filterPlaceCatalogTrailRowsInGroup(inArea, group.key);
+      const trailsInGroup = filterPlaceCatalogTrailRowsInGroup(
+        inArea,
+        group.key,
+        scoped.places
+      );
       const trailNameMatch = trailsInGroup.some((row) => searchMatches(row.name, q));
       if (!labelMatch && !trailNameMatch) continue;
       seenPlaceGroups.add(key);
       const sample = trailsInGroup[0];
       const state = sample
-        ? inferPlaceCatalogLadderFromRow(sample, scoped.areas, countryCode).state
+        ? inferPlaceCatalogLadderFromRow(sample, scoped.areas, countryCode, scoped.places).state
         : resolvePlaceCatalogStateFromArea(area, countryCode);
       placeHits.push({
         kind: 'place',

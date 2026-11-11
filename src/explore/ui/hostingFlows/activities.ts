@@ -5,6 +5,7 @@ import {
   validateHostingAudienceOthers,
   validateHostingPrice,
   validateHostingTitle,
+  validateHostingWhenSchedule,
 } from './validateShared';
 
 const DEFAULT_STEPS: CreateFlowStepId[] = [
@@ -25,9 +26,7 @@ const validateStep = (step: CreateFlowStepId, draft: CreateActivityDraft): strin
   if (step === 'activity_type' && !draft.activityTopic) return 'Choose an activity type.';
   if (step === 'title') return validateHostingTitle(draft, 'Give your outing a title.');
   if (step === 'audience') return validateHostingAudienceOthers(draft);
-  if (step === 'when' && draft.timeMode === 'specific' && !draft.time) {
-    return 'Choose a start time.';
-  }
+  if (step === 'when') return validateHostingWhenSchedule(draft);
   if (step === 'meeting') {
     if (draft.latitude == null || draft.longitude == null) {
       if (draft.meetingLatitude != null && draft.meetingLongitude != null) return null;

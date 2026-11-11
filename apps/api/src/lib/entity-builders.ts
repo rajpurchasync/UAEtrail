@@ -18,6 +18,8 @@ export type LocationCreateInput = {
   region?: string;
   areaLabel?: string | null;
   areaId?: string | null;
+  /** Leaf row → place hub (`locations` id). */
+  parentPlaceId?: string | null;
   activityType: ActivityType | string;
   description?: string;
   difficulty?: Difficulty | string | null;
@@ -193,6 +195,7 @@ export const buildLocationFromCreateInput = (data: LocationCreateInput, id: stri
     region: data.region ?? '',
     areaLabel: data.areaLabel?.trim() ? data.areaLabel.trim() : null,
     areaId: data.areaId?.trim() ? data.areaId.trim() : null,
+    parentPlaceId: data.parentPlaceId?.trim() ? data.parentPlaceId.trim() : null,
     activityType: data.activityType as Location['activityType'],
     description: data.description ?? '',
     difficulty: (data.difficulty as Location['difficulty']) ?? null,

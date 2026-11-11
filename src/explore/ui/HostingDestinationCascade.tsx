@@ -2,16 +2,21 @@ import { useMemo, useState } from 'react';
 import { Search } from 'lucide-react';
 import type { AreaPublicDTO, PlaceDTO } from '@uaetrail/shared-types';
 import type { ActivityType } from '../../config/activityTypes';
-import { SUPPORTED_COUNTRIES, type CountryCode } from '../../config/regions';
+import { SUPPORTED_COUNTRIES, subdivisionNoun, type CountryCode } from '../../config/regions';
 import { AppSelect } from '../../components/ui/AppSelect';
 import { EXPLORE_FLOW } from '../../config/exploreTheme';
 import {
   HOSTING_DESTINATION_ADD_TRAIL_NEW,
+  HOSTING_DESTINATION_EMPTY_ROUTES_PROMPT,
   HOSTING_DESTINATION_FIND_PLACEHOLDER,
   HOSTING_DESTINATION_LEAF_HINT,
+  HOSTING_DESTINATION_SEARCH_GROUP_AREA,
+  HOSTING_DESTINATION_SEARCH_GROUP_PLACE,
+  HOSTING_DESTINATION_SEARCH_GROUP_ROUTE,
   HOSTING_DESTINATION_PICK_PLACE_FIRST,
   HOSTING_DESTINATION_RESET_LABEL,
   HOSTING_DESTINATION_SELECT_AREA,
+  HOSTING_DESTINATION_SELECT_COUNTRY,
   HOSTING_DESTINATION_SELECT_PLACE,
   HOSTING_DESTINATION_SELECT_STATE,
   HOSTING_DESTINATION_SELECT_TRAIL_CAMP_LABEL,
@@ -30,7 +35,10 @@ import {
   type PlaceCatalogDestinationSearchHit,
 } from '../../places/placeCatalogDestinationIndex';
 import type { CreateActivityDraft } from './hostingFlowEngine';
-import { applyHostingDestinationSearchHit } from './hostingDestinationDraft';
+import {
+  applyHostingDestinationSearchHit,
+  patchHostingDestinationCatalogLeafLadder,
+} from './hostingDestinationDraft';
 
 const fieldClass = EXPLORE_FLOW.composeField;
 const labelClass = EXPLORE_FLOW.composeFieldLabel;
@@ -53,15 +61,16 @@ type Props = {
   onPatchDraft: (patch: Partial<CreateActivityDraft>) => void;
   onAddNewTrail?: () => void;
   onReset: () => void;
+  onCountryChange?: (countryCode: CountryCode) => void;
   placeGateMessage?: string | null;
   hideTrailRow?: boolean;
   showFind?: boolean;
 };
 
 const searchGroupLabel = (hit: PlaceCatalogDestinationSearchHit): string => {
-  if (hit.kind === 'trail') return 'Trails';
-  if (hit.kind === 'place') return 'Places';
-  return 'Areas';
+  if (hit.kind === 'trail') return HOSTING_DESTINATION_SEARCH_GROUP_ROUTE;
+  if (hit.kind === 'place') return HOSTING_DESTINATION_SEARCH_GROUP_PLACE;
+  return HOSTING_DESTINATION_SEARCH_GROUP_AREA;
 };
 
 const trailStepCopy = (placeType: ActivityType): { label: string; placeholder: string } => {
@@ -100,14 +109,13 @@ export const HostingDestinationCascade = ({
   onPatchDraft,
   onAddNewTrail,
   onReset,
+  onCountryChange,
   placeGateMessage,
   hideTrailRow = false,
   showFind = true,
 }: Props) => {
   const [query, setQuery] = useState('');
-
-  const countryLabel =
-    SUPPORTED_COUNTRIES.find((row) => row.code === countryCode)?.label ?? countryCode;
+  const stateColumnLabel = subdivisionNoun(countryCode);
 
   const searchHits = useMemo(
     () => searchPlaceCatalogDestination(query, catalogPlaces, areas, countryCode),
@@ -116,6 +124,10 @@ export const HostingDestinationCascade = ({
 
   const onSearchHit = (hit: PlaceCatalogDestinationSearchHit) => {
     if (hit.kind === 'trail') {
+      const row = catalogPlaces.find((place) => place.id === hit.placeId);
+      if (row) {
+        onPatchDraft(patchHostingDestinationCatalogLeafLadder(row, areas, countryCode, catalogPlaces));
+      }
       onPickTrail(hit.placeId);
       setQuery('');
       return;
@@ -151,7 +163,7 @@ export const HostingDestinationCascade = ({
 
   const trailsInGroup = useMemo(() => {
     if (!placeGroup) return [];
-    return filterPlaceCatalogTrailRowsInGroup(placesInArea, placeGroup);
+    return filterPlaceCatalogTrailRowsInGroup(placesInArea, placeGroup, catalog.places);
   }, [placesInArea, placeGroup]);
 
   const trailCopy = trailStepCopy(placeType);
@@ -161,10 +173,19 @@ export const HostingDestinationCascade = ({
 
   return (
     <div className="space-y-3">
-      <div className="rounded-2xl border border-neutral-200/80 bg-neutral-50 px-4 py-3">
-        <p className="text-sm font-semibold text-neutral-900">Country · {countryLabel}</p>
-        <p className="mt-0.5 text-xs text-neutral-600">Catalog scope for state, area, and place lists.</p>
-      </div>
+      <label className="block">
+        <span className={labelClass}>{HOSTING_DESTINATION_SELECT_COUNTRY}</span>
+        <AppSelect
+          className="mt-0.5 w-full"
+          value={countryCode}
+          disabled={!onCountryChange}
+          options={SUPPORTED_COUNTRIES.map((row) => ({ value: row.code, label: row.label }))}
+          onChange={(next) => onCountryChange?.(next as CountryCode)}
+          inputClassName={fieldClass}
+          aria-label={HOSTING_DESTINATION_SELECT_COUNTRY}
+        />
+        <p className="mt-1 text-xs text-neutral-600">Catalog scope for {stateColumnLabel.toLowerCase()}, area, and place lists.</p>
+      </label>
 
       {showFind ? (
         <label className="block">
@@ -227,7 +248,7 @@ export const HostingDestinationCascade = ({
       </div>
 
       <label className="block">
-        <span className={labelClass}>{HOSTING_DESTINATION_SELECT_STATE}</span>
+        <span className={labelClass}>{stateColumnLabel}</span>
         <AppSelect
           className="w-full"
           value={state}
@@ -236,7 +257,7 @@ export const HostingDestinationCascade = ({
           options={stateOptions.map((row) => ({ value: row.value, label: row.label }))}
           onChange={(next) => onStateChange(next)}
           inputClassName={fieldClass}
-          aria-label={HOSTING_DESTINATION_SELECT_STATE}
+          aria-label={stateColumnLabel}
         />
       </label>
 
@@ -276,32 +297,45 @@ export const HostingDestinationCascade = ({
           ) : (
             <p className="mt-0.5 text-xs text-neutral-500">Choose a place to see trails here.</p>
           )}
-          <div className="mt-1 flex overflow-hidden rounded-2xl border border-neutral-200 bg-white">
-            <div className="min-w-0 flex-1 border-r border-neutral-200">
-              <AppSelect
-                className="w-full"
-                value={draftRegistryPlaceId ?? ''}
-                disabled={!placeGroup}
-                placeholder={trailCopy.placeholder}
-                options={trailsInGroup.map((row) => ({
-                  value: row.id,
-                  label: row.status === 'draft' ? `${row.name} (pending review)` : row.name,
-                }))}
-                onChange={(next) => onPickTrail(next)}
-                inputClassName={`${fieldClass} rounded-none border-0`}
-                aria-label={trailCopy.label}
-              />
-            </div>
-            {onAddNewTrail ? (
+          {placeGroup && trailsInGroup.length === 0 && onAddNewTrail ? (
+            <div className="mt-1 rounded-2xl border border-dashed border-emerald-200 bg-emerald-50/50 px-3 py-3">
+              <p className="text-sm text-emerald-950">{HOSTING_DESTINATION_EMPTY_ROUTES_PROMPT}</p>
               <button
                 type="button"
                 onClick={onAddNewTrail}
-                className="shrink-0 px-4 py-3 text-sm font-semibold text-emerald-800 hover:bg-emerald-50"
+                className="mt-2 text-sm font-semibold text-emerald-800 underline-offset-2 hover:underline"
               >
                 {HOSTING_DESTINATION_ADD_TRAIL_NEW}
               </button>
-            ) : null}
-          </div>
+            </div>
+          ) : (
+            <div className="mt-1 flex overflow-hidden rounded-2xl border border-neutral-200 bg-white">
+              <div className="min-w-0 flex-1 border-r border-neutral-200">
+                <AppSelect
+                  className="w-full"
+                  value={draftRegistryPlaceId ?? ''}
+                  disabled={!placeGroup}
+                  placeholder={trailCopy.placeholder}
+                  options={trailsInGroup.map((row) => ({
+                    value: row.id,
+                    label: row.status === 'draft' ? `${row.name} (pending review)` : row.name,
+                  }))}
+                  onChange={(next) => onPickTrail(next)}
+                  inputClassName={`${fieldClass} rounded-none border-0`}
+                  aria-label={trailCopy.label}
+                />
+              </div>
+              {onAddNewTrail ? (
+                <button
+                  type="button"
+                  onClick={onAddNewTrail}
+                  className="shrink-0 px-4 py-3 text-sm font-semibold text-emerald-800 hover:bg-emerald-50"
+                >
+                  {HOSTING_DESTINATION_ADD_TRAIL_NEW}
+                </button>
+              ) : null}
+            </div>
+          )}
           {placeGateMessage ? (
             <p className="mt-1.5 text-xs font-medium text-amber-800">{placeGateMessage}</p>
           ) : !placeGroup && onAddNewTrail ? (

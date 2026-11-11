@@ -15,6 +15,7 @@ const locationFieldsSchema = z.object({
   region: z.string().min(2),
   areaLabel: z.string().min(2).max(120).optional().nullable(),
   areaId: z.string().min(1).max(80).optional().nullable(),
+  parentPlaceId: z.string().min(1).max(80).optional().nullable(),
   activityType: z.enum(['hiking', 'camping', 'event', 'shop']),
   description: z.string().min(20),
   difficulty: z.enum(['easy', 'moderate', 'hard']).optional(),

@@ -81,7 +81,8 @@ const emptyForm: Partial<PlaceDTO> = {
   images: [], featured: false, status: 'draft', distance: undefined, duration: undefined,
   elevation: undefined, campingType: undefined, latitude: null, longitude: null,
   highlights: [], surfaceType: [], tags: [], parkingLink: '', accessibleBy: [], countryCode: DEFAULT_COUNTRY,
-  gpxKey: null, guidePdfKey: null, guideMarkdown: '', guidePreview: '', unlockPriceAed: 29
+  gpxKey: null, guidePdfKey: null, guideMarkdown: '', guidePreview: '', unlockPriceAed: 29,
+  parentPlaceId: null,
 };
 
 /* ─── Component ──────────────────────────────────────────────────────────── */
@@ -299,6 +300,23 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
     () => places.filter((l) => adminCatalogSegmentForRow(l) === catalogSegment),
     [places, catalogSegment]
   );
+
+  const parentPlaceHubOptions = useMemo(() => {
+    if (catalogSegment !== 'outdoor') return [];
+    const areaId = form.areaId?.trim() || null;
+    return segmentPlaces
+      .filter((row) => {
+        if (editingId && row.id === editingId) return false;
+        if (row.parentPlaceId?.trim()) return false;
+        if (areaId && row.areaId !== areaId) return false;
+        return true;
+      })
+      .map((row) => ({
+        value: row.id,
+        label: `${row.name} · ${activityTypeLabel(row.activityType)}`,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [catalogSegment, editingId, form.areaId, segmentPlaces]);
 
   const hikingCount = segmentPlaces.filter((l) => l.activityType === 'hiking').length;
   const campingCount = segmentPlaces.filter((l) => l.activityType === 'camping').length;
@@ -753,7 +771,22 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
                       <label className="text-sm font-medium text-gray-700 mb-1 block">Curated area</label>
                       <AppSelect
                         value={form.areaId ?? ''}
-                        onChange={(areaId) => setForm({ ...form, areaId: areaId || null })}
+                        onChange={(areaId) => {
+                          const nextAreaId = areaId || null;
+                          const keepParent =
+                            !form.parentPlaceId?.trim() ||
+                            segmentPlaces.some(
+                              (row) =>
+                                row.id === form.parentPlaceId &&
+                                !row.parentPlaceId?.trim() &&
+                                (!nextAreaId || row.areaId === nextAreaId)
+                            );
+                          setForm({
+                            ...form,
+                            areaId: nextAreaId,
+                            parentPlaceId: keepParent ? form.parentPlaceId ?? null : null,
+                          });
+                        }}
                         options={adminAreas.map((area) => ({
                           value: area.id,
                           label: `${area.name} · ${area.region}${
@@ -775,6 +808,32 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
                         </p>
                       )}
                     </div>
+                    {catalogSegment === 'outdoor' && (
+                      <div className="col-span-2">
+                        <label className="text-sm font-medium text-gray-700 mb-1 block">
+                          Place hub (optional)
+                        </label>
+                        <AppSelect
+                          value={form.parentPlaceId ?? ''}
+                          onChange={(parentPlaceId) =>
+                            setForm({ ...form, parentPlaceId: parentPlaceId || null })
+                          }
+                          options={parentPlaceHubOptions}
+                          placeholder={
+                            form.areaId
+                              ? 'Group this route under a hub in the same area'
+                              : 'Pick a curated area first'
+                          }
+                          inputClassName={ADMIN_SELECT_CLASS}
+                          aria-label="Place hub"
+                          disabled={!form.areaId}
+                        />
+                        <p className="mt-1 text-xs text-gray-500">
+                          Host destination ladder groups leaf routes (trail, camp, venue) under this hub.
+                          Leave empty to group by area label only.
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   {isTrailLike(form.activityType) && (

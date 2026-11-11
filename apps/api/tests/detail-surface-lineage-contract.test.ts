@@ -197,6 +197,34 @@ describe('detail surface lineage (admin catalog → public read)', () => {
     expect(facilityRead.status).toBe(200);
     expect(facilityRead.body.viewerAccess?.canOpenDetailPage).toBe(true);
   });
+
+  it('admin place write persists parentPlaceId for host destination hub grouping', async () => {
+    expect(createdAreaId).toBeTruthy();
+    const hubName = `Lineage Hub ${suffix}`;
+    const hub = await request(app)
+      .post('/api/admin/places')
+      .set(adminAuth())
+      .send(placeCreateBody(createdAreaId!, hubName));
+
+    expect(hub.status).toBe(201);
+    const hubId = hub.body.data.id as string;
+
+    const leafName = `Lineage Leaf ${suffix}`;
+    const leaf = await request(app)
+      .post('/api/admin/places')
+      .set(adminAuth())
+      .send({ ...placeCreateBody(createdAreaId!, leafName), parentPlaceId: hubId });
+
+    expect(leaf.status).toBe(201);
+    expect(leaf.body.data.parentPlaceId).toBe(hubId);
+
+    const read = await request(app).get(`/api/places/${leaf.body.data.id}`);
+    expect(read.status).toBe(200);
+    expect(read.body.data.parentPlaceId).toBe(hubId);
+
+    await request(app).delete(`/api/admin/places/${leaf.body.data.id}`).set(adminAuth());
+    await request(app).delete(`/api/admin/places/${hubId}`).set(adminAuth());
+  });
 });
 
 describe('detail surface lineage (member profile write → public read)', () => {

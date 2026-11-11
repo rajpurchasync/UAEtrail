@@ -9,6 +9,7 @@ import {
   createDraftFromRegistryPlace,
   resolveCreateActivityKindFromVenueCardKind,
 } from '../../explore/ui/hostingFromPlace';
+import { fetchPublishedAreas } from '../../hooks/areaHubClientApi';
 import { fetchPublicPlaceDetail } from '../../hooks/placeDetailClientApi';
 import type { Place } from '../../types/place';
 import type { PlaceDetailKind } from '../../pages/placeDetailConfig';
@@ -28,7 +29,10 @@ export const navigateHostFromPlaceCard = async (
   if (!locationId || !isPlaceMapSource(card.source)) return;
 
   const kind = resolveCreateActivityKindFromVenueCardKind(card.kind);
-  const place = await fetchPublicPlaceDetail(locationId);
+  const [place, areas] = await Promise.all([
+    fetchPublicPlaceDetail(locationId),
+    fetchPublishedAreas(),
+  ]);
   const composeRoute = hostCompose(kind === 'event' ? 'activity' : kind);
   const flowId = composeFlowIdFromRoute(composeRoute);
   if (flowId) {
@@ -36,7 +40,7 @@ export const navigateHostFromPlaceCard = async (
       flowId,
       {
         step: 'title',
-        draft: createDraftFromRegistryPlace(place, kind),
+        draft: createDraftFromRegistryPlace(place, kind, areas),
         selectedKind: kind,
       },
       `place:${locationId}`
@@ -51,7 +55,10 @@ export const navigateHostFromPlace = async (
   detailKind: PlaceDetailKind
 ): Promise<void> => {
   const kind = placeDetailKindToOrganizeKind(detailKind);
-  const placeDto = await fetchPublicPlaceDetail(place.id);
+  const [placeDto, areas] = await Promise.all([
+    fetchPublicPlaceDetail(place.id),
+    fetchPublishedAreas(),
+  ]);
   const composeRoute = hostCompose(kind === 'event' ? 'activity' : kind);
   const flowId = composeFlowIdFromRoute(composeRoute);
   if (flowId) {
@@ -59,7 +66,7 @@ export const navigateHostFromPlace = async (
       flowId,
       {
         step: 'title',
-        draft: createDraftFromRegistryPlace(placeDto, kind),
+        draft: createDraftFromRegistryPlace(placeDto, kind, areas),
         selectedKind: kind,
       },
       `place:${place.id}`
