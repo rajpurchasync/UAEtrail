@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { Trash2 } from 'lucide-react';
 import {
   deleteMemberAccount,
   fetchAccountDeletionInfo,
   type AccountDeletionInfo,
 } from '../../hooks/accountSettingsApi';
 import { AppButton } from '../mobile/AppButton';
+import { SettingsMenuGroup, SettingsMenuRow } from '../settings/SettingsMenuRow';
 import { Dialog } from '../ui/Dialog';
 
 interface AccountDeleteSectionProps {
@@ -33,7 +35,7 @@ export const AccountDeleteSection = ({ onDeleted }: AccountDeleteSectionProps) =
     setDeleting(true);
     try {
       await deleteMemberAccount({
-        ...(info?.requiresPassword ? { password } : { confirmPhrase: confirmPhrase as 'DELETE' })
+        ...(info?.requiresPassword ? { password } : { confirmPhrase: confirmPhrase as 'DELETE' }),
       });
       setOpen(false);
       onDeleted();
@@ -44,48 +46,36 @@ export const AccountDeleteSection = ({ onDeleted }: AccountDeleteSectionProps) =
     }
   };
 
-  if (loading) return null;
+  const openDialog = () => {
+    if (loading || !info?.canDelete) return;
+    setError(null);
+    setPassword('');
+    setConfirmPhrase('');
+    setOpen(true);
+  };
+
+  const canDelete = !loading && Boolean(info?.canDelete);
 
   return (
-    <div className="mt-4 mb-2">
-      <div className="glass-card p-4 border border-red-100/80">
-        <div className="flex items-start gap-3">
-          <span className="text-xl flex-shrink-0 mt-0.5" aria-hidden>⚠️</span>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold text-gray-900">Delete account</h3>
-            <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-              Permanently remove your profile and sign-in access. Activity history may be retained in anonymized form.
-            </p>
-            {info && !info.canDelete && (
-              <p className="text-xs text-amber-700 mt-2">{info.blockers[0]}</p>
-            )}
-            <button
-              type="button"
-              onClick={() => {
-                setError(null);
-                setPassword('');
-                setConfirmPhrase('');
-                setOpen(true);
-              }}
-              disabled={!info?.canDelete}
-              className="mt-3 text-sm font-semibold text-red-600 disabled:text-gray-400 disabled:cursor-not-allowed"
-            >
-              Delete my account
-            </button>
-          </div>
-        </div>
-      </div>
+    <>
+      <SettingsMenuGroup>
+        <SettingsMenuRow
+          label="Delete account"
+          icon={Trash2}
+          destructive
+          disabled={!canDelete}
+          onClick={openDialog}
+        />
+      </SettingsMenuGroup>
+      {info && !canDelete && info.blockers[0] ? (
+        <p className="px-1 text-xs text-amber-700">{info.blockers[0]}</p>
+      ) : null}
 
       <Dialog open={open} onClose={() => setOpen(false)} title="Delete account">
         <form className="space-y-4" onSubmit={handleDelete}>
-          <p className="text-sm text-gray-600">
-            This action cannot be undone. Your personal details will be removed and you will be signed out.
-          </p>
           {info?.requiresPassword ? (
             <div>
-              <label className="text-xs font-bold uppercase tracking-wide text-neutral-400 mb-2 block">
-                Password
-              </label>
+              <label className="mb-1.5 block text-sm font-semibold text-neutral-900">Password</label>
               <input
                 type="password"
                 className="ios-input text-[15px]"
@@ -97,9 +87,7 @@ export const AccountDeleteSection = ({ onDeleted }: AccountDeleteSectionProps) =
             </div>
           ) : (
             <div>
-              <label className="text-xs font-bold uppercase tracking-wide text-neutral-400 mb-2 block">
-                Type DELETE to confirm
-              </label>
+              <label className="mb-1.5 block text-sm font-semibold text-neutral-900">Type DELETE</label>
               <input
                 className="ios-input text-[15px]"
                 value={confirmPhrase}
@@ -109,12 +97,15 @@ export const AccountDeleteSection = ({ onDeleted }: AccountDeleteSectionProps) =
               />
             </div>
           )}
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error ? <p className="text-sm text-red-600">{error}</p> : null}
           <AppButton type="submit" disabled={deleting} fullWidth className="!bg-red-600 hover:!bg-red-700">
-            {deleting ? 'Deleting…' : 'Permanently delete account'}
+            {deleting ? 'Deleting…' : 'Delete account'}
+          </AppButton>
+          <AppButton type="button" variant="secondary" fullWidth onClick={() => setOpen(false)} disabled={deleting}>
+            Cancel
           </AppButton>
         </form>
       </Dialog>
-    </div>
+    </>
   );
 };

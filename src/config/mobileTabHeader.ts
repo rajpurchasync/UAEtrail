@@ -104,7 +104,7 @@ export const resolveMobileTabHeaderTitle = (pathname: string, search: string): s
   if (/^\/profile\/vehicles\/[^/]+\/edit$/.test(pathname)) return 'Edit car';
   if (pathname === BUDDIES_PATH) return 'Friends';
   if (pathname === GROUPS_PATH) return 'Groups';
-  if (pathname === PROFILE_SUBMISSIONS_PATH) return 'Submissions';
+  if (pathname === PROFILE_SUBMISSIONS_PATH) return 'Contributions';
   if (pathname === INBOUND_CONTRIBUTIONS_PATH) return 'Contributions';
   if (pathname === MY_REQUESTS_PATH) return 'My requests';
   if (pathname === '/faq') return 'FAQ';
@@ -124,6 +124,7 @@ export const shouldShowMobileUnifiedTabHeader = (
   search: string,
   signedIn: boolean
 ): boolean => {
+  if (pathname === PROFILE_PATH) return false;
   if (!signedIn && resolveGuestSurfaceForPath(pathname)) return false;
   if (!isLayoutMobileUnifiedHeaderRoute(pathname)) return false;
   if (pathname === '/explore') return true;

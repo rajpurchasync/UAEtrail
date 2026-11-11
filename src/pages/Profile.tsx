@@ -18,6 +18,8 @@ import { useParticipantHubData } from '../hooks/useParticipantHubData';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { useMemberGoals } from '../hooks/useMemberGoals';
 import { ProfileConsumerHub } from '../components/profile/ProfileConsumerHub';
+import type { ProfileHubEditFocus } from '../components/profile/ProfileHubDetailsCard';
+import { ProfileHubFieldSheets } from '../components/profile/ProfileHubFieldSheets';
 import { buildProfileCompletion } from '../utils/profileCompletion';
 import { resolveProfileSharePath, resolveProfileShareText } from '../utils/profileShare';
 import { USER_CITY_LABELS, type UserCity } from '../constants/userProfileOptions';
@@ -52,6 +54,7 @@ export const Profile = () => {
     refresh: refreshHostGate,
   } = useMemberStatus({ enabled: Boolean(user) });
 
+  const [fieldEditFocus, setFieldEditFocus] = useState<ProfileHubEditFocus | null>(null);
   const [avatarSaving, setAvatarSaving] = useState(false);
   const [avatarMessage, setAvatarMessage] = useState<string | null>(null);
   const [showAvatarEdit, setShowAvatarEdit] = useState(false);
@@ -123,8 +126,6 @@ export const Profile = () => {
   const shareText = resolveProfileShareText(displayName, ownedProfiles);
   const shareReady = !hostGateLoading || ownedProfiles.length > 0;
 
-  const buddyBadge = incomingBuddyRequests.length > 0 ? incomingBuddyRequests.length : undefined;
-
   const profileHubStats = useMemo(() => {
     const followerCount = hubStats?.followerCount ?? 0;
     const joinedCount = hubStats?.joinedCount ?? 0;
@@ -173,6 +174,10 @@ export const Profile = () => {
   const openEdit = useCallback(() => {
     navigate('/profile/edit', { state: profileHubMobileBackState() });
   }, [navigate]);
+
+  const openEditSection = useCallback((focus: ProfileHubEditFocus) => {
+    setFieldEditFocus(focus);
+  }, []);
 
   const openAvatarEdit = useCallback(() => {
     setAvatarMessage(null);
@@ -228,7 +233,7 @@ export const Profile = () => {
     <>
       <PageMeta title="Profile" noIndex />
 
-      <ConsumerShell layout="tab" title="Profile" suppressMobileHeader maxWidth="4xl">
+      <ConsumerShell layout="tab" suppressMobileHeader maxWidth="4xl">
         {error && !loading ? (
           <ConsumerErrorCard message={error} onRetry={() => void reload()} />
         ) : null}
@@ -247,19 +252,27 @@ export const Profile = () => {
             shareReady={shareReady}
             onEditAvatar={openAvatarEdit}
             onEditProfile={openEdit}
+            onEditProfileSection={openEditSection}
             onViewProfile={openPublicProfile}
             cityLabel={profileLoaded ? profileCityLabel : null}
             memberSinceLabel={profileLoaded ? memberSinceLabel : null}
             visibilityLabel={profileLoaded ? profileVisibilityLabel(visibility) : null}
             hubStats={profileHubStats}
-            goalsCount={goals.length}
             badgesEarnedCount={badgesEarnedCount}
-            buddyBadge={buddyBadge}
-            showHosting={isActivityHost}
+            bio={profileLoaded ? profile.bio : null}
+            languages={profileLoaded ? profile.languages : null}
             onSignOut={() => void signOut()}
           />
         </PullToRefresh>
       </ConsumerShell>
+
+      <ProfileHubFieldSheets
+        focus={fieldEditFocus}
+        bio={profile.bio ?? ''}
+        languages={profile.languages}
+        onClose={() => setFieldEditFocus(null)}
+        onSaved={() => void reload()}
+      />
 
       <AccountAvatarModal
         open={showAvatarEdit}

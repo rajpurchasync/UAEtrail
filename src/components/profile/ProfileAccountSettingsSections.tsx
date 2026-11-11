@@ -7,19 +7,16 @@ import {
 import { OtpInput } from '../auth/OtpInput';
 import { AppButton } from '../mobile/AppButton';
 import { GlassCard } from '../mobile/GlassCard';
-import { AccountDeleteSection } from '../account/AccountDeleteSection';
 import { getPasswordValidationError } from '../../utils/passwordPolicy';
 
 interface ProfileAccountSettingsSectionsProps {
   email: string;
   onEmailChanged: () => void | Promise<void>;
-  onDeleted: () => void | Promise<void>;
 }
 
 export const ProfileAccountSettingsSections = ({
   email,
   onEmailChanged,
-  onDeleted,
 }: ProfileAccountSettingsSectionsProps) => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -225,8 +222,6 @@ export const ProfileAccountSettingsSections = ({
           </p>
         )}
       </GlassCard>
-
-      <AccountDeleteSection onDeleted={() => void onDeleted()} />
     </div>
   );
 };

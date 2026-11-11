@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { X } from 'lucide-react';
 import { LANGUAGE_SUGGESTIONS } from '../../constants/languageSuggestions';
 
 const isSelected = (languages: string[], language: string): boolean =>
@@ -34,23 +35,27 @@ export const SignupLanguagePicker = ({ value, onChange }: SignupLanguagePickerPr
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5">
       {value.length > 0 ? (
         <div className="flex flex-wrap gap-1.5">
           {value.map((language) => (
-            <button
+            <span
               key={language}
-              type="button"
-              onClick={() => onChange(toggleLanguage(value, language))}
-              className="rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm"
+              className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800 ring-1 ring-emerald-100"
             >
-              {language} ×
-            </button>
+              {language}
+              <button
+                type="button"
+                onClick={() => onChange(toggleLanguage(value, language))}
+                className="inline-flex h-4 w-4 items-center justify-center rounded-full text-emerald-700/80 hover:bg-emerald-100/80"
+                aria-label={`Remove ${language}`}
+              >
+                <X className="h-3 w-3" strokeWidth={2.5} aria-hidden />
+              </button>
+            </span>
           ))}
         </div>
-      ) : (
-        <p className="text-sm text-neutral-400">No languages yet.</p>
-      )}
+      ) : null}
 
       <input
         type="search"
@@ -62,33 +67,37 @@ export const SignupLanguagePicker = ({ value, onChange }: SignupLanguagePickerPr
             addCustom();
           }
         }}
-        placeholder="Search or type a language"
-        className="ios-input w-full text-[16px] border border-neutral-300 bg-white"
+        placeholder="Language"
+        className="ios-input w-full text-[16px]"
+        autoComplete="off"
+        enterKeyHint="done"
+        aria-label="Add language"
       />
 
-      <div className="flex flex-wrap gap-2">
-        {suggestions.map((language) => (
-          <button
-            key={language}
-            type="button"
-            onClick={() => onChange(toggleLanguage(value, language))}
-            className="rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-xs font-semibold text-neutral-800 hover:border-emerald-300 hover:bg-emerald-50"
-          >
-            + {language}
-          </button>
-        ))}
-      </div>
+      {suggestions.length > 0 ? (
+        <div className="flex flex-wrap gap-1.5">
+          {suggestions.map((language) => (
+            <button
+              key={language}
+              type="button"
+              onClick={() => onChange(toggleLanguage(value, language))}
+              className="rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-xs font-semibold text-neutral-700 hover:border-emerald-300 hover:bg-emerald-50/80"
+            >
+              + {language}
+            </button>
+          ))}
+        </div>
+      ) : null}
 
       {search.trim() && !isSelected(value, search.trim()) && !suggestions.some((s) => s.toLowerCase() === query) ? (
         <button
           type="button"
           onClick={addCustom}
-          className="text-sm font-semibold text-emerald-700"
+          className="rounded-full border border-dashed border-emerald-300 bg-emerald-50/50 px-3 py-1.5 text-xs font-semibold text-emerald-800"
         >
-          Add “{search.trim()}”
+          + {search.trim()}
         </button>
       ) : null}
-
     </div>
   );
 };

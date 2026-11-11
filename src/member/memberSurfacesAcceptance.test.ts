@@ -169,7 +169,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(profilePageData).toMatch(/viewerAccess\?\.canViewFullProfile/);
     const view = read('src/components/profile/MemberProfileView.tsx');
     expect(view).toMatch(/canViewFullProfile && profile\.yearGoal/);
-    expect(view).toMatch(/canViewFullProfile && profile\.bio/);
+    expect(view).toMatch(/profile\.bio \?/);
     expect(view).toMatch(/canViewFullProfile && upcomingActivities/);
   });
 
@@ -247,10 +247,10 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(sheet).toContain('planHostedActivityManagePath');
   });
 
-  it('G-profile: badges and submissions live on Profile launcher (not Plan)', () => {
-    const launcher = read('src/components/profile/ProfileQuickLauncher.tsx');
-    expect(launcher).toContain('PROFILE_BADGES_PATH');
-    expect(launcher).toContain('PROFILE_SUBMISSIONS_PATH');
+  it('G-profile: badges and contributions live on Profile hub menu (not Plan)', () => {
+    const menu = read('src/components/profile/ProfileHubNavMenu.tsx');
+    expect(menu).toContain('PROFILE_BADGES_PATH');
+    expect(menu).toContain('PROFILE_SUBMISSIONS_PATH');
     const submissions = read('src/pages/Submissions.tsx');
     expect(submissions).toContain('PROFILE_REVIEWS_PATH');
     const plan = read('src/plan/PlanPage.tsx');
@@ -258,31 +258,34 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(plan).not.toContain('PROFILE_SUBMISSIONS_PATH');
   });
 
-  it('G-profile: hub shortcuts use profile/plan paths (not host shell)', () => {
-    const launcher = read('src/components/profile/ProfileQuickLauncher.tsx');
-    expect(launcher).toContain('BUDDIES_PATH');
-    expect(launcher).toContain('PROFILE_HISTORY_PATH');
-    expect(launcher).toContain('planHostedSchedulePath()');
-    expect(launcher).not.toMatch(/HOST_OVERVIEW_PATH/);
+  it('G-profile: hub menu uses profile/plan paths (not host shell)', () => {
+    const menu = read('src/components/profile/ProfileHubNavMenu.tsx');
+    expect(menu).toContain('PROFILE_HISTORY_PATH');
+    expect(menu).toContain('planWishlistTabPath');
+    expect(menu).toContain('PROFILE_HUB_CALENDAR_PATH');
+    expect(menu).not.toMatch(/HOST_OVERVIEW_PATH/);
     const settings = read('src/components/profile/ProfileSettingsIndex.tsx');
     expect(settings).toMatch(/visibility/i);
   });
 
-  it('G-profile: goals teaser links to Plan lens (no duplicate goals CRUD on hub)', () => {
+  it('G-profile: goals menu links to Plan wishlist (no duplicate goals CRUD on hub)', () => {
     const hub = read('src/components/profile/ProfileConsumerHub.tsx');
-    expect(hub).toContain('ProfilePlanGoalsTeaser');
+    expect(hub).toContain('ProfileHubNavMenu');
+    expect(hub).toContain('ProfileHubDetailsCard');
     expect(hub).not.toContain('ProfileGoalsSection');
-    const teaser = read('src/components/profile/ProfilePlanGoalsTeaser.tsx');
-    expect(teaser).toContain('planGoalsWishlistPath');
+    expect(hub).not.toContain('ProfileQuickLauncher');
+    expect(hub).not.toContain('PROFILE_VEHICLES_PATH');
+    const menu = read('src/components/profile/ProfileHubNavMenu.tsx');
+    expect(menu).toContain('planGoalsWishlistPath');
+    expect(menu).toContain('PRO_MEMBERSHIP_PATH');
   });
 
   it('G-arch: Profile business entry uses pro membership (not host overview)', () => {
     const hub = read('src/components/profile/ProfileConsumerHub.tsx');
-    expect(hub).toContain('PRO_MEMBERSHIP_PATH');
+    const menu = read('src/components/profile/ProfileHubNavMenu.tsx');
+    expect(menu).toContain('PRO_MEMBERSHIP_PATH');
     expect(hub).not.toMatch(/\/host\/overview/);
-    const launcher = read('src/components/profile/ProfileQuickLauncher.tsx');
-    expect(launcher).toContain('planHostedSchedulePath()');
-    expect(launcher).not.toMatch(/\/host\//);
+    expect(menu).not.toMatch(/\/host\//);
   });
 
   it('G-arch: org public profile owner CTAs avoid consumer /host/* routes', () => {

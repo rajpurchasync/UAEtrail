@@ -31,6 +31,18 @@ describe('resolveMemberProfileRoleLabel', () => {
     ).toBe('host');
   });
 
+  it('labels buddy host when community tier is enabled', () => {
+    expect(
+      resolveMemberProfileRoleLabel({
+        role: UserRole.PARTICIPANT,
+        hostTiers: baseTiers,
+        isCommunityHost: false,
+        hasAgencyProfile: false,
+        hasShopProfile: false,
+      })
+    ).toBe('host');
+  });
+
   it('defaults to community_member', () => {
     expect(
       resolveMemberProfileRoleLabel({

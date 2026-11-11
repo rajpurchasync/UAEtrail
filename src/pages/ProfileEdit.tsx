@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { updateMeProfile } from '../hooks/memberProfileApi';
 import { useMeProfile } from '../hooks/useMeProfile';
@@ -8,11 +8,9 @@ import { useAuth } from '../context/AuthContext';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { AppButton } from '../components/mobile/AppButton';
 import { AppSelect } from '../components/ui/AppSelect';
-import { GlassCard } from '../components/mobile/GlassCard';
 import {
   USER_CITY_OPTIONS,
   USER_COUNTRY_OPTIONS,
-  USER_GENDER_OPTIONS,
   type UserCity,
   type UserCountryCode,
   type UserGender,
@@ -29,14 +27,28 @@ import { meProfileSignupGateKey } from '../utils/signupProfileGate';
 import { useProfileHubBackChrome } from '../hooks/useProfileHubBackChrome';
 import { PROFILE_PATH } from '../config/routingCatalog';
 import { navigateBack } from '../utils/backStack';
+import type { MobileBackNavState } from '../utils/mobileBackNav';
+import { ProfileFormDivider, ProfileFormField } from '../components/profile/ProfileFormSection';
+import { ProfileGenderField } from '../components/profile/ProfileGenderField';
+import { ProfileDateOfBirthDisplay } from '../components/profile/ProfileDateOfBirthDisplay';
+
+type ProfileEditLocationState = MobileBackNavState & {
+  profileEditFocus?: 'bio' | 'languages';
+};
+
+const nameInputClass = 'ios-input text-[16px]';
 
 export const ProfileEdit = () => {
   const backChrome = useProfileHubBackChrome();
+  const location = useLocation();
   const navigate = useNavigate();
   const { user, refreshUser } = useAuth();
   const queryClient = useQueryClient();
   const { profile, loading } = useMeProfile();
   const hydratedRef = useRef(false);
+  const bioFieldRef = useRef<HTMLDivElement>(null);
+  const languagesFieldRef = useRef<HTMLDivElement>(null);
+  const editFocus = (location.state as ProfileEditLocationState | null)?.profileEditFocus;
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [givenName, setGivenName] = useState('');
@@ -62,6 +74,19 @@ export const ProfileEdit = () => {
     setLanguages(parseLanguagesList(profile.languages));
     hydratedRef.current = true;
   }, [profile]);
+
+  useEffect(() => {
+    if (!profile || loading || !editFocus) return;
+    const target = editFocus === 'bio' ? bioFieldRef.current : languagesFieldRef.current;
+    target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const focusable =
+      editFocus === 'bio'
+        ? target?.querySelector('textarea')
+        : target?.querySelector('input[type="search"]');
+    if (focusable instanceof HTMLElement) {
+      window.setTimeout(() => focusable.focus({ preventScroll: true }), 300);
+    }
+  }, [profile, loading, editFocus]);
 
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -119,71 +144,72 @@ export const ProfileEdit = () => {
     }
   };
 
+  const bioLength = bio.length;
+
   return (
-    <ConsumerShell
-      layout="stack"
-      title="Edit profile"
-      showJourney={false}
-      back={backChrome}
-    >
+    <ConsumerShell layout="stack" title="Edit profile" showJourney={false} back={backChrome} maxWidth="4xl">
       {loading ? (
         <p className="py-10 text-center text-sm text-neutral-500">Loading…</p>
       ) : (
-        <form className="space-y-3 pb-nav-safe animate-fade-up" onSubmit={(e) => void onSubmit(e)}>
-          <GlassCard padding className="space-y-4">
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-neutral-800">First name</label>
-              <input
-                className="ios-input text-[15px]"
-                value={givenName}
-                onChange={(e) => setGivenName(sanitizePersonNameInput(e.target.value))}
-                autoComplete="given-name"
-              />
+        <form
+          className="mx-auto w-full max-w-lg space-y-3 pb-nav-safe animate-fade-up"
+          onSubmit={(e) => void onSubmit(e)}
+        >
+          <div className="glass-card space-y-4 px-3.5 py-4">
+            <div className="grid grid-cols-2 gap-3">
+              <ProfileFormField label="First name">
+                <input
+                  className={nameInputClass}
+                  value={givenName}
+                  onChange={(e) => setGivenName(sanitizePersonNameInput(e.target.value))}
+                  autoComplete="given-name"
+                />
+              </ProfileFormField>
+              <ProfileFormField label="Last name">
+                <input
+                  className={nameInputClass}
+                  value={surname}
+                  onChange={(e) => setSurname(sanitizePersonNameInput(e.target.value))}
+                  autoComplete="family-name"
+                />
+              </ProfileFormField>
             </div>
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-neutral-800">Last name</label>
-              <input
-                className="ios-input text-[15px]"
-                value={surname}
-                onChange={(e) => setSurname(sanitizePersonNameInput(e.target.value))}
-                autoComplete="family-name"
-              />
+
+            <ProfileFormDivider />
+
+            <ProfileDateOfBirthDisplay dateOfBirth={profile?.dateOfBirth} />
+
+            <ProfileFormField label="Gender">
+              <ProfileGenderField value={gender} onChange={setGender} disabled={saving} />
+            </ProfileFormField>
+
+            <div ref={bioFieldRef} id="profile-edit-bio">
+              <ProfileFormField
+                label="Bio"
+                accessory={
+                  <span className="text-[11px] font-medium text-neutral-400 tabular-nums">{bioLength}/500</span>
+                }
+              >
+                <textarea
+                  className="ios-input min-h-[112px] resize-none text-[15px] leading-relaxed"
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  maxLength={500}
+                />
+              </ProfileFormField>
             </div>
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-neutral-800">Gender</label>
-              <div className="grid grid-cols-1 gap-2">
-                {USER_GENDER_OPTIONS.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => setGender(option.value)}
-                    className={`rounded-xl border px-4 py-3 text-left text-sm font-medium ${
-                      gender === option.value
-                        ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
-                        : 'border-neutral-200 bg-neutral-50'
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
+
+            <ProfileFormDivider />
+
+            <div ref={languagesFieldRef} id="profile-edit-languages">
+              <ProfileFormField label="Speaks">
+                <SignupLanguagePicker value={languages} onChange={setLanguages} />
+              </ProfileFormField>
             </div>
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-neutral-800">Bio</label>
-              <textarea
-                className="ios-input min-h-[100px] text-[15px]"
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                maxLength={500}
-                placeholder="A line about what you like to do outside…"
-              />
-            </div>
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-neutral-800">Speaks</label>
-              <SignupLanguagePicker value={languages} onChange={setLanguages} />
-            </div>
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-neutral-800">Country</label>
+
+            <ProfileFormDivider />
+
+            <ProfileFormField label="Country">
               <AppSelect
                 value={countryCode}
                 onChange={(value) => {
@@ -195,10 +221,9 @@ export const ProfileEdit = () => {
                 aria-label="Country"
                 options={USER_COUNTRY_OPTIONS}
               />
-            </div>
+            </ProfileFormField>
             {countryCode === 'AE' ? (
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-neutral-800">City / emirate</label>
+              <ProfileFormField label="City / emirate">
                 <AppSelect
                   value={city}
                   onChange={(value) => setCity(value as UserCity)}
@@ -206,13 +231,12 @@ export const ProfileEdit = () => {
                   aria-label="City or emirate"
                   options={USER_CITY_OPTIONS}
                 />
-              </div>
+              </ProfileFormField>
             ) : null}
-          </GlassCard>
-          <p className="px-1 text-xs text-neutral-500">
-            Birthday is set when you join and cannot be changed here. Update photo from your profile hub.
-          </p>
+          </div>
+
           {error ? <p className="text-center text-sm text-red-600">{error}</p> : null}
+
           <AppButton type="submit" fullWidth disabled={saving}>
             {saving ? 'Saving…' : 'Save profile'}
           </AppButton>

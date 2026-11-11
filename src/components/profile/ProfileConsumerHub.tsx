@@ -1,292 +1,109 @@
-import { useMemo } from 'react';
-
-import { Car, HeartPulse, LogOut, Sparkles } from 'lucide-react';
-
-import { PRO_MEMBERSHIP_PATH, PROFILE_SETTINGS_SAFETY_PATH } from '../../config/routingCatalog';
-import { PROFILE_VEHICLES_PATH } from '../../config/surfacePaths';
-import { profileHubMobileBackState } from '../../utils/mobileBackNav';
-
-
-import { ProfileHubIdentityCard } from './ProfileHubIdentityCard';
-
-import { SettingsMenuGroup, SettingsMenuRow } from '../settings/SettingsMenuRow';
-
-import { ProfilePlanGoalsTeaser } from './ProfilePlanGoalsTeaser';
-
-import {
-
-  ProfileQuickLauncher,
-
-  buildProfileQuickLauncherItems,
-
-} from './ProfileQuickLauncher';
-
 import type { ProfileCompletionItem } from '../../utils/profileCompletion';
-
 import type { ProfileHubStat } from './ProfileConsumerHub.types';
-
-
-
+import type { ProfileHubEditFocus } from './ProfileHubDetailsCard';
+import { ProfileHubIdentityCard } from './ProfileHubIdentityCard';
+import { ProfileHubDetailsCard } from './ProfileHubDetailsCard';
+import { ProfileHubNavMenu } from './ProfileHubNavMenu';
 
 export type { ProfileHubStat };
 
-
-
 type ProfileConsumerHubProps = {
-
   displayName: string;
-
   roleLabel: string;
-
   avatarUrl?: string | null;
-
+  bio?: string | null;
+  languages?: string | null;
   completionPercent: number;
-
   completionItems: ProfileCompletionItem[];
-
   onCompleteProfile: () => void;
-
   shareTitle: string;
-
   shareText: string;
-
   sharePath: string;
-
   shareReady?: boolean;
-
   onEditAvatar: () => void;
-
   onEditProfile: () => void;
-
+  onEditProfileSection: (focus: ProfileHubEditFocus) => void;
   onViewProfile: () => void;
-
   memberSinceLabel?: string | null;
-
   visibilityLabel?: string | null;
-
   cityLabel?: string | null;
-
   hubStats: ProfileHubStat[];
-
-  goalsCount: number;
-
   badgesEarnedCount?: number;
-
-  buddyBadge?: number;
-
-  showHosting?: boolean;
-
   onSignOut: () => void;
-
 };
-
-
 
 export const ProfileConsumerHub = ({
-
   displayName,
-
   roleLabel,
-
   avatarUrl,
-
+  bio,
+  languages,
   completionPercent,
-
   completionItems,
-
   onCompleteProfile,
-
   shareTitle,
-
   shareText,
-
   sharePath,
-
   shareReady = true,
-
   onEditAvatar,
-
   onEditProfile,
-
+  onEditProfileSection,
   onViewProfile,
-
   memberSinceLabel,
-
   visibilityLabel,
-
   cityLabel,
-
   hubStats,
-
-  goalsCount,
-
   badgesEarnedCount = 0,
-
-  buddyBadge,
-
-  showHosting = false,
-
   onSignOut,
-
 }: ProfileConsumerHubProps) => {
-
   const showComplete =
-
     completionPercent < 100 && completionItems.some((item) => !item.done);
-
   const nextMissing = completionItems.find((item) => !item.done);
 
-
-
-  const launcherItems = useMemo(
-
-    () =>
-
-      buildProfileQuickLauncherItems({
-
-        buddyBadge,
-
-        badgesEarnedCount,
-
-        showHosting,
-
-      }),
-
-    [buddyBadge, badgesEarnedCount, showHosting]
-
-  );
-
-
-
   return (
-
-    <div className="space-y-3 pb-nav-safe animate-fade-up lg:grid lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-6 lg:space-y-0">
-
-      <div className="min-w-0 space-y-3">
-
+    <div className="mx-auto w-full max-w-lg space-y-3 pb-nav-safe animate-fade-up">
       <ProfileHubIdentityCard
-
         displayName={displayName}
-
         roleLabel={roleLabel}
-
         avatarUrl={avatarUrl}
-
         completionPercent={completionPercent}
-
         shareTitle={shareTitle}
-
         shareText={shareText}
-
         sharePath={sharePath}
-
         shareReady={shareReady}
-
         onEditAvatar={onEditAvatar}
-
         onEditProfile={onEditProfile}
-
         onViewProfile={onViewProfile}
-
         memberSinceLabel={memberSinceLabel}
-
         visibilityLabel={visibilityLabel}
-
         cityLabel={cityLabel}
-
         stats={hubStats}
-
       />
 
-
-
-      <div className="lg:hidden">
-        <ProfileQuickLauncher items={launcherItems} />
+      <div className="space-y-3">
+        <ProfileHubDetailsCard
+          bio={bio}
+          languages={languages}
+          onEditSection={onEditProfileSection}
+        />
       </div>
 
-
+      <ProfileHubNavMenu badgesEarnedCount={badgesEarnedCount} onSignOut={onSignOut} />
 
       {showComplete ? (
-
         <button
-
           type="button"
-
           onClick={onCompleteProfile}
-
           data-nav-focus="profile-complete"
-
           className="glass-card-interactive flex w-full items-center gap-3 border border-emerald-200/60 bg-emerald-50/50 px-3 py-3 text-left"
-
         >
-
           <span className="text-sm font-bold tabular-nums text-emerald-800">{completionPercent}%</span>
-
           <span className="min-w-0 flex-1 text-xs font-medium text-emerald-900">
-
             Complete your profile
-
             {nextMissing ? ` — ${nextMissing.label}` : ''}
-
           </span>
-
         </button>
-
       ) : null}
-
-
-
-      <ProfilePlanGoalsTeaser goalsCount={goalsCount} />
-
-      </div>
-
-      <div className="space-y-3">
-
-      <SettingsMenuGroup>
-        <SettingsMenuRow
-          label="My cars"
-          subtitle="Garage for rideshare — plate shared with your ride crew only"
-          to={PROFILE_VEHICLES_PATH}
-          linkState={profileHubMobileBackState()}
-          icon={Car}
-        />
-        <SettingsMenuRow
-          label="Safety & emergency"
-          subtitle="Blood group, medical notes, ICE contact — required to join outings"
-          to={PROFILE_SETTINGS_SAFETY_PATH}
-          linkState={profileHubMobileBackState()}
-          icon={HeartPulse}
-        />
-      </SettingsMenuGroup>
-
-
-
-      <SettingsMenuGroup>
-
-        <SettingsMenuRow
-
-          label="Pro membership"
-
-          subtitle="Professional guide, agency, or shop profile"
-
-          to={PRO_MEMBERSHIP_PATH}
-
-          linkState={profileHubMobileBackState()}
-
-          icon={Sparkles}
-
-        />
-
-        <SettingsMenuRow label="Sign out" icon={LogOut} destructive onClick={onSignOut} />
-
-      </SettingsMenuGroup>
-
-      </div>
-
     </div>
-
   );
-
 };
-
-

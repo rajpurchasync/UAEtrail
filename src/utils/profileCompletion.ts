@@ -53,7 +53,7 @@ export const buildProfileCompletion = (input: {
       key: 'languages',
       label: 'Add languages you speak',
       done: Boolean(input.languages?.trim()),
-      action: 'settings',
+      action: 'edit',
     },
     {
       key: 'bio',

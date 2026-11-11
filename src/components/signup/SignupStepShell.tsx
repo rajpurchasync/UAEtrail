@@ -51,7 +51,7 @@ export const SignupStepShell = ({
         </div>
       </div>
     </div>
-    <div className="p-5 space-y-4">{children}</div>
+    <div className="space-y-4 p-5 pt-4">{children}</div>
     <div className="border-t border-neutral-100 px-5 py-4">{footer}</div>
   </div>
 );

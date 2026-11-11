@@ -159,18 +159,18 @@ export const MemberProfileView = ({
         </div>
       </GlassCard>
 
-      {canViewFullProfile && profile.bio && (
+      {profile.bio ? (
         <GlassCard padding>
           <SectionHeading>About</SectionHeading>
           <p className="text-[15px] leading-7 text-neutral-700 whitespace-pre-line">{profile.bio}</p>
         </GlassCard>
-      )}
+      ) : null}
 
       {canViewFullProfile && profile.yearGoal ? (
         <PublicMemberYearGoal goal={profile.yearGoal} />
       ) : null}
 
-      {canViewFullProfile && hasDetails && (
+      {hasDetails ? (
         <GlassCard padding>
           <SectionHeading>Details</SectionHeading>
           <div className="space-y-4">
@@ -195,7 +195,7 @@ export const MemberProfileView = ({
             )}
           </div>
         </GlassCard>
-      )}
+      ) : null}
 
       {canViewFullProfile && upcomingActivities.length > 0 && (
         <GlassCard padding className="space-y-3">

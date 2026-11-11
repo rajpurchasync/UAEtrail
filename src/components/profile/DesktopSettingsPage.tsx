@@ -9,11 +9,10 @@ import {
   type DesktopSettingsSectionId,
 } from '../../config/desktopSettings';
 import { NOTIFICATIONS_PATH, planHubPath } from '../../config/routingCatalog';
-import { AccountSignOutButton } from '../account';
+import { AccountDeleteSection, AccountSignOutButton } from '../account';
 import { ConsumerShell } from '../mobile/ConsumerShell';
 import { PageMeta } from '../seo/PageMeta';
 import { AndroidInstallSettingsSection } from '../pwa/AndroidInstallSettingsSection';
-import { IosInstallSettingsSection } from '../pwa/IosInstallSettingsSection';
 import { SettingsMenuGroup, SettingsMenuRow } from '../settings/SettingsMenuRow';
 import { DisplayPreferencesSection } from './DisplayPreferencesSection';
 import { ProfileAccountSettingsSections } from './ProfileAccountSettingsSections';
@@ -161,9 +160,9 @@ export const DesktopSettingsPage = () => {
                 <ProfileAccountSettingsSections
                   email={user.email ?? ''}
                   onEmailChanged={() => void refreshUser()}
-                  onDeleted={() => void signOut()}
                 />
                 <AccountSignOutButton onSignOut={() => void signOut()} />
+                <AccountDeleteSection onDeleted={() => void signOut()} />
               </div>
             ) : (
               <p className="rounded-2xl border border-neutral-200/80 bg-neutral-50 px-4 py-3 text-sm text-neutral-600">
@@ -241,13 +240,7 @@ export const DesktopSettingsPage = () => {
             )}
           </SettingsSection>
 
-          <IosInstallSettingsSection />
           <AndroidInstallSettingsSection />
-
-          <p className="px-1 text-xs text-neutral-500">
-            Date of birth is set when you join and cannot be changed here. Update name, location, and speaks from Edit
-            profile on your profile hub.
-          </p>
         </div>
       </div>
     </ConsumerShell>

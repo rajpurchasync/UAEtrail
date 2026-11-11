@@ -2,7 +2,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { ProfileAccountSettingsSections } from '../components/profile/ProfileAccountSettingsSections';
-import { AccountSignOutButton } from '../components/account';
+import { AccountDeleteSection, AccountSignOutButton } from '../components/account';
 import { useProfileSettingsBackChrome } from '../hooks/useProfileHubBackChrome';
 import { useMinWidthLg } from '../hooks/useMinWidthLg';
 import { desktopSettingsSectionPath } from '../config/desktopSettings';
@@ -26,12 +26,9 @@ export const ProfileSettingsAccount = () => {
       back={backChrome}
     >
       <div className="space-y-3 pb-nav-safe animate-fade-up">
-        <ProfileAccountSettingsSections
-          email={user?.email ?? ''}
-          onEmailChanged={refresh}
-          onDeleted={() => void signOut()}
-        />
+        <ProfileAccountSettingsSections email={user?.email ?? ''} onEmailChanged={refresh} />
         <AccountSignOutButton onSignOut={() => void signOut()} />
+        <AccountDeleteSection onDeleted={() => void signOut()} />
       </div>
     </ConsumerShell>
   );

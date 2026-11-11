@@ -15,7 +15,7 @@ const GUEST_DISPLAY_KEY = 'uaetrail:guest-display';
 const CHANGE_EVENT = 'uaetrail-display-preferences';
 
 export const DEFAULT_DISPLAY_PREFERENCES: DisplayPreferences = {
-  theme: 'system',
+  theme: 'light',
   clock: '12',
   units: 'metric',
 };

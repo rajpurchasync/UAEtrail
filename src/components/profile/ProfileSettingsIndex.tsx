@@ -15,7 +15,6 @@ import { mobileBackNavState } from '../../utils/mobileBackNav';
 import { useProfileHubBackChrome } from '../../hooks/useProfileHubBackChrome';
 import { DisplayPreferencesSection } from './DisplayPreferencesSection';
 import { AndroidInstallSettingsSection } from '../pwa/AndroidInstallSettingsSection';
-import { IosInstallSettingsSection } from '../pwa/IosInstallSettingsSection';
 
 type ProfileSettingsIndexProps = {
   onRefresh?: () => Promise<void>;
@@ -69,12 +68,7 @@ export const ProfileSettingsIndex = ({ onRefresh }: ProfileSettingsIndexProps) =
           disabled={guest}
         />
       </SettingsMenuGroup>
-      <IosInstallSettingsSection />
       <AndroidInstallSettingsSection />
-      <p className="px-1 text-xs text-neutral-500">
-        Date of birth is set when you join and cannot be changed here. Update name, location, and speaks from Edit profile
-        on your profile hub.
-      </p>
     </div>
   );
 

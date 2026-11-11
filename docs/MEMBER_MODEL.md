@@ -135,8 +135,8 @@ Detail: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.6.
 
 | Key | When |
 |-----|------|
-| `community_member` | Default |
-| `host` (wire) | UI **Host** — `isCommunityHost` after first activity **or** seeking on map |
+| `community_member` | Signed in; profile incomplete (no community tier) |
+| `host` (wire) | UI **Host** — community publish tier (`hostTiers.community`) and/or `isCommunityHost` after first activity **or** seeking on map |
 | `professional_guide` | Professional tier tenant |
 | `agency` | Agency tenant or business tier operator |
 | `shop_owner` | Shop tenant |

@@ -3,7 +3,6 @@ import { CalendarDays } from 'lucide-react';
 import { AppButton } from '../mobile/AppButton';
 import { Dialog } from '../ui/Dialog';
 import { PRODUCT_SIGNUP_STEP_DOB } from '../../content/productNorthStar';
-import { formatMemberAge, computeAgeFromDateOfBirth } from '../../utils/profileAge';
 import {
   MEMBER_DOB_MONTHS,
   clampMemberDobDay,
@@ -36,7 +35,6 @@ export const MemberDateOfBirthField = ({
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<MemberDobParts>(() => defaultMemberDobDraft());
 
-  const previewAge = value ? computeAgeFromDateOfBirth(value) : null;
   const display = value ? formatMemberDobDisplay(value) : null;
   const yearOptions = useMemo(() => memberDobYearOptions(), []);
 
@@ -84,12 +82,7 @@ export const MemberDateOfBirthField = ({
         <CalendarDays className="h-5 w-5 shrink-0 text-emerald-600" strokeWidth={2.25} aria-hidden />
       </button>
 
-      {formatMemberAge(previewAge) ? (
-        <p className="mt-1.5 text-xs font-medium text-emerald-700">{formatMemberAge(previewAge)}</p>
-      ) : null}
-
       <Dialog open={open} onClose={() => setOpen(false)} title={PRODUCT_SIGNUP_STEP_DOB} variant="form">
-        <p className="mb-4 text-sm text-neutral-500">Choose day, month, and year.</p>
         <div className="space-y-3">
           <div>
             <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-neutral-400">

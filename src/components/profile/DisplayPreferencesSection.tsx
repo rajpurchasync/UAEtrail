@@ -1,24 +1,19 @@
 import type { ReactNode } from 'react';
 import { Moon, Sun } from 'lucide-react';
-import type { ExploreClockStyle } from '@uaetrail/shared-types';
-import {
-  writeActiveDisplayPreferences,
-  type ThemePreference,
-  type UnitSystem,
-} from '../../preferences/displayPreferences';
+import { writeActiveDisplayPreferences, type ThemePreference } from '../../preferences/displayPreferences';
 import { useDisplayPreferences } from '../../preferences/useDisplayPreferences';
 
-const Choice = <T extends string>({
+const Choice = ({
   value,
   current,
   label,
   onSelect,
   compact,
 }: {
-  value: T;
-  current: T;
+  value: 'light' | 'dark';
+  current: 'light' | 'dark';
   label: string;
-  onSelect: (value: T) => void;
+  onSelect: (value: 'light' | 'dark') => void;
   compact?: boolean;
 }) => {
   const selected = value === current;
@@ -103,22 +98,19 @@ type DisplayPreferencesSectionProps = {
   themeOnly?: boolean;
 };
 
+const resolveUiTheme = (theme: ThemePreference): 'light' | 'dark' => (theme === 'dark' ? 'dark' : 'light');
+
 export const DisplayPreferencesSection = ({
   compact = false,
   themeOnly = false,
 }: DisplayPreferencesSectionProps) => {
   const preferences = useDisplayPreferences();
+  const themeCurrent = resolveUiTheme(preferences.theme);
 
-  const setTheme = (theme: ThemePreference) => writeActiveDisplayPreferences({ theme });
-  const setClock = (clock: ExploreClockStyle) => writeActiveDisplayPreferences({ clock });
-  const setUnits = (units: UnitSystem) => writeActiveDisplayPreferences({ units });
-
-  const themeCurrent: ThemePreference =
-    themeOnly && preferences.theme === 'system' ? 'light' : preferences.theme;
+  const setTheme = (theme: 'light' | 'dark') => writeActiveDisplayPreferences({ theme });
 
   if (themeOnly && compact) {
-    const iconCurrent: 'light' | 'dark' = themeCurrent === 'dark' ? 'dark' : 'light';
-    return <DrawerThemeIconToggle current={iconCurrent} onSelect={setTheme} />;
+    return <DrawerThemeIconToggle current={themeCurrent} onSelect={setTheme} />;
   }
 
   return (
@@ -131,30 +123,9 @@ export const DisplayPreferencesSection = ({
     >
       {compact ? null : <h2 className="px-4 pb-1 pt-3 text-sm font-semibold text-neutral-500">Display</h2>}
       <Row label="Theme" compact={compact}>
-        {!themeOnly ? (
-          <Choice compact={compact} value="system" current={preferences.theme} label="System" onSelect={setTheme} />
-        ) : null}
         <Choice compact={compact} value="light" current={themeCurrent} label="Light" onSelect={setTheme} />
         <Choice compact={compact} value="dark" current={themeCurrent} label="Dark" onSelect={setTheme} />
       </Row>
-      {!themeOnly ? (
-        <>
-          <Row label="Time" compact={compact}>
-            <Choice compact={compact} value="12" current={preferences.clock} label="AM/PM" onSelect={setClock} />
-            <Choice compact={compact} value="24" current={preferences.clock} label="24-hour" onSelect={setClock} />
-          </Row>
-          <Row label="Units" compact={compact}>
-            <Choice compact={compact} value="metric" current={preferences.units} label="Metric" onSelect={setUnits} />
-            <Choice
-              compact={compact}
-              value="imperial"
-              current={preferences.units}
-              label="Imperial"
-              onSelect={setUnits}
-            />
-          </Row>
-        </>
-      ) : null}
     </section>
   );
 };

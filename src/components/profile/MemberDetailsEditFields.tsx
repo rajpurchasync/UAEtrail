@@ -1,12 +1,9 @@
 import {
   USER_COUNTRY_OPTIONS,
-  USER_GENDER_OPTIONS,
   type UserCountryCode,
   type UserGender,
 } from '../../constants/userProfileOptions';
 import {
-  PRODUCT_SIGNUP_LANGUAGES_HINT,
-  PRODUCT_SIGNUP_LOCATION_HINT,
   PRODUCT_SIGNUP_STEP_DOB,
   PRODUCT_SIGNUP_STEP_GENDER,
   PRODUCT_SIGNUP_STEP_LANGUAGES,
@@ -15,9 +12,11 @@ import {
 import type { SignupProfileStep } from '../../utils/signupProfileSteps';
 import { SignupLanguagePicker } from '../signup/SignupLanguagePicker';
 import { MemberDateOfBirthField } from './MemberDateOfBirthField';
+import { ProfileFormField, profileFormFieldLabelClass } from './ProfileFormSection';
+import { ProfileGenderField } from './ProfileGenderField';
 
 const FieldLabel = ({ children }: { children: React.ReactNode }) => (
-  <label className="mb-2 block text-sm font-semibold text-neutral-800">{children}</label>
+  <span className={`mb-1.5 block ${profileFormFieldLabelClass}`}>{children}</span>
 );
 
 const countrySelectClass =
@@ -60,39 +59,17 @@ export const MemberDetailsEditFields = ({
   const genderField = (
     <>
       {layout === 'stack' ? <FieldLabel>{PRODUCT_SIGNUP_STEP_GENDER}</FieldLabel> : null}
-      <div className="grid grid-cols-1 gap-2">
-        {USER_GENDER_OPTIONS.map((option) => {
-          const active = value.gender === option.value;
-          return (
-            <button
-              key={option.value}
-              type="button"
-              disabled={disabled}
-              onClick={() => onChange({ gender: option.value })}
-              className={`rounded-xl border px-4 py-3 text-left text-sm font-medium transition-colors ${
-                active
-                  ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
-                  : 'border-neutral-200 bg-neutral-50 text-neutral-800 hover:border-emerald-200'
-              }`}
-            >
-              {option.label}
-            </button>
-          );
-        })}
-      </div>
+      <ProfileGenderField
+        value={value.gender}
+        disabled={disabled}
+        onChange={(gender) => onChange({ gender })}
+      />
     </>
   );
 
   const countryField = (
     <>
-      {layout === 'stack' ? (
-        <>
-          <FieldLabel>{PRODUCT_SIGNUP_STEP_LOCATION}</FieldLabel>
-          <p className="mb-2 text-xs text-neutral-500">{PRODUCT_SIGNUP_LOCATION_HINT}</p>
-        </>
-      ) : layout === 'step' ? (
-        <p className="mb-3 text-xs text-neutral-500">{PRODUCT_SIGNUP_LOCATION_HINT}</p>
-      ) : null}
+      {layout === 'stack' ? <FieldLabel>{PRODUCT_SIGNUP_STEP_LOCATION}</FieldLabel> : null}
       <select
         className={countrySelectClass}
         value={value.countryCode}
@@ -111,17 +88,14 @@ export const MemberDetailsEditFields = ({
     </>
   );
 
-  const languagesField = (
-    <>
-      {layout === 'stack' ? (
-        <>
-          <FieldLabel>{PRODUCT_SIGNUP_STEP_LANGUAGES}</FieldLabel>
-          <p className="mb-2 text-xs text-neutral-500">{PRODUCT_SIGNUP_LANGUAGES_HINT}</p>
-        </>
-      ) : null}
+  const languagesField =
+    layout === 'stack' ? (
+      <ProfileFormField label={PRODUCT_SIGNUP_STEP_LANGUAGES}>
+        <SignupLanguagePicker value={value.languages} onChange={(languages) => onChange({ languages })} />
+      </ProfileFormField>
+    ) : (
       <SignupLanguagePicker value={value.languages} onChange={(languages) => onChange({ languages })} />
-    </>
-  );
+    );
 
   if (layout === 'step' && step) {
     if (step === 'dateOfBirth') return <div>{dobField}</div>;

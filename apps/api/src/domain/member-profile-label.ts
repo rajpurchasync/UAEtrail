@@ -12,6 +12,6 @@ export const resolveMemberProfileRoleLabel = (input: {
   if (input.hasShopProfile) return 'shop_owner';
   if (input.hasAgencyProfile || input.hostTiers.business) return 'agency';
   if (input.hostTiers.professional) return 'professional_guide';
-  if (input.isCommunityHost) return 'host';
+  if (input.isCommunityHost || input.hostTiers.community) return 'host';
   return 'community_member';
 };

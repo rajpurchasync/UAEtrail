@@ -38,14 +38,14 @@ const ProfileHubStatCell = ({ stat }: { stat: ProfileHubStat }) => {
       <span className="text-xl font-bold tabular-nums leading-none text-neutral-900">
         {typeof stat.value === 'number' ? stat.value.toLocaleString() : stat.value}
       </span>
-      <span className="mt-1 max-w-full truncate text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+      <span className="mt-1 max-w-full truncate text-[11px] font-medium text-neutral-500">
         {stat.label}
       </span>
     </>
   );
 
   const className =
-    'flex min-w-0 flex-1 flex-col items-center justify-center px-1 py-3 text-center transition-colors active:bg-neutral-50';
+    'flex min-w-0 flex-1 flex-col items-center justify-center px-1 py-2 text-center transition-colors active:bg-neutral-50';
 
   if (stat.to) {
     return (
@@ -86,15 +86,13 @@ export const ProfileHubIdentityCard = ({
   stats,
 }: ProfileHubIdentityCardProps) => (
   <div className="glass-card overflow-hidden animate-fade-up">
-    <div
-      className="relative flex min-h-[min(40dvh,380px)] flex-col justify-center lg:min-h-[280px] bg-gradient-to-b from-emerald-50/70 via-white/40 to-transparent px-4 pb-4 pt-4 text-center"
-    >
+    <div className="relative flex flex-col justify-center bg-gradient-to-b from-emerald-50/50 to-white px-4 pb-2 pt-[calc(var(--safe-top)+8px)] text-center">
       <div className="absolute left-1 top-1">
         <button
           type="button"
           onClick={onViewProfile}
           data-nav-focus="profile-view-public"
-          className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-2xl bg-white/90 text-neutral-700 shadow-sm ring-1 ring-neutral-200/80 active:scale-[0.98]"
+          className="inline-flex min-h-[40px] min-w-[40px] items-center justify-center text-neutral-600 active:scale-[0.98] active:text-neutral-900"
           aria-label="View public profile"
         >
           <Eye className="h-4 w-4" strokeWidth={2.25} aria-hidden />
@@ -108,14 +106,14 @@ export const ProfileHubIdentityCard = ({
           type="button"
           onClick={onEditProfile}
           data-nav-focus="profile-edit"
-          className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-2xl bg-white/90 text-neutral-700 shadow-sm ring-1 ring-neutral-200/80 active:scale-[0.98]"
+          className="inline-flex min-h-[40px] min-w-[40px] items-center justify-center text-neutral-600 active:scale-[0.98] active:text-neutral-900"
           aria-label="Edit profile"
         >
           <Pencil className="h-4 w-4" strokeWidth={2.25} aria-hidden />
         </button>
       </div>
 
-      <div className="relative mx-auto h-[112px] w-[112px] shrink-0">
+      <div className="relative mx-auto mt-6 h-[88px] w-[88px] shrink-0">
         <svg className="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 100 100" aria-hidden>
           <circle cx="50" cy="50" r="44" fill="none" stroke="#e5e7eb" strokeWidth="5" />
           <circle
@@ -132,7 +130,7 @@ export const ProfileHubIdentityCard = ({
         <SecureAvatar
           src={avatarUrl}
           name={displayName}
-          className="absolute inset-[10px] h-[92px] w-[92px] text-2xl ring-4 ring-white"
+          className="absolute inset-[8px] h-[72px] w-[72px] text-xl ring-4 ring-white"
         />
         <button
           type="button"
@@ -144,34 +142,27 @@ export const ProfileHubIdentityCard = ({
         </button>
       </div>
 
-      <h1 className="mt-4 text-xl font-bold leading-tight text-neutral-900">{displayName}</h1>
+      <h1 className="mt-2 text-lg font-bold leading-tight text-neutral-900">{displayName}</h1>
 
-      <p className="mt-1 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 text-xs text-neutral-500">
-        <span className="font-medium capitalize text-neutral-600">{roleLabel}</span>
-        {memberSinceLabel ? (
-          <>
-            <span className="text-neutral-300" aria-hidden>·</span>
-            <span>{memberSinceLabel}</span>
-          </>
+      <div className="mt-1.5 flex flex-wrap items-center justify-center gap-1.5">
+        <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-800 ring-1 ring-emerald-100">
+          {roleLabel}
+        </span>
+        {visibilityLabel ? (
+          <Link
+            to={PROFILE_SETTINGS_PRIVACY_PATH}
+            state={profileHubMobileBackState()}
+            data-nav-focus="profile-privacy"
+            className="rounded-full bg-neutral-100 px-2.5 py-0.5 text-[11px] font-semibold text-neutral-600 ring-1 ring-neutral-200/80"
+          >
+            {visibilityLabel}
+          </Link>
         ) : null}
-        {cityLabel ? (
-          <>
-            <span className="text-neutral-300" aria-hidden>·</span>
-            <span>{cityLabel}</span>
-          </>
-        ) : null}
+      </div>
+
+      <p className="mt-1.5 text-xs text-neutral-500">
+        {[cityLabel, memberSinceLabel].filter(Boolean).join(' · ')}
       </p>
-
-      {visibilityLabel ? (
-        <Link
-          to={PROFILE_SETTINGS_PRIVACY_PATH}
-          state={profileHubMobileBackState()}
-          data-nav-focus="profile-privacy"
-          className="mt-1.5 inline-block text-[11px] font-semibold text-emerald-700 underline-offset-2 hover:underline"
-        >
-          {visibilityLabel}
-        </Link>
-      ) : null}
 
       {tierBadge ? <div className="mt-2 flex justify-center">{tierBadge}</div> : null}
     </div>

@@ -37,7 +37,7 @@ export const Submissions = () => {
   return (
     <ConsumerShell
       layout="stack"
-      title="Submissions"
+      title="Contributions"
       maxWidth="4xl"
       showJourney={false}
       back={backChrome}

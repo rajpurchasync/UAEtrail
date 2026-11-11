@@ -4,7 +4,6 @@ import { completeSignupProfile } from '../../hooks/signupProfileApi';
 import { useAuth } from '../../context/AuthContext';
 import type { UserCountryCode, UserGender } from '../../constants/userProfileOptions';
 import {
-  PRODUCT_SIGNUP_LOCATION_HINT,
   PRODUCT_SIGNUP_STEP_DOB,
   PRODUCT_SIGNUP_STEP_GENDER,
   PRODUCT_SIGNUP_STEP_LOCATION,
@@ -34,10 +33,10 @@ interface SignupProfileWizardProps {
   onComplete: () => void;
 }
 
-const STEP_SHELL: Record<SignupProfileStep, { title: string; hint?: string }> = {
+const STEP_SHELL: Record<SignupProfileStep, { title: string }> = {
   dateOfBirth: { title: PRODUCT_SIGNUP_STEP_DOB },
   gender: { title: PRODUCT_SIGNUP_STEP_GENDER },
-  countryCode: { title: PRODUCT_SIGNUP_STEP_LOCATION, hint: PRODUCT_SIGNUP_LOCATION_HINT },
+  countryCode: { title: PRODUCT_SIGNUP_STEP_LOCATION },
 };
 
 const resolveInitialCountry = (profile: SignupProfileWizardProps['initialProfile']): UserCountryCode | '' => {
@@ -145,7 +144,6 @@ export const SignupProfileWizard = ({ initialProfile, onComplete }: SignupProfil
     <SignupStepShell
       stepNumber={stepNumber}
       title={shell.title}
-      hint={step === 'countryCode' ? undefined : shell.hint}
       onBack={stepNumber > 1 ? goBack : undefined}
       footer={footer}
     >
