@@ -49,6 +49,16 @@ import {
   type PlaceMapTopicKey,
   type TripMapTopicKey,
 } from './exploreMapQuickTopicFilters';
+import {
+  EXPLORE_FACILITY_KINDS_PARAM,
+  EXPLORE_HAS_TRIP_PARAM,
+  EXPLORE_PRICE_PARAM,
+  serializeExploreFacilityKinds,
+  serializeExploreHasTrip,
+  serializeExplorePriceFilter,
+  type ExplorePriceFilter,
+} from './exploreOptionalFilters';
+import type { PlaceKind } from '@uaetrail/shared-types';
 export type ExploreBrowseListMode = 'default' | 'people';
 
 export type ExploreBrowseUrlSyncPatch = {
@@ -74,6 +84,9 @@ export type ExploreBrowseUrlSyncPatch = {
   listCat?: BrowseMainCategoryKey | null;
   tripMapTopics?: TripMapTopicKey[];
   placeMapTopics?: PlaceMapTopicKey[];
+  priceFilter?: ExplorePriceFilter;
+  hasTrip?: boolean;
+  facilityKinds?: readonly PlaceKind[];
 };
 
 export type ExploreBrowseUrlSyncState = {
@@ -97,6 +110,9 @@ export type ExploreBrowseUrlSyncState = {
   peopleBrowseTab: PeopleBrowseTab;
   tripMapTopics: TripMapTopicKey[];
   placeMapTopics: PlaceMapTopicKey[];
+  priceFilter: ExplorePriceFilter;
+  hasTrip: boolean;
+  facilityKinds: readonly PlaceKind[];
 };
 
 /** Merge browse UI state + patch into explore URL search params (R2 / C18). */
@@ -128,8 +144,11 @@ export const buildExploreBrowseSearchParams = (input: {
   const topicValue = patch.outingTopic ?? state.outingTopic;
   const pinKindValue = patch.pinKind ?? state.pinKind;
   const topicPillsValue = patch.topicPills ?? state.topicPills;
-  const tripMapTopicsValue = patch.tripMapTopics ?? state.tripMapTopics;
-  const placeMapTopicsValue = patch.placeMapTopics ?? state.placeMapTopics;
+  const tripMapTopicsValue = patch.tripMapTopics ?? state.tripMapTopics ?? [];
+  const placeMapTopicsValue = patch.placeMapTopics ?? state.placeMapTopics ?? [];
+  const priceFilterValue = patch.priceFilter ?? state.priceFilter ?? 'all';
+  const hasTripValue = patch.hasTrip ?? state.hasTrip ?? false;
+  const facilityKindsValue = patch.facilityKinds ?? state.facilityKinds ?? [];
   const listModeValue = patch.listMode ?? state.listMode;
   const peopleBrowseOpenValue = patch.peopleBrowseOpen ?? state.peopleBrowseOpen;
   const peoplePanelActive = peopleBrowseOpenValue || listModeValue === 'people';
@@ -188,6 +207,18 @@ export const buildExploreBrowseSearchParams = (input: {
   const serializedPlaceTypes = serializePlaceMapTopicsParam(placeMapTopicsValue);
   if (serializedPlaceTypes) params.set(EXPLORE_PLACE_TYPES_PARAM, serializedPlaceTypes);
   else params.delete(EXPLORE_PLACE_TYPES_PARAM);
+
+  const serializedPrice = serializeExplorePriceFilter(priceFilterValue);
+  if (serializedPrice) params.set(EXPLORE_PRICE_PARAM, serializedPrice);
+  else params.delete(EXPLORE_PRICE_PARAM);
+
+  const serializedHasTrip = serializeExploreHasTrip(hasTripValue);
+  if (serializedHasTrip) params.set(EXPLORE_HAS_TRIP_PARAM, serializedHasTrip);
+  else params.delete(EXPLORE_HAS_TRIP_PARAM);
+
+  const serializedFacilityKinds = serializeExploreFacilityKinds(facilityKindsValue);
+  if (serializedFacilityKinds) params.set(EXPLORE_FACILITY_KINDS_PARAM, serializedFacilityKinds);
+  else params.delete(EXPLORE_FACILITY_KINDS_PARAM);
 
   const peopleBrowseTabValue = patch.peopleBrowseTab ?? state.peopleBrowseTab;
   if (peoplePanelActive) {

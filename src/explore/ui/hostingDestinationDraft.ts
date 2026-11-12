@@ -12,7 +12,15 @@ import {
   resolvePlaceCatalogStateFromArea,
   type PlaceCatalogDestinationSearchHit,
 } from '../../places/placeCatalogDestinationIndex';
+import {
+  HOSTING_DESTINATION_SEARCH_GROUP_AREA,
+  HOSTING_DESTINATION_SEARCH_GROUP_PLACE,
+  HOSTING_DESTINATION_SEARCH_GROUP_ROUTE,
+} from '../createFlowCopy';
 import type { CreateActivityDraft } from './hostingFlowEngine';
+import { applyRegistryPlaceToHostingDraft } from './hostingPlaceRegistryDraft';
+import { fetchPublishedAreas } from '../../hooks/areaHubClientApi';
+import { resolvePublishedAreaIdForPoint } from '../hostingPublishArea';
 
 /** Clear trail slot when changing catalog ladder (registry path). */
 export const patchHostingDestinationClearTrailSlot = (): Partial<CreateActivityDraft> => ({
@@ -61,17 +69,35 @@ export const patchHostingDestinationCountryChange = (
   ...patchHostingDestinationReset(),
 });
 
-export const patchHostingDestinationStartCustomTrail = (
-  draft: Pick<CreateActivityDraft, 'registryPlaceAreaId' | 'customPlaceAreaId'>
+/** Catalogue miss — typed trail + emirate + area + pin. Keeps any State/Area already chosen. */
+export const patchHostingDestinationEnterCustom = (
+  draft: Pick<
+    CreateActivityDraft,
+    'venueCascadeState' | 'registryPlaceAreaId' | 'customPlaceAreaId' | 'customPlaceEmirate'
+  >
 ): Partial<CreateActivityDraft> => ({
   placeLabelSource: 'custom',
   registryPlaceId: null,
+  venueCascadePlaceGroup: '',
   customPlaceAreaId: draft.registryPlaceAreaId ?? draft.customPlaceAreaId,
+  customPlaceEmirate: draft.customPlaceEmirate.trim() || draft.venueCascadeState,
+  trailName: '',
   trailLatitude: null,
   trailLongitude: null,
   meetingLatitude: null,
   meetingLongitude: null,
   meetingPointLabel: '',
+});
+
+export const patchHostingDestinationBackToListed = (): Partial<CreateActivityDraft> => ({
+  placeLabelSource: 'registry',
+  trailName: '',
+  customPlaceImages: [],
+  customPlaceProposedAreaName: '',
+  trailLatitude: null,
+  trailLongitude: null,
+  registryPlaceId: null,
+  venueCascadePlaceGroup: '',
 });
 
 /** Ladder fields when picking a catalog leaf row (search or trail dropdown). */
@@ -90,6 +116,53 @@ export const patchHostingDestinationCatalogLeafLadder = (
 };
 
 /** Map a catalog search hit to hosting draft ladder fields (trail hits use row pick instead). */
+/** Full draft patch when a host picks a catalog leaf (dropdown, search, or map search). */
+export const patchPickHostingCatalogPlace = (
+  draft: CreateActivityDraft,
+  placeId: string,
+  catalogPlaces: PlaceDTO[],
+  areas: AreaPublicDTO[],
+  countryCode: CountryCode = DEFAULT_PLACE_CATALOG_COUNTRY
+): Partial<CreateActivityDraft> => {
+  const place = catalogPlaces.find((item) => item.id === placeId);
+  if (!place) {
+    return {
+      registryPlaceId: placeId,
+      placeLabelSource: 'registry',
+    };
+  }
+  const ladder = patchHostingDestinationCatalogLeafLadder(place, areas, countryCode, catalogPlaces);
+  const basePatch = applyRegistryPlaceToHostingDraft(draft, place);
+  return {
+    ...ladder,
+    ...basePatch,
+    registryPlaceAreaId:
+      basePatch.registryPlaceAreaId ?? ladder.registryPlaceAreaId ?? draft.registryPlaceAreaId,
+  };
+};
+
+/** Optional `registryPlaceAreaId` when the leaf row lacks a persisted area but has coordinates. */
+export const hostingDestinationSearchHitGroupLabel = (
+  hit: PlaceCatalogDestinationSearchHit
+): string => {
+  if (hit.kind === 'trail') return HOSTING_DESTINATION_SEARCH_GROUP_ROUTE;
+  if (hit.kind === 'place') return HOSTING_DESTINATION_SEARCH_GROUP_PLACE;
+  return HOSTING_DESTINATION_SEARCH_GROUP_AREA;
+};
+
+export const enrichHostingCatalogPlacePick = async (
+  place: PlaceDTO,
+  patch: Partial<CreateActivityDraft>
+): Promise<Partial<CreateActivityDraft> | null> => {
+  if (patch.registryPlaceAreaId) return null;
+  const lat = place.latitude;
+  const lng = place.longitude;
+  if (lat == null || lng == null) return null;
+  const published = await fetchPublishedAreas();
+  const inferredAreaId = resolvePublishedAreaIdForPoint(lat, lng, published);
+  return inferredAreaId ? { registryPlaceAreaId: inferredAreaId } : null;
+};
+
 export const applyHostingDestinationSearchHit = (
   hit: PlaceCatalogDestinationSearchHit,
   areas: AreaPublicDTO[],

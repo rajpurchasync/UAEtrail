@@ -6,6 +6,8 @@ import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../../explore/exploreBrowseTaxonomy';
 import { BROWSE_LIST_CLEAR_FILTERS, BROWSE_LIST_EMPTY } from '../browseListCopy';
 import type { BrowseListFilterState } from '../browseListFilters';
+import type { PlaceKind } from '@uaetrail/shared-types';
+import type { ExplorePriceFilter } from '../../explore/exploreOptionalFilters';
 import type { BrowseTripTopicKey } from '../browseListTripTopics';
 import type { ListVenuePlaceTopicKey } from '../listVenuePlaceTopics';
 import type { ExploreActivityDatePreset } from '../../explore/exploreActivityDateFilter';
@@ -60,8 +62,12 @@ type ListExplorerProps = {
   onSortChange: (mode: ListExplorerSortMode) => void;
   showGuestCatalogPreview?: boolean;
   listPanelWidthPx?: number;
-  onToggleTripTopic: (key: BrowseTripTopicKey) => void;
-  onTogglePlaceTopic: (key: ListVenuePlaceTopicKey) => void;
+  onTripTopicsChange: (next: BrowseTripTopicKey[]) => void;
+  onPlaceTopicsChange: (next: ListVenuePlaceTopicKey[]) => void;
+  onPriceChange: (next: ExplorePriceFilter) => void;
+  onHasTripChange: (next: boolean) => void;
+  onFacilityKindsChange: (next: PlaceKind[]) => void;
+  onVenueFiltersChange?: (next: { placeTopics: ListVenuePlaceTopicKey[]; facilityKinds: PlaceKind[] }) => void;
   onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
   onVenueRegionsChange: (regions: string[]) => void;
   /** Standalone `/list` on mobile — Trips/Venues use bottom nav instead of in-page toggle. */
@@ -69,7 +75,7 @@ type ListExplorerProps = {
 };
 
 const thumbGridClass = (sideMap: boolean) =>
-  `list-explorer-thumb-grid grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-2 ${
+  `list-explorer-thumb-grid grid grid-cols-1 gap-3 ${
     sideMap ? 'list-explorer-thumb-grid--side-map' : ''
   }`;
 
@@ -172,9 +178,9 @@ const ListExplorerDateGroups = ({
 
 const ThumbnailSkeleton = ({ compactThumbGrid = false }: { compactThumbGrid?: boolean }) => (
   <div className={thumbGridClass(compactThumbGrid)} aria-hidden>
-    {Array.from({ length: 6 }, (_, index) => (
-      <div key={index} className="overflow-hidden rounded-2xl bg-neutral-200">
-        <div className="h-[9.75rem] animate-pulse bg-neutral-300/80 sm:h-[8.75rem] md:h-32" />
+    {Array.from({ length: 4 }, (_, index) => (
+      <div key={index} className="overflow-hidden rounded-xl bg-neutral-200">
+        <div className="aspect-[5/2] w-full animate-pulse bg-neutral-300/80" />
         <div className="space-y-1 p-2">
           <div className="h-2.5 w-4/5 animate-pulse rounded bg-neutral-300/80" />
           <div className="h-3 w-full animate-pulse rounded bg-neutral-300/70" />
@@ -215,8 +221,12 @@ export const ListExplorer = ({
   onSortChange,
   showGuestCatalogPreview = false,
   listPanelWidthPx,
-  onToggleTripTopic,
-  onTogglePlaceTopic,
+  onTripTopicsChange,
+  onPlaceTopicsChange,
+  onPriceChange,
+  onHasTripChange,
+  onFacilityKindsChange,
+  onVenueFiltersChange,
   onActivityDatePresetChange,
   onVenueRegionsChange,
   hideBucketToggleOnMobile = false,
@@ -234,7 +244,7 @@ export const ListExplorer = ({
   const locationEnabled = bucket === 'places' || listExplorerSortUsesViewerLocation(sort);
   const { fix: viewer, pending: locationPending, denied: locationDenied } = useViewerLocation(locationEnabled);
   const { units } = useDisplayPreferences();
-  const showDistance = bucket === 'places' || listExplorerSortShowsDistance(sort);
+  const showDistance = bucket !== 'places' && listExplorerSortShowsDistance(sort);
   const listSections = useMemo(() => {
     const sorted = sortListExplorerCards(cards, sort, viewer);
     return groupListExplorerSections(sorted, sort, viewer);
@@ -283,8 +293,12 @@ export const ListExplorer = ({
         locationDenied={locationDenied}
         filters={filters}
         regions={regions}
-        onToggleTripTopic={onToggleTripTopic}
-        onTogglePlaceTopic={onTogglePlaceTopic}
+        onTripTopicsChange={onTripTopicsChange}
+        onPlaceTopicsChange={onPlaceTopicsChange}
+        onPriceChange={onPriceChange}
+        onHasTripChange={onHasTripChange}
+        onFacilityKindsChange={onFacilityKindsChange}
+        onVenueFiltersChange={onVenueFiltersChange}
         onActivityDatePresetChange={onActivityDatePresetChange}
         onVenueRegionsChange={onVenueRegionsChange}
         hideBucketToggleOnMobile={hideBucketToggleOnMobile}
@@ -296,7 +310,7 @@ export const ListExplorer = ({
         className={`${APP_SCROLL_BODY_CLASS} min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain ${
           embedded
             ? 'pb-6'
-            : 'pb-[calc(var(--bottom-nav-height,56px)+var(--safe-bottom,0px)+24px)]'
+            : 'pb-[calc(var(--bottom-nav-height,56px)+var(--safe-bottom,0px)+var(--explore-map-fab-inset,20px)+3.75rem)]'
         }`}
       >
         <div

@@ -56,6 +56,40 @@ export const readVenueArabicNameFromTags = (tags?: string[] | null): string | nu
 export const resolvePlaceDisplayTitle = (storedName: string, tags?: string[] | null): string =>
   readVenueEnglishNameFromTags(tags) || storedName.trim() || 'Place';
 
+const FACILITY_TAG_PREFIX = 'facility:';
+
+const AMENITY_CHIP_RULES: ReadonlyArray<{ test: RegExp; label: string }> = [
+  { test: /toilet|restroom|\bwc\b/i, label: 'Toilet' },
+  { test: /fuel|petrol|\bgas\b|adnoc/i, label: 'Fuel' },
+  { test: /shop|store|market/i, label: 'Shop' },
+];
+
+const titleCaseAmenity = (value: string): string => {
+  const short = value.split(/\s+at\s+|\s+~/i)[0]?.trim() || value;
+  const clipped = short.length > 22 ? `${short.slice(0, 20).trim()}…` : short;
+  return clipped.charAt(0).toUpperCase() + clipped.slice(1);
+};
+
+/** On-site `facility:` tags as short list chips — not `nearby:` distances. */
+export const readVenueAmenityChipLabels = (tags?: string[] | null): string[] => {
+  if (!tags?.length) return [];
+  const labels: string[] = [];
+  const seen = new Set<string>();
+  for (const raw of tags) {
+    const tag = raw.trim();
+    if (!tag.toLowerCase().startsWith(FACILITY_TAG_PREFIX)) continue;
+    const value = tag.slice(FACILITY_TAG_PREFIX.length).trim();
+    if (!value) continue;
+    const rule = AMENITY_CHIP_RULES.find((entry) => entry.test.test(value));
+    const label = rule?.label ?? titleCaseAmenity(value);
+    const key = label.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    labels.push(label);
+  }
+  return labels.slice(0, 4);
+};
+
 /** Explore peek / list: English title when available, Arabic (+ region) as subtitle. */
 export const resolveVenueExploreLabels = (
   storedName: string,

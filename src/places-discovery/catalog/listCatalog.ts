@@ -1,11 +1,21 @@
-import { isTimeBoundExploreMapItem, type ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { isGeographyMapSource } from '@uaetrail/shared-types';
+import {
+  isFacilityMapSource,
+  isFacilityPlaceKind,
+  isGeographyMapSource,
+  isTimeBoundExploreMapItem,
+  type ExploreMapItemDTO,
+} from '@uaetrail/shared-types';
 import { sortExploreActivities, sortExploreVenues } from '../../explore/exploreListSort';
 import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
 
-/** Place/shop/agency rows in full-screen list discovery (broader than map `isPlacesMapItem`). */
-export const isListCatalogPlaceItem = (item: ExploreMapItemDTO): boolean =>
-  isGeographyMapSource(item.source) || item.source === 'shop' || item.source === 'agency';
+const isFacilityCatalogItem = (item: ExploreMapItemDTO): boolean =>
+  isFacilityMapSource(item.source) || Boolean(item.placeKind && isFacilityPlaceKind(item.placeKind));
+
+/** Place/shop/agency rows in list discovery — amenities are chips on parent places, not rows. */
+export const isListCatalogPlaceItem = (item: ExploreMapItemDTO): boolean => {
+  if (isFacilityCatalogItem(item)) return false;
+  return isGeographyMapSource(item.source) || item.source === 'shop' || item.source === 'agency';
+};
 
 /** Region chip — activities pass through; catalog places must match. */
 export const filterListCatalogByVenueRegions = (

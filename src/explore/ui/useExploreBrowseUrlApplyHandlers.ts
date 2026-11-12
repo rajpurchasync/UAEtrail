@@ -30,6 +30,8 @@ import type { ExplorePinKindFilter } from '../explorePinKindFilter';
 import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
 import type { ExploreBrowseListMode } from '../exploreBrowseUrlSync';
+import type { PlaceKind } from '@uaetrail/shared-types';
+import type { ExplorePriceFilter, ExploreVenueFilterPatch } from '../exploreOptionalFilters';
 import {
   effectivePlaceMapTopics,
   effectiveTripMapTopics,
@@ -63,6 +65,9 @@ type Setters = {
   setSearchScope: (v: ExploreSearchScopeKey | null) => void;
   setTripMapTopics: (v: TripMapTopicKey[]) => void;
   setPlaceMapTopics: (v: PlaceMapTopicKey[]) => void;
+  setPriceFilter: (v: ExplorePriceFilter) => void;
+  setHasTrip: (v: boolean) => void;
+  setFacilityKinds: (v: PlaceKind[]) => void;
 };
 
 export type UseExploreBrowseUrlApplyHandlersArgs = {
@@ -125,6 +130,7 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
     const only = topics[0];
     if (only === 'shops') return 'shop';
     if (only === 'facilities') return 'facilities';
+    if (only === 'others') return 'event';
     return only;
   };
 
@@ -538,6 +544,105 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
     [clearSelection, listOpen, setters, syncExploreUrl]
   );
 
+  const applyTripMapTopics = useCallback(
+    (next: TripMapTopicKey[]) => {
+      const nextActivityFilter = tripTopicToActivityFilter(next);
+      setters.setTripMapTopics(next);
+      setters.setMapFilter('all');
+      setters.setActivityFilter(nextActivityFilter);
+      setters.setBuddySubtype('all');
+      setters.setOutingTopic('all');
+      clearSelection();
+      syncExploreUrl({
+        filter: 'all',
+        tripMapTopics: next,
+        activityFilter: nextActivityFilter,
+        buddySubtype: 'all',
+        outingTopic: 'all',
+        list: listOpen,
+      });
+    },
+    [clearSelection, listOpen, setters, syncExploreUrl]
+  );
+
+  const applyPlaceMapTopics = useCallback(
+    (next: PlaceMapTopicKey[]) => {
+      const nextVenueFilter = placeTopicToVenueFilter(next);
+      setters.setPlaceMapTopics(next);
+      setters.setMapFilter('all');
+      setters.setVenueFilter(nextVenueFilter);
+      clearSelection();
+      syncExploreUrl({
+        filter: 'all',
+        placeMapTopics: next,
+        placesFilter: nextVenueFilter,
+        list: listOpen,
+      });
+    },
+    [clearSelection, listOpen, setters, syncExploreUrl]
+  );
+
+  const applyVenueFilters = useCallback(
+    (next: ExploreVenueFilterPatch) => {
+      const nextVenueFilter = placeTopicToVenueFilter(next.placeTopics);
+      setters.setPlaceMapTopics(next.placeTopics);
+      setters.setFacilityKinds(next.facilityKinds);
+      setters.setMapFilter('all');
+      setters.setVenueFilter(nextVenueFilter);
+      clearSelection();
+      syncExploreUrl({
+        filter: 'all',
+        placeMapTopics: next.placeTopics,
+        placesFilter: nextVenueFilter,
+        facilityKinds: next.facilityKinds,
+        list: listOpen,
+      });
+    },
+    [clearSelection, listOpen, setters, syncExploreUrl]
+  );
+
+  const applyPriceFilter = useCallback(
+    (next: ExplorePriceFilter) => {
+      setters.setPriceFilter(next);
+      clearSelection();
+      syncExploreUrl({ priceFilter: next, list: listOpen });
+    },
+    [clearSelection, listOpen, setters, syncExploreUrl]
+  );
+
+  const applyHasTrip = useCallback(
+    (next: boolean) => {
+      setters.setHasTrip(next);
+      clearSelection();
+      syncExploreUrl({ hasTrip: next, list: listOpen });
+    },
+    [clearSelection, listOpen, setters, syncExploreUrl]
+  );
+
+  const applyFacilityKinds = useCallback(
+    (next: PlaceKind[]) => {
+      setters.setFacilityKinds(next);
+      if (next.length > 0) {
+        const current = effectivePlaceMapTopics(mapFilter, venueFilter, placeMapTopics);
+        if (!current.includes('facilities')) {
+          applyPlaceMapTopics([...current, 'facilities']);
+        }
+      }
+      clearSelection();
+      syncExploreUrl({ facilityKinds: next, list: listOpen });
+    },
+    [
+      applyPlaceMapTopics,
+      clearSelection,
+      listOpen,
+      mapFilter,
+      placeMapTopics,
+      setters,
+      syncExploreUrl,
+      venueFilter,
+    ]
+  );
+
   const commitExploreSearch = useCallback(
     (scope?: ExploreSearchScopeKey | null) => {
       if (scope === 'facilities') return;
@@ -615,5 +720,11 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
     commitExploreSearch,
     toggleTripMapTopic,
     togglePlaceMapTopic,
+    applyTripMapTopics,
+    applyPlaceMapTopics,
+    applyVenueFilters,
+    applyPriceFilter,
+    applyHasTrip,
+    applyFacilityKinds,
   };
 };

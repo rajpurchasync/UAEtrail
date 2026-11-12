@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { CreateFlowStepId } from '../hostingFlowEngine';
 import { createFlowStepTitle } from '../hostingFlowEngine';
-import { FlowSheetChrome } from '../ExploreFlowSheetChrome';
+import { ComposeWizardStepChrome } from '../../create/ComposeWizardShell';
 import type { HostingWizardContext } from './hostingWizardContext';
 import { renderHostingWizardStep } from './renderHostingWizardStep';
 import { renderHostingWizardStepSlice } from './steps';
@@ -21,7 +21,7 @@ const renderOneHostingStep = (ctx: HostingWizardContext): ReactNode => {
 const renderWideHostingPage = (ctx: HostingWizardContext, page: CreateFlowStepId[]): ReactNode => {
   const last = page[page.length - 1];
   return (
-    <FlowSheetChrome title={ctx.widePageTitle} onClose={ctx.handleClose} onBack={ctx.goBack}>
+    <ComposeWizardStepChrome title={ctx.widePageTitle} onClose={ctx.handleClose} onBack={ctx.goBack}>
       {page.map((id, index) => (
         <HostingWizardEmbedProvider key={id} embedded>
           <section className={index === 0 ? undefined : 'mt-5 border-t border-neutral-100 pt-4'}>
@@ -36,7 +36,7 @@ const renderWideHostingPage = (ctx: HostingWizardContext, page: CreateFlowStepId
       ))}
       <HostingWizardStepError error={ctx.error} />
       {last === 'publish' ? null : <HostingWizardStepNext onClick={ctx.goNext} />}
-    </FlowSheetChrome>
+    </ComposeWizardStepChrome>
   );
 };
 

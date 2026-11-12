@@ -36,7 +36,7 @@ export const ExploreMapControlToolbar = ({
 }: ExploreMapControlToolbarProps) => (
   <div
     className={`pointer-events-auto flex flex-col items-center ${
-      layout === 'tray' ? `gap-0.5 ${EXPLORE_MAP_FROST_TRAY}` : 'gap-2'
+      layout === 'tray' ? `gap-0.5 ${EXPLORE_MAP_FROST_TRAY}` : 'gap-[var(--explore-map-mobile-control-gap)]'
     }`}
     role="toolbar"
     aria-label="Map controls"

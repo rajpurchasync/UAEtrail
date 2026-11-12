@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { FlowSheetChrome } from '../ui/ExploreFlowSheetChrome';
+import { ComposeWizardStepChrome } from './ComposeWizardShell';
 
 type ComposeWidePageSlotProps = {
   stepId: string;
@@ -38,8 +38,8 @@ export const ComposeWidePageSlot = ({
   );
   if (!first) return body;
   return (
-    <FlowSheetChrome title={pageSteps.length > 1 ? pageTitle : title} onClose={onClose} onBack={onBack}>
+    <ComposeWizardStepChrome title={pageSteps.length > 1 ? pageTitle : title} onClose={onClose} onBack={onBack}>
       {body}
-    </FlowSheetChrome>
+    </ComposeWizardStepChrome>
   );
 };

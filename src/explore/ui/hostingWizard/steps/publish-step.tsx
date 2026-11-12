@@ -28,7 +28,7 @@ import type { HostingWizardContext } from '../hostingWizardContext';
 import { formatHostingWhenPreview } from '../../hostingScheduleDraft';
 import { HostingPublishAsField } from '../../HostingPublishAsField';
 import { HostingGuidesField } from '../../HostingGuidesField';
-import { RidesharePublishLogisticsPreview } from '../../hostingRideshareWizardSteps';
+import { RidesharePublishLogisticsPreview } from '../bodies/rideshare';
 
 export function renderPublishStep(ctx: HostingWizardContext): ReactNode | null {
   const {

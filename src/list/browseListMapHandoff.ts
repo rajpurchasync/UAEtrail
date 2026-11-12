@@ -98,7 +98,6 @@ export const serializeBrowseListToExploreSearchParams = (
 ): URLSearchParams => {
   const params = serializeBrowseListSearchParams(state, regions);
   params.delete(LIST_CAT_PARAM);
-  params.delete('price');
 
   if (state.when === 'weekend') {
     params.delete('when');

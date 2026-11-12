@@ -100,7 +100,7 @@ export const EXPLORE_FILTER_PILL = {
 } as const;
 
 /** Label under emoji on compact map/list filter grids. */
-export const EXPLORE_COMPACT_PILL_LABEL = 'w-full truncate text-[9px] font-bold leading-tight';
+export const EXPLORE_COMPACT_PILL_LABEL = 'w-full truncate text-xs font-bold leading-tight';
 
 /** Equal-width pill grid (pass column count via style). */
 export const EXPLORE_COMPACT_PILL_GRID = 'grid w-full min-w-0 gap-0.5';
@@ -236,10 +236,10 @@ export const EXPLORE_FLOATING_CONTROL =
 
 /** Locate / layer / style icons floating on the map (mobile + desktop) — theme via `.explore-map-overlay-icon-btn`. */
 export const EXPLORE_MAP_OVERLAY_ICON_BTN =
-  'explore-map-overlay-icon-btn pointer-events-auto inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition active:scale-95 disabled:opacity-60';
+  'explore-map-overlay-icon-btn pointer-events-auto inline-flex h-[var(--explore-map-overlay-size)] w-[var(--explore-map-overlay-size)] shrink-0 items-center justify-center rounded-full border transition active:scale-95 disabled:opacity-60 md:h-11 md:w-11';
 
 /** Per-icon frost on the map (no shared toolbar tray). */
-export const EXPLORE_MAP_OVERLAY_STANDALONE = 'explore-map-overlay-icon-btn--standalone';
+export const EXPLORE_MAP_OVERLAY_STANDALONE = 'explore-map-overlay-icon-btn--standalone border-0';
 
 export const EXPLORE_MAP_OVERLAY_ICON =
   'h-6 w-6 shrink-0';
@@ -247,7 +247,23 @@ export const EXPLORE_MAP_OVERLAY_ICON =
 /** Stroke for map chrome glyphs — sits with 12px chrome labels. */
 export const EXPLORE_MAP_OVERLAY_ICON_STROKE = 1.5;
 
-export const EXPLORE_MAP_OVERLAY_ICON_BTN_SIZE = 'h-11 w-11';
+export const EXPLORE_MAP_OVERLAY_ICON_BTN_SIZE =
+  'h-[var(--explore-map-overlay-size)] w-[var(--explore-map-overlay-size)] md:h-11 md:w-11';
+
+/** Shared height + type — map List/Create, list Map/Create, hub FABs. */
+const MOBILE_DOCK_PILL =
+  'inline-flex h-[var(--mobile-dock-pill-height)] shrink-0 items-center justify-center gap-1.5 rounded-full px-4 text-sm font-bold leading-none transition active:scale-[0.98]';
+
+export const MOBILE_DOCK_SECONDARY = `${MOBILE_DOCK_PILL} ${EXPLORE_MAP_CHROME_FROST} ring-1 ring-black/5 text-neutral-900 hover:bg-white/80`;
+
+export const MOBILE_DOCK_PRIMARY =
+  `${MOBILE_DOCK_PILL} bg-emerald-600 text-white shadow-[0_4px_20px_rgba(5,150,105,.45)] hover:bg-emerald-700`;
+
+export const MOBILE_DOCK_ICON = 'h-5 w-5 shrink-0';
+
+export const EXPLORE_MAP_MOBILE_DOCK_SECONDARY = MOBILE_DOCK_SECONDARY;
+export const EXPLORE_MAP_MOBILE_DOCK_PRIMARY = MOBILE_DOCK_PRIMARY;
+export const EXPLORE_MAP_MOBILE_DOCK_ICON = MOBILE_DOCK_ICON;
 
 /** Map filter pill when active — Places layer uses sky-forward chips. */
 export const exploreMapPlacesFilterActiveClass = (key: MapFilterKey): string => {
@@ -268,7 +284,7 @@ export const exploreMapPlacesFilterActiveClass = (key: MapFilterKey): string => 
 };
 
 /** Floating map chrome label — matches bottom nav / Find crew (12px semibold). */
-export const EXPLORE_MAP_CHROME_LABEL = 'text-[12px] font-semibold leading-none';
+export const EXPLORE_MAP_CHROME_LABEL = 'text-[0.8125rem] font-semibold leading-none';
 
 /** Shared frost shell — sub-filter row and map control toolbar. */
 export const EXPLORE_MAP_FROST_TRAY =
@@ -361,7 +377,7 @@ export const exploreMapChildChipClass = (
 export const EXPLORE_MAP_FILTER_ALL_CHIP_CLASS = 'lg:min-w-[6.5rem]';
 
 const MAP_MOBILE_FLOAT_CHIP_BASE =
-  'inline-flex h-8 max-w-[9.5rem] shrink-0 items-center justify-center gap-1 rounded-full px-2.5 py-0 text-[11px] font-semibold leading-none whitespace-nowrap transition [-webkit-tap-highlight-color:transparent] lg:h-9 lg:max-w-none lg:min-h-[2.375rem] lg:gap-1.5 lg:px-3 lg:py-[0.45rem] lg:text-[12px]';
+  'inline-flex h-9 max-w-[10.5rem] shrink-0 items-center justify-center gap-1.5 rounded-full px-3 py-0 text-xs font-semibold leading-none whitespace-nowrap transition [-webkit-tap-highlight-color:transparent] lg:max-w-none lg:min-h-[2.375rem]';
 
 /** Icon scale for mobile map float pills (matches `.explore-filter-mark--chip`). */
 export const EXPLORE_MAP_MOBILE_FLOAT_CHIP_MARK = 'explore-filter-mark--chip';
@@ -385,7 +401,7 @@ export const exploreMapMobileFloatChipClass = (
 
 export const exploreMapScopeSegmentClass = (selected: boolean, layer: 'activity' | 'places'): string => {
   const base =
-    'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold leading-none transition [-webkit-tap-highlight-color:transparent]';
+    'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold leading-none transition [-webkit-tap-highlight-color:transparent]';
   if (!selected) return `${base} text-neutral-700 hover:bg-white/80`;
   return layer === 'places'
     ? `${base} bg-sky-600 text-white shadow-sm shadow-sky-900/20`
@@ -395,7 +411,7 @@ export const exploreMapScopeSegmentClass = (selected: boolean, layer: 'activity'
 /** Mobile explore — offsets for floating map chrome below the solid header. */
 export const EXPLORE_MOBILE_MAP_CHROME = {
   filterTop: 'max-lg:top-0',
-  noticeTop: 'max-lg:top-[11.625rem]',
+  noticeTop: 'max-lg:top-[12.5rem]',
 } as const;
 
 /** Bottom sheets over the map (Find crew list, compose peek) — leave filters visible. */

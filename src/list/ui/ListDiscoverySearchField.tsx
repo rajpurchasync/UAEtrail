@@ -24,7 +24,7 @@ type ListDiscoverySearchFieldProps = {
   compactTop?: boolean;
   hideMapLink?: boolean;
   className?: string;
-  /** Filters control — rendered beside search (standalone mobile list). */
+  /** Filters control — trailing icon inside the search shell. */
   filterSlot?: ReactNode;
   placeholder?: string;
   /** When false, Enter commits query only — no multi-scope dropdown (e.g. Buddies category). */
@@ -93,54 +93,57 @@ export const ListDiscoverySearchField = ({
         }}
       >
         <div ref={anchorRef} className="relative z-40 min-w-0 flex-1">
-          <label className={`w-full ${LIST_SEARCH.shell}`}>
-            <button
-              type="button"
-              className="shrink-0 rounded-full p-0.5 text-neutral-400 active:bg-neutral-100"
-              aria-label="Open search"
-              onClick={() => inputRef.current?.focus()}
-            >
-              <Search className={LIST_SEARCH.icon} aria-hidden />
-            </button>
-            <input
-              ref={inputRef}
-              value={query}
-              onChange={(event) => handleQueryChange(event.target.value)}
-              onFocus={() => {
-                if (query.trim().length > 0) setPanelOpen(true);
-              }}
-              onBlur={() => onQuerySync?.()}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                  event.preventDefault();
-                  commitSearch(null);
-                }
-              }}
-              placeholder={placeholder}
-              className={LIST_SEARCH.input}
-              enterKeyHint="search"
-              autoComplete="off"
-              autoCorrect="off"
-              spellCheck={false}
-              aria-label="Search"
-              aria-expanded={panelOpen}
-              aria-haspopup="dialog"
-            />
-            {hasQuery ? (
+          <div className={`w-full ${LIST_SEARCH.shell}`}>
+            <label className="flex min-w-0 flex-1 items-center gap-2">
               <button
                 type="button"
-                onClick={() => {
-                  onQueryChange('');
-                  onClearQuery?.();
-                  setPanelOpen(false);
-                }}
-                className="shrink-0 rounded-full p-0.5 text-neutral-500 hover:text-neutral-800"
-                aria-label="Clear search"
+                className="shrink-0 rounded-full p-0.5 text-neutral-400 active:bg-neutral-100"
+                aria-label="Open search"
+                onClick={() => inputRef.current?.focus()}
               >
-                <X className="h-4 w-4" aria-hidden />
+                <Search className={LIST_SEARCH.icon} aria-hidden />
               </button>
-            ) : null}
-          </label>
+              <input
+                ref={inputRef}
+                value={query}
+                onChange={(event) => handleQueryChange(event.target.value)}
+                onFocus={() => {
+                  if (query.trim().length > 0) setPanelOpen(true);
+                }}
+                onBlur={() => onQuerySync?.()}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault();
+                    commitSearch(null);
+                  }
+                }}
+                placeholder={placeholder}
+                className={LIST_SEARCH.input}
+                enterKeyHint="search"
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck={false}
+                aria-label="Search"
+                aria-expanded={panelOpen}
+                aria-haspopup="dialog"
+              />
+              {hasQuery ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onQueryChange('');
+                    onClearQuery?.();
+                    setPanelOpen(false);
+                  }}
+                  className="shrink-0 rounded-full p-0.5 text-neutral-500 hover:text-neutral-800"
+                  aria-label="Clear search"
+                >
+                  <X className="h-4 w-4" aria-hidden />
+                </button>
+              ) : null}
+            </label>
+            {filterSlot}
+          </div>
           {showScopePanel ? (
             <div
               className="absolute inset-x-0 top-full z-[100] mt-1.5 overflow-hidden rounded-2xl border border-neutral-200/90 bg-white shadow-[0_12px_40px_rgba(15,23,42,.18)]"
@@ -158,7 +161,6 @@ export const ListDiscoverySearchField = ({
             </div>
           ) : null}
         </div>
-        {filterSlot}
         {hideMapLink ? null : (
           <Link
             to={mapHref}

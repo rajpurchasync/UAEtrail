@@ -35,6 +35,18 @@ describe('list module hygiene', () => {
     expect(experience).toMatch(/ListExplorer/);
     const explorer = readFileSync(join(process.cwd(), 'src/list/explorer/ListExplorer.tsx'), 'utf8');
     expect(explorer).toMatch(/ListGuestCatalogPreviewNotice/);
+    expect(readFileSync(join(process.cwd(), 'src/list/ui/BrowseListMapFab.tsx'), 'utf8')).toMatch(
+      /LIST_MAP_FLOAT/
+    );
+    expect(readFileSync(join(process.cwd(), 'src/list/ui/BrowseListCreateFab.tsx'), 'utf8')).toMatch(
+      /LIST_CREATE_FAB/
+    );
+    expect(readFileSync(join(process.cwd(), 'src/list/listChromeTheme.ts'), 'utf8')).toMatch(
+      /MOBILE_DOCK_PRIMARY/
+    );
+    expect(readFileSync(join(process.cwd(), 'src/list/ui/ListGuestCatalogPreviewNotice.tsx'), 'utf8')).toMatch(
+      /GuestCatalogPreviewBanner/
+    );
     expect(experience).toMatch(/showGuestCatalogPreview=\{!user && !embeddedOnExplore/);
     expect(experience).toMatch(/countListExplorerFilters/);
     expect(experience).toMatch(/listExplorerEntityLinkState/);
@@ -60,23 +72,72 @@ describe('list module hygiene', () => {
     expect(gone.filter((file) => existsSync(join(process.cwd(), file)))).toEqual([]);
   });
 
-  it('thumbnail grid is at least two columns on mobile', () => {
+  it('thumbnail grid is one column for trip and venue listing cards', () => {
     const explorer = readFileSync(join(process.cwd(), 'src/list/explorer/ListExplorer.tsx'), 'utf8');
-    expect(explorer).toMatch(/grid-cols-2/);
+    expect(explorer).toMatch(/grid-cols-1/);
+    expect(explorer).not.toMatch(/grid-cols-2/);
     expect(explorer).toMatch(/ListExplorerThumbnailCard/);
     expect(explorer).toMatch(/ListExplorerFilterFab/);
   });
 
   it('puts type icon on the thumbnail and keeps search in the header', () => {
     const thumb = readFileSync(join(process.cwd(), 'src/list/explorer/ListExplorerThumbnailCard.tsx'), 'utf8');
+    const listing = readFileSync(
+      join(process.cwd(), 'src/list/explorer/ListExplorerVenueListingCard.tsx'),
+      'utf8'
+    );
+    const tripListing = readFileSync(
+      join(process.cwd(), 'src/list/explorer/ListExplorerTripListingCard.tsx'),
+      'utf8'
+    );
+    const chrome = readFileSync(
+      join(process.cwd(), 'src/list/explorer/listExplorerListingChrome.tsx'),
+      'utf8'
+    );
     const header = readFileSync(join(process.cwd(), 'src/list/explorer/ListExplorerHeader.tsx'), 'utf8');
-    expect(thumb).toMatch(/DiscoveryBrowsePosterBanner/);
-    expect(thumb).toMatch(/meta\.title/);
+    expect(thumb).toMatch(/ListExplorerVenueListingCard/);
+    expect(thumb).toMatch(/ListExplorerTripListingCard/);
+    expect(chrome).toMatch(/ShareButton/);
+    expect(chrome).toMatch(/iconOnly/);
+    expect(chrome).toMatch(/aspect-\[5\/2\]/);
+    expect(chrome).toMatch(/rounded-xl/);
+    expect(chrome).toMatch(/rounded-\[8px\]/);
+    expect(listing).toMatch(/typeIconBare/);
+    expect(listing).toMatch(/ExploreWishlistSaveButton/);
+    expect(listing).toMatch(/LIST_FEED_CTA_GET_DIRECTIONS/);
+    expect(listing).toMatch(/LIST_FEED_CTA_WISHLIST/);
+    expect(listing).toMatch(/LIST_EXPLORER_LISTING_FOOTER/);
+    expect(listing).toMatch(/compact/);
+    expect(listing).toMatch(/overlayContent/);
+    expect(listing).toMatch(/resolveListVenueListingCopy/);
+    expect(listing).toMatch(/scheduleHint/);
+    expect(listing).toMatch(/schedulePath/);
+    expect(listing).toMatch(/TitleRating/);
+    expect(listing).not.toMatch(/\bNew\b/);
+    expect(tripListing).toMatch(/typeIconBare/);
+    expect(tripListing).toMatch(/overlayContent/);
+    expect(tripListing).toMatch(/hideHostBand/);
+    expect(tripListing).toMatch(/resolveListTripListingCopy/);
+    expect(tripListing).toMatch(/ListExplorerListingPhotoShare/);
+    expect(tripListing).toMatch(/ListExplorerListingJoinFooter/);
+    expect(tripListing).toMatch(/listing.carpool/);
+    expect(tripListing).toMatch(/listing.hostName/);
+    expect(tripListing).toMatch(/LIST_FEED_CTA_CARPOOL|carpool.label/);
+    expect(readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8')).toMatch(
+      /ListFeedActionsProvider/
+    );
+    expect(readFileSync(join(process.cwd(), 'src/list/ui/ListFeedWireFooterButtons.tsx'), 'utf8')).toMatch(
+      /listing/
+    );
     const banner = readFileSync(
       join(process.cwd(), 'src/list/explorer/DiscoveryBrowsePosterBanner.tsx'),
       'utf8'
     );
     expect(banner).toMatch(/DiscoveryCardTypeIcon/);
+    expect(banner).toMatch(/typeIconBare/);
+    expect(banner).toMatch(/showOverlayMeta/);
+    expect(banner).toMatch(/overlayContent/);
+    expect(banner).toMatch(/hideHostBand/);
     expect(banner).toMatch(/SecureAvatar/);
     expect(banner).toMatch(/meta\.price/);
     expect(readFileSync(join(process.cwd(), 'src/list/explorer/listExplorerCardMeta.ts'), 'utf8')).toMatch(
@@ -84,6 +145,11 @@ describe('list module hygiene', () => {
     );
     expect(thumb).not.toMatch(/listTitle \|\| card\.headline/);
     expect(header).toMatch(/ListDiscoverySearchField/);
+    expect(header).toMatch(/filterSlot/);
+    expect(header).toMatch(/mt-2\.5/);
+    const searchField = readFileSync(join(process.cwd(), 'src/list/ui/ListDiscoverySearchField.tsx'), 'utf8');
+    expect(searchField).toMatch(/LIST_SEARCH\.shell/);
+    expect(searchField.indexOf('{filterSlot}')).toBeGreaterThan(searchField.indexOf('LIST_SEARCH.shell'));
     expect(header).toMatch(/stickySearch/);
     expect(header).toMatch(/ListExplorerViewSwitch/);
     expect(header).toMatch(/ListExplorerBucketToggle/);

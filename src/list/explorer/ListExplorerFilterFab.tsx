@@ -3,7 +3,7 @@ import { SlidersHorizontal } from 'lucide-react';
 import type { BrowseListFilterState } from '../browseListFilters';
 import type { ListExplorerBucket } from './listExplorerBucket';
 import { ListExplorerFilterPop, type ListFilterPopFixedLayout } from './ListExplorerFilterPop';
-import { LIST_FILTER_FAB_Z, LIST_SEARCH } from '../listChromeTheme';
+import { LIST_FILTER_FAB_Z } from '../listChromeTheme';
 import {
   LIST_FILTER_FAB_DRAG_PX,
   LIST_FILTER_FAB_EDGE,
@@ -185,8 +185,10 @@ export const ListExplorerFilterFab = ({
   const positionStyle = live ? { top: live.y, left: live.x } : snapped;
 
   const triggerClass = inline
-    ? `relative ${LIST_SEARCH.sideAction} shrink-0 ${
-        filterCount > 0 ? 'text-emerald-700 ring-1 ring-emerald-500/30' : 'text-neutral-700'
+    ? `relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition ${
+        filterCount > 0
+          ? 'text-emerald-700 hover:bg-emerald-50'
+          : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800'
       }`
     : `inline-flex h-12 w-12 items-center justify-center rounded-full border shadow-[0_4px_20px_rgba(15,23,42,.18)] ring-1 ring-black/[0.06] transition md:h-9 md:w-9 ${
         filterCount > 0
@@ -215,7 +217,10 @@ export const ListExplorerFilterFab = ({
       onClick={inline ? () => setOpen((prev) => !prev) : undefined}
       className={triggerClass}
     >
-      <SlidersHorizontal className="h-5 w-5 stroke-[2.25] md:h-4 md:w-4" aria-hidden />
+      <SlidersHorizontal
+        className={inline ? 'h-4 w-4 stroke-[2.25]' : 'h-5 w-5 stroke-[2.25] md:h-4 md:w-4'}
+        aria-hidden
+      />
       {badge}
     </button>
   );

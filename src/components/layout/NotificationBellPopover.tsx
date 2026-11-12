@@ -30,7 +30,6 @@ const UNREAD_PREVIEW_LIMIT = 12;
 
 export const NotificationBellPopover = ({
   tone = 'default',
-  triggerVariant = 'tab',
   className = '',
   viewAllPath = '/notifications',
   preferAdminRoutes = false,
@@ -131,7 +130,7 @@ export const NotificationBellPopover = ({
       ? 'text-white bg-white/15 backdrop-blur-sm border border-white/25 hover:bg-white/25'
       : 'text-neutral-600 bg-transparent border border-transparent hover:bg-neutral-100 hover:text-neutral-900';
 
-  const bellSizeClass = triggerVariant === 'desktop' ? 'h-10 w-10' : 'h-11 w-11';
+  const bellSizeClass = 'h-10 w-10';
 
   return (
     <div ref={rootRef} className={`relative shrink-0 ${className}`}>
@@ -150,7 +149,7 @@ export const NotificationBellPopover = ({
         aria-expanded={open}
         aria-haspopup="dialog"
       >
-        <Bell className={triggerVariant === 'desktop' ? 'w-5 h-5' : 'w-5 h-5'} strokeWidth={2.25} />
+        <Bell className="h-5 w-5" strokeWidth={2.25} />
         {user && badgeUnreadCount > 0 && (
           <span className="absolute top-1 right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">
             {badgeUnreadCount > 99 ? '99+' : badgeUnreadCount}
@@ -170,7 +169,7 @@ export const NotificationBellPopover = ({
           <div
             role="dialog"
             aria-label="Unread notifications"
-            className="fixed z-[1300] left-3 right-3 top-[calc(var(--safe-top)+3.25rem)] max-h-[min(70dvh,28rem)] flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl md:absolute md:left-auto md:right-0 md:top-full md:mt-2 md:w-96 md:max-w-[calc(100vw-2rem)]"
+            className="fixed z-[1300] left-3 right-3 top-[calc(var(--safe-top)+3rem)] max-h-[min(70dvh,28rem)] flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl md:absolute md:left-auto md:right-0 md:top-full md:mt-2 md:w-96 md:max-w-[calc(100vw-2rem)]"
           >
             <div className="px-4 py-3 border-b flex items-center justify-between bg-gray-50/70 shrink-0">
               <div>

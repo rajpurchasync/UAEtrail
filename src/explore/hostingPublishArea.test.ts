@@ -42,7 +42,7 @@ describe('validateHostingPlaceArea', () => {
     ).toBeNull();
   });
 
-  it('requires pin and a photo; unmatched pins use the spot name as a new area', () => {
+  it('requires name, pin, emirate, and a published area — no photo', () => {
     const draft = {
       ...emptyCreateActivityDraft(),
       kind: 'hiking' as const,
@@ -57,11 +57,10 @@ describe('validateHostingPlaceArea', () => {
           ...draft,
           trailLatitude: 24.8,
           trailLongitude: 56.1,
-          customPlaceImages: ['/media/a.jpg'],
         },
         []
       )
-    ).toBeNull();
+    ).toBe('Select an area.');
     expect(
       validateHostingPlaceArea(
         {
@@ -69,7 +68,6 @@ describe('validateHostingPlaceArea', () => {
           customPlaceAreaId: HATTA_AREA_ID,
           trailLatitude: 24.8,
           trailLongitude: 56.1,
-          customPlaceImages: ['/media/a.jpg'],
         },
         []
       )
@@ -81,11 +79,10 @@ describe('validateHostingPlaceArea', () => {
           customPlaceProposedAreaName: 'Wadi Naqab',
           trailLatitude: 24.8,
           trailLongitude: 56.1,
-          customPlaceImages: ['/media/a.jpg'],
         },
         []
       )
-    ).toBeNull();
+    ).toBe('Select an area.');
   });
 
   it('infers search/Home emirates from the pin and requires a dropdown when unmatched', () => {
@@ -104,8 +101,7 @@ describe('validateHostingPlaceArea', () => {
       trailName: 'Offshore pin',
       trailLatitude: 20,
       trailLongitude: 50,
-      customPlaceProposedAreaName: 'Open water',
-      customPlaceImages: ['/media/a.jpg'],
+      customPlaceAreaId: HATTA_AREA_ID,
     };
     expect(validateHostingPlaceArea(unmatched, [])).toMatch(/Choose the emirate/);
     expect(validateHostingPlaceArea({ ...unmatched, customPlaceEmirate: 'Sharjah' }, [])).toBeNull();
@@ -119,7 +115,7 @@ describe('validateHostingPlaceArea', () => {
           trailName: 'Wadi Al Helo',
           trailLatitude: 24.978,
           trailLongitude: 56.226,
-          customPlaceImages: ['/media/a.jpg'],
+          customPlaceAreaId: HATTA_AREA_ID,
         },
         []
       )
@@ -149,27 +145,26 @@ describe('validateHostingPlaceArea', () => {
 describe('validateHostingPublishArea (legacy shim)', () => {
   it('requires registry place id for public outings', () => {
     const draft = { ...emptyCreateActivityDraft(), kind: 'hiking' as const, joinMode: 'open' as const };
-    expect(validateHostingPublishArea(draft)).toMatch(/catalog place/);
+    expect(validateHostingPublishArea(draft)).toMatch(/listed trail/);
   });
 });
 
 describe('validateSeekingPublishArea', () => {
-  it('requires area and pin on curated step', () => {
+  it('requires a preferred area on the curated step', () => {
     const draft = {
       ...emptySeekingDraft(),
       kind: 'hiking' as const,
-      areaId: HATTA_AREA_ID,
-      areaPinPlaced: false,
+      areaId: null,
     };
-    expect(validateSeekingPublishArea(draft, 'hiking')).toMatch(/pin on the map/);
+    expect(validateSeekingPublishArea(draft, 'hiking')).toMatch(/area you want company in/);
   });
 
-  it('passes when area and pin are set', () => {
+  it('passes area without a destination pin; map visibility is going-from', () => {
     const draft = {
       ...emptySeekingDraft(),
       kind: 'hiking' as const,
       areaId: HATTA_AREA_ID,
-      areaPinPlaced: true,
+      fromPinPlaced: true,
       latitude: 25,
       longitude: 55,
     };

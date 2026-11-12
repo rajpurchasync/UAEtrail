@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { EXPLORE_BRAND_ACTIVE, EXPLORE_FLOW } from '../../../../config/exploreTheme';
+import { EXPLORE_BRAND_ACTIVE } from '../../../../config/exploreTheme';
+import { ComposeMapEntryRow, formatComposeMapCoord } from '../../../create/interactions';
 import { reverseCommunityCity } from '../../../../lib/placeSearch';
 import {
   HOME_START_AREA_NOTE,
@@ -78,10 +79,12 @@ export const HikingStartAreaStep = ({ draft, patchDraft, onPin }: HikingStartAre
 
       <div className="mt-1">
         <p className="mb-2 text-sm text-neutral-600">{HOME_START_PIN_OFFER}</p>
-        <button type="button" onClick={onPin} className={EXPLORE_FLOW.mapPinCard}>
-          <span className="text-sm font-bold text-neutral-900">{HOME_START_PIN_CTA}</span>
-          <span className="text-xs font-semibold text-emerald-800">{named ? 'Edit' : 'Map'}</span>
-        </button>
+        <ComposeMapEntryRow
+          title={HOME_START_PIN_CTA}
+          subtitle={formatComposeMapCoord(draft.latitude, draft.longitude, named)}
+          placed={named}
+          onOpen={onPin}
+        />
       </div>
 
       {locError ? <p className="mt-3 text-sm text-red-700">{locError}</p> : null}

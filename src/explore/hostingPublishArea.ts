@@ -11,19 +11,18 @@ import type { SeekingDraft, SeekingKind } from './ui/seekingFlowEngine';
 import type { CreateActivityDraft } from './ui/hostingFlowEngine';
 
 const PLACE_AREA_REQUIRED =
-  'Choose a catalog place linked to an area, or add a new spot with a pin and a photo for admin review.';
+  'Choose a listed trail, or add a new one with a name, area, and map pin.';
 
 const placeAreaError = (place: PlaceDTO | null | undefined, registryPlaceId: string | null): string => {
   if (place?.name?.trim()) {
-    return `“${place.name.trim()}” isn’t linked to a map area yet. Pick another catalog trail or add your spot via Explore → Add (choose an area first).`;
+    return `“${place.name.trim()}” isn’t linked to a map area yet. Pick another listed trail, or add a new one with a name, area, and map pin.`;
   }
   if (registryPlaceId?.trim()) {
     return 'We couldn’t verify that venue — open the destination step and select your trail again from the catalog list.';
   }
   return PLACE_AREA_REQUIRED;
 };
-const SEEKING_AREA_REQUIRED = 'Choose an area and drop a pin on the map.';
-const SEEKING_AREA_PIN_REQUIRED = 'Drop a pin on the map for the area you selected.';
+const SEEKING_AREA_REQUIRED = 'Choose an area you want company in.';
 
 const RIDESHARE_DESTINATION_REQUIRED =
   'Choose an outing meeting point or an approved catalog place as your ride destination.';
@@ -121,6 +120,7 @@ export const validateCustomVenueDetails = (draft: CreateActivityDraft): string |
   }
   const emirate =
     draft.customPlaceEmirate.trim() ||
+    draft.venueCascadeState.trim() ||
     inferEmirateFromPin(
       draft.trailLatitude,
       draft.trailLongitude,
@@ -129,11 +129,8 @@ export const validateCustomVenueDetails = (draft: CreateActivityDraft): string |
     ) ||
     '';
   if (!emirate) return EMIRATE_REQUIRED;
-  if (!draft.customPlaceAreaId?.trim() && resolveCustomProposedAreaName(draft).length < 2) {
-    return 'Name this spot — we’ll submit it as a new area for admin review.';
-  }
-  if (draft.customPlaceImages.filter((url) => url.trim()).length < 1) {
-    return 'Add at least one photo of this spot.';
+  if (!draft.customPlaceAreaId?.trim() && !draft.registryPlaceAreaId?.trim()) {
+    return 'Select an area.';
   }
   return null;
 };
@@ -153,15 +150,12 @@ export const validateHostingPublishArea = (draft: CreateActivityDraft): string |
 
 export const validateSeekingCuratedAreaStep = (draft: SeekingDraft): string | null => {
   if (!draft.areaId?.trim()) return SEEKING_AREA_REQUIRED;
-  if (!draft.areaPinPlaced || draft.latitude == null || draft.longitude == null) {
-    return SEEKING_AREA_PIN_REQUIRED;
-  }
   return null;
 };
 
-/** Find posts with a map pin need area + pin on the curated-area step. */
+/** Find posts appear on the map from the going-from pin (rideshare also has a to pin). */
 export const seekingPostVisibleOnMap = (draft: SeekingDraft): boolean =>
-  Boolean(draft.areaPinPlaced && draft.areaId?.trim());
+  Boolean(draft.fromPinPlaced && draft.areaId?.trim() && draft.latitude != null && draft.longitude != null);
 
 export const validateSeekingPublishArea = (draft: SeekingDraft, kind: SeekingKind | null): string | null => {
   if (!kind) return null;

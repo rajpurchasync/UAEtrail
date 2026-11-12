@@ -6,14 +6,12 @@ import {
 } from './listVenuePlaceTopics';
 
 describe('listVenuePlaceTopics', () => {
-  it('shows Trail, Camping, Facilities, Shopping, Other', () => {
-    expect(LIST_VENUE_PLACE_TOPIC_FILTERS.map((t) => t.key)).toContain('facilities');
+  it('shows Hiking trail, Camping spots, Hubs', () => {
+    expect(LIST_VENUE_PLACE_TOPIC_FILTERS.map((t) => t.key)).toEqual(['hiking', 'camping', 'others']);
     expect(listVenuePlaceTopicsForUi().map((t) => t.label)).toEqual([
-      'Trail',
-      'Camping',
-      'Facilities',
-      'Shopping',
-      'Other',
+      'Hiking trail',
+      'Camping spots',
+      'Hubs',
     ]);
   });
 

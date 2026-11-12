@@ -48,7 +48,6 @@ describe('composeWideWizard', () => {
         'title',
         'when',
         'curatedArea',
-        'destination',
         'persons',
         'audience',
         'from',

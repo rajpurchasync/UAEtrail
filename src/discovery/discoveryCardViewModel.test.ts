@@ -1,8 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { buildDiscoveryCardViewModel, buildDiscoveryCardViewModelCard } from './discoveryCardViewModel';
 import { buildListFeedCards } from '../list/buildListFeedCards';
 import { buildDiscoveryCardModel } from '../discovery/discoveryCardModel';
-import { hostedExploreMapItem, venueExploreMapItem } from '../explore/exploreMapItemFixtures';
+import {
+  hostedExploreMapItem,
+  seekingExploreMapItem,
+  venueExploreMapItem,
+} from '../explore/exploreMapItemFixtures';
 import { resolveListVenuePosterCopy } from '../list/listVenuePosterPresentation';
 import { buildDiscoveryEnrichedCard } from './buildDiscoveryEnrichedCard';
 import { buildDiscoveryMapListRowCard } from './buildDiscoveryMapListRowCard';
@@ -28,6 +33,40 @@ describe('buildDiscoveryCardViewModel (RF-02)', () => {
     const built = buildDiscoveryCardViewModel(item);
     expect(card.id).toBe(built.card.id);
     expect(card.source).toBe('place');
+  });
+
+  it('stamps hosted outing counts onto venue cards from the map pool', () => {
+    const venue = venueExploreMapItem({
+      id: 'venue:trail-1',
+      locationCard: { id: 'trail-1' } as ExploreMapItemDTO['locationCard'],
+    });
+    const outing = hostedExploreMapItem({
+      date: '2026-11-15',
+      activity: {
+        id: 'act-trail',
+        title: 'Hatta hike',
+        activityType: 'hiking',
+        status: 'published',
+        participationMode: 'rsvp',
+        locationId: 'trail-1',
+        date: '2026-11-15',
+      } as ExploreMapItemDTO['activity'],
+    });
+    const seeking = seekingExploreMapItem({
+      activity: {
+        id: 'act-seek',
+        title: 'Looking for Hatta',
+        activityType: 'hiking',
+        status: 'published',
+        participationMode: 'rsvp',
+        locationId: 'trail-1',
+      } as ExploreMapItemDTO['activity'],
+    });
+    const poster = buildListFeedCards([venue], null, [venue, outing, seeking])[0];
+    expect(poster.venueUpcomingOutingCount).toBe(1);
+    expect(poster.venueNextOutingIso).toBe('2026-11-15');
+    expect(poster.venueNextOutingPath).toBe('/activity/host-1');
+    expect(poster.venueNextOutingExploreItemId).toBe('activity:host-1');
   });
 
   it('buildListFeedCards matches legacy enrich path (RF-02 poster)', () => {

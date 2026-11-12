@@ -24,7 +24,7 @@ const participantIntentFieldsSchema = z.object({
   toLongitude: z.number().min(-180).max(180).optional().nullable(),
   partySize: z.number().int().min(1).max(50),
   comment: z.string().trim().min(3).max(1000),
-  /** Admin-registered area — required with map pin (Find **Area & map pin** step; matching/notifications phased). */
+  /** Admin-registered area (Find preferred-area step). Map pin is going-from, not a trail destination. */
   areaId: z.string().min(1).max(80).optional().nullable(),
 });
 
@@ -32,10 +32,14 @@ const refineParticipantIntent = (
   body: z.infer<typeof participantIntentFieldsSchema>,
   ctx: z.RefinementCtx
 ) => {
-  if ((body.kind === 'hiking' || body.kind === 'camping') && !body.preferredArea?.trim()) {
+  if (
+    (body.kind === 'hiking' || body.kind === 'camping') &&
+    !body.preferredArea?.trim() &&
+    !body.areaId?.trim()
+  ) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: 'Pick a preferred destination.',
+      message: 'Choose a preferred area.',
       path: ['preferredArea'],
     });
   }
@@ -55,7 +59,7 @@ const refineParticipantIntent = (
   if (body.kind === 'event' && (body.latitude == null || body.longitude == null)) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: 'Drop a location pin on the map.',
+      message: 'Drop a going-from pin on the map.',
       path: ['latitude'],
     });
   }

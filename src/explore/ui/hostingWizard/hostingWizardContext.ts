@@ -50,11 +50,12 @@ export type HostingWizardContext = {
   setShowMonthView: (value: boolean | ((prev: boolean) => boolean)) => void;
   hasFromPin: boolean;
   hasToPin: boolean;
-  meetingPointMapOpen: boolean;
-  setMeetingPointMapOpen: (open: boolean) => void;
   setMeetingPickerIntent: (intent: MeetingPointPickerIntent) => void;
-  setWhereMapOpen: (open: boolean) => void;
-  setRouteMapTarget: (target: 'from' | 'to' | null) => void;
+  openGoingFromMap: () => void;
+  openMeetingPointMap: () => void;
+  openDestinationCatalogMap: () => void;
+  openDestinationCustomSpotMap: () => void;
+  openRouteMap: (target: 'from' | 'to') => void;
   selectedKind: CreateActivityKind | null;
   setSelectedKind: (kind: CreateActivityKind | null) => void;
   goNext: () => void;

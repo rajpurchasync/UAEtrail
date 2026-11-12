@@ -9,14 +9,13 @@ import {
   readExploreGuestMapPreviewDismissed,
   writeExploreGuestMapPreviewDismissed,
 } from '../guestMapPreviewPolicy';
-import { List, Plus } from 'lucide-react';
-import { UiTooltip } from '../../components/ui/UiTooltip';
+import { Plus } from 'lucide-react';
 import { isGeographyMapSource, type ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { MapBounds, PlaceMapPin } from '../../components/ui/PlacesMap';
 import { getMapBounds } from '../../config/regions';
 import { MAP_CONFIG, getExploreMapTiles, type ExploreMapStyle } from '../../config/platform';
 import { hasSessionExpiredQuery } from '../../config/surfacePaths';
-import { EXPLORE_MAP_CHROME_FROST, EXPLORE_MAP_CHROME_LABEL, EXPLORE_Z } from '../../config/exploreTheme';
+import { EXPLORE_Z } from '../../config/exploreTheme';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import type { JoinRequestUiState } from '../../utils/joinRequestUi';
 import { ExploreDismissibleNotice } from './ExploreDismissibleNotice';
@@ -27,6 +26,7 @@ import { ExploreMapLoadErrorBoundary } from './ExploreMapLoadErrorBoundary';
 import { ExploreMapLoadingSkeleton } from './ExploreMapLoadingSkeleton';
 import { ExploreMapLocationPrompt } from './ExploreMapLocationPrompt';
 import { ExploreMapControlToolbar } from './ExploreMapControlToolbar';
+import { ExploreMapMobileDock } from './ExploreMapMobileDock';
 import { CatalogMapPeekHost } from './CatalogMapPeekHost';
 import { PlaceMapPeekHost } from './peek/place/PlaceMapPeekHost';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
@@ -61,8 +61,15 @@ export type ExploreMapStageProps = {
   onVenueFilterChange?: (filter: VenueListFilterKey) => void;
   tripMapTopics?: import('../exploreMapQuickTopicFilters').TripMapTopicKey[];
   placeMapTopics?: import('../exploreMapQuickTopicFilters').PlaceMapTopicKey[];
-  onToggleTripMapTopic?: (key: import('../exploreMapQuickTopicFilters').TripMapTopicKey) => void;
-  onTogglePlaceMapTopic?: (key: import('../exploreMapQuickTopicFilters').PlaceMapTopicKey) => void;
+  priceFilter?: import('../exploreOptionalFilters').ExplorePriceFilter;
+  hasTrip?: boolean;
+  facilityKinds?: import('@uaetrail/shared-types').PlaceKind[];
+  onTripTopicsChange?: (next: import('../exploreMapQuickTopicFilters').TripMapTopicKey[]) => void;
+  onPlaceTopicsChange?: (next: import('../exploreMapQuickTopicFilters').PlaceMapTopicKey[]) => void;
+  onPriceFilterChange?: (next: import('../exploreOptionalFilters').ExplorePriceFilter) => void;
+  onHasTripChange?: (next: boolean) => void;
+  onFacilityKindsChange?: (next: import('@uaetrail/shared-types').PlaceKind[]) => void;
+  onVenueFiltersChange?: (next: import('../exploreOptionalFilters').ExploreVenueFilterPatch) => void;
   exploreMapStyle: ExploreMapStyle;
   exploreMapTiles: ExploreMapTiles;
   onToggleMapStyle: () => void;
@@ -134,8 +141,15 @@ export const ExploreMapStage = ({
   onVenueFilterChange,
   tripMapTopics = [],
   placeMapTopics = [],
-  onToggleTripMapTopic,
-  onTogglePlaceMapTopic,
+  priceFilter = 'all',
+  hasTrip = false,
+  facilityKinds = [],
+  onTripTopicsChange,
+  onPlaceTopicsChange,
+  onPriceFilterChange,
+  onHasTripChange,
+  onFacilityKindsChange,
+  onVenueFiltersChange,
   exploreMapStyle,
   exploreMapTiles,
   onToggleMapStyle,
@@ -258,8 +272,15 @@ export const ExploreMapStage = ({
         onVenueFilterChange={onVenueFilterChange}
         tripMapTopics={tripMapTopics}
         placeMapTopics={placeMapTopics}
-        onToggleTripMapTopic={onToggleTripMapTopic}
-        onTogglePlaceMapTopic={onTogglePlaceMapTopic}
+        priceFilter={priceFilter}
+        hasTrip={hasTrip}
+        facilityKinds={facilityKinds}
+        onTripTopicsChange={onTripTopicsChange}
+        onPlaceTopicsChange={onPlaceTopicsChange}
+        onPriceFilterChange={onPriceFilterChange}
+        onHasTripChange={onHasTripChange}
+        onFacilityKindsChange={onFacilityKindsChange}
+        onVenueFiltersChange={onVenueFiltersChange}
         searchQuery={searchQuery}
         onSearchQueryChange={onSearchQueryChange}
         onSearchCommit={onSearchCommit}
@@ -316,47 +337,15 @@ export const ExploreMapStage = ({
       {loading && mapPins.length === 0 ? <ExploreMapLoadingSkeleton /> : null}
 
       {!listOpen ? (
-        <>
-          <div
-            className="pointer-events-none absolute right-4 z-[1100] md:hidden"
-            style={{
-              bottom:
-                'calc(var(--explore-float-base) + var(--explore-map-fab-inset) + var(--explore-map-mobile-primary-fab-height) + var(--explore-map-fab-stack-gap))',
-            }}
-          >
-            <ExploreMapControlToolbar
-              layout="standalone"
-              onLocate={onLocateMe}
-              locating={locatingDevice}
-              mapStyle={exploreMapStyle}
-              onToggleMapStyle={onToggleMapStyle}
-            />
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 bottom-[calc(var(--explore-float-base)+var(--explore-map-fab-inset))] z-[1100] flex items-center justify-between gap-3 px-4 md:hidden">
-            <UiTooltip label="Open list view">
-              <button
-                type="button"
-                onClick={onOpenBrowse}
-                className={`pointer-events-auto inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-full px-3.5 ring-1 ring-black/5 transition hover:bg-white/80 active:scale-[0.98] ${EXPLORE_MAP_CHROME_FROST} ${EXPLORE_MAP_CHROME_LABEL} text-neutral-900`}
-                aria-label="Open list view"
-              >
-                <List className="h-[1.125rem] w-[1.125rem] shrink-0" strokeWidth={2} aria-hidden />
-                List
-              </button>
-            </UiTooltip>
-            <UiTooltip label={primaryFabLabel}>
-              <button
-                type="button"
-                onClick={() => onPrimaryFab()}
-                className="pointer-events-auto inline-flex min-h-12 max-w-[min(100%,calc(100vw-7rem))] shrink items-center gap-2 rounded-full bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white shadow-[0_4px_20px_rgba(5,150,105,.45)] hover:bg-emerald-700 active:scale-[0.98]"
-                aria-label={primaryFabLabel}
-              >
-                <Plus className="h-5 w-5 shrink-0" strokeWidth={2.5} aria-hidden />
-                <span className="truncate">{primaryFabLabel}</span>
-              </button>
-            </UiTooltip>
-          </div>
-        </>
+        <ExploreMapMobileDock
+          onOpenBrowse={onOpenBrowse}
+          onPrimaryFab={onPrimaryFab}
+          primaryFabLabel={primaryFabLabel}
+          onLocateMe={onLocateMe}
+          locatingDevice={locatingDevice}
+          exploreMapStyle={exploreMapStyle}
+          onToggleMapStyle={onToggleMapStyle}
+        />
       ) : null}
 
       <div

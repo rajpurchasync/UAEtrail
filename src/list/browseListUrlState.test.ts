@@ -64,6 +64,8 @@ describe('browseListUrlState trip topics', () => {
         when: 'any',
         activityDatePreset: 'anyday',
         buddiesSegment: 'available',
+        hasTrip: false,
+        facilityKinds: [],
       },
       []
     );

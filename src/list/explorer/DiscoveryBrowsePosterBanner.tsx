@@ -20,6 +20,16 @@ export type DiscoveryBrowsePosterBannerProps = {
   leadingActions?: ReactNode;
   /** List thumbnail hover zoom on cover image. */
   imageHoverZoom?: boolean;
+  /** Place name on the photo (legacy venue overlay) — trip cards keep the title below. */
+  overlayTitle?: string | null;
+  /** Emoji without the colored circle. */
+  typeIconBare?: boolean;
+  /** Venue listing puts title/location in the body — photo is chrome only. */
+  showOverlayMeta?: boolean;
+  /** Catalogue overlay (emirate · hub, rating, trips) — replaces trip when/price. */
+  overlayContent?: ReactNode;
+  /** Trip listing puts host in the body — hide the photo band. */
+  hideHostBand?: boolean;
 };
 
 const DEFAULT_IMAGE_HEIGHT =
@@ -33,13 +43,20 @@ export const DiscoveryBrowsePosterBanner = ({
   headerActions = null,
   leadingActions = null,
   imageHoverZoom = false,
+  overlayTitle = null,
+  typeIconBare = false,
+  showOverlayMeta = true,
+  overlayContent = null,
+  hideHostBand = false,
 }: DiscoveryBrowsePosterBannerProps) => {
   const cover = resolveBrowsePosterCoverUrl(card);
   const meta = listExplorerCardMeta(card);
-  const distance = usePlaceDistanceLabel(card.mapLatitude, card.mapLongitude);
-  const showBottom = Boolean(
-    meta.location || meta.when || meta.price || distance || (showDistance && distance)
-  );
+  const gpsDistance = usePlaceDistanceLabel(card.mapLatitude, card.mapLongitude);
+  const distance = showDistance ? gpsDistance : null;
+  const showBottom = overlayContent
+    ? true
+    : showOverlayMeta &&
+      Boolean(overlayTitle || meta.location || meta.when || meta.price || distance);
   /** Bottom of peek share/close row (top-2.5 + h-8 controls). */
   const PEEK_CTA_BOTTOM = 'top-[calc(0.625rem+2rem)]';
   /** Top of price chip (pb-1.5 + chip height) — not the gradient’s pt-8 padding. */
@@ -47,7 +64,7 @@ export const DiscoveryBrowsePosterBanner = ({
   /** When there is no price pill, end the band at the meta row (pb + ~one line). */
   const PEEK_META_ROW_TOP = 'bottom-[calc(0.375rem+1.75rem)]';
 
-  const showHostBand = Boolean(meta.hostName || meta.soldOut);
+  const showHostBand = !hideHostBand && Boolean(meta.hostName || meta.soldOut);
   const hostAnchorTop = headerActions ? PEEK_CTA_BOTTOM : 'top-9';
   const hostAnchorBottom = showBottom
     ? meta.price
@@ -82,7 +99,12 @@ export const DiscoveryBrowsePosterBanner = ({
           kind={card.kind}
           emoji={card.emoji}
           size="overlay"
-          className="h-5 w-5 shrink-0 text-xs shadow-sm ring-2 ring-white/90 md:h-[1.125rem] md:w-[1.125rem]"
+          bare={typeIconBare}
+          className={
+            typeIconBare
+              ? 'shrink-0'
+              : 'h-5 w-5 shrink-0 text-xs shadow-sm ring-2 ring-white/90 md:h-[1.125rem] md:w-[1.125rem]'
+          }
         />
         {leadingActions}
       </div>
@@ -115,11 +137,27 @@ export const DiscoveryBrowsePosterBanner = ({
         </div>
       ) : null}
       {showBottom ? (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/40 to-transparent px-2 pb-1.5 pt-8">
+        <div
+          className={`pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/45 to-transparent px-2.5 pb-2 ${
+            overlayTitle ? 'pt-12' : overlayContent ? 'pt-10' : 'pt-8'
+          }`}
+        >
+          {overlayContent ? (
+            overlayContent
+          ) : (
           <div className="flex items-end gap-1.5">
             <div className="min-w-0 flex-1">
+              {overlayTitle ? (
+                <p className="line-clamp-2 text-[15px] font-bold leading-snug text-white [text-shadow:0_1px_3px_rgba(0,0,0,.55)]">
+                  {overlayTitle}
+                </p>
+              ) : null}
               {meta.location || distance ? (
-                <p className="flex flex-wrap items-center gap-1 text-[10px] font-semibold leading-tight text-white">
+                <p
+                  className={`flex flex-wrap items-center gap-1 text-[10px] font-semibold leading-tight text-white ${
+                    overlayTitle ? 'mt-0.5 text-white/90' : ''
+                  }`}
+                >
                   {meta.location ? (
                     <>
                       <MapPin className="h-3 w-3 shrink-0 text-emerald-300" aria-hidden />
@@ -142,6 +180,7 @@ export const DiscoveryBrowsePosterBanner = ({
               </span>
             ) : null}
           </div>
+          )}
         </div>
       ) : null}
     </div>

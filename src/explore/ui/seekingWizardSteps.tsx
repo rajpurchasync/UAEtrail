@@ -1,6 +1,10 @@
 import { EXPLORE_FLOW } from '../../config/exploreTheme';
-import { getVenueStateFilterOptions } from '../../config/regions';
 import { exploreFlowChoiceCardClass } from './exploreFlowUi';
+import {
+  ComposeMapEntryRow,
+  formatComposeMapCoord,
+} from '../create/interactions';
+import { TO_LOCATION_LABEL } from '../createFlowCopy';
 import {
   SEEKING_FITNESS_OPTIONS,
   SEEKING_SELF_VEHICLE_OPTIONS,
@@ -11,33 +15,6 @@ import {
 } from './seekingFlowEngine';
 
 type PatchDraft = (patch: Partial<SeekingDraft>) => void;
-
-export const SeekingDestinationStepBody = ({
-  draft,
-  patchDraft,
-}: {
-  draft: SeekingDraft;
-  patchDraft: PatchDraft;
-}) => (
-  <>
-    <p className="mb-3 text-sm text-gray-600">Which emirate or region are you hoping to go?</p>
-    <div className={`${EXPLORE_FLOW.choiceGrid2}`}>
-      {getVenueStateFilterOptions().map((option) => {
-        const active = draft.preferredArea === option.key;
-        return (
-          <button
-            key={option.key}
-            type="button"
-            onClick={() => patchDraft({ preferredArea: option.key })}
-            className={exploreFlowChoiceCardClass(active)}
-          >
-            <p className={EXPLORE_FLOW.choiceCardTitle}>{option.label}</p>
-          </button>
-        );
-      })}
-    </div>
-  </>
-);
 
 /** Audience restrictions for find/demand — no public/private toggle (always on map when pinned). */
 export const SeekingAudienceStepBody = ({
@@ -201,18 +178,15 @@ export const SeekingRideshareDestinationStepBody = ({
 }) => (
   <>
     <p className="mb-4 text-sm text-gray-600">Pin your destination and say if the drop-off time is fixed or flexible.</p>
-    <button
-      type="button"
-      onClick={onOpenMap}
-      className="mb-4 flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-neutral-200 px-4 py-4 text-left hover:border-emerald-300"
-    >
-      <span className="text-sm font-bold text-gray-800">
-        {draft.toPinPlaced
-          ? `Destination · ${draft.toLatitude?.toFixed(4)}, ${draft.toLongitude?.toFixed(4)}`
-          : 'Drop destination pin'}
-      </span>
-      <span className="text-xs font-semibold text-sky-600">{draft.toPinPlaced ? 'Edit' : 'Map'}</span>
-    </button>
+    <div className="mb-4">
+      <ComposeMapEntryRow
+        title={TO_LOCATION_LABEL}
+        subtitle={formatComposeMapCoord(draft.toLatitude, draft.toLongitude, draft.toPinPlaced)}
+        placed={draft.toPinPlaced}
+        accent="sky"
+        onOpen={onOpenMap}
+      />
+    </div>
     <div className={`${EXPLORE_FLOW.choiceGrid2}`}>
       {([
         { key: 'flexible' as const, title: 'Flexible', subtitle: 'Rough window OK' },

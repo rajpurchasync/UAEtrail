@@ -3,9 +3,9 @@ import {
   HostingWizardStepError,
   HostingWizardStepNext
 } from '../HostingWizardChrome';
-import { HikingDestinationStepBody } from '../../hostingHikingWizardSteps';
-import { CampingDestinationStepBody } from '../../hostingCampingWizardSteps';
-import { EventDestinationStepBody } from '../../hostingEventWizardSteps';
+import { HikingDestinationStepBody } from '../bodies/hiking';
+import { CampingDestinationStepBody } from '../bodies/camping';
+import { EventDestinationStepBody } from '../bodies/event';
 import type { ReactNode } from 'react';
 import type { HostingWizardContext } from '../hostingWizardContext';
 import { validateStructuredDestination } from '../../hostingFlows/validateShared';
@@ -19,7 +19,7 @@ export function renderDestinationStep(ctx: HostingWizardContext): ReactNode | nu
     error,
     tenantId,
     catalogPlaces,
-    setWhereMapOpen,
+    openDestinationCustomSpotMap,
     goNext,
     goBack,
     handleClose,
@@ -40,7 +40,7 @@ export function renderDestinationStep(ctx: HostingWizardContext): ReactNode | nu
                 patchDraft={patchDraft}
                 tenantId={tenantId}
                 catalogPlaces={catalogPlaces}
-                onOpenSpotMap={() => setWhereMapOpen(true)}
+                onOpenSpotMap={openDestinationCustomSpotMap}
               />
             ) : eventFlow ? (
               <EventDestinationStepBody
@@ -48,7 +48,7 @@ export function renderDestinationStep(ctx: HostingWizardContext): ReactNode | nu
                 patchDraft={patchDraft}
                 tenantId={tenantId}
                 catalogPlaces={catalogPlaces}
-                onOpenSpotMap={() => setWhereMapOpen(true)}
+                onOpenSpotMap={openDestinationCustomSpotMap}
               />
             ) : (
               <HikingDestinationStepBody
@@ -56,7 +56,7 @@ export function renderDestinationStep(ctx: HostingWizardContext): ReactNode | nu
                 patchDraft={patchDraft}
                 tenantId={tenantId}
                 catalogPlaces={catalogPlaces}
-                onOpenSpotMap={() => setWhereMapOpen(true)}
+                onOpenSpotMap={openDestinationCustomSpotMap}
               />
             )}
             <HostingWizardStepError error={error} />

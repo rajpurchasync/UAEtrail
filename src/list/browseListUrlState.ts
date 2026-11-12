@@ -10,6 +10,27 @@ import { isBrowseTripTopicKey, type BrowseTripTopicKey } from './browseListTripT
 import { isListVenuePlaceTopicKey } from './listVenuePlaceTopicFilter';
 import type { ListVenuePlaceTopicKey } from './listVenuePlaceTopics';
 import {
+  EXPLORE_FACILITY_KINDS_PARAM,
+  EXPLORE_HAS_TRIP_PARAM,
+  EXPLORE_PRICE_PARAM,
+  aliasListPlaceTopicToMap,
+  aliasPlaceMapTopicToList,
+  parseExploreFacilityKinds,
+  parseExploreHasTrip,
+  parseExplorePriceFilter,
+  serializeExploreFacilityKinds,
+  serializeExploreHasTrip,
+  serializeExplorePriceFilter,
+} from '../explore/exploreOptionalFilters';
+import {
+  EXPLORE_PLACE_TYPES_PARAM,
+  EXPLORE_TRIP_TYPES_PARAM,
+  parsePlaceMapTopicsParam,
+  parseTripMapTopicsParam,
+  serializePlaceMapTopicsParam,
+  serializeTripMapTopicsParam,
+} from '../explore/exploreMapQuickTopicFilters';
+import {
   parseBrowseMainCategoriesFromTopics,
   serializeBrowseMainCategoriesToTopics,
   type BrowseMainCategoryKey,
@@ -20,7 +41,6 @@ import {
   serializeBuddiesDiscoverySegment,
 } from './buddiesDiscoverySegment';
 
-const PRICE_PARAM = 'price';
 const WHEN_PARAM = 'when';
 
 /** List-only: dedicated category page (decoupled from map `topics` pills). */
@@ -41,13 +61,11 @@ export const parseListCatParam = (value: string | null): BrowseMainCategoryKey |
   return null;
 };
 
-export const parseBrowseListPriceParam = (value: string | null): BrowsePriceFilter => {
-  if (value === 'free' || value === 'paid') return value;
-  return 'all';
-};
+export const parseBrowseListPriceParam = (value: string | null): BrowsePriceFilter =>
+  parseExplorePriceFilter(value);
 
 export const serializeBrowseListPriceParam = (price: BrowsePriceFilter): string | null =>
-  price === 'all' ? null : price;
+  serializeExplorePriceFilter(price);
 
 export const parseBrowseListWhenParam = (
   whenParam: string | null,
@@ -133,20 +151,29 @@ export const parseBrowseListFilterState = (
   const rawListCat = searchParams.get(LIST_CAT_PARAM);
   const listCat = parseListCatParam(rawListCat);
   const topicParse = parseTripAndPlaceTopics(searchParams.get('filter'), listCat);
-  const placeTopics =
-    rawListCat === 'shops' && !topicParse.placeTopics.includes('shop')
-      ? [...topicParse.placeTopics, 'shop' as const]
-      : topicParse.placeTopics;
+  const tripTypes = parseTripMapTopicsParam(searchParams.get(EXPLORE_TRIP_TYPES_PARAM));
+  const placeTypes = parsePlaceMapTopicsParam(searchParams.get(EXPLORE_PLACE_TYPES_PARAM)).map(
+    aliasPlaceMapTopicToList
+  );
+  const tripTopics = tripTypes.length > 0 ? tripTypes : topicParse.tripTopics;
+  let placeTopics =
+    placeTypes.length > 0 ? placeTypes : topicParse.placeTopics;
+  if (rawListCat === 'shops' && !placeTopics.includes('shop')) {
+    placeTopics = [...placeTopics, 'shop'];
+  }
 
   return {
     query: searchParams.get('q')?.trim() ?? '',
     categories: parseBrowseMainCategoriesFromTopics(searchParams.get('topics')),
-    ...topicParse,
+    tripTopics,
+    tripLookingOnly: topicParse.tripLookingOnly,
     placeTopics,
-    price: parseBrowseListPriceParam(searchParams.get(PRICE_PARAM)),
+    price: parseBrowseListPriceParam(searchParams.get(EXPLORE_PRICE_PARAM)),
     when: whenNormalized,
     activityDatePreset,
     buddiesSegment: parseBuddiesDiscoverySegment(searchParams.get(BUDDIES_SEGMENT_URL_PARAM)),
+    hasTrip: parseExploreHasTrip(searchParams.get(EXPLORE_HAS_TRIP_PARAM)),
+    facilityKinds: parseExploreFacilityKinds(searchParams.get(EXPLORE_FACILITY_KINDS_PARAM)),
   };
 };
 
@@ -172,8 +199,23 @@ export const serializeBrowseListSearchParams = (
     params.set('filter', state.placeTopics.join(','));
   }
 
+  const tripTypes = serializeTripMapTopicsParam(state.tripTopics);
+  if (tripTypes) params.set(EXPLORE_TRIP_TYPES_PARAM, tripTypes);
+
+  const placeMapTopics = state.placeTopics
+    .map(aliasListPlaceTopicToMap)
+    .filter((key): key is NonNullable<typeof key> => key != null);
+  const placeTypes = serializePlaceMapTopicsParam(placeMapTopics);
+  if (placeTypes) params.set(EXPLORE_PLACE_TYPES_PARAM, placeTypes);
+
   const price = serializeBrowseListPriceParam(state.price);
-  if (price) params.set(PRICE_PARAM, price);
+  if (price) params.set(EXPLORE_PRICE_PARAM, price);
+
+  const hasTrip = serializeExploreHasTrip(state.hasTrip);
+  if (hasTrip) params.set(EXPLORE_HAS_TRIP_PARAM, hasTrip);
+
+  const facilityKinds = serializeExploreFacilityKinds(state.facilityKinds);
+  if (facilityKinds) params.set(EXPLORE_FACILITY_KINDS_PARAM, facilityKinds);
 
   const dateSerialized = serializeExploreActivityDatePreset(state.activityDatePreset);
   if (dateSerialized) params.set('date', dateSerialized);

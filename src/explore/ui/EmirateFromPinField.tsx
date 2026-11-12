@@ -22,6 +22,8 @@ type EmirateFromPinFieldProps = {
   value: string;
   onChange: (next: string) => void;
   pinned: boolean;
+  /** Host destination is UAE-only — hide the country control. Add-on-map keeps GCC. */
+  countryLocked?: boolean;
 };
 
 /** Country (level 3) and region (level 2). The region noun follows the country. */
@@ -32,6 +34,7 @@ export const EmirateFromPinField = ({
   value,
   onChange,
   pinned,
+  countryLocked = false,
 }: EmirateFromPinFieldProps) => {
   if (!pinned) return null;
 
@@ -48,6 +51,7 @@ export const EmirateFromPinField = ({
 
   return (
     <div className="mt-3 grid gap-3">
+      {countryLocked ? null : (
       <label className="block">
         <span className={`mb-1.5 block ${EXPLORE_FLOW.choiceCardTitle}`}>Country</span>
         <AppSelect
@@ -62,6 +66,7 @@ export const EmirateFromPinField = ({
           inputClassName={selectClass}
         />
       </label>
+      )}
       <label className="block">
         <span className={`mb-1.5 block ${EXPLORE_FLOW.choiceCardTitle}`}>{noun}</span>
         <AppSelect

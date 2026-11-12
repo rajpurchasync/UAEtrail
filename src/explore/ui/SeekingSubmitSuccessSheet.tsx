@@ -4,7 +4,6 @@ import type { ActivityDTO } from '@uaetrail/shared-types';
 import { fetchPublicActivityDetail } from '../../hooks/publicActivityClientApi';
 import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import { EXPLORE_Z } from '../../config/exploreTheme';
-import { EXPLORE_REGION_PILL_LABELS } from '../../config/regions';
 import {
   DEMAND_SUBMIT_SUCCESS_BODY_OFF_MAP,
   DEMAND_SUBMIT_SUCCESS_BODY_ON_MAP,
@@ -16,8 +15,6 @@ import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import {
   SEEKING_TYPE_OPTIONS,
   seekingWhenShowsTime,
-  usesCampingSeekingFlow,
-  usesHikingSeekingFlow,
   type SeekingDraft,
   type SeekingKind,
 } from './seekingFlowEngine';
@@ -91,10 +88,7 @@ export const SeekingSubmitSuccessSheet = ({
   );
 
   const typeLabel = SEEKING_TYPE_OPTIONS.find((option) => option.key === kind)?.title ?? kind;
-  const destination =
-    (usesHikingSeekingFlow(kind) || usesCampingSeekingFlow(kind)) && draft.preferredArea
-      ? EXPLORE_REGION_PILL_LABELS[draft.preferredArea] ?? draft.preferredArea
-      : null;
+  const destination = draft.preferredArea.trim() ? draft.preferredArea.trim() : null;
 
   const showLinkRideshare =
     visibleOnMap &&

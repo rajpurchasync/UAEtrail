@@ -1,12 +1,20 @@
-import { MapPin } from 'lucide-react';
 import {
   HostingWizardChrome,
   HostingWizardStepError,
   HostingWizardStepNext
 } from '../HostingWizardChrome';
-import { EXPLORE_FLOW } from '../../../../config/exploreTheme';
-import { formatCoord } from '../../../../utils/coords';
-import { RIDESHARE_PICKUP_HINT, EXTRA_DIRECTIONS_LABEL, GOING_FROM_HINT, GOING_FROM_WITH_TIME_HINT, PICKUP_POINT_LABEL } from '../../../createFlowCopy';
+import {
+  ComposeMapEntryRow,
+  formatComposeMapCoord,
+} from '../../../create/interactions';
+import {
+  RIDESHARE_PICKUP_HINT,
+  EXTRA_DIRECTIONS_LABEL,
+  GOING_FROM_HINT,
+  GOING_FROM_LABEL,
+  GOING_FROM_WITH_TIME_HINT,
+  PICKUP_POINT_LABEL,
+} from '../../../createFlowCopy';
 import { HikingStartAreaStep } from './HikingStartAreaStep';
 import type { ReactNode } from 'react';
 import type { HostingWizardContext } from '../hostingWizardContext';
@@ -20,7 +28,7 @@ export function renderMeetingStep(ctx: HostingWizardContext): ReactNode | null {
     patchDraft,
     error,
     hasFromPin,
-    setWhereMapOpen,
+    openGoingFromMap,
     goNext,
     goBack,
     handleClose,
@@ -34,54 +42,32 @@ export function renderMeetingStep(ctx: HostingWizardContext): ReactNode | null {
     return null;
   }
 
+  const fromRow = (title: string) => (
+    <ComposeMapEntryRow
+      title={title}
+      subtitle={formatComposeMapCoord(draft.latitude, draft.longitude, hasFromPin)}
+      placed={hasFromPin}
+      onOpen={openGoingFromMap}
+    />
+  );
+
   return (
           <HostingWizardChrome title={stepTitle} onClose={handleClose} onBack={goBack}>
             {kind === 'rideshare' ? (
               <>
                 <p className="mb-4 text-sm text-gray-600">{RIDESHARE_PICKUP_HINT}</p>
-                <button
-                  type="button"
-                  onClick={() => setWhereMapOpen(true)}
-                  className={EXPLORE_FLOW.mapPinCard}
-                >
-                  <span className="flex items-center gap-2 text-gray-800">
-                    <MapPin className="h-5 w-5 text-emerald-600" />
-                    <span>
-                      <span className="block text-sm font-bold">{PICKUP_POINT_LABEL}</span>
-                      <span className="text-xs text-gray-500">
-                        {hasFromPin && draft.latitude != null && draft.longitude != null
-                          ? `${formatCoord(draft.latitude)}, ${formatCoord(draft.longitude)}`
-                          : 'Tap to choose on map'}
-                      </span>
-                    </span>
-                  </span>
-                  <span className="text-xs font-semibold text-emerald-700">{hasFromPin ? 'Edit' : 'Map'}</span>
-                </button>
+                {fromRow(PICKUP_POINT_LABEL)}
               </>
             ) : draft.genericBuddy ? (
               <>
                 <p className="mb-4 text-sm text-gray-600">{GOING_FROM_HINT}</p>
-                <button
-                  type="button"
-                  onClick={() => setWhereMapOpen(true)}
-                  className={EXPLORE_FLOW.mapPinCard}
-                >
-                  <span className="flex items-center gap-2 text-gray-800">
-                    <MapPin className="h-5 w-5 text-emerald-600" />
-                    <span className="text-sm text-gray-800">
-                      {hasFromPin
-                        ? `${draft.latitude?.toFixed(4)}, ${draft.longitude?.toFixed(4)}`
-                        : 'Tap to choose on map'}
-                    </span>
-                  </span>
-                  <span className="text-xs font-semibold text-emerald-700">{hasFromPin ? 'Edit' : 'Map'}</span>
-                </button>
+                {fromRow(GOING_FROM_LABEL)}
               </>
             ) : hikingFlow ? (
               <HikingStartAreaStep
                 draft={draft}
                 patchDraft={patchDraft}
-                onPin={() => setWhereMapOpen(true)}
+                onPin={openGoingFromMap}
               />
             ) : goingFromFlow ? (
               <>
@@ -101,21 +87,7 @@ export function renderMeetingStep(ctx: HostingWizardContext): ReactNode | null {
                     Same as meeting point
                   </button>
                 ) : null}
-                <button
-                  type="button"
-                  onClick={() => setWhereMapOpen(true)}
-                  className={EXPLORE_FLOW.mapPinCard}
-                >
-                  <span className="flex items-center gap-2 text-gray-800">
-                    <MapPin className="h-5 w-5 text-emerald-600" />
-                    <span className="text-sm text-gray-800">
-                      {hasFromPin
-                        ? `${draft.latitude?.toFixed(4)}, ${draft.longitude?.toFixed(4)}`
-                        : 'Tap to choose on map'}
-                    </span>
-                  </span>
-                  <span className="text-xs font-semibold text-emerald-700">{hasFromPin ? 'Edit' : 'Map'}</span>
-                </button>
+                {fromRow(GOING_FROM_LABEL)}
                 <label className="mt-4 block">
                   <span className="mb-1 block text-sm font-medium text-gray-700">{EXTRA_DIRECTIONS_LABEL}</span>
                   <textarea
@@ -132,21 +104,7 @@ export function renderMeetingStep(ctx: HostingWizardContext): ReactNode | null {
             ) : (
               <>
                 <p className="mb-4 text-sm text-gray-600">{GOING_FROM_WITH_TIME_HINT}</p>
-                <button
-                  type="button"
-                  onClick={() => setWhereMapOpen(true)}
-                  className={EXPLORE_FLOW.mapPinCard}
-                >
-                  <span className="flex items-center gap-2 text-gray-800">
-                    <MapPin className="h-5 w-5 text-emerald-600" />
-                    <span className="text-sm text-gray-800">
-                      {hasFromPin
-                        ? `${draft.latitude?.toFixed(4)}, ${draft.longitude?.toFixed(4)}`
-                        : 'Tap to choose on map'}
-                    </span>
-                  </span>
-                  <span className="text-xs font-semibold text-emerald-700">{hasFromPin ? 'Edit' : 'Map'}</span>
-                </button>
+                {fromRow(GOING_FROM_LABEL)}
 
                 <label className="mt-4 block">
                   <span className="mb-1 block text-sm font-medium text-gray-700">{EXTRA_DIRECTIONS_LABEL}</span>

@@ -14,5 +14,7 @@ describe('explore map place + facility wire (COH-02)', () => {
     expect(base).not.toMatch(/source: 'catalog_place'/);
     expect(base).not.toMatch(/buildExploreAreaLensItems/);
     expect(base).toMatch(/id: `facility:\$\{facility\.id\}`/);
+    expect(base).toMatch(/resolveLocationAmenities/);
+    expect(base).toMatch(/collectParentPlaceAmenities/);
   });
 });

@@ -4,7 +4,10 @@ import {
   applyHostingDestinationSearchHit,
   patchHostingDestinationCatalogLeafLadder,
   patchHostingDestinationCountryChange,
+  patchHostingDestinationEnterCustom,
+  patchPickHostingCatalogPlace,
 } from '../explore/ui/hostingDestinationDraft';
+import { emptyCreateActivityDraft } from '../explore/ui/hostingFlowEngine';
 import {
   buildPlaceCatalogAreaOptions,
   buildPlaceCatalogPlaceGroupOptions,
@@ -16,6 +19,7 @@ import {
   placeCatalogPlaceGroupKey,
   placeCatalogPlaceGroupLabelForKey,
   placeCatalogRegionsMatch,
+  nearestPlaceCatalogHostingLeaf,
   searchPlaceCatalogDestination,
   scopePlaceCatalogDestination,
 } from './placeCatalogDestinationIndex';
@@ -118,6 +122,27 @@ describe('placeCatalogDestinationIndex', () => {
     ]);
   });
 
+  it('snaps a map pin to the nearest hosting leaf', () => {
+    const places = [
+      place({
+        id: 'near',
+        name: 'Near loop',
+        region: 'Dubai',
+        latitude: 25.0,
+        longitude: 55.0,
+      }),
+      place({
+        id: 'far',
+        name: 'Far loop',
+        region: 'Dubai',
+        latitude: 26.0,
+        longitude: 56.0,
+      }),
+    ];
+    expect(nearestPlaceCatalogHostingLeaf(25.001, 55.001, places)?.id).toBe('near');
+    expect(nearestPlaceCatalogHostingLeaf(24.0, 54.0, places)).toBeNull();
+  });
+
   it('scopes catalog to country (default AE)', () => {
     const areas = [
       area({ id: 'a-uae', name: 'Hatta', region: 'Dubai', countryCode: 'AE' }),
@@ -151,6 +176,16 @@ describe('placeCatalogDestinationIndex', () => {
     ];
     const trailHits = searchPlaceCatalogDestination('loop', places, areas, 'AE');
     expect(trailHits.find((row) => row.kind === 'trail')?.placeId).toBe('t-loop');
+    expect(
+      searchPlaceCatalogDestination('loop', places, areas, 'AE', { state: 'Dubai' }).find(
+        (row) => row.kind === 'trail'
+      )?.placeId
+    ).toBe('t-loop');
+    expect(
+      searchPlaceCatalogDestination('loop', places, areas, 'AE', { state: 'RAK' }).filter(
+        (row) => row.kind === 'trail'
+      )
+    ).toEqual([]);
     const placeHits = searchPlaceCatalogDestination('wadi shawka', places, areas, 'AE');
     const group = placeHits.find((row) => row.kind === 'place');
     expect(group?.kind).toBe('place');
@@ -199,6 +234,47 @@ describe('placeCatalogDestinationIndex', () => {
       state: 'Dubai',
       areaId: 'a-1',
       placeGroup: 'Hatta Dam',
+    });
+  });
+
+  it('patchPickHostingCatalogPlace fills emirate, area, place, and trail in one pick', () => {
+    const areas = [area({ id: 'a-1', name: 'Hatta', region: 'Dubai' })];
+    const row = place({
+      id: 'p-1',
+      name: 'Dam loop',
+      region: 'Dubai',
+      areaId: 'a-1',
+      areaLabel: 'Hatta Dam',
+      latitude: 24.8,
+      longitude: 56.1,
+    });
+    expect(patchPickHostingCatalogPlace(emptyCreateActivityDraft(), 'p-1', [row], areas, 'AE')).toMatchObject(
+      {
+        venueCascadeState: 'Dubai',
+        registryPlaceAreaId: 'a-1',
+        venueCascadePlaceGroup: 'Hatta Dam',
+        registryPlaceId: 'p-1',
+        placeLabelSource: 'registry',
+        trailName: 'Dam loop',
+      }
+    );
+  });
+
+  it('enter custom keeps selected emirate and area', () => {
+    expect(
+      patchHostingDestinationEnterCustom({
+        venueCascadeState: 'Dubai',
+        registryPlaceAreaId: 'a-hatta',
+        customPlaceAreaId: null,
+        customPlaceEmirate: '',
+      })
+    ).toMatchObject({
+      placeLabelSource: 'custom',
+      registryPlaceId: null,
+      venueCascadePlaceGroup: '',
+      customPlaceAreaId: 'a-hatta',
+      customPlaceEmirate: 'Dubai',
+      trailName: '',
     });
   });
 });

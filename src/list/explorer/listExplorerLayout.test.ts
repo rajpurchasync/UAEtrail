@@ -27,6 +27,8 @@ const emptyFilters = (): BrowseListFilterState => ({
   when: 'any',
   activityDatePreset: 'anyday',
   buddiesSegment: 'looking',
+  hasTrip: false,
+  facilityKinds: [],
 });
 
 describe('list explorer layout', () => {
@@ -153,6 +155,22 @@ describe('list explorer thumbnail copy', () => {
     const meta = listExplorerCardMeta(companyCard);
     expect(meta.hostName).toBe('UAE Adventure Co');
     expect(meta.hostAvatar).toBe('https://cdn.example/logo.png');
+  });
+
+  it('uses emirate and hub on venue cards instead of generic hiking location', () => {
+    const venueCard = {
+      source: 'venue',
+      kind: 'hiking',
+      listTitle: 'Wadi Shawka',
+      headline: 'Wadi Shawka',
+      subtitle: 'Wadi Ghalilah',
+      venueRegion: 'RAK',
+      areaName: 'Wadi Ghalilah',
+      venueHint: 'Hiking trail location',
+      sections: { details: [] },
+    } as DiscoveryCardModel;
+    expect(listExplorerCardMeta(venueCard).location).toBe('RAK · Wadi Ghalilah');
+    expect(listExplorerCardMeta(venueCard).location).not.toMatch(/Hiking trail location/);
   });
 
   it('formats list row dates in full and prefixes This for this-week section', () => {

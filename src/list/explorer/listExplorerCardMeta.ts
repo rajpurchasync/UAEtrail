@@ -1,5 +1,6 @@
 import { isGeographyMapSource, resolveActivityPublisherChip } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
+import { resolveCatalogHeaderAreaLocationLine } from '../listVenuePosterPresentation';
 import { listExplorerIsThisWeekSectionDate } from './listExplorerDateSections';
 
 const LIST_ROW_MONTHS = [
@@ -111,7 +112,10 @@ export const listExplorerCardMeta = (card: DiscoveryCardModel): ListExplorerCard
   const dateIso = listExplorerCardDateIso(card);
   const soldOut =
     card.activity?.slotsAvailable === 0 || SOLD_OUT.test(card.spotsLabel ?? '');
-  const location = card.venueHint?.trim() || card.subtitle?.trim() || null;
+  const catalogPlace = isGeographyMapSource(card.source) || card.source === 'shop';
+  const location = catalogPlace
+    ? resolveCatalogHeaderAreaLocationLine(card)
+    : card.venueHint?.trim() || card.subtitle?.trim() || null;
   const isEvent = card.source === 'activity';
   const publisher = isEvent
     ? resolveActivityPublisherChip({

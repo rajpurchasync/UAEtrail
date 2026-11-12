@@ -3,7 +3,7 @@ import {
   HostingWizardStepError,
   HostingWizardStepNext
 } from '../HostingWizardChrome';
-import { HikingDifficultyStepBody } from '../../hostingHikingWizardSteps';
+import { HikingDifficultyStepBody } from '../bodies/hiking';
 import type { ReactNode } from 'react';
 import type { HostingWizardContext } from '../hostingWizardContext';
 

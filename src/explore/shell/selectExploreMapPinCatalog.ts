@@ -4,8 +4,10 @@ import {
   selectPlacesFromExploreCatalog,
   selectShopsFromExploreCatalog,
 } from '@/places-discovery/catalog/places';
+import type { PlaceKind } from '@uaetrail/shared-types';
 import type { ExploreActivityDatePreset, ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
 import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
+import type { ExplorePriceFilter } from '../exploreOptionalFilters';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
@@ -27,6 +29,9 @@ export type ExploreMapPinCatalogArgs = {
   buddySubtype: ExploreBuddySubtypeKey;
   outingTopic: ExploreOutingTopicKey;
   activityModeFilter: ExploreActivityModeFilter;
+  priceFilter?: ExplorePriceFilter;
+  hasTrip?: boolean;
+  facilityKinds?: readonly PlaceKind[];
 };
 
 const activityCatalogFilters = (args: ExploreMapPinCatalogArgs) => ({
@@ -37,6 +42,7 @@ const activityCatalogFilters = (args: ExploreMapPinCatalogArgs) => ({
   query: '',
   activityDatePreset: args.activityDatePreset,
   activityModeFilter: args.activityModeFilter,
+  priceFilter: args.priceFilter ?? 'all',
 });
 
 const placesCatalogFilters = (args: ExploreMapPinCatalogArgs) => ({
@@ -44,6 +50,8 @@ const placesCatalogFilters = (args: ExploreMapPinCatalogArgs) => ({
   venueFilter: args.venueFilter,
   placeMapTopics: args.placeMapTopics,
   venueRegions: args.venueRegions,
+  hasTrip: args.hasTrip ?? false,
+  facilityKinds: args.facilityKinds ?? [],
 });
 
 /**

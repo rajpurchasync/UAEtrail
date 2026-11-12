@@ -118,6 +118,12 @@ const FACILITY_PLACE_KIND_SET = new Set<PlaceKind>(FACILITY_PLACE_KINDS);
 
 export const isFacilityPlaceKind = (kind: PlaceKind): boolean => FACILITY_PLACE_KIND_SET.has(kind);
 
+/** Short chip on a parent trail/camp card — amenities are not first-class list rows. */
+export const amenityChipLabelForFacilityKind = (kind: PlaceKind): string | null => {
+  if (!isFacilityPlaceKind(kind)) return null;
+  return PLACE_KIND_LABELS[kind];
+};
+
 /** Member FAB Add → Facilities — subset of {@link FACILITY_PLACE_KINDS}. */
 export const ADDABLE_FACILITY_PLACE_KINDS: readonly PlaceKind[] = [
   'parking',

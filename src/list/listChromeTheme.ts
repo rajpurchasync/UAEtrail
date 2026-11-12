@@ -1,4 +1,8 @@
-import { EXPLORE_BRAND_ACTIVE } from '../config/exploreTheme';
+import {
+  EXPLORE_BRAND_ACTIVE,
+  MOBILE_DOCK_PRIMARY,
+  MOBILE_DOCK_SECONDARY,
+} from '../config/exploreTheme';
 
 /** List discovery chrome — super-app tokens (not map overlay pills). */
 
@@ -24,7 +28,7 @@ export const LIST_SEARCH = {
   shell:
     'flex min-h-11 items-center gap-2 rounded-2xl border border-neutral-200/80 bg-white px-3 shadow-[0_1px_2px_rgba(15,23,42,.04)] transition-[box-shadow,border-color] focus-within:border-emerald-200 focus-within:shadow-[0_0_0_3px_rgba(16,185,129,.12)] md:min-h-9 lg:min-h-8 lg:rounded-xl lg:px-2.5',
   input:
-    'min-w-0 flex-1 bg-transparent text-[15px] font-medium text-neutral-900 outline-none placeholder:font-normal placeholder:text-neutral-400',
+    'min-w-0 flex-1 bg-transparent text-[0.9375rem] font-medium text-neutral-900 outline-none placeholder:font-normal placeholder:text-neutral-400',
   icon: 'h-[17px] w-[17px] shrink-0 text-neutral-400',
   /** Map / refine / category filters — aligned row height. */
   sideAction:
@@ -118,8 +122,7 @@ export const LIST_CATEGORY_FLOATING_FILTER =
 
 export const LIST_SECTION_TITLE = 'text-[15px] font-semibold text-neutral-500';
 
-export const LIST_FLOAT_FIXED =
-  'fixed z-[1150] transition active:scale-95 md:hidden';
+export const LIST_FLOAT_FIXED = 'fixed z-[1150] md:hidden';
 
 /** Filter FAB — draggable on list surfaces. */
 export const LIST_FILTER_FAB_Z = 'z-[1220]';
@@ -127,18 +130,16 @@ export const LIST_FILTER_FAB_Z = 'z-[1220]';
 /** Sort sheet / dropdown — must stack above {@link LIST_FILTER_FAB_Z}. */
 export const LIST_OVERLAY_Z = 'z-[1250]';
 
-export const LIST_MAP_FLOAT =
-  `${LIST_FLOAT_FIXED} inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-neutral-900 shadow-[0_4px_20px_rgba(15,23,42,.12)] ring-1 ring-black/[0.06] backdrop-blur-sm`;
+export const LIST_MAP_FLOAT = `${LIST_FLOAT_FIXED} ${MOBILE_DOCK_SECONDARY}`;
 
-export const LIST_CREATE_FAB =
-  `${LIST_FLOAT_FIXED} inline-flex min-h-12 max-w-[calc(100vw-5.5rem)] items-center gap-2 rounded-full bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white shadow-[0_4px_20px_rgba(5,150,105,.45)] hover:bg-emerald-700`;
+export const LIST_CREATE_FAB = `${LIST_FLOAT_FIXED} ${MOBILE_DOCK_PRIMARY} max-w-[calc(100vw-7.5rem)]`;
 
 export const LIST_MAP_FLOAT_POSITION =
-  'right-4 bottom-[calc(var(--bottom-nav-height,56px)+var(--safe-bottom,0px)+16px)]';
+  'right-4 bottom-[calc(var(--explore-float-base)+var(--explore-map-fab-inset))]';
 
 /** Mirrors explore map **List** pill — list trips/venues return to map (left). */
 export const LIST_VIEW_MAP_FLOAT_POSITION =
-  'left-4 bottom-[calc(var(--bottom-nav-height,56px)+var(--safe-bottom,0px)+16px)]';
+  'left-4 bottom-[calc(var(--explore-float-base)+var(--explore-map-fab-inset))]';
 
 export const LIST_DESKTOP_MAP_LINK =
   'hidden min-h-10 items-center rounded-full bg-neutral-100 px-4 text-sm font-semibold text-neutral-900 md:inline-flex active:bg-neutral-200';

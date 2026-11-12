@@ -8,13 +8,19 @@ import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 export type TripMapTopicKey = 'hiking' | 'camping' | 'rideshare' | 'others';
 
 /** Mobile map venue quick-filter topics (`placeTypes=` URL). */
-export type PlaceMapTopicKey = 'hiking' | 'camping' | 'facilities' | 'shops';
+export type PlaceMapTopicKey = 'hiking' | 'camping' | 'facilities' | 'shops' | 'others';
 
 export const EXPLORE_TRIP_TYPES_PARAM = 'tripTypes';
 export const EXPLORE_PLACE_TYPES_PARAM = 'placeTypes';
 
 const TRIP_TOPIC_SET = new Set<TripMapTopicKey>(['hiking', 'camping', 'rideshare', 'others']);
-const PLACE_TOPIC_SET = new Set<PlaceMapTopicKey>(['hiking', 'camping', 'facilities', 'shops']);
+const PLACE_TOPIC_SET = new Set<PlaceMapTopicKey>([
+  'hiking',
+  'camping',
+  'facilities',
+  'shops',
+  'others',
+]);
 
 const parseCsvTopics = <T extends string>(raw: string | null, allowed: Set<T>): T[] => {
   if (!raw?.trim()) return [];
@@ -30,7 +36,7 @@ export const parseTripMapTopicsParam = (raw: string | null): TripMapTopicKey[] =
   parseCsvTopics(raw, TRIP_TOPIC_SET);
 
 export const parsePlaceMapTopicsParam = (raw: string | null): PlaceMapTopicKey[] =>
-  parseCsvTopics(raw, PLACE_TOPIC_SET);
+  parseCsvTopics(raw?.replace(/\bhubs\b/g, 'others') ?? null, PLACE_TOPIC_SET);
 
 export const serializeTripMapTopicsParam = (topics: TripMapTopicKey[]): string | null =>
   topics.length > 0 ? topics.join(',') : null;
@@ -51,7 +57,14 @@ export const effectiveTripMapTopics = (
 };
 
 const placeTopicFromMapFilter = (mapFilter: MapFilterKey): PlaceMapTopicKey | null => {
-  if (mapFilter === 'hiking' || mapFilter === 'camping' || mapFilter === 'facilities') return mapFilter;
+  if (
+    mapFilter === 'hiking' ||
+    mapFilter === 'camping' ||
+    mapFilter === 'facilities' ||
+    mapFilter === 'others'
+  ) {
+    return mapFilter;
+  }
   if (mapFilter === 'shops') return 'shops';
   return null;
 };
@@ -59,6 +72,7 @@ const placeTopicFromMapFilter = (mapFilter: MapFilterKey): PlaceMapTopicKey | nu
 const placeTopicFromVenueFilter = (venueFilter: VenueListFilterKey): PlaceMapTopicKey | null => {
   if (venueFilter === 'hiking' || venueFilter === 'camping' || venueFilter === 'facilities') return venueFilter;
   if (venueFilter === 'shop') return 'shops';
+  if (venueFilter === 'event') return 'others';
   return null;
 };
 

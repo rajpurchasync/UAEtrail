@@ -2,12 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { getSeekingFlowSteps } from './seekingFlowEngine';
 
 describe('seekingFlowEngine steps', () => {
-  it('find hiking matches FLOW-06', () => {
+  it('find hiking is area then going from (no destination pin)', () => {
     expect(getSeekingFlowSteps('hiking')).toEqual([
       'title',
       'when',
       'curatedArea',
-      'destination',
       'persons',
       'audience',
       'from',
@@ -17,12 +16,11 @@ describe('seekingFlowEngine steps', () => {
     ]);
   });
 
-  it('find camping matches FLOW-07', () => {
+  it('find camping is area then going from (no destination pin)', () => {
     expect(getSeekingFlowSteps('camping')).toEqual([
       'title',
       'when',
       'curatedArea',
-      'destination',
       'persons',
       'audience',
       'from',
@@ -32,7 +30,7 @@ describe('seekingFlowEngine steps', () => {
     ]);
   });
 
-  it('find rideshare matches FLOW-08', () => {
+  it('find rideshare keeps from and to after area', () => {
     expect(getSeekingFlowSteps('rideshare')).toEqual([
       'title',
       'when',
@@ -46,13 +44,14 @@ describe('seekingFlowEngine steps', () => {
     ]);
   });
 
-  it('find activity matches FLOW-09', () => {
+  it('find activity is area then going from', () => {
     expect(getSeekingFlowSteps('event')).toEqual([
       'title',
       'when',
       'curatedArea',
       'persons',
       'audience',
+      'from',
       'info',
       'review',
     ]);

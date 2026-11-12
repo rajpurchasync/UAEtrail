@@ -74,7 +74,7 @@ describe('hostingFlowEngine', () => {
     expect(createFlowStepTitle('title', 'hiking')).toBe('Give it a title');
     expect(createFlowStepTitle('spots', 'hiking')).toBe('Participants');
     expect(createFlowStepTitle('when', 'hiking')).toBe('Date and Time');
-    expect(createFlowStepTitle('destination', 'hiking')).toBe('Where will it be?');
+    expect(createFlowStepTitle('destination', 'hiking')).toBe('Select a venue');
     expect(createFlowStepTitle('meeting', 'hiking')).toBe('Where do you start?');
     expect(createFlowStepTitle('join_kit', 'hiking')).toBe('What to bring');
     expect(createFlowStepTitle('difficulty', 'hiking')).toBe('How difficult is the hike?');
@@ -159,7 +159,7 @@ describe('hostingFlowEngine', () => {
   it('uses warm step titles for organize camping', () => {
     expect(createFlowStepTitle('title', 'camping')).toBe('Give it a title');
     expect(createFlowStepTitle('spots', 'camping')).toBe('Participants');
-    expect(createFlowStepTitle('destination', 'camping')).toBe('Where will it be?');
+    expect(createFlowStepTitle('destination', 'camping')).toBe('Select a venue');
   });
 
   it('validateDraftStep accepts hiking join_kit when present', () => {
@@ -323,7 +323,6 @@ describe('hostingFlowEngine', () => {
       customPlaceAreaId: 'area-hatta',
       trailLatitude: 24.82,
       trailLongitude: 56.12,
-      customPlaceImages: ['/media/a.jpg'],
       aboutTrail: 'Quiet sunrise loop with shade and a short scramble near the dam.',
       packingItems: defaultHikingPackingItems(),
       joinKit: 'Water 2 L minimum.',

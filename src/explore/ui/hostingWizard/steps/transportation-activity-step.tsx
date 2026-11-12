@@ -3,7 +3,7 @@ import {
   HostingWizardStepError,
   HostingWizardStepNext
 } from '../HostingWizardChrome';
-import { CampingTransportationStepBody } from '../../hostingCampingWizardSteps';
+import { CampingTransportationStepBody } from '../bodies/camping';
 import type { ReactNode } from 'react';
 import type { HostingWizardContext } from '../hostingWizardContext';
 

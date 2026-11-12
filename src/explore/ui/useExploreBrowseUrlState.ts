@@ -32,7 +32,9 @@ import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
+import type { PlaceKind } from '@uaetrail/shared-types';
 import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
+import type { ExplorePriceFilter } from '../exploreOptionalFilters';
 
 export type { ExploreBrowseListMode } from '../exploreBrowseUrlSync';
 
@@ -78,6 +80,9 @@ export const useExploreBrowseUrlState = ({
   const [topicPills, setTopicPills] = useState<ExploreMapFilterPillKey[]>(initial.topicPills);
   const [tripMapTopics, setTripMapTopics] = useState<TripMapTopicKey[]>(initial.tripMapTopics);
   const [placeMapTopics, setPlaceMapTopics] = useState<PlaceMapTopicKey[]>(initial.placeMapTopics);
+  const [priceFilter, setPriceFilter] = useState<ExplorePriceFilter>(initial.priceFilter);
+  const [hasTrip, setHasTrip] = useState(initial.hasTrip);
+  const [facilityKinds, setFacilityKinds] = useState<PlaceKind[]>(initial.facilityKinds);
   const [listMode, setListMode] = useState<ExploreBrowseListMode>(initial.listMode);
   const [peopleBrowseOpen, setPeopleBrowseOpen] = useState(initial.peopleBrowseOpen);
   const [searchScope, setSearchScope] = useState<ExploreSearchScopeKey | null>(initial.searchScope);
@@ -108,6 +113,9 @@ export const useExploreBrowseUrlState = ({
           topicPills,
           tripMapTopics,
           placeMapTopics,
+          priceFilter,
+          hasTrip,
+          facilityKinds,
           listMode,
           peopleBrowseOpen,
           searchScope,
@@ -134,6 +142,9 @@ export const useExploreBrowseUrlState = ({
       topicPills,
       tripMapTopics,
       placeMapTopics,
+      priceFilter,
+      hasTrip,
+      facilityKinds,
       listMode,
       peopleBrowseOpen,
       searchScope,
@@ -161,6 +172,9 @@ export const useExploreBrowseUrlState = ({
     setTopicPills(state.topicPills);
     setTripMapTopics(state.tripMapTopics);
     setPlaceMapTopics(state.placeMapTopics);
+    setPriceFilter(state.priceFilter);
+    setHasTrip(state.hasTrip);
+    setFacilityKinds(state.facilityKinds);
     setListMode(state.listMode);
     setPeopleBrowseOpen(state.peopleBrowseOpen);
     setSearchScope(state.searchScope);
@@ -198,6 +212,9 @@ export const useExploreBrowseUrlState = ({
       setSearchScope,
       setTripMapTopics,
       setPlaceMapTopics,
+      setPriceFilter,
+      setHasTrip,
+      setFacilityKinds,
     }),
     []
   );
@@ -287,6 +304,9 @@ export const useExploreBrowseUrlState = ({
     venueRegions,
     tripMapTopics,
     placeMapTopics,
+    priceFilter,
+    hasTrip,
+    facilityKinds,
     desktopBrowseTab,
     searchExpanded,
     setSearchExpanded,
@@ -316,6 +336,12 @@ export const useExploreBrowseUrlState = ({
     applyVenueRegions: handlers.applyVenueRegions,
     toggleTripMapTopic: handlers.toggleTripMapTopic,
     togglePlaceMapTopic: handlers.togglePlaceMapTopic,
+    applyTripMapTopics: handlers.applyTripMapTopics,
+    applyPlaceMapTopics: handlers.applyPlaceMapTopics,
+    applyVenueFilters: handlers.applyVenueFilters,
+    applyPriceFilter: handlers.applyPriceFilter,
+    applyHasTrip: handlers.applyHasTrip,
+    applyFacilityKinds: handlers.applyFacilityKinds,
     buddySubtype,
     applyBuddySubtype: handlers.applyBuddySubtype,
     outingTopic,

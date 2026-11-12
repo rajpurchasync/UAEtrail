@@ -8,23 +8,29 @@
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --cta-height: 56px;
-    --bottom-nav-height: 3.75rem;
+    --bottom-nav-height: 64px;
     --bottom-nav-chrome-height: var(--bottom-nav-height);
     --explore-float-base: var(--safe-bottom);
-    /** Extra lift for map “+” FAB above bottom nav / safe area */
-    --explore-map-fab-inset: 2.75rem;
-    --explore-map-mobile-primary-fab-height: 3rem;
+    /** Locate / basemap circles on the map. */
+    --explore-map-mobile-control: 3.5rem;
+    --explore-map-overlay-size: 2.5rem;
+    --explore-map-mobile-control-gap: 0.75rem;
+    /** Labeled floating FABs — Map, List, Create Trip, Add a venue, Find a crew. */
+    --mobile-dock-pill-height: 2.75rem;
+    /** Extra lift for floating dock above bottom nav / safe area */
+    --explore-map-fab-inset: 20px;
+    --explore-map-mobile-primary-fab-height: var(--mobile-dock-pill-height);
     /** Mobile explore tab header (safe area + avatar row). */
-    --explore-mobile-tab-header-stack: calc(var(--safe-top, 0px) + 2.75rem);
-    /** Fixed consumer identity header (safe inset + row) — mobile drawer aligns below identity row. */
-    --consumer-mobile-header-stack: calc(var(--safe-top, 0px) + 3.625rem);
+    --explore-mobile-tab-header-stack: calc(var(--safe-top, 0px) + 3.375rem);
+    /** Fixed consumer identity header (safe inset + identity row + bottom pad). */
+    --consumer-mobile-header-stack: calc(var(--safe-top, 0px) + 3.375rem);
     /** Map intent + activity filter toolbar — peek sheets start below this stack. */
-    --explore-mobile-map-filter-stack: 5.75rem;
+    --explore-mobile-map-filter-stack: 6.25rem;
     --explore-browse-peek-top: calc(
       var(--explore-mobile-tab-header-stack) + var(--explore-mobile-map-filter-stack)
     );
-    /** Vertical gap between map layer toggle and compose FAB */
-    --explore-map-fab-stack-gap: 1.25rem;
+    /** Vertical gap between stacked map controls (locate / style / FAB) */
+    --explore-map-fab-stack-gap: var(--explore-map-mobile-control-gap);
     /** Desktop explore — right rail (Add New + locate + style) */
     --explore-map-desktop-fab-bottom: 3rem;
     --explore-map-desktop-primary-fab-height: 3.5rem;
@@ -80,6 +86,17 @@
     overflow-x: clip;
   }
 
+  /**
+   * Phone / PWA readability — 16px CSS looks undersized vs desktop Cursor.
+   * Rem chrome (nav, dock, chips) scales; keep 100% text-size-adjust so iOS
+   * does not double-inflate. Desktop (md+) stays 16px.
+   */
+  @media (max-width: 767px) {
+    html {
+      font-size: 18px;
+    }
+  }
+
   body {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -105,6 +122,14 @@
     height: 100%;
     min-height: 0;
     overflow: hidden;
+  }
+
+  @supports (height: 100dvh) {
+    html.product-shell-active,
+    html.product-shell-active body,
+    html.product-shell-active #root {
+      min-height: 100dvh;
+    }
   }
 
   html.guest-landing {
@@ -414,12 +439,22 @@
   }
 
   .app-fab {
-    @apply fixed z-40 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg shadow-emerald-900/25 transition-all active:scale-95 hover:bg-emerald-700;
-    bottom: calc(var(--safe-bottom) + 12px);
+    @apply fixed z-40 right-4 flex items-center justify-center rounded-full bg-emerald-600 text-white shadow-[0_4px_20px_rgba(5,150,105,.45)] transition-all active:scale-[0.98] hover:bg-emerald-700;
+    height: var(--explore-map-mobile-control);
+    width: var(--explore-map-mobile-control);
+    bottom: calc(var(--explore-float-base) + var(--explore-map-fab-inset));
   }
 
   .app-fab--extended {
-    @apply w-auto max-w-[calc(100vw-2rem)] px-4 sm:px-5 gap-2 text-sm font-bold whitespace-nowrap;
+    width: auto;
+    max-width: calc(100vw - 2rem);
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    gap: 0.5rem;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
   }
 
   @media (min-width: 768px) {
@@ -429,17 +464,15 @@
   }
 
   html[data-mobile-bottom-nav='true'] .app-fab {
-    bottom: calc(var(--bottom-nav-chrome-height) + var(--safe-bottom) + 12px);
     z-index: 1250;
   }
 
   .app-fab--secondary {
     @apply bg-white text-neutral-800 shadow-lg ring-1 ring-neutral-200/90 hover:bg-neutral-50;
-    bottom: calc(var(--safe-bottom) + 12px + 3.75rem);
-  }
-
-  html[data-mobile-bottom-nav='true'] .app-fab--secondary {
-    bottom: calc(var(--bottom-nav-chrome-height) + var(--safe-bottom) + 12px + 3.75rem);
+    bottom: calc(
+      var(--explore-float-base) + var(--explore-map-fab-inset) + var(--explore-map-mobile-control) +
+        var(--explore-map-mobile-control-gap)
+    );
   }
 
   /* ── Typography ── */
@@ -800,7 +833,9 @@
   }
 
   html[data-mobile-bottom-nav='true'] {
-    --explore-float-base: calc(var(--safe-bottom) + var(--bottom-nav-chrome-height));
+  /* Tab row + home-indicator inset — one height for FABs and scroll padding. */
+    --bottom-nav-chrome-height: calc(var(--bottom-nav-height) + var(--safe-bottom));
+    --explore-float-base: var(--bottom-nav-chrome-height);
   }
 
   .pb-nav-safe {
@@ -808,7 +843,7 @@
   }
 
   html[data-mobile-bottom-nav='true'] .pb-nav-safe {
-    padding-bottom: calc(var(--bottom-nav-chrome-height) + var(--safe-bottom) + 0.75rem);
+    padding-bottom: calc(var(--bottom-nav-chrome-height) + 0.75rem);
   }
 
   .pb-bottom-nav-safe {
@@ -816,7 +851,7 @@
   }
 
   html[data-mobile-bottom-nav='true'] .pb-bottom-nav-safe {
-    padding-bottom: calc(var(--bottom-nav-chrome-height) + var(--safe-bottom));
+    padding-bottom: var(--bottom-nav-chrome-height);
   }
 
   .pb-mobile-fab {
@@ -824,7 +859,7 @@
   }
 
   html[data-mobile-bottom-nav='true'] .pb-mobile-fab {
-    padding-bottom: calc(var(--bottom-nav-chrome-height) + var(--safe-bottom) + 4.5rem);
+    padding-bottom: calc(var(--bottom-nav-chrome-height) + 4.5rem);
   }
 
   .pb-safe {
@@ -1712,7 +1747,7 @@
     background: rgba(255, 255, 255, 0.55) !important;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-color: rgba(255, 255, 255, 0.8) !important;
+    border-color: transparent !important;
     box-shadow: 0 2px 12px rgba(15, 23, 42, 0.12) !important;
   }
 
@@ -1731,7 +1766,7 @@
 
   html[data-theme='dark'] .explore-map-overlay-icon-btn.explore-map-overlay-icon-btn--standalone {
     background: rgba(16, 24, 30, 0.58) !important;
-    border-color: rgba(255, 255, 255, 0.18) !important;
+    border-color: transparent !important;
     box-shadow: 0 2px 16px rgba(0, 0, 0, 0.34) !important;
   }
 
@@ -1915,21 +1950,20 @@ html[data-theme='dark'] .explore-filter-quote-stroke--places {
   width: 2rem;
 }
 
-/* h-9 mobile map quick-filter pills — icon + 11px label */
-/* Mobile map quick-filter pills — 18px marks */
+/* Mobile map quick-filter pills — rem marks (scale with html font-size). */
 .explore-filter-mark.explore-filter-mark--chip {
-  height: 18px;
-  width: 18px;
-  font-size: 18px;
+  height: 1.25rem;
+  width: 1.25rem;
+  font-size: 1.25rem;
 }
 
 .explore-filter-mark.explore-filter-mark--chip svg {
-  height: 18px;
-  width: 18px;
+  height: 1.25rem;
+  width: 1.25rem;
 }
 
 .explore-filter-mark.explore-filter-mark--chip .font-emoji {
-  font-size: 18px;
+  font-size: 1.25rem;
   transform: translateY(-0.04em);
 }
 
@@ -1940,39 +1974,39 @@ html[data-theme='dark'] .explore-filter-quote-stroke--places {
 .explore-filter-mark.explore-filter-mark--chip:has(.explore-facility-glyph),
 .explore-filter-mark.explore-filter-mark--chip:has(.explore-hiking-glyph),
 .explore-filter-mark.explore-filter-mark--chip:has(.explore-other-glyph) {
-  height: 20px;
-  width: 20px;
+  height: 1.375rem;
+  width: 1.375rem;
 }
 
 .explore-filter-mark.explore-filter-mark--chip svg.explore-facility-glyph,
 .explore-filter-mark.explore-filter-mark--chip svg.explore-hiking-glyph,
 .explore-filter-mark.explore-filter-mark--chip svg.explore-other-glyph {
-  height: 18px;
-  width: 18px;
+  height: 1.25rem;
+  width: 1.25rem;
 }
 
 .explore-map-float-chip-glyph {
-  height: 18px;
-  width: 18px;
+  height: 1.25rem;
+  width: 1.25rem;
 }
 
 .explore-filter-mark.explore-filter-mark--chip.explore-filter-mark--uae-flag {
-  width: 25px;
-  height: 18px;
+  width: auto;
+  height: 0.9rem;
 }
 
 .explore-map-float-chip-uae-flag {
-  height: 18px;
-  width: 25px;
+  height: 0.9rem;
+  width: auto;
+  aspect-ratio: 21 / 15;
   border-radius: 1px;
-  box-shadow: 0 1px 2px rgb(15 23 42 / 0.08);
-  outline: 1px solid rgb(0 0 0 / 0.1);
-  outline-offset: 0;
 }
 
+.explore-filter-mark.explore-filter-mark--chip.explore-filter-mark--uae-flag svg,
 .explore-filter-mark.explore-filter-mark--uae-flag svg {
-  height: 18px;
-  width: 25px;
+  height: 0.9rem;
+  width: auto;
+  aspect-ratio: 21 / 15;
 }
 
 .list-explorer-bucket-count--active {

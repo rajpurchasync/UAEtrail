@@ -3,7 +3,7 @@ import {
   HostingWizardStepError,
   HostingWizardStepNext
 } from '../HostingWizardChrome';
-import { ActivityInstructionsStepBody } from '../../hostingActivitiesWizardSteps';
+import { ActivityInstructionsStepBody } from '../bodies/activity';
 import type { ReactNode } from 'react';
 import type { HostingWizardContext } from '../hostingWizardContext';
 

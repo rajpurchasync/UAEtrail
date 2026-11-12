@@ -314,7 +314,7 @@ const ActivityDetailLead = ({
 }) => {
   const leadDate = formatActivityDetailLeadDate(activity.date, activity.time);
   const scheduleSpan =
-    activity.activityType !== 'rideshare'
+    activity.activityType !== 'rideshare' && activity.date
       ? activityScheduleSpanLabel(activity.date, activity.endDate)
       : null;
   const scheduleTimeStart = formatExploreTime(activity.time);

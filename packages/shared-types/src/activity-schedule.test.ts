@@ -40,6 +40,7 @@ describe('activity-schedule', () => {
   it('formats schedule span and overlap helpers', () => {
     expect(activityScheduleSpanLabel('2026-11-10', '2026-11-10')).toBe('Same day');
     expect(activityScheduleSpanLabel('2026-11-10', '2026-11-12')).toBe('3 days');
+    expect(activityScheduleSpanLabel(undefined as unknown as string)).toBe('Same day');
     expect(activityScheduleIncludesDate({ date: '2026-11-10', endDate: '2026-11-12' }, '2026-11-11')).toBe(
       true
     );

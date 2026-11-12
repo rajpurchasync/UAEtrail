@@ -1,5 +1,10 @@
-import { isTimeBoundExploreMapItem, type ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { isGeographyMapSource } from '@uaetrail/shared-types';
+import {
+  isFacilityMapSource,
+  isFacilityPlaceKind,
+  isGeographyMapSource,
+  isTimeBoundExploreMapItem,
+  type ExploreMapItemDTO,
+} from '@uaetrail/shared-types';
 import { BROWSE_LIST_CATEGORY_PLACES } from '../place/geographyVocabulary';
 import type { ExploreMapFilterPillKey } from '../explore/exploreBrowseTaxonomy';
 import {
@@ -13,9 +18,14 @@ import {
  */
 export type BrowseMainCategoryKey = 'activities' | 'venues' | 'people' | 'agencies';
 
-/** Location-bounded catalog pins — trails, camps, outdoor venues, and gear shops. */
-export const mapItemMatchesBrowsePlacesCategory = (item: ExploreMapItemDTO): boolean =>
-  isGeographyMapSource(item.source) || item.source === 'shop';
+const isFacilityBrowseItem = (item: ExploreMapItemDTO): boolean =>
+  isFacilityMapSource(item.source) || Boolean(item.placeKind && isFacilityPlaceKind(item.placeKind));
+
+/** Trails, camps, outdoor venues, and gear shops — not amenity POIs. */
+export const mapItemMatchesBrowsePlacesCategory = (item: ExploreMapItemDTO): boolean => {
+  if (isFacilityBrowseItem(item)) return false;
+  return isGeographyMapSource(item.source) || item.source === 'shop';
+};
 
 const isAgencyBrandItem = (item: ExploreMapItemDTO): boolean =>
   item.source === 'agency' &&

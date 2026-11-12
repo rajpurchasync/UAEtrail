@@ -15,14 +15,24 @@ import { matchesUnifiedTopicFilter } from '../explore/ui/exploreMapPinModel';
 import { resolveExploreItemScheduleDate } from '../explore/ui/exploreMapPinModel';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import { mapItemMatchesBrowseMainCategories } from './browseListTaxonomy';
+import type { PlaceKind } from '@uaetrail/shared-types';
+import {
+  EXPLORE_PRICE_FILTER_OPTIONS,
+  exploreItemMatchesFacilityKinds,
+  exploreItemMatchesPriceFilter,
+  explorePlaceHasHostedTrip,
+  hostedPlaceLocationIdsFromCatalog,
+  type ExplorePriceFilter,
+} from '../explore/exploreOptionalFilters';
 import type { BrowseTripTopicKey } from './browseListTripTopics';
 import { matchesListVenuePlaceTopic } from './listVenuePlaceTopicFilter';
 import type { ListVenuePlaceTopicKey } from './listVenuePlaceTopics';
 import type { BuddiesDiscoverySegment } from './buddiesDiscoverySegment';
+import { isPlacesMapItem, isShopListItem } from '../explore/ui/exploreMapPinModel';
 /** @deprecated Use BrowseMainCategoryKey — kept for imports migrating */
 export type BrowseCategoryKey = BrowseMainCategoryKey;
 
-export type BrowsePriceFilter = 'all' | 'free' | 'paid';
+export type BrowsePriceFilter = ExplorePriceFilter;
 
 export type BrowseWhenFilter = 'any' | 'week' | 'weekend';
 
@@ -34,7 +44,7 @@ export type BrowseListFilterState = {
   tripTopics: BrowseTripTopicKey[];
   /** Demand-only — explore pin kind `looking` (`filter=looking`). */
   tripLookingOnly: boolean;
-  /** Places category — hiking · camping · others (see `listVenuePlaceTopics.ts`). */
+  /** Places category — hiking · camping · hubs, plus facilities/shop URL keys. */
   placeTopics: ListVenuePlaceTopicKey[];
   price: BrowsePriceFilter;
   when: BrowseWhenFilter;
@@ -42,13 +52,14 @@ export type BrowseListFilterState = {
   activityDatePreset: ExploreActivityDatePreset;
   /** Buddies list category — who's going · looking for · followed. */
   buddiesSegment: BuddiesDiscoverySegment;
+  /** Venues with an upcoming hosted outing. Default off = all kinds. */
+  hasTrip: boolean;
+  /** Amenity subtypes — empty = all facilities when Facilities is selected. */
+  facilityKinds: PlaceKind[];
 };
 
-export const BROWSE_PRICE_OPTIONS: ReadonlyArray<{ key: BrowsePriceFilter; label: string }> = [
-  { key: 'all', label: 'All prices' },
-  { key: 'free', label: 'Free' },
-  { key: 'paid', label: 'Paid' },
-];
+export const BROWSE_PRICE_OPTIONS: ReadonlyArray<{ key: BrowsePriceFilter; label: string }> =
+  EXPLORE_PRICE_FILTER_OPTIONS;
 
 export const BROWSE_WHEN_OPTIONS: ReadonlyArray<{ key: BrowseWhenFilter; label: string }> = [
   { key: 'any', label: 'Any time' },
@@ -57,10 +68,10 @@ export const BROWSE_WHEN_OPTIONS: ReadonlyArray<{ key: BrowseWhenFilter; label: 
 
 const cardMatchesPrice = (card: DiscoveryCardModel, price: BrowsePriceFilter): boolean => {
   if (price === 'all') return true;
-  const badge = card.price?.badge?.toLowerCase() ?? '';
-  if (price === 'free') return badge.startsWith('free') || !card.price;
-  if (price === 'paid') return badge.includes('paid') || badge.includes('aed') || badge.includes('shared');
-  return true;
+  const kind = card.price?.kind;
+  if (kind === 'free' || kind === 'shared' || kind === 'paid') return kind === price;
+  if (price === 'free') return !card.price;
+  return false;
 };
 
 export const cardMatchesBrowsePrice = cardMatchesPrice;
@@ -99,10 +110,13 @@ export const filterExploreMapItemsForList = (
   }
 
   if (placesCategoryInScope && state.placeTopics.length > 0) {
-    pool = pool.filter((item) => {
-      if (!isGeographyMapSource(item.source) && item.source !== 'shop') return false;
-      return state.placeTopics.some((topic) => matchesListVenuePlaceTopic(item, topic));
-    });
+    const destinationTopics = state.placeTopics.filter((topic) => topic !== 'facilities');
+    if (destinationTopics.length > 0) {
+      pool = pool.filter((item) => {
+        if (!isGeographyMapSource(item.source) && item.source !== 'shop') return false;
+        return destinationTopics.some((topic) => matchesListVenuePlaceTopic(item, topic));
+      });
+    }
   }
 
   if (state.query.trim()) {
@@ -114,6 +128,22 @@ export const filterExploreMapItemsForList = (
   }
   if (tripsCategoryInScope && state.when === 'weekend') {
     pool = pool.filter(matchesWeekendBrowseFilter);
+  }
+
+  if (tripsCategoryInScope && state.price !== 'all') {
+    pool = pool.filter((item) => exploreItemMatchesPriceFilter(item, state.price));
+  }
+
+  if (placesCategoryInScope && state.facilityKinds.length > 0) {
+    pool = pool.filter((item) => exploreItemMatchesFacilityKinds(item, state.facilityKinds));
+  }
+
+  if (placesCategoryInScope && state.hasTrip) {
+    const hostedIds = hostedPlaceLocationIdsFromCatalog(items);
+    pool = pool.filter((item) => {
+      if (!isPlacesMapItem(item) && !isShopListItem(item)) return true;
+      return explorePlaceHasHostedTrip(item, hostedIds);
+    });
   }
 
   pool = filterListCatalogByVenueRegions(pool, venueRegions);

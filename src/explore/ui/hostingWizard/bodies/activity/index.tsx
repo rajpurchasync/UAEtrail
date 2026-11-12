@@ -1,11 +1,11 @@
-import { EXPLORE_FLOW } from '../../config/exploreTheme';
-import { JOIN_RULES_LABEL } from '../createFlowCopy';
-import { exploreFlowChoiceCardClass } from './exploreFlowUi';
+import { EXPLORE_FLOW } from '../../../../../config/exploreTheme';
+import { JOIN_RULES_LABEL } from '../../../../createFlowCopy';
+import { exploreFlowChoiceCardClass } from '../../../exploreFlowUi';
 import {
   ACTIVITY_HOSTING_TOPIC_OPTIONS,
   type ActivityHostingTopic,
   type CreateActivityDraft,
-} from './hostingFlowEngine';
+} from '../../../hostingFlowEngine';
 
 type PatchDraft = (patch: Partial<CreateActivityDraft>) => void;
 

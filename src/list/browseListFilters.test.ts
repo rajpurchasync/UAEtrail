@@ -13,6 +13,8 @@ const baseState: BrowseListFilterState = {
   when: 'any',
   activityDatePreset: 'anyday',
   buddiesSegment: 'available',
+  hasTrip: false,
+  facilityKinds: [],
 };
 
 const hikingActivity = (id: string): ExploreMapItemDTO =>
@@ -80,6 +82,50 @@ describe('filterExploreMapItemsForList', () => {
     );
     expect(filtered).toHaveLength(1);
     expect(filtered[0].source).toBe('venue');
+  });
+
+  it('drops amenity POIs from the Venues list', () => {
+    const toilet = {
+      id: 'facility:toilet-1',
+      kind: 'event',
+      source: 'facility',
+      placeKind: 'toilet',
+      title: 'Hatta Dam visitor toilets',
+      latitude: 25,
+      longitude: 55,
+      path: '/facility/toilet-1',
+    } as ExploreMapItemDTO;
+    const trail = hikingVenue('hatta-dam-loop');
+    const filtered = filterExploreMapItemsForList(
+      [toilet, trail],
+      { ...baseState, categories: ['venues'] },
+      []
+    );
+    expect(filtered.map((item) => item.id)).toEqual(['venue:hatta-dam-loop']);
+  });
+
+  it('By facilities keeps parent places with amenityKinds, not toilet cards', () => {
+    const toilet = {
+      id: 'facility:toilet-1',
+      kind: 'event',
+      source: 'facility',
+      placeKind: 'toilet',
+      title: 'Hatta Dam visitor toilets',
+      latitude: 25,
+      longitude: 55,
+      path: '/facility/toilet-1',
+    } as ExploreMapItemDTO;
+    const trailWithToilet = {
+      ...hikingVenue('hatta-dam-loop'),
+      locationCard: { id: 'hatta-dam-loop', amenityKinds: ['toilet'], amenityLabels: ['Toilet'] },
+    } as ExploreMapItemDTO;
+    const trailWithout = hikingVenue('jebel-jais');
+    const filtered = filterExploreMapItemsForList(
+      [toilet, trailWithToilet, trailWithout],
+      { ...baseState, categories: ['venues'], facilityKinds: ['toilet'] },
+      []
+    );
+    expect(filtered.map((item) => item.id)).toEqual(['venue:hatta-dam-loop']);
   });
 
   it('tripLookingOnly uses activity-discovery seeking selector', () => {

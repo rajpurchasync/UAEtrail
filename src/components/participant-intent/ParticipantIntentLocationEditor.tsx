@@ -1,14 +1,15 @@
-import { lazy, Suspense, useCallback, useState } from 'react';
-import { MapPin } from 'lucide-react';
+import { useCallback, useState } from 'react';
 import type { ParticipantIntentKind } from '@uaetrail/shared-types';
 import { MAP_CONFIG } from '../../config/platform';
-import { EXPLORE_Z } from '../../config/exploreTheme';
 import type { LocationPrecision } from '../../explore/ui/hostingFlowEngine';
 import { GOING_FROM_LABEL, TO_LOCATION_LABEL, fromLocationLabel } from '../../explore/createFlowCopy';
-
-const CreatePlacePicker = lazy(() =>
-  import('../../explore/ui/CreatePlacePicker').then((m) => ({ default: m.CreatePlacePicker }))
-);
+import {
+  ComposeMapEntryRow,
+  ComposePlacePickerOverlay,
+  COMPOSE_MAP_INTENTS,
+  formatComposeMapCoord,
+  useComposeMapSession,
+} from '../../explore/create/interactions';
 
 export type ParticipantIntentLocationValue = {
   latitude: number | null;
@@ -18,18 +19,15 @@ export type ParticipantIntentLocationValue = {
   toLongitude: number | null;
 };
 
-type MapTarget = 'primary' | 'to';
+type IntentMapIntent =
+  | typeof COMPOSE_MAP_INTENTS.intentPrimary
+  | typeof COMPOSE_MAP_INTENTS.intentTo;
 
 type ParticipantIntentLocationEditorProps = {
   kind: ParticipantIntentKind;
   value: ParticipantIntentLocationValue;
   onChange: (next: ParticipantIntentLocationValue) => void;
 };
-
-const coordLabel = (lat: number | null, lng: number | null, placed: boolean) =>
-  placed && lat != null && lng != null
-    ? `${lat.toFixed(4)}, ${lng.toFixed(4)}`
-    : 'Tap to choose on map';
 
 export const validateParticipantIntentLocations = (
   kind: ParticipantIntentKind,
@@ -47,57 +45,29 @@ export const validateParticipantIntentLocations = (
   return null;
 };
 
-const PinRow = ({
-  title,
-  subtitle,
-  placed,
-  accent,
-  onClick,
-}: {
-  title: string;
-  subtitle: string;
-  placed: boolean;
-  accent: 'emerald' | 'sky';
-  onClick: () => void;
-}) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className="flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-neutral-200 px-4 py-3 text-left hover:border-emerald-300"
-  >
-    <span className="flex items-center gap-2 text-gray-800 min-w-0">
-      <MapPin className={`h-5 w-5 shrink-0 ${accent === 'sky' ? 'text-sky-500' : 'text-emerald-500'}`} />
-      <span className="min-w-0">
-        <span className="block text-sm font-bold">{title}</span>
-        <span className="block truncate text-xs text-gray-500">{subtitle}</span>
-      </span>
-    </span>
-    <span className={`shrink-0 text-xs font-semibold ${accent === 'sky' ? 'text-sky-600' : 'text-emerald-600'}`}>
-      {placed ? 'Edit' : 'Map'}
-    </span>
-  </button>
-);
-
 export const ParticipantIntentLocationEditor = ({
   kind,
   value,
   onChange,
 }: ParticipantIntentLocationEditorProps) => {
-  const [mapTarget, setMapTarget] = useState<MapTarget | null>(null);
+  const mapSession = useComposeMapSession<IntentMapIntent>();
+  const { openMap, closeMap, intent: mapIntent, open: mapOpen } = mapSession;
+  const isToMap = mapIntent === COMPOSE_MAP_INTENTS.intentTo;
   const [draftLat, setDraftLat] = useState<number>(MAP_CONFIG.exploreDefaultCenter.lat);
   const [draftLng, setDraftLng] = useState<number>(MAP_CONFIG.exploreDefaultCenter.lng);
   const [draftPrecision, setDraftPrecision] = useState<LocationPrecision>(value.locationPrecision);
 
-  const openMap = (target: MapTarget) => {
-    if (target === 'to') {
-      setDraftLat(value.toLatitude ?? MAP_CONFIG.exploreDefaultCenter.lat);
-      setDraftLng(value.toLongitude ?? MAP_CONFIG.exploreDefaultCenter.lng);
-    } else {
-      setDraftLat(value.latitude ?? MAP_CONFIG.exploreDefaultCenter.lat);
-      setDraftLng(value.longitude ?? MAP_CONFIG.exploreDefaultCenter.lng);
-      setDraftPrecision(value.locationPrecision);
-    }
-    setMapTarget(target);
+  const openPrimary = () => {
+    setDraftLat(value.latitude ?? MAP_CONFIG.exploreDefaultCenter.lat);
+    setDraftLng(value.longitude ?? MAP_CONFIG.exploreDefaultCenter.lng);
+    setDraftPrecision(value.locationPrecision);
+    openMap(COMPOSE_MAP_INTENTS.intentPrimary);
+  };
+
+  const openTo = () => {
+    setDraftLat(value.toLatitude ?? MAP_CONFIG.exploreDefaultCenter.lat);
+    setDraftLng(value.toLongitude ?? MAP_CONFIG.exploreDefaultCenter.lng);
+    openMap(COMPOSE_MAP_INTENTS.intentTo);
   };
 
   const handleLocationChange = useCallback((lat: number, lng: number) => {
@@ -106,7 +76,7 @@ export const ParticipantIntentLocationEditor = ({
   }, []);
 
   const confirmMap = () => {
-    if (mapTarget === 'to') {
+    if (isToMap) {
       onChange({ ...value, toLatitude: draftLat, toLongitude: draftLng });
     } else {
       onChange({
@@ -116,7 +86,7 @@ export const ParticipantIntentLocationEditor = ({
         locationPrecision: draftPrecision,
       });
     }
-    setMapTarget(null);
+    closeMap();
   };
 
   const showPrimary =
@@ -128,7 +98,7 @@ export const ParticipantIntentLocationEditor = ({
   if (!showPrimary && !showOptionalPin) return null;
 
   const mapTitle =
-    mapTarget === 'to'
+    isToMap
       ? TO_LOCATION_LABEL
       : kind === 'event'
         ? 'Where would you like to go?'
@@ -142,7 +112,7 @@ export const ParticipantIntentLocationEditor = ({
 
       {showPrimary ? (
         <>
-          <PinRow
+          <ComposeMapEntryRow
             title={
               kind === 'event'
                 ? 'Location'
@@ -150,53 +120,44 @@ export const ParticipantIntentLocationEditor = ({
                   ? fromLocationLabel('rideshare')
                   : GOING_FROM_LABEL
             }
-            subtitle={coordLabel(value.latitude, value.longitude, primaryPlaced)}
+            subtitle={formatComposeMapCoord(value.latitude, value.longitude, primaryPlaced)}
             placed={primaryPlaced}
-            accent="emerald"
-            onClick={() => openMap('primary')}
+            onOpen={openPrimary}
           />
           {kind === 'rideshare' ? (
-            <PinRow
+            <ComposeMapEntryRow
               title={TO_LOCATION_LABEL}
-              subtitle={coordLabel(value.toLatitude, value.toLongitude, toPlaced)}
+              subtitle={formatComposeMapCoord(value.toLatitude, value.toLongitude, toPlaced)}
               placed={toPlaced}
               accent="sky"
-              onClick={() => openMap('to')}
+              onOpen={openTo}
             />
           ) : null}
         </>
       ) : (
-        <PinRow
+        <ComposeMapEntryRow
           title="Map pin (optional)"
-          subtitle={coordLabel(value.latitude, value.longitude, primaryPlaced)}
+          subtitle={formatComposeMapCoord(value.latitude, value.longitude, primaryPlaced)}
           placed={primaryPlaced}
-          accent="emerald"
-          onClick={() => openMap('primary')}
+          onOpen={openPrimary}
         />
       )}
 
-      {mapTarget ? (
-        <div className={`fixed inset-0 ${EXPLORE_Z.composeFlow} z-[3000] bg-neutral-100`}>
-          <Suspense fallback={<div className="h-full w-full animate-pulse bg-emerald-50" />}>
-            <CreatePlacePicker
-              openInAdjustMode={mapTarget === 'to' ? toPlaced : primaryPlaced}
-              precision={mapTarget === 'to' ? 'specific' : draftPrecision}
-              latitude={draftLat}
-              longitude={draftLng}
-              initialZoom={15}
-              headerTitle={mapTitle}
-              confirmLabel="Use this location"
-              onPrecisionChange={
-                mapTarget === 'primary' ? setDraftPrecision : () => setDraftPrecision('specific')
-              }
-              onLocationChange={handleLocationChange}
-              onBack={() => setMapTarget(null)}
-              onClose={() => setMapTarget(null)}
-              onConfirm={confirmMap}
-            />
-          </Suspense>
-        </div>
-      ) : null}
+      <ComposePlacePickerOverlay
+        open={mapOpen}
+        openInAdjustMode={isToMap ? toPlaced : primaryPlaced}
+        precision={isToMap ? 'specific' : draftPrecision}
+        latitude={draftLat}
+        longitude={draftLng}
+        initialZoom={15}
+        headerTitle={mapTitle}
+        confirmLabel="Use this location"
+        onPrecisionChange={isToMap ? () => setDraftPrecision('specific') : setDraftPrecision}
+        onLocationChange={handleLocationChange}
+        onBack={closeMap}
+        onClose={closeMap}
+        onConfirm={confirmMap}
+      />
     </div>
   );
 };

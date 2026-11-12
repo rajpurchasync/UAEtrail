@@ -1,27 +1,25 @@
 import { useMemo, useState } from 'react';
-import { Search } from 'lucide-react';
+import { MapPin, Search } from 'lucide-react';
 import type { AreaPublicDTO, PlaceDTO } from '@uaetrail/shared-types';
 import type { ActivityType } from '../../config/activityTypes';
-import { SUPPORTED_COUNTRIES, subdivisionNoun, type CountryCode } from '../../config/regions';
+import { subdivisionNoun, type CountryCode } from '../../config/regions';
 import { AppSelect } from '../../components/ui/AppSelect';
 import { EXPLORE_FLOW } from '../../config/exploreTheme';
 import {
-  HOSTING_DESTINATION_ADD_TRAIL_NEW,
   HOSTING_DESTINATION_EMPTY_ROUTES_PROMPT,
+  HOSTING_DESTINATION_NOT_FOUND,
   HOSTING_DESTINATION_FIND_PLACEHOLDER,
-  HOSTING_DESTINATION_LEAF_HINT,
   HOSTING_DESTINATION_SEARCH_GROUP_AREA,
   HOSTING_DESTINATION_SEARCH_GROUP_PLACE,
   HOSTING_DESTINATION_SEARCH_GROUP_ROUTE,
-  HOSTING_DESTINATION_PICK_PLACE_FIRST,
   HOSTING_DESTINATION_RESET_LABEL,
+  HOSTING_DESTINATION_SEARCH_TOGGLE,
   HOSTING_DESTINATION_SELECT_AREA,
-  HOSTING_DESTINATION_SELECT_COUNTRY,
   HOSTING_DESTINATION_SELECT_PLACE,
-  HOSTING_DESTINATION_SELECT_STATE,
   HOSTING_DESTINATION_SELECT_TRAIL_CAMP_LABEL,
   HOSTING_DESTINATION_SELECT_TRAIL_EVENT_LABEL,
   HOSTING_DESTINATION_SELECT_TRAIL_LABEL,
+  HOSTING_DESTINATION_UAE_CHIP,
 } from '../createFlowCopy';
 import {
   DEFAULT_PLACE_CATALOG_COUNTRY,
@@ -35,10 +33,7 @@ import {
   type PlaceCatalogDestinationSearchHit,
 } from '../../places/placeCatalogDestinationIndex';
 import type { CreateActivityDraft } from './hostingFlowEngine';
-import {
-  applyHostingDestinationSearchHit,
-  patchHostingDestinationCatalogLeafLadder,
-} from './hostingDestinationDraft';
+import { applyHostingDestinationSearchHit } from './hostingDestinationDraft';
 
 const fieldClass = EXPLORE_FLOW.composeField;
 const labelClass = EXPLORE_FLOW.composeFieldLabel;
@@ -59,13 +54,19 @@ type Props = {
   onPickTrail: (placeId: string) => void;
   onClearTrail: () => void;
   onPatchDraft: (patch: Partial<CreateActivityDraft>) => void;
-  onAddNewTrail?: () => void;
+  onAddNew?: () => void;
   onReset: () => void;
-  onCountryChange?: (countryCode: CountryCode) => void;
   placeGateMessage?: string | null;
-  hideTrailRow?: boolean;
+  hidePlaceAndTrail?: boolean;
   showFind?: boolean;
 };
+
+export const HostingDestinationUaeChip = () => (
+  <p className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-900">
+    <MapPin className="h-3.5 w-3.5" aria-hidden />
+    {HOSTING_DESTINATION_UAE_CHIP}
+  </p>
+);
 
 const searchGroupLabel = (hit: PlaceCatalogDestinationSearchHit): string => {
   if (hit.kind === 'trail') return HOSTING_DESTINATION_SEARCH_GROUP_ROUTE;
@@ -107,11 +108,10 @@ export const HostingDestinationCascade = ({
   onPickTrail,
   onClearTrail,
   onPatchDraft,
-  onAddNewTrail,
+  onAddNew,
   onReset,
-  onCountryChange,
   placeGateMessage,
-  hideTrailRow = false,
+  hidePlaceAndTrail = false,
   showFind = true,
 }: Props) => {
   const [query, setQuery] = useState('');
@@ -124,10 +124,6 @@ export const HostingDestinationCascade = ({
 
   const onSearchHit = (hit: PlaceCatalogDestinationSearchHit) => {
     if (hit.kind === 'trail') {
-      const row = catalogPlaces.find((place) => place.id === hit.placeId);
-      if (row) {
-        onPatchDraft(patchHostingDestinationCatalogLeafLadder(row, areas, countryCode, catalogPlaces));
-      }
       onPickTrail(hit.placeId);
       setQuery('');
       return;
@@ -173,24 +169,10 @@ export const HostingDestinationCascade = ({
 
   return (
     <div className="space-y-3">
-      <label className="block">
-        <span className={labelClass}>{HOSTING_DESTINATION_SELECT_COUNTRY}</span>
-        <AppSelect
-          className="mt-0.5 w-full"
-          value={countryCode}
-          disabled={!onCountryChange}
-          options={SUPPORTED_COUNTRIES.map((row) => ({ value: row.code, label: row.label }))}
-          onChange={(next) => onCountryChange?.(next as CountryCode)}
-          inputClassName={fieldClass}
-          aria-label={HOSTING_DESTINATION_SELECT_COUNTRY}
-        />
-        <p className="mt-1 text-xs text-neutral-600">Catalog scope for {stateColumnLabel.toLowerCase()}, area, and place lists.</p>
-      </label>
-
       {showFind ? (
         <label className="block">
-          <span className={labelClass}>Find place or trail</span>
-          <div className="relative mt-0">
+          <span className={labelClass}>{HOSTING_DESTINATION_SEARCH_TOGGLE}</span>
+          <div className="relative mt-1">
             <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
             <input
               type="search"
@@ -204,7 +186,7 @@ export const HostingDestinationCascade = ({
           {query.trim().length >= 2 ? (
             <ul className="mt-2 max-h-48 space-y-1 overflow-y-auto rounded-2xl border border-neutral-200 bg-white p-1">
               {searchHits.length === 0 ? (
-                <li className="px-3 py-2 text-sm text-neutral-600">No matches — use the fields below.</li>
+                <li className="px-3 py-2 text-sm text-neutral-600">No matches — try another name.</li>
               ) : (
                 searchHits.map((hit) => {
                   const key =
@@ -232,11 +214,20 @@ export const HostingDestinationCascade = ({
               )}
             </ul>
           ) : null}
+          {onAddNew ? (
+            <button
+              type="button"
+              onClick={onAddNew}
+              className="mt-2 text-sm font-semibold text-emerald-800 underline-offset-2 hover:underline"
+            >
+              {HOSTING_DESTINATION_NOT_FOUND}
+            </button>
+          ) : null}
         </label>
       ) : null}
 
-      <div className="flex items-center justify-end">
-        {hasSelection ? (
+      {hasSelection ? (
+        <div className="flex justify-end">
           <button
             type="button"
             onClick={onReset}
@@ -244,16 +235,17 @@ export const HostingDestinationCascade = ({
           >
             {HOSTING_DESTINATION_RESET_LABEL}
           </button>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
 
-      <label className="block">
+      <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white">
+      <label className="block px-3 py-2.5">
         <span className={labelClass}>{stateColumnLabel}</span>
         <AppSelect
           className="w-full"
           value={state}
           disabled={stateOptions.length === 0}
-          placeholder="Select state…"
+          placeholder={`Select ${stateColumnLabel.toLowerCase()}…`}
           options={stateOptions.map((row) => ({ value: row.value, label: row.label }))}
           onChange={(next) => onStateChange(next)}
           inputClassName={fieldClass}
@@ -261,7 +253,7 @@ export const HostingDestinationCascade = ({
         />
       </label>
 
-      <label className="block">
+      <label className="block border-t border-neutral-100 px-3 py-2.5">
         <span className={labelClass}>{HOSTING_DESTINATION_SELECT_AREA}</span>
         <AppSelect
           className="w-full"
@@ -275,7 +267,8 @@ export const HostingDestinationCascade = ({
         />
       </label>
 
-      <label className="block">
+      {hidePlaceAndTrail ? null : (
+      <label className="block border-t border-neutral-100 px-3 py-2.5">
         <span className={labelClass}>{HOSTING_DESTINATION_SELECT_PLACE}</span>
         <AppSelect
           className="w-full"
@@ -288,61 +281,38 @@ export const HostingDestinationCascade = ({
           aria-label={HOSTING_DESTINATION_SELECT_PLACE}
         />
       </label>
+      )}
 
-      {hideTrailRow ? null : (
-        <div className="block">
+      {hidePlaceAndTrail ? null : (
+        <div className="block border-t border-neutral-100 px-3 py-2.5">
           <span className={labelClass}>{trailCopy.label}</span>
-          {placeGroup ? (
-            <p className="mt-0.5 text-xs text-neutral-600">{HOSTING_DESTINATION_LEAF_HINT}</p>
+          {placeGroup && trailsInGroup.length === 0 ? (
+            <p className="mt-1 rounded-xl border border-dashed border-neutral-200 bg-neutral-50 px-3 py-3 text-sm text-neutral-700">
+              {HOSTING_DESTINATION_EMPTY_ROUTES_PROMPT}
+            </p>
           ) : (
-            <p className="mt-0.5 text-xs text-neutral-500">Choose a place to see trails here.</p>
-          )}
-          {placeGroup && trailsInGroup.length === 0 && onAddNewTrail ? (
-            <div className="mt-1 rounded-2xl border border-dashed border-emerald-200 bg-emerald-50/50 px-3 py-3">
-              <p className="text-sm text-emerald-950">{HOSTING_DESTINATION_EMPTY_ROUTES_PROMPT}</p>
-              <button
-                type="button"
-                onClick={onAddNewTrail}
-                className="mt-2 text-sm font-semibold text-emerald-800 underline-offset-2 hover:underline"
-              >
-                {HOSTING_DESTINATION_ADD_TRAIL_NEW}
-              </button>
-            </div>
-          ) : (
-            <div className="mt-1 flex overflow-hidden rounded-2xl border border-neutral-200 bg-white">
-              <div className="min-w-0 flex-1 border-r border-neutral-200">
-                <AppSelect
-                  className="w-full"
-                  value={draftRegistryPlaceId ?? ''}
-                  disabled={!placeGroup}
-                  placeholder={trailCopy.placeholder}
-                  options={trailsInGroup.map((row) => ({
-                    value: row.id,
-                    label: row.status === 'draft' ? `${row.name} (pending review)` : row.name,
-                  }))}
-                  onChange={(next) => onPickTrail(next)}
-                  inputClassName={`${fieldClass} rounded-none border-0`}
-                  aria-label={trailCopy.label}
-                />
-              </div>
-              {onAddNewTrail ? (
-                <button
-                  type="button"
-                  onClick={onAddNewTrail}
-                  className="shrink-0 px-4 py-3 text-sm font-semibold text-emerald-800 hover:bg-emerald-50"
-                >
-                  {HOSTING_DESTINATION_ADD_TRAIL_NEW}
-                </button>
-              ) : null}
+            <div className="mt-1">
+              <AppSelect
+                className="w-full"
+                value={draftRegistryPlaceId ?? ''}
+                disabled={!placeGroup}
+                placeholder={trailCopy.placeholder}
+                options={trailsInGroup.map((row) => ({
+                  value: row.id,
+                  label: row.status === 'draft' ? `${row.name} (pending review)` : row.name,
+                }))}
+                onChange={(next) => onPickTrail(next)}
+                inputClassName={fieldClass}
+                aria-label={trailCopy.label}
+              />
             </div>
           )}
           {placeGateMessage ? (
             <p className="mt-1.5 text-xs font-medium text-amber-800">{placeGateMessage}</p>
-          ) : !placeGroup && onAddNewTrail ? (
-            <p className="mt-1.5 text-xs text-neutral-500">{HOSTING_DESTINATION_PICK_PLACE_FIRST}</p>
           ) : null}
         </div>
       )}
+      </div>
 
       {draftRegistryPlaceId ? (
         <button

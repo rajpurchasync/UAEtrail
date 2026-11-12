@@ -52,7 +52,7 @@ describe('place peek presentation', () => {
     const card = buildDiscoveryCardViewModelCard(campItem());
     const facts = resolvePlaceCatalogFactLabels(card);
     expect(facts).toContain('Child-friendly');
-    expect(facts).toContain('Parking');
+    expect(facts).toContain('Parking available');
     expect(facts).toContain('Self-guided camping');
     expect(facts).toContain('Sand');
     expect(facts).toContain('Up to 12 people');

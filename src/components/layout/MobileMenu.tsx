@@ -244,7 +244,7 @@ const MobileDrawer = ({
     >
       <button
         type="button"
-        className={`absolute inset-x-0 bottom-0 top-[var(--consumer-mobile-header-stack,3.625rem)] bg-black/50 backdrop-blur-[2px] ${
+        className={`absolute inset-x-0 bottom-0 top-[var(--consumer-mobile-header-stack,3.375rem)] bg-black/50 backdrop-blur-[2px] ${
           open ? 'pointer-events-auto' : 'pointer-events-none'
         }`}
         aria-label="Close menu"
@@ -412,7 +412,7 @@ export const MobileMenuButton = ({ tone = 'default', className = '', showOnDeskt
     <button
       type="button"
       onClick={toggleMenu}
-      className={`${showOnDesktop ? '' : 'md:hidden'} relative ${MOBILE_CONSUMER_MENU_Z.menuButton} h-11 w-11 shrink-0 inline-flex items-center justify-center rounded-full transition-colors active:scale-95 ${toneClass} ${className}`}
+      className={`${showOnDesktop ? '' : 'md:hidden'} relative ${MOBILE_CONSUMER_MENU_Z.menuButton} h-10 w-10 shrink-0 inline-flex items-center justify-center rounded-full transition-colors active:scale-95 ${toneClass} ${className}`}
       aria-label={open ? 'Close menu' : 'Open menu'}
       aria-expanded={open}
     >

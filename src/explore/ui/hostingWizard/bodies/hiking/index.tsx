@@ -8,7 +8,7 @@ import {
   UserRound,
   Users,
 } from 'lucide-react';
-import { HostingPackingListEditor } from './HostingPackingListEditor';
+import { HostingPackingListEditor } from '../../../HostingPackingListEditor';
 import { defaultHikingPackingItems, withHikingKitExtras } from '@uaetrail/shared-types';
 import {
   formatHikeCapacityLabel,
@@ -17,13 +17,13 @@ import {
   resolveLimitedAudienceAccess,
   type ActivityDifficulty,
   type CreateActivityDraft,
-} from './hostingFlowEngine';
+} from '../../../hostingFlowEngine';
 import {
   formatParticipantMinAgeFieldValue,
   parseParticipantMinAgeFieldValue,
   DEFAULT_PARTICIPANT_MIN_AGE,
-} from './hostingParticipantAgeMin';
-import { HostingDestinationField } from './HostingDestinationField';
+} from '../../../hostingParticipantAgeMin';
+import { HostingDestinationField } from '../../../HostingDestinationField';
 import type { PlaceDTO } from '@uaetrail/shared-types';
 import {
   HIKE_APPROVAL_NO_LABEL,
@@ -44,10 +44,10 @@ import {
   PARTICIPANTS_MIN_AGE_LABEL,
   PARTICIPANTS_SPOTS_QUESTION,
   PARTICIPANTS_WHO_CAN_JOIN,
-} from '../createFlowCopy';
-import { EXPLORE_FLOW } from '../../config/exploreTheme';
-import { exploreFlowChoiceCardClass } from './exploreFlowUi';
-import type { JoinMode, ParticipationMode } from './hostingFlowEngine';
+} from '../../../../createFlowCopy';
+import { EXPLORE_FLOW } from '../../../../../config/exploreTheme';
+import { exploreFlowChoiceCardClass } from '../../../exploreFlowUi';
+import type { JoinMode, ParticipationMode } from '../../../hostingFlowEngine';
 
 type PatchDraft = (patch: Partial<CreateActivityDraft>) => void;
 
@@ -357,8 +357,6 @@ export const HikingDestinationStepBody = ({
     placeType="hiking"
     customNameLabel="Trail or area"
     customNamePlaceholder="e.g. Wadi Shawka loop"
-    showDifficulty={Boolean(draft.registryPlaceId)}
-    registryDifficultyHint
     onOpenSpotMap={onOpenSpotMap}
   />
 );

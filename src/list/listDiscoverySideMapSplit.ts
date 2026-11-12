@@ -1,4 +1,4 @@
-/** Resizable side map next to list / guest preview — keeps browse thumbs at two columns max. */
+/** Resizable side map next to list / guest preview — listing cards stay one column. */
 
 export const LIST_SIDE_MAP_WIDTH_STORAGE_KEY = 'uaetrail.listSideMap.width';
 export const LIST_SIDE_LIST_WIDTH_STORAGE_KEY = 'uaetrail.listSideMap.listWidth';

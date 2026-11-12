@@ -96,6 +96,7 @@ export const isMultiDayActivitySchedule = (
 
 /** Consumer copy — `Same day` or inclusive `N days` (matches host When step). */
 export const activityScheduleSpanLabel = (startDate: string, endDate?: string | null): string => {
+  if (!startDate || !ISO_DATE.test(startDate)) return 'Same day';
   const end = normalizeActivityScheduleEndDate(startDate, endDate);
   if (end <= startDate) return 'Same day';
   const days =

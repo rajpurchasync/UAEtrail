@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Building2, ChevronLeft, MapPin, ShoppingBag, User, X } from 'lucide-react';
 import type { HostProfileType } from '@uaetrail/shared-types';
@@ -39,10 +39,13 @@ import {
   type HostFlowStepId,
 } from './hostWizardFlow';
 import { useMemberStatus } from '../../hooks/useMemberStatus';
-
-const CreatePlacePicker = lazy(() =>
-  import('../../explore/ui/CreatePlacePicker').then((m) => ({ default: m.CreatePlacePicker }))
-);
+import {
+  ComposeMapEntryRow,
+  ComposePlacePickerOverlay,
+  COMPOSE_MAP_INTENTS,
+  formatComposeMapCoord,
+  useComposeMapSession,
+} from '../../explore/create/interactions';
 
 const fieldClass =
   'w-full rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-base text-neutral-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20';
@@ -140,7 +143,7 @@ export const ProProfileApplicationFlow = ({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mapPrecision, setMapPrecision] = useState<LocationPrecision>('specific');
-  const [locationMapOpen, setLocationMapOpen] = useState(false);
+  const mapSession = useComposeMapSession<typeof COMPOSE_MAP_INTENTS.proApplicationLocation>();
   const [prefillLoading, setPrefillLoading] = useState(false);
 
   const lockedProfileType = hostFlowIntentProfileType(intent);
@@ -164,7 +167,7 @@ export const ProProfileApplicationFlow = ({
       setError(null);
       setSubmitting(false);
       setMapPrecision('specific');
-      setLocationMapOpen(false);
+      mapSession.closeMap();
       return;
     }
 
@@ -247,8 +250,8 @@ export const ProProfileApplicationFlow = ({
   };
 
   const goBack = () => {
-    if (locationMapOpen) {
-      setLocationMapOpen(false);
+    if (mapSession.open) {
+      mapSession.closeMap();
       setError(null);
       return;
     }
@@ -267,7 +270,7 @@ export const ProProfileApplicationFlow = ({
   };
 
   const goToStep = (target: HostFlowStepId) => {
-    setLocationMapOpen(false);
+    mapSession.closeMap();
     setStep(target);
     setError(null);
   };
@@ -325,32 +328,30 @@ export const ProProfileApplicationFlow = ({
       ? ((currentStepIndex + 1) / flowSteps.length) * 100
       : null;
 
+  const locationPlaced = form.latitude != null && form.longitude != null;
   const locationMapOverlay =
-    step === 'location' && locationMapOpen && profileType && profileType !== 'individual' ? (
-      <div className="fixed inset-0 z-[1500] bg-neutral-100">
-        <Suspense fallback={<div className="h-full w-full animate-pulse bg-emerald-50" />}>
-          <CreatePlacePicker
-            openInAdjustMode={form.latitude != null && form.longitude != null}
-            precision={mapPrecision}
-            latitude={form.latitude ?? MAP_CONFIG.defaultCenter.lat}
-            longitude={form.longitude ?? MAP_CONFIG.defaultCenter.lng}
-            initialZoom={16}
-            headerTitle={locationPickerTitle(profileType)}
-            confirmLabel="Use this location"
-            onPrecisionChange={setMapPrecision}
-            onLocationChange={(latitude, longitude) => patchForm({ latitude, longitude })}
-            onBack={() => setLocationMapOpen(false)}
-            onClose={handleClose}
-            onConfirm={() => setLocationMapOpen(false)}
-          />
-        </Suspense>
-      </div>
+    step === 'location' && mapSession.open && profileType && profileType !== 'individual' ? (
+      <ComposePlacePickerOverlay
+        open
+        openInAdjustMode={locationPlaced}
+        precision={mapPrecision}
+        latitude={form.latitude ?? MAP_CONFIG.defaultCenter.lat}
+        longitude={form.longitude ?? MAP_CONFIG.defaultCenter.lng}
+        initialZoom={16}
+        headerTitle={locationPickerTitle(profileType)}
+        confirmLabel="Use this location"
+        onPrecisionChange={setMapPrecision}
+        onLocationChange={(latitude, longitude) => patchForm({ latitude, longitude })}
+        onBack={() => mapSession.closeMap()}
+        onClose={handleClose}
+        onConfirm={() => mapSession.closeMap()}
+      />
     ) : null;
 
   return (
     <>
       {locationMapOverlay}
-      {!locationMapOpen && (
+      {!mapSession.open && (
       <div className="fixed inset-0 z-[1400] flex flex-col bg-neutral-50">
         {(showPickStep || step !== 'pick' || lockedProfileType) && (
           <FlowHeader
@@ -677,24 +678,12 @@ export const ProProfileApplicationFlow = ({
                 ? 'Optional office location for your public agency profile — not shown on the explore map.'
                 : 'Pin your store so explorers can find you on the map.'}
             </p>
-            <button
-              type="button"
-              onClick={() => setLocationMapOpen(true)}
-              className="w-full flex items-center justify-between gap-3 rounded-2xl border-2 border-neutral-200 px-4 py-4 text-left hover:border-emerald-300"
-            >
-              <span className="flex items-center gap-2 text-neutral-800">
-                <MapPin className="h-5 w-5 text-emerald-600" />
-                <span>
-                  <span className="block text-sm font-bold">
-                    {form.latitude != null && form.longitude != null
-                      ? `${form.latitude.toFixed(4)}, ${form.longitude.toFixed(4)}`
-                      : 'Choose on map'}
-                  </span>
-                  <span className="text-xs text-neutral-500">Tap to adjust on the map</span>
-                </span>
-              </span>
-              <span className="text-xs font-semibold text-emerald-700">Edit</span>
-            </button>
+            <ComposeMapEntryRow
+              title="Location pin"
+              subtitle={formatComposeMapCoord(form.latitude, form.longitude, locationPlaced)}
+              placed={locationPlaced}
+              onOpen={() => mapSession.openMap(COMPOSE_MAP_INTENTS.proApplicationLocation)}
+            />
             <div className="mt-4">
               <span className="mb-2 block text-sm font-medium text-neutral-700">Region (optional)</span>
               <div className="flex flex-wrap gap-2">

@@ -2,7 +2,9 @@ import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../explore
 import { EXPLORE_MOBILE_MAP_CHROME, EXPLORE_Z } from '../../config/exploreTheme';
 import { ExploreMapMobileLayerChrome } from './ExploreMapMobileLayerChrome';
 import type { ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
+import type { PlaceKind } from '@uaetrail/shared-types';
 import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
+import type { ExplorePriceFilter, ExploreVenueFilterPatch } from '../exploreOptionalFilters';
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
 
 type ExploreMapChromeBarProps = {
@@ -22,8 +24,15 @@ type ExploreMapChromeBarProps = {
   onVenueFilterChange?: (filter: VenueListFilterKey) => void;
   tripMapTopics?: TripMapTopicKey[];
   placeMapTopics?: PlaceMapTopicKey[];
-  onToggleTripMapTopic?: (key: TripMapTopicKey) => void;
-  onTogglePlaceMapTopic?: (key: PlaceMapTopicKey) => void;
+  priceFilter?: ExplorePriceFilter;
+  hasTrip?: boolean;
+  facilityKinds?: PlaceKind[];
+  onTripTopicsChange?: (next: TripMapTopicKey[]) => void;
+  onPlaceTopicsChange?: (next: PlaceMapTopicKey[]) => void;
+  onPriceFilterChange?: (next: ExplorePriceFilter) => void;
+  onHasTripChange?: (next: boolean) => void;
+  onFacilityKindsChange?: (next: PlaceKind[]) => void;
+  onVenueFiltersChange?: (next: ExploreVenueFilterPatch) => void;
   onOpenExploreSearch?: () => void;
 };
 
@@ -42,11 +51,17 @@ export const ExploreMapChromeBar = ({
   onActivityDatePresetChange,
   onVenueRegionsChange,
   venueFilter,
-  onVenueFilterChange,
   tripMapTopics = [],
   placeMapTopics = [],
-  onToggleTripMapTopic,
-  onTogglePlaceMapTopic,
+  priceFilter = 'all',
+  hasTrip = false,
+  facilityKinds = [],
+  onTripTopicsChange,
+  onPlaceTopicsChange,
+  onPriceFilterChange,
+  onHasTripChange,
+  onFacilityKindsChange,
+  onVenueFiltersChange,
   onOpenExploreSearch,
 }: ExploreMapChromeBarProps) => (
   <div
@@ -64,11 +79,17 @@ export const ExploreMapChromeBar = ({
         onActivityDatePresetChange={onActivityDatePresetChange}
         onVenueRegionsChange={onVenueRegionsChange}
         venueFilter={venueFilter}
-        onVenueFilterChange={onVenueFilterChange}
         tripMapTopics={tripMapTopics}
         placeMapTopics={placeMapTopics}
-        onToggleTripMapTopic={onToggleTripMapTopic}
-        onTogglePlaceMapTopic={onTogglePlaceMapTopic}
+        priceFilter={priceFilter}
+        hasTrip={hasTrip}
+        facilityKinds={facilityKinds}
+        onTripTopicsChange={onTripTopicsChange}
+        onPlaceTopicsChange={onPlaceTopicsChange}
+        onPriceFilterChange={onPriceFilterChange}
+        onHasTripChange={onHasTripChange}
+        onFacilityKindsChange={onFacilityKindsChange}
+        onVenueFiltersChange={onVenueFiltersChange}
         searchQuery={searchQuery}
         onSearchQueryChange={onSearchQueryChange}
         onSearchCommit={onSearchCommit}

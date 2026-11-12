@@ -16,6 +16,8 @@ const baseState: BrowseListFilterState = {
   when: 'any',
   activityDatePreset: 'anyday',
   buddiesSegment: 'looking',
+  hasTrip: false,
+  facilityKinds: [],
 };
 
 describe('browseListMapHandoff', () => {

@@ -1,10 +1,10 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Baby, Plus, SlidersHorizontal, UserRound, Users } from 'lucide-react';
 import { formatRideshareVehicleLabel } from '@uaetrail/shared-types';
-import { EXPLORE_FLOW } from '../../config/exploreTheme';
-import { PROFILE_VEHICLES_PATH } from '../../config/surfacePaths';
-import { mobileBackNavState } from '../../utils/mobileBackNav';
-import { exploreFlowChoiceCardClass } from './exploreFlowUi';
+import { EXPLORE_FLOW } from '../../../../../config/exploreTheme';
+import { PROFILE_VEHICLES_PATH } from '../../../../../config/surfacePaths';
+import { mobileBackNavState } from '../../../../../utils/mobileBackNav';
+import { exploreFlowChoiceCardClass } from '../../../exploreFlowUi';
 import {
   PARTICIPANTS_ANYONE_SUBTITLE,
   PARTICIPANTS_ANYONE_TITLE,
@@ -12,21 +12,21 @@ import {
   PARTICIPANTS_LIMITED_TITLE,
   PARTICIPANTS_MIN_AGE_LABEL,
   PARTICIPANTS_WHO_CAN_JOIN,
-} from '../createFlowCopy';
+} from '../../../../createFlowCopy';
 import {
   formatCapacityLabel,
   RIDESHARE_CAPACITY_PRESETS,
   resolveLimitedAudienceAccess,
   type CreateActivityDraft,
-} from './hostingFlowEngine';
+} from '../../../hostingFlowEngine';
 import {
   formatParticipantMinAgeFieldValue,
   parseParticipantMinAgeFieldValue,
   DEFAULT_PARTICIPANT_MIN_AGE,
-} from './hostingParticipantAgeMin';
-import { useMemberVehicles } from '../../hooks/useMemberVehicles';
-import { MemberVehicleCarIcon } from '../../components/vehicles/MemberVehicleCarIcon';
-import { MEMBER_VEHICLE_COLOR_LABELS } from '../../components/vehicles/memberVehicleColorChrome';
+} from '../../../hostingParticipantAgeMin';
+import { useMemberVehicles } from '../../../../../hooks/useMemberVehicles';
+import { MemberVehicleCarIcon } from '../../../../../components/vehicles/MemberVehicleCarIcon';
+import { MEMBER_VEHICLE_COLOR_LABELS } from '../../../../../components/vehicles/memberVehicleColorChrome';
 
 type PatchDraft = (patch: Partial<CreateActivityDraft>) => void;
 

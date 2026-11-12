@@ -330,7 +330,7 @@ export const createFlowStepTitle = (
     if (structuredHost || rideshareHost || activityHost) return 'Who can join?';
     return 'Who can attend?';
   }
-  if (step === 'destination' && structuredHost) return 'Where will it be?';
+  if (step === 'destination' && structuredHost) return 'Select a venue';
   if (step === 'difficulty' && hikingHost) return 'How difficult is the hike?';
   if (step === 'difficulty') return 'Difficulty';
   if (step === 'about_trail' && campingHost) return 'About this camp';

@@ -1,20 +1,20 @@
 import { useEffect } from 'react';
 import { defaultHikingPackingItems, withHikingKitExtras, type PlaceDTO } from '@uaetrail/shared-types';
-import { EXPLORE_FLOW } from '../../config/exploreTheme';
-import { JOIN_RULES_LABEL } from '../createFlowCopy';
-import { HostingDestinationField } from './HostingDestinationField';
-import { HostingPackingListEditor } from './HostingPackingListEditor';
-import type { CreateActivityDraft } from './hostingFlowEngine';
+import { EXPLORE_FLOW } from '../../../../../config/exploreTheme';
+import { JOIN_RULES_LABEL } from '../../../../createFlowCopy';
+import { HostingDestinationField } from '../../../HostingDestinationField';
+import { HostingPackingListEditor } from '../../../HostingPackingListEditor';
+import type { CreateActivityDraft } from '../../../hostingFlowEngine';
 
 export {
   HikingAudienceStepBody as EventAudienceStepBody,
   HikingSpotsStepBody as EventParticipantsStepBody,
-} from './hostingHikingWizardSteps';
+} from '../hiking';
 
 export {
   CampingTransportationStepBody as EventTransportationStepBody,
   CampingTransportationStepBody as HikingTransportationStepBody,
-} from './hostingCampingWizardSteps';
+} from '../camping';
 
 type PatchDraft = (patch: Partial<CreateActivityDraft>) => void;
 

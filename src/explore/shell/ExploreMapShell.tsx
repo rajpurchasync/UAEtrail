@@ -156,8 +156,15 @@ export const ExploreMapShell = ({
       onVenueFilterChange={browse.applyVenueFilter}
       tripMapTopics={browse.tripMapTopics}
       placeMapTopics={browse.placeMapTopics}
-      onToggleTripMapTopic={browse.toggleTripMapTopic}
-      onTogglePlaceMapTopic={browse.togglePlaceMapTopic}
+      priceFilter={browse.priceFilter}
+      hasTrip={browse.hasTrip}
+      facilityKinds={browse.facilityKinds}
+      onTripTopicsChange={browse.applyTripMapTopics}
+      onPlaceTopicsChange={browse.applyPlaceMapTopics}
+      onPriceFilterChange={browse.applyPriceFilter}
+      onHasTripChange={browse.applyHasTrip}
+      onFacilityKindsChange={browse.applyFacilityKinds}
+      onVenueFiltersChange={browse.applyVenueFilters}
       searchQuery={browse.query}
       onSearchQueryChange={browse.setQuery}
       onOpenExploreSearch={() => {

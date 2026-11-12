@@ -20,6 +20,7 @@ describe('mobile bottom nav contract', () => {
     expect(source).toContain('mobileFiveTabHomePath');
     expect(source).toContain('resolveMobileFiveTab');
     expect(source).toContain('grid-cols-5');
+    expect(source).toContain('safe-area-bottom');
   });
 });
 

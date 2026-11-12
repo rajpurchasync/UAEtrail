@@ -75,6 +75,7 @@ import { logConnectionsDemoPlaybook, seedConnectionsDemo } from './seedConnectio
 import { ensureDemoExploreActivities, seedDemoScheduledActivities } from './seed-demo-scheduled-activities.js';
 import { refreshSeedParticipantSeekingSchedules } from './seed-demo-seeking-schedules.js';
 import { seedCatalogFacilities } from './seed-catalog-facilities.js';
+import { seedCatalogPlaceReviews } from '../src/lib/seed-catalog-place-reviews.js';
 
 const seedChatThread = async (
   messages: Array<{
@@ -1002,9 +1003,15 @@ async function main() {
     await backfillSeedCatalogLocationAreaIds();
     await deactivateOrphanActiveLocations();
     await restampCatalogGeoIndexFields();
+    const placeReviews = await seedCatalogPlaceReviews();
     const { invalidateExploreMapCache } = await import('../src/lib/explore-map-cache.js');
     await invalidateExploreMapCache();
     console.log('[seed] Curated areas upserted and catalog place areaIds backfilled');
+    if (!placeReviews.skipped) {
+      console.log(
+        `[seed] Catalog place reviews: places=${placeReviews.places} shops=${placeReviews.shops} inserted=${placeReviews.inserted} updated=${placeReviews.updated}`
+      );
+    }
     await ensureDemoExploreActivities();
     if (isMobileInboxSeedEnabled()) {
       await runMobileInboxDemoSeed();
@@ -2017,14 +2024,6 @@ Share your live location and carry extra water in summer months.`
 
   await upsertReview({
     userId: participant._id,
-    targetType: ReviewTargetType.LOCATION,
-    targetId: 'wadi-shawka-loop',
-    rating: 5,
-    comment: 'Beautiful wadi with easy access. Perfect for a morning hike with friends.'
-  });
-
-  await upsertReview({
-    userId: participant._id,
     targetType: ReviewTargetType.TENANT,
     targetId: agencyTenant.id,
     rating: 5,
@@ -2049,13 +2048,12 @@ Share your live location and carry extra water in summer months.`
       'Fair seat contribution and easy coordination on WhatsApp. Helpful with bags at the trailhead.'
   });
 
-  await upsertReview({
-    userId: agencyGuide._id,
-    targetType: ReviewTargetType.LOCATION,
-    targetId: 'jebel-jais-summit-trail',
-    rating: 4,
-    comment: 'Challenging but rewarding summit trail. Start early and bring layers for the summit.'
-  });
+  const catalogPlaceReviews = await seedCatalogPlaceReviews();
+  if (!catalogPlaceReviews.skipped) {
+    console.log(
+      `[seed] Catalog place reviews: places=${catalogPlaceReviews.places} shops=${catalogPlaceReviews.shops} inserted=${catalogPlaceReviews.inserted} updated=${catalogPlaceReviews.updated}`
+    );
+  }
 
   await upsertNotification({
     id: 'seed-notif-visitor-approved',

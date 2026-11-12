@@ -22,7 +22,7 @@ export const MobileProfileHeaderIdentity = ({ activeOnProfile = false }: MobileP
     return (
       <Link
         to={signInHref}
-        className="flex shrink-0 items-center py-1 active:opacity-90"
+        className="flex shrink-0 items-center py-0.5 active:opacity-90"
         aria-label="Sign in or sign up"
       >
         <span className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 ring-1 ring-neutral-200/80">
@@ -38,8 +38,8 @@ export const MobileProfileHeaderIdentity = ({ activeOnProfile = false }: MobileP
 
   const identityText = (
     <span className="min-w-0 text-left">
-      <span className="block truncate text-[15px] font-semibold leading-tight text-neutral-900">{displayName}</span>
-      <span className="mt-0.5 block min-w-0 truncate text-xs font-medium text-neutral-500">{locationLine}</span>
+      <span className="block truncate text-base font-semibold leading-tight text-neutral-900">{displayName}</span>
+      <span className="mt-0.5 block min-w-0 truncate text-[0.8125rem] font-medium text-neutral-500">{locationLine}</span>
     </span>
   );
 
@@ -47,13 +47,13 @@ export const MobileProfileHeaderIdentity = ({ activeOnProfile = false }: MobileP
     <SecureAvatar
       src={user.avatarUrl}
       name={displayName}
-      className={`h-10 w-10 shrink-0 text-[10px] ${activeOnProfile ? 'ring-2 ring-emerald-500/80' : ''}`}
+      className={`h-10 w-10 shrink-0 text-[11px] ${activeOnProfile ? 'ring-2 ring-emerald-500/80' : ''}`}
     />
   );
 
   if (activeOnProfile) {
     return (
-      <div className="flex min-w-0 items-center gap-3 py-1" aria-current="page">
+      <div className="flex min-w-0 items-center gap-3 py-0.5" aria-current="page">
         {avatar}
         {identityText}
       </div>
@@ -61,7 +61,7 @@ export const MobileProfileHeaderIdentity = ({ activeOnProfile = false }: MobileP
   }
 
   return (
-    <Link to={PROFILE_PATH} className="flex min-w-0 items-center gap-3 py-1 active:opacity-90" aria-label="Profile">
+    <Link to={PROFILE_PATH} className="flex min-w-0 items-center gap-3 py-0.5 active:opacity-90" aria-label="Profile">
       {avatar}
       {identityText}
     </Link>

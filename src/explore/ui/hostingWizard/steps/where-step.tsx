@@ -1,10 +1,12 @@
-import { MapPin } from 'lucide-react';
 import {
   HostingWizardChrome,
   HostingWizardStepError,
   HostingWizardStepNext
 } from '../HostingWizardChrome';
-import { EXPLORE_FLOW } from '../../../../config/exploreTheme';
+import {
+  ComposeMapEntryRow,
+  formatComposeMapCoord,
+} from '../../../create/interactions';
 import { WHERE_STEP_CAMP_HINT, WHERE_STEP_HINT } from '../../../createFlowCopy';
 import type { ReactNode } from 'react';
 import type { HostingWizardContext } from '../hostingWizardContext';
@@ -17,7 +19,7 @@ export function renderWhereStep(ctx: HostingWizardContext): ReactNode | null {
     draft,
     error,
     hasFromPin,
-    setWhereMapOpen,
+    openGoingFromMap,
     goNext,
     goBack,
     handleClose,
@@ -27,28 +29,25 @@ export function renderWhereStep(ctx: HostingWizardContext): ReactNode | null {
     return null;
   }
 
+  const camping = kind === 'camping';
+
   return (
           <HostingWizardChrome title={stepTitle} onClose={handleClose} onBack={goBack}>
             <p className="mb-4 text-sm text-gray-600">
-              {kind === 'camping' ? WHERE_STEP_CAMP_HINT : WHERE_STEP_HINT}
+              {camping ? WHERE_STEP_CAMP_HINT : WHERE_STEP_HINT}
             </p>
-            <button
-              type="button"
-              onClick={() => setWhereMapOpen(true)}
-              className={EXPLORE_FLOW.mapPinCard}
-            >
-              <span className="flex items-center gap-2 text-gray-800">
-                <MapPin className="h-5 w-5 text-emerald-600" />
-                <span className="text-sm text-gray-800">
-                  {hasFromPin
-                    ? `${draft.latitude?.toFixed(4)}, ${draft.longitude?.toFixed(4)}`
-                    : kind === 'camping'
-                      ? 'Tap to choose camp location'
-                      : 'Tap to choose on map'}
-                </span>
-              </span>
-              <span className="text-xs font-semibold text-emerald-700">{hasFromPin ? 'Edit' : 'Map'}</span>
-            </button>
+            <ComposeMapEntryRow
+              title={camping ? 'Camp location' : 'Location pin'}
+              subtitle={
+                hasFromPin
+                  ? formatComposeMapCoord(draft.latitude, draft.longitude, true)
+                  : camping
+                    ? 'Tap to choose camp location'
+                    : formatComposeMapCoord(draft.latitude, draft.longitude, false)
+              }
+              placed={hasFromPin}
+              onOpen={openGoingFromMap}
+            />
             <HostingWizardStepError error={error} />
             <HostingWizardStepNext disabled={!hasFromPin} onClick={goNext}  />
           </HostingWizardChrome>

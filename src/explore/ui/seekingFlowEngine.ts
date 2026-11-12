@@ -106,7 +106,6 @@ const HIKING_DEMAND_STEPS: SeekingFlowStepId[] = [
   'title',
   'when',
   'curatedArea',
-  'destination',
   'persons',
   'audience',
   'from',
@@ -119,7 +118,6 @@ const CAMPING_DEMAND_STEPS: SeekingFlowStepId[] = [
   'title',
   'when',
   'curatedArea',
-  'destination',
   'persons',
   'audience',
   'from',
@@ -146,6 +144,7 @@ const EVENT_DEMAND_STEPS: SeekingFlowStepId[] = [
   'curatedArea',
   'persons',
   'audience',
+  'from',
   'info',
   'review',
 ];
@@ -225,8 +224,8 @@ export const getSeekingFlowSteps = (kind: SeekingKind): SeekingFlowStepId[] => {
 
 /** Sheet heading for each step (shown under the header). */
 export const seekingFlowStepTitle = (step: SeekingFlowStepId, kind: SeekingKind): string => {
-  if (step === 'curatedArea') return 'Area & map pin';
-  if (step === 'destination') return 'Preferred destination';
+  if (step === 'curatedArea') return 'Preferred area';
+  if (step === 'destination') return 'Preferred area';
   if (step === 'audience') return 'Looking for';
   if (step === 'transport') return 'Transport';
 
@@ -259,6 +258,8 @@ export const seekingFlowStepTitle = (step: SeekingFlowStepId, kind: SeekingKind)
         return 'Preferred date & time';
       case 'area':
         return 'Where';
+      case 'from':
+        return 'Going from';
       case 'persons':
         return 'No of people';
       case 'info':
@@ -432,7 +433,12 @@ export const validateSeekingStep = (step: SeekingFlowStepId, draft: SeekingDraft
       if (!draft.preferredArea.trim()) return 'Choose a preferred destination.';
       return null;
     case 'from':
-      if (kind === 'rideshare' || usesHikingSeekingFlow(kind) || usesCampingSeekingFlow(kind)) {
+      if (
+        kind === 'rideshare' ||
+        usesHikingSeekingFlow(kind) ||
+        usesCampingSeekingFlow(kind) ||
+        usesEventSeekingFlow(kind)
+      ) {
         if (!draft.fromPinPlaced || draft.latitude == null || draft.longitude == null) {
           return 'Drop a going-from pin on the map.';
         }
@@ -542,11 +548,9 @@ export const publishSeekingRequest = async (draft: SeekingDraft): Promise<Seekin
         ? null
         : draft.time,
     preferredArea: draft.preferredArea.trim() || null,
-    latitude:
-      draft.fromPinPlaced || draft.areaPinPlaced ? draft.latitude : null,
-    longitude:
-      draft.fromPinPlaced || draft.areaPinPlaced ? draft.longitude : null,
-    locationPrecision: draft.areaPinPlaced || draft.fromPinPlaced ? draft.locationPrecision : undefined,
+    latitude: draft.fromPinPlaced ? draft.latitude : null,
+    longitude: draft.fromPinPlaced ? draft.longitude : null,
+    locationPrecision: draft.fromPinPlaced ? draft.locationPrecision : undefined,
     toLatitude: draft.toPinPlaced ? draft.toLatitude : null,
     toLongitude: draft.toPinPlaced ? draft.toLongitude : null,
     partySize: draft.partySize,

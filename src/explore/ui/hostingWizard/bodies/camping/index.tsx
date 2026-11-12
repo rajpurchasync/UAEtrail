@@ -1,18 +1,18 @@
-import { HostingDestinationField } from './HostingDestinationField';
+import { HostingDestinationField } from '../../../HostingDestinationField';
 import type { PlaceDTO } from '@uaetrail/shared-types';
-import { EXPLORE_FLOW } from '../../config/exploreTheme';
-import { exploreFlowChoiceCardClass } from './exploreFlowUi';
-import { JOIN_RULES_LABEL } from '../createFlowCopy';
+import { EXPLORE_FLOW } from '../../../../../config/exploreTheme';
+import { exploreFlowChoiceCardClass } from '../../../exploreFlowUi';
+import { JOIN_RULES_LABEL } from '../../../../createFlowCopy';
 import {
   VEHICLE_ACCESS_OPTIONS,
   type CreateActivityDraft,
   type VehicleAccess,
-} from './hostingFlowEngine';
+} from '../../../hostingFlowEngine';
 
 export {
   HikingAudienceStepBody as CampingAudienceStepBody,
   HikingSpotsStepBody as CampingParticipantsStepBody,
-} from './hostingHikingWizardSteps';
+} from '../hiking';
 
 type PatchDraft = (patch: Partial<CreateActivityDraft>) => void;
 

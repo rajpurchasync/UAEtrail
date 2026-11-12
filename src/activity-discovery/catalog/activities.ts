@@ -10,6 +10,10 @@ import {
   matchesTripMapTopicFilter,
   type TripMapTopicKey,
 } from '../../explore/exploreMapQuickTopicFilters';
+import {
+  exploreItemMatchesPriceFilter,
+  type ExplorePriceFilter,
+} from '../../explore/exploreOptionalFilters';
 import { isBuddyMapItem } from '../../explore/ui/exploreMapPinModel';
 import {
   selectSeekingActivitiesFromExploreCatalog,
@@ -19,6 +23,7 @@ import {
 export type ExploreActivityCatalogFilters = ExploreSeekingCatalogFilters & {
   activityModeFilter?: ExploreActivityModeFilter;
   tripMapTopics?: TripMapTopicKey[];
+  priceFilter?: ExplorePriceFilter;
 };
 
 /**
@@ -54,6 +59,7 @@ export const selectActivitiesFromExploreCatalog = (
         return matchesActivityDateFilter(item, datePreset);
       })
       .filter((item) => exploreMapItemMatchesActivityModeFilter(item, activityModeFilter))
+      .filter((item) => exploreItemMatchesPriceFilter(item, filters.priceFilter ?? 'all'))
       .filter((item) => exploreItemMatchesQuery(item, filters.query))
   );
 };

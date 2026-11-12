@@ -373,6 +373,8 @@ Host preview (`previewMode`) and `ActivityManageSheet` (`isEmbedded: true`) use 
 | Join / RSVP / request | `useActivityJoinFlow`, wire footers | L2 actions, L3 footers, Plan manage |
 | `viewerAccess` → UI | `mapViewerAccessToUi`, `resolvePeekDetailAccess` | L2–L3 parity guards |
 | Participation modals | Activity manage / invite sheets | Explore host on map, L3, `/publishing/requests` |
+| **Location pick (write)** | `CreatePlacePicker` + `ComposePlacePickerOverlay` + `ComposeMapEntryRow` (`src/explore/create/interactions/`) | FAB Host / Seek / Add, participant intent, Pro application — **not** admin `MapPinPicker` |
+| **Compose wizard frame** | `ComposeWizardShell` + `ComposeWizardStepChrome` · step modules in `hostingWizard/` `seekingWizard/` `addWizard/` | FAB Host / Seek / Add / Facility — map session first, then sheet |
 
 #### 6.2.6 Admin & operator (out of consumer methodology)
 
@@ -417,6 +419,7 @@ Track consolidation here; sub-roadmaps link out but **this table is the system-w
 | **C26** | Catalog POI model flat (`locations` + `place-kind` amenities); area-wide “nearby facilities”; FAB **Host·Find crew·Add on map**; v3 `?compose=` (`host` \| `seek` \| `add` only); contribute/submit/registry jargon split | Wrong trail amenities; organize picker pollution; duplicate shop semantics (member pin vs operator storefront) | **Program CPC** (§8.4): **Place** + **Facility** entities; catalog queries; `viewerAccess` on places; compose wire host/seek/add only | **Mitigated (CPC-0–6)** — CPC-7 dual-read tail + `verify:system` before close |
 | **C27** | ~~**Doc corpus sprawl**~~ | — | **Mitigated (Oct 2026)** — `experiment/README` only; retired narratives stubbed or deleted; schedules §8 only | [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md) · `verify:docs` |
 | **C28** | **Multi-quarter refactor without program spine** | Half-migrations, lost context mid-flight | **`scripts/refactor-program.json`** + §8.6 phase gates; manifest + migration IDs; strangler rules | §8.6 below |
+| **C29** | ~~**Write-surface UI lag**~~ | — | **Done (S14-W5)** — location kit, compose shell, pillar steps, Host bodies, UAE destination modes | **S14** §8.3.6 |
 
 **Not debt (intentional):** legacy `/host/*` → `/publishing/*` SPA rewrite; Mongo `locations` collection name (wire **Place**); `x-organisation-id` header; `getOrganisationProfile` for **storefront** — not activity roster. Leftover inbound URLs: `/trail`·`/camp`·`/venue` → `/place/:id`; `/contributions` → `/profile/submissions`.
 
@@ -444,10 +447,11 @@ Ordered for **coherence**, not feature count:
 | **S11** | **Structural module naming (P5 SN-1–SN-8)** — context folders, not synonym renames | **SN-1–SN-8 done** — `useMemberStatus`, `tenantActivityClientApi`, `/publishing` mount, `moduleNamingGuard` SN-6 | §8.8 (this doc) P5 |
 | **S12** | **Hosted + seeking activity coherence** (one host, one map pin, linked transport) | **S12a–d done** | [`CREATE_FLOW.md`](./CREATE_FLOW.md) § Coherence program |
 | **S13** | **Frontend surface methodology** — profiles, discovery projections, admin/operator boundaries, L3 composers (§6.2) | **Guards + W1–W9 shipped** — **product closure = P4b** (`MIG-SURFACE-*`); **W10** = S10f gate | §8.3 · **§8.6 P4b** |
+| **S14** | **Write surfaces** — location pick kit, compose wizard chrome, pillar step modules, destination UX, stale-file hygiene | **Done** — W0–W5 shipped | §8.3.6 · [`CREATE_FLOW.md`](./CREATE_FLOW.md) |
 
 ### 8.3 S13 — unified frontend & UI program (final phase plan)
 
-**Canonical architecture:** §6.1 (discovery L0–L3) + §6.2 (surface families). **This section** is the **only** implementation schedule for remaining UI structure work (retired `docs/experiment/*` plan files — see [`experiment/README.md`](./experiment/README.md)).
+**Canonical architecture:** §6.1 (discovery L0–L3) + §6.2 (surface families). **S13** = read/detail surfaces. **S14** (§8.3.6) = write/compose surfaces. Retired `docs/experiment/*` plan files — see [`experiment/README.md`](./experiment/README.md).
 
 #### 8.3.1 Synthesis — one vertical stack per object
 
@@ -487,7 +491,9 @@ flowchart LR
   ROUTE --> COMP --> SHL
 ```
 
-**Cross-cutting kits** (§6.2.5): guest gate, join flow, `mapViewerAccessToUi` — imported by L2/L3; never forked per surface.
+**Cross-cutting kits** (§6.2.5): guest gate, join flow, `mapViewerAccessToUi`, **location pick** — imported by L2/L3/write chrome; never forked per surface.
+
+**Write chrome (FAB compose):** `ComposeHost` mounts three **domain** wizards (Host / Find crew / Add). Shared shell and map overlay live in `src/explore/create/` — not a fourth product, not L1 card VMs. Engines stay split (`hostingFlowEngine`, `seekingFlowEngine`, `addFlow` / `addFacilityFlow`). Schedule: **S14** (§8.3.6).
 
 #### 8.3.2 Baseline — already shipped (do not rebuild)
 
@@ -543,6 +549,22 @@ Work **top to bottom**. Each wave ends with **`npm run verify:system:quick`** (w
 2. No new `Explore*Peek*` entity files; no new `/become-host` links; no product `isHostRole` gates.
 3. Authorization stays on API `viewerAccess` — FE maps with `mapViewerAccessToUi` / `mapProfileViewerAccessToMemberLink`.
 4. Tier-1 doc delta in same PR (at least `NAVIGATION` or `DOMAIN_CANONICALS` §3.2 if routes/links change).
+
+#### 8.3.6 S14 — write surfaces (compose + location kit)
+
+**Does not rebuild** discovery L1–L3, peek, or member profile. Extends §6.2.5 for **writes**.
+
+| Wave | Outcome | Delete / stop using when done |
+|------|---------|-------------------------------|
+| **S14-W0** | Charter (this section + `CREATE_FLOW` code map) | No new compose architecture markdown |
+| **S14-W1** | Location kit: `ComposePlacePickerOverlay`, `ComposeMapEntryRow`, `useComposeMapSession` | Direct `lazy(() => import('…CreatePlacePicker'))` in wizards |
+| **S14-W2** | `ComposeWizardShell` (sheet + wide-page + back: map session first) | Per-flow `FlowSheetChrome` copy-paste where the shell covers it |
+| **S14-W3** | Thin controllers + `seekingWizard/steps`, `addWizard/steps` | Inline step blocks in `CreateSeekingFlow` / `CreateAddFlow` after extract |
+| **S14-W4** | Host bodies → `hostingWizard/bodies/` | Root `hosting*WizardSteps.tsx` barrels |
+| **S14-W5** | Destination product UX (UAE chip, ladder, in-host add-new) | Host-only map apply forks; `showDifficulty` on destination step |
+| **Hygiene** | Guard `composePlatformGuard`; no re-add of `organizeFlow` / `demandFlow` (already gone) | See stale inventory in [`CREATE_FLOW.md`](./CREATE_FLOW.md) § Code map |
+
+**Out of S14:** merging Host/Seek/Add engines · admin `MapPinPicker` · `/publishing/*` console forms · marketing `/`.
 
 ### 8.2 S12 — hosted + seeking coherence (phase plan)
 

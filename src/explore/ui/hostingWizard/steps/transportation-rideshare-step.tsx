@@ -3,7 +3,7 @@ import {
   HostingWizardStepError,
   HostingWizardStepNext
 } from '../HostingWizardChrome';
-import { RideshareTransportationStepBody } from '../../hostingRideshareWizardSteps';
+import { RideshareTransportationStepBody } from '../bodies/rideshare';
 import type { ReactNode } from 'react';
 import type { HostingWizardContext } from '../hostingWizardContext';
 

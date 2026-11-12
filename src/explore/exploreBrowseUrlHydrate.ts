@@ -43,6 +43,16 @@ import {
   type PlaceMapTopicKey,
   type TripMapTopicKey,
 } from './exploreMapQuickTopicFilters';
+import {
+  EXPLORE_FACILITY_KINDS_PARAM,
+  EXPLORE_HAS_TRIP_PARAM,
+  EXPLORE_PRICE_PARAM,
+  parseExploreFacilityKinds,
+  parseExploreHasTrip,
+  parseExplorePriceFilter,
+  type ExplorePriceFilter,
+} from './exploreOptionalFilters';
+import type { PlaceKind } from '@uaetrail/shared-types';
 
 const readPeopleBrowseTabParam = (params: URLSearchParams): string | null =>
   params.get('peopleTab') ?? params.get('socialTab');
@@ -74,6 +84,9 @@ export type ExploreBrowseUrlHydratedState = {
   expandSearch: boolean;
   tripMapTopics: TripMapTopicKey[];
   placeMapTopics: PlaceMapTopicKey[];
+  priceFilter: ExplorePriceFilter;
+  hasTrip: boolean;
+  facilityKinds: PlaceKind[];
 };
 
 /** Guests do not open the people browse rail from a shared URL. */
@@ -150,5 +163,8 @@ export const parseExploreBrowseStateFromSearchParams = (
     expandSearch: Boolean(isDesktop && searchParams.get('q')?.trim()),
     tripMapTopics: parseTripMapTopicsParam(searchParams.get(EXPLORE_TRIP_TYPES_PARAM)),
     placeMapTopics: parsePlaceMapTopicsParam(searchParams.get(EXPLORE_PLACE_TYPES_PARAM)),
+    priceFilter: parseExplorePriceFilter(searchParams.get(EXPLORE_PRICE_PARAM)),
+    hasTrip: parseExploreHasTrip(searchParams.get(EXPLORE_HAS_TRIP_PARAM)),
+    facilityKinds: parseExploreFacilityKinds(searchParams.get(EXPLORE_FACILITY_KINDS_PARAM)),
   };
 };

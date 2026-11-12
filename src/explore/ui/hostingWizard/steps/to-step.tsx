@@ -33,7 +33,7 @@ export function renderToStep(ctx: HostingWizardContext): ReactNode | null {
     goNext,
     goBack,
     handleClose,
-    setRouteMapTarget,
+    openRouteMap,
     hostTiers,
     patchDraft,
   } = ctx;
@@ -55,7 +55,7 @@ export function renderToStep(ctx: HostingWizardContext): ReactNode | null {
         rideshareDestinationPlaceLabel: null,
       });
     }
-    setRouteMapTarget('to');
+    openRouteMap('to');
   };
 
   return (

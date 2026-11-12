@@ -47,6 +47,8 @@ export const listDiscoveryPath = (options?: ListDiscoveryPathOptions): string =>
     when: options?.when ?? 'any',
     activityDatePreset: options?.activityDatePreset ?? 'anyday',
     buddiesSegment: options?.buddiesSegment ?? 'hub',
+    hasTrip: options?.hasTrip ?? false,
+    facilityKinds: options?.facilityKinds ?? [],
   };
   const params = serializeBrowseListSearchParams(state, options?.regions ?? []);
   if (options?.listCat) params.set(LIST_CAT_PARAM, options.listCat);

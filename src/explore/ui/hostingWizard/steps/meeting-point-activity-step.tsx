@@ -1,6 +1,10 @@
 import { useState, type ReactNode } from 'react';
 import { EXPLORE_FLOW } from '../../../../config/exploreTheme';
 import {
+  ComposeMapEntryRow,
+  formatComposeMapCoord,
+} from '../../../create/interactions';
+import {
   EXTRA_DIRECTIONS_LABEL,
   GOING_FROM_HINT,
   MEETING_FROM_VENUE_EDIT,
@@ -25,7 +29,7 @@ const openMeetingEditor = (
   ctx: HostingWizardContext
 ) => {
   ctx.setMeetingPickerIntent(intent);
-  ctx.setMeetingPointMapOpen(true);
+  ctx.openMeetingPointMap();
 };
 
 const HikeCampMeetingPoint = ({ ctx }: { ctx: HostingWizardContext }) => {
@@ -104,8 +108,7 @@ export function renderMeetingPointActivityStep(ctx: HostingWizardContext): React
     draft,
     patchDraft,
     error,
-    meetingPointMapOpen,
-    setMeetingPointMapOpen,
+    openMeetingPointMap,
     goNext,
     goBack,
     handleClose,
@@ -116,7 +119,7 @@ export function renderMeetingPointActivityStep(ctx: HostingWizardContext): React
     campingFlow,
   } = ctx;
 
-  if (!(step === 'meeting_point' && (structuredFlow || activityFlow) && !meetingPointMapOpen)) {
+  if (!(step === 'meeting_point' && (structuredFlow || activityFlow))) {
     return null;
   }
 
@@ -129,18 +132,16 @@ export function renderMeetingPointActivityStep(ctx: HostingWizardContext): React
       <p className="mb-3 text-sm text-neutral-600">
         {activityFlow || eventFlow ? 'Drop the pin where people should meet.' : GOING_FROM_HINT}
       </p>
-      <button
-        type="button"
-        onClick={() => setMeetingPointMapOpen(true)}
-        className={EXPLORE_FLOW.mapPinCard}
-      >
-        <span>
-          <p className="text-sm font-bold text-neutral-900">
-            {draft.meetingLatitude != null ? 'Update meeting point pin' : 'Drop meeting point on map'}
-          </p>
-        </span>
-        <span className="text-xs font-semibold text-emerald-800">Map</span>
-      </button>
+      <ComposeMapEntryRow
+        title="Meeting point"
+        subtitle={
+          draft.meetingLatitude != null && draft.meetingLongitude != null
+            ? formatComposeMapCoord(draft.meetingLatitude, draft.meetingLongitude, true)
+            : 'Drop meeting point on map'
+        }
+        placed={draft.meetingLatitude != null && draft.meetingLongitude != null}
+        onOpen={openMeetingPointMap}
+      />
       <label className="mt-4 block">
         <span className="mb-1 block text-sm font-medium text-neutral-700">{EXTRA_DIRECTIONS_LABEL}</span>
         <textarea

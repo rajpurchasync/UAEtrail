@@ -1,5 +1,5 @@
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
-import { isGeographyMapSource } from '@uaetrail/shared-types';
+import { formatExploreEventDateLabel, isGeographyMapSource } from '@uaetrail/shared-types';
 import {
   formatListFeedPosterTitleLines,
   type BrowsePosterScheduleGrid,
@@ -27,25 +27,43 @@ export const resolveCatalogEntityName = (card: DiscoveryCardModel): string => {
   return 'Outdoor place';
 };
 
-/** Area + location under place name in catalog header (not venue kind). */
-export const resolveCatalogHeaderAreaLocationLine = (card: DiscoveryCardModel): string | null => {
+const stripTrailingRegion = (value: string, region: string | null): string => {
+  if (!region) return value;
+  const suffix = ` · ${region}`;
+  if (value.endsWith(suffix)) return value.slice(0, -suffix.length).trim();
+  if (normalize(value) === normalize(region)) return '';
+  return value;
+};
+
+/** Emirate / state — never the place title. */
+export const resolveCatalogRegionLabel = (card: DiscoveryCardModel): string | null => {
   const nameNorm = normalize(resolveCatalogEntityName(card));
   const region = card.venueRegion?.trim() || null;
-  const subtitle = card.subtitle?.trim() || null;
+  return region && normalize(region) !== nameNorm ? region : null;
+};
 
-  const regionPart =
-    region && normalize(region) !== nameNorm ? region : null;
-  const locationPart =
-    subtitle && normalize(subtitle) !== nameNorm ? subtitle : null;
+/** Place hub (Hatta, Wadi Shawka) — never the title or the emirate again. */
+export const resolveCatalogHubLabel = (card: DiscoveryCardModel): string | null => {
+  const nameNorm = normalize(resolveCatalogEntityName(card));
+  const regionPart = resolveCatalogRegionLabel(card);
+  const hubFromArea =
+    card.areaName?.trim() && normalize(card.areaName) !== nameNorm ? card.areaName.trim() : null;
+  const hubFromSubtitle = card.subtitle?.trim()
+    ? stripTrailingRegion(card.subtitle.trim(), regionPart)
+    : '';
+  const subtitlePart =
+    hubFromSubtitle && normalize(hubFromSubtitle) !== nameNorm ? hubFromSubtitle : null;
+  const locationPart = hubFromArea || subtitlePart || null;
+  if (locationPart && regionPart && normalize(locationPart) === normalize(regionPart)) return null;
+  return locationPart;
+};
 
-  if (
-    regionPart &&
-    locationPart &&
-    normalize(regionPart) !== normalize(locationPart)
-  ) {
-    return `${regionPart} · ${locationPart}`;
-  }
-  return locationPart || regionPart || null;
+/** Emirate · place hub — never “Hiking trail location”. */
+export const resolveCatalogHeaderAreaLocationLine = (card: DiscoveryCardModel): string | null => {
+  const regionPart = resolveCatalogRegionLabel(card);
+  const hubPart = resolveCatalogHubLabel(card);
+  if (regionPart && hubPart) return `${regionPart} · ${hubPart}`;
+  return hubPart || regionPart || null;
 };
 
 /** Trail / wadi line under emirate — subtitle when it differs from region eyebrow. */
@@ -66,7 +84,7 @@ const resolveReachabilityLabel = (card: DiscoveryCardModel): string | null => {
 };
 
 const resolveParkingLabel = (card: DiscoveryCardModel): string | null => {
-  if (card.venueHasParking) return 'Parking';
+  if (card.venueHasParking) return 'Parking available';
   if (card.venueAccessibility === 'car-accessible') return 'Parking access';
   return null;
 };
@@ -120,7 +138,49 @@ const resolveMaxGroupLabel = (card: DiscoveryCardModel): string | null => {
   return `Up to ${size} people`;
 };
 
-/** Catalog attribute pills — aligned with place detail stats (optional local subtitle for list posters). */
+/** Parking, child-friendly, on-site facilities — shared by hiking and camping cards. */
+export const resolveSharedPlaceFactLabels = (card: DiscoveryCardModel): string[] => {
+  const labels: string[] = [];
+  if (card.childFriendly) labels.push('Child-friendly');
+  const parking = resolveParkingLabel(card);
+  if (parking) labels.push(parking);
+  for (const amenity of card.venueAmenityLabels ?? []) {
+    const chip = amenity.trim();
+    if (!chip) continue;
+    if (chip === 'Parking' && labels.includes('Parking available')) continue;
+    labels.push(chip);
+  }
+  return labels;
+};
+
+/** Trail registry facts — length/elevation live here, not on camp cards. */
+export const resolveHikingPlaceFactLabels = (card: DiscoveryCardModel): string[] => {
+  if (card.kind !== 'hiking') return [];
+  const labels: string[] = [];
+  const difficulty = resolveDifficultyLabel(card);
+  if (difficulty) labels.push(difficulty);
+  const distance = resolveDistanceLabel(card);
+  if (distance) labels.push(distance);
+  const elevation = resolveElevationLabel(card);
+  if (elevation) labels.push(elevation);
+  const duration = resolveDurationLabel(card);
+  if (duration) labels.push(duration);
+  return labels;
+};
+
+/** Camp registry facts — surface / camping style, never trail kilometres. */
+export const resolveCampingPlaceFactLabels = (card: DiscoveryCardModel): string[] => {
+  if (card.kind !== 'camping') return [];
+  const labels: string[] = [];
+  const campingType = resolveCampingTypeLabel(card);
+  if (campingType) labels.push(campingType);
+  labels.push(...resolveSurfaceLabels(card));
+  const group = resolveMaxGroupLabel(card);
+  if (group) labels.push(group);
+  return labels;
+};
+
+/** Catalog attribute pills — hiking and camping share chrome, not fact packs. */
 export const resolvePlaceCatalogFactLabels = (
   card: DiscoveryCardModel,
   options?: { includeLocationSubtitle?: boolean }
@@ -135,36 +195,108 @@ export const resolvePlaceCatalogFactLabels = (
     if (location) labels.push(location);
   }
 
-  if (card.childFriendly) labels.push('Child-friendly');
+  labels.push(...resolveSharedPlaceFactLabels(card));
 
-  const parking = resolveParkingLabel(card);
-  if (parking) labels.push(parking);
-
-  if (card.kind === 'hiking') {
-    const difficulty = resolveDifficultyLabel(card);
-    if (difficulty) labels.push(difficulty);
-    const distance = resolveDistanceLabel(card);
-    if (distance) labels.push(distance);
-    const elevation = resolveElevationLabel(card);
-    if (elevation) labels.push(elevation);
-    const duration = resolveDurationLabel(card);
-    if (duration) labels.push(duration);
-  }
-
-  if (card.kind === 'camping') {
-    const campingType = resolveCampingTypeLabel(card);
-    if (campingType) labels.push(campingType);
-    const surfaces = resolveSurfaceLabels(card);
-    if (surfaces.length) labels.push(...surfaces);
-    const group = resolveMaxGroupLabel(card);
-    if (group) labels.push(group);
-  }
+  if (card.kind === 'hiking') labels.push(...resolveHikingPlaceFactLabels(card));
+  if (card.kind === 'camping') labels.push(...resolveCampingPlaceFactLabels(card));
 
   const reach = resolveReachabilityLabel(card);
   if (reach) labels.push(reach);
 
   return [...new Set(labels)].slice(0, 8);
 };
+
+/** Thumbnail chips — hub/emirate live in the listing identity, not as pills. */
+export const resolveListVenueThumbnailFactLabels = (card: DiscoveryCardModel): string[] =>
+  resolvePlaceCatalogFactLabels(card);
+
+const LIST_VENUE_LISTING_FACT_LIMIT = 5;
+
+/** Listing chips — kind first (trail vs camp), then amenities, capped for scan. */
+export const resolveListVenueListingFactLabels = (card: DiscoveryCardModel): string[] => {
+  if (card.source === 'shop') return ['Outdoor shop'];
+  const kindFacts =
+    card.kind === 'hiking'
+      ? resolveHikingPlaceFactLabels(card).slice(0, 2)
+      : card.kind === 'camping'
+        ? resolveCampingPlaceFactLabels(card).slice(0, 2)
+        : [];
+  const shared = resolveSharedPlaceFactLabels(card);
+  const reach = resolveReachabilityLabel(card);
+  const rest = reach && !shared.includes(reach) ? [...shared, reach] : shared;
+  return [...new Set([...kindFacts, ...rest])].slice(0, LIST_VENUE_LISTING_FACT_LIMIT);
+};
+
+export type ListVenueListingRating = {
+  average: number;
+  count: number;
+};
+
+export const resolveListVenueListingRating = (
+  card: DiscoveryCardModel
+): ListVenueListingRating | null => {
+  const count = card.reviewCount ?? 0;
+  const average = card.averageRating;
+  if (count <= 0 || average == null || !Number.isFinite(average)) return null;
+  return { average, count };
+};
+
+/** Overlay date — weekday when close, `28 Nov` when further out (no year). */
+const compactOutingWhenLabel = (iso: string | null | undefined, now: Date): string | null => {
+  const label = formatExploreEventDateLabel(iso, now);
+  if (!label) return null;
+  const parts = label.split(/\s+/);
+  if (parts.length >= 3) return `${parts[1]} ${parts[2]}`;
+  return label;
+};
+
+/** Compact “people are going here” line — omitted when the place has no hosted trips. */
+export const resolveListVenueScheduleHint = (
+  card: DiscoveryCardModel,
+  now: Date = new Date()
+): string | null => {
+  const count = card.venueUpcomingOutingCount ?? 0;
+  if (count <= 0) return null;
+  const when = compactOutingWhenLabel(card.venueNextOutingIso, now);
+  if (count === 1) return when ? `1 trip · ${when}` : '1 trip scheduled';
+  return when ? `${count} trips · next ${when}` : `${count} trips scheduled`;
+};
+
+export type ListVenueListingCopy = {
+  title: string;
+  regionLabel: string | null;
+  hubLabel: string | null;
+  locationLine: string | null;
+  rating: ListVenueListingRating | null;
+  scheduleHint: string | null;
+  schedulePath: string | null;
+  scheduleExploreItemId: string | null;
+  factLabels: string[];
+  hasDirections: boolean;
+  canWishlist: boolean;
+};
+
+/** Venue list card — where on the photo, name + rating below, then act. */
+export const resolveListVenueListingCopy = (
+  card: DiscoveryCardModel,
+  now: Date = new Date()
+): ListVenueListingCopy => ({
+  title: resolveCatalogEntityName(card),
+  regionLabel: resolveCatalogRegionLabel(card),
+  hubLabel: resolveCatalogHubLabel(card),
+  locationLine: resolveCatalogHeaderAreaLocationLine(card),
+  rating: resolveListVenueListingRating(card),
+  scheduleHint: resolveListVenueScheduleHint(card, now),
+  schedulePath: card.venueNextOutingPath?.trim() || null,
+  scheduleExploreItemId: card.venueNextOutingExploreItemId?.trim() || null,
+  factLabels: resolveListVenueListingFactLabels(card),
+  hasDirections:
+    card.mapLatitude != null &&
+    card.mapLongitude != null &&
+    Number.isFinite(card.mapLatitude) &&
+    Number.isFinite(card.mapLongitude),
+  canWishlist: isGeographyMapSource(card.source) && Boolean(card.locationId),
+});
 
 const resolveShopPosterFactLabels = (card: DiscoveryCardModel): string[] => {
   const labels: string[] = [];

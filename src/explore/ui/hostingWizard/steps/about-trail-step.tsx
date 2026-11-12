@@ -3,9 +3,9 @@ import {
   HostingWizardStepError,
   HostingWizardStepNext
 } from '../HostingWizardChrome';
-import { HikingAboutTrailStepBody } from '../../hostingHikingWizardSteps';
-import { CampingAboutStepBody } from '../../hostingCampingWizardSteps';
-import { EventAboutStepBody } from '../../hostingEventWizardSteps';
+import { HikingAboutTrailStepBody } from '../bodies/hiking';
+import { CampingAboutStepBody } from '../bodies/camping';
+import { EventAboutStepBody } from '../bodies/event';
 import type { ReactNode } from 'react';
 import type { HostingWizardContext } from '../hostingWizardContext';
 

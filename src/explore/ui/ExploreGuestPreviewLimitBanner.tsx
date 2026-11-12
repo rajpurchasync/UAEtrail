@@ -18,7 +18,7 @@ export const ExploreGuestPreviewLimitBanner = () => {
     >
       <div
         role="status"
-        className="explore-guest-map-preview-banner pointer-events-auto w-full max-w-lg px-4 py-3 text-center text-[13px] leading-snug"
+        className="explore-guest-map-preview-banner pointer-events-auto w-full max-w-lg px-4 py-3 text-center text-[0.8125rem] leading-snug"
       >
         <p>
           <span className="explore-guest-map-preview-banner__lead block font-medium">

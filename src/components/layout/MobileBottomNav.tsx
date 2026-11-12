@@ -29,13 +29,13 @@ const tabShellClass = (active: boolean) =>
 
 const tabLabelClass = (active: boolean) =>
   [
-    'max-w-full truncate text-[10px] font-semibold leading-none sm:text-[11px]',
+    'max-w-full truncate text-xs font-semibold leading-none',
     active ? 'text-emerald-700' : 'text-neutral-500',
   ].join(' ');
 
 const TabIcon = ({ icon: Icon, active }: { icon: LucideIcon; active: boolean }) => (
   <Icon
-    className={`h-[1.125rem] w-[1.125rem] shrink-0 sm:h-5 sm:w-5 ${active ? 'text-emerald-600' : 'text-neutral-400'}`}
+    className={`h-6 w-6 shrink-0 ${active ? 'text-emerald-600' : 'text-neutral-400'}`}
     strokeWidth={active ? 2.5 : 2}
     aria-hidden
   />
@@ -62,9 +62,9 @@ export const MobileBottomNav = () => {
   return (
     <nav
       aria-label="Main"
-      className="fixed inset-x-0 bottom-0 z-[1200] border-t border-neutral-200/80 bg-white/95 backdrop-blur-md md:hidden"
+      className="safe-area-bottom fixed inset-x-0 bottom-0 z-[1200] border-t border-neutral-200/80 bg-white/95 backdrop-blur-md md:hidden"
     >
-      <div className="mx-auto grid max-w-lg grid-cols-5 pb-[var(--safe-bottom)]">
+      <div className="mx-auto grid h-[var(--bottom-nav-height)] max-w-lg grid-cols-5">
         {MOBILE_FIVE_TAB_ORDER.map((tab) => {
           const label = MOBILE_FIVE_TAB_UI_LABELS[tab];
           const active = activeTab === tab;
@@ -83,7 +83,7 @@ export const MobileBottomNav = () => {
                 <span className="relative">
                   <TabIcon icon={TAB_ICONS[tab]} active={active} />
                   {unreadMessages > 0 ? (
-                    <span className="absolute -right-1.5 -top-1 flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-emerald-600 px-0.5 text-[9px] font-bold text-white ring-2 ring-white">
+                    <span className="absolute -right-1.5 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-emerald-600 px-0.5 text-[10px] font-bold text-white ring-2 ring-white">
                       {unreadMessages > 9 ? '9+' : unreadMessages}
                     </span>
                   ) : null}

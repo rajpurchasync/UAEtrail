@@ -4,10 +4,10 @@ import {
   HostingWizardStepNext
 } from '../HostingWizardChrome';
 import { CAPACITY_PRESETS, formatCapacityLabel } from '../../hostingFlowEngine';
-import { HikingSpotsStepBody } from '../../hostingHikingWizardSteps';
-import { CampingParticipantsStepBody } from '../../hostingCampingWizardSteps';
-import { EventChildrenAllowedField } from '../../hostingEventWizardSteps';
-import { RideshareSeatsStepBody } from '../../hostingRideshareWizardSteps';
+import { HikingSpotsStepBody } from '../bodies/hiking';
+import { CampingParticipantsStepBody } from '../bodies/camping';
+import { EventChildrenAllowedField } from '../bodies/event';
+import { RideshareSeatsStepBody } from '../bodies/rideshare';
 import type { ReactNode } from 'react';
 import type { HostingWizardContext } from '../hostingWizardContext';
 

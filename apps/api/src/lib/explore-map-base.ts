@@ -1,5 +1,6 @@
-import type { ActivityDTO, ExploreMapItemDTO, ShopPresence } from '@uaetrail/shared-types';
+import type { ActivityDTO, ExploreMapItemDTO, PlaceKind, ShopPresence } from '@uaetrail/shared-types';
 import {
+  amenityChipLabelForFacilityKind,
   buildDiscoveryCardPresentation,
   buildExploreFeaturedPerson,
   buildExploreMapPlanProjection,
@@ -13,6 +14,7 @@ import {
   exploreMapPeekPath,
   isFacilityPlaceKind,
   PLACE_KIND_LABELS,
+  readVenueAmenityChipLabels,
   facilityDetailPath,
   placeDetailPath,
   placeKindFromLocationRow,
@@ -24,6 +26,7 @@ import {
   resolveParticipationMode,
   shopPublicPath,
 } from '@uaetrail/shared-types';
+import type { Facility } from '../domain/facility.js';
 import type { Location } from '../domain/types.js';
 import { resolveJoinMode } from '../domain/activity-join-mode.js';
 import { listPublishedActivitiesForExploreMap } from './activities-store.js';
@@ -73,6 +76,38 @@ const catalogUpdatedAtField = (
 ): Pick<ExploreMapItemDTO, 'catalogUpdatedAt'> | Record<string, never> => {
   const catalogUpdatedAt = catalogTimestampIso(...candidates);
   return catalogUpdatedAt ? { catalogUpdatedAt } : {};
+};
+
+type ParentAmenityRollup = { labels: string[]; kinds: PlaceKind[] };
+
+/** Amenities belong on the parent trail/camp — not as first-class list cards. */
+const collectParentPlaceAmenities = (facilities: Facility[]): Map<string, ParentAmenityRollup> => {
+  const byParent = new Map<string, ParentAmenityRollup>();
+  for (const facility of facilities) {
+    const parentId = facility.parentPlaceId?.trim();
+    if (!parentId) continue;
+    const kind = facility.facilityKind;
+    const label = amenityChipLabelForFacilityKind(kind);
+    if (!label) continue;
+    const current = byParent.get(parentId) ?? { labels: [], kinds: [] };
+    if (!current.kinds.includes(kind)) current.kinds.push(kind);
+    if (!current.labels.includes(label)) current.labels.push(label);
+    byParent.set(parentId, current);
+  }
+  return byParent;
+};
+
+const resolveLocationAmenities = (
+  tags: string[] | undefined,
+  placeId: string,
+  byParent: Map<string, ParentAmenityRollup>
+): { amenityLabels: string[]; amenityKinds: PlaceKind[] } => {
+  const fromTags = readVenueAmenityChipLabels(tags);
+  const fromParent = byParent.get(placeId);
+  return {
+    amenityLabels: [...new Set([...fromTags, ...(fromParent?.labels ?? [])])],
+    amenityKinds: [...(fromParent?.kinds ?? [])],
+  };
 };
 
 const resolveShopPresence = (latitude: number | null, longitude: number | null): ShopPresence =>
@@ -205,6 +240,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
       listPublishedAreas(),
     ]);
 
+  const amenitiesByParentId = collectParentPlaceAmenities(facilityRows);
   const areaSlugById = new Map(publishedAreas.map((area) => [area.id, area.slug]));
   const areaNameById = new Map(publishedAreas.map((area) => [area.id, area.name]));
   const merchantByTenantId = await findMerchantProfilesByTenantIds(shopTenants.map((shop) => shop.id));
@@ -401,6 +437,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
               season: dto.season ?? [],
               images: dto.images ?? [],
               featured: dto.featured,
+              ...resolveLocationAmenities(catalogLocation.tags, dto.id, amenitiesByParentId),
             },
             ...catalogUpdatedAtField(catalogLocation.updatedAt, catalogLocation.createdAt),
           },
@@ -457,6 +494,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
             parkingLat: dto.parkingLat ?? null,
             parkingLng: dto.parkingLng ?? null,
             parkingPoint: catalogLocation.parkingLink ?? null,
+            ...resolveLocationAmenities(catalogLocation.tags, dto.id, amenitiesByParentId),
           },
           ...catalogUpdatedAtField(catalogLocation.updatedAt, catalogLocation.createdAt),
         },

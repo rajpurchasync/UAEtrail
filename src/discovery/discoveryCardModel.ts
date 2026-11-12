@@ -11,6 +11,7 @@ import type {
   OutingCategory,
   ParticipantPreviewDTO,
   CatalogProfileExposure,
+  PlaceKind,
 } from '@uaetrail/shared-types';
 import {
   buildDiscoveryCardPresentation,
@@ -98,6 +99,15 @@ export interface DiscoveryCardModel {
   venueDurationHours?: number | null;
   venueCampingType?: 'self-guided' | 'operator-led' | null;
   venueMaxGroupSize?: number | null;
+  /** On-site facility chips from the trail/camp registry (`facility:` tags). */
+  venueAmenityLabels?: string[];
+  /** Amenity kinds on the parent place (toilets, water, picnic — not list rows). */
+  venueAmenityKinds?: PlaceKind[];
+  /** Hosted upcoming outings at this catalog place (from the explore map pool). */
+  venueUpcomingOutingCount?: number;
+  venueNextOutingIso?: string | null;
+  venueNextOutingPath?: string | null;
+  venueNextOutingExploreItemId?: string | null;
   requirementBadges?: string[];
   mapLatitude?: number | null;
   mapLongitude?: number | null;
@@ -293,6 +303,8 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
     venueDurationHours: item.locationCard?.duration ?? null,
     venueCampingType: item.locationCard?.campingType ?? null,
     venueMaxGroupSize: item.locationCard?.maxGroupSize ?? null,
+    venueAmenityLabels: item.locationCard?.amenityLabels ?? [],
+    venueAmenityKinds: item.locationCard?.amenityKinds ?? [],
     requirementBadges: [
       ...(exploreMapItemIsSeeking(item) ? ['Seeking'] : []),
       ...enrichExploreActivityRequirementBadges(activity?.requirements, {

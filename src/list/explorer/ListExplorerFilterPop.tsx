@@ -19,10 +19,22 @@ import {
   type BrowseTripTopicKey,
 } from '../browseListTripTopics';
 import {
-  listVenuePlaceTopicsForUi,
-  toggleListVenuePlaceTopic,
-  type ListVenuePlaceTopicKey,
-} from '../listVenuePlaceTopics';
+  EXPLORE_FACILITY_PILL_OPTIONS,
+  aliasListPlaceTopicToMap,
+  aliasPlaceMapTopicToList,
+  clearExploreDestinationPlaceTopics,
+  clearExploreFacilityPill,
+  destinationPlaceTopicsFrom,
+  exploreFacilityPillSelectedKeys,
+  toggleExploreDestinationPlaceTopic,
+  toggleExploreFacilityPillKey,
+  type ExploreFacilityPillKey,
+} from '../../explore/exploreOptionalFilters';
+import { listVenuePlaceTopicsForUi } from '../listVenuePlaceTopics';
+import type { PlaceMapTopicKey } from '../../explore/exploreMapQuickTopicFilters';
+
+const mapPlaceTopics = (topics: readonly string[]): PlaceMapTopicKey[] =>
+  topics.map(aliasListPlaceTopicToMap).filter((key): key is PlaceMapTopicKey => key != null);
 import { LIST_FILTER_POP, LIST_OVERLAY_Z, listFilterPopChipClass, listFilterPopGridChipClass } from '../listChromeTheme';
 import type { ListExplorerBucket } from './listExplorerBucket';
 import type { ListFilterFabCorner } from './listExplorerFabSnap';
@@ -81,7 +93,7 @@ const resetVisibleFilters = (
   bucket: ListExplorerBucket
 ): BrowseListFilterState =>
   bucket === 'places'
-    ? { ...state, placeTopics: [] }
+    ? { ...state, placeTopics: [], hasTrip: false, facilityKinds: [] }
     : {
         ...state,
         tripTopics: [],
@@ -148,33 +160,105 @@ export const ListExplorerFilterPop = ({
         </div>
         <div className={LIST_FILTER_POP.sections}>
           {bucket === 'places' ? (
+            <>
             <div className={LIST_FILTER_POP.block}>
-              <p className={LIST_FILTER_POP.label}>Type</p>
+              <p className={LIST_FILTER_POP.label}>Kinds</p>
               <div className={LIST_FILTER_POP.chipRow}>
                 <button
                   type="button"
-                  onClick={() => setDraft((prev) => ({ ...prev, placeTopics: [] }))}
-                  className={listFilterPopChipClass(draft.placeTopics.length === 0)}
+                  onClick={() =>
+                    setDraft((prev) => ({
+                      ...prev,
+                      placeTopics: clearExploreDestinationPlaceTopics(mapPlaceTopics(prev.placeTopics)).map(
+                        aliasPlaceMapTopicToList
+                      ),
+                    }))
+                  }
+                  className={listFilterPopChipClass(
+                    destinationPlaceTopicsFrom(mapPlaceTopics(draft.placeTopics)).length === 0
+                  )}
                 >
                   All
                 </button>
-                {listVenuePlaceTopicsForUi().map(({ key, label }) => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() =>
-                      setDraft((prev) => ({
-                        ...prev,
-                        placeTopics: toggleListVenuePlaceTopic(prev.placeTopics, key as ListVenuePlaceTopicKey),
-                      }))
-                    }
-                    className={listFilterPopChipClass(draft.placeTopics.includes(key as ListVenuePlaceTopicKey))}
-                  >
-                    {label}
-                  </button>
-                ))}
+                {listVenuePlaceTopicsForUi().map(({ key, label }) => {
+                  const selected = destinationPlaceTopicsFrom(mapPlaceTopics(draft.placeTopics)).includes(
+                    aliasListPlaceTopicToMap(key) as PlaceMapTopicKey
+                  );
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() =>
+                        setDraft((prev) => ({
+                          ...prev,
+                          placeTopics: toggleExploreDestinationPlaceTopic(
+                            mapPlaceTopics(prev.placeTopics),
+                            aliasListPlaceTopicToMap(key) as PlaceMapTopicKey
+                          ).map(aliasPlaceMapTopicToList),
+                        }))
+                      }
+                      className={listFilterPopChipClass(selected)}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
+            <div className={LIST_FILTER_POP.block}>
+              <p className={LIST_FILTER_POP.label}>By facilities</p>
+              <div className={LIST_FILTER_POP.chipRow}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setDraft((prev) => {
+                      const cleared = clearExploreFacilityPill(mapPlaceTopics(prev.placeTopics));
+                      return {
+                        ...prev,
+                        placeTopics: cleared.placeTopics.map(aliasPlaceMapTopicToList),
+                        facilityKinds: cleared.facilityKinds,
+                      };
+                    })
+                  }
+                  className={listFilterPopChipClass(
+                    exploreFacilityPillSelectedKeys(mapPlaceTopics(draft.placeTopics), draft.facilityKinds)
+                      .length === 0
+                  )}
+                >
+                  All
+                </button>
+                {EXPLORE_FACILITY_PILL_OPTIONS.map(({ key, label }) => {
+                  const selected = exploreFacilityPillSelectedKeys(
+                    mapPlaceTopics(draft.placeTopics),
+                    draft.facilityKinds
+                  ).includes(key);
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() =>
+                        setDraft((prev) => {
+                          const next = toggleExploreFacilityPillKey(
+                            mapPlaceTopics(prev.placeTopics),
+                            prev.facilityKinds,
+                            key as ExploreFacilityPillKey
+                          );
+                          return {
+                            ...prev,
+                            placeTopics: next.placeTopics.map(aliasPlaceMapTopicToList),
+                            facilityKinds: next.facilityKinds,
+                          };
+                        })
+                      }
+                      className={listFilterPopChipClass(selected)}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            </>
           ) : (
             <>
               <div className={LIST_FILTER_POP.block}>

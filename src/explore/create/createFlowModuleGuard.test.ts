@@ -82,7 +82,10 @@ describe('create flow module boundaries (CPC-9b)', () => {
     expect(existsSync(join(ROOT, 'src/explore/create/ComposeWizardItemContext.tsx'))).toBe(false);
   });
 
-  it('FAB wizards use composePresentation, not legacy mobileComposeChrome', () => {
+  it('FAB wizards wrap ComposeWizardShell, not legacy mobileComposeChrome', () => {
+    const shell = read('src/explore/create/ComposeWizardShell.tsx');
+    expect(shell).toMatch(/composePresentation="wizard"/);
+    expect(shell).not.toMatch(/mobileComposeChrome/);
     for (const file of [
       'CreateAddFlow.tsx',
       'CreateHostingActivityFlow.tsx',
@@ -90,7 +93,7 @@ describe('create flow module boundaries (CPC-9b)', () => {
       'CreateAddFacilityFlow.tsx',
     ]) {
       const src = read(`src/explore/ui/${file}`);
-      expect(src).toMatch(/composePresentation="wizard"/);
+      expect(src).toMatch(/ComposeWizardShell/);
       expect(src).not.toMatch(/mobileComposeChrome/);
     }
     expect(read('src/explore/ui/CreateIntentSheet.tsx')).toMatch(/composePresentation="menu"/);

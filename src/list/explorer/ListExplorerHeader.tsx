@@ -15,6 +15,8 @@ import type { ListExplorerLayout } from './listExplorerLayout';
 import type { ListExplorerSortMode } from './listExplorerSort';
 import { ListExplorerSortControl } from './ListExplorerSortControl';
 import type { BrowseListFilterState } from '../browseListFilters';
+import type { PlaceKind } from '@uaetrail/shared-types';
+import type { ExplorePriceFilter } from '../../explore/exploreOptionalFilters';
 import type { BrowseTripTopicKey } from '../browseListTripTopics';
 import type { ListVenuePlaceTopicKey } from '../listVenuePlaceTopics';
 import type { ExploreActivityDatePreset } from '../../explore/exploreActivityDateFilter';
@@ -44,8 +46,12 @@ type ListExplorerHeaderProps = {
   locationDenied?: boolean;
   filters: BrowseListFilterState;
   regions: string[];
-  onToggleTripTopic: (key: BrowseTripTopicKey) => void;
-  onTogglePlaceTopic: (key: ListVenuePlaceTopicKey) => void;
+  onTripTopicsChange: (next: BrowseTripTopicKey[]) => void;
+  onPlaceTopicsChange: (next: ListVenuePlaceTopicKey[]) => void;
+  onPriceChange: (next: ExplorePriceFilter) => void;
+  onHasTripChange: (next: boolean) => void;
+  onFacilityKindsChange: (next: PlaceKind[]) => void;
+  onVenueFiltersChange?: (next: { placeTopics: ListVenuePlaceTopicKey[]; facilityKinds: PlaceKind[] }) => void;
   onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
   onVenueRegionsChange: (regions: string[]) => void;
   hideBucketToggleOnMobile?: boolean;
@@ -77,8 +83,12 @@ export const ListExplorerHeader = ({
   locationDenied,
   filters,
   regions,
-  onToggleTripTopic,
-  onTogglePlaceTopic,
+  onTripTopicsChange,
+  onPlaceTopicsChange,
+  onPriceChange,
+  onHasTripChange,
+  onFacilityKindsChange,
+  onVenueFiltersChange,
   onActivityDatePresetChange,
   onVenueRegionsChange,
   hideBucketToggleOnMobile = false,
@@ -233,15 +243,21 @@ export const ListExplorerHeader = ({
           />
         </div>
       </div>
-      <ListExplorerQuickFilters
-        bucket={bucket}
-        filters={filters}
-        regions={regions}
-        onToggleTripTopic={onToggleTripTopic}
-        onTogglePlaceTopic={onTogglePlaceTopic}
-        onActivityDatePresetChange={onActivityDatePresetChange}
-        onVenueRegionsChange={onVenueRegionsChange}
-      />
+      <div className="mt-2.5">
+        <ListExplorerQuickFilters
+          bucket={bucket}
+          filters={filters}
+          regions={regions}
+          onTripTopicsChange={onTripTopicsChange}
+          onPlaceTopicsChange={onPlaceTopicsChange}
+          onPriceChange={onPriceChange}
+          onHasTripChange={onHasTripChange}
+          onFacilityKindsChange={onFacilityKindsChange}
+          onVenueFiltersChange={onVenueFiltersChange}
+          onActivityDatePresetChange={onActivityDatePresetChange}
+          onVenueRegionsChange={onVenueRegionsChange}
+        />
+      </div>
     </div>
   </header>
   );

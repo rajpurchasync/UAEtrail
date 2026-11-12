@@ -54,6 +54,5 @@ export const resolveBrowseListCreateFabLabel = (
   const params = new URLSearchParams(search.replace(/^\?/, ''));
   return browseListCreateFabLabel(parseListCatParam(params.get(LIST_CAT_PARAM)));
 };
-/** Guest `GET /explore/map` preview — align with `explore-map-guest-catalog-cap` + map copy. */
-export const LIST_GUEST_CATALOG_PREVIEW_NOTICE =
-  'Preview: 3 oldest outings and 3 oldest places. Log in to browse the full catalog.';
+/** Guest list preview — same copy as the map banner. */
+export { EXPLORE_GUEST_MAP_PREVIEW_NOTICE as LIST_GUEST_CATALOG_PREVIEW_NOTICE } from '../explore/exploreBrowseTaxonomy';

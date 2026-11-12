@@ -78,7 +78,6 @@ export const resolveOrganizeActivityLocationId = async (
     if (draft.trailLatitude == null || draft.trailLongitude == null) {
       throw new Error('Pin the spot on the map.');
     }
-    if (photos.length < 1) throw new Error('Add at least one photo of this spot.');
     const about =
       draft.aboutTrail.trim() ||
       draft.description.trim() ||
@@ -92,14 +91,16 @@ export const resolveOrganizeActivityLocationId = async (
       draft.trailLongitude,
       publishedAreas
     );
-    const areaId = draft.customPlaceAreaId?.trim() || inferred?.id || '';
+    const areaId =
+      draft.customPlaceAreaId?.trim() || draft.registryPlaceAreaId?.trim() || inferred?.id || '';
     const area = areaId ? publishedAreas.find((row) => row.id === areaId) ?? inferred : null;
     const proposedName = resolveCustomProposedAreaName(draft);
-    if (!area && proposedName.length < 2) {
-      throw new Error('Name this spot — we’ll submit it as a new area for admin review.');
+    if (!area) {
+      throw new Error('Select an area.');
     }
     const emirate =
       draft.customPlaceEmirate.trim() ||
+      draft.venueCascadeState.trim() ||
       inferEmirateFromPin(
         draft.trailLatitude,
         draft.trailLongitude,
@@ -121,9 +122,8 @@ export const resolveOrganizeActivityLocationId = async (
         emirate,
         groupRegion: emirate,
         region: emirate,
-        ...(area
-          ? { areaId: area.id, areaLabel: area.name }
-          : { proposedAreaName: proposedName, areaLabel: proposedName }),
+        areaId: area.id,
+        areaLabel: area.name,
         activityType,
         description: about.slice(0, 3000),
         latitude: draft.trailLatitude,
@@ -140,7 +140,7 @@ export const resolveOrganizeActivityLocationId = async (
 
   if (structured) {
     throw new Error(
-      'Choose a catalog place linked to an area, or add a new spot with a pin and a photo.'
+      'Choose a listed trail, or add a new one with a name, area, and map pin.'
     );
   }
 

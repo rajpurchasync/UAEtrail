@@ -21,7 +21,7 @@ export const MobileConsumerIdentityBar = ({
 }: MobileConsumerIdentityBarProps) => (
   <div
     data-consumer-identity-row
-    className={`min-h-12 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 ${className}`.trim()}
+    className={`min-h-[3rem] grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 ${className}`.trim()}
   >
     <div className="col-start-1 min-w-0 justify-self-start">
       {leading ?? <MobileProfileHeaderIdentity activeOnProfile={profileActive} />}

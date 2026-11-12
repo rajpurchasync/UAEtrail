@@ -69,7 +69,9 @@ export const ListExplorerListRow = ({ card, onMapHover, showDistance = false }: 
               />
               <span className="min-w-0 line-clamp-2 break-words leading-snug">{meta.location}</span>
             </p>
-            {distance ? <ListExplorerDistanceChip label={distance} className="self-start" /> : null}
+            {showDistance && distance ? (
+              <ListExplorerDistanceChip label={distance} className="self-start" />
+            ) : null}
           </div>
         ) : showDistance && distance ? (
           <ListExplorerDistanceChip label={distance} />

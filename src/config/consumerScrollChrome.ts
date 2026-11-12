@@ -1,8 +1,8 @@
 /** Shared mobile top chrome — scroll-linked frost for product shell + consumer detail. */
 
 /** Bottom-nav tab surfaces + standalone list — one safe-area inset (identity row + actions). */
-export const MOBILE_CONSUMER_HEADER_TOP_INSET = 'pt-[calc(var(--safe-top)+10px)]';
-export const MOBILE_CONSUMER_HEADER_BOTTOM_PAD = 'pb-2';
+export const MOBILE_CONSUMER_HEADER_TOP_INSET = 'pt-[var(--safe-top)]';
+export const MOBILE_CONSUMER_HEADER_BOTTOM_PAD = 'pb-1.5';
 export const MOBILE_CONSUMER_HEADER_HORIZONTAL_PAD = 'px-4';
 export const MOBILE_CONSUMER_IDENTITY_ROW = 'flex min-h-12 items-center justify-between gap-3';
 

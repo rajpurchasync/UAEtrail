@@ -40,6 +40,7 @@ import {
 } from './explorer/listExplorerBucket';
 import { listCatForListExplorerBucket, scopeBrowseListStateForListCat } from './browseListMapHandoff';
 import { ListExplorer } from './explorer/ListExplorer';
+import { ListFeedActionsProvider } from './ui/ListFeedActionsProvider';
 import { ListCrewsExplorer } from './explorer/ListCrewsExplorer';
 import { ListDiscoveryMapColumn } from './explorer/ListDiscoveryMapColumn';
 import { ListSideMapResizeHandle } from './explorer/ListSideMapResizeHandle';
@@ -55,11 +56,6 @@ import {
 } from './listDiscoveryMapLayout';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { ExploreActivityDatePreset } from '../explore/exploreActivityDateFilter';
-import {
-  toggleBrowseTripTopicInList,
-  type BrowseTripTopicKey,
-} from './browseListTripTopics';
-import { toggleListVenuePlaceTopic, type ListVenuePlaceTopicKey } from './listVenuePlaceTopics';
 import { resolveBrowseListCreateFabLabel } from './browseListCopy';
 import { resolveCreateFabComposeEntry } from '../explore/create/composeFabEntry';
 
@@ -366,6 +362,8 @@ export const ListDiscoveryExperience = ({
       when: 'any',
       activityDatePreset: 'anyday',
       buddiesSegment: filters.buddiesSegment,
+      hasTrip: false,
+      facilityKinds: [],
     };
   const scoped =
       cat === 'venues' || cat === 'activities'
@@ -374,23 +372,6 @@ export const ListDiscoveryExperience = ({
     syncUrl({ ...scoped, listCat: cat, regions: [] });
     setDraftQuery('');
   };
-
-  const handleToggleTripTopic = useCallback(
-    (key: BrowseTripTopicKey) => {
-      syncUrl({
-        tripTopics: toggleBrowseTripTopicInList(filters.tripTopics, key),
-        tripLookingOnly: false,
-      });
-    },
-    [filters.tripTopics, syncUrl]
-  );
-
-  const handleTogglePlaceTopic = useCallback(
-    (key: ListVenuePlaceTopicKey) => {
-      syncUrl({ placeTopics: toggleListVenuePlaceTopic(filters.placeTopics, key) });
-    },
-    [filters.placeTopics, syncUrl]
-  );
 
   const handleActivityDatePresetChange = useCallback(
     (preset: ExploreActivityDatePreset) => syncUrl({ activityDatePreset: preset }),
@@ -533,6 +514,7 @@ export const ListDiscoveryExperience = ({
           />
         )
       ) : (
+        <ListFeedActionsProvider>
         <div ref={sideMapWidth.splitRef} className="flex h-full min-h-0 min-w-0 flex-1 flex-row">
           <ListExplorer
             cards={cards}
@@ -557,7 +539,7 @@ export const ListDiscoveryExperience = ({
                 query: draftQuery,
                 listCat: cat,
                 ...scopeBrowseListStateForListCat(filters, cat),
-                regions: cat === 'venues' ? venueRegions : [],
+                regions: venueRegions,
                 ...(next === 'places' && layout === 'calendar' ? { layout: 'thumbnails' as const } : {}),
               });
             }}
@@ -575,8 +557,12 @@ export const ListDiscoveryExperience = ({
             onSortChange={(next) => syncUrl({ sort: next })}
             showGuestCatalogPreview={!user && !embeddedOnExplore && !isPeopleCategory}
             listPanelWidthPx={showListMapColumn ? sideMapWidth.listPanelWidth : undefined}
-            onToggleTripTopic={handleToggleTripTopic}
-            onTogglePlaceTopic={handleTogglePlaceTopic}
+            onTripTopicsChange={(next) => syncUrl({ tripTopics: next, tripLookingOnly: false })}
+            onPlaceTopicsChange={(next) => syncUrl({ placeTopics: next })}
+            onPriceChange={(next) => syncUrl({ price: next })}
+            onHasTripChange={(next) => syncUrl({ hasTrip: next })}
+            onFacilityKindsChange={(next) => syncUrl({ facilityKinds: next })}
+            onVenueFiltersChange={(next) => syncUrl({ placeTopics: next.placeTopics, facilityKinds: next.facilityKinds })}
             onActivityDatePresetChange={handleActivityDatePresetChange}
             onVenueRegionsChange={handleVenueRegionsChange}
           />
@@ -601,6 +587,7 @@ export const ListDiscoveryExperience = ({
             </>
           ) : null}
         </div>
+        </ListFeedActionsProvider>
       )}
 
       {embeddedOnExplore || overlayImmersive ? null : (

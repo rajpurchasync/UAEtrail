@@ -40,10 +40,14 @@ const LIST_FILTER_PARAM_KEYS = [
   'q',
   'topics',
   'filter',
+  'tripTypes',
+  'placeTypes',
   'price',
   'when',
   'date',
   'regions',
+  'hasTrip',
+  'facilityKinds',
   LIST_CAT_PARAM,
   BUDDIES_SEGMENT_URL_PARAM,
   LIST_LAYOUT_PARAM,
@@ -102,11 +106,7 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
     return raw;
   }, [searchParams, listCat]);
 
-  const venueRegions = useMemo(() => {
-    const raw = parseBrowseListVenueRegions(searchParams);
-    if (!mapOverlay && listCat === 'activities') return [];
-    return raw;
-  }, [searchParams, listCat, mapOverlay]);
+  const venueRegions = useMemo(() => parseBrowseListVenueRegions(searchParams), [searchParams]);
 
   const layout = useMemo(
     () => parseListExplorerLayout(searchParams.get(LIST_LAYOUT_PARAM)),
@@ -138,9 +138,6 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
       let regions = patch.regions ?? venueRegions;
       if (!mapOverlay && (patchedListCat === 'activities' || patchedListCat === 'venues')) {
         next = scopeBrowseListStateForListCat(next, patchedListCat);
-        if (patchedListCat === 'activities') {
-          regions = patch.regions ?? [];
-        }
       }
       const listParams = serializeBrowseListSearchParams(next, regions);
       const nextLayout = patch.layout ?? layout;
@@ -216,15 +213,14 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
     if (listCat !== 'activities' && listCat !== 'venues') return;
     const raw = parseBrowseListFilterState(searchParams);
     const scoped = scopeBrowseListStateForListCat(raw, listCat);
-    const regions = listCat === 'activities' ? [] : parseBrowseListVenueRegions(searchParams);
+    const regions = parseBrowseListVenueRegions(searchParams);
     const paramCat = parseListCatParam(searchParams.get(LIST_CAT_PARAM));
     const needsListCat = paramCat !== listCat;
     const needsScope =
       JSON.stringify(raw.categories) !== JSON.stringify(scoped.categories) ||
       raw.tripTopics.join(',') !== scoped.tripTopics.join(',') ||
       raw.placeTopics.join(',') !== scoped.placeTopics.join(',') ||
-      raw.tripLookingOnly !== scoped.tripLookingOnly ||
-      (listCat === 'activities' && regions.length > 0);
+      raw.tripLookingOnly !== scoped.tripLookingOnly;
     if (!needsListCat && !needsScope) return;
     const fingerprint = `${searchParams.toString()}|${listCat}`;
     if (scopeRepairRef.current === fingerprint) return;

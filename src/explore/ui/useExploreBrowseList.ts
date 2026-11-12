@@ -3,7 +3,9 @@ import { isTimeBoundExploreMapItem, type ExploreMapItemDTO } from '@uaetrail/sha
 import { sortExploreActivities, sortExploreVenues } from '../exploreListSort';
 import { selectExploreMapPinCatalog } from '../shell/selectExploreMapPinCatalog';
 import type { ExploreActivityDatePreset, ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
+import type { PlaceKind } from '@uaetrail/shared-types';
 import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
+import type { ExplorePriceFilter } from '../exploreOptionalFilters';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
 import type { DesktopBrowseTab } from './exploreBrowsePanelCopy';
@@ -48,6 +50,9 @@ type UseExploreBrowseListArgs = {
   buddySubtype: ExploreBuddySubtypeKey;
   outingTopic: ExploreOutingTopicKey;
   activityModeFilter?: ExploreActivityModeFilter;
+  priceFilter?: ExplorePriceFilter;
+  hasTrip?: boolean;
+  facilityKinds?: readonly PlaceKind[];
 };
 
 const dedupeExploreListById = (list: ExploreMapItemDTO[]): ExploreMapItemDTO[] => {
@@ -90,6 +95,9 @@ export const useExploreBrowseList = ({
   buddySubtype,
   outingTopic,
   activityModeFilter = 'all',
+  priceFilter = 'all',
+  hasTrip = false,
+  facilityKinds = [],
 }: UseExploreBrowseListArgs) => {
   const mapItems = useMemo(() => {
     const itemIds = new Set(items.map((entry) => entry.id));
@@ -111,6 +119,9 @@ export const useExploreBrowseList = ({
       buddySubtype,
       outingTopic,
       activityModeFilter,
+      priceFilter,
+      hasTrip,
+      facilityKinds,
     });
     if (query.trim()) {
       pool = pool.filter((item) => exploreItemMatchesQuery(item, query));
@@ -132,6 +143,9 @@ export const useExploreBrowseList = ({
     buddySubtype,
     outingTopic,
     activityModeFilter,
+    priceFilter,
+    hasTrip,
+    facilityKinds,
   ]);
 
   const browseListMode: ExploreBrowseListMode = isDesktop ? 'default' : listMode;
@@ -148,6 +162,7 @@ export const useExploreBrowseList = ({
         query: '',
         activityDatePreset,
         activityModeFilter,
+        priceFilter,
       });
       if (venueRegions.length === 0) return selected;
       return selected.filter((item) => venueItemMatchesRegions(item, venueRegions));
@@ -163,6 +178,8 @@ export const useExploreBrowseList = ({
           venueFilter,
           placeMapTopics,
           venueRegions,
+          hasTrip,
+          facilityKinds,
         })
       );
     }
@@ -174,6 +191,8 @@ export const useExploreBrowseList = ({
           venueFilter,
           placeMapTopics,
           venueRegions,
+          hasTrip,
+          facilityKinds,
         })
       );
     }
@@ -197,6 +216,9 @@ export const useExploreBrowseList = ({
     buddySubtype,
     outingTopic,
     activityModeFilter,
+    priceFilter,
+    hasTrip,
+    facilityKinds,
   ]);
 
   const listItems = useMemo(() => {
@@ -218,6 +240,7 @@ export const useExploreBrowseList = ({
         query: '',
         activityDatePreset,
         activityModeFilter,
+        priceFilter,
       });
       if (venueRegions.length === 0) return selected;
       return selected.filter((item) => venueItemMatchesRegions(item, venueRegions));
@@ -229,7 +252,13 @@ export const useExploreBrowseList = ({
     const peopleListPool = () =>
       activitySearchPool().filter((item) => mapItemMatchesSearchScope(item, 'people'));
 
-    const placesListPool = () => selectPlacesFromExploreCatalog(items, { mapFilter, venueRegions });
+    const placesListPool = () =>
+      selectPlacesFromExploreCatalog(items, {
+        mapFilter,
+        venueRegions,
+        hasTrip,
+        facilityKinds,
+      });
 
     if (hasQuery && searchScope === 'activities') {
       return sortExploreActivities(hostedTripsPool().filter(matchesQuery));

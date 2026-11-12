@@ -2,6 +2,7 @@ import { createPortal } from 'react-dom';
 import { useId, useState } from 'react';
 import { Check, MapPin } from 'lucide-react';
 import { EXPLORE_MAP_MOBILE_FLOAT_CHIP_MARK } from '../../config/exploreTheme';
+import { EXPLORE_REGION_SCOPE_RESTING_LABEL } from '../exploreOptionalFilters';
 import { getVenueStateFilterOptions } from '../../config/regions';
 import { UiTooltip } from '../../components/ui/UiTooltip';
 import { UaeFlagIcon } from '../../components/ui/UaeFlagIcon';
@@ -98,7 +99,16 @@ export const ExploreMapMobileUaePill = ({
         )
       : null;
 
-  const uaeLabel = active ? `UAE, ${venueRegions.length} emirates selected` : 'UAE emirates';
+  const selectedLabels = options
+    .filter((option) => venueRegions.includes(option.key))
+    .map((option) => option.label);
+  const restingLabel =
+    selectedLabels.length === 1
+      ? selectedLabels[0]
+      : selectedLabels.length > 1
+        ? `UAE (${selectedLabels.length})`
+        : EXPLORE_REGION_SCOPE_RESTING_LABEL;
+  const uaeLabel = active ? `UAE, ${venueRegions.length} emirates selected` : EXPLORE_REGION_SCOPE_RESTING_LABEL;
   const trigger = (
     <button
       type="button"
@@ -138,10 +148,7 @@ export const ExploreMapMobileUaePill = ({
           >
             <UaeFlagIcon className="explore-map-float-chip-uae-flag shrink-0" aria-hidden />
           </span>
-          <span>UAE</span>
-          {active ? (
-            <span className="text-sm font-bold leading-none">({venueRegions.length})</span>
-          ) : null}
+          <span className="max-w-[7.5rem] truncate">{restingLabel}</span>
         </>
       )}
     </button>

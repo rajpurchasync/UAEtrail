@@ -24,6 +24,8 @@ export const countListExplorerFilters = (
   let count = regions.length;
   if (bucket === 'places') {
     count += filters.placeTopics.length;
+    if (filters.hasTrip) count += 1;
+    if (filters.facilityKinds.length > 0) count += 1;
     return count;
   }
   count += filters.tripTopics.length;

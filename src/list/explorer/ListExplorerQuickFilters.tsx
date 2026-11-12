@@ -1,74 +1,28 @@
+import type { PlaceKind } from '@uaetrail/shared-types';
+import { ExploreOptionalFilterRow } from '../../explore/ui/ExploreOptionalFilterRow';
 import type { ExploreActivityDatePreset } from '../../explore/exploreActivityDateFilter';
+import type { PlaceMapTopicKey, TripMapTopicKey } from '../../explore/exploreMapQuickTopicFilters';
 import {
-  EXPLORE_MAP_MOBILE_FLOAT_CHIP_MARK,
-  exploreMapMobileFloatChipClass,
-} from '../../config/exploreTheme';
-import type { MapFilterKey } from '../../config/routingCatalog';
-import {
-  EXPLORE_MOBILE_ACTIVITY_QUICK_FILTERS,
-  EXPLORE_MOBILE_PLACES_QUICK_FILTERS,
-  type ExploreMobileActivityMenuKey,
-  type ExploreMobilePlacesMenuKey,
-} from '../../explore/ui/exploreMapMobileMenus';
-import { ExploreFilterIcon } from '../../explore/ui/ExploreFilterIcon';
-import { ExploreMapMobileAnydayPill } from '../../explore/ui/ExploreMapMobileAnydayPill';
-import { ExploreMapMobileUaePill } from '../../explore/ui/ExploreMapMobileUaePill';
+  aliasListPlaceTopicToMap,
+  aliasPlaceMapTopicToList,
+  type ExplorePriceFilter,
+  type ExploreVenueFilterPatch,
+} from '../../explore/exploreOptionalFilters';
 import type { BrowseListFilterState } from '../browseListFilters';
-import {
-  browseTripTopicIsActive,
-  type BrowseTripTopicKey,
-} from '../browseListTripTopics';
+import type { BrowseTripTopicKey } from '../browseListTripTopics';
 import type { ListVenuePlaceTopicKey } from '../listVenuePlaceTopics';
 import type { ListExplorerBucket } from './listExplorerBucket';
-
-const FLOAT_CHIP_WRAP = 'relative flex shrink-0 items-center justify-center';
-
-const activityChipFilter = (key: ExploreMobileActivityMenuKey): MapFilterKey => {
-  if (key === 'hiking' || key === 'camping' || key === 'rideshare' || key === 'others') return key;
-  return 'all';
-};
-
-const placesChipFilter = (key: ExploreMobilePlacesMenuKey): MapFilterKey => {
-  if (key === 'hiking' || key === 'camping' || key === 'facilities' || key === 'shops' || key === 'others') {
-    return key;
-  }
-  return 'all';
-};
-
-const activityQuickFilterLabels: Record<ExploreMobileActivityMenuKey, string> = {
-  all: 'All',
-  anyday: 'Anyday',
-  hiking: 'Hiking',
-  camping: 'Camping',
-  rideshare: 'Rideshare',
-  others: 'Other',
-};
-
-const placesQuickFilterLabels: Record<ExploreMobilePlacesMenuKey, string> = {
-  all: 'All',
-  uae: 'UAE',
-  hiking: 'Trail',
-  camping: 'Camping',
-  facilities: 'Facilities',
-  shops: 'Shopping',
-  others: 'Other',
-};
-
-const listVenueKeyForPlacesMenu = (key: ExploreMobilePlacesMenuKey): ListVenuePlaceTopicKey | null => {
-  if (key === 'hiking' || key === 'camping' || key === 'facilities' || key === 'others') return key;
-  if (key === 'shops') return 'shop';
-  return null;
-};
-
-const isActivityTripTopicKey = (key: ExploreMobileActivityMenuKey): key is BrowseTripTopicKey =>
-  key === 'hiking' || key === 'camping' || key === 'rideshare' || key === 'others';
 
 type ListExplorerQuickFiltersProps = {
   bucket: ListExplorerBucket;
   filters: BrowseListFilterState;
   regions: string[];
-  onToggleTripTopic: (key: BrowseTripTopicKey) => void;
-  onTogglePlaceTopic: (key: ListVenuePlaceTopicKey) => void;
+  onTripTopicsChange: (next: BrowseTripTopicKey[]) => void;
+  onPlaceTopicsChange: (next: ListVenuePlaceTopicKey[]) => void;
+  onPriceChange: (next: ExplorePriceFilter) => void;
+  onHasTripChange: (next: boolean) => void;
+  onFacilityKindsChange: (next: PlaceKind[]) => void;
+  onVenueFiltersChange?: (next: { placeTopics: ListVenuePlaceTopicKey[]; facilityKinds: PlaceKind[] }) => void;
   onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
   onVenueRegionsChange: (regions: string[]) => void;
 };
@@ -77,115 +31,47 @@ export const ListExplorerQuickFilters = ({
   bucket,
   filters,
   regions,
-  onToggleTripTopic,
-  onTogglePlaceTopic,
+  onTripTopicsChange,
+  onPlaceTopicsChange,
+  onPriceChange,
+  onHasTripChange,
+  onFacilityKindsChange,
+  onVenueFiltersChange,
   onActivityDatePresetChange,
   onVenueRegionsChange,
 }: ListExplorerQuickFiltersProps) => {
-  const onTrips = bucket === 'events';
-  const trailingPillClass = (active: boolean, filterKey: MapFilterKey, pillLayer: 'activity' | 'places') =>
-    exploreMapMobileFloatChipClass(active, filterKey, pillLayer);
+  const placeTopics = filters.placeTopics
+    .map(aliasListPlaceTopicToMap)
+    .filter((key): key is PlaceMapTopicKey => key != null);
 
-  const calendarPill = (
-    <ExploreMapMobileAnydayPill
-      activityDatePreset={filters.activityDatePreset}
-      onActivityDatePresetChange={onActivityDatePresetChange}
-      pillClassName={trailingPillClass(filters.activityDatePreset !== 'anyday', 'all', 'activity')}
-      wrapClassName={FLOAT_CHIP_WRAP}
-      triggerFullWidth={false}
-      compact={false}
-    />
-  );
-
-  const uaePill = (
-    <ExploreMapMobileUaePill
-      venueRegions={regions}
-      onVenueRegionsChange={onVenueRegionsChange}
-      pillClassName={trailingPillClass(regions.length > 0, 'all', 'places')}
-      wrapClassName={FLOAT_CHIP_WRAP}
-      triggerFullWidth={false}
-      compact={false}
-    />
-  );
-
-  const activityChips = EXPLORE_MOBILE_ACTIVITY_QUICK_FILTERS.map((key) => {
-    const filterKey = activityChipFilter(key);
-    const label = activityQuickFilterLabels[key];
-    const active = onTrips && isActivityTripTopicKey(key) && browseTripTopicIsActive(filters.tripTopics, key);
-    return (
-      <span key={key} className={FLOAT_CHIP_WRAP}>
-        <button
-          type="button"
-          onClick={() => {
-            if (isActivityTripTopicKey(key)) onToggleTripTopic(key);
-          }}
-          className={exploreMapMobileFloatChipClass(active, filterKey, 'activity')}
-          aria-pressed={active}
-          aria-label={label}
-        >
-          <ExploreFilterIcon
-            filter={filterKey}
-            context="activity"
-            markClassName={EXPLORE_MAP_MOBILE_FLOAT_CHIP_MARK}
-          />
-          <span>{label}</span>
-        </button>
-      </span>
-    );
-  });
-
-  const placesChips = EXPLORE_MOBILE_PLACES_QUICK_FILTERS.map((key) => {
-    const filterKey = placesChipFilter(key);
-    const label = placesQuickFilterLabels[key];
-    const venueKey = listVenueKeyForPlacesMenu(key);
-    const active = !onTrips && venueKey != null && filters.placeTopics.includes(venueKey);
-    const iconFilter =
-      key === 'facilities'
-        ? 'facilities'
-        : key === 'shops'
-          ? 'shops'
-          : key === 'camping'
-            ? 'camping'
-            : 'trails';
-    return (
-      <span key={key} className={FLOAT_CHIP_WRAP}>
-        <button
-          type="button"
-          onClick={() => {
-            if (venueKey) onTogglePlaceTopic(venueKey);
-          }}
-          className={exploreMapMobileFloatChipClass(active, filterKey, 'places')}
-          aria-pressed={active}
-          aria-label={label}
-        >
-          <ExploreFilterIcon
-            filter={iconFilter}
-            context="venue"
-            markClassName={EXPLORE_MAP_MOBILE_FLOAT_CHIP_MARK}
-          />
-          <span>{label}</span>
-        </button>
-      </span>
-    );
-  });
+  const commitVenueFilters = (next: ExploreVenueFilterPatch) => {
+    const listTopics = next.placeTopics.map(aliasPlaceMapTopicToList);
+    if (onVenueFiltersChange) {
+      onVenueFiltersChange({ placeTopics: listTopics, facilityKinds: next.facilityKinds });
+      return;
+    }
+    onPlaceTopicsChange(listTopics);
+    onFacilityKindsChange(next.facilityKinds);
+  };
 
   return (
-    <div
-      className="mt-2 flex w-full min-w-0 items-center gap-2 overflow-x-auto scrollbar-none py-0.5 md:mt-3"
-      role="toolbar"
-      aria-label={onTrips ? 'Trip filters' : 'Venue filters'}
-    >
-      {onTrips ? (
-        <>
-          {calendarPill}
-          {activityChips}
-        </>
-      ) : (
-        <>
-          {uaePill}
-          {placesChips}
-        </>
-      )}
-    </div>
+    <ExploreOptionalFilterRow
+      layer={bucket === 'places' ? 'places' : 'activity'}
+      activityDatePreset={filters.activityDatePreset}
+      onActivityDatePresetChange={onActivityDatePresetChange}
+      tripTopics={filters.tripTopics}
+      onTripTopicsChange={(next: TripMapTopicKey[]) => onTripTopicsChange(next)}
+      placeTopics={placeTopics}
+      onPlaceTopicsChange={(next) => onPlaceTopicsChange(next.map(aliasPlaceMapTopicToList))}
+      price={filters.price}
+      onPriceChange={onPriceChange}
+      regions={regions}
+      onRegionsChange={onVenueRegionsChange}
+      hasTrip={filters.hasTrip}
+      onHasTripChange={onHasTripChange}
+      facilityKinds={filters.facilityKinds}
+      onFacilityKindsChange={onFacilityKindsChange}
+      onVenueFiltersChange={commitVenueFilters}
+    />
   );
 };

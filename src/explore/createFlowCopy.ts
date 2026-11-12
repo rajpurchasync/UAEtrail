@@ -12,6 +12,13 @@ export const HOSTING_INTRO_PROMPT =
 
 export const GOING_FROM_LABEL = 'Where are you going from?';
 
+/** Shared location-pick kit copy (§6.2.5) — not per-wizard literals. */
+export const COMPOSE_MAP_TAP_HINT = 'Tap to choose on map';
+
+export const COMPOSE_MAP_EDIT_LABEL = 'Edit';
+
+export const COMPOSE_MAP_OPEN_LABEL = 'Map';
+
 export const HOME_START_STEP_TITLE = 'Where do you start?';
 
 export const HOME_START_HINT =
@@ -137,6 +144,32 @@ export const PARTICIPANTS_MIN_AGE_LABEL = 'Minimum age';
 /** Host destination ladder: Area → Place hub → catalog leaf (trail / camp / venue). Facilities are Add on map, not here. */
 export const HOSTING_DESTINATION_REGISTRY_LABEL = 'Select from catalog';
 
+export const HOSTING_DESTINATION_UAE_CHIP = 'United Arab Emirates';
+
+export const HOSTING_DESTINATION_MODE_LISTED_TITLE = 'Listed place';
+
+export const HOSTING_DESTINATION_MODE_LISTED_SUBTITLE =
+  'A trail, camp, or venue people already use';
+
+export const HOSTING_DESTINATION_MODE_NEW_TITLE = 'New spot';
+
+export const HOSTING_DESTINATION_MODE_NEW_SUBTITLE = 'Pin a place that isn’t listed yet';
+
+export const HOSTING_DESTINATION_SEARCH_TOGGLE = 'Search from Database';
+
+export const HOSTING_DESTINATION_NOT_FOUND = 'Not found? Add new';
+
+export const HOSTING_DESTINATION_SELECT_ON_MAP = 'Select on map';
+
+export const HOSTING_DESTINATION_SELECT_ON_MAP_HINT =
+  'Drop a pin — we match a listed trail if you’re close.';
+
+export const HOSTING_DESTINATION_MAP_SEARCH_TITLE = 'Find on map';
+
+export const HOSTING_DESTINATION_MAP_SEARCH_SUBTITLE = 'Search the catalog';
+
+export const HOSTING_DESTINATION_MAP_SEARCH_PLACEHOLDER = 'Trail, wadi, area…';
+
 export const HOSTING_DESTINATION_SELECT_STATE = 'State';
 
 export const HOSTING_DESTINATION_SELECT_COUNTRY = 'Country';
@@ -161,20 +194,14 @@ export const HOSTING_DESTINATION_ADD_TRAIL_NEW = '+ New';
 
 export const HOSTING_DESTINATION_FIND_PLACEHOLDER = 'e.g. Wadi Shawka, Hatta, Shawka loop';
 
-export const HOSTING_DESTINATION_PICK_PLACE_FIRST =
-  'Choose a place first — then add a new trail or camp spot under it.';
-
-export const HOSTING_DESTINATION_LEAF_HINT =
-  'One place can list several trails, camp spots, or routes — pick the one you’re leading.';
-
 export const HOSTING_DESTINATION_RESET_LABEL = 'Clear selection';
 
 export const HOSTING_DESTINATION_CUSTOM_NAME_TOGGLE = "Can't find it? Add under this place";
 
-export const HOSTING_DESTINATION_CUSTOM_NAME_BACK = 'Back to catalog search';
+export const HOSTING_DESTINATION_CUSTOM_NAME_BACK = 'Back to listed places';
 
 export const HOSTING_DESTINATION_CUSTOM_REVIEW_NOTE =
-  'Pin the spot and add a photo. If this is a new area, we submit the spot and the area together — both stay pending until an admin approves them.';
+  'We\u2019ll submit this as a new catalog place for admin review, then host your outing on it.';
 
 export const HOSTING_DESTINATION_CATALOG_LEAF_LINK_HIKING = 'Trail';
 export const HOSTING_DESTINATION_CATALOG_LEAF_LINK_CAMPING = 'Camp spot';
@@ -185,7 +212,7 @@ export const HOSTING_DESTINATION_SEARCH_GROUP_ROUTE = 'Route';
 export const HOSTING_DESTINATION_SEARCH_GROUP_PLACE = 'Place hub';
 export const HOSTING_DESTINATION_SEARCH_GROUP_AREA = 'Area';
 export const HOSTING_DESTINATION_EMPTY_ROUTES_PROMPT =
-  'No routes listed under this place yet — add the one you lead.';
+  'No routes listed under this place yet. Use Not found? Add new if you are leading a new trail.';
 
 export const HOSTING_PUBLISH_SUCCESS_TITLE = 'You\u2019re live';
 

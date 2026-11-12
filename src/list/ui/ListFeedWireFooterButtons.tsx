@@ -3,8 +3,12 @@ import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { DirectionsControl } from '../../components/ui/DirectionsControl';
 import { EXPLORE_BRAND_ACTIVE, EXPLORE_TYPE } from '../../config/exploreTheme';
 import type { ListFeedFooterButton, ListFeedFooterModel } from '../listFeedFooterActions';
+import {
+  LIST_EXPLORER_LISTING_FOOTER,
+  LIST_EXPLORER_LISTING_PRIMARY_CTA,
+} from '../explorer/listExplorerListingChrome';
 
-export type ListFeedWireFooterVariant = 'poster' | 'compact';
+export type ListFeedWireFooterVariant = 'poster' | 'compact' | 'listing';
 
 const variantStyles: Record<
   ListFeedWireFooterVariant,
@@ -42,6 +46,17 @@ const variantStyles: Record<
     secondaryText: 'text-xs',
     secondaryPad: 'px-2.5',
   },
+  listing: {
+    shell: LIST_EXPLORER_LISTING_FOOTER,
+    primaryHeight: 'h-9',
+    primaryRadius: 'rounded-[8px]',
+    primaryText: 'text-[12px]',
+    primaryPad: 'px-2',
+    secondaryHeight: 'h-9',
+    secondaryRadius: 'rounded-[8px]',
+    secondaryText: 'text-[12px]',
+    secondaryPad: 'px-2',
+  },
 };
 
 type ListFeedWireFooterButtonsProps = {
@@ -49,6 +64,8 @@ type ListFeedWireFooterButtonsProps = {
   model: ListFeedFooterModel;
   joinStateLoading: boolean;
   variant: ListFeedWireFooterVariant;
+  /** Catalogue trip cards — join only; detail is the card tap. */
+  primaryOnly?: boolean;
   onPrimaryFooter: (card: DiscoveryCardModel) => void;
   onSecondaryFooter: (card: DiscoveryCardModel) => void;
 };
@@ -60,20 +77,26 @@ export const ListFeedWireFooterButtons = ({
   model,
   joinStateLoading,
   variant,
+  primaryOnly = false,
   onPrimaryFooter,
   onSecondaryFooter,
 }: ListFeedWireFooterButtonsProps) => {
   const styles = variantStyles[variant];
   const primary = model.primary;
-  const secondary = model.secondary;
+  const secondary = primaryOnly ? null : model.secondary;
   const primaryDisabled =
     primary.kind === 'disabled' || (joinStateLoading && primary.kind === 'action');
 
-  const primaryActionClass = `${styles.primaryHeight} flex-1 ${styles.primaryRadius} ${styles.primaryPad} ${styles.primaryText} font-bold shadow-sm active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 ${
-    primary.kind === 'disabled'
-      ? 'bg-amber-100 text-amber-900 shadow-none'
-      : EXPLORE_BRAND_ACTIVE
-  }`;
+  const primaryActionClass =
+    variant === 'listing'
+      ? `${LIST_EXPLORER_LISTING_PRIMARY_CTA} ${
+          primary.kind === 'disabled' ? 'bg-amber-100 text-amber-900 shadow-none hover:bg-amber-100' : ''
+        }`
+      : `${styles.primaryHeight} flex-1 ${styles.primaryRadius} ${styles.primaryPad} ${styles.primaryText} font-bold shadow-sm active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 ${
+          primary.kind === 'disabled'
+            ? 'bg-amber-100 text-amber-900 shadow-none'
+            : EXPLORE_BRAND_ACTIVE
+        }`;
 
   const secondaryActionClass = `flex ${styles.secondaryHeight} flex-1 items-center justify-center ${styles.secondaryRadius} border border-neutral-200 bg-white ${styles.secondaryPad} ${styles.secondaryText} font-bold ${EXPLORE_TYPE.title} shadow-sm active:bg-neutral-50`;
 

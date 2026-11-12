@@ -1,5 +1,5 @@
 import { createContext, useContext, type ReactNode } from 'react';
-import { FlowSheetChrome } from '../ExploreFlowSheetChrome';
+import { ComposeWizardStepChrome } from '../../create/ComposeWizardShell';
 import { HostingWizardNextButton } from './HostingWizardNextButton';
 
 const HostingWizardEmbedContext = createContext(false);
@@ -26,9 +26,9 @@ export const HostingWizardChrome = ({ title, onClose, onBack, children }: Hostin
   const embedded = useContext(HostingWizardEmbedContext);
   if (embedded) return <>{children}</>;
   return (
-    <FlowSheetChrome title={title} onClose={onClose} onBack={onBack}>
+    <ComposeWizardStepChrome title={title} onClose={onClose} onBack={onBack}>
       {children}
-    </FlowSheetChrome>
+    </ComposeWizardStepChrome>
   );
 };
 

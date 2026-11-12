@@ -761,6 +761,10 @@ export interface ExploreLocationCardDTO {
   parkingLat?: number | null;
   parkingLng?: number | null;
   parkingPoint?: string | null;
+  /** On-site `facility:` tags as short chips (Toilet, Fuel, Shop). */
+  amenityLabels?: string[];
+  /** Amenity kinds rolled up from parent-place facilities + `facility:` tags. */
+  amenityKinds?: import('./place-kind.js').PlaceKind[];
 }
 
 /** Published rideshare linked to a parent hike/camp/event (explore map + peek). */
@@ -1266,6 +1270,7 @@ export {
   deriveVenueAccessibilityFromAccessibleBy,
   formatVenueAreaTag,
   mergeVenueAreaTag,
+  readVenueAmenityChipLabels,
   readVenueAreaFromTags,
   readVenueArabicNameFromTags,
   readVenueEnglishNameFromTags,
@@ -1614,6 +1619,7 @@ export {
 
 export {
   ADDABLE_FACILITY_PLACE_KINDS,
+  amenityChipLabelForFacilityKind,
   PLACE_CATALOG_KINDS,
   FACILITY_PLACE_KINDS,
   isAddableFacilityPlaceKind,

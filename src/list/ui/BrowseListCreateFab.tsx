@@ -1,4 +1,5 @@
 import { Plus } from 'lucide-react';
+import { MOBILE_DOCK_ICON } from '../../config/exploreTheme';
 import { BROWSE_LIST_CREATE_TRIP } from '../browseListCopy';
 import { LIST_CREATE_FAB, LIST_MAP_FLOAT_POSITION } from '../listChromeTheme';
 
@@ -17,7 +18,7 @@ export const BrowseListCreateFab = ({
     className={`${LIST_CREATE_FAB} ${LIST_MAP_FLOAT_POSITION}`}
     aria-label={label}
   >
-    <Plus className="h-5 w-5 shrink-0" strokeWidth={2.5} aria-hidden />
+    <Plus className={MOBILE_DOCK_ICON} strokeWidth={2.5} aria-hidden />
     <span className="truncate">{label}</span>
   </button>
 );
