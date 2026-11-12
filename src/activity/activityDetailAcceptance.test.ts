@@ -164,7 +164,12 @@ describe('activity detail program — wiring', () => {
     const actions = read('src/components/activity/detail/ActivityDetailEngagementActions.tsx');
     expect(actions).toMatch(/resolveActivityMapPeekActions/);
     expect(actions).toMatch(/participant_invite/);
+    expect(actions).toMatch(/showFamilyFooterSlot = showPartyActive && isMobileFooter && !isHostUser/);
+    expect(actions).toMatch(/add_family/);
     expect(actions).not.toMatch(/ActivityParticipationManageSheet/);
+    const rides = read('src/activity/detail/ActivityLinkedRidesSection.tsx');
+    expect(rides).toMatch(/ConsumerDetailSection/);
+    expect(rides).toMatch(/ACTIVITY_DETAIL_LINKED_RIDES_JUMP_LABEL/);
   });
 
   it('AD-GUEST-01: guests get in-page sign-in gate on the consumer template (map peek uses browse gate)', () => {

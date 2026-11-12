@@ -80,6 +80,7 @@ export const registerProfileRoutes = (router: Router): void => {
           fieldPrivacy: body.fieldPrivacy,
           dateOfBirthShare: body.dateOfBirthShare,
           friendsListShare: body.friendsListShare,
+          findCrewVisibility: body.findCrewVisibility,
         });
         res.json({ data });
       } catch (error) {

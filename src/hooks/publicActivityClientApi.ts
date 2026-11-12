@@ -1,4 +1,5 @@
 import type {
+  ActivityDTO,
   ActivityDetailDTO,
   ActivityParticipationDTO,
   ActivityPresentationDTO,
@@ -14,6 +15,12 @@ export type PublicActivityDetailPayload = {
   presentation: ActivityPresentationDTO | null;
   participation: ActivityParticipationDTO | null;
   myRequest: MyActivityRequestDTO | null;
+};
+
+/** Published rideshare offers linked to this outing (`linkedActivityId`). */
+export const fetchActivityLinkedRides = async (activityId: string): Promise<ActivityDTO[]> => {
+  const res = await api.getActivityLinkedRides(activityId);
+  return res.data ?? [];
 };
 
 /**

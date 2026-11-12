@@ -108,6 +108,14 @@ export const publishActivity = async (tenantId: string, activityId: string): Pro
   await api.publishActivity(tenantId, activityId);
 };
 
+export const suspendActivity = async (tenantId: string, activityId: string): Promise<void> => {
+  await api.suspendActivity(tenantId, activityId);
+};
+
+export const resumeActivity = async (tenantId: string, activityId: string): Promise<void> => {
+  await api.resumeActivity(tenantId, activityId);
+};
+
 export const duplicateActivity = async (
   tenantId: string,
   activityId: string

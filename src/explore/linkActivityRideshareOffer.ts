@@ -88,6 +88,44 @@ export const linkRideshareToParentActivityFromPaste = async (
   return parentActivityId;
 };
 
+/** Ride host — clear parent outing link on this rideshare (and parent primary pin when same tenant). */
+export const unlinkRideshareFromParentActivity = async (
+  tenantId: string,
+  rideshareActivityId: string
+): Promise<void> => {
+  const rideshareDetail = await fetchPublicActivityDetail(rideshareActivityId);
+  const rideshare = rideshareDetail.activity as ActivityDTO;
+  if (rideshare.activityType !== 'rideshare') {
+    throw new Error('Only rideshare activities can be unlinked from an outing.');
+  }
+  if (rideshare.tenantId !== tenantId) {
+    throw new Error('You can only unlink rides you host under this organization.');
+  }
+  const parentActivityId = rideshare.linkedActivityId?.trim() || null;
+  if (!parentActivityId) {
+    return;
+  }
+
+  await updateActivity(tenantId, rideshareActivityId, {
+    linkedActivityId: null,
+  });
+
+  try {
+    const parentDetail = await fetchPublicActivityDetail(parentActivityId);
+    const parent = parentDetail.activity as ActivityDTO;
+    if (
+      parent.tenantId === tenantId &&
+      parent.linkedRideshareActivityId === rideshareActivityId
+    ) {
+      await updateActivity(tenantId, parentActivityId, {
+        linkedRideshareActivityId: null,
+      });
+    }
+  } catch {
+    // Parent may be unpublished or inaccessible — ride unlink already succeeded.
+  }
+};
+
 /** Map/list pin kinds that may have a linked transport (rideshare) child — not rideshare plans. */
 export const parentMapKindMayOfferLinkedRideshare = (
   kind:

@@ -6,12 +6,10 @@ import {
 } from './coordinationAttentionPresentation';
 
 describe('coordinationAttentionPresentation', () => {
-  it('maps host queue to Plan hosted schedule', () => {
+  it('maps host queue to dedicated Hosting hub', () => {
     const item: MemberCoordinationAttentionItemDTO = { kind: 'host_join_queue', count: 2 };
     const path = coordinationAttentionPath(item);
-    expect(path).toContain('/plan');
-    expect(path).toContain('filter=hosting');
-    expect(path).not.toContain('/host');
+    expect(path).toBe('/hosting');
     expect(coordinationAttentionLabel(item)).toContain('2 people');
   });
 

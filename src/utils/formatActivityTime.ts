@@ -6,7 +6,7 @@ const localIsoDate = (date: Date): string => {
   return `${date.getFullYear()}-${month}-${day}`;
 };
 
-/** Homepage outing time — coming weekday, otherwise `09 Nov 26`, then the clock time. */
+/** Homepage outing time — progressive date stamp, then the clock time. */
 export function formatActivityTime(startsAt: Date | string, now: Date = new Date()): string {
   const date = typeof startsAt === 'string' ? new Date(startsAt) : startsAt;
   if (Number.isNaN(date.getTime())) {

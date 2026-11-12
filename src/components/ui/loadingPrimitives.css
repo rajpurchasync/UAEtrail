@@ -1,0 +1,47 @@
+/*
+ * Ball on a hard floor: accelerate down (gravity), sharp impact + squash,
+ * then spring back up decelerating to the apex.
+ * Travel = 1em font box minus the dot diameter.
+ */
+@keyframes loading-dots-bounce {
+  0% {
+    transform: translateY(0) scale(1, 1);
+    animation-timing-function: cubic-bezier(0.55, 0.05, 0.9, 0.4); /* fall faster */
+  }
+  48% {
+    transform: translateY(calc(1em - 100%)) scale(1, 1);
+    animation-timing-function: linear;
+  }
+  52% {
+    /* Hard floor contact — brief squash */
+    transform: translateY(calc(1em - 100%)) scale(1.35, 0.55);
+    animation-timing-function: cubic-bezier(0.15, 0.85, 0.35, 1); /* spring up */
+  }
+  88% {
+    transform: translateY(0) scale(1, 1);
+    animation-timing-function: ease-out;
+  }
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+}
+
+.loading-dots {
+  display: inline-flex;
+  height: 1em;
+  align-items: flex-start;
+  gap: 0.15em;
+  vertical-align: baseline;
+}
+
+.loading-dots__dot {
+  display: inline-block;
+  width: 0.22em;
+  height: 0.22em;
+  border-radius: 9999px;
+  background-color: currentColor;
+  opacity: 0.9;
+  transform-origin: center bottom;
+  animation: loading-dots-bounce 0.7s infinite;
+  will-change: transform;
+}

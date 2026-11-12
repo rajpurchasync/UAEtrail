@@ -6,7 +6,7 @@ import {
 
 /** Typographic date block for consumer outing detail (no hero image). */
 export type ActivityDetailConsumerLeadDate = {
-  /** Weekday within 6 days, otherwise `09 Nov 26`. */
+  /** Progressive stamp: week → weekday; month → `Sat 12`; year → `Sat 12 Sep`; else full. */
   label: string;
   month: string;
   day: string;

@@ -1,4 +1,5 @@
 import { HostActivityCancelDialog } from './HostActivityCancelDialog';
+import { HostActivitySuspendDialog } from './HostActivitySuspendDialog';
 import { activityCancelParticipantNotice } from '../../activity/activityCancelParticipantNotice';
 import type { HostActivityManageActions } from '../../hooks/useHostActivityManageActions';
 
@@ -7,11 +8,14 @@ type HostActivityManageCancelDialogsProps = {
     HostActivityManageActions,
     | 'confirmDelete'
     | 'confirmCancel'
+    | 'confirmSuspend'
     | 'busy'
     | 'setConfirmDelete'
     | 'setConfirmCancel'
+    | 'setConfirmSuspend'
     | 'confirmDeleteDraft'
     | 'confirmCancelActivity'
+    | 'confirmSuspendActivity'
     | 'error'
   >;
   onAfterConfirm?: () => void;
@@ -50,6 +54,18 @@ export const HostActivityManageCancelDialogs = ({
       onConfirm={() => {
         void (async () => {
           await actions.confirmCancelActivity();
+          if (!actions.error) onAfterConfirm?.();
+        })();
+      }}
+    />
+    <HostActivitySuspendDialog
+      activity={actions.confirmSuspend}
+      busy={actions.busy}
+      overlayClassName={overlayClassName}
+      onClose={() => actions.setConfirmSuspend(null)}
+      onConfirm={() => {
+        void (async () => {
+          await actions.confirmSuspendActivity();
           if (!actions.error) onAfterConfirm?.();
         })();
       }}

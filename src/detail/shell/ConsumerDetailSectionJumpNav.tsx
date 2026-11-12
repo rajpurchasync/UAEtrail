@@ -78,7 +78,7 @@ export const ConsumerDetailSectionJumpNav = ({
     <nav
       ref={navRef}
       aria-label={ariaLabel}
-      className={`sticky top-0 z-20 -mx-4 mb-3 bg-white shadow-[0_1px_0_rgba(15,23,42,.06)] max-md:top-[var(--detail-header-pad,calc(var(--safe-top)+4.75rem))] md:-mx-6 lg:mx-0 lg:mb-3 lg:bg-white/95 lg:shadow-sm lg:shadow-neutral-200/80 dark:bg-neutral-950 dark:shadow-neutral-900/50 dark:lg:bg-neutral-950/95 dark:lg:shadow-neutral-900/60 ${className}`}
+      className={`sticky top-0 z-20 -mx-4 mb-3 bg-white shadow-[0_1px_0_rgba(15,23,42,.06)] md:-mx-6 lg:mx-0 lg:mb-3 lg:bg-white/95 lg:shadow-sm lg:shadow-neutral-200/80 dark:bg-neutral-950 dark:shadow-neutral-900/50 dark:lg:bg-neutral-950/95 dark:lg:shadow-neutral-900/60 ${className}`}
       data-consumer-detail-jump-nav
     >
       <div className="flex gap-1 overflow-x-auto px-4 py-1.5 max-lg:snap-x max-lg:snap-proximity max-lg:[scrollbar-width:none] md:px-6 lg:rounded-xl lg:border lg:border-neutral-200/70 lg:bg-white/90 lg:px-2 lg:py-1.5 lg:backdrop-blur-md supports-[backdrop-filter]:lg:bg-white/75 dark:lg:border-neutral-700 dark:lg:bg-neutral-900/90">

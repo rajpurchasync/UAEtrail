@@ -1,9 +1,11 @@
+import type { FindCrewViewerRelation } from './find-crew-visibility.js';
 import type { ProfileDetailExposure } from './profile-viewer-access.js';
 
 /** Who can see your friends list on `/member/:id`. */
 export const PROFILE_FRIENDS_LIST_SHARE_LEVELS = [
   'only_me',
   'friends_crew',
+  'friends_of_friends',
   'mutual_only',
 ] as const;
 
@@ -33,12 +35,26 @@ export const resolveProfileFriendsListVisibility = (input: {
   isSelf: boolean;
   exposure: ProfileDetailExposure;
   canOpenMemberProfile: boolean;
+  /** Needed for friends_of_friends share. */
+  relation?: FindCrewViewerRelation | null;
 }): ProfileFriendsListVisibility => {
   if (input.isSelf) return 'full';
   if (!input.canOpenMemberProfile) return 'none';
   if (input.share === 'only_me') return 'none';
   if (input.share === 'friends_crew') {
-    return input.exposure === 'full' ? 'full' : 'none';
+    return input.exposure === 'full' || input.relation === 'friend' ? 'full' : 'none';
   }
+  if (input.share === 'friends_of_friends') {
+    const relation = input.relation ?? null;
+    if (
+      input.exposure === 'full' ||
+      relation === 'friend' ||
+      relation === 'friend_of_friend'
+    ) {
+      return 'full';
+    }
+    return 'none';
+  }
+  // mutual_only — mutual follows/friends slice (still requires open profile)
   return 'mutual';
 };

@@ -3,6 +3,7 @@ export { ConsumerEntityDetailLoading } from './ConsumerEntityDetailLoading';
 export { ConsumerDetailScrollToTop } from './ConsumerDetailScrollToTop';
 export { HeroBanner } from './HeroBanner';
 export { StatTile } from './StatTile';
+export { RatingStatTile } from './RatingStatTile';
 export { StatGrid } from './StatGrid';
 export { SectionCard } from './SectionCard';
 export { ConsumerDetailSection } from './ConsumerDetailSection';

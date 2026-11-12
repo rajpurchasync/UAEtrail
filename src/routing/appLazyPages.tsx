@@ -70,6 +70,9 @@ export const PeopleRedirect = lazy(() =>
 export const PlanBrowseRoute = lazy(() =>
   import('./planBrowseRoute').then((m) => ({ default: m.PlanBrowseRoute }))
 );
+export const HostingHubPage = lazy(() =>
+  import('../hosting/HostingHubPage').then((m) => ({ default: m.HostingHubPage }))
+);
 
 // ─── Lazy-loaded pages ───────────────────────────────────────────────────────
 export const VenuePlaceDetailPage = lazy(() =>
@@ -94,7 +97,12 @@ export const SignIn = lazy(() => import('../pages/SignIn').then((m) => ({ defaul
 export const VerifyOTP = lazy(() => import('../pages/VerifyOTP').then((m) => ({ default: m.VerifyOTP })));
 export const WelcomeSignup = lazy(() => import('../pages/WelcomeSignup').then((m) => ({ default: m.WelcomeSignup })));
 export const ForgotPassword = lazy(() => import('../pages/ForgotPassword').then((m) => ({ default: m.ForgotPassword })));
-export const AdminOverview = lazy(() => import('../pages/admin/Overview').then((m) => ({ default: m.Overview })));
+export const AdminInbox = lazy(() => import('../pages/admin/Inbox').then((m) => ({ default: m.Inbox })));
+export const AdminSubmissions = lazy(() =>
+  import('../pages/admin/Submissions').then((m) => ({ default: m.Submissions }))
+);
+/** @deprecated Use AdminInbox */
+export const AdminOverview = lazy(() => import('../pages/admin/Inbox').then((m) => ({ default: m.Inbox })));
 export const AdminPlaces = lazy(() => import('../pages/admin/Places').then((m) => ({ default: m.Places })));
 export const AdminAreas = lazy(() => import('../pages/admin/Areas').then((m) => ({ default: m.Areas })));
 export const AreaDetailPage = lazy(() => import('../pages/AreaDetailPage').then((m) => ({ default: m.AreaDetailPage })));

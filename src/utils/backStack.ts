@@ -4,6 +4,7 @@ import {
   APP_SETTINGS_SAFETY_PATH,
   INBOUND_PROFILE_SETTINGS_PATH,
   INBOUND_PROFILE_SETTINGS_SAFETY_PATH,
+  isNotificationHubPath,
 } from '../config/surfacePaths';
 import { armViewReturn, peekViewReturnSnapshot, viewReturnPathKey } from './viewReturnMemory';
 
@@ -288,6 +289,9 @@ export const resolveBackTarget = (
     const entryPathname = pathnameOf(entry.path);
     if (isTransientBackPath(entryPathname)) continue;
     if (skipPath?.(entryPathname)) continue;
+    // Notification history / preferences / saved are peer Settings panels — do not
+    // walk back through them (Saved → Notification settings → Notifications).
+    if (isNotificationHubPath(currentPathname) && isNotificationHubPath(entryPathname)) continue;
     if (currentIsFormTransient) {
       if (sameDestination(entry.path, fallbackKey)) {
         return { kind: 'pop', delta: stack.index - i, path: entry.path };

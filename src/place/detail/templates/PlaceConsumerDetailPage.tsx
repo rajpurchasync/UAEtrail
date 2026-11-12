@@ -1,6 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { Star } from 'lucide-react';
 import type {
   ActivityDTO,
   LocationPremiumSummaryDTO,
@@ -53,7 +52,7 @@ import { PlaceConsumerKindFacts } from '../PlaceConsumerKindFacts';
 import { PlaceReachableRidesSection } from '../PlaceReachableRidesSection';
 import { resolvePlacePeekAudienceFromPlace } from '../../peek/resolvePlacePeekCatalogFacts';
 import { splitPlacePracticalTags } from '../../../utils/placePracticalInfo';
-import { PLACE_PEEK_ARRANGE_TRIP, PLACE_PEEK_RATE_LABEL, PLACE_PEEK_SCHEDULED } from '../../../content/placePeekCopy';
+import { PLACE_PEEK_ARRANGE_TRIP, PLACE_PEEK_SCHEDULED } from '../../../content/placePeekCopy';
 import { navigateHostFromPlace } from '../../peek/navigateHostFromPlaceCard';
 import { capitalize } from '../../../utils';
 import {
@@ -388,7 +387,7 @@ export const PlaceConsumerDetailPage = ({
           }
           hero={
             heroPhotos.length > 0 ? (
-              <div className="-mx-4 mb-4 min-w-0 max-w-[calc(100%+2rem)] overflow-hidden max-lg:-mt-[var(--detail-header-pad,calc(var(--safe-top)+4.75rem))] max-lg:pt-[var(--detail-header-pad,calc(var(--safe-top)+4.75rem))] md:-mx-6 md:max-w-[calc(100%+3rem)] lg:mx-0 lg:mb-2 lg:mt-0 lg:max-w-full lg:pt-0">
+              <div className="-mx-4 mb-4 min-w-0 max-w-[calc(100%+2rem)] overflow-hidden md:-mx-6 md:max-w-[calc(100%+3rem)] lg:mx-0 lg:mb-2 lg:mt-0 lg:max-w-full lg:pt-0">
                 <DetailHeroPhotoStrip
                   photos={heroPhotos}
                   topEndAction={heroTopActions}
@@ -458,24 +457,16 @@ export const PlaceConsumerDetailPage = ({
               collapsible
               defaultExpanded
             >
-              <PlaceConsumerKindFacts kind={kind} place={place} showAudience />
-              {avgRating != null ? (
-                <p className="mt-2 flex items-center gap-1.5 text-sm font-semibold text-neutral-900">
-                  <Star className="h-4 w-4 fill-amber-400 text-amber-400" aria-hidden />
-                  <span>{avgRating.toFixed(1)}</span>
-                  <span className="font-medium text-neutral-500">
-                    · {reviews.length} {reviews.length === 1 ? 'rating' : 'ratings'}
-                  </span>
-                </p>
-              ) : (
-                <p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-neutral-600">
-                  <Star className="h-4 w-4 text-amber-300" aria-hidden />
-                  <span>No ratings yet</span>
-                  <a href="#place-reviews" className="font-semibold text-emerald-700 underline-offset-2 hover:underline">
-                    {PLACE_PEEK_RATE_LABEL}
-                  </a>
-                </p>
-              )}
+              <PlaceConsumerKindFacts
+                kind={kind}
+                place={place}
+                showAudience
+                rating={{
+                  average: avgRating,
+                  count: reviews.length,
+                  rateHref: '#place-reviews',
+                }}
+              />
             </ConsumerDetailSection>
           }
           aside={asidePanel}
@@ -507,6 +498,8 @@ export const PlaceConsumerDetailPage = ({
                 ) : null}
               </SectionCard>
             ) : null}
+
+            {!isFacilityCatalog ? <PlaceReachableRidesSection placeId={placeId} /> : null}
 
             {guestPreview ? null : (
               <>
@@ -575,7 +568,6 @@ export const PlaceConsumerDetailPage = ({
               id="place-detail-details"
               className="flex flex-col gap-3 max-lg:[&_section]:!mt-0"
             >
-            <PlaceReachableRidesSection placeId={placeId} />
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:items-stretch [&>section]:!mt-0">
             {showTransport ? (
               <ConsumerDetailSection

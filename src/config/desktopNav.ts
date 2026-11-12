@@ -1,5 +1,6 @@
 import {
   Award,
+  Briefcase,
   CalendarDays,
   ClipboardList,
   History,
@@ -20,6 +21,7 @@ import {
   EXPLORE_DISCOVER_BROWSE_PATH,
   EXPLORE_MAP_PATH,
   GROUPS_PATH,
+  HOSTING_HUB_PATH,
   JOURNEY_MAP_PATH,
   LIST_DISCOVERY_PATH,
   MESSAGES_PATH,
@@ -30,6 +32,7 @@ import {
   PROFILE_PATH,
   PROFILE_SETTINGS_PATH,
   PROFILE_SUBMISSIONS_PATH,
+  PUBLISHING_CONSOLE_PREFIX,
 } from './routingCatalog';
 import {
   PRODUCT_PLAN_SURFACE_TITLE,
@@ -38,6 +41,8 @@ import {
   PRODUCT_SOCIAL_SURFACE_TITLE,
 } from '../content/productNorthStar';
 import { LIST_CAT_PARAM } from '../list/browseListUrlState';
+import { isPlanHostingFilterRoute } from '../plan/planRouting';
+import { isPublishingConsolePath } from './surfacePaths';
 
 /** Wide app chrome (Tailwind `md`, ≥768px) — left sidebar + slim top bar. Mobile uses bottom nav + drawer. */
 export const DESKTOP_MIN_WIDTH_PX = 768;
@@ -123,6 +128,38 @@ export const DESKTOP_PRIMARY_NAV: readonly DesktopNavItem[] = [
     badge: 'chat',
     authGate: true,
     guestVisible: true,
+  },
+];
+
+/** Pro/agency/guide host mode — hosting hub first; no Explore. */
+export const DESKTOP_HOST_PRIMARY_NAV: readonly DesktopNavItem[] = [
+  {
+    key: 'hosting',
+    label: 'Hosting',
+    // Static default only — `DesktopSideNav` resolves the per-member hub via `resolveHostingHubPath`.
+    to: HOSTING_HUB_PATH,
+    icon: Briefcase,
+    match: [PUBLISHING_CONSOLE_PREFIX, PLAN_PATH],
+    authGate: true,
+    navHint: 'Your hosting hub — outings, requests, and workspace.',
+  },
+  {
+    key: 'plan',
+    label: PRODUCT_PLAN_SURFACE_TITLE,
+    to: PLAN_PATH,
+    icon: CalendarDays,
+    match: [PLAN_PATH],
+    authGate: true,
+    navHint: PRODUCT_PLAN_MEMBER_NAV_HINT,
+  },
+  {
+    key: 'chat',
+    label: 'Chat',
+    to: MESSAGES_PATH,
+    icon: MessageCircle,
+    match: [MESSAGES_PATH],
+    badge: 'chat',
+    authGate: true,
   },
 ];
 
@@ -214,8 +251,12 @@ export const DESKTOP_SIDE_NAV_SECTIONS: readonly DesktopSideNavSection[] = [
 export const isDesktopExploreBrowseView = (pathname: string, search: string): boolean =>
   !isPeopleListDiscoveryRoute(pathname, search) && isDiscoverBrowseRoute(pathname, search);
 
+export const isDesktopHostingNavActive = (pathname: string, search: string): boolean =>
+  isPublishingConsolePath(pathname) || isPlanHostingFilterRoute(pathname, search);
+
 export const isDesktopNavItemActive = (item: DesktopNavItem, pathname: string, search: string): boolean => {
   if (item.key === 'explore') return isDesktopExploreNavActive(pathname, search);
+  if (item.key === 'hosting') return isDesktopHostingNavActive(pathname, search);
   if (item.key === 'social') return isDesktopSocialNavActive(pathname, search);
   const params = new URLSearchParams(search);
   if (item.key === 'findCrew') {
@@ -229,13 +270,20 @@ export const isDesktopNavItemActive = (item: DesktopNavItem, pathname: string, s
     return pathname === EXPLORE_MAP_PATH && Boolean(params.get('compose'));
   }
   if (item.key === 'plan') {
+    // Host mode: hosting filter belongs to the Hosting tab, not My Plans.
+    if (isPlanHostingFilterRoute(pathname, search)) return false;
     return matchesPrefix(pathname, PLAN_PATH);
   }
   return item.match.some((prefix) => matchesPrefix(pathname, prefix));
 };
 
-export const desktopPrimaryNavForSession = (signedIn: boolean): readonly DesktopNavItem[] =>
-  DESKTOP_PRIMARY_NAV.filter((item) => signedIn || item.guestVisible || !item.authGate);
+export const desktopPrimaryNavForSession = (
+  signedIn: boolean,
+  options?: { hostMode?: boolean }
+): readonly DesktopNavItem[] => {
+  const source = options?.hostMode ? DESKTOP_HOST_PRIMARY_NAV : DESKTOP_PRIMARY_NAV;
+  return source.filter((item) => signedIn || item.guestVisible || !item.authGate);
+};
 
 /** Tablet/desktop chrome — explore map and stacked product views (guests and members). */
 export const shouldShowDesktopSideNav = (pathname: string, _signedIn: boolean): boolean => {
@@ -246,6 +294,7 @@ export const shouldShowDesktopSideNav = (pathname: string, _signedIn: boolean): 
 const NAV_ROOT_PATHS: readonly string[] = [
   PROFILE_PATH,
   LIST_DISCOVERY_PATH,
+  BUDDIES_PATH,
   GROUPS_PATH,
   ...DESKTOP_PRIMARY_NAV.map((item) => item.to),
   ...DESKTOP_PEOPLE_NAV.map((item) => item.to.split('?')[0]),

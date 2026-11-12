@@ -1,5 +1,6 @@
 import {
   Bell,
+  Briefcase,
   CalendarDays,
   Compass,
   History,
@@ -37,6 +38,7 @@ export const MOBILE_NAV_ICON_MAP: Record<
   | 'History'
   | 'Outing history'
   | 'My Plans'
+  | 'Hosting'
   | 'Chat'
   | 'Notifications'
   | 'Join'
@@ -64,6 +66,7 @@ export const MOBILE_NAV_ICON_MAP: Record<
   History: History,
   'Outing history': History,
   'My Plans': CalendarDays,
+  Hosting: Briefcase,
   Chat: MessageCircle,
   'Upcoming Activities': NAV_ICONS.activities,
   Settings,

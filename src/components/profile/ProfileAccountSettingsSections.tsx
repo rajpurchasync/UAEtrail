@@ -16,19 +16,29 @@ interface ProfileAccountSettingsSectionsProps {
   onDeleted: () => void | Promise<void>;
   /** Flat blocks when nested in {@link ConsumerDetailSection}. */
   embedded?: boolean;
+  /** Borderless blocks inside mobile settings cards. */
+  flush?: boolean;
 }
 
 const AccountBlock = ({
   embedded,
+  flush,
   children,
   className = '',
 }: {
   embedded: boolean;
+  flush: boolean;
   children: ReactNode;
   className?: string;
 }) =>
   embedded ? (
-    <div className={`space-y-3 rounded-xl border border-neutral-200/80 bg-white p-3 dark:border-neutral-700 dark:bg-neutral-900/40 ${className}`}>
+    <div
+      className={
+        flush
+          ? `space-y-3 ${className}`
+          : `space-y-3 rounded-xl border border-neutral-200/80 bg-white p-3 dark:border-neutral-700 dark:bg-neutral-900/40 ${className}`
+      }
+    >
       {children}
     </div>
   ) : (
@@ -42,6 +52,7 @@ export const ProfileAccountSettingsSections = ({
   onEmailChanged,
   onDeleted,
   embedded = false,
+  flush = false,
 }: ProfileAccountSettingsSectionsProps) => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -134,7 +145,7 @@ export const ProfileAccountSettingsSections = ({
 
   return (
     <div className="space-y-3">
-      <AccountBlock embedded={embedded}>
+      <AccountBlock embedded={embedded} flush={flush}>
         <h2 className="text-sm font-semibold text-neutral-900">✉️ Change email</h2>
         <p className="mt-1 text-xs text-neutral-600">Current: {email}</p>
         <div className="mt-3 space-y-3">
@@ -198,7 +209,7 @@ export const ProfileAccountSettingsSections = ({
         </div>
       </AccountBlock>
 
-      <AccountBlock embedded={embedded}>
+      <AccountBlock embedded={embedded} flush={flush}>
         <h2 className="text-sm font-semibold text-neutral-900">🔒 Change password</h2>
         <p className="mt-1 text-xs text-neutral-600">
           Enter your current password, then choose a new one.

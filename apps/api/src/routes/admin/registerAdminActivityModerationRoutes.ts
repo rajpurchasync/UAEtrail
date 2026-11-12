@@ -12,8 +12,24 @@ import {
   loadAdminActivityEngagement,
   loadAdminActivityModerationDetail,
 } from '../../services/admin-activity-moderation-read.js';
+import {
+  adminSetRideshareDestinationPlace,
+  adminSetRideshareParentLink,
+} from '../../services/admin-activity-rideshare-link-commands.js';
 
 const idParamSchema = z.object({ id: z.string().min(1) });
+
+const rideshareParentLinkSchema = z.object({
+  parentActivityId: z.string().min(1).nullable(),
+});
+
+const ridesharePlaceLinkSchema = z.object({
+  placeId: z.string().min(1).nullable(),
+});
+
+const parentLinkedRideshareSchema = z.object({
+  rideshareActivityId: z.string().min(1).nullable(),
+});
 
 const requireSuspendComment = (
   data: { comment?: string },
@@ -106,6 +122,79 @@ export const registerAdminActivityModerationRoutes = (adminRouter: Router): void
         const result = await toggleAdminActivityFeatured({
           actorId: req.auth!.userId,
           activityId: id,
+        });
+        res.json(result);
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  adminActivitiesRouter.patch(
+    '/:id/rideshare-parent',
+    validate({ params: idParamSchema, body: rideshareParentLinkSchema }),
+    async (req, res, next) => {
+      try {
+        const { id } = req.params as z.infer<typeof idParamSchema>;
+        const { parentActivityId } = req.body as z.infer<typeof rideshareParentLinkSchema>;
+        const result = await adminSetRideshareParentLink({
+          actorId: req.auth!.userId,
+          rideshareActivityId: id,
+          parentActivityId,
+        });
+        res.json(result);
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  /** Parent outing → set/clear primary linked rideshare. */
+  adminActivitiesRouter.patch(
+    '/:id/linked-rideshare',
+    validate({ params: idParamSchema, body: parentLinkedRideshareSchema }),
+    async (req, res, next) => {
+      try {
+        const { id } = req.params as z.infer<typeof idParamSchema>;
+        const { rideshareActivityId } = req.body as z.infer<typeof parentLinkedRideshareSchema>;
+        if (!rideshareActivityId) {
+          const parent = await loadAdminActivityModerationDetail(id);
+          const current = parent.linkedRideshareActivityId ?? null;
+          if (!current) {
+            res.json({ message: 'No linked ride to clear.', data: parent });
+            return;
+          }
+          const result = await adminSetRideshareParentLink({
+            actorId: req.auth!.userId,
+            rideshareActivityId: current,
+            parentActivityId: null,
+          });
+          res.json(result);
+          return;
+        }
+        const result = await adminSetRideshareParentLink({
+          actorId: req.auth!.userId,
+          rideshareActivityId,
+          parentActivityId: id,
+        });
+        res.json(result);
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  adminActivitiesRouter.patch(
+    '/:id/rideshare-place',
+    validate({ params: idParamSchema, body: ridesharePlaceLinkSchema }),
+    async (req, res, next) => {
+      try {
+        const { id } = req.params as z.infer<typeof idParamSchema>;
+        const { placeId } = req.body as z.infer<typeof ridesharePlaceLinkSchema>;
+        const result = await adminSetRideshareDestinationPlace({
+          actorId: req.auth!.userId,
+          rideshareActivityId: id,
+          placeId,
         });
         res.json(result);
       } catch (error) {

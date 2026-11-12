@@ -1,41 +1,78 @@
-import { Link } from 'react-router-dom';
-import { BUDDIES_PATH, GROUPS_PATH } from '../../config/routingCatalog';
+import {
+  UserPlus,
+  Users,
+  UsersRound,
+  UserCheck,
+} from 'lucide-react';
+import {
+  GROUPS_PATH,
+  socialFollowingPath,
+  socialFriendsPath,
+  socialRequestsPath,
+} from '../../config/routingCatalog';
 import {
   PRODUCT_FRIENDS_SURFACE_LABEL,
   PRODUCT_GROUPS_SURFACE_LABEL,
+  PRODUCT_SOCIAL_SURFACE_TITLE,
 } from '../../content/productNorthStar';
-import { listPeopleDiscoveryPath } from '../../list/routing';
+import { mobileBackNavState } from '../../utils/mobileBackNav';
+import { SettingsMenuGroup, SettingsMenuRow } from '../settings/SettingsMenuRow';
+import { BUDDIES_PATH } from '../../config/surfacePaths';
 
 export type SocialHubTab = 'people' | 'friends' | 'groups';
 
-const SOCIAL_HUB_TABS: readonly { id: SocialHubTab; label: string; to: string }[] = [
-  { id: 'people', label: 'People', to: listPeopleDiscoveryPath() },
-  { id: 'friends', label: PRODUCT_FRIENDS_SURFACE_LABEL, to: BUDDIES_PATH },
-  { id: 'groups', label: PRODUCT_GROUPS_SURFACE_LABEL, to: GROUPS_PATH },
-];
+/** Back state when opening Social child screens from the hub. */
+export const socialHubBackState = () =>
+  mobileBackNavState(BUDDIES_PATH, PRODUCT_SOCIAL_SURFACE_TITLE);
 
-/** Friends · Groups · people discovery — one hub, existing routes. */
-export const SocialHubNav = ({ active }: { active: SocialHubTab }) => (
-  <nav
-    aria-label="Social"
-    className="flex w-full min-w-0 max-w-full border-b border-gray-200"
-  >
-    {SOCIAL_HUB_TABS.map((tab) => {
-      const isActive = tab.id === active;
-      return (
-        <Link
-          key={tab.id}
-          to={tab.to}
-          aria-current={isActive ? 'page' : undefined}
-          className={`min-w-0 flex-1 truncate border-b-2 -mb-px px-3 py-2.5 text-center text-sm font-medium transition-colors sm:px-4 ${
-            isActive
-              ? 'border-emerald-600 bg-emerald-50/50 text-emerald-700'
-              : 'border-transparent text-gray-500 hover:bg-gray-50 hover:text-gray-700'
-          }`}
-        >
-          {tab.label}
-        </Link>
-      );
-    })}
-  </nav>
-);
+type SocialHubIndexProps = {
+  /** Pending friend requests — shown as a badge on Friend requests. */
+  requestCount?: number;
+};
+
+/**
+ * Social landing — Settings-style menu only (no tab bars).
+ * Child screens: Friends, Requests, Following, Groups.
+ */
+export const SocialHubIndex = ({ requestCount = 0 }: SocialHubIndexProps) => {
+  const back = socialHubBackState();
+
+  return (
+    <div className="space-y-4">
+      <SettingsMenuGroup>
+        <SettingsMenuRow
+          label={PRODUCT_FRIENDS_SURFACE_LABEL}
+          subtitle="People you're connected with"
+          to={socialFriendsPath()}
+          linkState={back}
+          icon={Users}
+        />
+        <SettingsMenuRow
+          label="Friend requests"
+          subtitle="Incoming and sent"
+          to={socialRequestsPath()}
+          linkState={back}
+          icon={UserPlus}
+          badge={requestCount > 0 ? requestCount : undefined}
+        />
+        <SettingsMenuRow
+          label="Following"
+          subtitle="Hosts you follow for new outings"
+          to={socialFollowingPath()}
+          linkState={back}
+          icon={UserCheck}
+        />
+        <SettingsMenuRow
+          label={PRODUCT_GROUPS_SURFACE_LABEL}
+          subtitle="Family & friends groups"
+          to={GROUPS_PATH}
+          linkState={back}
+          icon={UsersRound}
+        />
+      </SettingsMenuGroup>
+    </div>
+  );
+};
+
+/** @deprecated Use {@link SocialHubIndex} — Social is a Settings-style hub, not tab strips. */
+export const SocialHubNav = (_props: { active: SocialHubTab }) => <SocialHubIndex />;

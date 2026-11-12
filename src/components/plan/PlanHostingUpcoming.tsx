@@ -18,6 +18,7 @@ import {
   partitionParticipantIntentsForPlanHub,
 } from '../../member-plan/participantIntentPlan';
 import { usePlanHostingManage } from '../../plan/PlanHostingManageContext';
+import { matchesActivitySearch } from '../../utils/activitySearch';
 import { PlanCommitmentCard } from './PlanCommitmentCard';
 
 const pendingCountForActivity = (activityId: string, requests: ActivityRequestView[]) =>
@@ -33,6 +34,7 @@ type HostingRow =
 type PlanHostingUpcomingProps = {
   refreshKey?: number;
   canHost: boolean;
+  searchQuery?: string;
   /** Desktop hosting hub — seeking intents only (activities listed elsewhere). */
   intentsOnly?: boolean;
   /** With `intentsOnly` — join queue only, no full tenant activity list. */
@@ -45,6 +47,7 @@ type PlanHostingUpcomingProps = {
 export const PlanHostingUpcoming = ({
   refreshKey = 0,
   canHost,
+  searchQuery = '',
   intentsOnly = false,
   scopedJoinQueue = false,
 }: PlanHostingUpcomingProps) => {
@@ -98,6 +101,27 @@ export const PlanHostingUpcoming = ({
     );
   }, [host.activities, host.pendingRequests, intents, hostedActivityIds, intentsOnly, today]);
 
+  const filteredRows = useMemo(() => {
+    const q = searchQuery.trim();
+    if (!q) return rows;
+    return rows.filter((row) => {
+      if (row.kind === 'activity') {
+        return matchesActivitySearch(
+          q,
+          row.activity.title,
+          row.activity.locationName,
+          formatActivityType(row.activity.activityType)
+        );
+      }
+      return matchesActivitySearch(
+        q,
+        row.intent.title,
+        row.intent.preferredArea,
+        formatParticipantIntentMeta(row.intent)
+      );
+    });
+  }, [rows, searchQuery]);
+
   if (!canHost) {
     return (
       <ConsumerInlineEmpty
@@ -139,9 +163,13 @@ export const PlanHostingUpcoming = ({
     );
   }
 
+  if (filteredRows.length === 0) {
+    return <ConsumerInlineEmpty message="No hosted outings match your search." />;
+  }
+
   return (
     <div className="space-y-2 md:space-y-1.5">
-      {rows.map((row) => {
+      {filteredRows.map((row) => {
         if (row.kind === 'activity') {
           const activity = row.activity;
           const isSeeking = activity.activityMode === 'seeking';

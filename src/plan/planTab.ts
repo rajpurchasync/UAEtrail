@@ -1,4 +1,4 @@
-import { PLAN_PATH } from '../config/surfacePaths';
+import { HOSTING_HUB_PATH, PLAN_PATH } from '../config/surfacePaths';
 
 /** Primary Plan mobile tabs (bottom of Plan chrome). */
 export type PlanMainTab = 'upcoming' | 'wishlist';
@@ -66,8 +66,8 @@ export const planMainTabPath = (
   return `${PLAN_PATH}?${params.toString()}`;
 };
 
-export const planHostingFilterPath = (): string =>
-  planMainTabPath('upcoming', { filter: 'hosting' });
+/** Dedicated community hosting hub (not a My Plans filter). */
+export const planHostingFilterPath = (): string => HOSTING_HUB_PATH;
 
 export const planJoinedFilterPath = (): string =>
   planMainTabPath('upcoming', { filter: 'joined' });

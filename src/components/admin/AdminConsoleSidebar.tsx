@@ -1,24 +1,8 @@
 import { Link } from 'react-router-dom';
-import {
-  Bell,
-  Briefcase,
-  Building2,
-  CalendarDays,
-  FileClock,
-  Flag,
-  LayoutDashboard,
-  LogOut,
-  MapPin,
-  MapPinned,
-  Megaphone,
-  UserRound,
-  Users,
-  UsersRound,
-  type LucideIcon,
-} from 'lucide-react';
-import { ADMIN_NOTIFICATIONS_PATH } from '../../config/adminSurfacePaths';
-import { ADMIN_LINKS } from '../../constants';
+import { LogOut, UserRound } from 'lucide-react';
+import { ADMIN_NAV_GROUPS } from '../../admin/adminNav';
 import { isAdminConsoleNavActive } from '../../admin/adminNavActive';
+import { useAdminInboxBadges } from '../../hooks/useAdminInboxBadges';
 
 type AdminConsoleSidebarProps = {
   pathname: string;
@@ -26,28 +10,25 @@ type AdminConsoleSidebarProps = {
   onSignOut: () => void | Promise<void>;
   onSwitchToVisitor: () => void | Promise<void>;
   switchingRole?: boolean;
-};
-
-const NAV_ICONS: Record<string, LucideIcon> = {
-  Overview: LayoutDashboard,
-  Areas: MapPinned,
-  Places: MapPin,
-  Activities: CalendarDays,
-  Facilities: Building2,
-  'Users & Members': Users,
-  Operators: Briefcase,
-  Groups: UsersRound,
-  Reports: Flag,
-  'Audit Log': FileClock,
-  Broadcast: Megaphone,
+  compact?: boolean;
 };
 
 const navLinkClass = (active: boolean) =>
-  `group flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-all duration-150 ${
+  `group flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition-colors ${
     active
-      ? 'bg-emerald-50 text-emerald-800 font-semibold shadow-sm'
-      : 'text-gray-600 hover:bg-emerald-50 hover:text-emerald-900 hover:translate-x-0.5 hover:shadow-sm'
+      ? 'bg-emerald-50 font-semibold text-emerald-800'
+      : 'font-medium text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
   }`;
+
+const badgeFor = (
+  key: 'submissions' | 'applications' | 'reports' | 'safety' | 'notifications' | undefined,
+  badges: ReturnType<typeof useAdminInboxBadges>,
+  unreadNotifications: number
+): number => {
+  if (!key) return 0;
+  if (key === 'notifications') return unreadNotifications;
+  return badges[key] ?? 0;
+};
 
 export const AdminConsoleSidebar = ({
   pathname,
@@ -55,49 +36,67 @@ export const AdminConsoleSidebar = ({
   onSignOut,
   onSwitchToVisitor,
   switchingRole = false,
-}: AdminConsoleSidebarProps) => (
-  <nav className="space-y-0.5" aria-label="Admin console">
-    {ADMIN_LINKS.map((link) => {
-      const active = isAdminConsoleNavActive(pathname, link.to);
-      const Icon = NAV_ICONS[link.label] ?? LayoutDashboard;
-      return (
-        <Link key={link.to} to={link.to} className={navLinkClass(active)} aria-current={active ? 'page' : undefined}>
-          <Icon className="h-4 w-4 shrink-0 opacity-80" aria-hidden />
-          {link.label}
-        </Link>
-      );
-    })}
-    <Link
-      to={ADMIN_NOTIFICATIONS_PATH}
-      className={`${navLinkClass(isAdminConsoleNavActive(pathname, ADMIN_NOTIFICATIONS_PATH))} justify-between`}
-    >
-      <span className="flex items-center gap-2.5">
-        <Bell className="h-4 w-4 shrink-0 opacity-80" aria-hidden />
-        Notifications
-      </span>
-      {unreadNotifications > 0 ? (
-        <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-bold text-white">
-          {unreadNotifications > 99 ? '99+' : unreadNotifications}
-        </span>
-      ) : null}
-    </Link>
-    <div className="my-2 border-t border-gray-100" />
-    <button
-      type="button"
-      disabled={switchingRole}
-      onClick={() => void onSwitchToVisitor()}
-      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm text-gray-600 transition-all duration-150 hover:translate-x-0.5 hover:bg-emerald-50 hover:text-emerald-900 hover:shadow-sm disabled:opacity-60"
-    >
-      <UserRound className="h-4 w-4 shrink-0 opacity-70" aria-hidden />
-      {switchingRole ? 'Switching…' : 'Switch to visitor'}
-    </button>
-    <button
-      type="button"
-      onClick={() => void onSignOut()}
-      className="mt-1 flex w-full items-center gap-2 rounded-xl border-t border-gray-100 px-3 py-2 pt-3 text-sm text-red-600 transition-all duration-150 hover:translate-x-0.5 hover:bg-red-50 hover:shadow-sm"
-    >
-      <LogOut className="h-4 w-4" aria-hidden />
-      Sign out
-    </button>
-  </nav>
-);
+  compact = false,
+}: AdminConsoleSidebarProps) => {
+  const badges = useAdminInboxBadges();
+
+  return (
+    <nav className="space-y-4" aria-label="Admin console">
+      {ADMIN_NAV_GROUPS.map((group) => (
+        <div key={group.id}>
+          {!compact ? (
+            <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-400">
+              {group.label}
+            </p>
+          ) : null}
+          <ul className="space-y-0.5">
+            {group.links.map((link) => {
+              const active = isAdminConsoleNavActive(pathname, link.to, { exact: link.exact });
+              const Icon = link.icon;
+              const count = badgeFor(link.badgeKey, badges, unreadNotifications);
+              return (
+                <li key={link.to}>
+                  <Link
+                    to={link.to}
+                    className={`${navLinkClass(active)} justify-between`}
+                    aria-current={active ? 'page' : undefined}
+                  >
+                    <span className="flex min-w-0 items-center gap-2.5">
+                      <Icon className="h-4 w-4 shrink-0 opacity-80" aria-hidden />
+                      <span className="truncate">{link.label}</span>
+                    </span>
+                    {count > 0 ? (
+                      <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-emerald-600 px-1.5 text-[11px] font-bold text-white">
+                        {count > 99 ? '99+' : count}
+                      </span>
+                    ) : null}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
+
+      <div className="border-t border-neutral-100 pt-2">
+        <button
+          type="button"
+          disabled={switchingRole}
+          onClick={() => void onSwitchToVisitor()}
+          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-900 disabled:opacity-60"
+        >
+          <UserRound className="h-4 w-4 shrink-0 opacity-70" aria-hidden />
+          {switchingRole ? 'Switching…' : 'Switch to visitor'}
+        </button>
+        <button
+          type="button"
+          onClick={() => void onSignOut()}
+          className="mt-0.5 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+        >
+          <LogOut className="h-4 w-4" aria-hidden />
+          Sign out
+        </button>
+      </div>
+    </nav>
+  );
+};

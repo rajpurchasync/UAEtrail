@@ -89,10 +89,12 @@ describe('formatExploreDayShort', () => {
     vi.useRealTimers();
   });
 
-  it('uses the coming weekday within 6 days and a full date after that', () => {
+  it('tiers by this week / month / year then full date', () => {
+    // now = Mon 14 Sep 2026 → week Sun 13–Sat 19
     expect(formatExploreDayShort('2026-09-16')).toBe('Wed');
-    expect(formatExploreDayShort('2026-09-12')).toBe('Sat 12 Sep 26');
-    expect(formatExploreDayShort('2026-11-09')).toBe('Mon 09 Nov 26');
+    expect(formatExploreDayShort('2026-09-12')).toBe('Sat 12');
+    expect(formatExploreDayShort('2026-11-09')).toBe('Mon 09 Nov');
+    expect(formatExploreDayShort('2025-11-09')).toBe('Sun 09 Nov 25');
   });
 });
 
@@ -175,7 +177,7 @@ describe('exploreHeadline', () => {
         date: '2026-09-12',
         time: '06:00',
       })
-    ).toBe('Maya Hassan is going Hiking on Sat 12 Sep 26 - Jebel Jais - Sat 12 Sep 26 at 6:00 AM');
+    ).toBe('Maya Hassan is going Hiking on Sat 12 - Jebel Jais - Sat 12 at 6:00 AM');
   });
 
   it('uses a real host name instead of demo role labels', () => {
@@ -190,7 +192,7 @@ describe('exploreHeadline', () => {
         date: '2026-09-12',
         time: '06:00',
       })
-    ).toBe('Omar Al Hosani is going Hiking on Sat 12 Sep 26 - Jebel Jais - Sat 12 Sep 26 at 6:00 AM');
+    ).toBe('Omar Al Hosani is going Hiking on Sat 12 - Jebel Jais - Sat 12 at 6:00 AM');
   });
 
   it('formats hiking activity with host, location, time, and spots', () => {
@@ -206,7 +208,7 @@ describe('exploreHeadline', () => {
         slotsAvailable: 8,
         slotsTotal: 20,
       })
-    ).toBe('Sarah is going Hiking on Sat 12 Sep 26 - Fujairah - Sat 12 Sep 26 at 9:00 AM - 8 spots');
+    ).toBe('Sarah is going Hiking on Sat 12 - Fujairah - Sat 12 at 9:00 AM - 8 spots');
   });
 
   it('formats camping activity', () => {
@@ -221,7 +223,7 @@ describe('exploreHeadline', () => {
         time: '16:00',
         slotsTotal: 20,
       })
-    ).toBe('John is going Camping on Sun 13 Sep 26 - Al Qudra - Sun 13 Sep 26 at 4:00 PM - 20 spots');
+    ).toBe('John is going Camping on Sun - Al Qudra - Sun at 4:00 PM - 20 spots');
   });
 
   it('formats event activity without spots when none set', () => {
@@ -235,7 +237,7 @@ describe('exploreHeadline', () => {
         date: '2026-09-12',
         time: '15:00',
       })
-    ).toBe('Alex is going Other Outdoors on Sat 12 Sep 26 - Hatta - Sat 12 Sep 26 at 3:00 PM');
+    ).toBe('Alex is going Other Outdoors on Sat 12 - Hatta - Sat 12 at 3:00 PM');
   });
 
   it('formats carpool supply with route, time, and fixed tag', () => {
@@ -250,7 +252,7 @@ describe('exploreHeadline', () => {
         fromLabel: 'Dubai',
         toLabel: 'Fujairah',
       })
-    ).toBe('Ali is offering Rideshare on Sun 13 Sep 26 - Dubai to Fujairah - Sun 13 Sep 26 at 1:00 PM (fixed)');
+    ).toBe('Ali is offering Rideshare on Sun - Dubai to Fujairah - Sun at 1:00 PM (fixed)');
   });
 
   it('formats location catalog entries by title', () => {
@@ -278,7 +280,7 @@ describe('exploreHeadline', () => {
         fromLabel: 'Dubai',
         toLabel: 'Fujairah',
       })
-    ).toBe('Alex Rider is looking for Rideshare on Sun 13 Sep 26 - Dubai to Fujairah - Sun 13 Sep 26 at 2:00 PM (flexible)');
+    ).toBe('Alex Rider is looking for Rideshare on Sun - Dubai to Fujairah - Sun at 2:00 PM (flexible)');
   });
 
   it('formats hiking seeking with location and flexible tag', () => {
@@ -293,7 +295,7 @@ describe('exploreHeadline', () => {
         date: '2026-09-12',
         time: '07:00',
       })
-    ).toBe('Sarah Host is looking for Morning hike on Sat 12 Sep 26 - Wadi Shawka - Sat 12 Sep 26 at 7:00 AM (flexible)');
+    ).toBe('Sarah Host is looking for Morning hike on Sat 12 - Wadi Shawka - Sat 12 at 7:00 AM (flexible)');
   });
 
   it('formats event seeking with the requester title instead of a generic category', () => {
@@ -309,7 +311,7 @@ describe('exploreHeadline', () => {
         time: '06:30',
       })
     ).toBe(
-      'Fatima Host is looking for Sunrise run at Kite Beach on Thu 15 Oct 26 - Kite Beach running track, Dubai - Thu 15 Oct 26 at 6:30 AM (flexible)'
+      'Fatima Host is looking for Sunrise run at Kite Beach on Thu 15 Oct - Kite Beach running track, Dubai - Thu 15 Oct at 6:30 AM (flexible)'
     );
   });
 
@@ -323,7 +325,7 @@ describe('exploreHeadline', () => {
         hostName: 'Fatima Host',
         date: '2026-10-15',
       })
-    ).toBe('Fatima Host is looking for Other Outdoors on Thu 15 Oct 26 - Thu 15 Oct 26 (flexible)');
+    ).toBe('Fatima Host is looking for Other Outdoors on Thu 15 Oct - Thu 15 Oct (flexible)');
   });
 });
 
@@ -371,7 +373,7 @@ describe('buildExploreWhenSegment', () => {
   });
 
   it('adds fixed suffix for carpool supply', () => {
-    expect(buildExploreWhenSegment('2026-09-13', '13:00', 'fixed')).toBe('Sun 13 Sep 26 at 1:00 PM (fixed)');
+    expect(buildExploreWhenSegment('2026-09-13', '13:00', 'fixed')).toBe('Sun at 1:00 PM (fixed)');
   });
 });
 
@@ -394,13 +396,15 @@ describe('formatExploreRelativeScheduleLabel', () => {
     vi.useRealTimers();
   });
 
-  it('uses the coming weekday for the next 6 days and a full date after that', () => {
+  it('tiers by this week / month / year then full date', () => {
+    // now = Wed 14 Oct 2026 → week Sun 11–Sat 17
     expect(formatExploreRelativeScheduleLabel('2026-10-14')).toBe('Wed');
     expect(formatExploreRelativeScheduleLabel('2026-10-15')).toBe('Thu');
-    expect(formatExploreRelativeScheduleLabel('2026-10-20')).toBe('Tue');
-    expect(formatExploreRelativeScheduleLabel('2026-10-21')).toBe('Wed 21 Oct 26');
-    expect(formatExploreRelativeScheduleLabel('2026-11-09')).toBe('Mon 09 Nov 26');
-    expect(formatExploreRelativeScheduleLabel('2026-09-13')).toBe('Sun 13 Sep 26');
+    expect(formatExploreRelativeScheduleLabel('2026-10-20')).toBe('Tue 20');
+    expect(formatExploreRelativeScheduleLabel('2026-10-21')).toBe('Wed 21');
+    expect(formatExploreRelativeScheduleLabel('2026-11-09')).toBe('Mon 09 Nov');
+    expect(formatExploreRelativeScheduleLabel('2026-09-13')).toBe('Sun 13 Sep');
+    expect(formatExploreRelativeScheduleLabel('2025-09-13')).toBe('Sat 13 Sep 25');
   });
 });
 
@@ -417,7 +421,7 @@ describe('buildExploreListWhen', () => {
   it('uses the weekday or full date with the time', () => {
     expect(buildExploreListWhen('2026-10-15', '14:00')).toBe('Thu · 2:00 PM');
     expect(buildExploreListWhen('2026-10-17', '09:30')).toBe('Sat · 9:30 AM');
-    expect(buildExploreListWhen('2026-09-13', '14:00')).toBe('Sun 13 Sep 26 · 2:00 PM');
+    expect(buildExploreListWhen('2026-09-13', '14:00')).toBe('Sun 13 Sep · 2:00 PM');
   });
 });
 
@@ -512,14 +516,14 @@ describe('buildDiscoveryCardViewModelCard (explore list copy)', () => {
     const card = buildDiscoveryCardViewModelCard(hikingActivity);
     expect(card.showJoinActions).toBe(true);
     expect(card.price?.badge).toBe('Free');
-    expect(card.listTitle).toBe('Sarah is going Hiking on Sat 12 Sep 26');
-    expect(card.headline).toBe('Sarah is going Hiking on Sat 12 Sep 26 - Fujairah - Sat 12 Sep 26 at 9:00 AM - 8 spots');
+    expect(card.listTitle).toBe('Sarah is going Hiking on Sat 12');
+    expect(card.headline).toBe('Sarah is going Hiking on Sat 12 - Fujairah - Sat 12 at 9:00 AM - 8 spots');
     expect(buildDiscoveryListMeta(card)).toContain('Fujairah');
     expect(card.sections.highlightName).toBe('Sarah');
     expect(card.sections.suffix).toBe(' is going ');
     expect(card.sections.activityHighlight).toBe('Hiking');
-    expect(card.sections.dateHighlight).toBe(' on Sat 12 Sep 26');
-    expect(card.sections.listWhen).toContain('Sat 12 Sep 26');
+    expect(card.sections.dateHighlight).toBe(' on Sat 12');
+    expect(card.sections.listWhen).toContain('Sat 12');
     expect(card.sections.listGoing).toBe('12 going');
   });
 
@@ -583,13 +587,13 @@ describe('buildDiscoveryCardViewModelCard (explore list copy)', () => {
     expect(card.featuredPerson?.role).toBe('requester');
     expect(card.listTitle).toBe('Rideshare · Alex Rider');
     expect(card.headline).toBe(
-      'Alex Rider is looking for Rideshare on Sun 13 Sep 26 - Dubai to Fujairah - Sun 13 Sep 26 at 2:00 PM (flexible)'
+      'Alex Rider is looking for Rideshare on Sun - Dubai to Fujairah - Sun at 2:00 PM (flexible)'
     );
     expect(card.routeLabel).toBe('Dubai to Fujairah');
     expect(card.secondaryCta).toBe('Message');
     expect(buildDiscoveryListMeta(card)).toContain('Dubai to Fujairah');
     expect(card.sections.highlightName).toBe('Alex');
     expect(card.sections.listTitle).toBe('Rideshare · Alex Rider');
-    expect(card.sections.listWhen).toContain('Sun 13 Sep 26');
+    expect(card.sections.listWhen).toContain('Sun');
   });
 });

@@ -33,5 +33,22 @@ export const gccTodayIsoDate = (): string => {
   }
 };
 
-export const openMeteoMapUrl = (lat: number, lng: number): string =>
-  `https://open-meteo.com/en/weather?latitude=${encodeURIComponent(String(lat))}&longitude=${encodeURIComponent(String(lng))}`;
+/** Round coords for stable external weather deep-links (≈11 m). */
+const weatherCoord = (n: number): string => n.toFixed(4);
+
+/**
+ * Full-week / multi-day forecast for a pin (Yr / Norwegian Meteorological Institute).
+ * Opens in a new tab from place-detail weather headline.
+ */
+export const externalWeatherWeekUrl = (lat: number, lng: number): string =>
+  `https://www.yr.no/en/forecast/daily-table/${weatherCoord(lat)},${weatherCoord(lng)}`;
+
+/**
+ * Day graph for a pin + ISO calendar date (`YYYY-MM-DD`).
+ * Opens from each forecast day chip.
+ */
+export const externalWeatherDayUrl = (lat: number, lng: number, isoDate: string): string =>
+  `https://www.yr.no/en/forecast/graph/${weatherCoord(lat)},${weatherCoord(lng)}/${encodeURIComponent(isoDate)}`;
+
+/** @deprecated Use `externalWeatherWeekUrl` — Open-Meteo no longer hosts this map page. */
+export const openMeteoMapUrl = (lat: number, lng: number): string => externalWeatherWeekUrl(lat, lng);

@@ -14,6 +14,8 @@ type HostActivityManageOptionsSheetProps = {
   onEdit: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
+  onSuspend?: () => void;
+  onResume?: () => void;
 };
 
 const rowClass =
@@ -29,6 +31,8 @@ export const HostActivityManageOptionsSheet = ({
   onEdit,
   onDuplicate,
   onDelete,
+  onSuspend,
+  onResume,
 }: HostActivityManageOptionsSheetProps) => {
   const visible = buildHostManageOptionRows({
     activity,
@@ -37,6 +41,8 @@ export const HostActivityManageOptionsSheet = ({
     onEdit,
     onDuplicate,
     onDelete,
+    onSuspend,
+    onResume,
   }).filter((row) => !row.hidden);
 
   return (

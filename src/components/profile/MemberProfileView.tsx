@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { formatRideshareVehicleLabel } from '@uaetrail/shared-types';
+import { formatProfileMonthDayLabel, formatRideshareVehicleLabel } from '@uaetrail/shared-types';
 import { SIGNIN_PATH, memberProfileLink } from '../../config/routingCatalog';
 import type { ActivityDTO, BuddyRelationshipDTO, MemberProfileSocialGraphDTO } from '@uaetrail/shared-types';
 import { MemberProfileDeferredSectionAnchor } from './MemberProfileDeferredSectionAnchor';
@@ -121,11 +121,15 @@ export const MemberProfileView = ({
 }: MemberProfileViewProps) => {
   const roleLabel = resolvePublicMemberRoleLabel(profile);
   const languages = parseLanguagesList(profile.languages);
+  const birthdayMonthDayLabel = profile.monthDay
+    ? formatProfileMonthDayLabel(profile.monthDay)
+    : null;
   const hasDetails = Boolean(
     profile.city ||
       languages.length > 0 ||
       profile.age != null ||
       profile.birthYear != null ||
+      birthdayMonthDayLabel ||
       profile.dateOfBirth
   );
   const showConnectActions = !isSelf && userLoggedIn;
@@ -250,13 +254,9 @@ export const MemberProfileView = ({
               <DetailRow icon="🎂" label="Date of birth">
                 <p className="text-[15px] font-semibold text-neutral-900">{profile.dateOfBirth}</p>
               </DetailRow>
-            ) : profile.birthYear != null ? (
-              <DetailRow icon="🎂" label="Birth year">
-                <p className="text-[15px] font-semibold text-neutral-900">{profile.birthYear}</p>
-              </DetailRow>
-            ) : profile.age != null ? (
-              <DetailRow icon="🎂" label="Age">
-                <p className="text-[15px] font-semibold text-neutral-900">{profile.age}</p>
+            ) : birthdayMonthDayLabel ? (
+              <DetailRow icon="🎂" label="Birthday">
+                <p className="text-[15px] font-semibold text-neutral-900">{birthdayMonthDayLabel}</p>
               </DetailRow>
             ) : null}
             {languages.length > 0 && (

@@ -6,11 +6,19 @@ import {
 } from '../../config/routingCatalog';
 import { useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { ClipboardList, Map, MessageSquare, type LucideIcon } from 'lucide-react';
+import { Briefcase, ClipboardList, Map, MessageSquare, type LucideIcon } from 'lucide-react';
 
 import { PRODUCT_PLAN_SURFACE_TITLE } from '../../content/productNorthStar';
 import { useInboxUnreadCount } from '../../hooks/useInboxUnreadCount';
 import { useMobileBottomNav } from '../../hooks/useMobileBottomNav';
+import { useAuth } from '../../context/AuthContext';
+import { useMemberStatus } from '../../hooks/useMemberStatus';
+import {
+  isHostModeSession,
+  resolveHostingHubPath,
+} from '../../hosting/hostingHubRouting';
+import { isDesktopHostingNavActive } from '../../config/desktopNav';
+import { planMemberNavPath } from '../../plan/planRouting';
 
 const tabShellClass = (active: boolean) =>
   [
@@ -29,12 +37,18 @@ const TabIcon = ({ icon: Icon, active }: { icon: LucideIcon; active: boolean }) 
   />
 );
 
-/** Mobile tab bar — Explore · My Plans · Chat (`/plan`). */
+/** Mobile tab bar — visitor: Explore · My Plans · Chat; host mode: Hosting · My Plans · Chat. */
 export const MobileBottomNav = () => {
   const visible = useMobileBottomNav();
-  const { pathname } = useLocation();
-  const planTabActive = pathname === PLAN_PATH;
+  const { pathname, search } = useLocation();
+  const { user } = useAuth();
+  const { ownedProfiles, hostTiers } = useMemberStatus({ enabled: Boolean(user) });
+  const hostMode = isHostModeSession(user?.role);
+  const hostingHubPath = resolveHostingHubPath({ ownedProfiles, hostTiers });
+  const planTabTo = hostMode ? planMemberNavPath(true) : PLAN_PATH;
+  const planTabActive = pathname === PLAN_PATH && !isDesktopHostingNavActive(pathname, search);
   const exploreActive = pathname === EXPLORE_MAP_PATH || pathname === LIST_DISCOVERY_PATH;
+  const hostingActive = isDesktopHostingNavActive(pathname, search);
   const unreadMessages = useInboxUnreadCount();
 
   useEffect(() => {
@@ -51,25 +65,37 @@ export const MobileBottomNav = () => {
   return (
     <nav
       aria-label="Main"
-      className="fixed inset-x-0 bottom-0 z-[1200] border-t border-neutral-200/80 bg-white/95 backdrop-blur-md md:hidden"
+      className="relative z-[1200] shrink-0 border-t border-neutral-200/80 bg-white/95 backdrop-blur-md md:hidden"
     >
       <div className="mx-auto grid max-w-lg grid-cols-3 pb-[var(--safe-bottom)]">
-        <NavLink
-          to={EXPLORE_MAP_PATH}
-          end={pathname !== LIST_DISCOVERY_PATH}
-          className={() => tabShellClass(exploreActive)}
-          aria-label="Explore"
-        >
-          {() => (
-            <>
-              <TabIcon icon={Map} active={exploreActive} />
-              <span className={tabLabelClass(exploreActive)}>Explore</span>
-            </>
-          )}
-        </NavLink>
+        {hostMode ? (
+          <Link
+            to={hostingHubPath}
+            className={tabShellClass(hostingActive)}
+            aria-current={hostingActive ? 'page' : undefined}
+            aria-label="Hosting"
+          >
+            <TabIcon icon={Briefcase} active={hostingActive} />
+            <span className={tabLabelClass(hostingActive)}>Hosting</span>
+          </Link>
+        ) : (
+          <NavLink
+            to={EXPLORE_MAP_PATH}
+            end={pathname !== LIST_DISCOVERY_PATH}
+            className={() => tabShellClass(exploreActive)}
+            aria-label="Explore"
+          >
+            {() => (
+              <>
+                <TabIcon icon={Map} active={exploreActive} />
+                <span className={tabLabelClass(exploreActive)}>Explore</span>
+              </>
+            )}
+          </NavLink>
+        )}
 
         <Link
-          to={PLAN_PATH}
+          to={planTabTo}
           className={tabShellClass(planTabActive)}
           aria-current={planTabActive ? 'page' : undefined}
           aria-label={PRODUCT_PLAN_SURFACE_TITLE}

@@ -59,8 +59,12 @@ export {
   NOTIFICATIONS_SETTINGS_PATH,
   NOTIFICATIONS_SAVED_PATH,
   BUDDIES_PATH,
+  socialFriendsPath,
+  socialRequestsPath,
+  socialFollowingPath,
   PROFILE_SUBMISSIONS_PATH,
   PLAN_TODAY_PATH,
+  HOSTING_HUB_PATH,
   GEO_TREE_PATH,
   geoNodePath,
   geoCountryPath,
@@ -106,6 +110,8 @@ export {
 
 export {
   ADMIN_OVERVIEW_PATH,
+  ADMIN_INBOX_PATH,
+  ADMIN_INBOX_SUBMISSIONS_PATH,
   ADMIN_USERS_PATH,
   ADMIN_HOSTS_PATH,
   ADMIN_ACTIVITIES_PATH,
@@ -117,6 +123,8 @@ export {
   ADMIN_ACCOUNT_PATH,
   ADMIN_AREAS_PATH,
   ADMIN_ALERTS_PATH,
+  ADMIN_REPORTS_PATH,
+  ADMIN_FACILITIES_PATH,
 } from './adminSurfacePaths';
 
 export {

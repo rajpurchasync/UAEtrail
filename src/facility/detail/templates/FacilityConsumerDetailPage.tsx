@@ -186,7 +186,7 @@ export const FacilityConsumerDetailPage = ({
         }
         hero={
           heroPhotos.length > 0 ? (
-            <div className="-mx-4 mb-4 min-w-0 max-w-[calc(100%+2rem)] overflow-hidden max-lg:-mt-[var(--detail-header-pad,calc(var(--safe-top)+4.75rem))] max-lg:pt-[var(--detail-header-pad,calc(var(--safe-top)+4.75rem))] md:-mx-6 md:max-w-[calc(100%+3rem)] lg:mx-0 lg:mb-2 lg:mt-0 lg:max-w-full lg:pt-0">
+            <div className="-mx-4 mb-4 min-w-0 max-w-[calc(100%+2rem)] overflow-hidden md:-mx-6 md:max-w-[calc(100%+3rem)] lg:mx-0 lg:mb-2 lg:mt-0 lg:max-w-full lg:pt-0">
               <DetailHeroPhotoStrip
                 photos={heroPhotos}
                 topEndAction={shareControl}

@@ -160,6 +160,8 @@ type HostMenuHandlers = {
   onHostFromExisting?: (activity: ActivityDTO) => void;
   onDelete?: (activity: ActivityDTO) => void;
   onCancel?: (activity: ActivityDTO) => void;
+  onSuspend?: (activity: ActivityDTO) => void;
+  onResume?: (activity: ActivityDTO) => void;
   onCheckin?: (activity: ActivityDTO) => void;
   onManage?: (activity: ActivityDTO) => void;
 };
@@ -170,7 +172,7 @@ export const buildHostActivityMenuItems = (
   handlers: HostMenuHandlers
 ): ActivityMenuItem[] => {
   const status = activity.status;
-  const canEdit = status === 'draft' || status === 'published' || status === 'suspended';
+  const canEdit = status === 'draft' || status === 'published';
   const editOnMap = handlers.onHostFromExisting;
 
   return [
@@ -199,6 +201,12 @@ export const buildHostActivityMenuItems = (
       hidden: status !== 'draft' || !handlers.onPublish,
     },
     {
+      id: 'unsuspend',
+      label: 'Resume',
+      onClick: () => handlers.onResume?.(activity),
+      hidden: status !== 'suspended' || !handlers.onResume,
+    },
+    {
       id: 'duplicate',
       label: 'Duplicate',
       onClick: () => handlers.onDuplicate(activity),
@@ -210,11 +218,18 @@ export const buildHostActivityMenuItems = (
       hidden: status !== 'published' || !handlers.onCheckin,
     },
     {
+      id: 'suspend',
+      label: 'Suspend',
+      onClick: () => handlers.onSuspend?.(activity),
+      destructive: true,
+      hidden: status !== 'published' || !handlers.onSuspend,
+    },
+    {
       id: 'delete',
       label: 'Delete',
       onClick: () => handlers.onDelete?.(activity),
       destructive: true,
-      hidden: status !== 'draft' || !handlers.onDelete,
+      hidden: (status !== 'draft' && status !== 'suspended') || !handlers.onDelete,
     },
     {
       id: 'cancel',
@@ -237,7 +252,12 @@ export const buildAdminActivityMenuItems = (
   activity: ActivityDTO,
   handlers: AdminMenuHandlers
 ): ActivityMenuItem[] => [
-  ...buildHostActivityMenuItems(activity, handlers),
+  // Host menu also has suspend/resume; admin moderation uses its own actions + labels.
+  ...buildHostActivityMenuItems(activity, {
+    ...handlers,
+    onSuspend: undefined,
+    onResume: undefined,
+  }),
   {
     id: 'feature',
     label: activity.featured ? 'Remove from Upcoming rail' : 'Feature on discover (Upcoming)',

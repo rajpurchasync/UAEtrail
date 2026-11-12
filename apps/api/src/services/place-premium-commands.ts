@@ -1,3 +1,4 @@
+import { placeDetailPath } from '@uaetrail/shared-types';
 import { ActivityType, LocationUnlockSource, UserRole } from '../domain/enums.js';
 import { env } from '../config/env.js';
 import { ApiError } from '../lib/api-error.js';
@@ -9,14 +10,9 @@ import {
   locationHasPremiumContent,
   unlockLocationForUser,
 } from './location-premium.js';
-const publicPlaceDetailPath = (location: { id: string; activityType: ActivityType }) => {
-  if (location.activityType === ActivityType.SHOP) return `/shop/${location.id}`;
-  if (location.activityType === ActivityType.CAMPING) return `/camp/${location.id}`;
-  if (location.activityType === ActivityType.EVENT) {
-    return `/venue/${location.id}`;
-  }
-  return `/trail/${location.id}`;
-};
+
+const publicPlaceDetailPath = (location: { id: string; activityType: ActivityType }) =>
+  placeDetailPath(String(location.activityType), location.id);
 
 export const createPublicPlacePremiumCheckout = async (input: {
   placeId: string;

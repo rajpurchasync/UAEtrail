@@ -44,7 +44,33 @@ describe('resolveActivityDetailHeroStatusChips', () => {
       previewMode: false,
       isHostUser: false,
     });
-    expect(chips[0]).toEqual({ label: 'Join requested', tone: 'warning' });
+    expect(chips[0]).toEqual({ label: 'Pending', tone: 'warning' });
+  });
+
+  it('shows family variants on the detail card', () => {
+    expect(
+      resolveActivityDetailHeroStatusChips({
+        joinUiState: { kind: 'confirmed', requestId: 'r1' },
+        slotsAvailable: 2,
+        slotsTotal: 8,
+        previewMode: false,
+        isHostUser: false,
+        adults: 1,
+        kids: 2,
+      })[0]
+    ).toEqual({ label: 'Joined with family', tone: 'success' });
+    expect(
+      resolveActivityDetailHeroStatusChips({
+        joinUiState: { kind: 'confirmed', requestId: 'r1' },
+        slotsAvailable: 2,
+        slotsTotal: 8,
+        previewMode: false,
+        isHostUser: false,
+        adults: 1,
+        kids: 1,
+        partyApprovalPending: true,
+      })[0]
+    ).toEqual({ label: 'Joined · family pending', tone: 'warning' });
   });
 
   it('shows hosting for host viewer', () => {

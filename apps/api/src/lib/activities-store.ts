@@ -17,6 +17,7 @@ import { scheduleSideEffect } from './schedule-side-effect.js';
 import {
   GROUP_REGION_LEVEL,
   readGroupRegionAtLevel,
+  resolveCatalogSubmitterUserId,
   sameGroupRegionLevels,
 } from '@uaetrail/shared-types';
 import {
@@ -272,10 +273,49 @@ export const cancelActivityById = async (activityId: string) => {
   if (!mongoDoc) {
     throw new Error('Failed to cancel event.');
   }
-  if (existing?.status === ActivityStatus.PUBLISHED) {
+  if (
+    existing?.status === ActivityStatus.PUBLISHED ||
+    existing?.status === ActivityStatus.SUSPENDED
+  ) {
     scheduleExploreMapCacheInvalidation('activities-store.map_cache');
   }
   return mapMongoActivityToPublishResult({ ...mongoDoc, status: ActivityStatus.CANCELLED });
+};
+
+/** Host/admin soft-hide: off visitor map/search/browse; still listed in publishing workspace. */
+export const suspendActivityById = async (activityId: string) => {
+  const existing = await findActivityDocInMongo(activityId);
+  if (!existing) {
+    throw new Error('Activity not found.');
+  }
+  if (existing.status !== ActivityStatus.PUBLISHED) {
+    throw new Error('Only published activities can be suspended.');
+  }
+  await patchActivityInMongo(activityId, { status: ActivityStatus.SUSPENDED });
+  scheduleExploreMapCacheInvalidation('activities-store.map_cache');
+  const mongoDoc = await findActivityDocInMongo(activityId);
+  if (!mongoDoc) {
+    throw new Error('Failed to suspend event.');
+  }
+  return mapMongoActivityToPublishResult({ ...mongoDoc, status: ActivityStatus.SUSPENDED });
+};
+
+/** Restore a suspended outing to published (visitor discovery again). */
+export const resumeActivityById = async (activityId: string) => {
+  const existing = await findActivityDocInMongo(activityId);
+  if (!existing) {
+    throw new Error('Activity not found.');
+  }
+  if (existing.status !== ActivityStatus.SUSPENDED) {
+    throw new Error('Only suspended activities can be resumed.');
+  }
+  await patchActivityInMongo(activityId, { status: ActivityStatus.PUBLISHED });
+  scheduleExploreMapCacheInvalidation('activities-store.map_cache');
+  const mongoDoc = await findActivityDocInMongo(activityId);
+  if (!mongoDoc) {
+    throw new Error('Failed to resume event.');
+  }
+  return mapMongoActivityToPublishResult({ ...mongoDoc, status: ActivityStatus.PUBLISHED });
 };
 
 export const deleteDraftActivityById = async (activityId: string, tenantId: string) => {
@@ -523,7 +563,8 @@ export const findLocationForDetailView = async (
   if (!item || item.status !== LocationStatus.DRAFT) return null;
 
   const isAdmin = viewerRole === 'ADMIN' || viewerRole === 'PLATFORM_ADMIN';
-  if (viewerUserId && (item.submittedById === viewerUserId || isAdmin)) {
+  const submitterId = resolveCatalogSubmitterUserId(item);
+  if (viewerUserId && (submitterId === viewerUserId || isAdmin)) {
     return item;
   }
   return null;

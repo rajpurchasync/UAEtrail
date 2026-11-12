@@ -48,6 +48,7 @@ describe('seeking join M2b/M2c (activity canonical)', () => {
         medicalConditions: 'N/A',
         emergencyContactName: 'Test emergency',
         emergencyContactPhone: '+971501112233',
+        emergencyContactRelation: 'Friend',
       },
     });
 

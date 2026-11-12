@@ -8,6 +8,7 @@
  */
 
 import type { ScheduledActivityType } from '@uaetrail/shared-types';
+import { placeDetailPath } from '@uaetrail/shared-types';
 import { EXPLORE_MAP_PATH } from './platform';
 import { PRODUCT_ACTIVITIES_EXPLORE_BLURB } from '../content/productNorthStar';
 
@@ -147,8 +148,6 @@ export const activitiesBrowsePath = (activityType?: ScheduledActivityType | null
   return `${EXPLORE_MAP_PATH}?${params.toString()}`;
 };
 
-export const locationPathForActivity = (activityType: ActivityPickerType, id: string): string => {
-  if (activityType === 'camping') return `/camp/${id}`;
-  if (activityType === 'event') return `/venue/${id}`;
-  return `/trail/${id}`;
-};
+/** @deprecated Prefer `placeDetailPath` / `placeDetailPathForId` — kept for older call sites. */
+export const locationPathForActivity = (activityType: ActivityPickerType, id: string): string =>
+  placeDetailPath(activityType, id);

@@ -24,9 +24,25 @@ export const updateJoinRequestNote = async (
 export const updateJoinRequestParty = async (
   activityId: string,
   requestId: string,
-  payload: { adults?: number; kids?: number; note?: string }
+  payload: { adults?: number; kids?: number; note?: string; partyMemberIds?: string[] }
+) => {
+  const res = await api.updateJoinRequestParty(activityId, requestId, payload);
+  return res.data;
+};
+
+export const acceptActivityFamilyInvite = async (
+  activityId: string,
+  token: string
+) => {
+  const res = await api.acceptActivityFamilyInvite(activityId, token);
+  return res.data;
+};
+
+export const declineActivityFamilyInvite = async (
+  activityId: string,
+  token: string
 ): Promise<void> => {
-  await api.updateJoinRequestParty(activityId, requestId, payload);
+  await api.declineActivityFamilyInvite(activityId, token);
 };
 
 export const cancelJoinRequest = async (

@@ -66,6 +66,7 @@ import {
   resolveActivityDetailWirePresentation,
 } from '../activity/resolveActivityDetailWirePresentation';
 import { ActivityDetailJoinWelcomeSheet } from '../components/activity/detail/ActivityDetailJoinWelcomeSheet';
+import { acceptActivityFamilyInvite } from '../hooks/activityJoinClientApi';
 
 /**
  * Activity detail **route loader** (`/activity/:id`): fetch, join modals, SEO, host sheets.
@@ -106,10 +107,43 @@ export const ActivityDetail = () => {
   const { reviews: activityReviews } = useActivityReviews(id, reviewsEnabled);
   const [joinWelcomeOpen, setJoinWelcomeOpen] = useState(false);
   const inviteShare = useActivityInviteShareSheet();
+  const familyInviteToken = searchParams.get('familyInvite');
+  const familyInviteHandledRef = useRef<string | null>(null);
 
   const loadActivity = useCallback(() => {
     void refetchActivityDetail();
   }, [refetchActivityDetail]);
+
+  useEffect(() => {
+    if (!id || !user || !familyInviteToken) return;
+    if (familyInviteHandledRef.current === familyInviteToken) return;
+    familyInviteHandledRef.current = familyInviteToken;
+    void acceptActivityFamilyInvite(id, familyInviteToken)
+      .then((updated) => {
+        setMessage('You accepted the family outing invite.');
+        const next = new URLSearchParams(searchParams);
+        next.delete('familyInvite');
+        setSearchParams(next, { replace: true });
+        queryClient.setQueriesData<PublicActivityDetailPayload>(
+          { queryKey: ['activity', id], exact: false },
+          (prev) => {
+            if (!prev?.myRequest) return prev;
+            return {
+              ...prev,
+              myRequest: {
+                ...prev.myRequest,
+                partyMembers: updated.partyMembers ?? prev.myRequest.partyMembers,
+                partyApprovalPending:
+                  updated.partyApprovalPending ?? prev.myRequest.partyApprovalPending,
+              },
+            };
+          }
+        );
+      })
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : 'Could not accept family invite.');
+      });
+  }, [familyInviteToken, id, queryClient, searchParams, setSearchParams, user]);
 
   const hostSheets = useHostActivitySheetBundle({
     tenantId: gate.tenantId,

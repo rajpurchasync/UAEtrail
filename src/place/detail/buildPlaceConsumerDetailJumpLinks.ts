@@ -43,6 +43,13 @@ export const buildPlaceConsumerDetailJumpLinks = (
         sectionId: 'place-detail-about',
       });
     }
+    if (input.showRides) {
+      push({
+        href: '#place-detail-rides',
+        label: 'Rides',
+        sectionId: 'place-detail-rides',
+      });
+    }
     return links;
   }
 

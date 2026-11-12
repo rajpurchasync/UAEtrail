@@ -6,6 +6,7 @@ import { DashboardLayout } from '../../components/layout';
 import { AdminTablePager, DEFAULT_ADMIN_PAGE_SIZE, type AdminPageSize } from '../../components/admin/AdminTablePager';
 import { ADMIN_LINKS } from '../../constants';
 import { AppSelect, ADMIN_FILTER_SELECT_CLASS, ADMIN_INPUT_CLASS } from '../../components/ui/AppSelect';
+import { AdminFilterBar } from '../../components/admin/AdminFilterBar';
 import { formatAdminDateTime } from '../../utils/formatAdminDate';
 import { useDisplayPreferences } from '../../preferences/useDisplayPreferences';
 
@@ -125,77 +126,89 @@ export const AuditLog = () => {
   return (
     <DashboardLayout title="Audit Log" links={ADMIN_LINKS}>
       <div className="space-y-4">
-        <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
           <h2 className="text-lg font-semibold text-gray-900">Audit Log</h2>
-          <form
-            className="flex flex-wrap items-end gap-2"
-            onSubmit={(event) => {
-              event.preventDefault();
-              setPage(1);
-              setActorApplied(actorQuery.trim());
-            }}
-          >
-            <label className="text-xs text-gray-500">
-              From
-              <input
-                type="date"
-                value={fromDate}
-                onChange={(e) => {
-                  setFromDate(e.target.value);
-                  setPage(1);
-                }}
-                className={`${ADMIN_INPUT_CLASS} mt-1 block`}
-              />
-            </label>
-            <label className="text-xs text-gray-500">
-              To
-              <input
-                type="date"
-                value={toDate}
-                onChange={(e) => {
-                  setToDate(e.target.value);
-                  setPage(1);
-                }}
-                className={`${ADMIN_INPUT_CLASS} mt-1 block`}
-              />
-            </label>
-            <label className="text-xs text-gray-500">
-              User ID / name / email / phone
-              <input
-                type="search"
-                value={actorQuery}
-                onChange={(e) => setActorQuery(e.target.value)}
-                placeholder="Case insensitive"
-                className={`${ADMIN_INPUT_CLASS} mt-1 block w-56`}
-              />
-            </label>
-            <AppSelect
-              value={actionFilter}
-              onChange={(value) => {
-                setActionFilter(value);
-                setPage(1);
-              }}
-              options={ACTION_FILTER_OPTIONS}
-              placeholder="All Actions"
-              inputClassName={ADMIN_FILTER_SELECT_CLASS}
-              aria-label="Filter by action"
-            />
-            <AppSelect
-              value={entityFilter}
-              onChange={(value) => {
-                setEntityFilter(value);
-                setPage(1);
-              }}
-              options={ENTITY_FILTER_OPTIONS}
-              placeholder="All Entities"
-              inputClassName={ADMIN_FILTER_SELECT_CLASS}
-              aria-label="Filter by entity"
-            />
-            <button type="submit" className="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm text-white hover:bg-emerald-700">
+          <p className="text-sm text-neutral-500">Filter by date, actor, action, or entity type.</p>
+        </div>
+
+        <AdminFilterBar
+          onSubmit={(event) => {
+            event.preventDefault();
+            setPage(1);
+            setActorApplied(actorQuery.trim());
+          }}
+          onClear={() => {
+            setFromDate('');
+            setToDate('');
+            setActorQuery('');
+            setActorApplied('');
+            setActionFilter('');
+            setEntityFilter('');
+            setPage(1);
+          }}
+          actions={
+            <button type="submit" className="rounded-xl bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700">
               Apply
             </button>
-          </form>
-        </div>
+          }
+        >
+          <label className="text-xs text-neutral-500">
+            From
+            <input
+              type="date"
+              value={fromDate}
+              onChange={(e) => {
+                setFromDate(e.target.value);
+                setPage(1);
+              }}
+              className={`${ADMIN_INPUT_CLASS} mt-1 block`}
+            />
+          </label>
+          <label className="text-xs text-neutral-500">
+            To
+            <input
+              type="date"
+              value={toDate}
+              onChange={(e) => {
+                setToDate(e.target.value);
+                setPage(1);
+              }}
+              className={`${ADMIN_INPUT_CLASS} mt-1 block`}
+            />
+          </label>
+          <label className="text-xs text-neutral-500">
+            Actor
+            <input
+              type="search"
+              value={actorQuery}
+              onChange={(e) => setActorQuery(e.target.value)}
+              placeholder="ID / name / email / phone"
+              className={`${ADMIN_INPUT_CLASS} mt-1 block w-56`}
+            />
+          </label>
+          <AppSelect
+            value={actionFilter}
+            onChange={(value) => {
+              setActionFilter(value);
+              setPage(1);
+            }}
+            options={ACTION_FILTER_OPTIONS}
+            placeholder="All Actions"
+            inputClassName={ADMIN_FILTER_SELECT_CLASS}
+            aria-label="Filter by action"
+          />
+          <AppSelect
+            value={entityFilter}
+            onChange={(value) => {
+              setEntityFilter(value);
+              setPage(1);
+            }}
+            options={ENTITY_FILTER_OPTIONS}
+            placeholder="All Entities"
+            inputClassName={ADMIN_FILTER_SELECT_CLASS}
+            aria-label="Filter by entity"
+          />
+        </AdminFilterBar>
 
         {error && <p className="text-red-600 text-sm">{error}</p>}
 

@@ -11,8 +11,9 @@ import { fetchMeProfile } from '../hooks/memberProfileApi';
 import { fetchMemberStatus } from '../hooks/memberStatusApi';
 import { GoogleAuthSection } from '../components/auth/GoogleAuthSection';
 import { useAuth } from '../context/AuthContext';
-import { accountRouteByRole, defaultRouteByRole } from '../utils/authRouting';
+import { defaultRouteByRole, hostModeHomeRouteByRole } from '../utils/authRouting';
 import { isPlatformAdmin } from '../utils/roles';
+import { resolveHostingHubPath, isHostConsoleRole } from '../hosting/hostingHubRouting';
 import {
   AUTH_UNAVAILABLE_COPY,
   isRejectedAuthRedirectParam,
@@ -116,10 +117,20 @@ export const SignIn = () => {
     }
 
     const profile = await fetchMeProfile().catch(() => null);
-    const postAuthDefault =
-      signedInUser.role === 'participant' || isPlatformAdmin(signedInUser.role)
+    const memberStatus = await fetchMemberStatus().catch(() => null);
+    const tenantId = memberStatus?.publish.tenantId;
+    if (tenantId) {
+      setActiveTenantId(tenantId);
+    }
+
+    const postAuthDefault = isHostConsoleRole(signedInUser.role)
+      ? resolveHostingHubPath({
+          ownedProfiles: memberStatus?.publish.ownedProfiles ?? [],
+          hostTiers: memberStatus?.publish.hostTiers ?? null,
+        })
+      : signedInUser.role === 'participant' || isPlatformAdmin(signedInUser.role)
         ? defaultRouteByRole(signedInUser.role)
-        : accountRouteByRole(signedInUser.role);
+        : hostModeHomeRouteByRole(signedInUser.role);
     const welcomeRedirectTo = resolvePostAuthReturnPath(from, signedInUser.role) ?? postAuthDefault;
 
     if (profile && shouldForceSignupWelcome(signedInUser.role, profile)) {
@@ -141,19 +152,7 @@ export const SignIn = () => {
     }
 
     clearAuthReturnContext();
-
-    const memberStatus = await fetchMemberStatus().catch(() => null);
-    const tenantId = memberStatus?.publish.tenantId;
-    if (tenantId) {
-      setActiveTenantId(tenantId);
-    }
-
-    navigate(
-      signedInUser.role === 'participant' || isPlatformAdmin(signedInUser.role)
-        ? defaultRouteByRole(signedInUser.role)
-        : accountRouteByRole(signedInUser.role),
-      { replace: true }
-    );
+    navigate(postAuthDefault, { replace: true });
   };
 
   const quickLogin = async (pickEmail: string) => {

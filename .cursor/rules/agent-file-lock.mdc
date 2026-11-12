@@ -1,0 +1,36 @@
+---
+description: Advisory file locks when multiple agents share one working tree
+alwaysApply: true
+---
+
+# Multi-agent file locks
+
+This repo may be edited by **Cursor** and **Claude Desktop** (or other agents) in the same directory.
+
+## Hard rule
+
+Before creating or editing a file with Write/StrReplace (or equivalent), acquire an advisory lock:
+
+```bash
+UAETRAIL_AGENT_ID=claude node .cursor/hooks/agent-file-lock.mjs acquire <path>
+```
+
+Cursor Auto acquires locks via `.cursor/hooks.json` (`UAETRAIL_AGENT_ID` defaults to `cursor`).
+
+If acquire fails because another agent holds the lock: **do not overwrite** — pick another file, wait, or tell the user.
+
+Release when done with that file:
+
+```bash
+UAETRAIL_AGENT_ID=claude node .cursor/hooks/agent-file-lock.mjs release <path>
+```
+
+Or release all of yours at session end:
+
+```bash
+UAETRAIL_AGENT_ID=claude node .cursor/hooks/agent-file-lock.mjs release-mine
+```
+
+## Safer than locks
+
+Prefer **separate git worktrees/branches** for parallel agents. Locks are advisory and only work if every agent uses them.

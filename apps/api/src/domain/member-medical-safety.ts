@@ -17,6 +17,7 @@ export const updateMedicalSafetyProfileSchema = z.object({
     .max(500),
   emergencyContactName: z.string().trim().min(2).max(80),
   emergencyContactPhone: z.string().trim().min(8).max(30),
+  emergencyContactRelation: z.string().trim().min(1).max(40),
 });
 
 export type UpdateMedicalSafetyProfileInput = z.infer<typeof updateMedicalSafetyProfileSchema>;
@@ -28,7 +29,7 @@ export const assertMedicalSafetyProfileComplete = (
   throw new ApiError(
     400,
     'medical_safety_profile_required',
-    'Add your blood group, medical conditions (or N/A), and emergency contact in Profile → Settings → Safety before joining an outing.'
+    'Add your blood group, medical conditions (or N/A), and emergency contact (name, relation, phone) in Profile → Settings → Safety before joining an outing.'
   );
 };
 

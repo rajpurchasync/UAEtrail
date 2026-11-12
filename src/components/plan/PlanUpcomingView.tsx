@@ -1,4 +1,5 @@
-import { CalendarDays, List } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { CalendarDays, List, Search } from 'lucide-react';
 import type { PlanCommitmentFilter, PlanUpcomingLayout } from '../../plan/planTab';
 import {
   PRODUCT_PLAN_UPCOMING_HOSTING_CONTEXT,
@@ -12,6 +13,10 @@ import { PlanNeedsYouStrip } from './PlanNeedsYouStrip';
 import { parsePlanLens } from '../../plan/planLens';
 import { PlanHostingManageProvider } from '../../plan/PlanHostingManageContext';
 import { PLAN_SUMMARY_FOCUS_ELEMENT_IDS } from '../../plan/planSummaryFocusScroll';
+import { HostingModeSwitcher } from '../hosting/HostingModeSwitcher';
+import { useMemberStatus } from '../../hooks/useMemberStatus';
+import { useAuth } from '../../context/AuthContext';
+import { persistHostingSurfaceMode } from '../../hosting/hostingHubRouting';
 
 const PLAN_SUMMARY_SCROLL_MT = 'scroll-mt-[calc(var(--safe-top)+7.5rem)] outline-none';
 
@@ -32,9 +37,18 @@ export const PlanUpcomingView = ({
   lensRaw,
   onLayoutChange,
 }: PlanUpcomingViewProps) => {
+  const { user } = useAuth();
+  const { ownedProfiles, hostTiers } = useMemberStatus({ enabled: Boolean(user) && canHost });
+  const [searchQuery, setSearchQuery] = useState('');
   const planLens = parsePlanLens(lensRaw);
   const hostingActive = canHost && filter === 'hosting';
   const listSections = planLens !== 'availability' && layout === 'list';
+  const searchPlaceholder =
+    filter === 'hosting' && canHost ? 'Search hosted outings…' : 'Search joined outings…';
+
+  useEffect(() => {
+    if (hostingActive) persistHostingSurfaceMode('community');
+  }, [hostingActive]);
 
   const upcomingBody =
     planLens === 'availability' ? (
@@ -42,13 +56,20 @@ export const PlanUpcomingView = ({
     ) : layout === 'calendar' ? (
       <PlanCalendarSection refreshKey={refreshKey} canHost={canHost} filter={filter} />
     ) : filter === 'hosting' ? (
-      <PlanHostingUpcoming refreshKey={refreshKey} canHost={canHost} />
+      <PlanHostingUpcoming refreshKey={refreshKey} canHost={canHost} searchQuery={searchQuery} />
     ) : (
-      <PlanJoinedUpcoming refreshKey={refreshKey} />
+      <PlanJoinedUpcoming refreshKey={refreshKey} searchQuery={searchQuery} />
     );
 
   return (
     <div className="space-y-3 md:space-y-2">
+      {hostingActive ? (
+        <HostingModeSwitcher
+          active="community"
+          ownedProfiles={ownedProfiles}
+          hostTiers={hostTiers}
+        />
+      ) : null}
       {planLens !== 'availability' && layout === 'list' ? (
         <p className="text-xs leading-snug text-neutral-500 md:text-[11px]">
           {filter === 'hosting' && canHost
@@ -56,8 +77,24 @@ export const PlanUpcomingView = ({
             : PRODUCT_PLAN_UPCOMING_JOINED_CONTEXT}
         </p>
       ) : null}
-      <div className="flex items-center justify-end gap-3">
-        <div className="flex shrink-0 rounded-xl border border-neutral-200/80 bg-white p-0.5">
+      <div className="flex items-center gap-3">
+        {planLens !== 'availability' ? (
+          <div className="relative min-w-0 flex-1">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400"
+              aria-hidden
+            />
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder={searchPlaceholder}
+              aria-label={searchPlaceholder.replace('…', '')}
+              className="w-full rounded-xl border border-neutral-200/80 bg-white py-2.5 pl-10 pr-3 text-sm text-neutral-900 shadow-sm outline-none ring-emerald-600/30 placeholder:text-neutral-400 focus:ring-2"
+            />
+          </div>
+        ) : null}
+        <div className="flex shrink-0 rounded-xl border border-neutral-200/80 bg-white p-0.5 ms-auto">
           <button
             type="button"
             aria-label="List view"

@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   BLOOD_GROUP_VALUES,
+  EMERGENCY_CONTACT_RELATION_VALUES,
   MEDICAL_CONDITIONS_NA,
   type BloodGroup,
 } from '@uaetrail/shared-types';
@@ -17,13 +18,21 @@ type ProfileSafetyFormProps = {
   onSaved: () => void;
   className?: string;
   embedded?: boolean;
+  /** Borderless when nested in mobile settings cards. */
+  flush?: boolean;
 };
+
+const RELATION_OPTIONS = EMERGENCY_CONTACT_RELATION_VALUES.map((value) => ({
+  value,
+  label: value,
+}));
 
 /** Blood group, medical conditions, ICE contact — required before joining outings. */
 export const ProfileSafetyForm = ({
   onSaved,
   className = 'space-y-3 pb-nav-safe animate-fade-up',
   embedded = false,
+  flush = false,
 }: ProfileSafetyFormProps) => {
   const { user, refreshUser } = useAuth();
   const queryClient = useQueryClient();
@@ -34,6 +43,7 @@ export const ProfileSafetyForm = ({
   const [conditionsMode, setConditionsMode] = useState<'na' | 'custom'>('na');
   const [medicalConditions, setMedicalConditions] = useState('');
   const [emergencyContactName, setEmergencyContactName] = useState('');
+  const [emergencyContactRelation, setEmergencyContactRelation] = useState('');
   const [emergencyContactPhone, setEmergencyContactPhone] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,6 +61,16 @@ export const ProfileSafetyForm = ({
     }
     setEmergencyContactName(profile.emergencyContactName ?? '');
     setEmergencyContactPhone(profile.emergencyContactPhone ?? '');
+    const relation = profile.emergencyContactRelation?.trim() ?? '';
+    setEmergencyContactRelation(
+      EMERGENCY_CONTACT_RELATION_VALUES.includes(
+        relation as (typeof EMERGENCY_CONTACT_RELATION_VALUES)[number]
+      )
+        ? relation
+        : relation
+          ? 'Other'
+          : ''
+    );
     hydratedRef.current = true;
   }, [profile]);
 
@@ -70,6 +90,10 @@ export const ProfileSafetyForm = ({
       setError('Enter emergency contact name.');
       return;
     }
+    if (!emergencyContactRelation.trim()) {
+      setError('Select emergency contact relation.');
+      return;
+    }
     if (emergencyContactPhone.trim().length < 8) {
       setError('Enter a valid emergency phone (include country code, e.g. +971…).');
       return;
@@ -83,6 +107,7 @@ export const ProfileSafetyForm = ({
         medicalConditions: conditions,
         emergencyContactName: emergencyContactName.trim(),
         emergencyContactPhone: emergencyContactPhone.trim(),
+        emergencyContactRelation: emergencyContactRelation.trim(),
       });
       await refreshUser();
       if (user?.id) {
@@ -161,6 +186,16 @@ export const ProfileSafetyForm = ({
           />
         </div>
         <div>
+          <label className="mb-2 block text-sm font-semibold text-neutral-800">Relation</label>
+          <AppSelect
+            value={emergencyContactRelation}
+            onChange={setEmergencyContactRelation}
+            placeholder="Select…"
+            aria-label="Emergency contact relation"
+            options={RELATION_OPTIONS}
+          />
+        </div>
+        <div>
           <label className="mb-2 block text-sm font-semibold text-neutral-800">Emergency contact phone</label>
           <input
             className="ios-input text-[15px]"
@@ -179,7 +214,21 @@ export const ProfileSafetyForm = ({
       <p className={`text-sm text-neutral-600 ${embedded ? 'mb-2' : 'px-1'}`}>
         Required before you join outings. Hosts see this when you request a spot or RSVP.
       </p>
-      {embedded ? <div className="space-y-4 rounded-xl border border-neutral-200/80 bg-white p-3 dark:border-neutral-700 dark:bg-neutral-900/40">{fields}</div> : <GlassCard padding className="space-y-4">{fields}</GlassCard>}
+      {embedded ? (
+        <div
+          className={
+            flush
+              ? 'space-y-4'
+              : 'space-y-4 rounded-xl border border-neutral-200/80 bg-white p-3 dark:border-neutral-700 dark:bg-neutral-900/40'
+          }
+        >
+          {fields}
+        </div>
+      ) : (
+        <GlassCard padding className="space-y-4">
+          {fields}
+        </GlassCard>
+      )}
       {error ? <p className="text-sm text-red-600 px-1">{error}</p> : null}
       <AppButton type="submit" disabled={saving} className="w-full">
         {saving ? 'Saving…' : 'Save safety profile'}

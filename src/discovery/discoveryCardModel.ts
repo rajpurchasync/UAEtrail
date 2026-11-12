@@ -20,7 +20,7 @@ import {
   isGeographyMapSource,
   isPeekOnlyCatalogProfile,
   memberProfilePath,
-  placeDetailPath,
+  placeDetailPathForId,
   resolveActivityPublisherProfilePath,
   resolveExploreFeaturedPerson,
 } from '@uaetrail/shared-types';
@@ -79,6 +79,8 @@ export interface DiscoveryCardModel {
   reviewPath?: string | null;
   catalogProfileExposure?: CatalogProfileExposure | null;
   locationId?: string | null;
+  /** Place catalog type when known (`locationCard.activityType`) — not the outing type. */
+  locationActivityType?: 'hiking' | 'camping' | 'event' | null;
   activityId?: string | null;
   participantIntentId?: string | null;
   outingCategory?: OutingCategory | null;
@@ -243,6 +245,7 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
         : null,
     catalogProfileExposure: item.catalogProfileExposure ?? null,
     locationId: item.locationCard?.id ?? item.activity?.locationId ?? null,
+    locationActivityType: item.locationCard?.activityType ?? null,
     activityId: item.activity?.id ?? null,
     /** Manage/deeplink only for legacy seeking rows without a published activity id. */
     participantIntentId:
@@ -338,19 +341,8 @@ const discoveryCardHostUserId = (card: DiscoveryCardModel): string | null =>
 export const resolveDiscoveryCardLocationDetailPath = (card: DiscoveryCardModel): string => {
   if (isGeographyMapSource(card.source)) return card.path;
   if (card.source === 'activity' && card.locationId) {
-    const at =
-      card.activity?.activityType?.trim() ||
-      card.outingCategory ||
-      (card.kind === 'camping' || card.kind === 'event' ? card.kind : 'hiking');
-    const placeKind =
-      at === 'camping'
-        ? 'camping'
-        : at === 'event'
-          ? 'event'
-          : at === 'shop'
-            ? 'shop'
-            : 'hiking';
-    return placeDetailPath(placeKind, card.locationId);
+    // Never use the outing type — an event hosted at a camp must not open `/venue/{campId}`.
+    return placeDetailPathForId(card.locationId, card.locationActivityType);
   }
   return card.path;
 };

@@ -16,6 +16,12 @@ export const PLAN_PATH = '/plan' as const;
 /** Signed-in “today” briefing for the next joined outing. */
 export const PLAN_TODAY_PATH = '/plan/today' as const;
 
+/**
+ * Community hosting hub — dedicated surface (not My Plans).
+ * Legacy inbound: `/plan?filter=hosting` redirects here.
+ */
+export const HOSTING_HUB_PATH = '/hosting' as const;
+
 export const GEO_TREE_PATH = '/geo' as const;
 export const geoNodePath = (idOrPath: string): string =>
   `/geo/n/${encodeURIComponent(idOrPath)}`;
@@ -113,6 +119,13 @@ export const MEMBERSHIP_MARKETING_PATH = '/membership' as const;
 /** Social subgraph */
 export const GROUPS_PATH = '/groups' as const;
 export const BUDDIES_PATH = '/buddies' as const;
+
+/** Social hub child screens under `/buddies` (Settings-style sections, not tabs). */
+export type SocialFriendsSection = 'friends' | 'requests' | 'following';
+
+export const socialFriendsPath = (): string => `${BUDDIES_PATH}?section=friends`;
+export const socialRequestsPath = (): string => `${BUDDIES_PATH}?section=requests`;
+export const socialFollowingPath = (): string => `${BUDDIES_PATH}?section=following`;
 export const PROFILE_SUBMISSIONS_PATH = '/profile/submissions' as const;
 
 /** Inbound bookmark — redirects to {@link PROFILE_SUBMISSIONS_PATH}. */
@@ -131,12 +144,20 @@ export const groupsPath = (options?: {
   return qs ? `${GROUPS_PATH}?${qs}` : GROUPS_PATH;
 };
 
+/** Settings-style sections inside a Social group (hub = menu index). */
+export type GroupManageSection = 'hub' | 'members' | 'invite' | 'kids' | 'settings';
+
+/** @deprecated Prefer {@link GroupManageSection}; `manage` maps to `settings`. */
+export type GroupManagePathArg = GroupManageSection | 'manage' | 'members';
+
 /** List/manage surface only — threads use {@link messagesGroupPath}. */
 export const groupsManagePath = (
   groupId: string,
-  tab: 'members' | 'manage' = 'members'
+  section: GroupManagePathArg = 'hub'
 ): string => {
-  const params = new URLSearchParams({ group: groupId, tab });
+  const normalized: GroupManageSection = section === 'manage' ? 'settings' : section;
+  const params = new URLSearchParams({ group: groupId });
+  if (normalized !== 'hub') params.set('section', normalized);
   return `${GROUPS_PATH}?${params.toString()}`;
 };
 

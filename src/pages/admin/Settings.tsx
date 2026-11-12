@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import {
   fetchAdminNotificationBroadcasts,
@@ -6,7 +6,8 @@ import {
 } from '../../hooks/adminConsoleApi';
 import { DashboardLayout } from '../../components/layout';
 import { ADMIN_LINKS } from '../../constants';
-import { AppSelect, ADMIN_SELECT_CLASS } from '../../components/ui/AppSelect';
+import { AppSelect, ADMIN_FILTER_SELECT_CLASS, ADMIN_INPUT_CLASS, ADMIN_SELECT_CLASS } from '../../components/ui/AppSelect';
+import { AdminFilterBar } from '../../components/admin/AdminFilterBar';
 import { AdminTablePager, DEFAULT_ADMIN_PAGE_SIZE, paginateRows, type AdminPageSize } from '../../components/admin/AdminTablePager';
 import { formatAdminDate } from '../../utils/formatAdminDate';
 
@@ -27,6 +28,7 @@ interface BroadcastHistory {
   recipientCount: number;
 }
 
+/** Platform broadcast ops (sidebar label: Broadcast). */
 export const Settings = () => {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
@@ -39,6 +41,8 @@ export const Settings = () => {
   const [confirmSend, setConfirmSend] = useState(false);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
+  const [historySearch, setHistorySearch] = useState('');
+  const [historyAudience, setHistoryAudience] = useState('');
 
   const loadHistory = async (isActive: () => boolean = () => true) => {
     setLoadingHistory(true);
@@ -90,14 +94,26 @@ export const Settings = () => {
 
   const canSend = title.trim().length >= 3 && body.trim().length >= 5;
 
+  const filteredHistory = useMemo(() => {
+    return history.filter((row) => {
+      if (historyAudience && row.targetRole !== historyAudience) return false;
+      if (!historySearch.trim()) return true;
+      const q = historySearch.trim().toLowerCase();
+      return row.title.toLowerCase().includes(q) || row.body.toLowerCase().includes(q);
+    });
+  }, [history, historySearch, historyAudience]);
+
   return (
-    <DashboardLayout title="Admin Dashboard" links={ADMIN_LINKS}>
+    <DashboardLayout title="Broadcast" links={ADMIN_LINKS}>
       <div className="space-y-6">
-        <h2 className="text-lg font-semibold text-gray-900">Broadcast</h2>
+        <div>
+          <h2 className="text-lg font-semibold text-neutral-900">Broadcast</h2>
+          <p className="text-sm text-neutral-500">Send a one-shot notification to a role segment.</p>
+        </div>
 
         {/* Broadcast Form */}
-        <div className="bg-white border rounded-lg p-6 max-w-2xl">
-          <h3 className="font-medium text-gray-900 mb-4">Send Broadcast Notification</h3>
+        <div className="max-w-2xl rounded-2xl border border-neutral-200 bg-white p-6">
+          <h3 className="mb-4 font-medium text-neutral-900">Send broadcast notification</h3>
 
           {error && <p className="text-red-600 text-sm mb-3 bg-red-50 px-3 py-2 rounded">{error}</p>}
           {success && <p className="text-emerald-700 text-sm mb-3 bg-emerald-50 px-3 py-2 rounded">{success}</p>}
@@ -160,6 +176,38 @@ export const Settings = () => {
         {/* Broadcast History */}
         <div>
           <h3 className="font-medium text-gray-900 mb-3">Recent Broadcasts</h3>
+          <AdminFilterBar
+            onClear={() => {
+              setHistorySearch('');
+              setHistoryAudience('');
+              setPage(1);
+            }}
+          >
+            <label className="text-xs text-neutral-500">
+              Search
+              <input
+                type="search"
+                value={historySearch}
+                onChange={(e) => {
+                  setHistorySearch(e.target.value);
+                  setPage(1);
+                }}
+                placeholder="Title or message…"
+                className={`${ADMIN_INPUT_CLASS} mt-1 block w-56`}
+              />
+            </label>
+            <AppSelect
+              value={historyAudience}
+              onChange={(value) => {
+                setHistoryAudience(value);
+                setPage(1);
+              }}
+              options={BROADCAST_TARGET_OPTIONS}
+              placeholder="All audiences"
+              inputClassName={ADMIN_FILTER_SELECT_CLASS}
+              aria-label="Filter broadcasts by audience"
+            />
+          </AdminFilterBar>
           <div className="bg-white border rounded-lg overflow-x-auto desktop-scrollbar-x">
             <table className="min-w-full text-sm">
               <thead className="bg-gray-50">
@@ -176,9 +224,13 @@ export const Settings = () => {
                   <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-500">
                     <div className="inline-block w-5 h-5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mr-2" />Loading...
                   </td></tr>
-                ) : history.length === 0 ? (
-                  <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-500">No broadcasts sent yet</td></tr>
-                ) : paginateRows(history, page, pageSize).map((h) => (
+                ) : filteredHistory.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                      {history.length === 0 ? 'No broadcasts sent yet' : 'No broadcasts match these filters'}
+                    </td>
+                  </tr>
+                ) : paginateRows(filteredHistory, page, pageSize).map((h) => (
                   <tr key={h.id} className="border-t hover:bg-gray-50">
                     <td className="px-4 py-3 text-xs text-gray-600 whitespace-nowrap">{formatAdminDate(h.sentAt)}</td>
                     <td className="px-4 py-3 font-medium text-gray-900">{h.title}</td>
@@ -195,7 +247,7 @@ export const Settings = () => {
           <AdminTablePager
             page={page}
             pageSize={pageSize}
-            total={history.length}
+            total={filteredHistory.length}
             onPage={setPage}
             onPageSize={(size) => {
               setPageSize(size);

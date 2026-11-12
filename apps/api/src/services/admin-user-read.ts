@@ -1,3 +1,4 @@
+import { computeCatalogEditRanking } from '@uaetrail/shared-types';
 import { TenantType, UserRole, UserStatus } from '../domain/enums.js';
 import { ApiError } from '../lib/api-error.js';
 import {
@@ -89,6 +90,11 @@ export const loadAdminUserDetail = async (userId: string) => {
     throw new ApiError(404, 'user_not_found', 'User not found.');
   }
 
+  const catalogEditRanking = computeCatalogEditRanking(
+    user.profile?.catalogEditSuccessCount ?? 0,
+    user.profile?.catalogEditFailCount ?? 0
+  );
+
   const [ownedTenants, memberships, requests, participants, groups, hostedActivities] = await Promise.all([
     listUserOwnedTenantsBasic(userId),
     listTenantMembershipsForUser(userId),
@@ -130,6 +136,7 @@ export const loadAdminUserDetail = async (userId: string) => {
           avatarUrl: user.profile.avatarUrl,
         }
       : null,
+    catalogEditRanking,
     memberships: memberships.map((m) => ({
       tenantId: m.tenantId,
       tenantName: m.tenant.name,

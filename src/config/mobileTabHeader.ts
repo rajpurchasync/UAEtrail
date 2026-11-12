@@ -5,7 +5,10 @@ import {
   MY_REQUESTS_PATH,
   PROFILE_SUBMISSIONS_PATH,
 } from './routingCatalog';
-import { PRODUCT_PLAN_SURFACE_TITLE } from '../content/productNorthStar';
+import {
+  PRODUCT_HOSTING_SCHEDULE_NAV_LABEL,
+  PRODUCT_PLAN_SURFACE_TITLE,
+} from '../content/productNorthStar';
 import { resolveGuestSurfaceForPath } from '../utils/guestSurfaceByPath';
 import { joinedSubViewTitle } from '../pages/activities/shared';
 import {
@@ -18,6 +21,7 @@ import {
 } from './platform';
 import {
   isNotificationHubPath,
+  HOSTING_HUB_PATH,
   MESSAGES_PATH,
   PLAN_PATH,
   PROFILE_HISTORY_PATH,
@@ -42,6 +46,7 @@ const TAB_HEADER_ROUTES = new Set([
   '/explore',
   PROFILE_PATH,
   PLAN_PATH,
+  HOSTING_HUB_PATH,
   PROFILE_HISTORY_PATH,
   JOURNEY_MAP_PATH,
   MESSAGES_PATH,
@@ -86,6 +91,7 @@ export const isLayoutMobileUnifiedHeaderRoute = (pathname: string): boolean => {
 export const resolveMobileTabHeaderTitle = (pathname: string, search: string): string | null => {
   if (pathname === '/explore') return null;
   if (pathname === PROFILE_PATH) return 'Profile';
+  if (pathname === HOSTING_HUB_PATH) return PRODUCT_HOSTING_SCHEDULE_NAV_LABEL;
   if (pathname === PLAN_PATH) {
     const params = new URLSearchParams(search);
     const subTitle = joinedSubViewTitle(params.get('sub'));
@@ -112,8 +118,27 @@ export const resolveMobileTabHeaderTitle = (pathname: string, search: string): s
   if (pathname === PROFILE_VEHICLES_PATH) return 'My cars';
   if (pathname === `${PROFILE_VEHICLES_PATH}/new`) return 'Add car';
   if (/^\/profile\/vehicles\/[^/]+\/edit$/.test(pathname)) return 'Edit car';
-  if (pathname === BUDDIES_PATH) return 'Friends';
-  if (pathname === GROUPS_PATH) return 'Groups';
+  if (pathname === BUDDIES_PATH) {
+    const section = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search).get(
+      'section'
+    );
+    if (section === 'friends') return 'Friends';
+    if (section === 'requests') return 'Friend requests';
+    if (section === 'following') return 'Following';
+    return 'Social';
+  }
+  if (pathname === GROUPS_PATH) {
+    const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search);
+    if (params.get('group')) {
+      const section = params.get('section');
+      if (section === 'members') return 'Members';
+      if (section === 'invite') return 'Invite';
+      if (section === 'kids') return 'Kids';
+      if (section === 'settings') return 'Settings';
+      return 'Group';
+    }
+    return 'Groups';
+  }
   if (pathname === PROFILE_SUBMISSIONS_PATH) return 'Submissions';
   if (pathname === INBOUND_CONTRIBUTIONS_PATH) return 'Contributions';
   if (pathname === MY_REQUESTS_PATH) return 'My requests';

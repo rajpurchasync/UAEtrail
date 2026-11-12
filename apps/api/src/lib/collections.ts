@@ -63,6 +63,8 @@ export const COLLECTIONS = {
   SOCIAL_GROUP_INVITES: 'social_group_invites',
   SOCIAL_GROUP_WALL: 'social_group_wall',
   SOCIAL_GROUP_WALL_REACTIONS: 'social_group_wall_reactions',
+  /** Adult family members invited onto a specific outing join request. */
+  ACTIVITY_FAMILY_INVITES: 'activity_family_invites',
   BUDDY_REQUESTS: 'buddy_requests',
   BUDDY_PAIRS: 'buddy_pairs',
   USER_FOLLOWS: 'user_follows',

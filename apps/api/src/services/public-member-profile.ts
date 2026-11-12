@@ -42,6 +42,7 @@ import { getMemberGoalPublicSnapshot } from '../lib/member-goals-store.js';
 import { getMemberAvailabilityPublicSnapshot } from '../lib/member-availability-store.js';
 import { countParticipantIntentsByUser } from '../lib/participant-intents-store.js';
 import type { MemberAvailabilityPublicDTO, MemberGoalPublicDTO } from '@uaetrail/shared-types';
+import { resolveFindCrewViewerRelation } from '../lib/find-crew-visibility-gate.js';
 import { listPublicMemberBadges } from './member-badges.js';
 import { listMemberVehicles } from '../lib/member-vehicles-store.js';
 
@@ -159,6 +160,8 @@ export type PublicMemberProfileData =
       languages: string | null;
       age: number | null;
       birthYear: number | null;
+      /** `MM-DD` when the member shares day+month only (no year). */
+      monthDay: string | null;
       dateOfBirth: string | null;
       memberSince: string;
       isHost: boolean;
@@ -312,13 +315,17 @@ export async function buildPublicMemberProfile(
   );
   const exposure = viewerAccess.exposure;
   const isSelf = accessLevel === 'self' || Boolean(input.previewAsPublic && viewerUserId === userId);
+  const networkRelation = isSelf
+    ? ('self' as const)
+    : await resolveFindCrewViewerRelation(viewerUserId, userId);
   const fieldVisible = (key: ProfileFieldPrivacyKey) =>
-    canViewProfileField(fieldPrivacy[key], exposure, isSelf);
+    canViewProfileField(fieldPrivacy[key], exposure, isSelf, networkRelation);
   const dobSlice = resolveMemberCardDateOfBirth({
     dateOfBirth: user.profile?.dateOfBirth ?? null,
     share: dateOfBirthShare,
     exposure,
     isSelf,
+    relation: networkRelation,
   });
   const earnedBadges = badges.filter((b) => b.earned);
 
@@ -352,6 +359,7 @@ export async function buildPublicMemberProfile(
     city: fieldVisible('city') && profileCity ? USER_CITY_LABELS[profileCity as UserCity] : null,
     age: dobSlice.age,
     birthYear: dobSlice.birthYear,
+    monthDay: dobSlice.monthDay,
     dateOfBirth: dobSlice.dateOfBirth,
     memberSince: user.createdAt.toISOString(),
     languages: fieldVisible('languages') ? memberDetails.languages : null,

@@ -7,6 +7,7 @@ import {
   INBOUND_REWARDS_PATH,
   INBOUND_TRAIL_POINTS_PATH,
   MEMBERSHIP_MARKETING_PATH,
+  HOSTING_HUB_PATH,
   PLAN_PATH,
   PROFILE_BADGES_PATH,
   PROFILE_SUBMISSIONS_PATH,
@@ -43,7 +44,7 @@ import {
   INBOUND_JOURNEY_MAP_ALIAS_PATH,
   INBOUND_PROFILE_HISTORY_ALIAS_PATH,
 } from '../config/inboundBookmarkPaths';
-import { ProtectedRoute, Home, ExploreExperience, BrowseListPage, DiscoveryRedirect, InboundCanonicalPlaceRedirect, InboundMerchantPublicRedirect, InboundProductPathRedirect, InboundMessagesRedirect, InboundProMembershipRedirect, InboundProfileWishlistRedirect, InboundRetiredPublishingConsoleRedirect, InboundProfileHistoryAliasRedirect, InboundJourneyMapAliasRedirect, InboundLegacyProfileSettingsRedirect, InboundLegacyNotificationsRedirect, ShopBrowseRoute, CalendarRedirect, PeopleRedirect, PlanBrowseRoute, CanonicalPlaceDetailPage, VenuePlaceDetailPage, FacilityDetailPage, ProfileProMembership, ShopPublic, ActivityDetail, OrganisationProfile, MemberProfile, SignUp, SignIn, VerifyOTP, WelcomeSignup, ForgotPassword, AdminOverview, AdminPlaces, AdminAreas, AreaDetailPage, AdminOrganisations, AdminActivities, AdminMembers, AdminGroups, AdminAuditLog, AdminReports, AdminSettings, AdminAccount, AdminNotifications, AdminAlerts, GeoTreePage, GeoCountryPage, GeoNodePage, PlanTodayPage, PublishingOverview, PublishingActivities, PublishingJoinRequests, PublishingTeam, PublishingPublicProfileEdit, PublishingPlaces, PublishingHistory, UserRequests, MessagesGate, ShopManageRedirect, AgencyManageRedirect, PublishingManage, ProfileHistoryPage, JourneyMapPage, Profile, ProfileSettings, ProfileSettingsDisplay, ProfileSettingsAccount, ProfileSettingsPrivacy, ProfileSettingsNotifications, ProfileSettingsSafety, ProfileVehiclesPage, ProfileVehicleNewPage, ProfileVehicleEditPage, ProfileEdit, ProfileBadges, Submissions, ProfileReviews, JoinRequestDetail, Groups, Buddies, SecurityPrivacy, Terms, Privacy, Faq, About, Contact, SiteMap, NotFound, DashboardRedirect } from './appLazyPages';
+import { ProtectedRoute, Home, ExploreExperience, BrowseListPage, DiscoveryRedirect, InboundCanonicalPlaceRedirect, InboundMerchantPublicRedirect, InboundProductPathRedirect, InboundMessagesRedirect, InboundProMembershipRedirect, InboundProfileWishlistRedirect, InboundRetiredPublishingConsoleRedirect, InboundProfileHistoryAliasRedirect, InboundJourneyMapAliasRedirect, InboundLegacyProfileSettingsRedirect, InboundLegacyNotificationsRedirect, ShopBrowseRoute, CalendarRedirect, PeopleRedirect, PlanBrowseRoute, HostingHubPage, CanonicalPlaceDetailPage, VenuePlaceDetailPage, FacilityDetailPage, ProfileProMembership, ShopPublic, ActivityDetail, OrganisationProfile, MemberProfile, SignUp, SignIn, VerifyOTP, WelcomeSignup, ForgotPassword, AdminInbox, AdminSubmissions, AdminPlaces, AdminAreas, AreaDetailPage, AdminOrganisations, AdminActivities, AdminMembers, AdminGroups, AdminAuditLog, AdminReports, AdminSettings, AdminAccount, AdminNotifications, AdminAlerts, GeoTreePage, GeoCountryPage, GeoNodePage, PlanTodayPage, PublishingOverview, PublishingActivities, PublishingJoinRequests, PublishingTeam, PublishingPublicProfileEdit, PublishingPlaces, PublishingHistory, UserRequests, MessagesGate, ShopManageRedirect, AgencyManageRedirect, PublishingManage, ProfileHistoryPage, JourneyMapPage, Profile, ProfileSettings, ProfileSettingsDisplay, ProfileSettingsAccount, ProfileSettingsPrivacy, ProfileSettingsNotifications, ProfileSettingsSafety, ProfileVehiclesPage, ProfileVehicleNewPage, ProfileVehicleEditPage, ProfileEdit, ProfileBadges, Submissions, ProfileReviews, JoinRequestDetail, Groups, Buddies, SecurityPrivacy, Terms, Privacy, Faq, About, Contact, SiteMap, NotFound, DashboardRedirect } from './appLazyPages';
 import { PageLoader, AuthAliasRedirect } from './appRouteChrome';
 
 export const AppRoutes = () => (
@@ -85,6 +86,16 @@ export const AppRoutes = () => (
             }
           />
           <Route path="/plan" element={<PlanBrowseRoute />} />
+          <Route
+            path={HOSTING_HUB_PATH}
+            element={
+              <ProtectedRoute>
+                <Suspense fallback={<PageLoader />}>
+                  <HostingHubPage />
+                </Suspense>
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/geo"
             element={
@@ -395,12 +406,21 @@ export const AppRoutes = () => (
           <Route path="/onboarding" element={<Navigate to="/" replace />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/admin/login" element={<SignIn />} />
-          <Route path="/admin" element={<Navigate to="/admin/overview" replace />} />
+          <Route path="/admin" element={<Navigate to="/admin/inbox" replace />} />
+          <Route path="/admin/overview" element={<Navigate to="/admin/inbox" replace />} />
           <Route
-            path="/admin/overview"
+            path="/admin/inbox"
             element={
               <ProtectedRoute roles={['platform_admin']}>
-                <AdminOverview />
+                <AdminInbox />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/inbox/submissions"
+            element={
+              <ProtectedRoute roles={['platform_admin']}>
+                <AdminSubmissions />
               </ProtectedRoute>
             }
           />

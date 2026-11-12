@@ -16,11 +16,17 @@ describe('formatActivityTime', () => {
     expect(formatActivityTime('2026-10-05T18:30:00', now)).toBe('Mon, 6:30 PM');
   });
 
-  it('formats Sunday', () => {
-    expect(formatActivityTime('2026-10-11T17:00:00', now)).toBe('Sun, 5:00 PM');
+  // now = Mon 05 Oct 2026 → calendar week Sun 04 – Sat 10.
+  it('adds the day of month once the outing is past this week but still this month', () => {
+    expect(formatActivityTime('2026-10-11T17:00:00', now)).toBe('Sun 11, 5:00 PM');
+    expect(formatActivityTime('2026-10-20T17:00:00', now)).toBe('Tue 20, 5:00 PM');
   });
 
-  it('uses a full date after 6 days', () => {
-    expect(formatActivityTime('2026-10-20T17:00:00', now)).toBe('Tue 20 Oct 26, 5:00 PM');
+  it('adds the month for a later month this year', () => {
+    expect(formatActivityTime('2026-11-17T17:00:00', now)).toBe('Tue 17 Nov, 5:00 PM');
+  });
+
+  it('uses a full date outside this year', () => {
+    expect(formatActivityTime('2027-01-12T17:00:00', now)).toBe('Tue 12 Jan 27, 5:00 PM');
   });
 });

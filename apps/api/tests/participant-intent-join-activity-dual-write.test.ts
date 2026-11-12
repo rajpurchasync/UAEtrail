@@ -51,6 +51,7 @@ describe('participant intent join (M2c activity store)', () => {
         medicalConditions: 'N/A',
         emergencyContactName: 'Test emergency',
         emergencyContactPhone: '+971501112233',
+        emergencyContactRelation: 'Friend',
       },
     });
 

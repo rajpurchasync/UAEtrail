@@ -6,6 +6,10 @@ import {
   resolveDiscoveryCardHostProfilePath,
   resolveDiscoveryCardLocationDetailPath,
 } from '../../discovery/discoveryCardModel';
+import {
+  DiscoveryViewerJoinStatusChip,
+  resolveDiscoveryViewerJoinStatus,
+} from '../../discovery/DiscoveryViewerJoinStatusChip';
 import { DiscoveryPosterOverlayNav } from './DiscoveryPosterOverlayNav';
 import { EnvironmentImage } from '../../components/ui/EnvironmentImage';
 import { SecureAvatar } from '../../components/ui/SecureAvatar';
@@ -67,6 +71,7 @@ export const DiscoveryBrowsePosterBanner = ({
   const PEEK_META_ROW_TOP = 'bottom-[calc(0.375rem+1.75rem)]';
 
   const showHostBand = Boolean(meta.hostName || meta.soldOut);
+  const viewerJoinStatus = resolveDiscoveryViewerJoinStatus(card);
   /** List thumbs have no close/share row — pin host at top-right instead of mid-poster band. */
   const hostChipAtTop = !headerActions;
   const hostAnchorTop = headerActions ? PEEK_CTA_BOTTOM : 'top-9';
@@ -156,6 +161,11 @@ export const DiscoveryBrowsePosterBanner = ({
               Sold out
             </span>
           ) : null}
+          {viewerJoinStatus ? <DiscoveryViewerJoinStatusChip card={card} variant="overlay" /> : null}
+        </div>
+      ) : viewerJoinStatus ? (
+        <div className="pointer-events-none absolute right-2 top-2.5 z-10 flex max-w-[min(70%,11rem)] flex-col items-end gap-1">
+          <DiscoveryViewerJoinStatusChip card={card} variant="overlay" />
         </div>
       ) : null}
       {showBottom ? (
@@ -170,15 +180,15 @@ export const DiscoveryBrowsePosterBanner = ({
                       embedInItemLink={embedInItemLink}
                       onBeforeNavigate={onBeforeNavigate}
                       ariaLabel={`Open ${meta.location}`}
-                      className="flex min-w-0 max-w-full items-start gap-1 rounded-md text-left transition hover:underline active:opacity-90"
+                      className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-md text-left transition hover:underline active:opacity-90"
                     >
-                      <MapPin className="mt-0.5 h-3 w-3 shrink-0 text-emerald-300" aria-hidden />
-                      <span className="min-w-0 line-clamp-2">{meta.location}</span>
+                      <MapPin className="h-3 w-3 shrink-0 text-emerald-300" aria-hidden strokeWidth={2.25} />
+                      <span className="min-w-0 line-clamp-2 leading-none">{meta.location}</span>
                     </DiscoveryPosterOverlayNav>
                   ) : meta.location ? (
-                    <span className="flex min-w-0 items-start gap-1">
-                      <MapPin className="mt-0.5 h-3 w-3 shrink-0 text-emerald-300" aria-hidden />
-                      <span className="min-w-0 line-clamp-2">{meta.location}</span>
+                    <span className="inline-flex min-w-0 items-center gap-1">
+                      <MapPin className="h-3 w-3 shrink-0 text-emerald-300" aria-hidden strokeWidth={2.25} />
+                      <span className="min-w-0 line-clamp-2 leading-none">{meta.location}</span>
                     </span>
                   ) : null}
                   {distance ? <ListExplorerDistanceChip label={distance} variant="dark" /> : null}

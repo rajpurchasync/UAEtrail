@@ -68,7 +68,8 @@ describe('member surfaces §11 acceptance (automated)', () => {
 
   it('G-arch: participant /host bookmarks redirect off host console', () => {
     expect(participantHostBookmarkRedirect('/publishing/overview')).toBe('/explore?compose=host');
-    expect(participantHostBookmarkRedirect('/publishing/activities')).toContain('/plan');
+    // Hosting schedule is the dedicated `/hosting` hub — My Plans (`/plan`) stays joined/wishlist/goals.
+    expect(participantHostBookmarkRedirect('/publishing/activities')).toBe('/hosting');
   });
 
   it('G-arch: publishing console path helper matches /publishing workspace only', () => {
@@ -231,9 +232,16 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('G-manage: desktop hosting schedule uses dedicated hub (not consumer Plan summary)', () => {
+    // Hub is mounted on its own route (`/hosting`); My Plans redirects the hosting filter there.
+    const hostingPage = read('src/hosting/HostingHubPage.tsx');
+    expect(hostingPage).toContain('PlanDesktopHostingHub');
+    expect(hostingPage).toContain('PlanHostingManageProvider');
+    expect(hostingPage).toContain('HOSTING_HUB_PATH');
+    expect(hostingPage).not.toContain('PlanGoalsProgressSummary');
+    expect(hostingPage).not.toContain('PlanWishlistView');
     const plan = read('src/plan/PlanPage.tsx');
-    expect(plan).toContain('PlanDesktopHostingHub');
-    expect(plan).toContain('useMinWidthLg');
+    expect(plan).not.toContain('PlanDesktopHostingHub');
+    expect(plan).toMatch(/navigate\(HOSTING_HUB_PATH/);
     const hub = read('src/components/plan/PlanDesktopHostingHub.tsx');
     expect(hub).not.toContain('PlanGoalsProgressSummary');
     expect(hub).not.toContain('PlanWishlistView');
@@ -300,9 +308,11 @@ describe('member surfaces §11 acceptance (automated)', () => {
 
   it('G-arch: org public profile owner CTAs avoid consumer /host/* routes', () => {
     const orgProfile = read('src/components/organisation-console/OrganisationPublicProfile.tsx');
-    expect(orgProfile).toContain('planHostedSchedulePath()');
+    // Owner no longer gets a "Manage events" link here (the console Activities chip owns that list).
     expect(orgProfile).toContain('PRO_MEMBERSHIP_PATH');
     expect(orgProfile).not.toMatch(/HOST_(ACTIVITIES|TEAM|REQUESTS)_PATH/);
+    expect(orgProfile).not.toMatch(/PUBLISHING_(ACTIVITIES|TEAM|REQUESTS|OVERVIEW)_PATH/);
+    expect(orgProfile).not.toMatch(/['"]\/(?:host|operator|publishing)\//);
   });
 
   it('G-plan: wishlist tab surfaces saved-to-map suggested rail', () => {
@@ -543,10 +553,41 @@ describe('member surfaces §11 acceptance (automated)', () => {
   it('G-chat: /groups is manage-only; threads use /chat?group=', () => {
     const groups = read('src/pages/Groups.tsx');
     expect(groups).not.toMatch(/GroupChatThread/);
-    expect(groups).toMatch(/activityGroupChatPath/);
+    expect(groups).not.toMatch(/chat-app/);
+    expect(groups).not.toMatch(/groups-app/);
+    expect(groups).not.toMatch(/FormTabBar/);
+    expect(groups).not.toMatch(/SocialHubNav/);
+    expect(groups).toMatch(/layout="stack"/);
+    expect(groups).toMatch(/PRODUCT_GROUPS_SURFACE_LABEL/);
+    expect(groups).toMatch(/backChrome/);
+    expect(groups).toMatch(/SettingsMenuRow/);
+    // Adding people is two optional paths on the manage hub: invite adults, or add kids only.
+    expect(groups).toMatch(/Invite adults/);
+    expect(groups).toMatch(/Add kids/);
+    expect(groups).toMatch(/navigateToGroupChatFromSocial/);
     expect(groups).toMatch(/groupsManagePath/);
+    expect(groups).toMatch(/openGroupManage/);
     const routing = read('src/utils/notificationRouting.ts');
     expect(routing).toMatch(/normalizeConsumerChatDeepLinkPath/);
     expect(routing).toMatch(/messagesGroupPath/);
+  });
+
+  it('Social hub: Settings menu rows only — no stacked FormTabBar / hub tab strips', () => {
+    const buddies = read('src/pages/Buddies.tsx');
+    const hub = read('src/components/social/SocialHubNav.tsx');
+    const groups = read('src/pages/Groups.tsx');
+    expect(buddies).not.toMatch(/FormTabBar/);
+    expect(buddies).toMatch(/SocialHubIndex/);
+    expect(buddies).toMatch(/searchParams\.get\('section'\)/);
+    expect(buddies).toMatch(/useSocialHubBackChrome/);
+    expect(buddies).not.toMatch(/ChevronLeft/);
+    expect(groups).toMatch(/PRODUCT_GROUPS_SURFACE_LABEL/);
+    expect(groups).toMatch(/shellTitle/);
+    expect(groups).not.toMatch(/ChevronLeft/);
+    expect(groups).toMatch(/photoUrl/);
+    expect(groups).toMatch(/USER_GENDER_OPTIONS/);
+    expect(hub).toMatch(/SettingsMenuRow/);
+    expect(hub).toMatch(/SocialHubIndex/);
+    expect(hub).not.toMatch(/border-b-2/);
   });
 });

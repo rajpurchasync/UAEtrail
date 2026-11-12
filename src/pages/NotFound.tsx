@@ -20,7 +20,7 @@ export const NotFound = () => (
         <h1 className="mt-2 text-lg font-bold text-neutral-900">This page isn&apos;t here</h1>
         <p className="mt-2 text-sm text-neutral-600">Maybe the link moved, or there&apos;s a typo in the address.</p>
         <Link to={detailBackPath('explore')} className="mt-5 block">
-          <AppButton fullWidth>Back to the map</AppButton>
+          <AppButton fullWidth>Back to Explore</AppButton>
         </Link>
       </GlassCard>
     </ConsumerShell>

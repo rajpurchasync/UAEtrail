@@ -16,6 +16,8 @@ import {
   deleteOrCancelPublishingTenantActivity,
   duplicatePublishingTenantActivity,
   publishPublishingTenantActivity,
+  resumePublishingTenantActivity,
+  suspendPublishingTenantActivity,
   updatePublishingTenantActivity,
 } from '../../services/publishing-tenant-activity-commands.js';
 import {
@@ -134,6 +136,45 @@ export const registerPublishingActivityRoutes = (publishingRouter: Router): void
       try {
         const { id } = req.params as z.infer<typeof idParamSchema>;
         const result = await publishPublishingTenantActivity({
+          tenantId: req.tenantContext!.tenantId,
+          actorId: req.auth!.userId,
+          platformAdmin: Boolean(req.tenantContext!.actingAsPlatformAdmin),
+          activityId: id,
+        });
+        res.json(result);
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  hostActivitiesRouter.post(
+    '/:id/suspend',
+    requireOrgRole(ORG_ACTIVITY_PUBLISH_ROLES),
+    validate({ params: idParamSchema }),
+    async (req, res, next) => {
+      try {
+        const { id } = req.params as z.infer<typeof idParamSchema>;
+        const result = await suspendPublishingTenantActivity({
+          tenantId: req.tenantContext!.tenantId,
+          actorId: req.auth!.userId,
+          activityId: id,
+        });
+        res.json(result);
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  hostActivitiesRouter.post(
+    '/:id/resume',
+    requireOrgRole(ORG_ACTIVITY_PUBLISH_ROLES),
+    validate({ params: idParamSchema }),
+    async (req, res, next) => {
+      try {
+        const { id } = req.params as z.infer<typeof idParamSchema>;
+        const result = await resumePublishingTenantActivity({
           tenantId: req.tenantContext!.tenantId,
           actorId: req.auth!.userId,
           platformAdmin: Boolean(req.tenantContext!.actingAsPlatformAdmin),

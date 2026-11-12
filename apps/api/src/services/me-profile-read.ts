@@ -6,6 +6,7 @@ import { medicalSafetyFieldsFromAuthProfile } from '../lib/member-medical-safety
 import { ApiError } from '../lib/api-error.js';
 import { isPlatformMasterAdmin } from '../lib/platform-master-admin.js';
 import {
+  mergeFindCrewVisibility,
   mergeProfileDateOfBirthShare,
   mergeProfileFieldPrivacy,
   mergeProfileFriendsListShare,
@@ -39,6 +40,7 @@ export const getAuthenticatedMemberProfile = async (userId: string) => {
       user.profile?.friendsListShare,
       user.profile?.profileVisibility ?? null
     ),
+    findCrewVisibility: mergeFindCrewVisibility(user.profile?.findCrewVisibility),
     dateOfBirth: user.profile?.dateOfBirth ?? null,
     gender: user.profile?.gender ?? null,
     city: user.profile?.city ?? null,
@@ -49,6 +51,7 @@ export const getAuthenticatedMemberProfile = async (userId: string) => {
     medicalConditions: user.profile?.medicalConditions ?? null,
     emergencyContactName: user.profile?.emergencyContactName ?? null,
     emergencyContactPhone: user.profile?.emergencyContactPhone ?? null,
+    emergencyContactRelation: user.profile?.emergencyContactRelation ?? null,
     medicalSafetyProfileComplete: isMedicalSafetyProfileComplete(
       medicalSafetyFieldsFromAuthProfile(user.profile)
     ),

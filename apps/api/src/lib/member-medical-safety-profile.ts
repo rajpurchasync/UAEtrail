@@ -10,6 +10,7 @@ export type ProfileMedicalSlice = Pick<
   | 'medicalConditions'
   | 'emergencyContactName'
   | 'emergencyContactPhone'
+  | 'emergencyContactRelation'
 >;
 
 export const medicalSafetyFieldsFromAuthProfile = (
@@ -19,6 +20,7 @@ export const medicalSafetyFieldsFromAuthProfile = (
   medicalConditions: profile?.medicalConditions ?? null,
   emergencyContactName: profile?.emergencyContactName ?? null,
   emergencyContactPhone: profile?.emergencyContactPhone ?? null,
+  emergencyContactRelation: profile?.emergencyContactRelation ?? null,
 });
 
 export const hostVisibleMedicalSafety = (

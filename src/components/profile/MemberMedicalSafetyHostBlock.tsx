@@ -17,7 +17,8 @@ export const MemberMedicalSafetyHostBlock = ({
       <p className="mt-1.5 text-xs text-neutral-600">
         <span className="font-semibold text-neutral-800">Safety:</span>{' '}
         {medicalSafety.bloodGroup} · {medicalSafety.medicalConditions} · ICE{' '}
-        {medicalSafety.emergencyContactName} ({medicalSafety.emergencyContactPhone})
+        {medicalSafety.emergencyContactName} ({medicalSafety.emergencyContactRelation}) ·{' '}
+        {medicalSafety.emergencyContactPhone}
       </p>
     );
   }
@@ -33,7 +34,7 @@ export const MemberMedicalSafetyHostBlock = ({
       </p>
       <p>
         <span className="text-neutral-500">Emergency</span> · {medicalSafety.emergencyContactName} ·{' '}
-        {medicalSafety.emergencyContactPhone}
+        {medicalSafety.emergencyContactRelation} · {medicalSafety.emergencyContactPhone}
       </p>
     </div>
   );

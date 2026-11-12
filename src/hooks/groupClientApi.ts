@@ -1,11 +1,19 @@
 import type {
+  FamilyKidProfilePatchPayload,
+  FamilyKidProfilePayload,
   SocialGroupInviteView,
   SocialGroupMemberView,
   SocialGroupView,
 } from '../api/types';
 import { api } from '../api/index';
 
-export type { SocialGroupInviteView, SocialGroupMemberView, SocialGroupView };
+export type {
+  FamilyKidProfilePatchPayload,
+  FamilyKidProfilePayload,
+  SocialGroupInviteView,
+  SocialGroupMemberView,
+  SocialGroupView,
+};
 
 export type MeGroupDetailPayload = {
   group: SocialGroupView;
@@ -69,9 +77,18 @@ export const createMeGroupInviteLink = async (
 
 export const createMeGroupKidMember = async (
   groupId: string,
-  payload: { displayName: string; role?: 'admin' | 'buddy' }
+  payload: FamilyKidProfilePayload
 ): Promise<SocialGroupMemberView> => {
   const res = await api.createMeGroupKid(groupId, payload);
+  return res.data;
+};
+
+export const updateMeGroupKidMember = async (
+  groupId: string,
+  membershipId: string,
+  payload: FamilyKidProfilePatchPayload
+): Promise<SocialGroupMemberView> => {
+  const res = await api.updateMeGroupKid(groupId, membershipId, payload);
   return res.data;
 };
 

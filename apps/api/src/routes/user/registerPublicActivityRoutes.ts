@@ -7,7 +7,9 @@ import { withdrawReasonSchema } from '../../lib/withdraw-reasons.js';
 import { requireAuth, requireVerifiedEmail } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validate.js';
 import {
+  acceptActivityFamilyOutingInvite,
   cancelPublicActivityJoinRequest,
+  declineActivityFamilyOutingInvite,
   submitPublicActivityJoinRequest,
   submitPublicActivityRsvp,
   updatePublicActivityJoinRequestNote,
@@ -18,6 +20,7 @@ import {
   listPublishedActivitiesPublic,
   loadPublicActivityDetail,
 } from '../../services/activity-public-read.js';
+import { listPublicActivityLinkedRides } from '../../services/activity-linked-rides-read.js';
 import { createRequestSchema, eventIdParamSchema, requestIdParamSchema, rsvpSchema } from './schemas.js';
 
 const updateRequestNoteSchema = z.object({
@@ -29,10 +32,22 @@ const updateRequestPartySchema = z
     note: z.string().max(500).optional(),
     adults: z.coerce.number().int().min(1).max(20).optional(),
     kids: z.coerce.number().int().min(0).max(20).optional(),
+    partyMemberIds: z.array(z.string().min(1)).max(20).optional(),
   })
-  .refine((body) => body.note !== undefined || body.adults !== undefined || body.kids !== undefined, {
-    message: 'At least one field is required.',
-  });
+  .refine(
+    (body) =>
+      body.note !== undefined ||
+      body.adults !== undefined ||
+      body.kids !== undefined ||
+      body.partyMemberIds !== undefined,
+    {
+      message: 'At least one field is required.',
+    }
+  );
+
+const familyOutingInviteSchema = z.object({
+  token: z.string().min(20),
+});
 
 /** Public activity browse, detail, join request, and RSVP. */
 export const registerPublicActivityRoutes = (router: Router): void => {
@@ -62,6 +77,23 @@ export const registerPublicActivityRoutes = (router: Router): void => {
       next(error);
     }
   });
+
+  registerActivityRoute(
+    router,
+    'get',
+    '/:id/linked-rides',
+    validate({ params: eventIdParamSchema }),
+    async (req, res, next) => {
+      try {
+        const { id } = req.params as z.infer<typeof eventIdParamSchema>;
+        const payload = await listPublicActivityLinkedRides(id);
+        res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=60');
+        res.json(payload);
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
 
   registerActivityRoute(
     router,
@@ -203,13 +235,18 @@ export const registerPublicActivityRoutes = (router: Router): void => {
         const { requestId } = req.params as z.infer<typeof requestIdParamSchema>;
         const body = req.body as z.infer<typeof updateRequestNoteSchema> &
           z.infer<typeof updateRequestPartySchema>;
-        if (body.adults !== undefined || body.kids !== undefined) {
+        if (
+          body.adults !== undefined ||
+          body.kids !== undefined ||
+          body.partyMemberIds !== undefined
+        ) {
           const data = await updatePublicActivityJoinRequestParty({
             requestId,
             userId: req.auth!.userId,
             note: body.note,
             adults: body.adults,
             kids: body.kids,
+            partyMemberIds: body.partyMemberIds,
           });
           res.json({ data });
           return;
@@ -222,6 +259,48 @@ export const registerPublicActivityRoutes = (router: Router): void => {
           requestId,
           userId: req.auth!.userId,
           note,
+        });
+        res.json({ data });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  registerActivityRoute(
+    router,
+    'post',
+    '/:id/family-invites/accept',
+    requireAuth,
+    requireVerifiedEmail,
+    validate({ params: eventIdParamSchema, body: familyOutingInviteSchema }),
+    async (req, res, next) => {
+      try {
+        const body = req.body as z.infer<typeof familyOutingInviteSchema>;
+        const data = await acceptActivityFamilyOutingInvite({
+          token: body.token,
+          userId: req.auth!.userId,
+        });
+        res.json({ data });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  registerActivityRoute(
+    router,
+    'post',
+    '/:id/family-invites/decline',
+    requireAuth,
+    requireVerifiedEmail,
+    validate({ params: eventIdParamSchema, body: familyOutingInviteSchema }),
+    async (req, res, next) => {
+      try {
+        const body = req.body as z.infer<typeof familyOutingInviteSchema>;
+        const data = await declineActivityFamilyOutingInvite({
+          token: body.token,
+          userId: req.auth!.userId,
         });
         res.json({ data });
       } catch (error) {

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DESKTOP_HOST_PRIMARY_NAV,
   DESKTOP_MAP_NAV,
   DESKTOP_PEOPLE_NAV,
   DESKTOP_PRIMARY_NAV,
@@ -7,10 +8,15 @@ import {
   desktopPrimaryNavForSession,
   isDesktopExploreBrowseView,
   isDesktopExploreNavActive,
+  isDesktopHostingNavActive,
   isDesktopNavItemActive,
   isDesktopSocialNavActive,
 } from './desktopNav';
-import { CONSUMER_HAMBURGER_MENU, MOBILE_LANDING_USER_MENU } from './platform';
+import {
+  CONSUMER_HAMBURGER_MENU,
+  hostModeHamburgerMenu,
+  MOBILE_LANDING_USER_MENU,
+} from './platform';
 import { EXPLORE_MAP_PATH } from './routingCatalog';
 
 const exploreItem = DESKTOP_PRIMARY_NAV.find((item) => item.key === 'explore');
@@ -74,6 +80,19 @@ describe('desktop sidebar IA', () => {
     expect(memberKeys).toEqual(['explore', 'plan', 'chat']);
   });
 
+  it('host mode primary nav is Hosting · Plans · Chat without Explore', () => {
+    expect(DESKTOP_HOST_PRIMARY_NAV.map((item) => item.key)).toEqual(['hosting', 'plan', 'chat']);
+    expect(desktopPrimaryNavForSession(true, { hostMode: true }).map((item) => item.key)).toEqual([
+      'hosting',
+      'plan',
+      'chat',
+    ]);
+    expect(isDesktopHostingNavActive('/publishing/overview', '')).toBe(true);
+    expect(isDesktopHostingNavActive('/hosting', '')).toBe(true);
+    expect(isDesktopHostingNavActive('/plan', '?filter=hosting')).toBe(true);
+    expect(isDesktopHostingNavActive('/explore', '')).toBe(false);
+  });
+
   it('keeps notification history under Settings, not the You sidebar', () => {
     const youItems = DESKTOP_SIDE_NAV_SECTIONS.find((section) => section.key === 'you')?.items ?? [];
     expect(youItems.map((item) => item.key)).toEqual([
@@ -93,7 +112,17 @@ describe('desktop sidebar IA', () => {
     expect(hamburgerLabels).not.toContain('Browse');
     expect(hamburgerLabels.filter((label) => label === 'Explore')).toHaveLength(1);
     expect(hamburgerLabels).toContain('Social');
+    expect(hamburgerLabels).toContain('Profile');
     expect(MOBILE_LANDING_USER_MENU.some((item) => item.label === 'Browse')).toBe(false);
     expect(MOBILE_LANDING_USER_MENU.find((item) => item.label === 'Explore')?.to).toBe(EXPLORE_MAP_PATH);
+  });
+
+  it('host mode hamburger leads with Hosting and keeps Explore', () => {
+    const labels = hostModeHamburgerMenu('/publishing/overview')
+      .filter((item) => item.kind === 'link')
+      .map((item) => item.label);
+    expect(labels[0]).toBe('Hosting');
+    expect(labels).toContain('Explore');
+    expect(labels).toContain('My Plans');
   });
 });

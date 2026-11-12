@@ -9,15 +9,23 @@ import { PlanUpcomingDetailLink } from './PlanUpcomingDetailLink';
 export type PlanCommitmentBadge =
   | 'Hosting'
   | 'Looking for company'
-  | 'Going'
+  | 'Joined'
+  | 'Joined with family'
+  | 'Joined · family pending'
+  | 'Family joining pending'
   | 'Pending'
+  | 'Pending with family'
   | 'Waitlist';
 
 const badgeClass: Record<PlanCommitmentBadge, string> = {
   Hosting: 'bg-emerald-500/15 text-emerald-800',
   'Looking for company': 'bg-violet-500/15 text-violet-800',
-  Going: 'bg-sky-500/15 text-sky-800',
+  Joined: 'bg-sky-500/15 text-sky-800',
+  'Joined with family': 'bg-sky-500/15 text-sky-800',
+  'Joined · family pending': 'bg-amber-500/15 text-amber-900',
+  'Family joining pending': 'bg-amber-500/15 text-amber-900',
   Pending: 'bg-amber-500/15 text-amber-900',
+  'Pending with family': 'bg-amber-500/15 text-amber-900',
   Waitlist: 'bg-neutral-500/15 text-neutral-700',
 };
 

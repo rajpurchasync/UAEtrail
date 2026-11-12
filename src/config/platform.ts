@@ -14,6 +14,7 @@ import {
   PROFILE_PATH,
   JOURNEY_MAP_PATH,
   PROFILE_HISTORY_PATH,
+  HOSTING_HUB_PATH,
   PLAN_PATH,
   PLAN_TODAY_PATH,
   PROFILE_SETTINGS_PATH,
@@ -29,6 +30,7 @@ import {
   INBOUND_RETIRED_CONSOLE_PREFIXES,
 } from './inboundRoutePaths';
 import { INBOUND_PROFILE_HISTORY_ALIAS_PATH } from './inboundBookmarkPaths';
+import { SETTINGS_SURFACE_TITLE } from './settingsHub';
 import { AGENCY_PROFILE_PATH_PREFIX } from '@uaetrail/shared-types';
 
 export {
@@ -203,7 +205,7 @@ export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
   },
   {
     kind: 'link',
-    label: 'App settings',
+    label: SETTINGS_SURFACE_TITLE,
     emoji: '⚙️',
     to: PROFILE_SETTINGS_PATH,
     match: [PROFILE_SETTINGS_PATH],
@@ -217,6 +219,27 @@ export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
     ],
   },
 ];
+
+/** Hosting hub row injected at the top of the hamburger in host mode. */
+export const HOST_MODE_HAMBURGER_HOSTING_ITEM = {
+  kind: 'link',
+  label: 'Hosting',
+  emoji: '📋',
+  to: HOSTING_HUB_PATH,
+  match: [HOSTING_HUB_PATH, PUBLISHING_CONSOLE_PREFIX],
+  authGate: true,
+} as const satisfies ConsumerHamburgerMenuItem;
+
+/** Host mode drawer — Hosting first, then full consumer menu including Explore. */
+export const hostModeHamburgerMenu = (
+  hostingHubPath: string
+): readonly ConsumerHamburgerMenuItem[] => {
+  const hostingItem: ConsumerHamburgerMenuItem = {
+    ...HOST_MODE_HAMBURGER_HOSTING_ITEM,
+    to: hostingHubPath,
+  };
+  return [hostingItem, ...CONSUMER_HAMBURGER_MENU];
+};
 
 /**
  * User taxonomy (admin + product):
@@ -387,6 +410,7 @@ export const CONSUMER_SELF_HEADER_EXACT = [
   '/explore',
   LIST_DISCOVERY_PATH,
   PLAN_PATH,
+  HOSTING_HUB_PATH,
   PLAN_TODAY_PATH,
   PROFILE_HISTORY_PATH,
   JOURNEY_MAP_PATH,
@@ -436,7 +460,14 @@ export const hasConsumerSelfHeader = (pathname: string): boolean =>
 export const shouldShowConsumerShellHamburger = (pathname: string): boolean => {
   if (isConsumerChromeHidden(pathname)) return false;
   if (pathname === EXPLORE_MAP_PATH || pathname === LIST_DISCOVERY_PATH) return false;
-  if (pathname === '/profile' || pathname === PLAN_PATH || pathname === MESSAGES_PATH) return false;
+  if (
+    pathname === '/profile' ||
+    pathname === PLAN_PATH ||
+    pathname === HOSTING_HUB_PATH ||
+    pathname === MESSAGES_PATH
+  ) {
+    return false;
+  }
   if (pathname === PROFILE_HISTORY_PATH || pathname === JOURNEY_MAP_PATH) return false;
   if (pathname.startsWith('/profile/') || pathname === '/settings' || pathname.startsWith('/settings/')) return true;
   if (pathname === '/faq' || pathname === '/terms' || pathname === '/privacy') return true;
@@ -452,7 +483,8 @@ export type MobileBottomNavTabPath = (typeof MOBILE_BOTTOM_NAV_TAB_PATHS)[number
 
 export const isMobileBottomNavTabPath = (pathname: string): pathname is MobileBottomNavTabPath =>
   (MOBILE_BOTTOM_NAV_TAB_PATHS as readonly string[]).includes(pathname) ||
-  pathname === LIST_DISCOVERY_PATH;
+  pathname === LIST_DISCOVERY_PATH ||
+  pathname === HOSTING_HUB_PATH;
 
 /** Personal hub routes that keep the mobile tab bar visible (profile is not a tab). */
 export const MOBILE_BOTTOM_NAV_PROFILE_PATHS = [
@@ -461,6 +493,7 @@ export const MOBILE_BOTTOM_NAV_PROFILE_PATHS = [
   PROFILE_SUBMISSIONS_PATH,
   INBOUND_CONTRIBUTIONS_PATH,
   PUBLISHING_CONSOLE_PREFIX,
+  HOSTING_HUB_PATH,
   GROUPS_PATH,
   MY_REQUESTS_PATH,
 ] as const;

@@ -2,6 +2,10 @@ import type { MemberBrowseCardDTO } from '@uaetrail/shared-types';
 import { USER_CITY_LABELS, type UserCity } from '../domain/user-profile.js';
 import { listAuthUsers } from '../lib/auth-users-store.js';
 import { normalizeProfileVisibility } from '../lib/media-access.js';
+import {
+  filterSubjectsVisibleInFindCrew,
+  resolveCityLabelsForViewerBatch,
+} from '../lib/find-crew-visibility-gate.js';
 
 const isPublicMemberProfile = (profileVisibility: unknown): boolean => {
   const visibility = normalizeProfileVisibility(profileVisibility);
@@ -18,24 +22,34 @@ export const listBrowsablePublicMembers = async (input: {
   take: number;
 }): Promise<MemberBrowseCardDTO[]> => {
   const exclude = input.excludeUserIds ?? new Set<string>([input.excludeUserId]);
+  // Over-fetch so find-crew visibility filtering still fills the page.
   const users = await listAuthUsers({
     status: 'ACTIVE',
     search: input.search?.trim() || undefined,
     profileVisibility: 'public',
     skip: input.skip,
-    take: input.take + 5,
+    take: Math.max(input.take * 3, input.take + 15),
   });
 
-  return users
-    .filter((user) => !exclude.has(user._id) && isPublicMemberProfile(user.profile?.profileVisibility))
-    .slice(0, input.take)
-    .map((user) => {
-      const city = user.profile?.city;
-      return {
-        id: user._id,
-        displayName: user.profile?.displayName ?? user.email.split('@')[0],
-        avatarUrl: user.profile?.avatarUrl ?? null,
-        city: city ? USER_CITY_LABELS[city as UserCity] ?? null : null,
-      };
-    });
+  const candidates = users.filter(
+    (user) => !exclude.has(user._id) && isPublicMemberProfile(user.profile?.profileVisibility)
+  );
+  const visibleIds = await filterSubjectsVisibleInFindCrew(candidates, input.excludeUserId);
+  const visible = candidates.filter((user) => visibleIds.has(user._id)).slice(0, input.take);
+
+  const cityByUserId = await resolveCityLabelsForViewerBatch(
+    visible.map((user) => {
+      const rawCity = user.profile?.city;
+      const cityLabel = rawCity ? USER_CITY_LABELS[rawCity as UserCity] ?? null : null;
+      return { subject: user, cityLabel };
+    }),
+    input.excludeUserId
+  );
+
+  return visible.map((user) => ({
+    id: user._id,
+    displayName: user.profile?.displayName ?? user.email.split('@')[0],
+    avatarUrl: user.profile?.avatarUrl ?? null,
+    city: cityByUserId.get(user._id) ?? null,
+  }));
 };

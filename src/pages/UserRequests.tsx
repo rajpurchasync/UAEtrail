@@ -8,13 +8,17 @@ import { ConsumerErrorCard, ConsumerLoadingSpinner } from '../components/mobile/
 import { PageMeta } from '../components/seo/PageMeta';
 import { AppSelect } from '../components/ui/AppSelect';
 
+import {
+  ACTIVITY_STATUS_JOINED,
+  ACTIVITY_STATUS_JOIN_REQUESTED,
+} from '../content/activityParticipationCopy';
 import { requestStatusLabel } from '../utils/joinRequestUi';
 import { activityHostName } from '../utils/hostLabels';
 import { useProfileHubBackChrome } from '../hooks/useProfileHubBackChrome';
 
 const REQUEST_STATUS_OPTIONS = [
-  { value: 'pending' as const, label: 'Waiting for host' },
-  { value: 'approved' as const, label: 'Confirmed' },
+  { value: 'pending' as const, label: ACTIVITY_STATUS_JOIN_REQUESTED },
+  { value: 'approved' as const, label: ACTIVITY_STATUS_JOINED },
   { value: 'rejected' as const, label: 'Not this time' },
   { value: 'cancelled' as const, label: 'Cancelled' },
 ];

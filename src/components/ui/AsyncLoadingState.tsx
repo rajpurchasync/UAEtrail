@@ -62,7 +62,7 @@ export const AsyncLoadingState = ({
       {variant === 'page' ? (
         <div className={`app-page-center flex-col gap-4 px-4 py-10 ${className}`.trim()}>
           <LoadingRing size="lg" accent={accent} />
-          <LoadingLabelRow label={label} accent={accent} size="md" />
+          <LoadingLabelRow label={label} accent={accent} size="md" showIcon={false} />
         </div>
       ) : null}
 
@@ -72,7 +72,12 @@ export const AsyncLoadingState = ({
         >
           <LoadingRing accent={accent} />
           {label !== DETAIL_LOADING_GENERIC ? (
-            <LoadingLabelRow label={label} accent={accent} className="!justify-center" />
+            <LoadingLabelRow
+              label={label}
+              accent={accent}
+              className="!justify-center"
+              showIcon={false}
+            />
           ) : null}
         </div>
       ) : null}

@@ -1,4 +1,6 @@
 export const ACTIVITY_INVITE_FRIENDS_CTA = 'Invite Friends';
+/** Compact sticky footer — same action as {@link ACTIVITY_INVITE_FRIENDS_CTA}. */
+export const ACTIVITY_INVITE_FRIENDS_CTA_SHORT = 'Invite';
 export const ACTIVITY_INVITE_TAB_FRIENDS = 'Friends';
 export const ACTIVITY_INVITE_TAB_GROUPS = 'Groups';
 export const ACTIVITY_INVITE_SEARCH_PLACEHOLDER = 'Search by name';

@@ -8,7 +8,7 @@ import {
 import { normalizeMedicalConditions } from '../src/domain/member-medical-safety.js';
 
 describe('member medical safety', () => {
-  it('requires blood group, conditions, and emergency contact', () => {
+  it('requires blood group, conditions, and emergency contact with relation', () => {
     expect(isMedicalSafetyProfileComplete(null)).toBe(false);
     expect(
       isMedicalSafetyProfileComplete({
@@ -16,6 +16,15 @@ describe('member medical safety', () => {
         medicalConditions: MEDICAL_CONDITIONS_NA,
         emergencyContactName: 'Jane Doe',
         emergencyContactPhone: '+971501234567',
+      })
+    ).toBe(false);
+    expect(
+      isMedicalSafetyProfileComplete({
+        bloodGroup: 'O+',
+        medicalConditions: MEDICAL_CONDITIONS_NA,
+        emergencyContactName: 'Jane Doe',
+        emergencyContactPhone: '+971501234567',
+        emergencyContactRelation: 'Spouse',
       })
     ).toBe(true);
   });
@@ -30,7 +39,9 @@ describe('member medical safety', () => {
       medicalConditions: MEDICAL_CONDITIONS_NA,
       emergencyContactName: 'Ali',
       emergencyContactPhone: '+971501234567',
+      emergencyContactRelation: 'Sibling',
     });
     expect(dto?.bloodGroup).toBe(BLOOD_GROUP_VALUES[0]);
+    expect(dto?.emergencyContactRelation).toBe('Sibling');
   });
 });

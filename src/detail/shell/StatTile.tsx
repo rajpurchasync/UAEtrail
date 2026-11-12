@@ -5,12 +5,16 @@ export const StatTile = ({
   label,
   value,
   icon,
+  showWhenEmpty = false,
 }: {
   label: string;
-  value?: string | number | null;
+  value?: ReactNode;
   icon?: ReactNode;
+  /** Keep the chip visible for intentional empty states (e.g. “No ratings yet”). */
+  showWhenEmpty?: boolean;
 }) => {
-  if (value == null || value === '' || value === 0) return null;
+  const empty = value == null || value === '' || value === 0;
+  if (empty && !showWhenEmpty) return null;
   return (
     <div className="flex min-w-0 flex-col gap-0.5 rounded-xl border border-neutral-200/90 bg-white p-2.5 shadow-sm dark:border-neutral-700 dark:bg-neutral-900 sm:p-3 lg:flex-row lg:items-center lg:gap-2 lg:rounded-2xl">
       {icon ? (

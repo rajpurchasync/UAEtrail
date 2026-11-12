@@ -359,7 +359,20 @@ const exploreScheduleDayStart = (value: Date): Date => {
   return copy;
 };
 
-/** Short weekday within the next 6 days (`Sat`); otherwise weekday plus `Sat 09 Nov 26`. */
+/** Calendar week start (Sunday) — matches explore weekday labels. */
+const exploreScheduleWeekStart = (value: Date): Date => {
+  const day = exploreScheduleDayStart(value);
+  day.setDate(day.getDate() - day.getDay());
+  return day;
+};
+
+/**
+ * Progressive schedule stamp:
+ * - this week → `Sat`
+ * - this month → `Sat 12`
+ * - this year → `Sat 12 Sep`
+ * - otherwise → `Sat 12 Sep 26`
+ */
 export const formatExploreEventDateLabel = (
   date?: string | null,
   now: Date = new Date()
@@ -370,14 +383,20 @@ export const formatExploreEventDateLabel = (
 
   const today = exploreScheduleDayStart(now);
   const targetDay = exploreScheduleDayStart(target);
-  const diff = Math.round((targetDay.getTime() - today.getTime()) / 86400000);
   const weekday = EXPLORE_EVENT_WEEKDAYS[target.getDay()] ?? '';
-
-  if (diff >= 0 && diff <= 6) return weekday;
-
   const day = String(target.getDate()).padStart(2, '0');
   const month = EXPLORE_EVENT_MONTHS[target.getMonth()] ?? '';
   const year = String(target.getFullYear()).slice(-2);
+
+  if (exploreScheduleWeekStart(today).getTime() === exploreScheduleWeekStart(targetDay).getTime()) {
+    return weekday;
+  }
+  if (today.getFullYear() === targetDay.getFullYear() && today.getMonth() === targetDay.getMonth()) {
+    return `${weekday} ${day}`;
+  }
+  if (today.getFullYear() === targetDay.getFullYear()) {
+    return `${weekday} ${day} ${month}`;
+  }
   return `${weekday} ${day} ${month} ${year}`;
 };
 
@@ -404,7 +423,7 @@ export const formatExploreCalendarDateShort = (value?: string | null): string | 
   return `${day} ${month} ${year}`;
 };
 
-/** Mid-sentence day phrase for card titles, e.g. " on Sat", " on Sat 09 Nov 26". */
+/** Mid-sentence day phrase for card titles, e.g. " on Sat", " on Sat 12", " on Sat 12 Sep". */
 export const formatExploreDayForHeadline = (
   date?: string | null,
   now: Date = new Date()

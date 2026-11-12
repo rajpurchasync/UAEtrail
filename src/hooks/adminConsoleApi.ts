@@ -106,6 +106,27 @@ export const toggleAdminActivityFeatured = async (
   return api.toggleActivityFeatured(activityId);
 };
 
+/** Link (id) or delink (`null`) a rideshare offer ↔ its parent outing. */
+export const setAdminRideshareParent = async (
+  rideshareActivityId: string,
+  parentActivityId: string | null
+): Promise<{ message: string; data: ActivityDTO | null }> =>
+  api.adminSetRideshareParent(rideshareActivityId, parentActivityId);
+
+/** Link (id) or delink (`null`) the rideshare shown on a parent outing. */
+export const setAdminLinkedRideshare = async (
+  parentActivityId: string,
+  rideshareActivityId: string | null
+): Promise<{ message: string; data: ActivityDTO | null }> =>
+  api.adminSetLinkedRideshare(parentActivityId, rideshareActivityId);
+
+/** Link (id) or delink (`null`) a rideshare offer ↔ its destination catalog place. */
+export const setAdminRideshareDestinationPlace = async (
+  rideshareActivityId: string,
+  placeId: string | null
+): Promise<{ message: string; data: ActivityDTO | null }> =>
+  api.adminSetRideshareDestinationPlace(rideshareActivityId, placeId);
+
 export const fetchAdminOrganisationApplications = async (
   page = 1,
   pageSize?: number
@@ -157,6 +178,7 @@ export const fetchAdminContentReports = async (filters?: {
   pageSize?: number;
   reason?: string;
   targetType?: string;
+  status?: string;
   reporter?: string;
   from?: string;
   to?: string;
@@ -165,6 +187,15 @@ export const fetchAdminContentReports = async (filters?: {
   pagination: { total: number; page: number; pageSize: number; totalPages: number };
 }> => {
   return api.getAdminContentReports(filters);
+};
+
+export const resolveAdminContentReport = async (
+  id: string,
+  status: 'resolved' | 'dismissed',
+  note?: string
+): Promise<AdminContentReportEntry> => {
+  const res = await api.patchAdminContentReport(id, { status, note });
+  return res.data;
 };
 
 export type AdminNotificationRow = {

@@ -93,6 +93,8 @@ export const loadPublicActivityDetail = async (input: {
         canWithdraw: canWithdrawRequest(status),
         adults: requestRow.adults,
         kids: requestRow.kids,
+        partyMembers: requestRow.partyMembers,
+        partyApprovalPending: Boolean(requestRow.partyApprovalPending),
       };
     }
     if (!myParticipation) {

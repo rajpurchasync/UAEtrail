@@ -25,6 +25,23 @@ export class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     console.error('[ErrorBoundary]', error, errorInfo);
     reportClientError(error, errorInfo);
+
+    // Vite HMR can leave React's dispatcher null (Invalid hook call / useContext on null).
+    // Auto-reload once so users don't need a manual hard refresh after local rebuilds.
+    const message = error.message ?? '';
+    if (message.includes('useContext') || message.includes('Invalid hook call')) {
+      const key = 'uaetrail.hmr-hook-reload';
+      try {
+        if (typeof sessionStorage !== 'undefined' && !sessionStorage.getItem(key)) {
+          sessionStorage.setItem(key, '1');
+          window.location.reload();
+        } else if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.removeItem(key);
+        }
+      } catch {
+        // ignore storage failures
+      }
+    }
   }
 
   handleReset = () => {

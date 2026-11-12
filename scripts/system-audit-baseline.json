@@ -1,15 +1,15 @@
 {
-  "generated": "2026-11-09",
+  "generated": "2026-11-12",
   "description": "CTO system audit baseline. Regenerate: npm run system:audit",
   "summary": {
     "apiRegistrarFiles": 64,
-    "apiRouteEndpointsParsed": 194,
-    "mongoCollectionsDefined": 64,
+    "apiRouteEndpointsParsed": 204,
+    "mongoCollectionsDefined": 65,
     "mongoCollectionsOrphanInApi": 0,
     "mongoCollectionsMultiWriterOver4": 3,
     "routeRegistrarsWithDirectWrites": 0,
     "apiMounts": 8,
-    "spaRouteElements": 122,
+    "spaRouteElements": 135,
     "feDomainModules": 31,
     "boundedContexts": 17
   },
@@ -564,6 +564,15 @@
         "apps/api/src/lib/mongo-indexes.ts"
       ]
     },
+    "ACTIVITY_FAMILY_INVITES": {
+      "mongoName": "activity_family_invites",
+      "referencingFiles": 2,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/activity-family-invites-store.ts",
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
     "BUDDY_REQUESTS": {
       "mongoName": "buddy_requests",
       "referencingFiles": 1,
@@ -574,9 +583,10 @@
     },
     "BUDDY_PAIRS": {
       "mongoName": "buddy_pairs",
-      "referencingFiles": 1,
-      "writerFiles": 0,
+      "referencingFiles": 2,
+      "writerFiles": 1,
       "sampleFiles": [
+        "apps/api/src/lib/buddy-store.ts",
         "apps/api/src/lib/mongo-indexes.ts"
       ]
     },
@@ -787,8 +797,9 @@
     "SOCIAL_GROUP_INVITES": 0,
     "SOCIAL_GROUP_WALL": 0,
     "SOCIAL_GROUP_WALL_REACTIONS": 0,
+    "ACTIVITY_FAMILY_INVITES": 1,
     "BUDDY_REQUESTS": 0,
-    "BUDDY_PAIRS": 0,
+    "BUDDY_PAIRS": 1,
     "USER_FOLLOWS": 1,
     "ENTITY_FOLLOWS": 1,
     "USER_WISHLIST": 3,
@@ -811,7 +822,8 @@
   "registrarServicesSample": {
     "apps/api/src/routes/admin/registerAdminActivityModerationRoutes.ts": [
       "admin-activity-moderation-commands",
-      "admin-activity-moderation-read"
+      "admin-activity-moderation-read",
+      "admin-activity-rideshare-link-commands"
     ],
     "apps/api/src/routes/admin/registerAdminAlertRoutes.ts": [
       "platform-alerts-admin"
@@ -827,6 +839,7 @@
       "admin-audit-read"
     ],
     "apps/api/src/routes/admin/registerAdminContentReportRoutes.ts": [
+      "admin-content-reports-commands",
       "admin-content-reports-read"
     ],
     "apps/api/src/routes/admin/registerAdminFacilityRoutes.ts": [

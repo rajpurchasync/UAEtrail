@@ -381,6 +381,8 @@
         "src/hooks/contentReportClientApi.ts",
         "src/hooks/adminAlertsClientApi.ts",
         "src/pages/admin/Overview.tsx",
+        "src/pages/admin/Inbox.tsx",
+        "src/pages/admin/Submissions.tsx",
         "src/pages/admin/Places.tsx",
         "src/pages/admin/Areas.tsx",
         "src/pages/admin/Organisations.tsx",
@@ -394,6 +396,8 @@
         "src/pages/admin/Account.tsx",
         "src/pages/admin/Notifications.tsx",
         "src/components/layout/DashboardLayout.tsx",
+        "src/components/admin/AdminConsoleSidebar.tsx",
+        "src/admin/adminNav.ts",
         "src/constants/index.ts",
         "src/config/adminSurfacePaths.ts",
         "src/config/adminSurfacesAcceptance.test.ts"

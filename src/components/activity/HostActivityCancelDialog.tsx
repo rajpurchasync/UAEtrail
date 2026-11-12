@@ -21,20 +21,24 @@ export const HostActivityCancelDialog = ({
   overlayClassName,
 }: HostActivityCancelDialogProps) => {
   const isDraft = activity?.status === 'draft';
+  const isSuspended = activity?.status === 'suspended';
+  const title = isDraft ? 'Delete draft?' : isSuspended ? 'Delete outing?' : 'Cancel activity?';
+  const body = isDraft
+    ? `Remove "${activity?.title}" permanently?`
+    : isSuspended
+      ? `Permanently remove "${activity?.title}"? It stays off the map either way — this cannot be resumed.`
+      : `Cancel "${activity?.title}"?`;
+  const confirmLabel = isDraft || isSuspended ? 'Delete' : 'Cancel activity';
 
   return (
     <Dialog
       open={Boolean(activity)}
       onClose={onClose}
-      title={isDraft ? 'Delete draft?' : 'Cancel activity?'}
+      title={title}
       overlayClassName={overlayClassName}
     >
       <p className="mb-4 space-y-2 text-sm text-neutral-600">
-        <span className="block">
-          {isDraft
-            ? `Remove "${activity?.title}" permanently?`
-            : `Cancel "${activity?.title}"?`}
-        </span>
+        <span className="block">{body}</span>
         {participantNotice ? (
           <span className="block font-medium text-amber-900">{participantNotice}</span>
         ) : null}
@@ -49,7 +53,7 @@ export const HostActivityCancelDialog = ({
           disabled={busy}
           onClick={onConfirm}
         >
-          {isDraft ? 'Delete' : 'Cancel activity'}
+          {confirmLabel}
         </AppButton>
       </div>
     </Dialog>

@@ -19,6 +19,8 @@ const mapTenantRequestRow = (
     status: request.status.toLowerCase(),
     adults: request.adults,
     kids: request.kids,
+    partyMembers: request.partyMembers,
+    partyApprovalPending: Boolean(request.partyApprovalPending),
     note: request.note,
     hostNote: request.hostNote,
     cancelReason: request.cancelReason,

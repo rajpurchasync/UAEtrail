@@ -7,6 +7,7 @@ import {
   ConsumerDetailSectionJumpNav,
   DetailPageShell,
   HeroBanner,
+  RatingStatTile,
   SectionCard,
   StatGrid,
   StatTile,
@@ -266,13 +267,11 @@ export const ShopPublicPage = ({ shop }: ShopPublicPageProps) => {
                 icon={keyFactIconFromLabel('Location')}
               />
             ) : null}
-            {avgRating != null ? (
-              <StatTile
-                label="Rating"
-                value={`${avgRating.toFixed(1)} · ${reviews.length}`}
-                icon={keyFactIconFromLabel('Rating')}
-              />
-            ) : null}
+            <RatingStatTile
+              average={avgRating}
+              count={reviews.length}
+              rateHref="#shop-detail-reviews"
+            />
             {shop.communityInfo?.deliveryOffered ? (
               <StatTile
                 label="Delivery"

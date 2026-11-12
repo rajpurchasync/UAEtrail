@@ -32,4 +32,14 @@ describe('profile field privacy', () => {
     expect(canViewProfileField('hidden', 'full', false)).toBe(false);
     expect(canViewProfileField('hidden', 'full', true)).toBe(true);
   });
+
+  it('honors friends_of_friends via relation', () => {
+    expect(canViewProfileField('friends_of_friends', 'public', false, 'friend_of_friend')).toBe(
+      true
+    );
+    expect(canViewProfileField('friends_of_friends', 'public', false, 'stranger')).toBe(false);
+    expect(canViewProfileField('friends', 'public', false, 'friend_of_friend')).toBe(false);
+    expect(canViewProfileField('friends', 'public', false, 'friend')).toBe(true);
+  });
 });
+

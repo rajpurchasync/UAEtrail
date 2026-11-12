@@ -1,5 +1,6 @@
 import type { Router } from 'express';
 import { z } from 'zod';
+import type { AdminSubmissionDTO } from '@uaetrail/shared-types';
 import { validate } from '../../middleware/validate.js';
 import { listPendingSubmissions, reviewSubmission } from '../../services/submission-commands.js';
 
@@ -14,18 +15,35 @@ export const registerAdminSubmissionRoutes = (router: Router): void => {
     try {
       const rows = await listPendingSubmissions();
       res.json({
-        data: rows.map((s) => ({
-          id: s._id,
-          kind: s.kind,
-          facilityType: s.facilityType,
-          status: s.status,
-          name: s.payload.name ?? '',
-          candidates: s.candidates,
-          insisted: s.insisted,
-          submittedBy: s.submittedBy,
-          seconded: s.seconded.length,
-          createdAt: new Date(s.createdAt).toISOString(),
-        })),
+        data: rows.map((s): AdminSubmissionDTO => {
+          const payload = s.payload ?? {};
+          return {
+            id: s._id,
+            kind: s.kind,
+            facilityType: s.facilityType,
+            status: s.status,
+            name: typeof payload.name === 'string' ? payload.name : '',
+            description: typeof payload.description === 'string' ? payload.description : null,
+            latitude: typeof payload.latitude === 'number' ? payload.latitude : null,
+            longitude: typeof payload.longitude === 'number' ? payload.longitude : null,
+            images: Array.isArray(payload.images)
+              ? payload.images.filter((u): u is string => typeof u === 'string')
+              : [],
+            proposedAreaName:
+              typeof payload.proposedAreaName === 'string' ? payload.proposedAreaName : null,
+            candidates: s.candidates,
+            insisted: s.insisted
+              ? {
+                  reason: s.insisted.reason,
+                  note: s.insisted.note,
+                  at: new Date(s.insisted.at).toISOString(),
+                }
+              : undefined,
+            submittedBy: s.submittedBy,
+            seconded: s.seconded.length,
+            createdAt: new Date(s.createdAt).toISOString(),
+          };
+        }),
       });
     } catch (error) {
       next(error);

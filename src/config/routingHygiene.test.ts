@@ -141,6 +141,24 @@ describe('routingHygiene', () => {
     expect(violations).toEqual([]);
   });
 
+  it('app code does not hardcode /venue|/camp|/trail place detail templates (use placeDetailPath*)', () => {
+    const files = collectSourceFiles(SCAN_ROOT);
+    const violations: string[] = [];
+    // Dynamic templates like `/venue/${id}` — static allowlisted path tables are fine.
+    const linkPattern = /`\/(?:venue|camp|trail)\/\$\{/;
+
+    for (const file of files) {
+      if (file.endsWith('.test.ts') || file.endsWith('.test.tsx')) continue;
+      if (file.includes('/api/')) continue;
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (linkPattern.test(content)) {
+        violations.push(`${file}: use placeDetailPath / placeDetailPathForId (never guess /venue from outing type)`);
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
   it('app code does not link to /map as browse home (use EXPLORE_MAP_PATH / explorePath)', () => {
     const files = collectSourceFiles(SCAN_ROOT);
     const violations: string[] = [];

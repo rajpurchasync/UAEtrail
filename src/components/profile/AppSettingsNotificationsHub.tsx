@@ -8,14 +8,9 @@ import {
   NOTIFICATION_HUB_PANELS,
   notificationHubPanelFromPath,
 } from '../../config/notificationHub';
-import {
-  APP_SETTINGS_NOTIFICATIONS_PATH,
-  PROFILE_SETTINGS_NOTIFICATIONS_PATH,
-} from '../../config/routingCatalog';
 import { NotificationHistoryPanel } from '../notifications/NotificationHistoryPanel';
 import { NotificationPreferencesSection } from '../notifications/NotificationPreferencesSection';
 import { NotificationSavedMapPanel } from '../notifications/NotificationSavedMapPanel';
-import { mobileBackNavState } from '../../utils/mobileBackNav';
 import { useProfileSettingsBackChrome } from '../../hooks/useProfileHubBackChrome';
 import { useMinWidthLg } from '../../hooks/useMinWidthLg';
 import { DesktopSettingsShell } from './DesktopSettingsShell';
@@ -33,13 +28,17 @@ const panelTitle = (panel: ReturnType<typeof notificationHubPanelFromPath>): str
   return 'Notification history';
 };
 
-const NotificationPanelsBody = () => {
+const NotificationPanelsBody = ({ mobileSurface = false }: { mobileSurface?: boolean }) => {
   const { pathname } = useLocation();
   const panel = notificationHubPanelFromPath(pathname);
 
   const renderPanel = () => {
-    if (panel === 'settings') return <NotificationPreferencesSection />;
-    if (panel === 'saved') return <NotificationSavedMapPanel />;
+    if (panel === 'settings') {
+      return <NotificationPreferencesSection mobileSurface={mobileSurface} />;
+    }
+    if (panel === 'saved') {
+      return <NotificationSavedMapPanel mobileSurface={mobileSurface} />;
+    }
     return <NotificationHistoryPanel />;
   };
 
@@ -56,6 +55,7 @@ const NotificationPanelsBody = () => {
             <Link
               key={item.id}
               to={item.path}
+              replace
               aria-current={active ? 'page' : undefined}
               aria-label={item.label}
               className={`shrink-0 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 lg:w-full lg:min-w-0 ${
@@ -103,14 +103,6 @@ export const AppSettingsNotificationsHub = () => {
   const panel = notificationHubPanelFromPath(pathname);
   const settingsBackChrome = useProfileSettingsBackChrome();
   const isDesktop = useMinWidthLg();
-  const mobilePanelBack =
-    panel === 'history'
-      ? settingsBackChrome
-      : {
-          to: APP_SETTINGS_NOTIFICATIONS_PATH,
-          state: mobileBackNavState(PROFILE_SETTINGS_NOTIFICATIONS_PATH, 'Notifications'),
-          label: 'Notifications',
-        };
 
   if (user?.role === 'platform_admin') {
     return <Navigate to="/admin/notifications" replace />;
@@ -130,11 +122,11 @@ export const AppSettingsNotificationsHub = () => {
       title={panel === 'history' ? 'Notifications' : panelTitle(panel)}
       maxWidth="7xl"
       showJourney={false}
-      back={mobilePanelBack}
+      back={settingsBackChrome}
     >
       <PageMeta title="Notifications" noIndex />
       <MotionWrap>
-        <NotificationPanelsBody />
+        <NotificationPanelsBody mobileSurface />
       </MotionWrap>
     </ConsumerShell>
   );

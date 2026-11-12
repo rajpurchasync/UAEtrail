@@ -1,4 +1,5 @@
 import type { RequestStatus } from '../domain/enums.js';
+import type { ActivityRequest } from '../domain/types.js';
 import { ApiError } from '../lib/api-error.js';
 import {
   findActivityForRequestViewById,
@@ -22,6 +23,8 @@ const mapMeActivityJoinRequest = (
     status: RequestStatus;
     adults?: number;
     kids?: number;
+    partyMembers?: ActivityRequest['partyMembers'];
+    partyApprovalPending?: ActivityRequest['partyApprovalPending'];
     note: string | null;
     hostNote: string | null;
     cancelReason: string | null;
@@ -37,6 +40,8 @@ const mapMeActivityJoinRequest = (
     status: request.status.toLowerCase(),
     adults: request.adults,
     kids: request.kids,
+    partyMembers: request.partyMembers,
+    partyApprovalPending: Boolean(request.partyApprovalPending),
     note: request.note,
     hostNote: request.hostNote,
     cancelReason: request.cancelReason,

@@ -12,12 +12,25 @@ import { DashboardLayout } from '../../components/layout';
 import { ADMIN_LINKS } from '../../constants';
 import { MapPinPicker } from '../../components/ui/MapPinPicker';
 import { ImageUpload } from '../../components/ui';
-import { AppSelect, ADMIN_SELECT_CLASS } from '../../components/ui/AppSelect';
+import { AppSelect, ADMIN_FILTER_SELECT_CLASS, ADMIN_INPUT_CLASS, ADMIN_SELECT_CLASS } from '../../components/ui/AppSelect';
 import { SUPPORTED_COUNTRIES, DEFAULT_COUNTRY, getRegionsForCountry, type CountryCode } from '../../config/regions';
 import { adminPlacesPath } from '../../config/adminSurfacePaths';
 import { AdminIconButton } from '../../components/admin/AdminIconButton';
 import { AdminTablePager, DEFAULT_ADMIN_PAGE_SIZE, paginateRows, type AdminPageSize } from '../../components/admin/AdminTablePager';
+import { AdminCatalogWizard } from '../../components/admin/AdminCatalogWizard';
+import { AdminFilterBar } from '../../components/admin/AdminFilterBar';
 import { MapPin, Pencil, Trash2 } from 'lucide-react';
+
+const AREA_STATUS_FILTER_OPTIONS = [
+  { value: 'draft' as const, label: 'Draft' },
+  { value: 'published' as const, label: 'Published' },
+];
+
+const AREA_WIZARD_STEPS = [
+  { id: 'identity', label: 'Identity' },
+  { id: 'media', label: 'Pin & media' },
+  { id: 'publish', label: 'Publish' },
+];
 
 const COUNTRY_OPTIONS = SUPPORTED_COUNTRIES.map((country) => ({
   value: country.code,
@@ -71,16 +84,38 @@ export const Areas = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [wizardStep, setWizardStep] = useState(0);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<AreaFormState>(emptyForm);
   const [slugTouched, setSlugTouched] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<AreaDTO | null>(null);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [countryFilter, setCountryFilter] = useState('');
+  const [regionFilter, setRegionFilter] = useState('');
 
   const regionOptions = useMemo(
     () => getRegionsForCountry(form.countryCode),
     [form.countryCode]
   );
+
+  const filterRegionOptions = useMemo(
+    () => (countryFilter ? getRegionsForCountry(countryFilter as CountryCode) : []),
+    [countryFilter]
+  );
+
+  const filteredAreas = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return areas.filter((area) => {
+      if (statusFilter && area.status !== statusFilter) return false;
+      if (countryFilter && area.countryCode !== countryFilter) return false;
+      if (regionFilter && area.region !== regionFilter) return false;
+      if (!q) return true;
+      const hay = `${area.name} ${area.slug} ${area.region} ${area.summary ?? ''}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }, [areas, search, statusFilter, countryFilter, regionFilter]);
 
   const load = useCallback(async (isActive: () => boolean = () => true) => {
     setLoading(true);
@@ -103,6 +138,7 @@ export const Areas = () => {
     setEditingId(null);
     setForm(emptyForm());
     setSlugTouched(false);
+    setWizardStep(0);
     setModalOpen(true);
   };
 
@@ -121,12 +157,14 @@ export const Areas = () => {
       latitude: area.center.latitude,
       longitude: area.center.longitude,
     });
+    setWizardStep(0);
     setModalOpen(true);
   };
 
   const closeModal = () => {
     setModalOpen(false);
     setEditingId(null);
+    setWizardStep(0);
     setError(null);
   };
 
@@ -136,14 +174,15 @@ export const Areas = () => {
     }
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = async () => {
     if (!form.region.trim() || !form.name.trim() || !form.slug.trim()) {
       setError('Country, region, name, and slug are required.');
+      setWizardStep(0);
       return;
     }
     if (form.latitude == null || form.longitude == null) {
       setError('Drop a map pin for the area center.');
+      setWizardStep(1);
       return;
     }
     setSaving(true);
@@ -210,6 +249,66 @@ export const Areas = () => {
         </div>
 
         {error && !modalOpen ? <p className="text-sm text-red-600">{error}</p> : null}
+
+        <AdminFilterBar
+          onClear={() => {
+            setSearch('');
+            setStatusFilter('');
+            setCountryFilter('');
+            setRegionFilter('');
+            setPage(1);
+          }}
+        >
+          <label className="text-xs text-neutral-500">
+            Search
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Name, slug, region…"
+              className={`${ADMIN_INPUT_CLASS} mt-1 block w-56`}
+            />
+          </label>
+          <AppSelect
+            value={statusFilter}
+            onChange={(value) => {
+              setStatusFilter(value);
+              setPage(1);
+            }}
+            options={AREA_STATUS_FILTER_OPTIONS}
+            placeholder="All statuses"
+            inputClassName={ADMIN_FILTER_SELECT_CLASS}
+            aria-label="Filter by status"
+          />
+          <AppSelect
+            value={countryFilter}
+            onChange={(value) => {
+              setCountryFilter(value);
+              setRegionFilter('');
+              setPage(1);
+            }}
+            options={COUNTRY_OPTIONS}
+            placeholder="All countries"
+            inputClassName={ADMIN_FILTER_SELECT_CLASS}
+            aria-label="Filter by country"
+          />
+          <AppSelect
+            value={regionFilter}
+            onChange={(value) => {
+              setRegionFilter(value);
+              setPage(1);
+            }}
+            options={filterRegionOptions.map((region) => ({ value: region, label: region }))}
+            placeholder={countryFilter ? 'All regions' : 'Pick country first'}
+            inputClassName={ADMIN_FILTER_SELECT_CLASS}
+            aria-label="Filter by region"
+            disabled={!countryFilter}
+          />
+        </AdminFilterBar>
+
         {loading ? (
           <p className="text-slate-500">Loading…</p>
         ) : (
@@ -224,14 +323,14 @@ export const Areas = () => {
                 </tr>
               </thead>
               <tbody>
-                {areas.length === 0 ? (
+                {filteredAreas.length === 0 ? (
                   <tr>
                     <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
-                      No areas yet — add your first hub.
+                      {areas.length === 0 ? 'No areas yet — add your first hub.' : 'No areas match these filters.'}
                     </td>
                   </tr>
                 ) : (
-                  paginateRows(areas, page, pageSize).map((area) => (
+                  paginateRows(filteredAreas, page, pageSize).map((area) => (
                     <tr key={area.id} className="border-t hover:bg-gray-50">
                       <td className="admin-table-hit">
                         <button type="button" onClick={() => openEdit(area)}>
@@ -291,7 +390,7 @@ export const Areas = () => {
         <AdminTablePager
           page={page}
           pageSize={pageSize}
-          total={areas.length}
+          total={filteredAreas.length}
           onPage={setPage}
           onPageSize={(size) => {
             setPageSize(size);
@@ -300,171 +399,145 @@ export const Areas = () => {
         />
       </div>
 
-      {modalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={closeModal}>
-          <div
-            className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b px-6 py-4">
-              <h2 className="text-lg font-semibold text-gray-900">
-                {editingId ? 'Edit area' : 'Add curated area'}
-              </h2>
-              <button type="button" onClick={closeModal} className="text-gray-400 hover:text-gray-600 text-xl">
-                &times;
-              </button>
-            </div>
-            <form onSubmit={handleSave} className="p-6 space-y-5">
-              {error ? <p className="text-sm text-red-600">{error}</p> : null}
-
-              <fieldset className="space-y-4">
-                <legend className="text-sm font-semibold text-gray-800 uppercase tracking-wide border-b pb-1 w-full">
-                  1. Geography
-                </legend>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">Country *</label>
-                    <AppSelect
-                      value={form.countryCode}
-                      onChange={(countryCode) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          countryCode: countryCode as CountryCode,
-                          region: '',
-                        }))
-                      }
-                      options={COUNTRY_OPTIONS}
-                      inputClassName={ADMIN_SELECT_CLASS}
-                      aria-label="Country"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">State / region *</label>
-                    <AppSelect
-                      value={form.region}
-                      onChange={(region) => setForm((prev) => ({ ...prev, region }))}
-                      options={regionOptions.map((region) => ({ value: region, label: region }))}
-                      placeholder="Select region"
-                      inputClassName={ADMIN_SELECT_CLASS}
-                      aria-label="Region"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">Area name *</label>
-                    <input
-                      type="text"
-                      required
-                      value={form.name}
-                      onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-                      onBlur={handleNameBlur}
-                      className="w-full border rounded-lg px-3 py-2 text-sm"
-                      placeholder="e.g. Hatta"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">URL slug *</label>
-                    <input
-                      type="text"
-                      required
-                      value={form.slug}
-                      onChange={(e) => {
-                        setSlugTouched(true);
-                        setForm((prev) => ({ ...prev, slug: e.target.value }));
-                      }}
-                      className="w-full border rounded-lg px-3 py-2 text-sm font-mono"
-                      placeholder="hatta"
-                    />
-                  </div>
-                </div>
+      {modalOpen ? (
+        <AdminCatalogWizard
+          title={editingId ? 'Edit area' : 'Add curated area'}
+          steps={AREA_WIZARD_STEPS}
+          stepIndex={wizardStep}
+          onStepChange={setWizardStep}
+          onClose={closeModal}
+          onBack={() => setWizardStep((s) => Math.max(0, s - 1))}
+          onNext={() => setWizardStep((s) => Math.min(AREA_WIZARD_STEPS.length - 1, s + 1))}
+          onSave={() => void handleSave()}
+          saving={saving}
+          canNext={
+            wizardStep === 0
+              ? Boolean(form.countryCode && form.region.trim() && form.name.trim() && form.slug.trim())
+              : wizardStep === 1
+                ? form.latitude != null && form.longitude != null
+                : true
+          }
+        >
+          {error ? <p className="mb-3 text-sm text-red-600">{error}</p> : null}
+          {wizardStep === 0 ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Map center *</label>
-                  <MapPinPicker
-                    latitude={form.latitude}
-                    longitude={form.longitude}
-                    onChange={(lat, lng) => setForm((prev) => ({ ...prev, latitude: lat, longitude: lng }))}
-                  />
-                  <p className="mt-1 text-xs text-gray-500">
-                    Bounds are generated from this pin when you save (for map lens matching).
-                  </p>
-                </div>
-              </fieldset>
-
-              <fieldset className="space-y-4">
-                <legend className="text-sm font-semibold text-gray-800 uppercase tracking-wide border-b pb-1 w-full">
-                  2. Hub copy & image
-                </legend>
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Short description</label>
-                  <textarea
-                    value={form.summary}
-                    onChange={(e) => setForm((prev) => ({ ...prev, summary: e.target.value }))}
-                    rows={3}
-                    className="w-full border rounded-lg px-3 py-2 text-sm"
-                    placeholder="What makes this zone special for outings?"
+                  <label className="mb-1 block text-sm font-medium text-neutral-700">Country *</label>
+                  <AppSelect
+                    value={form.countryCode}
+                    onChange={(countryCode) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        countryCode: countryCode as CountryCode,
+                        region: '',
+                      }))
+                    }
+                    options={COUNTRY_OPTIONS}
+                    inputClassName={ADMIN_SELECT_CLASS}
+                    aria-label="Country"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Hero image</label>
-                  <ImageUpload
-                    images={heroImages}
-                    onChange={(urls) => setForm((prev) => ({ ...prev, imageUrl: urls[0] ?? null }))}
-                    max={1}
-                    keyPrefix="areas"
-                    kind="location-image"
-                    preset="location"
+                  <label className="mb-1 block text-sm font-medium text-neutral-700">State / region *</label>
+                  <AppSelect
+                    value={form.region}
+                    onChange={(region) => setForm((prev) => ({ ...prev, region }))}
+                    options={regionOptions.map((region) => ({ value: region, label: region }))}
+                    placeholder="Select region"
+                    inputClassName={ADMIN_SELECT_CLASS}
+                    aria-label="Region"
                   />
                 </div>
-              </fieldset>
-
-              <fieldset className="space-y-4">
-                <legend className="text-sm font-semibold text-gray-800 uppercase tracking-wide border-b pb-1 w-full">
-                  3. Publishing
-                </legend>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">Status</label>
-                    <AppSelect
-                      value={form.status}
-                      onChange={(status) => setForm((prev) => ({ ...prev, status: status as AreaStatus }))}
-                      options={STATUS_OPTIONS}
-                      inputClassName={ADMIN_SELECT_CLASS}
-                      aria-label="Status"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">Sort priority</label>
-                    <input
-                      type="number"
-                      min={0}
-                      max={9999}
-                      value={form.priority}
-                      onChange={(e) =>
-                        setForm((prev) => ({ ...prev, priority: Number(e.target.value) || 0 }))
-                      }
-                      className="w-full border rounded-lg px-3 py-2 text-sm"
-                    />
-                  </div>
-                </div>
-              </fieldset>
-
-              <div className="flex justify-end gap-2 pt-2 border-t">
-                <button type="button" onClick={closeModal} className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg">
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium disabled:opacity-60"
-                >
-                  {saving ? 'Saving…' : editingId ? 'Save changes' : 'Create area'}
-                </button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-neutral-700">Area name *</label>
+                  <input
+                    type="text"
+                    value={form.name}
+                    onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+                    onBlur={handleNameBlur}
+                    className="w-full rounded-xl border border-neutral-200 px-3 py-2 text-sm"
+                    placeholder="e.g. Hatta"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-neutral-700">URL slug *</label>
+                  <input
+                    type="text"
+                    value={form.slug}
+                    onChange={(e) => {
+                      setSlugTouched(true);
+                      setForm((prev) => ({ ...prev, slug: e.target.value }));
+                    }}
+                    className="w-full rounded-xl border border-neutral-200 px-3 py-2 font-mono text-sm"
+                    placeholder="hatta"
+                  />
+                </div>
+              </div>
+            </div>
+          ) : null}
+          {wizardStep === 1 ? (
+            <div className="space-y-4">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-neutral-700">Map center *</label>
+                <MapPinPicker
+                  latitude={form.latitude}
+                  longitude={form.longitude}
+                  onChange={(lat, lng) => setForm((prev) => ({ ...prev, latitude: lat, longitude: lng }))}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-neutral-700">Short description</label>
+                <textarea
+                  value={form.summary}
+                  onChange={(e) => setForm((prev) => ({ ...prev, summary: e.target.value }))}
+                  rows={3}
+                  className="w-full rounded-xl border border-neutral-200 px-3 py-2 text-sm"
+                  placeholder="What makes this zone special for outings?"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-neutral-700">Hero image</label>
+                <ImageUpload
+                  images={heroImages}
+                  onChange={(urls) => setForm((prev) => ({ ...prev, imageUrl: urls[0] ?? null }))}
+                  max={1}
+                  keyPrefix="areas"
+                  kind="location-image"
+                  preset="location"
+                />
+              </div>
+            </div>
+          ) : null}
+          {wizardStep === 2 ? (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-neutral-700">Status</label>
+                <AppSelect
+                  value={form.status}
+                  onChange={(status) => setForm((prev) => ({ ...prev, status: status as AreaStatus }))}
+                  options={STATUS_OPTIONS}
+                  inputClassName={ADMIN_SELECT_CLASS}
+                  aria-label="Status"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-neutral-700">Sort priority</label>
+                <input
+                  type="number"
+                  min={0}
+                  max={9999}
+                  value={form.priority}
+                  onChange={(e) => setForm((prev) => ({ ...prev, priority: Number(e.target.value) || 0 }))}
+                  className="w-full rounded-xl border border-neutral-200 px-3 py-2 text-sm"
+                />
+              </div>
+            </div>
+          ) : null}
+        </AdminCatalogWizard>
+      ) : null}
 
       {confirmDelete && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setConfirmDelete(null)}>

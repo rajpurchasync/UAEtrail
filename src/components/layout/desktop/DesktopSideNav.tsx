@@ -18,17 +18,21 @@ import {
   DESKTOP_SIDE_NAV_MIN_WIDTH,
   useDesktopSideNavExpanded,
 } from '../../../hooks/useDesktopSideNavExpanded';
-import { ADMIN_OVERVIEW_PATH, EXPLORE_MAP_PATH, joinAuthPath, PLAN_PATH, PROFILE_PATH } from '../../../config/routingCatalog';
+import { ADMIN_INBOX_PATH, EXPLORE_MAP_PATH, joinAuthPath, PLAN_PATH, PROFILE_PATH } from '../../../config/routingCatalog';
 import {
   PRODUCT_HOSTING_SCHEDULE_NAV_HINT,
   PRODUCT_HOSTING_SCHEDULE_NAV_LABEL,
 } from '../../../content/productNorthStar';
-import { planHostedSchedulePath, isPlanHostingFilterRoute, isPlanMemberNavActive, planMemberNavPath } from '../../../plan/planRouting';
+import { isPlanMemberNavActive, planMemberNavPath } from '../../../plan/planRouting';
 import { useAuth } from '../../../context/AuthContext';
 import { useInboxUnreadCount } from '../../../hooks/useInboxUnreadCount';
 import { useMemberStatus } from '../../../hooks/useMemberStatus';
 import { SecureAvatar } from '../../ui/SecureAvatar';
 import { buildSignInRedirect } from '../../../utils/authReturnContext';
+import {
+  isHostModeSession,
+  resolveHostingHubPath,
+} from '../../../hosting/hostingHubRouting';
 
 const FOOTER_LINKS = [
   { to: '/about', label: 'About' },
@@ -98,8 +102,10 @@ const SideNavLink = ({ to, label, icon: Icon, active, compact, badge = 0, navHin
 const resolveDesktopNavHref = (
   item: DesktopNavItem,
   user: { id: string } | null,
-  showOrganiserPlanShortcut: boolean
+  showOrganiserPlanShortcut: boolean,
+  hostingHubPath: string
 ): string => {
+  if (item.key === 'hosting') return hostingHubPath;
   if (item.key === 'plan') {
     return user ? planMemberNavPath(showOrganiserPlanShortcut) : PLAN_PATH;
   }
@@ -121,8 +127,11 @@ export const DesktopSideNav = () => {
     onResizePointerUp,
     onResizeKeyDown,
   } = useDesktopSideNavExpanded();
-  const { canAccessPublishingWorkspace } = useMemberStatus({ enabled: Boolean(user) });
+  const { canAccessPublishingWorkspace, ownedProfiles, hostTiers } = useMemberStatus({
+    enabled: Boolean(user),
+  });
   const unreadChat = useInboxUnreadCount();
+  const hostMode = isHostModeSession(user?.role);
 
   useEffect(() => {
     document.documentElement.style.setProperty('--desktop-side-nav-width', `${width}px`);
@@ -138,8 +147,9 @@ export const DesktopSideNav = () => {
     ? 'sr-only'
     : 'block px-2.5 pb-0.5 pt-2.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-neutral-500';
 
-  const showOrganiserPlanShortcut = Boolean(user && canAccessPublishingWorkspace);
-  const primaryNav = desktopPrimaryNavForSession(Boolean(user));
+  const showOrganiserPlanShortcut = Boolean(user && (canAccessPublishingWorkspace || hostMode));
+  const hostingHubPath = resolveHostingHubPath({ ownedProfiles, hostTiers });
+  const primaryNav = desktopPrimaryNavForSession(Boolean(user), { hostMode });
 
   const renderItems = (items: readonly DesktopNavItem[]) =>
     items.map((item) => {
@@ -147,7 +157,7 @@ export const DesktopSideNav = () => {
       return (
         <SideNavLink
           key={item.key}
-          to={resolveDesktopNavHref(item, user, showOrganiserPlanShortcut)}
+          to={resolveDesktopNavHref(item, user, showOrganiserPlanShortcut, hostingHubPath)}
           label={item.label}
           icon={item.icon}
           active={
@@ -227,7 +237,7 @@ export const DesktopSideNav = () => {
           </div>
         </div>
 
-        {user ? (
+        {user && !hostMode ? (
           <div role="group" aria-label={DESKTOP_PEOPLE_SECTION_TITLE}>
             <p className={sectionTitleClass}>{DESKTOP_PEOPLE_SECTION_TITLE}</p>
             <div className={compact ? 'mt-1.5 border-t border-neutral-100 pt-1.5' : undefined}>
@@ -236,12 +246,14 @@ export const DesktopSideNav = () => {
           </div>
         ) : null}
 
-        <div role="group" aria-label={DESKTOP_MAP_SECTION_TITLE}>
-          <p className={sectionTitleClass}>{DESKTOP_MAP_SECTION_TITLE}</p>
-          <div className={compact ? 'mt-1.5 border-t border-neutral-100 pt-1.5' : undefined}>
-            {renderItems(DESKTOP_MAP_NAV)}
+        {!hostMode ? (
+          <div role="group" aria-label={DESKTOP_MAP_SECTION_TITLE}>
+            <p className={sectionTitleClass}>{DESKTOP_MAP_SECTION_TITLE}</p>
+            <div className={compact ? 'mt-1.5 border-t border-neutral-100 pt-1.5' : undefined}>
+              {renderItems(DESKTOP_MAP_NAV)}
+            </div>
           </div>
-        </div>
+        ) : null}
 
         {(user
           ? DESKTOP_SIDE_NAV_SECTIONS
@@ -258,23 +270,27 @@ export const DesktopSideNav = () => {
           </div>
         ))}
 
-        {user && (canAccessPublishingWorkspace || user.role === 'platform_admin') ? (
+        {user && ((!hostMode && canAccessPublishingWorkspace) || user.role === 'platform_admin') ? (
           <div role="group" aria-label="Hosting">
             <p className={sectionTitleClass}>Hosting</p>
             <div className={compact ? 'mt-1.5 border-t border-neutral-100 pt-1.5' : undefined}>
-              {canAccessPublishingWorkspace ? (
+              {!hostMode && canAccessPublishingWorkspace ? (
                 <SideNavLink
-                  to={planHostedSchedulePath()}
+                  to={hostingHubPath}
                   label={PRODUCT_HOSTING_SCHEDULE_NAV_LABEL}
                   icon={Briefcase}
-                  active={isPlanHostingFilterRoute(pathname, search)}
+                  active={isDesktopNavItemActive(
+                    { key: 'hosting', label: 'Hosting', to: hostingHubPath, icon: Briefcase, match: [] },
+                    pathname,
+                    search
+                  )}
                   compact={compact}
                   navHint={PRODUCT_HOSTING_SCHEDULE_NAV_HINT}
                 />
               ) : null}
               {user.role === 'platform_admin' ? (
                 <SideNavLink
-                  to={ADMIN_OVERVIEW_PATH}
+                  to={ADMIN_INBOX_PATH}
                   label="Admin console"
                   icon={Shield}
                   active={false}

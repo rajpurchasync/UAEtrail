@@ -21,11 +21,12 @@ import { DashboardLayout } from '../../components/layout';
 import { ADMIN_LINKS } from '../../constants';
 import { SecureAvatar } from '../../components/ui/SecureAvatar';
 import { AppSelect, ADMIN_FILTER_SELECT_CLASS, ADMIN_INPUT_CLASS } from '../../components/ui/AppSelect';
+import { AdminFilterBar } from '../../components/admin/AdminFilterBar';
 import { AdminIconButton } from '../../components/admin/AdminIconButton';
-import { formatPhoneDisplay } from '../../utils/phone';
 import { tenantBrandPublicPath } from '../../utils/organisationLinks';
 import { resolveActivityPublisherProfilePath } from '@uaetrail/shared-types';
 import { formatAdminDate } from '../../utils/formatAdminDate';
+import { OperatorApplicationWizard } from '../../components/admin/OperatorApplicationWizard';
 
 type Tab = 'applications' | 'tenants';
 type TenantFilter = 'all' | 'active' | 'suspended';
@@ -409,39 +410,11 @@ export const Organisations = () => {
 
   const pendingCount = applications.filter((a) => a.status === 'pending').length;
 
-  const formatApplicantPhone = (app: OrganisationApplication): string | null => {
-    const meta = app.metadata;
-    if (!meta) return null;
-    if (meta.phoneE164) return meta.phoneE164;
-    if (meta.phoneCountryCode && meta.phone) {
-      return formatPhoneDisplay(meta.phoneCountryCode, meta.phone);
-    }
-    return meta.phone ?? null;
-  };
-
   const organisationDisplayName = (app: OrganisationApplication): string =>
     app.metadata?.hostDisplayName?.trim() ||
     app.metadata?.requestedName?.trim() ||
     app.requestedName?.trim() ||
     app.applicantName;
-
-  const profileTypeLabel = (app: OrganisationApplication): string => {
-    const type = app.metadata?.hostProfileType;
-    if (type === 'agency') return 'Agency';
-    if (type === 'shop') return 'Shop';
-    if (type === 'individual') return 'Guide';
-    return app.requestedType?.toLowerCase() === 'company' ? 'Business' : 'Individual';
-  };
-
-  const metaField = (label: string, value?: string | null) => {
-    if (!value?.trim()) return null;
-    return (
-      <div>
-        <p className="text-xs text-gray-500 uppercase font-medium">{label}</p>
-        <p className="text-sm text-gray-800 whitespace-pre-wrap">{value}</p>
-      </div>
-    );
-  };
 
   return (
     <DashboardLayout title="Hosts" links={ADMIN_LINKS}>
@@ -467,14 +440,26 @@ export const Organisations = () => {
 
         {!loading && tab === 'applications' && (
           <>
-          <div className="flex flex-wrap items-end gap-2">
-            <input
-              type="text"
-              placeholder="Search (case insensitive)..."
-              value={appSearch}
-              onChange={(e) => setAppSearch(e.target.value)}
-              className={`${ADMIN_INPUT_CLASS} w-56`}
-            />
+          <AdminFilterBar
+            onClear={() => {
+              setAppSearch('');
+              setAppType('');
+              setAppStatus('');
+              setAppDateFrom('');
+              setAppDateTo('');
+              setAppsPage(1);
+            }}
+          >
+            <label className="text-xs text-neutral-500">
+              Search
+              <input
+                type="search"
+                placeholder="Applicant, org, email…"
+                value={appSearch}
+                onChange={(e) => setAppSearch(e.target.value)}
+                className={`${ADMIN_INPUT_CLASS} mt-1 block w-56`}
+              />
+            </label>
             <AppSelect
               value={appType}
               onChange={setAppType}
@@ -488,8 +473,26 @@ export const Organisations = () => {
               inputClassName={ADMIN_FILTER_SELECT_CLASS}
               aria-label="Filter applications by type"
             />
-            <input type="date" value={appDateFrom} onChange={(e) => setAppDateFrom(e.target.value)} className={ADMIN_INPUT_CLASS} aria-label="From date" />
-            <input type="date" value={appDateTo} onChange={(e) => setAppDateTo(e.target.value)} className={ADMIN_INPUT_CLASS} aria-label="To date" />
+            <label className="text-xs text-neutral-500">
+              From
+              <input
+                type="date"
+                value={appDateFrom}
+                onChange={(e) => setAppDateFrom(e.target.value)}
+                className={`${ADMIN_INPUT_CLASS} mt-1 block`}
+                aria-label="From date"
+              />
+            </label>
+            <label className="text-xs text-neutral-500">
+              To
+              <input
+                type="date"
+                value={appDateTo}
+                onChange={(e) => setAppDateTo(e.target.value)}
+                className={`${ADMIN_INPUT_CLASS} mt-1 block`}
+                aria-label="To date"
+              />
+            </label>
             <AppSelect
               value={appStatus}
               onChange={setAppStatus}
@@ -502,7 +505,7 @@ export const Organisations = () => {
               inputClassName={ADMIN_FILTER_SELECT_CLASS}
               aria-label="Filter applications by status"
             />
-          </div>
+          </AdminFilterBar>
           <div className="bg-white border rounded-lg overflow-x-auto desktop-scrollbar-x">
             <table className="min-w-full text-sm">
               <thead className="bg-gray-50">
@@ -612,26 +615,36 @@ export const Organisations = () => {
 
         {!loading && tab === 'tenants' && (
           <>
-            <div className="flex flex-wrap items-end gap-2">
-              {(['all', 'active', 'suspended'] as const).map((f) => (
-                <button
-                  key={f}
-                  type="button"
-                  onClick={() => setTenantFilter(f)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium capitalize ${
-                    tenantFilter === f ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  {f === 'all' ? 'All publishers' : f}
-                </button>
-              ))}
-              <input
-                type="text"
-                placeholder="Search hosts (case insensitive)..."
-                value={tenantSearch}
-                onChange={(e) => setTenantSearch(e.target.value)}
-                className={`${ADMIN_INPUT_CLASS} w-56`}
+            <AdminFilterBar
+              onClear={() => {
+                setTenantFilter('all');
+                setTenantSearch('');
+                setTenantType('');
+                setTenantVisibility('');
+                setTenantsPage(1);
+              }}
+            >
+              <AppSelect
+                value={tenantFilter === 'all' ? '' : tenantFilter}
+                onChange={(value) => setTenantFilter((value || 'all') as TenantFilter)}
+                options={[
+                  { value: 'active', label: 'Active' },
+                  { value: 'suspended', label: 'Suspended' },
+                ]}
+                placeholder="All publishers"
+                inputClassName={ADMIN_FILTER_SELECT_CLASS}
+                aria-label="Filter hosts by status"
               />
+              <label className="text-xs text-neutral-500">
+                Search
+                <input
+                  type="search"
+                  placeholder="Name, slug, owner…"
+                  value={tenantSearch}
+                  onChange={(e) => setTenantSearch(e.target.value)}
+                  className={`${ADMIN_INPUT_CLASS} mt-1 block w-56`}
+                />
+              </label>
               <AppSelect
                 value={tenantType}
                 onChange={setTenantType}
@@ -654,7 +667,7 @@ export const Organisations = () => {
                 inputClassName={ADMIN_FILTER_SELECT_CLASS}
                 aria-label="Filter hosts by visibility"
               />
-            </div>
+            </AdminFilterBar>
             <div className="bg-white border rounded-lg overflow-x-auto desktop-scrollbar-x">
               <table className="min-w-full text-sm">
                 <thead className="bg-gray-50">
@@ -809,140 +822,64 @@ export const Organisations = () => {
         </div>
       )}
 
-      {applicationDetail && (
-        <div className="admin-dialog-backdrop fixed inset-0 flex items-center justify-center z-50 p-4" onClick={() => setApplicationDetail(null)}>
-          <div className="admin-dialog bg-white rounded-lg w-full max-w-2xl max-h-[85vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900">
-                  {applicationDetail.metadata?.hostProfileType === 'shop' ? 'Shop application' : 'Publishing application'}
-                </h2>
-                <p className="text-sm text-gray-500">{applicationDetail.requestedName} · {applicationDetail.requestedType.replace(/_/g, ' ')}</p>
-              </div>
-              <button onClick={() => setApplicationDetail(null)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex gap-3 items-center">
-                {statusBadge(applicationDetail.status)}
-                <span className="text-xs text-gray-500">Applied {formatAdminDate(applicationDetail.createdAt)}</span>
-              </div>
-
-              <div className="bg-gray-50 rounded-lg p-4 flex gap-4">
-                {applicationDetail.metadata?.profilePhoto ? (
-                  <SecureAvatar
-                    src={applicationDetail.metadata.profilePhoto}
-                    name={organisationDisplayName(applicationDetail)}
-                    className="w-16 h-16 text-lg border shrink-0"
-                  />
-                ) : (
-                  <SecureAvatar
-                    name={organisationDisplayName(applicationDetail)}
-                    className="w-16 h-16 text-lg border shrink-0"
-                  />
-                )}
-                <div className="min-w-0">
-                  <p className="font-medium text-gray-900">{organisationDisplayName(applicationDetail)}</p>
-                  <p className="text-sm text-gray-500">{applicationDetail.applicantEmail}</p>
-                  {formatApplicantPhone(applicationDetail) && (
-                    <p className="text-sm text-gray-600 mt-1">{formatApplicantPhone(applicationDetail)}</p>
-                  )}
-                </div>
-              </div>
-
-              {metaField('Profile type', profileTypeLabel(applicationDetail))}
-              {metaField('Display name', applicationDetail.metadata?.hostDisplayName)}
-              {metaField('Brand name', applicationDetail.metadata?.requestedName)}
-              {metaField('Date of birth', applicationDetail.metadata?.dateOfBirth ? formatAdminDate(applicationDetail.metadata.dateOfBirth) : undefined)}
-              {metaField('Bio', applicationDetail.metadata?.bio)}
-              {metaField('Website', applicationDetail.metadata?.website)}
-              {metaField('Services', applicationDetail.metadata?.services)}
-              {metaField('Search keywords', applicationDetail.metadata?.searchKeywords)}
-              {metaField('Shop email', applicationDetail.metadata?.contactEmail)}
-              {metaField(
-                'Shop presence',
-                applicationDetail.metadata?.shopPresence === 'physical'
-                  ? 'Physical (map pin)'
-                  : applicationDetail.metadata?.shopPresence === 'online'
-                    ? 'Online only'
-                    : null
-              )}
-              {metaField(
-                'Delivery',
-                applicationDetail.metadata?.deliveryOffered
-                  ? `Yes — up to ${applicationDetail.metadata?.deliveryRadiusKm ?? '?'} km`
-                  : applicationDetail.metadata?.deliveryOffered === false
-                    ? 'No'
-                    : null
-              )}
-              {metaField('Languages', applicationDetail.metadata?.languages)}
-              {metaField('Interests', applicationDetail.metadata?.interests)}
-              {metaField('Nationality', applicationDetail.metadata?.nationality)}
-              {metaField('Based in', applicationDetail.metadata?.residence ?? applicationDetail.metadata?.region)}
-              {metaField(
-                'Map pin',
-                applicationDetail.metadata?.latitude != null && applicationDetail.metadata?.longitude != null
-                  ? `${applicationDetail.metadata.latitude}, ${applicationDetail.metadata.longitude}`
-                  : null
-              )}
-              {metaField('Experience', applicationDetail.metadata?.experience)}
-              {metaField('Certificates', applicationDetail.metadata?.certificates)}
-              {metaField('Notable hikes', applicationDetail.metadata?.notableHikes)}
-
-              {applicationDetail.reviewerNote && (
-                <div className="border-t pt-3">
-                  <p className="text-xs text-gray-500 uppercase font-medium">Reviewer note</p>
-                  <p className="text-sm text-gray-700">{applicationDetail.reviewerNote}</p>
-                </div>
-              )}
-
-              {applicationTenant ? (
-                <div className="border-t pt-4">{renderOperatorTeam(applicationTenant)}</div>
-              ) : applicationDetail.requestedTenantId ? (
-                <p className="text-sm text-gray-500 border-t pt-4">Loading operator team…</p>
-              ) : (
-                <p className="text-sm text-gray-500 border-t pt-4">Approve this application to add guides, sub-users, or managers.</p>
-              )}
-
-              <div className="flex flex-wrap gap-2 pt-2 border-t">
-                {applicationDetail.requestedTenantId && (
-                  <button onClick={() => { setApplicationDetail(null); openTenantDetail(applicationDetail.requestedTenantId!); }}
-                    className="px-3 py-2 rounded-lg bg-blue-100 text-blue-800 text-sm font-medium hover:bg-blue-200">
-                    View publisher
-                  </button>
-                )}
-                {applicationDetail.status === 'approved' && (
-                  <Link
-                    to={
-                      resolveActivityPublisherProfilePath({
-                        publishingProfileKind:
-                          applicationDetail.metadata?.hostProfileType === 'agency'
-                            ? 'agency'
-                            : applicationDetail.metadata?.hostProfileType === 'shop'
-                              ? 'shop'
-                              : 'pro_guide',
-                        tenantSlug: applicationDetail.requestedSlug,
-                        hostUserId: applicationDetail.applicantId,
-                      }) ?? '/explore'
-                    }
-                    target="_blank"
-                    className="px-3 py-2 rounded-lg bg-gray-100 text-gray-800 text-sm font-medium hover:bg-gray-200">
-                    Public profile ↗
-                  </Link>
-                )}
-                {applicationDetail.status === 'pending' && (
-                  <>
-                    <button onClick={() => { setApplicationDetail(null); setNoteModal({ id: applicationDetail.id, action: 'approved' }); }}
-                      className="px-3 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700">Approve</button>
-                    <button onClick={() => { setApplicationDetail(null); setNoteModal({ id: applicationDetail.id, action: 'rejected' }); }}
-                      className="px-3 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700">Reject</button>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {applicationDetail ? (
+        <OperatorApplicationWizard
+          application={applicationDetail}
+          onClose={() => setApplicationDetail(null)}
+          onApprove={() => {
+            setNoteModal({ id: applicationDetail.id, action: 'approved' });
+            setApplicationDetail(null);
+          }}
+          onReject={() => {
+            setNoteModal({ id: applicationDetail.id, action: 'rejected' });
+            setApplicationDetail(null);
+          }}
+          teamSlot={
+            applicationTenant ? (
+              renderOperatorTeam(applicationTenant)
+            ) : applicationDetail.requestedTenantId ? (
+              <p className="text-sm text-neutral-500">Loading operator team…</p>
+            ) : undefined
+          }
+          extraActions={
+            <>
+              {applicationDetail.requestedTenantId ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const tenantId = applicationDetail.requestedTenantId!;
+                    setApplicationDetail(null);
+                    openTenantDetail(tenantId);
+                  }}
+                  className="rounded-xl bg-sky-100 px-3 py-2 text-sm font-medium text-sky-900"
+                >
+                  View publisher
+                </button>
+              ) : null}
+              {applicationDetail.status === 'approved' ? (
+                <Link
+                  to={
+                    resolveActivityPublisherProfilePath({
+                      publishingProfileKind:
+                        applicationDetail.metadata?.hostProfileType === 'agency'
+                          ? 'agency'
+                          : applicationDetail.metadata?.hostProfileType === 'shop'
+                            ? 'shop'
+                            : 'pro_guide',
+                      tenantSlug: applicationDetail.requestedSlug,
+                      hostUserId: applicationDetail.applicantId,
+                    }) ?? '/explore'
+                  }
+                  target="_blank"
+                  className="rounded-xl bg-neutral-100 px-3 py-2 text-center text-sm font-medium text-neutral-800"
+                >
+                  Public profile
+                </Link>
+              ) : null}
+            </>
+          }
+        />
+      ) : null}
 
       {tenantDetail && (
         <div className="admin-dialog-backdrop fixed inset-0 flex items-center justify-center z-50 p-4" onClick={() => setTenantDetail(null)}>

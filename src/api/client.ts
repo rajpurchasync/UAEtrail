@@ -1,5 +1,11 @@
 import { ApiError } from '@uaetrail/shared-types';
 import { formatEnvironmentUrl, rewriteEnvironmentUrls } from '../utils/formatEnvironmentUrl';
+import {
+  refreshFailureShouldInvalidateSession,
+  runTokenRefreshWithRetry,
+  type AuthSessionTokens,
+  type TokenRefreshOutcome,
+} from './authSessionRefresh';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
@@ -11,6 +17,14 @@ interface AuthSession {
 
 const SESSION_STORAGE_KEY = 'uaetrail_session';
 export const USER_STORAGE_KEY = 'uaetrail_user';
+
+/** Thrown when refresh cannot reach a healthy API — session cookie is preserved. */
+export class ApiTransientUnavailableError extends Error {
+  constructor(message = 'API temporarily unavailable. Please try again.') {
+    super(message);
+    this.name = 'ApiTransientUnavailableError';
+  }
+}
 
 /** In-memory access token only — refresh cookie rehydrates on load (see bootstrapSessionFromRefresh). */
 let memoryAccessToken: string | null = null;
@@ -33,6 +47,12 @@ const notifySessionInvalidated = (): void => {
   onSessionInvalidated?.();
 };
 
+const clearLocalSession = (): void => {
+  setStoredSession(null);
+  localStorage.removeItem(USER_STORAGE_KEY);
+  notifySessionInvalidated();
+};
+
 export const getStoredSession = (): AuthSession | null => {
   if (!memoryAccessToken) return null;
   return { accessToken: memoryAccessToken };
@@ -44,50 +64,68 @@ export const setStoredSession = (session: AuthSession | null): void => {
   memoryAccessToken = session?.accessToken ?? null;
 };
 
-/** Restore session after full page load using the httpOnly refresh cookie. */
-export const bootstrapSessionFromRefresh = (): Promise<AuthSession | null> => refreshAccessToken();
-
-// ─── Token Refresh Logic ─────────────────────────────────────────────────────
-
-let refreshPromise: Promise<AuthSession | null> | null = null;
-
-const attemptTokenRefresh = async (): Promise<AuthSession | null> => {
+const fetchRefreshOutcome = async (): Promise<TokenRefreshOutcome> => {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include'
+      credentials: 'include',
     });
 
-    if (!response.ok) {
-      setStoredSession(null);
-      localStorage.removeItem(USER_STORAGE_KEY);
-      notifySessionInvalidated();
-      return null;
+    if (response.ok) {
+      const data = (await response.json()) as { tokens: AuthSessionTokens };
+      setStoredSession(data.tokens);
+      return { status: 'ok', session: data.tokens };
     }
 
-    const data = (await response.json()) as { tokens: AuthSession };
-    setStoredSession(data.tokens);
-    return data.tokens;
+    if (refreshFailureShouldInvalidateSession(response.status)) {
+      return { status: 'unauthorized' };
+    }
+    return { status: 'transient' };
   } catch {
-    setStoredSession(null);
-    localStorage.removeItem(USER_STORAGE_KEY);
-    notifySessionInvalidated();
-    return null;
+    return { status: 'transient' };
   }
 };
+
+let refreshPromise: Promise<AuthSession | null> | null = null;
 
 /**
  * Ensures only one refresh request runs at a time.
  * Concurrent 401s queue behind the same promise.
+ * Network / 5xx during API restart → throws {@link ApiTransientUnavailableError} (keeps cookie).
+ * Real 401/403 from refresh → clears session and returns null.
  */
 const refreshAccessToken = (): Promise<AuthSession | null> => {
   if (!refreshPromise) {
-    refreshPromise = attemptTokenRefresh().finally(() => {
-      refreshPromise = null;
-    });
+    refreshPromise = runTokenRefreshWithRetry(fetchRefreshOutcome)
+      .then((outcome) => {
+        if (outcome.status === 'ok') return outcome.session;
+        if (outcome.status === 'unauthorized') {
+          clearLocalSession();
+          return null;
+        }
+        throw new ApiTransientUnavailableError();
+      })
+      .finally(() => {
+        refreshPromise = null;
+      });
   }
   return refreshPromise;
+};
+
+/**
+ * Restore session after full page load using the httpOnly refresh cookie.
+ * Transient API downtime does not wipe the stored user / refresh cookie.
+ */
+export const bootstrapSessionFromRefresh = async (): Promise<AuthSession | null> => {
+  try {
+    return await refreshAccessToken();
+  } catch (err) {
+    if (err instanceof ApiTransientUnavailableError) {
+      return getStoredSession();
+    }
+    throw err;
+  }
 };
 
 // ─── API Request ──────────────────────────────────────────────────────────────
@@ -132,9 +170,7 @@ export const apiRequest = async <T>(path: string, init?: RequestInit & { auth?: 
       throw new Error(`Failed to reach API at ${API_BASE_URL}.`);
     }
     if (response.status === 401) {
-      setStoredSession(null);
-      localStorage.removeItem(USER_STORAGE_KEY);
-      notifySessionInvalidated();
+      clearLocalSession();
       throw new Error('Session expired. Please sign in again.');
     }
   }
@@ -202,9 +238,7 @@ export const apiRequestConditional = async <T>(
       throw new Error(`Failed to reach API at ${API_BASE_URL}.`);
     }
     if (response.status === 401) {
-      setStoredSession(null);
-      localStorage.removeItem(USER_STORAGE_KEY);
-      notifySessionInvalidated();
+      clearLocalSession();
       throw new Error('Session expired. Please sign in again.');
     }
   }
@@ -253,9 +287,7 @@ export const downloadAuthenticatedFile = async (path: string): Promise<{ blob: B
     }
     response = await makeRequest(newSession.accessToken);
     if (response.status === 401) {
-      setStoredSession(null);
-      localStorage.removeItem(USER_STORAGE_KEY);
-      notifySessionInvalidated();
+      clearLocalSession();
       throw new Error('Session expired. Please sign in again.');
     }
   }

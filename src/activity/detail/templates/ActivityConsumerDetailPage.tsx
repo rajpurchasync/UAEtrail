@@ -40,7 +40,7 @@ import {
 } from '../../../content/activityDetailCopy';
 import { useAuth } from '../../../context/AuthContext';
 import { ActivityLinkedParentPlanAffordance } from '../../../components/activity/ActivityLinkedParentPlanAffordance';
-import { ActivityLinkedRideshareAffordance } from '../../../components/activity/ActivityLinkedRideshareAffordance';
+import { ActivityLinkedRidesSection } from '../ActivityLinkedRidesSection';
 import {
   resolveActivityLinkedParentSummary,
   resolveActivityLinkedRideshareSummary,
@@ -111,6 +111,7 @@ import { ConsumerDetailPlatformAlertBanner } from '../../../detail/ConsumerDetai
 import {
   DetailPageShell,
   HeroBanner,
+  RatingStatTile,
   StatGrid,
   StatTile,
   ConsumerDetailSectionJumpNav,
@@ -190,16 +191,7 @@ export const ActivityConsumerDetailPage = ({
   const isRideshare = model.activity.activityType === 'rideshare';
   const linkedParentSummary = resolveActivityLinkedParentSummary(model.activity);
   const linkedRideshareSummary = resolveActivityLinkedRideshareSummary(model.activity);
-  const showLinkedRidesJump =
-    isRideshare ||
-    Boolean(linkedRideshareSummary) ||
-    (!model.requiresSignIn &&
-      consumerDetailOfferRideshareVisible({
-        activity: model.activity,
-        viewerAccess: model.viewerAccess,
-        tenantId: model.linkRideshareTenantId ?? model.activity.tenantId ?? null,
-        onCreateRideshare: model.onOfferLinkedRideshare,
-      }));
+  const showLinkedRidesJump = true;
   const venueLine = shouldShowConsumerDetailHeroVenue(venueLabel, registryPath, isRideshare) ? (
     <ConsumerDetailVenueLead
       activity={model.activity}
@@ -310,12 +302,13 @@ export const ActivityConsumerDetailPage = ({
   const consumerActionAside =
     model.consumerEngagementActions && !model.previewMode ? model.consumerEngagementActions : null;
 
-  const showKeyFactsStrip = consumerDetailKeyFactsHasContent(
-    model.activity,
-    model.peekParityCard,
-    model.consumerStatusChips,
-    true
-  );
+  const activityReviewCount = model.activityReviews.length;
+  const activityAvgRating =
+    activityReviewCount > 0
+      ? model.activityReviews.reduce((sum, r) => sum + (r.rating ?? 0), 0) / activityReviewCount
+      : null;
+  // Rating chip always lives in key facts (empty → “No ratings yet · Rate”).
+  const showKeyFactsStrip = true;
   const keyFactsHostStack =
     showKeyFactsStrip ||
     layout.showHostProfile ||
@@ -327,6 +320,8 @@ export const ActivityConsumerDetailPage = ({
             card={model.peekParityCard}
             statusChips={model.consumerStatusChips}
             omitScheduleFromStrip
+            ratingAverage={activityAvgRating}
+            ratingCount={activityReviewCount}
           />
         ) : null}
         {hostManageSurface?.tenantId ? (
@@ -440,34 +435,46 @@ export const ActivityConsumerDetailPage = ({
           ? ACTIVITY_CONSUMER_SECTION_ORDER[resolveActivityDetailKind(model.activity)].map((sectionId) => {
           const nodes: Record<ActivityConsumerSectionId, ReactNode> = {
             linkage: (() => {
-              const inner = isRideshare ? (
-                <ConsumerDetailRideshareLinkage
-                  activity={model.activity}
-                  isRideHost={isRideHost}
-                  hostTenantId={rideHostTenantId}
-                  onParentLinked={onRideshareParentLinked}
-                />
-              ) : linkedRideshareSummary ? (
-                <ActivityLinkedRideshareAffordance rideshare={linkedRideshareSummary} className="mt-0" />
-              ) : !model.requiresSignIn ? (
-                <ConsumerDetailOfferRideshare
-                  activity={model.activity}
-                  viewerAccess={model.viewerAccess}
-                  tenantId={model.linkRideshareTenantId ?? model.activity.tenantId ?? null}
-                  onCreateRideshare={model.onOfferLinkedRideshare}
-                  onRideshareLinked={onRideshareParentLinked}
-                />
-              ) : null;
-              if (!inner) return null;
+              if (isRideshare) {
+                return (
+                  <section
+                    key="linkage"
+                    id={ACTIVITY_DETAIL_LINKED_RIDES_SECTION_ID}
+                    className="scroll-mt-28 md:scroll-mt-32 lg:scroll-mt-8"
+                    aria-label={ACTIVITY_DETAIL_LINKED_RIDESHARE_LABEL}
+                  >
+                    <ConsumerDetailRideshareLinkage
+                      activity={model.activity}
+                      isRideHost={isRideHost}
+                      hostTenantId={rideHostTenantId}
+                      onParentLinked={onRideshareParentLinked}
+                    />
+                  </section>
+                );
+              }
+              const offerTenantId = model.linkRideshareTenantId?.trim() || null;
+              const offerSlot =
+                !model.requiresSignIn &&
+                consumerDetailOfferRideshareVisible({
+                  activity: model.activity,
+                  viewerAccess: model.viewerAccess,
+                  tenantId: offerTenantId,
+                  onCreateRideshare: model.onOfferLinkedRideshare,
+                }) ? (
+                  <ConsumerDetailOfferRideshare
+                    activity={model.activity}
+                    viewerAccess={model.viewerAccess}
+                    tenantId={offerTenantId}
+                    onCreateRideshare={model.onOfferLinkedRideshare}
+                    onRideshareLinked={onRideshareParentLinked}
+                  />
+                ) : null;
               return (
-                <section
+                <ActivityLinkedRidesSection
                   key="linkage"
-                  id={ACTIVITY_DETAIL_LINKED_RIDES_SECTION_ID}
-                  className="scroll-mt-28 md:scroll-mt-32 lg:scroll-mt-8"
-                  aria-label={ACTIVITY_DETAIL_LINKED_RIDESHARE_LABEL}
-                >
-                  {inner}
-                </section>
+                  activityId={model.activity.id}
+                  offerSlot={offerSlot}
+                />
               );
             })(),
             guest: null,
@@ -1134,12 +1141,16 @@ const ConsumerDetailKeyFactsStrip = ({
   card,
   statusChips,
   omitScheduleFromStrip = false,
+  ratingAverage = null,
+  ratingCount = 0,
 }: {
   activity: ActivityDetailDTO;
   card: DiscoveryCardModel | null;
   statusChips: ActivityDetailHeroStatusChip[];
   /** Hero date chip + time overlay already show schedule. */
   omitScheduleFromStrip?: boolean;
+  ratingAverage?: number | null;
+  ratingCount?: number;
 }) => {
   const audienceBadges = resolveActivityDetailConsumerAudienceBadges(activity.requirements);
   const participationChip = participationStatusChip(statusChips);
@@ -1257,10 +1268,6 @@ const ConsumerDetailKeyFactsStrip = ({
       </div>
     ) : null;
 
-  if (!consumerDetailKeyFactsHasContent(activity, card, statusChips, omitScheduleFromStrip)) {
-    return null;
-  }
-
   return (
     <ConsumerDetailSection
       id="activity-detail-key-facts"
@@ -1273,13 +1280,16 @@ const ConsumerDetailKeyFactsStrip = ({
       className="!mt-0 overflow-visible"
     >
       <div className="space-y-2">
-        {facts.length > 0 ? (
-          <StatGrid label="">
-            {facts.map((f) => (
-              <StatTile key={f.key} icon={f.icon} label={f.label} value={f.value} />
-            ))}
-          </StatGrid>
-        ) : null}
+        <StatGrid label="">
+          {facts.map((f) => (
+            <StatTile key={f.key} icon={f.icon} label={f.label} value={f.value} />
+          ))}
+          <RatingStatTile
+            average={ratingAverage}
+            count={ratingCount}
+            rateHref="#reviews"
+          />
+        </StatGrid>
         {chipRows}
       </div>
     </ConsumerDetailSection>

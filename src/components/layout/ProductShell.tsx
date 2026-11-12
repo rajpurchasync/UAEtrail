@@ -14,7 +14,7 @@ import {
   PRODUCT_SHELL_HTML_CLASS,
 } from '../../config/layoutScroll';
 import { isJourneyMapPath } from '../../config/surfacePaths';
-import { ADMIN_ACCOUNT_PATH, ADMIN_OVERVIEW_PATH } from '../../config/adminSurfacePaths';
+import { ADMIN_ACCOUNT_PATH, ADMIN_INBOX_PATH } from '../../config/adminSurfacePaths';
 import { ComposeRail } from './ComposeRail';
 import { Header } from './Header';
 import { MobileBottomNav } from './MobileBottomNav';
@@ -47,7 +47,7 @@ export const ProductShell = ({ children }: { children: ReactNode }) => {
 
   if (isPlatformAdmin(user?.role) && !isPlatformAdminConsolePath(location.pathname)) {
     return (
-      <Navigate to={isConsumerProfilePath(location.pathname) ? ADMIN_ACCOUNT_PATH : ADMIN_OVERVIEW_PATH} replace />
+      <Navigate to={isConsumerProfilePath(location.pathname) ? ADMIN_ACCOUNT_PATH : ADMIN_INBOX_PATH} replace />
     );
   }
   const isExploreMap = location.pathname === '/explore';

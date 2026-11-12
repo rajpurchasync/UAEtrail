@@ -18,6 +18,7 @@ import {
   type PublicMemberProfileResult,
 } from './public-member-profile.js';
 import type { MemberProfilePageIncludes } from './member-profile-includes.js';
+import { resolveFindCrewViewerRelation } from '../lib/find-crew-visibility-gate.js';
 import { resolveProfileViewerAccess } from './profile-viewer-access.js';
 import { loadMemberProfileSocialGraph } from './member-profile-social-graph.js';
 
@@ -170,11 +171,15 @@ export const listPublicMemberUpcomingActivities = async (input: {
       : await findAuthUserById(input.userId);
   const fieldPrivacy = mergeProfileFieldPrivacy(owner?.profile?.fieldPrivacy);
   const isSelf = Boolean(input.viewerUserId && input.viewerUserId === input.userId);
+  const networkRelation = isSelf
+    ? ('self' as const)
+    : await resolveFindCrewViewerRelation(input.viewerUserId, input.userId);
   if (
     !canViewProfileField(
       fieldPrivacy.upcomingActivities,
       profile.viewerAccess.exposure,
-      isSelf
+      isSelf,
+      networkRelation
     )
   ) {
     return [];
@@ -216,7 +221,17 @@ export const listPublicMemberPastActivities = async (input: {
       : await findAuthUserById(input.userId);
   const fieldPrivacy = mergeProfileFieldPrivacy(owner?.profile?.fieldPrivacy);
   const isSelf = Boolean(input.viewerUserId && input.viewerUserId === input.userId);
-  if (!canViewProfileField(fieldPrivacy.tripHistory, profile.viewerAccess.exposure, isSelf)) {
+  const networkRelation = isSelf
+    ? ('self' as const)
+    : await resolveFindCrewViewerRelation(input.viewerUserId, input.userId);
+  if (
+    !canViewProfileField(
+      fieldPrivacy.tripHistory,
+      profile.viewerAccess.exposure,
+      isSelf,
+      networkRelation
+    )
+  ) {
     return [];
   }
 

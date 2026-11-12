@@ -4,6 +4,7 @@ import {
   inboundKindPlaceDetailPath,
   parseEntityRefFromPathname,
   placeDetailPath,
+  placeDetailPathForId,
 } from './entity-path.js';
 
 describe('place detail paths (CPC-6)', () => {
@@ -12,6 +13,14 @@ describe('place detail paths (CPC-6)', () => {
     expect(placeDetailPath('camping', 'abc')).toBe('/place/abc');
     expect(placeDetailPath('event', 'abc')).toBe('/venue/abc');
     expect(placeDetailPath('shop', 'shop-1')).toBe('/shop/shop-1');
+  });
+
+  it('does not guess /venue from an unknown place type', () => {
+    expect(placeDetailPathForId('fossil-rock-desert-camp')).toBe('/place/fossil-rock-desert-camp');
+    expect(placeDetailPathForId('fossil-rock-desert-camp', 'camping')).toBe(
+      '/place/fossil-rock-desert-camp'
+    );
+    expect(placeDetailPathForId('event-hall', 'event')).toBe('/venue/event-hall');
   });
 
   it('preserves legacy segments for redirects', () => {

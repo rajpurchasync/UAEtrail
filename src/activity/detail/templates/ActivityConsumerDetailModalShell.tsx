@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { readDetailBackPrefersDeclared } from '../../../explore/mapPeekDetailNavState';
@@ -57,25 +57,10 @@ export const ActivityConsumerDetailModalShell = ({
   const preferDeclaredBack = readDetailBackPrefersDeclared(location.state);
   const scrollRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const headerRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLDivElement>(null);
   const { headerFrosted, footerFrosted } = useConsumerDetailScrollChrome(scrollRef, contentRef);
 
-  /** Keep the first block clear of the overlay bar; further scroll passes under the glass. */
-  useLayoutEffect(() => {
-    const header = headerRef.current;
-    const scroll = scrollRef.current;
-    if (!header || !scroll) return;
-    const apply = () => {
-      scroll.style.setProperty('--detail-header-pad', `${header.offsetHeight}px`);
-    };
-    apply();
-    const resizeObserver = new ResizeObserver(apply);
-    resizeObserver.observe(header);
-    return () => resizeObserver.disconnect();
-  }, [headerChrome, headerAction, showMenu]);
-
-  /** Keep the last block clear of the sticky join bar on phones. */
+  /** Footer is in-flow; keep scroll-padding so anchors clear the sticky join bar. */
   useEffect(() => {
     if (!footer) return;
     const footerEl = footerRef.current;
@@ -109,9 +94,8 @@ export const ActivityConsumerDetailModalShell = ({
     data-activity-detail-mobile-fullscreen
   >
     <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
-      <div className="pointer-events-none z-30 max-md:absolute max-md:inset-x-0 max-md:top-0 md:relative md:shrink-0">
+      <div className="pointer-events-none relative z-30 shrink-0">
         <div
-          ref={headerRef}
           data-consumer-detail-modal-header
           className={`pointer-events-auto px-4 pb-3 pt-2 md:px-6 lg:px-6 lg:py-1.5 ${
             headerFrosted ? CONSUMER_DETAIL_STICKY_HEADER_FROSTED : CONSUMER_DETAIL_STICKY_HEADER_REST
@@ -178,7 +162,7 @@ export const ActivityConsumerDetailModalShell = ({
       >
         <div
           ref={contentRef}
-          className="px-4 pb-5 pt-0 max-md:pt-[var(--detail-header-pad,calc(var(--safe-top)+4.75rem))] md:px-6 md:pb-4 md:pt-2 lg:px-6 lg:pb-3 lg:pt-2"
+          className="px-4 pb-5 pt-0 md:px-6 md:pb-4 md:pt-2 lg:px-6 lg:pb-3 lg:pt-2"
         >
           <div className="min-w-0 lg:text-[13px] lg:leading-snug">{children}</div>
         </div>

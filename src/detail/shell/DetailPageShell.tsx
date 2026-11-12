@@ -58,7 +58,7 @@ export const DetailPageShell = ({
     </div>
   ) : (
     <div
-      className="w-full min-w-0 max-w-full overflow-x-clip pt-1 pb-2 max-lg:overflow-x-visible md:pt-0 lg:mx-auto lg:max-w-[1200px] lg:overflow-x-clip lg:pb-4"
+      className="w-full min-w-0 max-w-full overflow-x-clip pt-0 pb-2 max-lg:overflow-x-visible md:pt-0 lg:mx-auto lg:max-w-[1200px] lg:overflow-x-clip lg:pb-4"
       data-detail-page-shell
       dir={dir}
     >
