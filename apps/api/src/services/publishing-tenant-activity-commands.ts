@@ -26,6 +26,8 @@ import {
   findTenantActivityForEdit,
   findTenantActivityWithParticipants,
   publishActivityById,
+  resumeActivityById,
+  suspendActivityById,
   updateActivityDetailed,
 } from '../lib/activities-store.js';
 import { findAuthUserById } from '../lib/auth-users-store.js';
@@ -543,6 +545,80 @@ export const duplicatePublishingTenantActivity = async (input: {
   const groupChatId = await ensureActivityGroupChat(duplicated.id);
   const priv = await findActivityPrivateById(duplicated.id);
   return { data: { ...buildActivityDto(duplicated, { activityPrivate: priv }), groupChatId: groupChatId ?? null } };
+};
+
+export const suspendPublishingTenantActivity = async (input: {
+  tenantId: string;
+  actorId: string;
+  activityId: string;
+}) => {
+  const event = await findTenantActivityWithParticipants(input.activityId, input.tenantId);
+  if (!event) {
+    throw new ApiError(404, 'activity_not_found', 'Activity not found.');
+  }
+  if (event.status !== ActivityStatus.PUBLISHED) {
+    throw new ApiError(400, 'activity_not_published', 'Only published activities can be suspended.');
+  }
+
+  await suspendActivityById(event.id);
+
+  if (event.participants.length > 0) {
+    await createNotificationsMany(
+      event.participants.map((p) => ({
+        userId: p.userId,
+        title: 'Outing temporarily hidden',
+        body: `"${event.title}" is paused by the host and is no longer on the map. You’ll get an update if it resumes.`,
+        type: NotificationType.ACTIVITY,
+        meta: {
+          kind: 'activity_suspended',
+          activityId: event.id,
+          path: activityDetailPath(event.id),
+        },
+      }))
+    );
+  }
+
+  await createAuditLog({
+    actorId: input.actorId,
+    action: 'activity.suspend',
+    entityType: 'activity',
+    entityId: event.id,
+    tenantId: input.tenantId,
+  });
+  return { message: 'Activity suspended.' };
+};
+
+export const resumePublishingTenantActivity = async (input: {
+  tenantId: string;
+  actorId: string;
+  platformAdmin: boolean;
+  activityId: string;
+}) => {
+  const event = await findTenantActivityById(input.activityId, input.tenantId);
+  if (!event) {
+    throw new ApiError(404, 'activity_not_found', 'Activity not found.');
+  }
+  if (event.status !== ActivityStatus.SUSPENDED) {
+    throw new ApiError(400, 'activity_not_suspended', 'Only suspended activities can be resumed.');
+  }
+
+  const paidMode =
+    event.pricingMode === 'paid' || event.priceBreakdown?.mode === 'paid' ? 'paid' : event.pricingMode;
+  await assertMemberCanPublishActivities(input.actorId, {
+    platformAdmin: input.platformAdmin,
+    pricingMode: paidMode,
+  });
+
+  await resumeActivityById(event.id);
+
+  await createAuditLog({
+    actorId: input.actorId,
+    action: 'activity.resume',
+    entityType: 'activity',
+    entityId: event.id,
+    tenantId: input.tenantId,
+  });
+  return { message: 'Activity resumed.', activityId: event.id };
 };
 
 export const publishPublishingTenantActivity = async (input: {

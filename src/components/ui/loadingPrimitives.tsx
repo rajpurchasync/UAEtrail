@@ -1,5 +1,6 @@
 import { Loader2 } from 'lucide-react';
 import type { DetailLoadingAccent } from './DetailPageLoadingState';
+import './loadingPrimitives.css';
 
 export const loadingAccentSpinnerClass: Record<DetailLoadingAccent, string> = {
   emerald: 'text-emerald-600',
@@ -9,13 +10,14 @@ export const loadingAccentSpinnerClass: Record<DetailLoadingAccent, string> = {
   neutral: 'text-neutral-600',
 };
 
+/** Three dots that bounce the full em-box height of the surrounding label. */
 export const LoadingDots = () => (
-  <span className="inline-flex items-end gap-0.5 pb-0.5" aria-hidden>
+  <span className="loading-dots" aria-hidden>
     {[0, 1, 2].map((index) => (
       <span
         key={index}
-        className="inline-block h-1 w-1 rounded-full bg-current opacity-80 animate-bounce"
-        style={{ animationDelay: `${index * 140}ms`, animationDuration: '0.85s' }}
+        className="loading-dots__dot"
+        style={{ animationDelay: `${index * 140}ms` }}
       />
     ))}
   </span>
@@ -54,18 +56,23 @@ export const LoadingLabelRow = ({
   accent = 'emerald',
   size = 'sm',
   className = '',
+  /** Hide when a sibling `LoadingRing` already provides the spinner. */
+  showIcon = true,
 }: {
   label: string;
   accent?: DetailLoadingAccent;
   size?: 'sm' | 'md';
   className?: string;
+  showIcon?: boolean;
 }) => (
   <p
     className={`flex items-center justify-center gap-2 font-semibold text-neutral-600 dark:text-neutral-300 ${
       size === 'sm' ? 'text-sm' : 'text-base'
     } ${className}`.trim()}
   >
-    <Loader2 className={`h-4 w-4 animate-spin ${loadingAccentSpinnerClass[accent]}`} aria-hidden />
+    {showIcon ? (
+      <Loader2 className={`h-4 w-4 animate-spin ${loadingAccentSpinnerClass[accent]}`} aria-hidden />
+    ) : null}
     <span className="inline-flex items-center gap-1">
       {label}
       <LoadingDots />

@@ -61,7 +61,11 @@ describe('pagesApiGuard (R8.1)', () => {
         ? /notificationInboxApi/
         : file.endsWith('admin/Alerts.tsx')
           ? /adminAlertsClientApi/
-          : /adminConsoleApi/;
+          : file.endsWith('admin/Submissions.tsx')
+            ? /geoHierarchyClientApi/
+            : file.endsWith('admin/Overview.tsx')
+              ? /adminConsoleApi|Inbox/
+              : /adminConsoleApi/;
       expect(source, `${file} must import hooks facade`).toMatch(facadePattern);
       expect(source, `${file} must not call api.*`).not.toMatch(/\bapi\./);
     }

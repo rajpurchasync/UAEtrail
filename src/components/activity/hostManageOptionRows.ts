@@ -3,7 +3,9 @@ import {
   Car,
   Copy,
   MessageCircle,
+  PauseCircle,
   Pencil,
+  PlayCircle,
   Share2,
   Trash2,
   UserPlus,
@@ -31,14 +33,16 @@ export const buildHostManageOptionRows = (input: {
   onEdit: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
+  onSuspend?: () => void;
+  onResume?: () => void;
   onShare?: () => void;
   onChat?: () => void;
 }): HostManageOptionRow[] => {
   const { activity, caps } = input;
   const published = activity.status === 'published';
-  const canDelete = published || activity.status === 'draft';
-  const canEdit =
-    activity.status === 'draft' || activity.status === 'published' || activity.status === 'suspended';
+  const suspended = activity.status === 'suspended';
+  const canDelete = published || activity.status === 'draft' || suspended;
+  const canEdit = activity.status === 'draft' || published;
 
   return [
     {
@@ -48,6 +52,14 @@ export const buildHostManageOptionRows = (input: {
       icon: Pencil,
       hidden: !canEdit,
       onClick: input.onEdit,
+    },
+    {
+      id: 'resume',
+      label: 'Resume outing',
+      description: 'Show again on the map and in search',
+      icon: PlayCircle,
+      hidden: !suspended || !input.onResume,
+      onClick: () => input.onResume?.(),
     },
     {
       id: 'participants',
@@ -96,8 +108,17 @@ export const buildHostManageOptionRows = (input: {
       onClick: input.onDuplicate,
     },
     {
+      id: 'suspend',
+      label: 'Suspend outing',
+      description: 'Hide from map and visitor search',
+      icon: PauseCircle,
+      destructive: true,
+      hidden: !published || !input.onSuspend,
+      onClick: () => input.onSuspend?.(),
+    },
+    {
       id: 'delete',
-      label: published ? 'Delete outing' : 'Delete draft',
+      label: suspended ? 'Delete outing' : published ? 'Delete outing' : 'Delete draft',
       icon: Trash2,
       destructive: true,
       hidden: !canDelete,

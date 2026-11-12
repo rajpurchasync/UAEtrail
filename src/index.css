@@ -266,6 +266,105 @@
 }
 
 @layer components {
+  /**
+   * Table header — stronger emerald band so columns stand out from zebra body rows.
+   * `!important` beats utility `bg-gray-50` / `bg-neutral-50` on thead in TSX.
+   * Applies to publishing, admin, and any `table.min-w-full`.
+   */
+  table.min-w-full > thead,
+  table.min-w-full > thead > tr,
+  table.min-w-full > thead th {
+    background-color: #d1fae5 !important;
+  }
+
+  table.min-w-full > thead th {
+    color: #064e3b;
+    border-bottom: 1px solid #a7f3d0;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+
+  /**
+   * Alternating row colors — tables + `.app-zebra` stacks.
+   * Soft emerald tint so dense lists stay scannable.
+   */
+  table.min-w-full > tbody > tr:nth-child(odd) {
+    background-color: #ffffff;
+  }
+
+  table.min-w-full > tbody > tr:nth-child(even) {
+    background-color: #f3faf7;
+  }
+
+  table.min-w-full > tbody > tr:hover {
+    background-color: #ecfdf5;
+  }
+
+  .app-zebra > *:nth-child(odd) {
+    background-color: rgba(255, 255, 255, 0.92);
+  }
+
+  .app-zebra > *:nth-child(even) {
+    background-color: rgba(243, 250, 247, 0.95);
+  }
+
+  .app-zebra > .glass-card:nth-child(odd),
+  .app-zebra > .glass-card-interactive:nth-child(odd) {
+    background-color: rgba(255, 255, 255, 0.88);
+  }
+
+  .app-zebra > .glass-card:nth-child(even),
+  .app-zebra > .glass-card-interactive:nth-child(even) {
+    background-color: rgba(236, 253, 245, 0.92);
+  }
+
+  .app-zebra > *:hover,
+  .app-zebra > .glass-card:hover,
+  .app-zebra > .glass-card-interactive:hover {
+    background-color: #ecfdf5;
+  }
+
+  html[data-theme='dark'] table.min-w-full > thead,
+  .dark table.min-w-full > thead,
+  html[data-theme='dark'] table.min-w-full > thead > tr,
+  .dark table.min-w-full > thead > tr,
+  html[data-theme='dark'] table.min-w-full > thead th,
+  .dark table.min-w-full > thead th {
+    background-color: #14532d !important;
+    color: #d1fae5;
+    border-bottom-color: #166534;
+  }
+
+  html[data-theme='dark'] table.min-w-full > tbody > tr:nth-child(odd),
+  .dark table.min-w-full > tbody > tr:nth-child(odd) {
+    background-color: #141414;
+  }
+
+  html[data-theme='dark'] table.min-w-full > tbody > tr:nth-child(even),
+  .dark table.min-w-full > tbody > tr:nth-child(even) {
+    background-color: #1a2220;
+  }
+
+  html[data-theme='dark'] table.min-w-full > tbody > tr:hover,
+  .dark table.min-w-full > tbody > tr:hover {
+    background-color: #1f3d32;
+  }
+
+  html[data-theme='dark'] .app-zebra > *:nth-child(odd),
+  .dark .app-zebra > *:nth-child(odd) {
+    background-color: rgba(20, 20, 20, 0.92);
+  }
+
+  html[data-theme='dark'] .app-zebra > *:nth-child(even),
+  .dark .app-zebra > *:nth-child(even) {
+    background-color: rgba(26, 34, 32, 0.95);
+  }
+
+  html[data-theme='dark'] .app-zebra > *:hover,
+  .dark .app-zebra > *:hover {
+    background-color: #1f3d32;
+  }
+
   /* ── Consumer mesh background ── */
   .consumer-bg {
     background-color: #eef6f3;
@@ -850,8 +949,9 @@
     padding-bottom: var(--safe-bottom);
   }
 
+  /** Pane already clears the fixed tab bar; keep a small end gap only. */
   html[data-mobile-bottom-nav='true'] .pb-nav-safe {
-    padding-bottom: calc(var(--bottom-nav-chrome-height) + var(--safe-bottom) + 0.75rem);
+    padding-bottom: 0.75rem;
   }
 
   .pb-bottom-nav-safe {
@@ -859,7 +959,7 @@
   }
 
   html[data-mobile-bottom-nav='true'] .pb-bottom-nav-safe {
-    padding-bottom: calc(var(--bottom-nav-chrome-height) + var(--safe-bottom));
+    padding-bottom: 0.75rem;
   }
 
   .pb-mobile-fab {
@@ -867,7 +967,7 @@
   }
 
   html[data-mobile-bottom-nav='true'] .pb-mobile-fab {
-    padding-bottom: calc(var(--bottom-nav-chrome-height) + var(--safe-bottom) + 4.5rem);
+    padding-bottom: 4.5rem;
   }
 
   .pb-safe {
@@ -2267,9 +2367,25 @@ html[data-theme='dark'] .hover\:bg-gray-50:hover {
   background-color: #0a0a0a;
 }
 
+.admin-console-page table.min-w-full > thead,
+.admin-console-page table.min-w-full > thead > tr,
+.admin-console-page table.min-w-full > thead th {
+  background-color: #d1fae5 !important;
+  color: #064e3b;
+  border-bottom: 1px solid #a7f3d0;
+  font-weight: 700;
+}
+
 .admin-console-page table.min-w-full tbody > tr {
-  background-color: #ffffff;
   transition: background-color 0.12s ease;
+}
+
+.admin-console-page table.min-w-full tbody > tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+.admin-console-page table.min-w-full tbody > tr:nth-child(even) {
+  background-color: #f3faf7;
 }
 
 .admin-console-page table.min-w-full tbody > tr:hover {
@@ -2296,8 +2412,20 @@ html[data-theme='dark'] .hover\:bg-gray-50:hover {
   background: transparent;
 }
 
-html[data-theme='dark'] .admin-console-page table.min-w-full tbody > tr {
+html[data-theme='dark'] .admin-console-page table.min-w-full > thead,
+html[data-theme='dark'] .admin-console-page table.min-w-full > thead > tr,
+html[data-theme='dark'] .admin-console-page table.min-w-full > thead th {
+  background-color: #14532d !important;
+  color: #d1fae5;
+  border-bottom-color: #166534;
+}
+
+html[data-theme='dark'] .admin-console-page table.min-w-full tbody > tr:nth-child(odd) {
   background-color: #141414;
+}
+
+html[data-theme='dark'] .admin-console-page table.min-w-full tbody > tr:nth-child(even) {
+  background-color: #1a2220;
 }
 
 html[data-theme='dark'] .admin-console-page table.min-w-full tbody > tr:hover,

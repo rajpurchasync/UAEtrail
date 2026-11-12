@@ -25,11 +25,16 @@ import {
   toggleGroupWallReaction,
   updateGroupChatSettings,
   updateGroupMemberRole,
+  updateKidGroupMember,
 } from '../lib/social-groups-store.js';
+import {
+  normalizeKidProfileInput,
+  type CreateKidInput,
+  type PatchKidInput,
+} from '../domain/family-kid-profile.js';
 import type {
   acceptInviteSchema,
   createGroupSchema,
-  createKidSchema,
   createWallPostSchema,
   groupInviteSchema,
   groupMembershipPatchSchema,
@@ -272,19 +277,47 @@ export const removeMyGroupMember = async (groupId: string, membershipId: string,
 export const createMyGroupKidMember = async (
   groupId: string,
   userId: string,
-  body: z.infer<typeof createKidSchema>
+  body: CreateKidInput
 ) => {
   const membership = await getGroupMembership(groupId, userId);
   if (!membership || membership.role !== 'admin') {
     throw new ApiError(403, 'forbidden', 'Only group admins can add kids.');
   }
 
+  const normalized = normalizeKidProfileInput(body);
   return createKidGroupMember({
     groupId,
     createdByUserId: userId,
-    displayName: body.displayName,
+    displayName: normalized.displayName!,
+    dateOfBirth: normalized.dateOfBirth!,
+    emergencyContactName: normalized.emergencyContactName!,
+    emergencyContactPhone: normalized.emergencyContactPhone!,
+    emergencyContactRelation: normalized.emergencyContactRelation ?? null,
+    medicalConditions: normalized.medicalConditions!,
+    gender: normalized.gender ?? null,
+    photoUrl: normalized.photoUrl ?? null,
     role: body.role,
   });
+};
+
+export const updateMyGroupKidMember = async (
+  groupId: string,
+  membershipId: string,
+  userId: string,
+  body: PatchKidInput
+) => {
+  const membership = await getGroupMembership(groupId, userId);
+  if (!membership || membership.role !== 'admin') {
+    throw new ApiError(403, 'forbidden', 'Only group admins can edit kids.');
+  }
+
+  const kid = await findGroupMemberById(groupId, membershipId);
+  if (!kid || kid.memberType !== 'kid') {
+    throw new ApiError(404, 'member_not_found', 'Kid profile not found.');
+  }
+
+  const normalized = normalizeKidProfileInput(body);
+  return updateKidGroupMember(membershipId, normalized);
 };
 
 export const markMyGroupWallRead = async (groupId: string, userId: string) => {

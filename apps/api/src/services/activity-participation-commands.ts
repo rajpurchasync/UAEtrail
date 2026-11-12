@@ -3,11 +3,23 @@ import { ApiError } from '../lib/api-error.js';
 import { findPublishedActivityWithPreviewsById, findActivityForRequestViewById } from '../lib/activities-store.js';
 import { findActivityDocInMongo } from '../lib/entity-sync.js';
 import {
+  applyAdultFamilyInviteAccepted,
+  applyAdultFamilyInviteDeclined,
   cancelUserActivityRequestAndPromoteWaitlist,
   findActivityRequestByIdForUser,
   updateActivityRequestNote,
   updateActivityRequestParty,
 } from '../lib/activity-engagement-store.js';
+import {
+  buildPartyRosterFromMembershipIds,
+  headcountFromPartyRoster,
+  sendOutingInvitesForNewAdults,
+} from './activity-party-attach.js';
+import {
+  findActivityFamilyInviteByToken,
+  markActivityFamilyInviteResponded,
+} from '../lib/activity-family-invites-store.js';
+import { partyRosterHasPendingFamilyInvite } from '../domain/activity-party-roster.js';
 import { markNotificationsReadForCancelledJoinRequest } from '../lib/notifications-store.js';
 import { canWithdrawRequest, withdrawReasonSchema } from '../lib/withdraw-reasons.js';
 import type { z } from 'zod';
@@ -242,6 +254,7 @@ export const updatePublicActivityJoinRequestParty = async (input: {
   note?: string;
   adults?: number;
   kids?: number;
+  partyMemberIds?: string[];
 }) => {
   const request = await findActivityRequestByIdForUser(input.requestId, input.userId);
   if (!request) {
@@ -250,18 +263,117 @@ export const updatePublicActivityJoinRequestParty = async (input: {
   if (!ACTIVE_EDIT_STATUSES.includes(request.status)) {
     throw new ApiError(400, 'request_not_editable', 'This request cannot be updated.');
   }
-  if (input.note === undefined && input.adults === undefined && input.kids === undefined) {
+  if (
+    input.note === undefined &&
+    input.adults === undefined &&
+    input.kids === undefined &&
+    input.partyMemberIds === undefined
+  ) {
     throw new ApiError(400, 'nothing_to_update', 'No party details to update.');
   }
+
+  let partyMembers = request.partyMembers;
+  let adults = input.adults;
+  let kids = input.kids;
+  let deferHostApproval = false;
+
+  if (input.partyMemberIds !== undefined) {
+    partyMembers = await buildPartyRosterFromMembershipIds({
+      actorUserId: input.userId,
+      membershipIds: input.partyMemberIds,
+      existing: request.partyMembers,
+    });
+    const headcount = headcountFromPartyRoster(partyMembers);
+    adults = headcount.adults;
+    kids = headcount.kids;
+    // Adults start as family_invited — host approval waits until they accept.
+    deferHostApproval = partyRosterHasPendingFamilyInvite(partyMembers);
+  }
+
+  const eventDoc =
+    input.partyMemberIds !== undefined
+      ? await findActivityDocInMongo(request.activityId)
+      : undefined;
+
   const updated = await updateActivityRequestParty(request.id, {
     note: input.note,
-    adults: input.adults,
-    kids: input.kids,
+    adults,
+    kids,
+    partyMembers,
+    deferHostApproval,
+    eventDoc: eventDoc ?? undefined,
   });
+
+  if (input.partyMemberIds !== undefined && partyMembers) {
+    await sendOutingInvitesForNewAdults({
+      activityId: request.activityId,
+      requestId: request.id,
+      invitedByUserId: input.userId,
+      previous: request.partyMembers,
+      next: partyMembers,
+      activityTitle: eventDoc?.title?.trim() || 'outing',
+    });
+  }
+
   return {
     id: updated.id,
     note: updated.note,
     adults: updated.adults,
     kids: updated.kids,
+    partyMembers: updated.partyMembers,
+    partyApprovalPending: updated.partyApprovalPending,
+  };
+};
+
+export const acceptActivityFamilyOutingInvite = async (input: {
+  token: string;
+  userId: string;
+}) => {
+  const invite = await findActivityFamilyInviteByToken(input.token);
+  if (!invite) {
+    throw new ApiError(404, 'invite_not_found', 'Family outing invite not found or already used.');
+  }
+  if (invite.inviteeUserId !== input.userId) {
+    throw new ApiError(403, 'forbidden', 'This invite belongs to a different account.');
+  }
+  const marked = await markActivityFamilyInviteResponded(invite.id, 'accepted');
+  if (!marked) {
+    throw new ApiError(400, 'invite_not_pending', 'Invite is no longer pending.');
+  }
+  const updated = await applyAdultFamilyInviteAccepted({
+    requestId: invite.requestId,
+    membershipId: invite.membershipId,
+  });
+  return {
+    activityId: invite.activityId,
+    requestId: invite.requestId,
+    partyMembers: updated.partyMembers,
+    partyApprovalPending: updated.partyApprovalPending,
+  };
+};
+
+export const declineActivityFamilyOutingInvite = async (input: {
+  token: string;
+  userId: string;
+}) => {
+  const invite = await findActivityFamilyInviteByToken(input.token);
+  if (!invite) {
+    throw new ApiError(404, 'invite_not_found', 'Family outing invite not found or already used.');
+  }
+  if (invite.inviteeUserId !== input.userId) {
+    throw new ApiError(403, 'forbidden', 'This invite belongs to a different account.');
+  }
+  const marked = await markActivityFamilyInviteResponded(invite.id, 'declined');
+  if (!marked) {
+    throw new ApiError(400, 'invite_not_pending', 'Invite is no longer pending.');
+  }
+  const updated = await applyAdultFamilyInviteDeclined({
+    requestId: invite.requestId,
+    membershipId: invite.membershipId,
+  });
+  return {
+    activityId: invite.activityId,
+    requestId: invite.requestId,
+    partyMembers: updated.partyMembers,
   };
 };

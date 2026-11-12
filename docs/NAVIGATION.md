@@ -46,7 +46,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Geo tree (country → state → area → venue counts):** **`/geo`** (country count chips), **`/geo/country/:code`**, and **`/geo/n/:id`**. Area hubs stay **`/area/:slug`**. Search still uses country/area/venue names. **`/venue/:id`** is the event-venue detail hub (`PlaceDetailPage` kind `event`; `placeDetailPath('event', id)`). **`/trail`** and **`/camp`** inbound aliases still redirect to `/place/:id`. `/event/:id` bookmarks redirect to `/venue/:id`.
 - **Summary** on the hub counts hosting, joined, goals, and saved places from the same catalog queries as the lists (`usePlanHubSummary`). Host console data loads only when the member can host, and stays fresh for 60s so the summary and the hosting list share one fetch.
 - **Upcoming list and calendar** open the outing (`/activity/:id`) for going and pending rows. Hosting and looking-for-company rows open the same manage paths as before (`planHostedActivityManagePath` / intent manage). **Back** returns to the same Plan URL (filter, layout, scroll) with that row focused. **Available** is an indicator strip only; **edit availability** via the calendar link or `planAvailabilityPath()` (`lens=availability`).
-- **Desktop hosting schedule** (`filter=hosting`, `lg+`): dedicated **Hosting schedule** workspace on `/plan` — create, search, today/week/month counts, copy/open hosted outings, shortcuts (profile, availability, join requests). No consumer summary strip or Wishlist tab on this surface.
+- **Hosting hub** (`/hosting`, all breakpoints): dedicated **Hosting** workspace — stats (upcoming / pending / week / history), host tools (approvals, chat, manage, past trips, profile, places, team), upcoming schedule, past trips list + `/publishing/history`. Same glass/account chrome as Profile and publishing overview. **My Plans** stays on `/plan` only. Legacy `/plan?filter=hosting` redirects to `/hosting`.
 - **Mobile chrome** (`src/plan/planTab.ts`): **Upcoming** · **Wishlist**; goals on Wishlist. Legacy `?lens=saved|goals|calendar` normalizes on load (`calendar` → `layout=calendar`).
 - **`/profile/plans`** → **`/plan`**. **`/trips`**, **`/activities`** → `/plan` or history (`inboundTripsRedirect.ts`).
 
@@ -68,6 +68,9 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 ### Publishing console (`/publishing/*` routes)
 
 - **Canonical SPA `/publishing/*`** — publishing workspace routes only (no `/operator` SPA alias). Product UI uses **Organizer workspace** (community / Pro) or **Operator workspace** (agency / shop); capabilities from **`GET /me/status`** (`useMemberStatus`, `publish.*`). No `/host` or `/organizer` SPA trees. Tenant HTTP API: **`/publishing/*`** only. `/operator/:slug` is **not** a public storefront.
+- **Host mode home:** Pro/agency/guide console roles land on the **hosting hub** after sign-in and **Switch to Host** (`resolveHostingHubPath` / `navigateToHostModeHome`) — not Explore or Profile. **Switch to Visitor** returns to `/explore`.
+- **Host mode chrome:** while role is `tenant_*` (not visitor), primary nav is **Hosting (`/hosting`) · My Plans (`/plan`) · Chat** — no Explore tab, no Map tools, no Find crew. Hamburger leads with **Hosting** and still includes **Explore**. Visitor switch restores the consumer Explore chrome.
+- **Combined hosting (two modes):** when the same account has **community** buddy outings and a **workspace** (guide / agency / shop), `HostingModeSwitcher` toggles **Community** (`/hosting`) ↔ **Operator/Guide workspace** (`/publishing/overview`). Preference stored in `uaetrail.hostingSurfaceMode`.
 - **Shell nav:** `PUBLISHING_CONSOLE_LINKS` + `ConsoleShell` (`src/console/*`); route pages in `src/pages/publishing/*`. Copy: `src/content/workspaceVocabulary.ts`.
 - **`/publishing/overview`:** `ConsoleHubSections` — stats, **Up next** preview, header **Add activity** — not a second copy of the shell link list. Below that: **personal** shortcuts (trips as participant, **Chat** → `/chat`, explore map).
 - **Member profile (`/profile`):** consumer hub only; buddies open **Organizing** → `planHostedSchedulePath()` (hosted filter on `/plan`), not `/publishing/overview`. Pro/agency/shop management remains `/publishing/*`.
@@ -79,24 +82,28 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Staff provisioning API:** `POST /admin/platform-admins`, `DELETE /admin/platform-admins/:userId` — not self-serve signup.
 - **Out of consumer methodology:** admin tables use `adminApi` + `DashboardLayout` — not discovery card VM, map peek, or entity tab footers (`SYSTEM_COHERENCE` §6.2.6). Guard: `adminSurfacesAcceptance.test.ts`.
 
-#### Platform admin route catalog (S13-W9)
+#### Platform admin route catalog
+
+Grouped nav (`ADMIN_NAV_GROUPS` / flat `ADMIN_LINKS`). Legacy `/admin/overview` redirects to Inbox.
 
 | Route | Page module | Sidebar (`ADMIN_LINKS`) | Job |
 |-------|-------------|-------------------------|-----|
-| `/admin/overview` | `pages/admin/Overview` | Overview | Metrics + shortcuts |
-| `/admin/activities` | `pages/admin/Activities` | Activities | Outing moderation |
-| `/admin/areas` | `pages/admin/Areas` | Areas | Curated **names** (not map pins); country/state/region from geography |
+| `/admin/inbox` | `pages/admin/Inbox` | Inbox | Work-queue hub + real pending counts |
+| `/admin/inbox/submissions` | `pages/admin/Submissions` | Submissions | Map suggestion review wizard |
+| `/admin/hosts` | `pages/admin/Organisations` | Operators | Host / tenant applications (`/admin/organizers` → redirect) |
+| `/admin/reports` | `pages/admin/Reports` | Reports | Content reports triage |
+| `/admin/alerts` | `pages/admin/Alerts` | Safety | Banners + amenity condition queue + host verification |
 | `/admin/places` | `pages/admin/Places` | Places | Trails, camps, event venues (`/admin/locations` → redirect) |
 | `/admin/facilities` | `pages/admin/Places` (`catalogSegment=facility`) | Facilities | Amenity POIs (parking, toilet, …) — `facilities` collection, map `source: facility` |
+| `/admin/areas` | `pages/admin/Areas` | Areas | Curated **names** (not map pins); country/state/region from geography |
 | `/admin/users` | `pages/admin/Members` | Users & Members | Member search, suspend, staff grant (`MEMBER_MODEL.md`) |
-| `/admin/hosts` | `pages/admin/Organisations` | Operators | Host / tenant applications (`/admin/organizers` → redirect) |
 | `/admin/groups` | `pages/admin/Groups` | Groups | Platform groups |
-| `/admin/reports` | `pages/admin/Reports` | Reports | Content reports queue |
-| `/admin/alerts` | `pages/admin/Alerts` | Alerts | Platform safety banners + amenity condition queue + host verification docs |
-| `/admin/audit-log` | `pages/admin/AuditLog` | Audit Log | Audit trail |
+| `/admin/activities` | `pages/admin/Activities` | Activities | Outing moderation |
 | `/admin/settings` | `pages/admin/Settings` | Broadcast | Platform broadcast |
+| `/admin/audit-log` | `pages/admin/AuditLog` | Audit Log | Audit trail |
 | `/admin/account` | `pages/admin/Account` | Account | Staff photo, name, contact, bio, units, time format, theme. Full member profile (`/profile`) only after **Switch to visitor**. |
-| `/admin/notifications` | `pages/admin/Notifications` | — (deep link / ops only) | Notification ops |
+| `/admin/notifications` | `pages/admin/Notifications` | — (Ops group / deep link) | Notification ops |
+| `/admin/overview` | — | — | Redirect → `/admin/inbox` |
 | `/admin/login` | `SignIn` | — | Staff sign-in entry |
 
 ### Friends (`/buddies`)

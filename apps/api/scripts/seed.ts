@@ -443,6 +443,7 @@ const upsertUser = async ({
       medicalConditions: 'N/A',
       emergencyContactName: 'Demo emergency',
       emergencyContactPhone: '+971500000001',
+      emergencyContactRelation: 'Friend',
     });
     const updated = await findAuthUserByEmail(email);
     if (!updated) throw new Error(`Failed to update user: ${email}`);
@@ -467,6 +468,7 @@ const upsertUser = async ({
       medicalConditions: 'N/A',
       emergencyContactName: 'Demo emergency',
       emergencyContactPhone: '+971500000001',
+      emergencyContactRelation: 'Friend',
     }
   });
 };

@@ -436,6 +436,27 @@ export const findPublishedActivityWithPreviewsFromMongo = async (
   return event ?? null;
 };
 
+/** Published upcoming rideshare children linked to a parent outing (`linkedActivityId`). */
+export const listPublishedLinkedRidesByParentFromMongo = async (
+  parentActivityId: string
+): Promise<ActivityWithPublicRelations[]> => {
+  const docs = await activitiesCollection()
+    .find({
+      activityType: ActivityType.RIDESHARE,
+      status: ActivityStatus.PUBLISHED,
+      linkedActivityId: parentActivityId,
+      startAt: { $gte: new Date() },
+    })
+    .sort({ startAt: 1 })
+    .limit(50)
+    .toArray();
+
+  const visible = docs.filter(
+    (doc) => !shouldHideActivityFromExploreMap(doc.joinMode, doc.requirements)
+  );
+  return assembleEventsWithPublicRelations(visible);
+};
+
 /** Published upcoming rideshare rows targeting a catalog place or linked parent outing at that place. */
 export const listPublishedReachableRidesByPlaceFromMongo = async (
   placeId: string,

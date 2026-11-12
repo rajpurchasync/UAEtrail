@@ -2,6 +2,7 @@ import type { UserRole } from '@uaetrail/shared-types';
 import type { NavigateFunction } from 'react-router-dom';
 import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
 import { canReturnAfterAuth } from './authRedirect';
+import { stripSessionExpiredQuery } from './authSessionLanding';
 import { armViewReturn, seedViewReturnSnapshot } from './viewReturnMemory';
 import {
   clearAuthReturnContext,
@@ -16,10 +17,11 @@ export const resolvePostAuthReturnPath = (
   role: UserRole | string
 ): string | undefined => {
   if (!from) return undefined;
-  const pathname = from.split('?')[0]?.split('#')[0] ?? from;
+  const cleaned = stripSessionExpiredQuery(from);
+  const pathname = cleaned.split('?')[0]?.split('#')[0] ?? cleaned;
   if (pathname === '/') return EXPLORE_MAP_PATH;
-  if (!canReturnAfterAuth(from, role)) return undefined;
-  return from;
+  if (!canReturnAfterAuth(cleaned, role)) return undefined;
+  return cleaned;
 };
 
 export const persistAuthReturnContextForPath = (

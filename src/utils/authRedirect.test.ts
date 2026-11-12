@@ -46,6 +46,11 @@ describe('resolveAuthRedirect', () => {
     expect(resolveAuthRedirect(null, '/')).toBe('/');
   });
 
+  it('strips session=expired so login does not re-show the toast', () => {
+    expect(resolveAuthRedirect(null, '/explore?session=expired')).toBe('/explore');
+    expect(resolveAuthRedirect('/explore?session=expired&list=1', null)).toBe('/explore?list=1');
+  });
+
   it('flags unsafe redirect query params', () => {
     expect(isRejectedAuthRedirectParam('/signin')).toBe(true);
     expect(isRejectedAuthRedirectParam('https://evil.com')).toBe(true);

@@ -223,6 +223,19 @@ export type SubmissionPublicDTO = {
   createdAt: string;
 };
 
+/** Admin review queue row — `GET /admin/submissions`. */
+export type AdminSubmissionDTO = SubmissionPublicDTO & {
+  description: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  images: string[];
+  proposedAreaName: string | null;
+  insisted?: { reason: string; note?: string; at?: string };
+  submittedBy: string;
+  /** Count of other members who seconded this suggestion. */
+  seconded: number;
+};
+
 export const trigramRatio = (a: string, b: string): number => {
   const grams = (s: string): Set<string> => {
     const t = `  ${s} `;

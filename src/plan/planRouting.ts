@@ -1,8 +1,9 @@
 /**
  * My Plans surface (`/plan`) — canonical path builders and query normalization.
- * @see docs/NAVIGATION.md § Plan
+ * Hosting hub lives at {@link HOSTING_HUB_PATH} (`/hosting`).
+ * @see docs/NAVIGATION.md § Plan · Hosting
  */
-import { PLAN_PATH } from '../config/surfacePaths';
+import { HOSTING_HUB_PATH, PLAN_PATH } from '../config/surfacePaths';
 import {
   normalizePlanHubSearchParams,
   planHostedActivityManagePath,
@@ -44,17 +45,17 @@ export {
   PLAN_PATH,
 };
 
-/** Upcoming tab with optional hosting / joined filter (canonical `filter=` query). */
+/** Upcoming tab with optional joined filter — hosting goes to dedicated `/hosting`. */
 export const planUpcomingPath = (
   filter: PlanCommitmentFilter | 'all' = 'all',
   layout?: PlanUpcomingLayout
 ): string => {
-  if (filter === 'hosting') return planMainTabPath('upcoming', { filter: 'hosting', layout });
+  if (filter === 'hosting') return planHostingFilterPath();
   if (filter === 'joined') return planMainTabPath('upcoming', { filter: 'joined', layout });
   return planMainTabPath('upcoming', { layout });
 };
 
-/** Notification / API deep links — hosting filter on upcoming. */
+/** Community hosting hub — dedicated `/hosting` (legacy `/plan?filter=hosting` redirects). */
 export const planHostedSchedulePath = (): string => planHostingFilterPath();
 
 /** Notification / API deep links — joined filter on upcoming. */
@@ -66,9 +67,15 @@ const isPlanPath = (pathname: string): boolean =>
 /** My Plans hub only — not `/plan/today` or other plan sub-surfaces. */
 export const isPlanHubPath = (pathname: string): boolean => pathname === PLAN_PATH;
 
-/** True when upcoming tab is filtered to outings the member hosts. */
+/** Dedicated hosting hub path. */
+export const isHostingHubPath = (pathname: string): boolean => pathname === HOSTING_HUB_PATH;
+
+/**
+ * Hosting nav active — dedicated `/hosting`, or legacy `/plan?filter=hosting` before redirect.
+ */
 export const isPlanHostingFilterRoute = (pathname: string, search: string): boolean =>
-  isPlanPath(pathname) && new URLSearchParams(search).get('filter') === 'hosting';
+  isHostingHubPath(pathname) ||
+  (isPlanPath(pathname) && new URLSearchParams(search).get('filter') === 'hosting');
 
 /**
  * Desktop sidebar “My Plans” target when Hosting → Hosting schedule is shown:
@@ -77,12 +84,13 @@ export const isPlanHostingFilterRoute = (pathname: string, search: string): bool
 export const planMemberNavPath = (showOrganiserShortcut: boolean): string =>
   showOrganiserShortcut ? planJoinedFilterPath() : PLAN_PATH;
 
-/** Highlight My Plans nav (not the organiser hosting shortcut). */
+/** Highlight My Plans nav (not the Hosting hub). */
 export const isPlanMemberNavActive = (
   pathname: string,
   search: string,
   showOrganiserShortcut: boolean
 ): boolean => {
+  if (isHostingHubPath(pathname)) return false;
   if (!isPlanHubPath(pathname)) return false;
   if (!showOrganiserShortcut) return true;
   return !isPlanHostingFilterRoute(pathname, search);

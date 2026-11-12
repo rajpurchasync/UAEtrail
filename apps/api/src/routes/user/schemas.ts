@@ -52,17 +52,31 @@ export const updateProfileSchema = z
     { message: 'Provide both name and surname.' }
   );
 
-const profileFieldAudienceSchema = z.enum(['hidden', 'friends', 'public']);
+const profileFieldAudienceSchema = z.enum([
+  'hidden',
+  'friends',
+  'friends_of_friends',
+  'public',
+]);
 
 const profileDateOfBirthShareSchema = z.enum([
   'hidden',
-  'year_friends',
-  'year_public',
+  'month_day_friends',
+  'month_day_friends_of_friends',
+  'month_day_public',
   'full_friends',
+  'full_friends_of_friends',
   'full_public',
 ]);
 
-const profileFriendsListShareSchema = z.enum(['only_me', 'friends_crew', 'mutual_only']);
+const profileFriendsListShareSchema = z.enum([
+  'only_me',
+  'friends_crew',
+  'friends_of_friends',
+  'mutual_only',
+]);
+
+const findCrewVisibilitySchema = z.enum(['friends', 'friends_of_friends', 'none']);
 
 export const updateProfileFieldPrivacySchema = z
   .object({
@@ -76,13 +90,18 @@ export const updateProfileFieldPrivacySchema = z
       .optional(),
     dateOfBirthShare: profileDateOfBirthShareSchema.optional(),
     friendsListShare: profileFriendsListShareSchema.optional(),
+    findCrewVisibility: findCrewVisibilitySchema.optional(),
   })
   .refine(
     (body) =>
       body.fieldPrivacy !== undefined ||
       body.dateOfBirthShare !== undefined ||
-      body.friendsListShare !== undefined,
-    { message: 'Provide fieldPrivacy, dateOfBirthShare, and/or friendsListShare.' }
+      body.friendsListShare !== undefined ||
+      body.findCrewVisibility !== undefined,
+    {
+      message:
+        'Provide fieldPrivacy, dateOfBirthShare, friendsListShare, and/or findCrewVisibility.',
+    }
   );
 
 const notificationChannelSchema = z
@@ -149,10 +168,10 @@ export const acceptInviteSchema = z.object({
   token: z.string().min(20)
 });
 
-export const createKidSchema = z.object({
-  displayName: z.string().min(2).max(80),
-  role: z.enum(['buddy', 'admin']).optional()
-});
+export {
+  createKidSchema,
+  patchKidSchema,
+} from '../../domain/family-kid-profile.js';
 
 export const groupMembershipPatchSchema = z
   .object({

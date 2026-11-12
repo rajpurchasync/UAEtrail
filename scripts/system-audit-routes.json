@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-09",
+  "generated": "2026-11-12",
   "endpoints": [
     {
       "method": "GET",
@@ -239,6 +239,11 @@
     {
       "method": "POST",
       "path": "/me/groups/:groupId/kids",
+      "registrar": "apps/api/src/routes/user/registerGroupRoutes.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/me/groups/:groupId/kids/:membershipId",
       "registrar": "apps/api/src/routes/user/registerGroupRoutes.ts"
     },
     {
@@ -578,6 +583,21 @@
     },
     {
       "method": "PATCH",
+      "path": "/me/profile/field-privacy",
+      "registrar": "apps/api/src/routes/user/registerProfileRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/me/notification-preferences",
+      "registrar": "apps/api/src/routes/user/registerProfileRoutes.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/me/notification-preferences",
+      "registrar": "apps/api/src/routes/user/registerProfileRoutes.ts"
+    },
+    {
+      "method": "PATCH",
       "path": "/me/profile",
       "registrar": "apps/api/src/routes/user/registerProfileRoutes.ts"
     },
@@ -689,6 +709,16 @@
     {
       "method": "GET",
       "path": "/member/:userId/upcoming-activities",
+      "registrar": "apps/api/src/routes/user/registerPublicMemberRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/member/:userId/past-activities",
+      "registrar": "apps/api/src/routes/user/registerPublicMemberRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/member/:userId/social-graph",
       "registrar": "apps/api/src/routes/user/registerPublicMemberRoutes.ts"
     },
     {
@@ -808,6 +838,11 @@
     },
     {
       "method": "GET",
+      "path": "/activities/:id/linked-rides",
+      "registrar": "apps/api/src/routes/user/registerPublicActivityRoutes.ts"
+    },
+    {
+      "method": "GET",
       "path": "/activities/:id",
       "registrar": "apps/api/src/routes/user/registerPublicActivityRoutes.ts"
     },
@@ -838,12 +873,27 @@
     },
     {
       "method": "POST",
+      "path": "/activities/:id/family-invites/accept",
+      "registrar": "apps/api/src/routes/user/registerPublicActivityRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/activities/:id/family-invites/decline",
+      "registrar": "apps/api/src/routes/user/registerPublicActivityRoutes.ts"
+    },
+    {
+      "method": "POST",
       "path": "/auth/register",
       "registrar": "apps/api/src/routes/auth.ts"
     },
     {
       "method": "POST",
       "path": "/auth/login",
+      "registrar": "apps/api/src/routes/auth.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/demo-login-catalog",
       "registrar": "apps/api/src/routes/auth.ts"
     },
     {
@@ -975,7 +1025,8 @@
   "registrarServices": {
     "apps/api/src/routes/admin/registerAdminActivityModerationRoutes.ts": [
       "admin-activity-moderation-commands",
-      "admin-activity-moderation-read"
+      "admin-activity-moderation-read",
+      "admin-activity-rideshare-link-commands"
     ],
     "apps/api/src/routes/admin/registerAdminAlertRoutes.ts": [
       "platform-alerts-admin"
@@ -991,6 +1042,7 @@
       "admin-audit-read"
     ],
     "apps/api/src/routes/admin/registerAdminContentReportRoutes.ts": [
+      "admin-content-reports-commands",
       "admin-content-reports-read"
     ],
     "apps/api/src/routes/admin/registerAdminFacilityRoutes.ts": [
@@ -1169,11 +1221,14 @@
       "me-notifications-read"
     ],
     "apps/api/src/routes/user/registerProfileRoutes.ts": [
+      "me-notification-preferences",
       "me-profile-commands",
+      "me-profile-field-privacy",
       "me-profile-read",
       "public-member-profile"
     ],
     "apps/api/src/routes/user/registerPublicActivityRoutes.ts": [
+      "activity-linked-rides-read",
       "activity-participation-commands",
       "activity-public-read"
     ],
@@ -1192,6 +1247,8 @@
       "geo-hierarchy-read"
     ],
     "apps/api/src/routes/user/registerPublicMemberRoutes.ts": [
+      "member-profile-includes",
+      "member-profile-social-graph",
       "member-public-read"
     ],
     "apps/api/src/routes/user/registerPublicPlaceRoutes.ts": [

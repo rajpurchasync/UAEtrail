@@ -2,10 +2,13 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import {
   type AreaDTO,
+  type CatalogEditRankingDTO,
   FACILITY_PLACE_KINDS,
   PLACE_KIND_LABELS,
   PlaceDTO,
   facilityPlaceKindPinEmoji,
+  formatCatalogEditRankingSummary,
+  memberProfilePath,
   placeDetailPath,
   placeKindFromLocationRow,
   tagsForPlaceKind,
@@ -21,21 +24,22 @@ import {
   deleteAdminPlace,
   fetchAdminAreas,
   fetchAdminFacilitiesCatalog,
+  fetchAdminMemberDetail,
   fetchAdminPlacesCatalog,
   updateAdminFacility,
   updateAdminPlace,
 } from '../../hooks/adminConsoleApi';
 import { AdminTablePager, DEFAULT_ADMIN_PAGE_SIZE, paginateRows, type AdminPageSize } from '../../components/admin/AdminTablePager';
 import { AdminIconButton } from '../../components/admin/AdminIconButton';
+import { AdminPlaceRidesLinkPanel } from '../../components/admin/AdminPlaceRidesLinkPanel';
 import { DashboardLayout } from '../../components/layout';
 import { ADMIN_LINKS } from '../../constants';
 import { Check, Pencil, Power, Trash2 } from 'lucide-react';
 import { MapPinPicker } from '../../components/ui/MapPinPicker';
 import { ImageUpload } from '../../components/ui';
 import { AssetKeyUpload } from '../../components/ui/AssetKeyUpload';
-import { AppSelect, ADMIN_INPUT_CLASS, ADMIN_SELECT_CLASS } from '../../components/ui/AppSelect';
-import { SubmissionsQueue } from '../../components/admin/SubmissionsQueue';
-
+import { AppSelect, ADMIN_FILTER_SELECT_CLASS, ADMIN_INPUT_CLASS, ADMIN_SELECT_CLASS } from '../../components/ui/AppSelect';
+import { AdminFilterBar } from '../../components/admin/AdminFilterBar';
 /* ─── Constants ──────────────────────────────────────────────────────────── */
 
 const HIKING_SURFACES = ['Stairs', 'Boulders', 'Steep hike', 'Rocks', 'Sandy', 'Gravel'];
@@ -44,9 +48,16 @@ const HIKING_ACCESSIBLE = ['4X4 required', 'Any cars', 'Bike'];
 const CAMPING_ACCESSIBLE = ['4X4 required', 'Any cars'];
 const TAG_OPTIONS = ['Child-free', 'Pet-friendly', 'Family-friendly', 'Solo-friendly', 'Wheelchair-accessible', 'Night-hiking', 'Sunrise spot', 'Sunset spot'];
 import { SUPPORTED_COUNTRIES, DEFAULT_COUNTRY, getRegionsForCountry, CountryCode } from '../../config/regions';
-import { ADMIN_AREAS_PATH } from '../../config/adminSurfacePaths';
+import { ADMIN_AREAS_PATH, ADMIN_INBOX_SUBMISSIONS_PATH } from '../../config/adminSurfacePaths';
+import { AdminCatalogWizard } from '../../components/admin/AdminCatalogWizard';
 import { VENUE_TYPE_LABELS } from '../../config/activityTypes';
 const SEASONS = ['winter', 'spring', 'summer', 'autumn', 'year-round'];
+const PLACE_DETAIL_STEPS = [
+  { id: 'identity', label: 'Identity' },
+  { id: 'attributes', label: 'Attributes' },
+  { id: 'media', label: 'Pin & media' },
+  { id: 'publish', label: 'Publish' },
+];
 
 const COUNTRY_OPTIONS = SUPPORTED_COUNTRIES.map((country) => ({
   value: country.code,
@@ -57,6 +68,17 @@ const LOCATION_STATUS_OPTIONS = [
   { value: 'draft' as const, label: 'Draft' },
   { value: 'active' as const, label: 'Active (Published)' },
   { value: 'inactive' as const, label: 'Inactive' },
+];
+
+const PLACE_STATUS_FILTER_OPTIONS = [
+  { value: 'draft' as const, label: 'Draft / pending' },
+  { value: 'active' as const, label: 'Active' },
+  { value: 'inactive' as const, label: 'Inactive' },
+];
+
+const FEATURED_FILTER_OPTIONS = [
+  { value: 'yes' as const, label: 'Featured' },
+  { value: 'no' as const, label: 'Not featured' },
 ];
 
 const isTrailLike = (type?: PlaceDTO['activityType']) =>
@@ -102,6 +124,9 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
   const [form, setForm] = useState<Partial<PlaceDTO>>(emptyForm);
+  /** String drafts so number inputs keep caret/decimals (avoid Number() remounting to 0). */
+  const [distanceInput, setDistanceInput] = useState('');
+  const [elevationInput, setElevationInput] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -110,9 +135,18 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
   const [highlightInput, setHighlightInput] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'hiking' | 'camping' | 'event'>('all');
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [regionFilter, setRegionFilter] = useState('');
+  const [featuredFilter, setFeaturedFilter] = useState('');
   const [confirmAction, setConfirmAction] = useState<{ type: 'status' | 'delete' | 'publish'; loc: PlaceDTO } | null>(null);
   const [previewLoc, setPreviewLoc] = useState<PlaceDTO | null>(null);
+  const [previewSubmitter, setPreviewSubmitter] = useState<{
+    id: string;
+    displayName: string | null;
+    ranking: CatalogEditRankingDTO | null;
+  } | null>(null);
   const [formStep, setFormStep] = useState(0); // 0=type select, 1=form
+  const [detailStep, setDetailStep] = useState(0);
   const [adminAreas, setAdminAreas] = useState<AreaDTO[]>([]);
 
   const loadPlaces = async (isActive: () => boolean = () => true) => {
@@ -148,6 +182,32 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
 
   useSafeAsyncEffect((isActive) => loadPlaces(isActive), [catalogSegment]);
 
+  useSafeAsyncEffect(
+    async (isActive) => {
+      const submitterId = previewLoc ? resolveCatalogSubmitterUserId(previewLoc) : null;
+      if (!submitterId) {
+        if (isActive()) setPreviewSubmitter(null);
+        return;
+      }
+      try {
+        const detail = await fetchAdminMemberDetail(submitterId);
+        if (!isActive()) return;
+        const profile = detail.profile as { displayName?: string | null } | null | undefined;
+        const ranking = detail.catalogEditRanking as CatalogEditRankingDTO | null | undefined;
+        setPreviewSubmitter({
+          id: submitterId,
+          displayName: profile?.displayName?.trim() || null,
+          ranking: ranking ?? null,
+        });
+      } catch {
+        if (isActive()) {
+          setPreviewSubmitter({ id: submitterId, displayName: null, ranking: null });
+        }
+      }
+    },
+    [previewLoc?.id]
+  );
+
   useSafeAsyncEffect(async (isActive) => {
     try {
       const areas = await fetchAdminAreas();
@@ -156,6 +216,18 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
       if (isActive()) setAdminAreas([]);
     }
   }, []);
+
+  const resetTrailStatInputs = (distance?: number | null, elevation?: number | null) => {
+    setDistanceInput(distance != null && Number.isFinite(distance) ? String(distance) : '');
+    setElevationInput(elevation != null && Number.isFinite(elevation) ? String(elevation) : '');
+  };
+
+  const parseOptionalNumberInput = (raw: string): number | undefined => {
+    const trimmed = raw.trim();
+    if (trimmed === '' || trimmed === '-' || trimmed === '.' || trimmed === '-.') return undefined;
+    const parsed = Number(trimmed);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  };
 
   const openCreate = () => {
     setEditingId(null);
@@ -166,6 +238,7 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
       countryCode: (filterArea?.countryCode as CountryCode) ?? emptyForm.countryCode,
     });
     setHighlightInput('');
+    resetTrailStatInputs();
     setFormStep(0);
     setModalOpen(true);
   };
@@ -174,14 +247,23 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
     setEditingId(loc.id);
     setForm({ ...loc });
     setHighlightInput((loc.highlights ?? []).join(', '));
+    resetTrailStatInputs(loc.distance, loc.elevation);
     setFormStep(1);
+    setDetailStep(0);
     setModalOpen(true);
   };
 
-  const closeModal = () => { setModalOpen(false); setEditingId(null); setError(null); };
+  const closeModal = () => {
+    setModalOpen(false);
+    setEditingId(null);
+    setDetailStep(0);
+    setError(null);
+  };
 
   const selectType = (type: 'hiking' | 'camping' | 'event') => {
     setForm({ ...emptyForm, activityType: type });
+    resetTrailStatInputs();
+    setDetailStep(0);
     setFormStep(1);
   };
 
@@ -191,6 +273,8 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
       activityType: 'event',
       tags: tagsForPlaceKind(kind),
     });
+    resetTrailStatInputs();
+    setDetailStep(0);
     setFormStep(1);
   };
 
@@ -199,11 +283,15 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
     if (!form.images || form.images.length === 0) { setError('At least 1 photo is required'); return; }
     setSaving(true); setError(null);
     try {
+      const distance = parseOptionalNumberInput(distanceInput);
+      const elevation = parseOptionalNumberInput(elevationInput);
       const payload = {
         ...form,
         images: form.images ?? [],
         highlights: highlightInput.split(',').map((s) => s.trim()).filter(Boolean),
         season: form.season?.length ? form.season : ['winter'],
+        distance,
+        elevation,
         ...(form.activityType === 'camping' ? { distance: undefined, duration: undefined, elevation: undefined } : {}),
         ...(form.activityType === 'hiking' || form.activityType === 'event' ? { campingType: undefined } : {})
       };
@@ -279,6 +367,16 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
     ? adminAreas.find((area) => area.id === filterAreaId) ?? null
     : null;
 
+  const regionFilterOptions = useMemo(() => {
+    const regions = new Set(
+      places
+        .filter((l) => adminCatalogSegmentForRow(l) === catalogSegment)
+        .map((l) => l.region)
+        .filter(Boolean)
+    );
+    return [...regions].sort().map((region) => ({ value: region, label: region }));
+  }, [places, catalogSegment]);
+
   const filtered = places
     .filter((l) => adminCatalogSegmentForRow(l) === catalogSegment)
     .filter((l) => {
@@ -288,7 +386,15 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
       if (catalogSegment === 'facility') return true;
       return l.activityType === activeTab;
     })
-    .filter((l) => !search || l.name.toLowerCase().includes(search.toLowerCase()) || l.region.toLowerCase().includes(search.toLowerCase()));
+    .filter((l) => {
+      if (statusFilter && l.status !== statusFilter) return false;
+      if (regionFilter && l.region !== regionFilter) return false;
+      if (featuredFilter === 'yes' && !l.featured) return false;
+      if (featuredFilter === 'no' && l.featured) return false;
+      if (!search) return true;
+      const q = search.toLowerCase();
+      return l.name.toLowerCase().includes(q) || l.region.toLowerCase().includes(q);
+    });
   const pagedPlaces = paginateRows(filtered, page, pageSize);
 
   const areaNameById = useMemo(
@@ -335,7 +441,12 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
       links={ADMIN_LINKS}
     >
       <div className="space-y-4">
-        <SubmissionsQueue />
+        <Link
+          to={ADMIN_INBOX_SUBMISSIONS_PATH}
+          className="block rounded-2xl border border-amber-200 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 hover:bg-amber-50"
+        >
+          Review member map suggestions in <span className="font-semibold">Inbox → Submissions</span>
+        </Link>
         <p className="text-sm text-gray-600 max-w-3xl">
           Curated explore pins can be corrected here — open <strong>Edit</strong>, move the map pin, and update name,
           region, and description. Saves refresh the map and are kept when the JSON catalog is re-imported.
@@ -387,19 +498,67 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
               </>
             ) : null}
           </div>
-          <div className="flex items-center gap-3">
-            <input
-              type="text"
-              placeholder="Search name or region..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className={`${ADMIN_INPUT_CLASS} w-52`}
-            />
-            <button onClick={openCreate} className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium">
-              {catalogSegment === 'facility' ? '+ Add facility' : '+ Add Place'}
-            </button>
-          </div>
+          <button onClick={openCreate} className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium">
+            {catalogSegment === 'facility' ? '+ Add facility' : '+ Add Place'}
+          </button>
         </div>
+
+        <AdminFilterBar
+          onClear={() => {
+            setSearch('');
+            setStatusFilter('');
+            setRegionFilter('');
+            setFeaturedFilter('');
+            setPage(1);
+          }}
+        >
+          <label className="text-xs text-neutral-500">
+            Search
+            <input
+              type="search"
+              placeholder="Name or region…"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              className={`${ADMIN_INPUT_CLASS} mt-1 block w-52`}
+            />
+          </label>
+          <AppSelect
+            value={statusFilter}
+            onChange={(value) => {
+              setStatusFilter(value);
+              setPage(1);
+            }}
+            options={PLACE_STATUS_FILTER_OPTIONS}
+            placeholder="All statuses"
+            inputClassName={ADMIN_FILTER_SELECT_CLASS}
+            aria-label="Filter by status"
+          />
+          <AppSelect
+            value={regionFilter}
+            onChange={(value) => {
+              setRegionFilter(value);
+              setPage(1);
+            }}
+            options={regionFilterOptions}
+            placeholder="All regions"
+            inputClassName={ADMIN_FILTER_SELECT_CLASS}
+            aria-label="Filter by region"
+          />
+          <AppSelect
+            value={featuredFilter}
+            onChange={(value) => {
+              setFeaturedFilter(value);
+              setPage(1);
+            }}
+            options={FEATURED_FILTER_OPTIONS}
+            placeholder="Featured: any"
+            inputClassName={ADMIN_FILTER_SELECT_CLASS}
+            aria-label="Filter by featured"
+          />
+        </AdminFilterBar>
 
         {error && !modalOpen && <p className="text-sm text-red-600">{error}</p>}
 
@@ -554,11 +713,29 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
                   Map pin: {previewLoc.latitude.toFixed(5)}, {previewLoc.longitude.toFixed(5)}
                 </p>
               )}
-              {resolveCatalogSubmitterUserId(previewLoc) && (
-                <p className="text-xs text-gray-500">
-                  Submitted by member: {resolveCatalogSubmitterUserId(previewLoc)}
-                </p>
-              )}
+              {resolveCatalogSubmitterUserId(previewLoc) ? (
+                <div className="space-y-1 rounded-lg border border-neutral-100 bg-neutral-50 px-3 py-2">
+                  <p className="text-xs text-gray-500">
+                    Submitted by{' '}
+                    <Link
+                      to={memberProfilePath(resolveCatalogSubmitterUserId(previewLoc)!)!}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-emerald-800 hover:underline"
+                    >
+                      {previewSubmitter?.displayName ||
+                        previewSubmitter?.id ||
+                        resolveCatalogSubmitterUserId(previewLoc)}
+                    </Link>
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    Edit Ranking:{' '}
+                    {previewSubmitter?.ranking
+                      ? formatCatalogEditRankingSummary(previewSubmitter.ranking)
+                      : 'Loading…'}
+                  </p>
+                </div>
+              ) : null}
               <p className="text-sm text-gray-700 whitespace-pre-line">{previewLoc.description}</p>
               {isTrailLike(previewLoc.activityType) && (
                 <div className="grid grid-cols-3 gap-3 text-sm">
@@ -579,15 +756,16 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
               {previewLoc.parkingLink && (
                 <div><p className="text-xs text-gray-500 mb-1">Parking</p><a href={previewLoc.parkingLink} target="_blank" rel="noreferrer" className="text-sm text-emerald-600 hover:underline">View on Google Maps →</a></div>
               )}
+              <AdminPlaceRidesLinkPanel placeId={previewLoc.id} />
               <div className="flex flex-wrap gap-3 pt-2 border-t">
-                <Link
-                  to={placeDetailPath(previewLoc.activityType, previewLoc.id)}
+                <a
+                  href={placeDetailPath(previewLoc.activityType, previewLoc.id)}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50 text-emerald-800 font-medium"
                 >
                   Open as submitter preview ↗
-                </Link>
+                </a>
                 <button onClick={() => { setPreviewLoc(null); openEdit(previewLoc); }} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Edit</button>
                 <button onClick={() => setPreviewLoc(null)} className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">Close</button>
               </div>
@@ -634,27 +812,16 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
         </div>
       )}
 
-      {/* ─── Create / Edit Modal ─────────────────────────────────────────── */}
-      {modalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={closeModal}>
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10">
-              <h2 className="text-lg font-semibold text-gray-900">
-                {editingId
-                  ? 'Edit place'
-                  : formStep === 0
-                    ? 'Select Activity Type'
-                    : form.activityType === 'hiking'
-                      ? '🥾 Add Hiking Trail'
-                      : form.activityType === 'event'
-                        ? `🏃 Add ${VENUE_TYPE_LABELS.event}`
-                        : '⛺ Add camping place'}
-              </h2>
-              <button onClick={closeModal} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+      {/* ─── Type selection (create only) ─────────────────────────────── */}
+      {modalOpen && formStep === 0 && !editingId ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={closeModal}>
+          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-white px-6 py-4">
+              <h2 className="text-lg font-semibold text-gray-900">Select type</h2>
+              <button type="button" onClick={closeModal} className="text-xl text-gray-400 hover:text-gray-600">&times;</button>
             </div>
 
-            {/* ── Step 0: Type Selection ── */}
-            {formStep === 0 && !editingId && catalogSegment === 'facility' && (
+            {catalogSegment === 'facility' && (
               <div className="p-6">
                 <p className="text-sm text-gray-600 mb-4 text-center">Choose facility type</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-3xl mx-auto">
@@ -673,45 +840,80 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
               </div>
             )}
 
-            {formStep === 0 && !editingId && catalogSegment === 'outdoor' && (
+            {catalogSegment === 'outdoor' && (
               <div className="p-8">
-                <p className="text-sm text-gray-600 mb-6 text-center">Choose what type of place you want to add</p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto">
-                  <button onClick={() => selectType('hiking')}
-                    className="border-2 border-gray-200 hover:border-emerald-400 rounded-xl p-8 text-center transition-all hover:shadow-md group">
-                    <div className="text-5xl mb-3">🥾</div>
+                <p className="mb-6 text-center text-sm text-gray-600">Choose what type of place you want to add</p>
+                <div className="mx-auto grid max-w-3xl grid-cols-1 gap-6 sm:grid-cols-3">
+                  <button type="button" onClick={() => selectType('hiking')}
+                    className="group rounded-xl border-2 border-gray-200 p-8 text-center transition-all hover:border-emerald-400 hover:shadow-md">
+                    <div className="mb-3 text-5xl">🥾</div>
                     <h3 className="text-lg font-semibold text-gray-900 group-hover:text-emerald-700">Hiking Trail</h3>
-                    <p className="text-xs text-gray-500 mt-1">Trails, mountains, walks</p>
+                    <p className="mt-1 text-xs text-gray-500">Trails, mountains, walks</p>
                   </button>
-                  <button onClick={() => selectType('camping')}
-                    className="border-2 border-gray-200 hover:border-amber-400 rounded-xl p-8 text-center transition-all hover:shadow-md group">
-                    <div className="text-5xl mb-3">⛺</div>
+                  <button type="button" onClick={() => selectType('camping')}
+                    className="group rounded-xl border-2 border-gray-200 p-8 text-center transition-all hover:border-amber-400 hover:shadow-md">
+                    <div className="mb-3 text-5xl">⛺</div>
                     <h3 className="text-lg font-semibold text-gray-900 group-hover:text-amber-700">Camping place</h3>
-                    <p className="text-xs text-gray-500 mt-1">Campsites, outdoor stays</p>
+                    <p className="mt-1 text-xs text-gray-500">Campsites, outdoor stays</p>
                   </button>
-                  <button onClick={() => selectType('event')}
-                    className="border-2 border-gray-200 hover:border-violet-400 rounded-xl p-8 text-center transition-all hover:shadow-md group">
-                    <div className="text-5xl mb-3">🏃</div>
+                  <button type="button" onClick={() => selectType('event')}
+                    className="group rounded-xl border-2 border-gray-200 p-8 text-center transition-all hover:border-violet-400 hover:shadow-md">
+                    <div className="mb-3 text-5xl">🏃</div>
                     <h3 className="text-lg font-semibold text-gray-900 group-hover:text-violet-700">{VENUE_TYPE_LABELS.event}</h3>
-                    <p className="text-xs text-gray-500 mt-1">Trail runs, triathlons, races</p>
+                    <p className="mt-1 text-xs text-gray-500">Trail runs, triathlons, races</p>
                   </button>
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      ) : null}
 
-            {/* ── Step 1: Dynamic Form ── */}
-            {(formStep === 1 || editingId) && (
-              <form onSubmit={handleSave} className="p-6 space-y-6">
-                {form.status === 'draft' && resolveCatalogSubmitterUserId(form) && (
-                  <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-900">
-                    Host submission — add child-friendly / pet-friendly tags, parking link or map pin, and difficulty (hikes) before approving.
+      {modalOpen && (formStep === 1 || editingId) ? (
+              <AdminCatalogWizard
+                title={
+                  editingId
+                    ? 'Edit place'
+                    : form.activityType === 'hiking'
+                      ? 'Add hiking trail'
+                      : form.activityType === 'event'
+                        ? `Add ${VENUE_TYPE_LABELS.event}`
+                        : 'Add camping place'
+                }
+                steps={PLACE_DETAIL_STEPS}
+                stepIndex={detailStep}
+                onStepChange={setDetailStep}
+                onClose={closeModal}
+                onBack={() => {
+                  if (detailStep === 0 && !editingId) setFormStep(0);
+                  else setDetailStep((s) => Math.max(0, s - 1));
+                }}
+                onNext={() => setDetailStep((s) => Math.min(PLACE_DETAIL_STEPS.length - 1, s + 1))}
+                onSave={() => {
+                  const fakeEvent = { preventDefault() {} } as React.FormEvent;
+                  void handleSave(fakeEvent);
+                }}
+                saving={saving}
+              >
+                {form.status === 'draft' && resolveCatalogSubmitterUserId(form) ? (
+                  <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                    Host submission from{' '}
+                    <Link
+                      to={memberProfilePath(resolveCatalogSubmitterUserId(form)!)!}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold underline"
+                    >
+                      this member
+                    </Link>
+                    — add tags, parking, and difficulty before approving.
                   </div>
-                )}
+                ) : null}
 
                 {/* Section 1: Basic Info */}
-                <fieldset className="space-y-4">
-                  <legend className="text-sm font-semibold text-gray-800 uppercase tracking-wide border-b pb-1 w-full">
-                    {isTrailLike(form.activityType) ? '1. Trail Information' : '1. Place information'}
+                <fieldset className={`space-y-4 ${detailStep === 0 ? '' : 'hidden'}`}>
+                  <legend className="w-full border-b pb-1 text-sm font-semibold uppercase tracking-wide text-gray-800">
+                    {isTrailLike(form.activityType) ? 'Trail information' : 'Place information'}
                   </legend>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -783,13 +985,35 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="text-sm font-medium text-gray-700 mb-1 block">Length in KM *</label>
-                        <input type="number" step="0.1" min={0} required value={form.distance ?? ''} onChange={(e) => setForm({ ...form, distance: e.target.value ? Number(e.target.value) : undefined })}
-                          className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="12.5" />
+                        <input
+                          type="number"
+                          step="0.1"
+                          min={0}
+                          required
+                          value={distanceInput}
+                          onChange={(e) => {
+                            const raw = e.target.value;
+                            setDistanceInput(raw);
+                            setForm((prev) => ({ ...prev, distance: parseOptionalNumberInput(raw) }));
+                          }}
+                          className="w-full border rounded-lg px-3 py-2 text-sm"
+                          placeholder="12.5"
+                        />
                       </div>
                       <div>
                         <label className="text-sm font-medium text-gray-700 mb-1 block">Elevation (m)</label>
-                        <input type="number" min={0} value={form.elevation ?? ''} onChange={(e) => setForm({ ...form, elevation: e.target.value ? Number(e.target.value) : undefined })}
-                          className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="1934" />
+                        <input
+                          type="number"
+                          min={0}
+                          value={elevationInput}
+                          onChange={(e) => {
+                            const raw = e.target.value;
+                            setElevationInput(raw);
+                            setForm((prev) => ({ ...prev, elevation: parseOptionalNumberInput(raw) }));
+                          }}
+                          className="w-full border rounded-lg px-3 py-2 text-sm"
+                          placeholder="1934"
+                        />
                       </div>
                     </div>
                   )}
@@ -813,8 +1037,8 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
                 </fieldset>
 
                 {/* Section 2: Conditions */}
-                <fieldset className="space-y-4">
-                  <legend className="text-sm font-semibold text-gray-800 uppercase tracking-wide border-b pb-1 w-full">2. Conditions</legend>
+                <fieldset className={`space-y-4 ${detailStep === 1 ? '' : 'hidden'}`}>
+                  <legend className="w-full border-b pb-1 text-sm font-semibold uppercase tracking-wide text-gray-800">Conditions</legend>
 
                   <ChipSelect
                     label="Surface Type"
@@ -873,8 +1097,8 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
                 </fieldset>
 
                 {/* Section 3: Media */}
-                <fieldset className="space-y-4">
-                  <legend className="text-sm font-semibold text-gray-800 uppercase tracking-wide border-b pb-1 w-full">3. Media</legend>
+                <fieldset className={`space-y-4 ${detailStep === 2 ? '' : 'hidden'}`}>
+                  <legend className="w-full border-b pb-1 text-sm font-semibold uppercase tracking-wide text-gray-800">Media</legend>
                   <div>
                     <label className="text-sm font-medium text-gray-700 mb-1 block">Add Photos (minimum 1 required) *</label>
                     <ImageUpload
@@ -889,8 +1113,8 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
                 </fieldset>
 
                 {/* Section 4: Transportation */}
-                <fieldset className="space-y-4">
-                  <legend className="text-sm font-semibold text-gray-800 uppercase tracking-wide border-b pb-1 w-full">4. Transportation</legend>
+                <fieldset className={`space-y-4 ${detailStep === 1 ? '' : 'hidden'}`}>
+                  <legend className="w-full border-b pb-1 text-sm font-semibold uppercase tracking-wide text-gray-800">Transportation</legend>
                   <div>
                     <label className="text-sm font-medium text-gray-700 mb-1 block">Parking Spot (Google Maps link)</label>
                     <input type="url" value={form.parkingLink ?? ''} onChange={(e) => setForm({ ...form, parkingLink: e.target.value || undefined })}
@@ -905,9 +1129,9 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
                 </fieldset>
 
                 {/* Section 5: Premium map & guide */}
-                <fieldset className="space-y-4">
-                  <legend className="text-sm font-semibold text-gray-800 uppercase tracking-wide border-b pb-1 w-full">
-                    5. Route map &amp; paid guide
+                <fieldset className={`space-y-4 ${detailStep === 3 ? '' : 'hidden'}`}>
+                  <legend className="w-full border-b pb-1 text-sm font-semibold uppercase tracking-wide text-gray-800">
+                    Route map &amp; paid guide
                   </legend>
                   <p className="text-xs text-gray-500">
                     Upload GPX for offline navigation and a detailed guide for Active (pay-as-you-go), Pro, and GOAT members.
@@ -960,12 +1184,22 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
                   </div>
                 </fieldset>
 
+                <fieldset className={`space-y-4 ${detailStep === 2 ? '' : 'hidden'}`}>
+                  <legend className="w-full border-b pb-1 text-sm font-semibold uppercase tracking-wide text-gray-800">Map pin</legend>
+                  {editingId && isCatalogMapPlace(form) && (
+                    <p className="rounded-xl border border-sky-100 bg-sky-50 px-3 py-2 text-sm text-sky-900">
+                      Drag the marker to the real trailhead or camp spot, then save — catalog import will not overwrite it.
+                    </p>
+                  )}
+                  <MapPinPicker latitude={form.latitude} longitude={form.longitude} onChange={handleMapChange} />
+                </fieldset>
+
                 {/* Section 6: Additional Settings */}
-                <fieldset className="space-y-4">
-                  <legend className="text-sm font-semibold text-gray-800 uppercase tracking-wide border-b pb-1 w-full">6. Additional Settings</legend>
+                <fieldset className={`space-y-4 ${detailStep === 3 ? '' : 'hidden'}`}>
+                  <legend className="w-full border-b pb-1 text-sm font-semibold uppercase tracking-wide text-gray-800">Publish settings</legend>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm font-medium text-gray-700 mb-1 block">Status</label>
+                      <label className="mb-1 block text-sm font-medium text-gray-700">Status</label>
                       <AppSelect
                         value={form.status ?? 'draft'}
                         onChange={(status) => setForm({ ...form, status: status as PlaceDTO['status'] })}
@@ -975,9 +1209,9 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
                       />
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-700 mb-1 block">Max Group Size</label>
+                      <label className="mb-1 block text-sm font-medium text-gray-700">Max Group Size</label>
                       <input type="number" min={1} value={form.maxGroupSize ?? ''} onChange={(e) => setForm({ ...form, maxGroupSize: e.target.value ? Number(e.target.value) : undefined })}
-                        className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="20" />
+                        className="w-full rounded-lg border px-3 py-2 text-sm" placeholder="20" />
                     </div>
                   </div>
                   <div className="flex items-center gap-6">
@@ -994,38 +1228,11 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
                       Featured on discover (Near you)
                     </label>
                   </div>
-                  {editingId && isCatalogMapPlace(form) && (
-                    <p className="text-sm text-sky-900 bg-sky-50 border border-sky-100 rounded-lg px-3 py-2">
-                      This pin is on the explore map catalog. Drag the marker to the real trailhead or camp spot, then
-                      save — your coordinates won&apos;t be overwritten by a catalog import.
-                    </p>
-                  )}
-                  <MapPinPicker latitude={form.latitude} longitude={form.longitude} onChange={handleMapChange} />
                 </fieldset>
 
-                {error && <p className="text-sm text-red-600">{error}</p>}
-
-                <div className="flex justify-between items-center pt-2 border-t">
-                  <div className="text-xs text-gray-400">
-                    {form.status === 'draft' && 'Saved as draft — won\'t be visible publicly.'}
-                    {form.status === 'active' && 'Will be published and visible in public listings.'}
-                    {form.status === 'inactive' && 'Will be hidden from public listings.'}
-                  </div>
-                  <div className="flex gap-3">
-                    {!editingId && formStep === 1 && (
-                      <button type="button" onClick={() => setFormStep(0)} className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">← Back</button>
-                    )}
-                    <button type="button" onClick={closeModal} className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">Cancel</button>
-                    <button type="submit" disabled={saving} className="px-6 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 disabled:opacity-60">
-                      {saving ? 'Saving...' : editingId ? 'Update place' : form.status === 'draft' ? 'Save Draft' : 'Publish place'}
-                    </button>
-                  </div>
-                </div>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
+                {error ? <p className="mt-3 text-sm text-red-600">{error}</p> : null}
+              </AdminCatalogWizard>
+      ) : null}
     </DashboardLayout>
   );
 };

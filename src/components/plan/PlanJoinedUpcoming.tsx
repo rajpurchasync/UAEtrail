@@ -15,10 +15,23 @@ import {
   PRODUCT_JOINED_UPCOMING_EMPTY_TITLE,
   PRODUCT_LOAD_ERROR,
 } from '../../content/productNorthStar';
-import { buildUpcomingPlanRows } from '../../utils/activityHubSections';
+import { buildUpcomingPlanRows, type UpcomingPlanRow } from '../../utils/activityHubSections';
+import { matchesActivitySearch } from '../../utils/activitySearch';
 import { formatDate } from '../../utils';
 import { formatActivityType, resolveActivityTitle } from '../../utils/activityIdentity';
-import { PlanCommitmentCard } from './PlanCommitmentCard';
+import { ACTIVITY_STATUS_JOINED } from '../../content/activityParticipationCopy';
+import { resolveViewerParticipationStatus } from '../../content/activityParticipationStatus';
+import { PlanCommitmentCard, type PlanCommitmentBadge } from './PlanCommitmentCard';
+
+const filterUpcomingRows = (rows: UpcomingPlanRow[], query: string) =>
+  rows.filter((row) => {
+    if (row.kind === 'confirmed') {
+      const activity = row.activity;
+      return matchesActivitySearch(query, activity.title, activity.locationName);
+    }
+    const activity = row.request.activity;
+    return matchesActivitySearch(query, activity.title, activity.locationName);
+  });
 
 /**
  * My Plans → Upcoming → joined filter: confirmed outings + pending/waitlisted requests.
@@ -26,9 +39,13 @@ import { PlanCommitmentCard } from './PlanCommitmentCard';
  */
 type PlanJoinedUpcomingProps = {
   refreshKey?: number;
+  searchQuery?: string;
 };
 
-export const PlanJoinedUpcoming = ({ refreshKey = 0 }: PlanJoinedUpcomingProps) => {
+export const PlanJoinedUpcoming = ({
+  refreshKey = 0,
+  searchQuery = '',
+}: PlanJoinedUpcomingProps) => {
   const {
     activities,
     loading: joinedLoading,
@@ -49,14 +66,20 @@ export const PlanJoinedUpcoming = ({ refreshKey = 0 }: PlanJoinedUpcomingProps) 
   );
 
   const sorted = useMemo(
-    () => [...rows].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
-    [rows]
+    () =>
+      filterUpcomingRows(rows, searchQuery).sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      ),
+    [rows, searchQuery]
   );
 
   if (loading) return <ConsumerLoadingSpinner className="py-12" />;
   if (error) return <ConsumerErrorCard message={error || PRODUCT_LOAD_ERROR} />;
 
   if (sorted.length === 0) {
+    if (searchQuery.trim() && rows.length > 0) {
+      return <ConsumerInlineEmpty message="No joined outings match your search." />;
+    }
     return (
       <ConsumerInlineEmpty
         message={`${PRODUCT_JOINED_UPCOMING_EMPTY_TITLE} — ${PRODUCT_JOINED_UPCOMING_EMPTY_BODY}`}
@@ -79,7 +102,7 @@ export const PlanJoinedUpcoming = ({ refreshKey = 0 }: PlanJoinedUpcomingProps) 
               timeLabel={activity.time}
               locationLabel={activity.locationName}
               activityTypeLabel={formatActivityType(activity.activityType)}
-              badge="Going"
+              badge={ACTIVITY_STATUS_JOINED}
               participants={activity.participantPreviews}
               activityDetailTo={activityDetailPath(activity.id)}
               navFocus={planUpcomingActivityFocusId(activity.id)}
@@ -87,7 +110,16 @@ export const PlanJoinedUpcoming = ({ refreshKey = 0 }: PlanJoinedUpcomingProps) 
           );
         }
         const request = row.request;
-        const badge = request.status === 'waitlisted' ? 'Waitlist' : 'Pending';
+        const badge: PlanCommitmentBadge =
+          request.status === 'waitlisted'
+            ? 'Waitlist'
+            : ((resolveViewerParticipationStatus({
+                joinKind: 'pending',
+                adults: request.adults,
+                kids: request.kids,
+                partyMembers: request.partyMembers,
+                partyApprovalPending: request.partyApprovalPending,
+              })?.label ?? 'Pending') as PlanCommitmentBadge);
         const activityId = request.activity.id;
         return (
           <PlanCommitmentCard

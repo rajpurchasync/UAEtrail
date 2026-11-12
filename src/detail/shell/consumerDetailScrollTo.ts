@@ -32,8 +32,8 @@ const headerPadPx = (root: HTMLElement): number => {
   const pad = getComputedStyle(root).getPropertyValue('--detail-header-pad').trim();
   const n = parseFloat(pad);
   if (Number.isFinite(n) && n > 0) return n;
-  const modalHeader = document.querySelector<HTMLElement>('[data-consumer-detail-modal-header]');
-  return modalHeader?.offsetHeight ?? 0;
+  // Modal header is in-flow above the scroller — only honor an explicit CSS pad.
+  return 0;
 };
 
 const preferMainColumnScrollTarget = (candidates: HTMLElement[]): HTMLElement | null => {

@@ -117,6 +117,7 @@ export const adminApi = {
     pageSize?: number;
     reason?: string;
     targetType?: string;
+    status?: string;
     reporter?: string;
     from?: string;
     to?: string;
@@ -126,6 +127,7 @@ export const adminApi = {
     if (filters?.pageSize) params.set('pageSize', String(filters.pageSize));
     if (filters?.reason) params.set('reason', filters.reason);
     if (filters?.targetType) params.set('targetType', filters.targetType);
+    if (filters?.status) params.set('status', filters.status);
     if (filters?.reporter) params.set('reporter', filters.reporter);
     if (filters?.from) params.set('from', filters.from);
     if (filters?.to) params.set('to', filters.to);
@@ -135,6 +137,16 @@ export const adminApi = {
       pagination: { total: number; page: number; pageSize: number; totalPages: number };
     }>(`/admin/reports${qs ? `?${qs}` : ''}`, { auth: true });
   },
+
+  patchAdminContentReport: (
+    id: string,
+    payload: { status: 'resolved' | 'dismissed'; note?: string }
+  ) =>
+    apiRequest<{ data: AdminContentReportEntry }>(`/admin/reports/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      auth: true,
+      body: JSON.stringify(payload),
+    }),
 
     addAdminTenantTeamMember: (
       tenantId: string,

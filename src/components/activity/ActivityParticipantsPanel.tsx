@@ -25,7 +25,7 @@ interface ActivityParticipantsPanelProps {
 
 const statusLabel = (participant: ParticipantDTO): string => {
   if (participant.status === 'attended') return 'Attended';
-  return 'Going';
+  return 'Joined';
 };
 
 const formatJoined = (joinedAt: string): string =>

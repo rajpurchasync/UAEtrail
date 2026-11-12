@@ -1,5 +1,9 @@
 import type { MyActivityRequestDTO, ActivityParticipationDTO } from '@uaetrail/shared-types';
-import { ACTIVITY_CTA_PENDING_APPROVAL } from '../content/activityParticipationCopy';
+import {
+  ACTIVITY_CTA_PENDING_APPROVAL,
+  ACTIVITY_STATUS_JOINED,
+  ACTIVITY_STATUS_JOIN_REQUESTED,
+} from '../content/activityParticipationCopy';
 
 export type JoinRequestUiState =
   | { kind: 'open' }
@@ -40,11 +44,11 @@ export const pendingApprovalLabel = (status: 'pending' | 'waitlisted'): string =
 export const requestStatusLabel = (status: string): string => {
   switch (status) {
     case 'pending':
-      return 'Waiting for host';
+      return ACTIVITY_STATUS_JOIN_REQUESTED;
     case 'waitlisted':
       return 'On waitlist';
     case 'approved':
-      return 'Confirmed';
+      return ACTIVITY_STATUS_JOINED;
     case 'rejected':
       return 'Not this time';
     case 'cancelled':

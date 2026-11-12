@@ -448,6 +448,10 @@ export const useActivityDetailViewModel = ({
     isHostUser,
     pendingJoinInviteCount: wireStrips?.pendingJoinInviteCount,
     confirmedParticipantCount,
+    adults: myRequest?.adults,
+    kids: myRequest?.kids,
+    partyMembers: myRequest?.partyMembers,
+    partyApprovalPending: myRequest?.partyApprovalPending,
   });
   const peekParityCard = useMemo((): DiscoveryCardModel | null => {
     if (!consumerDetailLayout || previewMode) return null;
@@ -466,6 +470,10 @@ export const useActivityDetailViewModel = ({
     isHostUser,
     pendingJoinInviteCount: wireStrips?.pendingJoinInviteCount,
     confirmedParticipantCount,
+    adults: myRequest?.adults,
+    kids: myRequest?.kids,
+    partyMembers: myRequest?.partyMembers,
+    partyApprovalPending: myRequest?.partyApprovalPending,
   });
 
   const heroFactChips = consumerDetailLayout

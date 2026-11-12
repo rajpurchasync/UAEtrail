@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type {
+  FindCrewVisibility,
   ProfileDateOfBirthShare,
   ProfileFieldAudience,
   ProfileFieldPrivacyKey,
@@ -7,6 +8,7 @@ import type {
   ProfileFriendsListShare,
 } from '@uaetrail/shared-types';
 import {
+  DEFAULT_FIND_CREW_VISIBILITY,
   DEFAULT_PROFILE_FIELD_PRIVACY,
   DEFAULT_PROFILE_FRIENDS_LIST_SHARE,
   mergeProfileFieldPrivacy,
@@ -14,6 +16,8 @@ import {
 import { GlassCard } from '../mobile/GlassCard';
 import { AppSelect } from '../ui/AppSelect';
 import {
+  FIND_CREW_VISIBILITY_HINT,
+  FIND_CREW_VISIBILITY_LABELS,
   PROFILE_DATE_OF_BIRTH_SHARE_HINT,
   PROFILE_DATE_OF_BIRTH_SHARE_LABELS,
   PROFILE_FIELD_AUDIENCE_LABELS,
@@ -28,18 +32,52 @@ import {
 } from '../../hooks/memberProfileApi';
 
 const fieldPrivacyFromResponse = (response: MemberProfilePrivacySettings): ProfileFieldPrivacySettings => {
-  const { dateOfBirthShare: _dob, friendsListShare: _friends, ...fieldRest } = response;
+  const {
+    dateOfBirthShare: _dob,
+    friendsListShare: _friends,
+    findCrewVisibility: _findCrew,
+    ...fieldRest
+  } = response;
   return mergeProfileFieldPrivacy(fieldRest);
 };
 
+const applyPrivacyResponse = (
+  next: MemberProfilePrivacySettings,
+  setters: {
+    setSettings: (value: ProfileFieldPrivacySettings) => void;
+    setDateOfBirthShare: (value: ProfileDateOfBirthShare) => void;
+    setFriendsListShare: (value: ProfileFriendsListShare) => void;
+    setFindCrewVisibility: (value: FindCrewVisibility) => void;
+  }
+) => {
+  setters.setSettings(fieldPrivacyFromResponse(next));
+  setters.setDateOfBirthShare(next.dateOfBirthShare);
+  setters.setFriendsListShare(next.friendsListShare);
+  setters.setFindCrewVisibility(next.findCrewVisibility);
+};
+
 const FRIENDS_LIST_OPTIONS = (
-  ['only_me', 'friends_crew', 'mutual_only'] as const satisfies readonly ProfileFriendsListShare[]
+  [
+    'only_me',
+    'friends_crew',
+    'friends_of_friends',
+    'mutual_only',
+  ] as const satisfies readonly ProfileFriendsListShare[]
 ).map((value) => ({
   value,
   label: PROFILE_FRIENDS_LIST_SHARE_LABELS[value],
 }));
 
-const AUDIENCE_OPTIONS = (['hidden', 'friends', 'public'] as const).map((value) => ({
+const FIND_CREW_OPTIONS = (
+  ['friends', 'friends_of_friends', 'none'] as const satisfies readonly FindCrewVisibility[]
+).map((value) => ({
+  value,
+  label: FIND_CREW_VISIBILITY_LABELS[value],
+}));
+
+const AUDIENCE_OPTIONS = (
+  ['hidden', 'friends', 'friends_of_friends', 'public'] as const satisfies readonly ProfileFieldAudience[]
+).map((value) => ({
   value,
   label: PROFILE_FIELD_AUDIENCE_LABELS[value],
 }));
@@ -47,9 +85,11 @@ const AUDIENCE_OPTIONS = (['hidden', 'friends', 'public'] as const).map((value) 
 const DOB_OPTIONS = (
   [
     'hidden',
-    'year_friends',
-    'year_public',
+    'month_day_friends',
+    'month_day_friends_of_friends',
+    'month_day_public',
     'full_friends',
+    'full_friends_of_friends',
     'full_public',
   ] as const satisfies readonly ProfileDateOfBirthShare[]
 ).map((value) => ({
@@ -66,8 +106,10 @@ export const ProfileFieldPrivacySection = ({ embedded = false }: ProfileFieldPri
   const [dateOfBirthShare, setDateOfBirthShare] = useState<ProfileDateOfBirthShare>('hidden');
   const [friendsListShare, setFriendsListShare] =
     useState<ProfileFriendsListShare>(DEFAULT_PROFILE_FRIENDS_LIST_SHARE);
+  const [findCrewVisibility, setFindCrewVisibility] =
+    useState<FindCrewVisibility>(DEFAULT_FIND_CREW_VISIBILITY);
   const [savingKey, setSavingKey] = useState<
-    ProfileFieldPrivacyKey | 'dateOfBirthShare' | 'friendsListShare' | null
+    ProfileFieldPrivacyKey | 'dateOfBirthShare' | 'friendsListShare' | 'findCrewVisibility' | null
   >(null);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -82,6 +124,9 @@ export const ProfileFieldPrivacySection = ({ embedded = false }: ProfileFieldPri
       if (profile.friendsListShare) {
         setFriendsListShare(profile.friendsListShare);
       }
+      if (profile.findCrewVisibility) {
+        setFindCrewVisibility(profile.findCrewVisibility);
+      }
     });
   }, []);
 
@@ -94,9 +139,12 @@ export const ProfileFieldPrivacySection = ({ embedded = false }: ProfileFieldPri
       setSettings((current) => ({ ...current, [key]: value }));
       try {
         const next = await updateMeProfileFieldPrivacy({ fieldPrivacy: { [key]: value } });
-        setSettings(fieldPrivacyFromResponse(next));
-        setDateOfBirthShare(next.dateOfBirthShare);
-        setFriendsListShare(next.friendsListShare);
+        applyPrivacyResponse(next, {
+          setSettings,
+          setDateOfBirthShare,
+          setFriendsListShare,
+          setFindCrewVisibility,
+        });
         setMessage('Saved.');
       } catch {
         setSettings((current) => ({ ...current, [key]: previous }));
@@ -117,9 +165,12 @@ export const ProfileFieldPrivacySection = ({ embedded = false }: ProfileFieldPri
       setDateOfBirthShare(value);
       try {
         const next = await updateMeProfileFieldPrivacy({ dateOfBirthShare: value });
-        setSettings(fieldPrivacyFromResponse(next));
-        setDateOfBirthShare(next.dateOfBirthShare);
-        setFriendsListShare(next.friendsListShare);
+        applyPrivacyResponse(next, {
+          setSettings,
+          setDateOfBirthShare,
+          setFriendsListShare,
+          setFindCrewVisibility,
+        });
         setMessage('Saved.');
       } catch {
         setDateOfBirthShare(previous);
@@ -140,9 +191,12 @@ export const ProfileFieldPrivacySection = ({ embedded = false }: ProfileFieldPri
       setFriendsListShare(value);
       try {
         const next = await updateMeProfileFieldPrivacy({ friendsListShare: value });
-        setSettings(fieldPrivacyFromResponse(next));
-        setDateOfBirthShare(next.dateOfBirthShare);
-        setFriendsListShare(next.friendsListShare);
+        applyPrivacyResponse(next, {
+          setSettings,
+          setDateOfBirthShare,
+          setFriendsListShare,
+          setFindCrewVisibility,
+        });
         setMessage('Saved.');
       } catch {
         setFriendsListShare(previous);
@@ -154,10 +208,37 @@ export const ProfileFieldPrivacySection = ({ embedded = false }: ProfileFieldPri
     [friendsListShare, savingKey]
   );
 
+  const saveFindCrewVisibility = useCallback(
+    async (value: FindCrewVisibility) => {
+      if (findCrewVisibility === value || savingKey) return;
+      setSavingKey('findCrewVisibility');
+      setMessage(null);
+      const previous = findCrewVisibility;
+      setFindCrewVisibility(value);
+      try {
+        const next = await updateMeProfileFieldPrivacy({ findCrewVisibility: value });
+        applyPrivacyResponse(next, {
+          setSettings,
+          setDateOfBirthShare,
+          setFriendsListShare,
+          setFindCrewVisibility,
+        });
+        setMessage('Saved.');
+      } catch {
+        setFindCrewVisibility(previous);
+        setMessage('Could not save. Try again.');
+      } finally {
+        setSavingKey(null);
+      }
+    },
+    [findCrewVisibility, savingKey]
+  );
+
   const intro = (
     <p className={`text-xs leading-relaxed text-neutral-600 ${embedded ? 'mb-3' : 'mt-1'}`}>
       Choose what appears on your member card for{' '}
-      <span className="font-medium text-neutral-800">all signed-in members</span> vs{' '}
+      <span className="font-medium text-neutral-800">all signed-in members</span>,{' '}
+      <span className="font-medium text-neutral-800">friends of friends</span>, or{' '}
       <span className="font-medium text-neutral-800">friends and outing crew</span>. Guests must always sign in
       first. Sensitive fields default to private.
     </p>
@@ -167,7 +248,7 @@ export const ProfileFieldPrivacySection = ({ embedded = false }: ProfileFieldPri
     <div className={embedded ? 'space-y-5' : 'mt-4 space-y-5'}>
         <section>
           <h3 className="mb-2 px-1 text-sm font-bold text-neutral-800">Birth date on card</h3>
-          <div className="flex flex-col gap-2 rounded-xl border border-neutral-100 bg-neutral-50/80 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-2 rounded-xl bg-neutral-50/80 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:border sm:border-neutral-100">
             <div className="min-w-0">
               <p className="text-sm font-semibold text-neutral-900">Date of birth</p>
               <p className="text-xs text-neutral-500">{PROFILE_DATE_OF_BIRTH_SHARE_HINT}</p>
@@ -186,7 +267,7 @@ export const ProfileFieldPrivacySection = ({ embedded = false }: ProfileFieldPri
 
         <section>
           <h3 className="mb-2 px-1 text-sm font-bold text-neutral-800">Connections</h3>
-          <div className="flex flex-col gap-2 rounded-xl border border-neutral-100 bg-neutral-50/80 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-2 rounded-xl bg-neutral-50/80 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:border sm:border-neutral-100">
             <div className="min-w-0">
               <p className="text-sm font-semibold text-neutral-900">Friends list on profile</p>
               <p className="text-xs text-neutral-500">{PROFILE_FRIENDS_LIST_SHARE_HINT}</p>
@@ -203,6 +284,25 @@ export const ProfileFieldPrivacySection = ({ embedded = false }: ProfileFieldPri
           </div>
         </section>
 
+        <section>
+          <h3 className="mb-2 px-1 text-sm font-bold text-neutral-800">Find crew</h3>
+          <div className="flex flex-col gap-2 rounded-xl bg-neutral-50/80 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:border sm:border-neutral-100">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-neutral-900">Who can find you</p>
+              <p className="text-xs text-neutral-500">{FIND_CREW_VISIBILITY_HINT}</p>
+            </div>
+            <AppSelect
+              className="w-full sm:w-56"
+              size="compact"
+              aria-label="Find crew visibility"
+              value={findCrewVisibility}
+              disabled={savingKey === 'findCrewVisibility'}
+              options={FIND_CREW_OPTIONS}
+              onChange={(value) => void saveFindCrewVisibility(value as FindCrewVisibility)}
+            />
+          </div>
+        </section>
+
         {PROFILE_FIELD_PRIVACY_GROUPS.map((group) => (
           <section key={group.title}>
             <h3 className="mb-2 px-1 text-sm font-bold text-neutral-800">{group.title}</h3>
@@ -210,7 +310,7 @@ export const ProfileFieldPrivacySection = ({ embedded = false }: ProfileFieldPri
               {group.rows.map((row) => (
                 <li
                   key={row.key}
-                  className="flex flex-col gap-2 rounded-xl border border-neutral-100 bg-neutral-50/80 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between"
+                  className="flex flex-col gap-2 rounded-xl bg-neutral-50/80 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:border sm:border-neutral-100"
                 >
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-neutral-900">{row.label}</p>

@@ -216,6 +216,15 @@ export type ActivityGuideRecord = {
   respondedAt: Date | null;
 };
 
+export type ActivityPartyMemberRecord = {
+  membershipId: string;
+  groupId: string;
+  memberType: 'adult' | 'kid';
+  userId: string | null;
+  displayName: string;
+  status: 'family_invited' | 'accepted' | 'declined' | 'host_pending' | 'confirmed';
+};
+
 export interface ActivityRequest {
   id: string;
   activityId: string;
@@ -223,6 +232,9 @@ export interface ActivityRequest {
   status: RequestStatus;
   adults?: number;
   kids?: number;
+  partyMembers?: ActivityPartyMemberRecord[];
+  /** Approved participant; family/headcount bump still awaiting host confirmation. */
+  partyApprovalPending?: boolean;
   note: string | null;
   selectedPackageIndex: number | null;
   hostNote: string | null;

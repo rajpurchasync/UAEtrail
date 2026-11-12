@@ -84,7 +84,7 @@ export const ActivityManageSheet = ({
   const { headerFrosted } = useConsumerDetailScrollChrome(panelRef, scrollContentRef);
   const [view, setView] = useState<ActivityManageSubview>('overview');
 
-  /** Embedded consumer detail uses `--detail-header-pad` for modal underlap — manage header is outside scroll. */
+  /** Manage header is outside scroll; keep `--detail-header-pad` at 0 so jump-nav sticky stays flush. */
   useLayoutEffect(() => {
     const scroll = panelRef.current;
     if (!scroll) return;
@@ -235,13 +235,23 @@ export const ActivityManageSheet = ({
 
   const handleDelete = () => {
     if (!activity) return;
-    if (activity.status === 'draft') {
+    if (activity.status === 'draft' || activity.status === 'suspended') {
       actions.setConfirmDelete(activity);
       return;
     }
     if (activity.status === 'published') {
       actions.setConfirmCancel(activity);
     }
+  };
+
+  const handleSuspend = () => {
+    if (!activity || activity.status !== 'published') return;
+    actions.setConfirmSuspend(activity);
+  };
+
+  const handleResume = () => {
+    if (!activity || activity.status !== 'suspended') return;
+    void actions.resumeActivity(activity);
   };
 
   const decideRequest = async (
@@ -434,6 +444,8 @@ export const ActivityManageSheet = ({
                   },
                   onDuplicate: () => actions.hostFromExistingActivity(activity),
                   onDelete: handleDelete,
+                  onSuspend: handleSuspend,
+                  onResume: handleResume,
                   onShare: showShareFooter && onShare ? () => onShare(activity) : undefined,
                   onChat: caps.showGroupChat
                     ? () => {
@@ -481,6 +493,8 @@ export const ActivityManageSheet = ({
         }}
         onDuplicate={() => actions.hostFromExistingActivity(activity)}
         onDelete={handleDelete}
+        onSuspend={handleSuspend}
+        onResume={handleResume}
       />
 
       <ActivityJoinRequestDeclineDialog

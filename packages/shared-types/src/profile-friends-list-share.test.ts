@@ -54,5 +54,24 @@ describe('profile-friends-list-share', () => {
         canOpenMemberProfile: true,
       })
     ).toBe('full');
+    expect(
+      resolveProfileFriendsListVisibility({
+        share: 'friends_of_friends',
+        isSelf: false,
+        exposure: 'public',
+        canOpenMemberProfile: true,
+        relation: 'friend_of_friend',
+      })
+    ).toBe('full');
+    expect(
+      resolveProfileFriendsListVisibility({
+        share: 'friends_of_friends',
+        isSelf: false,
+        exposure: 'public',
+        canOpenMemberProfile: true,
+        relation: 'stranger',
+      })
+    ).toBe('none');
   });
 });
+

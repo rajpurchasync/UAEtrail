@@ -2,7 +2,13 @@ import { useMemo, useState } from 'react';
 import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import { Link } from 'react-router-dom';
 import { UserMinus, UserPlus } from 'lucide-react';
-import { AdminUserType, ActivityDTO } from '@uaetrail/shared-types';
+import {
+  AdminUserType,
+  ActivityDTO,
+  type CatalogEditRankingDTO,
+  formatCatalogEditRankingSummary,
+  memberProfilePath,
+} from '@uaetrail/shared-types';
 import {
   fetchAdminActivityDetail,
   fetchAdminGroupDetail,
@@ -31,6 +37,7 @@ export interface UserDetail {
   lastActiveAt?: string | null;
   emailVerifiedAt?: string | null;
   profile?: { displayName?: string; phone?: string; bio?: string; avatarUrl?: string };
+  catalogEditRanking?: CatalogEditRankingDTO | null;
   requests?: Array<{
     id: string;
     activityId: string;
@@ -597,8 +604,27 @@ export const UserDetailPanel = ({
                   <Section title="Bio"><p className="text-sm text-gray-700 whitespace-pre-wrap">{user.profile.bio}</p></Section>
                 )}
 
+                <Section title="Edit Ranking">
+                  <p className="text-sm text-gray-700">
+                    {user.catalogEditRanking
+                      ? formatCatalogEditRankingSummary(user.catalogEditRanking)
+                      : 'No catalog edits yet · Trust: New'}
+                  </p>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Success rate rises with each approved map submission; rejections lower trust.
+                  </p>
+                </Section>
+
                 <Section title="Quick links">
                   <div className="flex flex-wrap gap-2">
+                    <Link
+                      to={memberProfilePath(user.id)!}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 text-sm font-medium"
+                    >
+                      Public profile ↗
+                    </Link>
                     {(user.ownedTenants?.length ?? 0) > 0 && (
                       <button type="button" onClick={() => setTab('hosts')} className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-800 text-sm font-medium">
                         {user.ownedTenants!.length} publishing profile{user.ownedTenants!.length > 1 ? 's' : ''}

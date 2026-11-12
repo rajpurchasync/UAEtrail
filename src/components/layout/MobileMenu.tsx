@@ -21,6 +21,7 @@ import { iconStroke, MOBILE_NAV_ICON_MAP } from '../../config/navIcons';
 import { UiTooltip } from '../ui/UiTooltip';
 import {
   CONSUMER_HAMBURGER_MENU,
+  hostModeHamburgerMenu,
   isConsumerChromeHidden,
   LIST_DISCOVERY_PATH,
   MOBILE_LANDING_USER_MENU,
@@ -34,15 +35,29 @@ import { detectAndroidWebBrowser, resolveAndroidInstallSteps, resolveIosInstallS
 import { promptAndroidInstall } from '../../utils/pwaInstallPrompt';
 import { PROFILE_SETTINGS_PATH } from '../../config/routingCatalog';
 import { resolveMobileTabHeaderTitle } from '../../config/mobileTabHeader';
-import { exploreMapMobileBackState, mobileBackNavState, type MobileBackNavState } from '../../utils/mobileBackNav';
-import { isPublishingConsolePath } from '../../config/surfacePaths';
+import {
+  exploreMapMobileBackState,
+  mobileBackNavState,
+  mobileUnifiedHeaderShowsProfileLeading,
+  type MobileBackNavState,
+} from '../../utils/mobileBackNav';
+import { isPublishingConsolePath, PROFILE_PATH } from '../../config/surfacePaths';
 import { ADMIN_LINKS, PUBLISHING_CONSOLE_LINKS } from '../../constants';
-import { ADMIN_OVERVIEW_PATH } from '../../config/adminSurfacePaths';
+import { ADMIN_INBOX_PATH } from '../../config/adminSurfacePaths';
 import { isAdminConsoleNavActive } from '../../admin/adminNavActive';
 import { useAuth } from '../../context/AuthContext';
 import { persistAuthSessionTokens, switchMeRoleSession } from '../../hooks/accountSessionApi';
 import { accountRouteByRole } from '../../utils/authRouting';
 import { buildSignInRedirect, signInPathForReturn } from '../../utils/authReturnContext';
+import {
+  isHostModeSession,
+  resolveHostingHubPath,
+  switchToHostLabel,
+} from '../../hosting/hostingHubRouting';
+import {
+  navigateToHostModeHome,
+  navigateToVisitorHome,
+} from '../../hosting/navigateHostRoleHome';
 
 type ConsumerHamburgerLinkItem = Extract<ConsumerHamburgerMenuItem, { kind: 'link' }>;
 
@@ -61,6 +76,11 @@ const isConsumerHamburgerLinkActive = (
     return (
       (pathname === item.to || pathname.startsWith(`${item.to}/`)) &&
       !isPlanHostingFilterRoute(pathname, search)
+    );
+  }
+  if (item.label === 'Hosting') {
+    return (
+      isPublishingConsolePath(pathname) || isPlanHostingFilterRoute(pathname, search)
     );
   }
   return item.match.some((prefix) =>
@@ -548,14 +568,22 @@ export const MobileUserMenuButton = ({
 
 const MobileMenuPanel = () => {
   const { open, closeMenu } = useMobileMenu();
-  const { pathname, search } = useLocation();
+  const { pathname, search, state: locationState } = useLocation();
   const navigate = useNavigate();
   const { user, signOut, refreshUser } = useAuth();
-  const { canAccessPublishingWorkspace } = useMemberStatus({ enabled: Boolean(user) });
+  const { canAccessPublishingWorkspace, ownedProfiles, hostTiers } = useMemberStatus({
+    enabled: Boolean(user),
+  });
   const unreadNotifications = useNotificationUnreadCount();
   const { href: signInHref } = buildSignInRedirect({ pathname, search });
   const [androidHelpOpen, setAndroidHelpOpen] = useState(false);
   const [iosHelpOpen, setIosHelpOpen] = useState(false);
+  const hostMode = isHostModeSession(user?.role);
+  const hostingHubPath = resolveHostingHubPath({ ownedProfiles, hostTiers });
+  const hamburgerMenu = hostMode ? hostModeHamburgerMenu(hostingHubPath) : CONSUMER_HAMBURGER_MENU;
+  /** Header left is back chrome — surface Profile at the top of the drawer. */
+  const burgerNeedsProfileShortcut =
+    Boolean(user) && !mobileUnifiedHeaderShowsProfileLeading(pathname, locationState, search);
 
   useEffect(() => {
     if (!open) {
@@ -591,7 +619,11 @@ const MobileMenuPanel = () => {
       const res = await switchMeRoleSession(target);
       persistAuthSessionTokens(res.tokens);
       await refreshUser();
-      navigate(target === 'participant' ? EXPLORE_MAP_PATH : accountRouteByRole(res.data.role as Parameters<typeof accountRouteByRole>[0]), { replace: true });
+      if (target === 'participant') {
+        navigateToVisitorHome(navigate);
+        return;
+      }
+      await navigateToHostModeHome(navigate, res.data.role);
     } catch { /* noop */ }
   };
 
@@ -664,12 +696,40 @@ const MobileMenuPanel = () => {
     );
   }
 
+  const profileActive =
+    pathname === PROFILE_PATH || pathname.startsWith(`${PROFILE_PATH}/`);
+  const profileDisplayName = user?.displayName || user?.email || 'Account';
+
   return (
     <MobileDrawer open={open} closeMenu={closeMenu} ariaLabel="Main menu">
       <div className={MOBILE_DRAWER.stack}>
+        {burgerNeedsProfileShortcut ? (
+          <div className={MOBILE_DRAWER.group}>
+            <Link
+              to={profileDestination}
+              onClick={closeMenu}
+              className={mobileDrawerRowClass(profileActive)}
+              aria-current={profileActive ? 'page' : undefined}
+            >
+              <SecureAvatar
+                src={user?.avatarUrl}
+                name={profileDisplayName}
+                className="h-8 w-8 shrink-0 text-xs"
+              />
+              <span className="min-w-0">
+                <span className={drawerNavLabelClass(profileActive)}>Profile</span>
+                <span className="block truncate text-[11px] font-medium text-neutral-500">
+                  {profileDisplayName}
+                </span>
+              </span>
+            </Link>
+          </div>
+        ) : null}
         <div className={MOBILE_DRAWER.group}>
-          {CONSUMER_HAMBURGER_MENU.filter((item) => {
+          {hamburgerMenu.filter((item) => {
             if (item.kind !== 'link') return false;
+            // Account row above already links to Profile when header left is not the avatar.
+            if (burgerNeedsProfileShortcut && item.profileLink) return false;
             if (user) return true;
             if (!item.authGate) return true;
             return item.label === 'Chat';
@@ -711,7 +771,7 @@ const MobileMenuPanel = () => {
           </div>
         ) : null}
 
-        {CONSUMER_HAMBURGER_MENU.filter((item) => item.kind === 'download').map((item) => (
+        {hamburgerMenu.filter((item) => item.kind === 'download').map((item) => (
           <div key={item.title} role="group" aria-label={item.title}>
             <p className={MOBILE_DRAWER.sectionLabel}>{item.title}</p>
             <div className={MOBILE_DRAWER.group}>
@@ -796,7 +856,7 @@ const MobileMenuPanel = () => {
             <p className={MOBILE_DRAWER.sectionLabel}>Platform</p>
             <div className={MOBILE_DRAWER.group}>
               <Link
-                to={ADMIN_OVERVIEW_PATH}
+                to={ADMIN_INBOX_PATH}
                 onClick={closeMenu}
                 className={mobileDrawerRowClass(false)}
               >
@@ -817,9 +877,7 @@ const MobileMenuPanel = () => {
               >
                 <DrawerNavIcon active={false} icon={RefreshCw} />
                 <span className={`${drawerNavLabelClass(false)} text-emerald-800`}>
-                  {user?.switchedFromRole === 'platform_admin'
-                    ? 'Switch to admin'
-                    : `Restore ${user?.switchedFromRole?.replace(/_/g, ' ')}`}
+                  {switchToHostLabel(user?.switchedFromRole)}
                 </span>
               </button>
             ) : null}

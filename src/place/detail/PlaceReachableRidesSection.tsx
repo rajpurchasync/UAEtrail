@@ -1,33 +1,40 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import type { PlaceReachableRideRowDTO } from '@uaetrail/shared-types';
 import { formatExploreEventDateLabel } from '@uaetrail/shared-types';
-import { api } from '../../api/index';
-import { ActivityHubListRow } from '../../components/mobile/ActivityHubListRow';
+import { fetchPlaceReachableRides } from '../../hooks/placeDetailClientApi';
+import { ActivityLinkedRideshareAffordance } from '../../components/activity/ActivityLinkedRideshareAffordance';
 import { ConsumerDetailSection } from '../../detail/shell/ConsumerDetailSection';
 import { AsyncLoadingState } from '../../components/ui/AsyncLoadingState';
 import { LOADING_NEARBY_RIDES } from '../../content/detailLoadingCopy';
+import type { ActivityLinkagePlanSummary } from '../../activity/resolveActivityLinkageSummaries';
 
 const PAGE_SIZE = 10;
 
-const formatRideRowMeta = (row: PlaceReachableRideRowDTO): string => {
+const toSummary = (row: PlaceReachableRideRowDTO): ActivityLinkagePlanSummary => {
   const activity = row.activity;
   const datePart = formatExploreEventDateLabel(activity.date) ?? activity.date;
-  const parts: string[] = [];
-  if (activity.locationName?.trim()) parts.push(activity.locationName.trim());
-  parts.push(datePart);
-  if (activity.time?.trim()) parts.push(activity.time.trim());
-  return parts.join(' · ');
-};
-
-const distanceChip = (km: number | null) => {
-  if (km == null) return null;
-  const label = km < 1 ? `${Math.round(km * 1000)} m` : `${km} km`;
-  return (
-    <span className="shrink-0 rounded-md bg-white/90 px-1.5 py-0.5 text-[10px] font-bold text-indigo-900 ring-1 ring-indigo-200">
-      {label}
-    </span>
-  );
+  const distance =
+    row.distanceKmFromPlace == null
+      ? null
+      : row.distanceKmFromPlace < 1
+        ? `${Math.round(row.distanceKmFromPlace * 1000)} m away`
+        : `${row.distanceKmFromPlace} km away`;
+  const blurbParts = [
+    activity.locationName?.trim() || null,
+    datePart,
+    activity.time?.trim() || null,
+    distance,
+  ].filter(Boolean);
+  return {
+    id: activity.id,
+    title: activity.title?.trim() || 'Rideshare',
+    activityType: activity.activityType ?? 'rideshare',
+    description: blurbParts.join(' · ') || activity.description || null,
+    date: activity.date ?? null,
+    time: activity.time ?? null,
+    endDate: activity.endDate ?? null,
+    endTime: activity.endTime ?? null,
+  };
 };
 
 type PlaceReachableRidesSectionProps = {
@@ -35,7 +42,6 @@ type PlaceReachableRidesSectionProps = {
 };
 
 export const PlaceReachableRidesSection = ({ placeId }: PlaceReachableRidesSectionProps) => {
-  const navigate = useNavigate();
   const [rows, setRows] = useState<PlaceReachableRideRowDTO[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
@@ -49,8 +55,7 @@ export const PlaceReachableRidesSection = ({ placeId }: PlaceReachableRidesSecti
     setHasMore(false);
     setLoading(true);
     let cancelled = false;
-    void api
-      .getPlaceReachableRides(placeId, 1, PAGE_SIZE)
+    void fetchPlaceReachableRides(placeId, 1, PAGE_SIZE)
       .then((res) => {
         if (cancelled) return;
         setRows(res.data ?? []);
@@ -79,8 +84,7 @@ export const PlaceReachableRidesSection = ({ placeId }: PlaceReachableRidesSecti
         if (!entries[0]?.isIntersecting) return;
         setLoadingMore(true);
         const nextPage = page + 1;
-        void api
-          .getPlaceReachableRides(placeId, nextPage, PAGE_SIZE)
+        void fetchPlaceReachableRides(placeId, nextPage, PAGE_SIZE)
           .then((res) => {
             setRows((prev) => [...prev, ...(res.data ?? [])]);
             setHasMore(res.meta?.hasMore ?? false);
@@ -95,13 +99,14 @@ export const PlaceReachableRidesSection = ({ placeId }: PlaceReachableRidesSecti
     return () => observer.disconnect();
   }, [hasMore, loading, loadingMore, page, placeId]);
 
+  const hasRides = rows.length > 0;
   const sectionProps = {
     id: 'place-detail-rides' as const,
-    title: 'Rides reaching this area' as const,
+    title: 'Rides to this place' as const,
     tone: 'indigo' as const,
-    ariaLabel: 'Rides reaching this area',
+    ariaLabel: 'Rides to this place',
     collapsible: true,
-    defaultExpanded: false,
+    defaultExpanded: true,
   };
 
   if (loading) {
@@ -112,27 +117,26 @@ export const PlaceReachableRidesSection = ({ placeId }: PlaceReachableRidesSecti
     );
   }
 
-  if (rows.length === 0) {
+  if (!hasRides) {
     return (
       <ConsumerDetailSection {...sectionProps}>
-        <p className="text-sm text-neutral-700 lg:text-[13px]">
-          No published rides listed for this place yet. Check the map for rideshare pins nearby.
-        </p>
+        <div className="rounded-xl border border-indigo-100 bg-indigo-50/70 px-4 py-3.5 text-sm text-indigo-950 shadow-sm dark:border-indigo-900/40 dark:bg-indigo-950/25 dark:text-indigo-100">
+          <p className="font-semibold">No rides listed yet</p>
+          <p className="mt-0.5 text-indigo-900/80 dark:text-indigo-200/80">
+            Shared rides that head here (or to outings at this place) will appear as cards in this
+            section.
+          </p>
+        </div>
       </ConsumerDetailSection>
     );
   }
 
   return (
-    <ConsumerDetailSection {...sectionProps} defaultExpanded>
-      <ul className="divide-y divide-indigo-100/80 rounded-lg border border-indigo-100/80 bg-white/70">
+    <ConsumerDetailSection {...sectionProps}>
+      <ul className="m-0 flex list-none flex-col gap-2 p-0">
         {rows.map((row) => (
           <li key={row.activity.id}>
-            <ActivityHubListRow
-              title={row.activity.title?.trim() || 'Rideshare'}
-              meta={formatRideRowMeta(row)}
-              badge={distanceChip(row.distanceKmFromPlace)}
-              onClick={() => navigate(`/activity/${row.activity.id}`)}
-            />
+            <ActivityLinkedRideshareAffordance rideshare={toSummary(row)} className="mt-0" />
           </li>
         ))}
       </ul>

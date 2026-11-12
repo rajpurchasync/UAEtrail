@@ -7,6 +7,7 @@ import { ACTIVITY_INVITE_FRIENDS_CTA } from '../content/activityInviteCopy';
 import {
   ACTIVITY_CTA_MESSAGE_HOST,
   ACTIVITY_CTA_OPEN_CHAT,
+  ACTIVITY_CTA_PENDING_APPROVAL,
   ACTIVITY_PEEK_MANAGE_LABEL,
 } from '../content/activityParticipationCopy';
 import { JOIN_CANCEL_REQUEST_BUTTON } from '../content/joinWithdrawCopy';
@@ -74,7 +75,7 @@ export const activityMapPeekActionLabel = (
     case 'pending_join':
       return action?.joinRequestStatus
         ? pendingApprovalLabel(action.joinRequestStatus)
-        : 'Waiting for host';
+        : ACTIVITY_CTA_PENDING_APPROVAL;
     default:
       return id;
   }

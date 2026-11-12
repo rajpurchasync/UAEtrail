@@ -43,6 +43,7 @@ const activityStatusFromQuery = (
   if (status === 'published') return ActivityStatus.PUBLISHED;
   if (status === 'draft') return ActivityStatus.DRAFT;
   if (status === 'cancelled') return ActivityStatus.CANCELLED;
+  if (status === 'suspended') return ActivityStatus.SUSPENDED;
   return undefined;
 };
 

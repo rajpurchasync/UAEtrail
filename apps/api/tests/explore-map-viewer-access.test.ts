@@ -140,12 +140,14 @@ describe('attachExploreMapViewerAccess', () => {
     });
 
     expect(enriched[0].viewerAccess?.level).toBe('host');
+    // Hosts may link a ride without Pro (`computeActivityViewerEntitlements`).
     expect(enriched[0].viewerAccess?.mapPeekActions?.map((a) => a.id)).toEqual([
       'share_activity',
       'manage_activity',
+      'link_rideshare',
       'view_detail',
     ]);
-    expect(enriched[0].viewerAccess?.entitlements?.canAddLinkedRide).toBe(false);
+    expect(enriched[0].viewerAccess?.entitlements?.canAddLinkedRide).toBe(true);
   });
 
   it('attaches pending join-invite count on mapPeekStrips for host', () => {
@@ -203,6 +205,7 @@ describe('attachExploreMapViewerAccess', () => {
       'open_crew_chat',
       'share_activity',
       'manage_activity',
+      'link_rideshare',
       'view_detail',
     ]);
   });

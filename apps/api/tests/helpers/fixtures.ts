@@ -280,6 +280,7 @@ export const registerVerifiedVisitor = async (
     medicalConditions: 'N/A',
     emergencyContactName: 'Test emergency',
     emergencyContactPhone: '+971501112233',
+    emergencyContactRelation: 'Friend',
   });
 
   return {

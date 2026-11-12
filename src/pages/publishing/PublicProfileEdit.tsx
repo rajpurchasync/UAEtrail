@@ -10,7 +10,7 @@ import { OrganisationPublicProfile } from '../../components/organisation-console
 import { ConsoleShell } from '../../console/ConsoleShell';
 import { GlassCard } from '../../components/mobile/GlassCard';
 import { PUBLISHING_PROFILE_PATH, signInPath } from '../../config/routingCatalog';
-import { accountRouteByRole } from '../../utils/authRouting';
+import { navigateToVisitorHome } from '../../hosting/navigateHostRoleHome';
 
 export const PublicProfileEdit = () => {
   const { user, initializing, refreshUser } = useAuth();
@@ -52,10 +52,10 @@ export const PublicProfileEdit = () => {
     setSwitchMessage(null);
     setSwitchingRole(true);
     try {
-      const res = await switchMeRoleSession('participant');
-      persistAuthSessionTokens(res.tokens);
+      const session = await switchMeRoleSession('participant');
+      persistAuthSessionTokens(session.tokens);
       await refreshUser();
-      navigate(accountRouteByRole(res.data.role as Parameters<typeof accountRouteByRole>[0]), { replace: true });
+      navigateToVisitorHome(navigate);
     } catch (err) {
       setSwitchMessage(err instanceof Error ? err.message : 'Failed to switch role');
     } finally {
@@ -90,7 +90,9 @@ export const PublicProfileEdit = () => {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-semibold text-neutral-900">Role mode</p>
-            <p className="mt-1 text-xs text-neutral-600">Switch to participant mode to browse and book activities.</p>
+            <p className="mt-1 text-xs text-neutral-600">
+              Switch to visitor to explore the map and join outings.
+            </p>
           </div>
           <button
             type="button"
@@ -98,7 +100,7 @@ export const PublicProfileEdit = () => {
             onClick={() => void switchToVisitorMode()}
             className="ios-btn min-h-[40px] bg-emerald-600 px-3 text-white"
           >
-            {switchingRole ? 'Switching...' : 'Switch to participant'}
+            {switchingRole ? 'Switching...' : 'Switch to Visitor'}
           </button>
         </div>
         {switchMessage && <p className="mt-2 text-xs text-red-600">{switchMessage}</p>}

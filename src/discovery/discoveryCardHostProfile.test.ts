@@ -73,6 +73,24 @@ describe('resolveDiscoveryCardLocationDetailPath', () => {
       )
     ).toBe('/place/loc-1');
   });
+
+  it('does not use outing type for place links (event at a camp → /place)', () => {
+    expect(
+      resolveDiscoveryCardLocationDetailPath(
+        activityCard({
+          locationId: 'fossil-rock-desert-camp',
+          kind: 'event',
+          locationActivityType: null,
+          activity: {
+            id: '1',
+            hostUserId: 'host-1',
+            activityType: 'event',
+            publishingProfileKind: 'community',
+          },
+        })
+      )
+    ).toBe('/place/fossil-rock-desert-camp');
+  });
 });
 
 describe('discoveryCardCanOpenHostProfile', () => {

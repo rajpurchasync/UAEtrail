@@ -3,6 +3,8 @@ import { exploreSeekingMapItemPath } from '@uaetrail/shared-types';
 /** Deep links in API notification meta — keep in sync with `src/config/surfacePaths.ts`. */
 export const PRO_MEMBERSHIP_PATH = '/profile/pro-membership';
 export const PLAN_PATH = '/plan';
+/** Community hosting hub — keep in sync with FE `HOSTING_HUB_PATH`. */
+export const HOSTING_HUB_PATH = '/hosting';
 export const PROFILE_PATH = '/profile';
 export const PROFILE_BADGES_PATH = '/profile/badges';
 export const GROUPS_PATH = '/groups';
@@ -35,8 +37,8 @@ export const EXPLORE_VENUES_LIST_PATH = '/explore?panel=venues&list=1';
 /** Plan schedule → joined outings — FE `tripsLegacyJoinedTabPath()`. */
 export const planJoinedSchedulePath = (): string => `${PLAN_PATH}?view=plans&filter=joined`;
 
-/** Buddy organizer join queue on Plan (not tenant `/publishing/requests`) — FE `planHostingFilterPath()`. */
-export const planHostedSchedulePath = (): string => `${PLAN_PATH}?view=plans&filter=hosting`;
+/** Community hosting hub (not My Plans) — FE `HOSTING_HUB_PATH` / `planHostingFilterPath()`. */
+export const planHostedSchedulePath = (): string => HOSTING_HUB_PATH;
 
 /** @deprecated Name kept for imports — value is canonical {@link PLAN_PATH}. */
 export const TRIPS_JOINED_TAB_PATH = planJoinedSchedulePath();

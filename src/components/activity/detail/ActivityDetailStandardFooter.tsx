@@ -5,6 +5,7 @@ import {
   Settings2,
   Share2,
   UserPlus,
+  Users,
   type LucideIcon,
 } from 'lucide-react';
 import type {
@@ -14,7 +15,7 @@ import type {
 
 const FOOTER_BTN_BASE =
   'flex flex-1 items-center justify-center text-center shadow-sm disabled:opacity-60';
-const FOOTER_BTN_MOBILE = `${FOOTER_BTN_BASE} min-h-10 min-w-0 shrink-0 rounded-xl px-2.5 text-xs font-semibold`;
+const FOOTER_BTN_MOBILE = `${FOOTER_BTN_BASE} min-h-10 min-w-0 shrink-0 rounded-xl px-1.5 py-1.5 text-[11px] font-semibold leading-tight`;
 const FOOTER_BTN_DESKTOP =
   'flex min-h-[3.25rem] flex-1 items-center justify-center rounded-2xl px-3 text-center text-sm font-bold shadow-sm disabled:opacity-60 lg:min-h-9 lg:rounded-lg lg:text-[13px] lg:font-semibold';
 
@@ -33,8 +34,8 @@ const statusClassCompact = `${FOOTER_BTN_MOBILE} bg-amber-100 text-amber-900 dis
 const mutedClass = `${FOOTER_BTN_DESKTOP} bg-neutral-200 text-neutral-500`;
 const mutedClassCompact = `${FOOTER_BTN_MOBILE} bg-neutral-200 text-neutral-500`;
 
-const dangerClass = `${FOOTER_BTN_DESKTOP} border border-red-100 bg-red-50 text-red-800 active:bg-red-100/80`;
-const dangerClassCompact = `${FOOTER_BTN_MOBILE} border border-red-100 bg-red-50 text-red-800 active:bg-red-100/80`;
+const dangerClass = `${FOOTER_BTN_DESKTOP} bg-red-600 text-white active:bg-red-700`;
+const dangerClassCompact = `${FOOTER_BTN_MOBILE} bg-red-600 text-white active:bg-red-700`;
 
 const toneClass = (tone: ActivityDetailFooterButton['tone'], compact: boolean): string => {
   switch (tone) {
@@ -60,6 +61,9 @@ const footerActionIcon = (action: ActivityDetailFooterAction): LucideIcon | null
     case 'participant_invite':
     case 'invite_crew':
       return UserPlus;
+    case 'add_family':
+    case 'edit_family':
+      return Users;
     case 'participant_withdraw':
       return LogOut;
     case 'share_activity':
@@ -92,7 +96,11 @@ const FooterButtonLabel = ({
     ? 'h-3.5 w-3.5 shrink-0 opacity-90'
     : 'hidden h-4 w-4 shrink-0 md:block';
   return (
-    <span className={`inline-flex items-center justify-center ${compactButtons ? 'gap-1' : 'gap-1.5'}`}>
+    <span
+      className={`inline-flex min-w-0 items-center justify-center ${
+        compactButtons ? 'max-w-full gap-1' : 'gap-1.5'
+      }`}
+    >
       {Icon ? <Icon className={iconClass} aria-hidden /> : null}
       <span className="min-w-0 truncate">{button.label}</span>
     </span>
@@ -104,6 +112,7 @@ type ActivityDetailStandardFooterProps = {
   left: ActivityDetailFooterButton;
   right: ActivityDetailFooterButton;
   center?: ActivityDetailFooterButton;
+  fourth?: ActivityDetailFooterButton;
   onPress: (action: ActivityDetailFooterButton['action']) => void;
   /** Icon before label on large screens (desktop aside column). */
   showDesktopIcons?: boolean;
@@ -115,12 +124,13 @@ type ActivityDetailStandardFooterProps = {
   compactButtons?: boolean;
 };
 
-/** One row — two or three buttons on activity detail sticky footer. */
+/** One row — two to four buttons on activity detail sticky footer. */
 export const ActivityDetailStandardFooter = ({
   mode,
   left,
   right,
   center,
+  fourth,
   onPress,
   showDesktopIcons = false,
   stackActions = false,
@@ -154,6 +164,20 @@ export const ActivityDetailStandardFooter = ({
       >
         <FooterButtonLabel
           button={center}
+          showDesktopIcons={showDesktopIcons}
+          compactButtons={compactButtons}
+        />
+      </button>
+    ) : null}
+    {fourth ? (
+      <button
+        type="button"
+        disabled={fourth.disabled}
+        onClick={() => onPress(fourth.action)}
+        className={toneClass(fourth.tone, compactButtons)}
+      >
+        <FooterButtonLabel
+          button={fourth}
           showDesktopIcons={showDesktopIcons}
           compactButtons={compactButtons}
         />

@@ -22,6 +22,8 @@ export interface ConsoleHubSectionsProps {
   upcomingActivities: ActivityDTO[];
   /** Workspace shortcuts — omitted when the shell already shows nav (e.g. `/publishing/overview`). */
   showConsoleLinks?: boolean;
+  /** Compact “Up next” preview — hide when Activities chip covers the same list. */
+  showUpcomingPreview?: boolean;
 }
 
 const buildConsoleStats = ({
@@ -55,6 +57,7 @@ export const ConsoleHubSections = ({
   pastActivitiesCount,
   upcomingActivities,
   showConsoleLinks = true,
+  showUpcomingPreview = true,
 }: ConsoleHubSectionsProps) => {
   const stats = buildConsoleStats({
     activitiesCount,
@@ -63,7 +66,7 @@ export const ConsoleHubSections = ({
     pastActivitiesCount,
   });
 
-  const previewActivities = upcomingActivities.slice(0, 2);
+  const previewActivities = showUpcomingPreview ? upcomingActivities.slice(0, 2) : [];
 
   return (
     <>

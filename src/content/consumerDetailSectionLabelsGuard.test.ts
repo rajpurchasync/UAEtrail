@@ -42,7 +42,7 @@ describe('consumerDetailSectionLabelsGuard', () => {
     expect(source).toMatch(/StatGrid label=""/);
     expect(source).toMatch(/ConsumerDetailHeroGeoLine/);
     expect(source).toMatch(/landing-hero-headline/);
-    expect(source).toMatch(/max-lg:-mt-\[var\(--detail-header-pad/);
+    expect(source).not.toMatch(/max-lg:-mt-\[var\(--detail-header-pad/);
     expect(source).not.toMatch(/overlay=\{\s*<>[\s\S]*headerChrome\.label[\s\S]*<\/h1>/);
   });
 });

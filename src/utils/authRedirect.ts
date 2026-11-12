@@ -12,6 +12,7 @@ import {
 import type { UserRole } from '@uaetrail/shared-types';
 import type { NavigateFunction } from 'react-router-dom';
 import { navigateBack } from './backStack';
+import { stripSessionExpiredQuery } from './authSessionLanding';
 
 const AUTH_LOOP_PATHS = new Set(['/signin', '/signup', '/verify']);
 
@@ -102,7 +103,8 @@ export const resolveAuthRedirect = (
   if (!candidate.startsWith('/') || candidate.startsWith('//')) {
     return undefined;
   }
-  return candidate;
+  // Avoid returning to Explore/Home with the guest “session expired” toast still in the URL.
+  return stripSessionExpiredQuery(candidate);
 };
 
 /** True when `?redirect=` is present but is not a safe in-app path. */

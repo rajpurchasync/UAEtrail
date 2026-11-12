@@ -32,11 +32,11 @@ export const PRODUCT_PLAN_SURFACE_TITLE = 'My Plans';
 export const PRODUCT_PLAN_MEMBER_NAV_HINT =
   'Outings you join, saved places, and goals — your side of getting outside together.';
 
-/** Host console shortcut — same `/plan` surface, hosting filter (not a separate product). */
-export const PRODUCT_HOSTING_SCHEDULE_NAV_LABEL = 'Hosting schedule';
+/** Hosting hub — `/hosting` (not My Plans goals/wishlist). */
+export const PRODUCT_HOSTING_SCHEDULE_NAV_LABEL = 'Hosting';
 
 export const PRODUCT_HOSTING_SCHEDULE_NAV_HINT =
-  'Outings you organize — publish, edit, and review join requests.';
+  'Upcoming outings you organize — approvals, chat, manage trips, and past history.';
 
 /** Upcoming list context (Plan page). */
 export const PRODUCT_PLAN_UPCOMING_JOINED_CONTEXT =
@@ -51,11 +51,13 @@ export const PRODUCT_PLAN_GOALS_ON_WISHLIST =
 
 /** Explore people panel vs friends list (D11). */
 export const PRODUCT_PEOPLE_DISCOVERY_LABEL = 'Find your crew';
+/** Social hub tab — discover people to add as friends. */
+export const PRODUCT_FIND_FRIENDS_HUB_LABEL = 'Find friends';
 export const PRODUCT_FRIENDS_SURFACE_LABEL = 'Friends';
 /** Combined friends + groups hub (desktop GO + hamburger). */
 export const PRODUCT_SOCIAL_SURFACE_TITLE = 'Social';
 export const PRODUCT_SOCIAL_NAV_HINT =
-  'Friends, groups, and people you can go outside with.';
+  'Manage friends and family groups — open chat when you want to message.';
 export const PRODUCT_GROUPS_SURFACE_LABEL = 'Groups';
 
 /** Join CTA label — marketing / map browse (free account). */

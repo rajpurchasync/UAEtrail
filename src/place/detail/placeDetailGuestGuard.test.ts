@@ -7,9 +7,9 @@ const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 
 describe('placeDetailGuestGuard', () => {
   it('guest jump chips stay on preview sections', () => {
-    const links = buildPlaceConsumerDetailJumpLinks({
+    const guestInput = {
       guestPreview: true,
-      kind: 'trail',
+      kind: 'trail' as const,
       hasAbout: true,
       showMapElevation: true,
       showSeason: true,
@@ -20,8 +20,25 @@ describe('placeDetailGuestGuard', () => {
       showScheduled: true,
       showRides: true,
       showGuide: true,
-    });
-    expect(links.map((l) => l.label)).toEqual(['Key facts', 'Overview']);
+    };
+    // "Rides to this place" is a public preview section (rendered above the member-only block).
+    expect(buildPlaceConsumerDetailJumpLinks(guestInput).map((l) => l.label)).toEqual([
+      'Key facts',
+      'Overview',
+      'Rides',
+    ]);
+    expect(
+      buildPlaceConsumerDetailJumpLinks({ ...guestInput, showRides: false }).map((l) => l.label)
+    ).toEqual(['Key facts', 'Overview']);
+  });
+
+  it('guest rides chip targets a section rendered outside the member-only block', () => {
+    const template = read('src/place/detail/templates/PlaceConsumerDetailPage.tsx');
+    const ridesAt = template.indexOf('<PlaceReachableRidesSection');
+    const memberOnlyAt = template.indexOf('{guestPreview ? null : (');
+    expect(ridesAt).toBeGreaterThan(-1);
+    expect(memberOnlyAt).toBeGreaterThan(-1);
+    expect(ridesAt).toBeLessThan(memberOnlyAt);
   });
 
   it('place L3 wires guest gate above jump nav', () => {

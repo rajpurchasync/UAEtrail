@@ -33,8 +33,10 @@ describe('surfacePaths', () => {
       `${GROUPS_PATH}?create=1&from=profile`
     );
     expect(groupsPath({ invite: 'tok' })).toBe(`${GROUPS_PATH}?invite=tok`);
-    expect(groupsManagePath('g-1')).toBe(`${GROUPS_PATH}?group=g-1&tab=members`);
-    expect(groupsManagePath('g-1', 'manage')).toBe(`${GROUPS_PATH}?group=g-1&tab=manage`);
+    expect(groupsManagePath('g-1')).toBe(`${GROUPS_PATH}?group=g-1`);
+    expect(groupsManagePath('g-1', 'hub')).toBe(`${GROUPS_PATH}?group=g-1`);
+    expect(groupsManagePath('g-1', 'invite')).toBe(`${GROUPS_PATH}?group=g-1&section=invite`);
+    expect(groupsManagePath('g-1', 'manage')).toBe(`${GROUPS_PATH}?group=g-1&section=settings`);
     expect(messagesGroupPath('g-1', 'act-1')).toBe('/chat?group=g-1&chat=1&activity=act-1');
     expect(messagesGroupChatPath('g-1', 'act-1')).toBe('/chat?group=g-1&chat=1&activity=act-1');
   });

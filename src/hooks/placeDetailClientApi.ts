@@ -2,6 +2,7 @@ import type {
   ActivityDTO,
   LocationDTO,
   LocationDetailResponse,
+  PlaceReachableRidesResponse,
   ReviewDTO,
 } from '@uaetrail/shared-types';
 import { api } from '../api/index';
@@ -16,6 +17,13 @@ export const fetchPlaceActivities = async (placeId: string): Promise<ActivityDTO
   return res.data ?? [];
 };
 
+/** Published rideshare offers whose destination is this place (paginated). */
+export const fetchPlaceReachableRides = async (
+  placeId: string,
+  page = 1,
+  pageSize = 10
+): Promise<PlaceReachableRidesResponse> => api.getPlaceReachableRides(placeId, page, pageSize);
+
 export const fetchPlaceReviews = async (placeId: string): Promise<ReviewDTO[]> => {
   const res = await api.getPlaceReviews(placeId);
   return res.data ?? [];
@@ -29,18 +37,15 @@ export const fetchPublicPlaceDetail = async (placeId: string): Promise<LocationD
 export const fetchPublicPlaceDetailPayload = async (
   placeId: string
 ): Promise<LocationDetailResponse> => {
-  const shell = await api.getPublicPlaceDetail(placeId);
-  if (!getStoredSession()) return shell;
-  try {
-    const me = await api.getPublicPlaceMeState(placeId);
-    return {
-      ...shell,
-      ...me,
-      data: me.data ?? shell.data,
-      premium: me.premium ?? shell.premium,
-      viewerAccess: me.viewerAccess ?? shell.viewerAccess,
-    };
-  } catch {
-    return shell;
+  // Signed-in path first: draft places are only readable by submitter / platform admin
+  // (`GET /places/:id` with auth:false always 404s drafts).
+  if (getStoredSession()) {
+    try {
+      return await api.getPublicPlaceMeState(placeId);
+    } catch {
+      /* fall through to public shell for active places if me/state fails */
+    }
   }
+
+  return api.getPublicPlaceDetail(placeId);
 };

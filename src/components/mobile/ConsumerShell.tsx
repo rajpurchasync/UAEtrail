@@ -77,7 +77,16 @@ export const ConsumerShell = ({
   const layoutUnifiedHeader = shouldShowMobileUnifiedTabHeader(pathname, search, Boolean(user));
   const effectiveSuppressMobileHeader = suppressMobileHeader || layoutUnifiedHeader;
   const shellHamburger = shouldShowConsumerShellHamburger(pathname);
-  const headerTrailing = action ?? (shellHamburger ? <ConsumerHeaderActions showOnDesktop={false} /> : null);
+  const shellMenu = shellHamburger ? <ConsumerHeaderActions showOnDesktop={false} /> : null;
+  const headerTrailing =
+    action && shellMenu ? (
+      <div className="flex shrink-0 items-center gap-0.5">
+        {action}
+        {shellMenu}
+      </div>
+    ) : (
+      action ?? shellMenu
+    );
   const barTitle = navTitle ?? title;
   const pad = flush ? '' : 'px-4 sm:px-6 lg:px-8';
   const showTabTitleStrip = layout === 'tab' && title && !banner;

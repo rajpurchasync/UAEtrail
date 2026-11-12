@@ -1,9 +1,11 @@
 import type {
+  FindCrewVisibility,
   ProfileDateOfBirthShare,
   ProfileFieldPrivacySettings,
   ProfileFriendsListShare,
 } from '@uaetrail/shared-types';
 import {
+  mergeFindCrewVisibility,
   mergeProfileDateOfBirthShare,
   mergeProfileFieldPrivacy,
   mergeProfileFriendsListShare,
@@ -15,12 +17,14 @@ import { findAuthUserById } from './member-identity-read.js';
 export type MemberProfilePrivacySettingsDTO = ProfileFieldPrivacySettings & {
   dateOfBirthShare: ProfileDateOfBirthShare;
   friendsListShare: ProfileFriendsListShare;
+  findCrewVisibility: FindCrewVisibility;
 };
 
 const readPrivacySettings = (profile: {
   fieldPrivacy?: Partial<ProfileFieldPrivacySettings> | null;
   dateOfBirthShare?: ProfileDateOfBirthShare | null;
   friendsListShare?: ProfileFriendsListShare | null;
+  findCrewVisibility?: FindCrewVisibility | null;
   profileVisibility?: 'public' | 'group_members' | 'private' | null;
 } | null | undefined): MemberProfilePrivacySettingsDTO => {
   const fieldPrivacy = mergeProfileFieldPrivacy(profile?.fieldPrivacy);
@@ -35,7 +39,8 @@ const readPrivacySettings = (profile: {
     profile?.friendsListShare,
     profile?.profileVisibility ?? null
   );
-  return { ...fieldPrivacy, dateOfBirthShare, friendsListShare };
+  const findCrewVisibility = mergeFindCrewVisibility(profile?.findCrewVisibility);
+  return { ...fieldPrivacy, dateOfBirthShare, friendsListShare, findCrewVisibility };
 };
 
 export const getMemberFieldPrivacySettings = async (
@@ -51,6 +56,7 @@ export const patchMemberFieldPrivacy = async (
     fieldPrivacy?: Partial<ProfileFieldPrivacySettings>;
     dateOfBirthShare?: ProfileDateOfBirthShare;
     friendsListShare?: ProfileFriendsListShare;
+    findCrewVisibility?: FindCrewVisibility;
   }
 ): Promise<MemberProfilePrivacySettingsDTO> => {
   const user = await findAuthUserById(userId);
@@ -67,10 +73,13 @@ export const patchMemberFieldPrivacy = async (
     patch.dateOfBirthShare !== undefined ? patch.dateOfBirthShare : current.dateOfBirthShare;
   const friendsListShare =
     patch.friendsListShare !== undefined ? patch.friendsListShare : current.friendsListShare;
+  const findCrewVisibility =
+    patch.findCrewVisibility !== undefined ? patch.findCrewVisibility : current.findCrewVisibility;
   await updateAuthUserProfile(userId, {
     fieldPrivacy: nextFieldPrivacy,
     dateOfBirthShare,
     friendsListShare,
+    findCrewVisibility,
   });
-  return { ...nextFieldPrivacy, dateOfBirthShare, friendsListShare };
+  return { ...nextFieldPrivacy, dateOfBirthShare, friendsListShare, findCrewVisibility };
 };

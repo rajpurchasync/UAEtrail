@@ -77,7 +77,7 @@ export const ChatGroupSummarySheet = ({
             label: 'Edit group',
             icon: <UserRound className="h-4 w-4" aria-hidden />,
             variant: 'secondary' as const,
-            to: groupsManagePath(group.id, 'manage'),
+            to: groupsManagePath(group.id, 'settings'),
           },
         ]
       : []),

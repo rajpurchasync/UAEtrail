@@ -141,6 +141,20 @@ export const publishingWorkspaceApi = {
       headers: organisationRequestHeaders(tenantId),
     }),
 
+  suspendActivity: (tenantId: string, activityId: string) =>
+    apiRequest(`/publishing/activities/${activityId}/suspend`, {
+      method: 'POST',
+      auth: true,
+      headers: organisationRequestHeaders(tenantId),
+    }),
+
+  resumeActivity: (tenantId: string, activityId: string) =>
+    apiRequest(`/publishing/activities/${activityId}/resume`, {
+      method: 'POST',
+      auth: true,
+      headers: organisationRequestHeaders(tenantId),
+    }),
+
   duplicateActivity: (tenantId: string, activityId: string) =>
     apiRequest<{ data: ActivityDTO }>(`/publishing/activities/${activityId}/duplicate`, {
       method: 'POST',

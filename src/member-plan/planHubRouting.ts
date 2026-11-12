@@ -1,5 +1,6 @@
 import { INBOUND_PLAN_HUB_TRIPS_MAP_PATH } from '../config/inboundBookmarkPaths';
 import {
+  HOSTING_HUB_PATH,
   JOURNEY_MAP_PATH,
   PLAN_PATH,
   PROFILE_HISTORY_PATH,
@@ -90,7 +91,7 @@ export const parsePlanUpcomingSub = (segment: PlanHubSegment): PlanUpcomingSub =
 export const planUpcomingPath = (
   filter: 'hosting' | 'joined' | 'all' = 'all'
 ): string => {
-  if (filter === 'hosting') return planMainTabPath('upcoming', { filter: 'hosting' });
+  if (filter === 'hosting') return HOSTING_HUB_PATH;
   if (filter === 'joined') return planMainTabPath('upcoming', { filter: 'joined' });
   return planMainTabPath('upcoming');
 };
@@ -99,15 +100,16 @@ export const planUpcomingPath = (
 export const planPlansRolePath = (
   role: PlanUpcomingRole | PlanUpcomingSub = 'all'
 ): string => {
-  const params = new URLSearchParams();
-  params.set('view', 'plans');
   if (role === 'wishlist') {
     return planSavedPath();
   }
+  if (role === 'hosted') {
+    return HOSTING_HUB_PATH;
+  }
+  const params = new URLSearchParams();
+  params.set('view', 'plans');
   if (role === 'joined') {
     params.set('filter', 'joined');
-  } else if (role === 'hosted') {
-    params.set('filter', 'hosting');
   } else if (role === 'upcoming' || role === 'all') {
     params.delete('filter');
   }

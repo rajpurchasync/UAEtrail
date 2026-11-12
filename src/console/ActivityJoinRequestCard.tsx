@@ -40,12 +40,13 @@ export const ActivityJoinRequestCard = ({
   const activityTitle = activity?.title || activity?.locationName || 'Activity';
   const activityDate = formatDate(activity?.date || activity?.startAt);
   const hostNote = resolveHostNote(request);
+  const partyMembers = request.partyMembers ?? [];
   const partyLine =
-    request.adults != null || request.kids != null
+    request.adults != null || request.kids != null || partyMembers.length > 0
       ? (() => {
           const a = request.adults ?? 1;
           const k = request.kids ?? 0;
-          if (a === 1 && k === 0) return null;
+          if (a === 1 && k === 0 && partyMembers.length === 0) return null;
           return `Group: ${a} adult${a === 1 ? '' : 's'}${
             k > 0 ? `, ${k} kid${k === 1 ? '' : 's'}` : ''
           }`;
@@ -53,6 +54,14 @@ export const ActivityJoinRequestCard = ({
       : null;
   const guestNote = request.note?.trim() || '';
   const showGuestNote = Boolean(guestNote) && guestNote !== partyLine;
+  const memberStatusLabel = (status: string): string => {
+    if (status === 'family_invited') return 'Family member invited';
+    if (status === 'host_pending') return 'Awaiting host';
+    if (status === 'accepted') return 'Accepted';
+    if (status === 'confirmed') return 'Confirmed';
+    if (status === 'declined') return 'Declined';
+    return status;
+  };
 
   return (
     <GlassCard padding className="!p-3.5">
@@ -67,6 +76,27 @@ export const ActivityJoinRequestCard = ({
           </p>
           {partyLine ? (
             <p className="mt-1 text-xs font-medium text-neutral-700 dark:text-neutral-300">{partyLine}</p>
+          ) : null}
+          {partyMembers.length > 0 ? (
+            <ul className="mt-1 space-y-0.5">
+              {partyMembers.map((member) => (
+                <li
+                  key={member.membershipId}
+                  className="text-[11px] text-neutral-600 dark:text-neutral-400"
+                >
+                  {member.displayName}
+                  <span className="text-neutral-400"> · </span>
+                  {member.memberType === 'kid' ? 'Kid' : 'Adult'}
+                  <span className="text-neutral-400"> · </span>
+                  {memberStatusLabel(member.status)}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          {request.partyApprovalPending ? (
+            <p className="mt-1 text-[11px] font-medium text-amber-800 dark:text-amber-200">
+              Family headcount awaiting your approval
+            </p>
           ) : null}
           {showGuestNote ? (
             <p className={`mt-1 text-xs text-neutral-600 dark:text-neutral-400 ${expanded ? '' : 'line-clamp-2'}`}>

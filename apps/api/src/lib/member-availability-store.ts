@@ -20,6 +20,11 @@ import { getMongoClient } from './mongo.js';
 import { findAuthUsersByIds } from './auth-users-store.js';
 import { findAreaBySlug, findPublishedAreaById } from './areas-store.js';
 import { areAcceptedBuddies } from './buddy-store.js';
+import {
+  filterSubjectsVisibleInFindCrew,
+  maySeeMemberLocationForViewer,
+  readCityAudience,
+} from './find-crew-visibility-gate.js';
 
 type MongoMemberAvailability = {
   _id: string;
@@ -129,10 +134,20 @@ export const getMemberAvailabilityPublicSnapshot = async (
   const slots = sanitizeSlots(doc.slots);
   const visible = await viewerMaySeeAvailability({ ...doc, slots }, viewerUserId);
   if (!visible) return null;
+  const users = await findAuthUsersByIds([memberUserId]);
+  const user = users[0];
+  const cityAudience = readCityAudience(user?.profile);
+  const maySeeLocation =
+    cityAudience === 'hidden'
+      ? viewerUserId === memberUserId
+      : await maySeeMemberLocationForViewer(
+          user ?? { _id: memberUserId, profile: undefined },
+          viewerUserId
+        );
   return {
     kinds: doc.kinds,
-    region: doc.region,
-    areaId: doc.areaId,
+    region: maySeeLocation ? doc.region : null,
+    areaId: maySeeLocation ? doc.areaId : null,
     note: doc.note,
     slots,
   };
@@ -172,7 +187,11 @@ export const loadExploreAvailabilityIndex = async (
   const people: ExploreAvailablePersonDTO[] = [];
   const clusterCounts = new Map<string, ExploreAvailabilityClusterDTO>();
 
-  const userIds: string[] = [];
+  const candidateUserIds = [...new Set(docs.map((doc) => doc.userId))];
+  const users = await findAuthUsersByIds(candidateUserIds);
+  const userMap = new Map(users.map((u) => [u._id, u]));
+  const findCrewVisible = await filterSubjectsVisibleInFindCrew(users, query.viewerUserId);
+
   for (const doc of docs) {
     const slots = sanitizeSlots(doc.slots).filter((slot) =>
       availabilitySlotOverlapsRange(slot, query.rangeStart, query.rangeEnd)
@@ -182,6 +201,10 @@ export const loadExploreAvailabilityIndex = async (
 
     const maySee = await viewerMaySeeAvailability({ ...doc, slots }, query.viewerUserId);
     if (!maySee) continue;
+    if (!findCrewVisible.has(doc.userId)) continue;
+
+    const user = userMap.get(doc.userId);
+    if (!user) continue;
 
     const isBuddy =
       query.viewerUserId != null && doc.userId !== query.viewerUserId
@@ -189,47 +212,52 @@ export const loadExploreAvailabilityIndex = async (
         : false;
     if (query.buddiesOnly && !isBuddy) continue;
 
-    userIds.push(doc.userId);
+    const maySeeLocation = await maySeeMemberLocationForViewer(user, query.viewerUserId, {
+      isBuddy,
+    });
+    // Area-filtered Find Crew must not match members who hide their start area.
+    if (areaIdFilter && !maySeeLocation) continue;
+
+    const region = maySeeLocation ? doc.region : null;
+    const areaId = maySeeLocation ? doc.areaId : null;
+
     people.push({
       userId: doc.userId,
-      displayName: 'Member',
+      displayName: user.profile?.displayName ?? 'Member',
+      avatarUrl: user.profile?.avatarUrl ?? null,
       kinds: doc.kinds,
-      region: doc.region,
-      areaId: doc.areaId,
+      region,
+      areaId,
       slots,
       isBuddy,
     });
 
     for (const kind of doc.kinds) {
       if (query.kind && kind !== query.kind) continue;
-      const clusterKey = `${doc.areaId ?? doc.region ?? 'any'}:${kind}`;
+      if (!maySeeLocation) continue;
+      const clusterKey = `${areaId ?? region ?? 'any'}:${kind}`;
       const existing = clusterCounts.get(clusterKey);
       if (existing) {
         existing.count += 1;
       } else {
         let areaSlug: string | null = null;
-        if (doc.areaId) {
-          const row = await findPublishedAreaById(doc.areaId);
+        if (areaId) {
+          const row = await findPublishedAreaById(areaId);
           areaSlug = row?.slug ?? null;
         }
         clusterCounts.set(clusterKey, {
-          areaId: doc.areaId,
+          areaId,
           areaSlug,
-          region: doc.region,
+          region,
           kind,
           count: 1,
-          label: `${kind} · ${areaSlug ?? doc.region ?? 'UAE'}`,
+          label: `${kind} · ${areaSlug ?? region ?? 'UAE'}`,
         });
       }
     }
   }
 
-  const users = await findAuthUsersByIds([...new Set(userIds)]);
-  const userMap = new Map(users.map((u) => [u._id, u]));
   for (const row of people) {
-    const user = userMap.get(row.userId);
-    row.displayName = user?.profile?.displayName ?? 'Member';
-    row.avatarUrl = user?.profile?.avatarUrl ?? null;
     if (row.areaId) {
       const a = await findPublishedAreaById(row.areaId);
       row.areaSlug = a?.slug ?? null;

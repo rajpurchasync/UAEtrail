@@ -1,12 +1,18 @@
 import { useInfiniteQuery, useQueries, useQuery } from '@tanstack/react-query';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import type { PlanHostingCountRange, PlanHostingScheduleLens } from '../plan/planHostingTimeRange';
-import { planHostingListWindowQuery } from '../plan/planHostingTimeRange';
+import {
+  planHostingListWindowQuery,
+  toPlanHostingIsoDate,
+} from '../plan/planHostingTimeRange';
 import {
   PLAN_HOSTING_OTHER_PAGE_SIZE,
   fetchPlanHostedActivitiesPage,
   type PublishingActivitiesPageMeta,
 } from './planHostedActivitiesClientApi';
+
+const HOST_HUB_STALE_MS = 30_000;
+const PAST_PREVIEW_SIZE = 8;
 
 const hostedScheduleKey = (
   tenantId: string,
@@ -15,6 +21,9 @@ const hostedScheduleKey = (
 ) => ['plan-hosted-activities', tenantId, range, kind] as const;
 
 const hostedCopyKey = (tenantId: string) => ['plan-hosted-copy', tenantId] as const;
+
+const hostedPastPreviewKey = (tenantId: string) =>
+  ['plan-hosted-past-preview', tenantId, PAST_PREVIEW_SIZE] as const;
 
 const WEEK_MONTH_PAGE_SIZE = 50;
 
@@ -38,7 +47,7 @@ export const usePlanHostingRangeCounts = (
         return page.meta.total;
       },
       enabled: enabled && Boolean(tenantId),
-      staleTime: 30_000,
+      staleTime: HOST_HUB_STALE_MS,
     })),
   });
 
@@ -73,7 +82,7 @@ export const usePlanHostedSchedule = (
       });
     },
     enabled: enabled && Boolean(tenantId) && !isOther,
-    staleTime: 30_000,
+    staleTime: HOST_HUB_STALE_MS,
   });
 
   const infinite = useInfiniteQuery({
@@ -94,7 +103,7 @@ export const usePlanHostedSchedule = (
       return page < totalPages ? page + 1 : undefined;
     },
     enabled: enabled && Boolean(tenantId) && isOther,
-    staleTime: 30_000,
+    staleTime: HOST_HUB_STALE_MS,
   });
 
   const activities: ActivityDTO[] = isOther
@@ -151,7 +160,7 @@ export const usePlanHostedCopySources = (
       return page < totalPages ? page + 1 : undefined;
     },
     enabled: enabled && Boolean(tenantId),
-    staleTime: 30_000,
+    staleTime: HOST_HUB_STALE_MS,
   });
 
   const activities: ActivityDTO[] = infinite.data?.pages.flatMap((page) => page.data) ?? [];
@@ -163,5 +172,39 @@ export const usePlanHostedCopySources = (
     loadMore: () => void infinite.fetchNextPage(),
     loadingMore: infinite.isFetchingNextPage,
     hasMore: Boolean(infinite.hasNextPage),
+  };
+};
+
+/**
+ * Host Hub past strip — one small page of past published outings.
+ * Deferred (`enabled`) so schedule + counts load first.
+ */
+export const usePlanHostedPastPreview = (
+  tenantId: string | null,
+  enabled: boolean,
+  refreshKey = 0
+) => {
+  const query = useQuery({
+    queryKey: [...hostedPastPreviewKey(tenantId ?? ''), refreshKey],
+    queryFn: async () => {
+      const today = toPlanHostingIsoDate(new Date(new Date().toDateString()));
+      return fetchPlanHostedActivitiesPage(tenantId!, {
+        startAtGte: '1970-01-01',
+        startAtLt: today,
+        page: 1,
+        pageSize: PAST_PREVIEW_SIZE,
+        status: 'published',
+        order: 'desc',
+      });
+    },
+    enabled: enabled && Boolean(tenantId),
+    staleTime: HOST_HUB_STALE_MS,
+  });
+
+  return {
+    activities: query.data?.data ?? [],
+    total: query.data?.meta.total ?? 0,
+    loading: query.isLoading,
+    error: query.isError ? 'Failed to load past trips' : null,
   };
 };

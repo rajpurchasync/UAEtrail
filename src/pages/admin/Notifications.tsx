@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
@@ -16,8 +16,15 @@ import { invalidateNotificationUnreadBadge } from '../../utils/notificationBadge
 import { notificationReasonLine } from '../../utils/notificationDisplay';
 import { inferNotificationPath } from '../../utils/notificationRouting';
 import { AdminTablePager, DEFAULT_ADMIN_PAGE_SIZE, type AdminPageSize } from '../../components/admin/AdminTablePager';
+import { AdminFilterBar } from '../../components/admin/AdminFilterBar';
+import { AppSelect, ADMIN_FILTER_SELECT_CLASS, ADMIN_INPUT_CLASS } from '../../components/ui/AppSelect';
 import { formatAdminDateTime } from '../../utils/formatAdminDate';
 import { useDisplayPreferences } from '../../preferences/useDisplayPreferences';
+
+const READ_FILTER_OPTIONS = [
+  { value: 'unread' as const, label: 'Unread' },
+  { value: 'read' as const, label: 'Read' },
+];
 
 export const Notifications = () => {
   const navigate = useNavigate();
@@ -31,6 +38,8 @@ export const Notifications = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
   const [total, setTotal] = useState(0);
+  const [search, setSearch] = useState('');
+  const [readFilter, setReadFilter] = useState('');
 
   const syncUnreadBadge = () => {
     if (!user?.id) return;
@@ -55,6 +64,20 @@ export const Notifications = () => {
   };
 
   useSafeAsyncEffect((isActive) => load(isActive), [page, pageSize]);
+
+  const filtered = useMemo(() => {
+    return notifications.filter((notif) => {
+      if (readFilter === 'unread' && notif.isRead) return false;
+      if (readFilter === 'read' && !notif.isRead) return false;
+      if (!search.trim()) return true;
+      const q = search.trim().toLowerCase();
+      return (
+        notif.title.toLowerCase().includes(q) ||
+        notif.body.toLowerCase().includes(q) ||
+        (notificationReasonLine(notif) ?? '').toLowerCase().includes(q)
+      );
+    });
+  }, [notifications, readFilter, search]);
 
   const markRead = async (id: string) => {
     await markNotificationReadById(id).catch(() => undefined);
@@ -96,6 +119,32 @@ export const Notifications = () => {
           )}
         </div>
 
+        <AdminFilterBar
+          onClear={() => {
+            setSearch('');
+            setReadFilter('');
+          }}
+        >
+          <label className="text-xs text-neutral-500">
+            Search
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Title or body…"
+              className={`${ADMIN_INPUT_CLASS} mt-1 block w-56`}
+            />
+          </label>
+          <AppSelect
+            value={readFilter}
+            onChange={setReadFilter}
+            options={READ_FILTER_OPTIONS}
+            placeholder="All (read + unread)"
+            inputClassName={ADMIN_FILTER_SELECT_CLASS}
+            aria-label="Filter by read status"
+          />
+        </AdminFilterBar>
+
         {error && <p className="text-sm text-red-600">{error}</p>}
 
         <div className="bg-white border rounded-lg overflow-hidden">
@@ -104,14 +153,16 @@ export const Notifications = () => {
               <div className="inline-block w-5 h-5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mr-2" />
               Loading...
             </div>
-          ) : notifications.length === 0 ? (
+          ) : filtered.length === 0 ? (
             <div className="px-4 py-12 text-center">
               <Bell className="w-10 h-10 text-gray-200 mx-auto mb-3" />
-              <p className="text-sm text-gray-500">No notifications yet</p>
+              <p className="text-sm text-gray-500">
+                {notifications.length === 0 ? 'No notifications yet' : 'No notifications match these filters'}
+              </p>
             </div>
           ) : (
             <div className="divide-y">
-              {notifications.map((notif) => {
+              {filtered.map((notif) => {
                 const reasonLine = notificationReasonLine(notif);
                 return (
                 <button

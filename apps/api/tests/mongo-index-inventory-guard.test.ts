@@ -17,5 +17,8 @@ describe('mongo index inventory guard', () => {
     expect(source).toContain("name: 'by_place_upcoming'");
     expect(source).toContain("name: 'verification_queue'");
     expect(source).toContain("name: 'weather_cache_ttl'");
+    expect(source).toContain('ACTIVITY_FAMILY_INVITES');
+    expect(source).toContain('{ token: 1 }, unique: true');
+    expect(source).toContain('{ inviteeUserId: 1, status: 1, createdAt: -1 }');
   });
 });

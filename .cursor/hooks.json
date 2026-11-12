@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "command": "node .cursor/hooks/agent-file-lock.mjs pre-tool-use",
+        "matcher": "Write|StrReplace|EditNotebook|Delete",
+        "failClosed": false
+      }
+    ],
+    "sessionEnd": [
+      {
+        "command": "node .cursor/hooks/agent-file-lock.mjs release-mine"
+      }
+    ]
+  }
+}

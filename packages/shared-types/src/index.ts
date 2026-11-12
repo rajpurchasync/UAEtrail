@@ -28,6 +28,7 @@ import type {
   ActivityPolicyKeyDTO,
   ActivityPriceBreakdownDTO,
 } from './activity-detail-revamp.js';
+import type { ActivityPartyMemberDTO } from './activity-party-roster.js';
 
 export type {
   ActivityAudienceFitnessDTO,
@@ -412,6 +413,10 @@ export interface MyActivityRequestDTO {
   canWithdraw: boolean;
   adults?: number;
   kids?: number;
+  /** Named family companions (adults invited / kids attached). */
+  partyMembers?: ActivityPartyMemberDTO[];
+  /** True when the join is approved but a later family/headcount increase still needs the host. */
+  partyApprovalPending?: boolean;
 }
 
 export interface JoinRequestDTO {
@@ -1099,6 +1104,7 @@ export interface TenantPublicDTO {
 
 export {
   BLOOD_GROUP_VALUES,
+  EMERGENCY_CONTACT_RELATION_VALUES,
   MEDICAL_CONDITIONS_NA,
   formatBloodGroupLabel,
   isMedicalSafetyProfileComplete,
@@ -1106,6 +1112,7 @@ export {
 } from './member-medical-safety.js';
 export type {
   BloodGroup,
+  EmergencyContactRelation,
   MemberMedicalSafetyDTO,
   MemberMedicalSafetyFields,
 } from './member-medical-safety.js';
@@ -1117,6 +1124,12 @@ export type {
   RideshareRiderRatingDimensionsDTO,
   RideshareRiderReputationDTO,
 } from './rideshare-rider-reputation.js';
+export type { CatalogEditRankingDTO, CatalogEditTrustLevel } from './catalog-edit-ranking.js';
+export {
+  CATALOG_EDIT_TRUST_LABELS,
+  computeCatalogEditRanking,
+  formatCatalogEditRankingSummary,
+} from './catalog-edit-ranking.js';
 export {
   MEMBER_VEHICLE_COLORS,
   formatRideshareVehicleLabel,
@@ -1514,6 +1527,8 @@ export {
   DEFAULT_PROFILE_DATE_OF_BIRTH_SHARE,
   mergeProfileDateOfBirthShare,
   computeAgeFromIsoDateOfBirth,
+  monthDayFromIsoDateOfBirth,
+  formatProfileMonthDayLabel,
   resolveMemberCardDateOfBirth,
   type ProfileDateOfBirthShare,
   type MemberCardDateOfBirthSlice,
@@ -1527,6 +1542,16 @@ export {
   type ProfileFriendsListShare,
   type ProfileFriendsListVisibility,
 } from './profile-friends-list-share.js';
+
+export {
+  FIND_CREW_VISIBILITY_LEVELS,
+  DEFAULT_FIND_CREW_VISIBILITY,
+  mergeFindCrewVisibility,
+  viewerMaySeeInFindCrew,
+  viewerMaySeeMemberLocation,
+  type FindCrewVisibility,
+  type FindCrewViewerRelation,
+} from './find-crew-visibility.js';
 
 export { type MemberProfileSocialGraphDTO } from './member-profile-social-graph.js';
 
@@ -1608,6 +1633,13 @@ export {
 } from './activity-join-engagement.js';
 
 export { resolveActivityPartyHeadcount } from './activity-party-headcount.js';
+
+export {
+  derivePartyHeadcountFromRoster,
+  partyRosterHasPendingFamilyInvite,
+  type ActivityPartyMemberDTO,
+  type ActivityPartyMemberStatus,
+} from './activity-party-roster.js';
 
 export {
   ACTIVITY_DETAIL_TAB_IDS,
@@ -1817,6 +1849,7 @@ export {
   partnerProfilePath,
   parseEntityRefFromPathname,
   placeDetailPath,
+  placeDetailPathForId,
   canonicalPlaceDetailPath,
   inboundKindPlaceDetailPath,
   PLACE_CANONICAL_PATH_PREFIX,
@@ -2082,6 +2115,7 @@ export type { GeoCountedPin, GeoDelta } from './geo-counters.js';
 export { countersFor, deltaFor, scopesFor } from './geo-counters.js';
 
 export type {
+  AdminSubmissionDTO,
   DedupeKind,
   DuplicateVerdict,
   SubmissionCandidate,

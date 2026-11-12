@@ -129,6 +129,20 @@ describe('resolveBackTarget', () => {
     });
   });
 
+  it('skips peer notification settings panels so Saved map returns to Settings', () => {
+    const s = stackOf([
+      '/settings',
+      '/settings/notifications',
+      '/settings/notifications/preferences',
+      '/settings/notifications/saved',
+    ]);
+    expect(resolveBackTarget(s, '/settings/notifications/saved', '/settings')).toEqual({
+      kind: 'pop',
+      delta: 3,
+      path: '/settings',
+    });
+  });
+
   it('skips transient screens underneath (edit → save landed on the item)', () => {
     const s = stackOf(['/plan', '/activity/abc', '/activity/abc/edit', '/activity/abc']);
     expect(resolveBackTarget(s, '/activity/abc', '/explore')).toEqual({

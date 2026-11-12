@@ -5,7 +5,7 @@ import {
   ADMIN_GROUPS_PATH,
   ADMIN_HOSTS_PATH,
   ADMIN_NOTIFICATIONS_PATH,
-  ADMIN_OVERVIEW_PATH,
+  ADMIN_INBOX_PATH,
   ADMIN_PLACES_PATH,
   ADMIN_SETTINGS_PATH,
   ADMIN_ACCOUNT_PATH,
@@ -30,17 +30,27 @@ import { organisationManagePath } from '../config/routingCatalog';
 import { isPlatformAdmin } from './roles';
 
 export const defaultRouteByRole = (role: UserRole): string => {
-  if (isPlatformAdmin(role)) return ADMIN_OVERVIEW_PATH;
+  if (isPlatformAdmin(role)) return ADMIN_INBOX_PATH;
   if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') {
+    /** Sync fallback — prefer `resolveHostingHubPath` / `navigateToHostModeHome` when status is loaded. */
     return PUBLISHING_OVERVIEW_PATH;
   }
   return EXPLORE_MAP_PATH;
 };
 
-/** Participant account home — all explorers including hosts and shop owners. */
+/** Personal hub (profile / admin account) — not the host-mode home. */
 export const accountRouteByRole = (role: UserRole): string => {
   if (isPlatformAdmin(role)) return ADMIN_ACCOUNT_PATH;
   return PROFILE_PATH;
+};
+
+/** Host-mode app home after login / Switch to Host (workspace overview until dual-mode status loads). */
+export const hostModeHomeRouteByRole = (role: UserRole): string => {
+  if (isPlatformAdmin(role)) return ADMIN_INBOX_PATH;
+  if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') {
+    return PUBLISHING_OVERVIEW_PATH;
+  }
+  return EXPLORE_MAP_PATH;
 };
 
 /** `/publishing/*` console bookmarks for members without tenant console roles — consumer surfaces. */
@@ -121,8 +131,13 @@ export const adminDashboardRedirect = (subpath: string): string => {
       return ADMIN_SETTINGS_PATH;
     case 'account':
       return ADMIN_ACCOUNT_PATH;
+    case 'overview':
+    case 'inbox':
+      return ADMIN_INBOX_PATH;
+    case 'submissions':
+      return '/admin/inbox/submissions';
     default:
-      return ADMIN_OVERVIEW_PATH;
+      return ADMIN_INBOX_PATH;
   }
 };
 
@@ -135,7 +150,7 @@ export const messagesRouteForRole = (
   userId: string,
   options?: { activityId?: string }
 ): string => {
-  if (role === 'platform_admin') return '/admin/overview';
+  if (role === 'platform_admin') return ADMIN_INBOX_PATH;
   if (role === 'merchant_admin') return MESSAGES_PATH;
   const base = messagesToUserPath(userId);
   if (!options?.activityId) {

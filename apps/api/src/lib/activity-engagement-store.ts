@@ -42,6 +42,15 @@ const releaseSlotsForRequest = async (activityId: string, requestId: string): Pr
   await releaseActivityParticipantSlots(activityId, headcount);
 };
 
+type MongoPartyMember = {
+  membershipId: string;
+  groupId: string;
+  memberType: 'adult' | 'kid';
+  userId: string | null;
+  displayName: string;
+  status: 'family_invited' | 'accepted' | 'declined' | 'host_pending' | 'confirmed';
+};
+
 type MongoActivityRequest = {
   _id: string;
   activityId: string;
@@ -49,6 +58,8 @@ type MongoActivityRequest = {
   status: RequestStatus;
   adults?: number;
   kids?: number;
+  partyMembers?: MongoPartyMember[];
+  partyApprovalPending?: boolean;
   note: string | null;
   hostNote?: string | null;
   cancelReason: string | null;
@@ -105,6 +116,8 @@ const toActivityRequestRecord = (doc: MongoActivityRequest): ActivityRequest => 
   status: doc.status,
   adults: doc.adults,
   kids: doc.kids,
+  partyMembers: doc.partyMembers,
+  partyApprovalPending: Boolean(doc.partyApprovalPending),
   note: doc.note,
   hostNote: resolveHostNote(doc),
   cancelReason: doc.cancelReason,
@@ -619,15 +632,25 @@ export const updateActivityRequestNote = async (id: string, note: string): Promi
 
 export const updateActivityRequestParty = async (
   id: string,
-  input: { note?: string; adults?: number; kids?: number }
+  input: {
+    note?: string;
+    adults?: number;
+    kids?: number;
+    partyMembers?: MongoPartyMember[];
+    /** When true, skip auto host-pending for new kids (adult invite flow owns the flag). */
+    deferHostApproval?: boolean;
+    /** Caller-preloaded activity doc — avoids a second activity find on the PATCH path. */
+    eventDoc?: Awaited<ReturnType<typeof findActivityDocInMongo>>;
+  }
 ): Promise<ActivityRequest> => {
   const mongoRow = await activityRequestsCollection().findOne({ _id: id });
   if (!mongoRow) {
     throw new ApiError(404, 'request_not_found', 'Request not found.');
   }
+  const partyMembers = input.partyMembers ?? mongoRow.partyMembers;
   const adults = input.adults ?? mongoRow.adults ?? 1;
   const kids = input.kids ?? mongoRow.kids ?? 0;
-  const eventDoc = await findActivityDocInMongo(mongoRow.activityId);
+  const eventDoc = input.eventDoc ?? (await findActivityDocInMongo(mongoRow.activityId));
   if (!eventDoc) {
     throw new ApiError(404, 'activity_not_found', 'Activity not found.');
   }
@@ -637,6 +660,7 @@ export const updateActivityRequestParty = async (
   const nextHeadcount = resolveActivityPartyHeadcount(adults, kids);
   const delta = nextHeadcount - priorHeadcount;
 
+  let partyApprovalPending = Boolean(mongoRow.partyApprovalPending);
   if (mongoRow.status === RequestStatus.APPROVED && delta !== 0) {
     if (delta > 0) {
       const reserved = await tryReserveActivityParticipantSlots(
@@ -647,16 +671,125 @@ export const updateActivityRequestParty = async (
       if (!reserved) {
         throw new ApiError(400, 'activity_full', 'Not enough spots left for this group size.');
       }
+      // RSVP outings auto-apply; approval outings flag host when headcount grows without deferred invite flow.
+      const mode = resolveParticipationMode(
+        eventDoc.participationMode,
+        eventDoc.requirements ?? []
+      );
+      if (mode === 'approval' && !input.deferHostApproval) {
+        partyApprovalPending = true;
+      }
     } else {
       await releaseActivityParticipantSlots(mongoRow.activityId, Math.abs(delta));
+      if (resolveActivityPartyHeadcount(adults, kids) <= 1) {
+        partyApprovalPending = false;
+      }
     }
   }
 
   const noteBase =
     input.note !== undefined ? input.note.trim() || null : stripPartyLineFromNote(mongoRow.note ?? null);
   const note = withPartyNote(noteBase, adults, kids);
-  await patchActivityRequestInMongo(id, { note, adults, kids });
-  const next = await activityRequestsCollection().findOne({ _id: id });
+  const next = await activityRequestsCollection().findOneAndUpdate(
+    { _id: id },
+    {
+      $set: {
+        note,
+        adults,
+        kids,
+        ...(partyMembers !== undefined ? { partyMembers } : {}),
+        partyApprovalPending,
+        updatedAt: new Date(),
+      },
+    },
+    { returnDocument: 'after' }
+  );
+  if (!next) {
+    throw new ApiError(404, 'request_not_found', 'Request not found.');
+  }
+  return toActivityRequestRecord(next);
+};
+
+/** After an adult accepts a family outing invite — escalate host approval or confirm. */
+export const applyAdultFamilyInviteAccepted = async (input: {
+  requestId: string;
+  membershipId: string;
+}): Promise<ActivityRequest> => {
+  const mongoRow = await activityRequestsCollection().findOne({ _id: input.requestId });
+  if (!mongoRow) {
+    throw new ApiError(404, 'request_not_found', 'Request not found.');
+  }
+  const partyMembers = [...(mongoRow.partyMembers ?? [])];
+  const idx = partyMembers.findIndex((row) => row.membershipId === input.membershipId);
+  if (idx < 0) {
+    throw new ApiError(404, 'party_member_not_found', 'Family member not on this outing.');
+  }
+  const eventDoc = await findActivityDocInMongo(mongoRow.activityId);
+  if (!eventDoc) {
+    throw new ApiError(404, 'activity_not_found', 'Activity not found.');
+  }
+  const mode = resolveParticipationMode(eventDoc.participationMode, eventDoc.requirements ?? []);
+  const nextStatus =
+    mongoRow.status === RequestStatus.APPROVED && mode === 'approval'
+      ? 'host_pending'
+      : 'confirmed';
+  partyMembers[idx] = { ...partyMembers[idx]!, status: nextStatus };
+  const partyApprovalPending =
+    nextStatus === 'host_pending' ? true : Boolean(mongoRow.partyApprovalPending);
+  const next = await activityRequestsCollection().findOneAndUpdate(
+    { _id: input.requestId },
+    { $set: { partyMembers, partyApprovalPending, updatedAt: new Date() } },
+    { returnDocument: 'after' }
+  );
+  if (!next) {
+    throw new ApiError(404, 'request_not_found', 'Request not found.');
+  }
+  return toActivityRequestRecord(next);
+};
+
+export const applyAdultFamilyInviteDeclined = async (input: {
+  requestId: string;
+  membershipId: string;
+}): Promise<ActivityRequest> => {
+  const mongoRow = await activityRequestsCollection().findOne({ _id: input.requestId });
+  if (!mongoRow) {
+    throw new ApiError(404, 'request_not_found', 'Request not found.');
+  }
+  const prior = mongoRow.partyMembers ?? [];
+  const removed = prior.find((row) => row.membershipId === input.membershipId);
+  const partyMembers = prior.filter((row) => row.membershipId !== input.membershipId);
+  const { adults, kids } = (() => {
+    const familyAdults = partyMembers.filter(
+      (row) => row.memberType === 'adult' && row.status !== 'declined'
+    ).length;
+    const kidCount = partyMembers.filter(
+      (row) => row.memberType === 'kid' && row.status !== 'declined'
+    ).length;
+    return { adults: 1 + familyAdults, kids: kidCount };
+  })();
+  const priorHeadcount = resolveActivityPartyHeadcount(mongoRow.adults, mongoRow.kids);
+  const nextHeadcount = resolveActivityPartyHeadcount(adults, kids);
+  const delta = nextHeadcount - priorHeadcount;
+  if (delta < 0 && removed) {
+    await releaseActivityParticipantSlots(mongoRow.activityId, Math.abs(delta));
+  }
+  const note = withPartyNote(stripPartyLineFromNote(mongoRow.note ?? null), adults, kids);
+  let partyApprovalPending = Boolean(mongoRow.partyApprovalPending);
+  if (nextHeadcount <= 1) partyApprovalPending = false;
+  const next = await activityRequestsCollection().findOneAndUpdate(
+    { _id: input.requestId },
+    {
+      $set: {
+        partyMembers,
+        adults,
+        kids,
+        note,
+        partyApprovalPending,
+        updatedAt: new Date(),
+      },
+    },
+    { returnDocument: 'after' }
+  );
   if (!next) {
     throw new ApiError(404, 'request_not_found', 'Request not found.');
   }
@@ -1421,6 +1554,11 @@ export const enrollHostApprovedActivityParticipant = async (opts: {
   const reviewedAt = new Date();
 
   try {
+    const confirmedPartyMembers = (existing?.partyMembers ?? []).map((row) =>
+      row.status === 'host_pending' || row.status === 'accepted'
+        ? { ...row, status: 'confirmed' as const }
+        : row
+    );
     await activityRequestsCollection().updateOne(
       { activityId: opts.activityId, userId: opts.userId },
       {
@@ -1432,6 +1570,8 @@ export const enrollHostApprovedActivityParticipant = async (opts: {
           cancelMessage: null,
           cancelledAt: null,
           selectedPackageIndex: existing?.selectedPackageIndex ?? null,
+          partyApprovalPending: false,
+          ...(confirmedPartyMembers.length > 0 ? { partyMembers: confirmedPartyMembers } : {}),
           reviewedAt,
           reviewedById: opts.reviewerId,
           updatedAt: reviewedAt,
@@ -1681,6 +1821,7 @@ export const listActivityParticipantsWithUsers = async (activityId: string) => {
               medicalConditions: user.profile.medicalConditions ?? null,
               emergencyContactName: user.profile.emergencyContactName ?? null,
               emergencyContactPhone: user.profile.emergencyContactPhone ?? null,
+              emergencyContactRelation: user.profile.emergencyContactRelation ?? null,
             }
           : null
       }

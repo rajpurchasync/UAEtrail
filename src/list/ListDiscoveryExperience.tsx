@@ -41,7 +41,6 @@ import { ListExplorer } from './explorer/ListExplorer';
 import { BrowsePanelCollapsedRail } from './explorer/BrowsePanelCollapsedRail';
 import { browseAppliedFilterLabels } from './explorer/browseAppliedFilterLabels';
 import { useExploreDesktopListDrawerChrome } from '../explore/ui/ExploreDesktopListDrawer';
-import { SocialHubNav } from '../components/social/SocialHubNav';
 import { ListDiscoveryMapColumn } from './explorer/ListDiscoveryMapColumn';
 import { ListSideMapResizeHandle } from './explorer/ListSideMapResizeHandle';
 import { useBindExploreListMapHover } from '../explore/ExploreMapChromeContext';
@@ -377,7 +376,6 @@ export const ListDiscoveryExperience = ({
     <>
       {isPeopleCategory ? (
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-          {embeddedOnExplore ? null : <SocialHubNav active="people" />}
           <PeopleBrowsePanel
           embedded
           isDesktop={surface === 'exploreSidebar'}

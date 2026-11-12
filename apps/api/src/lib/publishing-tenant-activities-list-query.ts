@@ -7,7 +7,7 @@ const isoDateSchema = z
 
 /** Tenant publishing list filters for plan hosting hub (not explore map). */
 export const publishingTenantActivitiesListQuerySchema = paginationSchema.extend({
-  status: z.enum(['draft', 'published', 'cancelled']).optional(),
+  status: z.enum(['draft', 'published', 'cancelled', 'suspended']).optional(),
   startAtGte: isoDateSchema.optional(),
   startAtLt: isoDateSchema.optional(),
   /** When set with startAtGte + startAtLt: events with startAt strictly outside [gte, lt). */

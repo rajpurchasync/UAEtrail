@@ -69,9 +69,6 @@ export const MemberProfileSocialSections = ({
       {showCommonFollows ? (
         <GlassCard padding>
           <PublicProfileSectionHeading>Accounts you both follow</PublicProfileSectionHeading>
-          <p className="mb-3 text-xs text-neutral-500">
-            Hosts and members you both follow on UAE Trail.
-          </p>
           <MemberProfilePeopleChips people={graph!.commonFollows} />
         </GlassCard>
       ) : null}

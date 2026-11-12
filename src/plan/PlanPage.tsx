@@ -7,10 +7,7 @@ import { FloatingActionButton } from '../components/mobile/FloatingActionButton'
 import { PullToRefresh } from '../components/mobile/PullToRefresh';
 import { PageMeta } from '../components/seo/PageMeta';
 import { PLAN_PATH } from '../constants';
-import {
-  PRODUCT_HOSTING_SCHEDULE_NAV_LABEL,
-  PRODUCT_PLAN_SURFACE_TITLE,
-} from '../content/productNorthStar';
+import { PRODUCT_PLAN_SURFACE_TITLE } from '../content/productNorthStar';
 import { explorePath } from '../explore/routing';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { memberCanManageHostedActivities } from '../utils/hostedActivitiesGate';
@@ -23,7 +20,12 @@ import {
 import { PlanPageTabs } from '../components/plan/PlanPageTabs';
 import { PlanUpcomingView } from '../components/plan/PlanUpcomingView';
 import { PlanWishlistView } from '../components/plan/PlanWishlistView';
-import { JOURNEY_MAP_PATH, PLAN_TODAY_PATH, PROFILE_HISTORY_PATH } from '../config/surfacePaths';
+import {
+  HOSTING_HUB_PATH,
+  JOURNEY_MAP_PATH,
+  PLAN_TODAY_PATH,
+  PROFILE_HISTORY_PATH,
+} from '../config/surfacePaths';
 import {
   parsePlanCommitmentFilter,
   parsePlanMainTab,
@@ -34,9 +36,6 @@ import {
 } from './planTab';
 import { normalizePlanSearchParams } from './planRouting';
 import { scrollToPlanSummaryFocus } from './planSummaryFocusScroll';
-import { useMinWidthLg } from '../hooks/useMinWidthLg';
-import { PlanDesktopHostingHub } from '../components/plan/PlanDesktopHostingHub';
-import { PlanHostingManageProvider } from './PlanHostingManageContext';
 
 /** My Plans tab — `/plan` (`PLAN_PATH`). */
 export const PlanPage = () => {
@@ -50,7 +49,6 @@ export const PlanPage = () => {
   const [savedSummaryScrollRequest, setSavedSummaryScrollRequest] = useState(0);
   const gate = useMemberStatus({ enabled: Boolean(user) });
   const canHost = memberCanManageHostedActivities(user, gate.canAccessPublishingWorkspace);
-  const isDesktopLg = useMinWidthLg();
   const {
     goals,
     loading: goalsLoading,
@@ -63,6 +61,13 @@ export const PlanPage = () => {
 
   useEffect(() => {
     const view = searchParams.get('view');
+    const filter = searchParams.get('filter');
+    const role = searchParams.get('role');
+    // Hosting is a dedicated surface — never render inside My Plans.
+    if (filter === 'hosting' || role === 'hosted') {
+      navigate(HOSTING_HUB_PATH, { replace: true });
+      return;
+    }
     // History + journey map live on profile — not the My Plans hub.
     if (view === 'map') {
       const qs = searchParams.toString();
@@ -143,10 +148,7 @@ export const PlanPage = () => {
         focus === 'hosting' || focus === 'joined' ? 'upcoming' : 'wishlist';
 
       if (focus === 'hosting') {
-        if (mainTab !== 'upcoming') {
-          setMainTab('upcoming');
-        }
-        setCommitmentFilter('hosting');
+        navigate(HOSTING_HUB_PATH);
         return;
       }
 
@@ -171,7 +173,7 @@ export const PlanPage = () => {
 
       scrollToPlanSummaryFocus(focus);
     },
-    [canHost, commitmentFilter, mainTab, setCommitmentFilter, setMainTab]
+    [canHost, commitmentFilter, mainTab, navigate, setCommitmentFilter, setMainTab]
   );
 
   useEffect(() => {
@@ -205,24 +207,18 @@ export const PlanPage = () => {
   }, [navigate, user]);
 
   const showFab = mainTab === 'upcoming' && upcomingLayout === 'list' && Boolean(user);
-  const showDesktopHostingHub =
-    Boolean(user) &&
-    isDesktopLg &&
-    canHost &&
-    mainTab === 'upcoming' &&
-    commitmentFilter === 'hosting';
 
   return (
     <>
       <PageMeta
         title={`${PRODUCT_PLAN_SURFACE_TITLE} — your outings on UAE Trail`}
-        description="What you are planning next — joined, hosting, and looking for company on UAE Trail."
+        description="What you are planning next — joined outings, wishlist, and goals on UAE Trail."
         path={PLAN_PATH}
       />
 
       <ConsumerShell
         layout="tab"
-        title={showDesktopHostingHub ? PRODUCT_HOSTING_SCHEDULE_NAV_LABEL : PRODUCT_PLAN_SURFACE_TITLE}
+        title={PRODUCT_PLAN_SURFACE_TITLE}
         suppressMobileHeader
         suppressMobileToolbarBorder
         maxWidth="4xl"
@@ -230,23 +226,10 @@ export const PlanPage = () => {
         <PullToRefresh onRefresh={handleRefresh}>
           <div
             className={`space-y-3 pt-0.5 md:space-y-1.5 ${
-              showFab && !showDesktopHostingHub ? 'pb-mobile-fab' : 'pb-bottom-nav-safe'
+              showFab ? 'pb-mobile-fab' : 'pb-bottom-nav-safe'
             }`}
           >
             {user ? (
-              showDesktopHostingHub ? (
-                <PlanHostingManageProvider
-                  refreshKey={refreshKey}
-                  canHost={canHost}
-                  active
-                  scopedActivityLists
-                >
-                  <PlanDesktopHostingHub
-                    refreshKey={refreshKey}
-                    onCreateNew={handleOpenCompose}
-                  />
-                </PlanHostingManageProvider>
-              ) : (
               <>
                 <PlanGoalsProgressSummary
                   goals={goals}
@@ -268,7 +251,7 @@ export const PlanPage = () => {
                   <PlanUpcomingView
                     refreshKey={refreshKey}
                     canHost={canHost}
-                    filter={commitmentFilter}
+                    filter={commitmentFilter === 'hosting' ? 'joined' : commitmentFilter}
                     layout={upcomingLayout}
                     lensRaw={lensRaw}
                     onLayoutChange={setUpcomingLayout}
@@ -289,7 +272,6 @@ export const PlanPage = () => {
                   />
                 )}
               </>
-              )
             ) : (
               <div className="glass-card p-6 text-center text-sm text-neutral-600">
                 Sign in to see what you are planning next and track goals.

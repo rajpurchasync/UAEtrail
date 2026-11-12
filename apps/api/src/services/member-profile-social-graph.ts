@@ -13,6 +13,7 @@ import {
   listMutualBuddiesBetween,
 } from '../lib/buddy-store.js';
 import { listCommonFollowingBetween } from '../lib/follow-store.js';
+import { resolveFindCrewViewerRelation } from '../lib/find-crew-visibility-gate.js';
 import { normalizeProfileVisibility } from '../lib/media-access.js';
 import { resolveProfileViewerAccess } from './profile-viewer-access.js';
 
@@ -88,11 +89,15 @@ const resolveSocialGraphContext = async (input: {
     target.profile?.friendsListShare,
     visibility
   );
+  const networkRelation = isSelf
+    ? ('self' as const)
+    : await resolveFindCrewViewerRelation(input.viewerUserId, input.targetUserId);
   const friendsListVisibility = resolveProfileFriendsListVisibility({
     share: friendsListShare,
     isSelf,
     exposure: viewerAccess.exposure,
     canOpenMemberProfile: viewerAccess.canOpenMemberProfile,
+    relation: networkRelation,
   });
 
   return {

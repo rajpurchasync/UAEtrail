@@ -3,6 +3,7 @@ import { Navigate, useSearchParams } from 'react-router-dom';
 import { GuestGatedSurfaceLayout } from '../components/auth/GuestGatedSurfaceLayout';
 import { useAuth } from '../context/AuthContext';
 import { PRODUCT_PLAN_SURFACE_TITLE } from '../content/productNorthStar';
+import { HOSTING_HUB_PATH } from '../config/surfacePaths';
 import { explorePath, inboundCreateParamToHostPath, parseActivityListFilter } from '../explore/routing';
 import { AsyncLoadingState } from '../components/ui/AsyncLoadingState';
 
@@ -10,14 +11,20 @@ const PlanPage = lazy(() => import('../plan/PlanPage').then((m) => ({ default: m
 
 const PlanRouteFallback = () => <AsyncLoadingState variant="page" label="Loading your plan" />;
 
-/** `/plan` — signed-in plan hub, or a guest handoff. Not part of the home bundle. */
+/** `/plan` — signed-in My Plans hub, or a guest handoff. Not part of the home bundle. */
 export const PlanBrowseRoute = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const tab = searchParams.get('tab');
+  const filter = searchParams.get('filter');
+  const role = searchParams.get('role');
   const inboundCreatePath = inboundCreateParamToHostPath(searchParams.get('create'));
   if (inboundCreatePath) {
     return <Navigate to={inboundCreatePath} replace />;
+  }
+  // Hosting hub is dedicated — never render My Plans for hosting filters.
+  if (filter === 'hosting' || role === 'hosted') {
+    return <Navigate to={HOSTING_HUB_PATH} replace />;
   }
   if (user) {
     return (

@@ -23,9 +23,14 @@ const DOC_TYPES: Array<{ value: VerificationDocumentType; label: string }> = [
 
 type ProfileVerificationDocsProps = {
   embedded?: boolean;
+  /** Borderless when nested in mobile settings cards. */
+  flush?: boolean;
 };
 
-export const ProfileVerificationDocs = ({ embedded = false }: ProfileVerificationDocsProps) => {
+export const ProfileVerificationDocs = ({
+  embedded = false,
+  flush = false,
+}: ProfileVerificationDocsProps) => {
   const [rows, setRows] = useState<MemberVerificationDocumentDTO[]>([]);
   const [docType, setDocType] = useState<VerificationDocumentType>('trade_licence');
   const [error, setError] = useState<string | null>(null);
@@ -77,7 +82,13 @@ export const ProfileVerificationDocs = ({ embedded = false }: ProfileVerificatio
 
   if (embedded) {
     return (
-      <div className="mt-3 space-y-3 rounded-xl border border-neutral-200/80 bg-white p-3 dark:border-neutral-700 dark:bg-neutral-900/40">
+      <div
+        className={
+          flush
+            ? 'mt-3 space-y-3'
+            : 'mt-3 space-y-3 rounded-xl border border-neutral-200/80 bg-white p-3 dark:border-neutral-700 dark:bg-neutral-900/40'
+        }
+      >
         {body}
       </div>
     );

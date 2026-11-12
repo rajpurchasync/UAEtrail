@@ -7,7 +7,8 @@ import uaetrail from './eslint/uaetrail-plugin.mjs';
 import { r8HooksNonFacadeFiles, r8UiLayerFiles } from './eslint/r8-api-facade.mjs';
 
 export default tseslint.config(
-  { ignores: ['dist', 'public/sw.js'] },
+  // `.claude/` holds agent worktrees (full nested checkouts) — never lint them as part of this repo.
+  { ignores: ['dist', 'public/sw.js', '.claude/**'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],

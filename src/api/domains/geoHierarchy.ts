@@ -1,4 +1,5 @@
 import type {
+  AdminSubmissionDTO,
   GeoRef,
   GeoSummaryDTO,
   GeoTreeDTO,
@@ -115,10 +116,7 @@ export const geoHierarchyApi = {
       auth: true,
     }),
   listAdminSubmissions: () =>
-    apiRequest<{ data: Array<SubmissionPublicDTO & { insisted?: { reason: string }; submittedBy: string }> }>(
-      '/admin/submissions',
-      { auth: true }
-    ),
+    apiRequest<{ data: AdminSubmissionDTO[] }>('/admin/submissions', { auth: true }),
   reviewAdminSubmission: (id: string, action: 'approve' | 'reject' | 'merge', reason?: string) =>
     apiRequest<{ data: { id: string; status: string } }>(`/admin/submissions/${id}/review`, {
       method: 'POST',

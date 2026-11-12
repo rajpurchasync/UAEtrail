@@ -1,5 +1,7 @@
 import { apiRequest } from '../client';
 import type {
+  FamilyKidProfilePatchPayload,
+  FamilyKidProfilePayload,
   SocialGroupInviteView,
   SocialGroupMemberView,
   SocialGroupView,
@@ -67,12 +69,22 @@ export const groupsApi = {
       body: JSON.stringify({ token }),
     }),
 
-  createMeGroupKid: (groupId: string, payload: { displayName: string; role?: 'admin' | 'buddy' }) =>
+  createMeGroupKid: (groupId: string, payload: FamilyKidProfilePayload) =>
     apiRequest<{ data: SocialGroupMemberView }>(`/me/groups/${groupId}/kids`, {
       method: 'POST',
       auth: true,
       body: JSON.stringify(payload),
     }),
+
+  updateMeGroupKid: (groupId: string, membershipId: string, payload: FamilyKidProfilePatchPayload) =>
+    apiRequest<{ data: SocialGroupMemberView }>(
+      `/me/groups/${groupId}/kids/${membershipId}`,
+      {
+        method: 'PATCH',
+        auth: true,
+        body: JSON.stringify(payload),
+      }
+    ),
 
   updateMeGroupMemberStatus: (groupId: string, membershipId: string, isActive: boolean) =>
     apiRequest<{ data: SocialGroupMemberView }>(`/me/groups/${groupId}/members/${membershipId}`, {

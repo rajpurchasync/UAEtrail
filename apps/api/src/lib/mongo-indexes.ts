@@ -256,6 +256,12 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { token: 1 }, unique: true },
       { key: { email: 1, status: 1 } }
     ]),
+    db.collection(COLLECTIONS.ACTIVITY_FAMILY_INVITES).createIndexes([
+      { key: { token: 1 }, unique: true },
+      { key: { inviteeUserId: 1, status: 1, createdAt: -1 } },
+      { key: { activityId: 1, inviteeUserId: 1, status: 1 } },
+      { key: { activityId: 1, requestId: 1, membershipId: 1, status: 1 } },
+    ]),
     db.collection(COLLECTIONS.SOCIAL_GROUP_WALL).createIndexes([
       { key: { groupId: 1, createdAt: -1 } }
     ]),

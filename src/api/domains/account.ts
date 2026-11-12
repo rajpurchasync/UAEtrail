@@ -119,11 +119,13 @@ export const accountApi = {
       fieldPrivacy?: Partial<import('@uaetrail/shared-types').ProfileFieldPrivacySettings>;
       dateOfBirthShare?: import('@uaetrail/shared-types').ProfileDateOfBirthShare;
       friendsListShare?: import('@uaetrail/shared-types').ProfileFriendsListShare;
+      findCrewVisibility?: import('@uaetrail/shared-types').FindCrewVisibility;
     }) =>
       apiRequest<{
         data: import('@uaetrail/shared-types').ProfileFieldPrivacySettings & {
           dateOfBirthShare: import('@uaetrail/shared-types').ProfileDateOfBirthShare;
           friendsListShare: import('@uaetrail/shared-types').ProfileFriendsListShare;
+          findCrewVisibility: import('@uaetrail/shared-types').FindCrewVisibility;
         };
       }>('/me/profile/field-privacy', {
         method: 'PATCH',
@@ -155,6 +157,7 @@ export const accountApi = {
       medicalConditions: string;
       emergencyContactName: string;
       emergencyContactPhone: string;
+      emergencyContactRelation: string;
     }) =>
       apiRequest<{
         data: Pick<
@@ -163,6 +166,7 @@ export const accountApi = {
           | 'medicalConditions'
           | 'emergencyContactName'
           | 'emergencyContactPhone'
+          | 'emergencyContactRelation'
           | 'medicalSafetyProfileComplete'
         >;
       }>('/me/profile/medical-safety', {

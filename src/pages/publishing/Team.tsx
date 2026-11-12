@@ -28,10 +28,15 @@ export const Team = () => {
   const [displayName, setDisplayName] = useState('');
   const [role, setRole] = useState<'tenant_admin' | 'tenant_guide'>('tenant_guide');
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const loadMembers = useCallback(
     async (activeTenantId: string, isActive: IsActiveGuard = () => true) => {
-      if (!activeTenantId) return;
+      if (!activeTenantId) {
+        if (isActive()) setLoading(false);
+        return;
+      }
+      if (isActive()) setLoading(true);
       try {
         const team = await fetchOrganisationTeam(activeTenantId);
         if (!isActive()) return;
@@ -43,10 +48,13 @@ export const Team = () => {
           }
         });
         setRoleDrafts(drafts);
+        setError(null);
       } catch (loadError) {
         if (isActive()) {
           setError(loadError instanceof Error ? loadError.message : 'Failed to load team');
         }
+      } finally {
+        if (isActive()) setLoading(false);
       }
     },
     []
@@ -163,7 +171,15 @@ export const Team = () => {
               </tr>
             </thead>
             <tbody>
-              {members.map((member) => (
+              {loading ? (
+                <tr>
+                  <td colSpan={4} className="px-4 py-12 text-center">
+                    <div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
+                  </td>
+                </tr>
+              ) : null}
+              {!loading &&
+                members.map((member) => (
                 <tr key={member.id} className="border-t">
                   <td className="px-4 py-3">{member.displayName}</td>
                   <td className="px-4 py-3">{member.email}</td>

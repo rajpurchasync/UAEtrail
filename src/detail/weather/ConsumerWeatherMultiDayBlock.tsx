@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { formatExploreCalendarDateShort } from '@uaetrail/shared-types';
-import { gccTodayIsoDate } from './weatherDisplayUtils';
+import {
+  externalWeatherDayUrl,
+  externalWeatherWeekUrl,
+  gccTodayIsoDate,
+} from './weatherDisplayUtils';
 import {
   fetchConsumerWeatherForDates,
   type ConsumerWeatherDayRow,
@@ -100,17 +104,26 @@ export const ConsumerWeatherMultiDayBlock = ({
   }
 
   const headlineName = resolvedLocationName?.trim() || forecastForName?.trim() || null;
+  const weekForecastHref = externalWeatherWeekUrl(lat, lng);
 
   return (
     <div className="min-w-0 space-y-2">
       {headlineName ? (
         <p className="truncate text-[10px] font-semibold leading-snug text-neutral-700 dark:text-neutral-200">
           Forecast for{' '}
-          <span className="font-bold text-neutral-900 dark:text-neutral-50">{headlineName}</span>
+          <a
+            href={weekForecastHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-bold text-neutral-900 underline decoration-sky-400/80 underline-offset-2 hover:text-sky-800 dark:text-neutral-50 dark:hover:text-sky-300"
+            title={`Open weekly forecast for ${headlineName}`}
+          >
+            {headlineName}
+          </a>
         </p>
       ) : null}
       <ul
-        className="-mx-0.5 flex list-none gap-1.5 overflow-x-auto overscroll-x-contain scroll-touch pb-0.5 pt-0.5 m-0 p-0"
+        className="-mx-0.5 flex list-none items-stretch gap-1.5 overflow-x-auto overscroll-x-contain scroll-touch pb-0.5 pt-0.5 m-0 p-0"
         aria-label="Daily forecast"
       >
         {rows.map((row) => (
@@ -120,6 +133,7 @@ export const ConsumerWeatherMultiDayBlock = ({
             daily={row.daily}
             unavailable={row.unavailable}
             isToday={row.date === today}
+            href={row.daily && !row.unavailable ? externalWeatherDayUrl(lat, lng, row.date) : undefined}
           />
         ))}
       </ul>

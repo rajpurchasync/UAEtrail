@@ -229,19 +229,19 @@ html[data-theme='dark'] {
 }
 
 /**
- * Adaptive card row — grow to fill when there is room; never shrink below min-width.
- * Parent scrolls horizontally when cards do not fit (see carousel controls in JS).
+ * Adaptive card row — grow slightly when there is room, but cap width so a single
+ * (or few) cards never become full-bleed posters. Parent scrolls when cards do not fit.
  */
 .home-marketing-adaptive-card {
   flex: 1 0 17.5rem;
   min-width: 17.5rem;
-  max-width: none;
+  max-width: 22rem;
 }
 
 .home-marketing-adaptive-review-card {
   flex: 1 0 19rem;
   min-width: 19rem;
-  max-width: none;
+  max-width: 24rem;
 }
 
 .home-marketing-adaptive-track {

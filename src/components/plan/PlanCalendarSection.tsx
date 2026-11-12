@@ -29,7 +29,7 @@ const legendForFilter = (filter: PlanCommitmentFilter) => {
     ];
   }
   return [
-    { className: 'bg-sky-500', label: 'Going' },
+    { className: 'bg-sky-500', label: 'Joined' },
     { className: 'bg-sky-300', label: 'Pending' },
   ];
 };
@@ -43,7 +43,7 @@ const detailLabel = (row: PlanCalendarDayDetail): string => {
     case 'seeking':
       return `Looking for company · ${row.title}`;
     case 'joined':
-      return `Going · ${row.title}`;
+      return `Joined · ${row.title}`;
     case 'requested':
       return `Pending · ${row.title}`;
     default:

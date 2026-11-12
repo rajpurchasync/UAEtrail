@@ -20,6 +20,8 @@ describe('api canonical surface', () => {
     expect(typeof api.getMemberStatus).toBe('function');
     expect(typeof api.listActivities).toBe('function');
     expect(typeof api.publishActivity).toBe('function');
+    expect(typeof api.suspendActivity).toBe('function');
+    expect(typeof api.resumeActivity).toBe('function');
     expect(typeof api.cancelActivity).toBe('function');
     expect(typeof api.createActivity).toBe('function');
     expect(typeof api.updateActivity).toBe('function');

@@ -13,6 +13,8 @@ export type ActivityHostManageSurfaceProps = {
   onEdit: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
+  onSuspend?: () => void;
+  onResume?: () => void;
   onShare?: () => void;
   onChat?: () => void;
 } & ConsumerDetailHostParticipantsSurface;
@@ -29,6 +31,8 @@ export const ConsumerDetailHostManageSection = ({
   onEdit,
   onDuplicate,
   onDelete,
+  onSuspend,
+  onResume,
   onShare,
   onChat,
 }: ActivityHostManageSurfaceProps) => {
@@ -39,6 +43,8 @@ export const ConsumerDetailHostManageSection = ({
     onEdit,
     onDuplicate,
     onDelete,
+    onSuspend,
+    onResume,
     onShare,
     onChat,
   }).filter((row) => !row.hidden);

@@ -484,6 +484,14 @@ export const updateAdminActivityStatus = async (id: string, status: ActivityStat
   if (!result) {
     throw new Error('Activity not found.');
   }
+  if (
+    status === ActivityStatus.SUSPENDED ||
+    status === ActivityStatus.PUBLISHED ||
+    status === ActivityStatus.CANCELLED
+  ) {
+    const { scheduleExploreMapCacheInvalidation } = await import('./explore-map-cache-schedule.js');
+    scheduleExploreMapCacheInvalidation('admin-store.activity_status_map_cache');
+  }
   return mapMongoActivity(result);
 };
 

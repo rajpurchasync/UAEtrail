@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { ConsumerBottomSheet } from '../../mobile/ConsumerBottomSheet';
 import {
   GROUP_JOIN_EDIT_HEADLINE,
@@ -10,6 +11,7 @@ import {
 import { PartySizeSelect } from '../../../detail/shell/PartySizeSelect';
 import { activityDetailFooterPrimaryButtonClass } from './ActivityDetailStandardFooter';
 import { EXPLORE_Z } from '../../../config/exploreTheme';
+import { ActivityFamilyPartyPicker } from './ActivityFamilyPartyPicker';
 
 const PARTY_SHEET_Z = Number.parseInt(EXPLORE_Z.shareSheet.replace('z-[', '').replace(']', ''), 10) || 6800;
 
@@ -20,17 +22,23 @@ type ActivityDetailPartyJoinSheetProps = {
   kids: number;
   onAdults: (n: number) => void;
   onKids: (n: number) => void;
-  /** Join flow — primary continues to join modal. Edit flow — saves on dismiss. */
+  /** Join flow — primary continues to join modal. Edit flow — saves roster / headcount. */
   variant: 'join' | 'edit';
   joinLabel?: string;
   joinDisabled?: boolean;
   onConfirmJoin?: () => void;
+  /** Edit / family roster — receives selected membership ids when using the picker. */
+  onSaveEdit?: (membershipIds?: string[]) => void;
   partyJoined?: boolean;
-  /** Solo joiner — kids / family only (no adult counter). */
+  /** Solo joiner — family roster picker (named members). */
   familyOnly?: boolean;
+  kidsAllowed?: boolean;
+  selectedMembershipIds?: string[];
+  viewerUserId?: string | null;
+  saving?: boolean;
 };
 
-/** Mobile group join — slide-up before join, or edit after request. */
+/** Mobile group join — slide-up before join, or family roster edit after request. */
 export const ActivityDetailPartyJoinSheet = ({
   open,
   onClose,
@@ -42,24 +50,37 @@ export const ActivityDetailPartyJoinSheet = ({
   joinLabel,
   joinDisabled = false,
   onConfirmJoin,
+  onSaveEdit,
   partyJoined = false,
   familyOnly = false,
+  kidsAllowed = true,
+  selectedMembershipIds = [],
+  viewerUserId,
+  saving = false,
 }: ActivityDetailPartyJoinSheetProps) => {
+  const [localIds, setLocalIds] = useState(selectedMembershipIds);
+
+  useEffect(() => {
+    if (open) setLocalIds(selectedMembershipIds);
+  }, [open, selectedMembershipIds]);
+
+  const useRosterPicker = variant === 'edit' || familyOnly;
+
   const title =
-    variant === 'join'
+    variant === 'join' && !familyOnly
       ? GROUP_JOIN_JOIN_HEADLINE
       : familyOnly
         ? GROUP_JOIN_FAMILY_HEADLINE
         : GROUP_JOIN_EDIT_HEADLINE;
   const subtitle =
-    variant === 'join'
+    variant === 'join' && !familyOnly
       ? GROUP_JOIN_JOIN_LEAD
       : familyOnly
         ? GROUP_JOIN_FAMILY_LEAD
         : GROUP_JOIN_EDIT_LEAD;
 
   const primaryFooter =
-    variant === 'join' && joinLabel && onConfirmJoin ? (
+    variant === 'join' && !familyOnly && joinLabel && onConfirmJoin ? (
       <button
         type="button"
         disabled={joinDisabled}
@@ -75,10 +96,14 @@ export const ActivityDetailPartyJoinSheet = ({
     ) : (
       <button
         type="button"
-        onClick={onClose}
+        disabled={saving}
+        onClick={() => {
+          onSaveEdit?.(useRosterPicker ? localIds : undefined);
+          onClose();
+        }}
         className={`${activityDetailFooterPrimaryButtonClass(true)} w-full`}
       >
-        Done
+        {saving ? 'Saving…' : 'Done'}
       </button>
     );
 
@@ -91,14 +116,25 @@ export const ActivityDetailPartyJoinSheet = ({
       zIndex={PARTY_SHEET_Z}
       footer={primaryFooter}
     >
-      <PartySizeSelect
-        adults={adults}
-        kids={kids}
-        onAdults={onAdults}
-        onKids={onKids}
-        compact
-        joined={partyJoined || familyOnly}
-      />
+      {useRosterPicker ? (
+        <ActivityFamilyPartyPicker
+          enabled={open}
+          kidsAllowed={kidsAllowed}
+          selectedMembershipIds={localIds}
+          onChange={setLocalIds}
+          viewerUserId={viewerUserId}
+        />
+      ) : (
+        <PartySizeSelect
+          adults={adults}
+          kids={kidsAllowed ? kids : 0}
+          onAdults={onAdults}
+          onKids={onKids}
+          compact
+          joined={partyJoined}
+          kidsAllowed={kidsAllowed}
+        />
+      )}
     </ConsumerBottomSheet>
   );
 };

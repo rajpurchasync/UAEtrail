@@ -1,4 +1,4 @@
-import { useLocation, useParams, useSearchParams } from 'react-router-dom';
+import { Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { PageMeta } from '../components/seo/PageMeta';
 import { PlaceDetailPageShell } from './place/PlaceDetailPageShell';
@@ -87,6 +87,17 @@ export const PlaceDetailPage = ({ kind: kindProp }: PlaceDetailPageProps) => {
     );
   }
 
+  // e.g. camping place opened as `/venue/:id` — API found it; URL kind was wrong.
+  if (core.kindRedirectPath) {
+    return (
+      <Navigate
+        to={`${core.kindRedirectPath}${location.search}${location.hash}`}
+        replace
+        state={location.state}
+      />
+    );
+  }
+
   if (!core.place || !id) {
     return (
       <>
@@ -94,9 +105,8 @@ export const PlaceDetailPage = ({ kind: kindProp }: PlaceDetailPageProps) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
           <h1 className="text-2xl font-bold text-gray-900">{notFoundTitle}</h1>
           <p className="mt-2 text-sm text-neutral-600 max-w-md mx-auto">
-            Listed spots are public for signed-out visitors — this usually means the ID is missing
-            from your database or the row has no cover image (registry rule). Run catalog seed if you
-            are on a fresh dev environment.
+            This place isn’t available. The link may be wrong, or it isn’t in the catalog on this
+            environment yet.
           </p>
           <div className="mt-4 flex justify-center">
             <MobileBackButton

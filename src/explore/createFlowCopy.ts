@@ -233,7 +233,7 @@ export const HOSTING_LINK_RIDESHARE_PASTE_LABEL = 'Or paste your rideshare link'
 export const HOSTING_LINK_RIDESHARE_PASTE_PLACEHOLDER = 'https://uaetrail.com/activity/…';
 
 export const HOSTING_LINK_RIDESHARE_HINT =
-  'Tap a ride you already published to attach it here. Joiners will see it on this plan.';
+  'Link a ride you host, or create a new one for this plan. People going will see it here.';
 
 export const HOSTING_LINK_RIDESHARE_PICK_LABEL = 'Your rides';
 
@@ -241,6 +241,10 @@ export const HOSTING_LINK_RIDESHARE_EMPTY =
   'No published rides yet. Paste a ride link below.';
 
 export const HOSTING_RIDESHARE_LINKED_NOTICE = 'Rideshare linked — joiners will see it on your plan.';
+
+export const HOSTING_RIDESHARE_UNLINKED_NOTICE = 'Ride unlinked from the outing.';
+
+export const HOSTING_RIDESHARE_UNLINK_LABEL = 'Unlink from outing';
 
 export const HOSTING_LINK_PARENT_ACTIVITY_HINT =
   'Link this ride to a published hike, camp, or event you’ve joined or host.';

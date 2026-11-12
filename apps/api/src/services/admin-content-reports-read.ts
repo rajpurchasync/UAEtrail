@@ -2,6 +2,7 @@ import { findAuthUserIdsMatchingActorSearch } from '../lib/auth-users-store.js';
 import {
   listContentReportsAdmin,
   type ContentReportReason,
+  type ContentReportStatus,
   type ContentReportTargetType,
 } from '../lib/content-reports-store.js';
 
@@ -10,6 +11,7 @@ export const listAdminContentReports = async (input: {
   pageSize: number;
   reason?: ContentReportReason;
   targetType?: ContentReportTargetType;
+  status?: ContentReportStatus;
   reporter?: string;
   from?: string;
   to?: string;
@@ -23,6 +25,7 @@ export const listAdminContentReports = async (input: {
     take: input.pageSize,
     reason: input.reason,
     targetType: input.targetType,
+    status: input.status,
     reporterUserIds:
       reporterUserIds === undefined ? undefined : reporterUserIds.length > 0 ? reporterUserIds : ['__none__'],
     createdAtFrom: input.from ? new Date(input.from) : undefined,

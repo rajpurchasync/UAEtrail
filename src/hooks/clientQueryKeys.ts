@@ -190,6 +190,15 @@ export const activityJoinInvitesSentQueryKey = (activityId: string): QueryKey =>
 
 export const meGroupsActivityInviteQueryKey = ['me-groups', 'activity-invite'] as const;
 
+/** Family roster picker on activity detail (cached; only fetched when picker enabled). */
+export const meFamilyPartyPickerGroupsQueryKey = ['me-groups', 'family-party-picker'] as const;
+export const meFamilyPartyPickerMembersQueryKey = (groupId: string): QueryKey => [
+  'me-groups',
+  'family-party-picker',
+  'members',
+  groupId,
+];
+
 export const participantHubQueryKey = (userId: string): QueryKey => ['participant-hub', userId];
 
 /** Published curated areas (`GET /areas` public list) — explore search + area pickers. */

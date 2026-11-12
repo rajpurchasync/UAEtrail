@@ -5,6 +5,7 @@ import type { HomeLandingActivity } from '../../../../content/homeLanding';
 import { HOME_ACTIVITIES, HOME_EMIRATE_FILTER_ORDER } from '../../../../content/homeMarketing';
 import { emirateLabelFromId } from '../../../../utils/homeLandingEmirate';
 import { mapHomeLandingActivityToCard } from '../../../../utils/mapHomeLandingActivity';
+import { HOME_LANDING_ACTIVITY_LIMIT } from '../../../../utils/selectDiverseHomeLandingActivities';
 import { ActivityCardCarousel } from '../ActivityCardCarousel';
 import { AppButton } from '../../../mobile/AppButton';
 import { EmirateChips } from '../EmirateChips';
@@ -45,7 +46,7 @@ export const HomeActivitiesSection = ({
   const filtered = useMemo(() => {
     const list =
       emirate === 'all' ? cards : cards.filter((c) => c.emirateId === emirate);
-    return list.slice(0, 6).map(({ emirateId: _e, ...card }) => card);
+    return list.slice(0, HOME_LANDING_ACTIVITY_LIMIT).map(({ emirateId: _e, ...card }) => card);
   }, [cards, emirate]);
 
   const emptyEmirate = emirate !== 'all' && filtered.length === 0 && !loading;
@@ -78,7 +79,7 @@ export const HomeActivitiesSection = ({
               <ActivityCardCarousel
                 cards={filtered}
                 loading={loading}
-                skeletonCount={4}
+                skeletonCount={HOME_LANDING_ACTIVITY_LIMIT}
                 emptyState={
                   emptyEmirate ? (
                     <p className="text-neutral-600">

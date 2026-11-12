@@ -131,7 +131,7 @@ export const GroupChatHubPanel = ({
               {admin && displayGroup ? (
                 <>
                   <Link
-                    to={groupsManagePath(displayGroup.id, 'manage')}
+                    to={groupsManagePath(displayGroup.id, 'settings')}
                     className="flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 text-sm font-medium text-neutral-800 hover:bg-neutral-50"
                   >
                     <UserRound className="h-4 w-4" aria-hidden />

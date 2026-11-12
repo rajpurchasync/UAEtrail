@@ -1,12 +1,14 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useMemo, useState } from 'react';
-import { useSafeAsyncEffect, type IsActiveGuard } from '../../hooks/useSafeAsyncEffect';
+import { useMemo, useState } from 'react';
 import { afterHostJoinDecisionClientRefresh } from '../../hooks/activityJoinClientEffects';
-import type { ActivityRequestView } from '../../hooks/publishingJoinQueueClientApi';
 import {
   decideActivityJoinRequest,
-  getActivityJoinRequests,
+  type ActivityRequestView,
 } from '../../hooks/publishingJoinQueueClientApi';
+import {
+  useInvalidatePublishingWorkspace,
+  usePublishingJoinQueue,
+} from '../../hooks/publishingWorkspaceQueries';
 import { getActiveTenantId } from '../../api/tenant';
 import { ConsoleShell } from '../../console/ConsoleShell';
 import { ActivityJoinRequestCard } from '../../console/ActivityJoinRequestCard';
@@ -14,38 +16,31 @@ import { TenantSwitcher } from '../../components/ui';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
 import { GlassCard } from '../../components/mobile/GlassCard';
 import { ActivityJoinRequestDeclineDialog } from '../../console/ActivityJoinRequestDeclineDialog';
+import { LoadingRing } from '../../components/ui/loadingPrimitives';
+import { resolveJoinRequestActivity } from '../../utils/joinRequestActivity';
 
 type RequestFilter = 'pending' | 'all';
 
 export const JoinRequests = () => {
   const queryClient = useQueryClient();
   const [tenantId, setTenantId] = useState(getActiveTenantId());
-  const [requests, setRequests] = useState<ActivityRequestView[]>([]);
-  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<RequestFilter>('pending');
   const [busyRequestId, setBusyRequestId] = useState<string | null>(null);
   const [declineRequest, setDeclineRequest] = useState<ActivityRequestView | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
-  const loadRequests = useCallback(async (activeTenantId: string, isActive: IsActiveGuard = () => true) => {
-    if (!activeTenantId) return;
-    try {
-      const rows = await getActivityJoinRequests(activeTenantId);
-      if (isActive()) {
-        setRequests(rows);
-      }
-    } catch (err) {
-      if (isActive()) {
-        setError(err instanceof Error ? err.message : 'Failed to load requests');
-      }
-    }
-  }, []);
+  const joinQueueQuery = usePublishingJoinQueue(tenantId, Boolean(tenantId));
+  const invalidateWorkspace = useInvalidatePublishingWorkspace(tenantId);
 
-  useSafeAsyncEffect(
-    async (isActive) => {
-      await loadRequests(tenantId, isActive);
-    },
-    [tenantId, loadRequests]
-  );
+  const requests = useMemo(() => joinQueueQuery.data ?? [], [joinQueueQuery.data]);
+  const loading = Boolean(tenantId) && joinQueueQuery.isLoading && !joinQueueQuery.data;
+  const error =
+    actionError ??
+    (joinQueueQuery.error instanceof Error
+      ? joinQueueQuery.error.message
+      : joinQueueQuery.error
+        ? 'Failed to load requests'
+        : null);
 
   const pendingCount = useMemo(
     () => requests.filter((request) => request.status === 'pending').length,
@@ -59,17 +54,18 @@ export const JoinRequests = () => {
     return requests;
   }, [filter, requests]);
 
+  const refreshQueue = async () => {
+    invalidateWorkspace();
+    await joinQueueQuery.refetch();
+  };
+
   const submitDecline = async (hostNote: string) => {
     if (!tenantId || !declineRequest) return;
     setBusyRequestId(declineRequest.id);
+    setActionError(null);
     try {
-      await decideActivityJoinRequest(
-        tenantId,
-        declineRequest.id,
-        'rejected',
-        hostNote
-      );
-      const activityId = declineRequest.activity?.id;
+      await decideActivityJoinRequest(tenantId, declineRequest.id, 'rejected', hostNote);
+      const activityId = resolveJoinRequestActivity(declineRequest)?.id;
       if (activityId) {
         await afterHostJoinDecisionClientRefresh(queryClient, {
           activityId,
@@ -77,9 +73,9 @@ export const JoinRequests = () => {
         });
       }
       setDeclineRequest(null);
-      await loadRequests(tenantId);
+      await refreshQueue();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to process request');
+      setActionError(err instanceof Error ? err.message : 'Failed to process request');
     } finally {
       setBusyRequestId(null);
     }
@@ -88,16 +84,17 @@ export const JoinRequests = () => {
   const quickDecide = async (requestId: string, status: 'approved' | 'rejected') => {
     if (!tenantId) return;
     setBusyRequestId(requestId);
+    setActionError(null);
     try {
       await decideActivityJoinRequest(tenantId, requestId, status);
       const row = requests.find((request) => request.id === requestId);
-      const activityId = row?.activity?.id;
+      const activityId = row ? resolveJoinRequestActivity(row)?.id : undefined;
       if (activityId) {
         await afterHostJoinDecisionClientRefresh(queryClient, { activityId, status });
       }
-      await loadRequests(tenantId);
+      await refreshQueue();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to process request');
+      setActionError(err instanceof Error ? err.message : 'Failed to process request');
     } finally {
       setBusyRequestId(null);
     }
@@ -105,22 +102,22 @@ export const JoinRequests = () => {
 
   return (
     <ConsoleShell title="Join Requests">
-      <div className="space-y-4">
+      <div className="space-y-4 pb-20">
         <TenantSwitcher onChange={setTenantId} />
-        {error && (
+        {error ? (
           <GlassCard padding className="border-red-200/50 bg-red-50/50">
             <p className="text-sm text-red-600">{error}</p>
           </GlassCard>
-        )}
+        ) : null}
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">Join requests</h2>
-            {pendingCount > 0 && (
+            {pendingCount > 0 ? (
               <p className="mt-0.5 text-sm text-amber-700 dark:text-amber-400">
                 {pendingCount} waiting for your response
               </p>
-            )}
+            ) : null}
           </div>
           <AppSegmented
             segments={[
@@ -132,14 +129,18 @@ export const JoinRequests = () => {
           />
         </div>
 
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="flex justify-center py-10" role="status" aria-label="Loading">
+            <LoadingRing size="md" />
+          </div>
+        ) : filtered.length === 0 ? (
           <GlassCard padding>
             <p className="text-sm text-neutral-600">
               {filter === 'pending' ? 'No pending join requests.' : 'No join requests yet.'}
             </p>
           </GlassCard>
         ) : (
-          <div className="space-y-2">
+          <div className="app-zebra space-y-2">
             {filtered.map((request) => (
               <ActivityJoinRequestCard
                 key={request.id}
