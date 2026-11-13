@@ -1,35 +1,35 @@
 import type { ActivityDetailDTO } from '@uaetrail/shared-types';
-import type { ConsumerDetailHeaderMark } from '../components/mobile/ConsumerDetailHeaderChromeTitle';
+import { resolveMapPinEmoji } from '@uaetrail/shared-types';
+import type { DetailHeaderMark } from '../components/mobile/DetailHeaderChrome';
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import { discoveryCardIsSeeking } from '../discovery/discoveryCardModel';
-import { activityKindChromeEmoji, activityKindChromeLabel } from './activityKindChrome';
+import { activityKindChromeEmoji } from './activityKindChrome';
 
-export type ActivityConsumerDetailHeaderChrome = {
+export type ActivityDetailHeaderChrome = {
   emoji: string;
   label: string;
-  mark?: ConsumerDetailHeaderMark;
+  mark?: DetailHeaderMark;
 };
 
-const activityHeaderMark = (
-  activityType: ActivityDetailDTO['activityType']
-): ConsumerDetailHeaderMark | undefined => {
-  switch (activityType) {
-    case 'rideshare':
-      return 'rideshare';
-    case 'hiking':
-      return 'hiking';
-    case 'camping':
-      return 'camping';
-    default:
-      return undefined;
-  }
-};
-
-/** Sheet + hero chrome — scheduled activity kind (venue type is on the place line, not this chip). */
-export const resolveActivityConsumerDetailHeaderChrome = (
+/** Sticky header — place kind when linked, otherwise activity pin type (not the outing title). */
+export const resolveActivityDetailHeaderChrome = (
   activity: ActivityDetailDTO,
   card: DiscoveryCardModel | null | undefined
-): ActivityConsumerDetailHeaderChrome => {
+): ActivityDetailHeaderChrome => {
+  const place = activity.location;
+  const placeKind = place?.activityType;
+  if (place?.name?.trim() && placeKind) {
+    const emoji = card?.emoji ?? resolveMapPinEmoji(placeKind, 'venue');
+    if (placeKind === 'hiking') {
+      return { emoji, label: 'Hiking', mark: 'hiking' };
+    }
+    if (placeKind === 'camping') {
+      return { emoji, label: 'Camping', mark: 'camping' };
+    }
+    const label = placeKind === 'event' ? 'Venue' : 'Place';
+    return { emoji, label };
+  }
+
   if (card?.source === 'activity' && card.emoji && card.tone) {
     const seeking = activity.activityMode === 'seeking' || discoveryCardIsSeeking(card);
     if (seeking) {
@@ -42,12 +42,20 @@ export const resolveActivityConsumerDetailHeaderChrome = (
 
   const type = activity.activityType;
   const emoji = card?.emoji ?? activityKindChromeEmoji(type);
-  const label = activityKindChromeLabel(type);
-  const mark = activityHeaderMark(type);
-
   if (activity.activityMode === 'seeking') {
     return { emoji, label: 'Looking for company' };
   }
 
-  return { emoji, label, mark };
+  switch (type) {
+    case 'rideshare':
+      return { emoji, label: 'Rideshare', mark: 'rideshare' };
+    case 'hiking':
+      return { emoji, label: 'Hiking', mark: 'hiking' };
+    case 'camping':
+      return { emoji, label: 'Camping', mark: 'camping' };
+    case 'event':
+      return { emoji, label: 'Event' };
+    default:
+      return { emoji, label: 'Group outing' };
+  }
 };

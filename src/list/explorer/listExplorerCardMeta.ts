@@ -1,8 +1,4 @@
-import {
-  formatExploreTime,
-  isGeographyMapSource,
-  resolveActivityPublisherChip,
-} from '@uaetrail/shared-types';
+import { isGeographyMapSource, resolveActivityPublisherChip } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { resolveCatalogHeaderAreaLocationLine } from '../listVenuePosterPresentation';
 import { listExplorerIsThisWeekSectionDate } from './listExplorerDateSections';
@@ -34,9 +30,6 @@ export type ListExplorerCardMeta = {
   price: string | null;
   location: string | null;
   when: string | null;
-  whenDay: string | null;
-  whenDate: string | null;
-  whenTime: string | null;
   soldOut: boolean;
   dateIso: string | null;
 };
@@ -73,7 +66,7 @@ export const listExplorerCardDateIso = (card: DiscoveryCardModel): string | null
   return /^\d{4}-\d{2}-\d{2}/.test(rawDate) ? rawDate.slice(0, 10) : null;
 };
 
-/** List row date column — always `Fri 20 Nov 26`; prefix `This` for “This Week” section dates. */
+/** List row date column — always `Fri 20 Nov 26`; prefix `This` for “This week” section dates. */
 export const formatListExplorerRowDateLabel = (
   iso: string | null,
   now: Date = new Date()
@@ -85,9 +78,8 @@ export const formatListExplorerRowDateLabel = (
   const weekday = LIST_ROW_WEEKDAYS[target.getDay()] ?? '';
   const day = String(target.getDate()).padStart(2, '0');
   const month = LIST_ROW_MONTHS[target.getMonth()] ?? '';
-  const showYear = target.getFullYear() !== now.getFullYear();
-  const yearSuffix = showYear ? ` ${String(target.getFullYear()).slice(-2)}` : '';
-  const core = `${weekday} ${day} ${month}${yearSuffix}`;
+  const year = String(target.getFullYear()).slice(-2);
+  const core = `${weekday} ${day} ${month} ${year}`;
 
   if (listExplorerIsThisWeekSectionDate(iso, now)) return `This ${core}`;
   return core;
@@ -100,41 +92,6 @@ const splitExploreWhenLabel = (when: string | null): { date: string; time: strin
     return { date: when.slice(0, atIdx).trim(), time: when.slice(atIdx + 4).trim() };
   }
   return { date: when.trim(), time: null };
-};
-
-const listExplorerEventTimeLabel = (card: DiscoveryCardModel): string | null => {
-  const fromWhen = splitExploreWhenLabel(card.whenLabel?.trim() || null);
-  if (fromWhen?.time) return fromWhen.time;
-  const raw = card.activity?.time?.trim();
-  if (!raw) return null;
-  return formatExploreTime(raw) ?? raw;
-};
-
-/** Thumbnail poster — weekday, calendar date, and clock on separate lines. */
-export const listExplorerThumbWhenLines = (
-  card: DiscoveryCardModel,
-  now: Date = new Date()
-): { day: string; date: string; time: string | null } | null => {
-  const iso = listExplorerCardDateIso(card);
-  const time = listExplorerEventTimeLabel(card);
-  if (!iso) {
-    const fromWhen = splitExploreWhenLabel(card.whenLabel?.trim() || null);
-    if (!fromWhen?.date && !time) return null;
-    return { day: '', date: fromWhen?.date ?? '', time };
-  }
-  const target = new Date(`${iso.slice(0, 10)}T12:00:00`);
-  if (Number.isNaN(target.getTime())) {
-    return time ? { day: '', date: '', time } : null;
-  }
-  const weekday = LIST_ROW_WEEKDAYS[target.getDay()] ?? '';
-  const dayNum = String(target.getDate()).padStart(2, '0');
-  const month = LIST_ROW_MONTHS[target.getMonth()] ?? '';
-  const showYear = target.getFullYear() !== now.getFullYear();
-  const yearSuffix = showYear ? ` ${String(target.getFullYear()).slice(-2)}` : '';
-  let dateLine = `${dayNum} ${month}${yearSuffix}`;
-  if (listExplorerIsThisWeekSectionDate(iso, now)) dateLine = `This ${dateLine}`;
-  if (!weekday && !dateLine && !time) return null;
-  return { day: weekday, date: dateLine, time };
 };
 
 /** Date/time column for list rows — full date from ISO; time from explore when label. */
@@ -170,7 +127,6 @@ export const listExplorerCardMeta = (card: DiscoveryCardModel): ListExplorerCard
         listHost: card.listHost,
       })
     : null;
-  const whenLines = isEvent ? listExplorerThumbWhenLines(card) : null;
   return {
     title: listExplorerCardTitle(card),
     hostName: publisher?.name ?? null,
@@ -178,9 +134,6 @@ export const listExplorerCardMeta = (card: DiscoveryCardModel): ListExplorerCard
     price: isEvent ? listExplorerPriceLabel(card) : null,
     location,
     when: card.whenLabel?.trim() || null,
-    whenDay: whenLines?.day?.trim() ? whenLines.day : null,
-    whenDate: whenLines?.date?.trim() ? whenLines.date : null,
-    whenTime: whenLines?.time ?? null,
     soldOut,
     dateIso,
   };

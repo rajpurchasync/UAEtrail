@@ -1,12 +1,8 @@
-import {
-  formatActivityScheduleDateRangeLabel,
-  formatActivityScheduleTimeRangeLabel,
-  formatExploreEventDateLabel,
-} from '@uaetrail/shared-types';
+import { formatExploreEventDateLabel, formatExploreTime } from '@uaetrail/shared-types';
 
 /** Typographic date block for consumer outing detail (no hero image). */
 export type ActivityDetailConsumerLeadDate = {
-  /** Progressive stamp: week → weekday; month → `Sat 12`; year → `Sat 12 Sep`; else full. */
+  /** Weekday within 6 days, otherwise `09 Nov 26`. */
   label: string;
   month: string;
   day: string;
@@ -14,21 +10,18 @@ export type ActivityDetailConsumerLeadDate = {
   time: string | null;
 };
 
-export const formatActivityDetailConsumerLeadDate = (
+const formatTimeLabel = (time?: string | null): string | null => formatExploreTime(time?.trim().slice(0, 5));
+
+export const formatActivityDetailLeadDate = (
   dateStr?: string | null,
-  time?: string | null,
-  endDate?: string | null,
-  endTime?: string | null
+  time?: string | null
 ): ActivityDetailConsumerLeadDate => {
-  const timeLabel = formatActivityScheduleTimeRangeLabel(time, endTime);
+  const timeLabel = formatTimeLabel(time);
   if (!dateStr) {
     return { label: '', month: '', day: '', weekday: '', time: timeLabel };
   }
   const date = new Date(`${dateStr.slice(0, 10)}T12:00:00`);
-  const label =
-    formatActivityScheduleDateRangeLabel(dateStr, endDate) ??
-    formatExploreEventDateLabel(dateStr) ??
-    dateStr;
+  const label = formatExploreEventDateLabel(dateStr) ?? dateStr;
   return {
     label,
     month: date.toLocaleDateString('en-GB', { month: 'short' }),

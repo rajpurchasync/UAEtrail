@@ -476,15 +476,21 @@ export const shouldShowConsumerShellHamburger = (pathname: string): boolean => {
   return MOBILE_BOTTOM_NAV_PROFILE_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 };
 
-/** Signed-in mobile tab shell — Explore · My Plans · Chat (middle tab route {@link PLAN_PATH}). */
-export const MOBILE_BOTTOM_NAV_TAB_PATHS = [EXPLORE_MAP_PATH, PLAN_PATH, MESSAGES_PATH] as const;
+/**
+ * Route pathnames that host the five-tab mobile shell (Trips/Venues share `/explore` + `/list`).
+ * Tab labels: `MOBILE_FIVE_TAB_UI_LABELS` in `src/config/mobileFiveTabNav.ts`.
+ */
+export const MOBILE_BOTTOM_NAV_TAB_PATHS = [
+  EXPLORE_MAP_PATH,
+  LIST_DISCOVERY_PATH,
+  PLAN_PATH,
+  MESSAGES_PATH,
+] as const;
 
 export type MobileBottomNavTabPath = (typeof MOBILE_BOTTOM_NAV_TAB_PATHS)[number];
 
 export const isMobileBottomNavTabPath = (pathname: string): pathname is MobileBottomNavTabPath =>
-  (MOBILE_BOTTOM_NAV_TAB_PATHS as readonly string[]).includes(pathname) ||
-  pathname === LIST_DISCOVERY_PATH ||
-  pathname === HOSTING_HUB_PATH;
+  (MOBILE_BOTTOM_NAV_TAB_PATHS as readonly string[]).includes(pathname);
 
 /** Personal hub routes that keep the mobile tab bar visible (profile is not a tab). */
 export const MOBILE_BOTTOM_NAV_PROFILE_PATHS = [

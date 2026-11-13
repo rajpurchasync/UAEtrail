@@ -94,9 +94,9 @@ export const listCatForListExplorerBucket = (
 export const serializeBrowseListToExploreSearchParams = (
   state: BrowseListFilterState,
   regions: string[],
-  options?: { listCat?: BrowseMainCategoryKey | null; geoIds?: string[] }
+  options?: { listCat?: BrowseMainCategoryKey | null }
 ): URLSearchParams => {
-  const params = serializeBrowseListSearchParams(state, regions, options?.geoIds ?? []);
+  const params = serializeBrowseListSearchParams(state, regions);
   params.delete(LIST_CAT_PARAM);
 
   if (state.when === 'weekend') {

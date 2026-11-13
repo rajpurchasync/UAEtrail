@@ -5,7 +5,6 @@ import {
 } from '../explore/exploreActivityDateFilter';
 import { parseMapFilter, type MapFilterKey } from '../explore/routing';
 import { parseVenueRegionsParam } from '../explore/routing';
-import { BROWSE_GEO_PARAM, parseBrowseGeoPath, serializeBrowseGeoPath } from './browseGeoPath';
 import type { BrowseListFilterState, BrowsePriceFilter, BrowseWhenFilter } from './browseListFilters';
 import { isBrowseTripTopicKey, type BrowseTripTopicKey } from './browseListTripTopics';
 import { isListVenuePlaceTopicKey } from './listVenuePlaceTopicFilter';
@@ -182,13 +181,9 @@ export const parseBrowseListVenueRegions = (
   searchParams: Pick<URLSearchParams, 'get'>
 ): string[] => parseVenueRegionsParam(searchParams);
 
-export const parseBrowseListGeoIds = (searchParams: Pick<URLSearchParams, 'get'>): string[] =>
-  parseBrowseGeoPath(searchParams.get(BROWSE_GEO_PARAM));
-
 export const serializeBrowseListSearchParams = (
   state: BrowseListFilterState,
-  regions: string[],
-  geoIds: string[] = []
+  regions: string[]
 ): URLSearchParams => {
   const params = new URLSearchParams();
   if (state.query.trim()) params.set('q', state.query.trim());
@@ -230,8 +225,6 @@ export const serializeBrowseListSearchParams = (
   }
 
   if (regions.length > 0) params.set('regions', regions.join(','));
-  const geo = serializeBrowseGeoPath(geoIds);
-  if (geo) params.set(BROWSE_GEO_PARAM, geo);
 
   const buddies = serializeBuddiesDiscoverySegment(state.buddiesSegment);
   if (buddies) params.set(BUDDIES_SEGMENT_URL_PARAM, buddies);

@@ -337,15 +337,8 @@ const relabelPostDateSection = (section: ListExplorerDateSection): ListExplorerD
       return { ...section, label: 'Posted this week' };
     case 'month':
       return { ...section, label: 'Posted this month' };
-    case 'next_month':
-      return { ...section, label: 'Posted next month' };
-    case 'beyond':
-      return { ...section, label: 'Posted beyond next month' };
-    case 'earlier':
-      return { ...section, label: 'Posted earlier' };
-    case 'anytime':
     case 'other':
-      return { ...section, label: 'Anytime' };
+      return { ...section, label: 'Other' };
     default:
       return section;
   }

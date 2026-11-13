@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { buildDiscoveryCardViewModelCard } from '../discovery';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
@@ -167,21 +167,11 @@ describe('list poster presentation', () => {
       spotsLabel: '12 spots',
     };
 
-    // The date stamp is tiered by distance from "now" (week / month / year / full) — pin the clock.
-    vi.useFakeTimers();
-    try {
-      vi.setSystemTime(new Date('2026-09-14T10:00:00'));
-      const grid = resolveBrowsePosterScheduleGrid(cardWithPrice);
-      expect(grid.dateLabel).toBe('Mon 12 Oct');
-      expect(grid.timeLabel).toBe('Starts 4:00 PM');
-      expect(grid.priceLabel).toBe('AED 200');
-      expect(grid.spotsLabel).toBe('5 spots');
-
-      vi.setSystemTime(new Date('2025-12-01T10:00:00'));
-      expect(resolveBrowsePosterScheduleGrid(cardWithPrice).dateLabel).toBe('Mon 12 Oct 26');
-    } finally {
-      vi.useRealTimers();
-    }
+    const grid = resolveBrowsePosterScheduleGrid(cardWithPrice);
+    expect(grid.dateLabel).toMatch(/12 Oct 26/);
+    expect(grid.timeLabel).toBe('Starts 4:00 PM');
+    expect(grid.priceLabel).toBe('AED 200');
+    expect(grid.spotsLabel).toBe('5 spots');
   });
 });
 

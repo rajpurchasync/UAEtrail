@@ -1,29 +1,13 @@
-import type { ActivityPartyMemberDTO } from '@uaetrail/shared-types';
 import type { JoinRequestUiState } from '../utils/joinRequestUi';
-import { resolveViewerParticipationStatus } from '../content/activityParticipationStatus';
-import { HOSTING_LABEL } from '../content/workspaceVocabulary';
+import { ACTIVITY_STATUS_JOIN_REQUESTED } from '../content/activityParticipationCopy';
+import { activityPeekPendingInviteChipLabel } from '../content/activityPeekCopy';
 
 export type ActivityDetailHeroStatusChip = {
   label: string;
   tone: 'neutral' | 'success' | 'warning' | 'muted';
 };
 
-const toneForParticipation = (
-  kind: NonNullable<ReturnType<typeof resolveViewerParticipationStatus>>['kind']
-): ActivityDetailHeroStatusChip['tone'] => {
-  if (kind === 'joined' || kind === 'joined_with_family') return 'success';
-  if (kind === 'joined_family_pending' || kind === 'family_joining_pending') return 'warning';
-  return 'warning';
-};
-
-type PartyStatusInput = {
-  adults?: number | null;
-  kids?: number | null;
-  partyMembers?: ActivityPartyMemberDTO[] | null;
-  partyApprovalPending?: boolean | null;
-};
-
-/** Hero strip — viewer relationship only (hosting / joined / pending / family / full). */
+/** v3.2 hero strip — join state + capacity (mobile tabs only). */
 export const resolveActivityDetailHeroStatusChips = (input: {
   joinUiState: JoinRequestUiState;
   slotsAvailable: number;
@@ -32,21 +16,32 @@ export const resolveActivityDetailHeroStatusChips = (input: {
   isHostUser: boolean;
   pendingJoinInviteCount?: number;
   confirmedParticipantCount?: number;
-} & PartyStatusInput): ActivityDetailHeroStatusChip[] => {
+}): ActivityDetailHeroStatusChip[] => {
   if (input.previewMode) return [];
 
   if (input.isHostUser) {
-    return [{ label: HOSTING_LABEL, tone: 'success' }];
+    const chips: ActivityDetailHeroStatusChip[] = [];
+    const total = input.slotsTotal;
+    const joined =
+      input.confirmedParticipantCount ??
+      (total > 0 ? Math.max(0, total - input.slotsAvailable) : 0);
+    if (total > 0) {
+      chips.push({
+        label: `${joined}/${total} going`,
+        tone: 'neutral',
+      });
+    }
+    const pendingInvites = input.pendingJoinInviteCount ?? 0;
+    if (pendingInvites > 0) {
+      chips.push({
+        label: activityPeekPendingInviteChipLabel(pendingInvites),
+        tone: 'neutral',
+      });
+    }
+    return chips;
   }
 
-  const chips: ActivityDetailHeroStatusChip[] = [
-    ...joinStateChips(input.joinUiState, {
-      adults: input.adults,
-      kids: input.kids,
-      partyMembers: input.partyMembers,
-      partyApprovalPending: input.partyApprovalPending,
-    }),
-  ];
+  const chips: ActivityDetailHeroStatusChip[] = [...joinStateChips(input.joinUiState)];
 
   const left = input.slotsAvailable;
   const total = input.slotsTotal;
@@ -57,24 +52,30 @@ export const resolveActivityDetailHeroStatusChips = (input: {
   return chips;
 };
 
-const joinStateChips = (
-  joinUiState: JoinRequestUiState,
-  party: PartyStatusInput
-): ActivityDetailHeroStatusChip[] => {
-  if (joinUiState.kind === 'open') return [];
-  const status = resolveViewerParticipationStatus({
-    joinKind: joinUiState.kind,
-    adults: party.adults,
-    kids: party.kids,
-    partyMembers: party.partyMembers,
-    partyApprovalPending: party.partyApprovalPending,
-    waitlisted: joinUiState.kind === 'pending' && joinUiState.status === 'waitlisted',
-  });
-  if (!status) return [];
-  return [{ label: status.label, tone: toneForParticipation(status.kind) }];
+const joinStateChips = (joinUiState: JoinRequestUiState): ActivityDetailHeroStatusChip[] => {
+  if (joinUiState.kind === 'confirmed') {
+    return [{ label: 'Joined', tone: 'success' }];
+  }
+  if (joinUiState.kind === 'pending') {
+    return [
+      {
+        label:
+          joinUiState.status === 'waitlisted' ? 'On waitlist' : ACTIVITY_STATUS_JOIN_REQUESTED,
+        tone: 'warning',
+      },
+    ];
+  }
+  return [];
 };
 
 /** Consumer detail — join/host status only; published plan facts use L1 discovery card. */
-export const resolveActivityDetailMarketingStatusChips = (
-  input: Parameters<typeof resolveActivityDetailHeroStatusChips>[0]
-): ActivityDetailHeroStatusChip[] => resolveActivityDetailHeroStatusChips(input);
+export const resolveActivityDetailMarketingStatusChips = (input: {
+  joinUiState: JoinRequestUiState;
+  slotsAvailable: number;
+  slotsTotal: number;
+  previewMode: boolean;
+  isHostUser: boolean;
+  pendingJoinInviteCount?: number;
+  confirmedParticipantCount?: number;
+}): ActivityDetailHeroStatusChip[] =>
+  resolveActivityDetailHeroStatusChips(input);

@@ -19,14 +19,3 @@ export const shouldShowActivityDetailLeadVenue = (
   }
   return true;
 };
-
-/** Hero overlay — linked trail/place under the title when a place URL exists. */
-export const shouldShowConsumerDetailHeroVenue = (
-  venueLabel: string | null | undefined,
-  placePath: string | null | undefined,
-  isRideshare: boolean
-): boolean => {
-  if (isRideshare) return false;
-  if (!placePath?.trim()) return false;
-  return Boolean(venueLabel?.trim());
-};

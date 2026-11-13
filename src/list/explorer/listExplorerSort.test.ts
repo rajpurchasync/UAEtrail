@@ -94,8 +94,7 @@ describe('listExplorerSort', () => {
     expect(sections.map((section) => section.label)).toEqual([
       'Posted today',
       'Posted this week',
-      'Posted next month',
-      'Anytime',
+      'Other',
     ]);
     expect(listExplorerCardPostDateIso(card('undated', 'No stamp'))).toBeNull();
   });

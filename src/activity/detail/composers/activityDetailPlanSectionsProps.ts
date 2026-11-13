@@ -4,5 +4,4 @@ export type ActivityDetailPlanSectionsModel = ReturnType<typeof useActivityDetai
 
 export type ActivityDetailPlanSectionsProps = {
   model: ActivityDetailPlanSectionsModel;
-  consumerInline?: boolean;
 };

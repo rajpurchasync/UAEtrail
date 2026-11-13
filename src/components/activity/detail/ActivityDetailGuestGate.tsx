@@ -10,8 +10,6 @@ type ActivityDetailGuestGateProps = {
   activity: ActivityDetailDTO;
   compact?: boolean;
   className?: string;
-  /** Listed outing detail — redacted API payload; frame as preview not full page. */
-  detailPreview?: boolean;
 };
 
 /** Single sign-up surface for redacted `/activity/:id` guests (no duplicate join sheet copy). */
@@ -19,7 +17,6 @@ export const ActivityDetailGuestGate = ({
   activity,
   compact = false,
   className = '',
-  detailPreview = true,
 }: ActivityDetailGuestGateProps) => {
   const title = activity.title || activity.locationName;
   const authReturnPath = withAuthResumeQuery(activityDetailPath(activity.id), { join: true });
@@ -33,7 +30,6 @@ export const ActivityDetailGuestGate = ({
       requirements={activity.requirements}
       authReturnPath={authReturnPath}
       authFocusSelector={ACTIVITY_JOIN_CTA_SELECTOR}
-      detailPreview={detailPreview}
       compact={compact}
       className={className}
     />

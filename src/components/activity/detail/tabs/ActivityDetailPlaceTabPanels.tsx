@@ -1,8 +1,11 @@
 import { Car } from 'lucide-react';
 import { ActivityDetailLinkedPlaceLink } from '../ActivityDetailLinkedPlaceLink';
 import type { ActivityDetailDTO } from '@uaetrail/shared-types';
-import { DirectionsControl, ViewOnMapLink } from '../../../ui';
-import { LazyMeetingPointMap } from '../../../../detail/shared/LazyMeetingPointMap';
+import {
+  DirectionsControl,
+  MeetingPointMap,
+  ViewOnMapLink,
+} from '../../../ui';
 import {
   ACTIVITY_DETAIL_PLACE_LOCKED_BODY,
   ACTIVITY_DETAIL_PLACE_LOCKED_CTA,
@@ -45,7 +48,7 @@ export const ActivityDetailPlaceTabPanels = ({
   <>
     {registryPlaceName ? (
       <div className={panelClassName}>
-        <div className="md:hidden rounded-2xl border border-gray-100 bg-white p-5 sm:p-6 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="md:hidden rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
           <ActivityDetailLinkedPlaceLink
             name={registryPlaceName}
             to={registryPlacePath}
@@ -56,7 +59,7 @@ export const ActivityDetailPlaceTabPanels = ({
     ) : null}
 
     {(showPlaceLockedOnMobile ?? (!showPlaceCrewBody && showMobileTabs)) ? (
-      <div className={`bg-white rounded-2xl border border-gray-100 p-6 text-center dark:border-neutral-800 dark:bg-neutral-900 ${panelClassName}`}>
+      <div className={`bg-white rounded-2xl border border-gray-100 p-6 text-center ${panelClassName}`}>
         <Car className="mx-auto h-8 w-8 text-neutral-400" aria-hidden />
         <p className="mt-3 text-sm text-neutral-600 leading-relaxed">{ACTIVITY_DETAIL_PLACE_LOCKED_BODY}</p>
         {onMobileTabChange ? (
@@ -76,7 +79,7 @@ export const ActivityDetailPlaceTabPanels = ({
       activity.meetingPoint ||
       activity.parkingPoint ||
       hasAccessCoordinates) && (
-      <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 dark:border-neutral-800 dark:bg-neutral-900 ${panelClassName}`}>
+      <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${panelClassName}`}>
         <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
           <div className="flex items-start gap-3">
             <Car className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
@@ -92,6 +95,9 @@ export const ActivityDetailPlaceTabPanels = ({
                   {activity.meetingPoint ? (
                     <p>
                       <span className="font-medium text-gray-900">Meeting point:</span> {activity.meetingPoint}
+                      <span className="block text-xs font-normal text-gray-500 mt-0.5">
+                        Information only — not a join requirement.
+                      </span>
                     </p>
                   ) : null}
                   {activity.parkingPoint ? (
@@ -102,7 +108,7 @@ export const ActivityDetailPlaceTabPanels = ({
                 </div>
               )}
               {hasAccessCoordinates && accessLat != null && accessLng != null && !previewMode ? (
-                <LazyMeetingPointMap
+                <MeetingPointMap
                   lat={accessLat}
                   lng={accessLng}
                   label={activity.meetingPoint ?? activity.parkingPoint ?? activity.locationName}

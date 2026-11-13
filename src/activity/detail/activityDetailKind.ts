@@ -4,13 +4,13 @@ import type { ActivityDetailDTO, ScheduledActivityType } from '@uaetrail/shared-
  * Consumer activity detail template key — one reusable page shell per kind.
  * Route stays `/activity/:id`; template is chosen from listing `activityType`.
  */
-export type ActivityDetailKind = 'hiking' | 'camping' | 'rideshare' | 'event' | 'other';
+export type ActivityDetailKind = 'hiking' | 'camping' | 'rideshare' | 'other';
 
 const SCHEDULED_TO_TEMPLATE: Record<ScheduledActivityType, ActivityDetailKind> = {
   hiking: 'hiking',
   camping: 'camping',
   rideshare: 'rideshare',
-  event: 'event',
+  event: 'other',
 };
 
 export const resolveActivityDetailKind = (

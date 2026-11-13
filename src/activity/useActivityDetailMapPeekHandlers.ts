@@ -23,8 +23,8 @@ export type UseActivityDetailMapPeekHandlersInput = {
   onChatError?: (message: string) => void;
   isHostUser?: boolean;
   onOpenHostManage?: (activity: ActivityDTO, initialView?: ActivityManageInitialView) => void;
-  /** Public scroll layout — no Buddies tab; open participation manage sheet instead. */
-  consumerDetailLayout?: boolean;
+  /** Public `/activity/:id` — no Buddies tab; open participation manage sheet instead. */
+  publicDetail?: boolean;
   onOpenParticipationManage?: () => void;
 };
 
@@ -63,15 +63,19 @@ export const useActivityDetailMapPeekHandlers = (
       requestJoin: () => input.onJoin?.(),
       shareActivity: () => input.onHostShareOuting?.(),
       manageActivity: () => {
+        if (
+          !input.isHostUser &&
+          input.publicDetail &&
+          input.onOpenParticipationManage
+        ) {
+          input.onOpenParticipationManage();
+          return;
+        }
         if (input.isHostUser && input.onOpenHostManage) {
           input.onOpenHostManage(activity, 'participants');
           return;
         }
-        if (
-          !input.isHostUser &&
-          input.consumerDetailLayout &&
-          input.onOpenParticipationManage
-        ) {
+        if (input.publicDetail && input.onOpenParticipationManage) {
           input.onOpenParticipationManage();
           return;
         }

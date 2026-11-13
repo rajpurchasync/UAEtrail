@@ -1,54 +1,51 @@
-import {
-  MESSAGES_PATH,
-  EXPLORE_MAP_PATH,
-  LIST_DISCOVERY_PATH,
-  PLAN_PATH,
-} from '../../config/routingCatalog';
 import { useEffect } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
-import { Briefcase, ClipboardList, Map, MessageSquare, type LucideIcon } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { ClipboardList, MapPin, MessageSquare, Users, type LucideIcon } from 'lucide-react';
 
-import { PRODUCT_PLAN_SURFACE_TITLE } from '../../content/productNorthStar';
+import { NAV_ICONS } from '../../config/navIcons';
+import {
+  MOBILE_FIVE_TAB_UI_LABELS,
+  MOBILE_FIVE_TAB_ORDER,
+  mobileFiveTabHomePath,
+  resolveMobileFiveTab,
+  type MobileFiveTabId,
+} from '../../config/mobileFiveTabNav';
 import { useInboxUnreadCount } from '../../hooks/useInboxUnreadCount';
 import { useMobileBottomNav } from '../../hooks/useMobileBottomNav';
-import { useAuth } from '../../context/AuthContext';
-import { useMemberStatus } from '../../hooks/useMemberStatus';
-import {
-  isHostModeSession,
-  resolveHostingHubPath,
-} from '../../hosting/hostingHubRouting';
-import { isDesktopHostingNavActive } from '../../config/desktopNav';
-import { planMemberNavPath } from '../../plan/planRouting';
+
+const TAB_ICONS: Record<MobileFiveTabId, LucideIcon> = {
+  trips: NAV_ICONS.trips,
+  venues: MapPin,
+  crews: Users,
+  plan: ClipboardList,
+  chat: MessageSquare,
+};
 
 const tabShellClass = (active: boolean) =>
   [
-    'flex min-h-[var(--bottom-nav-height)] flex-col items-center justify-center gap-0.5 px-2 pt-1.5 pb-0.5 transition-colors',
+    'flex min-h-[var(--bottom-nav-height)] min-w-0 flex-col items-center justify-center gap-0.5 px-0.5 pt-1.5 pb-0.5 transition-colors',
     active ? 'text-emerald-700' : 'text-neutral-500 active:text-neutral-700',
   ].join(' ');
 
 const tabLabelClass = (active: boolean) =>
-  ['text-[12px] font-semibold leading-none', active ? 'text-emerald-700' : 'text-neutral-500'].join(' ');
+  [
+    'max-w-full truncate text-xs font-semibold leading-none',
+    active ? 'text-emerald-700' : 'text-neutral-500',
+  ].join(' ');
 
 const TabIcon = ({ icon: Icon, active }: { icon: LucideIcon; active: boolean }) => (
   <Icon
-    className={`h-5 w-5 shrink-0 ${active ? 'text-emerald-600' : 'text-neutral-400'}`}
+    className={`h-6 w-6 shrink-0 ${active ? 'text-emerald-600' : 'text-neutral-400'}`}
     strokeWidth={active ? 2.5 : 2}
     aria-hidden
   />
 );
 
-/** Mobile tab bar — visitor: Explore · My Plans · Chat; host mode: Hosting · My Plans · Chat. */
+/** Mobile tab bar — Trips · Venues · Plans · Crews · Chat (`mobileFiveTabHomePath`). */
 export const MobileBottomNav = () => {
   const visible = useMobileBottomNav();
   const { pathname, search } = useLocation();
-  const { user } = useAuth();
-  const { ownedProfiles, hostTiers } = useMemberStatus({ enabled: Boolean(user) });
-  const hostMode = isHostModeSession(user?.role);
-  const hostingHubPath = resolveHostingHubPath({ ownedProfiles, hostTiers });
-  const planTabTo = hostMode ? planMemberNavPath(true) : PLAN_PATH;
-  const planTabActive = pathname === PLAN_PATH && !isDesktopHostingNavActive(pathname, search);
-  const exploreActive = pathname === EXPLORE_MAP_PATH || pathname === LIST_DISCOVERY_PATH;
-  const hostingActive = isDesktopHostingNavActive(pathname, search);
+  const activeTab = resolveMobileFiveTab(pathname, search);
   const unreadMessages = useInboxUnreadCount();
 
   useEffect(() => {
@@ -65,60 +62,39 @@ export const MobileBottomNav = () => {
   return (
     <nav
       aria-label="Main"
-      className="relative z-[1200] shrink-0 border-t border-neutral-200/80 bg-white/95 backdrop-blur-md md:hidden"
+      className="safe-area-bottom fixed inset-x-0 bottom-0 z-[1200] border-t border-neutral-200/80 bg-white/95 backdrop-blur-md md:hidden"
     >
-      <div className="mx-auto grid max-w-lg grid-cols-3 pb-[var(--safe-bottom)]">
-        {hostMode ? (
-          <Link
-            to={hostingHubPath}
-            className={tabShellClass(hostingActive)}
-            aria-current={hostingActive ? 'page' : undefined}
-            aria-label="Hosting"
-          >
-            <TabIcon icon={Briefcase} active={hostingActive} />
-            <span className={tabLabelClass(hostingActive)}>Hosting</span>
-          </Link>
-        ) : (
-          <NavLink
-            to={EXPLORE_MAP_PATH}
-            end={pathname !== LIST_DISCOVERY_PATH}
-            className={() => tabShellClass(exploreActive)}
-            aria-label="Explore"
-          >
-            {() => (
-              <>
-                <TabIcon icon={Map} active={exploreActive} />
-                <span className={tabLabelClass(exploreActive)}>Explore</span>
-              </>
-            )}
-          </NavLink>
-        )}
+      <div className="mx-auto grid h-[var(--bottom-nav-height)] max-w-lg grid-cols-5">
+        {MOBILE_FIVE_TAB_ORDER.map((tab) => {
+          const label = MOBILE_FIVE_TAB_UI_LABELS[tab];
+          const active = activeTab === tab;
+          const href = mobileFiveTabHomePath(tab);
+          const isChat = tab === 'chat';
 
-        <Link
-          to={planTabTo}
-          className={tabShellClass(planTabActive)}
-          aria-current={planTabActive ? 'page' : undefined}
-          aria-label={PRODUCT_PLAN_SURFACE_TITLE}
-        >
-          <TabIcon icon={ClipboardList} active={planTabActive} />
-          <span className={tabLabelClass(planTabActive)}>{PRODUCT_PLAN_SURFACE_TITLE}</span>
-        </Link>
-
-        <NavLink to={MESSAGES_PATH} end className={({ isActive }) => tabShellClass(isActive)} aria-label="Chat">
-          {({ isActive }) => (
-            <>
-              <span className="relative">
-                <TabIcon icon={MessageSquare} active={isActive} />
-                {unreadMessages > 0 ? (
-                  <span className="absolute -right-1.5 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-emerald-600 px-1 text-[10px] font-bold text-white ring-2 ring-white">
-                    {unreadMessages > 9 ? '9+' : unreadMessages}
-                  </span>
-                ) : null}
-              </span>
-              <span className={tabLabelClass(isActive)}>Chat</span>
-            </>
-          )}
-        </NavLink>
+          return (
+            <Link
+              key={tab}
+              to={href}
+              className={tabShellClass(active)}
+              aria-current={active ? 'page' : undefined}
+              aria-label={label}
+            >
+              {isChat ? (
+                <span className="relative">
+                  <TabIcon icon={TAB_ICONS[tab]} active={active} />
+                  {unreadMessages > 0 ? (
+                    <span className="absolute -right-1.5 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-emerald-600 px-0.5 text-[10px] font-bold text-white ring-2 ring-white">
+                      {unreadMessages > 9 ? '9+' : unreadMessages}
+                    </span>
+                  ) : null}
+                </span>
+              ) : (
+                <TabIcon icon={TAB_ICONS[tab]} active={active} />
+              )}
+              <span className={tabLabelClass(active)}>{label}</span>
+            </Link>
+          );
+        })}
       </div>
     </nav>
   );

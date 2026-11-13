@@ -4,8 +4,7 @@ import type {
   ActivityParticipationDTO,
   MyActivityRequestDTO,
 } from '@uaetrail/shared-types';
-import { activityJoinCtaLabel, activityJoinIsFull } from '@uaetrail/shared-types';
-import { GUEST_ACTIVITY_DETAIL_PREVIEW_FOOTER_HINT } from '../../../content/guestJoinCopy';
+import { activityJoinCtaLabel } from '@uaetrail/shared-types';
 import { JoinRequestActions, ActivityParticipationStatus } from '../../ui';
 import { resolveJoinRequestUiState } from '../../../utils/joinRequestUi';
 import { ActivityDetailMobileFooter } from '../ActivityDetailMobileFooter';
@@ -76,18 +75,12 @@ export const useActivityDetailJoinSurfaces = ({
   consumerWireEngagementCta,
 }: Args) => {
   const joinActionDisabled = joinDisabled;
-  const isFull = activityJoinIsFull({
-    slotsTotal: activity.slotsTotal,
-    slotsAvailable: activity.slotsAvailable,
-  });
+  const isFull = (activity.slotsAvailable ?? 0) <= 0;
   const joinUiState = resolveJoinRequestUiState({ myRequest, participation });
   const joinLabel = activityJoinCtaLabel({
     participationMode: activity.participationMode,
     requirements: activity.requirements,
     isFull,
-    requiresSignIn,
-    price: activity.price,
-    pricingMode: activity.pricingMode,
   });
   const consumerJoinEnabled = !isEmbedded && !previewMode;
   const sharePayload = buildActivitySharePayload(activityShareInputFromActivity(activity));
@@ -134,22 +127,17 @@ export const useActivityDetailJoinSurfaces = ({
 
   const guestJoinCta = requiresSignIn && onJoin
     ? wrapMobileFooter(
-        <div className="space-y-2">
-          <p className="text-center text-xs leading-snug text-neutral-600 dark:text-neutral-400">
-            {GUEST_ACTIVITY_DETAIL_PREVIEW_FOOTER_HINT}
-          </p>
-          <button
-            type="button"
-            onClick={handleJoinClick}
-            disabled={joinActionDisabled || isFull}
-            data-activity-join-cta
-            className={`w-full px-4 py-3 text-white text-sm font-semibold rounded-xl disabled:opacity-60 transition-colors ${
-              isFull ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'
-            }`}
-          >
-            {joinLabel}
-          </button>
-        </div>,
+        <button
+          type="button"
+          onClick={handleJoinClick}
+          disabled={joinActionDisabled}
+          data-activity-join-cta
+          className={`w-full px-4 py-3 text-white text-sm font-semibold rounded-xl disabled:opacity-60 transition-colors ${
+            isFull ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'
+          }`}
+        >
+          {joinLabel}
+        </button>,
         false
       )
     : null;
@@ -224,22 +212,17 @@ export const useActivityDetailJoinSurfaces = ({
   const sidebarJoin = consumerJoinEnabled && !isHostViewer
     ? sidebarJoinOverride ??
       (requiresSignIn && onJoin ? (
-        <div className="mt-4 hidden md:block">
-          <p className="mb-2 text-center text-xs leading-snug text-neutral-600 dark:text-neutral-400">
-            {GUEST_ACTIVITY_DETAIL_PREVIEW_FOOTER_HINT}
-          </p>
-          <button
-            type="button"
-            onClick={handleJoinClick}
-            disabled={joinActionDisabled}
-            data-activity-join-cta
-            className={`w-full px-4 py-3 text-white text-sm font-semibold rounded-xl disabled:opacity-60 transition-colors ${
-              isFull ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'
-            }`}
-          >
-            {joinLabel}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={handleJoinClick}
+          disabled={joinActionDisabled}
+          data-activity-join-cta
+          className={`hidden md:block w-full mt-4 px-4 py-3 text-white text-sm font-semibold rounded-xl disabled:opacity-60 transition-colors ${
+            isFull ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'
+          }`}
+        >
+          {joinLabel}
+        </button>
       ) : previewMode ? (
         <p className="mt-4 text-sm text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
           Preview only — join is disabled until you publish.

@@ -1,15 +1,16 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ParticipantDTO } from '@uaetrail/shared-types';
 import { MoreVertical } from 'lucide-react';
 import {
+  checkInActivityParticipant,
+  getActivityParticipants,
   rateActivityParticipant,
   revokeActivityParticipant,
+  undoActivityParticipantCheckIn,
 } from '../../hooks/tenantActivityClientApi';
-import { useActivityParticipantsRoster } from './useActivityParticipantsRoster';
 import { MESSAGES_PATH } from '../../config/surfacePaths';
 import { publishingActivitiesCheckInPath } from '../../config/routingCatalog';
-import { MemberJoinProfileHostBlock } from '../profile/MemberJoinProfileHostBlock';
 import { SecureAvatar } from '../ui';
 import { ActivityParticipantRevokeDialog } from './ActivityParticipantRevokeDialog';
 import { ActivityParticipantRateDialog } from './ActivityParticipantRateDialog';
@@ -25,7 +26,7 @@ interface ActivityParticipantsPanelProps {
 
 const statusLabel = (participant: ParticipantDTO): string => {
   if (participant.status === 'attended') return 'Attended';
-  return 'Joined';
+  return 'Going';
 };
 
 const formatJoined = (joinedAt: string): string =>
@@ -44,24 +45,51 @@ export const ActivityParticipantsPanel = ({
   onError,
 }: ActivityParticipantsPanelProps) => {
   const navigate = useNavigate();
-  const {
-    participants,
-    activityEnded,
-    loading,
-    busyParticipantId,
-    attendedCount,
-    loadParticipants,
-    toggleAttendance,
-  } = useActivityParticipantsRoster(tenantId, activityId, onError);
+  const [participants, setParticipants] = useState<ParticipantDTO[]>([]);
+  const [activityEnded, setActivityEnded] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [busyParticipantId, setBusyParticipantId] = useState<string | null>(null);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const [revokeTarget, setRevokeTarget] = useState<ParticipantDTO | null>(null);
   const [rateTarget, setRateTarget] = useState<ParticipantDTO | null>(null);
   const [revokeSubmitting, setRevokeSubmitting] = useState(false);
   const [rateSubmitting, setRateSubmitting] = useState(false);
 
+  const loadParticipants = useCallback(async () => {
+    if (!tenantId || !activityId) return;
+    setLoading(true);
+    try {
+      const snapshot = await getActivityParticipants(tenantId, activityId);
+      setParticipants(snapshot.participants);
+      setActivityEnded(snapshot.activityEnded);
+    } catch (err) {
+      onError?.(err instanceof Error ? err.message : 'Failed to load participants');
+      setParticipants([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [activityId, onError, tenantId]);
+
+  useEffect(() => {
+    void loadParticipants();
+  }, [loadParticipants]);
+
   const confirmAttendance = async (participant: ParticipantDTO) => {
+    if (!tenantId) return;
+    setBusyParticipantId(participant.id);
     setMenuOpenId(null);
-    await toggleAttendance(participant);
+    try {
+      if (participant.checkedInAt) {
+        await undoActivityParticipantCheckIn(tenantId, activityId, participant.id);
+      } else {
+        await checkInActivityParticipant(tenantId, activityId, participant.id);
+      }
+      await loadParticipants();
+    } catch (err) {
+      onError?.(err instanceof Error ? err.message : 'Failed to update attendance');
+    } finally {
+      setBusyParticipantId(null);
+    }
   };
 
   const openChat = (participant: ParticipantDTO) => {
@@ -111,6 +139,7 @@ export const ActivityParticipantsPanel = ({
     }
   };
 
+  const attendedCount = participants.filter((p) => p.status === 'attended').length;
   const progress = participants.length > 0 ? (attendedCount / participants.length) * 100 : 0;
   const rateableCount = participants.filter((p) => p.canRate).length;
 
@@ -188,9 +217,6 @@ export const ActivityParticipantsPanel = ({
                           <p className="text-xs text-amber-700">
                             Rated {participant.hostRating.score}/5
                           </p>
-                        ) : null}
-                        {participant.joinProfile ? (
-                          <MemberJoinProfileHostBlock joinProfile={participant.joinProfile} compact />
                         ) : null}
                         {participant.medicalSafety ? (
                           <p className="text-[11px] text-rose-800/90">

@@ -59,14 +59,6 @@ export const ACTIVITY_DETAIL_TEMPLATE_CONFIG: Record<ActivityDetailKind, Activit
       transportForward: true,
       tabVisibility: RIDESHARE_TABS,
     },
-    event: {
-      pageComponent: 'EventActivityDetailPage',
-      label: 'Event',
-      accent: 'violet',
-      defaultTab: 'plan',
-      transportForward: false,
-      tabVisibility: ALL_TABS,
-    },
     other: {
       pageComponent: 'OtherActivityDetailPage',
       label: 'Group outing',

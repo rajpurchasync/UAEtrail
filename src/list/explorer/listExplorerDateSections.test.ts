@@ -6,9 +6,9 @@ const card = (id: string, scheduleDate: string | null): DiscoveryCardModel =>
   ({ id, scheduleDate, activity: scheduleDate ? { date: scheduleDate } : undefined }) as DiscoveryCardModel;
 
 describe('groupListExplorerDateSections', () => {
-  const now = new Date('2026-10-30T10:00:00+04:00');
+  const now = new Date('2026-10-30T10:00:00');
 
-  it('groups into Today, This Week, This Month, Next Month, and Beyond next month', () => {
+  it('groups into Today, This week, This month, and Other', () => {
     const sections = groupListExplorerDateSections(
       [
         card('later-year', '2027-01-02'),
@@ -26,52 +26,26 @@ describe('groupListExplorerDateSections', () => {
     );
 
     expect(sections.map((section) => section.label)).toEqual([
-      'Earlier',
       'Today',
-      'This Week',
-      'This Month',
-      'Next Month',
-      'Beyond next month',
-      'Anytime',
+      'This week',
+      'This month',
+      'Other',
     ]);
-    expect(sections.find((section) => section.label === 'This Week')?.cards.map((item) => item.id)).toEqual([
+    expect(sections.find((section) => section.label === 'This week')?.cards.map((item) => item.id)).toEqual([
       'earlier-week',
       'week',
     ]);
-    expect(sections.find((section) => section.label === 'This Month')?.cards.map((item) => item.id)).toEqual([
+    expect(sections.find((section) => section.label === 'This month')?.cards.map((item) => item.id)).toEqual([
       'month',
     ]);
-    expect(sections.find((section) => section.label === 'Next Month')?.cards.map((item) => item.id)).toEqual([
-      'nov',
-    ]);
-    expect(sections.find((section) => section.label === 'Beyond next month')?.cards.map((item) => item.id)).toEqual([
-      'dec',
-      'later-year',
-    ]);
-    expect(sections.find((section) => section.label === 'Earlier')?.cards.map((item) => item.id)).toEqual([
+    expect(sections.find((section) => section.label === 'Other')?.cards.map((item) => item.id)).toEqual([
       'past-year',
       'sep',
+      'nov',
+      'dec',
+      'later-year',
+      'open',
     ]);
-    expect(sections.find((section) => section.label === 'Anytime')?.cards.map((item) => item.id)).toEqual(['open']);
-  });
-
-  it('keeps This Week ahead of This Month when the week spills into next month', () => {
-    const fridayMonthEnd = new Date('2026-10-30T10:00:00+04:00');
-    const sections = groupListExplorerDateSections(
-      [card('sat', '2026-10-31'), card('nov-sun', '2026-11-01')],
-      fridayMonthEnd
-    );
-    expect(sections.map((section) => ({ key: section.key, ids: section.cards.map((item) => item.id) }))).toEqual([
-      { key: 'week', ids: ['sat'] },
-      { key: 'next_month', ids: ['nov-sun'] },
-    ]);
-  });
-
-  it('uses Asia/Dubai calendar day for Today', () => {
-    const thursdayEveningDubai = new Date('2026-10-29T19:30:00.000Z');
-    const fridayJustStartedDubai = new Date('2026-10-29T20:30:00.000Z');
-    expect(groupListExplorerDateSections([card('fri', '2026-10-30')], thursdayEveningDubai)[0]?.key).toBe('week');
-    expect(groupListExplorerDateSections([card('fri', '2026-10-30')], fridayJustStartedDubai)[0]?.key).toBe('today');
   });
 
   it('skips headings when nothing is dated', () => {

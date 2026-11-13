@@ -15,16 +15,4 @@ describe('formatActivityDetailLeadDate', () => {
     const lead = formatActivityDetailLeadDate('2026-11-14', null);
     expect(lead.time).toBeNull();
   });
-
-  it('formats multi-day date and time range', () => {
-    const lead = formatActivityDetailConsumerLeadDate(
-      '2026-11-14',
-      '16:00',
-      '2026-11-16',
-      '10:00'
-    );
-    expect(lead.label).toContain('–');
-    expect(lead.time).toMatch(/4:00/);
-    expect(lead.time).toMatch(/10:00/);
-  });
 });

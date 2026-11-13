@@ -7,66 +7,42 @@ export type ListExplorerDateSection = {
   cards: DiscoveryCardModel[];
 };
 
-const DUBAI_TZ = 'Asia/Dubai';
-
-/** Calendar `YYYY-MM-DD` in Asia/Dubai. */
-export const listExplorerDubaiYmd = (now: Date = new Date()): string =>
-  now.toLocaleDateString('en-CA', { timeZone: DUBAI_TZ });
-
-const monthKey = (iso: string): string => iso.slice(0, 7);
-
-const nextMonthKey = (iso: string): string => {
-  const year = Number(iso.slice(0, 4));
-  const month = Number(iso.slice(5, 7));
-  const nextMonth = month === 12 ? 1 : month + 1;
-  const nextYear = month === 12 ? year + 1 : year;
-  return `${nextYear}-${String(nextMonth).padStart(2, '0')}`;
+const startOfDay = (value: Date): Date => {
+  const copy = new Date(value);
+  copy.setHours(0, 0, 0, 0);
+  return copy;
 };
 
-/** Sunday = 0 in Asia/Dubai for the given calendar day. */
-const dubaiWeekdaySun0 = (iso: string): number => new Date(`${iso}T12:00:00+04:00`).getUTCDay();
-
-const addDaysYmd = (iso: string, days: number): string => {
-  const stamp = new Date(`${iso}T12:00:00+04:00`);
-  stamp.setUTCDate(stamp.getUTCDate() + days);
-  return stamp.toLocaleDateString('en-CA', { timeZone: DUBAI_TZ });
+const parseIso = (iso: string): Date | null => {
+  const target = new Date(`${iso}T12:00:00`);
+  return Number.isNaN(target.getTime()) ? null : startOfDay(target);
 };
 
 type SectionSlot = { key: string; label: string; sort: number };
 
-/** Today → this Sun–Sat week → rest of this month → next month → after that. */
+/** Today → this Sun–Sat week → rest of calendar month → everything else. */
 const sectionSlot = (iso: string, now: Date): SectionSlot | null => {
-  const target = iso.trim().slice(0, 10);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(target)) return null;
+  const target = parseIso(iso);
+  if (!target) return null;
+  const today = startOfDay(now);
+  const weekStart = new Date(today);
+  weekStart.setDate(today.getDate() - today.getDay());
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
 
-  const today = listExplorerDubaiYmd(now);
-  if (target === today) {
-    return { key: 'today', label: 'Today', sort: 1 };
+  if (target.getTime() === today.getTime()) {
+    return { key: 'today', label: 'Today', sort: 0 };
   }
-
-  const weekStart = addDaysYmd(today, -dubaiWeekdaySun0(today));
-  const weekEnd = addDaysYmd(weekStart, 6);
   if (target >= weekStart && target <= weekEnd) {
-    return { key: 'week', label: 'This Week', sort: 2 };
+    return { key: 'week', label: 'This week', sort: 1 };
   }
-
-  const thisMonth = monthKey(today);
-  const targetMonth = monthKey(target);
-  if (targetMonth === thisMonth) {
-    return { key: 'month', label: 'This Month', sort: 3 };
+  if (target.getFullYear() === today.getFullYear() && target.getMonth() === today.getMonth()) {
+    return { key: 'month', label: 'This month', sort: 2 };
   }
-
-  const upcomingMonth = nextMonthKey(today);
-  if (targetMonth === upcomingMonth) {
-    return { key: 'next_month', label: 'Next Month', sort: 4 };
-  }
-  if (targetMonth > upcomingMonth) {
-    return { key: 'beyond', label: 'Beyond next month', sort: 5 };
-  }
-  return { key: 'earlier', label: 'Earlier', sort: 0 };
+  return { key: 'other', label: 'Other', sort: 3 };
 };
 
-/** Matches the “This Week” list section — not Today or later buckets. */
+/** Matches the “This week” list section — not Today or later buckets. */
 export const listExplorerIsThisWeekSectionDate = (iso: string, now: Date = new Date()): boolean =>
   sectionSlot(iso, now)?.key === 'week';
 
@@ -102,7 +78,9 @@ export const groupListExplorerByIso = (
   }
 
   if (undated.length > 0) {
-    buckets.set('anytime', { key: 'anytime', label: 'Anytime', sort: 6, cards: undated });
+    const other = buckets.get('other');
+    if (other) other.cards.push(...undated);
+    else buckets.set('other', { key: 'other', label: 'Other', sort: 3, cards: undated });
   }
 
   const sections = [...buckets.values()].sort((a, b) => a.sort - b.sort);

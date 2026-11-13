@@ -25,17 +25,6 @@ describe('resolveActivityDetailHeroStatusChips', () => {
     ).toEqual([]);
   });
 
-  it('shows no hero chip for open participant when spots remain', () => {
-    const chips = resolveActivityDetailHeroStatusChips({
-      joinUiState: { kind: 'open' },
-      slotsAvailable: 7,
-      slotsTotal: 10,
-      previewMode: false,
-      isHostUser: false,
-    });
-    expect(chips).toEqual([]);
-  });
-
   it('shows join requested for pending participant', () => {
     const chips = resolveActivityDetailHeroStatusChips({
       joinUiState: { kind: 'pending', requestId: 'r1', status: 'pending' },
@@ -44,36 +33,10 @@ describe('resolveActivityDetailHeroStatusChips', () => {
       previewMode: false,
       isHostUser: false,
     });
-    expect(chips[0]).toEqual({ label: 'Pending', tone: 'warning' });
+    expect(chips[0]).toEqual({ label: 'Join requested', tone: 'warning' });
   });
 
-  it('shows family variants on the detail card', () => {
-    expect(
-      resolveActivityDetailHeroStatusChips({
-        joinUiState: { kind: 'confirmed', requestId: 'r1' },
-        slotsAvailable: 2,
-        slotsTotal: 8,
-        previewMode: false,
-        isHostUser: false,
-        adults: 1,
-        kids: 2,
-      })[0]
-    ).toEqual({ label: 'Joined with family', tone: 'success' });
-    expect(
-      resolveActivityDetailHeroStatusChips({
-        joinUiState: { kind: 'confirmed', requestId: 'r1' },
-        slotsAvailable: 2,
-        slotsTotal: 8,
-        previewMode: false,
-        isHostUser: false,
-        adults: 1,
-        kids: 1,
-        partyApprovalPending: true,
-      })[0]
-    ).toEqual({ label: 'Joined · family pending', tone: 'warning' });
-  });
-
-  it('shows hosting for host viewer', () => {
+  it('shows host capacity and invited chips', () => {
     const chips = resolveActivityDetailHeroStatusChips({
       joinUiState: { kind: 'open' },
       slotsAvailable: 5,
@@ -83,6 +46,6 @@ describe('resolveActivityDetailHeroStatusChips', () => {
       confirmedParticipantCount: 0,
       pendingJoinInviteCount: 2,
     });
-    expect(chips).toEqual([{ label: 'Hosting', tone: 'success' }]);
+    expect(chips.map((c) => c.label)).toEqual(['0/5 going', '2 invited']);
   });
 });

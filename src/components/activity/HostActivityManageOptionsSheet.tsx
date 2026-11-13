@@ -1,9 +1,18 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
+import {
+  Car,
+  Copy,
+  Pencil,
+  Trash2,
+  UserPlus,
+  Users,
+} from 'lucide-react';
 import type { ActivityManageCapabilities } from '../../activity/activityManageCapabilities';
 import { EXPLORE_SHEET } from '../../config/exploreTheme';
 import { ExploreResponsiveSheet } from '../../explore/ui/ExploreResponsiveSheet';
 import type { ActivityManageSubview } from './activityManageViews';
-import { buildHostManageOptionRows } from './hostManageOptionRows';
+import { ACTIVITY_INVITE_FRIENDS_CTA } from '../../content/activityInviteCopy';
+import { ACTIVITY_PARTICIPANTS_SECTION_LABEL } from '../../content/activityParticipantsCopy';
 
 type HostActivityManageOptionsSheetProps = {
   open: boolean;
@@ -14,8 +23,16 @@ type HostActivityManageOptionsSheetProps = {
   onEdit: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
-  onSuspend?: () => void;
-  onResume?: () => void;
+};
+
+type OptionRow = {
+  id: string;
+  label: string;
+  description?: string;
+  icon: typeof Users;
+  destructive?: boolean;
+  hidden?: boolean;
+  onClick: () => void;
 };
 
 const rowClass =
@@ -31,19 +48,62 @@ export const HostActivityManageOptionsSheet = ({
   onEdit,
   onDuplicate,
   onDelete,
-  onSuspend,
-  onResume,
 }: HostActivityManageOptionsSheetProps) => {
-  const visible = buildHostManageOptionRows({
-    activity,
-    caps,
-    onSelectSubview,
-    onEdit,
-    onDuplicate,
-    onDelete,
-    onSuspend,
-    onResume,
-  }).filter((row) => !row.hidden);
+  const published = activity.status === 'published';
+  const canDelete = published || activity.status === 'draft';
+  const canEdit =
+    activity.status === 'draft' || activity.status === 'published' || activity.status === 'suspended';
+
+  const options: OptionRow[] = [
+    {
+      id: 'edit',
+      label: 'Edit outing',
+      description: 'Date, place, capacity, and join rules',
+      icon: Pencil,
+      hidden: !canEdit,
+      onClick: onEdit,
+    },
+    {
+      id: 'participants',
+      label: ACTIVITY_PARTICIPANTS_SECTION_LABEL,
+      description: 'Roster, attendance, chat, revoke',
+      icon: Users,
+      onClick: () => onSelectSubview('participants'),
+    },
+    {
+      id: 'invite',
+      label: ACTIVITY_INVITE_FRIENDS_CTA,
+      description: 'Invite friends to join',
+      icon: UserPlus,
+      hidden: !published,
+      onClick: () => onSelectSubview('invite'),
+    },
+    {
+      id: 'rideshare',
+      label: 'Rideshare',
+      description: 'Link or add a carpool',
+      icon: Car,
+      hidden: !caps.showLinkRideshare,
+      onClick: () => onSelectSubview('rideshare'),
+    },
+    {
+      id: 'duplicate',
+      label: 'Duplicate',
+      description: 'New outing from this plan',
+      icon: Copy,
+      onClick: onDuplicate,
+    },
+    {
+      id: 'delete',
+      label: published ? 'Delete outing' : 'Delete draft',
+      icon: Trash2,
+      destructive: true,
+      hidden: !canDelete,
+      onClick: onDelete,
+    },
+  ];
+
+  const visible = options.filter((row) => !row.hidden);
 
   return (
     <ExploreResponsiveSheet

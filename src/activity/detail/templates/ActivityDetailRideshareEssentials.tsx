@@ -4,20 +4,20 @@ import {
   formatRideshareVehicleLabel,
 } from '@uaetrail/shared-types';
 import { MapPin } from 'lucide-react';
-import { formatActivityDetailConsumerLeadDate } from '../../formatActivityDetailConsumerLead';
+import { formatActivityDetailLeadDate } from '../../formatActivityDetailLead';
 import {
   resolveRidesharePlanFacts,
   ridesharePlanFactsHasContent,
 } from '../activityKindRequirementFacts';
 import { resolveRideshareSeatsAvailability } from '../../resolveRideshareSeatsAvailability';
 import { resolveRideshareContributionPresentation } from '../../resolveRideshareContributionPresentation';
-import { CONSUMER_DETAIL_SECTION_TITLE } from './activityConsumerDetailSectionStyles';
+import { DETAIL_SCROLL_SECTION_TITLE } from '../../../components/mobile/detailScrollSectionStyles';
 import { MemberVehicleCarIcon } from '../../../components/vehicles/MemberVehicleCarIcon';
 import { MEMBER_VEHICLE_COLOR_LABELS } from '../../../components/vehicles/memberVehicleColorChrome';
 import { DirectionsControl } from '../../../components/ui/DirectionsControl';
 
 /** Ride share schedule, seats, car, pickup, and payment — single block under the title on consumer detail. */
-export const ConsumerDetailRideshareEssentials = ({
+export const ActivityDetailRideshareEssentials = ({
   activity,
   showVehiclePlate = false,
 }: {
@@ -28,12 +28,7 @@ export const ConsumerDetailRideshareEssentials = ({
   const facts = resolveRidesharePlanFacts(activity);
   if (!ridesharePlanFactsHasContent(facts) && !activity.date) return null;
 
-  const leadDate = formatActivityDetailConsumerLeadDate(
-    activity.date,
-    activity.time,
-    activity.endDate,
-    activity.endTime
-  );
+  const leadDate = formatActivityDetailLeadDate(activity.date, activity.time);
   const scheduleLine = [leadDate.label, leadDate.time]
     .filter(Boolean)
     .join(' · ');
@@ -56,12 +51,8 @@ export const ConsumerDetailRideshareEssentials = ({
     (pickupLat == null || dropoffLat !== pickupLat || dropoffLng !== pickupLng);
 
   return (
-    <section
-      id="activity-detail-essentials"
-      className="mt-3 scroll-mt-28 md:scroll-mt-32 lg:scroll-mt-8"
-      aria-label="Ride share details"
-    >
-      <p className={`mb-2 ${CONSUMER_DETAIL_SECTION_TITLE}`}>Ride share</p>
+    <section className="mt-3" aria-label="Ride share details">
+      <p className={`mb-2 ${DETAIL_SCROLL_SECTION_TITLE}`}>Ride share</p>
       <div className="rounded-2xl border border-sky-200/90 bg-gradient-to-br from-sky-50 via-white to-white p-4 shadow-[0_4px_20px_rgba(14,116,144,.08)]">
         <p className="text-base font-bold leading-snug text-neutral-950">{scheduleLine}</p>
         {seatsAvailability ? (

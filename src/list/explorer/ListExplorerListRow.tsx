@@ -1,6 +1,5 @@
 import { ChevronRight, MapPin } from 'lucide-react';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import { DiscoveryViewerJoinStatusChip } from '../../discovery/DiscoveryViewerJoinStatusChip';
 import { EnvironmentImage } from '../../components/ui/EnvironmentImage';
 import { SecureAvatar } from '../../components/ui/SecureAvatar';
 import { DiscoveryCardTypeIcon } from '../../explore/ui/DiscoveryCardTypeIcon';
@@ -90,7 +89,6 @@ export const ListExplorerListRow = ({ card, onMapHover, showDistance = false }: 
         {meta.soldOut ? (
           <p className="text-[10px] font-bold uppercase tracking-wide text-red-600">Sold out</p>
         ) : null}
-        <DiscoveryViewerJoinStatusChip card={card} className="mt-0.5 self-start" />
       </div>
       {whenParts ? (
         <div className="flex shrink-0 flex-col justify-center self-center pl-0.5 text-right leading-tight md:max-w-[7.25rem] lg:max-w-[8rem]">

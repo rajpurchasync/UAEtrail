@@ -7,8 +7,6 @@ export type ActivityLinkagePlanSummary = {
   description?: string | null;
   date?: string | null;
   time?: string | null;
-  endDate?: string | null;
-  endTime?: string | null;
 };
 
 export const resolveActivityLinkedParentSummary = (

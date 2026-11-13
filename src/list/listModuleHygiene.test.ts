@@ -164,8 +164,7 @@ describe('list module hygiene', () => {
     expect(fab).toMatch(/ListExplorerFilterPop/);
     expect(fab).toMatch(/LIST_FILTER_FAB_Z/);
     expect(fab).toMatch(/bucket/);
-    expect(pop).toMatch(/BROWSE_GEO_LEAF_PLACE_TYPES/);
-    expect(pop).toMatch(/hideEmirates/);
+    expect(pop).toMatch(/listVenuePlaceTopicsForUi/);
     expect(pop).toMatch(/bucket === 'places'/);
   });
 

@@ -11,7 +11,6 @@ import type {
   OutingCategory,
   ParticipantPreviewDTO,
   CatalogProfileExposure,
-  PlaceKind,
 } from '@uaetrail/shared-types';
 import {
   activityJoinIsFull,
@@ -24,7 +23,6 @@ import {
   placeDetailPathForId,
   resolveActivityPublisherProfilePath,
   resolveExploreFeaturedPerson,
-  type DiscoveryCardPresentationDTO,
 } from '@uaetrail/shared-types';
 import { groupRegionTextAtBrowseFilterLevel } from '../config/groupRegionFilter';
 import {
@@ -103,15 +101,6 @@ export interface DiscoveryCardModel {
   venueDurationHours?: number | null;
   venueCampingType?: 'self-guided' | 'operator-led' | null;
   venueMaxGroupSize?: number | null;
-  /** On-site facility chips from the trail/camp registry (`facility:` tags). */
-  venueAmenityLabels?: string[];
-  /** Amenity kinds on the parent place (toilets, water, picnic — not list rows). */
-  venueAmenityKinds?: PlaceKind[];
-  /** Hosted upcoming outings at this catalog place (from the explore map pool). */
-  venueUpcomingOutingCount?: number;
-  venueNextOutingIso?: string | null;
-  venueNextOutingPath?: string | null;
-  venueNextOutingExploreItemId?: string | null;
   requirementBadges?: string[];
   mapLatitude?: number | null;
   mapLongitude?: number | null;
@@ -165,37 +154,10 @@ export const buildDiscoveryListMeta = (card: DiscoveryCardModel): string | null 
   return null;
 };
 
-/**
- * Map items already carry `presentation` from the catalog build.
- * Clock strings are reapplied here because the member's 12h/24h preference lives on the client.
- */
-const presentationWithClientClock = (
-  item: ExploreMapItemDTO
-): DiscoveryCardPresentationDTO => {
-  const clocked = buildDiscoveryCardPresentation(item);
-  const wire = item.presentation;
-  if (!wire?.sections?.details) return clocked;
-  const clockTimes = clocked.sections.details.filter((detail) => detail.icon === 'time');
-  let timeIndex = 0;
-  return {
-    ...wire,
-    whenLabel: clocked.whenLabel,
-    shareText: clocked.shareText,
-    sections: {
-      ...wire.sections,
-      listWhen: clocked.sections.listWhen,
-      details: wire.sections.details.map((detail) => {
-        if (detail.icon !== 'time') return detail;
-        const next = clockTimes[timeIndex];
-        timeIndex += 1;
-        return next ?? detail;
-      }),
-    },
-  };
-};
-
 export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardModel => {
-  const presentation = presentationWithClientClock(item);
+  const presentation = item.date
+    ? buildDiscoveryCardPresentation(item)
+    : (item.presentation ?? buildDiscoveryCardPresentation(item));
   const kind = presentation.kind;
   const source = exploreMapItemIsSeeking(item) ? 'activity' : presentation.source;
   const featuredPerson = item.featuredPerson ?? presentation.featuredPerson ?? resolveExploreFeaturedPerson(item);
@@ -314,8 +276,6 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
     venueDurationHours: item.locationCard?.duration ?? null,
     venueCampingType: item.locationCard?.campingType ?? null,
     venueMaxGroupSize: item.locationCard?.maxGroupSize ?? null,
-    venueAmenityLabels: item.locationCard?.amenityLabels ?? [],
-    venueAmenityKinds: item.locationCard?.amenityKinds ?? [],
     requirementBadges: [
       ...(exploreMapItemIsSeeking(item) ? ['Seeking'] : []),
       ...enrichExploreActivityRequirementBadges(activity?.requirements, {

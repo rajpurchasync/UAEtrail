@@ -1,13 +1,13 @@
 import type { ActivityViewerAccessLevel } from '@uaetrail/shared-types';
 import {
-  ACTIVITY_CTA_CHAT_SHORT,
   ACTIVITY_CTA_MESSAGE_HOST,
+  ACTIVITY_CTA_OPEN_CHAT,
   ACTIVITY_PEEK_MANAGE_LABEL,
 } from '../../../content/activityParticipationCopy';
-import { ACTIVITY_INVITE_FRIENDS_CTA_SHORT } from '../../../content/activityInviteCopy';
+import { ACTIVITY_INVITE_FRIENDS_CTA } from '../../../content/activityInviteCopy';
 import {
-  JOIN_CANCEL_REQUEST_BUTTON_SHORT,
-  JOIN_WITHDRAW_APPROVED_REQUEST_BUTTON_SHORT,
+  JOIN_CANCEL_REQUEST_BUTTON,
+  JOIN_WITHDRAW_APPROVED_REQUEST_BUTTON,
 } from '../../../content/joinWithdrawCopy';
 import { ACTIVITY_DETAIL_TAB_FOOTER_SHARE_OUTING } from '../../../content/activityDetailCopy';
 import type { JoinRequestUiState } from '../../../utils/joinRequestUi';
@@ -26,9 +26,7 @@ export type ActivityDetailFooterAction =
   | 'participant_withdraw'
   | 'invite_crew'
   | 'share_activity'
-  | 'host_manage'
-  | 'add_family'
-  | 'edit_family';
+  | 'host_manage';
 
 export type ActivityDetailFooterButton = {
   label: string;
@@ -43,20 +41,18 @@ export type ActivityDetailStandardFooterModel = {
   right: ActivityDetailFooterButton;
   /** Third slot — invite + withdraw inline (no Manage sheet). */
   center?: ActivityDetailFooterButton;
-  /** Fourth slot — add / edit family on joined or pending. */
-  fourth?: ActivityDetailFooterButton;
 };
 
 const participantWithdrawLabel = (joinUiState: JoinRequestUiState): string =>
   withdrawModalVariant(joinUiState) === 'activity'
-    ? JOIN_WITHDRAW_APPROVED_REQUEST_BUTTON_SHORT
-    : JOIN_CANCEL_REQUEST_BUTTON_SHORT;
+    ? JOIN_WITHDRAW_APPROVED_REQUEST_BUTTON
+    : JOIN_CANCEL_REQUEST_BUTTON;
 
 const inviteFriendsButton = (): ActivityDetailFooterButton => ({
-  label: ACTIVITY_INVITE_FRIENDS_CTA_SHORT,
+  label: ACTIVITY_INVITE_FRIENDS_CTA,
   action: 'participant_invite',
   disabled: false,
-  tone: 'primary',
+  tone: 'secondary',
 });
 
 const withdrawButton = (joinUiState: JoinRequestUiState): ActivityDetailFooterButton => ({
@@ -83,7 +79,7 @@ const pendingLabel = (
 /**
  * Consumer activity detail sticky footer.
  * Not going: join status + Message host.
- * Going: Chat + Invite + Withdraw (no Manage sheet).
+ * Going: Open chat + Invite + Withdraw (no Manage sheet).
  * Pending (with manage): Invite + Cancel/withdraw + Message host.
  * Hosting: Share outing + Manage.
  */
@@ -131,7 +127,7 @@ export const resolveActivityDetailStandardFooter = (input: {
       return {
         mode: 'joined',
         left: {
-          label: ACTIVITY_CTA_CHAT_SHORT,
+          label: ACTIVITY_CTA_OPEN_CHAT,
           action: 'open_crew_chat',
           disabled: false,
           tone: 'primary',
@@ -143,16 +139,16 @@ export const resolveActivityDetailStandardFooter = (input: {
     return {
       mode: 'joined',
       left: {
-        label: ACTIVITY_CTA_CHAT_SHORT,
+        label: ACTIVITY_CTA_OPEN_CHAT,
         action: 'open_crew_chat',
         disabled: false,
         tone: 'primary',
       },
       right: {
-        label: ACTIVITY_INVITE_FRIENDS_CTA_SHORT,
+        label: ACTIVITY_INVITE_FRIENDS_CTA,
         action: 'invite_crew',
         disabled: false,
-        tone: 'primary',
+        tone: 'secondary',
       },
     };
   }

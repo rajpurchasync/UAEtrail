@@ -5,10 +5,7 @@ import {
   MY_REQUESTS_PATH,
   PROFILE_SUBMISSIONS_PATH,
 } from './routingCatalog';
-import {
-  PRODUCT_HOSTING_SCHEDULE_NAV_LABEL,
-  PRODUCT_PLAN_SURFACE_TITLE,
-} from '../content/productNorthStar';
+import { PRODUCT_PLAN_SURFACE_TITLE } from '../content/productNorthStar';
 import { resolveGuestSurfaceForPath } from '../utils/guestSurfaceByPath';
 import { joinedSubViewTitle } from '../pages/activities/shared';
 import {
@@ -20,33 +17,26 @@ import {
   shouldShowMobileBottomNav,
 } from './platform';
 import {
-  isNotificationHubPath,
-  HOSTING_HUB_PATH,
   MESSAGES_PATH,
+  NOTIFICATIONS_PATH,
   PLAN_PATH,
   PROFILE_HISTORY_PATH,
   JOURNEY_MAP_PATH,
   PROFILE_PATH,
   PROFILE_REVIEWS_PATH,
   PROFILE_VEHICLES_PATH,
-  APP_SETTINGS_PATH,
-  APP_SETTINGS_DISPLAY_PATH,
-  APP_SETTINGS_ACCOUNT_PATH,
-  APP_SETTINGS_PRIVACY_PATH,
-  APP_SETTINGS_NOTIFICATIONS_PATH,
-  APP_SETTINGS_SAFETY_PATH,
+  PROFILE_SETTINGS_PATH,
+  PROFILE_SETTINGS_ACCOUNT_PATH,
+  PROFILE_SETTINGS_PRIVACY_PATH,
+  PROFILE_SETTINGS_NOTIFICATIONS_PATH,
+  PROFILE_SETTINGS_SAFETY_PATH,
 } from './surfacePaths';
-import { SETTINGS_SURFACE_TITLE } from './settingsHub';
-
-export type MobileTabHeaderCenter =
-  | { kind: 'brand' }
-  | { kind: 'title'; text: string };
 
 const TAB_HEADER_ROUTES = new Set([
   '/explore',
+  '/list',
   PROFILE_PATH,
   PLAN_PATH,
-  HOSTING_HUB_PATH,
   PROFILE_HISTORY_PATH,
   JOURNEY_MAP_PATH,
   MESSAGES_PATH,
@@ -55,6 +45,7 @@ const TAB_HEADER_ROUTES = new Set([
 export const isMobileTabHeaderRoute = (pathname: string): boolean => TAB_HEADER_ROUTES.has(pathname);
 
 const LAYOUT_UNIFIED_HEADER_EXACT = new Set([
+  NOTIFICATIONS_PATH,
   '/faq',
   '/terms',
   '/privacy',
@@ -64,12 +55,11 @@ const LAYOUT_UNIFIED_HEADER_EXACT = new Set([
   PROFILE_SUBMISSIONS_PATH,
   INBOUND_CONTRIBUTIONS_PATH,
   MY_REQUESTS_PATH,
-  APP_SETTINGS_PATH,
-  APP_SETTINGS_DISPLAY_PATH,
-  APP_SETTINGS_ACCOUNT_PATH,
-  APP_SETTINGS_PRIVACY_PATH,
-  APP_SETTINGS_NOTIFICATIONS_PATH,
-  APP_SETTINGS_SAFETY_PATH,
+  PROFILE_SETTINGS_PATH,
+  PROFILE_SETTINGS_ACCOUNT_PATH,
+  PROFILE_SETTINGS_PRIVACY_PATH,
+  PROFILE_SETTINGS_NOTIFICATIONS_PATH,
+  PROFILE_SETTINGS_SAFETY_PATH,
   '/profile/edit',
   '/profile/pro-membership',
   '/profile/badges',
@@ -83,7 +73,6 @@ export const isLayoutMobileUnifiedHeaderRoute = (pathname: string): boolean => {
   if (pathname.startsWith('/member/')) return false;
   if (pathname === '/explore' || isMobileTabHeaderRoute(pathname)) return true;
   if (pathname.startsWith('/profile/')) return true;
-  if (isNotificationHubPath(pathname)) return true;
   if (LAYOUT_UNIFIED_HEADER_EXACT.has(pathname)) return true;
   return (MOBILE_BOTTOM_NAV_PROFILE_PATHS as readonly string[]).includes(pathname);
 };
@@ -91,26 +80,21 @@ export const isLayoutMobileUnifiedHeaderRoute = (pathname: string): boolean => {
 export const resolveMobileTabHeaderTitle = (pathname: string, search: string): string | null => {
   if (pathname === '/explore') return null;
   if (pathname === PROFILE_PATH) return 'Profile';
-  if (pathname === HOSTING_HUB_PATH) return PRODUCT_HOSTING_SCHEDULE_NAV_LABEL;
   if (pathname === PLAN_PATH) {
     const params = new URLSearchParams(search);
     const subTitle = joinedSubViewTitle(params.get('sub'));
     if (subTitle) return subTitle;
     return PRODUCT_PLAN_SURFACE_TITLE;
   }
-  if (pathname === MESSAGES_PATH) return 'Chat';
+  if (pathname === MESSAGES_PATH) return null;
   if (pathname === PROFILE_HISTORY_PATH) return 'History';
   if (pathname === JOURNEY_MAP_PATH) return 'My Map';
-  if (pathname === APP_SETTINGS_PATH) return SETTINGS_SURFACE_TITLE;
-  if (pathname === APP_SETTINGS_DISPLAY_PATH) return 'Display';
-  if (pathname === APP_SETTINGS_ACCOUNT_PATH) return 'Account';
-  if (pathname === APP_SETTINGS_PRIVACY_PATH) return 'Privacy';
-  if (isNotificationHubPath(pathname)) {
-    if (pathname.includes('/preferences')) return 'Notification settings';
-    if (pathname.includes('/saved')) return 'Saved map & alerts';
-    return 'Notifications';
-  }
-  if (pathname === APP_SETTINGS_SAFETY_PATH) return 'Safety & emergency';
+  if (pathname === NOTIFICATIONS_PATH) return 'Notifications';
+  if (pathname === PROFILE_SETTINGS_PATH) return 'Settings';
+  if (pathname === PROFILE_SETTINGS_ACCOUNT_PATH) return 'Account';
+  if (pathname === PROFILE_SETTINGS_PRIVACY_PATH) return 'Privacy';
+  if (pathname === PROFILE_SETTINGS_NOTIFICATIONS_PATH) return 'Notifications';
+  if (pathname === PROFILE_SETTINGS_SAFETY_PATH) return 'Safety & emergency';
   if (pathname === '/profile/edit') return 'Edit profile';
   if (pathname === '/profile/pro-membership') return 'Pro membership';
   if (pathname === '/profile/badges') return 'Badges';
@@ -118,28 +102,9 @@ export const resolveMobileTabHeaderTitle = (pathname: string, search: string): s
   if (pathname === PROFILE_VEHICLES_PATH) return 'My cars';
   if (pathname === `${PROFILE_VEHICLES_PATH}/new`) return 'Add car';
   if (/^\/profile\/vehicles\/[^/]+\/edit$/.test(pathname)) return 'Edit car';
-  if (pathname === BUDDIES_PATH) {
-    const section = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search).get(
-      'section'
-    );
-    if (section === 'friends') return 'Friends';
-    if (section === 'requests') return 'Friend requests';
-    if (section === 'following') return 'Following';
-    return 'Social';
-  }
-  if (pathname === GROUPS_PATH) {
-    const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search);
-    if (params.get('group')) {
-      const section = params.get('section');
-      if (section === 'members') return 'Members';
-      if (section === 'invite') return 'Invite';
-      if (section === 'kids') return 'Kids';
-      if (section === 'settings') return 'Settings';
-      return 'Group';
-    }
-    return 'Groups';
-  }
-  if (pathname === PROFILE_SUBMISSIONS_PATH) return 'Submissions';
+  if (pathname === BUDDIES_PATH) return 'Friends';
+  if (pathname === GROUPS_PATH) return 'Groups';
+  if (pathname === PROFILE_SUBMISSIONS_PATH) return 'Contributions';
   if (pathname === INBOUND_CONTRIBUTIONS_PATH) return 'Contributions';
   if (pathname === MY_REQUESTS_PATH) return 'My requests';
   if (pathname === '/faq') return 'FAQ';
@@ -159,6 +124,7 @@ export const shouldShowMobileUnifiedTabHeader = (
   search: string,
   signedIn: boolean
 ): boolean => {
+  if (pathname === PROFILE_PATH) return false;
   if (!signedIn && resolveGuestSurfaceForPath(pathname)) return false;
   if (!isLayoutMobileUnifiedHeaderRoute(pathname)) return false;
   if (pathname === '/explore') return true;

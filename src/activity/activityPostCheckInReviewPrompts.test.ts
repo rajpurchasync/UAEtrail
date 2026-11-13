@@ -54,7 +54,7 @@ describe('buildParticipantPostCheckInReviewPrompts', () => {
     });
     expect(prompts.map((p) => p.id)).toEqual(['activity', 'place', 'host']);
     expect(prompts[1]?.href).toBe('/place/trail-1#reviews');
-    expect(prompts[2]?.href).toBe('/member/u-host?source=host#reviews');
+    expect(prompts[2]?.href).toBe('/member/u-host#reviews');
   });
 
   it('marks activity prompt done when viewer already reviewed', () => {

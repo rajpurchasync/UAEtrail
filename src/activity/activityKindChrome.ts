@@ -3,12 +3,7 @@ import { resolveMapPinEmoji } from '@uaetrail/shared-types';
 import { ACTIVITY_TYPE_LABELS, type ActivityType as LocalActivityType } from '../config/activityTypes';
 
 const normalizeActivityType = (activityType: ActivityType | string): LocalActivityType => {
-  if (
-    activityType === 'hiking' ||
-    activityType === 'camping' ||
-    activityType === 'event' ||
-    activityType === 'rideshare'
-  ) {
+  if (activityType === 'hiking' || activityType === 'camping' || activityType === 'event') {
     return activityType;
   }
   return 'hiking';
