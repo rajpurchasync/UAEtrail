@@ -1,15 +1,11 @@
-import { Link } from 'react-router-dom';
 import { Users } from 'lucide-react';
+import type { ActivityGroupChatPostPolicy } from '@uaetrail/shared-types';
 import type { ActivityRequestView } from '../../../../api/types';
-import { activityCrewPath } from '../../../../config/routingCatalog';
 import {
   ACTIVITY_DETAIL_CREW_LOCKED_HINT,
   ACTIVITY_DETAIL_HOST_BUDDIES_TOOLS_HINT,
 } from '../../../../content/activityDetailCopy';
-import {
-  ACTIVITY_PARTICIPANTS_HOST_MANAGE_HINT,
-  ACTIVITY_PARTICIPANTS_SECTION_LABEL,
-} from '../../../../content/activityParticipantsCopy';
+import { ActivityDetailHostBuddiesHub } from '../ActivityDetailHostBuddiesHub';
 
 type ActivityDetailBuddiesAsideProps = {
   panelClassName: string;
@@ -17,11 +13,18 @@ type ActivityDetailBuddiesAsideProps = {
   showMobileTabs: boolean;
   showCrewLockedHint: boolean;
   activityId: string;
+  activityTitle: string;
+  activityType?: string;
+  rideshareHasPayment?: boolean;
   hostBuddiesHub?: {
     joinRequests: ActivityRequestView[];
+    requestsLoading: boolean;
+    onRequestsChanged: () => void | Promise<void>;
   };
   hostCrewChatPolicy?: {
     tenantId: string;
+    onSaved?: (policy: ActivityGroupChatPostPolicy) => void;
+    onError?: (message: string) => void;
   };
 };
 
@@ -31,6 +34,9 @@ export const ActivityDetailBuddiesAside = ({
   showMobileTabs,
   showCrewLockedHint,
   activityId,
+  activityTitle,
+  activityType,
+  rideshareHasPayment = false,
   hostBuddiesHub,
   hostCrewChatPolicy,
 }: ActivityDetailBuddiesAsideProps) => (
@@ -40,18 +46,17 @@ export const ActivityDetailBuddiesAside = ({
         <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
           {ACTIVITY_DETAIL_HOST_BUDDIES_TOOLS_HINT}
         </p>
-        <Link
-          to={activityCrewPath(activityId)}
-          className="block rounded-2xl border border-neutral-200/80 bg-white px-4 py-3 shadow-sm"
-        >
-          <span className="text-sm font-semibold text-neutral-900">{ACTIVITY_PARTICIPANTS_SECTION_LABEL}</span>
-          <span className="mt-0.5 block text-sm text-neutral-600">
-            {ACTIVITY_PARTICIPANTS_HOST_MANAGE_HINT}
-            {hostBuddiesHub.joinRequests.length > 0
-              ? ` ${hostBuddiesHub.joinRequests.length} waiting.`
-              : ''}
-          </span>
-        </Link>
+        <ActivityDetailHostBuddiesHub
+          tenantId={hostCrewChatPolicy.tenantId}
+          activityId={activityId}
+          activityTitle={activityTitle}
+          activityType={activityType}
+          rideshareHasPayment={rideshareHasPayment}
+          joinRequests={hostBuddiesHub.joinRequests}
+          requestsLoading={hostBuddiesHub.requestsLoading}
+          onRequestsChanged={hostBuddiesHub.onRequestsChanged}
+          onError={hostCrewChatPolicy.onError}
+        />
       </div>
     ) : null}
     {showCrewLockedHint && showMobileTabs ? (

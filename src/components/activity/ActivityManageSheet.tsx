@@ -1,9 +1,17 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { afterHostJoinDecisionClientRefresh } from '../../hooks/activityJoinClientEffects';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { LinkRidesharePanel } from '../../explore/ui/LinkRidesharePanel';
 import { activityManageCapabilities } from '../../activity/activityManageCapabilities';
+import { ActivityJoinRequestDeclineDialog } from '../../console/ActivityJoinRequestDeclineDialog';
+import { ActivityRollcallView } from './ActivityRollcallView';
 import { HostActivityManageCancelDialogs } from './HostActivityManageCancelDialogs';
+import type { ActivityRequestView } from '../../hooks/publishingJoinQueueClientApi';
+import {
+  decideActivityJoinRequest,
+  getActivityJoinRequests,
+} from '../../hooks/publishingJoinQueueClientApi';
 import { fetchPublicActivityDetail } from '../../hooks/usePublicActivityDetail';
 import { resolveActivityTitle } from '../../utils/activityIdentity';
 import { buildActivitySharePayload } from '../../utils/activityShare';
@@ -16,7 +24,7 @@ import type {
   ActivityViewerEntitlementsDTO,
 } from '@uaetrail/shared-types';
 import { resolveActivityDetailWirePresentation } from '../../activity/resolveActivityDetailWirePresentation';
-import { ActivityDetailView } from './ActivityDetailView';
+import { ActivityDetailByKind } from '../../activity/detail/templates/ActivityDetailByKind';
 import { CONSUMER_MAIN_OVERLAY_INSET } from '../../config/consumerOverlayInset';
 import { HostActivityManageFooterActions } from './HostActivityManageFooterActions';
 import { HostActivityManageOptionsSheet } from './HostActivityManageOptionsSheet';
@@ -32,21 +40,22 @@ import {
   MOBILE_PRODUCT_HEADER_FROSTED,
   MOBILE_PRODUCT_HEADER_REST,
 } from '../../config/consumerScrollChrome';
-import { useDetailScrollChrome } from '../mobile/useDetailScrollChrome';
-import { resolveActivityDetailHeaderChrome } from '../../activity/activityDetailHeaderChrome';
+import { useConsumerDetailScrollChrome } from '../../activity/detail/templates/useConsumerDetailScrollChrome';
+import { resolveActivityConsumerDetailHeaderChrome } from '../../activity/activityConsumerDetailHeader';
 import { ConsumerHeaderActions } from '../layout/ConsumerHeaderActions';
-import { DetailHeaderTypeMark } from '../mobile/DetailHeaderChrome';
+import { ConsumerDetailHeaderTypeMark } from '../mobile/ConsumerDetailHeaderChromeTitle';
 import { MobileBackButton } from '../mobile/MobileBackButton';
 import { CreateHostingActivityFlow } from '../../explore/ui/CreateHostingActivityFlow';
 import { hostingFlowForComposeKind } from '../../explore/ui/hostingFlows';
 import { resolveHostComposeKindFromActivity } from '../../explore/ui/hostingFromActivity';
-import { activityCrewPath, joinAuthPath } from '../../config/routingCatalog';
+import { joinAuthPath } from '../../config/routingCatalog';
 import { planHostedActivityManagePath } from '../../plan/planRouting';
 
 export type ActivityManageSheetProps = {
   open: boolean;
   activity: ActivityDTO | null;
   tenantId: string | null;
+  pendingRequests: ActivityRequestView[];
   actions: HostActivityManageActions;
   initialView?: ActivityManageInitialView;
   onClose: () => void;
@@ -60,22 +69,35 @@ export const ActivityManageSheet = ({
   open,
   activity,
   tenantId,
+  pendingRequests,
   actions,
   initialView = 'overview',
   onClose,
   onRequestsChanged,
   onShare,
 }: ActivityManageSheetProps) => {
-  const navigate = useNavigate();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const headerRef = useRef<HTMLElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const scrollContentRef = useRef<HTMLDivElement>(null);
-  const { headerFrosted } = useDetailScrollChrome(panelRef, scrollContentRef);
+  const { headerFrosted } = useConsumerDetailScrollChrome(panelRef, scrollContentRef);
   const [view, setView] = useState<ActivityManageSubview>('overview');
+
+  /** Manage header is outside scroll; keep `--detail-header-pad` at 0 so jump-nav sticky stays flush. */
+  useLayoutEffect(() => {
+    const scroll = panelRef.current;
+    if (!scroll) return;
+    scroll.style.setProperty('--detail-header-pad', '0px');
+  }, [open]);
   const [manageOptionsOpen, setManageOptionsOpen] = useState(false);
   const [returnToManageMenu, setReturnToManageMenu] = useState(false);
   const [editWizardOpen, setEditWizardOpen] = useState(false);
+  const [busyRequestId, setBusyRequestId] = useState<string | null>(null);
+  const [declineRequest, setDeclineRequest] = useState<ActivityRequestView | null>(null);
   const [rideshareNotice, setRideshareNotice] = useState<string | null>(null);
+  const [activityRequests, setActivityRequests] = useState<ActivityRequestView[]>([]);
+  const [requestsLoading, setRequestsLoading] = useState(false);
   const [sheetActivity, setSheetActivity] = useState<ActivityDTO | null>(activity);
   const [taggedPlace, setTaggedPlace] = useState<ActivityDetailDTO['location']>(undefined);
   const [viewerEntitlements, setViewerEntitlements] = useState<ActivityViewerEntitlementsDTO | null>(null);
@@ -112,8 +134,6 @@ export const ActivityManageSheet = ({
       });
   }, [open, activity?.id]);
 
-  useModalA11y(open, onClose, panelRef);
-
   const embeddedWirePresentation = useMemo(() => {
     if (wirePresentation) return wirePresentation;
     if (!sheetActivity) return null;
@@ -131,28 +151,37 @@ export const ActivityManageSheet = ({
       activity: sheetActivity as ActivityDetailDTO,
       viewerAccess,
       isHostUser: true,
-      isEmbedded: true,
+      isEmbedded: false,
       joinUiState: { kind: 'open' },
     });
   }, [wirePresentation, sheetActivity, viewerEntitlements]);
 
   useEffect(() => {
-    if (!open || !activity?.id) return;
-    if (normalizeActivityManageView(initialView) !== 'participants') return;
-    navigate(activityCrewPath(activity.id));
-    onClose();
-  }, [open, initialView, activity?.id, navigate, onClose]);
-
-  useEffect(() => {
     if (!open) return;
-    const next = normalizeActivityManageView(initialView);
-    if (next === 'participants') return;
-    setView(next);
+    setView(normalizeActivityManageView(initialView));
     setRideshareNotice(null);
     setManageOptionsOpen(false);
     setReturnToManageMenu(false);
     setEditWizardOpen(false);
   }, [open, initialView, activity?.id]);
+
+  useEffect(() => {
+    if (!open || !activity?.id || !tenantId) {
+      setActivityRequests([]);
+      return;
+    }
+    setRequestsLoading(true);
+    void getActivityJoinRequests(tenantId, { activityId: activity.id })
+      .then((data) => {
+        setActivityRequests(data.filter((request) => request.status === 'pending'));
+      })
+      .catch(() => {
+        setActivityRequests(
+          pendingRequests.filter((request) => request.activity?.id === activity.id && request.status === 'pending')
+        );
+      })
+      .finally(() => setRequestsLoading(false));
+  }, [open, activity?.id, tenantId, pendingRequests]);
 
   const caps = activity
     ? activityManageCapabilities(activity, {
@@ -184,13 +213,21 @@ export const ActivityManageSheet = ({
     setView('overview');
   };
 
-  const openManageSubviewFromMenu = (subview: ActivityManageSubview) => {
-    if (subview === 'participants') {
-      if (!activity) return;
-      navigate(activityCrewPath(activity.id));
+  const manageSheetActive = Boolean(open && activity && tenantId && caps);
+
+  useModalA11y(
+    manageSheetActive,
+    () => {
+      if (view !== 'overview') {
+        handleHeaderBack();
+        return;
+      }
       handleClose();
-      return;
-    }
+    },
+    panelRef
+  );
+
+  const openManageSubviewFromMenu = (subview: ActivityManageSubview) => {
     setReturnToManageMenu(true);
     setView(subview);
     setManageOptionsOpen(false);
@@ -198,7 +235,7 @@ export const ActivityManageSheet = ({
 
   const handleDelete = () => {
     if (!activity) return;
-    if (activity.status === 'draft') {
+    if (activity.status === 'draft' || activity.status === 'suspended') {
       actions.setConfirmDelete(activity);
       return;
     }
@@ -207,11 +244,43 @@ export const ActivityManageSheet = ({
     }
   };
 
+  const handleSuspend = () => {
+    if (!activity || activity.status !== 'published') return;
+    actions.setConfirmSuspend(activity);
+  };
+
+  const handleResume = () => {
+    if (!activity || activity.status !== 'suspended') return;
+    void actions.resumeActivity(activity);
+  };
+
+  const decideRequest = async (
+    requestId: string,
+    status: 'approved' | 'rejected',
+    hostNote?: string
+  ) => {
+    if (!tenantId || !activity) return;
+    setBusyRequestId(requestId);
+    try {
+      await decideActivityJoinRequest(tenantId, requestId, status, hostNote);
+      await afterHostJoinDecisionClientRefresh(queryClient, { activityId: activity.id, status });
+      if (status === 'rejected') setDeclineRequest(null);
+      await onRequestsChanged();
+    } catch (err) {
+      actions.setError(err instanceof Error ? err.message : 'Could not update request.');
+    } finally {
+      setBusyRequestId(null);
+    }
+  };
+
   if (!open || !activity || !tenantId || !caps) return null;
 
   const title = resolveActivityTitle(activity);
   const headerTitle = activityManageSubviewTitle(view, title);
-  const chatReturnTo = planHostedActivityManagePath(activity.id);
+  const chatReturnTo = planHostedActivityManagePath(
+    activity.id,
+    view === 'participants' ? 'checkin' : 'overview'
+  );
   const sharePayload = buildActivitySharePayload({
     id: activity.id,
     title,
@@ -220,24 +289,27 @@ export const ActivityManageSheet = ({
     locationName: activity.locationName,
   });
   const showShareFooter = activity.status === 'published' && Boolean(onShare);
-  const typeChrome = resolveActivityDetailHeaderChrome(activity, null);
+  const typeChrome = resolveActivityConsumerDetailHeaderChrome(activity, null);
 
   return (
     <>
-      <div className={`${CONSUMER_MAIN_OVERLAY_INSET} z-[1500] flex flex-col bg-neutral-50`}>
+      <div
+        className={`${CONSUMER_MAIN_OVERLAY_INSET} z-[1500] flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-neutral-50`}
+      >
         <header
-          className={`pointer-events-none fixed inset-x-0 top-0 z-20 pt-safe-plus-2 ${
+          ref={headerRef}
+          className={`relative z-20 shrink-0 pt-safe-plus-2 ${
             headerFrosted ? MOBILE_PRODUCT_HEADER_FROSTED : MOBILE_PRODUCT_HEADER_REST
           }`}
         >
-          <div className="pointer-events-auto grid grid-cols-[minmax(72px,auto)_1fr_auto] items-center gap-2 px-3 pb-2">
+          <div className="grid grid-cols-[minmax(72px,auto)_1fr_auto] items-center gap-2 px-3 pb-2">
             <MobileBackButton
               onPress={handleHeaderBack}
               label="Back"
               className="min-h-[36px] py-0 -ml-1"
             />
             <div className="flex min-w-0 items-center justify-center gap-2 px-1">
-              <DetailHeaderTypeMark
+              <ConsumerDetailHeaderTypeMark
                 emoji={typeChrome.emoji}
                 mark={typeChrome.mark}
                 sizeClass="h-8 w-8"
@@ -252,16 +324,32 @@ export const ActivityManageSheet = ({
 
         <div
           ref={panelRef}
+          data-consumer-detail-scroll
           role="dialog"
           aria-modal="true"
           aria-label={headerTitle}
-          className="min-h-0 flex-1 overflow-y-auto scroll-touch px-4 pb-4 pt-[calc(var(--safe-top)+3.5rem)]"
+          className="min-h-0 flex-1 overflow-y-auto scroll-touch px-4 pb-4"
         >
           <div ref={scrollContentRef} className="py-4">
           {actions.error ? (
             <p className="mb-3 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
               {actions.error}
             </p>
+          ) : null}
+
+          {view === 'participants' ? (
+            <div className="mx-auto w-full max-w-2xl">
+              <ActivityRollcallView
+                tenantId={tenantId}
+                activityId={activity.id}
+                pendingRequests={activityRequests}
+                busyRequestId={busyRequestId}
+                onParticipantsError={(message) => actions.setError(message)}
+                onApproveJoinRequest={(requestId) => void decideRequest(requestId, 'approved')}
+                onRejectJoinRequest={(request) => setDeclineRequest(request)}
+                className="min-h-[min(60dvh,28rem)]"
+              />
+            </div>
           ) : null}
 
           {view === 'invite' ? (
@@ -293,11 +381,31 @@ export const ActivityManageSheet = ({
           ) : null}
 
           {view === 'overview' && sheetActivity ? (
-            <div className="mx-auto w-full max-w-2xl">
-              <ActivityDetailView
-                layout="embedded"
-                activity={{ ...(sheetActivity as ActivityDetailDTO), location: taggedPlace ?? (sheetActivity as ActivityDetailDTO).location }}
+            <div className="min-w-0 w-full">
+              <ActivityDetailByKind
+                layout="page"
+                inlineConsumerDetail
+                activity={{
+                  ...(sheetActivity as ActivityDetailDTO),
+                  location: taggedPlace ?? (sheetActivity as ActivityDetailDTO).location,
+                }}
                 canAccessCrewSurfaces
+                consumerLayout={embeddedWirePresentation?.consumerLayout ?? null}
+                viewerAccess={
+                  embeddedWirePresentation
+                    ? {
+                        exposure: 'full',
+                        level: 'host',
+                        gateReason: null,
+                        canViewFullActivity: true,
+                        canOpenDetailPage: true,
+                        joinMode: sheetActivity.joinMode ?? 'open',
+                        canAccessCrewSurfaces: true,
+                        entitlements: viewerEntitlements ?? undefined,
+                      }
+                    : null
+                }
+                viewerEntitlements={viewerEntitlements}
                 hostCrewChatPolicy={
                   tenantId
                     ? {
@@ -308,27 +416,68 @@ export const ActivityManageSheet = ({
                       }
                     : undefined
                 }
+                hostBuddiesHub={{
+                  joinRequests: activityRequests,
+                  requestsLoading,
+                  onRequestsChanged,
+                }}
                 wireFooterByTab={embeddedWirePresentation?.footerByTab ?? null}
-                wireSections={embeddedWirePresentation?.sections ?? null}
+                wireTabs={embeddedWirePresentation?.tabs ?? null}
+                wireStrips={embeddedWirePresentation?.strips ?? null}
+                linkRideshareTenantId={tenantId}
+                onHostShareOuting={showShareFooter && onShare ? () => onShare(activity) : undefined}
+                hostManageSurface={{
+                  activity,
+                  caps,
+                  tenantId,
+                  busy: actions.busy,
+                  joinRequests: activityRequests,
+                  requestsLoading,
+                  busyRequestId,
+                  onParticipantsError: (message) => actions.setError(message),
+                  onApproveJoinRequest: (requestId) => void decideRequest(requestId, 'approved'),
+                  onRejectJoinRequest: (request) => setDeclineRequest(request),
+                  onSelectSubview: openManageSubviewFromMenu,
+                  onEdit: () => {
+                    setReturnToManageMenu(true);
+                    setEditWizardOpen(true);
+                  },
+                  onDuplicate: () => actions.hostFromExistingActivity(activity),
+                  onDelete: handleDelete,
+                  onSuspend: handleSuspend,
+                  onResume: handleResume,
+                  onShare: showShareFooter && onShare ? () => onShare(activity) : undefined,
+                  onChat: caps.showGroupChat
+                    ? () => {
+                        void actions
+                          .openGroupChat(activity.id, activity.groupChatId, { returnTo: chatReturnTo })
+                          .then((opened) => {
+                            if (opened) handleClose();
+                          });
+                      }
+                    : undefined,
+                }}
               />
             </div>
           ) : null}
           </div>
         </div>
 
-        <HostActivityManageFooterActions
-          caps={caps}
-          busy={actions.busy}
-          showShare={showShareFooter}
-          onOpenShare={onShare ? () => onShare(activity) : undefined}
-          onChat={async () => {
-            const opened = await actions.openGroupChat(activity.id, activity.groupChatId, {
-              returnTo: chatReturnTo,
-            });
-            if (opened) handleClose();
-          }}
-          onManage={() => setManageOptionsOpen(true)}
-        />
+        <div className="shrink-0">
+          <HostActivityManageFooterActions
+            caps={caps}
+            busy={actions.busy}
+            showShare={showShareFooter}
+            onOpenShare={onShare ? () => onShare(activity) : undefined}
+            onChat={async () => {
+              const opened = await actions.openGroupChat(activity.id, activity.groupChatId, {
+                returnTo: chatReturnTo,
+              });
+              if (opened) handleClose();
+            }}
+            onManage={() => setManageOptionsOpen(true)}
+          />
+        </div>
       </div>
 
       <HostActivityManageOptionsSheet
@@ -344,6 +493,19 @@ export const ActivityManageSheet = ({
         }}
         onDuplicate={() => actions.hostFromExistingActivity(activity)}
         onDelete={handleDelete}
+        onSuspend={handleSuspend}
+        onResume={handleResume}
+      />
+
+      <ActivityJoinRequestDeclineDialog
+        open={Boolean(declineRequest)}
+        request={declineRequest}
+        submitting={Boolean(declineRequest && busyRequestId === declineRequest.id)}
+        onClose={() => setDeclineRequest(null)}
+        onConfirm={(hostNote) => {
+          if (!declineRequest) return;
+          return decideRequest(declineRequest.id, 'rejected', hostNote);
+        }}
       />
 
       <HostActivityManageCancelDialogs actions={actions} onAfterConfirm={handleClose} />

@@ -45,7 +45,7 @@ const factGrid = (
   );
 };
 
-export const PlaceConsumerKindFacts = ({
+export const PlaceDetailKindFacts = ({
   kind,
   place,
   showAudience = true,
@@ -144,3 +144,6 @@ export const PlaceConsumerKindFacts = ({
     </div>
   );
 };
+
+/** @deprecated Use `PlaceDetailKindFacts` — kept for consumer detail templates. */
+export const PlaceConsumerKindFacts = PlaceDetailKindFacts;

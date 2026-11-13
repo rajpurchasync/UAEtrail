@@ -33,10 +33,23 @@ export type ActivityPresentationSectionsDTO = {
   canOpenParticipantRoster: boolean;
 };
 
+/** Public `/activity/:id` scroll template slots (consumer scroll page). */
+export type ActivityPresentationConsumerLayoutDTO = {
+  showPublishedCatalog: boolean;
+  showHostProfile: boolean;
+  participants: ActivityDetailParticipantsSlot;
+  showMeetingPoint: boolean;
+  showTransportSection: boolean;
+  showHostManageHub: boolean;
+  canOpenParticipantRoster: boolean;
+};
+
 export type ActivityPresentationDTO = {
   engagement: ActivityPresentationEngagementDTO;
   /** One section policy for the public page and embed. */
   sections: ActivityPresentationSectionsDTO;
+  /** Scroll consumer page only (`!previewMode && !isEmbedded && published`). */
+  consumerLayout?: ActivityPresentationConsumerLayoutDTO;
   /** Embed footer kind per legacy tab id. Not a second section policy. */
   footerByTab: Record<ActivityDetailTabId, ActivityDetailTabFooterKind>;
   /** Peek-parity strip flags (detail hero invited chip, etc.). */
@@ -146,6 +159,19 @@ export const buildActivityPresentationDTO = (
       canAccessCrewSurfaces || input.isHostUser || isConfirmedParticipant,
   };
 
+  const consumerScrollPage = input.activityPublished && !previewMode && !isEmbedded;
+  const consumerLayout: ActivityPresentationConsumerLayoutDTO | undefined = consumerScrollPage
+    ? {
+        showPublishedCatalog: true,
+        showHostProfile: sections.showHostProfile,
+        participants: sections.participants,
+        showMeetingPoint: sections.showMeetingPoint && coordinates,
+        showTransportSection: Boolean(input.rideshareEnabled),
+        showHostManageHub: input.isHostUser,
+        canOpenParticipantRoster: sections.canOpenParticipantRoster,
+      }
+    : undefined;
+
   return {
     engagement: {
       participationMode,
@@ -156,6 +182,7 @@ export const buildActivityPresentationDTO = (
       joinEngagement,
     },
     sections,
+    consumerLayout,
     footerByTab,
   };
 };

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { PlaceDTO } from '@uaetrail/shared-types';
 import { AppSelect } from '../../components/ui/AppSelect';
 import { EXPLORE_FLOW } from '../../config/exploreTheme';
-import { fetchPlaceCatalog } from '../../api/domains/placeCatalogClient';
+import { fetchPlaceCatalog } from '../../hooks/placeCatalogReadsClientApi';
 import {
   FACILITY_ADD_PARENT_PLACE_HINT,
   FACILITY_ADD_PARENT_PLACE_SKIP,

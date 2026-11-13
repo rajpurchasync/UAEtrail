@@ -12,6 +12,7 @@ import {
 } from '../../config/mobileFiveTabNav';
 import { useInboxUnreadCount } from '../../hooks/useInboxUnreadCount';
 import { useMobileBottomNav } from '../../hooks/useMobileBottomNav';
+import { PRODUCT_PLAN_SURFACE_TITLE } from '../../content/productNorthStar';
 
 const TAB_ICONS: Record<MobileFiveTabId, LucideIcon> = {
   trips: NAV_ICONS.trips,
@@ -66,7 +67,7 @@ export const MobileBottomNav = () => {
     >
       <div className="mx-auto grid h-[var(--bottom-nav-height)] max-w-lg grid-cols-5">
         {MOBILE_FIVE_TAB_ORDER.map((tab) => {
-          const label = MOBILE_FIVE_TAB_UI_LABELS[tab];
+          const label = tab === 'plan' ? PRODUCT_PLAN_SURFACE_TITLE : MOBILE_FIVE_TAB_UI_LABELS[tab];
           const active = activeTab === tab;
           const href = mobileFiveTabHomePath(tab);
           const isChat = tab === 'chat';

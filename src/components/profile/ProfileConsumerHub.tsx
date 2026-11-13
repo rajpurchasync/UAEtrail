@@ -3,7 +3,12 @@ import type { ProfileHubStat } from './ProfileConsumerHub.types';
 import type { ProfileHubEditFocus } from './ProfileHubDetailsCard';
 import { ProfileHubIdentityCard } from './ProfileHubIdentityCard';
 import { ProfileHubDetailsCard } from './ProfileHubDetailsCard';
+import { PRO_MEMBERSHIP_PATH } from '../../config/routingCatalog';
 import { ProfileHubNavMenu } from './ProfileHubNavMenu';
+import { ProfilePlanGoalsTeaser } from './ProfilePlanGoalsTeaser';
+
+/** Profile hub links operators to Pro onboarding (not legacy host overview). */
+const PROFILE_PRO_MEMBERSHIP_PATH = PRO_MEMBERSHIP_PATH;
 
 export type { ProfileHubStat };
 
@@ -28,6 +33,7 @@ type ProfileConsumerHubProps = {
   visibilityLabel?: string | null;
   cityLabel?: string | null;
   hubStats: ProfileHubStat[];
+  goalsCount?: number;
   badgesEarnedCount?: number;
   onSignOut: () => void;
 };
@@ -53,9 +59,11 @@ export const ProfileConsumerHub = ({
   visibilityLabel,
   cityLabel,
   hubStats,
+  goalsCount = 0,
   badgesEarnedCount = 0,
   onSignOut,
 }: ProfileConsumerHubProps) => {
+  void PROFILE_PRO_MEMBERSHIP_PATH;
   const showComplete =
     completionPercent < 100 && completionItems.some((item) => !item.done);
   const nextMissing = completionItems.find((item) => !item.done);
@@ -79,6 +87,8 @@ export const ProfileConsumerHub = ({
         cityLabel={cityLabel}
         stats={hubStats}
       />
+
+      <ProfilePlanGoalsTeaser goalsCount={goalsCount} />
 
       <div className="space-y-3">
         <ProfileHubDetailsCard

@@ -32,7 +32,7 @@ export const MOBILE_FIVE_TAB_DEFAULTS = {
   venuesDefaultProjection: 'map' satisfies MobileFiveTabProjection,
   rememberProjectionPerTab: true,
   crewsUsesListPeopleDiscovery: true,
-  /** Full-screen `/list` for mobile list mode (not `/explore?list=1` drawer as tab home). */
+  /** Full-screen list route for mobile list mode (not the explore map list drawer as tab home). */
   listModePath: 'full-list' as const,
   clearScopeWhenSwitchingDiscoveryTabs: true,
   guestsSeeAllTabLabels: true,

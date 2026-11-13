@@ -258,6 +258,7 @@ export const Profile = () => {
             memberSinceLabel={profileLoaded ? memberSinceLabel : null}
             visibilityLabel={profileLoaded ? profileVisibilityLabel(visibility) : null}
             hubStats={profileHubStats}
+            goalsCount={goals.length}
             badgesEarnedCount={badgesEarnedCount}
             bio={profileLoaded ? profile.bio : null}
             languages={profileLoaded ? profile.languages : null}

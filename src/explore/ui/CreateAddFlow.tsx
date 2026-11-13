@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { placeDetailPath } from '@uaetrail/shared-types';
 import { useAuth } from '../../context/AuthContext';
 import { MAP_CONFIG } from '../../config/platform';
 import {
@@ -210,15 +211,12 @@ export const CreateAddFlow = ({
     if (!submitResult) return;
     onSubmitted?.(submitResult);
     const type = submitResult.location.activityType;
-    if (type === 'shop') {
-      navigate(`/shop/${submitResult.location.id}`);
-    } else if (type === 'camping') {
-      navigate(`/camp/${submitResult.location.id}`);
-    } else if (type === 'event') {
-      navigate(`/venue/${submitResult.location.id}`);
-    } else {
-      navigate(`/trail/${submitResult.location.id}`);
-    }
+    const placeType = type ?? 'hiking';
+    const path =
+      placeType === 'shop'
+        ? `/shop/${submitResult.location.id}`
+        : placeDetailPath(placeType, submitResult.location.id);
+    navigate(path);
     onClose();
   };
 

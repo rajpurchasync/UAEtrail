@@ -2,7 +2,6 @@ import {
   resolveActivityEngagementPolicy,
   type ActivityDetailDTO,
   type ActivityPresentationDTO,
-  type ActivityPresentationSectionsDTO,
   type ActivityViewerAccessDTO,
   type MapPeekJoinRequestStatus,
 } from '@uaetrail/shared-types';
@@ -44,15 +43,29 @@ const joinRequestStatusFromUi = (
 };
 
 /**
- * Public detail uses the API presentation.
- * Preview and manage call `resolveActivityDetailWirePresentation` when GET has not returned one.
- * A payload without `sections` is not patched from the client resolver.
+ * Prefer API `presentation`, but backfill fields the client resolver always knows
+ * (e.g. `consumerLayout` when an older API build omitted it).
  */
 export const mergeActivityDetailWirePresentation = (
-  fromApi: (Omit<ActivityPresentationDTO, 'sections'> & { sections?: ActivityPresentationSectionsDTO }) | null | undefined,
+  fromApi:
+    | (Omit<ActivityPresentationDTO, 'sections'> & {
+        sections?: ActivityPresentationDTO['sections'];
+      })
+    | null
+    | undefined,
   resolved: ActivityPresentationDTO | null
 ): ActivityPresentationDTO | null => {
-  if (fromApi?.sections) return fromApi as ActivityPresentationDTO;
+  if (fromApi?.sections) {
+    return {
+      ...fromApi,
+      sections: fromApi.sections,
+      engagement: fromApi.engagement ?? resolved?.engagement,
+      tabs: fromApi.tabs ?? resolved?.tabs,
+      footerByTab: fromApi.footerByTab ?? resolved?.footerByTab,
+      consumerLayout: fromApi.consumerLayout ?? resolved?.consumerLayout,
+      strips: fromApi.strips ?? resolved?.strips,
+    } as ActivityPresentationDTO;
+  }
   if (fromApi) return null;
   return resolved;
 };
