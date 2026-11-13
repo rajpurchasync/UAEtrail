@@ -1,10 +1,11 @@
 import { useEffect, type ReactNode } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+import { useProductLocation } from '../../routing/useEffectiveLocation';
 import { ComposeRailProvider } from '../../context/ComposeRailContext';
 import {
   hasConsumerSelfHeader,
   isConsumerChromeHidden,
-  isConsumerEntityDetailRoute,
+  isEntityDetailRoute,
 } from '../../config/platform';
 import {
   APP_SCROLL_PANE_CLASS,
@@ -25,6 +26,7 @@ import { ApiStatusBanner } from './ApiStatusBanner';
 import { AuthUnavailableNotice } from '../auth/AuthUnavailableNotice';
 import { ExploreMapChromeProvider } from '../../explore/ExploreMapChromeContext';
 import { ComposeImmersiveChromeProvider } from '../../explore/create/ComposeImmersiveChromeContext';
+import { CreateFlowProvider } from '../../create/CreateFlowProvider';
 import { useAuth } from '../../context/AuthContext';
 import { isConsumerProfilePath, isPlatformAdmin, isPlatformAdminConsolePath } from '../../utils/roles';
 import { useIsMobile } from '../../hooks/useIsMobile';
@@ -38,7 +40,7 @@ const productViewportShellClass =
 /** Signed-in / product chrome — not used on guest marketing `/`. */
 export const ProductShell = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
-  const location = useLocation();
+  const location = useProductLocation();
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -72,6 +74,7 @@ export const ProductShell = ({ children }: { children: ReactNode }) => {
       <ComposeRailProvider>
         <MobileMenuProvider>
           <ComposeImmersiveChromeProvider>
+          <CreateFlowProvider>
           <ExploreMapChromeProvider>
             <div className={`${productViewportShellClass} md:bg-gray-50`}>
               <ApiStatusBanner />
@@ -89,6 +92,7 @@ export const ProductShell = ({ children }: { children: ReactNode }) => {
               <MobileBottomNav />
             </div>
           </ExploreMapChromeProvider>
+          </CreateFlowProvider>
           </ComposeImmersiveChromeProvider>
         </MobileMenuProvider>
       </ComposeRailProvider>
@@ -103,7 +107,7 @@ export const ProductShell = ({ children }: { children: ReactNode }) => {
   const showMobileConsumerNavBar =
     showConsumerChrome &&
     !hasConsumerSelfHeader(location.pathname) &&
-    !isConsumerEntityDetailRoute(location.pathname) &&
+    !isEntityDetailRoute(location.pathname) &&
     !(isMobile && layoutUnifiedMobileHeader);
   const showDesktopSideNav =
     !isMobile && showConsumerChrome && shouldShowDesktopSideNav(location.pathname, Boolean(user));
@@ -112,6 +116,7 @@ export const ProductShell = ({ children }: { children: ReactNode }) => {
     <ComposeRailProvider>
       <MobileMenuProvider>
         <ComposeImmersiveChromeProvider>
+        <CreateFlowProvider>
         <div className={productViewportShellClass}>
           <ApiStatusBanner />
           <AuthUnavailableNotice />
@@ -137,6 +142,7 @@ export const ProductShell = ({ children }: { children: ReactNode }) => {
           )}
           <MobileBottomNav />
         </div>
+        </CreateFlowProvider>
         </ComposeImmersiveChromeProvider>
       </MobileMenuProvider>
     </ComposeRailProvider>

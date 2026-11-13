@@ -26,6 +26,7 @@ import {
 import { getPasswordValidationError } from '../utils/passwordPolicy';
 import { PageMeta } from '../components/seo/PageMeta';
 import { fetchMeProfile } from '../hooks/memberProfileApi';
+import { resolveWelcomeFinishExplorePath } from '../explore/exploreWelcomeNavigation';
 import { shouldForceSignupWelcome } from '../utils/signupProfileGate';
 import { signInPath } from '../config/routingCatalog';
 import { PRODUCT_AUTH_SIGNUP_SUBLINE } from '../content/productNorthStar';
@@ -67,7 +68,9 @@ export const SignUp = () => {
       const user = await signInWithGoogle(idToken, referralCode, groupInviteToken);
       const profile = await fetchMeProfile().catch(() => null);
       const postAuthDefault = defaultRouteByRole(user.role);
-      const welcomeRedirectTo = resolvePostAuthReturnPath(redirectTo, user.role) ?? postAuthDefault;
+      const welcomeRedirectTo = resolveWelcomeFinishExplorePath(
+        resolvePostAuthReturnPath(redirectTo, user.role) ?? postAuthDefault
+      );
       if (profile && shouldForceSignupWelcome(user.role, profile)) {
         navigate('/welcome', { replace: true, state: { redirectTo: welcomeRedirectTo } });
         return;

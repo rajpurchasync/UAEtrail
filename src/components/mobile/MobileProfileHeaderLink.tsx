@@ -1,4 +1,5 @@
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { ProductNavLink } from '../navigation/ProductNavLink';
 import { User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { PROFILE_PATH } from '../../config/routingCatalog';
@@ -15,9 +16,9 @@ export const MobileProfileHeaderLink = ({ activeOnProfile = false }: { activeOnP
 
   if (!user) {
     return (
-      <Link to={signInHref} className={slotClass} aria-label="Sign in or sign up">
+      <ProductNavLink to={signInHref} className={slotClass} aria-label="Sign in or sign up">
         <User className="h-6 w-6 text-gray-700" strokeWidth={2.25} />
-      </Link>
+      </ProductNavLink>
     );
   }
 
@@ -34,12 +35,12 @@ export const MobileProfileHeaderLink = ({ activeOnProfile = false }: { activeOnP
   }
 
   return (
-    <Link to={PROFILE_PATH} className={slotClass} aria-label="Profile">
+    <ProductNavLink to={PROFILE_PATH} className={slotClass} aria-label="Profile">
       <SecureAvatar
         src={user.avatarUrl}
         name={user.displayName || user.email || 'Account'}
         className="h-10 w-10 text-xs"
       />
-    </Link>
+    </ProductNavLink>
   );
 };

@@ -1,6 +1,7 @@
 import { TenantBusinessMode, TenantType, UserRole } from '../domain/enums.js';
 import { resolveHostTiersFromTenants } from '../domain/member-host-tiers.js';
 import { resolveMemberProfileRoleLabel } from '../domain/member-profile-label.js';
+import { wireMemberDisplayName } from '../domain/person-name.js';
 import { isSignupProfileComplete } from '../domain/user-profile.js';
 import { resolveOwnedProfileType } from '../lib/tenant-store.js';
 import type {
@@ -353,7 +354,12 @@ export async function buildPublicMemberProfile(
   const data: Extract<PublicMemberProfileData, { visibilityState: 'full' }> = {
     visibilityState: 'full',
     id: user._id,
-    displayName: user.profile?.displayName ?? user.email.split('@')[0],
+    displayName: wireMemberDisplayName({
+      displayName: user.profile?.displayName,
+      givenName: user.profile?.givenName,
+      surname: user.profile?.surname,
+      email: user.email,
+    }),
     avatarUrl: user.profile?.avatarUrl ?? null,
     bio: fieldVisible('bio') ? user.profile?.bio ?? null : null,
     city: fieldVisible('city') && profileCity ? USER_CITY_LABELS[profileCity as UserCity] : null,

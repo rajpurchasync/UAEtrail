@@ -21,22 +21,22 @@ type ExploreMapChromeBarProps = {
   onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
   onVenueRegionsChange: (regions: string[]) => void;
   venueFilter?: VenueListFilterKey;
-  onVenueFilterChange?: (filter: VenueListFilterKey) => void;
-  tripMapTopics?: TripMapTopicKey[];
-  placeMapTopics?: PlaceMapTopicKey[];
-  priceFilter?: ExplorePriceFilter;
-  hasTrip?: boolean;
-  facilityKinds?: PlaceKind[];
-  onTripTopicsChange?: (next: TripMapTopicKey[]) => void;
-  onPlaceTopicsChange?: (next: PlaceMapTopicKey[]) => void;
-  onPriceFilterChange?: (next: ExplorePriceFilter) => void;
-  onHasTripChange?: (next: boolean) => void;
-  onFacilityKindsChange?: (next: PlaceKind[]) => void;
-  onVenueFiltersChange?: (next: ExploreVenueFilterPatch) => void;
+  tripMapTopics: TripMapTopicKey[];
+  placeMapTopics: PlaceMapTopicKey[];
+  priceFilter: ExplorePriceFilter;
+  hasTrip: boolean;
+  facilityKinds: PlaceKind[];
+  onTripTopicsChange: (next: TripMapTopicKey[]) => void;
+  onPlaceTopicsChange: (next: PlaceMapTopicKey[]) => void;
+  onPriceFilterChange: (next: ExplorePriceFilter) => void;
+  onHasTripChange: (next: boolean) => void;
+  onFacilityKindsChange: (next: PlaceKind[]) => void;
+  onVenueFiltersChange: (next: ExploreVenueFilterPatch) => void;
   onOpenExploreSearch?: () => void;
+  onOpenCrewsPage: () => void;
 };
 
-/** Map toolbar — same Activities / Places browse context as the list panel. */
+/** Map toolbar — Trips/Venues scope + same quick filters as list explorer. */
 export const ExploreMapChromeBar = ({
   searchQuery = '',
   onSearchQueryChange,
@@ -51,11 +51,11 @@ export const ExploreMapChromeBar = ({
   onActivityDatePresetChange,
   onVenueRegionsChange,
   venueFilter,
-  tripMapTopics = [],
-  placeMapTopics = [],
-  priceFilter = 'all',
-  hasTrip = false,
-  facilityKinds = [],
+  tripMapTopics,
+  placeMapTopics,
+  priceFilter,
+  hasTrip,
+  facilityKinds,
   onTripTopicsChange,
   onPlaceTopicsChange,
   onPriceFilterChange,
@@ -63,6 +63,7 @@ export const ExploreMapChromeBar = ({
   onFacilityKindsChange,
   onVenueFiltersChange,
   onOpenExploreSearch,
+  onOpenCrewsPage,
 }: ExploreMapChromeBarProps) => (
   <div
     data-explore-map-chrome
@@ -95,6 +96,7 @@ export const ExploreMapChromeBar = ({
         onSearchCommit={onSearchCommit}
         searchScopeCounts={searchScopeCounts}
         onOpenExploreSearch={onOpenExploreSearch}
+        onOpenCrewsPage={onOpenCrewsPage}
       />
     </div>
   </div>

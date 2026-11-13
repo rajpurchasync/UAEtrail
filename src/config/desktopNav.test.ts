@@ -110,19 +110,25 @@ describe('desktop sidebar IA', () => {
       (item) => item.label
     );
     expect(hamburgerLabels).not.toContain('Browse');
-    expect(hamburgerLabels.filter((label) => label === 'Explore')).toHaveLength(1);
-    expect(hamburgerLabels).toContain('Social');
-    expect(hamburgerLabels).toContain('Profile');
+    expect(hamburgerLabels).not.toContain('Explore');
+    expect(hamburgerLabels).not.toContain('Outing history');
+    expect(hamburgerLabels).toEqual(
+      expect.arrayContaining(['Trips', 'Venues', 'Plans', 'Crews', 'Chat', 'Profile'])
+    );
+    expect(hamburgerLabels).not.toContain('Social');
     expect(MOBILE_LANDING_USER_MENU.some((item) => item.label === 'Browse')).toBe(false);
     expect(MOBILE_LANDING_USER_MENU.find((item) => item.label === 'Explore')?.to).toBe(EXPLORE_MAP_PATH);
+    expect(MOBILE_LANDING_USER_MENU.some((item) => item.label === 'Trips')).toBe(true);
+    expect(MOBILE_LANDING_USER_MENU.some((item) => item.label === 'Venues')).toBe(true);
   });
 
-  it('host mode hamburger leads with Hosting and keeps Explore', () => {
+  it('host mode hamburger leads with Hosting then the five-tab consumer rows', () => {
     const labels = hostModeHamburgerMenu('/publishing/overview')
       .filter((item) => item.kind === 'link')
       .map((item) => item.label);
     expect(labels[0]).toBe('Hosting');
-    expect(labels).toContain('Explore');
-    expect(labels).toContain('My Plans');
+    expect(labels).not.toContain('Explore');
+    expect(labels).toContain('Trips');
+    expect(labels).toContain('Plans');
   });
 });

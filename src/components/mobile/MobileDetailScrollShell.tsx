@@ -20,6 +20,9 @@ export type MobileDetailScrollShellProps = {
   headerAction?: ReactNode;
   showMenu?: boolean;
   footer?: ReactNode;
+  footerClassName?: string;
+  /** When true, back uses declared label/path from route state (catalog child links). */
+  preferDeclaredBackLabel?: boolean;
   children: ReactNode;
 };
 
@@ -34,11 +37,14 @@ export const MobileDetailScrollShell = ({
   headerAction,
   showMenu = false,
   footer,
+  footerClassName,
+  preferDeclaredBackLabel = false,
   children,
 }: MobileDetailScrollShellProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const preferDeclaredBack = readDetailBackPrefersDeclared(location.state);
+  const preferDeclaredBack =
+    preferDeclaredBackLabel || readDetailBackPrefersDeclared(location.state);
   const scrollRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
@@ -119,6 +125,7 @@ export const MobileDetailScrollShell = ({
 
         <div
           ref={scrollRef}
+          data-entity-detail-scroll
           className={`h-0 min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain scroll-touch ${CONSUMER_DETAIL_SCROLL_CLASS} ${
             footer ? 'pb-3' : 'pb-4 lg:pb-6'
           }`}
@@ -138,7 +145,9 @@ export const MobileDetailScrollShell = ({
                 footerFrosted ? DETAIL_SCROLL_STICKY_FOOTER_FROSTED : DETAIL_SCROLL_STICKY_FOOTER_REST
               }`}
             >
-              <div className="mx-auto w-full max-w-full">{footer}</div>
+              <div className={`mx-auto w-full max-w-full${footerClassName ? ` ${footerClassName}` : ''}`}>
+                {footer}
+              </div>
             </div>
           </div>
         ) : null}

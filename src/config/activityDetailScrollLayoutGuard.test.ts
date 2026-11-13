@@ -30,6 +30,8 @@ describe('activityDetailScrollLayoutGuard', () => {
     expect(read('src/components/mobile/MobileDetailScrollShell.tsx')).toMatch(
       /data-entity-detail-scroll-shell/
     );
+    expect(read('src/components/mobile/MobileDetailScrollShell.tsx')).toMatch(/data-entity-detail-scroll/);
+    expect(read('src/activity/detail/activityDetailScrollAnchors.ts')).toMatch(/scrollEntityDetailToId/);
     expect(read('src/activity/detail/templates/ActivityDetailPageShell.tsx')).not.toMatch(
       /scrollDetailLayout/
     );

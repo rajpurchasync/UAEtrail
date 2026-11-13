@@ -92,3 +92,7 @@ export const ConsumerDetailHeaderChromeTitle = ({
     <span className="truncate">{label}</span>
   </p>
 );
+
+/** Entity detail header naming (preferred in new code). */
+export type DetailHeaderMark = ConsumerDetailHeaderMark;
+export const DetailHeaderTypeMark = ConsumerDetailHeaderTypeMark;

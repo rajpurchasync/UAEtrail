@@ -17,6 +17,8 @@ type ProfileGoalsSectionProps = {
   /** Open the “add goal” sheet from parent chrome (e.g. Trips filters). */
   openAddSheet?: boolean;
   onOpenAddSheetHandled?: () => void;
+  onAddSheetOpenChange?: (open: boolean) => void;
+  addButtonLabel?: string;
 };
 
 export const ProfileGoalsSection = ({
@@ -29,9 +31,15 @@ export const ProfileGoalsSection = ({
   layout = 'profile',
   openAddSheet = false,
   onOpenAddSheetHandled,
+  onAddSheetOpenChange,
+  addButtonLabel = 'Add another goal',
 }: ProfileGoalsSectionProps) => {
   const [addSheetOpen, setAddSheetOpen] = useState(false);
   const canAddMore = goals.length < MAX_MEMBER_GOALS;
+  const setSheetOpen = (open: boolean) => {
+    setAddSheetOpen(open);
+    onAddSheetOpenChange?.(open);
+  };
 
   useEffect(() => {
     if (!openAddSheet) return;
@@ -79,11 +87,11 @@ export const ProfileGoalsSection = ({
           variant="tint"
           fullWidth
           className="!min-h-[44px]"
-          onClick={() => setAddSheetOpen(true)}
+          onClick={() => setSheetOpen(true)}
         >
           <span className="inline-flex items-center justify-center gap-2">
             <Plus className="h-4 w-4" aria-hidden />
-            Add another goal
+            {addButtonLabel}
           </span>
         </AppButton>
       ) : null}
@@ -94,10 +102,10 @@ export const ProfileGoalsSection = ({
         saving={saving}
         onSave={async (input) => {
           await onCreateGoal(input);
-          setAddSheetOpen(false);
+          setSheetOpen(false);
         }}
         sheetOpen={addSheetOpen}
-        onSheetOpenChange={setAddSheetOpen}
+        onSheetOpenChange={setSheetOpen}
         onReloadGoal={onReloadGoals}
       />
     </div>

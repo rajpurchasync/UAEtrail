@@ -8,6 +8,7 @@ import type {
   MemberAvailabilitySlotDTO,
   UpsertMemberAvailabilityInput,
 } from '@uaetrail/shared-types';
+import { profileDisplayNameFromAuthUser } from '../domain/person-name.js';
 import {
   AVAILABILITY_KINDS,
   availabilitySlotOverlapsRange,
@@ -223,7 +224,7 @@ export const loadExploreAvailabilityIndex = async (
 
     people.push({
       userId: doc.userId,
-      displayName: user.profile?.displayName ?? 'Member',
+      displayName: profileDisplayNameFromAuthUser(user),
       avatarUrl: user.profile?.avatarUrl ?? null,
       kinds: doc.kinds,
       region,

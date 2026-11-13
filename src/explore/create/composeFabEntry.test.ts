@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { resolveCreateFabComposeEntry } from './composeFabEntry';
+import { BROWSE_LIST_CREATE_TRIP, BROWSE_LIST_CREATE_VENUE } from '../../list/browseListCopy';
+import { resolveBrowseListCreateFabLabel } from '../../list/browseListCopy';
+import {
+  resolveCreateFabComposeEntry,
+  resolveExploreMapCreateFabHints,
+} from './composeFabEntry';
 
 describe('resolveCreateFabComposeEntry', () => {
   it('opens host kinds on trips context', () => {
@@ -13,7 +18,7 @@ describe('resolveCreateFabComposeEntry', () => {
     });
   });
 
-  it('opens add-on-map targets on venues context', () => {
+  it('opens add venue kind grid on venues context', () => {
     expect(resolveCreateFabComposeEntry('/list', '?listCat=venues')).toEqual({
       surface: 'menu',
       intent: 'add',
@@ -29,5 +34,33 @@ describe('resolveCreateFabComposeEntry', () => {
       surface: 'menu',
       intent: 'seek',
     });
+  });
+});
+
+describe('resolveExploreMapCreateFabHints', () => {
+  it('drives FAB label and compose when explore URL is bare but map scope is venues', () => {
+    const hints = resolveExploreMapCreateFabHints({
+      panel: 'venues',
+      peopleBrowseOpen: false,
+      listMode: 'default',
+      pinKind: 'places',
+      placesMode: true,
+    });
+    expect(resolveBrowseListCreateFabLabel('/explore', '', hints)).toBe(BROWSE_LIST_CREATE_VENUE);
+    expect(resolveCreateFabComposeEntry('/explore', '', hints)).toEqual({
+      surface: 'menu',
+      intent: 'add',
+    });
+  });
+
+  it('stays on create trip for activities scope without query params', () => {
+    const hints = resolveExploreMapCreateFabHints({
+      panel: 'activities',
+      peopleBrowseOpen: false,
+      listMode: 'default',
+      pinKind: 'activities',
+      placesMode: false,
+    });
+    expect(resolveBrowseListCreateFabLabel('/explore', '', hints)).toBe(BROWSE_LIST_CREATE_TRIP);
   });
 });

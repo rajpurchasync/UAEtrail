@@ -65,18 +65,17 @@ describe('detailSurfaceWiringAcceptance', () => {
     );
   });
 
-  it('DS-WIRE-05: activity public detail uses API consumerLayout (embed uses tab wire)', () => {
+  it('DS-WIRE-05: activity public detail uses presentation sections (embed uses tab wire)', () => {
     const presentation = read('packages/shared-types/src/activity-detail-presentation.ts');
-    expect(presentation).toMatch(/ActivityPresentationConsumerLayoutDTO/);
-    expect(presentation).toMatch(/consumerLayout/);
-    expect(read('src/pages/ActivityDetail.tsx')).toMatch(/consumerLayout=/);
-    expect(read('src/activity/detail/templates/ActivityConsumerDetailPage.tsx')).toMatch(
-      /model\.consumerLayout/
+    expect(presentation).toMatch(/ActivityPresentationSectionsDTO/);
+    expect(read('src/pages/ActivityDetail.tsx')).toMatch(/wireSections=/);
+    expect(read('src/activity/detail/templates/ActivityDetailSections.tsx')).toMatch(
+      /model\.sections/
     );
     const manage = read('src/components/activity/ActivityManageSheet.tsx');
-    expect(manage).toMatch(/inlineConsumerDetail/);
     expect(manage).toMatch(/ActivityDetailByKind/);
     expect(manage).toMatch(/hostManageSurface=/);
+    expect(manage).toMatch(/wireSections=/);
   });
 
   it('DS-WIRE-04: place/shop/area peek mounts route to detail paths', () => {

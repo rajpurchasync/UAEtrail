@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef, type ReactNode } from 'react';
-import { useLocation, useNavigate, useNavigationType } from 'react-router-dom';
+import { useNavigate, useNavigationType } from 'react-router-dom';
+import { useProductLocation } from '../../routing/useEffectiveLocation';
 import { APP_SCROLL_ROOT_ID, resetAppScroll, shouldResetAppScrollOnNavigation } from '../../config/layoutScroll';
 import {
   applyViewReturnSnapshot,
@@ -14,6 +15,7 @@ import {
 import { HomeDeferredMount } from '../home/marketing/HomeDeferredMount';
 import { getBackStack, recordNavigation, skipTransientIfPoppedOnto } from '../../utils/backStack';
 import { resetModalA11yState } from '../../hooks/useModalA11y';
+import { PageLoader } from '../../routing/appRouteChrome';
 
 const ProductShell = lazy(() => import('./ProductShell').then((m) => ({ default: m.ProductShell })));
 const Footer = lazy(() => import('./Footer').then((m) => ({ default: m.Footer })));
@@ -23,7 +25,7 @@ interface LayoutProps {
 }
 
 export const Layout = ({ children }: LayoutProps) => {
-  const location = useLocation();
+  const location = useProductLocation();
   const navigate = useNavigate();
   const navType = useNavigationType();
   const previousPath = useRef<string | null>(null);
@@ -144,11 +146,7 @@ export const Layout = ({ children }: LayoutProps) => {
   }
 
   return (
-    <Suspense
-      fallback={
-        <div className="flex h-[100dvh] w-full flex-col overflow-hidden consumer-bg">{children}</div>
-      }
-    >
+    <Suspense fallback={<PageLoader />}>
       <ProductShell>{children}</ProductShell>
     </Suspense>
   );

@@ -52,6 +52,28 @@ export const resolveMemberCityLabel = (city: string | null | undefined): string 
   return city.trim();
 };
 
+export const resolveMemberCountryLabel = (
+  countryCode: string | null | undefined
+): string | null => {
+  if (!countryCode?.trim()) return null;
+  if (countryCode in USER_COUNTRY_LABELS) {
+    return USER_COUNTRY_LABELS[countryCode as UserCountryCode];
+  }
+  return null;
+};
+
+/** Header subline — city when set, otherwise onboarding country. */
+export const resolveMemberLocationSubline = (profile: {
+  city?: string | null;
+  countryCode?: string | null;
+} | null | undefined): string => {
+  const city = resolveMemberCityLabel(profile?.city);
+  if (city) return city;
+  const country = resolveMemberCountryLabel(profile?.countryCode);
+  if (country) return country;
+  return 'Add your city';
+};
+
 export const maxDateOfBirthForMember = (): string => {
   const cutoff = new Date();
   cutoff.setFullYear(cutoff.getFullYear() - 5);

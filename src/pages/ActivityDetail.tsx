@@ -524,7 +524,6 @@ export const ActivityDetail = () => {
             : undefined
         }
         wireSections={effectiveWirePresentation?.sections ?? null}
-        consumerLayout={effectiveWirePresentation?.consumerLayout ?? null}
         wireStrips={effectiveWirePresentation?.strips ?? null}
         onHostShareOuting={isActivityHostUser ? onHostShareOuting : undefined}
         onOpenHostManage={isActivityHostUser ? () => openHostDesk() : undefined}

@@ -158,7 +158,7 @@ export const PlanHostingUpcoming = ({
       <ConsumerInlineEmpty
         message="Nothing you’re hosting yet — organize on the map or post what you’re looking for."
         actionLabel="Open Explore"
-        actionTo={explorePath({ compose: 'menu' })}
+        actionTo={explorePath({ compose: { surface: 'menu', intent: 'host' } })}
       />
     );
   }

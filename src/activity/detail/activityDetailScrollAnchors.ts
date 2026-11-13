@@ -1,4 +1,5 @@
 import type { ActivityDetailTabId } from '../activityDetailTab';
+import { scrollEntityDetailToId } from '../../detail/shell/consumerDetailScrollTo';
 
 /** Scroll targets on public `/activity/:id` (scroll layout — no tab panels). */
 export const ACTIVITY_DETAIL_SCROLL_ANCHOR = {
@@ -20,11 +21,14 @@ export const activityDetailScrollAnchorForTab = (tab: ActivityDetailTabId): stri
 
 export const scrollActivityDetailSection = (tab: ActivityDetailTabId): void => {
   const id = activityDetailScrollAnchorForTab(tab);
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (!scrollEntityDetailToId(id)) {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 };
 
 export const scrollActivityDetailMeetingPoint = (): void => {
-  document
-    .getElementById(ACTIVITY_DETAIL_SCROLL_ANCHOR.meetingPoint)
-    ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const id = ACTIVITY_DETAIL_SCROLL_ANCHOR.meetingPoint;
+  if (!scrollEntityDetailToId(id)) {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 };

@@ -10,8 +10,6 @@ export const DEMO_QUICK_LOGIN_ROLE_SUFFIX: Record<UserRole, string> = {
   [UserRole.TENANT_GUIDE]: 'Guide',
 };
 
-export const withDemoQuickLoginRoleSuffix = (baseName: string, role: UserRole): string => {
-  const suffix = DEMO_QUICK_LOGIN_ROLE_SUFFIX[role];
-  if (baseName.endsWith(` ${suffix}`)) return baseName;
-  return `${baseName} ${suffix}`;
-};
+/** @deprecated Role is shown via `roleLabel` in the demo picker — names stay human-only. */
+export const withDemoQuickLoginRoleSuffix = (baseName: string, _role: UserRole): string =>
+  baseName.trim();

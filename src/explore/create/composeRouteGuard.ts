@@ -11,6 +11,7 @@ import {
   isSeekFlexibleWizard,
   type ExploreCompose,
 } from '../compose';
+import { buildComposeAuthReturnPath } from './guestComposeResume';
 import { explorePath } from '../routing';
 
 export type ComposeRouteGuardDecision =
@@ -24,6 +25,19 @@ type ComposeRouteGuardContext = {
   hostGateLoading: boolean;
   canPublish: boolean;
   profileComplete: boolean;
+  /** Current surface — create session stays here, not bounced to Explore. */
+  resumePathname?: string;
+  resumeSearch?: string;
+};
+
+const composeAuthReturnPath = (
+  route: ExploreCompose,
+  ctx: ComposeRouteGuardContext
+): string => {
+  if (ctx.resumePathname) {
+    return buildComposeAuthReturnPath(ctx.resumePathname, ctx.resumeSearch ?? '', route);
+  }
+  return explorePath({ compose: route });
 };
 
 /** Create wizards require a signed-in member; FAB menu drill-down stays public until a wizard opens. */
@@ -45,11 +59,11 @@ export const resolveComposeRouteChange = (
 ): ComposeRouteGuardDecision => {
   if (route && isHostWizard(route)) {
     if (!ctx.user) {
-      return { type: 'sign-in', href: signInPathForReturn(explorePath({ compose: route })) };
+      return { type: 'sign-in', href: signInPathForReturn(composeAuthReturnPath(route, ctx)) };
     }
     if (ctx.hostGateLoading) return { type: 'blocked' };
     if (!ctx.canPublish) {
-      const returnTo = explorePath({ compose: route });
+      const returnTo = composeAuthReturnPath(route, ctx);
       return {
         type: 'complete-profile',
         href: memberPublishGateHref(
@@ -69,7 +83,7 @@ export const resolveComposeRouteChange = (
     (isSeekFixedWizard(route) || isSeekFlexibleWizard(route) || isAddWizard(route)) &&
     !ctx.user
   ) {
-    return { type: 'sign-in', href: signInPathForReturn(explorePath({ compose: route })) };
+    return { type: 'sign-in', href: signInPathForReturn(composeAuthReturnPath(route, ctx)) };
   }
 
   return { type: 'set', route };

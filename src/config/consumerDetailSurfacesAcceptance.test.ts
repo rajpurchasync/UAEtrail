@@ -17,11 +17,6 @@ describe('consumerDetailSurfacesAcceptance', () => {
   it('entity detail views use tab wire modules and shared tab chrome', () => {
     const surfaces: Array<{ file: string; wire: string; tabChrome: RegExp }> = [
       {
-        file: 'src/place/detail/templates/PlaceConsumerDetailPage.tsx',
-        wire: 'placeDetailTab',
-        tabChrome: /ConsumerDetailSectionJumpNav/,
-      },
-      {
         file: 'src/components/ui/PlaceDetailTabs.tsx',
         wire: 'placeDetailTab',
         tabChrome: /ConsumerEntityTabBar/,
@@ -46,11 +41,6 @@ describe('consumerDetailSurfacesAcceptance', () => {
         wire: 'organisationPublicDetailTab',
         tabChrome: /ConsumerEntityTabBar/,
       },
-      {
-        file: 'src/components/activity/detail/ActivityDetailTabBar.tsx',
-        wire: 'activityDetailTab',
-        tabChrome: /ConsumerEntityTabBar/,
-      },
     ];
     const violations: string[] = [];
     for (const { file, wire, tabChrome } of surfaces) {
@@ -69,9 +59,16 @@ describe('consumerDetailSurfacesAcceptance', () => {
     expect(read('src/components/activity/detail/ActivityDetailGuestGate.tsx')).toMatch(
       /join-activity/
     );
-    expect(read('src/activity/detail/templates/ActivityConsumerDetailPage.tsx')).toMatch(
+    expect(read('src/activity/detail/templates/ActivityDetailSections.tsx')).toMatch(
       /ActivityDetailGuestGate/
     );
+  });
+
+  it('S9-ACT-02: activity public scroll uses sections; embed keeps tab body', () => {
+    const sections = read('src/activity/detail/templates/ActivityDetailSections.tsx');
+    expect(sections).toMatch(/ActivityPeekLinkedTransport/);
+    expect(sections).toMatch(/data-activity-scroll-detail-template/);
+    expect(read('src/components/activity/detail/ActivityDetailBody.tsx')).toMatch(/ActivityDetailPlaceTabPanels/);
   });
 
   it('S9-ACT-01: consumer activity route uses kind templates (not direct ActivityDetailView)', () => {

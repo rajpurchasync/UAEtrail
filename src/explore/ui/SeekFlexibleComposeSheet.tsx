@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { MemberAvailabilityMatchPreviewDTO } from '@uaetrail/shared-types';
 import { PlanAvailabilitySection } from '../../components/plan/PlanAvailabilitySection';
-import { EXPLORE_FLOW, EXPLORE_Z } from '../../config/exploreTheme';
+import { EXPLORE_Z } from '../../config/exploreTheme';
 import { fetchMyAvailabilityMatchPreview } from '../../hooks/memberAvailabilityApi';
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
 import { areaIdForExploreAreaSlug } from '../exploreAreaFilter';
@@ -70,11 +70,6 @@ export const SeekFlexibleComposeSheet = ({
           onClose={onClose}
           onBack={step === 'preview' ? () => setStep('form') : undefined}
         />
-        {step === 'form' ? (
-          <p className={`mb-4 ${EXPLORE_FLOW.choiceCardSubtitle}`}>
-            Pick days and what you’re open to — region and area are optional. No map pin.
-          </p>
-        ) : null}
         {open && step === 'form' ? (
           <PlanAvailabilitySection
             variant="fab"

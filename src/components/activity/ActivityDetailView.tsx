@@ -21,6 +21,7 @@ import { ShareButton } from '../ui';
 import type { ActivityDetailTabId } from '../../activity/activityDetailTab';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import type { ActivityManageInitialView } from './activityManageViews';
+import type { ActivityHostManageSurfaceProps } from './ConsumerDetailHostManageSection';
 import type { ActivityDetailKind } from '../../activity/detail/activityDetailKind';
 import type { ActivityDetailPlanSectionsComponent } from '../../activity/detail/composers';
 import { activityDetailPlanSectionsForKind } from '../../activity/detail/composers';
@@ -104,6 +105,8 @@ export interface ActivityDetailViewProps {
   onOpenHostManage?: (activity: ActivityDTO, initialView?: ActivityManageInitialView) => void;
   /** Rideshare host attached a parent outing — refresh detail. */
   onRideshareParentLinked?: () => void;
+  /** Host manage sheet overview — participants queue + hosting actions on the scroll template. */
+  hostManageSurface?: ActivityHostManageSurfaceProps | null;
 }
 
 export const ActivityDetailView = ({
@@ -149,6 +152,7 @@ export const ActivityDetailView = ({
   onParticipantInviteFriends,
   onOpenHostManage,
   onRideshareParentLinked,
+  hostManageSurface = null,
 }: ActivityDetailViewProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -264,6 +268,7 @@ export const ActivityDetailView = ({
             model={model}
             planSections={PlanSections}
             onRideshareParentLinked={onRideshareParentLinked}
+            hostManageSurface={hostManageSurface}
           />
         </MobileDetailScrollShell>
       </div>

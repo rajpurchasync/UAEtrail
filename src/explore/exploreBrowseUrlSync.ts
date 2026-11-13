@@ -258,7 +258,7 @@ export const buildExploreBrowseSearchParams = (input: {
   }
 
   params.delete('addLocation');
-  params.delete('compose');
+  /* Keep create/join overlays (`compose`, etc.) — browse sync must not dismiss FAB sessions. */
   params.delete('contribute');
   params.delete('request');
   params.delete('fulfillIntent');

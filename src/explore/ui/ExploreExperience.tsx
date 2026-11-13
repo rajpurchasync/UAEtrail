@@ -72,29 +72,8 @@ export const ExploreExperience = () => {
       </div>
 
       <ExploreExperienceOverlays
-        compose={model.compose}
         selection={model.selection}
-        user={model.user}
-        hostWizardOpen={model.hostWizardOpen}
-        hostingWizardPrefill={model.hostingWizardPrefill}
-        pathname={model.pathname}
-        search={model.search}
-        signInHref={model.signInHref}
-        planWithBuddyUserId={model.planWithBuddyUserId}
-        composeAreaSlug={model.areaSlug}
-        facilityOnPlaceId={model.facilityOnPlaceId}
         hostRemoveParticipantNotice={model.hostRemoveParticipantNotice}
-        rideshareLinkParent={model.rideshareLinkParent}
-        rideshareLinkSeeking={model.rideshareLinkSeeking}
-        onCloseCreateFlow={model.closeCreateFlow}
-        onHostingBackToIntent={model.onHostingBackToIntent}
-        onActivityPublished={model.selection.handleActivityPublished}
-        onCreateLinkedRideshare={model.handleCreateLinkedRideshare}
-        onOpenHostApplication={model.onOpenHostApplication}
-        onRefreshHostGate={model.refreshHostGate}
-        setRideshareLinkParent={model.setRideshareLinkParent}
-        setRideshareLinkSeeking={model.setRideshareLinkSeeking}
-        tenantId={model.tenantId}
         useDesktopGuestGatePanel={model.useDesktopGuestGatePanel}
       />
     </div>

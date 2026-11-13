@@ -90,6 +90,8 @@ export interface LocationDTO {
   areaLabel?: string | null;
   /** Curated geographic area (`GET /areas/:slug`). */
   areaId?: string | null;
+  /** Leaf venue grouped under a destination hub place (`locations.id`). */
+  parentPlaceId?: string | null;
   /** Populated on place detail reads when `areaId` resolves to a published area. */
   areaSlug?: string | null;
   areaName?: string | null;
@@ -1300,8 +1302,17 @@ export {
 } from './host-display.js';
 
 export {
+  ACCOUNT_ROLE_DISPLAY_SUFFIXES,
+  isAccountRoleDisplaySuffix,
+  resolveMemberDisplayName,
+  stripAccountRoleDisplaySuffix,
+  type AccountRoleDisplaySuffix,
+} from './member-display-name.js';
+
+export {
   exploreActivityPublisherTypeLabel,
   publishesActivityAsIndividual,
+  resolveActivityHostReviewTarget,
   resolveActivityPublisherDisplayName,
   resolveActivityPublisherProfilePath,
 } from './activity-publisher-display.js';
@@ -1418,6 +1429,7 @@ export {
   readVenueAreaFromTags,
   readVenueArabicNameFromTags,
   readVenueEnglishNameFromTags,
+  readVenueAmenityChipLabels,
   resolvePlaceDisplayTitle,
   resolveVenueExploreLabels,
 } from './venue-catalog-tags.js';
@@ -1651,14 +1663,11 @@ export {
 
 export {
   buildActivityPresentationDTO,
-  type ActivityPresentationBuddiesTabDTO,
+  type ActivityDetailParticipantsSlot,
   type ActivityPresentationConsumerLayoutDTO,
   type ActivityPresentationDTO,
   type ActivityPresentationEngagementDTO,
-  type ActivityPresentationPlaceTabDTO,
-  type ActivityPresentationPlanTabDTO,
-  type ActivityPresentationTabsDTO,
-  type ActivityPresentationTransportTabDTO,
+  type ActivityPresentationSectionsDTO,
   type BuildActivityPresentationInput,
 } from './activity-detail-presentation.js';
 
@@ -1856,6 +1865,7 @@ export {
   facilityDetailPath,
   resolveEntityPath,
   resolveOrganisationProfilePath,
+  activityCrewPath,
   shopPublicPath,
   type EntityKind,
   type EntityRef,
@@ -1879,6 +1889,7 @@ export {
   isPlaceKind,
   locationActivityTypeForPlaceKind,
   placeDetailRouteKindFromPlaceKind,
+  amenityChipLabelForFacilityKind,
   placeKindFromAddVenueKind,
   placeKindFromLocationRow,
   tagsForPlaceKind,
@@ -2025,10 +2036,13 @@ export {
 export {
   activityInstantHasEnded,
   activityScheduleHasEnded,
+  activityScheduleIncludesDate,
+  activityScheduleOverlapsRange,
   gccCalendarDate,
   parseActivityLocalDateTime,
   resolveActivityScheduleEndFromFields,
   resolveActivityScheduleEndInstant,
+  activityScheduleSpanLabel,
   type ActivityScheduleFields,
 } from './activity-schedule.js';
 

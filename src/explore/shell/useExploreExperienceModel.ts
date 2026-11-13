@@ -11,7 +11,7 @@ import { useMinWidthMd } from '../../hooks/useMinWidthMd';
 import { getExploreMapTiles } from '../../config/platform';
 import { useExploreBrowseList } from '../ui/useExploreBrowseList';
 import { useExploreBrowseUrlState } from '../ui/useExploreBrowseUrlState';
-import { useComposeRoute } from '../create/hooks/useComposeRoute';
+import { useCreateFlow } from '../../create/CreateFlowProvider';
 import { useHostingFromActivity } from '../create/hooks/useHostingFromActivity';
 import { useHostingWizardPrefill } from '../create/hooks/useHostingWizardPrefill';
 import {
@@ -34,7 +34,10 @@ import { useExplorePinDeepLink } from './useExplorePinDeepLink';
 import { useExploreMapCatalog } from './useExploreMapCatalog';
 import { resolveExploreItemIdFromMapPin } from '../ui/exploreMapPinModel';
 import { resolveBrowseListCreateFabLabel } from '../../list/browseListCopy';
-import { resolveCreateFabComposeEntry } from '../create/composeFabEntry';
+import {
+  resolveCreateFabComposeEntry,
+  resolveExploreMapCreateFabHints,
+} from '../create/composeFabEntry';
 
 /** Explore map + browse + compose + selection orchestration (R2). */
 export const useExploreExperienceModel = () => {
@@ -114,18 +117,7 @@ export const useExploreExperienceModel = () => {
     navigate,
   });
 
-  const compose = useComposeRoute({
-    user,
-    navigate,
-    pathname,
-    search,
-    searchParams,
-    setSearchParams,
-    onOpenComposeMenu: clearSelection,
-    canPublish,
-    profileComplete,
-    hostGateLoading,
-  });
+  const { compose, registerBridge } = useCreateFlow();
 
   const selectionItems = useMemo(() => {
     const ids = new Set(mapItems.map((entry) => entry.id));
@@ -176,14 +168,38 @@ export const useExploreExperienceModel = () => {
   const hostSheets = useHostActivitySheetBundle({ tenantId });
   const { inviteShare, shareHostedActivity, openHostManage } = hostSheets;
 
+  const createFabHints = useMemo(
+    () =>
+      resolveExploreMapCreateFabHints({
+        panel: browse.panel,
+        peopleBrowseOpen: browse.peopleBrowseOpen,
+        listMode: browse.listMode,
+        pinKind: browse.pinKind,
+        placesMode: browse.placesMode,
+      }),
+    [
+      browse.panel,
+      browse.peopleBrowseOpen,
+      browse.listMode,
+      browse.pinKind,
+      browse.placesMode,
+    ]
+  );
+
+  const fabSearch = useMemo(
+    () => (searchParams.toString() ? `?${searchParams.toString()}` : search),
+    [searchParams, search]
+  );
+
   const primaryFabLabel = useMemo(
-    () => resolveBrowseListCreateFabLabel(pathname, search),
-    [pathname, search]
+    () => resolveBrowseListCreateFabLabel(pathname, fabSearch, createFabHints),
+    [pathname, fabSearch, createFabHints]
   );
 
   const handlePrimaryFabTap = useCallback(() => {
-    compose.handleCreateTap(resolveCreateFabComposeEntry(pathname, search));
-  }, [compose, pathname, search]);
+    clearSelection();
+    compose.handleCreateTap(resolveCreateFabComposeEntry(pathname, fabSearch, createFabHints));
+  }, [clearSelection, compose, pathname, fabSearch, createFabHints]);
 
   const planWithBuddyUserId = parsePlanWithUserId(searchParams);
   const [joinInvitePeekActivityId, setJoinInvitePeekActivityId] = useState<string | null>(null);
@@ -300,7 +316,8 @@ export const useExploreExperienceModel = () => {
     activityModeFilter: browse.activityModeFilter,
   });
 
-  const { peopleBrowsePanelProps } = useExplorePeopleBrowseBundle({
+  const { peopleBrowsePanelProps, openPeopleBrowsePanel, peopleBrowseMapChip } =
+    useExplorePeopleBrowseBundle({
       user,
       hostStatus,
       browse,
@@ -372,6 +389,45 @@ export const useExploreExperienceModel = () => {
     [selectionItems, selection]
   );
 
+  useEffect(() => {
+    registerBridge({
+      hostingWizardPrefill: hostingLauncher.hostingWizardPrefill,
+      hostWizardOpen: hostingLauncher.hostWizardOpen,
+      onCloseCreateFlow: hostingLauncher.closeCreateFlow,
+      onHostingBackToIntent: hostingLauncher.onHostingBackToIntent,
+      onActivityPublished: async (activity) => {
+        await selection.handleActivityPublished(activity);
+        if (hostingLauncher.rideshareLinkParent && activity.activityType === 'rideshare') {
+          hostingLauncher.setRideshareLinkParent(null);
+        }
+        if (hostingLauncher.rideshareLinkSeeking && activity.activityType === 'rideshare') {
+          hostingLauncher.setRideshareLinkSeeking(null);
+        }
+        void refreshHostGate();
+      },
+      onCreateLinkedRideshare: hostingLauncher.handleCreateLinkedRideshare,
+      onSeekingSubmitted: (result) => {
+        selection.handleSeekingSubmitted(result);
+        void refreshHostGate();
+      },
+      onAddSubmitted: selection.handleAddSubmitted,
+      planWithBuddyUserId,
+      composeAreaSlug: areaSlug,
+      facilityOnPlaceId,
+      tenantId,
+    });
+    return () => registerBridge(null);
+  }, [
+    registerBridge,
+    hostingLauncher,
+    selection,
+    planWithBuddyUserId,
+    areaSlug,
+    facilityOnPlaceId,
+    tenantId,
+    refreshHostGate,
+  ]);
+
   return {
     user,
     tenantId,
@@ -384,6 +440,8 @@ export const useExploreExperienceModel = () => {
     mapItems,
     browse,
     peopleBrowsePanelProps,
+    openPeopleBrowsePanel,
+    peopleBrowseMapChip,
     compose,
     selection,
     selectionItems,

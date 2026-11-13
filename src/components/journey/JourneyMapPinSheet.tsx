@@ -175,7 +175,7 @@ export const JourneyMapPinSheet = ({
             className="mt-4 inline-flex min-h-11 items-center rounded-full bg-emerald-50 px-4 text-sm font-semibold text-emerald-800"
             onClick={onClose}
           >
-            Open outing
+            {entry.activityId ? 'Open outing' : 'Open venue'}
           </Link>
         ) : null}
       </>

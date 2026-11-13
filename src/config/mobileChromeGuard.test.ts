@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { isLayoutMobileUnifiedHeaderRoute } from './mobileTabHeader';
 import {
   hasConsumerSelfHeader,
-  isConsumerEntityDetailRoute,
+  isEntityDetailRoute,
   MOBILE_BOTTOM_NAV_PROFILE_PATHS,
   MOBILE_BOTTOM_NAV_TAB_PATHS,
 } from './platform';
@@ -80,7 +80,7 @@ describe('mobileChromeGuard', () => {
     const missing = paths.filter(
       (p) =>
         isLayoutMobileUnifiedHeaderRoute(p) &&
-        !isConsumerEntityDetailRoute(p) &&
+        !isEntityDetailRoute(p) &&
         !hasConsumerSelfHeader(p)
     );
     expect(missing).toEqual([]);
@@ -103,7 +103,7 @@ describe('mobileChromeGuard', () => {
     const dualRisk = paths.filter(
       (p) =>
         isLayoutMobileUnifiedHeaderRoute(p) &&
-        !isConsumerEntityDetailRoute(p) &&
+        !isEntityDetailRoute(p) &&
         !hasConsumerSelfHeader(p)
     );
     expect(dualRisk).toEqual([]);
@@ -111,8 +111,8 @@ describe('mobileChromeGuard', () => {
 
   it('entity detail and member cards hide MobileConsumerNavBar via detail or self header', () => {
     for (const p of ENTITY_DETAIL_SAMPLES) {
-      expect(isConsumerEntityDetailRoute(p)).toBe(true);
-      expect(hasConsumerSelfHeader(p) || isConsumerEntityDetailRoute(p)).toBe(true);
+      expect(isEntityDetailRoute(p)).toBe(true);
+      expect(hasConsumerSelfHeader(p) || isEntityDetailRoute(p)).toBe(true);
     }
     expect(hasConsumerSelfHeader('/member/user-1')).toBe(true);
   });

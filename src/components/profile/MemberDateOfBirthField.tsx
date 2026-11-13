@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { CalendarDays } from 'lucide-react';
 import { AppButton } from '../mobile/AppButton';
 import { Dialog } from '../ui/Dialog';
-import { PRODUCT_SIGNUP_STEP_DOB } from '../../content/productNorthStar';
+const SIGNUP_DOB_PICK_LABEL = 'Birthday';
 import {
   MEMBER_DOB_MONTHS,
   clampMemberDobDay,
@@ -77,12 +77,12 @@ export const MemberDateOfBirthField = ({
         } disabled:opacity-60`}
       >
         <span className={display ? 'font-semibold text-neutral-900' : 'text-neutral-400'}>
-          {display ?? PRODUCT_SIGNUP_STEP_DOB}
+          {display ?? SIGNUP_DOB_PICK_LABEL}
         </span>
         <CalendarDays className="h-5 w-5 shrink-0 text-emerald-600" strokeWidth={2.25} aria-hidden />
       </button>
 
-      <Dialog open={open} onClose={() => setOpen(false)} title={PRODUCT_SIGNUP_STEP_DOB} variant="form">
+      <Dialog open={open} onClose={() => setOpen(false)} title={SIGNUP_DOB_PICK_LABEL} variant="form">
         <div className="space-y-3">
           <div>
             <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-neutral-400">

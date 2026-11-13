@@ -1,0 +1,226 @@
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import type { ActivityDTO } from '@uaetrail/shared-types';
+import { useAuth } from '../context/AuthContext';
+import { EXPLORE_MAP_PATH } from '../config/platform';
+import { addVenueKindFromRoute } from '../explore/compose';
+import { ComposeHost } from '../explore/create/ComposeHost';
+import { useComposeRoute } from '../explore/create/hooks/useComposeRoute';
+import { clearComposeWizardSessionForRoute } from '../explore/ui/composeWizardSession';
+import { GuestComposeSignInSheet } from '../explore/ui/GuestComposeSignInSheet';
+import { parseExploreAreaSlug } from '../explore/exploreAreaFilter';
+import { parseFacilityOnPlaceId, parsePlanWithUserId } from '../explore/routing';
+import type { HostingWizardPrefill } from '../explore/ui/hostingWizardPrefill';
+import type { AddSubmitResult } from '../explore/ui/addFlow';
+import type { SeekingSubmitResult } from '../explore/ui/seekingFlowEngine';
+import { useMemberStatus } from '../hooks/useMemberStatus';
+import { reloadExploreMap } from '../hooks/useExploreMap';
+import { useMinWidthMd } from '../hooks/useMinWidthMd';
+import { buildSignInRedirect } from '../utils/authReturnContext';
+import {
+  memberPublishGateHref,
+  memberPublishGateInputFromMemberStatus,
+} from '../utils/memberPublishGate';
+
+export type CreateFlowBridge = {
+  hostingWizardPrefill?: HostingWizardPrefill | null;
+  hostWizardOpen?: boolean;
+  onCloseCreateFlow?: () => void;
+  onHostingBackToIntent?: () => void;
+  onActivityPublished?: (activity: ActivityDTO) => void | Promise<void>;
+  onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
+  onSeekingSubmitted?: (result: SeekingSubmitResult) => void;
+  onAddSubmitted?: (result: AddSubmitResult) => void;
+  planWithBuddyUserId?: string | null;
+  composeAreaSlug?: string | null;
+  facilityOnPlaceId?: string | null;
+  tenantId?: string | null;
+};
+
+type CreateFlowContextValue = {
+  compose: ReturnType<typeof useComposeRoute>;
+  registerBridge: (bridge: CreateFlowBridge | null) => void;
+};
+
+const CreateFlowContext = createContext<CreateFlowContextValue | null>(null);
+
+/** Product-shell create session — overlay on the current route, not an Explore page. */
+export const CreateFlowProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { pathname, search } = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryClient = useQueryClient();
+  const isDesktop = useMinWidthMd();
+  const {
+    canPublish,
+    profileComplete,
+    isCommunityHost,
+    hostTiers,
+    loading: hostGateLoading,
+    tenantId,
+    refresh: refreshHostGate,
+  } = useMemberStatus({ enabled: Boolean(user) });
+
+  const compose = useComposeRoute({
+    user,
+    navigate,
+    pathname,
+    search,
+    searchParams,
+    setSearchParams,
+    onOpenComposeMenu: () => {},
+    canPublish,
+    profileComplete,
+    hostGateLoading,
+  });
+
+  const bridgeRef = useRef<CreateFlowBridge | null>(null);
+  const [bridgeGeneration, setBridgeGeneration] = useState(0);
+  const registerBridge = useCallback((next: CreateFlowBridge | null) => {
+    const prev = bridgeRef.current;
+    bridgeRef.current = next;
+    if (
+      Boolean(prev) !== Boolean(next) ||
+      prev?.hostWizardOpen !== next?.hostWizardOpen ||
+      prev?.hostingWizardPrefill !== next?.hostingWizardPrefill ||
+      prev?.tenantId !== next?.tenantId ||
+      prev?.composeAreaSlug !== next?.composeAreaSlug ||
+      prev?.facilityOnPlaceId !== next?.facilityOnPlaceId ||
+      prev?.planWithBuddyUserId !== next?.planWithBuddyUserId
+    ) {
+      setBridgeGeneration((n) => n + 1);
+    }
+  }, []);
+  const bridge = bridgeRef.current;
+  void bridgeGeneration;
+
+  const signInHref = useMemo(
+    () => buildSignInRedirect({ pathname, search }).href,
+    [pathname, search]
+  );
+
+  const navigateMemberPublishGate = useCallback(
+    (returnPath: string) =>
+      navigate(
+        memberPublishGateHref(
+          returnPath,
+          memberPublishGateInputFromMemberStatus({
+            viewerUserId: user?.id ?? null,
+            profileComplete,
+            canPublish,
+            isCommunityHost,
+            hostTiers,
+          })
+        )
+      ),
+    [navigate, user?.id, profileComplete, canPublish, isCommunityHost, hostTiers]
+  );
+
+  const defaultRefresh = useCallback(async () => {
+    await reloadExploreMap(queryClient);
+    void refreshHostGate();
+  }, [queryClient, refreshHostGate]);
+
+  const hostWizardOpen =
+    bridge?.hostWizardOpen ?? (Boolean(compose.hostComposeRoute) && Boolean(user));
+  const hostingWizardPrefill = bridge?.hostingWizardPrefill ?? null;
+
+  const onCloseCreateFlow = bridge?.onCloseCreateFlow ?? compose.closeCompose;
+  const onHostingBackToIntent =
+    bridge?.onHostingBackToIntent ??
+    (() => {
+      clearComposeWizardSessionForRoute(compose.hostComposeRoute);
+      compose.setComposeRoute({ surface: 'menu', intent: 'host' });
+    });
+
+  const skipGuestComposeSheet = isDesktop && !user && pathname === EXPLORE_MAP_PATH;
+
+  const value = useMemo(
+    () => ({ compose, registerBridge }),
+    [compose, registerBridge]
+  );
+
+  return (
+    <CreateFlowContext.Provider value={value}>
+      {children}
+      <ComposeHost
+        composeRoute={compose.composeRoute}
+        composeMenuOpen={compose.composeMenuOpen}
+        hostWizardOpen={hostWizardOpen}
+        seekFixedWizardOpen={Boolean(compose.seekFixedRoute) && Boolean(user)}
+        addWizardOpen={Boolean(compose.addRoute) && Boolean(user)}
+        seekFlexibleOpen={compose.seekFlexibleOpen && Boolean(user)}
+        hostComposeKind={compose.hostComposeRoute?.kind ?? null}
+        seekFixedKind={compose.seekFixedRoute?.kind}
+        addVenueKind={addVenueKindFromRoute(compose.addRoute)}
+        hostingWizardPrefill={hostingWizardPrefill}
+        signInHref={signInHref}
+        onComposeRouteChange={compose.handleComposeRouteChange}
+        onCloseCompose={compose.closeCompose}
+        onCloseCreateFlow={onCloseCreateFlow}
+        wizardEnteredFromMenu={compose.wizardEnteredFromMenu}
+        onHostingBackToIntent={onHostingBackToIntent}
+        onSeekingBackToIntent={() => {
+          clearComposeWizardSessionForRoute(compose.seekFixedRoute);
+          compose.setComposeRoute({ surface: 'menu', intent: 'seek' });
+        }}
+        onAddBackToIntent={() => {
+          clearComposeWizardSessionForRoute(compose.addRoute);
+          compose.setComposeRoute({ surface: 'menu', intent: 'add' });
+        }}
+        onActivityPublished={async (activity) => {
+          if (bridge?.onActivityPublished) {
+            await bridge.onActivityPublished(activity);
+          } else {
+            await defaultRefresh();
+          }
+        }}
+        onSeekingSubmitted={(result) => {
+          if (bridge?.onSeekingSubmitted) bridge.onSeekingSubmitted(result);
+          else void defaultRefresh();
+        }}
+        onAddSubmitted={(result) => {
+          if (bridge?.onAddSubmitted) bridge.onAddSubmitted(result);
+          else void defaultRefresh();
+        }}
+        onCreateLinkedRideshare={bridge?.onCreateLinkedRideshare}
+        tenantId={bridge?.tenantId ?? tenantId}
+        planWithBuddyUserId={bridge?.planWithBuddyUserId ?? parsePlanWithUserId(searchParams)}
+        composeAreaSlug={bridge?.composeAreaSlug ?? parseExploreAreaSlug(searchParams)}
+        facilityOnPlaceId={bridge?.facilityOnPlaceId ?? parseFacilityOnPlaceId(searchParams)}
+        onOpenHostApplication={() => {
+          onCloseCreateFlow();
+          navigateMemberPublishGate(`${pathname}${search}`);
+        }}
+      />
+      {!skipGuestComposeSheet ? (
+        <GuestComposeSignInSheet
+          open={compose.guestComposeSignInOpen}
+          onClose={compose.closeGuestComposeSignIn}
+          authReturnPath={compose.guestComposeSignInReturnPath}
+        />
+      ) : null}
+    </CreateFlowContext.Provider>
+  );
+};
+
+export const useCreateFlow = (): CreateFlowContextValue => {
+  const ctx = useContext(CreateFlowContext);
+  if (!ctx) {
+    throw new Error('useCreateFlow must be used under CreateFlowProvider (ProductShell).');
+  }
+  return ctx;
+};
+
+export const useCreateFlowOptional = (): CreateFlowContextValue | null =>
+  useContext(CreateFlowContext);

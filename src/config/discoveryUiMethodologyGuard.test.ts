@@ -26,14 +26,12 @@ describe('discoveryUiMethodologyGuard', () => {
     expect(coherence).toMatch(/src\/discovery\/discoveryCardModel/);
   });
 
-  it('DISC-METH-02: activity peek is activity-only; catalog pins use the source slots', () => {
+  it('DISC-METH-02: activity peek wires entity slots — not legacy ExploreItemPeekParts', () => {
     const peek = read('src/explore/ui/peek/ActivityPeekCard.tsx');
-    expect(peek).toMatch(/ActivityPeekActions/);
-    expect(peek).toMatch(/ActivityPeekBody/);
-    expect(peek).not.toMatch(/MapPeekActionsSlot|MapPeekBodySlot|ExploreItemPeekParts/);
-    const catalog = read('src/explore/ui/peek/CatalogPeekCard.tsx');
-    expect(catalog).toMatch(/MapPeekActionsSlot/);
-    expect(catalog).toMatch(/MapPeekBodySlot/);
+    expect(peek).toMatch(/from ['"].*map-peek/);
+    expect(peek).toMatch(/MapPeekActionsSlot/);
+    expect(peek).toMatch(/MapPeekBodySlot/);
+    expect(peek).not.toMatch(/ExploreItemPeekParts/);
   });
 
   it('DISC-METH-05: wire-driven activity + shop peek actions live under peek/', () => {

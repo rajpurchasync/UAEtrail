@@ -17,12 +17,17 @@
     /** Mobile explore tab header (safe area + avatar row). */
     --explore-mobile-tab-header-stack: calc(var(--safe-top, 0px) + 2.75rem);
     /** Map intent + activity filter toolbar — peek sheets start below this stack. */
-    --explore-mobile-map-filter-stack: 5.75rem;
+    --explore-mobile-map-filter-stack: 4.75rem;
     --explore-browse-peek-top: calc(
       var(--explore-mobile-tab-header-stack) + var(--explore-mobile-map-filter-stack)
     );
     /** Vertical gap between map layer toggle and compose FAB */
     --explore-map-fab-stack-gap: 1.25rem;
+    /** Shared mobile dock pills (List · Create) and list Map/Create FABs */
+    --mobile-dock-pill-height: 2.75rem;
+    --explore-map-overlay-size: 2.5rem;
+    --explore-map-mobile-control: 3.5rem;
+    --explore-map-mobile-control-gap: 0.625rem;
     /** Desktop explore — right rail (Add New + locate + style) */
     --explore-map-desktop-fab-bottom: 3rem;
     --explore-map-desktop-primary-fab-height: 2.5rem;
@@ -714,6 +719,10 @@
   }
 
   @media (max-width: 767px) {
+    html {
+      font-size: 18px;
+    }
+
     .home-hero-copy {
       padding-inline: 0.25rem;
       padding-block: 0;

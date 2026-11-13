@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import type { NavigateFunction, SetURLSearchParams } from 'react-router-dom';
+import { clearPlanAddQuery } from '../../../create/planAddQuery';
 import {
   clearExploreComposeParams,
   formatComposeQuery,
@@ -8,6 +10,7 @@ import {
   isSeekFixedWizard,
   isHostWizard,
   isSeekFlexibleWizard,
+  COMPOSE_QUERY_KEY,
   parseExploreCompose,
   setExploreComposeParam,
   type ExploreCompose,
@@ -23,6 +26,10 @@ import {
 import { clearComposeWizardSessionForRoute } from '../../ui/composeWizardSession';
 import { clearFacilityOnPlaceParams, PLAN_WITH_QUERY_KEY } from '../../routing';
 import { composeRouteRequiresAuth, resolveComposeRouteChange } from '../composeRouteGuard';
+import {
+  HISTORY_CHANGE_EVENT,
+  installHistoryChangeNotify,
+} from '../../../routing/routerLocationReconcile';
 
 export type UseComposeRouteArgs = {
   user: { id: string } | null | undefined;
@@ -37,7 +44,7 @@ export type UseComposeRouteArgs = {
   hostGateLoading: boolean;
 };
 
-/** `?compose=` URL state — shared by `/explore` and `/list` (not map-only). */
+/** `?compose=` create-flow session — current surface (`/explore`, `/list`, later `/plan`), not map-only. */
 export const useComposeRoute = ({
   user,
   navigate,
@@ -50,7 +57,31 @@ export const useComposeRoute = ({
   profileComplete,
   hostGateLoading,
 }: UseComposeRouteArgs) => {
-  const composeRoute = useMemo(() => parseExploreCompose(searchParams), [searchParams]);
+  const [locationHistoryTick, setLocationHistoryTick] = useState(0);
+  useEffect(() => {
+    installHistoryChangeNotify();
+    const bump = () => setLocationHistoryTick((n) => n + 1);
+    window.addEventListener(HISTORY_CHANGE_EVENT, bump);
+    window.addEventListener('popstate', bump);
+    return () => {
+      window.removeEventListener(HISTORY_CHANGE_EVENT, bump);
+      window.removeEventListener('popstate', bump);
+    };
+  }, []);
+
+  const composeWire = searchParams.get(COMPOSE_QUERY_KEY);
+  const composeRoute = useMemo(() => {
+    const fromRouter = parseExploreCompose(searchParams);
+    if (typeof window === 'undefined' || window.location.pathname !== pathname) {
+      return fromRouter;
+    }
+    const barParams = new URLSearchParams(window.location.search);
+    const barWire = barParams.get(COMPOSE_QUERY_KEY);
+    if (barWire && barWire !== composeWire) {
+      return parseExploreCompose(barParams);
+    }
+    return fromRouter;
+  }, [searchParams, composeWire, pathname, locationHistoryTick]);
   const [guestComposeSignInOpen, setGuestComposeSignInOpen] = useState(false);
   const [guestComposePendingRoute, setGuestComposePendingRoute] = useState<ExploreCompose | null>(
     null
@@ -64,58 +95,82 @@ export const useComposeRoute = ({
   const addRoute = isAddWizard(composeRoute) ? composeRoute : null;
   const seekFlexibleOpen = isSeekFlexibleWizard(composeRoute);
 
+  const applySearchMutation = useCallback(
+    (mutate: (params: URLSearchParams) => void) => {
+      let nextParams: URLSearchParams | null = null;
+      flushSync(() => {
+        setSearchParams(
+          (prev) => {
+            const params = new URLSearchParams(prev);
+            mutate(params);
+            nextParams = params;
+            return params;
+          },
+          { replace: true }
+        );
+      });
+      if (typeof window === 'undefined' || !nextParams) return;
+      if (window.location.pathname !== pathname) return;
+      const intended = nextParams.toString();
+      const bar = new URLSearchParams(window.location.search).toString();
+      if (bar !== intended) {
+        flushSync(() => {
+          navigate(
+            { pathname, search: intended ? `?${intended}` : '' },
+            { replace: true }
+          );
+        });
+      }
+    },
+    [navigate, pathname, setSearchParams]
+  );
+
   const setComposeRoute = useCallback(
     (route: ExploreCompose | null) => {
-      setSearchParams(
-        (prev) => {
-          const params = new URLSearchParams(prev);
-          if (!route) {
-            clearExploreComposeParams(params);
-          } else {
-            setExploreComposeParam(params, route);
-          }
-          return params;
-        },
-        { replace: true }
-      );
+      applySearchMutation((params) => {
+        if (!route) {
+          clearExploreComposeParams(params);
+          return;
+        }
+        setExploreComposeParam(params, route);
+        clearPlanAddQuery(params);
+      });
     },
-    [setSearchParams]
+    [applySearchMutation]
   );
 
   const closeCompose = useCallback(() => {
-    setSearchParams(
-      (prev) => {
-        clearComposeWizardSessionForRoute(parseExploreCompose(prev));
-        const params = new URLSearchParams(prev);
-        clearExploreComposeParams(params);
-        clearFacilityOnPlaceParams(params);
-        params.delete(PLAN_WITH_QUERY_KEY);
-        return params;
-      },
-      { replace: true }
-    );
+    applySearchMutation((params) => {
+      clearComposeWizardSessionForRoute(parseExploreCompose(params));
+      clearExploreComposeParams(params);
+      clearFacilityOnPlaceParams(params);
+      params.delete(PLAN_WITH_QUERY_KEY);
+    });
     setWizardEnteredFromMenu(false);
     setGuestComposeSignInOpen(false);
     setGuestComposePendingRoute(null);
     clearGuestComposeResumeSession();
-  }, [setSearchParams]);
+  }, [applySearchMutation]);
+
+  const prevPathnameRef = useRef(pathname);
+  useEffect(() => {
+    if (prevPathnameRef.current !== pathname && composeWire) {
+      closeCompose();
+    }
+    prevPathnameRef.current = pathname;
+  }, [pathname, composeWire, closeCompose]);
 
   const blockGuestComposeWizard = useCallback(
     (route: ExploreCompose, fromMenu: boolean) => {
       writeGuestComposeResumeSession(captureGuestComposeResume(route, fromMenu));
       setGuestComposePendingRoute(route);
       setGuestComposeSignInOpen(true);
-      setSearchParams(
-        (prev) => {
-          const params = new URLSearchParams(prev);
-          clearExploreComposeParams(params);
-          return params;
-        },
-        { replace: true }
-      );
+      applySearchMutation((params) => {
+        clearExploreComposeParams(params);
+      });
       if (!fromMenu) setWizardEnteredFromMenu(false);
     },
-    [setSearchParams]
+    [applySearchMutation]
   );
 
   useEffect(() => {
@@ -176,6 +231,8 @@ export const useComposeRoute = ({
         hostGateLoading,
         canPublish,
         profileComplete,
+        resumePathname: pathname,
+        resumeSearch: search,
       });
       if (decision.type === 'sign-in') {
         if (!user) {
@@ -206,6 +263,8 @@ export const useComposeRoute = ({
       setComposeRoute,
       composeRoute,
       blockGuestComposeWizard,
+      pathname,
+      search,
     ]
   );
 
@@ -230,19 +289,12 @@ export const useComposeRoute = ({
     setGuestComposeSignInOpen(false);
     setGuestComposePendingRoute(null);
     clearGuestComposeResumeSession();
-    setSearchParams(
-      (prev) => {
-        const pending = parseExploreCompose(prev);
-        if (!pending || !composeRouteRequiresAuth(pending)) {
-          return prev;
-        }
-        const params = new URLSearchParams(prev);
-        clearExploreComposeParams(params);
-        return params;
-      },
-      { replace: true }
-    );
-  }, [setSearchParams]);
+    applySearchMutation((params) => {
+      const pending = parseExploreCompose(params);
+      if (!pending || !composeRouteRequiresAuth(pending)) return;
+      clearExploreComposeParams(params);
+    });
+  }, [applySearchMutation]);
 
   return {
     composeRoute,

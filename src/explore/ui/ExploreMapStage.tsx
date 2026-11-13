@@ -9,17 +9,16 @@ import {
   readExploreGuestMapPreviewDismissed,
   writeExploreGuestMapPreviewDismissed,
 } from '../guestMapPreviewPolicy';
-import { List, Plus } from 'lucide-react';
-import { UiTooltip } from '../../components/ui/UiTooltip';
+import { Plus } from 'lucide-react';
 import { isGeographyMapSource, type ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { MapBounds, PlaceMapPin } from '../../components/ui/PlacesMap';
 import { getMapBounds } from '../../config/regions';
 import { MAP_CONFIG, getExploreMapTiles, type ExploreMapStyle } from '../../config/platform';
 import { hasSessionExpiredQuery } from '../../config/surfacePaths';
-import { EXPLORE_MAP_FLOATING_CHROME_BTN, EXPLORE_Z } from '../../config/exploreTheme';
+import { EXPLORE_Z } from '../../config/exploreTheme';
+import { ExploreMapMobileDock } from './ExploreMapMobileDock';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import type { JoinRequestUiState } from '../../utils/joinRequestUi';
-import { ExploreCoachMarks } from './ExploreCoachMarks';
 import { ExploreDismissibleNotice } from './ExploreDismissibleNotice';
 import { ExploreGuestPreviewLimitBanner } from './ExploreGuestPreviewLimitBanner';
 import { ActivityMapPeekHost } from './ActivityMapPeekHost';
@@ -30,8 +29,11 @@ import { ExploreMapLocationPrompt } from './ExploreMapLocationPrompt';
 import { ExploreMapControlToolbar } from './ExploreMapControlToolbar';
 import { PlaceMapPeekHost } from './peek/place/PlaceMapPeekHost';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
+import type { PlaceKind } from '@uaetrail/shared-types';
 import type { ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
+import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
+import type { ExplorePriceFilter, ExploreVenueFilterPatch } from '../exploreOptionalFilters';
 import type { MapRecenterTarget } from '../../lib/mapRecenter';
 import type { MapPeekPinAnchor } from '../mapPeekBubbleLayout';
 
@@ -59,6 +61,18 @@ export type ExploreMapStageProps = {
   onVenueRegionsChange: (regions: string[]) => void;
   venueFilter?: VenueListFilterKey;
   onVenueFilterChange?: (filter: VenueListFilterKey) => void;
+  tripMapTopics: TripMapTopicKey[];
+  placeMapTopics: PlaceMapTopicKey[];
+  priceFilter: ExplorePriceFilter;
+  hasTrip: boolean;
+  facilityKinds: PlaceKind[];
+  onTripTopicsChange: (next: TripMapTopicKey[]) => void;
+  onPlaceTopicsChange: (next: PlaceMapTopicKey[]) => void;
+  onPriceFilterChange: (next: ExplorePriceFilter) => void;
+  onHasTripChange: (next: boolean) => void;
+  onFacilityKindsChange: (next: PlaceKind[]) => void;
+  onVenueFiltersChange: (next: ExploreVenueFilterPatch) => void;
+  onOpenCrewsPage: () => void;
   onOpenPeopleBrowsePanel?: () => void;
   peopleBrowsePanelAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
   peopleBrowsePanelFriendCount?: number;
@@ -136,6 +150,18 @@ export const ExploreMapStage = ({
   onVenueRegionsChange,
   venueFilter,
   onVenueFilterChange,
+  tripMapTopics,
+  placeMapTopics,
+  priceFilter,
+  hasTrip,
+  facilityKinds,
+  onTripTopicsChange,
+  onPlaceTopicsChange,
+  onPriceFilterChange,
+  onHasTripChange,
+  onFacilityKindsChange,
+  onVenueFiltersChange,
+  onOpenCrewsPage,
   onOpenPeopleBrowsePanel,
   peopleBrowsePanelAvatars,
   peopleBrowsePanelFriendCount,
@@ -253,8 +279,6 @@ export const ExploreMapStage = ({
         </ExploreMapLoadErrorBoundary>
       </div>
 
-      {!listOpen && !isDesktop && user ? <ExploreCoachMarks /> : null}
-
       {!(isDesktop) && !peopleMap ? (
       <ExploreMapChromeBar
         panel={panel}
@@ -266,12 +290,18 @@ export const ExploreMapStage = ({
         onActivityDatePresetChange={onActivityDatePresetChange}
         onVenueRegionsChange={onVenueRegionsChange}
         venueFilter={venueFilter}
-        onVenueFilterChange={onVenueFilterChange}
-        onOpenPeopleBrowsePanel={onOpenPeopleBrowsePanel}
-        peopleBrowsePanelAvatars={peopleBrowsePanelAvatars}
-        peopleBrowsePanelFriendCount={peopleBrowsePanelFriendCount}
-        peopleBrowseGuest={peopleBrowseGuest}
-        peopleBrowsePossibleCrewCount={peopleBrowsePossibleCrewCount}
+        tripMapTopics={tripMapTopics}
+        placeMapTopics={placeMapTopics}
+        priceFilter={priceFilter}
+        hasTrip={hasTrip}
+        facilityKinds={facilityKinds}
+        onTripTopicsChange={onTripTopicsChange}
+        onPlaceTopicsChange={onPlaceTopicsChange}
+        onPriceFilterChange={onPriceFilterChange}
+        onHasTripChange={onHasTripChange}
+        onFacilityKindsChange={onFacilityKindsChange}
+        onVenueFiltersChange={onVenueFiltersChange}
+        onOpenCrewsPage={onOpenCrewsPage}
         searchQuery={searchQuery}
         onSearchQueryChange={onSearchQueryChange}
         onSearchCommit={onSearchCommit}
@@ -328,46 +358,15 @@ export const ExploreMapStage = ({
       {loading && mapPins.length === 0 ? <ExploreMapLoadingSkeleton /> : null}
 
       {!listOpen && !peopleMap ? (
-        <div
-          className="pointer-events-none absolute inset-x-0 bottom-[calc(var(--explore-float-base)+var(--explore-map-fab-inset))] z-[1100] grid grid-cols-[1fr_auto] grid-rows-[auto_auto] items-center gap-x-3 px-4 md:hidden"
-          style={{ rowGap: 'var(--explore-map-fab-stack-gap)' }}
-        >
-          <div className="pointer-events-auto col-start-1 row-start-1 self-center justify-self-start">
-            <button
-              type="button"
-              onClick={onOpenBrowse}
-              className={EXPLORE_MAP_FLOATING_CHROME_BTN}
-            >
-              <List
-                className="h-6 w-6 shrink-0 text-current"
-                strokeWidth={1.25}
-                absoluteStrokeWidth
-                aria-hidden
-              />
-              List
-            </button>
-          </div>
-          <div className="pointer-events-auto col-start-2 row-start-1">
-            <ExploreMapControlToolbar
-              onLocate={onLocateMe}
-              locating={locatingDevice}
-              mapStyle={exploreMapStyle}
-              onToggleMapStyle={onToggleMapStyle}
-            />
-          </div>
-          <div className="pointer-events-auto col-start-2 row-start-2 justify-self-center">
-            <UiTooltip label={primaryFabLabel}>
-            <button
-              type="button"
-              onClick={onPrimaryFab}
-              className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white shadow-[0_4px_20px_rgba(5,150,105,.45)] hover:bg-emerald-700 active:scale-[0.98]"
-              aria-label={primaryFabLabel}
-            >
-              <Plus className="h-6 w-6 shrink-0" strokeWidth={2.5} aria-hidden />
-            </button>
-            </UiTooltip>
-          </div>
-        </div>
+        <ExploreMapMobileDock
+          onOpenBrowse={onOpenBrowse}
+          onPrimaryFab={onPrimaryFab}
+          primaryFabLabel={primaryFabLabel}
+          onLocateMe={onLocateMe}
+          locatingDevice={locatingDevice}
+          exploreMapStyle={exploreMapStyle}
+          onToggleMapStyle={onToggleMapStyle}
+        />
       ) : null}
 
       <div

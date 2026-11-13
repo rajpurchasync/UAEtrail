@@ -49,6 +49,7 @@ describe('addFlow steps', () => {
       'title',
       'facilityType',
       'curatedArea',
+      'parentPlace',
       'location',
       'image',
       'description',

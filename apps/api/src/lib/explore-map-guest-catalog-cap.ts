@@ -42,8 +42,12 @@ export const compareGuestPreviewPlaces = (a: ExploreMapItemDTO, b: ExploreMapIte
  * `GET /explore/map` returns the full catalog for guests; peek depth is enforced in the client.
  * Set `EXPLORE_MAP_GUEST_CATALOG_CAP=0` to disable caps on auxiliary guest reads.
  */
-export const isGuestExploreMapCatalogCapEnabled = (): boolean =>
-  process.env.EXPLORE_MAP_GUEST_CATALOG_CAP !== '0';
+export const isGuestExploreMapCatalogCapEnabled = (): boolean => {
+  const raw = process.env.EXPLORE_MAP_GUEST_CATALOG_CAP?.trim().toLowerCase();
+  if (raw === '0' || raw === 'false') return false;
+  if (raw === '1' || raw === 'true') return true;
+  return process.env.NODE_ENV === 'production';
+};
 
 export const applyGuestExploreMapCatalogCap = (items: ExploreMapItemDTO[]): ExploreMapItemDTO[] => {
   const places = items.filter(isGuestMapPlaceItem).sort(compareGuestPreviewPlaces);

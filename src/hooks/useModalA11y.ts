@@ -70,6 +70,7 @@ export const useModalA11y = (open: boolean, onClose: () => void, panelRef: RefOb
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         if (isTopModalEscapeLayer(layerId)) {
+          event.preventDefault();
           onCloseRef.current();
         }
         return;

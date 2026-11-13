@@ -3,7 +3,7 @@ import { isPlaceMapSource } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { composeFlowIdFromRoute } from '../../explore/composeFlowCatalog';
 import { hostCompose } from '../../explore/compose';
-import { explorePath } from '../../explore/routing';
+import { createFlowPathFromWindow } from '../../create/createFlowPath';
 import { writeHostingWizardSession } from '../../explore/ui/composeWizardSession';
 import {
   createDraftFromRegistryPlace,
@@ -46,7 +46,7 @@ export const navigateHostFromPlaceCard = async (
       `place:${locationId}`
     );
   }
-  navigate(explorePath({ compose: composeRoute }));
+  navigate(createFlowPathFromWindow(composeRoute));
 };
 
 export const navigateHostFromPlace = async (
@@ -72,5 +72,5 @@ export const navigateHostFromPlace = async (
       `place:${place.id}`
     );
   }
-  navigate(explorePath({ compose: composeRoute }));
+  navigate(createFlowPathFromWindow(composeRoute));
 };

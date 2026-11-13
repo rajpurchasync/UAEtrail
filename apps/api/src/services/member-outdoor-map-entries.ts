@@ -1,5 +1,5 @@
 import type { ActivityDTO, JourneyMapEntryCategory, JourneyMapEntryDTO } from '@uaetrail/shared-types';
-import { activityDetailPath } from '@uaetrail/shared-types';
+import { activityDetailPath, placeDetailPathForId } from '@uaetrail/shared-types';
 import { listHostedActivityIdsForUser, listActivitiesForRequestViews } from '../lib/activities-store.js';
 import { buildActivityDto } from '../lib/mappers.js';
 import { findActivityPrivateByIds } from '../lib/activity-private-store.js';
@@ -9,6 +9,10 @@ import {
   parseMemberMapPinActivityType,
   scheduledLocationToPinActivityType,
 } from '../lib/member-map-pin-activity-type.js';
+import {
+  listWishlistVenuesForJourneyMap,
+  type WishlistVenueMapRow,
+} from '../lib/wishlist-store.js';
 
 const isoDateFromActivity = (activity: ActivityDTO): string => {
   if (activity.date && /^\d{4}-\d{2}-\d{2}$/.test(activity.date)) return activity.date;
@@ -70,6 +74,29 @@ const entryFromJoinedActivity = (
     activityPath: activityDetailPath(activity.id),
     pinId: null,
     activityId: activity.id,
+  };
+};
+
+const isoDateFromCreatedAt = (value: Date): string => value.toISOString().slice(0, 10);
+
+const entryFromWishlistVenue = (row: WishlistVenueMapRow): JourneyMapEntryDTO => {
+  const type =
+    parseMemberMapPinActivityType(row.activityType) ??
+    scheduledLocationToPinActivityType(row.activityType) ??
+    null;
+
+  return {
+    id: `place:${row.locationId}`,
+    categories: ['wishlist'],
+    title: row.name,
+    placeDate: isoDateFromCreatedAt(row.createdAt),
+    latitude: row.latitude,
+    longitude: row.longitude,
+    activityType: type,
+    statusLabel: 'Want to go',
+    activityPath: placeDetailPathForId(row.locationId, row.activityType),
+    pinId: null,
+    activityId: null,
   };
 };
 
@@ -176,6 +203,13 @@ export const buildJourneyMapEntries = async (
     } else {
       byId.set(entry.id, entry);
     }
+  }
+
+  const wishlistVenues = await listWishlistVenuesForJourneyMap(userId);
+  for (const row of wishlistVenues) {
+    const entry = entryFromWishlistVenue(row);
+    const existing = byId.get(entry.id);
+    byId.set(entry.id, existing ? mergeEntries(existing, entry) : entry);
   }
 
   return [...byId.values()].sort((a, b) => b.placeDate.localeCompare(a.placeDate));

@@ -3,9 +3,9 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const TEMPLATES = [
-  'src/activity/detail/templates/ActivityConsumerDetailPage.tsx',
-  'src/place/detail/templates/PlaceConsumerDetailPage.tsx',
-  'src/facility/detail/templates/FacilityConsumerDetailPage.tsx',
+  'src/activity/detail/templates/ActivityDetailSections.tsx',
+  'src/place/detail/templates/PlaceDetailSections.tsx',
+  'src/facility/detail/templates/FacilityDetailSections.tsx',
   'src/plan/PlanTodayPage.tsx',
   'src/components/ui/PlaceDetailTabs.tsx',
 ];

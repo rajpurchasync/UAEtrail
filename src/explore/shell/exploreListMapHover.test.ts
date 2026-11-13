@@ -18,7 +18,7 @@ describe('explore list → map pin hover', () => {
     expect(mapShell).not.toMatch(/onPrimaryFab=\{compose\.handleCreateTap\}/);
     expect(itemLink).toMatch(/setListHoverExploreItemId/);
     expect(chrome).toMatch(/subscribeListHover/);
-    expect(listDiscovery).toMatch(/showListMapColumn \? setListMapHighlightedId : null/);
+    expect(listDiscovery).toMatch(/showListMapColumn \? setListMapHighlightedId/);
   });
 
   it('pans on list hover only when the pin is outside the comfortable viewport', () => {

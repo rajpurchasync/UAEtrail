@@ -5,13 +5,13 @@ import { useAuth } from '../context/AuthContext';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { FloatingActionButton } from '../components/mobile/FloatingActionButton';
 import { PullToRefresh } from '../components/mobile/PullToRefresh';
+import { PlanAddIntentSheet } from '../components/plan/PlanAddIntentSheet';
+import { PlanWishlistPickSheet } from '../components/plan/PlanWishlistPickSheet';
 import { PageMeta } from '../components/seo/PageMeta';
 import { PLAN_PATH } from '../constants';
 import { PRODUCT_PLAN_SURFACE_TITLE } from '../content/productNorthStar';
-import { explorePath } from '../explore/routing';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { memberCanManageHostedActivities } from '../utils/hostedActivitiesGate';
-import { signInPathForReturn } from '../utils/authReturnContext';
 import { useMemberGoals } from '../hooks/useMemberGoals';
 import {
   PlanGoalsProgressSummary,
@@ -35,7 +35,9 @@ import {
   type PlanUpcomingLayout,
 } from './planTab';
 import { normalizePlanSearchParams } from './planRouting';
+import { PLAN_ADD_FAB_LABEL } from './planAdd';
 import { scrollToPlanSummaryFocus } from './planSummaryFocusScroll';
+import { usePlanAddFlow } from './usePlanAddFlow';
 
 /** My Plans tab — `/plan` (`PLAN_PATH`). */
 export const PlanPage = () => {
@@ -43,7 +45,7 @@ export const PlanPage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [refreshKey, setRefreshKey] = useState(0);
-  const [goalAddSheet, setGoalAddSheet] = useState(false);
+  const planAdd = usePlanAddFlow();
   const pendingSummaryFocusRef = useRef<PlanSummaryFocus | null>(null);
   const pendingSavedSummaryScrollRef = useRef(false);
   const [savedSummaryScrollRequest, setSavedSummaryScrollRequest] = useState(0);
@@ -197,16 +199,7 @@ export const PlanPage = () => {
     [searchParams, setSearchParams]
   );
 
-  const handleOpenCompose = useCallback(() => {
-    const composePath = explorePath({ compose: 'menu' });
-    if (!user) {
-      navigate(signInPathForReturn(composePath));
-      return;
-    }
-    navigate(composePath);
-  }, [navigate, user]);
-
-  const showFab = mainTab === 'upcoming' && upcomingLayout === 'list' && Boolean(user);
+  const showFab = Boolean(user);
 
   return (
     <>
@@ -265,10 +258,13 @@ export const PlanPage = () => {
                     onUpdateGoal={updateGoal}
                     onDeleteGoal={deleteGoal}
                     onReloadGoals={reloadGoals}
-                    openAddSheet={goalAddSheet}
-                    onOpenAddSheetHandled={() => setGoalAddSheet(false)}
+                    openAddSheet={planAdd.step === 'goal'}
+                    onAddSheetOpenChange={(open) => {
+                      if (!open) planAdd.close();
+                    }}
                     savedSummaryScrollRequest={savedSummaryScrollRequest}
                     onSavedSummaryScrollReady={completeSavedSummaryScroll}
+                    onAddWantToGo={() => planAdd.selectOption('wishlist')}
                   />
                 )}
               </>
@@ -284,11 +280,20 @@ export const PlanPage = () => {
       {showFab ? (
         <FloatingActionButton
           icon={<Plus className="h-6 w-6" strokeWidth={2.5} aria-hidden />}
-          label="Add New"
-          onClick={handleOpenCompose}
-          className="md:hidden"
+          label={PLAN_ADD_FAB_LABEL}
+          onClick={planAdd.openMenu}
         />
       ) : null}
+
+      <PlanAddIntentSheet
+        open={planAdd.step === 'menu'}
+        onSelect={planAdd.selectOption}
+        onClose={planAdd.close}
+      />
+      <PlanWishlistPickSheet
+        open={planAdd.step === 'wishlist'}
+        onClose={planAdd.close}
+      />
     </>
   );
 };

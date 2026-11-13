@@ -73,8 +73,8 @@ describe('hostingFlowEngine', () => {
     expect(createFlowStepTitle('title', 'hiking', { genericBuddy: true })).toBe('What do you want to do?');
     expect(createFlowStepTitle('title', 'hiking')).toBe('Give it a title');
     expect(createFlowStepTitle('spots', 'hiking')).toBe('Participants');
-    expect(createFlowStepTitle('when', 'hiking')).toBe('Date and Time');
-    expect(createFlowStepTitle('destination', 'hiking')).toBe('Select a venue');
+    expect(createFlowStepTitle('when', 'hiking')).toBe('When are you going?');
+    expect(createFlowStepTitle('destination', 'hiking')).toBe('Where are you going?');
     expect(createFlowStepTitle('meeting', 'hiking')).toBe('Where do you start?');
     expect(createFlowStepTitle('join_kit', 'hiking')).toBe('What to bring');
     expect(createFlowStepTitle('difficulty', 'hiking')).toBe('How difficult is the hike?');
@@ -109,15 +109,15 @@ describe('hostingFlowEngine', () => {
     expect(getCreateFlowSteps('camping', false)).toEqual([
       'title',
       'when',
-      'destination',
-      'meeting_point',
+      'meeting',
       'audience',
       'spots',
       'price',
+      'destination',
       'about_trail',
+      'meeting_point',
       'join_kit',
       'transportation',
-      'meeting',
       'publish',
     ]);
   });
@@ -136,19 +136,19 @@ describe('hostingFlowEngine', () => {
       'publish',
     ]);
     expect(createFlowStepTitle('meeting', 'rideshare')).toBe('Going from');
-    expect(createFlowStepTitle('when', 'rideshare')).toBe('Date and Time');
+    expect(createFlowStepTitle('when', 'rideshare')).toBe('When are you going?');
   });
 
   it('organize event uses structured steps without going-from', () => {
     expect(getCreateFlowSteps('event', false)).toEqual([
       'title',
       'when',
-      'destination',
-      'meeting_point',
       'audience',
       'spots',
       'price',
+      'destination',
       'about_trail',
+      'meeting_point',
       'join_kit',
       'transportation',
       'publish',
@@ -159,7 +159,7 @@ describe('hostingFlowEngine', () => {
   it('uses warm step titles for organize camping', () => {
     expect(createFlowStepTitle('title', 'camping')).toBe('Give it a title');
     expect(createFlowStepTitle('spots', 'camping')).toBe('Participants');
-    expect(createFlowStepTitle('destination', 'camping')).toBe('Select a venue');
+    expect(createFlowStepTitle('destination', 'camping')).toBe('Where are you camping?');
   });
 
   it('validateDraftStep accepts hiking join_kit when present', () => {

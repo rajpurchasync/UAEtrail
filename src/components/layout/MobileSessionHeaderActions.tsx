@@ -1,4 +1,5 @@
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { ProductNavLink } from '../navigation/ProductNavLink';
 import { Bell, User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
@@ -58,7 +59,7 @@ export const MobileSessionHeaderActions = ({
   return (
     <div className={`flex shrink-0 items-center gap-2.5 ${className}`}>
       {user && !profileOnly && (
-        <Link
+        <ProductNavLink
           to={APP_SETTINGS_NOTIFICATIONS_PATH}
           state={notificationsBackState}
           className={notificationActionClass}
@@ -70,9 +71,9 @@ export const MobileSessionHeaderActions = ({
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
-        </Link>
+        </ProductNavLink>
       )}
-      <Link
+      <ProductNavLink
         to={user ? '/profile' : signInHref}
         className={profileActionClass}
         aria-label={user ? 'Profile' : 'Sign in or sign up'}
@@ -86,7 +87,7 @@ export const MobileSessionHeaderActions = ({
         ) : (
           <User className="h-5 w-5 text-gray-700" strokeWidth={2.25} />
         )}
-      </Link>
+      </ProductNavLink>
     </div>
   );
 };

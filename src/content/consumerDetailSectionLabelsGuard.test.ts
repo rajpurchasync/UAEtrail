@@ -5,11 +5,11 @@ import { join } from 'node:path';
 const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 
 const CONSUMER_DETAIL_SURFACES = [
-  'src/place/detail/templates/PlaceConsumerDetailPage.tsx',
-  'src/activity/detail/templates/ActivityConsumerDetailPage.tsx',
+  'src/place/detail/templates/PlaceDetailSections.tsx',
+  'src/activity/detail/templates/ActivityDetailSections.tsx',
   'src/components/area/AreaDetailView.tsx',
   'src/components/shop/ShopPublicPage.tsx',
-  'src/facility/detail/templates/FacilityConsumerDetailPage.tsx',
+  'src/facility/detail/templates/FacilityDetailSections.tsx',
   'src/place/detail/buildPlaceConsumerDetailJumpLinks.ts',
 ];
 
@@ -31,13 +31,13 @@ describe('consumerDetailSectionLabelsGuard', () => {
   });
 
   it('facility detail uses collapsible sections on mobile (lg+ keeps bordered pills)', () => {
-    const source = read('src/facility/detail/templates/FacilityConsumerDetailPage.tsx');
+    const source = read('src/facility/detail/templates/FacilityDetailSections.tsx');
     expect(source).toMatch(/CONSUMER_DETAIL_KEY_FACTS_LABEL/);
     expect((source.match(/\bcollapsible\b/g) ?? []).length).toBeGreaterThanOrEqual(4);
   });
 
   it('facility detail uses single consumer header chrome (type in bar, name in hero only)', () => {
-    const source = read('src/facility/detail/templates/FacilityConsumerDetailPage.tsx');
+    const source = read('src/facility/detail/templates/FacilityDetailSections.tsx');
     expect(source).toMatch(/resolveFacilityConsumerDetailHeaderChrome/);
     expect(source).toMatch(/StatGrid label=""/);
     expect(source).toMatch(/ConsumerDetailHeroGeoLine/);

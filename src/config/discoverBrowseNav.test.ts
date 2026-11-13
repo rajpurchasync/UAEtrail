@@ -12,28 +12,32 @@ import {
 import { DESKTOP_PRIMARY_NAV } from './desktopNav';
 
 describe('discover browse navigation contract', () => {
-  it('hamburger Explore lands on the map; list catalog is not a sibling Browse item', () => {
-    const exploreLink = CONSUMER_HAMBURGER_MENU.find(
-      (item) => item.kind === 'link' && item.label === 'Explore'
+  it('signed-in hamburger mirrors bottom nav (no Explore · Browse · Outing history)', () => {
+    const linkLabels = CONSUMER_HAMBURGER_MENU.filter((item) => item.kind === 'link').map(
+      (item) => item.label
     );
-    const hamburgerBrowse = CONSUMER_HAMBURGER_MENU.find(
-      (item) => item.kind === 'link' && item.label === 'Browse'
+    expect(linkLabels.slice(0, 5)).toEqual(['Trips', 'Venues', 'Plans', 'Crews', 'Chat']);
+    expect(linkLabels).not.toContain('Explore');
+    expect(linkLabels).not.toContain('Browse');
+    expect(linkLabels).not.toContain('Outing history');
+    const tripsLink = CONSUMER_HAMBURGER_MENU.find(
+      (item) => item.kind === 'link' && item.label === 'Trips'
     );
-    expect(exploreLink?.kind).toBe('link');
-    if (exploreLink?.kind === 'link') {
-      expect(exploreLink.to).toBe(EXPLORE_MAP_PATH);
-      expect(exploreLink.match).toContain(LIST_DISCOVERY_PATH);
+    expect(tripsLink?.kind).toBe('link');
+    if (tripsLink?.kind === 'link') {
+      expect(tripsLink.match).toContain(LIST_DISCOVERY_PATH);
     }
-    expect(hamburgerBrowse).toBeUndefined();
     expect(DESKTOP_NAV_LINKS.some((link) => link.to === EXPLORE_DISCOVER_BROWSE_PATH)).toBe(false);
     expect(DESKTOP_PRIMARY_NAV.some((item) => item.label === 'Browse')).toBe(false);
     expect(DESKTOP_PRIMARY_NAV.find((item) => item.key === 'explore')?.to).toBe(EXPLORE_MAP_PATH);
   });
 
-  it('guest landing drawer exposes map-first Explore only (list stays an in-page projection)', () => {
+  it('guest landing drawer leads with Explore plus Trips/Venues list homes (no Browse sibling)', () => {
     const explore = MOBILE_LANDING_USER_MENU.find((item) => item.label === 'Explore');
     const browse = MOBILE_LANDING_USER_MENU.find((item) => item.label === 'Browse');
     expect(explore?.to).toBe(EXPLORE_MAP_PATH);
+    expect(MOBILE_LANDING_USER_MENU.some((item) => item.label === 'Trips')).toBe(true);
+    expect(MOBILE_LANDING_USER_MENU.some((item) => item.label === 'Venues')).toBe(true);
     expect(browse).toBeUndefined();
   });
 
@@ -94,6 +98,7 @@ describe('discover browse navigation contract', () => {
     expect(menu).toMatch(/isPublishingConsolePath/);
     expect(menu).toMatch(/useMemberStatus/);
     expect(menu).toMatch(/CONSUMER_HAMBURGER_MENU/);
+    expect(menu).toMatch(/mobileFiveTabHomePath/);
     expect(menu).toMatch(/isAdminRole && !onAdminConsole/);
     expect(menu).toMatch(/Admin console/);
   });

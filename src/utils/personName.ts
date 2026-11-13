@@ -17,8 +17,19 @@ export const validatePersonName = (value: string, label: 'Name' | 'Surname'): st
   return null;
 };
 
+export {
+  isAccountRoleDisplaySuffix,
+  resolveMemberDisplayName,
+  stripAccountRoleDisplaySuffix,
+} from '@uaetrail/shared-types';
+
+import { resolveMemberDisplayName } from '@uaetrail/shared-types';
+
 export const formatDisplayNameFromParts = (givenName: string, surname: string): string =>
   `${givenName.trim()} ${surname.trim()}`;
+
+/** Consumer chrome — never show account/demo role tokens in the member name. */
+export const resolveConsumerMemberDisplayName = resolveMemberDisplayName;
 
 export const splitUndelimitedDisplayName = (
   displayName: string | null | undefined

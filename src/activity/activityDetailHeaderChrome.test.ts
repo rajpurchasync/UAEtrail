@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ActivityDetailDTO } from '@uaetrail/shared-types';
-import { resolveActivityConsumerDetailHeaderChrome } from './activityConsumerDetailHeader';
+import { resolveActivityDetailHeaderChrome } from './activityDetailHeaderChrome';
 
 const base = (overrides: Partial<ActivityDetailDTO> = {}): ActivityDetailDTO =>
   ({
@@ -15,16 +15,16 @@ const base = (overrides: Partial<ActivityDetailDTO> = {}): ActivityDetailDTO =>
     ...overrides,
   }) as ActivityDetailDTO;
 
-describe('resolveActivityConsumerDetailHeaderChrome', () => {
+describe('resolveActivityDetailHeaderChrome', () => {
   it('uses scheduled activity kind on hero chrome, not linked place pin', () => {
-    const chrome = resolveActivityConsumerDetailHeaderChrome(base(), null);
+    const chrome = resolveActivityDetailHeaderChrome(base(), null);
     expect(chrome.label).toBe('Hiking');
     expect(chrome.mark).toBe('hiking');
     expect(chrome.emoji).not.toBe('📍');
   });
 
   it('maps rideshare to car mark', () => {
-    const chrome = resolveActivityConsumerDetailHeaderChrome(
+    const chrome = resolveActivityDetailHeaderChrome(
       base({ activityType: 'rideshare', location: undefined }),
       null
     );

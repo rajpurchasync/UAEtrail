@@ -4,7 +4,7 @@ import { SIGNUP_PROFILE_STEP_COUNT } from '../../utils/signupProfileSteps';
 
 interface SignupStepShellProps {
   stepNumber: number;
-  title: string;
+  title?: string;
   hint?: string;
   onBack?: () => void;
   children: ReactNode;
@@ -46,7 +46,9 @@ export const SignupStepShell = ({
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-700/85">
             Step {stepNumber} of {SIGNUP_PROFILE_STEP_COUNT}
           </p>
-          <h2 className="mt-0.5 text-lg font-bold tracking-tight text-neutral-900">{title}</h2>
+          {title ? (
+            <h2 className="mt-0.5 text-base font-semibold tracking-tight text-neutral-900">{title}</h2>
+          ) : null}
           {hint ? <p className="mt-1 text-sm text-neutral-500">{hint}</p> : null}
         </div>
       </div>

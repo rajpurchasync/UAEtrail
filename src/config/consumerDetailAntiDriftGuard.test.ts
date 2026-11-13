@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { isConsumerEntityDetailRoute, isMobileDetailRoute } from './platform';
+import { isEntityDetailRoute, isMobileDetailRoute } from './platform';
 
 const read = (relativePath: string) => readFileSync(join(process.cwd(), relativePath), 'utf8');
 
@@ -24,13 +24,16 @@ describe('consumerDetailAntiDriftGuard (plan §15.3)', () => {
   it('product shell does not render global marketing Footer (entity pages use sticky CTAs only)', () => {
     const shell = read('src/components/layout/ProductShell.tsx');
     expect(shell).not.toMatch(/<Footer\b/);
-    expect(read('src/config/platform.ts')).toMatch(/isConsumerEntityDetailRoute/);
+    expect(read('src/config/platform.ts')).toMatch(/isEntityDetailRoute/);
   });
 
   it('facility detail is an entity route (hides MobileConsumerNavBar — single detail header)', () => {
     expect(isMobileDetailRoute('/facility/seed-toilet-01')).toBe(true);
-    expect(isConsumerEntityDetailRoute('/facility/seed-toilet-01')).toBe(true);
-    expect(read('src/components/layout/ProductShell.tsx')).toMatch(/!isConsumerEntityDetailRoute/);
+    expect(isEntityDetailRoute('/facility/seed-toilet-01')).toBe(true);
+    expect(read('src/components/layout/ProductShell.tsx')).toMatch(/!isEntityDetailRoute/);
+    const tabHeader = read('src/config/mobileTabHeader.ts');
+    expect(tabHeader).toMatch(/isEntityDetailRoute/);
+    expect(tabHeader).not.toMatch(/isConsumerEntityDetailRoute/);
   });
 
   it('entity detail surfaces use detailBackPath from routing catalog for shell back', () => {
@@ -43,11 +46,17 @@ describe('consumerDetailAntiDriftGuard (plan §15.3)', () => {
     expect(violations).toEqual([]);
   });
 
+  it('DetailPageShell composes MobileDetailScrollShell (not retired modal shim)', () => {
+    const shell = read('src/detail/shell/DetailPageShell.tsx');
+    expect(shell).toMatch(/MobileDetailScrollShell/);
+    expect(shell).not.toMatch(/ActivityConsumerDetailModalShell/);
+  });
+
   it('entity detail sticky headers omit bell and hamburger by default', () => {
     expect(read('src/components/mobile/MobileDetailScrollShell.tsx')).toMatch(/showMenu = false/);
     expect(read('src/components/mobile/MobileDetailShell.tsx')).toMatch(/showMenu = false/);
     const platform = read('src/config/platform.ts');
-    expect(platform).toMatch(/isConsumerEntityDetailRoute\(pathname\)\) return false/);
+    expect(platform).toMatch(/isEntityDetailRoute\(pathname\)\) return false/);
     expect(platform).toMatch(/pathname\.startsWith\('\/member\/'\)\) return false/);
   });
 

@@ -138,7 +138,12 @@ export const activityHostJoinRequestsQueryKey = (tenantId: string, activityId: s
   activityId,
 ];
 
-export const memberJourneyMapQueryKey = (userId: string): QueryKey => ['me', 'journey-map', userId];
+export const memberJourneyMapQueryKeyPrefix = ['me', 'journey-map'] as const;
+
+export const memberJourneyMapQueryKey = (userId: string): QueryKey => [
+  ...memberJourneyMapQueryKeyPrefix,
+  userId,
+];
 
 export const messagesInboxQueryKey = (userId: string): QueryKey => ['messages-inbox', userId];
 

@@ -1,5 +1,5 @@
 import { UserRole } from '../domain/enums.js';
-import { resolveProfilePersonNames } from '../domain/person-name.js';
+import { resolveProfilePersonNames, wireMemberDisplayName } from '../domain/person-name.js';
 import { isSignupProfileComplete } from '../domain/user-profile.js';
 import { isMedicalSafetyProfileComplete } from '@uaetrail/shared-types';
 import { medicalSafetyFieldsFromAuthProfile } from '../lib/member-medical-safety-profile.js';
@@ -24,7 +24,12 @@ export const getAuthenticatedMemberProfile = async (userId: string) => {
     email: user.email,
     role: user.role.toLowerCase(),
     switchedFromRole: user.profile?.switchedFromRole?.toLowerCase() ?? null,
-    displayName: user.profile?.displayName,
+    displayName: wireMemberDisplayName({
+      displayName: user.profile?.displayName,
+      givenName: personNames.givenName,
+      surname: personNames.surname,
+      email: user.email,
+    }),
     givenName: personNames.givenName || null,
     surname: personNames.surname || null,
     phone: user.profile?.phone,

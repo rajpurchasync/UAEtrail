@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { Bookmark, CalendarCheck, Target, Users } from 'lucide-react';
 import type { MemberGoalDTO } from '@uaetrail/shared-types';
+import { PLAN_GOALS_SECTION_TITLE, PLAN_WANT_TO_GO_LABEL } from '../../plan/planAdd';
 import { ProfileGoalCard, type SaveMemberGoalInput } from '../profile/ProfileGoalCard';
 import { usePlanHubSummary } from '../../hooks/usePlanHubSummary';
 
@@ -58,7 +59,7 @@ const StatCell = ({
   </button>
 );
 
-/** Plan hub summary — hosting, joined, goals, and saved places at a glance. */
+/** Plan hub summary — hosting, joined, goals, and want-to-go venues at a glance. */
 const SummaryStatSkeleton = () => (
   <div className="flex min-h-[3.25rem] min-w-0 flex-1 flex-col items-center justify-center gap-1 px-1 py-1.5 md:min-h-[3rem] lg:min-h-10 lg:flex-row lg:gap-2 lg:py-1.5">
     <div className="h-4 w-4 animate-pulse rounded bg-orange-200/80" aria-hidden />
@@ -135,14 +136,14 @@ export const PlanGoalsProgressSummary = ({
               onClick={() => onSummaryFocus('joined')}
             />
             <StatCell
-              label="Goals"
+              label={PLAN_GOALS_SECTION_TITLE}
               tone="goals"
               value={String(activeGoalCount)}
               icon={<Target className="h-4 w-4" strokeWidth={2.25} />}
               onClick={focusGoals}
             />
             <StatCell
-              label="Saved"
+              label={PLAN_WANT_TO_GO_LABEL}
               tone="saved"
               value={String(savedPlaces)}
               icon={<Bookmark className="h-4 w-4" strokeWidth={2.25} />}

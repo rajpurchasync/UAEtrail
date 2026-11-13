@@ -17,9 +17,9 @@ const budget = JSON.parse(readFileSync(join(root, 'scripts/detail-bundle-budget.
 
 const BANNED = new Set(budget.bannedInitialModules ?? []);
 const DETAIL_TEMPLATES = [
-  'src/activity/detail/templates/ActivityConsumerDetailPage.tsx',
-  'src/place/detail/templates/PlaceConsumerDetailPage.tsx',
-  'src/facility/detail/templates/FacilityConsumerDetailPage.tsx',
+  'src/activity/detail/templates/ActivityDetailSections.tsx',
+  'src/place/detail/templates/PlaceDetailSections.tsx',
+  'src/facility/detail/templates/FacilityDetailSections.tsx',
   'src/plan/PlanTodayPage.tsx',
   'src/main.tsx',
   'src/App.tsx',

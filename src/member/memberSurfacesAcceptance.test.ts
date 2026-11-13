@@ -80,10 +80,11 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(isPublishingConsolePath('/explore')).toBe(false);
   });
 
-  it('G-lang: mobile tab bar labels My Plans (not Trips hub)', () => {
+  it('G-lang: mobile tab bar labels Plans (not Trips hub)', () => {
     const nav = read('src/components/layout/MobileBottomNav.tsx');
-    expect(nav).toContain('PRODUCT_PLAN_SURFACE_TITLE');
-    expect(nav).not.toMatch(/aria-label="Trips"/);
+    expect(nav).toContain('MOBILE_FIVE_TAB_UI_LABELS');
+    expect(nav).toMatch(/Trips · Venues · Plans/);
+    expect(nav).not.toMatch(/aria-label=\{['"]Trips['"]\}/);
     const northStar = read('src/content/productNorthStar.ts');
     expect(northStar).toContain("PRODUCT_PLAN_SURFACE_TITLE = 'My Plans'");
   });
@@ -332,9 +333,15 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(resolver).not.toMatch(/plans-all|plans-joined|plans-hosted/);
   });
 
-  it('G-plan: My Plans mobile FAB opens explore compose (no second create stack)', () => {
+  it('G-plan: My Plans mobile FAB opens Add a Plan on Plan (no Explore bounce)', () => {
     const plan = read('src/plan/PlanPage.tsx');
-    expect(plan).toContain("explorePath({ compose: 'menu' })");
+    const add = read('src/plan/usePlanAddFlow.ts');
+    expect(plan).toMatch(/usePlanAddFlow/);
+    expect(plan).toMatch(/PLAN_ADD_FAB_LABEL/);
+    expect(plan).toMatch(/PlanAddIntentSheet/);
+    expect(add).toMatch(/handleCreateTap\(\{ surface: 'menu', intent: 'host' \}\)/);
+    expect(add).toMatch(/seekFlexibleCompose/);
+    expect(plan).not.toMatch(/explorePath\(\{ compose/);
     expect(plan).not.toMatch(/CreateHostingActivityFlow|HostingFlowHost/);
   });
 

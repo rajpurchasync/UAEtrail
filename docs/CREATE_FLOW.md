@@ -1,12 +1,14 @@
-# Create flow — FAB: Host · Find crew · Add on map
+# Create flow — trip, venue, and crew registry
 
-**Canonical product spec** for the explore map **+ FAB** (**Host** · **Find crew** · **Add on map**). Read this before changing intent sheets, create wizards, join CTAs, or participation behavior.
+**Canonical product spec** for **create / registry flows** (publish an outing, submit a venue, find crew). Read this before changing intent sheets, create wizards, join CTAs, or participation behavior.
+
+**Explore is discovery** (`/explore` map, `/list` browse). It is **not** the create product. Per-tab **FABs are launchers** into these flows; `?compose=` is the create-flow session on the **current surface** (`/explore`, `/list`, later `/plan`).
 
 **Program:** Implementation follows **Program CPC** ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4, debt **C26**). **CPC-9+** ships v3 `?compose=` wire (`host` \| `seek` \| `add`); leftover plan/contribute/organize/find tokens are not accepted.
 
-**Vocabulary (UI):** **Host** · **Find crew** · **Add on map** — not **Compose** (reserved for **message / email compose** later). Bottom nav **Plan** (`/plan`) = *your* schedule and availability — not the FAB ([`NAVIGATION.md`](./NAVIGATION.md)).
+**Vocabulary (UI):** Tab FABs **Create Trip** · **Add a venue** · **Find a Crew** skip straight to kind options. Do not open **Host · Find crew · Add on map** (“I would like to…”) from a tab FAB. **Compose** stays reserved for **message / email compose** later. Bottom nav **Plans** (`/plan`) **Add a Plan** = commitments launcher (Create Trip · Mark Availability · Set a Goal · Want to go) — not a fourth Explore lens.
 
-**Vocabulary (wire):** Explore query `?compose=…` — **v3** `host:<kind>` \| `seek:fixed:<kind>` \| `seek:flexible` \| `add:place:*` \| `add:facility:*`. Leftover plan/contribute/organize/find tokens are not accepted ([`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.7).
+**Vocabulary (wire):** Create query `?compose=…` — **v3** `host:<kind>` \| `seek:fixed:<kind>` \| `seek:flexible` \| `add:place:*` \| `add:facility:*`. Leftover plan/contribute/organize/find tokens are not accepted ([`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.7).
 
 **Domain lens** ([`DOMAIN.md`](./DOMAIN.md) § What · Where · Who · How): **Host** / **Find crew (fixed)** → **What** (Activity). **Find crew (flexible)** → `member_availability` (people layer, no map pin). **Add on map** → **Where** (Place or Facility). **Who** (Person / Host / Operator) is chosen when publishing or on detail — not a FAB branch. **How** (join, RSVP, approvals) is **context only** on activity/place/facility surfaces — `viewerAccess`, not new nouns.
 
@@ -14,11 +16,11 @@
 
 Companion docs: [`DOCS_INDEX.md`](./DOCS_INDEX.md), [`NORTHSTAR.md`](./NORTHSTAR.md), [`MEMBER_MODEL.md`](./MEMBER_MODEL.md), [`DOMAIN.md`](./DOMAIN.md), [`NAVIGATION.md`](./NAVIGATION.md), [`COMMUNICATION.md`](./COMMUNICATION.md), `src/explore/exploreCopy.ts`.
 
-Code (today): `src/explore/compose.ts`, `CreateIntentSheet.tsx`, `SeekFlexibleComposeSheet.tsx`, `hostingFlowEngine.ts` / `hostingFlows/*`, `seekingFlowEngine.ts`, `addFlow.ts`.
+Code (today): `src/create/` (session + kind tiles) · `src/plan/planAdd.ts` · `src/explore/compose.ts`, `CreateIntentSheet.tsx`, `SeekFlexibleComposeSheet.tsx`, `hostingFlowEngine.ts` / `hostingFlows/*`, `seekingFlowEngine.ts`, `addFlow.ts`.
 
-**Status:** Spec **approved (CPC)** · **Host · Find crew · Add on map** FAB + v3 compose wire **shipped** (`host` \| `seek` \| `add` only; see [Implementation status](#implementation-status))
+**Status:** Spec **approved (CPC)** · per-tab create FABs skip to kind options + v3 compose wire **shipped** (`host` \| `seek` \| `add` only; see [Implementation status](#implementation-status))
 
-**Last updated:** 2026-10-29
+**Last updated:** 2026-11-13
 
 ---
 
@@ -39,19 +41,24 @@ Code (today): `src/explore/compose.ts`, `CreateIntentSheet.tsx`, `SeekFlexibleCo
 
 ---
 
-## FAB entry (level 1)
+## FAB entry (per tab — skip to options)
 
-**Header:** `I would like to…` (or equivalent warm prompt)
+Tab context is known. **Do not** show `I would like to…` / Host · Find crew · Add from **Create Trip**, **Add a venue**, or **Find a Crew**. Resolver: `src/explore/create/composeFabEntry.ts`.
 
-**Three** compact choices (drill-down in the same sheet):
+| Tab FAB | Opens first | Wire |
+|---------|-------------|------|
+| **Create Trip** (Trips map/list) | Hiking · Camping · Rideshare · Others | `compose=host` |
+| **Add a venue** (Venues map/list) | Hiking Trail · Camping Spots · Facilities · Others | `compose=add` |
+| **Find a Crew** (Crews) | Post on the map · Share availability | `compose=seek` |
+| **Add a Plan** (`/plan`) | Create Trip · Mark Availability · Set a Goal · Want to go | `planAdd=menu` then existing flows |
 
-| Choice | User meaning | Opens |
-|--------|--------------|--------|
-| **Host** | Publish an outing you lead | Kind grid → `hostingFlowEngine` / `hostingFlows/*` |
-| **Find crew** | Looking for people to go with | **Post on map** (kind → `seekingFlowEngine`) or **Share availability** (`member_availability` sheet) |
-| **Add on map** | Trail, camp, outdoor spot, or **facility** | Place vs facility → catalog submit |
+Kind pick → the matching create wizard (`hostingFlowEngine`, `addFlow`, `seekingFlowEngine`). Venue options map via `addComposeFromVenueKind` (not a Place vs Facility submenu).
 
-**Disambiguation:** Bottom nav **My Plans** (`/plan`) = upcoming commitments + availability — not this FAB.
+**Plans FAB** reuses those wizards — it does not add a second compose stack. **Create Trip** → `compose=host` kind grid. **Mark Availability** → `compose=seek:flexible` (`PlanAvailabilitySection`). **Set a Goal** → existing goal sheet on Wishlist. **Want to go** → catalog venue picker (`planAdd=wishlist`, `locationId` on `user_wishlist`; journey map composes those places). Shared tiles: `src/create/CreateKindGrid.tsx`. FAB shows on mobile and desktop.
+
+The leftover **Host · Find crew · Add on map** sheet (`compose=1`) is only for an explicit combined menu, not tab FABs.
+
+**Disambiguation:** Bottom nav **Plans** (`/plan`) = upcoming commitments, wishlist, goals, availability. Explore FABs publish to the catalog; Plan FAB records *your* next commitments.
 
 **Layout:** Mobile stays a peek sheet you pull up to full screen. Tablet and desktop (`md+`) use **one scrollable form page** for all text/choice fields, then separate full screens for map pins, photos (when needed), and publish/review. Warm tone; section headings on wide forms. See [`NAVIGATION.md`](./NAVIGATION.md) § Explore FAB.
 
@@ -206,7 +213,7 @@ participationMode: 'rsvp' | 'approval'
 
 **Consumer activity detail** (`/activity/:id`): **scroll layout** — published facts from the same L1 card as map peek (`buildActivityDetailPageShellCard`) + **Transport strip** (reachable by / vehicle lines from Host capture; **rideshare available** when linked; joined crew / host **Offer rideshare** when entitled). No Plan/Place/Buddies/Transport tabs on the public route (`consumerDetailLayout`; embed/manage sheet keeps tabbed `ActivityDetailView`). **Participation → crew:** RSVP → `canAccessCrewSurfaces: true` + welcome sheet; approval grants crew after host approve (`?joined=1`). Pending viewers see published facts + join CTAs only — no meeting precision or crew chat until entitled. **Pro** vs **host:** Pro unlocks roster / pre-join host profile per Layer 7 — not `canPublish`; transport create/link is crew/host (see [`MEMBER_MODEL.md`](./MEMBER_MODEL.md)).
 
-**Engagement policy (L1 shipped):** `resolveActivityEngagementPolicy` drives **explore** `mapPeekActions` / `mapPeekStrips` and **detail** `presentation` on `GET /activities/:id`. **Peek + detail CTAs:** wire ids only (`executeActivityMapPeekAction`). **FE:** consumer page `ActivityConsumerDetailPage` (alias `ActivityConsumerDetailBody`) — Getting there uses `ActivityPeekLinkedTransport`; peek `ActivityDiscoveryPublishedBody` in `MapPeekShell`. Navigation: [`NAVIGATION.md`](./NAVIGATION.md) § Activity detail.
+**Engagement policy (L1 shipped):** `resolveActivityEngagementPolicy` drives **explore** `mapPeekActions` / `mapPeekStrips` and **detail** `presentation` on `GET /activities/:id`. **Peek + detail CTAs:** wire ids only (`executeActivityMapPeekAction`). **FE:** public activity scroll `ActivityDetailSections` — Getting there uses `ActivityPeekLinkedTransport`; peek `ActivityDiscoveryPublishedBody` in `MapPeekShell`. Embed/manage uses tabbed `ActivityDetailBody`. Navigation: [`NAVIGATION.md`](./NAVIGATION.md) § Activity detail.
 
 ---
 

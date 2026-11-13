@@ -11,6 +11,7 @@ import {
 import { api } from '../api/index';
 
 export type { PlaceCatalogQuery };
+export { fetchPlaceCatalog };
 
 export const fetchPlaceCatalogRows = (
   query: PlaceCatalogQuery = {}

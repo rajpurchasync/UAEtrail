@@ -187,7 +187,7 @@ Evolve from today’s `GET /places/registry` → **`GET /places/catalog`** (plac
 | **Wishlist** | Private “save for later” | `user_wishlist` · `/me/wishlist` | **Venues** (`locationId`) and **activities** (`activityId`) only — not demand, not people |
 | **Goal** | Time-bounded target count | `user_goals` · `/me/goals` | Progress from joined/hosted outings + visited map pins — not wishlist saves |
 
-**Journey map** (`/profile/history/map`, `POST /me/map-pins`): personal **visited** vs **want to go** pins — complements wishlist; goal progress uses **visited** + attendance, not wishlist rows.
+**Journey map** (`/profile/history/map`, `POST /me/map-pins`): personal **visited** vs **want to go**. Catalog **Want to go** venues (`user_wishlist` `locationId`) compose onto the same map as joined/hosted/self pins. Goal progress uses **visited** + attendance, not wishlist rows.
 
 **Retired product term:** “Favorites” — do not use in UI or new API paths.
 

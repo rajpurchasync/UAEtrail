@@ -1,4 +1,33 @@
+import {
+  isAccountRoleDisplaySuffix,
+  resolveMemberDisplayName,
+  stripAccountRoleDisplaySuffix,
+} from '@uaetrail/shared-types';
 import { z } from 'zod';
+
+export { resolveMemberDisplayName, stripAccountRoleDisplaySuffix };
+
+export const wireMemberDisplayName = (input: {
+  displayName?: string | null;
+  givenName?: string | null;
+  surname?: string | null;
+  email?: string | null;
+}): string => resolveMemberDisplayName({ ...input, fallback: 'Member' });
+
+export const profileDisplayNameFromAuthUser = (user: {
+  email: string;
+  profile?: {
+    displayName?: string | null;
+    givenName?: string | null;
+    surname?: string | null;
+  } | null;
+}): string =>
+  wireMemberDisplayName({
+    displayName: user.profile?.displayName,
+    givenName: user.profile?.givenName,
+    surname: user.profile?.surname,
+    email: user.email,
+  });
 
 export const PERSON_NAME_MIN = 3;
 export const PERSON_NAME_MAX = 20;
@@ -41,6 +70,12 @@ export const resolveProfilePersonNames = (profile: {
 }): { givenName: string; surname: string } => {
   const given = profile.givenName?.trim() ?? '';
   const sur = profile.surname?.trim() ?? '';
-  if (given && sur) return { givenName: given, surname: sur };
-  return splitUndelimitedDisplayName(profile.displayName);
+  if (given && sur) {
+    if (isAccountRoleDisplaySuffix(sur)) return { givenName: given, surname: '' };
+    return { givenName: given, surname: sur };
+  }
+  if (given) return { givenName: given, surname: '' };
+  return splitUndelimitedDisplayName(
+    profile.displayName ? stripAccountRoleDisplaySuffix(profile.displayName) : profile.displayName
+  );
 };

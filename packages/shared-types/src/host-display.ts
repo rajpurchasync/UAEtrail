@@ -1,3 +1,5 @@
+import { stripAccountRoleDisplaySuffix } from './member-display-name.js';
+
 /** When no person or brand name is available on consumer surfaces (UPL Host). */
 export const HOST_FALLBACK_DISPLAY_NAME = 'Host';
 /** @deprecated Old payloads / placeholders — treat as {@link HOST_FALLBACK_DISPLAY_NAME}. */
@@ -39,7 +41,7 @@ export const resolveHostPersonDisplayName = (input: HostPersonNameInput): string
       if (createdBy && trimmed.toLowerCase() === createdBy.toLowerCase()) return trimmed;
       continue;
     }
-    return trimmed;
+    return stripAccountRoleDisplaySuffix(trimmed);
   }
 
   return null;

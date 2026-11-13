@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
-import { listDiscoveryPath } from '../../list/routing';
+import { listDiscoveryPath, listPeopleDiscoveryPath } from '../../list/routing';
+import { exploreMapMobileBackState } from '../../utils/mobileBackNav';
 import {
   activityFilterToMapFilter,
   mapFilterToActivityListFilter,
@@ -90,6 +91,7 @@ export type UseExploreBrowseUrlApplyHandlersArgs = {
   query: string;
   searchScope: ExploreSearchScopeKey | null;
   listMode: ExploreBrowseListMode;
+  exploreReturnPath: string;
   setters: Setters;
 };
 
@@ -115,6 +117,7 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
     query,
     searchScope,
     listMode,
+    exploreReturnPath,
     setters,
   } = args;
 
@@ -309,17 +312,21 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
         return;
       }
       setters.setPeopleBrowseTab(initialTab);
-      navigate(
-        listDiscoveryPath({
-          listCat: 'people',
-          categories: ['people'],
-          buddiesSegment: initialTab,
-          query,
-          activityDatePreset: 'anyday',
-        })
-      );
+      const peoplePath =
+        initialTab === 'hub'
+          ? listPeopleDiscoveryPath()
+          : listDiscoveryPath({
+              listCat: 'people',
+              categories: ['people'],
+              buddiesSegment: initialTab,
+              query,
+              activityDatePreset: 'anyday',
+            });
+      navigate(peoplePath, {
+        state: exploreMapMobileBackState(exploreReturnPath),
+      });
     },
-    [isDesktop, isSignedIn, clearSelection, navigate, query, setters, syncExploreUrl]
+    [isDesktop, isSignedIn, clearSelection, exploreReturnPath, navigate, query, setters, syncExploreUrl]
   );
 
   const closePeopleBrowsePanel = useCallback(() => {

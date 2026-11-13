@@ -1,6 +1,6 @@
 ---
 description: Locked activity consumer detail hero — confirm with Husnain before layout changes (place/area heroes not locked)
-globs: src/activity/detail/templates/ActivityConsumerDetailPage.tsx,src/detail/shared/detailHeroMobileTopChrome.ts,src/activity/detail/ConsumerDetailLeadDateChip.tsx,src/detail/shared/collectActivityDetailHeroPhotos.ts
+globs: src/activity/detail/templates/ActivityDetailSections.tsx,src/detail/shared/detailHeroMobileTopChrome.ts,src/activity/detail/ActivityDetailLeadDateChip.tsx,src/detail/shared/collectActivityDetailHeroPhotos.ts
 alwaysApply: false
 ---
 

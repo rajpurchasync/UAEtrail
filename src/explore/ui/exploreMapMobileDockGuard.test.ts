@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -36,6 +36,35 @@ describe('explore map mobile dock', () => {
     expect(read('src/styles/home-tokens.css')).toMatch(/--text-xs:\s*0\.75rem/);
     expect(read('src/components/layout/MobileBottomNav.tsx')).toMatch(/text-xs/);
     expect(read('src/components/layout/MobileBottomNav.tsx')).toMatch(/h-6 w-6/);
+  });
+
+  it('mobile map quick filters reuse list explorer row', () => {
+    const layer = read('src/explore/ui/ExploreMapMobileLayerChrome.tsx');
+    expect(layer).toMatch(/ListExplorerQuickFilters/);
+    expect(layer).toMatch(/exploreMapQuickFiltersBrowseState/);
+    expect(layer).toMatch(/exploreMapScopeSegmentLabeledClass/);
+    expect(layer).toMatch(/whitespace-nowrap">Trips</);
+    expect(layer).toMatch(/whitespace-nowrap">Crews</);
+    expect(layer).toMatch(/SCOPE_TRAY/);
+    expect(layer).toMatch(/onOpenCrewsPage/);
+    expect(layer).not.toMatch(/EXPLORE_MOBILE_ACTIVITY_QUICK_FILTERS/);
+    expect(layer).not.toMatch(/EXPLORE_MAP_FROST_TRAY/);
+    expect(layer).not.toMatch(/explore-filter-quote-well/);
+  });
+
+  it('EXP-UX-01: no three-step explore coach cards on the map', () => {
+    expect(read('src/explore/ui/ExploreMapStage.tsx')).not.toMatch(/ExploreCoachMarks/);
+    const coachPath = join(ROOT, 'src/explore/ui/ExploreCoachMarks.tsx');
+    const onboardingPath = join(ROOT, 'src/explore/exploreOnboarding.ts');
+    expect(existsSync(coachPath)).toBe(false);
+    expect(existsSync(onboardingPath)).toBe(false);
+  });
+
+  it('Crews scope opens full-screen crews list, not map filters', () => {
+    const shell = read('src/explore/shell/ExploreMapShell.tsx');
+    expect(shell).toMatch(/listPeopleDiscoveryPath/);
+    expect(shell).toMatch(/onOpenCrewsPage/);
+    expect(shell).toMatch(/exploreMapMobileBackState/);
   });
 
   it('list Map and Create FABs reuse the same dock pills', () => {

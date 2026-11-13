@@ -3,7 +3,7 @@ import type { WishlistItemDTO } from '@uaetrail/shared-types';
 import { countPlanSavedPlaces } from './planHubSummaryCounts';
 
 describe('planHubSummaryCounts', () => {
-  it('counts wishlist rows with a place id', () => {
+  it('counts catalog venue rows only', () => {
     const items: WishlistItemDTO[] = [
       { id: '1', locationId: 'loc-1' },
       { id: '2', activityId: 'act-1' },

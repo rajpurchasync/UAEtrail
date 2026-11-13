@@ -16,10 +16,19 @@ import {
   applySignedOutTheme,
   clearGuestDisplayPreferences,
 } from '../preferences/displayPreferences';
+import { resolveMemberDisplayName } from '@uaetrail/shared-types';
 import {
   PendingEmailVerification,
   RegisterPendingVerification
 } from '../utils/authVerification';
+
+const withCleanMemberDisplayName = (user: AuthUser): AuthUser => ({
+  ...user,
+  displayName: resolveMemberDisplayName({
+    displayName: user.displayName,
+    email: user.email,
+  }),
+});
 
 interface AuthContextValue {
   user: AuthUser | null;
@@ -52,7 +61,7 @@ const parseStoredUser = (raw: string): AuthUser | null => {
       return null;
     }
 
-    return {
+    const base: AuthUser = {
       id: parsed.id,
       email: parsed.email,
       role: parsed.role as AuthUser['role'],
@@ -61,6 +70,7 @@ const parseStoredUser = (raw: string): AuthUser | null => {
       switchedFromRole: typeof parsed.switchedFromRole === 'string' ? parsed.switchedFromRole : null,
       platformMasterAdmin: parsed.platformMasterAdmin === true,
     };
+    return withCleanMemberDisplayName(base);
   } catch {
     return null;
   }
@@ -116,7 +126,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       })
       .then((profile) => {
         if (!profile) return;
-        const revalidatedUser: AuthUser = {
+        const revalidatedUser = withCleanMemberDisplayName({
           id: profile.id,
           email: profile.email,
           role: profile.role as AuthUser['role'],
@@ -124,7 +134,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           avatarUrl: typeof profile.avatarUrl === 'string' ? profile.avatarUrl : undefined,
           switchedFromRole: profile.switchedFromRole ?? null,
           platformMasterAdmin: profile.platformMasterAdmin === true,
-        };
+        });
         setStoredUser(revalidatedUser);
         setUser(revalidatedUser);
         clearGuestDisplayPreferences();
@@ -144,15 +154,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const profile = await fetchMeProfileAuth();
       // Role comes from the login response (token), not the profile endpoint — avoids stale DB reads
-      return {
+      return withCleanMemberDisplayName({
         ...fallback,
         displayName: typeof profile.displayName === 'string' ? profile.displayName : fallback.displayName,
         avatarUrl: typeof profile.avatarUrl === 'string' ? profile.avatarUrl : undefined,
         switchedFromRole: profile.switchedFromRole ?? null,
         platformMasterAdmin: profile.platformMasterAdmin === true,
-      };
+      });
     } catch {
-      return fallback;
+      return withCleanMemberDisplayName(fallback);
     }
   }, []);
 
@@ -288,7 +298,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const session = getStoredSession();
     if (!session?.accessToken) return;
     const profile = await fetchMeProfileAuth();
-    const next: AuthUser = {
+    const next = withCleanMemberDisplayName({
       id: profile.id,
       email: profile.email,
       role: profile.role as AuthUser['role'],
@@ -296,7 +306,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       avatarUrl: profile.avatarUrl,
       switchedFromRole: profile.switchedFromRole ?? null,
       platformMasterAdmin: profile.platformMasterAdmin === true,
-    };
+    });
     setStoredUser(next);
     setUser(next);
   };

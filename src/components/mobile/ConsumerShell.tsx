@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { MOBILE_PRODUCT_HEADER_FROSTED } from '../../config/consumerScrollChrome';
 import { APP_PAGE_MIN_H_CLASS, APP_SCROLL_BODY_CLASS } from '../../config/layoutScroll';
 import { shouldShowMobileUnifiedTabHeader } from '../../config/mobileTabHeader';
-import { shouldShowConsumerShellHamburger } from '../../config/platform';
+import { shouldShowProductShellHamburger } from '../../config/platform';
 import { isWideNavRootPath } from '../../config/desktopNav';
 import { useAppScrollFrostedHeader } from '../../hooks/useAppScrollFrostedHeader';
 import { useMinWidthMd } from '../../hooks/useMinWidthMd';
@@ -76,7 +76,7 @@ export const ConsumerShell = ({
   const layout: ConsumerLayout = layoutProp ?? (back ? 'stack' : 'tab');
   const layoutUnifiedHeader = shouldShowMobileUnifiedTabHeader(pathname, search, Boolean(user));
   const effectiveSuppressMobileHeader = suppressMobileHeader || layoutUnifiedHeader;
-  const shellHamburger = shouldShowConsumerShellHamburger(pathname);
+  const shellHamburger = shouldShowProductShellHamburger(pathname);
   const shellMenu = shellHamburger ? <ConsumerHeaderActions showOnDesktop={false} /> : null;
   const headerTrailing =
     action && shellMenu ? (

@@ -52,15 +52,15 @@ const COMMERCIAL_FACILITY_KINDS = new Set<FacilityDTO['facilityKind']>([
   'outdoor_shop',
 ]);
 
-export type FacilityConsumerDetailPageProps = {
+export type FacilityDetailSectionsProps = {
   facility: FacilityDTO;
   facilityId: string;
 };
 
-export const FacilityConsumerDetailPage = ({
+export const FacilityDetailSections = ({
   facility,
   facilityId,
-}: FacilityConsumerDetailPageProps) => {
+}: FacilityDetailSectionsProps) => {
   const location = useLocation();
   const amenityState = facility.amenityState;
   const lastCheckedAt = facility.amenityLastCheckedAt ?? null;

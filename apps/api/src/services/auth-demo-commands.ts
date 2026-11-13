@@ -11,6 +11,7 @@ import {
   updateAuthUserLastActive,
   updateAuthUserProfile,
 } from './member-identity-commands.js';
+import { stripAccountRoleDisplaySuffix } from '@uaetrail/shared-types';
 import { findAuthUserByEmail } from './member-identity-read.js';
 
 export type DemoLoginResult = {
@@ -49,6 +50,7 @@ export const loginWithDemoAccount = async (input: {
 
     const passwordHash = await hashPassword(resolveDemoAccountPassword(normalizedEmail));
     const referralCode = await createUniqueReferralCode();
+    const displayName = stripAccountRoleDisplaySuffix(defaults.displayName);
     user = await createAuthUser({
       email: normalizedEmail,
       passwordHash,
@@ -60,7 +62,7 @@ export const loginWithDemoAccount = async (input: {
       lastActiveAt: new Date(),
       referralCode,
       profile: {
-        displayName: defaults.displayName,
+        displayName,
         phone: null,
         bio: null,
         avatarUrl: null,
@@ -81,8 +83,13 @@ export const loginWithDemoAccount = async (input: {
       profile: { switchedFromRole: null },
     });
   }
-  if (defaults?.displayName && user.profile?.displayName !== defaults.displayName) {
-    await updateAuthUserProfile(user._id, { displayName: defaults.displayName });
+  const canonicalDisplayName = defaults?.displayName
+    ? stripAccountRoleDisplaySuffix(defaults.displayName)
+    : user.profile?.displayName
+      ? stripAccountRoleDisplaySuffix(user.profile.displayName)
+      : null;
+  if (canonicalDisplayName && user.profile?.displayName !== canonicalDisplayName) {
+    await updateAuthUserProfile(user._id, { displayName: canonicalDisplayName });
   }
 
   const tokens = await createMemberSession({

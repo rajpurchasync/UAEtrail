@@ -32,6 +32,7 @@ import { sessionExpiredLandingPath } from '../utils/authSessionLanding';
 import { buildAuthGateUrls, clearAuthReturnContext } from '../utils/authReturnContext';
 import { PageMeta } from '../components/seo/PageMeta';
 import { PRODUCT_AUTH_SIGNIN_SUBLINE } from '../content/productNorthStar';
+import { resolveWelcomeFinishExplorePath } from '../explore/exploreWelcomeNavigation';
 import { shouldForceSignupWelcome } from '../utils/signupProfileGate';
 import {
   fetchDemoLoginCatalog,
@@ -131,7 +132,9 @@ export const SignIn = () => {
       : signedInUser.role === 'participant' || isPlatformAdmin(signedInUser.role)
         ? defaultRouteByRole(signedInUser.role)
         : hostModeHomeRouteByRole(signedInUser.role);
-    const welcomeRedirectTo = resolvePostAuthReturnPath(from, signedInUser.role) ?? postAuthDefault;
+    const welcomeRedirectTo = resolveWelcomeFinishExplorePath(
+      resolvePostAuthReturnPath(from, signedInUser.role) ?? postAuthDefault
+    );
 
     if (profile && shouldForceSignupWelcome(signedInUser.role, profile)) {
       navigate('/welcome', {

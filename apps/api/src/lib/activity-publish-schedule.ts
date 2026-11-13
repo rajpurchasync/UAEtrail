@@ -1,8 +1,8 @@
 import { parseLocalDateTime } from './datetime.js';
 
 type PublishScheduleBody = {
-  date: string;
-  time: string;
+  date?: string;
+  time?: string;
   endDate?: string;
   endTime?: string;
 };

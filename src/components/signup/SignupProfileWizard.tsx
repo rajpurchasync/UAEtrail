@@ -4,11 +4,6 @@ import { completeSignupProfile } from '../../hooks/signupProfileApi';
 import { useAuth } from '../../context/AuthContext';
 import type { UserCountryCode, UserGender } from '../../constants/userProfileOptions';
 import {
-  PRODUCT_SIGNUP_STEP_DOB,
-  PRODUCT_SIGNUP_STEP_GENDER,
-  PRODUCT_SIGNUP_STEP_LOCATION,
-} from '../../content/productNorthStar';
-import {
   MemberDetailsEditFields,
   type MemberDetailsFormValue,
 } from '../profile/MemberDetailsEditFields';
@@ -33,12 +28,6 @@ interface SignupProfileWizardProps {
   onComplete: () => void;
 }
 
-const STEP_SHELL: Record<SignupProfileStep, { title: string }> = {
-  dateOfBirth: { title: PRODUCT_SIGNUP_STEP_DOB },
-  gender: { title: PRODUCT_SIGNUP_STEP_GENDER },
-  countryCode: { title: PRODUCT_SIGNUP_STEP_LOCATION },
-};
-
 const resolveInitialCountry = (profile: SignupProfileWizardProps['initialProfile']): UserCountryCode | '' => {
   if (profile.countryCode) return profile.countryCode;
   if (profile.city) return 'AE';
@@ -59,7 +48,6 @@ export const SignupProfileWizard = ({ initialProfile, onComplete }: SignupProfil
   const [error, setError] = useState<string | null>(null);
 
   const stepNumber = signupProfileStepIndex(step) + 1;
-  const shell = STEP_SHELL[step];
 
   const goNext = () => {
     const index = signupProfileStepIndex(step);
@@ -143,7 +131,6 @@ export const SignupProfileWizard = ({ initialProfile, onComplete }: SignupProfil
   return (
     <SignupStepShell
       stepNumber={stepNumber}
-      title={shell.title}
       onBack={stepNumber > 1 ? goBack : undefined}
       footer={footer}
     >

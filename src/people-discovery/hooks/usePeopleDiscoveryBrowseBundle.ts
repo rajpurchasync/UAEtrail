@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { memberHasUnlimitedDiscovery } from '@uaetrail/shared-types';
 import { usePeopleDiscoverySeekingActivities } from './usePeopleDiscoverySeekingActivities';
@@ -7,6 +7,7 @@ import { useMemberDiscoveryRoster } from './useMemberDiscoveryRoster';
 import { useExplorePeopleAvailability } from './usePeopleAvailability';
 import type { useExploreBrowseUrlState } from '@/explore/ui/useExploreBrowseUrlState';
 import type { MemberStatusDTO, UserRole } from '@uaetrail/shared-types';
+import { buildExploreMemberPeopleMapChip } from '../lib/exploreMemberPeopleMapChip';
 
 type BrowseState = ReturnType<typeof useExploreBrowseUrlState>;
 
@@ -63,6 +64,10 @@ export const useExplorePeopleBrowseBundle = ({
     mapFilter: browse.mapFilter,
   });
 
+  const openPeopleBrowsePanel = useCallback(() => {
+    browse.openPeopleBrowsePanel('looking');
+  }, [browse]);
+
   const peopleLookingTabActive =
     peopleBrowsePanelOpen && browse.peopleBrowseTab === 'looking';
 
@@ -78,6 +83,17 @@ export const useExplorePeopleBrowseBundle = ({
   });
 
   const seekingActivities = seekingDiscovery.seekingActivities;
+
+  const peopleBrowseMapChip = useMemo(
+    () =>
+      buildExploreMemberPeopleMapChip({
+        preview: memberPeoplePreview.preview,
+        mapItems: exploreCatalogItems,
+        viewerUserId: user?.id,
+        activityDatePreset: browse.activityDatePreset,
+      }),
+    [memberPeoplePreview.preview, exploreCatalogItems, user?.id, browse.activityDatePreset]
+  );
 
   const canBrowseAllMembers = memberHasUnlimitedDiscovery(
     hostStatus ? { hostTiers: hostStatus.publish.hostTiers } : null
@@ -126,6 +142,8 @@ export const useExplorePeopleBrowseBundle = ({
 
   return {
     peopleBrowsePanelProps,
+    openPeopleBrowsePanel,
+    peopleBrowseMapChip,
     memberPeoplePreview,
     canBrowseAllMembers,
   };

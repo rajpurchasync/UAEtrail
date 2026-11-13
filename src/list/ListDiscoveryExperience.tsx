@@ -2,20 +2,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
-import { LIST_DISCOVERY_PATH } from '../config/platform';
 import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
-import { ComposeHost } from '../explore/create/ComposeHost';
-import { GuestComposeSignInSheet } from '../explore/ui/GuestComposeSignInSheet';
-import { useComposeRoute } from '../explore/create/hooks/useComposeRoute';
-import { clearComposeWizardSessionForRoute } from '../explore/ui/composeWizardSession';
-import { addVenueKindFromRoute, isSeekFixedWizard } from '../explore/compose';
+import { useCreateFlow } from '../create/CreateFlowProvider';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { reloadExploreMap } from '../hooks/useExploreMap';
-import { buildSignInRedirect } from '../utils/authReturnContext';
-import {
-  memberPublishGateHref,
-  memberPublishGateInputFromMemberStatus,
-} from '../utils/memberPublishGate';
 import { browseListFilterPatchForSearchScope } from './listDiscoverySearchCommit';
 import type { BrowseListFilterState } from './browseListFilters';
 import { countExploreSearchScopes } from '../explore/exploreSearchMatches';
@@ -111,49 +101,12 @@ export const ListDiscoveryExperience = ({
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
-  const pathname = embeddedOnExplore ? EXPLORE_MAP_PATH : LIST_DISCOVERY_PATH;
   const search = searchParams.toString() ? `?${searchParams.toString()}` : '';
 
-  const {
-    canPublish,
-    profileComplete,
-    isCommunityHost,
-    hostTiers,
-    loading: hostGateLoading,
-    refresh: refreshHostGate,
-  } = useMemberStatus({ enabled: Boolean(user) });
-
-  const navigateMemberPublishGate = useCallback(
-    (returnPath: string) =>
-      navigate(
-        memberPublishGateHref(
-          returnPath,
-          memberPublishGateInputFromMemberStatus({
-            viewerUserId: user?.id ?? null,
-            profileComplete,
-            canPublish,
-            isCommunityHost,
-            hostTiers,
-          })
-        )
-      ),
-    [navigate, user?.id, profileComplete, canPublish, isCommunityHost, hostTiers]
-  );
-
-  const compose = useComposeRoute({
-    user,
-    navigate,
-    pathname,
-    search,
-    searchParams,
-    setSearchParams,
-    onOpenComposeMenu: () => {},
-    canPublish,
-    profileComplete,
-    hostGateLoading,
-  });
+  const { refresh: refreshHostGate } = useMemberStatus({ enabled: Boolean(user) });
+  const { compose, registerBridge } = useCreateFlow();
 
   const reloadFeed = useCallback(async () => {
     await reloadExploreMap(queryClient);
@@ -191,6 +144,16 @@ export const ListDiscoveryExperience = ({
       resolveCreateFabComposeEntry(location.pathname, location.search, createFabContext)
     );
   }, [compose, location.pathname, location.search, createFabContext]);
+
+  useEffect(() => {
+    if (embeddedOnExplore) return undefined;
+    registerBridge({
+      onActivityPublished: () => void reloadFeed(),
+      onSeekingSubmitted: () => void reloadFeed(),
+      onAddSubmitted: () => void reloadFeed(),
+    });
+    return () => registerBridge(null);
+  }, [embeddedOnExplore, registerBridge, reloadFeed]);
   const [draftQuery, setDraftQuery] = useState(filters.query);
   useEffect(() => {
     setDraftQuery(filters.query);
@@ -391,8 +354,6 @@ export const ListDiscoveryExperience = ({
     if (onCloseMapOverlay) return EXPLORE_MAP_PATH;
     return exploreMapPathFromListSearch(search);
   }, [onCloseMapOverlay, search]);
-
-  const hostWizardOpen = Boolean(compose.hostComposeRoute) && Boolean(user);
 
   const desktopMd = useMinWidthMd();
   const wideListMapSplit = useMinWidthPx(LIST_DISCOVERY_MAP_AUTO_MIN_PX);
@@ -596,51 +557,6 @@ export const ListDiscoveryExperience = ({
           <BrowseListCreateFab onClick={handleCreateFabTap} label={createFabLabel} />
         </>
       )}
-
-      <ComposeHost
-        composeRoute={compose.composeRoute}
-        composeMenuOpen={compose.composeMenuOpen}
-        hostWizardOpen={hostWizardOpen}
-        seekFixedWizardOpen={
-          Boolean(compose.seekFixedRoute && isSeekFixedWizard(compose.composeRoute)) && Boolean(user)
-        }
-        addWizardOpen={Boolean(compose.addRoute) && Boolean(user)}
-        seekFlexibleOpen={compose.seekFlexibleOpen && Boolean(user)}
-        hostComposeKind={compose.hostComposeRoute?.kind ?? null}
-        seekFixedKind={compose.seekFixedRoute?.kind}
-        addVenueKind={addVenueKindFromRoute(compose.addRoute)}
-        hostingWizardPrefill={null}
-        signInHref={buildSignInRedirect({ pathname, search }).href}
-        onComposeRouteChange={compose.handleComposeRouteChange}
-        onCloseCompose={compose.closeCompose}
-        onCloseCreateFlow={compose.closeCompose}
-        wizardEnteredFromMenu={compose.wizardEnteredFromMenu}
-        onHostingBackToIntent={() => {
-          clearComposeWizardSessionForRoute(compose.hostComposeRoute);
-          compose.setComposeRoute({ surface: 'menu', intent: 'host' });
-        }}
-        onSeekingBackToIntent={() => {
-          clearComposeWizardSessionForRoute(compose.seekFixedRoute);
-          compose.setComposeRoute({ surface: 'menu', intent: 'seek' });
-        }}
-        onAddBackToIntent={() => {
-          clearComposeWizardSessionForRoute(compose.addRoute);
-          compose.setComposeRoute({ surface: 'menu', intent: 'add' });
-        }}
-        onActivityPublished={() => void reloadFeed()}
-        onSeekingSubmitted={() => void reloadFeed()}
-        onAddSubmitted={() => void reloadFeed()}
-        onOpenHostApplication={() => {
-          compose.closeCompose();
-          navigateMemberPublishGate(`${pathname}${search}`);
-        }}
-      />
-
-      <GuestComposeSignInSheet
-        open={compose.guestComposeSignInOpen}
-        onClose={compose.closeGuestComposeSignIn}
-        authReturnPath={compose.guestComposeSignInReturnPath}
-      />
     </>
   );
 };

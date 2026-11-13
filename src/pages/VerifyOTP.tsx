@@ -4,7 +4,8 @@ import { Mail, Mountain } from 'lucide-react';
 import { resendEmailVerification } from '../hooks/accountAuthClientApi';
 import { requestPasswordReset } from '../hooks/accountPasswordClientApi';
 import { OtpInput } from '../components/auth/OtpInput';
-import { EXPLORE_MAP_PATH, SIGNIN_PATH } from '../config/routingCatalog';
+import { SIGNIN_PATH } from '../config/routingCatalog';
+import { resolveWelcomeFinishExplorePath } from '../explore/exploreWelcomeNavigation';
 import { PageMeta } from '../components/seo/PageMeta';
 import { useAuth } from '../context/AuthContext';
 
@@ -27,7 +28,7 @@ export const VerifyOTP = () => {
 
   const email = state.email ?? '';
   const mode = state.mode ?? 'email';
-  const redirectTo = state.redirectTo ?? EXPLORE_MAP_PATH;
+  const redirectTo = resolveWelcomeFinishExplorePath(state.redirectTo);
 
   const [otp, setOtp] = useState('');
   const [error, setError] = useState<string | null>(null);

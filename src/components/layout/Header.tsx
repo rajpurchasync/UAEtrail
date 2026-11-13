@@ -1,5 +1,6 @@
 import { EXPLORE_MAP_PATH, joinAuthPath } from '../../config/routingCatalog';
 import { Link, useLocation } from 'react-router-dom';
+import { ProductNavLink } from '../navigation/ProductNavLink';
 import { Mountain } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
@@ -32,18 +33,18 @@ export const Header = () => {
               </div>
             ) : (
               <>
-                <Link
+                <ProductNavLink
                   to={signInHref}
                   className="hidden md:inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold text-neutral-700 transition-colors hover:bg-neutral-100"
                 >
                   Sign in
-                </Link>
-                <Link
+                </ProductNavLink>
+                <ProductNavLink
                   to={joinAuthPath(EXPLORE_MAP_PATH)}
                   className="hidden md:inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-colors text-sm font-semibold shadow-sm shadow-emerald-200/80"
                 >
                   Join free
-                </Link>
+                </ProductNavLink>
               </>
             )}
           </div>

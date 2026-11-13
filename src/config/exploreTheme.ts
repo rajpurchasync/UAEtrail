@@ -377,7 +377,7 @@ export const exploreMapChildChipClass = (
 export const EXPLORE_MAP_FILTER_ALL_CHIP_CLASS = 'lg:min-w-[6.5rem]';
 
 const MAP_MOBILE_FLOAT_CHIP_BASE =
-  'inline-flex h-9 max-w-[10.5rem] shrink-0 items-center justify-center gap-1.5 rounded-full px-3 py-0 text-xs font-semibold leading-none whitespace-nowrap transition [-webkit-tap-highlight-color:transparent] lg:max-w-none lg:min-h-[2.375rem]';
+  'inline-flex h-8 max-w-[10.5rem] shrink-0 items-center justify-center gap-1.5 rounded-full px-2.5 py-0 text-xs font-semibold leading-none whitespace-nowrap transition [-webkit-tap-highlight-color:transparent] lg:h-9 lg:max-w-none lg:min-h-[2.375rem] lg:px-3';
 
 /** Icon scale for mobile map float pills (matches `.explore-filter-mark--chip`). */
 export const EXPLORE_MAP_MOBILE_FLOAT_CHIP_MARK = 'explore-filter-mark--chip';
@@ -407,6 +407,13 @@ export const exploreMapScopeSegmentClass = (selected: boolean, layer: 'activity'
     ? `${base} bg-sky-600 text-white shadow-sm shadow-sky-900/20`
     : `${base} bg-emerald-700 text-white shadow-sm shadow-emerald-900/20`;
 };
+
+/** Map top scope — emoji + label at readable `text-sm` inside the h-8 tray. */
+export const exploreMapScopeSegmentLabeledClass = (
+  selected: boolean,
+  layer: 'activity' | 'places'
+): string =>
+  `${exploreMapScopeSegmentClass(selected, layer)} !h-full !min-h-0 !w-auto !shrink-0 !justify-center !gap-1 !px-1.5 !py-0 !text-sm !leading-none`;
 
 /** Mobile explore — offsets for floating map chrome below the solid header. */
 export const EXPLORE_MOBILE_MAP_CHROME = {

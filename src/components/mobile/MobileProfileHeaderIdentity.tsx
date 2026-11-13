@@ -2,7 +2,8 @@ import { User } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { PROFILE_PATH } from '../../config/routingCatalog';
-import { resolveMemberCityLabel } from '../../constants/userProfileOptions';
+import { resolveMemberLocationSubline } from '../../constants/userProfileOptions';
+import { resolveConsumerMemberDisplayName } from '../../utils/personName';
 import { useMeProfile } from '../../hooks/useMeProfile';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
 import { SecureAvatar } from '../ui/SecureAvatar';
@@ -32,9 +33,13 @@ export const MobileProfileHeaderIdentity = ({ activeOnProfile = false }: MobileP
     );
   }
 
-  const displayName = profile?.displayName?.trim() || user.displayName || user.email?.split('@')[0] || 'Explorer';
-  const cityLabel = resolveMemberCityLabel(profile?.city);
-  const locationLine = cityLabel ?? 'Add your city';
+  const displayName = resolveConsumerMemberDisplayName({
+    displayName: profile?.displayName ?? user.displayName,
+    givenName: profile?.givenName,
+    surname: profile?.surname,
+    email: user.email,
+  });
+  const locationLine = resolveMemberLocationSubline(profile);
 
   const identityText = (
     <span className="min-w-0 text-left">

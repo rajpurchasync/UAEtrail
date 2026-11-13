@@ -119,8 +119,8 @@ export const validateCustomVenueDetails = (draft: CreateActivityDraft): string |
     return 'Pin the spot on the map.';
   }
   const emirate =
-    draft.customPlaceEmirate.trim() ||
-    draft.venueCascadeState.trim() ||
+    draft.customPlaceEmirate?.trim() ||
+    draft.venueCascadeState?.trim() ||
     inferEmirateFromPin(
       draft.trailLatitude,
       draft.trailLongitude,

@@ -1,4 +1,5 @@
 import type { MemberFollowStateDTO, MemberFollowSummaryDTO } from '@uaetrail/shared-types';
+import { profileDisplayNameFromAuthUser } from '../domain/person-name.js';
 import { findAuthUserById, findAuthUsersByIds } from './auth-users-store.js';
 import { COLLECTIONS } from './collections.js';
 import { ApiError } from './api-error.js';
@@ -80,7 +81,7 @@ export const listFollowingForUser = async (followerId: string): Promise<MemberFo
       if (!user) return null;
       return {
         userId: doc.followingId,
-        displayName: user.profile?.displayName ?? user.email.split('@')[0],
+        displayName: profileDisplayNameFromAuthUser(user),
         avatarUrl: user.profile?.avatarUrl ?? null,
         followedAt: doc.createdAt.toISOString(),
       };
@@ -149,7 +150,7 @@ export const listCommonFollowingBetween = async (
       if (!user) return null;
       return {
         userId,
-        displayName: user.profile?.displayName ?? user.email.split('@')[0],
+        displayName: profileDisplayNameFromAuthUser(user),
         avatarUrl: user.profile?.avatarUrl ?? null,
         followedAt: '',
       };

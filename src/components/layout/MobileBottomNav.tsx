@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useProductLocation } from '../../routing/useEffectiveLocation';
+import { ProductNavLink } from '../navigation/ProductNavLink';
 import { ClipboardList, MapPin, MessageSquare, Users, type LucideIcon } from 'lucide-react';
 
 import { NAV_ICONS } from '../../config/navIcons';
@@ -12,7 +13,6 @@ import {
 } from '../../config/mobileFiveTabNav';
 import { useInboxUnreadCount } from '../../hooks/useInboxUnreadCount';
 import { useMobileBottomNav } from '../../hooks/useMobileBottomNav';
-import { PRODUCT_PLAN_SURFACE_TITLE } from '../../content/productNorthStar';
 
 const TAB_ICONS: Record<MobileFiveTabId, LucideIcon> = {
   trips: NAV_ICONS.trips,
@@ -45,7 +45,7 @@ const TabIcon = ({ icon: Icon, active }: { icon: LucideIcon; active: boolean }) 
 /** Mobile tab bar — Trips · Venues · Plans · Crews · Chat (`mobileFiveTabHomePath`). */
 export const MobileBottomNav = () => {
   const visible = useMobileBottomNav();
-  const { pathname, search } = useLocation();
+  const { pathname, search } = useProductLocation();
   const activeTab = resolveMobileFiveTab(pathname, search);
   const unreadMessages = useInboxUnreadCount();
 
@@ -67,13 +67,13 @@ export const MobileBottomNav = () => {
     >
       <div className="mx-auto grid h-[var(--bottom-nav-height)] max-w-lg grid-cols-5">
         {MOBILE_FIVE_TAB_ORDER.map((tab) => {
-          const label = tab === 'plan' ? PRODUCT_PLAN_SURFACE_TITLE : MOBILE_FIVE_TAB_UI_LABELS[tab];
+          const label = MOBILE_FIVE_TAB_UI_LABELS[tab];
           const active = activeTab === tab;
           const href = mobileFiveTabHomePath(tab);
           const isChat = tab === 'chat';
 
           return (
-            <Link
+            <ProductNavLink
               key={tab}
               to={href}
               className={tabShellClass(active)}
@@ -93,7 +93,7 @@ export const MobileBottomNav = () => {
                 <TabIcon icon={TAB_ICONS[tab]} active={active} />
               )}
               <span className={tabLabelClass(active)}>{label}</span>
-            </Link>
+            </ProductNavLink>
           );
         })}
       </div>

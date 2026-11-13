@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import { ProductNavLink } from '../../navigation/ProductNavLink';
 import { useEffect } from 'react';
 import { Briefcase, PanelLeft, PanelLeftClose, Shield } from 'lucide-react';
 import { UiTooltip } from '../../ui/UiTooltip';
@@ -57,7 +58,7 @@ type SideNavLinkProps = {
 
 const SideNavLink = ({ to, label, icon: Icon, active, compact, badge = 0, navHint }: SideNavLinkProps) => {
   const link = (
-  <Link
+  <ProductNavLink
     to={to}
     aria-label={compact ? label : undefined}
     aria-current={active ? 'page' : undefined}
@@ -87,7 +88,7 @@ const SideNavLink = ({ to, label, icon: Icon, active, compact, badge = 0, navHin
         {formatBadge(badge)}
       </span>
     ) : null}
-  </Link>
+  </ProductNavLink>
   );
   const tooltip = navHint
     ? compact

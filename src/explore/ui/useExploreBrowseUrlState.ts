@@ -32,6 +32,9 @@ import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
+import type { PlaceKind } from '@uaetrail/shared-types';
+import type { ExplorePriceFilter } from '../exploreOptionalFilters';
+import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
 
 export type { ExploreBrowseListMode } from '../exploreBrowseUrlSync';
 
@@ -82,35 +85,48 @@ export const useExploreBrowseUrlState = ({
   const [buddiesDiscoverSegment, setBuddiesDiscoverSegment] = useState<BuddiesDiscoverySegment>(
     initial.buddiesDiscoverSegment
   );
+  const [tripMapTopics, setTripMapTopics] = useState<TripMapTopicKey[]>(initial.tripMapTopics);
+  const [placeMapTopics, setPlaceMapTopics] = useState<PlaceMapTopicKey[]>(initial.placeMapTopics);
+  const [priceFilter, setPriceFilter] = useState<ExplorePriceFilter>(initial.priceFilter);
+  const [hasTrip, setHasTrip] = useState(initial.hasTrip);
+  const [facilityKinds, setFacilityKinds] = useState<PlaceKind[]>([...initial.facilityKinds]);
 
   const syncExploreUrl = useCallback(
     (next: ExploreBrowseUrlSyncPatch) => {
-      const params = buildExploreBrowseSearchParams({
-        base: searchParams,
-        isDesktop,
-        state: {
-          mapFilter,
-          activityFilter,
-          venueFilter,
-          panel,
-          listOpen,
-          browseOpen,
-          query,
-          venueRegions,
-          activityDatePreset,
-          activityModeFilter,
-          buddySubtype,
-          outingTopic,
-          pinKind,
-          topicPills,
-          listMode,
-          peopleBrowseOpen,
-          searchScope,
-          peopleBrowseTab,
-        },
-        patch: next,
-      });
-      setSearchParams(params, { replace: true });
+      setSearchParams(
+        (prev) =>
+          buildExploreBrowseSearchParams({
+            base: prev,
+            isDesktop,
+            state: {
+              mapFilter,
+              activityFilter,
+              venueFilter,
+              panel,
+              listOpen,
+              browseOpen,
+              query,
+              venueRegions,
+              activityDatePreset,
+              activityModeFilter,
+              buddySubtype,
+              outingTopic,
+              pinKind,
+              topicPills,
+              listMode,
+              peopleBrowseOpen,
+              searchScope,
+              peopleBrowseTab,
+              tripMapTopics,
+              placeMapTopics,
+              priceFilter,
+              hasTrip,
+              facilityKinds,
+            },
+            patch: next,
+          }),
+        { replace: true }
+      );
     },
     [
       mapFilter,
@@ -131,6 +147,11 @@ export const useExploreBrowseUrlState = ({
       peopleBrowseOpen,
       searchScope,
       peopleBrowseTab,
+      tripMapTopics,
+      placeMapTopics,
+      priceFilter,
+      hasTrip,
+      facilityKinds,
       searchParams,
       setSearchParams,
       isDesktop,
@@ -157,6 +178,11 @@ export const useExploreBrowseUrlState = ({
     setSearchScope(state.searchScope);
     setPeopleBrowseTab(state.peopleBrowseTab);
     setBuddiesDiscoverSegment(state.buddiesDiscoverSegment);
+    setTripMapTopics(state.tripMapTopics);
+    setPlaceMapTopics(state.placeMapTopics);
+    setPriceFilter(state.priceFilter);
+    setHasTrip(state.hasTrip);
+    setFacilityKinds([...state.facilityKinds]);
     if (isDesktop) {
       setDesktopBrowseTab(state.desktopBrowseTab);
       if (state.expandSearch) setSearchExpanded(true);
@@ -188,12 +214,18 @@ export const useExploreBrowseUrlState = ({
       setActivityModeFilter,
       setVenueRegions,
       setSearchScope,
+      setTripMapTopics,
+      setPlaceMapTopics,
+      setPriceFilter,
+      setHasTrip,
+      setFacilityKinds,
     }),
     []
   );
 
   const handlers = useExploreBrowseUrlApplyHandlers({
-    isDesktop, isSignedIn,
+    isDesktop,
+    isSignedIn,
     clearSelection,
     syncExploreUrl,
     listOpen,
@@ -203,9 +235,14 @@ export const useExploreBrowseUrlState = ({
     buddySubtype,
     outingTopic,
     topicPills,
+    tripMapTopics,
+    placeMapTopics,
+    activityFilter,
+    venueFilter,
     query,
     searchScope,
     listMode,
+    exploreReturnPath: `${location.pathname}${location.search}`,
     setters: browseSetters,
   });
 
@@ -314,5 +351,18 @@ export const useExploreBrowseUrlState = ({
     applyBuddiesDiscoverSegment: handlers.applyBuddiesDiscoverSegment,
     listMode,
     peopleBrowseOpen,
+    tripMapTopics,
+    placeMapTopics,
+    priceFilter,
+    hasTrip,
+    facilityKinds,
+    applyTripMapTopics: handlers.applyTripMapTopics,
+    applyPlaceMapTopics: handlers.applyPlaceMapTopics,
+    applyPriceFilter: handlers.applyPriceFilter,
+    applyHasTrip: handlers.applyHasTrip,
+    applyFacilityKinds: handlers.applyFacilityKinds,
+    applyVenueFilters: handlers.applyVenueFilters,
+    toggleTripMapTopic: handlers.toggleTripMapTopic,
+    togglePlaceMapTopic: handlers.togglePlaceMapTopic,
   };
 };

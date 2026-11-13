@@ -10,6 +10,7 @@ import {
   readBuddyAdjacencyIds,
   writeBuddyAdjacencyIds,
 } from './social-adjacency-read-cache.js';
+import { profileDisplayNameFromAuthUser } from '../domain/person-name.js';
 import { followUser } from './follow-store.js';
 
 const REQUESTS_COLLECTION = 'buddy_requests';
@@ -40,7 +41,7 @@ const mapUserPreview = (user: Awaited<ReturnType<typeof findAuthUserById>>) =>
   user
     ? {
         id: user._id,
-        displayName: user.profile?.displayName ?? user.email.split('@')[0],
+        displayName: profileDisplayNameFromAuthUser(user),
         avatarUrl: user.profile?.avatarUrl ?? null,
       }
     : null;
@@ -377,7 +378,7 @@ export const listMutualBuddiesBetween = async (
       if (!user) return null;
       return {
         userId: buddyId,
-        displayName: user.profile?.displayName ?? user.email.split('@')[0],
+        displayName: profileDisplayNameFromAuthUser(user),
         avatarUrl: user.profile?.avatarUrl ?? null,
         connectedAt: connectedById.get(buddyId) ?? new Date(0).toISOString(),
       };
@@ -399,7 +400,7 @@ const mapBuddySummaries = (
       if (!user) return null;
       return {
         userId: buddyId,
-        displayName: user.profile?.displayName ?? user.email.split('@')[0],
+        displayName: profileDisplayNameFromAuthUser(user),
         avatarUrl: user.profile?.avatarUrl ?? null,
         connectedAt: pair.createdAt.toISOString(),
       };
@@ -445,7 +446,7 @@ export const listBuddySummariesForIds = async (
       if (!user) return null;
       return {
         userId: buddyId,
-        displayName: user.profile?.displayName ?? user.email.split('@')[0],
+        displayName: profileDisplayNameFromAuthUser(user),
         avatarUrl: user.profile?.avatarUrl ?? null,
         connectedAt: pairByBuddy.get(buddyId) ?? new Date(0).toISOString(),
       };

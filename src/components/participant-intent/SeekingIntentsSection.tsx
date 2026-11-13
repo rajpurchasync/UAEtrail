@@ -126,7 +126,7 @@ export const SeekingIntentsSection = ({
               : 'Closed or converted plans will show here.'
           }
           actionLabel="Open the map"
-          actionTo={explorePath({ compose: 'menu' })}
+          actionTo={explorePath({ compose: { surface: 'menu', intent: 'seek' } })}
         />
       ) : filteredIntents.length === 0 ? (
         <ConsumerInlineEmpty message="No plans match your search." />

@@ -6,6 +6,11 @@ import {
   type HostComposeKind,
   type SeekingComposeKind,
 } from '@uaetrail/shared-types';
+import {
+  BROWSE_LIST_CREATE_CREW,
+  BROWSE_LIST_CREATE_TRIP,
+  BROWSE_LIST_CREATE_VENUE,
+} from '../list/browseListCopy';
 import type { CreateActivityKind } from './ui/hostingFlowEngine';
 import type { AddVenueKind } from './addTypes';
 
@@ -123,13 +128,20 @@ export const ADD_PLACE_OPTIONS: Array<{ kind: string; label: string; emoji: stri
   { kind: 'outdoor_other', label: 'Outdoor spot', emoji: '📍' },
 ];
 
-/** @deprecated Shops FAB retired — use facility `outdoor_shop`. */
-export const ADD_COMPOSE_OPTIONS: Array<{ kind: AddVenueKind; label: string; emoji: string }> = [
+/** Venues create FAB — kind grid (Hiking Trail · Camping Spots · Facilities · Others). */
+export const CREATE_VENUE_ADD_COMPOSE_OPTIONS: Array<{
+  kind: AddVenueKind;
+  label: string;
+  emoji: string;
+}> = [
+  { kind: 'hiking', label: 'Hiking Trail', emoji: '🥾' },
   { kind: 'camping', label: 'Camping Spots', emoji: '⛺' },
-  { kind: 'hiking', label: 'Hiking Trails', emoji: '🥾' },
   { kind: 'facility', label: 'Facilities', emoji: '🚻' },
-  { kind: 'event', label: 'Others', emoji: '📍' },
+  { kind: 'event', label: 'Others', emoji: '✨' },
 ];
+
+/** @deprecated Use {@link CREATE_VENUE_ADD_COMPOSE_OPTIONS} — catalog + flow-id tests. */
+export const ADD_COMPOSE_OPTIONS = CREATE_VENUE_ADD_COMPOSE_OPTIONS;
 
 export const COMPOSE_MENU_TITLE = 'I would like to…';
 
@@ -157,11 +169,11 @@ export const hostingPublishSeed = (kind: HostComposeKind): HostingPublishSeed =>
   participationMode: defaultParticipationForHostKind(kind),
 });
 
-export const COMPOSE_HOST_KIND_TITLE = 'What are you hosting?';
-export const COMPOSE_SEEK_MODE_TITLE = 'How do you want to find crew?';
-export const COMPOSE_SEEK_FIXED_KIND_TITLE = 'What are you looking for?';
-export const COMPOSE_ADD_TARGET_TITLE = 'What are you adding?';
-export const COMPOSE_ADD_PLACE_TITLE = 'What kind of place?';
+export const COMPOSE_HOST_KIND_TITLE = BROWSE_LIST_CREATE_TRIP;
+export const COMPOSE_SEEK_MODE_TITLE = BROWSE_LIST_CREATE_CREW;
+export const COMPOSE_SEEK_FIXED_KIND_TITLE = 'Post on the map';
+export const COMPOSE_ADD_TARGET_TITLE = BROWSE_LIST_CREATE_VENUE;
+export const COMPOSE_ADD_PLACE_TITLE = 'Place';
 
 export const composeMenuTitle = (route: ExploreCompose | null): string => {
   if (!route) return COMPOSE_MENU_TITLE;

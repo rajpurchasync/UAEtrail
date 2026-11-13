@@ -44,6 +44,8 @@ export const countPlanJoinedUpcoming = (
 export const countPlanActiveGoals = (goals: MemberGoalDTO[]): number =>
   aggregateMemberGoals(goals).activeGoals.length;
 
-/** Wishlist rows tied to a catalog place (map saves). */
+/** Catalog venue rows on Plan Want to go (`locationId` only). */
+export const isPlanWantToGoVenue = (item: WishlistItemDTO): boolean => Boolean(item.locationId);
+
 export const countPlanSavedPlaces = (items: WishlistItemDTO[]): number =>
-  items.filter((item) => Boolean(item.locationId || item.areaId)).length;
+  items.filter(isPlanWantToGoVenue).length;

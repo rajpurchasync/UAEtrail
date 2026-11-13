@@ -44,6 +44,8 @@ export const MOBILE_NAV_ICON_MAP: Record<
   | 'History'
   | 'Outing history'
   | 'My Plans'
+  | 'Plans'
+  | 'Crews'
   | 'Hosting'
   | 'Chat'
   | 'Notifications'
@@ -58,9 +60,8 @@ export const MOBILE_NAV_ICON_MAP: Record<
   Explore: NAV_ICONS.explore,
   Social: Users,
   Browse: NAV_ICONS.activities,
-  Trips: NAV_ICONS.activities,
-  Venues: MapPin,
   Trips: NAV_ICONS.trips,
+  Venues: MapPin,
   'Join free': NAV_ICONS.activities,
   'Log in': LogIn,
   Contact: MessageCircle,
@@ -74,6 +75,8 @@ export const MOBILE_NAV_ICON_MAP: Record<
   History: History,
   'Outing history': History,
   'My Plans': CalendarDays,
+  Plans: CalendarDays,
+  Crews: Users,
   Hosting: Briefcase,
   Chat: MessageCircle,
   'Upcoming Activities': NAV_ICONS.activities,

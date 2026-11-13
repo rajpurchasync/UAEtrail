@@ -1,4 +1,6 @@
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { exploreMapMobileBackState } from '../../utils/mobileBackNav';
+import { listPeopleDiscoveryPath } from '../../list/routing';
 import { ExploreMapStage } from '../ui/ExploreMapStage';
 import { ExploreDesktopGuestGatePanel } from '../ui/ExploreDesktopGuestGatePanel';
 import { ExploreBrowseSearchModal } from '../ui/ExploreBrowseSearchModal';
@@ -36,6 +38,7 @@ type Props = Pick<
   | 'handleCloseMapSelection'
   | 'handleOfferRideshareForSeeking'
   | 'primaryFabLabel'
+  | 'handlePrimaryFabTap'
   | 'handleOpenExploreItem'
   | 'searchScopeCounts'
   | 'setExploreSearchModalOpen'
@@ -71,6 +74,7 @@ export const ExploreMapShell = ({
   handleCloseMapSelection,
   handleOfferRideshareForSeeking: _handleOfferRideshareForSeeking,
   primaryFabLabel,
+  handlePrimaryFabTap,
   handleOpenExploreItem,
   searchScopeCounts,
   setExploreSearchModalOpen,
@@ -82,6 +86,7 @@ export const ExploreMapShell = ({
   onVisibleMapBoundsChange,
 }: Props) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const joinActions = selection.joinActions;
   const browseReturnPath = `${location.pathname}${location.search}`;
   const guestAuthReturnPath = resolveExploreGuestAuthReturnPath({
@@ -139,13 +144,30 @@ export const ExploreMapShell = ({
       onVenueRegionsChange={browse.applyVenueRegions}
       venueFilter={browse.venueFilter}
       onVenueFilterChange={browse.applyVenueFilter}
+      tripMapTopics={browse.tripMapTopics}
+      placeMapTopics={browse.placeMapTopics}
+      priceFilter={browse.priceFilter}
+      hasTrip={browse.hasTrip}
+      facilityKinds={browse.facilityKinds}
+      onTripTopicsChange={browse.applyTripMapTopics}
+      onPlaceTopicsChange={browse.applyPlaceMapTopics}
+      onPriceFilterChange={browse.applyPriceFilter}
+      onHasTripChange={browse.applyHasTrip}
+      onFacilityKindsChange={browse.applyFacilityKinds}
+      onVenueFiltersChange={browse.applyVenueFilters}
+      onOpenCrewsPage={() => {
+        handleCloseMapSelection();
+        navigate(listPeopleDiscoveryPath(), {
+          state: exploreMapMobileBackState(browseReturnPath),
+        });
+      }}
       onOpenPeopleBrowsePanel={
         user ? openPeopleBrowsePanel : () => selection.handleGuestGatedAction('view_detail')
       }
-      peopleBrowsePanelAvatars={user ? peopleBrowseMapChip.avatars : []}
-      peopleBrowsePanelFriendCount={peopleBrowseMapChip.friendCount}
+      peopleBrowsePanelAvatars={user ? peopleBrowseMapChip?.avatars ?? [] : []}
+      peopleBrowsePanelFriendCount={peopleBrowseMapChip?.friendCount ?? 0}
       peopleBrowseGuest={!user}
-      peopleBrowsePossibleCrewCount={peopleBrowseMapChip.crewCount}
+      peopleBrowsePossibleCrewCount={peopleBrowseMapChip?.crewCount ?? 0}
       searchQuery={browse.query}
       onSearchQueryChange={browse.setQuery}
       onOpenExploreSearch={() => {
@@ -185,7 +207,7 @@ export const ExploreMapShell = ({
       onAllowMapLocation={viewport.handleAllowMapLocation}
       onDismissLocationPrompt={viewport.dismissLocationPromptUi}
       onOpenBrowse={browse.openMapListPanel}
-      onPrimaryFab={compose.handleCreateTap}
+      onPrimaryFab={handlePrimaryFabTap}
       primaryFabLabel={primaryFabLabel}
       selected={selection.selected}
       selectedCard={selection.selectedCard}

@@ -54,6 +54,11 @@ export const EXPLORE_DISCOVER_BROWSE_PATH = `${EXPLORE_MAP_PATH}?browse=1` as co
 /** Scroll-first discovery feed (mobile-first layout; desktop centered column). */
 export const LIST_DISCOVERY_PATH = '/list' as const;
 
+/** Drawer / landing list entry paths (aligned with `tripsListHomePath` / `venuesListHomePath` scoping). */
+export const TRIPS_LIST_NAV_PATH = `${LIST_DISCOVERY_PATH}?listCat=activities` as const;
+export const VENUES_LIST_NAV_PATH = `${LIST_DISCOVERY_PATH}?listCat=venues` as const;
+/** Crews tab list home (`listPeopleDiscoveryPath` minimal). */
+export const CREWS_LIST_NAV_PATH = `${LIST_DISCOVERY_PATH}?listCat=people` as const;
 
 /**
  * Domain glossary — product language vs wire/storage names (Phase 1).
@@ -115,12 +120,18 @@ export const joinAuthPath = (
   options?: { focus?: string; scrollY?: number }
 ): string => signUpPath({ redirect, focus: options?.focus, scrollY: options?.scrollY });
 
-/** Right-side user menu on landing (mobile/PWA) — Explore, Join free, Contact (+ Log in in drawer). */
+/** Right-side user menu on landing (mobile/PWA) — Explore, Trips, Venues, Join free, Contact. */
 export const MOBILE_LANDING_USER_MENU = [
+  { label: 'Explore', to: EXPLORE_MAP_PATH, match: [EXPLORE_MAP_PATH] as const },
   {
-    label: 'Explore',
-    to: EXPLORE_MAP_PATH,
-    match: [EXPLORE_MAP_PATH, LIST_DISCOVERY_PATH, EXPLORE_DISCOVER_BROWSE_PATH, '/discovery'] as const,
+    label: 'Trips',
+    to: TRIPS_LIST_NAV_PATH,
+    match: [LIST_DISCOVERY_PATH, EXPLORE_DISCOVER_BROWSE_PATH, '/discovery'] as const,
+  },
+  {
+    label: 'Venues',
+    to: VENUES_LIST_NAV_PATH,
+    match: [LIST_DISCOVERY_PATH, EXPLORE_MAP_PATH, '/discovery'] as const,
   },
   { label: 'Join free', to: joinAuthPath(), match: ['/signin', '/signup'] as const },
   { label: 'Contact', href: 'mailto:support@uaetrail.com' },
@@ -150,20 +161,27 @@ export type ConsumerHamburgerMenuItem =
     };
 
 /**
- * Signed-in hamburger drawer — map-first order; notifications stay in the header bell.
- * Labels/icons: `MOBILE_NAV_ICON_MAP` + `mobileDrawerChrome`.
+ * Signed-in hamburger — same five tabs as `MobileBottomNav`, then Profile · Settings · Install.
+ * Trip/Venue/Crews/Plans/Chat `to` fallbacks; `MobileMenu` resolves via `mobileFiveTabHomePath`.
  */
 export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
   {
     kind: 'link',
-    label: 'Explore',
-    emoji: '🗺️',
-    to: EXPLORE_MAP_PATH,
-    match: [EXPLORE_MAP_PATH, LIST_DISCOVERY_PATH, EXPLORE_DISCOVER_BROWSE_PATH, '/discovery'],
+    label: 'Trips',
+    emoji: '🥾',
+    to: TRIPS_LIST_NAV_PATH,
+    match: [EXPLORE_DISCOVER_BROWSE_PATH, LIST_DISCOVERY_PATH, EXPLORE_MAP_PATH, '/discovery'],
   },
   {
     kind: 'link',
-    label: 'My Plans',
+    label: 'Venues',
+    emoji: '📍',
+    to: VENUES_LIST_NAV_PATH,
+    match: [LIST_DISCOVERY_PATH, EXPLORE_MAP_PATH, '/discovery'],
+  },
+  {
+    kind: 'link',
+    label: 'Plans',
     emoji: '📅',
     to: PLAN_PATH,
     match: [PLAN_PATH],
@@ -171,18 +189,10 @@ export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
   },
   {
     kind: 'link',
-    label: 'Social',
+    label: 'Crews',
     emoji: '👥',
-    to: BUDDIES_PATH,
-    match: [BUDDIES_PATH, GROUPS_PATH],
-    authGate: true,
-  },
-  {
-    kind: 'link',
-    label: 'Outing history',
-    emoji: '🧳',
-    to: PROFILE_HISTORY_PATH,
-    match: [PROFILE_HISTORY_PATH, JOURNEY_MAP_PATH, INBOUND_PROFILE_HISTORY_ALIAS_PATH],
+    to: CREWS_LIST_NAV_PATH,
+    match: [LIST_DISCOVERY_PATH, EXPLORE_MAP_PATH],
     authGate: true,
   },
   {
@@ -391,7 +401,7 @@ export const isMobileDetailRoute = (pathname: string): boolean =>
   );
 
 /** Public entity detail — own header + sticky CTA (MobileDetailShell). */
-export const isConsumerEntityDetailRoute = (pathname: string): boolean =>
+export const isEntityDetailRoute = (pathname: string): boolean =>
   isMobileDetailRoute(pathname) ||
   pathname.startsWith('/area/') ||
   pathname === '/geo' ||
@@ -401,8 +411,11 @@ export const isConsumerEntityDetailRoute = (pathname: string): boolean =>
   pathname.startsWith('/agency/') ||
   pathname.startsWith('/partner/');
 
+/** @deprecated Use {@link isEntityDetailRoute}. */
+export const isConsumerEntityDetailRoute = isEntityDetailRoute;
+
 /**
- * Consumer pages that render their own sticky header (ConsumerShell / MobileScreen / MobileDetailShell).
+ * Product pages that render their own sticky header (ProductShell / MobileScreen / MobileDetailShell).
  * Layout must not also show MobileConsumerNavBar on these routes.
  */
 export const CONSUMER_SELF_HEADER_EXACT = [
@@ -457,8 +470,10 @@ export const hasConsumerSelfHeader = (pathname: string): boolean =>
   isMobileDetailRoute(pathname);
 
 /** Profile stack + help pages — inject hamburger in ConsumerShell when Layout tab header is absent. */
-export const shouldShowConsumerShellHamburger = (pathname: string): boolean => {
+export const shouldShowProductShellHamburger = (pathname: string): boolean => {
   if (isConsumerChromeHidden(pathname)) return false;
+  if (isEntityDetailRoute(pathname)) return false;
+  if (pathname.startsWith('/member/')) return false;
   if (pathname === EXPLORE_MAP_PATH || pathname === LIST_DISCOVERY_PATH) return false;
   if (
     pathname === '/profile' ||
@@ -471,10 +486,12 @@ export const shouldShowConsumerShellHamburger = (pathname: string): boolean => {
   if (pathname === PROFILE_HISTORY_PATH || pathname === JOURNEY_MAP_PATH) return false;
   if (pathname.startsWith('/profile/') || pathname === '/settings' || pathname.startsWith('/settings/')) return true;
   if (pathname === '/faq' || pathname === '/terms' || pathname === '/privacy') return true;
-  if (pathname.startsWith('/member/')) return true;
   if ((MOBILE_BOTTOM_NAV_PROFILE_PATHS as readonly string[]).includes(pathname)) return true;
   return MOBILE_BOTTOM_NAV_PROFILE_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 };
+
+/** @deprecated Use {@link shouldShowProductShellHamburger}. */
+export const shouldShowConsumerShellHamburger = shouldShowProductShellHamburger;
 
 /**
  * Route pathnames that host the five-tab mobile shell (Trips/Venues share `/explore` + `/list`).

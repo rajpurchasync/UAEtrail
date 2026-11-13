@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { afterHostJoinDecisionClientRefresh } from '../../hooks/activityJoinClientEffects';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { LinkRidesharePanel } from '../../explore/ui/LinkRidesharePanel';
@@ -40,15 +41,15 @@ import {
   MOBILE_PRODUCT_HEADER_FROSTED,
   MOBILE_PRODUCT_HEADER_REST,
 } from '../../config/consumerScrollChrome';
-import { useConsumerDetailScrollChrome } from '../../activity/detail/templates/useConsumerDetailScrollChrome';
-import { resolveActivityConsumerDetailHeaderChrome } from '../../activity/activityConsumerDetailHeader';
+import { useDetailScrollChrome } from '../mobile/useDetailScrollChrome';
+import { resolveActivityDetailHeaderChrome } from '../../activity/activityDetailHeaderChrome';
 import { ConsumerHeaderActions } from '../layout/ConsumerHeaderActions';
 import { ConsumerDetailHeaderTypeMark } from '../mobile/ConsumerDetailHeaderChromeTitle';
 import { MobileBackButton } from '../mobile/MobileBackButton';
 import { CreateHostingActivityFlow } from '../../explore/ui/CreateHostingActivityFlow';
 import { hostingFlowForComposeKind } from '../../explore/ui/hostingFlows';
 import { resolveHostComposeKindFromActivity } from '../../explore/ui/hostingFromActivity';
-import { joinAuthPath } from '../../config/routingCatalog';
+import { activityCrewPath, joinAuthPath } from '../../config/routingCatalog';
 import { planHostedActivityManagePath } from '../../plan/planRouting';
 
 export type ActivityManageSheetProps = {
@@ -76,12 +77,13 @@ export const ActivityManageSheet = ({
   onRequestsChanged,
   onShare,
 }: ActivityManageSheetProps) => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const headerRef = useRef<HTMLElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const scrollContentRef = useRef<HTMLDivElement>(null);
-  const { headerFrosted } = useConsumerDetailScrollChrome(panelRef, scrollContentRef);
+  const { headerFrosted } = useDetailScrollChrome(panelRef, scrollContentRef);
   const [view, setView] = useState<ActivityManageSubview>('overview');
 
   /** Manage header is outside scroll; keep `--detail-header-pad` at 0 so jump-nav sticky stays flush. */
@@ -157,8 +159,17 @@ export const ActivityManageSheet = ({
   }, [wirePresentation, sheetActivity, viewerEntitlements]);
 
   useEffect(() => {
+    if (!open || !activity?.id) return;
+    if (normalizeActivityManageView(initialView) !== 'participants') return;
+    navigate(activityCrewPath(activity.id));
+    onClose();
+  }, [open, initialView, activity?.id, navigate, onClose]);
+
+  useEffect(() => {
     if (!open) return;
-    setView(normalizeActivityManageView(initialView));
+    const next = normalizeActivityManageView(initialView);
+    if (next === 'participants') return;
+    setView(next);
     setRideshareNotice(null);
     setManageOptionsOpen(false);
     setReturnToManageMenu(false);
@@ -228,6 +239,12 @@ export const ActivityManageSheet = ({
   );
 
   const openManageSubviewFromMenu = (subview: ActivityManageSubview) => {
+    if (subview === 'participants') {
+      if (!activity) return;
+      navigate(activityCrewPath(activity.id));
+      handleClose();
+      return;
+    }
     setReturnToManageMenu(true);
     setView(subview);
     setManageOptionsOpen(false);
@@ -289,7 +306,7 @@ export const ActivityManageSheet = ({
     locationName: activity.locationName,
   });
   const showShareFooter = activity.status === 'published' && Boolean(onShare);
-  const typeChrome = resolveActivityConsumerDetailHeaderChrome(activity, null);
+  const typeChrome = resolveActivityDetailHeaderChrome(activity, null);
 
   return (
     <>
@@ -324,7 +341,7 @@ export const ActivityManageSheet = ({
 
         <div
           ref={panelRef}
-          data-consumer-detail-scroll
+          data-entity-detail-scroll
           role="dialog"
           aria-modal="true"
           aria-label={headerTitle}
@@ -384,13 +401,11 @@ export const ActivityManageSheet = ({
             <div className="min-w-0 w-full">
               <ActivityDetailByKind
                 layout="page"
-                inlineConsumerDetail
                 activity={{
                   ...(sheetActivity as ActivityDetailDTO),
                   location: taggedPlace ?? (sheetActivity as ActivityDetailDTO).location,
                 }}
                 canAccessCrewSurfaces
-                consumerLayout={embeddedWirePresentation?.consumerLayout ?? null}
                 viewerAccess={
                   embeddedWirePresentation
                     ? {
@@ -422,7 +437,7 @@ export const ActivityManageSheet = ({
                   onRequestsChanged,
                 }}
                 wireFooterByTab={embeddedWirePresentation?.footerByTab ?? null}
-                wireTabs={embeddedWirePresentation?.tabs ?? null}
+                wireSections={embeddedWirePresentation?.sections ?? null}
                 wireStrips={embeddedWirePresentation?.strips ?? null}
                 linkRideshareTenantId={tenantId}
                 onHostShareOuting={showShareFooter && onShare ? () => onShare(activity) : undefined}

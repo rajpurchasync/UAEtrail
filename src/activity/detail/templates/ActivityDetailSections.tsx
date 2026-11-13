@@ -82,18 +82,25 @@ import {
   DETAIL_SCROLL_PANEL,
   DETAIL_SCROLL_SECTION_TITLE,
 } from '../../../components/mobile/detailScrollSectionStyles';
+import {
+  ConsumerDetailHostManageSection,
+  type ActivityHostManageSurfaceProps,
+} from '../../../components/activity/ConsumerDetailHostManageSection';
+import { ConsumerDetailHostParticipantsSection } from '../../../components/activity/ConsumerDetailHostParticipantsSection';
 type ActivityDetailViewModel = ReturnType<typeof useActivityDetailViewModel>;
 
 export type ActivityDetailSectionsProps = {
   model: ActivityDetailViewModel;
   planSections?: ActivityDetailPlanSectionsComponent | null;
   onRideshareParentLinked?: () => void;
+  hostManageSurface?: ActivityHostManageSurfaceProps | null;
 };
 
 export const ActivityDetailSections = ({
   model,
   planSections = null,
   onRideshareParentLinked,
+  hostManageSurface = null,
 }: ActivityDetailSectionsProps) => {
   const { user } = useAuth();
   if (!model.publicDetail) {
@@ -129,7 +136,7 @@ export const ActivityDetailSections = ({
     />
   ) : null;
 
-  const showParticipantsRow = participantSlot !== 'hidden';
+  const showParticipantsRow = participantSlot !== 'hidden' && !hostManageSurface?.tenantId;
 
   const rosterPreview =
     model.rosterParticipants.length > 0
@@ -186,6 +193,23 @@ export const ActivityDetailSections = ({
         venueLine={venueLine}
         statusChips={model.consumerStatusChips}
       />
+
+      {hostManageSurface?.tenantId ? (
+        <div className="mt-3 space-y-3 lg:space-y-2.5">
+          <ConsumerDetailHostParticipantsSection
+            activity={hostManageSurface.activity}
+            tenantId={hostManageSurface.tenantId}
+            caps={hostManageSurface.caps}
+            joinRequests={hostManageSurface.joinRequests}
+            requestsLoading={hostManageSurface.requestsLoading}
+            busyRequestId={hostManageSurface.busyRequestId}
+            onParticipantsError={hostManageSurface.onParticipantsError}
+            onApproveJoinRequest={hostManageSurface.onApproveJoinRequest}
+            onRejectJoinRequest={hostManageSurface.onRejectJoinRequest}
+          />
+          <ConsumerDetailHostManageSection {...hostManageSurface} activity={model.activity} />
+        </div>
+      ) : null}
 
       {isRideshare ? (
         <ActivityDetailRideshareLinkage

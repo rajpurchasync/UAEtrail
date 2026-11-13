@@ -43,6 +43,10 @@ describe('componentsClientApi (R8.1)', () => {
     expectNoDirectApi('src/components/plan/PlanNeedsYouStrip.tsx');
     expect(read('src/components/plan/PlanAvailabilitySection.tsx')).toMatch(/useMemberAvailability/);
     expectNoDirectApi('src/components/plan/PlanAvailabilitySection.tsx');
+    expect(read('src/components/plan/PlanWishlistPickSheet.tsx')).toMatch(/wishlistClientApi/);
+    expect(read('src/components/plan/PlanWishlistPickSheet.tsx')).toMatch(/usePlaceRegistry/);
+    expect(read('src/components/plan/PlanWishlistPickSheet.tsx')).not.toMatch(/publicActivitiesClientApi/);
+    expectNoDirectApi('src/components/plan/PlanWishlistPickSheet.tsx');
     expect(read('src/components/ui/TenantSwitcher.tsx')).toMatch(/tenantMembershipApi/);
     expect(read('src/components/ui/TenantSwitcher.tsx')).not.toMatch(/\bapi\./);
   });

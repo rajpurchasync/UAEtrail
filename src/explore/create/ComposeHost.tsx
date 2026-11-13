@@ -44,7 +44,7 @@ export interface ComposeHostProps {
   wizardEnteredFromMenu: boolean;
 }
 
-/** FAB compose menu and create wizards — `/explore` and `/list`. */
+/** Create-flow host (trip / venue / seek wizards) — overlay on the current surface. */
 export const ComposeHost = ({
   composeRoute,
   composeMenuOpen,

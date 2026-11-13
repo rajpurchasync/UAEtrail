@@ -31,7 +31,7 @@ import {
 import { detectAndroidWebBrowser, resolveAndroidInstallSteps, resolveIosInstallSteps } from '../../utils/pwaInstallGuide';
 import { promptAndroidInstall } from '../../utils/pwaInstallPrompt';
 import { PROFILE_SETTINGS_PATH } from '../../config/routingCatalog';
-import { PLAN_PATH } from '../../config/surfacePaths';
+import { MESSAGES_PATH, PLAN_PATH } from '../../config/surfacePaths';
 import { resolveMobileTabHeaderTitle } from '../../config/mobileTabHeader';
 import { exploreMapMobileBackState, mobileBackNavState, type MobileBackNavState } from '../../utils/mobileBackNav';
 import { isPublishingConsolePath } from '../../config/surfacePaths';
@@ -42,7 +42,19 @@ import { useAuth } from '../../context/AuthContext';
 import { persistAuthSessionTokens, switchMeRoleSession } from '../../hooks/accountSessionApi';
 import { accountRouteByRole } from '../../utils/authRouting';
 import { buildSignInRedirect, signInPathForReturn } from '../../utils/authReturnContext';
-import { resolveMobileFiveTab } from '../../config/mobileFiveTabNav';
+import {
+  mobileFiveTabHomePath,
+  resolveMobileFiveTab,
+  type MobileFiveTabId,
+} from '../../config/mobileFiveTabNav';
+
+const HAMBURGER_FIVE_TAB_BY_LABEL: Record<string, MobileFiveTabId> = {
+  Trips: 'trips',
+  Venues: 'venues',
+  Plans: 'plan',
+  Crews: 'crews',
+  Chat: 'chat',
+};
 
 type ConsumerHamburgerLinkItem = Extract<ConsumerHamburgerMenuItem, { kind: 'link' }>;
 
@@ -65,7 +77,16 @@ const isConsumerHamburgerLinkActive = (
     return pathname === EXPLORE_MAP_PATH && activeTab === 'venues';
   }
   if (item.label === 'Crews') {
-    return pathname === LIST_DISCOVERY_PATH && activeTab === 'crews';
+    if (pathname === LIST_DISCOVERY_PATH && activeTab === 'crews') return true;
+    return (
+      (pathname === EXPLORE_MAP_PATH || pathname === '/discovery') && activeTab === 'crews'
+    );
+  }
+  if (item.label === 'Chat') {
+    if (pathname !== MESSAGES_PATH && pathname !== '/publishing/messages') return false;
+    const params = new URLSearchParams(search.replace(/^\?/, ''));
+    if (params.get('to') || params.get('group')) return false;
+    return true;
   }
   if (item.label === 'Plans') {
     return pathname === PLAN_PATH || pathname.startsWith(`${PLAN_PATH}/`);
@@ -83,6 +104,8 @@ const resolveConsumerHamburgerDestination = (
 ): string => {
   if (item.profileLink) return user ? profileDestination : signInHref;
   if (item.authGate && !user) return item.to;
+  const fiveTab = HAMBURGER_FIVE_TAB_BY_LABEL[item.label];
+  if (fiveTab) return mobileFiveTabHomePath(fiveTab);
   return item.to;
 };
 

@@ -98,4 +98,36 @@ describe('create flow module boundaries (CPC-9b)', () => {
     }
     expect(read('src/explore/ui/CreateIntentSheet.tsx')).toMatch(/composePresentation="menu"/);
   });
+
+  it('create session is product-shell, not Explore-owned', () => {
+    expect(read('src/components/layout/ProductShell.tsx')).toMatch(/CreateFlowProvider/);
+    expect(read('src/list/ListDiscoveryExperience.tsx')).not.toMatch(/<ComposeHost/);
+    expect(read('src/explore/shell/ExploreExperienceOverlays.tsx')).not.toMatch(/<ComposeHost/);
+    expect(read('src/plan/PlanPage.tsx')).toMatch(/usePlanAddFlow/);
+    expect(read('src/plan/usePlanAddFlow.ts')).toMatch(/useCreateFlow/);
+    expect(read('src/plan/PlanPage.tsx')).not.toMatch(/explorePath\(\{ compose/);
+  });
+
+  it('tab FABs skip the stale Host · Find crew · Add top-level menu', () => {
+    const entry = read('src/explore/create/composeFabEntry.ts');
+    expect(entry).toMatch(/intent: 'host'/);
+    expect(entry).toMatch(/intent: 'add'/);
+    expect(entry).toMatch(/intent: 'seek'/);
+    const mapShell = read('src/explore/shell/ExploreMapShell.tsx');
+    expect(mapShell).toMatch(/onPrimaryFab=\{handlePrimaryFabTap\}/);
+    expect(mapShell).not.toMatch(/onPrimaryFab=\{compose\.handleCreateTap\}/);
+    const sheet = read('src/explore/ui/CreateIntentSheet.tsx');
+    expect(sheet).toMatch(/CREATE_TRIP_HOST_COMPOSE_OPTIONS/);
+    expect(sheet).toMatch(/CREATE_VENUE_ADD_COMPOSE_OPTIONS/);
+    expect(sheet).toMatch(/showAddVenueKinds/);
+    expect(sheet).toMatch(/CreateKindGrid/);
+    expect(sheet).not.toMatch(/ADD_TARGET_OPTIONS/);
+    const planAdd = read('src/plan/planAdd.ts');
+    expect(planAdd).toMatch(/Create Trip/);
+    expect(planAdd).toMatch(/Mark Availability/);
+    expect(planAdd).toMatch(/Set a Goal/);
+    expect(planAdd).toMatch(/Want to go/);
+    expect(planAdd).not.toMatch(/Create Wishlist/);
+    expect(read('src/components/plan/PlanAddIntentSheet.tsx')).toMatch(/CreateIntentPickerSheet/);
+  });
 });

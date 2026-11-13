@@ -1,4 +1,9 @@
 import type { MemberGoalDTO } from '@uaetrail/shared-types';
+import {
+  PLAN_GOAL_OPTION_LABEL,
+  PLAN_GOALS_SECTION_TITLE,
+  PLAN_WANT_TO_GO_SECTION_TITLE,
+} from '../../plan/planAdd';
 import { ProfileGoalsSection } from '../profile/ProfileGoalsSection';
 import type { SaveMemberGoalInput } from '../profile/ProfileGoalCard';
 import { PlanSavedSection } from './PlanSavedSection';
@@ -14,9 +19,11 @@ type PlanWishlistViewProps = {
   onReloadGoals: () => void;
   openAddSheet?: boolean;
   onOpenAddSheetHandled?: () => void;
-  /** Bumped when user taps Saved in the plan summary strip — scroll after saved list loads. */
+  onAddSheetOpenChange?: (open: boolean) => void;
+  /** Bumped when user taps Want to go in the plan summary strip — scroll after the list loads. */
   savedSummaryScrollRequest?: number;
   onSavedSummaryScrollReady?: () => void;
+  onAddWantToGo?: () => void;
 };
 
 export const PlanWishlistView = ({
@@ -29,8 +36,10 @@ export const PlanWishlistView = ({
   onReloadGoals,
   openAddSheet,
   onOpenAddSheetHandled,
+  onAddSheetOpenChange,
   savedSummaryScrollRequest = 0,
   onSavedSummaryScrollReady,
+  onAddWantToGo,
 }: PlanWishlistViewProps) => (
   <div className="space-y-8">
     <section
@@ -41,7 +50,7 @@ export const PlanWishlistView = ({
     >
       <div className="mb-3 flex items-baseline justify-between gap-2">
         <h2 id="plan-wishlist-goals-heading" className="text-sm font-bold text-neutral-900">
-          Your goals
+          {PLAN_GOALS_SECTION_TITLE}
         </h2>
         {goals.length > 0 ? (
           <span className="text-xs font-medium text-neutral-500 tabular-nums">{goals.length} total</span>
@@ -57,6 +66,8 @@ export const PlanWishlistView = ({
         onReloadGoals={onReloadGoals}
         openAddSheet={openAddSheet}
         onOpenAddSheetHandled={onOpenAddSheetHandled}
+        onAddSheetOpenChange={onAddSheetOpenChange}
+        addButtonLabel={PLAN_GOAL_OPTION_LABEL}
       />
     </section>
     <section
@@ -66,11 +77,12 @@ export const PlanWishlistView = ({
       aria-labelledby="plan-wishlist-saved-heading"
     >
       <h2 id="plan-wishlist-saved-heading" className="mb-3 text-sm font-bold text-neutral-900">
-        Saved
+        {PLAN_WANT_TO_GO_SECTION_TITLE}
       </h2>
       <PlanSavedSection
         summaryScrollRequest={savedSummaryScrollRequest}
         onSummaryScrollReady={onSavedSummaryScrollReady}
+        onAdd={onAddWantToGo}
       />
     </section>
     <PlanSuggestedRail refreshKey={refreshKey} />

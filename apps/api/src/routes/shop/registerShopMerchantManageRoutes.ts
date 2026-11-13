@@ -15,14 +15,15 @@ import {
   merchantProfilePatchSchema,
   merchantProfileSchema,
   serializeMerchantProfile,
-  shopManagePrefix,
+  shopOrganisationManagePrefixes,
   shopScopeSchema,
   type ShopManageScope,
 } from './shop-route-schemas.js';
 
-/** Shop manage (`/shop/organisation/*`). */
+/** Merchant + organisation manage (`/shop/merchant/*`, `/shop/organisation/*` profile aliases). */
 export const registerShopMerchantManageRoutes = (router: Router): void => {
-  router.get(`${shopManagePrefix}/stores`, requireAuth, requireVerifiedEmail, async (req, res, next) => {
+  shopOrganisationManagePrefixes.forEach((prefix) => {
+    router.get(`${prefix}/stores`, requireAuth, requireVerifiedEmail, async (req, res, next) => {
       try {
         const stores = await listManagedMerchantProfiles(req.auth!.userId);
         res.json({ data: stores.map(serializeMerchantProfile) });
@@ -30,9 +31,11 @@ export const registerShopMerchantManageRoutes = (router: Router): void => {
         next(error);
       }
     });
+  });
 
-  router.get(
-      `${shopManagePrefix}/profile`,
+  shopOrganisationManagePrefixes.forEach((prefix) => {
+    router.get(
+      `${prefix}/profile`,
       requireAuth,
       requireVerifiedEmail,
       validate({ query: shopScopeSchema }),
@@ -50,9 +53,11 @@ export const registerShopMerchantManageRoutes = (router: Router): void => {
         }
       }
     );
+  });
 
-  router.post(
-      `${shopManagePrefix}/profile`,
+  shopOrganisationManagePrefixes.forEach((prefix) => {
+    router.post(
+      `${prefix}/profile`,
       requireAuth,
       requireVerifiedEmail,
       validate({ body: merchantProfileSchema }),
@@ -78,9 +83,11 @@ export const registerShopMerchantManageRoutes = (router: Router): void => {
         }
       }
     );
+  });
 
-  router.patch(
-      `${shopManagePrefix}/profile`,
+  shopOrganisationManagePrefixes.forEach((prefix) => {
+    router.patch(
+      `${prefix}/profile`,
       requireAuth,
       requireVerifiedEmail,
       validate({ query: shopScopeSchema, body: merchantProfilePatchSchema }),
@@ -104,4 +111,5 @@ export const registerShopMerchantManageRoutes = (router: Router): void => {
         }
       }
     );
+  });
 };

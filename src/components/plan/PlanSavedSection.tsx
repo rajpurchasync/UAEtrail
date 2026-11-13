@@ -1,8 +1,10 @@
-import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo } from 'react';
+import { Plus } from 'lucide-react';
 import { useMeWishlist } from '../../hooks/useMeWishlist';
-import { explorePath, explorePlacesPath } from '../../explore/routing';
+import { AppButton } from '../mobile/AppButton';
 import { planWishlistSavedFocusId } from '../../plan/planWishlistReturnCapture';
+import { isPlanWantToGoVenue } from '../../plan/planHubSummaryCounts';
+import { PLAN_WANT_TO_GO_LABEL } from '../../plan/planAdd';
 import {
   resolveWishlistItemPath,
   wishlistItemPinEmoji,
@@ -12,16 +14,19 @@ import { PlanWishlistDetailLink } from './PlanWishlistDetailLink';
 import { PlanWishlistRowIcon } from './PlanWishlistRowIcon';
 
 type PlanSavedSectionProps = {
-  /** Non-zero after user taps Saved in plan summary — scroll once loading finishes. */
+  /** Non-zero after user taps Want to go in plan summary — scroll once loading finishes. */
   summaryScrollRequest?: number;
   onSummaryScrollReady?: () => void;
+  onAdd?: () => void;
 };
 
 export const PlanSavedSection = ({
   summaryScrollRequest = 0,
   onSummaryScrollReady,
+  onAdd,
 }: PlanSavedSectionProps) => {
   const { items, loading, error, refetch } = useMeWishlist();
+  const venues = useMemo(() => items.filter(isPlanWantToGoVenue), [items]);
 
   useEffect(() => {
     if (!summaryScrollRequest || !onSummaryScrollReady) return;
@@ -30,7 +35,7 @@ export const PlanSavedSection = ({
   }, [summaryScrollRequest, loading, onSummaryScrollReady]);
 
   if (loading) {
-    return <p className="text-sm text-neutral-500">Loading saved…</p>;
+    return <p className="text-sm text-neutral-500">Loading…</p>;
   }
 
   if (error) {
@@ -48,35 +53,43 @@ export const PlanSavedSection = ({
     );
   }
 
-  if (items.length === 0) {
-    return (
-      <div className="glass-card space-y-3 p-6 text-center text-sm text-neutral-600">
-        <p>Save outings and places from the map to compare and get alerts.</p>
-        <Link to={explorePlacesPath()} className="inline-block font-semibold text-emerald-700">
-          Explore the map
-        </Link>
-      </div>
-    );
-  }
-
   return (
-    <ul className="space-y-2">
-      {items.map((item) => {
-        const to = resolveWishlistItemPath(item) ?? explorePath();
-        const title = wishlistItemTitle(item);
-        return (
-          <li key={item.id}>
-            <PlanWishlistDetailLink
-              to={to}
-              navFocus={planWishlistSavedFocusId(item.id)}
-              className="glass-card-interactive flex items-center gap-3 px-4 py-3 text-sm font-medium text-neutral-900"
-            >
-              <PlanWishlistRowIcon emoji={wishlistItemPinEmoji(item)} />
-              <span className="min-w-0 flex-1 truncate">{title}</span>
-            </PlanWishlistDetailLink>
-          </li>
-        );
-      })}
-    </ul>
+    <div className="space-y-3">
+      {venues.length > 0 ? (
+        <ul className="space-y-2">
+          {venues.map((item) => {
+            const to = resolveWishlistItemPath(item);
+            if (!to) return null;
+            const title = wishlistItemTitle(item);
+            return (
+              <li key={item.id}>
+                <PlanWishlistDetailLink
+                  to={to}
+                  navFocus={planWishlistSavedFocusId(item.id)}
+                  className="glass-card-interactive flex items-center gap-3 px-4 py-3 text-sm font-medium text-neutral-900"
+                >
+                  <PlanWishlistRowIcon emoji={wishlistItemPinEmoji(item)} />
+                  <span className="min-w-0 flex-1 truncate">{title}</span>
+                </PlanWishlistDetailLink>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+      {onAdd ? (
+        <AppButton
+          type="button"
+          variant="tint"
+          fullWidth
+          className="!min-h-[44px]"
+          onClick={onAdd}
+        >
+          <span className="inline-flex items-center justify-center gap-2">
+            <Plus className="h-4 w-4" aria-hidden />
+            {PLAN_WANT_TO_GO_LABEL}
+          </span>
+        </AppButton>
+      ) : null}
+    </div>
   );
 };

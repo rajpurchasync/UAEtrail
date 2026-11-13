@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { ActivityConsumerDetailModalShell } from '../../activity/detail/templates/ActivityConsumerDetailModalShell';
+import { MobileDetailScrollShell } from '../../components/mobile/MobileDetailScrollShell';
 import type { ConsumerDetailHeaderMark } from '../../components/mobile/ConsumerDetailHeaderChromeTitle';
 
 /**
@@ -40,7 +40,7 @@ export const DetailPageShell = ({
   keyFacts?: ReactNode;
   aside?: ReactNode;
   children: ReactNode;
-  /** Activity L3 already wraps `ActivityConsumerDetailModalShell` — skip a second chrome. */
+  /** Activity L3 already wraps `MobileDetailScrollShell` — skip a second chrome. */
   withModalChrome?: boolean;
   preferDeclaredBackLabel?: boolean;
   /** Center children in the scroll viewport (entity detail loading). */
@@ -91,9 +91,9 @@ export const DetailPageShell = ({
 
 
   return (
-    <ActivityConsumerDetailModalShell
+    <MobileDetailScrollShell
       backTo={backTo}
-      backLabel={backLabel ?? ''}
+      backLabel={backLabel ?? 'Back'}
       headerChrome={headerChrome}
       headerAction={headerAction}
       footer={footer}
@@ -101,6 +101,6 @@ export const DetailPageShell = ({
       preferDeclaredBackLabel={preferDeclaredBackLabel}
     >
       {body}
-    </ActivityConsumerDetailModalShell>
+    </MobileDetailScrollShell>
   );
 };

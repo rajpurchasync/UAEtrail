@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { Route, Routes, Navigate } from 'react-router-dom';
+import { Route, Routes, Navigate, type Location } from 'react-router-dom';
 import { EXPLORE_MAP_PATH, LIST_DISCOVERY_PATH } from '../config/routingCatalogLite';
 import {
   INBOUND_CONTRIBUTIONS_PATH,
@@ -47,8 +47,8 @@ import {
 import { ProtectedRoute, Home, ExploreExperience, BrowseListPage, DiscoveryRedirect, InboundCanonicalPlaceRedirect, InboundMerchantPublicRedirect, InboundProductPathRedirect, InboundMessagesRedirect, InboundProMembershipRedirect, InboundProfileWishlistRedirect, InboundRetiredPublishingConsoleRedirect, InboundProfileHistoryAliasRedirect, InboundJourneyMapAliasRedirect, InboundLegacyProfileSettingsRedirect, InboundLegacyNotificationsRedirect, ShopBrowseRoute, CalendarRedirect, PeopleRedirect, PlanBrowseRoute, HostingHubPage, CanonicalPlaceDetailPage, VenuePlaceDetailPage, FacilityDetailPage, ProfileProMembership, ShopPublic, ActivityDetail, ActivityCrewPage, OrganisationProfile, MemberProfile, SignUp, SignIn, VerifyOTP, WelcomeSignup, ForgotPassword, AdminInbox, AdminSubmissions, AdminPlaces, AdminAreas, AreaDetailPage, AdminOrganisations, AdminActivities, AdminMembers, AdminGroups, AdminAuditLog, AdminReports, AdminSettings, AdminAccount, AdminNotifications, AdminAlerts, GeoTreePage, GeoCountryPage, GeoNodePage, PlanTodayPage, PublishingOverview, PublishingActivities, PublishingJoinRequests, PublishingTeam, PublishingPublicProfileEdit, PublishingPlaces, PublishingHistory, UserRequests, MessagesGate, ShopManageRedirect, AgencyManageRedirect, PublishingManage, ProfileHistoryPage, JourneyMapPage, Profile, ProfileSettings, ProfileSettingsDisplay, ProfileSettingsAccount, ProfileSettingsPrivacy, ProfileSettingsNotifications, ProfileSettingsSafety, ProfileVehiclesPage, ProfileVehicleNewPage, ProfileVehicleEditPage, ProfileEdit, ProfileBadges, Submissions, ProfileReviews, JoinRequestDetail, Groups, Buddies, SecurityPrivacy, Terms, Privacy, Faq, About, Contact, SiteMap, NotFound, DashboardRedirect } from './appLazyPages';
 import { PageLoader, AuthAliasRedirect } from './appRouteChrome';
 
-export const AppRoutes = () => (
-  <Routes>
+export const AppRoutes = ({ location }: { location: Location }) => (
+  <Routes location={location}>
           <Route path="/" element={<Home />} />
           <Route path="/map" element={<Navigate to={EXPLORE_MAP_PATH} replace />} />
           <Route

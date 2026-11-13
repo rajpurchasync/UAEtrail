@@ -1,14 +1,23 @@
 import { getAppScrollContainer } from '../../config/layoutScroll';
 
-/** Nearest overflow scroller for consumer entity detail (modal shell or app root). */
-export const findConsumerDetailScrollRoot = (from?: Element | null): HTMLElement | null => {
+/** Nearest overflow scroller for member entity detail (modal shell or app root). */
+export const findEntityDetailScrollRoot = (from?: Element | null): HTMLElement | null => {
   if (from instanceof HTMLElement) {
-    const nearest = from.closest<HTMLElement>('[data-consumer-detail-scroll]');
+    const nearest = from.closest<HTMLElement>(
+      '[data-entity-detail-scroll],[data-consumer-detail-scroll]'
+    );
     if (nearest) return nearest;
+    const shell = from.closest<HTMLElement>('[data-entity-detail-scroll-shell]');
+    if (shell) {
+      const inner = shell.querySelector<HTMLElement>('[data-entity-detail-scroll]');
+      if (inner) return inner;
+    }
   }
 
   const modal = document.querySelector<HTMLElement>('[data-activity-detail-modal-shell]');
-  const modalScroll = modal?.querySelector<HTMLElement>('[data-consumer-detail-scroll]');
+  const modalScroll = modal?.querySelector<HTMLElement>(
+    '[data-entity-detail-scroll],[data-consumer-detail-scroll]'
+  );
   if (modalScroll) return modalScroll;
 
   let el: HTMLElement | null = (from?.parentElement as HTMLElement | null) ?? null;
@@ -61,7 +70,7 @@ const scrollRootOffsetTop = (node: HTMLElement, root: HTMLElement): number => {
 };
 
 /** Scroll in-page section anchors inside the detail scroller (hash links break with nested overflow). */
-export const scrollConsumerDetailToId = (
+export const scrollEntityDetailToId = (
   id: string,
   behavior: ScrollBehavior = 'smooth'
 ): boolean => {
@@ -70,7 +79,7 @@ export const scrollConsumerDetailToId = (
     preferMainColumnScrollTarget([...candidates]) ?? document.getElementById(id);
   if (!target) return false;
 
-  const root = findConsumerDetailScrollRoot(target);
+  const root = findEntityDetailScrollRoot(target);
   if (!root) {
     target.scrollIntoView({ behavior, block: 'start' });
     return true;
@@ -95,3 +104,9 @@ export const scrollConsumerDetailToId = (
   }
   return true;
 };
+
+/** @deprecated Use {@link findEntityDetailScrollRoot}. */
+export const findConsumerDetailScrollRoot = findEntityDetailScrollRoot;
+
+/** @deprecated Use {@link scrollEntityDetailToId}. */
+export const scrollConsumerDetailToId = scrollEntityDetailToId;

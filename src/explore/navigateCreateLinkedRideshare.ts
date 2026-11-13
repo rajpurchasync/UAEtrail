@@ -3,7 +3,7 @@ import type { NavigateFunction } from 'react-router-dom';
 import { hostCompose } from './compose';
 import { composeFlowIdFromRoute } from './composeFlowCatalog';
 import { buildRideshareDraftFromParentActivity } from './linkRidesharePrefill';
-import { explorePath } from './routing';
+import { createFlowPathFromWindow } from '../create/createFlowPath';
 import { writeHostingWizardSession } from './ui/composeWizardSession';
 
 /** Open explore organize rideshare wizard prefilled from a parent outing. */
@@ -25,5 +25,5 @@ export const navigateToCreateLinkedRideshare = (
       scope
     );
   }
-  navigate(explorePath({ compose: composeRoute }));
+  navigate(createFlowPathFromWindow(composeRoute));
 };

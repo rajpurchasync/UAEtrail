@@ -1,4 +1,3 @@
-import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Mountain } from 'lucide-react';
@@ -8,12 +7,11 @@ import { PageMeta } from '../components/seo/PageMeta';
 
 import { isSignupProfileComplete } from '../constants/userProfileOptions';
 import type { UserCountryCode, UserGender } from '../constants/userProfileOptions';
+import { PRODUCT_SIGNUP_FINISH_TITLE } from '../content/productNorthStar';
 import {
-  PRODUCT_AUTH_SIGNUP_SUBLINE,
-  PRODUCT_SIGNUP_FINISH_SUBLINE,
-  PRODUCT_SIGNUP_FINISH_TITLE,
-} from '../content/productNorthStar';
-import { EXPLORE_WELCOME_FINISH_STATE } from '../explore/exploreWelcomeNavigation';
+  EXPLORE_WELCOME_FINISH_STATE,
+  resolveWelcomeFinishExplorePath,
+} from '../explore/exploreWelcomeNavigation';
 import { persistAuthReturnContextForPath } from '../utils/authPostLoginNavigation';
 
 type WelcomeLocationState = {
@@ -24,7 +22,7 @@ export const WelcomeSignup = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const state = (location.state as WelcomeLocationState | null) ?? {};
-  const redirectTo = state.redirectTo ?? EXPLORE_MAP_PATH;
+  const finishExplorePath = resolveWelcomeFinishExplorePath(state.redirectTo);
   const [loadingProfile, setLoadingProfile] = useState(true);
 
   const [profileDraft, setProfileDraft] = useState<{
@@ -35,23 +33,23 @@ export const WelcomeSignup = () => {
   } | null>(null);
 
   const goToMap = () => {
-    persistAuthReturnContextForPath(redirectTo);
-    navigate(redirectTo, { replace: true, state: EXPLORE_WELCOME_FINISH_STATE });
+    persistAuthReturnContextForPath(finishExplorePath);
+    navigate(finishExplorePath, { replace: true, state: EXPLORE_WELCOME_FINISH_STATE });
   };
 
   useEffect(() => {
     void fetchMeProfile()
       .then((profile) => {
         if (isSignupProfileComplete(profile)) {
-          persistAuthReturnContextForPath(redirectTo);
-          navigate(redirectTo, { replace: true, state: EXPLORE_WELCOME_FINISH_STATE });
+          persistAuthReturnContextForPath(finishExplorePath);
+          navigate(finishExplorePath, { replace: true, state: EXPLORE_WELCOME_FINISH_STATE });
           return;
         }
         setProfileDraft(profile);
       })
       .catch(() => undefined)
       .finally(() => setLoadingProfile(false));
-  }, [navigate, redirectTo]);
+  }, [finishExplorePath, navigate]);
 
   if (loadingProfile) {
     return (
@@ -71,9 +69,7 @@ export const WelcomeSignup = () => {
               <Mountain className="w-6 h-6 text-white" />
             </div>
           </Link>
-          <h1 className="text-[28px] font-bold text-neutral-900 tracking-tight">{PRODUCT_SIGNUP_FINISH_TITLE}</h1>
-          <p className="text-[15px] text-neutral-500 mt-2">{PRODUCT_SIGNUP_FINISH_SUBLINE}</p>
-          <p className="text-xs text-neutral-400 mt-2">{PRODUCT_AUTH_SIGNUP_SUBLINE}</p>
+          <h1 className="text-xl font-bold text-neutral-900 tracking-tight">{PRODUCT_SIGNUP_FINISH_TITLE}</h1>
         </div>
 
         {profileDraft ? (

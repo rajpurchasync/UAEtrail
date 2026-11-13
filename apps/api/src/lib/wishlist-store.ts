@@ -251,6 +251,52 @@ export const listWishlistItemsWithDetails = async (userId: string): Promise<Wish
   }));
 };
 
+export type WishlistVenueMapRow = {
+  wishlistItemId: string;
+  locationId: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  activityType: string;
+  createdAt: Date;
+};
+
+/** Catalog venues on the member wishlist that have coordinates for the journey map. */
+export const listWishlistVenuesForJourneyMap = async (
+  userId: string
+): Promise<WishlistVenueMapRow[]> => {
+  const rows = await listUserWishlistItems(userId);
+  const locationIds = [
+    ...new Set(rows.map((row) => row.locationId).filter((id): id is string => Boolean(id))),
+  ];
+  if (locationIds.length === 0) return [];
+
+  const locationDocs = await locationsCollection()
+    .find(
+      { _id: { $in: locationIds } },
+      { projection: { name: 1, activityType: 1, latitude: 1, longitude: 1 } }
+    )
+    .toArray();
+  const locationMap = new Map(locationDocs.map((location) => [location._id, location]));
+
+  const out: WishlistVenueMapRow[] = [];
+  for (const row of rows) {
+    if (!row.locationId) continue;
+    const location = locationMap.get(row.locationId);
+    if (!location || location.latitude == null || location.longitude == null) continue;
+    out.push({
+      wishlistItemId: row.id,
+      locationId: row.locationId,
+      name: location.name,
+      latitude: location.latitude,
+      longitude: location.longitude,
+      activityType: location.activityType,
+      createdAt: row.createdAt,
+    });
+  }
+  return out;
+};
+
 export const deleteWishlistItemsForUser = async (userId: string): Promise<void> => {
   await wishlistCollection().deleteMany({ userId });
 };

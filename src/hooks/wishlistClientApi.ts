@@ -1,7 +1,7 @@
 import type { WishlistItemDTO } from '@uaetrail/shared-types';
 import type { QueryClient } from '@tanstack/react-query';
 import { api } from '../api/index';
-import { meWishlistQueryKey } from './clientQueryKeys';
+import { meWishlistQueryKey, memberJourneyMapQueryKeyPrefix } from './clientQueryKeys';
 
 export type WishlistTarget = {
   locationId?: string;
@@ -36,4 +36,5 @@ export const fetchMeWishlist = async (): Promise<WishlistItemDTO[]> => {
 
 export const invalidateMeWishlistQueries = (queryClient: QueryClient): void => {
   void queryClient.invalidateQueries({ queryKey: meWishlistQueryKey });
+  void queryClient.invalidateQueries({ queryKey: memberJourneyMapQueryKeyPrefix });
 };

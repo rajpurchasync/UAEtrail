@@ -10,11 +10,11 @@ import { resolveGuestSurfaceForPath } from '../utils/guestSurfaceByPath';
 import { joinedSubViewTitle } from '../pages/activities/shared';
 import {
   isConsumerChromeHidden,
-  isConsumerEntityDetailRoute,
+  isEntityDetailRoute,
   isMobileBottomNavTabPath,
   MOBILE_BOTTOM_NAV_PROFILE_PATHS,
-  shouldShowConsumerShellHamburger,
   shouldShowMobileBottomNav,
+  shouldShowProductShellHamburger,
 } from './platform';
 import {
   MESSAGES_PATH,
@@ -68,7 +68,7 @@ const LAYOUT_UNIFIED_HEADER_EXACT = new Set([
 /** Routes that use layout `MobileUnifiedTabHeader` (not entity detail shells). */
 export const isLayoutMobileUnifiedHeaderRoute = (pathname: string): boolean => {
   if (isConsumerChromeHidden(pathname)) return false;
-  if (isConsumerEntityDetailRoute(pathname)) return false;
+  if (isEntityDetailRoute(pathname)) return false;
   // Member cards title themselves in ConsumerShell (display name), not "Member".
   if (pathname.startsWith('/member/')) return false;
   if (pathname === '/explore' || isMobileTabHeaderRoute(pathname)) return true;
@@ -130,6 +130,6 @@ export const shouldShowMobileUnifiedTabHeader = (
   if (pathname === '/explore') return true;
   if (!signedIn) return isMobileBottomNavTabPath(pathname);
   if (shouldShowMobileBottomNav(pathname, search, signedIn)) return true;
-  if (shouldShowConsumerShellHamburger(pathname)) return true;
+  if (shouldShowProductShellHamburger(pathname)) return true;
   return false;
 };

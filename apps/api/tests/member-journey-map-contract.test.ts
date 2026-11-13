@@ -14,4 +14,15 @@ describe('Member journey map HTTP contract', () => {
     const readService = read('src/services/me-map-pins-read.ts');
     expect(readService).toContain('buildMemberJourneyMap');
   });
+
+  it('composes catalog wishlist venues onto journey map entries', () => {
+    const store = read('src/lib/wishlist-store.ts');
+    const entries = read('src/services/member-outdoor-map-entries.ts');
+    const map = read('src/services/member-journey-map.ts');
+    expect(store).toContain('listWishlistVenuesForJourneyMap');
+    expect(entries).toContain('listWishlistVenuesForJourneyMap');
+    expect(entries).toContain('place:');
+    expect(entries).toContain('Want to go');
+    expect(map).toContain("entry.categories.includes('wishlist')");
+  });
 });

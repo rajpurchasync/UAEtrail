@@ -9,15 +9,16 @@ import type {
 } from '@uaetrail/shared-types';
 import type { UserProfile } from '../api/types';
 import { api } from '../api/index';
+import { normalizeMeProfile } from '../utils/normalizeMeProfile';
 
 export const fetchMeProfile = async (): Promise<UserProfile> => {
   const res = await api.getMeProfile();
-  return res.data;
+  return normalizeMeProfile(res.data);
 };
 
 export const updateMeProfile = async (payload: Partial<UserProfile>): Promise<UserProfile> => {
   const res = await api.updateMeProfile(payload);
-  return res.data;
+  return normalizeMeProfile(res.data);
 };
 
 export type MemberProfilePrivacySettings = ProfileFieldPrivacySettings & {

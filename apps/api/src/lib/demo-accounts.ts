@@ -1,5 +1,6 @@
 import { UserRole } from '../domain/enums.js';
 import { DEV_QA_PERSONAS } from './dev-demo-personas.js';
+import { stripAccountRoleDisplaySuffix } from '@uaetrail/shared-types';
 import { withDemoQuickLoginRoleSuffix } from './demo-quick-login-labels.js';
 
 export { DEMO_QUICK_LOGIN_ROLE_SUFFIX, withDemoQuickLoginRoleSuffix } from './demo-quick-login-labels.js';
@@ -82,7 +83,7 @@ export const listDemoQuickLoginCatalog = (): Array<{
     .filter(([, account]) => account.quickLogin)
     .map(([email, account]) => ({
       email,
-      displayName: account.displayName,
+      displayName: stripAccountRoleDisplaySuffix(account.displayName),
       role: account.role,
       roleLabel: ROLE_LABELS[account.role],
     }))
