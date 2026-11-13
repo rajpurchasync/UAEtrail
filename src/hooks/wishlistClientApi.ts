@@ -5,6 +5,7 @@ import { meWishlistQueryKey } from './clientQueryKeys';
 
 export type WishlistTarget = {
   locationId?: string;
+  areaId?: string;
   activityId?: string;
   alertOnMatch?: boolean;
   watchOutingCategory?: string | null;

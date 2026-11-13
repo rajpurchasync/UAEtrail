@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { EXPLORE_MAP_PATH, hasSessionExpiredQuery, joinAuthPath } from '../config/routingCatalogLite';
-import { ADMIN_OVERVIEW_PATH } from '../config/adminSurfacePaths';
+import { ADMIN_INBOX_PATH } from '../config/adminSurfacePaths';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { DEFAULT_OG_IMAGE } from '../config/seo';
 import { PageMeta } from '../components/seo/PageMeta';
@@ -44,7 +44,7 @@ export const Home = () => {
 
   if (user) {
     if (isPlatformAdmin(user.role)) {
-      return <Navigate to={ADMIN_OVERVIEW_PATH} replace />;
+      return <Navigate to={ADMIN_INBOX_PATH} replace />;
     }
     return <Navigate to={EXPLORE_MAP_PATH} replace />;
   }

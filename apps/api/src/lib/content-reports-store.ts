@@ -11,6 +11,9 @@ export type ContentReportReason = (typeof CONTENT_REPORT_REASONS)[number];
 export const CONTENT_REPORT_TARGET_TYPES = ['user', 'message', 'post', 'review', 'reply'] as const;
 export type ContentReportTargetType = (typeof CONTENT_REPORT_TARGET_TYPES)[number];
 
+export const CONTENT_REPORT_STATUSES = ['open', 'resolved', 'dismissed'] as const;
+export type ContentReportStatus = (typeof CONTENT_REPORT_STATUSES)[number];
+
 type MongoContentReport = {
   _id: string;
   reporterUserId: string;
@@ -18,6 +21,10 @@ type MongoContentReport = {
   targetId: string;
   reason: ContentReportReason;
   details: string | null;
+  status?: ContentReportStatus;
+  resolutionNote?: string | null;
+  resolvedAt?: Date | null;
+  resolvedByUserId?: string | null;
   createdAt: Date;
 };
 
@@ -50,6 +57,9 @@ export type AdminContentReportRow = {
   targetId: string;
   reason: ContentReportReason;
   details: string | null;
+  status: ContentReportStatus;
+  resolutionNote: string | null;
+  resolvedAt: string | null;
   createdAt: string;
   reporter: {
     id: string;
@@ -63,6 +73,7 @@ export const listContentReportsAdmin = async (input: {
   take: number;
   reason?: ContentReportReason;
   targetType?: ContentReportTargetType;
+  status?: ContentReportStatus;
   reporterUserIds?: string[];
   createdAtFrom?: Date;
   createdAtTo?: Date;
@@ -70,6 +81,11 @@ export const listContentReportsAdmin = async (input: {
   const query: Record<string, unknown> = {};
   if (input.reason) query.reason = input.reason;
   if (input.targetType) query.targetType = input.targetType;
+  if (input.status === 'open') {
+    query.$or = [{ status: 'open' }, { status: { $exists: false } }, { status: null }];
+  } else if (input.status) {
+    query.status = input.status;
+  }
   if (input.reporterUserIds) query.reporterUserId = { $in: input.reporterUserIds };
   if (input.createdAtFrom || input.createdAtTo) {
     const createdAt: Record<string, Date> = {};
@@ -95,6 +111,9 @@ export const listContentReportsAdmin = async (input: {
       targetId: doc.targetId,
       reason: doc.reason,
       details: doc.details,
+      status: doc.status ?? 'open',
+      resolutionNote: doc.resolutionNote ?? null,
+      resolvedAt: doc.resolvedAt ? doc.resolvedAt.toISOString() : null,
       createdAt: doc.createdAt.toISOString(),
       reporter: {
         id: doc.reporterUserId,
@@ -105,4 +124,45 @@ export const listContentReportsAdmin = async (input: {
   });
 
   return { items, total };
+};
+
+export const updateContentReportStatus = async (input: {
+  id: string;
+  status: Exclude<ContentReportStatus, 'open'>;
+  note?: string | null;
+  actorUserId: string;
+}): Promise<AdminContentReportRow | null> => {
+  const resolvedAt = new Date();
+  const result = await reportsCollection().findOneAndUpdate(
+    { _id: input.id },
+    {
+      $set: {
+        status: input.status,
+        resolutionNote: input.note?.trim() || null,
+        resolvedAt,
+        resolvedByUserId: input.actorUserId,
+      },
+    },
+    { returnDocument: 'after' }
+  );
+  const doc = result;
+  if (!doc) return null;
+  const reporters = await findAuthUsersByIds([doc.reporterUserId]);
+  const reporter = reporters[0];
+  return {
+    id: doc._id,
+    targetType: doc.targetType,
+    targetId: doc.targetId,
+    reason: doc.reason,
+    details: doc.details,
+    status: doc.status ?? input.status,
+    resolutionNote: doc.resolutionNote ?? null,
+    resolvedAt: doc.resolvedAt ? doc.resolvedAt.toISOString() : resolvedAt.toISOString(),
+    createdAt: doc.createdAt.toISOString(),
+    reporter: {
+      id: doc.reporterUserId,
+      email: reporter?.email ?? 'unknown',
+      displayName: reporter?.profile.displayName ?? null,
+    },
+  };
 };

@@ -9,15 +9,17 @@ import {
   readExploreGuestMapPreviewDismissed,
   writeExploreGuestMapPreviewDismissed,
 } from '../guestMapPreviewPolicy';
-import { Plus } from 'lucide-react';
+import { List, Plus } from 'lucide-react';
+import { UiTooltip } from '../../components/ui/UiTooltip';
 import { isGeographyMapSource, type ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { MapBounds, PlaceMapPin } from '../../components/ui/PlacesMap';
 import { getMapBounds } from '../../config/regions';
 import { MAP_CONFIG, getExploreMapTiles, type ExploreMapStyle } from '../../config/platform';
 import { hasSessionExpiredQuery } from '../../config/surfacePaths';
-import { EXPLORE_Z } from '../../config/exploreTheme';
+import { EXPLORE_MAP_FLOATING_CHROME_BTN, EXPLORE_Z } from '../../config/exploreTheme';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import type { JoinRequestUiState } from '../../utils/joinRequestUi';
+import { ExploreCoachMarks } from './ExploreCoachMarks';
 import { ExploreDismissibleNotice } from './ExploreDismissibleNotice';
 import { ExploreGuestPreviewLimitBanner } from './ExploreGuestPreviewLimitBanner';
 import { ActivityMapPeekHost } from './ActivityMapPeekHost';
@@ -26,8 +28,6 @@ import { ExploreMapLoadErrorBoundary } from './ExploreMapLoadErrorBoundary';
 import { ExploreMapLoadingSkeleton } from './ExploreMapLoadingSkeleton';
 import { ExploreMapLocationPrompt } from './ExploreMapLocationPrompt';
 import { ExploreMapControlToolbar } from './ExploreMapControlToolbar';
-import { ExploreMapMobileDock } from './ExploreMapMobileDock';
-import { CatalogMapPeekHost } from './CatalogMapPeekHost';
 import { PlaceMapPeekHost } from './peek/place/PlaceMapPeekHost';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import type { ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
@@ -59,17 +59,11 @@ export type ExploreMapStageProps = {
   onVenueRegionsChange: (regions: string[]) => void;
   venueFilter?: VenueListFilterKey;
   onVenueFilterChange?: (filter: VenueListFilterKey) => void;
-  tripMapTopics?: import('../exploreMapQuickTopicFilters').TripMapTopicKey[];
-  placeMapTopics?: import('../exploreMapQuickTopicFilters').PlaceMapTopicKey[];
-  priceFilter?: import('../exploreOptionalFilters').ExplorePriceFilter;
-  hasTrip?: boolean;
-  facilityKinds?: import('@uaetrail/shared-types').PlaceKind[];
-  onTripTopicsChange?: (next: import('../exploreMapQuickTopicFilters').TripMapTopicKey[]) => void;
-  onPlaceTopicsChange?: (next: import('../exploreMapQuickTopicFilters').PlaceMapTopicKey[]) => void;
-  onPriceFilterChange?: (next: import('../exploreOptionalFilters').ExplorePriceFilter) => void;
-  onHasTripChange?: (next: boolean) => void;
-  onFacilityKindsChange?: (next: import('@uaetrail/shared-types').PlaceKind[]) => void;
-  onVenueFiltersChange?: (next: import('../exploreOptionalFilters').ExploreVenueFilterPatch) => void;
+  onOpenPeopleBrowsePanel?: () => void;
+  peopleBrowsePanelAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
+  peopleBrowsePanelFriendCount?: number;
+  peopleBrowseGuest?: boolean;
+  peopleBrowsePossibleCrewCount?: number;
   exploreMapStyle: ExploreMapStyle;
   exploreMapTiles: ExploreMapTiles;
   onToggleMapStyle: () => void;
@@ -79,6 +73,7 @@ export type ExploreMapStageProps = {
   highlightedExploreItemId?: string | null;
   recenterTo: MapRecenterTarget | null;
   exploreMapCenter: { lat: number; lng: number };
+  deviceLocation?: { lat: number; lng: number } | null;
   onPinClick: (pin: PlaceMapPin) => void;
   onVisibleBoundsChange?: (bounds: MapBounds) => void;
   loading: boolean;
@@ -112,13 +107,15 @@ export type ExploreMapStageProps = {
   onGuestGatedAction?: (action: import('@uaetrail/shared-types').ActivityMapPeekActionId) => void;
   joinInvitePeekBanner?: string | null;
   onShareActivity?: () => void;
-  /** Desktop overlay — Find crew rail or guest sign-in popup. */
+  /** Desktop overlay — guest sign-in gates centered over the map. */
   desktopRightPanelOverlay?: ReactNode;
-  /** `rail` = right column; `centered` = modal over map (guest gates). */
-  desktopMapOverlayLayout?: 'rail' | 'centered';
+  /** Find crew — people pins only, list docked beside the map, no outing filters. */
+  peopleMap?: boolean;
   /** Search modal + results — scoped to map pane. */
   mapSearchOverlay?: ReactNode;
   mapSearchOpen?: boolean;
+  /** Leaflet invalidateSize when left rails or list/crew modes change width. */
+  mapLayoutRevision?: boolean;
 };
 
 export const ExploreMapStage = ({
@@ -139,17 +136,11 @@ export const ExploreMapStage = ({
   onVenueRegionsChange,
   venueFilter,
   onVenueFilterChange,
-  tripMapTopics = [],
-  placeMapTopics = [],
-  priceFilter = 'all',
-  hasTrip = false,
-  facilityKinds = [],
-  onTripTopicsChange,
-  onPlaceTopicsChange,
-  onPriceFilterChange,
-  onHasTripChange,
-  onFacilityKindsChange,
-  onVenueFiltersChange,
+  onOpenPeopleBrowsePanel,
+  peopleBrowsePanelAvatars,
+  peopleBrowsePanelFriendCount,
+  peopleBrowseGuest = false,
+  peopleBrowsePossibleCrewCount = 0,
   exploreMapStyle,
   exploreMapTiles,
   onToggleMapStyle,
@@ -159,6 +150,7 @@ export const ExploreMapStage = ({
   highlightedExploreItemId = null,
   recenterTo,
   exploreMapCenter,
+  deviceLocation = null,
   onPinClick,
   onVisibleBoundsChange,
   loading,
@@ -193,9 +185,10 @@ export const ExploreMapStage = ({
   joinInvitePeekBanner = null,
   onShareActivity,
   desktopRightPanelOverlay = null,
-  desktopMapOverlayLayout = 'rail',
+  peopleMap = false,
   mapSearchOverlay = null,
   mapSearchOpen = false,
+  mapLayoutRevision = false,
 }: ExploreMapStageProps) => {
   const [searchParams] = useSearchParams();
   const [guestPreviewDismissed, setGuestPreviewDismissed] = useState(() =>
@@ -219,6 +212,7 @@ export const ExploreMapStage = ({
     isGuestMapCatalogPreviewLimited() &&
     !user &&
     !listOpen &&
+    !loadError &&
     !guestPreviewDismissed &&
     !guestExplorePreviewLimitReached() &&
     !mapSearchOpen &&
@@ -229,7 +223,7 @@ export const ExploreMapStage = ({
 
   return (
   <div className="explore-map-stage relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-    <div className="relative z-0 min-h-0 flex-1 isolate overflow-hidden">
+    <div className="relative z-0 min-h-0 min-w-0 flex-1 isolate overflow-hidden">
       <div className="absolute inset-0 z-0 min-h-[280px]">
         <ExploreMapLoadErrorBoundary onRetry={onReloadMap}>
         <Suspense fallback={<div className="h-full min-h-[280px] w-full bg-[#2a3441]" aria-hidden />}>
@@ -249,16 +243,19 @@ export const ExploreMapStage = ({
           onVisibleBoundsChange={onVisibleBoundsChange}
           recenterTo={recenterTo}
           exploreMapCenter={exploreMapCenter}
+          deviceLocation={deviceLocation}
           className="h-full w-full min-h-[280px]"
           onMapReady={handleMapReady}
-          layoutRevision={listOpen}
+          layoutRevision={mapLayoutRevision || listOpen || peopleMap}
           onSelectedPinScreenPoint={handleSelectedPinScreenPoint}
         />
         </Suspense>
         </ExploreMapLoadErrorBoundary>
       </div>
 
-      {!(isDesktop && listOpen) ? (
+      {!listOpen && !isDesktop && user ? <ExploreCoachMarks /> : null}
+
+      {!(isDesktop) && !peopleMap ? (
       <ExploreMapChromeBar
         panel={panel}
         mapFilter={mapFilter}
@@ -270,17 +267,11 @@ export const ExploreMapStage = ({
         onVenueRegionsChange={onVenueRegionsChange}
         venueFilter={venueFilter}
         onVenueFilterChange={onVenueFilterChange}
-        tripMapTopics={tripMapTopics}
-        placeMapTopics={placeMapTopics}
-        priceFilter={priceFilter}
-        hasTrip={hasTrip}
-        facilityKinds={facilityKinds}
-        onTripTopicsChange={onTripTopicsChange}
-        onPlaceTopicsChange={onPlaceTopicsChange}
-        onPriceFilterChange={onPriceFilterChange}
-        onHasTripChange={onHasTripChange}
-        onFacilityKindsChange={onFacilityKindsChange}
-        onVenueFiltersChange={onVenueFiltersChange}
+        onOpenPeopleBrowsePanel={onOpenPeopleBrowsePanel}
+        peopleBrowsePanelAvatars={peopleBrowsePanelAvatars}
+        peopleBrowsePanelFriendCount={peopleBrowsePanelFriendCount}
+        peopleBrowseGuest={peopleBrowseGuest}
+        peopleBrowsePossibleCrewCount={peopleBrowsePossibleCrewCount}
         searchQuery={searchQuery}
         onSearchQueryChange={onSearchQueryChange}
         onSearchCommit={onSearchCommit}
@@ -317,7 +308,7 @@ export const ExploreMapStage = ({
         />
       ) : null}
 
-      {!user && !listOpen && guestExplorePreviewLimitReached() ? (
+      {!user && !listOpen && !loadError && guestExplorePreviewLimitReached() ? (
         <ExploreGuestPreviewLimitBanner />
       ) : null}
 
@@ -336,23 +327,55 @@ export const ExploreMapStage = ({
 
       {loading && mapPins.length === 0 ? <ExploreMapLoadingSkeleton /> : null}
 
-      {!listOpen ? (
-        <ExploreMapMobileDock
-          onOpenBrowse={onOpenBrowse}
-          onPrimaryFab={onPrimaryFab}
-          primaryFabLabel={primaryFabLabel}
-          onLocateMe={onLocateMe}
-          locatingDevice={locatingDevice}
-          exploreMapStyle={exploreMapStyle}
-          onToggleMapStyle={onToggleMapStyle}
-        />
+      {!listOpen && !peopleMap ? (
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-[calc(var(--explore-float-base)+var(--explore-map-fab-inset))] z-[1100] grid grid-cols-[1fr_auto] grid-rows-[auto_auto] items-center gap-x-3 px-4 md:hidden"
+          style={{ rowGap: 'var(--explore-map-fab-stack-gap)' }}
+        >
+          <div className="pointer-events-auto col-start-1 row-start-1 self-center justify-self-start">
+            <button
+              type="button"
+              onClick={onOpenBrowse}
+              className={EXPLORE_MAP_FLOATING_CHROME_BTN}
+            >
+              <List
+                className="h-6 w-6 shrink-0 text-current"
+                strokeWidth={1.25}
+                absoluteStrokeWidth
+                aria-hidden
+              />
+              List
+            </button>
+          </div>
+          <div className="pointer-events-auto col-start-2 row-start-1">
+            <ExploreMapControlToolbar
+              onLocate={onLocateMe}
+              locating={locatingDevice}
+              mapStyle={exploreMapStyle}
+              onToggleMapStyle={onToggleMapStyle}
+            />
+          </div>
+          <div className="pointer-events-auto col-start-2 row-start-2 justify-self-center">
+            <UiTooltip label={primaryFabLabel}>
+            <button
+              type="button"
+              onClick={onPrimaryFab}
+              className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white shadow-[0_4px_20px_rgba(5,150,105,.45)] hover:bg-emerald-700 active:scale-[0.98]"
+              aria-label={primaryFabLabel}
+            >
+              <Plus className="h-6 w-6 shrink-0" strokeWidth={2.5} aria-hidden />
+            </button>
+            </UiTooltip>
+          </div>
+        </div>
       ) : null}
 
       <div
         className="pointer-events-none absolute right-4 z-[1100] hidden md:flex md:flex-col md:items-end"
         style={{
-          bottom:
-            'calc(var(--explore-map-desktop-fab-bottom) + var(--explore-map-desktop-primary-fab-height) + var(--explore-map-fab-stack-gap) + var(--explore-map-desktop-zoom-clearance))',
+          bottom: peopleMap
+            ? 'var(--explore-map-desktop-fab-bottom)'
+            : 'calc(var(--explore-map-desktop-fab-bottom) + var(--explore-map-desktop-primary-fab-height) + var(--explore-map-fab-stack-gap) + var(--explore-map-desktop-zoom-clearance))',
         }}
       >
         <ExploreMapControlToolbar
@@ -365,20 +388,22 @@ export const ExploreMapStage = ({
           onToggleMapStyle={onToggleMapStyle}
         />
       </div>
+      {!peopleMap ? (
       <div
         className="pointer-events-none absolute right-4 z-[1100] hidden md:block"
         style={{ bottom: 'var(--explore-map-desktop-fab-bottom)' }}
       >
         <button
           type="button"
-          onClick={() => onPrimaryFab()}
-          className="pointer-events-auto inline-flex min-h-14 shrink-0 items-center gap-2 rounded-full bg-emerald-600 px-6 py-3.5 text-base font-bold text-white shadow-[0_4px_20px_rgba(5,150,105,.45)] hover:bg-emerald-700 active:scale-[0.98]"
+          onClick={onPrimaryFab}
+          className="pointer-events-auto inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_4px_16px_rgba(5,150,105,.35)] hover:bg-emerald-700 active:scale-[0.98]"
           aria-label={primaryFabLabel}
         >
           <Plus className="h-5 w-5 shrink-0" strokeWidth={2.5} aria-hidden />
           {primaryFabLabel}
         </button>
       </div>
+      ) : null}
 
       {selectedCard && selected && isGeographyMapSource(selected.source) ? (
         <PlaceMapPeekHost
@@ -388,7 +413,7 @@ export const ExploreMapStage = ({
           pinAnchor={pinAnchor}
           pinKey={selected.id}
         />
-      ) : selectedCard?.source === 'activity' ? (
+      ) : selectedCard ? (
         <ActivityMapPeekHost
           card={selectedCard}
           pinAnchor={pinAnchor}
@@ -407,26 +432,12 @@ export const ExploreMapStage = ({
           joinInvitePeekBanner={joinInvitePeekBanner}
           onShareActivity={onShareActivity}
         />
-      ) : selectedCard ? (
-        <CatalogMapPeekHost
-          card={selectedCard}
-          pinAnchor={pinAnchor}
-          pinKey={selected?.id ?? null}
-          onClose={onCloseSelection}
-          onGuestGatedAction={
-            guestGatedActionForActivity ? () => guestGatedActionForActivity('view_detail') : undefined
-          }
-        />
       ) : null}
     </div>
 
     {desktopRightPanelOverlay ? (
       <div
-        className={
-          desktopMapOverlayLayout === 'centered'
-            ? `pointer-events-none absolute inset-0 ${EXPLORE_Z.guestJoinSheet}`
-            : 'pointer-events-none absolute inset-0 z-[1200] flex h-full min-h-0 justify-end'
-        }
+        className={`pointer-events-none absolute inset-0 ${EXPLORE_Z.guestJoinSheet}`}
         role="presentation"
       >
         {desktopRightPanelOverlay}

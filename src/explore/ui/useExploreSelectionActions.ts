@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 import type { QueryClient } from '@tanstack/react-query';
-import type { NavigateFunction } from 'react-router-dom';
-import { useLocation } from 'react-router-dom';
+import { useLocation, type NavigateFunction } from 'react-router-dom';
 import {
   type ActivityDTO,
   type ActivityMapPeekActionId,
@@ -37,6 +36,7 @@ import { useExploreActivityPinDeepLink } from './useExploreActivityPinDeepLink';
 import { useExploreSelectionRemovals } from './useExploreSelectionRemovals';
 import { hostPublishAvailabilityNoticeMessage } from '../../plan/hostPublishAvailabilityNotice';
 import { recordGuestExplorePreviewView } from '../guestMapPreviewPolicy';
+import { navigateToAuthGate, withAuthResumeShare } from '../../utils/authReturnContext';
 
 type BrowseState = ReturnType<typeof useExploreBrowseUrlState>;
 
@@ -191,12 +191,22 @@ export const useExploreSelectionActions = ({
     onInviteActivity?.(activity, { canSendBuddyInvites: true });
   }, [onInviteActivity, selected?.activity]);
 
+  const handleGuestShareActivity = useCallback(
+    (activity: ActivityDTO) => {
+      navigateToAuthGate(navigate, location, {
+        returnPath: withAuthResumeShare(activityDetailPath(activity.id)),
+      });
+    },
+    [location, navigate]
+  );
+
   const handleSharePeek = useExplorePeekShareAction({
     selectedCard,
     activity: selected?.activity,
     user,
     onInviteActivity,
     onShareHostedActivity,
+    onGuestShareActivity: handleGuestShareActivity,
   });
 
   const handleActivityMapPeekAction = useCallback(

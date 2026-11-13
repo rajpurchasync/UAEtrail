@@ -17,6 +17,7 @@ import { listBuddiesForUser, listBuddyRequestsForUser } from '../lib/buddy-store
 import { listFollowingForUser } from '../lib/follow-store.js';
 import { loadExploreMapItemsForMemberEngagement } from '../lib/explore-map-member-engagement.js';
 import { filterInboxMessageablePartnerIds } from './chat-policy.js';
+import { resolveCityLabelForViewer } from '../lib/find-crew-visibility-gate.js';
 import { buildMemberTripHintMap } from './member-trip-hints.js';
 
 export type MemberPersonRowSeed = {
@@ -66,33 +67,40 @@ export const enrichMemberPersonRows = async (
       .filter(Boolean) as string[]
   );
 
-  return seeds.map((seed) => {
-    const user = userMap.get(seed.userId);
-    const city = user?.profile?.city;
-    const cityLabel =
-      city && city in USER_CITY_LABELS ? USER_CITY_LABELS[city as UserCity] : null;
-    const relationship = buddyIds.has(seed.userId) ? 'friend' : 'following';
-    const buddyRequestState = buddyRequestStateForTarget(
-      seed.userId,
-      pendingIncoming,
-      pendingOutgoing
-    );
-    const areBuddies = relationship === 'friend';
+  return Promise.all(
+    seeds.map(async (seed) => {
+      const user = userMap.get(seed.userId);
+      const city = user?.profile?.city;
+      const rawCityLabel =
+        city && city in USER_CITY_LABELS ? USER_CITY_LABELS[city as UserCity] : null;
+      const relationship = buddyIds.has(seed.userId) ? 'friend' : 'following';
+      const buddyRequestState = buddyRequestStateForTarget(
+        seed.userId,
+        pendingIncoming,
+        pendingOutgoing
+      );
+      const areBuddies = relationship === 'friend';
+      const cityLabel = user
+        ? await resolveCityLabelForViewer(user, viewerUserId, rawCityLabel, {
+            isBuddy: areBuddies,
+          })
+        : null;
 
-    return {
-      userId: seed.userId,
-      displayName: seed.displayName,
-      avatarUrl: seed.avatarUrl,
-      cityLabel,
-      activitiesAttended: attendedMap.get(seed.userId) ?? 0,
-      relationship,
-      buddyRequestState,
-      canMessage: buddyIds.has(seed.userId) || messageablePartnerIds.has(seed.userId),
-      canSendBuddyRequest:
-        !areBuddies && buddyRequestState === 'none' && seed.userId !== viewerUserId,
-      upcomingTrip: seed.upcomingTrip,
-    };
-  });
+      return {
+        userId: seed.userId,
+        displayName: seed.displayName,
+        avatarUrl: seed.avatarUrl,
+        cityLabel,
+        activitiesAttended: attendedMap.get(seed.userId) ?? 0,
+        relationship,
+        buddyRequestState,
+        canMessage: buddyIds.has(seed.userId) || messageablePartnerIds.has(seed.userId),
+        canSendBuddyRequest:
+          !areBuddies && buddyRequestState === 'none' && seed.userId !== viewerUserId,
+        upcomingTrip: seed.upcomingTrip,
+      };
+    })
+  );
 };
 
 type PersonSeed = {

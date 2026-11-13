@@ -1,4 +1,4 @@
-import { PRODUCT_JOIN_CTA, PRODUCT_TAGLINE } from './productNorthStar';
+import { GUEST_OUTING_SIGN_UP_CTA, PRODUCT_JOIN_CTA, PRODUCT_TAGLINE } from './productNorthStar';
 import { EXPLORE_GUEST_MAP_PREVIEW_MAX_MATCHES } from '../explore/exploreBrowseTaxonomy';
 import type { GuestBrowseGateIntent } from './guestBrowseGateCopy';
 
@@ -19,7 +19,8 @@ export type GuestFeatureUnlockKey =
   | 'badges'
   | 'submissions'
   | 'settings-hub'
-  | 'preview-limit';
+  | 'preview-limit'
+  | 'geo-places';
 
 export type GuestFeatureUnlockCopy = {
   emoji: string;
@@ -46,7 +47,7 @@ const COPY: Record<GuestFeatureUnlockKey, GuestFeatureUnlockCopy> = {
     title: 'Join this outing',
     lead: 'Say you’re going, meet the host, and show up with people who actually turn up.',
     bullets: ['Request a spot or RSVP in one tap', 'Chat with your crew before the trail', 'Build a streak of real plans'],
-    signUpLabel: PRODUCT_JOIN_CTA,
+    signUpLabel: GUEST_OUTING_SIGN_UP_CTA,
   },
   'map-peek': {
     emoji: '🗺️',
@@ -139,6 +140,17 @@ const COPY: Record<GuestFeatureUnlockKey, GuestFeatureUnlockCopy> = {
     bullets: ['Control who sees your profile', 'Notification preferences', 'Safety and emergency info'],
     signUpLabel: PRODUCT_JOIN_CTA,
   },
+  'geo-places': {
+    emoji: '🗺️',
+    title: 'Places by area',
+    lead: 'Browse countries, emirates, and areas with live counts of outings and spots — then drill into what’s happening near you.',
+    bullets: [
+      'See activities and places rolled up by region',
+      'Open emirates and neighborhoods from one tree',
+      'Explore scoped lists without losing the map',
+    ],
+    signUpLabel: PRODUCT_JOIN_CTA,
+  },
   'preview-limit': {
     emoji: '🔒',
     title: 'Preview limit reached',
@@ -171,5 +183,7 @@ export const guestBrowseGateIntentToFeatureKey = (
       return 'join-outing';
     case 'member-profile':
       return 'member-profile';
+    case 'place-detail':
+      return 'geo-places';
   }
 };

@@ -65,6 +65,22 @@ export const loginDemo = async (email: string): Promise<AuthResponse & { demoLog
   );
 };
 
+export type DemoLoginCatalogAccount = {
+  email: string;
+  displayName: string;
+  role: string;
+  roleLabel: string;
+};
+
+export const fetchDemoLoginCatalog = async (): Promise<DemoLoginCatalogAccount[]> => {
+  try {
+    const res = await apiRequest<{ accounts: DemoLoginCatalogAccount[] }>('/auth/demo-login-catalog');
+    return res.accounts ?? [];
+  } catch {
+    return [];
+  }
+};
+
 export const verifyEmailOtp = async (
   email: string,
   otp: string

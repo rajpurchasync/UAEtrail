@@ -9,7 +9,7 @@ export const ActivityDetailLeadDateChip = ({
   if (!leadDate.day && !leadDate.month) return null;
   return (
     <div
-      className="flex min-h-[4.25rem] w-[4.75rem] shrink-0 flex-col items-center justify-center rounded-xl bg-emerald-600 px-1.5 py-1.5 text-center text-white shadow-sm lg:min-h-[3.35rem] lg:w-[3.6rem] lg:rounded-lg"
+      className="flex min-h-[4.25rem] w-[4.75rem] shrink-0 flex-col items-center justify-center rounded-xl bg-emerald-600 px-1.5 py-1.5 text-center text-white shadow-sm md:min-h-[3.5rem] md:w-[4rem] md:rounded-lg md:py-1 lg:min-h-[3.25rem] lg:w-[3.5rem]"
       aria-label={
         [leadDate.weekday, leadDate.day, leadDate.month].filter(Boolean).join(' ') || undefined
       }

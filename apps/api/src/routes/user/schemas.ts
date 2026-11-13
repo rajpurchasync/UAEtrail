@@ -1,4 +1,4 @@
-import { FACILITY_KINDS } from '@uaetrail/shared-types';
+import { FACILITY_KINDS, PROFILE_FIELD_PRIVACY_KEYS } from '@uaetrail/shared-types';
 import { z } from 'zod';
 import { UserRole } from '../../domain/enums.js';
 import { personNameSchema } from '../../domain/person-name.js';
@@ -11,6 +11,8 @@ export const createRequestSchema = z.object({
   note: z.string().max(1000).optional(),
   packingCheckedIds: z.array(z.string().min(1).max(80)).max(40).optional(),
   packingSignature: z.string().max(80).optional(),
+  adults: z.coerce.number().int().min(1).max(20).optional(),
+  kids: z.coerce.number().int().min(0).max(20).optional(),
 });
 
 export const rsvpSchema = createRequestSchema;
@@ -50,6 +52,88 @@ export const updateProfileSchema = z
     { message: 'Provide both name and surname.' }
   );
 
+const profileFieldAudienceSchema = z.enum([
+  'hidden',
+  'friends',
+  'friends_of_friends',
+  'public',
+]);
+
+const profileDateOfBirthShareSchema = z.enum([
+  'hidden',
+  'month_day_friends',
+  'month_day_friends_of_friends',
+  'month_day_public',
+  'full_friends',
+  'full_friends_of_friends',
+  'full_public',
+]);
+
+const profileFriendsListShareSchema = z.enum([
+  'only_me',
+  'friends_crew',
+  'friends_of_friends',
+  'mutual_only',
+]);
+
+const findCrewVisibilitySchema = z.enum(['friends', 'friends_of_friends', 'none']);
+
+export const updateProfileFieldPrivacySchema = z
+  .object({
+    fieldPrivacy: z
+      .object(
+        Object.fromEntries(
+          PROFILE_FIELD_PRIVACY_KEYS.map((key) => [key, profileFieldAudienceSchema.optional()])
+        ) as Record<(typeof PROFILE_FIELD_PRIVACY_KEYS)[number], z.ZodOptional<typeof profileFieldAudienceSchema>>
+      )
+      .strict()
+      .optional(),
+    dateOfBirthShare: profileDateOfBirthShareSchema.optional(),
+    friendsListShare: profileFriendsListShareSchema.optional(),
+    findCrewVisibility: findCrewVisibilitySchema.optional(),
+  })
+  .refine(
+    (body) =>
+      body.fieldPrivacy !== undefined ||
+      body.dateOfBirthShare !== undefined ||
+      body.friendsListShare !== undefined ||
+      body.findCrewVisibility !== undefined,
+    {
+      message:
+        'Provide fieldPrivacy, dateOfBirthShare, friendsListShare, and/or findCrewVisibility.',
+    }
+  );
+
+const notificationChannelSchema = z
+  .object({
+    email: z.boolean().optional(),
+    push: z.boolean().optional(),
+    inApp: z.boolean().optional(),
+  })
+  .strict();
+
+export const updateNotificationPreferencesSchema = z
+  .object({
+    topics: z
+      .object({
+        plans: notificationChannelSchema.optional(),
+        social: notificationChannelSchema.optional(),
+        account: notificationChannelSchema.optional(),
+        map_alerts: notificationChannelSchema.optional(),
+      })
+      .strict()
+      .optional(),
+    dnd: z
+      .object({
+        mode: z.enum(['off', 'always', 'schedule']).optional(),
+        fromDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+        toDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
+
 export const requestEmailChangeSchema = z.object({
   newEmail: z.string().email()
 });
@@ -84,10 +168,10 @@ export const acceptInviteSchema = z.object({
   token: z.string().min(20)
 });
 
-export const createKidSchema = z.object({
-  displayName: z.string().min(2).max(80),
-  role: z.enum(['buddy', 'admin']).optional()
-});
+export {
+  createKidSchema,
+  patchKidSchema,
+} from '../../domain/family-kid-profile.js';
 
 export const groupMembershipPatchSchema = z
   .object({
@@ -158,6 +242,10 @@ export const listFilterSchema = z.object({
   lng: z.coerce.number().optional(),
   radius: z.coerce.number().min(1).max(500).default(50).optional(),
   countryCode: z.string().length(2).optional(),
+  q: z.string().max(120).optional(),
+  country: z.string().max(80).optional(),
+  area: z.string().max(80).optional(),
+  venue: z.string().max(80).optional(),
   page: z.coerce.number().int().min(1).default(1).optional(),
   pageSize: z.coerce.number().int().min(1).max(100).default(20).optional()
 });

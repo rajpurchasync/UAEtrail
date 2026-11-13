@@ -10,6 +10,7 @@ import {
   registerVerifiedVisitor,
   type PublishedEventFixture
 } from './helpers/fixtures.js';
+import { getMongoClient } from '../src/lib/mongo.js';
 
 let app: Express;
 const suffix = `${Date.now()}`;
@@ -58,6 +59,29 @@ describe('join request flow integration', () => {
     expect(joinRes.body.data.activityId).toBe(openFixture.activityId);
     expect(joinRes.body.data.status).toBe('pending');
     expect(joinRes.body.data.waitlisted).toBe(false);
+  });
+
+  it('rejects join when the outing is full and waitlist is off', async () => {
+    const closed = await createFullEventFixture(`${suffix}-nowait`);
+    await getMongoClient()!
+      .db()
+      .collection('activities')
+      .updateOne({ _id: closed.activityId }, { $set: { waitlist: false } });
+
+    const closedVisitor = await registerVerifiedVisitor(app, `${suffix}-nowait-user`);
+    const login = await request(app)
+      .post('/api/auth/login')
+      .send({ email: closedVisitor.email, password: closedVisitor.password });
+    const token = login.body.tokens.accessToken as string;
+
+    const joinRes = await request(app)
+      .post(`/api/activities/${closed.activityId}/requests`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ note: 'Should be blocked' });
+
+    expect(joinRes.status).toBe(400);
+    expect(joinRes.body.error.code).toBe('activity_full');
+    await cleanupEventFixture(closed);
   });
 
   it('returns waitlisted status when event is at capacity', async () => {

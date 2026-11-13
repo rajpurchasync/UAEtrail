@@ -52,15 +52,31 @@ export const resolveParticipationModeForJoinMode = (input: {
   return resolveParticipationMode(input.participationMode, input.requirements);
 };
 
+/** Guest activity join CTA — auth required, not pricing (“outing is free”). */
+export const ACTIVITY_GUEST_JOIN_LABEL = 'Sign in to join';
+
+/** @deprecated Use {@link ACTIVITY_GUEST_JOIN_LABEL}. */
+export const ACTIVITY_GUEST_JOIN_LABEL_RSVP = ACTIVITY_GUEST_JOIN_LABEL;
+
+/** @deprecated Use {@link ACTIVITY_GUEST_JOIN_LABEL}. */
+export const ACTIVITY_GUEST_JOIN_LABEL_APPROVAL = ACTIVITY_GUEST_JOIN_LABEL;
+
 /** Primary join CTA on activity detail and explore cards. */
 export const activityJoinCtaLabel = (options: {
   participationMode?: ParticipationMode | null;
   requirements?: string[] | null;
   isFull?: boolean;
+  /** Signed-out viewer — not the same as capacity full when slots are unknown. */
+  requiresSignIn?: boolean;
+  price?: number | null;
+  pricingMode?: import('./activity-pricing.js').ActivityPricingMode | null;
 }): string => {
   const mode = resolveParticipationMode(options.participationMode, options.requirements);
   if (options.isFull) {
     return mode === 'rsvp' ? 'Activity full' : 'Join waitlist';
+  }
+  if (options.requiresSignIn) {
+    return ACTIVITY_GUEST_JOIN_LABEL;
   }
   return mode === 'rsvp' ? "I'm going" : 'Request to join';
 };

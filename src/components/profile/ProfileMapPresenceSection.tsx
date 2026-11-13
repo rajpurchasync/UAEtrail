@@ -13,8 +13,12 @@ const HOST_PROFILE_CHIPS = [
   { key: 'shop' as const, intent: 'add-shop' as HostFlowIntent, label: 'Shop', emoji: '🛍️' },
 ];
 
+type ProfileMapPresenceSectionProps = {
+  embedded?: boolean;
+};
+
 /** Manage guide, agency, and shop publishing profiles. Only physical shops appear on the explore map. */
-export const ProfileMapPresenceSection = () => {
+export const ProfileMapPresenceSection = ({ embedded = false }: ProfileMapPresenceSectionProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { loading, hasGuideProfile, hasAgencyProfile, hasShopProfile, ownedProfiles } = useMemberStatus();
@@ -36,15 +40,21 @@ export const ProfileMapPresenceSection = () => {
 
   const activeCount = HOST_PROFILE_CHIPS.filter((chip) => isActive(chip.key)).length;
 
-  return (
-    <GlassCard padding id="host-profiles" className="scroll-mt-24 animate-fade-up">
-      <div className="mb-3">
-        <h2 className="text-sm font-bold text-neutral-900">Publishing profiles</h2>
-        <p className="mt-1 text-xs text-neutral-500 leading-relaxed">
-          Guides and agencies host activities on UAE Trail. Gear shops can pin a store on the map or list as an online
-          partner — separate from your personal profile.
-        </p>
-      </div>
+  const intro = (
+    <p className={`text-xs leading-relaxed text-neutral-500 ${embedded ? 'mb-3' : 'mt-1'}`}>
+      Guides and agencies host activities on UAE Trail. Gear shops can pin a store on the map or list as an online
+      partner — separate from your personal profile.
+    </p>
+  );
+
+  const body = (
+    <>
+      {embedded ? intro : (
+        <div className="mb-3">
+          <h2 className="text-sm font-bold text-neutral-900">Publishing profiles</h2>
+          {intro}
+        </div>
+      )}
 
       {loading ? (
         <p className="text-sm text-neutral-500">Loading…</p>
@@ -99,6 +109,16 @@ export const ProfileMapPresenceSection = () => {
           </div>
         </>
       )}
+    </>
+  );
+
+  if (embedded) {
+    return <div className="min-w-0 animate-fade-up">{body}</div>;
+  }
+
+  return (
+    <GlassCard padding id="host-profiles" className="scroll-mt-24 animate-fade-up">
+      {body}
     </GlassCard>
   );
 };

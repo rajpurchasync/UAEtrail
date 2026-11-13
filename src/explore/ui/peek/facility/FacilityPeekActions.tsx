@@ -1,7 +1,27 @@
+import type { ReactNode } from 'react';
+import { FileText, RefreshCw } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 import type { DiscoveryCardModel } from '../../../../discovery/discoveryCardModel';
-import { discoveryCardHasMapCoords } from '../../../../discovery/discoveryCardModel';
-import { DiscoveryCardDirectionsButton } from '../../DiscoveryCardPresentation';
+import {
+  FACILITY_PEEK_FOOTER_UPDATE,
+  FACILITY_PEEK_FOOTER_VIEW_DETAILS,
+} from '../../../../content/facilityPeekCopy';
+import { EXPLORE_PEEK_CTA } from '../../../../config/exploreTheme';
 import { PeekDetailLink } from '../../map-peek/PeekDetailLink';
+import { mapPeekDetailNavState } from '../../../mapPeekDetailNavState';
+import { ActivityPeekFooterIcon } from '../activity/ActivityPeekFooterIcon';
+import { FACILITY_DETAIL_REPORT_SECTION_ID } from '../../../../facility/facilityDetailAnchors';
+import type { PlaceKind } from '@uaetrail/shared-types';
+
+const COMMERCIAL_FACILITY_KINDS = new Set<PlaceKind>([
+  'grocery',
+  'food',
+  'gas_station',
+  'outdoor_shop',
+]);
+
+const facilitySupportsConditionUpdate = (card: DiscoveryCardModel): boolean =>
+  !COMMERCIAL_FACILITY_KINDS.has(card.kind as PlaceKind);
 
 export type FacilityPeekActionsProps = {
   card: DiscoveryCardModel;
@@ -9,30 +29,71 @@ export type FacilityPeekActionsProps = {
   onGuestGatedAction?: () => void;
 };
 
-/** Amenity pin. Directions and the facility page — same job as `FacilityDetailSections`. */
+const PeekFooterLinkTile = ({
+  to,
+  icon,
+  label,
+  ariaLabel,
+  onBeforeNavigate,
+}: {
+  to: string;
+  icon: ReactNode;
+  label: ReactNode;
+  ariaLabel: string;
+  onBeforeNavigate?: () => void;
+}) => (
+  <Link
+    to={to}
+    className={EXPLORE_PEEK_CTA.peekTile}
+    aria-label={ariaLabel}
+    onClick={() => onBeforeNavigate?.()}
+  >
+    {icon}
+    <span className="max-w-full px-0.5">{label}</span>
+  </Link>
+);
+
 export const FacilityPeekActions = ({
   card,
   onClose,
   onGuestGatedAction,
 }: FacilityPeekActionsProps) => {
-  const hasCoords = discoveryCardHasMapCoords(card);
+  const location = useLocation();
+  const detailPath = card.path?.trim();
+  if (!detailPath) return null;
+
+  const showUpdate = facilitySupportsConditionUpdate(card);
+  const updatePath = showUpdate
+    ? `${detailPath}#${FACILITY_DETAIL_REPORT_SECTION_ID}`
+    : detailPath;
+
+  const viewDetailsLabel = (
+    <>
+      <ActivityPeekFooterIcon icon={FileText} />
+      <span>{FACILITY_PEEK_FOOTER_VIEW_DETAILS}</span>
+    </>
+  );
 
   return (
-    <div className="flex flex-col gap-2">
-      {hasCoords ? (
-        <DiscoveryCardDirectionsButton
-          latitude={card.mapLatitude}
-          longitude={card.mapLongitude}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-sm font-bold text-white"
-        />
-      ) : null}
+    <div className={`grid gap-1.5 ${showUpdate ? 'grid-cols-2' : 'grid-cols-1'}`}>
       <PeekDetailLink
         card={card}
-        label={card.primaryCta || 'View details'}
-        className="block w-full rounded-2xl bg-neutral-100 py-3.5 text-center text-base font-bold text-gray-900"
+        label={viewDetailsLabel}
+        className={EXPLORE_PEEK_CTA.peekTile}
         onGuestGatedAction={onGuestGatedAction}
         onBeforeNavigate={onClose}
+        linkState={mapPeekDetailNavState(location)}
+        ariaLabel={FACILITY_PEEK_FOOTER_VIEW_DETAILS}
       />
+      {showUpdate ? (
+        <PeekFooterLinkTile
+          to={updatePath}
+          icon={<ActivityPeekFooterIcon icon={RefreshCw} />}
+          label={FACILITY_PEEK_FOOTER_UPDATE}
+          ariaLabel={FACILITY_PEEK_FOOTER_UPDATE}
+          onBeforeNavigate={onClose}
+        />
+      ) : null}
     </div>
   );
 };

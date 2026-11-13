@@ -82,6 +82,10 @@ export interface TeamMember {
 export interface ActivityRequestView {
   id: string;
   status: string;
+  adults?: number;
+  kids?: number;
+  partyMembers?: import('@uaetrail/shared-types').ActivityPartyMemberDTO[];
+  partyApprovalPending?: boolean;
   note?: string;
   hostNote?: string;
   cancelReason?: string | null;
@@ -93,6 +97,7 @@ export interface ActivityRequestView {
     email: string;
     displayName: string;
     medicalSafety?: import('@uaetrail/shared-types').MemberMedicalSafetyDTO | null;
+    joinProfile?: import('@uaetrail/shared-types').HostJoinProfileSnippetDTO | null;
   };
   activity: {
     id: string;
@@ -122,6 +127,10 @@ export interface UserProfile {
   bio?: string;
   avatarUrl?: string;
   profileVisibility?: 'public' | 'group_members' | 'private';
+  fieldPrivacy?: import('@uaetrail/shared-types').ProfileFieldPrivacySettings;
+  dateOfBirthShare?: import('@uaetrail/shared-types').ProfileDateOfBirthShare;
+  friendsListShare?: import('@uaetrail/shared-types').ProfileFriendsListShare;
+  findCrewVisibility?: import('@uaetrail/shared-types').FindCrewVisibility;
   dateOfBirth?: string | null;
   gender?: 'male' | 'female' | 'prefer_not_to_say' | null;
   city?:
@@ -141,6 +150,7 @@ export interface UserProfile {
   medicalConditions?: string | null;
   emergencyContactName?: string | null;
   emergencyContactPhone?: string | null;
+  emergencyContactRelation?: string | null;
   medicalSafetyProfileComplete?: boolean;
   memberSince?: string;
 }
@@ -159,6 +169,11 @@ export type PublicMemberProfileDTO =
       bio: string | null;
       city: string | null;
       languages: string | null;
+      age: number | null;
+      birthYear?: number | null;
+      /** `MM-DD` when day+month only is shared. */
+      monthDay?: string | null;
+      dateOfBirth?: string | null;
       memberSince: string;
       isHost: boolean;
       profileRoleLabel?: import('@uaetrail/shared-types').MemberProfileRoleLabel;
@@ -166,6 +181,8 @@ export type PublicMemberProfileDTO =
       hostProfileKind: 'shop' | 'agency' | 'guide' | null;
       hostProfilePath: string | null;
       linkedOperatorName?: string | null;
+      /** Publishing tenant for community host reviews (`targetType=tenant`). */
+      publishingTenantId?: string | null;
       badges: Array<{
         key: string;
         name: string;
@@ -177,7 +194,9 @@ export type PublicMemberProfileDTO =
       stats: {
         activitiesAttended: number;
         activitiesHosted: number;
-      };
+      } | null;
+      vehicles: import('@uaetrail/shared-types').RideshareVehiclePublicDTO[] | null;
+      availability?: import('@uaetrail/shared-types').MemberAvailabilityPublicDTO | null;
       yearGoal: {
         activityFilter: 'hiking' | 'camping' | 'all_outings';
         countMode?: 'join' | 'host';
@@ -210,6 +229,8 @@ export interface SocialGroupView {
   chatPreview?: SocialGroupChatPreviewDTO;
 }
 
+export type FamilyKidGender = 'male' | 'female' | 'prefer_not_to_say';
+
 export interface SocialGroupMemberView {
   id: string;
   groupId: string;
@@ -221,6 +242,15 @@ export interface SocialGroupMemberView {
   createdByUserId: string;
   createdAt: string;
   isActive?: boolean;
+  dateOfBirth?: string | null;
+  emergencyContactName?: string | null;
+  emergencyContactPhone?: string | null;
+  emergencyContactRelation?: string | null;
+  medicalConditions?: string | null;
+  gender?: FamilyKidGender | null;
+  photoUrl?: string | null;
+  /** Kid rows only — ready to attach to an outing. */
+  profileComplete?: boolean;
   user?: {
     id: string;
     email: string;
@@ -228,6 +258,22 @@ export interface SocialGroupMemberView {
     avatarUrl?: string | null;
   } | null;
 }
+
+export type FamilyKidProfilePayload = {
+  displayName: string;
+  dateOfBirth: string;
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  emergencyContactRelation?: string | null;
+  medicalConditions: string;
+  gender?: FamilyKidGender | null;
+  photoUrl?: string | null;
+  role?: 'admin' | 'buddy';
+};
+
+export type FamilyKidProfilePatchPayload = Partial<
+  Omit<FamilyKidProfilePayload, 'role'>
+>;
 
 export interface SocialGroupInviteView {
   id: string;
@@ -310,12 +356,17 @@ export interface AccountDeletionInfo {
 export type ContentReportTargetType = 'user' | 'message' | 'post' | 'review' | 'reply';
 export type ContentReportReason = 'spam' | 'harassment' | 'other';
 
+export type ContentReportStatus = 'open' | 'resolved' | 'dismissed';
+
 export interface AdminContentReportEntry {
   id: string;
   targetType: ContentReportTargetType;
   targetId: string;
   reason: ContentReportReason;
   details: string | null;
+  status: ContentReportStatus;
+  resolutionNote: string | null;
+  resolvedAt: string | null;
   createdAt: string;
   reporter: {
     id: string;

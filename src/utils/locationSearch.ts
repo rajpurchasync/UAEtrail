@@ -5,8 +5,7 @@ const REGION_ALIAS_GROUPS: string[][] = [
   ['rak', 'ras al khaimah', 'ras'],
   ['dubai', 'hatta'],
   ['fujairah', 'dibba', 'khor fakkan'],
-  ['abu dhabi'],
-  ['al ain', 'jebel hafeet'],
+  ['abu dhabi', 'al ain', 'alain', 'jebel hafeet'],
   ['sharjah'],
   ['ajman'],
   ['umm al quwain', 'uaq']

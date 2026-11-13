@@ -11,6 +11,7 @@ describe('wishlist saved place publish notify', () => {
     const activities = read('src/lib/activities-store.ts');
 
     expect(store).toMatch(/listWishlistSaversForLocation/);
+    expect(store).toMatch(/listWishlistSaversForArea/);
     expect(alerts).toMatch(/listWishlistSaversForLocation/);
     expect(alerts).toMatch(/fanOutSavedPlaceWishlistNotifications/);
     expect(alerts).toMatch(/kind: 'wishlist_match'/);

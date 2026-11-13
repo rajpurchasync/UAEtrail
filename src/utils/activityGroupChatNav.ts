@@ -1,5 +1,6 @@
 import type { NavigateFunction } from 'react-router-dom';
 import { messagesGroupChatPath } from '../config/routingCatalog';
+import { groupsManagePath, type GroupManageSection } from '../config/surfacePaths';
 import { resolveAuthRedirect } from './authRedirect';
 
 /** Deep link to the single group chat tied to an activity (Chat tab). */
@@ -26,6 +27,15 @@ export const navigateToActivityGroupChat = (
   navigate(activityGroupChatPath(groupId, activityId), {
     state: safeReturn ? { [MESSAGES_CHAT_RETURN_TO_KEY]: safeReturn } : undefined,
   });
+};
+
+/** From Social Groups manage hub — open chat and return to manage on back. */
+export const navigateToGroupChatFromSocial = (
+  navigate: NavigateFunction,
+  groupId: string,
+  manageSection: GroupManageSection = 'hub'
+): void => {
+  navigateToActivityGroupChat(navigate, groupId, groupsManagePath(groupId, manageSection));
 };
 
 /** Direct thread from map peek — back returns to explore/list pin when `returnTo` is set. */

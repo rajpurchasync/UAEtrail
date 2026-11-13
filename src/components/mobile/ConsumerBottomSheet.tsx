@@ -1,4 +1,5 @@
 import { ReactNode, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { CONSUMER_MAIN_OVERLAY_INSET } from '../../config/consumerOverlayInset';
@@ -43,7 +44,7 @@ export const ConsumerBottomSheet = ({
 
   const warm = headerTone === 'warm';
 
-  return (
+  const sheet = (
     <div
       className={`${CONSUMER_MAIN_OVERLAY_INSET} flex items-end justify-center sm:items-center sm:p-4`}
       style={{ zIndex }}
@@ -114,4 +115,7 @@ export const ConsumerBottomSheet = ({
       </div>
     </div>
   );
+
+  if (typeof document === 'undefined') return sheet;
+  return createPortal(sheet, document.body);
 };

@@ -7,6 +7,7 @@ import type {
   ActivityGroupChatPostPolicy,
   ActivityGuideHostDTO,
   ParticipantDTO,
+  PublishingActivityUpsertBody,
 } from '@uaetrail/shared-types';
 import { api } from '../api/index';
 
@@ -107,6 +108,14 @@ export const publishActivity = async (tenantId: string, activityId: string): Pro
   await api.publishActivity(tenantId, activityId);
 };
 
+export const suspendActivity = async (tenantId: string, activityId: string): Promise<void> => {
+  await api.suspendActivity(tenantId, activityId);
+};
+
+export const resumeActivity = async (tenantId: string, activityId: string): Promise<void> => {
+  await api.resumeActivity(tenantId, activityId);
+};
+
 export const duplicateActivity = async (
   tenantId: string,
   activityId: string
@@ -118,7 +127,7 @@ export const duplicateActivity = async (
 export const updateActivity = async (
   tenantId: string,
   activityId: string,
-  payload: Record<string, unknown>
+  payload: PublishingActivityUpsertBody
 ): Promise<ActivityDTO> => {
   const res = await api.updateActivity(tenantId, activityId, payload);
   return res.data;
@@ -126,7 +135,7 @@ export const updateActivity = async (
 
 export const createActivity = async (
   tenantId: string,
-  payload: Record<string, unknown>
+  payload: PublishingActivityUpsertBody
 ): Promise<ActivityDTO> => {
   const res = await api.createActivity(tenantId, payload);
   return res.data;

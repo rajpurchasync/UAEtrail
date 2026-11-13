@@ -3,12 +3,15 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   ActivityDetailDTO,
   activityJoinCtaLabel,
+  activityJoinIsFull,
   formatPackingJoinNote,
   isPackingSignatureValid,
   missingRequiredPackingIds,
   parsePackingList,
   resolveParticipationMode,
   type ActivityDTO,
+  joinHostProfileShareNotice,
+  resolveJoinHostProfileDisclosureNeeds,
 } from '@uaetrail/shared-types';
 import { JoinPackingAck } from '../activity/JoinPackingAck';
 import { formatDate } from '../../utils';
@@ -22,6 +25,9 @@ import {
 } from '../../utils/joinInstructions';
 import { afterActivityJoinClientRefresh } from '../../hooks/activityJoinClientEffects';
 import { submitActivityJoin } from '../../hooks/activityJoinClientApi';
+import { formatGroupJoinLine } from '../../content/groupJoinCopy';
+import { PartySizeSelect } from '../../detail/shell/PartySizeSelect';
+import { consumeSkipPartySizeInJoinModal, useSharedPartySize } from '../../detail/partySizeState';
 import { Dialog } from './Dialog';
 
 type JoinableActivity = Pick<
@@ -63,12 +69,14 @@ export const JoinRequestModal = ({
 }: JoinRequestModalProps) => {
   const queryClient = useQueryClient();
   const [note, setNote] = useState('');
+  const { adults, kids, setAdults, setKids } = useSharedPartySize();
   const [agreed, setAgreed] = useState(false);
   const [packingCheckedIds, setPackingCheckedIds] = useState<string[]>([]);
   const [packingSignature, setPackingSignature] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hidePartySize, setHidePartySize] = useState(false);
 
   const participationMode = useMemo(
     () => resolveParticipationMode(activity.participationMode, activity.requirements),
@@ -80,12 +88,21 @@ export const JoinRequestModal = ({
   const hasInstructions = instructions.length > 0;
   const hasPacking = packing.items.length > 0;
   const packingStrict = hasPacking && packing.mode === 'strict';
-  const full = isFull ?? activity.slotsAvailable <= 0;
+  const full =
+    isFull ??
+    activityJoinIsFull({
+      slotsTotal: activity.slotsTotal,
+      slotsAvailable: activity.slotsAvailable,
+    });
   const needsAgreement = hasInstructions;
   const packingReady =
     !packingStrict ||
     (missingRequiredPackingIds(packing.items, packingCheckedIds).length === 0 &&
       isPackingSignatureValid(packingSignature));
+  const hostProfileDisclosure = useMemo(() => {
+    const needs = resolveJoinHostProfileDisclosureNeeds(activity.requirements);
+    return joinHostProfileShareNotice(needs);
+  }, [activity.requirements]);
 
   const priceInfo = resolveExplorePrice({
     isRideshare: false,
@@ -100,6 +117,7 @@ export const JoinRequestModal = ({
 
   useEffect(() => {
     if (!open) return;
+    setHidePartySize(consumeSkipPartySizeInJoinModal());
     setNote('');
     setAgreed(false);
     setPackingCheckedIds([]);
@@ -128,6 +146,7 @@ export const JoinRequestModal = ({
 
     setSubmitting(true);
     setError(null);
+    setSubmitted(true);
     try {
       const packedNote = hasPacking
         ? formatPackingJoinNote({
@@ -142,18 +161,20 @@ export const JoinRequestModal = ({
         note: packedNote || undefined,
         packingCheckedIds: hasPacking ? packingCheckedIds : undefined,
         packingSignature: packingStrict ? packingSignature.trim() : undefined,
+        adults,
+        kids,
       });
       afterActivityJoinClientRefresh(queryClient, {
         activityId: activity.id,
         participationMode,
         exploreMapItemId,
       });
-      setSubmitted(true);
       onSuccess?.(successMessage);
       setTimeout(() => {
         onClose();
       }, 1500);
     } catch (err) {
+      setSubmitted(false);
       setError(err instanceof Error ? err.message : 'We couldn\'t complete that — sign in and try again.');
     } finally {
       setSubmitting(false);
@@ -177,8 +198,8 @@ export const JoinRequestModal = ({
     >
       {!submitted ? (
         <>
-          <div className="p-4 -mx-2 mb-4 bg-gray-50 border border-gray-100 rounded-xl">
-            <h3 className="font-semibold text-gray-900">{activity.title || activity.locationName}</h3>
+          <div className="p-4 -mx-2 mb-4 bg-gray-50 border border-gray-100 rounded-xl dark:border-neutral-700 dark:bg-neutral-800">
+            <h3 className="font-semibold text-gray-900 dark:text-neutral-50">{activity.title || activity.locationName}</h3>
             <p className="text-sm text-gray-600">
               {formatDate(activity.date)} at {activity.time}
             </p>
@@ -204,6 +225,13 @@ export const JoinRequestModal = ({
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {hidePartySize ? (
+              <p className="rounded-xl border border-neutral-200/80 bg-neutral-50/80 px-3 py-2 text-sm text-neutral-700 dark:border-neutral-700 dark:bg-neutral-900/40 dark:text-neutral-200">
+                {formatGroupJoinLine(adults, kids)}
+              </p>
+            ) : (
+              <PartySizeSelect adults={adults} kids={kids} onAdults={setAdults} onKids={setKids} compact />
+            )}
             {hasPacking ? (
               <JoinPackingAck
                 mode={packing.mode}
@@ -217,6 +245,15 @@ export const JoinRequestModal = ({
                 }
                 onSignatureChange={setPackingSignature}
               />
+            ) : null}
+
+            {hostProfileDisclosure ? (
+              <div className="rounded-xl border border-sky-200 bg-sky-50 p-4 dark:border-sky-900/50 dark:bg-sky-950/40">
+                <p className="text-sm font-semibold text-sky-900 dark:text-sky-100">Shared with host</p>
+                <p className="mt-1 text-xs leading-relaxed text-sky-900/90 dark:text-sky-100/90">
+                  {hostProfileDisclosure}
+                </p>
+              </div>
             ) : null}
 
             {hasInstructions ? (

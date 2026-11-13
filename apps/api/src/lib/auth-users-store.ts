@@ -18,6 +18,7 @@ const AUTH_USER_RELATION_PROJECTION = {
   'profile.bloodGroup': 0,
   'profile.emergencyContactName': 0,
   'profile.emergencyContactPhone': 0,
+  'profile.emergencyContactRelation': 0,
 } as const;
 
 export type AuthUserRecord = {
@@ -44,15 +45,27 @@ export type AuthUserRecord = {
     countryCode?: UserCountryCode | null;
     languages?: string | null;
     profileVisibility?: 'public' | 'group_members' | 'private';
+    fieldPrivacy?: Partial<import('@uaetrail/shared-types').ProfileFieldPrivacySettings>;
+    dateOfBirthShare?: import('@uaetrail/shared-types').ProfileDateOfBirthShare;
+    friendsListShare?: import('@uaetrail/shared-types').ProfileFriendsListShare;
+    findCrewVisibility?: import('@uaetrail/shared-types').FindCrewVisibility;
+    notificationPreferences?: Partial<
+      import('@uaetrail/shared-types').NotificationPreferenceSettings
+    >;
     switchedFromRole?: 'PLATFORM_ADMIN' | 'MERCHANT_ADMIN' | 'TENANT_OWNER' | 'TENANT_ADMIN' | 'TENANT_GUIDE' | null;
     /** When true, may grant/revoke other `PLATFORM_ADMIN` accounts. */
     platformMasterAdmin?: boolean;
     rewardPoints?: number;
     membershipTier?: MembershipTier;
+    /** Approved catalog submissions / edits (places, amenities). */
+    catalogEditSuccessCount?: number;
+    /** Rejected or deleted draft catalog submissions. */
+    catalogEditFailCount?: number;
     bloodGroup?: BloodGroup | null;
     medicalConditions?: string | null;
     emergencyContactName?: string | null;
     emergencyContactPhone?: string | null;
+    emergencyContactRelation?: string | null;
   };
   createdAt: Date;
   updatedAt: Date;
@@ -269,6 +282,21 @@ export const updateAuthUserProfile = async (
   if (patch.profileVisibility !== undefined) {
     setFields['profile.profileVisibility'] = patch.profileVisibility;
   }
+  if (patch.fieldPrivacy !== undefined) {
+    setFields['profile.fieldPrivacy'] = patch.fieldPrivacy;
+  }
+  if (patch.dateOfBirthShare !== undefined) {
+    setFields['profile.dateOfBirthShare'] = patch.dateOfBirthShare;
+  }
+  if (patch.friendsListShare !== undefined) {
+    setFields['profile.friendsListShare'] = patch.friendsListShare;
+  }
+  if (patch.findCrewVisibility !== undefined) {
+    setFields['profile.findCrewVisibility'] = patch.findCrewVisibility;
+  }
+  if (patch.notificationPreferences !== undefined) {
+    setFields['profile.notificationPreferences'] = patch.notificationPreferences;
+  }
   if (patch.platformMasterAdmin !== undefined) {
     setFields['profile.platformMasterAdmin'] = patch.platformMasterAdmin;
   }
@@ -282,11 +310,28 @@ export const updateAuthUserProfile = async (
   if (patch.emergencyContactPhone !== undefined) {
     setFields['profile.emergencyContactPhone'] = patch.emergencyContactPhone ?? null;
   }
+  if (patch.emergencyContactRelation !== undefined) {
+    setFields['profile.emergencyContactRelation'] = patch.emergencyContactRelation ?? null;
+  }
   await usersCollection().updateOne({ _id: userId }, { $set: setFields });
   invalidateAuthUserReadCache(userId);
   if (patch.displayName !== undefined || patch.givenName !== undefined || patch.surname !== undefined) {
     scheduleExploreMapCacheInvalidation('auth-users.profile_map_cache');
   }
+};
+
+/** Bump catalog edit ranking counters after admin approve/reject of a member submission. */
+export const incrementCatalogEditOutcome = async (
+  userId: string,
+  outcome: 'success' | 'fail'
+): Promise<void> => {
+  const field =
+    outcome === 'success' ? 'profile.catalogEditSuccessCount' : 'profile.catalogEditFailCount';
+  await usersCollection().updateOne(
+    { _id: userId },
+    { $inc: { [field]: 1 }, $set: { updatedAt: new Date() } }
+  );
+  invalidateAuthUserReadCache(userId);
 };
 
 export const updateAuthUserLastActive = async (userId: string): Promise<void> => {

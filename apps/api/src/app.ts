@@ -16,6 +16,7 @@ import { requireMetricsAuth } from './middleware/metrics-auth.js';
 import { createRateLimiters } from './middleware/rate-limit.js';
 import { getClientErrorLimiter, getGlobalLimiter } from './middleware/rate-limit-instances.js';
 import { requestTimeout } from './middleware/request-timeout.js';
+import { requestScopeMiddleware } from './middleware/request-scope.js';
 import { traceIdMiddleware } from './middleware/trace-id.js';
 import { openApiSpec } from './openapi.js';
 import { apiRouter } from './routes/index.js';
@@ -141,6 +142,7 @@ export const createApp = async (): Promise<Express> => {
   );
   app.use(globalLimiter);
   app.use(requestTimeout());
+  app.use(requestScopeMiddleware);
   app.use(traceIdMiddleware);
   app.use((req, res, next) => {
     const requestLogger = createRequestLogger(req);

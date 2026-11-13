@@ -59,3 +59,7 @@ android/keystore.properties
 android/*.keystore
 *.keystore
 .vercel
+.lighthouseci
+
+# Advisory locks while Cursor / Claude Desktop share one working tree
+.cursor/agent-file-locks/

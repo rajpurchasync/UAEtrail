@@ -6,6 +6,7 @@ import type { TenantProfile } from '../api/types';
 import { fetchOrganisationProfileBySlug } from '../hooks/organisationConsoleApi';
 import { shopPublicPath } from '../utils/shopPaths';
 import { detailBackPath } from '../config/routingCatalog';
+import { AsyncLoadingState } from '../components/ui/AsyncLoadingState';
 import {
   ORGANISATION_PUBLIC_TAB_QUERY,
   parseOrganisationPublicDetailTabParam,
@@ -52,9 +53,7 @@ export const OrganisationProfile = () => {
   if (loading) {
     return (
       <EntityPublicDetailShell backTo={shellBack} backLabel="Explore" showMenu={false}>
-        <div className="flex justify-center py-16">
-          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-emerald-600" />
-        </div>
+        <AsyncLoadingState variant="centered" className="py-16" label="Loading organisation" />
       </EntityPublicDetailShell>
     );
   }

@@ -15,7 +15,7 @@ import {
 describe('viewReturnMemory', () => {
   it('keys a path without the hash', () => {
     expect(viewReturnPathKey('/explore', '?list=1')).toBe('/explore?list=1');
-    expect(viewReturnPathKey('/profile/settings#ios-install')).toBe('/profile/settings');
+    expect(viewReturnPathKey('/settings#ios-install')).toBe('/settings');
   });
 
   it('prefers data-nav-focus over href', () => {
@@ -35,20 +35,20 @@ describe('viewReturnMemory', () => {
     body.scrollTop = 240;
     const row = document.createElement('a');
     row.setAttribute('data-nav-focus', 'safety');
-    row.href = '/profile/settings/safety';
+    row.href = '/settings/safety';
     row.tabIndex = 0;
     body.append(row);
     root.append(body);
     document.body.append(root);
 
-    captureLeavingView('/profile/settings');
-    const snapshot = peekViewReturnSnapshot('/profile/settings');
+    captureLeavingView('/settings');
+    const snapshot = peekViewReturnSnapshot('/settings');
     expect(snapshot?.scrollTops).toEqual([240]);
     expect(snapshot?.focusSelector).toBeNull();
 
     body.scrollTop = 0;
-    armViewReturn('/profile/settings', '[data-nav-focus="safety"]');
-    const armed = takeArmedViewReturn('/profile/settings');
+    armViewReturn('/settings', '[data-nav-focus="safety"]');
+    const armed = takeArmedViewReturn('/settings');
     expect(applyViewReturnSnapshot(snapshot!, armed?.focusSelector)).toBe(true);
     expect(body.scrollTop).toBe(240);
     expect(document.activeElement).toBe(row);

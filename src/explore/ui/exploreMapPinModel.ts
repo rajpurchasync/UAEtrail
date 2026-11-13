@@ -312,6 +312,7 @@ export const expandMapPins = (items: ExploreMapItemDTO[]): PlaceMapPin[] => {
       activityMode: resolvedMode ?? undefined,
       rideshareEndpoint: hasDistinctTo ? 'from' : undefined,
       placeKind: item.placeKind ?? undefined,
+      scheduleDate: resolveExploreItemScheduleDate(item),
     });
 
     if (hasDistinctTo) {
@@ -328,6 +329,7 @@ export const expandMapPins = (items: ExploreMapItemDTO[]): PlaceMapPin[] => {
         source: resolveMapPinItemSource(item),
         activityMode: resolvedMode ?? undefined,
         rideshareEndpoint: item.kind === 'rideshare' ? 'to' : 'to',
+        scheduleDate: resolveExploreItemScheduleDate(item),
       });
     }
   }

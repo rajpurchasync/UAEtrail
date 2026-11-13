@@ -22,6 +22,25 @@ describe('activityRegistryPlacePath', () => {
     ).toBe('/place/loc-2');
   });
 
+  it('does not open /venue when an event outing is at a camping place', () => {
+    expect(
+      activityRegistryPlacePath({
+        locationId: 'fossil-rock-desert-camp',
+        activityType: 'event',
+        location: { activityType: 'camping' } as never,
+      })
+    ).toBe('/place/fossil-rock-desert-camp');
+  });
+
+  it('falls back to canonical /place when place type is unknown', () => {
+    expect(
+      activityRegistryPlacePath({
+        locationId: 'fossil-rock-desert-camp',
+        activityType: 'event',
+      })
+    ).toBe('/place/fossil-rock-desert-camp');
+  });
+
   it('returns null without locationId', () => {
     expect(activityRegistryPlacePath({ locationId: '  ', activityType: 'hiking' })).toBeNull();
   });

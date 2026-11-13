@@ -1,7 +1,7 @@
-import { EXPLORE_MAP_PATH, MESSAGES_PATH } from '../config/routingCatalog';
+import { EXPLORE_MAP_PATH, messagesToUserPath } from '../config/routingCatalog';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { MessageCircle, UserMinus, UserRound } from 'lucide-react';
+import { MessageCircle, UserMinus } from 'lucide-react';
 import type { BuddyRequestDTO, BuddySummaryDTO, MemberFollowSummaryDTO } from '@uaetrail/shared-types';
 import { setMemberFollow } from '../hooks/memberFollowApi';
 import { useMeBuddiesNetwork, useMeFollowingMembers } from '../hooks/useMeBuddiesNetwork';
@@ -15,20 +15,31 @@ import {
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { TabPageSearchRow } from '../components/mobile/TabPageSearchRow';
-import { FormTabBar } from '../components/ui/FormTabBar';
 import { Dialog } from '../components/ui/Dialog';
 import { SecureAvatar } from '../components/ui/SecureAvatar';
 import { useAuth } from '../context/AuthContext';
-import { useProfileHubBackChrome } from '../hooks/useProfileHubBackChrome';
+import {
+  useProfileHubBackChrome,
+  useSocialHubBackChrome,
+} from '../hooks/useProfileHubBackChrome';
 
-import { PRODUCT_EXPLORE_CTA } from '../content/productNorthStar';
+import { PRODUCT_EXPLORE_CTA, PRODUCT_SOCIAL_SURFACE_TITLE } from '../content/productNorthStar';
+import { SocialHubIndex } from '../components/social/SocialHubNav';
 import { memberProfileLink } from '../member/memberProfileLink';
+import { MESSAGES_CHAT_RETURN_TO_KEY } from '../utils/activityGroupChatNav';
 import { mobileBackNavState } from '../utils/mobileBackNav';
-type FriendsTab = 'friends' | 'requests' | 'following';
+type SocialSection = 'friends' | 'requests' | 'following';
 
-const parseFriendsTab = (raw: string | null): FriendsTab => {
-  if (raw === 'requests' || raw === 'following') return raw;
-  return 'friends';
+const parseSocialSection = (section: string | null, legacyTab: string | null): SocialSection | null => {
+  const raw = section ?? legacyTab;
+  if (raw === 'friends' || raw === 'requests' || raw === 'following') return raw;
+  return null;
+};
+
+const SECTION_TITLES: Record<SocialSection, string> = {
+  friends: 'Friends',
+  requests: 'Friend requests',
+  following: 'Following',
 };
 
 const formatConnectedDate = (iso: string) =>
@@ -46,20 +57,23 @@ const friendActionNeutral = `${FRIEND_ACTION_ROW} border border-neutral-200/90 b
 const FRIEND_CARD_PAD = '!p-3 lg:!p-2.5';
 const FRIEND_ROW = 'flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-4';
 const FRIEND_ROW_MAIN = 'flex min-w-0 flex-1 items-center gap-3';
-const FRIEND_ACTIONS_THREE =
-  'grid grid-cols-3 gap-2 lg:flex lg:w-auto lg:shrink-0 lg:grid-cols-none lg:gap-1.5';
 const FRIEND_ACTIONS_TWO = 'flex gap-2 lg:shrink-0 lg:gap-1.5';
+const FRIEND_ACTIONS_ONE = 'flex lg:shrink-0';
 const FRIEND_AVATAR = 'h-11 w-11 text-sm lg:h-10 lg:w-10';
 const FRIEND_LIST = 'space-y-2 lg:space-y-1.5';
 const FRIEND_SECTION_LABEL = 'mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-neutral-400 lg:mb-1';
 
 export const Buddies = () => {
   const { user } = useAuth();
-  const backChrome = useProfileHubBackChrome();
+  const profileBackChrome = useProfileHubBackChrome();
+  const socialBackChrome = useSocialHubBackChrome();
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = parseFriendsTab(searchParams.get('tab'));
+  const [searchParams] = useSearchParams();
+  const activeSection = parseSocialSection(searchParams.get('section'), searchParams.get('tab'));
+  const isHub = activeSection === null;
+  const backChrome = isHub ? profileBackChrome : socialBackChrome;
+  const shellTitle = isHub ? PRODUCT_SOCIAL_SURFACE_TITLE : SECTION_TITLES[activeSection];
 
   const {
     buddies,
@@ -74,7 +88,7 @@ export const Buddies = () => {
     loading: followingLoading,
     error: followingError,
     refetch: refetchFollowing,
-  } = useMeFollowingMembers(Boolean(user) && activeTab === 'following');
+  } = useMeFollowingMembers(Boolean(user) && activeSection === 'following');
   const [error, setError] = useState<string | null>(null);
   const [busyRequestId, setBusyRequestId] = useState<string | null>(null);
   const [unfriendingBuddy, setUnfriendingBuddy] = useState<BuddySummaryDTO | null>(null);
@@ -86,9 +100,8 @@ export const Buddies = () => {
   >([]);
   const [findSearching, setFindSearching] = useState(false);
 
-  const messagesPath = MESSAGES_PATH;
-
-  const displayError = error ?? networkError ?? (activeTab === 'following' ? followingError : null);
+  const displayError =
+    error ?? networkError ?? (activeSection === 'following' ? followingError : null);
 
   const loadCore = useCallback(async () => {
     setError(null);
@@ -115,29 +128,7 @@ export const Buddies = () => {
     return () => clearTimeout(timer);
   }, [findQuery, user?.id]);
 
-  const setTab = useCallback(
-    (tab: FriendsTab) => {
-      const next = new URLSearchParams(searchParams);
-      if (tab === 'friends') next.delete('tab');
-      else next.set('tab', tab);
-      setSearchParams(next, { replace: true });
-    },
-    [searchParams, setSearchParams]
-  );
-
   const requestCount = incomingRequests.length + outgoingRequests.length;
-
-  const tabDefs = useMemo(
-    () => [
-      { id: 'friends', label: 'Friends' },
-      {
-        id: 'requests',
-        label: requestCount > 0 ? `Requests (${requestCount})` : 'Requests',
-      },
-      { id: 'following', label: 'Following' },
-    ],
-    [requestCount]
-  );
 
   const handleAcceptRequest = async (request: BuddyRequestDTO) => {
     setBusyRequestId(request.id);
@@ -208,62 +199,65 @@ export const Buddies = () => {
 
   const filteredBuddies = useMemo(() => {
     const q = findQuery.trim().toLowerCase();
-    if (!q || activeTab !== 'friends') return buddies;
+    if (!q || activeSection !== 'friends') return buddies;
     return buddies.filter((buddy) => buddy.displayName.toLowerCase().includes(q));
-  }, [activeTab, buddies, findQuery]);
+  }, [activeSection, buddies, findQuery]);
 
-  const showFindRow = activeTab === 'friends' || activeTab === 'following';
-  const friendsReturn = mobileBackNavState(
-    location.search ? `${location.pathname}${location.search}` : location.pathname,
-    'Friends'
-  );
+  const showFindRow = activeSection === 'friends' || activeSection === 'following';
+  const friendsReturnPath = location.search
+    ? `${location.pathname}${location.search}`
+    : location.pathname;
+  const friendsReturn = {
+    ...mobileBackNavState(friendsReturnPath, 'Friends'),
+    [MESSAGES_CHAT_RETURN_TO_KEY]: friendsReturnPath,
+  };
 
   return (
     <ConsumerShell
       layout="stack"
-      title="Friends"
+      title={shellTitle}
       maxWidth="7xl"
       showJourney={false}
       back={backChrome}
     >
       <div className="min-w-0 max-w-full space-y-3 pb-nav-safe animate-fade-up lg:space-y-2">
-        <FormTabBar tabs={tabDefs} activeId={activeTab} onChange={(id) => setTab(parseFriendsTab(id))} />
-
-        {showFindRow && (
-          <TabPageSearchRow
-            value={findQuery}
-            onChange={setFindQuery}
-            placeholder={activeTab === 'friends' ? 'Search friends' : 'Search following'}
-          />
-        )}
-
-        {displayError && (
-          <GlassCard padding className="border-red-200/50 bg-red-50/50">
-            <p className="text-sm text-red-600">{displayError}</p>
-            <button
-              type="button"
-              onClick={() => void loadCore()}
-              className="mt-2 text-sm font-semibold text-emerald-600"
-            >
-              Retry
-            </button>
-          </GlassCard>
-        )}
-
-        {loading ? (
-          <div className="flex flex-col items-center gap-3 py-12" role="status" aria-live="polite">
-            <div className="h-7 w-7 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
-            <p className="text-sm font-medium text-neutral-600">Loading friends</p>
-          </div>
+        {isHub ? (
+          <SocialHubIndex requestCount={requestCount} />
         ) : (
           <>
-            {activeTab === 'friends' && (
+            {showFindRow && (
+              <TabPageSearchRow
+                value={findQuery}
+                onChange={setFindQuery}
+                placeholder={activeSection === 'friends' ? 'Search friends' : 'Search following'}
+              />
+            )}
+
+            {displayError && (
+              <GlassCard padding className="border-red-200/50 bg-red-50/50">
+                <p className="text-sm text-red-600">{displayError}</p>
+                <button
+                  type="button"
+                  onClick={() => void loadCore()}
+                  className="mt-2 text-sm font-semibold text-emerald-600"
+                >
+                  Retry
+                </button>
+              </GlassCard>
+            )}
+
+            {loading ? (
+              <div className="flex flex-col items-center gap-3 py-12" role="status" aria-live="polite">
+                <div className="h-7 w-7 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
+                <p className="text-sm font-medium text-neutral-600">Loading friends</p>
+              </div>
+            ) : null}
+
+            {!loading && activeSection === 'friends' ? (
               <>
-                {findQuery.trim().length >= 2 && (
+                {findQuery.trim().length >= 2 ? (
                   <section>
-                    <p className={FRIEND_SECTION_LABEL}>
-                      Find people
-                    </p>
+                    <p className={FRIEND_SECTION_LABEL}>Find people</p>
                     {findSearching ? (
                       <p className="px-1 text-sm text-neutral-500">Searching…</p>
                     ) : findResults.length === 0 ? (
@@ -276,14 +270,10 @@ export const Buddies = () => {
                             <GlassCard key={row.id} padding className={FRIEND_CARD_PAD}>
                               <div className={FRIEND_ROW}>
                                 <div className={FRIEND_ROW_MAIN}>
-                                <SecureAvatar
-                                  src={row.avatarUrl}
-                                  name={name}
-                                  className={FRIEND_AVATAR}
-                                />
-                                <div className="min-w-0 flex-1">
-                                  <p className="truncate font-semibold text-neutral-900 lg:text-sm">{name}</p>
-                                </div>
+                                  <SecureAvatar src={row.avatarUrl} name={name} className={FRIEND_AVATAR} />
+                                  <div className="min-w-0 flex-1">
+                                    <p className="truncate font-semibold text-neutral-900 lg:text-sm">{name}</p>
+                                  </div>
                                 </div>
                                 <Link
                                   to={memberProfileLink(row.id, 'friends')}
@@ -299,12 +289,10 @@ export const Buddies = () => {
                       </div>
                     )}
                   </section>
-                )}
+                ) : null}
 
                 <section>
-                  <p className={FRIEND_SECTION_LABEL}>
-                    Your friends
-                  </p>
+                  <p className={FRIEND_SECTION_LABEL}>Your friends</p>
                   {filteredBuddies.length === 0 ? (
                     <GlassCard padding className="text-center">
                       <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-50 text-2xl">
@@ -317,7 +305,7 @@ export const Buddies = () => {
                       <button
                         type="button"
                         onClick={() => navigate(EXPLORE_MAP_PATH)}
-                        className="mt-4 w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white"
+                        className="mt-4 inline-flex w-full items-center justify-center rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white md:w-auto md:rounded-lg md:px-5 md:py-2"
                       >
                         {PRODUCT_EXPLORE_CTA}
                       </button>
@@ -327,32 +315,31 @@ export const Buddies = () => {
                       {filteredBuddies.map((buddy) => (
                         <GlassCard key={buddy.userId} padding className={FRIEND_CARD_PAD}>
                           <div className={FRIEND_ROW}>
-                            <div className={FRIEND_ROW_MAIN}>
-                            <SecureAvatar
-                              src={buddy.avatarUrl}
-                              name={buddy.displayName}
-                              className={FRIEND_AVATAR}
-                            />
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate font-semibold text-neutral-900 lg:text-sm">{buddy.displayName}</p>
-                              <p className="text-xs text-neutral-500">
-                                Friends since {formatConnectedDate(buddy.connectedAt)}
-                              </p>
-                            </div>
-                            </div>
-                            <div className={FRIEND_ACTIONS_THREE}>
+                            <Link
+                              to={memberProfileLink(buddy.userId, 'friends')}
+                              state={friendsReturn}
+                              className={`${FRIEND_ROW_MAIN} rounded-xl outline-offset-2 transition hover:bg-neutral-50/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600`}
+                              aria-label={`View ${buddy.displayName} profile`}
+                            >
+                              <SecureAvatar
+                                src={buddy.avatarUrl}
+                                name={buddy.displayName}
+                                className={FRIEND_AVATAR}
+                              />
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate font-semibold text-neutral-900 lg:text-sm">
+                                  {buddy.displayName}
+                                </p>
+                                <p className="text-xs text-neutral-500">
+                                  Friends since {formatConnectedDate(buddy.connectedAt)}
+                                </p>
+                              </div>
+                            </Link>
+                            <div className={FRIEND_ACTIONS_TWO}>
                               <Link
-                                to={memberProfileLink(buddy.userId, 'friends')}
+                                to={messagesToUserPath(buddy.userId)}
                                 state={friendsReturn}
-                                className={friendActionSecondary}
-                              >
-                                <UserRound className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                                View
-                              </Link>
-                              <Link
-                                to={`${messagesPath}?to=${buddy.userId}`}
-                                state={friendsReturn}
-                                className={friendActionPrimary}
+                                className={`flex-1 lg:flex-none ${friendActionPrimary}`}
                               >
                                 <MessageCircle className="h-3.5 w-3.5 shrink-0" aria-hidden />
                                 Message
@@ -360,9 +347,9 @@ export const Buddies = () => {
                               <button
                                 type="button"
                                 onClick={() => setUnfriendingBuddy(buddy)}
-                                className={friendActionNeutral}
+                                className={`flex-1 lg:flex-none ${friendActionNeutral}`}
                               >
-                                <UserMinus className="h-3.5 w-3.5" />
+                                <UserMinus className="h-3.5 w-3.5 shrink-0" aria-hidden />
                                 Unfriend
                               </button>
                             </div>
@@ -373,43 +360,42 @@ export const Buddies = () => {
                   )}
                 </section>
               </>
-            )}
+            ) : null}
 
-            {activeTab === 'requests' && (
-              <>
-                {incomingRequests.length === 0 && outgoingRequests.length === 0 ? (
-                  <GlassCard padding className="text-center">
-                    <p className="font-semibold text-neutral-900">No pending requests</p>
-                    <p className="mt-1 text-sm text-neutral-500">
-                      When someone wants to connect, you will see it here.
-                    </p>
-                  </GlassCard>
-                ) : (
-                  <>
-                    {incomingRequests.length > 0 && (
-                      <section>
-                        <p className={FRIEND_SECTION_LABEL}>
-                          Incoming
-                        </p>
-                        <div className={FRIEND_LIST}>
-                          {incomingRequests.map((request) => {
-                            const sender = request.fromUser;
-                            const displayName = sender?.displayName ?? 'Member';
-                            return (
-                              <GlassCard key={request.id} padding className={FRIEND_CARD_PAD}>
-                                <div className={FRIEND_ROW}>
-                                  <div className={FRIEND_ROW_MAIN}>
+            {!loading && activeSection === 'requests' ? (
+              incomingRequests.length === 0 && outgoingRequests.length === 0 ? (
+                <GlassCard padding className="text-center">
+                  <p className="font-semibold text-neutral-900">No pending requests</p>
+                  <p className="mt-1 text-sm text-neutral-500">
+                    When someone wants to connect, you will see it here.
+                  </p>
+                </GlassCard>
+              ) : (
+                <>
+                  {incomingRequests.length > 0 ? (
+                    <section>
+                      <p className={FRIEND_SECTION_LABEL}>Incoming</p>
+                      <div className={FRIEND_LIST}>
+                        {incomingRequests.map((request) => {
+                          const sender = request.fromUser;
+                          const displayName = sender?.displayName ?? 'Member';
+                          return (
+                            <GlassCard key={request.id} padding className={FRIEND_CARD_PAD}>
+                              <div className={FRIEND_ROW}>
+                                <div className={FRIEND_ROW_MAIN}>
                                   <SecureAvatar
                                     src={sender?.avatarUrl}
                                     name={displayName}
                                     className={FRIEND_AVATAR}
                                   />
                                   <div className="min-w-0 flex-1">
-                                    <p className="truncate font-semibold text-neutral-900 lg:text-sm">{displayName}</p>
+                                    <p className="truncate font-semibold text-neutral-900 lg:text-sm">
+                                      {displayName}
+                                    </p>
                                     <p className="text-xs text-neutral-500">Wants to be friends</p>
                                   </div>
-                                  </div>
-                                  <div className={`mt-0 ${FRIEND_ACTIONS_TWO}`}>
+                                </div>
+                                <div className={FRIEND_ACTIONS_TWO}>
                                   <button
                                     type="button"
                                     disabled={busyRequestId === request.id}
@@ -426,39 +412,39 @@ export const Buddies = () => {
                                   >
                                     Decline
                                   </button>
-                                  </div>
                                 </div>
-                              </GlassCard>
-                            );
-                          })}
-                        </div>
-                      </section>
-                    )}
+                              </div>
+                            </GlassCard>
+                          );
+                        })}
+                      </div>
+                    </section>
+                  ) : null}
 
-                    {outgoingRequests.length > 0 && (
-                      <section>
-                        <p className={FRIEND_SECTION_LABEL}>
-                          Sent
-                        </p>
-                        <div className={FRIEND_LIST}>
-                          {outgoingRequests.map((request) => {
-                            const recipient = request.toUser;
-                            const displayName = recipient?.displayName ?? 'Member';
-                            return (
-                              <GlassCard key={request.id} padding className={FRIEND_CARD_PAD}>
-                                <div className={FRIEND_ROW}>
-                                  <div className={FRIEND_ROW_MAIN}>
+                  {outgoingRequests.length > 0 ? (
+                    <section>
+                      <p className={FRIEND_SECTION_LABEL}>Sent</p>
+                      <div className={FRIEND_LIST}>
+                        {outgoingRequests.map((request) => {
+                          const recipient = request.toUser;
+                          const displayName = recipient?.displayName ?? 'Member';
+                          return (
+                            <GlassCard key={request.id} padding className={FRIEND_CARD_PAD}>
+                              <div className={FRIEND_ROW}>
+                                <div className={FRIEND_ROW_MAIN}>
                                   <SecureAvatar
                                     src={recipient?.avatarUrl}
                                     name={displayName}
                                     className={FRIEND_AVATAR}
                                   />
                                   <div className="min-w-0 flex-1">
-                                    <p className="truncate font-semibold text-neutral-900 lg:text-sm">{displayName}</p>
+                                    <p className="truncate font-semibold text-neutral-900 lg:text-sm">
+                                      {displayName}
+                                    </p>
                                     <p className="text-xs text-neutral-500">Waiting for a response</p>
                                   </div>
-                                  </div>
-                                  <div className={`mt-0 ${FRIEND_ACTIONS_TWO}`}>
+                                </div>
+                                <div className={FRIEND_ACTIONS_TWO}>
                                   <Link
                                     to={memberProfileLink(request.toUserId, 'friends')}
                                     state={friendsReturn}
@@ -474,27 +460,27 @@ export const Buddies = () => {
                                   >
                                     Cancel
                                   </button>
-                                  </div>
                                 </div>
-                              </GlassCard>
-                            );
-                          })}
-                        </div>
-                      </section>
-                    )}
-                  </>
-                )}
-              </>
-            )}
+                              </div>
+                            </GlassCard>
+                          );
+                        })}
+                      </div>
+                    </section>
+                  ) : null}
+                </>
+              )
+            ) : null}
 
-            {activeTab === 'following' && (
+            {!loading && activeSection === 'following' ? (
               <section>
-                <p className={FRIEND_SECTION_LABEL}>
-                  People you follow
-                </p>
+                <p className={FRIEND_SECTION_LABEL}>People you follow</p>
                 {followingLoading ? (
                   <div className="flex flex-col items-center gap-2 py-8" role="status" aria-live="polite">
-                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" aria-hidden />
+                    <div
+                      className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent"
+                      aria-hidden
+                    />
                     <p className="text-sm font-medium text-neutral-600">Loading people</p>
                   </div>
                 ) : following.length === 0 ? (
@@ -515,35 +501,36 @@ export const Buddies = () => {
                       .map((member) => (
                         <GlassCard key={member.userId} padding className={FRIEND_CARD_PAD}>
                           <div className={FRIEND_ROW}>
-                            <div className={FRIEND_ROW_MAIN}>
-                            <SecureAvatar
-                              src={member.avatarUrl}
-                              name={member.displayName}
-                              className={FRIEND_AVATAR}
-                            />
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate font-semibold text-neutral-900 lg:text-sm">{member.displayName}</p>
-                              <p className="text-xs text-neutral-500">
-                                Following since {formatConnectedDate(member.followedAt)}
-                              </p>
-                            </div>
-                            </div>
-                            <div className={`mt-0 ${FRIEND_ACTIONS_TWO}`}>
                             <Link
                               to={memberProfileLink(member.userId, 'friends')}
                               state={friendsReturn}
-                              className={`flex-1 lg:flex-none ${friendActionSecondary}`}
+                              className={`${FRIEND_ROW_MAIN} rounded-xl outline-offset-2 transition hover:bg-neutral-50/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600`}
+                              aria-label={`View ${member.displayName} profile`}
                             >
-                              View profile
+                              <SecureAvatar
+                                src={member.avatarUrl}
+                                name={member.displayName}
+                                className={FRIEND_AVATAR}
+                              />
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate font-semibold text-neutral-900 lg:text-sm">
+                                  {member.displayName}
+                                </p>
+                                <p className="text-xs text-neutral-500">
+                                  Following since {formatConnectedDate(member.followedAt)}
+                                </p>
+                              </div>
                             </Link>
-                            <button
-                              type="button"
-                              disabled={unfollowBusyId === member.userId}
-                              onClick={() => void handleUnfollow(member)}
-                              className={`flex-1 lg:flex-none ${friendActionNeutral} disabled:opacity-60 disabled:active:scale-100`}
-                            >
-                              Unfollow
-                            </button>
+                            <div className={FRIEND_ACTIONS_ONE}>
+                              <button
+                                type="button"
+                                disabled={unfollowBusyId === member.userId}
+                                onClick={() => void handleUnfollow(member)}
+                                className={`flex-1 lg:flex-none ${friendActionNeutral} disabled:opacity-60 disabled:active:scale-100`}
+                              >
+                                <UserMinus className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                                {unfollowBusyId === member.userId ? 'Unfollowing…' : 'Unfollow'}
+                              </button>
                             </div>
                           </div>
                         </GlassCard>
@@ -551,7 +538,7 @@ export const Buddies = () => {
                   </div>
                 )}
               </section>
-            )}
+            ) : null}
           </>
         )}
       </div>

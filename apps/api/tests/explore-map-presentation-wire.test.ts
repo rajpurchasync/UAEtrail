@@ -47,14 +47,19 @@ describe('GET /api/explore/map card payload', () => {
         { _id: fixture.activityId },
         { $set: { meetingLat: 25.2, meetingLng: 55.2, joinMode: 'open' } }
       );
+    await getMongoClient()!
+      .db()
+      .collection('locations')
+      .updateOne({ _id: fixture.locationId }, { $set: { latitude: 25.2, longitude: 55.2 } });
     await invalidateExploreMapCache();
 
     const res = await request(app)
       .get('/api/explore/map')
-      .query({ bbox: '55,25,55.5,25.5', limit: '50' })
+      .query({ bbox: '55.15,25.15,55.25,25.25', limit: '50' })
       .expect(200);
 
     const items = res.body.data.items as Array<{ id: string; discoveryCard?: { headline: string } }>;
+    expect(items.some((item) => item.discoveryCard?.headline)).toBe(true);
     const row = items.find((item) => item.id === `activity:${fixture.activityId}`);
     expect(row?.discoveryCard).toBeUndefined();
 

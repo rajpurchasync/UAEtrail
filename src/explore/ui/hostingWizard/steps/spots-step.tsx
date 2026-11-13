@@ -70,6 +70,16 @@ export function renderSpotsStep(ctx: HostingWizardContext): ReactNode | null {
                 </div>
               </>
             )}
+            {kind !== 'rideshare' ? (
+              <label className="mt-4 flex items-center gap-2 text-sm text-gray-800">
+                <input
+                  type="checkbox"
+                  checked={draft.waitlist !== false}
+                  onChange={(e) => patchDraft({ waitlist: e.target.checked })}
+                />
+                Allow a waitlist when the outing is full
+              </label>
+            ) : null}
             <HostingWizardStepError error={error} />
             <HostingWizardStepNext onClick={goNext}  />
           </HostingWizardChrome>

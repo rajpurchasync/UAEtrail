@@ -8,15 +8,24 @@ describe('area detail shell (S9 Phase 4)', () => {
   it('AreaDetailPage delegates to AreaDetailView with tab wire ids', () => {
     const page = read('src/pages/AreaDetailPage.tsx');
     expect(page).toMatch(/AreaDetailView/);
+    expect(page).toMatch(/AreaDetailPageShell/);
     expect(page).toMatch(/areaDetailTab/);
     expect(page).not.toMatch(/<main className="mx-auto max-w-lg px-4 py-8">/);
   });
 
-  it('AreaDetailView uses MobileDetailShell and ConsumerEntityTabBar', () => {
+  it('AreaDetailView uses DetailPageShell scroll-first §5 layout', () => {
     const view = read('src/components/area/AreaDetailView.tsx');
-    expect(view).toMatch(/MobileDetailShell/);
-    expect(view).toMatch(/ConsumerEntityTabBar/);
-    expect(view).toMatch(/AREA_DETAIL_TABS/);
+    expect(view).toMatch(/DetailPageShell/);
+    expect(view).toMatch(/resolveAreaConsumerDetailHeaderChrome/);
+    expect(view).toMatch(/readDetailBackToFromLocation/);
+    expect(view).toMatch(/ConsumerDetailSectionJumpNav/);
+    expect(view).toMatch(/DetailHeroPhotoStrip/);
+    expect(view).toMatch(/ExploreWishlistSaveButton/);
+    expect(view).toMatch(/GeoAncestorEyebrow/);
+    expect(view).toMatch(/landing-hero-headline/);
+    expect(view).toMatch(/StatGrid/);
+    expect(view).not.toMatch(/ConsumerEntityTabBar/);
+    expect(view).not.toMatch(/MobileDetailShell/);
   });
 
   it('AreaHubPreviewSections supports tab modes', () => {

@@ -7,13 +7,14 @@ describe('resolveGuestSurfaceForPath', () => {
     expect(resolveGuestSurfaceForPath('/chat')?.feature).toBe('chat');
     expect(resolveGuestSurfaceForPath('/buddies')?.feature).toBe('friends');
     expect(resolveGuestSurfaceForPath('/groups')?.feature).toBe('groups');
-    expect(resolveGuestSurfaceForPath('/notifications')?.feature).toBe('notifications');
-    expect(resolveGuestSurfaceForPath('/profile/settings/account')?.feature).toBe('settings-hub');
+    expect(resolveGuestSurfaceForPath('/notifications')?.feature).toBe('settings-hub');
+    expect(resolveGuestSurfaceForPath('/settings/notifications')?.feature).toBe('settings-hub');
+    expect(resolveGuestSurfaceForPath('/settings/account')?.feature).toBe('settings-hub');
   });
 
   it('returns null for public routes', () => {
     expect(resolveGuestSurfaceForPath('/explore')).toBeNull();
     expect(resolveGuestSurfaceForPath('/list')).toBeNull();
-    expect(resolveGuestSurfaceForPath('/profile/settings')).toBeNull();
+    expect(resolveGuestSurfaceForPath('/settings')).toBeNull();
   });
 });

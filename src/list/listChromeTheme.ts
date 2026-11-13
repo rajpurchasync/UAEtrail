@@ -10,7 +10,7 @@ export const LIST_CHROME = {
   pageBg: 'bg-neutral-50',
   chromeBg: 'bg-white/95 backdrop-blur-md',
   chromeBorder: 'border-b border-neutral-200/60 shadow-[0_1px_0_rgba(15,23,42,.04)]',
-  maxWidth: 'mx-auto w-full max-w-lg md:max-w-xl lg:max-w-lg',
+  maxWidth: 'mx-auto w-full max-w-lg md:max-w-3xl lg:max-w-5xl',
   horizontalPad: 'px-4 md:px-6',
   /** Standalone `/list` — layout supplies identity row; light top pad only. */
   standaloneMobileInset: 'pt-1 pb-2 md:pt-1',

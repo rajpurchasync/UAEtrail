@@ -1,5 +1,6 @@
 import {
   Bell,
+  Briefcase,
   CalendarDays,
   Compass,
   Route,
@@ -27,6 +28,7 @@ export const NAV_ICONS = {
 
 export const MOBILE_NAV_ICON_MAP: Record<
   | 'Explore'
+  | 'Social'
   | 'Browse'
   | 'Trips'
   | 'Venues'
@@ -42,6 +44,7 @@ export const MOBILE_NAV_ICON_MAP: Record<
   | 'History'
   | 'Outing history'
   | 'My Plans'
+  | 'Hosting'
   | 'Chat'
   | 'Notifications'
   | 'Join'
@@ -53,6 +56,7 @@ export const MOBILE_NAV_ICON_MAP: Record<
 > = {
   'Explore Map': NAV_ICONS.explore,
   Explore: NAV_ICONS.explore,
+  Social: Users,
   Browse: NAV_ICONS.activities,
   Trips: NAV_ICONS.activities,
   Venues: MapPin,
@@ -70,6 +74,7 @@ export const MOBILE_NAV_ICON_MAP: Record<
   History: History,
   'Outing history': History,
   'My Plans': CalendarDays,
+  Hosting: Briefcase,
   Chat: MessageCircle,
   'Upcoming Activities': NAV_ICONS.activities,
   Settings,

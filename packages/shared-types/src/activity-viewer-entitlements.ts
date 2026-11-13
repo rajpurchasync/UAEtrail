@@ -31,12 +31,15 @@ export const computeActivityViewerEntitlements = (input: {
     ? input.isProMember || input.isFriendOfHost || input.level === 'join_request'
     : true;
 
+  /** Joined crew or host workspace — create/link a ride for this outing (publish gate still applies). */
+  const canManageLinkedTransport = joinedParticipant || isHostLevel;
+
   return {
     isProMember: input.isProMember,
     canViewHostProfileBeforeJoin,
     canViewFullBuddyRoster: input.isProMember || isHostLevel,
-    canOfferTransport: input.isProMember && (joinedParticipant || input.level === 'host'),
-    canAddLinkedRide: input.isProMember && input.level === 'host',
+    canOfferTransport: canManageLinkedTransport,
+    canAddLinkedRide: canManageLinkedTransport,
     canMessageHostBeforeJoin: canViewHostProfileBeforeJoin,
     buddyUserIdsOnActivity: input.buddyUserIdsOnActivity,
   };

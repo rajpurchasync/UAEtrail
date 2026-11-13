@@ -1,6 +1,10 @@
 import type {
+  FindCrewVisibility,
   MemberProfileStatsDTO,
   MemberProfileViewStatsDTO,
+  ProfileDateOfBirthShare,
+  ProfileFieldPrivacySettings,
+  ProfileFriendsListShare,
   RewardBadgeDTO,
 } from '@uaetrail/shared-types';
 import type { UserProfile } from '../api/types';
@@ -16,12 +20,29 @@ export const updateMeProfile = async (payload: Partial<UserProfile>): Promise<Us
   return res.data;
 };
 
+export type MemberProfilePrivacySettings = ProfileFieldPrivacySettings & {
+  dateOfBirthShare: ProfileDateOfBirthShare;
+  friendsListShare: ProfileFriendsListShare;
+  findCrewVisibility: FindCrewVisibility;
+};
+
+export const updateMeProfileFieldPrivacy = async (patch: {
+  fieldPrivacy?: Partial<ProfileFieldPrivacySettings>;
+  dateOfBirthShare?: ProfileDateOfBirthShare;
+  friendsListShare?: ProfileFriendsListShare;
+  findCrewVisibility?: FindCrewVisibility;
+}): Promise<MemberProfilePrivacySettings> => {
+  const res = await api.updateMeProfileFieldPrivacy(patch);
+  return res.data;
+};
+
 export const updateMeMedicalSafetyProfile = async (
   payload: {
     bloodGroup: NonNullable<UserProfile['bloodGroup']>;
     medicalConditions: string;
     emergencyContactName: string;
     emergencyContactPhone: string;
+    emergencyContactRelation: string;
   }
 ): Promise<UserProfile> => {
   const res = await api.updateMeMedicalSafetyProfile(payload);

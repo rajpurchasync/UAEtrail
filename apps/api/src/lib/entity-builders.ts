@@ -1,5 +1,11 @@
 import { randomUUID } from 'crypto';
-import type { MemberVehicleColor } from '@uaetrail/shared-types';
+import type { DetailRevampConfidence, MemberVehicleColor } from '@uaetrail/shared-types';
+import {
+  defaultPolicyKeyForMode,
+  mapLegacyPricingToBreakdown,
+  migrateInstructionAndPlanLinesToGear,
+  migrateLegacyItineraryStringsToSteps,
+} from '@uaetrail/shared-types';
 import type { Location } from '../domain/types.js';
 import {
   ActivityType,
@@ -108,6 +114,7 @@ export type ActivityCreateInput = {
   priceAed?: number;
   pricePackages?: unknown;
   capacity: number;
+  waitlist?: boolean;
   status?: ActivityStatus | string;
   featured?: boolean;
   publishedAt?: Date | null;
@@ -166,6 +173,7 @@ export type ActivityUpdateInput = {
   priceAed?: number;
   pricePackages?: unknown;
   capacity?: number;
+  waitlist?: boolean;
   status?: ActivityStatus | string;
   featured?: boolean;
   publishedAt?: Date | null;
@@ -278,6 +286,7 @@ export type MongoActivityDoc = {
   linkedRideshareActivityId: string | null;
   paymentTerms: string | null;
   pricingMode: 'free' | 'shared' | 'paid' | null;
+  /** Empty on schema v2 — use itinerarySteps. */
   itinerary: string[];
   requirements: string[];
   joinMode?: 'open' | 'private' | null;
@@ -295,6 +304,7 @@ export type MongoActivityDoc = {
   outingCategory?: string | null;
   outingTopic?: string | null;
   areaId?: string | null;
+  geoRef?: import('@uaetrail/shared-types').GeoRef | null;
   groupRegionLevels?: import('@uaetrail/shared-types').GroupRegionLevels | null;
   activityMode?: 'hosted' | 'seeking' | null;
   participantIntentId?: string | null;
@@ -302,12 +312,109 @@ export type MongoActivityDoc = {
   seekingConvertedActivityId?: string | null;
   groupChatPostPolicy?: 'all_participants' | 'host_only' | null;
   guides?: import('../domain/types.js').ActivityGuideRecord[];
+  schemaVersion?: 1 | 2;
+  summary?: string | null;
+  itinerarySteps?: import('@uaetrail/shared-types').ActivityItineraryStepDTO[];
+  gear?: import('@uaetrail/shared-types').ActivityGearItemDTO[];
+  waitlist?: boolean;
+  counts?: import('@uaetrail/shared-types').ActivityCountsDTO;
+  priceBreakdown?: import('@uaetrail/shared-types').ActivityPriceBreakdownDTO;
+  policyKey?: import('@uaetrail/shared-types').ActivityPolicyKeyDTO;
+  customPolicy?: string | null;
+  audience?: import('../domain/types.js').Activity['audience'];
+  waiverRequired?: boolean;
+  needsReview?: string[];
+  confidence?: Record<string, DetailRevampConfidence>;
   createdAt: Date;
   updatedAt: Date;
 };
 
+const requirementsSignalWomenOnly = (requirements: string[]): boolean =>
+  requirements.some((line) => /\bwomen[-\s]?only\b/i.test(line.trim()));
+
+const requirementsSignalKidsWelcome = (requirements: string[]): boolean =>
+  requirements.some((line) => /\b(kids?\s+welcome|child[-\s]?friendly|families?\s+welcome)\b/i.test(line.trim()));
+
+const requirementsSignalPets = (requirements: string[]): boolean =>
+  requirements.some((line) => /\b(pets?\s+allowed|dogs?\s+allowed)\b/i.test(line.trim()));
+
+const extractLanguageLines = (requirements: string[]): string[] => {
+  const out: string[] = [];
+  for (const line of requirements) {
+    const m = line.trim().match(/^Languages?\s*:\s*(.+)$/i);
+    if (m?.[1]) {
+      out.push(
+        ...m[1]
+          .split(/[,;/]/)
+          .map((s) => s.trim())
+          .filter(Boolean)
+      );
+    }
+  }
+  return [...new Set(out)];
+};
+
+export const buildDetailRevampSnapshotFromLegacy = (input: {
+  itineraryLines: string[];
+  requirements: string[];
+  description: string;
+  priceAed: number;
+  pricingMode: 'free' | 'shared' | 'paid' | null;
+}): Pick<
+  MongoActivityDoc,
+  | 'schemaVersion'
+  | 'itinerary'
+  | 'summary'
+  | 'itinerarySteps'
+  | 'gear'
+  | 'priceBreakdown'
+  | 'policyKey'
+  | 'audience'
+  | 'waiverRequired'
+> => {
+  const requirements = input.requirements;
+  const itinerarySteps = migrateLegacyItineraryStringsToSteps(input.itineraryLines);
+  const gear = migrateInstructionAndPlanLinesToGear(requirements);
+  const priceBreakdown = mapLegacyPricingToBreakdown({
+    priceAed: input.priceAed,
+    pricingMode: input.pricingMode,
+  });
+  const policyKey = defaultPolicyKeyForMode(priceBreakdown.mode);
+  const summary = input.description.trim().slice(0, 160) || null;
+  return {
+    schemaVersion: 2,
+    itinerary: [],
+    summary,
+    itinerarySteps,
+    gear,
+    priceBreakdown,
+    policyKey,
+    audience: {
+      kidsWelcome: requirementsSignalKidsWelcome(requirements),
+      minAge: null,
+      petsAllowed: requirementsSignalPets(requirements),
+      womenOnly: requirementsSignalWomenOnly(requirements),
+      fitness: 'unknown',
+      fitnessNote: null,
+      languages: extractLanguageLines(requirements),
+      accessibility: null,
+    },
+    waiverRequired: false,
+  };
+};
+
 export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: string): MongoActivityDoc => {
   const now = new Date();
+  const requirements = asStringArray(data.requirements);
+  const priorItineraryLines = asStringArray(data.itinerary);
+  const revamp = buildDetailRevampSnapshotFromLegacy({
+    itineraryLines: priorItineraryLines,
+    requirements,
+    description: data.description ?? '',
+    priceAed: data.priceAed ?? 0,
+    pricingMode: data.pricingMode ?? null,
+  });
+
   return {
     _id: id,
     tenantId: extractConnectedId(data.tenant)!,
@@ -343,8 +450,8 @@ export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: stri
     linkedRideshareActivityId: data.linkedRideshareActivityId ?? null,
     paymentTerms: data.paymentTerms ?? null,
     pricingMode: data.pricingMode ?? null,
-    itinerary: asStringArray(data.itinerary),
-    requirements: asStringArray(data.requirements),
+    itinerary: revamp.itinerary,
+    requirements,
     joinMode: data.joinMode ?? null,
     participationMode: data.participationMode ?? null,
     images: asStringArray(data.images),
@@ -364,6 +471,19 @@ export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: stri
     activityMode: data.activityMode ?? 'hosted',
     participantIntentId: data.participantIntentId ?? null,
     groupChatPostPolicy: data.groupChatPostPolicy ?? null,
+    schemaVersion: revamp.schemaVersion,
+    summary: revamp.summary,
+    itinerarySteps: revamp.itinerarySteps,
+    gear: revamp.gear,
+    waitlist: data.waitlist !== false,
+    counts: { going: 0, waitlisted: 0, pending: 0 },
+    priceBreakdown: revamp.priceBreakdown,
+    policyKey: revamp.policyKey,
+    customPolicy: null,
+    audience: revamp.audience,
+    waiverRequired: revamp.waiverRequired,
+    needsReview: [],
+    confidence: {},
     createdAt: now,
     updatedAt: now
   };

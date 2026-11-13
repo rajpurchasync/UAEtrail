@@ -1,21 +1,37 @@
 {
-  "generated": "2026-10-19",
+  "generated": "2026-11-12",
   "description": "CTO system audit baseline. Regenerate: npm run system:audit",
   "summary": {
-    "apiRegistrarFiles": 50,
-    "apiRouteEndpointsParsed": 156,
-    "mongoCollectionsDefined": 47,
+    "apiRegistrarFiles": 64,
+    "apiRouteEndpointsParsed": 204,
+    "mongoCollectionsDefined": 65,
     "mongoCollectionsOrphanInApi": 0,
-    "mongoCollectionsMultiWriterOver4": 0,
+    "mongoCollectionsMultiWriterOver4": 3,
     "routeRegistrarsWithDirectWrites": 0,
     "apiMounts": 8,
-    "spaRouteElements": 112,
-    "feDomainModules": 27,
+    "spaRouteElements": 135,
+    "feDomainModules": 31,
     "boundedContexts": 17
   },
   "risks": {
     "orphanCollections": [],
-    "multiWriterCollectionsTop": [],
+    "multiWriterCollectionsTop": [
+      {
+        "key": "LOCATIONS",
+        "mongoName": "locations",
+        "writerFileCount": 6
+      },
+      {
+        "key": "FACILITIES",
+        "mongoName": "facilities",
+        "writerFileCount": 5
+      },
+      {
+        "key": "ACTIVITIES",
+        "mongoName": "activities",
+        "writerFileCount": 5
+      }
+    ],
     "routeLayerViolations": []
   },
   "apiMounts": [
@@ -206,24 +222,70 @@
     },
     "LOCATIONS": {
       "mongoName": "locations",
-      "referencingFiles": 5,
-      "writerFiles": 2,
+      "referencingFiles": 11,
+      "writerFiles": 6,
       "sampleFiles": [
         "apps/api/src/lib/catalog-cpc-migrations.ts",
-        "apps/api/src/lib/member-goals-store.ts",
+        "apps/api/src/lib/explore-geo-search.ts",
+        "apps/api/src/lib/geo-backfill.ts",
+        "apps/api/src/lib/geo-read.ts",
+        "apps/api/src/lib/geo-worker.ts",
+        "apps/api/src/lib/member-goals-store.ts"
+      ]
+    },
+    "PLACE_TRACKS": {
+      "mongoName": "place_tracks",
+      "referencingFiles": 4,
+      "writerFiles": 3,
+      "sampleFiles": [
+        "apps/api/src/lib/entity-sync.ts",
         "apps/api/src/lib/mongo-indexes.ts",
-        "apps/api/src/services/area-public-read.ts",
-        "apps/api/src/services/seeking-area-match-notifications.ts"
+        "apps/api/src/lib/mongo-migrations.ts",
+        "apps/api/src/lib/place-heavy-store.ts"
+      ]
+    },
+    "PLACE_GUIDES": {
+      "mongoName": "place_guides",
+      "referencingFiles": 4,
+      "writerFiles": 3,
+      "sampleFiles": [
+        "apps/api/src/lib/entity-sync.ts",
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts",
+        "apps/api/src/lib/place-heavy-store.ts"
       ]
     },
     "FACILITIES": {
       "mongoName": "facilities",
+      "referencingFiles": 8,
+      "writerFiles": 5,
+      "sampleFiles": [
+        "apps/api/src/lib/catalog-cpc-migrations.ts",
+        "apps/api/src/lib/explore-geo-search.ts",
+        "apps/api/src/lib/facilities-store.ts",
+        "apps/api/src/lib/geo-backfill.ts",
+        "apps/api/src/lib/geo-read.ts",
+        "apps/api/src/lib/geo-worker.ts"
+      ]
+    },
+    "PLATFORM_ALERTS": {
+      "mongoName": "platform_alerts",
       "referencingFiles": 3,
       "writerFiles": 2,
       "sampleFiles": [
-        "apps/api/src/lib/catalog-cpc-migrations.ts",
-        "apps/api/src/lib/facilities-store.ts",
-        "apps/api/src/lib/mongo-indexes.ts"
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts",
+        "apps/api/src/lib/platform-alerts-store.ts"
+      ]
+    },
+    "REFERRAL_CLICKS": {
+      "mongoName": "referral_clicks",
+      "referencingFiles": 3,
+      "writerFiles": 2,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts",
+        "apps/api/src/services/referral-click-write.ts"
       ]
     },
     "LOCATION_UNLOCKS": {
@@ -236,24 +298,128 @@
     },
     "AREAS": {
       "mongoName": "areas",
+      "referencingFiles": 4,
+      "writerFiles": 3,
+      "sampleFiles": [
+        "apps/api/src/lib/areas-store.ts",
+        "apps/api/src/lib/geo-backfill.ts",
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/wishlist-store.ts"
+      ]
+    },
+    "GEO_NODES": {
+      "mongoName": "geo_nodes",
+      "referencingFiles": 6,
+      "writerFiles": 4,
+      "sampleFiles": [
+        "apps/api/src/lib/geo-backfill.ts",
+        "apps/api/src/lib/geo-tree.ts",
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts",
+        "apps/api/src/lib/mongo-warn-validators.ts",
+        "apps/api/src/lib/submissions-store.ts"
+      ]
+    },
+    "GEO_STATS": {
+      "mongoName": "geo_stats",
+      "referencingFiles": 3,
+      "writerFiles": 2,
+      "sampleFiles": [
+        "apps/api/src/lib/geo-read.ts",
+        "apps/api/src/lib/geo-worker.ts",
+        "apps/api/src/lib/mongo-migrations.ts"
+      ]
+    },
+    "GEO_OUTBOX": {
+      "mongoName": "geo_outbox",
+      "referencingFiles": 4,
+      "writerFiles": 3,
+      "sampleFiles": [
+        "apps/api/src/lib/geo-worker.ts",
+        "apps/api/src/lib/geo-write.ts",
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts"
+      ]
+    },
+    "GEO_META": {
+      "mongoName": "geo_meta",
+      "referencingFiles": 3,
+      "writerFiles": 3,
+      "sampleFiles": [
+        "apps/api/src/lib/geo-backfill.ts",
+        "apps/api/src/lib/geo-tree.ts",
+        "apps/api/src/lib/mongo-migrations.ts"
+      ]
+    },
+    "SUBMISSIONS": {
+      "mongoName": "submissions",
+      "referencingFiles": 4,
+      "writerFiles": 2,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts",
+        "apps/api/src/lib/mongo-warn-validators.ts",
+        "apps/api/src/lib/submissions-store.ts"
+      ]
+    },
+    "AMENITY_REPORTS": {
+      "mongoName": "amenity_reports",
+      "referencingFiles": 3,
+      "writerFiles": 2,
+      "sampleFiles": [
+        "apps/api/src/lib/amenity-reports-store.ts",
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts"
+      ]
+    },
+    "MERGES": {
+      "mongoName": "merges",
+      "referencingFiles": 1,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-migrations.ts"
+      ]
+    },
+    "CATALOGS": {
+      "mongoName": "catalogs",
+      "referencingFiles": 3,
+      "writerFiles": 2,
+      "sampleFiles": [
+        "apps/api/src/lib/catalogs-store.ts",
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts"
+      ]
+    },
+    "VERIFICATION_DOCUMENTS": {
+      "mongoName": "verification_documents",
+      "referencingFiles": 3,
+      "writerFiles": 2,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts",
+        "apps/api/src/services/verification-documents.ts"
+      ]
+    },
+    "PAYMENTS": {
+      "mongoName": "payments",
       "referencingFiles": 2,
       "writerFiles": 1,
       "sampleFiles": [
-        "apps/api/src/lib/areas-store.ts",
-        "apps/api/src/lib/mongo-indexes.ts"
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts"
       ]
     },
     "ACTIVITIES": {
       "mongoName": "activities",
-      "referencingFiles": 7,
-      "writerFiles": 3,
+      "referencingFiles": 11,
+      "writerFiles": 5,
       "sampleFiles": [
+        "apps/api/src/lib/explore-geo-search.ts",
+        "apps/api/src/lib/geo-backfill.ts",
+        "apps/api/src/lib/geo-read.ts",
+        "apps/api/src/lib/geo-worker.ts",
         "apps/api/src/lib/member-goals-store.ts",
-        "apps/api/src/lib/mongo-indexes.ts",
-        "apps/api/src/lib/mongo-migrations.ts",
-        "apps/api/src/lib/participant-intent-requests-store.ts",
-        "apps/api/src/services/area-public-read.ts",
-        "apps/api/src/services/participant-intent-activity-readthrough.ts"
+        "apps/api/src/lib/mongo-indexes.ts"
       ]
     },
     "ACTIVITY_REQUESTS": {
@@ -267,10 +433,22 @@
     },
     "ACTIVITY_PARTICIPANTS": {
       "mongoName": "activity_participants",
-      "referencingFiles": 3,
+      "referencingFiles": 4,
       "writerFiles": 2,
       "sampleFiles": [
         "apps/api/src/lib/member-map-pins-store.ts",
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts",
+        "apps/api/src/lib/rideshare-rider-reputation.ts"
+      ]
+    },
+    "ACTIVITY_PRIVATE": {
+      "mongoName": "activity_private",
+      "referencingFiles": 4,
+      "writerFiles": 3,
+      "sampleFiles": [
+        "apps/api/src/lib/activity-private-store.ts",
+        "apps/api/src/lib/entity-sync.ts",
         "apps/api/src/lib/mongo-indexes.ts",
         "apps/api/src/lib/mongo-migrations.ts"
       ]
@@ -331,10 +509,11 @@
     },
     "CONTENT_REPORTS": {
       "mongoName": "content_reports",
-      "referencingFiles": 1,
+      "referencingFiles": 2,
       "writerFiles": 1,
       "sampleFiles": [
-        "apps/api/src/lib/content-reports-store.ts"
+        "apps/api/src/lib/content-reports-store.ts",
+        "apps/api/src/lib/mongo-indexes.ts"
       ]
     },
     "SOCIAL_REVIEWS": {
@@ -385,6 +564,15 @@
         "apps/api/src/lib/mongo-indexes.ts"
       ]
     },
+    "ACTIVITY_FAMILY_INVITES": {
+      "mongoName": "activity_family_invites",
+      "referencingFiles": 2,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/activity-family-invites-store.ts",
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
     "BUDDY_REQUESTS": {
       "mongoName": "buddy_requests",
       "referencingFiles": 1,
@@ -395,9 +583,10 @@
     },
     "BUDDY_PAIRS": {
       "mongoName": "buddy_pairs",
-      "referencingFiles": 1,
-      "writerFiles": 0,
+      "referencingFiles": 2,
+      "writerFiles": 1,
       "sampleFiles": [
+        "apps/api/src/lib/buddy-store.ts",
         "apps/api/src/lib/mongo-indexes.ts"
       ]
     },
@@ -428,6 +617,16 @@
         "apps/api/src/lib/mongo-migrations.ts",
         "apps/api/src/lib/wishlist-store.ts",
         "apps/api/src/services/account-deletion.ts"
+      ]
+    },
+    "WEATHER_CACHE": {
+      "mongoName": "weather_cache",
+      "referencingFiles": 3,
+      "writerFiles": 2,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts",
+        "apps/api/src/lib/weather-cache-store.ts"
       ]
     },
     "NOTIFICATIONS": {
@@ -493,6 +692,15 @@
         "apps/api/src/lib/mongo-indexes.ts"
       ]
     },
+    "MEMBER_VEHICLES": {
+      "mongoName": "member_vehicles",
+      "referencingFiles": 2,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/member-vehicles-store.ts",
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
     "MEMBER_PROFILE_VIEWS": {
       "mongoName": "member_profile_views",
       "referencingFiles": 2,
@@ -534,6 +742,14 @@
       "sampleFiles": [
         "apps/api/src/lib/mongo-indexes.ts"
       ]
+    },
+    "WEB_VITALS_BATCHES": {
+      "mongoName": "web_vitals_batches",
+      "referencingFiles": 1,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/web-vitals-buffer.ts"
+      ]
     }
   },
   "collectionWritersSummary": {
@@ -546,13 +762,28 @@
     "TENANTS": 1,
     "TENANT_MEMBERSHIPS": 1,
     "HOST_APPLICATIONS": 3,
-    "LOCATIONS": 2,
-    "FACILITIES": 2,
+    "LOCATIONS": 6,
+    "PLACE_TRACKS": 3,
+    "PLACE_GUIDES": 3,
+    "FACILITIES": 5,
+    "PLATFORM_ALERTS": 2,
+    "REFERRAL_CLICKS": 2,
     "LOCATION_UNLOCKS": 0,
-    "AREAS": 1,
-    "ACTIVITIES": 3,
+    "AREAS": 3,
+    "GEO_NODES": 4,
+    "GEO_STATS": 2,
+    "GEO_OUTBOX": 3,
+    "GEO_META": 3,
+    "SUBMISSIONS": 2,
+    "AMENITY_REPORTS": 2,
+    "MERGES": 1,
+    "CATALOGS": 2,
+    "VERIFICATION_DOCUMENTS": 2,
+    "PAYMENTS": 1,
+    "ACTIVITIES": 5,
     "ACTIVITY_REQUESTS": 1,
     "ACTIVITY_PARTICIPANTS": 2,
+    "ACTIVITY_PRIVATE": 3,
     "PARTICIPANT_INTENTS": 3,
     "PARTICIPANT_INTENT_REQUESTS": 1,
     "MERCHANT_PROFILES": 3,
@@ -566,11 +797,13 @@
     "SOCIAL_GROUP_INVITES": 0,
     "SOCIAL_GROUP_WALL": 0,
     "SOCIAL_GROUP_WALL_REACTIONS": 0,
+    "ACTIVITY_FAMILY_INVITES": 1,
     "BUDDY_REQUESTS": 0,
-    "BUDDY_PAIRS": 0,
+    "BUDDY_PAIRS": 1,
     "USER_FOLLOWS": 1,
     "ENTITY_FOLLOWS": 1,
     "USER_WISHLIST": 3,
+    "WEATHER_CACHE": 2,
     "NOTIFICATIONS": 0,
     "SIDE_EFFECT_OUTBOX": 1,
     "REWARD_LEDGERS": 0,
@@ -578,16 +811,25 @@
     "USER_GOALS": 2,
     "MEMBER_AVAILABILITY": 1,
     "MEMBER_MAP_PINS": 2,
+    "MEMBER_VEHICLES": 1,
     "MEMBER_PROFILE_VIEWS": 1,
     "ACTIVITY_INVITES": 1,
     "PUSH_SUBSCRIPTIONS": 0,
     "MEDIA_ASSETS": 0,
-    "AUDIT_LOGS": 0
+    "AUDIT_LOGS": 0,
+    "WEB_VITALS_BATCHES": 1
   },
   "registrarServicesSample": {
     "apps/api/src/routes/admin/registerAdminActivityModerationRoutes.ts": [
       "admin-activity-moderation-commands",
-      "admin-activity-moderation-read"
+      "admin-activity-moderation-read",
+      "admin-activity-rideshare-link-commands"
+    ],
+    "apps/api/src/routes/admin/registerAdminAlertRoutes.ts": [
+      "platform-alerts-admin"
+    ],
+    "apps/api/src/routes/admin/registerAdminAmenityReportRoutes.ts": [
+      "amenity-reports"
     ],
     "apps/api/src/routes/admin/registerAdminAreaRoutes.ts": [
       "admin-area-commands",
@@ -597,6 +839,7 @@
       "admin-audit-read"
     ],
     "apps/api/src/routes/admin/registerAdminContentReportRoutes.ts": [
+      "admin-content-reports-commands",
       "admin-content-reports-read"
     ],
     "apps/api/src/routes/admin/registerAdminFacilityRoutes.ts": [
@@ -606,13 +849,6 @@
     "apps/api/src/routes/admin/registerAdminGroupRoutes.ts": [
       "admin-group-commands",
       "admin-group-read"
-    ],
-    "apps/api/src/routes/admin/registerAdminHostApplicationRoutes.ts": [
-      "admin-host-application-commands",
-      "admin-host-application-read"
-    ],
-    "apps/api/src/routes/admin/registerAdminMetricsRoutes.ts": [
-      "admin-metrics-read"
     ]
   },
   "auditPillars": [

@@ -31,7 +31,6 @@ import {
   memberProfileLink,
   PRO_MEMBERSHIP_PATH,
   SIGNIN_PATH,
-  planHostedSchedulePath,
 } from '../../config/routingCatalog';
 import { GlassCard } from '../mobile/GlassCard';
 import { AppButton } from '../mobile/AppButton';
@@ -533,7 +532,8 @@ export const OrganisationPublicProfile = ({
         </GlassCard>
       )}
 
-      {showOutingsPanel && (
+      {/* Owner console already has Activities chip — avoid duplicate list here. */}
+      {showOutingsPanel && !isOwner && (
       <GlassCard padding className="space-y-3">
         <AccountSectionHeader title="Activities hosted" />
         {activities.length === 0 ? (
@@ -544,11 +544,6 @@ export const OrganisationPublicProfile = ({
               <ProfileActivityListRow key={activity.id} activity={activity} />
             ))}
           </div>
-        )}
-        {isOwner && (
-          <Link to={planHostedSchedulePath()} className="inline-block text-sm font-semibold text-emerald-700">
-            Manage events →
-          </Link>
         )}
       </GlassCard>
       )}

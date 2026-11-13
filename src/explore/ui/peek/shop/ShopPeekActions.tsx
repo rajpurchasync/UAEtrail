@@ -95,7 +95,7 @@ export const ShopPeekActions = ({
   }
 
   const primaryClass =
-    'block w-full rounded-2xl bg-emerald-500 py-3.5 text-center text-base font-bold text-white';
+    'block w-full rounded-2xl bg-emerald-500 py-3.5 text-center text-base font-bold text-white md:rounded-xl md:py-2 md:text-sm';
 
   return (
     <>

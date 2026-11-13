@@ -47,7 +47,7 @@ export const normalizePlaceActivityType = (activityType: string): PlaceVenueKind
   return 'hiking';
 };
 
-/** Inbound kind-specific place URL segments (redirect to {@link canonicalPlaceDetailPath}). */
+/** Kind-specific place URL segments. Event venues are live at `/venue/:id`; trail/camp inbound aliases redirect to `/place/:id`. */
 export const inboundKindPlaceDetailPath = (activityType: string, placeId: string): string => {
   const kind = normalizePlaceActivityType(activityType);
   if (kind === 'shop') return `/shop/${encodeURIComponent(placeId)}`;
@@ -56,11 +56,28 @@ export const inboundKindPlaceDetailPath = (activityType: string, placeId: string
   return `/trail/${encodeURIComponent(placeId)}`;
 };
 
-/** Public URL for a place (trail, camp, or event venue). */
+/** Public URL for a place (trail, camp, or event venue). Event venues use `/venue/:id`; `/place/:id` still serves all kinds. */
 export const placeDetailPath = (activityType: string, placeId: string): string => {
   const kind = normalizePlaceActivityType(activityType);
   if (kind === 'shop') return `/shop/${encodeURIComponent(placeId)}`;
+  if (kind === 'event') return inboundKindPlaceDetailPath('event', placeId);
   return canonicalPlaceDetailPath(placeId);
+};
+
+/**
+ * Place detail URL from a place id.
+ * Pass the **place's** `activityType` when known. Never pass an outing/activity type —
+ * if the place type is unknown, use `/place/:id` (canonical page resolves kind from the API).
+ */
+export const placeDetailPathForId = (
+  placeId: string,
+  placeActivityType?: string | null
+): string => {
+  const id = placeId.trim();
+  if (!id) return PLACE_CANONICAL_PATH_PREFIX;
+  const known = placeActivityType?.trim();
+  if (known) return placeDetailPath(known, id);
+  return canonicalPlaceDetailPath(id);
 };
 
 /** Public URL for a facility amenity row (Program CPC). */

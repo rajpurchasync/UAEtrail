@@ -8,6 +8,8 @@ interface ActivityHubListRowProps {
   badge?: ReactNode;
   onClick: () => void;
   menu?: ReactNode;
+  /** Plain rows for lists already inside a bordered section (no nested glass card). */
+  variant?: 'card' | 'plain';
 }
 
 /** Compact tappable row for Joined / Hosted activity lists. */
@@ -18,10 +20,15 @@ export const ActivityHubListRow = ({
   badge,
   onClick,
   menu,
+  variant = 'card',
 }: ActivityHubListRowProps) => {
-  const shellClass = menu
+  const plainShell = menu
+    ? 'flex w-full items-center gap-1 py-1 pl-0.5 text-left transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/40'
+    : 'flex w-full items-center gap-3 py-2.5 text-left transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/40';
+  const cardShell = menu
     ? 'glass-card-interactive flex w-full items-center gap-1 p-1 pl-3.5'
     : 'glass-card-interactive flex w-full items-center gap-3 p-3.5 text-left';
+  const shellClass = variant === 'plain' ? plainShell : cardShell;
 
   const main = (
     <>

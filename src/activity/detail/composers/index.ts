@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react';
 import type { ActivityDetailKind } from '../activityDetailKind';
 import { CampingActivityDetailPlanSections } from './CampingActivityDetailPlanSections';
+import { EventActivityDetailPlanSections } from './EventActivityDetailPlanSections';
 import { HikingActivityDetailPlanSections } from './HikingActivityDetailPlanSections';
 import { OtherActivityDetailPlanSections } from './OtherActivityDetailPlanSections';
 import { RideshareActivityDetailPlanSections } from './RideshareActivityDetailPlanSections';
@@ -14,6 +15,7 @@ export const ACTIVITY_DETAIL_KIND_PLAN_SECTIONS: Record<
 > = {
   hiking: HikingActivityDetailPlanSections,
   camping: CampingActivityDetailPlanSections,
+  event: EventActivityDetailPlanSections,
   rideshare: RideshareActivityDetailPlanSections,
   other: OtherActivityDetailPlanSections,
 };

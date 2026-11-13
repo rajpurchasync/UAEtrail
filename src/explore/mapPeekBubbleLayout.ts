@@ -22,6 +22,12 @@ export const MAP_PEEK_PIN_VISUAL_LIFT = 22;
 const clamp = (value: number, min: number, max: number): number =>
   Math.min(max, Math.max(min, value));
 
+/** Scale the peek card so its natural height fits the overlay without an inner scrollbar. */
+export const mapPeekFitScale = (naturalHeight: number, availableHeight: number): number => {
+  if (!(naturalHeight > 0) || !(availableHeight > 0)) return 1;
+  return Math.min(1, availableHeight / naturalHeight);
+};
+
 /** Bubble next to a map pin — sized to content, capped by remaining viewport (no inner scroll). */
 export const layoutMapPeekBubble = (input: {
   overlayWidth: number;

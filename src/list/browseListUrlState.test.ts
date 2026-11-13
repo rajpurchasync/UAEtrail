@@ -52,6 +52,26 @@ describe('browseListUrlState trip topics', () => {
     expect(state.placeTopics).toEqual([]);
   });
 
+  it('serializes a geo drill path', () => {
+    const serialized = serializeBrowseListSearchParams(
+      {
+        query: '',
+        categories: [],
+        tripTopics: [],
+        placeTopics: [],
+        tripLookingOnly: false,
+        price: 'all',
+        when: 'any',
+        activityDatePreset: 'anyday',
+        buddiesSegment: 'looking',
+      },
+      ['Dubai'],
+      ['geo-state-ae-dubai', 'geo-area-hatta']
+    );
+    expect(serialized.get('regions')).toBe('Dubai');
+    expect(serialized.get('geo')).toBe('geo-state-ae-dubai/geo-area-hatta');
+  });
+
   it('serializes place topics when trip topics are empty', () => {
     const serialized = serializeBrowseListSearchParams(
       {

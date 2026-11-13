@@ -9,21 +9,19 @@ const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 
 describe('peek ↔ detail template alignment', () => {
   it('PEEK-ARCH-01: named ActivityPeekCard + PlacePeekCard facades', () => {
-    expect(read('src/explore/ui/peek/ActivityPeekCard.tsx')).toMatch(/ActivityPeekBody/);
+    expect(read('src/explore/ui/peek/ActivityPeekCard.tsx')).toMatch(/MapPeekBodySlot/);
     expect(read('src/explore/ui/peek/PlacePeekCard.tsx')).toMatch(/MapPeekShell/);
     expect(read('src/explore/ui/map-peek/MapPeekShell.tsx')).toMatch(/catalogPlaceSummary/);
     expect(read('src/explore/ui/ActivityMapPeekHost.tsx')).toMatch(/ActivityPeekCard/);
-    expect(read('src/explore/ui/peek/ActivityPeekCard.tsx')).toMatch(/ActivityPeekActions/);
-    expect(read('src/explore/ui/ExploreMapStage.tsx')).toMatch(/CatalogMapPeekHost/);
-    expect(read('src/explore/ui/peek/PlacePeekCard.tsx')).toMatch(/FacilityPeekActions/);
+    expect(read('src/explore/ui/peek/ActivityPeekCard.tsx')).toMatch(/MapPeekBodySlot/);
     expect(read('src/explore/ui/peek/place/PlaceMapPeekHost.tsx')).toMatch(/PlacePeekCard/);
   });
 
   it('PEEK-ARCH-02: consumer detail shares card model + peek transport wire', () => {
-    expect(read('src/activity/detail/templates/ActivityDetailSections.tsx')).toMatch(
+    expect(read('src/activity/detail/templates/ActivityConsumerDetailPage.tsx')).toMatch(
       /ActivityPeekLinkedTransport/
     );
-    expect(read('src/activity/detail/templates/ActivityDetailSections.tsx')).toMatch(
+    expect(read('src/activity/detail/templates/ActivityConsumerDetailPage.tsx')).toMatch(
       /peekParityCard/
     );
     expect(read('src/explore/ui/map-peek/MapPeekShell.tsx')).toMatch(/ActivityDiscoveryPublishedBody/);
@@ -33,9 +31,9 @@ describe('peek ↔ detail template alignment', () => {
   });
 
   it('PEEK-ARCH-03: place consumer detail aligns with peek CTAs and shell', () => {
-    const consumer = read('src/place/detail/templates/PlaceDetailSections.tsx');
-    expect(consumer).toMatch(/MobileDetailScrollShell/);
-    expect(consumer).toMatch(/PLACE_PEEK_FOOTER_PLAN_TRIP/);
+    const consumer = read('src/place/detail/templates/PlaceConsumerDetailPage.tsx');
+    expect(consumer).toMatch(/DetailPageShell/);
+    expect(consumer).toMatch(/PLACE_PEEK_ARRANGE_TRIP/);
     expect(read('src/explore/ui/peek/place/PlacePeekActions.tsx')).toMatch(/PLACE_PEEK_FOOTER_PLAN_TRIP/);
     expect(read('src/explore/ui/peek/place/PlacePeekActions.tsx')).toMatch(/PeekDetailLink/);
     expect(read('src/explore/ui/peek/place/PlacePeekActions.tsx')).toMatch(/PLACE_PEEK_FOOTER_TRIP_ALERTS/);

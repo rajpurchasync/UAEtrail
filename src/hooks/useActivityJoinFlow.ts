@@ -156,8 +156,14 @@ export const useActivityJoinActions = ({
       onMessage?.(message);
       setJoinModalOpen(false);
       void onReload();
+      const id = activity?.id;
+      if (id) {
+        void import('../offline/joinedTripOffline').then((m) =>
+          m.registerJoinedTripServiceWorker().then(() => m.precacheJoinedTrip(id))
+        );
+      }
     },
-    [onMessage, onReload]
+    [onMessage, onReload, activity]
   );
 
   const handleWithdraw = useCallback(

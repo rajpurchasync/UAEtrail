@@ -12,7 +12,7 @@ describe('resolveRegionFilter', () => {
   it('maps canonical region codes', () => {
     expect(resolveRegionFilter('RAK')).toBe('RAK');
     expect(resolveRegionFilter('Fujairah')).toBe('Fujairah');
-    expect(resolveRegionFilter('Al Ain')).toBe('Al Ain');
+    expect(resolveRegionFilter('Al Ain')).toBe('Abu Dhabi');
   });
 
   it('maps Ras Al Khaimah aliases to RAK', () => {

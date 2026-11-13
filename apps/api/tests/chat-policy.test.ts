@@ -3,6 +3,7 @@ import request from 'supertest';
 import type { Express } from 'express';
 import { findAuthUserByEmail } from '../src/lib/auth-users-store.js';
 import { canMessageUser, filterInboxMessageablePartnerIds } from '../src/services/chat-policy.js';
+import { createMerchantProfileForUser, updateManagedMerchantProfileById } from '../src/lib/shop-store.js';
 import { getMongoClient } from '../src/lib/mongo.js';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
 import {
@@ -210,5 +211,51 @@ describe('chat messaging policy', () => {
     expect(inboxRes.status).toBe(200);
     const directIds = (inboxRes.body.data?.direct ?? []).map((row: { userId: string }) => row.userId);
     expect(directIds).toContain(organizerId);
+  });
+
+  it('allows shop DMs and public phone only when the owner opts in', async () => {
+    const owner = await findAuthUserByEmail(visitorA.email);
+    const customer = await findAuthUserByEmail(visitorB.email);
+    expect(owner && customer).toBeTruthy();
+
+    const shop = await createMerchantProfileForUser(owner!._id, {
+      shopName: `Inbound chat shop ${Date.now()}`,
+      contactPhone: '+971500000009',
+      allowInboundChat: false,
+      showContactPhone: false,
+    });
+
+    const hidden = await request(app).get(`/api/shop/shops/${shop.id}`);
+    expect(hidden.status).toBe(200);
+    expect(hidden.body.data.contactPhone).toBeNull();
+    expect(hidden.body.data.allowInboundChat).toBe(false);
+
+    const blocked = await request(app)
+      .post('/api/chat/messages')
+      .set('Authorization', `Bearer ${visitorB.accessToken}`)
+      .send({ receiverId: owner!._id, content: 'Do you stock filters?' });
+    expect(blocked.status).toBe(403);
+    expect(blocked.body.error?.code).toBe('message_not_allowed');
+
+    await updateManagedMerchantProfileById(owner!._id, shop.id, {
+      allowInboundChat: true,
+      showContactPhone: true,
+    });
+
+    const visible = await request(app).get(`/api/shop/shops/${shop.id}`);
+    expect(visible.body.data.contactPhone).toBe('+971500000009');
+    expect(visible.body.data.allowInboundChat).toBe(true);
+
+    const inbound = await request(app)
+      .post('/api/chat/messages')
+      .set('Authorization', `Bearer ${visitorB.accessToken}`)
+      .send({ receiverId: owner!._id, content: 'Do you stock filters?' });
+    expect(inbound.status).toBe(201);
+
+    const reply = await request(app)
+      .post('/api/chat/messages')
+      .set('Authorization', `Bearer ${visitorA.accessToken}`)
+      .send({ receiverId: customer!._id, content: 'Yes — in store this week.' });
+    expect(reply.status).toBe(201);
   });
 });

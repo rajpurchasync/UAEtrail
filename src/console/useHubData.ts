@@ -1,28 +1,22 @@
 import { useCallback, useEffect, useMemo } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { getActivityJoinRequests } from '../hooks/publishingJoinQueueClientApi';
-import { listActivities } from '../hooks/tenantActivityClientApi';
+import { useQueryClient } from '@tanstack/react-query';
 import { getActiveTenantId, setActiveTenantId } from '../api/tenant';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { useAuth } from '../context/AuthContext';
-import { CATALOG_FRESH_MS } from '../lib/catalogSnapshot';
+import {
+  invalidatePublishingWorkspaceQueries,
+  usePublishingJoinQueue,
+  usePublishingTenantActivities,
+} from '../hooks/publishingWorkspaceQueries';
 
-const consoleHubKey = (tenantId: string) => ['console-hub', tenantId] as const;
+type ConsoleHubOptions = {
+  /** When false, only join queue loads (Host Hub lists use scoped `/publishing/activities` filters). */
+  fetchActivities?: boolean;
+};
 
-async function fetchConsoleHub(tenantId: string) {
-  const [activities, requests] = await Promise.all([
-    listActivities(tenantId),
-    getActivityJoinRequests(tenantId),
-  ]);
-  return {
-    activities,
-    requests,
-    pendingJoinRequests: requests.filter((request) => request.status === 'pending').length,
-  };
-}
-
-/** Publishing workspace hub: activities + join queue for active tenant. */
-export const useConsoleHubData = (enabled = true) => {
+/** Publishing workspace hub: join queue (+ optional full activity list) for active tenant. */
+export const useConsoleHubData = (enabled = true, options?: ConsoleHubOptions) => {
+  const fetchActivities = options?.fetchActivities !== false;
   const { user } = useAuth();
   const hostStatus = useMemberStatus({ enabled: Boolean(user) });
   const storedTenantId = getActiveTenantId();
@@ -35,14 +29,13 @@ export const useConsoleHubData = (enabled = true) => {
     }
   }, [hostStatus.tenantId]);
 
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: tenantId ? consoleHubKey(tenantId) : ['console-hub', 'none'],
-    queryFn: () => fetchConsoleHub(tenantId!),
-    enabled: enabled && Boolean(tenantId),
-    staleTime: CATALOG_FRESH_MS,
-  });
+  const activitiesQuery = usePublishingTenantActivities(tenantId, enabled && fetchActivities);
+  const joinQueueQuery = usePublishingJoinQueue(tenantId, enabled);
 
-  const activities = useMemo(() => data?.activities ?? [], [data?.activities]);
+  const activities = useMemo(
+    () => (fetchActivities ? activitiesQuery.data ?? [] : []),
+    [activitiesQuery.data, fetchActivities]
+  );
 
   const draftCount = useMemo(
     () => activities.filter((item) => item.status === 'draft').length,
@@ -74,20 +67,25 @@ export const useConsoleHubData = (enabled = true) => {
   );
 
   const reload = useCallback(async () => {
-    if (tenantId) {
-      await queryClient.invalidateQueries({ queryKey: consoleHubKey(tenantId) });
-    }
-    await refetch();
-  }, [queryClient, refetch, tenantId]);
+    invalidatePublishingWorkspaceQueries(queryClient, tenantId);
+    await Promise.all([
+      joinQueueQuery.refetch(),
+      fetchActivities ? activitiesQuery.refetch() : Promise.resolve(),
+    ]);
+  }, [activitiesQuery, fetchActivities, joinQueueQuery, queryClient, tenantId]);
 
-  const requests = useMemo(() => data?.requests ?? [], [data?.requests]);
+  const requests = useMemo(() => joinQueueQuery.data ?? [], [joinQueueQuery.data]);
 
   const pendingRequests = useMemo(
     () => requests.filter((request) => request.status === 'pending'),
     [requests]
   );
 
-  const loading = hostStatus.loading || (Boolean(tenantId) && isLoading);
+  const queryLoading =
+    joinQueueQuery.isLoading || (fetchActivities && activitiesQuery.isLoading);
+  const loading = hostStatus.loading || (Boolean(tenantId) && queryLoading);
+
+  const queryError = joinQueueQuery.error ?? (fetchActivities ? activitiesQuery.error : null);
 
   return {
     tenantId,
@@ -95,14 +93,19 @@ export const useConsoleHubData = (enabled = true) => {
     activities,
     requests,
     pendingRequests,
-    pendingJoinRequests: data?.pendingJoinRequests ?? 0,
+    pendingJoinRequests: pendingRequests.length,
     publishedCount,
     draftCount,
     upcomingActivitiesCount,
     pastActivitiesCount,
     upcomingActivities,
     loading,
-    error: error instanceof Error ? error.message : error ? 'Failed to load console data' : null,
+    error:
+      queryError instanceof Error
+        ? queryError.message
+        : queryError
+          ? 'Failed to load console data'
+          : null,
     reload,
   };
 };

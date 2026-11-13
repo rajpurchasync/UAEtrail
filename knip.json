@@ -25,7 +25,7 @@
       "project": ["src/**/*.ts"]
     }
   },
-  "ignoreDependencies": ["@capacitor/android", "@capacitor/ios"],
+  "ignoreDependencies": ["@capacitor/android", "@capacitor/ios", "@lhci/cli"],
   "ignoreIssues": {
     "apps/api/src/app.ts": ["exports"],
     "src/config/platform.ts": ["exports"],

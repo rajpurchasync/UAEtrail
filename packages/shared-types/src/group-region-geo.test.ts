@@ -11,14 +11,14 @@ import {
 describe('group-region-geo', () => {
   it('normalizes common region spellings', () => {
     expect(normalizeGroupRegionLabel('Ras Al Khaimah')).toBe('RAK');
-    expect(normalizeGroupRegionLabel('alain')).toBe('Al Ain');
+    expect(normalizeGroupRegionLabel('alain')).toBe('Abu Dhabi');
     expect(normalizeGroupRegionLabel('UAQ')).toBe('Umm Al Quwain');
     expect(normalizeGroupRegionLabel('Dibba Al-Hisn')).toBe('Sharjah');
   });
 
   it('resolves group regions from coordinates', () => {
     expect(resolveGroupRegionFromCoordinates(25.2048, 55.2708)).toBe('Dubai');
-    expect(resolveGroupRegionFromCoordinates(24.22, 55.76)).toBe('Al Ain');
+    expect(resolveGroupRegionFromCoordinates(24.22, 55.76)).toBe('Abu Dhabi');
     expect(resolveGroupRegionFromCoordinates(24.82, 56.13)).toBe('Dubai');
     expect(resolveGroupRegionFromCoordinates(25.12, 56.34)).toBe('Fujairah');
     expect(resolveGroupRegionFromCoordinates(25.33, 56.34)).toBe('Sharjah');

@@ -2,8 +2,9 @@ import { Link, useLocation } from 'react-router-dom';
 import { Bell, User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
-import { NOTIFICATIONS_PATH } from '../../config/routingCatalog';
+import { APP_SETTINGS_NOTIFICATIONS_PATH } from '../../config/routingCatalog';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
+import { notificationsInboxMobileBackState } from '../../utils/mobileBackNav';
 import { SecureAvatar } from '../ui/SecureAvatar';
 
 interface MobileSessionHeaderActionsProps {
@@ -24,6 +25,7 @@ export const MobileSessionHeaderActions = ({
   const { pathname, search } = useLocation();
   const unreadCount = useNotificationUnreadCount();
   const { href: signInHref } = buildSignInRedirect({ pathname, search });
+  const notificationsBackState = notificationsInboxMobileBackState(pathname, search);
 
   const floatingActionClass =
     'flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/95 shadow-[0_2px_12px_rgba(15,23,42,.14)] backdrop-blur-md';
@@ -57,7 +59,8 @@ export const MobileSessionHeaderActions = ({
     <div className={`flex shrink-0 items-center gap-2.5 ${className}`}>
       {user && !profileOnly && (
         <Link
-          to={NOTIFICATIONS_PATH}
+          to={APP_SETTINGS_NOTIFICATIONS_PATH}
+          state={notificationsBackState}
           className={notificationActionClass}
           aria-label="Notifications"
         >

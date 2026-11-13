@@ -6,6 +6,8 @@ import { COLLECTIONS } from './collections.js';
 import { getMongoClient } from './mongo.js';
 import { newEntityId } from './entity-builders.js';
 import { withCatalogLifecycleFields } from './catalog-lifecycle-map.js';
+import { emitGeoPinChange, facilityToCountedPin } from './geo-write.js';
+import { resolveGeoRefForPin } from './geo-resolve.js';
 
 export type MongoFacilityDoc = Omit<Facility, 'id'> & { _id: string };
 
@@ -17,6 +19,7 @@ export const mapMongoFacility = (doc: MongoFacilityDoc): Facility => {
   return {
     id: _id,
     ...rest,
+    partnerReferralUrl: rest.partnerReferralUrl ?? null,
     areaLabel: rest.areaLabel ?? null,
     registeredByUserId: rest.registeredByUserId ?? rest.submittedById ?? null,
   };
@@ -134,6 +137,7 @@ export type FacilityCreateInput = {
   latitude: number;
   longitude: number;
   images: string[];
+  partnerReferralUrl?: string | null;
   tags?: string[];
   countryCode?: string;
   registeredByUserId: string;
@@ -163,6 +167,7 @@ export const createFacilityRecord = async (input: FacilityCreateInput): Promise<
     latitude: input.latitude,
     longitude: input.longitude,
     images: input.images,
+    partnerReferralUrl: input.partnerReferralUrl?.trim() || null,
     tags: input.tags ?? [],
     featured: false,
     countryCode: (input.countryCode ?? 'AE').toUpperCase(),
@@ -175,7 +180,25 @@ export const createFacilityRecord = async (input: FacilityCreateInput): Promise<
   };
 
   await facilitiesCollection().insertOne(doc);
-  return mapMongoFacility(doc);
+  const mapped = mapMongoFacility(doc);
+  if (mapped.latitude != null && mapped.longitude != null) {
+    const { geoRef } = await resolveGeoRefForPin({
+      latitude: mapped.latitude,
+      longitude: mapped.longitude,
+      areaId: mapped.areaId,
+      countryCode: mapped.countryCode,
+      region: mapped.region,
+      venueName: mapped.name,
+    });
+    await facilitiesCollection().updateOne(
+      { _id: mapped.id },
+      { $set: { geoRef, venueId: geoRef.venueId ?? null } }
+    );
+    mapped.geoRef = geoRef;
+    mapped.venueId = geoRef.venueId ?? null;
+    await emitGeoPinChange(null, facilityToCountedPin(mapped));
+  }
+  return mapped;
 };
 
 export type AdminFacilityCreateInput = {
@@ -189,6 +212,7 @@ export type AdminFacilityCreateInput = {
   latitude?: number | null;
   longitude?: number | null;
   images: string[];
+  partnerReferralUrl?: string | null;
   tags?: string[];
   featured?: boolean;
   status?: LocationStatus;
@@ -220,6 +244,7 @@ export const createAdminFacility = async (input: AdminFacilityCreateInput): Prom
     latitude: input.latitude ?? null,
     longitude: input.longitude ?? null,
     images: input.images,
+    partnerReferralUrl: input.partnerReferralUrl?.trim() || null,
     tags: input.tags ?? [],
     featured: input.featured ?? false,
     countryCode: (input.countryCode ?? 'AE').toUpperCase(),
@@ -232,7 +257,25 @@ export const createAdminFacility = async (input: AdminFacilityCreateInput): Prom
   };
 
   await facilitiesCollection().insertOne(doc);
-  return mapMongoFacility(doc);
+  const mapped = mapMongoFacility(doc);
+  if (mapped.latitude != null && mapped.longitude != null) {
+    const { geoRef } = await resolveGeoRefForPin({
+      latitude: mapped.latitude,
+      longitude: mapped.longitude,
+      areaId: mapped.areaId,
+      countryCode: mapped.countryCode,
+      region: mapped.region,
+      venueName: mapped.name,
+    });
+    await facilitiesCollection().updateOne(
+      { _id: mapped.id },
+      { $set: { geoRef, venueId: geoRef.venueId ?? null } }
+    );
+    mapped.geoRef = geoRef;
+    mapped.venueId = geoRef.venueId ?? null;
+    await emitGeoPinChange(null, facilityToCountedPin(mapped));
+  }
+  return mapped;
 };
 
 export const listAdminFacilitiesPaged = async (input: { skip: number; take: number }) => {
@@ -257,6 +300,7 @@ export type AdminFacilityUpdateInput = Partial<
     | 'latitude'
     | 'longitude'
     | 'images'
+    | 'partnerReferralUrl'
     | 'tags'
     | 'status'
     | 'featured'

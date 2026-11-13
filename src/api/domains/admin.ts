@@ -117,6 +117,7 @@ export const adminApi = {
     pageSize?: number;
     reason?: string;
     targetType?: string;
+    status?: string;
     reporter?: string;
     from?: string;
     to?: string;
@@ -126,6 +127,7 @@ export const adminApi = {
     if (filters?.pageSize) params.set('pageSize', String(filters.pageSize));
     if (filters?.reason) params.set('reason', filters.reason);
     if (filters?.targetType) params.set('targetType', filters.targetType);
+    if (filters?.status) params.set('status', filters.status);
     if (filters?.reporter) params.set('reporter', filters.reporter);
     if (filters?.from) params.set('from', filters.from);
     if (filters?.to) params.set('to', filters.to);
@@ -135,6 +137,16 @@ export const adminApi = {
       pagination: { total: number; page: number; pageSize: number; totalPages: number };
     }>(`/admin/reports${qs ? `?${qs}` : ''}`, { auth: true });
   },
+
+  patchAdminContentReport: (
+    id: string,
+    payload: { status: 'resolved' | 'dismissed'; note?: string }
+  ) =>
+    apiRequest<{ data: AdminContentReportEntry }>(`/admin/reports/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      auth: true,
+      body: JSON.stringify(payload),
+    }),
 
     addAdminTenantTeamMember: (
       tenantId: string,
@@ -213,5 +225,59 @@ export const adminApi = {
       apiRequest(`/admin/platform-admins/${userId}`, {
         method: 'DELETE',
         auth: true,
+      }),
+
+    listAdminPlatformAlerts: () =>
+      apiRequest<{ data: import('@uaetrail/shared-types').AdminPlatformAlertDTO[] }>('/admin/alerts', {
+        auth: true,
+      }),
+
+    createAdminPlatformAlert: (body: Record<string, unknown>) =>
+      apiRequest<{ data: import('@uaetrail/shared-types').AdminPlatformAlertDTO }>('/admin/alerts', {
+        method: 'POST',
+        auth: true,
+        body: JSON.stringify(body),
+      }),
+
+    expireAdminPlatformAlert: (id: string) =>
+      apiRequest<{ data: import('@uaetrail/shared-types').AdminPlatformAlertDTO }>(
+        `/admin/alerts/${id}/expire`,
+        { method: 'POST', auth: true }
+      ),
+
+    listAdminAmenityReports: () =>
+      apiRequest<{
+        data: Array<{
+          id: string;
+          facilityId: string;
+          amenityState: import('@uaetrail/shared-types').AmenityState;
+          note?: string;
+          photoUrl?: string;
+          createdAt: string;
+        }>;
+      }>('/admin/amenity-reports', { auth: true }),
+
+    confirmAdminAmenityReport: (id: string) =>
+      apiRequest<{ data: { id: string; status: string } }>(`/admin/amenity-reports/${id}/confirm`, {
+        method: 'POST',
+        auth: true,
+      }),
+
+    listAdminVerificationDocuments: () =>
+      apiRequest<{
+        data: Array<{
+          id: string;
+          organizerId: string;
+          docType: string;
+          status: 'pending' | 'accepted' | 'rejected';
+          createdAt: string;
+        }>;
+      }>('/admin/verification-documents', { auth: true }),
+
+    reviewAdminVerificationDocument: (id: string, status: 'accepted' | 'rejected') =>
+      apiRequest<{ data: { id: string; status: string } }>(`/admin/verification-documents/${id}`, {
+        method: 'PATCH',
+        auth: true,
+        body: JSON.stringify({ status }),
       }),
 } as const;

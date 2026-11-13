@@ -23,7 +23,7 @@ interface AccountLinkListProps {
 
 /** Compact settings-style link rows — lighter than full ActionTiles. */
 export const AccountLinkList = ({ items }: AccountLinkListProps) => (
-  <div className="glass-card overflow-hidden divide-y divide-neutral-100/70">
+  <div className="app-zebra glass-card overflow-hidden divide-y divide-neutral-100/70">
     {items.map((item) => (
       <Link
         key={item.to + item.label}

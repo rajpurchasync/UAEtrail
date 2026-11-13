@@ -18,6 +18,20 @@ export const deriveActivityAvailability = (activity: ActivityAvailabilityInput):
 export const isActivityFull = (activity: Pick<ActivityAvailabilityInput, 'slotsAvailable'>): boolean =>
   activity.slotsAvailable <= 0;
 
+export type ActivityJoinCapacityInput = {
+  slotsTotal?: number | null;
+  slotsAvailable?: number | null;
+};
+
+/** Join CTA "full" — capped capacity with no open spots (not unknown / unlimited capacity). */
+export const activityJoinIsFull = (input: ActivityJoinCapacityInput): boolean => {
+  const total = input.slotsTotal ?? 0;
+  if (total <= 0) return false;
+  const available = input.slotsAvailable;
+  if (available == null) return false;
+  return available <= 0;
+};
+
 export type ActivityJoinCountInput = {
   slotsAvailable?: number | null;
   slotsTotal?: number | null;

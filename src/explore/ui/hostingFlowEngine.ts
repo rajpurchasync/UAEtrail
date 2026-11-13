@@ -27,13 +27,11 @@ import { validateHostingPublishArea } from '../hostingPublishArea';
 import type { ParticipationMode } from '../compose';
 import {
   todayIso,
-  tomorrowIso,
   type ActivityDifficulty,
   type LocationPrecision,
   type TimeMode,
 } from './createFlowShared';
 import { DEFAULT_PARTICIPANT_MIN_AGE } from './hostingParticipantAgeMin';
-import { DEFAULT_HOSTING_START_TIME } from './hostingScheduleDraft';
 
 export type { ParticipationMode } from '../compose';
 export type {
@@ -107,12 +105,14 @@ export type CreateActivityDraft = {
   toLabel: string;
   locationPrecision: LocationPrecision;
   date: string;
-  /** Inclusive last day — defaults to {@link date} for same-day outings. */
+  /** Last day when the outing spans multiple days (inclusive). Empty or same as `date` = one day. */
   endDate: string;
   timeMode: TimeMode;
   time: string;
   meetingTime: string;
   capacity: number;
+  /** When false, joiners cannot waitlist if the outing is full. */
+  waitlist: boolean;
   priceMode: PriceMode;
   priceAmount: number;
   sharedCostNote: string;
@@ -136,15 +136,11 @@ export type CreateActivityDraft = {
   endTime: string;
   /** Trail or camp name when {@link CreateActivityDraft.placeLabelSource} is `custom`. */
   trailName: string;
-  /** Catalog leaf row id (trail, camp spot, or event venue) from `GET /places/catalog`. */
+  /** Selected venue id from the place registry (catalog). */
   registryPlaceId: string | null;
-  /** Curated map area id for the ladder (cached for publish validation). */
+  /** Curated map area on the registry place (cached for publish validation). */
   registryPlaceAreaId: string | null;
-  /** Destination ladder — canonical state/emirate key (`getSubdivisionOptionsForCountry`). */
-  venueCascadeState: string;
-  /** Place hub bucket within the area (`areaLabel` key until hub rows ship). */
-  venueCascadePlaceGroup: string;
-  /** Catalog leaf pick vs member-submitted new spot under a hub. */
+  /** Registry pick vs typed venue name. */
   placeLabelSource: PlaceLabelSource;
   /** Map coordinates from the registry place (activity start on map). */
   trailLatitude: number | null;
@@ -314,7 +310,7 @@ export const createFlowStepTitle = (
   }
   if (step === 'when') {
     if (genericBuddy) return 'When';
-    if (structuredHost || rideshareHost || activityHost) return 'Date and Time';
+    if (structuredHost || rideshareHost || activityHost) return 'When are you going?';
     return 'Activity date & time';
   }
   if (step === 'meeting') {
@@ -330,7 +326,9 @@ export const createFlowStepTitle = (
     if (structuredHost || rideshareHost || activityHost) return 'Who can join?';
     return 'Who can attend?';
   }
-  if (step === 'destination' && structuredHost) return 'Select a venue';
+  if (step === 'destination' && campingHost) return 'Where are you camping?';
+  if (step === 'destination' && hikingHost) return 'Where are you going?';
+  if (step === 'destination' && eventHost) return 'Where is it happening?';
   if (step === 'difficulty' && hikingHost) return 'How difficult is the hike?';
   if (step === 'difficulty') return 'Difficulty';
   if (step === 'about_trail' && campingHost) return 'About this camp';
@@ -415,7 +413,7 @@ export const createDraftFromSeekingMapItem = (item: ExploreMapItemDTO): CreateAc
     kind: exploreMapKindToPlanMapKind(item.kind),
   }) as CreateActivityKind;
   const base = emptyCreateActivityDraft();
-  const timeStr = item.time?.trim() || DEFAULT_HOSTING_START_TIME;
+  const timeStr = item.time?.trim() || '09:00';
   const subtitle = item.subtitle?.trim() || '';
   const fromLabel = item.fromLabel?.trim() || '';
   const hasPin = item.latitude != null && item.longitude != null;
@@ -434,8 +432,7 @@ export const createDraftFromSeekingMapItem = (item: ExploreMapItemDTO): CreateAc
     toLongitude: item.toLongitude ?? null,
     toLabel: item.toLabel?.trim() || '',
     date: item.date?.trim() || todayIso(),
-    endDate: item.date?.trim() || todayIso(),
-    timeMode: item.time?.trim() ? 'specific' : 'specific',
+    timeMode: item.time?.trim() ? 'specific' : 'flexible',
     time: timeStr,
     meetingTime: item.time?.trim() ? timeStr : base.meetingTime,
     capacity: item.slotsTotal ?? defaultCapacityForKind(kind),
@@ -453,19 +450,12 @@ export const createDraftFromSeekingMapItem = (item: ExploreMapItemDTO): CreateAc
 
 export const hydrateCreateActivityDraft = (
   draft?: Partial<CreateActivityDraft> | null
-): CreateActivityDraft => {
-  const base = emptyCreateActivityDraft();
-  const startDate = draft?.date?.trim() || base.date;
-  const endDate = draft?.endDate?.trim() || startDate;
-  return {
-    ...base,
-    ...draft,
-    date: startDate,
-    endDate: endDate < startDate ? startDate : endDate,
-    packingItems: Array.isArray(draft?.packingItems) ? draft.packingItems : [],
-    packingAckMode: draft?.packingAckMode === 'strict' ? 'strict' : 'lenient',
-  };
-};
+): CreateActivityDraft => ({
+  ...emptyCreateActivityDraft(),
+  ...draft,
+  packingItems: Array.isArray(draft?.packingItems) ? draft.packingItems : [],
+  packingAckMode: draft?.packingAckMode === 'strict' ? 'strict' : 'lenient',
+});
 
 export const emptyCreateActivityDraft = (): CreateActivityDraft => ({
   kind: null,
@@ -481,17 +471,15 @@ export const emptyCreateActivityDraft = (): CreateActivityDraft => ({
   toLongitude: null,
   toLabel: '',
   locationPrecision: 'general',
-  date: tomorrowIso(),
-  endDate: tomorrowIso(),
-  timeMode: 'specific',
-  time: DEFAULT_HOSTING_START_TIME,
-  meetingTime: DEFAULT_HOSTING_START_TIME,
-  endTime: '18:00',
+  date: todayIso(),
+  endDate: '',
+  timeMode: 'flexible',
+  time: '09:00',
+  meetingTime: '09:00',
+  endTime: '12:00',
   trailName: '',
   registryPlaceId: null,
   registryPlaceAreaId: null,
-  venueCascadeState: '',
-  venueCascadePlaceGroup: '',
   placeLabelSource: 'registry',
   trailLatitude: null,
   trailLongitude: null,
@@ -505,6 +493,7 @@ export const emptyCreateActivityDraft = (): CreateActivityDraft => ({
   meetingLongitude: null,
   meetingPointLabel: '',
   capacity: 6,
+  waitlist: true,
   priceMode: 'free',
   priceAmount: 0,
   sharedCostNote: '',
@@ -640,6 +629,9 @@ export const buildHostingActivityRequirements = (draft: CreateActivityDraft): st
       if (!draft.childrenAllowed) requirements.push('No children');
       if (!draft.petsAllowed) requirements.push('No pets');
     }
+  }
+  if (draft.timeMode === 'flexible') {
+    requirements.push('Flexible time — anytime during the day');
   }
   if (draft.locationPrecision === 'general') {
     requirements.push('General area — exact meeting point may vary');

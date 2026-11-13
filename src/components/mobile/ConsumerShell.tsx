@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { MOBILE_PRODUCT_HEADER_FROSTED } from '../../config/consumerScrollChrome';
 import { APP_PAGE_MIN_H_CLASS, APP_SCROLL_BODY_CLASS } from '../../config/layoutScroll';
@@ -7,6 +8,7 @@ import { shouldShowMobileUnifiedTabHeader } from '../../config/mobileTabHeader';
 import { shouldShowConsumerShellHamburger } from '../../config/platform';
 import { isWideNavRootPath } from '../../config/desktopNav';
 import { useAppScrollFrostedHeader } from '../../hooks/useAppScrollFrostedHeader';
+import { useMinWidthMd } from '../../hooks/useMinWidthMd';
 import { ConsumerHeaderActions } from '../layout/ConsumerHeaderActions';
 import { MobileBackButton } from './MobileBackButton';
 import { MobileProfileHeaderLink } from './MobileProfileHeaderLink';
@@ -38,6 +40,8 @@ interface ConsumerShellProps {
   leading?: 'profile';
   showJourney?: boolean;
   journey?: { fallbackTo?: string; label?: string };
+  /** Close (X) — e.g. member profile → explore map. */
+  closeTo?: string;
 }
 
 const maxWidthClass = {
@@ -63,18 +67,31 @@ export const ConsumerShell = ({
   leading,
   showJourney = true,
   journey,
+  closeTo,
 }: ConsumerShellProps) => {
   const { pathname, search } = useLocation();
   const { user } = useAuth();
   const headerFrosted = useAppScrollFrostedHeader();
+  const isDesktopMd = useMinWidthMd();
   const layout: ConsumerLayout = layoutProp ?? (back ? 'stack' : 'tab');
   const layoutUnifiedHeader = shouldShowMobileUnifiedTabHeader(pathname, search, Boolean(user));
   const effectiveSuppressMobileHeader = suppressMobileHeader || layoutUnifiedHeader;
   const shellHamburger = shouldShowConsumerShellHamburger(pathname);
-  const headerTrailing = action ?? (shellHamburger ? <ConsumerHeaderActions showOnDesktop={false} /> : null);
+  const shellMenu = shellHamburger ? <ConsumerHeaderActions showOnDesktop={false} /> : null;
+  const headerTrailing =
+    action && shellMenu ? (
+      <div className="flex shrink-0 items-center gap-0.5">
+        {action}
+        {shellMenu}
+      </div>
+    ) : (
+      action ?? shellMenu
+    );
   const barTitle = navTitle ?? title;
   const pad = flush ? '' : 'px-4 sm:px-6 lg:px-8';
   const showTabTitleStrip = layout === 'tab' && title && !banner;
+  /** Layout `MobileTabHeader` owns the title on mobile — keep desktop `ConsumerTabBanner` only. */
+  const showTabTitleInChrome = showTabTitleStrip && (!layoutUnifiedHeader || isDesktopMd);
   const showTabActionInStrip = layout === 'tab' && action && !banner;
   const mobileUnifiedTitle = title ?? navTitle;
   const showMobileUnifiedHeader =
@@ -82,7 +99,7 @@ export const ConsumerShell = ({
     Boolean(mobileUnifiedTitle || back || leading || showJourney || action) &&
     (Boolean(banner) || layout === 'tab' || layout === 'editorial' || layout === 'stack');
   const hasTabSticky =
-    layout === 'tab' && Boolean((toolbar && !banner) || showTabTitleStrip || showTabActionInStrip);
+    layout === 'tab' && Boolean((toolbar && !banner) || showTabTitleInChrome || showTabActionInStrip);
   const hasEditorialSticky =
     layout === 'editorial' && !banner && Boolean(toolbar || back || action);
   const hasStackSticky = layout === 'stack' && !banner;
@@ -151,38 +168,56 @@ export const ConsumerShell = ({
                   ) : (
                     <span aria-hidden />
                   )}
-                  <div className="justify-self-end flex items-center justify-end min-w-[44px]">
+                  <div className="justify-self-end flex items-center justify-end gap-0.5 min-w-[44px]">
+                    {closeTo ? (
+                      <Link
+                        to={closeTo}
+                        replace
+                        aria-label="Close"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-full text-neutral-700 hover:bg-neutral-100"
+                      >
+                        <X className="h-5 w-5" aria-hidden />
+                      </Link>
+                    ) : null}
                     {headerTrailing}
                   </div>
                 </div>
               </div>
             )}
 
-            {showJourney && !banner && !(layout === 'tab' && isWideNavRootPath(pathname)) && (
+            {showJourney &&
+              !banner &&
+              !back &&
+              !(layout === 'tab' && isWideNavRootPath(pathname)) && (
               <div className="hidden md:block pt-safe-plus-2 pb-1">
                 <MobileBackButton fallbackTo={journeyFallbackTo} label={journeyLabel} />
               </div>
             )}
             {layout === 'stack' && (
               <>
-                <div className={`relative hidden md:flex items-center min-h-[44px] pb-2 md:pt-4 ${showJourney && !banner ? 'pt-1' : 'pt-safe-plus-2'}`}>
-                  {back && !showJourney && (
-                    <div className="absolute left-0 z-10 md:hidden">
+                <div
+                  className={`relative hidden md:flex min-h-[44px] items-center pb-2 md:pt-4 ${showJourney && !banner ? 'pt-1' : 'pt-safe-plus-2'}`}
+                >
+                  <div className="relative z-10 flex min-w-[5.5rem] shrink-0 items-center gap-1">
+                    {back ? (
                       <MobileBackButton
                         fallbackTo={back.fallbackTo ?? '/'}
                         label={back.label ?? 'Back'}
-                        backBehavior="fallback"
+                        backBehavior={back.backBehavior ?? 'fallback'}
+                        className="-ml-1"
                       />
+                    ) : null}
+                  </div>
+                  {barTitle ? (
+                    <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center px-28">
+                      <h1 className="min-w-0 max-w-full truncate text-center text-xl font-bold text-neutral-900">
+                        {barTitle}
+                      </h1>
                     </div>
-                  )}
-                  {barTitle && (
-                    <h1 className="flex-1 text-center text-[17px] font-semibold text-neutral-900 truncate px-14 md:px-0 md:text-left md:text-xl md:font-bold">
-                      {barTitle}
-                    </h1>
-                  )}
-                  {action && (
-                    <div className="absolute right-0 z-10 shrink-0 md:relative md:ml-auto">{action}</div>
-                  )}
+                  ) : null}
+                  <div className="relative z-10 ms-auto flex min-w-[5.5rem] shrink-0 items-center justify-end">
+                    {action ?? null}
+                  </div>
                 </div>
                 {toolbar && <div className="pb-3 md:pb-4">{toolbar}</div>}
               </>
@@ -208,12 +243,12 @@ export const ConsumerShell = ({
               </>
             )}
 
-            {layout === 'tab' && (
+            {layout === 'tab' && (showTabTitleInChrome || toolbar) && (
               <div className={`hidden md:block pt-safe-plus-2 pb-2 md:py-2 lg:px-3 lg:py-1.5 ${flush ? 'md:px-4' : ''}`}>
-                {showTabTitleStrip && (
+                {showTabTitleInChrome && (
                   <ConsumerTabBanner title={title!} action={showTabActionInStrip ? action : undefined} />
                 )}
-                {toolbar && <div className={showTabTitleStrip ? 'mt-2 lg:mt-1.5' : ''}>{toolbar}</div>}
+                {toolbar && <div className={showTabTitleInChrome ? 'mt-2 lg:mt-1.5' : ''}>{toolbar}</div>}
               </div>
             )}
             {layout === 'tab' && toolbar && (

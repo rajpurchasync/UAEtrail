@@ -64,6 +64,7 @@ export const resolveTheme = (preference: ThemePreference): 'light' | 'dark' => {
 const paintTheme = (theme: 'light' | 'dark'): void => {
   document.documentElement.dataset.theme = theme;
   document.documentElement.style.colorScheme = theme;
+  document.documentElement.classList.toggle('dark', theme === 'dark');
 };
 
 export const hasAccountSession = (): boolean => {

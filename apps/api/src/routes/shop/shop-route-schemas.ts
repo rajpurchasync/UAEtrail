@@ -9,6 +9,7 @@ import {
 export const idParamSchema = z.object({ id: z.string().min(1) });
 
 export const shopScopeSchema = z.object({
+  merchantId: z.string().min(1).optional(),
   shopId: z.string().min(1).optional(),
   tenantId: z.string().min(1).optional(),
 });
@@ -25,12 +26,14 @@ export const merchantProfileSchema = z.object({
   latitude: z.number().min(-90).max(90).optional().nullable(),
   longitude: z.number().min(-180).max(180).optional().nullable(),
   region: z.string().max(80).optional().nullable(),
+  allowInboundChat: z.boolean().optional(),
+  showContactPhone: z.boolean().optional(),
 });
 
 export const merchantProfilePatchSchema = merchantProfileSchema.partial();
 
-/** Shop manage routes. Mongo collection stays `merchant_profiles`. */
-export const shopManagePrefix = '/organisation' as const;
+/** Live dual prefixes — `/organisation/*` stays next to `/merchant/*` (not a leftover file). */
+export const shopOrganisationManagePrefixes = ['/merchant', '/organisation'] as const;
 
 export const serializeMerchantProfile = (profile: {
   id: string;
@@ -44,9 +47,12 @@ export const serializeMerchantProfile = (profile: {
   latitude?: number | null;
   longitude?: number | null;
   region?: string | null;
+  allowInboundChat?: boolean;
+  showContactPhone?: boolean;
 }) => ({
   id: profile.id,
   shopId: profile.id,
+  merchantId: profile.id,
   tenantId: profile.tenantId ?? null,
   shopName: profile.shopName,
   description: profile.description,
@@ -57,11 +63,30 @@ export const serializeMerchantProfile = (profile: {
   latitude: profile.latitude ?? null,
   longitude: profile.longitude ?? null,
   region: profile.region ?? null,
+  allowInboundChat: profile.allowInboundChat === true,
+  showContactPhone: profile.showContactPhone === true,
 });
 
-export async function getManagedMerchantProfile(userId: string, scope?: ShopManageScope) {
-  const resolvedScope: ShopManageScope = scope ?? {};
-  const merchantKey = resolvedScope.shopId;
+export const serializeMerchantPublicProfile = (
+  profile: Parameters<typeof serializeMerchantProfile>[0] & {
+    contactPersonName?: string | null;
+    contactPersonAvatar?: string | null;
+    contactPersonUserId?: string | null;
+  }
+) => {
+  const owner = serializeMerchantProfile(profile);
+  return {
+    ...owner,
+    contactPhone: owner.showContactPhone ? owner.contactPhone : null,
+    contactPersonName: profile.contactPersonName ?? null,
+    contactPersonAvatar: profile.contactPersonAvatar ?? null,
+    contactPersonUserId: profile.contactPersonUserId ?? null,
+  };
+};
+
+export async function getManagedMerchantProfile(userId: string, scope?: ShopManageScope | string) {
+  const resolvedScope: ShopManageScope = typeof scope === 'string' ? { merchantId: scope } : (scope ?? {});
+  const merchantKey = resolvedScope.merchantId ?? resolvedScope.shopId;
 
   if (merchantKey) {
     const profile = await findManagedMerchantProfileById(userId, merchantKey);

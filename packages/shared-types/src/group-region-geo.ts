@@ -13,7 +13,6 @@ import {
 export type UaeGroupRegionCatalogLabel =
   | 'Dubai'
   | 'Abu Dhabi'
-  | 'Al Ain'
   | 'Sharjah'
   | 'RAK'
   | 'Fujairah'
@@ -77,7 +76,7 @@ const UAE_GROUP_REGION_CORES: GroupRegionGeoZone[] = [
   bboxZone('Umm Al Quwain', 12, 25.48, 55.48, 25.62, 55.72),
   bboxZone('Sharjah', 13, 25.288, 55.36, 25.382, 55.55),
   bboxZone('Sharjah', 14, 25.08, 55.7, 25.34, 56.0), // Mleiha / Dhaid
-  bboxZone('Al Ain', 15, 24.0, 55.6, 24.55, 56.25),
+  bboxZone('Abu Dhabi', 15, 24.0, 55.6, 24.55, 56.25), // Al Ain city / oasis (Abu Dhabi emirate)
   bboxZone('Dubai', 20, 24.8, 54.96, 25.276, 55.42),
   bboxZone('Dubai', 21, 24.78, 55.38, 25.2, 55.7),
   bboxZone('RAK', 23, 25.52, 55.78, 26.08, 56.22),
@@ -100,7 +99,7 @@ const TEXT_TO_UAE_GROUP_REGION: ReadonlyArray<{
 }> = [
   { tokens: ['dubai'], label: 'Dubai' },
   { tokens: ['abu dhabi', 'abudhabi'], label: 'Abu Dhabi' },
-  { tokens: ['al ain', 'alain'], label: 'Al Ain' },
+  { tokens: ['al ain', 'alain'], label: 'Abu Dhabi' },
   { tokens: ['dibba al hisn', 'dibba al-hisn'], label: 'Sharjah' },
   { tokens: ['sharjah', 'kalba', 'khor fakkan', 'khorfakkan'], label: 'Sharjah' },
   { tokens: ['rak', 'ras al khaimah', 'ras al khaima', 'rask al khaimah'], label: 'RAK' },
@@ -135,6 +134,7 @@ const LOCALITY_TO_UAE_GROUP_REGION: ReadonlyArray<{
   { tokens: ['wadi shees', 'shees'], label: 'Sharjah' },
   { tokens: ['masfut', 'masfoot'], label: 'Ajman' },
   { tokens: ['hatta'], label: 'Dubai' },
+  { tokens: ['al ain', 'alain'], label: 'Abu Dhabi' },
   { tokens: ['shawka'], label: 'RAK' },
   { tokens: ['mleiha', 'maleha'], label: 'Sharjah' },
   { tokens: ['kalba'], label: 'Sharjah' },
@@ -227,7 +227,6 @@ export const UAE_GROUP_REGION_AREA_LABELS: readonly UaeGroupRegionCatalogLabel[]
   'Umm Al Quwain',
   'RAK',
   'Fujairah',
-  'Al Ain',
 ];
 
 /** Match a point to an emirate and return that area’s center, not the point itself. */

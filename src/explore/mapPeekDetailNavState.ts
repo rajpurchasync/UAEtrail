@@ -110,3 +110,12 @@ export const profileHistoryEntityLinkState = (
   ...mobileBackNavState(returnTo, 'History'),
   detailBackTo: returnTo,
 });
+
+/** Hero / geo link from one entity detail into another (e.g. outing → area hub). */
+export const consumerDetailChildLinkState = (
+  returnTo: string,
+  backLabel: string
+): MapPeekDetailNavState & MobileBackNavState => ({
+  ...mobileBackNavState(returnTo, backLabel),
+  detailBackTo: returnTo,
+});

@@ -1,5 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
-import { listActivities } from './tenantActivityClientApi';
 import { useMyJoinedActivities } from './useMyJoinedActivities';
 import {
   filterEligibleSelfRideshares,
@@ -7,17 +5,7 @@ import {
   type RideshareParentCandidate,
   type SelfRideshareCandidate,
 } from '../explore/eligibleRideshareParentActivities';
-
-const publishingTenantActivitiesQueryKey = (tenantId: string) =>
-  ['publishing', 'activities', tenantId] as const;
-
-function usePublishingTenantActivities(tenantId: string | null, enabled: boolean) {
-  return useQuery({
-    queryKey: tenantId ? publishingTenantActivitiesQueryKey(tenantId) : ['publishing', 'activities', 'none'],
-    queryFn: () => listActivities(tenantId!),
-    enabled: enabled && Boolean(tenantId),
-  });
-}
+import { usePublishingTenantActivities } from './publishingWorkspaceQueries';
 
 export function useEligibleRideshareParentActivities(input: {
   enabled: boolean;

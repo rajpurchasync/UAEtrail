@@ -19,6 +19,8 @@ import { mapIntentJoinRequestStatusByIntentIdsForUser } from './participant-inte
 import { listActiveTenantMembershipsByUser } from './tenant-access.js';
 import { listBuddiesForUser } from './buddy-store.js';
 import { countPendingActivityInvitesByActivityIdsForSender } from './activity-invites-store.js';
+import { findAuthUsersByIds } from './auth-users-store.js';
+import { filterSubjectsVisibleInFindCrew } from './find-crew-visibility-gate.js';
 import { resolveMemberStatusForExploreOverlay } from '../services/member-status-overlay-cache.js';
 import { applyActivityViewEntitlements } from '../services/member-entitlements.js';
 import type { HostStatusDTO } from '@uaetrail/shared-types';
@@ -332,5 +334,27 @@ export const enrichExploreMapPayloadViewerAccess = async (
     userRole: input.userRole,
     items: payload.items,
   });
-  return { items: attachExploreMapViewerAccess(payload.items, ctx) };
+  const withAccess = attachExploreMapViewerAccess(payload.items, ctx);
+
+  const seekerIds = new Set<string>();
+  for (const item of withAccess) {
+    if (!exploreMapItemIsSeeking(item)) continue;
+    const seekerId = item.featuredPerson?.userId ?? item.requesterUserId ?? null;
+    if (seekerId) seekerIds.add(seekerId);
+  }
+  if (seekerIds.size === 0) {
+    return { items: withAccess };
+  }
+
+  const seekers = await findAuthUsersByIds([...seekerIds]);
+  const visibleSeekers = await filterSubjectsVisibleInFindCrew(seekers, input.viewerUserId);
+  const items = withAccess.filter((item) => {
+    if (!exploreMapItemIsSeeking(item)) return true;
+    const seekerId = item.featuredPerson?.userId ?? item.requesterUserId ?? null;
+    if (!seekerId) return true;
+    // Own seeking pins always remain visible.
+    if (input.viewerUserId && seekerId === input.viewerUserId) return true;
+    return visibleSeekers.has(seekerId);
+  });
+  return { items };
 };

@@ -2,38 +2,30 @@
 @import './styles/home-tokens.css';
 @import 'tailwindcss';
 @config '../tailwind.config.js';
+@custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
   :root {
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --cta-height: 56px;
-    --bottom-nav-height: 64px;
+    --bottom-nav-height: 3.75rem;
     --bottom-nav-chrome-height: var(--bottom-nav-height);
     --explore-float-base: var(--safe-bottom);
-    /** Locate / basemap circles on the map. */
-    --explore-map-mobile-control: 3.5rem;
-    --explore-map-overlay-size: 2.5rem;
-    --explore-map-mobile-control-gap: 0.75rem;
-    /** Labeled floating FABs — Map, List, Create Trip, Add a venue, Find a crew. */
-    --mobile-dock-pill-height: 2.75rem;
-    /** Extra lift for floating dock above bottom nav / safe area */
-    --explore-map-fab-inset: 20px;
-    --explore-map-mobile-primary-fab-height: var(--mobile-dock-pill-height);
+    /** Extra lift for map “+” FAB above bottom nav / safe area */
+    --explore-map-fab-inset: 2.75rem;
     /** Mobile explore tab header (safe area + avatar row). */
-    --explore-mobile-tab-header-stack: calc(var(--safe-top, 0px) + 3.375rem);
-    /** Fixed consumer identity header (safe inset + identity row + bottom pad). */
-    --consumer-mobile-header-stack: calc(var(--safe-top, 0px) + 3.375rem);
+    --explore-mobile-tab-header-stack: calc(var(--safe-top, 0px) + 2.75rem);
     /** Map intent + activity filter toolbar — peek sheets start below this stack. */
-    --explore-mobile-map-filter-stack: 6.25rem;
+    --explore-mobile-map-filter-stack: 5.75rem;
     --explore-browse-peek-top: calc(
       var(--explore-mobile-tab-header-stack) + var(--explore-mobile-map-filter-stack)
     );
-    /** Vertical gap between stacked map controls (locate / style / FAB) */
-    --explore-map-fab-stack-gap: var(--explore-map-mobile-control-gap);
+    /** Vertical gap between map layer toggle and compose FAB */
+    --explore-map-fab-stack-gap: 1.25rem;
     /** Desktop explore — right rail (Add New + locate + style) */
     --explore-map-desktop-fab-bottom: 3rem;
-    --explore-map-desktop-primary-fab-height: 3.5rem;
+    --explore-map-desktop-primary-fab-height: 2.5rem;
     --explore-map-desktop-layer-toggle-size: 2.75rem;
     --explore-map-desktop-zoom-clearance: 2.75rem;
     --sticky-top: var(--safe-top);
@@ -86,17 +78,6 @@
     overflow-x: clip;
   }
 
-  /**
-   * Phone / PWA readability — 16px CSS looks undersized vs desktop Cursor.
-   * Rem chrome (nav, dock, chips) scales; keep 100% text-size-adjust so iOS
-   * does not double-inflate. Desktop (md+) stays 16px.
-   */
-  @media (max-width: 767px) {
-    html {
-      font-size: 18px;
-    }
-  }
-
   body {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -122,14 +103,6 @@
     height: 100%;
     min-height: 0;
     overflow: hidden;
-  }
-
-  @supports (height: 100dvh) {
-    html.product-shell-active,
-    html.product-shell-active body,
-    html.product-shell-active #root {
-      min-height: 100dvh;
-    }
   }
 
   html.guest-landing {
@@ -205,6 +178,42 @@
     scrollbar-color: rgba(15, 23, 42, 0.35) transparent;
   }
 
+  /** Browse/Explore list column — always a real scrollport with a visible thin rail. */
+  .list-explorer-scroll {
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(15, 23, 42, 0.45) rgba(15, 23, 42, 0.08);
+  }
+
+  .list-explorer-scroll::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .list-explorer-scroll::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.06);
+  }
+
+  .list-explorer-scroll::-webkit-scrollbar-thumb {
+    background: rgba(15, 23, 42, 0.45);
+    border-radius: 999px;
+  }
+
+  /** Explore map left rail — scrollport flush to resize gutter (no reserved gutter strip). */
+  [data-explore-browse-rail-content] .explore-browse-rail-scroll {
+    width: 100%;
+    max-width: 100%;
+    scrollbar-gutter: auto;
+  }
+
+  [data-explore-browse-rail-content] .explore-browse-rail-scroll::-webkit-scrollbar {
+    width: 8px;
+  }
+
   /* Product scrollbars stay thin. Hidden rails (scrollbar-none) override this. */
   * {
     scrollbar-width: thin;
@@ -257,6 +266,105 @@
 }
 
 @layer components {
+  /**
+   * Table header — stronger emerald band so columns stand out from zebra body rows.
+   * `!important` beats utility `bg-gray-50` / `bg-neutral-50` on thead in TSX.
+   * Applies to publishing, admin, and any `table.min-w-full`.
+   */
+  table.min-w-full > thead,
+  table.min-w-full > thead > tr,
+  table.min-w-full > thead th {
+    background-color: #d1fae5 !important;
+  }
+
+  table.min-w-full > thead th {
+    color: #064e3b;
+    border-bottom: 1px solid #a7f3d0;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+
+  /**
+   * Alternating row colors — tables + `.app-zebra` stacks.
+   * Soft emerald tint so dense lists stay scannable.
+   */
+  table.min-w-full > tbody > tr:nth-child(odd) {
+    background-color: #ffffff;
+  }
+
+  table.min-w-full > tbody > tr:nth-child(even) {
+    background-color: #f3faf7;
+  }
+
+  table.min-w-full > tbody > tr:hover {
+    background-color: #ecfdf5;
+  }
+
+  .app-zebra > *:nth-child(odd) {
+    background-color: rgba(255, 255, 255, 0.92);
+  }
+
+  .app-zebra > *:nth-child(even) {
+    background-color: rgba(243, 250, 247, 0.95);
+  }
+
+  .app-zebra > .glass-card:nth-child(odd),
+  .app-zebra > .glass-card-interactive:nth-child(odd) {
+    background-color: rgba(255, 255, 255, 0.88);
+  }
+
+  .app-zebra > .glass-card:nth-child(even),
+  .app-zebra > .glass-card-interactive:nth-child(even) {
+    background-color: rgba(236, 253, 245, 0.92);
+  }
+
+  .app-zebra > *:hover,
+  .app-zebra > .glass-card:hover,
+  .app-zebra > .glass-card-interactive:hover {
+    background-color: #ecfdf5;
+  }
+
+  html[data-theme='dark'] table.min-w-full > thead,
+  .dark table.min-w-full > thead,
+  html[data-theme='dark'] table.min-w-full > thead > tr,
+  .dark table.min-w-full > thead > tr,
+  html[data-theme='dark'] table.min-w-full > thead th,
+  .dark table.min-w-full > thead th {
+    background-color: #14532d !important;
+    color: #d1fae5;
+    border-bottom-color: #166534;
+  }
+
+  html[data-theme='dark'] table.min-w-full > tbody > tr:nth-child(odd),
+  .dark table.min-w-full > tbody > tr:nth-child(odd) {
+    background-color: #141414;
+  }
+
+  html[data-theme='dark'] table.min-w-full > tbody > tr:nth-child(even),
+  .dark table.min-w-full > tbody > tr:nth-child(even) {
+    background-color: #1a2220;
+  }
+
+  html[data-theme='dark'] table.min-w-full > tbody > tr:hover,
+  .dark table.min-w-full > tbody > tr:hover {
+    background-color: #1f3d32;
+  }
+
+  html[data-theme='dark'] .app-zebra > *:nth-child(odd),
+  .dark .app-zebra > *:nth-child(odd) {
+    background-color: rgba(20, 20, 20, 0.92);
+  }
+
+  html[data-theme='dark'] .app-zebra > *:nth-child(even),
+  .dark .app-zebra > *:nth-child(even) {
+    background-color: rgba(26, 34, 32, 0.95);
+  }
+
+  html[data-theme='dark'] .app-zebra > *:hover,
+  .dark .app-zebra > *:hover {
+    background-color: #1f3d32;
+  }
+
   /* ── Consumer mesh background ── */
   .consumer-bg {
     background-color: #eef6f3;
@@ -439,22 +547,12 @@
   }
 
   .app-fab {
-    @apply fixed z-40 right-4 flex items-center justify-center rounded-full bg-emerald-600 text-white shadow-[0_4px_20px_rgba(5,150,105,.45)] transition-all active:scale-[0.98] hover:bg-emerald-700;
-    height: var(--explore-map-mobile-control);
-    width: var(--explore-map-mobile-control);
-    bottom: calc(var(--explore-float-base) + var(--explore-map-fab-inset));
+    @apply fixed z-40 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg shadow-emerald-900/25 transition-all active:scale-95 hover:bg-emerald-700;
+    bottom: calc(var(--safe-bottom) + 12px);
   }
 
   .app-fab--extended {
-    width: auto;
-    max-width: calc(100vw - 2rem);
-    padding-left: 1.25rem;
-    padding-right: 1.25rem;
-    gap: 0.5rem;
-    font-size: 15px;
-    font-weight: 700;
-    line-height: 1;
-    white-space: nowrap;
+    @apply w-auto max-w-[calc(100vw-2rem)] px-4 sm:px-5 gap-2 text-sm font-bold whitespace-nowrap;
   }
 
   @media (min-width: 768px) {
@@ -464,15 +562,17 @@
   }
 
   html[data-mobile-bottom-nav='true'] .app-fab {
+    bottom: calc(var(--bottom-nav-chrome-height) + var(--safe-bottom) + 12px);
     z-index: 1250;
   }
 
   .app-fab--secondary {
     @apply bg-white text-neutral-800 shadow-lg ring-1 ring-neutral-200/90 hover:bg-neutral-50;
-    bottom: calc(
-      var(--explore-float-base) + var(--explore-map-fab-inset) + var(--explore-map-mobile-control) +
-        var(--explore-map-mobile-control-gap)
-    );
+    bottom: calc(var(--safe-bottom) + 12px + 3.75rem);
+  }
+
+  html[data-mobile-bottom-nav='true'] .app-fab--secondary {
+    bottom: calc(var(--bottom-nav-chrome-height) + var(--safe-bottom) + 12px + 3.75rem);
   }
 
   /* ── Typography ── */
@@ -522,6 +622,11 @@
     @apply absolute z-[7000] mt-1 w-full overflow-hidden rounded-2xl border border-neutral-200/90 bg-white shadow-lg shadow-neutral-900/10;
   }
 
+  /** Portaled AppSelect menu — fixed to viewport so stacked GlassCards do not cover options. */
+  .place-select-panel-fixed {
+    @apply overflow-hidden rounded-2xl border border-neutral-200/90 bg-white shadow-lg shadow-neutral-900/10;
+  }
+
   .place-select-option {
     @apply transition-colors duration-150 ease-out hover:bg-neutral-50 active:bg-neutral-100/80 w-full px-3 py-2.5 text-left text-sm flex items-start gap-2 text-neutral-800;
   }
@@ -544,6 +649,10 @@
 
   .ios-input {
     @apply w-full min-h-[48px] px-4 py-2.5 rounded-2xl bg-white/65 backdrop-blur-xl border border-white/70 text-[16px] text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-shadow;
+  }
+
+  .auth-card .ios-input {
+    @apply border-neutral-200/90 bg-white shadow-sm backdrop-blur-none focus:border-emerald-400;
   }
 
   .ios-search,
@@ -833,17 +942,16 @@
   }
 
   html[data-mobile-bottom-nav='true'] {
-  /* Tab row + home-indicator inset — one height for FABs and scroll padding. */
-    --bottom-nav-chrome-height: calc(var(--bottom-nav-height) + var(--safe-bottom));
-    --explore-float-base: var(--bottom-nav-chrome-height);
+    --explore-float-base: calc(var(--safe-bottom) + var(--bottom-nav-chrome-height));
   }
 
   .pb-nav-safe {
     padding-bottom: var(--safe-bottom);
   }
 
+  /** Pane already clears the fixed tab bar; keep a small end gap only. */
   html[data-mobile-bottom-nav='true'] .pb-nav-safe {
-    padding-bottom: calc(var(--bottom-nav-chrome-height) + 0.75rem);
+    padding-bottom: 0.75rem;
   }
 
   .pb-bottom-nav-safe {
@@ -851,7 +959,7 @@
   }
 
   html[data-mobile-bottom-nav='true'] .pb-bottom-nav-safe {
-    padding-bottom: var(--bottom-nav-chrome-height);
+    padding-bottom: 0.75rem;
   }
 
   .pb-mobile-fab {
@@ -859,7 +967,7 @@
   }
 
   html[data-mobile-bottom-nav='true'] .pb-mobile-fab {
-    padding-bottom: calc(var(--bottom-nav-chrome-height) + 4.5rem);
+    padding-bottom: 4.5rem;
   }
 
   .pb-safe {
@@ -922,28 +1030,28 @@
     scrollbar-color: rgba(15, 23, 42, 0.35) transparent;
   }
 
-  /** Vertical chrome sidebars — neutral thumb (overrides dark-theme mint scrollbars). */
+  /** Vertical chrome sidebars — thin visible rail (light and dark). */
   .product-sidebar-scroll {
     scrollbar-width: thin;
-    scrollbar-color: rgba(15, 23, 42, 0.28) transparent;
+    scrollbar-color: rgba(15, 23, 42, 0.45) rgba(15, 23, 42, 0.08);
   }
 
   .product-sidebar-scroll::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
   }
 
   .product-sidebar-scroll::-webkit-scrollbar-track {
-    background: transparent;
+    background: rgba(15, 23, 42, 0.06);
   }
 
   .product-sidebar-scroll::-webkit-scrollbar-thumb {
-    background: rgba(15, 23, 42, 0.28);
+    background: rgba(15, 23, 42, 0.45);
     border-radius: 999px;
   }
 
   .product-sidebar-scroll::-webkit-scrollbar-thumb:hover {
-    background: rgba(15, 23, 42, 0.4);
+    background: rgba(15, 23, 42, 0.6);
   }
 
   /* Shop featured marquee — scrolls right to left */
@@ -1006,6 +1114,36 @@
     -webkit-user-select: none;
   }
 
+  /*
+   * Spiderfy: markercluster animates icons via .leaflet-cluster-anim; legs use SVG stroke-dashoffset.
+   * Durations / stagger are driven from exploreMapClusterSpiderAnimation.ts (--uaetrail-cluster-spider-*).
+   */
+  .explore-map-rich .leaflet-cluster-anim .leaflet-marker-icon,
+  .explore-map-rich .leaflet-cluster-anim .leaflet-marker-shadow {
+    transition:
+      transform var(--uaetrail-cluster-spider-ms, 320ms) var(--uaetrail-cluster-spider-ease, cubic-bezier(0.32, 0.72, 0, 1)),
+      opacity calc(var(--uaetrail-cluster-spider-ms, 320ms) * 0.88) ease-out;
+    transition-delay: var(--uaetrail-cluster-spider-delay, 0ms);
+  }
+
+  .explore-map-rich .uaetrail-map-cluster-spider-leg,
+  .explore-map-rich .leaflet-cluster-spider-leg {
+    transition:
+      stroke-dashoffset var(--uaetrail-cluster-spider-ms, 320ms) var(--uaetrail-cluster-spider-ease, cubic-bezier(0.32, 0.72, 0, 1)),
+      stroke-opacity calc(var(--uaetrail-cluster-spider-ms, 320ms) * 0.88) ease-out;
+    transition-delay: var(--uaetrail-cluster-spider-delay, 0ms);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .explore-map-rich .leaflet-cluster-anim .leaflet-marker-icon,
+    .explore-map-rich .leaflet-cluster-anim .leaflet-marker-shadow,
+    .explore-map-rich .uaetrail-map-cluster-spider-leg,
+    .explore-map-rich .leaflet-cluster-spider-leg {
+      transition-delay: 0ms !important;
+      transition-duration: 1ms !important;
+    }
+  }
+
   @media (max-width: 1023px) {
     .explore-map-stage {
       min-height: calc(
@@ -1031,7 +1169,7 @@
 
   @media (min-width: 1024px) {
     .list-explorer-thumb-grid {
-      grid-template-columns: repeat(auto-fill, minmax(9.5rem, 11.25rem)) !important;
+      grid-template-columns: repeat(auto-fill, minmax(10.5rem, 12.25rem)) !important;
     }
 
     .list-explorer-thumb-grid--side-map {
@@ -1051,6 +1189,31 @@
     background: transparent !important;
     border: none !important;
     overflow: visible !important;
+  }
+
+  .explore-map-rich .leaflet-tooltip.uaetrail-map-pin-tooltip {
+    margin-top: 0;
+    padding: 0.28rem 0.65rem;
+    border: 1px solid rgba(255, 255, 255, 0.78);
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.58) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    color: #475569 !important;
+    box-shadow:
+      0 4px 18px rgba(15, 23, 42, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    font-size: 10px !important;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    line-height: 1.25;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  .explore-map-rich .leaflet-tooltip.uaetrail-map-pin-tooltip::before {
+    border-top-color: rgba(255, 255, 255, 0.58) !important;
+    margin-bottom: -1px;
   }
 
   .uaetrail-map-pin-hit {
@@ -1329,9 +1492,15 @@
   }
 
   .map-peek-bubble {
+    overflow: hidden;
     transform-origin: var(--peek-origin-x, 50%) var(--peek-origin-y, 100%);
     animation: map-peek-bubble-in 0.42s cubic-bezier(0.22, 1.18, 0.36, 1) both;
     will-change: transform, opacity;
+  }
+
+  .map-peek-fit {
+    --peek-fit: 1;
+    zoom: var(--peek-fit);
   }
 
   .map-peek-bubble-card {
@@ -1453,6 +1622,64 @@
     animation: uaetrail-pin-ring-pulse 1.6s ease-out infinite;
   }
 
+  .explore-map-rich .uaetrail-map-user-location {
+    background: transparent !important;
+    border: none !important;
+  }
+
+  .uaetrail-map-user-location-dot {
+    display: block;
+    width: 28px;
+    height: 28px;
+    position: relative;
+  }
+
+  .uaetrail-map-user-location-dot::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: rgba(37, 99, 235, 0.2);
+    animation: uaetrail-user-loc-halo 2.2s ease-out infinite;
+  }
+
+  .uaetrail-map-user-location-dot::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 14px;
+    height: 14px;
+    margin: -7px 0 0 -7px;
+    border-radius: 50%;
+    background: #2563eb;
+    border: 3px solid #ffffff;
+    box-shadow: 0 1px 6px rgba(15, 23, 42, 0.35);
+  }
+
+  @keyframes uaetrail-user-loc-halo {
+    0% {
+      transform: scale(0.65);
+      opacity: 0.85;
+    }
+    70% {
+      transform: scale(1);
+      opacity: 0.15;
+    }
+    100% {
+      transform: scale(1.05);
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .uaetrail-map-user-location-dot::before {
+      animation: none;
+      opacity: 0.35;
+      transform: scale(0.9);
+    }
+  }
+
   .uaetrail-map-cluster-marker {
     position: relative;
   }
@@ -1531,6 +1758,43 @@
     box-shadow:
       0 4px 14px rgba(5, 150, 105, 0.35),
       0 1px 3px rgba(15, 23, 42, 0.12);
+  }
+
+  .uaetrail-map-geo-bubble-wrap {
+    background: transparent !important;
+    border: none !important;
+  }
+
+  .uaetrail-map-geo-bubble {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    pointer-events: auto;
+  }
+
+  .uaetrail-map-geo-bubble-count {
+    min-width: 40px;
+    height: 40px;
+    padding: 0 8px;
+    font-size: 13px;
+  }
+
+  .uaetrail-map-geo-bubble-label {
+    max-width: 9.5rem;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.92);
+    color: #065f46;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.16);
   }
 
   .marker-cluster-small,
@@ -1743,18 +2007,6 @@
     background: rgba(255, 255, 255, 0.5) !important;
   }
 
-  .explore-map-overlay-icon-btn.explore-map-overlay-icon-btn--standalone {
-    background: rgba(255, 255, 255, 0.55) !important;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-color: transparent !important;
-    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.12) !important;
-  }
-
-  .explore-map-overlay-icon-btn.explore-map-overlay-icon-btn--standalone:hover {
-    background: rgba(255, 255, 255, 0.85) !important;
-  }
-
   html[data-theme='dark'] .explore-map-overlay-icon-btn,
   html[data-theme='dark'] .explore-map-chrome-stroke {
     color: #f4fff8 !important;
@@ -1762,16 +2014,6 @@
 
   html[data-theme='dark'] .explore-map-overlay-icon-btn:hover {
     background: rgba(255, 255, 255, 0.1) !important;
-  }
-
-  html[data-theme='dark'] .explore-map-overlay-icon-btn.explore-map-overlay-icon-btn--standalone {
-    background: rgba(16, 24, 30, 0.58) !important;
-    border-color: transparent !important;
-    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.34) !important;
-  }
-
-  html[data-theme='dark'] .explore-map-overlay-icon-btn.explore-map-overlay-icon-btn--standalone:hover {
-    background: rgba(24, 34, 42, 0.72) !important;
   }
 
   html[data-theme='dark'] button.explore-map-floating-chrome-btn,
@@ -1796,6 +2038,26 @@ html[data-theme='dark'] .explore-map-filter-tray {
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.34);
   backdrop-filter: blur(18px) saturate(1.28);
   -webkit-backdrop-filter: blur(18px) saturate(1.28);
+}
+
+/* Unlayered — beats Leaflet default tooltip text/background. */
+html[data-theme='dark'] .explore-map-rich .leaflet-tooltip.uaetrail-map-pin-tooltip {
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  border-radius: 9999px !important;
+  padding: 0.28rem 0.65rem !important;
+  background: rgba(16, 24, 30, 0.92) !important;
+  color: #f4fff8 !important;
+  font-size: 10px !important;
+  line-height: 1.25 !important;
+  box-shadow:
+    0 4px 18px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(18px) saturate(1.28);
+  -webkit-backdrop-filter: blur(18px) saturate(1.28);
+}
+
+html[data-theme='dark'] .explore-map-rich .leaflet-tooltip.uaetrail-map-pin-tooltip::before {
+  border-top-color: rgba(16, 24, 30, 0.92) !important;
 }
 
 html[data-theme='dark'] button.explore-map-filter-tray {
@@ -1847,37 +2109,44 @@ html[data-theme='dark'] .explore-map-filter-tray-sep {
   animation: explore-filter-quote-in 220ms ease-out;
 }
 
-.explore-filter-quote-fill--events {
-  fill: rgb(236 253 245);
+.explore-filter-quote-caret-shape {
+  stroke-width: 1;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
 }
-.explore-filter-quote-stroke--events {
+
+.explore-filter-quote-caret-shape--events {
+  fill: rgb(236 253 245);
   stroke: rgb(167 243 208 / 0.8);
 }
-.explore-filter-quote-fill--places {
+
+.explore-filter-quote-caret-shape--places {
   fill: rgb(240 249 255);
-}
-.explore-filter-quote-stroke--places {
   stroke: rgb(186 230 253 / 0.8);
 }
 
-html[data-theme='dark'] .explore-filter-quote-well--events.bg-emerald-50,
-html[data-theme='dark'] .explore-filter-quote-seam--events {
+html[data-theme='dark'] .explore-filter-quote-well--events.bg-emerald-50 {
   background: rgba(16, 24, 30, 0.58) !important;
   border-color: rgba(255, 255, 255, 0.18);
   backdrop-filter: blur(18px) saturate(1.28);
   -webkit-backdrop-filter: blur(18px) saturate(1.28);
 }
-html[data-theme='dark'] .explore-filter-quote-fill--events {
-  fill: rgba(16, 24, 30, 0.58);
+
+html[data-theme='dark'] .explore-filter-quote-well--places.bg-sky-50 {
+  background: rgba(16, 24, 30, 0.58) !important;
+  border-color: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(18px) saturate(1.28);
+  -webkit-backdrop-filter: blur(18px) saturate(1.28);
 }
-html[data-theme='dark'] .explore-filter-quote-stroke--events {
+
+html[data-theme='dark'] .explore-filter-quote-caret-shape--events {
+  fill: rgba(16, 24, 30, 0.58);
   stroke: rgba(255, 255, 255, 0.18);
 }
-html[data-theme='dark'] .explore-filter-quote-fill--places {
-  fill: #1c2430;
-}
-html[data-theme='dark'] .explore-filter-quote-stroke--places {
-  stroke: rgba(186, 230, 253, 0.28);
+
+html[data-theme='dark'] .explore-filter-quote-caret-shape--places {
+  fill: rgba(16, 24, 30, 0.58);
+  stroke: rgba(255, 255, 255, 0.18);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1950,65 +2219,6 @@ html[data-theme='dark'] .explore-filter-quote-stroke--places {
   width: 2rem;
 }
 
-/* Mobile map quick-filter pills — rem marks (scale with html font-size). */
-.explore-filter-mark.explore-filter-mark--chip {
-  height: 1.25rem;
-  width: 1.25rem;
-  font-size: 1.25rem;
-}
-
-.explore-filter-mark.explore-filter-mark--chip svg {
-  height: 1.25rem;
-  width: 1.25rem;
-}
-
-.explore-filter-mark.explore-filter-mark--chip .font-emoji {
-  font-size: 1.25rem;
-  transform: translateY(-0.04em);
-}
-
-.explore-filter-mark.explore-filter-mark--chip .explore-filter-emoji-camp {
-  transform: translateY(-0.1em);
-}
-
-.explore-filter-mark.explore-filter-mark--chip:has(.explore-facility-glyph),
-.explore-filter-mark.explore-filter-mark--chip:has(.explore-hiking-glyph),
-.explore-filter-mark.explore-filter-mark--chip:has(.explore-other-glyph) {
-  height: 1.375rem;
-  width: 1.375rem;
-}
-
-.explore-filter-mark.explore-filter-mark--chip svg.explore-facility-glyph,
-.explore-filter-mark.explore-filter-mark--chip svg.explore-hiking-glyph,
-.explore-filter-mark.explore-filter-mark--chip svg.explore-other-glyph {
-  height: 1.25rem;
-  width: 1.25rem;
-}
-
-.explore-map-float-chip-glyph {
-  height: 1.25rem;
-  width: 1.25rem;
-}
-
-.explore-filter-mark.explore-filter-mark--chip.explore-filter-mark--uae-flag {
-  width: auto;
-  height: 0.9rem;
-}
-
-.explore-map-float-chip-uae-flag {
-  height: 0.9rem;
-  width: auto;
-  aspect-ratio: 21 / 15;
-  border-radius: 1px;
-}
-
-.explore-filter-mark.explore-filter-mark--chip.explore-filter-mark--uae-flag svg,
-.explore-filter-mark.explore-filter-mark--uae-flag svg {
-  height: 0.9rem;
-  width: auto;
-  aspect-ratio: 21 / 15;
-}
-
 .list-explorer-bucket-count--active {
   background-color: #ffffff !important;
   color: #064e3b !important;
@@ -2058,23 +2268,49 @@ html[data-theme='dark'] .md\:bg-white\/90 {
   color: #eef6f1;
 }
 
+html[data-theme='dark'] .api-status-banner {
+  background-color: #1c1810;
+  border-bottom-color: rgba(251, 191, 36, 0.35);
+  color: #fde68a;
+}
+
+html[data-theme='dark'] .api-status-banner .text-amber-700,
+html[data-theme='dark'] .api-status-banner .text-amber-950,
+html[data-theme='dark'] .api-status-banner .text-amber-900 {
+  color: #fde68a;
+}
+
+html[data-theme='dark'] .api-status-banner code,
+html[data-theme='dark'] .api-status-banner button {
+  background-color: #2a2418;
+  color: #fef3c7;
+}
+
 html[data-theme='dark'] .bg-ios-bg {
   background-color: #0a0a0a;
 }
 
-html[data-theme='dark'] .auth-card.bg-white {
-  background-color: #1c1c1c;
-  border: 1px solid rgba(196, 232, 210, 0.34);
-  box-shadow: none;
+html[data-theme='dark'] .auth-card.bg-white,
+html[data-theme='dark'] .auth-card {
   color: #f4fff8;
 }
 
 html[data-theme='dark'] .auth-card .text-neutral-900,
 html[data-theme='dark'] .auth-card .text-neutral-800,
-html[data-theme='dark'] .auth-card .text-gray-700,
-html[data-theme='dark'] .auth-card .text-emerald-600,
-html[data-theme='dark'] .auth-card .text-emerald-700 {
+html[data-theme='dark'] .auth-card .text-gray-700 {
   color: #f4fff8;
+}
+
+html[data-theme='dark'] .auth-card a.text-emerald-700,
+html[data-theme='dark'] .auth-card a.text-emerald-800,
+html[data-theme='dark'] .auth-card a[class*='text-emerald-700'],
+html[data-theme='dark'] .auth-card a[class*='text-emerald-800'] {
+  color: #34d399;
+}
+
+html[data-theme='dark'] .auth-card a.text-emerald-700:hover,
+html[data-theme='dark'] .auth-card a.text-emerald-800:hover {
+  color: #6ee7b7;
 }
 
 html[data-theme='dark'] .auth-card .text-neutral-500,
@@ -2083,10 +2319,10 @@ html[data-theme='dark'] .auth-card .text-gray-500 {
 }
 
 html[data-theme='dark'] .auth-card .ios-input,
-html[data-theme='dark'] .auth-card input {
+html[data-theme='dark'] .auth-card input.ios-input {
   background-color: #2a2a2a;
   color: #f7fff9;
-  border-color: rgba(167, 220, 190, 0.4);
+  border: 1px solid rgba(167, 220, 190, 0.45);
 }
 
 html[data-theme='dark'] .auth-card input::placeholder {
@@ -2108,7 +2344,8 @@ html[data-theme='dark'] .bg-white\/95,
 html[data-theme='dark'] .bg-white\/65,
 html[data-theme='dark'] .bg-white\/55,
 html[data-theme='dark'] .bg-white\/40,
-html[data-theme='dark'] .bg-white\/30 {
+html[data-theme='dark'] .bg-white\/30,
+html[data-theme='dark'] .bg-white\/92 {
   background-color: #141414;
 }
 
@@ -2130,9 +2367,25 @@ html[data-theme='dark'] .hover\:bg-gray-50:hover {
   background-color: #0a0a0a;
 }
 
+.admin-console-page table.min-w-full > thead,
+.admin-console-page table.min-w-full > thead > tr,
+.admin-console-page table.min-w-full > thead th {
+  background-color: #d1fae5 !important;
+  color: #064e3b;
+  border-bottom: 1px solid #a7f3d0;
+  font-weight: 700;
+}
+
 .admin-console-page table.min-w-full tbody > tr {
-  background-color: #ffffff;
   transition: background-color 0.12s ease;
+}
+
+.admin-console-page table.min-w-full tbody > tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+.admin-console-page table.min-w-full tbody > tr:nth-child(even) {
+  background-color: #f3faf7;
 }
 
 .admin-console-page table.min-w-full tbody > tr:hover {
@@ -2159,8 +2412,20 @@ html[data-theme='dark'] .hover\:bg-gray-50:hover {
   background: transparent;
 }
 
-html[data-theme='dark'] .admin-console-page table.min-w-full tbody > tr {
+html[data-theme='dark'] .admin-console-page table.min-w-full > thead,
+html[data-theme='dark'] .admin-console-page table.min-w-full > thead > tr,
+html[data-theme='dark'] .admin-console-page table.min-w-full > thead th {
+  background-color: #14532d !important;
+  color: #d1fae5;
+  border-bottom-color: #166534;
+}
+
+html[data-theme='dark'] .admin-console-page table.min-w-full tbody > tr:nth-child(odd) {
   background-color: #141414;
+}
+
+html[data-theme='dark'] .admin-console-page table.min-w-full tbody > tr:nth-child(even) {
+  background-color: #1a2220;
 }
 
 html[data-theme='dark'] .admin-console-page table.min-w-full tbody > tr:hover,
@@ -2251,6 +2516,7 @@ html[data-theme='dark'] .bg-neutral-50\/95 {
   background-color: #2a2a2a;
 }
 
+html[data-theme='dark'] .hover\:bg-slate-50:hover,
 html[data-theme='dark'] .hover\:bg-neutral-50:hover,
 html[data-theme='dark'] .hover\:bg-neutral-50\/80:hover,
 html[data-theme='dark'] .hover\:bg-neutral-100:hover,
@@ -2453,7 +2719,9 @@ html[data-theme='dark'] .border-neutral-200\/75,
 html[data-theme='dark'] .border-neutral-200\/80,
 html[data-theme='dark'] .border-gray-100,
 html[data-theme='dark'] .border-gray-200,
-html[data-theme='dark'] .divide-neutral-100 > :not([hidden]) ~ :not([hidden]) {
+html[data-theme='dark'] .border-slate-200,
+html[data-theme='dark'] .divide-neutral-100 > :not([hidden]) ~ :not([hidden]),
+html[data-theme='dark'] .divide-y.border-slate-200 {
   border-color: rgba(167, 220, 190, 0.28);
 }
 
@@ -2615,26 +2883,26 @@ html[data-theme='dark'] .scrollbar-hide::-webkit-scrollbar {
 }
 
 html[data-theme='dark'] .product-sidebar-scroll {
-  scrollbar-color: rgba(15, 23, 42, 0.38) transparent;
+  scrollbar-color: #c5ddd0 rgba(255, 255, 255, 0.1);
 }
 
 html[data-theme='dark'] .product-sidebar-scroll::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 html[data-theme='dark'] .product-sidebar-scroll::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 html[data-theme='dark'] .product-sidebar-scroll::-webkit-scrollbar-thumb {
-  background: rgba(15, 23, 42, 0.38);
-  border: none;
+  background: #c5ddd0;
+  border: 2px solid #0a0a0a;
   border-radius: 999px;
 }
 
 html[data-theme='dark'] .product-sidebar-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(15, 23, 42, 0.52);
+  background: #d7ebe2;
 }
 
 header.home-marketing-header {
@@ -2807,6 +3075,11 @@ html[data-theme='dark'] .chat-app .chat-compose {
   color: #e9edef;
 }
 
+html[data-theme='dark'] .chat-app .chat-compose-field {
+  background-color: #2a3942;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
 html[data-theme='dark'] .chat-app .chat-thread-scroll {
   background-color: #0b141a;
   background-image: none;
@@ -2846,7 +3119,8 @@ html[data-theme='dark'] .consumer-list-row-selected {
   background-color: rgba(46, 139, 87, 0.22);
 }
 
-html[data-theme='dark'] .place-select-panel {
+html[data-theme='dark'] .place-select-panel,
+html[data-theme='dark'] .place-select-panel-fixed {
   background-color: #1c1c1c;
   border-color: #333;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
@@ -2979,7 +3253,6 @@ html.uaetrail-panel-resizing * {
   cursor: ew-resize !important;
 }
 
-html[data-mobile-menu='open'] [data-consumer-identity-row] {
-  position: relative;
-  z-index: 6410;
+html[data-mobile-menu='open'] [data-consumer-chrome-header] {
+  z-index: 5100;
 }

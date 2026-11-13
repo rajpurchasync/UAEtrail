@@ -6,8 +6,8 @@
  *   npm --workspace @uaetrail/api run backfill-seeking-activities -- --dry-run
  *   npm --workspace @uaetrail/api run backfill-seeking-activities -- --limit=100
  */
-import { connectMongo, disconnectMongo } from '../src/lib/mongo.js';
 import { backfillSeekingActivitiesForActiveIntents } from '../src/lib/participant-intents-store.js';
+import { resolveCliScriptName, runCliScript } from './cli-script-runner.js';
 
 const parseArgs = () => {
   const dryRun = process.argv.includes('--dry-run');
@@ -16,10 +16,8 @@ const parseArgs = () => {
   return { dryRun, limit: Number.isFinite(limit) ? limit : undefined };
 };
 
-const main = async () => {
+runCliScript(resolveCliScriptName(import.meta.url), async () => {
   const { dryRun, limit } = parseArgs();
-  await connectMongo();
-
   const result = await backfillSeekingActivitiesForActiveIntents({ dryRun, limit });
   console.log(
     JSON.stringify(
@@ -36,13 +34,4 @@ const main = async () => {
   if (result.errors.length > 0) {
     process.exitCode = 1;
   }
-};
-
-main()
-  .catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
-  })
-  .finally(async () => {
-    await disconnectMongo();
-  });
+});

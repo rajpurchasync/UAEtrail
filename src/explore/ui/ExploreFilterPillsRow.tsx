@@ -1,4 +1,6 @@
+import { useRef } from 'react';
 import type { MapFilterKey } from '../routing';
+import { useHorizontalDragScroll } from '../../hooks/useHorizontalDragScroll';
 import {
   EXPLORE_COMPACT_PILL_GRID,
   EXPLORE_COMPACT_PILL_LABEL,
@@ -33,6 +35,8 @@ export const ExploreFilterPillsRow = ({
   layout = 'map',
   className = '',
 }: ExploreFilterPillsRowProps) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useHorizontalDragScroll(scrollRef);
   const placesLabels = filterEmojiContext === 'venue';
   const pills = allowedKeys
     ? MAP_FILTER_PILLS.filter((pill) => allowedKeys.includes(pill.key))
@@ -54,7 +58,7 @@ export const ExploreFilterPillsRow = ({
       : undefined;
 
   return (
-    <div className={`${scrollClass} ${className}`}>
+    <div ref={scrollRef} className={`${scrollClass} ${className}`}>
       <div className={innerClass} style={innerStyle}>
         {pills.map((option) => {
           const active = mapFilter === option.key;

@@ -121,21 +121,21 @@ export const Account = () => {
 
   return (
     <DashboardLayout title="Account" links={ADMIN_LINKS}>
-      <div className="space-y-6 max-w-2xl">
+      <div className="max-w-2xl space-y-6">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">Account</h2>
-          <p className="text-sm text-gray-500 mt-1">
+          <h2 className="text-lg font-semibold text-neutral-900">Account</h2>
+          <p className="mt-1 text-sm text-neutral-500">
             Staff identity and display on this console. Outing history, privacy, cars, languages, and the rest of your
-            member profile are on <span className="font-medium text-gray-700">Switch to visitor</span>.
+            member profile are on <span className="font-medium text-neutral-700">Switch to visitor</span>.
           </p>
         </div>
 
         {loading ? (
-          <p className="text-sm text-gray-500">Loading…</p>
+          <p className="text-sm text-neutral-500">Loading…</p>
         ) : (
           <>
-            <div className="bg-white border rounded-lg p-6 space-y-4">
-              <h3 className="font-medium text-gray-900">Photo</h3>
+            <div className="space-y-4 rounded-2xl border border-neutral-200 bg-white p-6">
+              <h3 className="font-medium text-neutral-900">Photo</h3>
               <ProfilePhotoEditorField
                 value={avatarUrl || undefined}
                 name={formatDisplayNameFromParts(givenName, surname) || 'Admin'}
@@ -145,8 +145,8 @@ export const Account = () => {
               />
             </div>
 
-            <form className="bg-white border rounded-lg p-6 space-y-4" onSubmit={(e) => void onSubmit(e)}>
-              <h3 className="font-medium text-gray-900">Profile</h3>
+            <form className="space-y-4 rounded-2xl border border-neutral-200 bg-white p-6" onSubmit={(e) => void onSubmit(e)}>
+              <h3 className="font-medium text-neutral-900">Profile</h3>
               {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded">{error}</p>}
               {success && <p className="text-sm text-emerald-700 bg-emerald-50 px-3 py-2 rounded">{success}</p>}
 

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Plus } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { FloatingActionButton } from '../components/mobile/FloatingActionButton';
@@ -20,7 +20,12 @@ import {
 import { PlanPageTabs } from '../components/plan/PlanPageTabs';
 import { PlanUpcomingView } from '../components/plan/PlanUpcomingView';
 import { PlanWishlistView } from '../components/plan/PlanWishlistView';
-import { JOURNEY_MAP_PATH, PROFILE_HISTORY_PATH } from '../config/surfacePaths';
+import {
+  HOSTING_HUB_PATH,
+  JOURNEY_MAP_PATH,
+  PLAN_TODAY_PATH,
+  PROFILE_HISTORY_PATH,
+} from '../config/surfacePaths';
 import {
   parsePlanCommitmentFilter,
   parsePlanMainTab,
@@ -56,6 +61,13 @@ export const PlanPage = () => {
 
   useEffect(() => {
     const view = searchParams.get('view');
+    const filter = searchParams.get('filter');
+    const role = searchParams.get('role');
+    // Hosting is a dedicated surface — never render inside My Plans.
+    if (filter === 'hosting' || role === 'hosted') {
+      navigate(HOSTING_HUB_PATH, { replace: true });
+      return;
+    }
     // History + journey map live on profile — not the My Plans hub.
     if (view === 'map') {
       const qs = searchParams.toString();
@@ -103,11 +115,11 @@ export const PlanPage = () => {
         next.delete('layout');
       } else {
         next.delete('tab');
-        if (!next.get('filter')) next.set('filter', canHost ? 'hosting' : 'joined');
+        if (!next.get('filter')) next.set('filter', 'joined');
       }
       setSearchParams(next, { replace: true });
     },
-    [canHost, searchParams, setSearchParams]
+    [searchParams, setSearchParams]
   );
 
   const setCommitmentFilter = useCallback(
@@ -135,6 +147,11 @@ export const PlanPage = () => {
       const targetTab: PlanMainTab =
         focus === 'hosting' || focus === 'joined' ? 'upcoming' : 'wishlist';
 
+      if (focus === 'hosting') {
+        navigate(HOSTING_HUB_PATH);
+        return;
+      }
+
       if (focus === 'saved') {
         pendingSavedSummaryScrollRef.current = true;
         setSavedSummaryScrollRequest((n) => n + 1);
@@ -149,9 +166,14 @@ export const PlanPage = () => {
         setMainTab(targetTab);
         return;
       }
+      if (focus === 'joined' && commitmentFilter !== 'joined') {
+        setCommitmentFilter('joined');
+        return;
+      }
+
       scrollToPlanSummaryFocus(focus);
     },
-    [canHost, mainTab, setMainTab]
+    [canHost, commitmentFilter, mainTab, navigate, setCommitmentFilter, setMainTab]
   );
 
   useEffect(() => {
@@ -190,7 +212,7 @@ export const PlanPage = () => {
     <>
       <PageMeta
         title={`${PRODUCT_PLAN_SURFACE_TITLE} — your outings on UAE Trail`}
-        description="What you are planning next — joined, hosting, and looking for company on UAE Trail."
+        description="What you are planning next — joined outings, wishlist, and goals on UAE Trail."
         path={PLAN_PATH}
       />
 
@@ -202,7 +224,11 @@ export const PlanPage = () => {
         maxWidth="4xl"
       >
         <PullToRefresh onRefresh={handleRefresh}>
-          <div className={`space-y-3 pt-0.5 md:space-y-1.5 ${showFab ? 'pb-mobile-fab' : 'pb-bottom-nav-safe'}`}>
+          <div
+            className={`space-y-3 pt-0.5 md:space-y-1.5 ${
+              showFab ? 'pb-mobile-fab' : 'pb-bottom-nav-safe'
+            }`}
+          >
             {user ? (
               <>
                 <PlanGoalsProgressSummary
@@ -216,14 +242,18 @@ export const PlanPage = () => {
                   onSummaryFocus={handleSummaryFocus}
                 />
                 <PlanPageTabs active={mainTab} onChange={setMainTab} />
+                <p className="px-1 text-sm">
+                  <Link to={PLAN_TODAY_PATH} className="font-semibold text-emerald-800 hover:underline">
+                    Today — next outing briefing
+                  </Link>
+                </p>
                 {mainTab === 'upcoming' ? (
                   <PlanUpcomingView
                     refreshKey={refreshKey}
                     canHost={canHost}
-                    filter={commitmentFilter}
+                    filter={commitmentFilter === 'hosting' ? 'joined' : commitmentFilter}
                     layout={upcomingLayout}
                     lensRaw={lensRaw}
-                    onFilterChange={setCommitmentFilter}
                     onLayoutChange={setUpcomingLayout}
                   />
                 ) : (

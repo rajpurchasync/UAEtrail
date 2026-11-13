@@ -4,12 +4,12 @@ import {
   exploreActivitiesPath,
   exploreHostPath,
   exploreHostFromActivityPath,
-  exploreAddFacilityOnPlacePath,
   explorePath,
   parseExploreMyPlanMapMode,
   explorePlacesPath,
   exploreShopsPath,
   inboundCreateParamToHostPath,
+  compactExploreParentFilterSearchParams,
   myActivitiesPath,
   exploreSavedPinPath,
   participantIntentExplorePinPath,
@@ -18,7 +18,6 @@ import {
   parseExplorePinMapItemId,
   exploreOfferRideshareForSeekingPath,
   parseHostFromActivityId,
-  parseFacilityOnPlaceId,
 } from './routing';
 import { EXPLORE_MAP_PATH } from '../config/platform';
 import {
@@ -102,7 +101,7 @@ describe('exploreRouting navigation contract', () => {
 
   it('myActivitiesPath targets trips hub tabs', () => {
     expect(myActivitiesPath()).toBe('/plan');
-    expect(myActivitiesPath('hosted')).toBe('/plan?view=plans&filter=hosting');
+    expect(myActivitiesPath('hosted')).toBe('/hosting');
   });
 
   it('explorePath supports join-invite deep link on activity pin', () => {
@@ -137,15 +136,20 @@ describe('exploreRouting navigation contract', () => {
     expect(parseHostFromActivityId(new URLSearchParams('organizeFrom=act-legacy'))).toBeNull();
   });
 
-  it('exploreAddFacilityOnPlacePath deep-links facility wizard with parentPlace prefill', () => {
-    expect(exploreAddFacilityOnPlacePath('place-trail-1')).toBe(
-      '/explore?panel=venues&compose=add%3Afacility%3Atoilet&facilityOnPlace=place-trail-1&pinKind=places'
-    );
+  it('compactExploreParentFilterSearchParams keeps panel + filter only', () => {
+    const params = new URLSearchParams('panel=venues&filter=camping&places=camping&activity=camping');
+    expect(compactExploreParentFilterSearchParams(params)).toBe(true);
+    expect(params.get('panel')).toBe('venues');
+    expect(params.get('filter')).toBe('camping');
+    expect(params.get('places')).toBeNull();
+    expect(params.get('activity')).toBeNull();
   });
 
-  it('parseFacilityOnPlaceId reads facilityOnPlace only', () => {
-    expect(parseFacilityOnPlaceId(new URLSearchParams('facilityOnPlace=place-1'))).toBe('place-1');
-    expect(parseFacilityOnPlaceId(new URLSearchParams('parentPlaceId=legacy'))).toBeNull();
+  it('explorePath maps activity option onto filter, not a duplicate activity key', () => {
+    expect(explorePath({ panel: 'venues', filter: 'camping', activity: 'camping' })).toBe(
+      '/explore?filter=camping&panel=venues'
+    );
+    expect(explorePath({ activity: 'camping' })).toBe('/explore?filter=camping');
   });
 
   it('inboundCreateParamToHostPath redirects old activity create URLs', () => {

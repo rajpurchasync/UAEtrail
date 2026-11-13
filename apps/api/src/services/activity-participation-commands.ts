@@ -3,10 +3,23 @@ import { ApiError } from '../lib/api-error.js';
 import { findPublishedActivityWithPreviewsById, findActivityForRequestViewById } from '../lib/activities-store.js';
 import { findActivityDocInMongo } from '../lib/entity-sync.js';
 import {
+  applyAdultFamilyInviteAccepted,
+  applyAdultFamilyInviteDeclined,
   cancelUserActivityRequestAndPromoteWaitlist,
   findActivityRequestByIdForUser,
   updateActivityRequestNote,
+  updateActivityRequestParty,
 } from '../lib/activity-engagement-store.js';
+import {
+  buildPartyRosterFromMembershipIds,
+  headcountFromPartyRoster,
+  sendOutingInvitesForNewAdults,
+} from './activity-party-attach.js';
+import {
+  findActivityFamilyInviteByToken,
+  markActivityFamilyInviteResponded,
+} from '../lib/activity-family-invites-store.js';
+import { partyRosterHasPendingFamilyInvite } from '../domain/activity-party-roster.js';
 import { markNotificationsReadForCancelledJoinRequest } from '../lib/notifications-store.js';
 import { canWithdrawRequest, withdrawReasonSchema } from '../lib/withdraw-reasons.js';
 import type { z } from 'zod';
@@ -64,6 +77,8 @@ export const submitPublicActivityJoinRequest = async (input: {
   note?: string | null;
   packingCheckedIds?: string[];
   packingSignature?: string;
+  adults?: number;
+  kids?: number;
 }) => {
   await assertPrivateActivityJoinAllowed({
     activityId: input.activityId,
@@ -77,6 +92,8 @@ export const submitPublicActivityJoinRequest = async (input: {
     note: input.note ?? undefined,
     packingCheckedIds: input.packingCheckedIds,
     packingSignature: input.packingSignature,
+    adults: input.adults,
+    kids: input.kids,
   });
 
   void notifyParticipantJoinRequestSubmitted({
@@ -106,6 +123,8 @@ export const submitPublicActivityRsvp = async (input: {
   note?: string | null;
   packingCheckedIds?: string[];
   packingSignature?: string;
+  adults?: number;
+  kids?: number;
 }) => {
   await assertPrivateActivityJoinAllowed({
     activityId: input.activityId,
@@ -113,13 +132,31 @@ export const submitPublicActivityRsvp = async (input: {
     isPlatformAdmin: input.isPlatformAdmin,
   });
 
-  const { request, participation } = await createRsvpParticipation({
+  const { request, participation, waitlisted } = await createRsvpParticipation({
     activityId: input.activityId,
     userId: input.userId,
     note: input.note ?? undefined,
     packingCheckedIds: input.packingCheckedIds,
     packingSignature: input.packingSignature,
+    adults: input.adults,
+    kids: input.kids,
   });
+
+  const requestDto = {
+    id: request.id,
+    activityId: request.activityId,
+    userId: request.userId,
+    status: request.status.toLowerCase(),
+    waitlisted: Boolean(waitlisted),
+    note: request.note,
+    hostNote: request.hostNote,
+    createdAt: request.createdAt,
+    updatedAt: request.updatedAt,
+  };
+
+  if (!participation) {
+    return { request: requestDto, participation: null, waitlisted: true };
+  }
 
   const eventDoc = await findActivityDocInMongo(input.activityId);
   const participationDto = eventDoc
@@ -130,17 +167,9 @@ export const submitPublicActivityRsvp = async (input: {
       );
 
   return {
-    request: {
-      id: request.id,
-      activityId: request.activityId,
-      userId: request.userId,
-      status: request.status.toLowerCase(),
-      note: request.note,
-      hostNote: request.hostNote,
-      createdAt: request.createdAt,
-      updatedAt: request.updatedAt,
-    },
+    request: requestDto,
     participation: participationDto,
+    waitlisted: false,
   };
 };
 
@@ -197,6 +226,12 @@ export const cancelPublicActivityJoinRequest = async (input: {
   });
 };
 
+const ACTIVE_EDIT_STATUSES: RequestStatus[] = [
+  RequestStatus.PENDING,
+  RequestStatus.WAITLISTED,
+  RequestStatus.APPROVED,
+];
+
 export const updatePublicActivityJoinRequestNote = async (input: {
   requestId: string;
   userId: string;
@@ -211,4 +246,134 @@ export const updatePublicActivityJoinRequestNote = async (input: {
   }
   const updated = await updateActivityRequestNote(request.id, input.note);
   return { id: updated.id, note: updated.note };
+};
+
+export const updatePublicActivityJoinRequestParty = async (input: {
+  requestId: string;
+  userId: string;
+  note?: string;
+  adults?: number;
+  kids?: number;
+  partyMemberIds?: string[];
+}) => {
+  const request = await findActivityRequestByIdForUser(input.requestId, input.userId);
+  if (!request) {
+    throw new ApiError(404, 'request_not_found', 'Request not found.');
+  }
+  if (!ACTIVE_EDIT_STATUSES.includes(request.status)) {
+    throw new ApiError(400, 'request_not_editable', 'This request cannot be updated.');
+  }
+  if (
+    input.note === undefined &&
+    input.adults === undefined &&
+    input.kids === undefined &&
+    input.partyMemberIds === undefined
+  ) {
+    throw new ApiError(400, 'nothing_to_update', 'No party details to update.');
+  }
+
+  let partyMembers = request.partyMembers;
+  let adults = input.adults;
+  let kids = input.kids;
+  let deferHostApproval = false;
+
+  if (input.partyMemberIds !== undefined) {
+    partyMembers = await buildPartyRosterFromMembershipIds({
+      actorUserId: input.userId,
+      membershipIds: input.partyMemberIds,
+      existing: request.partyMembers,
+    });
+    const headcount = headcountFromPartyRoster(partyMembers);
+    adults = headcount.adults;
+    kids = headcount.kids;
+    // Adults start as family_invited — host approval waits until they accept.
+    deferHostApproval = partyRosterHasPendingFamilyInvite(partyMembers);
+  }
+
+  const eventDoc =
+    input.partyMemberIds !== undefined
+      ? await findActivityDocInMongo(request.activityId)
+      : undefined;
+
+  const updated = await updateActivityRequestParty(request.id, {
+    note: input.note,
+    adults,
+    kids,
+    partyMembers,
+    deferHostApproval,
+    eventDoc: eventDoc ?? undefined,
+  });
+
+  if (input.partyMemberIds !== undefined && partyMembers) {
+    await sendOutingInvitesForNewAdults({
+      activityId: request.activityId,
+      requestId: request.id,
+      invitedByUserId: input.userId,
+      previous: request.partyMembers,
+      next: partyMembers,
+      activityTitle: eventDoc?.title?.trim() || 'outing',
+    });
+  }
+
+  return {
+    id: updated.id,
+    note: updated.note,
+    adults: updated.adults,
+    kids: updated.kids,
+    partyMembers: updated.partyMembers,
+    partyApprovalPending: updated.partyApprovalPending,
+  };
+};
+
+export const acceptActivityFamilyOutingInvite = async (input: {
+  token: string;
+  userId: string;
+}) => {
+  const invite = await findActivityFamilyInviteByToken(input.token);
+  if (!invite) {
+    throw new ApiError(404, 'invite_not_found', 'Family outing invite not found or already used.');
+  }
+  if (invite.inviteeUserId !== input.userId) {
+    throw new ApiError(403, 'forbidden', 'This invite belongs to a different account.');
+  }
+  const marked = await markActivityFamilyInviteResponded(invite.id, 'accepted');
+  if (!marked) {
+    throw new ApiError(400, 'invite_not_pending', 'Invite is no longer pending.');
+  }
+  const updated = await applyAdultFamilyInviteAccepted({
+    requestId: invite.requestId,
+    membershipId: invite.membershipId,
+  });
+  return {
+    activityId: invite.activityId,
+    requestId: invite.requestId,
+    partyMembers: updated.partyMembers,
+    partyApprovalPending: updated.partyApprovalPending,
+  };
+};
+
+export const declineActivityFamilyOutingInvite = async (input: {
+  token: string;
+  userId: string;
+}) => {
+  const invite = await findActivityFamilyInviteByToken(input.token);
+  if (!invite) {
+    throw new ApiError(404, 'invite_not_found', 'Family outing invite not found or already used.');
+  }
+  if (invite.inviteeUserId !== input.userId) {
+    throw new ApiError(403, 'forbidden', 'This invite belongs to a different account.');
+  }
+  const marked = await markActivityFamilyInviteResponded(invite.id, 'declined');
+  if (!marked) {
+    throw new ApiError(400, 'invite_not_pending', 'Invite is no longer pending.');
+  }
+  const updated = await applyAdultFamilyInviteDeclined({
+    requestId: invite.requestId,
+    membershipId: invite.membershipId,
+  });
+  return {
+    activityId: invite.activityId,
+    requestId: invite.requestId,
+    partyMembers: updated.partyMembers,
+  };
 };

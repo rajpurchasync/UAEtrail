@@ -5,6 +5,8 @@ import type { RateLimiters } from './rate-limit.js';
 let globalLimiterInstance: RateLimitRequestHandler | null = null;
 let authLimiterInstance: RateLimitRequestHandler | null = null;
 let viewLimiterInstance: RateLimitRequestHandler | null = null;
+let weatherLimiterInstance: RateLimitRequestHandler | null = null;
+let referralClickLimiterInstance: RateLimitRequestHandler | null = null;
 let sensitiveDataLimiterInstance: RateLimitRequestHandler | null = null;
 let clientErrorLimiterInstance: RateLimitRequestHandler | null = null;
 
@@ -12,6 +14,8 @@ export const registerRateLimiters = (limiters: RateLimiters): void => {
   globalLimiterInstance = limiters.globalLimiter;
   authLimiterInstance = limiters.authLimiter;
   viewLimiterInstance = limiters.viewLimiter;
+  weatherLimiterInstance = limiters.weatherLimiter;
+  referralClickLimiterInstance = limiters.referralClickLimiter;
   sensitiveDataLimiterInstance = limiters.sensitiveDataLimiter;
   clientErrorLimiterInstance = limiters.clientErrorLimiter;
 };
@@ -34,6 +38,22 @@ export const viewLimiter: RequestHandler = (req, res, next) => {
     return;
   }
   viewLimiterInstance(req, res, next);
+};
+
+export const weatherLimiter: RequestHandler = (req, res, next) => {
+  if (!weatherLimiterInstance) {
+    next();
+    return;
+  }
+  weatherLimiterInstance(req, res, next);
+};
+
+export const referralClickLimiter: RequestHandler = (req, res, next) => {
+  if (!referralClickLimiterInstance) {
+    next();
+    return;
+  }
+  referralClickLimiterInstance(req, res, next);
 };
 
 export const sensitiveDataLimiter: RequestHandler = (req, res, next) => {

@@ -24,6 +24,7 @@ const facilityFieldsSchema = z.object({
   latitude: z.number().min(-90).max(90).optional().nullable(),
   longitude: z.number().min(-180).max(180).optional().nullable(),
   images: z.array(mediaUrlSchema).default([]),
+  partnerReferralUrl: z.string().url().max(2048).optional().nullable(),
   tags: z.array(z.string()).default([]),
   featured: z.boolean().default(false),
   status: z.enum(['draft', 'active', 'inactive']).default('active'),

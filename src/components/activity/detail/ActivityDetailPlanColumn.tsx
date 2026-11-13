@@ -8,7 +8,15 @@ import { ActivityPostCheckInReviewPrompts } from '../ActivityPostCheckInReviewPr
 import type { ActivityDetailPlanSectionsComponent } from '../../../activity/detail/composers';
 import { ActivityDetailPlanAboutCard } from './tabs/ActivityDetailPlanAboutCard';
 import { ActivityDetailPlanExtras } from './tabs/ActivityDetailPlanExtras';
+import { ActivityDetailPlaceTabPanels } from './tabs/ActivityDetailPlaceTabPanels';
+import { ActivityDetailTransportTabPanels } from './tabs/ActivityDetailTransportTabPanels';
 import type { useActivityDetailViewModel } from './useActivityDetailViewModel';
+import {
+  ActivityDetailCostPolicySection,
+  activityShowsCostPolicySection,
+} from './ActivityDetailCostPolicySection';
+import { ActivityDetailAudienceSection } from './ActivityDetailAudienceSection';
+import { ActivityDetailSafetySection } from './ActivityDetailSafetySection';
 
 type Model = ReturnType<typeof useActivityDetailViewModel>;
 
@@ -21,25 +29,30 @@ const linkedPlaceEyebrow = (kind: string | null | undefined): string => {
 type ActivityDetailPlanColumnProps = {
   model: Model;
   planSections?: ActivityDetailPlanSectionsComponent | null;
-  /**
-   * Public page already renders venue, packing, and getting there.
-   * Embed and preview render those beside this column.
-   */
-  factsOnly?: boolean;
+  /** Embedded in `ActivityConsumerDetailPage` — skip tab panels already on the scroll template. */
+  consumerInline?: boolean;
 };
 
-/** Shared plan facts. The public page passes `factsOnly` because it already renders venue, packing, and getting there. */
+/** Plan / place / transport main column (S13-W7) — kind slots injected via `planSections`. */
 export const ActivityDetailPlanColumn = ({
   model,
   planSections = null,
-  factsOnly = false,
+  consumerInline = false,
 }: ActivityDetailPlanColumnProps) => {
   const KindPlanSections = planSections;
-  const rideshareFacts = factsOnly && model.activity.activityType === 'rideshare';
+  const consumerRideshare = consumerInline && model.activity.activityType === 'rideshare';
+  const consumerCostPolicy =
+    consumerInline &&
+    !model.requiresSignIn &&
+    activityShowsCostPolicySection(model.activity);
+
+  if (model.consumerDetailLayout && !consumerInline) {
+    return null;
+  }
 
   return (
-    <div className={factsOnly ? 'space-y-6 lg:space-y-3' : 'space-y-4'}>
-      {model.showInviteShare && model.canSendJoinInvites && !factsOnly ? (
+    <div className={consumerInline ? 'space-y-6 lg:space-y-3' : 'lg:col-span-2 space-y-4'}>
+      {model.showInviteShare && model.canSendJoinInvites && !consumerInline ? (
         <ActivityInviteLauncher
           activity={{
             id: model.activity.id,
@@ -62,7 +75,7 @@ export const ActivityDetailPlanColumn = ({
 
       {model.planRequestManagePanel}
 
-      {model.requiresSignIn && !factsOnly ? (
+      {model.requiresSignIn && !consumerInline ? (
         <div className={model.mobilePlanPanel}>
           <ActivityDetailGuestGate activity={model.activity} compact />
         </div>
@@ -77,17 +90,26 @@ export const ActivityDetailPlanColumn = ({
         </p>
       ) : null}
 
-      {!rideshareFacts ? (
+      {!consumerRideshare && !consumerInline ? (
         <ActivityDetailPlanAboutCard
           panelClassName={model.mobilePlanPanel}
           activity={model.activity}
           showMobileTabs={model.showMobileTabs}
-          hideScheduleFactsGrid={factsOnly}
+          hideScheduleFactsGrid={consumerInline}
           hideAboutBody={false}
+          contentId={consumerInline ? 'activity-detail-about' : undefined}
         />
       ) : null}
 
-      {!factsOnly && model.registryPlaceName ? (
+      {!consumerRideshare ? (
+        <ActivityDetailAudienceSection
+          activity={model.activity}
+          panelClassName={model.mobilePlanPanel}
+          consumerSection={consumerInline}
+        />
+      ) : null}
+
+      {!consumerInline && model.registryPlaceName ? (
         <div className={model.mobilePlanPanel}>
           <ActivityDetailLinkedPlaceLink
             name={model.registryPlaceName}
@@ -104,8 +126,16 @@ export const ActivityDetailPlanColumn = ({
         </div>
       ) : null}
 
-      {!model.requiresSignIn && KindPlanSections && !rideshareFacts ? (
-        <KindPlanSections model={model} />
+      {KindPlanSections && !consumerRideshare ? (
+        <KindPlanSections model={model} consumerInline={consumerInline} />
+      ) : null}
+
+      {consumerCostPolicy ? (
+        <ActivityDetailCostPolicySection
+          activity={model.activity}
+          panelClassName={model.mobilePlanPanel}
+          consumerSection={consumerInline}
+        />
       ) : null}
 
       {!model.requiresSignIn ? (
@@ -117,8 +147,59 @@ export const ActivityDetailPlanColumn = ({
           activityReviews={model.activityReviews}
           canWriteActivityReview={model.canWriteActivityReview}
           onActivityReviewSubmitted={model.onActivityReviewSubmitted}
-          hideActivityReviews={rideshareFacts}
-          hidePackingList={factsOnly}
+          hideActivityReviews={consumerRideshare || consumerInline}
+          hidePackingList={consumerInline}
+          hideGearList={consumerInline}
+          hideCostPolicy={consumerInline}
+          isHostViewer={Boolean(model.hostCrewChatPolicy)}
+          consumerSection={consumerInline}
+        />
+      ) : null}
+
+      {!consumerInline ? (
+        <ActivityDetailSafetySection
+          activity={model.activity}
+          panelClassName={model.mobilePlanPanel}
+          showBaseline={false}
+        />
+      ) : null}
+
+      {model.showPlaceTab && !consumerInline ? (
+        <ActivityDetailPlaceTabPanels
+          panelClassName={model.mobilePlacePanel}
+          activity={model.activity}
+          previewMode={model.previewMode}
+          showMobileTabs={model.showMobileTabs}
+          showPlaceCrewBody={model.showPlaceCrewBody}
+          showPlaceLockedOnMobile={model.showPlaceLockedOnMobile}
+          registryPlacePath={model.registryPlacePath}
+          registryPlaceName={model.registryPlaceName}
+          placeReturnTo={
+            model.isEmbedded
+              ? planHostedActivityManagePath(model.activity.id)
+              : activityDetailPath(model.activity.id)
+          }
+          hasAccessCoordinates={model.hasAccessCoordinates}
+          accessLat={model.accessLat}
+          accessLng={model.accessLng}
+          openInGoogleMapsUrl={model.openInGoogleMapsUrl}
+          onMobileTabChange={model.onMobileTabChange}
+        />
+      ) : null}
+
+      {model.showTransportTab && !consumerInline ? (
+        <ActivityDetailTransportTabPanels
+          panelClassName={model.mobileTransportPanel}
+          activity={model.activity}
+          transportReachLines={model.transportReachLines}
+          showTransportEncouragementMobile={
+            model.requiresSignIn ? false : model.showTransportEncouragementMobile
+          }
+          showTransportHostProUpsell={model.requiresSignIn ? false : model.showTransportHostProUpsell}
+          showTransportParticipantProUpsell={
+            model.requiresSignIn ? false : model.showTransportParticipantProUpsell
+          }
+          publicReachOnly={model.requiresSignIn}
         />
       ) : null}
     </div>

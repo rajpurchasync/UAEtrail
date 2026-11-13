@@ -13,10 +13,33 @@ import type {
 } from './explore-plan-projection.js';
 import type { HostParticipantRosterStatus, ParticipantHostRatingDTO } from './participant-roster.js';
 import type { MemberMedicalSafetyDTO } from './member-medical-safety.js';
+import type { HostJoinProfileSnippetDTO } from './join-host-profile-disclosure.js';
 import type { ExploreActivityMode } from './explore-activity-mode.js';
 import type { ActivityGroupChatPostPolicy } from './activity-group-chat-post-policy.js';
 import type { PlaceNearbyFacilityDTO } from './place-kind.js';
+import type { PlaceViewerAccessDTO } from './place-viewer-access.js';
 import type { ExploreMapSourceWire } from './wire-lexicon.js';
+import type {
+  ActivityAudienceFitnessDTO,
+  ActivityCountsDTO,
+  ActivityDetailSchemaVersion,
+  ActivityGearItemDTO,
+  ActivityItineraryStepDTO,
+  ActivityPolicyKeyDTO,
+  ActivityPriceBreakdownDTO,
+} from './activity-detail-revamp.js';
+import type { ActivityPartyMemberDTO } from './activity-party-roster.js';
+
+export type {
+  ActivityAudienceFitnessDTO,
+  ActivityCountsDTO,
+  ActivityDetailSchemaVersion,
+  ActivityGearItemDTO,
+  ActivityItineraryStepDTO,
+  ActivityPolicyKeyDTO,
+  ActivityPriceBreakdownDTO,
+  DetailRevampConfidence,
+} from './activity-detail-revamp.js';
 
 export type UserRole =
   | 'platform_admin'
@@ -97,6 +120,8 @@ export interface LocationDTO {
   parkingLng?: number | null;
   /** Geography levels L1–L4 for map/list filters (see `group-region.ts`). */
   groupRegionLevels?: GroupRegionLevels | null;
+  /** Country → state → area → optional venue chain (plan §18). */
+  geoRef?: import('./geo-hierarchy.js').GeoRef | null;
   premiumImages?: string[];
   accessibleBy?: string[];
   viewCount?: number;
@@ -104,8 +129,6 @@ export interface LocationDTO {
   submittedById?: string | null;
   /** Who registered this catalog row (CPC). Dual-read with {@link submittedById}. */
   registeredByUserId?: string | null;
-  /** Catalog leaf → place hub row id when hub/child split ships (organize picker grouping). */
-  parentPlaceId?: string | null;
   moderationStatus?: import('./catalog-lifecycle.js').CatalogModerationStatus;
   publicationStatus?: import('./catalog-lifecycle.js').CatalogPublicationStatus;
   /** Public-safe premium hints (no private file keys on consumer APIs). */
@@ -144,11 +167,61 @@ export interface LocationGuideDTO {
   hasPdf: boolean;
 }
 
+/** Public-safe route preview for place detail (`GET /places/:id/track`) — no storage keys. */
+export interface PlaceTrackPreviewDTO {
+  /** Bounding box as GeoJSON order: `[west, south, east, north]` in degrees. */
+  bbox: [number, number, number, number] | null;
+  /** Encoded polyline (precision-5); decode client-side for map overlay. */
+  polyline: string | null;
+  /** Elevation profile samples as `[distanceMeters, elevationMeters][]` (optional). */
+  profile: [number, number][] | null;
+}
+
+export interface PlaceTrackPreviewResponse {
+  data: PlaceTrackPreviewDTO | null;
+}
+
+export type {
+  PlaceReachableRideRowDTO,
+  PlaceReachableRidesResponse,
+} from './place-reachable-rides.js';
+
+/** Normalized daily snapshot from `GET /weather` (Open-Meteo behind server cache). */
+export interface WeatherDailySnapshotDTO {
+  weatherCode: number | null;
+  tempMaxC: number | null;
+  tempMinC: number | null;
+  precipProbabilityMax: number | null;
+}
+
+export interface WeatherForecastResponseDTO {
+  provider: 'open-meteo';
+  latitude: number;
+  longitude: number;
+  date: string;
+  /** Reverse-geocoded label at the forecast pin (Open-Meteo coordinates). */
+  locationName?: string | null;
+  daily: WeatherDailySnapshotDTO;
+  series: {
+    time: string[];
+    weathercode: number[] | null;
+    temperature_2m_max: number[] | null;
+    temperature_2m_min: number[] | null;
+    precipitation_probability_max: number[] | null;
+  };
+}
+
+export interface WeatherForecastResponse {
+  data: WeatherForecastResponseDTO;
+}
+
 export interface LocationDetailResponse {
   data: LocationDTO;
   premium: LocationPremiumSummaryDTO | null;
   /** Facility POIs in the same curated area as `data` (when `data.areaId` is set). */
   nearbyFacilities?: PlaceNearbyFacilityDTO[];
+  /** Signed-in overlay (`GET /places/:id/me/state`); public shell omits this. */
+  viewerAccess?: PlaceViewerAccessDTO;
 }
 
 /** Domain aliases — place detail payloads (wire remains `Location*`). */
@@ -171,6 +244,7 @@ export interface ActivityDTO {
   region?: string;
   groupRegionLevels?: GroupRegionLevels | null;
   areaId?: string | null;
+  geoRef?: import('./geo-hierarchy.js').GeoRef | null;
   activityType: ScheduledActivityType;
   title: string;
   description: string;
@@ -210,6 +284,8 @@ export interface ActivityDTO {
     description?: string | null;
     date?: string;
     time?: string | null;
+    endDate?: string | null;
+    endTime?: string | null;
   } | null;
   paymentTerms?: string | null;
   pricingMode?: 'free' | 'shared' | 'paid' | null;
@@ -261,6 +337,46 @@ export interface ActivityDTO {
   activityMode?: ExploreActivityMode | null;
   /** Correlation id for `/me/seeking-posts/:postId` when `activityMode: seeking`. */
   participantIntentId?: string | null;
+
+  /**
+   * Detail revamp (Mongo schema v2) — see `docs/detailPagesRevampPlan.md` §13.4.
+   * `1` = legacy row; `2` = migrated / new writes.
+   */
+  schemaVersion?: ActivityDetailSchemaVersion;
+  /** Card / hero subtitle — max ~160 chars when set. */
+  summary?: string | null;
+  /** Structured itinerary (replaces string[] `itinerary` on v2 rows). */
+  itinerarySteps?: ActivityItineraryStepDTO[] | null;
+  /** Icon gear checklist — mandatory, recommended, provided by host. */
+  gear?: ActivityGearItemDTO[] | null;
+  /** Whether waitlist is enabled when full. */
+  waitlist?: boolean;
+  /** Denormalized join counts (shell / detail). */
+  counts?: ActivityCountsDTO | null;
+  /** Structured price — v1 host-collected money uses `collectedBy: host`. */
+  priceBreakdown?: ActivityPriceBreakdownDTO | null;
+  /** Host cancellation preset key. */
+  policyKey?: ActivityPolicyKeyDTO | null;
+  customPolicy?: string | null;
+  audience?: {
+    kidsWelcome: boolean;
+    minAge?: number | null;
+    petsAllowed: boolean;
+    womenOnly: boolean;
+    fitness: ActivityAudienceFitnessDTO;
+    fitnessNote?: string | null;
+    languages: string[];
+    accessibility?: string | null;
+  } | null;
+  waiverRequired?: boolean;
+  /**
+   * Crew / host surfaces — data from `activity_private` when the API merges it.
+   * Omitted on public list/map payloads.
+   */
+  activityPrivateDetails?: {
+    emergencyContact: { name: string; phone: string } | null;
+    plateNumber: string | null;
+  } | null;
 }
 
 
@@ -295,6 +411,12 @@ export interface MyActivityRequestDTO {
   id: string;
   status: RequestStatus;
   canWithdraw: boolean;
+  adults?: number;
+  kids?: number;
+  /** Named family companions (adults invited / kids attached). */
+  partyMembers?: ActivityPartyMemberDTO[];
+  /** True when the join is approved but a later family/headcount increase still needs the host. */
+  partyApprovalPending?: boolean;
 }
 
 export interface JoinRequestDTO {
@@ -645,6 +767,8 @@ export interface MerchantProfileDTO {
   id: string;
   /** Preferred shop profile id (`merchant_profiles._id`). Same as `id`. */
   shopId?: string;
+  /** @deprecated Use shopId — legacy alias for the same id. */
+  merchantId?: string;
   /** Linked shop tenant when merchant_profiles.tenantId is set. */
   tenantId?: string | null;
   shopName: string;
@@ -659,6 +783,10 @@ export interface MerchantProfileDTO {
   contactPersonName?: string | null;
   contactPersonAvatar?: string | null;
   contactPersonUserId?: string | null;
+  /** Owner opt-in: visitors may start an in-app chat with the shop contact. */
+  allowInboundChat?: boolean;
+  /** Owner opt-in: public pages and map peeks may show `contactPhone`. */
+  showContactPhone?: boolean;
 }
 
 /** Domain alias — shop organisation. Storage/API remain `merchant_profiles` / `MerchantProfileDTO`. */
@@ -761,10 +889,6 @@ export interface ExploreLocationCardDTO {
   parkingLat?: number | null;
   parkingLng?: number | null;
   parkingPoint?: string | null;
-  /** On-site `facility:` tags as short chips (Toilet, Fuel, Shop). */
-  amenityLabels?: string[];
-  /** Amenity kinds rolled up from parent-place facilities + `facility:` tags. */
-  amenityKinds?: import('./place-kind.js').PlaceKind[];
 }
 
 /** Published rideshare linked to a parent hike/camp/event (explore map + peek). */
@@ -794,6 +918,8 @@ export interface ExploreMapItemDTO {
   hostAvatar?: string | null;
   date?: string | null;
   time?: string | null;
+  endDate?: string | null;
+  endTime?: string | null;
   slotsAvailable?: number;
   slotsTotal?: number;
   participantPreviews?: ParticipantPreviewDTO[];
@@ -823,6 +949,7 @@ export interface ExploreMapItemDTO {
   /** Curated area membership for explore `?area=` filters. */
   areaId?: string | null;
   areaSlug?: string | null;
+  geoRef?: import('./geo-hierarchy.js').GeoRef | null;
   /** Published curated area hub title when `areaId` is set. */
   areaName?: string | null;
   groupRegionLevels?: GroupRegionLevels | null;
@@ -864,6 +991,11 @@ export interface ExploreMapItemDTO {
    * replace this from `GET /me/discover/overlay`. Not stored in Redis payload.
    */
   viewerAccess?: ActivityViewerAccessDTO;
+  /**
+   * Slim L1 discovery read model (`EXPLORE_MAP_DISCOVERY_PROJECTION=1`).
+   * Attached on `GET /explore/map` after cache read — not stored in Redis.
+   */
+  discoveryCard?: import('./discovery-card-projection.js').DiscoveryCardProjection | null;
   /** ISO timestamp — guest preview cap picks oldest posted events (server catalog assembly). */
   catalogPostedAt?: string | null;
   /** ISO timestamp — guest preview cap picks oldest updated places (server catalog assembly). */
@@ -957,17 +1089,22 @@ export interface TenantPublicDTO {
   ownerAvatar: string | null;
   ownerBio: string | null;
   hostDetails?: OrganisationHostDetailsDTO;
+  /** @deprecated Use hostDetails — kept for legacy clients. */
+  organizerDetails?: OrganisationHostDetailsDTO;
   memberCount: number;
   team: TenantPublicTeamMemberDTO[];
   activities: ActivityDTO[];
   /** Preferred shop public id when tenant is a shop. Wire: merchant_profiles._id */
   shopId?: string | null;
+  /** @deprecated Use shopId */
+  merchantId?: string | null;
 }
 
 // ─── Member medical safety (join / host roster) ─────────────────────────────
 
 export {
   BLOOD_GROUP_VALUES,
+  EMERGENCY_CONTACT_RELATION_VALUES,
   MEDICAL_CONDITIONS_NA,
   formatBloodGroupLabel,
   isMedicalSafetyProfileComplete,
@@ -975,6 +1112,7 @@ export {
 } from './member-medical-safety.js';
 export type {
   BloodGroup,
+  EmergencyContactRelation,
   MemberMedicalSafetyDTO,
   MemberMedicalSafetyFields,
 } from './member-medical-safety.js';
@@ -986,6 +1124,12 @@ export type {
   RideshareRiderRatingDimensionsDTO,
   RideshareRiderReputationDTO,
 } from './rideshare-rider-reputation.js';
+export type { CatalogEditRankingDTO, CatalogEditTrustLevel } from './catalog-edit-ranking.js';
+export {
+  CATALOG_EDIT_TRUST_LABELS,
+  computeCatalogEditRanking,
+  formatCatalogEditRankingSummary,
+} from './catalog-edit-ranking.js';
 export {
   MEMBER_VEHICLE_COLORS,
   formatRideshareVehicleLabel,
@@ -1011,6 +1155,8 @@ export interface ParticipantDTO {
   hostRating?: ParticipantHostRatingDTO | null;
   /** Host-only — member safety profile when join/roster is visible. */
   medicalSafety?: MemberMedicalSafetyDTO | null;
+  /** Host-only — gender/DOB when the outing has women-only or age rules. */
+  joinProfile?: HostJoinProfileSnippetDTO | null;
   canConfirmAttendance: boolean;
   canRevoke: boolean;
   canRate: boolean;
@@ -1156,10 +1302,8 @@ export {
 export {
   exploreActivityPublisherTypeLabel,
   publishesActivityAsIndividual,
-  resolveActivityHostReviewTarget,
   resolveActivityPublisherDisplayName,
   resolveActivityPublisherProfilePath,
-  type ActivityHostReviewTarget,
 } from './activity-publisher-display.js';
 
 export {
@@ -1184,11 +1328,11 @@ export {
   buildDiscoveryCardPresentation,
   buildDiscoveryCardSections,
   buildExploreListWhen,
-  buildExploreActivityScheduleDetail,
   buildExploreRouteLabel,
   normalizeRideshareRouteLabels,
   buildExploreSpotsSegment,
   buildExplorePeekSpotsLabel,
+  buildActivitySpotsLeftLabel,
   buildExploreWhenSegment,
   exploreHeadline,
   explorePrimaryCtaLabel,
@@ -1198,6 +1342,7 @@ export {
   exploreVenueHint,
   formatExploreDayForHeadline,
   formatExploreDayShort,
+  formatExploreCalendarDateShort,
   formatExploreClockFromDate,
   formatExploreEventDateLabel,
   formatExploreRelativeScheduleLabel,
@@ -1270,7 +1415,6 @@ export {
   deriveVenueAccessibilityFromAccessibleBy,
   formatVenueAreaTag,
   mergeVenueAreaTag,
-  readVenueAmenityChipLabels,
   readVenueAreaFromTags,
   readVenueArabicNameFromTags,
   readVenueEnglishNameFromTags,
@@ -1284,6 +1428,16 @@ export {
   hasJoinInstructions,
   JOIN_INSTRUCTION_PREFIX,
 } from './join-instructions.js';
+
+export {
+  defaultPolicyKeyForMode,
+  extractActivityPlanDetailLinesForMigration,
+  inferFitnessFromPlaceDifficulty,
+  mapLegacyPricingToBreakdown,
+  filterMigratedPlaceholderGear,
+  migrateInstructionAndPlanLinesToGear,
+  migrateLegacyItineraryStringsToSteps,
+} from './activity-detail-revamp-migrate.js';
 
 export {
   DEFAULT_HIKING_PACKING_ITEMS,
@@ -1357,6 +1511,75 @@ export {
 } from './profile-viewer-access.js';
 
 export {
+  PROFILE_FIELD_AUDIENCES,
+  PROFILE_FIELD_PRIVACY_KEYS,
+  DEFAULT_PROFILE_FIELD_PRIVACY,
+  canViewProfileField,
+  mergeProfileFieldPrivacy,
+  type ProfileFieldAudience,
+  type ProfileFieldPrivacyKey,
+  type ProfileFieldPrivacyPatch,
+  type ProfileFieldPrivacySettings,
+} from './profile-field-privacy.js';
+
+export {
+  PROFILE_DATE_OF_BIRTH_SHARE_LEVELS,
+  DEFAULT_PROFILE_DATE_OF_BIRTH_SHARE,
+  mergeProfileDateOfBirthShare,
+  computeAgeFromIsoDateOfBirth,
+  monthDayFromIsoDateOfBirth,
+  formatProfileMonthDayLabel,
+  resolveMemberCardDateOfBirth,
+  type ProfileDateOfBirthShare,
+  type MemberCardDateOfBirthSlice,
+} from './profile-date-of-birth-share.js';
+
+export {
+  PROFILE_FRIENDS_LIST_SHARE_LEVELS,
+  DEFAULT_PROFILE_FRIENDS_LIST_SHARE,
+  mergeProfileFriendsListShare,
+  resolveProfileFriendsListVisibility,
+  type ProfileFriendsListShare,
+  type ProfileFriendsListVisibility,
+} from './profile-friends-list-share.js';
+
+export {
+  FIND_CREW_VISIBILITY_LEVELS,
+  DEFAULT_FIND_CREW_VISIBILITY,
+  mergeFindCrewVisibility,
+  viewerMaySeeInFindCrew,
+  viewerMaySeeMemberLocation,
+  type FindCrewVisibility,
+  type FindCrewViewerRelation,
+} from './find-crew-visibility.js';
+
+export { type MemberProfileSocialGraphDTO } from './member-profile-social-graph.js';
+
+export {
+  resolveJoinHostProfileDisclosureNeeds,
+  hostJoinProfileSnippetFromProfile,
+  joinHostProfileShareNotice,
+  type JoinHostProfileDisclosureNeeds,
+  type HostJoinProfileSnippetDTO,
+} from './join-host-profile-disclosure.js';
+
+export {
+  NOTIFICATION_PREFERENCE_TOPICS,
+  NOTIFICATION_DND_MODES,
+  DEFAULT_NOTIFICATION_PREFERENCE_SETTINGS,
+  mergeNotificationPreferenceSettings,
+  isNotificationDndActive,
+  resolveNotificationPreferenceTopic,
+  shouldDeliverNotification,
+  type NotificationPreferenceTopic,
+  type NotificationDndMode,
+  type NotificationChannelPrefs,
+  type NotificationDndSettings,
+  type NotificationPreferenceSettings,
+  type NotificationDeliveryChannel,
+} from './notification-preferences.js';
+
+export {
   type BusinessProSubtype,
   type ProMembershipPath,
   type PublishingProfileKind,
@@ -1364,6 +1587,11 @@ export {
   resolvePublishingProfileKind,
   inferHostStorefrontKindFromTenantWire,
 } from './publishing-profile-kind.js';
+
+export type {
+  PublishingActivityPrivateCrewBodyFields,
+  PublishingActivityUpsertBody,
+} from './publishing-activity-private-body.js';
 
 export {
   resolveCommerceMapViewerAccess,
@@ -1387,6 +1615,9 @@ export {
 } from './member-access.js';
 
 export {
+  ACTIVITY_GUEST_JOIN_LABEL,
+  ACTIVITY_GUEST_JOIN_LABEL_APPROVAL,
+  ACTIVITY_GUEST_JOIN_LABEL_RSVP,
   APPROVAL_PARTICIPATION_REQUIREMENT,
   RSVP_PARTICIPATION_REQUIREMENT,
   activityJoinCtaLabel,
@@ -1401,6 +1632,15 @@ export {
   type ActivityJoinEngagementKind,
 } from './activity-join-engagement.js';
 
+export { resolveActivityPartyHeadcount } from './activity-party-headcount.js';
+
+export {
+  derivePartyHeadcountFromRoster,
+  partyRosterHasPendingFamilyInvite,
+  type ActivityPartyMemberDTO,
+  type ActivityPartyMemberStatus,
+} from './activity-party-roster.js';
+
 export {
   ACTIVITY_DETAIL_TAB_IDS,
   resolveActivityDetailTabFooterKind,
@@ -1411,10 +1651,14 @@ export {
 
 export {
   buildActivityPresentationDTO,
-  type ActivityPresentationSectionsDTO,
-  type ActivityDetailParticipantsSlot,
+  type ActivityPresentationBuddiesTabDTO,
+  type ActivityPresentationConsumerLayoutDTO,
   type ActivityPresentationDTO,
   type ActivityPresentationEngagementDTO,
+  type ActivityPresentationPlaceTabDTO,
+  type ActivityPresentationPlanTabDTO,
+  type ActivityPresentationTabsDTO,
+  type ActivityPresentationTransportTabDTO,
   type BuildActivityPresentationInput,
 } from './activity-detail-presentation.js';
 
@@ -1562,10 +1806,12 @@ export {
 
 export {
   activityHasJoinedParticipants,
+  activityJoinIsFull,
   deriveActivityAvailability,
   isActivityFull,
   type ActivityAvailabilityInput,
   type ActivityAvailabilityStatus,
+  type ActivityJoinCapacityInput,
   type ActivityJoinCountInput,
 } from './activity-availability.js';
 
@@ -1586,7 +1832,6 @@ export {
   EXPLORE_SHOPS_LIST_PATH,
   EXPLORE_SHOPS_PATH,
   activityDetailPath,
-  activityCrewPath,
   activityDetailInvitePath,
   exploreActivityInvitePath,
   AGENCY_PROFILE_PATH_PREFIX,
@@ -1604,6 +1849,7 @@ export {
   partnerProfilePath,
   parseEntityRefFromPathname,
   placeDetailPath,
+  placeDetailPathForId,
   canonicalPlaceDetailPath,
   inboundKindPlaceDetailPath,
   PLACE_CANONICAL_PATH_PREFIX,
@@ -1619,7 +1865,6 @@ export {
 
 export {
   ADDABLE_FACILITY_PLACE_KINDS,
-  amenityChipLabelForFacilityKind,
   PLACE_CATALOG_KINDS,
   FACILITY_PLACE_KINDS,
   isAddableFacilityPlaceKind,
@@ -1665,7 +1910,21 @@ export type {
 
 export { FACILITY_KINDS, isFacilityKind, type FacilityKind } from './facility-kind.js';
 
-export type { FacilityDTO } from './facility.js';
+export type {
+  AmenityState,
+  FacilityAmenityReportPendingReview,
+  FacilityDTO,
+} from './facility.js';
+
+export type {
+  PlatformAlertScope,
+  PlatformAlertSeverity,
+  PublicActiveAlertDTO,
+  PublicActiveAlertsResponse,
+  AdminPlatformAlertDTO,
+} from './platform-alert.js';
+
+export type { ReferralClickEntityKind, ReferralClickRequestDTO } from './referral-click.js';
 
 export type { FacilityViewerAccessDTO, FacilityViewerAccessLevel } from './facility-viewer-access.js';
 
@@ -1766,16 +2025,18 @@ export {
 export {
   activityInstantHasEnded,
   activityScheduleHasEnded,
-  activityScheduleIncludesDate,
-  activityScheduleOverlapsRange,
-  activityScheduleSpanLabel,
-  isMultiDayActivitySchedule,
-  normalizeActivityScheduleEndDate,
+  gccCalendarDate,
   parseActivityLocalDateTime,
   resolveActivityScheduleEndFromFields,
   resolveActivityScheduleEndInstant,
   type ActivityScheduleFields,
 } from './activity-schedule.js';
+
+export {
+  activityScheduleIsMultiDay,
+  formatActivityScheduleDateRangeLabel,
+  formatActivityScheduleTimeRangeLabel,
+} from './activity-schedule-presentation.js';
 
 export type {
   AgentDiscoverEntityKind,
@@ -1819,3 +2080,75 @@ export {
   activityHasPendingVenuePlace,
   pendingVenuePlaceId,
 } from './pending-venue-place.js';
+
+export type {
+  GeoCountsDTO,
+  GeoKind,
+  GeoLevel,
+  GeoMetaDoc,
+  GeoNodeDoc,
+  GeoNodeLite,
+  GeoOutboxDoc,
+  GeoPointWire,
+  GeoRef,
+  GeoRefNames,
+  GeoStatsDoc,
+  GeoSummaryDTO,
+  GeoTreeDTO,
+  DedupeKeys,
+} from './geo-hierarchy.js';
+export {
+  GEO_COUNTRY_AE_ID,
+  GEO_STATE_AE_ABU_DHABI_ID,
+  GEO_AREA_AE_AL_AIN_ID,
+  GEO_LEGACY_STATE_AE_AL_AIN_ID,
+  GEO_LEGACY_AREA_OTHER_AL_AIN_ID,
+  GEO_NODE_ID_ALIASES,
+  canonicalGeoNodeId,
+  buildGeoSearchTokens,
+  exploreGeoQueryTokens,
+  geoRefMatchesQuery,
+  tokenizeGeoSearchText,
+} from './geo-hierarchy.js';
+
+export type { GeoCountedPin, GeoDelta } from './geo-counters.js';
+export { countersFor, deltaFor, scopesFor } from './geo-counters.js';
+
+export type {
+  AdminSubmissionDTO,
+  DedupeKind,
+  DuplicateVerdict,
+  SubmissionCandidate,
+  SubmissionDoc,
+  SubmissionPublicDTO,
+  SubmissionStatus,
+} from './dedupe.js';
+export {
+  buildDedupeKeys,
+  cellsFor,
+  domainKey,
+  geohashEncode,
+  nameKey,
+  phoneKey,
+  primaryGeohashPrecision,
+  scoreDuplicate,
+  trigramRatio,
+} from './dedupe.js';
+
+export type {
+  CatalogEntryDoc,
+  CatalogKind,
+  FacilityType,
+  HostType,
+  PaymentDoc,
+  VerificationDocumentDoc,
+  VerificationDocumentType,
+  VerificationState,
+  VerificationStatus,
+} from './detail-revamp-enums.js';
+export {
+  AMENITY_TYPES,
+  COMMERCIAL_FACILITY_TYPES,
+  DETAIL_ARRAY_CAPS,
+  mapFacilityKindToPlanType,
+} from './detail-revamp-enums.js';

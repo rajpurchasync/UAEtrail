@@ -1,6 +1,7 @@
 import {
+  activityFilterToMapFilter,
   serializeExploreActivityDatePreset,
-  serializeVenueListFilter,
+  venueFilterToMapFilter,
   type ActivityListFilterKey,
   type ExploreActivityDatePreset,
   type ExplorePanel,
@@ -154,15 +155,18 @@ export const buildExploreBrowseSearchParams = (input: {
   const peoplePanelActive = peopleBrowseOpenValue || listModeValue === 'people';
   const searchScopeValue = patch.searchScope !== undefined ? patch.searchScope : state.searchScope;
 
-  if (filterValue === 'all') params.delete('filter');
-  else params.set('filter', filterValue);
+  if (filterValue === 'all') {
+    const fromActivity = activityFilterToMapFilter(activityFilterValue);
+    const fromPlaces = venueFilterToMapFilter(placesFilterValue);
+    const inferred = fromActivity ?? fromPlaces;
+    if (inferred && inferred !== 'all') params.set('filter', inferred);
+    else params.delete('filter');
+  } else {
+    params.set('filter', filterValue);
+  }
 
-  if (activityFilterValue === 'all') params.delete('activity');
-  else params.set('activity', activityFilterValue);
-
-  const serializedPlaces = serializeVenueListFilter(placesFilterValue);
-  if (serializedPlaces) params.set('places', serializedPlaces);
-  else params.delete('places');
+  params.delete('activity');
+  params.delete('places');
 
   if (panelValue === 'activities') params.delete('panel');
   else params.set('panel', panelValue);

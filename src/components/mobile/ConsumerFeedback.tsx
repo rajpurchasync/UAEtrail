@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { GlassCard } from './GlassCard';
 import { PRODUCT_RETRY_LABEL } from '../../content/productNorthStar';
+import { AsyncLoadingState } from '../ui/AsyncLoadingState';
 
 interface ConsumerErrorCardProps {
   message: string;
@@ -29,13 +30,15 @@ export const ConsumerErrorCard = ({
 
 interface ConsumerLoadingSpinnerProps {
   className?: string;
+  label?: string;
 }
 
 /** Centered loading spinner for list sections. */
-export const ConsumerLoadingSpinner = ({ className = 'py-10' }: ConsumerLoadingSpinnerProps) => (
-  <div className={`flex justify-center ${className}`.trim()}>
-    <div className="h-7 w-7 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
-  </div>
+export const ConsumerLoadingSpinner = ({
+  className = 'py-10',
+  label,
+}: ConsumerLoadingSpinnerProps) => (
+  <AsyncLoadingState variant="centered" className={className} label={label} />
 );
 
 interface ConsumerLoadingSkeletonProps {

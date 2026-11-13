@@ -1,4 +1,4 @@
-import { PLAN_PATH } from '../config/surfacePaths';
+import { HOSTING_HUB_PATH, PLAN_PATH } from '../config/surfacePaths';
 
 /** Primary Plan mobile tabs (bottom of Plan chrome). */
 export type PlanMainTab = 'upcoming' | 'wishlist';
@@ -31,7 +31,7 @@ export const parsePlanCommitmentFilter = (
   if (filterRaw === 'hosting' && canHost) return 'hosting';
   if (roleRaw === 'joined') return 'joined';
   if (roleRaw === 'hosted' && canHost) return 'hosting';
-  return canHost ? 'hosting' : 'joined';
+  return 'joined';
 };
 
 export const parsePlanUpcomingLayout = (
@@ -66,8 +66,8 @@ export const planMainTabPath = (
   return `${PLAN_PATH}?${params.toString()}`;
 };
 
-export const planHostingFilterPath = (): string =>
-  planMainTabPath('upcoming', { filter: 'hosting' });
+/** Dedicated community hosting hub (not a My Plans filter). */
+export const planHostingFilterPath = (): string => HOSTING_HUB_PATH;
 
 export const planJoinedFilterPath = (): string =>
   planMainTabPath('upcoming', { filter: 'joined' });
@@ -107,7 +107,7 @@ export const normalizePlanMobileParams = (
   } else if (role === 'all') {
     params.delete('role');
     if (!params.get('filter') && params.get('tab') !== 'wishlist') {
-      params.set('filter', canHost ? 'hosting' : 'joined');
+      params.set('filter', 'joined');
       changed = true;
     }
   }
@@ -118,7 +118,7 @@ export const normalizePlanMobileParams = (
     !params.get('filter') &&
     params.get('lens') !== 'availability'
   ) {
-    params.set('filter', canHost ? 'hosting' : 'joined');
+    params.set('filter', 'joined');
     changed = true;
   }
 

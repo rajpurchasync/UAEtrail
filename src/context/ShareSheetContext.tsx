@@ -16,12 +16,18 @@ import {
   buildActivitySharePayload,
   type ActivityShareInput,
 } from '../utils/activityShare';
+import {
+  resolveShareSheetTitle,
+  type ShareSheetSurface,
+} from '../content/shareSheetCopy';
 
 export type ShareFlowOptions = {
   canSendBuddyInvites?: boolean;
   initialSelectedBuddyIds?: string[];
   /** When set, in-app invite opens friends + groups for this outing. */
   activity?: ActivityShareInput | null;
+  sheetTitle?: string;
+  shareSurface?: ShareSheetSurface;
 };
 
 type ShareFlowState = {
@@ -29,8 +35,12 @@ type ShareFlowState = {
   activity: ActivityShareInput | null;
   canSendBuddyInvites: boolean;
   initialSelectedBuddyIds?: string[];
+  sheetTitle: string;
   phase: 'menu' | 'invite';
 };
+
+const resolveFlowSheetTitle = (options?: ShareFlowOptions): string =>
+  options?.sheetTitle?.trim() || resolveShareSheetTitle(options?.shareSurface);
 
 export type ShareSheetApi = {
   openShare: (payload: ActivityOutingSharePayload, options?: ShareFlowOptions) => void;
@@ -51,6 +61,7 @@ function useShareSheetState(): ShareSheetApi & { sheet: ReactNode } {
       activity: options?.activity ?? null,
       canSendBuddyInvites: options?.canSendBuddyInvites ?? false,
       initialSelectedBuddyIds: options?.initialSelectedBuddyIds,
+      sheetTitle: resolveFlowSheetTitle(options),
       phase: 'menu',
     });
   }, []);
@@ -61,6 +72,7 @@ function useShareSheetState(): ShareSheetApi & { sheet: ReactNode } {
       activity: input,
       canSendBuddyInvites: options?.canSendBuddyInvites ?? false,
       initialSelectedBuddyIds: options?.initialSelectedBuddyIds,
+      sheetTitle: resolveFlowSheetTitle({ ...options, shareSurface: 'activity' }),
       phase: 'invite',
     });
   }, []);
@@ -72,6 +84,7 @@ function useShareSheetState(): ShareSheetApi & { sheet: ReactNode } {
       activity,
       canSendBuddyInvites: options?.canSendBuddyInvites ?? false,
       initialSelectedBuddyIds: options?.initialSelectedBuddyIds,
+      sheetTitle: resolveFlowSheetTitle({ ...options, shareSurface: 'activity' }),
       phase: 'menu',
     });
   }, []);
@@ -83,6 +96,7 @@ function useShareSheetState(): ShareSheetApi & { sheet: ReactNode } {
       activity,
       canSendBuddyInvites: options?.canSendBuddyInvites ?? false,
       initialSelectedBuddyIds: options?.initialSelectedBuddyIds,
+      sheetTitle: resolveFlowSheetTitle({ ...options, shareSurface: 'activity' }),
       phase: 'invite',
     });
   }, []);
@@ -101,6 +115,7 @@ function useShareSheetState(): ShareSheetApi & { sheet: ReactNode } {
         <ActivityOutingShareSheet
           open={Boolean(state && state.phase === 'menu')}
           sharePayload={sharePayload}
+          title={state?.sheetTitle}
           showInviteOnApp={Boolean(state?.canSendBuddyInvites && state.activity)}
           onInviteOnApp={state?.canSendBuddyInvites && state?.activity ? openInviteFromMenu : undefined}
           onClose={closeInvite}
@@ -154,7 +169,3 @@ export function useOptionalShareSheet(): ShareSheetApi | null {
   return useContext(ShareSheetContext);
 }
 
-/** @deprecated Prefer `useShareSheet` — alias kept for existing call sites. */
-export function useActivityInviteShareSheet() {
-  return useShareSheet();
-}

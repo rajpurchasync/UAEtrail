@@ -21,18 +21,17 @@ export const UaeTrailBrandMark = ({
   const icon = size === 'md' ? 'h-[18px] w-[18px]' : size === 'inline' ? 'h-3 w-3' : 'h-4 w-4';
   const text = size === 'md' ? 'text-base' : size === 'inline' ? 'text-[0.95em] leading-none' : 'text-sm';
   const gap = size === 'inline' ? 'gap-1' : 'gap-2';
-  const wordmarkClass = tone === 'light' ? 'text-white' : 'text-gray-900';
-  const wordmarkWrap = size === 'inline' ? 'truncate' : 'whitespace-nowrap';
+  const wordmarkClass = tone === 'light' ? 'text-white' : 'text-gray-900 dark:text-neutral-50';
 
   return (
-    <span className={`inline-flex shrink-0 items-center ${gap} ${className}`}>
+    <span className={`inline-flex min-w-0 items-center ${gap} ${className}`}>
       <span
         className={`flex shrink-0 items-center justify-center bg-gradient-to-br from-emerald-400 to-emerald-700 ${box}`}
         aria-hidden
       >
         <Mountain className={`${icon} text-white`} strokeWidth={2.25} />
       </span>
-      <span className={`${wordmarkWrap} font-bold tracking-tight ${wordmarkClass} ${text}`}>{wordmark}</span>
+      <span className={`truncate font-bold tracking-tight ${wordmarkClass} ${text}`}>{wordmark}</span>
     </span>
   );
 };

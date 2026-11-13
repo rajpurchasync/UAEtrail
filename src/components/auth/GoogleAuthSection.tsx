@@ -24,14 +24,16 @@ export const GoogleAuthSection = ({
 
   return (
     <GoogleOAuthProvider clientId={clientId}>
-      <div className="mb-4 space-y-3 md:mb-5">
+      <div className="mb-5 space-y-4 md:mb-6">
         <GoogleSignInButton onSuccess={onSuccess} onError={onError} text={text} disabled={disabled} />
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-neutral-200" />
+            <div className="w-full border-t border-neutral-200/80 dark:border-neutral-700" />
           </div>
           <div className="relative flex justify-center text-xs">
-            <span className="bg-white px-3 text-neutral-400">or continue with email</span>
+            <span className="bg-white px-3 text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400">
+              or continue with email
+            </span>
           </div>
         </div>
       </div>

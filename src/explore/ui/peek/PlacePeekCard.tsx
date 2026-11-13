@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 import { MapPeekShell } from '../map-peek';
-import { FacilityPeekActions } from './facility/FacilityPeekActions';
-import { PlacePeekActions } from './place/PlacePeekActions';
+import { FacilityPeekActions } from '../peek/facility/FacilityPeekActions';
+import { PlacePeekActions } from '../peek/place/PlacePeekActions';
 
 export type PlacePeekCardProps = {
   card: DiscoveryCardModel;
@@ -15,8 +15,8 @@ export type PlacePeekCardProps = {
 };
 
 /**
- * Place and facility pins.
- * Trails, camps, and venues plan a trip. Amenities open directions and the facility page.
+ * Catalog place peek (`source: venue`) — trail / camp / event venue pins.
+ * Detail depth: `PlaceDetailPage` (`kind` trail · camp · event).
  */
 export const PlacePeekCard = ({
   card,

@@ -246,6 +246,24 @@ export const hasThreadBetweenUsers = async (firstUserId: string, secondUserId: s
   return Boolean(existingThread);
 };
 
+/** True when `fromUserId` has already sent at least one DM to `toUserId`. */
+export const hasDirectedMessageFromTo = async (fromUserId: string, toUserId: string): Promise<boolean> => {
+  const existing = await chatMessagesCollection().findOne(
+    { senderId: fromUserId, receiverId: toUserId },
+    { projection: { _id: 1 } }
+  );
+  return Boolean(existing);
+};
+
+export const listPartnersWhoSentToUser = async (userId: string, partnerIds: string[]): Promise<Set<string>> => {
+  const unique = [...new Set(partnerIds.filter(Boolean))];
+  if (unique.length === 0) return new Set();
+  const rows = await chatMessagesCollection()
+    .find({ receiverId: userId, senderId: { $in: unique } }, { projection: { senderId: 1 } })
+    .toArray();
+  return new Set(rows.map((row) => row.senderId));
+};
+
 /** Remove message content authored by a deleted user. */
 export const purgeUserChatMessages = async (userId: string): Promise<void> => {
   await chatMessagesCollection().updateMany(

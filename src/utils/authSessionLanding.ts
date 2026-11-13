@@ -21,3 +21,23 @@ export const sessionExpiredLandingPath = (): string =>
 /** After logout — never send phones back to the marketing page. */
 export const signedOutLandingPath = (): string =>
   isMobileAuthViewport() ? EXPLORE_MAP_PATH : '/';
+
+/**
+ * Drop `?session=expired` from a return path so a successful sign-in does not
+ * re-show the session-expired toast on Explore / Home.
+ */
+export const stripSessionExpiredQuery = (path: string): string => {
+  const hashIndex = path.indexOf('#');
+  const withoutHash = hashIndex >= 0 ? path.slice(0, hashIndex) : path;
+  const hash = hashIndex >= 0 ? path.slice(hashIndex) : '';
+  const queryIndex = withoutHash.indexOf('?');
+  if (queryIndex < 0) return path;
+  const pathname = withoutHash.slice(0, queryIndex);
+  const params = new URLSearchParams(withoutHash.slice(queryIndex + 1));
+  if (params.get(SESSION_EXPIRED_QUERY_KEY) !== SESSION_EXPIRED_QUERY_VALUE) {
+    return path;
+  }
+  params.delete(SESSION_EXPIRED_QUERY_KEY);
+  const qs = params.toString();
+  return `${pathname}${qs ? `?${qs}` : ''}${hash}`;
+};

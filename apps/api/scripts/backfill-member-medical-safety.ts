@@ -1,13 +1,17 @@
 /**
- * Backfill blood group, medical conditions, and emergency contact for existing auth_users.
+ * Backfill blood group, medical conditions, and emergency contact (incl. relation) for existing
+ * auth_users. Only missing fields are filled; values a member already saved are kept.
  * Run: npm --workspace @uaetrail/api exec tsx scripts/backfill-member-medical-safety.ts
  */
 import {
   BLOOD_GROUP_VALUES,
+  EMERGENCY_CONTACT_RELATION_VALUES,
   MEDICAL_CONDITIONS_NA,
   isMedicalSafetyProfileComplete,
+  type BloodGroup,
 } from '@uaetrail/shared-types';
-import { connectMongo, getMongoClient } from '../src/lib/mongo.js';
+import { getMongoClient } from '../src/lib/mongo.js';
+import { resolveCliScriptName, runCliScript } from './cli-script-runner.js';
 import { medicalSafetyFieldsFromAuthProfile } from '../src/lib/member-medical-safety-profile.js';
 import type { AuthUserRecord } from '../src/lib/auth-users-store.js';
 
@@ -29,7 +33,6 @@ const randomUaePhone = (): string => {
 };
 
 const main = async () => {
-  await connectMongo();
   const collection = getMongoClient()!.db().collection<AuthUserRecord>('auth_users');
   const docs = await collection.find({}).project({ _id: 1, profile: 1 }).toArray();
 
@@ -37,14 +40,28 @@ const main = async () => {
   let skipped = 0;
 
   for (const doc of docs) {
-    if (isMedicalSafetyProfileComplete(medicalSafetyFieldsFromAuthProfile(doc.profile))) {
+    const existing = medicalSafetyFieldsFromAuthProfile(doc.profile);
+    if (isMedicalSafetyProfileComplete(existing)) {
       skipped += 1;
       continue;
     }
-    const bloodGroup = randomItem(BLOOD_GROUP_VALUES);
-    const medicalConditions = randomItem(CONDITIONS);
-    const emergencyContactName = randomItem(NAMES);
-    const emergencyContactPhone = randomUaePhone();
+    // Fill only what is missing — never overwrite a blood group or contact the member already saved.
+    const existingBlood = existing.bloodGroup?.trim() as BloodGroup | undefined;
+    const bloodGroup =
+      existingBlood && BLOOD_GROUP_VALUES.includes(existingBlood)
+        ? existingBlood
+        : randomItem(BLOOD_GROUP_VALUES);
+    const medicalConditions = existing.medicalConditions?.trim() || randomItem(CONDITIONS);
+    const existingName = existing.emergencyContactName?.trim() ?? '';
+    const existingPhone = existing.emergencyContactPhone?.trim() ?? '';
+    const hasContact = existingName.length >= 2 && existingPhone.length >= 8;
+    const emergencyContactName = hasContact ? existingName : randomItem(NAMES);
+    const emergencyContactPhone = hasContact ? existingPhone : randomUaePhone();
+    // Relation became mandatory after the first backfill: a saved contact without one gets the
+    // neutral `Other` instead of a guessed relationship.
+    const emergencyContactRelation =
+      existing.emergencyContactRelation?.trim() ||
+      (hasContact ? 'Other' : randomItem(EMERGENCY_CONTACT_RELATION_VALUES));
     await collection.updateOne(
       { _id: doc._id },
       {
@@ -53,6 +70,7 @@ const main = async () => {
           'profile.medicalConditions': medicalConditions,
           'profile.emergencyContactName': emergencyContactName,
           'profile.emergencyContactPhone': emergencyContactPhone,
+          'profile.emergencyContactRelation': emergencyContactRelation,
           updatedAt: new Date(),
         },
       }
@@ -61,10 +79,6 @@ const main = async () => {
   }
 
   console.log(`backfill-member-medical-safety: updated=${updated} skipped=${skipped} total=${docs.length}`);
-  process.exit(0);
 };
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+runCliScript(resolveCliScriptName(import.meta.url), main);

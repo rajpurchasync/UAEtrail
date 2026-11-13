@@ -9,11 +9,13 @@ import { viewLimiter } from '../../middleware/rate-limit-instances.js';
 import { validate } from '../../middleware/validate.js';
 import { UserRole } from '../../domain/enums.js';
 import { createPublicPlacePremiumCheckout } from '../../services/place-premium-commands.js';
+import { listPublicPlaceReachableRides } from '../../services/place-reachable-rides-read.js';
 import {
   loadExploreMapForViewer,
   loadExploreSeekingActivitiesForMapViewer,
   loadPublicPlaceCatalog,
   loadPublicPlaceDetailPayload,
+  loadPublicPlaceTrackPreview,
   loadPublicPlacePremiumGuideContent,
   loadPublicPlaceRegistry,
   listPopularPublicPlaces,
@@ -50,6 +52,9 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
           cursor: query.cursor,
           limit: query.limit,
           area: query.area,
+          q: query.q,
+          country: query.country,
+          venue: query.venue,
           projection,
           sources: query.sources,
           includeRideshare: query.includeRideshare,
@@ -85,6 +90,10 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
         activityType: filters.activityType,
         featured: filters.featured,
         countryCode: filters.countryCode,
+        q: filters.q,
+        country: filters.country,
+        area: filters.area,
+        venue: filters.venue,
         lat: filters.lat,
         lng: filters.lng,
         radius: filters.radius,
@@ -169,6 +178,67 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
   registerPlaceAlias(
     router,
     'get',
+    '/places/:id/reachable-rides',
+    validate({ params: eventIdParamSchema }),
+    async (req, res, next) => {
+      try {
+        const { id } = req.params as z.infer<typeof eventIdParamSchema>;
+        const page = Number(req.query.page) || 1;
+        const pageSize = Number(req.query.pageSize) || 10;
+        const payload = await listPublicPlaceReachableRides({ placeId: id, page, pageSize });
+        res.json(payload);
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  registerPlaceAlias(
+    router,
+    'get',
+    '/places/:id/track',
+    optionalAuth,
+    validate({ params: eventIdParamSchema }),
+    async (req, res, next) => {
+      try {
+        const { id } = req.params as z.infer<typeof eventIdParamSchema>;
+        const data = await loadPublicPlaceTrackPreview({
+          placeId: id,
+          viewerUserId: req.auth?.userId ?? null,
+          viewerRole: req.auth?.role ?? null,
+        });
+        res.json({ data });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  registerPlaceAlias(
+    router,
+    'get',
+    '/places/:id/me/state',
+    requireAuth,
+    validate({ params: eventIdParamSchema }),
+    async (req, res, next) => {
+      try {
+        const { id } = req.params as z.infer<typeof eventIdParamSchema>;
+        const payload = await loadPublicPlaceDetailPayload({
+          placeId: id,
+          viewerUserId: req.auth!.userId,
+          viewerRole: req.auth?.role ?? null,
+        });
+        res.setHeader('Cache-Control', 'private, no-store');
+        res.json(payload);
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  registerPlaceAlias(
+    router,
+    'get',
     '/places/:id',
     optionalAuth,
     validate({ params: eventIdParamSchema }),
@@ -180,6 +250,7 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
           viewerUserId: req.auth?.userId ?? null,
           viewerRole: req.auth?.role ?? null,
         });
+        res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
         res.json(payload);
       } catch (error) {
         next(error);

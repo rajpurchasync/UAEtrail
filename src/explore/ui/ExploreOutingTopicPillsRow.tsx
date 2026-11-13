@@ -1,4 +1,6 @@
+import { useRef } from 'react';
 import { OUTING_TOPIC_PILLS, type ExploreOutingTopicKey } from '../exploreOutingTopic';
+import { useHorizontalDragScroll } from '../../hooks/useHorizontalDragScroll';
 import {
   EXPLORE_FILTER_PILL,
   EXPLORE_LIST_PILLS_SCROLL,
@@ -20,13 +22,15 @@ export const ExploreOutingTopicPillsRow = ({
   layout = 'map',
   className = '',
 }: ExploreOutingTopicPillsRowProps) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useHorizontalDragScroll(scrollRef);
   const scrollClass =
     layout === 'list'
       ? EXPLORE_LIST_PILLS_SCROLL
       : 'min-w-0 overflow-x-auto scroll-smooth scrollbar-none py-0.5 [-webkit-overflow-scrolling:touch]';
 
   return (
-  <div className={`${scrollClass} ${className}`}>
+  <div ref={scrollRef} className={`${scrollClass} ${className}`}>
     <div
       className={`flex w-max max-w-full flex-nowrap items-center gap-2 ${layout === 'map' ? 'min-w-full pr-2 lg:pr-0' : ''}`}
     >

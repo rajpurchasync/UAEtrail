@@ -13,6 +13,7 @@ import {
 } from './explore-person.js';
 import type { PublishingProfileKind } from './publishing-profile-kind.js';
 import { isGenericSeekingTitle, type SeekingTitleKind } from './seeking-titles.js';
+import { activityJoinIsFull } from './activity-availability.js';
 import {
   activityJoinCtaLabel,
   resolveParticipationMode,
@@ -20,10 +21,6 @@ import {
 } from './activity-participation-mode.js';
 import { exploreMapItemIsSeeking } from './explore-activity-mode.js';
 import type { ExploreActivityMode } from './explore-activity-mode.js';
-import {
-  activityScheduleSpanLabel,
-  isMultiDayActivitySchedule,
-} from './activity-schedule.js';
 import {
   facilityPlaceKindPinEmoji,
   isFacilityPlaceKind,
@@ -71,6 +68,8 @@ export type DiscoveryCardBuildInput = {
   requesterUserId?: string | null;
   date?: string | null;
   time?: string | null;
+  endDate?: string | null;
+  endTime?: string | null;
   slotsAvailable?: number;
   slotsTotal?: number;
   participantPreviews?: Array<{ id: string; name: string; avatar?: string | null }>;
@@ -88,7 +87,6 @@ export type DiscoveryCardBuildInput = {
     locationName?: string | null;
     meetingPoint?: string | null;
     startPoint?: string | null;
-    date?: string | null;
     time?: string | null;
     endDate?: string | null;
     endTime?: string | null;
@@ -361,7 +359,20 @@ const exploreScheduleDayStart = (value: Date): Date => {
   return copy;
 };
 
-/** Short weekday within the next 6 days (`Sat`); otherwise weekday plus `Sat 09 Nov 26`. */
+/** Calendar week start (Sunday) — matches explore weekday labels. */
+const exploreScheduleWeekStart = (value: Date): Date => {
+  const day = exploreScheduleDayStart(value);
+  day.setDate(day.getDate() - day.getDay());
+  return day;
+};
+
+/**
+ * Progressive schedule stamp:
+ * - this week → `Sat`
+ * - this month → `Sat 12`
+ * - this year → `Sat 12 Sep`
+ * - otherwise → `Sat 12 Sep 26`
+ */
 export const formatExploreEventDateLabel = (
   date?: string | null,
   now: Date = new Date()
@@ -372,14 +383,20 @@ export const formatExploreEventDateLabel = (
 
   const today = exploreScheduleDayStart(now);
   const targetDay = exploreScheduleDayStart(target);
-  const diff = Math.round((targetDay.getTime() - today.getTime()) / 86400000);
   const weekday = EXPLORE_EVENT_WEEKDAYS[target.getDay()] ?? '';
-
-  if (diff >= 0 && diff <= 6) return weekday;
-
   const day = String(target.getDate()).padStart(2, '0');
   const month = EXPLORE_EVENT_MONTHS[target.getMonth()] ?? '';
   const year = String(target.getFullYear()).slice(-2);
+
+  if (exploreScheduleWeekStart(today).getTime() === exploreScheduleWeekStart(targetDay).getTime()) {
+    return weekday;
+  }
+  if (today.getFullYear() === targetDay.getFullYear() && today.getMonth() === targetDay.getMonth()) {
+    return `${weekday} ${day}`;
+  }
+  if (today.getFullYear() === targetDay.getFullYear()) {
+    return `${weekday} ${day} ${month}`;
+  }
   return `${weekday} ${day} ${month} ${year}`;
 };
 
@@ -394,7 +411,19 @@ export const formatExploreDayShort = (
   now: Date = new Date()
 ): string | null => formatExploreEventDateLabel(date, now);
 
-/** Mid-sentence day phrase for card titles, e.g. " on Sat", " on Sat 09 Nov 26". */
+/** Stamp without weekday — e.g. `08 Nov 26` (reviews, member history). */
+export const formatExploreCalendarDateShort = (value?: string | null): string | null => {
+  if (!value?.trim()) return null;
+  const trimmed = value.trim();
+  const parsed = new Date(trimmed.includes('T') ? trimmed : `${trimmed.slice(0, 10)}T12:00:00`);
+  if (Number.isNaN(parsed.getTime())) return null;
+  const day = String(parsed.getDate()).padStart(2, '0');
+  const month = EXPLORE_EVENT_MONTHS[parsed.getMonth()] ?? '';
+  const year = String(parsed.getFullYear()).slice(-2);
+  return `${day} ${month} ${year}`;
+};
+
+/** Mid-sentence day phrase for card titles, e.g. " on Sat", " on Sat 12", " on Sat 12 Sep". */
 export const formatExploreDayForHeadline = (
   date?: string | null,
   now: Date = new Date()
@@ -407,7 +436,7 @@ export type ExploreClockStyle = '12' | '24';
 
 let exploreClockStyle: ExploreClockStyle = '12';
 
-/** Display preference from profile settings. Defaults to 12-hour with AM/PM. */
+/** Display preference from app settings (`/settings`). Defaults to 12-hour with AM/PM. */
 export const setExploreClockStyle = (style: ExploreClockStyle): void => {
   exploreClockStyle = style;
 };
@@ -445,72 +474,20 @@ export const formatExploreClockFromDate = (
   return formatExploreTime(`${hours}:${minutes}`, clock) ?? '';
 };
 
-const resolveHostedScheduleFields = (input: ExploreHeadlineInput) => ({
-  date: input.date ?? input.activity?.date ?? null,
-  time: input.time ?? input.activity?.time ?? null,
-  endDate: input.endDate ?? input.activity?.endDate ?? null,
-  endTime: input.endTime ?? input.activity?.endTime ?? null,
-});
-
-const formatExploreScheduleClockRange = (
-  time?: string | null,
-  endTime?: string | null
-): string | null => {
-  const startClock = formatExploreTime(time);
-  const endClock = formatExploreTime(endTime);
-  if (startClock && endClock && endClock !== startClock) return `${startClock}–${endClock}`;
-  return startClock;
-};
-
-/** Hosted outings — date range, clock window, and Same day / N days (map peek, list, detail). */
-export const buildExploreActivityScheduleDetail = (
-  fields: {
-    date?: string | null;
-    time?: string | null;
-    endDate?: string | null;
-    endTime?: string | null;
-  },
-  options: { suffix?: 'flexible' | 'fixed' | null; includeSpan?: boolean } = {}
-): string | null => {
-  const date = fields.date?.trim();
-  if (!date) return null;
-  const endDate = fields.endDate ?? null;
-  const clockRange = formatExploreScheduleClockRange(fields.time, fields.endTime);
-  const span =
-    options.includeSpan === false ? null : activityScheduleSpanLabel(date, endDate);
-
-  let segment: string | null = null;
-  if (isMultiDayActivitySchedule(date, endDate)) {
-    const startDay = formatExploreEventDateLabel(date) ?? formatExploreDayShort(date);
-    const endDay = formatExploreEventDateLabel(endDate) ?? formatExploreDayShort(endDate);
-    if (startDay && endDay) {
-      segment = `${startDay} → ${endDay}`;
-      if (clockRange) segment = `${segment} · ${clockRange}`;
-    }
-  } else {
-    segment = buildExploreWhenSegment(date, fields.time, null);
-    if (clockRange && segment && !segment.includes(clockRange)) {
-      const day = formatExploreDayShort(date);
-      segment = day ? `${day} · ${clockRange}` : clockRange;
-    } else if (clockRange && !segment) {
-      segment = clockRange;
-    }
-  }
-
-  if (!segment) return span;
-  if (options.suffix === 'flexible') segment += ' (flexible)';
-  if (options.suffix === 'fixed') segment += ' (fixed)';
-  if (span) segment += ` · ${span}`;
-  return segment;
-};
-
 export const buildExploreWhenSegment = (
   date?: string | null,
   time?: string | null,
-  suffix?: 'flexible' | 'fixed' | null
+  suffix?: 'flexible' | 'fixed' | null,
+  endDate?: string | null,
+  endTime?: string | null
 ): string | null => {
-  const day = formatExploreDayShort(date);
-  const clock = formatExploreTime(time);
+  const startYmd = date?.trim().slice(0, 10);
+  const endYmd = endDate?.trim().slice(0, 10);
+  const day =
+    startYmd && endYmd && endYmd > startYmd
+      ? formatExploreDayRangeForList(date, endDate)?.replace(' – ', ' to ')
+      : formatExploreDayShort(date);
+  const clock = formatExploreClockRangeForList(time, endTime) ?? formatExploreTime(time);
   let segment: string | null = null;
 
   if (day && clock) segment = `${day} at ${clock}`;
@@ -615,6 +592,27 @@ export const buildExplorePeekSpotsLabel = (
   return `${filled}/${total}`;
 };
 
+/** Activity detail key facts — open spots remaining (e.g. `19 of 20 spots left`). */
+export const buildActivitySpotsLeftLabel = (
+  slotsAvailable?: number | null,
+  slotsTotal?: number | null,
+  opts?: { participantCount?: number | null; countsGoing?: number | null }
+): string | null => {
+  const total = slotsTotal ?? 0;
+  if (total <= 0) return null;
+  const available = slotsAvailable ?? total;
+  let filled = Math.max(0, total - available);
+  const fromCounts = opts?.countsGoing ?? 0;
+  const fromParticipants = opts?.participantCount ?? 0;
+  if (filled === 0 && (fromCounts > 0 || fromParticipants > 0)) {
+    filled = Math.min(Math.max(fromCounts, fromParticipants), total);
+  } else {
+    filled = Math.min(Math.max(filled, fromCounts, fromParticipants), total);
+  }
+  const left = Math.max(0, total - filled);
+  return `${left} of ${total} spots left`;
+};
+
 /** Hide raw map-pin coordinate labels from card copy. */
 export const sanitizeExploreLocation = (label?: string | null): string | null => {
   const trimmed = label?.trim();
@@ -624,23 +622,39 @@ export const sanitizeExploreLocation = (label?: string | null): string | null =>
   return trimmed;
 };
 
+const formatExploreDayRangeForList = (
+  startDate?: string | null,
+  endDate?: string | null
+): string | null => {
+  const start = startDate ? formatExploreEventDateLabel(startDate) : null;
+  if (!start) return null;
+  const end = endDate?.trim().slice(0, 10);
+  const startYmd = startDate?.trim().slice(0, 10);
+  if (!end || !startYmd || end === startYmd) return start;
+  const endLabel = formatExploreEventDateLabel(end);
+  return endLabel && endLabel !== start ? `${start} – ${endLabel}` : start;
+};
+
+const formatExploreClockRangeForList = (
+  startTime?: string | null,
+  endTime?: string | null
+): string | null => {
+  const start = formatExploreTime(startTime);
+  if (!start) return null;
+  const end = formatExploreTime(endTime?.trim().slice(0, 5));
+  if (!end || end === start) return start;
+  return `${start} – ${end}`;
+};
+
 export const buildExploreListWhen = (
   date?: string | null,
   time?: string | null,
-  schedule?: { endDate?: string | null; endTime?: string | null }
+  endDate?: string | null,
+  endTime?: string | null
 ): string | null => {
-  if (schedule?.endDate || schedule?.endTime) {
-    const detail = buildExploreActivityScheduleDetail({
-      date,
-      time,
-      endDate: schedule.endDate,
-      endTime: schedule.endTime,
-    });
-    if (detail) return detail;
-  }
-  const day = date ? formatExploreEventDateLabel(date) : null;
-  if (!day) return formatExploreTime(time);
-  const clock = formatExploreTime(time);
+  const day = formatExploreDayRangeForList(date, endDate);
+  const clock = formatExploreClockRangeForList(time, endTime);
+  if (!day) return clock ?? formatExploreTime(time);
   return clock ? `${day} · ${clock}` : day;
 };
 
@@ -742,7 +756,13 @@ export const exploreHeadline = (input: ExploreHeadlineInput): string => {
   const route = buildExploreRouteLabel(input.fromLabel, input.toLabel, input.kind);
   const whenSuffix =
     headlineIsSeeking(input) ? 'flexible' : input.kind === 'rideshare' ? 'fixed' : null;
-  const when = buildExploreWhenSegment(input.date, input.time, whenSuffix);
+  const when = buildExploreWhenSegment(
+    input.date,
+    input.time,
+    whenSuffix,
+    input.endDate,
+    input.endTime
+  );
   const location = sanitizeExploreLocation(input.location);
 
   if (headlineIsSeeking(input)) {
@@ -764,7 +784,13 @@ export const exploreHeadline = (input: ExploreHeadlineInput): string => {
     input.kind === 'event' &&
     resolveParticipationMode(input.activity?.participationMode, input.activity?.requirements) === 'rsvp'
   ) {
-    const when = buildExploreWhenSegment(input.date, input.time, null);
+    const when = buildExploreWhenSegment(
+      input.date,
+      input.time,
+      null,
+      input.endDate,
+      input.endTime
+    );
     if (when) return `I'm going · ${when}`;
     const day = formatExploreDayForHeadline(input.date);
     return day ? `I'm going${day}` : "I'm going";
@@ -810,14 +836,10 @@ const finishDiscoveryCardSections = (
   }
 ): DiscoveryCardSections => {
   const { participantCount, ...rest } = sections;
-  const hostedSchedule = resolveHostedScheduleFields(input);
   return {
     ...rest,
     listTitle: buildExploreListTitle(input),
-    listWhen: buildExploreListWhen(hostedSchedule.date, hostedSchedule.time, {
-      endDate: hostedSchedule.endDate,
-      endTime: hostedSchedule.endTime,
-    }),
+    listWhen: buildExploreListWhen(input.date, input.time, input.endDate, input.endTime),
     listGoing: buildExploreListGoingLabel({ ...input, participantCount }),
   };
 };
@@ -840,21 +862,13 @@ export const buildDiscoveryCardSections = (input: ExploreHeadlineInput): Discove
   const route = buildExploreRouteLabel(input.fromLabel, input.toLabel, input.kind);
   const whenSuffix =
     headlineIsSeeking(input) ? 'flexible' : input.kind === 'rideshare' ? 'fixed' : null;
-  const hostedSchedule = resolveHostedScheduleFields(input);
-  const hostedScheduleDetail =
-    input.source === 'activity' && !headlineIsSeeking(input) && input.kind !== 'rideshare'
-      ? buildExploreActivityScheduleDetail(
-          {
-            date: hostedSchedule.date,
-            time: hostedSchedule.time,
-            endDate: hostedSchedule.endDate,
-            endTime: hostedSchedule.endTime,
-          },
-          { suffix: whenSuffix }
-        )
-      : null;
-  const when =
-    hostedScheduleDetail ?? buildExploreWhenSegment(input.date, input.time, whenSuffix);
+  const when = buildExploreWhenSegment(
+    input.date,
+    input.time,
+    whenSuffix,
+    input.endDate,
+    input.endTime
+  );
   const spots =
     input.source === 'activity' && !headlineIsSeeking(input) && input.kind !== 'rideshare'
       ? buildExploreSpotsSegment(input.slotsAvailable, input.slotsTotal)
@@ -947,6 +961,11 @@ export const explorePrimaryCtaLabel = (
     participationMode?: ParticipationMode | null;
     requirements?: string[] | null;
     seeking?: boolean;
+    slotsTotal?: number | null;
+    slotsAvailable?: number | null;
+    requiresSignIn?: boolean;
+    price?: number | null;
+    pricingMode?: import('./activity-pricing.js').ActivityPricingMode | null;
   }
 ): string => {
   if (options?.seeking) return 'Request to join';
@@ -956,6 +975,13 @@ export const explorePrimaryCtaLabel = (
     return activityJoinCtaLabel({
       participationMode: options?.participationMode,
       requirements: options?.requirements,
+      isFull: activityJoinIsFull({
+        slotsTotal: options?.slotsTotal,
+        slotsAvailable: options?.slotsAvailable,
+      }),
+      requiresSignIn: options?.requiresSignIn,
+      price: options?.price,
+      pricingMode: options?.pricingMode,
     });
   }
   return 'View details';
@@ -1057,18 +1083,15 @@ export const buildDiscoveryCardPresentation = (
   const toLabel = item.toLabel ?? activity?.startPoint ?? activity?.locationName ?? null;
   const routeLabel = buildExploreRouteLabel(fromLabel, toLabel, kind);
   const whenSuffix = isSeekingPin ? 'flexible' : kind === 'rideshare' ? 'fixed' : null;
-  const whenLabel =
-    source === 'activity' && !isSeekingPin && kind !== 'rideshare'
-      ? buildExploreActivityScheduleDetail(
-          {
-            date: item.date ?? activity?.date ?? null,
-            time: item.time ?? activity?.time ?? null,
-            endDate: activity?.endDate ?? null,
-            endTime: activity?.endTime ?? null,
-          },
-          { suffix: whenSuffix }
-        )
-      : buildExploreWhenSegment(item.date, item.time ?? activity?.time ?? null, whenSuffix);
+  const endDate = item.endDate ?? activity?.endDate ?? null;
+  const endTime = item.endTime ?? activity?.endTime ?? null;
+  const whenLabel = buildExploreWhenSegment(
+    item.date,
+    item.time ?? activity?.time ?? null,
+    whenSuffix,
+    endDate,
+    endTime
+  );
   const location = sanitizeExploreLocation(
     item.subtitle?.trim() ||
       activity?.locationName?.trim() ||
@@ -1089,10 +1112,10 @@ export const buildDiscoveryCardPresentation = (
     location,
     subtitle,
     about: item.about ?? null,
-    date: item.date ?? activity?.date ?? null,
+    date: item.date,
     time: item.time ?? activity?.time ?? null,
-    endDate: activity?.endDate ?? null,
-    endTime: activity?.endTime ?? null,
+    endDate,
+    endTime,
     fromLabel,
     toLabel,
     slotsAvailable: item.slotsAvailable,
@@ -1135,6 +1158,8 @@ export const buildDiscoveryCardPresentation = (
       participationMode: itemParticipationMode(item),
       requirements: activity?.requirements,
       seeking: isSeekingPin,
+      slotsTotal: item.slotsTotal,
+      slotsAvailable: item.slotsAvailable,
     }),
     secondaryCta: exploreSecondaryCtaLabel(source, {
       websiteUrl: item.websiteUrl,

@@ -17,6 +17,7 @@ import {
 } from '../lib/explore-activity-date-filter.js';
 import { loadExploreMapItemsForMemberEngagement } from '../lib/explore-map-member-engagement.js';
 import { enrichMemberBrowseDirectory } from './member-discovery-directory-enrich.js';
+import { resolveCityLabelsForViewerBatch } from '../lib/find-crew-visibility-gate.js';
 import {
   buildMemberDiscoveryFriendsGoing,
   buildMemberDiscoveryHostsGoing,
@@ -36,15 +37,17 @@ const matchesMemberDiscoverySearch = (
 };
 
 /** Members with active seeking posts on the explore map. */
-export const buildMemberDiscoverySeekingRowsFromMapItems = (
+export const buildMemberDiscoverySeekingRowsFromMapItems = async (
   items: ExploreMapItemDTO[],
   input: {
     viewerUserId: string;
     excludeUserIds: Set<string>;
     datePreset: ExploreActivityDatePreset;
     search?: string;
+    /** When set, only these seeker user ids pass find-crew visibility. */
+    findCrewVisibleUserIds?: ReadonlySet<string>;
   }
-): MemberDiscoverySeekingRowDTO[] => {
+): Promise<MemberDiscoverySeekingRowDTO[]> => {
   const seen = new Set<string>();
   const rows: MemberDiscoverySeekingRowDTO[] = [];
 
@@ -55,6 +58,7 @@ export const buildMemberDiscoverySeekingRowsFromMapItems = (
 
     const userId = item.featuredPerson?.userId ?? item.requesterUserId ?? null;
     if (!userId || input.excludeUserIds.has(userId) || seen.has(userId)) continue;
+    if (input.findCrewVisibleUserIds && !input.findCrewVisibleUserIds.has(userId)) continue;
 
     const displayName =
       item.featuredPerson?.displayName ?? item.hostName ?? 'Member';
@@ -145,17 +149,34 @@ export const loadMemberDiscoveryRoster = async (input: {
   const followedPromise = buildFollowedBrowseCards(input.viewerUserId, buddyIds, input.search).then(
     async (followedRaw) => {
       const followedUsers = await findAuthUsersByIds(followedRaw.map((card) => card.id));
-      const followedWithCity = followedRaw.map((card) => {
-        const user = followedUsers.find((u) => u._id === card.id);
-        const city = user?.profile?.city;
-        return {
-          ...card,
-          city: city ? USER_CITY_LABELS[city as UserCity] ?? null : null,
-        };
-      });
+      const userById = new Map(followedUsers.map((user) => [user._id, user] as const));
+      const cityByUserId = await resolveCityLabelsForViewerBatch(
+        // Cards without a loaded user record have no city to gate — they fall back to `null` below.
+        followedRaw.flatMap((card) => {
+          const user = userById.get(card.id);
+          if (!user) return [];
+          const rawCity = user.profile?.city;
+          const cityLabel = rawCity ? USER_CITY_LABELS[rawCity as UserCity] ?? null : null;
+          return [{ subject: user, cityLabel }];
+        }),
+        input.viewerUserId,
+        { viewerBuddyIds: buddyIds }
+      );
+      const followedWithCity = followedRaw.map((card) => ({
+        ...card,
+        city: cityByUserId.get(card.id) ?? null,
+      }));
       return enrichMemberBrowseDirectory(input.viewerUserId, followedWithCity);
     }
   );
+
+  // Map items already passed find-crew filtering in enrichExploreMapPayloadViewerAccess.
+  const seekingPromise = buildMemberDiscoverySeekingRowsFromMapItems(mapItems, {
+    viewerUserId: input.viewerUserId,
+    excludeUserIds,
+    datePreset,
+    search: input.search,
+  });
 
   const [friendsGoing, hostsGoing, seekingOnMap, followed] = await Promise.all([
     buildMemberDiscoveryFriendsGoing(input.viewerUserId, buddies, mapItems, datePreset),
@@ -166,14 +187,7 @@ export const loadMemberDiscoveryRoster = async (input: {
       datePreset,
       input.search
     ),
-    Promise.resolve(
-      buildMemberDiscoverySeekingRowsFromMapItems(mapItems, {
-        viewerUserId: input.viewerUserId,
-        excludeUserIds,
-        datePreset,
-        search: input.search,
-      })
-    ),
+    seekingPromise,
     followedPromise,
   ]);
 

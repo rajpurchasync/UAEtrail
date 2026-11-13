@@ -1,4 +1,11 @@
 import type { NavigateFunction } from 'react-router-dom';
+import {
+  APP_SETTINGS_PATH,
+  APP_SETTINGS_SAFETY_PATH,
+  INBOUND_PROFILE_SETTINGS_PATH,
+  INBOUND_PROFILE_SETTINGS_SAFETY_PATH,
+  isNotificationHubPath,
+} from '../config/surfacePaths';
 import { armViewReturn, peekViewReturnSnapshot, viewReturnPathKey } from './viewReturnMemory';
 
 /**
@@ -194,23 +201,32 @@ const isAuthTransientPath = (pathname: string): boolean => TRANSIENT_EXACT.has(p
  */
 export const inferBackParent = (pathKey: string): string | null => {
   const pathname = pathnameOf(pathKey);
-  if (isAuthTransientPath(pathname)) return '/explore';
+  if (isAuthTransientPath(pathname)) return '/';
   if (pathname === '/profile/edit') return '/profile';
   if (pathname === '/profile/vehicles/new' || /^\/profile\/vehicles\/[^/]+\/edit$/.test(pathname)) {
     return '/profile/vehicles';
   }
   const form = pathname.match(/^(.*)\/(edit|new|create)$/);
   if (form?.[1]) return form[1];
-  if (pathname === '/profile/settings/safety') return '/profile';
-  if (pathname.startsWith('/profile/settings/') && pathname !== '/profile/settings') {
-    return '/profile/settings';
+  if (pathname === APP_SETTINGS_SAFETY_PATH || pathname === INBOUND_PROFILE_SETTINGS_SAFETY_PATH) {
+    return '/profile';
+  }
+  if (pathname.startsWith(`${APP_SETTINGS_PATH}/`) && pathname !== APP_SETTINGS_PATH) {
+    return APP_SETTINGS_PATH;
+  }
+  if (
+    pathname.startsWith(`${INBOUND_PROFILE_SETTINGS_PATH}/`) &&
+    pathname !== INBOUND_PROFILE_SETTINGS_PATH
+  ) {
+    return APP_SETTINGS_PATH;
   }
   if (pathname === '/profile/history/map') return '/profile/history?view=completed';
   if (pathname.startsWith('/profile/') && pathname !== '/profile') return '/profile';
   if (
     pathname === '/buddies' ||
     pathname === '/groups' ||
-    pathname === '/notifications' ||
+    pathname === '/settings/notifications' ||
+    pathname.startsWith('/settings/notifications/') ||
     pathname === '/my-requests'
   ) {
     return '/profile';
@@ -273,6 +289,9 @@ export const resolveBackTarget = (
     const entryPathname = pathnameOf(entry.path);
     if (isTransientBackPath(entryPathname)) continue;
     if (skipPath?.(entryPathname)) continue;
+    // Notification history / preferences / saved are peer Settings panels — do not
+    // walk back through them (Saved → Notification settings → Notifications).
+    if (isNotificationHubPath(currentPathname) && isNotificationHubPath(entryPathname)) continue;
     if (currentIsFormTransient) {
       if (sameDestination(entry.path, fallbackKey)) {
         return { kind: 'pop', delta: stack.index - i, path: entry.path };

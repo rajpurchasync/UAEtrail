@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronDown, ChevronUp, Star } from 'lucide-react';
-import { ReviewDTO } from '@uaetrail/shared-types';
+import { ReviewDTO, formatExploreCalendarDateShort } from '@uaetrail/shared-types';
 import { submitEntityReview } from '../../hooks/entityReviewsClientApi';
 import { useAuth } from '../../context/AuthContext';
 import { MembershipTierBadge } from '../ui/MembershipTierBadge';
@@ -17,7 +17,7 @@ import {
 } from '../../content/activityDetailCopy';
 
 interface ReviewSectionProps {
-  targetType: 'location' | 'tenant' | 'place' | 'activity' | 'user';
+  targetType: 'location' | 'tenant' | 'place' | 'activity';
   targetId: string;
   reviews: ReviewDTO[];
   onReviewSubmitted: (review: ReviewDTO) => void;
@@ -29,17 +29,15 @@ interface ReviewSectionProps {
   /** Tap header to expand/collapse (e.g. activity detail). */
   collapsible?: boolean;
   defaultExpanded?: boolean;
-  /** Outing that gates a host review. Sent with the person or the operator. */
-  contextActivityId?: string;
-  heading?: string;
-  sectionId?: string;
-  /** Check-in and end-time gate, including host reviews on an outing. */
-  reviewGate?: 'open' | 'activity';
+  /** Parent `ConsumerDetailSection` already shows the title — skip duplicate header/chrome. */
+  hideHeader?: boolean;
+  /** No outer `#reviews` section — parent owns scroll anchor and section shell. */
+  embedded?: boolean;
 }
 
 const reviewWireTargetType = (
   targetType: ReviewSectionProps['targetType']
-): 'location' | 'tenant' | 'activity' | 'user' => {
+): 'location' | 'tenant' | 'activity' => {
   if (targetType === 'place') return 'location';
   return targetType;
 };
@@ -54,10 +52,8 @@ export const ReviewSection = ({
   activityAwaitingCompletion = false,
   collapsible = false,
   defaultExpanded = true,
-  contextActivityId,
-  heading = 'Reviews',
-  sectionId = 'reviews',
-  reviewGate = targetType === 'activity' ? 'activity' : 'open',
+  hideHeader = false,
+  embedded = false,
 }: ReviewSectionProps) => {
   const { user } = useAuth();
   const [expanded, setExpanded] = useState(defaultExpanded);
@@ -118,10 +114,8 @@ export const ReviewSection = ({
       const review = await submitEntityReview(
         wireTarget === 'activity'
           ? { kind: 'activity', activityId: targetId }
-          :         wireTarget === 'tenant'
-            ? { kind: 'tenant', organisationId: targetId, activityId: contextActivityId }
-            : wireTarget === 'user' && contextActivityId
-              ? { kind: 'user', userId: targetId, activityId: contextActivityId }
+          : wireTarget === 'tenant'
+            ? { kind: 'tenant', organisationId: targetId }
             : { kind: 'place', placeId: targetId },
         { rating, comment: comment.trim() }
       );
@@ -137,14 +131,13 @@ export const ReviewSection = ({
   };
 
   const reviewCountLabel = reviews.length > 0 ? ` (${reviews.length})` : '';
-  const gated = reviewGate === 'activity';
-  const activityReviewsOpen = !gated || canWriteReview;
+  const activityReviewsOpen = targetType !== 'activity' || canWriteReview;
   const emptyReviewsCopy =
-    gated && !canWriteReview
+    targetType === 'activity' && !canWriteReview
       ? ACTIVITY_DETAIL_REVIEWS_EMPTY_NEUTRAL
       : ACTIVITY_DETAIL_REVIEWS_EMPTY_INVITE;
 
-  const header = collapsible ? (
+  const header = hideHeader ? null : collapsible ? (
     <button
       type="button"
       onClick={() => setExpanded((open) => !open)}
@@ -152,7 +145,7 @@ export const ReviewSection = ({
       className="mb-4 flex w-full items-center justify-between gap-2 rounded-xl border border-gray-100 bg-white px-4 py-3 text-left shadow-sm active:bg-gray-50"
     >
       <span className="text-lg md:text-xl font-bold text-gray-900">
-        {heading}{reviewCountLabel}
+        Reviews{reviewCountLabel}
       </span>
       {expanded ? (
         <ChevronUp className="h-5 w-5 shrink-0 text-gray-500" aria-hidden />
@@ -161,20 +154,13 @@ export const ReviewSection = ({
       )}
     </button>
   ) : (
-    <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4">{heading}{reviewCountLabel}</h2>
+    <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4">Reviews{reviewCountLabel}</h2>
   );
 
-  return (
-    <section
-      id={sectionId}
-      className="scroll-mt-24 scroll-mb-28 pb-2 md:scroll-mb-0"
-      tabIndex={-1}
-    >
-      {header}
-
-      {collapsible && !expanded ? null : (
-        <>
-      {user && !existingReview && !success && !canWriteReview && gated ? (
+  const body =
+    collapsible && !expanded ? null : (
+      <>
+      {user && !existingReview && !success && !canWriteReview && targetType === 'activity' ? (
         <p className="mb-4 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm text-neutral-700">
           {activityAwaitingCompletion
             ? ACTIVITY_DETAIL_REVIEWS_GATE_AFTER_END
@@ -288,7 +274,7 @@ export const ReviewSection = ({
               <p className="text-gray-600">{review.comment}</p>
               <div className="flex items-center justify-between mt-2 gap-2">
                 <div className="text-sm text-gray-500">
-                  {new Date(review.createdAt).toLocaleDateString()}
+                  {formatExploreCalendarDateShort(review.createdAt) ?? review.createdAt}
                 </div>
                 {user && review.userId !== user.id && (
                   <ReportContentButton targetType="review" targetId={review.id} label="Report" />
@@ -299,8 +285,26 @@ export const ReviewSection = ({
           })}
         </div>
       )}
-        </>
-      )}
+      </>
+    );
+
+  if (embedded) {
+    return (
+      <div className="min-w-0">
+        {header}
+        {body}
+      </div>
+    );
+  }
+
+  return (
+    <section
+      id="reviews"
+      className="scroll-mt-24 scroll-mb-28 pb-2 md:scroll-mb-0"
+      tabIndex={-1}
+    >
+      {header}
+      {body}
     </section>
   );
 };

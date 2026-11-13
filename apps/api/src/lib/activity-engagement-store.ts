@@ -1,5 +1,5 @@
 import type { Collection } from 'mongodb';
-import { resolveHostNote } from '@uaetrail/shared-types';
+import { resolveActivityPartyHeadcount, resolveHostNote } from '@uaetrail/shared-types';
 import {
   ActivityStatus,
   NotificationType,
@@ -14,9 +14,10 @@ import {
   findActivityDocInMongo,
   findLocationInMongo,
   findLocationsByIds,
+  incrementActivityCounts,
   patchActivityInMongo,
-  releaseActivityParticipantSlot,
-  tryReserveActivityParticipantSlot
+  releaseActivityParticipantSlots,
+  tryReserveActivityParticipantSlots,
 } from './entity-sync.js';
 import { getMongoClient } from './mongo.js';
 import { myRequestDetailPath } from './member-routes.js';
@@ -27,18 +28,38 @@ import {
 } from '../services/activity-group-chat.js';
 import { resolveParticipationMode } from '../domain/activity-participation-mode.js';
 import { assertParticipantMeetsWomenOnlyRequirement } from '../domain/activity-audience-requirements.js';
+import { assertPartyKidsAllowed } from '../domain/activity-party-join.js';
 import { scheduleSideEffect } from './schedule-side-effect.js';
 
 const ACTIVE_STATUSES: RequestStatus[] = ['PENDING', 'APPROVED', 'WAITLISTED'];
 
-export const isActivityFull = (capacity: number, participantCount: number): boolean =>
-  participantCount >= capacity;
+/** Capacity uses party headcount (adults + kids), not household rows. */
+export const isActivityFull = (capacity: number, slotsUsed: number): boolean => slotsUsed >= capacity;
+
+const releaseSlotsForRequest = async (activityId: string, requestId: string): Promise<void> => {
+  const row = await activityRequestsCollection().findOne({ _id: requestId });
+  const headcount = resolveActivityPartyHeadcount(row?.adults, row?.kids);
+  await releaseActivityParticipantSlots(activityId, headcount);
+};
+
+type MongoPartyMember = {
+  membershipId: string;
+  groupId: string;
+  memberType: 'adult' | 'kid';
+  userId: string | null;
+  displayName: string;
+  status: 'family_invited' | 'accepted' | 'declined' | 'host_pending' | 'confirmed';
+};
 
 type MongoActivityRequest = {
   _id: string;
   activityId: string;
   userId: string;
   status: RequestStatus;
+  adults?: number;
+  kids?: number;
+  partyMembers?: MongoPartyMember[];
+  partyApprovalPending?: boolean;
   note: string | null;
   hostNote?: string | null;
   cancelReason: string | null;
@@ -93,6 +114,10 @@ const toActivityRequestRecord = (doc: MongoActivityRequest): ActivityRequest => 
   activityId: doc.activityId,
   userId: doc.userId,
   status: doc.status,
+  adults: doc.adults,
+  kids: doc.kids,
+  partyMembers: doc.partyMembers,
+  partyApprovalPending: Boolean(doc.partyApprovalPending),
   note: doc.note,
   hostNote: resolveHostNote(doc),
   cancelReason: doc.cancelReason,
@@ -141,16 +166,64 @@ const loadPublishedEventForJoin = async (activityId: string) => {
   if (!doc || doc.status !== ActivityStatus.PUBLISHED) return null;
 
   const participantCount = await activityParticipantsCollection().countDocuments({ activityId });
+  const slotsUsed =
+    typeof doc.participantSlotsUsed === 'number' ? doc.participantSlotsUsed : participantCount;
   return {
     id: doc._id,
     capacity: doc.capacity,
     pricePackages: doc.pricePackages,
     participationMode: resolveParticipationMode(doc.participationMode, doc.requirements),
     requirements: doc.requirements ?? [],
+    audience: doc.audience ?? null,
     hostId: doc.hostId,
     createdById: doc.createdById,
-    participants: Array.from({ length: participantCount }, (_, index) => ({ id: String(index) }))
+    waitlist: doc.waitlist !== false,
+    participantSlotsUsed: slotsUsed,
+    participants: Array.from({ length: participantCount }, (_, index) => ({ id: String(index) })),
   };
+};
+
+const persistJoinRequestRow = async (input: {
+  requestId: string;
+  activityId: string;
+  userId: string;
+  status: RequestStatus;
+  note: string | null;
+  adults?: number;
+  kids?: number;
+  existingCreatedAt?: Date;
+  reviewedAt?: Date | null;
+  reviewedById?: string | null;
+}): Promise<ActivityRequest> => {
+  const now = new Date();
+  await activityRequestsCollection().updateOne(
+    { _id: input.requestId },
+    {
+      $set: {
+        activityId: input.activityId,
+        userId: input.userId,
+        status: input.status,
+        note: input.note,
+        adults: input.adults ?? 1,
+        kids: input.kids ?? 0,
+        hostNote: null,
+        cancelReason: null,
+        cancelMessage: null,
+        cancelledAt: null,
+        selectedPackageIndex: null,
+        reviewedAt: input.reviewedAt ?? null,
+        reviewedById: input.reviewedById ?? null,
+        updatedAt: now,
+        createdAt: input.existingCreatedAt ?? now,
+      },
+    },
+    { upsert: true }
+  );
+  const mongoRow = await activityRequestsCollection().findOne({ _id: input.requestId });
+  if (!mongoRow) {
+    throw new ApiError(500, 'request_persist_failed', 'Failed to persist join request.');
+  }
+  return toActivityRequestRecord(mongoRow);
 };
 
 const isEventHost = async (
@@ -169,12 +242,36 @@ const isEventHost = async (
   return Boolean(membership);
 };
 
+const stripPartyLineFromNote = (note: string | null | undefined): string | null => {
+  if (!note?.trim()) return null;
+  const trimmed = note
+    .split('\n')
+    .filter(
+      (line) =>
+        !line.trimStart().startsWith('Party:') && !line.trimStart().startsWith('Group:')
+    )
+    .join('\n')
+    .trim();
+  return trimmed || null;
+};
+
+const withPartyNote = (note: string | null | undefined, adults?: number, kids?: number): string | null => {
+  if (adults == null && kids == null) return note ?? null;
+  const a = adults ?? 1;
+  const k = kids ?? 0;
+  const line = `Group: ${a} adult${a === 1 ? '' : 's'}${k ? `, ${k} kid${k === 1 ? '' : 's'}` : ''}`;
+  const base = stripPartyLineFromNote(note);
+  return base ? `${base}\n${line}` : line;
+};
+
 export async function createJoinOrWaitlistRequest(opts: {
   activityId: string;
   userId: string;
   note?: string;
   packingCheckedIds?: string[];
   packingSignature?: string;
+  adults?: number;
+  kids?: number;
 }) {
   const event = await loadPublishedEventForJoin(opts.activityId);
   if (!event) {
@@ -217,39 +314,30 @@ export async function createJoinOrWaitlistRequest(opts: {
     throw new ApiError(409, 'request_exists', 'You already have an active request for this event.');
   }
 
-  const waitlisted = isActivityFull(event.capacity, event.participants.length);
-  const status = waitlisted ? RequestStatus.WAITLISTED : RequestStatus.PENDING;
-  const requestId = existing?.id ?? newEntityId();
-  const now = new Date();
+  assertPartyKidsAllowed(opts.kids ?? 0, event.requirements, event.audience?.kidsWelcome);
 
-  await activityRequestsCollection().updateOne(
-    { _id: requestId },
-    {
-      $set: {
-        activityId: opts.activityId,
-        userId: opts.userId,
-        status,
-        note: joinNote ?? existing?.note ?? null,
-        hostNote: null,
-        cancelReason: null,
-        cancelMessage: null,
-        cancelledAt: null,
-        selectedPackageIndex: null,
-        reviewedAt: null,
-        reviewedById: null,
-        updatedAt: now,
-        createdAt: existing?.createdAt ?? now
-      }
-    },
-    { upsert: true }
+  const waitlisted = isActivityFull(event.capacity, event.participantSlotsUsed);
+  if (waitlisted && event.waitlist === false) {
+    throw new ApiError(400, 'activity_full', 'This activity is full.');
+  }
+  const status = waitlisted ? RequestStatus.WAITLISTED : RequestStatus.PENDING;
+  const request = await persistJoinRequestRow({
+    requestId: existing?.id ?? newEntityId(),
+    activityId: opts.activityId,
+    userId: opts.userId,
+    status,
+    note: withPartyNote(joinNote ?? existing?.note ?? null, opts.adults, opts.kids),
+    adults: opts.adults,
+    kids: opts.kids,
+    existingCreatedAt: existing?.createdAt,
+  });
+
+  await incrementActivityCounts(
+    opts.activityId,
+    waitlisted ? { waitlisted: 1 } : { pending: 1 }
   );
 
-  const mongoRow = await activityRequestsCollection().findOne({ _id: requestId });
-  if (!mongoRow) {
-    throw new ApiError(500, 'request_persist_failed', 'Failed to persist join request.');
-  }
-
-  return { request: toActivityRequestRecord(mongoRow), waitlisted };
+  return { request, waitlisted };
 }
 
 export async function createRsvpParticipation(opts: {
@@ -258,6 +346,8 @@ export async function createRsvpParticipation(opts: {
   note?: string;
   packingCheckedIds?: string[];
   packingSignature?: string;
+  adults?: number;
+  kids?: number;
 }) {
   const event = await loadPublishedEventForJoin(opts.activityId);
   if (!event) {
@@ -303,12 +393,36 @@ export async function createRsvpParticipation(opts: {
   if (existing && existing.status === RequestStatus.APPROVED) {
     throw new ApiError(409, 'already_joined', 'You are already going to this activity.');
   }
-
-  if (isActivityFull(event.capacity, event.participants.length)) {
-    throw new ApiError(400, 'activity_full', 'This activity is full.');
+  if (existing && ACTIVE_STATUSES.includes(existing.status)) {
+    throw new ApiError(409, 'request_exists', 'You already have an active request for this event.');
   }
 
-  const reserved = await tryReserveActivityParticipantSlot(opts.activityId, ActivityStatus.PUBLISHED);
+  assertPartyKidsAllowed(opts.kids ?? 0, event.requirements, event.audience?.kidsWelcome);
+
+  if (isActivityFull(event.capacity, event.participantSlotsUsed)) {
+    if (event.waitlist === false) {
+      throw new ApiError(400, 'activity_full', 'This activity is full.');
+    }
+    const request = await persistJoinRequestRow({
+      requestId: existing?.id ?? newEntityId(),
+      activityId: opts.activityId,
+      userId: opts.userId,
+      status: RequestStatus.WAITLISTED,
+      note: withPartyNote(joinNote ?? existing?.note ?? null, opts.adults, opts.kids),
+      adults: opts.adults,
+      kids: opts.kids,
+      existingCreatedAt: existing?.createdAt,
+    });
+    await incrementActivityCounts(opts.activityId, { waitlisted: 1 });
+    return { request, participation: null, waitlisted: true };
+  }
+
+  const partyHeadcount = resolveActivityPartyHeadcount(opts.adults, opts.kids);
+  const reserved = await tryReserveActivityParticipantSlots(
+    opts.activityId,
+    partyHeadcount,
+    ActivityStatus.PUBLISHED
+  );
   if (!reserved) {
     throw new ApiError(400, 'activity_full', 'This activity is full.');
   }
@@ -326,7 +440,9 @@ export async function createRsvpParticipation(opts: {
           activityId: opts.activityId,
           userId: opts.userId,
           status: RequestStatus.APPROVED,
-          note: joinNote ?? existing?.note ?? null,
+          note: withPartyNote(joinNote ?? existing?.note ?? null, opts.adults, opts.kids),
+          adults: opts.adults ?? 1,
+          kids: opts.kids ?? 0,
           hostNote: null,
           cancelReason: null,
           cancelMessage: null,
@@ -359,7 +475,7 @@ export async function createRsvpParticipation(opts: {
       { upsert: true }
     );
   } catch (error) {
-    await releaseActivityParticipantSlot(opts.activityId);
+    await releaseActivityParticipantSlots(opts.activityId, partyHeadcount);
     throw error;
   }
 
@@ -383,7 +499,8 @@ export async function createRsvpParticipation(opts: {
 
   return {
     request: toActivityRequestRecord(mongoRow),
-    participation: participant
+    participation: participant,
+    waitlisted: false,
   };
 }
 
@@ -392,8 +509,11 @@ async function promoteNextWaitlisted(activityId: string): Promise<boolean> {
   const eventDoc = await findActivityDocInMongo(activityId);
   if (!eventDoc) return false;
 
-  const participantCount = await activityParticipantsCollection().countDocuments({ activityId });
-  if (isActivityFull(eventDoc.capacity, participantCount)) {
+  const slotsUsed =
+    typeof eventDoc.participantSlotsUsed === 'number'
+      ? eventDoc.participantSlotsUsed
+      : await activityParticipantsCollection().countDocuments({ activityId });
+  if (isActivityFull(eventDoc.capacity, slotsUsed)) {
     return false;
   }
 
@@ -403,7 +523,63 @@ async function promoteNextWaitlisted(activityId: string): Promise<boolean> {
   );
   if (!next) return false;
 
+  const rsvp = resolveParticipationMode(eventDoc.participationMode, eventDoc.requirements) === 'rsvp';
+  if (rsvp) {
+    const headcount = resolveActivityPartyHeadcount(next.adults, next.kids);
+    const reserved = await tryReserveActivityParticipantSlots(
+      activityId,
+      headcount,
+      ActivityStatus.PUBLISHED
+    );
+    if (!reserved) return false;
+    const reviewerId = eventDoc.hostId ?? eventDoc.createdById ?? next.userId;
+    const now = new Date();
+    try {
+      await patchActivityRequestInMongo(next._id, {
+        status: RequestStatus.APPROVED,
+        reviewedAt: now,
+        reviewedById: reviewerId,
+      });
+      await activityParticipantsCollection().updateOne(
+        { activityId, userId: next.userId },
+        {
+          $set: {
+            activityId,
+            requestId: next._id,
+            userId: next.userId,
+            approvedById: reviewerId,
+            checkedInAt: null,
+          },
+          $setOnInsert: { _id: newEntityId(), createdAt: now },
+        },
+        { upsert: true }
+      );
+    } catch (error) {
+      await releaseActivityParticipantSlots(activityId, headcount);
+      throw error;
+    }
+    await incrementActivityCounts(activityId, { waitlisted: -1 });
+    scheduleSideEffect(
+      addParticipantToActivityGroupChat({ activityId, userId: next.userId }),
+      'engagement.waitlist_promote_rsvp_chat'
+    );
+    await dispatchNotification({
+      userId: next.userId,
+      title: "You're going!",
+      body: 'A waitlist spot opened and you are now confirmed on this outing.',
+      type: NotificationType.REQUEST_UPDATE,
+      meta: {
+        kind: 'join_request_approved',
+        activityId,
+        requestId: String(next._id),
+        path: myRequestDetailPath(String(next._id)),
+      },
+    });
+    return true;
+  }
+
   await patchActivityRequestInMongo(next._id, { status: RequestStatus.PENDING });
+  await incrementActivityCounts(activityId, { waitlisted: -1, pending: 1 });
 
   await dispatchNotification({
     userId: next.userId,
@@ -452,6 +628,172 @@ export const updateActivityRequestNote = async (id: string, note: string): Promi
     throw new ApiError(404, 'request_not_found', 'Request not found.');
   }
   return toActivityRequestRecord({ ...mongoRow, note });
+};
+
+export const updateActivityRequestParty = async (
+  id: string,
+  input: {
+    note?: string;
+    adults?: number;
+    kids?: number;
+    partyMembers?: MongoPartyMember[];
+    /** When true, skip auto host-pending for new kids (adult invite flow owns the flag). */
+    deferHostApproval?: boolean;
+    /** Caller-preloaded activity doc — avoids a second activity find on the PATCH path. */
+    eventDoc?: Awaited<ReturnType<typeof findActivityDocInMongo>>;
+  }
+): Promise<ActivityRequest> => {
+  const mongoRow = await activityRequestsCollection().findOne({ _id: id });
+  if (!mongoRow) {
+    throw new ApiError(404, 'request_not_found', 'Request not found.');
+  }
+  const partyMembers = input.partyMembers ?? mongoRow.partyMembers;
+  const adults = input.adults ?? mongoRow.adults ?? 1;
+  const kids = input.kids ?? mongoRow.kids ?? 0;
+  const eventDoc = input.eventDoc ?? (await findActivityDocInMongo(mongoRow.activityId));
+  if (!eventDoc) {
+    throw new ApiError(404, 'activity_not_found', 'Activity not found.');
+  }
+  assertPartyKidsAllowed(kids, eventDoc.requirements ?? [], eventDoc.audience?.kidsWelcome);
+
+  const priorHeadcount = resolveActivityPartyHeadcount(mongoRow.adults, mongoRow.kids);
+  const nextHeadcount = resolveActivityPartyHeadcount(adults, kids);
+  const delta = nextHeadcount - priorHeadcount;
+
+  let partyApprovalPending = Boolean(mongoRow.partyApprovalPending);
+  if (mongoRow.status === RequestStatus.APPROVED && delta !== 0) {
+    if (delta > 0) {
+      const reserved = await tryReserveActivityParticipantSlots(
+        mongoRow.activityId,
+        delta,
+        ActivityStatus.PUBLISHED
+      );
+      if (!reserved) {
+        throw new ApiError(400, 'activity_full', 'Not enough spots left for this group size.');
+      }
+      // RSVP outings auto-apply; approval outings flag host when headcount grows without deferred invite flow.
+      const mode = resolveParticipationMode(
+        eventDoc.participationMode,
+        eventDoc.requirements ?? []
+      );
+      if (mode === 'approval' && !input.deferHostApproval) {
+        partyApprovalPending = true;
+      }
+    } else {
+      await releaseActivityParticipantSlots(mongoRow.activityId, Math.abs(delta));
+      if (resolveActivityPartyHeadcount(adults, kids) <= 1) {
+        partyApprovalPending = false;
+      }
+    }
+  }
+
+  const noteBase =
+    input.note !== undefined ? input.note.trim() || null : stripPartyLineFromNote(mongoRow.note ?? null);
+  const note = withPartyNote(noteBase, adults, kids);
+  const next = await activityRequestsCollection().findOneAndUpdate(
+    { _id: id },
+    {
+      $set: {
+        note,
+        adults,
+        kids,
+        ...(partyMembers !== undefined ? { partyMembers } : {}),
+        partyApprovalPending,
+        updatedAt: new Date(),
+      },
+    },
+    { returnDocument: 'after' }
+  );
+  if (!next) {
+    throw new ApiError(404, 'request_not_found', 'Request not found.');
+  }
+  return toActivityRequestRecord(next);
+};
+
+/** After an adult accepts a family outing invite — escalate host approval or confirm. */
+export const applyAdultFamilyInviteAccepted = async (input: {
+  requestId: string;
+  membershipId: string;
+}): Promise<ActivityRequest> => {
+  const mongoRow = await activityRequestsCollection().findOne({ _id: input.requestId });
+  if (!mongoRow) {
+    throw new ApiError(404, 'request_not_found', 'Request not found.');
+  }
+  const partyMembers = [...(mongoRow.partyMembers ?? [])];
+  const idx = partyMembers.findIndex((row) => row.membershipId === input.membershipId);
+  if (idx < 0) {
+    throw new ApiError(404, 'party_member_not_found', 'Family member not on this outing.');
+  }
+  const eventDoc = await findActivityDocInMongo(mongoRow.activityId);
+  if (!eventDoc) {
+    throw new ApiError(404, 'activity_not_found', 'Activity not found.');
+  }
+  const mode = resolveParticipationMode(eventDoc.participationMode, eventDoc.requirements ?? []);
+  const nextStatus =
+    mongoRow.status === RequestStatus.APPROVED && mode === 'approval'
+      ? 'host_pending'
+      : 'confirmed';
+  partyMembers[idx] = { ...partyMembers[idx]!, status: nextStatus };
+  const partyApprovalPending =
+    nextStatus === 'host_pending' ? true : Boolean(mongoRow.partyApprovalPending);
+  const next = await activityRequestsCollection().findOneAndUpdate(
+    { _id: input.requestId },
+    { $set: { partyMembers, partyApprovalPending, updatedAt: new Date() } },
+    { returnDocument: 'after' }
+  );
+  if (!next) {
+    throw new ApiError(404, 'request_not_found', 'Request not found.');
+  }
+  return toActivityRequestRecord(next);
+};
+
+export const applyAdultFamilyInviteDeclined = async (input: {
+  requestId: string;
+  membershipId: string;
+}): Promise<ActivityRequest> => {
+  const mongoRow = await activityRequestsCollection().findOne({ _id: input.requestId });
+  if (!mongoRow) {
+    throw new ApiError(404, 'request_not_found', 'Request not found.');
+  }
+  const prior = mongoRow.partyMembers ?? [];
+  const removed = prior.find((row) => row.membershipId === input.membershipId);
+  const partyMembers = prior.filter((row) => row.membershipId !== input.membershipId);
+  const { adults, kids } = (() => {
+    const familyAdults = partyMembers.filter(
+      (row) => row.memberType === 'adult' && row.status !== 'declined'
+    ).length;
+    const kidCount = partyMembers.filter(
+      (row) => row.memberType === 'kid' && row.status !== 'declined'
+    ).length;
+    return { adults: 1 + familyAdults, kids: kidCount };
+  })();
+  const priorHeadcount = resolveActivityPartyHeadcount(mongoRow.adults, mongoRow.kids);
+  const nextHeadcount = resolveActivityPartyHeadcount(adults, kids);
+  const delta = nextHeadcount - priorHeadcount;
+  if (delta < 0 && removed) {
+    await releaseActivityParticipantSlots(mongoRow.activityId, Math.abs(delta));
+  }
+  const note = withPartyNote(stripPartyLineFromNote(mongoRow.note ?? null), adults, kids);
+  let partyApprovalPending = Boolean(mongoRow.partyApprovalPending);
+  if (nextHeadcount <= 1) partyApprovalPending = false;
+  const next = await activityRequestsCollection().findOneAndUpdate(
+    { _id: input.requestId },
+    {
+      $set: {
+        partyMembers,
+        adults,
+        kids,
+        note,
+        partyApprovalPending,
+        updatedAt: new Date(),
+      },
+    },
+    { returnDocument: 'after' }
+  );
+  if (!next) {
+    throw new ApiError(404, 'request_not_found', 'Request not found.');
+  }
+  return toActivityRequestRecord(next);
 };
 
 export const listUserActivityRequestsBasic = async (userId: string, take = 200): Promise<ActivityRequest[]> => {
@@ -1019,7 +1361,17 @@ export const listTenantActivityRequestsDetailed = async (input: {
   }
 
   const tenantEvents = await activitiesCollection()
-    .find(eventFilter, { projection: { _id: 1, title: 1, startAt: 1, locationId: 1, activityType: 1 } })
+    .find(eventFilter, {
+      projection: {
+        _id: 1,
+        title: 1,
+        startAt: 1,
+        locationId: 1,
+        activityType: 1,
+        requirements: 1,
+        audience: 1,
+      },
+    })
     .toArray();
   const eventIds = tenantEvents.map((event) => event._id);
   if (eventIds.length === 0) return [];
@@ -1033,6 +1385,13 @@ export const listTenantActivityRequestsDetailed = async (input: {
         startAt: event.startAt,
         locationId: event.locationId,
         activityType: event.activityType ?? 'hiking',
+        requirements: (() => {
+          const raw = event as unknown as { requirements?: string[] };
+          return Array.isArray(raw.requirements) ? raw.requirements : [];
+        })(),
+        audience:
+          (event as unknown as { audience?: { minAge?: number | null; womenOnly?: boolean } | null })
+            .audience ?? null,
       },
     ])
   );
@@ -1066,8 +1425,10 @@ export const listTenantActivityRequestsDetailed = async (input: {
         title: event.title,
         startAt: event.startAt,
         activityType: event.activityType,
-        location: location ?? { id: event.locationId, name: '' }
-      }
+        requirements: event.requirements,
+        audience: event.audience,
+        location: location ?? { id: event.locationId, name: '' },
+      },
     };
   });
 };
@@ -1169,13 +1530,19 @@ export const enrollHostApprovedActivityParticipant = async (opts: {
     await patchActivityInMongo(opts.activityId, { participantSlotsUsed: participantCount });
   }
 
-  const reserved = await tryReserveActivityParticipantSlot(opts.activityId, ActivityStatus.PUBLISHED);
+  const existing = await findActivityRequestByEventAndUser(opts.activityId, opts.userId);
+  const partyHeadcount = resolveActivityPartyHeadcount(existing?.adults, existing?.kids);
+
+  const reserved = await tryReserveActivityParticipantSlots(
+    opts.activityId,
+    partyHeadcount,
+    ActivityStatus.PUBLISHED
+  );
   if (!reserved) {
     if (opts.lenient) return 'skipped';
     throw new ApiError(400, 'activity_full', 'Activity capacity has already been reached.');
   }
 
-  const existing = await findActivityRequestByEventAndUser(opts.activityId, opts.userId);
   let requestId = opts.requestId ?? existing?.id;
   if (!requestId) {
     if (!opts.lenient) {
@@ -1187,6 +1554,11 @@ export const enrollHostApprovedActivityParticipant = async (opts: {
   const reviewedAt = new Date();
 
   try {
+    const confirmedPartyMembers = (existing?.partyMembers ?? []).map((row) =>
+      row.status === 'host_pending' || row.status === 'accepted'
+        ? { ...row, status: 'confirmed' as const }
+        : row
+    );
     await activityRequestsCollection().updateOne(
       { activityId: opts.activityId, userId: opts.userId },
       {
@@ -1198,6 +1570,8 @@ export const enrollHostApprovedActivityParticipant = async (opts: {
           cancelMessage: null,
           cancelledAt: null,
           selectedPackageIndex: existing?.selectedPackageIndex ?? null,
+          partyApprovalPending: false,
+          ...(confirmedPartyMembers.length > 0 ? { partyMembers: confirmedPartyMembers } : {}),
           reviewedAt,
           reviewedById: opts.reviewerId,
           updatedAt: reviewedAt,
@@ -1230,7 +1604,7 @@ export const enrollHostApprovedActivityParticipant = async (opts: {
       { upsert: true }
     );
   } catch (error) {
-    await releaseActivityParticipantSlot(opts.activityId);
+    await releaseActivityParticipantSlots(opts.activityId, partyHeadcount);
     throw error;
   }
 
@@ -1305,7 +1679,7 @@ export const cancelUserActivityRequestAndPromoteWaitlist = async (input: {
   });
   const deleted = await activityParticipantsCollection().deleteMany({ requestId: input.requestId });
   if (deleted.deletedCount > 0) {
-    await releaseActivityParticipantSlot(input.activityId);
+    await releaseSlotsForRequest(input.activityId, input.requestId);
     scheduleSideEffect(
       removeParticipantFromActivityGroupChat({
         activityId: input.activityId,
@@ -1342,7 +1716,7 @@ export const revokeHostActivityParticipant = async (input: {
 
   const deleted = await activityParticipantsCollection().deleteOne({ _id: participant.id });
   if (deleted.deletedCount > 0) {
-    await releaseActivityParticipantSlot(input.activityId);
+    await releaseSlotsForRequest(input.activityId, participant.requestId);
     scheduleSideEffect(
       removeParticipantFromActivityGroupChat({
         activityId: input.activityId,
@@ -1447,6 +1821,7 @@ export const listActivityParticipantsWithUsers = async (activityId: string) => {
               medicalConditions: user.profile.medicalConditions ?? null,
               emergencyContactName: user.profile.emergencyContactName ?? null,
               emergencyContactPhone: user.profile.emergencyContactPhone ?? null,
+              emergencyContactRelation: user.profile.emergencyContactRelation ?? null,
             }
           : null
       }
@@ -1457,7 +1832,7 @@ export const listActivityParticipantsWithUsers = async (activityId: string) => {
 export const purgeUserActivityEngagement = async (userId: string): Promise<void> => {
   const participants = await activityParticipantsCollection().find({ userId }).toArray();
   for (const participant of participants) {
-    await releaseActivityParticipantSlot(participant.activityId);
+    await releaseSlotsForRequest(participant.activityId, participant.requestId);
   }
   await activityParticipantsCollection().deleteMany({ userId });
   await activityRequestsCollection().deleteMany({ userId });

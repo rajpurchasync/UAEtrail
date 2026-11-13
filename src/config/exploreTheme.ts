@@ -452,11 +452,16 @@ export const EXPLORE_Z = {
  * Map peek card — compact bubble over the pin (mobile + desktop), not a full-height dock.
  */
 export const EXPLORE_PEEK = {
-  position: `absolute inset-0 ${EXPLORE_Z.peekCard} pointer-events-none`,
+  position: `absolute inset-0 overflow-hidden ${EXPLORE_Z.peekCard} pointer-events-none`,
   scrim: 'map-peek-bubble-scrim pointer-events-auto absolute inset-0',
-  inner: 'map-peek-bubble pointer-events-auto absolute flex w-[min(100%-1.5rem,23.75rem)] flex-col',
+  inner: 'map-peek-bubble pointer-events-auto absolute flex w-[min(100%-1.5rem,23.75rem)] flex-col overflow-hidden',
   shell:
     'map-peek-bubble-card flex shrink-0 flex-col overflow-hidden rounded-[1.35rem] bg-white shadow-[0_12px_40px_rgba(15,23,42,.22)] ring-1 ring-black/8',
+  /** Photo/banner chrome — share, close, wishlist, type emoji. */
+  mediaIconBtn:
+    'inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm hover:bg-black/50 transition-colors',
+  mediaEmojiBadge:
+    'flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-black/35 text-lg backdrop-blur-sm',
 } as const;
 
 export const EXPLORE_LIST_FILTER_INACTIVE =
@@ -519,9 +524,10 @@ export const exploreMapPinRingColor = (
 
 /** Map peek card footer CTAs — brand primary, neutral secondary. */
 export const EXPLORE_PEEK_CTA = {
-  primary: 'w-full rounded-xl bg-emerald-600 py-3.5 text-sm font-bold text-white shadow-sm hover:bg-emerald-700',
+  primary:
+    'w-full rounded-xl bg-emerald-600 py-3.5 text-sm font-bold text-white shadow-sm hover:bg-emerald-700 md:py-2 md:text-[13px] md:font-semibold',
   secondary:
-    'block w-full rounded-xl border border-neutral-200 bg-white py-3.5 text-center text-sm font-bold text-neutral-800',
+    'block w-full rounded-xl border border-neutral-200 bg-white py-3.5 text-center text-sm font-bold text-neutral-800 md:py-2 md:text-[13px] md:font-semibold dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100',
   secondaryText:
     'block w-full py-2.5 text-center text-sm font-semibold text-neutral-700',
   link: 'text-sm font-semibold text-sky-800 underline underline-offset-2 hover:text-sky-950',

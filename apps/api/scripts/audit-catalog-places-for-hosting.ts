@@ -2,7 +2,7 @@
  * Audit catalog places for public outing publish (registry picker + area linkage).
  * Run: npm --workspace @uaetrail/api exec tsx scripts/audit-catalog-places-for-hosting.ts
  */
-import { connectMongo } from '../src/lib/mongo.js';
+import { resolveCliScriptName, runCliScript } from './cli-script-runner.js';
 import { buildPlaceRegistry } from '../src/services/place-registry.js';
 import { listPublishedAreas } from '../src/lib/areas-store.js';
 import { locationHasRegistryCoverImage } from '../src/lib/catalog-registry-cover.js';
@@ -91,7 +91,6 @@ const auditPlace = (
 };
 
 const main = async () => {
-  await connectMongo();
   const areas = await listPublishedAreas();
 
   const registryByType = new Map<string, Set<string>>();
@@ -203,10 +202,6 @@ const main = async () => {
     }
   }
 
-  process.exit(0);
 };
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+runCliScript(resolveCliScriptName(import.meta.url), main);

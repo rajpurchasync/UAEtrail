@@ -5,6 +5,7 @@ import {
   adminDashboardRedirect,
   defaultRouteByRole,
   hostDashboardRedirect,
+  hostModeHomeRouteByRole,
   merchantDashboardRedirect,
   participantDashboardRedirect,
   participantHostBookmarkRedirect,
@@ -29,11 +30,14 @@ describe('auth routing by role', () => {
 
   it('treats only /admin paths as the locked admin console', () => {
     expect(isPlatformAdminConsolePath('/admin')).toBe(true);
+    expect(isPlatformAdminConsolePath('/admin/inbox')).toBe(true);
     expect(isPlatformAdminConsolePath('/admin/overview')).toBe(true);
     expect(isPlatformAdminConsolePath('/explore')).toBe(false);
     expect(isPlatformAdminConsolePath('/plan')).toBe(false);
     expect(isConsumerProfilePath('/profile')).toBe(true);
     expect(isConsumerProfilePath('/profile/settings')).toBe(true);
+    expect(isConsumerProfilePath('/settings')).toBe(false);
+    expect(isConsumerProfilePath('/settings/safety')).toBe(false);
     expect(isConsumerProfilePath('/admin/account')).toBe(false);
   });
 
@@ -44,12 +48,18 @@ describe('auth routing by role', () => {
       ['tenant_owner', '/publishing/overview'],
       ['tenant_admin', '/publishing/overview'],
       ['tenant_guide', '/publishing/overview'],
-      ['platform_admin', '/admin/overview'],
+      ['platform_admin', '/admin/inbox'],
     ];
 
     for (const [role, expected] of cases) {
       expect(defaultRouteByRole(role)).toBe(expected);
     }
+  });
+
+  it('maps host-mode home to publishing overview for console roles', () => {
+    expect(hostModeHomeRouteByRole('tenant_owner')).toBe('/publishing/overview');
+    expect(hostModeHomeRouteByRole('tenant_guide')).toBe('/publishing/overview');
+    expect(hostModeHomeRouteByRole('participant')).toBe('/explore');
   });
 
   it('maps participant dashboard aliases', () => {
@@ -82,7 +92,9 @@ describe('auth routing by role', () => {
     expect(adminDashboardRedirect('audit-log')).toBe('/admin/audit-log');
     expect(adminDashboardRedirect('settings')).toBe('/admin/settings');
     expect(adminDashboardRedirect('account')).toBe('/admin/account');
-    expect(adminDashboardRedirect('unknown')).toBe('/admin/overview');
+    expect(adminDashboardRedirect('unknown')).toBe('/admin/inbox');
+    expect(adminDashboardRedirect('overview')).toBe('/admin/inbox');
+    expect(adminDashboardRedirect('submissions')).toBe('/admin/inbox/submissions');
   });
 
   it('maps merchant dashboard aliases to shop management', () => {
@@ -92,7 +104,7 @@ describe('auth routing by role', () => {
 
   it('maps /publishing bookmarks to Plan, explore host, or pro membership (not tenant console)', () => {
     expect(participantHostBookmarkRedirect('/publishing/overview')).toBe('/explore?compose=host');
-    expect(participantHostBookmarkRedirect('/publishing/activities')).toBe('/plan?view=plans&filter=hosting');
+    expect(participantHostBookmarkRedirect('/publishing/activities')).toBe('/hosting');
     expect(participantHostBookmarkRedirect('/publishing/requests')).toBe('/my-requests');
     expect(participantHostBookmarkRedirect('/publishing/messages')).toBe('/chat');
     expect(participantHostBookmarkRedirect('/publishing/team')).toBe('/profile/pro-membership');

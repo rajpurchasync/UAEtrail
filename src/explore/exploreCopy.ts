@@ -16,6 +16,7 @@ export {
   buildExploreRouteLabel,
   buildExploreSpotsSegment,
   buildExplorePeekSpotsLabel,
+  buildActivitySpotsLeftLabel,
   buildExploreWhenSegment,
   exploreHeadline,
   explorePrimaryCtaLabel,

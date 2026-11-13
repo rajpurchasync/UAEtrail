@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { isDelegatedProductScrollPath, PRODUCT_SHELL_HTML_CLASS } from './layoutScroll';
+import {
+  isDelegatedProductScrollPath,
+  PRODUCT_SHELL_HTML_CLASS,
+  shouldResetAppScrollOnNavigation,
+} from './layoutScroll';
 
 const ALLOW_MIN_H_SCREEN = new Set([
   'src/pages/Home.tsx',
@@ -31,6 +35,13 @@ describe('layoutScrollGuard', () => {
       `html.${PRODUCT_SHELL_HTML_CLASS}`
     );
     expect(source).toMatch(/document\.documentElement\.classList\.add/);
+  });
+
+  it('does not reset scroll when only the query string changes (detail tabs)', () => {
+    expect(shouldResetAppScrollOnNavigation(null, '/shop/abc')).toBe(true);
+    expect(shouldResetAppScrollOnNavigation('/shop/abc', '/shop/abc')).toBe(false);
+    expect(shouldResetAppScrollOnNavigation('/shop/abc', '/shop/xyz')).toBe(true);
+    expect(shouldResetAppScrollOnNavigation('/area/hatta', '/place/hatta-dam-loop')).toBe(true);
   });
 
   it('delegates scroll only on list discovery', () => {

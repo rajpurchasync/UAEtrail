@@ -14,11 +14,11 @@ describe('placeDetailUiHygieneGuard', () => {
   });
 
   it('PLACE-HYG-02: consumer detail uses modal shell + peek parity modules', () => {
-    const consumer = read('src/place/detail/templates/PlaceDetailSections.tsx');
-    expect(consumer).toMatch(/MobileDetailScrollShell/);
-    expect(consumer).toMatch(/PlaceDetailKindFacts/);
+    const consumer = read('src/place/detail/templates/PlaceConsumerDetailPage.tsx');
+    expect(consumer).toMatch(/DetailPageShell/);
+    expect(consumer).toMatch(/PlaceConsumerKindFacts/);
     expect(consumer).toMatch(/PlacePremiumGuidePanel/);
-    expect(consumer).toMatch(/PLACE_PEEK_FOOTER_PLAN_TRIP/);
+    expect(consumer).toMatch(/PLACE_PEEK_ARRANGE_TRIP/);
   });
 
   it('PLACE-HYG-03: venue map peek wires PlacePeekCard stack (not activity body slot)', () => {

@@ -27,7 +27,8 @@ import {
   readStoredFile,
 } from './location-premium.js';
 import { loadExploreSeekingActivitiesForViewer } from './explore-seeking-activities-read.js';
-import type { PlaceCatalogQuery } from '@uaetrail/shared-types';
+import type { LocationDTO, PlaceCatalogQuery, PlaceTrackPreviewDTO } from '@uaetrail/shared-types';
+import { findPlaceTrackById } from '../lib/place-heavy-store.js';
 
 export const loadExploreMapForViewer = (input: {
   query: {
@@ -35,6 +36,9 @@ export const loadExploreMapForViewer = (input: {
     cursor?: string;
     limit?: string;
     area?: string;
+    q?: string;
+    country?: string;
+    venue?: string;
     projection?: string;
     sources?: string;
     includeRideshare?: string;
@@ -85,6 +89,13 @@ export const listPopularPublicPlaces = async (limit: number) => {
   return locations.map((l) => toLocationDto(l));
 };
 
+const redactPlaceDtoForGuest = (dto: LocationDTO): LocationDTO => ({
+  ...dto,
+  parkingLat: undefined,
+  parkingLng: undefined,
+  parkingLink: undefined,
+});
+
 export const listPublicPlaceUpcomingActivities = async (placeId: string) => {
   const events = await listPublishedUpcomingActivitiesByLocation(placeId, 20);
   return events.map((event) => buildActivityDto(event));
@@ -113,7 +124,9 @@ export const loadPublicPlaceDetailPayload = async (input: {
   );
   const premium = locationHasPremiumContent(location) ? buildPremiumSummary(location, access) : null;
   const nearbyFacilities = await listNearbyFacilitiesForPlace(location);
-  const data = await enrichLocationDtoWithAreaHub(location, toLocationDto(location));
+  const mapped = await enrichLocationDtoWithAreaHub(location, toLocationDto(location));
+  const data =
+    input.viewerUserId == null ? redactPlaceDtoForGuest(mapped) : mapped;
   const viewerAccess = buildPlaceViewerAccess({
     viewerUserId: input.viewerUserId,
     viewerRole: input.viewerRole ?? null,
@@ -174,3 +187,55 @@ export const readPublicPlacePremiumGuidePdfFile = async (input: {
 };
 
 export const recordPublicPlaceView = (placeId: string) => incrementActiveLocationViewCount(placeId);
+
+/** GPX-backed places only: returns bbox / encoded polyline / elevation profile when stored on `place_tracks` (never exposes `gpxKey`). */
+export const loadPublicPlaceTrackPreview = async (input: {
+  placeId: string;
+  viewerUserId: string | null;
+  viewerRole?: string | null;
+}): Promise<PlaceTrackPreviewDTO | null> => {
+  if (!input.viewerUserId) {
+    return null;
+  }
+  const location = await findLocationForDetailView(
+    input.placeId,
+    input.viewerUserId,
+    input.viewerRole ?? null
+  );
+  if (!location?.gpxKey?.trim()) {
+    return null;
+  }
+
+  const track = await findPlaceTrackById(input.placeId);
+  if (!track) {
+    return null;
+  }
+
+  const bboxOk =
+    Array.isArray(track.bbox) &&
+    track.bbox.length === 4 &&
+    track.bbox.every((n) => typeof n === 'number' && Number.isFinite(n));
+  const poly = typeof track.polyline === 'string' ? track.polyline.trim() : '';
+  const prof =
+    Array.isArray(track.profile) && track.profile.length > 0
+      ? track.profile.filter(
+          (pair): pair is [number, number] =>
+            Array.isArray(pair) &&
+            pair.length === 2 &&
+            typeof pair[0] === 'number' &&
+            typeof pair[1] === 'number' &&
+            Number.isFinite(pair[0]) &&
+            Number.isFinite(pair[1])
+        )
+      : [];
+
+  if (!bboxOk && !poly && prof.length < 2) {
+    return null;
+  }
+
+  return {
+    bbox: bboxOk ? (track.bbox as [number, number, number, number]) : null,
+    polyline: poly || null,
+    profile: prof.length > 0 ? prof : null,
+  };
+};

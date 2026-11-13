@@ -1,34 +1,25 @@
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
-import { ProfileAccountSettingsSections } from '../components/profile/ProfileAccountSettingsSections';
-import { AccountDeleteSection, AccountSignOutButton } from '../components/account';
-import { useProfileSettingsBackChrome } from '../hooks/useProfileHubBackChrome';
+import { AppSettingsBody } from '../components/profile/AppSettingsBody';
+import { DesktopSettingsShell } from '../components/profile/DesktopSettingsShell';
 import { useMinWidthLg } from '../hooks/useMinWidthLg';
-import { desktopSettingsSectionPath } from '../config/desktopSettings';
+import { useProfileSettingsBackChrome } from '../hooks/useProfileHubBackChrome';
 
 export const ProfileSettingsAccount = () => {
   const backChrome = useProfileSettingsBackChrome();
-  const { user, signOut, refreshUser } = useAuth();
   const isDesktop = useMinWidthLg();
 
-  const refresh = async () => {
-    await refreshUser();
-  };
-
-  if (isDesktop) return <Navigate to={desktopSettingsSectionPath('account')} replace />;
+  if (isDesktop) {
+    return (
+      <DesktopSettingsShell activeSection="account">
+        <AppSettingsBody section="account" />
+      </DesktopSettingsShell>
+    );
+  }
 
   return (
-    <ConsumerShell
-      layout="stack"
-      title="Account"
-      showJourney={false}
-      back={backChrome}
-    >
-      <div className="space-y-3 pb-nav-safe animate-fade-up">
-        <ProfileAccountSettingsSections email={user?.email ?? ''} onEmailChanged={refresh} />
-        <AccountSignOutButton onSignOut={() => void signOut()} />
-        <AccountDeleteSection onDeleted={() => void signOut()} />
+    <ConsumerShell layout="stack" title="Account" showJourney={false} back={backChrome}>
+      <div className="animate-fade-up">
+        <AppSettingsBody section="account" />
       </div>
     </ConsumerShell>
   );

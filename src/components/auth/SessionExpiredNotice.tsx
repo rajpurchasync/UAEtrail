@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { X } from 'lucide-react';
 import {
@@ -6,6 +7,7 @@ import {
   hasSessionExpiredQuery,
 } from '../../config/surfacePaths';
 import { HOME_HEADER_NAV, HOME_SESSION_EXPIRED } from '../../content/homeMarketing';
+import { useAuth } from '../../context/AuthContext';
 
 type Props = {
   /** `header` anchors under Join free. `overlay` is the Explore map toast. */
@@ -13,8 +15,20 @@ type Props = {
 };
 
 export const SessionExpiredNotice = ({ variant = 'header' }: Props) => {
+  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
-  if (!hasSessionExpiredQuery(searchParams)) return null;
+  const expired = hasSessionExpiredQuery(searchParams);
+
+  // Signed-in users must never keep the guest toast query (e.g. returned from sign-in
+  // with redirect=/explore?session=expired).
+  useEffect(() => {
+    if (!user || !expired) return;
+    const next = new URLSearchParams(searchParams);
+    next.delete(SESSION_EXPIRED_QUERY_KEY);
+    setSearchParams(next, { replace: true });
+  }, [user, expired, searchParams, setSearchParams]);
+
+  if (!expired || user) return null;
 
   const dismiss = () => {
     const next = new URLSearchParams(searchParams);

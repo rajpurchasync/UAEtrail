@@ -48,8 +48,14 @@ export const meNotificationsPageQueryKey = (page: number): QueryKey => ['me', 'n
 
 export const wishlistTargetStateQueryKey = (
   userId: string,
-  target: { locationId?: string; activityId?: string }
-): QueryKey => ['wishlist-target-state', userId, target.activityId ?? '', target.locationId ?? ''];
+  target: { locationId?: string; areaId?: string; activityId?: string }
+): QueryKey => [
+  'wishlist-target-state',
+  userId,
+  target.activityId ?? '',
+  target.locationId ?? '',
+  target.areaId ?? '',
+];
 
 export const shopPublicPageQueryKey = (id: string): QueryKey => ['shop-public-page', id];
 
@@ -70,17 +76,50 @@ export const participantIntentJoinRequestQueryKey = (
 
 export const personPublicProfileQueryKey = (
   userId: string,
-  variant: 'me-preview' | { mode: 'person'; discover: boolean }
+  variant:
+    | 'me-preview'
+    | {
+        mode: 'person';
+        discover: boolean;
+        bundleKey?: string;
+      }
 ): QueryKey => {
   if (variant === 'me-preview') {
     return ['person-public-profile', userId, 'me-preview'];
   }
-  return ['person-public-profile', userId, 'person', variant.discover ? 'discover' : 'direct'];
+  return [
+    'person-public-profile',
+    userId,
+    'person',
+    variant.discover ? 'discover' : 'direct',
+    variant.bundleKey ?? 'base',
+  ];
 };
+
+export const personSocialGraphFriendsQueryKey = (
+  userId: string,
+  viewerId: string | undefined
+): QueryKey => ['person-social-graph', userId, viewerId ?? 'guest', 'friends'];
+
+export const personSocialGraphCommonQueryKey = (
+  userId: string,
+  viewerId: string | undefined
+): QueryKey => ['person-social-graph', userId, viewerId ?? 'guest', 'commonFollows'];
 
 export const personUpcomingActivitiesQueryKey = (userId: string): QueryKey => [
   'person-upcoming-activities',
   userId,
+];
+
+export const personPastActivitiesQueryKey = (userId: string): QueryKey => [
+  'person-past-activities',
+  userId,
+];
+
+export const personSocialGraphQueryKey = (userId: string, viewerId: string | undefined): QueryKey => [
+  'person-social-graph',
+  userId,
+  viewerId ?? 'guest',
 ];
 
 export const buddyRelationshipQueryKey = (viewerUserId: string, targetUserId: string): QueryKey => [
@@ -150,6 +189,15 @@ export const activityJoinInvitesSentQueryKey = (activityId: string): QueryKey =>
 ];
 
 export const meGroupsActivityInviteQueryKey = ['me-groups', 'activity-invite'] as const;
+
+/** Family roster picker on activity detail (cached; only fetched when picker enabled). */
+export const meFamilyPartyPickerGroupsQueryKey = ['me-groups', 'family-party-picker'] as const;
+export const meFamilyPartyPickerMembersQueryKey = (groupId: string): QueryKey => [
+  'me-groups',
+  'family-party-picker',
+  'members',
+  groupId,
+];
 
 export const participantHubQueryKey = (userId: string): QueryKey => ['participant-hub', userId];
 

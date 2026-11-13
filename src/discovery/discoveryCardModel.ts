@@ -14,12 +14,14 @@ import type {
   PlaceKind,
 } from '@uaetrail/shared-types';
 import {
+  activityJoinIsFull,
   buildDiscoveryCardPresentation,
   canonicalizeMapComposeIntent,
   exploreMapItemIsSeeking,
   isGeographyMapSource,
   isPeekOnlyCatalogProfile,
   memberProfilePath,
+  placeDetailPathForId,
   resolveActivityPublisherProfilePath,
   resolveExploreFeaturedPerson,
   type DiscoveryCardPresentationDTO,
@@ -79,6 +81,8 @@ export interface DiscoveryCardModel {
   reviewPath?: string | null;
   catalogProfileExposure?: CatalogProfileExposure | null;
   locationId?: string | null;
+  /** Place catalog type when known (`locationCard.activityType`) — not the outing type. */
+  locationActivityType?: 'hiking' | 'camping' | 'event' | null;
   activityId?: string | null;
   participantIntentId?: string | null;
   outingCategory?: OutingCategory | null;
@@ -205,7 +209,13 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
   const whenSuffix = seeking ? 'flexible' : kind === 'rideshare' ? 'fixed' : null;
   const whenLabel =
     presentation.whenLabel ??
-    buildExploreWhenSegment(item.date, item.time ?? activity?.time ?? null, whenSuffix);
+    buildExploreWhenSegment(
+      item.date,
+      item.time ?? activity?.time ?? null,
+      whenSuffix,
+      item.endDate ?? activity?.endDate ?? null,
+      item.endTime ?? activity?.endTime ?? null
+    );
 
   const headline = presentation.headline;
   const sections = presentation.sections;
@@ -273,6 +283,7 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
         : null,
     catalogProfileExposure: item.catalogProfileExposure ?? null,
     locationId: item.locationCard?.id ?? item.activity?.locationId ?? null,
+    locationActivityType: item.locationCard?.activityType ?? null,
     activityId: item.activity?.id ?? null,
     /** Manage/deeplink only for legacy seeking rows without a published activity id. */
     participantIntentId:
@@ -366,6 +377,16 @@ const discoveryCardHostUserId = (card: DiscoveryCardModel): string | null =>
   card.profileUserId ??
   null;
 
+/** Consumer detail for the venue/spot line on poster banners (trail, camp, activity, shop). */
+export const resolveDiscoveryCardLocationDetailPath = (card: DiscoveryCardModel): string => {
+  if (isGeographyMapSource(card.source)) return card.path;
+  if (card.source === 'activity' && card.locationId) {
+    // Never use the outing type — an event hosted at a camp must not open `/venue/{campId}`.
+    return placeDetailPathForId(card.locationId, card.locationActivityType);
+  }
+  return card.path;
+};
+
 /** Profile href for the host / requester row on explore cards and map peek. */
 export const resolveDiscoveryCardHostProfilePath = (card: DiscoveryCardModel): string | null => {
   if (card.source === 'activity' && card.activity) {
@@ -397,13 +418,11 @@ export const discoveryCardPeekShowsFollow = (card: DiscoveryCardModel): boolean 
   card.source !== 'activity';
 
 /** Hosted activity with a capacity cap and no open spots left. */
-export const discoveryCardActivityJoinIsFull = (card: DiscoveryCardModel): boolean => {
-  const total = card.activity?.slotsTotal ?? 0;
-  if (total <= 0) return false;
-  const available = card.activity?.slotsAvailable;
-  if (available == null) return false;
-  return available <= 0;
-};
+export const discoveryCardActivityJoinIsFull = (card: DiscoveryCardModel): boolean =>
+  activityJoinIsFull({
+    slotsTotal: card.activity?.slotsTotal,
+    slotsAvailable: card.activity?.slotsAvailable,
+  });
 
 export const discoveryCardActivityShowsPeekSpots = (card: DiscoveryCardModel): boolean =>
   (card.activity?.slotsTotal ?? 0) > 0 && Boolean(card.sections.partyLabel);
@@ -456,6 +475,7 @@ export const resolveExploreEntityFollowTarget = (
 
 export type ExploreWishlistTarget = {
   locationId?: string;
+  areaId?: string;
   activityId?: string;
   alertOnMatch?: boolean;
   watchOutingCategory?: OutingCategory | null;
@@ -478,11 +498,12 @@ const watchMetaFromCard = (card: DiscoveryCardModel) => ({
   watchLongitude: card.mapLongitude ?? null,
 });
 
-/** Wishlist = private venue or activity save — not demand, shops, or people (use Follow). */
+/** Wishlist = private venue, area, or activity save — not demand, shops, or people (use Follow). */
 export const resolveExploreWishlistTarget = (card: DiscoveryCardModel): ExploreWishlistTarget | null => {
   const watch = watchMetaFromCard(card);
   if (discoveryCardIsSeeking(card)) return null;
   if (card.source === 'activity' && card.activityId) return { activityId: card.activityId, ...watch };
+  if (card.source === 'area' && card.areaId) return { areaId: card.areaId, ...watch };
   if (isGeographyMapSource(card.source) && card.locationId) return { locationId: card.locationId, ...watch };
   return null;
 };

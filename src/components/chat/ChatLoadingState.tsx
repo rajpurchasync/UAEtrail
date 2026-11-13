@@ -1,4 +1,4 @@
-import { Loader2 } from 'lucide-react';
+import { LoadingLabelRow } from '../ui/loadingPrimitives';
 
 type ChatLoadingStateProps = {
   label: string;
@@ -11,10 +11,7 @@ export const ChatLoadingState = ({ label, variant, rows = 6 }: ChatLoadingStateP
   if (variant === 'thread') {
     return (
       <div role="status" aria-live="polite" aria-busy="true" className="space-y-3 py-4">
-        <p className="flex items-center justify-center gap-2 text-sm font-medium text-neutral-600">
-          <Loader2 className="h-4 w-4 animate-spin text-emerald-600" aria-hidden />
-          {label}
-        </p>
+        <LoadingLabelRow label={label} className="!font-medium !text-neutral-600" />
         {[false, true, false, true, false].map((mine, index) => (
           <div key={index} className={`flex ${mine ? 'justify-end' : 'justify-start'}`} aria-hidden>
             <div
@@ -33,10 +30,9 @@ export const ChatLoadingState = ({ label, variant, rows = 6 }: ChatLoadingStateP
       aria-busy="true"
       className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-ios-sm"
     >
-      <p className="flex items-center gap-2 border-b border-neutral-100 px-4 py-3 text-sm font-medium text-neutral-600">
-        <Loader2 className="h-4 w-4 animate-spin text-emerald-600" aria-hidden />
-        {label}
-      </p>
+      <div className="border-b border-neutral-100 px-4 py-3">
+        <LoadingLabelRow label={label} className="!justify-start !font-medium !text-neutral-600" />
+      </div>
       {Array.from({ length: rows }, (_, index) => (
         <div key={index} className="flex animate-pulse items-center gap-3 border-b border-neutral-100 px-4 py-3 last:border-b-0" aria-hidden>
           <div className="h-10 w-10 shrink-0 rounded-full bg-neutral-200" />

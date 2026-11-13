@@ -39,7 +39,7 @@ import {
   resolveGroupRegionLevelsForActivityDoc,
   stampLocationGroupRegionLevels,
 } from '../src/lib/group-region-resolution.js';
-import { getMongoClient, connectMongo, disconnectMongo } from '../src/lib/mongo.js';
+import { getMongoClient, connectMongo } from '../src/lib/mongo.js';
 import { createSocialReview } from '../src/lib/social-reviews-store.js';
 import {
   createMerchantProfileForUser,
@@ -72,10 +72,17 @@ import {
 } from '../src/lib/social-groups-store.js';
 import { ensureActivityGroupChat } from '../src/services/activity-group-chat.js';
 import { logConnectionsDemoPlaybook, seedConnectionsDemo } from './seedConnectionsDemo.js';
-import { ensureDemoExploreActivities, seedDemoScheduledActivities } from './seed-demo-scheduled-activities.js';
+import {
+  ensureDemoExploreActivities,
+  resolveDemoActivitySeedContext,
+  seedDemoScheduledActivities,
+} from './seed-demo-scheduled-activities.js';
+import { seedDevRichCatalog } from './seed-dev-rich-catalog.js';
+import { seedDevMonthlyActivities } from './seed-dev-monthly-activities.js';
 import { refreshSeedParticipantSeekingSchedules } from './seed-demo-seeking-schedules.js';
 import { seedCatalogFacilities } from './seed-catalog-facilities.js';
-import { seedCatalogPlaceReviews } from '../src/lib/seed-catalog-place-reviews.js';
+import { runDevQaBundleSeed } from './seed-dev-qa-bundle.js';
+import { resolveCliScriptName, runCliScript } from './cli-script-runner.js';
 
 const seedChatThread = async (
   messages: Array<{
@@ -396,8 +403,6 @@ const db = () => getMongoClient()!.db();
 
 const demoAccount = (email: keyof typeof DEMO_ACCOUNTS) => DEMO_ACCOUNTS[email];
 
-const demoPassword = (email: keyof typeof DEMO_ACCOUNTS) => resolveDemoAccountPassword(email);
-
 const upsertDemoUser = (email: keyof typeof DEMO_ACCOUNTS) => {
   const { role, displayName } = DEMO_ACCOUNTS[email];
   const password = resolveDemoAccountPassword(email);
@@ -438,6 +443,7 @@ const upsertUser = async ({
       medicalConditions: 'N/A',
       emergencyContactName: 'Demo emergency',
       emergencyContactPhone: '+971500000001',
+      emergencyContactRelation: 'Friend',
     });
     const updated = await findAuthUserByEmail(email);
     if (!updated) throw new Error(`Failed to update user: ${email}`);
@@ -462,6 +468,7 @@ const upsertUser = async ({
       medicalConditions: 'N/A',
       emergencyContactName: 'Demo emergency',
       emergencyContactPhone: '+971500000001',
+      emergencyContactRelation: 'Friend',
     }
   });
 };
@@ -707,6 +714,8 @@ const upsertMerchantProfile = async (
           latitude: data.latitude ?? null,
           longitude: data.longitude ?? null,
           region: data.region ?? null,
+          showContactPhone: Boolean(data.contactPhone),
+          allowInboundChat: false,
           updatedAt: now
         }
       }
@@ -724,6 +733,8 @@ const upsertMerchantProfile = async (
         latitude: data.latitude ?? null,
         longitude: data.longitude ?? null,
         region: data.region ?? null,
+        showContactPhone: Boolean(data.contactPhone),
+        allowInboundChat: false,
         updatedAt: new Date()
       }
     }
@@ -872,6 +883,28 @@ const SEED_MARKER_LOCATION_ID = 'jebel-jais-summit-trail';
 
 const isProductionEnv = (): boolean => process.env.NODE_ENV === 'production';
 
+const isSeedDevRichEnabled = (): boolean => {
+  const raw = process.env.SEED_DEV_RICH?.trim().toLowerCase();
+  return raw === '1' || raw === 'true' || raw === 'yes';
+};
+
+const runDevRichCalendarSeed = async (options?: { force?: boolean }): Promise<void> => {
+  if (!options?.force && !isSeedDevRichEnabled()) return;
+  const ctx = await resolveDemoActivitySeedContext();
+  if (!ctx) {
+    console.warn('[seed] SEED_DEV_RICH set but demo users/tenants missing — skip monthly calendar seed');
+    return;
+  }
+  const participant = await findAuthUserByEmail('visitor@uaetrails.app');
+  const visitor2 = await findAuthUserByEmail('visitor2@uaetrails.app');
+  const participantIds = [participant?._id, visitor2?._id].filter((id): id is string => Boolean(id));
+  const monthly = await seedDevMonthlyActivities(ctx, participantIds);
+  console.log(
+    `[seed] Dev rich calendar: ${monthly.published} published outings across ${monthly.months} months ` +
+      `(participants=${monthly.participantsSeeded}, pending=${monthly.pendingRequests}, reviews=${monthly.reviews})`
+  );
+};
+
 const isSeedDataEnabled = (): boolean => {
   const values = [
     process.env.SEED_DATA,
@@ -995,7 +1028,8 @@ async function main() {
   const client = await connectMongo();
   if (!client) {
     console.error('[seed] MongoDB is not configured. Set MONGODB_URI.');
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   if (!(await shouldRunSeed())) {
@@ -1003,16 +1037,17 @@ async function main() {
     await backfillSeedCatalogLocationAreaIds();
     await deactivateOrphanActiveLocations();
     await restampCatalogGeoIndexFields();
-    const placeReviews = await seedCatalogPlaceReviews();
     const { invalidateExploreMapCache } = await import('../src/lib/explore-map-cache.js');
     await invalidateExploreMapCache();
     console.log('[seed] Curated areas upserted and catalog place areaIds backfilled');
-    if (!placeReviews.skipped) {
-      console.log(
-        `[seed] Catalog place reviews: places=${placeReviews.places} shops=${placeReviews.shops} inserted=${placeReviews.inserted} updated=${placeReviews.updated}`
-      );
-    }
+    const richCatalog = await seedDevRichCatalog(upsertLocation);
+    console.log(
+      `[seed] Dev rich catalog: +${richCatalog.hiking} hiking, +${richCatalog.camping} camping rows upserted`
+    );
     await ensureDemoExploreActivities();
+    const lightCtx = await resolveDemoActivitySeedContext();
+    await runDevQaBundleSeed(lightCtx);
+    await runDevRichCalendarSeed();
     if (isMobileInboxSeedEnabled()) {
       await runMobileInboxDemoSeed();
     }
@@ -1040,7 +1075,7 @@ async function main() {
   const pendingParticipant = await upsertDemoUser('visitor2@uaetrails.app');
 
   const suspendedDemo = demoAccount('suspended@uaetrails.app');
-  const suspendedPassword = demoPassword('suspended@uaetrails.app');
+  const suspendedPassword = resolveDemoAccountPassword('suspended@uaetrails.app');
   const suspendedHash = await bcrypt.hash(suspendedPassword, 10);
   const suspendedExisting = await findAuthUserByEmail('suspended@uaetrails.app');
   if (suspendedExisting) {
@@ -1830,7 +1865,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
       id: 'jebel-hafeet-viewpoint-hike',
       data: {
         name: 'Jebel Hafeet Summit Walk',
-        region: 'Al Ain',
+        region: 'Abu Dhabi',
         areaLabel: 'Jebel Hafeet summit',
         areaId: curatedAreaSeedId('jebelHafeet'),
         activityType: ActivityType.HIKING,
@@ -1891,7 +1926,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
       id: 'al-ain-desert-camp',
       data: {
         name: 'Al Ain Desert Camp',
-        region: 'Al Ain',
+        region: 'Abu Dhabi',
         areaLabel: 'Remah dune field',
         activityType: ActivityType.CAMPING,
         description:
@@ -1931,6 +1966,11 @@ Share your live location and carry extra water in summer months.`
     await upsertLocation(location.id, location.data);
   }
 
+  const richCatalog = await seedDevRichCatalog(upsertLocation);
+  console.log(
+    `[seed] Dev rich catalog: +${richCatalog.hiking} hiking, +${richCatalog.camping} camping rows upserted`
+  );
+
   await backfillSeedCatalogLocationAreaIds();
   await deactivateOrphanActiveLocations();
 
@@ -1939,13 +1979,19 @@ Share your live location and carry extra water in summer months.`
     `[seed] Catalog facilities: upserted=${facilitySeed.upserted} skipped=${facilitySeed.skipped}`
   );
 
-  const { jaisActivityId } = await seedDemoScheduledActivities({
+  const demoActivityCtx = {
     agencyTenantId: agencyTenant.id,
     individualHostTenantId: individualHostTenant.id,
     agencyOwnerId: agencyOwner._id,
     agencyGuideId: agencyGuide._id,
     individualHostId: individualHost._id,
-  });
+  };
+
+  const { jaisActivityId } = await seedDemoScheduledActivities(demoActivityCtx);
+
+  await runDevQaBundleSeed(demoActivityCtx);
+
+  await runDevRichCalendarSeed({ force: true });
 
   await seedParticipant(jaisActivityId, participant._id, agencyOwner._id);
 
@@ -2024,6 +2070,14 @@ Share your live location and carry extra water in summer months.`
 
   await upsertReview({
     userId: participant._id,
+    targetType: ReviewTargetType.LOCATION,
+    targetId: 'wadi-shawka-loop',
+    rating: 5,
+    comment: 'Beautiful wadi with easy access. Perfect for a morning hike with friends.'
+  });
+
+  await upsertReview({
+    userId: participant._id,
     targetType: ReviewTargetType.TENANT,
     targetId: agencyTenant.id,
     rating: 5,
@@ -2048,12 +2102,13 @@ Share your live location and carry extra water in summer months.`
       'Fair seat contribution and easy coordination on WhatsApp. Helpful with bags at the trailhead.'
   });
 
-  const catalogPlaceReviews = await seedCatalogPlaceReviews();
-  if (!catalogPlaceReviews.skipped) {
-    console.log(
-      `[seed] Catalog place reviews: places=${catalogPlaceReviews.places} shops=${catalogPlaceReviews.shops} inserted=${catalogPlaceReviews.inserted} updated=${catalogPlaceReviews.updated}`
-    );
-  }
+  await upsertReview({
+    userId: agencyGuide._id,
+    targetType: ReviewTargetType.LOCATION,
+    targetId: 'jebel-jais-summit-trail',
+    rating: 4,
+    comment: 'Challenging but rewarding summit trail. Start early and bring layers for the summit.'
+  });
 
   await upsertNotification({
     id: 'seed-notif-visitor-approved',
@@ -2214,6 +2269,7 @@ Share your live location and carry extra water in summer months.`
   console.log(`Seeking demo schedule refresh: updated=${seekingScheduleRefresh.updated}`);
 
   console.log('Seed complete.');
+  const demoPassword = (email: keyof typeof DEMO_ACCOUNTS) => resolveDemoAccountPassword(email);
   console.log(`Admin: admin@uaetrails.app (${admin.profile?.displayName ?? demoAccount('admin@uaetrails.app').displayName}) / ${demoPassword('admin@uaetrails.app')}`);
   console.log(`Participant: visitor@uaetrails.app (${participant.profile?.displayName ?? demoAccount('visitor@uaetrails.app').displayName}) / ${demoPassword('visitor@uaetrails.app')}`);
   console.log(`Individual host: host@uaetrails.app (${individualHost.profile?.displayName ?? demoAccount('host@uaetrails.app').displayName}) / ${demoPassword('host@uaetrails.app')}`);
@@ -2245,11 +2301,4 @@ Share your live location and carry extra water in summer months.`
   console.log('Connections demo: see playbook above (buddies / pending / follow notifications)');
 }
 
-main()
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await disconnectMongo();
-  });
+runCliScript(resolveCliScriptName(import.meta.url), main, { connectMongo: false });

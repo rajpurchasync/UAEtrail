@@ -9,22 +9,14 @@ import { AdminConsoleSidebar } from '../admin/AdminConsoleSidebar';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
 import { persistAuthSessionTokens, switchMeRoleSession } from '../../hooks/accountSessionApi';
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
-import { ADMIN_LINKS } from '../../constants';
 import { ADMIN_NOTIFICATIONS_PATH } from '../../config/adminSurfacePaths';
-import { isAdminConsoleNavActive } from '../../admin/adminNavActive';
+import { adminPageTitleFromPath } from '../../admin/adminNav';
 
 interface DashboardLayoutProps {
   title: string;
   links: Array<{ to: string; label: string }>;
   children: ReactNode;
 }
-
-const adminPageTitle = (pathname: string, fallback: string): string => {
-  const match = ADMIN_LINKS.find((link) => isAdminConsoleNavActive(pathname, link.to));
-  if (match) return match.label;
-  if (isAdminConsoleNavActive(pathname, ADMIN_NOTIFICATIONS_PATH)) return 'Notifications';
-  return fallback.replace(/^Admin( · | Dashboard)?/i, '').trim() || fallback;
-};
 
 export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps) => {
   const location = useLocation();
@@ -53,25 +45,25 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
   };
 
   if (isAdminDashboard) {
-    const pageTitle = adminPageTitle(location.pathname, title);
+    const pageTitle = adminPageTitleFromPath(location.pathname, title);
     return (
-      <div className={`${APP_PAGE_MIN_H_CLASS} admin-console-page flex flex-col overflow-hidden bg-gray-50`}>
-        <header className="z-40 shrink-0 border-b border-gray-200 bg-white">
+      <div className={`${APP_PAGE_MIN_H_CLASS} admin-console-page flex flex-col overflow-hidden bg-[#F4F6F5]`}>
+        <header className="z-40 shrink-0 border-b border-neutral-200/80 bg-white">
           <div className="flex h-14 items-center gap-3 px-4 sm:px-5">
             <div className="flex min-w-0 items-center gap-3">
-              <span className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-[11px] font-bold text-white sm:inline-flex">
+              <span className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-[11px] font-bold text-white sm:inline-flex">
                 UT
               </span>
               <div className="min-w-0">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-700">
                   Admin console
                 </p>
-                <h1 className="truncate text-base font-semibold leading-tight text-gray-900">{pageTitle}</h1>
+                <h1 className="truncate text-base font-semibold leading-tight text-neutral-900">{pageTitle}</h1>
               </div>
             </div>
             <div className="ml-auto flex items-center gap-2">
-              <span className="hidden max-w-[240px] truncate text-xs text-gray-500 md:block">{user?.email}</span>
-              <NotificationBellPopover viewAllPath="/admin/notifications" preferAdminRoutes />
+              <span className="hidden max-w-[240px] truncate text-xs text-neutral-500 lg:block">{user?.email}</span>
+              <NotificationBellPopover viewAllPath={ADMIN_NOTIFICATIONS_PATH} preferAdminRoutes />
               <div className="md:hidden">
                 <MobileMenuButton />
               </div>
@@ -79,7 +71,7 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
           </div>
         </header>
         <div className="flex min-h-0 flex-1">
-          <aside className="product-sidebar-scroll hidden w-[220px] shrink-0 overflow-y-auto border-r border-gray-200 bg-white p-3 md:block">
+          <aside className="product-sidebar-scroll hidden w-[220px] shrink-0 overflow-y-auto border-r border-neutral-200/80 bg-white p-3 md:block lg:w-[240px]">
             <AdminConsoleSidebar
               pathname={location.pathname}
               unreadNotifications={unreadNotifications}
@@ -89,7 +81,7 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
             />
           </aside>
           <div className={`${APP_SCROLL_BODY_CLASS} min-h-0 flex-1 px-4 py-5 sm:px-6`}>
-            <main className="mx-auto max-w-6xl">{children}</main>
+            <main className="mx-auto max-w-6xl animate-fade-up">{children}</main>
           </div>
         </div>
       </div>

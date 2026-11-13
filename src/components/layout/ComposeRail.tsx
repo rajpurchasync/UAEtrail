@@ -9,13 +9,15 @@ export const ComposeRail = () => {
     <aside
       aria-hidden={!isOpen}
       {...(isOpen ? {} : { inert: true })}
-      className={`hidden md:flex shrink-0 flex-col bg-white border-l border-gray-100 overflow-hidden transition-[width] duration-300 ease-out ${
-        isOpen ? 'w-[min(28rem,42vw)]' : 'w-0 border-transparent pointer-events-none'
+      className={`hidden md:flex flex-col bg-white border-l border-gray-100 overflow-hidden transition-[width] duration-300 ease-out dark:border-neutral-800 dark:bg-neutral-950 ${
+        isOpen
+          ? 'w-[min(28rem,42vw)] shrink-0'
+          : 'w-0 min-w-0 shrink border-transparent pointer-events-none'
       }`}
     >
       <div
-        className={`flex flex-col h-full min-w-[min(28rem,42vw)] transition-opacity duration-200 ${
-          isOpen ? 'opacity-100' : 'opacity-0'
+        className={`flex h-full flex-col transition-opacity duration-200 ${
+          isOpen ? 'min-w-[min(28rem,42vw)] opacity-100' : 'min-w-0 opacity-0'
         }`}
       >
         <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-100 shrink-0">

@@ -82,7 +82,7 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 | `community` | Buddy host (no brand page) | Via activities/seeking only | Host on map | `/member/:userId` only |
 | `pro_guide` | Pro individual — same person as community, plus Pro membership | **No** person pin | Activity join / request | **`/member/:userId`** |
 | `agency` | Tour **operator** (company profile) | **No** agency pin | Activities + paid trips | `/agency/:slug`; linked users show **operator name** on member profile |
-| `shop` | Shop **operator** | **Yes** (shop pin) | Directions, contact, outbound website | `/shop/:id`; linked users show **operator name** on member profile |
+| `shop` | Shop **operator** | **Yes** (shop pin) | Directions, **opt-in** phone / in-app chat, outbound website | `/shop/:id`; linked users show **operator name** on member profile |
 | `hospitality` | Business Pro — hotels, venues | Often **yes** | Stays + linked campaigns (future) | TBD |
 | `partner` | **Partner** Pro path (top-level) | Often **yes** (campaign pin) | Campaigns + linked Activities (future) | `/partner/:slug` |
 
@@ -165,12 +165,14 @@ Member **Add** → typically `pending` + `unlisted`; public `/place` or `/facili
 | Activity | `/activity/:id` |
 | Submissions inventory | `/profile/submissions` |
 
-Redirects: `/trail`, `/camp`, `/venue`, `/event`, `/contributions` → canonical paths.
+Redirects: `/trail`, `/camp` → `/place/:id`. Event aliases (`/event`, `/event-spot`, `/community-activity`) → `/venue/:id`. `/place/:id` still serves any catalog place.
 
 #### Catalog reads (target)
 
 - `GET /places/catalog` — **places** only (`segment=place`); `purpose=organize_picker` \| `map` \| …
 - `GET /facilities/catalog` — amenities; filters `areaId`, `parentPlaceId`, `facilityKind`
+- `GET /explore/map?q=&country=&area=&venue=` — find spots/events by country, area, and venue **name** (`geoRef` + title text)
+- `GET /geo/tree` — hierarchy for explore search hints and **`/geo`** tree page; country URLs at `/geo/country/:code`; area hubs stay `/area/:slug`; geo node pages at `/geo/n/:id` (country / state / venue summaries). Event-venue consumer URL is **`/venue/:id`** (`placeDetailPath('event', id)`); `/place/:id` remains a working hub for all place kinds.
 
 Evolve from today’s `GET /places/registry` → **`GET /places/catalog`** (places only). Implementation map: `SYSTEM_COHERENCE.md` §8.4.9.
 
@@ -329,7 +331,7 @@ Explore URL builders live in `src/explore/routing.ts` (re-exported from `config/
 |-------|-------------|-----|----------------|
 | **Browse (feed)** | `/explore?…` and optionally `/list?…` | Map-first discovery; topic + pin-kind filters (Trips, Looking for, Spots, Shops) live in **query**, not path segments | One read model: `GET /explore/map` (filters on query). `/list` uses the slim map projection (same Redis catalog, lighter nested fields). Client cache keys = **canonical serialized browse state** (`explorePath`, list URL state). **Catalog list** is `ListDiscoveryExperience` (thumbnails / list / calendar, date-sorted): full-screen `/list` on mobile and hamburger **Browse**; a resizable left drawer on desktop `/explore?list=1`. Inbound `/explore?list=1` / `browse=1` rewrite to `/list` on mobile only. **People** = `PeopleBrowsePanel` on the map (`view=people`). **Explorer cards (Activities):** `buildListFeedCards` → `listFeedPosterStandard.ts` + `listPosterPresentation.ts` (title/place/schedule from `ActivityDTO`; requirement pills from stored `requirements[]`). **Places category (`listCat=venues`):** location-bounded **venues + gear shops** (no separate list category for shops; legacy `listCat=shops` → Places + `filter=shop`). **Agencies** stay a separate list category (brand/operators, not map pins). Place facts persist on `locations`: `areaLabel` (+ synced `area:` tag), `childFriendly`, `accessibility`, `parkingLat`/`parkingLng` — set via member/host `POST …/locations` (`locationSubmitBodySchema`), admin place CRUD, and explore contribute publish. **Buddies** list/search bucket (`listCat=people`, `searchScope=people`, UI label Buddies) uses **member_discovery** roster (`ExploreMemberDiscoveryList`) — not demand/`GET /explore/map`; **Looking for** stays Trips sub-filter + map pill only. |
 | **Entity (document)** | `/activity/:id`, `/trail/:id`, `/venue/:id`, `/shop/:id`, `/agency/:slug`, `/member/:userId`, … | Share link, notification target, SEO snippet, per-record auth (`viewerAccess`) | Per-entity fetch + cache (`activity`, place, shop, tenant). **Not** used as “browse all hikes” hubs. |
-| **Personal (not public browse)** | `/plan`, `/profile/history`, `/profile` | Upcoming + goals; history + journey map; settings | `/me/*` APIs; separate from explore map payload. |
+| **Personal (not public browse)** | `/plan`, `/profile/history`, `/profile`, `/settings` | Upcoming + goals; history + journey map; profile hub; **app settings** (not `/profile/edit`) | `/me/*` APIs; separate from explore map payload. |
 
 **Do not add** parallel browse roots such as `/map`, `/activities` (catalog), `/places`, `/shops` as top-level **category pages** — that duplicates filters already expressed on `/explore` and `/list`, splits analytics, and invites divergent APIs. Legacy `/map` and `/activities` → redirect only ([`NAVIGATION.md`](./NAVIGATION.md)). **Mobile bottom nav:** five tabs (Trips · Venues · Plans · Crews · Chat) — Trips/Venues use **map + list projections**, not a sixth “List” tab; use `mobileFiveTabHomePath()` instead of ad hoc `/list` links in chrome.
 

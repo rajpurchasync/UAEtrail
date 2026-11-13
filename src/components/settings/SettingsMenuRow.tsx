@@ -53,7 +53,7 @@ export const SettingsMenuRow = ({
           {typeof badge === 'number' && badge > 99 ? '99+' : badge}
         </span>
       ) : null}
-      {to ? (
+      {to || onClick ? (
         <ChevronRight className="h-4 w-4 shrink-0 text-neutral-300" aria-hidden />
       ) : (
         <span className="w-4 shrink-0" aria-hidden />
@@ -84,6 +84,9 @@ export const SettingsMenuRow = ({
   );
 };
 
+export const SETTINGS_MOBILE_CARD_CLASS =
+  'settings-menu-rows overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-sm';
+
 export const SettingsMenuGroup = ({
   children,
   title,
@@ -95,8 +98,24 @@ export const SettingsMenuGroup = ({
     {title ? (
       <p className="mb-0.5 px-0.5 text-[11px] font-bold uppercase tracking-wide text-neutral-500">{title}</p>
     ) : null}
-    <div className="settings-menu-rows overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-sm">
-      {children}
-    </div>
+    <div className={SETTINGS_MOBILE_CARD_CLASS}>{children}</div>
+  </div>
+);
+
+/** Padded content panel matching the mobile settings hub card (not desktop detail borders). */
+export const SettingsContentGroup = ({
+  children,
+  title,
+  className = '',
+}: {
+  children: React.ReactNode;
+  title?: string;
+  className?: string;
+}) => (
+  <div className={`space-y-1 ${className}`.trim()}>
+    {title ? (
+      <p className="mb-0.5 px-0.5 text-[11px] font-bold uppercase tracking-wide text-neutral-500">{title}</p>
+    ) : null}
+    <div className={`${SETTINGS_MOBILE_CARD_CLASS} px-4 py-3`}>{children}</div>
   </div>
 );

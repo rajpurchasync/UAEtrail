@@ -108,9 +108,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     void bootstrapSessionFromRefresh()
       .then((session) => {
         if (!session?.accessToken) {
-          setStoredUser(null);
-          setUser(null);
-          applySignedOutTheme();
+          // No access token yet (API blip) — keep cached user; do not sign out.
+          // Next authenticated call will retry refresh. Only wipe when refresh returns unauthorized.
           return null;
         }
         return fetchMeProfileAuth();
@@ -132,10 +131,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         applyDisplayPreferences();
       })
       .catch(() => {
-        setStoredSession(null);
-        setStoredUser(null);
-        setUser(null);
-        applySignedOutTheme();
+        // Profile fetch failed after a successful refresh — keep cached user; avoid forced logout.
       })
       .finally(() => {
         setInitializing(false);

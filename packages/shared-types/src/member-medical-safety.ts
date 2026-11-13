@@ -16,11 +16,27 @@ export type BloodGroup = (typeof BLOOD_GROUP_VALUES)[number];
 /** Wire value when member has no conditions to declare. */
 export const MEDICAL_CONDITIONS_NA = 'N/A';
 
+/** Common ICE relation labels (also used for family kid contacts). */
+export const EMERGENCY_CONTACT_RELATION_VALUES = [
+  'Spouse',
+  'Partner',
+  'Parent',
+  'Mother',
+  'Father',
+  'Sibling',
+  'Friend',
+  'Guardian',
+  'Other',
+] as const;
+
+export type EmergencyContactRelation = (typeof EMERGENCY_CONTACT_RELATION_VALUES)[number];
+
 export type MemberMedicalSafetyFields = {
   bloodGroup?: BloodGroup | null;
   medicalConditions?: string | null;
   emergencyContactName?: string | null;
   emergencyContactPhone?: string | null;
+  emergencyContactRelation?: string | null;
 };
 
 export type MemberMedicalSafetyDTO = {
@@ -28,6 +44,7 @@ export type MemberMedicalSafetyDTO = {
   medicalConditions: string;
   emergencyContactName: string;
   emergencyContactPhone: string;
+  emergencyContactRelation: string;
 };
 
 export const isMedicalSafetyProfileComplete = (
@@ -41,6 +58,8 @@ export const isMedicalSafetyProfileComplete = (
   if (!name || name.length < 2) return false;
   const phone = profile?.emergencyContactPhone?.trim();
   if (!phone || phone.length < 8) return false;
+  const relation = profile?.emergencyContactRelation?.trim();
+  if (!relation || relation.length < 1) return false;
   return true;
 };
 
@@ -53,6 +72,7 @@ export const toMemberMedicalSafetyDto = (
     medicalConditions: profile!.medicalConditions!.trim(),
     emergencyContactName: profile!.emergencyContactName!.trim(),
     emergencyContactPhone: profile!.emergencyContactPhone!.trim(),
+    emergencyContactRelation: profile!.emergencyContactRelation!.trim(),
   };
 };
 

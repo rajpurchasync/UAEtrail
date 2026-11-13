@@ -99,6 +99,7 @@ export const patchAuthenticatedMedicalSafetyProfile = async (
     medicalConditions: normalizeMedicalConditions(data.medicalConditions),
     emergencyContactName: data.emergencyContactName.trim(),
     emergencyContactPhone: data.emergencyContactPhone.trim(),
+    emergencyContactRelation: data.emergencyContactRelation.trim(),
   });
   const user = await findAuthUserById(userId);
   const fields = medicalSafetyFieldsFromAuthProfile(user?.profile);
@@ -107,6 +108,7 @@ export const patchAuthenticatedMedicalSafetyProfile = async (
     medicalConditions: user?.profile?.medicalConditions ?? null,
     emergencyContactName: user?.profile?.emergencyContactName ?? null,
     emergencyContactPhone: user?.profile?.emergencyContactPhone ?? null,
+    emergencyContactRelation: user?.profile?.emergencyContactRelation ?? null,
     medicalSafetyProfileComplete: isMedicalSafetyProfileComplete(fields),
   };
 };

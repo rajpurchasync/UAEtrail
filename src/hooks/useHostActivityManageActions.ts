@@ -5,10 +5,13 @@ import {
   cancelActivity as cancelTenantActivity,
   duplicateActivity as duplicateTenantActivity,
   publishActivity as publishTenantActivity,
+  resumeActivity as resumeTenantActivity,
+  suspendActivity as suspendTenantActivity,
 } from './tenantActivityClientApi';
 import { navigateToCreateLinkedRideshare } from '../explore/navigateCreateLinkedRideshare';
 import { navigateToHostFromExistingActivity } from '../explore/navigateHostFromExistingActivity';
 import { openPublishedActivityPreview } from '../components/activities';
+import { useInvalidatePublishingWorkspace } from './publishingWorkspaceQueries';
 import { useReloadExploreMap } from './useReloadExploreMap';
 import { openActivityGroupChat } from '../utils/openActivityGroupChat';
 
@@ -19,15 +22,18 @@ export function useHostActivityManageActions(
 ) {
   const navigate = useNavigate();
   const reloadExploreMap = useReloadExploreMap();
+  const invalidateWorkspace = useInvalidatePublishingWorkspace(tenantId);
   const [confirmCancel, setConfirmCancel] = useState<ActivityDTO | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<ActivityDTO | null>(null);
+  const [confirmSuspend, setConfirmSuspend] = useState<ActivityDTO | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const afterChange = useCallback(async () => {
+    invalidateWorkspace();
     await reloadExploreMap();
     await onActivitiesChanged?.();
-  }, [onActivitiesChanged, reloadExploreMap]);
+  }, [invalidateWorkspace, onActivitiesChanged, reloadExploreMap]);
 
   const openGroupChat = useCallback(
     async (
@@ -127,11 +133,51 @@ export function useHostActivityManageActions(
       setConfirmDelete(null);
       await afterChange();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not delete draft.');
+      setError(
+        err instanceof Error
+          ? err.message
+          : confirmDelete.status === 'suspended'
+            ? 'Could not delete outing.'
+            : 'Could not delete draft.'
+      );
     } finally {
       setBusy(false);
     }
   }, [afterChange, confirmDelete, tenantId]);
+
+  const confirmSuspendActivity = useCallback(async () => {
+    if (!tenantId || !confirmSuspend) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await suspendTenantActivity(tenantId, confirmSuspend.id);
+      setConfirmSuspend(null);
+      await afterChange();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not suspend outing.');
+    } finally {
+      setBusy(false);
+    }
+  }, [afterChange, confirmSuspend, tenantId]);
+
+  const resumeActivity = useCallback(
+    async (activity: ActivityDTO): Promise<boolean> => {
+      if (!tenantId) return false;
+      setBusy(true);
+      setError(null);
+      try {
+        await resumeTenantActivity(tenantId, activity.id);
+        await afterChange();
+        return true;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Could not resume outing.');
+        return false;
+      } finally {
+        setBusy(false);
+      }
+    },
+    [afterChange, tenantId]
+  );
 
   return {
     busy,
@@ -141,8 +187,12 @@ export function useHostActivityManageActions(
     setConfirmCancel,
     confirmDelete,
     setConfirmDelete,
+    confirmSuspend,
+    setConfirmSuspend,
     confirmCancelActivity,
     confirmDeleteDraft,
+    confirmSuspendActivity,
+    resumeActivity,
     openGroupChat,
     publishActivity,
     duplicateActivity,

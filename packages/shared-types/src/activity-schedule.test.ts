@@ -2,9 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   activityInstantHasEnded,
   activityScheduleHasEnded,
-  activityScheduleIncludesDate,
-  activityScheduleOverlapsRange,
-  activityScheduleSpanLabel,
+  gccCalendarDate,
 } from './activity-schedule.js';
 
 describe('activity-schedule', () => {
@@ -37,24 +35,6 @@ describe('activity-schedule', () => {
     ).toBe(false);
   });
 
-  it('formats schedule span and overlap helpers', () => {
-    expect(activityScheduleSpanLabel('2026-11-10', '2026-11-10')).toBe('Same day');
-    expect(activityScheduleSpanLabel('2026-11-10', '2026-11-12')).toBe('3 days');
-    expect(activityScheduleSpanLabel(undefined as unknown as string)).toBe('Same day');
-    expect(activityScheduleIncludesDate({ date: '2026-11-10', endDate: '2026-11-12' }, '2026-11-11')).toBe(
-      true
-    );
-    expect(activityScheduleIncludesDate({ date: '2026-11-10', endDate: '2026-11-12' }, '2026-11-13')).toBe(
-      false
-    );
-    expect(
-      activityScheduleOverlapsRange('2026-11-10', '2026-11-14', '2026-11-12', '2026-11-13')
-    ).toBe(true);
-    expect(
-      activityScheduleOverlapsRange('2026-11-10', '2026-11-14', '2026-11-15', '2026-11-16')
-    ).toBe(false);
-  });
-
   it('activityScheduleHasEnded uses endDate when present', () => {
     const farFuture = '2099-06-01';
     expect(
@@ -75,5 +55,12 @@ describe('activity-schedule', () => {
         countryCode: 'AE',
       })
     ).toBe(true);
+  });
+
+  it('gccCalendarDate keeps YYYY-MM-DD and converts ISO instants in Asia/Dubai', () => {
+    expect(gccCalendarDate('2026-11-06', 'AE')).toBe('2026-11-06');
+    expect(gccCalendarDate('2026-11-05T22:00:00.000Z', 'AE')).toBe('2026-11-06');
+    expect(gccCalendarDate(new Date('2026-11-05T22:00:00.000Z'), 'AE')).toBe('2026-11-06');
+    expect(gccCalendarDate('not-a-date', 'AE')).toBe('not-a-date');
   });
 });

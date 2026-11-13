@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { ApiError } from '../../lib/api-error.js';
 import { validate } from '../../middleware/validate.js';
 import { findMerchantPublicById } from '../../services/shop-public-read.js';
-import { idParamSchema } from './shop-route-schemas.js';
+import { idParamSchema, serializeMerchantPublicProfile } from './shop-route-schemas.js';
 
 async function handleShopPublic(
   req: { params: z.infer<typeof idParamSchema> },
@@ -16,30 +16,16 @@ async function handleShopPublic(
     if (!merchant) throw new ApiError(404, 'merchant_not_found', 'Shop not found.');
 
     res.json({
-      data: {
-        id: merchant.id,
-        shopId: merchant.id,
-        tenantId: merchant.tenantId ?? null,
-        shopName: merchant.shopName,
-        description: merchant.description,
-        logo: merchant.logo,
-        contactEmail: merchant.contactEmail,
-        contactPhone: merchant.contactPhone,
-        latitude: merchant.latitude,
-        longitude: merchant.longitude,
-        region: merchant.region,
-        contactPersonName: merchant.contactPersonName ?? null,
-        contactPersonAvatar: merchant.contactPersonAvatar ?? null,
-        contactPersonUserId: merchant.contactPersonUserId ?? null,
-        websiteUrl: merchant.websiteUrl ?? null,
-      },
+      data: serializeMerchantPublicProfile(merchant),
     });
   } catch (error) {
     next(error);
   }
 }
 
-/** Public storefront (`GET /shop/shops/:id`). */
+/** Public storefront (`GET /shop/shops/:id`; `/merchants/:id` alias). */
 export const registerShopPublicRoutes = (router: Router): void => {
+  router.get('/merchants/:id', validate({ params: idParamSchema }), handleShopPublic);
+  /** Preferred public path — live alias of `/merchants/:id`. */
   router.get('/shops/:id', validate({ params: idParamSchema }), handleShopPublic);
 };

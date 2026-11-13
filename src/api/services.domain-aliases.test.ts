@@ -6,7 +6,9 @@ describe('api canonical surface', () => {
   it('exposes place and explore entrypoints', () => {
     expect(typeof api.getPublicPlaces).toBe('function');
     expect(typeof api.fetchPlaceCatalog).toBe('function');
+    expect(typeof api.getWeatherForecast).toBe('function');
     expect(typeof api.getPublicPlaceDetail).toBe('function');
+    expect(typeof api.getPublicPlaceTrackPreview).toBe('function');
     expect(typeof api.submitOrganisationPlace).toBe('function');
     expect(typeof api.submitPlace).toBe('function');
   });
@@ -18,6 +20,8 @@ describe('api canonical surface', () => {
     expect(typeof api.getMemberStatus).toBe('function');
     expect(typeof api.listActivities).toBe('function');
     expect(typeof api.publishActivity).toBe('function');
+    expect(typeof api.suspendActivity).toBe('function');
+    expect(typeof api.resumeActivity).toBe('function');
     expect(typeof api.cancelActivity).toBe('function');
     expect(typeof api.createActivity).toBe('function');
     expect(typeof api.updateActivity).toBe('function');

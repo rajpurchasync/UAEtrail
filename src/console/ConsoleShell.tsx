@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { fetchOrganisationReviews } from '../hooks/organisationConsoleApi';
 import { getActiveTenantId } from '../api/tenant';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
+import { ConsumerHeaderActions } from '../components/layout/ConsumerHeaderActions';
 import { FilterChips } from '../components/mobile/FilterChips';
 import { PUBLISHING_CONSOLE_LINKS } from '../constants';
 import { PUBLISHING_PROFILE_PATH } from '../config/routingCatalog';
@@ -58,13 +59,17 @@ export const ConsoleShell = ({ title, children, cta, headerExtra }: ConsoleShell
       showJourney={false}
       back={backChrome}
       action={
-        avgRating !== null ? (
-          <ConsoleRatingChip
-            rating={avgRating}
-            reviewCount={reviewCount}
-            onClick={() => navigate(PUBLISHING_PROFILE_PATH)}
-          />
-        ) : undefined
+        <div className="flex shrink-0 items-center gap-0.5">
+          {avgRating !== null ? (
+            <ConsoleRatingChip
+              rating={avgRating}
+              reviewCount={reviewCount}
+              onClick={() => navigate(PUBLISHING_PROFILE_PATH)}
+            />
+          ) : null}
+          {/* Publishing chrome hides global consumer hamburger — keep drawer on console headers. */}
+          <ConsumerHeaderActions showOnDesktop={false} />
+        </div>
       }
       toolbar={
         <div className="space-y-3">

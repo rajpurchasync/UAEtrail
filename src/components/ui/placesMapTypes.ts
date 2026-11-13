@@ -17,6 +17,8 @@ export interface PlaceMapPin {
   stackCount?: number;
   colocatedEntries?: ColocatedMapPinEntry[];
   placeKind?: PlaceKind;
+  /** ISO date (YYYY-MM-DD) for hosted / seeking outing pins — map hover tooltip. */
+  scheduleDate?: string | null;
 }
 
 export interface ColocatedMapPinEntry {

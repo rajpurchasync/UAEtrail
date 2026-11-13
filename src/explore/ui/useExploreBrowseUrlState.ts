@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, type SetURLSearchParams } from 'react-router-dom';
 import { listDiscoveryPathFromExploreSearch } from '../../list/routing';
-import { writeMobileFiveTabProjection } from '../../config/mobileFiveTabNav';
 import { exploreMapMobileBackState } from '../../utils/mobileBackNav';
 import { MAP_FILTER_PILLS } from '../../config/exploreMapFilters';
 import {
@@ -25,6 +24,7 @@ import {
   type ExploreBrowseUrlHydratedState,
 } from '../exploreBrowseUrlHydrate';
 import { useExploreBrowseUrlInboundMigrations } from './useExploreBrowseUrlInboundMigrations';
+import { useExploreBrowsePeekDismissOnFilterChange } from './useExploreBrowsePeekDismissOnFilterChange';
 import { useExploreBrowseUrlApplyHandlers } from './useExploreBrowseUrlApplyHandlers';
 import type { BuddiesDiscoverySegment } from '../../list/buddiesDiscoverySegment';
 import type { ExplorePinKindFilter } from '../explorePinKindFilter';
@@ -32,9 +32,6 @@ import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
-import type { PlaceKind } from '@uaetrail/shared-types';
-import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
-import type { ExplorePriceFilter } from '../exploreOptionalFilters';
 
 export type { ExploreBrowseListMode } from '../exploreBrowseUrlSync';
 
@@ -78,11 +75,6 @@ export const useExploreBrowseUrlState = ({
   const [outingTopic, setOutingTopic] = useState<ExploreOutingTopicKey>(initial.outingTopic);
   const [pinKind, setPinKind] = useState<ExplorePinKindFilter>(initial.pinKind);
   const [topicPills, setTopicPills] = useState<ExploreMapFilterPillKey[]>(initial.topicPills);
-  const [tripMapTopics, setTripMapTopics] = useState<TripMapTopicKey[]>(initial.tripMapTopics);
-  const [placeMapTopics, setPlaceMapTopics] = useState<PlaceMapTopicKey[]>(initial.placeMapTopics);
-  const [priceFilter, setPriceFilter] = useState<ExplorePriceFilter>(initial.priceFilter);
-  const [hasTrip, setHasTrip] = useState(initial.hasTrip);
-  const [facilityKinds, setFacilityKinds] = useState<PlaceKind[]>(initial.facilityKinds);
   const [listMode, setListMode] = useState<ExploreBrowseListMode>(initial.listMode);
   const [peopleBrowseOpen, setPeopleBrowseOpen] = useState(initial.peopleBrowseOpen);
   const [searchScope, setSearchScope] = useState<ExploreSearchScopeKey | null>(initial.searchScope);
@@ -111,11 +103,6 @@ export const useExploreBrowseUrlState = ({
           outingTopic,
           pinKind,
           topicPills,
-          tripMapTopics,
-          placeMapTopics,
-          priceFilter,
-          hasTrip,
-          facilityKinds,
           listMode,
           peopleBrowseOpen,
           searchScope,
@@ -140,11 +127,6 @@ export const useExploreBrowseUrlState = ({
       outingTopic,
       pinKind,
       topicPills,
-      tripMapTopics,
-      placeMapTopics,
-      priceFilter,
-      hasTrip,
-      facilityKinds,
       listMode,
       peopleBrowseOpen,
       searchScope,
@@ -170,11 +152,6 @@ export const useExploreBrowseUrlState = ({
     setOutingTopic(state.outingTopic);
     setPinKind(state.pinKind);
     setTopicPills(state.topicPills);
-    setTripMapTopics(state.tripMapTopics);
-    setPlaceMapTopics(state.placeMapTopics);
-    setPriceFilter(state.priceFilter);
-    setHasTrip(state.hasTrip);
-    setFacilityKinds(state.facilityKinds);
     setListMode(state.listMode);
     setPeopleBrowseOpen(state.peopleBrowseOpen);
     setSearchScope(state.searchScope);
@@ -188,7 +165,8 @@ export const useExploreBrowseUrlState = ({
   useEffect(() => {
     applyHydratedState(clampGuestPeopleBrowse(parseExploreBrowseStateFromSearchParams(searchParams, isDesktop), isSignedIn));
   }, [searchParams, isDesktop, isSignedIn, applyHydratedState]);
-  useExploreBrowseUrlInboundMigrations({ searchParams, setSearchParams, isDesktop, isSignedIn });
+  useExploreBrowsePeekDismissOnFilterChange(searchParams, clearSelection);
+  useExploreBrowseUrlInboundMigrations({ searchParams, setSearchParams, isDesktop });
   const browseSetters = useMemo(
     () => ({
       setMapFilter,
@@ -210,19 +188,12 @@ export const useExploreBrowseUrlState = ({
       setActivityModeFilter,
       setVenueRegions,
       setSearchScope,
-      setTripMapTopics,
-      setPlaceMapTopics,
-      setPriceFilter,
-      setHasTrip,
-      setFacilityKinds,
     }),
     []
   );
 
   const handlers = useExploreBrowseUrlApplyHandlers({
-    isDesktop,
-    isSignedIn,
-    navigate,
+    isDesktop, isSignedIn,
     clearSelection,
     syncExploreUrl,
     listOpen,
@@ -232,10 +203,6 @@ export const useExploreBrowseUrlState = ({
     buddySubtype,
     outingTopic,
     topicPills,
-    tripMapTopics,
-    placeMapTopics,
-    activityFilter,
-    venueFilter,
     query,
     searchScope,
     listMode,
@@ -251,16 +218,14 @@ export const useExploreBrowseUrlState = ({
       syncExploreUrl({ list: true, listMode: 'default', peopleBrowseOpen: false });
       return;
     }
-    const discoveryTab = panel === 'venues' || panel === 'shops' ? 'venues' : 'trips';
-    writeMobileFiveTabProjection(discoveryTab, 'list');
     const current = `${location.pathname}${location.search}`;
     navigate(listDiscoveryPathFromExploreSearch(searchParams.toString()), {
       state: exploreMapMobileBackState(current),
     });
-  }, [clearSelection, isDesktop, location.pathname, location.search, navigate, panel, searchParams, syncExploreUrl]);
+  }, [clearSelection, isDesktop, location.pathname, location.search, navigate, searchParams, syncExploreUrl]);
 
   const showListPanel = listOpen && listMode === 'people';
-  const showDesktopCatalogDrawer = isDesktop && listOpen && listMode !== 'people';
+  const showDesktopCatalogDrawer = isDesktop && !peopleBrowseOpen;
   const sidebarPanel: ExplorePanel = isDesktop
     ? panel === 'venues'
       ? 'venues'
@@ -302,11 +267,6 @@ export const useExploreBrowseUrlState = ({
     setQuery,
     venueFilter,
     venueRegions,
-    tripMapTopics,
-    placeMapTopics,
-    priceFilter,
-    hasTrip,
-    facilityKinds,
     desktopBrowseTab,
     searchExpanded,
     setSearchExpanded,
@@ -334,14 +294,6 @@ export const useExploreBrowseUrlState = ({
     browseFilterKeys,
     placesMode,
     applyVenueRegions: handlers.applyVenueRegions,
-    toggleTripMapTopic: handlers.toggleTripMapTopic,
-    togglePlaceMapTopic: handlers.togglePlaceMapTopic,
-    applyTripMapTopics: handlers.applyTripMapTopics,
-    applyPlaceMapTopics: handlers.applyPlaceMapTopics,
-    applyVenueFilters: handlers.applyVenueFilters,
-    applyPriceFilter: handlers.applyPriceFilter,
-    applyHasTrip: handlers.applyHasTrip,
-    applyFacilityKinds: handlers.applyFacilityKinds,
     buddySubtype,
     applyBuddySubtype: handlers.applyBuddySubtype,
     outingTopic,

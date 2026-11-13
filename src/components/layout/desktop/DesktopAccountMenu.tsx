@@ -1,10 +1,14 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronDown, LogOut, RefreshCw, Shield } from 'lucide-react';
-import { ADMIN_OVERVIEW_PATH, EXPLORE_MAP_PATH, PROFILE_PATH } from '../../../config/routingCatalog';
+import { ADMIN_INBOX_PATH, PROFILE_PATH } from '../../../config/routingCatalog';
 import { useAuth } from '../../../context/AuthContext';
 import { persistAuthSessionTokens, switchMeRoleSession } from '../../../hooks/accountSessionApi';
-import { accountRouteByRole } from '../../../utils/authRouting';
+import { switchToHostLabel } from '../../../hosting/hostingHubRouting';
+import {
+  navigateToHostModeHome,
+  navigateToVisitorHome,
+} from '../../../hosting/navigateHostRoleHome';
 import { SecureAvatar } from '../../ui/SecureAvatar';
 
 const itemClass =
@@ -48,12 +52,11 @@ export const DesktopAccountMenu = () => {
       const res = await switchMeRoleSession(target);
       persistAuthSessionTokens(res.tokens);
       await refreshUser();
-      navigate(
-        target === 'participant'
-          ? EXPLORE_MAP_PATH
-          : accountRouteByRole(res.data.role as Parameters<typeof accountRouteByRole>[0]),
-        { replace: true }
-      );
+      if (target === 'participant') {
+        navigateToVisitorHome(navigate);
+        return;
+      }
+      await navigateToHostModeHome(navigate, res.data.role);
     } catch {
       /* noop */
     }
@@ -97,7 +100,7 @@ export const DesktopAccountMenu = () => {
           </Link>
           <div className="my-1.5 border-t border-neutral-100" role="presentation" />
           {user.role === 'platform_admin' ? (
-            <Link to={ADMIN_OVERVIEW_PATH} role="menuitem" className={itemClass}>
+            <Link to={ADMIN_INBOX_PATH} role="menuitem" className={itemClass}>
               <Shield className="h-4 w-4 text-neutral-500" aria-hidden />
               Admin console
             </Link>
@@ -105,9 +108,7 @@ export const DesktopAccountMenu = () => {
           {canSwitchBack ? (
             <button type="button" role="menuitem" onClick={() => void switchRole('original')} className={itemClass}>
               <RefreshCw className="h-4 w-4 text-neutral-500" aria-hidden />
-              {user.switchedFromRole === 'platform_admin'
-                ? 'Switch to admin'
-                : `Restore ${user.switchedFromRole?.replace(/_/g, ' ')}`}
+              {switchToHostLabel(user.switchedFromRole)}
             </button>
           ) : null}
           <div className="my-1.5 border-t border-neutral-100" role="presentation" />

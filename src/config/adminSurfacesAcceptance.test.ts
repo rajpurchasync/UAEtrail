@@ -7,8 +7,8 @@ const ROOT = process.cwd();
 const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
 
 /**
- * Canonical platform admin routes (S13-W9) — sync with `App.tsx`, `ADMIN_LINKS`, `docs/NAVIGATION.md`.
- * Notifications is routed but not in sidebar nav (ops deep link).
+ * Canonical platform admin routes — sync with `AppRoutes`, `ADMIN_LINKS`, `docs/NAVIGATION.md`.
+ * Notifications is routed in Ops group but counted separately for badge UX.
  */
 export const ADMIN_PLATFORM_ROUTE_CATALOG: Array<{
   path: string;
@@ -16,17 +16,19 @@ export const ADMIN_PLATFORM_ROUTE_CATALOG: Array<{
   element: string;
   inSidebar: boolean;
 }> = [
-  { path: '/admin/overview', page: 'admin/Overview.tsx', element: 'AdminOverview', inSidebar: true },
-  { path: '/admin/activities', page: 'admin/Activities.tsx', element: 'AdminActivities', inSidebar: true },
-  { path: '/admin/areas', page: 'admin/Areas.tsx', element: 'AdminAreas', inSidebar: true },
+  { path: '/admin/inbox', page: 'admin/Inbox.tsx', element: 'AdminInbox', inSidebar: true },
+  { path: '/admin/inbox/submissions', page: 'admin/Submissions.tsx', element: 'AdminSubmissions', inSidebar: true },
+  { path: '/admin/hosts', page: 'admin/Organisations.tsx', element: 'AdminOrganisations', inSidebar: true },
+  { path: '/admin/reports', page: 'admin/Reports.tsx', element: 'AdminReports', inSidebar: true },
+  { path: '/admin/alerts', page: 'admin/Alerts.tsx', element: 'AdminAlerts', inSidebar: true },
   { path: '/admin/places', page: 'admin/Places.tsx', element: 'AdminPlaces', inSidebar: true },
   { path: '/admin/facilities', page: 'admin/Places.tsx', element: 'AdminPlaces', inSidebar: true },
+  { path: '/admin/areas', page: 'admin/Areas.tsx', element: 'AdminAreas', inSidebar: true },
   { path: '/admin/users', page: 'admin/Members.tsx', element: 'AdminMembers', inSidebar: true },
-  { path: '/admin/hosts', page: 'admin/Organisations.tsx', element: 'AdminOrganisations', inSidebar: true },
   { path: '/admin/groups', page: 'admin/Groups.tsx', element: 'AdminGroups', inSidebar: true },
-  { path: '/admin/reports', page: 'admin/Reports.tsx', element: 'AdminReports', inSidebar: true },
-  { path: '/admin/audit-log', page: 'admin/AuditLog.tsx', element: 'AdminAuditLog', inSidebar: true },
+  { path: '/admin/activities', page: 'admin/Activities.tsx', element: 'AdminActivities', inSidebar: true },
   { path: '/admin/settings', page: 'admin/Settings.tsx', element: 'AdminSettings', inSidebar: true },
+  { path: '/admin/audit-log', page: 'admin/AuditLog.tsx', element: 'AdminAuditLog', inSidebar: true },
   { path: '/admin/account', page: 'admin/Account.tsx', element: 'AdminAccount', inSidebar: true },
   { path: '/admin/notifications', page: 'admin/Notifications.tsx', element: 'AdminNotifications', inSidebar: false },
 ];

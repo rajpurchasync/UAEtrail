@@ -43,7 +43,9 @@ const LauncherTile = ({ item }: { item: ProfileQuickLauncherItem }) => {
           </span>
         ) : null}
       </span>
-      <span className="text-[11px] font-semibold leading-tight text-neutral-800">{item.label}</span>
+      <span className="text-[11px] font-semibold leading-tight text-neutral-800 dark:text-neutral-100">
+        {item.label}
+      </span>
     </Link>
   );
 };
@@ -74,14 +76,14 @@ export const buildProfileQuickLauncherItems = (input: {
       label: 'People',
       to: listPeopleDiscoveryPath(),
       icon: UserRound,
-      iconWrapClassName: 'bg-emerald-50 text-emerald-800',
+      iconWrapClassName: 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200',
     },
     {
       key: 'friends',
       label: 'Friends',
       to: BUDDIES_PATH,
       icon: Users,
-      iconWrapClassName: 'bg-blue-50 text-blue-700',
+      iconWrapClassName: 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-200',
       badge: input.buddyBadge,
     },
     {
@@ -89,14 +91,14 @@ export const buildProfileQuickLauncherItems = (input: {
       label: 'Messages',
       to: MESSAGES_PATH,
       icon: MessageCircle,
-      iconWrapClassName: 'bg-violet-50 text-violet-700',
+      iconWrapClassName: 'bg-violet-50 text-violet-700 dark:bg-violet-950 dark:text-violet-200',
     },
     {
       key: 'badges',
       label: 'Badges',
       to: PROFILE_BADGES_PATH,
       icon: Award,
-      iconWrapClassName: 'bg-amber-50 text-amber-800',
+      iconWrapClassName: 'bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-200',
       badge: input.badgesEarnedCount > 0 ? input.badgesEarnedCount : undefined,
     },
     {
@@ -104,21 +106,21 @@ export const buildProfileQuickLauncherItems = (input: {
       label: 'History',
       to: PROFILE_HISTORY_PATH,
       icon: Backpack,
-      iconWrapClassName: 'bg-sky-50 text-sky-800',
+      iconWrapClassName: 'bg-sky-50 text-sky-800 dark:bg-sky-950 dark:text-sky-200',
     },
     {
       key: 'submissions',
       label: 'Submissions',
       to: PROFILE_SUBMISSIONS_PATH,
       icon: MapPin,
-      iconWrapClassName: 'bg-emerald-50 text-emerald-700',
+      iconWrapClassName: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-200',
     },
     {
       key: 'settings',
       label: 'Settings',
       to: PROFILE_SETTINGS_PATH,
       icon: Settings,
-      iconWrapClassName: 'bg-neutral-100 text-neutral-700',
+      iconWrapClassName: 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200',
     },
   ];
 
@@ -128,7 +130,7 @@ export const buildProfileQuickLauncherItems = (input: {
       label: 'Hosting',
       to: planHostedSchedulePath(),
       icon: Mountain,
-      iconWrapClassName: 'bg-violet-50 text-violet-700',
+      iconWrapClassName: 'bg-violet-50 text-violet-700 dark:bg-violet-950 dark:text-violet-200',
     });
   }
 

@@ -3,6 +3,7 @@ import { EXPLORE_MAP_PATH, MESSAGES_PATH, PLAN_PATH, PROFILE_PATH, PROFILE_EDIT_
 import {
   parseMobileBackNavState,
   exploreMapMobileBackState,
+  mobileUnifiedHeaderShowsProfileLeading,
   profileHubMobileBackState,
   resolveMobileBackChrome,
   resolveMobileTabHeaderLeadingBack,
@@ -34,8 +35,13 @@ describe('mobileBackNav', () => {
     expect(chrome.backBehavior).toBe('fallback');
   });
 
-  it('uses identity header on My Plans tab root (no back)', () => {
-    expect(resolveMobileTabHeaderLeadingBack(PLAN_PATH, null)).toBeNull();
+  it('sends My Plans back to Explore when nothing else in the flow is recorded', () => {
+    const chrome = resolveMobileTabHeaderLeadingBack(PLAN_PATH, null);
+    expect(chrome).toEqual({
+      fallbackTo: EXPLORE_MAP_PATH,
+      label: 'Explore',
+      backBehavior: 'fallback',
+    });
   });
 
   it('sends a My Plans drill-in back to My Plans', () => {
@@ -93,19 +99,24 @@ describe('mobileBackNav', () => {
     });
   });
 
-  it('uses identity header on chat inbox (no back)', () => {
-    expect(resolveMobileTabHeaderLeadingBack(MESSAGES_PATH, null)).toBeNull();
+  it('sends notification preferences and saved map back to Settings, not Notifications', () => {
+    expect(resolveMobileTabHeaderLeadingBack('/settings/notifications/preferences', null)).toEqual({
+      fallbackTo: PROFILE_SETTINGS_PATH,
+      label: 'Settings',
+      backBehavior: 'fallback',
+    });
+    expect(resolveMobileTabHeaderLeadingBack('/settings/notifications/saved', null)).toEqual({
+      fallbackTo: PROFILE_SETTINGS_PATH,
+      label: 'Settings',
+      backBehavior: 'fallback',
+    });
   });
 
-  it('respects custom return state when a chat thread is open', () => {
-    const chrome = resolveMobileTabHeaderLeadingBack(
-      MESSAGES_PATH,
-      {
-        from: '/activity/abc',
-        backLabel: 'Outing',
-      },
-      '?to=member-1'
-    );
+  it('respects custom return state on messages', () => {
+    const chrome = resolveMobileTabHeaderLeadingBack(MESSAGES_PATH, {
+      from: '/activity/abc',
+      backLabel: 'Outing',
+    });
     expect(chrome?.label).toBe('Outing');
     expect(chrome?.fallbackTo).toBe('/activity/abc');
     expect(chrome?.backBehavior).toBe('fallback');
@@ -120,12 +131,44 @@ describe('mobileBackNav', () => {
     });
   });
 
-  it('sends Friends back to the profile hub', () => {
+  it('sends Social hub back to the profile hub', () => {
     const chrome = resolveMobileTabHeaderLeadingBack('/buddies', null);
     expect(chrome).toEqual({
       fallbackTo: PROFILE_PATH,
       label: 'Profile',
       backBehavior: 'fallback',
     });
+  });
+
+  it('sends Social child screens back to Social', () => {
+    expect(resolveMobileTabHeaderLeadingBack('/buddies', null, '?section=friends')).toEqual({
+      fallbackTo: '/buddies',
+      label: 'Social',
+      backBehavior: 'fallback',
+    });
+    expect(resolveMobileTabHeaderLeadingBack('/groups', null)).toEqual({
+      fallbackTo: '/buddies',
+      label: 'Social',
+      backBehavior: 'fallback',
+    });
+    expect(resolveMobileTabHeaderLeadingBack('/groups', null, '?group=g1')).toEqual({
+      fallbackTo: '/groups',
+      label: 'Groups',
+      backBehavior: 'fallback',
+    });
+    expect(resolveMobileTabHeaderLeadingBack('/groups', null, '?group=g1&section=kids')).toEqual({
+      fallbackTo: '/groups?group=g1',
+      label: 'Group',
+      backBehavior: 'fallback',
+    });
+  });
+
+  it('profile avatar leading only on Explore and Profile roots', () => {
+    expect(mobileUnifiedHeaderShowsProfileLeading(PROFILE_PATH, null)).toBe(true);
+    expect(mobileUnifiedHeaderShowsProfileLeading(EXPLORE_MAP_PATH, null)).toBe(true);
+    expect(mobileUnifiedHeaderShowsProfileLeading(PLAN_PATH, null)).toBe(false);
+    expect(mobileUnifiedHeaderShowsProfileLeading(MESSAGES_PATH, null)).toBe(false);
+    expect(mobileUnifiedHeaderShowsProfileLeading('/buddies', null)).toBe(false);
+    expect(mobileUnifiedHeaderShowsProfileLeading('/settings', null)).toBe(false);
   });
 });

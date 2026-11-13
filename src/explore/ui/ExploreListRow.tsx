@@ -5,6 +5,7 @@ import { SecureAvatar } from '../../components/ui';
 import { formatExploreRelativeScheduleLabel } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { buildDiscoveryListMeta, discoveryCardToneTextClass } from '../../discovery/discoveryCardModel';
+import { DiscoveryViewerJoinStatusChip } from '../../discovery/DiscoveryViewerJoinStatusChip';
 import { EnvironmentImage } from '../../components/ui/EnvironmentImage';
 import { EXPLORE_LIST_ROW, EXPLORE_TYPE } from '../../config/exploreTheme';
 import { DiscoveryCardDetailList, DiscoveryCardLocationLink, DiscoveryCardRatingRow } from './DiscoveryCardPresentation';
@@ -159,6 +160,7 @@ export const ExploreListRow = ({
             </span>
           ) : null}
           {titleBlock}
+          <DiscoveryViewerJoinStatusChip card={card} className="mt-1" />
           {meta ? (
             <p className={`mt-0.5 ${metaClamp} text-sm font-medium leading-snug ${EXPLORE_TYPE.muted}`}>{meta}</p>
           ) : (

@@ -18,7 +18,7 @@ Code (today): `src/explore/compose.ts`, `CreateIntentSheet.tsx`, `SeekFlexibleCo
 
 **Status:** Spec **approved (CPC)** · **Host · Find crew · Add on map** FAB + v3 compose wire **shipped** (`host` \| `seek` \| `add` only; see [Implementation status](#implementation-status))
 
-**Last updated:** 2026-11-12
+**Last updated:** 2026-10-29
 
 ---
 
@@ -91,7 +91,7 @@ Kind grid (hiking, camping, rideshare, event, other activity) → hosting wizard
 
 **Hiking and camping** take the meeting point from the chosen spot or venue. Edit opens search, a map pin, or coordinate edit. **Hiking host wizard** starts with the title, when, an approved catalog venue, and the meeting point. **Hiking and event** **What to bring** is a packing checklist (must-have vs nice-to-have, with typical hiking kit defaults). **Strict** join requires ticking every must-have and a full-name digital signature; **Lenient** only shows the list. The last step before publish is where you live or start the drive. **Use my location** or an optional pin names the community and city (for example Al Barsha, Dubai). The consented coordinates are stored as `originLat` / `originLng` with `originLabel` so later matching can find people leaving from the same place. The label is what the host sees.
 
-**Host / publish** requires **profile completion** (`profileComplete` on `GET /me/status` — same member details as `/welcome`). `publish.canPublish` provisions a community tenant on first check. Gate failure → `/welcome?redirect=…` (not Pro Membership). **Join / participate** requires **sign-in** and a complete **safety profile** (`medicalSafetyProfileComplete` — `/profile/settings/safety`), not profile completion. **Rideshare host** selects a saved car (`/profile/vehicles`, `GET /me/vehicles`); riders see make, model, color, and year. **Community rideshare destination** (wizard **To** step) searches outing meeting points and approved catalog places (`GET /geo/rideshare-destinations`). A new place needs a hike/camp/spot kind, **a photo**, and a pin inside a published area (region and country come from that area) via `POST /me/places`; the ride stays in review until the place is approved. **Pro** hosts pin any destination on the map. Back from **My cars** or **Safety** during the wizard returns to the host step at the same scroll position with that control focused. **Pro membership** (`/profile/pro-membership`) adds a **guide**, **agency**, or **shop** public profile — not community Host / publish. **Paid** pricing (`canHostPaidActivities` = linked business tenant) requires publish-as **agency, shop, or partner**. Individual professionals (no business license on platform) stay **free + shared** only.
+**Host / publish** requires **profile completion** (`profileComplete` on `GET /me/status` — same member details as `/welcome`). `publish.canPublish` provisions a community tenant on first check. Gate failure → `/welcome?redirect=…` (not Pro Membership). **Join / participate** requires **sign-in** and a complete **safety profile** (`medicalSafetyProfileComplete` — `/settings/safety`), not profile completion. **Rideshare host** selects a saved car (`/profile/vehicles`, `GET /me/vehicles`); riders see make, model, color, and year. **Community rideshare destination** (wizard **To** step) searches outing meeting points and approved catalog places (`GET /geo/rideshare-destinations`). A new place needs a hike/camp/spot kind, **a photo**, and a pin inside a published area (region and country come from that area) via `POST /me/places`; the ride stays in review until the place is approved. **Pro** hosts pin any destination on the map. Back from **My cars** or **Safety** during the wizard returns to the host step at the same scroll position with that control focused. **Pro membership** (`/profile/pro-membership`) adds a **guide**, **agency**, or **shop** public profile — not community Host / publish. **Paid** pricing (`canHostPaidActivities` = linked business tenant) requires publish-as **agency, shop, or partner**. Individual professionals (no business license on platform) stay **free + shared** only.
 
 **Activity pricing (host / publish):** one mode per outing — `free` · `shared` · `paid` — with a single indicative AED amount when not free. **No tiered packages** and **no in-app payments** (amounts are informational; members settle with the host offline). **Who may set which mode** (`allowedActivityPricingModes`): everyone who can host → **free + shared**. **Paid** only when the member is **linked to a verified business** (`hostTiers.business`) **and** publishes as **agency, shop, or partner** — not as an individual guide (community / pro guide). External registration URLs are **parked** (not in product UI/API).
 
@@ -128,7 +128,7 @@ Any signed-in member — no host approval to post seeking.
 
 **Intent:** runs, climbs, workshops, social outings â€” fifth **outing category** (`activities`), not hiking/camp/event/rideshare.
 
-**Wizard:** `host:activity` → **FLOW-05** (step order in `hostingFlows/activities.ts`, UI in `hostingWizard/steps/` + `hostingWizard/bodies/activity/`):
+**Wizard:** `host:activity` → **FLOW-05** (step order in `hostingFlows/activities.ts`, UI in `hostingWizard/steps/`):
 
 1. **Activity type** â€” chip (run, climb, yoga, social, â€¦) â†’ `outingTopic` on publish
 2. **Title** â†’ **When** â†’ **Where (meeting)** pin early
@@ -204,9 +204,9 @@ participationMode: 'rsvp' | 'approval'
 
 **Full detail page vs map peek** is **not** `participationMode` or `joinMode` alone — it is **viewer access / detail exposure** (who may open `/activity/:id` with a full payload). Canonical model: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15. UI maps API `viewerAccess` via `src/access/resolvePeekDetailAccess.ts` — do not add client-side policy.
 
-**Consumer activity detail** (`/activity/:id`): **scroll layout** — published facts from the same L1 card as map peek (`buildActivityDetailPageShellCard`) + **Transport strip** (reachable by / vehicle lines from Host capture; **rideshare available** when linked; host **Offer rideshare** when entitled). No Plan/Place/Buddies/Transport tabs on the public route (default of `ActivityDetailView`; embed/manage sheet passes `layout="embedded"`). **Participation → crew:** RSVP → `canAccessCrewSurfaces: true` + welcome sheet; approval grants crew after host approve (`?joined=1`). Pending viewers see published facts + join CTAs only — no meeting precision or crew chat until entitled. **Pro** vs **host:** Pro unlocks roster / pre-join host profile / transport offer per Layer 7 — not `canPublish`; see [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
+**Consumer activity detail** (`/activity/:id`): **scroll layout** — published facts from the same L1 card as map peek (`buildActivityDetailPageShellCard`) + **Transport strip** (reachable by / vehicle lines from Host capture; **rideshare available** when linked; joined crew / host **Offer rideshare** when entitled). No Plan/Place/Buddies/Transport tabs on the public route (`consumerDetailLayout`; embed/manage sheet keeps tabbed `ActivityDetailView`). **Participation → crew:** RSVP → `canAccessCrewSurfaces: true` + welcome sheet; approval grants crew after host approve (`?joined=1`). Pending viewers see published facts + join CTAs only — no meeting precision or crew chat until entitled. **Pro** vs **host:** Pro unlocks roster / pre-join host profile per Layer 7 — not `canPublish`; transport create/link is crew/host (see [`MEMBER_MODEL.md`](./MEMBER_MODEL.md)).
 
-**Engagement policy (L1 shipped):** `resolveActivityEngagementPolicy` drives **explore** `mapPeekActions` / `mapPeekStrips` and **detail** `presentation` on `GET /activities/:id`. **Peek + detail CTAs:** wire ids only (`executeActivityMapPeekAction`). **FE:** public sections `ActivityDetailSections` — Getting there uses `ActivityPeekLinkedTransport`; peek `ActivityDiscoveryPublishedBody` in `MapPeekShell`. Navigation: [`NAVIGATION.md`](./NAVIGATION.md) § Activity detail.
+**Engagement policy (L1 shipped):** `resolveActivityEngagementPolicy` drives **explore** `mapPeekActions` / `mapPeekStrips` and **detail** `presentation` on `GET /activities/:id`. **Peek + detail CTAs:** wire ids only (`executeActivityMapPeekAction`). **FE:** consumer page `ActivityConsumerDetailPage` (alias `ActivityConsumerDetailBody`) — Getting there uses `ActivityPeekLinkedTransport`; peek `ActivityDiscoveryPublishedBody` in `MapPeekShell`. Navigation: [`NAVIGATION.md`](./NAVIGATION.md) § Activity detail.
 
 ---
 
@@ -259,7 +259,7 @@ Optional **published rideshare** linked to a **parent** plan (hiking, camping, o
 
 **Find → Link transport** prefill must set `linkToParentActivityId` to the **seeking activity id** (`resolveSeekingParentActivityId` in `linkActivityRideshareOffer.ts`). **Never** call `link-activity` when publishing `activityType: rideshare` (`hostingActivityPublish.ts`).
 
-**Gates:** profile `canPublish` to create transport; Pro `canOfferTransport` / `canAddLinkedRide` for peek/manage CTAs (see `activity-viewer-entitlements.ts`).
+**Gates:** profile `canPublish` to create transport; joined crew / host `canOfferTransport` / `canAddLinkedRide` for peek/manage CTAs (see `activity-viewer-entitlements.ts`). Ride host may unlink a linked parent outing from the ride detail.
 
 **Distinction:** Find wizard **Transport** step (“Rideshare needed”) = joiner metadata on the post. **Link rideshare** on peek = host publishes a **child** rideshare activity on the map.
 
@@ -314,16 +314,9 @@ Publish gate (API): `activity_area_required` when the linked place and the activ
 
 ### Find (looking for)
 
-Find crew is **availability / looking for company**, not a hosted trail pin.
+Dedicated step **Area & map pin**: choose registered **Area**, drop a pin → `POST /me/seeking-posts` **`areaId`** + coordinates. Seeking activity dual-write sets **`place.areaId`** on the synthetic location (not `activity.areaId`).
 
-| Step | Hiking / camping / activities | Rideshare |
-|------|-------------------------------|-----------|
-| **Preferred area** | Registered **Area** (places) — no destination pin | Same |
-| **Going from** | Required map pin (where they start) | Required **from** + **to** pins |
-
-`POST /me/seeking-posts` sends **`areaId`** plus going-from coordinates. Dual-write sets **`place.areaId`** on the synthetic location (not `activity.areaId`). **`preferredArea`** is the selected area’s name (copy), not an emirate chip and not a catalog trail.
-
-Area enables matching hosted outings in that area (notifications phased). The map pin is **going from**, not “this exact spot.”
+**`preferredArea`** (emirate chip on hiking/camp) is region copy only — not the **Area** registry id. Area + pin enables matching hosted outings in the same area (notifications phased).
 
 ---
 
@@ -346,7 +339,7 @@ Track what is **spec** vs **shipped**. Update this table in the same PR that lan
 | Warm copy pass in wizards | ✅ | ✅ |
 | `outingCategory` / `outingTopic` on host publish | ✅ | ✅ (host create; map projection + Others browse filters) |
 | Host **area via place** (registry `place.areaId` only) | ✅ | ✅ (`validateHostingPlaceArea`, publish gate) |
-| Find crew (fixed) **area + going from** | ✅ | ✅ (`curatedArea` area only; `from` pin; no trail destination) |
+| Find crew (fixed) **area + pin** step | ✅ | ✅ (`curatedArea`, seeking `activities.areaId`) |
 | Add on map place **area-first** | ✅ | ✅ (`curatedArea`, `areaId` on submit) |
 | Host **custom spot → admin review** (pin + photo; city from coords) | ✅ | ✅ (`PENDING_VENUE_PLACE_PREFIX`; auto-publish on place approve) |
 | Find crew (flexible) **Share availability** FAB sheet | ✅ | ✅ (`SeekFlexibleComposeSheet`, `PlanAvailabilitySection` variant `fab`) |
@@ -417,38 +410,17 @@ Do **not** ship Event Host with RSVP marketing until Phase C exists.
 | Copy + route contract | `src/explore/compose.ts`, `packages/shared-types/compose-route.ts` |
 | Compose URL + auth | `src/explore/create/hooks/useComposeRoute.ts`, `create/composeRouteGuard.ts` |
 | Hosting prefill / open | `create/hooks/useHostingWizardPrefill.ts`, `useHostingFromActivity.ts` |
-| Wizard host (FAB) | `create/ComposeHost.tsx`, `create/ComposeWizardShell.tsx` (`ComposeWizardStepChrome`) |
+| Wizard host (FAB) | `create/ComposeHost.tsx` |
 | Explore URL helpers | `src/explore/routing.ts` (`explorePath`, `compose=…`) |
 | FAB entry | `CreateIntentSheet.tsx` |
 | Map shell | `ExploreExperience.tsx`, `useExploreExperienceModel` (map/browse hooks only) |
-| Hosting wizard | `CreateHostingActivityFlow.tsx`, `hostingWizard/steps`, `hostingWizard/bodies/{hiking,camping,event,rideshare,activity}`, `HostingDestinationField` (UAE listed vs new-spot), `hostingWizard/hostDestinationMap.ts`, `hostingFlowEngine.ts`, `hostingFlows/*` |
-| Seeking wizard | `CreateSeekingFlow.tsx` (controller) · `seekingWizard/steps` · `seekingFlowEngine.ts` |
-| Add on map wizard | `CreateAddFlow.tsx` / `CreateAddFacilityFlow.tsx` (controllers) · `addWizard/steps` · `addFlow.ts`, `addFacilityFlow.ts`; `catalogPlaceSubmit.ts` / `catalogFacilitySubmit.ts` |
-| Map pin UI | `CreatePlacePicker.tsx` (primitive) · **kit:** `src/explore/create/interactions/` (`ComposePlacePickerOverlay`, `ComposeMapEntryRow`) |
-| Write-surface program | [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.3.6 **S14** — kit → shell → controllers → Host bodies → destination UX (W5 shipped) |
+| Hosting wizard | `CreateHostingActivityFlow.tsx`, `hostingFlowEngine.ts`, `hostingFlows/*` |
+| Seeking wizard | `CreateSeekingFlow.tsx`, `seekingFlowEngine.ts` |
+| Add on map wizard | `CreateAddFlow.tsx`, `CreateAddFacilityFlow.tsx`, `addFlow.ts`, `addFacilityFlow.ts`; `catalogPlaceSubmit.ts` / `catalogFacilitySubmit.ts` |
+| Map pin UI | `CreatePlacePicker.tsx` |
 | Join / RSVP UI | `JoinRequestModal.tsx`, `ActivityDetail.tsx`, `joinRequestUi.ts` |
 | API | activities publish, `POST /me/seeking-posts`, `POST /me/places` / `POST /me/facilities` |
 | Shared types | `packages/shared-types` — compose wire, `participationMode` on `ActivityDTO` |
-
----
-
-## Stale files (hygiene — do not re-add)
-
-Already **gone** (guarded in `createFlowModuleGuard.test.ts` / `composePlatformGuard.test.ts`): `organizeFlow.ts`, `demandFlow.ts`, `CreateDemandFlow.tsx`, `organizeWizard/`, `createOrganize/`, root `hosting*WizardSteps.tsx` barrels (S14-W4 — bodies now in `hostingWizard/bodies/{hiking,camping,event,rideshare,activity}/`).
-
-**Do not delete until unused:** `CreatePlacePicker.tsx` (primitive), engines, `ComposeHost.tsx`. **Admin** `MapPinPicker` stays. **Never** merge Host/Seek/Add into one flow file.
-
-After each kit migration, drop that file’s `lazy(() => import('./CreatePlacePicker'))`. **On kit:** Add, Host, Seek (going-from / rideshare to), participant intent, Pro application. Find crew does **not** use Host destination catalog pick.
-
-**On shell (S14-W2):** Host, Seek, Add, Facility wrap `ComposeWizardShell` (map overlay first, then sheet). Step chrome is `ComposeWizardStepChrome`. Do not remount `ExploreResponsiveSheet` in those four files. FAB intent menu stays `CreateIntentSheet`.
-
-**On steps (S14-W3):** Seek / Add / Facility step JSX lives under `seekingWizard/steps` and `addWizard/` — do not put new `ComposeWidePageSlot` blocks back in the three controllers. Host renders via `hostingWizard/steps`.
-
-**On Host bodies (S14-W4):** Kind field bodies live under `hostingWizard/bodies/` — `steps/*` import from there, not from root `hosting*WizardSteps.tsx`.
-
-**On destination:** Host **Select a venue** is UAE-only (MapPin + United Arab Emirates). Search from Database (UAE-wide) fills emirate → area → place → leaf. **Not found? Add new** stays in Host: typed trail name, emirate, published area, and a map pin — enough to `submitMemberPlace` a draft catalog row and host on it. No Listed/New mode cards. Difficulty stays on the hiking `difficulty` step — not on destination. Destination pin apply lives in `hostDestinationMap.ts` (does not write going-from coords).
-
-**Barrel:** `src/explore/ui/index.ts` still re-exports create flows + map chrome — trim compose exports if controllers later move under `src/explore/create/`.
 
 ---
 

@@ -89,7 +89,7 @@ export const CURATED_AREA_CATALOG: readonly CuratedAreaCatalogEntry[] = [
     'jebelHafeet',
     'jebel-hafeet',
     'Jebel Hafeet',
-    'Al Ain',
+    'Abu Dhabi',
     12,
     { latitude: 24.06, longitude: 55.78 },
     { south: 24.0, west: 55.72, north: 24.12, east: 55.86 },
@@ -159,7 +159,7 @@ export const CURATED_AREA_CATALOG: readonly CuratedAreaCatalogEntry[] = [
     'remahDunes',
     'remah-dunes',
     'Remah Dunes',
-    'Al Ain',
+    'Abu Dhabi',
     16,
     { latitude: 24.05, longitude: 55.55 },
     { south: 23.98, west: 55.48, north: 24.12, east: 55.64 },
@@ -174,6 +174,56 @@ export const CURATED_AREA_CATALOG: readonly CuratedAreaCatalogEntry[] = [
     { latitude: 25.07, longitude: 56.35 },
     { south: 25.0, west: 56.28, north: 25.14, east: 56.42 },
     'Mangrove and mountain edge — kayak routes, bird hides, and east-coast day trips.'
+  ),
+  entry(
+    'jbr',
+    'jbr',
+    'JBR',
+    'Dubai',
+    6,
+    { latitude: 25.078, longitude: 55.133 },
+    { south: 25.068, west: 55.12, north: 25.09, east: 55.145 },
+    'Beachfront boardwalk — community runs, sunset walks, and casual meetups by the water.'
+  ),
+  entry(
+    'downtown',
+    'downtown',
+    'Downtown Dubai',
+    'Dubai',
+    7,
+    { latitude: 25.1972, longitude: 55.2744 },
+    { south: 25.185, west: 55.26, north: 25.21, east: 55.292 },
+    'City core — Burj views, fitness groups, and evening strolls around the boulevard.'
+  ),
+  entry(
+    'dubaiMarina',
+    'dubai-marina',
+    'Dubai Marina',
+    'Dubai',
+    6,
+    { latitude: 25.0805, longitude: 55.1403 },
+    { south: 25.065, west: 55.125, north: 25.1, east: 55.16 },
+    'Marina promenade — harbour walks, running crews, and weekend coffee meetups.'
+  ),
+  entry(
+    'warsan4',
+    'warsan-4',
+    'Warsan 4',
+    'Dubai',
+    20,
+    { latitude: 25.162, longitude: 55.412 },
+    { south: 25.148, west: 55.39, north: 25.178, east: 55.43 },
+    'Eastern Dubai — desert-edge camps, gravel tracks, and spontaneous weekend outings.'
+  ),
+  entry(
+    'alAin',
+    'al-ain',
+    'Al Ain',
+    'Abu Dhabi',
+    8,
+    { latitude: 24.21, longitude: 55.76 },
+    { south: 24.13, west: 55.64, north: 24.32, east: 55.88 },
+    'Garden city foothills — Jebel Hafeet access, green belts, and cooler winter hikes.'
   ),
 ];
 

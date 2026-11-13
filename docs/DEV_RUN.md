@@ -8,7 +8,7 @@
 "dev run" means:
 
 - Run from VS Code (tasks/workspace run) with hot reload for both frontend and API.
-- **Local DB (recommended):** `npm run dev:local` — starts Docker Mongo (`local-mongo` profile) and forces `MONGODB_URI` to `LOCAL_MONGODB_URI` (`mongodb://127.0.0.1:27017/uaetrail_dev` by default). Requires Docker Desktop.
+- **Local DB (recommended):** `npm run db:local:up` → `npm run db:local:migrate` → `npm run db:seed:dev` (set `DEMO_ACCOUNT_PASSWORD` in `.env`) → `npm run dev:local`. Docker Mongo (`local-mongo` profile); `dev:local` forces `MONGODB_URI` to `LOCAL_MONGODB_URI`.
 - **Cloud test DB:** `npm run dev:all` with `RUN_ENV=test` and reachable `MONGODB_URI_TEST` / `MONGODB_URI` in root `.env` (Atlas IP allowlist).
 - Avoid observability stack containers in this mode (Grafana, Prometheus, Loki, Promtail, exporters) unless explicitly requested.
 - Open the app in the VS Code integrated browser during dev run for live agent-side monitoring checks.
@@ -29,6 +29,8 @@ Use full run-project scripts only when explicitly requested.
 - **Prometheus `/metrics`:** requires `METRICS_TOKEN` bearer auth except in `NODE_ENV=test` or local dev loopback peers (same trust model as demo login).
 - **Async side effects** (notifications, explore map cache bust): **production** uses the durable outbox automatically (`NODE_ENV=production`). Local/staging: set `SIDE_EFFECT_OUTBOX=1` to match prod (drain every 30s via `SIDE_EFFECT_OUTBOX_DRAIN_INTERVAL_MS`). Without the flag, dev uses fire-and-forget + warn logs — see `scheduleSideEffect` in `apps/api/src/lib/schedule-side-effect.ts`.
 - **`npm run seed` without `SEED_DATA`:** still **upserts curated areas** and **backfills `place.areaId`** on catalog rows (safe on existing DBs).
+- **Seed/backfill CLI audit:** one-shot API scripts (`npm run seed`, `seed-dev-qa`, `mongo:sync`, backfills, …) append a JSON line to `apps/api/logs/seed-script-runs.jsonl` (`script`, `ok`, `durationMs`, `exitCode`). Override path with `SEED_SCRIPT_AUDIT_LOG`. Scripts exit after teardown (Mongo + Redis) so terminals do not hang.
+- **Explore map guest cap:** signed-out map preview is **3 outings + 3 places** in **production** only. Local dev serves the full catalog (set `EXPLORE_MAP_GUEST_CATALOG_CAP=1` to rehearse guest preview). Signed-in members always get the full payload. QA seed adds **20 outings** (mix of hike/camp/**event**/rideshare) — only rows with `activityType: event` count as **Events** on the map filter, not all 20.
 - After pulling member/host changes, restart the API once so Mongo migrations run (`tenant_memberships` owner backfill, `publishingPurpose` on tenants).
 - Buddy **Host** requires **signup profile complete** (`PATCH /me/profile/signup-details`); `GET /me/status` exposes `profileComplete` and `publish.canPublish`. Publish/create on `POST /publishing/activities` enforces the same server-side.
 - **`npm run dev:local`:** prints a reminder to run `SEED_DATA=true npm run seed` when the map has no pins (see [`operations/EXPLORE_MAP_RUNBOOK.md`](./operations/EXPLORE_MAP_RUNBOOK.md)).

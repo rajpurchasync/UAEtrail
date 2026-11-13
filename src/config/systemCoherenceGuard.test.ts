@@ -15,9 +15,9 @@ const SURFACE_LINKS: Array<{ path: string; constant: string }> = [
   { path: '/profile/badges', constant: 'PROFILE_BADGES_PATH' },
   { path: '/my-requests', constant: 'MY_REQUESTS_PATH' },
   { path: '/chat', constant: 'MESSAGES_PATH' },
-  { path: '/notifications', constant: 'NOTIFICATIONS_PATH' },
+  { path: '/settings/notifications', constant: 'APP_SETTINGS_NOTIFICATIONS_PATH' },
   { path: '/profile', constant: 'PROFILE_PATH' },
-  { path: '/profile/settings', constant: 'PROFILE_SETTINGS_PATH' },
+  { path: '/settings', constant: 'APP_SETTINGS_PATH' },
   { path: '/publishing/activities', constant: 'PUBLISHING_ACTIVITIES_PATH' },
   { path: '/publishing/requests', constant: 'PUBLISHING_REQUESTS_PATH' },
 ];
@@ -200,10 +200,7 @@ describe('systemCoherenceGuard', () => {
 
   it('S10b host console guards mount fetches with useSafeAsyncEffect', () => {
     const hostPages = [
-      'src/pages/publishing/Activities.tsx',
-      'src/pages/publishing/JoinRequests.tsx',
       'src/pages/publishing/Places.tsx',
-      'src/pages/publishing/History.tsx',
       'src/pages/publishing/Team.tsx',
       'src/pages/publishing/PublicProfileEdit.tsx',
     ];
@@ -216,6 +213,31 @@ describe('systemCoherenceGuard', () => {
       }
     }
     expect(missing).toEqual([]);
+  });
+
+  it('S10b host console pages on TanStack Query read through publishingWorkspaceQueries (no ad-hoc mount fetch)', () => {
+    const queries = readFileSync(join(ROOT, 'src/hooks/publishingWorkspaceQueries.ts'), 'utf8');
+    expect(queries).toMatch(/useQuery/);
+    const hostQueryPages: [string, string][] = [
+      ['src/pages/publishing/Activities.tsx', 'usePublishingTenantActivities'],
+      ['src/pages/publishing/JoinRequests.tsx', 'usePublishingJoinQueue'],
+      ['src/pages/publishing/History.tsx', 'usePublishingActivityHistory'],
+    ];
+    const violations: string[] = [];
+    for (const [rel, hook] of hostQueryPages) {
+      const content = readFileSync(join(ROOT, rel), 'utf8');
+      if (!content.includes('publishingWorkspaceQueries') || !content.includes(hook)) {
+        violations.push(`${rel}: missing ${hook} from hooks/publishingWorkspaceQueries`);
+      }
+      if (content.includes('useSafeAsyncEffect')) {
+        violations.push(`${rel}: still uses useSafeAsyncEffect`);
+      }
+      // Reads go through the cached query — the page must not also fetch the same lists on mount.
+      if (/\b(listActivities|getActivityJoinRequests|getActivityHistory)\s*\(/.test(content)) {
+        violations.push(`${rel}: fetches workspace lists outside publishingWorkspaceQueries`);
+      }
+    }
+    expect(violations).toEqual([]);
   });
 
   it('member profile hooks use TanStack Query for server reads', () => {

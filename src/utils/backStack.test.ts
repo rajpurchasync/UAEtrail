@@ -129,6 +129,20 @@ describe('resolveBackTarget', () => {
     });
   });
 
+  it('skips peer notification settings panels so Saved map returns to Settings', () => {
+    const s = stackOf([
+      '/settings',
+      '/settings/notifications',
+      '/settings/notifications/preferences',
+      '/settings/notifications/saved',
+    ]);
+    expect(resolveBackTarget(s, '/settings/notifications/saved', '/settings')).toEqual({
+      kind: 'pop',
+      delta: 3,
+      path: '/settings',
+    });
+  });
+
   it('skips transient screens underneath (edit → save landed on the item)', () => {
     const s = stackOf(['/plan', '/activity/abc', '/activity/abc/edit', '/activity/abc']);
     expect(resolveBackTarget(s, '/activity/abc', '/explore')).toEqual({
@@ -216,8 +230,10 @@ describe('inferBackParent', () => {
   it('maps form and hub screens to their item/parent', () => {
     expect(inferBackParent('/profile/vehicles/car-1/edit')).toBe('/profile/vehicles');
     expect(inferBackParent('/profile/edit')).toBe('/profile');
-    expect(inferBackParent('/signin')).toBe('/explore');
-    expect(inferBackParent('/profile/settings/account')).toBe('/profile/settings');
+    expect(inferBackParent('/signin')).toBe('/');
+    expect(inferBackParent('/settings/account')).toBe('/settings');
+    expect(inferBackParent('/profile/settings/account')).toBe('/settings');
+    expect(inferBackParent('/settings/safety')).toBe('/profile');
     expect(inferBackParent('/my-requests/req-1')).toBe('/my-requests');
   });
 });
@@ -244,7 +260,7 @@ describe('resolveBackLabel', () => {
     expect(
       resolveBackLabel({ kind: 'pop', delta: 1, path: '/plan?tab=upcoming' }, '/explore', 'Explore')
     ).toBe('My Plans');
-    expect(resolveBackLabel({ kind: 'pop', delta: 1, path: '/profile/settings' }, '/profile', 'Profile')).toBe(
+    expect(resolveBackLabel({ kind: 'pop', delta: 1, path: '/settings' }, '/profile', 'Profile')).toBe(
       'Settings'
     );
     expect(resolveBackLabel({ kind: 'pop', delta: 1, path: '/member/u1' }, '/explore', 'Explore')).toBe('Back');

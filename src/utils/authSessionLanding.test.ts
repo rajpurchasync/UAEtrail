@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { sessionExpiredExplorePath, sessionExpiredLandingPath, signedOutLandingPath } from './authSessionLanding';
+import {
+  sessionExpiredExplorePath,
+  sessionExpiredLandingPath,
+  signedOutLandingPath,
+  stripSessionExpiredQuery,
+} from './authSessionLanding';
 
 const mockMatchMedia = (mobile: boolean) => {
   vi.stubGlobal('matchMedia', (query: string) => ({
@@ -26,5 +31,12 @@ describe('authSessionLanding', () => {
     mockMatchMedia(false);
     expect(sessionExpiredLandingPath()).toBe('/?session=expired');
     expect(signedOutLandingPath()).toBe('/');
+  });
+
+  it('strips session=expired from post-auth return paths', () => {
+    expect(stripSessionExpiredQuery('/explore?session=expired')).toBe('/explore');
+    expect(stripSessionExpiredQuery('/explore?session=expired&list=1')).toBe('/explore?list=1');
+    expect(stripSessionExpiredQuery('/explore?list=1')).toBe('/explore?list=1');
+    expect(stripSessionExpiredQuery('/?session=expired#top')).toBe('/#top');
   });
 });

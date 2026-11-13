@@ -9,6 +9,7 @@ import {
   GROUP_WALL_REACTION_KINDS,
   type GroupWallReactionKind,
 } from '../domain/group-wall-reactions.js';
+import { isKidProfileComplete } from '../domain/family-kid-profile.js';
 
 export { GROUP_WALL_REACTION_KINDS, type GroupWallReactionKind };
 
@@ -47,6 +48,15 @@ export type GroupMemberRecord = {
   createdByUserId: string;
   createdAt: Date;
   isActive: boolean;
+  /** Kid profile — required for outing attach. */
+  dateOfBirth?: Date | null;
+  emergencyContactName?: string | null;
+  emergencyContactPhone?: string | null;
+  emergencyContactRelation?: string | null;
+  medicalConditions?: string | null;
+  gender?: 'male' | 'female' | 'prefer_not_to_say' | null;
+  photoUrl?: string | null;
+  profileComplete?: boolean;
 };
 
 export type GroupInviteRecord = {
@@ -117,6 +127,13 @@ type MongoGroupMember = {
   createdAt: Date;
   isActive?: boolean;
   wallLastReadAt?: Date;
+  dateOfBirth?: Date | null;
+  emergencyContactName?: string | null;
+  emergencyContactPhone?: string | null;
+  emergencyContactRelation?: string | null;
+  medicalConditions?: string | null;
+  gender?: 'male' | 'female' | 'prefer_not_to_say' | null;
+  photoUrl?: string | null;
 };
 
 type MongoGroupInvite = {
@@ -182,18 +199,31 @@ const mapGroup = (row: MongoGroup): GroupRecord => ({
   updatedAt: row.updatedAt
 });
 
-const mapMember = (row: MongoGroupMember): GroupMemberRecord => ({
-  id: row._id,
-  groupId: row.groupId,
-  userId: row.userId,
-  role: row.role,
-  memberType: row.memberType,
-  displayName: row.displayName,
-  invitedEmail: row.invitedEmail,
-  createdByUserId: row.createdByUserId,
-  createdAt: row.createdAt,
-  isActive: row.isActive ?? true
-});
+const mapMember = (row: MongoGroupMember): GroupMemberRecord => {
+  const base: GroupMemberRecord = {
+    id: row._id,
+    groupId: row.groupId,
+    userId: row.userId,
+    role: row.role,
+    memberType: row.memberType,
+    displayName: row.displayName,
+    invitedEmail: row.invitedEmail,
+    createdByUserId: row.createdByUserId,
+    createdAt: row.createdAt,
+    isActive: row.isActive ?? true,
+    dateOfBirth: row.dateOfBirth ?? null,
+    emergencyContactName: row.emergencyContactName ?? null,
+    emergencyContactPhone: row.emergencyContactPhone ?? null,
+    emergencyContactRelation: row.emergencyContactRelation ?? null,
+    medicalConditions: row.medicalConditions ?? null,
+    gender: row.gender ?? null,
+    photoUrl: row.photoUrl ?? null,
+  };
+  if (row.memberType === 'kid') {
+    base.profileComplete = isKidProfileComplete(base);
+  }
+  return base;
+};
 
 const mapInvite = (row: MongoGroupInvite): GroupInviteRecord => ({
   id: row._id,
@@ -224,6 +254,15 @@ const normalizeInviteEmail = (email: string) => email.trim().toLowerCase();
 export const findGroupById = async (groupId: string): Promise<GroupRecord | null> => {
   const row = await groupsCollection().findOne({ _id: groupId });
   return row ? mapGroup(row) : null;
+};
+
+export const findGroupsByIds = async (groupIds: string[]): Promise<GroupRecord[]> => {
+  const ids = [...new Set(groupIds.filter(Boolean))];
+  if (ids.length === 0) return [];
+  const rows = await groupsCollection()
+    .find({ _id: { $in: ids } })
+    .toArray();
+  return rows.map(mapGroup);
 };
 
 export const findGroupByActivityId = async (activityId: string): Promise<GroupRecord | null> => {
@@ -561,6 +600,23 @@ export const getGroupMembership = async (
   return row ? mapMember(row) : null;
 };
 
+/** Adult memberships for one user across many groups (one query). */
+export const getAdultMembershipsInGroups = async (
+  groupIds: string[],
+  userId: string
+): Promise<Map<string, GroupMemberRecord>> => {
+  const ids = [...new Set(groupIds.filter(Boolean))];
+  if (ids.length === 0 || !userId) return new Map();
+  const rows = await membersCollection()
+    .find({ groupId: { $in: ids }, userId, memberType: 'adult' })
+    .toArray();
+  const map = new Map<string, GroupMemberRecord>();
+  for (const row of rows) {
+    map.set(row.groupId, mapMember(row));
+  }
+  return map;
+};
+
 /** True when both adults currently share at least one social group. */
 export const usersShareActiveGroup = async (userA: string, userB: string): Promise<boolean> => {
   if (!userA || !userB) return false;
@@ -770,6 +826,17 @@ export const findGroupMemberById = async (
   return row ? mapMember(row) : null;
 };
 
+export const findGroupMembersByIds = async (
+  membershipIds: string[]
+): Promise<GroupMemberRecord[]> => {
+  const ids = [...new Set(membershipIds.filter(Boolean))];
+  if (ids.length === 0) return [];
+  const rows = await membersCollection()
+    .find({ _id: { $in: ids } })
+    .toArray();
+  return rows.map(mapMember);
+};
+
 export const setGroupMembershipActiveState = async (membershipId: string, isActive: boolean) => {
   const updated = await membersCollection().findOneAndUpdate(
     { _id: membershipId },
@@ -834,6 +901,13 @@ export const createKidGroupMember = async (input: {
   groupId: string;
   createdByUserId: string;
   displayName: string;
+  dateOfBirth: Date;
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  emergencyContactRelation?: string | null;
+  medicalConditions: string;
+  gender?: 'male' | 'female' | 'prefer_not_to_say' | null;
+  photoUrl?: string | null;
   role?: GroupRole;
 }): Promise<GroupMemberRecord> => {
   const doc: MongoGroupMember = {
@@ -846,11 +920,64 @@ export const createKidGroupMember = async (input: {
     invitedEmail: null,
     createdByUserId: input.createdByUserId,
     createdAt: new Date(),
-    isActive: true
+    isActive: true,
+    dateOfBirth: input.dateOfBirth,
+    emergencyContactName: input.emergencyContactName.trim(),
+    emergencyContactPhone: input.emergencyContactPhone.trim(),
+    emergencyContactRelation: input.emergencyContactRelation?.trim() || null,
+    medicalConditions: input.medicalConditions.trim(),
+    gender: input.gender ?? null,
+    photoUrl: input.photoUrl?.trim() || null,
   };
   await membersCollection().insertOne(doc);
   return mapMember(doc);
 };
+
+export const updateKidGroupMember = async (
+  membershipId: string,
+  patch: {
+    displayName?: string;
+    dateOfBirth?: Date;
+    emergencyContactName?: string;
+    emergencyContactPhone?: string;
+    emergencyContactRelation?: string | null;
+    medicalConditions?: string;
+    gender?: 'male' | 'female' | 'prefer_not_to_say' | null;
+    photoUrl?: string | null;
+  }
+): Promise<GroupMemberRecord> => {
+  const existing = await membersCollection().findOne({ _id: membershipId, memberType: 'kid' });
+  if (!existing) {
+    throw new Error('Kid membership not found.');
+  }
+  const $set: Partial<MongoGroupMember> = {};
+  if (patch.displayName !== undefined) $set.displayName = patch.displayName.trim();
+  if (patch.dateOfBirth !== undefined) $set.dateOfBirth = patch.dateOfBirth;
+  if (patch.emergencyContactName !== undefined) {
+    $set.emergencyContactName = patch.emergencyContactName.trim();
+  }
+  if (patch.emergencyContactPhone !== undefined) {
+    $set.emergencyContactPhone = patch.emergencyContactPhone.trim();
+  }
+  if (patch.emergencyContactRelation !== undefined) {
+    $set.emergencyContactRelation = patch.emergencyContactRelation?.trim() || null;
+  }
+  if (patch.medicalConditions !== undefined) {
+    $set.medicalConditions = patch.medicalConditions.trim();
+  }
+  if (patch.gender !== undefined) $set.gender = patch.gender;
+  if (patch.photoUrl !== undefined) $set.photoUrl = patch.photoUrl?.trim() || null;
+  const result = await membersCollection().findOneAndUpdate(
+    { _id: membershipId, memberType: 'kid' },
+    { $set },
+    { returnDocument: 'after' }
+  );
+  if (!result) {
+    throw new Error('Kid membership not found.');
+  }
+  return mapMember(result);
+};
+
 
 const displayNameForUser = (
   user: Awaited<ReturnType<typeof findAuthUsersByIds>>[number] | undefined

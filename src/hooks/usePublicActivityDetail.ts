@@ -6,12 +6,13 @@ import { useAuth } from '../context/AuthContext';
 export { fetchPublicActivityDetail, type PublicActivityDetailPayload } from './publicActivityClientApi';
 
 export const usePublicActivityDetail = (activityId: string | undefined) => {
-  const { user } = useAuth();
+  const { user, initializing } = useAuth();
   const viewerScope = user?.id ?? 'guest';
+  const viewerIdForFetch = user?.id ?? (initializing ? undefined : null);
   const query = useQuery({
     queryKey: activityId ? activityDetailQueryKey(activityId, viewerScope) : ['activity', '', viewerScope],
-    queryFn: () => fetchPublicActivityDetail(activityId!),
-    enabled: Boolean(activityId),
+    queryFn: () => fetchPublicActivityDetail(activityId!, viewerIdForFetch),
+    enabled: Boolean(activityId) && !initializing,
   });
 
   return {
@@ -20,7 +21,7 @@ export const usePublicActivityDetail = (activityId: string | undefined) => {
     wirePresentation: query.data?.presentation ?? null,
     participation: query.data?.participation ?? null,
     myRequest: query.data?.myRequest ?? null,
-    loading: query.isLoading,
+    loading: query.isLoading || initializing,
     isFetching: query.isFetching,
     error: query.error,
     refetch: query.refetch,

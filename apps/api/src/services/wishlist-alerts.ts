@@ -1,20 +1,32 @@
 import { activityTypeToOutingCategory, type OutingCategory } from '@uaetrail/shared-types';
 import { NotificationType } from '../domain/enums.js';
 import { findActivityDocInMongo, findLocationInMongo } from '../lib/entity-sync.js';
+import { findActivityPrivateById } from '../lib/activity-private-store.js';
 import { createNotificationsMany } from '../lib/notifications-store.js';
-import { listWishlistSaversForLocation, listWishlistWatchCandidates } from '../lib/wishlist-store.js';
+import { findPublishedAreaById } from '../lib/areas-store.js';
+import {
+  listWishlistSaversForArea,
+  listWishlistSaversForLocation,
+  listWishlistWatchCandidates,
+} from '../lib/wishlist-store.js';
 import { wishlistWatchMatchesPin, type WishlistPinEvent } from '../lib/wishlist-match.js';
 import { activityDetailPath, explorePublishedActivityPinPath } from '../lib/member-routes.js';
 import { findSeekingActivityByParticipantIntentId } from './participant-intent-activity-readthrough.js';
 import { resolveNotificationActorDisplayNamesForRecipients } from './notification-actor-label.js';
 import { logger } from '../lib/logger.js';
 
-const resolveActivityPinCoords = (doc: {
-  meetingLat: number | null;
-  meetingLng: number | null;
-  startLat: number | null;
-  startLng: number | null;
-}): { latitude: number | null; longitude: number | null } => {
+const resolveActivityPinCoords = (
+  doc: {
+    meetingLat: number | null;
+    meetingLng: number | null;
+    startLat: number | null;
+    startLng: number | null;
+  },
+  exactMeeting?: { latitude: number; longitude: number } | null
+): { latitude: number | null; longitude: number | null } => {
+  if (exactMeeting) {
+    return { latitude: exactMeeting.latitude, longitude: exactMeeting.longitude };
+  }
   if (doc.meetingLat != null && doc.meetingLng != null) {
     return { latitude: doc.meetingLat, longitude: doc.meetingLng };
   }
@@ -133,6 +145,59 @@ const fanOutSavedPlaceWishlistNotifications = async (
   }
 };
 
+/** Saved curated area (`areaId` on wishlist) — trip alerts for outings published in that area. */
+const fanOutSavedAreaWishlistNotifications = async (
+  input: {
+    activityId: string;
+    title: string;
+    hostUserId: string;
+    areaId: string;
+    path: string;
+  },
+  notified: Set<string>
+): Promise<void> => {
+  const savers = await listWishlistSaversForArea(input.areaId);
+  if (savers.length === 0) return;
+
+  const area = await findPublishedAreaById(input.areaId);
+  if (!area) return;
+  const areaName = area.name;
+  const recipientIds = savers.map((row) => row.userId).filter((userId) => userId !== input.hostUserId);
+  if (recipientIds.length === 0) return;
+
+  const actorNames = await resolveNotificationActorDisplayNamesForRecipients(
+    input.hostUserId,
+    recipientIds
+  );
+
+  const rows: WishlistNotifyRow[] = [];
+  for (const saver of savers) {
+    if (saver.userId === input.hostUserId) continue;
+    if (notified.has(saver.userId)) continue;
+    notified.add(saver.userId);
+    const actorName = actorNames.get(saver.userId);
+    if (!actorName) continue;
+    rows.push({
+      userId: saver.userId,
+      title: `New outing in ${areaName}`,
+      body: `${actorName}: ${input.title}`,
+      type: NotificationType.ACTIVITY,
+      meta: {
+        kind: 'wishlist_match',
+        path: input.path,
+        activityId: input.activityId,
+        areaId: input.areaId,
+        wishlistItemId: saver.wishlistItemId,
+        actorUserId: input.hostUserId,
+      },
+    });
+  }
+
+  if (rows.length > 0) {
+    await createNotificationsMany(rows);
+  }
+};
+
 export const notifyWishlistForPublishedActivity = async (activityId: string): Promise<void> => {
   try {
     const doc = await findActivityDocInMongo(activityId);
@@ -153,7 +218,29 @@ export const notifyWishlistForPublishedActivity = async (activityId: string): Pr
       );
     }
 
-    const { latitude, longitude } = resolveActivityPinCoords(doc);
+    const activityAreaId = doc.areaId?.trim() || null;
+    if (activityAreaId) {
+      await fanOutSavedAreaWishlistNotifications(
+        {
+          activityId,
+          title: doc.title,
+          hostUserId: doc.createdById,
+          areaId: activityAreaId,
+          path,
+        },
+        notified
+      );
+    }
+
+    const priv = await findActivityPrivateById(activityId);
+    const exact =
+      priv?.exactGeo?.coordinates && Array.isArray(priv.exactGeo.coordinates)
+        ? {
+            latitude: priv.exactGeo.coordinates[1] as number,
+            longitude: priv.exactGeo.coordinates[0] as number,
+          }
+        : null;
+    const { latitude, longitude } = resolveActivityPinCoords(doc, exact);
     const outingCategory = resolveActivityOutingCategory(doc);
     const event: WishlistPinEvent = {
       composeIntent: 'host',
@@ -182,6 +269,25 @@ export const notifyWishlistForNewSeeking = async (intentId: string, requesterUse
     const activity = await findSeekingActivityByParticipantIntentId(intentId);
     if (!activity) return;
 
+    const path = explorePublishedActivityPinPath({
+      intentId,
+      activityId: activity._id,
+    });
+    const notified = new Set<string>();
+    const activityAreaId = activity.areaId?.trim() || null;
+    if (activityAreaId) {
+      await fanOutSavedAreaWishlistNotifications(
+        {
+          activityId: activity._id,
+          title: activity.title,
+          hostUserId: requesterUserId,
+          areaId: activityAreaId,
+          path,
+        },
+        notified
+      );
+    }
+
     const { latitude, longitude } = resolveActivityPinCoords(activity);
     const event: WishlistPinEvent = {
       composeIntent: 'seek',
@@ -195,12 +301,9 @@ export const notifyWishlistForNewSeeking = async (intentId: string, requesterUse
       event,
       'Someone is looking for a crew near you',
       activity.title,
-      explorePublishedActivityPinPath({
-        intentId,
-        activityId: activity._id,
-      }),
+      path,
       { intentId, activityId: activity._id },
-      new Set<string>()
+      notified
     );
   } catch (error) {
     logger.warn({ err: error, intentId }, 'wishlist notify for seeking failed');

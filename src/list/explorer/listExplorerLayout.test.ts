@@ -15,7 +15,14 @@ import {
 import { parseListFilterFabCorner, snapListFilterFabCorner } from './listExplorerFabSnap';
 import { listExplorerEntityLinkState } from './listExplorerNavState';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import { listExplorerCardMeta, listExplorerCardTitle, listExplorerPriceLabel, formatListExplorerRowDateLabel, listExplorerRowWhenDisplay } from './listExplorerCardMeta';
+import {
+  listExplorerCardMeta,
+  listExplorerCardTitle,
+  listExplorerPriceLabel,
+  formatListExplorerRowDateLabel,
+  listExplorerRowWhenDisplay,
+  listExplorerThumbWhenLines,
+} from './listExplorerCardMeta';
 
 const emptyFilters = (): BrowseListFilterState => ({
   query: 'wadi',
@@ -175,8 +182,8 @@ describe('list explorer thumbnail copy', () => {
 
   it('formats list row dates in full and prefixes This for this-week section', () => {
     const now = new Date('2026-10-30T10:00:00');
-    expect(formatListExplorerRowDateLabel('2026-10-30', now)).toBe('Fri 30 Oct 26');
-    expect(formatListExplorerRowDateLabel('2026-10-31', now)).toBe('This Sat 31 Oct 26');
+    expect(formatListExplorerRowDateLabel('2026-10-30', now)).toBe('Fri 30 Oct');
+    expect(formatListExplorerRowDateLabel('2026-10-31', now)).toBe('This Sat 31 Oct');
 
     const weekCard = {
       ...eventCard,
@@ -185,9 +192,15 @@ describe('list explorer thumbnail copy', () => {
       activity: { title: 'Hatta Dam Loop', date: '2026-10-31', time: '16:00' },
     } as DiscoveryCardModel;
     expect(listExplorerRowWhenDisplay(weekCard, now)).toEqual({
-      date: 'This Sat 31 Oct 26',
+      date: 'This Sat 31 Oct',
       time: '4:00 PM',
     });
+    expect(listExplorerThumbWhenLines(weekCard, now)).toEqual({
+      day: 'Sat',
+      date: 'This 31 Oct',
+      time: '4:00 PM',
+    });
+    expect(formatListExplorerRowDateLabel('2025-12-01', now)).toBe('Mon 01 Dec 25');
   });
 });
 

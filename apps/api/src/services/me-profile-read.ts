@@ -5,6 +5,12 @@ import { isMedicalSafetyProfileComplete } from '@uaetrail/shared-types';
 import { medicalSafetyFieldsFromAuthProfile } from '../lib/member-medical-safety-profile.js';
 import { ApiError } from '../lib/api-error.js';
 import { isPlatformMasterAdmin } from '../lib/platform-master-admin.js';
+import {
+  mergeFindCrewVisibility,
+  mergeProfileDateOfBirthShare,
+  mergeProfileFieldPrivacy,
+  mergeProfileFriendsListShare,
+} from '@uaetrail/shared-types';
 import { findAuthUserById } from './member-identity-read.js';
 
 export const getAuthenticatedMemberProfile = async (userId: string) => {
@@ -25,6 +31,16 @@ export const getAuthenticatedMemberProfile = async (userId: string) => {
     bio: user.profile?.bio,
     avatarUrl: user.profile?.avatarUrl,
     profileVisibility: user.profile?.profileVisibility ?? 'public',
+    fieldPrivacy: mergeProfileFieldPrivacy(user.profile?.fieldPrivacy),
+    dateOfBirthShare: mergeProfileDateOfBirthShare(
+      user.profile?.dateOfBirthShare,
+      (user.profile?.fieldPrivacy as { age?: 'hidden' | 'friends' | 'public' } | undefined)?.age ?? null
+    ),
+    friendsListShare: mergeProfileFriendsListShare(
+      user.profile?.friendsListShare,
+      user.profile?.profileVisibility ?? null
+    ),
+    findCrewVisibility: mergeFindCrewVisibility(user.profile?.findCrewVisibility),
     dateOfBirth: user.profile?.dateOfBirth ?? null,
     gender: user.profile?.gender ?? null,
     city: user.profile?.city ?? null,
@@ -35,6 +51,7 @@ export const getAuthenticatedMemberProfile = async (userId: string) => {
     medicalConditions: user.profile?.medicalConditions ?? null,
     emergencyContactName: user.profile?.emergencyContactName ?? null,
     emergencyContactPhone: user.profile?.emergencyContactPhone ?? null,
+    emergencyContactRelation: user.profile?.emergencyContactRelation ?? null,
     medicalSafetyProfileComplete: isMedicalSafetyProfileComplete(
       medicalSafetyFieldsFromAuthProfile(user.profile)
     ),

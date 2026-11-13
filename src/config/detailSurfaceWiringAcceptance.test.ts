@@ -65,18 +65,18 @@ describe('detailSurfaceWiringAcceptance', () => {
     );
   });
 
-  it('DS-WIRE-05: activity detail uses one presentation.sections (embed still uses tabs)', () => {
+  it('DS-WIRE-05: activity public detail uses API consumerLayout (embed uses tab wire)', () => {
     const presentation = read('packages/shared-types/src/activity-detail-presentation.ts');
-    expect(presentation).toMatch(/ActivityPresentationSectionsDTO/);
-    expect(presentation).not.toMatch(/scrollLayout/);
-    expect(read('src/pages/ActivityDetail.tsx')).toMatch(/wireSections=/);
-    expect(read('src/activity/detail/templates/ActivityDetailSections.tsx')).toMatch(
-      /model\.sections/
+    expect(presentation).toMatch(/ActivityPresentationConsumerLayoutDTO/);
+    expect(presentation).toMatch(/consumerLayout/);
+    expect(read('src/pages/ActivityDetail.tsx')).toMatch(/consumerLayout=/);
+    expect(read('src/activity/detail/templates/ActivityConsumerDetailPage.tsx')).toMatch(
+      /model\.consumerLayout/
     );
     const manage = read('src/components/activity/ActivityManageSheet.tsx');
-    expect(manage).toMatch(/isEmbedded:\s*true/);
-    expect(manage).toMatch(/wireSections=/);
-    expect(manage).not.toMatch(/wireTabs=/);
+    expect(manage).toMatch(/inlineConsumerDetail/);
+    expect(manage).toMatch(/ActivityDetailByKind/);
+    expect(manage).toMatch(/hostManageSurface=/);
   });
 
   it('DS-WIRE-04: place/shop/area peek mounts route to detail paths', () => {

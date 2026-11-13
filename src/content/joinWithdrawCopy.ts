@@ -7,8 +7,12 @@ export const JOIN_REQUEST_PENDING_WITH_HOST_BUTTON =
 
 /** Approved participant — withdraws a previously approved join request. */
 export const JOIN_WITHDRAW_APPROVED_REQUEST_BUTTON = 'Withdraw request';
+/** Compact sticky footer — same action as {@link JOIN_WITHDRAW_APPROVED_REQUEST_BUTTON}. */
+export const JOIN_WITHDRAW_APPROVED_REQUEST_BUTTON_SHORT = 'Withdraw';
 /** Pending / waitlisted — cancels before host approval. */
 export const JOIN_CANCEL_REQUEST_BUTTON = 'Cancel request';
+/** Compact sticky footer — same action as {@link JOIN_CANCEL_REQUEST_BUTTON}. */
+export const JOIN_CANCEL_REQUEST_BUTTON_SHORT = 'Cancel';
 export const JOIN_WITHDRAW_PENDING_HINT = "We'll let you know when the host replies";
 
 export const WITHDRAW_MODAL_TITLE_APPROVED = 'Withdraw your request?';

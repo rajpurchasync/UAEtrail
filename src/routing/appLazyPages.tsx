@@ -50,6 +50,12 @@ export const InboundProfileHistoryAliasRedirect = lazy(() =>
 export const InboundJourneyMapAliasRedirect = lazy(() =>
   loadInboundRedirects().then((m) => ({ default: m.InboundJourneyMapAliasRedirect }))
 );
+export const InboundLegacyProfileSettingsRedirect = lazy(() =>
+  loadInboundRedirects().then((m) => ({ default: m.InboundLegacyProfileSettingsRedirect }))
+);
+export const InboundLegacyNotificationsRedirect = lazy(() =>
+  loadInboundRedirects().then((m) => ({ default: m.InboundLegacyNotificationsRedirect }))
+);
 
 export const loadExploreEntryRedirects = () => import('./exploreEntryRedirects');
 export const ShopBrowseRoute = lazy(() =>
@@ -64,8 +70,14 @@ export const PeopleRedirect = lazy(() =>
 export const PlanBrowseRoute = lazy(() =>
   import('./planBrowseRoute').then((m) => ({ default: m.PlanBrowseRoute }))
 );
+export const HostingHubPage = lazy(() =>
+  import('../hosting/HostingHubPage').then((m) => ({ default: m.HostingHubPage }))
+);
 
 // ─── Lazy-loaded pages ───────────────────────────────────────────────────────
+export const VenuePlaceDetailPage = lazy(() =>
+  import('../pages/PlaceDetailPage').then((m) => ({ default: m.VenuePlaceDetailPage }))
+);
 export const CanonicalPlaceDetailPage = lazy(() =>
   import('../pages/PlaceDetailPage').then((m) => ({ default: m.CanonicalPlaceDetailPage }))
 );
@@ -88,7 +100,12 @@ export const SignIn = lazy(() => import('../pages/SignIn').then((m) => ({ defaul
 export const VerifyOTP = lazy(() => import('../pages/VerifyOTP').then((m) => ({ default: m.VerifyOTP })));
 export const WelcomeSignup = lazy(() => import('../pages/WelcomeSignup').then((m) => ({ default: m.WelcomeSignup })));
 export const ForgotPassword = lazy(() => import('../pages/ForgotPassword').then((m) => ({ default: m.ForgotPassword })));
-export const AdminOverview = lazy(() => import('../pages/admin/Overview').then((m) => ({ default: m.Overview })));
+export const AdminInbox = lazy(() => import('../pages/admin/Inbox').then((m) => ({ default: m.Inbox })));
+export const AdminSubmissions = lazy(() =>
+  import('../pages/admin/Submissions').then((m) => ({ default: m.Submissions }))
+);
+/** @deprecated Use AdminInbox */
+export const AdminOverview = lazy(() => import('../pages/admin/Inbox').then((m) => ({ default: m.Inbox })));
 export const AdminPlaces = lazy(() => import('../pages/admin/Places').then((m) => ({ default: m.Places })));
 export const AdminAreas = lazy(() => import('../pages/admin/Areas').then((m) => ({ default: m.Areas })));
 export const AreaDetailPage = lazy(() => import('../pages/AreaDetailPage').then((m) => ({ default: m.AreaDetailPage })));
@@ -105,6 +122,13 @@ export const AdminAccount = lazy(() => import('../pages/admin/Account').then((m)
 export const AdminNotifications = lazy(() =>
   import('../pages/admin/Notifications').then((m) => ({ default: m.Notifications }))
 );
+export const AdminAlerts = lazy(() => import('../pages/admin/Alerts').then((m) => ({ default: m.Alerts })));
+export const GeoTreePage = lazy(() => import('../pages/GeoTreePage').then((m) => ({ default: m.GeoTreePage })));
+export const GeoCountryPage = lazy(() =>
+  import('../pages/GeoCountryPage').then((m) => ({ default: m.GeoCountryPage }))
+);
+export const GeoNodePage = lazy(() => import('../pages/GeoNodePage').then((m) => ({ default: m.GeoNodePage })));
+export const PlanTodayPage = lazy(() => import('../plan/PlanTodayPage').then((m) => ({ default: m.PlanTodayPage })));
 export const PublishingOverview = lazy(() =>
   import('../pages/publishing/Overview').then((m) => ({ default: m.Overview }))
 );
@@ -133,6 +157,9 @@ export const JourneyMapPage = lazy(() =>
 );
 export const Profile = lazy(() => import('../pages/Profile').then((m) => ({ default: m.Profile })));
 export const ProfileSettings = lazy(() => import('../pages/ProfileSettings').then((m) => ({ default: m.ProfileSettings })));
+export const ProfileSettingsDisplay = lazy(() =>
+  import('../pages/ProfileSettingsDisplay').then((m) => ({ default: m.ProfileSettingsDisplay }))
+);
 export const ProfileSettingsAccount = lazy(() =>
   import('../pages/ProfileSettingsAccount').then((m) => ({ default: m.ProfileSettingsAccount }))
 );
@@ -160,9 +187,6 @@ export const Submissions = lazy(() => import('../pages/Submissions').then((m) =>
 export const ProfileReviews = lazy(() => import('../pages/ProfileReviews').then((m) => ({ default: m.ProfileReviews })));
 export const JoinRequestDetail = lazy(() =>
   import('../pages/JoinRequestDetail').then((m) => ({ default: m.JoinRequestDetail }))
-);
-export const Notifications = lazy(() =>
-  import('../pages/Notifications').then((m) => ({ default: m.Notifications }))
 );
 export const Groups = lazy(() => import('../pages/Groups').then((m) => ({ default: m.Groups })));
 export const Buddies = lazy(() => import('../pages/Buddies').then((m) => ({ default: m.Buddies })));

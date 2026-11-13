@@ -11,11 +11,16 @@ export const PasswordRequirements = ({ password, className = '' }: PasswordRequi
     {PASSWORD_REQUIREMENTS.map((rule) => {
       const met = rule.test(password);
       return (
-        <li key={rule.id} className={`flex items-center gap-2 text-xs ${met ? 'text-emerald-700' : 'text-gray-500'}`}>
+        <li
+          key={rule.id}
+          className={`flex items-center gap-2 text-xs ${
+            met ? 'text-emerald-700 dark:text-emerald-400' : 'text-gray-500 dark:text-neutral-500'
+          }`}
+        >
           {met ? (
             <Check className="w-3.5 h-3.5 shrink-0" strokeWidth={2.5} aria-hidden />
           ) : (
-            <Circle className="w-3.5 h-3.5 shrink-0 text-gray-300" strokeWidth={2} aria-hidden />
+            <Circle className="w-3.5 h-3.5 shrink-0 text-gray-300 dark:text-neutral-600" strokeWidth={2} aria-hidden />
           )}
           <span>{rule.label}</span>
         </li>

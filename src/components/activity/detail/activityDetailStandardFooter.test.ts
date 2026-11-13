@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ACTIVITY_CTA_CHAT_SHORT,
   ACTIVITY_CTA_MESSAGE_HOST,
-  ACTIVITY_CTA_OPEN_CHAT,
   ACTIVITY_PEEK_MANAGE_LABEL,
 } from '../../../content/activityParticipationCopy';
+import { ACTIVITY_INVITE_FRIENDS_CTA_SHORT } from '../../../content/activityInviteCopy';
 import { ACTIVITY_DETAIL_TAB_FOOTER_SHARE_OUTING } from '../../../content/activityDetailCopy';
 import { resolveActivityDetailStandardFooter } from './activityDetailFooterSlots';
 
@@ -36,7 +37,7 @@ describe('resolveActivityDetailStandardFooter', () => {
     expect(footer.right.label).toBe(ACTIVITY_CTA_MESSAGE_HOST);
   });
 
-  it('uses Open chat, Invite friends, and Withdraw when you are going', () => {
+  it('uses Chat, Invite, and Withdraw when you are going', () => {
     const footer = resolveActivityDetailStandardFooter({
       isHost: false,
       joinUiState: { kind: 'confirmed', requestId: 'r1' },
@@ -45,8 +46,8 @@ describe('resolveActivityDetailStandardFooter', () => {
       viewerLevel: 'participant',
     });
     expect(footer.mode).toBe('joined');
-    expect(footer.left.label).toBe(ACTIVITY_CTA_OPEN_CHAT);
-    expect(footer.center?.label).toBe('Invite Friends');
+    expect(footer.left.label).toBe(ACTIVITY_CTA_CHAT_SHORT);
+    expect(footer.center?.label).toBe(ACTIVITY_INVITE_FRIENDS_CTA_SHORT);
     expect(footer.center?.action).toBe('participant_invite');
     expect(footer.right.action).toBe('participant_withdraw');
   });

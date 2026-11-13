@@ -121,6 +121,8 @@ Registration: `registerMeBadgesRoutes.ts` · service: `member-badges.ts`.
 | GET | `/activities/:id/invites` | Pending **Join me** invitee ids the caller sent for this activity |
 | POST | `/activities/:id/invites` | **Join me** — host or confirmed participant invites another member (notification only; invitee still RSVPs / requests; host approval when required). Rate limit: **20 sends / activity / sender / 24h** (`ACTIVITY_JOIN_INVITE_DAILY_LIMIT_PER_ACTIVITY`) |
 | * | `/publishing/activities/*` | CRUD, publish, history — FE: `tenantActivityClientApi` (`activities.ts` → `/publishing/…`) |
+| POST | `/publishing/activities/:id/suspend` | Host soft-hide: `published` → `suspended` (off visitor map/search/browse; keep in workspace) |
+| POST | `/publishing/activities/:id/resume` | Host restore: `suspended` → `published` |
 | GET | `/publishing/activities/:id/participants` | Approved roster + flags (`registerPublishingActivityParticipantRoutes`) |
 | POST/DELETE | `/publishing/activities/:id/participants/:participantId/checkin` | Confirm / undo attendance |
 | POST | `/publishing/activities/:id/participants/:participantId/revoke` | Remove joiner (`hostNote` → notification) |
@@ -134,6 +136,18 @@ Storage: `activity_invites` (`COLLECTIONS.ACTIVITY_INVITES`) · indexes in `mong
 
 ---
 
+## Detail surfaces — platform alerts & partner referrals
+
+Registered on the **`/`** user router (`composeUserPublicRoutes` — before `requireAuth`).
+
+| Method | Path | Who | Notes |
+|--------|------|-----|--------|
+| GET | `/alerts/active?lat=&lng=&radiusKm=&region=` | Public | Active safety / ops banners for consumer detail pages (rate-limited per IP + resource like other catalog reads). |
+| GET / POST / PATCH | `/admin/alerts` | Platform admin | Create, list, update platform alerts. `POST /admin/alerts/:id/expire` ends a banner. |
+| POST | `/facilities/:id/condition-reports` | Signed-in | Amenity working / not_working / unknown — queued for curator confirm. |
+| GET / POST | `/admin/amenity-reports` | Platform admin | Review queue; `POST /admin/amenity-reports/:id/confirm` sets `amenityState`. |
+| POST | `/referrals/click` | Public | Fire-and-forget partner link telemetry — body `{ entityKind: 'facility', entityId, destinationUrl, source? }`; **204**; `destinationUrl` must match `facilities.partnerReferralUrl`. |
+
 ## Geo search (`/geo`)
 
 Place autocomplete and community rideshare destinations. Registered in `apps/api/src/routes/geo-search.ts` (`apiRouter.use('/geo')`). Optional auth. Place autocomplete is cached on the API for 60s; destination search caches the public half (outings + catalog places) for 20s and loads the caller’s draft places on each request.
@@ -145,6 +159,16 @@ Place autocomplete and community rideshare destinations. Registered in `apps/api
 | POST | `/geo/resolve` | `{ placeId }` or `{ query }` → one place row with coordinates. |
 | GET | `/geo/rideshare-destinations?q=` | Parallel search: published outing **meeting** points (`meetingLat` / `meetingLng` / `meetingPoint`), active catalog places that have an area and a cover, and the caller’s draft place submissions. Rides are excluded. |
 | POST | `/geo/rideshare-destinations/resolve` | `{ kind, id }` → one destination row by id (`activity_meeting` · `catalog_place` · `pending_place`). |
+| GET | `/geo/tree` | Geographic hierarchy (country → emirate → area → venue). UUID node ids. Cache 5m. |
+| GET | `/geo/counts?ids=` | Coalesced facility / place / activity counts for node ids. |
+| GET | `/geo/resolve?lat=&lng=` | Pin → `geoRef` chain (distinct from POST `/geo/resolve` place autocomplete). |
+| GET | `/geo/:id/summary` | Node summary + breadcrumbs + child counts. |
+| GET | `/geo/:id/facilities` · `/geo/:id/places` · `/geo/:id/activities` | Cursor lists under a node (`geoRef.chain`). |
+| POST | `/vitals` | Sampled web-vitals RUM. In-memory buffer; at most one Mongo batch insert per minute per instance. Never one document per vital. |
+
+Explore map/list search: `GET /explore/map?q=&country=&area=&venue=` filters pins by `geoRef` names/tokens (and existing title text). `GET /places` accepts the same `q` / `country` / `area` / `venue` params.
+
+Member catalog suggestions (always-review): `GET/POST /me/submissions*` · admin `GET /admin/submissions` · `POST /admin/submissions/:id/review`.
 
 Community host publish stores the chosen row on the activity `requirements` lines (`Rideshare destination activity:` / `Rideshare destination place:` / `Rideshare pending destination place:`). Pro hosts may pin any map destination and skip this search.
 

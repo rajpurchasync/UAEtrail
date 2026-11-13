@@ -13,6 +13,7 @@ import {
   removeMyGroupMember,
   toggleMyGroupWallReaction,
   updateMyGroupChatSettings,
+  updateMyGroupKidMember,
 } from '../../services/social-groups-me-commands.js';
 import {
   listMyGroupWallMessages,
@@ -23,6 +24,7 @@ import {
   acceptInviteSchema,
   createGroupSchema,
   createKidSchema,
+  patchKidSchema,
   createWallPostSchema,
   groupIdParamSchema,
   groupInviteSchema,
@@ -152,6 +154,21 @@ export const registerGroupRoutes = (router: Router): void => {
         const body = req.body as z.infer<typeof createKidSchema>;
         const data = await createMyGroupKidMember(groupId, req.auth!.userId, body);
         res.status(201).json({ data });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  router.patch(
+    '/me/groups/:groupId/kids/:membershipId',
+    validate({ params: groupMembershipIdParamSchema, body: patchKidSchema }),
+    async (req, res, next) => {
+      try {
+        const { groupId, membershipId } = req.params as z.infer<typeof groupMembershipIdParamSchema>;
+        const body = req.body as z.infer<typeof patchKidSchema>;
+        const data = await updateMyGroupKidMember(groupId, membershipId, req.auth!.userId, body);
+        res.json({ data });
       } catch (error) {
         next(error);
       }

@@ -9,7 +9,7 @@ interface DialogProps {
   onClose: () => void;
   title: string;
   children: ReactNode;
-  /** Bottom sheet on mobile, centered card on desktop */
+  /** Extra classes on the dialog panel. */
   className?: string;
   /** Override backdrop stacking (e.g. explore map overlays). */
   overlayClassName?: string;
@@ -45,12 +45,12 @@ export const Dialog = ({
 
   const panelClass =
     variant === 'form'
-      ? `glass-card w-full max-w-lg max-h-[min(88dvh,720px)] p-6 rounded-t-[24px] md:rounded-[24px] flex flex-col overflow-hidden ${className}`
-      : `glass-card w-full max-w-lg max-h-[min(88dvh,720px)] overflow-y-auto scroll-touch p-6 rounded-t-[24px] md:rounded-[24px] ${className}`;
+      ? `glass-card w-full max-w-lg max-h-[min(88dvh,calc(100dvh-2rem-env(safe-area-inset-top)-env(safe-area-inset-bottom)))] p-6 rounded-[24px] flex flex-col overflow-hidden ${className}`
+      : `glass-card w-full max-w-lg max-h-[min(88dvh,calc(100dvh-2rem-env(safe-area-inset-top)-env(safe-area-inset-bottom)))] overflow-y-auto scroll-touch p-6 rounded-[24px] ${className}`;
 
   return createPortal(
     <div
-      className={`${CONSUMER_MAIN_OVERLAY_INSET} ${overlayClassName} flex items-end justify-center bg-black/40 p-0 md:items-center md:p-4`}
+      className={`${CONSUMER_MAIN_OVERLAY_INSET} ${overlayClassName} flex items-center justify-center bg-black/40 p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]`}
       onClick={onClose}
       role="presentation"
     >
@@ -63,7 +63,7 @@ export const Dialog = ({
         onClick={(e) => e.stopPropagation()}
       >
         <div className={headerClass}>
-          <h3 id={titleId} className="text-lg font-bold text-neutral-900">
+          <h3 id={titleId} className="text-lg font-bold text-neutral-900 dark:text-neutral-100">
             {title}
           </h3>
           <button

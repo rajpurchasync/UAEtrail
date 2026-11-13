@@ -30,21 +30,34 @@ describe('computeActivityViewerEntitlements', () => {
     expect(ent.canMessageHostBeforeJoin).toBe(true);
   });
 
-  it('Pro joined participant may offer transport', () => {
+  it('joined participant may offer and link rides (Pro not required)', () => {
     const ent = computeActivityViewerEntitlements({
-      isProMember: true,
+      isProMember: false,
       isFriendOfHost: false,
       level: 'participant',
       canAccessCrewSurfaces: true,
       buddyUserIdsOnActivity: ['b1'],
     });
-    expect(ent.canViewFullBuddyRoster).toBe(true);
     expect(ent.canOfferTransport).toBe(true);
+    expect(ent.canAddLinkedRide).toBe(true);
+    expect(ent.canViewFullBuddyRoster).toBe(false);
+  });
+
+  it('host may offer and link rides without Pro', () => {
+    const ent = computeActivityViewerEntitlements({
+      isProMember: false,
+      isFriendOfHost: false,
+      level: 'host',
+      canAccessCrewSurfaces: true,
+      buddyUserIdsOnActivity: [],
+    });
+    expect(ent.canOfferTransport).toBe(true);
+    expect(ent.canAddLinkedRide).toBe(true);
   });
 });
 
 describe('mergeActivityMapPeekActionsWithEntitlements', () => {
-  it('strips link_rideshare when host is not Pro', () => {
+  it('keeps link_rideshare for host without Pro', () => {
     const ent = computeActivityViewerEntitlements({
       isProMember: false,
       isFriendOfHost: false,
@@ -61,7 +74,7 @@ describe('mergeActivityMapPeekActionsWithEntitlements', () => {
       ent,
       'host'
     );
-    expect(merged.map((a) => a.id)).toEqual(['open_crew_chat', 'view_detail']);
+    expect(merged.map((a) => a.id)).toEqual(['open_crew_chat', 'link_rideshare', 'view_detail']);
   });
 
   it('adds message_host for Pro pre-join when allowed', () => {

@@ -11,6 +11,7 @@ import type { AreaPublicDTO } from '@uaetrail/shared-types';
 import { findPublishedAreaByQuery, isStrongPublishedAreaSearchMatch } from '../exploreAreaFilter';
 import { isGuestMapCatalogPreviewLimited } from '../guestMapPreviewPolicy';
 import { ExploreSearchAreaHints } from './ExploreSearchAreaHints';
+import { ExploreSearchGeoHints } from './ExploreSearchGeoHints';
 import { ExploreSearchGuestPreviewNotice } from './ExploreSearchGuestPreviewNotice';
 import { ExploreSearchScopeHints } from './ExploreSearchScopeHints';
 import { EXPLORE_MAP_SEARCH_INPUT_FONT_PX } from './exploreMapPillDropdown';
@@ -116,6 +117,12 @@ export const ExploreBrowseSearchPanel = ({
               className={variant === 'modal' ? 'mt-3 border-t border-neutral-100' : 'mt-2 border-t border-neutral-100'}
             />
           ) : null}
+          <ExploreSearchGeoHints
+            query={query}
+            onPickArea={onPickArea}
+            onPickQuery={onQueryChange}
+            className={variant === 'modal' ? 'border-t border-neutral-100' : 'mt-2 border-t border-neutral-100'}
+          />
           <ExploreSearchScopeHints
             query={query}
             counts={scopeCounts}

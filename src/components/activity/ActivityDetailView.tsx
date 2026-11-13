@@ -3,33 +3,36 @@ import { useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { resolveJoinRequestUiState } from '../../utils/joinRequestUi';
 import { useAuth } from '../../context/AuthContext';
+import { viewerCanManageActivityOuting } from '../../utils/viewerHostsActivity';
 import { useActivityDetailMapPeekHandlers } from '../../activity/useActivityDetailMapPeekHandlers';
 import type {
   ActivityDetailDTO,
   ActivityEngagementStripsDTO,
   ActivityGroupChatPostPolicy,
-  ActivityPresentationSectionsDTO,
+  ActivityPresentationConsumerLayoutDTO,
+  ActivityPresentationTabsDTO,
   MyActivityRequestDTO,
   ActivityParticipationDTO,
   ReviewDTO,
 } from '@uaetrail/shared-types';
 import { activityDetailEyebrowForActivity } from '../../config/activityTypes';
-import { detailBackPath } from '../../config/routingCatalog';
+import { detailBackPath, EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import type { ActivityViewerAccessDTO, ActivityViewerEntitlementsDTO } from '@uaetrail/shared-types';
 import { activityShareInputFromActivity } from '../../utils/activityShare';
-import { ShareButton } from '../ui';
+import { DetailHeroShareButton } from '../../detail/shared/DetailHeroShareButton';
 import type { ActivityDetailTabId } from '../../activity/activityDetailTab';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import type { ActivityManageInitialView } from './activityManageViews';
+import type { ActivityHostManageSurfaceProps } from './ConsumerDetailHostManageSection';
 import type { ActivityDetailKind } from '../../activity/detail/activityDetailKind';
 import type { ActivityDetailPlanSectionsComponent } from '../../activity/detail/composers';
 import { activityDetailPlanSectionsForKind } from '../../activity/detail/composers';
 import type { ActivityDetailTabFooterKind } from '../../activity/activityDetailTabFooters';
 import { ActivityDetailBody } from './detail/ActivityDetailBody';
-import { ActivityDetailSections } from '../../activity/detail/templates/ActivityDetailSections';
-import { MobileDetailScrollShell } from '../mobile/MobileDetailScrollShell';
+import { ActivityConsumerDetailPage } from '../../activity/detail/templates/ActivityConsumerDetailPage';
+import { ActivityConsumerDetailModalShell } from '../../activity/detail/templates/ActivityConsumerDetailModalShell';
 import { MobileDetailShell } from '../mobile/MobileDetailShell';
-import { resolveActivityDetailHeaderChrome } from '../../activity/activityDetailHeaderChrome';
+import { resolveActivityConsumerDetailHeaderChrome } from '../../activity/activityConsumerDetailHeader';
 import { useActivityDetailViewModel } from './detail/useActivityDetailViewModel';
 import type { ActivityRequestView } from '../../api/types';
 
@@ -86,15 +89,23 @@ export interface ActivityDetailViewProps {
   };
   /** Wire `presentation.footerByTab` from GET /activities/:id (AD-PRES-02). */
   wireFooterByTab?: Record<ActivityDetailTabId, ActivityDetailTabFooterKind> | null;
+  /** Wire `presentation.tabs` from GET /activities/:id (AD-PRES-02). */
+  wireTabs?: ActivityPresentationTabsDTO | null;
   /** Wire `presentation.strips` — host invited chip on hero, etc. */
   wireStrips?: ActivityEngagementStripsDTO | null;
-  /** Wire `presentation.sections` — section visibility for the public page and embed. */
-  wireSections?: ActivityPresentationSectionsDTO | null;
+  /** Wire `presentation.consumerLayout` — public scroll template slots. */
+  consumerLayout?: ActivityPresentationConsumerLayoutDTO | null;
   onHostShareOuting?: () => void;
   /** Consumer page template (`HikingActivityDetailPage`, …) — set by `ActivityDetailByKind`. */
   detailKind?: ActivityDetailKind;
   /** Consumer kind composer — defaults from `detailKind` when host embed omits template. */
   planSections?: ActivityDetailPlanSectionsComponent;
+  /** Public route scroll layout (`ActivityDetailPageShell` only). */
+  consumerDetailLayout?: boolean;
+  /** Host manage sheet — same consumer sections; parent supplies overlay chrome. */
+  inlineConsumerDetail?: boolean;
+  /** Host manage overview — outing admin section after key facts / About. */
+  hostManageSurface?: ActivityHostManageSurfaceProps | null;
   viewerAccess?: ActivityViewerAccessDTO | null;
   onOfferLinkedRideshare?: () => void;
   linkRideshareTenantId?: string | null;
@@ -104,6 +115,8 @@ export interface ActivityDetailViewProps {
   onOpenHostManage?: (activity: ActivityDTO, initialView?: ActivityManageInitialView) => void;
   /** Rideshare host attached a parent outing — refresh detail. */
   onRideshareParentLinked?: () => void;
+  /** Guest hero share — sign in, then return with share sheet open. */
+  onGuestShareAuth?: () => void;
 }
 
 export const ActivityDetailView = ({
@@ -137,11 +150,15 @@ export const ActivityDetailView = ({
   hostCrewChatPolicy,
   hostBuddiesHub,
   wireFooterByTab = null,
+  wireTabs = null,
   wireStrips = null,
-  wireSections = null,
+  consumerLayout = null,
   onHostShareOuting,
   detailKind,
   planSections,
+  consumerDetailLayout = false,
+  inlineConsumerDetail = false,
+  hostManageSurface = null,
   viewerAccess = null,
   onOfferLinkedRideshare,
   linkRideshareTenantId = null,
@@ -149,10 +166,11 @@ export const ActivityDetailView = ({
   onParticipantInviteFriends,
   onOpenHostManage,
   onRideshareParentLinked,
+  onGuestShareAuth,
 }: ActivityDetailViewProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const isHostUser = Boolean(hostCrewChatPolicy);
+  const isHostUser = viewerCanManageActivityOuting(activity, user?.id ?? null, user?.role ?? null);
 
   const joinUiState = useMemo(
     () =>
@@ -179,7 +197,7 @@ export const ActivityDetailView = ({
     onChatError: onMapPeekChatError,
     isHostUser,
     onOpenHostManage,
-    publicDetail: !previewMode && layout !== 'embedded',
+    consumerDetailLayout,
     onOpenParticipationManage: () => openParticipationManageRef.current(),
   });
 
@@ -212,9 +230,11 @@ export const ActivityDetailView = ({
     hostCrewChatPolicy,
     hostBuddiesHub,
     wireFooterByTab,
+    wireTabs,
     wireStrips,
-    wireSections,
+    consumerLayout,
     onHostShareOuting,
+    consumerDetailLayout,
     viewerAccess,
     onOfferLinkedRideshare,
     detailKind,
@@ -227,15 +247,14 @@ export const ActivityDetailView = ({
     planSections ?? (detailKind ? activityDetailPlanSectionsForKind(detailKind) : null);
 
   const shareControl =
-    model.showInviteShare ? (
-      <ShareButton
+    !previewMode && model.activity.status === 'published' ? (
+      <DetailHeroShareButton
         title={model.sharePayload.title}
         text={model.sharePayload.text}
         path={model.sharePayload.path}
         activityShare={activityShareInputFromActivity(activity)}
-        canSendBuddyInvites={Boolean(user && canSendJoinInvites)}
-        iconOnly
-        light
+        canSendBuddyInvites={Boolean(user && canSendJoinInvites && model.showInviteShare)}
+        gateShareUntilSignedIn={!user ? onGuestShareAuth : undefined}
       />
     ) : null;
 
@@ -243,8 +262,30 @@ export const ActivityDetailView = ({
     return <ActivityDetailBody {...model} planSections={PlanSections} />;
   }
 
-  if (model.publicDetail) {
-    const headerChrome = resolveActivityDetailHeaderChrome(
+  if (consumerDetailLayout) {
+    const consumerPage = (
+      <ActivityConsumerDetailPage
+        model={model}
+        planSections={PlanSections}
+        onRideshareParentLinked={onRideshareParentLinked}
+        heroTopAction={shareControl}
+        hostManageSurface={hostManageSurface}
+      />
+    );
+
+    if (inlineConsumerDetail) {
+      return (
+        <div
+          className="min-w-0 w-full"
+          data-activity-detail-template={detailKind ?? undefined}
+          data-activity-host-manage-overview
+        >
+          {consumerPage}
+        </div>
+      );
+    }
+
+    const headerChrome = resolveActivityConsumerDetailHeaderChrome(
       model.activity,
       model.peekParityCard
     );
@@ -253,19 +294,16 @@ export const ActivityDetailView = ({
         className="flex h-full min-h-0 flex-1 flex-col overflow-hidden"
         data-activity-detail-template={detailKind ?? undefined}
       >
-        <MobileDetailScrollShell
+        <ActivityConsumerDetailModalShell
           backTo={backTo}
           backLabel={backLabel}
           headerChrome={headerChrome}
-          headerAction={shareControl}
+          closeTo={EXPLORE_MAP_PATH}
           footer={model.stickyFooter}
+          footerClassName={model.consumerEngagementActions ? 'md:hidden' : undefined}
         >
-          <ActivityDetailSections
-            model={model}
-            planSections={PlanSections}
-            onRideshareParentLinked={onRideshareParentLinked}
-          />
-        </MobileDetailScrollShell>
+          {consumerPage}
+        </ActivityConsumerDetailModalShell>
       </div>
     );
   }

@@ -1,5 +1,14 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Check, ChevronDown } from 'lucide-react';
+
+type AppSelectMenuLayout = {
+  top?: number;
+  bottom?: number;
+  left: number;
+  width: number;
+  maxHeight: number;
+};
 
 export interface AppSelectOption<T extends string = string> {
   value: T;
@@ -43,19 +52,63 @@ export function AppSelect<T extends string>({
   'aria-label': ariaLabel,
 }: AppSelectProps<T>) {
   const [open, setOpen] = useState(false);
+  const [menuLayout, setMenuLayout] = useState<AppSelectMenuLayout | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const listId = useId();
   const selected = options.find((option) => option.value === value);
   const showPlaceholder = !selected && Boolean(placeholder);
   const displayLabel = selected?.label ?? placeholder ?? 'Select';
 
+  const updateMenuLayout = useCallback(() => {
+    const trigger = triggerRef.current;
+    if (!trigger) return;
+    const rect = trigger.getBoundingClientRect();
+    const gap = 4;
+    const viewportPad = 8;
+    const minWidth = size === 'compact' ? 136 : rect.width;
+    const width = size === 'compact' ? Math.max(rect.width, minWidth) : rect.width;
+    const left =
+      size === 'compact' ? Math.max(viewportPad, rect.right - width) : Math.max(viewportPad, rect.left);
+    const spaceBelow = window.innerHeight - rect.bottom - viewportPad;
+    const spaceAbove = rect.top - viewportPad;
+    const preferBelow = spaceBelow >= 120 || spaceBelow >= spaceAbove;
+    const maxHeight = Math.min(240, Math.max(96, preferBelow ? spaceBelow - gap : spaceAbove - gap));
+    if (preferBelow) {
+      setMenuLayout({ top: rect.bottom + gap, left, width, maxHeight });
+    } else {
+      setMenuLayout({
+        bottom: window.innerHeight - rect.top + gap,
+        left,
+        width,
+        maxHeight,
+      });
+    }
+  }, [size]);
+
+  useLayoutEffect(() => {
+    if (!open) {
+      setMenuLayout(null);
+      return;
+    }
+    updateMenuLayout();
+    window.addEventListener('resize', updateMenuLayout);
+    window.addEventListener('scroll', updateMenuLayout, true);
+    return () => {
+      window.removeEventListener('resize', updateMenuLayout);
+      window.removeEventListener('scroll', updateMenuLayout, true);
+    };
+  }, [open, updateMenuLayout]);
+
   useEffect(() => {
     if (!open) return;
 
     const onDocumentClick = (event: MouseEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) {
-        setOpen(false);
-      }
+      const target = event.target as Node;
+      if (rootRef.current?.contains(target)) return;
+      const panel = document.getElementById(listId);
+      if (panel?.contains(target)) return;
+      setOpen(false);
     };
     const onEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setOpen(false);
@@ -67,7 +120,7 @@ export function AppSelect<T extends string>({
       document.removeEventListener('mousedown', onDocumentClick);
       document.removeEventListener('keydown', onEscape);
     };
-  }, [open]);
+  }, [open, listId]);
 
   const triggerClass =
     inputClassName ??
@@ -75,11 +128,54 @@ export function AppSelect<T extends string>({
       ? 'min-h-0 rounded-lg border border-neutral-200 bg-white px-2 py-1 text-[11px] text-neutral-700'
       : 'ios-input min-h-[48px] text-[14px]');
 
-  const menuAlignClass = size === 'compact' ? 'right-0 left-auto min-w-[8.5rem]' : 'left-0 right-0';
+  const menuPanel =
+    open && menuLayout
+      ? createPortal(
+          <ul
+            id={listId}
+            role="listbox"
+            aria-label={ariaLabel}
+            style={{
+              position: 'fixed',
+              top: menuLayout.top,
+              bottom: menuLayout.bottom,
+              left: menuLayout.left,
+              width: menuLayout.width,
+              maxHeight: menuLayout.maxHeight,
+            }}
+            className={`place-select-panel-fixed z-[7000] max-h-60 overflow-y-auto overscroll-contain py-1 ${menuClassName}`}
+          >
+            {options.map((option) => {
+              const active = option.value === value;
+              return (
+                <li key={option.value} role="presentation">
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={active}
+                    onClick={() => {
+                      onChange(option.value);
+                      setOpen(false);
+                    }}
+                    className={`place-select-option items-center justify-between ${
+                      active ? 'place-select-option--selected' : ''
+                    }`}
+                  >
+                    <span>{option.label}</span>
+                    {active && <Check className="h-4 w-4 shrink-0" aria-hidden />}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>,
+          document.body
+        )
+      : null;
 
   return (
     <div ref={rootRef} className={`relative ${className}`}>
       <button
+        ref={triggerRef}
         type="button"
         disabled={disabled}
         aria-haspopup="listbox"
@@ -102,37 +198,7 @@ export function AppSelect<T extends string>({
         />
       </button>
 
-      {open && (
-        <ul
-          id={listId}
-          role="listbox"
-          aria-label={ariaLabel}
-          className={`place-select-panel top-[calc(100%+4px)] z-[100] max-h-60 py-1 ${menuAlignClass} ${menuClassName}`}
-        >
-          {options.map((option) => {
-            const active = option.value === value;
-            return (
-              <li key={option.value} role="presentation">
-                <button
-                  type="button"
-                  role="option"
-                  aria-selected={active}
-                  onClick={() => {
-                    onChange(option.value);
-                    setOpen(false);
-                  }}
-                  className={`place-select-option items-center justify-between ${
-                    active ? 'place-select-option--selected' : ''
-                  }`}
-                >
-                  <span>{option.label}</span>
-                  {active && <Check className="h-4 w-4 shrink-0" aria-hidden />}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+      {menuPanel}
     </div>
   );
 }

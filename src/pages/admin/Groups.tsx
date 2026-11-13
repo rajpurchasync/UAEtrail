@@ -6,6 +6,7 @@ import { fetchAdminGroupDetail } from '../../hooks/adminDrilldownApi';
 import { DashboardLayout } from '../../components/layout';
 import { ADMIN_LINKS } from '../../constants';
 import { AppSelect, ADMIN_FILTER_SELECT_CLASS, ADMIN_INPUT_CLASS } from '../../components/ui/AppSelect';
+import { AdminFilterBar } from '../../components/admin/AdminFilterBar';
 import { AdminTablePager, DEFAULT_ADMIN_PAGE_SIZE, paginateRows, type AdminPageSize } from '../../components/admin/AdminTablePager';
 import { formatAdminDate } from '../../utils/formatAdminDate';
 
@@ -27,6 +28,7 @@ const inviteStatusClass: Record<string, string> = {
   cancelled: 'bg-red-100 text-red-800',
 };
 
+/** Platform social groups moderation. */
 export const Groups = () => {
   const [groups, setGroups] = useState<AdminSocialGroupListItem[]>([]);
   const [page, setPage] = useState(1);
@@ -148,19 +150,29 @@ export const Groups = () => {
   };
 
   return (
-    <DashboardLayout title="Admin Dashboard" links={ADMIN_LINKS}>
-      <div className="flex flex-wrap gap-3 mb-4">
-        <form onSubmit={handleSearch} className="flex gap-2">
+    <DashboardLayout title="Groups" links={ADMIN_LINKS}>
+      <AdminFilterBar
+        onSubmit={handleSearch}
+        onClear={() => {
+          setSearch('');
+          setTypeFilter('');
+          setStatusFilter('');
+          setCreatorFilter('');
+          setDateFrom('');
+          setDateTo('');
+          setPage(1);
+        }}
+      >
+        <label className="text-xs text-neutral-500">
+          Search
           <input
+            type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search name or slogan..."
-            className={`${ADMIN_INPUT_CLASS} w-56`}
+            placeholder="Name or creator…"
+            className={`${ADMIN_INPUT_CLASS} mt-1 block w-56`}
           />
-          <button type="submit" className="px-4 py-2 bg-emerald-600 text-white rounded-md text-sm hover:bg-emerald-700">
-            Search
-          </button>
-        </form>
+        </label>
         <AppSelect
           value={typeFilter}
           onChange={(value) => {
@@ -186,29 +198,38 @@ export const Groups = () => {
           inputClassName={ADMIN_FILTER_SELECT_CLASS}
           aria-label="Filter by status"
         />
-        <input
-          type="date"
-          value={dateFrom}
-          onChange={(e) => setDateFrom(e.target.value)}
-          className={ADMIN_INPUT_CLASS}
-          aria-label="Created from"
-        />
-        <input
-          type="date"
-          value={dateTo}
-          onChange={(e) => setDateTo(e.target.value)}
-          className={ADMIN_INPUT_CLASS}
-          aria-label="Created to"
-        />
-        <input
-          type="text"
-          value={creatorFilter}
-          onChange={(e) => setCreatorFilter(e.target.value)}
-          placeholder="Creator"
-          className={`${ADMIN_INPUT_CLASS} w-40`}
-          aria-label="Filter by creator"
-        />
-      </div>
+        <label className="text-xs text-neutral-500">
+          From
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+            className={`${ADMIN_INPUT_CLASS} mt-1 block`}
+            aria-label="Created from"
+          />
+        </label>
+        <label className="text-xs text-neutral-500">
+          To
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+            className={`${ADMIN_INPUT_CLASS} mt-1 block`}
+            aria-label="Created to"
+          />
+        </label>
+        <label className="text-xs text-neutral-500">
+          Creator
+          <input
+            type="search"
+            value={creatorFilter}
+            onChange={(e) => setCreatorFilter(e.target.value)}
+            placeholder="Name or email"
+            className={`${ADMIN_INPUT_CLASS} mt-1 block w-40`}
+            aria-label="Filter by creator"
+          />
+        </label>
+      </AdminFilterBar>
 
       {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
 

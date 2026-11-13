@@ -2,6 +2,7 @@ import type { Router } from 'express';
 import type { RequestHandler } from 'express';
 import { z } from 'zod';
 import { paginatedResponse } from '../../lib/pagination.js';
+import { requireAuth } from '../../middleware/auth.js';
 import { optionalAuth } from '../../middleware/optional-auth.js';
 import { validate } from '../../middleware/validate.js';
 import { buildFacilityCatalog } from '../../services/place-catalog.js';
@@ -67,4 +68,38 @@ export const registerPublicFacilityRoutes = (router: Router): void => {
   };
 
   router.get('/facilities/:id', optionalAuth, validate({ params: eventIdParamSchema }), facilityDetailHandler);
+
+  router.post(
+    '/facilities/:id/condition-reports',
+    requireAuth,
+    validate({
+      params: eventIdParamSchema,
+      body: z.object({
+        amenityState: z.enum(['working', 'not_working', 'unknown']),
+        note: z.string().max(500).optional(),
+        photoUrl: z.string().min(1).max(2048),
+      }),
+    }),
+    async (req, res, next) => {
+      try {
+        const { createAmenityReport } = await import('../../services/amenity-reports.js');
+        const { id } = req.params as z.infer<typeof eventIdParamSchema>;
+        const body = req.body as {
+          amenityState: 'working' | 'not_working' | 'unknown';
+          note?: string;
+          photoUrl: string;
+        };
+        const data = await createAmenityReport({
+          facilityId: id,
+          userId: req.auth!.userId,
+          amenityState: body.amenityState,
+          note: body.note,
+          photoUrl: body.photoUrl,
+        });
+        res.status(201).json({ data: { id: data._id, status: data.status } });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
 };

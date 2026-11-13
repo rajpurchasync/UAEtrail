@@ -13,6 +13,7 @@ import { AdminTablePager, DEFAULT_ADMIN_PAGE_SIZE, type AdminPageSize } from '..
 import { DashboardLayout } from '../../components/layout';
 import { ADMIN_LINKS } from '../../constants';
 import { AppSelect, ADMIN_FILTER_SELECT_CLASS, ADMIN_INPUT_CLASS } from '../../components/ui/AppSelect';
+import { AdminFilterBar } from '../../components/admin/AdminFilterBar';
 import { AdminIconButton } from '../../components/admin/AdminIconButton';
 import { Ban, Eye, ShieldOff, UserCheck } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -67,6 +68,7 @@ export const Members = () => {
   const [userTypeFilter, setUserTypeFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [search, setSearch] = useState('');
+  const [searchApplied, setSearchApplied] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<UserDetail | null>(null);
@@ -85,7 +87,7 @@ export const Members = () => {
         role: roleFilter || undefined,
         userType: userTypeFilter || undefined,
         status: statusFilter || undefined,
-        search: search || undefined,
+        search: searchApplied || undefined,
         page,
         pageSize
       });
@@ -101,12 +103,12 @@ export const Members = () => {
     }
   };
 
-  useSafeAsyncEffect((isActive) => loadUsers(isActive), [page, pageSize, roleFilter, userTypeFilter, statusFilter]);
+  useSafeAsyncEffect((isActive) => loadUsers(isActive), [page, pageSize, roleFilter, userTypeFilter, statusFilter, searchApplied]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setPage(1);
-    loadUsers();
+    setSearchApplied(search.trim());
   };
 
   const executeToggleStatus = async () => {
@@ -193,10 +195,13 @@ export const Members = () => {
   };
 
   return (
-    <DashboardLayout title="Users" links={ADMIN_LINKS}>
-      <p className="text-sm text-gray-600 mb-4">
-        Search members, review accounts, suspend or activate access. Platform staff roles are managed separately below.
-      </p>
+    <DashboardLayout title="Users & Members" links={ADMIN_LINKS}>
+      <div className="mb-5">
+        <h2 className="text-lg font-semibold text-neutral-900">Users & Members</h2>
+        <p className="text-sm text-neutral-500">
+          Search members, review accounts, suspend or activate access. Platform staff roles are managed separately below.
+        </p>
+      </div>
 
       {isMasterAdmin && (
         <section className="mb-6 rounded-xl border border-purple-100 bg-purple-50/60 p-4">
@@ -224,17 +229,32 @@ export const Members = () => {
         </section>
       )}
 
-      <div className="flex flex-wrap gap-3 mb-4">
-        <form onSubmit={handleSearch} className="flex gap-2">
+      <AdminFilterBar
+        onSubmit={handleSearch}
+        onClear={() => {
+          setSearch('');
+          setSearchApplied('');
+          setUserTypeFilter('');
+          setRoleFilter('');
+          setStatusFilter('');
+          setPage(1);
+        }}
+        actions={
+          <button type="submit" className="rounded-xl bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700">
+            Search
+          </button>
+        }
+      >
+        <label className="text-xs text-neutral-500">
+          Search
           <input
-            type="text"
-            placeholder="Search email, name, or phone..."
+            type="search"
+            placeholder="Email, name, or phone…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className={`${ADMIN_INPUT_CLASS} w-60`}
+            className={`${ADMIN_INPUT_CLASS} mt-1 block w-60`}
           />
-          <button type="submit" className="bg-emerald-600 text-white px-3 py-1.5 rounded text-sm hover:bg-emerald-700">Search</button>
-        </form>
+        </label>
         <AppSelect
           value={userTypeFilter}
           onChange={(value) => {
@@ -268,7 +288,7 @@ export const Members = () => {
           inputClassName={ADMIN_FILTER_SELECT_CLASS}
           aria-label="Filter by status"
         />
-      </div>
+      </AdminFilterBar>
 
       {successMessage && <p className="text-emerald-700 text-sm mb-3">{successMessage}</p>}
       {error && <p className="text-red-600 text-sm mb-3">{error}</p>}

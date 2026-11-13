@@ -6,7 +6,7 @@ import {
   MyActivityDTO,
   WithdrawReason,
 } from '@uaetrail/shared-types';
-import { apiRequest, getStoredSession } from '../client';
+import { apiRequest } from '../client';
 import { ADMIN_TABLE_PAGE_SIZE } from '../listAllPages';
 import type { ActivityDetail, ActivityRequestView } from '../types';
 
@@ -31,7 +31,22 @@ export const activitiesApi = {
       viewerAccess: ActivityViewerAccessDTO;
       presentation?: ActivityPresentationDTO;
     }>(`/activities/${id}`, {
-      auth: Boolean(getStoredSession()),
+      auth: false,
+    }),
+
+    getActivityLinkedRides: (activityId: string) =>
+      apiRequest<{ data: ActivityDTO[]; meta: { total: number } }>(
+        `/activities/${activityId}/linked-rides`,
+        { auth: false }
+      ),
+
+    getPublicActivityMeState: (id: string) =>
+    apiRequest<{
+      data: ActivityDetail;
+      viewerAccess: ActivityViewerAccessDTO;
+      presentation?: ActivityPresentationDTO;
+    }>(`/activities/${id}/me/state`, {
+      auth: true,
     }),
 
     listActivityJoinInvitesSent: (activityId: string) =>
@@ -107,7 +122,7 @@ export const activitiesApi = {
 
     createJoinRequest: (
       activityId: string,
-      body?: { note?: string; packingCheckedIds?: string[]; packingSignature?: string }
+      body?: { note?: string; packingCheckedIds?: string[]; packingSignature?: string; adults?: number; kids?: number }
     ) =>
     apiRequest<{ data: JoinRequestDTO }>(`/activities/${activityId}/requests`, {
       method: 'POST',
@@ -117,9 +132,15 @@ export const activitiesApi = {
 
     rsvpActivity: (
       activityId: string,
-      body?: { note?: string; packingCheckedIds?: string[]; packingSignature?: string }
+      body?: { note?: string; packingCheckedIds?: string[]; packingSignature?: string; adults?: number; kids?: number }
     ) =>
-    apiRequest<{ data: { request: JoinRequestDTO; participation: MyActivityDTO['participation'] } }>(
+    apiRequest<{
+      data: {
+        request: JoinRequestDTO;
+        participation: MyActivityDTO['participation'] | null;
+        waitlisted?: boolean;
+      };
+    }>(
       `/activities/${activityId}/rsvp`,
       {
         method: 'POST',
@@ -145,6 +166,58 @@ export const activitiesApi = {
       auth: true,
       body: JSON.stringify({ note }),
     }),
+
+    updateJoinRequestParty: (
+      activityId: string,
+      requestId: string,
+      body: {
+        note?: string;
+        adults?: number;
+        kids?: number;
+        partyMemberIds?: string[];
+      }
+    ) =>
+      apiRequest<{
+        data: {
+          id: string;
+          note?: string | null;
+          adults?: number;
+          kids?: number;
+          partyMembers?: import('@uaetrail/shared-types').ActivityPartyMemberDTO[];
+          partyApprovalPending?: boolean;
+        };
+      }>(`/activities/${activityId}/requests/${requestId}`, {
+        method: 'PATCH',
+        auth: true,
+        body: JSON.stringify(body),
+      }),
+
+    acceptActivityFamilyInvite: (activityId: string, token: string) =>
+      apiRequest<{
+        data: {
+          activityId: string;
+          requestId: string;
+          partyMembers?: import('@uaetrail/shared-types').ActivityPartyMemberDTO[];
+          partyApprovalPending?: boolean;
+        };
+      }>(`/activities/${activityId}/family-invites/accept`, {
+        method: 'POST',
+        auth: true,
+        body: JSON.stringify({ token }),
+      }),
+
+    declineActivityFamilyInvite: (activityId: string, token: string) =>
+      apiRequest<{
+        data: {
+          activityId: string;
+          requestId: string;
+          partyMembers?: import('@uaetrail/shared-types').ActivityPartyMemberDTO[];
+        };
+      }>(`/activities/${activityId}/family-invites/decline`, {
+        method: 'POST',
+        auth: true,
+        body: JSON.stringify({ token }),
+      }),
 
     getMeRequests: () => apiRequest<{ data: ActivityRequestView[] }>('/me/requests?pageSize=100', { auth: true }),
 
@@ -198,4 +271,34 @@ export const activitiesApi = {
       method: 'PATCH',
       auth: true
     }),
+
+    adminSetRideshareParent: (rideshareActivityId: string, parentActivityId: string | null) =>
+      apiRequest<{ message: string; data: ActivityDTO | null }>(
+        `/admin/activities/${rideshareActivityId}/rideshare-parent`,
+        {
+          method: 'PATCH',
+          auth: true,
+          body: JSON.stringify({ parentActivityId }),
+        }
+      ),
+
+    adminSetLinkedRideshare: (parentActivityId: string, rideshareActivityId: string | null) =>
+      apiRequest<{ message: string; data: ActivityDTO | null }>(
+        `/admin/activities/${parentActivityId}/linked-rideshare`,
+        {
+          method: 'PATCH',
+          auth: true,
+          body: JSON.stringify({ rideshareActivityId }),
+        }
+      ),
+
+    adminSetRideshareDestinationPlace: (rideshareActivityId: string, placeId: string | null) =>
+      apiRequest<{ message: string; data: ActivityDTO | null }>(
+        `/admin/activities/${rideshareActivityId}/rideshare-place`,
+        {
+          method: 'PATCH',
+          auth: true,
+          body: JSON.stringify({ placeId }),
+        }
+      ),
 } as const;

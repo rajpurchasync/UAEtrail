@@ -5,7 +5,11 @@ import { usePhoneAppInstall } from '../../hooks/usePhoneAppInstall';
 import { SettingsMenuGroup } from '../settings/SettingsMenuRow';
 import { InstallGuideCard } from './InstallGuideCard';
 
-export const IosInstallSettingsSection = () => {
+type IosInstallSettingsSectionProps = {
+  embedded?: boolean;
+};
+
+export const IosInstallSettingsSection = ({ embedded = false }: IosInstallSettingsSectionProps) => {
   const { hash } = useLocation();
   const { installed, isNativeShell, platform, iosGuide } = usePhoneAppInstall();
 
@@ -14,18 +18,20 @@ export const IosInstallSettingsSection = () => {
 
   if (!visible) return null;
 
-  return (
-    <SettingsMenuGroup title={IOS_INSTALL.sectionTitle}>
-      <InstallGuideCard
-        id="ios-install"
-        settingsHash={IOS_INSTALL_SETTINGS_HASH}
-        headline={IOS_INSTALL.headline}
-        body={IOS_INSTALL.body}
-        showStepsLabel={IOS_INSTALL.showSteps}
-        guide={iosGuide}
-        accent="sky"
-        defaultStepsOpen={platform === 'ios'}
-      />
-    </SettingsMenuGroup>
+  const card = (
+    <InstallGuideCard
+      id="ios-install"
+      settingsHash={IOS_INSTALL_SETTINGS_HASH}
+      headline={IOS_INSTALL.headline}
+      body={IOS_INSTALL.body}
+      showStepsLabel={IOS_INSTALL.showSteps}
+      guide={iosGuide}
+      accent="sky"
+      defaultStepsOpen={platform === 'ios'}
+    />
   );
+
+  if (embedded) return card;
+
+  return <SettingsMenuGroup title={IOS_INSTALL.sectionTitle}>{card}</SettingsMenuGroup>;
 };

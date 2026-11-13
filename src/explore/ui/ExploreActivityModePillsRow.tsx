@@ -1,4 +1,6 @@
+import { useRef } from 'react';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
+import { useHorizontalDragScroll } from '../../hooks/useHorizontalDragScroll';
 import { EXPLORE_FILTER_PILL, EXPLORE_LIST_PILLS_SCROLL, EXPLORE_MAP_FILTER_INACTIVE } from '../../config/exploreTheme';
 
 const OPTIONS: ReadonlyArray<{ key: ExploreActivityModeFilter; label: string }> = [
@@ -21,6 +23,8 @@ export const ExploreActivityModePillsRow = ({
   layout = 'map',
   className = '',
 }: ExploreActivityModePillsRowProps) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useHorizontalDragScroll(scrollRef);
   const base = layout === 'map' ? EXPLORE_FILTER_PILL.map : EXPLORE_FILTER_PILL.list;
   const scrollClass =
     layout === 'list'
@@ -28,7 +32,7 @@ export const ExploreActivityModePillsRow = ({
       : 'min-w-0 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-none py-0.5';
 
   return (
-    <div className={`${scrollClass} ${className}`}>
+    <div ref={scrollRef} className={`${scrollClass} ${className}`}>
       <div className="flex w-max flex-nowrap items-center gap-2">
         {OPTIONS.map((option) => {
           const active = value === option.key;

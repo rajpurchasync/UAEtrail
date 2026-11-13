@@ -26,6 +26,7 @@ import {
 import { formatActivityLocal } from './datetime.js';
 import { resolveActivityDtoType } from '../domain/activity-type.js';
 import { sanitizeRideshareVehiclePublic } from './rideshare-vehicle-crew.js';
+import type { MongoActivityPrivateDoc } from './activity-private-store.js';
 
 const enumMap = <T extends string>(value: string | null | undefined): T =>
   (typeof value === 'string' ? value.toLowerCase() : '') as T;
@@ -37,13 +38,28 @@ export const mapTenantType = (type: string): TenantType => enumMap<TenantType>(t
 export const mapTenantBusinessMode = (mode: string | null | undefined): TenantBusinessMode | null =>
   mode ? enumMap<TenantBusinessMode>(mode) : null;
 
-const resolveSlotsAvailable = (event: Activity & { participantSlotsUsed?: number; participants?: Array<unknown> }): number => {
-  const used =
-    typeof event.participantSlotsUsed === 'number'
-      ? event.participantSlotsUsed
-      : (event.participants?.length ?? 0);
-  return Math.max(event.capacity - used, 0);
+type ActivityCapacitySource = Activity & {
+  participantSlotsUsed?: number;
+  participants?: Array<unknown>;
+  schemaVersion?: number;
+  counts?: { going?: number; waitlisted?: number; pending?: number } | null;
 };
+
+/** Headcount reserved against capacity — prefer `participantSlotsUsed`, heal stale v2 `counts`. */
+export const resolveActivityParticipantSlotsUsed = (event: ActivityCapacitySource): number => {
+  const fromParticipants = event.participants?.length ?? 0;
+  const fromCounts =
+    event.schemaVersion === 2 && event.counts != null && typeof event.counts.going === 'number'
+      ? event.counts.going
+      : 0;
+  if (typeof event.participantSlotsUsed === 'number') {
+    return Math.max(event.participantSlotsUsed, fromCounts, fromParticipants);
+  }
+  return Math.max(fromCounts, fromParticipants);
+};
+
+export const resolveActivitySlotsAvailable = (event: ActivityCapacitySource): number =>
+  Math.max(event.capacity - resolveActivityParticipantSlotsUsed(event), 0);
 
 const mapPlaceActivityType = (activityType: ActivityType | string): LocationDTO['activityType'] => {
   const value = String(activityType).toUpperCase();
@@ -99,7 +115,82 @@ type ActivityWithRelations = Activity & {
   participants?: Array<{ id: string } | ParticipantWithUser>;
 };
 
-export const buildActivityDto = (event : ActivityWithRelations): ActivityDTO => {
+export type ActivityDtoBuildOpts = {
+  /** Merge exact meeting pin + notes from `activity_private` (crew / host / trusted tools). */
+  activityPrivate?: MongoActivityPrivateDoc | null;
+};
+
+const exactMeetingFromPrivate = (
+  privateDoc: MongoActivityPrivateDoc | null | undefined
+): { lat: number; lng: number; meetingNotes: string | null } | null => {
+  if (!privateDoc?.exactGeo?.coordinates) return null;
+  const [lng, lat] = privateDoc.exactGeo.coordinates;
+  if (typeof lat !== 'number' || typeof lng !== 'number' || Number.isNaN(lat) || Number.isNaN(lng)) {
+    return null;
+  }
+  return {
+    lat,
+    lng,
+    meetingNotes: privateDoc.meetingNotes?.trim() ? privateDoc.meetingNotes.trim() : null,
+  };
+};
+
+/**
+ * Applies exact meeting fields from `activity_private` onto a mapped DTO and recomputes display coords.
+ */
+export const mergeActivityPrivateIntoActivityDto = (
+  dto: ActivityDTO,
+  privateDoc: MongoActivityPrivateDoc | null | undefined
+): ActivityDTO => {
+  if (!privateDoc) return dto;
+
+  const emergency = privateDoc.emergencyContact?.name?.trim() && privateDoc.emergencyContact?.phone?.trim()
+    ? {
+        name: privateDoc.emergencyContact.name.trim(),
+        phone: privateDoc.emergencyContact.phone.trim(),
+      }
+    : null;
+  const plateNumber =
+    typeof privateDoc.plateNumber === 'string' && privateDoc.plateNumber.trim()
+      ? privateDoc.plateNumber.trim()
+      : null;
+  const hasPrivateDetails = emergency != null || plateNumber != null;
+  const activityPrivateDetails = hasPrivateDetails
+    ? { emergencyContact: emergency, plateNumber: plateNumber ?? null }
+    : undefined;
+
+  const exact = exactMeetingFromPrivate(privateDoc);
+  if (!exact) {
+    if (!hasPrivateDetails) return dto;
+    return {
+      ...dto,
+      ...(activityPrivateDetails ? { activityPrivateDetails } : {}),
+    };
+  }
+
+  const meetingPoint = exact.meetingNotes ?? dto.meetingPoint ?? null;
+  const displayCoords = resolveActivityDisplayCoordinates({
+    meetingLat: exact.lat,
+    meetingLng: exact.lng,
+    startLat: dto.startLat ?? null,
+    startLng: dto.startLng ?? null,
+    parkingLat: dto.parkingLat ?? null,
+    parkingLng: dto.parkingLng ?? null,
+    locationLatitude: dto.locationLatitude ?? null,
+    locationLongitude: dto.locationLongitude ?? null,
+  });
+  return {
+    ...dto,
+    meetingPoint,
+    meetingLat: exact.lat,
+    meetingLng: exact.lng,
+    displayLatitude: displayCoords.latitude,
+    displayLongitude: displayCoords.longitude,
+    ...(activityPrivateDetails ? { activityPrivateDetails } : {}),
+  };
+};
+
+export const buildActivityDto = (event: ActivityWithRelations, opts?: ActivityDtoBuildOpts): ActivityDTO => {
   const participantsWithUser = (event.participants ?? []).filter(
     (p): p is ParticipantWithUser => 'user' in p && Boolean(p.user)
   );
@@ -132,13 +223,13 @@ export const buildActivityDto = (event : ActivityWithRelations): ActivityDTO => 
       : hostUserId
         ? [{ userId: hostUserId, displayName: hostName, avatarUrl: hostAvatar }]
         : [];
-  return toEventDto({
+  const dto = toEventDto({
     event,
     locationName: event.location.name,
     activityType: resolveActivityDtoType(event, event.location),
     region: event.location.region,
     groupRegionLevels: event.groupRegionLevels ?? event.location.groupRegionLevels ?? null,
-    slotsAvailable: resolveSlotsAvailable(event),
+    slotsAvailable: resolveActivitySlotsAvailable(event),
     hostName,
     hostUserId,
     hostAvatar,
@@ -157,6 +248,25 @@ export const buildActivityDto = (event : ActivityWithRelations): ActivityDTO => 
     locationLongitude: event.location.longitude ?? null,
     locationAreaId: event.location.areaId ?? null
   });
+
+  const priceBreakdown = event.priceBreakdown ? { ...event.priceBreakdown } : undefined;
+
+  const built: ActivityDTO = {
+    ...dto,
+    schemaVersion: event.schemaVersion ?? 1,
+    summary: event.summary ?? null,
+    itinerarySteps: event.itinerarySteps ?? null,
+    gear: event.gear ?? null,
+    waitlist: event.waitlist ?? false,
+    counts: event.counts ?? null,
+    priceBreakdown: priceBreakdown ?? null,
+    policyKey: event.policyKey ?? null,
+    customPolicy: event.customPolicy ?? null,
+    audience: event.audience ?? null,
+    waiverRequired: event.waiverRequired ?? false,
+  };
+
+  return opts?.activityPrivate ? mergeActivityPrivateIntoActivityDto(built, opts.activityPrivate) : built;
 };
 
 export const toLocationDto = (location: Location, opts?: { admin?: boolean }): LocationDTO => ({
@@ -165,7 +275,7 @@ export const toLocationDto = (location: Location, opts?: { admin?: boolean }): L
   region: location.region,
   areaLabel: location.areaLabel ?? null,
   areaId: location.areaId ?? null,
-  parentPlaceId: location.parentPlaceId ?? null,
+  geoRef: location.geoRef ?? null,
   activityType: mapPlaceActivityType(location.activityType),
   description: location.description,
   difficulty: location.difficulty ? enumMap<'easy' | 'moderate' | 'hard'>(location.difficulty) : undefined,
@@ -288,12 +398,13 @@ const toEventDto = ({
     : event.areaId?.trim()
       ? event.areaId.trim()
       : null,
+  geoRef: event.geoRef ?? null,
   activityType: mapScheduledActivityType(activityType),
   title: event.title,
   description: event.description,
   date: local.date,
   time: local.time,
-  endDate: endLocal && endLocal.date > local.date ? endLocal.date : null,
+  endDate: endLocal?.date ?? null,
   endTime: endLocal?.time ?? null,
   price: event.priceAed,
   slotsTotal: event.capacity,

@@ -1,14 +1,18 @@
-import { Link, useParams } from 'react-router-dom';
-import { FacilityDetailSections } from '../facility/detail/templates/FacilityDetailSections';
+import { Link, useLocation, useParams } from 'react-router-dom';
+import { FacilityConsumerDetailPage } from '../facility/detail/templates/FacilityConsumerDetailPage';
 import { PageMeta } from '../components/seo/PageMeta';
 import { facilityDetailPath, detailBackPath } from '../config/routingCatalog';
 import { usePublicFacilityDetail } from '../hooks/usePublicFacilityDetail';
-import { DetailPageLoadingState } from '../components/ui/DetailPageLoadingState';
+import { ConsumerEntityDetailLoading } from '../detail/shell/ConsumerEntityDetailLoading';
+import { parseMobileBackNavState } from '../utils/mobileBackNav';
+import { resolveFacilityConsumerDetailHeaderChrome } from '../facility/detail/resolveFacilityConsumerDetailHeaderChrome';
 import { DETAIL_LOADING_FACILITY } from '../content/detailLoadingCopy';
+import { APP_PAGE_MIN_H_CLASS } from '../config/layoutScroll';
 
 export const FacilityDetailPage = () => {
-  const { id } = useParams();
-  const { facility, loading } = usePublicFacilityDetail(id);
+    const { id } = useParams();
+    const location = useLocation();
+    const { facility, loading } = usePublicFacilityDetail(id);
 
   const detailPath = id ? facilityDetailPath(id) : undefined;
 
@@ -16,7 +20,12 @@ export const FacilityDetailPage = () => {
     return (
       <>
         <PageMeta title="Loading facility" path={detailPath} />
-        <DetailPageLoadingState label={DETAIL_LOADING_FACILITY} accent="violet" variant="page" />
+        <ConsumerEntityDetailLoading
+          backTo={detailBackPath('explore')}
+          backLabel={parseMobileBackNavState(location.state)?.backLabel ?? 'Explore'}
+          headerChrome={resolveFacilityConsumerDetailHeaderChrome('toilet')}
+          label={DETAIL_LOADING_FACILITY}
+        />
       </>
     );
   }
@@ -35,5 +44,9 @@ export const FacilityDetailPage = () => {
     );
   }
 
-  return <FacilityDetailSections facility={facility} facilityId={id} />;
+  return (
+    <div className={`${APP_PAGE_MIN_H_CLASS} flex h-full min-h-0 flex-1 flex-col overflow-hidden`}>
+      <FacilityConsumerDetailPage facility={facility} facilityId={id} />
+    </div>
+  );
 };

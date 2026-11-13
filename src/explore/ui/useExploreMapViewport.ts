@@ -3,6 +3,7 @@ import type { NavigateFunction } from 'react-router-dom';
 import { MAP_CONFIG, readExploreMapStyle, EXPLORE_MAP_STYLE_STORAGE_KEY, type ExploreMapStyle } from '../../config/platform';
 import { useExploreDeviceLocation } from '../../hooks/useExploreDeviceLocation';
 import type { MapRecenterTarget } from '../../lib/mapRecenter';
+import { getExploreMapLocationPreference } from '../exploreMapLocationPreference';
 import { shouldOpenExploreLocationPromptFromWelcome } from '../exploreWelcomeNavigation';
 
 type UseExploreMapViewportArgs = {
@@ -24,6 +25,10 @@ export const useExploreMapViewport = ({
   const [locationPromptOpen, setLocationPromptOpen] = useState(false);
   const [exploreMapStyle, setExploreMapStyle] = useState<ExploreMapStyle>(() => readExploreMapStyle());
   const mapCenteredRef = useRef(false);
+  const [showDeviceLocationPointer, setShowDeviceLocationPointer] = useState(() => {
+    const pref = getExploreMapLocationPreference();
+    return pref.useDeviceLocation && pref.lastLat != null && pref.lastLng != null;
+  });
 
   const {
     deviceFix,
@@ -83,13 +88,19 @@ export const useExploreMapViewport = ({
   const handleAllowMapLocation = () => {
     void enableDeviceLocation().then((fix) => {
       setLocationPromptOpen(false);
-      if (fix) handleFocusMapLocation(fix, { zoomIn: true });
+      if (fix) {
+        setShowDeviceLocationPointer(true);
+        handleFocusMapLocation(fix, { zoomIn: true });
+      }
     });
   };
 
   const handleLocateMe = () => {
     void requestDeviceLocation().then((fix) => {
-      if (fix) handleFocusMapLocation(fix, { zoomIn: true });
+      if (fix) {
+        setShowDeviceLocationPointer(true);
+        handleFocusMapLocation(fix, { zoomIn: true });
+      }
     });
   };
 
@@ -97,6 +108,9 @@ export const useExploreMapViewport = ({
     dismissLocationPrompt();
     setLocationPromptOpen(false);
   };
+
+  const deviceLocationPointer =
+    showDeviceLocationPointer && deviceFix ? deviceFix : null;
 
   return {
     recenterTo,
@@ -109,5 +123,6 @@ export const useExploreMapViewport = ({
     handleAllowMapLocation,
     handleLocateMe,
     dismissLocationPromptUi,
+    deviceLocationPointer,
   };
 };

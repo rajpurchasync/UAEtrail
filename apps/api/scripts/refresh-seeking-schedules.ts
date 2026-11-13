@@ -4,22 +4,12 @@
  *
  * Usage: npm --workspace @uaetrail/api run refresh-seeking-schedules
  */
-import { connectMongo, disconnectMongo } from '../src/lib/mongo.js';
 import { refreshActiveParticipantSeekingSchedules } from './seed-demo-seeking-schedules.js';
+import { resolveCliScriptName, runCliScript } from './cli-script-runner.js';
 
-const main = async () => {
-  await connectMongo();
+runCliScript(resolveCliScriptName(import.meta.url), async () => {
   const result = await refreshActiveParticipantSeekingSchedules();
   console.log(
     `Seeking schedule refresh: updated=${result.updated} rolledForward=${result.rolledForward}`
   );
-};
-
-main()
-  .catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
-  })
-  .finally(async () => {
-    await disconnectMongo();
-  });
+});

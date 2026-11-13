@@ -7,6 +7,7 @@ import type {
   PlaceNearbyFacilityDTO,
   ReviewDTO,
 } from '@uaetrail/shared-types';
+import { placeDetailPath } from '@uaetrail/shared-types';
 import {
   fetchPlaceActivities,
   fetchPlaceReviews,
@@ -21,6 +22,7 @@ import {
   type PlaceDetailKindConfig,
 } from '../pages/placeDetailConfig';
 import { placeDetailCoreQueryKey } from './clientQueryKeys';
+import { useAuth } from '../context/AuthContext';
 
 type Args = {
   /** When omitted, kind is resolved from loaded place `activityType` (canonical `/place/:id`). */
@@ -41,23 +43,36 @@ const resolveLoadedPlace = (
   placeResult: PlaceDetailCorePayload['placeResult'],
   kindProp: PlaceDetailKind | undefined,
   config: PlaceDetailKindConfig
-): { place: Place | null; resolvedKind: PlaceDetailKind | null } => {
+): {
+  place: Place | null;
+  resolvedKind: PlaceDetailKind | null;
+  /** Typed URL was wrong (e.g. camp opened as `/venue/:id`) — go to the canonical path. */
+  kindRedirectPath: string | null;
+} => {
   if (!placeResult.place) {
-    return { place: null, resolvedKind: null };
-  }
-  if (kindProp) {
-    const place =
-      placeResult.place.activityType === config.activityType ? placeResult.place : null;
-    return { place, resolvedKind: kindProp };
+    return { place: null, resolvedKind: null, kindRedirectPath: null };
   }
   const inferred = resolvePlaceDetailKind(placeResult.place.activityType);
+  if (kindProp) {
+    if (placeResult.place.activityType === config.activityType) {
+      return { place: placeResult.place, resolvedKind: kindProp, kindRedirectPath: null };
+    }
+    if (inferred) {
+      return {
+        place: null,
+        resolvedKind: null,
+        kindRedirectPath: placeDetailPath(placeResult.place.activityType, placeResult.place.id),
+      };
+    }
+    return { place: null, resolvedKind: null, kindRedirectPath: null };
+  }
   if (!inferred) {
-    return { place: null, resolvedKind: null };
+    return { place: null, resolvedKind: null, kindRedirectPath: null };
   }
   const inferredConfig = PLACE_DETAIL_CONFIG[inferred];
   const place =
     placeResult.place.activityType === inferredConfig.activityType ? placeResult.place : null;
-  return { place, resolvedKind: inferred };
+  return { place, resolvedKind: inferred, kindRedirectPath: null };
 };
 
 /** Load place, activities, reviews, and premium unlock return handling (R3). */
@@ -68,6 +83,7 @@ export const usePlaceDetailCore = ({
   searchParams,
   setSearchParams,
 }: Args) => {
+  const { initializing: authInitializing } = useAuth();
   const queryClient = useQueryClient();
   const scope = `${kindProp ?? 'auto'}:${config.activityType}`;
   const [resolvedKind, setResolvedKind] = useState<PlaceDetailKind | null>(null);
@@ -86,7 +102,8 @@ export const usePlaceDetailCore = ({
       ]);
       return { placeResult, activities: placeActivities, reviews: placeReviews };
     },
-    enabled: Boolean(placeId),
+    // Wait for refresh-cookie bootstrap so draft submitter/admin preview is not raced as a guest 404.
+    enabled: Boolean(placeId) && !authInitializing,
     staleTime: 60_000,
   });
 
@@ -99,9 +116,10 @@ export const usePlaceDetailCore = ({
         activities: [] as ActivityDTO[],
         reviews: [] as ReviewDTO[],
         inferredKind: null as PlaceDetailKind | null,
+        kindRedirectPath: null as string | null,
       };
     }
-    const { place, resolvedKind: inferredKind } = resolveLoadedPlace(
+    const { place, resolvedKind: inferredKind, kindRedirectPath } = resolveLoadedPlace(
       query.data.placeResult,
       kindProp,
       config
@@ -113,6 +131,7 @@ export const usePlaceDetailCore = ({
       activities: query.data.activities,
       reviews: query.data.reviews,
       inferredKind,
+      kindRedirectPath,
     };
   }, [query.data, kindProp, config]);
 
@@ -180,7 +199,10 @@ export const usePlaceDetailCore = ({
   return {
     resolvedKind: effectiveKind,
     place: derived.place,
-    loading: query.isLoading,
+    kindRedirectPath: derived.kindRedirectPath,
+    loading: Boolean(placeId) && (authInitializing || query.isLoading),
+    error: query.isError ? (query.error instanceof Error ? query.error.message : 'Could not load this place.') : null,
+    reload: () => void query.refetch(),
     activities: derived.activities,
     reviews: derived.reviews,
     premium: derived.premium,

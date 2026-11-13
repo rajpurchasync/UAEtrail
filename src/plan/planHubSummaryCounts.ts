@@ -46,4 +46,4 @@ export const countPlanActiveGoals = (goals: MemberGoalDTO[]): number =>
 
 /** Wishlist rows tied to a catalog place (map saves). */
 export const countPlanSavedPlaces = (items: WishlistItemDTO[]): number =>
-  items.filter((item) => Boolean(item.locationId)).length;
+  items.filter((item) => Boolean(item.locationId || item.areaId)).length;

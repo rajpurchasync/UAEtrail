@@ -1,22 +1,25 @@
-import { Navigate } from 'react-router-dom';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
-import { ProfileVisibilitySection } from '../components/profile/ProfileVisibilitySection';
-import { ProfileMapPresenceSection } from '../components/profile/ProfileMapPresenceSection';
-import { useProfileSettingsBackChrome } from '../hooks/useProfileHubBackChrome';
+import { AppSettingsBody } from '../components/profile/AppSettingsBody';
+import { DesktopSettingsShell } from '../components/profile/DesktopSettingsShell';
 import { useMinWidthLg } from '../hooks/useMinWidthLg';
-import { desktopSettingsSectionPath } from '../config/desktopSettings';
+import { useProfileSettingsBackChrome } from '../hooks/useProfileHubBackChrome';
 
 export const ProfileSettingsPrivacy = () => {
   const backChrome = useProfileSettingsBackChrome();
   const isDesktop = useMinWidthLg();
 
-  if (isDesktop) return <Navigate to={desktopSettingsSectionPath('privacy')} replace />;
+  if (isDesktop) {
+    return (
+      <DesktopSettingsShell activeSection="privacy">
+        <AppSettingsBody section="privacy" />
+      </DesktopSettingsShell>
+    );
+  }
 
   return (
     <ConsumerShell layout="stack" title="Privacy" showJourney={false} back={backChrome}>
-      <div className="space-y-3 pb-nav-safe animate-fade-up">
-        <ProfileVisibilitySection />
-        <ProfileMapPresenceSection />
+      <div className="animate-fade-up">
+        <AppSettingsBody section="privacy" />
       </div>
     </ConsumerShell>
   );

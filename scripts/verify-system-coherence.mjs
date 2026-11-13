@@ -26,6 +26,7 @@ const steps = [
   ['Platform program spine', 'npm run verify:refactor-program'],
   ['CTO system audit (W0)', 'npm run verify:system-audit'],
   ['Domain + routing + naming guards', 'npm run verify:domain'],
+  ['Detail bundle / lazy-map graph', 'npm run verify:perf'],
   ['Host/member contracts', 'npm run verify:host-member'],
   [
     'Doc coherence (Tier 1 + experiment)',

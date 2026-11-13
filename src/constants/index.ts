@@ -1,18 +1,4 @@
 import {
-  ADMIN_ACTIVITIES_PATH,
-  ADMIN_AUDIT_LOG_PATH,
-  ADMIN_REPORTS_PATH,
-  ADMIN_GROUPS_PATH,
-  ADMIN_HOSTS_PATH,
-  ADMIN_AREAS_PATH,
-  ADMIN_FACILITIES_PATH,
-  ADMIN_OVERVIEW_PATH,
-  ADMIN_SETTINGS_PATH,
-  ADMIN_ACCOUNT_PATH,
-  ADMIN_USERS_PATH,
-} from '../config/adminSurfacePaths';
-import {
-  ADMIN_PLACES_PATH,
   PUBLISHING_ACTIVITIES_PATH,
   PUBLISHING_HISTORY_PATH,
   PUBLISHING_OVERVIEW_PATH,
@@ -24,6 +10,7 @@ import {
   PLAN_PATH,
   PROFILE_HISTORY_PATH,
 } from '../config/surfacePaths';
+import { ADMIN_SIDEBAR_LINKS } from '../admin/adminNav';
 
 export const DIFFICULTY_COLORS = {
   easy: 'bg-green-100 text-green-800',
@@ -36,31 +23,16 @@ export { PLAN_PATH, PROFILE_HISTORY_PATH, JOURNEY_MAP_PATH };
 /** Publishing console nav — canonical `/publishing/*` routes. */
 export const PUBLISHING_CONSOLE_LINKS = [
   { to: PUBLISHING_OVERVIEW_PATH, label: 'Overview' },
-  { to: PUBLISHING_PROFILE_PATH, label: 'Public profile' },
-  { to: PUBLISHING_ACTIVITIES_PATH, label: 'Activities' },
   { to: PUBLISHING_REQUESTS_PATH, label: 'Join requests' },
+  { to: PUBLISHING_ACTIVITIES_PATH, label: 'Activities' },
+  { to: PUBLISHING_PROFILE_PATH, label: 'Public profile' },
   { to: PUBLISHING_TEAM_PATH, label: 'Team' },
   { to: PUBLISHING_PLACES_PATH, label: 'Places' },
   { to: PUBLISHING_HISTORY_PATH, label: 'History' },
 ];
 
-
-
-
-export const ADMIN_LINKS = [
-  { to: ADMIN_OVERVIEW_PATH, label: 'Overview' },
-  { to: ADMIN_ACTIVITIES_PATH, label: 'Activities' },
-  { to: ADMIN_AREAS_PATH, label: 'Areas' },
-  { to: ADMIN_PLACES_PATH, label: 'Places' },
-  { to: ADMIN_FACILITIES_PATH, label: 'Facilities' },
-  { to: ADMIN_USERS_PATH, label: 'Users & Members' },
-  { to: ADMIN_HOSTS_PATH, label: 'Operators' },
-  { to: ADMIN_GROUPS_PATH, label: 'Groups' },
-  { to: ADMIN_REPORTS_PATH, label: 'Reports' },
-  { to: ADMIN_AUDIT_LOG_PATH, label: 'Audit Log' },
-  { to: ADMIN_SETTINGS_PATH, label: 'Broadcast' },
-  { to: ADMIN_ACCOUNT_PATH, label: 'Account' },
-];
+/** Flat admin sidebar links (grouped IA lives in `adminNav.ts`). */
+export const ADMIN_LINKS = ADMIN_SIDEBAR_LINKS;
 
 export const COUNTRIES = [
   'Afghanistan','Albania','Algeria','Andorra','Angola','Argentina','Armenia','Australia','Austria','Azerbaijan',

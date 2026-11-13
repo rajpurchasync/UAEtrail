@@ -69,6 +69,7 @@ describe('routingHygiene', () => {
     expect(catalog).toMatch(/PRO_MEMBERSHIP_PATH/);
     expect(catalog).toMatch(/INBOUND_COMMUNITY_FEED_PATH/);
     expect(catalog).toMatch(/PROFILE_BADGES_PATH/);
+    expect(catalog).toMatch(/APP_SETTINGS_PATH/);
   });
 
   it('app code does not use raw /explore? outside explore routing allowlist', () => {
@@ -134,6 +135,24 @@ describe('routingHygiene', () => {
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       if (linkPattern.test(content)) {
         violations.push(`${file}: use placeDetailPath("event", id) → /venue/:id`);
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  it('app code does not hardcode /venue|/camp|/trail place detail templates (use placeDetailPath*)', () => {
+    const files = collectSourceFiles(SCAN_ROOT);
+    const violations: string[] = [];
+    // Dynamic templates like `/venue/${id}` — static allowlisted path tables are fine.
+    const linkPattern = /`\/(?:venue|camp|trail)\/\$\{/;
+
+    for (const file of files) {
+      if (file.endsWith('.test.ts') || file.endsWith('.test.tsx')) continue;
+      if (file.includes('/api/')) continue;
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (linkPattern.test(content)) {
+        violations.push(`${file}: use placeDetailPath / placeDetailPathForId (never guess /venue from outing type)`);
       }
     }
 

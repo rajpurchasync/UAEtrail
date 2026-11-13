@@ -5,8 +5,10 @@ import { countPendingActivityInvitesForSenderOnActivity } from '../lib/activity-
 import { findActivityRequestByEventAndUser } from '../lib/activity-engagement-store.js';
 import { buildActivityPresentationForDetail } from '../lib/build-activity-presentation.js';
 import { buildActivityRedactedDetail } from '../lib/activity-redacted-detail.js';
+import { buildActivityGuestListedPreviewDetail } from '../lib/activity-guest-listed-preview.js';
 import { resolveActivityDetailLinkage } from '../lib/activity-detail-linkage.js';
 import { buildActivityDto, toLocationDto, toParticipantPreviews } from '../lib/mappers.js';
+import { findActivityPrivateById } from '../lib/activity-private-store.js';
 import { enrichActivityRideshareVehicleForCrew } from '../lib/rideshare-vehicle-crew.js';
 import { canWithdrawRequest } from '../lib/withdraw-reasons.js';
 import { PRIVATE_ACTIVITY_MESSAGE } from './activity-viewer-access.js';
@@ -93,6 +95,10 @@ export const loadPublicActivityDetail = async (input: {
         id: requestRow.id,
         status,
         canWithdraw: canWithdrawRequest(status),
+        adults: requestRow.adults,
+        kids: requestRow.kids,
+        partyMembers: requestRow.partyMembers,
+        partyApprovalPending: Boolean(requestRow.partyApprovalPending),
       };
     }
     if (!myParticipation) {
@@ -122,26 +128,22 @@ export const loadPublicActivityDetail = async (input: {
       !viewerUserId && access.gateReason === 'sign_in' && access.joinMode !== 'private';
     return {
       data: guestListedSignIn
-        ? {
-            id: event.id,
-            joinMode: event.joinMode,
-            title: event.title,
-            locationName: event.location.name,
-            activityType: event.activityType,
-            participationMode: event.participationMode,
-            requirements: event.requirements,
-          }
+        ? buildActivityGuestListedPreviewDetail(event)
         : {
             id: event.id,
             joinMode: 'private',
             message: PRIVATE_ACTIVITY_MESSAGE,
           },
       viewerAccess: access,
-      presentation: guestListedSignIn ? null : presentation,
+      presentation: guestListedSignIn ? presentation : null,
     };
   }
 
   const linkage = await resolveActivityDetailLinkage(event, findPublishedActivityWithPreviewsById);
+  const activityPrivate =
+    access.canAccessCrewSurfaces || access.level === 'platform_admin'
+      ? await findActivityPrivateById(event.id)
+      : null;
 
   if (access.exposure === 'redacted') {
     const redactedDto = await enrichActivityRideshareVehicleForCrew(
@@ -165,7 +167,7 @@ export const loadPublicActivityDetail = async (input: {
   }
 
   const activityDto = await enrichActivityRideshareVehicleForCrew(
-    buildActivityDto(event),
+    buildActivityDto(event, { activityPrivate }),
     hostUserId,
     access.canAccessCrewSurfaces
   );

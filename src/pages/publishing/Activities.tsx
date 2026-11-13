@@ -1,8 +1,11 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useSafeAsyncEffect, type IsActiveGuard } from '../../hooks/useSafeAsyncEffect';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import type { ActivityDTO } from '@uaetrail/shared-types';
-import { listActivities } from '../../hooks/tenantActivityClientApi';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { ArrowDown, ArrowUp, ArrowUpDown, Plus, Search, Settings2 } from 'lucide-react';
+import {
+  formatExploreEventDateLabel,
+  memberProfilePath,
+  type ActivityDTO,
+} from '@uaetrail/shared-types';
 import { getActiveTenantId } from '../../api/tenant';
 import { parseActivityTypeParam } from '../../config/activityTypes';
 import {
@@ -19,19 +22,49 @@ import { TenantSwitcher } from '../../components/ui';
 import { ActivityHubInviteIconButton } from '../../components/activity/ActivityHubInviteIconButton';
 import { useActivityInviteShareSheet } from '../../hooks/useActivityInviteShareSheet';
 import { ActivityManageSheet } from '../../components/activity/ActivityManageSheet';
+import { HostActivityManageCancelDialogs } from '../../components/activity/HostActivityManageCancelDialogs';
 import { useHostActivityManageActions } from '../../hooks/useHostActivityManageActions';
+import {
+  useInvalidatePublishingWorkspace,
+  usePublishingJoinQueue,
+  usePublishingTenantActivities,
+} from '../../hooks/publishingWorkspaceQueries';
 import { useAuth } from '../../context/AuthContext';
 import { hostPublishAvailabilityNoticeMessage } from '../../plan/hostPublishAvailabilityNotice';
-import { activityCrewPath, PUBLISHING_ACTIVITIES_NEW_PATH } from '../../config/routingCatalog';
+import { PUBLISHING_ACTIVITIES_NEW_PATH, PUBLISHING_ACTIVITIES_PATH } from '../../config/routingCatalog';
 import {
-  activityTypeBadgeClass,
   formatActivityCapacity,
   formatActivityPrice,
-  formatActivityType,
   resolveActivityHostLabel,
-  resolveActivityLocationState,
   resolveActivityTitle,
 } from '../../utils/activityIdentity';
+import { activityKindChromeEmoji } from '../../activity/activityKindChrome';
+import { matchesActivitySearch } from '../../utils/activitySearch';
+import { FloatingActionButton } from '../../components/mobile/FloatingActionButton';
+import { LoadingRing } from '../../components/ui/loadingPrimitives';
+import { consumerDetailChildLinkState } from '../../explore/mapPeekDetailNavState';
+import { mobileBackNavState } from '../../utils/mobileBackNav';
+import {
+  AdminTablePager,
+  DEFAULT_ADMIN_PAGE_SIZE,
+  paginateRows,
+  type AdminPageSize,
+} from '../../components/admin/AdminTablePager';
+
+type ActivitySortKey = 'title' | 'host' | 'date' | 'spots' | 'price' | 'status';
+type SortDir = 'asc' | 'desc';
+
+const compareText = (a: string, b: string) => a.localeCompare(b, undefined, { sensitivity: 'base' });
+
+const activityDateTimeValue = (activity: ActivityDTO): number => {
+  const date = activity.date?.trim() || '';
+  const time = activity.time?.trim() || '00:00';
+  const parsed = Date.parse(`${date}T${time}`);
+  return Number.isFinite(parsed) ? parsed : Date.parse(date) || 0;
+};
+
+const bookedSpots = (activity: ActivityDTO): number =>
+  Math.max(0, (activity.slotsTotal ?? 0) - (activity.slotsAvailable ?? 0));
 
 /** Publishing workspace: tenant-scoped activities (`GET /publishing/activities`). */
 export const Activities = () => {
@@ -39,37 +72,47 @@ export const Activities = () => {
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [tenantId, setTenantId] = useState(getActiveTenantId());
-  const [events, setEvents] = useState<ActivityDTO[]>([]);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortKey, setSortKey] = useState<ActivitySortKey>('date');
+  const [sortDir, setSortDir] = useState<SortDir>('asc');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
   const [previewActivity, setPreviewActivity] = useState<ActivityDTO | null>(null);
   const [previewPublishing, setPreviewPublishing] = useState(false);
   const [manageActivity, setManageActivity] = useState<ActivityDTO | null>(null);
+  const [manageInitialView, setManageInitialView] = useState<'overview' | 'checkin'>('overview');
   const [publishNotice, setPublishNotice] = useState<string | null>(null);
   const { user } = useAuth();
 
-  const loadEvents = useCallback(async (tid: string, isActive: IsActiveGuard = () => true) => {
-    if (!tid) return;
-    try {
-      const activities = await listActivities(tid);
-      if (!isActive()) return;
-      setEvents(activities);
-      setLoadError(null);
-    } catch (err) {
-      if (isActive()) {
-        setLoadError(err instanceof Error ? err.message : 'Failed to load events');
-      }
-    }
-  }, []);
+  const activitiesQuery = usePublishingTenantActivities(tenantId, Boolean(tenantId));
+  const joinQueueQuery = usePublishingJoinQueue(tenantId, Boolean(tenantId));
+  const invalidateWorkspace = useInvalidatePublishingWorkspace(tenantId);
 
-  const hostActions = useHostActivityManageActions(tenantId, () => loadEvents(tenantId));
-  const inviteShare = useActivityInviteShareSheet();
-
-  useSafeAsyncEffect(
-    async (isActive) => {
-      await loadEvents(tenantId, isActive);
-    },
-    [tenantId, loadEvents]
+  const events = useMemo(() => activitiesQuery.data ?? [], [activitiesQuery.data]);
+  const pendingRequests = useMemo(
+    () => (joinQueueQuery.data ?? []).filter((request) => request.status === 'pending'),
+    [joinQueueQuery.data]
   );
+  const loading =
+    Boolean(tenantId) &&
+    ((activitiesQuery.isLoading && !activitiesQuery.data) ||
+      (joinQueueQuery.isLoading && !joinQueueQuery.data));
+  const loadError =
+    activitiesQuery.error instanceof Error
+      ? activitiesQuery.error.message
+      : joinQueueQuery.error instanceof Error
+        ? joinQueueQuery.error.message
+        : activitiesQuery.error || joinQueueQuery.error
+          ? 'Failed to load events'
+          : null;
+
+  const reloadEvents = useCallback(async () => {
+    invalidateWorkspace();
+    await Promise.all([activitiesQuery.refetch(), joinQueueQuery.refetch()]);
+  }, [activitiesQuery, invalidateWorkspace, joinQueueQuery]);
+
+  const hostActions = useHostActivityManageActions(tenantId, reloadEvents);
+  const inviteShare = useActivityInviteShareSheet();
 
   const openCreateActivity = () => {
     navigateToExploreHost(navigate);
@@ -81,7 +124,8 @@ export const Activities = () => {
     navigateToExploreHost(navigate, type ? activityTypeToHostComposeKind(type) : null);
   }, [location.pathname, navigate, searchParams]);
 
-  const openManage = (activity: ActivityDTO) => {
+  const openManage = (activity: ActivityDTO, view: 'overview' | 'checkin' = 'overview') => {
+    setManageInitialView(view);
     setManageActivity(activity);
   };
 
@@ -91,6 +135,12 @@ export const Activities = () => {
       return;
     }
     setPreviewActivity(event);
+  };
+
+  const openActivityDetail = (event: ActivityDTO) => {
+    navigate(`/activity/${event.id}`, {
+      state: consumerDetailChildLinkState(PUBLISHING_ACTIVITIES_PATH, 'Activities'),
+    });
   };
 
   const applyPublishAvailabilityNotice = async (event: ActivityDTO) => {
@@ -124,18 +174,107 @@ export const Activities = () => {
     const event = events.find((item) => item.id === rosterId);
     if (!event || event.status !== 'published') return;
 
+    openManage(event, 'checkin');
     const nextParams = new URLSearchParams(searchParams);
     nextParams.delete('checkin');
     nextParams.delete('roster');
     setSearchParams(nextParams, { replace: true });
-    navigate(activityCrewPath(event.id));
-  }, [events, navigate, searchParams, setSearchParams, tenantId]);
+  }, [events, searchParams, setSearchParams, tenantId]);
 
   useEffect(() => {
     if (!manageActivity) return;
     const fresh = events.find((item) => item.id === manageActivity.id);
     if (fresh) setManageActivity(fresh);
   }, [events, manageActivity]);
+
+  const filteredEvents = useMemo(() => {
+    const q = searchQuery.trim();
+    if (!q) return events;
+    return events.filter((event) =>
+      matchesActivitySearch(
+        q,
+        resolveActivityTitle(event),
+        event.locationName,
+        event.activityType,
+        resolveActivityHostLabel(event),
+        ...(event.guides ?? []).map((guide) => guide.displayName)
+      )
+    );
+  }, [events, searchQuery]);
+
+  /** Sort the full filtered set first, then paginate — never sort only the current page. */
+  const sortedEvents = useMemo(() => {
+    const rows = [...filteredEvents];
+    const dir = sortDir === 'asc' ? 1 : -1;
+    rows.sort((a, b) => {
+      let cmp: number;
+      switch (sortKey) {
+        case 'title':
+          cmp = compareText(resolveActivityTitle(a), resolveActivityTitle(b));
+          break;
+        case 'host':
+          cmp = compareText(resolveActivityHostLabel(a), resolveActivityHostLabel(b));
+          break;
+        case 'date':
+          cmp = activityDateTimeValue(a) - activityDateTimeValue(b);
+          break;
+        case 'spots':
+          cmp = bookedSpots(a) - bookedSpots(b) || (a.slotsTotal ?? 0) - (b.slotsTotal ?? 0);
+          break;
+        case 'price':
+          cmp = (a.price ?? 0) - (b.price ?? 0);
+          break;
+        case 'status':
+          cmp = compareText(a.status ?? '', b.status ?? '');
+          break;
+        default:
+          cmp = 0;
+      }
+      if (cmp !== 0) return cmp * dir;
+      return compareText(a.id, b.id) * dir;
+    });
+    return rows;
+  }, [filteredEvents, sortDir, sortKey]);
+
+  const pagedEvents = useMemo(
+    () => paginateRows(sortedEvents, page, pageSize),
+    [page, pageSize, sortedEvents]
+  );
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery, sortKey, sortDir, pageSize, tenantId]);
+
+  const toggleSort = (key: ActivitySortKey) => {
+    if (sortKey === key) {
+      setSortDir((current) => (current === 'asc' ? 'desc' : 'asc'));
+      return;
+    }
+    setSortKey(key);
+    setSortDir('asc');
+  };
+
+  const sortHeader = (key: ActivitySortKey, label: string, align: 'left' | 'center' = 'left') => {
+    const active = sortKey === key;
+    const Icon = !active ? ArrowUpDown : sortDir === 'asc' ? ArrowUp : ArrowDown;
+    return (
+      <th
+        className={`px-4 py-3 ${align === 'center' ? 'text-center' : 'text-left'}`}
+        aria-sort={active ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
+      >
+        <button
+          type="button"
+          onClick={() => toggleSort(key)}
+          className={`inline-flex items-center gap-1 font-semibold ${
+            align === 'center' ? 'justify-center' : ''
+          } ${active ? 'text-emerald-800' : 'text-neutral-700 hover:text-emerald-800'}`}
+        >
+          {label}
+          <Icon className="h-3.5 w-3.5 shrink-0 opacity-70" aria-hidden />
+        </button>
+      </th>
+    );
+  };
 
   const statusBadge = (status: string) => {
     const colors: Record<string, string> = {
@@ -156,115 +295,216 @@ export const Activities = () => {
   const displayError = loadError ?? hostActions.error;
 
   return (
-    <ConsoleShell title="Activities">
-      <div className="space-y-4">
-        <TenantSwitcher onChange={setTenantId} />
-        {displayError && <p className="text-sm text-red-600">{displayError}</p>}
-        {publishNotice && <p className="text-sm text-emerald-700">{publishNotice}</p>}
+    <>
+      <ConsoleShell title="Activities">
+        <div className="space-y-4 pb-20">
+          <TenantSwitcher onChange={setTenantId} />
+          {displayError && <p className="text-sm text-red-600">{displayError}</p>}
+          {publishNotice && <p className="text-sm text-emerald-700">{publishNotice}</p>}
 
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">Activities</h2>
-          <button
-            onClick={openCreateActivity}
-            className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium"
-            disabled={!tenantId}
-          >
-            + Add Activity
-          </button>
+          <div className="relative">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400"
+              aria-hidden
+            />
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search activities, hosts, guides…"
+              aria-label="Search activities"
+              className="w-full rounded-xl border border-neutral-200/80 bg-white py-2.5 pl-10 pr-3 text-sm text-neutral-900 shadow-sm outline-none ring-emerald-600/30 placeholder:text-neutral-400 focus:ring-2"
+            />
+          </div>
+
+          {loading ? (
+            <div className="flex justify-center py-8" role="status" aria-label="Loading">
+              <LoadingRing size="md" />
+            </div>
+          ) : (
+            <>
+              <div className="overflow-hidden rounded-xl border border-neutral-200/80 bg-white desktop-scrollbar-x overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead className="bg-neutral-50">
+                    <tr>
+                      {sortHeader('title', 'Activity')}
+                      {sortHeader('host', 'Hosts & guides')}
+                      {sortHeader('date', 'Date / time')}
+                      {sortHeader('spots', 'Spots', 'center')}
+                      {sortHeader('price', 'Price', 'center')}
+                      {sortHeader('status', 'Status')}
+                      <th className="px-4 py-3 text-left font-semibold text-neutral-700">Manage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pagedEvents.map((event) => {
+                      const hostName = resolveActivityHostLabel(event);
+                      const hostNameKey = hostName.trim().toLowerCase();
+                      const extraGuides = (event.guides ?? []).filter((guide) => {
+                        if (event.hostUserId && guide.userId === event.hostUserId) return false;
+                        if (hostNameKey && guide.displayName.trim().toLowerCase() === hostNameKey) {
+                          return false;
+                        }
+                        return true;
+                      });
+                      return (
+                        <tr
+                          key={event.id}
+                          className="cursor-pointer border-t border-neutral-100"
+                          onClick={() => openActivityDetail(event)}
+                        >
+                          <td className="px-4 py-3">
+                            <p className="font-medium text-neutral-900">
+                              <span className="mr-1.5" aria-hidden>
+                                {activityKindChromeEmoji(event.activityType)}
+                              </span>
+                              {resolveActivityTitle(event)}
+                            </p>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div
+                              className="flex flex-col gap-0.5"
+                              onClick={(e) => e.stopPropagation()}
+                              onKeyDown={(e) => e.stopPropagation()}
+                            >
+                              {(() => {
+                                const hostPath = event.hostUserId
+                                  ? memberProfilePath(event.hostUserId, { lens: 'host' })
+                                  : null;
+                                return hostPath ? (
+                                  <Link
+                                    to={hostPath}
+                                    state={mobileBackNavState(PUBLISHING_ACTIVITIES_PATH, 'Activities')}
+                                    className="font-medium text-emerald-700 hover:underline"
+                                  >
+                                    {hostName}
+                                  </Link>
+                                ) : (
+                                  <span className="text-neutral-800">{hostName}</span>
+                                );
+                              })()}
+                              {extraGuides.map((guide) => {
+                                const guidePath = memberProfilePath(guide.userId, { lens: 'host' });
+                                if (!guidePath) return null;
+                                return (
+                                  <Link
+                                    key={guide.userId}
+                                    to={guidePath}
+                                    state={mobileBackNavState(PUBLISHING_ACTIVITIES_PATH, 'Activities')}
+                                    className="text-xs text-emerald-700 hover:underline"
+                                  >
+                                    {guide.displayName}
+                                  </Link>
+                                );
+                              })}
+                            </div>
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3">
+                            <p className="text-neutral-900">
+                              {formatExploreEventDateLabel(event.date) ?? event.date}
+                            </p>
+                            {event.time ? <p className="text-xs text-neutral-500">{event.time}</p> : null}
+                          </td>
+                          <td className="px-4 py-3 text-center text-neutral-900">
+                            {formatActivityCapacity(event)}
+                          </td>
+                          <td className="px-4 py-3 text-center">{formatActivityPrice(event)}</td>
+                          <td className="px-4 py-3">{statusBadge(event.status)}</td>
+                          <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                className="inline-flex items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-800 hover:border-emerald-300 hover:text-emerald-800"
+                                onClick={() => openManage(event, 'overview')}
+                              >
+                                <Settings2 className="h-3.5 w-3.5" aria-hidden />
+                                Manage
+                              </button>
+                              {event.status === 'published' && (
+                                <ActivityHubInviteIconButton
+                                  onClick={() =>
+                                    inviteShare.openShareFromActivity(event, {
+                                      canSendBuddyInvites: true,
+                                    })
+                                  }
+                                />
+                              )}
+                              <ActivityActionsMenu
+                                items={buildHostActivityMenuItems(event, {
+                                  onPreview: openPreview,
+                                  onManage: (e) => openManage(e, 'overview'),
+                                  onPublish: (e) => void publishActivityWithNotice(e),
+                                  onDuplicate: (e) => void hostActions.duplicateActivity(e),
+                                  onHostFromExisting: hostActions.hostFromExistingActivity,
+                                  onDelete: hostActions.setConfirmDelete,
+                                  onCancel: hostActions.setConfirmCancel,
+                                  onSuspend: hostActions.setConfirmSuspend,
+                                  onResume: (e) => void hostActions.resumeActivity(e),
+                                  onCheckin: (e) => openManage(e, 'checkin'),
+                                })}
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {sortedEvents.length === 0 && (
+                      <tr>
+                        <td colSpan={7} className="px-4 py-8 text-center text-neutral-500">
+                          {searchQuery.trim()
+                            ? 'No activities match your search.'
+                            : 'No activities yet. Create your first activity!'}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <AdminTablePager
+                page={page}
+                pageSize={pageSize}
+                total={sortedEvents.length}
+                onPage={setPage}
+                onPageSize={setPageSize}
+              />
+            </>
+          )}
         </div>
 
-        <div className="bg-white border rounded-lg overflow-x-auto desktop-scrollbar-x">
-          <table className="min-w-full text-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left">Title</th>
-                <th className="px-4 py-3 text-left">Type</th>
-                <th className="px-4 py-3 text-left">Host</th>
-                <th className="px-4 py-3 text-left">Place</th>
-                <th className="px-4 py-3 text-left">Date</th>
-                <th className="px-4 py-3 text-center">Capacity</th>
-                <th className="px-4 py-3 text-center">Price</th>
-                <th className="px-4 py-3 text-left">Status</th>
-                <th className="px-4 py-3 text-left">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {events.map((event) => (
-                <tr key={event.id} className="border-t hover:bg-gray-50">
-                  <td className="px-4 py-3">
-                    <p className="font-medium text-gray-900">{resolveActivityTitle(event)}</p>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${activityTypeBadgeClass(event.activityType)}`}
-                    >
-                      {formatActivityType(event.activityType)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">{resolveActivityHostLabel(event)}</td>
-                  <td className="px-4 py-3">{resolveActivityLocationState(event)}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <p className="text-gray-900">{event.date}</p>
-                    <p className="text-xs text-gray-500">{event.time}</p>
-                  </td>
-                  <td className="px-4 py-3 text-center text-gray-900">{formatActivityCapacity(event)}</td>
-                  <td className="px-4 py-3 text-center">{formatActivityPrice(event)}</td>
-                  <td className="px-4 py-3">{statusBadge(event.status)}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1">
-                      {event.status === 'published' && (
-                        <ActivityHubInviteIconButton
-                          onClick={() =>
-                            inviteShare.openShareFromActivity(event, { canSendBuddyInvites: true })
-                          }
-                        />
-                      )}
-                      <ActivityActionsMenu
-                        items={buildHostActivityMenuItems(event, {
-                          onPreview: openPreview,
-                          onManage: (e) => openManage(e),
-                          onPublish: (e) => void publishActivityWithNotice(e),
-                          onDuplicate: (e) => void hostActions.duplicateActivity(e),
-                          onHostFromExisting: hostActions.hostFromExistingActivity,
-                          onDelete: hostActions.setConfirmDelete,
-                          onCancel: hostActions.setConfirmCancel,
-                          onCheckin: (e) => navigate(activityCrewPath(e.id)),
-                        })}
-                      />
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {events.length === 0 && (
-                <tr>
-                  <td colSpan={9} className="px-4 py-8 text-center text-gray-500">
-                    No activities yet. Create your first activity!
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+        <ActivityListPreview
+          activity={previewActivity}
+          saving={previewPublishing}
+          onClose={() => setPreviewActivity(null)}
+          onSaveDraft={() => setPreviewActivity(null)}
+          onPublish={publishFromPreview}
+        />
 
-      <ActivityListPreview
-        activity={previewActivity}
-        saving={previewPublishing}
-        onClose={() => setPreviewActivity(null)}
-        onSaveDraft={() => setPreviewActivity(null)}
-        onPublish={publishFromPreview}
-      />
+        <ActivityManageSheet
+          open={Boolean(manageActivity)}
+          activity={manageActivity}
+          tenantId={tenantId}
+          pendingRequests={pendingRequests}
+          actions={hostActions}
+          initialView={manageInitialView}
+          onOpenPublicPage={(activity) => openActivityDetail(activity)}
+          onClose={() => {
+            setManageActivity(null);
+            setManageInitialView('overview');
+          }}
+          onRequestsChanged={() => void reloadEvents()}
+        />
 
-      <ActivityManageSheet
-        open={Boolean(manageActivity)}
-        activity={manageActivity}
-        tenantId={tenantId}
-        actions={hostActions}
-        onClose={() => {
-          setManageActivity(null);
-        }}
-        onRequestsChanged={() => loadEvents(tenantId)}
+        {!manageActivity ? <HostActivityManageCancelDialogs actions={hostActions} /> : null}
+      </ConsoleShell>
+
+      <FloatingActionButton
+        icon={<Plus className="h-6 w-6" strokeWidth={2.5} aria-hidden />}
+        label="Add activity"
+        extended
+        text="Add activity"
+        disabled={!tenantId}
+        onClick={openCreateActivity}
       />
-    </ConsoleShell>
+    </>
   );
 };

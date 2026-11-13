@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { MapPin, Star } from 'lucide-react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import type {
   ActivityDTO,
   LocationPremiumSummaryDTO,
   PlaceNearbyFacilityDTO,
+  PlaceTrackPreviewDTO,
   ReviewDTO,
 } from '@uaetrail/shared-types';
-import { areaDetailPath } from '@uaetrail/shared-types';
+import { activityDetailPath } from '@uaetrail/shared-types';
 import {
   facilityPlaceKindPinEmoji,
   isFacilityPlaceKind,
@@ -15,45 +15,77 @@ import {
 } from '@uaetrail/shared-types';
 import type { PlaceDetailKind, PlaceDetailKindConfig } from '../../../pages/placeDetailConfig';
 import type { Place } from '../../../types/place';
-import { MobileDetailScrollShell } from '../../../components/mobile/MobileDetailScrollShell';
+import { CONSUMER_DETAIL_PANEL, CONSUMER_DETAIL_SECTION_TITLE } from '../../../activity/detail/templates/activityConsumerDetailSectionStyles';
 import {
-  DETAIL_SCROLL_MEDIA_BLEED,
-  DETAIL_SCROLL_PANEL,
-  DETAIL_SCROLL_SECTION_TITLE,
-} from '../../../components/mobile/detailScrollSectionStyles';
-import { EnvironmentImage } from '../../../components/ui/EnvironmentImage';
-import { ShareButton, ReviewSection, MeetingPointMap, DirectionsControl } from '../../../components/ui';
-import { PlacePlanList } from '../../placePlanList';
+  ConsumerDetailSection,
+  ConsumerDetailSectionJumpNav,
+  DetailPageShell,
+  HeroBanner,
+  SectionCard,
+} from '../../../detail/shell';
+import { DetailHeroPhotoStrip } from '../../../detail/shared/DetailHeroPhotoStrip';
+import { collectDetailHeroPhotos } from '../../../detail/shared/detailHeroPhotos';
+import { ConsumerDetailHeroGeoLine } from '../../../detail/shared/ConsumerDetailHeroGeoLine';
+import { useGeoAncestorLinks } from '../../../hooks/useGeoAncestorLinks';
+import { ReviewSection, DirectionsControl } from '../../../components/ui';
+import { DetailHeroShareButton } from '../../../detail/shared/DetailHeroShareButton';
+import { LazyMeetingPointMap } from '../../../detail/shared/LazyMeetingPointMap';
+import { ProfileActivityListRow } from '../../../components/profile/ProfileActivityListRow';
 import { PageMeta } from '../../../components/seo/PageMeta';
 import { JsonLd } from '../../../components/seo/JsonLd';
 import { placeSchema } from '../../../components/seo/schemas';
 import { detailBackPath } from '../../../config/routingCatalog';
-import { readDetailBackToFromLocation } from '../../../explore/mapPeekDetailNavState';
+import {
+  consumerDetailChildLinkState,
+  readDetailBackToFromLocation,
+} from '../../../explore/mapPeekDetailNavState';
 import { EXPLORE_PEEK_CTA } from '../../../config/exploreTheme';
+import { buildPlaceDetailDiscoveryCard } from '../buildPlaceDetailDiscoveryCard';
+import { buildPlaceConsumerDetailJumpLinks } from '../buildPlaceConsumerDetailJumpLinks';
 import { buildPlaceDetailPageModel } from '../buildPlaceDetailPageModel';
+import { parseMobileBackNavState } from '../../../utils/mobileBackNav';
+import { ExploreWishlistSaveButton } from '../../../explore/ui/ExploreWishlistSaveButton';
 import { resolvePlaceDisplayTitle, readPlaceArabicName } from '../../../utils/venueDetailDisplay';
 import { resolvePlaceAreaLabelFromTags } from '../resolvePlaceAreaFromTags';
-import { placeCoverFallbackClass, resolvePlaceCoverFromPlace } from '../../peek/resolvePlaceRegistryCoverImage';
-import { PlaceDetailKindFacts } from '../PlaceDetailKindFacts';
+import { resolvePlaceCoverFromPlace } from '../../peek/resolvePlaceRegistryCoverImage';
+import { PlaceConsumerKindFacts } from '../PlaceConsumerKindFacts';
+import { PlaceReachableRidesSection } from '../PlaceReachableRidesSection';
+import { resolvePlacePeekAudienceFromPlace } from '../../peek/resolvePlacePeekCatalogFacts';
 import { splitPlacePracticalTags } from '../../../utils/placePracticalInfo';
-import { PLACE_PEEK_FOOTER_PLAN_TRIP, PLACE_PEEK_RATE_LABEL } from '../../../content/placePeekCopy';
+import { PLACE_PEEK_ARRANGE_TRIP, PLACE_PEEK_SCHEDULED } from '../../../content/placePeekCopy';
 import { navigateHostFromPlace } from '../../peek/navigateHostFromPlaceCard';
-import { useAuth } from '../../../context/AuthContext';
-import { joinAuthPath } from '../../../config/routingCatalog';
-import { exploreAddFacilityOnPlacePath } from '../../../explore/routing';
 import { capitalize } from '../../../utils';
-import type { DiscoveryCardTone } from '../../../discovery/discoveryCardModel';
-import { PLACE_DETAIL_TAB_LABELS } from '../../../place/placeDetailTab';
-import { resolvePlaceDetailHeaderChrome } from '../resolvePlaceDetailHeaderChrome';
+import {
+  PLACE_DETAIL_TAB_QUERY,
+  parsePlaceDetailTabParam,
+  type PlaceDetailTabId,
+} from '../../../place/placeDetailTab';
+import { resolvePlaceConsumerDetailHeaderChrome } from '../resolvePlaceConsumerDetailHeaderChrome';
 import { PlacePremiumGuidePanel } from '../../../components/place/PlacePremiumGuidePanel';
+import { PlaceElevationProfile } from '../../../components/place/PlaceElevationProfile';
+import { PlaceDetailWeatherSection } from '../../../components/place/PlaceDetailWeatherSection';
+import { fetchPublicPlaceTrackPreview } from '../../../hooks/placeTrackPreviewClientApi';
+import { useActivePlatformAlerts } from '../../../hooks/useActivePlatformAlerts';
+import { ConsumerDetailPlatformAlertBanner } from '../../../detail/ConsumerDetailPlatformAlertBanner';
+import { PlaceDetailGuestGate } from '../../../components/place/detail/PlaceDetailGuestGate';
+import { GUEST_PLACE_DETAIL_PREVIEW_FOOTER_HINT } from '../../../content/guestJoinCopy';
+import {
+  CONSUMER_DETAIL_KEY_FACTS_LABEL,
+  CONSUMER_DETAIL_OVERVIEW_LABEL,
+} from '../../../content/consumerDetailSectionLabels';
 
-const toneForKind = (kind: PlaceDetailKind): DiscoveryCardTone => {
-  if (kind === 'camp') return 'camping';
-  if (kind === 'event') return 'event';
-  return 'hiking';
+const PlaceTrackPreviewMapLazy = lazy(() =>
+  import('../../../components/place/PlaceTrackPreviewMap').then((m) => ({ default: m.PlaceTrackPreviewMap }))
+);
+
+const PLACE_TAB_SCROLL_ANCHORS: Record<PlaceDetailTabId, string> = {
+  overview: 'place-detail-about',
+  facts: 'place-detail-map-elevation',
+  transport: 'place-detail-transport',
+  guide: 'place-guide',
 };
 
-export type PlaceDetailSectionsProps = {
+export type PlaceConsumerDetailPageProps = {
   kind: PlaceDetailKind;
   config: PlaceDetailKindConfig;
   place: Place;
@@ -67,9 +99,11 @@ export type PlaceDetailSectionsProps = {
   unlockNotice: string | null;
   onDismissUnlockNotice: () => void;
   onReviewSubmitted: (review: ReviewDTO) => void;
+  /** Signed-out visitor — redacted body; sign-in gate + preview jump chips only. */
+  guestPreview?: boolean;
 };
 
-export const PlaceDetailSections = ({
+export const PlaceConsumerDetailPage = ({
   kind,
   config,
   place,
@@ -83,16 +117,30 @@ export const PlaceDetailSections = ({
   unlockNotice,
   onDismissUnlockNotice,
   onReviewSubmitted,
-}: PlaceDetailSectionsProps) => {
-  const { user } = useAuth();
+  guestPreview = false,
+}: PlaceConsumerDetailPageProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const addFacilityAlongRoutePath = exploreAddFacilityOnPlacePath(placeId);
-  const addFacilityHref = user ? addFacilityAlongRoutePath : joinAuthPath(addFacilityAlongRoutePath);
+  const [searchParams] = useSearchParams();
+  const inboundTab = parsePlaceDetailTabParam(searchParams.get(PLACE_DETAIL_TAB_QUERY));
   const [arranging, setArranging] = useState(false);
+  const mapSectionRef = useRef<HTMLElement | null>(null);
+  const [trackSectionVisible, setTrackSectionVisible] = useState(false);
+  const [trackPreview, setTrackPreview] = useState<PlaceTrackPreviewDTO | null | undefined>(undefined);
   const pageModel = useMemo(
     () => buildPlaceDetailPageModel({ kind, place, config }),
     [kind, place, config]
+  );
+  const wishlistCard = useMemo(
+    () =>
+      buildPlaceDetailDiscoveryCard({
+        kind,
+        place,
+        placeId,
+        detailPath,
+        shareText: pageModel.shareText,
+      }),
+    [kind, place, placeId, detailPath, pageModel.shareText]
   );
   const coverUrl = resolvePlaceCoverFromPlace(place);
   const displayName = resolvePlaceDisplayTitle(place.name, place.tags);
@@ -102,6 +150,15 @@ export const PlaceDetailSections = ({
   const areaLabel = place.areaName?.trim() || place.areaLabel?.trim() || resolvePlaceAreaLabelFromTags(place.tags);
   const areaSlug = place.areaSlug?.trim() || null;
   const practical = splitPlacePracticalTags(place.tags);
+  const forecastLat =
+    place.latitude ?? place.parkingLat ?? null;
+  const forecastLng =
+    place.longitude ?? place.parkingLng ?? null;
+  const showPlaceWeather =
+    typeof forecastLat === 'number' &&
+    typeof forecastLng === 'number' &&
+    !Number.isNaN(forecastLat) &&
+    !Number.isNaN(forecastLng);
   const avgRating =
     reviews.length > 0
       ? reviews.reduce((sum, r) => sum + (r.rating ?? 0), 0) / reviews.length
@@ -110,12 +167,16 @@ export const PlaceDetailSections = ({
     (place.parkingLat != null && place.parkingLng != null) || Boolean(place.parkingLink);
   const showTransport =
     hasParking || (place.accessibleBy?.length ?? 0) > 0 || Boolean(place.accessibility);
-  const showAmenitiesAlongRoute = kind === 'trail' || kind === 'camp';
   const showNearbySection =
-    showAmenitiesAlongRoute ||
-    nearbyFacilities.length > 0 ||
-    practical.facilities.length > 0 ||
-    practical.nearby.length > 0;
+    nearbyFacilities.length > 0 || practical.facilities.length > 0 || practical.nearby.length > 0;
+
+  const platformAlerts = useActivePlatformAlerts({
+    enabled: showPlaceWeather,
+    lat: forecastLat,
+    lng: forecastLng,
+    radiusKm: 120,
+    region: place.region,
+  });
 
   useEffect(() => {
     if (unlockNotice?.toLowerCase().includes('unlocked')) {
@@ -123,17 +184,123 @@ export const PlaceDetailSections = ({
     }
   }, [unlockNotice]);
 
+  useEffect(() => {
+    if (kind !== 'trail') return;
+    const el = mapSectionRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      setTrackSectionVisible(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setTrackSectionVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '140px 0px', threshold: 0.01 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [kind, placeId]);
+
+  useEffect(() => {
+    if (guestPreview || !trackSectionVisible || kind !== 'trail') return;
+    let cancelled = false;
+    void fetchPublicPlaceTrackPreview(placeId)
+      .then((data) => {
+        if (!cancelled) setTrackPreview(data);
+      })
+      .catch(() => {
+        if (!cancelled) setTrackPreview(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [guestPreview, trackSectionVisible, kind, placeId]);
+
   const backTo =
     readDetailBackToFromLocation(location.state) ?? detailBackPath(pageModel.backKind);
-  const headerChrome = resolvePlaceDetailHeaderChrome(kind);
+  const headerChrome = resolvePlaceConsumerDetailHeaderChrome(kind);
+  const areaLinkState = useMemo(() => {
+    const returnTo = `${location.pathname}${location.search}`;
+    return consumerDetailChildLinkState(returnTo, headerChrome.label);
+  }, [headerChrome.label, location.pathname, location.search]);
+  const geoLinks = useGeoAncestorLinks({ region: place.region });
+  const heroPhotos = useMemo(
+    () =>
+      collectDetailHeroPhotos([
+        {
+          srcs: [...(place.images ?? []), coverUrl],
+          title: displayName,
+          kindLabel: headerChrome.label,
+          href: detailPath,
+        },
+        ...activities.map((activity) => ({
+          srcs: [...(activity.images ?? []), activity.bannerUrl],
+          title: activity.title,
+          kindLabel: 'Outing',
+          href: activityDetailPath(activity.id),
+        })),
+      ]),
+    [activities, coverUrl, detailPath, displayName, headerChrome.label, place.images]
+  );
 
   const catalogKind = placeKindFromLocationRow({
     activityType: place.activityType,
     tags: place.tags,
   });
   const isFacilityCatalog = isFacilityPlaceKind(catalogKind);
+  const audienceLabels = useMemo(() => resolvePlacePeekAudienceFromPlace(place), [place]);
+  const hasAbout = Boolean(place.description?.trim());
+  const jumpLinks = useMemo(
+    () =>
+      buildPlaceConsumerDetailJumpLinks({
+        guestPreview,
+        kind,
+        hasAbout,
+        showMapElevation: kind === 'trail',
+        showSeason: pageModel.showSeason,
+        showTransport,
+        showNearby: showNearbySection,
+        showAmenities: kind === 'camp' && practical.facilities.length > 0,
+        showWeather: showPlaceWeather,
+        showScheduled: activities.length > 0,
+        showRides: !isFacilityCatalog,
+        showGuide: kind === 'trail',
+      }),
+    [
+      guestPreview,
+      kind,
+      hasAbout,
+      pageModel.showSeason,
+      showTransport,
+      showNearbySection,
+      practical.facilities.length,
+      showPlaceWeather,
+      activities.length,
+      isFacilityCatalog,
+    ]
+  );
 
-  const footer = isFacilityCatalog ? undefined : (
+  useEffect(() => {
+    const anchor = PLACE_TAB_SCROLL_ANCHORS[inboundTab];
+    if (!anchor || inboundTab === 'overview') return;
+    const el = document.getElementById(anchor);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [inboundTab, placeId]);
+
+  const guestFooter = guestPreview ? (
+    <p className="text-center text-xs font-medium leading-snug text-neutral-600 dark:text-neutral-400">
+      {GUEST_PLACE_DETAIL_PREVIEW_FOOTER_HINT}
+    </p>
+  ) : undefined;
+
+  const footer = guestPreview
+    ? guestFooter
+    : isFacilityCatalog
+      ? undefined
+      : (
     <button
       type="button"
       disabled={arranging}
@@ -143,18 +310,44 @@ export const PlaceDetailSections = ({
       }}
       className={`${EXPLORE_PEEK_CTA.primary} lg:!rounded-lg lg:!py-2 lg:!text-[13px]`}
     >
-      {arranging ? 'Opening…' : PLACE_PEEK_FOOTER_PLAN_TRIP}
+      {arranging ? 'Opening…' : PLACE_PEEK_ARRANGE_TRIP}
     </button>
-  );
+      );
 
-  const shareControl = (
-    <ShareButton
-      title={place.name}
-      text={pageModel.shareText}
-      path={detailPath}
-      iconOnly
-      light
-    />
+  const asidePanel =
+    guestPreview || (!footer && audienceLabels.length === 0)
+      ? undefined
+      : (
+      <div className="space-y-3">
+        {audienceLabels.length > 0 ? (
+          <div className="hidden md:block">
+            <p className="text-[11px] font-bold uppercase tracking-wide text-neutral-500">Good for</p>
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              {audienceLabels.map((label) => (
+                <span
+                  key={label}
+                  className="inline-flex rounded-lg border border-neutral-200 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-800"
+                >
+                  {label}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : null}
+        {guestPreview ? null : footer}
+      </div>
+    );
+
+  const heroTopActions = (
+    <div className="flex items-center gap-1.5">
+      {!isFacilityCatalog && !guestPreview ? <ExploreWishlistSaveButton card={wishlistCard} bare /> : null}
+      <DetailHeroShareButton
+        title={place.name}
+        text={pageModel.shareText}
+        path={detailPath}
+        shareSurface="place"
+      />
+    </div>
   );
 
   return (
@@ -169,88 +362,195 @@ export const PlaceDetailSections = ({
       <JsonLd data={placeSchema(place)} id={`${kind}-${place.id}`} />
 
       <div
-        className="flex h-full min-h-0 flex-1 flex-col overflow-hidden"
         data-place-consumer-detail-template
+        className="flex h-full min-h-0 flex-1 flex-col overflow-hidden"
       >
-        <MobileDetailScrollShell
+        <DetailPageShell
           backTo={backTo}
-          backLabel=""
+          backLabel={parseMobileBackNavState(location.state)?.backLabel ?? 'Explore'}
           headerChrome={headerChrome}
-          headerAction={shareControl}
+          preferDeclaredBackLabel
           footer={footer}
-        >
-          <div className={`relative mb-4 h-[min(32dvh,220px)] md:mb-6 md:h-[min(40dvh,340px)] lg:mb-3 lg:h-[11rem] ${DETAIL_SCROLL_MEDIA_BLEED}`}>
-            {coverUrl ? (
-              <EnvironmentImage src={coverUrl} alt="" className="h-full w-full object-cover" loading="eager" />
-            ) : (
-              <div
-                className={`flex h-full w-full items-center justify-center bg-gradient-to-br ${placeCoverFallbackClass(toneForKind(kind))}`}
-              >
-                <MapPin className="h-12 w-12 text-neutral-400" aria-hidden />
+          footerClassName={footer ? 'md:hidden' : undefined}
+          jumpRow={
+            <>
+              <ConsumerDetailSectionJumpNav links={jumpLinks} />
+              {guestPreview ? (
+                <PlaceDetailGuestGate
+                  placeId={placeId}
+                  placeName={displayName}
+                  compact
+                  className="mb-3 md:mb-2"
+                />
+              ) : null}
+            </>
+          }
+          hero={
+            heroPhotos.length > 0 ? (
+              <div className="-mx-4 mb-4 min-w-0 max-w-[calc(100%+2rem)] overflow-hidden md:-mx-6 md:max-w-[calc(100%+3rem)] lg:mx-0 lg:mb-2 lg:mt-0 lg:max-w-full lg:pt-0">
+                <DetailHeroPhotoStrip
+                  photos={heroPhotos}
+                  topEndAction={heroTopActions}
+                  mobileOverlayLayout="centered"
+                  selfDetailPath={detailPath}
+                  ariaLabel={`${displayName} photos`}
+                  overlay={
+                    <>
+                      <h1 className="landing-hero-headline font-black leading-[1.18] [overflow-wrap:anywhere] md:text-[2rem] md:leading-[1.15] lg:text-[2.125rem]">
+                        {displayName}
+                      </h1>
+                  <ConsumerDetailHeroGeoLine
+                    geoLinks={geoLinks}
+                    regionFallback={place.region}
+                    areaLabel={areaLabel}
+                    areaSlug={areaSlug}
+                    areaLinkState={areaLinkState}
+                    geoLinkBackLabel={headerChrome.label}
+                  />
+                      {nameAr && nameAr !== displayName ? (
+                        <p className="text-sm text-white/90" dir="rtl" lang="ar">
+                          {nameAr}
+                        </p>
+                      ) : null}
+                    </>
+                  }
+                />
               </div>
-            )}
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 px-4 pb-4 text-white md:px-6 md:pb-6 lg:px-4 lg:pb-3">
-              <p className="text-sm font-medium text-white/90 lg:text-xs">{place.region}</p>
-              {areaLabel ? (
-                <p className="text-sm font-semibold">
-                  {areaSlug ? (
-                    <Link
-                      to={areaDetailPath(areaSlug)}
-                      className="underline decoration-white/40 underline-offset-2 hover:text-white"
-                    >
-                      {areaLabel}
-                    </Link>
-                  ) : (
-                    areaLabel
-                  )}
-                </p>
-              ) : null}
-              <h1 className="mt-1 text-[1.5rem] font-bold leading-snug md:text-[1.85rem] lg:mt-0.5 lg:text-lg">{displayName}</h1>
-              {nameAr && nameAr !== displayName ? (
-                <p className="mt-1 text-sm text-white/90" dir="rtl" lang="ar">{nameAr}</p>
-              ) : null}
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-6 lg:gap-3">
-            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between md:gap-6">
-            <section className="min-w-0 flex-1" aria-label="At a glance">
-              <PlaceDetailKindFacts kind={kind} place={place} />
-            </section>
-
-            <section className="shrink-0 md:pt-1" aria-label="Ratings">
-              {avgRating != null ? (
-                <p className="flex items-center gap-1.5 text-sm font-semibold text-neutral-900">
-                  <Star className="h-4 w-4 fill-amber-400 text-amber-400" aria-hidden />
-                  <span>{avgRating.toFixed(1)}</span>
-                  <span className="font-medium text-neutral-500">· {reviews.length} ratings</span>
-                </p>
-              ) : (
-                <p className="flex flex-wrap items-center gap-2 text-sm text-neutral-600">
-                  <Star className="h-4 w-4 text-amber-300" aria-hidden />
-                  <span>No ratings yet</span>
-                  <a
-                    href="#place-reviews"
-                    className="font-semibold text-emerald-700 underline-offset-2 hover:underline"
-                  >
-                    {PLACE_PEEK_RATE_LABEL}
-                  </a>
-                </p>
-              )}
-            </section>
-            </div>
-
+            ) : (
+              <HeroBanner
+                imageUrl={coverUrl}
+                topEndAction={heroTopActions}
+                mobileTitleLayout="center"
+                typeBadge={
+                  <span className="rounded-full border border-white/35 bg-white/15 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide">
+                    {headerChrome.label}
+                  </span>
+                }
+                title={displayName}
+                subtitle={
+                  <ConsumerDetailHeroGeoLine
+                    geoLinks={geoLinks}
+                    regionFallback={place.region}
+                    areaLabel={areaLabel}
+                    areaSlug={areaSlug}
+                    areaLinkState={areaLinkState}
+                    geoLinkBackLabel={headerChrome.label}
+                  />
+                }
+              />
+            )
+          }
+          alerts={
+            <ConsumerDetailPlatformAlertBanner
+              alerts={platformAlerts}
+              label="Safety and conditions"
+              className="mb-1 md:mb-2"
+            />
+          }
+          keyFacts={
+            <ConsumerDetailSection
+              id="place-detail-at-a-glance"
+              title={CONSUMER_DETAIL_KEY_FACTS_LABEL}
+              tone="slate"
+              ariaLabel={CONSUMER_DETAIL_KEY_FACTS_LABEL}
+              className="!mt-0"
+              collapsible
+              defaultExpanded
+            >
+              <PlaceConsumerKindFacts
+                kind={kind}
+                place={place}
+                showAudience
+                rating={{
+                  average: avgRating,
+                  count: reviews.length,
+                  rateHref: '#place-reviews',
+                }}
+              />
+            </ConsumerDetailSection>
+          }
+          aside={asidePanel}
+        >
             {place.description?.trim() ? (
-              <section aria-label="About">
-                <h2 className={`mb-2 ${DETAIL_SCROLL_SECTION_TITLE}`}>About</h2>
-                <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-neutral-800 md:text-base md:leading-7 lg:text-[13px] lg:leading-5">{place.description}</p>
-              </section>
+              <SectionCard
+                id="place-detail-about"
+                title={CONSUMER_DETAIL_OVERVIEW_LABEL}
+                tone="emerald"
+                collapsible
+                defaultExpanded
+                bodyClassName={
+                  guestPreview
+                    ? undefined
+                    : 'max-h-[min(12rem,30vh)] overflow-y-auto overscroll-contain scroll-touch pr-0.5 lg:max-h-[min(10rem,26vh)]'
+                }
+              >
+                <p
+                  className={`whitespace-pre-wrap text-[15px] leading-relaxed text-neutral-800 md:text-base md:leading-7 lg:text-[13px] lg:leading-5${
+                    guestPreview ? ' line-clamp-5' : ''
+                  }`}
+                >
+                  {place.description}
+                </p>
+                {guestPreview ? (
+                  <p className="mt-2 text-xs font-medium text-neutral-500 dark:text-neutral-400">
+                    Join free to read the full description, map, directions, and community reviews.
+                  </p>
+                ) : null}
+              </SectionCard>
+            ) : null}
+
+            {!isFacilityCatalog ? <PlaceReachableRidesSection placeId={placeId} /> : null}
+
+            {guestPreview ? null : (
+              <>
+            {kind === 'trail' ? (
+              <ConsumerDetailSection
+                ref={mapSectionRef}
+                id="place-detail-map-elevation"
+                title="Map and elevation"
+                tone="sky"
+                ariaLabel="Map and elevation"
+                collapsible
+                defaultExpanded
+              >
+                {trackSectionVisible && trackPreview === undefined ? (
+                  <div className="space-y-2" aria-hidden>
+                    <div className="aspect-[16/9] max-w-full animate-pulse rounded-xl bg-neutral-100" />
+                  </div>
+                ) : null}
+                {trackPreview && (trackPreview.polyline || trackPreview.bbox) ? (
+                  <div className="space-y-3">
+                    <p className="text-sm text-neutral-600 lg:text-[13px] lg:leading-5">
+                      Route preview. Download the GPX from Guided information when you have access.
+                    </p>
+                    <Suspense
+                      fallback={
+                        <div className="aspect-[16/9] max-w-full animate-pulse rounded-xl border border-neutral-100 bg-neutral-50 lg:aspect-[21/9] lg:max-h-[140px]" />
+                      }
+                    >
+                      <div className="lg:max-h-[140px] lg:overflow-hidden lg:[&_.leaflet-container]:!max-h-[140px]">
+                        <PlaceTrackPreviewMapLazy polyline={trackPreview.polyline} bbox={trackPreview.bbox} />
+                      </div>
+                    </Suspense>
+                    {trackPreview.profile && trackPreview.profile.length >= 2 ? (
+                      <div className={`${CONSUMER_DETAIL_PANEL.social} rounded-xl border border-neutral-100 p-3`}>
+                        <PlaceElevationProfile profile={trackPreview.profile} />
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+              </ConsumerDetailSection>
             ) : null}
 
             {pageModel.showSeason && place.season && place.season.length > 0 ? (
-              <section aria-label="Best season">
-                <h2 className={`mb-2 ${DETAIL_SCROLL_SECTION_TITLE}`}>Best season</h2>
+              <ConsumerDetailSection
+                id="place-detail-season"
+                title="Best season"
+                tone="rose"
+                ariaLabel="Best season"
+                collapsible
+                defaultExpanded
+              >
                 <div className="flex flex-wrap gap-2">
                   {place.season.map((season) => (
                     <span
@@ -261,16 +561,25 @@ export const PlaceDetailSections = ({
                     </span>
                   ))}
                 </div>
-              </section>
+              </ConsumerDetailSection>
             ) : null}
 
-            <div className="grid gap-6 md:grid-cols-2 lg:gap-3">
+            <div
+              id="place-detail-details"
+              className="flex flex-col gap-3 max-lg:[&_section]:!mt-0"
+            >
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:items-stretch [&>section]:!mt-0">
             {showTransport ? (
-              <section id="place-detail-transport" aria-label="Getting there">
-                <h2 className={`mb-3 ${DETAIL_SCROLL_SECTION_TITLE}`}>
-                  {PLACE_DETAIL_TAB_LABELS.transport}
-                </h2>
-                <div className={`space-y-4 ${DETAIL_SCROLL_PANEL.logistics}`}>
+              <ConsumerDetailSection
+                id="place-detail-transport"
+                title="Getting there"
+                tone="sky"
+                ariaLabel="Getting there"
+                collapsible
+                defaultExpanded
+                className="h-full min-h-0"
+              >
+                <div className="space-y-4">
                   {place.accessibility ? (
                     <p className="text-sm text-neutral-800">
                       <span className="font-semibold">Access:</span>{' '}
@@ -279,7 +588,7 @@ export const PlaceDetailSections = ({
                   ) : null}
                   {place.accessibleBy && place.accessibleBy.length > 0 ? (
                     <div>
-                      <p className={`${DETAIL_SCROLL_SECTION_TITLE} mb-1`}>Accessible by</p>
+                      <p className={`${CONSUMER_DETAIL_SECTION_TITLE} mb-1`}>Accessible by</p>
                       <ul className="mt-1 list-disc pl-5 text-sm text-neutral-800">
                         {place.accessibleBy.map((line) => (
                           <li key={line}>{line}</li>
@@ -289,8 +598,8 @@ export const PlaceDetailSections = ({
                   ) : null}
                   {place.parkingLat != null && place.parkingLng != null ? (
                     <div>
-                      <p className={`${DETAIL_SCROLL_SECTION_TITLE} mb-2`}>Parking</p>
-                      <MeetingPointMap lat={place.parkingLat} lng={place.parkingLng} label="Parking" hideExternalLink />
+                      <p className={`${CONSUMER_DETAIL_SECTION_TITLE} mb-2`}>Parking</p>
+                      <LazyMeetingPointMap lat={place.parkingLat} lng={place.parkingLng} label="Parking" hideExternalLink />
                       <DirectionsControl
                         lat={place.parkingLat}
                         lng={place.parkingLng}
@@ -301,29 +610,20 @@ export const PlaceDetailSections = ({
                     </div>
                   ) : null}
                 </div>
-              </section>
+              </ConsumerDetailSection>
             ) : null}
 
             {showNearbySection ? (
-              <section aria-label="Nearby facilities">
-                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                  <h2 className={DETAIL_SCROLL_SECTION_TITLE}>Along this route</h2>
-                  {showAmenitiesAlongRoute ? (
-                    <Link
-                      to={addFacilityHref}
-                      className="text-sm font-semibold text-emerald-800 underline-offset-2 hover:underline"
-                    >
-                      Add amenity · drop a pin
-                    </Link>
-                  ) : null}
-                </div>
-                <div className={`space-y-3 ${DETAIL_SCROLL_PANEL.social}`}>
-                  {nearbyFacilities.length === 0 && showAmenitiesAlongRoute ? (
-                    <p className="text-sm text-neutral-600">
-                      Toilets, water, rest stops, and gear pins along this route appear here after members add them
-                      on the map.
-                    </p>
-                  ) : null}
+              <ConsumerDetailSection
+                id="place-detail-nearby"
+                title="Nearby facilities"
+                tone="violet"
+                ariaLabel="Nearby facilities"
+                collapsible
+                defaultExpanded
+                className="h-full min-h-0"
+              >
+                <div className="space-y-3">
                   {nearbyFacilities.length > 0 ? (
                     <ul className="divide-y divide-neutral-100">
                       {nearbyFacilities.map((facility) => (
@@ -346,7 +646,7 @@ export const PlaceDetailSections = ({
                   ) : null}
                   {practical.facilities.length > 0 ? (
                     <div>
-                      <p className={`${DETAIL_SCROLL_SECTION_TITLE} mb-1`}>On site</p>
+                      <p className={`${CONSUMER_DETAIL_SECTION_TITLE} mb-1`}>On site</p>
                       <ul className="mt-1 list-disc pl-5 text-sm text-neutral-800">
                         {practical.facilities.map((line) => (
                           <li key={line}>{line}</li>
@@ -356,7 +656,7 @@ export const PlaceDetailSections = ({
                   ) : null}
                   {practical.nearby.length > 0 ? (
                     <div>
-                      <p className={`${DETAIL_SCROLL_SECTION_TITLE} mb-1`}>Nearby</p>
+                      <p className={`${CONSUMER_DETAIL_SECTION_TITLE} mb-1`}>Nearby</p>
                       <ul className="mt-1 list-disc pl-5 text-sm text-neutral-800">
                         {practical.nearby.map((line) => (
                           <li key={line}>{line}</li>
@@ -365,15 +665,73 @@ export const PlaceDetailSections = ({
                     </div>
                   ) : null}
                 </div>
-              </section>
+              </ConsumerDetailSection>
             ) : null}
             </div>
+            </div>
 
-            <PlacePlanList activities={activities} />
+            {kind === 'camp' && practical.facilities.length > 0 ? (
+              <SectionCard
+                id="place-detail-amenities"
+                title="Amenities"
+                tone="amber"
+                collapsible
+                defaultExpanded
+              >
+                <ul className="list-disc ps-5 text-sm text-neutral-800">
+                  {practical.facilities.map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+              </SectionCard>
+            ) : null}
 
-            <section id="place-guide" aria-label={PLACE_DETAIL_TAB_LABELS.guide}>
-                <h2 className={`mb-3 ${DETAIL_SCROLL_SECTION_TITLE}`}>{PLACE_DETAIL_TAB_LABELS.guide}</h2>
-                <div className={DETAIL_SCROLL_PANEL.prep}>
+            {showPlaceWeather ? (
+              <ConsumerDetailSection
+                id="place-detail-safety"
+                title="Safety and conditions"
+                tone="indigo"
+                ariaLabel="Safety and conditions"
+                collapsible
+                defaultExpanded
+              >
+                <PlaceDetailWeatherSection
+                  lat={forecastLat}
+                  lng={forecastLng}
+                  forecastForName={displayName}
+                  className="mt-0"
+                />
+              </ConsumerDetailSection>
+            ) : null}
+
+            {activities.length > 0 ? (
+              <ConsumerDetailSection
+                id="place-detail-scheduled"
+                title={PLACE_PEEK_SCHEDULED}
+                tone="emerald"
+                ariaLabel={PLACE_PEEK_SCHEDULED}
+                collapsible
+                defaultExpanded
+              >
+                <ul className="divide-y divide-neutral-200/80">
+                  {activities.map((activity) => (
+                    <li key={activity.id}>
+                      <ProfileActivityListRow activity={activity} variant="plain" />
+                    </li>
+                  ))}
+                </ul>
+              </ConsumerDetailSection>
+            ) : null}
+
+            {kind === 'trail' ? (
+            <ConsumerDetailSection
+                id="place-guide"
+                title="Guide"
+                tone="amber"
+                ariaLabel="Guide"
+                collapsible
+                defaultExpanded={false}
+              >
                   <PlacePremiumGuidePanel
                     placeId={placeId}
                     placeName={displayName}
@@ -383,11 +741,17 @@ export const PlaceDetailSections = ({
                     onDismissUnlockNotice={onDismissUnlockNotice}
                     accent={config.accent === 'emerald' ? undefined : config.accent}
                   />
-                </div>
-            </section>
+            </ConsumerDetailSection>
+            ) : null}
 
-            <section id="place-reviews" aria-label="Reviews">
-              <h2 className={`mb-2 ${DETAIL_SCROLL_SECTION_TITLE}`}>Reviews</h2>
+            <ConsumerDetailSection
+              id="place-reviews"
+              title="Reviews"
+              tone="violet"
+              ariaLabel="Reviews"
+              collapsible
+              defaultExpanded={false}
+            >
               <ReviewSection
                 targetType="place"
                 targetId={placeId}
@@ -395,9 +759,10 @@ export const PlaceDetailSections = ({
                 onReviewSubmitted={onReviewSubmitted}
                 accent={config.accent === 'emerald' ? undefined : config.accent}
               />
-            </section>
-          </div>
-        </MobileDetailScrollShell>
+            </ConsumerDetailSection>
+              </>
+            )}
+        </DetailPageShell>
       </div>
     </>
   );

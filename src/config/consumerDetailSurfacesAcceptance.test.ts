@@ -17,9 +17,9 @@ describe('consumerDetailSurfacesAcceptance', () => {
   it('entity detail views use tab wire modules and shared tab chrome', () => {
     const surfaces: Array<{ file: string; wire: string; tabChrome: RegExp }> = [
       {
-        file: 'src/place/detail/templates/PlaceDetailSections.tsx',
+        file: 'src/place/detail/templates/PlaceConsumerDetailPage.tsx',
         wire: 'placeDetailTab',
-        tabChrome: /MobileDetailScrollShell/,
+        tabChrome: /ConsumerDetailSectionJumpNav/,
       },
       {
         file: 'src/components/ui/PlaceDetailTabs.tsx',
@@ -29,12 +29,12 @@ describe('consumerDetailSurfacesAcceptance', () => {
       {
         file: 'src/components/area/AreaDetailView.tsx',
         wire: 'areaDetailTab',
-        tabChrome: /ConsumerEntityTabBar/,
+        tabChrome: /ConsumerDetailSectionJumpNav/,
       },
       {
         file: 'src/components/shop/ShopPublicPage.tsx',
         wire: 'shopPublicDetailTab',
-        tabChrome: /ConsumerEntityTabBar/,
+        tabChrome: /ConsumerDetailSectionJumpNav/,
       },
       {
         file: 'src/pages/OrganisationProfile.tsx',
@@ -44,6 +44,11 @@ describe('consumerDetailSurfacesAcceptance', () => {
       {
         file: 'src/components/organisation-console/OrganisationPublicProfile.tsx',
         wire: 'organisationPublicDetailTab',
+        tabChrome: /ConsumerEntityTabBar/,
+      },
+      {
+        file: 'src/components/activity/detail/ActivityDetailTabBar.tsx',
+        wire: 'activityDetailTab',
         tabChrome: /ConsumerEntityTabBar/,
       },
     ];
@@ -64,7 +69,7 @@ describe('consumerDetailSurfacesAcceptance', () => {
     expect(read('src/components/activity/detail/ActivityDetailGuestGate.tsx')).toMatch(
       /join-activity/
     );
-    expect(read('src/activity/detail/templates/ActivityDetailSections.tsx')).toMatch(
+    expect(read('src/activity/detail/templates/ActivityConsumerDetailPage.tsx')).toMatch(
       /ActivityDetailGuestGate/
     );
   });

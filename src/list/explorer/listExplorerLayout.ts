@@ -19,9 +19,12 @@ export const serializeListExplorerLayout = (layout: ListExplorerLayout): string 
 export const countListExplorerFilters = (
   filters: BrowseListFilterState,
   regions: readonly string[],
-  bucket: ListExplorerBucket = 'events'
+  bucket: ListExplorerBucket = 'events',
+  geoIds: readonly string[] = [],
+  lockedGeoCount = 0
 ): number => {
-  let count = regions.length;
+  let count = Math.max(0, geoIds.length - lockedGeoCount);
+  if (count === 0) count = regions.length;
   if (bucket === 'places') {
     count += filters.placeTopics.length;
     if (filters.hasTrip) count += 1;

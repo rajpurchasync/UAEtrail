@@ -27,6 +27,8 @@ type PlanHostingManageProviderProps = {
   canHost: boolean;
   /** Hosting filter on upcoming tab — loads console hub + sheets. */
   active: boolean;
+  /** Desktop hosting hub — skip unscoped tenant activity list; scoped lists load separately. */
+  scopedActivityLists?: boolean;
 };
 
 export const PlanHostingManageProvider = ({
@@ -34,8 +36,9 @@ export const PlanHostingManageProvider = ({
   refreshKey = 0,
   canHost,
   active,
+  scopedActivityLists = false,
 }: PlanHostingManageProviderProps) => {
-  const host = useConsoleHubData();
+  const host = useConsoleHubData(canHost && active, { fetchActivities: !scopedActivityLists });
   const hostActions = useHostActivityManageActions(host.tenantId, host.reload);
   const { intents, refetch: refetchIntents } = useMySeekingPosts(canHost && active, refreshKey);
 

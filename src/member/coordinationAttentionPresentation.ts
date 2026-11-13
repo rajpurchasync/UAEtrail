@@ -1,7 +1,7 @@
 import type { MemberCoordinationAttentionItemDTO } from '@uaetrail/shared-types';
 import { exploreActivityInvitePathFromRouting } from '../explore/routing';
 import { planHostedSchedulePath } from '../plan/planRouting';
-import { BUDDIES_PATH, MY_REQUESTS_PATH, NOTIFICATIONS_PATH } from '../config/surfacePaths';
+import { APP_SETTINGS_NOTIFICATIONS_PATH, BUDDIES_PATH, MY_REQUESTS_PATH } from '../config/surfacePaths';
 
 const plural = (count: number, singular: string, pluralLabel: string): string =>
   count === 1 ? `1 ${singular}` : `${count} ${pluralLabel}`;
@@ -21,7 +21,7 @@ export const coordinationAttentionPath = (item: MemberCoordinationAttentionItemD
       if (item.count === 1 && item.activityId) {
         return exploreActivityInvitePathFromRouting(item.activityId);
       }
-      return NOTIFICATIONS_PATH;
+      return APP_SETTINGS_NOTIFICATIONS_PATH;
     default:
       return MY_REQUESTS_PATH;
   }

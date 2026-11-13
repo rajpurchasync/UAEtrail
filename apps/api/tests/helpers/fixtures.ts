@@ -108,7 +108,16 @@ export const createPublishedEventFixture = async (suffix: string): Promise<Publi
 export const createFullEventFixture = async (suffix: string): Promise<PublishedEventFixture> => {
   const fixture = await createPublishedEventFixture(`${suffix}-full`);
 
-  await db().collection('activities').updateOne({ _id: fixture.activityId }, { $set: { capacity: 1 } });
+  await db().collection('activities').updateOne(
+    { _id: fixture.activityId },
+    {
+      $set: {
+        capacity: 1,
+        participantSlotsUsed: 1,
+        counts: { going: 1, waitlisted: 0, pending: 0 },
+      },
+    }
+  );
 
   const filler = await createAuthUser({
     email: `filler-${suffix}@test.local`,
@@ -271,6 +280,7 @@ export const registerVerifiedVisitor = async (
     medicalConditions: 'N/A',
     emergencyContactName: 'Test emergency',
     emergencyContactPhone: '+971501112233',
+    emergencyContactRelation: 'Friend',
   });
 
   return {

@@ -36,6 +36,7 @@ import { EXPLORE_VENUES_LIST_PATH } from '../lib/member-routes.js';
 import { scheduleSideEffect } from '../lib/schedule-side-effect.js';
 import { dispatchNotification } from './notifications.js';
 import { notifyUserAdminAction } from './admin-notifications.js';
+import { recordCatalogEditOutcome } from './catalog-edit-ranking.js';
 
 export type AdminPlaceWriteInput = {
   name: string;
@@ -199,7 +200,11 @@ export const updateAdminPlaceRecord = async (input: {
   const activating =
     nextStatus === LocationStatus.ACTIVE &&
     (existing.status === LocationStatus.DRAFT || existing.status === LocationStatus.INACTIVE);
+  const activatingFromDraft =
+    nextStatus === LocationStatus.ACTIVE && existing.status === LocationStatus.DRAFT;
   const deactivating = nextStatus === LocationStatus.INACTIVE && existing.status === LocationStatus.ACTIVE;
+  const rejectingDraft =
+    nextStatus === LocationStatus.INACTIVE && existing.status === LocationStatus.DRAFT;
 
   if (activating) {
     const mergedImages = body.images ?? existing.images ?? [];
@@ -330,6 +335,9 @@ export const updateAdminPlaceRecord = async (input: {
 
   const catalogSubmitterId = resolveCatalogSubmitterUserId(updated);
   if (activating && catalogSubmitterId) {
+    if (activatingFromDraft) {
+      recordCatalogEditOutcome(catalogSubmitterId, 'success');
+    }
     const locationDto = toLocationDto(updated, { admin: true });
     const activityTypeWire = locationDto.activityType;
     const publicPath = placeDetailPath(activityTypeWire, updated.id);
@@ -441,7 +449,8 @@ export const updateAdminPlaceRecord = async (input: {
     );
   }
 
-  if (deactivating && catalogSubmitterId) {
+  if (rejectingDraft && catalogSubmitterId) {
+    recordCatalogEditOutcome(catalogSubmitterId, 'fail');
     await notifyUserAdminAction({
       userId: catalogSubmitterId,
       title: 'Location not approved',
@@ -449,6 +458,17 @@ export const updateAdminPlaceRecord = async (input: {
       meta: {
         locationId: updated.id,
         kind: 'location_rejected',
+        path: EXPLORE_VENUES_LIST_PATH,
+      },
+    });
+  } else if (deactivating && catalogSubmitterId) {
+    await notifyUserAdminAction({
+      userId: catalogSubmitterId,
+      title: 'Location delisted',
+      body: `"${updated.name}" was removed from the public map. Contact support if you have questions.`,
+      meta: {
+        locationId: updated.id,
+        kind: 'location_delisted',
         path: EXPLORE_VENUES_LIST_PATH,
       },
     });
@@ -470,6 +490,10 @@ export const deleteAdminPlaceRecord = async (input: { actorId: string; placeId: 
       'location_has_events',
       `Cannot delete location: ${activeEventCount} active event(s) reference it.`
     );
+  }
+
+  if (location.status === LocationStatus.DRAFT) {
+    recordCatalogEditOutcome(resolveCatalogSubmitterUserId(location), 'fail');
   }
 
   await deleteAdminLocation(input.placeId);

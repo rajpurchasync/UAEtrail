@@ -20,6 +20,7 @@ import { getMongoClient } from './mongo.js';
 import { findTenantById } from './tenant-store.js';
 import { syncTenantMembershipStatusForTenant } from './tenant-access.js';
 import { normalizeSearchRegexInput } from './regex-search.js';
+import { enrichLocationsWithHeavyReadsBatch } from './place-heavy-store.js';
 
 type MongoAuditLog = {
   _id: string;
@@ -148,7 +149,10 @@ const mapMongoActivity = (doc: MongoActivityDoc) : Activity => ({
   linkedRideshareActivityId: doc.linkedRideshareActivityId ?? null,
   paymentTerms: doc.paymentTerms,
   pricingMode: doc.pricingMode ?? null,
-  itinerary: doc.itinerary,
+  itinerary:
+    doc.itinerary?.length > 0
+      ? doc.itinerary
+      : (doc.itinerarySteps?.map((s) => s.title).filter(Boolean) ?? []),
   requirements: doc.requirements,
   images: doc.images,
   bannerUrl: doc.bannerUrl ?? null,
@@ -160,6 +164,19 @@ const mapMongoActivity = (doc: MongoActivityDoc) : Activity => ({
   featured: doc.featured,
   publishedAt: doc.publishedAt,
   areaId: doc.areaId ?? null,
+  schemaVersion: doc.schemaVersion,
+  summary: doc.summary ?? null,
+  itinerarySteps: doc.itinerarySteps,
+  gear: doc.gear,
+  waitlist: doc.waitlist,
+  counts: doc.counts,
+  priceBreakdown: doc.priceBreakdown,
+  policyKey: doc.policyKey,
+  customPolicy: doc.customPolicy ?? null,
+  audience: doc.audience,
+  waiverRequired: doc.waiverRequired,
+  needsReview: doc.needsReview,
+  confidence: doc.confidence,
   createdAt: doc.createdAt,
   updatedAt: doc.updatedAt
 });
@@ -257,7 +274,8 @@ const loadEventsWithRelations = async (eventDocs: MongoActivityDoc[]) => {
 const loadLocationsByIds = async (ids: string[]): Promise<Map<string, Location>> => {
   if (ids.length === 0) return new Map();
   const docs = await locationsCollection().find({ _id: { $in: ids } }).toArray();
-  return new Map(docs.map((doc) => [doc._id, mapMongoLocation(doc)]));
+  const enriched = await enrichLocationsWithHeavyReadsBatch(docs.map(mapMongoLocation));
+  return new Map(enriched.map((loc) => [loc.id, loc]));
 };
 
 const loadTenantsByIds = async (ids: string[]): Promise<Map<string, Tenant>> => {
@@ -278,7 +296,7 @@ export const listAdminPlacesPaged = async (input: { skip: number; take: number }
   ]);
 
   return {
-    items: items.map(mapMongoLocation),
+    items: await enrichLocationsWithHeavyReadsBatch(items.map(mapMongoLocation)),
     total
   };
 };
@@ -465,6 +483,14 @@ export const updateAdminActivityStatus = async (id: string, status: ActivityStat
   );
   if (!result) {
     throw new Error('Activity not found.');
+  }
+  if (
+    status === ActivityStatus.SUSPENDED ||
+    status === ActivityStatus.PUBLISHED ||
+    status === ActivityStatus.CANCELLED
+  ) {
+    const { scheduleExploreMapCacheInvalidation } = await import('./explore-map-cache-schedule.js');
+    scheduleExploreMapCacheInvalidation('admin-store.activity_status_map_cache');
   }
   return mapMongoActivity(result);
 };

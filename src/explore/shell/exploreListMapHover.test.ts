@@ -9,11 +9,23 @@ describe('explore list → map pin hover', () => {
     const model = read('src/explore/shell/useExploreExperienceModel.ts');
     const mapShell = read('src/explore/shell/ExploreMapShell.tsx');
     const itemLink = read('src/list/explorer/ListExplorerItemLink.tsx');
+    const chrome = read('src/explore/ExploreMapChromeContext.tsx');
+    const listDiscovery = read('src/list/ListDiscoveryExperience.tsx');
     expect(model).toMatch(/highlightedExploreItemId/);
     expect(model).toMatch(/setHighlightedExploreItemId/);
     expect(mapShell).toMatch(/highlightedExploreItemId=\{highlightedExploreItemId\}/);
     expect(mapShell).toMatch(/onPrimaryFab=\{handlePrimaryFabTap\}/);
     expect(mapShell).not.toMatch(/onPrimaryFab=\{compose\.handleCreateTap\}/);
     expect(itemLink).toMatch(/setListHoverExploreItemId/);
+    expect(chrome).toMatch(/subscribeListHover/);
+    expect(listDiscovery).toMatch(/showListMapColumn \? setListMapHighlightedId : null/);
+  });
+
+  it('pans on list hover only when the pin is outside the comfortable viewport', () => {
+    const placesMap = read('src/components/ui/PlacesMap.tsx');
+    expect(placesMap).toMatch(/ListSidecarMapViewportSync/);
+    expect(placesMap).toMatch(/ExploreListHoverViewportSync/);
+    expect(placesMap).toMatch(/anyPinOutsideComfortableView/);
+    expect(placesMap).toMatch(/refreshClusterPinEmphasis/);
   });
 });

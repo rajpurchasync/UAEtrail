@@ -18,6 +18,7 @@ import {
   partitionParticipantIntentsForPlanHub,
 } from '../../member-plan/participantIntentPlan';
 import { usePlanHostingManage } from '../../plan/PlanHostingManageContext';
+import { matchesActivitySearch } from '../../utils/activitySearch';
 import { PlanCommitmentCard } from './PlanCommitmentCard';
 
 const pendingCountForActivity = (activityId: string, requests: ActivityRequestView[]) =>
@@ -33,13 +34,24 @@ type HostingRow =
 type PlanHostingUpcomingProps = {
   refreshKey?: number;
   canHost: boolean;
+  searchQuery?: string;
+  /** Desktop hosting hub — seeking intents only (activities listed elsewhere). */
+  intentsOnly?: boolean;
+  /** With `intentsOnly` — join queue only, no full tenant activity list. */
+  scopedJoinQueue?: boolean;
 };
 
 /**
  * My Plans → Upcoming → hosting filter: published activities you organize + open seeking intents.
  */
-export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpcomingProps) => {
-  const host = useConsoleHubData();
+export const PlanHostingUpcoming = ({
+  refreshKey = 0,
+  canHost,
+  searchQuery = '',
+  intentsOnly = false,
+  scopedJoinQueue = false,
+}: PlanHostingUpcomingProps) => {
+  const host = useConsoleHubData(true, { fetchActivities: !scopedJoinQueue });
   const { openManageActivity, openManageIntent } = usePlanHostingManage();
 
   const {
@@ -65,15 +77,17 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
 
   const rows = useMemo((): HostingRow[] => {
     const list: HostingRow[] = [];
-    for (const event of host.activities) {
-      if (event.status !== 'published') continue;
-      if (new Date(event.date) < today) continue;
-      list.push({
-        kind: 'activity',
-        sortDate: event.date,
-        activity: event,
-        pending: pendingCountForActivity(event.id, host.pendingRequests),
-      });
+    if (!intentsOnly) {
+      for (const event of host.activities) {
+        if (event.status !== 'published') continue;
+        if (new Date(event.date) < today) continue;
+        list.push({
+          kind: 'activity',
+          sortDate: event.date,
+          activity: event,
+          pending: pendingCountForActivity(event.id, host.pendingRequests),
+        });
+      }
     }
     const { upcoming } = partitionParticipantIntentsForPlanHub(intents);
     for (const intent of upcoming) {
@@ -85,7 +99,28 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
     return list.sort(
       (a, b) => new Date(a.sortDate).getTime() - new Date(b.sortDate).getTime()
     );
-  }, [host.activities, host.pendingRequests, intents, hostedActivityIds, today]);
+  }, [host.activities, host.pendingRequests, intents, hostedActivityIds, intentsOnly, today]);
+
+  const filteredRows = useMemo(() => {
+    const q = searchQuery.trim();
+    if (!q) return rows;
+    return rows.filter((row) => {
+      if (row.kind === 'activity') {
+        return matchesActivitySearch(
+          q,
+          row.activity.title,
+          row.activity.locationName,
+          formatActivityType(row.activity.activityType)
+        );
+      }
+      return matchesActivitySearch(
+        q,
+        row.intent.title,
+        row.intent.preferredArea,
+        formatParticipantIntentMeta(row.intent)
+      );
+    });
+  }, [rows, searchQuery]);
 
   if (!canHost) {
     return (
@@ -97,7 +132,7 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
     );
   }
 
-  if (host.loading || intentsLoading) {
+  if ((!intentsOnly && host.loading) || (intentsOnly && scopedJoinQueue && host.loading) || intentsLoading) {
     return <ConsumerLoadingSpinner className="py-12" />;
   }
 
@@ -105,7 +140,7 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
     return <ConsumerErrorCard message={host.error ?? ''} />;
   }
 
-  if (!host.tenantId) {
+  if (!intentsOnly && !host.tenantId) {
     return (
       <ConsumerInlineEmpty
         message="Host profile is still loading — try again in a moment."
@@ -116,6 +151,9 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
   }
 
   if (rows.length === 0) {
+    if (intentsOnly) {
+      return <ConsumerInlineEmpty message="No open “find company” posts." />;
+    }
     return (
       <ConsumerInlineEmpty
         message="Nothing you’re hosting yet — organize on the map or post what you’re looking for."
@@ -125,9 +163,13 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
     );
   }
 
+  if (filteredRows.length === 0) {
+    return <ConsumerInlineEmpty message="No hosted outings match your search." />;
+  }
+
   return (
     <div className="space-y-2 md:space-y-1.5">
-      {rows.map((row) => {
+      {filteredRows.map((row) => {
         if (row.kind === 'activity') {
           const activity = row.activity;
           const isSeeking = activity.activityMode === 'seeking';

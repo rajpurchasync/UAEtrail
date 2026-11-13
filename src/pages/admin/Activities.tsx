@@ -33,8 +33,10 @@ import {
 } from '../../utils/activityIdentity';
 import { navigateToHostFromExistingActivity } from '../../explore/navigateHostFromExistingActivity';
 import { AppSelect, ADMIN_FILTER_SELECT_CLASS, ADMIN_INPUT_CLASS } from '../../components/ui/AppSelect';
+import { AdminFilterBar } from '../../components/admin/AdminFilterBar';
 import { ACTIVITY_TYPE_LABELS, SCHEDULED_ACTIVITY_TYPES } from '../../config/activityTypes';
 import { formatAdminDate } from '../../utils/formatAdminDate';
+import { AdminActivityRidesLinkPanel } from '../../components/admin/AdminActivityRidesLinkPanel';
 
 type Tab = 'active' | 'past';
 
@@ -327,18 +329,22 @@ export const Activities = () => {
   };
 
   return (
-    <DashboardLayout title="Admin Dashboard" links={ADMIN_LINKS}>
+    <DashboardLayout title="Activities" links={ADMIN_LINKS}>
       <div className="space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold text-neutral-900">Outing moderation</h2>
+          <p className="text-sm text-neutral-500">Suspend, feature, or inspect engagement — drafts are host-owned, not an admin approval queue.</p>
+        </div>
         {/* Header + Tabs */}
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+          <div className="flex items-center gap-1 rounded-xl border border-neutral-200 bg-white p-1">
             <button onClick={() => setTab('active')}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition ${tab === 'active' ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'}`}>
-              Active Activities ({activeEvents.length})
+              className={`rounded-lg px-4 py-1.5 text-sm font-medium transition ${tab === 'active' ? 'bg-emerald-50 text-emerald-800' : 'text-neutral-600 hover:text-neutral-900'}`}>
+              Active ({activeEvents.length})
             </button>
             <button onClick={() => setTab('past')}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition ${tab === 'past' ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'}`}>
-              Past Activities ({pastEvents.length})
+              className={`rounded-lg px-4 py-1.5 text-sm font-medium transition ${tab === 'past' ? 'bg-emerald-50 text-emerald-800' : 'text-neutral-600 hover:text-neutral-900'}`}>
+              Past ({pastEvents.length})
             </button>
           </div>
           <div className="flex items-center gap-3">
@@ -356,14 +362,29 @@ export const Activities = () => {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-end gap-2">
-          <input
-            type="text"
-            placeholder="Search (case insensitive)..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className={`${ADMIN_INPUT_CLASS} w-56`}
-          />
+        <AdminFilterBar
+          onClear={() => {
+            setSearch('');
+            setTypeFilter('');
+            setStatusFilter('');
+            setDateFrom('');
+            setDateTo('');
+            setHostFilter('');
+            setAreaFilter('');
+            setPlaceFilter('');
+            setPage(1);
+          }}
+        >
+          <label className="text-xs text-neutral-500">
+            Search
+            <input
+              type="search"
+              placeholder="Title, host, place…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className={`${ADMIN_INPUT_CLASS} mt-1 block w-56`}
+            />
+          </label>
           <AppSelect
             value={typeFilter}
             onChange={setTypeFilter}
@@ -372,20 +393,26 @@ export const Activities = () => {
             inputClassName={ADMIN_FILTER_SELECT_CLASS}
             aria-label="Filter by type"
           />
-          <input
-            type="date"
-            value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
-            className={ADMIN_INPUT_CLASS}
-            aria-label="From date"
-          />
-          <input
-            type="date"
-            value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
-            className={ADMIN_INPUT_CLASS}
-            aria-label="To date"
-          />
+          <label className="text-xs text-neutral-500">
+            From
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className={`${ADMIN_INPUT_CLASS} mt-1 block`}
+              aria-label="From date"
+            />
+          </label>
+          <label className="text-xs text-neutral-500">
+            To
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className={`${ADMIN_INPUT_CLASS} mt-1 block`}
+              aria-label="To date"
+            />
+          </label>
           <AppSelect
             value={statusFilter}
             onChange={setStatusFilter}
@@ -423,7 +450,7 @@ export const Activities = () => {
             inputClassName={ADMIN_FILTER_SELECT_CLASS}
             aria-label="Filter by place"
           />
-        </div>
+        </AdminFilterBar>
 
         {error && <p className="text-red-600 text-sm">{error}</p>}
 
@@ -535,11 +562,19 @@ export const Activities = () => {
                               </ul>
                             </div>
                           )}
-                          {event.itinerary && event.itinerary.length > 0 && (
+                          {((event.itinerary && event.itinerary.length > 0) ||
+                            (event.itinerarySteps && event.itinerarySteps.length > 0)) && (
                             <div className="col-span-2">
                               <p className="text-xs text-gray-500 uppercase font-medium">Itinerary</p>
                               <ol className="text-xs text-gray-700 list-decimal list-inside mt-0.5">
-                                {event.itinerary.map((item, i) => <li key={i}>{item}</li>)}
+                                {(event.itinerarySteps && event.itinerarySteps.length > 0
+                                  ? event.itinerarySteps.map((s) =>
+                                      [s.at, s.title, s.note].filter(Boolean).join(' — ')
+                                    )
+                                  : event.itinerary ?? []
+                                ).map((item, i) => (
+                                  <li key={i}>{item}</li>
+                                ))}
                               </ol>
                             </div>
                           )}
@@ -552,6 +587,14 @@ export const Activities = () => {
                             <p className="text-gray-700 break-all text-xs mt-0.5">{event.tenantId}</p>
                           </div>
                         </div>
+                        <AdminActivityRidesLinkPanel
+                          activity={event}
+                          onUpdated={() => {
+                            void fetchAdminModerationActivities(page, pageSize).then((res) => {
+                              setEvents(res.items);
+                            });
+                          }}
+                        />
                         <div className="mt-4 border-t border-gray-200 pt-4">
                           <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                             Participation

@@ -154,7 +154,7 @@ export const DirectChatThread = ({
 
   return (
     <div
-      className={`flex min-h-0 flex-1 flex-col bg-white h-full ${!mobileShowThread && !partnerUserId ? 'hidden md:flex' : 'flex'}`}
+      className={`flex min-h-0 flex-1 flex-col bg-white h-full dark:bg-neutral-950 ${!mobileShowThread && !partnerUserId ? 'hidden md:flex' : 'flex'}`}
     >
       {!partnerUserId ? (
         <div className="flex-1 flex flex-col items-center justify-center text-gray-400 px-4">

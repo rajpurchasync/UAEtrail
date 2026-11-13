@@ -75,7 +75,11 @@ export const Places = () => {
 
         <div>
           <h3 className="font-semibold text-gray-900 mb-3">Your submissions</h3>
-          {loading && <p className="text-sm text-gray-400">Loading…</p>}
+          {loading && (
+            <div className="flex justify-center py-8">
+              <div className="h-7 w-7 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
+            </div>
+          )}
           {!loading && submitted.length === 0 && (
             <p className="text-sm text-gray-500">No places submitted yet.</p>
           )}
