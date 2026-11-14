@@ -1,2 +1,2 @@
-/** @deprecated Use `BrowseCardJoinFooter` from `src/list/browse/BrowseCardJoinFooter.tsx`. */
-export { BrowseCardJoinFooter as ListExplorerListingJoinFooter } from '../browse/BrowseCardJoinFooter';
+/** @deprecated Use `DiscoveryBrowseListEngagementFooter` from `src/discovery/DiscoveryBrowseListEngagementFooter.tsx`. */
+export { DiscoveryBrowseListEngagementFooter as ListExplorerListingJoinFooter } from '../../discovery/DiscoveryBrowseListEngagementFooter';

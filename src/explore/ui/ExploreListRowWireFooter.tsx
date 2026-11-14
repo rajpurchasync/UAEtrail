@@ -1,26 +1,11 @@
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import { useListFeedActionsOptional } from '../../list/ui/ListFeedActionsProvider';
-import { ListFeedWireFooterButtons } from '../../list/ui/ListFeedWireFooterButtons';
+import { DiscoveryCardWireEngagementFooter } from '../../discovery/DiscoveryCardWireEngagementFooter';
 
 interface ExploreListRowWireFooterProps {
   card: DiscoveryCardModel;
 }
 
 /** L1 peek footer parity on map-aligned compact list rows (`list=1`). */
-export const ExploreListRowWireFooter = ({ card }: ExploreListRowWireFooterProps) => {
-  const actions = useListFeedActionsOptional();
-  if (!actions) return null;
-
-  const { footerModel, onPrimaryFooter, onSecondaryFooter, joinStateLoadingForCard } = actions;
-
-  return (
-    <ListFeedWireFooterButtons
-      card={card}
-      model={footerModel(card)}
-      joinStateLoading={joinStateLoadingForCard(card)}
-      variant="compact"
-      onPrimaryFooter={onPrimaryFooter}
-      onSecondaryFooter={onSecondaryFooter}
-    />
-  );
-};
+export const ExploreListRowWireFooter = ({ card }: ExploreListRowWireFooterProps) => (
+  <DiscoveryCardWireEngagementFooter card={card} variant="compact" />
+);

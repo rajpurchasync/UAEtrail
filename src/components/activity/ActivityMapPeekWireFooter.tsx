@@ -3,14 +3,14 @@ import { resolveActivityMapPeekActionsForHostDto } from '../../activity/activity
 import { executeActivityMapPeekAction, type ActivityMapPeekActionHandlers } from '../../activity/executeActivityMapPeekAction';
 import { resolveListFeedFooterFromMapPeekWire } from '../../list/listFeedFooterActions';
 import {
-  ListFeedMapPeekFooterButtons,
-  type ListFeedMapPeekFooterVariant,
-} from '../../list/ui/ListFeedMapPeekFooterButtons';
+  DiscoveryCardMapPeekEngagementFooter,
+  type DiscoveryCardMapPeekEngagementFooterProps,
+} from '../../discovery/DiscoveryCardMapPeekEngagementFooter';
 
 export type ActivityMapPeekWireFooterProps = {
   activity: ActivityDTO;
   handlers: ActivityMapPeekActionHandlers;
-  variant?: ListFeedMapPeekFooterVariant;
+  variant?: DiscoveryCardMapPeekEngagementFooterProps['variant'];
   className?: string;
 };
 
@@ -25,7 +25,7 @@ export const ActivityMapPeekWireFooter = ({
   const model = resolveListFeedFooterFromMapPeekWire(wire);
 
   return (
-    <ListFeedMapPeekFooterButtons
+    <DiscoveryCardMapPeekEngagementFooter
       model={model}
       variant={variant}
       className={className}

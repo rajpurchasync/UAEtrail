@@ -3,17 +3,15 @@ import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { SecureAvatar } from '../../components/ui/SecureAvatar';
 import { EXPLORE_TYPE } from '../../config/exploreTheme';
 import { resolveTripBrowseCardCopy } from './tripBrowseCardCopy';
-import { DiscoveryBrowsePosterBanner } from '../../discovery/DiscoveryBrowsePosterBanner';
+import { DiscoveryBrowseThumbnailPoster } from '../../discovery/DiscoveryBrowseThumbnailPoster';
 import { BrowseItemLink } from './BrowseItemLink';
-import { BrowseCardJoinFooter } from './BrowseCardJoinFooter';
+import { DiscoveryBrowseListEngagementFooter } from '../../discovery/DiscoveryBrowseListEngagementFooter';
 import { DiscoveryCardHostProfileNav } from '../../discovery/DiscoveryCardHostProfileNav';
 import { BrowseActivityStatusChips } from './BrowseActivityStatusChips';
 import { useListFeedActionsOptional } from '../ui/ListFeedActionsProvider';
 import {
   BROWSE_CARD_CHIP,
-  BROWSE_CARD_IMAGE,
   BROWSE_CARD_SHELL,
-  BrowseCardPhotoShare,
 } from './browseCardChrome';
 
 type TripBrowseCardProps = {
@@ -41,15 +39,9 @@ export const TripBrowseCard = ({ card, onMapHover }: TripBrowseCardProps) => {
           onMapHover={onMapHover}
           className="group block"
         >
-          <DiscoveryBrowsePosterBanner
+          <DiscoveryBrowseThumbnailPoster
             card={card}
-            imageHoverZoom
-            imageHeightClass={BROWSE_CARD_IMAGE}
-            showOverlayMeta={false}
             hideHostBand
-            embedHostInItemLink
-            typeIconBare
-            headerActions={<BrowseCardPhotoShare card={card} />}
             overlayContent={
               listing.locationLine || listing.whenLine || listing.price || listing.soldOut ? (
                 <div className="flex items-end gap-1.5">
@@ -138,7 +130,7 @@ export const TripBrowseCard = ({ card, onMapHover }: TripBrowseCardProps) => {
           ) : null}
         </div>
       </BrowseItemLink>
-      <BrowseCardJoinFooter card={card} />
+      <DiscoveryBrowseListEngagementFooter card={card} />
     </article>
   );
 };

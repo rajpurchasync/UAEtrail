@@ -48,7 +48,7 @@ describe('listBrowseNamingGuard', () => {
     const peek = read('src/explore/ui/map-peek/MapPeekShell.tsx');
     expect(peek).toMatch(/discovery\/DiscoveryBrowsePosterBanner/);
     const trip = read('src/list/browse/TripBrowseCard.tsx');
-    expect(trip).toMatch(/BrowseCardJoinFooter/);
+    expect(trip).toMatch(/DiscoveryBrowseListEngagementFooter/);
     expect(trip).toMatch(/BrowseActivityStatusChips/);
     expect(trip).not.toMatch(/ListExplorerListingJoinFooter/);
   });
@@ -111,5 +111,46 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/explorer/ListExplorerDistanceChip.tsx'))).toBe(
       false
     );
+  });
+
+  it('BROWSE-NAME-11: browse thumbs compose media via DiscoveryBrowseThumbnailPoster', () => {
+    for (const file of ['src/list/browse/TripBrowseCard.tsx', 'src/list/browse/VenueBrowseCard.tsx']) {
+      const source = read(file);
+      expect(source).toMatch(/DiscoveryBrowseThumbnailPoster/);
+      expect(source).not.toMatch(/DiscoveryBrowsePosterBanner/);
+    }
+    expect(read('src/discovery/DiscoveryBrowseThumbnailPoster.tsx')).toMatch(
+      /DiscoveryBrowsePosterBanner/
+    );
+  });
+
+  it('BROWSE-NAME-10: L2/list discovery media from src/discovery (not explorer shims)', () => {
+    for (const file of [
+      'src/list/browse/TripBrowseCard.tsx',
+      'src/list/browse/VenueBrowseCard.tsx',
+    ]) {
+      const source = read(file);
+      expect(source).toMatch(/discovery\/DiscoveryBrowseThumbnailPoster/);
+      expect(source).not.toMatch(/list\/explorer\/DiscoveryBrowsePosterBanner/);
+    }
+    const peek = read('src/explore/ui/map-peek/MapPeekShell.tsx');
+    expect(peek).toMatch(/discovery\/DiscoveryBrowsePosterBanner/);
+    expect(peek).not.toMatch(/list\/explorer\/DiscoveryBrowsePosterBanner/);
+  });
+
+  it('BROWSE-NAME-12: discovery engagement footers own browse list + map wire render', () => {
+    expect(existsSync(join(process.cwd(), 'src/discovery/DiscoveryBrowseListEngagementFooter.tsx'))).toBe(
+      true
+    );
+    expect(existsSync(join(process.cwd(), 'src/discovery/DiscoveryCardMapPeekEngagementFooter.tsx'))).toBe(
+      true
+    );
+    const trip = read('src/list/browse/TripBrowseCard.tsx');
+    expect(trip).toMatch(/DiscoveryBrowseListEngagementFooter/);
+    expect(read('src/components/activity/ActivityMapPeekWireFooter.tsx')).toMatch(
+      /DiscoveryCardMapPeekEngagementFooter/
+    );
+    expect(read('src/list/ui/ListFeedWireFooterButtons.tsx')).toMatch(/BROWSE_CARD_FOOTER/);
+    expect(read('src/list/ui/ListFeedWireFooterButtons.tsx')).not.toMatch(/LIST_EXPLORER_LISTING_FOOTER/);
   });
 });

@@ -9,15 +9,13 @@ import {
   LIST_FEED_CTA_WISHLIST_SAVED,
 } from '../listFeedCtaCopy';
 import { resolveVenueBrowseCardCopy, type VenueBrowseCardRating } from './venueBrowseCardCopy';
-import { DiscoveryBrowsePosterBanner } from '../../discovery/DiscoveryBrowsePosterBanner';
+import { DiscoveryBrowseThumbnailPoster } from '../../discovery/DiscoveryBrowseThumbnailPoster';
 import { BrowseItemLink } from './BrowseItemLink';
 import {
   BROWSE_CARD_CHIP,
   BROWSE_CARD_FOOTER,
-  BROWSE_CARD_IMAGE,
   BROWSE_CARD_PRIMARY_CTA,
   BROWSE_CARD_SHELL,
-  BrowseCardPhotoShare,
 } from './browseCardChrome';
 
 type VenueBrowseCardProps = {
@@ -55,14 +53,8 @@ export const VenueBrowseCard = ({ card, onMapHover }: VenueBrowseCardProps) => {
           onMapHover={onMapHover}
           className="group block"
         >
-          <DiscoveryBrowsePosterBanner
+          <DiscoveryBrowseThumbnailPoster
             card={card}
-            imageHoverZoom
-            imageHeightClass={BROWSE_CARD_IMAGE}
-            showOverlayMeta={false}
-            embedHostInItemLink
-            typeIconBare
-            headerActions={<BrowseCardPhotoShare card={card} />}
             overlayContent={
               listing.locationLine || listing.scheduleHint ? (
                 <div className="min-w-0">

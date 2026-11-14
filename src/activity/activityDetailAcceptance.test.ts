@@ -79,7 +79,10 @@ describe('activity detail program — wiring', () => {
     expect(shared).toMatch(/ListFeedWireFooterVariant/);
     expect(existsSync(join(process.cwd(), 'src/list/ui/ListFeedPosterFooter.tsx'))).toBe(false);
     const compact = read('src/explore/ui/ExploreListRowWireFooter.tsx');
-    expect(compact).toMatch(/ListFeedWireFooterButtons/);
+    expect(compact).toMatch(/DiscoveryCardWireEngagementFooter/);
+    expect(read('src/discovery/DiscoveryCardWireEngagementFooter.tsx')).toMatch(
+      /ListFeedWireFooterButtons/
+    );
   });
 
   it('AD-HYGIENE-01: People browse panel is not wrapped in ListFeedActionsProvider', () => {
@@ -104,7 +107,7 @@ describe('activity detail program — wiring', () => {
     expect(wireFooter).toMatch(/resolveActivityMapPeekActionsForHostDto/);
     expect(wireFooter).toMatch(/resolveListFeedFooterFromMapPeekWire/);
     expect(wireFooter).toMatch(/executeActivityMapPeekAction/);
-    expect(wireFooter).toMatch(/ListFeedMapPeekFooterButtons/);
+    expect(wireFooter).toMatch(/DiscoveryCardMapPeekEngagementFooter/);
     const publishing = read('src/pages/publishing/Activities.tsx');
     expect(publishing).toMatch(/ActivityMapPeekWireFooter/);
     const hub = read('src/hosting/HostingHubView.tsx');
@@ -131,7 +134,10 @@ describe('activity detail program — wiring', () => {
     const listRow = read('src/explore/ui/ExploreListRow.tsx');
     expect(listRow).toMatch(/ExploreListRowWireFooter/);
     const wireFooter = read('src/explore/ui/ExploreListRowWireFooter.tsx');
-    expect(wireFooter).toMatch(/useListFeedActionsOptional/);
+    expect(wireFooter).toMatch(/DiscoveryCardWireEngagementFooter/);
+    expect(read('src/discovery/DiscoveryCardWireEngagementFooter.tsx')).toMatch(
+      /useListFeedActionsOptional/
+    );
   });
 
   it('AD-PEEK-03: activity map peek must not branch to HostActivityCtas', () => {
@@ -438,7 +444,7 @@ describe('discovery refactor — RF-01 list feed footers', () => {
     expect(provider).toMatch(/resolveListFeedFooterModel/);
     expect(provider).toMatch(/applyPeekJoinOpenAfterClick/);
     expect(provider).not.toMatch(/\bswitch\s*\([^)]*actionId/);
-    expect(read('src/list/browse/BrowseCardJoinFooter.tsx')).not.toMatch(/primaryOnly/);
+    expect(read('src/discovery/DiscoveryBrowseListEngagementFooter.tsx')).not.toMatch(/primaryOnly/);
     expect(footerActions).toMatch(/resolveListFeedPeekSecondary/);
     expect(footerActions).toMatch(/peekActionLabelContext/);
     expect(read('src/list/listMapPeekEngagementParity.test.ts')).toMatch(/listMapPeekEngagementParity/);

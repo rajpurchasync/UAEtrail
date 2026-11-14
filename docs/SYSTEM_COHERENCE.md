@@ -297,6 +297,22 @@ Canon table: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) (Discovery UI file
 
 **Guards:** `apps/api/tests/api-ui-vocabulary-guard.test.ts`, `src/config/apiUiVocabularyGuard.test.ts`.
 
+#### 6.1.2 Browse & peek card composition (do not merge into one mega-card)
+
+**One card VM, composed surfaces.** L1 is always `DiscoveryCardModel` (wire → `buildDiscoveryCardViewModel`). UI is **not** one React component with every field; it is **shared primitives + bucket composers + action slots**.
+
+| Piece | Role | Canonical |
+|-------|------|-----------|
+| **Copy / meta** | Pure projection from L1 (testable) | `src/list/browse/*Copy.ts`, `browseCardMeta`, `browseCatalogLabels`, `venueBrowseFacts` |
+| **Media hero** | Cover + type icon + optional host band | `DiscoveryBrowsePosterBanner` (map peek + raw poster); list thumbs → `DiscoveryBrowseThumbnailPoster` |
+| **Browse bucket body** | Trips vs venues layout rules | `TripBrowseCard`, `VenueBrowseCard`, `BrowseCompactRow` |
+| **Peek shell** | Dismiss, embed vs map summary, routes entity body | `MapPeekShell` + `peek/{activity,place,shop}/*` |
+| **Engagement** | Join / wire / directions — policy-driven | `resolveListFeedFooterModel`; render → `DiscoveryCardWireEngagementFooter`, `DiscoveryBrowseListEngagementFooter`, `DiscoveryCardMapPeekEngagementFooter`, `ActivityPeekStandardFooter` |
+
+**Why split CTAs, images, and catalogue lines:** Activity join state and venue wishlist/directions differ by entity and viewer; list thumbnails virtualize hundreds of rows; map peek needs dismiss chrome and bubble layout. Share **poster + meta**, not one `DiscoveryCard` that branches on every prop.
+
+**Parity rule:** Same L1 + same footer resolver as L3 for activities (`listMapPeekEngagementParity`). Venue peek may use `PlacePeekHero` on catalog pins while list uses `DiscoveryBrowsePosterBanner` with venue overlay — entity-specific L2 is allowed; duplicate copy logic is not.
+
 ### 6.2 Frontend surface architecture (system methodology)
 
 **Purpose:** One **object-centric** stack (wire → projection → shell → page composer) across **all** user-facing families — not only map peek and entity detail. Experiment plans (`consumer-detail-surfaces-plan`, `member-surfaces-implementation-plan`) are **workstreams under this section**; they do not replace it.

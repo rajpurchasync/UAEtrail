@@ -93,7 +93,9 @@ describe('list module hygiene', () => {
     expect(chrome).toMatch(/aspect-\[5\/2\]/);
     expect(chrome).toMatch(/rounded-xl/);
     expect(chrome).toMatch(/rounded-\[8px\]/);
-    expect(listing).toMatch(/typeIconBare/);
+    expect(readFileSync(join(process.cwd(), 'src/discovery/DiscoveryBrowseThumbnailPoster.tsx'), 'utf8')).toMatch(
+      /typeIconBare/
+    );
     expect(listing).toMatch(/ExploreWishlistSaveButton/);
     expect(listing).toMatch(/LIST_FEED_CTA_GET_DIRECTIONS/);
     expect(listing).toMatch(/LIST_FEED_CTA_WISHLIST/);
@@ -105,12 +107,17 @@ describe('list module hygiene', () => {
     expect(listing).toMatch(/schedulePath/);
     expect(listing).toMatch(/TitleRating/);
     expect(listing).not.toMatch(/\bNew\b/);
-    expect(tripListing).toMatch(/typeIconBare/);
+    expect(tripListing).toMatch(/DiscoveryBrowseThumbnailPoster/);
     expect(tripListing).toMatch(/overlayContent/);
     expect(tripListing).toMatch(/hideHostBand/);
     expect(tripListing).toMatch(/resolveTripBrowseCardCopy/);
-    expect(tripListing).toMatch(/BrowseCardPhotoShare/);
-    expect(tripListing).toMatch(/BrowseCardJoinFooter/);
+    const thumbPoster = readFileSync(
+      join(process.cwd(), 'src/discovery/DiscoveryBrowseThumbnailPoster.tsx'),
+      'utf8'
+    );
+    expect(thumbPoster).toMatch(/BrowseCardPhotoShare/);
+    expect(thumbPoster).toMatch(/typeIconBare/);
+    expect(tripListing).toMatch(/DiscoveryBrowseListEngagementFooter/);
     expect(tripListing).toMatch(/listing.carpool/);
     expect(tripListing).toMatch(/listing.hostName/);
     expect(tripListing).toMatch(/LIST_FEED_CTA_CARPOOL|carpool.label/);

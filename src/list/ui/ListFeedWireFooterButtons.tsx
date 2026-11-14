@@ -3,10 +3,7 @@ import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { DirectionsControl } from '../../components/ui/DirectionsControl';
 import { EXPLORE_BRAND_ACTIVE, EXPLORE_TYPE } from '../../config/exploreTheme';
 import type { ListFeedFooterButton, ListFeedFooterModel } from '../listFeedFooterActions';
-import {
-  LIST_EXPLORER_LISTING_FOOTER,
-  LIST_EXPLORER_LISTING_PRIMARY_CTA,
-} from '../explorer/listExplorerListingChrome';
+import { BROWSE_CARD_FOOTER, BROWSE_CARD_PRIMARY_CTA } from '../browse/browseCardChrome';
 
 export type ListFeedWireFooterVariant = 'poster' | 'compact' | 'listing';
 
@@ -47,7 +44,7 @@ const variantStyles: Record<
     secondaryPad: 'px-2.5',
   },
   listing: {
-    shell: LIST_EXPLORER_LISTING_FOOTER,
+    shell: BROWSE_CARD_FOOTER,
     primaryHeight: 'h-9',
     primaryRadius: 'rounded-[8px]',
     primaryText: 'text-[12px]',
@@ -89,7 +86,7 @@ export const ListFeedWireFooterButtons = ({
 
   const primaryActionClass =
     variant === 'listing'
-      ? `${LIST_EXPLORER_LISTING_PRIMARY_CTA} ${
+      ? `${BROWSE_CARD_PRIMARY_CTA} ${
           primary.kind === 'disabled' ? 'bg-amber-100 text-amber-900 shadow-none hover:bg-amber-100' : ''
         }`
       : `${styles.primaryHeight} flex-1 ${styles.primaryRadius} ${styles.primaryPad} ${styles.primaryText} font-bold shadow-sm active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 ${
