@@ -95,6 +95,7 @@ export const enrichExploreActivityRequirementBadges = (
     kind: ActivityBadgeKind;
     rideshareEnabled?: boolean;
     venueDifficulty?: 'easy' | 'moderate' | 'hard' | null;
+    childFriendly?: boolean;
   }
 ): string[] => {
   const items = requirements ?? [];
@@ -124,9 +125,20 @@ export const enrichExploreActivityRequirementBadges = (
   const hasNoPets = items.some((line) => /^No pets$/i.test(line.trim()));
 
   if (
+    options.childFriendly &&
+    !hasNoChildren &&
+    !badges.includes('Child-friendly') &&
+    !badges.includes('No children')
+  ) {
+    badges.push('Child-friendly');
+  }
+
+  if (
     (options.kind === 'event' || options.kind === 'rideshare') &&
     !hasNoChildren &&
-    !badges.includes('Children welcome')
+    !options.childFriendly &&
+    !badges.includes('Children welcome') &&
+    !badges.includes('Child-friendly')
   ) {
     badges.push('Children welcome');
   }

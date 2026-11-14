@@ -8,7 +8,7 @@ import {
   seekingExploreMapItem,
   venueExploreMapItem,
 } from '../explore/exploreMapItemFixtures';
-import { resolveListVenuePosterCopy } from '../list/listVenuePosterPresentation';
+import { resolveVenueBrowsePosterCopy } from '../list/browse/venueBrowseCardCopy';
 import { buildDiscoveryEnrichedCard } from './buildDiscoveryEnrichedCard';
 import { buildDiscoveryMapListRowCard } from './buildDiscoveryMapListRowCard';
 
@@ -90,7 +90,7 @@ describe('buildDiscoveryCardViewModel (RF-02)', () => {
     const item = venueExploreMapItem();
     const legacy = buildDiscoveryCardModel(item);
     const vm = buildDiscoveryCardViewModelCard(item);
-    expect(resolveListVenuePosterCopy(vm).heroTitle).toBe(resolveListVenuePosterCopy(legacy).heroTitle);
+    expect(resolveVenueBrowsePosterCopy(vm).heroTitle).toBe(resolveVenueBrowsePosterCopy(legacy).heroTitle);
     expect(vm.primaryCta).toBe(legacy.primaryCta);
   });
 

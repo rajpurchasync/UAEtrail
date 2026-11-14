@@ -1,19 +1,23 @@
 import { describe, expect, it } from 'vitest';
-import { buildDiscoveryCardViewModelCard } from '../discovery';
+import { buildDiscoveryCardViewModelCard } from '../../discovery';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { resolveListFeedFooterModel } from './listFeedFooterActions';
+import { resolveListFeedFooterModel } from '../listFeedFooterActions';
+import {
+  browseCatalogHeaderLocationLine,
+  browseCatalogHubLabel,
+  browseCatalogRegionLabel,
+} from './browseCatalogLabels';
 import {
   resolveCampingPlaceFactLabels,
-  resolveCatalogHeaderAreaLocationLine,
-  resolveCatalogHubLabel,
-  resolveCatalogRegionLabel,
   resolveHikingPlaceFactLabels,
-  resolveListVenueListingCopy,
-  resolveListVenuePosterCopy,
-  resolveListVenuePosterFactLabels,
-  resolveListVenueScheduleHint,
-  resolveListVenueThumbnailFactLabels,
-} from './listVenuePosterPresentation';
+  resolveVenueBrowseThumbnailFactLabels,
+} from './venueBrowseFacts';
+import {
+  resolveVenueBrowseCardCopy,
+  resolveVenueBrowsePosterCopy,
+  resolveVenueBrowsePosterFactLabels,
+  resolveVenueBrowseScheduleHint,
+} from './venueBrowseCardCopy';
 
 const venueItem = (overrides: Partial<ExploreMapItemDTO> = {}): ExploreMapItemDTO =>
   ({
@@ -55,15 +59,15 @@ const venueItem = (overrides: Partial<ExploreMapItemDTO> = {}): ExploreMapItemDT
     ...overrides,
   }) as ExploreMapItemDTO;
 
-describe('listVenuePosterPresentation', () => {
+describe('venue browse presentation', () => {
   it('shows region above place name and hike fact pills', () => {
     const card = buildDiscoveryCardViewModelCard(venueItem());
-    const copy = resolveListVenuePosterCopy(card);
+    const copy = resolveVenueBrowsePosterCopy(card);
     expect(copy.placeLine).toBe('RAK');
-    expect(resolveCatalogHeaderAreaLocationLine(card)).toBe('RAK · Wadi Ghalilah');
+    expect(browseCatalogHeaderLocationLine(card)).toBe('RAK · Wadi Ghalilah');
     expect(copy.heroTitle).toBe('Wadi Shawka');
     expect(copy.titleLines.line1).toContain('Wadi');
-    expect(resolveListVenuePosterFactLabels(card)).toEqual([
+    expect(resolveVenueBrowsePosterFactLabels(card)).toEqual([
       'Wadi Ghalilah',
       'Child-friendly',
       'Parking available',
@@ -71,7 +75,7 @@ describe('listVenuePosterPresentation', () => {
       '8.5 km',
       '4x4 required',
     ]);
-    expect(resolveListVenueThumbnailFactLabels(card)).toEqual([
+    expect(resolveVenueBrowseThumbnailFactLabels(card)).toEqual([
       'Child-friendly',
       'Parking available',
       'Moderate',
@@ -123,14 +127,14 @@ describe('listVenuePosterPresentation', () => {
         },
       })
     );
-    expect(resolveCatalogHeaderAreaLocationLine(card)).toBe('Sharjah · Mleiha');
+    expect(browseCatalogHeaderLocationLine(card)).toBe('Sharjah · Mleiha');
     expect(resolveHikingPlaceFactLabels(card)).toEqual([]);
     expect(resolveCampingPlaceFactLabels(card)).toEqual([
       'Self-guided camping',
       'Sand',
       'Up to 12 people',
     ]);
-    expect(resolveListVenueThumbnailFactLabels(card)).toEqual([
+    expect(resolveVenueBrowseThumbnailFactLabels(card)).toEqual([
       'Child-friendly',
       'Parking available',
       'Toilet',
@@ -139,7 +143,7 @@ describe('listVenuePosterPresentation', () => {
       'Up to 12 people',
       'Sedan access',
     ]);
-    expect(resolveListVenueThumbnailFactLabels(card).some((label) => label.includes('km'))).toBe(
+    expect(resolveVenueBrowseThumbnailFactLabels(card).some((label) => label.includes('km'))).toBe(
       false
     );
   });
@@ -152,10 +156,10 @@ describe('listVenuePosterPresentation', () => {
         reviewCount: 12,
       })
     );
-    const listing = resolveListVenueListingCopy(card);
+    const listing = resolveVenueBrowseCardCopy(card);
     expect(listing.title).toBe('Wadi Shawka');
-    expect(resolveCatalogRegionLabel(card)).toBe('RAK');
-    expect(resolveCatalogHubLabel(card)).toBe('Wadi Ghalilah');
+    expect(browseCatalogRegionLabel(card)).toBe('RAK');
+    expect(browseCatalogHubLabel(card)).toBe('Wadi Ghalilah');
     expect(listing.locationLine).toBe('RAK · Wadi Ghalilah');
     expect(listing.rating).toEqual({ average: 4.8, count: 12 });
     expect(listing.factLabels).toEqual([
@@ -163,7 +167,6 @@ describe('listVenuePosterPresentation', () => {
       '8.5 km',
       'Child-friendly',
       'Parking available',
-      '4x4 required',
     ]);
     expect(listing.hasDirections).toBe(true);
     expect(listing.canWishlist).toBe(true);
@@ -173,7 +176,7 @@ describe('listVenuePosterPresentation', () => {
 
   it('omits unrated places and links a trip hint to the next outing', () => {
     const unrated = buildDiscoveryCardViewModelCard(venueItem());
-    expect(resolveListVenueListingCopy(unrated).rating).toBeNull();
+    expect(resolveVenueBrowseCardCopy(unrated).rating).toBeNull();
     const withTrips = {
       ...unrated,
       venueUpcomingOutingCount: 2,
@@ -181,17 +184,17 @@ describe('listVenuePosterPresentation', () => {
       venueNextOutingPath: '/activity/next-hike',
       venueNextOutingExploreItemId: 'activity:next-hike',
     };
-    expect(resolveListVenueListingCopy(withTrips).schedulePath).toBe('/activity/next-hike');
-    expect(resolveListVenueScheduleHint(withTrips, new Date('2026-11-12T10:00:00'))).toBe(
-      '2 trips · next Sat'
+    expect(resolveVenueBrowseCardCopy(withTrips).schedulePath).toBe('/activity/next-hike');
+    expect(resolveVenueBrowseScheduleHint(withTrips, new Date('2026-11-12T10:00:00'))).toBe(
+      '2 trips · next 14 Nov'
     );
     expect(
-      resolveListVenueScheduleHint(
+      resolveVenueBrowseScheduleHint(
         { ...unrated, venueUpcomingOutingCount: 1, venueNextOutingIso: '2026-11-28' },
         new Date('2026-11-12T10:00:00')
       )
     ).toBe('1 trip · 28 Nov');
-    expect(resolveListVenueScheduleHint({ ...unrated, venueUpcomingOutingCount: 1 }, new Date())).toBe(
+    expect(resolveVenueBrowseScheduleHint({ ...unrated, venueUpcomingOutingCount: 1 }, new Date())).toBe(
       '1 trip scheduled'
     );
   });
@@ -237,7 +240,7 @@ describe('listVenuePosterPresentation', () => {
         },
       })
     );
-    const listing = resolveListVenueListingCopy(card);
+    const listing = resolveVenueBrowseCardCopy(card);
     expect(listing.rating).toBeNull();
     expect(listing.factLabels).toHaveLength(5);
     expect(listing.factLabels).toEqual([

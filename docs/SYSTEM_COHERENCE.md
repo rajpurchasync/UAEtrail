@@ -313,6 +313,54 @@ Canon table: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) (Discovery UI file
 
 **Parity rule:** Same L1 + same footer resolver as L3 for activities (`listMapPeekEngagementParity`). Venue peek may use `PlacePeekHero` on catalog pins while list uses `DiscoveryBrowsePosterBanner` with venue overlay — entity-specific L2 is allowed; duplicate copy logic is not.
 
+#### 6.1.3 Discovery card contract (map peek + list browse)
+
+**Product job (L2):** One **decision card** per map pin or list row — answer *what is this, is it for me, who runs it, what do I do next* in a few seconds. **Map peek** and **list browse** are the **same contract**, **different presentation** (bubble vs thumbnail/row). **Entity detail (L3)** proves and deepens; it does not repeat the card’s job.
+
+**Do not treat peek as a mini detail page.** Scroll-heavy peek = users lost before they tap Details.
+
+| Presentation | Surface | Shell / composer | Density |
+|--------------|---------|------------------|---------|
+| **P-A Map peek** | `/explore` pin bubble | `ActivityPeekCard` / `PlacePeekCard` → `MapPeekShell` | Tight; footer always visible; max ~40% viewport |
+| **P-B List thumb** | `/list` trips · venues buckets | `TripBrowseCard`, `VenueBrowseCard` | Same slots; body under hero; virtualized |
+| **P-C List row** | `/explore` list column · compact bucket | `ExploreListRow`, `BrowseCompactRow` | Same slots; single row where possible |
+
+**L1 input:** `DiscoveryCardModel` only (`buildDiscoveryCardViewModel`). **No second card VM** for list vs map. Presentation differences are layout/chrome only (§6.1.2).
+
+##### Activity card — slots (order fixed)
+
+| Slot | User question | Required | Cap | P-A peek | P-B list | L3 detail owns |
+|------|---------------|----------|-----|----------|----------|----------------|
+| **S1 Media** | What kind of outing? | Cover + type icon | 1 hero | Banner in bubble | Thumbnail poster | Full gallery |
+| **S2 Identity** | What is it? | Title (+ tappable → L3) | 1–2 lines | `MapPeekBrowseTitle` / headline | Card title | H1 + full description |
+| **S3 Schedule / place** | When & where? | When line · location line · price/spots on hero when known | 3 facts on hero | On banner overlay | On thumb overlay | Full schedule, meeting point map |
+| **S4 Policy** | Am I allowed / is it a fit? | Audience & rules chips | **≤5 chips** | `requirementBadges` via `ActivityDiscoveryPublishedBody` | Browse fact chips (`listFeedPosterStandard` **must match policy subset**) | Full requirements text |
+| **S5 Hosted by** | Who do I trust? | Label **Hosted by** (or **Tour operator**) · avatar · name · **trust line** (verified host/business, guide count) — **not** “view profile” as the trust message | 1 block | Compact row in `ActivityPeekBody`; optional strip when not compact | `DiscoveryCardHostedByRow` | Host section, reviews, guides roster |
+| **S6 Logistics hook** | How do I get there / ride? | **One** of: linked rideshare affordance · inherited place access line (parking · 4x4 · toilet) | 1 row | `ActivityPeekLinkedTransport` + optional place projection | Carpool chip on photo | Transport tab, parking map, facility pins |
+| **S7 Join state** | Where am I in the flow? | Joined / Pending / spots (when changes CTA) | chips only | `ActivityPeekBody` status chips | `BrowseActivityStatusChips` | Participation, chat gates |
+| **S8 Engagement** | What’s my next step? | Primary join/wire + Details | 1 footer | `ActivityPeekStandardFooter` | `DiscoveryBrowseListEngagementFooter` / wire footer | Sticky footer + full tab layout |
+
+**S4 source of truth:** `enrichExploreActivityRequirementBadges(activity.requirements, …)` on L1 (`discoveryCardModel`). List browse must not invent a parallel policy vocabulary (align `listFeedPosterStandard` with the same extractor over time).
+
+**S6 place inheritance:** When `activity.locationId` / `locationCard` exists, at most **two** logistics chips on the card (e.g. parking · toilet · sedan/4x4) from `venueBrowseFacts` — not a facility directory. **Nearby shops/facilities** = **map pins** + L3 **Nearby facilities** on place detail, not prose on the activity card.
+
+##### Place / facility / shop cards — slots (abbreviated)
+
+| Entity | Core job | Required slots | Card cap | L3 owns |
+|--------|----------|----------------|----------|---------|
+| **Place** (trail/camp) | Worth planning? | S1 hero · S2 name · S3 emirate/hub · S4 kind + access facts · Plan trip + Details | ≤6 fact chips | Maps, amenities, scheduled activities, nearby facilities list |
+| **Facility** | Can I use this amenity? | S1 pin · S2 label · Directions + facility page | 2 CTAs | Condition reports, full amenity detail |
+| **Shop** | Relevant gear? | S1 hero · S2 name · region · wishlist/follow · Details | minimal | Catalog, hours, contact |
+
+##### Parity rules (enforce in code)
+
+1. **Same L1** → map peek and list row show the **same** policy chips and **same** hosted-by trust line for a given `card.id` (modulo Pro entitlements hiding roster).
+2. **Same engagement policy** as L3 for activities (`resolveActivityEngagementPolicy`, `mapPeekActions`, `ActivityPeekStandardFooter` ↔ detail footer).
+3. **Copy resolvers live outside composers** — `*BrowseCardCopy`, `discoveryHostTrustPresentation`, `venueBrowseFacts`, `listFeedFooterActions`; composers only layout.
+4. **Forbidden on L2:** participant walls, long descriptions, parking maps, “shops nearby” lists, GPS travel distance chips, duplicate mega-card components.
+
+**Guards (orientation):** `mapPeekNaming.test.ts`, `listBrowseNamingGuard.test.ts`, `activityDetailAcceptance.test.ts`, `mapDetailEngagementParity` · **Nav summary:** [`NAVIGATION.md`](./NAVIGATION.md) § Explore map pin summaries → this section.
+
 ### 6.2 Frontend surface architecture (system methodology)
 
 **Purpose:** One **object-centric** stack (wire → projection → shell → page composer) across **all** user-facing families — not only map peek and entity detail. Experiment plans (`consumer-detail-surfaces-plan`, `member-surfaces-implementation-plan`) are **workstreams under this section**; they do not replace it.

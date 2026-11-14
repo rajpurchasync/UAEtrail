@@ -893,6 +893,8 @@ export interface ExploreLocationCardDTO {
   parkingLat?: number | null;
   parkingLng?: number | null;
   parkingPoint?: string | null;
+  /** Facility chips merged from catalog tags + linked amenities (`explore-map-base`). */
+  amenityLabels?: string[];
 }
 
 /** Published rideshare linked to a parent hike/camp/event (explore map + peek). */

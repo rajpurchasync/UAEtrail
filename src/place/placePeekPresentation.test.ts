@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildDiscoveryCardViewModelCard } from '../discovery';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { resolvePlaceCatalogFactLabels } from '../list/listVenuePosterPresentation';
+import { resolveVenueCatalogFactLabels } from '../list/browse/venueBrowseFacts';
 import {
   resolvePlacePeekCuratedArea,
   resolvePlacePeekLocalLabel,
@@ -50,7 +50,7 @@ describe('place peek presentation', () => {
 
   it('uses catalog stats for facts — not location subtitles', () => {
     const card = buildDiscoveryCardViewModelCard(campItem());
-    const facts = resolvePlaceCatalogFactLabels(card);
+    const facts = resolveVenueCatalogFactLabels(card);
     expect(facts).toContain('Child-friendly');
     expect(facts).toContain('Parking available');
     expect(facts).toContain('Self-guided camping');

@@ -101,6 +101,8 @@ export interface DiscoveryCardModel {
   venueDurationHours?: number | null;
   venueCampingType?: 'self-guided' | 'operator-led' | null;
   venueMaxGroupSize?: number | null;
+  /** Linked place facility chips (toilet, …) — not a full amenity directory on activity cards. */
+  venueAmenityLabels?: string[];
   requirementBadges?: string[];
   mapLatitude?: number | null;
   mapLongitude?: number | null;
@@ -276,6 +278,9 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
     venueDurationHours: item.locationCard?.duration ?? null,
     venueCampingType: item.locationCard?.campingType ?? null,
     venueMaxGroupSize: item.locationCard?.maxGroupSize ?? null,
+    venueAmenityLabels: item.locationCard?.amenityLabels?.length
+      ? [...new Set(item.locationCard.amenityLabels.map((l) => l.trim()).filter(Boolean))]
+      : undefined,
     requirementBadges: [
       ...(exploreMapItemIsSeeking(item) ? ['Seeking'] : []),
       ...enrichExploreActivityRequirementBadges(activity?.requirements, {
@@ -288,6 +293,7 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
               (item.linkedRideshareActivities?.length ?? 0) > 0)
         ),
         venueDifficulty: item.locationCard?.difficulty ?? null,
+        childFriendly: Boolean(item.locationCard?.childFriendly),
       }),
     ],
     mapLatitude:

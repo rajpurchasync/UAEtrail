@@ -1,12 +1,49 @@
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { formatExploreEventDateLabel, isGeographyMapSource } from '@uaetrail/shared-types';
 import {
+  formatListFeedPosterTitleLines,
+  type BrowsePosterScheduleGrid,
+  type ListFeedPosterTitleLines,
+} from '../listPosterPresentation';
+import {
   browseCatalogEntityName,
   browseCatalogHeaderLocationLine,
   browseCatalogHubLabel,
   browseCatalogRegionLabel,
 } from './browseCatalogLabels';
-import { resolveVenueBrowseCardFactLabels } from './venueBrowseFacts';
+import { resolveVenueBrowseCardFactLabels, resolveVenueCatalogFactLabels } from './venueBrowseFacts';
+
+const emptySchedule: BrowsePosterScheduleGrid = {
+  dateLabel: null,
+  timeLabel: null,
+  spotsLabel: null,
+  priceLabel: null,
+};
+
+export type VenueBrowsePosterCopy = {
+  placeLine: string | null;
+  heroTitle: string;
+  titleLines: ListFeedPosterTitleLines;
+  schedule: BrowsePosterScheduleGrid;
+  requirementLabels: string[];
+};
+
+/** Full-width poster / legacy feed title layout — browse thumbs use `resolveVenueBrowseCardCopy`. */
+export const resolveVenueBrowsePosterFactLabels = (card: DiscoveryCardModel): string[] =>
+  resolveVenueCatalogFactLabels(card, { includeLocationSubtitle: true });
+
+export const resolveVenueBrowsePosterCopy = (card: DiscoveryCardModel): VenueBrowsePosterCopy => {
+  const heroTitle = browseCatalogEntityName(card);
+  const region = card.venueRegion?.trim() || card.subtitle?.trim() || null;
+
+  return {
+    placeLine: region,
+    heroTitle,
+    titleLines: formatListFeedPosterTitleLines(heroTitle, 6, 3),
+    schedule: emptySchedule,
+    requirementLabels: resolveVenueBrowsePosterFactLabels(card),
+  };
+};
 
 export type VenueBrowseCardRating = {
   average: number;

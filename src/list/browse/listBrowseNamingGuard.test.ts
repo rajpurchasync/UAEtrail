@@ -1,6 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { join, relative } from 'node:path';
+
+const WIRE_FOOTER_IMPORT = /from\s+['"][^'"]*ListFeedWireFooterButtons['"]/;
+
+const collectSourceFiles = (dir: string, out: string[] = []): string[] => {
+  for (const entry of readdirSync(dir)) {
+    const abs = join(dir, entry);
+    if (statSync(abs).isDirectory()) {
+      if (entry === 'node_modules' || entry === 'dist') continue;
+      collectSourceFiles(abs, out);
+      continue;
+    }
+    if (!/\.(ts|tsx)$/.test(entry) || /\.test\.(ts|tsx)$/.test(entry)) continue;
+    out.push(abs);
+  }
+  return out;
+};
 
 const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 
@@ -152,5 +168,45 @@ describe('listBrowseNamingGuard', () => {
     );
     expect(read('src/list/ui/ListFeedWireFooterButtons.tsx')).toMatch(/BROWSE_CARD_FOOTER/);
     expect(read('src/list/ui/ListFeedWireFooterButtons.tsx')).not.toMatch(/LIST_EXPLORER_LISTING_FOOTER/);
+  });
+
+  it('BROWSE-NAME-15: venue browse tests live under browse (not listVenuePosterPresentation)', () => {
+    expect(existsSync(join(process.cwd(), 'src/list/browse/venueBrowsePresentation.test.ts'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/list/listVenuePosterPresentation.test.ts'))).toBe(false);
+    const shim = read('src/list/listVenuePosterPresentation.ts');
+    expect(shim).toMatch(/@deprecated/);
+    expect(shim.split('\n').length).toBeLessThan(35);
+    expect(read('src/list/browse/VenueBrowseCard.tsx')).not.toMatch(/listVenuePosterPresentation/);
+    expect(read('src/discovery/discoveryCardViewModel.test.ts')).toMatch(/venueBrowseCardCopy/);
+    expect(read('src/discovery/discoveryCardViewModel.test.ts')).not.toMatch(/listVenuePosterPresentation/);
+  });
+
+  it('BROWSE-NAME-14: trip browse copy tests live at browse/tripBrowseCardCopy (not listTripPosterPresentation)', () => {
+    expect(existsSync(join(process.cwd(), 'src/list/browse/tripBrowseCardCopy.test.ts'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/list/listTripPosterPresentation.test.ts'))).toBe(false);
+    const shim = read('src/list/listTripPosterPresentation.ts');
+    expect(shim).toMatch(/@deprecated/);
+    expect(read('src/list/browse/TripBrowseCard.tsx')).toMatch(/resolveTripBrowseCardCopy/);
+    expect(read('src/list/browse/TripBrowseCard.tsx')).not.toMatch(/listTripPosterPresentation/);
+  });
+
+  it('BROWSE-NAME-13: feed wire footers mount through DiscoveryCardWireEngagementFooter only', () => {
+    expect(existsSync(join(process.cwd(), 'src/list/ui/ListFeedPosterFooter.tsx'))).toBe(false);
+    const allowed = new Set([
+      'src/discovery/DiscoveryCardWireEngagementFooter.tsx',
+      'src/list/ui/ListFeedWireFooterButtons.tsx',
+    ]);
+    const violations: string[] = [];
+    for (const file of collectSourceFiles(join(process.cwd(), 'src'))) {
+      const rel = relative(process.cwd(), file).replace(/\\/g, '/');
+      const source = read(rel);
+      if (!WIRE_FOOTER_IMPORT.test(source)) continue;
+      if (!allowed.has(rel)) violations.push(rel);
+    }
+    expect(violations).toEqual([]);
+    expect(read('src/explore/ui/ExploreListRowWireFooter.tsx')).toMatch(/DiscoveryCardWireEngagementFooter/);
+    expect(read('src/discovery/DiscoveryBrowseListEngagementFooter.tsx')).toMatch(
+      /DiscoveryCardWireEngagementFooter/
+    );
   });
 });

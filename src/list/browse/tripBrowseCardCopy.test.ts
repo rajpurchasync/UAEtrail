@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { buildDiscoveryCardViewModelCard } from '../discovery';
+import { buildDiscoveryCardViewModelCard } from '../../discovery';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { resolveListTripListingCopy } from './listTripPosterPresentation';
-import { LIST_FEED_CTA_CARPOOL } from './listFeedCtaCopy';
+import { resolveTripBrowseCardCopy } from './tripBrowseCardCopy';
+import { LIST_FEED_CTA_CARPOOL } from '../listFeedCtaCopy';
 
 const hikeItem = (overrides: Partial<ExploreMapItemDTO> = {}): ExploreMapItemDTO =>
   ({
@@ -44,7 +44,7 @@ const hikeItem = (overrides: Partial<ExploreMapItemDTO> = {}): ExploreMapItemDTO
     ...overrides,
   }) as ExploreMapItemDTO;
 
-describe('resolveListTripListingCopy', () => {
+describe('resolveTripBrowseCardCopy', () => {
   it('puts when, price, host, hiking labels, and linked carpool on the listing', () => {
     const card = buildDiscoveryCardViewModelCard(
       hikeItem({
@@ -58,7 +58,7 @@ describe('resolveListTripListingCopy', () => {
         ],
       })
     );
-    const copy = resolveListTripListingCopy(card);
+    const copy = resolveTripBrowseCardCopy(card);
     expect(copy.title).toBe('Shawka sunrise hike');
     expect(copy.locationLine).toBe('Wadi Shawka');
     expect(copy.whenLine).toMatch(/20 Nov/);
@@ -71,6 +71,32 @@ describe('resolveListTripListingCopy', () => {
       label: LIST_FEED_CTA_CARPOOL,
       path: '/activity/r1',
       exploreItemId: 'activity:r1',
+    });
+  });
+
+  it('uses parent plan path when multiple carpools are linked', () => {
+    const card = buildDiscoveryCardViewModelCard(
+      hikeItem({
+        linkedRideshareActivities: [
+          {
+            activityId: 'r1',
+            exploreItemId: 'activity:r1',
+            title: 'Pickup Dubai',
+            path: '/activity/r1',
+          },
+          {
+            activityId: 'r2',
+            exploreItemId: 'activity:r2',
+            title: 'Pickup Sharjah',
+            path: '/activity/r2',
+          },
+        ],
+      })
+    );
+    expect(resolveTripBrowseCardCopy(card).carpool).toEqual({
+      label: '2 carpools available',
+      path: '/activity/a1',
+      exploreItemId: 'activity:a1',
     });
   });
 
@@ -107,11 +133,11 @@ describe('resolveListTripListingCopy', () => {
         },
       })
     );
-    const copy = resolveListTripListingCopy(card);
+    const copy = resolveTripBrowseCardCopy(card);
     expect(copy.price).toBe('AED 150');
     expect(copy.factLabels).toContain('Medium');
     expect(copy.factLabels).toContain('Women only');
-    expect(copy.factLabels).not.toContain('Pets welcome');
+    expect(copy.factLabels).toContain('Pets welcome');
     expect(copy.carpool).toBeNull();
   });
 
@@ -147,6 +173,47 @@ describe('resolveListTripListingCopy', () => {
         },
       })
     );
-    expect(resolveListTripListingCopy(card).carpool).toBeNull();
+    expect(resolveTripBrowseCardCopy(card).carpool).toBeNull();
+  });
+
+  it('inherits place logistics when linked and no carpool', () => {
+    const card = buildDiscoveryCardViewModelCard(
+      hikeItem({
+        locationCard: {
+          id: 'l1',
+          activityType: 'hiking',
+          region: 'RAK',
+          description: 'Trail',
+          accessibility: 'remote',
+          season: ['winter'],
+          images: [],
+          featured: false,
+          parkingLat: 25.1,
+          parkingLng: 55.2,
+          amenityLabels: ['Toilet'],
+        },
+        activity: {
+          id: 'a1',
+          tenantId: 't1',
+          tenantSlug: 'host',
+          locationId: 'l1',
+          locationName: 'Wadi Shawka',
+          activityType: 'hiking',
+          title: 'Shawka sunrise hike',
+          description: '',
+          date: '2026-11-20',
+          time: '09:00',
+          price: 0,
+          slotsTotal: 10,
+          slotsAvailable: 5,
+          status: 'published',
+          hostUserId: 'u1',
+          requirements: [],
+        },
+      })
+    );
+    const copy = resolveTripBrowseCardCopy(card);
+    expect(copy.placeLogisticsLabels).toEqual(['4x4 required', 'Parking available']);
+    expect(copy.carpool).toBeNull();
   });
 });

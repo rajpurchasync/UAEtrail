@@ -1,19 +1,12 @@
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import { discoveryCardIsSeeking } from '../../discovery/discoveryCardModel';
 import { EXPLORE_RIDESHARE_AVAILABLE_BADGE } from '../../explore/exploreRequirementBadges';
 import { browseCardMeta, browseRowWhenDisplay } from './browseCardMeta';
 import { LIST_FEED_CTA_CARPOOL } from '../listFeedCtaCopy';
 import { resolveListFeedPosterRequirementLabels } from '../listFeedPosterStandard';
+import { resolveActivityLinkedPlaceLogisticsLabels } from './venueBrowseFacts';
 
 const TRIP_BROWSE_FACT_LIMIT = 5;
-
-const HIKING_DIFFICULTY: Record<string, string> = {
-  easy: 'Easy',
-  moderate: 'Medium',
-  hard: 'Hard',
-};
-
-const STORED_DIFFICULTY = new Set(['Easy', 'Medium', 'Hard']);
+const SEEKING_LIST_POLICY_LABEL = 'Looking for';
 
 export type TripBrowseCardCarpool = {
   label: string;
@@ -31,11 +24,7 @@ export type TripBrowseCardCopy = {
   soldOut: boolean;
   factLabels: string[];
   carpool: TripBrowseCardCarpool | null;
-};
-
-const hikingDifficultyLabel = (card: DiscoveryCardModel): string | null => {
-  if (card.kind !== 'hiking' || !card.difficulty) return null;
-  return HIKING_DIFFICULTY[card.difficulty] ?? null;
+  placeLogisticsLabels: string[];
 };
 
 /** Trips browse bucket — when/price on the photo, host + labels in the body. */
@@ -50,27 +39,27 @@ export const resolveTripBrowseCardCopy = (card: DiscoveryCardModel): TripBrowseC
     ? [when.date, clock].filter(Boolean).join(' · ')
     : meta.when;
 
-  const linked = card.kind === 'rideshare' ? null : (card.linkedRideshares?.[0] ?? null);
-  const carpool: TripBrowseCardCarpool | null = linked
-    ? {
-        label: LIST_FEED_CTA_CARPOOL,
-        path: linked.path,
-        exploreItemId: linked.exploreItemId ?? null,
-      }
-    : null;
+  const linkedRides = card.kind === 'rideshare' ? [] : (card.linkedRideshares ?? []);
+  const carpool: TripBrowseCardCarpool | null =
+    linkedRides.length === 1
+      ? {
+          label: LIST_FEED_CTA_CARPOOL,
+          path: linkedRides[0]!.path,
+          exploreItemId: linkedRides[0]!.exploreItemId ?? null,
+        }
+      : linkedRides.length > 1
+        ? {
+            label: `${linkedRides.length} carpools available`,
+            path: card.path,
+            exploreItemId: card.id,
+          }
+        : null;
 
-  const labels = resolveListFeedPosterRequirementLabels(card).filter(
-    (label) => !(carpool && label === EXPLORE_RIDESHARE_AVAILABLE_BADGE)
-  );
+  const labels = resolveListFeedPosterRequirementLabels(card)
+    .map((label) => (label === 'Seeking' ? SEEKING_LIST_POLICY_LABEL : label))
+    .filter((label) => !(carpool && label === EXPLORE_RIDESHARE_AVAILABLE_BADGE));
 
-  const hikeDifficulty = hikingDifficultyLabel(card);
-  if (hikeDifficulty && !labels.some((label) => STORED_DIFFICULTY.has(label))) {
-    labels.unshift(hikeDifficulty);
-  }
-
-  if (discoveryCardIsSeeking(card) && !labels.includes('Looking for')) {
-    labels.unshift('Looking for');
-  }
+  const placeLogisticsLabels = carpool ? [] : resolveActivityLinkedPlaceLogisticsLabels(card);
 
   return {
     title: meta.title,
@@ -82,5 +71,6 @@ export const resolveTripBrowseCardCopy = (card: DiscoveryCardModel): TripBrowseC
     soldOut: meta.soldOut,
     factLabels: [...new Set(labels)].slice(0, TRIP_BROWSE_FACT_LIMIT),
     carpool,
+    placeLogisticsLabels,
   };
 };

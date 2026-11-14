@@ -34,19 +34,6 @@ export type ListFeedFooterModel = {
   usesJoinFlow: boolean;
 };
 
-/** Join / gate primary on poster image — details open via full-card tap. */
-export const shouldShowListFeedImageCta = (model: ListFeedFooterModel): boolean => {
-  const kinds = new Set([model.primary.kind, model.secondary?.kind]);
-  return (
-    kinds.has('action') ||
-    kinds.has('guest_gate') ||
-    kinds.has('disabled') ||
-    kinds.has('directions') ||
-    kinds.has('plan_trip') ||
-    kinds.has('link')
-  );
-};
-
 const detailButton = (card: DiscoveryCardModel): ListFeedFooterButton => ({
   kind: 'link',
   label:

@@ -164,6 +164,30 @@ export const resolveVenueBrowseThumbnailFactLabels = (card: DiscoveryCardModel):
 
 const VENUE_BROWSE_CARD_FACT_LIMIT = 5;
 
+const ACTIVITY_PLACE_LOGISTICS_CAP = 2;
+
+/** S6 — inherited parking / reachability / amenity chips when an activity links a place (not S4 policy). */
+export const resolveActivityLinkedPlaceLogisticsLabels = (card: DiscoveryCardModel): string[] => {
+  if (card.source !== 'activity' || !card.locationId) return [];
+
+  const labels: string[] = [];
+  const reach = resolveReachabilityLabel(card);
+  if (reach) labels.push(reach);
+
+  const parking = resolveParkingLabel(card);
+  if (parking && !labels.includes(parking)) labels.push(parking);
+
+  for (const amenity of card.venueAmenityLabels ?? []) {
+    const chip = amenity.trim();
+    if (!chip) continue;
+    if (chip === 'Parking' && labels.some((line) => line.includes('Parking'))) continue;
+    if (!labels.includes(chip)) labels.push(chip);
+    if (labels.length >= ACTIVITY_PLACE_LOGISTICS_CAP) break;
+  }
+
+  return labels.slice(0, ACTIVITY_PLACE_LOGISTICS_CAP);
+};
+
 /** Venues browse card chips — kind first (trail vs camp), then amenities, capped for scan. */
 export const resolveVenueBrowseCardFactLabels = (card: DiscoveryCardModel): string[] => {
   if (card.source === 'shop') return ['Outdoor shop'];

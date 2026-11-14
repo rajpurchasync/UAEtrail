@@ -11,6 +11,7 @@ import { PeekDetailLink } from '../../map-peek/PeekDetailLink';
 import { useLocation } from 'react-router-dom';
 import { mapPeekDetailNavState } from '../../../mapPeekDetailNavState';
 import { ActivityPeekStrips } from './ActivityPeekStrips';
+import { DiscoveryCardHostedByRow } from '../../../../discovery/DiscoveryCardHostedByRow';
 
 export type ActivityPeekBodyProps = {
   card: DiscoveryCardModel;
@@ -74,6 +75,13 @@ export const ActivityPeekBody = ({
   return (
     <>
       {statusChipRow}
+      {mapPeekCompact ? (
+        <DiscoveryCardHostedByRow
+          card={card}
+          onGuestGatedAction={onGuestGatedAction}
+          mapPeekCompact
+        />
+      ) : null}
       <div className={mapPeekCompact ? 'mt-2.5' : 'mt-3'}>
       <ActivityPeekStrips
         card={card}

@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import {
   activityGuideCountLabel,
-  explorePersonRoleLabel,
   isGeographyMapSource,
   resolveActivityPublisherChip,
 } from '@uaetrail/shared-types';
@@ -22,6 +21,8 @@ import {
   ACTIVITY_PEEK_MY_HOST_PROFILE_SUBTITLE,
   ACTIVITY_PEEK_SECTION_SPOTS,
 } from '../../content/activityPeekCopy';
+import { HOSTED_BY_LABEL } from '../../content/workspaceVocabulary';
+import { resolveDiscoveryHostTrustLabels } from '../../discovery/discoveryHostTrustPresentation';
 import { EXPLORE_TYPE } from '../../config/exploreTheme';
 import {
   buildActivitySpotsLeftLabel,
@@ -485,9 +486,6 @@ export const DiscoveryCardPeopleRow = ({
     Boolean(hostProfilePath) &&
     card.viewerAccess?.entitlements != null &&
     !card.viewerAccess.entitlements.canViewHostProfileBeforeJoin;
-  const personRoleLabel = person
-    ? explorePersonRoleLabel(person.role, publishingProfileKind)
-    : null;
   const showMyHostProfileSubtitle =
     card.source === 'activity' && resolveActivityMapPeekStrips(card).showHostSelfProfileLink;
   const hostProfileSubtitle = (base: string) =>
@@ -496,19 +494,9 @@ export const DiscoveryCardPeopleRow = ({
     card.source === 'activity' && acceptedGuideCount > 1
       ? activityGuideCountLabel(acceptedGuideCount)
       : null;
-  const peekPublisherRole =
-    publisher.kind === 'company'
-      ? 'Tour operator'
-      : personRoleLabel
-        ? personRoleLabel
-        : discoveryCardIsSeeking(card)
-          ? 'Posted this request'
-          : card.source === 'shop'
-            ? 'Shop contact'
-            : 'Host';
-  const peekPublisherSubtitle = peekGuideCountLine
-    ? `${peekPublisherRole} · ${peekGuideCountLine}`
-    : `${peekPublisherRole} · view profile`;
+  const hostedByLabel =
+    card.source === 'shop' ? 'Shop contact' : publisher.kind === 'company' ? 'Tour operator' : HOSTED_BY_LABEL;
+  const hostTrustLine = resolveDiscoveryHostTrustLabels(card).join(' · ');
 
   const showHostRow =
     Boolean(hostName || card.hostAvatar) &&
@@ -545,10 +533,13 @@ export const DiscoveryCardPeopleRow = ({
           className={avatarClass}
         />
         <div className="min-w-0 flex-1">
+          <p className={subtitleClass}>{hostedByLabel}</p>
           <p className={linkNameClass}>{hostName}</p>
-          <p className={subtitleClass}>
-            {hostProfileSubtitle(peekPublisherSubtitle)}
-          </p>
+          {hostTrustLine ? (
+            <p className="mt-0.5 text-[11px] font-medium leading-snug text-emerald-800">{hostTrustLine}</p>
+          ) : showMyHostProfileSubtitle ? (
+            <p className={subtitleClass}>{hostProfileSubtitle(ACTIVITY_PEEK_MY_HOST_PROFILE_SUBTITLE)}</p>
+          ) : null}
         </div>
         <ChevronRight className={`${mapPeekCompact ? 'h-3.5 w-3.5' : 'h-4 w-4'} text-gray-400 shrink-0`} />
       </Link>
@@ -564,10 +555,11 @@ export const DiscoveryCardPeopleRow = ({
           className={avatarClass}
         />
         <div className="min-w-0 flex-1">
+          <p className={subtitleClass}>{hostedByLabel}</p>
           <p className={nameClass}>{hostName}</p>
-          <p className={subtitleClass}>
-            {hostProfileSubtitle(peekPublisherSubtitle)}
-          </p>
+          {hostTrustLine ? (
+            <p className="mt-0.5 text-[11px] font-medium leading-snug text-emerald-800">{hostTrustLine}</p>
+          ) : null}
         </div>
         <ChevronRight className={`${mapPeekCompact ? 'h-3.5 w-3.5' : 'h-4 w-4'} text-gray-400 shrink-0`} />
       </button>
@@ -579,12 +571,13 @@ export const DiscoveryCardPeopleRow = ({
           className={avatarClassPlain}
         />
         <div className="min-w-0">
+          <p className={subtitleClass}>{hostedByLabel}</p>
           <p className={nameClass}>{hostName}</p>
-          <p className={subtitleClass}>
-            {hostProfileSubtitle(
-              peekGuideCountLine ? `${peekPublisherRole} · ${peekGuideCountLine}` : peekPublisherRole
-            )}
-          </p>
+          {hostTrustLine ? (
+            <p className="mt-0.5 text-[11px] font-medium leading-snug text-emerald-800">{hostTrustLine}</p>
+          ) : peekGuideCountLine ? (
+            <p className={subtitleClass}>{hostProfileSubtitle(peekGuideCountLine)}</p>
+          ) : null}
         </div>
       </div>
     )

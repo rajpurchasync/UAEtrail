@@ -1,20 +1,4 @@
-import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
-import {
-  formatListFeedPosterTitleLines,
-  type BrowsePosterScheduleGrid,
-  type ListFeedPosterTitleLines,
-} from './listPosterPresentation';
-import { browseCatalogEntityName } from './browse/browseCatalogLabels';
-import { resolveVenueCatalogFactLabels } from './browse/venueBrowseFacts';
-
-const emptySchedule: BrowsePosterScheduleGrid = {
-  dateLabel: null,
-  timeLabel: null,
-  spotsLabel: null,
-  priceLabel: null,
-};
-
-/** @deprecated Import from `src/list/browse/browseCatalogLabels.ts`. */
+/** @deprecated Import from `src/list/browse/*` — see `venueBrowseCardCopy`, `venueBrowseFacts`, `browseCatalogLabels`. */
 export {
   browseCatalogEntityName as resolveCatalogEntityName,
   browseCatalogRegionLabel as resolveCatalogRegionLabel,
@@ -23,7 +7,6 @@ export {
   browseCatalogNormalize as catalogLabelNormalize,
 } from './browse/browseCatalogLabels';
 
-/** @deprecated Import from `src/list/browse/venueBrowseFacts.ts`. */
 export {
   resolveSharedPlaceFactLabels,
   resolveHikingPlaceFactLabels,
@@ -33,7 +16,6 @@ export {
   resolveVenueBrowseCardFactLabels as resolveListVenueListingFactLabels,
 } from './browse/venueBrowseFacts';
 
-/** @deprecated Import from `src/list/browse/venueBrowseCardCopy.ts`. */
 export {
   type VenueBrowseCardRating as ListVenueListingRating,
   resolveVenueBrowseCardRating as resolveListVenueListingRating,
@@ -42,29 +24,7 @@ export {
   resolveVenueBrowseCardCopy as resolveListVenueListingCopy,
   resolveVenueBrowseCardCopy,
   type VenueBrowseCardCopy,
+  type VenueBrowsePosterCopy as ListVenuePosterCopy,
+  resolveVenueBrowsePosterCopy as resolveListVenuePosterCopy,
+  resolveVenueBrowsePosterFactLabels as resolveListVenuePosterFactLabels,
 } from './browse/venueBrowseCardCopy';
-
-/** Fact pills on place / shop posters. */
-export const resolveListVenuePosterFactLabels = (card: DiscoveryCardModel): string[] =>
-  resolveVenueCatalogFactLabels(card, { includeLocationSubtitle: true });
-
-export type ListVenuePosterCopy = {
-  placeLine: string | null;
-  heroTitle: string;
-  titleLines: ListFeedPosterTitleLines;
-  schedule: BrowsePosterScheduleGrid;
-  requirementLabels: string[];
-};
-
-export const resolveListVenuePosterCopy = (card: DiscoveryCardModel): ListVenuePosterCopy => {
-  const heroTitle = browseCatalogEntityName(card);
-  const region = card.venueRegion?.trim() || card.subtitle?.trim() || null;
-
-  return {
-    placeLine: region,
-    heroTitle,
-    titleLines: formatListFeedPosterTitleLines(heroTitle, 6, 3),
-    schedule: emptySchedule,
-    requirementLabels: resolveListVenuePosterFactLabels(card),
-  };
-};

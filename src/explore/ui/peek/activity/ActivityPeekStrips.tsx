@@ -13,6 +13,7 @@ import {
   DiscoveryCardPeopleRow,
 } from '../../DiscoveryCardPresentation';
 import type { JoinRequestUiState } from '../../../../utils/joinRequestUi';
+import { resolveActivityLinkedPlaceLogisticsLabels } from '../../../../list/browse/venueBrowseFacts';
 
 const stripShell = (compact: boolean) =>
   compact
@@ -47,10 +48,15 @@ export const ActivityPeekStrips = ({
   const strips = resolveActivityMapPeekStrips(card, joinUiState);
   const showOfferTransport = Boolean(onOfferTransport) && strips.showOfferRideInLogistics;
   const hasRideshareAffordance = activityPeekHasLinkedTransportAffordance(card);
+  const placeLogisticsLabels = !hasRideshareAffordance
+    ? resolveActivityLinkedPlaceLogisticsLabels(card)
+    : [];
+  const showPlaceLogistics =
+    strips.showLogisticsStrip && placeLogisticsLabels.length > 0 && !hasRideshareAffordance;
   const showTransportSection =
     !mapPeekCompact &&
     strips.showLogisticsStrip &&
-    (hasRideshareAffordance || showOfferTransport);
+    (hasRideshareAffordance || showOfferTransport || showPlaceLogistics);
   const publisherSectionLabel = exploreActivityPublisherSectionNoun(
     card.activity?.publishingProfileKind
   );
@@ -58,6 +64,18 @@ export const ActivityPeekStrips = ({
 
   return (
     <div className={mapPeekCompact ? 'space-y-3' : 'space-y-2'}>
+      {mapPeekCompact && showPlaceLogistics ? (
+        <ul className="flex flex-wrap gap-1.5" aria-label="Trail access">
+          {placeLogisticsLabels.map((label) => (
+            <li
+              key={label}
+              className="inline-flex rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-semibold text-sky-900"
+            >
+              {label}
+            </li>
+          ))}
+        </ul>
+      ) : null}
       {showSpotsSection ? (
         <ExploreActivityPeekSpotsSection card={card} compact={mapPeekCompact} />
       ) : null}
@@ -86,6 +104,18 @@ export const ActivityPeekStrips = ({
       {showTransportSection ? (
         <section className={stripShell(false)} aria-label="Transport">
           <ActivityPeekLinkedTransport card={card} onOpenLinkedPin={onOpenLinkedPin} />
+          {showPlaceLogistics ? (
+            <ul className={`flex flex-wrap gap-1.5 ${hasRideshareAffordance ? 'mt-2' : ''}`}>
+              {placeLogisticsLabels.map((label) => (
+                <li
+                  key={label}
+                  className="inline-flex rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-semibold text-sky-900"
+                >
+                  {label}
+                </li>
+              ))}
+            </ul>
+          ) : null}
           {showOfferTransport ? (
             <button
               type="button"

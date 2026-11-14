@@ -1,8 +1,4 @@
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
-import {
-  EXPLORE_RIDESHARE_AVAILABLE_BADGE,
-  extractExploreRequirementBadges,
-} from '../explore/exploreRequirementBadges';
 
 /**
  * Shared requirement labels for list explorer cards and place peek.
@@ -10,10 +6,11 @@ import {
  * Build path: `GET /explore/map` → `buildListFeedCards` → `ListExplorer*`.
  * Presentation resolvers: `listPosterPresentation.ts` (import requirement helper from here).
  *
- * Do not read inferred peek badges (`card.requirementBadges`) here — those add defaults
- * for map peek only (`enrichExploreActivityRequirementBadges`).
+ * Policy chips come from L1 (`card.requirementBadges` — `enrichExploreActivityRequirementBadges`).
  */
 export const LIST_FEED_POSTER_BUILDER = 'buildListFeedCards';
+
+const DISCOVERY_POLICY_CHIP_CAP = 5;
 
 /** Stored `activity.requirements` lines from the map row (no UI inference). */
 export const resolveListFeedPosterStoredRequirements = (
@@ -24,34 +21,8 @@ export const resolveListFeedPosterStoredRequirements = (
   return null;
 };
 
-const appendStoredDifficultyAndReachability = (requirements: string[], badges: string[]): void => {
-  for (const line of requirements) {
-    if (/^Difficulty: Easy/i.test(line) && !badges.includes('Easy')) badges.push('Easy');
-    if (/^Difficulty: Medium/i.test(line) && !badges.includes('Medium')) badges.push('Medium');
-    if (/^Difficulty: Hard/i.test(line) && !badges.includes('Hard')) badges.push('Hard');
-  }
-  if (
-    requirements.some((line) => /Reachable by 4x4 only/i.test(line)) &&
-    !badges.includes('4x4 required')
-  ) {
-    badges.push('4x4 required');
-  }
-};
-
-/** Audience / policy pills on poster overlays — DB requirements + linked rideshare flag only. */
+/** Audience / policy pills — same subset as map peek (`DiscoveryCardModel.requirementBadges`). */
 export const resolveListFeedPosterRequirementLabels = (card: DiscoveryCardModel): string[] => {
-  const stored = resolveListFeedPosterStoredRequirements(card) ?? [];
-  const badges = extractExploreRequirementBadges(stored);
-  appendStoredDifficultyAndReachability(stored, badges);
-
-  const rideshareListed =
-    card.source === 'activity' &&
-    card.kind !== 'rideshare' &&
-    (Boolean(card.activity?.rideshareEnabled) || (card.linkedRideshares?.length ?? 0) > 0);
-
-  if (rideshareListed && !badges.includes(EXPLORE_RIDESHARE_AVAILABLE_BADGE)) {
-    badges.push(EXPLORE_RIDESHARE_AVAILABLE_BADGE);
-  }
-
-  return [...new Set(badges)].slice(0, 4);
+  const badges = card.requirementBadges ?? [];
+  return [...new Set(badges)].slice(0, DISCOVERY_POLICY_CHIP_CAP);
 };

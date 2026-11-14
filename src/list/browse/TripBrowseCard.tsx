@@ -1,12 +1,11 @@
-import { Car, Clock, MapPin } from 'lucide-react';
+import { Car, ChevronRight, Clock, MapPin } from 'lucide-react';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import { SecureAvatar } from '../../components/ui/SecureAvatar';
 import { EXPLORE_TYPE } from '../../config/exploreTheme';
 import { resolveTripBrowseCardCopy } from './tripBrowseCardCopy';
 import { DiscoveryBrowseThumbnailPoster } from '../../discovery/DiscoveryBrowseThumbnailPoster';
 import { BrowseItemLink } from './BrowseItemLink';
 import { DiscoveryBrowseListEngagementFooter } from '../../discovery/DiscoveryBrowseListEngagementFooter';
-import { DiscoveryCardHostProfileNav } from '../../discovery/DiscoveryCardHostProfileNav';
+import { DiscoveryCardHostedByRow } from '../../discovery/DiscoveryCardHostedByRow';
 import { BrowseActivityStatusChips } from './BrowseActivityStatusChips';
 import { useListFeedActionsOptional } from '../ui/ListFeedActionsProvider';
 import {
@@ -84,10 +83,16 @@ export const TripBrowseCard = ({ card, onMapHover }: TripBrowseCardProps) => {
             to={listing.carpool.path}
             exploreItemId={listing.carpool.exploreItemId}
             onMapHover={onMapHover}
-            className="absolute bottom-2 left-2.5 z-20 inline-flex max-w-[calc(100%-1.25rem)] items-center gap-1 rounded-md bg-sky-700/95 px-1.5 py-0.5 text-[11px] font-semibold text-white shadow-sm ring-1 ring-white/15"
+            aria-label={
+              listing.carpool.label.includes('carpools')
+                ? `${listing.carpool.label} — view outing for rideshare links`
+                : `${listing.carpool.label} — open linked rideshare`
+            }
+            className="absolute bottom-2 left-2.5 z-20 inline-flex max-w-[calc(100%-1.25rem)] items-center gap-1 rounded-md bg-sky-700/95 px-1.5 py-0.5 text-[11px] font-semibold text-white shadow-sm ring-1 ring-white/15 hover:bg-sky-800/95"
           >
             <Car className="h-3 w-3 shrink-0" aria-hidden />
             <span className="min-w-0 truncate">{listing.carpool.label}</span>
+            <ChevronRight className="h-3 w-3 shrink-0 opacity-90" aria-hidden />
           </BrowseItemLink>
         ) : null}
       </div>
@@ -102,23 +107,18 @@ export const TripBrowseCard = ({ card, onMapHover }: TripBrowseCardProps) => {
             {listing.title}
           </h3>
           {listing.hostName ? (
-            <DiscoveryCardHostProfileNav
-              card={card}
-              embedInItemLink
-              ariaLabel={`View ${listing.hostName} profile`}
-              className="flex min-w-0 items-center gap-1.5 text-left text-[12px] font-medium text-neutral-600 hover:text-emerald-800"
-            >
-              <SecureAvatar
-                src={listing.hostAvatar}
-                name={listing.hostName}
-                className="h-5 w-5 shrink-0 text-[8px] ring-1 ring-white"
-              />
-              <span className="min-w-0 truncate underline decoration-neutral-300 underline-offset-2">
-                {listing.hostName}
-              </span>
-            </DiscoveryCardHostProfileNav>
+            <DiscoveryCardHostedByRow card={card} embedInItemLink className="text-neutral-600" />
           ) : null}
           <BrowseActivityStatusChips card={card} joinUiState={joinUiState} />
+          {listing.placeLogisticsLabels.length > 0 ? (
+            <ul className="flex flex-wrap gap-1" aria-label="Trail access">
+              {listing.placeLogisticsLabels.map((label) => (
+                <li key={label} className={`${BROWSE_CARD_CHIP} bg-sky-50 text-sky-900`}>
+                  {label}
+                </li>
+              ))}
+            </ul>
+          ) : null}
           {listing.factLabels.length > 0 ? (
             <ul className="flex flex-wrap gap-1">
               {listing.factLabels.map((label) => (
