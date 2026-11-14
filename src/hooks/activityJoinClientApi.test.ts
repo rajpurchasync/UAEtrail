@@ -12,6 +12,8 @@ describe('activityJoinClientApi (R8.1)', () => {
     expect(modal).toMatch(/afterActivityJoinClientRefresh/);
     expect(modal).not.toMatch(/\bapi\./);
     expect(read('src/hooks/activityJoinClientApi.ts')).toMatch(/rsvpActivity/);
+    expect(read('src/hooks/activityJoinClientApi.ts')).toMatch(/sourceTeamId/);
+    expect(read('src/hooks/activityJoinClientApi.ts')).toMatch(/partyMemberIds/);
   });
 
   it('withdraw flow refreshes client caches via hooks layer (R8.3)', () => {

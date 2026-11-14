@@ -237,6 +237,8 @@ export interface ActivityRequest {
   partyMembers?: ActivityPartyMemberRecord[];
   /** Approved participant; family/headcount bump still awaiting host confirmation. */
   partyApprovalPending?: boolean;
+  /** `social_groups` id when join party was built from a team roster. */
+  sourceTeamId?: string | null;
   note: string | null;
   selectedPackageIndex: number | null;
   hostNote: string | null;

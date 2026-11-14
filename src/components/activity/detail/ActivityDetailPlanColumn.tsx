@@ -60,6 +60,8 @@ export const ActivityDetailPlanColumn = ({
         />
       ) : null}
 
+      {model.partyEditPanel}
+
       {model.planRequestManagePanel}
 
       {model.requiresSignIn && !factsOnly ? (

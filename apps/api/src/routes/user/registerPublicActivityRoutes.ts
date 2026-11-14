@@ -21,29 +21,17 @@ import {
   loadPublicActivityDetail,
 } from '../../services/activity-public-read.js';
 import { listPublicActivityLinkedRides } from '../../services/activity-linked-rides-read.js';
-import { createRequestSchema, eventIdParamSchema, requestIdParamSchema, rsvpSchema } from './schemas.js';
+import {
+  createRequestSchema,
+  eventIdParamSchema,
+  requestIdParamSchema,
+  rsvpSchema,
+  updateRequestPartySchema,
+} from './schemas.js';
 
 const updateRequestNoteSchema = z.object({
   note: z.string().max(500),
 });
-
-const updateRequestPartySchema = z
-  .object({
-    note: z.string().max(500).optional(),
-    adults: z.coerce.number().int().min(1).max(20).optional(),
-    kids: z.coerce.number().int().min(0).max(20).optional(),
-    partyMemberIds: z.array(z.string().min(1)).max(20).optional(),
-  })
-  .refine(
-    (body) =>
-      body.note !== undefined ||
-      body.adults !== undefined ||
-      body.kids !== undefined ||
-      body.partyMemberIds !== undefined,
-    {
-      message: 'At least one field is required.',
-    }
-  );
 
 const familyOutingInviteSchema = z.object({
   token: z.string().min(20),
@@ -148,9 +136,8 @@ export const registerPublicActivityRoutes = (router: Router): void => {
     async (req, res, next) => {
       try {
         const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-        const { note, packingCheckedIds, packingSignature, adults, kids } = req.body as z.infer<
-          typeof createRequestSchema
-        >;
+        const { note, packingCheckedIds, packingSignature, adults, kids, partyMemberIds, sourceTeamId } =
+          req.body as z.infer<typeof createRequestSchema>;
         const data = await submitPublicActivityJoinRequest({
           activityId: id,
           userId: req.auth!.userId,
@@ -160,6 +147,8 @@ export const registerPublicActivityRoutes = (router: Router): void => {
           packingSignature,
           adults,
           kids,
+          partyMemberIds,
+          sourceTeamId,
         });
         res.status(201).json({ data });
       } catch (error) {
@@ -178,7 +167,8 @@ export const registerPublicActivityRoutes = (router: Router): void => {
     async (req, res, next) => {
       try {
         const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-        const { note, packingCheckedIds, packingSignature, adults, kids } = req.body as z.infer<typeof rsvpSchema>;
+        const { note, packingCheckedIds, packingSignature, adults, kids, partyMemberIds, sourceTeamId } =
+          req.body as z.infer<typeof rsvpSchema>;
         const data = await submitPublicActivityRsvp({
           activityId: id,
           userId: req.auth!.userId,
@@ -188,6 +178,8 @@ export const registerPublicActivityRoutes = (router: Router): void => {
           packingSignature,
           adults,
           kids,
+          partyMemberIds,
+          sourceTeamId,
         });
         res.status(201).json({ data });
       } catch (error) {
@@ -247,6 +239,7 @@ export const registerPublicActivityRoutes = (router: Router): void => {
             adults: body.adults,
             kids: body.kids,
             partyMemberIds: body.partyMemberIds,
+            sourceTeamId: body.sourceTeamId,
           });
           res.json({ data });
           return;

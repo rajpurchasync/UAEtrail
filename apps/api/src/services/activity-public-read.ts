@@ -99,6 +99,7 @@ export const loadPublicActivityDetail = async (input: {
         kids: requestRow.kids,
         partyMembers: requestRow.partyMembers,
         partyApprovalPending: Boolean(requestRow.partyApprovalPending),
+        sourceTeamId: requestRow.sourceTeamId ?? null,
       };
     }
     if (!myParticipation) {

@@ -8,6 +8,7 @@ export const updateMyGroupSettings = async (
   payload: {
     wallPostPolicy?: GroupWallPostPolicy;
     photoUrl?: string | null;
+    name?: string;
   }
 ): Promise<SocialGroupView> => {
   const res = await api.updateMeGroupSettings(groupId, payload);

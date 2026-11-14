@@ -24,7 +24,13 @@ export const updateJoinRequestNote = async (
 export const updateJoinRequestParty = async (
   activityId: string,
   requestId: string,
-  payload: { adults?: number; kids?: number; note?: string; partyMemberIds?: string[] }
+  payload: {
+    adults?: number;
+    kids?: number;
+    note?: string;
+    partyMemberIds?: string[];
+    sourceTeamId?: string;
+  }
 ) => {
   const res = await api.updateJoinRequestParty(activityId, requestId, payload);
   return res.data;
@@ -67,14 +73,18 @@ export const submitActivityJoin = async (
     packingSignature?: string;
     adults?: number;
     kids?: number;
+    partyMemberIds?: string[];
+    sourceTeamId?: string;
   }
 ): Promise<ActivityJoinSubmitResult> => {
   const joinBody = {
     note: input.note?.trim() || undefined,
     packingCheckedIds: input.packingCheckedIds,
     packingSignature: input.packingSignature?.trim() || undefined,
-    adults: input.adults,
-    kids: input.kids,
+    adults: input.partyMemberIds?.length ? undefined : input.adults,
+    kids: input.partyMemberIds?.length ? undefined : input.kids,
+    partyMemberIds: input.partyMemberIds?.length ? input.partyMemberIds : undefined,
+    sourceTeamId: input.sourceTeamId,
   };
   if (input.participationMode === 'rsvp') {
     const res = await api.rsvpActivity(activityId, joinBody);

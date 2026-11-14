@@ -11,15 +11,13 @@ import {
   updateActivityRequestParty,
 } from '../lib/activity-engagement-store.js';
 import {
-  buildPartyRosterFromMembershipIds,
-  headcountFromPartyRoster,
+  resolveJoinPartyFromBody,
   sendOutingInvitesForNewAdults,
 } from './activity-party-attach.js';
 import {
   findActivityFamilyInviteByToken,
   markActivityFamilyInviteResponded,
 } from '../lib/activity-family-invites-store.js';
-import { partyRosterHasPendingFamilyInvite } from '../domain/activity-party-roster.js';
 import { markNotificationsReadForCancelledJoinRequest } from '../lib/notifications-store.js';
 import { canWithdrawRequest, withdrawReasonSchema } from '../lib/withdraw-reasons.js';
 import type { z } from 'zod';
@@ -79,11 +77,21 @@ export const submitPublicActivityJoinRequest = async (input: {
   packingSignature?: string;
   adults?: number;
   kids?: number;
+  partyMemberIds?: string[];
+  sourceTeamId?: string | null;
 }) => {
   await assertPrivateActivityJoinAllowed({
     activityId: input.activityId,
     viewerUserId: input.userId,
     isPlatformAdmin: input.isPlatformAdmin,
+  });
+
+  const party = await resolveJoinPartyFromBody({
+    actorUserId: input.userId,
+    partyMemberIds: input.partyMemberIds,
+    sourceTeamId: input.sourceTeamId,
+    adults: input.adults,
+    kids: input.kids,
   });
 
   const { request, waitlisted } = await createJoinOrWaitlistRequest({
@@ -92,9 +100,24 @@ export const submitPublicActivityJoinRequest = async (input: {
     note: input.note ?? undefined,
     packingCheckedIds: input.packingCheckedIds,
     packingSignature: input.packingSignature,
-    adults: input.adults,
-    kids: input.kids,
+    adults: party.adults,
+    kids: party.kids,
+    partyMembers: party.partyMembers,
+    partyApprovalPending: party.partyApprovalPending,
+    sourceTeamId: party.sourceTeamId,
   });
+
+  if (party.partyMembers?.length) {
+    const eventDoc = await findActivityDocInMongo(input.activityId);
+    await sendOutingInvitesForNewAdults({
+      activityId: input.activityId,
+      requestId: request.id,
+      invitedByUserId: input.userId,
+      previous: [],
+      next: party.partyMembers,
+      activityTitle: eventDoc?.title?.trim() || 'outing',
+    });
+  }
 
   void notifyParticipantJoinRequestSubmitted({
     userId: input.userId,
@@ -111,6 +134,11 @@ export const submitPublicActivityJoinRequest = async (input: {
     waitlisted,
     note: request.note,
     hostNote: request.hostNote,
+    adults: request.adults,
+    kids: request.kids,
+    partyMembers: request.partyMembers,
+    partyApprovalPending: request.partyApprovalPending,
+    sourceTeamId: request.sourceTeamId,
     createdAt: request.createdAt,
     updatedAt: request.updatedAt,
   };
@@ -125,11 +153,21 @@ export const submitPublicActivityRsvp = async (input: {
   packingSignature?: string;
   adults?: number;
   kids?: number;
+  partyMemberIds?: string[];
+  sourceTeamId?: string | null;
 }) => {
   await assertPrivateActivityJoinAllowed({
     activityId: input.activityId,
     viewerUserId: input.userId,
     isPlatformAdmin: input.isPlatformAdmin,
+  });
+
+  const party = await resolveJoinPartyFromBody({
+    actorUserId: input.userId,
+    partyMemberIds: input.partyMemberIds,
+    sourceTeamId: input.sourceTeamId,
+    adults: input.adults,
+    kids: input.kids,
   });
 
   const { request, participation, waitlisted } = await createRsvpParticipation({
@@ -138,9 +176,24 @@ export const submitPublicActivityRsvp = async (input: {
     note: input.note ?? undefined,
     packingCheckedIds: input.packingCheckedIds,
     packingSignature: input.packingSignature,
-    adults: input.adults,
-    kids: input.kids,
+    adults: party.adults,
+    kids: party.kids,
+    partyMembers: party.partyMembers,
+    partyApprovalPending: party.partyApprovalPending,
+    sourceTeamId: party.sourceTeamId,
   });
+
+  if (party.partyMembers?.length) {
+    const eventDoc = await findActivityDocInMongo(input.activityId);
+    await sendOutingInvitesForNewAdults({
+      activityId: input.activityId,
+      requestId: request.id,
+      invitedByUserId: input.userId,
+      previous: [],
+      next: party.partyMembers,
+      activityTitle: eventDoc?.title?.trim() || 'outing',
+    });
+  }
 
   const requestDto = {
     id: request.id,
@@ -255,6 +308,7 @@ export const updatePublicActivityJoinRequestParty = async (input: {
   adults?: number;
   kids?: number;
   partyMemberIds?: string[];
+  sourceTeamId?: string | null;
 }) => {
   const request = await findActivityRequestByIdForUser(input.requestId, input.userId);
   if (!request) {
@@ -275,19 +329,22 @@ export const updatePublicActivityJoinRequestParty = async (input: {
   let partyMembers = request.partyMembers;
   let adults = input.adults;
   let kids = input.kids;
+  let sourceTeamId: string | null | undefined = input.sourceTeamId;
   let deferHostApproval = false;
 
   if (input.partyMemberIds !== undefined) {
-    partyMembers = await buildPartyRosterFromMembershipIds({
+    const party = await resolveJoinPartyFromBody({
       actorUserId: input.userId,
-      membershipIds: input.partyMemberIds,
-      existing: request.partyMembers,
+      partyMemberIds: input.partyMemberIds,
+      sourceTeamId: input.sourceTeamId ?? request.sourceTeamId,
+      adults: input.adults,
+      kids: input.kids,
     });
-    const headcount = headcountFromPartyRoster(partyMembers);
-    adults = headcount.adults;
-    kids = headcount.kids;
-    // Adults start as family_invited — host approval waits until they accept.
-    deferHostApproval = partyRosterHasPendingFamilyInvite(partyMembers);
+    partyMembers = party.partyMembers;
+    adults = party.adults;
+    kids = party.kids;
+    sourceTeamId = party.sourceTeamId;
+    deferHostApproval = party.deferHostApproval;
   }
 
   const eventDoc =
@@ -300,6 +357,7 @@ export const updatePublicActivityJoinRequestParty = async (input: {
     adults,
     kids,
     partyMembers,
+    sourceTeamId,
     deferHostApproval,
     eventDoc: eventDoc ?? undefined,
   });
@@ -322,6 +380,7 @@ export const updatePublicActivityJoinRequestParty = async (input: {
     kids: updated.kids,
     partyMembers: updated.partyMembers,
     partyApprovalPending: updated.partyApprovalPending,
+    sourceTeamId: updated.sourceTeamId,
   };
 };
 

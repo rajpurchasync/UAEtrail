@@ -86,6 +86,8 @@ export interface ActivityRequestView {
   kids?: number;
   partyMembers?: import('@uaetrail/shared-types').ActivityPartyMemberDTO[];
   partyApprovalPending?: boolean;
+  sourceTeamId?: string | null;
+  sourceTeamName?: string | null;
   note?: string;
   hostNote?: string;
   cancelReason?: string | null;
@@ -259,7 +261,13 @@ export interface SocialGroupMemberView {
   } | null;
 }
 
-export type FamilyKidProfilePayload = {
+export type FamilyKidRosterCreatePayload = {
+  rosterOnly: true;
+  displayName: string;
+  role?: 'admin' | 'buddy';
+};
+
+export type FamilyKidProfileFullPayload = {
   displayName: string;
   dateOfBirth: string;
   emergencyContactName: string;
@@ -270,6 +278,8 @@ export type FamilyKidProfilePayload = {
   photoUrl?: string | null;
   role?: 'admin' | 'buddy';
 };
+
+export type FamilyKidProfilePayload = FamilyKidRosterCreatePayload | FamilyKidProfileFullPayload;
 
 export type FamilyKidProfilePatchPayload = Partial<
   Omit<FamilyKidProfilePayload, 'role'>

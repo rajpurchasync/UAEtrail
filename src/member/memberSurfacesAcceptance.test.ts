@@ -367,7 +367,9 @@ describe('member surfaces §11 acceptance (automated)', () => {
     const list = read('src/components/chat/MessagesInboxList.tsx');
     expect(list).not.toMatch(/Start a conversation/);
     const messages = read('src/pages/Messages.tsx');
-    expect(messages).toMatch(/hasInboxThreads/);
+    expect(messages).toMatch(/ChatInboxLayout/);
+    expect(messages).toMatch(/FloatingActionButton/);
+    expect(messages).not.toMatch(/hasInboxThreads/);
   });
 
   it('AD-arch: activity detail uses single shell (no HostActivityDetailView shim)', () => {
@@ -568,9 +570,11 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(groups).toMatch(/PRODUCT_GROUPS_SURFACE_LABEL/);
     expect(groups).toMatch(/backChrome/);
     expect(groups).toMatch(/SettingsMenuRow/);
-    // Adding people is two optional paths on the manage hub: invite adults, or add kids only.
-    expect(groups).toMatch(/Invite adults/);
-    expect(groups).toMatch(/Add kids/);
+    expect(groups).toMatch(/\+Invite/);
+    expect(groups).toMatch(/Add Kids/);
+    expect(groups).toMatch(/GroupMembersPanel/);
+    expect(groups).toMatch(/GroupEditPanel/);
+    expect(groups).toMatch(/openGroupManage\(.*'edit'\)/);
     expect(groups).toMatch(/navigateToGroupChatFromSocial/);
     expect(groups).toMatch(/groupsManagePath/);
     expect(groups).toMatch(/openGroupManage/);
@@ -592,7 +596,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(groups).toMatch(/shellTitle/);
     expect(groups).not.toMatch(/ChevronLeft/);
     expect(groups).toMatch(/photoUrl/);
-    expect(groups).toMatch(/USER_GENDER_OPTIONS/);
+    expect(groups).toMatch(/GroupMembersPanel/);
     expect(hub).toMatch(/SettingsMenuRow/);
     expect(hub).toMatch(/SocialHubIndex/);
     expect(hub).not.toMatch(/border-b-2/);

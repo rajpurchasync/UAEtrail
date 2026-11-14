@@ -336,7 +336,11 @@ export const updateGroupWallPostPolicy = async (
 
 export const updateGroupChatSettings = async (
   groupId: string,
-  patch: { wallPostPolicy?: GroupWallPostPolicy; photoUrl?: string | null }
+  patch: {
+    wallPostPolicy?: GroupWallPostPolicy;
+    photoUrl?: string | null;
+    name?: string;
+  }
 ): Promise<GroupRecord | null> => {
   const $set: Record<string, unknown> = { updatedAt: new Date() };
   if (patch.wallPostPolicy !== undefined) {
@@ -344,6 +348,9 @@ export const updateGroupChatSettings = async (
   }
   if (patch.photoUrl !== undefined) {
     $set.photoUrl = patch.photoUrl?.trim() || null;
+  }
+  if (patch.name !== undefined) {
+    $set.name = patch.name.trim();
   }
 
   const result = await groupsCollection().findOneAndUpdate(
@@ -901,11 +908,11 @@ export const createKidGroupMember = async (input: {
   groupId: string;
   createdByUserId: string;
   displayName: string;
-  dateOfBirth: Date;
-  emergencyContactName: string;
-  emergencyContactPhone: string;
+  dateOfBirth?: Date | null;
+  emergencyContactName?: string | null;
+  emergencyContactPhone?: string | null;
   emergencyContactRelation?: string | null;
-  medicalConditions: string;
+  medicalConditions?: string | null;
   gender?: 'male' | 'female' | 'prefer_not_to_say' | null;
   photoUrl?: string | null;
   role?: GroupRole;
@@ -921,11 +928,11 @@ export const createKidGroupMember = async (input: {
     createdByUserId: input.createdByUserId,
     createdAt: new Date(),
     isActive: true,
-    dateOfBirth: input.dateOfBirth,
-    emergencyContactName: input.emergencyContactName.trim(),
-    emergencyContactPhone: input.emergencyContactPhone.trim(),
+    dateOfBirth: input.dateOfBirth ?? null,
+    emergencyContactName: input.emergencyContactName?.trim() ?? '',
+    emergencyContactPhone: input.emergencyContactPhone?.trim() ?? '',
     emergencyContactRelation: input.emergencyContactRelation?.trim() || null,
-    medicalConditions: input.medicalConditions.trim(),
+    medicalConditions: input.medicalConditions?.trim() ?? '',
     gender: input.gender ?? null,
     photoUrl: input.photoUrl?.trim() || null,
   };

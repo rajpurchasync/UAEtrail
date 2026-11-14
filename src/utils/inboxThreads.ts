@@ -9,8 +9,8 @@ export type InboxFilter = 'unread' | 'people' | 'groups' | 'outings' | 'all';
 export const INBOX_QUICK_SORT_PILLS: Array<{ key: InboxFilter; label: string }> = [
   { key: 'all', label: 'All' },
   { key: 'unread', label: 'Unread' },
-  { key: 'groups', label: 'Groups' },
-  { key: 'outings', label: 'Community' },
+  { key: 'groups', label: 'Teams' },
+  { key: 'outings', label: 'Outing crew' },
   { key: 'people', label: 'Friends' },
 ];
 

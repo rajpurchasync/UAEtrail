@@ -29,6 +29,7 @@ import {
 } from '../lib/social-groups-store.js';
 import {
   normalizeKidProfileInput,
+  type CreateKidBodyInput,
   type CreateKidInput,
   type PatchKidInput,
 } from '../domain/family-kid-profile.js';
@@ -107,6 +108,7 @@ export const updateMyGroupChatSettings = async (
   const updated = await updateGroupChatSettings(groupId, {
     wallPostPolicy: body.wallPostPolicy,
     photoUrl,
+    name: body.name?.trim(),
   });
   if (!updated) {
     throw new ApiError(404, 'group_not_found', 'Group not found.');
@@ -271,17 +273,31 @@ export const removeMyGroupMember = async (groupId: string, membershipId: string,
     throw new ApiError(403, 'forbidden', 'Only group admins can remove other members.');
   }
 
+  const group = await findGroupById(groupId);
+  if (group && target.userId && target.userId === group.adminUserId) {
+    throw new ApiError(403, 'forbidden', 'The group owner cannot be removed.');
+  }
+
   return removeGroupMembership(membershipId);
 };
 
 export const createMyGroupKidMember = async (
   groupId: string,
   userId: string,
-  body: CreateKidInput
+  body: CreateKidBodyInput
 ) => {
   const membership = await getGroupMembership(groupId, userId);
   if (!membership || membership.role !== 'admin') {
     throw new ApiError(403, 'forbidden', 'Only group admins can add kids.');
+  }
+
+  if ('rosterOnly' in body && body.rosterOnly === true) {
+    return createKidGroupMember({
+      groupId,
+      createdByUserId: userId,
+      displayName: body.displayName,
+      role: body.role,
+    });
   }
 
   const normalized = normalizeKidProfileInput(body);
@@ -289,11 +305,11 @@ export const createMyGroupKidMember = async (
     groupId,
     createdByUserId: userId,
     displayName: normalized.displayName!,
-    dateOfBirth: normalized.dateOfBirth!,
-    emergencyContactName: normalized.emergencyContactName!,
-    emergencyContactPhone: normalized.emergencyContactPhone!,
+    dateOfBirth: normalized.dateOfBirth ?? null,
+    emergencyContactName: normalized.emergencyContactName ?? null,
+    emergencyContactPhone: normalized.emergencyContactPhone ?? null,
     emergencyContactRelation: normalized.emergencyContactRelation ?? null,
-    medicalConditions: normalized.medicalConditions!,
+    medicalConditions: normalized.medicalConditions ?? null,
     gender: normalized.gender ?? null,
     photoUrl: normalized.photoUrl ?? null,
     role: body.role,

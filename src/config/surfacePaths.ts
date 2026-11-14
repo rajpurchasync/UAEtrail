@@ -120,6 +120,18 @@ export const MEMBERSHIP_MARKETING_PATH = '/membership' as const;
 export const GROUPS_PATH = '/groups' as const;
 export const BUDDIES_PATH = '/buddies' as const;
 
+/** Query on `/buddies` or `/groups` when opened from the Crews list hub — back returns to `crewsHomePath()`. */
+export const CREWS_ORIGIN_QUERY = 'crews' as const;
+
+export const isCrewsOriginQuery = (from: string | null | undefined): boolean =>
+  from === CREWS_ORIGIN_QUERY;
+
+export const buddiesPath = (options?: { from?: string }): string => {
+  if (!options?.from) return BUDDIES_PATH;
+  const params = new URLSearchParams({ from: options.from });
+  return `${BUDDIES_PATH}?${params.toString()}`;
+};
+
 /** Social hub child screens under `/buddies` (Settings-style sections, not tabs). */
 export type SocialFriendsSection = 'friends' | 'requests' | 'following';
 
@@ -145,19 +157,51 @@ export const groupsPath = (options?: {
 };
 
 /** Settings-style sections inside a Social group (hub = menu index). */
-export type GroupManageSection = 'hub' | 'members' | 'invite' | 'kids' | 'settings';
+export type GroupManageSection = 'hub' | 'members' | 'edit';
 
-/** @deprecated Prefer {@link GroupManageSection}; `manage` maps to `settings`. */
-export type GroupManagePathArg = GroupManageSection | 'manage' | 'members';
+export type GroupMembersFocus = 'invite' | 'add-kid';
+
+/** Legacy section slugs still accepted in URLs and normalized at runtime. */
+export type GroupManagePathArg =
+  | GroupManageSection
+  | 'manage'
+  | 'settings'
+  | 'invite'
+  | 'kids';
+
+export const normalizeGroupManageSection = (
+  section: string | null,
+  legacyTab?: string | null
+): GroupManageSection => {
+  if (section === 'members' || section === 'edit') return section;
+  if (section === 'invite' || section === 'kids' || legacyTab === 'members') return 'members';
+  if (section === 'settings' || section === 'manage' || legacyTab === 'manage') return 'edit';
+  return 'hub';
+};
+
+export const groupManageFocusFromLegacySection = (
+  section: string | null
+): GroupMembersFocus | undefined => {
+  if (section === 'invite') return 'invite';
+  if (section === 'kids') return 'add-kid';
+  return undefined;
+};
 
 /** List/manage surface only — threads use {@link messagesGroupPath}. */
 export const groupsManagePath = (
   groupId: string,
-  section: GroupManagePathArg = 'hub'
+  section: GroupManagePathArg = 'hub',
+  options?: { focus?: GroupMembersFocus; from?: string }
 ): string => {
-  const normalized: GroupManageSection = section === 'manage' ? 'settings' : section;
+  const rawSection = section;
+  const normalized = normalizeGroupManageSection(rawSection, null);
   const params = new URLSearchParams({ group: groupId });
   if (normalized !== 'hub') params.set('section', normalized);
+  const focus =
+    options?.focus ??
+    (rawSection === 'invite' || rawSection === 'kids' ? groupManageFocusFromLegacySection(rawSection) : undefined);
+  if (focus && normalized === 'members') params.set('focus', focus);
+  if (options?.from) params.set('from', options.from);
   return `${GROUPS_PATH}?${params.toString()}`;
 };
 

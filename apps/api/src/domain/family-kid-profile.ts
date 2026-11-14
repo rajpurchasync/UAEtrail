@@ -64,6 +64,13 @@ const kidPhotoUrlSchema = z.union([mediaUrlSchema, z.literal(''), z.null()]);
 
 const kidRelationSchema = z.string().trim().min(1).max(40);
 
+/** Name-only roster row — trip fields completed later via PATCH. */
+export const createKidRosterSchema = z.object({
+  rosterOnly: z.literal(true),
+  displayName: z.string().trim().min(2).max(80),
+  role: z.enum(['buddy', 'admin']).optional(),
+});
+
 export const createKidSchema = z.object({
   displayName: z.string().trim().min(2).max(80),
   dateOfBirth: kidDobSchema,
@@ -75,6 +82,8 @@ export const createKidSchema = z.object({
   photoUrl: kidPhotoUrlSchema.optional(),
   role: z.enum(['buddy', 'admin']).optional(),
 });
+
+export const createKidBodySchema = z.union([createKidRosterSchema, createKidSchema]);
 
 export const patchKidSchema = z
   .object({
@@ -101,6 +110,8 @@ export const patchKidSchema = z
   );
 
 export type CreateKidInput = z.infer<typeof createKidSchema>;
+export type CreateKidRosterInput = z.infer<typeof createKidRosterSchema>;
+export type CreateKidBodyInput = z.infer<typeof createKidBodySchema>;
 export type PatchKidInput = z.infer<typeof patchKidSchema>;
 
 const normalizePhotoUrl = (value: string | null | undefined): string | null | undefined => {

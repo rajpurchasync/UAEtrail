@@ -47,6 +47,7 @@ export const groupsApi = {
     payload: {
       wallPostPolicy?: 'all_members' | 'admins_only';
       photoUrl?: string | null;
+      name?: string;
     }
   ) =>
     apiRequest<{ data: SocialGroupView }>(`/me/groups/${groupId}`, {

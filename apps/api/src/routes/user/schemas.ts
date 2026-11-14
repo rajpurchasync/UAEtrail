@@ -1,4 +1,9 @@
-import { FACILITY_KINDS, PROFILE_FIELD_PRIVACY_KEYS } from '@uaetrail/shared-types';
+import {
+  FACILITY_KINDS,
+  PROFILE_FIELD_PRIVACY_KEYS,
+  SOCIAL_GROUP_NAME_MAX_LENGTH,
+  SOCIAL_GROUP_NAME_MIN_LENGTH,
+} from '@uaetrail/shared-types';
 import { z } from 'zod';
 import { UserRole } from '../../domain/enums.js';
 import { personNameSchema } from '../../domain/person-name.js';
@@ -7,15 +12,44 @@ import { GROUP_WALL_REACTION_KINDS } from '../../domain/group-wall-reactions.js'
 export const eventIdParamSchema = z.object({ id: z.string().min(1) });
 export const requestIdParamSchema = z.object({ id: z.string().min(1), requestId: z.string().min(1) });
 
-export const createRequestSchema = z.object({
-  note: z.string().max(1000).optional(),
-  packingCheckedIds: z.array(z.string().min(1).max(80)).max(40).optional(),
-  packingSignature: z.string().max(80).optional(),
-  adults: z.coerce.number().int().min(1).max(20).optional(),
-  kids: z.coerce.number().int().min(0).max(20).optional(),
-});
+export const createRequestSchema = z
+  .object({
+    note: z.string().max(1000).optional(),
+    packingCheckedIds: z.array(z.string().min(1).max(80)).max(40).optional(),
+    packingSignature: z.string().max(80).optional(),
+    adults: z.coerce.number().int().min(1).max(20).optional(),
+    kids: z.coerce.number().int().min(0).max(20).optional(),
+    partyMemberIds: z.array(z.string().min(1)).max(20).optional(),
+    sourceTeamId: z.string().min(1).optional(),
+  })
+  .refine(
+    (body) => !(body.partyMemberIds?.length && (body.adults !== undefined || body.kids !== undefined)),
+    { message: 'Send either partyMemberIds or adults/kids headcount — not both.' }
+  );
 
 export const rsvpSchema = createRequestSchema;
+
+export const updateRequestPartySchema = z
+  .object({
+    note: z.string().max(500).optional(),
+    adults: z.coerce.number().int().min(1).max(20).optional(),
+    kids: z.coerce.number().int().min(0).max(20).optional(),
+    partyMemberIds: z.array(z.string().min(1)).max(20).optional(),
+    sourceTeamId: z.string().min(1).optional(),
+  })
+  .refine(
+    (body) =>
+      body.note !== undefined ||
+      body.adults !== undefined ||
+      body.kids !== undefined ||
+      body.partyMemberIds !== undefined ||
+      body.sourceTeamId !== undefined,
+    { message: 'At least one field is required.' }
+  )
+  .refine(
+    (body) => !(body.partyMemberIds?.length && (body.adults !== undefined || body.kids !== undefined)),
+    { message: 'Send either partyMemberIds or adults/kids headcount — not both.' }
+  );
 
 const mediaUrlSchema = z.string().min(1).refine(
   (value) => value.startsWith('/') || /^https?:\/\//i.test(value),
@@ -149,7 +183,7 @@ export const roleSwitchSchema = z.object({
 
 export const createGroupSchema = z.object({
   type: z.enum(['family', 'friends']),
-  name: z.string().min(2).max(80),
+  name: z.string().min(SOCIAL_GROUP_NAME_MIN_LENGTH).max(SOCIAL_GROUP_NAME_MAX_LENGTH),
   slogan: z.string().max(120).optional(),
   bannerUrl: mediaUrlSchema.optional(),
   photoUrl: mediaUrlSchema.optional()
@@ -169,8 +203,10 @@ export const acceptInviteSchema = z.object({
 });
 
 export {
+  createKidBodySchema,
   createKidSchema,
   patchKidSchema,
+  type CreateKidBodyInput,
 } from '../../domain/family-kid-profile.js';
 
 export const groupMembershipPatchSchema = z
@@ -222,10 +258,15 @@ export const groupSettingsPatchSchema = z
   .object({
     wallPostPolicy: z.enum(['all_members', 'admins_only']).optional(),
     photoUrl: z.union([mediaUrlSchema, z.literal(''), z.null()]).optional(),
+    name: z.string().min(SOCIAL_GROUP_NAME_MIN_LENGTH).max(SOCIAL_GROUP_NAME_MAX_LENGTH).optional(),
   })
-  .refine((body) => body.wallPostPolicy !== undefined || body.photoUrl !== undefined, {
-    message: 'Provide wallPostPolicy and/or photoUrl.',
-  });
+  .refine(
+    (body) =>
+      body.wallPostPolicy !== undefined || body.photoUrl !== undefined || body.name !== undefined,
+    {
+      message: 'Provide wallPostPolicy, photoUrl, and/or name.',
+    }
+  );
 
 export const SWITCHABLE_PRIVILEGED_ROLES: UserRole[] = [
   UserRole.PLATFORM_ADMIN,

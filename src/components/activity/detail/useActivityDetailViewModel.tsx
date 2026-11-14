@@ -356,7 +356,7 @@ export const useActivityDetailViewModel = ({
         )
       : undefined;
 
-  const { joinUiState, sharePayload, stickyFooter, sidebarJoin, planRequestManagePanel } =
+  const { joinUiState, sharePayload, stickyFooter, sidebarJoin, planRequestManagePanel, partyEditPanel } =
     useActivityDetailJoinSurfaces({
     activity,
     previewMode,
@@ -385,6 +385,7 @@ export const useActivityDetailViewModel = ({
     consumerWireEngagement: publicDetail,
     isHostViewer: Boolean(hostCrewChatPolicy),
     consumerWireEngagementCta,
+    viewerUserId: user?.id,
   });
 
   const isHostUser = Boolean(hostCrewChatPolicy);
@@ -496,6 +497,7 @@ export const useActivityDetailViewModel = ({
     stickyFooter,
     sidebarJoin,
     planRequestManagePanel,
+    partyEditPanel,
     message,
     error,
     hostPath,

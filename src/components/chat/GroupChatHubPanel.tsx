@@ -65,7 +65,6 @@ export const GroupChatHubPanel = ({
   const activeCount = members.filter((m) => m.memberType === 'adult' && m.isActive !== false).length;
   const postPolicy = displayGroup ? resolveGroupWallPostPolicy(displayGroup) : 'all_members';
   const admin = displayGroup ? isSocialGroupAdmin(displayGroup, membership, user?.id) : false;
-  const slogan = displayGroup?.slogan?.trim();
 
   const handleGroupUpdated = (updated: SocialGroupView) => {
     setGroup(updated);
@@ -105,7 +104,6 @@ export const GroupChatHubPanel = ({
                 <SecureAvatar name={title} className="h-16 w-16 text-lg bg-emerald-100 text-emerald-700" />
               )}
               <h1 className="mt-4 text-xl font-semibold text-neutral-900">{title}</h1>
-              {slogan ? <p className="mt-2 max-w-sm text-sm italic text-neutral-600">&ldquo;{slogan}&rdquo;</p> : null}
               <p className="mt-3 text-sm text-neutral-500">
                 {activeCount} participant{activeCount === 1 ? '' : 's'} · {groupWallPostPolicyLabel[postPolicy]}
               </p>
@@ -131,7 +129,7 @@ export const GroupChatHubPanel = ({
               {admin && displayGroup ? (
                 <>
                   <Link
-                    to={groupsManagePath(displayGroup.id, 'settings')}
+                    to={groupsManagePath(displayGroup.id, 'edit')}
                     className="flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 text-sm font-medium text-neutral-800 hover:bg-neutral-50"
                   >
                     <UserRound className="h-4 w-4" aria-hidden />
@@ -143,7 +141,7 @@ export const GroupChatHubPanel = ({
                     className="flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 text-sm font-medium text-neutral-800 hover:bg-neutral-50"
                   >
                     <Settings2 className="h-4 w-4" aria-hidden />
-                    Chat settings
+                    Permissions
                   </button>
                 </>
               ) : null}

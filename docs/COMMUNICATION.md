@@ -74,6 +74,21 @@ Used for **family/friends groups** and **activity crew** (`social_groups.type ==
 
 Shared types: `GroupWallPostPolicy`, `SocialGroupChatPreviewDTO`, `GroupWallReplyPreviewDTO`, `groupWallBodySnippet` in `@uaetrail/shared-types`.
 
+## Four chat surfaces (product)
+
+| Surface | Storage (`social_groups`) | Route | Who chats | Kids |
+|---------|---------------------------|--------|-----------|------|
+| **Direct** | `chat_messages` | `/chat?to=` | Buddies / approved partners | — |
+| **Team** | `type` family/friends + wall | `/chat?group=` | **Adults with `userId` only** — optional team wall (`GroupWallMembersSheet` filters `memberType === 'adult'`) | Roster rows **no** `userId`; **not** in wall/stream; trip-only |
+| **Outing crew** | `type: activity`, `activityId` | `/chat?group=` (+ optional `activity=`) | Confirmed participants | Kids on **`activity_requests` / `partyMembers`** when profile complete (`assertKidProfileComplete`) |
+| **Community** | *Deferred* — not another `social_groups.type` | TBD | TBD | TBD |
+
+**Teams are not chat-first** — roster + optional wall for adults; **Crews tab** (`/list?listCat=people`, hub segment) is discovery + **My crew** (Friends `/buddies`, Teams `/groups`). Member-facing **“Social”** label is retired in favor of **My crew** / **Teams** (`productNorthStar.ts`).
+
+**Kid roster (team):** `POST …/kids` accepts **name-only** roster (`rosterOnly`) or full trip fields; `profileComplete` / `PATCH` completes trip details before outing attach.
+
+**Join party:** default **Just me** in `JoinRequestModal` (`PartyJoinModePicker`); **Headcount** or **From my team** with `partyMemberIds` + `sourceTeamId` on create/`PATCH` → `partyMembers` snapshot on `activity_requests` (`resolveJoinPartyFromBody` in `activity-party-attach.ts`). Host queue: `ActivityJoinRequestCard` + `sourceTeamName`. After submit, pending/approved requests edit party on activity detail (`ActivityDetailPartyEditBlock` + `usePersistedPartySize`).
+
 ## Activity crew chat (Plan · detail · Explore ↔ Messages)
 
 **One group per published activity** — not a second chat product.

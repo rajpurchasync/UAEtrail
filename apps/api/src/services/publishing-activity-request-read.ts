@@ -2,6 +2,7 @@ import {
   countTenantActivityRequests,
   listTenantActivityRequestsDetailed,
 } from '../lib/activity-engagement-store.js';
+import { findGroupsByIds } from '../lib/social-groups-store.js';
 import { hostJoinProfileSnippetForActivity } from '../lib/host-join-profile-snippet.js';
 import { hostVisibleMedicalSafety } from '../lib/member-medical-safety-profile.js';
 import type { RideshareRiderReputationDTO } from '@uaetrail/shared-types';
@@ -9,7 +10,8 @@ import { getRideshareRiderReputations } from '../lib/rideshare-rider-reputation.
 
 const mapTenantRequestRow = (
   request: Awaited<ReturnType<typeof listTenantActivityRequestsDetailed>>[number],
-  rideshareRiderReputation: RideshareRiderReputationDTO | null
+  rideshareRiderReputation: RideshareRiderReputationDTO | null,
+  sourceTeamName: string | null
 ) => {
   const startAt = request.activity.startAt;
   const startIso =
@@ -21,6 +23,8 @@ const mapTenantRequestRow = (
     kids: request.kids,
     partyMembers: request.partyMembers,
     partyApprovalPending: Boolean(request.partyApprovalPending),
+    sourceTeamId: request.sourceTeamId ?? null,
+    sourceTeamName,
     note: request.note,
     hostNote: request.hostNote,
     cancelReason: request.cancelReason,
@@ -65,10 +69,18 @@ export const listTenantActivityJoinRequests = async (input: {
     .filter((row) => row.activity.activityType === 'rideshare')
     .map((row) => row.user.id);
   const reputations = await getRideshareRiderReputations(rideshareUserIds);
+  const teamIds = [
+    ...new Set(
+      requests.map((row) => row.sourceTeamId).filter((id): id is string => Boolean(id?.trim()))
+    ),
+  ];
+  const teams = await findGroupsByIds(teamIds);
+  const teamNameById = new Map(teams.map((team) => [team.id, team.name] as const));
   const items = requests.map((row) =>
     mapTenantRequestRow(
       row,
-      row.activity.activityType === 'rideshare' ? (reputations.get(row.user.id) ?? null) : null
+      row.activity.activityType === 'rideshare' ? (reputations.get(row.user.id) ?? null) : null,
+      row.sourceTeamId ? (teamNameById.get(row.sourceTeamId) ?? null) : null
     )
   );
   return { items, total };

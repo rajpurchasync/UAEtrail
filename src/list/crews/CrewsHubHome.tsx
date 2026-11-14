@@ -1,5 +1,6 @@
 import type { MemberBrowseCardDTO } from '@uaetrail/shared-types';
 import { CrewsGuidesRail } from './CrewsGuidesRail';
+import { CrewsMyCrewCard } from './CrewsMyCrewCard';
 import { filterCrewsGuideDirectoryCards } from './crewsGuides';
 import { CREWS_STAT_TAB_LABELS, type CrewsStatTab } from './crewsStatTab';
 
@@ -9,6 +10,7 @@ type CrewsHubHomeProps = {
   availableCount: number;
   everyoneCount: number;
   onSelectTab: (tab: CrewsStatTab) => void;
+  isSignedIn: boolean;
 };
 
 const teaserClass =
@@ -20,6 +22,7 @@ export const CrewsHubHome = ({
   availableCount,
   everyoneCount,
   onSelectTab,
+  isSignedIn,
 }: CrewsHubHomeProps) => {
   const guides = filterCrewsGuideDirectoryCards(directory);
   const teasers: { tab: CrewsStatTab; count: number; blurb: string }[] = [
@@ -30,6 +33,7 @@ export const CrewsHubHome = ({
 
   return (
     <>
+      {isSignedIn ? <CrewsMyCrewCard /> : null}
       <CrewsGuidesRail guides={guides} onBrowseEveryone={() => onSelectTab('everyone')} />
       <section aria-labelledby="crews-hub-teasers">
         <h2 id="crews-hub-teasers" className="mb-2 text-base font-bold text-neutral-900">

@@ -140,25 +140,29 @@ describe('mobileBackNav', () => {
     });
   });
 
-  it('sends Social child screens back to Social', () => {
+  it('sends My crew child screens back to the hub', () => {
     expect(resolveMobileTabHeaderLeadingBack('/buddies', null, '?section=friends')).toEqual({
       fallbackTo: '/buddies',
-      label: 'Social',
+      label: 'My crew',
       backBehavior: 'fallback',
     });
     expect(resolveMobileTabHeaderLeadingBack('/groups', null)).toEqual({
       fallbackTo: '/buddies',
-      label: 'Social',
+      label: 'My crew',
       backBehavior: 'fallback',
+    });
+    expect(resolveMobileTabHeaderLeadingBack('/groups', null, '?from=crews')).toMatchObject({
+      fallbackTo: expect.stringContaining('/list'),
+      label: 'Crews',
     });
     expect(resolveMobileTabHeaderLeadingBack('/groups', null, '?group=g1')).toEqual({
       fallbackTo: '/groups',
-      label: 'Groups',
+      label: 'Teams',
       backBehavior: 'fallback',
     });
     expect(resolveMobileTabHeaderLeadingBack('/groups', null, '?group=g1&section=kids')).toEqual({
       fallbackTo: '/groups?group=g1',
-      label: 'Group',
+      label: 'Team',
       backBehavior: 'fallback',
     });
   });

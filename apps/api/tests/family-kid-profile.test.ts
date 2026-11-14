@@ -5,6 +5,18 @@ import {
 } from '../src/domain/family-kid-profile.js';
 
 describe('family kid profile', () => {
+  it('treats name-only roster rows as incomplete until trip fields are saved', () => {
+    expect(
+      isKidProfileComplete({
+        displayName: 'Sam',
+        dateOfBirth: null,
+        emergencyContactName: '',
+        emergencyContactPhone: '',
+        medicalConditions: '',
+      })
+    ).toBe(false);
+  });
+
   it('requires name, DOB, emergency contact, and medical info', () => {
     expect(
       isKidProfileComplete({

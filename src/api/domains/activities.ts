@@ -122,7 +122,15 @@ export const activitiesApi = {
 
     createJoinRequest: (
       activityId: string,
-      body?: { note?: string; packingCheckedIds?: string[]; packingSignature?: string; adults?: number; kids?: number }
+      body?: {
+        note?: string;
+        packingCheckedIds?: string[];
+        packingSignature?: string;
+        adults?: number;
+        kids?: number;
+        partyMemberIds?: string[];
+        sourceTeamId?: string;
+      }
     ) =>
     apiRequest<{ data: JoinRequestDTO }>(`/activities/${activityId}/requests`, {
       method: 'POST',
@@ -132,7 +140,15 @@ export const activitiesApi = {
 
     rsvpActivity: (
       activityId: string,
-      body?: { note?: string; packingCheckedIds?: string[]; packingSignature?: string; adults?: number; kids?: number }
+      body?: {
+        note?: string;
+        packingCheckedIds?: string[];
+        packingSignature?: string;
+        adults?: number;
+        kids?: number;
+        partyMemberIds?: string[];
+        sourceTeamId?: string;
+      }
     ) =>
     apiRequest<{
       data: {
@@ -175,6 +191,7 @@ export const activitiesApi = {
         adults?: number;
         kids?: number;
         partyMemberIds?: string[];
+        sourceTeamId?: string;
       }
     ) =>
       apiRequest<{
@@ -185,6 +202,7 @@ export const activitiesApi = {
           kids?: number;
           partyMembers?: import('@uaetrail/shared-types').ActivityPartyMemberDTO[];
           partyApprovalPending?: boolean;
+          sourceTeamId?: string | null;
         };
       }>(`/activities/${activityId}/requests/${requestId}`, {
         method: 'PATCH',

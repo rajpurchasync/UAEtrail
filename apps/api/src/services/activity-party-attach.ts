@@ -1,5 +1,5 @@
 import type { ActivityPartyMemberDTO } from '@uaetrail/shared-types';
-import { derivePartyHeadcountFromRoster } from '@uaetrail/shared-types';
+import { derivePartyHeadcountFromRoster, partyRosterHasPendingFamilyInvite } from '@uaetrail/shared-types';
 import { ApiError } from '../lib/api-error.js';
 import { assertKidProfileComplete } from '../domain/family-kid-profile.js';
 import { isSignupProfileComplete } from '../domain/user-profile.js';
@@ -60,13 +60,16 @@ export const buildPartyRosterFromMembershipIds = async (input: {
     }
 
     const group = groupById.get(member.groupId);
-    if (!group || group.type !== 'family') {
-      throw new ApiError(400, 'party_member_not_family', 'Only family group members can join an outing together.');
+    if (!group || (group.type !== 'family' && group.type !== 'friends')) {
+      throw new ApiError(400, 'party_member_not_team', 'Only team roster members can join an outing together.');
+    }
+    if (member.memberType === 'kid' && group.type !== 'family') {
+      throw new ApiError(400, 'party_kid_not_friends_team', 'Kids can only be attached from a family team.');
     }
 
     const actorMembership = actorMemberships.get(member.groupId);
     if (!actorMembership || !actorMembership.isActive) {
-      throw new ApiError(403, 'forbidden', 'You must be an adult member of this family to attach them.');
+      throw new ApiError(403, 'forbidden', 'You must be an adult member of this team to attach them.');
     }
 
     if (member.memberType === 'adult') {
@@ -121,6 +124,59 @@ export const buildPartyRosterFromMembershipIds = async (input: {
 
 export const headcountFromPartyRoster = (partyMembers: ActivityPartyMemberDTO[]) =>
   derivePartyHeadcountFromRoster(partyMembers);
+
+export type ResolvedJoinPartySnapshot = {
+  adults: number;
+  kids: number;
+  partyMembers?: ActivityPartyMemberDTO[];
+  partyApprovalPending: boolean;
+  sourceTeamId: string | null;
+  deferHostApproval: boolean;
+};
+
+/** Join create/PATCH — headcount, roster snapshot, and source team id (Phase 3). */
+export const resolveJoinPartyFromBody = async (input: {
+  actorUserId: string;
+  partyMemberIds?: string[];
+  sourceTeamId?: string | null;
+  adults?: number;
+  kids?: number;
+}): Promise<ResolvedJoinPartySnapshot> => {
+  const ids = (input.partyMemberIds ?? []).map((id) => id.trim()).filter(Boolean);
+  if (ids.length === 0) {
+    return {
+      adults: input.adults ?? 1,
+      kids: input.kids ?? 0,
+      partyMembers: undefined,
+      partyApprovalPending: false,
+      sourceTeamId: null,
+      deferHostApproval: false,
+    };
+  }
+
+  const partyMembers = await buildPartyRosterFromMembershipIds({
+    actorUserId: input.actorUserId,
+    membershipIds: ids,
+  });
+  const { adults, kids } = headcountFromPartyRoster(partyMembers);
+  const groupIds = new Set(partyMembers.map((row) => row.groupId));
+  let sourceTeamId = input.sourceTeamId?.trim() || null;
+  if (!sourceTeamId && groupIds.size === 1) {
+    sourceTeamId = [...groupIds][0] ?? null;
+  }
+  if (sourceTeamId && partyMembers.some((row) => row.groupId !== sourceTeamId)) {
+    throw new ApiError(400, 'party_team_mismatch', 'All roster members must belong to the selected team.');
+  }
+  const pendingInvite = partyRosterHasPendingFamilyInvite(partyMembers);
+  return {
+    adults,
+    kids,
+    partyMembers,
+    partyApprovalPending: pendingInvite,
+    sourceTeamId,
+    deferHostApproval: pendingInvite,
+  };
+};
 
 /** Create outing invites + notifications for newly attached adults. */
 export const sendOutingInvitesForNewAdults = async (input: {

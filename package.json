@@ -36,7 +36,7 @@
     "dev:fresh": "node scripts/clear-vite-cache.mjs && vite --force",
     "heroes:lqip": "node scripts/generate-hero-lqips.mjs",
     "heroes:optimize": "node scripts/optimize-hero-images.mjs",
-    "dev:api": "npm --workspace @uaetrail/api run dev",
+    "dev:api": "npm run build --workspace @uaetrail/shared-types && npm --workspace @uaetrail/api run dev",
     "dev:all": "concurrently \"npm run dev\" \"npm run dev:api\"",
     "dev:all:fresh": "concurrently \"npm run dev:fresh\" \"npm run dev:api\"",
     "dev:local": "node scripts/dev-local.mjs",

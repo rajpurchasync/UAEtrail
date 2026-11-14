@@ -54,11 +54,19 @@ export const PRODUCT_PEOPLE_DISCOVERY_LABEL = 'Find your crew';
 /** Social hub tab — discover people to add as friends. */
 export const PRODUCT_FIND_FRIENDS_HUB_LABEL = 'Find friends';
 export const PRODUCT_FRIENDS_SURFACE_LABEL = 'Friends';
-/** Combined friends + groups hub (desktop GO + hamburger). */
-export const PRODUCT_SOCIAL_SURFACE_TITLE = 'Social';
+/** Friends + teams hub (desktop GO + hamburger; `/buddies` index). */
+export const PRODUCT_MY_CREW_SURFACE_TITLE = 'My crew';
+/** @deprecated Use {@link PRODUCT_MY_CREW_SURFACE_TITLE} — retained for import stability. */
+export const PRODUCT_SOCIAL_SURFACE_TITLE = PRODUCT_MY_CREW_SURFACE_TITLE;
 export const PRODUCT_SOCIAL_NAV_HINT =
-  'Manage friends and family groups — open chat when you want to message.';
-export const PRODUCT_GROUPS_SURFACE_LABEL = 'Groups';
+  'Friends and family teams — optional team chat for adults when you want to message.';
+export const PRODUCT_GROUPS_SURFACE_LABEL = 'Teams';
+export const PRODUCT_CREWS_TAB_LABEL = 'Crews';
+export const PRODUCT_MY_CREW_CARD_TITLE = 'My crew';
+export const PRODUCT_MY_CREW_CARD_SUBTITLE = 'Friends you message and teams you travel with';
+export const PRODUCT_TEAM_CHAT_SUBTITLE = 'Optional team wall — adults only';
+export const PRODUCT_TEAM_KID_ROSTER_NOTE = 'On trips only — not in team chat';
+export const PRODUCT_TEAM_KID_READY_LABEL = 'Ready for outings';
 
 /** Join CTA label — marketing / map browse (free account). */
 export const PRODUCT_JOIN_CTA = 'Join free';

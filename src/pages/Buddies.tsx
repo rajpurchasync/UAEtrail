@@ -23,7 +23,15 @@ import {
   useSocialHubBackChrome,
 } from '../hooks/useProfileHubBackChrome';
 
-import { PRODUCT_EXPLORE_CTA, PRODUCT_SOCIAL_SURFACE_TITLE } from '../content/productNorthStar';
+import {
+  PRODUCT_CREWS_TAB_LABEL,
+  PRODUCT_EXPLORE_CTA,
+  PRODUCT_MY_CREW_SURFACE_TITLE,
+  PRODUCT_SOCIAL_SURFACE_TITLE,
+} from '../content/productNorthStar';
+import { crewsHomePath } from '../config/mobileFiveTabNav';
+import { isCrewsOriginQuery } from '../config/surfacePaths';
+import { useMobileBackChrome } from '../hooks/useMobileBackChrome';
 import { SocialHubIndex } from '../components/social/SocialHubNav';
 import { memberProfileLink } from '../member/memberProfileLink';
 import { MESSAGES_CHAT_RETURN_TO_KEY } from '../utils/activityGroupChatNav';
@@ -67,13 +75,19 @@ export const Buddies = () => {
   const { user } = useAuth();
   const profileBackChrome = useProfileHubBackChrome();
   const socialBackChrome = useSocialHubBackChrome();
+  const crewsBackChrome = useMobileBackChrome({
+    fallbackTo: crewsHomePath(),
+    label: PRODUCT_CREWS_TAB_LABEL,
+    backBehavior: 'fallback',
+  });
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const activeSection = parseSocialSection(searchParams.get('section'), searchParams.get('tab'));
   const isHub = activeSection === null;
-  const backChrome = isHub ? profileBackChrome : socialBackChrome;
-  const shellTitle = isHub ? PRODUCT_SOCIAL_SURFACE_TITLE : SECTION_TITLES[activeSection];
+  const crewsOrigin = isCrewsOriginQuery(searchParams.get('from'));
+  const backChrome = isHub ? (crewsOrigin ? crewsBackChrome : profileBackChrome) : socialBackChrome;
+  const shellTitle = isHub ? PRODUCT_MY_CREW_SURFACE_TITLE : SECTION_TITLES[activeSection];
 
   const {
     buddies,

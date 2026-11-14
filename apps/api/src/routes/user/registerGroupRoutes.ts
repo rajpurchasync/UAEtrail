@@ -23,7 +23,8 @@ import {
 import {
   acceptInviteSchema,
   createGroupSchema,
-  createKidSchema,
+  createKidBodySchema,
+  type CreateKidBodyInput,
   patchKidSchema,
   createWallPostSchema,
   groupIdParamSchema,
@@ -147,11 +148,11 @@ export const registerGroupRoutes = (router: Router): void => {
 
   router.post(
     '/me/groups/:groupId/kids',
-    validate({ params: groupIdParamSchema, body: createKidSchema }),
+    validate({ params: groupIdParamSchema, body: createKidBodySchema }),
     async (req, res, next) => {
       try {
         const { groupId } = req.params as z.infer<typeof groupIdParamSchema>;
-        const body = req.body as z.infer<typeof createKidSchema>;
+        const body = req.body as CreateKidBodyInput;
         const data = await createMyGroupKidMember(groupId, req.auth!.userId, body);
         res.status(201).json({ data });
       } catch (error) {

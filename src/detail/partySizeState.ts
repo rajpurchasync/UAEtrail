@@ -1,23 +1,10 @@
 import { useEffect, useState } from 'react';
 
-/** Shared adults/kids so the desktop aside and JoinRequestModal stay in sync. */
+/** Shared adults/kids for headcount mode in JoinRequestModal. */
 type PartySize = { adults: number; kids: number };
 
 let current: PartySize = { adults: 1, kids: 0 };
 const listeners = new Set<() => void>();
-
-/** Mobile detail: party chosen in sheet — hide duplicate pickers in JoinRequestModal once. */
-let skipPartySizeInJoinModal = false;
-
-export const markPartySizeChosenForJoinModal = (): void => {
-  skipPartySizeInJoinModal = true;
-};
-
-export const consumeSkipPartySizeInJoinModal = (): boolean => {
-  const skip = skipPartySizeInJoinModal;
-  skipPartySizeInJoinModal = false;
-  return skip;
-};
 
 export const getPartySize = (): PartySize => current;
 

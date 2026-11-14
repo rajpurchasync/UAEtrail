@@ -1,5 +1,6 @@
 import type { NavigateFunction } from 'react-router-dom';
 import {
+  PRODUCT_CREWS_TAB_LABEL,
   PRODUCT_GROUPS_SURFACE_LABEL,
   PRODUCT_PLAN_SURFACE_TITLE,
   PRODUCT_SOCIAL_SURFACE_TITLE,
@@ -10,10 +11,13 @@ import { resolveMobileTabHeaderTitle } from '../config/mobileTabHeader';
 import { SETTINGS_SURFACE_TITLE } from '../config/settingsHub';
 import { isTransientBackPath, navigateBack } from './backStack';
 import { exploreMapPathAfterPeopleFullScreen } from '../explore/exploreBrowseReturnPath';
+import { crewsHomePath } from '../config/mobileFiveTabNav';
 import {
   BUDDIES_PATH,
+  CREWS_ORIGIN_QUERY,
   GROUPS_PATH,
   groupsManagePath,
+  isCrewsOriginQuery,
   isAppSettingsPath,
   isJourneyMapPath,
   isNotificationHubPath,
@@ -170,26 +174,32 @@ export const resolveMobileTabHeaderLeadingBack = (
     if (sub && PLAN_DRILL_SUBS.has(sub)) {
       return flowBack(PLAN_PATH, PRODUCT_PLAN_SURFACE_TITLE);
     }
-    return null;
+    return flowBack(EXPLORE_MAP_PATH, 'Explore');
   }
 
   if (pathname === MESSAGES_PATH) {
     const params = searchParamsOf(search);
     const inThread = Boolean(params.get('to') || params.get('group'));
-    if (!inThread) return null;
-    if (!parseMobileBackNavState(locationState)) {
-      return flowBack(MESSAGES_PATH, 'Chat');
+    const parsedNav = parseMobileBackNavState(locationState);
+    if (parsedNav) {
+      return resolveMobileBackChrome(locationState, {
+        fallbackTo: MESSAGES_PATH,
+        label: 'Chat',
+      });
     }
-    return resolveMobileBackChrome(locationState, {
-      fallbackTo: MESSAGES_PATH,
-      label: 'Chat',
-    });
+    if (!inThread) return null;
+    return flowBack(MESSAGES_PATH, 'Chat');
   }
 
   if (pathname === BUDDIES_PATH) {
-    const section = searchParamsOf(search).get('section') ?? searchParamsOf(search).get('tab');
+    const params = searchParamsOf(search);
+    const section = params.get('section') ?? params.get('tab');
+    const crewsOrigin = isCrewsOriginQuery(params.get('from'));
     if (section === 'friends' || section === 'requests' || section === 'following') {
       return flowBack(BUDDIES_PATH, PRODUCT_SOCIAL_SURFACE_TITLE);
+    }
+    if (crewsOrigin) {
+      return flowBack(crewsHomePath(), 'Crews');
     }
     return profileStackBack(locationState, {
       fallbackTo: PROFILE_PATH,
@@ -200,14 +210,28 @@ export const resolveMobileTabHeaderLeadingBack = (
   if (pathname === GROUPS_PATH) {
     const params = searchParamsOf(search);
     const groupId = params.get('group');
+    const crewsOrigin = isCrewsOriginQuery(params.get('from'));
+    const teamsListPath = crewsOrigin
+      ? `${GROUPS_PATH}?${new URLSearchParams({ from: CREWS_ORIGIN_QUERY })}`
+      : GROUPS_PATH;
     if (groupId) {
       const section = params.get('section');
-      if (section === 'members' || section === 'invite' || section === 'kids' || section === 'settings') {
-        return flowBack(groupsManagePath(groupId), 'Group');
+      const manageFrom = crewsOrigin ? { from: CREWS_ORIGIN_QUERY } : undefined;
+      if (
+        section === 'members' ||
+        section === 'edit' ||
+        section === 'invite' ||
+        section === 'kids' ||
+        section === 'settings'
+      ) {
+        return flowBack(groupsManagePath(groupId, 'hub', manageFrom), 'Team');
       }
-      return flowBack(GROUPS_PATH, PRODUCT_GROUPS_SURFACE_LABEL);
+      return flowBack(teamsListPath, PRODUCT_GROUPS_SURFACE_LABEL);
     }
-    return flowBack(BUDDIES_PATH, PRODUCT_SOCIAL_SURFACE_TITLE);
+    return flowBack(
+      crewsOrigin ? crewsHomePath() : BUDDIES_PATH,
+      crewsOrigin ? PRODUCT_CREWS_TAB_LABEL : PRODUCT_SOCIAL_SURFACE_TITLE
+    );
   }
 
   if (pathname === MY_REQUESTS_PATH) {

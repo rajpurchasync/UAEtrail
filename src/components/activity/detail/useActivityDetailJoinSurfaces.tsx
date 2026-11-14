@@ -11,6 +11,7 @@ import { ActivityDetailMobileFooter } from '../ActivityDetailMobileFooter';
 import { ActivityDetailStickyFooter } from './ActivityDetailStickyFooter';
 import type { ActivityDetailTabFooterKind } from '../../../activity/activityDetailTabFooters';
 import { buildActivitySharePayload, activityShareInputFromActivity } from '../../../utils/activityShare';
+import { ActivityDetailPartyEditBlock } from './ActivityDetailPartyEditBlock';
 
 type Args = {
   activity: ActivityDetailDTO;
@@ -42,6 +43,7 @@ type Args = {
   /** Host on consumer detail — no join sidebar/sticky share duplicates. */
   isHostViewer?: boolean;
   consumerWireEngagementCta?: ReactNode;
+  viewerUserId?: string | null;
 };
 
 /** Join CTAs, mobile footer wrap, sticky footer, and desktop sidebar join (R6). */
@@ -73,6 +75,7 @@ export const useActivityDetailJoinSurfaces = ({
   consumerWireEngagement = false,
   isHostViewer = false,
   consumerWireEngagementCta,
+  viewerUserId,
 }: Args) => {
   const joinActionDisabled = joinDisabled;
   const isFull = (activity.slotsAvailable ?? 0) <= 0;
@@ -266,6 +269,16 @@ export const useActivityDetailJoinSurfaces = ({
       ))
     : null;
 
+  const requestEditable =
+    Boolean(myRequest?.id) &&
+    joinUiState.requestId !== 'participation' &&
+    (joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed');
+
+  const partyEditPanel =
+    consumerJoinEnabled && !previewMode && requestEditable && myRequest ? (
+      <ActivityDetailPartyEditBlock activity={activity} myRequest={myRequest} viewerUserId={viewerUserId} />
+    ) : null;
+
   const planRequestManagePanel =
     consumerWireEngagement || !consumerJoinEnabled || previewMode
       ? null
@@ -289,5 +302,6 @@ export const useActivityDetailJoinSurfaces = ({
     sidebarJoin,
     wrapMobileFooter,
     planRequestManagePanel,
+    partyEditPanel,
   };
 };

@@ -119,16 +119,23 @@ Grouped nav (`ADMIN_NAV_GROUPS` / flat `ADMIN_LINKS`). Legacy `/admin/overview` 
 
 Canonical detail: **[`COMMUNICATION.md`](./COMMUNICATION.md)**. Legacy `/messages` redirects here.
 
-- **Inbox:** Direct chats, **Groups** (family/friends), and **Outing chats** (activity crew) in one list; filters `people` / `groups` / `outings`.
+- **Inbox:** Direct chats, **Teams** (family/friends walls), and **Outing crew** (activity `social_groups`) in one list; filters `people` / `groups` / `outings`.
 - **Direct thread:** `/chat?to=<userId>` (optional `activity` context).
 - **Group / crew thread:** `/chat?group=<groupId>` (optional `activity=<activityId>` for outing crew) — all wall chat UI lives here (not on `/groups`).
 - **Legacy `/host/messages` and `/operator/messages`:** redirect to `/chat` (one inbox). Notification meta normalizes to `/chat` with the same query params.
 - **API:** prefer **`GET /chat/inbox`** (direct + groups with `chatPreview`); wall supports `?since=` and `POST .../wall/read`; optional `replyToMessageId` on wall POST.
 
-### Groups (`/groups`)
+### Teams (`/groups`)
 
-- **List + manage:** create family/friends groups, members, invites, kids, **who can message** (wall post policy). Manage deep links use `groupsManagePath()` (`?group=&tab=members|manage`).
-- **Chat:** tap **Message** → `/chat?group=<id>` (single chat surface).
+Product label **Teams** (family/friends `social_groups`); optional **team chat** — adults only.
+
+- **List + manage:** create family/friends teams; **Members** (`?section=members`, optional `focus=invite|add-kid`) for invites, roster (kids: name on roster; **trip details** when joining outings); **Edit group** (`?section=edit`) for name, image, delete. Chat **Permissions** (who can post) lives in the thread gear sheet — not Edit group. `groupsManagePath()`; legacy `?section=invite|kids|settings` and `?tab=` redirect.
+- **From Crews tab:** `?from=crews` on `/groups` or `/buddies` → back returns to `/list?listCat=people` hub (`crewsHomePath()`).
+- **Chat:** hub **Team chat** → `/chat?group=<id>` (single chat surface).
+
+### Crews tab home (`/list?listCat=people`, hub segment)
+
+Mobile five-tab **Crews** — discovery rails + **My crew** card (signed in): **Friends** (`/buddies?from=crews`), **Teams** (`/groups?from=crews`). Not the chat inbox.
 
 ### Post-auth member details (`/welcome`)
 
@@ -206,7 +213,7 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 
 **Job:** who can I go with, who’s going, who’s looking — **not** chat. Chat is [`/chat`](#chat-chat) ([`COMMUNICATION.md`](./COMMUNICATION.md)).
 
-Map pill label **Find your crew** (see `explorePeopleBrowseCopy.ts`); opens `view=people` on desktop (`peopleBrowseOpen`; mobile `listMode=people`; legacy `view=social` / `view=going` still parse). Query `peopleTab=looking|available|going|connect` (default **looking** omitted in URL; legacy `socialTab`, `all`→`connect`, `friends`→`going`, `discover`→`available`). Panel title **Find your crew** — list **Buddies** (`listCat=people`, URL `buddies=` mirrors `peopleTab`). **Looking for** tab is public (published seeking activities); other tabs → sign-in when needed.
+Map pill label **Find your crew** (see `explorePeopleBrowseCopy.ts`); opens `view=people` on desktop (`peopleBrowseOpen`; mobile `listMode=people`; legacy `view=social` / `view=going` still parse). Query `peopleTab=looking|available|going|connect` (default **looking** omitted in URL; legacy `socialTab`, `all`→`connect`, `friends`→`going`, `discover`→`available`). Panel title **Find your crew** — list **Crews** (`listCat=people`, URL `buddies=` mirrors `peopleTab`; hub segment = Crews home). **Looking for** tab is public (published seeking activities); other tabs → sign-in when needed.
 
 | Segment (`peopleTab`) | Label | Data / actions |
 |-----------------------|-------|----------------|

@@ -40,8 +40,14 @@ export const usePersistedPartySize = ({
     seededRef.current = true;
   }, [enabled, seedAdults, seedKids]);
 
+  useEffect(() => {
+    if (!enabled || !seededRef.current) return;
+    if (seedAdults == null && seedKids == null) return;
+    lastSent.current = { adults: seedAdults ?? 1, kids: seedKids ?? 0 };
+  }, [enabled, seedAdults, seedKids]);
+
   const persist = useCallback(
-    (adults: number, kids: number, partyMemberIds?: string[]) => {
+    (adults: number, kids: number, partyMemberIds?: string[], sourceTeamId?: string | null) => {
       if (!enabled || !requestId || requestId === 'participation') return;
       const rosterMode = partyMemberIds !== undefined;
       if (
@@ -52,41 +58,46 @@ export const usePersistedPartySize = ({
         return;
       }
       if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        void (async () => {
-          setSaving(true);
-          setError(null);
-          try {
-            const updated = await updateJoinRequestParty(activityId, requestId, {
-              ...(rosterMode ? { partyMemberIds } : { adults, kids }),
-            });
-            lastSent.current = {
-              adults: updated.adults ?? adults,
-              kids: updated.kids ?? kids,
-            };
-            // Merge into detail cache — avoid full shell + me waterfall invalidate.
-            queryClient.setQueriesData<PublicActivityDetailPayload>(
-              { queryKey: ['activity', activityId], exact: false },
-              (prev) => {
-                if (!prev?.myRequest) return prev;
-                const nextRequest: MyActivityRequestDTO = {
-                  ...prev.myRequest,
-                  adults: updated.adults ?? prev.myRequest.adults,
-                  kids: updated.kids ?? prev.myRequest.kids,
-                  partyMembers: updated.partyMembers ?? prev.myRequest.partyMembers,
-                  partyApprovalPending:
-                    updated.partyApprovalPending ?? prev.myRequest.partyApprovalPending,
-                };
-                return { ...prev, myRequest: nextRequest };
-              }
-            );
-          } catch (err) {
-            setError(err instanceof Error ? err.message : GROUP_JOIN_UPDATE_ERROR);
-          } finally {
-            setSaving(false);
-          }
-        })();
-      }, rosterMode ? 0 : 450);
+      debounceRef.current = setTimeout(
+        () => {
+          void (async () => {
+            setSaving(true);
+            setError(null);
+            try {
+              const updated = await updateJoinRequestParty(activityId, requestId, {
+                ...(rosterMode
+                  ? { partyMemberIds, sourceTeamId: sourceTeamId ?? undefined }
+                  : { adults, kids }),
+              });
+              lastSent.current = {
+                adults: updated.adults ?? adults,
+                kids: updated.kids ?? kids,
+              };
+              queryClient.setQueriesData<PublicActivityDetailPayload>(
+                { queryKey: ['activity', activityId], exact: false },
+                (prev) => {
+                  if (!prev?.myRequest) return prev;
+                  const nextRequest: MyActivityRequestDTO = {
+                    ...prev.myRequest,
+                    adults: updated.adults ?? prev.myRequest.adults,
+                    kids: updated.kids ?? prev.myRequest.kids,
+                    partyMembers: updated.partyMembers ?? prev.myRequest.partyMembers,
+                    partyApprovalPending:
+                      updated.partyApprovalPending ?? prev.myRequest.partyApprovalPending,
+                    sourceTeamId: updated.sourceTeamId ?? prev.myRequest.sourceTeamId,
+                  };
+                  return { ...prev, myRequest: nextRequest };
+                }
+              );
+            } catch (err) {
+              setError(err instanceof Error ? err.message : GROUP_JOIN_UPDATE_ERROR);
+            } finally {
+              setSaving(false);
+            }
+          })();
+        },
+        rosterMode ? 0 : 450
+      );
     },
     [activityId, enabled, queryClient, requestId]
   );

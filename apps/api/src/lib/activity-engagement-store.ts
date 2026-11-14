@@ -60,6 +60,7 @@ type MongoActivityRequest = {
   kids?: number;
   partyMembers?: MongoPartyMember[];
   partyApprovalPending?: boolean;
+  sourceTeamId?: string | null;
   note: string | null;
   hostNote?: string | null;
   cancelReason: string | null;
@@ -118,6 +119,7 @@ const toActivityRequestRecord = (doc: MongoActivityRequest): ActivityRequest => 
   kids: doc.kids,
   partyMembers: doc.partyMembers,
   partyApprovalPending: Boolean(doc.partyApprovalPending),
+  sourceTeamId: doc.sourceTeamId ?? null,
   note: doc.note,
   hostNote: resolveHostNote(doc),
   cancelReason: doc.cancelReason,
@@ -191,6 +193,9 @@ const persistJoinRequestRow = async (input: {
   note: string | null;
   adults?: number;
   kids?: number;
+  partyMembers?: MongoPartyMember[];
+  partyApprovalPending?: boolean;
+  sourceTeamId?: string | null;
   existingCreatedAt?: Date;
   reviewedAt?: Date | null;
   reviewedById?: string | null;
@@ -206,6 +211,11 @@ const persistJoinRequestRow = async (input: {
         note: input.note,
         adults: input.adults ?? 1,
         kids: input.kids ?? 0,
+        ...(input.partyMembers !== undefined ? { partyMembers: input.partyMembers } : {}),
+        ...(input.partyApprovalPending !== undefined
+          ? { partyApprovalPending: input.partyApprovalPending }
+          : {}),
+        ...(input.sourceTeamId !== undefined ? { sourceTeamId: input.sourceTeamId } : {}),
         hostNote: null,
         cancelReason: null,
         cancelMessage: null,
@@ -272,6 +282,9 @@ export async function createJoinOrWaitlistRequest(opts: {
   packingSignature?: string;
   adults?: number;
   kids?: number;
+  partyMembers?: MongoPartyMember[];
+  partyApprovalPending?: boolean;
+  sourceTeamId?: string | null;
 }) {
   const event = await loadPublishedEventForJoin(opts.activityId);
   if (!event) {
@@ -329,6 +342,9 @@ export async function createJoinOrWaitlistRequest(opts: {
     note: withPartyNote(joinNote ?? existing?.note ?? null, opts.adults, opts.kids),
     adults: opts.adults,
     kids: opts.kids,
+    partyMembers: opts.partyMembers,
+    partyApprovalPending: opts.partyApprovalPending,
+    sourceTeamId: opts.sourceTeamId,
     existingCreatedAt: existing?.createdAt,
   });
 
@@ -348,6 +364,9 @@ export async function createRsvpParticipation(opts: {
   packingSignature?: string;
   adults?: number;
   kids?: number;
+  partyMembers?: MongoPartyMember[];
+  partyApprovalPending?: boolean;
+  sourceTeamId?: string | null;
 }) {
   const event = await loadPublishedEventForJoin(opts.activityId);
   if (!event) {
@@ -411,6 +430,9 @@ export async function createRsvpParticipation(opts: {
       note: withPartyNote(joinNote ?? existing?.note ?? null, opts.adults, opts.kids),
       adults: opts.adults,
       kids: opts.kids,
+      partyMembers: opts.partyMembers,
+      partyApprovalPending: opts.partyApprovalPending,
+      sourceTeamId: opts.sourceTeamId,
       existingCreatedAt: existing?.createdAt,
     });
     await incrementActivityCounts(opts.activityId, { waitlisted: 1 });
@@ -443,6 +465,11 @@ export async function createRsvpParticipation(opts: {
           note: withPartyNote(joinNote ?? existing?.note ?? null, opts.adults, opts.kids),
           adults: opts.adults ?? 1,
           kids: opts.kids ?? 0,
+          ...(opts.partyMembers !== undefined ? { partyMembers: opts.partyMembers } : {}),
+          ...(opts.partyApprovalPending !== undefined
+            ? { partyApprovalPending: opts.partyApprovalPending }
+            : {}),
+          ...(opts.sourceTeamId !== undefined ? { sourceTeamId: opts.sourceTeamId } : {}),
           hostNote: null,
           cancelReason: null,
           cancelMessage: null,
@@ -637,6 +664,7 @@ export const updateActivityRequestParty = async (
     adults?: number;
     kids?: number;
     partyMembers?: MongoPartyMember[];
+    sourceTeamId?: string | null;
     /** When true, skip auto host-pending for new kids (adult invite flow owns the flag). */
     deferHostApproval?: boolean;
     /** Caller-preloaded activity doc — avoids a second activity find on the PATCH path. */
@@ -698,6 +726,7 @@ export const updateActivityRequestParty = async (
         adults,
         kids,
         ...(partyMembers !== undefined ? { partyMembers } : {}),
+        ...(input.sourceTeamId !== undefined ? { sourceTeamId: input.sourceTeamId } : {}),
         partyApprovalPending,
         updatedAt: new Date(),
       },

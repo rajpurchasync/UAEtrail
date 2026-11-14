@@ -8,7 +8,7 @@ import {
   meFamilyPartyPickerGroupsQueryKey,
   meFamilyPartyPickerMembersQueryKey,
 } from '../../../hooks/clientQueryKeys';
-import { GROUPS_PATH, groupsManagePath } from '../../../config/routingCatalog';
+import { groupsManagePath, groupsPath } from '../../../config/surfacePaths';
 import { AppSelect } from '../../ui/AppSelect';
 import { AsyncLoadingState } from '../../ui/AsyncLoadingState';
 
@@ -19,6 +19,7 @@ type Props = {
   kidsAllowed: boolean;
   selectedMembershipIds: string[];
   onChange: (membershipIds: string[]) => void;
+  onTeamIdChange?: (teamId: string | null) => void;
   /** Exclude the viewer's own adult membership from the list. */
   viewerUserId?: string | null;
   /** When false, skip network (CSS-hidden trees / closed sheets). */
@@ -44,6 +45,7 @@ export const ActivityFamilyPartyPicker = ({
   kidsAllowed,
   selectedMembershipIds,
   onChange,
+  onTeamIdChange,
   viewerUserId,
   enabled = true,
 }: Props) => {
@@ -53,7 +55,7 @@ export const ActivityFamilyPartyPicker = ({
     queryKey: meFamilyPartyPickerGroupsQueryKey,
     queryFn: async (): Promise<SocialGroupView[]> => {
       const groups = await fetchMeGroups();
-      return groups.filter((g) => g.type === 'family');
+      return groups.filter((g) => g.type === 'family' || g.type === 'friends');
     },
     enabled,
     staleTime: 60_000,
@@ -69,6 +71,11 @@ export const ActivityFamilyPartyPicker = ({
     if (!enabled) return;
     setGroupId((prev) => prev ?? familyGroups[0]?.id ?? null);
   }, [enabled, familyGroups]);
+
+  useEffect(() => {
+    if (!enabled) return;
+    onTeamIdChange?.(groupId);
+  }, [enabled, groupId, onTeamIdChange]);
 
   const membersQuery = useQuery({
     queryKey: groupId ? meFamilyPartyPickerMembersQueryKey(groupId) : ['me-family-party', 'members', ''],
@@ -105,7 +112,7 @@ export const ActivityFamilyPartyPicker = ({
   if (!enabled) return null;
 
   if (loading) {
-    return <AsyncLoadingState variant="section" label="Loading family…" rows={2} />;
+    return <AsyncLoadingState variant="section" label="Loading team roster…" rows={2} />;
   }
 
   if (error) {
@@ -115,34 +122,39 @@ export const ActivityFamilyPartyPicker = ({
   if (familyGroups.length === 0) {
     return (
       <div className="space-y-2 text-sm text-neutral-700 dark:text-neutral-200">
-        <p>Create a Family group first, then invite adults and add kid profiles.</p>
-        <Link to={GROUPS_PATH} className="font-semibold text-emerald-700 underline">
-          Open Groups
+        <p>Create a team first, then invite adults and add kids to the roster.</p>
+        <Link to={groupsPath()} className="font-semibold text-emerald-700 underline">
+          Open Teams
         </Link>
       </div>
     );
   }
 
+  const activeGroup = familyGroups.find((g) => g.id === groupId);
+  const kidsOnTeam = activeGroup?.type === 'family';
+
   const adults = members.filter((m) => adultSelectable(m, viewerUserId));
-  const kidsReady = members.filter((m) => kidSelectable(m, kidsAllowed));
-  const kidsIncomplete = members.filter((m) => m.memberType === 'kid' && !m.profileComplete);
+  const kidsReady = kidsOnTeam ? members.filter((m) => kidSelectable(m, kidsAllowed)) : [];
+  const kidsIncomplete = kidsOnTeam
+    ? members.filter((m) => m.memberType === 'kid' && !m.profileComplete)
+    : [];
 
   return (
     <div className="space-y-3">
       {familyGroups.length > 1 ? (
         <div>
-          <p className="text-xs font-semibold text-neutral-600 dark:text-neutral-300">Family group</p>
+          <p className="text-xs font-semibold text-neutral-600 dark:text-neutral-300">Team</p>
           <AppSelect
             className="mt-1"
             value={groupId ?? ''}
             onChange={(next) => setGroupId(next || null)}
             options={familyGroupOptions}
-            aria-label="Family group"
+            aria-label="Team"
           />
         </div>
       ) : (
         <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-          {familyGroups[0]?.name ?? 'Family'}
+          {familyGroups[0]?.name ?? 'Team'}
         </p>
       )}
 
@@ -194,6 +206,7 @@ export const ActivityFamilyPartyPicker = ({
         ) : null}
       </div>
 
+      {kidsOnTeam ? (
       <div className="space-y-1.5">
         <p className="flex items-center gap-1.5 text-xs font-semibold text-neutral-700 dark:text-neutral-200">
           <Baby className="h-3.5 w-3.5" aria-hidden />
@@ -258,6 +271,7 @@ export const ActivityFamilyPartyPicker = ({
           </>
         )}
       </div>
+      ) : null}
     </div>
   );
 };

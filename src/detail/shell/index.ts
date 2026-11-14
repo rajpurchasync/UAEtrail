@@ -14,3 +14,4 @@ export {
 export type { ConsumerDetailSectionTone } from './consumerDetailSectionTones';
 export { ChipRow } from './ChipRow';
 export { PartySizeSelect } from './PartySizeSelect';
+export { PartyJoinModePicker } from './PartyJoinModePicker';

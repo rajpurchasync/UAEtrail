@@ -419,6 +419,8 @@ export interface MyActivityRequestDTO {
   partyMembers?: ActivityPartyMemberDTO[];
   /** True when the join is approved but a later family/headcount increase still needs the host. */
   partyApprovalPending?: boolean;
+  /** Family/friends team the roster was picked from — `social_groups.id`. */
+  sourceTeamId?: string | null;
 }
 
 export interface JoinRequestDTO {
@@ -1987,6 +1989,10 @@ export type {
 } from './group-wall.js';
 
 export { groupWallBodySnippet } from './group-wall.js';
+export {
+  SOCIAL_GROUP_NAME_MIN_LENGTH,
+  SOCIAL_GROUP_NAME_MAX_LENGTH,
+} from './social-group-limits.js';
 
 export type {
   AreaBoundsRing,

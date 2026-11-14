@@ -25,9 +25,12 @@ import {
 } from '../../utils/joinInstructions';
 import { afterActivityJoinClientRefresh } from '../../hooks/activityJoinClientEffects';
 import { submitActivityJoin } from '../../hooks/activityJoinClientApi';
-import { formatGroupJoinLine } from '../../content/groupJoinCopy';
+import { ActivityFamilyPartyPicker } from '../activity/detail/ActivityFamilyPartyPicker';
+import { PartyJoinModePicker } from '../../detail/shell/PartyJoinModePicker';
 import { PartySizeSelect } from '../../detail/shell/PartySizeSelect';
-import { consumeSkipPartySizeInJoinModal, useSharedPartySize } from '../../detail/partySizeState';
+import { resetPartyJoinIntent, usePartyJoinIntent } from '../../detail/partyJoinIntent';
+import { useSharedPartySize } from '../../detail/partySizeState';
+import { useAuth } from '../../context/AuthContext';
 import { Dialog } from './Dialog';
 
 type JoinableActivity = Pick<
@@ -45,6 +48,7 @@ type JoinableActivity = Pick<
   | 'tenantName'
   | 'hostName'
   | 'participationMode'
+  | 'audience'
 >;
 
 interface JoinRequestModalProps {
@@ -68,15 +72,16 @@ export const JoinRequestModal = ({
   overlayClassName,
 }: JoinRequestModalProps) => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [note, setNote] = useState('');
   const { adults, kids, setAdults, setKids } = useSharedPartySize();
+  const { mode, teamId, membershipIds, setMode, setTeam } = usePartyJoinIntent();
   const [agreed, setAgreed] = useState(false);
   const [packingCheckedIds, setPackingCheckedIds] = useState<string[]>([]);
   const [packingSignature, setPackingSignature] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [hidePartySize, setHidePartySize] = useState(false);
 
   const participationMode = useMemo(
     () => resolveParticipationMode(activity.participationMode, activity.requirements),
@@ -99,6 +104,10 @@ export const JoinRequestModal = ({
     !packingStrict ||
     (missingRequiredPackingIds(packing.items, packingCheckedIds).length === 0 &&
       isPackingSignatureValid(packingSignature));
+  const kidsAllowed =
+    activity.audience?.kidsWelcome !== false &&
+    !activity.requirements?.some((line) => line.trim().toLowerCase() === 'no children');
+
   const hostProfileDisclosure = useMemo(() => {
     const needs = resolveJoinHostProfileDisclosureNeeds(activity.requirements);
     return joinHostProfileShareNotice(needs);
@@ -117,7 +126,6 @@ export const JoinRequestModal = ({
 
   useEffect(() => {
     if (!open) return;
-    setHidePartySize(consumeSkipPartySizeInJoinModal());
     setNote('');
     setAgreed(false);
     setPackingCheckedIds([]);
@@ -125,6 +133,7 @@ export const JoinRequestModal = ({
     setSubmitting(false);
     setSubmitted(false);
     setError(null);
+    resetPartyJoinIntent();
   }, [open, activity.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -143,6 +152,10 @@ export const JoinRequestModal = ({
       setError('Type your first and last name to confirm.');
       return;
     }
+    if (mode === 'team' && membershipIds.length === 0) {
+      setError('Pick at least one team member to bring on this outing.');
+      return;
+    }
 
     setSubmitting(true);
     setError(null);
@@ -156,13 +169,18 @@ export const JoinRequestModal = ({
             note: note.trim(),
           })
         : note.trim();
+      const teamJoin = mode === 'team' && membershipIds.length > 0;
+      const headcountJoin = mode === 'headcount';
       const { successMessage } = await submitActivityJoin(activity.id, {
         participationMode,
         note: packedNote || undefined,
         packingCheckedIds: hasPacking ? packingCheckedIds : undefined,
         packingSignature: packingStrict ? packingSignature.trim() : undefined,
-        adults,
-        kids,
+        ...(teamJoin
+          ? { partyMemberIds: membershipIds, sourceTeamId: teamId ?? undefined }
+          : headcountJoin
+            ? { adults, kids: kidsAllowed ? kids : 0 }
+            : { adults: 1, kids: 0 }),
       });
       afterActivityJoinClientRefresh(queryClient, {
         activityId: activity.id,
@@ -225,13 +243,29 @@ export const JoinRequestModal = ({
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {hidePartySize ? (
-              <p className="rounded-xl border border-neutral-200/80 bg-neutral-50/80 px-3 py-2 text-sm text-neutral-700 dark:border-neutral-700 dark:bg-neutral-900/40 dark:text-neutral-200">
-                {formatGroupJoinLine(adults, kids)}
-              </p>
-            ) : (
-              <PartySizeSelect adults={adults} kids={kids} onAdults={setAdults} onKids={setKids} compact />
-            )}
+            <div className="space-y-3">
+              <PartyJoinModePicker mode={mode} onChange={setMode} />
+              {mode === 'headcount' ? (
+                <PartySizeSelect
+                  adults={adults}
+                  kids={kidsAllowed ? kids : 0}
+                  onAdults={setAdults}
+                  onKids={setKids}
+                  compact
+                  kidsAllowed={kidsAllowed}
+                />
+              ) : null}
+              {mode === 'team' ? (
+                <ActivityFamilyPartyPicker
+                  enabled={open}
+                  kidsAllowed={kidsAllowed}
+                  selectedMembershipIds={membershipIds}
+                  onChange={(ids) => setTeam(teamId, ids)}
+                  onTeamIdChange={(id) => setTeam(id, [])}
+                  viewerUserId={user?.id}
+                />
+              ) : null}
+            </div>
             {hasPacking ? (
               <JoinPackingAck
                 mode={packing.mode}

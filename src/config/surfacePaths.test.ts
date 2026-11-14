@@ -35,8 +35,14 @@ describe('surfacePaths', () => {
     expect(groupsPath({ invite: 'tok' })).toBe(`${GROUPS_PATH}?invite=tok`);
     expect(groupsManagePath('g-1')).toBe(`${GROUPS_PATH}?group=g-1`);
     expect(groupsManagePath('g-1', 'hub')).toBe(`${GROUPS_PATH}?group=g-1`);
-    expect(groupsManagePath('g-1', 'invite')).toBe(`${GROUPS_PATH}?group=g-1&section=invite`);
-    expect(groupsManagePath('g-1', 'manage')).toBe(`${GROUPS_PATH}?group=g-1&section=settings`);
+    expect(groupsManagePath('g-1', 'invite')).toBe(`${GROUPS_PATH}?group=g-1&section=members&focus=invite`);
+    expect(groupsManagePath('g-1', 'manage')).toBe(`${GROUPS_PATH}?group=g-1&section=edit`);
+    expect(groupsManagePath('g-1', 'hub', { from: 'crews' })).toBe(
+      `${GROUPS_PATH}?group=g-1&from=crews`
+    );
+    expect(groupsManagePath('g-1', 'members', { focus: 'add-kid' })).toBe(
+      `${GROUPS_PATH}?group=g-1&section=members&focus=add-kid`
+    );
     expect(messagesGroupPath('g-1', 'act-1')).toBe('/chat?group=g-1&chat=1&activity=act-1');
     expect(messagesGroupChatPath('g-1', 'act-1')).toBe('/chat?group=g-1&chat=1&activity=act-1');
   });

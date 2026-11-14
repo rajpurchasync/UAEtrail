@@ -75,6 +75,7 @@ export const CrewsTabBody = ({
         availableCount={availableCount}
         everyoneCount={everyoneCount}
         onSelectTab={onSelectStatTab}
+        isSignedIn={isSignedIn}
       />
     );
   }

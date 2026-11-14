@@ -36,7 +36,6 @@ export const ChatGroupSummarySheet = ({
   const activeCount = members.filter((m) => m.memberType === 'adult' && m.isActive !== false).length;
   const postPolicy = resolveGroupWallPostPolicy(group);
   const admin = isSocialGroupAdmin(group, membership, currentUserId);
-  const slogan = group.slogan?.trim();
   const isActivity = group.type === 'activity';
   const activityId = group.activityId?.trim() || null;
 
@@ -77,14 +76,14 @@ export const ChatGroupSummarySheet = ({
             label: 'Edit group',
             icon: <UserRound className="h-4 w-4" aria-hidden />,
             variant: 'secondary' as const,
-            to: groupsManagePath(group.id, 'settings'),
+            to: groupsManagePath(group.id, 'edit'),
           },
         ]
       : []),
     ...(admin
       ? [
           {
-            label: 'Chat settings',
+            label: 'Permissions',
             icon: <Settings2 className="h-4 w-4" aria-hidden />,
             variant: 'secondary' as const,
             onClick: () => {
@@ -98,9 +97,6 @@ export const ChatGroupSummarySheet = ({
 
   const detail = (
     <>
-      {slogan && !isActivity ? (
-        <p className="text-center italic text-neutral-600">&ldquo;{slogan}&rdquo;</p>
-      ) : null}
       {isActivity && activityId ? (
         <div className="flex justify-center">
           <ChatActivityLinkPreview activityId={activityId} />
@@ -109,8 +105,7 @@ export const ChatGroupSummarySheet = ({
     </>
   );
 
-  const hasDetail =
-    (slogan && !isActivity) || (isActivity && activityId);
+  const hasDetail = Boolean(isActivity && activityId);
 
   return (
     <ChatThreadSummarySheet
