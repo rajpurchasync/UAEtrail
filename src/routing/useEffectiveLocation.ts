@@ -4,3 +4,4 @@ export {
   useEffectiveLocation,
   useProductLocation,
 } from './useEffectiveLocation.tsx';
+export { useProductSearchParams } from './useProductSearchParams';

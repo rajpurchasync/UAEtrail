@@ -2,6 +2,8 @@
 
 Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). Defines **where users go** for each intent. Routes stay stable; new links must follow this contract.
 
+**Client URL writes:** Explore/list filter sync and create (`?compose=`) sessions commit through React Router (`setSearchParams` / `navigate`, often via `src/routing/productSearchMutation.ts`). Do not use raw `history.replaceState` for product navigation. Detail: [`CREATE_FLOW.md`](./CREATE_FLOW.md).
+
 **Product intent:** Help people **find like-minded company outdoors** in the UAE & GCC — discover plans, connect, chat, go together. See north star for voice and audience (residents, expats, visitors; hikes, camps, runs, and more).
 
 ## Three surfaces

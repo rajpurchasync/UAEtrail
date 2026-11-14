@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { flushSync } from 'react-dom';
 import type { NavigateFunction, SetURLSearchParams } from 'react-router-dom';
+import { applyProductSearchMutation } from '../../../routing/productSearchMutation';
 import { clearPlanAddQuery } from '../../../create/planAddQuery';
 import {
   clearExploreComposeParams,
@@ -26,10 +26,6 @@ import {
 import { clearComposeWizardSessionForRoute } from '../../ui/composeWizardSession';
 import { clearFacilityOnPlaceParams, PLAN_WITH_QUERY_KEY } from '../../routing';
 import { composeRouteRequiresAuth, resolveComposeRouteChange } from '../composeRouteGuard';
-import {
-  HISTORY_CHANGE_EVENT,
-  installHistoryChangeNotify,
-} from '../../../routing/routerLocationReconcile';
 
 export type UseComposeRouteArgs = {
   user: { id: string } | null | undefined;
@@ -38,7 +34,6 @@ export type UseComposeRouteArgs = {
   search: string;
   searchParams: URLSearchParams;
   setSearchParams: SetURLSearchParams;
-  onOpenComposeMenu: () => void;
   canPublish: boolean;
   profileComplete: boolean;
   hostGateLoading: boolean;
@@ -52,36 +47,12 @@ export const useComposeRoute = ({
   search,
   searchParams,
   setSearchParams,
-  onOpenComposeMenu,
   canPublish,
   profileComplete,
   hostGateLoading,
 }: UseComposeRouteArgs) => {
-  const [locationHistoryTick, setLocationHistoryTick] = useState(0);
-  useEffect(() => {
-    installHistoryChangeNotify();
-    const bump = () => setLocationHistoryTick((n) => n + 1);
-    window.addEventListener(HISTORY_CHANGE_EVENT, bump);
-    window.addEventListener('popstate', bump);
-    return () => {
-      window.removeEventListener(HISTORY_CHANGE_EVENT, bump);
-      window.removeEventListener('popstate', bump);
-    };
-  }, []);
-
   const composeWire = searchParams.get(COMPOSE_QUERY_KEY);
-  const composeRoute = useMemo(() => {
-    const fromRouter = parseExploreCompose(searchParams);
-    if (typeof window === 'undefined' || window.location.pathname !== pathname) {
-      return fromRouter;
-    }
-    const barParams = new URLSearchParams(window.location.search);
-    const barWire = barParams.get(COMPOSE_QUERY_KEY);
-    if (barWire && barWire !== composeWire) {
-      return parseExploreCompose(barParams);
-    }
-    return fromRouter;
-  }, [searchParams, composeWire, pathname, locationHistoryTick]);
+  const composeRoute = useMemo(() => parseExploreCompose(searchParams), [searchParams, composeWire]);
   const [guestComposeSignInOpen, setGuestComposeSignInOpen] = useState(false);
   const [guestComposePendingRoute, setGuestComposePendingRoute] = useState<ExploreCompose | null>(
     null
@@ -97,30 +68,7 @@ export const useComposeRoute = ({
 
   const applySearchMutation = useCallback(
     (mutate: (params: URLSearchParams) => void) => {
-      let nextParams: URLSearchParams | null = null;
-      flushSync(() => {
-        setSearchParams(
-          (prev) => {
-            const params = new URLSearchParams(prev);
-            mutate(params);
-            nextParams = params;
-            return params;
-          },
-          { replace: true }
-        );
-      });
-      if (typeof window === 'undefined' || !nextParams) return;
-      if (window.location.pathname !== pathname) return;
-      const intended = nextParams.toString();
-      const bar = new URLSearchParams(window.location.search).toString();
-      if (bar !== intended) {
-        flushSync(() => {
-          navigate(
-            { pathname, search: intended ? `?${intended}` : '' },
-            { replace: true }
-          );
-        });
-      }
+      applyProductSearchMutation({ pathname, navigate, setSearchParams }, mutate);
     },
     [navigate, pathname, setSearchParams]
   );
@@ -190,12 +138,6 @@ export const useComposeRoute = ({
 
     prevComposeRouteRef.current = next;
   }, [composeRoute]);
-
-  useEffect(() => {
-    if (searchParams.get('compose') !== '1') return;
-    onOpenComposeMenu();
-    setComposeRoute({ surface: 'menu' });
-  }, [searchParams, setComposeRoute, onOpenComposeMenu]);
 
   useEffect(() => {
     if (user) return;

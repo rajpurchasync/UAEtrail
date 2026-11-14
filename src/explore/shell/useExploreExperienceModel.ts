@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useProductLocation, useProductSearchParams } from '../../routing/useEffectiveLocation';
+import { useExploreCreateFlowBridge } from './useExploreCreateFlowBridge';
+import { useExploreSearchModal } from './useExploreSearchModal';
 import { useQueryClient } from '@tanstack/react-query';
-import type { PlaceMapPin } from '../../components/ui/PlacesMap';
 import { useAuth } from '../../context/AuthContext';
 import { useMemberStatus } from '../../hooks/useMemberStatus';
-import { reloadExploreMap } from '../../hooks/useExploreMap';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
 import { useMinWidthLg } from '../../hooks/useMinWidthLg';
 import { useMinWidthMd } from '../../hooks/useMinWidthMd';
@@ -19,7 +20,6 @@ import {
   memberPublishGateInputFromMemberStatus,
 } from '../../utils/memberPublishGate';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { areaDetailPath } from '@uaetrail/shared-types';
 import { activityCancelParticipantNotice } from '../../activity/activityCancelParticipantNotice';
 import { useExploreMapViewport } from '../ui/useExploreMapViewport';
 import { useExploreSelectionActions } from '../ui/useExploreSelectionActions';
@@ -32,7 +32,7 @@ import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
 import { useExplorePeopleBrowseBundle } from './useExplorePeopleBrowseBundle';
 import { useExplorePinDeepLink } from './useExplorePinDeepLink';
 import { useExploreMapCatalog } from './useExploreMapCatalog';
-import { resolveExploreItemIdFromMapPin } from '../ui/exploreMapPinModel';
+import { useExploreMapInteractionHandlers } from './useExploreMapInteractionHandlers';
 import { resolveBrowseListCreateFabLabel } from '../../list/browseListCopy';
 import {
   resolveCreateFabComposeEntry,
@@ -71,7 +71,7 @@ export const useExploreExperienceModel = () => {
       ),
     [navigate, user?.id, profileComplete, canPublish, isCommunityHost, hostTiers]
   );
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useProductSearchParams();
   const queryClient = useQueryClient();
   const wasGuestRef = useRef(!user);
   useEffect(() => {
@@ -83,7 +83,7 @@ export const useExploreExperienceModel = () => {
       wasGuestRef.current = true;
     }
   }, [user, queryClient]);
-  const { pathname, search, state: locationState } = useLocation();
+  const { pathname, search, state: locationState } = useProductLocation();
   const facilityOnPlaceId = parseFacilityOnPlaceId(searchParams);
   const isDesktop = useMinWidthLg();
   /** Side nav + in-map right rail for guest gates (md+), not browse panel layout (lg+). */
@@ -266,21 +266,8 @@ export const useExploreExperienceModel = () => {
   }, []);
 
   const [searchFocusNonce, setSearchFocusNonce] = useState(0);
-  const [exploreSearchModalOpen, setExploreSearchModalOpen] = useState(
-    () => searchParams.get('search') === '1'
-  );
-
-  useEffect(() => {
-    if (searchParams.get('search') === '1') setExploreSearchModalOpen(true);
-  }, [searchParams]);
-
-  const closeExploreSearchModal = useCallback(() => {
-    setExploreSearchModalOpen(false);
-    if (searchParams.get('search') !== '1') return;
-    const next = new URLSearchParams(searchParams);
-    next.delete('search');
-    setSearchParams(next, { replace: true });
-  }, [searchParams, setSearchParams]);
+  const { exploreSearchModalOpen, setExploreSearchModalOpen, closeExploreSearchModal } =
+    useExploreSearchModal(searchParams, pathname, navigate, setSearchParams);
   const publishedAreas = useExplorePublishedAreas(
     browse.listOpen || browse.browseOpen || exploreSearchModalOpen || Boolean(areaSlug)
   );
@@ -335,25 +322,12 @@ export const useExploreExperienceModel = () => {
     [viewport.exploreMapStyle]
   );
 
-  const reloadMap = useCallback(() => {
-    void reloadExploreMap(queryClient);
-  }, [queryClient]);
-
-  const handleMapPinClick = useCallback(
-    (pin: PlaceMapPin) => {
-      const itemId = resolveExploreItemIdFromMapPin(pin);
-      const item = selectionItems.find((entry) => entry.id === itemId);
-      if (item) selection.openItem(item);
-    },
-    [selectionItems, selection]
-  );
-
-  const handlePickExploreArea = useCallback(
-    (slug: string) => {
-      closeExploreSearchModal();
-      navigate(areaDetailPath(slug));
-    },
-    [closeExploreSearchModal, navigate]
+  const { reloadMap, handleMapPinClick, handlePickExploreArea } = useExploreMapInteractionHandlers(
+    queryClient,
+    selectionItems,
+    selection,
+    closeExploreSearchModal,
+    navigate
   );
 
   const handleExploreSearchCommit = useCallback(
@@ -374,12 +348,10 @@ export const useExploreExperienceModel = () => {
     [pathname, search]
   );
 
-  const closeCreateFlow = hostingLauncher.closeCreateFlow;
-
   const onOpenHostApplication = useCallback(() => {
-    closeCreateFlow();
+    hostingLauncher.closeCreateFlow();
     navigateMemberPublishGate(`${pathname}${search}`);
-  }, [closeCreateFlow, navigateMemberPublishGate, pathname, search]);
+  }, [hostingLauncher, navigateMemberPublishGate, pathname, search]);
 
   const handleOpenExploreItem = useCallback(
     (exploreItemId: string) => {
@@ -389,44 +361,26 @@ export const useExploreExperienceModel = () => {
     [selectionItems, selection]
   );
 
-  useEffect(() => {
-    registerBridge({
-      hostingWizardPrefill: hostingLauncher.hostingWizardPrefill,
-      hostWizardOpen: hostingLauncher.hostWizardOpen,
-      onCloseCreateFlow: hostingLauncher.closeCreateFlow,
-      onHostingBackToIntent: hostingLauncher.onHostingBackToIntent,
-      onActivityPublished: async (activity) => {
-        await selection.handleActivityPublished(activity);
-        if (hostingLauncher.rideshareLinkParent && activity.activityType === 'rideshare') {
-          hostingLauncher.setRideshareLinkParent(null);
-        }
-        if (hostingLauncher.rideshareLinkSeeking && activity.activityType === 'rideshare') {
-          hostingLauncher.setRideshareLinkSeeking(null);
-        }
-        void refreshHostGate();
-      },
-      onCreateLinkedRideshare: hostingLauncher.handleCreateLinkedRideshare,
-      onSeekingSubmitted: (result) => {
-        selection.handleSeekingSubmitted(result);
-        void refreshHostGate();
-      },
-      onAddSubmitted: selection.handleAddSubmitted,
-      planWithBuddyUserId,
-      composeAreaSlug: areaSlug,
-      facilityOnPlaceId,
-      tenantId,
-    });
-    return () => registerBridge(null);
-  }, [
+  useExploreCreateFlowBridge({
     registerBridge,
-    hostingLauncher,
-    selection,
+    hostingWizardPrefill: hostingLauncher.hostingWizardPrefill,
+    hostWizardOpen: hostingLauncher.hostWizardOpen,
+    closeCreateFlow: hostingLauncher.closeCreateFlow,
+    onHostingBackToIntent: hostingLauncher.onHostingBackToIntent,
+    rideshareLinkParent: hostingLauncher.rideshareLinkParent,
+    rideshareLinkSeeking: hostingLauncher.rideshareLinkSeeking,
+    setRideshareLinkParent: hostingLauncher.setRideshareLinkParent,
+    setRideshareLinkSeeking: hostingLauncher.setRideshareLinkSeeking,
+    handleCreateLinkedRideshare: hostingLauncher.handleCreateLinkedRideshare,
+    handleActivityPublished: selection.handleActivityPublished,
+    handleSeekingSubmitted: selection.handleSeekingSubmitted,
+    handleAddSubmitted: selection.handleAddSubmitted,
     planWithBuddyUserId,
-    areaSlug,
+    composeAreaSlug: areaSlug,
     facilityOnPlaceId,
     tenantId,
     refreshHostGate,
-  ]);
+  });
 
   return {
     user,

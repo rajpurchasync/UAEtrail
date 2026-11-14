@@ -5,7 +5,11 @@ import { Layout } from './components/layout/Layout';
 import { NativeDeepLinkHandler } from './routing/appLazyPages';
 import { AuthReturnContextRestorer, PageLoader } from './routing/appRouteChrome';
 import { AppRoutes } from './routing/AppRoutes';
-import { EffectiveLocationProvider, useProductLocation } from './routing/useEffectiveLocation';
+import {
+  EffectiveLocationProvider,
+  useProductLocation,
+} from './routing/useEffectiveLocation';
+import { RouterDesyncDebug } from './routing/RouterDesyncDebug';
 
 const AppRoutesWithLocation = () => {
   const location = useProductLocation();
@@ -14,6 +18,7 @@ const AppRoutesWithLocation = () => {
 
 const AppRouterShell = () => (
   <EffectiveLocationProvider>
+    <RouterDesyncDebug />
     <Suspense fallback={null}>
       <NativeDeepLinkHandler />
     </Suspense>

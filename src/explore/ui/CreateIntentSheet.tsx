@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router-dom';
+import { useProductSearchParams } from '../../routing/useEffectiveLocation';
 import { ChevronRight } from 'lucide-react';
 import { CreateKindGrid } from '../../create/CreateKindGrid';
 import type { SeekingComposeKind } from '@uaetrail/shared-types';
@@ -14,8 +14,6 @@ import {
   addComposeFromVenueKind,
   addPlaceCompose,
   composeMenuTitle,
-  COMPOSE_QUERY_KEY,
-  formatComposeQuery,
   hostCompose,
   isComposeMenu,
   parseExploreCompose,
@@ -26,7 +24,6 @@ import {
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { FlowSheetHeader } from './ExploreFlowSheetChrome';
 import { finishComposeFlowClose, requestComposeFlowClose } from './composeFlowClose';
-import { composeWireMatchesBrowserLocation } from './createIntentSheetComposeOpen';
 
 interface CreateIntentSheetProps {
   route: ExploreCompose | null;
@@ -48,17 +45,9 @@ const isSeekFixedKindStep = (
   );
 
 export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateIntentSheetProps) => {
-  const [searchParams] = useSearchParams();
-  const composeWire = searchParams.get(COMPOSE_QUERY_KEY);
+  const [searchParams] = useProductSearchParams();
   const urlCompose = parseExploreCompose(searchParams);
-  const routeWire = route ? formatComposeQuery(route) : null;
-  const open =
-    Boolean(route) &&
-    isComposeMenu(route) &&
-    (isComposeMenu(urlCompose) ||
-      composeWireMatchesBrowserLocation(routeWire, {
-        routerSearch: searchParams.toString(),
-      }));
+  const open = Boolean(route) && isComposeMenu(route) && isComposeMenu(urlCompose);
   if (!open || !route) return null;
 
   const headerTitle = composeMenuTitle(route);

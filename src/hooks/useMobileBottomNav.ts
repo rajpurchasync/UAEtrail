@@ -1,12 +1,12 @@
 import { useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useProductLocation } from '../routing/useEffectiveLocation';
 import { shouldShowMobileBottomNav } from '../config/platform';
 import { useComposeImmersiveChrome } from '../explore/create/ComposeImmersiveChromeContext';
 import { useAuth } from '../context/AuthContext';
 
 export const useMobileBottomNav = (): boolean => {
   const { user } = useAuth();
-  const { pathname, search } = useLocation();
+  const { pathname, search } = useProductLocation();
   const { immersiveCompose } = useComposeImmersiveChrome();
 
   return useMemo(

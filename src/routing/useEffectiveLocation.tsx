@@ -9,7 +9,6 @@ import {
 import { type Location, useLocation } from 'react-router-dom';
 import {
   HISTORY_CHANGE_EVENT,
-  installHistoryChangeNotify,
   readBrowserLocationSnapshot,
   routerPathFromHistoryState,
   snapshotLocationUrl,
@@ -32,7 +31,6 @@ export const useEffectiveLocation = (): Location => {
   const [browserSnapshot, setBrowserSnapshot] = useState(() => readBrowserLocationSnapshot());
 
   useEffect(() => {
-    installHistoryChangeNotify();
     const sync = () => {
       const next = readBrowserLocationSnapshot();
       setBrowserSnapshot((prev) => (prev === next ? prev : next));

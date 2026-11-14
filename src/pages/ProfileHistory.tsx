@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { applyProductSearchMutation } from '../routing/productSearchMutation';
 import { useAuth } from '../context/AuthContext';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { PullToRefresh } from '../components/mobile/PullToRefresh';
@@ -40,6 +41,7 @@ export const ProfileHistoryPage = () => {
   const gate = useMemberStatus({ enabled: Boolean(user) });
   const canHost = memberCanManageHostedActivities(user, gate.canAccessPublishingWorkspace);
   const { goals, reload: reloadGoals } = useMemberGoals(Boolean(user));
+  const historySearchKey = searchParams.toString();
 
   useEffect(() => {
     const view = searchParams.get('view');
@@ -54,14 +56,22 @@ export const ProfileHistoryPage = () => {
       return;
     }
     if (!user) return;
-    const next = new URLSearchParams(searchParams);
-    if (!next.get('view') && isProfileHistoryListPath(location.pathname)) {
-      next.set('view', 'completed');
+    const draft = new URLSearchParams(searchParams);
+    if (!draft.get('view') && isProfileHistoryListPath(location.pathname)) {
+      draft.set('view', 'completed');
     }
-    const { changed } = normalizePlanHubSearchParams(next, canHost);
-    const shouldReplace = changed || next.toString() !== searchParams.toString();
-    if (shouldReplace) setSearchParams(next, { replace: true });
-  }, [canHost, location.pathname, navigate, searchParams, setSearchParams, user]);
+    const { changed } = normalizePlanHubSearchParams(draft, canHost);
+    if (!changed && draft.toString() === historySearchKey) return;
+    applyProductSearchMutation(
+      { pathname: location.pathname, navigate, setSearchParams },
+      (params) => {
+        for (const key of [...params.keys()]) {
+          params.delete(key);
+        }
+        draft.forEach((value, key) => params.set(key, value));
+      }
+    );
+  }, [canHost, historySearchKey, location.pathname, navigate, searchParams, setSearchParams, user]);
 
   const mainView = parsePlanHistoryMainView(location.pathname, searchParams.get('view'));
   const historyRole: PlanHistoryRole = parsePlanHistoryRole(searchParams.get('role'), 'completed', {
@@ -82,14 +92,17 @@ export const ProfileHistoryPage = () => {
 
   const setHistoryRole = useCallback(
     (role: PlanHistoryRole) => {
-      const next = new URLSearchParams(searchParams);
-      next.set('view', 'completed');
-      next.set('role', role);
-      next.delete('segment');
-      next.delete('saved');
-      setSearchParams(next, { replace: true });
+      applyProductSearchMutation(
+        { pathname: location.pathname, navigate, setSearchParams },
+        (params) => {
+          params.set('view', 'completed');
+          params.set('role', role);
+          params.delete('segment');
+          params.delete('saved');
+        }
+      );
     },
-    [searchParams, setSearchParams]
+    [location.pathname, navigate, setSearchParams]
   );
 
   const historyToolbar = user ? (

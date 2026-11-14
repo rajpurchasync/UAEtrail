@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { applyProductSearchMutation } from '../routing/productSearchMutation';
 import type { ActivityDTO, ParticipantIntentDTO } from '@uaetrail/shared-types';
 import { activityCrewPath } from '../config/routingCatalog';
 
@@ -25,7 +26,9 @@ export const usePlanHostingManageDeepLink = ({
   intents,
 }: UsePlanHostingManageDeepLinkInput) => {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
+  const planSearchKey = searchParams.toString();
   const [manageActivity, setManageActivity] = useState<ActivityDTO | null>(null);
   const [manageIntent, setManageIntent] = useState<ParticipantIntentDTO | null>(null);
   const openedDeepLinkRef = useRef<string | null>(null);
@@ -44,11 +47,11 @@ export const usePlanHostingManageDeepLink = ({
       const rosterActivity = activities.find((event) => event.id === rosterId);
       if (!rosterActivity || openedDeepLinkRef.current === rosterId) return;
       openedDeepLinkRef.current = rosterId;
-      const next = new URLSearchParams(searchParams);
-      next.delete('peek');
-      next.delete('checkin');
-      next.delete('roster');
-      setSearchParams(next, { replace: true });
+      applyProductSearchMutation({ pathname, navigate, setSearchParams }, (params) => {
+        params.delete('peek');
+        params.delete('checkin');
+        params.delete('roster');
+      });
       navigate(activityCrewPath(rosterId));
       return;
     }
@@ -67,12 +70,12 @@ export const usePlanHostingManageDeepLink = ({
       }
     }
 
-    const next = new URLSearchParams(searchParams);
-    next.delete('peek');
-    next.delete('checkin');
-    next.delete('roster');
-    setSearchParams(next, { replace: true });
-  }, [activities, activitiesLoading, enabled, intents, navigate, searchParams, setSearchParams]);
+    applyProductSearchMutation({ pathname, navigate, setSearchParams }, (params) => {
+      params.delete('peek');
+      params.delete('checkin');
+      params.delete('roster');
+    });
+  }, [activities, activitiesLoading, enabled, intents, navigate, pathname, planSearchKey, setSearchParams]);
 
   return {
     manageActivity,

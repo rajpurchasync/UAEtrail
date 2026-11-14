@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { inferListCatFromExploreHandoff, scopeBrowseListStateForListCat } from './browseListMapHandoff';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { applyProductSearchMutation } from '../routing/productSearchMutation';
 import { LIST_DISCOVERY_PATH } from '../config/platform';
 import type { BrowseTripTopicKey } from './browseListTripTopics';
 import type { BrowseListFilterState } from './browseListFilters';
@@ -80,7 +81,7 @@ type UseListDiscoveryUrlStateOptions = {
 
 export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptions) => {
   const mapOverlay = options?.mapOverlay ?? false;
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -129,78 +130,97 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
         availabilitySheet?: boolean | null;
       }
     ) => {
-      const patchedListCat =
-        patch.listCat !== undefined ? patch.listCat : listCat;
-      let next: BrowseListFilterState = {
-        ...filters,
-        ...patch,
-      };
-      let regions = patch.regions ?? venueRegions;
-      if (!mapOverlay && (patchedListCat === 'activities' || patchedListCat === 'venues')) {
-        next = scopeBrowseListStateForListCat(next, patchedListCat);
-      }
-      const listParams = serializeBrowseListSearchParams(next, regions);
-      const nextLayout = patch.layout ?? layout;
-      const layoutParam = serializeListExplorerLayout(nextLayout);
-      if (layoutParam) listParams.set(LIST_LAYOUT_PARAM, layoutParam);
+      applyProductSearchMutation(
+        {
+          pathname: location.pathname,
+          navigate,
+          setSearchParams,
+          locationState: location.state,
+        },
+        (params) => {
+          const patchedListCat =
+            patch.listCat !== undefined ? patch.listCat : listCat;
+          let next: BrowseListFilterState = {
+            ...filters,
+            ...patch,
+          };
+          let regions = patch.regions ?? venueRegions;
+          if (!mapOverlay && (patchedListCat === 'activities' || patchedListCat === 'venues')) {
+            next = scopeBrowseListStateForListCat(next, patchedListCat);
+          }
+          const listParams = serializeBrowseListSearchParams(next, regions);
+          const nextLayout = patch.layout ?? layout;
+          const layoutParam = serializeListExplorerLayout(nextLayout);
+          if (layoutParam) listParams.set(LIST_LAYOUT_PARAM, layoutParam);
 
-      const nextSort = patch.sort ?? sort;
-      const sortParam = serializeListExplorerSort(nextSort);
-      if (sortParam) listParams.set(LIST_SORT_PARAM, sortParam);
-      else listParams.delete(LIST_SORT_PARAM);
+          const nextSort = patch.sort ?? sort;
+          const sortParam = serializeListExplorerSort(nextSort);
+          if (sortParam) listParams.set(LIST_SORT_PARAM, sortParam);
+          else listParams.delete(LIST_SORT_PARAM);
 
-      const params = new URLSearchParams(searchParams);
-      const preserved = new Map<string, string>();
-      if (mapOverlay) {
-        for (const key of EXPLORE_PRESERVE_PARAM_KEYS) {
-          const value = searchParams.get(key);
-          if (value) preserved.set(key, value);
+          const preserved = new Map<string, string>();
+          if (mapOverlay) {
+            for (const key of EXPLORE_PRESERVE_PARAM_KEYS) {
+              const value = searchParams.get(key);
+              if (value) preserved.set(key, value);
+            }
+          }
+          for (const key of LIST_FILTER_PARAM_KEYS) {
+            params.delete(key);
+          }
+          listParams.forEach((value, key) => {
+            params.set(key, value);
+          });
+          if (patch.crewsOpen !== undefined) {
+            const serializedOpen = patch.crewsOpen
+              ? serializeCrewsAvailableOpenLens(patch.crewsOpen)
+              : null;
+            if (serializedOpen) params.set(CREWS_OPEN_URL_PARAM, serializedOpen);
+            else params.delete(CREWS_OPEN_URL_PARAM);
+          }
+          if (patch.availabilitySheet !== undefined) {
+            if (patch.availabilitySheet) params.set(CREWS_AVAILABILITY_SHEET_PARAM, '1');
+            else params.delete(CREWS_AVAILABILITY_SHEET_PARAM);
+          }
+          if (mapOverlay) {
+            preserved.forEach((value, key) => {
+              params.set(key, value);
+            });
+          }
+          if (patch.listCat === null) {
+            params.delete(LIST_CAT_PARAM);
+          } else if (patch.listCat) {
+            params.set(LIST_CAT_PARAM, patch.listCat);
+          } else if (patchedListCat && patchedListCat !== 'activities') {
+            params.set(LIST_CAT_PARAM, patchedListCat);
+          } else if (!mapOverlay) {
+            params.set(LIST_CAT_PARAM, 'activities');
+          } else if (listCat) {
+            params.set(LIST_CAT_PARAM, listCat);
+          }
+          if (mapOverlay) {
+            params.set('list', '1');
+            params.delete(BROWSE_DISCOVER_PARAM);
+          }
         }
-      }
-      for (const key of LIST_FILTER_PARAM_KEYS) {
-        params.delete(key);
-      }
-      listParams.forEach((value, key) => {
-        params.set(key, value);
-      });
-      if (patch.crewsOpen !== undefined) {
-        const serializedOpen = patch.crewsOpen ? serializeCrewsAvailableOpenLens(patch.crewsOpen) : null;
-        if (serializedOpen) params.set(CREWS_OPEN_URL_PARAM, serializedOpen);
-        else params.delete(CREWS_OPEN_URL_PARAM);
-      }
-      if (patch.availabilitySheet !== undefined) {
-        if (patch.availabilitySheet) params.set(CREWS_AVAILABILITY_SHEET_PARAM, '1');
-        else params.delete(CREWS_AVAILABILITY_SHEET_PARAM);
-      }
-      if (mapOverlay) {
-        preserved.forEach((value, key) => {
-          params.set(key, value);
-        });
-      }
-      if (patch.listCat === null) {
-        params.delete(LIST_CAT_PARAM);
-      } else if (patch.listCat) {
-        params.set(LIST_CAT_PARAM, patch.listCat);
-      } else if (patchedListCat && patchedListCat !== 'activities') {
-        params.set(LIST_CAT_PARAM, patchedListCat);
-      } else if (!mapOverlay) {
-        params.set(LIST_CAT_PARAM, 'activities');
-      } else if (listCat) {
-        params.set(LIST_CAT_PARAM, listCat);
-      }
-      if (mapOverlay) {
-        params.set('list', '1');
-        params.delete(BROWSE_DISCOVER_PARAM);
-      }
-      const qs = params.toString();
-      navigate(
-        { pathname: location.pathname, search: qs ? `?${qs}` : '' },
-        { replace: true, state: location.state }
       );
     },
-    [filters, venueRegions, listCat, layout, sort, location.pathname, location.state, mapOverlay, navigate, searchParams]
+    [
+      filters,
+      venueRegions,
+      listCat,
+      layout,
+      sort,
+      location.pathname,
+      location.state,
+      mapOverlay,
+      navigate,
+      searchParams,
+      setSearchParams,
+    ]
   );
 
+  const listSearchKey = searchParams.toString();
   const scopeRepairRef = useRef<string | null>(null);
   useEffect(() => {
     if (mapOverlay) return;
@@ -226,7 +246,7 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
     if (scopeRepairRef.current === fingerprint) return;
     scopeRepairRef.current = fingerprint;
     syncUrl({ ...scoped, listCat, regions });
-  }, [listCat, mapOverlay, searchParams, syncUrl]);
+  }, [listCat, mapOverlay, listSearchKey, syncUrl]);
 
   const setQuery = useCallback((query: string) => syncUrl({ query }), [syncUrl]);
 

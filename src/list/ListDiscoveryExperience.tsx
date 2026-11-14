@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useProductLocation, useProductSearchParams } from '../routing/useEffectiveLocation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
@@ -100,8 +101,8 @@ export const ListDiscoveryExperience = ({
   const embeddedOnExplore = listDiscoveryEmbeddedOnExplore(surface);
   const { user } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [searchParams] = useSearchParams();
+  const location = useProductLocation();
+  const [searchParams] = useProductSearchParams();
   const queryClient = useQueryClient();
   const search = searchParams.toString() ? `?${searchParams.toString()}` : '';
 

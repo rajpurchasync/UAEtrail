@@ -369,7 +369,7 @@ describe('systemCoherenceGuard', () => {
       join(ROOT, 'src/explore/ui/useExploreBrowseUrlState.ts'),
       'utf8'
     );
-    expect(browseHook).toMatch(/buildExploreBrowseSearchParams/);
+    expect(browseHook).toMatch(/commitExploreBrowseUrlSync/);
     expect(browseHook).toMatch(/parseExploreBrowseStateFromSearchParams/);
     expect(browseHook).toMatch(/useExploreBrowseUrlApplyHandlers/);
     expect(browseHook.split(/\r?\n/).length).toBeLessThan(320);

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Plus } from 'lucide-react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { applyProductSearchMutation } from '../routing/productSearchMutation';
 import { useAuth } from '../context/AuthContext';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { FloatingActionButton } from '../components/mobile/FloatingActionButton';
@@ -43,6 +44,7 @@ import { usePlanAddFlow } from './usePlanAddFlow';
 export const PlanPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [refreshKey, setRefreshKey] = useState(0);
   const planAdd = usePlanAddFlow();
@@ -60,6 +62,8 @@ export const PlanPage = () => {
     deleteGoal,
     reload: reloadGoals,
   } = useMemberGoals(Boolean(user));
+
+  const planSearchKey = searchParams.toString();
 
   useEffect(() => {
     const view = searchParams.get('view');
@@ -85,10 +89,16 @@ export const PlanPage = () => {
       return;
     }
     if (!user) return;
-    const next = new URLSearchParams(searchParams);
-    const { changed } = normalizePlanSearchParams(next, canHost);
-    if (changed) setSearchParams(next, { replace: true });
-  }, [canHost, navigate, searchParams, setSearchParams, user]);
+    const draft = new URLSearchParams(searchParams);
+    const { changed } = normalizePlanSearchParams(draft, canHost);
+    if (!changed) return;
+    applyProductSearchMutation({ pathname, navigate, setSearchParams }, (params) => {
+      for (const key of [...params.keys()]) {
+        params.delete(key);
+      }
+      draft.forEach((value, key) => params.set(key, value));
+    });
+  }, [canHost, navigate, pathname, planSearchKey, setSearchParams, user]);
 
   const mainTab = parsePlanMainTab(searchParams.get('tab'), searchParams.get('lens'));
   const commitmentFilter = parsePlanCommitmentFilter(
@@ -106,34 +116,34 @@ export const PlanPage = () => {
 
   const setMainTab = useCallback(
     (tab: PlanMainTab) => {
-      const next = new URLSearchParams(searchParams);
-      next.set('view', 'plans');
-      next.delete('segment');
-      next.delete('lens');
-      next.delete('role');
-      if (tab === 'wishlist') {
-        next.set('tab', 'wishlist');
-        next.delete('filter');
-        next.delete('layout');
-      } else {
-        next.delete('tab');
-        if (!next.get('filter')) next.set('filter', 'joined');
-      }
-      setSearchParams(next, { replace: true });
+      applyProductSearchMutation({ pathname, navigate, setSearchParams }, (params) => {
+        params.set('view', 'plans');
+        params.delete('segment');
+        params.delete('lens');
+        params.delete('role');
+        if (tab === 'wishlist') {
+          params.set('tab', 'wishlist');
+          params.delete('filter');
+          params.delete('layout');
+        } else {
+          params.delete('tab');
+          if (!params.get('filter')) params.set('filter', 'joined');
+        }
+      });
     },
-    [searchParams, setSearchParams]
+    [navigate, pathname, setSearchParams]
   );
 
   const setCommitmentFilter = useCallback(
     (filter: PlanCommitmentFilter) => {
-      const next = new URLSearchParams(searchParams);
-      next.set('view', 'plans');
-      next.delete('tab');
-      next.set('filter', filter);
-      next.delete('role');
-      setSearchParams(next, { replace: true });
+      applyProductSearchMutation({ pathname, navigate, setSearchParams }, (params) => {
+        params.set('view', 'plans');
+        params.delete('tab');
+        params.set('filter', filter);
+        params.delete('role');
+      });
     },
-    [searchParams, setSearchParams]
+    [navigate, pathname, setSearchParams]
   );
 
   const completeSavedSummaryScroll = useCallback(() => {
@@ -187,16 +197,13 @@ export const PlanPage = () => {
 
   const setUpcomingLayout = useCallback(
     (layout: PlanUpcomingLayout) => {
-      const next = new URLSearchParams(searchParams);
-      next.set('view', 'plans');
-      if (layout === 'calendar') {
-        next.set('layout', 'calendar');
-      } else {
-        next.delete('layout');
-      }
-      setSearchParams(next, { replace: true });
+      applyProductSearchMutation({ pathname, navigate, setSearchParams }, (params) => {
+        params.set('view', 'plans');
+        if (layout === 'calendar') params.set('layout', 'calendar');
+        else params.delete('layout');
+      });
     },
-    [searchParams, setSearchParams]
+    [navigate, pathname, setSearchParams]
   );
 
   const showFab = Boolean(user);

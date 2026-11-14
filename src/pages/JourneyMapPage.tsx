@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useMemberJourneyMap } from '../hooks/useMemberJourneyMap';
-import { useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { applyProductSearchMutation } from '../routing/productSearchMutation';
 import { List, Plus, Share2 } from 'lucide-react';
 import type {
   MemberMapPinActivityType,
@@ -42,6 +43,8 @@ const entryToMarker = (entry: JourneyMapEntryDTO): JourneyMapMarker | null => {
 
 /** Outdoor journey map — `/profile/history/map`. */
 export const JourneyMapPage = () => {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const filter = parseJourneyMapFilter(searchParams.get('filter'));
 
@@ -54,10 +57,10 @@ export const JourneyMapPage = () => {
   const [shareHint, setShareHint] = useState<string | null>(null);
   const [focusLatLng, setFocusLatLng] = useState<{ lat: number; lng: number } | null>(null);
   const setFilter = (next: JourneyMapFilterCategory) => {
-    const params = new URLSearchParams(searchParams);
-    if (next === 'all') params.delete('filter');
-    else params.set('filter', next === 'self' ? 'gone' : next);
-    setSearchParams(params, { replace: true });
+    applyProductSearchMutation({ pathname, navigate, setSearchParams }, (params) => {
+      if (next === 'all') params.delete('filter');
+      else params.set('filter', next === 'self' ? 'gone' : next);
+    });
   };
 
   const displayError = error ?? mapError;

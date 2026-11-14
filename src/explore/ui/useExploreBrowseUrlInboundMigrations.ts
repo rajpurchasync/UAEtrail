@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import type { SetURLSearchParams } from 'react-router-dom';
+import { applyProductSearchMutation } from '../../routing/productSearchMutation';
 import { listDiscoveryPathFromExploreSearch } from '../../list/routing';
 import {
   BROWSE_DISCOVER_PARAM,
@@ -18,6 +19,7 @@ export const useExploreBrowseUrlInboundMigrations = (input: {
   isDesktop: boolean;
 }) => {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const search = input.searchParams.toString();
   const setSearchParams = input.setSearchParams;
   const isDesktop = input.isDesktop;
@@ -30,21 +32,24 @@ export const useExploreBrowseUrlInboundMigrations = (input: {
     const pin = params.get(EXPLORE_PIN_QUERY_KEY)?.trim();
 
     if (compactExploreParentFilterSearchParams(params)) {
-      setSearchParams(params, { replace: true });
+      const next = params.toString();
+      if (next !== search) {
+        applyProductSearchMutation({ pathname, navigate, setSearchParams }, (draft) => {
+          for (const key of [...draft.keys()]) {
+            draft.delete(key);
+          }
+          params.forEach((value, key) => draft.set(key, value));
+        });
+      }
       return;
     }
 
     if (people) return;
 
     if (list && pin && !browse) {
-      setSearchParams(
-        (prev) => {
-          const next = new URLSearchParams(prev);
-          next.delete('list');
-          return next;
-        },
-        { replace: true }
-      );
+      applyProductSearchMutation({ pathname, navigate, setSearchParams }, (draft) => {
+        draft.delete('list');
+      });
       return;
     }
 
@@ -59,5 +64,5 @@ export const useExploreBrowseUrlInboundMigrations = (input: {
     if (list) {
       navigate(listDiscoveryPathFromExploreSearch(search), { replace: true });
     }
-  }, [search, setSearchParams, navigate, isDesktop]);
+  }, [search, setSearchParams, navigate, isDesktop, pathname]);
 };
