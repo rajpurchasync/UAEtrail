@@ -4,8 +4,8 @@ import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { MobileMonthCalendar } from '../../components/mobile/MobileMonthCalendar';
 import { todayIso } from '../../explore/exploreActivityDateFilter';
 import { EXPLORE_TYPE } from '../../config/exploreTheme';
-import { ListExplorerListRow } from './ListExplorerListRow';
-import { listExplorerCardDateIso } from './listExplorerCardMeta';
+import { BrowseCompactRow } from '../browse/BrowseCompactRow';
+import { browseCardDateIso } from '../browse/browseCardMeta';
 
 type ListExplorerCalendarProps = {
   cards: DiscoveryCardModel[];
@@ -18,7 +18,7 @@ export const ListExplorerCalendar = ({ cards, onMapHover }: ListExplorerCalendar
   const byDate = useMemo(() => {
     const map = new Map<string, DiscoveryCardModel[]>();
     for (const card of cards) {
-      const iso = listExplorerCardDateIso(card);
+      const iso = browseCardDateIso(card);
       if (!iso) continue;
       const list = map.get(iso);
       if (list) list.push(card);
@@ -28,7 +28,7 @@ export const ListExplorerCalendar = ({ cards, onMapHover }: ListExplorerCalendar
   }, [cards]);
 
   const markedDates = useMemo(() => new Set(byDate.keys()), [byDate]);
-  const undated = useMemo(() => cards.filter((card) => !listExplorerCardDateIso(card)), [cards]);
+  const undated = useMemo(() => cards.filter((card) => !browseCardDateIso(card)), [cards]);
 
   const today = todayIso();
   const initial =
@@ -56,7 +56,7 @@ export const ListExplorerCalendar = ({ cards, onMapHover }: ListExplorerCalendar
           <ul className="space-y-2">
             {dayCards.map((card) => (
               <li key={card.id}>
-                <ListExplorerListRow card={card} onMapHover={onMapHover} />
+                <BrowseCompactRow card={card} onMapHover={onMapHover} />
               </li>
             ))}
           </ul>
@@ -68,7 +68,7 @@ export const ListExplorerCalendar = ({ cards, onMapHover }: ListExplorerCalendar
           <ul className="space-y-2">
             {undated.map((card) => (
               <li key={card.id}>
-                <ListExplorerListRow card={card} onMapHover={onMapHover} />
+                <BrowseCompactRow card={card} onMapHover={onMapHover} />
               </li>
             ))}
           </ul>

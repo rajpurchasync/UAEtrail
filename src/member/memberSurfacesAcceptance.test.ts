@@ -235,15 +235,15 @@ describe('member surfaces §11 acceptance (automated)', () => {
   it('G-manage: desktop hosting schedule uses dedicated hub (not consumer Plan summary)', () => {
     // Hub is mounted on its own route (`/hosting`); My Plans redirects the hosting filter there.
     const hostingPage = read('src/hosting/HostingHubPage.tsx');
-    expect(hostingPage).toContain('PlanDesktopHostingHub');
+    expect(hostingPage).toContain('HostingHubView');
     expect(hostingPage).toContain('PlanHostingManageProvider');
     expect(hostingPage).toContain('HOSTING_HUB_PATH');
     expect(hostingPage).not.toContain('PlanGoalsProgressSummary');
     expect(hostingPage).not.toContain('PlanWishlistView');
     const plan = read('src/plan/PlanPage.tsx');
-    expect(plan).not.toContain('PlanDesktopHostingHub');
+    expect(plan).not.toContain('HostingHubView');
     expect(plan).toMatch(/navigate\(HOSTING_HUB_PATH/);
-    const hub = read('src/components/plan/PlanDesktopHostingHub.tsx');
+    const hub = read('src/hosting/HostingHubView.tsx');
     expect(hub).not.toContain('PlanGoalsProgressSummary');
     expect(hub).not.toContain('PlanWishlistView');
     expect(hub).toContain('HostedActivityListRow');
@@ -255,13 +255,13 @@ describe('member surfaces §11 acceptance (automated)', () => {
     const plan = read('src/plan/PlanPage.tsx');
     expect(plan).toContain('PlanUpcomingView');
     const upcoming = read('src/components/plan/PlanUpcomingView.tsx');
-    expect(upcoming).toContain('PlanHostingUpcoming');
-    expect(upcoming).toContain('PlanHostingManageProvider');
+    expect(upcoming).not.toContain('PlanHostingUpcoming');
+    expect(upcoming).not.toContain('PlanHostingManageProvider');
     const sheets = read('src/components/plan/PlanHostingManageSheets.tsx');
     expect(sheets).toContain('ActivityManageSheet');
-    const hosted = read('src/components/plan/PlanHostingUpcoming.tsx');
-    expect(hosted).toContain('usePlanHostingManage');
-    expect(hosted).not.toMatch(/\/host\/requests|HOST_REQUESTS_PATH/);
+    const seeking = read('src/hosting/HostingSeekingPostsSection.tsx');
+    expect(seeking).toContain('usePlanHostingManage');
+    expect(seeking).not.toMatch(/\/host\/requests|HOST_REQUESTS_PATH/);
     const sheet = read('src/components/activity/ActivityManageSheet.tsx');
     expect(sheet).toContain('decideActivityJoinRequest');
     expect(sheet).toContain('planHostedActivityManagePath');

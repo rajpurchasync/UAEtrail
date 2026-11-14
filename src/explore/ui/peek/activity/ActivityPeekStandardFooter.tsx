@@ -22,6 +22,7 @@ import type { JoinRequestUiState } from '../../../../utils/joinRequestUi';
 import { useLocation } from 'react-router-dom';
 import { PeekDetailLink } from '../../map-peek/PeekDetailLink';
 import { mapPeekDetailNavState } from '../../../mapPeekDetailNavState';
+import { resolveListFeedFooterModel, type ListFeedFooterButton } from '../../../../list/listFeedFooterActions';
 
 export type ActivityPeekStandardFooterProps = {
   card: DiscoveryCardModel;
@@ -49,6 +50,9 @@ const buttonClass = (button: ActivityDetailFooterButton): string => {
   return EXPLORE_PEEK_CTA.peekTile;
 };
 
+const wireActionButtonClass = (role: 'primary' | 'secondary'): string =>
+  role === 'primary' ? EXPLORE_PEEK_CTA.peekJoin : EXPLORE_PEEK_CTA.peekTile;
+
 /** Map peek footer. Same membership states as the activity detail sticky footer, plus Details. */
 export const ActivityPeekStandardFooter = ({
   card,
@@ -75,20 +79,26 @@ export const ActivityPeekStandardFooter = ({
   const canManageParticipation =
     Boolean(onWithdraw) &&
     (joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed');
-  const pendingWire = resolveActivityMapPeekActions(card, joinUiState).find(
-    (action) => action.id === 'pending_join'
-  );
+  const peekWireActions = resolveActivityMapPeekActions(card, joinUiState);
+  const pendingWire = peekWireActions.find((action) => action.id === 'pending_join');
+  const hostWirePeek = isHost && mapWire;
 
-  const footer = resolveActivityDetailStandardFooter({
-    isHost,
-    joinUiState,
-    viewerLevel: card.viewerAccess?.level ?? null,
-    wirePending: Boolean(pendingWire),
-    pendingStatus: pendingWire?.joinRequestStatus ?? null,
-    joinFull,
-    joinLabel: joinLoading ? 'Loading…' : card.primaryCta,
-    canManageParticipation,
-  });
+  const hostWireFooter = hostWirePeek
+    ? resolveListFeedFooterModel(card, { isGuest: false, joinUiState })
+    : null;
+
+  const footer = hostWirePeek
+    ? null
+    : resolveActivityDetailStandardFooter({
+        isHost,
+        joinUiState,
+        viewerLevel: card.viewerAccess?.level ?? null,
+        wirePending: Boolean(pendingWire),
+        pendingStatus: pendingWire?.joinRequestStatus ?? null,
+        joinFull,
+        joinLabel: joinLoading ? 'Loading…' : card.primaryCta,
+        canManageParticipation,
+      });
 
   const run = (id: ActivityMapPeekActionId, effect: () => void) => {
     if (gate) {
@@ -138,26 +148,58 @@ export const ActivityPeekStandardFooter = ({
     }
   };
 
-  const buttons = [footer.left, footer.center, footer.right].filter(
-    (button): button is ActivityDetailFooterButton => Boolean(button)
-  );
+  const renderWireAction = (button: ListFeedFooterButton, role: 'primary' | 'secondary') => {
+    if (button.kind === 'disabled') {
+      return (
+        <button type="button" disabled className={EXPLORE_PEEK_CTA.peekJoinPending}>
+          {button.label}
+        </button>
+      );
+    }
+    if (button.kind !== 'action') return null;
+    return (
+      <button
+        type="button"
+        className={wireActionButtonClass(role)}
+        onClick={() => run(button.actionId, () => onAction(button.actionId))}
+      >
+        {button.label}
+      </button>
+    );
+  };
+
+  const buttons = hostWirePeek
+    ? null
+    : [footer!.left, footer!.center, footer!.right].filter(
+        (button): button is ActivityDetailFooterButton => Boolean(button)
+      );
   const activityId = card.activityId ?? card.activity?.id;
   const detailHref = activityId ? activityDetailPath(activityId) : card.path;
+  const footerMode = hostWirePeek ? 'host' : footer!.mode;
 
   return (
-    <div className="space-y-1.5" data-activity-peek-standard-footer={footer.mode}>
-      <div className={`grid gap-1.5 ${buttons.length > 2 ? 'grid-cols-3' : 'grid-cols-2'}`}>
-        {buttons.map((button) => (
-          <button
-            key={button.action}
-            type="button"
-            disabled={button.disabled || (joinLoading && button.action === 'request_join')}
-            className={buttonClass(button)}
-            onClick={() => press(button.action)}
-          >
-            {button.label}
-          </button>
-        ))}
+    <div className="space-y-1.5" data-activity-peek-standard-footer={footerMode}>
+      <div className={`grid gap-1.5 ${buttons && buttons.length > 2 ? 'grid-cols-3' : 'grid-cols-2'}`}>
+        {hostWirePeek && hostWireFooter ? (
+          <>
+            {renderWireAction(hostWireFooter.primary, 'primary')}
+            {hostWireFooter.secondary
+              ? renderWireAction(hostWireFooter.secondary, 'secondary')
+              : null}
+          </>
+        ) : (
+          buttons?.map((button) => (
+            <button
+              key={button.action}
+              type="button"
+              disabled={button.disabled || (joinLoading && button.action === 'request_join')}
+              className={buttonClass(button)}
+              onClick={() => press(button.action)}
+            >
+              {button.label}
+            </button>
+          ))
+        )}
       </div>
       {detailHref ? (
         <PeekDetailLink

@@ -14,8 +14,8 @@ import type { ExploreActivityDatePreset } from '../../explore/exploreActivityDat
 import { ListExplorerCalendar } from './ListExplorerCalendar';
 import { ListExplorerFilterFab } from './ListExplorerFilterFab';
 import { ListExplorerHeader } from './ListExplorerHeader';
-import { ListExplorerListRow } from './ListExplorerListRow';
-import { ListExplorerThumbnailCard } from './ListExplorerThumbnailCard';
+import { BrowseCompactRow } from '../browse/BrowseCompactRow';
+import { BrowseThumbnailCard } from '../browse/BrowseThumbnailCard';
 import { PlaceDistanceProvider } from './listPlaceDistance';
 import { useViewerLocation } from './useViewerLocation';
 import { useDisplayPreferences } from '../../preferences/useDisplayPreferences';
@@ -25,7 +25,6 @@ import type { ListExplorerDateSection } from './listExplorerDateSections';
 import { ListGuestCatalogPreviewNotice } from '../ui/ListGuestCatalogPreviewNotice';
 import {
   groupListExplorerSections,
-  listExplorerSortShowsDistance,
   listExplorerSortUsesViewerLocation,
   sortListExplorerCards,
   type ListExplorerSortMode,
@@ -85,12 +84,10 @@ const LIST_ROW_ESTIMATE_PX = 92;
 const VirtualizedListRows = ({
   cards,
   onMapHover,
-  showDistance,
   scrollElement,
 }: {
   cards: DiscoveryCardModel[];
   onMapHover?: (exploreItemId: string | null) => void;
-  showDistance?: boolean;
   scrollElement: HTMLElement | null;
 }) => {
   const virtualizer = useVirtualizer({
@@ -110,7 +107,7 @@ const VirtualizedListRows = ({
             className="absolute left-0 top-0 w-full pb-2"
             style={{ transform: `translateY(${virtualRow.start}px)` }}
           >
-            <ListExplorerListRow card={card} onMapHover={onMapHover} showDistance={showDistance} />
+            <BrowseCompactRow card={card} onMapHover={onMapHover} />
           </li>
         );
       })}
@@ -123,14 +120,12 @@ const ListExplorerDateGroups = ({
   layout,
   onMapHover,
   compactThumbGrid = false,
-  showDistance = false,
   scrollElement,
 }: {
   sections: ListExplorerDateSection[];
   layout: ListExplorerLayout;
   onMapHover?: (exploreItemId: string | null) => void;
   compactThumbGrid?: boolean;
-  showDistance?: boolean;
   scrollElement?: HTMLElement | null;
 }) => {
   return (
@@ -149,14 +144,13 @@ const ListExplorerDateGroups = ({
               <VirtualizedListRows
                 cards={section.cards}
                 onMapHover={onMapHover}
-                showDistance={showDistance}
                 scrollElement={scrollElement}
               />
             ) : (
             <ul className="space-y-2">
               {section.cards.map((card) => (
                 <li key={card.id}>
-                  <ListExplorerListRow card={card} onMapHover={onMapHover} showDistance={showDistance} />
+                  <BrowseCompactRow card={card} onMapHover={onMapHover} />
                 </li>
               ))}
             </ul>
@@ -165,7 +159,7 @@ const ListExplorerDateGroups = ({
             <ul className={thumbGridClass(compactThumbGrid)}>
               {section.cards.map((card) => (
                 <li key={card.id} className="min-w-0">
-                  <ListExplorerThumbnailCard card={card} onMapHover={onMapHover} showDistance={showDistance} />
+                  <BrowseThumbnailCard card={card} onMapHover={onMapHover} />
                 </li>
               ))}
             </ul>
@@ -244,7 +238,6 @@ export const ListExplorer = ({
   const locationEnabled = bucket === 'places' || listExplorerSortUsesViewerLocation(sort);
   const { fix: viewer, pending: locationPending, denied: locationDenied } = useViewerLocation(locationEnabled);
   const { units } = useDisplayPreferences();
-  const showDistance = bucket !== 'places' && listExplorerSortShowsDistance(sort);
   const listSections = useMemo(() => {
     const sorted = sortListExplorerCards(cards, sort, viewer);
     return groupListExplorerSections(sorted, sort, viewer);
@@ -356,7 +349,6 @@ export const ListExplorer = ({
                 layout={effectiveLayout}
                 onMapHover={onMapHover}
                 compactThumbGrid={mapColumnVisible}
-                showDistance={showDistance}
                 scrollElement={scrollElement}
               />
             </PlaceDistanceProvider>

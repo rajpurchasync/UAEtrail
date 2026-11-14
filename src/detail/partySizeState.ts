@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 /** Shared adults/kids for headcount mode in JoinRequestModal. */
 type PartySize = { adults: number; kids: number };
@@ -9,10 +9,12 @@ const listeners = new Set<() => void>();
 export const getPartySize = (): PartySize => current;
 
 export const setPartySize = (next: Partial<PartySize>): PartySize => {
-  current = {
-    adults: next.adults ?? current.adults,
-    kids: next.kids ?? current.kids,
-  };
+  const adults = next.adults ?? current.adults;
+  const kids = next.kids ?? current.kids;
+  if (adults === current.adults && kids === current.kids) {
+    return current;
+  }
+  current = { adults, kids };
   listeners.forEach((fn) => fn());
   return current;
 };
@@ -29,9 +31,12 @@ export const useSharedPartySize = (): PartySize & {
       listeners.delete(onChange);
     };
   }, []);
+  const setAdults = useCallback((n: number) => setPartySize({ adults: n }), []);
+  const setKids = useCallback((n: number) => setPartySize({ kids: n }), []);
+
   return {
     ...value,
-    setAdults: (n: number) => setPartySize({ adults: n }),
-    setKids: (n: number) => setPartySize({ kids: n }),
+    setAdults,
+    setKids,
   };
 };

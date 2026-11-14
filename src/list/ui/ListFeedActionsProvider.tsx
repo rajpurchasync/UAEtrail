@@ -30,15 +30,23 @@ import {
 import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useActivityJoinFlow';
 import { useActivityJoinGuardMessage } from '../../hooks/useActivityJoinGuardMessage';
 import { executeActivityMapPeekAction } from '../../activity/executeActivityMapPeekAction';
-import { activityMapPeekNeedsJoinContext } from '../../activity/activityPeekEngagement';
+import {
+  activityMapPeekNeedsJoinContext,
+  activityPeekHasMapWireActions,
+} from '../../activity/activityPeekEngagement';
 import { navigateHostFromPlaceCard } from '../../place/peek/navigateHostFromPlaceCard';
 import { resolveListFeedFooterModel } from '../listFeedFooterActions';
+import { inferJoinUiStateFromDiscoveryCard } from '../../activity/inferJoinUiStateFromDiscoveryCard';
+import { applyPeekJoinOpenAfterClick } from '../../activity/resolvePeekJoinOpenAfterClick';
 import { activityDetailPath } from '../../config/routingCatalog';
+import type { JoinRequestUiState } from '../../utils/joinRequestUi';
 
 type ListFeedActionsContextValue = {
   isGuest: boolean;
+  /** @deprecated Prefer joinStateLoadingForCard — list rows disable CTAs during join load. */
   joinStateLoading: boolean;
-  joinUiStateForCard: (card: DiscoveryCardModel) => ReturnType<typeof useActivityJoinContext>['uiState'] | undefined;
+  joinStateLoadingForCard: (card: DiscoveryCardModel) => boolean;
+  joinUiStateForCard: (card: DiscoveryCardModel) => JoinRequestUiState | undefined;
   onPrimaryFooter: (card: DiscoveryCardModel) => void;
   onSecondaryFooter: (card: DiscoveryCardModel) => void;
   footerModel: (card: DiscoveryCardModel) => ReturnType<typeof resolveListFeedFooterModel>;
@@ -82,17 +90,22 @@ export const ListFeedActionsProvider = ({
   const [joinCard, setJoinCard] = useState<DiscoveryCardModel | null>(null);
   const [pendingJoinOpen, setPendingJoinOpen] = useState(false);
   const [pendingWithdrawOpen, setPendingWithdrawOpen] = useState(false);
+  const [joinNotice, setJoinNotice] = useState<string | null>(null);
 
   const joinContextEnabled = Boolean(
     joinActivityId && joinCard && activityMapPeekNeedsJoinContext(joinCard)
   );
 
-  const { uiState: joinUiState, loading: joinStateLoading, reload: reloadJoinContext } =
-    useActivityJoinContext({
-      activityId: joinActivityId,
-      enabled: joinContextEnabled,
-      userId: user?.id,
-    });
+  const {
+    context: joinContext,
+    uiState: joinUiState,
+    loading: joinStateLoading,
+    reload: reloadJoinContext,
+  } = useActivityJoinContext({
+    activityId: joinActivityId,
+    enabled: joinContextEnabled,
+    userId: user?.id,
+  });
 
   const joinGuardMessage = useActivityJoinGuardMessage(
     joinCard?.activity?.requirements,
@@ -102,8 +115,11 @@ export const ListFeedActionsProvider = ({
   const joinActions = useActivityJoinActions({
     activity: joinCard?.activity ?? null,
     uiState: joinUiState,
+    requestIdFallback: joinContext?.myRequest?.id ?? null,
     joinGuardMessage,
     onReload: reloadJoinContext,
+    onError: (message) => setJoinNotice(message),
+    onMessage: (message) => setJoinNotice(message),
   });
 
   const handleListJoinSuccess = useCallback(
@@ -114,12 +130,21 @@ export const ListFeedActionsProvider = ({
   );
 
   useEffect(() => {
-    if (!pendingJoinOpen || joinStateLoading) return;
-    if (joinUiState.kind === 'open') {
-      joinActions.openJoinModal();
+    if (!pendingJoinOpen) return;
+    const outcome = applyPeekJoinOpenAfterClick(joinUiState, joinStateLoading, {
+      openJoinModal: () => joinActions.openJoinModal(),
+      setShowWithdraw: (open) => joinActions.setShowWithdraw(open),
+    });
+    if (outcome !== 'waiting') {
       setPendingJoinOpen(false);
     }
-  }, [pendingJoinOpen, joinStateLoading, joinUiState.kind, joinActions]);
+  }, [pendingJoinOpen, joinStateLoading, joinUiState, joinActions]);
+
+  useEffect(() => {
+    if (!joinNotice) return;
+    const timer = window.setTimeout(() => setJoinNotice(null), 5000);
+    return () => window.clearTimeout(timer);
+  }, [joinNotice]);
 
   useEffect(() => {
     if (!pendingWithdrawOpen || joinStateLoading) return;
@@ -235,13 +260,22 @@ export const ListFeedActionsProvider = ({
     ]
   );
 
+  const joinUiStateForCard = useCallback(
+    (card: DiscoveryCardModel) =>
+      inferJoinUiStateFromDiscoveryCard(
+        card,
+        joinActivityId === card.activity?.id ? joinUiState : undefined
+      ),
+    [joinActivityId, joinUiState]
+  );
+
   const footerModel = useCallback(
     (card: DiscoveryCardModel) =>
       resolveListFeedFooterModel(card, {
         isGuest,
-        joinUiState: joinActivityId === card.activity?.id ? joinUiState : undefined,
+        joinUiState: joinUiStateForCard(card),
       }),
-    [isGuest, joinActivityId, joinUiState]
+    [isGuest, joinUiStateForCard]
   );
 
   const onPrimaryFooter = useCallback(
@@ -306,22 +340,51 @@ export const ListFeedActionsProvider = ({
     [footerModel, user, navigate, location, joinActions, runPeekAction]
   );
 
+  const joinStateLoadingForCard = useCallback(
+    (card: DiscoveryCardModel) =>
+      Boolean(
+        joinActivityId === card.activity?.id &&
+          joinStateLoading &&
+          !activityPeekHasMapWireActions(card)
+      ),
+    [joinActivityId, joinStateLoading]
+  );
+
   const value = useMemo(
     (): ListFeedActionsContextValue => ({
       isGuest,
       joinStateLoading: Boolean(joinActivityId && joinStateLoading),
-      joinUiStateForCard: (card) =>
-        joinActivityId === card.activity?.id ? joinUiState : undefined,
+      joinStateLoadingForCard,
+      joinUiStateForCard,
       onPrimaryFooter,
       onSecondaryFooter,
       footerModel,
     }),
-    [isGuest, joinActivityId, joinStateLoading, joinUiState, onPrimaryFooter, onSecondaryFooter, footerModel]
+    [
+      isGuest,
+      joinActivityId,
+      joinStateLoading,
+      joinStateLoadingForCard,
+      joinUiStateForCard,
+      onPrimaryFooter,
+      onSecondaryFooter,
+      footerModel,
+    ]
   );
 
   return (
     <ListFeedActionsContext.Provider value={value}>
       {children}
+      {joinNotice ? (
+        <div
+          role="status"
+          className="pointer-events-none fixed inset-x-0 bottom-20 z-[6500] flex justify-center px-4 md:bottom-6"
+        >
+          <p className="max-w-md rounded-2xl bg-neutral-900/90 px-4 py-2.5 text-center text-sm font-medium text-white shadow-lg">
+            {joinNotice}
+          </p>
+        </div>
+      ) : null}
       <ExploreJoinOverlays
         activity={joinCard?.activity}
         exploreMapItemId={joinCard?.id}

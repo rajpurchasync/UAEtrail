@@ -99,8 +99,32 @@ describe('activity detail program — wiring', () => {
     expect(exploreActions).toMatch(/executeActivityMapPeekAction/);
   });
 
+  it('AD-MANAGE-01: publishing + hosting hub use map-peek wire footer (no parallel host resolvers)', () => {
+    const wireFooter = read('src/components/activity/ActivityMapPeekWireFooter.tsx');
+    expect(wireFooter).toMatch(/resolveActivityMapPeekActionsForHostDto/);
+    expect(wireFooter).toMatch(/resolveListFeedFooterFromMapPeekWire/);
+    expect(wireFooter).toMatch(/executeActivityMapPeekAction/);
+    expect(wireFooter).toMatch(/ListFeedMapPeekFooterButtons/);
+    const publishing = read('src/pages/publishing/Activities.tsx');
+    expect(publishing).toMatch(/ActivityMapPeekWireFooter/);
+    const hub = read('src/hosting/HostingHubView.tsx');
+    expect(hub).toMatch(/mapPeekHandlersFor/);
+    const row = read('src/components/activity/HostedActivityListRow.tsx');
+    expect(row).toMatch(/ActivityMapPeekWireFooter/);
+    const historyHosted = read('src/components/activity/HostedActivitiesSection.tsx');
+    expect(historyHosted).toMatch(/mapPeekHandlersFor/);
+    const peekFooter = read('src/explore/ui/peek/activity/ActivityPeekStandardFooter.tsx');
+    expect(peekFooter).toMatch(/resolveListFeedFooterModel/);
+    expect(existsSync(join(process.cwd(), 'src/activity/resolveHostActivityPeekTwoSlot.ts'))).toBe(
+      false
+    );
+    expect(
+      existsSync(join(process.cwd(), 'src/components/activity/HostedActivityEngagementActions.tsx'))
+    ).toBe(false);
+  });
+
   it('AD-PEEK-07: list explorer opens entity detail; people rows omit join CTAs without provider', () => {
-    const explorerLink = read('src/list/explorer/ListExplorerItemLink.tsx');
+    const explorerLink = read('src/list/browse/BrowseItemLink.tsx');
     expect(explorerLink).toMatch(/listExplorerEntityLinkState/);
     const browsePanels = read('src/explore/shell/ExploreExperienceBrowsePanels.tsx');
     expect(browsePanels).not.toMatch(/ListFeedActionsProvider/);
@@ -412,7 +436,16 @@ describe('discovery refactor — RF-01 list feed footers', () => {
     const provider = read('src/list/ui/ListFeedActionsProvider.tsx');
     expect(provider).toMatch(/executeActivityMapPeekAction/);
     expect(provider).toMatch(/resolveListFeedFooterModel/);
+    expect(provider).toMatch(/applyPeekJoinOpenAfterClick/);
     expect(provider).not.toMatch(/\bswitch\s*\([^)]*actionId/);
+    expect(read('src/list/browse/BrowseCardJoinFooter.tsx')).not.toMatch(/primaryOnly/);
+    expect(footerActions).toMatch(/resolveListFeedPeekSecondary/);
+    expect(footerActions).toMatch(/peekActionLabelContext/);
+    expect(read('src/list/listMapPeekEngagementParity.test.ts')).toMatch(/listMapPeekEngagementParity/);
+    expect(read('src/activity/resolveActivityPeekStatusChips.ts')).toMatch(/resolveActivityPeekStatusChips/);
+    expect(read('src/list/browse/BrowseActivityStatusChips.tsx')).toMatch(
+      /resolveActivityPeekStatusChips/
+    );
   });
 });
 

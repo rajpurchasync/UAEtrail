@@ -8,27 +8,24 @@ import {
   LIST_FEED_CTA_WISHLIST,
   LIST_FEED_CTA_WISHLIST_SAVED,
 } from '../listFeedCtaCopy';
+import { resolveVenueBrowseCardCopy, type VenueBrowseCardRating } from './venueBrowseCardCopy';
+import { DiscoveryBrowsePosterBanner } from '../../discovery/DiscoveryBrowsePosterBanner';
+import { BrowseItemLink } from './BrowseItemLink';
 import {
-  resolveListVenueListingCopy,
-  type ListVenueListingRating,
-} from '../listVenuePosterPresentation';
-import { DiscoveryBrowsePosterBanner } from './DiscoveryBrowsePosterBanner';
-import { ListExplorerItemLink } from './ListExplorerItemLink';
-import {
-  LIST_EXPLORER_LISTING_CHIP,
-  LIST_EXPLORER_LISTING_FOOTER,
-  LIST_EXPLORER_LISTING_IMAGE,
-  LIST_EXPLORER_LISTING_PRIMARY_CTA,
-  LIST_EXPLORER_LISTING_SHELL,
-  ListExplorerListingPhotoShare,
-} from './listExplorerListingChrome';
+  BROWSE_CARD_CHIP,
+  BROWSE_CARD_FOOTER,
+  BROWSE_CARD_IMAGE,
+  BROWSE_CARD_PRIMARY_CTA,
+  BROWSE_CARD_SHELL,
+  BrowseCardPhotoShare,
+} from './browseCardChrome';
 
-type ListExplorerVenueListingCardProps = {
+type VenueBrowseCardProps = {
   card: DiscoveryCardModel;
   onMapHover?: (exploreItemId: string | null) => void;
 };
 
-const TitleRating = ({ rating }: { rating: ListVenueListingRating }) => (
+const TitleRating = ({ rating }: { rating: VenueBrowseCardRating }) => (
   <p
     className="mt-0.5 flex shrink-0 items-center gap-0.5 text-[12px] font-semibold tabular-nums text-neutral-800"
     aria-label={`${rating.average.toFixed(1)} out of 5 from ${rating.count} rating${rating.count === 1 ? '' : 's'}`}
@@ -39,26 +36,20 @@ const TitleRating = ({ rating }: { rating: ListVenueListingRating }) => (
   </p>
 );
 
-/**
- * Catalogue listing: photo is where; body is the place name + rating;
- * overlay trip chip opens the next hosted outing (not nested in the venue link).
- */
-export const ListExplorerVenueListingCard = ({
-  card,
-  onMapHover,
-}: ListExplorerVenueListingCardProps) => {
-  const listing = resolveListVenueListingCopy(card);
+/** Explore venues bucket — thumbnail card for places and shops. */
+export const VenueBrowseCard = ({ card, onMapHover }: VenueBrowseCardProps) => {
+  const listing = resolveVenueBrowseCardCopy(card);
   const emitHover = (id: string | null) => onMapHover?.(id);
   const tripHref = listing.scheduleHint ? listing.schedulePath : null;
 
   return (
     <article
-      className={LIST_EXPLORER_LISTING_SHELL}
+      className={BROWSE_CARD_SHELL}
       onMouseEnter={() => emitHover(card.id)}
       onMouseLeave={() => emitHover(null)}
     >
       <div className="relative">
-        <ListExplorerItemLink
+        <BrowseItemLink
           to={card.path}
           exploreItemId={card.id}
           onMapHover={onMapHover}
@@ -66,12 +57,12 @@ export const ListExplorerVenueListingCard = ({
         >
           <DiscoveryBrowsePosterBanner
             card={card}
-            showDistance={false}
             imageHoverZoom
-            imageHeightClass={LIST_EXPLORER_LISTING_IMAGE}
+            imageHeightClass={BROWSE_CARD_IMAGE}
             showOverlayMeta={false}
+            embedHostInItemLink
             typeIconBare
-            headerActions={<ListExplorerListingPhotoShare card={card} />}
+            headerActions={<BrowseCardPhotoShare card={card} />}
             overlayContent={
               listing.locationLine || listing.scheduleHint ? (
                 <div className="min-w-0">
@@ -96,10 +87,10 @@ export const ListExplorerVenueListingCard = ({
               ) : null
             }
           />
-        </ListExplorerItemLink>
+        </BrowseItemLink>
         {listing.scheduleHint ? (
           tripHref ? (
-            <ListExplorerItemLink
+            <BrowseItemLink
               to={tripHref}
               exploreItemId={listing.scheduleExploreItemId}
               onMapHover={onMapHover}
@@ -107,7 +98,7 @@ export const ListExplorerVenueListingCard = ({
             >
               <CalendarDays className="h-3 w-3 shrink-0" aria-hidden />
               <span className="min-w-0 truncate">{listing.scheduleHint}</span>
-            </ListExplorerItemLink>
+            </BrowseItemLink>
           ) : (
             <p className="absolute bottom-2 left-2.5 z-10 flex max-w-[calc(100%-1.25rem)] items-center gap-1 text-[11px] font-semibold text-emerald-200 [text-shadow:0_1px_2px_rgba(0,0,0,.45)]">
               <CalendarDays className="h-3 w-3 shrink-0" aria-hidden />
@@ -116,7 +107,7 @@ export const ListExplorerVenueListingCard = ({
           )
         ) : null}
       </div>
-      <ListExplorerItemLink
+      <BrowseItemLink
         to={card.path}
         exploreItemId={card.id}
         onMapHover={onMapHover}
@@ -132,19 +123,16 @@ export const ListExplorerVenueListingCard = ({
           {listing.factLabels.length > 0 ? (
             <ul className="flex flex-wrap gap-1">
               {listing.factLabels.map((label) => (
-                <li
-                  key={label}
-                  className={LIST_EXPLORER_LISTING_CHIP}
-                >
+                <li key={label} className={BROWSE_CARD_CHIP}>
                   {label}
                 </li>
               ))}
             </ul>
           ) : null}
         </div>
-      </ListExplorerItemLink>
+      </BrowseItemLink>
       {listing.hasDirections || listing.canWishlist ? (
-        <div className={LIST_EXPLORER_LISTING_FOOTER}>
+        <div className={BROWSE_CARD_FOOTER}>
           {listing.hasDirections && card.mapLatitude != null && card.mapLongitude != null ? (
             <DirectionsControl
               lat={card.mapLatitude}
@@ -152,7 +140,7 @@ export const ListExplorerVenueListingCard = ({
               variant="button"
               label={LIST_FEED_CTA_GET_DIRECTIONS}
               className="min-w-0 flex-1"
-              buttonClassName={LIST_EXPLORER_LISTING_PRIMARY_CTA}
+              buttonClassName={BROWSE_CARD_PRIMARY_CTA}
               showAppPickerAffordance={false}
             />
           ) : null}

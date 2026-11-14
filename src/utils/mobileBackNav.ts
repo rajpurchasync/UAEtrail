@@ -12,6 +12,7 @@ import { SETTINGS_SURFACE_TITLE } from '../config/settingsHub';
 import { isTransientBackPath, navigateBack } from './backStack';
 import { exploreMapPathAfterPeopleFullScreen } from '../explore/exploreBrowseReturnPath';
 import { crewsHomePath } from '../config/mobileFiveTabNav';
+import { isMobileBottomNavTabPath } from '../config/platform';
 import {
   BUDDIES_PATH,
   CREWS_ORIGIN_QUERY,
@@ -174,7 +175,7 @@ export const resolveMobileTabHeaderLeadingBack = (
     if (sub && PLAN_DRILL_SUBS.has(sub)) {
       return flowBack(PLAN_PATH, PRODUCT_PLAN_SURFACE_TITLE);
     }
-    return flowBack(EXPLORE_MAP_PATH, 'Explore');
+    return null;
   }
 
   if (pathname === MESSAGES_PATH) {
@@ -201,10 +202,7 @@ export const resolveMobileTabHeaderLeadingBack = (
     if (crewsOrigin) {
       return flowBack(crewsHomePath(), 'Crews');
     }
-    return profileStackBack(locationState, {
-      fallbackTo: PROFILE_PATH,
-      label: 'Profile',
-    });
+    return null;
   }
 
   if (pathname === GROUPS_PATH) {
@@ -228,24 +226,18 @@ export const resolveMobileTabHeaderLeadingBack = (
       }
       return flowBack(teamsListPath, PRODUCT_GROUPS_SURFACE_LABEL);
     }
-    return flowBack(
-      crewsOrigin ? crewsHomePath() : BUDDIES_PATH,
-      crewsOrigin ? PRODUCT_CREWS_TAB_LABEL : PRODUCT_SOCIAL_SURFACE_TITLE
-    );
+    if (crewsOrigin) {
+      return flowBack(crewsHomePath(), PRODUCT_CREWS_TAB_LABEL);
+    }
+    return null;
   }
 
   if (pathname === MY_REQUESTS_PATH) {
-    return profileStackBack(locationState, {
-      fallbackTo: PROFILE_PATH,
-      label: 'Profile',
-    });
+    return null;
   }
 
   if (pathname === PROFILE_SETTINGS_PATH) {
-    return profileStackBack(locationState, {
-      fallbackTo: PROFILE_PATH,
-      label: 'Profile',
-    });
+    return null;
   }
 
   if (pathname === PROFILE_SETTINGS_DISPLAY_PATH) {
@@ -318,13 +310,30 @@ export const resolveMobileTabHeaderLeadingBack = (
 
 /**
  * True when layout `MobileUnifiedTabHeader` shows the profile avatar on the left
- * (Explore + Profile roots). Elsewhere the leading slot is back chrome — Profile
+ * (tab hubs + profile roots). Elsewhere the leading slot is back chrome — Profile
  * must stay reachable from the hamburger.
  */
 export const mobileUnifiedHeaderShowsProfileLeading = (
   pathname: string,
   locationState: unknown,
   search = ''
-): boolean =>
-  resolveMobileTabHeaderLeadingBack(pathname, locationState, search) === null &&
-  (pathname === PROFILE_PATH || pathname === EXPLORE_MAP_PATH || pathname === '/explore');
+): boolean => {
+  if (resolveMobileTabHeaderLeadingBack(pathname, locationState, search) !== null) {
+    return false;
+  }
+  if (pathname === PROFILE_PATH || pathname === EXPLORE_MAP_PATH || pathname === '/explore') {
+    return true;
+  }
+  if (isMobileBottomNavTabPath(pathname)) return true;
+  if (pathname === BUDDIES_PATH) {
+    const params = searchParamsOf(search);
+    const section = params.get('section') ?? params.get('tab');
+    return !section;
+  }
+  if (pathname === GROUPS_PATH) {
+    return !searchParamsOf(search).get('group');
+  }
+  if (pathname === MY_REQUESTS_PATH) return true;
+  if (pathname === PROFILE_SETTINGS_PATH) return true;
+  return false;
+};

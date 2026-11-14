@@ -6,7 +6,7 @@ import { useMySeekingPosts } from './useMySeekingPosts';
 import { useMeWishlist } from './useMeWishlist';
 import {
   countPlanActiveGoals,
-  countPlanHostingUpcoming,
+  countHostingUpcomingCommitments,
   countPlanJoinedUpcoming,
   countPlanSavedPlaces,
 } from '../plan/planHubSummaryCounts';
@@ -36,7 +36,7 @@ export const usePlanHubSummary = (
   const counts = useMemo(
     () => ({
       hosting: canHost
-        ? countPlanHostingUpcoming(host.activities, host.pendingRequests, intents)
+        ? countHostingUpcomingCommitments(host.activities, host.pendingRequests, intents)
         : 0,
       joined: countPlanJoinedUpcoming(activities, requests),
       goals: countPlanActiveGoals(goals),

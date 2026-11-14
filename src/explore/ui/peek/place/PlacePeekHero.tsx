@@ -5,7 +5,7 @@ import type { DiscoveryCardModel } from '../../../../discovery/discoveryCardMode
 import { EnvironmentImage } from '../../../../components/ui/EnvironmentImage';
 import { ShareButton } from '../../../../components/ui/ShareButton';
 import { ExploreWishlistSaveButton } from '../../ExploreWishlistSaveButton';
-import { resolveCatalogEntityName } from '../../../../list/listVenuePosterPresentation';
+import { browseCatalogEntityName } from '../../../../list/browse/browseCatalogLabels';
 import {
   resolvePlacePeekCuratedArea,
   resolvePlacePeekLocalLabel,
@@ -30,7 +30,7 @@ export const PlacePeekHero = ({
   onBeforeDetailNavigate,
 }: PlacePeekHeroProps) => {
   const coverUrl = resolvePlaceRegistryCoverUrl(card);
-  const title = resolveCatalogEntityName(card);
+  const title = browseCatalogEntityName(card);
   const curated = resolvePlacePeekCuratedArea(card);
   const localLabel = resolvePlacePeekLocalLabel(card);
   const emoji = card.emoji?.trim() || '📍';

@@ -5,7 +5,7 @@ import {
   groupListExplorerByIso,
   type ListExplorerDateSection,
 } from './listExplorerDateSections';
-import { listExplorerCardDateIso, listExplorerCardTitle } from './listExplorerCardMeta';
+import { browseCardDateIso, browseCardTitle } from '../browse/browseCardMeta';
 
 export const LIST_SORT_PARAM = 'sort';
 
@@ -136,11 +136,11 @@ export const listExplorerCardDistanceMeters = (
 };
 
 const compareEventDate = (a: DiscoveryCardModel, b: DiscoveryCardModel): number => {
-  const left = listExplorerCardDateIso(a) ?? '9999-99-99';
-  const right = listExplorerCardDateIso(b) ?? '9999-99-99';
+  const left = browseCardDateIso(a) ?? '9999-99-99';
+  const right = browseCardDateIso(b) ?? '9999-99-99';
   const byDate = left.localeCompare(right);
   if (byDate !== 0) return byDate;
-  return listExplorerCardTitle(a).localeCompare(listExplorerCardTitle(b));
+  return browseCardTitle(a).localeCompare(browseCardTitle(b));
 };
 
 const comparePostDate = (a: DiscoveryCardModel, b: DiscoveryCardModel): number => {
@@ -148,11 +148,11 @@ const comparePostDate = (a: DiscoveryCardModel, b: DiscoveryCardModel): number =
   const right = listExplorerCardPostDateIso(b) ?? '9999-99-99';
   const byDate = left.localeCompare(right);
   if (byDate !== 0) return byDate;
-  return listExplorerCardTitle(a).localeCompare(listExplorerCardTitle(b));
+  return browseCardTitle(a).localeCompare(browseCardTitle(b));
 };
 
 const compareName = (a: DiscoveryCardModel, b: DiscoveryCardModel): number =>
-  listExplorerCardTitle(a).localeCompare(listExplorerCardTitle(b), undefined, { sensitivity: 'base' });
+  browseCardTitle(a).localeCompare(browseCardTitle(b), undefined, { sensitivity: 'base' });
 
 const compareNear = (
   a: DiscoveryCardModel,
@@ -217,7 +217,7 @@ const buildNameLetterGroups = (
 ): Array<{ key: string; label: string; letters: Set<string> }> => {
   const letterCounts = new Map<string, number>();
   for (const card of cards) {
-    const letter = nameFirstLetter(listExplorerCardTitle(card));
+    const letter = nameFirstLetter(browseCardTitle(card));
     letterCounts.set(letter, (letterCounts.get(letter) ?? 0) + 1);
   }
   const letters = [...letterCounts.keys()].sort((a, b) => {
@@ -280,7 +280,7 @@ const groupByName = (cards: DiscoveryCardModel[], desc: boolean): ListExplorerDa
   const letterGroups = buildNameLetterGroups(cards);
   const sections = letterGroups.map((group) => {
     const groupCards = cards.filter((card) =>
-      group.letters.has(nameFirstLetter(listExplorerCardTitle(card)))
+      group.letters.has(nameFirstLetter(browseCardTitle(card)))
     );
     groupCards.sort((a, b) => (desc ? compareName(b, a) : compareName(a, b)));
     return { key: group.key, label: group.label, cards: groupCards };
@@ -397,8 +397,8 @@ export const groupListExplorerSections = (
 export const listExplorerSortUsesViewerLocation = (mode: ListExplorerSortMode): boolean =>
   mode === 'near_me';
 
-export const listExplorerSortShowsDistance = (mode: ListExplorerSortMode): boolean =>
-  mode === 'near_me';
+/** Near-me sort uses viewer location; browse surfaces do not show travel-distance chips. */
+export const listExplorerSortShowsDistance = (_mode: ListExplorerSortMode): boolean => false;
 
 /** @deprecated Prefer `listExplorerSortButtonLabel` for UI. */
 export const listExplorerSortLabel = (mode: ListExplorerSortMode): string =>

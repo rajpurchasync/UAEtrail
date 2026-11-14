@@ -249,7 +249,7 @@ describe('listVenuePosterPresentation', () => {
     ]);
   });
 
-  it('uses Plan trip + View Details on place posters', () => {
+  it('uses Plan trip + Details on place posters (map peek copy)', () => {
     const card = buildDiscoveryCardViewModelCard(venueItem());
     const model = resolveListFeedFooterModel(card, { isGuest: true });
     expect(model.primary).toMatchObject({
@@ -258,7 +258,7 @@ describe('listVenuePosterPresentation', () => {
     });
     expect(model.secondary).toMatchObject({
       kind: 'link',
-      label: 'View Details',
+      label: 'Details',
     });
   });
 

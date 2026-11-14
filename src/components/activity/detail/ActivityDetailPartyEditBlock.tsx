@@ -12,7 +12,7 @@ import { PartySizeSelect } from '../../../detail/shell/PartySizeSelect';
 import { resolvePartyEditSeed } from '../../../detail/resolvePartyEditSeed';
 import type { PartyJoinMode } from '../../../detail/partyJoinIntent';
 import { usePersistedPartySize } from '../../../detail/usePersistedPartySize';
-import { useSharedPartySize } from '../../../detail/partySizeState';
+import { setPartySize, useSharedPartySize } from '../../../detail/partySizeState';
 
 type Props = {
   activity: ActivityDetailDTO;
@@ -47,7 +47,13 @@ export const ActivityDetailPartyEditBlock = ({ activity, myRequest, viewerUserId
         myRequest.sourceTeamId ?? '',
         (myRequest.partyMembers ?? []).map((row) => `${row.membershipId}:${row.status}`).join('|'),
       ].join(':'),
-    [myRequest]
+    [
+      myRequest.id,
+      myRequest.adults,
+      myRequest.kids,
+      myRequest.sourceTeamId,
+      myRequest.partyMembers,
+    ]
   );
 
   useEffect(() => {
@@ -55,9 +61,9 @@ export const ActivityDetailPartyEditBlock = ({ activity, myRequest, viewerUserId
     setMode(next.mode);
     setTeamId(next.teamId);
     setMembershipIds(next.membershipIds);
-    setAdults(next.adults);
-    setKids(next.kids);
-  }, [partySnapshotKey, myRequest, setAdults, setKids]);
+    setPartySize({ adults: next.adults, kids: next.kids });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on partySnapshotKey only
+  }, [partySnapshotKey]);
 
   const applyMode = (next: PartyJoinMode) => {
     setMode(next);

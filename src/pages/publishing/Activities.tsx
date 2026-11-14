@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowDown, ArrowUp, ArrowUpDown, Plus, Search, Settings2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, Plus, Search } from 'lucide-react';
 import {
   formatExploreEventDateLabel,
   memberProfilePath,
@@ -19,7 +19,8 @@ import {
 } from '../../explore/navigateExploreHost';
 import { ConsoleShell } from '../../console/ConsoleShell';
 import { TenantSwitcher } from '../../components/ui';
-import { ActivityHubInviteIconButton } from '../../components/activity/ActivityHubInviteIconButton';
+import { ActivityMapPeekWireFooter } from '../../components/activity/ActivityMapPeekWireFooter';
+import type { ActivityMapPeekActionHandlers } from '../../activity/executeActivityMapPeekAction';
 import { useActivityInviteShareSheet } from '../../hooks/useActivityInviteShareSheet';
 import { ActivityManageSheet } from '../../components/activity/ActivityManageSheet';
 import { HostActivityManageCancelDialogs } from '../../components/activity/HostActivityManageCancelDialogs';
@@ -128,6 +129,19 @@ export const Activities = () => {
     setManageInitialView(view);
     setManageActivity(activity);
   };
+
+  const mapPeekHandlersFor = useCallback(
+    (activity: ActivityDTO): ActivityMapPeekActionHandlers => ({
+      shareActivity: () =>
+        inviteShare.openShareFromActivity(activity, { canSendBuddyInvites: true }),
+      manageActivity: () => openManage(activity, 'overview'),
+      openCrewChat: () =>
+        void hostActions.openGroupChat(activity.id, activity.groupChatId, {
+          returnTo: PUBLISHING_ACTIVITIES_PATH,
+        }),
+    }),
+    [hostActions, inviteShare, openManage]
+  );
 
   const openPreview = (event: ActivityDTO) => {
     if (event.status === 'published') {
@@ -412,23 +426,11 @@ export const Activities = () => {
                           <td className="px-4 py-3">{statusBadge(event.status)}</td>
                           <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                             <div className="flex items-center gap-1">
-                              <button
-                                type="button"
-                                className="inline-flex items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-800 hover:border-emerald-300 hover:text-emerald-800"
-                                onClick={() => openManage(event, 'overview')}
-                              >
-                                <Settings2 className="h-3.5 w-3.5" aria-hidden />
-                                Manage
-                              </button>
-                              {event.status === 'published' && (
-                                <ActivityHubInviteIconButton
-                                  onClick={() =>
-                                    inviteShare.openShareFromActivity(event, {
-                                      canSendBuddyInvites: true,
-                                    })
-                                  }
-                                />
-                              )}
+                              <ActivityMapPeekWireFooter
+                                activity={event}
+                                handlers={mapPeekHandlersFor(event)}
+                                variant="console"
+                              />
                               <ActivityActionsMenu
                                 items={buildHostActivityMenuItems(event, {
                                   onPreview: openPreview,

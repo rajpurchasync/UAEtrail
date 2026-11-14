@@ -35,13 +35,8 @@ describe('mobileBackNav', () => {
     expect(chrome.backBehavior).toBe('fallback');
   });
 
-  it('sends My Plans back to Explore when nothing else in the flow is recorded', () => {
-    const chrome = resolveMobileTabHeaderLeadingBack(PLAN_PATH, null);
-    expect(chrome).toEqual({
-      fallbackTo: EXPLORE_MAP_PATH,
-      label: 'Explore',
-      backBehavior: 'fallback',
-    });
+  it('shows profile leading on My Plans hub root', () => {
+    expect(resolveMobileTabHeaderLeadingBack(PLAN_PATH, null)).toBeNull();
   });
 
   it('sends a My Plans drill-in back to My Plans', () => {
@@ -131,13 +126,8 @@ describe('mobileBackNav', () => {
     });
   });
 
-  it('sends Social hub back to the profile hub', () => {
-    const chrome = resolveMobileTabHeaderLeadingBack('/buddies', null);
-    expect(chrome).toEqual({
-      fallbackTo: PROFILE_PATH,
-      label: 'Profile',
-      backBehavior: 'fallback',
-    });
+  it('shows profile leading on Social hub root', () => {
+    expect(resolveMobileTabHeaderLeadingBack('/buddies', null)).toBeNull();
   });
 
   it('sends My crew child screens back to the hub', () => {
@@ -146,11 +136,7 @@ describe('mobileBackNav', () => {
       label: 'My crew',
       backBehavior: 'fallback',
     });
-    expect(resolveMobileTabHeaderLeadingBack('/groups', null)).toEqual({
-      fallbackTo: '/buddies',
-      label: 'My crew',
-      backBehavior: 'fallback',
-    });
+    expect(resolveMobileTabHeaderLeadingBack('/groups', null)).toBeNull();
     expect(resolveMobileTabHeaderLeadingBack('/groups', null, '?from=crews')).toMatchObject({
       fallbackTo: expect.stringContaining('/list'),
       label: 'Crews',
@@ -167,12 +153,13 @@ describe('mobileBackNav', () => {
     });
   });
 
-  it('profile avatar leading only on Explore and Profile roots', () => {
+  it('profile avatar leading on tab hubs and profile roots', () => {
     expect(mobileUnifiedHeaderShowsProfileLeading(PROFILE_PATH, null)).toBe(true);
     expect(mobileUnifiedHeaderShowsProfileLeading(EXPLORE_MAP_PATH, null)).toBe(true);
-    expect(mobileUnifiedHeaderShowsProfileLeading(PLAN_PATH, null)).toBe(false);
-    expect(mobileUnifiedHeaderShowsProfileLeading(MESSAGES_PATH, null)).toBe(false);
-    expect(mobileUnifiedHeaderShowsProfileLeading('/buddies', null)).toBe(false);
-    expect(mobileUnifiedHeaderShowsProfileLeading('/settings', null)).toBe(false);
+    expect(mobileUnifiedHeaderShowsProfileLeading(PLAN_PATH, null)).toBe(true);
+    expect(mobileUnifiedHeaderShowsProfileLeading(MESSAGES_PATH, null)).toBe(true);
+    expect(mobileUnifiedHeaderShowsProfileLeading('/buddies', null)).toBe(true);
+    expect(mobileUnifiedHeaderShowsProfileLeading('/settings', null)).toBe(true);
+    expect(mobileUnifiedHeaderShowsProfileLeading('/buddies', null, '?section=friends')).toBe(false);
   });
 });

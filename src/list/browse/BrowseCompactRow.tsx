@@ -5,26 +5,23 @@ import { SecureAvatar } from '../../components/ui/SecureAvatar';
 import { DiscoveryCardTypeIcon } from '../../explore/ui/DiscoveryCardTypeIcon';
 import { EXPLORE_LIST_ROW, EXPLORE_TYPE } from '../../config/exploreTheme';
 import { resolveBrowsePosterCoverUrl } from '../browsePosterCover';
-import { ListExplorerItemLink } from './ListExplorerItemLink';
-import { listExplorerCardMeta, listExplorerRowWhenDisplay } from './listExplorerCardMeta';
-import { usePlaceDistanceLabel } from './listPlaceDistance';
-import { ListExplorerDistanceChip } from './ListExplorerDistanceChip';
+import { BrowseItemLink } from './BrowseItemLink';
+import { browseCardMeta, browseRowWhenDisplay } from './browseCardMeta';
+import { DiscoveryCardHostProfileNav } from '../../discovery/DiscoveryCardHostProfileNav';
 
-type ListExplorerListRowProps = {
+type BrowseCompactRowProps = {
   card: DiscoveryCardModel;
   onMapHover?: (exploreItemId: string | null) => void;
-  showDistance?: boolean;
 };
 
-/** List layout row — compact type scales with viewport; meta wraps instead of single-line clip. */
-export const ListExplorerListRow = ({ card, onMapHover, showDistance = false }: ListExplorerListRowProps) => {
+/** List layout row — compact discovery card (`?layout=list`). */
+export const BrowseCompactRow = ({ card, onMapHover }: BrowseCompactRowProps) => {
   const cover = resolveBrowsePosterCoverUrl(card);
-  const meta = listExplorerCardMeta(card);
-  const whenParts = listExplorerRowWhenDisplay(card);
-  const distance = usePlaceDistanceLabel(card.mapLatitude, card.mapLongitude);
+  const meta = browseCardMeta(card);
+  const whenParts = browseRowWhenDisplay(card);
 
   return (
-    <ListExplorerItemLink
+    <BrowseItemLink
       to={card.path}
       exploreItemId={card.id}
       onMapHover={onMapHover}
@@ -61,30 +58,30 @@ export const ListExplorerListRow = ({ card, onMapHover, showDistance = false }: 
           {meta.title}
         </h3>
         {meta.location ? (
-          <div className="mt-0 flex min-w-0 flex-wrap items-start gap-1">
-            <p className="flex min-w-0 flex-1 items-start gap-0.5 text-[clamp(0.625rem,2.4vw,0.8125rem)] font-medium leading-snug text-neutral-700">
-              <MapPin
-                className="mt-0.5 h-3 w-3 shrink-0 text-emerald-600 sm:h-3.5 sm:w-3.5"
-                aria-hidden
-              />
-              <span className="min-w-0 line-clamp-2 break-words leading-snug">{meta.location}</span>
-            </p>
-            {showDistance && distance ? (
-              <ListExplorerDistanceChip label={distance} className="self-start" />
-            ) : null}
-          </div>
-        ) : showDistance && distance ? (
-          <ListExplorerDistanceChip label={distance} />
+          <p className="mt-0 flex min-w-0 items-start gap-0.5 text-[clamp(0.625rem,2.4vw,0.8125rem)] font-medium leading-snug text-neutral-700">
+            <MapPin
+              className="mt-0.5 h-3 w-3 shrink-0 text-emerald-600 sm:h-3.5 sm:w-3.5"
+              aria-hidden
+            />
+            <span className="min-w-0 line-clamp-2 break-words leading-snug">{meta.location}</span>
+          </p>
         ) : null}
         {meta.hostName ? (
-          <p className="flex items-center gap-1 text-[clamp(0.625rem,2.2vw,0.75rem)] font-medium leading-snug text-neutral-600">
+          <DiscoveryCardHostProfileNav
+            card={card}
+            embedInItemLink
+            ariaLabel={`View ${meta.hostName} profile`}
+            className="flex items-center gap-1 text-left text-[clamp(0.625rem,2.2vw,0.75rem)] font-medium leading-snug text-neutral-600 hover:text-emerald-800"
+          >
             <SecureAvatar
               src={meta.hostAvatar}
               name={meta.hostName}
               className="h-3.5 w-3.5 shrink-0 text-[6px] sm:h-4 sm:w-4 sm:text-[7px]"
             />
-            <span className="min-w-0 truncate">{meta.hostName}</span>
-          </p>
+            <span className="min-w-0 truncate underline decoration-neutral-300 underline-offset-2">
+              {meta.hostName}
+            </span>
+          </DiscoveryCardHostProfileNav>
         ) : null}
         {meta.soldOut ? (
           <p className="text-[10px] font-bold uppercase tracking-wide text-red-600">Sold out</p>
@@ -103,6 +100,6 @@ export const ListExplorerListRow = ({ card, onMapHover, showDistance = false }: 
         </div>
       ) : null}
       <ChevronRight className="h-3.5 w-3.5 shrink-0 self-center text-neutral-400 sm:h-4 sm:w-4" aria-hidden />
-    </ListExplorerItemLink>
+    </BrowseItemLink>
   );
 };

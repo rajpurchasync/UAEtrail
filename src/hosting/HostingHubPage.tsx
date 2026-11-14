@@ -13,7 +13,7 @@ import { exploreHostPath } from '../explore/routing';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { memberCanManageHostedActivities } from '../utils/hostedActivitiesGate';
 import { signInPathForReturn } from '../utils/authReturnContext';
-import { PlanDesktopHostingHub } from '../components/plan/PlanDesktopHostingHub';
+import { HostingHubView } from './HostingHubView';
 import { PlanHostingManageProvider } from '../plan/PlanHostingManageContext';
 import { planJoinedSchedulePath } from '../plan/planRouting';
 
@@ -80,7 +80,7 @@ export const HostingHubPage = () => {
                 active
                 scopedActivityLists
               >
-                <PlanDesktopHostingHub refreshKey={refreshKey} onCreateNew={handleOpenCompose} />
+                <HostingHubView refreshKey={refreshKey} onCreateNew={handleOpenCompose} />
               </PlanHostingManageProvider>
             )}
           </div>

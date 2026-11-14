@@ -2,41 +2,40 @@ import { Car, Clock, MapPin } from 'lucide-react';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { SecureAvatar } from '../../components/ui/SecureAvatar';
 import { EXPLORE_TYPE } from '../../config/exploreTheme';
-import { resolveListTripListingCopy } from '../listTripPosterPresentation';
-import { DiscoveryBrowsePosterBanner } from './DiscoveryBrowsePosterBanner';
-import { ListExplorerItemLink } from './ListExplorerItemLink';
-import { ListExplorerListingJoinFooter } from './ListExplorerListingJoinFooter';
+import { resolveTripBrowseCardCopy } from './tripBrowseCardCopy';
+import { DiscoveryBrowsePosterBanner } from '../../discovery/DiscoveryBrowsePosterBanner';
+import { BrowseItemLink } from './BrowseItemLink';
+import { BrowseCardJoinFooter } from './BrowseCardJoinFooter';
+import { DiscoveryCardHostProfileNav } from '../../discovery/DiscoveryCardHostProfileNav';
+import { BrowseActivityStatusChips } from './BrowseActivityStatusChips';
+import { useListFeedActionsOptional } from '../ui/ListFeedActionsProvider';
 import {
-  LIST_EXPLORER_LISTING_CHIP,
-  LIST_EXPLORER_LISTING_IMAGE,
-  LIST_EXPLORER_LISTING_SHELL,
-  ListExplorerListingPhotoShare,
-} from './listExplorerListingChrome';
+  BROWSE_CARD_CHIP,
+  BROWSE_CARD_IMAGE,
+  BROWSE_CARD_SHELL,
+  BrowseCardPhotoShare,
+} from './browseCardChrome';
 
-type ListExplorerTripListingCardProps = {
+type TripBrowseCardProps = {
   card: DiscoveryCardModel;
   onMapHover?: (exploreItemId: string | null) => void;
 };
 
-/**
- * Catalogue listing for hosted outings: photo is when/where/price;
- * body is title + host + audience chips; join CTA on the footer row.
- */
-export const ListExplorerTripListingCard = ({
-  card,
-  onMapHover,
-}: ListExplorerTripListingCardProps) => {
-  const listing = resolveListTripListingCopy(card);
+/** Explore trips bucket — thumbnail card for hosted/seeking activities (`DiscoveryCardModel`). */
+export const TripBrowseCard = ({ card, onMapHover }: TripBrowseCardProps) => {
+  const listing = resolveTripBrowseCardCopy(card);
+  const listActions = useListFeedActionsOptional();
+  const joinUiState = listActions?.joinUiStateForCard(card);
   const emitHover = (id: string | null) => onMapHover?.(id);
 
   return (
     <article
-      className={LIST_EXPLORER_LISTING_SHELL}
+      className={BROWSE_CARD_SHELL}
       onMouseEnter={() => emitHover(card.id)}
       onMouseLeave={() => emitHover(null)}
     >
       <div className="relative">
-        <ListExplorerItemLink
+        <BrowseItemLink
           to={card.path}
           exploreItemId={card.id}
           onMapHover={onMapHover}
@@ -44,13 +43,13 @@ export const ListExplorerTripListingCard = ({
         >
           <DiscoveryBrowsePosterBanner
             card={card}
-            showDistance={false}
             imageHoverZoom
-            imageHeightClass={LIST_EXPLORER_LISTING_IMAGE}
+            imageHeightClass={BROWSE_CARD_IMAGE}
             showOverlayMeta={false}
             hideHostBand
+            embedHostInItemLink
             typeIconBare
-            headerActions={<ListExplorerListingPhotoShare card={card} />}
+            headerActions={<BrowseCardPhotoShare card={card} />}
             overlayContent={
               listing.locationLine || listing.whenLine || listing.price || listing.soldOut ? (
                 <div className="flex items-end gap-1.5">
@@ -87,9 +86,9 @@ export const ListExplorerTripListingCard = ({
               ) : null
             }
           />
-        </ListExplorerItemLink>
+        </BrowseItemLink>
         {listing.carpool ? (
-          <ListExplorerItemLink
+          <BrowseItemLink
             to={listing.carpool.path}
             exploreItemId={listing.carpool.exploreItemId}
             onMapHover={onMapHover}
@@ -97,10 +96,10 @@ export const ListExplorerTripListingCard = ({
           >
             <Car className="h-3 w-3 shrink-0" aria-hidden />
             <span className="min-w-0 truncate">{listing.carpool.label}</span>
-          </ListExplorerItemLink>
+          </BrowseItemLink>
         ) : null}
       </div>
-      <ListExplorerItemLink
+      <BrowseItemLink
         to={card.path}
         exploreItemId={card.id}
         onMapHover={onMapHover}
@@ -111,27 +110,35 @@ export const ListExplorerTripListingCard = ({
             {listing.title}
           </h3>
           {listing.hostName ? (
-            <p className="flex min-w-0 items-center gap-1.5 text-[12px] font-medium text-neutral-600">
+            <DiscoveryCardHostProfileNav
+              card={card}
+              embedInItemLink
+              ariaLabel={`View ${listing.hostName} profile`}
+              className="flex min-w-0 items-center gap-1.5 text-left text-[12px] font-medium text-neutral-600 hover:text-emerald-800"
+            >
               <SecureAvatar
                 src={listing.hostAvatar}
                 name={listing.hostName}
                 className="h-5 w-5 shrink-0 text-[8px] ring-1 ring-white"
               />
-              <span className="min-w-0 truncate">{listing.hostName}</span>
-            </p>
+              <span className="min-w-0 truncate underline decoration-neutral-300 underline-offset-2">
+                {listing.hostName}
+              </span>
+            </DiscoveryCardHostProfileNav>
           ) : null}
+          <BrowseActivityStatusChips card={card} joinUiState={joinUiState} />
           {listing.factLabels.length > 0 ? (
             <ul className="flex flex-wrap gap-1">
               {listing.factLabels.map((label) => (
-                <li key={label} className={LIST_EXPLORER_LISTING_CHIP}>
+                <li key={label} className={BROWSE_CARD_CHIP}>
                   {label}
                 </li>
               ))}
             </ul>
           ) : null}
         </div>
-      </ListExplorerItemLink>
-      <ListExplorerListingJoinFooter card={card} />
+      </BrowseItemLink>
+      <BrowseCardJoinFooter card={card} />
     </article>
   );
 };

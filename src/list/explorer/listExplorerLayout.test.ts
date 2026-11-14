@@ -15,7 +15,13 @@ import {
 import { parseListFilterFabCorner, snapListFilterFabCorner } from './listExplorerFabSnap';
 import { listExplorerEntityLinkState } from './listExplorerNavState';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import { listExplorerCardMeta, listExplorerCardTitle, listExplorerPriceLabel, formatListExplorerRowDateLabel, listExplorerRowWhenDisplay } from './listExplorerCardMeta';
+import {
+  browseCardMeta,
+  browseCardTitle,
+  browseCardPriceLabel,
+  formatBrowseRowDateLabel,
+  browseRowWhenDisplay,
+} from '../browse/browseCardMeta';
 
 const emptyFilters = (): BrowseListFilterState => ({
   query: 'wadi',
@@ -130,14 +136,14 @@ describe('list explorer thumbnail copy', () => {
   } as DiscoveryCardModel;
 
   it('uses the host-provided event name instead of the social headline', () => {
-    expect(listExplorerCardTitle(eventCard)).toBe('Hatta Dam Loop');
-    expect(listExplorerCardMeta(eventCard).title).toBe('Hatta Dam Loop');
-    expect(listExplorerCardMeta(eventCard).hostName).toBe('Samira Khan');
+    expect(browseCardTitle(eventCard)).toBe('Hatta Dam Loop');
+    expect(browseCardMeta(eventCard).title).toBe('Hatta Dam Loop');
+    expect(browseCardMeta(eventCard).hostName).toBe('Samira Khan');
   });
 
   it('shows a compact price for the image overlay', () => {
-    expect(listExplorerPriceLabel(eventCard)).toBe('AED 120');
-    expect(listExplorerPriceLabel({ ...eventCard, price: { kind: 'free', badge: 'Free' } })).toBe('Free');
+    expect(browseCardPriceLabel(eventCard)).toBe('AED 120');
+    expect(browseCardPriceLabel({ ...eventCard, price: { kind: 'free', badge: 'Free' } })).toBe('Free');
   });
 
   it('uses the company logo and name when the outing is published by an agency', () => {
@@ -152,7 +158,7 @@ describe('list explorer thumbnail copy', () => {
         tenantLogoUrl: 'https://cdn.example/logo.png',
       },
     } as DiscoveryCardModel;
-    const meta = listExplorerCardMeta(companyCard);
+    const meta = browseCardMeta(companyCard);
     expect(meta.hostName).toBe('UAE Adventure Co');
     expect(meta.hostAvatar).toBe('https://cdn.example/logo.png');
   });
@@ -169,14 +175,14 @@ describe('list explorer thumbnail copy', () => {
       venueHint: 'Hiking trail location',
       sections: { details: [] },
     } as DiscoveryCardModel;
-    expect(listExplorerCardMeta(venueCard).location).toBe('RAK · Wadi Ghalilah');
-    expect(listExplorerCardMeta(venueCard).location).not.toMatch(/Hiking trail location/);
+    expect(browseCardMeta(venueCard).location).toBe('RAK · Wadi Ghalilah');
+    expect(browseCardMeta(venueCard).location).not.toMatch(/Hiking trail location/);
   });
 
   it('formats list row dates in full and prefixes This for this-week section', () => {
     const now = new Date('2026-10-30T10:00:00');
-    expect(formatListExplorerRowDateLabel('2026-10-30', now)).toBe('Fri 30 Oct 26');
-    expect(formatListExplorerRowDateLabel('2026-10-31', now)).toBe('This Sat 31 Oct 26');
+    expect(formatBrowseRowDateLabel('2026-10-30', now)).toBe('Fri 30 Oct 26');
+    expect(formatBrowseRowDateLabel('2026-10-31', now)).toBe('This Sat 31 Oct 26');
 
     const weekCard = {
       ...eventCard,
@@ -184,7 +190,7 @@ describe('list explorer thumbnail copy', () => {
       whenLabel: 'Sat at 4:00 PM',
       activity: { title: 'Hatta Dam Loop', date: '2026-10-31', time: '16:00' },
     } as DiscoveryCardModel;
-    expect(listExplorerRowWhenDisplay(weekCard, now)).toEqual({
+    expect(browseRowWhenDisplay(weekCard, now)).toEqual({
       date: 'This Sat 31 Oct 26',
       time: '4:00 PM',
     });

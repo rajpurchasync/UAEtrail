@@ -282,6 +282,21 @@ Detail: [`API_ROUTING.md`](./API_ROUTING.md).
 
 Canon table: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) (Discovery UI file names). Guards: `mapPeekNaming.test.ts`, `discoveryUiMethodologyGuard.test.ts`, `geographyTerminologyGuard.test.ts`.
 
+#### 6.1.1 API vs UI vocabulary (keep the backend small)
+
+**Problem:** When SPA layout names (`ListExplorer`, `ListingCard`, `embedMode`, five-tab ids) leak into `domain/`, stores, and non-catalog services, the API grows parallel concepts for every UI rename — without new product capability.
+
+**Rule:** The server exposes **entities + catalog projections + viewerAccess**. Clients choose map vs list vs thumbnails.
+
+| Layer | May say | Must not become |
+|-------|---------|-----------------|
+| **HTTP (stable)** | `GET /explore/map`, `GET /me/discover/overlay`, `GET /activities/:id`, `GET /me/member-discovery/*` | `/list/*` catalog routes, per-layout duplicate reads |
+| **Discovery read-model** (`explore-map-*`, overlay, engagement wire) | `projection`, `presentation`, `mapPeekActions` / `mapPeekStrips` (L0 engagement on pins) | `listExplorer`, component filenames, tab chrome |
+| **Core stores / domain** | `activities`, `locations`, `activity_requests`, `hostUserId` | Trip/listing/thumbnail as types or endpoints |
+| **FE** | Explore · Trips · Venues · Crews (copy); browse cards in `src/list/browse/*` (`TripBrowseCard`, `VenueBrowseCard`, …); shell chrome may stay `ListExplorer*` until renamed | New `exploreApi.listExplorer*` clients; `*ListingCard` component names |
+
+**Guards:** `apps/api/tests/api-ui-vocabulary-guard.test.ts`, `src/config/apiUiVocabularyGuard.test.ts`.
+
 ### 6.2 Frontend surface architecture (system methodology)
 
 **Purpose:** One **object-centric** stack (wire → projection → shell → page composer) across **all** user-facing families — not only map peek and entity detail. Experiment plans (`consumer-detail-surfaces-plan`, `member-surfaces-implementation-plan`) are **workstreams under this section**; they do not replace it.

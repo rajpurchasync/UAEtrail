@@ -4,16 +4,18 @@
  * @see docs/DOMAIN_CANONICALS.md §12.1.1
  */
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
-import { resolveCatalogEntityName } from '../list/listVenuePosterPresentation';
+import {
+  browseCatalogEntityName,
+  browseCatalogNormalize,
+} from '../list/browse/browseCatalogLabels';
 
-const normalize = (value: string | null | undefined): string =>
-  value?.trim().toLowerCase().replace(/\s+/g, ' ') ?? '';
+const normalize = browseCatalogNormalize;
 
 /** Emirate / region line — never duplicates Arabic subtitle blobs. */
 export const resolvePlacePeekRegionLabel = (card: DiscoveryCardModel): string | null => {
   const region = card.venueRegion?.trim();
   if (!region) return null;
-  if (normalize(region) === normalize(resolveCatalogEntityName(card))) return null;
+  if (normalize(region) === normalize(browseCatalogEntityName(card))) return null;
   return region;
 };
 
@@ -34,7 +36,7 @@ export const resolvePlacePeekLocalLabel = (card: DiscoveryCardModel): string | n
 
   const curated = card.areaName?.trim();
   if (curated && normalize(local) === normalize(curated)) return null;
-  if (normalize(local) === normalize(resolveCatalogEntityName(card))) return null;
+  if (normalize(local) === normalize(browseCatalogEntityName(card))) return null;
   return local || null;
 };
 

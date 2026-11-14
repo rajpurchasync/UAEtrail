@@ -1,22 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { CalendarDays, List, Search } from 'lucide-react';
 import type { PlanCommitmentFilter, PlanUpcomingLayout } from '../../plan/planTab';
-import {
-  PRODUCT_PLAN_UPCOMING_HOSTING_CONTEXT,
-  PRODUCT_PLAN_UPCOMING_JOINED_CONTEXT,
-} from '../../content/productNorthStar';
+import { PRODUCT_PLAN_UPCOMING_JOINED_CONTEXT } from '../../content/productNorthStar';
 import { PlanAvailabilitySection } from './PlanAvailabilitySection';
 import { PlanCalendarSection } from './PlanCalendarSection';
-import { PlanHostingUpcoming } from './PlanHostingUpcoming';
 import { PlanJoinedUpcoming } from './PlanJoinedUpcoming';
 import { PlanNeedsYouStrip } from './PlanNeedsYouStrip';
 import { parsePlanLens } from '../../plan/planLens';
-import { PlanHostingManageProvider } from '../../plan/PlanHostingManageContext';
 import { PLAN_SUMMARY_FOCUS_ELEMENT_IDS } from '../../plan/planSummaryFocusScroll';
-import { HostingModeSwitcher } from '../hosting/HostingModeSwitcher';
-import { useMemberStatus } from '../../hooks/useMemberStatus';
-import { useAuth } from '../../context/AuthContext';
-import { persistHostingSurfaceMode } from '../../hosting/hostingHubRouting';
 
 const PLAN_SUMMARY_SCROLL_MT = 'scroll-mt-[calc(var(--safe-top)+7.5rem)] outline-none';
 
@@ -29,6 +20,7 @@ type PlanUpcomingViewProps = {
   onLayoutChange: (layout: PlanUpcomingLayout) => void;
 };
 
+/** My Plans → Upcoming tab (joined + calendar + availability). Hosting lives at `/hosting`. */
 export const PlanUpcomingView = ({
   refreshKey,
   canHost,
@@ -37,44 +29,25 @@ export const PlanUpcomingView = ({
   lensRaw,
   onLayoutChange,
 }: PlanUpcomingViewProps) => {
-  const { user } = useAuth();
-  const { ownedProfiles, hostTiers } = useMemberStatus({ enabled: Boolean(user) && canHost });
   const [searchQuery, setSearchQuery] = useState('');
   const planLens = parsePlanLens(lensRaw);
-  const hostingActive = canHost && filter === 'hosting';
   const listSections = planLens !== 'availability' && layout === 'list';
-  const searchPlaceholder =
-    filter === 'hosting' && canHost ? 'Search hosted outings…' : 'Search joined outings…';
-
-  useEffect(() => {
-    if (hostingActive) persistHostingSurfaceMode('community');
-  }, [hostingActive]);
+  const searchPlaceholder = 'Search joined outings…';
 
   const upcomingBody =
     planLens === 'availability' ? (
       <PlanAvailabilitySection />
     ) : layout === 'calendar' ? (
       <PlanCalendarSection refreshKey={refreshKey} canHost={canHost} filter={filter} />
-    ) : filter === 'hosting' ? (
-      <PlanHostingUpcoming refreshKey={refreshKey} canHost={canHost} searchQuery={searchQuery} />
     ) : (
       <PlanJoinedUpcoming refreshKey={refreshKey} searchQuery={searchQuery} />
     );
 
   return (
     <div className="space-y-3 md:space-y-2">
-      {hostingActive ? (
-        <HostingModeSwitcher
-          active="community"
-          ownedProfiles={ownedProfiles}
-          hostTiers={hostTiers}
-        />
-      ) : null}
       {planLens !== 'availability' && layout === 'list' ? (
         <p className="text-xs leading-snug text-neutral-500 md:text-[11px]">
-          {filter === 'hosting' && canHost
-            ? PRODUCT_PLAN_UPCOMING_HOSTING_CONTEXT
-            : PRODUCT_PLAN_UPCOMING_JOINED_CONTEXT}
+          {PRODUCT_PLAN_UPCOMING_JOINED_CONTEXT}
         </p>
       ) : null}
       <div className="flex items-center gap-3">
@@ -118,29 +91,18 @@ export const PlanUpcomingView = ({
 
       <PlanNeedsYouStrip refreshKey={refreshKey} />
 
-      <PlanHostingManageProvider refreshKey={refreshKey} canHost={canHost} active={hostingActive}>
-        {listSections && filter === 'hosting' ? (
-          <section
-            id={PLAN_SUMMARY_FOCUS_ELEMENT_IDS.hosting}
-            tabIndex={-1}
-            className={PLAN_SUMMARY_SCROLL_MT}
-            aria-label="Hosting"
-          >
-            {upcomingBody}
-          </section>
-        ) : listSections && filter === 'joined' ? (
-          <section
-            id={PLAN_SUMMARY_FOCUS_ELEMENT_IDS.joined}
-            tabIndex={-1}
-            className={PLAN_SUMMARY_SCROLL_MT}
-            aria-label="Joined"
-          >
-            {upcomingBody}
-          </section>
-        ) : (
-          upcomingBody
-        )}
-      </PlanHostingManageProvider>
+      {listSections && filter === 'joined' ? (
+        <section
+          id={PLAN_SUMMARY_FOCUS_ELEMENT_IDS.joined}
+          tabIndex={-1}
+          className={PLAN_SUMMARY_SCROLL_MT}
+          aria-label="Joined"
+        >
+          {upcomingBody}
+        </section>
+      ) : (
+        upcomingBody
+      )}
     </div>
   );
 };

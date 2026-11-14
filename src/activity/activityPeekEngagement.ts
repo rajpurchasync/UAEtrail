@@ -1,7 +1,9 @@
 import {
+  computeActivityMapPeekActions,
   mergeActivityMapPeekActionsWithEntitlements,
   projectActivityMapPeekActions,
   resolveActivityEngagementPolicy,
+  type ActivityDTO,
   type ActivityEngagementStripsDTO,
   type ActivityMapPeekAction,
   type ActivityViewerAccessDTO,
@@ -174,6 +176,28 @@ const enrichJoinedParticipantPeekActions = (
   return withoutDetail.map((action) =>
     action.id === 'open_crew_chat' ? { ...action, prominence: 'primary' } : action
   );
+};
+
+const confirmedParticipantCountForHostPeek = (activity: ActivityDTO): number => {
+  const previewCount = activity.participantPreviews?.length ?? 0;
+  if (previewCount > 0) return previewCount;
+  const total = activity.slotsTotal ?? 0;
+  const available = activity.slotsAvailable ?? 0;
+  return Math.max(0, total - available);
+};
+
+/** Publishing / hosting rows — same L1 host wire as discovery (`level: host`), without a discovery card. */
+export const resolveActivityMapPeekActionsForHostDto = (
+  activity: ActivityDTO
+): ActivityMapPeekAction[] => {
+  if (activity.status !== 'published') {
+    return [{ id: 'manage_activity', prominence: 'primary' }];
+  }
+  return computeActivityMapPeekActions({
+    level: 'host',
+    activityPublished: true,
+    confirmedParticipantCount: confirmedParticipantCountForHostPeek(activity),
+  });
 };
 
 /** Resolved wire actions for an activity map peek (API list or computed fallback). */

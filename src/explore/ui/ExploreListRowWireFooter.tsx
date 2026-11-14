@@ -11,13 +11,13 @@ export const ExploreListRowWireFooter = ({ card }: ExploreListRowWireFooterProps
   const actions = useListFeedActionsOptional();
   if (!actions) return null;
 
-  const { footerModel, onPrimaryFooter, onSecondaryFooter, joinStateLoading } = actions;
+  const { footerModel, onPrimaryFooter, onSecondaryFooter, joinStateLoadingForCard } = actions;
 
   return (
     <ListFeedWireFooterButtons
       card={card}
       model={footerModel(card)}
-      joinStateLoading={joinStateLoading}
+      joinStateLoading={joinStateLoadingForCard(card)}
       variant="compact"
       onPrimaryFooter={onPrimaryFooter}
       onSecondaryFooter={onSecondaryFooter}

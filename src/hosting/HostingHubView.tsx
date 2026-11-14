@@ -12,27 +12,28 @@ import {
   UsersRound,
 } from 'lucide-react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
-import { useConsoleHubData } from '../../console/useHubData';
-import { useHostActivityManageActions } from '../../hooks/useHostActivityManageActions';
-import { useMySeekingPosts } from '../../hooks/useMySeekingPosts';
+import { useConsoleHubData } from '../console/useHubData';
+import { useHostActivityManageActions } from '../hooks/useHostActivityManageActions';
 import {
   usePlanHostedPastPreview,
   usePlanHostedSchedule,
   usePlanHostingRangeCounts,
-} from '../../hooks/usePlanHostedActivities';
+} from '../hooks/usePlanHostedActivities';
 import {
   ConsumerErrorCard,
   ConsumerInlineEmpty,
   ConsumerLoadingSpinner,
-} from '../mobile/ConsumerFeedback';
-import { HostedActivityListRow } from '../activity/HostedActivityListRow';
-import { ActivityManageSheet } from '../activity/ActivityManageSheet';
-import { PlanNeedsYouStrip } from './PlanNeedsYouStrip';
-import { PlanHostingUpcoming } from './PlanHostingUpcoming';
-import { resolveJoinRequestActivity } from '../../utils/joinRequestActivity';
-import type { ActivityRequestView } from '../../api/types';
-import { matchesActivitySearch } from '../../utils/activitySearch';
-import type { PlanHostingScheduleLens } from '../../plan/planHostingTimeRange';
+} from '../components/mobile/ConsumerFeedback';
+import { HostedActivityListRow } from '../components/activity/HostedActivityListRow';
+import { ActivityManageSheet } from '../components/activity/ActivityManageSheet';
+import type { ActivityMapPeekActionHandlers } from '../activity/executeActivityMapPeekAction';
+import { useActivityInviteShareSheet } from '../hooks/useActivityInviteShareSheet';
+import { PlanNeedsYouStrip } from '../components/plan/PlanNeedsYouStrip';
+import { HostingSeekingPostsSection } from './HostingSeekingPostsSection';
+import { resolveJoinRequestActivity } from '../utils/joinRequestActivity';
+import type { ActivityRequestView } from '../api/types';
+import { matchesActivitySearch } from '../utils/activitySearch';
+import type { PlanHostingScheduleLens } from '../plan/planHostingTimeRange';
 import {
   HOSTING_HUB_PATH,
   MESSAGES_PATH,
@@ -42,21 +43,21 @@ import {
   PUBLISHING_PROFILE_PATH,
   PUBLISHING_REQUESTS_PATH,
   PUBLISHING_TEAM_PATH,
-} from '../../config/routingCatalog';
+} from '../config/routingCatalog';
 import {
   PRODUCT_HOSTING_SCHEDULE_NAV_HINT,
   PRODUCT_PLAN_UPCOMING_HOSTING_CONTEXT,
-} from '../../content/productNorthStar';
-import { HostingModeSwitcher } from '../hosting/HostingModeSwitcher';
-import { useMemberStatus } from '../../hooks/useMemberStatus';
-import { persistHostingSurfaceMode } from '../../hosting/hostingHubRouting';
-import { useAuth } from '../../context/AuthContext';
+} from '../content/productNorthStar';
+import { HostingModeSwitcher } from './HostingModeSwitcher';
+import { useMemberStatus } from '../hooks/useMemberStatus';
+import { persistHostingSurfaceMode } from './hostingHubRouting';
+import { useAuth } from '../context/AuthContext';
 import {
   AccountLinkList,
   AccountSectionHeader,
   AccountStatGrid,
   type AccountStat,
-} from '../account';
+} from '../components/account';
 
 const pendingCountForActivity = (activityId: string, requests: ActivityRequestView[]) =>
   requests.filter((request) => {
@@ -71,7 +72,7 @@ const COUNT_CHIPS: { key: PlanHostingScheduleLens; label: string }[] = [
   { key: 'other', label: 'Later' },
 ];
 
-type PlanDesktopHostingHubProps = {
+type HostingHubViewProps = {
   refreshKey: number;
   onCreateNew: () => void;
 };
@@ -80,13 +81,14 @@ type PlanDesktopHostingHubProps = {
  * Dedicated `/hosting` hub (mobile + tablet + desktop) — hosting workspace only
  * (upcoming, approvals, chat, manage, history — not My Plans).
  */
-export const PlanDesktopHostingHub = ({ refreshKey, onCreateNew }: PlanDesktopHostingHubProps) => {
+export const HostingHubView = ({ refreshKey, onCreateNew }: HostingHubViewProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { ownedProfiles, hostTiers } = useMemberStatus({ enabled: Boolean(user) });
   // Join queue only — schedule / counts / past use scoped queries (no full tenant dump).
   const host = useConsoleHubData(true, { fetchActivities: false });
   const hostActions = useHostActivityManageActions(host.tenantId, host.reload);
+  const inviteShare = useActivityInviteShareSheet();
 
   useEffect(() => {
     persistHostingSurfaceMode('community');
@@ -156,6 +158,19 @@ export const PlanDesktopHostingHub = ({ refreshKey, onCreateNew }: PlanDesktopHo
     setManageInitialView(view);
     setManageActivity(activity);
   }, []);
+
+  const mapPeekHandlersFor = useCallback(
+    (activity: ActivityDTO): ActivityMapPeekActionHandlers => ({
+      shareActivity: () =>
+        inviteShare.openShareFromActivity(activity, { canSendBuddyInvites: true }),
+      manageActivity: () => openManage(activity),
+      openCrewChat: () =>
+        void hostActions.openGroupChat(activity.id, activity.groupChatId, {
+          returnTo: HOSTING_HUB_PATH,
+        }),
+    }),
+    [hostActions, inviteShare, openManage]
+  );
 
   const queueLoading = host.loading;
   const scheduleLoading = scheduleQuery.loading;
@@ -384,6 +399,7 @@ export const PlanDesktopHostingHub = ({ refreshKey, onCreateNew }: PlanDesktopHo
                   layout="desktop-actions"
                   pendingRequestCount={pendingCountForActivity(activity.id, host.pendingRequests)}
                   onOpenDetail={() => openManage(activity)}
+                  mapPeekHandlers={mapPeekHandlersFor(activity)}
                   onDuplicate={() => void hostActions.duplicateActivity(activity)}
                 />
               ))}
@@ -423,6 +439,7 @@ export const PlanDesktopHostingHub = ({ refreshKey, onCreateNew }: PlanDesktopHo
                   layout="desktop-actions"
                   pendingRequestCount={pendingCountForActivity(activity.id, host.pendingRequests)}
                   onOpenDetail={() => openManage(activity)}
+                  mapPeekHandlers={mapPeekHandlersFor(activity)}
                   onDuplicate={() => void hostActions.duplicateActivity(activity)}
                 />
               ))}
@@ -451,12 +468,12 @@ export const PlanDesktopHostingHub = ({ refreshKey, onCreateNew }: PlanDesktopHo
         )}
       </section>
 
-      <section aria-labelledby="plan-hosting-seeking-heading" className="space-y-2">
+      <section aria-labelledby="hosting-seeking-posts-heading" className="space-y-2">
         <AccountSectionHeader title="Open “find company” posts" />
-        <h2 id="plan-hosting-seeking-heading" className="sr-only">
+        <h2 id="hosting-seeking-posts-heading" className="sr-only">
           Open find company posts
         </h2>
-        <PlanHostingUpcoming refreshKey={refreshKey} canHost intentsOnly scopedJoinQueue />
+        <HostingSeekingPostsSection refreshKey={refreshKey} canHost />
       </section>
 
       {hostActions.error && <ConsumerErrorCard message={hostActions.error} />}

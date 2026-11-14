@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { useConsoleHubData } from '../../console/useHubData';
@@ -21,6 +21,7 @@ import { matchesActivitySearch } from '../../utils/activitySearch';
 import { resolveJoinRequestActivity } from '../../utils/joinRequestActivity';
 import type { ActivityRequestView } from '../../api/types';
 import { useActivityInviteShareSheet } from '../../hooks/useActivityInviteShareSheet';
+import type { ActivityMapPeekActionHandlers } from '../../activity/executeActivityMapPeekAction';
 import { profileHistoryEntityLinkState } from '../../explore/mapPeekDetailNavState';
 import { viewReturnPathKey } from '../../utils/viewReturnMemory';
 
@@ -101,6 +102,19 @@ export const HostedActivitiesSection = ({
   const openManage = (activity: ActivityDTO) => {
     setManageActivity(activity);
   };
+
+  const returnTo = viewReturnPathKey(location.pathname, location.search);
+
+  const mapPeekHandlersFor = useCallback(
+    (activity: ActivityDTO): ActivityMapPeekActionHandlers => ({
+      shareActivity: () =>
+        inviteShare.openShareFromActivity(activity, { canSendBuddyInvites: true }),
+      manageActivity: () => openManage(activity),
+      openCrewChat: () =>
+        void hostActions.openGroupChat(activity.id, activity.groupChatId, { returnTo }),
+    }),
+    [hostActions, inviteShare, returnTo]
+  );
 
   const openedDeepLinkRef = useRef<string | null>(null);
 
@@ -228,8 +242,10 @@ export const HostedActivitiesSection = ({
             <HostedActivityListRow
               key={activity.id}
               activity={activity}
+              layout="desktop-actions"
               pendingRequestCount={pendingCountForActivity(activity.id, host.pendingRequests)}
               onOpenDetail={() => openManage(activity)}
+              mapPeekHandlers={mapPeekHandlersFor(activity)}
             />
           ))}
         </div>

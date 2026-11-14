@@ -17,7 +17,7 @@ import {
   ExploreVenueImageBadges,
 } from '../DiscoveryCardPresentation';
 import { ActivityDiscoveryPublishedBody } from '../../../discovery/ActivityDiscoveryPublishedBody';
-import { DiscoveryBrowsePosterBanner } from '../../../list/explorer/DiscoveryBrowsePosterBanner';
+import { DiscoveryBrowsePosterBanner } from '../../../discovery/DiscoveryBrowsePosterBanner';
 import { MapPeekBrowseTitle } from './MapPeekBrowseTitle';
 import { PlacePeekBody } from '../peek/place/PlacePeekBody';
 import { PlacePeekHero } from '../peek/place/PlacePeekHero';

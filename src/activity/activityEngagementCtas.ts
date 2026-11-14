@@ -1,10 +1,19 @@
-import type { ActivityMapPeekAction } from '@uaetrail/shared-types';
+import {
+  pickActivityPeekTwoSlotActions,
+  type ActivityMapPeekAction,
+  type ActivityPeekTwoSlot,
+} from '@uaetrail/shared-types';
 import {
   detailPlanFooterKindForPeekPrimary,
   resolveActivityDetailEngagementFooterKind,
 } from './resolveActivityDetailEngagement';
 
 export { detailPlanFooterKindForPeekPrimary, resolveActivityDetailEngagementFooterKind };
+
+/** Client projection — two peek/list buttons from a wire action list (L1 `pickActivityPeekTwoSlotActions`). */
+export const resolveActivityPeekTwoSlot = (
+  actions: readonly ActivityMapPeekAction[]
+): ActivityPeekTwoSlot => pickActivityPeekTwoSlotActions(actions);
 
 /** Primary peek affordance (explore map) — same intent family as detail sticky footer on Plan. */
 export const resolveActivityPeekPrimaryActionId = (

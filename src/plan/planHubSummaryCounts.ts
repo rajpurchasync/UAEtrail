@@ -12,8 +12,8 @@ import { aggregateMemberGoals } from '../utils/memberGoalsAggregate';
 
 const todayStart = () => new Date(new Date().toDateString());
 
-/** Upcoming hosted outings + open seeking posts (matches Plan hosting list). */
-export const countPlanHostingUpcoming = (
+/** Upcoming hosted outings + open seeking posts (hosting hub summary). */
+export const countHostingUpcomingCommitments = (
   activities: ActivityDTO[],
   _pendingRequests: ActivityRequestView[],
   intents: ParticipantIntentDTO[]

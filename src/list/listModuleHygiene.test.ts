@@ -76,27 +76,18 @@ describe('list module hygiene', () => {
     const explorer = readFileSync(join(process.cwd(), 'src/list/explorer/ListExplorer.tsx'), 'utf8');
     expect(explorer).toMatch(/grid-cols-1/);
     expect(explorer).not.toMatch(/grid-cols-2/);
-    expect(explorer).toMatch(/ListExplorerThumbnailCard/);
+    expect(explorer).toMatch(/BrowseThumbnailCard/);
     expect(explorer).toMatch(/ListExplorerFilterFab/);
   });
 
   it('puts type icon on the thumbnail and keeps search in the header', () => {
-    const thumb = readFileSync(join(process.cwd(), 'src/list/explorer/ListExplorerThumbnailCard.tsx'), 'utf8');
-    const listing = readFileSync(
-      join(process.cwd(), 'src/list/explorer/ListExplorerVenueListingCard.tsx'),
-      'utf8'
-    );
-    const tripListing = readFileSync(
-      join(process.cwd(), 'src/list/explorer/ListExplorerTripListingCard.tsx'),
-      'utf8'
-    );
-    const chrome = readFileSync(
-      join(process.cwd(), 'src/list/explorer/listExplorerListingChrome.tsx'),
-      'utf8'
-    );
+    const thumb = readFileSync(join(process.cwd(), 'src/list/browse/BrowseThumbnailCard.tsx'), 'utf8');
+    const listing = readFileSync(join(process.cwd(), 'src/list/browse/VenueBrowseCard.tsx'), 'utf8');
+    const tripListing = readFileSync(join(process.cwd(), 'src/list/browse/TripBrowseCard.tsx'), 'utf8');
+    const chrome = readFileSync(join(process.cwd(), 'src/list/browse/browseCardChrome.tsx'), 'utf8');
     const header = readFileSync(join(process.cwd(), 'src/list/explorer/ListExplorerHeader.tsx'), 'utf8');
-    expect(thumb).toMatch(/ListExplorerVenueListingCard/);
-    expect(thumb).toMatch(/ListExplorerTripListingCard/);
+    expect(thumb).toMatch(/VenueBrowseCard/);
+    expect(thumb).toMatch(/TripBrowseCard/);
     expect(chrome).toMatch(/ShareButton/);
     expect(chrome).toMatch(/iconOnly/);
     expect(chrome).toMatch(/aspect-\[5\/2\]/);
@@ -106,10 +97,10 @@ describe('list module hygiene', () => {
     expect(listing).toMatch(/ExploreWishlistSaveButton/);
     expect(listing).toMatch(/LIST_FEED_CTA_GET_DIRECTIONS/);
     expect(listing).toMatch(/LIST_FEED_CTA_WISHLIST/);
-    expect(listing).toMatch(/LIST_EXPLORER_LISTING_FOOTER/);
+    expect(listing).toMatch(/BROWSE_CARD_FOOTER/);
     expect(listing).toMatch(/compact/);
     expect(listing).toMatch(/overlayContent/);
-    expect(listing).toMatch(/resolveListVenueListingCopy/);
+    expect(listing).toMatch(/resolveVenueBrowseCardCopy/);
     expect(listing).toMatch(/scheduleHint/);
     expect(listing).toMatch(/schedulePath/);
     expect(listing).toMatch(/TitleRating/);
@@ -117,9 +108,9 @@ describe('list module hygiene', () => {
     expect(tripListing).toMatch(/typeIconBare/);
     expect(tripListing).toMatch(/overlayContent/);
     expect(tripListing).toMatch(/hideHostBand/);
-    expect(tripListing).toMatch(/resolveListTripListingCopy/);
-    expect(tripListing).toMatch(/ListExplorerListingPhotoShare/);
-    expect(tripListing).toMatch(/ListExplorerListingJoinFooter/);
+    expect(tripListing).toMatch(/resolveTripBrowseCardCopy/);
+    expect(tripListing).toMatch(/BrowseCardPhotoShare/);
+    expect(tripListing).toMatch(/BrowseCardJoinFooter/);
     expect(tripListing).toMatch(/listing.carpool/);
     expect(tripListing).toMatch(/listing.hostName/);
     expect(tripListing).toMatch(/LIST_FEED_CTA_CARPOOL|carpool.label/);
@@ -130,7 +121,7 @@ describe('list module hygiene', () => {
       /listing/
     );
     const banner = readFileSync(
-      join(process.cwd(), 'src/list/explorer/DiscoveryBrowsePosterBanner.tsx'),
+      join(process.cwd(), 'src/discovery/DiscoveryBrowsePosterBanner.tsx'),
       'utf8'
     );
     expect(banner).toMatch(/DiscoveryCardTypeIcon/);
@@ -140,7 +131,7 @@ describe('list module hygiene', () => {
     expect(banner).toMatch(/hideHostBand/);
     expect(banner).toMatch(/SecureAvatar/);
     expect(banner).toMatch(/meta\.price/);
-    expect(readFileSync(join(process.cwd(), 'src/list/explorer/listExplorerCardMeta.ts'), 'utf8')).toMatch(
+    expect(readFileSync(join(process.cwd(), 'src/list/browse/browseCardMeta.ts'), 'utf8')).toMatch(
       /resolveActivityPublisherChip/
     );
     expect(thumb).not.toMatch(/listTitle \|\| card\.headline/);

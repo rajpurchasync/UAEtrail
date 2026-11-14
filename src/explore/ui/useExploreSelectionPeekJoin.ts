@@ -10,6 +10,7 @@ import {
   activityMapPeekSkipsJoinContext,
 } from '../../activity/activityPeekEngagement';
 import type { DiscoveryCardViewModel } from '../../discovery';
+import { applyPeekJoinOpenAfterClick } from '../../activity/resolvePeekJoinOpenAfterClick';
 import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useActivityJoinFlow';
 import { useActivityJoinGuardMessage } from '../../hooks/useActivityJoinGuardMessage';
 import { messagesRouteForRole } from '../../utils/authRouting';
@@ -121,9 +122,11 @@ export const useExploreSelectionPeekJoin = (input: {
       joinActions.openGuestSheet('activity');
       return;
     }
-    if (joinUiState.kind !== 'open') return;
-    joinActions.openJoinModal();
-  }, [input.selected, input.user, joinUiState.kind, joinActions]);
+    applyPeekJoinOpenAfterClick(joinUiState, joinStateLoading, {
+      openJoinModal: () => joinActions.openJoinModal(),
+      setShowWithdraw: (open) => joinActions.setShowWithdraw(open),
+    });
+  }, [input.selected, input.user, joinUiState, joinStateLoading, joinActions]);
 
   const handlePeekHostMessage = useCallback(() => {
     if (input.selected) messageHost(input.selected);

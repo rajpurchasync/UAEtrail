@@ -1517,6 +1517,11 @@ export {
 } from './activity-map-peek-actions.js';
 
 export {
+  pickActivityPeekTwoSlotActions,
+  type ActivityPeekTwoSlot,
+} from './activity-peek-two-slot.js';
+
+export {
   computeProfileDetailExposure,
   type ProfileDetailExposure,
   type ProfileVisibilitySetting,

@@ -8,6 +8,7 @@ describe('ActivityPeekStandardFooter', () => {
   it('uses the activity detail membership footer, plus a details link', () => {
     const footer = read('src/explore/ui/peek/activity/ActivityPeekStandardFooter.tsx');
     expect(footer).toMatch(/resolveActivityDetailStandardFooter/);
+    expect(footer).toMatch(/resolveListFeedFooterModel/);
     expect(footer).toMatch(/data-activity-peek-standard-footer/);
     expect(footer).toMatch(/View details/);
     expect(footer).toMatch(/share_activity/);

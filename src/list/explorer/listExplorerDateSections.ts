@@ -1,5 +1,6 @@
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import { listExplorerCardDateIso } from './listExplorerCardMeta';
+import { browseCardDateIso } from '../browse/browseCardMeta';
+import { browseListSectionSlot, browseListIsThisWeekSectionDate } from '../browse/browseListSectionDates';
 
 export type ListExplorerDateSection = {
   key: string;
@@ -7,50 +8,14 @@ export type ListExplorerDateSection = {
   cards: DiscoveryCardModel[];
 };
 
-const startOfDay = (value: Date): Date => {
-  const copy = new Date(value);
-  copy.setHours(0, 0, 0, 0);
-  return copy;
-};
-
-const parseIso = (iso: string): Date | null => {
-  const target = new Date(`${iso}T12:00:00`);
-  return Number.isNaN(target.getTime()) ? null : startOfDay(target);
-};
-
-type SectionSlot = { key: string; label: string; sort: number };
-
-/** Today → this Sun–Sat week → rest of calendar month → everything else. */
-const sectionSlot = (iso: string, now: Date): SectionSlot | null => {
-  const target = parseIso(iso);
-  if (!target) return null;
-  const today = startOfDay(now);
-  const weekStart = new Date(today);
-  weekStart.setDate(today.getDate() - today.getDay());
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekStart.getDate() + 6);
-
-  if (target.getTime() === today.getTime()) {
-    return { key: 'today', label: 'Today', sort: 0 };
-  }
-  if (target >= weekStart && target <= weekEnd) {
-    return { key: 'week', label: 'This week', sort: 1 };
-  }
-  if (target.getFullYear() === today.getFullYear() && target.getMonth() === today.getMonth()) {
-    return { key: 'month', label: 'This month', sort: 2 };
-  }
-  return { key: 'other', label: 'Other', sort: 3 };
-};
-
 /** Matches the “This week” list section — not Today or later buckets. */
-export const listExplorerIsThisWeekSectionDate = (iso: string, now: Date = new Date()): boolean =>
-  sectionSlot(iso, now)?.key === 'week';
+export const listExplorerIsThisWeekSectionDate = browseListIsThisWeekSectionDate;
 
 export const groupListExplorerDateSections = (
   cards: DiscoveryCardModel[],
   now: Date = new Date()
 ): ListExplorerDateSection[] =>
-  groupListExplorerByIso(cards, listExplorerCardDateIso, now);
+  groupListExplorerByIso(cards, browseCardDateIso, now);
 
 export const groupListExplorerByIso = (
   cards: DiscoveryCardModel[],
@@ -67,7 +32,7 @@ export const groupListExplorerByIso = (
 
   for (const card of cards) {
     const iso = isoForCard(card);
-    const slot = iso ? sectionSlot(iso, now) : null;
+    const slot = iso ? browseListSectionSlot(iso, now) : null;
     if (!slot) {
       undated.push(card);
       continue;

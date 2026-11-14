@@ -1,6 +1,6 @@
 import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 import { EXPLORE_TYPE } from '../../../config/exploreTheme';
-import { listExplorerCardTitle } from '../../../list/explorer/listExplorerCardMeta';
+import { browseCardTitle } from '../../../list/browse/browseCardMeta';
 import type { ExplorePeekDetailAccess } from '../../../access/resolvePeekDetailAccess';
 import type { MapPeekDetailNavState } from '../../mapPeekDetailNavState';
 import { PeekDetailLink } from './PeekDetailLink';
@@ -25,7 +25,7 @@ export const MapPeekBrowseTitle = ({
   joinStateLoading = false,
   compact = true,
 }: MapPeekBrowseTitleProps) => {
-  const title = listExplorerCardTitle(card);
+  const title = browseCardTitle(card);
   const textClass = compact
     ? `line-clamp-2 text-[14px] font-bold leading-normal ${EXPLORE_TYPE.title}`
     : `line-clamp-2 text-base font-bold leading-snug ${EXPLORE_TYPE.title}`;
