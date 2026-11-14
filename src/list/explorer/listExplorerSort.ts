@@ -397,9 +397,6 @@ export const groupListExplorerSections = (
 export const listExplorerSortUsesViewerLocation = (mode: ListExplorerSortMode): boolean =>
   mode === 'near_me';
 
-/** Near-me sort uses viewer location; browse surfaces do not show travel-distance chips. */
-export const listExplorerSortShowsDistance = (_mode: ListExplorerSortMode): boolean => false;
-
 /** @deprecated Prefer `listExplorerSortButtonLabel` for UI. */
 export const listExplorerSortLabel = (mode: ListExplorerSortMode): string =>
   listExplorerSortButtonLabel(mode);

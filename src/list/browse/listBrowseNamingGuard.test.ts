@@ -108,5 +108,8 @@ describe('listBrowseNamingGuard', () => {
     const hikeFacts = read('src/list/browse/venueBrowseFacts.ts');
     expect(hikeFacts).toMatch(/resolveHikingTrailDistanceLabel/);
     expect(hikeFacts).toMatch(/resolveHikingPlaceFactLabels/);
+    expect(existsSync(join(process.cwd(), 'src/list/explorer/ListExplorerDistanceChip.tsx'))).toBe(
+      false
+    );
   });
 });
