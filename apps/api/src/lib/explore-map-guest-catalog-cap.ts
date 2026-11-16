@@ -38,7 +38,7 @@ export const compareGuestPreviewPlaces = (a: ExploreMapItemDTO, b: ExploreMapIte
 };
 
 /**
- * Legacy pin-list cap (3 places + 3 events) — used by `GET /explore/seeking-activities` for guests.
+ * Guest catalog cap helper — legacy seeking-activities route retired (MIG-DISCO-REG); kept for guest map slice limits.
  * `GET /explore/map` returns the full catalog for guests; peek depth is enforced in the client.
  * Set `EXPLORE_MAP_GUEST_CATALOG_CAP=0` to disable caps on auxiliary guest reads.
  */
