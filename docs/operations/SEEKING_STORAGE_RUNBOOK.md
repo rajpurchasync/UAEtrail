@@ -104,9 +104,20 @@ Set `PARTICIPANT_INTENT_STUB_WRITE=true` and restart API. **Not recommended post
 
 **Ops (every env — still required before calling storage “done”):**
 
-1. `npm --workspace @uaetrail/api run migrate-seeking-to-availability -- --dry-run` then without `--dry-run` (optional `--cancel-seeking`).
-2. `npm run seeking:storage-status -- --strict` → exit 0.
-3. Legacy backfill if report shows `activeIntentsMissingSeekingActivity` (§2 above).
+Run from repo root on the VPS/staging host (same `.env` as API), or `docker compose exec api npm run …` inside the API container:
+
+```bash
+git pull   # mig/disco-reg or merged release commit
+npm run mig-disco-reg:ops:preflight    # status + migrate dry-run
+MIG_DISCO_REG_OPS_CONFIRM=1 npm run mig-disco-reg:ops:migrate
+# optional after review: MIG_DISCO_REG_OPS_CONFIRM=1 npm run mig-disco-reg:ops:migrate -- --cancel-seeking
+npm run mig-disco-reg:ops:gate         # must exit 0
+```
+
+1. `npm run mig-disco-reg:ops:preflight` (or steps 2–2c in [`PRE_DEPLOY_CHECKLIST.md`](../PRE_DEPLOY_CHECKLIST.md)).
+2. `MIG_DISCO_REG_OPS_CONFIRM=1 npm run mig-disco-reg:ops:migrate` (optional `--cancel-seeking`).
+3. `npm run mig-disco-reg:ops:gate` → exit 0.
+4. Legacy backfill if status shows `activeIntentsMissingSeekingActivity` (§2 above) — **before** step 2.
 
 **Code residue (shipped on branch — pre-ops):** HTTP `/me/participant-intents` service modules removed; join requests read published seeking activity ids via `participant-intent-activity-readthrough` only (`participant-intent-residue-guard.test.ts`). `participant_intents` Mongo writes are **backfill script only** until ops strict gate.
 

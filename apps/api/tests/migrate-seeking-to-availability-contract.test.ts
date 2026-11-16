@@ -5,6 +5,13 @@ import { join } from 'node:path';
 const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 
 describe('migrate-seeking-to-availability (MIG-DISCO-REG ops)', () => {
+  it('root ops runner wires preflight, migrate, and gate', () => {
+    const ops = readFileSync(join(process.cwd(), '../../scripts/mig-disco-reg-staging-ops.mjs'), 'utf8');
+    expect(ops).toMatch(/migrate-seeking-to-availability/);
+    expect(ops).toMatch(/seeking:deploy-gate/);
+    expect(ops).toMatch(/MIG_DISCO_REG_OPS_CONFIRM/);
+  });
+
   it('migrates published seeking activities into member_availability fixed slots', () => {
     const script = read('scripts/migrate-seeking-to-availability.ts');
     expect(script).toMatch(/activityMode: 'seeking'/);
