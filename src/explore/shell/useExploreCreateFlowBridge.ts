@@ -23,6 +23,8 @@ type UseExploreCreateFlowBridgeArgs = {
   facilityOnPlaceId: string | null;
   tenantId: string | null | undefined;
   refreshHostGate: () => void;
+  /** When false, clears bridge registration (e.g. list embedded on explore). */
+  enabled?: boolean;
 };
 
 /** Registers explore hosting/seeking/add handlers with the product `CreateFlowProvider`. */
@@ -44,6 +46,7 @@ export const useExploreCreateFlowBridge = ({
   facilityOnPlaceId,
   tenantId,
   refreshHostGate,
+  enabled = true,
 }: UseExploreCreateFlowBridgeArgs): void => {
   const handlersRef = useRef({
     closeCreateFlow,
@@ -73,6 +76,10 @@ export const useExploreCreateFlowBridge = ({
   };
 
   useEffect(() => {
+    if (!enabled) {
+      registerBridge(null);
+      return () => registerBridge(null);
+    }
     registerBridge({
       hostingWizardPrefill,
       onCloseCreateFlow: () => handlersRef.current.closeCreateFlow(),
@@ -107,5 +114,6 @@ export const useExploreCreateFlowBridge = ({
     composeAreaSlug,
     facilityOnPlaceId,
     tenantId,
+    enabled,
   ]);
 };

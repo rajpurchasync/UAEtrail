@@ -29,6 +29,7 @@ type ListCrewsExplorerProps = {
   exploreCatalogItems: ExploreMapItemDTO[];
   exploreCatalogLoading: boolean;
   onOpenAvailabilityCatalogItem: (item: ExploreMapItemDTO) => void;
+  onOfferRideshareForAvailabilityItem?: (item: ExploreMapItemDTO) => void;
   buddyUserIds?: Set<string>;
   availabilityPeople: ExploreAvailablePersonDTO[];
   availabilityLoading: boolean;
@@ -61,6 +62,7 @@ export const ListCrewsExplorer = ({
   exploreCatalogItems,
   exploreCatalogLoading,
   onOpenAvailabilityCatalogItem,
+  onOfferRideshareForAvailabilityItem,
   buddyUserIds,
   availabilityPeople,
   availabilityLoading,
@@ -114,6 +116,7 @@ export const ListCrewsExplorer = ({
             exploreCatalogItems={exploreCatalogItems}
             exploreCatalogLoading={exploreCatalogLoading}
             onOpenAvailabilityCatalogItem={onOpenAvailabilityCatalogItem}
+            onOfferRideshareForAvailabilityItem={onOfferRideshareForAvailabilityItem}
             buddyUserIds={buddyUserIds}
             availabilityPeople={availabilityPeople}
             availabilityLoading={availabilityLoading}

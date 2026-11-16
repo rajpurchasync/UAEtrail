@@ -50,6 +50,9 @@ import type { ExploreActivityDatePreset } from '../explore/exploreActivityDateFi
 import { resolveBrowseListCreateFabLabel } from './browseListCopy';
 import { resolveCreateFabComposeEntry } from '../explore/create/composeFabEntry';
 import { availabilityFlexibleCompose } from '../explore/compose';
+import { useHostingFromActivity } from '../explore/create/hooks/useHostingFromActivity';
+import { useHostingWizardPrefill } from '../explore/create/hooks/useHostingWizardPrefill';
+import { useExploreCreateFlowBridge } from '../explore/shell/useExploreCreateFlowBridge';
 
 type ListDiscoveryExperienceProps = {
   surface: ListDiscoverySurface;
@@ -58,6 +61,8 @@ type ListDiscoveryExperienceProps = {
   onImmersiveSubtitleChange?: (subtitle: string | null) => void;
   /** Explore desktop drawer — reuse map catalog (no projection=list refetch). */
   prefetchedCatalogItems?: ExploreMapItemDTO[];
+  /** Explore embed — host compose for offer-rideshare lives on explore shell. */
+  onOfferRideshareForAvailabilityItem?: (item: ExploreMapItemDTO) => void;
 };
 
 const readListMapColumnOpen = (): boolean => {
@@ -98,16 +103,18 @@ export const ListDiscoveryExperience = ({
   overlayImmersive = false,
   onImmersiveSubtitleChange,
   prefetchedCatalogItems,
+  onOfferRideshareForAvailabilityItem: embeddedOfferRideshare,
 }: ListDiscoveryExperienceProps) => {
   const embeddedOnExplore = listDiscoveryEmbeddedOnExplore(surface);
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useProductLocation();
-  const [searchParams] = useProductSearchParams();
+  const { pathname } = location;
+  const [searchParams, setSearchParams] = useProductSearchParams();
   const queryClient = useQueryClient();
   const search = searchParams.toString() ? `?${searchParams.toString()}` : '';
 
-  const { refresh: refreshHostGate } = useMemberStatus({ enabled: Boolean(user) });
+  const { refresh: refreshHostGate, tenantId } = useMemberStatus({ enabled: Boolean(user) });
   const { compose, registerBridge } = useCreateFlow();
 
   const reloadFeed = useCallback(async () => {
@@ -159,15 +166,54 @@ export const ListDiscoveryExperience = ({
     compose.handleCreateTap(availabilityFlexibleCompose());
   }, [availabilitySheetOpen, compose, syncUrl]);
 
-  useEffect(() => {
-    if (embeddedOnExplore) return undefined;
-    registerBridge({
-      onActivityPublished: () => void reloadFeed(),
-      onAvailabilityFixedSubmitted: () => void reloadFeed(),
-      onAddSubmitted: () => void reloadFeed(),
-    });
-    return () => registerBridge(null);
-  }, [embeddedOnExplore, registerBridge, reloadFeed]);
+  const hostingFrom = useHostingFromActivity({
+    user,
+    tenantId,
+    searchParams,
+    setSearchParams,
+    setComposeRoute: compose.setComposeRoute,
+    hostComposeKind: compose.hostComposeRoute?.kind ?? null,
+  });
+
+  const [listSelectedId, setListSelectedId] = useState<string | null>(null);
+  const hostingLauncher = useHostingWizardPrefill({
+    pathname,
+    search,
+    searchParams,
+    setSearchParams,
+    user,
+    navigate,
+    compose,
+    hostingFrom,
+    selected: null,
+    setSelectedId: setListSelectedId,
+  });
+
+  useExploreCreateFlowBridge({
+    enabled: !embeddedOnExplore,
+    registerBridge,
+    hostingWizardPrefill: hostingLauncher.hostingWizardPrefill,
+    closeCreateFlow: hostingLauncher.closeCreateFlow,
+    onHostingBackToIntent: hostingLauncher.onHostingBackToIntent,
+    rideshareLinkParent: hostingLauncher.rideshareLinkParent,
+    rideshareLinkAvailability: hostingLauncher.rideshareLinkAvailability,
+    setRideshareLinkParent: hostingLauncher.setRideshareLinkParent,
+    setRideshareLinkAvailability: hostingLauncher.setRideshareLinkAvailability,
+    handleCreateLinkedRideshare: hostingLauncher.handleCreateLinkedRideshare,
+    handleActivityPublished: reloadFeed,
+    handleAvailabilityFixedSubmitted: () => void reloadFeed(),
+    handleAddSubmitted: () => void reloadFeed(),
+    planWithBuddyUserId: null,
+    composeAreaSlug: null,
+    facilityOnPlaceId: null,
+    tenantId,
+    refreshHostGate,
+  });
+
+  const offerRideshareForAvailabilityItem = embeddedOnExplore
+    ? embeddedOfferRideshare
+    : hostingLauncher.offerRideshareForAvailabilityItem;
+
   const [draftQuery, setDraftQuery] = useState(filters.query);
   useEffect(() => {
     setDraftQuery(filters.query);
@@ -453,6 +499,7 @@ export const ListDiscoveryExperience = ({
             exploreCatalogItems={items}
             exploreCatalogLoading={isLoading}
             onOpenAvailabilityCatalogItem={handleOpenAvailabilityCatalogItem}
+            onOfferRideshareForAvailabilityItem={offerRideshareForAvailabilityItem}
           />
         ) : (
           <ListCrewsExplorer
@@ -475,6 +522,7 @@ export const ListDiscoveryExperience = ({
             exploreCatalogItems={items}
             exploreCatalogLoading={isLoading}
             onOpenAvailabilityCatalogItem={handleOpenAvailabilityCatalogItem}
+            onOfferRideshareForAvailabilityItem={offerRideshareForAvailabilityItem}
             availabilityPeople={memberAvailability.people}
             availabilityLoading={memberAvailability.loading}
             availabilityError={memberAvailability.error}

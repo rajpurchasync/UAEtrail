@@ -60,6 +60,9 @@ export const ExploreExperienceBrowsePanels = ({
               surface="exploreSidebar"
               onCloseMapOverlay={browse.closeListPanel}
               prefetchedCatalogItems={prefetchedCatalogItems}
+              onOfferRideshareForAvailabilityItem={
+                peopleBrowsePanelProps.onOfferRideshareForAvailabilityItem
+              }
             />
           </Suspense>
         </ExploreDesktopListDrawer>

@@ -37,6 +37,7 @@ type CrewsTabBodyProps = {
   exploreCatalogItems: ExploreMapItemDTO[];
   exploreCatalogLoading: boolean;
   onOpenAvailabilityCatalogItem: (item: ExploreMapItemDTO) => void;
+  onOfferRideshareForAvailabilityItem?: (item: ExploreMapItemDTO) => void;
   onOpenAvailability: () => void;
   buddyUserIds?: Set<string>;
 };
@@ -64,6 +65,7 @@ export const CrewsTabBody = ({
   exploreCatalogItems,
   exploreCatalogLoading,
   onOpenAvailabilityCatalogItem,
+  onOfferRideshareForAvailabilityItem,
   onOpenAvailability,
   buddyUserIds,
 }: CrewsTabBodyProps) => {
@@ -112,6 +114,7 @@ export const CrewsTabBody = ({
         exploreCatalogItems={exploreCatalogItems}
         exploreCatalogLoading={exploreCatalogLoading}
         onOpenAvailabilityCatalogItem={onOpenAvailabilityCatalogItem}
+        onOfferRideshareForAvailabilityItem={onOfferRideshareForAvailabilityItem}
         buddyUserIds={buddyUserIds}
         availabilityPeople={availabilityPeople}
         availabilityLoading={availabilityLoading}

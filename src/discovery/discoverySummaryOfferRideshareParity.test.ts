@@ -28,4 +28,13 @@ describe('discoverySummaryOfferRideshareParity (MIG-DISCO-REG)', () => {
     expect(list).toContain('discoverySelectionShowsOfferRideshare');
     expect(list).toContain('HOSTING_OFFER_RIDESHARE_LABEL');
   });
+
+  it('list crews discovery wires offer-rideshare compose on standalone and explore embed', () => {
+    const list = read('src/list/ListDiscoveryExperience.tsx');
+    expect(list).toContain('offerRideshareForAvailabilityItem');
+    expect(list).toContain('useHostingWizardPrefill');
+    expect(list).toContain('useExploreCreateFlowBridge');
+    const panels = read('src/explore/shell/ExploreExperienceBrowsePanels.tsx');
+    expect(panels).toContain('onOfferRideshareForAvailabilityItem');
+  });
 });
