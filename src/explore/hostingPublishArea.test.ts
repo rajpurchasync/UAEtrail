@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { emptySeekingDraft } from './ui/availabilityFlowEngine';
+import { emptyAvailabilityFixedDraft } from './ui/availabilityFlowEngine';
 import { emptyCreateActivityDraft } from './ui/hostingFlowEngine';
 import { curatedAreaSeedId, type PlaceDTO } from '@uaetrail/shared-types';
 import {
   inferEmirateFromPin,
-  seekingPostVisibleOnMap,
-  validateSeekingPublishArea,
+  availabilityFixedVisibleOnMap,
+  validateAvailabilityPublishArea,
   validateHostingPlaceArea,
   validateHostingPublishArea,
 } from './hostingPublishArea';
@@ -149,26 +149,26 @@ describe('validateHostingPublishArea (legacy shim)', () => {
   });
 });
 
-describe('validateSeekingPublishArea', () => {
+describe('validateAvailabilityPublishArea', () => {
   it('requires a preferred area on the curated step', () => {
     const draft = {
-      ...emptySeekingDraft(),
+      ...emptyAvailabilityFixedDraft(),
       kind: 'hiking' as const,
       areaId: null,
     };
-    expect(validateSeekingPublishArea(draft, 'hiking')).toMatch(/area you want company in/);
+    expect(validateAvailabilityPublishArea(draft, 'hiking')).toMatch(/area you want company in/);
   });
 
   it('passes area without a destination pin; map visibility is going-from', () => {
     const draft = {
-      ...emptySeekingDraft(),
+      ...emptyAvailabilityFixedDraft(),
       kind: 'hiking' as const,
       areaId: HATTA_AREA_ID,
       fromPinPlaced: true,
       latitude: 25,
       longitude: 55,
     };
-    expect(seekingPostVisibleOnMap(draft)).toBe(true);
-    expect(validateSeekingPublishArea(draft, 'hiking')).toBeNull();
+    expect(availabilityFixedVisibleOnMap(draft)).toBe(true);
+    expect(validateAvailabilityPublishArea(draft, 'hiking')).toBeNull();
   });
 });

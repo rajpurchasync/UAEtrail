@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   bundleAddWizardPages,
   bundleHostingWizardPages,
-  bundleSeekingWizardPages,
+  bundleAvailabilityWizardPages,
 } from './composeWideWizard';
 
 describe('composeWideWizard', () => {
@@ -44,7 +44,7 @@ describe('composeWideWizard', () => {
 
   it('bundles seeking form fields; map and review stay solo', () => {
     expect(
-      bundleSeekingWizardPages([
+      bundleAvailabilityWizardPages([
         'title',
         'when',
         'curatedArea',

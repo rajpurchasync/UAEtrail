@@ -6,25 +6,25 @@ import {
 } from '../create/interactions';
 import { TO_LOCATION_LABEL } from '../createFlowCopy';
 import {
-  SEEKING_FITNESS_OPTIONS,
-  SEEKING_SELF_VEHICLE_OPTIONS,
-  type SeekingDraft,
-  type SeekingFitnessLevel,
-  type SeekingKind,
-  type SeekingVehicleType,
+  AVAILABILITY_FIXED_FITNESS_OPTIONS,
+  AVAILABILITY_FIXED_VEHICLE_OPTIONS,
+  type AvailabilityFixedDraft,
+  type AvailabilityFixedFitnessLevel,
+  type AvailabilityFixedKind,
+  type AvailabilityFixedVehicleType,
 } from './availabilityFlowEngine';
 
-type PatchDraft = (patch: Partial<SeekingDraft>) => void;
+type PatchDraft = (patch: Partial<AvailabilityFixedDraft>) => void;
 
 /** Audience restrictions for find/demand — no public/private toggle (always on map when pinned). */
-export const SeekingAudienceStepBody = ({
+export const AvailabilityAudienceStepBody = ({
   draft,
   patchDraft,
   kind,
 }: {
-  draft: SeekingDraft;
+  draft: AvailabilityFixedDraft;
   patchDraft: PatchDraft;
-  kind: SeekingKind;
+  kind: AvailabilityFixedKind;
 }) => (
   <>
     <p className="mb-3 text-sm text-gray-600">
@@ -71,13 +71,13 @@ export const SeekingAudienceStepBody = ({
     {kind === 'hiking' ? (
       <div className="mt-4 space-y-3">
         <p className={`${EXPLORE_FLOW.choiceCardTitle}`}>Fitness level</p>
-        {SEEKING_FITNESS_OPTIONS.map((option) => {
+        {AVAILABILITY_FIXED_FITNESS_OPTIONS.map((option) => {
           const active = draft.fitnessLevel === option.value;
           return (
             <button
               key={option.value}
               type="button"
-              onClick={() => patchDraft({ fitnessLevel: option.value as SeekingFitnessLevel })}
+              onClick={() => patchDraft({ fitnessLevel: option.value as AvailabilityFixedFitnessLevel })}
               className={`w-full rounded-2xl border-2 px-4 py-3 text-left ${
                 active ? 'border-emerald-500 bg-emerald-50/50' : 'border-neutral-200 bg-white'
               }`}
@@ -92,11 +92,11 @@ export const SeekingAudienceStepBody = ({
   </>
 );
 
-export const SeekingTransportStepBody = ({
+export const AvailabilityTransportStepBody = ({
   draft,
   patchDraft,
 }: {
-  draft: SeekingDraft;
+  draft: AvailabilityFixedDraft;
   patchDraft: PatchDraft;
 }) => (
   <>
@@ -128,13 +128,13 @@ export const SeekingTransportStepBody = ({
     </div>
     {draft.transportMode === 'self' ? (
       <div className={`${EXPLORE_FLOW.choiceGrid2}`}>
-        {SEEKING_SELF_VEHICLE_OPTIONS.map((option) => {
+        {AVAILABILITY_FIXED_VEHICLE_OPTIONS.map((option) => {
           const active = draft.selfVehicleType === option.value;
           return (
             <button
               key={option.value}
               type="button"
-              onClick={() => patchDraft({ selfVehicleType: option.value as SeekingVehicleType })}
+              onClick={() => patchDraft({ selfVehicleType: option.value as AvailabilityFixedVehicleType })}
               className={exploreFlowChoiceCardClass(active)}
             >
               <p className={EXPLORE_FLOW.choiceCardTitle}>{option.title}</p>
@@ -167,12 +167,12 @@ export const SeekingTransportStepBody = ({
   </>
 );
 
-export const SeekingRideshareDestinationStepBody = ({
+export const AvailabilityRideshareDestinationStepBody = ({
   draft,
   patchDraft,
   onOpenMap,
 }: {
-  draft: SeekingDraft;
+  draft: AvailabilityFixedDraft;
   patchDraft: PatchDraft;
   onOpenMap: () => void;
 }) => (

@@ -36,9 +36,9 @@ import type { AddFlowStepId } from './ui/addFlow';
 
 import { getAddFlowSteps } from './ui/addFlow';
 
-import type { SeekingFlowStepId, SeekingKind } from './ui/availabilityFlowEngine';
+import type { AvailabilityFixedFlowStepId, AvailabilityFixedKind } from './ui/availabilityFlowEngine';
 
-import { getSeekingFlowSteps } from './ui/availabilityFlowEngine';
+import { getAvailabilityFixedFlowSteps } from './ui/availabilityFlowEngine';
 
 import type { CreateFlowStepId } from './ui/hostingFlowEngine';
 
@@ -58,7 +58,7 @@ import {
 
 
 
-export const seekingKindFromComposeKind = (kind: SeekingComposeKind): SeekingKind => kind;
+export const availabilityFixedKindFromComposeKind = (kind: SeekingComposeKind): AvailabilityFixedKind => kind;
 
 
 
@@ -96,7 +96,7 @@ export type ComposeFlowSpec = {
 
   hostingSteps?: readonly CreateFlowStepId[];
 
-  seekingSteps?: readonly SeekingFlowStepId[];
+  availabilityFixedSteps?: readonly AvailabilityFixedFlowStepId[];
 
   addSteps?: readonly AddFlowStepId[];
 
@@ -260,7 +260,7 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     wizard: 'availabilityFlow',
 
-    seekingSteps: getSeekingFlowSteps('hiking'),
+    availabilityFixedSteps: getAvailabilityFixedFlowSteps('hiking'),
 
     confirmationDoc: COMPOSE_FLOW_SPEC_DOC,
 
@@ -284,7 +284,7 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     wizard: 'availabilityFlow',
 
-    seekingSteps: getSeekingFlowSteps('camping'),
+    availabilityFixedSteps: getAvailabilityFixedFlowSteps('camping'),
 
     confirmationDoc: COMPOSE_FLOW_SPEC_DOC,
 
@@ -308,7 +308,7 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     wizard: 'availabilityFlow',
 
-    seekingSteps: getSeekingFlowSteps('event'),
+    availabilityFixedSteps: getAvailabilityFixedFlowSteps('event'),
 
     confirmationDoc: COMPOSE_FLOW_SPEC_DOC,
 
@@ -332,7 +332,7 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     wizard: 'availabilityFlow',
 
-    seekingSteps: getSeekingFlowSteps('rideshare'),
+    availabilityFixedSteps: getAvailabilityFixedFlowSteps('rideshare'),
 
     confirmationDoc: COMPOSE_FLOW_SPEC_DOC,
 

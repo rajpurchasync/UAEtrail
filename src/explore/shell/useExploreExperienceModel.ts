@@ -367,7 +367,7 @@ export const useExploreExperienceModel = () => {
     setRideshareLinkSeeking: hostingLauncher.setRideshareLinkSeeking,
     handleCreateLinkedRideshare: hostingLauncher.handleCreateLinkedRideshare,
     handleActivityPublished: selection.handleActivityPublished,
-    handleSeekingSubmitted: selection.handleSeekingSubmitted,
+    handleAvailabilityFixedSubmitted: selection.handleAvailabilityFixedSubmitted,
     handleAddSubmitted: selection.handleAddSubmitted,
     planWithBuddyUserId,
     composeAreaSlug: areaSlug,

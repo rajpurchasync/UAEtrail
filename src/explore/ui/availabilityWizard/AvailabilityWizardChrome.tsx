@@ -7,7 +7,7 @@ import {
 import { fromLocationLabel, TO_LOCATION_LABEL } from '../../createFlowCopy';
 import type { AvailabilityWizardContext } from './availabilityWizardContext';
 
-export const SeekingWizardNextButton = ({
+export const AvailabilityWizardNextButton = ({
   label = 'Next',
   disabled,
   loading,
@@ -28,7 +28,7 @@ export const SeekingWizardNextButton = ({
   />
 );
 
-export const seekingMapPinRow = (
+export const availabilityMapPinRow = (
   ctx: AvailabilityWizardContext,
   endpoint: 'from' | 'to',
   options: { title: string; accent: 'emerald' | 'sky' }
@@ -49,7 +49,7 @@ export const seekingMapPinRow = (
   );
 };
 
-export const seekingRoutePinRow = (ctx: AvailabilityWizardContext, endpoint: 'from' | 'to') => {
+export const availabilityRoutePinRow = (ctx: AvailabilityWizardContext, endpoint: 'from' | 'to') => {
   const isTo = endpoint === 'to';
   const placed = isTo ? ctx.draft.toPinPlaced : ctx.draft.fromPinPlaced;
   const lat = isTo ? ctx.draft.toLatitude : ctx.draft.latitude;

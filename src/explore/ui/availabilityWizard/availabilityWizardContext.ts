@@ -1,28 +1,28 @@
 import type { AreaPublicDTO } from '@uaetrail/shared-types';
 import type { SeekingComposeKind } from '../../compose';
 import { COMPOSE_MAP_INTENTS } from '../../create/interactions';
-import type { SeekingDraft, SeekingFlowStepId, SeekingKind } from '../availabilityFlowEngine';
+import type { AvailabilityFixedDraft, AvailabilityFixedFlowStepId, AvailabilityFixedKind } from '../availabilityFlowEngine';
 
-export type SeekingWizardFlowStep = 'type' | SeekingFlowStepId;
+export type AvailabilityWizardFlowStep = 'type' | AvailabilityFixedFlowStepId;
 
-export type SeekingMapOpen = (
+export type AvailabilityMapOpen = (
   intent: typeof COMPOSE_MAP_INTENTS.seekFrom | typeof COMPOSE_MAP_INTENTS.seekTo
 ) => void;
 
 export type AvailabilityWizardContext = {
-  step: SeekingWizardFlowStep;
+  step: AvailabilityWizardFlowStep;
   seekKind: SeekingComposeKind | null;
-  kind: SeekingKind | null;
-  selectedKind: SeekingKind | null;
-  setSelectedKind: (kind: SeekingKind | null) => void;
-  draft: SeekingDraft;
-  patchDraft: (patch: Partial<SeekingDraft>) => void;
+  kind: AvailabilityFixedKind | null;
+  selectedKind: AvailabilityFixedKind | null;
+  setSelectedKind: (kind: AvailabilityFixedKind | null) => void;
+  draft: AvailabilityFixedDraft;
+  patchDraft: (patch: Partial<AvailabilityFixedDraft>) => void;
   error: string | null;
   submitting: boolean;
   headerTitle: string;
-  widePageSteps: SeekingFlowStepId[];
-  pageHas: (id: SeekingFlowStepId) => boolean;
-  flowSteps: SeekingFlowStepId[];
+  widePageSteps: AvailabilityFixedFlowStepId[];
+  pageHas: (id: AvailabilityFixedFlowStepId) => boolean;
+  flowSteps: AvailabilityFixedFlowStepId[];
   dateOptions: Array<{ iso: string; label: string; day: number }>;
   showMonthView: boolean;
   setShowMonthView: (value: boolean | ((prev: boolean) => boolean)) => void;
@@ -30,8 +30,8 @@ export type AvailabilityWizardContext = {
   goNext: () => void;
   goBack: () => void;
   goToFirstStep: () => void;
-  goToStep: (step: SeekingFlowStepId) => void;
+  goToStep: (step: AvailabilityFixedFlowStepId) => void;
   requestClose: () => void;
   handleSubmit: () => void;
-  openMap: SeekingMapOpen;
+  openMap: AvailabilityMapOpen;
 };

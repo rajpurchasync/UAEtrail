@@ -9,36 +9,36 @@ import { areaLabelForId } from '../../../hostingPublishArea';
 import { MobileMonthCalendar } from '../../../../components/mobile/MobileMonthCalendar';
 import { FlowStepTextArea, FlowStepTextInput } from '../../useFlowSheetPrimaryFieldFocus';
 import {
-  buildSeekingComment,
-  SEEKING_PARTY_PRESETS,
-  SEEKING_TYPE_OPTIONS,
-  seekingAdditionalInfoPlaceholder,
-  seekingFlowStepTitle,
-  seekingTitlePlaceholder,
-  seekingWhenShowsTime,
-  usesCampingSeekingFlow,
-  usesEventSeekingFlow,
-  usesGuidedSeekingFlow,
-  usesHikingSeekingFlow,
-  usesRideshareSeekingFlow,
-  type SeekingFlowStepId,
+  buildAvailabilityFixedComment,
+  AVAILABILITY_FIXED_PARTY_PRESETS,
+  AVAILABILITY_FIXED_TYPE_OPTIONS,
+  availabilityAdditionalInfoPlaceholder,
+  availabilityFixedFlowStepTitle,
+  availabilityTitlePlaceholder,
+  availabilityWhenShowsTime,
+  usesCampingAvailabilityFlow,
+  usesEventAvailabilityFlow,
+  usesGuidedAvailabilityFlow,
+  usesHikingAvailabilityFlow,
+  usesRideshareAvailabilityFlow,
+  type AvailabilityFixedFlowStepId,
 } from '../../availabilityFlowEngine';
 import type { TimeMode } from '../../createFlowShared';
-import { SeekingCuratedAreaStep } from '../../SeekingCuratedAreaStep';
+import { AvailabilityCuratedAreaStep } from '../../AvailabilityCuratedAreaStep';
 import {
-  SeekingAudienceStepBody,
-  SeekingRideshareDestinationStepBody,
-  SeekingTransportStepBody,
-} from '../../seekingWizardSteps';
+  AvailabilityAudienceStepBody,
+  AvailabilityRideshareDestinationStepBody,
+  AvailabilityTransportStepBody,
+} from '../../availabilityWizardStepBodies';
 import { COMPOSE_MAP_INTENTS } from '../../../create/interactions';
 import {
-  SeekingWizardNextButton,
-  seekingMapPinRow,
-  seekingRoutePinRow,
+  AvailabilityWizardNextButton,
+  availabilityMapPinRow,
+  availabilityRoutePinRow,
 } from '../AvailabilityWizardChrome';
 import type { AvailabilityWizardContext } from '../availabilityWizardContext';
 
-const REVIEW_EDIT_LABELS: Partial<Record<SeekingFlowStepId, string>> = {
+const REVIEW_EDIT_LABELS: Partial<Record<AvailabilityFixedFlowStepId, string>> = {
   title: 'Title',
   destination: 'Destination',
   area: 'Where',
@@ -89,7 +89,7 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
       {step === 'type' && !seekKind && (
         <ComposeWizardStepChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <div className="grid grid-cols-2 gap-3">
-            {SEEKING_TYPE_OPTIONS.map((option) => {
+            {AVAILABILITY_FIXED_TYPE_OPTIONS.map((option) => {
               const active = selectedKind === option.key;
               return (
                 <button
@@ -112,7 +112,7 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
             })}
           </div>
           <div className="mt-5 pb-2">
-            <SeekingWizardNextButton disabled={!selectedKind} onClick={goToFirstStep} />
+            <AvailabilityWizardNextButton disabled={!selectedKind} onClick={goToFirstStep} />
           </div>
         </ComposeWizardStepChrome>
       )}
@@ -121,27 +121,27 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
         <ComposeWidePageSlot
           stepId="title"
           pageSteps={widePageSteps}
-          title={seekingFlowStepTitle('title', kind)}
+          title={availabilityFixedFlowStepTitle('title', kind)}
           pageTitle={headerTitle}
           onClose={requestClose}
           onBack={goBack}
           footer={composeWizardErrorFooter(
             error,
-            <SeekingWizardNextButton disabled={!draft.title.trim()} onClick={goNext} />
+            <AvailabilityWizardNextButton disabled={!draft.title.trim()} onClick={goNext} />
           )}
         >
           <label className="block">
-            {!usesGuidedSeekingFlow(kind) ? (
+            {!usesGuidedAvailabilityFlow(kind) ? (
               <span className="mb-2 block text-sm font-medium text-gray-700">
                 Share a few details so others know what you need
               </span>
             ) : null}
-            {usesGuidedSeekingFlow(kind) ? (
+            {usesGuidedAvailabilityFlow(kind) ? (
               <FlowStepTextInput
                 value={draft.title}
                 onChange={(event) => patchDraft({ title: event.target.value })}
-                placeholder={seekingTitlePlaceholder(kind)}
-                aria-label={seekingTitlePlaceholder(kind)}
+                placeholder={availabilityTitlePlaceholder(kind)}
+                aria-label={availabilityTitlePlaceholder(kind)}
                 className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
                 maxLength={120}
               />
@@ -149,7 +149,7 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
               <FlowStepTextArea
                 value={draft.title}
                 onChange={(event) => patchDraft({ title: event.target.value })}
-                placeholder={seekingTitlePlaceholder(kind)}
+                placeholder={availabilityTitlePlaceholder(kind)}
                 rows={4}
                 className="w-full resize-none rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
                 maxLength={120}
@@ -161,7 +161,7 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
 
       {step === 'curatedArea' && kind && (
         <ComposeWizardStepChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
-          <SeekingCuratedAreaStep
+          <AvailabilityCuratedAreaStep
             areaId={draft.areaId}
             onAreaIdChange={(next) => {
               patchDraft({
@@ -172,21 +172,21 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
           />
           {composeWizardErrorFooter(
             error,
-            <SeekingWizardNextButton disabled={!draft.areaId} onClick={goNext} />
+            <AvailabilityWizardNextButton disabled={!draft.areaId} onClick={goNext} />
           )}
         </ComposeWizardStepChrome>
       )}
 
       {step === 'to' && kind === 'rideshare' && (
         <ComposeWizardStepChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
-          <SeekingRideshareDestinationStepBody
+          <AvailabilityRideshareDestinationStepBody
             draft={draft}
             patchDraft={patchDraft}
             onOpenMap={() => ctx.openMap(COMPOSE_MAP_INTENTS.seekTo)}
           />
           {composeWizardErrorFooter(
             error,
-            <SeekingWizardNextButton
+            <AvailabilityWizardNextButton
               disabled={
                 !draft.toPinPlaced || (draft.destinationTimeMode === 'specific' && !draft.destinationTime)
               }
@@ -199,60 +199,60 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
       {step === 'from' && kind === 'rideshare' && (
         <ComposeWizardStepChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <p className="mb-4 text-sm text-gray-600">Pin where you are leaving from.</p>
-          {seekingMapPinRow(ctx, 'from', { title: 'Pickup pin', accent: 'emerald' })}
+          {availabilityMapPinRow(ctx, 'from', { title: 'Pickup pin', accent: 'emerald' })}
           {composeWizardErrorFooter(
             error,
-            <SeekingWizardNextButton disabled={!draft.fromPinPlaced} onClick={goNext} />
+            <AvailabilityWizardNextButton disabled={!draft.fromPinPlaced} onClick={goNext} />
           )}
         </ComposeWizardStepChrome>
       )}
 
       {step === 'from' &&
         kind &&
-        (usesHikingSeekingFlow(kind) || usesCampingSeekingFlow(kind) || usesEventSeekingFlow(kind)) && (
+        (usesHikingAvailabilityFlow(kind) || usesCampingAvailabilityFlow(kind) || usesEventAvailabilityFlow(kind)) && (
           <ComposeWizardStepChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
             <p className="mb-4 text-sm text-gray-600">Pin where you are leaving from.</p>
-            {seekingMapPinRow(ctx, 'from', { title: 'Going from', accent: 'emerald' })}
+            {availabilityMapPinRow(ctx, 'from', { title: 'Going from', accent: 'emerald' })}
             {composeWizardErrorFooter(
               error,
-              <SeekingWizardNextButton disabled={!draft.fromPinPlaced} onClick={goNext} />
+              <AvailabilityWizardNextButton disabled={!draft.fromPinPlaced} onClick={goNext} />
             )}
           </ComposeWizardStepChrome>
         )}
 
       {pageHas('audience') &&
         kind &&
-        (usesHikingSeekingFlow(kind) ||
-          usesCampingSeekingFlow(kind) ||
-          usesEventSeekingFlow(kind) ||
+        (usesHikingAvailabilityFlow(kind) ||
+          usesCampingAvailabilityFlow(kind) ||
+          usesEventAvailabilityFlow(kind) ||
           kind === 'rideshare') && (
           <ComposeWidePageSlot
             stepId="audience"
             pageSteps={widePageSteps}
-            title={seekingFlowStepTitle('audience', kind)}
+            title={availabilityFixedFlowStepTitle('audience', kind)}
             pageTitle={headerTitle}
             onClose={requestClose}
             onBack={goBack}
             footer={composeWizardErrorFooter(
               error,
-              <SeekingWizardNextButton disabled={kind === 'hiking' && !draft.fitnessLevel} onClick={goNext} />
+              <AvailabilityWizardNextButton disabled={kind === 'hiking' && !draft.fitnessLevel} onClick={goNext} />
             )}
           >
-            <SeekingAudienceStepBody draft={draft} patchDraft={patchDraft} kind={kind} />
+            <AvailabilityAudienceStepBody draft={draft} patchDraft={patchDraft} kind={kind} />
           </ComposeWidePageSlot>
         )}
 
-      {pageHas('transport') && kind && (usesHikingSeekingFlow(kind) || usesCampingSeekingFlow(kind)) && (
+      {pageHas('transport') && kind && (usesHikingAvailabilityFlow(kind) || usesCampingAvailabilityFlow(kind)) && (
         <ComposeWidePageSlot
           stepId="transport"
           pageSteps={widePageSteps}
-          title={seekingFlowStepTitle('transport', kind)}
+          title={availabilityFixedFlowStepTitle('transport', kind)}
           pageTitle={headerTitle}
           onClose={requestClose}
           onBack={goBack}
           footer={composeWizardErrorFooter(
             error,
-            <SeekingWizardNextButton
+            <AvailabilityWizardNextButton
               disabled={
                 !draft.transportMode ||
                 (draft.transportMode === 'self' && !draft.selfVehicleType) ||
@@ -262,7 +262,7 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
             />
           )}
         >
-          <SeekingTransportStepBody draft={draft} patchDraft={patchDraft} />
+          <AvailabilityTransportStepBody draft={draft} patchDraft={patchDraft} />
         </ComposeWidePageSlot>
       )}
 
@@ -270,16 +270,16 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
         <ComposeWidePageSlot
           stepId="when"
           pageSteps={widePageSteps}
-          title={seekingFlowStepTitle('when', kind)}
+          title={availabilityFixedFlowStepTitle('when', kind)}
           pageTitle={headerTitle}
           onClose={requestClose}
           onBack={goBack}
           footer={composeWizardErrorFooter(
             error,
-            <SeekingWizardNextButton
-              disabled={seekingWhenShowsTime(kind) && draft.timeMode === 'specific' && !draft.time}
+            <AvailabilityWizardNextButton
+              disabled={availabilityWhenShowsTime(kind) && draft.timeMode === 'specific' && !draft.time}
               onClick={() => {
-                if (!seekingWhenShowsTime(kind)) {
+                if (!availabilityWhenShowsTime(kind)) {
                   patchDraft({ timeMode: 'flexible', time: '' });
                 }
                 goNext();
@@ -319,7 +319,7 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
             </div>
           )}
           <div className="mt-4 grid grid-cols-2 gap-3">
-            {seekingWhenShowsTime(kind)
+            {availabilityWhenShowsTime(kind)
               ? (
                   [
                     { key: 'flexible' as TimeMode, title: 'Flexible', subtitle: 'Rough window', icon: CalendarDays },
@@ -345,7 +345,7 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
                 })
               : null}
           </div>
-          {seekingWhenShowsTime(kind) && draft.timeMode === 'specific' && (
+          {availabilityWhenShowsTime(kind) && draft.timeMode === 'specific' && (
             <label className="mt-4 block">
               <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">Time</span>
               <input
@@ -363,12 +363,12 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
         <ComposeWizardStepChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <p className="mb-4 text-sm text-gray-600">Set both pickup and destination on the map.</p>
           <div className="space-y-3">
-            {seekingRoutePinRow(ctx, 'from')}
-            {seekingRoutePinRow(ctx, 'to')}
+            {availabilityRoutePinRow(ctx, 'from')}
+            {availabilityRoutePinRow(ctx, 'to')}
           </div>
           {composeWizardErrorFooter(
             error,
-            <SeekingWizardNextButton disabled={!draft.fromPinPlaced || !draft.toPinPlaced} onClick={goNext} />
+            <AvailabilityWizardNextButton disabled={!draft.fromPinPlaced || !draft.toPinPlaced} onClick={goNext} />
           )}
         </ComposeWizardStepChrome>
       )}
@@ -377,15 +377,15 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
         <ComposeWidePageSlot
           stepId="persons"
           pageSteps={widePageSteps}
-          title={seekingFlowStepTitle('persons', kind)}
+          title={availabilityFixedFlowStepTitle('persons', kind)}
           pageTitle={headerTitle}
           onClose={requestClose}
           onBack={goBack}
-          footer={composeWizardErrorFooter(error, <SeekingWizardNextButton onClick={goNext} />)}
+          footer={composeWizardErrorFooter(error, <AvailabilityWizardNextButton onClick={goNext} />)}
         >
           <p className="mb-3 text-sm text-gray-600">Including yourself</p>
           <div className="flex flex-wrap gap-2">
-            {SEEKING_PARTY_PRESETS.map((value) => {
+            {AVAILABILITY_FIXED_PARTY_PRESETS.map((value) => {
               const active = draft.partySize === value;
               return (
                 <button
@@ -404,37 +404,37 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
         </ComposeWidePageSlot>
       )}
 
-      {pageHas('info') && kind && usesGuidedSeekingFlow(kind) && (
+      {pageHas('info') && kind && usesGuidedAvailabilityFlow(kind) && (
         <ComposeWidePageSlot
           stepId="info"
           pageSteps={widePageSteps}
-          title={seekingFlowStepTitle('info', kind)}
+          title={availabilityFixedFlowStepTitle('info', kind)}
           pageTitle={headerTitle}
           onClose={requestClose}
           onBack={goBack}
-          footer={composeWizardErrorFooter(error, <SeekingWizardNextButton onClick={goNext} />)}
+          footer={composeWizardErrorFooter(error, <AvailabilityWizardNextButton onClick={goNext} />)}
         >
           <textarea
             value={draft.additionalInfo}
             onChange={(event) => patchDraft({ additionalInfo: event.target.value })}
             rows={4}
-            placeholder={seekingAdditionalInfoPlaceholder(kind)}
-            aria-label={seekingAdditionalInfoPlaceholder(kind)}
+            placeholder={availabilityAdditionalInfoPlaceholder(kind)}
+            aria-label={availabilityAdditionalInfoPlaceholder(kind)}
             className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
             maxLength={1000}
           />
         </ComposeWidePageSlot>
       )}
 
-      {pageHas('comment') && kind && !usesGuidedSeekingFlow(kind) && (
+      {pageHas('comment') && kind && !usesGuidedAvailabilityFlow(kind) && (
         <ComposeWidePageSlot
           stepId="comment"
           pageSteps={widePageSteps}
-          title={seekingFlowStepTitle('comment', kind)}
+          title={availabilityFixedFlowStepTitle('comment', kind)}
           pageTitle={headerTitle}
           onClose={requestClose}
           onBack={goBack}
-          footer={composeWizardErrorFooter(error, <SeekingWizardNextButton onClick={goNext} />)}
+          footer={composeWizardErrorFooter(error, <AvailabilityWizardNextButton onClick={goNext} />)}
         >
           <label className="block">
             <textarea
@@ -462,7 +462,7 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
               ) : (
                 <Users className="h-4 w-4 text-emerald-600" />
               )}
-              {SEEKING_TYPE_OPTIONS.find((option) => option.key === kind)?.title ?? kind}
+              {AVAILABILITY_FIXED_TYPE_OPTIONS.find((option) => option.key === kind)?.title ?? kind}
             </p>
             {draft.title && (
               <p className="mt-2 text-xs text-gray-600">
@@ -476,14 +476,14 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
                 {areaLabelForId(draft.areaId, publishedAreas) ?? draft.preferredArea}
               </p>
             )}
-            {(usesHikingSeekingFlow(kind) || usesCampingSeekingFlow(kind) || usesEventSeekingFlow(kind)) &&
+            {(usesHikingAvailabilityFlow(kind) || usesCampingAvailabilityFlow(kind) || usesEventAvailabilityFlow(kind)) &&
               draft.fromPinPlaced && (
                 <p className="mt-1 flex items-center gap-1.5 text-xs text-gray-600">
                   <MapPin className="h-3.5 w-3.5 text-emerald-500" />
                   Going from: {draft.latitude?.toFixed(4)}, {draft.longitude?.toFixed(4)}
                 </p>
               )}
-            {usesRideshareSeekingFlow(kind) && draft.toPinPlaced && (
+            {usesRideshareAvailabilityFlow(kind) && draft.toPinPlaced && (
               <p className="mt-2 flex items-center gap-1.5 text-xs text-gray-600">
                 <MapPin className="h-3.5 w-3.5 text-sky-500" />
                 Destination: {draft.toLatitude?.toFixed(4)}, {draft.toLongitude?.toFixed(4)}
@@ -492,7 +492,7 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
                   : ' · flexible arrival'}
               </p>
             )}
-            {usesRideshareSeekingFlow(kind) && draft.fromPinPlaced && (
+            {usesRideshareAvailabilityFlow(kind) && draft.fromPinPlaced && (
               <p className="mt-1 flex items-center gap-1.5 text-xs text-gray-600">
                 <MapPin className="h-3.5 w-3.5 text-emerald-500" />
                 {GOING_FROM_LABEL}: {draft.latitude?.toFixed(4)}, {draft.longitude?.toFixed(4)}
@@ -501,21 +501,21 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
             {draft.date && (
               <p className="mt-1 text-xs text-gray-500">
                 {draft.date}
-                {seekingWhenShowsTime(kind) && draft.timeMode === 'specific' && draft.time
+                {availabilityWhenShowsTime(kind) && draft.timeMode === 'specific' && draft.time
                   ? ` · ${draft.time}`
-                  : seekingWhenShowsTime(kind)
+                  : availabilityWhenShowsTime(kind)
                     ? ' · flexible time'
                     : ''}
               </p>
             )}
-            {(usesHikingSeekingFlow(kind) ||
-              usesCampingSeekingFlow(kind) ||
-              usesRideshareSeekingFlow(kind) ||
-              usesEventSeekingFlow(kind)) && (
+            {(usesHikingAvailabilityFlow(kind) ||
+              usesCampingAvailabilityFlow(kind) ||
+              usesRideshareAvailabilityFlow(kind) ||
+              usesEventAvailabilityFlow(kind)) && (
               <p className="mt-1 text-xs text-gray-500">{draft.partySize} people</p>
             )}
             <p className="mt-2 line-clamp-6 whitespace-pre-line text-xs text-gray-600">
-              {buildSeekingComment(draft)}
+              {buildAvailabilityFixedComment(draft)}
             </p>
           </div>
 
@@ -548,7 +548,7 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
           </p>
           {composeWizardErrorFooter(
             error,
-            <SeekingWizardNextButton label="Submit" loading={submitting} onClick={handleSubmit} />
+            <AvailabilityWizardNextButton label="Submit" loading={submitting} onClick={handleSubmit} />
           )}
         </ComposeWizardStepChrome>
       )}

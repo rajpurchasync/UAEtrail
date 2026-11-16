@@ -23,7 +23,7 @@ import {
 
   defaultParticipationForHostRoute,
 
-  seekingKindFromComposeKind,
+  availabilityFixedKindFromComposeKind,
 
 } from './composeFlowCatalog';
 
@@ -31,7 +31,7 @@ import { isCanonicalComposeFlowId } from './composeFlowIds';
 
 import { getAddFlowSteps } from './ui/addFlow';
 
-import { SEEKING_TYPE_OPTIONS, getSeekingFlowSteps } from './ui/availabilityFlowEngine';
+import { AVAILABILITY_FIXED_TYPE_OPTIONS, getAvailabilityFixedFlowSteps } from './ui/availabilityFlowEngine';
 
 import { getCreateFlowSteps } from './ui/hostingFlowEngine';
 
@@ -203,7 +203,7 @@ describe('compose flow catalog', () => {
 
 
 
-  it('catalog seekingSteps stay aligned with availabilityFlowEngine step lists', () => {
+  it('catalog availabilityFixedSteps stay aligned with availabilityFlowEngine step lists', () => {
 
     for (const option of AVAILABILITY_FIXED_COMPOSE_OPTIONS) {
 
@@ -211,9 +211,9 @@ describe('compose flow catalog', () => {
 
       expect(id).toBeTruthy();
 
-      const seekingKind = seekingKindFromComposeKind(option.kind);
+      const seekingKind = availabilityFixedKindFromComposeKind(option.kind);
 
-      expect(composeFlowSpec(id!).seekingSteps).toEqual(getSeekingFlowSteps(seekingKind));
+      expect(composeFlowSpec(id!).availabilityFixedSteps).toEqual(getAvailabilityFixedFlowSteps(seekingKind));
 
     }
 
@@ -239,13 +239,13 @@ describe('compose flow catalog', () => {
 
   it('seeking type picker matches seek FAB options', () => {
 
-    expect(SEEKING_TYPE_OPTIONS.map((row) => row.key)).toEqual(
+    expect(AVAILABILITY_FIXED_TYPE_OPTIONS.map((row) => row.key)).toEqual(
 
-      AVAILABILITY_FIXED_COMPOSE_OPTIONS.map((row) => seekingKindFromComposeKind(row.kind))
+      AVAILABILITY_FIXED_COMPOSE_OPTIONS.map((row) => availabilityFixedKindFromComposeKind(row.kind))
 
     );
 
-    expect(SEEKING_TYPE_OPTIONS.map((row) => row.title)).toEqual(
+    expect(AVAILABILITY_FIXED_TYPE_OPTIONS.map((row) => row.title)).toEqual(
 
       AVAILABILITY_FIXED_COMPOSE_OPTIONS.map((row) => row.label)
 

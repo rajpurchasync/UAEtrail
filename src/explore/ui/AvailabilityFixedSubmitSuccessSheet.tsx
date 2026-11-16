@@ -13,10 +13,10 @@ import {
 } from '../createFlowCopy';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import {
-  SEEKING_TYPE_OPTIONS,
-  seekingWhenShowsTime,
-  type SeekingDraft,
-  type SeekingKind,
+  AVAILABILITY_FIXED_TYPE_OPTIONS,
+  availabilityWhenShowsTime,
+  type AvailabilityFixedDraft,
+  type AvailabilityFixedKind,
 } from './availabilityFlowEngine';
 import { LinkRidesharePanel } from './LinkRidesharePanel';
 import { canLinkRideshareToActivity, parentMapKindMayOfferLinkedRideshare } from '../linkActivityRideshareOffer';
@@ -24,8 +24,8 @@ import { canLinkRideshareToActivity, parentMapKindMayOfferLinkedRideshare } from
 type AvailabilityFixedSubmitSuccessSheetProps = {
   open: boolean;
   onClose: () => void;
-  kind: SeekingKind;
-  draft: SeekingDraft;
+  kind: AvailabilityFixedKind;
+  draft: AvailabilityFixedDraft;
   visibleOnMap: boolean;
   tenantId: string | null;
   publishedActivity: ActivityDTO | null;
@@ -42,12 +42,12 @@ const SuccessDetailRow = ({ label, value }: { label: string; value: string }) =>
   </div>
 );
 
-const formatWhenLine = (draft: SeekingDraft, kind: SeekingKind): string => {
+const formatWhenLine = (draft: AvailabilityFixedDraft, kind: AvailabilityFixedKind): string => {
   if (!draft.date) return 'Flexible';
   const timePart =
-    seekingWhenShowsTime(kind) && draft.timeMode === 'specific' && draft.time
+    availabilityWhenShowsTime(kind) && draft.timeMode === 'specific' && draft.time
       ? ` · ${draft.time}`
-      : seekingWhenShowsTime(kind)
+      : availabilityWhenShowsTime(kind)
         ? ' · flexible time'
         : '';
   return `${draft.date}${timePart}`;
@@ -87,7 +87,7 @@ export const AvailabilityFixedSubmitSuccessSheet = ({
     [open, publishedActivity?.id]
   );
 
-  const typeLabel = SEEKING_TYPE_OPTIONS.find((option) => option.key === kind)?.title ?? kind;
+  const typeLabel = AVAILABILITY_FIXED_TYPE_OPTIONS.find((option) => option.key === kind)?.title ?? kind;
   const destination = draft.preferredArea.trim() ? draft.preferredArea.trim() : null;
 
   const showLinkRideshare =

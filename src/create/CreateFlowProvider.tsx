@@ -22,7 +22,7 @@ import { parseExploreAreaSlug } from '../explore/exploreAreaFilter';
 import { parseFacilityOnPlaceId, parsePlanWithUserId } from '../explore/routing';
 import type { HostingWizardPrefill } from '../explore/ui/hostingWizardPrefill';
 import type { AddSubmitResult } from '../explore/ui/addFlow';
-import type { SeekingSubmitResult } from '../explore/ui/availabilityFlowEngine';
+import type { AvailabilityFixedSubmitResult } from '../explore/ui/availabilityFlowEngine';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { reloadExploreMap } from '../hooks/useExploreMap';
 import { useMinWidthMd } from '../hooks/useMinWidthMd';
@@ -39,7 +39,7 @@ export type CreateFlowBridge = {
   onActivityPublished?: (activity: ActivityDTO) => void | Promise<void>;
   onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
   /** Fixed availability map post (`availability:fixed`) submitted — reload browse surfaces. */
-  onAvailabilityFixedSubmitted?: (result: SeekingSubmitResult) => void;
+  onAvailabilityFixedSubmitted?: (result: AvailabilityFixedSubmitResult) => void;
   onAddSubmitted?: (result: AddSubmitResult) => void;
   planWithBuddyUserId?: string | null;
   composeAreaSlug?: string | null;
@@ -184,7 +184,7 @@ export const CreateFlowProvider = ({ children }: { children: ReactNode }) => {
             await defaultRefresh();
           }
         }}
-        onSeekingSubmitted={(result) => {
+        onAvailabilityFixedSubmitted={(result) => {
           if (bridge?.onAvailabilityFixedSubmitted) bridge.onAvailabilityFixedSubmitted(result);
           else void defaultRefresh();
         }}

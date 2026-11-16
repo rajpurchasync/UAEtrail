@@ -12,7 +12,7 @@ import {
   useComposeMapSession,
 } from '../create/interactions';
 import { useIsMobile } from '../../hooks/useIsMobile';
-import { bundleSeekingWizardPages, wizardPageContaining } from '../create/composeWideWizard';
+import { bundleAvailabilityWizardPages, wizardPageContaining } from '../create/composeWideWizard';
 import { useComposeWizardExitBack } from '../create/useComposeWizardExitBack';
 import {
   composeWizardHasDraftContent,
@@ -22,16 +22,16 @@ import {
 } from './composeFlowClose';
 import {
   buildDateOptions,
-  seekingFlowStepTitle,
-  emptySeekingDraft,
-  getSeekingFlowSteps,
-  publishSeekingRequest,
-  validateSeekingDraft,
-  validateSeekingStep,
-  type SeekingFlowStepId,
-  type SeekingSubmitResult,
-  type SeekingDraft,
-  type SeekingKind,
+  availabilityFixedFlowStepTitle,
+  emptyAvailabilityFixedDraft,
+  getAvailabilityFixedFlowSteps,
+  publishAvailabilityFixedSlot,
+  validateAvailabilityFixedDraft,
+  validateAvailabilityFixedStep,
+  type AvailabilityFixedFlowStepId,
+  type AvailabilityFixedSubmitResult,
+  type AvailabilityFixedDraft,
+  type AvailabilityFixedKind,
 } from './availabilityFlowEngine';
 import type { LocationPrecision } from './createFlowShared';
 import { availabilityFixedCompose, type SeekingComposeKind } from '../compose';
@@ -39,9 +39,9 @@ import { areaIdForExploreAreaSlug } from '../exploreAreaFilter';
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
 import { composeFlowIdFromRoute } from '../composeFlowCatalog';
 import {
-  clearSeekingWizardSession,
-  readSeekingWizardSession,
-  writeSeekingWizardSession,
+  clearAvailabilityWizardSession,
+  readAvailabilityWizardSession,
+  writeAvailabilityWizardSession,
 } from './composeWizardSession';
 import { GOING_FROM_LABEL, TO_LOCATION_LABEL } from '../createFlowCopy';
 import { AvailabilityFixedSubmitSuccessSheet } from './AvailabilityFixedSubmitSuccessSheet';
@@ -52,13 +52,13 @@ type SeekingMapIntent =
   | typeof COMPOSE_MAP_INTENTS.seekFrom
   | typeof COMPOSE_MAP_INTENTS.seekTo;
 
-type FlowStep = 'type' | SeekingFlowStepId;
+type FlowStep = 'type' | AvailabilityFixedFlowStepId;
 
 interface CreateAvailabilityFixedFlowProps {
   open: boolean;
   onClose: () => void;
   onBackToIntent?: () => void;
-  onSubmitted?: (result: SeekingSubmitResult) => void;
+  onSubmitted?: (result: AvailabilityFixedSubmitResult) => void;
   signInHref: string;
   seekKind?: SeekingComposeKind | null;
   exploreAreaSlug?: string | null;
@@ -82,10 +82,10 @@ export const CreateAvailabilityFixedFlow = ({
   const isMobile = useIsMobile();
 
   const [step, setStep] = useState<FlowStep>('type');
-  const [draft, setDraft] = useState<SeekingDraft>(emptySeekingDraft);
-  const [selectedKind, setSelectedKind] = useState<SeekingKind | null>(null);
+  const [draft, setDraft] = useState<AvailabilityFixedDraft>(emptyAvailabilityFixedDraft);
+  const [selectedKind, setSelectedKind] = useState<AvailabilityFixedKind | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [submitResult, setSubmitResult] = useState<SeekingSubmitResult | null>(null);
+  const [submitResult, setSubmitResult] = useState<AvailabilityFixedSubmitResult | null>(null);
   const [publishedActivity, setPublishedActivity] = useState<ActivityDTO | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showMonthView, setShowMonthView] = useState(false);
@@ -112,27 +112,27 @@ export const CreateAvailabilityFixedFlow = ({
   }, [submitResult?.activityId]);
 
   const kind = draft.kind ?? selectedKind;
-  const flowSteps = useMemo(() => (kind ? getSeekingFlowSteps(kind) : []), [kind]);
+  const flowSteps = useMemo(() => (kind ? getAvailabilityFixedFlowSteps(kind) : []), [kind]);
   const wizardPages = useMemo(
-    () => (isMobile ? flowSteps.map((id) => [id]) : bundleSeekingWizardPages(flowSteps)),
+    () => (isMobile ? flowSteps.map((id) => [id]) : bundleAvailabilityWizardPages(flowSteps)),
     [flowSteps, isMobile]
   );
   const dateOptions = useMemo(() => buildDateOptions(), []);
-  const currentStepIndex = kind && step !== 'type' ? flowSteps.indexOf(step as SeekingFlowStepId) : -1;
+  const currentStepIndex = kind && step !== 'type' ? flowSteps.indexOf(step as AvailabilityFixedFlowStepId) : -1;
   const widePageSteps =
-    kind && step !== 'type' ? wizardPageContaining(wizardPages, step as SeekingFlowStepId) : [];
+    kind && step !== 'type' ? wizardPageContaining(wizardPages, step as AvailabilityFixedFlowStepId) : [];
   const currentPageIndex =
     kind && step !== 'type'
-      ? wizardPages.findIndex((page) => page.includes(step as SeekingFlowStepId))
+      ? wizardPages.findIndex((page) => page.includes(step as AvailabilityFixedFlowStepId))
       : -1;
-  const pageHas = (id: SeekingFlowStepId) => widePageSteps.includes(id);
+  const pageHas = (id: AvailabilityFixedFlowStepId) => widePageSteps.includes(id);
 
   const headerTitle =
     step === 'type' || !kind
       ? 'Find'
       : widePageSteps.length > 1
-        ? seekingFlowStepTitle(widePageSteps[0], kind)
-        : seekingFlowStepTitle(step as SeekingFlowStepId, kind);
+        ? availabilityFixedFlowStepTitle(widePageSteps[0], kind)
+        : availabilityFixedFlowStepTitle(step as AvailabilityFixedFlowStepId, kind);
 
   const seekingFlowId = useMemo(
     () =>
@@ -153,7 +153,7 @@ export const CreateAvailabilityFixedFlow = ({
     if (seekKind && seekingFlowId) {
       if (seekingInitializedRef.current === seekingInitKey) return;
 
-      const saved = readSeekingWizardSession(seekingFlowId);
+      const saved = readAvailabilityWizardSession(seekingFlowId);
       if (saved?.draft?.kind) {
         setDraft(saved.draft);
         setSelectedKind(saved.selectedKind);
@@ -169,12 +169,12 @@ export const CreateAvailabilityFixedFlow = ({
 
       const areaId = areaIdForExploreAreaSlug(publishedAreas, exploreAreaSlug);
       setDraft({
-        ...emptySeekingDraft(),
+        ...emptyAvailabilityFixedDraft(),
         kind: seekKind,
         ...(areaId ? { areaId } : {}),
       });
       setSelectedKind(seekKind);
-      setStep(getSeekingFlowSteps(seekKind)[0]);
+      setStep(getAvailabilityFixedFlowSteps(seekKind)[0]);
       setError(null);
       setSubmitting(false);
       setSubmitResult(null);
@@ -202,10 +202,10 @@ export const CreateAvailabilityFixedFlow = ({
 
   useEffect(() => {
     if (!open || !seekingFlowId || submitResult) return;
-    writeSeekingWizardSession(seekingFlowId, { step, draft, selectedKind });
+    writeAvailabilityWizardSession(seekingFlowId, { step, draft, selectedKind });
   }, [open, seekingFlowId, step, draft, selectedKind, submitResult]);
 
-  const patchDraft = useCallback((patch: Partial<SeekingDraft>) => {
+  const patchDraft = useCallback((patch: Partial<AvailabilityFixedDraft>) => {
     setDraft((prev) => ({ ...prev, ...patch }));
   }, []);
 
@@ -232,11 +232,11 @@ export const CreateAvailabilityFixedFlow = ({
   const goToFirstStep = () => {
     if (!selectedKind) return;
     patchDraft({ kind: selectedKind });
-    setStep(getSeekingFlowSteps(selectedKind)[0]);
+    setStep(getAvailabilityFixedFlowSteps(selectedKind)[0]);
     setError(null);
   };
 
-  const goToStep = (target: SeekingFlowStepId) => {
+  const goToStep = (target: AvailabilityFixedFlowStepId) => {
     closeMap();
     setStep(target);
     setError(null);
@@ -269,7 +269,7 @@ export const CreateAvailabilityFixedFlow = ({
   const goNext = () => {
     if (!kind || step === 'type') return;
     for (const id of widePageSteps) {
-      const validation = validateSeekingStep(id, draft);
+      const validation = validateAvailabilityFixedStep(id, draft);
       if (validation) {
         setError(validation);
         return;
@@ -282,7 +282,7 @@ export const CreateAvailabilityFixedFlow = ({
 
   const handleSubmit = async () => {
     if (!user) return;
-    const validation = validateSeekingDraft({ ...draft, kind: draft.kind ?? selectedKind });
+    const validation = validateAvailabilityFixedDraft({ ...draft, kind: draft.kind ?? selectedKind });
     if (validation) {
       setError(validation);
       return;
@@ -290,8 +290,8 @@ export const CreateAvailabilityFixedFlow = ({
     setSubmitting(true);
     setError(null);
     try {
-      const result = await publishSeekingRequest({ ...draft, kind: draft.kind ?? selectedKind });
-      if (seekingFlowId) clearSeekingWizardSession(seekingFlowId);
+      const result = await publishAvailabilityFixedSlot({ ...draft, kind: draft.kind ?? selectedKind });
+      if (seekingFlowId) clearAvailabilityWizardSession(seekingFlowId);
       setSubmitResult(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not post your request.');

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { getSeekingFlowSteps } from './availabilityFlowEngine';
+import { getAvailabilityFixedFlowSteps } from './availabilityFlowEngine';
 
 describe('availabilityFlowEngine steps', () => {
   it('find hiking is area then going from (no destination pin)', () => {
-    expect(getSeekingFlowSteps('hiking')).toEqual([
+    expect(getAvailabilityFixedFlowSteps('hiking')).toEqual([
       'title',
       'when',
       'curatedArea',
@@ -17,7 +17,7 @@ describe('availabilityFlowEngine steps', () => {
   });
 
   it('find camping is area then going from (no destination pin)', () => {
-    expect(getSeekingFlowSteps('camping')).toEqual([
+    expect(getAvailabilityFixedFlowSteps('camping')).toEqual([
       'title',
       'when',
       'curatedArea',
@@ -31,7 +31,7 @@ describe('availabilityFlowEngine steps', () => {
   });
 
   it('find rideshare keeps from and to after area', () => {
-    expect(getSeekingFlowSteps('rideshare')).toEqual([
+    expect(getAvailabilityFixedFlowSteps('rideshare')).toEqual([
       'title',
       'when',
       'curatedArea',
@@ -45,7 +45,7 @@ describe('availabilityFlowEngine steps', () => {
   });
 
   it('find activity is area then going from', () => {
-    expect(getSeekingFlowSteps('event')).toEqual([
+    expect(getAvailabilityFixedFlowSteps('event')).toEqual([
       'title',
       'when',
       'curatedArea',

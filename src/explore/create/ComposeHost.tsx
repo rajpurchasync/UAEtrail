@@ -6,7 +6,7 @@ import { CreateAddFlow } from '../ui/CreateAddFlow';
 import { CreateAddFacilityFlow } from '../ui/CreateAddFacilityFlow';
 import type { AddSubmitResult } from '../ui/addFlow';
 import { CreateAvailabilityFixedFlow } from '../ui/CreateAvailabilityFixedFlow';
-import type { SeekingSubmitResult } from '../ui/availabilityFlowEngine';
+import type { AvailabilityFixedSubmitResult } from '../ui/availabilityFlowEngine';
 import { CreateIntentSheet } from '../ui/CreateIntentSheet';
 import { SeekFlexibleComposeSheet } from '../ui/SeekFlexibleComposeSheet';
 import { ComposeSheetExpandedProvider } from './ComposeSheetExpandedContext';
@@ -35,7 +35,7 @@ export interface ComposeHostProps {
   onActivityPublished: (activity: ActivityDTO) => void | Promise<void>;
   onOpenHostApplication: () => void;
   onAddSubmitted: (result: AddSubmitResult) => void;
-  onSeekingSubmitted: (result: SeekingSubmitResult) => void;
+  onAvailabilityFixedSubmitted: (result: AvailabilityFixedSubmitResult) => void;
   onCreateLinkedRideshare?: (parentActivity: ActivityDTO) => void;
   tenantId?: string | null;
   planWithBuddyUserId?: string | null;
@@ -70,7 +70,7 @@ export const ComposeHost = ({
   onActivityPublished,
   onOpenHostApplication,
   onAddSubmitted,
-  onSeekingSubmitted,
+  onAvailabilityFixedSubmitted,
   onCreateLinkedRideshare,
   tenantId = null,
   planWithBuddyUserId = null,
@@ -160,7 +160,7 @@ export const ComposeHost = ({
         seekKind={availabilityFixedKind ?? null}
         exploreAreaSlug={composeAreaSlug}
         onBackToIntent={onAvailabilityBackToIntent}
-        onSubmitted={onSeekingSubmitted}
+        onSubmitted={onAvailabilityFixedSubmitted}
         signInHref={signInHref}
         tenantId={tenantId}
         onCreateLinkedRideshare={onCreateLinkedRideshare}

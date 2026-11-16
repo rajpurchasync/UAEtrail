@@ -2,15 +2,15 @@ import type { AvailabilityKind, ParticipantIntentKind } from '@uaetrail/shared-t
 import { availabilityMapItemId } from '@uaetrail/shared-types';
 import { getMyAvailability, putMyAvailability } from '../../hooks/memberAvailabilityApi';
 import {
-  validateSeekingCuratedAreaStep,
-  validateSeekingPublishArea,
+  validateAvailabilityCuratedAreaStep,
+  validateAvailabilityPublishArea,
 } from '../hostingPublishArea';
 import { MAP_CONFIG } from '../../config/platform';
 import { buildDateOptions, todayIso, type LocationPrecision, type TimeMode } from './createFlowShared';
 
-export type SeekingKind = ParticipantIntentKind;
+export type AvailabilityFixedKind = ParticipantIntentKind;
 
-export type SeekingFlowStepId =
+export type AvailabilityFixedFlowStepId =
   | 'title'
   | 'when'
   | 'destination'
@@ -29,14 +29,14 @@ export type SeekingFlowStepId =
   | 'comment'
   | 'review';
 
-export type SeekingFitnessLevel = 'beginner' | 'medium' | 'goat';
+export type AvailabilityFixedFitnessLevel = 'beginner' | 'medium' | 'goat';
 
-export type SeekingTransportMode = 'self' | 'rideshare';
+export type AvailabilityFixedTransportMode = 'self' | 'rideshare';
 
-export type SeekingVehicleType = 'sedan' | 'suv' | '4x4' | 'van';
+export type AvailabilityFixedVehicleType = 'sedan' | 'suv' | '4x4' | 'van';
 
-export type SeekingDraft = {
-  kind: SeekingKind | null;
+export type AvailabilityFixedDraft = {
+  kind: AvailabilityFixedKind | null;
   title: string;
   date: string;
   time: string;
@@ -49,15 +49,15 @@ export type SeekingDraft = {
   toLatitude: number | null;
   toLongitude: number | null;
   partySize: number;
-  fitnessLevel: SeekingFitnessLevel | null;
+  fitnessLevel: AvailabilityFixedFitnessLevel | null;
   additionalInfo: string;
   rideshareNeeded: boolean;
   womenOnly: boolean;
   familyOnly: boolean;
   childrenAllowed: boolean;
   petsAllowed: boolean;
-  transportMode: SeekingTransportMode | null;
-  selfVehicleType: SeekingVehicleType | null;
+  transportMode: AvailabilityFixedTransportMode | null;
+  selfVehicleType: AvailabilityFixedVehicleType | null;
   rideshareSeatsNeeded: number;
   destinationTimeMode: TimeMode;
   destinationTime: string;
@@ -72,8 +72,8 @@ export type SeekingDraft = {
 };
 
 /** Same order and labels as FAB `SEEK_FIXED_COMPOSE_OPTIONS` / compose catalog `find.*`. */
-export const SEEKING_TYPE_OPTIONS: Array<{
-  key: SeekingKind;
+export const AVAILABILITY_FIXED_TYPE_OPTIONS: Array<{
+  key: AvailabilityFixedKind;
   title: string;
   subtitle: string;
   emoji: string;
@@ -84,10 +84,10 @@ export const SEEKING_TYPE_OPTIONS: Array<{
   { key: 'event', title: 'Activities', subtitle: 'Runs, jogs, meetups & more', emoji: '✨' },
 ];
 
-export const SEEKING_PARTY_PRESETS = [1, 2, 3, 4, 6, 8] as const;
+export const AVAILABILITY_FIXED_PARTY_PRESETS = [1, 2, 3, 4, 6, 8] as const;
 
-export const SEEKING_FITNESS_OPTIONS: Array<{
-  value: SeekingFitnessLevel;
+export const AVAILABILITY_FIXED_FITNESS_OPTIONS: Array<{
+  value: AvailabilityFixedFitnessLevel;
   title: string;
   subtitle: string;
 }> = [
@@ -96,14 +96,14 @@ export const SEEKING_FITNESS_OPTIONS: Array<{
   { value: 'goat', title: 'GOAT', subtitle: 'Hard trails, fast pace' },
 ];
 
-export const SEEKING_SELF_VEHICLE_OPTIONS: Array<{ value: SeekingVehicleType; title: string }> = [
+export const AVAILABILITY_FIXED_VEHICLE_OPTIONS: Array<{ value: AvailabilityFixedVehicleType; title: string }> = [
   { value: 'sedan', title: 'Sedan' },
   { value: 'suv', title: 'SUV' },
   { value: '4x4', title: '4x4' },
   { value: 'van', title: 'Van' },
 ];
 
-const HIKING_DEMAND_STEPS: SeekingFlowStepId[] = [
+const HIKING_DEMAND_STEPS: AvailabilityFixedFlowStepId[] = [
   'title',
   'when',
   'curatedArea',
@@ -115,7 +115,7 @@ const HIKING_DEMAND_STEPS: SeekingFlowStepId[] = [
   'review',
 ];
 
-const CAMPING_DEMAND_STEPS: SeekingFlowStepId[] = [
+const CAMPING_DEMAND_STEPS: AvailabilityFixedFlowStepId[] = [
   'title',
   'when',
   'curatedArea',
@@ -127,7 +127,7 @@ const CAMPING_DEMAND_STEPS: SeekingFlowStepId[] = [
   'review',
 ];
 
-const RIDESHARE_DEMAND_STEPS: SeekingFlowStepId[] = [
+const RIDESHARE_DEMAND_STEPS: AvailabilityFixedFlowStepId[] = [
   'title',
   'when',
   'curatedArea',
@@ -139,7 +139,7 @@ const RIDESHARE_DEMAND_STEPS: SeekingFlowStepId[] = [
   'review',
 ];
 
-const EVENT_DEMAND_STEPS: SeekingFlowStepId[] = [
+const EVENT_DEMAND_STEPS: AvailabilityFixedFlowStepId[] = [
   'title',
   'when',
   'curatedArea',
@@ -150,27 +150,27 @@ const EVENT_DEMAND_STEPS: SeekingFlowStepId[] = [
   'review',
 ];
 
-export const usesHikingSeekingFlow = (kind: SeekingKind | null): boolean => kind === 'hiking';
+export const usesHikingAvailabilityFlow = (kind: AvailabilityFixedKind | null): boolean => kind === 'hiking';
 
-export const usesCampingSeekingFlow = (kind: SeekingKind | null): boolean => kind === 'camping';
+export const usesCampingAvailabilityFlow = (kind: AvailabilityFixedKind | null): boolean => kind === 'camping';
 
-export const seekingWhenShowsTime = (kind: SeekingKind | null): boolean =>
+export const availabilityWhenShowsTime = (kind: AvailabilityFixedKind | null): boolean =>
   kind === 'rideshare' || kind === 'event';
 
-export const usesStructuredSeekingFlow = (kind: SeekingKind | null): boolean =>
+export const usesStructuredAvailabilityFlow = (kind: AvailabilityFixedKind | null): boolean =>
   kind === 'hiking' || kind === 'camping';
 
-export const usesEventSeekingFlow = (kind: SeekingKind | null): boolean => kind === 'event';
+export const usesEventAvailabilityFlow = (kind: AvailabilityFixedKind | null): boolean => kind === 'event';
 
-export const usesOutdoorActivitySeekingFlow = (kind: SeekingKind | null): boolean =>
-  usesStructuredSeekingFlow(kind) || usesEventSeekingFlow(kind);
+export const usesOutdoorActivityAvailabilityFlow = (kind: AvailabilityFixedKind | null): boolean =>
+  usesStructuredAvailabilityFlow(kind) || usesEventAvailabilityFlow(kind);
 
-export const usesRideshareSeekingFlow = (kind: SeekingKind | null): boolean => kind === 'rideshare';
+export const usesRideshareAvailabilityFlow = (kind: AvailabilityFixedKind | null): boolean => kind === 'rideshare';
 
-export const usesGuidedSeekingFlow = (kind: SeekingKind | null): boolean =>
-  usesOutdoorActivitySeekingFlow(kind) || usesRideshareSeekingFlow(kind);
+export const usesGuidedAvailabilityFlow = (kind: AvailabilityFixedKind | null): boolean =>
+  usesOutdoorActivityAvailabilityFlow(kind) || usesRideshareAvailabilityFlow(kind);
 
-export const emptySeekingDraft = (): SeekingDraft => ({
+export const emptyAvailabilityFixedDraft = (): AvailabilityFixedDraft => ({
   kind: null,
   title: '',
   date: todayIso(),
@@ -204,7 +204,7 @@ export const emptySeekingDraft = (): SeekingDraft => ({
   areaId: null,
 });
 
-export const getSeekingFlowSteps = (kind: SeekingKind): SeekingFlowStepId[] => {
+export const getAvailabilityFixedFlowSteps = (kind: AvailabilityFixedKind): AvailabilityFixedFlowStepId[] => {
   switch (kind) {
     case 'hiking':
       return HIKING_DEMAND_STEPS;
@@ -224,13 +224,13 @@ export const getSeekingFlowSteps = (kind: SeekingKind): SeekingFlowStepId[] => {
 };
 
 /** Sheet heading for each step (shown under the header). */
-export const seekingFlowStepTitle = (step: SeekingFlowStepId, kind: SeekingKind): string => {
+export const availabilityFixedFlowStepTitle = (step: AvailabilityFixedFlowStepId, kind: AvailabilityFixedKind): string => {
   if (step === 'curatedArea') return 'Preferred area';
   if (step === 'destination') return 'Preferred area';
   if (step === 'audience') return 'Looking for';
   if (step === 'transport') return 'Transport';
 
-  if (usesRideshareSeekingFlow(kind)) {
+  if (usesRideshareAvailabilityFlow(kind)) {
     switch (step) {
       case 'title':
         return 'Title';
@@ -251,7 +251,7 @@ export const seekingFlowStepTitle = (step: SeekingFlowStepId, kind: SeekingKind)
     }
   }
 
-  if (usesEventSeekingFlow(kind)) {
+  if (usesEventAvailabilityFlow(kind)) {
     switch (step) {
       case 'title':
         return 'Title';
@@ -272,7 +272,7 @@ export const seekingFlowStepTitle = (step: SeekingFlowStepId, kind: SeekingKind)
     }
   }
 
-  if (usesHikingSeekingFlow(kind) || usesCampingSeekingFlow(kind)) {
+  if (usesHikingAvailabilityFlow(kind) || usesCampingAvailabilityFlow(kind)) {
     switch (step) {
       case 'title':
         return 'Title';
@@ -313,7 +313,7 @@ export const seekingFlowStepTitle = (step: SeekingFlowStepId, kind: SeekingKind)
   }
 };
 
-export const seekingTitlePlaceholder = (kind: SeekingKind): string => {
+export const availabilityTitlePlaceholder = (kind: AvailabilityFixedKind): string => {
   switch (kind) {
     case 'hiking':
       return 'e.g. Easy-moderate hike near Hatta this weekend, open to rideshare';
@@ -330,13 +330,13 @@ export const seekingTitlePlaceholder = (kind: SeekingKind): string => {
   }
 };
 
-export const seekingAreaFieldLabel = (kind: SeekingKind): string => {
+export const availabilityAreaFieldLabel = (kind: AvailabilityFixedKind): string => {
   if (kind === 'event') return 'What would you like to do?';
   if (kind === 'guide') return 'What are you looking for?';
   return 'Where would you like to go?';
 };
 
-export const seekingAreaPlaceholder = (kind: SeekingKind): string => {
+export const availabilityAreaPlaceholder = (kind: AvailabilityFixedKind): string => {
   switch (kind) {
     case 'hiking':
       return 'e.g. Hatta, Jebel Jais, Wadi Shawka';
@@ -353,18 +353,18 @@ export const seekingAreaPlaceholder = (kind: SeekingKind): string => {
   }
 };
 
-export const seekingAreaUsesMap = (kind: SeekingKind): boolean =>
+export const availabilityAreaUsesMap = (kind: AvailabilityFixedKind): boolean =>
   kind === 'camping' || kind === 'guide' || kind === 'other';
 
-export const seekingAreaTextRequired = (kind: SeekingKind): boolean =>
+export const availabilityAreaTextRequired = (kind: AvailabilityFixedKind): boolean =>
   kind === 'hiking' || kind === 'guide';
 
-export const seekingGoingFromPlaceholder = (kind: SeekingKind): string => {
+export const availabilityGoingFromPlaceholder = (kind: AvailabilityFixedKind): string => {
   if (kind === 'camping') return 'e.g. Dubai, Sharjah, Abu Dhabi';
   return 'e.g. Dubai Marina, Business Bay, JLT';
 };
 
-export const seekingAdditionalInfoPlaceholder = (kind: SeekingKind): string => {
+export const availabilityAdditionalInfoPlaceholder = (kind: AvailabilityFixedKind): string => {
   if (kind === 'rideshare') {
     return 'Luggage, pickup flexibility, preferred departure window…';
   }
@@ -377,13 +377,13 @@ export const seekingAdditionalInfoPlaceholder = (kind: SeekingKind): string => {
   return 'Preferred area, trail type, pace, anything else hosts should know…';
 };
 
-const fitnessLevelLabel = (level: SeekingFitnessLevel): string =>
-  SEEKING_FITNESS_OPTIONS.find((option) => option.value === level)?.title ?? level;
+const fitnessLevelLabel = (level: AvailabilityFixedFitnessLevel): string =>
+  AVAILABILITY_FIXED_FITNESS_OPTIONS.find((option) => option.value === level)?.title ?? level;
 
-const vehicleLabel = (value: SeekingVehicleType | null): string =>
-  SEEKING_SELF_VEHICLE_OPTIONS.find((option) => option.value === value)?.title ?? value ?? '';
+const vehicleLabel = (value: AvailabilityFixedVehicleType | null): string =>
+  AVAILABILITY_FIXED_VEHICLE_OPTIONS.find((option) => option.value === value)?.title ?? value ?? '';
 
-export const buildSeekingComment = (draft: SeekingDraft): string => {
+export const buildAvailabilityFixedComment = (draft: AvailabilityFixedDraft): string => {
   const parts: string[] = [];
 
   if (draft.womenOnly) parts.push('Women only');
@@ -419,14 +419,14 @@ export const buildSeekingComment = (draft: SeekingDraft): string => {
   return combined.length >= 3 ? combined : 'Open to matching plans nearby.';
 };
 
-export const validateSeekingStep = (step: SeekingFlowStepId, draft: SeekingDraft): string | null => {
+export const validateAvailabilityFixedStep = (step: AvailabilityFixedFlowStepId, draft: AvailabilityFixedDraft): string | null => {
   const kind = draft.kind;
   if (!kind) return 'Choose what you are looking for.';
 
   switch (step) {
     case 'title':
       if (!draft.title.trim()) {
-        return usesGuidedSeekingFlow(kind) ? 'Enter a title.' : 'Tell us a bit about what you are looking for.';
+        return usesGuidedAvailabilityFlow(kind) ? 'Enter a title.' : 'Tell us a bit about what you are looking for.';
       }
       if (draft.title.trim().length < 3) return 'Please add a few more details (at least 3 characters).';
       return null;
@@ -436,9 +436,9 @@ export const validateSeekingStep = (step: SeekingFlowStepId, draft: SeekingDraft
     case 'from':
       if (
         kind === 'rideshare' ||
-        usesHikingSeekingFlow(kind) ||
-        usesCampingSeekingFlow(kind) ||
-        usesEventSeekingFlow(kind)
+        usesHikingAvailabilityFlow(kind) ||
+        usesCampingAvailabilityFlow(kind) ||
+        usesEventAvailabilityFlow(kind)
       ) {
         if (!draft.fromPinPlaced || draft.latitude == null || draft.longitude == null) {
           return 'Drop a going-from pin on the map.';
@@ -478,9 +478,9 @@ export const validateSeekingStep = (step: SeekingFlowStepId, draft: SeekingDraft
     case 'rideshare':
       return null;
     case 'curatedArea':
-      return validateSeekingCuratedAreaStep(draft);
+      return validateAvailabilityCuratedAreaStep(draft);
     case 'area': {
-      if (seekingAreaTextRequired(kind) && !draft.preferredArea.trim()) {
+      if (availabilityAreaTextRequired(kind) && !draft.preferredArea.trim()) {
         return kind === 'guide'
           ? 'Describe what you are looking for.'
           : 'Enter where you would like to go.';
@@ -489,7 +489,7 @@ export const validateSeekingStep = (step: SeekingFlowStepId, draft: SeekingDraft
     }
     case 'when':
       if (!draft.date) return 'Pick a date.';
-      if (seekingWhenShowsTime(kind) && draft.timeMode === 'specific' && !draft.time) {
+      if (availabilityWhenShowsTime(kind) && draft.timeMode === 'specific' && !draft.time) {
         return 'Pick a time.';
       }
       return null;
@@ -505,29 +505,29 @@ export const validateSeekingStep = (step: SeekingFlowStepId, draft: SeekingDraft
       if (!draft.partySize || draft.partySize < 1) return 'Enter how many people.';
       return null;
     case 'comment':
-      if (usesGuidedSeekingFlow(kind)) return null;
+      if (usesGuidedAvailabilityFlow(kind)) return null;
       if (draft.comment.trim().length < 3) return 'Add a short comment (at least 3 characters).';
       return null;
     case 'review':
-      return validateSeekingPublishArea(draft, kind);
+      return validateAvailabilityPublishArea(draft, kind);
     default:
       return null;
   }
 };
 
-export const validateSeekingDraft = (draft: SeekingDraft): string | null => {
+export const validateAvailabilityFixedDraft = (draft: AvailabilityFixedDraft): string | null => {
   const kind = draft.kind;
   if (!kind) return 'Choose what you are looking for.';
 
-  for (const step of getSeekingFlowSteps(kind)) {
+  for (const step of getAvailabilityFixedFlowSteps(kind)) {
     if (step === 'review') continue;
-    const message = validateSeekingStep(step, draft);
+    const message = validateAvailabilityFixedStep(step, draft);
     if (message) return message;
   }
-  return validateSeekingPublishArea(draft, kind);
+  return validateAvailabilityPublishArea(draft, kind);
 };
 
-export type SeekingSubmitResult = {
+export type AvailabilityFixedSubmitResult = {
   visibleOnMap: boolean;
   /** @deprecated Legacy field — fixed availability uses member_availability only. */
   participantIntentId: string;
@@ -536,12 +536,12 @@ export type SeekingSubmitResult = {
   activityId: string | null;
 };
 
-const seekingKindToAvailability = (kind: SeekingKind): AvailabilityKind => {
+const seekingKindToAvailability = (kind: AvailabilityFixedKind): AvailabilityKind => {
   if (kind === 'hiking' || kind === 'camping' || kind === 'rideshare' || kind === 'event') return kind;
   return 'other';
 };
 
-export const publishSeekingRequest = async (draft: SeekingDraft): Promise<SeekingSubmitResult> => {
+export const publishAvailabilityFixedSlot = async (draft: AvailabilityFixedDraft): Promise<AvailabilityFixedSubmitResult> => {
   if (!draft.kind) throw new Error('Choose what you are looking for.');
   if (!draft.fromPinPlaced || draft.latitude == null || draft.longitude == null) {
     throw new Error('Drop a pin on the map for a fixed availability post.');
@@ -552,7 +552,7 @@ export const publishSeekingRequest = async (draft: SeekingDraft): Promise<Seekin
       ? todayIso()
       : draft.date.trim().slice(0, 10);
   const timePart =
-    draft.kind !== 'other' && seekingWhenShowsTime(draft.kind) && draft.timeMode !== 'flexible'
+    draft.kind !== 'other' && availabilityWhenShowsTime(draft.kind) && draft.timeMode !== 'flexible'
       ? draft.time?.trim()
       : null;
   const startAt = timePart ? `${dateIso}T${timePart}:00.000Z` : `${dateIso}T12:00:00.000Z`;

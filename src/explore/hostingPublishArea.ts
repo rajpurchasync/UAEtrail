@@ -7,7 +7,7 @@ import {
   type PlaceDTO,
   type UaeGroupRegionCatalogLabel,
 } from '@uaetrail/shared-types';
-import type { SeekingDraft, SeekingKind } from './ui/availabilityFlowEngine';
+import type { AvailabilityFixedDraft, AvailabilityFixedKind } from './ui/availabilityFlowEngine';
 import type { CreateActivityDraft } from './ui/hostingFlowEngine';
 
 const PLACE_AREA_REQUIRED =
@@ -148,22 +148,22 @@ export const validateHostingPublishArea = (draft: CreateActivityDraft): string |
   return null;
 };
 
-export const validateSeekingCuratedAreaStep = (draft: SeekingDraft): string | null => {
+export const validateAvailabilityCuratedAreaStep = (draft: AvailabilityFixedDraft): string | null => {
   if (!draft.areaId?.trim()) return SEEKING_AREA_REQUIRED;
   return null;
 };
 
 /** Find posts appear on the map from the going-from pin (rideshare also has a to pin). */
-export const seekingPostVisibleOnMap = (draft: SeekingDraft): boolean =>
+export const availabilityFixedVisibleOnMap = (draft: AvailabilityFixedDraft): boolean =>
   Boolean(draft.fromPinPlaced && draft.areaId?.trim() && draft.latitude != null && draft.longitude != null);
 
-export const validateSeekingPublishArea = (draft: SeekingDraft, kind: SeekingKind | null): string | null => {
+export const validateAvailabilityPublishArea = (draft: AvailabilityFixedDraft, kind: AvailabilityFixedKind | null): string | null => {
   if (!kind) return null;
-  if (!usesSeekingCuratedAreaStep(kind)) return null;
-  return validateSeekingCuratedAreaStep(draft);
+  if (!usesAvailabilityCuratedAreaStep(kind)) return null;
+  return validateAvailabilityCuratedAreaStep(draft);
 };
 
-export const usesSeekingCuratedAreaStep = (kind: SeekingKind): boolean =>
+export const usesAvailabilityCuratedAreaStep = (kind: AvailabilityFixedKind): boolean =>
   kind === 'hiking' ||
   kind === 'camping' ||
   kind === 'rideshare' ||

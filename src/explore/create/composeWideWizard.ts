@@ -1,6 +1,6 @@
 import type { AddFlowStepId } from '../ui/addFlow';
 import type { CreateFlowStepId } from '../ui/hostingFlowEngine';
-import type { SeekingFlowStepId } from '../ui/availabilityFlowEngine';
+import type { AvailabilityFixedFlowStepId } from '../ui/availabilityFlowEngine';
 
 /** Wider compose dialog on tablet/desktop single-page forms. */
 export const COMPOSE_WIDE_SHEET_MAX_WIDTH = 'md:max-w-2xl lg:max-w-3xl';
@@ -48,7 +48,7 @@ export const bundleComposeFormPages = <T extends string>(
 export const bundleHostingWizardPages = (steps: readonly CreateFlowStepId[]): CreateFlowStepId[][] =>
   bundleComposeFormPages(steps, HOSTING_SOLO);
 
-export const bundleSeekingWizardPages = (steps: readonly SeekingFlowStepId[]): SeekingFlowStepId[][] =>
+export const bundleAvailabilityWizardPages = (steps: readonly AvailabilityFixedFlowStepId[]): AvailabilityFixedFlowStepId[][] =>
   bundleComposeFormPages(steps, SEEKING_SOLO);
 
 export const bundleAddWizardPages = (steps: readonly AddFlowStepId[]): AddFlowStepId[][] =>

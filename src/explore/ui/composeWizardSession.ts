@@ -3,7 +3,7 @@ import type { ExploreCompose } from '../compose';
 import { addComposeFromVenueKind } from '../compose';
 import { composeFlowIdFromRoute } from '../composeFlowCatalog';
 import type { CreateActivityDraft, CreateActivityKind } from './hostingFlowEngine';
-import type { SeekingDraft, SeekingKind } from './availabilityFlowEngine';
+import type { AvailabilityFixedDraft, AvailabilityFixedKind } from './availabilityFlowEngine';
 import type { AddDraft } from './addFlow';
 import type { FacilityAddDraft } from './addFacilityFlow';
 import type { AddVenueKind } from '../addTypes';
@@ -16,10 +16,10 @@ export type HostingWizardSession = {
   selectedKind: CreateActivityKind | null;
 };
 
-export type SeekingWizardSession = {
+export type AvailabilityWizardSession = {
   step: string;
-  draft: SeekingDraft;
-  selectedKind: SeekingKind | null;
+  draft: AvailabilityFixedDraft;
+  selectedKind: AvailabilityFixedKind | null;
 };
 
 export type AddWizardSession = {
@@ -61,13 +61,13 @@ export const clearHostingWizardSession = (flowId: ComposeFlowId, scope?: string)
   }
 };
 
-export const readSeekingWizardSession = (flowId: ComposeFlowId): SeekingWizardSession | null =>
-  readSessionJson<SeekingWizardSession>(flowId);
+export const readAvailabilityWizardSession = (flowId: ComposeFlowId): AvailabilityWizardSession | null =>
+  readSessionJson<AvailabilityWizardSession>(flowId);
 
-export const writeSeekingWizardSession = (flowId: ComposeFlowId, data: SeekingWizardSession): void =>
+export const writeAvailabilityWizardSession = (flowId: ComposeFlowId, data: AvailabilityWizardSession): void =>
   writeJson(sessionKey(flowId), data);
 
-export const clearSeekingWizardSession = (flowId: ComposeFlowId): void => {
+export const clearAvailabilityWizardSession = (flowId: ComposeFlowId): void => {
   try {
     sessionStorage.removeItem(sessionKey(flowId));
   } catch {
@@ -113,7 +113,7 @@ export const clearComposeWizardSessionForRoute = (route: ExploreCompose | null):
     return;
   }
   if (route.intent === 'availability') {
-    clearSeekingWizardSession(flowId);
+    clearAvailabilityWizardSession(flowId);
     return;
   }
   if (route.intent === 'add' && 'target' in route) {

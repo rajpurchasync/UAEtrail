@@ -64,7 +64,7 @@ describe('create flow module boundaries (CPC-9b)', () => {
     expect(existsSync(join(ROOT, 'src/explore/ui/DemandSubmitSuccessSheet.tsx'))).toBe(false);
     expect(existsSync(join(ROOT, 'src/explore/ui/demandFlow.test.ts'))).toBe(false);
     expect(existsSync(join(ROOT, 'src/explore/ui/CreateAvailabilityFixedFlow.tsx'))).toBe(true);
-    expect(existsSync(join(ROOT, 'src/explore/ui/seekingWizardSteps.tsx'))).toBe(true);
+    expect(existsSync(join(ROOT, 'src/explore/ui/availabilityWizardStepBodies.tsx'))).toBe(true);
     expect(existsSync(join(ROOT, 'src/explore/ui/AvailabilityFixedSubmitSuccessSheet.tsx'))).toBe(true);
   });
 

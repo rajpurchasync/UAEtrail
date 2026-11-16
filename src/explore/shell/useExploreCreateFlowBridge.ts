@@ -3,7 +3,7 @@ import type { ActivityDTO } from '@uaetrail/shared-types';
 import type { CreateFlowBridge } from '../../create/CreateFlowProvider';
 import type { HostingWizardPrefill } from '../ui/hostingWizardPrefill';
 import type { AddSubmitResult } from '../ui/addFlow';
-import type { SeekingSubmitResult } from '../ui/availabilityFlowEngine';
+import type { AvailabilityFixedSubmitResult } from '../ui/availabilityFlowEngine';
 
 type UseExploreCreateFlowBridgeArgs = {
   registerBridge: (next: CreateFlowBridge | null) => void;
@@ -16,7 +16,7 @@ type UseExploreCreateFlowBridgeArgs = {
   setRideshareLinkSeeking: (next: ActivityDTO | null) => void;
   handleCreateLinkedRideshare: CreateFlowBridge['onCreateLinkedRideshare'];
   handleActivityPublished: (activity: ActivityDTO) => Promise<void>;
-  handleSeekingSubmitted: (result: SeekingSubmitResult) => void;
+  handleAvailabilityFixedSubmitted: (result: AvailabilityFixedSubmitResult) => void;
   handleAddSubmitted: (result: AddSubmitResult) => void;
   planWithBuddyUserId: string | null;
   composeAreaSlug: string | null;
@@ -37,7 +37,7 @@ export const useExploreCreateFlowBridge = ({
   setRideshareLinkSeeking,
   handleCreateLinkedRideshare,
   handleActivityPublished,
-  handleSeekingSubmitted,
+  handleAvailabilityFixedSubmitted,
   handleAddSubmitted,
   planWithBuddyUserId,
   composeAreaSlug,
@@ -54,7 +54,7 @@ export const useExploreCreateFlowBridge = ({
     setRideshareLinkSeeking,
     handleCreateLinkedRideshare,
     handleActivityPublished,
-    handleSeekingSubmitted,
+    handleAvailabilityFixedSubmitted,
     handleAddSubmitted,
     refreshHostGate,
   });
@@ -67,7 +67,7 @@ export const useExploreCreateFlowBridge = ({
     setRideshareLinkSeeking,
     handleCreateLinkedRideshare,
     handleActivityPublished,
-    handleSeekingSubmitted,
+    handleAvailabilityFixedSubmitted,
     handleAddSubmitted,
     refreshHostGate,
   };
@@ -90,7 +90,7 @@ export const useExploreCreateFlowBridge = ({
       },
       onCreateLinkedRideshare: (parent) => handlersRef.current.handleCreateLinkedRideshare?.(parent),
       onAvailabilityFixedSubmitted: (result) => {
-        handlersRef.current.handleSeekingSubmitted(result);
+        handlersRef.current.handleAvailabilityFixedSubmitted(result);
         void handlersRef.current.refreshHostGate();
       },
       onAddSubmitted: (result) => handlersRef.current.handleAddSubmitted(result),
