@@ -38,7 +38,6 @@ type Props = Pick<
   | 'peopleBrowseMapChip'
   | 'joinInvitePeekBanner'
   | 'handleCloseMapSelection'
-  | 'handleOfferRideshareForAvailability'
   | 'primaryFabLabel'
   | 'handlePrimaryFabTap'
   | 'handleOpenExploreItem'
@@ -74,7 +73,6 @@ export const ExploreMapShell = ({
   peopleBrowseMapChip,
   joinInvitePeekBanner,
   handleCloseMapSelection,
-  handleOfferRideshareForAvailability: _handleOfferRideshareForAvailability,
   primaryFabLabel,
   handlePrimaryFabTap,
   handleOpenExploreItem,
@@ -226,6 +224,11 @@ export const ExploreMapShell = ({
       onMessage={selection.handlePeekHostMessage}
       onActivityMapPeekAction={selection.handleActivityMapPeekAction}
       onOfferTransport={selection.handleOfferTransport}
+      onOfferRideshare={
+        selection.showAvailabilityPeekOfferRideshare
+          ? selection.handleOfferRideshareForAvailability
+          : undefined
+      }
       activityPeekSkipsJoinContext={selection.activityPeekSkipsJoinContext}
       linkRideshareTenantId={tenantId}
       onOpenExploreItem={handleOpenExploreItem}

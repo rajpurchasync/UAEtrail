@@ -54,7 +54,6 @@ export const ExploreExperience = () => {
               handleMapPinClick={model.handleMapPinClick}
               joinInvitePeekBanner={model.joinInvitePeekBanner}
               handleCloseMapSelection={model.handleCloseMapSelection}
-              handleOfferRideshareForAvailability={model.handleOfferRideshareForAvailability}
               primaryFabLabel={model.primaryFabLabel}
               handlePrimaryFabTap={model.handlePrimaryFabTap}
               handleOpenExploreItem={model.handleOpenExploreItem}

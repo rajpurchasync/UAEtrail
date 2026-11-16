@@ -333,6 +333,7 @@ describe('systemCoherenceGuard', () => {
     );
     expect(selection).toMatch(/useExploreActivityPinDeepLink/);
     expect(selection).toMatch(/useExploreSelectionPeekJoin/);
+    expect(selection).toMatch(/useExploreSelectionMapPeekAction/);
     expect(selection.split(/\r?\n/).length).toBeLessThan(400);
   });
 

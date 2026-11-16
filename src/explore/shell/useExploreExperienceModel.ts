@@ -213,6 +213,7 @@ export const useExploreExperienceModel = () => {
     setLinkOnlyPeekItems,
     onInviteActivity: inviteShare.openShareFromActivity,
     onCreateLinkedRideshare: hostingLauncher.handleCreateLinkedRideshare,
+    onOfferRideshareForAvailability: hostingLauncher.handleOfferRideshareForAvailability,
     onOpenHostManage: tenantId ? openHostManage : undefined,
     onShareHostedActivity: shareHostedActivity,
   });
@@ -405,7 +406,6 @@ export const useExploreExperienceModel = () => {
     handleMapPinClick,
     joinInvitePeekBanner,
     handleCloseMapSelection,
-    handleOfferRideshareForAvailability: hostingLauncher.handleOfferRideshareForAvailability,
     handleCreateLinkedRideshare: hostingLauncher.handleCreateLinkedRideshare,
     primaryFabLabel,
     handlePrimaryFabTap,

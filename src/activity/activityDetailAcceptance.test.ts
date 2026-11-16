@@ -51,11 +51,13 @@ describe('activity detail program — wiring', () => {
 
   it('AD-PEEK-06: host peek share_activity + manage_activity handlers wired', () => {
     const actions = read('src/explore/ui/useExploreSelectionActions.ts');
-    expect(actions).toMatch(/executeActivityMapPeekAction/);
-    expect(actions).toMatch(/shareActivity:/);
+    expect(actions).toMatch(/useExploreSelectionMapPeekAction/);
+    const mapPeekWire = read('src/explore/ui/useExploreSelectionMapPeekAction.ts');
+    expect(mapPeekWire).toMatch(/executeActivityMapPeekAction/);
+    expect(mapPeekWire).toMatch(/shareActivity:/);
     expect(actions).toMatch(/handleSharePeek/);
     expect(read('src/explore/ui/useExplorePeekShareAction.ts')).toMatch(/shareSheet\.openShare/);
-    expect(actions).toMatch(/manageActivity:/);
+    expect(mapPeekWire).toMatch(/manageActivity:/);
     expect(actions).toMatch(/onOpenHostManage/);
     const model = read('src/explore/shell/useExploreExperienceModel.ts');
     expect(model).toMatch(/useHostActivitySheetBundle/);
@@ -99,7 +101,9 @@ describe('activity detail program — wiring', () => {
     const listFeed = read('src/list/ui/ListFeedActionsProvider.tsx');
     expect(listFeed).toMatch(/executeActivityMapPeekAction/);
     const exploreActions = read('src/explore/ui/useExploreSelectionActions.ts');
-    expect(exploreActions).toMatch(/executeActivityMapPeekAction/);
+    expect(exploreActions).toMatch(/useExploreSelectionMapPeekAction/);
+    const mapPeekWire = read('src/explore/ui/useExploreSelectionMapPeekAction.ts');
+    expect(mapPeekWire).toMatch(/executeActivityMapPeekAction/);
   });
 
   it('AD-MANAGE-01: publishing + hosting hub use map-peek wire footer (no parallel host resolvers)', () => {

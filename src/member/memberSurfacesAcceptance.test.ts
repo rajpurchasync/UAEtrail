@@ -467,6 +467,9 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(caps).toContain('canAddLinkedRide');
     const offer = read('src/explore/linkActivityRideshareOffer.ts');
     expect(offer).toContain('canShowAvailabilityLinkRideshareOffer');
+    const availabilityPeek = read('src/explore/ui/peek/availability/AvailabilityPeekActions.tsx');
+    expect(availabilityPeek).toMatch(/onOfferRideshare/);
+    expect(availabilityPeek).toContain('HOSTING_OFFER_RIDESHARE_LABEL');
     expect(offer).toMatch(/canOfferTransport/);
     const entitlements = read('packages/shared-types/src/activity-viewer-entitlements.ts');
     expect(entitlements).toMatch(/link_rideshare.*canAddLinkedRide/);

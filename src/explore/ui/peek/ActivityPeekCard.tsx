@@ -16,6 +16,7 @@ export type ActivityPeekCardProps = {
   onActivityMapPeekAction?: (actionId: ActivityMapPeekActionId) => void;
   onOpenExploreItem?: (exploreItemId: string) => void;
   onOfferTransport?: () => void;
+  onOfferRideshare?: () => void;
   joinInvitePeekBanner?: string | null;
   embedMode?: boolean;
   showDismissChrome?: boolean;
@@ -39,6 +40,7 @@ export const ActivityPeekCard = ({
   onActivityMapPeekAction,
   onOpenExploreItem,
   onOfferTransport,
+  onOfferRideshare,
   joinInvitePeekBanner = null,
   embedMode = false,
   showDismissChrome,
@@ -69,6 +71,7 @@ export const ActivityPeekCard = ({
           joinStateLoading={joinStateLoading}
           onGuestGatedAction={onGuestGatedAction}
           onActivityMapPeekAction={onActivityMapPeekAction}
+          onOfferRideshare={onOfferRideshare}
         />
       }
     >

@@ -492,7 +492,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 | Product (UI copy) | API / wire | Preferred FE symbol / folder | Do not use for new code |
 |-------------------|------------|------------------------------|-------------------------|
 | **Find crew** (FAB) | `PUT /me/availability` (`member_availability`) | `CreateAvailabilityFixedFlow.tsx` (rename TBD), `availabilityFlowEngine.ts` → availability publish | `CreateDemandFlow.tsx`, `/me/seeking-posts`, new `activityMode: seeking` writes |
-| **Availability pin** (public map) | `member_availability` fixed slot | Map id **`availability:{userId}:{slotId}`**; wire **`source: availability`**; peek **`AvailabilityPeekActions`** (profile + message). Assembler: `discovery-catalog-builder.ts` + `buildAvailabilityFixedMapItems`. | `activityMode: seeking` catalog pins; `demand:` ids; join on peek |
+| **Availability pin** (public map) | `member_availability` fixed slot | Map id **`availability:{userId}:{slotId}`**; wire **`source: availability`**; peek **`AvailabilityPeekActions`** (profile + message; optional **Offer rideshare** when `canOfferTransport`). Assembler: `discovery-catalog-builder.ts` + `buildAvailabilityFixedMapItems`. | `activityMode: seeking` catalog pins; `demand:` ids; join on peek |
 | **Follow** (venue / host brand / shop alerts) | `entity_follows` | `EntityFollowDTO`, `GET/POST /me/entity-follows` | Wishlist UI, “favorites” |
 | **Follow** (people) | `user_follows` | `MemberFollowControls`, `/me/following/:userId` | Buddies are **friends**; accepting a buddy **auto-follows** both ways |
 | **Wishlist** (private saves) | `user_wishlist` | `WishlistItemDTO`, `GET/POST /me/wishlist` | “Favorite”, demand bookmarks, saving people/shops to wishlist |

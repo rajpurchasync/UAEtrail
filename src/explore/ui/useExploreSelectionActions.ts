@@ -6,7 +6,6 @@ import {
   resolveActivityDisplayCoordinates,
   resolveActivityHostUserId,
   type ActivityDTO,
-  type ActivityMapPeekActionId,
   type ExploreMapItemDTO,
   type UserRole,
 } from '@uaetrail/shared-types';
@@ -16,11 +15,7 @@ import { buildExploreMapItemFromActivity } from '../privateActivityExploreItem';
 import { openActivityGroupChat } from '../../utils/openActivityGroupChat';
 import { messagesRouteForRole } from '../../utils/authRouting';
 import { navigateToMessagesWithReturn } from '../../utils/activityGroupChatNav';
-import {
-  buildMapPeekReturnPath,
-  mapPeekDetailNavState,
-} from '../mapPeekDetailNavState';
-import { executeActivityMapPeekAction } from '../../activity/executeActivityMapPeekAction';
+import { buildMapPeekReturnPath } from '../mapPeekDetailNavState';
 import { readExploreMapItemsFromCache, reloadExploreMap } from '../../hooks/useExploreMap';
 import { isExploreMapBboxEnabled } from '../exploreMapBbox';
 import { memberAvailabilityQueryKey } from '../../hooks/clientQueryKeys';
@@ -35,6 +30,7 @@ import { useExploreSelectionRemovals } from './useExploreSelectionRemovals';
 import { hostPublishAvailabilityNoticeMessage } from '../../plan/hostPublishAvailabilityNotice';
 import { recordGuestExplorePreviewView } from '../guestMapPreviewPolicy';
 import { navigateToAuthGate, withAuthResumeShare } from '../../utils/authReturnContext';
+import { useExploreSelectionMapPeekAction } from './useExploreSelectionMapPeekAction';
 
 type BrowseState = ReturnType<typeof useExploreBrowseUrlState>;
 
@@ -56,6 +52,7 @@ type UseExploreSelectionActionsArgs = {
     options?: { canSendBuddyInvites?: boolean }
   ) => void;
   onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
+  onOfferRideshareForAvailability?: () => void;
   onOpenHostManage?: (
     activity: ActivityDTO,
     initialView?: ActivityManageInitialView
@@ -78,6 +75,7 @@ export const useExploreSelectionActions = ({
   setLinkOnlyPeekItems,
   onInviteActivity,
   onCreateLinkedRideshare,
+  onOfferRideshareForAvailability,
   onOpenHostManage,
   onShareHostedActivity,
 }: UseExploreSelectionActionsArgs) => {
@@ -207,66 +205,20 @@ export const useExploreSelectionActions = ({
     onGuestShareActivity: handleGuestShareActivity,
   });
 
-  const handleActivityMapPeekAction = useCallback(
-    (actionId: ActivityMapPeekActionId) => {
-      const activity = selected?.activity;
-      executeActivityMapPeekAction(actionId, {
-        openCrewChat: () => void handleHostMessage(),
-        messageHost: handleMessageActivityHost,
-        inviteCrew: handleInviteCrew,
-        linkRideshare: () => {
-          if (activity && onCreateLinkedRideshare) onCreateLinkedRideshare(activity);
-        },
-        offerRideshare: () => {
-          if (activity && onCreateLinkedRideshare) onCreateLinkedRideshare(activity);
-        },
-        requestJoin: peekJoin.handleJoin,
-        shareActivity: () => {
-          handleSharePeek();
-        },
-        manageActivity: () => {
-          if (!activity) return;
-          if (onOpenHostManage) {
-            onOpenHostManage(activity, 'participants');
-            return;
-          }
-          const detailState = mapPeekDetailNavState(location);
-          setSelectedId(null);
-          navigate(`${activityDetailPath(activity.id)}?tab=buddies`, { state: detailState });
-        },
-        withdrawJoin: () => {
-          if (peekJoin.joinUiState.kind === 'pending' || peekJoin.joinUiState.kind === 'confirmed') {
-            peekJoin.joinActions.setShowWithdraw(true);
-          }
-        },
-        viewDetail: () => {
-          if (!activity) return;
-          const detailState = mapPeekDetailNavState(location);
-          setSelectedId(null);
-          navigate(activityDetailPath(activity.id), { state: detailState });
-        },
-      });
-    },
-    [
-      selected?.activity,
-      handleHostMessage,
-      handleMessageActivityHost,
-      handleInviteCrew,
-      peekJoin.handleJoin,
-      peekJoin.joinActions,
-      peekJoin.joinUiState.kind,
-      onCreateLinkedRideshare,
-      onOpenHostManage,
-      handleSharePeek,
-      navigate,
-      setSelectedId,
-      location,
-    ]
-  );
-
-  const handleOfferTransport = useCallback(() => {
-    handleActivityMapPeekAction('offer_rideshare');
-  }, [handleActivityMapPeekAction]);
+  const mapPeekAction = useExploreSelectionMapPeekAction({
+    selected,
+    location,
+    navigate,
+    setSelectedId,
+    peekJoin,
+    handleHostMessage,
+    handleMessageActivityHost,
+    handleInviteCrew,
+    handleSharePeek,
+    onCreateLinkedRideshare,
+    onOfferRideshareForAvailability,
+    onOpenHostManage,
+  });
 
   const handleActivityPublished = useCallback(
     async (activity: ActivityDTO) => {
@@ -364,8 +316,10 @@ export const useExploreSelectionActions = ({
     selected,
     selectedCard,
     activityPeekSkipsJoinContext: peekJoin.activityPeekSkipsJoinContext,
-    handleActivityMapPeekAction,
-    handleOfferTransport,
+    handleActivityMapPeekAction: mapPeekAction.handleActivityMapPeekAction,
+    handleOfferTransport: mapPeekAction.handleOfferTransport,
+    showAvailabilityPeekOfferRideshare: mapPeekAction.showAvailabilityPeekOfferRideshare,
+    handleOfferRideshareForAvailability: onOfferRideshareForAvailability,
     joinUiState: peekJoin.joinUiState,
     joinStateLoading: peekJoin.joinStateLoading,
     peekJoinUiState: peekJoin.peekJoinUiState,

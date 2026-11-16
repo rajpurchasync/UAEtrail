@@ -116,6 +116,7 @@ export type ExploreMapStageProps = {
   activityPeekSkipsJoinContext?: boolean;
   onActivityMapPeekAction?: (actionId: import('@uaetrail/shared-types').ActivityMapPeekActionId) => void;
   onOfferTransport?: () => void;
+  onOfferRideshare?: () => void;
   linkRideshareTenantId?: string | null;
   onOpenExploreItem?: (exploreItemId: string) => void;
   onGuestGatedAction?: (action: import('@uaetrail/shared-types').ActivityMapPeekActionId) => void;
@@ -205,6 +206,7 @@ export const ExploreMapStage = ({
   activityPeekSkipsJoinContext: _activityPeekSkipsJoinContext = false,
   onActivityMapPeekAction,
   onOfferTransport,
+  onOfferRideshare,
   linkRideshareTenantId = null,
   onOpenExploreItem,
   onGuestGatedAction,
@@ -428,6 +430,7 @@ export const ExploreMapStage = ({
           joinStateLoading={joinStateLoading}
           onActivityMapPeekAction={onActivityMapPeekAction}
           onOfferTransport={onOfferTransport}
+          onOfferRideshare={onOfferRideshare}
           joinInvitePeekBanner={joinInvitePeekBanner}
           onShareActivity={onShareActivity}
         />

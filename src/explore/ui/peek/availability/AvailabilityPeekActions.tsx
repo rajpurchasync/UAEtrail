@@ -1,11 +1,13 @@
 import type { ActivityMapPeekActionId } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../../../discovery/discoveryCardModel';
+import { HOSTING_OFFER_RIDESHARE_LABEL } from '../../../createFlowCopy';
 import { PeekDetailLink } from '../../map-peek/PeekDetailLink';
 
 export type AvailabilityPeekActionsProps = {
   card: DiscoveryCardModel;
   onClose: () => void;
   onMessage?: () => void;
+  onOfferRideshare?: () => void;
   onGuestGatedAction?: (action: ActivityMapPeekActionId) => void;
 };
 
@@ -20,32 +22,44 @@ export const AvailabilityPeekActions = ({
   card,
   onClose,
   onMessage,
+  onOfferRideshare,
   onGuestGatedAction,
 }: AvailabilityPeekActionsProps) => {
   const gate = onGuestGatedAction;
 
   return (
-    <div className="flex gap-2">
-      <PeekDetailLink
-        card={card}
-        label={card.primaryCta ?? 'View profile'}
-        className={primaryButtonClass}
-        onGuestGatedAction={gate ? () => gate('view_detail') : undefined}
-        onBeforeNavigate={onClose}
-      />
-      {onMessage ? (
-        <button type="button" onClick={onMessage} className={secondaryButtonClass}>
-          {card.secondaryCta ?? 'Message'}
-        </button>
-      ) : (
+    <div className="flex flex-col gap-2">
+      <div className="flex gap-2">
         <PeekDetailLink
           card={card}
-          label={card.secondaryCta ?? 'Message'}
-          className={secondaryButtonClass}
+          label={card.primaryCta ?? 'View profile'}
+          className={primaryButtonClass}
           onGuestGatedAction={gate ? () => gate('view_detail') : undefined}
           onBeforeNavigate={onClose}
         />
-      )}
+        {onMessage ? (
+          <button type="button" onClick={onMessage} className={secondaryButtonClass}>
+            {card.secondaryCta ?? 'Message'}
+          </button>
+        ) : (
+          <PeekDetailLink
+            card={card}
+            label={card.secondaryCta ?? 'Message'}
+            className={secondaryButtonClass}
+            onGuestGatedAction={gate ? () => gate('view_detail') : undefined}
+            onBeforeNavigate={onClose}
+          />
+        )}
+      </div>
+      {onOfferRideshare ? (
+        <button
+          type="button"
+          onClick={() => (gate ? gate('offer_rideshare') : onOfferRideshare())}
+          className="w-full rounded-xl border border-emerald-200/80 bg-emerald-50 py-2.5 text-center text-sm font-semibold text-emerald-800 transition-colors hover:bg-emerald-100"
+        >
+          {HOSTING_OFFER_RIDESHARE_LABEL}
+        </button>
+      ) : null}
     </div>
   );
 };
