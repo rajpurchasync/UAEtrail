@@ -1,6 +1,8 @@
 # Seeking storage — operations runbook
 
-**Goal:** Find posts and seeking joins use **`activities`** (`activityMode: seeking`) + **`activity_requests`** only. Legacy **`participant_intents`** stub rows are optional after backfill.
+> **MIG-DISCO-REG (Nov 2026):** Product **Find crew** = **`member_availability`** (fixed map pins). No new `activityMode: seeking` writes; HTTP **`/me/seeking-posts/*`** removed. After legacy backfill below, run **`npm --workspace @uaetrail/api run migrate-seeking-to-availability`** (dry-run first) to copy published seeking activities into fixed slots; optional **`--cancel-seeking`**. Map cache invalidates automatically.
+
+**Goal (legacy phase):** Retire **`participant_intents`** stub rows and seeking activities without leaving orphan join data. **Current product** does not create seeking activities — this runbook is **ops cleanup** on existing DBs.
 
 **Checklist mirror:** [`PRE_DEPLOY_CHECKLIST.md`](../PRE_DEPLOY_CHECKLIST.md) § Release gates (seeking + G-manage).
 
@@ -78,7 +80,7 @@ Record in the deploy ticket: date, commit SHA, and the JSON summary (`readyToDis
 ## Local dev
 
 - `.env.example` defaults `PARTICIPANT_INTENT_STUB_WRITE=false` — mirror in root `.env` after backfill.
-- Find flow uses `/me/seeking-posts` (activity-canonical; legacy `participant_intents` read-only).
+- Find crew uses **`PUT /me/availability`**; legacy `/me/seeking-posts` returns **404**.
 
 ## G-manage smoke (staging UI)
 
@@ -92,7 +94,7 @@ API regression (no browser): `apps/api/tests/g-manage-coordination-join-approve.
 
 ## Rollback
 
-Set `PARTICIPANT_INTENT_STUB_WRITE=true` and restart API. Does not delete existing `activities` seeking rows; only re-enables dual-write on new Find posts.
+Set `PARTICIPANT_INTENT_STUB_WRITE=true` and restart API. **Not recommended post MIG-DISCO-REG** — product no longer mounts seeking-posts routes; rollback is DB restore only.
 
 ---
 
@@ -103,6 +105,6 @@ Set `PARTICIPANT_INTENT_STUB_WRITE=true` and restart API. Does not delete existi
 - `npm run seeking:storage-status -- --strict` exits **0** on every env for **≥30 days** with no rollback.
 - `activeIntentsMissingSeekingActivity === 0` and no new `participant_intents` inserts in ops metrics.
 
-**Then remove:** `PARTICIPANT_INTENT_STUB_WRITE`, stub insert path, phase-letter labels in Tier-1, `demand:` compat — see [`API_ROUTING.md`](../API_ROUTING.md) seeking-posts section.
+**Then remove:** `PARTICIPANT_INTENT_STUB_WRITE`, stub insert path, `demand:` compat, stale seeking activities (cancel or migrate).
 
-**Keep:** `activityMode: seeking`, Find FAB, explore seeking pins, Available vs looking-for split.
+**Keep:** **`member_availability`** registry, Find crew FAB → `PUT /me/availability`, explore `source: availability` pins.

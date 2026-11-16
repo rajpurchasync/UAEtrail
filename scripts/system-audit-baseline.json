@@ -1,16 +1,16 @@
 {
-  "generated": "2026-11-12",
+  "generated": "2026-11-16",
   "description": "CTO system audit baseline. Regenerate: npm run system:audit",
   "summary": {
-    "apiRegistrarFiles": 64,
-    "apiRouteEndpointsParsed": 204,
+    "apiRegistrarFiles": 63,
+    "apiRouteEndpointsParsed": 195,
     "mongoCollectionsDefined": 65,
     "mongoCollectionsOrphanInApi": 0,
     "mongoCollectionsMultiWriterOver4": 3,
     "routeRegistrarsWithDirectWrites": 0,
     "apiMounts": 8,
-    "spaRouteElements": 135,
-    "feDomainModules": 31,
+    "spaRouteElements": 136,
+    "feDomainModules": 30,
     "boundedContexts": 17
   },
   "risks": {
@@ -674,9 +674,10 @@
     },
     "MEMBER_AVAILABILITY": {
       "mongoName": "member_availability",
-      "referencingFiles": 3,
+      "referencingFiles": 4,
       "writerFiles": 1,
       "sampleFiles": [
+        "apps/api/src/lib/availability-fixed-map-items.ts",
         "apps/api/src/lib/member-availability-store.ts",
         "apps/api/src/lib/mongo-indexes.ts",
         "apps/api/src/services/availability-hosted-match-notifications.ts"

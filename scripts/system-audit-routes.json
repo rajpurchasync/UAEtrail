@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-12",
+  "generated": "2026-11-16",
   "endpoints": [
     {
       "method": "GET",
@@ -442,46 +442,6 @@
       "registrar": "apps/api/src/routes/user/registerMeParticipantHubRoutes.ts"
     },
     {
-      "method": "PATCH",
-      "path": "${basePath}/:${idParam}",
-      "registrar": "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts"
-    },
-    {
-      "method": "POST",
-      "path": "${basePath}/:${idParam}/cancel",
-      "registrar": "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts"
-    },
-    {
-      "method": "POST",
-      "path": "${basePath}/:${idParam}/link-activity",
-      "registrar": "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts"
-    },
-    {
-      "method": "POST",
-      "path": "${basePath}/:${idParam}/${requestSegment}",
-      "registrar": "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts"
-    },
-    {
-      "method": "GET",
-      "path": "${basePath}/:${idParam}/${requestSegment}",
-      "registrar": "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts"
-    },
-    {
-      "method": "GET",
-      "path": "${basePath}/:${idParam}/${requestSegment}/mine",
-      "registrar": "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts"
-    },
-    {
-      "method": "POST",
-      "path": "${basePath}/:${idParam}/${requestSegment}/:requestId/approve",
-      "registrar": "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts"
-    },
-    {
-      "method": "POST",
-      "path": "${basePath}/:${idParam}/${requestSegment}/:requestId/reject",
-      "registrar": "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts"
-    },
-    {
       "method": "GET",
       "path": "/me/submissions/candidates",
       "registrar": "apps/api/src/routes/user/registerMeSubmissionRoutes.ts"
@@ -724,11 +684,6 @@
     {
       "method": "GET",
       "path": "/explore/map",
-      "registrar": "apps/api/src/routes/user/registerPublicPlaceRoutes.ts"
-    },
-    {
-      "method": "GET",
-      "path": "/explore/seeking-activities",
       "registrar": "apps/api/src/routes/user/registerPublicPlaceRoutes.ts"
     },
     {
@@ -1193,10 +1148,6 @@
     ],
     "apps/api/src/routes/user/registerMeParticipantHubRoutes.ts": [
       "participant-hub-read"
-    ],
-    "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts": [
-      "participant-intent-me-commands",
-      "participant-intent-me-read"
     ],
     "apps/api/src/routes/user/registerMeSubmissionRoutes.ts": [
       "submission-commands"

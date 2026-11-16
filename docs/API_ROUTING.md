@@ -30,43 +30,33 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`M
 
 **Naming**
 
-- **Resource paths** use kebab-case plural nouns (`seeking-posts`, not `intents` or `demand`).
+- **Resource paths** use kebab-case plural nouns (`member-availability` slots via `/me/availability`, not `intents` or `demand`).
 - **No tab or marketing names** on `/me/*` (`plan-needs-you`, `member-hub-stats` are forbidden — use capability names like `coordination-attention`, `profile-stats`). Presentation (`label`, consumer `path`) belongs in the SPA, not JSON.
 - **Crew availability** → **`PUT /me/availability`** (`member_availability`; fixed windows project to explore map `source: availability`). Legacy **`/me/seeking-posts`** HTTP removed (MIG-DISCO-REG).
-- **Type field** on intents: `kind` (`ParticipantIntentKind`) — parallels activity `activityType` / shared `outingCategory`.
+- **Availability slots** use `kinds[]` on `member_availability` — parallels activity `activityType` / shared `outingCategory`.
 - Do **not** add catch-all `/plans` or `/me/intents` (legacy plan doc paths are obsolete).
 
 ---
 
-## Join requests: activities vs demand
+## Join requests (hosted activities only)
 
-**Demand** pins are always **public** on the map and use **approval-style join only** — no RSVP, no **I'm going**, no `participationMode` or `joinMode` on seeking rows. Hosted activities keep both modes.
+**Find crew** map pins (`source: availability`) are **not joinable** — discover → member profile → message. Join flows apply only to **hosted** published activities.
 
-Same product verb (**request to join**), two surfaces of **`activity_requests`**:
-
-| Step | Published activity | Demand (seeking `activities`) |
-|------|-------------------|----------------------------------|
-| **Create request** | `POST /activities/:activityId/requests` | `POST /me/seeking-posts/:postId/requests` (same `activity_requests` row) |
-| **My status** | In activity detail `myRequest` | `GET …/requests/mine` |
-| **Poster / host lists** | `GET /publishing/requests` (tenant) | `GET /me/seeking-posts/:postId/requests` (owner) |
-| **Approve / reject** | `PATCH /publishing/requests/:id` | `POST …/requests/:requestId/approve` · `…/reject` |
-| **Member list (outgoing)** | `GET /me/requests` | *(future: aggregate or trips)* |
+| Step | Published activity |
+|------|-------------------|
+| **Create request** | `POST /activities/:activityId/requests` |
+| **My status** | In activity detail `myRequest` |
+| **Host lists** | `GET /publishing/requests` (tenant) |
+| **Approve / reject** | `PATCH /publishing/requests/:id` |
+| **Member list (outgoing)** | `GET /me/requests` |
 
 Deprecated alias (do not use in new clients): `…/join-requests` mirrors `…/requests`.
 
 **Messages (COH-06):** JSON **`note`** (joiner → host) and **`hostNote`** (host decision / revoke). HTTP, DTO, and Mongo use **`hostNote` only**.
 
-Storage: `activity_requests` vs `participant_intent_requests`.
+Storage: **`activity_requests`** only for new join traffic. Legacy **`participant_intent_requests`** rows are read/migrate only.
 
-### M2 join unification (in progress)
-
-| Step | Status | Behavior |
-|------|--------|----------|
-| **M1** | Shipped | Find post → `activities` row (`activityMode: seeking`, `participantIntentId`). |
-| **M2a** | Superseded by M2c | Transitional dual-write (Oct 2026); replaced by single **`activity_requests`** store. |
-| **M2b** | Shipped | `POST /activities/:id/requests` is canonical for seeking pins (mirrors `participant_intent_requests`); intent `POST` delegates to activity when **`activityId`** is set; `GET …/requests/mine` reads `activity_requests` when needed. |
-| **M2c** | Shipped | Seeking joins on **`activity_requests`** only; `/me/seeking-posts/…/requests` for manage UI. |
-| **M2d / COH-01** | Shipped | Find writes only `activities`; HTTP **`/me/seeking-posts/*`**; no `participant_intents` inserts. |
+**Retired (MIG-DISCO-REG):** demand / seeking activity joins, `/me/seeking-posts/*`, `GET /explore/seeking-activities`. Ops: `migrate-seeking-to-availability` then `seeking:storage-status --strict`.
 
 ---
 
