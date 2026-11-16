@@ -60,7 +60,7 @@ const REVIEW_EDIT_LABELS: Partial<Record<AvailabilityFixedFlowStepId, string>> =
 export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): ReactNode {
   const {
     step,
-    seekKind,
+    availabilityFixedKind,
     kind,
     selectedKind,
     setSelectedKind,
@@ -86,7 +86,7 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
 
   return (
     <>
-      {step === 'type' && !seekKind && (
+      {step === 'type' && !availabilityFixedKind && (
         <ComposeWizardStepChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <div className="grid grid-cols-2 gap-3">
             {AVAILABILITY_FIXED_TYPE_OPTIONS.map((option) => {

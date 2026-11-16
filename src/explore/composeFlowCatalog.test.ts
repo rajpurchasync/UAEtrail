@@ -211,9 +211,9 @@ describe('compose flow catalog', () => {
 
       expect(id).toBeTruthy();
 
-      const seekingKind = availabilityFixedKindFromComposeKind(option.kind);
+      const fixedKind = availabilityFixedKindFromComposeKind(option.kind);
 
-      expect(composeFlowSpec(id!).availabilityFixedSteps).toEqual(getAvailabilityFixedFlowSteps(seekingKind));
+      expect(composeFlowSpec(id!).availabilityFixedSteps).toEqual(getAvailabilityFixedFlowSteps(fixedKind));
 
     }
 

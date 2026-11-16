@@ -1,5 +1,5 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
-import type { ExploreCompose, SeekingComposeKind, HostComposeKind } from '../compose';
+import type { ExploreCompose, AvailabilityFixedComposeKind, HostComposeKind } from '../compose';
 import type { AddVenueKind } from '../addTypes';
 import { HostingFlowHost } from './hosting/HostingFlowHost';
 import { CreateAddFlow } from '../ui/CreateAddFlow';
@@ -22,7 +22,7 @@ export interface ComposeHostProps {
   /** Availability — share days (`seek:flexible`). */
   availabilityFlexibleOpen: boolean;
   hostComposeKind: HostComposeKind | null;
-  availabilityFixedKind: SeekingComposeKind | null | undefined;
+  availabilityFixedKind: AvailabilityFixedComposeKind | null | undefined;
   addVenueKind: AddVenueKind | null;
   hostingWizardPrefill: import('../ui/hostingWizardPrefill').HostingWizardPrefill | null;
   signInHref: string;
@@ -157,7 +157,7 @@ export const ComposeHost = ({
       <CreateAvailabilityFixedFlow
         open={availabilityFixedWizardOpen}
         onClose={onCloseCompose}
-        seekKind={availabilityFixedKind ?? null}
+        availabilityFixedKind={availabilityFixedKind ?? null}
         exploreAreaSlug={composeAreaSlug}
         onBackToIntent={onAvailabilityBackToIntent}
         onSubmitted={onAvailabilityFixedSubmitted}

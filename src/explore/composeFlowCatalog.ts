@@ -20,7 +20,7 @@ import type {
 
   ExploreCompose,
 
-  SeekingComposeKind,
+  AvailabilityFixedComposeKind,
 
   HostComposeKind,
 
@@ -58,7 +58,9 @@ import {
 
 
 
-export const availabilityFixedKindFromComposeKind = (kind: SeekingComposeKind): AvailabilityFixedKind => kind;
+export const availabilityFixedKindFromComposeKind = (
+  kind: AvailabilityFixedComposeKind
+): AvailabilityFixedKind => kind;
 
 
 
@@ -486,7 +488,7 @@ export const composeFlowSpecForHostKind = (kind: HostComposeKind): ComposeFlowSp
 
 
 
-const SEEK_KIND_TO_FLOW_ID: Record<SeekingComposeKind, CanonicalComposeFlowId> = {
+const AVAILABILITY_FIXED_KIND_TO_FLOW_ID: Record<AvailabilityFixedComposeKind, CanonicalComposeFlowId> = {
 
   hiking: 'seek.fixed.hiking',
 
@@ -522,7 +524,7 @@ export const composeFlowIdFromRoute = (route: ExploreCompose | null): CanonicalC
   if ('surface' in route) return null;
   if (route.intent === 'host' && route.kind) return HOST_KIND_TO_FLOW_ID[route.kind];
   if (route.intent === 'availability' && route.mode === 'fixed' && route.kind) {
-    return SEEK_KIND_TO_FLOW_ID[route.kind];
+    return AVAILABILITY_FIXED_KIND_TO_FLOW_ID[route.kind];
   }
   if (route.intent === 'add' && 'target' in route) {
     if (route.target === 'facility') return 'add.facility';

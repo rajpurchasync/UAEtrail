@@ -1,5 +1,5 @@
 import type { AreaPublicDTO } from '@uaetrail/shared-types';
-import type { SeekingComposeKind } from '../../compose';
+import type { AvailabilityFixedComposeKind } from '../../compose';
 import { COMPOSE_MAP_INTENTS } from '../../create/interactions';
 import type { AvailabilityFixedDraft, AvailabilityFixedFlowStepId, AvailabilityFixedKind } from '../availabilityFlowEngine';
 
@@ -11,7 +11,7 @@ export type AvailabilityMapOpen = (
 
 export type AvailabilityWizardContext = {
   step: AvailabilityWizardFlowStep;
-  seekKind: SeekingComposeKind | null;
+  availabilityFixedKind: AvailabilityFixedComposeKind | null;
   kind: AvailabilityFixedKind | null;
   selectedKind: AvailabilityFixedKind | null;
   setSelectedKind: (kind: AvailabilityFixedKind | null) => void;

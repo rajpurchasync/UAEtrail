@@ -34,7 +34,7 @@ import {
   type AvailabilityFixedKind,
 } from './availabilityFlowEngine';
 import type { LocationPrecision } from './createFlowShared';
-import { availabilityFixedCompose, type SeekingComposeKind } from '../compose';
+import { availabilityFixedCompose, type AvailabilityFixedComposeKind } from '../compose';
 import { areaIdForExploreAreaSlug } from '../exploreAreaFilter';
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
 import { composeFlowIdFromRoute } from '../composeFlowCatalog';
@@ -60,7 +60,7 @@ interface CreateAvailabilityFixedFlowProps {
   onBackToIntent?: () => void;
   onSubmitted?: (result: AvailabilityFixedSubmitResult) => void;
   signInHref: string;
-  seekKind?: SeekingComposeKind | null;
+  availabilityFixedKind?: AvailabilityFixedComposeKind | null;
   exploreAreaSlug?: string | null;
   tenantId?: string | null;
   onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
@@ -72,7 +72,7 @@ export const CreateAvailabilityFixedFlow = ({
   onBackToIntent,
   onSubmitted,
   signInHref,
-  seekKind = null,
+  availabilityFixedKind = null,
   exploreAreaSlug = null,
   tenantId = null,
   onCreateLinkedRideshare,
@@ -134,13 +134,13 @@ export const CreateAvailabilityFixedFlow = ({
         ? availabilityFixedFlowStepTitle(widePageSteps[0], kind)
         : availabilityFixedFlowStepTitle(step as AvailabilityFixedFlowStepId, kind);
 
-  const seekingFlowId = useMemo(
+  const availabilityFixedFlowId = useMemo(
     () =>
-      seekKind ? composeFlowIdFromRoute(availabilityFixedCompose(seekKind)) : null,
-    [seekKind]
+      availabilityFixedKind ? composeFlowIdFromRoute(availabilityFixedCompose(availabilityFixedKind)) : null,
+    [availabilityFixedKind]
   );
-  const seekingInitKey = seekingFlowId ?? null;
-  const seekingInitializedRef = useRef<string | null>(null);
+  const availabilityFixedInitKey = availabilityFixedFlowId ?? null;
+  const availabilityFixedInitializedRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!open) {
@@ -150,10 +150,10 @@ export const CreateAvailabilityFixedFlow = ({
       closeMap();
       return;
     }
-    if (seekKind && seekingFlowId) {
-      if (seekingInitializedRef.current === seekingInitKey) return;
+    if (availabilityFixedKind && availabilityFixedFlowId) {
+      if (availabilityFixedInitializedRef.current === availabilityFixedInitKey) return;
 
-      const saved = readAvailabilityWizardSession(seekingFlowId);
+      const saved = readAvailabilityWizardSession(availabilityFixedFlowId);
       if (saved?.draft?.kind) {
         setDraft(saved.draft);
         setSelectedKind(saved.selectedKind);
@@ -163,24 +163,24 @@ export const CreateAvailabilityFixedFlow = ({
         setSubmitResult(null);
         setShowMonthView(false);
         closeMap();
-        seekingInitializedRef.current = seekingInitKey;
+        availabilityFixedInitializedRef.current = availabilityFixedInitKey;
         return;
       }
 
       const areaId = areaIdForExploreAreaSlug(publishedAreas, exploreAreaSlug);
       setDraft({
         ...emptyAvailabilityFixedDraft(),
-        kind: seekKind,
+        kind: availabilityFixedKind,
         ...(areaId ? { areaId } : {}),
       });
-      setSelectedKind(seekKind);
-      setStep(getAvailabilityFixedFlowSteps(seekKind)[0]);
+      setSelectedKind(availabilityFixedKind);
+      setStep(getAvailabilityFixedFlowSteps(availabilityFixedKind)[0]);
       setError(null);
       setSubmitting(false);
       setSubmitResult(null);
       setShowMonthView(false);
       closeMap();
-      seekingInitializedRef.current = seekingInitKey;
+      availabilityFixedInitializedRef.current = availabilityFixedInitKey;
       return;
     }
     if (!user) {
@@ -192,18 +192,18 @@ export const CreateAvailabilityFixedFlow = ({
     navigate,
     signInHref,
     onClose,
-    seekKind,
-    seekingFlowId,
-    seekingInitKey,
+    availabilityFixedKind,
+    availabilityFixedFlowId,
+    availabilityFixedInitKey,
     exploreAreaSlug,
     publishedAreas,
     closeMap,
   ]);
 
   useEffect(() => {
-    if (!open || !seekingFlowId || submitResult) return;
-    writeAvailabilityWizardSession(seekingFlowId, { step, draft, selectedKind });
-  }, [open, seekingFlowId, step, draft, selectedKind, submitResult]);
+    if (!open || !availabilityFixedFlowId || submitResult) return;
+    writeAvailabilityWizardSession(availabilityFixedFlowId, { step, draft, selectedKind });
+  }, [open, availabilityFixedFlowId, step, draft, selectedKind, submitResult]);
 
   const patchDraft = useCallback((patch: Partial<AvailabilityFixedDraft>) => {
     setDraft((prev) => ({ ...prev, ...patch }));
@@ -248,7 +248,7 @@ export const CreateAvailabilityFixedFlow = ({
       return;
     }
     if (step === 'type' || currentPageIndex <= 0) {
-      if (step === 'type' && !seekKind) {
+      if (step === 'type' && !availabilityFixedKind) {
         exitWizardBack();
         setError(null);
         return;
@@ -291,7 +291,7 @@ export const CreateAvailabilityFixedFlow = ({
     setError(null);
     try {
       const result = await publishAvailabilityFixedSlot({ ...draft, kind: draft.kind ?? selectedKind });
-      if (seekingFlowId) clearAvailabilityWizardSession(seekingFlowId);
+      if (availabilityFixedFlowId) clearAvailabilityWizardSession(availabilityFixedFlowId);
       setSubmitResult(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not post your request.');
@@ -395,7 +395,7 @@ export const CreateAvailabilityFixedFlow = ({
     >
       {renderAvailabilityWizardSteps({
         step,
-        seekKind,
+        availabilityFixedKind,
         kind,
         selectedKind,
         setSelectedKind,
