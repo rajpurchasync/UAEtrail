@@ -12,6 +12,15 @@ describe('migrate-seeking-to-availability (MIG-DISCO-REG ops)', () => {
     expect(ops).toMatch(/MIG_DISCO_REG_OPS_CONFIRM/);
   });
 
+  it('runbook documents merge train before branch closure ops', () => {
+    const runbook = readFileSync(
+      join(process.cwd(), '../../docs/operations/SEEKING_STORAGE_RUNBOOK.md'),
+      'utf8'
+    );
+    expect(runbook).toMatch(/## Merge train to `main`/);
+    expect(runbook).toMatch(/mig-disco-reg:ops:gate/);
+  });
+
   it('migrates published seeking activities into member_availability fixed slots', () => {
     const script = read('scripts/migrate-seeking-to-availability.ts');
     expect(script).toMatch(/activityMode: 'seeking'/);

@@ -56,6 +56,13 @@ CI / no live API: `npm run p5:slo-preflight` (wired into `verify:domain`). Recor
 - [ ] **SLO-JOIN** — guest activity detail samples OK when `P5_ACTIVITY_ID` set; join probe exits 0 (RSVP or request POST JSON `note`; HTTP 201 or 409)
 - [ ] **SLO-API-ERR** — smoke run reports 5xx rate &lt;0.1%; confirm rolling 24h in staging (or first prod week)
 
+## MIG-DISCO-REG merge train (when promoting `mig/disco-reg`)
+
+- [ ] `npm run verify:system:quick` green on the PR HEAD commit
+- [ ] Staging deploy from PR build
+- [ ] Staging ops + smoke complete per [`operations/SEEKING_STORAGE_RUNBOOK.md`](./operations/SEEKING_STORAGE_RUNBOOK.md) § **Merge train** and § **MIG-DISCO-REG**
+- [ ] Merge to `main`; production deploy; production ops (same ordered steps as staging §2–2c)
+
 ## Release gates (before traffic)
 
 - [ ] Side-effect outbox: production API runs with `NODE_ENV=production` (outbox on by default — do **not** set `SIDE_EFFECT_OUTBOX=0`); confirm outbox drain logs on startup

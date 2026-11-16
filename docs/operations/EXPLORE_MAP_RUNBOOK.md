@@ -17,7 +17,8 @@ Per-request **`viewerAccess`** on activity/demand rows is applied **after** the 
 | **Places** (`locations`) | `writeLocationToMongo`, `deleteLocationFromMongo` (admin, member place submit, catalog import). Map: trails, camps, outdoor spots, community shops (peek). |
 | **Facilities** (`facilities`) | `createFacilityRecord`, admin facility CRUD, `seed:catalog-facilities`. Map amenity pins (`facility:*`); member `POST /me/facilities` does **not** insert `locations`. |
 | **Activities** | Publish / cancel / update while `PUBLISHED` (`activities-store`) |
-| **Seeking activities** | Activity create/update (`activityMode: seeking`) + intent alias writes (`participant-intents-store` when stub write enabled) |
+| **Member availability (fixed map pins)** | `PUT /me/availability` (`me-availability-commands` → `scheduleExploreMapCacheInvalidation`); migration `migrate-seeking-to-availability` |
+| **Legacy seeking activities** | No new product writes; catalog builder skips `activityMode: seeking`. Until ops migration/cancel, leftover rows may still exist in DB — see [`SEEKING_STORAGE_RUNBOOK.md`](./SEEKING_STORAGE_RUNBOOK.md) § MIG-DISCO-REG |
 | **Shops** | Shop tenant `writeTenantToMongo`, shop profile sync routes, admin shop tenant status |
 | **Admin** | Place create/patch/delete (also covered by location writers) |
 

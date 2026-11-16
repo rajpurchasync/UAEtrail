@@ -98,6 +98,24 @@ Set `PARTICIPANT_INTENT_STUB_WRITE=true` and restart API. **Not recommended post
 
 ---
 
+## Merge train to `main` (code promote)
+
+**Branch:** `mig/disco-reg` → single PR to `origin/main` (train must not land on `main` without availability map slice).
+
+| Order | Gate | Owner |
+|-------|------|--------|
+| 1 | CI / local: `npm run verify:system:quick` green on release SHA | Eng |
+| 2 | Open PR; note **39+ commits** — discovery catalog, availability compose, seeking HTTP retired, ops scripts | Eng |
+| 3 | Deploy **staging** API + FE from PR build (not prod yet) | Ops |
+| 4 | Staging **ops** below (§ MIG-DISCO-REG) — migrate dry-run reviewed, migrate, `mig-disco-reg:ops:gate` exit 0 | Ops |
+| 5 | Staging **smoke** — [`CREATE_FLOW.md`](../CREATE_FLOW.md) Mark availability (open + fixed); `/explore` availability pins; People browse + offer rideshare; `/list` crews looking rows | QA |
+| 6 | Merge PR → `main`; deploy prod | Eng |
+| 7 | Repeat ops steps **4** on **production** Mongo; record JSON + SHA in deploy ticket | Ops |
+
+**Do not** run production migrate before staging gate is green and smoke signed off.
+
+---
+
 ## MIG-DISCO-REG branch closure (`mig/disco-reg`)
 
 **Product (code — done when PR merges):** `discovery-catalog-builder.ts` assembler; no new `activityMode: seeking` writes; `/me/seeking-posts/*` and `GET /explore/seeking-activities` retired; map `source: availability`; compose `seek:fixed:*` → availability publish; roster `availabilityOnMap` + `exploreItemId`; guards + `npm run verify:system`.
