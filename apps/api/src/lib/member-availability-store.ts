@@ -104,6 +104,54 @@ export const getMemberAvailability = async (userId: string): Promise<MemberAvail
   return mapDto({ ...doc, slots: pruned });
 };
 
+/**
+ * MIG-DISCO-REG ops — merge fixed slots without past-date prune (map builder drops stale pins).
+ * Not for member HTTP paths.
+ */
+export const mergeMemberAvailabilityFixedSlotsMigration = async (
+  userId: string,
+  input: {
+    kinds: AvailabilityKind[];
+    visibility?: AvailabilityVisibility;
+    region?: string | null;
+    areaId?: string | null;
+    note?: string | null;
+    fixedSlots: MemberAvailabilitySlotDTO[];
+  }
+): Promise<MemberAvailabilityDTO> => {
+  const kinds = sanitizeKinds(input.kinds);
+  const incoming = ensureAvailabilitySlotIds(
+    normalizeMemberAvailabilitySlotsForStorage(input.fixedSlots)
+  );
+  if (incoming.length === 0) {
+    throw new ApiError(400, 'availability_slots_required', 'No fixed slots to migrate.');
+  }
+
+  const existing = await collection().findOne({ _id: userId });
+  const openAndOther = (existing?.slots ?? []).filter((s) => s.scheduleKind !== 'fixed');
+  const incomingTitles = new Set(incoming.map((s) => s.title?.trim() ?? ''));
+  const keptFixed = (existing?.slots ?? []).filter(
+    (s) =>
+      s.scheduleKind === 'fixed' && !incomingTitles.has((s.title?.trim() ?? ''))
+  );
+  const slots = [...openAndOther, ...keptFixed, ...incoming];
+  const visibility = input.visibility ?? existing?.visibility ?? 'public';
+  const now = new Date();
+  const doc: MongoMemberAvailability = {
+    _id: userId,
+    userId,
+    kinds,
+    visibility,
+    region: input.region?.trim() || existing?.region?.trim() || null,
+    areaId: input.areaId?.trim() || existing?.areaId?.trim() || null,
+    note: input.note?.trim() || existing?.note?.trim() || null,
+    slots,
+    updatedAt: now,
+  };
+  await collection().updateOne({ _id: userId }, { $set: doc }, { upsert: true });
+  return mapDto(doc);
+};
+
 export const upsertMemberAvailability = async (
   userId: string,
   input: UpsertMemberAvailabilityInput

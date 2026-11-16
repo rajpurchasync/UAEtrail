@@ -14,7 +14,11 @@ import { COLLECTIONS } from '../src/lib/collections.js';
 import { getMongoClient } from '../src/lib/mongo.js';
 import { patchActivityInMongo } from '../src/lib/entity-sync.js';
 import { scheduleExploreMapCacheInvalidation } from '../src/lib/explore-map-cache-schedule.js';
-import { getMemberAvailability, upsertMemberAvailability } from '../src/lib/member-availability-store.js';
+import {
+  getMemberAvailability,
+  mergeMemberAvailabilityFixedSlotsMigration,
+} from '../src/lib/member-availability-store.js';
+import { prunePastAvailabilitySlots } from '@uaetrail/shared-types';
 import { resolveCliScriptName, runCliScript } from './cli-script-runner.js';
 
 type SeekingActivityRow = {
@@ -102,8 +106,10 @@ runCliScript(resolveCliScriptName(import.meta.url), async () => {
 
   let migrated = 0;
   let skippedNoGeo = 0;
+  let skippedWouldBeEmptyAfterSanitize = 0;
   let cancelled = 0;
   const errors: string[] = [];
+  const today = new Date().toISOString().slice(0, 10);
 
   for (const row of rows) {
     const userId = row.createdById ?? row.hostId;
@@ -124,6 +130,10 @@ runCliScript(resolveCliScriptName(import.meta.url), async () => {
       continue;
     }
 
+    if (prunePastAvailabilitySlots([slot], today).length === 0) {
+      skippedWouldBeEmptyAfterSanitize += 1;
+    }
+
     if (dryRun) {
       migrated += 1;
       continue;
@@ -132,18 +142,14 @@ runCliScript(resolveCliScriptName(import.meta.url), async () => {
     try {
       const existing = await getMemberAvailability(userId);
       const kinds = [...new Set([...(existing?.kinds ?? []), kind])];
-      const slots = [
-        ...(existing?.slots ?? []).filter((s) => s.scheduleKind !== 'fixed' || s.title !== slot.title),
-        slot,
-      ];
 
-      await upsertMemberAvailability(userId, {
+      await mergeMemberAvailabilityFixedSlotsMigration(userId, {
         kinds,
-        visibility: existing?.visibility ?? 'public',
+        visibility: existing?.visibility === 'hidden' ? 'public' : existing?.visibility ?? 'public',
         region: existing?.region ?? null,
         areaId: existing?.areaId ?? row.areaId ?? null,
         note: existing?.note ?? null,
-        slots,
+        fixedSlots: [slot],
       });
       migrated += 1;
 
@@ -168,6 +174,7 @@ runCliScript(resolveCliScriptName(import.meta.url), async () => {
         scanned: rows.length,
         migrated,
         skippedNoGeo,
+        skippedWouldBeEmptyAfterSanitize,
         cancelled,
         errors,
       },

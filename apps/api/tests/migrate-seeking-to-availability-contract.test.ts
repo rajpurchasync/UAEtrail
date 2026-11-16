@@ -25,7 +25,7 @@ describe('migrate-seeking-to-availability (MIG-DISCO-REG ops)', () => {
     const script = read('scripts/migrate-seeking-to-availability.ts');
     expect(script).toMatch(/activityMode: 'seeking'/);
     expect(script).toMatch(/ActivityStatus\.PUBLISHED/);
-    expect(script).toMatch(/upsertMemberAvailability/);
+    expect(script).toMatch(/mergeMemberAvailabilityFixedSlotsMigration/);
     expect(script).toMatch(/scheduleExploreMapCacheInvalidation/);
     expect(script).toMatch(/scheduleKind: 'fixed'/);
     expect(script).toMatch(/--cancel-seeking/);

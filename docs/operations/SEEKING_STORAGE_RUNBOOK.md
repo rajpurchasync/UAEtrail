@@ -122,6 +122,8 @@ Set `PARTICIPANT_INTENT_STUB_WRITE=true` and restart API. **Not recommended post
 
 **Ops (every env — still required before calling storage “done”):**
 
+**Atlas from a dev laptop:** if `TcpTestSucceeded` to `*.mongodb.net:27017` is false, run on the **VPS** (or add your IP to Atlas allowlist). Local Docker only: `MONGODB_URI=mongodb://127.0.0.1:27017/uaetrail_dev RUN_ENV=local npm run mig-disco-reg:ops:preflight`.
+
 Run from repo root on the VPS/staging host (same `.env` as API), or `docker compose exec api npm run …` inside the API container:
 
 ```bash
