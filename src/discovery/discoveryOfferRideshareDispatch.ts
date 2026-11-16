@@ -2,10 +2,13 @@ import type { ActivityDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   canOfferRideshareForAvailabilityItem,
   canShowAvailabilityLinkRideshareOffer,
-} from './linkActivityRideshareOffer';
+} from '../explore/linkActivityRideshareOffer';
 
-/** Map/list peek — offer a linked rideshare beside a crew availability or legacy seeking pin. */
-export const runPeekOfferRideshare = (input: {
+/**
+ * Discovery engagement — handle wire `offer_rideshare` for a selected catalog pin.
+ * Crew availability + legacy seeking pins prefill host compose; hosted activity pins link to parent activity.
+ */
+export const dispatchOfferRideshareFromSelection = (input: {
   selected: ExploreMapItemDTO | null | undefined;
   activity: ActivityDTO | null | undefined;
   onOfferRideshareForAvailability?: () => void;
@@ -21,6 +24,7 @@ export const runPeekOfferRideshare = (input: {
   }
 };
 
-export const availabilityPeekShowsOfferRideshare = (
+/** Summary surface (map peek) — show Offer rideshare when wire entitlements allow. */
+export const discoverySelectionShowsOfferRideshare = (
   selected: ExploreMapItemDTO | null | undefined
 ): boolean => canShowAvailabilityLinkRideshareOffer(selected);

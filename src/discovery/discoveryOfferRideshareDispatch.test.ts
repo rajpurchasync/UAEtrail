@@ -1,9 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { availabilityPeekShowsOfferRideshare, runPeekOfferRideshare } from './explorePeekRideshareOffer';
-import { availabilityExploreMapItem } from './exploreMapItemFixtures';
+import {
+  discoverySelectionShowsOfferRideshare,
+  dispatchOfferRideshareFromSelection,
+} from './discoveryOfferRideshareDispatch';
+import { availabilityExploreMapItem } from '../explore/exploreMapItemFixtures';
 
-describe('explorePeekRideshareOffer', () => {
+describe('discoveryOfferRideshareDispatch', () => {
   it('routes offer to availability handler for catalog pins', () => {
     const onOffer = vi.fn();
     const item = availabilityExploreMapItem({
@@ -23,7 +26,7 @@ describe('explorePeekRideshareOffer', () => {
         },
       },
     });
-    runPeekOfferRideshare({
+    dispatchOfferRideshareFromSelection({
       selected: item,
       activity: undefined,
       onOfferRideshareForAvailability: onOffer,
@@ -31,10 +34,10 @@ describe('explorePeekRideshareOffer', () => {
     expect(onOffer).toHaveBeenCalledOnce();
   });
 
-  it('gates availability peek offer on canOfferTransport', () => {
-    expect(availabilityPeekShowsOfferRideshare(availabilityExploreMapItem())).toBe(false);
+  it('gates summary offer on canOfferTransport', () => {
+    expect(discoverySelectionShowsOfferRideshare(availabilityExploreMapItem())).toBe(false);
     expect(
-      availabilityPeekShowsOfferRideshare(
+      discoverySelectionShowsOfferRideshare(
         availabilityExploreMapItem({
           viewerAccess: {
             level: 'host',

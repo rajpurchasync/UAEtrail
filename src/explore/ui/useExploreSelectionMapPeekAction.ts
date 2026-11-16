@@ -10,9 +10,9 @@ import { executeActivityMapPeekAction } from '../../activity/executeActivityMapP
 import type { ActivityManageInitialView } from '../../components/activity/activityManageViews';
 import { mapPeekDetailNavState } from '../mapPeekDetailNavState';
 import {
-  availabilityPeekShowsOfferRideshare,
-  runPeekOfferRideshare,
-} from '../explorePeekRideshareOffer';
+  discoverySelectionShowsOfferRideshare,
+  dispatchOfferRideshareFromSelection,
+} from '../../discovery/discoveryOfferRideshareDispatch';
 import type { useExploreSelectionPeekJoin } from './useExploreSelectionPeekJoin';
 
 type PeekJoin = ReturnType<typeof useExploreSelectionPeekJoin>;
@@ -57,7 +57,7 @@ export const useExploreSelectionMapPeekAction = (input: {
           if (activity && onCreateLinkedRideshare) onCreateLinkedRideshare(activity);
         },
         offerRideshare: () => {
-          runPeekOfferRideshare({
+          dispatchOfferRideshareFromSelection({
             selected,
             activity,
             onOfferRideshareForAvailability,
@@ -110,7 +110,7 @@ export const useExploreSelectionMapPeekAction = (input: {
   );
 
   const handleOfferTransport = useCallback(() => {
-    if (availabilityPeekShowsOfferRideshare(selected) && onOfferRideshareForAvailability) {
+    if (discoverySelectionShowsOfferRideshare(selected) && onOfferRideshareForAvailability) {
       onOfferRideshareForAvailability();
       return;
     }
@@ -118,7 +118,7 @@ export const useExploreSelectionMapPeekAction = (input: {
   }, [handleActivityMapPeekAction, onOfferRideshareForAvailability, selected]);
 
   const showAvailabilityPeekOfferRideshare = useMemo(
-    () => availabilityPeekShowsOfferRideshare(selected),
+    () => discoverySelectionShowsOfferRideshare(selected),
     [selected]
   );
 

@@ -98,6 +98,20 @@ Set `PARTICIPANT_INTENT_STUB_WRITE=true` and restart API. **Not recommended post
 
 ---
 
+## MIG-DISCO-REG branch closure (`mig/disco-reg`)
+
+**Product (code — done when PR merges):** `discovery-catalog-builder.ts` assembler; no new `activityMode: seeking` writes; `/me/seeking-posts/*` and `GET /explore/seeking-activities` retired; map `source: availability`; compose `seek:fixed:*` → availability publish; roster `availabilityOnMap` + `exploreItemId`; guards + `npm run verify:system`.
+
+**Ops (every env — still required before calling storage “done”):**
+
+1. `npm --workspace @uaetrail/api run migrate-seeking-to-availability -- --dry-run` then without `--dry-run` (optional `--cancel-seeking`).
+2. `npm run seeking:storage-status -- --strict` → exit 0.
+3. Legacy backfill if report shows `activeIntentsMissingSeekingActivity` (§2 above).
+
+**Optional / follow-up (not blocking merge):** retire `participant-intents-store` readthroughs after strict gate; `explore-map-base.ts` shim deletion; P5 catalog cache slice perf; inline offer CTA on list availability rows (today: people browse → explore pin → same summary peek).
+
+---
+
 ## Residue cleanup (after migration — do not skip)
 
 **Gate (all must be true on staging + prod):**

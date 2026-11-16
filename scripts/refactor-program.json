@@ -209,16 +209,19 @@
         "apps/api/src/lib/availability-fixed-map-items.ts",
         "apps/api/src/lib/discovery-catalog-builder.ts",
         "apps/api/src/lib/explore-map-base.ts",
-        "apps/api/src/services/me-availability-commands.ts"
+        "apps/api/src/services/me-availability-commands.ts",
+        "apps/api/scripts/migrate-seeking-to-availability.ts"
       ],
       "feRoots": [
         "src/explore/compose.ts",
         "src/explore/ui/availabilityFlowEngine.ts",
         "src/hooks/exploreAvailabilityCatalogClientApi.ts",
         "src/explore/ui/peek/availability/AvailabilityPeekActions.tsx",
-        "src/activity/availabilityMapPeekParity.test.ts"
+        "src/discovery/discoveryOfferRideshareDispatch.ts",
+        "src/activity/availabilityMapPeekParity.test.ts",
+        "src/discovery/discoverySummaryOfferRideshareParity.test.ts"
       ],
-      "successMetric": "Crew registry = member_availability; map source=availability; no /me/seeking-posts or new activityMode seeking writes"
+      "successMetric": "Code shipped on mig/disco-reg; ops closure = migrate-seeking-to-availability + seeking:storage-status --strict (SEEKING_STORAGE_RUNBOOK § MIG-DISCO-REG)"
     },
     {
       "id": "MIG-PLAN-HUB",
