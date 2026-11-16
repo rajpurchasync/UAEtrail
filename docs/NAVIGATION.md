@@ -233,7 +233,7 @@ Signed-in members tap **+** on `/explore` (or list FAB) to compose. **Guests** â
 | Choice | Opens |
 |--------|--------|
 | **Host** | `hostingFlowEngine` / per-kind hosting wizards |
-| **Find crew** | Fixed map seek (`seekingFlowEngine`) or **Share availability** (`member_availability`) |
+| **Find crew** | Fixed map seek (`availabilityFlowEngine`) or **Share availability** (`member_availability`) |
 | **Add on map** | Place or facility submit |
 
 Compose URLs are `host:*` / `seek:*` / `add:*` only.

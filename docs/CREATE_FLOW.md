@@ -54,7 +54,7 @@ Tab context is known. **Do not** show `I would like to…` / Host · Find crew �
 | **Find a Crew** (Crews) | Post on the map · Share availability | `compose=seek` |
 | **Add a Plan** (`/plan`) | Create Trip · Mark Availability · Set a Goal · Want to go | `planAdd=menu` then existing flows |
 
-Kind pick → the matching create wizard (`hostingFlowEngine`, `addFlow`, `seekingFlowEngine`). Venue options map via `addComposeFromVenueKind` (not a Place vs Facility submenu).
+Kind pick → the matching create wizard (`hostingFlowEngine`, `addFlow`, `availabilityFlowEngine`). Venue options map via `addComposeFromVenueKind` (not a Place vs Facility submenu).
 
 **Plans FAB** reuses those wizards — it does not add a second compose stack. **Create Trip** → `compose=host` kind grid. **Mark Availability** → `compose=seek:flexible` (`PlanAvailabilitySection`). **Set a Goal** → existing goal sheet on Wishlist. **Want to go** → catalog venue picker (`planAdd=wishlist`, `locationId` on `user_wishlist`; journey map composes those places). Shared tiles: `src/create/CreateKindGrid.tsx`. FAB shows on mobile and desktop.
 
@@ -104,7 +104,7 @@ Do not bounce consumers to `/explore` for compose when `createFlowPath` can keep
 
 | Mode | User meaning | Wizard | Gates |
 |------|--------------|--------|-------|
-| **Post on map** (fixed) | Time/place window for company | `seekingFlowEngine` → **`PUT /me/availability`** (fixed slot) | Sign-in only |
+| **Post on map** (fixed) | Time/place window for company | `availabilityFlowEngine` → **`PUT /me/availability`** (fixed slot) | Sign-in only |
 | **Share availability** (flexible) | Days + activities; location **open**, region, or area (all optional) — no pin | `PlanAvailabilitySection` / `member_availability` | Sign-in only |
 
 **Find crew browse (Available tab):** directory of everyone who saved availability with slots in the selected date range (`GET /explore/people/availability`) — optional map area / activity filter only; **not** personalized match to the viewer. Day + activity-type **notifications** and optional post-save **hosted outing** preview are separate.
@@ -258,7 +258,7 @@ When a member is ready to run a **dated hosted outing**, they use **Create Trip*
 
 Still applies to **hosted** parents: publish child rideshare with `linkedActivityId`. **Never** link a parent when publishing `activityType: rideshare`. Gates unchanged (`canPublish`, `canOfferTransport`).
 
-**Catalog:** `src/explore/composeFlowCatalog.ts`. **Tests:** `npm run test:explore-alignment`, `availabilityMapPeekParity.test.ts`, `seekingFlowEngine.test.ts`.
+**Catalog:** `src/explore/composeFlowCatalog.ts`. **Tests:** `npm run test:explore-alignment`, `availabilityMapPeekParity.test.ts`, `availabilityFlowEngine.test.ts`.
 
 ---
 
@@ -337,7 +337,7 @@ Track what is **spec** vs **shipped**. Update this table in the same PR that lan
 | Availability ↔ hosted (date + activity type; notify + FAB hosted preview) | ✅ | ✅ (`availability-hosted-match-notifications.ts`, `GET /me/availability/match-preview` → `hostedOutings` only) |
 | **Find crew → Available** tab (all members with future slots in range) | ✅ | ✅ (`GET /explore/people/availability` — not match-preview) |
 
-**Current code:** `/explore?compose=…` is **host / seek / add** (`host:hiking`, `seek:fixed:hiking`, `seek:flexible`, `add:place:hiking`, `add:facility:*`). Leftover plan/contribute/organize/find/request/addLocation query keys are not compose. One Host tree: `create/hosting` + `hostingFlowEngine` + `hostingFlows`. Seeking: `seekingFlowEngine` (no `demandFlow.ts` shim).
+**Current code:** `/explore?compose=…` is **host / seek / add** (`host:hiking`, `seek:fixed:hiking`, `seek:flexible`, `add:place:hiking`, `add:facility:*`). Leftover plan/contribute/organize/find/request/addLocation query keys are not compose. One Host tree: `create/hosting` + `hostingFlowEngine` + `hostingFlows`. Seeking: `availabilityFlowEngine` (no `demandFlow.ts` shim).
 
 ### Module naming (CPC-9a)
 

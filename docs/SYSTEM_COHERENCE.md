@@ -883,7 +883,7 @@ Mark `[x]` in the PR that completes the item. **Gate:** `npm run verify:system:q
 
 - [x] `COMPOSE_MENU_OPTIONS` → **Host** · **Find crew** · **Add on map** (bottom nav **Plan** = schedule, not FAB)
 - [x] compose wire: `host:*` \| `seek:fixed:*` \| `seek:flexible` \| `add:*`
-- [x] Find crew: fixed → `seekingFlowEngine`; flexible → `SeekFlexibleComposeSheet` / `member_availability`
+- [x] Find crew: fixed → `availabilityFlowEngine`; flexible → `SeekFlexibleComposeSheet` / `member_availability`
 - [x] Add on map: **Place** (trail/camp/other) \| **Facility** (kinds); drop standalone **Shops** chip
 - [x] `formatComposeQuery` / `parseExploreCompose` v3 canonical only (`packages/shared-types/compose-route.ts`)
 - [x] `composeFlowCatalog.ts` storage ids: `host.*` / `seek.fixed.*` / `add.*`
