@@ -17,8 +17,10 @@ import {
 } from './activity-engagement-store.js';
 import { ActivityStatus, RequestStatus } from '../domain/enums.js';
 import type { MongoActivityDoc } from './entity-builders.js';
-import { resolveIntentPublishedActivityId } from './participant-intents-store.js';
-import { findSeekingActivityByParticipantIntentId } from '../services/participant-intent-activity-readthrough.js';
+import {
+  findSeekingActivityByParticipantIntentId,
+  resolveIntentPublishedActivityId,
+} from '../services/participant-intent-activity-readthrough.js';
 
 type MongoParticipantIntentJoinRequest = {
   _id: string;

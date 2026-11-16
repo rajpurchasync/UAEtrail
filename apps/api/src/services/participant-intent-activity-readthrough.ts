@@ -17,6 +17,12 @@ import { getMongoClient } from '../lib/mongo.js';
 /** @deprecated Always false after MIG-COH-01 — env ignored. */
 export const isParticipantIntentStubWriteEnabled = (): boolean => false;
 
+/** Published seeking activity id — legacy intent rows may store both aliases. */
+export const resolveIntentPublishedActivityId = (doc: {
+  activityId?: string | null;
+  seekingActivityId?: string | null;
+}): string | null => doc.activityId ?? doc.seekingActivityId ?? null;
+
 const activitiesCollection = () =>
   getMongoClient()!.db().collection<MongoActivityDoc>(COLLECTIONS.ACTIVITIES);
 

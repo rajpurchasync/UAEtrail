@@ -68,4 +68,9 @@ describe('participant intent M2 guards', () => {
       false
     );
   });
+
+  it('retired /me participant-intent command/read services removed (MIG-DISCO-REG residue)', () => {
+    expect(existsSync(join(process.cwd(), 'src/services/participant-intent-me-commands.ts'))).toBe(false);
+    expect(existsSync(join(process.cwd(), 'src/services/participant-intent-me-read.ts'))).toBe(false);
+  });
 });

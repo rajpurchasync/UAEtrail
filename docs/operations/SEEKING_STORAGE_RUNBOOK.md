@@ -108,7 +108,9 @@ Set `PARTICIPANT_INTENT_STUB_WRITE=true` and restart API. **Not recommended post
 2. `npm run seeking:storage-status -- --strict` → exit 0.
 3. Legacy backfill if report shows `activeIntentsMissingSeekingActivity` (§2 above).
 
-**Optional / follow-up (not blocking merge):** retire `participant-intents-store` readthroughs after strict gate.
+**Code residue (shipped on branch — pre-ops):** HTTP `/me/participant-intents` service modules removed; join requests read published seeking activity ids via `participant-intent-activity-readthrough` only (`participant-intent-residue-guard.test.ts`). `participant_intents` Mongo writes are **backfill script only** until ops strict gate.
+
+**Optional / follow-up (after strict gate + 30d):** delete `participant-intents-store` CRUD façade and legacy seeking join routes when no env still serves `activityMode: seeking` pins.
 
 ---
 

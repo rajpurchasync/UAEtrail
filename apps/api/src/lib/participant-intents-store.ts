@@ -45,11 +45,6 @@ type MongoParticipantIntent = {
 
 const collection = () => getMongoClient()!.db().collection<MongoParticipantIntent>(COLLECTIONS.PARTICIPANT_INTENTS);
 
-/** Map-published activity for an intent (seeking mode). Not the later `convertedActivityId` hosted link. */
-export const resolveIntentPublishedActivityId = (
-  doc: Pick<MongoParticipantIntent, 'activityId' | 'seekingActivityId'>
-): string | null => doc.activityId ?? doc.seekingActivityId ?? null;
-
 const resolveStoredDemandTitle = (doc: MongoParticipantIntent): string =>
   doc.title?.trim() || seekingFallbackTitle(doc.kind);
 
