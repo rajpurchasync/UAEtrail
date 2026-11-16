@@ -43,7 +43,7 @@ export type PeopleBrowseTabContentProps = {
   discoveryQuota: MemberDiscoveryQuotaDTO | null;
   discoveryLoading: boolean;
   discoveryError: string | null;
-  seekingActivities: ExploreMapItemDTO[];
+  availabilityCatalogItems: ExploreMapItemDTO[];
   exploreCatalogItems: ExploreMapItemDTO[];
   exploreCatalogLoading: boolean;
   onOpenSeekingActivity: (item: ExploreMapItemDTO) => void;
@@ -78,7 +78,7 @@ export const PeopleBrowseTabContent = ({
   discoveryQuota,
   discoveryLoading,
   discoveryError,
-  seekingActivities,
+  availabilityCatalogItems,
   exploreCatalogItems,
   exploreCatalogLoading,
   onOpenSeekingActivity,
@@ -89,7 +89,7 @@ export const PeopleBrowseTabContent = ({
   if (tab === 'looking') {
     return (
       <PeopleBrowseLookingList
-        seekingActivities={seekingActivities}
+        availabilityCatalogItems={availabilityCatalogItems}
         exploreCatalogItems={exploreCatalogItems}
         loading={exploreCatalogLoading}
         onOpenSeekingActivity={onOpenSeekingActivity}
@@ -109,7 +109,7 @@ export const PeopleBrowseTabContent = ({
     const lookingBlock =
       showLooking ? (
         <PeopleBrowseLookingList
-          seekingActivities={seekingActivities}
+          availabilityCatalogItems={availabilityCatalogItems}
           exploreCatalogItems={exploreCatalogItems}
           loading={exploreCatalogLoading}
           onOpenSeekingActivity={onOpenSeekingActivity}

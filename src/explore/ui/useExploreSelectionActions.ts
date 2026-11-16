@@ -25,7 +25,7 @@ import { readExploreMapItemsFromCache, reloadExploreMap } from '../../hooks/useE
 import { isExploreMapBboxEnabled } from '../exploreMapBbox';
 import { memberAvailabilityQueryKey } from '../../hooks/clientQueryKeys';
 import type { AddSubmitResult } from './addFlow';
-import type { SeekingSubmitResult } from './seekingFlowEngine';
+import type { SeekingSubmitResult } from './availabilityFlowEngine';
 import type { useExploreBrowseUrlState } from './useExploreBrowseUrlState';
 import type { ActivityManageInitialView } from '../../components/activity/activityManageViews';
 import { buildExploreSelectionSelectedCard } from '../exploreSelectionSelectedCard';

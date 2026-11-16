@@ -249,14 +249,14 @@ describe('list module hygiene', () => {
       join(process.cwd(), 'src/people-discovery/hooks/usePeopleDiscoveryBrowseBundle.ts'),
       'utf8'
     );
-    expect(experience).toMatch(/usePeopleDiscoverySeekingActivities/);
-    expect(bundle).toMatch(/usePeopleDiscoverySeekingActivities/);
+    expect(experience).toMatch(/usePeopleDiscoveryAvailabilityCatalog/);
+    expect(bundle).toMatch(/usePeopleDiscoveryAvailabilityCatalog/);
     expect(bundle).not.toMatch(/from ['"]@\/api\/domains\//);
   });
 
   it('list map feed filters delegate seeking and place merge to discovery modules', () => {
     const filters = readFileSync(join(process.cwd(), 'src/list/browseListFilters.ts'), 'utf8');
-    expect(filters).toMatch(/activity-discovery\/catalog\/listSeeking/);
+    expect(filters).toMatch(/activity-discovery\/catalog\/listAvailabilityCatalog/);
     expect(filters).toMatch(/places-discovery\/catalog\/listCatalog/);
     expect(filters).not.toMatch(/exploreMapItemIsSeeking/);
   });

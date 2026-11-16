@@ -16,7 +16,7 @@ import { useListDiscoveryUrlState } from './useListDiscoveryUrlState';
 import { BrowseListCreateFab } from './ui/BrowseListCreateFab';
 import { BrowseListMapFab } from './ui/BrowseListMapFab';
 import { PeopleBrowsePanel } from '@/people-discovery/panel/PeopleBrowsePanel';
-import { usePeopleDiscoverySeekingActivities } from '@/people-discovery/hooks/usePeopleDiscoverySeekingActivities';
+import { usePeopleDiscoveryAvailabilityCatalog } from '@/people-discovery/hooks/usePeopleDiscoveryAvailabilityCatalog';
 import { exploreMapPathFromListSearch } from './routing';
 import { listDiscoveryEmbeddedOnExplore, type ListDiscoverySurface } from './listDiscoverySurface';
 import { useMemberDiscoveryRoster } from '@/people-discovery/hooks/useMemberDiscoveryRoster';
@@ -226,7 +226,7 @@ export const ListDiscoveryExperience = ({
     catalogItems: embeddedOnExplore ? prefetchedCatalogItems : undefined,
   });
 
-  const { seekingActivities } = usePeopleDiscoverySeekingActivities({
+  const { availabilityCatalogItems } = usePeopleDiscoveryAvailabilityCatalog({
     enabled: isPeopleCategory && crewsNeedsAvailability,
     exploreCatalogFallback: items,
     filters: {
@@ -259,7 +259,7 @@ export const ListDiscoveryExperience = ({
   const crewsStatCounts = useMemo(() => {
     const buddiesCount = memberRoster.loading ? null : memberRoster.friendsGoing.length;
     const markedCount = memberAvailability.loading ? 0 : memberAvailability.people.length;
-    const lookingCount = isLoading ? 0 : seekingActivities.length;
+    const lookingCount = isLoading ? 0 : availabilityCatalogItems.length;
     const availableCount = markedCount + lookingCount;
     const everyoneCount = memberRoster.loading ? null : memberRoster.directory.length;
     return {
@@ -274,7 +274,7 @@ export const ListDiscoveryExperience = ({
     memberAvailability.loading,
     memberAvailability.people.length,
     isLoading,
-    seekingActivities.length,
+    availabilityCatalogItems.length,
   ]);
 
   const commitQuery = () => {
@@ -449,7 +449,7 @@ export const ListDiscoveryExperience = ({
             onRefreshAvailability={() => void memberAvailability.refresh()}
             isSignedIn={Boolean(user)}
             userRole={user?.role}
-            seekingActivities={seekingActivities}
+            availabilityCatalogItems={availabilityCatalogItems}
             exploreCatalogItems={items}
             exploreCatalogLoading={isLoading}
             onOpenSeekingActivity={handleOpenSeekingActivity}
@@ -471,7 +471,7 @@ export const ListDiscoveryExperience = ({
             isSignedIn={Boolean(user)}
             filterCount={filterCount}
             statCounts={crewsStatCounts}
-            seekingActivities={seekingActivities}
+            availabilityCatalogItems={availabilityCatalogItems}
             exploreCatalogItems={items}
             exploreCatalogLoading={isLoading}
             onOpenSeekingActivity={handleOpenSeekingActivity}

@@ -17,11 +17,11 @@ import {
   seekingWhenShowsTime,
   type SeekingDraft,
   type SeekingKind,
-} from './seekingFlowEngine';
+} from './availabilityFlowEngine';
 import { LinkRidesharePanel } from './LinkRidesharePanel';
 import { canLinkRideshareToActivity, parentMapKindMayOfferLinkedRideshare } from '../linkActivityRideshareOffer';
 
-type SeekingSubmitSuccessSheetProps = {
+type AvailabilityFixedSubmitSuccessSheetProps = {
   open: boolean;
   onClose: () => void;
   kind: SeekingKind;
@@ -53,7 +53,7 @@ const formatWhenLine = (draft: SeekingDraft, kind: SeekingKind): string => {
   return `${draft.date}${timePart}`;
 };
 
-export const SeekingSubmitSuccessSheet = ({
+export const AvailabilityFixedSubmitSuccessSheet = ({
   open,
   onClose,
   kind,
@@ -64,7 +64,7 @@ export const SeekingSubmitSuccessSheet = ({
   onPrimaryAction,
   onRideshareLinked,
   onRideshareLinkError,
-}: SeekingSubmitSuccessSheetProps) => {
+}: AvailabilityFixedSubmitSuccessSheetProps) => {
   const [canAddLinkedRide, setCanAddLinkedRide] = useState(false);
   const [rideLinked, setRideLinked] = useState(Boolean(publishedActivity?.linkedRideshareActivityId));
   const [rideshareNotice, setRideshareNotice] = useState<string | null>(null);

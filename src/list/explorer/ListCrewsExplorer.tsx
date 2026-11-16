@@ -25,7 +25,7 @@ type ListCrewsExplorerProps = {
   isSignedIn: boolean;
   filterCount: number;
   statCounts: CrewsStatCounts;
-  seekingActivities: ExploreMapItemDTO[];
+  availabilityCatalogItems: ExploreMapItemDTO[];
   exploreCatalogItems: ExploreMapItemDTO[];
   exploreCatalogLoading: boolean;
   onOpenSeekingActivity: (item: ExploreMapItemDTO) => void;
@@ -57,7 +57,7 @@ export const ListCrewsExplorer = ({
   isSignedIn,
   filterCount,
   statCounts,
-  seekingActivities,
+  availabilityCatalogItems,
   exploreCatalogItems,
   exploreCatalogLoading,
   onOpenSeekingActivity,
@@ -110,7 +110,7 @@ export const ListCrewsExplorer = ({
             availableCount={statCounts.available ?? 0}
             everyoneCount={statCounts.everyone ?? 0}
             isSignedIn={isSignedIn}
-            seekingActivities={seekingActivities}
+            availabilityCatalogItems={availabilityCatalogItems}
             exploreCatalogItems={exploreCatalogItems}
             exploreCatalogLoading={exploreCatalogLoading}
             onOpenSeekingActivity={onOpenSeekingActivity}

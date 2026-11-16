@@ -1,6 +1,6 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { isGeographyMapSource } from '@uaetrail/shared-types';
-import { selectSeekingActivitiesForListCatalog } from '@/activity-discovery/catalog/listSeeking';
+import { selectAvailabilityForListCatalog } from '@/activity-discovery/catalog/listAvailabilityCatalog';
 import {
   filterListCatalogByVenueRegions,
   mergeListCatalogPlansAndPlaces,
@@ -102,7 +102,7 @@ export const filterExploreMapItemsForList = (
     state.categories.length === 0 || state.categories.includes('venues');
 
   if (tripsCategoryInScope && state.tripLookingOnly) {
-    pool = selectSeekingActivitiesForListCatalog(pool);
+    pool = selectAvailabilityForListCatalog(pool);
   } else if (tripsCategoryInScope && state.tripTopics.length > 0) {
     pool = pool.filter((item) =>
       state.tripTopics.some((topic) => matchesUnifiedTopicFilter(item, topic, 'all', 'all'))

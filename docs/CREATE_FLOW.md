@@ -18,7 +18,7 @@
 
 Companion docs: [`DOCS_INDEX.md`](./DOCS_INDEX.md), [`NORTHSTAR.md`](./NORTHSTAR.md), [`MEMBER_MODEL.md`](./MEMBER_MODEL.md), [`DOMAIN.md`](./DOMAIN.md), [`NAVIGATION.md`](./NAVIGATION.md), [`COMMUNICATION.md`](./COMMUNICATION.md), `src/explore/exploreCopy.ts`.
 
-Code (today): `src/create/` (session + kind tiles) · `src/plan/planAdd.ts` · `src/explore/compose.ts`, `CreateIntentSheet.tsx`, `SeekFlexibleComposeSheet.tsx`, `hostingFlowEngine.ts` / `hostingFlows/*`, `seekingFlowEngine.ts`, `addFlow.ts`.
+Code (today): `src/create/` (session + kind tiles) · `src/plan/planAdd.ts` · `src/explore/compose.ts`, `CreateIntentSheet.tsx`, `SeekFlexibleComposeSheet.tsx`, `hostingFlowEngine.ts` / `hostingFlows/*`, `availabilityFlowEngine.ts`, `addFlow.ts`.
 
 **Status:** Spec **approved (CPC)** · per-tab create FABs skip to kind options + v3 compose wire **shipped** (`host` \| `seek` \| `add` only; see [Implementation status](#implementation-status))
 
@@ -348,7 +348,7 @@ Track what is **spec** vs **shipped**. Update this table in the same PR that lan
 | **`Explore*` on hooks/components** | Map/browse shell only (`useExploreMapViewport`, pin peek). **Not** FAB compose — compose mounts on `/explore` **and** `/list`. |
 | **`src/explore/create/`** | Cross-surface compose: URL state, guards, `ComposeHost`, hosting prefill/reorganize. |
 | **Product verbs in shell props** | `ComposeHost`: `hostWizardOpen`, `availabilityFixedWizardOpen`, `availabilityFlexibleOpen`, `addWizardOpen` — availability uses product names; wire stays `seek:*`. |
-| **Wizard modules (catalog `wizard` field)** | `hostingFlow` → `hostingFlowEngine.ts` + `hostingFlows/*`; `seekingFlow` → `seekingFlowEngine.ts`. Removed: `hostingFlow.ts` facade, `seekingFlow.ts`, `organizeFlow.ts`, `organizeFlows/`, `createOrganize/`, `hostingCatalog/`, `CreateActivityFlow.tsx`. |
+| **Wizard modules (catalog `wizard` field)** | `hostingFlow` → `hostingFlowEngine.ts` + `hostingFlows/*`; `seekingFlow` → `availabilityFlowEngine.ts`. Removed: `hostingFlow.ts` facade, `seekingFlow.ts`, `organizeFlow.ts`, `organizeFlows/`, `createOrganize/`, `hostingCatalog/`, `CreateActivityFlow.tsx`. |
 | **“Catalog” in code** | **Place/facility inventory only** (`GET */catalog`, Add-on-map submit). Per-kind **hosting** wizards = `hostingFlows` (`HostingKindFlow`) — not catalog. |
 | **“Plan” in code** | Bottom nav `/plan` (schedule + availability) — **not** the FAB. FAB wire: `host:*` \| `seek:*` \| `add:*`. |
 | **Compose flow ids** | `host.*` / `seek.fixed.*` / `add.*` via `composeFlowIds.ts`. |
@@ -362,7 +362,7 @@ One responsive stack — not separate mobile/desktop implementations.
 |----------------------------|------------------|----------------------------------|
 | Compose shell | `create/ComposeHost.tsx`, `CreateIntentSheet.tsx` | `compose.ts`, `create/composeRouteGuard.ts`, `create/hooks/useComposeRoute.ts` |
 | **Host** | `create/hosting/HostingFlowHost` → `CreateHostingActivityFlow.tsx` | `hostingFlowEngine.ts`, `hostingFlows/*` |
-| **Find crew** (fixed) | `CreateSeekingFlow.tsx` | `seekingFlowEngine.ts` |
+| **Find crew** (fixed) | `CreateAvailabilityFixedFlow.tsx` | `availabilityFlowEngine.ts` |
 | **Find crew** (flexible) | `SeekFlexibleComposeSheet.tsx` | `PlanAvailabilitySection` (`variant=fab`) |
 | **Add on map** | `CreateAddFlow.tsx`, `CreateAddFacilityFlow.tsx` | `addFlow.ts`, `addFacilityFlow.ts` |
 | Map browse shell | `ExploreExperience.tsx` | `useExploreExperienceModel`, map hooks |
@@ -401,7 +401,7 @@ Do **not** ship Event Host with RSVP marketing until Phase C exists.
 | FAB entry | `CreateIntentSheet.tsx` |
 | Map shell | `ExploreExperience.tsx`, `useExploreExperienceModel` (map/browse hooks only) |
 | Hosting wizard | `CreateHostingActivityFlow.tsx`, `hostingFlowEngine.ts`, `hostingFlows/*` |
-| Seeking wizard | `CreateSeekingFlow.tsx`, `seekingFlowEngine.ts` |
+| Seeking wizard | `CreateAvailabilityFixedFlow.tsx`, `availabilityFlowEngine.ts` |
 | Add on map wizard | `CreateAddFlow.tsx`, `CreateAddFacilityFlow.tsx`, `addFlow.ts`, `addFacilityFlow.ts`; `catalogPlaceSubmit.ts` / `catalogFacilitySubmit.ts` |
 | Map pin UI | `CreatePlacePicker.tsx` |
 | Join / RSVP UI | `JoinRequestModal.tsx`, `ActivityDetail.tsx`, `joinRequestUi.ts` |

@@ -52,7 +52,7 @@ export interface PeopleBrowsePanelProps {
   userRole?: UserRole;
   canBrowseAllMembers?: boolean;
   mobileSheetChrome?: boolean;
-  seekingActivities: ExploreMapItemDTO[];
+  availabilityCatalogItems: ExploreMapItemDTO[];
   exploreCatalogItems: ExploreMapItemDTO[];
   exploreCatalogLoading: boolean;
   onOpenSeekingActivity: (item: ExploreMapItemDTO) => void;
@@ -89,7 +89,7 @@ export const PeopleBrowsePanel = ({
   availabilityError = null,
   isSignedIn,
   mobileSheetChrome = false,
-  seekingActivities,
+  availabilityCatalogItems,
   exploreCatalogItems,
   exploreCatalogLoading,
   onOpenSeekingActivity,
@@ -173,7 +173,7 @@ export const PeopleBrowsePanel = ({
         <PeopleBrowseTabContent
           tab={peopleBrowseTab}
           isSignedIn={isSignedIn}
-          seekingActivities={seekingActivities}
+          availabilityCatalogItems={availabilityCatalogItems}
           exploreCatalogItems={exploreCatalogItems}
           exploreCatalogLoading={exploreCatalogLoading}
           onOpenSeekingActivity={onOpenSeekingActivity}

@@ -31,7 +31,7 @@ import { isCanonicalComposeFlowId } from './composeFlowIds';
 
 import { getAddFlowSteps } from './ui/addFlow';
 
-import { SEEKING_TYPE_OPTIONS, getSeekingFlowSteps } from './ui/seekingFlowEngine';
+import { SEEKING_TYPE_OPTIONS, getSeekingFlowSteps } from './ui/availabilityFlowEngine';
 
 import { getCreateFlowSteps } from './ui/hostingFlowEngine';
 
@@ -71,7 +71,7 @@ describe('compose flow catalog', () => {
 
       expect(id).toMatch(/^seek\.fixed\./);
 
-      expect(COMPOSE_FLOW_CATALOG[id!].wizard).toBe('seekingFlow');
+      expect(COMPOSE_FLOW_CATALOG[id!].wizard).toBe('availabilityFlow');
 
       expect(COMPOSE_FLOW_CATALOG[id!].intent).toBe('availability');
 
@@ -203,7 +203,7 @@ describe('compose flow catalog', () => {
 
 
 
-  it('catalog seekingSteps stay aligned with seekingFlowEngine step lists', () => {
+  it('catalog seekingSteps stay aligned with availabilityFlowEngine step lists', () => {
 
     for (const option of AVAILABILITY_FIXED_COMPOSE_OPTIONS) {
 

@@ -5,8 +5,8 @@ import { HostingFlowHost } from './hosting/HostingFlowHost';
 import { CreateAddFlow } from '../ui/CreateAddFlow';
 import { CreateAddFacilityFlow } from '../ui/CreateAddFacilityFlow';
 import type { AddSubmitResult } from '../ui/addFlow';
-import { CreateSeekingFlow } from '../ui/CreateSeekingFlow';
-import type { SeekingSubmitResult } from '../ui/seekingFlowEngine';
+import { CreateAvailabilityFixedFlow } from '../ui/CreateAvailabilityFixedFlow';
+import type { SeekingSubmitResult } from '../ui/availabilityFlowEngine';
 import { CreateIntentSheet } from '../ui/CreateIntentSheet';
 import { SeekFlexibleComposeSheet } from '../ui/SeekFlexibleComposeSheet';
 import { ComposeSheetExpandedProvider } from './ComposeSheetExpandedContext';
@@ -154,7 +154,7 @@ export const ComposeHost = ({
     )}
 
     {availabilityFixedWizardOpen && (
-      <CreateSeekingFlow
+      <CreateAvailabilityFixedFlow
         open={availabilityFixedWizardOpen}
         onClose={onCloseCompose}
         seekKind={availabilityFixedKind ?? null}

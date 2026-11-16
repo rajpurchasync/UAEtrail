@@ -114,9 +114,9 @@ Each context has **one write path** and **one public read model** where possible
 | Context | Responsibility | Frontend home | API home | Storage (see `collections.ts`) |
 |---------|----------------|---------------|----------|--------------------------------|
 | **Discovery (Explore umbrella)** | **Explore** = discovery shell (URL, layout, chrome). **Projections:** map, list explorer (`/list`), search — not separate data stores. **Activity discovery** = hosted + seeking outings from `GET /explore/map`. **Places discovery** = place / facility / shop pins from the same read (filters in explore/list). **Area** is an admin-curated **name** (`?area=` / `/area/:slug`) — **not a pin**. **People discovery** = roster, availability, directory (`member_discovery` APIs); *Looking for* tab composes **activity-discovery** seeking rows. Signed-in peek is `GET /me/discover/overlay`, not a second catalog. | Shell: `src/explore/shell/*`. Activity: `src/activity-discovery/*`, activities list in `src/explore/ui`, `src/list/*`. Places: entity detail + list filters. People: `src/people-discovery/*` | `lib/explore-map.ts`, `GET /explore/map`, `GET /me/discover/overlay` | `activities`, `locations`, `facilities`, `areas`, `tenants` (shops) |
-| **Compose** | FAB intents, wizards, draft → publish payload | `src/explore/create/` (`hosting/`), `compose.ts`, `hostingFlowEngine.ts`, `hostingFlows/`, `seekingFlowEngine.ts` (Mark availability fixed) | `POST /publishing/activities`, `PUT /me/availability` | `activities` (hosted); `member_availability` (open + fixed crew) |
+| **Compose** | FAB intents, wizards, draft → publish payload | `src/explore/create/` (`hosting/`), `compose.ts`, `hostingFlowEngine.ts`, `hostingFlows/`, `availabilityFlowEngine.ts` (Mark availability fixed) | `POST /publishing/activities`, `PUT /me/availability` | `activities` (hosted); `member_availability` (open + fixed crew) |
 | **Participation** | Join, waitlist, RSVP, seeking joins, **Join me** invites | `useActivityJoin*`, detail + explore selection | `join-request.ts`, `activity-invite.ts`, intent join **aliases** (`participant-intent-requests-store`) | **`activity_requests`** (canonical); `participant_intent_requests` legacy-only; `activity_participants`, `activity_invites` |
-| **Browse — member people** | Who can I go with? Network roster + availability + discover directory (quota). **Looking for** tab: `GET /explore/map?sources=availability` + `selectSeekingActivitiesFromExploreCatalog` (`src/activity-discovery`). | `src/people-discovery/*` (`PeopleBrowsePanel`, tabs), `ListDiscoveryExperience` | `availability-fixed-map-items.ts`, `member-people-engagement.ts`, `member-discovery-roster.ts`, `registerMemberDiscoveryRoutes` | Composes `buddy_*`, `user_follows`, explore catalog (read), `member_profile_views` |
+| **Browse — member people** | Who can I go with? Network roster + availability + discover directory (quota). **Looking for** tab: `GET /explore/map?sources=availability` + `selectAvailabilityFromExploreCatalog` (`src/activity-discovery`). | `src/people-discovery/*` (`PeopleBrowsePanel`, tabs), `ListDiscoveryExperience` | `availability-fixed-map-items.ts`, `member-people-engagement.ts`, `member-discovery-roster.ts`, `registerMemberDiscoveryRoutes` | Composes `buddy_*`, `user_follows`, explore catalog (read), `member_profile_views` |
 | **Member identity** | Profile, welcome gate, visibility, public card | `src/pages/Profile*`, `src/member/*` | `registerProfileRoutes`, `public-member-profile`, `profile-viewer-access` | `auth_users` profile fields |
 | **Member publish capabilities** | Who may Host / publish & open publishing workspace (tier + `profileComplete`) | `useMemberStatus`, `memberPublishGate` | **`services/member-status.ts` only** | `tenants`, `tenant_memberships` |
 | **Publishing console** | Tenant-scoped CRUD, check-in, activity join queue | `src/pages/publishing/*`, `src/console/*`, `components/activity/` | `/publishing/*` + `x-organisation-id` | same + `activities` |
@@ -455,7 +455,7 @@ Host preview (`previewMode`) and `ActivityManageSheet` (`isEmbedded: true`) use 
 | `viewerAccess` → UI | `mapViewerAccessToUi`, `resolvePeekDetailAccess` | L2–L3 parity guards |
 | Participation modals | Activity manage / invite sheets | Explore host on map, L3, `/publishing/requests` |
 | **Location pick (write)** | `CreatePlacePicker` + `ComposePlacePickerOverlay` + `ComposeMapEntryRow` (`src/explore/create/interactions/`) | FAB Host / Seek / Add, participant intent, Pro application — **not** admin `MapPinPicker` |
-| **Compose wizard frame** | `ComposeWizardShell` + `ComposeWizardStepChrome` · step modules in `hostingWizard/` `seekingWizard/` `addWizard/` | FAB Host / Seek / Add / Facility — map session first, then sheet |
+| **Compose wizard frame** | `ComposeWizardShell` + `ComposeWizardStepChrome` · step modules in `hostingWizard/` `availabilityWizard/` `addWizard/` | FAB Host / Seek / Add / Facility — map session first, then sheet |
 
 #### 6.2.6 Admin & operator (out of consumer methodology)
 
@@ -574,7 +574,7 @@ flowchart LR
 
 **Cross-cutting kits** (§6.2.5): guest gate, join flow, `mapViewerAccessToUi`, **location pick** — imported by L2/L3/write chrome; never forked per surface.
 
-**Write chrome (FAB compose):** `ComposeHost` mounts three **domain** wizards (Host / Find crew / Add). Shared shell and map overlay live in `src/explore/create/` — not a fourth product, not L1 card VMs. Engines stay split (`hostingFlowEngine`, `seekingFlowEngine`, `addFlow` / `addFacilityFlow`). Schedule: **S14** (§8.3.6).
+**Write chrome (FAB compose):** `ComposeHost` mounts three **domain** wizards (Host / Find crew / Add). Shared shell and map overlay live in `src/explore/create/` — not a fourth product, not L1 card VMs. Engines stay split (`hostingFlowEngine`, `availabilityFlowEngine`, `addFlow` / `addFacilityFlow`). Schedule: **S14** (§8.3.6).
 
 #### 8.3.2 Baseline — already shipped (do not rebuild)
 
@@ -640,7 +640,7 @@ Work **top to bottom**. Each wave ends with **`npm run verify:system:quick`** (w
 | **S14-W0** | Charter (this section + `CREATE_FLOW` code map) | No new compose architecture markdown |
 | **S14-W1** | Location kit: `ComposePlacePickerOverlay`, `ComposeMapEntryRow`, `useComposeMapSession` | Direct `lazy(() => import('…CreatePlacePicker'))` in wizards |
 | **S14-W2** | `ComposeWizardShell` (sheet + wide-page + back: map session first) | Per-flow `FlowSheetChrome` copy-paste where the shell covers it |
-| **S14-W3** | Thin controllers + `seekingWizard/steps`, `addWizard/steps` | Inline step blocks in `CreateSeekingFlow` / `CreateAddFlow` after extract |
+| **S14-W3** | Thin controllers + `availabilityWizard/steps`, `addWizard/steps` | Inline step blocks in `CreateAvailabilityFixedFlow` / `CreateAddFlow` after extract |
 | **S14-W4** | Host bodies → `hostingWizard/bodies/` | Root `hosting*WizardSteps.tsx` barrels |
 | **S14-W5** | Destination product UX (UAE chip, ladder, in-host add-new) | Host-only map apply forks; `showDifficulty` on destination step |
 | **Hygiene** | Guard `composePlatformGuard`; no re-add of `organizeFlow` / `demandFlow` (already gone) | See stale inventory in [`CREATE_FLOW.md`](./CREATE_FLOW.md) § Code map |
@@ -653,7 +653,7 @@ Work **top to bottom**. Each wave ends with **`npm run verify:system:quick`** (w
 |-------|---------|--------------|--------|
 | **S12a** | Transport child links via `linkedActivityId` / `linkParentToRideshareActivity`; **no** `link-activity` on rideshare publish | `useExploreRideshareOrganizeLinks.ts`, `hostingActivityPublish.ts`, `linkActivityRideshareOffer.ts` | **Done** |
 | **S12b** | Owner peek = `ExploreActivityMapPeekActions` for seeking + hosted (legacy demand-owner fork only without activity host wire) | `exploreSelectionSelectedCard.ts`, `enrichListFeedCard.ts` | **Done** |
-| **S12c** | Find success + intent manage → same transport surfaces as Organize (`LinkRidesharePanel`, paste link) | `SeekingSubmitSuccessSheet.tsx`, `ParticipantIntentManageSheet.tsx` | **Done** |
+| **S12c** | Find success + intent manage → same transport surfaces as Organize (`LinkRidesharePanel`, paste link) | `AvailabilityFixedSubmitSuccessSheet.tsx`, `ParticipantIntentManageSheet.tsx` | **Done** |
 | **S12d** | Docs/guards: no new `demand`-only product gates; intent APIs read-through only | `seekingPinHygieneGuard` (S12d tests), `discoveryCardModel` leftover flags | **Done** |
 
 ### 8.1 S10 remediation waves (phase plan)
@@ -1217,7 +1217,7 @@ Discover map `GET /explore/map` (guest catalog) · overlay `GET /me/discover/ove
 | Wishlist collection | `user_wishlist` (startup migrate from `user_favorites`) |
 | Reviews HTTP | `GET /reviews` public on `userRouter` before `requireAuth`; writes keep per-route auth |
 | Host compose tree | `create/hosting` + `hostingFlowEngine` + `hostingFlows` (COH-10). No `organizeFlow.ts` / `createOrganize` / `CreateActivityFlow` |
-| Seeking compose engine | `seekingFlowEngine.ts` + `CreateSeekingFlow.tsx` (no `CreateDemandFlow` / `demandFlow.ts` / `demandWizardSteps`) |
+| Seeking compose engine | `availabilityFlowEngine.ts` + `CreateAvailabilityFixedFlow.tsx` (no `CreateDemandFlow` / `demandFlow.ts` / `demandWizardSteps`) |
 | People browse module | `src/people-discovery/*` only. No `explore/ui/peopleBrowse` re-export; no `explore/peopleBrowseTab.ts` |
 | Shop HTTP | `shop.ts` mounts `registerShopPublicRoutes` (`GET /shop/shops/:id`) and `registerShopMerchantManageRoutes` (`/shop/organisation/*`). Mongo collection stays `merchant_profiles` |
 | Admin HTTP | `admin.ts` mounts `registerAdmin*` only. Pages: `src/pages/admin/*` (folder-as-namespace; no root `Admin*.tsx`) |

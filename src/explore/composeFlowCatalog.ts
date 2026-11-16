@@ -1,6 +1,6 @@
 /**
  * Compose wizard catalog — one entry per product pillar:
- * **Host** (`hostingFlow`) · **Availability** (`seekingFlow` + flexible sheet) · **Add** (`addFlow`).
+ * **Host** (`hostingFlow`) · **Availability** (`availabilityFlow` + flexible sheet) · **Add** (`addFlow`).
  * Wire `availability:*` = mark availability. Spec: docs/CREATE_FLOW.md.
  */
 
@@ -36,9 +36,9 @@ import type { AddFlowStepId } from './ui/addFlow';
 
 import { getAddFlowSteps } from './ui/addFlow';
 
-import type { SeekingFlowStepId, SeekingKind } from './ui/seekingFlowEngine';
+import type { SeekingFlowStepId, SeekingKind } from './ui/availabilityFlowEngine';
 
-import { getSeekingFlowSteps } from './ui/seekingFlowEngine';
+import { getSeekingFlowSteps } from './ui/availabilityFlowEngine';
 
 import type { CreateFlowStepId } from './ui/hostingFlowEngine';
 
@@ -66,7 +66,7 @@ export type ComposeWizardModule =
 
   | 'hostingFlow'
 
-  | 'seekingFlow'
+  | 'availabilityFlow'
 
   | 'addFlow';
 
@@ -258,7 +258,7 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     defaultParticipation: null,
 
-    wizard: 'seekingFlow',
+    wizard: 'availabilityFlow',
 
     seekingSteps: getSeekingFlowSteps('hiking'),
 
@@ -282,7 +282,7 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     defaultParticipation: null,
 
-    wizard: 'seekingFlow',
+    wizard: 'availabilityFlow',
 
     seekingSteps: getSeekingFlowSteps('camping'),
 
@@ -306,7 +306,7 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     defaultParticipation: null,
 
-    wizard: 'seekingFlow',
+    wizard: 'availabilityFlow',
 
     seekingSteps: getSeekingFlowSteps('event'),
 
@@ -330,7 +330,7 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     defaultParticipation: null,
 
-    wizard: 'seekingFlow',
+    wizard: 'availabilityFlow',
 
     seekingSteps: getSeekingFlowSteps('rideshare'),
 

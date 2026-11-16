@@ -3,7 +3,7 @@ import type { ExploreCompose } from '../compose';
 import { addComposeFromVenueKind } from '../compose';
 import { composeFlowIdFromRoute } from '../composeFlowCatalog';
 import type { CreateActivityDraft, CreateActivityKind } from './hostingFlowEngine';
-import type { SeekingDraft, SeekingKind } from './seekingFlowEngine';
+import type { SeekingDraft, SeekingKind } from './availabilityFlowEngine';
 import type { AddDraft } from './addFlow';
 import type { FacilityAddDraft } from './addFacilityFlow';
 import type { AddVenueKind } from '../addTypes';

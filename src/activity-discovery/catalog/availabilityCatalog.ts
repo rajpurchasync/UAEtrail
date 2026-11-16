@@ -14,13 +14,13 @@ import {
 } from '../../explore/ui/exploreMapPinModel';
 
 /** Filters for fixed availability catalog rows from `GET /explore/map`. */
-export type ExploreSeekingCatalogFilters = {
+export type ExploreAvailabilityCatalogFilters = {
   mapFilter: MapFilterKey;
   buddySubtype: ExploreBuddySubtypeKey;
   outingTopic: ExploreOutingTopicKey;
   query: string;
   /**
-   * When set (Activities list / `activityMode=seeking`), apply map date chip.
+   * When set (Activities list / `availability catalog`), apply map date chip.
    * Omit or `null` for People → Looking for (date chip does not apply).
    */
   activityDatePreset?: ExploreActivityDatePreset | null;
@@ -30,9 +30,9 @@ export type ExploreSeekingCatalogFilters = {
  * Fixed crew availability from the explore catalog (`ExploreMapItemDTO[]`).
  * Same entities as map pins (`source: availability`).
  */
-export const selectSeekingActivitiesFromExploreCatalog = (
+export const selectAvailabilityFromExploreCatalog = (
   exploreCatalogItems: ExploreMapItemDTO[],
-  filters: ExploreSeekingCatalogFilters
+  filters: ExploreAvailabilityCatalogFilters
 ): ExploreMapItemDTO[] => {
   const datePreset = filters.activityDatePreset ?? null;
 

@@ -7,7 +7,7 @@ import {
   type PlaceDTO,
   type UaeGroupRegionCatalogLabel,
 } from '@uaetrail/shared-types';
-import type { SeekingDraft, SeekingKind } from './ui/seekingFlowEngine';
+import type { SeekingDraft, SeekingKind } from './ui/availabilityFlowEngine';
 import type { CreateActivityDraft } from './ui/hostingFlowEngine';
 
 const PLACE_AREA_REQUIRED =

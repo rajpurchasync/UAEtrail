@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { availabilityExploreMapItem } from '../../explore/exploreMapItemFixtures';
-import { selectSeekingActivitiesFromExploreCatalog } from './seeking';
+import { selectAvailabilityFromExploreCatalog } from './availabilityCatalog';
 
-describe('selectSeekingActivitiesFromExploreCatalog', () => {
+describe('selectAvailabilityFromExploreCatalog', () => {
   it('includes seeking activities when date chip is not applied (People Looking for)', () => {
     const farFuture = availabilityExploreMapItem({
       id: 'availability:user-1:slot-future',
       date: '2099-06-15',
     });
-    const rows = selectSeekingActivitiesFromExploreCatalog([farFuture], {
+    const rows = selectAvailabilityFromExploreCatalog([farFuture], {
       mapFilter: 'all',
       buddySubtype: 'all',
       outingTopic: 'all',
@@ -22,7 +22,7 @@ describe('selectSeekingActivitiesFromExploreCatalog', () => {
       id: 'availability:user-1:slot-future',
       date: '2099-06-15',
     });
-    const rows = selectSeekingActivitiesFromExploreCatalog([farFuture], {
+    const rows = selectAvailabilityFromExploreCatalog([farFuture], {
       mapFilter: 'all',
       buddySubtype: 'all',
       outingTopic: 'all',

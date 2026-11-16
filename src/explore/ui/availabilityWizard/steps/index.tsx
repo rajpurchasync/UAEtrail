@@ -22,7 +22,7 @@ import {
   usesHikingSeekingFlow,
   usesRideshareSeekingFlow,
   type SeekingFlowStepId,
-} from '../../seekingFlowEngine';
+} from '../../availabilityFlowEngine';
 import type { TimeMode } from '../../createFlowShared';
 import { SeekingCuratedAreaStep } from '../../SeekingCuratedAreaStep';
 import {
@@ -35,8 +35,8 @@ import {
   SeekingWizardNextButton,
   seekingMapPinRow,
   seekingRoutePinRow,
-} from '../SeekingWizardChrome';
-import type { SeekingWizardContext } from '../seekingWizardContext';
+} from '../AvailabilityWizardChrome';
+import type { AvailabilityWizardContext } from '../availabilityWizardContext';
 
 const REVIEW_EDIT_LABELS: Partial<Record<SeekingFlowStepId, string>> = {
   title: 'Title',
@@ -57,7 +57,7 @@ const REVIEW_EDIT_LABELS: Partial<Record<SeekingFlowStepId, string>> = {
   comment: 'Comment',
 };
 
-export function renderSeekingWizardSteps(ctx: SeekingWizardContext): ReactNode {
+export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): ReactNode {
   const {
     step,
     seekKind,

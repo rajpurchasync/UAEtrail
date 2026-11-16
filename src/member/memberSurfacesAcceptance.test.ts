@@ -205,7 +205,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
   it('G-seek: People browse wires seekingOnMap to explore pin routes (no activity detail hop)', () => {
     const panel = read('src/people-discovery/panel/PeopleBrowsePanel.tsx');
     expect(panel).toContain('discoverySeekingOnMap');
-    expect(panel).toContain('seekingActivities');
+    expect(panel).toContain('availabilityCatalogItems');
     const routing = read('src/explore/memberDiscoverySeekingRow.ts');
     expect(routing).toContain('exploreSeekingMapItemPath');
     const list = read('src/list/ListDiscoveryExperience.tsx');

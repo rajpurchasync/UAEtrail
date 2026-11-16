@@ -32,7 +32,7 @@ import {
   type SeekingSubmitResult,
   type SeekingDraft,
   type SeekingKind,
-} from './seekingFlowEngine';
+} from './availabilityFlowEngine';
 import type { LocationPrecision } from './createFlowShared';
 import { availabilityFixedCompose, type SeekingComposeKind } from '../compose';
 import { areaIdForExploreAreaSlug } from '../exploreAreaFilter';
@@ -44,9 +44,9 @@ import {
   writeSeekingWizardSession,
 } from './composeWizardSession';
 import { GOING_FROM_LABEL, TO_LOCATION_LABEL } from '../createFlowCopy';
-import { SeekingSubmitSuccessSheet } from './SeekingSubmitSuccessSheet';
-import { renderSeekingWizardSteps } from './seekingWizard/steps';
-import type { SeekingWizardContext } from './seekingWizard/seekingWizardContext';
+import { AvailabilityFixedSubmitSuccessSheet } from './AvailabilityFixedSubmitSuccessSheet';
+import { renderAvailabilityWizardSteps } from './availabilityWizard/steps';
+import type { AvailabilityWizardContext } from './availabilityWizard/availabilityWizardContext';
 
 type SeekingMapIntent =
   | typeof COMPOSE_MAP_INTENTS.seekFrom
@@ -54,7 +54,7 @@ type SeekingMapIntent =
 
 type FlowStep = 'type' | SeekingFlowStepId;
 
-interface CreateSeekingFlowProps {
+interface CreateAvailabilityFixedFlowProps {
   open: boolean;
   onClose: () => void;
   onBackToIntent?: () => void;
@@ -66,7 +66,7 @@ interface CreateSeekingFlowProps {
   onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
 }
 
-export const CreateSeekingFlow = ({
+export const CreateAvailabilityFixedFlow = ({
   open,
   onClose,
   onBackToIntent,
@@ -76,7 +76,7 @@ export const CreateSeekingFlow = ({
   exploreAreaSlug = null,
   tenantId = null,
   onCreateLinkedRideshare,
-}: CreateSeekingFlowProps) => {
+}: CreateAvailabilityFixedFlowProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const isMobile = useIsMobile();
@@ -313,7 +313,7 @@ export const CreateSeekingFlow = ({
 
   if (submitResult && submittedKind) {
     return (
-      <SeekingSubmitSuccessSheet
+      <AvailabilityFixedSubmitSuccessSheet
         open={open}
         onClose={onClose}
         kind={submittedKind}
@@ -393,7 +393,7 @@ export const CreateSeekingFlow = ({
       onClose={requestClose}
       isMobile={isMobile}
     >
-      {renderSeekingWizardSteps({
+      {renderAvailabilityWizardSteps({
         step,
         seekKind,
         kind,
@@ -420,7 +420,7 @@ export const CreateSeekingFlow = ({
           void handleSubmit();
         },
         openMap,
-      } satisfies SeekingWizardContext)}
+      } satisfies AvailabilityWizardContext)}
     </ComposeWizardShell>
   );
 };

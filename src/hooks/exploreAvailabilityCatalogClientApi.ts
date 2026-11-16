@@ -4,7 +4,7 @@ import { applyExploreMapOverlay } from '../explore/applyExploreMapOverlay';
 import { fetchExploreMapItems, fetchExploreMapOverlayIfSignedIn, type ConditionalCatalog } from './exploreMapClientApi';
 
 /** Fixed crew availability for People **Looking for** (explore map slice). */
-export const fetchExploreSeekingActivities = async (
+export const fetchExploreAvailabilityCatalog = async (
   etag?: string | null
 ): Promise<ConditionalCatalog<ExploreMapItemDTO[]>> => {
   const result = await fetchExploreMapItems(

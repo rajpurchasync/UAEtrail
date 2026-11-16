@@ -12,7 +12,7 @@ import {
   type SeekingFitnessLevel,
   type SeekingKind,
   type SeekingVehicleType,
-} from './seekingFlowEngine';
+} from './availabilityFlowEngine';
 
 type PatchDraft = (patch: Partial<SeekingDraft>) => void;
 

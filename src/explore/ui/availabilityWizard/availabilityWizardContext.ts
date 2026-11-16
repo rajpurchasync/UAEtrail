@@ -1,7 +1,7 @@
 import type { AreaPublicDTO } from '@uaetrail/shared-types';
 import type { SeekingComposeKind } from '../../compose';
 import { COMPOSE_MAP_INTENTS } from '../../create/interactions';
-import type { SeekingDraft, SeekingFlowStepId, SeekingKind } from '../seekingFlowEngine';
+import type { SeekingDraft, SeekingFlowStepId, SeekingKind } from '../availabilityFlowEngine';
 
 export type SeekingWizardFlowStep = 'type' | SeekingFlowStepId;
 
@@ -9,7 +9,7 @@ export type SeekingMapOpen = (
   intent: typeof COMPOSE_MAP_INTENTS.seekFrom | typeof COMPOSE_MAP_INTENTS.seekTo
 ) => void;
 
-export type SeekingWizardContext = {
+export type AvailabilityWizardContext = {
   step: SeekingWizardFlowStep;
   seekKind: SeekingComposeKind | null;
   kind: SeekingKind | null;

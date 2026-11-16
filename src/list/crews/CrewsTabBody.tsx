@@ -33,7 +33,7 @@ type CrewsTabBodyProps = {
   discoveryQuota: MemberDiscoveryQuotaDTO | null;
   discoveryLoading: boolean;
   discoveryError: string | null;
-  seekingActivities: ExploreMapItemDTO[];
+  availabilityCatalogItems: ExploreMapItemDTO[];
   exploreCatalogItems: ExploreMapItemDTO[];
   exploreCatalogLoading: boolean;
   onOpenSeekingActivity: (item: ExploreMapItemDTO) => void;
@@ -60,7 +60,7 @@ export const CrewsTabBody = ({
   discoveryQuota,
   discoveryLoading,
   discoveryError,
-  seekingActivities,
+  availabilityCatalogItems,
   exploreCatalogItems,
   exploreCatalogLoading,
   onOpenSeekingActivity,
@@ -108,7 +108,7 @@ export const CrewsTabBody = ({
         tab={segment === 'looking' ? 'available' : segment}
         crewsOpenLens={isAvailableLane ? effectiveLens : undefined}
         isSignedIn={isSignedIn}
-        seekingActivities={seekingActivities}
+        availabilityCatalogItems={availabilityCatalogItems}
         exploreCatalogItems={exploreCatalogItems}
         exploreCatalogLoading={exploreCatalogLoading}
         onOpenSeekingActivity={onOpenSeekingActivity}

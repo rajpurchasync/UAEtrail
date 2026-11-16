@@ -34,7 +34,7 @@ describe('compose write-surface platform (S14)', () => {
       'src/explore/ui/CreateAddFlow.tsx',
       'src/explore/ui/CreateAddFacilityFlow.tsx',
       'src/explore/ui/CreateHostingActivityFlow.tsx',
-      'src/explore/ui/CreateSeekingFlow.tsx',
+      'src/explore/ui/CreateAvailabilityFixedFlow.tsx',
       'src/components/organisation-console/ProProfileApplicationFlow.tsx',
     ]) {
       const src = readFileSync(join(ROOT, rel), 'utf8');
@@ -46,10 +46,10 @@ describe('compose write-surface platform (S14)', () => {
   it('map-entry rows live on Host controller, Seek/Add step modules, intent, and Pro', () => {
     for (const rel of [
       'src/explore/ui/CreateHostingActivityFlow.tsx',
-      'src/explore/ui/seekingWizard/SeekingWizardChrome.tsx',
+      'src/explore/ui/availabilityWizard/AvailabilityWizardChrome.tsx',
       'src/explore/ui/addWizard/steps/index.tsx',
       'src/explore/ui/addWizard/facility/FacilityAddWizardSteps.tsx',
-      'src/explore/ui/seekingWizard/steps/index.tsx',
+      'src/explore/ui/availabilityWizard/steps/index.tsx',
       'src/components/organisation-console/ProProfileApplicationFlow.tsx',
     ]) {
       expect(readFileSync(join(ROOT, rel), 'utf8')).toMatch(/ComposeMapEntryRow/);
@@ -57,13 +57,13 @@ describe('compose write-surface platform (S14)', () => {
   });
 
   it('Seek and Add step UI lives in seekingWizard / addWizard modules', () => {
-    expect(existsSync(join(ROOT, 'src/explore/ui/seekingWizard/steps/index.tsx'))).toBe(true);
+    expect(existsSync(join(ROOT, 'src/explore/ui/availabilityWizard/steps/index.tsx'))).toBe(true);
     expect(existsSync(join(ROOT, 'src/explore/ui/addWizard/steps/index.tsx'))).toBe(true);
     expect(existsSync(join(ROOT, 'src/explore/ui/addWizard/facility/FacilityAddWizardSteps.tsx'))).toBe(
       true
     );
-    const seek = readFileSync(join(ROOT, 'src/explore/ui/CreateSeekingFlow.tsx'), 'utf8');
-    expect(seek).toMatch(/renderSeekingWizardSteps/);
+    const seek = readFileSync(join(ROOT, 'src/explore/ui/CreateAvailabilityFixedFlow.tsx'), 'utf8');
+    expect(seek).toMatch(/renderAvailabilityWizardSteps/);
     expect(seek).not.toMatch(/ComposeWidePageSlot/);
     expect(seek).not.toMatch(/ComposeWizardStepChrome/);
     const add = readFileSync(join(ROOT, 'src/explore/ui/CreateAddFlow.tsx'), 'utf8');
@@ -109,7 +109,7 @@ describe('compose write-surface platform (S14)', () => {
       'src/explore/ui/CreateAddFlow.tsx',
       'src/explore/ui/CreateAddFacilityFlow.tsx',
       'src/explore/ui/CreateHostingActivityFlow.tsx',
-      'src/explore/ui/CreateSeekingFlow.tsx',
+      'src/explore/ui/CreateAvailabilityFixedFlow.tsx',
     ]) {
       const src = readFileSync(join(ROOT, rel), 'utf8');
       expect(src).toMatch(/ComposeWizardShell/);

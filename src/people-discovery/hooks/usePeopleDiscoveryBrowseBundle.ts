@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { memberHasUnlimitedDiscovery } from '@uaetrail/shared-types';
-import { usePeopleDiscoverySeekingActivities } from './usePeopleDiscoverySeekingActivities';
+import { usePeopleDiscoveryAvailabilityCatalog } from './usePeopleDiscoveryAvailabilityCatalog';
 import { useMemberPeopleNetworkPreview } from './useMemberPeopleNetworkPreview';
 import { useMemberDiscoveryRoster } from './useMemberDiscoveryRoster';
 import { useExplorePeopleAvailability } from './usePeopleAvailability';
@@ -73,7 +73,7 @@ export const useExplorePeopleBrowseBundle = ({
   const peopleLookingTabActive =
     peopleBrowsePanelOpen && browse.peopleBrowseTab === 'looking';
 
-  const seekingDiscovery = usePeopleDiscoverySeekingActivities({
+  const availabilityDiscovery = usePeopleDiscoveryAvailabilityCatalog({
     enabled: peopleLookingTabActive,
     exploreCatalogFallback: exploreCatalogItems,
     filters: {
@@ -84,7 +84,7 @@ export const useExplorePeopleBrowseBundle = ({
     },
   });
 
-  const seekingActivities = seekingDiscovery.seekingActivities;
+  const availabilityCatalogItems = availabilityDiscovery.availabilityCatalogItems;
 
   const peopleBrowseMapChip = useMemo(
     () =>
@@ -135,9 +135,9 @@ export const useExplorePeopleBrowseBundle = ({
     isSignedIn: Boolean(user),
     userRole: user?.role as UserRole | undefined,
     canBrowseAllMembers,
-    seekingActivities,
+    availabilityCatalogItems,
     exploreCatalogItems,
-    exploreCatalogLoading: mapLoading || seekingDiscovery.loading,
+    exploreCatalogLoading: mapLoading || availabilityDiscovery.loading,
     onOpenSeekingActivity,
     onOpenMarkAvailability,
     buddyUserIds,

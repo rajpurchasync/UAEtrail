@@ -6,20 +6,20 @@ const ROOT = process.cwd();
 const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
 
 describe('create flow module boundaries (CPC-9b)', () => {
-  it('seeking wizard does not import hosting engine', () => {
-    const seeking = read('src/explore/ui/seekingFlowEngine.ts');
-    expect(seeking).not.toMatch(/from ['"]\.\/hostingFlowEngine['"]/);
-    expect(seeking).not.toMatch(/from ['"]\.\/organizeFlow['"]/);
-    expect(seeking).toMatch(/createFlowShared/);
-    expect(seeking).toMatch(/memberAvailabilityApi/);
+  it('availability fixed wizard does not import hosting engine', () => {
+    const availability = read('src/explore/ui/availabilityFlowEngine.ts');
+    expect(availability).not.toMatch(/from ['"]\.\/hostingFlowEngine['"]/);
+    expect(availability).not.toMatch(/from ['"]\.\/organizeFlow['"]/);
+    expect(availability).toMatch(/createFlowShared/);
+    expect(availability).toMatch(/memberAvailabilityApi/);
   });
 
   it('availability fixed publish uses availability map pins only (MIG-DISCO-REG)', () => {
-    const seeking = read('src/explore/ui/seekingFlowEngine.ts');
-    expect(seeking).toMatch(/availabilityMapItemId/);
-    expect(seeking).toMatch(/activityId: null/);
-    expect(seeking).not.toMatch(/`demand:\$\{/);
-    expect(seeking).not.toMatch(/createSeekingPost/);
+    const availability = read('src/explore/ui/availabilityFlowEngine.ts');
+    expect(availability).toMatch(/availabilityMapItemId/);
+    expect(availability).toMatch(/activityId: null/);
+    expect(availability).not.toMatch(/`demand:\$\{/);
+    expect(availability).not.toMatch(/createSeekingPost/);
   });
 
   it('hostingFlow.ts leftover facade is gone', () => {
@@ -29,7 +29,7 @@ describe('create flow module boundaries (CPC-9b)', () => {
   it('hostingFlowEngine does not import seeking wizard', () => {
     const engine = read('src/explore/ui/hostingFlowEngine.ts');
     expect(engine).not.toMatch(/from ['"]\.\/demandFlow['"]/);
-    expect(engine).not.toMatch(/from ['"]\.\/seekingFlowEngine['"]/);
+    expect(engine).not.toMatch(/from ['"]\.\/(seeking|availability)FlowEngine['"]/);
   });
 
   it('organizeFlow.ts duplicate shim is gone (COH-10)', () => {
@@ -50,7 +50,7 @@ describe('create flow module boundaries (CPC-9b)', () => {
     expect(existsSync(join(ROOT, 'src/explore/exploreCardModel.ts'))).toBe(false);
   });
 
-  it('leftover seekingFlow.ts and exploreSeekingCatalog shims are gone', () => {
+  it('leftover seekingFlow.ts shim is gone (engine is availabilityFlowEngine)', () => {
     expect(existsSync(join(ROOT, 'src/explore/ui/seekingFlow.ts'))).toBe(false);
     expect(existsSync(join(ROOT, 'src/explore/exploreSeekingCatalog.ts'))).toBe(false);
     expect(existsSync(join(ROOT, 'src/explore/ui/useExploreComposeRoute.ts'))).toBe(false);
@@ -63,21 +63,21 @@ describe('create flow module boundaries (CPC-9b)', () => {
     expect(existsSync(join(ROOT, 'src/explore/ui/demandWizardSteps.tsx'))).toBe(false);
     expect(existsSync(join(ROOT, 'src/explore/ui/DemandSubmitSuccessSheet.tsx'))).toBe(false);
     expect(existsSync(join(ROOT, 'src/explore/ui/demandFlow.test.ts'))).toBe(false);
-    expect(existsSync(join(ROOT, 'src/explore/ui/CreateSeekingFlow.tsx'))).toBe(true);
+    expect(existsSync(join(ROOT, 'src/explore/ui/CreateAvailabilityFixedFlow.tsx'))).toBe(true);
     expect(existsSync(join(ROOT, 'src/explore/ui/seekingWizardSteps.tsx'))).toBe(true);
-    expect(existsSync(join(ROOT, 'src/explore/ui/SeekingSubmitSuccessSheet.tsx'))).toBe(true);
+    expect(existsSync(join(ROOT, 'src/explore/ui/AvailabilityFixedSubmitSuccessSheet.tsx'))).toBe(true);
   });
 
   it('hostingFlows does not import seeking wizard', () => {
     const flows = read('src/explore/ui/hostingFlows/index.ts');
-    expect(flows).not.toMatch(/demandFlow|seekingFlowEngine/);
+    expect(flows).not.toMatch(/demandFlow|availabilityFlowEngine/);
   });
 
 
   it('compose catalog maps hosting and seeking wizard modules', () => {
     const catalog = read('src/explore/composeFlowCatalog.ts');
     expect(catalog).toMatch(/wizard: 'hostingFlow'/);
-    expect(catalog).toMatch(/wizard: 'seekingFlow'/);
+    expect(catalog).toMatch(/wizard: 'availabilityFlow'/);
   });
 
   it('ComposeWizardItemContext emoji provider is retired (wizard chrome uses FlowSheetHeader)', () => {
@@ -91,7 +91,7 @@ describe('create flow module boundaries (CPC-9b)', () => {
     for (const file of [
       'CreateAddFlow.tsx',
       'CreateHostingActivityFlow.tsx',
-      'CreateSeekingFlow.tsx',
+      'CreateAvailabilityFixedFlow.tsx',
       'CreateAddFacilityFlow.tsx',
     ]) {
       const src = read(`src/explore/ui/${file}`);

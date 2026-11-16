@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { emptySeekingDraft } from './ui/seekingFlowEngine';
+import { emptySeekingDraft } from './ui/availabilityFlowEngine';
 import { emptyCreateActivityDraft } from './ui/hostingFlowEngine';
 import { curatedAreaSeedId, type PlaceDTO } from '@uaetrail/shared-types';
 import {

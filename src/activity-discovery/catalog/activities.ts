@@ -16,11 +16,11 @@ import {
 } from '../../explore/exploreOptionalFilters';
 import { isBuddyMapItem } from '../../explore/ui/exploreMapPinModel';
 import {
-  selectSeekingActivitiesFromExploreCatalog,
-  type ExploreSeekingCatalogFilters,
-} from './seeking';
+  selectAvailabilityFromExploreCatalog,
+  type ExploreAvailabilityCatalogFilters,
+} from './availabilityCatalog';
 
-export type ExploreActivityCatalogFilters = ExploreSeekingCatalogFilters & {
+export type ExploreActivityCatalogFilters = ExploreAvailabilityCatalogFilters & {
   activityModeFilter?: ExploreActivityModeFilter;
   tripMapTopics?: TripMapTopicKey[];
   priceFilter?: ExplorePriceFilter;
@@ -28,7 +28,7 @@ export type ExploreActivityCatalogFilters = ExploreSeekingCatalogFilters & {
 
 /**
  * Time-bound activities from `GET /explore/map` (hosted, seeking, or both).
- * Seeking uses {@link selectSeekingActivitiesFromExploreCatalog}; hosted applies date + mode filters.
+ * Seeking uses {@link selectAvailabilityFromExploreCatalog}; hosted applies date + mode filters.
  */
 export const selectActivitiesFromExploreCatalog = (
   exploreCatalogItems: ExploreMapItemDTO[],
@@ -37,7 +37,7 @@ export const selectActivitiesFromExploreCatalog = (
   const activityModeFilter = filters.activityModeFilter ?? 'all';
 
   if (activityModeFilter === 'seeking') {
-    return selectSeekingActivitiesFromExploreCatalog(exploreCatalogItems, filters);
+    return selectAvailabilityFromExploreCatalog(exploreCatalogItems, filters);
   }
 
   const datePreset = filters.activityDatePreset ?? 'anyday';

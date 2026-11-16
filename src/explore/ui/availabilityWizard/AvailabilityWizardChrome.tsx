@@ -5,7 +5,7 @@ import {
   formatComposeMapCoord,
 } from '../../create/interactions';
 import { fromLocationLabel, TO_LOCATION_LABEL } from '../../createFlowCopy';
-import type { SeekingWizardContext } from './seekingWizardContext';
+import type { AvailabilityWizardContext } from './availabilityWizardContext';
 
 export const SeekingWizardNextButton = ({
   label = 'Next',
@@ -29,7 +29,7 @@ export const SeekingWizardNextButton = ({
 );
 
 export const seekingMapPinRow = (
-  ctx: SeekingWizardContext,
+  ctx: AvailabilityWizardContext,
   endpoint: 'from' | 'to',
   options: { title: string; accent: 'emerald' | 'sky' }
 ) => {
@@ -49,7 +49,7 @@ export const seekingMapPinRow = (
   );
 };
 
-export const seekingRoutePinRow = (ctx: SeekingWizardContext, endpoint: 'from' | 'to') => {
+export const seekingRoutePinRow = (ctx: AvailabilityWizardContext, endpoint: 'from' | 'to') => {
   const isTo = endpoint === 'to';
   const placed = isTo ? ctx.draft.toPinPlaced : ctx.draft.fromPinPlaced;
   const lat = isTo ? ctx.draft.toLatitude : ctx.draft.latitude;

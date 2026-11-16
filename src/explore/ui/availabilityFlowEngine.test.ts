@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { getSeekingFlowSteps } from './seekingFlowEngine';
+import { getSeekingFlowSteps } from './availabilityFlowEngine';
 
-describe('seekingFlowEngine steps', () => {
+describe('availabilityFlowEngine steps', () => {
   it('find hiking is area then going from (no destination pin)', () => {
     expect(getSeekingFlowSteps('hiking')).toEqual([
       'title',

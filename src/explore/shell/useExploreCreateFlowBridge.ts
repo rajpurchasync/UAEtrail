@@ -3,7 +3,7 @@ import type { ActivityDTO } from '@uaetrail/shared-types';
 import type { CreateFlowBridge } from '../../create/CreateFlowProvider';
 import type { HostingWizardPrefill } from '../ui/hostingWizardPrefill';
 import type { AddSubmitResult } from '../ui/addFlow';
-import type { SeekingSubmitResult } from '../ui/seekingFlow';
+import type { SeekingSubmitResult } from '../ui/availabilityFlowEngine';
 
 type UseExploreCreateFlowBridgeArgs = {
   registerBridge: (next: CreateFlowBridge | null) => void;

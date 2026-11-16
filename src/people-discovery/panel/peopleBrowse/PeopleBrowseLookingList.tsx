@@ -7,7 +7,7 @@ import { EXPLORE_PEOPLE_BROWSE_EMPTY_DISCOVER_LOOKING, EXPLORE_PEOPLE_BROWSE_LOO
 import { PeopleBrowseListEmpty, PeopleBrowseListLoading } from './PeopleBrowseListStates';
 
 type Props = {
-  seekingActivities: ExploreMapItemDTO[];
+  availabilityCatalogItems: ExploreMapItemDTO[];
   exploreCatalogItems: ExploreMapItemDTO[];
   loading: boolean;
   onOpenSeekingActivity: (item: ExploreMapItemDTO) => void;
@@ -16,7 +16,7 @@ type Props = {
 
 /** Published seeking activities — compact `ExploreListRow`. */
 export const PeopleBrowseLookingList = ({
-  seekingActivities,
+  availabilityCatalogItems,
   exploreCatalogItems,
   loading,
   onOpenSeekingActivity,
@@ -24,23 +24,23 @@ export const PeopleBrowseLookingList = ({
 }: Props) => {
   const cardById = useMemo(() => {
     const map = new Map<string, DiscoveryCardModel>();
-    for (const item of seekingActivities) {
+    for (const item of availabilityCatalogItems) {
       map.set(item.id, buildDiscoveryMapListRowCard(item, exploreCatalogItems));
     }
     return map;
-  }, [seekingActivities, exploreCatalogItems]);
+  }, [availabilityCatalogItems, exploreCatalogItems]);
 
-  if (loading && seekingActivities.length === 0) {
+  if (loading && availabilityCatalogItems.length === 0) {
     return <PeopleBrowseListLoading label={EXPLORE_PEOPLE_BROWSE_LOOKING_LOADING} />;
   }
 
-  if (seekingActivities.length === 0) {
+  if (availabilityCatalogItems.length === 0) {
     return <PeopleBrowseListEmpty>{EXPLORE_PEOPLE_BROWSE_EMPTY_DISCOVER_LOOKING}</PeopleBrowseListEmpty>;
   }
 
   return (
     <>
-      {seekingActivities.map((item) => (
+      {availabilityCatalogItems.map((item) => (
         <ExploreListRow
           key={item.id}
           card={cardById.get(item.id)!}
