@@ -22,6 +22,7 @@ type Args = {
   mapLoading: boolean;
   onOpenExploreActivity: (activity: { exploreItemId: string }) => void;
   onOpenSeekingActivity: (item: ExploreMapItemDTO) => void;
+  onOpenMarkAvailability?: () => void;
   searchFocusNonce: number;
 };
 
@@ -35,6 +36,7 @@ export const useExplorePeopleBrowseBundle = ({
   mapLoading,
   onOpenExploreActivity,
   onOpenSeekingActivity,
+  onOpenMarkAvailability,
   searchFocusNonce,
 }: Args) => {
   const peopleBrowsePanelOpen =
@@ -137,6 +139,7 @@ export const useExplorePeopleBrowseBundle = ({
     exploreCatalogItems,
     exploreCatalogLoading: mapLoading || seekingDiscovery.loading,
     onOpenSeekingActivity,
+    onOpenMarkAvailability,
     buddyUserIds,
   };
 

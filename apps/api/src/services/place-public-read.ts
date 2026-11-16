@@ -26,7 +26,6 @@ import {
   assertPremiumAccess,
   readStoredFile,
 } from './location-premium.js';
-import { loadExploreSeekingActivitiesForViewer } from './explore-seeking-activities-read.js';
 import type { LocationDTO, PlaceCatalogQuery, PlaceTrackPreviewDTO } from '@uaetrail/shared-types';
 import { findPlaceTrackById } from '../lib/place-heavy-store.js';
 
@@ -50,12 +49,6 @@ export const loadExploreMapForViewer = (input: {
     query: input.query,
     viewerUserId: input.viewerUserId,
     userRole: input.userRole ?? null,
-  });
-
-export const loadExploreSeekingActivitiesForMapViewer = () =>
-  loadExploreSeekingActivitiesForViewer({
-    viewerUserId: null,
-    userRole: null,
   });
 
 export const listPublicPlacesPaged = async (filters: LocationListFilters) => {

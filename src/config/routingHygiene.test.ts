@@ -216,7 +216,6 @@ describe('routingHygiene', () => {
       'src/pages/Activities.tsx',
       'src/hooks/participantIntentClientApi.ts',
       'src/member-plan/participantIntentTrips.ts',
-      'src/member-plan/navigateParticipantIntentManage.ts',
       'src/components/organisation-console/BecomeHostFlow.tsx',
       'src/components/organisation-console/becomeHostForm.ts',
       'src/components/organisation-console/OrganisationConsoleShell.tsx',

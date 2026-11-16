@@ -41,7 +41,7 @@ import {
 } from './profile-viewer-access.js';
 import { getMemberGoalPublicSnapshot } from '../lib/member-goals-store.js';
 import { getMemberAvailabilityPublicSnapshot } from '../lib/member-availability-store.js';
-import { countParticipantIntentsByUser } from '../lib/participant-intents-store.js';
+import { countActiveFixedAvailabilityMapSlotsForUser } from '../lib/member-availability-store.js';
 import type { MemberAvailabilityPublicDTO, MemberGoalPublicDTO } from '@uaetrail/shared-types';
 import { resolveFindCrewViewerRelation } from '../lib/find-crew-visibility-gate.js';
 import { listPublicMemberBadges } from './member-badges.js';
@@ -269,7 +269,7 @@ export async function buildPublicMemberProfile(
   ] = await Promise.all([
     countUserCheckedInParticipations(userId),
     countPublishedActivitiesHostedByUser(userId),
-    countParticipantIntentsByUser(userId),
+    countActiveFixedAvailabilityMapSlotsForUser(userId),
     listTenantsByOwnerId(userId),
     listActiveTenantMembershipsByUser(userId),
     findLatestHostApplicationByApplicant(userId),

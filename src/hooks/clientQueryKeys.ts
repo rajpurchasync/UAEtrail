@@ -22,12 +22,6 @@ export const activityReviewsQueryKey = (activityId: string): QueryKey => [
   'reviews',
 ];
 
-/** Member seeking posts (`GET /me/seeking-posts`). */
-export const mySeekingPostsQueryKey = (refreshKey?: number): QueryKey =>
-  refreshKey != null && refreshKey !== 0
-    ? ['my-seeking-posts', refreshKey]
-    : ['my-seeking-posts'];
-
 export const entityFollowsQueryKey = ['me', 'entity-follows'] as const;
 
 export const entityFollowStateQueryKey = (

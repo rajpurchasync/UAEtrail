@@ -10,7 +10,7 @@ Do **not** re-implement tier logic in React hooks — consume **`GET /me/status`
 
 **My Plans surface vs `/me/*`:** Consumer **My Plans** lives at **`/plan`** (`PLAN_PATH`, `src/plan/planRouting.ts`) — **forward-looking only**: upcoming joined/hosting (list or calendar), coordination strip, availability lens, wishlist/saved, goals teaser — **not** outing history or journey map. **`/profile`** is identity and settings; **`/profile/history`** (+ map at `/profile/history/map`) is **past** inventory (joined / hosted / self-logged). HTTP **`GET/PUT /me/goals`**, **`/me/availability`**, **`/me/coordination-attention`** back the Plan page; they are **not** browser routes like `/me/plans`. Explore FAB **Host · Find crew · Add** is separate from the Plan tab ([`NAVIGATION.md`](./NAVIGATION.md) § Plan disambiguation).
 
-**Plan is a UI hub, not a domain entity:** There is no `Plan` collection, `PlanDTO`, or `GET /plans/:id`. The middle tab is a **read-model shell** over real objects — primarily **`activities`** (joined upcoming, **hosted** / hosting filter, seeking via `activityMode: seeking`), plus **`member_goals`**, **`member_availability`**, wishlist saves, and **`coordination-attention`** (join queues, invites). **Hosting an outing** = create/publish an **`Activity`** (tenant-scoped publish, map discovery) — not “creating a Plan.” In code, prefer **activity / hosted / joined / goals / availability** in API and store names; FE hub helpers: `memberCommitmentHubApi` (`goals` + `availability` only). Reserve **Plan** for routes (`/plan`), tab chrome, and inbox grouping copy where noted in [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) (activity detail tab label **Plan** = outing facts on L3 — still not a Plan entity).
+**Plan is a UI hub, not a domain entity:** There is no `Plan` collection, `PlanDTO`, or `GET /plans/:id`. The middle tab is a **read-model shell** over real objects — primarily **`activities`** (joined upcoming, **hosted** / hosting filter), **`member_goals`**, **`member_availability`** (Find crew / calendar — not activities), wishlist saves, and **`coordination-attention`** (join queues, invites). **Hosting an outing** = create/publish an **`Activity`** (tenant-scoped publish, map discovery) — not “creating a Plan.” In code, prefer **activity / hosted / joined / goals / availability** in API and store names; FE hub helpers: `memberCommitmentHubApi` (`goals` + `availability` only). Reserve **Plan** for routes (`/plan`), tab chrome, and inbox grouping copy where noted in [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) (activity detail tab label **Plan** = outing facts on L3 — still not a Plan entity).
 
 **FE file naming:** Two patterns — pick by **surface**, not by parsing every word in a component name.
 
@@ -271,7 +271,7 @@ Product-facing **who is viewing** for **capabilities** (Host / publish, console,
 | **Edit** | Plan → **Available** lens (`lens=availability`) |
 | **Discover** | `GET /explore/people/availability` · Explore People filters (date range, area, kind) |
 | **Visibility** | `public` · `buddies` · `hidden` — enforced on index and public profile `availability` slice |
-| **vs seeking** | Seeking = time-bound **Activity** on the map (`activityMode: seeking`). Availability = person slots only. |
+| **vs legacy seeking** | Retired: `activityMode: seeking` activities and `/me/seeking-posts`. **Find crew** = fixed **`member_availability`** slots on the map (`source: availability`); peek → profile + message, not join. |
 | **Guide kind** | Casual “can guide” on availability; paid/commercial guiding = **hosted** activity or agency profile |
 
 ---
@@ -314,7 +314,7 @@ UI labels vs capabilities vs wire — **host/join/buddy slice only**; entity + r
 | **Publishing workspace** | Tenant-scoped publish/manage UI | Wire `/publishing/*`, `x-organisation-id`, `src/console/*` — shell title from `workspaceConsoleLabel(kind)` |
 | **Pro / business publishing** | Agency, shop, professional guide onboarding | `/profile/pro-membership`, HTTP `/me/pro-application` (collection `host_applications` until rename) |
 | **Activity join request** | Join a **published activity** (approval) | `activity_requests` (`note` joiner → host, `hostNote` host decision); `/publishing/requests` |
-| **Seeking join request** | Join a **Find crew** post (seeking **activity**) | **`activity_requests`** (canonical); `/me/seeking-posts/.../requests` for manage UI |
+| **Find crew (fixed)** | Connect before a hosted outing exists | Message + profile from map peek; **no** `activity_requests` on availability pins |
 | **Pro membership (apply)** | Pro/agency/shop onboarding | HTTP `/me/pro-application`; collection `host_applications` (target `pro_applications`) |
 | **Buddy connection (friends)** | Mutual link between **member accounts**; accept also creates **mutual follow** (`user_follows`, no separate follow notification) | `BuddySummaryDTO.userId` = other person’s user id (no “buddy id”) |
 | **`actorUserId` (notifications)** | Who triggered the action | Always a **user** id — see `DOMAIN_CANONICALS.md` §11 |

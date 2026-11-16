@@ -112,7 +112,7 @@ export const clearComposeWizardSessionForRoute = (route: ExploreCompose | null):
     clearHostingWizardSession(flowId);
     return;
   }
-  if (route.intent === 'seek') {
+  if (route.intent === 'availability') {
     clearSeekingWizardSession(flowId);
     return;
   }

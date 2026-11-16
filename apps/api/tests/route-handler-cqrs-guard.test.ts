@@ -140,7 +140,6 @@ describe('route handler CQRS guard (MIG-CQRS-ROUTES)', () => {
       'apps/api/src/routes/user/registerPublicTenantRoutes.ts',
       'apps/api/src/routes/user/registerNotificationRoutes.ts',
       'apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts',
-      'apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts',
       'apps/api/src/routes/user/registerMeGoalsRoutes.ts',
       'apps/api/src/routes/user/registerMeAvailabilityRoutes.ts',
       'apps/api/src/routes/user/registerMeEngagementRoutes.ts',
@@ -221,11 +220,10 @@ describe('route handler CQRS guard (MIG-CQRS-ROUTES)', () => {
     expect(listStoreImports('apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts')).toEqual([]);
   });
 
-  it('participant intent registrar delegates to me read + command services', () => {
-    const registrar = readRegistrar('apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts');
-    expect(registrar).toMatch(/participant-intent-me-read/);
-    expect(registrar).toMatch(/participant-intent-me-commands/);
-    expect(listStoreImports('apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts')).toEqual([]);
+  it('member availability registrar delegates to me-availability commands (MIG-DISCO-REG)', () => {
+    const registrar = readRegistrar('apps/api/src/routes/user/registerMeAvailabilityRoutes.ts');
+    expect(registrar).toMatch(/me-availability-commands/);
+    expect(listStoreImports('apps/api/src/routes/user/registerMeAvailabilityRoutes.ts')).toEqual([]);
   });
 
   it('me goals registrar wires me-goals read + commands', () => {

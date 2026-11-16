@@ -11,6 +11,7 @@ export const parseCrewsAvailableOpenLens = (raw: string | null): CrewsAvailableO
 export const serializeCrewsAvailableOpenLens = (lens: CrewsAvailableOpenLens): string | null =>
   lens === 'all' ? null : lens;
 
+/** Legacy deep link — migrated to `?compose=seek:flexible` via `ListDiscoveryExperience`. */
 export const CREWS_AVAILABILITY_SHEET_PARAM = 'availability';
 
 export const parseCrewsAvailabilitySheetOpen = (raw: string | null): boolean => raw === '1';

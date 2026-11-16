@@ -37,10 +37,9 @@ const BANNED_CALLS: Array<{ pattern: RegExp; hint: string }> = [
   },
   { pattern: /\bapi\.(getHostRequests|decideHostRequest|getHostTeam)\b/, hint: 'Use getPublishingActivityJoinRequests / getOrganisationTeam' },
   { pattern: /\bapi\.(getMyHostStatus|getMyHostApplication|submitHostApplication)\b/, hint: 'Use getMyOrganisation* / submitOrganisationApplication' },
-  { pattern: /\bapi\.fulfillParticipantIntent\b/, hint: 'Use api.linkSeekingPostToActivity (demand poster)' },
   {
-    pattern: /\bapi\.(listMyParticipantIntents|createParticipantIntent|listParticipantIntentJoinRequests|updateParticipantIntent|cancelParticipantIntent|linkParticipantIntentToActivity)\s*\(/,
-    hint: 'Use seekingApi / seekingClientApi (MIG-COH-01)',
+    pattern: /\bapi\.(listMySeekingPosts|listMyParticipantIntents|createParticipantIntent|fulfillParticipantIntent|listParticipantIntentJoinRequests|updateParticipantIntent|cancelParticipantIntent|linkParticipantIntentToActivity|linkSeekingPostToActivity)\s*\(/,
+    hint: 'Use availabilityApi + memberAvailabilityApi (MIG-DISCO-REG)',
   },
   { pattern: /\bapi\.reportContent\b/, hint: 'Use safetyApi.submitContentReport or api.submitContentReport' },
   { pattern: /\bsocialApi\b/, hint: 'Use buddiesApi, groupsApi, wishlistApi, entityFollowApi, or reviewsApi' },

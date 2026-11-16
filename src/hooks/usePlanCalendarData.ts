@@ -5,7 +5,6 @@ import { useConsoleHubData } from '../console/useHubData';
 import { useMemberAvailability } from './useMemberAvailability';
 import { useMyActivityJoinRequests } from './useMyActivityJoinRequests';
 import { useMyJoinedActivities } from './useMyJoinedActivities';
-import { useMySeekingPosts } from './useMySeekingPosts';
 import {
   buildPlanCalendarMaps,
   filterPlanCalendarByCommitment,
@@ -13,12 +12,8 @@ import {
   type PlanCalendarDayMarkers,
 } from '../plan/planCalendarMarkers';
 import type { PlanCommitmentFilter } from '../plan/planTab';
-import {
-  planHostedActivityManagePath,
-  planSelfDemandManagePath,
-} from '../plan/planRouting';
-import { activityDetailPath } from '../config/routingCatalog';
-import { partitionParticipantIntentsForPlanHub } from '../member-plan/participantIntentPlan';
+import { planHostedActivityManagePath } from '../plan/planRouting';
+import { PLAN_PATH, activityDetailPath } from '../config/routingCatalog';
 
 type PlanCalendarData = {
   loading: boolean;
@@ -41,15 +36,10 @@ export const usePlanCalendarData = (
 
   const joinedQuery = useMyJoinedActivities(memberEnabled, refreshKey);
   const requestsQuery = useMyActivityJoinRequests(memberEnabled, refreshKey);
-  const intentsQuery = useMySeekingPosts(memberEnabled, refreshKey);
 
   const hostedActivities = useMemo(
     () => (canHost ? ((host.activities ?? []) as ActivityDTO[]) : []),
     [canHost, host.activities]
-  );
-  const activeSeeking = useMemo(
-    () => partitionParticipantIntentsForPlanHub(intentsQuery.intents).upcoming,
-    [intentsQuery.intents]
   );
 
   const { markers, details } = useMemo(() => {
@@ -58,10 +48,9 @@ export const usePlanCalendarData = (
       joinedActivities: joinedQuery.activities,
       joinRequests: requestsQuery.requests,
       hostedActivities,
-      seekingIntents: activeSeeking,
       viewerUserId: user?.id ?? null,
       activityHref: activityDetailPath,
-      seekingIntentHref: planSelfDemandManagePath,
+      fixedAvailabilityManageHref: () => PLAN_PATH,
       hostingManageHref: (activityId) => planHostedActivityManagePath(activityId),
     });
     return filterPlanCalendarByCommitment(built.markers, built.details, filter);
@@ -70,22 +59,20 @@ export const usePlanCalendarData = (
     joinedQuery.activities,
     requestsQuery.requests,
     hostedActivities,
-    activeSeeking,
     user?.id,
     filter,
   ]);
 
-  const memberLoading = joinedQuery.loading || requestsQuery.loading || intentsQuery.loading;
-  const memberError = joinedQuery.error ?? requestsQuery.error ?? intentsQuery.error;
+  const memberLoading = joinedQuery.loading || requestsQuery.loading;
+  const memberError = joinedQuery.error ?? requestsQuery.error;
   const loading = enabled && (availability.loading || memberLoading || (canHost && host.loading));
-  const error = memberError ?? availability.error ?? null;
+  const error = availability.error ?? memberError ?? (canHost ? host.error : null);
 
   const reload = () => {
     void availability.reload();
-    if (canHost) void host.reload();
     void joinedQuery.refetch();
     void requestsQuery.refetch();
-    void intentsQuery.refetch();
+    if (canHost) void host.reload();
   };
 
   return { loading, error, markers, details, reload };

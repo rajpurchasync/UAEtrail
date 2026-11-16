@@ -6,7 +6,6 @@ export { exploreApi } from './explore';
 export { geoHierarchyApi } from './geoHierarchy';
 export { weatherApi } from './weather';
 export { platformAlertsApi, sendReferralClickBeacon } from './platformAlerts';
-export { seekingApi } from './seeking';
 export { badgesApi } from './badges';
 export { goalsApi } from './goals';
 export { availabilityApi } from './availability';

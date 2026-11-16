@@ -34,7 +34,7 @@ import {
   type SeekingKind,
 } from './seekingFlowEngine';
 import type { LocationPrecision } from './createFlowShared';
-import { seekFixedCompose, type SeekingComposeKind } from '../compose';
+import { availabilityFixedCompose, type SeekingComposeKind } from '../compose';
 import { areaIdForExploreAreaSlug } from '../exploreAreaFilter';
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
 import { composeFlowIdFromRoute } from '../composeFlowCatalog';
@@ -136,7 +136,7 @@ export const CreateSeekingFlow = ({
 
   const seekingFlowId = useMemo(
     () =>
-      seekKind ? composeFlowIdFromRoute(seekFixedCompose(seekKind)) : null,
+      seekKind ? composeFlowIdFromRoute(availabilityFixedCompose(seekKind)) : null,
     [seekKind]
   );
   const seekingInitKey = seekingFlowId ?? null;
@@ -366,14 +366,22 @@ export const CreateSeekingFlow = ({
             }}
             onBack={goBack}
             onClose={requestClose}
-            onConfirm={() => {
+            onConfirm={(confirmLat, confirmLng) => {
               if (isToStep) {
-                patchDraft({ toPinPlaced: true });
-          } else {
-            patchDraft({ fromPinPlaced: true });
+                patchDraft({
+                  toLatitude: confirmLat,
+                  toLongitude: confirmLng,
+                  toPinPlaced: true,
+                });
+              } else {
+                patchDraft({
+                  latitude: confirmLat,
+                  longitude: confirmLng,
+                  fromPinPlaced: true,
+                });
               }
-          closeMap();
-                setError(null);
+              closeMap();
+              setError(null);
             }}
           />
   ) : null;

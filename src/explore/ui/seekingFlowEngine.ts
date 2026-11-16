@@ -1,5 +1,6 @@
-import type { ParticipantIntentKind } from '@uaetrail/shared-types';
-import { createSeekingPost } from '../../hooks/seekingClientApi';
+import type { AvailabilityKind, ParticipantIntentKind } from '@uaetrail/shared-types';
+import { availabilityMapItemId } from '@uaetrail/shared-types';
+import { getMyAvailability, putMyAvailability } from '../../hooks/memberAvailabilityApi';
 import {
   validateSeekingCuratedAreaStep,
   validateSeekingPublishArea,
@@ -528,48 +529,67 @@ export const validateSeekingDraft = (draft: SeekingDraft): string | null => {
 
 export type SeekingSubmitResult = {
   visibleOnMap: boolean;
+  /** @deprecated Legacy field — fixed availability uses member_availability only. */
   participantIntentId: string;
   mapItemId: string;
-  /** Published seeking activity id when M0 map row exists. */
+  /** @deprecated Fixed availability is not an activity row. */
   activityId: string | null;
+};
+
+const seekingKindToAvailability = (kind: SeekingKind): AvailabilityKind => {
+  if (kind === 'hiking' || kind === 'camping' || kind === 'rideshare' || kind === 'event') return kind;
+  return 'other';
 };
 
 export const publishSeekingRequest = async (draft: SeekingDraft): Promise<SeekingSubmitResult> => {
   if (!draft.kind) throw new Error('Choose what you are looking for.');
+  if (!draft.fromPinPlaced || draft.latitude == null || draft.longitude == null) {
+    throw new Error('Drop a pin on the map for a fixed availability post.');
+  }
 
-  const comment = buildSeekingComment(draft);
+  const dateIso =
+    draft.kind === 'other' || !draft.date?.trim()
+      ? todayIso()
+      : draft.date.trim().slice(0, 10);
+  const timePart =
+    draft.kind !== 'other' && seekingWhenShowsTime(draft.kind) && draft.timeMode !== 'flexible'
+      ? draft.time?.trim()
+      : null;
+  const startAt = timePart ? `${dateIso}T${timePart}:00.000Z` : `${dateIso}T12:00:00.000Z`;
 
-  const payload = {
-    kind: draft.kind,
+  const existing = await getMyAvailability();
+  const kind = seekingKindToAvailability(draft.kind);
+  const fixedSlot = {
+    scheduleKind: 'fixed' as const,
+    startDate: dateIso,
+    endDate: dateIso,
+    startAt,
+    endAt: startAt,
     title: draft.title.trim(),
-    date: draft.kind === 'other' ? null : draft.date,
-    time:
-      draft.kind === 'other' || !seekingWhenShowsTime(draft.kind) || draft.timeMode === 'flexible'
-        ? null
-        : draft.time,
-    preferredArea: draft.preferredArea.trim() || null,
-    latitude: draft.fromPinPlaced ? draft.latitude : null,
-    longitude: draft.fromPinPlaced ? draft.longitude : null,
-    locationPrecision: draft.fromPinPlaced ? draft.locationPrecision : undefined,
-    toLatitude: draft.toPinPlaced ? draft.toLatitude : null,
-    toLongitude: draft.toPinPlaced ? draft.toLongitude : null,
-    partySize: draft.partySize,
-    comment,
-    ...(draft.areaId?.trim() ? { areaId: draft.areaId.trim() } : {}),
+    latitude: draft.latitude,
+    longitude: draft.longitude,
+    locationPrecision: draft.locationPrecision,
+    timeBand: null,
   };
 
-  const created = await createSeekingPost(payload);
+  const updated = await putMyAvailability({
+    kinds: [...new Set([...existing.kinds, kind])],
+    visibility: existing.visibility === 'hidden' ? 'public' : existing.visibility,
+    region: draft.preferredArea.trim() || existing.region || null,
+    areaId: draft.areaId?.trim() || existing.areaId || null,
+    note: existing.note,
+    slots: [...existing.slots.filter((s) => s.scheduleKind !== 'fixed'), fixedSlot],
+  });
 
-  const publishedActivityId =
-    created.activityId ?? created.seekingActivityId ?? null;
-  if (!publishedActivityId) {
-    throw new Error('Seeking publish did not return a published activity id.');
-  }
+  const savedSlot = updated.slots.find((s) => s.scheduleKind === 'fixed' && s.title === fixedSlot.title);
+  const slotId = savedSlot?.slotId ?? 'fixed';
+  const mapItemId = availabilityMapItemId(updated.userId, slotId);
+
   return {
-    visibleOnMap: payload.latitude != null && payload.longitude != null,
-    participantIntentId: created.id,
-    mapItemId: `activity:${publishedActivityId}`,
-    activityId: publishedActivityId,
+    visibleOnMap: true,
+    participantIntentId: mapItemId,
+    mapItemId,
+    activityId: null,
   };
 };
 

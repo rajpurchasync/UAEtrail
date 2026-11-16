@@ -1,8 +1,4 @@
-import type {
-  MyActivityDTO,
-  MyActivityRequestDTO,
-  ParticipantIntentDTO,
-} from '@uaetrail/shared-types';
+import type { MyActivityDTO, MyActivityRequestDTO } from '@uaetrail/shared-types';
 import type { QueryClient } from '@tanstack/react-query';
 import { api } from '../api/index';
 import { apiRequestConditional } from '../api/client';
@@ -22,11 +18,6 @@ export const fetchJoinedUpcomingPlanData = async (): Promise<{
     activities: activitiesRes.data,
     requests: requestsRes.data as unknown as MyActivityRequestDTO[],
   };
-};
-
-export const fetchMySeekingPosts = async (): Promise<ParticipantIntentDTO[]> => {
-  const res = await api.listMySeekingPosts();
-  return res.data;
 };
 
 export const fetchMyJoinedActivities = async (): Promise<MyActivityDTO[]> => {
@@ -62,17 +53,4 @@ export const invalidateMemberJoinPlanQueries = (queryClient: QueryClient): void 
 export const fetchMyActivityJoinRequests = async (): Promise<ActivityRequestView[]> => {
   const res = await api.getMeRequests();
   return res.data;
-};
-
-export const fetchMemberPlanCalendarSources = async (): Promise<{
-  activities: MyActivityDTO[];
-  requests: ActivityRequestView[];
-  seekingIntents: ParticipantIntentDTO[];
-}> => {
-  const [activities, requests, seekingIntents] = await Promise.all([
-    fetchMyJoinedActivities(),
-    fetchMyActivityJoinRequests(),
-    fetchMySeekingPosts(),
-  ]);
-  return { activities, requests, seekingIntents };
 };

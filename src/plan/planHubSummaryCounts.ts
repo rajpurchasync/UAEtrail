@@ -1,35 +1,36 @@
 import type {
   ActivityDTO,
+  MemberAvailabilitySlotDTO,
   MemberGoalDTO,
   MyActivityDTO,
-  ParticipantIntentDTO,
   WishlistItemDTO,
 } from '@uaetrail/shared-types';
+import { isFixedAvailabilitySlot } from '@uaetrail/shared-types';
 import type { ActivityRequestView } from '../api/types';
-import { partitionParticipantIntentsForPlanHub } from '../member-plan/participantIntentPlan';
 import { buildUpcomingPlanRows } from '../utils/activityHubSections';
 import { aggregateMemberGoals } from '../utils/memberGoalsAggregate';
 
 const todayStart = () => new Date(new Date().toDateString());
 
-/** Upcoming hosted outings + open seeking posts (hosting hub summary). */
+/** Upcoming hosted outings + upcoming fixed availability on the map. */
 export const countHostingUpcomingCommitments = (
   activities: ActivityDTO[],
   _pendingRequests: ActivityRequestView[],
-  intents: ParticipantIntentDTO[]
+  availabilitySlots: MemberAvailabilitySlotDTO[]
 ): number => {
   const today = todayStart();
-  const hostedActivityIds = new Set(activities.map((a) => a.id));
   let count = 0;
   for (const event of activities) {
     if (event.status !== 'published') continue;
+    if (event.activityMode === 'seeking') continue;
     if (new Date(event.date) < today) continue;
     count += 1;
   }
-  const { upcoming } = partitionParticipantIntentsForPlanHub(intents);
-  for (const intent of upcoming) {
-    const activityId = intent.activityId ?? intent.seekingActivityId;
-    if (activityId && hostedActivityIds.has(activityId)) continue;
+  for (const slot of availabilitySlots) {
+    if (!isFixedAvailabilitySlot(slot)) continue;
+    const day = slot.startDate?.slice(0, 10);
+    if (!day) continue;
+    if (new Date(day) < today) continue;
     count += 1;
   }
   return count;

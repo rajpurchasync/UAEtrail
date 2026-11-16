@@ -4,7 +4,7 @@ import { PLAN_PATH } from '../constants';
 import { applyProductSearchMutation } from '../routing/productSearchMutation';
 import { useCreateFlow } from '../create/CreateFlowProvider';
 import { clearPlanAddQuery, parsePlanAddQuery, setPlanAddQuery } from '../create/planAddQuery';
-import { clearExploreComposeParams, seekFlexibleCompose } from '../explore/compose';
+import { availabilityOpenCompose, clearExploreComposeParams } from '../explore/compose';
 import { signInPathForReturn } from '../utils/authReturnContext';
 import { useAuth } from '../context/AuthContext';
 import type { PlanAddOptionId } from './planAdd';
@@ -54,7 +54,7 @@ export const usePlanAddFlow = () => {
         return;
       }
       if (id === 'availability') {
-        compose.handleCreateTap(seekFlexibleCompose());
+        compose.handleCreateTap(availabilityOpenCompose());
         return;
       }
       if (id === 'goal') {

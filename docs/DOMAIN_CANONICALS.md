@@ -24,9 +24,9 @@ There are **five public entity kinds** on the wire (`EntityKind` / `EntityRef`):
 | `shop` | **Shop** (outdoor retail brand — profile only, no SKU catalog) | `merchant_profiles` + SHOP `tenants` | “Merchant”, “Partner” for shops |
 | `person` | **Person** / member | `users` (profile fields) | “User” in consumer copy |
 
-**Find crew** is not a sixth entity kind on URLs — it is a **seeking activity** (`activityMode: seeking`) on the map; deep links use **`exploreSeekingMapItemPath`** (`pin=activity:{id}`). Leftover **`pin=demand:`** is not a product path. Not `/demand/:id`.
+**Find crew** is not a sixth entity kind on URLs — **discover** label only. Fixed time/place posts are **`member_availability`** map items (`source: availability`, `pin=availability:{userId}:{slotId}` → member profile). Legacy **`activityMode: seeking`** rows are retired from the catalog. Not `/demand/:id`.
 
-**Plan** (`/plan`) is the active member tab — **My Plans**: upcoming list or **calendar** (`layout=calendar` — joined, hosting, seeking, your available days), wishlist + goals; **share availability** editor is `?lens=availability` (`planAvailabilityPath()`), not the calendar layout. **Outing history** (`/profile/history`) is profile inventory (past outings, journey map). Wishlist deep links: `planWishlistTabPath()` / `planSavedPath()` (`tab=wishlist`; legacy `lens=saved|goals` normalizes on load). Page module: `src/plan/PlanPage.tsx`. Inbound `/trips` and `/trips/map` redirect via `INBOUND_TRIPS_MAP_PATH` / `resolveInboundTripsHubRedirect` (`inboundTripsRedirect.ts`) — not a domain type. Consumer path helpers: import `config/routingCatalog` (not `member-plan/planHubRouting` directly).
+**Plan** (`/plan`) is the active member tab — **My Plans**: upcoming list or **calendar** (`layout=calendar` — joined, hosting, availability markers), wishlist + goals; **share availability** editor is `?lens=availability` (`planAvailabilityPath()`), not the calendar layout. **Outing history** (`/profile/history`) is profile inventory (past outings, journey map). Wishlist deep links: `planWishlistTabPath()` / `planSavedPath()` (`tab=wishlist`; legacy `lens=saved|goals` normalizes on load). Page module: `src/plan/PlanPage.tsx`. Inbound `/trips` and `/trips/map` redirect via `INBOUND_TRIPS_MAP_PATH` / `resolveInboundTripsHubRedirect` (`inboundTripsRedirect.ts`) — not a domain type. Consumer path helpers: import `config/routingCatalog` (not `member-plan/planHubRouting` directly).
 
 **Campaigns** (future) are not a seventh entity kind — they are **surfaces** that promote Activities and/or link to host storefronts (agencies, partners, shops) in “What’s happening” feeds. See §1.2.
 
@@ -153,6 +153,8 @@ Member **Add** → typically `pending` + `unlisted`; public `/place` or `/facili
 | **Find crew** → fixed | Map seeking post | `seek:fixed:<kind>` |
 | **Find crew** → flexible | Member availability | `seek:flexible` |
 | **Add on map** | Submit **place** or **facility** | `add:place:<kind>` \| `add:facility:<kind>` |
+
+**Availability** (product pillar) = **Find crew** FAB — flexible (share days) + fixed (post on map); wire stays `seek:*`. Detail: [`CREATE_FLOW.md`](./CREATE_FLOW.md) § Product pillars vs compose wire.
 
 **Compose** remains the **query param name** only — not FAB copy ([§1.1](#11-words-that-must-not-be-confused)).
 
@@ -347,12 +349,12 @@ IA detail (pills, topics): [`NAVIGATION.md`](./NAVIGATION.md) · `src/list/`.
 
 | Scope | Prefix | Header | Examples |
 |-------|--------|--------|----------|
-| Public read | `/activities`, `/explore/map`, `/explore/seeking-activities`, `/places` | — | Browse; seeking slice = published `activityMode: seeking` (`explore-seeking-activities-read.ts`) |
-| Member | `/me/*` | Bearer | `seeking-posts`, `status`, profile |
+| Public read | `/activities`, `/explore/map` (`sources=availability` for Looking for), `/places` | — | Browse; crew map slice = `availability-fixed-map-items.ts` |
+| Member | `/me/*` | Bearer | `availability`, `status`, profile |
 | Publishing workspace (tenant scope) | `/publishing/*` | Bearer + `x-organisation-id` | `activities`, **`/publishing/requests`** (activity join queue) |
 | Person public | `/users/:id` | optional | Public profile |
 
-**Kebab-case plurals** on URLs: `seeking-posts`, not `intents` or `demand`.
+**Kebab-case plurals** on URLs: `availability` (crew registry), not `intents` or `demand`.
 
 **Client modules:** `src/api/domains/*.ts` — canonical method names (`getOrganisationProfile`, `getMemberStatus`, `getPublicPlaces`). No retired alias layer on `api` (see `apiClientSurfaceGuard.test.ts`).
 
@@ -458,7 +460,7 @@ When renaming or adding routes:
 | Context | FE module | Canonical calls |
 |---------|-----------|-----------------|
 | Host tier / publish gate | `memberApi` | `getMemberStatus()` |
-| Map / Find | `exploreApi`, `seekingApi` | explore map; `/me/seeking-posts` |
+| Map / Find | `exploreApi`, `availabilityApi` | explore map; `/me/availability` |
 | Buddies / groups / follow | `buddiesApi`, `groupsApi` | `/me/buddies`, `/me/groups`, `/me/following` |
 | Wishlist / entity follow / reviews | `wishlistApi`, `entityFollowApi`, `reviewsApi` | `/me/wishlist`, `/me/entity-follows`, `/reviews` |
 | Tenant console | `organisationApi` | organisation profile, team, join queue |
@@ -489,8 +491,8 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 
 | Product (UI copy) | API / wire | Preferred FE symbol / folder | Do not use for new code |
 |-------------------|------------|------------------------------|-------------------------|
-| **Find** (FAB) | `activities` (`activityMode: seeking`) | `CreateSeekingFlow.tsx`, `seekingFlowEngine.ts`, `seekingWizardSteps.tsx` | `CreateDemandFlow.tsx`, `demandFlow.ts`, `demandWizardSteps.tsx`, “wishlist”, “lookingFor” in filenames |
-| **Seeking pin** (public map) | `activities` (`activityMode: seeking`) | Map item id **`activity:{activityId}`**; DTO `activityMode: 'seeking'`; helpers `exploreMapItemIsSeeking`, `resolveExploreMapActivityMode`. Map/list wire **`source: 'activity'`** + **`activityMode: 'seeking'`**; UI copy uses **`composeIntent: 'seek'`** (not a separate map species). **Publisher = activity host** — map peek uses same host actions as Host (`mapPeekActions`), not a parallel seeking-owner chrome. **Linked transport:** child rideshare via `linkedActivityId` on publish + `linkedRideshareActivityId` on parent — not `POST …/link-activity` (`CREATE_FLOW.md` § Linked transport). | leftover `demand:` pin ids; `item.source === 'demand'`; parallel `participant_intent_requests` writes |
+| **Find crew** (FAB) | `PUT /me/availability` (`member_availability`) | `CreateSeekingFlow.tsx` (rename TBD), `seekingFlowEngine.ts` → availability publish | `CreateDemandFlow.tsx`, `/me/seeking-posts`, new `activityMode: seeking` writes |
+| **Availability pin** (public map) | `member_availability` fixed slot | Map id **`availability:{userId}:{slotId}`**; wire **`source: availability`**; peek **`AvailabilityPeekActions`** (profile + message). Assembler: `discovery-catalog-builder.ts` + `buildAvailabilityFixedMapItems`. | `activityMode: seeking` catalog pins; `demand:` ids; join on peek |
 | **Follow** (venue / host brand / shop alerts) | `entity_follows` | `EntityFollowDTO`, `GET/POST /me/entity-follows` | Wishlist UI, “favorites” |
 | **Follow** (people) | `user_follows` | `MemberFollowControls`, `/me/following/:userId` | Buddies are **friends**; accepting a buddy **auto-follows** both ways |
 | **Wishlist** (private saves) | `user_wishlist` | `WishlistItemDTO`, `GET/POST /me/wishlist` | “Favorite”, demand bookmarks, saving people/shops to wishlist |
@@ -524,7 +526,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 | Shops (merchant / Pro tenant) | `shop:` tenant rows | Yes — **Shops** lens, `catalogProfileExposure: full` → `/shop/…` | Merchant profile + reviews |
 | Individual Pro / tour agencies | `tenants` + `/member/:userId` · `/agency` | **No map pin** — discover via **hosted activities** + person or agency URL (`catalogProfileExposure: full`) | Area hub `#operators` rail = Pro hosts with outings in this area (not tenant lat/lng) |
 | Facilities (toilet, parking, gas, water, viewpoint, picnic, …) | `facilities` collection · `facilityKind` | Yes (`source: facility`, `id: facility:{id}`, coords for navigation) | `facilities` in `areaLensStats`; list on area hub `#places`. Peek still shares Place chrome until a facility peek ships. |
-| Hosted / seeking outings | **Activity** (not a Place) | **Activities** lens (emoji pins) | `hostedActivities` / `seekingPosts` via `item.areaId` on map projection |
+| Hosted outings · Find crew (fixed) | **Activity** · **`member_availability`** | **Activities** lens · **`source: availability`** pins | Legacy `activityMode: seeking` on map |
 
 **Assignment rules (write path — do not invert):**
 
@@ -533,7 +535,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 | **Area** | Admin `/admin/areas` | Curated **name** + optional center/bounds as camera hint for the hub page — **no explore map pin**. Geography labels (country, state, region) come from the map, not from Area. |
 | **Place** | Admin `/admin/places` or member **Add** (`curatedArea` then pin) | **`locations.areaId` required** on submit (`POST /me/locations`, host `/locations`) |
 | **Hosted activity** | Host publish | **No `activity.areaId` on write.** `activity.locationId` → catalog **place** with **`place.areaId`**. `validateHostingPlaceArea` / publish gate. Meeting / going-from pin does **not** define area. |
-| **Seeking activity** | Find FAB | **`activities.areaId`** (`activityMode: seeking`) + map pin; synthetic seeking **place** carries same **`areaId`**. |
+| **Find crew (fixed map slot)** | Find FAB | **`member_availability`** slot with time/place; optional **`areaId`** on slot — not an activity row. |
 | **Availability** | Plan / profile | Member picks **`areaId`** (optional region fallback) — not an activity. |
 
 **Explore map lenses (orthogonal to tagging):**
@@ -573,6 +575,19 @@ Wire: `publishingProfileKind` on `ActivityDTO`; paths via `resolveActivityPublis
 **Code anchors:** `packages/shared-types/src/place-kind.ts` · `apps/api/src/lib/explore-map-area-lens.ts` · `apps/api/src/lib/explore-map.ts` (`attachExploreItemArea`) · `src/explore/hostingPublishArea.ts` · `GET /areas/:slug` preview · [`DOMAIN.md`](./DOMAIN.md) § Geography.
 
 **Known read-path gap (do not confuse with write contract):** legacy or tenant-only shop pins may lack `areaId` on the explore payload until linked/backfilled; **new** catalog places and gated publishes must have **`place.areaId`**.
+
+#### 12.1.2 Geo tree drill (spatial hub — alongside curated Area)
+
+| Layer | Storage | Consumer URL | Role |
+|-------|---------|--------------|------|
+| Country → state → area → **destination** (`geo_nodes` L4 `kind: venue`) | `geoRef` on map pins | **`/geo/n/:id`** (`GeoHubView`) | Rollup browse: places, outings, facilities under the node |
+| Curated **Area guide** | `areas` | **`/area/:slug`** | Editorial hub — parallel to geo area, not a replacement |
+| Catalog **place** row | `locations` | **`/place/:id`** | Shareable entity; hub rows may group children via `parentPlaceId` |
+| Event outdoor site | `locations` (`event`) | **`/venue/:id`** | Not the same as geo L4 **venue** (destination name in `geoRef`) |
+
+**L2 list/peek location tail:** `resolveDiscoveryBrowseGeoHubPath` — tap **geo L4** when `geoRef.venueId` is set, else **curated area** when `areaSlug` is set. Full breadcrumbs stay on hub + detail pages, not on thumbnails.
+
+**Canonical hub browse:** `/geo/n/{venueNodeId}` for destination marketing; deep links remain `/activity/:id`, `/place/:id`, `/facility/:id`.
 
 ---
 

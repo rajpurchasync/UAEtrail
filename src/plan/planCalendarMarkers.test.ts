@@ -2,9 +2,20 @@ import { describe, expect, it } from 'vitest';
 import { buildPlanCalendarMaps, filterPlanCalendarByCommitment } from './planCalendarMarkers';
 
 describe('buildPlanCalendarMaps', () => {
-  it('marks availability, hosting, joined, and seeking (no map discovery)', () => {
+  it('marks availability, hosting, joined, and fixed map slots (no legacy seeking posts)', () => {
     const { markers, details } = buildPlanCalendarMaps({
-      availabilitySlots: [{ startDate: '2026-10-15', endDate: '2026-10-15' }],
+      availabilitySlots: [
+        { startDate: '2026-10-15', endDate: '2026-10-15' },
+        {
+          scheduleKind: 'fixed',
+          startDate: '2026-10-18',
+          endDate: '2026-10-18',
+          title: 'Hatta crew',
+          slotId: 'slot-1',
+          latitude: 25.1,
+          longitude: 55.2,
+        },
+      ],
       joinedActivities: [
         {
           id: 'a-join',
@@ -28,17 +39,9 @@ describe('buildPlanCalendarMaps', () => {
           hostId: 'me',
         } as never,
       ],
-      seekingIntents: [
-        {
-          id: 'int-1',
-          title: 'Hatta crew',
-          status: 'active',
-          date: '2026-10-18',
-        } as never,
-      ],
       viewerUserId: 'me',
       activityHref: (id) => `/activity/${id}`,
-      seekingIntentHref: (id) => `/plan?peek=${id}`,
+      fixedAvailabilityManageHref: () => '/plan',
       hostingManageHref: (id) => `/plan?peek=${id}`,
     });
 
@@ -49,6 +52,8 @@ describe('buildPlanCalendarMaps', () => {
     expect(details.get('2026-10-15')?.some((d) => d.kind === 'available')).toBe(true);
     const joinedRow = details.get('2026-10-16')?.find((d) => d.kind === 'joined');
     expect(joinedRow).toMatchObject({ activityId: 'a-join', title: 'Sunrise hike' });
+    const crewRow = details.get('2026-10-18')?.find((d) => d.kind === 'seeking');
+    expect(crewRow).toMatchObject({ title: 'Hatta crew', slotId: 'slot-1' });
   });
 
   it('filterPlanCalendarByCommitment scopes hosting vs joined', () => {
@@ -73,10 +78,9 @@ describe('buildPlanCalendarMaps', () => {
           hostUserId: 'me',
         } as never,
       ],
-      seekingIntents: [],
       viewerUserId: 'me',
       activityHref: (id) => `/activity/${id}`,
-      seekingIntentHref: (id) => `/plan?peek=${id}`,
+      fixedAvailabilityManageHref: () => '/plan',
       hostingManageHref: (id) => `/plan?peek=${id}`,
     });
 

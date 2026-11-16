@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { applyProductSearchMutation } from '../routing/productSearchMutation';
-import type { ActivityDTO, ParticipantIntentDTO } from '@uaetrail/shared-types';
+import type { ActivityDTO } from '@uaetrail/shared-types';
 import { activityCrewPath } from '../config/routingCatalog';
 
 export const planHostingDeepLinkId = (searchParams: URLSearchParams): string | null =>
@@ -15,7 +15,6 @@ type UsePlanHostingManageDeepLinkInput = {
   enabled: boolean;
   activities: ActivityDTO[];
   activitiesLoading: boolean;
-  intents: ParticipantIntentDTO[];
 };
 
 /** Opens the edit sheet from `peek`. `roster` and `checkin` open the crew page. */
@@ -23,14 +22,12 @@ export const usePlanHostingManageDeepLink = ({
   enabled,
   activities,
   activitiesLoading,
-  intents,
 }: UsePlanHostingManageDeepLinkInput) => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const planSearchKey = searchParams.toString();
   const [manageActivity, setManageActivity] = useState<ActivityDTO | null>(null);
-  const [manageIntent, setManageIntent] = useState<ParticipantIntentDTO | null>(null);
   const openedDeepLinkRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -62,12 +59,6 @@ export const usePlanHostingManageDeepLink = ({
     if (activity) {
       openedDeepLinkRef.current = openId;
       setManageActivity(activity);
-    } else {
-      const intent = intents.find((entry) => entry.id === openId);
-      if (intent) {
-        openedDeepLinkRef.current = openId;
-        setManageIntent(intent);
-      }
     }
 
     applyProductSearchMutation({ pathname, navigate, setSearchParams }, (params) => {
@@ -75,12 +66,10 @@ export const usePlanHostingManageDeepLink = ({
       params.delete('checkin');
       params.delete('roster');
     });
-  }, [activities, activitiesLoading, enabled, intents, navigate, pathname, planSearchKey, setSearchParams]);
+  }, [activities, activitiesLoading, enabled, navigate, pathname, planSearchKey, setSearchParams]);
 
   return {
     manageActivity,
     setManageActivity,
-    manageIntent,
-    setManageIntent,
   };
 };

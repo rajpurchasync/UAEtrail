@@ -45,6 +45,28 @@ export const seekingExploreMapItem = (
   });
 };
 
+/** Fixed crew availability pin (`member_availability` on explore catalog). */
+export const availabilityExploreMapItem = (
+  partial: Partial<ExploreMapItemDTO> & { userId?: string; slotId?: string } = {}
+): ExploreMapItemDTO => {
+  const userId = partial.userId ?? 'user-1';
+  const slotId = partial.slotId ?? 'slot-1';
+  const id = partial.id ?? `availability:${userId}:${slotId}`;
+  return base({
+    id,
+    kind: 'hiking',
+    source: 'availability',
+    path: `/member/${userId}?lens=available`,
+    featuredPerson: {
+      userId,
+      name: 'Sam',
+      avatarUrl: null,
+      role: 'host',
+    },
+    ...partial,
+  });
+};
+
 export const venueExploreMapItem = (
   partial: Partial<ExploreMapItemDTO> & { id?: string } = {}
 ): ExploreMapItemDTO =>

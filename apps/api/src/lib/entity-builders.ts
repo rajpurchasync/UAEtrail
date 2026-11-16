@@ -404,6 +404,9 @@ export const buildDetailRevampSnapshotFromLegacy = (input: {
 };
 
 export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: string): MongoActivityDoc => {
+  if (data.activityMode === 'seeking') {
+    throw new Error('activity_mode_seeking_retired');
+  }
   const now = new Date();
   const requirements = asStringArray(data.requirements);
   const priorItineraryLines = asStringArray(data.itinerary);

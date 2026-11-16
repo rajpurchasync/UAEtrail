@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { PlaceKind } from '@uaetrail/shared-types';
 import { useNavigate } from 'react-router-dom';
 import { facilityDetailPath } from '@uaetrail/shared-types';
 import { useAuth } from '../../context/AuthContext';
@@ -120,6 +121,19 @@ export const CreateAddFacilityFlow = ({
   const patchDraft = useCallback((patch: Partial<FacilityAddDraft>) => {
     setDraft((prev) => ({ ...prev, ...patch }));
   }, []);
+
+  const selectFacilityKind = useCallback(
+    (facilityKind: PlaceKind) => {
+      setError(null);
+      patchDraft({ facilityKind });
+      if (step !== 'facilityType') return;
+      const idx = flowSteps.indexOf('facilityType');
+      if (idx >= 0 && idx < flowSteps.length - 1) {
+        setStep(flowSteps[idx + 1]);
+      }
+    },
+    [flowSteps, patchDraft, step]
+  );
 
   useEffect(() => {
     const placeId = facilityOnPlaceId?.trim();
@@ -250,9 +264,11 @@ export const CreateAddFacilityFlow = ({
         }}
         onBack={goBack}
         onClose={requestClose}
-        onConfirm={() => {
-          const inferred = inferEmirateFromPin(draft.latitude, draft.longitude, publishedAreas);
+        onConfirm={(confirmLat, confirmLng) => {
+          const inferred = inferEmirateFromPin(confirmLat, confirmLng, publishedAreas);
           patchDraft({
+            latitude: confirmLat,
+            longitude: confirmLng,
             locationPinPlaced: true,
             emirate: draft.countryCode === 'AE' ? inferred ?? draft.emirate : draft.emirate,
           });
@@ -287,6 +303,7 @@ export const CreateAddFacilityFlow = ({
           void handleSubmit();
         },
         openLocationMap: () => mapSession.openMap(COMPOSE_MAP_INTENTS.addFacilityLocation),
+        selectFacilityKind,
       } satisfies FacilityAddWizardContext)}
     </ComposeWizardShell>
   );

@@ -16,6 +16,7 @@ import {
   activityJoinIsFull,
   buildDiscoveryCardPresentation,
   canonicalizeMapComposeIntent,
+  exploreMapItemIsAvailabilityCatalog,
   exploreMapItemIsSeeking,
   isGeographyMapSource,
   isPeekOnlyCatalogProfile,
@@ -114,6 +115,8 @@ export interface DiscoveryCardModel {
   areaSlug?: string | null;
   areaName?: string | null;
   areaLensStats?: ExploreAreaLensStatsDTO | null;
+  /** Denormalised geo tree — map/list filters and L2 location links. */
+  geoRef?: import('@uaetrail/shared-types').GeoRef | null;
 }
 
 const resolveCoverImage = (item: ExploreMapItemDTO): string | null =>
@@ -170,7 +173,9 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
   const toLabel = item.toLabel ?? activity?.startPoint ?? activity?.locationName ?? null;
   const routeLabel = presentation.routeLabel ?? buildExploreRouteLabel(fromLabel, toLabel, kind);
   const seeking = exploreMapItemIsSeeking(item);
-  const whenSuffix = seeking ? 'flexible' : kind === 'rideshare' ? 'fixed' : null;
+  const availability = exploreMapItemIsAvailabilityCatalog(item);
+  const whenSuffix =
+    seeking && !availability ? 'flexible' : kind === 'rideshare' || availability ? 'fixed' : null;
   const whenLabel =
     presentation.whenLabel ??
     buildExploreWhenSegment(
@@ -217,8 +222,9 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
     primaryCta: presentation.primaryCta,
     secondaryCta: presentation.secondaryCta,
     showJoinActions:
-      (source === 'activity' && Boolean(activity)) ||
-      (seeking && Boolean(item.requesterUserId)),
+      !availability &&
+      ((source === 'activity' && Boolean(activity)) ||
+        (seeking && Boolean(item.requesterUserId))),
     websiteUrl: item.websiteUrl ?? null,
     contactPhone: item.contactPhone ?? null,
     shareTitle: headline,
@@ -282,6 +288,7 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
       ? [...new Set(item.locationCard.amenityLabels.map((l) => l.trim()).filter(Boolean))]
       : undefined,
     requirementBadges: [
+      ...(availability ? ['Available'] : []),
       ...(exploreMapItemIsSeeking(item) ? ['Seeking'] : []),
       ...enrichExploreActivityRequirementBadges(activity?.requirements, {
         kind: kind === 'area' ? 'event' : kind,
@@ -304,6 +311,7 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
     areaSlug: item.areaSlug ?? null,
     areaName: item.areaName ?? null,
     areaLensStats: item.areaLensStats ?? null,
+    geoRef: item.geoRef ?? item.activity?.geoRef ?? item.locationCard?.geoRef ?? null,
     linkedRideshares:
       item.linkedRideshareActivities && item.linkedRideshareActivities.length > 0
         ? item.linkedRideshareActivities

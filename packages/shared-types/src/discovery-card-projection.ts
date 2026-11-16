@@ -1,4 +1,4 @@
-import { exploreMapItemIsSeeking } from './explore-activity-mode.js';
+import { exploreMapItemIsAvailabilityCatalog, exploreMapItemIsSeeking } from './explore-activity-mode.js';
 import { buildDiscoveryCardPresentation, isGeographyMapSource } from './explore-presentation.js';
 import type { DiscoveryCardKind, DiscoveryCardSource } from './explore-presentation.js';
 import type { DiscoveryCardPresentationDTO } from './explore-presentation.js';
@@ -70,6 +70,11 @@ export const resolveDiscoveryCardEntityRef = (item: DiscoveryMapItemWire): Disco
     const locationId = item.locationCard?.id ?? item.activity?.locationId;
     if (locationId) return { kind: 'place', locationId };
   }
+  if (exploreMapItemIsAvailabilityCatalog(item)) {
+    const userId =
+      item.featuredPerson?.userId ?? item.requesterUserId ?? item.activity?.hostUserId ?? null;
+    if (userId) return { kind: 'person', userId };
+  }
   if (exploreMapItemIsSeeking(item) || item.source === 'activity') {
     const activityId = item.activity?.id ?? null;
     if (activityId) return { kind: 'activity', activityId };
@@ -96,6 +101,7 @@ export const buildDiscoveryCardProjectionFromMapItem = (
 ): DiscoveryCardProjection => {
   const presentation = item.presentation ?? buildDiscoveryCardPresentation(item);
   const seeking = exploreMapItemIsSeeking(item);
+  const availability = exploreMapItemIsAvailabilityCatalog(item);
   const sharePath =
     options.sharePath ??
     (item.activity?.joinMode === 'private' && item.activity.id
@@ -104,7 +110,7 @@ export const buildDiscoveryCardProjectionFromMapItem = (
 
   const requirementChips =
     options.requirementChips ??
-    (seeking ? ['Seeking'] : item.activity?.requirements?.slice(0, 4) ?? []);
+    (availability ? ['Available'] : seeking ? ['Seeking'] : item.activity?.requirements?.slice(0, 4) ?? []);
 
   return {
     entityRef: resolveDiscoveryCardEntityRef(item),

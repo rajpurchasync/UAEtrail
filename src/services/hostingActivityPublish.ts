@@ -6,7 +6,6 @@ import {
 } from '@uaetrail/shared-types';
 import { fetchPublishedAreas } from '../hooks/areaHubClientApi';
 import { createActivity, publishActivity, updateActivity } from '../hooks/tenantActivityClientApi';
-import { linkSeekingPostToActivity } from '../hooks/seekingClientApi';
 import { submitMemberPlace } from '../hooks/memberCatalogSubmitClientApi';
 import { HOME_HERO_OG_PATH } from '../config/seo';
 import { subdivisionNoun } from '../config/regions';
@@ -344,11 +343,10 @@ export const publishHostingActivity = async (input: {
   draft: CreateActivityDraft;
   tenantId: string;
   userId: string;
-  participantIntentId?: string | null;
   sourceActivityId?: string | null;
   linkToParentActivityId?: string | null;
 }): Promise<ActivityDTO> => {
-  const { draft, tenantId, userId, participantIntentId, sourceActivityId, linkToParentActivityId } = input;
+  const { draft, tenantId, userId, sourceActivityId, linkToParentActivityId } = input;
   if (!draft.kind) throw new Error('Choose an activity type.');
   const structured = isStructuredHostingFlow(draft.kind, draft.genericBuddy);
   const event = isEventHostingFlow(draft.kind, draft.genericBuddy);
@@ -399,11 +397,6 @@ export const publishHostingActivity = async (input: {
     activityHasPendingVenuePlace(payload.requirements);
   if (!pendingPlaceDestination && !pendingVenue) {
     await publishActivity(tenantId, created.id);
-  }
-
-  // Graduate find crew onto a new hosted outing only — never when publishing a transport child.
-  if (participantIntentId && draft.kind !== 'rideshare') {
-    await linkSeekingPostToActivity(participantIntentId, created.id);
   }
 
   if (parentLinkId && draft.kind === 'rideshare') {

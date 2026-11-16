@@ -9,7 +9,6 @@ const ALLOWLIST = new Set([
   'src/member-plan/planHubRouting.ts',
   'src/member-plan/resolveInboundPlanHubPath.ts',
   'src/member-plan/resolvePlanHubView.ts',
-  'src/member-plan/participantIntentPlan.ts',
   'src/config/inboundBookmarkPaths.ts',
   'src/config/surfacePaths.ts',
   'src/App.tsx',

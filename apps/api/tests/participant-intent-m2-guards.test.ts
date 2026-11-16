@@ -7,14 +7,14 @@ const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 describe('participant intent M2 guards', () => {
   it('explore map does not merge legacy participant_intents pins', () => {
     const exploreMap = read('src/lib/explore-map.ts');
-    const exploreMapBase = read('src/lib/explore-map-base.ts');
+    const exploreMapBase = read('src/lib/discovery-catalog-builder.ts');
     expect(exploreMap).not.toMatch(/listActiveParticipantIntentsForMap\(/);
     expect(exploreMapBase).not.toMatch(/listActiveParticipantIntentsForMap\(/);
   });
 
   it('legacy demand map-pin flag module is gone (seeking uses activity: rows)', () => {
     expect(existsSync(join(process.cwd(), 'src/lib/explore-map-demand-pins.ts'))).toBe(false);
-    const exploreMapBase = read('src/lib/explore-map-base.ts');
+    const exploreMapBase = read('src/lib/discovery-catalog-builder.ts');
     expect(exploreMapBase).not.toMatch(/EXPLORE_MAP_DEMAND_PINS/);
     expect(exploreMapBase).not.toMatch(/source:\s*'demand'/);
   });
@@ -57,10 +57,15 @@ describe('participant intent M2 guards', () => {
     expect(readthrough).toMatch(/activityDocToParticipantIntentDto/);
   });
 
-  it('HTTP registrar exposes /me/seeking-posts only (no participant-intents alias)', () => {
-    const registrar = read('src/routes/user/registerMeParticipantIntentRoutes.ts');
-    expect(registrar).toMatch(/\/me\/seeking-posts/);
-    expect(registrar).not.toMatch(/\/me\/participant-intents/);
-    expect(registrar).toMatch(/registerMeSeekingPostRoutes/);
+  it('user router does not mount /me/seeking-posts (MIG-DISCO-REG)', () => {
+    const composer = read('src/routes/user/composeUserMemberRoutes.ts');
+    expect(composer).not.toMatch(/registerMeSeekingPostRoutes|registerMeParticipantIntentRoutes/);
+    expect(composer).toMatch(/registerMeAvailabilityRoutes/);
+  });
+
+  it('participant-intent HTTP registrar module removed', () => {
+    expect(existsSync(join(process.cwd(), 'src/routes/user/registerMeParticipantIntentRoutes.ts'))).toBe(
+      false
+    );
   });
 });

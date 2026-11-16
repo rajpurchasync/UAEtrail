@@ -28,17 +28,20 @@ export const resolveExploreMapCreateFabHints = (input: {
   return undefined;
 };
 
-/** FAB tap — skip level-1 “I would like to…” where the tab context is known. */
+/**
+ * Tab FAB entry — maps to product pillar menu (`host` · `add` · `availability` wire).
+ * Trips → Host · Venues → Add · Crews → Availability (Find a Crew).
+ */
 export const resolveCreateFabComposeEntry = (
   pathname: string,
   search: string,
   hints?: BrowseListCreateFabHints
 ): ExploreCompose => {
-  if (hints?.isPeopleCategory) return { surface: 'menu', intent: 'seek' };
+  if (hints?.isPeopleCategory) return { surface: 'menu', intent: 'availability' };
   if (hints?.explorerBucket === 'places') return { surface: 'menu', intent: 'add' };
 
   const tab = resolveMobileFiveTab(pathname, search);
   if (tab === 'venues') return { surface: 'menu', intent: 'add' };
-  if (tab === 'crews') return { surface: 'menu', intent: 'seek' };
+  if (tab === 'crews') return { surface: 'menu', intent: 'availability' };
   return { surface: 'menu', intent: 'host' };
 };

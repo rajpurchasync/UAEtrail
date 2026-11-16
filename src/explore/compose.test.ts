@@ -1,8 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import {
+  availabilityFixedCompose,
+  availabilityOpenCompose,
   clearExploreComposeParams,
   formatComposeQuery,
+  isAvailabilityFixedWizard,
+  isAvailabilityOpenWizard,
+  isComposeWizardRoute,
+  isSeekFixedWizard,
+  isSeekFlexibleWizard,
   parseExploreCompose,
+  seekFixedCompose,
   setExploreComposeParam,
 } from './compose';
 
@@ -11,10 +19,10 @@ describe('explore compose routing', () => {
     expect(formatComposeQuery({ surface: 'menu' })).toBe('1');
     expect(formatComposeQuery({ surface: 'menu', intent: 'host' })).toBe('host');
     expect(formatComposeQuery({ intent: 'host', kind: 'hiking' })).toBe('host:hiking');
-    expect(formatComposeQuery({ intent: 'seek', mode: 'fixed', kind: 'rideshare' })).toBe(
-      'seek:fixed:rideshare'
+    expect(formatComposeQuery({ intent: 'availability', mode: 'fixed', kind: 'rideshare' })).toBe(
+      'availability:fixed:rideshare'
     );
-    expect(formatComposeQuery({ intent: 'seek', mode: 'flexible' })).toBe('seek:flexible');
+    expect(formatComposeQuery({ intent: 'availability', mode: 'open' })).toBe('availability:open');
     expect(formatComposeQuery({ intent: 'add', target: 'place', kind: 'hiking' })).toBe(
       'add:place:hiking'
     );
@@ -26,8 +34,8 @@ describe('explore compose routing', () => {
       intent: 'host',
       kind: 'hiking',
     });
-    expect(parseExploreCompose(new URLSearchParams('compose=seek:fixed:camping'))).toEqual({
-      intent: 'seek',
+    expect(parseExploreCompose(new URLSearchParams('compose=availability:fixed:camping'))).toEqual({
+      intent: 'availability',
       mode: 'fixed',
       kind: 'camping',
     });
@@ -85,5 +93,46 @@ describe('explore compose routing', () => {
 
     clearExploreComposeParams(params);
     expect(params.toString()).toBe('');
+  });
+
+  it('availability compose builders are canonical; seek names alias wire', () => {
+    const fixed = availabilityFixedCompose('hiking');
+    expect(seekFixedCompose('hiking')).toEqual(fixed);
+    expect(formatComposeQuery(fixed)).toBe('availability:fixed:hiking');
+    expect(formatComposeQuery(availabilityOpenCompose())).toBe('availability:open');
+  });
+
+  it('legacy seek wire normalizes to availability on parse', () => {
+    expect(parseExploreCompose(new URLSearchParams('compose=seek:fixed:camping'))).toEqual({
+      intent: 'availability',
+      mode: 'fixed',
+      kind: 'camping',
+    });
+    expect(parseExploreCompose(new URLSearchParams('compose=seek:flexible'))).toEqual({
+      intent: 'availability',
+      mode: 'open',
+    });
+  });
+
+  it('seek wire predicates alias availability implementations', () => {
+    const fixed = {
+      intent: 'availability' as const,
+      mode: 'fixed' as const,
+      kind: 'hiking' as const,
+    };
+    const open = { intent: 'availability' as const, mode: 'open' as const };
+    expect(isSeekFixedWizard(fixed)).toBe(isAvailabilityFixedWizard(fixed));
+    expect(isSeekFlexibleWizard(open)).toBe(isAvailabilityOpenWizard(open));
+  });
+
+  it('isComposeWizardRoute covers host, add, and availability wizards', () => {
+    expect(isComposeWizardRoute(null)).toBe(false);
+    expect(isComposeWizardRoute({ surface: 'menu', intent: 'host' })).toBe(false);
+    expect(isComposeWizardRoute({ intent: 'host', kind: 'hiking' })).toBe(true);
+    expect(isComposeWizardRoute({ intent: 'add', target: 'place', kind: 'hiking' })).toBe(true);
+    expect(isComposeWizardRoute({ intent: 'availability', mode: 'fixed', kind: 'camping' })).toBe(
+      true
+    );
+    expect(isComposeWizardRoute({ intent: 'availability', mode: 'open' })).toBe(true);
   });
 });

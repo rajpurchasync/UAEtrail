@@ -1,4 +1,4 @@
-import type { AreaPublicDTO } from '@uaetrail/shared-types';
+import type { AreaPublicDTO, PlaceKind } from '@uaetrail/shared-types';
 import type { FacilityAddDraft, FacilityAddStepId } from '../addFacilityFlow';
 
 export type FacilityAddWizardContext = {
@@ -14,4 +14,5 @@ export type FacilityAddWizardContext = {
   requestClose: () => void;
   handleSubmit: () => void;
   openLocationMap: () => void;
+  selectFacilityKind: (kind: PlaceKind) => void;
 };

@@ -7,7 +7,7 @@ const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
 
 describe('explore map place + facility wire (COH-02)', () => {
   it('map builder emits place and facility sources (not venue / catalog_place)', () => {
-    const base = read('apps/api/src/lib/explore-map-base.ts');
+    const base = read('apps/api/src/lib/discovery-catalog-builder.ts');
     expect(base).toMatch(/PLACE_MAP_SOURCE/);
     expect(base).toMatch(/FACILITY_MAP_SOURCE/);
     expect(base).not.toMatch(/source: 'venue'/);

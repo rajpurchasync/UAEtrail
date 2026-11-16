@@ -129,12 +129,13 @@ describe('listBrowseNamingGuard', () => {
     );
   });
 
-  it('BROWSE-NAME-11: browse thumbs compose media via DiscoveryBrowseThumbnailPoster', () => {
+  it('BROWSE-NAME-11: browse thumbs compose media via DiscoveryBrowseCardHero (wraps thumbnail poster)', () => {
     for (const file of ['src/list/browse/TripBrowseCard.tsx', 'src/list/browse/VenueBrowseCard.tsx']) {
       const source = read(file);
-      expect(source).toMatch(/DiscoveryBrowseThumbnailPoster/);
+      expect(source).toMatch(/DiscoveryBrowseCardHero/);
       expect(source).not.toMatch(/DiscoveryBrowsePosterBanner/);
     }
+    expect(read('src/discovery/browse/DiscoveryBrowseCardHero.tsx')).toMatch(/DiscoveryBrowseThumbnailPoster/);
     expect(read('src/discovery/DiscoveryBrowseThumbnailPoster.tsx')).toMatch(
       /DiscoveryBrowsePosterBanner/
     );
@@ -146,12 +147,24 @@ describe('listBrowseNamingGuard', () => {
       'src/list/browse/VenueBrowseCard.tsx',
     ]) {
       const source = read(file);
-      expect(source).toMatch(/discovery\/DiscoveryBrowseThumbnailPoster/);
+      expect(source).toMatch(/discovery\/browse\/DiscoveryBrowseCardHero/);
       expect(source).not.toMatch(/list\/explorer\/DiscoveryBrowsePosterBanner/);
     }
     const peek = read('src/explore/ui/map-peek/MapPeekShell.tsx');
     expect(peek).toMatch(/discovery\/DiscoveryBrowsePosterBanner/);
     expect(peek).not.toMatch(/list\/explorer\/DiscoveryBrowsePosterBanner/);
+  });
+
+  it('BROWSE-NAME-16: shared L2 browse frame lives under src/discovery/browse', () => {
+    expect(existsSync(join(process.cwd(), 'src/discovery/browse/DiscoveryBrowseCardHero.tsx'))).toBe(true);
+    const trip = read('src/list/browse/TripBrowseCard.tsx');
+    expect(trip).toMatch(/discovery\/browse\/DiscoveryBrowseCardHero/);
+    expect(trip).toMatch(/discovery\/browse\/DiscoveryBrowseCardMetaSlot/);
+    const venue = read('src/list/browse/VenueBrowseCard.tsx');
+    expect(venue).toMatch(/discovery\/browse\/DiscoveryBrowseCardHero/);
+    expect(read('src/discovery/browse/resolveDiscoveryBrowseGeoLink.ts')).toMatch(
+      /resolveDiscoveryBrowseGeoHubPath/
+    );
   });
 
   it('BROWSE-NAME-12: discovery engagement footers own browse list + map wire render', () => {

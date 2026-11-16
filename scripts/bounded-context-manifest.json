@@ -8,6 +8,7 @@
       "apiFiles": [
         "apps/api/src/lib/explore-map.ts",
         "apps/api/src/lib/explore-map-base.ts",
+        "apps/api/src/lib/discovery-catalog-builder.ts",
         "apps/api/src/lib/explore-map-bbox.ts",
         "apps/api/src/lib/explore-map-route.ts",
         "apps/api/src/lib/explore-map-viewer-access.ts",
@@ -16,7 +17,7 @@
         "apps/api/src/services/explore-map-overlay-read.ts",
         "apps/api/src/lib/explore-map-list-projection.ts",
         "apps/api/src/lib/activity-engagement-policy-input.ts",
-        "apps/api/src/services/explore-seeking-activities-read.ts"
+        "apps/api/src/lib/availability-fixed-map-items.ts"
       ],
       "routeRegistrars": [
         "apps/api/src/routes/user/registerPublicActivityRoutes.ts",
@@ -40,10 +41,10 @@
       "label": "Compose",
       "apiFiles": ["apps/api/src/services/member-publish-gate.ts"],
       "routeRegistrars": [
-        "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts",
+        "apps/api/src/routes/user/registerMeAvailabilityRoutes.ts",
         "apps/api/src/routes/publishing.ts"
       ],
-      "feDomains": ["src/api/domains/explore.ts", "src/api/domains/seeking.ts"],
+      "feDomains": ["src/api/domains/explore.ts", "src/api/domains/availability.ts"],
       "feRoots": ["src/explore/ui", "src/explore/create"]
     },
     {
@@ -61,13 +62,12 @@
       "routeRegistrars": [
         "apps/api/src/routes/user/registerPublicActivityRoutes.ts",
         "apps/api/src/routes/publishing/registerPublishingActivityRequestRoutes.ts",
-        "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts",
         "apps/api/src/routes/user/registerActivityJoinInviteRoutes.ts"
       ],
       "feDomains": [
         "src/api/domains/activities.ts",
         "src/api/domains/explore.ts",
-        "src/api/domains/seeking.ts"
+        "src/api/domains/availability.ts"
       ],
       "feRoots": [
         "src/plan/PlanTodayPage.tsx",

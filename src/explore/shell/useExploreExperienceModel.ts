@@ -38,6 +38,7 @@ import {
   resolveCreateFabComposeEntry,
   resolveExploreMapCreateFabHints,
 } from '../create/composeFabEntry';
+import { availabilityFlexibleCompose } from '../compose';
 
 /** Explore map + browse + compose + selection orchestration (R2). */
 export const useExploreExperienceModel = () => {
@@ -48,7 +49,6 @@ export const useExploreExperienceModel = () => {
     profileComplete,
     isCommunityHost,
     hostTiers,
-    loading: hostGateLoading,
     tenantId,
     refresh: refreshHostGate,
   } = useMemberStatus({
@@ -134,13 +134,6 @@ export const useExploreExperienceModel = () => {
   const hostingFrom = useHostingFromActivity({
     user,
     tenantId,
-    hostGateLoading,
-    canPublish,
-    profileComplete,
-    isCommunityHost,
-    hostTiers,
-    navigate,
-    pathname,
     searchParams,
     setSearchParams,
     setComposeRoute: compose.setComposeRoute,
@@ -155,10 +148,7 @@ export const useExploreExperienceModel = () => {
     searchParams,
     setSearchParams,
     user,
-    hostGateLoading,
-    canPublish,
     navigate,
-    navigateMemberPublishGate,
     compose,
     hostingFrom,
     selected,
@@ -200,6 +190,10 @@ export const useExploreExperienceModel = () => {
     clearSelection();
     compose.handleCreateTap(resolveCreateFabComposeEntry(pathname, fabSearch, createFabHints));
   }, [clearSelection, compose, pathname, fabSearch, createFabHints]);
+
+  const handleOpenMarkAvailability = useCallback(() => {
+    compose.handleCreateTap(availabilityFlexibleCompose());
+  }, [compose]);
 
   const planWithBuddyUserId = parsePlanWithUserId(searchParams);
   const [joinInvitePeekActivityId, setJoinInvitePeekActivityId] = useState<string | null>(null);
@@ -314,6 +308,7 @@ export const useExploreExperienceModel = () => {
       mapLoading,
       onOpenExploreActivity: openExploreActivityFromRef,
       onOpenSeekingActivity: selection.openItem,
+      onOpenMarkAvailability: handleOpenMarkAvailability,
       searchFocusNonce,
     });
 
@@ -364,7 +359,6 @@ export const useExploreExperienceModel = () => {
   useExploreCreateFlowBridge({
     registerBridge,
     hostingWizardPrefill: hostingLauncher.hostingWizardPrefill,
-    hostWizardOpen: hostingLauncher.hostWizardOpen,
     closeCreateFlow: hostingLauncher.closeCreateFlow,
     onHostingBackToIntent: hostingLauncher.onHostingBackToIntent,
     rideshareLinkParent: hostingLauncher.rideshareLinkParent,
@@ -415,7 +409,6 @@ export const useExploreExperienceModel = () => {
     handleCreateLinkedRideshare: hostingLauncher.handleCreateLinkedRideshare,
     primaryFabLabel,
     handlePrimaryFabTap,
-    hostWizardOpen: hostingLauncher.hostWizardOpen,
     hostingWizardPrefill: hostingLauncher.hostingWizardPrefill,
     onHostingBackToIntent: hostingLauncher.onHostingBackToIntent,
     planWithBuddyUserId,

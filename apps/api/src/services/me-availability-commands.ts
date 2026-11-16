@@ -1,4 +1,5 @@
 import type { AvailabilityKind } from '@uaetrail/shared-types';
+import { scheduleExploreMapCacheInvalidation } from '../lib/explore-map-cache-schedule.js';
 import { upsertMemberAvailability } from '../lib/member-availability-store.js';
 import { notifyMemberOfHostedActivitiesForAvailability } from './availability-hosted-match-notifications.js';
 
@@ -20,6 +21,7 @@ export const upsertMyMemberAvailability = async (
   input: UpsertMyMemberAvailabilityInput
 ) => {
   const data = await upsertMemberAvailability(userId, input);
+  scheduleExploreMapCacheInvalidation('member_availability:upsert');
   void notifyMemberOfHostedActivitiesForAvailability({
     userId,
     availability: data,

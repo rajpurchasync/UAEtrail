@@ -127,11 +127,14 @@ describe('member surfaces §11 acceptance (automated)', () => {
 
   it('G-seek: explore map build does not merge legacy demand pins into payload', () => {
     const exploreMap = read('apps/api/src/lib/explore-map.ts');
-    const exploreMapBase = read('apps/api/src/lib/explore-map-base.ts');
+    const catalog = read('apps/api/src/lib/discovery-catalog-builder.ts');
+    const shim = read('apps/api/src/lib/explore-map-base.ts');
     expect(exploreMap).not.toMatch(/listActiveParticipantIntentsForMap\(/);
-    expect(exploreMapBase).not.toMatch(/listActiveParticipantIntentsForMap\(/);
-    expect(exploreMapBase).toMatch(/source: 'activity',\s*\n\s*activityMode,/);
-    expect(exploreMapBase).not.toMatch(/activityMode === 'seeking' \? 'demand'/);
+    expect(catalog).not.toMatch(/listActiveParticipantIntentsForMap\(/);
+    expect(catalog).toMatch(/activityMode === 'seeking'\) continue/);
+    expect(catalog).toMatch(/buildAvailabilityFixedMapItems/);
+    expect(shim).toMatch(/discovery-catalog-builder/);
+    expect(catalog).not.toMatch(/activityMode === 'seeking' \? 'demand'/);
   });
 
   it('G-seek: publish fan-out prefers activity pin when seeking id exists', () => {
@@ -259,9 +262,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(upcoming).not.toContain('PlanHostingManageProvider');
     const sheets = read('src/components/plan/PlanHostingManageSheets.tsx');
     expect(sheets).toContain('ActivityManageSheet');
-    const seeking = read('src/hosting/HostingSeekingPostsSection.tsx');
-    expect(seeking).toContain('usePlanHostingManage');
-    expect(seeking).not.toMatch(/\/host\/requests|HOST_REQUESTS_PATH/);
+    expect(read('src/hosting/HostingHubView.tsx')).not.toMatch(/HostingSeekingPostsSection/);
     const sheet = read('src/components/activity/ActivityManageSheet.tsx');
     expect(sheet).toContain('decideActivityJoinRequest');
     expect(sheet).toContain('planHostedActivityManagePath');
@@ -340,7 +341,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(plan).toMatch(/PLAN_ADD_FAB_LABEL/);
     expect(plan).toMatch(/PlanAddIntentSheet/);
     expect(add).toMatch(/handleCreateTap\(\{ surface: 'menu', intent: 'host' \}\)/);
-    expect(add).toMatch(/seekFlexibleCompose/);
+    expect(add).toMatch(/availabilityOpenCompose/);
     expect(plan).not.toMatch(/explorePath\(\{ compose/);
     expect(plan).not.toMatch(/CreateHostingActivityFlow|HostingFlowHost/);
   });

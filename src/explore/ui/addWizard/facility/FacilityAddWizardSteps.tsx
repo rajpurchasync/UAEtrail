@@ -29,6 +29,7 @@ export function renderFacilityAddWizardSteps(ctx: FacilityAddWizardContext): Rea
     requestClose,
     handleSubmit,
     openLocationMap,
+    selectFacilityKind,
   } = ctx;
 
   return (
@@ -56,7 +57,7 @@ export function renderFacilityAddWizardSteps(ctx: FacilityAddWizardContext): Rea
               <button
                 key={option.kind}
                 type="button"
-                onClick={() => patchDraft({ facilityKind: option.kind })}
+                onClick={() => selectFacilityKind(option.kind)}
                 className={exploreFlowKindTileClass(draft.facilityKind === option.kind)}
               >
                 <span className="text-xl font-emoji" aria-hidden>

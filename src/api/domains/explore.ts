@@ -41,7 +41,4 @@ export const exploreApi = {
     );
   },
 
-  /** Published seeking outings — public catalog for people **Looking for**. */
-  getExploreSeekingActivities: () =>
-    apiRequest<{ data: ExploreMapItemDTO[] }>('/explore/seeking-activities'),
 } as const;

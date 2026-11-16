@@ -60,6 +60,9 @@ describe('resolveTripBrowseCardCopy', () => {
     );
     const copy = resolveTripBrowseCardCopy(card);
     expect(copy.title).toBe('Shawka sunrise hike');
+    expect(copy.metaLine).toMatch(/Wadi Shawka/);
+    expect(copy.metaLine).toMatch(/20 Nov/);
+    expect(copy.visibleFactLabels).toHaveLength(3);
     expect(copy.locationLine).toBe('Wadi Shawka');
     expect(copy.whenLine).toMatch(/20 Nov/);
     expect(copy.whenLine).toMatch(/9:00 AM/);

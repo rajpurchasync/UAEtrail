@@ -25,9 +25,8 @@ describe('hostingSurfaceNamingGuard', () => {
     expect(read('src/plan/PlanPage.tsx')).toMatch(/HOSTING_HUB_PATH/);
   });
 
-  it('HOST-NAMING-03: seeking posts section is hosting-scoped', () => {
-    const seeking = read('src/hosting/HostingSeekingPostsSection.tsx');
-    expect(seeking).toContain('HostingSeekingPostsSection');
-    expect(read('src/hosting/HostingHubView.tsx')).toContain('HostingSeekingPostsSection');
+  it('HOST-NAMING-03: hosting hub does not mount legacy seeking-posts strip (MIG-DISCO-REG)', () => {
+    const hub = read('src/hosting/HostingHubView.tsx');
+    expect(hub).not.toMatch(/HostingSeekingPostsSection|useMySeekingPosts/);
   });
 });

@@ -49,6 +49,7 @@ import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { ExploreActivityDatePreset } from '../explore/exploreActivityDateFilter';
 import { resolveBrowseListCreateFabLabel } from './browseListCopy';
 import { resolveCreateFabComposeEntry } from '../explore/create/composeFabEntry';
+import { availabilityFlexibleCompose } from '../explore/compose';
 
 type ListDiscoveryExperienceProps = {
   surface: ListDiscoverySurface;
@@ -146,11 +147,23 @@ export const ListDiscoveryExperience = ({
     );
   }, [compose, location.pathname, location.search, createFabContext]);
 
+  const handleOpenMarkAvailability = useCallback(() => {
+    compose.handleCreateTap(availabilityFlexibleCompose());
+  }, [compose]);
+
+  const availabilityLegacyMigratedRef = useRef(false);
+  useEffect(() => {
+    if (!availabilitySheetOpen || availabilityLegacyMigratedRef.current) return;
+    availabilityLegacyMigratedRef.current = true;
+    syncUrl({ availabilitySheet: false });
+    compose.handleCreateTap(availabilityFlexibleCompose());
+  }, [availabilitySheetOpen, compose, syncUrl]);
+
   useEffect(() => {
     if (embeddedOnExplore) return undefined;
     registerBridge({
       onActivityPublished: () => void reloadFeed(),
-      onSeekingSubmitted: () => void reloadFeed(),
+      onAvailabilityFixedSubmitted: () => void reloadFeed(),
       onAddSubmitted: () => void reloadFeed(),
     });
     return () => registerBridge(null);
@@ -454,8 +467,7 @@ export const ListDiscoveryExperience = ({
             onPeopleBrowseTabChange={(tab) => syncUrl({ buddiesSegment: tab, crewsOpen: null })}
             crewsOpenLens={crewsOpenLens}
             onCrewsOpenLensChange={(lens) => syncUrl({ crewsOpen: lens })}
-            availabilitySheetOpen={availabilitySheetOpen}
-            onAvailabilitySheetOpenChange={(open) => syncUrl({ availabilitySheet: open })}
+            onOpenMarkAvailability={handleOpenMarkAvailability}
             isSignedIn={Boolean(user)}
             filterCount={filterCount}
             statCounts={crewsStatCounts}
@@ -472,7 +484,6 @@ export const ListDiscoveryExperience = ({
             discoveryQuota={memberRoster.quota}
             discoveryLoading={memberRoster.loading}
             discoveryError={memberRoster.error}
-            exploreAreaSlug={areaSlug}
           />
         )
       ) : (

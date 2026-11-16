@@ -178,9 +178,8 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
             if (serializedOpen) params.set(CREWS_OPEN_URL_PARAM, serializedOpen);
             else params.delete(CREWS_OPEN_URL_PARAM);
           }
-          if (patch.availabilitySheet !== undefined) {
-            if (patch.availabilitySheet) params.set(CREWS_AVAILABILITY_SHEET_PARAM, '1');
-            else params.delete(CREWS_AVAILABILITY_SHEET_PARAM);
+          if (patch.availabilitySheet === false) {
+            params.delete(CREWS_AVAILABILITY_SHEET_PARAM);
           }
           if (mapOverlay) {
             preserved.forEach((value, key) => {

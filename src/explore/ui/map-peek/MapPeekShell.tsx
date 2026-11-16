@@ -18,6 +18,8 @@ import {
 } from '../DiscoveryCardPresentation';
 import { ActivityDiscoveryPublishedBody } from '../../../discovery/ActivityDiscoveryPublishedBody';
 import { DiscoveryBrowsePosterBanner } from '../../../discovery/DiscoveryBrowsePosterBanner';
+import { DiscoveryBrowseCardMetaSlot } from '../../../discovery/browse/DiscoveryBrowseCardMetaSlot';
+import { resolveTripBrowseCardCopy } from '../../../list/browse/tripBrowseCardCopy';
 import { MapPeekBrowseTitle } from './MapPeekBrowseTitle';
 import { PlacePeekBody } from '../peek/place/PlacePeekBody';
 import { PlacePeekHero } from '../peek/place/PlacePeekHero';
@@ -89,6 +91,9 @@ export const MapPeekShell = ({
       <ExploreFollowButton card={card} />
     ) : null;
 
+  const activityBrowseCopy =
+    browseBannerPeek && card.source === 'activity' ? resolveTripBrowseCardCopy(card) : null;
+
   const peekHeaderActions = (
     <>
       {onShareActivity ? (
@@ -144,7 +149,9 @@ export const MapPeekShell = ({
       {browseBannerPeek ? (
         <DiscoveryBrowsePosterBanner
           card={card}
-          imageHeightClass="h-[7.75rem] w-full shrink-0 sm:h-32"
+          imageHeightClass="aspect-[3/2] w-full shrink-0"
+          showOverlayMeta={false}
+          hideHostBand
           leadingActions={peekLeadingActions}
           headerActions={peekHeaderActions}
           onGuestGatedAction={onGuestGatedAction}
@@ -252,14 +259,23 @@ export const MapPeekShell = ({
         ) : (
           <>
             {browseBannerPeek ? (
-              <MapPeekBrowseTitle
-                card={card}
-                detailAccess={titleDetailAccess}
-                onGuestGatedDetail={onGuestGatedAction}
-                onBeforeDetailNavigate={onClose}
-                detailLinkState={detailLinkState}
-                joinStateLoading={joinStateLoading}
-              />
+              <>
+                <MapPeekBrowseTitle
+                  card={card}
+                  detailAccess={titleDetailAccess}
+                  onGuestGatedDetail={onGuestGatedAction}
+                  onBeforeDetailNavigate={onClose}
+                  detailLinkState={detailLinkState}
+                  joinStateLoading={joinStateLoading}
+                />
+                {activityBrowseCopy?.metaLine ? (
+                  <DiscoveryBrowseCardMetaSlot
+                    line={activityBrowseCopy.metaLine}
+                    href={activityBrowseCopy.metaHref}
+                    mode="peek"
+                  />
+                ) : null}
+              </>
             ) : (
               <DiscoveryCardHeadline
                 sections={card.sections}

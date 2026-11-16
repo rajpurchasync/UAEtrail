@@ -1,4 +1,4 @@
-import { exploreMapItemIsSeeking, type ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { exploreMapItemIsAvailabilityCatalog, type ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { sortExploreActivities } from '../../explore/exploreListSort';
 import {
   matchesActivityDateFilter,
@@ -13,7 +13,7 @@ import {
   matchesBuddyMapFilter,
 } from '../../explore/ui/exploreMapPinModel';
 
-/** Filters for published `activityMode: seeking` rows from `GET /explore/map`. */
+/** Filters for fixed availability catalog rows from `GET /explore/map`. */
 export type ExploreSeekingCatalogFilters = {
   mapFilter: MapFilterKey;
   buddySubtype: ExploreBuddySubtypeKey;
@@ -27,8 +27,8 @@ export type ExploreSeekingCatalogFilters = {
 };
 
 /**
- * Published seeking activities from the explore catalog (`ExploreMapItemDTO[]`).
- * Same entities as map pins and Activities list (`activityMode: seeking`).
+ * Fixed crew availability from the explore catalog (`ExploreMapItemDTO[]`).
+ * Same entities as map pins (`source: availability`).
  */
 export const selectSeekingActivitiesFromExploreCatalog = (
   exploreCatalogItems: ExploreMapItemDTO[],
@@ -39,7 +39,7 @@ export const selectSeekingActivitiesFromExploreCatalog = (
   return sortExploreActivities(
     exploreCatalogItems
       .filter(isBuddyMapItem)
-      .filter(exploreMapItemIsSeeking)
+      .filter(exploreMapItemIsAvailabilityCatalog)
       .filter((item) =>
         matchesBuddyMapFilter(item, filters.mapFilter, filters.buddySubtype, filters.outingTopic)
       )

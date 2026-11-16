@@ -20,7 +20,6 @@ const DISCOVERY_READ_MODEL_PREFIXES = [
   'lib/explore-person',
   'lib/member-routes',
   'services/explore-map-overlay-read',
-  'services/explore-seeking-activities-read',
   'services/member-discovery',
   'services/member-entitlements',
   'services/activity-viewer-access',

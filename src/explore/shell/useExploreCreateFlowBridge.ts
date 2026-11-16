@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import type { CreateFlowBridge } from '../../create/CreateFlowProvider';
 import type { HostingWizardPrefill } from '../ui/hostingWizardPrefill';
@@ -8,7 +8,6 @@ import type { SeekingSubmitResult } from '../ui/seekingFlow';
 type UseExploreCreateFlowBridgeArgs = {
   registerBridge: (next: CreateFlowBridge | null) => void;
   hostingWizardPrefill: HostingWizardPrefill | null | undefined;
-  hostWizardOpen: boolean;
   closeCreateFlow: () => void;
   onHostingBackToIntent: () => void;
   rideshareLinkParent: ActivityDTO | null;
@@ -30,7 +29,6 @@ type UseExploreCreateFlowBridgeArgs = {
 export const useExploreCreateFlowBridge = ({
   registerBridge,
   hostingWizardPrefill,
-  hostWizardOpen,
   closeCreateFlow,
   onHostingBackToIntent,
   rideshareLinkParent,
@@ -47,38 +45,7 @@ export const useExploreCreateFlowBridge = ({
   tenantId,
   refreshHostGate,
 }: UseExploreCreateFlowBridgeArgs): void => {
-  useEffect(() => {
-    registerBridge({
-      hostingWizardPrefill,
-      hostWizardOpen,
-      onCloseCreateFlow: closeCreateFlow,
-      onHostingBackToIntent,
-      onActivityPublished: async (activity) => {
-        await handleActivityPublished(activity);
-        if (rideshareLinkParent && activity.activityType === 'rideshare') {
-          setRideshareLinkParent(null);
-        }
-        if (rideshareLinkSeeking && activity.activityType === 'rideshare') {
-          setRideshareLinkSeeking(null);
-        }
-        void refreshHostGate();
-      },
-      onCreateLinkedRideshare: handleCreateLinkedRideshare,
-      onSeekingSubmitted: (result) => {
-        handleSeekingSubmitted(result);
-        void refreshHostGate();
-      },
-      onAddSubmitted: handleAddSubmitted,
-      planWithBuddyUserId,
-      composeAreaSlug,
-      facilityOnPlaceId,
-      tenantId,
-    });
-    return () => registerBridge(null);
-  }, [
-    registerBridge,
-    hostingWizardPrefill,
-    hostWizardOpen,
+  const handlersRef = useRef({
     closeCreateFlow,
     onHostingBackToIntent,
     rideshareLinkParent,
@@ -89,10 +56,56 @@ export const useExploreCreateFlowBridge = ({
     handleActivityPublished,
     handleSeekingSubmitted,
     handleAddSubmitted,
+    refreshHostGate,
+  });
+  handlersRef.current = {
+    closeCreateFlow,
+    onHostingBackToIntent,
+    rideshareLinkParent,
+    rideshareLinkSeeking,
+    setRideshareLinkParent,
+    setRideshareLinkSeeking,
+    handleCreateLinkedRideshare,
+    handleActivityPublished,
+    handleSeekingSubmitted,
+    handleAddSubmitted,
+    refreshHostGate,
+  };
+
+  useEffect(() => {
+    registerBridge({
+      hostingWizardPrefill,
+      onCloseCreateFlow: () => handlersRef.current.closeCreateFlow(),
+      onHostingBackToIntent: () => handlersRef.current.onHostingBackToIntent(),
+      onActivityPublished: async (activity) => {
+        const handlers = handlersRef.current;
+        await handlers.handleActivityPublished(activity);
+        if (handlers.rideshareLinkParent && activity.activityType === 'rideshare') {
+          handlers.setRideshareLinkParent(null);
+        }
+        if (handlers.rideshareLinkSeeking && activity.activityType === 'rideshare') {
+          handlers.setRideshareLinkSeeking(null);
+        }
+        void handlers.refreshHostGate();
+      },
+      onCreateLinkedRideshare: (parent) => handlersRef.current.handleCreateLinkedRideshare?.(parent),
+      onAvailabilityFixedSubmitted: (result) => {
+        handlersRef.current.handleSeekingSubmitted(result);
+        void handlersRef.current.refreshHostGate();
+      },
+      onAddSubmitted: (result) => handlersRef.current.handleAddSubmitted(result),
+      planWithBuddyUserId,
+      composeAreaSlug,
+      facilityOnPlaceId,
+      tenantId,
+    });
+    return () => registerBridge(null);
+  }, [
+    registerBridge,
+    hostingWizardPrefill,
     planWithBuddyUserId,
     composeAreaSlug,
     facilityOnPlaceId,
     tenantId,
-    refreshHostGate,
   ]);
 };

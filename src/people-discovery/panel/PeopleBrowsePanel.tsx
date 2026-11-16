@@ -56,6 +56,8 @@ export interface PeopleBrowsePanelProps {
   exploreCatalogItems: ExploreMapItemDTO[];
   exploreCatalogLoading: boolean;
   onOpenSeekingActivity: (item: ExploreMapItemDTO) => void;
+  /** Share availability — opens compose `seek:flexible` on the current surface. */
+  onOpenMarkAvailability?: () => void;
   buddyUserIds?: Set<string>;
 }
 
@@ -91,6 +93,7 @@ export const PeopleBrowsePanel = ({
   exploreCatalogItems,
   exploreCatalogLoading,
   onOpenSeekingActivity,
+  onOpenMarkAvailability,
   buddyUserIds,
 }: PeopleBrowsePanelProps) => {
   const mobileSheetPad = !isDesktop && mobileSheetChrome && !embedded;
@@ -184,6 +187,7 @@ export const PeopleBrowsePanel = ({
           discoveryQuota={discoveryQuota}
           discoveryLoading={discoveryLoading}
           discoveryError={discoveryError}
+          onOpenAvailability={onOpenMarkAvailability}
         />
       </div>
     </div>

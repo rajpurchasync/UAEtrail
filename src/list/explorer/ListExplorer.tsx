@@ -174,7 +174,7 @@ const ThumbnailSkeleton = ({ compactThumbGrid = false }: { compactThumbGrid?: bo
   <div className={thumbGridClass(compactThumbGrid)} aria-hidden>
     {Array.from({ length: 4 }, (_, index) => (
       <div key={index} className="overflow-hidden rounded-xl bg-neutral-200">
-        <div className="aspect-[5/2] w-full animate-pulse bg-neutral-300/80" />
+        <div className="aspect-[3/2] w-full animate-pulse bg-neutral-300/80" />
         <div className="space-y-1 p-2">
           <div className="h-2.5 w-4/5 animate-pulse rounded bg-neutral-300/80" />
           <div className="h-3 w-full animate-pulse rounded bg-neutral-300/70" />

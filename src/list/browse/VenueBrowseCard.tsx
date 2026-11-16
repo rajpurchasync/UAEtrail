@@ -1,4 +1,4 @@
-import { CalendarDays, MapPin, Star } from 'lucide-react';
+import { Star } from 'lucide-react';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { DirectionsControl } from '../../components/ui/DirectionsControl';
 import { EXPLORE_TYPE } from '../../config/exploreTheme';
@@ -9,14 +9,17 @@ import {
   LIST_FEED_CTA_WISHLIST_SAVED,
 } from '../listFeedCtaCopy';
 import { resolveVenueBrowseCardCopy, type VenueBrowseCardRating } from './venueBrowseCardCopy';
-import { DiscoveryBrowseThumbnailPoster } from '../../discovery/DiscoveryBrowseThumbnailPoster';
 import { BrowseItemLink } from './BrowseItemLink';
 import {
-  BROWSE_CARD_CHIP,
+  BROWSE_CARD_BODY,
   BROWSE_CARD_FOOTER,
   BROWSE_CARD_PRIMARY_CTA,
   BROWSE_CARD_SHELL,
 } from './browseCardChrome';
+import { DiscoveryBrowseCardHero } from '../../discovery/browse/DiscoveryBrowseCardHero';
+import { DiscoveryBrowseCardMetaSlot } from '../../discovery/browse/DiscoveryBrowseCardMetaSlot';
+import { DiscoveryBrowseCardChipRow } from '../../discovery/browse/DiscoveryBrowseCardChipRow';
+import { DiscoveryBrowseCardScheduleRow } from '../../discovery/browse/DiscoveryBrowseCardScheduleRow';
 
 type VenueBrowseCardProps = {
   card: DiscoveryCardModel;
@@ -38,7 +41,6 @@ const TitleRating = ({ rating }: { rating: VenueBrowseCardRating }) => (
 export const VenueBrowseCard = ({ card, onMapHover }: VenueBrowseCardProps) => {
   const listing = resolveVenueBrowseCardCopy(card);
   const emitHover = (id: string | null) => onMapHover?.(id);
-  const tripHref = listing.scheduleHint ? listing.schedulePath : null;
 
   return (
     <article
@@ -46,83 +48,50 @@ export const VenueBrowseCard = ({ card, onMapHover }: VenueBrowseCardProps) => {
       onMouseEnter={() => emitHover(card.id)}
       onMouseLeave={() => emitHover(null)}
     >
-      <div className="relative">
-        <BrowseItemLink
-          to={card.path}
-          exploreItemId={card.id}
-          onMapHover={onMapHover}
-          className="group block"
-        >
-          <DiscoveryBrowseThumbnailPoster
-            card={card}
-            overlayContent={
-              listing.locationLine || listing.scheduleHint ? (
-                <div className="min-w-0">
-                  {listing.locationLine ? (
-                    <p className="flex min-w-0 items-center gap-1 text-[11px] font-semibold leading-tight text-white [text-shadow:0_1px_2px_rgba(0,0,0,.45)]">
-                      <MapPin className="h-3 w-3 shrink-0 text-emerald-300" aria-hidden />
-                      <span className="min-w-0 truncate">
-                        {listing.regionLabel && listing.hubLabel ? (
-                          <>
-                            {listing.regionLabel}
-                            <span className="text-white/70"> · </span>
-                            {listing.hubLabel}
-                          </>
-                        ) : (
-                          listing.locationLine
-                        )}
-                      </span>
-                    </p>
-                  ) : null}
-                  {listing.scheduleHint ? <div className="mt-0.5 h-5" aria-hidden /> : null}
-                </div>
-              ) : null
-            }
-          />
-        </BrowseItemLink>
-        {listing.scheduleHint ? (
-          tripHref ? (
-            <BrowseItemLink
-              to={tripHref}
-              exploreItemId={listing.scheduleExploreItemId}
-              onMapHover={onMapHover}
-              className="absolute bottom-2 left-2.5 z-20 inline-flex max-w-[calc(100%-1.25rem)] items-center gap-1 rounded-md bg-emerald-700/95 px-1.5 py-0.5 text-[11px] font-semibold text-white shadow-sm ring-1 ring-white/15"
-            >
-              <CalendarDays className="h-3 w-3 shrink-0" aria-hidden />
-              <span className="min-w-0 truncate">{listing.scheduleHint}</span>
-            </BrowseItemLink>
-          ) : (
-            <p className="absolute bottom-2 left-2.5 z-10 flex max-w-[calc(100%-1.25rem)] items-center gap-1 text-[11px] font-semibold text-emerald-200 [text-shadow:0_1px_2px_rgba(0,0,0,.45)]">
-              <CalendarDays className="h-3 w-3 shrink-0" aria-hidden />
-              <span className="min-w-0 truncate">{listing.scheduleHint}</span>
-            </p>
-          )
-        ) : null}
-      </div>
       <BrowseItemLink
         to={card.path}
         exploreItemId={card.id}
         onMapHover={onMapHover}
-        className="group flex min-w-0 flex-1 flex-col"
+        className="group block"
       >
-        <div className="flex flex-1 flex-col gap-1.5 px-3 pb-2 pt-2.5">
-          <div className="flex min-w-0 items-start gap-2">
-            <h3 className={`min-w-0 flex-1 line-clamp-2 text-[15px] font-bold leading-snug ${EXPLORE_TYPE.title}`}>
-              {listing.title}
-            </h3>
-            {listing.rating ? <TitleRating rating={listing.rating} /> : null}
-          </div>
-          {listing.factLabels.length > 0 ? (
-            <ul className="flex flex-wrap gap-1">
-              {listing.factLabels.map((label) => (
-                <li key={label} className={BROWSE_CARD_CHIP}>
-                  {label}
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </div>
+        <DiscoveryBrowseCardHero card={card} />
       </BrowseItemLink>
+      <div className={BROWSE_CARD_BODY}>
+        <BrowseItemLink
+          to={card.path}
+          exploreItemId={card.id}
+          onMapHover={onMapHover}
+          className="group flex min-w-0 items-start gap-2"
+        >
+          <h3 className={`min-w-0 flex-1 line-clamp-2 text-[15px] font-bold leading-snug ${EXPLORE_TYPE.title}`}>
+            {listing.title}
+          </h3>
+          {listing.rating ? <TitleRating rating={listing.rating} /> : null}
+        </BrowseItemLink>
+        {listing.metaLine ? (
+          <DiscoveryBrowseCardMetaSlot
+            line={listing.metaLine}
+            href={listing.metaHref}
+            onMapHover={onMapHover}
+          />
+        ) : null}
+        {listing.scheduleHint ? (
+          <DiscoveryBrowseCardScheduleRow
+            hint={listing.scheduleHint}
+            path={listing.schedulePath}
+            exploreItemId={listing.scheduleExploreItemId}
+            onMapHover={onMapHover}
+          />
+        ) : null}
+        <BrowseItemLink
+          to={card.path}
+          exploreItemId={card.id}
+          onMapHover={onMapHover}
+          className="group block min-w-0"
+        >
+          <DiscoveryBrowseCardChipRow labels={listing.visibleFactLabels} maxVisible={3} />
+        </BrowseItemLink>
+      </div>
       {listing.hasDirections || listing.canWishlist ? (
         <div className={BROWSE_CARD_FOOTER}>
           {listing.hasDirections && card.mapLatitude != null && card.mapLongitude != null ? (

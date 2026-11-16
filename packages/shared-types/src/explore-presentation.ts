@@ -173,6 +173,7 @@ export const resolveExploreItemSource = (
   if (exploreMapItemIsSeeking(item)) return 'activity';
   if (
     source === 'activity' ||
+    source === 'availability' ||
     isGeographyMapSource(source) ||
     source === 'shop' ||
     source === 'agency' ||
@@ -185,6 +186,7 @@ export const resolveExploreItemSource = (
   if (id.startsWith('place:') || id.startsWith('venue:')) return PLACE_MAP_SOURCE;
   if (id.startsWith('shop:')) return 'shop';
   if (id.startsWith('agency:')) return 'agency';
+  if (id.startsWith('availability:')) return 'availability';
   return 'activity';
 };
 
@@ -263,7 +265,9 @@ interface ExploreHeadlineInput extends ExploreFeaturedPersonInput {
 }
 
 const headlineIsSeeking = (input: ExploreHeadlineInput): boolean =>
-  input.isSeekingPin === true || exploreMapItemIsSeeking(input);
+  input.isSeekingPin === true ||
+  exploreMapItemIsSeeking(input) ||
+  input.source === 'availability';
 
 const joinExploreParts = (...parts: (string | null | undefined)[]): string =>
   parts.filter((part): part is string => Boolean(part?.trim())).join(' - ');
@@ -968,6 +972,7 @@ export const explorePrimaryCtaLabel = (
     pricingMode?: import('./activity-pricing.js').ActivityPricingMode | null;
   }
 ): string => {
+  if (source === 'availability') return 'View profile';
   if (options?.seeking) return 'Request to join';
   if (source === 'shop') return 'View shop';
   if (source === 'agency') return 'View agency';
@@ -991,6 +996,7 @@ export const exploreSecondaryCtaLabel = (
   source: DiscoveryCardSource,
   options?: { websiteUrl?: string | null; seeking?: boolean }
 ): string | null => {
+  if (source === 'availability') return 'Message';
   if (source === 'activity' && !options?.seeking) return 'View details';
   if (options?.seeking) return 'Message';
   if (source === 'shop' && options?.websiteUrl) return 'Visit website';
@@ -1076,13 +1082,15 @@ export const buildDiscoveryCardPresentation = (
     };
   }
   const kind = resolveDiscoveryCardKind(item);
+  const isAvailabilityPin = item.source === 'availability';
   const isSeekingPin = exploreMapItemIsSeeking(item);
+  const isCrewHeadlinePin = isSeekingPin || isAvailabilityPin;
   const activity = item.activity;
 
   const fromLabel = item.fromLabel ?? activity?.meetingPoint ?? null;
   const toLabel = item.toLabel ?? activity?.startPoint ?? activity?.locationName ?? null;
   const routeLabel = buildExploreRouteLabel(fromLabel, toLabel, kind);
-  const whenSuffix = isSeekingPin ? 'flexible' : kind === 'rideshare' ? 'fixed' : null;
+  const whenSuffix = isCrewHeadlinePin && !isAvailabilityPin ? 'flexible' : kind === 'rideshare' || isAvailabilityPin ? 'fixed' : null;
   const endDate = item.endDate ?? activity?.endDate ?? null;
   const endTime = item.endTime ?? activity?.endTime ?? null;
   const whenLabel = buildExploreWhenSegment(
@@ -1103,7 +1111,7 @@ export const buildDiscoveryCardPresentation = (
 
   const headlineInput: ExploreHeadlineInput = {
     source,
-    isSeekingPin,
+    isSeekingPin: isCrewHeadlinePin,
     kind,
     title: item.title,
     featuredPerson,
@@ -1136,7 +1144,7 @@ export const buildDiscoveryCardPresentation = (
       source,
       undefined,
       item.placeKind ?? undefined,
-      isSeekingPin
+      isSeekingPin && !isAvailabilityPin
     ),
     headline: exploreHeadline(headlineInput),
     listTitle: sections.listTitle,
@@ -1153,17 +1161,17 @@ export const buildDiscoveryCardPresentation = (
     featuredPerson,
     subtitle,
     spotsLabel: exploreSpotsLabel(item),
-    venueHint: exploreVenueHint(source, kind, item.shopPresence, isSeekingPin),
+    venueHint: exploreVenueHint(source, kind, item.shopPresence, isSeekingPin && !isAvailabilityPin),
     primaryCta: explorePrimaryCtaLabel(source, {
       participationMode: itemParticipationMode(item),
       requirements: activity?.requirements,
-      seeking: isSeekingPin,
+      seeking: isSeekingPin && !isAvailabilityPin,
       slotsTotal: item.slotsTotal,
       slotsAvailable: item.slotsAvailable,
     }),
     secondaryCta: exploreSecondaryCtaLabel(source, {
       websiteUrl: item.websiteUrl,
-      seeking: isSeekingPin,
+      seeking: isSeekingPin && !isAvailabilityPin,
     }),
     shareText: [routeLabel, whenLabel].filter(Boolean).join(' · ') || item.subtitle || null,
     routeLabel,

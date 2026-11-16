@@ -16,9 +16,18 @@ const availabilityKindEnum = z.enum(
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 
 const slotSchema = z.object({
+  slotId: z.string().max(80).optional().nullable(),
+  scheduleKind: z.enum(['open', 'fixed']).optional().nullable(),
   startDate: isoDate,
   endDate: isoDate,
   timeBand: z.enum(['morning', 'afternoon', 'evening', 'any']).optional().nullable(),
+  startAt: z.string().datetime().optional().nullable(),
+  endAt: z.string().datetime().optional().nullable(),
+  title: z.string().max(200).optional().nullable(),
+  locationId: z.string().max(80).optional().nullable(),
+  latitude: z.number().min(-90).max(90).optional().nullable(),
+  longitude: z.number().min(-180).max(180).optional().nullable(),
+  locationPrecision: z.enum(['general', 'specific']).optional().nullable(),
 });
 
 const upsertSchema = z.object({

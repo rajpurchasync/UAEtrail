@@ -108,7 +108,7 @@ export const CreateAddFlow = ({
     if (addInitializedRef.current !== addInitKey) {
       const saved = readAddWizardSession(kind);
       if (saved?.draft && kind !== 'facility') {
-        setDraft(saved.draft as AddDraft);
+        setDraft({ ...(saved.draft as AddDraft), kind });
         setStep(saved.step as AddFlowStepId);
       } else {
         setStep('title');
@@ -262,17 +262,24 @@ export const CreateAddFlow = ({
             }}
             onBack={goBack}
             onClose={requestClose}
-            onConfirm={() => {
-          if (isParkingMap) {
-                patchDraft({ parkingPinPlaced: true });
-              } else {
-            const inferred = inferEmirateFromPin(draft.latitude, draft.longitude, publishedAreas);
+            onConfirm={(confirmLat, confirmLng) => {
+              if (isParkingMap) {
                 patchDraft({
+                  parkingLat: confirmLat,
+                  parkingLng: confirmLng,
+                  parkingPinPlaced: true,
+                });
+              } else {
+                const inferred = inferEmirateFromPin(confirmLat, confirmLng, publishedAreas);
+                patchDraft({
+                  latitude: confirmLat,
+                  longitude: confirmLng,
                   locationPinPlaced: true,
-              emirate: draft.countryCode === 'AE' ? inferred ?? draft.emirate : draft.emirate,
+                  emirate:
+                    draft.countryCode === 'AE' ? inferred ?? draft.emirate : draft.emirate,
                 });
               }
-          mapSession.closeMap();
+              mapSession.closeMap();
               setError(null);
             }}
         headerTitle={isParkingMap ? 'Pin parking location' : addFlowStepTitle('location', kind)}

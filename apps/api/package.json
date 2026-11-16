@@ -15,6 +15,7 @@
     "bump-activity-dates": "tsx scripts/bump-activity-dates.ts",
     "refresh-seeking-schedules": "tsx scripts/refresh-seeking-schedules.ts",
     "backfill-seeking-activities": "tsx scripts/backfill-seeking-activities.ts",
+    "migrate-seeking-to-availability": "tsx scripts/migrate-seeking-to-availability.ts",
     "backfill-rideshare-vehicles": "tsx scripts/backfill-rideshare-vehicles.ts",
     "backfill-location-area-ids": "tsx scripts/backfill-location-area-ids.ts",
     "backfill-geo-hierarchy": "tsx scripts/backfill-geo-hierarchy.ts",

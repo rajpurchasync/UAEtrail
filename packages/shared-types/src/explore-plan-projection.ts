@@ -149,7 +149,10 @@ export const resolveHostCreateKindFromSeekingMapItem = (item: {
 export const resolveSeekingExploreMapItemId = (input: {
   intentId: string;
   activityId?: string | null;
+  availabilityMapItemId?: string | null;
 }): string | null => {
+  const availabilityPin = input.availabilityMapItemId?.trim();
+  if (availabilityPin?.startsWith('availability:')) return availabilityPin;
   const activityId = input.activityId?.trim();
   if (activityId) return `activity:${activityId}`;
   return null;

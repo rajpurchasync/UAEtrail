@@ -9,8 +9,6 @@ import type { CrewsStatCounts } from '../crews/CrewsStatsTabs';
 import type { CrewsAvailableOpenLens } from '../crews/crewsOpenSegment';
 import type { CrewsStatTab } from '../crews/crewsStatTab';
 import { segmentFromCrewsStatTab } from '../crews/crewsStatTab';
-import { SeekFlexibleComposeSheet } from '@/explore/ui/SeekFlexibleComposeSheet';
-
 type ListCrewsExplorerProps = {
   query: string;
   onQueryChange: (value: string) => void;
@@ -23,8 +21,7 @@ type ListCrewsExplorerProps = {
   onPeopleBrowseTabChange: (tab: PeopleBrowseTab) => void;
   crewsOpenLens: CrewsAvailableOpenLens;
   onCrewsOpenLensChange: (lens: CrewsAvailableOpenLens) => void;
-  availabilitySheetOpen: boolean;
-  onAvailabilitySheetOpenChange: (open: boolean) => void;
+  onOpenMarkAvailability: () => void;
   isSignedIn: boolean;
   filterCount: number;
   statCounts: CrewsStatCounts;
@@ -42,7 +39,6 @@ type ListCrewsExplorerProps = {
   discoveryQuota: MemberDiscoveryQuotaDTO | null;
   discoveryLoading: boolean;
   discoveryError: string | null;
-  exploreAreaSlug?: string | null;
 };
 
 export const ListCrewsExplorer = ({
@@ -57,8 +53,7 @@ export const ListCrewsExplorer = ({
   onPeopleBrowseTabChange,
   crewsOpenLens,
   onCrewsOpenLensChange,
-  availabilitySheetOpen,
-  onAvailabilitySheetOpenChange,
+  onOpenMarkAvailability,
   isSignedIn,
   filterCount,
   statCounts,
@@ -76,7 +71,6 @@ export const ListCrewsExplorer = ({
   discoveryQuota,
   discoveryLoading,
   discoveryError,
-  exploreAreaSlug = null,
 }: ListCrewsExplorerProps) => {
   const stickySearch = query.trim().length > 0;
 
@@ -99,7 +93,7 @@ export const ListCrewsExplorer = ({
         stickySearch={stickySearch}
         isSignedIn={isSignedIn}
         statCounts={statCounts}
-        onOpenAvailability={() => onAvailabilitySheetOpenChange(true)}
+        onOpenAvailability={onOpenMarkAvailability}
         filterCount={filterCount}
       />
       <div
@@ -130,15 +124,10 @@ export const ListCrewsExplorer = ({
             discoveryQuota={discoveryQuota}
             discoveryLoading={discoveryLoading}
             discoveryError={discoveryError}
-            onOpenAvailability={() => onAvailabilitySheetOpenChange(true)}
+            onOpenAvailability={onOpenMarkAvailability}
           />
         </div>
       </div>
-      <SeekFlexibleComposeSheet
-        open={availabilitySheetOpen}
-        onClose={() => onAvailabilitySheetOpenChange(false)}
-        exploreAreaSlug={exploreAreaSlug}
-      />
     </div>
   );
 };

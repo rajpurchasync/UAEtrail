@@ -7,9 +7,9 @@ import {
   formatComposeQuery,
   isAddWizard,
   isComposeMenu,
-  isSeekFixedWizard,
+  isAvailabilityFixedWizard,
+  isAvailabilityFlexibleWizard,
   isHostWizard,
-  isSeekFlexibleWizard,
   COMPOSE_QUERY_KEY,
   parseExploreCompose,
   setExploreComposeParam,
@@ -29,27 +29,24 @@ import { composeRouteRequiresAuth, resolveComposeRouteChange } from '../composeR
 
 export type UseComposeRouteArgs = {
   user: { id: string } | null | undefined;
+  /** Wait for refresh bootstrap before treating compose wizards as guest-only. */
+  authInitializing: boolean;
   navigate: NavigateFunction;
   pathname: string;
   search: string;
   searchParams: URLSearchParams;
   setSearchParams: SetURLSearchParams;
-  canPublish: boolean;
-  profileComplete: boolean;
-  hostGateLoading: boolean;
 };
 
 /** `?compose=` create-flow session — current surface (`/explore`, `/list`, later `/plan`), not map-only. */
 export const useComposeRoute = ({
   user,
+  authInitializing,
   navigate,
   pathname,
   search,
   searchParams,
   setSearchParams,
-  canPublish,
-  profileComplete,
-  hostGateLoading,
 }: UseComposeRouteArgs) => {
   const composeWire = searchParams.get(COMPOSE_QUERY_KEY);
   const composeRoute = useMemo(() => parseExploreCompose(searchParams), [searchParams, composeWire]);
@@ -62,9 +59,9 @@ export const useComposeRoute = ({
 
   const composeMenuOpen = isComposeMenu(composeRoute);
   const hostComposeRoute = isHostWizard(composeRoute) ? composeRoute : null;
-  const seekFixedRoute = isSeekFixedWizard(composeRoute) ? composeRoute : null;
+  const availabilityFixedRoute = isAvailabilityFixedWizard(composeRoute) ? composeRoute : null;
   const addRoute = isAddWizard(composeRoute) ? composeRoute : null;
-  const seekFlexibleOpen = isSeekFlexibleWizard(composeRoute);
+  const availabilityFlexibleOpen = isAvailabilityFlexibleWizard(composeRoute);
 
   const applySearchMutation = useCallback(
     (mutate: (params: URLSearchParams) => void) => {
@@ -83,8 +80,13 @@ export const useComposeRoute = ({
         setExploreComposeParam(params, route);
         clearPlanAddQuery(params);
       });
+      if (route && user && composeRouteRequiresAuth(route)) {
+        setGuestComposeSignInOpen(false);
+        setGuestComposePendingRoute(null);
+        clearGuestComposeResumeSession();
+      }
     },
-    [applySearchMutation]
+    [applySearchMutation, user]
   );
 
   const closeCompose = useCallback(() => {
@@ -127,7 +129,10 @@ export const useComposeRoute = ({
 
     const openedWizardFromMenu =
       Boolean(next && prev && isComposeMenu(prev)) &&
-      (isHostWizard(next) || isSeekFixedWizard(next) || isAddWizard(next));
+      (isHostWizard(next) ||
+        isAvailabilityFixedWizard(next) ||
+        isAvailabilityFlexibleWizard(next) ||
+        isAddWizard(next));
 
     if (openedWizardFromMenu && next) {
       clearComposeWizardSessionForRoute(next);
@@ -140,10 +145,11 @@ export const useComposeRoute = ({
   }, [composeRoute]);
 
   useEffect(() => {
+    if (authInitializing) return;
     if (user) return;
     if (!composeRoute || !composeRouteRequiresAuth(composeRoute)) return;
     blockGuestComposeWizard(composeRoute, isComposeMenu(composeRoute));
-  }, [user, composeRoute, blockGuestComposeWizard]);
+  }, [authInitializing, user, composeRoute, blockGuestComposeWizard]);
 
   useEffect(() => {
     if (!user) return;
@@ -170,14 +176,15 @@ export const useComposeRoute = ({
     (route: ExploreCompose | null) => {
       const decision = resolveComposeRouteChange(route, {
         user,
-        hostGateLoading,
-        canPublish,
-        profileComplete,
         resumePathname: pathname,
         resumeSearch: search,
       });
       if (decision.type === 'sign-in') {
         if (!user) {
+          if (authInitializing && route) {
+            setComposeRoute(route);
+            return;
+          }
           if (route && composeRouteRequiresAuth(route)) {
             blockGuestComposeWizard(
               route,
@@ -189,18 +196,11 @@ export const useComposeRoute = ({
         navigate(decision.href);
         return;
       }
-      if (decision.type === 'complete-profile') {
-        navigate(decision.href);
-        return;
-      }
-      if (decision.type === 'blocked') return;
       setComposeRoute(decision.route);
     },
     [
       user,
-      hostGateLoading,
-      canPublish,
-      profileComplete,
+      authInitializing,
       navigate,
       setComposeRoute,
       composeRoute,
@@ -216,10 +216,9 @@ export const useComposeRoute = ({
         setComposeRoute(entry);
         return;
       }
-      if (hostGateLoading && user) return;
       handleComposeRouteChange(entry);
     },
-    [user, hostGateLoading, handleComposeRouteChange, setComposeRoute]
+    [handleComposeRouteChange, setComposeRoute]
   );
 
   const guestComposeSignInReturnPath = useMemo(() => {
@@ -242,9 +241,9 @@ export const useComposeRoute = ({
     composeRoute,
     composeMenuOpen,
     hostComposeRoute,
-    seekFixedRoute,
+    availabilityFixedRoute,
     addRoute,
-    seekFlexibleOpen,
+    availabilityFlexibleOpen,
     setComposeRoute,
     closeCompose,
     handleCreateTap,

@@ -13,7 +13,7 @@ import { ensureBuddyHostTenant, ensureOwnerMembershipForTenant } from '../lib/bu
 import { findLatestHostApplicationByApplicant } from '../lib/host-applications-store.js';
 import { countPublishedActivitiesHostedByUserIds } from '../lib/activity-engagement-store.js';
 import { listActiveTenantMembershipsByUserIds } from '../lib/tenant-access.js';
-import { countParticipantIntentsByUser } from '../lib/participant-intents-store.js';
+import { countActiveFixedAvailabilityMapSlotsForUser } from '../lib/member-availability-store.js';
 import {
   listTenantsByOwnerId,
   listTenantsByOwnerIds,
@@ -51,7 +51,9 @@ export const batchResolveMemberProfileRoleLabelsForDirectory = async (
   }
   if (needIntentCheck.length > 0) {
     const intentPairs = await Promise.all(
-      needIntentCheck.map(async (userId) => [userId, await countParticipantIntentsByUser(userId)] as const)
+      needIntentCheck.map(
+        async (userId) => [userId, await countActiveFixedAvailabilityMapSlotsForUser(userId)] as const
+      )
     );
     for (const [userId, count] of intentPairs) {
       communityHostByUserId.set(userId, count > 0);

@@ -35,7 +35,6 @@ describe('compose write-surface platform (S14)', () => {
       'src/explore/ui/CreateAddFacilityFlow.tsx',
       'src/explore/ui/CreateHostingActivityFlow.tsx',
       'src/explore/ui/CreateSeekingFlow.tsx',
-      'src/components/participant-intent/ParticipantIntentLocationEditor.tsx',
       'src/components/organisation-console/ProProfileApplicationFlow.tsx',
     ]) {
       const src = readFileSync(join(ROOT, rel), 'utf8');
@@ -50,7 +49,7 @@ describe('compose write-surface platform (S14)', () => {
       'src/explore/ui/seekingWizard/SeekingWizardChrome.tsx',
       'src/explore/ui/addWizard/steps/index.tsx',
       'src/explore/ui/addWizard/facility/FacilityAddWizardSteps.tsx',
-      'src/components/participant-intent/ParticipantIntentLocationEditor.tsx',
+      'src/explore/ui/seekingWizard/steps/index.tsx',
       'src/components/organisation-console/ProProfileApplicationFlow.tsx',
     ]) {
       expect(readFileSync(join(ROOT, rel), 'utf8')).toMatch(/ComposeMapEntryRow/);

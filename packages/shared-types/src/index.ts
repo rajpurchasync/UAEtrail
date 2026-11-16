@@ -811,6 +811,7 @@ export { exploreAreaLensStatsSummary } from './explore-area-lens.js';
 
 export type { ExploreActivityMode } from './explore-activity-mode.js';
 export {
+  exploreMapItemIsAvailabilityCatalog,
   exploreMapItemIsHostedActivity,
   exploreMapItemIsSeeking,
   isTimeBoundExploreMapItem,
@@ -1724,10 +1725,15 @@ export {
   prunePastAvailabilitySlots,
   availabilityKindMatchesActivityType,
   availabilityKindsForActivityType,
+  availabilityMapItemId,
+  parseAvailabilityMapItemId,
+  isFixedAvailabilitySlot,
+  isOpenAvailabilitySlot,
 } from './member-availability.js';
 export type { MemberAvailabilityDayBlock } from './member-availability.js';
 export type {
   AvailabilityKind,
+  AvailabilityScheduleKind,
   AvailabilityTimeBand,
   AvailabilityVisibility,
   ExploreAvailabilityClusterDTO,
@@ -1962,8 +1968,11 @@ export {
   formatComposeWire,
   parseComposeWire,
   HOST_COMPOSE_KINDS,
+  AVAILABILITY_FIXED_COMPOSE_KINDS,
   SEEKING_COMPOSE_KINDS,
   ADD_PLACE_KINDS,
+  type AvailabilityComposeMode,
+  type AvailabilityFixedComposeKind,
   type ComposeMenuIntent,
   type AddPlaceKind,
   type AddTarget,

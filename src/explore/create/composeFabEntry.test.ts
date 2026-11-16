@@ -32,7 +32,7 @@ describe('resolveCreateFabComposeEntry', () => {
   it('opens find crew on crews context', () => {
     expect(resolveCreateFabComposeEntry('/list', '?listCat=people')).toEqual({
       surface: 'menu',
-      intent: 'seek',
+      intent: 'availability',
     });
   });
 });

@@ -4,7 +4,7 @@ import {
 
   ADD_COMPOSE_OPTIONS,
 
-  SEEK_FIXED_COMPOSE_OPTIONS,
+  AVAILABILITY_FIXED_COMPOSE_OPTIONS,
 
   HOST_COMPOSE_OPTIONS,
 
@@ -61,11 +61,11 @@ describe('compose flow catalog', () => {
 
 
 
-  it('maps every FAB seek option to seek.fixed.* flowId', () => {
+  it('maps every FAB availability option to seek.fixed.* flowId', () => {
 
-    for (const option of SEEK_FIXED_COMPOSE_OPTIONS) {
+    for (const option of AVAILABILITY_FIXED_COMPOSE_OPTIONS) {
 
-      const id = composeFlowIdFromRoute({ intent: 'seek', mode: 'fixed', kind: option.kind });
+      const id = composeFlowIdFromRoute({ intent: 'availability', mode: 'fixed', kind: option.kind });
 
       expect(id).toBeTruthy();
 
@@ -73,7 +73,7 @@ describe('compose flow catalog', () => {
 
       expect(COMPOSE_FLOW_CATALOG[id!].wizard).toBe('seekingFlow');
 
-      expect(COMPOSE_FLOW_CATALOG[id!].intent).toBe('seek');
+      expect(COMPOSE_FLOW_CATALOG[id!].intent).toBe('availability');
 
     }
 
@@ -129,7 +129,7 @@ describe('compose flow catalog', () => {
 
 
 
-  it('catalog ids are host/seek/add only', () => {
+  it('catalog ids are host/availability/add only', () => {
 
     expect(isCanonicalComposeFlowId('host.hiking')).toBe(true);
 
@@ -205,9 +205,9 @@ describe('compose flow catalog', () => {
 
   it('catalog seekingSteps stay aligned with seekingFlowEngine step lists', () => {
 
-    for (const option of SEEK_FIXED_COMPOSE_OPTIONS) {
+    for (const option of AVAILABILITY_FIXED_COMPOSE_OPTIONS) {
 
-      const id = composeFlowIdFromRoute({ intent: 'seek', mode: 'fixed', kind: option.kind });
+      const id = composeFlowIdFromRoute({ intent: 'availability', mode: 'fixed', kind: option.kind });
 
       expect(id).toBeTruthy();
 
@@ -241,13 +241,13 @@ describe('compose flow catalog', () => {
 
     expect(SEEKING_TYPE_OPTIONS.map((row) => row.key)).toEqual(
 
-      SEEK_FIXED_COMPOSE_OPTIONS.map((row) => seekingKindFromComposeKind(row.kind))
+      AVAILABILITY_FIXED_COMPOSE_OPTIONS.map((row) => seekingKindFromComposeKind(row.kind))
 
     );
 
     expect(SEEKING_TYPE_OPTIONS.map((row) => row.title)).toEqual(
 
-      SEEK_FIXED_COMPOSE_OPTIONS.map((row) => row.label)
+      AVAILABILITY_FIXED_COMPOSE_OPTIONS.map((row) => row.label)
 
     );
 

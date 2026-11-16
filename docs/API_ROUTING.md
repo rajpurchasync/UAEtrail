@@ -32,7 +32,7 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`M
 
 - **Resource paths** use kebab-case plural nouns (`seeking-posts`, not `intents` or `demand`).
 - **No tab or marketing names** on `/me/*` (`plan-needs-you`, `member-hub-stats` are forbidden — use capability names like `coordination-attention`, `profile-stats`). Presentation (`label`, consumer `path`) belongs in the SPA, not JSON.
-- **Seeking posts** → URL **`/me/seeking-posts`** (product storage: `activities` with `activityMode: seeking`; leftover `participant_intents` is ops/backfill only; product copy: *Find* / looking for company).
+- **Crew availability** → **`PUT /me/availability`** (`member_availability`; fixed windows project to explore map `source: availability`). Legacy **`/me/seeking-posts`** HTTP removed (MIG-DISCO-REG).
 - **Type field** on intents: `kind` (`ParticipantIntentKind`) — parallels activity `activityType` / shared `outingCategory`.
 - Do **not** add catch-all `/plans` or `/me/intents` (legacy plan doc paths are obsolete).
 
@@ -70,29 +70,20 @@ Storage: `activity_requests` vs `participant_intent_requests`.
 
 ---
 
-## Seeking posts (`/me/seeking-posts`)
+## Member availability (`/me/availability`)
 
-**COH-01:** Find posts are published **`activities`** (`activityMode: seeking`). HTTP **`/me/participant-intents`** removed. Map pin **`activity:{id}`**. **UI (S12):** `ActivityMapPeekHost` + `seekingPeekUnificationGuard`.
+**MIG-DISCO-REG:** Find crew = **availability registry** (open calendar + optional **fixed** map catalog). No new `activityMode: seeking` writes. Map pins: `availability:{userId}:{slotId}`.
 
 | Method | Path | Who |
 |--------|------|-----|
-| GET | `/me/seeking-posts` | List my seeking posts |
-| POST | `/me/seeking-posts` | Create (Find flow) → seeking activity; response **`activityId`** + post **`id`** (`participantIntentId`) |
-| — | `npm run backfill-seeking-activities` | Legacy `participant_intents` → seeking activities (`--dry-run`, `--limit=N`) |
-| — | `npm run seeking:storage-status` | Ops readiness (`--strict` if backfill incomplete) |
-| PATCH | `/me/seeking-posts/:postId` | Update own active post |
-| POST | `/me/seeking-posts/:postId/cancel` | Remove from map |
-| POST | `/me/seeking-posts/:postId/link-activity` | Graduate find crew onto a **hosted** outing (`CREATE_FLOW.md`) |
-| POST | `/me/seeking-posts/:postId/requests` | Member asks to join |
-| GET | `/me/seeking-posts/:postId/requests` | **Poster** lists requests |
-| GET | `/me/seeking-posts/:postId/requests/mine` | Caller’s request |
-| POST | `…/requests/:requestId/approve` \| `…/reject` | **Poster** decides |
+| GET | `/me/availability` | My slots + kinds + visibility |
+| PUT | `/me/availability` | Upsert (open days + fixed slots) |
+| GET | `/me/availability/match-preview` | Suggested hosted outings for open availability |
+| GET | `/explore/map` | Catalog BFF (`sources=availability` for fixed crew pins) |
 
-**Publish gate:** `POST /publishing/activities` + publish require `profileComplete` + `publish.canPublish`. **Join** does not require profile completion.
+**Ops migration:** `npm run migrate-seeking-to-availability` (dev DB: legacy seeking activities → fixed slots; optional `--cancel-seeking`).
 
-**Consumer vs console:** Plan + `/activity/:id` + `/me/seeking-posts/*`. Tenant publishing: **`/publishing/*`** (SPA `/publishing/*`).
-
-Registration: `registerMeSeekingPostRoutes` (`registerMeParticipantIntentRoutes.ts`).
+**Retired:** `/me/seeking-posts/*`, `GET /explore/seeking-activities`, client `seekingApi`.
 
 ---
 
@@ -200,9 +191,9 @@ Explore **people browse panel** (map; URL `view=people`; legacy `view=social` / 
 | GET | `/me/member-discovery/browse` | Directory only (paginated public members) |
 | GET | `/me/member-discovery/search` | User search (e.g. new chat) |
 | GET | `/me/member-discovery/quota` | Free vs Pro profile-open quota |
-| GET | `/explore/seeking-activities` | **Looking for outings** — published `activityMode: seeking` as `ExploreMapItemDTO[]` |
+| GET | `/explore/map?sources=availability` | **Looking for** — fixed crew availability pins (`source: availability`, `member_availability`) |
 
-Registration: `registerMemberDiscoveryRoutes.ts` · `registerPublicPlaceRoutes.ts` (`/explore/seeking-activities`) · services: `member-people-engagement.ts`, `member-discovery-roster.ts`, `explore-seeking-activities-read.ts`.
+Registration: `registerMemberDiscoveryRoutes.ts` · `registerPublicPlaceRoutes.ts` (`GET /explore/map`) · `availability-fixed-map-items.ts`, `member-people-engagement.ts`, `member-discovery-roster.ts`.
 
 ---
 
@@ -416,8 +407,8 @@ SPA: `/admin/hosts` → `pages/admin/Organisations` (see [`NAVIGATION.md`](./NAV
 | `badges.ts` | **`/me/badges`** |
 | `activities.ts` | `/activities`, `/me/requests`, `/publishing/activities`, `/publishing/requests` |
 | `shop.ts` | `GET /shop/shops/:id`; auth shop manage on `/shop/organisation/*` |
-| `explore.ts` | `/explore/map`, `/explore/seeking-activities` |
-| `seeking.ts` | **`/me/seeking-posts`** (+ requests, link-activity) |
+| `explore.ts` | `/explore/map` |
+| `availability.ts` | **`/me/availability`** (+ match-preview) |
 | `groups.ts`, `chat.ts` | Groups, DMs, inbox |
 | `buddies.ts` | `/me/buddies`, `/me/following` |
 | `wishlist.ts`, `entityFollow.ts`, `reviews.ts` | `/me/wishlist`, `/me/entity-follows`, `/reviews` |
@@ -425,8 +416,6 @@ SPA: `/admin/hosts` → `pages/admin/Organisations` (see [`NAVIGATION.md`](./NAV
 | `facilities.ts` | `/me/facilities`, `/admin/facilities` |
 | `organisation.ts` | `/me/pro-application` (alias `/me/host-application`) |
 | `admin.ts` | `/admin/pro-applications` (alias `/admin/host-applications`) |
-
-Prefer **`seekingApi.linkSeekingPostToActivity`** when a Find poster graduates crew onto a hosted outing.
 
 ---
 

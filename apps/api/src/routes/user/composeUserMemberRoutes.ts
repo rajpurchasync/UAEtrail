@@ -10,7 +10,6 @@ import {
   registerMeAccountSessionRoutes,
   registerMeActivityParticipationRoutes,
 } from './registerMeEngagementRoutes.js';
-import { registerMeSeekingPostRoutes } from './registerMeParticipantIntentRoutes.js';
 import { registerMeBadgesRoutes } from './registerMeBadgesRoutes.js';
 import { registerMeGoalsRoutes } from './registerMeGoalsRoutes.js';
 import { registerMeVehiclesRoutes } from './registerMeVehiclesRoutes.js';
@@ -51,7 +50,6 @@ export const composeUserMemberRoutes = (userRouter: Router): void => {
   registerMeSubmittedPlaceRoutes(userRouter);
   registerMeSubmissionRoutes(userRouter);
   registerMeFacilityRoutes(userRouter);
-  registerMeSeekingPostRoutes(userRouter);
   registerMeBadgesRoutes(userRouter);
   registerMeGoalsRoutes(userRouter);
   registerMeVehiclesRoutes(userRouter);

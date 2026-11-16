@@ -2,15 +2,13 @@ import { useCallback, useMemo, useState, type Dispatch, type SetStateAction } fr
 import type { QueryClient } from '@tanstack/react-query';
 import { useLocation, type NavigateFunction } from 'react-router-dom';
 import {
+  activityDetailPath,
+  resolveActivityDisplayCoordinates,
+  resolveActivityHostUserId,
   type ActivityDTO,
   type ActivityMapPeekActionId,
   type ExploreMapItemDTO,
   type UserRole,
-} from '@uaetrail/shared-types';
-import {
-  activityDetailPath,
-  resolveActivityDisplayCoordinates,
-  resolveActivityHostUserId,
 } from '@uaetrail/shared-types';
 import { useExplorePeekShareAction } from './useExplorePeekShareAction';
 import { hostPublishedActivityPeekAccess } from '../../access/resolvePeekDetailAccess';
@@ -25,7 +23,7 @@ import {
 import { executeActivityMapPeekAction } from '../../activity/executeActivityMapPeekAction';
 import { readExploreMapItemsFromCache, reloadExploreMap } from '../../hooks/useExploreMap';
 import { isExploreMapBboxEnabled } from '../exploreMapBbox';
-import { invalidateMySeekingPostsQueries } from '../../hooks/seekingClientApi';
+import { memberAvailabilityQueryKey } from '../../hooks/clientQueryKeys';
 import type { AddSubmitResult } from './addFlow';
 import type { SeekingSubmitResult } from './seekingFlowEngine';
 import type { useExploreBrowseUrlState } from './useExploreBrowseUrlState';
@@ -332,7 +330,9 @@ export const useExploreSelectionActions = ({
 
   const handleSeekingSubmitted = useCallback(
     async (result: SeekingSubmitResult) => {
-      invalidateMySeekingPostsQueries(queryClient);
+      if (user?.id) {
+        void queryClient.invalidateQueries({ queryKey: memberAvailabilityQueryKey(user.id) });
+      }
       await reloadExploreMap(queryClient);
       if (!result.visibleOnMap) {
         return;
@@ -347,7 +347,7 @@ export const useExploreSelectionActions = ({
         setListOpen(false);
       }
     },
-    [queryClient, setSelectedId, handleFocusMapLocation, isDesktop, setListOpen]
+    [queryClient, setSelectedId, handleFocusMapLocation, isDesktop, setListOpen, user?.id]
   );
 
   const handleAddSubmitted = useCallback(

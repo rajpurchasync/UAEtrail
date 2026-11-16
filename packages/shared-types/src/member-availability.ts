@@ -1,6 +1,6 @@
 /**
- * Person calendar availability — distinct from seeking activities (map pins).
- * Indexed for Explore People discovery; edited on Plan.
+ * Member availability — crew registry (open discover + optional fixed map catalog items).
+ * Indexed for Explore People discovery; edited via Mark availability compose / Plan.
  */
 
 export const AVAILABILITY_KINDS = [
@@ -18,7 +18,13 @@ export type AvailabilityVisibility = 'public' | 'buddies' | 'hidden';
 
 export type AvailabilityTimeBand = 'morning' | 'afternoon' | 'evening' | 'any';
 
+export type AvailabilityScheduleKind = 'open' | 'fixed';
+
 export interface MemberAvailabilitySlotDTO {
+  /** Server-issued stable id for map pins and edits. */
+  slotId?: string;
+  /** `open` = calendar discover only; `fixed` = time/place window + map catalog when listed. */
+  scheduleKind?: AvailabilityScheduleKind | null;
   /**
    * Wire/storage: inclusive ISO calendar range (`YYYY-MM-DD`).
    * **One picked day** → `startDate === endDate`. UI may store many single-day rows.
@@ -26,7 +32,34 @@ export interface MemberAvailabilitySlotDTO {
   startDate: string;
   endDate: string;
   timeBand?: AvailabilityTimeBand | null;
+  /** Fixed slots — ISO datetimes for map/list schedule display. */
+  startAt?: string | null;
+  endAt?: string | null;
+  title?: string | null;
+  locationId?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  locationPrecision?: 'general' | 'specific' | null;
 }
+
+export const availabilityMapItemId = (userId: string, slotId: string): string =>
+  `availability:${userId}:${slotId}`;
+
+export const parseAvailabilityMapItemId = (
+  id: string
+): { userId: string; slotId: string } | null => {
+  const parts = id.split(':');
+  if (parts.length < 3 || parts[0] !== 'availability') return null;
+  const slotId = parts.slice(2).join(':');
+  if (!slotId) return null;
+  return { userId: parts[1], slotId };
+};
+
+export const isFixedAvailabilitySlot = (slot: MemberAvailabilitySlotDTO): boolean =>
+  slot.scheduleKind === 'fixed';
+
+export const isOpenAvailabilitySlot = (slot: MemberAvailabilitySlotDTO): boolean =>
+  slot.scheduleKind !== 'fixed';
 
 export interface MemberAvailabilityDTO {
   userId: string;
@@ -120,7 +153,19 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 export const isValidAvailabilitySlot = (slot: MemberAvailabilitySlotDTO): boolean => {
   if (!ISO_DATE.test(slot.startDate) || !ISO_DATE.test(slot.endDate)) return false;
-  return slot.startDate <= slot.endDate;
+  if (slot.startDate > slot.endDate) return false;
+  if (isFixedAvailabilitySlot(slot)) {
+    const hasGeo =
+      (typeof slot.latitude === 'number' && typeof slot.longitude === 'number') ||
+      Boolean(slot.locationId?.trim());
+    if (!hasGeo) return false;
+    if (slot.startAt && slot.endAt) {
+      const startMs = Date.parse(slot.startAt);
+      const endMs = Date.parse(slot.endAt);
+      if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs < startMs) return false;
+    }
+  }
+  return true;
 };
 
 /** Inclusive range overlap on calendar dates (YYYY-MM-DD strings). */
@@ -228,16 +273,21 @@ export const memberAvailabilitySlotsAsDayPicks = (
   return out;
 };
 
-/** One row per calendar day, sorted, deduped — canonical shape for `PUT /me/availability`. */
+/** One row per calendar day for open slots; fixed slots preserved — canonical `PUT /me/availability`. */
 export const normalizeMemberAvailabilitySlotsForStorage = (
   slots: MemberAvailabilitySlotDTO[]
 ): MemberAvailabilitySlotDTO[] => {
+  const fixed = slots.filter((s) => isFixedAvailabilitySlot(s) && isValidAvailabilitySlot(s));
+  const open = slots.filter((s) => isOpenAvailabilitySlot(s));
   const seen = new Set<string>();
-  const out: MemberAvailabilitySlotDTO[] = [];
-  for (const slot of memberAvailabilitySlotsAsDayPicks(slots)) {
+  const openOut: MemberAvailabilitySlotDTO[] = [];
+  for (const slot of memberAvailabilitySlotsAsDayPicks(open)) {
     if (seen.has(slot.startDate)) continue;
     seen.add(slot.startDate);
-    out.push(slot);
+    openOut.push({ ...slot, scheduleKind: 'open' });
   }
-  return out.sort((a, b) => a.startDate.localeCompare(b.startDate));
+  return [
+    ...openOut.sort((a, b) => a.startDate.localeCompare(b.startDate)),
+    ...fixed.map((s) => ({ ...s, scheduleKind: 'fixed' as const })),
+  ];
 };

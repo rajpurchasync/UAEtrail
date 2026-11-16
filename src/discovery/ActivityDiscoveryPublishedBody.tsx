@@ -39,11 +39,11 @@ export const ActivityDiscoveryPublishedBody = ({
     showDirections ?? discoveryCardPeekShowsDirections(card);
 
   if (mapPeekBrowseLayout) {
-    const hasBadges = (card.requirementBadges?.length ?? 0) > 0;
-    if (!hasBadges) return null;
+    const badges = (card.requirementBadges ?? []).slice(0, 3);
+    if (badges.length === 0) return null;
     return (
       <div className={mapPeekCompact ? '' : 'mt-2'}>
-        <DiscoveryCardRequirementBadges badges={card.requirementBadges!} compact={mapPeekCompact} />
+        <DiscoveryCardRequirementBadges badges={badges} compact={mapPeekCompact} />
       </div>
     );
   }

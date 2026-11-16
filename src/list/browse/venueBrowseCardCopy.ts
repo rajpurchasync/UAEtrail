@@ -12,6 +12,7 @@ import {
   browseCatalogRegionLabel,
 } from './browseCatalogLabels';
 import { resolveVenueBrowseCardFactLabels, resolveVenueCatalogFactLabels } from './venueBrowseFacts';
+import { resolveDiscoveryBrowseGeoHubPath } from '../../discovery/browse/resolveDiscoveryBrowseGeoLink';
 
 const emptySchedule: BrowsePosterScheduleGrid = {
   dateLabel: null,
@@ -103,8 +104,12 @@ export const resolveVenueBrowseScheduleHint = (
   return when ? `${count} trips · next ${when}` : `${count} trips scheduled`;
 };
 
+export const VENUE_BROWSE_VISIBLE_FACT_LIMIT = 3;
+
 export type VenueBrowseCardCopy = {
   title: string;
+  metaLine: string | null;
+  metaHref: string | null;
   regionLabel: string | null;
   hubLabel: string | null;
   locationLine: string | null;
@@ -113,28 +118,41 @@ export type VenueBrowseCardCopy = {
   schedulePath: string | null;
   scheduleExploreItemId: string | null;
   factLabels: string[];
+  visibleFactLabels: string[];
   hasDirections: boolean;
   canWishlist: boolean;
 };
 
-/** Venues browse bucket — where on the photo, name + rating below, then act. */
+/** Venues browse bucket — location meta under title; facts + CTAs in the body. */
 export const resolveVenueBrowseCardCopy = (
   card: DiscoveryCardModel,
   now: Date = new Date()
-): VenueBrowseCardCopy => ({
+): VenueBrowseCardCopy => {
+  const regionLabel = browseCatalogRegionLabel(card);
+  const hubLabel = browseCatalogHubLabel(card);
+  const locationLine = browseCatalogHeaderLocationLine(card);
+  const metaLine =
+    regionLabel && hubLabel ? `${regionLabel} · ${hubLabel}` : locationLine?.trim() || null;
+  const factLabels = resolveVenueBrowseCardFactLabels(card);
+
+  return {
   title: browseCatalogEntityName(card),
-  regionLabel: browseCatalogRegionLabel(card),
-  hubLabel: browseCatalogHubLabel(card),
-  locationLine: browseCatalogHeaderLocationLine(card),
+  metaLine,
+  metaHref: metaLine ? resolveDiscoveryBrowseGeoHubPath(card) : null,
+  regionLabel,
+  hubLabel,
+  locationLine,
   rating: resolveVenueBrowseCardRating(card),
   scheduleHint: resolveVenueBrowseScheduleHint(card, now),
   schedulePath: card.venueNextOutingPath?.trim() || null,
   scheduleExploreItemId: card.venueNextOutingExploreItemId?.trim() || null,
-  factLabels: resolveVenueBrowseCardFactLabels(card),
+  factLabels,
+  visibleFactLabels: factLabels.slice(0, VENUE_BROWSE_VISIBLE_FACT_LIMIT),
   hasDirections:
     card.mapLatitude != null &&
     card.mapLongitude != null &&
     Number.isFinite(card.mapLatitude) &&
     Number.isFinite(card.mapLongitude),
   canWishlist: isGeographyMapSource(card.source) && Boolean(card.locationId),
-});
+  };
+};

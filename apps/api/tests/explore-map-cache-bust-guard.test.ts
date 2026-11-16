@@ -49,7 +49,7 @@ describe('explore map cache bust guard (COH-08)', () => {
     );
     const mapBlock = registrar.slice(
       registrar.indexOf("router.get('/explore/map'"),
-      registrar.indexOf("router.get('/explore/seeking-activities'")
+      registrar.indexOf("registerPlaceAlias(router, 'get', '/places'")
     );
     expect(mapBlock).not.toMatch(/optionalAuth/);
     expect(mapBlock).toMatch(/viewerUserId:\s*null/);

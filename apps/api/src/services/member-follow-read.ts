@@ -8,7 +8,7 @@ import {
   countUserCheckedInParticipations,
 } from '../lib/activity-engagement-store.js';
 import { isCommunityHostByUserId } from '../lib/community-host.js';
-import { countParticipantIntentsByUser } from '../lib/participant-intents-store.js';
+import { countActiveFixedAvailabilityMapSlotsForUser } from '../lib/member-availability-store.js';
 
 export const loadMeProfileEngagementStats = async (userId: string) => {
   const [followerCount, joinedCount, hostedCount, activeParticipantIntentCount, isCommunityHost] =
@@ -16,7 +16,7 @@ export const loadMeProfileEngagementStats = async (userId: string) => {
       countFollowersForUser(userId),
       countUserCheckedInParticipations(userId),
       countPublishedActivitiesHostedByUser(userId),
-      countParticipantIntentsByUser(userId),
+      countActiveFixedAvailabilityMapSlotsForUser(userId),
       isCommunityHostByUserId(userId),
     ]);
   return {

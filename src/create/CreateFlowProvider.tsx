@@ -13,7 +13,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { useAuth } from '../context/AuthContext';
 import { EXPLORE_MAP_PATH } from '../config/platform';
-import { addVenueKindFromRoute } from '../explore/compose';
+import { addVenueKindFromRoute, isComposeWizardRoute } from '../explore/compose';
 import { ComposeHost } from '../explore/create/ComposeHost';
 import { useComposeRoute } from '../explore/create/hooks/useComposeRoute';
 import { clearComposeWizardSessionForRoute } from '../explore/ui/composeWizardSession';
@@ -34,12 +34,12 @@ import {
 
 export type CreateFlowBridge = {
   hostingWizardPrefill?: HostingWizardPrefill | null;
-  hostWizardOpen?: boolean;
   onCloseCreateFlow?: () => void;
   onHostingBackToIntent?: () => void;
   onActivityPublished?: (activity: ActivityDTO) => void | Promise<void>;
   onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
-  onSeekingSubmitted?: (result: SeekingSubmitResult) => void;
+  /** Fixed availability map post (`availability:fixed`) submitted — reload browse surfaces. */
+  onAvailabilityFixedSubmitted?: (result: SeekingSubmitResult) => void;
   onAddSubmitted?: (result: AddSubmitResult) => void;
   planWithBuddyUserId?: string | null;
   composeAreaSlug?: string | null;
@@ -56,7 +56,7 @@ const CreateFlowContext = createContext<CreateFlowContextValue | null>(null);
 
 /** Product-shell create session — overlay on the current route, not an Explore page. */
 export const CreateFlowProvider = ({ children }: { children: ReactNode }) => {
-  const { user } = useAuth();
+  const { user, initializing: authInitializing } = useAuth();
   const navigate = useNavigate();
   const { pathname, search } = useProductLocation();
   const [searchParams, setSearchParams] = useProductSearchParams();
@@ -67,21 +67,18 @@ export const CreateFlowProvider = ({ children }: { children: ReactNode }) => {
     profileComplete,
     isCommunityHost,
     hostTiers,
-    loading: hostGateLoading,
     tenantId,
     refresh: refreshHostGate,
   } = useMemberStatus({ enabled: Boolean(user) });
 
   const compose = useComposeRoute({
     user,
+    authInitializing,
     navigate,
     pathname,
     search,
     searchParams,
     setSearchParams,
-    canPublish,
-    profileComplete,
-    hostGateLoading,
   });
 
   const bridgeRef = useRef<CreateFlowBridge | null>(null);
@@ -91,7 +88,6 @@ export const CreateFlowProvider = ({ children }: { children: ReactNode }) => {
     bridgeRef.current = next;
     if (
       Boolean(prev) !== Boolean(next) ||
-      prev?.hostWizardOpen !== next?.hostWizardOpen ||
       prev?.hostingWizardPrefill !== next?.hostingWizardPrefill ||
       prev?.tenantId !== next?.tenantId ||
       prev?.composeAreaSlug !== next?.composeAreaSlug ||
@@ -131,9 +127,11 @@ export const CreateFlowProvider = ({ children }: { children: ReactNode }) => {
     void refreshHostGate();
   }, [queryClient, refreshHostGate]);
 
-  const hostWizardOpen =
-    bridge?.hostWizardOpen ?? (Boolean(compose.hostComposeRoute) && Boolean(user));
   const hostingWizardPrefill = bridge?.hostingWizardPrefill ?? null;
+  const hostWizardOpen = Boolean(user) && Boolean(compose.hostComposeRoute);
+  const composeWizardActive = Boolean(user) && isComposeWizardRoute(compose.composeRoute);
+  const guestComposeSignInOpen =
+    compose.guestComposeSignInOpen && !composeWizardActive;
 
   const onCloseCreateFlow = bridge?.onCloseCreateFlow ?? compose.closeCompose;
   const onHostingBackToIntent =
@@ -157,11 +155,11 @@ export const CreateFlowProvider = ({ children }: { children: ReactNode }) => {
         composeRoute={compose.composeRoute}
         composeMenuOpen={compose.composeMenuOpen}
         hostWizardOpen={hostWizardOpen}
-        seekFixedWizardOpen={Boolean(compose.seekFixedRoute) && Boolean(user)}
+        availabilityFixedWizardOpen={Boolean(compose.availabilityFixedRoute) && Boolean(user)}
         addWizardOpen={Boolean(compose.addRoute) && Boolean(user)}
-        seekFlexibleOpen={compose.seekFlexibleOpen && Boolean(user)}
+        availabilityFlexibleOpen={compose.availabilityFlexibleOpen && Boolean(user)}
         hostComposeKind={compose.hostComposeRoute?.kind ?? null}
-        seekFixedKind={compose.seekFixedRoute?.kind}
+        availabilityFixedKind={compose.availabilityFixedRoute?.kind}
         addVenueKind={addVenueKindFromRoute(compose.addRoute)}
         hostingWizardPrefill={hostingWizardPrefill}
         signInHref={signInHref}
@@ -169,10 +167,11 @@ export const CreateFlowProvider = ({ children }: { children: ReactNode }) => {
         onCloseCompose={compose.closeCompose}
         onCloseCreateFlow={onCloseCreateFlow}
         wizardEnteredFromMenu={compose.wizardEnteredFromMenu}
+        intentMenuSuppressed={compose.guestComposeSignInOpen}
         onHostingBackToIntent={onHostingBackToIntent}
-        onSeekingBackToIntent={() => {
-          clearComposeWizardSessionForRoute(compose.seekFixedRoute);
-          compose.setComposeRoute({ surface: 'menu', intent: 'seek' });
+        onAvailabilityBackToIntent={() => {
+          clearComposeWizardSessionForRoute(compose.composeRoute);
+          compose.setComposeRoute({ surface: 'menu', intent: 'availability' });
         }}
         onAddBackToIntent={() => {
           clearComposeWizardSessionForRoute(compose.addRoute);
@@ -186,7 +185,7 @@ export const CreateFlowProvider = ({ children }: { children: ReactNode }) => {
           }
         }}
         onSeekingSubmitted={(result) => {
-          if (bridge?.onSeekingSubmitted) bridge.onSeekingSubmitted(result);
+          if (bridge?.onAvailabilityFixedSubmitted) bridge.onAvailabilityFixedSubmitted(result);
           else void defaultRefresh();
         }}
         onAddSubmitted={(result) => {
@@ -205,7 +204,7 @@ export const CreateFlowProvider = ({ children }: { children: ReactNode }) => {
       />
       {!skipGuestComposeSheet ? (
         <GuestComposeSignInSheet
-          open={compose.guestComposeSignInOpen}
+          open={guestComposeSignInOpen}
           onClose={compose.closeGuestComposeSignIn}
           authReturnPath={compose.guestComposeSignInReturnPath}
         />

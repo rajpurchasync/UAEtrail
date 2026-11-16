@@ -418,7 +418,7 @@ export const exploreDiscoverBrowsePath = (): string => LIST_DISCOVERY_PATH;
 /** Start create flow with optional buddy to plan with. */
 export const explorePlanWithBuddyPath = (
   buddyUserId: string,
-  mode: 'host' | 'seek'
+  mode: 'host' | 'availability'
 ): string =>
   explorePath({
     list: true,
@@ -426,7 +426,7 @@ export const explorePlanWithBuddyPath = (
     compose:
       mode === 'host'
         ? hostCompose('activity')
-        : { surface: 'menu', intent: 'seek' },
+        : { surface: 'menu', intent: 'availability' },
   });
 
 /** Join me notification target — map peek with invite banner. */

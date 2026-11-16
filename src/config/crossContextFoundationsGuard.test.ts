@@ -97,9 +97,9 @@ describe('crossContextFoundationsGuard', () => {
     expect(workspace).toMatch(/\/publishing\/activities/);
     expect(workspace).toMatch(/organisationRequestHeaders/);
 
-    const seeking = read('src/api/domains/seeking.ts');
-    expect(seeking).toMatch(/\/me\/seeking-posts/);
-    expect(seeking).not.toMatch(/\/me\/participant-intents/);
+    const availability = read('src/api/domains/availability.ts');
+    expect(availability).toMatch(/\/me\/availability/);
+    expect(availability).not.toMatch(/\/me\/seeking-posts/);
   });
 
   it('CTX-FOUND-04: discovery read model — one map catalog + overlay (no second discovery API in exploreApi)', () => {

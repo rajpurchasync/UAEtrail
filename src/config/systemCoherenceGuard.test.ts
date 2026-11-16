@@ -336,14 +336,14 @@ describe('systemCoherenceGuard', () => {
     expect(selection.split(/\r?\n/).length).toBeLessThan(400);
   });
 
-  it('S10d organize-from-activity effect includes host gate inputs in deps', () => {
+  it('S10d hostFrom= deep link defers publish gate to hosting wizard', () => {
     const content = readFileSync(
       join(ROOT, 'src/explore/create/hooks/useHostingFromActivity.ts'),
       'utf8'
     );
-    const effectBlock = content.slice(content.indexOf('parseHostFromActivityId(searchParams)'), content.indexOf('const clearHostingFromActivityPrefill'));
-    expect(effectBlock).toMatch(/isCommunityHost/);
-    expect(effectBlock).toMatch(/hostTiers/);
+    expect(content).not.toMatch(/memberPublishGateHref/);
+    expect(content).not.toMatch(/canPublish/);
+    expect(content).toMatch(/setComposeRoute/);
   });
 
   it('C18 explore shell model composes map catalog, rideshare, and browse shared hooks', () => {

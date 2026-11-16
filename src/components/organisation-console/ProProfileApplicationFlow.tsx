@@ -344,7 +344,9 @@ export const ProProfileApplicationFlow = ({
         onLocationChange={(latitude, longitude) => patchForm({ latitude, longitude })}
         onBack={() => mapSession.closeMap()}
         onClose={handleClose}
-        onConfirm={() => mapSession.closeMap()}
+        onConfirm={(_lat, _lng) => {
+          mapSession.closeMap();
+        }}
       />
     ) : null;
 

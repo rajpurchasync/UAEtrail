@@ -5,7 +5,9 @@ import { ShareButton } from '../../components/ui/ShareButton';
 export const BROWSE_CARD_SHELL =
   'rounded-xl flex h-full flex-col overflow-hidden border border-neutral-200 bg-white shadow-[0_1px_4px_rgba(15,23,42,.05)]';
 
-export const BROWSE_CARD_IMAGE = 'aspect-[5/2] w-full shrink-0';
+export const BROWSE_CARD_IMAGE = 'aspect-[3/2] w-full shrink-0';
+
+export const BROWSE_CARD_BODY = 'flex flex-1 flex-col gap-2 px-3 pb-2 pt-2.5';
 
 export const BROWSE_CARD_FOOTER = 'mt-auto flex gap-2 border-t border-neutral-100 px-3 py-2';
 

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { seekingExploreMapItem } from '../../explore/exploreMapItemFixtures';
+import { availabilityExploreMapItem } from '../../explore/exploreMapItemFixtures';
 import { selectSeekingActivitiesFromExploreCatalog } from './seeking';
 
 describe('selectSeekingActivitiesFromExploreCatalog', () => {
   it('includes seeking activities when date chip is not applied (People Looking for)', () => {
-    const farFuture = seekingExploreMapItem({
-      id: 'activity:seek-future',
+    const farFuture = availabilityExploreMapItem({
+      id: 'availability:user-1:slot-future',
       date: '2099-06-15',
     });
     const rows = selectSeekingActivitiesFromExploreCatalog([farFuture], {
@@ -18,8 +18,8 @@ describe('selectSeekingActivitiesFromExploreCatalog', () => {
   });
 
   it('respects activity date preset when provided (Activities list)', () => {
-    const farFuture = seekingExploreMapItem({
-      id: 'activity:seek-future',
+    const farFuture = availabilityExploreMapItem({
+      id: 'availability:user-1:slot-future',
       date: '2099-06-15',
     });
     const rows = selectSeekingActivitiesFromExploreCatalog([farFuture], {

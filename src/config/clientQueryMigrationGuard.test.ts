@@ -79,13 +79,6 @@ describe('clientQueryMigrationGuard (MIG-CLIENT-QUERY)', () => {
     expect(content).not.toMatch(/useSafeAsyncEffect/);
   });
 
-  it('useParticipantIntentJoinContext uses useQuery', () => {
-    const content = read('src/hooks/useParticipantIntentJoinContext.ts');
-    expect(content).toMatch(/useQuery/);
-    expect(content).toMatch(/participantIntentJoinRequestQueryKey/);
-    expect(content).not.toMatch(/useSafeAsyncEffect/);
-  });
-
   it('useMemberProfilePage uses person public profile query keys', () => {
     const content = read('src/hooks/useMemberProfilePage.ts');
     expect(content).toMatch(/useQuery/);

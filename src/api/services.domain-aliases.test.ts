@@ -36,9 +36,11 @@ describe('api canonical surface', () => {
     expect(typeof api.revokePlatformAdmin).toBe('function');
   });
 
-  it('exposes seeking post BWL entrypoints', () => {
-    expect(typeof api.listMySeekingPosts).toBe('function');
-    expect(typeof api.createSeekingPost).toBe('function');
+  it('exposes member availability entrypoints (MIG-DISCO-REG)', () => {
+    expect(typeof api.getMyAvailability).toBe('function');
+    expect(typeof api.putMyAvailability).toBe('function');
+    expect((api as Record<string, unknown>).listMySeekingPosts).toBeUndefined();
+    expect((api as Record<string, unknown>).createSeekingPost).toBeUndefined();
     expect((api as Record<string, unknown>).listMyParticipantIntents).toBeUndefined();
   });
 

@@ -1,7 +1,7 @@
 import { useProductSearchParams } from '../../routing/useEffectiveLocation';
 import { ChevronRight } from 'lucide-react';
 import { CreateKindGrid } from '../../create/CreateKindGrid';
-import type { SeekingComposeKind } from '@uaetrail/shared-types';
+import type { AvailabilityFixedComposeKind } from '@uaetrail/shared-types';
 import { EXPLORE_COMPOSE, EXPLORE_FLOW, EXPLORE_Z } from '../../config/exploreTheme';
 import {
   ADD_PLACE_OPTIONS,
@@ -9,16 +9,16 @@ import {
   COMPOSE_MENU_TITLE,
   CREATE_TRIP_HOST_COMPOSE_OPTIONS,
   CREATE_VENUE_ADD_COMPOSE_OPTIONS,
-  SEEK_FIXED_COMPOSE_OPTIONS,
-  SEEK_MODE_OPTIONS,
+  AVAILABILITY_FIXED_COMPOSE_OPTIONS,
+  AVAILABILITY_MODE_OPTIONS,
   addComposeFromVenueKind,
   addPlaceCompose,
   composeMenuTitle,
   hostCompose,
   isComposeMenu,
   parseExploreCompose,
-  seekFixedCompose,
-  seekFlexibleCompose,
+  availabilityFixedCompose,
+  availabilityOpenCompose,
   type ExploreCompose,
 } from '../compose';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
@@ -34,12 +34,12 @@ interface CreateIntentSheetProps {
 const menuGroupClass =
   'overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-[0_1px_8px_rgba(15,23,42,.06)]';
 
-const isSeekFixedKindStep = (
+const isAvailabilityFixedKindStep = (
   route: ExploreCompose
-): route is Extract<ExploreCompose, { surface: 'menu'; intent: 'seek'; mode: 'fixed' }> =>
+): route is Extract<ExploreCompose, { surface: 'menu'; intent: 'availability'; mode: 'fixed' }> =>
   Boolean(
     isComposeMenu(route) &&
-      route.intent === 'seek' &&
+      route.intent === 'availability' &&
       'mode' in route &&
       route.mode === 'fixed'
   );
@@ -58,8 +58,9 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
   const showTopLevel = !route.intent;
   const showHostKinds = route.intent === 'host';
-  const showSeekModes = route.intent === 'seek' && !isSeekFixedKindStep(route);
-  const showSeekFixedKinds = isSeekFixedKindStep(route);
+  const showAvailabilityModes =
+    route.intent === 'availability' && !isAvailabilityFixedKindStep(route);
+  const showAvailabilityFixedKinds = isAvailabilityFixedKindStep(route);
   const showAddVenueKinds = route.intent === 'add' && !('target' in route);
   const showAddPlaceKinds =
     route.intent === 'add' && 'target' in route && route.target === 'place';
@@ -117,30 +118,32 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
                 onSelect={(kind) => onRouteChange(hostCompose(kind))}
               />
             ) : null}
-            {showSeekModes ? (
+            {showAvailabilityModes ? (
               <CreateKindGrid
-                options={SEEK_MODE_OPTIONS.map((option) => ({
+                options={AVAILABILITY_MODE_OPTIONS.map((option) => ({
                   id: option.mode,
                   label: option.label,
                   emoji: option.emoji,
                 }))}
                 onSelect={(mode) => {
-                  if (mode === 'flexible') {
-                    onRouteChange(seekFlexibleCompose());
+                  if (mode === 'open') {
+                    onRouteChange(availabilityOpenCompose());
                     return;
                   }
-                  onRouteChange({ surface: 'menu', intent: 'seek', mode: 'fixed' });
+                  onRouteChange({ surface: 'menu', intent: 'availability', mode: 'fixed' });
                 }}
               />
             ) : null}
-            {showSeekFixedKinds ? (
+            {showAvailabilityFixedKinds ? (
               <CreateKindGrid
-                options={SEEK_FIXED_COMPOSE_OPTIONS.map((option) => ({
+                options={AVAILABILITY_FIXED_COMPOSE_OPTIONS.map((option) => ({
                   id: option.kind,
                   label: option.label,
                   emoji: option.emoji,
                 }))}
-                onSelect={(kind) => onRouteChange(seekFixedCompose(kind as SeekingComposeKind))}
+                onSelect={(kind) =>
+                  onRouteChange(availabilityFixedCompose(kind as AvailabilityFixedComposeKind))
+                }
               />
             ) : null}
             {showAddVenueKinds ? (

@@ -15,7 +15,7 @@ From [`NORTHSTAR.md`](./NORTHSTAR.md), the product delivers five **capabilities*
 | Capability | Member outcome | Primary surfaces |
 |------------|----------------|------------------|
 | **Discover** | See real outdoor plans near me | `/explore`, entity detail (`/activity`, `/trail`, …) |
-| **Express demand** | Say what I want when nothing fits | Explore FAB → Find → **`activities`** (`activityMode: seeking`); manage via `/me/seeking-posts` |
+| **Express demand** | Say what I want when nothing fits | Explore FAB → **Availability** → `member_availability` (`PUT /me/availability`; fixed pins on map `source: availability`) |
 | **Connect** | Align with people before the day | **Browse — member people** (who’s going / looking / your crew on map & list) → **Chat** (`/messages`, group & outing threads) |
 | **Participate** | Join or host a specific outing | Activity detail join/RSVP; host join queue |
 | **Return** | Same crew, next time | `/profile`, **`/plan`**, notifications, goals |
@@ -114,9 +114,9 @@ Each context has **one write path** and **one public read model** where possible
 | Context | Responsibility | Frontend home | API home | Storage (see `collections.ts`) |
 |---------|----------------|---------------|----------|--------------------------------|
 | **Discovery (Explore umbrella)** | **Explore** = discovery shell (URL, layout, chrome). **Projections:** map, list explorer (`/list`), search — not separate data stores. **Activity discovery** = hosted + seeking outings from `GET /explore/map`. **Places discovery** = place / facility / shop pins from the same read (filters in explore/list). **Area** is an admin-curated **name** (`?area=` / `/area/:slug`) — **not a pin**. **People discovery** = roster, availability, directory (`member_discovery` APIs); *Looking for* tab composes **activity-discovery** seeking rows. Signed-in peek is `GET /me/discover/overlay`, not a second catalog. | Shell: `src/explore/shell/*`. Activity: `src/activity-discovery/*`, activities list in `src/explore/ui`, `src/list/*`. Places: entity detail + list filters. People: `src/people-discovery/*` | `lib/explore-map.ts`, `GET /explore/map`, `GET /me/discover/overlay` | `activities`, `locations`, `facilities`, `areas`, `tenants` (shops) |
-| **Compose** | FAB intents, wizards, draft → publish payload | `src/explore/create/` (`hosting/`), `compose.ts`, `hostingFlowEngine.ts`, `hostingFlows/`, `seekingFlowEngine.ts` | `POST /publishing/activities`, `POST /me/seeking-posts` | `activities` (seeking rows; `participant_intents` leftover ops/backfill only) |
+| **Compose** | FAB intents, wizards, draft → publish payload | `src/explore/create/` (`hosting/`), `compose.ts`, `hostingFlowEngine.ts`, `hostingFlows/`, `seekingFlowEngine.ts` (Mark availability fixed) | `POST /publishing/activities`, `PUT /me/availability` | `activities` (hosted); `member_availability` (open + fixed crew) |
 | **Participation** | Join, waitlist, RSVP, seeking joins, **Join me** invites | `useActivityJoin*`, detail + explore selection | `join-request.ts`, `activity-invite.ts`, intent join **aliases** (`participant-intent-requests-store`) | **`activity_requests`** (canonical); `participant_intent_requests` legacy-only; `activity_participants`, `activity_invites` |
-| **Browse — member people** | Who can I go with? Network roster + availability + discover directory (quota). **Looking for** tab: `GET /explore/seeking-activities` + `selectSeekingActivitiesFromExploreCatalog` (`src/activity-discovery`). | `src/people-discovery/*` (`PeopleBrowsePanel`, tabs), `ListDiscoveryExperience` | `explore-seeking-activities-read.ts`, `member-people-engagement.ts`, `member-discovery-roster.ts`, `registerMemberDiscoveryRoutes` | Composes `buddy_*`, `user_follows`, explore catalog (read), `member_profile_views` |
+| **Browse — member people** | Who can I go with? Network roster + availability + discover directory (quota). **Looking for** tab: `GET /explore/map?sources=availability` + `selectSeekingActivitiesFromExploreCatalog` (`src/activity-discovery`). | `src/people-discovery/*` (`PeopleBrowsePanel`, tabs), `ListDiscoveryExperience` | `availability-fixed-map-items.ts`, `member-people-engagement.ts`, `member-discovery-roster.ts`, `registerMemberDiscoveryRoutes` | Composes `buddy_*`, `user_follows`, explore catalog (read), `member_profile_views` |
 | **Member identity** | Profile, welcome gate, visibility, public card | `src/pages/Profile*`, `src/member/*` | `registerProfileRoutes`, `public-member-profile`, `profile-viewer-access` | `auth_users` profile fields |
 | **Member publish capabilities** | Who may Host / publish & open publishing workspace (tier + `profileComplete`) | `useMemberStatus`, `memberPublishGate` | **`services/member-status.ts` only** | `tenants`, `tenant_memberships` |
 | **Publishing console** | Tenant-scoped CRUD, check-in, activity join queue | `src/pages/publishing/*`, `src/console/*`, `components/activity/` | `/publishing/*` + `x-organisation-id` | same + `activities` |
@@ -140,8 +140,8 @@ Pick a **context id** when changing code; touch registrar + `src/api/domains/*` 
 | Context | Collections (wire) | Key HTTP | FE domain module | UI roots |
 |---------|-------------------|----------|------------------|----------|
 | discovery | `activities`, `locations`, shop tenants | `GET /explore/map` (`q`, `country`, `area`, `venue`) · `GET /me/discover/overlay` · browse also `/list` | `exploreApi` | `src/discovery` (card VM), `src/explore/shell`, `src/activity-discovery`, `src/places-discovery`, `src/explore/*`, `src/list/*` — pin UI §6.1 |
-| compose | `activities` (seeking) | `POST /publishing/activities`, `POST /me/seeking-posts` | `exploreApi`, `seekingApi`, `organisationApi` | `src/explore/ui/*` |
-| participation | `activity_requests` (`note`, `hostNote`), `activity_participants`, `activity_invites` | **`POST /activities/:id/requests`** (canonical seeking + hosted); `/me/seeking-posts/.../requests` for Find crew manage; tenant **`GET /publishing/requests`** (console API, also Plan manage) | `activitiesApi`, `seekingApi` | Activity detail, Plan manage sheet, `JoinRequestDetail` |
+| compose | `member_availability`, `activities` (hosted) | `PUT /me/availability`, `POST /publishing/activities` | `exploreApi`, `availabilityApi`, `organisationApi` | `src/explore/ui/*` |
+| participation | `activity_requests` (`note`, `hostNote`), `activity_participants`, `activity_invites` | **`POST /activities/:id/requests`** (hosted + rideshare); tenant **`GET /publishing/requests`** (console API, also Plan manage) | `activitiesApi` | Activity detail, Plan manage sheet, `JoinRequestDetail` |
 | *(cross-cut)* | — | `GET /activities/:id` (`viewerAccess`, `myJoinInvite`) | — | **`activity-viewer-access.ts`**, **`activity-invite.ts`** |
 | member_discovery | `member_profile_views` (+ read-only compose from map) | `/me/member-discovery/*` (roster, network, browse, quota, search); profile `?from=discover` | `accountApi` (`getMemberPeopleNetwork*`, discovery roster) | `src/people-discovery` — Explore **Find crew** panel, list **Buddies** (`listCat=people`), `MemberProfile` discover |
 | member_identity | `auth_users` profile | `/me/profile`, `/users/:id` | `accountApi`, `memberApi` | `Profile*`, `src/member/*` |
@@ -272,7 +272,7 @@ Detail: [`API_ROUTING.md`](./API_ROUTING.md).
 
 **Routing rule:** `ExploreMapStage` mounts one host: geography (place and facility) → `PlaceMapPeekHost`; activity → `ActivityMapPeekHost`; shop and area → `CatalogMapPeekHost`. `mapPeekSlots` branches shop, area, and activity only inside the catalog card. Facility actions are directions plus the facility page (`FacilityPeekActions`). New logic goes under `peek/{activity|place|facility|area|shop}/`, not new `Explore*Peek*` files.
 
-**Looking-for / seeking (unified with activity):** Product = **activity** (`activityMode: seeking`); publisher = **host** on wire. Map/list peek = same stack as hosted outings: `ActivityMapPeekHost` → `ActivityPeekCard` → `peek/activity/*` + `resolveActivityPeekEngagement` (`viewerAccess.mapPeekActions`). **No** intent-only peek UI in app code — map wire is activity-backed. L1 cards force `source: 'activity'` for seeking. Ops: backfill leftover `participant_intents` rows (`seeking:storage-status`). Leftover `pin=demand:` is not a product path (`seekingPinHygieneGuard`).
+**Find crew (availability — MIG-DISCO-REG):** Registry = **`member_availability`** fixed slots; map wire `source: availability`, pin `availability:{userId}:{slotId}`. L2 peek = **`AvailabilityPeekActions`** (profile + message — no join). Assembler: `discovery-catalog-builder.ts` skips legacy `activityMode: seeking` rows. Ops: `migrate-seeking-to-availability` + `seeking:storage-status` for leftover `participant_intents`; leftover `pin=demand:` is not a product path (`seekingPinHygieneGuard`).
 
 **Parity rule:** Engagement affordances on L2 must match L3 for the same viewer state (`resolvePeekDetailAccess`, activity engagement policy) — see `consumer-detail-surfaces-plan.md`.
 
@@ -304,7 +304,8 @@ Canon table: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) (Discovery UI file
 | Piece | Role | Canonical |
 |-------|------|-----------|
 | **Copy / meta** | Pure projection from L1 (testable) | `src/list/browse/*Copy.ts`, `browseCardMeta`, `browseCatalogLabels`, `venueBrowseFacts` |
-| **Media hero** | Cover + type icon + optional host band | `DiscoveryBrowsePosterBanner` (map peek + raw poster); list thumbs → `DiscoveryBrowseThumbnailPoster` |
+| **L2 frame** | Shared hero · meta · chip rows (list + peek) | `src/discovery/browse/*` — composers stay thin (`TripBrowseCard`, peek bodies) |
+| **Media hero** | Cover + type icon; **no** when/where on photo (§6.1.3) | `DiscoveryBrowsePosterBanner` (map peek); list → `DiscoveryBrowseThumbnailPoster` via `DiscoveryBrowseCardHero` |
 | **Browse bucket body** | Trips vs venues layout rules | `TripBrowseCard`, `VenueBrowseCard`, `BrowseCompactRow` |
 | **Peek shell** | Dismiss, embed vs map summary, routes entity body | `MapPeekShell` + `peek/{activity,place,shop}/*` |
 | **Engagement** | Join / wire / directions — policy-driven | `resolveListFeedFooterModel`; render → `DiscoveryCardWireEngagementFooter`, `DiscoveryBrowseListEngagementFooter`, `DiscoveryCardMapPeekEngagementFooter`, `ActivityPeekStandardFooter` |
@@ -331,12 +332,12 @@ Canon table: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) (Discovery UI file
 
 | Slot | User question | Required | Cap | P-A peek | P-B list | L3 detail owns |
 |------|---------------|----------|-----|----------|----------|----------------|
-| **S1 Media** | What kind of outing? | Cover + type icon | 1 hero | Banner in bubble | Thumbnail poster | Full gallery |
+| **S1 Media** | What kind of outing? | Cover + type icon; optional corner pill (price / sold out) | **3:2** hero | Banner in bubble | Thumbnail poster (`aspect-[3/2]`) | Full gallery |
 | **S2 Identity** | What is it? | Title (+ tappable → L3) | 1–2 lines | `MapPeekBrowseTitle` / headline | Card title | H1 + full description |
-| **S3 Schedule / place** | When & where? | When line · location line · price/spots on hero when known | 3 facts on hero | On banner overlay | On thumb overlay | Full schedule, meeting point map |
-| **S4 Policy** | Am I allowed / is it a fit? | Audience & rules chips | **≤5 chips** | `requirementBadges` via `ActivityDiscoveryPublishedBody` | Browse fact chips (`listFeedPosterStandard` **must match policy subset**) | Full requirements text |
-| **S5 Hosted by** | Who do I trust? | Label **Hosted by** (or **Tour operator**) · avatar · name · **trust line** (verified host/business, guide count) — **not** “view profile” as the trust message | 1 block | Compact row in `ActivityPeekBody`; optional strip when not compact | `DiscoveryCardHostedByRow` | Host section, reviews, guides roster |
-| **S6 Logistics hook** | How do I get there / ride? | **One** of: linked rideshare affordance · inherited place access line (parking · 4x4 · toilet) | 1 row | `ActivityPeekLinkedTransport` + optional place projection | Carpool chip on photo | Transport tab, parking map, facility pins |
+| **S3 Schedule / place** | When & where? | **One muted meta line under title:** when · place tail · price/spots (not on photo) | 1 line | `DiscoveryBrowseCardMetaLine` | Same meta resolver as list | Full schedule, meeting point map |
+| **S4 Policy** | Am I allowed / is it a fit? | Audience & rules chips | **≤5 on L1** · **≤3 visible on L2** | Shared middle / published body | `DiscoveryBrowseCardChipRow` | Full requirements text |
+| **S5 Hosted by** | Who do I trust? | Label **Hosted by** (or **Tour operator**) · avatar · name · **trust line** (verified host/business, guide count) — **not** “view profile” as the trust message | 1 block | Compact row in `ActivityPeekBody`; optional strip when not compact | `DiscoveryCardHostedByRow` (`layout="inline"` on list) | Host section, reviews, guides roster |
+| **S6 Logistics hook** | How do I get there / ride? | **One** of: linked rideshare affordance · inherited place access line (parking · 4x4 · toilet) | 1 row | `ActivityPeekLinkedTransport` + optional place projection | **Carpool link row in body** (not on photo); place logistics ≤2 chips | Transport tab, parking map, facility pins |
 | **S7 Join state** | Where am I in the flow? | Joined / Pending / spots (when changes CTA) | chips only | `ActivityPeekBody` status chips | `BrowseActivityStatusChips` | Participation, chat gates |
 | **S8 Engagement** | What’s my next step? | Primary join/wire + Details | 1 footer | `ActivityPeekStandardFooter` | `DiscoveryBrowseListEngagementFooter` / wire footer | Sticky footer + full tab layout |
 
@@ -348,7 +349,7 @@ Canon table: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) (Discovery UI file
 
 | Entity | Core job | Required slots | Card cap | L3 owns |
 |--------|----------|----------------|----------|---------|
-| **Place** (trail/camp) | Worth planning? | S1 hero · S2 name · S3 emirate/hub · S4 kind + access facts · Plan trip + Details | ≤6 fact chips | Maps, amenities, scheduled activities, nearby facilities list |
+| **Place** (trail/camp) | Worth planning? | S1 hero · S2 name · S3 **breadcrumb tail** (`area · destination` from `geoRef` / catalog) · S4 kind + access facts · Plan trip + Details | **≤3 fact chips on L2** (full set on L3) | Maps, amenities, scheduled activities, nearby facilities list |
 | **Facility** | Can I use this amenity? | S1 pin · S2 label · Directions + facility page | 2 CTAs | Condition reports, full amenity detail |
 | **Shop** | Relevant gear? | S1 hero · S2 name · region · wishlist/follow · Details | minimal | Catalog, hours, contact |
 
@@ -688,7 +689,7 @@ Phases **S0–S4** (guards), **S6–S8** (core), and **S7/S7b/S7c** are in place
 | **Auth actor** | One **person** (`users`); capabilities `GET /me/status`; **operator** = tenant-scoped **`/publishing/*`** workspace (guide, agency, shop owner) — not a separate login entity ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)). |
 | **Place** | Trail, camp, venue, outdoor spot (**place kind**). Storage: `locations` (place rows after CPC). Host registry picks **places only**. |
 | **Facility** | **Amenity** POI (toilet, rest_area, parking, …; member **outdoor_shop** pin ≠ operator shop). Storage: **`facilities` collection** (target). Optional **`parentPlaceId`** (rest stop on a trail); required **`areaId`**. |
-| **Activity** | Scheduled outing; `activityMode: hosted` \| `seeking`. **Find crew** (fixed) + **Host** on explore FAB (no separate legacy **Find** menu). |
+| **Activity** | Scheduled outing; `activityMode: hosted` only (new writes). **Find crew** = **`member_availability`** fixed slots · **Host** on explore FAB (no separate legacy **Find** menu). |
 | **Area** | Curated hub; places and facilities link via `areaId`; activity geography via `activity.locationId → place.areaId`. |
 | **Shop profiles** | **Operator tenant** + `/shop/:id` + `/publishing/*` — **not** the same as FAB **Add → Shops** (`add.place.shop` community place submit). No product catalog or shop checkout HTTP. |
 | **Add / submit** | **Not** an API or table — **provenance** `registeredByUserId` (alias `submittedById` during migration) on place/facility rows. |
@@ -944,7 +945,7 @@ Legacy shim (one release, no new imports): `placeRegistry.ts`. `placeCatalogApi.
 | FAB branch | Entity | Member “register” (create row) | Member “publish” (go public on map) | Admin / platform |
 |------------|--------|----------------------------------|-------------------------------------|------------------|
 | **Host** | `activities` (hosted) | `POST /publishing/activities` → **DRAFT** | `POST /publishing/activities/:id/publish` → **PUBLISHED** | Moderation suspend |
-| **Find crew** | `activities` (`activityMode: seeking`) | `POST /me/seeking-posts` (published seeking activity — **no** member draft step) | N/A (single shot) | Cancel / moderate |
+| **Availability (Find crew)** | `member_availability` | `PUT /me/availability` (open + optional fixed slot) | Fixed slot → explore map `source: availability` when visible | Hide visibility / prune past slots |
 | **Add → place** | `locations` (place row) | `POST /me/places` → **DRAFT** + moderation **pending** | **No member publish** — inventory = `/profile/submissions` | Approve → `status: active` + `moderationStatus: approved` + `publicationStatus: listed` (`/admin/places`) |
 | **Add → facility** | `facilities` | `POST /me/facilities` → same pending pattern | **No member publish** | `/admin/facilities` (`facilities` only — §5.1) |
 | **Host side-effect** | Place **anchor** (not catalog) | `submitMemberPlace` with `activityAnchor` (ACTIVE, **not** registry-listed) | Tied to activity publish, not catalog | — |

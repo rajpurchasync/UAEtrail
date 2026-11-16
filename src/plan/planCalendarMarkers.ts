@@ -1,5 +1,9 @@
-import type { ActivityDTO, MemberAvailabilitySlotDTO, ParticipantIntentDTO } from '@uaetrail/shared-types';
-import { formatExploreEventDateLabel, memberAvailabilityCalendarDays } from '@uaetrail/shared-types';
+import type { ActivityDTO, MemberAvailabilitySlotDTO } from '@uaetrail/shared-types';
+import {
+  formatExploreEventDateLabel,
+  isFixedAvailabilitySlot,
+  memberAvailabilityCalendarDays,
+} from '@uaetrail/shared-types';
 import type { ActivityRequestView } from '../api/types';
 import { getRequestEventDate } from '../utils/activityDates';
 import { viewerIsActivityHostUser } from '../utils/viewerHostsActivity';
@@ -25,7 +29,7 @@ export type PlanCalendarJoinedDetail = {
 export type PlanCalendarDayDetail =
   | { kind: 'available' }
   | { kind: 'hosting'; title: string; href: string; activityId: string }
-  | { kind: 'seeking'; title: string; href: string; activityId?: string; intentId?: string }
+  | { kind: 'seeking'; title: string; href: string; slotId?: string }
   | PlanCalendarJoinedDetail;
 
 export const emptyPlanCalendarDayMarkers = (): PlanCalendarDayMarkers => ({
@@ -57,10 +61,9 @@ type BuildPlanCalendarInput = {
   joinedActivities: ActivityDTO[];
   joinRequests: ActivityRequestView[];
   hostedActivities: ActivityDTO[];
-  seekingIntents: ParticipantIntentDTO[];
   viewerUserId: string | null;
   activityHref: (activityId: string) => string;
-  seekingIntentHref: (intentId: string) => string;
+  fixedAvailabilityManageHref: () => string;
   hostingManageHref: (activityId: string) => string;
 };
 
@@ -87,49 +90,34 @@ export const buildPlanCalendarMaps = (input: BuildPlanCalendarInput) => {
     }
   }
 
-  const hostedActivityIds = new Set(input.hostedActivities.map((a) => a.id));
-
-  for (const activity of input.hostedActivities) {
-    if (activity.status === 'draft') continue;
-    const day = activityScheduleDay(activity.date);
-    if (!day) continue;
-    ensureDay(markers, details, day);
-    const m = markers.get(day)!;
-    const isSeeking = activity.activityMode === 'seeking';
-    if (isSeeking) {
-      m.seeking = true;
-      details.get(day)!.push({
-        kind: 'seeking',
-        title: activity.title,
-        href: input.hostingManageHref(activity.id),
-        activityId: activity.id,
-      });
-    } else {
-      m.hosting = true;
-      details.get(day)!.push({
-        kind: 'hosting',
-        title: activity.title,
-        href: input.hostingManageHref(activity.id),
-        activityId: activity.id,
-      });
-    }
-  }
-
-  for (const intent of input.seekingIntents) {
-    if (intent.status !== 'active') continue;
-    const linkedId = intent.activityId ?? intent.seekingActivityId;
-    if (linkedId && hostedActivityIds.has(linkedId)) continue;
-    const day = activityScheduleDay(intent.date);
+  for (const slot of input.availabilitySlots) {
+    if (!isFixedAvailabilitySlot(slot)) continue;
+    const day = activityScheduleDay(slot.startAt ?? slot.startDate);
     if (!day) continue;
     ensureDay(markers, details, day);
     const m = markers.get(day)!;
     m.seeking = true;
     details.get(day)!.push({
       kind: 'seeking',
-      title: intent.title,
-      href: input.seekingIntentHref(intent.id),
-      intentId: intent.id,
-      activityId: linkedId ?? undefined,
+      title: slot.title?.trim() || 'On the map',
+      href: input.fixedAvailabilityManageHref(),
+      slotId: slot.slotId,
+    });
+  }
+
+  for (const activity of input.hostedActivities) {
+    if (activity.status === 'draft') continue;
+    if (activity.activityMode === 'seeking') continue;
+    const day = activityScheduleDay(activity.date);
+    if (!day) continue;
+    ensureDay(markers, details, day);
+    const m = markers.get(day)!;
+    m.hosting = true;
+    details.get(day)!.push({
+      kind: 'hosting',
+      title: activity.title,
+      href: input.hostingManageHref(activity.id),
+      activityId: activity.id,
     });
   }
 

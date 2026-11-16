@@ -4,17 +4,15 @@ import { join } from 'node:path';
 
 const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 
-describe('explore seeking activities read contract', () => {
-  it('exposes GET /explore/seeking-activities for people-discovery Looking for', () => {
+describe('explore availability catalog contract', () => {
+  it('does not expose legacy GET /explore/seeking-activities', () => {
     const registrar = read('src/routes/user/registerPublicPlaceRoutes.ts');
-    expect(registrar).toMatch(/\/explore\/seeking-activities/);
-    expect(registrar).toMatch(/loadExploreSeekingActivitiesForMapViewer/);
-    expect(read('src/services/place-public-read.ts')).toMatch(/loadExploreSeekingActivitiesForViewer/);
+    expect(registrar).not.toMatch(/\/explore\/seeking-activities/);
   });
 
-  it('filters published seeking activities from explore map assembler', () => {
-    const service = read('src/services/explore-seeking-activities-read.ts');
-    expect(service).toMatch(/loadExploreMapItemsForMemberEngagement/);
-    expect(service).toMatch(/exploreMapItemIsSeeking/);
+  it('appends fixed availability to explore map assembler', () => {
+    const assembler = read('src/lib/discovery-catalog-builder.ts');
+    expect(assembler).toMatch(/buildAvailabilityFixedMapItems/);
+    expect(assembler).toMatch(/activityMode === 'seeking'\) continue/);
   });
 });

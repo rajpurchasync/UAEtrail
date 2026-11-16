@@ -109,6 +109,9 @@ export const listTenantActivitiesDetailed = async (input: {
 };
 
 export const createActivityDetailed = async (data: ActivityCreateInput): Promise<ActivityWithTenantRelations> => {
+  if (data.activityMode === 'seeking') {
+    throw new Error('activity_mode_seeking_retired');
+  }
   const activityId = newEntityId();
   const mongoDoc = buildActivityFromCreateInput(data, activityId);
   const linkedLocation = mongoDoc.locationId ? await findLocationInMongo(mongoDoc.locationId) : null;
@@ -133,6 +136,9 @@ export const updateActivityDetailed = async (
   activityId: string,
   data: ActivityUpdateInput
 ): Promise<ActivityWithTenantRelations> => {
+  if (data.activityMode === 'seeking') {
+    throw new Error('activity_mode_seeking_retired');
+  }
   const patch: Partial<MongoActivityDoc> = { updatedAt: new Date() };
   if (data.activityType !== undefined) patch.activityType = data.activityType as ActivityType;
   if (data.title !== undefined) patch.title = data.title;

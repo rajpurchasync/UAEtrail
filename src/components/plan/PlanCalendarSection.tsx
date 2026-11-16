@@ -203,7 +203,7 @@ export const PlanCalendarSection = ({
                     : row.kind === 'hosting'
                       ? `hosting-${row.activityId}`
                       : row.kind === 'seeking'
-                        ? `seeking-${row.intentId ?? row.activityId ?? index}`
+                        ? `crew-${row.slotId ?? index}`
                         : `available-${index}`;
 
                 return (

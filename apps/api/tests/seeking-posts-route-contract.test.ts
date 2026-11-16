@@ -1,62 +1,51 @@
 /**
- * Canonical BWL: POST /me/seeking-posts → seeking activity only (MIG-COH-01).
+ * Legacy `/me/seeking-posts` retired — crew writes use `PUT /me/availability` (MIG-DISCO-REG).
  */
-import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import type { Express } from 'express';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
-import { cleanupTestUsers, registerVerifiedVisitor } from './helpers/fixtures.js';
-import { getMongoClient } from '../src/lib/mongo.js';
-import { COLLECTIONS } from '../src/lib/collections.js';
-import { findActivityDocInMongo } from '../src/lib/entity-sync.js';
-import { buildTestParticipantIntentInput, ensureCuratedAreasSeeded } from './helpers/test-seed.js';
+import { createAuthUser } from '../src/lib/auth-users-store.js';
+import { UserRole, UserStatus } from '../src/domain/enums.js';
+import { generateReferralCode } from '../src/lib/referral-code.js';
+import bcrypt from 'bcryptjs';
 
 let app: Express;
 
 beforeAll(async () => {
   app = await bootstrapTestApp();
-  await ensureCuratedAreasSeeded();
 });
 
-describe('POST /me/seeking-posts (canonical)', () => {
-  afterEach(async () => {
-    await cleanupTestUsers();
-  });
-
-  it('returns 201 with activityId and does not persist participant_intents', async () => {
+describe('POST /me/seeking-posts (retired)', () => {
+  it('returns 404 — use PUT /me/availability for Find crew fixed posts', async () => {
     const suffix = `seeking-posts-${Date.now()}`;
-    const visitor = await registerVerifiedVisitor(app, suffix);
-
-    const body = buildTestParticipantIntentInput({
-      title: `Find via seeking-posts ${suffix}`,
-      date: '2026-12-24',
-      time: '07:00',
-      comment: 'Looking for company.',
+    const password = 'TestPass1!';
+    const hash = await bcrypt.hash(password, 10);
+    const user = await createAuthUser({
+      email: `seeking-retire-${suffix}@test.local`,
+      passwordHash: hash,
+      googleId: null,
+      authProvider: 'EMAIL',
+      role: UserRole.PARTICIPANT,
+      status: UserStatus.ACTIVE,
+      emailVerifiedAt: new Date(),
+      referralCode: generateReferralCode(),
+      profile: { displayName: 'Seeker', phone: null, bio: null, avatarUrl: null },
     });
 
-    const res = await request(app)
+    const login = await request(app).post('/api/auth/login').send({ email: user.email, password });
+    expect(login.status).toBe(200);
+    const token = login.body.tokens.accessToken as string;
+
+    const response = await request(app)
       .post('/api/me/seeking-posts')
-      .set('Authorization', `Bearer ${visitor.accessToken}`)
-      .send(body);
-
-    expect(res.status).toBe(201);
-    const data = res.body.data as {
-      id: string;
-      activityId?: string | null;
-      seekingActivityId?: string | null;
-    };
-    expect(data.id).toBeTruthy();
-    const activityId = data.activityId ?? data.seekingActivityId;
-    expect(activityId).toBeTruthy();
-
-    const intentDoc = await getMongoClient()!
-      .db()
-      .collection(COLLECTIONS.PARTICIPANT_INTENTS)
-      .findOne({ _id: data.id });
-    expect(intentDoc).toBeNull();
-
-    const activity = await findActivityDocInMongo(activityId as string);
-    expect(activity?.activityMode).toBe('seeking');
-    expect(activity?.participantIntentId).toBe(data.id);
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        kind: 'hiking',
+        title: `Find via seeking-posts ${suffix}`,
+        latitude: 25.1,
+        longitude: 55.2,
+      });
+    expect(response.status).toBe(404);
   });
 });

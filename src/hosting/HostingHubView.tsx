@@ -29,7 +29,6 @@ import { ActivityManageSheet } from '../components/activity/ActivityManageSheet'
 import type { ActivityMapPeekActionHandlers } from '../activity/executeActivityMapPeekAction';
 import { useActivityInviteShareSheet } from '../hooks/useActivityInviteShareSheet';
 import { PlanNeedsYouStrip } from '../components/plan/PlanNeedsYouStrip';
-import { HostingSeekingPostsSection } from './HostingSeekingPostsSection';
 import { resolveJoinRequestActivity } from '../utils/joinRequestActivity';
 import type { ActivityRequestView } from '../api/types';
 import { matchesActivitySearch } from '../utils/activitySearch';
@@ -94,11 +93,6 @@ export const HostingHubView = ({ refreshKey, onCreateNew }: HostingHubViewProps)
     persistHostingSurfaceMode('community');
   }, []);
 
-  const {
-    loading: intentsLoading,
-    refetch: refetchIntents,
-  } = useMySeekingPosts(true, refreshKey);
-
   const [timeRange, setTimeRange] = useState<PlanHostingScheduleLens>('week');
   const [searchQuery, setSearchQuery] = useState('');
   const [manageActivity, setManageActivity] = useState<ActivityDTO | null>(null);
@@ -123,9 +117,8 @@ export const HostingHubView = ({ refreshKey, onCreateNew }: HostingHubViewProps)
   useEffect(() => {
     if (!refreshKey) return;
     void host.reload();
-    void refetchIntents();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- refresh when refreshKey bumps
-  }, [refreshKey, host.reload, refetchIntents]);
+  }, [refreshKey, host.reload]);
 
   const filterBySearch = useCallback(
     (pool: ActivityDTO[]) => {
@@ -174,7 +167,7 @@ export const HostingHubView = ({ refreshKey, onCreateNew }: HostingHubViewProps)
 
   const queueLoading = host.loading;
   const scheduleLoading = scheduleQuery.loading;
-  const pageLoading = queueLoading || intentsLoading || (scheduleLoading && scheduleActivities.length === 0);
+  const pageLoading = queueLoading || (scheduleLoading && scheduleActivities.length === 0);
 
   const countForChip = (key: PlanHostingScheduleLens): number | '…' => {
     if (rangeCounts.loading) return '…';
@@ -466,14 +459,6 @@ export const HostingHubView = ({ refreshKey, onCreateNew }: HostingHubViewProps)
             actionTo={pastPreview.total > 0 ? PUBLISHING_HISTORY_PATH : undefined}
           />
         )}
-      </section>
-
-      <section aria-labelledby="hosting-seeking-posts-heading" className="space-y-2">
-        <AccountSectionHeader title="Open “find company” posts" />
-        <h2 id="hosting-seeking-posts-heading" className="sr-only">
-          Open find company posts
-        </h2>
-        <HostingSeekingPostsSection refreshKey={refreshKey} canHost />
       </section>
 
       {hostActions.error && <ConsumerErrorCard message={hostActions.error} />}

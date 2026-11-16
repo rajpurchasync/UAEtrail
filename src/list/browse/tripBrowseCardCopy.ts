@@ -4,9 +4,16 @@ import { browseCardMeta, browseRowWhenDisplay } from './browseCardMeta';
 import { LIST_FEED_CTA_CARPOOL } from '../listFeedCtaCopy';
 import { resolveListFeedPosterRequirementLabels } from '../listFeedPosterStandard';
 import { resolveActivityLinkedPlaceLogisticsLabels } from './venueBrowseFacts';
+import { resolveDiscoveryBrowseGeoHubPath } from '../../discovery/browse/resolveDiscoveryBrowseGeoLink';
 
 const TRIP_BROWSE_FACT_LIMIT = 5;
+export const TRIP_BROWSE_VISIBLE_FACT_LIMIT = 3;
 const SEEKING_LIST_POLICY_LABEL = 'Looking for';
+
+const joinMetaParts = (parts: (string | null | undefined)[]): string | null => {
+  const next = parts.map((part) => part?.trim()).filter((part): part is string => Boolean(part));
+  return next.length > 0 ? next.join(' · ') : null;
+};
 
 export type TripBrowseCardCarpool = {
   label: string;
@@ -16,6 +23,8 @@ export type TripBrowseCardCarpool = {
 
 export type TripBrowseCardCopy = {
   title: string;
+  metaLine: string | null;
+  metaHref: string | null;
   locationLine: string | null;
   whenLine: string | null;
   price: string | null;
@@ -23,11 +32,12 @@ export type TripBrowseCardCopy = {
   hostAvatar: string | null;
   soldOut: boolean;
   factLabels: string[];
+  visibleFactLabels: string[];
   carpool: TripBrowseCardCarpool | null;
   placeLogisticsLabels: string[];
 };
 
-/** Trips browse bucket — when/price on the photo, host + labels in the body. */
+/** Trips browse bucket — meta under title; host + labels in the body. */
 export const resolveTripBrowseCardCopy = (card: DiscoveryCardModel): TripBrowseCardCopy => {
   const meta = browseCardMeta(card);
   const when = browseRowWhenDisplay(card);
@@ -61,15 +71,20 @@ export const resolveTripBrowseCardCopy = (card: DiscoveryCardModel): TripBrowseC
 
   const placeLogisticsLabels = carpool ? [] : resolveActivityLinkedPlaceLogisticsLabels(card);
 
+  const factLabels = [...new Set(labels)].slice(0, TRIP_BROWSE_FACT_LIMIT);
+
   return {
     title: meta.title,
+    metaLine: joinMetaParts([whenLine, meta.location]),
+    metaHref: resolveDiscoveryBrowseGeoHubPath(card),
     locationLine: meta.location,
     whenLine,
     price: meta.price,
     hostName: meta.hostName,
     hostAvatar: meta.hostAvatar,
     soldOut: meta.soldOut,
-    factLabels: [...new Set(labels)].slice(0, TRIP_BROWSE_FACT_LIMIT),
+    factLabels,
+    visibleFactLabels: factLabels.slice(0, TRIP_BROWSE_VISIBLE_FACT_LIMIT),
     carpool,
     placeLogisticsLabels,
   };

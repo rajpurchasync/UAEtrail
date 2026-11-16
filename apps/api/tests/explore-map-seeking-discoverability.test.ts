@@ -3,59 +3,72 @@ import request from 'supertest';
 import type { Express } from 'express';
 import { UserRole, UserStatus } from '../src/domain/enums.js';
 import { createAuthUser } from '../src/lib/auth-users-store.js';
-import { createParticipantIntent } from '../src/lib/participant-intents-store.js';
 import { generateReferralCode } from '../src/lib/referral-code.js';
 import bcrypt from 'bcryptjs';
-import { patchActivityInMongo } from '../src/lib/entity-sync.js';
 import { invalidateExploreMapCache } from '../src/lib/explore-map-cache.js';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
-import { buildTestParticipantIntentInput, ensureCuratedAreasSeeded } from './helpers/test-seed.js';
 
 let app: Express;
 
 beforeAll(async () => {
   app = await bootstrapTestApp();
-  await ensureCuratedAreasSeeded();
 });
 
-describe('GET /api/explore/map seeking discoverability', () => {
-  it('includes published seeking activities even when startAt is before today', async () => {
-    const suffix = `seek-past-${Date.now()}`;
+describe('GET /api/explore/map availability discoverability (MIG-DISCO-REG)', () => {
+  it('includes fixed public availability when sources=availability', async () => {
+    const suffix = `avail-map-${Date.now()}`;
+    const password = 'TestPass1!';
+    const hash = await bcrypt.hash(password, 10);
     const user = await createAuthUser({
-      email: `seeker-past-${suffix}@test.local`,
-      passwordHash: await bcrypt.hash('TestPass1', 10),
+      email: `avail-map-${suffix}@test.local`,
+      passwordHash: hash,
       googleId: null,
       authProvider: 'EMAIL',
       role: UserRole.PARTICIPANT,
       status: UserStatus.ACTIVE,
       emailVerifiedAt: new Date(),
       referralCode: generateReferralCode(),
-      profile: { displayName: 'Seeker', phone: null, bio: null, avatarUrl: null },
+      profile: { displayName: 'Avail Member', phone: null, bio: null, avatarUrl: null },
     });
 
-    const intent = await createParticipantIntent(
-      user._id,
-      buildTestParticipantIntentInput({
-        title: `Past start seeking ${suffix}`,
-        partySize: 2,
-      })
-    );
+    const login = await request(app).post('/api/auth/login').send({ email: user.email, password });
+    expect(login.status).toBe(200);
+    const token = login.body.tokens.accessToken as string;
 
-    const past = new Date();
-    past.setDate(past.getDate() - 14);
-    past.setHours(9, 0, 0, 0);
-    await patchActivityInMongo(intent.seekingActivityId!, { startAt: past });
+    const tomorrow = new Date();
+    tomorrow.setUTCDate(tomorrow.getUTCDate() + 2);
+    const start = tomorrow.toISOString().slice(0, 10);
+
+    const put = await request(app)
+      .put('/api/me/availability')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        kinds: ['hiking'],
+        visibility: 'public',
+        slots: [
+          {
+            scheduleKind: 'fixed',
+            startDate: start,
+            endDate: start,
+            startAt: `${start}T09:00:00.000Z`,
+            endAt: `${start}T11:00:00.000Z`,
+            title: `Trail crew ${suffix}`,
+            latitude: 25.12,
+            longitude: 55.22,
+            locationPrecision: 'specific',
+          },
+        ],
+      });
+    expect(put.status).toBe(200);
+
     await invalidateExploreMapCache();
 
-    const response = await request(app).get('/api/explore/map');
+    const response = await request(app).get('/api/explore/map?sources=availability');
     expect(response.status).toBe(200);
-    const items = response.body.data.items as Array<{
-      id: string;
-      activityMode?: string;
-      participantIntentId?: string;
-    }>;
-    const row = items.find((item) => item.participantIntentId === intent.id);
+    const items = response.body.data.items as Array<{ id: string; source?: string; title?: string }>;
+    const row = items.find((item) => item.id.startsWith(`availability:${user._id}:`));
     expect(row).toBeDefined();
-    expect(row?.activityMode).toBe('seeking');
+    expect(row?.source).toBe('availability');
+    expect(row?.title).toContain(suffix);
   });
 });

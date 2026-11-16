@@ -6,12 +6,12 @@ import {
 } from './compose-route.js';
 
 describe('compose-route wire', () => {
-  it('formats and parses host, seek, and add tokens', () => {
+  it('formats and parses host, availability, and add tokens', () => {
     expect(formatComposeWire({ intent: 'host', kind: 'hiking' })).toBe('host:hiking');
-    expect(formatComposeWire({ intent: 'seek', mode: 'fixed', kind: 'rideshare' })).toBe(
-      'seek:fixed:rideshare'
+    expect(formatComposeWire({ intent: 'availability', mode: 'fixed', kind: 'rideshare' })).toBe(
+      'availability:fixed:rideshare'
     );
-    expect(formatComposeWire({ intent: 'seek', mode: 'flexible' })).toBe('seek:flexible');
+    expect(formatComposeWire({ intent: 'availability', mode: 'open' })).toBe('availability:open');
     expect(formatComposeWire({ intent: 'add', target: 'place', kind: 'hiking' })).toBe(
       'add:place:hiking'
     );
@@ -19,23 +19,23 @@ describe('compose-route wire', () => {
       'add:facility:toilet'
     );
     expect(formatComposeWire({ surface: 'menu', intent: 'host' })).toBe('host');
-    expect(formatComposeWire({ surface: 'menu', intent: 'seek', mode: 'fixed' })).toBe(
-      'seek:fixed'
+    expect(formatComposeWire({ surface: 'menu', intent: 'availability', mode: 'fixed' })).toBe(
+      'availability:fixed'
     );
     expect(formatComposeWire({ surface: 'menu', intent: 'add', target: 'place' })).toBe(
       'add:place'
     );
 
     expect(parseComposeWire('host:hiking')).toEqual({ intent: 'host', kind: 'hiking' });
-    expect(parseComposeWire('seek:flexible')).toEqual({ intent: 'seek', mode: 'flexible' });
-    expect(parseComposeWire('seek:fixed:hiking')).toEqual({
-      intent: 'seek',
+    expect(parseComposeWire('availability:open')).toEqual({ intent: 'availability', mode: 'open' });
+    expect(parseComposeWire('availability:fixed:hiking')).toEqual({
+      intent: 'availability',
       mode: 'fixed',
       kind: 'hiking',
     });
-    expect(parseComposeWire('seek:fixed')).toEqual({
+    expect(parseComposeWire('availability:fixed')).toEqual({
       surface: 'menu',
-      intent: 'seek',
+      intent: 'availability',
       mode: 'fixed',
     });
     expect(parseComposeWire('add:place')).toEqual({
@@ -47,6 +47,20 @@ describe('compose-route wire', () => {
       intent: 'add',
       target: 'place',
       kind: 'hiking',
+    });
+  });
+
+  it('normalizes legacy seek tokens to availability on read', () => {
+    expect(parseComposeWire('seek:flexible')).toEqual({ intent: 'availability', mode: 'open' });
+    expect(parseComposeWire('seek:fixed:hiking')).toEqual({
+      intent: 'availability',
+      mode: 'fixed',
+      kind: 'hiking',
+    });
+    expect(parseComposeWire('seek:fixed')).toEqual({
+      surface: 'menu',
+      intent: 'availability',
+      mode: 'fixed',
     });
   });
 

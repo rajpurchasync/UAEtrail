@@ -26,17 +26,11 @@ describe('componentsClientApi (R8.1)', () => {
       expect(read(file)).not.toMatch(/fetchJoinedUpcomingPlanData/);
       expectNoDirectApi(file);
     }
-    expect(read('src/components/participant-intent/SeekingIntentsSection.tsx')).toMatch(
-      /useMySeekingPosts/
-    );
-    expectNoDirectApi('src/components/participant-intent/SeekingIntentsSection.tsx');
     expect(read('src/components/plan/PlanJoinedUpcoming.tsx')).toMatch(/useMyJoinedActivities/);
     expect(read('src/components/plan/PlanJoinedUpcoming.tsx')).toMatch(/useMyActivityJoinRequests/);
     expectNoDirectApi('src/components/plan/PlanJoinedUpcoming.tsx');
     expect(read('src/components/plan/PlanJoinedUpcoming.tsx')).not.toMatch(/\bapi\./);
-    expect(read('src/hosting/HostingSeekingPostsSection.tsx')).toMatch(/useMySeekingPosts/);
-    expectNoDirectApi('src/hosting/HostingSeekingPostsSection.tsx');
-    expect(read('src/hosting/HostingSeekingPostsSection.tsx')).not.toMatch(/\bapi\./);
+    expect(read('src/hosting/HostingHubView.tsx')).not.toMatch(/useMySeekingPosts|HostingSeekingPostsSection/);
     expect(read('src/plan/PlanPage.tsx')).toMatch(/useMemberGoals/);
     expectNoDirectApi('src/plan/PlanPage.tsx');
     expect(read('src/components/plan/PlanNeedsYouStrip.tsx')).toMatch(/useMemberCoordinationAttention/);
@@ -51,21 +45,13 @@ describe('componentsClientApi (R8.1)', () => {
     expect(read('src/components/ui/TenantSwitcher.tsx')).not.toMatch(/\bapi\./);
   });
 
-  it('notifications, signup, and seeking manage sheets use hooks layer', () => {
+  it('notifications and signup use hooks layer', () => {
     const bell = read('src/components/layout/NotificationBellPopover.tsx');
     expect(bell).toMatch(/notificationInboxApi/);
     expect(bell).toMatch(/inferNotificationPath/);
     expectNoDirectApi('src/components/layout/NotificationBellPopover.tsx');
     expect(read('src/components/signup/SignupProfileWizard.tsx')).toMatch(/signupProfileApi/);
     expectNoDirectApi('src/components/signup/SignupProfileWizard.tsx');
-    for (const file of [
-      'src/components/participant-intent/ParticipantIntentJoinRequestsSection.tsx',
-      'src/components/participant-intent/ParticipantIntentEditForm.tsx',
-      'src/components/participant-intent/ParticipantIntentManageSheet.tsx',
-    ]) {
-      expect(read(file)).toMatch(/seekingClientApi/);
-      expectNoDirectApi(file);
-    }
   });
 
   it('activity invite and host manage use hooks layer', () => {

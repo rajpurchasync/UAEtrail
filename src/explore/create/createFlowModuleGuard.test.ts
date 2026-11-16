@@ -11,13 +11,15 @@ describe('create flow module boundaries (CPC-9b)', () => {
     expect(seeking).not.toMatch(/from ['"]\.\/hostingFlowEngine['"]/);
     expect(seeking).not.toMatch(/from ['"]\.\/organizeFlow['"]/);
     expect(seeking).toMatch(/createFlowShared/);
-    expect(seeking).toMatch(/seekingClientApi/);
+    expect(seeking).toMatch(/memberAvailabilityApi/);
   });
 
-  it('seeking publish returns activity map pins only (COH-01)', () => {
+  it('availability fixed publish uses availability map pins only (MIG-DISCO-REG)', () => {
     const seeking = read('src/explore/ui/seekingFlowEngine.ts');
-    expect(seeking).toMatch(/mapItemId: `activity:\$\{publishedActivityId\}`/);
+    expect(seeking).toMatch(/availabilityMapItemId/);
+    expect(seeking).toMatch(/activityId: null/);
     expect(seeking).not.toMatch(/`demand:\$\{/);
+    expect(seeking).not.toMatch(/createSeekingPost/);
   });
 
   it('hostingFlow.ts leftover facade is gone', () => {
@@ -108,11 +110,42 @@ describe('create flow module boundaries (CPC-9b)', () => {
     expect(read('src/plan/PlanPage.tsx')).not.toMatch(/explorePath\(\{ compose/);
   });
 
+  it('compose module documents product pillars (Host · Add · Availability)', () => {
+    const compose = read('src/explore/compose.ts');
+    expect(compose).toMatch(/availabilityFixedCompose/);
+    expect(compose).toMatch(/availabilityFlexibleCompose/);
+    expect(compose).toMatch(/export const isAvailabilityFixedWizard =/);
+    expect(compose).toMatch(/export const seekFixedCompose = availabilityFixedCompose/);
+    const guard = read('src/explore/create/composeRouteGuard.ts');
+    expect(guard).not.toMatch(/canPublish/);
+    expect(guard).toMatch(/Availability/);
+    const routeHook = read('src/explore/create/hooks/useComposeRoute.ts');
+    expect(routeHook).toMatch(/availabilityFixedRoute/);
+    expect(routeHook).toMatch(/isAvailabilityFlexibleWizard\(next\)/);
+    for (const hook of [
+      'useHostingFromActivity.ts',
+      'useHostingWizardPrefill.ts',
+      'useComposeRoute.ts',
+    ]) {
+      const src = read(`src/explore/create/hooks/${hook}`);
+      expect(src).not.toMatch(/memberPublishGateHref/);
+    }
+    const offerRideshare = read('src/explore/linkActivityRideshareOffer.ts');
+    expect(offerRideshare).not.toMatch(/memberPublishGateHref/);
+    const crewsList = read('src/list/explorer/ListCrewsExplorer.tsx');
+    expect(crewsList).not.toMatch(/SeekFlexibleComposeSheet/);
+    expect(crewsList).toMatch(/onOpenMarkAvailability/);
+    expect(read('src/create/launchHostWizard.ts')).toMatch(/createFlowPath/);
+    const placeNav = read('src/place/peek/navigateHostFromPlaceCard.ts');
+    expect(placeNav).toMatch(/launchHostWizard/);
+    expect(placeNav).not.toMatch(/createFlowPathFromWindow\(composeRoute\)/);
+  });
+
   it('tab FABs skip the stale Host · Find crew · Add top-level menu', () => {
     const entry = read('src/explore/create/composeFabEntry.ts');
     expect(entry).toMatch(/intent: 'host'/);
     expect(entry).toMatch(/intent: 'add'/);
-    expect(entry).toMatch(/intent: 'seek'/);
+    expect(entry).toMatch(/intent: 'availability'/);
     const mapShell = read('src/explore/shell/ExploreMapShell.tsx');
     expect(mapShell).toMatch(/onPrimaryFab=\{handlePrimaryFabTap\}/);
     expect(mapShell).not.toMatch(/onPrimaryFab=\{compose\.handleCreateTap\}/);

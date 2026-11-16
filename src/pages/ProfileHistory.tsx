@@ -15,7 +15,7 @@ import { useMemberStatus } from '../hooks/useMemberStatus';
 import { memberCanManageHostedActivities } from '../utils/hostedActivitiesGate';
 import { JoinedSection } from '../components/activity/JoinedSection';
 import { HostedActivitiesSection } from '../components/activity/HostedActivitiesSection';
-import { SeekingIntentsSection } from '../components/participant-intent/SeekingIntentsSection';
+import { PlanAvailabilitySection } from '../components/plan/PlanAvailabilitySection';
 import { ProfileHistoryPageToolbar } from '../components/profile-history/ProfileHistoryPageToolbar';
 import { ProfileHistoryFiltersSheet } from '../components/profile-history/ProfileHistoryFiltersSheet';
 import { useMemberGoals } from '../hooks/useMemberGoals';
@@ -146,13 +146,7 @@ export const ProfileHistoryPage = () => {
           />
         );
       case 'self-completed':
-        return (
-          <SeekingIntentsSection
-            segment="completed"
-            refreshKey={refreshKey}
-            searchQuery={activitySearchQuery}
-          />
-        );
+        return <PlanAvailabilitySection />;
       case 'hosted-needs-approval':
         return (
           <div className="glass-card p-6 text-center">

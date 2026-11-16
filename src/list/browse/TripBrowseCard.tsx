@@ -1,17 +1,16 @@
-import { Car, ChevronRight, Clock, MapPin } from 'lucide-react';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { EXPLORE_TYPE } from '../../config/exploreTheme';
 import { resolveTripBrowseCardCopy } from './tripBrowseCardCopy';
-import { DiscoveryBrowseThumbnailPoster } from '../../discovery/DiscoveryBrowseThumbnailPoster';
 import { BrowseItemLink } from './BrowseItemLink';
 import { DiscoveryBrowseListEngagementFooter } from '../../discovery/DiscoveryBrowseListEngagementFooter';
 import { DiscoveryCardHostedByRow } from '../../discovery/DiscoveryCardHostedByRow';
 import { BrowseActivityStatusChips } from './BrowseActivityStatusChips';
 import { useListFeedActionsOptional } from '../ui/ListFeedActionsProvider';
-import {
-  BROWSE_CARD_CHIP,
-  BROWSE_CARD_SHELL,
-} from './browseCardChrome';
+import { BROWSE_CARD_BODY, BROWSE_CARD_SHELL } from './browseCardChrome';
+import { DiscoveryBrowseCardHero } from '../../discovery/browse/DiscoveryBrowseCardHero';
+import { DiscoveryBrowseCardMetaSlot } from '../../discovery/browse/DiscoveryBrowseCardMetaSlot';
+import { DiscoveryBrowseCardChipRow } from '../../discovery/browse/DiscoveryBrowseCardChipRow';
+import { DiscoveryBrowseCardCarpoolRow } from '../../discovery/browse/DiscoveryBrowseCardCarpoolRow';
 
 type TripBrowseCardProps = {
   card: DiscoveryCardModel;
@@ -25,111 +24,93 @@ export const TripBrowseCard = ({ card, onMapHover }: TripBrowseCardProps) => {
   const joinUiState = listActions?.joinUiStateForCard(card);
   const emitHover = (id: string | null) => onMapHover?.(id);
 
+  const cornerBadges =
+    listing.soldOut || listing.price ? (
+      <>
+        {listing.soldOut ? (
+          <span className="pointer-events-auto rounded-md bg-red-600 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
+            Sold out
+          </span>
+        ) : null}
+        {listing.price ? (
+          <span className="pointer-events-auto rounded-md bg-white/95 px-1.5 py-0.5 text-[10px] font-bold leading-none text-neutral-900 shadow-sm">
+            {listing.price}
+          </span>
+        ) : null}
+      </>
+    ) : null;
+
   return (
     <article
       className={BROWSE_CARD_SHELL}
       onMouseEnter={() => emitHover(card.id)}
       onMouseLeave={() => emitHover(null)}
     >
-      <div className="relative">
-        <BrowseItemLink
-          to={card.path}
-          exploreItemId={card.id}
-          onMapHover={onMapHover}
-          className="group block"
-        >
-          <DiscoveryBrowseThumbnailPoster
-            card={card}
-            hideHostBand
-            overlayContent={
-              listing.locationLine || listing.whenLine || listing.price || listing.soldOut ? (
-                <div className="flex items-end gap-1.5">
-                  <div className="min-w-0 flex-1">
-                    {listing.locationLine ? (
-                      <p className="flex min-w-0 items-center gap-1 text-[11px] font-semibold leading-tight text-white [text-shadow:0_1px_2px_rgba(0,0,0,.45)]">
-                        <MapPin className="h-3 w-3 shrink-0 text-emerald-300" aria-hidden />
-                        <span className="min-w-0 truncate">{listing.locationLine}</span>
-                      </p>
-                    ) : null}
-                    {listing.whenLine ? (
-                      <p className="mt-0.5 flex min-w-0 items-center gap-1 text-[11px] font-semibold leading-tight text-white [text-shadow:0_1px_2px_rgba(0,0,0,.45)]">
-                        <Clock className="h-3 w-3 shrink-0 text-white/85" aria-hidden />
-                        <span className="min-w-0 truncate">{listing.whenLine}</span>
-                      </p>
-                    ) : null}
-                    {listing.carpool ? <div className="mt-0.5 h-5" aria-hidden /> : null}
-                  </div>
-                  {listing.price || listing.soldOut ? (
-                    <div className="flex shrink-0 flex-col items-end gap-1">
-                      {listing.soldOut ? (
-                        <span className="rounded-md bg-red-600 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
-                          Sold out
-                        </span>
-                      ) : null}
-                      {listing.price ? (
-                        <span className="rounded-md bg-white/95 px-1.5 py-0.5 text-[10px] font-bold leading-none text-neutral-900 shadow-sm">
-                          {listing.price}
-                        </span>
-                      ) : null}
-                    </div>
-                  ) : null}
-                </div>
-              ) : null
-            }
-          />
-        </BrowseItemLink>
-        {listing.carpool ? (
-          <BrowseItemLink
-            to={listing.carpool.path}
-            exploreItemId={listing.carpool.exploreItemId}
-            onMapHover={onMapHover}
-            aria-label={
-              listing.carpool.label.includes('carpools')
-                ? `${listing.carpool.label} — view outing for rideshare links`
-                : `${listing.carpool.label} — open linked rideshare`
-            }
-            className="absolute bottom-2 left-2.5 z-20 inline-flex max-w-[calc(100%-1.25rem)] items-center gap-1 rounded-md bg-sky-700/95 px-1.5 py-0.5 text-[11px] font-semibold text-white shadow-sm ring-1 ring-white/15 hover:bg-sky-800/95"
-          >
-            <Car className="h-3 w-3 shrink-0" aria-hidden />
-            <span className="min-w-0 truncate">{listing.carpool.label}</span>
-            <ChevronRight className="h-3 w-3 shrink-0 opacity-90" aria-hidden />
-          </BrowseItemLink>
-        ) : null}
-      </div>
       <BrowseItemLink
         to={card.path}
         exploreItemId={card.id}
         onMapHover={onMapHover}
-        className="group flex min-w-0 flex-1 flex-col"
+        className="group block"
       >
-        <div className="flex flex-1 flex-col gap-1.5 px-3 pb-2 pt-2.5">
+        <DiscoveryBrowseCardHero card={card} hideHostBand cornerBadges={cornerBadges} />
+      </BrowseItemLink>
+      <div className={BROWSE_CARD_BODY}>
+        <BrowseItemLink
+          to={card.path}
+          exploreItemId={card.id}
+          onMapHover={onMapHover}
+          className="group block min-w-0"
+        >
           <h3 className={`min-w-0 line-clamp-2 text-[15px] font-bold leading-snug ${EXPLORE_TYPE.title}`}>
             {listing.title}
           </h3>
+        </BrowseItemLink>
+        {listing.metaLine ? (
+          <DiscoveryBrowseCardMetaSlot
+            line={listing.metaLine}
+            href={listing.metaHref}
+            onMapHover={onMapHover}
+          />
+        ) : null}
+        <BrowseItemLink
+          to={card.path}
+          exploreItemId={card.id}
+          onMapHover={onMapHover}
+          className="group block min-w-0"
+        >
           {listing.hostName ? (
-            <DiscoveryCardHostedByRow card={card} embedInItemLink className="text-neutral-600" />
+            <DiscoveryCardHostedByRow
+              card={card}
+              embedInItemLink
+              mapPeekCompact
+              className="text-neutral-600"
+            />
           ) : null}
           <BrowseActivityStatusChips card={card} joinUiState={joinUiState} />
-          {listing.placeLogisticsLabels.length > 0 ? (
-            <ul className="flex flex-wrap gap-1" aria-label="Trail access">
-              {listing.placeLogisticsLabels.map((label) => (
-                <li key={label} className={`${BROWSE_CARD_CHIP} bg-sky-50 text-sky-900`}>
-                  {label}
-                </li>
-              ))}
-            </ul>
-          ) : null}
-          {listing.factLabels.length > 0 ? (
-            <ul className="flex flex-wrap gap-1">
-              {listing.factLabels.map((label) => (
-                <li key={label} className={BROWSE_CARD_CHIP}>
-                  {label}
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </div>
-      </BrowseItemLink>
+        </BrowseItemLink>
+        {listing.carpool ? (
+          <DiscoveryBrowseCardCarpoolRow
+            label={listing.carpool.label}
+            path={listing.carpool.path}
+            exploreItemId={listing.carpool.exploreItemId}
+            onMapHover={onMapHover}
+          />
+        ) : null}
+        <BrowseItemLink
+          to={card.path}
+          exploreItemId={card.id}
+          onMapHover={onMapHover}
+          className="group block min-w-0"
+        >
+          <DiscoveryBrowseCardChipRow
+            labels={listing.placeLogisticsLabels}
+            tone="logistics"
+            maxVisible={2}
+            ariaLabel="Trail access"
+          />
+          <DiscoveryBrowseCardChipRow labels={listing.visibleFactLabels} maxVisible={3} />
+        </BrowseItemLink>
+      </div>
       <DiscoveryBrowseListEngagementFooter card={card} />
     </article>
   );

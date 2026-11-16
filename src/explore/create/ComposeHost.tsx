@@ -16,11 +16,13 @@ export interface ComposeHostProps {
   composeRoute: ExploreCompose | null;
   composeMenuOpen: boolean;
   hostWizardOpen: boolean;
-  seekFixedWizardOpen: boolean;
+  /** Availability — post on map (`seek:fixed:*`). */
+  availabilityFixedWizardOpen: boolean;
   addWizardOpen: boolean;
-  seekFlexibleOpen: boolean;
+  /** Availability — share days (`seek:flexible`). */
+  availabilityFlexibleOpen: boolean;
   hostComposeKind: HostComposeKind | null;
-  seekFixedKind: SeekingComposeKind | null | undefined;
+  availabilityFixedKind: SeekingComposeKind | null | undefined;
   addVenueKind: AddVenueKind | null;
   hostingWizardPrefill: import('../ui/hostingWizardPrefill').HostingWizardPrefill | null;
   signInHref: string;
@@ -28,7 +30,7 @@ export interface ComposeHostProps {
   onCloseCompose: () => void;
   onCloseCreateFlow: () => void;
   onHostingBackToIntent: () => void;
-  onSeekingBackToIntent: () => void;
+  onAvailabilityBackToIntent: () => void;
   onAddBackToIntent: () => void;
   onActivityPublished: (activity: ActivityDTO) => void | Promise<void>;
   onOpenHostApplication: () => void;
@@ -42,18 +44,20 @@ export interface ComposeHostProps {
   /** `facilityOnPlace` query — link amenity to trail/camp catalog row. */
   facilityOnPlaceId?: string | null;
   wizardEnteredFromMenu: boolean;
+  /** Guest sign-in gate — hide kind picker so it does not stack under z-[6600] sheet. */
+  intentMenuSuppressed?: boolean;
 }
 
-/** Create-flow host (trip / venue / seek wizards) — overlay on the current surface. */
+/** Create-flow shell: Host · Add · Availability wizards on the current surface (`ComposeHost`). */
 export const ComposeHost = ({
   composeRoute,
   composeMenuOpen,
   hostWizardOpen,
-  seekFixedWizardOpen,
+  availabilityFixedWizardOpen,
   addWizardOpen,
-  seekFlexibleOpen,
+  availabilityFlexibleOpen,
   hostComposeKind,
-  seekFixedKind,
+  availabilityFixedKind,
   addVenueKind,
   hostingWizardPrefill,
   signInHref,
@@ -61,7 +65,7 @@ export const ComposeHost = ({
   onCloseCompose,
   onCloseCreateFlow,
   onHostingBackToIntent,
-  onSeekingBackToIntent,
+  onAvailabilityBackToIntent,
   onAddBackToIntent,
   onActivityPublished,
   onOpenHostApplication,
@@ -73,18 +77,19 @@ export const ComposeHost = ({
   composeAreaSlug = null,
   facilityOnPlaceId = null,
   wizardEnteredFromMenu,
+  intentMenuSuppressed = false,
 }: ComposeHostProps) => {
   const composeSessionOpen =
     composeMenuOpen ||
     hostWizardOpen ||
-    seekFixedWizardOpen ||
+    availabilityFixedWizardOpen ||
     addWizardOpen ||
-    seekFlexibleOpen;
+    availabilityFlexibleOpen;
   const immersiveWizardOpen =
     hostWizardOpen ||
-    seekFixedWizardOpen ||
+    availabilityFixedWizardOpen ||
     addWizardOpen ||
-    seekFlexibleOpen;
+    availabilityFlexibleOpen;
 
   return (
     <ComposeWizardNavigationProvider value={wizardEnteredFromMenu}>
@@ -92,7 +97,7 @@ export const ComposeHost = ({
       composeSessionOpen={composeSessionOpen}
       immersiveWizardOpen={immersiveWizardOpen}
     >
-    {composeMenuOpen && composeRoute && (
+    {composeMenuOpen && composeRoute && !intentMenuSuppressed && (
       <CreateIntentSheet
         route={composeRoute}
         onRouteChange={onComposeRouteChange}
@@ -139,22 +144,22 @@ export const ComposeHost = ({
       />
     )}
 
-    {seekFlexibleOpen && (
+    {availabilityFlexibleOpen && (
       <SeekFlexibleComposeSheet
-        open={seekFlexibleOpen}
+        open={availabilityFlexibleOpen}
         onClose={onCloseCompose}
-        onBackToIntent={onSeekingBackToIntent}
+        onBackToIntent={onAvailabilityBackToIntent}
         exploreAreaSlug={composeAreaSlug}
       />
     )}
 
-    {seekFixedWizardOpen && (
+    {availabilityFixedWizardOpen && (
       <CreateSeekingFlow
-        open={seekFixedWizardOpen}
+        open={availabilityFixedWizardOpen}
         onClose={onCloseCompose}
-        seekKind={seekFixedKind ?? null}
+        seekKind={availabilityFixedKind ?? null}
         exploreAreaSlug={composeAreaSlug}
-        onBackToIntent={onSeekingBackToIntent}
+        onBackToIntent={onAvailabilityBackToIntent}
         onSubmitted={onSeekingSubmitted}
         signInHref={signInHref}
         tenantId={tenantId}

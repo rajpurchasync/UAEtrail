@@ -91,8 +91,6 @@ export const BWL_API_MOUNTS = {
   PRO_APPLICATION: '/me/pro-application',
   ADMIN_PRO_APPLICATIONS: '/admin/pro-applications',
   SAFETY_REPORTS: '/safety/reports',
-  /** Member seeking posts (activity-backed). */
-  SEEKING_POSTS: '/me/seeking-posts',
 } as const;
 
 /**
@@ -104,6 +102,8 @@ export const BWL_API_MOUNTS = {
  */
 export const BWL_EXPLORE_MAP_SOURCE = {
   ACTIVITY: 'activity',
+  /** Fixed member availability — activity-shaped map card; storage is member_availability. */
+  AVAILABILITY: 'availability',
   PLACE: 'place',
   FACILITY: 'facility',
   SHOP: 'shop',
@@ -118,6 +118,7 @@ export const BWL_EXPLORE_MAP_SOURCE = {
 
 export type ExploreMapSourceCanonical =
   | typeof BWL_EXPLORE_MAP_SOURCE.ACTIVITY
+  | typeof BWL_EXPLORE_MAP_SOURCE.AVAILABILITY
   | typeof BWL_EXPLORE_MAP_SOURCE.PLACE
   | typeof BWL_EXPLORE_MAP_SOURCE.FACILITY
   | typeof BWL_EXPLORE_MAP_SOURCE.SHOP

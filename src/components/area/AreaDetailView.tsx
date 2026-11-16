@@ -4,7 +4,7 @@ import type { AreaDetailPayload } from '../../hooks/areaHubClientApi';
 import type { ExploreAvailabilityIndex } from '../../hooks/memberPeopleClientApi';
 import { PageMeta } from '../seo/PageMeta';
 import { explorePath } from '../../explore/routing';
-import { hostCompose, seekFixedCompose } from '../../explore/compose';
+import { availabilityFixedCompose, hostCompose } from '../../explore/compose';
 import { areaDetailPath } from '@uaetrail/shared-types';
 import { type AreaDetailTabId } from '../../area/areaDetailTab';
 import { AreaHubMapStrip } from './AreaHubMapStrip';
@@ -110,7 +110,7 @@ export const AreaDetailView = ({
 
   const findCrewPath = explorePath({
     area: area.slug,
-    compose: seekFixedCompose('hiking'),
+    compose: availabilityFixedCompose('hiking'),
   });
   const hostPath = explorePath({
     area: area.slug,

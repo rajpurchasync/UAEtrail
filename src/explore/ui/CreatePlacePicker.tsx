@@ -77,7 +77,7 @@ interface CreatePlacePickerProps {
   onLocationChange: (lat: number, lng: number) => void;
   onBack: () => void;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: (lat: number, lng: number) => void;
   headerTitle?: string;
   confirmLabel?: string;
   hint?: string;
@@ -124,7 +124,11 @@ export const CreatePlacePicker = ({
   const [latInput, setLatInput] = useState(formatCoord(latitude));
   const [lngInput, setLngInput] = useState(formatCoord(longitude));
 
-  useComposeWizardEnterSubmit(onConfirm, { enabled: phase === 'adjust' });
+  const confirmPin = useCallback(
+    () => onConfirm(latitude, longitude),
+    [onConfirm, latitude, longitude]
+  );
+  useComposeWizardEnterSubmit(confirmPin, { enabled: phase === 'adjust' });
 
   useEffect(() => {
     setMapReady(true);
@@ -488,7 +492,7 @@ export const CreatePlacePicker = ({
           </button>
           <button
             type="button"
-            onClick={onConfirm}
+            onClick={confirmPin}
             className="flex-1 rounded-2xl bg-emerald-600 py-4 text-center text-base font-bold text-white shadow-lg shadow-emerald-600/30"
           >
             {confirmLabel}

@@ -1,10 +1,9 @@
 import type { NavigateFunction } from 'react-router-dom';
 import { isPlaceMapSource } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
+import { launchHostWizard } from '../../create/launchHostWizard';
 import { composeFlowIdFromRoute } from '../../explore/composeFlowCatalog';
 import { hostCompose } from '../../explore/compose';
-import { createFlowPathFromWindow } from '../../create/createFlowPath';
-import { writeHostingWizardSession } from '../../explore/ui/composeWizardSession';
 import {
   createDraftFromRegistryPlace,
   resolveCreateActivityKindFromVenueCardKind,
@@ -20,7 +19,31 @@ const placeDetailKindToOrganizeKind = (kind: PlaceDetailKind): 'hiking' | 'campi
   return 'event';
 };
 
-/** Map peek / place detail → explore organize wizard prefilled from registry place. */
+const launchHostFromPlaceDto = (
+  navigate: NavigateFunction,
+  locationId: string,
+  place: Awaited<ReturnType<typeof fetchPublicPlaceDetail>>,
+  kind: 'hiking' | 'camping' | 'event',
+  areas: Awaited<ReturnType<typeof fetchPublishedAreas>>
+): void => {
+  const composeRoute = hostCompose(kind === 'event' ? 'activity' : kind);
+  const flowId = composeFlowIdFromRoute(composeRoute);
+  launchHostWizard({
+    navigate,
+    route: composeRoute,
+    sessionScope: `place:${locationId}`,
+    session:
+      flowId ?
+        {
+          step: 'title',
+          draft: createDraftFromRegistryPlace(place, kind, areas),
+          selectedKind: kind,
+        }
+      : undefined,
+  });
+};
+
+/** Map peek / place detail → host wizard prefilled from registry place. */
 export const navigateHostFromPlaceCard = async (
   navigate: NavigateFunction,
   card: DiscoveryCardModel
@@ -33,20 +56,7 @@ export const navigateHostFromPlaceCard = async (
     fetchPublicPlaceDetail(locationId),
     fetchPublishedAreas(),
   ]);
-  const composeRoute = hostCompose(kind === 'event' ? 'activity' : kind);
-  const flowId = composeFlowIdFromRoute(composeRoute);
-  if (flowId) {
-    writeHostingWizardSession(
-      flowId,
-      {
-        step: 'title',
-        draft: createDraftFromRegistryPlace(place, kind, areas),
-        selectedKind: kind,
-      },
-      `place:${locationId}`
-    );
-  }
-  navigate(createFlowPathFromWindow(composeRoute));
+  launchHostFromPlaceDto(navigate, locationId, place, kind, areas);
 };
 
 export const navigateHostFromPlace = async (
@@ -59,18 +69,5 @@ export const navigateHostFromPlace = async (
     fetchPublicPlaceDetail(place.id),
     fetchPublishedAreas(),
   ]);
-  const composeRoute = hostCompose(kind === 'event' ? 'activity' : kind);
-  const flowId = composeFlowIdFromRoute(composeRoute);
-  if (flowId) {
-    writeHostingWizardSession(
-      flowId,
-      {
-        step: 'title',
-        draft: createDraftFromRegistryPlace(placeDto, kind, areas),
-        selectedKind: kind,
-      },
-      `place:${place.id}`
-    );
-  }
-  navigate(createFlowPathFromWindow(composeRoute));
+  launchHostFromPlaceDto(navigate, place.id, placeDto, kind, areas);
 };

@@ -7,6 +7,7 @@ import { AreaPeekActions } from '../peek/area/AreaPeekActions';
 import { AreaPeekBody } from '../peek/area/AreaPeekBody';
 import { CatalogPeekBody } from '../peek/catalog/CatalogPeekBody';
 import { ShopPeekActions } from '../peek/shop/ShopPeekActions';
+import { AvailabilityPeekActions } from '../peek/availability/AvailabilityPeekActions';
 
 /**
  * Routes pin-summary body/actions by `card.source` — the only place that branches on wire source
@@ -37,6 +38,17 @@ export const MapPeekActionsSlot = ({
         stats={card.areaLensStats}
         areaPagePath={card.path}
         onClose={onClose}
+      />
+    );
+  }
+
+  if (card.source === 'availability') {
+    return (
+      <AvailabilityPeekActions
+        card={card}
+        onClose={onClose}
+        onMessage={rest.onMessage}
+        onGuestGatedAction={rest.onGuestGatedAction}
       />
     );
   }

@@ -90,7 +90,7 @@ describe('list module hygiene', () => {
     expect(thumb).toMatch(/TripBrowseCard/);
     expect(chrome).toMatch(/ShareButton/);
     expect(chrome).toMatch(/iconOnly/);
-    expect(chrome).toMatch(/aspect-\[5\/2\]/);
+    expect(chrome).toMatch(/aspect-\[3\/2\]/);
     expect(chrome).toMatch(/rounded-xl/);
     expect(chrome).toMatch(/rounded-\[8px\]/);
     expect(readFileSync(join(process.cwd(), 'src/discovery/DiscoveryBrowseThumbnailPoster.tsx'), 'utf8')).toMatch(
@@ -101,14 +101,15 @@ describe('list module hygiene', () => {
     expect(listing).toMatch(/LIST_FEED_CTA_WISHLIST/);
     expect(listing).toMatch(/BROWSE_CARD_FOOTER/);
     expect(listing).toMatch(/compact/);
-    expect(listing).toMatch(/overlayContent/);
+    expect(listing).toMatch(/DiscoveryBrowseCardHero/);
+    expect(listing).not.toMatch(/overlayContent/);
     expect(listing).toMatch(/resolveVenueBrowseCardCopy/);
     expect(listing).toMatch(/scheduleHint/);
     expect(listing).toMatch(/schedulePath/);
     expect(listing).toMatch(/TitleRating/);
     expect(listing).not.toMatch(/\bNew\b/);
-    expect(tripListing).toMatch(/DiscoveryBrowseThumbnailPoster/);
-    expect(tripListing).toMatch(/overlayContent/);
+    expect(tripListing).toMatch(/DiscoveryBrowseCardHero/);
+    expect(tripListing).not.toMatch(/overlayContent/);
     expect(tripListing).toMatch(/hideHostBand/);
     expect(tripListing).toMatch(/resolveTripBrowseCardCopy/);
     const thumbPoster = readFileSync(

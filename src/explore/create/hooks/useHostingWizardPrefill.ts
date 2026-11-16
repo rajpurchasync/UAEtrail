@@ -12,7 +12,6 @@ import {
   buildRideshareDraftFromSeekingMapItem,
   buildRideshareDraftFromParentActivity,
 } from '../../linkRidesharePrefill';
-import { parseHostFromActivityId } from '../../routing';
 import { clearComposeWizardSessionForRoute } from '../../ui/composeWizardSession';
 import type { HostingWizardPrefill } from '../../ui/hostingWizardPrefill';
 import type { useComposeRoute } from './useComposeRoute';
@@ -21,23 +20,34 @@ import type { useHostingFromActivity } from './useHostingFromActivity';
 type Compose = ReturnType<typeof useComposeRoute>;
 type HostingFrom = ReturnType<typeof useHostingFromActivity>;
 
-/** Host wizard: linked rideshare, offer-for-seeking, Host-from-existing prefill, and open-state. */
+/** Host wizard: linked rideshare, offer-for-seeking, Host-from-existing prefill. */
 export const useHostingWizardPrefill = (input: {
   pathname: string;
   search: string;
   searchParams: URLSearchParams;
   setSearchParams: SetURLSearchParams;
   user: { id: string } | null | undefined;
-  hostGateLoading: boolean;
-  canPublish: boolean;
   navigate: NavigateFunction;
-  navigateMemberPublishGate: (returnPath: string) => void;
   compose: Compose;
   hostingFrom: HostingFrom;
   selected: ExploreMapItemDTO | null;
   setSelectedId: (id: string | null) => void;
 }) => {
-  const { hostingFrom } = input;
+  const {
+    pathname,
+    search,
+    user,
+    navigate,
+    compose,
+    hostingFrom,
+    selected,
+    setSelectedId,
+  } = input;
+  const setComposeRoute = compose.setComposeRoute;
+  const closeCompose = compose.closeCompose;
+  const hostComposeRoute = compose.hostComposeRoute;
+  const clearHostingFromActivityPrefill = hostingFrom.clearHostingFromActivityPrefill;
+  const hostingFromActivityPrefill = hostingFrom.hostingFromActivityPrefill;
   const [rideshareLinkParent, setRideshareLinkParent] = useState<ActivityDTO | null>(null);
   const [rideshareLinkSeeking, setRideshareLinkSeeking] = useState<ExploreMapItemDTO | null>(null);
 
@@ -45,33 +55,35 @@ export const useHostingWizardPrefill = (input: {
     (parent: ActivityDTO) => {
       setRideshareLinkSeeking(null);
       setRideshareLinkParent(parent);
-      input.setSelectedId(null);
-      input.compose.setComposeRoute(hostCompose('rideshare'));
+      setSelectedId(null);
+      setComposeRoute(hostCompose('rideshare'));
     },
-    [input]
+    [setComposeRoute, setSelectedId]
   );
 
   const handleOfferRideshareForSeeking = useCallback(() => {
-    const selected = input.selected;
     if (!selected || !exploreMapItemIsSeeking(selected)) return;
 
-    const returnPath = `${input.pathname}${input.search}`;
+    const returnPath = `${pathname}${search}`;
 
-    if (!input.user) {
-      input.navigate(`/signup?redirect=${encodeURIComponent(returnPath)}`);
-      return;
-    }
-    if (input.hostGateLoading) return;
-    if (!input.canPublish) {
-      input.navigateMemberPublishGate(returnPath);
+    if (!user) {
+      navigate(`/signup?redirect=${encodeURIComponent(returnPath)}`);
       return;
     }
 
     setRideshareLinkParent(null);
     setRideshareLinkSeeking(selected);
-    input.setSelectedId(null);
-    input.compose.setComposeRoute(hostCompose('rideshare'));
-  }, [input]);
+    setSelectedId(null);
+    setComposeRoute(hostCompose('rideshare'));
+  }, [
+    navigate,
+    pathname,
+    search,
+    selected,
+    setComposeRoute,
+    setSelectedId,
+    user,
+  ]);
 
   const hostingWizardPrefill = useMemo((): HostingWizardPrefill | null => {
     if (rideshareLinkParent) {
@@ -87,34 +99,29 @@ export const useHostingWizardPrefill = (input: {
         linkToParentActivityId: parentActivityId ?? undefined,
       };
     }
-    if (hostingFrom.hostingFromActivityPrefill) {
+    if (hostingFromActivityPrefill) {
       return {
-        draft: hostingFrom.hostingFromActivityPrefill.draft,
-        sourceActivityId: hostingFrom.hostingFromActivityPrefill.sourceActivityId,
+        draft: hostingFromActivityPrefill.draft,
+        sourceActivityId: hostingFromActivityPrefill.sourceActivityId,
       };
     }
     return null;
-  }, [rideshareLinkParent, rideshareLinkSeeking, hostingFrom.hostingFromActivityPrefill]);
-
-  const hostFromPending = Boolean(parseHostFromActivityId(input.searchParams));
-  const hostWizardOpen =
-    (Boolean(hostingWizardPrefill) && Boolean(input.user)) ||
-    (Boolean(input.compose.hostComposeRoute) && !hostFromPending && Boolean(input.user));
+  }, [rideshareLinkParent, rideshareLinkSeeking, hostingFromActivityPrefill]);
 
   const closeCreateFlow = useCallback(() => {
-    hostingFrom.clearHostingFromActivityPrefill();
+    clearHostingFromActivityPrefill();
     setRideshareLinkParent(null);
     setRideshareLinkSeeking(null);
-    input.compose.closeCompose();
-  }, [input, hostingFrom]);
+    closeCompose();
+  }, [clearHostingFromActivityPrefill, closeCompose]);
 
   const onHostingBackToIntent = useCallback(() => {
-    clearComposeWizardSessionForRoute(input.compose.hostComposeRoute);
-    hostingFrom.clearHostingFromActivityPrefill();
+    clearComposeWizardSessionForRoute(hostComposeRoute);
+    clearHostingFromActivityPrefill();
     setRideshareLinkParent(null);
     setRideshareLinkSeeking(null);
-    input.compose.setComposeRoute({ surface: 'menu', intent: 'host' });
-  }, [hostingFrom, input]);
+    setComposeRoute({ surface: 'menu', intent: 'host' });
+  }, [clearHostingFromActivityPrefill, hostComposeRoute, setComposeRoute]);
 
   return {
     rideshareLinkParent,
@@ -124,7 +131,6 @@ export const useHostingWizardPrefill = (input: {
     handleCreateLinkedRideshare,
     handleOfferRideshareForSeeking,
     hostingWizardPrefill,
-    hostWizardOpen,
     closeCreateFlow,
     onHostingBackToIntent,
   };

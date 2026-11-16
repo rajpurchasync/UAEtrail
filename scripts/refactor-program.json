@@ -200,13 +200,25 @@
       "successMetric": "CPC-7+; single catalog read/write vocabulary (C26)"
     },
     {
-      "id": "MIG-SEEKING-READ",
+      "id": "MIG-DISCO-REG",
       "phase": "P1",
       "status": "complete",
       "owner": "discovery",
-      "contextIds": ["discovery", "participation", "compose"],
-      "apiRoots": ["apps/api/src/services/explore-seeking-activities-read.ts"],
-      "successMetric": "seeking:deploy-gate on staging + local; C20 read paths only"
+      "contextIds": ["discovery", "availability", "compose"],
+      "apiRoots": [
+        "apps/api/src/lib/availability-fixed-map-items.ts",
+        "apps/api/src/lib/discovery-catalog-builder.ts",
+        "apps/api/src/lib/explore-map-base.ts",
+        "apps/api/src/services/me-availability-commands.ts"
+      ],
+      "feRoots": [
+        "src/explore/compose.ts",
+        "src/explore/ui/seekingFlowEngine.ts",
+        "src/hooks/exploreSeekingClientApi.ts",
+        "src/explore/ui/peek/availability/AvailabilityPeekActions.tsx",
+        "src/activity/availabilityMapPeekParity.test.ts"
+      ],
+      "successMetric": "Crew registry = member_availability; map source=availability; no /me/seeking-posts or new activityMode seeking writes"
     },
     {
       "id": "MIG-PLAN-HUB",
@@ -232,7 +244,7 @@
         "src/explore/ui/HostingPublishSuccessSheet.tsx",
         "src/pages/ProfileEdit.tsx",
         "src/pages/Profile.tsx",
-        "src/hooks/useParticipantIntentJoinContext.ts",
+        "src/hooks/useMemberAvailability.ts",
         "src/pages/MemberProfile.tsx",
         "src/hooks/useMemberProfilePage.ts",
         "src/pages/Buddies.tsx",
@@ -321,15 +333,12 @@
         "apps/api/src/routes/user/registerNotificationRoutes.ts",
         "apps/api/src/services/member-discovery-me-read.ts",
         "apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts",
-        "apps/api/src/services/participant-intent-me-read.ts",
-        "apps/api/src/services/participant-intent-me-commands.ts",
-        "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts",
-        "apps/api/src/services/me-goals-read.ts",
-        "apps/api/src/services/me-goals-commands.ts",
-        "apps/api/src/routes/user/registerMeGoalsRoutes.ts",
         "apps/api/src/services/me-availability-read.ts",
         "apps/api/src/services/me-availability-commands.ts",
         "apps/api/src/routes/user/registerMeAvailabilityRoutes.ts",
+        "apps/api/src/services/me-goals-read.ts",
+        "apps/api/src/services/me-goals-commands.ts",
+        "apps/api/src/routes/user/registerMeGoalsRoutes.ts",
         "apps/api/src/services/me-activity-participation-read.ts",
         "apps/api/src/services/activity-group-chat-me-commands.ts",
         "apps/api/src/services/me-account-session-read.ts",
@@ -663,16 +672,16 @@
       "owner": "product-eng",
       "contextIds": ["participation", "compose", "discovery"],
       "apiRoots": [
-        "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts",
-        "apps/api/src/services/participant-intent-me-commands.ts",
-        "apps/api/src/lib/participant-intents-store.ts"
+        "apps/api/src/routes/user/registerMeAvailabilityRoutes.ts",
+        "apps/api/src/services/me-availability-commands.ts",
+        "apps/api/src/lib/availability-fixed-map-items.ts"
       ],
       "feRoots": [
-        "src/api/domains/seeking.ts",
-        "src/hooks/seekingClientApi.ts",
+        "src/api/domains/availability.ts",
+        "src/hooks/memberAvailabilityApi.ts",
         "src/explore/ui/seekingFlowEngine.ts"
       ],
-      "successMetric": "No participant_intents writes; seeking activities only; no demand: ids"
+      "successMetric": "Crew registry is member_availability; no /me/seeking-posts client or new activityMode seeking writes"
     },
     {
       "id": "MIG-COH-02",

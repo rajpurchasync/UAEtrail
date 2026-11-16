@@ -1,9 +1,7 @@
 /**
-
- * Compose wizard catalog — one entry per FAB path (Host · Find crew · Add on map).
-
- * Product spec: docs/CREATE_FLOW.md · hostingFlows / seekingFlowEngine / addFlow (catalog = place/facility only).
-
+ * Compose wizard catalog — one entry per product pillar:
+ * **Host** (`hostingFlow`) · **Availability** (`seekingFlow` + flexible sheet) · **Add** (`addFlow`).
+ * Wire `availability:*` = mark availability. Spec: docs/CREATE_FLOW.md.
  */
 
 const COMPOSE_FLOW_SPEC_DOC = 'docs/CREATE_FLOW.md';
@@ -78,7 +76,7 @@ export type ComposeFlowSpec = {
 
   id: CanonicalComposeFlowId;
 
-  /** Canonical FAB wire ids (`host.*` / `seek.*` / `add.*`). */
+  /** Canonical FAB wire ids (`host.*` / `seek.fixed.*` / `add.*`). */
 
   intent: FabTopLevel;
 
@@ -248,7 +246,7 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     id: 'seek.fixed.hiking',
 
-    intent: 'seek',
+    intent: 'availability',
 
     outingCategory: 'hiking',
 
@@ -272,7 +270,7 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     id: 'seek.fixed.camping',
 
-    intent: 'seek',
+    intent: 'availability',
 
     outingCategory: 'camping',
 
@@ -296,7 +294,7 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     id: 'seek.fixed.event',
 
-    intent: 'seek',
+    intent: 'availability',
 
     outingCategory: 'activities',
 
@@ -320,7 +318,7 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     id: 'seek.fixed.rideshare',
 
-    intent: 'seek',
+    intent: 'availability',
 
     outingCategory: 'rideshare',
 
@@ -518,12 +516,12 @@ const addPlaceKindToId = (kind: string): CanonicalComposeFlowId | null => {
 
 
 
-/** Resolve catalog entry from an open compose route (`host` / `seek` / `add`). */
+/** Resolve catalog entry from an open compose route (`host` / `availability` / `add`). */
 export const composeFlowIdFromRoute = (route: ExploreCompose | null): CanonicalComposeFlowId | null => {
   if (!route) return null;
   if ('surface' in route) return null;
   if (route.intent === 'host' && route.kind) return HOST_KIND_TO_FLOW_ID[route.kind];
-  if (route.intent === 'seek' && route.mode === 'fixed' && route.kind) {
+  if (route.intent === 'availability' && route.mode === 'fixed' && route.kind) {
     return SEEK_KIND_TO_FLOW_ID[route.kind];
   }
   if (route.intent === 'add' && 'target' in route) {

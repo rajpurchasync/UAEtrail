@@ -12,7 +12,6 @@ import { createPublicPlacePremiumCheckout } from '../../services/place-premium-c
 import { listPublicPlaceReachableRides } from '../../services/place-reachable-rides-read.js';
 import {
   loadExploreMapForViewer,
-  loadExploreSeekingActivitiesForMapViewer,
   loadPublicPlaceCatalog,
   loadPublicPlaceDetailPayload,
   loadPublicPlaceTrackPreview,
@@ -65,18 +64,6 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
       const payload: ExploreMapRouteResult = data;
       if (unscoped && projection !== 'full' && (await finishCatalogEtag(req, res, 'map', payload))) return;
       res.json({ data: payload });
-    } catch (error) {
-      next(error);
-    }
-  });
-
-  router.get('/explore/seeking-activities', async (req, res, next) => {
-    try {
-      const catalogFresh = readExploreMapMemoryCache() != null;
-      if (catalogFresh && sendNotModifiedIfMatch(req, res, await readCatalogResponseEtag('seeking'))) return;
-      const data = await loadExploreSeekingActivitiesForMapViewer();
-      if (await finishCatalogEtag(req, res, 'seeking', data)) return;
-      res.json({ data });
     } catch (error) {
       next(error);
     }

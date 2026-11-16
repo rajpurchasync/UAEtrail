@@ -10,6 +10,8 @@ import {
   AUTH_RESUME_JOIN_QUERY,
 } from '../../utils/authReturnContext';
 import { resolveExploreGuestAuthReturnPath } from '../exploreGuestAuthReturn';
+import { isComposeWizardRoute } from '../compose';
+import { exploreMapItemIsAvailabilityCatalog } from '@uaetrail/shared-types';
 import type { useExploreExperienceModel } from './useExploreExperienceModel';
 
 type Model = ReturnType<typeof useExploreExperienceModel>;
@@ -98,7 +100,10 @@ export const ExploreMapShell = ({
   });
 
   const desktopGuestJoinGateOpen = useDesktopGuestGatePanel && joinActions.guestSheetOpen;
-  const desktopGuestComposeGateOpen = useDesktopGuestGatePanel && compose.guestComposeSignInOpen;
+  const composeWizardActive =
+    Boolean(user) && isComposeWizardRoute(compose.composeRoute);
+  const desktopGuestComposeGateOpen =
+    useDesktopGuestGatePanel && compose.guestComposeSignInOpen && !composeWizardActive;
   const desktopBrowseSplit =
     isDesktop && (browse.showDesktopCatalogDrawer || browse.peopleBrowseOpen);
   const mapLayoutRevision = desktopBrowseSplit || browse.listOpen || browse.peopleBrowseOpen;
@@ -183,7 +188,9 @@ export const ExploreMapShell = ({
       onToggleMapStyle={viewport.toggleExploreMapStyle}
       onLocateMe={viewport.handleLocateMe}
       mapPins={
-        browse.peopleBrowseOpen ? mapPins.filter((pin) => pin.activityMode === 'seeking') : mapPins
+        browse.peopleBrowseOpen
+          ? mapPins.filter((pin) => exploreMapItemIsAvailabilityCatalog(pin))
+          : mapPins
       }
       peopleMap={browse.peopleBrowseOpen}
       mapLayoutRevision={mapLayoutRevision}

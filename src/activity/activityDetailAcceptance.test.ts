@@ -237,8 +237,8 @@ describe('activity detail program — wiring', () => {
   });
 
   it('AD-PRIVATE-01: private hosted plans stay off Explore/Browse and invite-only on detail', () => {
-    const mapBase = read('apps/api/src/lib/explore-map-base.ts');
-    expect(mapBase).toMatch(/resolveJoinMode\(event\.joinMode, event\.requirements\) === 'private'/);
+    const catalog = read('apps/api/src/lib/discovery-catalog-builder.ts');
+    expect(catalog).toMatch(/resolveJoinMode\(event\.joinMode, event\.requirements\) === 'private'/);
     const assembler = read('apps/api/src/lib/activity-read-assembler.ts');
     expect(assembler).toMatch(/shouldHideActivityFromExploreMap/);
     const access = read('packages/shared-types/src/activity-viewer-access.ts');

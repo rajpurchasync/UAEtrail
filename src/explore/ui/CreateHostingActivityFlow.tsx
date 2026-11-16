@@ -660,24 +660,22 @@ export const CreateHostingActivityFlow = ({
         });
         await afterHostingActivityPublishClientRefresh(queryClient, {
           activityId: updated.id,
-          linkedParticipantIntentId: null,
+          userId: user.id,
         });
         await onPublished?.(updated);
         onClose();
         return;
       }
-      const linkedIntentId = wizardPrefill?.participantIntentId ?? null;
       const activity = await publishCreateActivity({
         draft: normalizedDraft,
         tenantId,
         userId: user.id,
-        participantIntentId: linkedIntentId,
         sourceActivityId: wizardPrefill?.sourceActivityId ?? null,
         linkToParentActivityId: wizardPrefill?.linkToParentActivityId ?? null,
       });
       await afterHostingActivityPublishClientRefresh(queryClient, {
         activityId: activity.id,
-        linkedParticipantIntentId: linkedIntentId,
+        userId: user.id,
       });
       if (hostingFlowId) clearHostingWizardSession(hostingFlowId, wizardSessionScope);
       setPublishedActivity(activity);
@@ -1022,7 +1020,7 @@ export const CreateHostingActivityFlow = ({
             }}
             onBack={goBack}
             onClose={requestClose}
-            onConfirm={() => {
+            onConfirm={(_confirmLat, _confirmLng) => {
               if (isCatalogDestinationPin) {
                 const pinLat = draft.trailLatitude;
                 const pinLng = draft.trailLongitude;

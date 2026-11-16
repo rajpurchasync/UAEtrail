@@ -49,9 +49,19 @@ const sanitizeKinds = (kinds: AvailabilityKind[]): AvailabilityKind[] => {
   return [...new Set(kinds.filter((k) => allowed.has(k)))];
 };
 
+import { randomUUID } from 'node:crypto';
+
+const ensureAvailabilitySlotIds = (slots: MemberAvailabilitySlotDTO[]): MemberAvailabilitySlotDTO[] =>
+  slots.map((slot) => ({
+    ...slot,
+    slotId: slot.slotId?.trim() || randomUUID(),
+  }));
+
 const sanitizeSlots = (slots: MemberAvailabilitySlotDTO[]): MemberAvailabilitySlotDTO[] => {
   const today = todayIsoUtc();
-  return prunePastAvailabilitySlots(normalizeMemberAvailabilitySlotsForStorage(slots), today);
+  return ensureAvailabilitySlotIds(
+    prunePastAvailabilitySlots(normalizeMemberAvailabilitySlotsForStorage(slots), today)
+  );
 };
 
 const mapDto = (doc: MongoMemberAvailability): MemberAvailabilityDTO => ({
@@ -64,6 +74,14 @@ const mapDto = (doc: MongoMemberAvailability): MemberAvailabilityDTO => ({
   slots: doc.slots,
   updatedAt: doc.updatedAt.toISOString(),
 });
+
+/** Future-dated fixed slots listed on the explore map (`scheduleKind: fixed`). */
+export const countActiveFixedAvailabilityMapSlotsForUser = async (userId: string): Promise<number> => {
+  const doc = await collection().findOne({ _id: userId });
+  if (!doc || doc.visibility === 'hidden') return 0;
+  const pruned = sanitizeSlots(doc.slots);
+  return pruned.filter((slot) => slot.scheduleKind === 'fixed').length;
+};
 
 export const getMemberAvailability = async (userId: string): Promise<MemberAvailabilityDTO> => {
   const doc = await collection().findOne({ _id: userId });

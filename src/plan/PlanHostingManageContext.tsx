@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, type ReactNode } from 'react';
-import type { ActivityDTO, ParticipantIntentDTO } from '@uaetrail/shared-types';
-import { useMySeekingPosts } from '../hooks/useMySeekingPosts';
+import type { ActivityDTO } from '@uaetrail/shared-types';
 import { useConsoleHubData } from '../console/useHubData';
 import { useHostActivityManageActions } from '../hooks/useHostActivityManageActions';
 import { PlanHostingManageSheets } from '../components/plan/PlanHostingManageSheets';
@@ -8,7 +7,6 @@ import { usePlanHostingManageDeepLink } from './usePlanHostingManageDeepLink';
 
 type PlanHostingManageContextValue = {
   openManageActivity: (activity: ActivityDTO) => void;
-  openManageIntent: (intent: ParticipantIntentDTO) => void;
 };
 
 const PlanHostingManageContext = createContext<PlanHostingManageContextValue | null>(null);
@@ -40,22 +38,18 @@ export const PlanHostingManageProvider = ({
 }: PlanHostingManageProviderProps) => {
   const host = useConsoleHubData(canHost && active, { fetchActivities: !scopedActivityLists });
   const hostActions = useHostActivityManageActions(host.tenantId, host.reload);
-  const { intents, refetch: refetchIntents } = useMySeekingPosts(canHost && active, refreshKey);
 
   useEffect(() => {
     if (!refreshKey || !active) return;
     void host.reload();
-    void refetchIntents();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- refresh when refreshKey bumps
-  }, [active, refreshKey, host.reload, refetchIntents]);
+  }, [active, refreshKey, host.reload]);
 
-  const { manageActivity, setManageActivity, manageIntent, setManageIntent } =
-    usePlanHostingManageDeepLink({
-      enabled: canHost && active,
-      activities: host.activities,
-      activitiesLoading: host.loading,
-      intents,
-    });
+  const { manageActivity, setManageActivity } = usePlanHostingManageDeepLink({
+    enabled: canHost && active,
+    activities: host.activities,
+    activitiesLoading: host.loading,
+  });
 
   if (!canHost || !active) {
     return <>{children}</>;
@@ -63,7 +57,6 @@ export const PlanHostingManageProvider = ({
 
   const value: PlanHostingManageContextValue = {
     openManageActivity: setManageActivity,
-    openManageIntent: setManageIntent,
   };
 
   return (
@@ -73,11 +66,8 @@ export const PlanHostingManageProvider = ({
         tenantId={host.tenantId}
         actions={hostActions}
         onHostReload={host.reload}
-        onIntentsChanged={() => void refetchIntents()}
         manageActivity={manageActivity}
         onManageActivityClose={() => setManageActivity(null)}
-        manageIntent={manageIntent}
-        onManageIntentClose={() => setManageIntent(null)}
       />
     </PlanHostingManageContext.Provider>
   );
