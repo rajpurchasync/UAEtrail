@@ -337,7 +337,7 @@ export const accountApi = {
         data: {
           friendsGoing: import('@uaetrail/shared-types').SocialPersonRowDTO[];
           hostsGoing: import('@uaetrail/shared-types').SocialPersonRowDTO[];
-          seekingOnMap: import('@uaetrail/shared-types').MemberDiscoverySeekingRowDTO[];
+          availabilityOnMap: import('@uaetrail/shared-types').MemberDiscoveryAvailabilityRowDTO[];
           followed: import('@uaetrail/shared-types').MemberBrowseCardDTO[];
           directory: import('@uaetrail/shared-types').MemberBrowseCardDTO[];
         };

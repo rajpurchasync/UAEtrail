@@ -10,13 +10,12 @@ export type MemberDiscoveryOnTripRowDTO = {
   activityTitle: string;
 };
 
-/** Member with an active seeking post on the map (`activityMode: seeking`). */
-export type MemberDiscoverySeekingRowDTO = {
+/** Member with a fixed **availability** pin on explore (`source: availability`). */
+export type MemberDiscoveryAvailabilityRowDTO = {
   userId: string;
   displayName: string;
   avatarUrl: string | null;
-  participantIntentId: string;
-  seekingTitle: string;
+  availabilityTitle: string;
   exploreItemId: string;
 };
 
@@ -25,8 +24,8 @@ export type MemberDiscoveryRosterDTO = {
   friendsGoing: SocialPersonRowDTO[];
   /** Non-buddy activity hosts on outings (date filter). */
   hostsGoing: SocialPersonRowDTO[];
-  /** Active Find / seeking pins on explore (not coordination “needs you”). */
-  seekingOnMap: MemberDiscoverySeekingRowDTO[];
+  /** Fixed crew availability on explore (not coordination “needs you”). */
+  availabilityOnMap: MemberDiscoveryAvailabilityRowDTO[];
   /** People you follow (not already friends) — enriched like directory cards. */
   followed: MemberBrowseCardDTO[];
 };

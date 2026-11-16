@@ -4,7 +4,7 @@ import type {
   MemberFollowSummaryDTO,
   MemberDiscoveryQuotaDTO,
   MemberBrowseCardDTO,
-  MemberDiscoverySeekingRowDTO,
+  MemberDiscoveryAvailabilityRowDTO,
   SocialPeopleDTO,
   SocialPeoplePreviewDTO,
   SocialPeopleSegment,
@@ -30,7 +30,7 @@ export const fetchMemberPeopleNetworkPreview = async (): Promise<SocialPeoplePre
 export type MemberDiscoveryRosterPayload = {
   friendsGoing: SocialPersonRowDTO[];
   hostsGoing: SocialPersonRowDTO[];
-  seekingOnMap: MemberDiscoverySeekingRowDTO[];
+  availabilityOnMap: MemberDiscoveryAvailabilityRowDTO[];
   followed: MemberBrowseCardDTO[];
   directory: MemberBrowseCardDTO[];
   quota: MemberDiscoveryQuotaDTO;
@@ -47,7 +47,7 @@ export const fetchMeMemberDiscoveryRoster = async (options?: {
   return {
     friendsGoing: res.data.friendsGoing ?? [],
     hostsGoing: res.data.hostsGoing ?? [],
-    seekingOnMap: res.data.seekingOnMap ?? [],
+    availabilityOnMap: res.data.availabilityOnMap ?? [],
     followed: res.data.followed ?? [],
     directory: res.data.directory ?? [],
     quota: res.meta.quota,

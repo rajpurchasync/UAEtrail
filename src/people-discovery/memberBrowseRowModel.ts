@@ -2,7 +2,7 @@ import type {
   ExploreAvailablePersonDTO,
   MemberBrowseCardDTO,
   MemberDiscoveryQuotaDTO,
-  MemberDiscoverySeekingRowDTO,
+  MemberDiscoveryAvailabilityRowDTO,
   SocialPersonRowDTO,
 } from '@uaetrail/shared-types';
 import { proMembershipPath } from '../config/routingCatalog';
@@ -16,7 +16,7 @@ import {
 import { memberProfileLink } from '../member/memberProfileLink';
 import { memberProfileRoleBadgeLabel } from '../member/memberProfileRoleBadge';
 import { memberProfileRoleLabel } from '../member/memberProfileRoleLabel';
-import { exploreMapItemPathFromSeekingRow } from '../explore/memberDiscoverySeekingRow';
+import { exploreMapItemPathFromAvailabilityRow } from '../explore/memberDiscoveryAvailabilityRow';
 import { explorePath } from '../explore/routing';
 import type { PeopleBrowseMemberRowProps } from './panel/peopleBrowse/PeopleBrowseMemberRow';
 import { availabilityKindLabels } from './panel/peopleBrowse/peopleBrowseAvailabilityKinds';
@@ -120,16 +120,16 @@ export const buildMemberBrowseRowsFromDirectory = (
   });
 };
 
-export const buildMemberBrowseRowFromSeeking = (
-  row: MemberDiscoverySeekingRowDTO
+export const buildMemberBrowseRowFromRosterAvailability = (
+  row: MemberDiscoveryAvailabilityRowDTO
 ): MemberBrowseRowVm => ({
   key: `${row.userId}:${row.exploreItemId}`,
   userId: row.userId,
   profileHref: memberProfileLink(row.userId, 'host'),
-  actionHref: exploreMapItemPathFromSeekingRow(row),
+  actionHref: exploreMapItemPathFromAvailabilityRow(row),
   displayName: row.displayName,
   avatarUrl: row.avatarUrl,
   buddyHighlight: false,
-  title: `Looking for: ${row.seekingTitle}`,
+  title: `Available: ${row.availabilityTitle}`,
   titleClamp: 'line-clamp-2',
 });

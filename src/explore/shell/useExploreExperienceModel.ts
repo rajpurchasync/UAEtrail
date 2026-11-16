@@ -307,7 +307,7 @@ export const useExploreExperienceModel = () => {
       isDesktop,
       mapLoading,
       onOpenExploreActivity: openExploreActivityFromRef,
-      onOpenSeekingActivity: selection.openItem,
+      onOpenAvailabilityCatalogItem: selection.openItem,
       onOpenMarkAvailability: handleOpenMarkAvailability,
       searchFocusNonce,
     });

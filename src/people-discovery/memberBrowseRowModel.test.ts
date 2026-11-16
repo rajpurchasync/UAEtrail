@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   buildMemberBrowseRowFromAvailability,
   buildMemberBrowseRowFromGoing,
+  buildMemberBrowseRowFromRosterAvailability,
   buildMemberBrowseRowsFromDirectory,
-  buildMemberBrowseRowFromSeeking,
   filterDirectoryBrowseCards,
 } from './memberBrowseRowModel';
 
@@ -68,16 +68,15 @@ describe('memberBrowseRowModel', () => {
     expect(row.profileHref).toBe('/member/f1?source=friends');
   });
 
-  it('maps seeking rows to host lens + map action', () => {
-    const row = buildMemberBrowseRowFromSeeking({
+  it('maps availability roster rows to host lens + map action', () => {
+    const row = buildMemberBrowseRowFromRosterAvailability({
       userId: 'h1',
       displayName: 'Host',
       avatarUrl: null,
-      participantIntentId: 'pi1',
-      seekingTitle: 'Hike crew',
-      exploreItemId: 'activity:act1',
+      availabilityTitle: 'Hike crew',
+      exploreItemId: 'availability:h1:slot-1',
     });
     expect(row.profileHref).toBe('/member/h1?source=host');
-    expect(row.actionHref).toMatch(/pin=activity(%3A|:)act1/);
+    expect(row.actionHref).toMatch(/pin=availability(%3A|:)h1/);
   });
 });

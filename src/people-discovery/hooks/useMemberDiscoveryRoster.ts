@@ -51,7 +51,7 @@ export const useMemberDiscoveryRoster = ({
   return {
     friendsGoing: query.data?.friendsGoing ?? [],
     hostsGoing: query.data?.hostsGoing ?? [],
-    seekingOnMap: query.data?.seekingOnMap ?? [],
+    availabilityOnMap: query.data?.availabilityOnMap ?? [],
     followed: query.data?.followed ?? [],
     directory: query.data?.directory ?? [],
     quota: query.data?.quota ?? null,

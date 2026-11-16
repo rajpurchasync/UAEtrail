@@ -462,7 +462,7 @@ export {
   type MemberDiscoveryQuotaDTO,
 } from './member-discovery-quota.js';
 export type {
-  MemberDiscoverySeekingRowDTO,
+  MemberDiscoveryAvailabilityRowDTO,
   MemberDiscoveryOnTripRowDTO,
   MemberDiscoveryRosterDTO,
 } from './member-discovery-roster.js';
@@ -1401,6 +1401,7 @@ export {
   activityTypeToOutingCategory,
   buildExploreMapPlanProjection,
   deriveOutingTopicFromRequirements,
+  exploreAvailabilityMapItemPath,
   exploreSeekingMapItemPath,
   resolveSeekingExploreMapItemId,
   exploreMapKindToPlanMapKind,

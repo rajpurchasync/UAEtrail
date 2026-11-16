@@ -10,7 +10,7 @@ type Props = {
   availabilityCatalogItems: ExploreMapItemDTO[];
   exploreCatalogItems: ExploreMapItemDTO[];
   loading: boolean;
-  onOpenSeekingActivity: (item: ExploreMapItemDTO) => void;
+  onOpenAvailabilityCatalogItem: (item: ExploreMapItemDTO) => void;
   buddyUserIds?: Set<string>;
 };
 
@@ -19,7 +19,7 @@ export const PeopleBrowseLookingList = ({
   availabilityCatalogItems,
   exploreCatalogItems,
   loading,
-  onOpenSeekingActivity,
+  onOpenAvailabilityCatalogItem,
   buddyUserIds,
 }: Props) => {
   const cardById = useMemo(() => {
@@ -44,7 +44,7 @@ export const PeopleBrowseLookingList = ({
         <ExploreListRow
           key={item.id}
           card={cardById.get(item.id)!}
-          onClick={() => onOpenSeekingActivity(item)}
+          onClick={() => onOpenAvailabilityCatalogItem(item)}
           buddyUserIds={buddyUserIds}
         />
       ))}

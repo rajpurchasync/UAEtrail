@@ -36,7 +36,7 @@ export interface PeopleBrowsePanelProps {
   onOpenMemberPersonActivity?: (trip: { exploreItemId: string }) => void;
   discoveryFriendsGoing: SocialPersonRowDTO[];
   discoveryHostsGoing: SocialPersonRowDTO[];
-  discoverySeekingOnMap: import('@uaetrail/shared-types').MemberDiscoverySeekingRowDTO[];
+  discoveryAvailabilityOnMap: import('@uaetrail/shared-types').MemberDiscoveryAvailabilityRowDTO[];
   discoveryFollowed: MemberBrowseCardDTO[];
   discoveryDirectory: MemberBrowseCardDTO[];
   discoveryQuota: MemberDiscoveryQuotaDTO | null;
@@ -55,7 +55,7 @@ export interface PeopleBrowsePanelProps {
   availabilityCatalogItems: ExploreMapItemDTO[];
   exploreCatalogItems: ExploreMapItemDTO[];
   exploreCatalogLoading: boolean;
-  onOpenSeekingActivity: (item: ExploreMapItemDTO) => void;
+  onOpenAvailabilityCatalogItem: (item: ExploreMapItemDTO) => void;
   /** Share availability — opens compose `seek:flexible` on the current surface. */
   onOpenMarkAvailability?: () => void;
   buddyUserIds?: Set<string>;
@@ -79,7 +79,7 @@ export const PeopleBrowsePanel = ({
   onPeopleBrowseTabChange,
   discoveryFriendsGoing,
   discoveryHostsGoing,
-  discoverySeekingOnMap: _discoverySeekingOnMap,
+  discoveryAvailabilityOnMap: _discoveryAvailabilityOnMap,
   discoveryDirectory,
   discoveryQuota,
   discoveryLoading,
@@ -92,7 +92,7 @@ export const PeopleBrowsePanel = ({
   availabilityCatalogItems,
   exploreCatalogItems,
   exploreCatalogLoading,
-  onOpenSeekingActivity,
+  onOpenAvailabilityCatalogItem,
   onOpenMarkAvailability,
   buddyUserIds,
 }: PeopleBrowsePanelProps) => {
@@ -176,7 +176,7 @@ export const PeopleBrowsePanel = ({
           availabilityCatalogItems={availabilityCatalogItems}
           exploreCatalogItems={exploreCatalogItems}
           exploreCatalogLoading={exploreCatalogLoading}
-          onOpenSeekingActivity={onOpenSeekingActivity}
+          onOpenAvailabilityCatalogItem={onOpenAvailabilityCatalogItem}
           buddyUserIds={buddyUserIds}
           availabilityPeople={availabilityPeople}
           availabilityLoading={availabilityLoading}

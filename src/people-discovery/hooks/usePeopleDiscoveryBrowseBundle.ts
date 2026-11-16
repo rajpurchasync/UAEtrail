@@ -21,7 +21,7 @@ type Args = {
   isDesktop: boolean;
   mapLoading: boolean;
   onOpenExploreActivity: (activity: { exploreItemId: string }) => void;
-  onOpenSeekingActivity: (item: ExploreMapItemDTO) => void;
+  onOpenAvailabilityCatalogItem: (item: ExploreMapItemDTO) => void;
   onOpenMarkAvailability?: () => void;
   searchFocusNonce: number;
 };
@@ -35,7 +35,7 @@ export const useExplorePeopleBrowseBundle = ({
   isDesktop,
   mapLoading,
   onOpenExploreActivity,
-  onOpenSeekingActivity,
+  onOpenAvailabilityCatalogItem,
   onOpenMarkAvailability,
   searchFocusNonce,
 }: Args) => {
@@ -120,7 +120,7 @@ export const useExplorePeopleBrowseBundle = ({
     onOpenMemberPersonActivity: onOpenExploreActivity,
     discoveryFriendsGoing: memberDiscovery.friendsGoing,
     discoveryHostsGoing: memberDiscovery.hostsGoing,
-    discoverySeekingOnMap: memberDiscovery.seekingOnMap,
+    discoveryAvailabilityOnMap: memberDiscovery.availabilityOnMap,
     discoveryFollowed: memberDiscovery.followed,
     discoveryDirectory: memberDiscovery.directory,
     discoveryQuota: memberDiscovery.quota,
@@ -138,7 +138,7 @@ export const useExplorePeopleBrowseBundle = ({
     availabilityCatalogItems,
     exploreCatalogItems,
     exploreCatalogLoading: mapLoading || availabilityDiscovery.loading,
-    onOpenSeekingActivity,
+    onOpenAvailabilityCatalogItem,
     onOpenMarkAvailability,
     buddyUserIds,
   };

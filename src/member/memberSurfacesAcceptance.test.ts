@@ -202,12 +202,12 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(read('src/components/chat/ChatMessageBubble.tsx')).toContain('memberProfileLink');
   });
 
-  it('G-seek: People browse wires seekingOnMap to explore pin routes (no activity detail hop)', () => {
+  it('G-seek: People browse wires availability roster to explore pin routes (no activity detail hop)', () => {
     const panel = read('src/people-discovery/panel/PeopleBrowsePanel.tsx');
-    expect(panel).toContain('discoverySeekingOnMap');
+    expect(panel).toContain('discoveryAvailabilityOnMap');
     expect(panel).toContain('availabilityCatalogItems');
-    const routing = read('src/explore/memberDiscoverySeekingRow.ts');
-    expect(routing).toContain('exploreSeekingMapItemPath');
+    const routing = read('src/explore/memberDiscoveryAvailabilityRow.ts');
+    expect(routing).toContain('exploreAvailabilityMapItemPath');
     const list = read('src/list/ListDiscoveryExperience.tsx');
     expect(list).not.toMatch(/onOpenDiscoveryActivity.*activityDetailPath/);
   });

@@ -1,8 +1,8 @@
-import { exploreMapItemIsSeeking } from '@uaetrail/shared-types';
+import { exploreMapItemIsAvailabilityCatalog } from '@uaetrail/shared-types';
 import type {
   ExploreMapItemDTO,
   MemberBrowseCardDTO,
-  MemberDiscoverySeekingRowDTO,
+  MemberDiscoveryAvailabilityRowDTO,
   MemberDiscoveryQuotaDTO,
   MemberDiscoveryRosterDTO,
 } from '@uaetrail/shared-types';
@@ -36,47 +36,45 @@ const matchesMemberDiscoverySearch = (
   return haystack.includes(needle);
 };
 
-/** Members with active seeking posts on the explore map. */
-export const buildMemberDiscoverySeekingRowsFromMapItems = async (
+/** Members with fixed availability pins on the explore map. */
+export const buildMemberDiscoveryAvailabilityRowsFromMapItems = async (
   items: ExploreMapItemDTO[],
   input: {
     viewerUserId: string;
     excludeUserIds: Set<string>;
     datePreset: ExploreActivityDatePreset;
     search?: string;
-    /** When set, only these seeker user ids pass find-crew visibility. */
+    /** When set, only these member user ids pass find-crew visibility. */
     findCrewVisibleUserIds?: ReadonlySet<string>;
   }
-): Promise<MemberDiscoverySeekingRowDTO[]> => {
+): Promise<MemberDiscoveryAvailabilityRowDTO[]> => {
   const seen = new Set<string>();
-  const rows: MemberDiscoverySeekingRowDTO[] = [];
+  const rows: MemberDiscoveryAvailabilityRowDTO[] = [];
 
   for (const item of items) {
-    if (!exploreMapItemIsSeeking(item)) continue;
+    if (!exploreMapItemIsAvailabilityCatalog(item)) continue;
     if (!matchesExploreActivityDateFilter(item, input.datePreset)) continue;
     if (item.viewerAccess?.exposure === 'none') continue;
 
-    const userId = item.featuredPerson?.userId ?? item.requesterUserId ?? null;
+    const userId = item.featuredPerson?.userId ?? null;
     if (!userId || input.excludeUserIds.has(userId) || seen.has(userId)) continue;
     if (input.findCrewVisibleUserIds && !input.findCrewVisibleUserIds.has(userId)) continue;
 
     const displayName =
-      item.featuredPerson?.displayName ?? item.hostName ?? 'Member';
-    const seekingTitle = item.title?.trim() || 'Looking for company';
+      item.featuredPerson?.displayName ?? item.subtitle ?? 'Member';
+    const availabilityTitle = item.title?.trim() || 'Available to go together';
     if (
-      !matchesMemberDiscoverySearch([displayName, seekingTitle, item.subtitle ?? null], input.search)
+      !matchesMemberDiscoverySearch([displayName, availabilityTitle, item.subtitle ?? null], input.search)
     ) {
       continue;
     }
 
-    const intentId = item.participantIntentId ?? '';
     seen.add(userId);
     rows.push({
       userId,
       displayName,
-      avatarUrl: item.featuredPerson?.avatarUrl ?? item.hostAvatar ?? null,
-      participantIntentId: intentId,
-      seekingTitle,
+      avatarUrl: item.featuredPerson?.avatarUrl ?? null,
+      availabilityTitle,
       exploreItemId: item.id,
     });
   }
@@ -171,14 +169,14 @@ export const loadMemberDiscoveryRoster = async (input: {
   );
 
   // Map items already passed find-crew filtering in enrichExploreMapPayloadViewerAccess.
-  const seekingPromise = buildMemberDiscoverySeekingRowsFromMapItems(mapItems, {
+  const availabilityOnMapPromise = buildMemberDiscoveryAvailabilityRowsFromMapItems(mapItems, {
     viewerUserId: input.viewerUserId,
     excludeUserIds,
     datePreset,
     search: input.search,
   });
 
-  const [friendsGoing, hostsGoing, seekingOnMap, followed] = await Promise.all([
+  const [friendsGoing, hostsGoing, availabilityOnMap, followed] = await Promise.all([
     buildMemberDiscoveryFriendsGoing(input.viewerUserId, buddies, mapItems, datePreset),
     buildMemberDiscoveryHostsGoing(
       input.viewerUserId,
@@ -187,7 +185,7 @@ export const loadMemberDiscoveryRoster = async (input: {
       datePreset,
       input.search
     ),
-    seekingPromise,
+    availabilityOnMapPromise,
     followedPromise,
   ]);
 
@@ -199,7 +197,7 @@ export const loadMemberDiscoveryRoster = async (input: {
   );
 
   return {
-    data: { friendsGoing: friendsFiltered, hostsGoing, seekingOnMap, followed, directory },
+    data: { friendsGoing: friendsFiltered, hostsGoing, availabilityOnMap, followed, directory },
     quota,
   };
 };

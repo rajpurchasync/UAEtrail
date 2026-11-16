@@ -237,7 +237,7 @@ export const ListDiscoveryExperience = ({
     },
   });
 
-  const handleOpenSeekingActivity = useCallback(
+  const handleOpenAvailabilityCatalogItem = useCallback(
     (item: { path: string }) => {
       const returnTo = `${location.pathname}${location.search}`;
       navigate(item.path, { state: listExplorerEntityLinkState(returnTo) });
@@ -436,7 +436,7 @@ export const ListDiscoveryExperience = ({
             onRefreshMemberPeople={() => {}}
             discoveryFriendsGoing={memberRoster.friendsGoing}
             discoveryHostsGoing={memberRoster.hostsGoing}
-            discoverySeekingOnMap={memberRoster.seekingOnMap}
+            discoveryAvailabilityOnMap={memberRoster.availabilityOnMap}
             discoveryFollowed={memberRoster.followed}
             discoveryDirectory={memberRoster.directory}
             discoveryQuota={memberRoster.quota}
@@ -452,7 +452,7 @@ export const ListDiscoveryExperience = ({
             availabilityCatalogItems={availabilityCatalogItems}
             exploreCatalogItems={items}
             exploreCatalogLoading={isLoading}
-            onOpenSeekingActivity={handleOpenSeekingActivity}
+            onOpenAvailabilityCatalogItem={handleOpenAvailabilityCatalogItem}
           />
         ) : (
           <ListCrewsExplorer
@@ -474,7 +474,7 @@ export const ListDiscoveryExperience = ({
             availabilityCatalogItems={availabilityCatalogItems}
             exploreCatalogItems={items}
             exploreCatalogLoading={isLoading}
-            onOpenSeekingActivity={handleOpenSeekingActivity}
+            onOpenAvailabilityCatalogItem={handleOpenAvailabilityCatalogItem}
             availabilityPeople={memberAvailability.people}
             availabilityLoading={memberAvailability.loading}
             availabilityError={memberAvailability.error}

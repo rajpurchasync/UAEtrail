@@ -46,7 +46,7 @@ export type PeopleBrowseTabContentProps = {
   availabilityCatalogItems: ExploreMapItemDTO[];
   exploreCatalogItems: ExploreMapItemDTO[];
   exploreCatalogLoading: boolean;
-  onOpenSeekingActivity: (item: ExploreMapItemDTO) => void;
+  onOpenAvailabilityCatalogItem: (item: ExploreMapItemDTO) => void;
   buddyUserIds?: Set<string>;
   /** Crews list — filter Available combined lanes. */
   crewsOpenLens?: CrewsAvailableOpenLens;
@@ -81,7 +81,7 @@ export const PeopleBrowseTabContent = ({
   availabilityCatalogItems,
   exploreCatalogItems,
   exploreCatalogLoading,
-  onOpenSeekingActivity,
+  onOpenAvailabilityCatalogItem,
   buddyUserIds,
   crewsOpenLens = 'all',
   onOpenAvailability,
@@ -92,7 +92,7 @@ export const PeopleBrowseTabContent = ({
         availabilityCatalogItems={availabilityCatalogItems}
         exploreCatalogItems={exploreCatalogItems}
         loading={exploreCatalogLoading}
-        onOpenSeekingActivity={onOpenSeekingActivity}
+        onOpenAvailabilityCatalogItem={onOpenAvailabilityCatalogItem}
         buddyUserIds={buddyUserIds}
       />
     );
@@ -112,7 +112,7 @@ export const PeopleBrowseTabContent = ({
           availabilityCatalogItems={availabilityCatalogItems}
           exploreCatalogItems={exploreCatalogItems}
           loading={exploreCatalogLoading}
-          onOpenSeekingActivity={onOpenSeekingActivity}
+          onOpenAvailabilityCatalogItem={onOpenAvailabilityCatalogItem}
           buddyUserIds={buddyUserIds}
         />
       ) : null;

@@ -172,6 +172,17 @@ export const exploreSeekingMapItemPath = (input: {
   return `/explore?${params.toString()}`;
 };
 
+/** Explore list + map peek for fixed availability pins (`availability:{userId}:{slotId}`). */
+export const exploreAvailabilityMapItemPath = (exploreItemId: string): string => {
+  const pin = exploreItemId.trim();
+  const params = new URLSearchParams({
+    list: '1',
+    panel: 'people',
+  });
+  if (pin.startsWith('availability:')) params.set('pin', pin);
+  return `/explore?${params.toString()}`;
+};
+
 /** FLOW-05 Host activity wizard chip → persisted `outingTopic`. */
 export const activityHostTopicToOutingTopic = (topic: string): OutingTopic | null => {
   switch (topic) {
