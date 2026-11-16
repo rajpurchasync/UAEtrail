@@ -309,6 +309,7 @@ export const useExploreExperienceModel = () => {
       mapLoading,
       onOpenExploreActivity: openExploreActivityFromRef,
       onOpenAvailabilityCatalogItem: selection.openItem,
+      onOfferRideshareForAvailabilityItem: hostingLauncher.offerRideshareForAvailabilityItem,
       onOpenMarkAvailability: handleOpenMarkAvailability,
       searchFocusNonce,
     });

@@ -248,6 +248,10 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
   const amenitiesByParentId = collectParentPlaceAmenities(facilityRows);
   const areaSlugById = new Map(publishedAreas.map((area) => [area.id, area.slug]));
   const areaNameById = new Map(publishedAreas.map((area) => [area.id, area.name]));
+  const availabilityItemsPromise = buildAvailabilityFixedMapItems({
+    areaSlugById,
+    areaNameById,
+  });
   const merchantByTenantId = await findMerchantProfilesByTenantIds(shopTenants.map((shop) => shop.id));
 
   const activityDtos = activityEvents.map((event) => buildActivityDto(event));
@@ -649,15 +653,11 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
     .filter((item) => item.source === 'shop')
     .map((item) => item.tenantId ?? item.id.replace(/^shop:/, ''));
 
-  const [locationStats, tenantStats] = await Promise.all([
+  const [locationStats, tenantStats, availabilityItems] = await Promise.all([
     getReviewStatsByTargets(ReviewTargetType.LOCATION, locationIds),
     getReviewStatsByTargets(ReviewTargetType.TENANT, tenantIds),
+    availabilityItemsPromise,
   ]);
-
-  const availabilityItems = await buildAvailabilityFixedMapItems({
-    areaSlugById,
-    areaNameById,
-  });
   items.push(...availabilityItems);
 
   for (const item of items) {

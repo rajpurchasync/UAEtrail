@@ -5,11 +5,19 @@ import { join } from 'node:path';
 const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 
 describe('discovery-catalog-builder (MIG-DISCO-REG)', () => {
-  it('owns map catalog assembly; explore-map-base is a stable re-export', () => {
+  it('owns map catalog assembly; explore-map caches discovery-catalog-builder', () => {
+    const exploreMap = read('src/lib/explore-map.ts');
+    expect(exploreMap).toMatch(/discovery-catalog-builder/);
+    expect(exploreMap).toMatch(/buildDiscoveryCatalogMapPayload/);
     const shim = read('src/lib/explore-map-base.ts');
-    expect(shim).toMatch(/discovery-catalog-builder/);
-    expect(shim).toMatch(/buildDiscoveryCatalogMapPayload/);
+    expect(shim).toMatch(/Deprecated import path/);
     expect(shim).not.toMatch(/listPublishedActivitiesForExploreMap/);
+  });
+
+  it('overlaps availability slice with review stats fetch', () => {
+    const builder = read('src/lib/discovery-catalog-builder.ts');
+    expect(builder).toMatch(/availabilityItemsPromise/);
+    expect(builder).toMatch(/buildAvailabilityFixedMapItems/);
   });
 
   it('skips legacy seeking activities and appends fixed availability', () => {

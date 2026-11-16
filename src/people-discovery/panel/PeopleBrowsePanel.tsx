@@ -56,6 +56,7 @@ export interface PeopleBrowsePanelProps {
   exploreCatalogItems: ExploreMapItemDTO[];
   exploreCatalogLoading: boolean;
   onOpenAvailabilityCatalogItem: (item: ExploreMapItemDTO) => void;
+  onOfferRideshareForAvailabilityItem?: (item: ExploreMapItemDTO) => void;
   /** Share availability — opens compose `seek:flexible` on the current surface. */
   onOpenMarkAvailability?: () => void;
   buddyUserIds?: Set<string>;
@@ -93,6 +94,7 @@ export const PeopleBrowsePanel = ({
   exploreCatalogItems,
   exploreCatalogLoading,
   onOpenAvailabilityCatalogItem,
+  onOfferRideshareForAvailabilityItem,
   onOpenMarkAvailability,
   buddyUserIds,
 }: PeopleBrowsePanelProps) => {
@@ -177,6 +179,7 @@ export const PeopleBrowsePanel = ({
           exploreCatalogItems={exploreCatalogItems}
           exploreCatalogLoading={exploreCatalogLoading}
           onOpenAvailabilityCatalogItem={onOpenAvailabilityCatalogItem}
+          onOfferRideshareForAvailabilityItem={onOfferRideshareForAvailabilityItem}
           buddyUserIds={buddyUserIds}
           availabilityPeople={availabilityPeople}
           availabilityLoading={availabilityLoading}

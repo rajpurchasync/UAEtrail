@@ -65,29 +65,29 @@ export const useHostingWizardPrefill = (input: {
     [setComposeRoute, setSelectedId]
   );
 
+  const beginOfferRideshareForAvailabilityItem = useCallback(
+    (item: ExploreMapItemDTO) => {
+      if (!canOfferRideshareForAvailabilityItem(item)) return;
+
+      const returnPath = `${pathname}${search}`;
+
+      if (!user) {
+        navigate(`/signup?redirect=${encodeURIComponent(returnPath)}`);
+        return;
+      }
+
+      setRideshareLinkParent(null);
+      setRideshareLinkAvailability(item);
+      setSelectedId(null);
+      setComposeRoute(hostCompose('rideshare'));
+    },
+    [navigate, pathname, search, setComposeRoute, setSelectedId, user]
+  );
+
   const handleOfferRideshareForAvailability = useCallback(() => {
-    if (!selected || !canOfferRideshareForAvailabilityItem(selected)) return;
-
-    const returnPath = `${pathname}${search}`;
-
-    if (!user) {
-      navigate(`/signup?redirect=${encodeURIComponent(returnPath)}`);
-      return;
-    }
-
-    setRideshareLinkParent(null);
-    setRideshareLinkAvailability(selected);
-    setSelectedId(null);
-    setComposeRoute(hostCompose('rideshare'));
-  }, [
-    navigate,
-    pathname,
-    search,
-    selected,
-    setComposeRoute,
-    setSelectedId,
-    user,
-  ]);
+    if (!selected) return;
+    beginOfferRideshareForAvailabilityItem(selected);
+  }, [beginOfferRideshareForAvailabilityItem, selected]);
 
   const hostingWizardPrefill = useMemo((): HostingWizardPrefill | null => {
     if (rideshareLinkParent) {
@@ -134,6 +134,7 @@ export const useHostingWizardPrefill = (input: {
     setRideshareLinkAvailability,
     handleCreateLinkedRideshare,
     handleOfferRideshareForAvailability,
+    offerRideshareForAvailabilityItem: beginOfferRideshareForAvailabilityItem,
     hostingWizardPrefill,
     closeCreateFlow,
     onHostingBackToIntent,

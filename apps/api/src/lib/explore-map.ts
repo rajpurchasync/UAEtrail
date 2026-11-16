@@ -11,10 +11,13 @@ import {
   readExploreMapStalePayload,
   writeExploreMapMemoryCache,
 } from './explore-map-cache.js';
-import { buildExploreMapBasePayload } from './explore-map-base.js';
+import {
+  buildDiscoveryCatalogMapPayload,
+  buildDiscoveryCatalogMapPayload as buildExploreMapBasePayload,
+} from './discovery-catalog-builder.js';
 
 export { scheduleExploreMapCacheInvalidation } from './explore-map-cache-schedule.js';
-export { buildExploreMapBasePayload } from './explore-map-base.js';
+export { buildExploreMapBasePayload };
 
 let exploreMapInflight: Promise<{ items: ExploreMapItemDTO[] }> | null = null;
 

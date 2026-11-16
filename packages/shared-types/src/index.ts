@@ -894,7 +894,7 @@ export interface ExploreLocationCardDTO {
   parkingLat?: number | null;
   parkingLng?: number | null;
   parkingPoint?: string | null;
-  /** Facility chips merged from catalog tags + linked amenities (`explore-map-base`). */
+  /** Facility chips merged from catalog tags + linked amenities (`discovery-catalog-builder`). */
   amenityLabels?: string[];
 }
 

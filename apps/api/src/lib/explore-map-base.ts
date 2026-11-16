@@ -1,7 +1,4 @@
-/**
- * Explore map catalog BFF — implementation in `discovery-catalog-builder.ts` (MIG-DISCO-REG).
- * Keep this module as the stable import path for explore map assembly.
- */
+/** Deprecated import path — use `discovery-catalog-builder.ts` or `explore-map.ts`. */
 export {
   buildDiscoveryCatalogMapPayload,
   buildDiscoveryCatalogMapPayload as buildExploreMapBasePayload,

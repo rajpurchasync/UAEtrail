@@ -133,7 +133,8 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(catalog).not.toMatch(/listActiveParticipantIntentsForMap\(/);
     expect(catalog).toMatch(/activityMode === 'seeking'\) continue/);
     expect(catalog).toMatch(/buildAvailabilityFixedMapItems/);
-    expect(shim).toMatch(/discovery-catalog-builder/);
+    expect(exploreMap).toMatch(/discovery-catalog-builder/);
+    expect(shim).toMatch(/Deprecated import path/);
     expect(catalog).not.toMatch(/activityMode === 'seeking' \? 'demand'/);
   });
 

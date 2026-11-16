@@ -21,4 +21,11 @@ describe('discoverySummaryOfferRideshareParity (MIG-DISCO-REG)', () => {
     const stage = read('src/explore/shell/ExploreMapShell.tsx');
     expect(stage).toMatch(/showAvailabilityPeekOfferRideshare/);
   });
+
+  it('people browse looking list wires Offer rideshare when entitlements allow', () => {
+    const list = read('src/people-discovery/panel/peopleBrowse/PeopleBrowseLookingList.tsx');
+    expect(list).toContain('onOfferRideshareForAvailabilityItem');
+    expect(list).toContain('discoverySelectionShowsOfferRideshare');
+    expect(list).toContain('HOSTING_OFFER_RIDESHARE_LABEL');
+  });
 });

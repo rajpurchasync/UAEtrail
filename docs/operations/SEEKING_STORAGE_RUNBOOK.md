@@ -108,7 +108,7 @@ Set `PARTICIPANT_INTENT_STUB_WRITE=true` and restart API. **Not recommended post
 2. `npm run seeking:storage-status -- --strict` → exit 0.
 3. Legacy backfill if report shows `activeIntentsMissingSeekingActivity` (§2 above).
 
-**Optional / follow-up (not blocking merge):** retire `participant-intents-store` readthroughs after strict gate; `explore-map-base.ts` shim deletion; P5 catalog cache slice perf; inline offer CTA on list availability rows (today: people browse → explore pin → same summary peek).
+**Optional / follow-up (not blocking merge):** retire `participant-intents-store` readthroughs after strict gate; delete `explore-map-base.ts` shim once imports are gone.
 
 ---
 
