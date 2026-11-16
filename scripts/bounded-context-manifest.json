@@ -7,7 +7,6 @@
       "label": "Discovery",
       "apiFiles": [
         "apps/api/src/lib/explore-map.ts",
-        "apps/api/src/lib/explore-map-base.ts",
         "apps/api/src/lib/discovery-catalog-builder.ts",
         "apps/api/src/lib/explore-map-bbox.ts",
         "apps/api/src/lib/explore-map-route.ts",

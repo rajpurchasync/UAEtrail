@@ -208,7 +208,6 @@
       "apiRoots": [
         "apps/api/src/lib/availability-fixed-map-items.ts",
         "apps/api/src/lib/discovery-catalog-builder.ts",
-        "apps/api/src/lib/explore-map-base.ts",
         "apps/api/src/services/me-availability-commands.ts",
         "apps/api/scripts/migrate-seeking-to-availability.ts"
       ],

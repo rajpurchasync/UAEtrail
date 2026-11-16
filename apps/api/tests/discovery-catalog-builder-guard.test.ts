@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
@@ -9,9 +9,8 @@ describe('discovery-catalog-builder (MIG-DISCO-REG)', () => {
     const exploreMap = read('src/lib/explore-map.ts');
     expect(exploreMap).toMatch(/discovery-catalog-builder/);
     expect(exploreMap).toMatch(/buildDiscoveryCatalogMapPayload/);
-    const shim = read('src/lib/explore-map-base.ts');
-    expect(shim).toMatch(/Deprecated import path/);
-    expect(shim).not.toMatch(/listPublishedActivitiesForExploreMap/);
+    expect(exploreMap).not.toMatch(/explore-map-base/);
+    expect(existsSync(join(process.cwd(), 'src/lib/explore-map-base.ts'))).toBe(false);
   });
 
   it('overlaps availability slice with review stats fetch', () => {

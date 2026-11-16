@@ -128,13 +128,13 @@ describe('member surfaces §11 acceptance (automated)', () => {
   it('G-seek: explore map build does not merge legacy demand pins into payload', () => {
     const exploreMap = read('apps/api/src/lib/explore-map.ts');
     const catalog = read('apps/api/src/lib/discovery-catalog-builder.ts');
-    const shim = read('apps/api/src/lib/explore-map-base.ts');
     expect(exploreMap).not.toMatch(/listActiveParticipantIntentsForMap\(/);
     expect(catalog).not.toMatch(/listActiveParticipantIntentsForMap\(/);
     expect(catalog).toMatch(/activityMode === 'seeking'\) continue/);
     expect(catalog).toMatch(/buildAvailabilityFixedMapItems/);
     expect(exploreMap).toMatch(/discovery-catalog-builder/);
-    expect(shim).toMatch(/Deprecated import path/);
+    expect(exploreMap).not.toMatch(/explore-map-base/);
+    expect(existsSync(join(process.cwd(), 'apps/api/src/lib/explore-map-base.ts'))).toBe(false);
     expect(catalog).not.toMatch(/activityMode === 'seeking' \? 'demand'/);
   });
 

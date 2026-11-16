@@ -98,7 +98,7 @@ describe('api-ui-vocabulary-guard', () => {
 
   it('API-UI-05: detail presentation builder stays on activity public read (not catalog lib)', () => {
     const catalogLibs = [
-      'src/lib/explore-map-base.ts',
+      'src/lib/discovery-catalog-builder.ts',
       'src/lib/explore-map-route.ts',
       'src/lib/explore-map-viewer-access.ts',
     ];
