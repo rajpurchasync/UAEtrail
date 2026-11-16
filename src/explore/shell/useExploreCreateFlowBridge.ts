@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import type { ActivityDTO } from '@uaetrail/shared-types';
+import type { ActivityDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { CreateFlowBridge } from '../../create/CreateFlowProvider';
 import type { HostingWizardPrefill } from '../ui/hostingWizardPrefill';
 import type { AddSubmitResult } from '../ui/addFlow';
@@ -11,9 +11,9 @@ type UseExploreCreateFlowBridgeArgs = {
   closeCreateFlow: () => void;
   onHostingBackToIntent: () => void;
   rideshareLinkParent: ActivityDTO | null;
-  rideshareLinkSeeking: ActivityDTO | null;
+  rideshareLinkAvailability: ExploreMapItemDTO | null;
   setRideshareLinkParent: (next: ActivityDTO | null) => void;
-  setRideshareLinkSeeking: (next: ActivityDTO | null) => void;
+  setRideshareLinkAvailability: (next: ExploreMapItemDTO | null) => void;
   handleCreateLinkedRideshare: CreateFlowBridge['onCreateLinkedRideshare'];
   handleActivityPublished: (activity: ActivityDTO) => Promise<void>;
   handleAvailabilityFixedSubmitted: (result: AvailabilityFixedSubmitResult) => void;
@@ -32,9 +32,9 @@ export const useExploreCreateFlowBridge = ({
   closeCreateFlow,
   onHostingBackToIntent,
   rideshareLinkParent,
-  rideshareLinkSeeking,
+  rideshareLinkAvailability,
   setRideshareLinkParent,
-  setRideshareLinkSeeking,
+  setRideshareLinkAvailability,
   handleCreateLinkedRideshare,
   handleActivityPublished,
   handleAvailabilityFixedSubmitted,
@@ -49,9 +49,9 @@ export const useExploreCreateFlowBridge = ({
     closeCreateFlow,
     onHostingBackToIntent,
     rideshareLinkParent,
-    rideshareLinkSeeking,
+    rideshareLinkAvailability,
     setRideshareLinkParent,
-    setRideshareLinkSeeking,
+    setRideshareLinkAvailability,
     handleCreateLinkedRideshare,
     handleActivityPublished,
     handleAvailabilityFixedSubmitted,
@@ -62,9 +62,9 @@ export const useExploreCreateFlowBridge = ({
     closeCreateFlow,
     onHostingBackToIntent,
     rideshareLinkParent,
-    rideshareLinkSeeking,
+    rideshareLinkAvailability,
     setRideshareLinkParent,
-    setRideshareLinkSeeking,
+    setRideshareLinkAvailability,
     handleCreateLinkedRideshare,
     handleActivityPublished,
     handleAvailabilityFixedSubmitted,
@@ -83,8 +83,8 @@ export const useExploreCreateFlowBridge = ({
         if (handlers.rideshareLinkParent && activity.activityType === 'rideshare') {
           handlers.setRideshareLinkParent(null);
         }
-        if (handlers.rideshareLinkSeeking && activity.activityType === 'rideshare') {
-          handlers.setRideshareLinkSeeking(null);
+        if (handlers.rideshareLinkAvailability && activity.activityType === 'rideshare') {
+          handlers.setRideshareLinkAvailability(null);
         }
         void handlers.refreshHostGate();
       },

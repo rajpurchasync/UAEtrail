@@ -1,10 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { canOfferRideshareForSeekingItem, canShowSeekingLinkRideshareOffer } from './linkActivityRideshareOffer';
-import { buildRideshareDraftFromSeekingMapItem } from './linkRidesharePrefill';
-import { seekingExploreMapItem } from './exploreMapItemFixtures';
+import {
+  canOfferRideshareForAvailabilityItem,
+  canShowAvailabilityLinkRideshareOffer,
+} from './linkActivityRideshareOffer';
+import { buildRideshareDraftFromAvailabilityMapItem } from './linkRidesharePrefill';
+import { availabilityExploreMapItem, seekingExploreMapItem } from './exploreMapItemFixtures';
 
-const demandItem = (overrides: Partial<ExploreMapItemDTO> = {}): ExploreMapItemDTO =>
+const availabilityItem = (overrides: Partial<ExploreMapItemDTO> = {}): ExploreMapItemDTO =>
+  availabilityExploreMapItem({
+    title: 'Jebel hike crew',
+    slotsTotal: 3,
+    ...overrides,
+  });
+
+const legacySeekingItem = (overrides: Partial<ExploreMapItemDTO> = {}): ExploreMapItemDTO =>
   seekingExploreMapItem({
     intentId: 'int-1',
     kind: 'hiking',
@@ -14,16 +24,20 @@ const demandItem = (overrides: Partial<ExploreMapItemDTO> = {}): ExploreMapItemD
   });
 
 describe('demand carpool offer', () => {
-  it('allows carpool offer for hiking demand', () => {
-    expect(canOfferRideshareForSeekingItem(demandItem())).toBe(true);
-    expect(canOfferRideshareForSeekingItem(demandItem({ kind: 'rideshare' }))).toBe(false);
+  it('allows carpool offer for hiking availability pins', () => {
+    expect(canOfferRideshareForAvailabilityItem(availabilityItem())).toBe(true);
+    expect(canOfferRideshareForAvailabilityItem(availabilityItem({ kind: 'rideshare' }))).toBe(false);
+  });
+
+  it('still allows carpool offer for legacy seeking activity pins', () => {
+    expect(canOfferRideshareForAvailabilityItem(legacySeekingItem())).toBe(true);
   });
 
   it('requires wire canOfferTransport for demand link rideshare CTA', () => {
-    expect(canShowSeekingLinkRideshareOffer(demandItem())).toBe(false);
+    expect(canShowAvailabilityLinkRideshareOffer(availabilityItem())).toBe(false);
     expect(
-      canShowSeekingLinkRideshareOffer(
-        demandItem({
+      canShowAvailabilityLinkRideshareOffer(
+        availabilityItem({
           viewerAccess: {
             level: 'host',
             exposure: 'full',
@@ -44,8 +58,8 @@ describe('demand carpool offer', () => {
     ).toBe(true);
   });
 
-  it('prefills rideshare draft from demand map item', () => {
-    const draft = buildRideshareDraftFromSeekingMapItem(demandItem());
+  it('prefills rideshare draft from availability map item', () => {
+    const draft = buildRideshareDraftFromAvailabilityMapItem(availabilityItem());
     expect(draft.kind).toBe('rideshare');
     expect(draft.title).toContain('Jebel hike crew');
     expect(draft.latitude).toBe(25.1);

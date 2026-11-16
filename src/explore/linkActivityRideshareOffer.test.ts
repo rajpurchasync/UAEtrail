@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import {
   canLinkRideshareToActivity,
-  resolveSeekingParentActivityId,
+  resolveAvailabilityParentActivityId,
 } from './linkActivityRideshareOffer';
 import { seekingExploreMapItem } from './exploreMapItemFixtures';
 
@@ -39,16 +39,16 @@ describe('canLinkRideshareToActivity', () => {
   });
 });
 
-describe('resolveSeekingParentActivityId', () => {
+describe('resolveAvailabilityParentActivityId', () => {
   it('reads parent id from nested activity or activity: wire id', () => {
     const item = seekingExploreMapItem({
       intentId: 'int-1',
       activityId: 'act-seek-1',
       activity: { id: 'act-seek-1', title: 'Crew', activityType: 'hiking' },
     });
-    expect(resolveSeekingParentActivityId(item)).toBe('act-seek-1');
+    expect(resolveAvailabilityParentActivityId(item)).toBe('act-seek-1');
     expect(
-      resolveSeekingParentActivityId({
+      resolveAvailabilityParentActivityId({
         ...item,
         activity: undefined,
         id: 'activity:act-wire-only',

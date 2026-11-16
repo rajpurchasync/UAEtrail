@@ -23,8 +23,8 @@ export const buildRideshareDraftFromParentActivity = (parent: ActivityDTO): Crea
   description: defaultRideshareRiderRulesText(),
 });
 
-/** Seed FLOW-04 from a requester's own demand pin (standalone rideshare on the map). */
-export const buildRideshareDraftFromSeekingMapItem = (item: ExploreMapItemDTO): CreateActivityDraft => {
+/** Seed FLOW-04 from a crew availability or legacy seeking map pin. */
+export const buildRideshareDraftFromAvailabilityMapItem = (item: ExploreMapItemDTO): CreateActivityDraft => {
   const label = item.title?.trim() || 'your plan';
   const timeStr = item.time?.trim() || '09:00';
   return {

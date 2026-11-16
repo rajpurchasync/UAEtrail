@@ -38,7 +38,7 @@ type Props = Pick<
   | 'peopleBrowseMapChip'
   | 'joinInvitePeekBanner'
   | 'handleCloseMapSelection'
-  | 'handleOfferRideshareForSeeking'
+  | 'handleOfferRideshareForAvailability'
   | 'primaryFabLabel'
   | 'handlePrimaryFabTap'
   | 'handleOpenExploreItem'
@@ -74,7 +74,7 @@ export const ExploreMapShell = ({
   peopleBrowseMapChip,
   joinInvitePeekBanner,
   handleCloseMapSelection,
-  handleOfferRideshareForSeeking: _handleOfferRideshareForSeeking,
+  handleOfferRideshareForAvailability: _handleOfferRideshareForAvailability,
   primaryFabLabel,
   handlePrimaryFabTap,
   handleOpenExploreItem,

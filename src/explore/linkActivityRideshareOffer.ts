@@ -1,4 +1,5 @@
 import {
+  exploreMapItemIsAvailabilityCatalog,
   exploreMapItemIsSeeking,
   type ActivityDTO,
   type ExploreMapItemDTO,
@@ -140,8 +141,8 @@ export const parentMapKindMayOfferLinkedRideshare = (
   return kind === 'hiking' || kind === 'camping' || kind === 'event';
 };
 
-/** Published parent activity id for a seeking map row (`activity:{id}` wire). */
-export const resolveSeekingParentActivityId = (item: ExploreMapItemDTO): string | null => {
+/** Published parent activity id when the pin nests an activity (`activity:{id}` wire). */
+export const resolveAvailabilityParentActivityId = (item: ExploreMapItemDTO): string | null => {
   const nested = item.activity?.id?.trim();
   if (nested) return nested;
   if (item.id.startsWith('activity:')) return item.id.slice('activity:'.length);
@@ -154,19 +155,19 @@ export const canLinkRideshareToActivity = (activity: ActivityDTO | null | undefi
   return parentMapKindMayOfferLinkedRideshare(activity.activityType);
 };
 
-/** Own seeking peek — offer a rideshare alongside the parent plan (not rideshare find posts). */
-export const canOfferRideshareForSeekingItem = (item: ExploreMapItemDTO | null | undefined): boolean => {
-  if (!item || !exploreMapItemIsSeeking(item)) return false;
+/** Availability or legacy activity peek — offer a rideshare alongside someone's plan (not rideshare pins). */
+export const canOfferRideshareForAvailabilityItem = (item: ExploreMapItemDTO | null | undefined): boolean => {
+  if (!item) return false;
+  const crewPin = exploreMapItemIsAvailabilityCatalog(item) || exploreMapItemIsSeeking(item);
+  if (!crewPin) return false;
   if (item.convertedActivityId) return false;
   return parentMapKindMayOfferLinkedRideshare(item.kind);
 };
 
-/**
- * Legacy intent-only host-manage peek — prefer host `link_rideshare` on `mapPeekActions` for M0 seeking pins.
- * @deprecated Use `canAddLinkedRide` + `canLinkRideshareToActivity` on activity-backed peek only.
- */
-export const canShowSeekingLinkRideshareOffer = (item: ExploreMapItemDTO | null | undefined): boolean =>
-  canOfferRideshareForSeekingItem(item) && Boolean(item?.viewerAccess?.entitlements?.canOfferTransport);
+/** Map peek CTA — host may offer transport when entitlement allows. */
+export const canShowAvailabilityLinkRideshareOffer = (item: ExploreMapItemDTO | null | undefined): boolean =>
+  canOfferRideshareForAvailabilityItem(item) &&
+  Boolean(item?.viewerAccess?.entitlements?.canOfferTransport);
 
 /** Trips → My plans manage sheet — same rules as map host-manage peek. */
 export const canOfferRideshareForParticipantIntent = (

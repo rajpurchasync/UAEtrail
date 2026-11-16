@@ -582,8 +582,8 @@ export const exploreHostPath = (kind?: HostComposeKind): string =>
     ? explorePath({ compose: hostCompose(kind) })
     : explorePath({ compose: { surface: 'menu', intent: 'host' } });
 
-/** Host with publish access — prefill rideshare organize from an own seeking post. */
-export const exploreOfferRideshareForSeekingPath = (intent: {
+/** Host with publish access — prefill rideshare organize from a crew availability pin. */
+export const exploreOfferRideshareForAvailabilityPath = (intent: {
   id: string;
   activityId?: string | null;
   seekingActivityId?: string | null;
