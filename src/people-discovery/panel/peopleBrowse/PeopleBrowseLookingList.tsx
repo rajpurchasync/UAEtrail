@@ -18,7 +18,7 @@ type Props = {
   buddyUserIds?: Set<string>;
 };
 
-/** Published seeking activities — compact `ExploreListRow`. */
+/** Fixed availability catalog rows (`source: availability`) — compact `ExploreListRow`. */
 export const PeopleBrowseLookingList = ({
   availabilityCatalogItems,
   exploreCatalogItems,

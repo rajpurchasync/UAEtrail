@@ -1,5 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
 import { describe, expect, it, vi } from 'vitest';
+import { peopleDiscoveryAvailabilityCatalogQueryKey } from '../people-discovery/hooks/usePeopleDiscoveryAvailabilityCatalog';
 import { exploreMapQueryKeyPrefix, reloadExploreMap } from './useExploreMap';
 
 describe('reloadExploreMap', () => {
@@ -11,7 +12,9 @@ describe('reloadExploreMap', () => {
     await reloadExploreMap(queryClient);
 
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: exploreMapQueryKeyPrefix });
-    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['people-discovery', 'seeking-activities'] });
+    expect(invalidateSpy).toHaveBeenCalledWith({
+      queryKey: peopleDiscoveryAvailabilityCatalogQueryKey(),
+    });
     expect(refetchSpy).toHaveBeenCalledWith({ queryKey: exploreMapQueryKeyPrefix, type: 'active' });
   });
 });

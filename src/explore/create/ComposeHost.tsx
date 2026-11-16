@@ -16,10 +16,10 @@ export interface ComposeHostProps {
   composeRoute: ExploreCompose | null;
   composeMenuOpen: boolean;
   hostWizardOpen: boolean;
-  /** Availability — post on map (`seek:fixed:*`). */
+  /** Availability — fixed map slot (`availability:fixed:*` wire; `seek:fixed:*` read-compat). */
   availabilityFixedWizardOpen: boolean;
   addWizardOpen: boolean;
-  /** Availability — share days (`seek:flexible`). */
+  /** Availability — open days (`availability:flexible` / `seek:flexible` read-compat). */
   availabilityFlexibleOpen: boolean;
   hostComposeKind: HostComposeKind | null;
   availabilityFixedKind: AvailabilityFixedComposeKind | null | undefined;

@@ -51,7 +51,7 @@ import { viewerIsActivityHostUser } from '../utils/viewerHostsActivity';
 import { activityJoinInviteBanner } from '../content/exploreGoingPanelCopy';
 import { joinActivityGroupChatSession } from '../hooks/activityGroupChatClientApi';
 import { navigateToActivityGroupChat } from '../utils/activityGroupChatNav';
-import { navigateToCreateLinkedRideshare } from '../explore/navigateCreateLinkedRideshare';
+import { launchLinkedRideshareFromParentActivity } from '../create/launchLinkedRideshareFromParentActivity';
 import { useActivityInviteShareSheet } from '../hooks/useActivityInviteShareSheet';
 import {
   ACTIVITY_DETAIL_JOINED_QUERY,
@@ -530,7 +530,7 @@ export const ActivityDetail = () => {
         viewerAccess={viewerAccess}
         onOfferLinkedRideshare={
           canOpenLinkedRideshareFlow && activity
-            ? () => navigateToCreateLinkedRideshare(navigate, activity)
+            ? () => launchLinkedRideshareFromParentActivity(navigate, activity)
             : undefined
         }
         onRideshareParentLinked={

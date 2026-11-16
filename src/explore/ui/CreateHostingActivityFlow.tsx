@@ -92,6 +92,7 @@ import { hostingPublishSeed, type HostComposeKind } from '../compose';
 import { composeFlowIdFromRoute, defaultParticipationForHostRoute } from '../composeFlowCatalog';
 import {
   clearHostingWizardSession,
+  findHostingWizardLinkSessionScope,
   hostingWizardSessionScope,
   readHostingWizardSession,
   writeHostingWizardSession,
@@ -279,13 +280,13 @@ export const CreateHostingActivityFlow = ({
       (editActivity ? { draft: createDraftFromPastActivity(editActivity) } : null),
     [seekingPrefill, editActivity]
   );
-  const wizardSessionScope = useMemo(
-    () =>
-      editActivity
-        ? `edit:${editActivity.id}`
-        : hostingWizardSessionScope(wizardPrefill),
-    [editActivity, wizardPrefill]
-  );
+  const wizardSessionScope = useMemo(() => {
+    if (editActivity) return `edit:${editActivity.id}`;
+    const fromPrefill = hostingWizardSessionScope(wizardPrefill);
+    if (fromPrefill) return fromPrefill;
+    if (hostingFlowId) return findHostingWizardLinkSessionScope(hostingFlowId);
+    return undefined;
+  }, [editActivity, wizardPrefill, hostingFlowId]);
   const wizardInitKey = editActivity
     ? `edit:${editActivity.id}`
     : hostingFlowId
@@ -387,12 +388,31 @@ export const CreateHostingActivityFlow = ({
 
   useEffect(() => {
     if (!open || !hostingFlowId || publishedActivity) return;
+    const linkToParentActivityId =
+      wizardPrefill?.linkToParentActivityId ??
+      readHostingWizardSession(hostingFlowId, wizardSessionScope)?.linkToParentActivityId;
     writeHostingWizardSession(
       hostingFlowId,
-      { step, draft, selectedKind },
+      {
+        step,
+        draft,
+        selectedKind,
+        ...(linkToParentActivityId ? { linkToParentActivityId } : {}),
+        ...(wizardPrefill?.sourceActivityId ? { sourceActivityId: wizardPrefill.sourceActivityId } : {}),
+      },
       wizardSessionScope
     );
-  }, [open, hostingFlowId, wizardSessionScope, step, draft, selectedKind, publishedActivity]);
+  }, [
+    open,
+    hostingFlowId,
+    wizardSessionScope,
+    step,
+    draft,
+    selectedKind,
+    publishedActivity,
+    wizardPrefill?.linkToParentActivityId,
+    wizardPrefill?.sourceActivityId,
+  ]);
 
   const patchDraft = useCallback((patch: Partial<CreateActivityDraft>) => {
     setDraft((prev) => ({ ...prev, ...patch }));
@@ -671,7 +691,10 @@ export const CreateHostingActivityFlow = ({
         tenantId,
         userId: user.id,
         sourceActivityId: wizardPrefill?.sourceActivityId ?? null,
-        linkToParentActivityId: wizardPrefill?.linkToParentActivityId ?? null,
+        linkToParentActivityId:
+          wizardPrefill?.linkToParentActivityId ??
+          readHostingWizardSession(hostingFlowId!, wizardSessionScope)?.linkToParentActivityId ??
+          null,
       });
       await afterHostingActivityPublishClientRefresh(queryClient, {
         activityId: activity.id,

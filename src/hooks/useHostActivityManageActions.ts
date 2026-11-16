@@ -8,7 +8,7 @@ import {
   resumeActivity as resumeTenantActivity,
   suspendActivity as suspendTenantActivity,
 } from './tenantActivityClientApi';
-import { navigateToCreateLinkedRideshare } from '../explore/navigateCreateLinkedRideshare';
+import { launchLinkedRideshareFromParentActivity } from '../create/launchLinkedRideshareFromParentActivity';
 import { navigateToHostFromExistingActivity } from '../explore/navigateHostFromExistingActivity';
 import { openPublishedActivityPreview } from '../components/activities';
 import { useInvalidatePublishingWorkspace } from './publishingWorkspaceQueries';
@@ -104,7 +104,7 @@ export function useHostActivityManageActions(
 
   const createLinkedRideshare = useCallback(
     (parent: ActivityDTO) => {
-      navigateToCreateLinkedRideshare(navigate, parent);
+      launchLinkedRideshareFromParentActivity(navigate, parent);
     },
     [navigate]
   );

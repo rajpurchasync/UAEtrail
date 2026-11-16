@@ -1,6 +1,9 @@
 import type { AvailabilityKind, ParticipantIntentKind } from '@uaetrail/shared-types';
 import { availabilityMapItemId } from '@uaetrail/shared-types';
-import { getMyAvailability, putMyAvailability } from '../../hooks/memberAvailabilityApi';
+import {
+  fetchMyMemberAvailability,
+  saveMyMemberAvailability,
+} from '../../hooks/memberAvailabilityApi';
 import {
   validateAvailabilityCuratedAreaStep,
   validateAvailabilityPublishArea,
@@ -529,14 +532,10 @@ export const validateAvailabilityFixedDraft = (draft: AvailabilityFixedDraft): s
 
 export type AvailabilityFixedSubmitResult = {
   visibleOnMap: boolean;
-  /** @deprecated Legacy field — fixed availability uses member_availability only. */
-  participantIntentId: string;
   mapItemId: string;
-  /** @deprecated Fixed availability is not an activity row. */
-  activityId: string | null;
 };
 
-const seekingKindToAvailability = (kind: AvailabilityFixedKind): AvailabilityKind => {
+const fixedWizardKindToAvailabilityKind = (kind: AvailabilityFixedKind): AvailabilityKind => {
   if (kind === 'hiking' || kind === 'camping' || kind === 'rideshare' || kind === 'event') return kind;
   return 'other';
 };
@@ -557,8 +556,8 @@ export const publishAvailabilityFixedSlot = async (draft: AvailabilityFixedDraft
       : null;
   const startAt = timePart ? `${dateIso}T${timePart}:00.000Z` : `${dateIso}T12:00:00.000Z`;
 
-  const existing = await getMyAvailability();
-  const kind = seekingKindToAvailability(draft.kind);
+  const existing = await fetchMyMemberAvailability();
+  const kind = fixedWizardKindToAvailabilityKind(draft.kind);
   const fixedSlot = {
     scheduleKind: 'fixed' as const,
     startDate: dateIso,
@@ -572,24 +571,29 @@ export const publishAvailabilityFixedSlot = async (draft: AvailabilityFixedDraft
     timeBand: null,
   };
 
-  const updated = await putMyAvailability({
+  const updated = await saveMyMemberAvailability({
     kinds: [...new Set([...existing.kinds, kind])],
     visibility: existing.visibility === 'hidden' ? 'public' : existing.visibility,
     region: draft.preferredArea.trim() || existing.region || null,
     areaId: draft.areaId?.trim() || existing.areaId || null,
     note: existing.note,
-    slots: [...existing.slots.filter((s) => s.scheduleKind !== 'fixed'), fixedSlot],
+    slots: [...existing.slots, fixedSlot],
   });
 
-  const savedSlot = updated.slots.find((s) => s.scheduleKind === 'fixed' && s.title === fixedSlot.title);
+  const fixedSlots = updated.slots.filter((s) => s.scheduleKind === 'fixed');
+  const savedSlot =
+    fixedSlots.find(
+      (s) =>
+        s.startAt === fixedSlot.startAt &&
+        s.latitude === fixedSlot.latitude &&
+        s.longitude === fixedSlot.longitude
+    ) ?? fixedSlots.at(-1);
   const slotId = savedSlot?.slotId ?? 'fixed';
   const mapItemId = availabilityMapItemId(updated.userId, slotId);
 
   return {
     visibleOnMap: true,
-    participantIntentId: mapItemId,
     mapItemId,
-    activityId: null,
   };
 };
 

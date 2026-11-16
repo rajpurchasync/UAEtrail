@@ -1,12 +1,15 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import type { NavigateFunction } from 'react-router-dom';
-import { launchHostWizard } from '../create/launchHostWizard';
-import { hostCompose } from './compose';
-import { composeFlowIdFromRoute } from './composeFlowCatalog';
-import { buildRideshareDraftFromParentActivity } from './linkRidesharePrefill';
+import { hostCompose } from '../explore/compose';
+import { composeFlowIdFromRoute } from '../explore/composeFlowCatalog';
+import { buildRideshareDraftFromParentActivity } from '../explore/linkRidesharePrefill';
+import { launchHostWizard } from './launchHostWizard';
 
-/** Parent activity → host rideshare wizard (session prefill + compose on current surface). */
-export const navigateCreateLinkedRideshare = (
+/**
+ * Compose entry — child rideshare wizard prefilled from a hosted parent activity.
+ * Post-publish `linkedActivityId` is set in the hosting wizard, not here.
+ */
+export const launchLinkedRideshareFromParentActivity = (
   navigate: NavigateFunction,
   parent: ActivityDTO,
   location?: { pathname: string; search: string }
@@ -25,6 +28,7 @@ export const navigateCreateLinkedRideshare = (
           step: 'title',
           draft: buildRideshareDraftFromParentActivity(parent),
           selectedKind: 'rideshare',
+          linkToParentActivityId: parent.id,
         }
       : undefined,
   });

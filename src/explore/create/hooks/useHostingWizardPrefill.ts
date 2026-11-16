@@ -10,10 +10,8 @@ import {
   canOfferRideshareForAvailabilityItem,
   resolveAvailabilityParentActivityId,
 } from '../../linkActivityRideshareOffer';
-import {
-  buildRideshareDraftFromAvailabilityMapItem,
-  buildRideshareDraftFromParentActivity,
-} from '../../linkRidesharePrefill';
+import { launchLinkedRideshareFromParentActivity } from '../../../create/launchLinkedRideshareFromParentActivity';
+import { buildRideshareDraftFromAvailabilityMapItem } from '../../linkRidesharePrefill';
 import { clearComposeWizardSessionForRoute } from '../../ui/composeWizardSession';
 import type { HostingWizardPrefill } from '../../ui/hostingWizardPrefill';
 import type { useComposeRoute } from './useComposeRoute';
@@ -50,7 +48,6 @@ export const useHostingWizardPrefill = (input: {
   const hostComposeRoute = compose.hostComposeRoute;
   const clearHostingFromActivityPrefill = hostingFrom.clearHostingFromActivityPrefill;
   const hostingFromActivityPrefill = hostingFrom.hostingFromActivityPrefill;
-  const [rideshareLinkParent, setRideshareLinkParent] = useState<ActivityDTO | null>(null);
   const [rideshareLinkAvailability, setRideshareLinkAvailability] = useState<ExploreMapItemDTO | null>(
     null
   );
@@ -58,11 +55,10 @@ export const useHostingWizardPrefill = (input: {
   const handleCreateLinkedRideshare = useCallback(
     (parent: ActivityDTO) => {
       setRideshareLinkAvailability(null);
-      setRideshareLinkParent(parent);
       setSelectedId(null);
-      setComposeRoute(hostCompose('rideshare'));
+      launchLinkedRideshareFromParentActivity(navigate, parent, { pathname, search });
     },
-    [setComposeRoute, setSelectedId]
+    [navigate, pathname, search, setSelectedId]
   );
 
   const beginOfferRideshareForAvailabilityItem = useCallback(
@@ -76,7 +72,6 @@ export const useHostingWizardPrefill = (input: {
         return;
       }
 
-      setRideshareLinkParent(null);
       setRideshareLinkAvailability(item);
       setSelectedId(null);
       setComposeRoute(hostCompose('rideshare'));
@@ -90,12 +85,6 @@ export const useHostingWizardPrefill = (input: {
   }, [beginOfferRideshareForAvailabilityItem, selected]);
 
   const hostingWizardPrefill = useMemo((): HostingWizardPrefill | null => {
-    if (rideshareLinkParent) {
-      return {
-        draft: buildRideshareDraftFromParentActivity(rideshareLinkParent),
-        linkToParentActivityId: rideshareLinkParent.id,
-      };
-    }
     if (rideshareLinkAvailability) {
       const parentActivityId = resolveAvailabilityParentActivityId(rideshareLinkAvailability);
       return {
@@ -110,11 +99,10 @@ export const useHostingWizardPrefill = (input: {
       };
     }
     return null;
-  }, [rideshareLinkParent, rideshareLinkAvailability, hostingFromActivityPrefill]);
+  }, [rideshareLinkAvailability, hostingFromActivityPrefill]);
 
   const closeCreateFlow = useCallback(() => {
     clearHostingFromActivityPrefill();
-    setRideshareLinkParent(null);
     setRideshareLinkAvailability(null);
     closeCompose();
   }, [clearHostingFromActivityPrefill, closeCompose]);
@@ -122,15 +110,12 @@ export const useHostingWizardPrefill = (input: {
   const onHostingBackToIntent = useCallback(() => {
     clearComposeWizardSessionForRoute(hostComposeRoute);
     clearHostingFromActivityPrefill();
-    setRideshareLinkParent(null);
     setRideshareLinkAvailability(null);
     setComposeRoute({ surface: 'menu', intent: 'host' });
   }, [clearHostingFromActivityPrefill, hostComposeRoute, setComposeRoute]);
 
   return {
-    rideshareLinkParent,
     rideshareLinkAvailability,
-    setRideshareLinkParent,
     setRideshareLinkAvailability,
     handleCreateLinkedRideshare,
     handleOfferRideshareForAvailability,

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { activityCrewPath } from '../config/routingCatalog';
 import type { ListFeedHostActivityActions } from '../list/ui/ListFeedActionsProvider';
-import { navigateToCreateLinkedRideshare } from '../explore/navigateCreateLinkedRideshare';
+import { launchLinkedRideshareFromParentActivity } from '../create/launchLinkedRideshareFromParentActivity';
 import { useActivityInviteShareSheet } from './useActivityInviteShareSheet';
 
 /** Invite share on the map. Host crew management is `/activity/:id/crew`. */
@@ -29,7 +29,7 @@ export const useHostActivitySheetBundle = (input: {
   );
 
   const onCreateLinkedRideshare = useCallback(
-    (parent: ActivityDTO) => navigateToCreateLinkedRideshare(navigate, parent),
+    (parent: ActivityDTO) => launchLinkedRideshareFromParentActivity(navigate, parent),
     [navigate]
   );
 

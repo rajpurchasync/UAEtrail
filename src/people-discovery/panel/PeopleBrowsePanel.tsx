@@ -57,7 +57,7 @@ export interface PeopleBrowsePanelProps {
   exploreCatalogLoading: boolean;
   onOpenAvailabilityCatalogItem: (item: ExploreMapItemDTO) => void;
   onOfferRideshareForAvailabilityItem?: (item: ExploreMapItemDTO) => void;
-  /** Share availability — opens compose `seek:flexible` on the current surface. */
+  /** Share availability — opens compose `availability` (open/fixed) on the current surface. */
   onOpenMarkAvailability?: () => void;
   buddyUserIds?: Set<string>;
 }

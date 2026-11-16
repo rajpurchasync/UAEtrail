@@ -10,9 +10,7 @@ type UseExploreCreateFlowBridgeArgs = {
   hostingWizardPrefill: HostingWizardPrefill | null | undefined;
   closeCreateFlow: () => void;
   onHostingBackToIntent: () => void;
-  rideshareLinkParent: ActivityDTO | null;
   rideshareLinkAvailability: ExploreMapItemDTO | null;
-  setRideshareLinkParent: (next: ActivityDTO | null) => void;
   setRideshareLinkAvailability: (next: ExploreMapItemDTO | null) => void;
   handleCreateLinkedRideshare: CreateFlowBridge['onCreateLinkedRideshare'];
   handleActivityPublished: (activity: ActivityDTO) => Promise<void>;
@@ -27,15 +25,13 @@ type UseExploreCreateFlowBridgeArgs = {
   enabled?: boolean;
 };
 
-/** Registers explore hosting/seeking/add handlers with the product `CreateFlowProvider`. */
+/** Registers explore hosting/availability/add handlers with the product `CreateFlowProvider`. */
 export const useExploreCreateFlowBridge = ({
   registerBridge,
   hostingWizardPrefill,
   closeCreateFlow,
   onHostingBackToIntent,
-  rideshareLinkParent,
   rideshareLinkAvailability,
-  setRideshareLinkParent,
   setRideshareLinkAvailability,
   handleCreateLinkedRideshare,
   handleActivityPublished,
@@ -51,9 +47,7 @@ export const useExploreCreateFlowBridge = ({
   const handlersRef = useRef({
     closeCreateFlow,
     onHostingBackToIntent,
-    rideshareLinkParent,
     rideshareLinkAvailability,
-    setRideshareLinkParent,
     setRideshareLinkAvailability,
     handleCreateLinkedRideshare,
     handleActivityPublished,
@@ -64,9 +58,7 @@ export const useExploreCreateFlowBridge = ({
   handlersRef.current = {
     closeCreateFlow,
     onHostingBackToIntent,
-    rideshareLinkParent,
     rideshareLinkAvailability,
-    setRideshareLinkParent,
     setRideshareLinkAvailability,
     handleCreateLinkedRideshare,
     handleActivityPublished,
@@ -87,9 +79,6 @@ export const useExploreCreateFlowBridge = ({
       onActivityPublished: async (activity) => {
         const handlers = handlersRef.current;
         await handlers.handleActivityPublished(activity);
-        if (handlers.rideshareLinkParent && activity.activityType === 'rideshare') {
-          handlers.setRideshareLinkParent(null);
-        }
         if (handlers.rideshareLinkAvailability && activity.activityType === 'rideshare') {
           handlers.setRideshareLinkAvailability(null);
         }

@@ -243,7 +243,7 @@ describe('list module hygiene', () => {
     expect(browseList).not.toMatch(/matchesBuddyMapFilter/);
   });
 
-  it('people Looking for uses dedicated seeking-activities read hook', () => {
+  it('people Looking for uses availability catalog read hook', () => {
     const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
     const bundle = readFileSync(
       join(process.cwd(), 'src/people-discovery/hooks/usePeopleDiscoveryBrowseBundle.ts'),

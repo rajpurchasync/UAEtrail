@@ -14,6 +14,9 @@ export type HostingWizardSession = {
   step: string;
   draft: CreateActivityDraft;
   selectedKind: CreateActivityKind | null;
+  /** Post-publish graph link — survives sessionStorage when compose opens off explore. */
+  linkToParentActivityId?: string;
+  sourceActivityId?: string;
 };
 
 export type AvailabilityWizardSession = {
@@ -39,6 +42,22 @@ export const hostingWizardSessionScope = (prefill?: {
   if (prefill.participantIntentId) return `intent:${prefill.participantIntentId}`;
   if (prefill.linkToParentActivityId) return `link:${prefill.linkToParentActivityId}`;
   if (prefill.sourceActivityId) return `from:${prefill.sourceActivityId}`;
+  return undefined;
+};
+
+/** Session scope `link:{parentId}` written by `launchLinkedRideshareFromParentActivity`. */
+export const findHostingWizardLinkSessionScope = (flowId: ComposeFlowId): string | undefined => {
+  try {
+    const prefix = `${STORAGE_PREFIX}:${flowId}:link:`;
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const key = sessionStorage.key(i);
+      if (key?.startsWith(prefix)) {
+        return key.slice(`${STORAGE_PREFIX}:${flowId}:`.length);
+      }
+    }
+  } catch {
+    /* ignore */
+  }
   return undefined;
 };
 

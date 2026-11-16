@@ -17,7 +17,8 @@ describe('create flow module boundaries (CPC-9b)', () => {
   it('availability fixed publish uses availability map pins only (MIG-DISCO-REG)', () => {
     const availability = read('src/explore/ui/availabilityFlowEngine.ts');
     expect(availability).toMatch(/availabilityMapItemId/);
-    expect(availability).toMatch(/activityId: null/);
+    expect(availability).toMatch(/mapItemId,/);
+    expect(availability).not.toMatch(/participantIntentId/);
     expect(availability).not.toMatch(/`demand:\$\{/);
     expect(availability).not.toMatch(/createSeekingPost/);
   });

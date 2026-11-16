@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { emptyCreateActivityDraft } from './hostingFlowEngine';
 import {
   clearHostingWizardSession,
+  findHostingWizardLinkSessionScope,
   hostingWizardSessionScope,
   readHostingWizardSession,
   writeHostingWizardSession,
@@ -36,6 +37,23 @@ describe('composeWizardSession', () => {
     expect(readHostingWizardSession('host.hiking', scope)?.step).toBe('title');
     clearHostingWizardSession('host.hiking', scope);
     expect(readHostingWizardSession('host.hiking', scope)).toBeNull();
+  });
+
+  it('finds link session scope for linked rideshare launch', () => {
+    const scope = 'link:parent-1';
+    writeHostingWizardSession(
+      'host.rideshare',
+      {
+        step: 'title',
+        draft: emptyCreateActivityDraft(),
+        selectedKind: 'rideshare',
+        linkToParentActivityId: 'parent-1',
+      },
+      scope
+    );
+    expect(findHostingWizardLinkSessionScope('host.rideshare')).toBe(scope);
+    expect(readHostingWizardSession('host.rideshare', scope)?.linkToParentActivityId).toBe('parent-1');
+    clearHostingWizardSession('host.rideshare', scope);
   });
 
   it('does not read legacy plan.* session keys', () => {
