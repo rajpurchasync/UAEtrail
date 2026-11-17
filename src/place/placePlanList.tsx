@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import {
+  activityIsConsumerDiscoverable,
   exploreActivityPublisherTypeLabel,
   formatExploreEventDateLabel,
   publishesActivityAsIndividual,
@@ -13,7 +14,9 @@ import { DETAIL_SCROLL_SECTION_TITLE } from '../components/mobile/detailScrollSe
 const isRide = (activity: ActivityDTO): boolean => activity.activityType === 'rideshare';
 
 export const splitPlacePlans = (activities: ActivityDTO[]) => {
-  const published = activities.filter((activity) => activity.status === 'published');
+  const published = activities.filter((activity) =>
+    activityIsConsumerDiscoverable(activity.status)
+  );
   return {
     outings: published.filter((activity) => !isRide(activity)),
     rides: published.filter((activity) => isRide(activity)),

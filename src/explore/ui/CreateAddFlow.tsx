@@ -36,6 +36,13 @@ import type { LocationPrecision } from './createFlowShared';
 import { inferEmirateFromPin } from '../hostingPublishArea';
 import { AddSubmitSuccessSheet } from './AddSubmitSuccessSheet';
 import {
+  COMPOSE_SUBMIT_FLOW_IDLE,
+  composeSubmitFlowBlocksSessionPersist,
+  composeSubmitFlowIsSubmitting,
+  composeSubmitFlowResult,
+  type ComposeSubmitFlowStatus,
+} from './composeSubmitFlowStatus';
+import {
   clearAddWizardSession,
   readAddWizardSession,
   writeAddWizardSession,
@@ -73,8 +80,11 @@ export const CreateAddFlow = ({
     ...emptyAddDraft(),
     kind,
   }));
-  const [submitting, setSubmitting] = useState(false);
-  const [submitResult, setSubmitResult] = useState<AddSubmitResult | null>(null);
+  const [submitStatus, setSubmitStatus] = useState<ComposeSubmitFlowStatus<AddSubmitResult>>(
+    COMPOSE_SUBMIT_FLOW_IDLE
+  );
+  const submitting = composeSubmitFlowIsSubmitting(submitStatus);
+  const submitResult = composeSubmitFlowResult(submitStatus);
   const [error, setError] = useState<string | null>(null);
   const mapSession = useComposeMapSession<
     typeof COMPOSE_MAP_INTENTS.addLocation | typeof COMPOSE_MAP_INTENTS.addParking
@@ -101,7 +111,7 @@ export const CreateAddFlow = ({
   useEffect(() => {
     if (!open) {
       setError(null);
-      setSubmitting(false);
+      setSubmitStatus(COMPOSE_SUBMIT_FLOW_IDLE);
       mapSession.closeMap();
       return;
     }
@@ -119,7 +129,7 @@ export const CreateAddFlow = ({
           ...(areaId ? { areaId } : {}),
         });
       }
-      setSubmitResult(null);
+      setSubmitStatus(COMPOSE_SUBMIT_FLOW_IDLE);
       addInitializedRef.current = addInitKey;
     }
     if (!user) {
@@ -128,9 +138,9 @@ export const CreateAddFlow = ({
   }, [open, user, navigate, signInHref, onClose, kind, addInitKey, exploreAreaSlug, publishedAreas]);
 
   useEffect(() => {
-    if (!open || submitResult) return;
+    if (!open || composeSubmitFlowBlocksSessionPersist(submitStatus)) return;
     writeAddWizardSession(kind, { step, draft });
-  }, [open, kind, step, draft, submitResult]);
+  }, [open, kind, step, draft, submitStatus]);
 
   const patchDraft = useCallback((patch: Partial<AddDraft>) => {
     setDraft((prev) => ({ ...prev, ...patch }));
@@ -192,16 +202,15 @@ export const CreateAddFlow = ({
       setError(validation);
       return;
     }
-    setSubmitting(true);
+    setSubmitStatus({ kind: 'submitting' });
     setError(null);
     try {
       const result = await publishAddVenue({ ...draft, kind });
       clearAddWizardSession(kind);
-      setSubmitResult(result);
+      setSubmitStatus({ kind: 'submitted', result });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not submit your contribution.');
-    } finally {
-      setSubmitting(false);
+      setSubmitStatus(COMPOSE_SUBMIT_FLOW_IDLE);
     }
   };
 

@@ -1,3 +1,4 @@
+import { projectJoinRequestUiFromMapPeekWire } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import type { JoinRequestUiState } from '../utils/joinRequestUi';
 
@@ -13,24 +14,10 @@ export const inferJoinUiStateFromDiscoveryCard = (
   if (clientJoinUi) return clientJoinUi;
   if (card.source !== 'activity') return undefined;
 
-  const pendingWire = card.viewerAccess?.mapPeekActions?.find(
-    (action) => action.id === 'pending_join'
+  return (
+    projectJoinRequestUiFromMapPeekWire({
+      level: card.viewerAccess?.level,
+      mapPeekActions: card.viewerAccess?.mapPeekActions,
+    }) ?? undefined
   );
-  // Bare `join_request` (invite / guide, no pending_join wire) is not pending —
-  // peek already shows request_join. Do not invent a pending UI state.
-  if (pendingWire) {
-    const status = pendingWire.joinRequestStatus === 'waitlisted' ? 'waitlisted' : 'pending';
-    return {
-      kind: 'pending',
-      requestId: 'wire',
-      status,
-    };
-  }
-
-  const level = card.viewerAccess?.level;
-  if (level === 'participant' || level === 'activity_group_member') {
-    return { kind: 'confirmed', requestId: 'wire' };
-  }
-
-  return undefined;
 };

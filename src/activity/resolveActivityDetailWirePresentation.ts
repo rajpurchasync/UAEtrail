@@ -1,4 +1,5 @@
 import {
+  activityIsConsumerDiscoverable,
   mapPeekJoinRequestStatusFromUiKind,
   resolveActivityEngagementPolicy,
   type ActivityDetailDTO,
@@ -77,7 +78,7 @@ export const resolveActivityDetailWirePresentation = (
     isHostUser: input.isHostUser,
     previewMode: input.previewMode ?? false,
     isEmbedded: input.isEmbedded ?? false,
-    activityPublished: input.activity.status === 'published',
+    activityPublished: activityIsConsumerDiscoverable(input.activity.status),
     participationMode: input.activity.participationMode,
     requirements: input.activity.requirements,
     joinMode: input.activity.joinMode,

@@ -1,6 +1,11 @@
 import { useMemo } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
-import type { ActivityDetailDTO, ActivityDTO, UserRole } from '@uaetrail/shared-types';
+import {
+  activityIsConsumerDiscoverable,
+  type ActivityDetailDTO,
+  type ActivityDTO,
+  type UserRole,
+} from '@uaetrail/shared-types';
 import type { ActivityManageInitialView } from '../components/activity/activityManageViews';
 import { resolveActivityHostUserId } from '@uaetrail/shared-types';
 import type { ActivityMapPeekActionHandlers } from './executeActivityMapPeekAction';
@@ -51,7 +56,7 @@ export const useActivityDetailMapPeekHandlers = (
         );
       },
       inviteCrew: () => {
-        if (activity.status !== 'published') return;
+        if (!activityIsConsumerDiscoverable(activity.status)) return;
         if (input.onParticipantInviteFriends) {
           input.onParticipantInviteFriends();
         } else {

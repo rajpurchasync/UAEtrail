@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-do
 import { ArrowDown, ArrowUp, ArrowUpDown, Plus, Search } from 'lucide-react';
 import {
   formatExploreEventDateLabel,
+  isPublishedActivityStatus,
   memberProfilePath,
   type ActivityDTO,
 } from '@uaetrail/shared-types';
@@ -144,7 +145,7 @@ export const Activities = () => {
   );
 
   const openPreview = (event: ActivityDTO) => {
-    if (event.status === 'published') {
+    if (isPublishedActivityStatus(event.status)) {
       hostActions.previewPublished(event.id);
       return;
     }

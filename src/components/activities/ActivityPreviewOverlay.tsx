@@ -1,6 +1,10 @@
 import { useMemo, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import type { ActivityDetailDTO, ActivityViewerAccessDTO } from '@uaetrail/shared-types';
+import {
+  isPublishedActivityStatus,
+  type ActivityDetailDTO,
+  type ActivityViewerAccessDTO,
+} from '@uaetrail/shared-types';
 import { ActivityDetailView } from '../activity/ActivityDetailView';
 import { detailBackPath } from '../../config/routingCatalog';
 import { CONSUMER_MAIN_OVERLAY_INSET } from '../../config/consumerOverlayInset';
@@ -99,7 +103,7 @@ export const ActivityPreviewOverlay = (props: ActivityPreviewOverlayProps) => {
           <div className="text-center">
             <p className="text-sm font-semibold text-gray-900">Activity preview</p>
             <p className="text-xs text-gray-600 mt-1">
-              {activity.status === 'published'
+              {isPublishedActivityStatus(activity.status)
                 ? 'This is how the activity appears to participants.'
                 : 'This is how your activity will look once published.'}
             </p>

@@ -1,5 +1,8 @@
 import type { ActivityDTO, AvailabilityKind } from '@uaetrail/shared-types';
-import { availabilityKindsForActivityType } from '@uaetrail/shared-types';
+import {
+  availabilityKindsForActivityType,
+  isPublishedActivityStatus,
+} from '@uaetrail/shared-types';
 import { fetchExplorePeopleAvailability } from '../hooks/memberPeopleClientApi';
 
 const primaryAvailabilityKind = (activityType: string): AvailabilityKind | undefined =>
@@ -37,7 +40,8 @@ export const hostPublishAvailabilityNoticeMessage = async (
   hostUserId: string | null | undefined
 ): Promise<string | null> => {
   if (!hostUserId) return null;
-  const published =
-    activity.status === 'published' ? activity : { ...activity, status: 'published' as const };
+  const published = isPublishedActivityStatus(activity.status)
+    ? activity
+    : { ...activity, status: 'published' as const };
   return buildHostPublishAvailabilityNotice(published, hostUserId);
 };

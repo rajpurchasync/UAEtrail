@@ -6,7 +6,7 @@ import {
 } from '../../../../utils/joinInstructions';
 import { extractActivityPlanDetailLines } from '../../../../activity/activityDetailReachBy';
 import { ActivityPackingListPreview } from '../../ActivityPackingListPreview';
-import { activityScheduleHasEnded } from '@uaetrail/shared-types';
+import { activityIsConsumerDiscoverable, activityScheduleHasEnded } from '@uaetrail/shared-types';
 import { ReviewSection } from '../../../ui/ReviewSection';
 
 type ActivityDetailPlanExtrasProps = {
@@ -100,7 +100,7 @@ export const ActivityDetailPlanExtras = ({
 
       {!hideActivityReviews &&
       !previewMode &&
-      activity.status === 'published' &&
+      activityIsConsumerDiscoverable(activity.status) &&
       onActivityReviewSubmitted ? (
         <ReviewSection
           targetType="activity"

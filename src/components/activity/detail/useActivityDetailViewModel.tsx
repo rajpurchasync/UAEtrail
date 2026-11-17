@@ -10,6 +10,7 @@ import type {
   ReviewDTO,
 } from '@uaetrail/shared-types';
 import {
+  activityIsConsumerDiscoverable,
   exploreActivityPublisherTypeLabel,
   resolveActivityPublisherProfilePath,
 } from '@uaetrail/shared-types';
@@ -316,7 +317,7 @@ export const useActivityDetailViewModel = ({
   const mobileTransportPanel = '';
   const mobileSidebarPanel = publicDetail ? 'hidden md:block' : 'block';
 
-  const showInviteShare = !previewMode && activity.status === 'published';
+  const showInviteShare = !previewMode && activityIsConsumerDiscoverable(activity.status);
   const tabFooterKind = wireFooterByTab?.[mobileTab] ?? 'plan_join';
   const consumerJoinEnabled = !isEmbedded && !previewMode;
   const hostUserId = activityHostUserId(activity) ?? null;

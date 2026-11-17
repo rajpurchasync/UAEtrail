@@ -20,6 +20,13 @@ import {
   type FacilityAddStepId,
 } from './addFacilityFlow';
 import {
+  COMPOSE_SUBMIT_FLOW_IDLE,
+  composeSubmitFlowBlocksSessionPersist,
+  composeSubmitFlowIsSubmitting,
+  composeSubmitFlowResult,
+  type ComposeSubmitFlowStatus,
+} from './composeSubmitFlowStatus';
+import {
   clearAddWizardSession,
   readAddWizardSession,
   writeAddWizardSession,
@@ -69,8 +76,11 @@ export const CreateAddFacilityFlow = ({
 
   const [step, setStep] = useState<FacilityAddStepId>('title');
   const [draft, setDraft] = useState<FacilityAddDraft>(() => emptyFacilityAddDraft());
-  const [submitting, setSubmitting] = useState(false);
-  const [submitResult, setSubmitResult] = useState<AddSubmitResult | null>(null);
+  const [submitStatus, setSubmitStatus] = useState<ComposeSubmitFlowStatus<AddSubmitResult>>(
+    COMPOSE_SUBMIT_FLOW_IDLE
+  );
+  const submitting = composeSubmitFlowIsSubmitting(submitStatus);
+  const submitResult = composeSubmitFlowResult(submitStatus);
   const [error, setError] = useState<string | null>(null);
   const mapSession = useComposeMapSession<typeof COMPOSE_MAP_INTENTS.addFacilityLocation>();
   const [mapPrecision, setMapPrecision] = useState<LocationPrecision>('specific');
@@ -84,7 +94,7 @@ export const CreateAddFacilityFlow = ({
   useEffect(() => {
     if (!open) {
       setError(null);
-      setSubmitting(false);
+      setSubmitStatus(COMPOSE_SUBMIT_FLOW_IDLE);
       mapSession.closeMap();
       return;
     }
@@ -101,7 +111,7 @@ export const CreateAddFacilityFlow = ({
           ...(areaId ? { areaId } : {}),
         });
       }
-      setSubmitResult(null);
+      setSubmitStatus(COMPOSE_SUBMIT_FLOW_IDLE);
       initializedRef.current = true;
     }
     if (!user) {
@@ -114,9 +124,9 @@ export const CreateAddFacilityFlow = ({
   }, [open]);
 
   useEffect(() => {
-    if (!open || submitResult) return;
+    if (!open || composeSubmitFlowBlocksSessionPersist(submitStatus)) return;
     writeAddWizardSession('facility', { step, draft });
-  }, [open, step, draft, submitResult]);
+  }, [open, step, draft, submitStatus]);
 
   const patchDraft = useCallback((patch: Partial<FacilityAddDraft>) => {
     setDraft((prev) => ({ ...prev, ...patch }));
@@ -203,16 +213,15 @@ export const CreateAddFacilityFlow = ({
       setError(validation);
       return;
     }
-    setSubmitting(true);
+    setSubmitStatus({ kind: 'submitting' });
     setError(null);
     try {
       const result = await submitFacilityAdd(draft);
       clearAddWizardSession('facility');
-      setSubmitResult(result);
+      setSubmitStatus({ kind: 'submitted', result });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not submit your facility.');
-    } finally {
-      setSubmitting(false);
+      setSubmitStatus(COMPOSE_SUBMIT_FLOW_IDLE);
     }
   };
 

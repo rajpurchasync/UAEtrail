@@ -17,15 +17,15 @@ describe('hostingPublishFlowStatus', () => {
     expect(hostingPublishFlowBlocksSessionPersist(HOSTING_PUBLISH_FLOW_IDLE)).toBe(false);
   });
 
-  it('publishing and published are mutually exclusive', () => {
-    const publishing: HostingPublishFlowStatus = { kind: 'publishing' };
-    const published: HostingPublishFlowStatus = { kind: 'published', activity };
+  it('submitting and submitted are mutually exclusive', () => {
+    const submitting: HostingPublishFlowStatus = { kind: 'submitting' };
+    const submitted: HostingPublishFlowStatus = { kind: 'submitted', result: activity };
 
-    expect(hostingPublishFlowIsPublishing(publishing)).toBe(true);
-    expect(hostingPublishFlowPublishedActivity(publishing)).toBeNull();
+    expect(hostingPublishFlowIsPublishing(submitting)).toBe(true);
+    expect(hostingPublishFlowPublishedActivity(submitting)).toBeNull();
 
-    expect(hostingPublishFlowIsPublishing(published)).toBe(false);
-    expect(hostingPublishFlowPublishedActivity(published)).toBe(activity);
-    expect(hostingPublishFlowBlocksSessionPersist(published)).toBe(true);
+    expect(hostingPublishFlowIsPublishing(submitted)).toBe(false);
+    expect(hostingPublishFlowPublishedActivity(submitted)).toBe(activity);
+    expect(hostingPublishFlowBlocksSessionPersist(submitted)).toBe(true);
   });
 });

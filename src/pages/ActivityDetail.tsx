@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate, useSearchParams, useLocation } from 'reac
 import { useQueryClient } from '@tanstack/react-query';
 import { Lock } from 'lucide-react';
 import {
+  activityIsConsumerDiscoverable,
   activityScheduleHasEnded,
   type ReviewDTO,
 } from '@uaetrail/shared-types';
@@ -102,7 +103,7 @@ export const ActivityDetail = () => {
   } = usePublicActivityDetail(id);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const reviewsEnabled = Boolean(id && activity?.status === 'published');
+  const reviewsEnabled = Boolean(id && activityIsConsumerDiscoverable(activity?.status));
   const { reviews: activityReviews } = useActivityReviews(id, reviewsEnabled);
   const [joinWelcomeUi, setJoinWelcomeUi] = useState<ActivityDetailJoinWelcomeUi>(
     ACTIVITY_DETAIL_JOIN_WELCOME_CLOSED

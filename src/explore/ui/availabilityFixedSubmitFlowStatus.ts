@@ -1,24 +1,21 @@
 import type { AvailabilityFixedSubmitResult } from './availabilityFlowEngine';
+import {
+  COMPOSE_SUBMIT_FLOW_IDLE,
+  composeSubmitFlowBlocksSessionPersist,
+  composeSubmitFlowIsSubmitting,
+  composeSubmitFlowResult,
+  type ComposeSubmitFlowStatus,
+} from './composeSubmitFlowStatus';
 
 /** Fixed “find a group” wizard — submit outcome (draft/step state stays separate). */
 export type AvailabilityFixedSubmitFlowStatus =
-  | { kind: 'idle' }
-  | { kind: 'submitting' }
-  | { kind: 'submitted'; result: AvailabilityFixedSubmitResult };
+  ComposeSubmitFlowStatus<AvailabilityFixedSubmitResult>;
 
-export const AVAILABILITY_FIXED_SUBMIT_FLOW_IDLE: AvailabilityFixedSubmitFlowStatus = {
-  kind: 'idle',
-};
+export const AVAILABILITY_FIXED_SUBMIT_FLOW_IDLE: AvailabilityFixedSubmitFlowStatus =
+  COMPOSE_SUBMIT_FLOW_IDLE;
 
-export const availabilityFixedSubmitFlowIsSubmitting = (
-  status: AvailabilityFixedSubmitFlowStatus
-): boolean => status.kind === 'submitting';
+export const availabilityFixedSubmitFlowIsSubmitting = composeSubmitFlowIsSubmitting;
 
-export const availabilityFixedSubmitFlowResult = (
-  status: AvailabilityFixedSubmitFlowStatus
-): AvailabilityFixedSubmitResult | null =>
-  status.kind === 'submitted' ? status.result : null;
+export const availabilityFixedSubmitFlowResult = composeSubmitFlowResult;
 
-export const availabilityFixedSubmitFlowBlocksSessionPersist = (
-  status: AvailabilityFixedSubmitFlowStatus
-): boolean => status.kind === 'submitted';
+export const availabilityFixedSubmitFlowBlocksSessionPersist = composeSubmitFlowBlocksSessionPersist;

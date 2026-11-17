@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, Fragment } from 'react';
 import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import { useNavigate } from 'react-router-dom';
-import { ActivityDTO, LocationDTO } from '@uaetrail/shared-types';
+import { ActivityDTO, isPublishedActivityStatus, LocationDTO } from '@uaetrail/shared-types';
 import { AdminTablePager, DEFAULT_ADMIN_PAGE_SIZE, paginateRows, type AdminPageSize } from '../../components/admin/AdminTablePager';
 import {
   fetchAdminActivityEngagement,
@@ -306,7 +306,7 @@ export const Activities = () => {
   };
 
   const openPreview = (event: ActivityDTO) => {
-    if (event.status === 'published') {
+    if (isPublishedActivityStatus(event.status)) {
       openPublishedActivityPreview(event.id);
       return;
     }

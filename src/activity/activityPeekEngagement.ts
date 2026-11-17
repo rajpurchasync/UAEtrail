@@ -1,4 +1,5 @@
 import {
+  activityIsConsumerDiscoverable,
   computeActivityMapPeekActions,
   mapPeekJoinRequestStatusFromUiKind,
   mergeActivityMapPeekActionsWithEntitlements,
@@ -94,7 +95,7 @@ const resolvePeekFallbackEngagementPolicy = (
   return resolveActivityEngagementPolicy({
     viewerAccess: { ...card.viewerAccess, level },
     isHostUser: level === 'host',
-    activityPublished: card.activity?.status === 'published',
+    activityPublished: activityIsConsumerDiscoverable(card.activity?.status),
     joinMode: card.activity?.joinMode,
     joinRequestStatus: mapPeekJoinRequestStatusFromUiKind(joinUiState),
     participationMode: card.activity?.participationMode,
@@ -206,7 +207,7 @@ const confirmedParticipantCountForHostPeek = (activity: ActivityDTO): number => 
 export const resolveActivityMapPeekActionsForHostDto = (
   activity: ActivityDTO
 ): ActivityMapPeekAction[] => {
-  if (activity.status !== 'published') {
+  if (!activityIsConsumerDiscoverable(activity.status)) {
     return [{ id: 'manage_activity', prominence: 'primary' }];
   }
   return computeActivityMapPeekActions({

@@ -1,5 +1,9 @@
 import { useNavigate } from 'react-router-dom';
-import { formatExploreEventDateLabel, type ActivityDTO } from '@uaetrail/shared-types';
+import {
+  formatExploreEventDateLabel,
+  isPublishedActivityStatus,
+  type ActivityDTO,
+} from '@uaetrail/shared-types';
 import { ActivityHubListRow } from '../mobile/ActivityHubListRow';
 
 const formatActivityRowMeta = (activity: ActivityDTO): string => {
@@ -28,7 +32,7 @@ export const ProfileActivityListRow = ({
       badge={
         <span
           className={`text-[11px] font-bold px-2 py-0.5 rounded-full capitalize shrink-0 ${
-            activity.status === 'published'
+            isPublishedActivityStatus(activity.status)
               ? 'bg-emerald-500/15 text-emerald-700'
               : 'bg-neutral-500/10 text-neutral-600'
           }`}

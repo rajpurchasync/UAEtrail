@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import type { ActivityDTO } from '@uaetrail/shared-types';
+import { activityIsConsumerDiscoverable, type ActivityDTO } from '@uaetrail/shared-types';
 import { useShareSheet } from '../../context/ShareSheetContext';
 import { shareSurfaceFromDiscoveryCard } from '../../content/shareSheetCopy';
 import type { DiscoveryCardViewModel } from '../../discovery/discoveryCardViewModel';
@@ -28,7 +28,7 @@ export function useExplorePeekShareAction({
   const shareSheet = useShareSheet();
 
   return useCallback(() => {
-    if (activity?.status === 'published') {
+    if (activity && activityIsConsumerDiscoverable(activity.status)) {
       if (!user && onGuestShareActivity) {
         onGuestShareActivity(activity);
         return;

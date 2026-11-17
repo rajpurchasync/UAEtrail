@@ -7,6 +7,7 @@ import {
   mapPeekJoinRequestStatusFromUiKind,
   mapPeekJoinRequestStatusFromWire,
   projectActivityJoinRequestUiState,
+  projectJoinRequestUiFromMapPeekWire,
   resolveActivityJoinEngagementKind,
   resolveActivityJoinEngagementPhase,
 } from './activity-join-engagement.js';
@@ -51,6 +52,29 @@ describe('activity join engagement machine', () => {
         myRequest: { id: 'r1', status: 'waitlisted', canWithdraw: true },
       })
     ).toEqual({ kind: 'pending', requestId: 'r1', status: 'waitlisted' });
+  });
+
+  it('builds join snapshot from map peek wire', () => {
+    expect(
+      projectJoinRequestUiFromMapPeekWire({
+        level: 'join_request',
+        mapPeekActions: [
+          { id: 'pending_join', joinRequestStatus: 'pending' },
+        ],
+      })
+    ).toEqual({ kind: 'pending', requestId: 'wire', status: 'pending' });
+    expect(
+      projectJoinRequestUiFromMapPeekWire({
+        level: 'join_request',
+        mapPeekActions: [{ id: 'request_join' }],
+      })
+    ).toBeNull();
+    expect(
+      projectJoinRequestUiFromMapPeekWire({
+        level: 'participant',
+        mapPeekActions: [],
+      })
+    ).toEqual({ kind: 'confirmed', requestId: 'participation' });
   });
 
   it('treats non-withdrawable requests as open (rejected / cancelled / closed)', () => {

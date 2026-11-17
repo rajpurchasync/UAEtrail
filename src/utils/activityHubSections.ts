@@ -1,4 +1,8 @@
-import { resolveHostNote, type MyActivityDTO } from '@uaetrail/shared-types';
+import {
+  activityIsConsumerDiscoverable,
+  resolveHostNote,
+  type MyActivityDTO,
+} from '@uaetrail/shared-types';
 import type { ActivityRequestView } from '../api/types';
 import { getRequestEventDate, isUpcomingActivity } from './activityDates';
 
@@ -17,7 +21,7 @@ export const isAttendedActivity = (activity: MyActivityDTO): boolean =>
   Boolean(activity.participation?.checkedInAt);
 
 export const isActiveUpcomingJoinedActivity = (activity: MyActivityDTO): boolean =>
-  isUpcomingActivity(activity) && activity.status === 'published';
+  isUpcomingActivity(activity) && activityIsConsumerDiscoverable(activity.status);
 
 export const upcomingConfirmedActivities = (activities: MyActivityDTO[]) =>
   activities.filter(isActiveUpcomingJoinedActivity);

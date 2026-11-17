@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo } from 'react';
+import { isPublishedActivityStatus } from '@uaetrail/shared-types';
 import { useQueryClient } from '@tanstack/react-query';
 import { getActiveTenantId, setActiveTenantId } from '../api/tenant';
 import { useMemberStatus } from '../hooks/useMemberStatus';
@@ -43,7 +44,7 @@ export const useConsoleHubData = (enabled = true, options?: ConsoleHubOptions) =
   );
 
   const publishedCount = useMemo(
-    () => activities.filter((item) => item.status === 'published').length,
+    () => activities.filter((item) => isPublishedActivityStatus(item.status)).length,
     [activities]
   );
 

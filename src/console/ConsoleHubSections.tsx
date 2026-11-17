@@ -1,6 +1,10 @@
 import { Link } from 'react-router-dom';
 import { ChevronRight, MapPin, Plus, UserCircle, Users, UsersRound } from 'lucide-react';
-import { formatExploreEventDateLabel, type ActivityDTO } from '@uaetrail/shared-types';
+import {
+  formatExploreEventDateLabel,
+  isPublishedActivityStatus,
+  type ActivityDTO,
+} from '@uaetrail/shared-types';
 import {
   PUBLISHING_ACTIVITIES_NEW_PATH,
   PUBLISHING_ACTIVITIES_PATH,
@@ -93,7 +97,7 @@ export const ConsoleHubSections = ({
                 </div>
                 <span
                   className={`text-[11px] font-bold px-2 py-0.5 rounded-full capitalize shrink-0 ${
-                    evt.status === 'published'
+                    isPublishedActivityStatus(evt.status)
                       ? 'bg-emerald-500/15 text-emerald-700'
                       : 'bg-neutral-500/10 text-neutral-600'
                   }`}

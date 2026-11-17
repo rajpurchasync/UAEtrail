@@ -144,3 +144,44 @@ export const mapPeekJoinRequestStatusFromWire = (
   if (!status || !isInFlightJoinRequestWireStatus(status)) return null;
   return inFlightStatusFromWire(status);
 };
+
+type MapPeekWireJoinInput = {
+  level?: string | null;
+  mapPeekActions?: ReadonlyArray<{ id: string; joinRequestStatus?: string | null }> | null;
+};
+
+/**
+ * List/map wire inference — only when enrich sets `pending_join` or roster level.
+ * Bare `join_request` without `pending_join` returns null (invite / request CTA only).
+ */
+export const activityJoinEngagementSnapshotFromMapPeekWire = (
+  input: MapPeekWireJoinInput
+): ActivityJoinEngagementSnapshot | null => {
+  const pendingWire = input.mapPeekActions?.find((action) => action.id === 'pending_join');
+  if (pendingWire) {
+    const inFlight = mapPeekJoinRequestStatusFromWire(pendingWire.joinRequestStatus);
+    if (!inFlight) return null;
+    return {
+      myRequest: {
+        id: 'wire',
+        status: inFlight,
+        canWithdraw: true,
+      },
+    };
+  }
+
+  const level = input.level?.trim();
+  if (level === 'participant' || level === 'activity_group_member') {
+    return { hasParticipation: true };
+  }
+
+  return null;
+};
+
+export const projectJoinRequestUiFromMapPeekWire = (
+  input: MapPeekWireJoinInput
+): ActivityJoinRequestUiProjection | null => {
+  const snapshot = activityJoinEngagementSnapshotFromMapPeekWire(input);
+  if (!snapshot) return null;
+  return projectActivityJoinRequestUiState(snapshot);
+};

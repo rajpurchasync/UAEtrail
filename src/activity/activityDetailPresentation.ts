@@ -1,4 +1,5 @@
 import {
+  activityIsConsumerDiscoverable,
   mapPeekJoinRequestStatusFromUiKind,
   resolveActivityEngagementPolicy,
   resolveParticipationMode,
@@ -63,7 +64,7 @@ export const resolveActivityPresentationFromDiscoveryCard = (
     joinUiState: options.joinUiState,
     participationMode: card.activity?.participationMode,
     requirements: card.activity?.requirements,
-    activityPublished: card.activity?.status === 'published',
+    activityPublished: activityIsConsumerDiscoverable(card.activity?.status),
     isHostUser: options.isHostUser,
     isConfirmedParticipant: options.isConfirmedParticipant,
   });

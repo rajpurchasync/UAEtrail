@@ -674,7 +674,7 @@ export const CreateHostingActivityFlow = ({
       return;
     }
 
-    setPublishStatus({ kind: 'publishing' });
+    setPublishStatus({ kind: 'submitting' });
     setError(null);
     try {
       const normalizedDraft = { ...draft, kind: draft.kind ?? selectedKind, rideshareEnabled: false };
@@ -709,7 +709,7 @@ export const CreateHostingActivityFlow = ({
         userId: user.id,
       });
       if (hostingFlowId) clearHostingWizardSession(hostingFlowId, wizardSessionScope);
-      setPublishStatus({ kind: 'published', activity });
+      setPublishStatus({ kind: 'submitted', result: activity });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not publish. Try again.');
       setPublishStatus(HOSTING_PUBLISH_FLOW_IDLE);

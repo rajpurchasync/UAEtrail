@@ -40,6 +40,10 @@ export const isActivityCatalogStatus = (status: string | null | undefined): bool
 export const isPublishedActivityStatus = (status: string | null | undefined): boolean =>
   normalizeActivityCatalogStatus(status ?? '') === 'published';
 
+/** Consumer discover/join surfaces — only published catalog rows. */
+export const activityIsConsumerDiscoverable = (status: string | null | undefined): boolean =>
+  isPublishedActivityStatus(status);
+
 export const isDraftActivityStatus = (status: string | null | undefined): boolean =>
   normalizeActivityCatalogStatus(status ?? '') === 'draft';
 

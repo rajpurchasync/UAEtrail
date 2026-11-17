@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ActivityViewerAccessDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
+  activityIsConsumerDiscoverable,
   computeActivityViewerEntitlements,
   mapPeekJoinRequestStatusFromUiKind,
   projectActivityMapPeekActions,
@@ -49,7 +50,7 @@ const expectPeekMatchesDetailWire = (input: {
   const detailPolicy = resolveActivityEngagementPolicy({
     viewerAccess: input.viewerAccess,
     isHostUser: input.isHostUser,
-    activityPublished: activity.status === 'published',
+    activityPublished: activityIsConsumerDiscoverable(activity.status),
     participationMode: activity.participationMode,
     requirements: activity.requirements,
     joinMode: activity.joinMode,
