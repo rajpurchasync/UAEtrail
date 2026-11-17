@@ -1,5 +1,10 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
-import { resolveParticipationModeForJoinMode, resolvePublishingProfileKind } from '@uaetrail/shared-types';
+import {
+  activityCatalogAllows,
+  activityCatalogDenialMessage,
+  resolveParticipationModeForJoinMode,
+  resolvePublishingProfileKind,
+} from '@uaetrail/shared-types';
 import { ActivityStatus, ActivityType, NotificationType, RewardAction } from '../domain/enums.js';
 import {
   assertNoLegacyLinkedRideshareFields,
@@ -237,11 +242,11 @@ export const updatePublishingTenantActivity = async (input: {
   const nextActivityType =
     body.activityType ?? fromPrismaActivityType(existing.activityType ?? ActivityType.HIKING);
   assertNoLegacyLinkedRideshareFields(nextActivityType, body);
-  if (existing.status === ActivityStatus.CANCELLED || existing.status === ActivityStatus.SUSPENDED) {
+  if (!activityCatalogAllows(existing.status, 'edit')) {
     throw new ApiError(
       400,
       'activity_not_editable',
-      `Cannot edit an activity that is ${existing.status.toLowerCase()}.`
+      activityCatalogDenialMessage('edit', existing.status)
     );
   }
   if (body.capacity !== undefined && body.capacity < existing.participants.length) {
@@ -476,10 +481,10 @@ export const deleteOrCancelPublishingTenantActivity = async (input: {
     throw new ApiError(404, 'activity_not_found', 'Activity not found.');
   }
 
-  if (event.status === ActivityStatus.DRAFT) {
+  if (activityCatalogAllows(event.status, 'delete_draft')) {
     const deleted = await deleteDraftActivityById(event.id, input.tenantId);
     if (!deleted) {
-      throw new ApiError(400, 'activity_not_deletable', 'Only draft activities can be deleted.');
+      throw new ApiError(400, 'activity_not_deletable', activityCatalogDenialMessage('delete_draft'));
     }
     await createAuditLog({
       actorId: input.actorId,
@@ -551,8 +556,8 @@ export const suspendPublishingTenantActivity = async (input: {
   if (!event) {
     throw new ApiError(404, 'activity_not_found', 'Activity not found.');
   }
-  if (event.status !== ActivityStatus.PUBLISHED) {
-    throw new ApiError(400, 'activity_not_published', 'Only published activities can be suspended.');
+  if (!activityCatalogAllows(event.status, 'suspend')) {
+    throw new ApiError(400, 'activity_not_published', activityCatalogDenialMessage('suspend'));
   }
 
   await suspendActivityById(event.id);
@@ -593,8 +598,8 @@ export const resumePublishingTenantActivity = async (input: {
   if (!event) {
     throw new ApiError(404, 'activity_not_found', 'Activity not found.');
   }
-  if (event.status !== ActivityStatus.SUSPENDED) {
-    throw new ApiError(400, 'activity_not_suspended', 'Only suspended activities can be resumed.');
+  if (!activityCatalogAllows(event.status, 'resume')) {
+    throw new ApiError(400, 'activity_not_suspended', activityCatalogDenialMessage('resume'));
   }
 
   const paidMode =
@@ -632,8 +637,8 @@ export const publishPublishingTenantActivity = async (input: {
     platformAdmin: input.platformAdmin,
     pricingMode: paidMode,
   });
-  if (event.status !== ActivityStatus.DRAFT) {
-    throw new ApiError(400, 'activity_not_draft', 'Only draft activities can be published.');
+  if (!activityCatalogAllows(event.status, 'publish')) {
+    throw new ApiError(400, 'activity_not_draft', activityCatalogDenialMessage('publish'));
   }
   assertActivityJoinInstructions(event.requirements ?? []);
   const memberStatus = await resolveMemberStatus(input.actorId);

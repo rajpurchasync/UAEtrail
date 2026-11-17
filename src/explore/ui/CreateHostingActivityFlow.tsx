@@ -109,6 +109,13 @@ import {
 import { reverseCommunityCity } from '../../lib/placeSearch';
 import { MAP_CONFIG } from '../../config/platform';
 import { HostingPublishSuccessSheet } from './HostingPublishSuccessSheet';
+import {
+  HOSTING_PUBLISH_FLOW_IDLE,
+  hostingPublishFlowBlocksSessionPersist,
+  hostingPublishFlowIsPublishing,
+  hostingPublishFlowPublishedActivity,
+  type HostingPublishFlowStatus,
+} from './hostingPublishFlowStatus';
 import { registryPlaceTypeForHostingKindFlow, type HostingKindFlow } from './hostingFlows';
 import type { HostingWizardPrefill } from './hostingWizardPrefill';
 import { renderHostingWizardSteps } from './hostingWizard/HostingWizardSteps';
@@ -200,13 +207,16 @@ export const CreateHostingActivityFlow = ({
   const [step, setStep] = useState<FlowStep>('type');
   const [draft, setDraft] = useState<CreateActivityDraft>(emptyCreateActivityDraft);
   const [selectedKind, setSelectedKind] = useState<CreateActivityKind | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [publishStatus, setPublishStatus] = useState<HostingPublishFlowStatus>(
+    HOSTING_PUBLISH_FLOW_IDLE
+  );
   const [error, setError] = useState<string | null>(null);
   const [showMonthView, setShowMonthView] = useState(false);
   const mapSession = useComposeMapSession<HostingMapIntent>();
   const { openMap, closeMap } = mapSession;
   const [meetingPickerIntent, setMeetingPickerIntent] = useState<MeetingPointPickerIntent>('search');
-  const [publishedActivity, setPublishedActivity] = useState<ActivityDTO | null>(null);
+  const publishedActivity = hostingPublishFlowPublishedActivity(publishStatus);
+  const submitting = hostingPublishFlowIsPublishing(publishStatus);
   const [rideshareOfferNotice, setRideshareOfferNotice] = useState<string | null>(null);
 
   const kind = draft.kind ?? selectedKind;
@@ -299,7 +309,7 @@ export const CreateHostingActivityFlow = ({
   useEffect(() => {
     if (!open) {
       setError(null);
-      setSubmitting(false);
+      setPublishStatus(HOSTING_PUBLISH_FLOW_IDLE);
       setShowMonthView(false);
       closeMap();
       return;
@@ -320,10 +330,9 @@ export const CreateHostingActivityFlow = ({
         : getCreateFlowSteps(prefillKind, wizardPrefill.draft.genericBuddy);
       setStep(steps[0] ?? 'title');
       setError(null);
-      setSubmitting(false);
+      setPublishStatus(HOSTING_PUBLISH_FLOW_IDLE);
       setShowMonthView(false);
       closeMap();
-      setPublishedActivity(null);
       wizardInitializedRef.current = wizardInitKey;
       return;
     }
@@ -335,10 +344,9 @@ export const CreateHostingActivityFlow = ({
         setSelectedKind(saved.selectedKind);
         setStep(saved.step as FlowStep);
         setError(null);
-        setSubmitting(false);
+        setPublishStatus(HOSTING_PUBLISH_FLOW_IDLE);
         setShowMonthView(false);
         closeMap();
-        setPublishedActivity(null);
         wizardInitializedRef.current = wizardInitKey;
         return;
       }
@@ -359,10 +367,9 @@ export const CreateHostingActivityFlow = ({
       setSelectedKind(createKind);
       setStep(getCreateFlowSteps(createKind, seed.genericBuddy)[0]);
       setError(null);
-      setSubmitting(false);
+      setPublishStatus(HOSTING_PUBLISH_FLOW_IDLE);
       setShowMonthView(false);
       closeMap();
-      setPublishedActivity(null);
       wizardInitializedRef.current = wizardInitKey;
       return;
     }
@@ -387,7 +394,7 @@ export const CreateHostingActivityFlow = ({
   ]);
 
   useEffect(() => {
-    if (!open || !hostingFlowId || publishedActivity) return;
+    if (!open || !hostingFlowId || hostingPublishFlowBlocksSessionPersist(publishStatus)) return;
     const linkToParentActivityId =
       wizardPrefill?.linkToParentActivityId ??
       readHostingWizardSession(hostingFlowId, wizardSessionScope)?.linkToParentActivityId;
@@ -409,7 +416,7 @@ export const CreateHostingActivityFlow = ({
     step,
     draft,
     selectedKind,
-    publishedActivity,
+    publishStatus,
     wizardPrefill?.linkToParentActivityId,
     wizardPrefill?.sourceActivityId,
   ]);
@@ -667,7 +674,7 @@ export const CreateHostingActivityFlow = ({
       return;
     }
 
-    setSubmitting(true);
+    setPublishStatus({ kind: 'publishing' });
     setError(null);
     try {
       const normalizedDraft = { ...draft, kind: draft.kind ?? selectedKind, rideshareEnabled: false };
@@ -683,6 +690,7 @@ export const CreateHostingActivityFlow = ({
           userId: user.id,
         });
         await onPublished?.(updated);
+        setPublishStatus(HOSTING_PUBLISH_FLOW_IDLE);
         onClose();
         return;
       }
@@ -701,11 +709,10 @@ export const CreateHostingActivityFlow = ({
         userId: user.id,
       });
       if (hostingFlowId) clearHostingWizardSession(hostingFlowId, wizardSessionScope);
-      setPublishedActivity(activity);
+      setPublishStatus({ kind: 'published', activity });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not publish. Try again.');
-    } finally {
-      setSubmitting(false);
+      setPublishStatus(HOSTING_PUBLISH_FLOW_IDLE);
     }
   }, [
     user?.id,

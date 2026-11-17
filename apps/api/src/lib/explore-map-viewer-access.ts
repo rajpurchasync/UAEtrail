@@ -1,5 +1,8 @@
 import {
+  activityJoinEngagementSnapshotFromViewerFacts,
+  activityViewerLevelFromJoinEngagement,
   computeActivityDetailExposure,
+  mapPeekJoinRequestStatusFromWire,
   resolveActivityHostUserId,
   resolveActivityEngagementMapPeekActionsBase,
   resolveActivityEngagementMapPeekStrips,
@@ -30,12 +33,6 @@ const HOST_MEMBERSHIP_ROLES: MembershipRole[] = [
   MembershipRole.TENANT_OWNER,
   MembershipRole.TENANT_ADMIN,
   MembershipRole.TENANT_GUIDE,
-];
-
-const ACTIVE_REQUEST_STATUSES: RequestStatus[] = [
-  RequestStatus.PENDING,
-  RequestStatus.APPROVED,
-  RequestStatus.WAITLISTED,
 ];
 
 export type ExploreMapViewerAccessContext = {
@@ -70,23 +67,14 @@ export const resolveDemandMapViewerAccess = (input: {
       viewerUserId: input.viewerUserId,
     });
   }
-  if (input.joinRequestStatus === 'approved') {
-    return computeActivityDetailExposure({
-      joinMode,
-      level: 'participant',
-      viewerUserId: input.viewerUserId,
-    });
-  }
-  if (input.joinRequestStatus === 'pending') {
-    return computeActivityDetailExposure({
-      joinMode,
-      level: 'join_request',
-      viewerUserId: input.viewerUserId,
-    });
-  }
+  const fromJoin = activityViewerLevelFromJoinEngagement(
+    activityJoinEngagementSnapshotFromViewerFacts({
+      requestStatus: input.joinRequestStatus,
+    })
+  );
   return computeActivityDetailExposure({
     joinMode,
-    level: 'link_holder',
+    level: fromJoin ?? 'link_holder',
     viewerUserId: input.viewerUserId,
   });
 };
@@ -122,13 +110,14 @@ export const resolveActivityMapViewerLevel = (input: {
     return 'tenant_staff';
   }
 
-  if (input.participantActivityIds.has(input.activity.id)) {
-    return 'participant';
-  }
-
-  const requestStatus = input.requestStatusByActivityId.get(input.activity.id);
-  if (requestStatus && ACTIVE_REQUEST_STATUSES.includes(requestStatus)) {
-    return 'join_request';
+  const fromJoin = activityViewerLevelFromJoinEngagement(
+    activityJoinEngagementSnapshotFromViewerFacts({
+      hasParticipation: input.participantActivityIds.has(input.activity.id),
+      requestStatus: input.requestStatusByActivityId.get(input.activity.id) ?? null,
+    })
+  );
+  if (fromJoin) {
+    return fromJoin;
   }
 
   return 'link_holder';
@@ -245,12 +234,7 @@ export const attachExploreMapViewerAccess = (
         viewerUserId: ctx.viewerUserId,
       });
       const rawRequestStatus = ctx.requestStatusByActivityId.get(item.activity.id);
-      const joinRequestStatus: 'pending' | 'waitlisted' | null =
-        rawRequestStatus === RequestStatus.PENDING
-          ? 'pending'
-          : rawRequestStatus === RequestStatus.WAITLISTED
-            ? 'waitlisted'
-            : null;
+      const joinRequestStatus = mapPeekJoinRequestStatusFromWire(rawRequestStatus);
       const hostUserId = item.activity.hostUserId ?? item.featuredPerson?.userId ?? null;
       const participantUserIds = (item.participantPreviews ?? []).map((preview) => preview.id);
       const buddyOnActivity = participantUserIds.filter((id) => ctx.buddyUserIds.has(id));

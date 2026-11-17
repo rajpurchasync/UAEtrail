@@ -1,4 +1,9 @@
-import type { ActivityDTO } from '@uaetrail/shared-types';
+import {
+  activityCatalogAllows,
+  isPublishedActivityStatus,
+  isSuspendedActivityStatus,
+  type ActivityDTO,
+} from '@uaetrail/shared-types';
 import {
   Car,
   Copy,
@@ -39,10 +44,10 @@ export const buildHostManageOptionRows = (input: {
   onChat?: () => void;
 }): HostManageOptionRow[] => {
   const { activity, caps } = input;
-  const published = activity.status === 'published';
-  const suspended = activity.status === 'suspended';
-  const canDelete = published || activity.status === 'draft' || suspended;
-  const canEdit = activity.status === 'draft' || published;
+  const published = isPublishedActivityStatus(activity.status);
+  const suspended = isSuspendedActivityStatus(activity.status);
+  const canDelete = activityCatalogAllows(activity.status, 'remove');
+  const canEdit = activityCatalogAllows(activity.status, 'edit');
 
   return [
     {
@@ -58,7 +63,7 @@ export const buildHostManageOptionRows = (input: {
       label: 'Resume outing',
       description: 'Show again on the map and in search',
       icon: PlayCircle,
-      hidden: !suspended || !input.onResume,
+      hidden: !activityCatalogAllows(activity.status, 'resume') || !input.onResume,
       onClick: () => input.onResume?.(),
     },
     {
@@ -113,7 +118,7 @@ export const buildHostManageOptionRows = (input: {
       description: 'Hide from map and visitor search',
       icon: PauseCircle,
       destructive: true,
-      hidden: !published || !input.onSuspend,
+      hidden: !activityCatalogAllows(activity.status, 'suspend') || !input.onSuspend,
       onClick: () => input.onSuspend?.(),
     },
     {

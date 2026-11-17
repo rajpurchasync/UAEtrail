@@ -45,6 +45,13 @@ import {
 } from './composeWizardSession';
 import { GOING_FROM_LABEL, TO_LOCATION_LABEL } from '../createFlowCopy';
 import { AvailabilityFixedSubmitSuccessSheet } from './AvailabilityFixedSubmitSuccessSheet';
+import {
+  AVAILABILITY_FIXED_SUBMIT_FLOW_IDLE,
+  availabilityFixedSubmitFlowBlocksSessionPersist,
+  availabilityFixedSubmitFlowIsSubmitting,
+  availabilityFixedSubmitFlowResult,
+  type AvailabilityFixedSubmitFlowStatus,
+} from './availabilityFixedSubmitFlowStatus';
 import { renderAvailabilityWizardSteps } from './availabilityWizard/steps';
 import type { AvailabilityWizardContext } from './availabilityWizard/availabilityWizardContext';
 
@@ -84,9 +91,12 @@ export const CreateAvailabilityFixedFlow = ({
   const [step, setStep] = useState<FlowStep>('type');
   const [draft, setDraft] = useState<AvailabilityFixedDraft>(emptyAvailabilityFixedDraft);
   const [selectedKind, setSelectedKind] = useState<AvailabilityFixedKind | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitResult, setSubmitResult] = useState<AvailabilityFixedSubmitResult | null>(null);
+  const [submitStatus, setSubmitStatus] = useState<AvailabilityFixedSubmitFlowStatus>(
+    AVAILABILITY_FIXED_SUBMIT_FLOW_IDLE
+  );
   const [publishedActivity, setPublishedActivity] = useState<ActivityDTO | null>(null);
+  const submitting = availabilityFixedSubmitFlowIsSubmitting(submitStatus);
+  const submitResult = availabilityFixedSubmitFlowResult(submitStatus);
   const [error, setError] = useState<string | null>(null);
   const [showMonthView, setShowMonthView] = useState(false);
   const publishedAreas = useExplorePublishedAreas();
@@ -145,7 +155,7 @@ export const CreateAvailabilityFixedFlow = ({
   useEffect(() => {
     if (!open) {
       setError(null);
-      setSubmitting(false);
+      setSubmitStatus(AVAILABILITY_FIXED_SUBMIT_FLOW_IDLE);
       setShowMonthView(false);
       closeMap();
       return;
@@ -159,8 +169,7 @@ export const CreateAvailabilityFixedFlow = ({
         setSelectedKind(saved.selectedKind);
         setStep(saved.step as FlowStep);
         setError(null);
-        setSubmitting(false);
-        setSubmitResult(null);
+        setSubmitStatus(AVAILABILITY_FIXED_SUBMIT_FLOW_IDLE);
         setShowMonthView(false);
         closeMap();
         availabilityFixedInitializedRef.current = availabilityFixedInitKey;
@@ -176,8 +185,7 @@ export const CreateAvailabilityFixedFlow = ({
       setSelectedKind(availabilityFixedKind);
       setStep(getAvailabilityFixedFlowSteps(availabilityFixedKind)[0]);
       setError(null);
-      setSubmitting(false);
-      setSubmitResult(null);
+      setSubmitStatus(AVAILABILITY_FIXED_SUBMIT_FLOW_IDLE);
       setShowMonthView(false);
       closeMap();
       availabilityFixedInitializedRef.current = availabilityFixedInitKey;
@@ -201,9 +209,11 @@ export const CreateAvailabilityFixedFlow = ({
   ]);
 
   useEffect(() => {
-    if (!open || !availabilityFixedFlowId || submitResult) return;
+    if (!open || !availabilityFixedFlowId || availabilityFixedSubmitFlowBlocksSessionPersist(submitStatus)) {
+      return;
+    }
     writeAvailabilityWizardSession(availabilityFixedFlowId, { step, draft, selectedKind });
-  }, [open, availabilityFixedFlowId, step, draft, selectedKind, submitResult]);
+  }, [open, availabilityFixedFlowId, step, draft, selectedKind, submitStatus]);
 
   const patchDraft = useCallback((patch: Partial<AvailabilityFixedDraft>) => {
     setDraft((prev) => ({ ...prev, ...patch }));
@@ -287,16 +297,15 @@ export const CreateAvailabilityFixedFlow = ({
       setError(validation);
       return;
     }
-    setSubmitting(true);
+    setSubmitStatus({ kind: 'submitting' });
     setError(null);
     try {
       const result = await publishAvailabilityFixedSlot({ ...draft, kind: draft.kind ?? selectedKind });
       if (availabilityFixedFlowId) clearAvailabilityWizardSession(availabilityFixedFlowId);
-      setSubmitResult(result);
+      setSubmitStatus({ kind: 'submitted', result });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not post your request.');
-    } finally {
-      setSubmitting(false);
+      setSubmitStatus(AVAILABILITY_FIXED_SUBMIT_FLOW_IDLE);
     }
   };
 

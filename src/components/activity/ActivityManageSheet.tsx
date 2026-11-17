@@ -2,7 +2,16 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { afterHostJoinDecisionClientRefresh } from '../../hooks/activityJoinClientEffects';
-import type { ActivityDTO } from '@uaetrail/shared-types';
+import {
+  activityCatalogAllows,
+  isPublishedActivityStatus,
+  resolveActivityCatalogRemoveKind,
+  type ActivityDetailDTO,
+  type ActivityDTO,
+  type ActivityPresentationDTO,
+  type ActivityViewerAccessDTO,
+  type ActivityViewerEntitlementsDTO,
+} from '@uaetrail/shared-types';
 import { LinkRidesharePanel } from '../../explore/ui/LinkRidesharePanel';
 import { activityManageCapabilities } from '../../activity/activityManageCapabilities';
 import { ActivityJoinRequestDeclineDialog } from '../../console/ActivityJoinRequestDeclineDialog';
@@ -18,12 +27,6 @@ import { resolveActivityTitle } from '../../utils/activityIdentity';
 import { buildActivitySharePayload } from '../../utils/activityShare';
 import { ActivityInviteModalBody } from './ActivityInviteModalBody';
 import type { HostActivityManageActions } from '../../hooks/useHostActivityManageActions';
-import type {
-  ActivityDetailDTO,
-  ActivityPresentationDTO,
-  ActivityViewerAccessDTO,
-  ActivityViewerEntitlementsDTO,
-} from '@uaetrail/shared-types';
 import { resolveActivityDetailWirePresentation } from '../../activity/resolveActivityDetailWirePresentation';
 import { ActivityDetailByKind } from '../../activity/detail/templates/ActivityDetailByKind';
 import { CONSUMER_MAIN_OVERLAY_INSET } from '../../config/consumerOverlayInset';
@@ -35,6 +38,17 @@ import {
   type ActivityManageInitialView,
   type ActivityManageSubview,
 } from './activityManageViews';
+import {
+  activityManageSheetChromeClosed,
+  activityManageSheetCloseEdit,
+  activityManageSheetCloseOptions,
+  activityManageSheetHeaderBack,
+  activityManageSheetOpenEdit,
+  activityManageSheetOpenOptions,
+  activityManageSheetSelectSubview,
+  activityManageSheetSelectSubviewFromMenu,
+  type ActivityManageSheetChrome,
+} from './activityManageSheetChrome';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -84,7 +98,12 @@ export const ActivityManageSheet = ({
   const panelRef = useRef<HTMLDivElement>(null);
   const scrollContentRef = useRef<HTMLDivElement>(null);
   const { headerFrosted } = useDetailScrollChrome(panelRef, scrollContentRef);
-  const [view, setView] = useState<ActivityManageSubview>('overview');
+  const [chrome, setChrome] = useState<ActivityManageSheetChrome>(() =>
+    activityManageSheetChromeClosed('overview')
+  );
+  const view = chrome.view;
+  const manageOptionsOpen = chrome.optionsOpen;
+  const editWizardOpen = chrome.editOpen;
 
   /** Manage header is outside scroll; keep `--detail-header-pad` at 0 so jump-nav sticky stays flush. */
   useLayoutEffect(() => {
@@ -92,9 +111,6 @@ export const ActivityManageSheet = ({
     if (!scroll) return;
     scroll.style.setProperty('--detail-header-pad', '0px');
   }, [open]);
-  const [manageOptionsOpen, setManageOptionsOpen] = useState(false);
-  const [returnToManageMenu, setReturnToManageMenu] = useState(false);
-  const [editWizardOpen, setEditWizardOpen] = useState(false);
   const [busyRequestId, setBusyRequestId] = useState<string | null>(null);
   const [declineRequest, setDeclineRequest] = useState<ActivityRequestView | null>(null);
   const [rideshareNotice, setRideshareNotice] = useState<string | null>(null);
@@ -169,11 +185,8 @@ export const ActivityManageSheet = ({
     if (!open) return;
     const next = normalizeActivityManageView(initialView);
     if (next === 'participants') return;
-    setView(next);
+    setChrome(activityManageSheetChromeClosed(next));
     setRideshareNotice(null);
-    setManageOptionsOpen(false);
-    setReturnToManageMenu(false);
-    setEditWizardOpen(false);
   }, [open, initialView, activity?.id]);
 
   useEffect(() => {
@@ -201,27 +214,20 @@ export const ActivityManageSheet = ({
     : null;
 
   const handleClose = () => {
-    setView('overview');
+    setChrome(activityManageSheetChromeClosed());
     setRideshareNotice(null);
-    setManageOptionsOpen(false);
-    setReturnToManageMenu(false);
     actions.setError(null);
     onClose();
   };
 
   const handleHeaderBack = () => {
-    if (view === 'overview') {
+    actions.setError(null);
+    const next = activityManageSheetHeaderBack(chrome);
+    if (next === 'close') {
       handleClose();
       return;
     }
-    actions.setError(null);
-    if (returnToManageMenu) {
-      setView('overview');
-      setManageOptionsOpen(true);
-      setReturnToManageMenu(false);
-      return;
-    }
-    setView('overview');
+    setChrome(next);
   };
 
   const manageSheetActive = Boolean(open && activity && tenantId && caps);
@@ -245,29 +251,28 @@ export const ActivityManageSheet = ({
       handleClose();
       return;
     }
-    setReturnToManageMenu(true);
-    setView(subview);
-    setManageOptionsOpen(false);
+    setChrome(activityManageSheetSelectSubviewFromMenu(subview));
   };
 
   const handleDelete = () => {
     if (!activity) return;
-    if (activity.status === 'draft' || activity.status === 'suspended') {
+    const removeKind = resolveActivityCatalogRemoveKind(activity.status);
+    if (removeKind === 'delete_draft' || (removeKind === 'cancel' && !isPublishedActivityStatus(activity.status))) {
       actions.setConfirmDelete(activity);
       return;
     }
-    if (activity.status === 'published') {
+    if (removeKind === 'cancel') {
       actions.setConfirmCancel(activity);
     }
   };
 
   const handleSuspend = () => {
-    if (!activity || activity.status !== 'published') return;
+    if (!activity || !activityCatalogAllows(activity.status, 'suspend')) return;
     actions.setConfirmSuspend(activity);
   };
 
   const handleResume = () => {
-    if (!activity || activity.status !== 'suspended') return;
+    if (!activity || !activityCatalogAllows(activity.status, 'resume')) return;
     void actions.resumeActivity(activity);
   };
 
@@ -305,7 +310,7 @@ export const ActivityManageSheet = ({
     date: activity.date,
     locationName: activity.locationName,
   });
-  const showShareFooter = activity.status === 'published' && Boolean(onShare);
+  const showShareFooter = isPublishedActivityStatus(activity.status) && Boolean(onShare);
   const typeChrome = resolveActivityDetailHeaderChrome(activity, null);
 
   return (
@@ -452,10 +457,11 @@ export const ActivityManageSheet = ({
                   onParticipantsError: (message) => actions.setError(message),
                   onApproveJoinRequest: (requestId) => void decideRequest(requestId, 'approved'),
                   onRejectJoinRequest: (request) => setDeclineRequest(request),
-                  onSelectSubview: openManageSubviewFromMenu,
+                  onSelectSubview: (subview) => {
+                    setChrome(activityManageSheetSelectSubview(subview, false));
+                  },
                   onEdit: () => {
-                    setReturnToManageMenu(true);
-                    setEditWizardOpen(true);
+                    setChrome(activityManageSheetOpenEdit(true));
                   },
                   onDuplicate: () => actions.hostFromExistingActivity(activity),
                   onDelete: handleDelete,
@@ -490,21 +496,19 @@ export const ActivityManageSheet = ({
               });
               if (opened) handleClose();
             }}
-            onManage={() => setManageOptionsOpen(true)}
+            onManage={() => setChrome((current) => activityManageSheetOpenOptions(current))}
           />
         </div>
       </div>
 
       <HostActivityManageOptionsSheet
         open={manageOptionsOpen}
-        onClose={() => setManageOptionsOpen(false)}
+        onClose={() => setChrome((current) => activityManageSheetCloseOptions(current))}
         activity={activity}
         caps={caps}
         onSelectSubview={openManageSubviewFromMenu}
         onEdit={() => {
-          setManageOptionsOpen(false);
-          setReturnToManageMenu(true);
-          setEditWizardOpen(true);
+          setChrome(activityManageSheetOpenEdit(true));
         }}
         onDuplicate={() => actions.hostFromExistingActivity(activity)}
         onDelete={handleDelete}
@@ -532,10 +536,10 @@ export const ActivityManageSheet = ({
           hostingKindFlow={hostingFlowForComposeKind(resolveHostComposeKindFromActivity(activity))}
           hostComposeKind={resolveHostComposeKindFromActivity(activity)}
           signInHref={joinAuthPath(planHostedActivityManagePath(activity.id))}
-          onClose={() => setEditWizardOpen(false)}
+          onClose={() => setChrome((current) => activityManageSheetCloseEdit(current))}
           onPublished={async (updated) => {
             setSheetActivity(updated);
-            setEditWizardOpen(false);
+            setChrome((current) => activityManageSheetCloseEdit(current));
             await onRequestsChanged();
           }}
         />

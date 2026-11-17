@@ -33,6 +33,12 @@ import { wallMessageQuoteSnippet } from '../../utils/groupWallReply';
 import { ChatThreadLoadMore } from './ChatThreadLoadMore';
 import { ChatLoadingState } from './ChatLoadingState';
 import {
+  GROUP_CHAT_WALL_BOOTSTRAP_LOADING,
+  groupChatWallBootstrapError,
+  groupChatWallBootstrapIsLoading,
+  type GroupChatWallBootstrap,
+} from './groupChatWallBootstrap';
+import {
   CHAT_THREAD_INITIAL_LIMIT,
   CHAT_THREAD_MANUAL_OLDER_LIMIT,
   shouldShowChatLoadMore,
@@ -87,8 +93,10 @@ export const GroupChatThread = ({
   const [membership, setMembership] = useState<SocialGroupMemberView | null>(null);
   const [members, setMembers] = useState<SocialGroupMemberView[]>([]);
   const [wall, setWall] = useState<SocialGroupWallMessageView[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [bootstrap, setBootstrap] = useState<GroupChatWallBootstrap>(GROUP_CHAT_WALL_BOOTSTRAP_LOADING);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const loading = groupChatWallBootstrapIsLoading(bootstrap);
+  const error = groupChatWallBootstrapError(bootstrap) ?? sendError;
   const [draft, setDraft] = useState('');
   const [membersOpen, setMembersOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -204,13 +212,12 @@ export const GroupChatThread = ({
     if (hasWallCache && cached) {
       setWall(cached.messages);
       setHasMoreOlder(cached.hasMoreOlder);
-      setLoading(false);
+      setBootstrap({ kind: 'ready' });
       scrollModeRef.current = 'initial';
       skipScrollRef.current = true;
     } else {
-      setLoading(true);
+      setBootstrap(GROUP_CHAT_WALL_BOOTSTRAP_LOADING);
     }
-    setError(null);
     try {
       const [detailRes, wallRes] = await Promise.all([
         groupsApi.getMeGroupDetail(groupId),
@@ -232,12 +239,15 @@ export const GroupChatThread = ({
       const latest = wallRes.data[wallRes.data.length - 1];
       if (latest) notifyWallActivity(latest);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load group chat.');
+      setBootstrap({
+        kind: 'error',
+        message: err instanceof Error ? err.message : 'Could not load group chat.',
+      });
       if (!hasWallCache) {
         setWall([]);
       }
     } finally {
-      setLoading(false);
+      setBootstrap((current) => (current.kind === 'loading' ? { kind: 'ready' } : current));
     }
   }, [groupId, markWallRead, mergeWall, notifyWallActivity, queryClient]);
 
@@ -292,6 +302,15 @@ export const GroupChatThread = ({
   const loadMoreManual = useCallback(() => {
     void loadOlderMessages(CHAT_THREAD_MANUAL_OLDER_LIMIT);
   }, [loadOlderMessages]);
+
+  useEffect(() => {
+    setBootstrap(GROUP_CHAT_WALL_BOOTSTRAP_LOADING);
+    setSendError(null);
+    setWall([]);
+    setGroup(null);
+    setMembership(null);
+    setMembers([]);
+  }, [groupId]);
 
   useEffect(() => {
     void loadThread();
@@ -371,7 +390,7 @@ export const GroupChatThread = ({
     const trimmed = draft.trim();
     if (!trimmed || !canPost || !currentUserId) return;
     setDraft('');
-    setError(null);
+    setSendError(null);
 
     const replyToMessageId = replyTo?.id;
     const quoted = replyToMessageId ? wall.find((row) => row.id === replyToMessageId) : undefined;
@@ -413,7 +432,7 @@ export const GroupChatThread = ({
       setWall((current) => current.filter((row) => row.id !== optimisticId));
       setDraft(trimmed);
       setReplyTo(previousReply);
-      setError(err instanceof Error ? err.message : 'Could not send message.');
+      setSendError(err instanceof Error ? err.message : 'Could not send message.');
     }
   };
 
@@ -522,7 +541,7 @@ export const GroupChatThread = ({
                     onReply={setReplyTo}
                     onScrollToQuotedMessage={scrollToWallMessage}
                     resolveQuotedMessage={resolveQuotedMessage}
-                    onError={setError}
+                    onError={setSendError}
                   />
                 </div>
               );
@@ -557,7 +576,7 @@ export const GroupChatThread = ({
             setGroup(updated);
             onGroupUpdated?.(updated);
           }}
-          onError={setError}
+          onError={setSendError}
         />
       </>
     ) : null}

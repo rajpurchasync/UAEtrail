@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Calendar, MapPin, MessageCircle } from 'lucide-react';
 import { activityHostName, activityHostUserId } from '../utils/hostLabels';
-import { resolveHostNote, WithdrawReason, withdrawReasonLabel } from '@uaetrail/shared-types';
+import {
+  canWithdrawJoinRequestStatus,
+  resolveHostNote,
+  WithdrawReason,
+  withdrawReasonLabel,
+} from '@uaetrail/shared-types';
 import type { ActivityRequestView } from '../api/types';
 import {
   cancelJoinRequest,
@@ -16,6 +21,11 @@ import { WithdrawRequestModal } from '../components/ui/WithdrawRequestModal';
 import { requestStatusLabel } from '../utils/joinRequestUi';
 import { MY_REQUESTS_PATH, messagesToUserPath } from '../config/routingCatalog';
 import { navigateBack } from '../utils/backStack';
+import {
+  JOIN_REQUEST_MUTATION_IDLE,
+  joinRequestMutationIsSaving,
+  type JoinRequestMutationStatus,
+} from './joinRequestMutationStatus';
 
 const statusBadge: Record<string, string> = {
   pending: 'bg-amber-500/15 text-amber-700',
@@ -31,7 +41,10 @@ export const JoinRequestDetail = () => {
   const [request, setRequest] = useState<ActivityRequestView | null>(null);
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [mutationStatus, setMutationStatus] = useState<JoinRequestMutationStatus>(
+    JOIN_REQUEST_MUTATION_IDLE
+  );
+  const saving = joinRequestMutationIsSaving(mutationStatus);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [showWithdraw, setShowWithdraw] = useState(false);
@@ -50,7 +63,7 @@ export const JoinRequestDetail = () => {
 
   const handleSaveNote = async () => {
     if (!request || request.status !== 'pending') return;
-    setSaving(true);
+    setMutationStatus({ kind: 'saving_note' });
     setError(null);
     setMessage(null);
     try {
@@ -60,13 +73,13 @@ export const JoinRequestDetail = () => {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Couldn\'t save your note — try again.');
     } finally {
-      setSaving(false);
+      setMutationStatus(JOIN_REQUEST_MUTATION_IDLE);
     }
   };
 
   const handleWithdraw = async (payload: { reason: WithdrawReason; message?: string }) => {
     if (!request) return;
-    setSaving(true);
+    setMutationStatus({ kind: 'withdrawing' });
     setError(null);
     try {
       await cancelJoinRequest(request.activity.id, request.id, payload);
@@ -74,8 +87,7 @@ export const JoinRequestDetail = () => {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Couldn\'t cancel your request — try again.');
       setShowWithdraw(false);
-    } finally {
-      setSaving(false);
+      setMutationStatus(JOIN_REQUEST_MUTATION_IDLE);
     }
   };
 
@@ -112,7 +124,7 @@ export const JoinRequestDetail = () => {
   }
 
   const canEdit = request.status === 'pending';
-  const canWithdraw = ['pending', 'approved', 'waitlisted'].includes(request.status);
+  const canWithdraw = canWithdrawJoinRequestStatus(request.status);
   const withdrawVariant = request.status === 'approved' ? 'activity' : 'request';
   const hostNote = resolveHostNote(request);
 

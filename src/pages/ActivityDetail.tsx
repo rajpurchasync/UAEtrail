@@ -63,6 +63,11 @@ import {
   resolveActivityDetailWirePresentation,
 } from '../activity/resolveActivityDetailWirePresentation';
 import { ActivityDetailJoinWelcomeSheet } from '../components/activity/detail/ActivityDetailJoinWelcomeSheet';
+import {
+  ACTIVITY_DETAIL_JOIN_WELCOME_CLOSED,
+  activityDetailJoinWelcomeShouldOpen,
+  type ActivityDetailJoinWelcomeUi,
+} from './activityDetailJoinWelcome';
 
 /**
  * Activity detail **route loader** (`/activity/:id`): fetch, join modals, SEO, host sheets.
@@ -99,7 +104,10 @@ export const ActivityDetail = () => {
   const [message, setMessage] = useState<string | null>(null);
   const reviewsEnabled = Boolean(id && activity?.status === 'published');
   const { reviews: activityReviews } = useActivityReviews(id, reviewsEnabled);
-  const [joinWelcomeOpen, setJoinWelcomeOpen] = useState(false);
+  const [joinWelcomeUi, setJoinWelcomeUi] = useState<ActivityDetailJoinWelcomeUi>(
+    ACTIVITY_DETAIL_JOIN_WELCOME_CLOSED
+  );
+  const joinWelcomeOpen = joinWelcomeUi.kind === 'open';
   const inviteShare = useActivityInviteShareSheet();
 
   const loadActivity = useCallback(() => {
@@ -219,11 +227,20 @@ export const ActivityDetail = () => {
   const joinedWelcomeQuery = searchParams.get(ACTIVITY_DETAIL_JOINED_QUERY) === '1';
 
   useEffect(() => {
-    if (!joinedWelcomeQuery || loading || !activity || joinedWelcomeHandledRef.current) return;
-    if (!isConfirmedParticipant) return;
-    if (presentation && !presentation.canAccessCrewSurfaces) return;
+    if (
+      !activityDetailJoinWelcomeShouldOpen({
+        joinedWelcomeQuery,
+        detailLoading: loading,
+        hasActivity: Boolean(activity),
+        isConfirmedParticipant,
+        canAccessCrewSurfaces: presentation?.canAccessCrewSurfaces,
+        alreadyHandled: joinedWelcomeHandledRef.current,
+      })
+    ) {
+      return;
+    }
     joinedWelcomeHandledRef.current = true;
-    setJoinWelcomeOpen(true);
+    setJoinWelcomeUi({ kind: 'open' });
     const next = new URLSearchParams(searchParams);
     next.delete(ACTIVITY_DETAIL_JOINED_QUERY);
     setSearchParams(next, { replace: true });
@@ -548,7 +565,7 @@ export const ActivityDetail = () => {
           open={joinWelcomeOpen}
           activityId={activity.id}
           detailPath={activityDetailPath(activity.id)}
-          onClose={() => setJoinWelcomeOpen(false)}
+          onClose={() => setJoinWelcomeUi(ACTIVITY_DETAIL_JOIN_WELCOME_CLOSED)}
           onScrollToMeetingPoint={scrollActivityDetailMeetingPoint}
         />
       ) : null}

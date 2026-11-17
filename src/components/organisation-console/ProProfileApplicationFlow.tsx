@@ -24,6 +24,7 @@ import {
   formatHostPhonePreview,
   type ProProfileApplicationFormState,
 } from './proProfileApplicationForm';
+import { PRO_PROFILE_FLOW_BUSY_IDLE, type ProProfileFlowBusy } from './proProfileFlowBusy';
 import {
   getHostFlowSteps,
   hostFlowIntentProfileType,
@@ -140,11 +141,12 @@ export const ProProfileApplicationFlow = ({
   const [step, setStep] = useState<HostFlowStep>('pick');
   const [selectedType, setSelectedType] = useState<HostProfileType | null>(null);
   const [form, setForm] = useState<ProProfileApplicationFormState>(emptyProProfileApplicationForm);
-  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mapPrecision, setMapPrecision] = useState<LocationPrecision>('specific');
   const mapSession = useComposeMapSession<typeof COMPOSE_MAP_INTENTS.proApplicationLocation>();
-  const [prefillLoading, setPrefillLoading] = useState(false);
+  const [flowBusy, setFlowBusy] = useState<ProProfileFlowBusy>(PRO_PROFILE_FLOW_BUSY_IDLE);
+  const prefillLoading = flowBusy.kind === 'prefilling';
+  const submitting = flowBusy.kind === 'submitting';
 
   const lockedProfileType = hostFlowIntentProfileType(intent);
   const profileType = form.hostProfileType ?? selectedType ?? lockedProfileType;
@@ -165,7 +167,7 @@ export const ProProfileApplicationFlow = ({
       setSelectedType(null);
       setForm(emptyProProfileApplicationForm());
       setError(null);
-      setSubmitting(false);
+      setFlowBusy(PRO_PROFILE_FLOW_BUSY_IDLE);
       setMapPrecision('specific');
       mapSession.closeMap();
       return;
@@ -196,7 +198,7 @@ export const ProProfileApplicationFlow = ({
     }
 
     let disposed = false;
-    setPrefillLoading(true);
+    setFlowBusy({ kind: 'prefilling' });
     Promise.all([fetchMeProfile(), fetchMyOrganisationApplication()])
       .then(([profile, application]) => {
         if (disposed) return;
@@ -229,7 +231,7 @@ export const ProProfileApplicationFlow = ({
         setForm(fallback);
       })
       .finally(() => {
-        if (!disposed) setPrefillLoading(false);
+        if (!disposed) setFlowBusy(PRO_PROFILE_FLOW_BUSY_IDLE);
       });
 
     return () => {
@@ -295,7 +297,7 @@ export const ProProfileApplicationFlow = ({
       return;
     }
 
-    setSubmitting(true);
+    setFlowBusy({ kind: 'submitting' });
     setError(null);
     try {
       const application = await submitOrganisationApplication(payload);
@@ -309,7 +311,7 @@ export const ProProfileApplicationFlow = ({
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not submit application.');
     } finally {
-      setSubmitting(false);
+      setFlowBusy(PRO_PROFILE_FLOW_BUSY_IDLE);
     }
   };
 

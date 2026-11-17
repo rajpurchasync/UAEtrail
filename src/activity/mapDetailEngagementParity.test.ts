@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import type { ActivityViewerAccessDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   computeActivityViewerEntitlements,
+  mapPeekJoinRequestStatusFromUiKind,
   projectActivityMapPeekActions,
   resolveActivityEngagementPolicy,
   APPROVAL_PARTICIPATION_REQUIREMENT,
@@ -17,13 +18,6 @@ import { resolveActivityDetailWirePresentation } from './resolveActivityDetailWi
 import type { JoinRequestUiState } from '../utils/joinRequestUi';
 
 const meeting = { meetingLat: 25.1, meetingLng: 55.2 };
-
-const joinRequestStatusFromUi = (
-  joinUiState: JoinRequestUiState
-): 'pending' | 'waitlisted' | null => {
-  if (joinUiState.kind !== 'pending') return null;
-  return joinUiState.status === 'waitlisted' ? 'waitlisted' : 'pending';
-};
 
 const expectPeekMatchesDetailWire = (input: {
   item: ExploreMapItemDTO;
@@ -59,7 +53,7 @@ const expectPeekMatchesDetailWire = (input: {
     participationMode: activity.participationMode,
     requirements: activity.requirements,
     joinMode: activity.joinMode,
-    joinRequestStatus: joinRequestStatusFromUi(input.joinUiState),
+    joinRequestStatus: mapPeekJoinRequestStatusFromUiKind(input.joinUiState),
     meetingLat: activity.meetingLat ?? null,
     meetingLng: activity.meetingLng ?? null,
     rideshareEnabled: Boolean(activity.rideshareEnabled),

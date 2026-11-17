@@ -1497,7 +1497,9 @@ export {
 } from './activity-group-chat-post-policy.js';
 
 export {
+  activityJoinEngagementSnapshotFromViewerFacts,
   activityViewerLevelCanAccessCrewSurfaces,
+  activityViewerLevelFromJoinEngagement,
   activityViewerLevelHasFullDetail,
   computeActivityDetailExposure,
   type ActivityViewerAccessDTO,
@@ -1651,9 +1653,40 @@ export {
 } from './activity-participation-mode.js';
 
 export {
+  ACTIVE_JOIN_REQUEST_WIRE_STATUSES,
+  canWithdrawJoinRequestStatus,
+  isActiveJoinRequestWireStatus,
+  isInFlightJoinRequestWireStatus,
+  mapPeekJoinRequestStatusFromSnapshot,
+  mapPeekJoinRequestStatusFromUiKind,
+  mapPeekJoinRequestStatusFromWire,
+  normalizeJoinRequestWireStatus,
+  projectActivityJoinRequestUiState,
   resolveActivityJoinEngagementKind,
+  resolveActivityJoinEngagementPhase,
+  type ActiveJoinRequestWireStatus,
   type ActivityJoinEngagementKind,
+  type ActivityJoinEngagementPhase,
+  type ActivityJoinEngagementSnapshot,
+  type ActivityJoinInFlightStatus,
+  type ActivityJoinRequestUiProjection,
+  type ActivityJoinUiKindProjection,
 } from './activity-join-engagement.js';
+
+export {
+  ACTIVITY_CATALOG_STATUSES,
+  activityCatalogAllows,
+  activityCatalogDenialMessage,
+  isActivityCatalogStatus,
+  isCancelledActivityStatus,
+  isDraftActivityStatus,
+  isPublishedActivityStatus,
+  isSuspendedActivityStatus,
+  normalizeActivityCatalogStatus,
+  resolveActivityCatalogRemoveKind,
+  type ActivityCatalogAction,
+  type ActivityCatalogStatus,
+} from './activity-catalog-status.js';
 
 export { resolveActivityPartyHeadcount } from './activity-party-headcount.js';
 

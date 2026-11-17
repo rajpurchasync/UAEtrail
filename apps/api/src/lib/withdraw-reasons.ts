@@ -1,3 +1,4 @@
+import { canWithdrawJoinRequestStatus } from '@uaetrail/shared-types';
 import { z } from 'zod';
 
 const WITHDRAW_REASON_VALUES = [
@@ -25,4 +26,4 @@ export const withdrawReasonSchema = z
   });
 
 export const canWithdrawRequest = (status: string): boolean =>
-  status === 'pending' || status === 'approved' || status === 'waitlisted';
+  canWithdrawJoinRequestStatus(status);

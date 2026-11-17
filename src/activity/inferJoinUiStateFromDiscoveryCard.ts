@@ -13,20 +13,21 @@ export const inferJoinUiStateFromDiscoveryCard = (
   if (clientJoinUi) return clientJoinUi;
   if (card.source !== 'activity') return undefined;
 
-  const level = card.viewerAccess?.level;
   const pendingWire = card.viewerAccess?.mapPeekActions?.find(
     (action) => action.id === 'pending_join'
   );
-
-  if (pendingWire || level === 'join_request') {
-    const status = pendingWire?.joinRequestStatus ?? 'pending';
+  // Bare `join_request` (invite / guide, no pending_join wire) is not pending —
+  // peek already shows request_join. Do not invent a pending UI state.
+  if (pendingWire) {
+    const status = pendingWire.joinRequestStatus === 'waitlisted' ? 'waitlisted' : 'pending';
     return {
       kind: 'pending',
       requestId: 'wire',
-      status: status === 'waitlisted' ? 'waitlisted' : 'pending',
+      status,
     };
   }
 
+  const level = card.viewerAccess?.level;
   if (level === 'participant' || level === 'activity_group_member') {
     return { kind: 'confirmed', requestId: 'wire' };
   }

@@ -45,6 +45,54 @@ describe('inferJoinUiStateFromDiscoveryCard', () => {
     });
   });
 
+  it('does not invent pending from bare join_request (invite / no pending_join wire)', () => {
+    const card = buildDiscoveryCardViewModelCard(
+      hostedExploreMapItem({
+        activity: { id: 'a1', title: 'Hike', activityType: 'hiking', status: 'published' },
+      } as Parameters<typeof hostedExploreMapItem>[0])
+    );
+    expect(
+      inferJoinUiStateFromDiscoveryCard({
+        ...card,
+        viewerAccess: {
+          exposure: 'redacted',
+          level: 'join_request',
+          gateReason: null,
+          canOpenDetailPage: true,
+          canAccessCrewSurfaces: false,
+          mapPeekActions: [{ id: 'request_join', prominence: 'primary' }],
+        },
+      })
+    ).toBeUndefined();
+  });
+
+  it('infers waitlisted from pending_join wire', () => {
+    const card = buildDiscoveryCardViewModelCard(
+      hostedExploreMapItem({
+        activity: { id: 'a1', title: 'Hike', activityType: 'hiking', status: 'published' },
+      } as Parameters<typeof hostedExploreMapItem>[0])
+    );
+    expect(
+      inferJoinUiStateFromDiscoveryCard({
+        ...card,
+        viewerAccess: {
+          exposure: 'full',
+          level: 'join_request',
+          gateReason: null,
+          canOpenDetailPage: true,
+          canAccessCrewSurfaces: false,
+          mapPeekActions: [
+            { id: 'pending_join', prominence: 'primary', joinRequestStatus: 'waitlisted' },
+          ],
+        },
+      })
+    ).toEqual({
+      kind: 'pending',
+      requestId: 'wire',
+      status: 'waitlisted',
+    });
+  });
+
   it('infers confirmed from participant level', () => {
     const card = buildDiscoveryCardViewModelCard(
       hostedExploreMapItem({

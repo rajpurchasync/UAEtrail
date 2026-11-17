@@ -18,8 +18,21 @@ import {
   type JoinRequestUiState,
 } from '../utils/joinRequestUi';
 import type { GuestBrowseGateIntent } from '../content/guestBrowseGateCopy';
+import {
+  ACTIVITY_JOIN_GUEST_OVERLAY_CLOSED,
+  activityJoinGuestOverlayIsOpen,
+  activityJoinGuestOverlayOpenBrowse,
+  activityJoinGuestOverlayOpenJoin,
+  type ActivityJoinGuestOverlay,
+} from './activityJoinGuestOverlay';
+import {
+  ACTIVITY_JOIN_WITHDRAW_HIDDEN,
+  activityJoinWithdrawIsBusy,
+  activityJoinWithdrawIsVisible,
+  type ActivityJoinWithdrawUi,
+} from './activityJoinWithdrawUi';
 
-export type GuestSheetSurface = 'join' | 'browse';
+export type { GuestSheetSurface } from './activityJoinSheetTypes';
 
 export type ActivityJoinContext = {
   myRequest: MyActivityRequestDTO | null;
@@ -100,15 +113,21 @@ export const useActivityJoinActions = ({
 }: UseActivityJoinActionsOptions) => {
   const queryClient = useQueryClient();
   const [joinModalOpen, setJoinModalOpen] = useState(false);
-  const [showWithdraw, setShowWithdraw] = useState(false);
-  const [withdrawing, setWithdrawing] = useState(false);
-  const [guestSheetOpen, setGuestSheetOpen] = useState(false);
-  const [guestSheetIntent, setGuestSheetIntent] = useState<'activity' | 'place'>('activity');
-  const [guestSheetSurface, setGuestSheetSurface] = useState<GuestSheetSurface>('join');
-  const [guestBrowseGateIntent, setGuestBrowseGateIntent] =
-    useState<GuestBrowseGateIntent>('peek-details');
-  const [guestPendingPeekAction, setGuestPendingPeekAction] =
-    useState<ActivityMapPeekActionId | null>(null);
+  const [withdrawUi, setWithdrawUi] = useState<ActivityJoinWithdrawUi>(ACTIVITY_JOIN_WITHDRAW_HIDDEN);
+  const [guestOverlay, setGuestOverlay] = useState<ActivityJoinGuestOverlay>(
+    ACTIVITY_JOIN_GUEST_OVERLAY_CLOSED
+  );
+  const guestSheetOpen = activityJoinGuestOverlayIsOpen(guestOverlay);
+  const showWithdraw = activityJoinWithdrawIsVisible(withdrawUi);
+  const withdrawing = activityJoinWithdrawIsBusy(withdrawUi);
+  const guestSheetIntent =
+    guestOverlay.kind === 'open' ? guestOverlay.intent : ('activity' as const);
+  const guestSheetSurface =
+    guestOverlay.kind === 'open' ? guestOverlay.surface : ('join' as GuestSheetSurface);
+  const guestBrowseGateIntent: GuestBrowseGateIntent =
+    guestOverlay.kind === 'open' ? guestOverlay.browseGateIntent : 'peek-details';
+  const guestPendingPeekAction =
+    guestOverlay.kind === 'open' ? guestOverlay.pendingPeekAction : null;
 
   const openJoinModal = useCallback(() => {
     if (joinGuardMessage) {
@@ -125,30 +144,20 @@ export const useActivityJoinActions = ({
 
   const openGuestSheet = useCallback(
     (intent: 'activity' | 'place' = 'activity', pendingAction: ActivityMapPeekActionId = 'request_join') => {
-      setGuestSheetSurface('join');
-      setGuestSheetIntent(intent);
-      setGuestPendingPeekAction(pendingAction);
-      setGuestSheetOpen(true);
+      setGuestOverlay(activityJoinGuestOverlayOpenJoin(intent, pendingAction));
     },
     []
   );
 
   const openGuestBrowseGate = useCallback(
     (intent: GuestBrowseGateIntent = 'peek-details', pendingAction: ActivityMapPeekActionId = 'view_detail') => {
-      setGuestSheetSurface('browse');
-      setGuestBrowseGateIntent(intent);
-      setGuestPendingPeekAction(pendingAction);
-      setGuestSheetOpen(true);
+      setGuestOverlay(activityJoinGuestOverlayOpenBrowse(intent, pendingAction));
     },
     []
   );
 
   const closeGuestSheet = useCallback(() => {
-    setGuestSheetOpen(false);
-    setGuestSheetIntent('activity');
-    setGuestSheetSurface('join');
-    setGuestBrowseGateIntent('peek-details');
-    setGuestPendingPeekAction(null);
+    setGuestOverlay(ACTIVITY_JOIN_GUEST_OVERLAY_CLOSED);
   }, []);
 
   const handleJoinSuccess = useCallback(
@@ -177,10 +186,10 @@ export const useActivityJoinActions = ({
           : requestIdFallback;
       if (!requestId) return;
 
-      setWithdrawing(true);
+      setWithdrawUi({ kind: 'withdrawing' });
       try {
         await cancelJoinRequest(activity.id, requestId, payload);
-        setShowWithdraw(false);
+        setWithdrawUi(ACTIVITY_JOIN_WITHDRAW_HIDDEN);
         onMessage?.(
           uiState.kind === 'confirmed'
             ? 'Your request to join has been withdrawn.'
@@ -190,9 +199,7 @@ export const useActivityJoinActions = ({
         await onReload();
       } catch (err) {
         onError?.(err instanceof Error ? err.message : 'Could not withdraw');
-        setShowWithdraw(false);
-      } finally {
-        setWithdrawing(false);
+        setWithdrawUi(ACTIVITY_JOIN_WITHDRAW_HIDDEN);
       }
     },
     [activity, uiState, requestIdFallback, onMessage, onError, onReload, queryClient]
@@ -201,7 +208,9 @@ export const useActivityJoinActions = ({
   return {
     joinModalOpen,
     showWithdraw,
-    setShowWithdraw,
+    setShowWithdraw: (open: boolean) => {
+      setWithdrawUi(open ? { kind: 'confirm' } : ACTIVITY_JOIN_WITHDRAW_HIDDEN);
+    },
     withdrawing,
     guestSheetOpen,
     guestSheetIntent,

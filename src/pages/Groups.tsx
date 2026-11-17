@@ -44,6 +44,10 @@ import {
 } from '../content/productNorthStar';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { navigateToGroupChatFromSocial } from '../utils/activityGroupChatNav';
+import {
+  GROUPS_DESTRUCTIVE_MODAL_NONE,
+  type GroupsDestructiveModal,
+} from './groupsDestructiveModal';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { Dialog } from '../components/ui/Dialog';
 import { AppSelect } from '../components/ui/AppSelect';
@@ -114,8 +118,11 @@ export const Groups = () => {
   const [showCreateModal, setShowCreateModal] = useState(
     () => searchParams.get('create') === '1' || searchParams.get('create') === 'true'
   );
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [destructiveModal, setDestructiveModal] = useState<GroupsDestructiveModal>(
+    GROUPS_DESTRUCTIVE_MODAL_NONE
+  );
+  const showDeleteModal = destructiveModal === 'delete';
+  const showLeaveModal = destructiveModal === 'leave';
   const [deleteConfirmed, setDeleteConfirmed] = useState(false);
   const [groupForm, setGroupForm] = useState(emptyGroupForm);
   const [inviteForm, setInviteForm] = useState({ email: '', role: 'buddy' as 'buddy' | 'admin' });
@@ -437,7 +444,7 @@ export const Groups = () => {
     setError(null);
     try {
       await deleteMeGroup(detail.group.id);
-      setShowDeleteModal(false);
+      setDestructiveModal(GROUPS_DESTRUCTIVE_MODAL_NONE);
       setDeleteConfirmed(false);
       setDetail(null);
       setSelectedGroupId(null);
@@ -456,7 +463,7 @@ export const Groups = () => {
     setError(null);
     try {
       await removeMeGroupMember(detail.group.id, detail.membership.id);
-      setShowLeaveModal(false);
+      setDestructiveModal(GROUPS_DESTRUCTIVE_MODAL_NONE);
       setDetail(null);
       setSelectedGroupId(null);
       setSuccess(`You left ${detail.group.name}.`);
@@ -640,7 +647,7 @@ export const Groups = () => {
         onSavePhoto={(url) => saveGroupPhoto(detail.group.id, url)}
         onDeleteClick={() => {
           setDeleteConfirmed(false);
-          setShowDeleteModal(true);
+          setDestructiveModal('delete');
         }}
       />
     );
@@ -726,7 +733,7 @@ export const Groups = () => {
               subtitle="You can rejoin with a new invite"
               icon={LogOut}
               destructive
-              onClick={() => setShowLeaveModal(true)}
+              onClick={() => setDestructiveModal('leave')}
             />
           ) : null}
         </SettingsMenuGroup>
@@ -935,7 +942,7 @@ export const Groups = () => {
 
       <Dialog
         open={showLeaveModal}
-        onClose={() => !saving && setShowLeaveModal(false)}
+        onClose={() => !saving && setDestructiveModal(GROUPS_DESTRUCTIVE_MODAL_NONE)}
         title="Leave this group?"
       >
         <p className="text-sm text-neutral-600 leading-relaxed mb-5">
@@ -944,7 +951,7 @@ export const Groups = () => {
         <div className="flex gap-3">
           <button
             type="button"
-            onClick={() => setShowLeaveModal(false)}
+            onClick={() => setDestructiveModal(GROUPS_DESTRUCTIVE_MODAL_NONE)}
             disabled={saving}
             className="flex-1 rounded-xl border border-neutral-200 py-2.5 text-sm font-semibold text-neutral-700"
           >
@@ -963,7 +970,7 @@ export const Groups = () => {
 
       <Dialog
         open={showDeleteModal}
-        onClose={() => !saving && setShowDeleteModal(false)}
+        onClose={() => !saving && setDestructiveModal(GROUPS_DESTRUCTIVE_MODAL_NONE)}
         title="Delete group permanently?"
       >
         <div className="rounded-xl bg-red-50 border border-red-100 px-3 py-3 mb-4">
@@ -985,7 +992,7 @@ export const Groups = () => {
         <div className="flex gap-3">
           <button
             type="button"
-            onClick={() => setShowDeleteModal(false)}
+            onClick={() => setDestructiveModal(GROUPS_DESTRUCTIVE_MODAL_NONE)}
             disabled={saving}
             className="flex-1 rounded-xl border border-neutral-200 py-2.5 text-sm font-semibold text-neutral-700"
           >

@@ -1,7 +1,12 @@
 import { createPortal } from 'react-dom';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { MoreVertical } from 'lucide-react';
-import type { ActivityDTO } from '@uaetrail/shared-types';
+import {
+  activityCatalogAllows,
+  isPublishedActivityStatus,
+  isSuspendedActivityStatus,
+  type ActivityDTO,
+} from '@uaetrail/shared-types';
 
 export type ActivityMenuActionId =
   | 'manage'
@@ -172,7 +177,7 @@ export const buildHostActivityMenuItems = (
   handlers: HostMenuHandlers
 ): ActivityMenuItem[] => {
   const status = activity.status;
-  const canEdit = status === 'draft' || status === 'published';
+  const canEdit = activityCatalogAllows(status, 'edit');
   const editOnMap = handlers.onHostFromExisting;
 
   return [
@@ -198,13 +203,13 @@ export const buildHostActivityMenuItems = (
       id: 'publish',
       label: 'Publish',
       onClick: () => handlers.onPublish?.(activity),
-      hidden: status !== 'draft' || !handlers.onPublish,
+      hidden: !activityCatalogAllows(status, 'publish') || !handlers.onPublish,
     },
     {
       id: 'unsuspend',
       label: 'Resume',
       onClick: () => handlers.onResume?.(activity),
-      hidden: status !== 'suspended' || !handlers.onResume,
+      hidden: !activityCatalogAllows(status, 'resume') || !handlers.onResume,
     },
     {
       id: 'duplicate',
@@ -215,28 +220,30 @@ export const buildHostActivityMenuItems = (
       id: 'checkin',
       label: 'Check-in',
       onClick: () => handlers.onCheckin?.(activity),
-      hidden: status !== 'published' || !handlers.onCheckin,
+      hidden: !isPublishedActivityStatus(status) || !handlers.onCheckin,
     },
     {
       id: 'suspend',
       label: 'Suspend',
       onClick: () => handlers.onSuspend?.(activity),
       destructive: true,
-      hidden: status !== 'published' || !handlers.onSuspend,
+      hidden: !activityCatalogAllows(status, 'suspend') || !handlers.onSuspend,
     },
     {
       id: 'delete',
       label: 'Delete',
       onClick: () => handlers.onDelete?.(activity),
       destructive: true,
-      hidden: (status !== 'draft' && status !== 'suspended') || !handlers.onDelete,
+      hidden:
+        (!activityCatalogAllows(status, 'delete_draft') && !isSuspendedActivityStatus(status)) ||
+        !handlers.onDelete,
     },
     {
       id: 'cancel',
       label: 'Cancel activity',
       onClick: () => handlers.onCancel?.(activity),
       destructive: true,
-      hidden: status !== 'published' || !handlers.onCancel,
+      hidden: !isPublishedActivityStatus(status) || !handlers.onCancel,
     },
   ];
 };

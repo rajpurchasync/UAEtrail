@@ -26,6 +26,12 @@ import {
 import { clearComposeWizardSessionForRoute } from '../../ui/composeWizardSession';
 import { clearFacilityOnPlaceParams, PLAN_WITH_QUERY_KEY } from '../../routing';
 import { composeRouteRequiresAuth, resolveComposeRouteChange } from '../composeRouteGuard';
+import {
+  GUEST_COMPOSE_SIGN_IN_GATE_CLOSED,
+  guestComposeSignInGateIsOpen,
+  guestComposeSignInGatePendingRoute,
+  type GuestComposeSignInGate,
+} from '../guestComposeSignInGate';
 
 export type UseComposeRouteArgs = {
   user: { id: string } | null | undefined;
@@ -50,10 +56,11 @@ export const useComposeRoute = ({
 }: UseComposeRouteArgs) => {
   const composeWire = searchParams.get(COMPOSE_QUERY_KEY);
   const composeRoute = useMemo(() => parseExploreCompose(searchParams), [searchParams, composeWire]);
-  const [guestComposeSignInOpen, setGuestComposeSignInOpen] = useState(false);
-  const [guestComposePendingRoute, setGuestComposePendingRoute] = useState<ExploreCompose | null>(
-    null
+  const [guestComposeSignInGate, setGuestComposeSignInGate] = useState<GuestComposeSignInGate>(
+    GUEST_COMPOSE_SIGN_IN_GATE_CLOSED
   );
+  const guestComposeSignInOpen = guestComposeSignInGateIsOpen(guestComposeSignInGate);
+  const guestComposePendingRoute = guestComposeSignInGatePendingRoute(guestComposeSignInGate);
   const [wizardEnteredFromMenu, setWizardEnteredFromMenu] = useState(false);
   const prevComposeRouteRef = useRef<ExploreCompose | null>(null);
 
@@ -81,8 +88,7 @@ export const useComposeRoute = ({
         clearPlanAddQuery(params);
       });
       if (route && user && composeRouteRequiresAuth(route)) {
-        setGuestComposeSignInOpen(false);
-        setGuestComposePendingRoute(null);
+        setGuestComposeSignInGate(GUEST_COMPOSE_SIGN_IN_GATE_CLOSED);
         clearGuestComposeResumeSession();
       }
     },
@@ -97,8 +103,7 @@ export const useComposeRoute = ({
       params.delete(PLAN_WITH_QUERY_KEY);
     });
     setWizardEnteredFromMenu(false);
-    setGuestComposeSignInOpen(false);
-    setGuestComposePendingRoute(null);
+    setGuestComposeSignInGate(GUEST_COMPOSE_SIGN_IN_GATE_CLOSED);
     clearGuestComposeResumeSession();
   }, [applySearchMutation]);
 
@@ -113,8 +118,7 @@ export const useComposeRoute = ({
   const blockGuestComposeWizard = useCallback(
     (route: ExploreCompose, fromMenu: boolean) => {
       writeGuestComposeResumeSession(captureGuestComposeResume(route, fromMenu));
-      setGuestComposePendingRoute(route);
-      setGuestComposeSignInOpen(true);
+      setGuestComposeSignInGate({ kind: 'open', pendingRoute: route });
       applySearchMutation((params) => {
         clearExploreComposeParams(params);
       });
@@ -168,8 +172,7 @@ export const useComposeRoute = ({
     }
     if (resume.fromMenu) setWizardEnteredFromMenu(true);
     clearGuestComposeResumeSession();
-    setGuestComposePendingRoute(null);
-    setGuestComposeSignInOpen(false);
+    setGuestComposeSignInGate(GUEST_COMPOSE_SIGN_IN_GATE_CLOSED);
   }, [user, composeRoute, setComposeRoute]);
 
   const handleComposeRouteChange = useCallback(
@@ -227,8 +230,7 @@ export const useComposeRoute = ({
   }, [guestComposePendingRoute, pathname, search]);
 
   const closeGuestComposeSignIn = useCallback(() => {
-    setGuestComposeSignInOpen(false);
-    setGuestComposePendingRoute(null);
+    setGuestComposeSignInGate(GUEST_COMPOSE_SIGN_IN_GATE_CLOSED);
     clearGuestComposeResumeSession();
     applySearchMutation((params) => {
       const pending = parseExploreCompose(params);

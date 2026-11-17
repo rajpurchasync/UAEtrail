@@ -84,6 +84,34 @@ describe('buildActivityViewerAccess', () => {
     expect(access.level).toBe('host');
   });
 
+  it('treats an approved request without a roster row as a participant', async () => {
+    vi.mocked(findActivityRequestByEventAndUser).mockResolvedValue({
+      id: 'req-approved',
+      activityId: activity.id,
+      userId: 'guest-approved',
+      status: RequestStatus.APPROVED,
+      note: null,
+      selectedPackageIndex: null,
+      hostNote: null,
+      cancelReason: null,
+      cancelMessage: null,
+      cancelledAt: null,
+      reviewedById: null,
+      reviewedAt: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const access = await buildActivityViewerAccess({
+      viewerUserId: 'guest-approved',
+      activity,
+    });
+
+    expect(access.level).toBe('participant');
+    expect(access.exposure).toBe('full');
+    expect(access.canAccessCrewSurfaces).toBe(true);
+  });
+
   it('allows waitlisted participants to view a private activity', async () => {
     vi.mocked(findActivityRequestByEventAndUser).mockResolvedValue({
       id: 'req-1',

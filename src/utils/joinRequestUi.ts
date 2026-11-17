@@ -1,41 +1,25 @@
-import type { MyActivityRequestDTO, ActivityParticipationDTO } from '@uaetrail/shared-types';
+import {
+  projectActivityJoinRequestUiState,
+  type ActivityJoinRequestUiProjection,
+  type ActivityParticipationDTO,
+  type MyActivityRequestDTO,
+} from '@uaetrail/shared-types';
 import {
   ACTIVITY_CTA_PENDING_APPROVAL,
   ACTIVITY_STATUS_JOINED,
   ACTIVITY_STATUS_JOIN_REQUESTED,
 } from '../content/activityParticipationCopy';
 
-export type JoinRequestUiState =
-  | { kind: 'open' }
-  | { kind: 'pending'; requestId: string; status: 'pending' | 'waitlisted' }
-  | { kind: 'confirmed'; requestId: string };
+export type JoinRequestUiState = ActivityJoinRequestUiProjection;
 
 export const resolveJoinRequestUiState = (input: {
   myRequest?: MyActivityRequestDTO | null;
   participation?: ActivityParticipationDTO | null;
-}): JoinRequestUiState => {
-  if (input.participation) {
-    return { kind: 'confirmed', requestId: input.myRequest?.id ?? 'participation' };
-  }
-
-  if (!input.myRequest?.canWithdraw) {
-    return { kind: 'open' };
-  }
-
-  if (input.myRequest.status === 'approved') {
-    return { kind: 'confirmed', requestId: input.myRequest.id };
-  }
-
-  if (input.myRequest.status === 'pending' || input.myRequest.status === 'waitlisted') {
-    return {
-      kind: 'pending',
-      requestId: input.myRequest.id,
-      status: input.myRequest.status
-    };
-  }
-
-  return { kind: 'open' };
-};
+}): JoinRequestUiState =>
+  projectActivityJoinRequestUiState({
+    hasParticipation: Boolean(input.participation),
+    myRequest: input.myRequest,
+  });
 
 export const pendingApprovalLabel = (status: 'pending' | 'waitlisted'): string =>
   status === 'waitlisted' ? 'On waitlist' : ACTIVITY_CTA_PENDING_APPROVAL;

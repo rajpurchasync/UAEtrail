@@ -271,8 +271,8 @@ export const useActivityDetailJoinSurfaces = ({
 
   const requestEditable =
     Boolean(myRequest?.id) &&
-    joinUiState.requestId !== 'participation' &&
-    (joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed');
+    (joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed') &&
+    joinUiState.requestId !== 'participation';
 
   const partyEditPanel =
     consumerJoinEnabled && !previewMode && requestEditable && myRequest ? (

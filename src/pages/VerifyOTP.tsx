@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Mail, Mountain } from 'lucide-react';
 import { resendEmailVerification } from '../hooks/accountAuthClientApi';
@@ -8,6 +8,11 @@ import { SIGNIN_PATH } from '../config/routingCatalog';
 import { resolveWelcomeFinishExplorePath } from '../explore/exploreWelcomeNavigation';
 import { PageMeta } from '../components/seo/PageMeta';
 import { useAuth } from '../context/AuthContext';
+import {
+  VERIFY_OTP_BUSY_IDLE,
+  verifyOtpIsBusy,
+  type VerifyOtpBusyStatus,
+} from './verifyOtpBusyStatus';
 
 const OTP_LENGTH = 6;
 
@@ -32,8 +37,10 @@ export const VerifyOTP = () => {
 
   const [otp, setOtp] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [resending, setResending] = useState(false);
+  const [busyStatus, setBusyStatus] = useState<VerifyOtpBusyStatus>(VERIFY_OTP_BUSY_IDLE);
+  const autoVerifyOtpRef = useRef<string | null>(null);
+  const loading = busyStatus.kind === 'verifying';
+  const resending = busyStatus.kind === 'resending';
   const [expiresAt, setExpiresAt] = useState<number | null>(() => {
     if (state.expiresAt) return new Date(state.expiresAt).getTime();
     if (state.expiresInSeconds) return Date.now() + state.expiresInSeconds * 1000;
@@ -70,7 +77,7 @@ export const VerifyOTP = () => {
       return;
     }
 
-    setLoading(true);
+    setBusyStatus({ kind: 'verifying' });
     setError(null);
     try {
       if (mode === 'password-reset') {
@@ -86,23 +93,28 @@ export const VerifyOTP = () => {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'That code didn\'t work — try again or request a new one.');
     } finally {
-      setLoading(false);
+      setBusyStatus(VERIFY_OTP_BUSY_IDLE);
     }
   };
 
   useEffect(() => {
-    if (otp.length === OTP_LENGTH && !loading && secondsLeft > 0) {
-      void runVerify(otp);
+    if (otp.length !== OTP_LENGTH) {
+      autoVerifyOtpRef.current = null;
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- verify when OTP is complete
-  }, [otp]);
+    if (verifyOtpIsBusy(busyStatus) || secondsLeft <= 0) return;
+    if (autoVerifyOtpRef.current === otp) return;
+    autoVerifyOtpRef.current = otp;
+    void runVerify(otp);
+  }, [otp, busyStatus, secondsLeft]);
 
   const handleResend = async () => {
     if (secondsLeft > 0 || resending) return;
 
-    setResending(true);
+    setBusyStatus({ kind: 'resending' });
     setError(null);
     setOtp('');
+    autoVerifyOtpRef.current = null;
     try {
       if (mode === 'password-reset') {
         await requestPasswordReset(email);
@@ -120,7 +132,7 @@ export const VerifyOTP = () => {
     } catch {
       setError('Couldn\'t send a new code — try again in a moment.');
     } finally {
-      setResending(false);
+      setBusyStatus(VERIFY_OTP_BUSY_IDLE);
     }
   };
 

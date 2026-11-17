@@ -1,4 +1,5 @@
-import { MembershipRole, RequestStatus } from '../domain/enums.js';
+import { ACTIVE_JOIN_REQUEST_STATUSES } from '../domain/active-join-request-statuses.js';
+import { MembershipRole } from '../domain/enums.js';
 import { ApiError } from '../lib/api-error.js';
 import { countRecentMessagesBySender } from '../lib/chat-messages-store.js';
 import {
@@ -12,12 +13,6 @@ import {
 import { areAcceptedBuddies, listBuddiesForUser } from '../lib/buddy-store.js';
 import { hasDirectedMessageFromTo, listPartnersWhoSentToUser } from '../lib/chat-messages-store.js';
 import { listInboundChatEnabledShopAdminIds } from '../lib/shop-store.js';
-
-const ACTIVE_REQUEST_STATUSES: RequestStatus[] = [
-  RequestStatus.PENDING,
-  RequestStatus.APPROVED,
-  RequestStatus.WAITLISTED
-];
 
 const HOST_MEMBERSHIP_ROLES: MembershipRole[] = [
   MembershipRole.TENANT_OWNER,
@@ -57,7 +52,7 @@ export async function canMessageUser(
     senderId,
     receiverId,
     hostMembershipRoles: HOST_MEMBERSHIP_ROLES,
-    activeStatuses: ACTIVE_REQUEST_STATUSES
+    activeStatuses: ACTIVE_JOIN_REQUEST_STATUSES
   });
   if (joinRequestLink) return true;
 
@@ -127,7 +122,7 @@ export async function filterInboxMessageablePartnerIds(
       viewerId,
       partnerIds: toCheck,
       hostMembershipRoles: HOST_MEMBERSHIP_ROLES,
-      activeStatuses: ACTIVE_REQUEST_STATUSES,
+      activeStatuses: ACTIVE_JOIN_REQUEST_STATUSES,
     });
     for (const partnerId of linked) {
       allowed.add(partnerId);

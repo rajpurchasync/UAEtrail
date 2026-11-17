@@ -1,5 +1,8 @@
-import type { ActivityDTO } from '@uaetrail/shared-types';
-import { resolveParticipationMode } from '@uaetrail/shared-types';
+import {
+  isPublishedActivityStatus,
+  resolveParticipationMode,
+  type ActivityDTO,
+} from '@uaetrail/shared-types';
 import { canLinkRideshareToActivity } from '../explore/linkActivityRideshareOffer';
 
 export type ActivityManageCapabilityOptions = {
@@ -35,7 +38,7 @@ export const activityManageCapabilities = (
   options?: ActivityManageCapabilityOptions
 ): ActivityManageCapabilities => {
   const mode = resolveParticipationMode(activity.participationMode, activity.requirements);
-  const published = activity.status === 'published';
+  const published = isPublishedActivityStatus(activity.status);
   const canAddLinkedRide = options?.canAddLinkedRide ?? false;
 
   return {

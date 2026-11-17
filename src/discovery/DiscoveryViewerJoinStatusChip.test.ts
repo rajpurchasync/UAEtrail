@@ -41,27 +41,48 @@ describe('resolveDiscoveryViewerJoinStatus', () => {
     ).toBe('joined');
   });
 
-  it('returns pending for join_request level', () => {
+  it('returns pending from pending_join wire, not bare join_request', () => {
+    const entitlements = {
+      isProMember: false,
+      canViewHostProfileBeforeJoin: true,
+      canViewFullBuddyRoster: false,
+      canOfferTransport: false,
+      canAddLinkedRide: false,
+      canMessageHostBeforeJoin: true,
+      buddyUserIdsOnActivity: [],
+    };
     expect(
       resolveDiscoveryViewerJoinStatus(
         baseCard({
           viewerAccess: {
-            exposure: 'full',
+            exposure: 'redacted',
             level: 'join_request',
             gateReason: null,
-            canViewFullActivity: true,
+            canViewFullActivity: false,
             canOpenDetailPage: true,
             joinMode: 'open',
             canAccessCrewSurfaces: false,
-            entitlements: {
-              isProMember: false,
-              canViewHostProfileBeforeJoin: true,
-              canViewFullBuddyRoster: false,
-              canOfferTransport: false,
-              canAddLinkedRide: false,
-              canMessageHostBeforeJoin: true,
-              buddyUserIdsOnActivity: [],
-            },
+            entitlements,
+            mapPeekActions: [{ id: 'request_join', prominence: 'primary' }],
+          },
+        })
+      )
+    ).toBeNull();
+    expect(
+      resolveDiscoveryViewerJoinStatus(
+        baseCard({
+          viewerAccess: {
+            exposure: 'redacted',
+            level: 'join_request',
+            gateReason: null,
+            canViewFullActivity: false,
+            canOpenDetailPage: true,
+            joinMode: 'open',
+            canAccessCrewSurfaces: false,
+            entitlements,
+            mapPeekActions: [
+              { id: 'pending_join', prominence: 'primary', joinRequestStatus: 'pending' },
+            ],
           },
         })
       )

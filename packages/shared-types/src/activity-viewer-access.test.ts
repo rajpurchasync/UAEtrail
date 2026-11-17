@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { computeActivityDetailExposure } from './activity-viewer-access.js';
+import {
+  activityJoinEngagementSnapshotFromViewerFacts,
+  activityViewerLevelFromJoinEngagement,
+  computeActivityDetailExposure,
+} from './activity-viewer-access.js';
 
 describe('computeActivityDetailExposure', () => {
   it('redacts pending join requests but keeps detail page open', () => {
@@ -58,5 +62,45 @@ describe('computeActivityDetailExposure', () => {
     });
     expect(access.exposure).toBe('full');
     expect(access.canAccessCrewSurfaces).toBe(true);
+  });
+});
+
+describe('activityViewerLevelFromJoinEngagement', () => {
+  it('maps in-flight pending/waitlisted to join_request, not approved', () => {
+    expect(
+      activityViewerLevelFromJoinEngagement(
+        activityJoinEngagementSnapshotFromViewerFacts({ requestStatus: 'PENDING' })
+      )
+    ).toBe('join_request');
+    expect(
+      activityViewerLevelFromJoinEngagement(
+        activityJoinEngagementSnapshotFromViewerFacts({ requestStatus: 'waitlisted' })
+      )
+    ).toBe('join_request');
+  });
+
+  it('maps approved (with or without a roster row) to participant', () => {
+    expect(
+      activityViewerLevelFromJoinEngagement(
+        activityJoinEngagementSnapshotFromViewerFacts({ requestStatus: 'approved' })
+      )
+    ).toBe('participant');
+    expect(
+      activityViewerLevelFromJoinEngagement(
+        activityJoinEngagementSnapshotFromViewerFacts({
+          hasParticipation: true,
+          requestStatus: 'pending',
+        })
+      )
+    ).toBe('participant');
+  });
+
+  it('returns null when there is no live join relationship', () => {
+    expect(activityViewerLevelFromJoinEngagement({})).toBeNull();
+    expect(
+      activityViewerLevelFromJoinEngagement(
+        activityJoinEngagementSnapshotFromViewerFacts({ requestStatus: 'rejected' })
+      )
+    ).toBeNull();
   });
 });

@@ -10,7 +10,10 @@ import {
   type ActivityMapPeekActionId,
   type MapPeekJoinRequestStatus,
 } from './activity-map-peek-actions.js';
-import type { ActivityJoinEngagementKind } from './activity-join-engagement.js';
+import {
+  mapPeekJoinRequestStatusFromSnapshot,
+  type ActivityJoinEngagementKind,
+} from './activity-join-engagement.js';
 import type { ActivityViewerAccessLevel } from './activity-viewer-access.js';
 import {
   mergeActivityMapPeekActionsWithEntitlements,
@@ -64,11 +67,10 @@ const resolveJoinRequestStatus = (
   if (input.joinRequestStatus !== undefined) {
     return input.joinRequestStatus;
   }
-  if (!input.myRequest?.canWithdraw) return null;
-  if (input.myRequest.status === 'pending' || input.myRequest.status === 'waitlisted') {
-    return input.myRequest.status;
-  }
-  return null;
+  return mapPeekJoinRequestStatusFromSnapshot({
+    hasParticipation: Boolean(input.myParticipation),
+    myRequest: input.myRequest,
+  });
 };
 
 const appendWithdrawAndViewDetail = (

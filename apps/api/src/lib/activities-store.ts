@@ -15,6 +15,8 @@ import {
 import { scheduleExploreMapCacheInvalidation } from './explore-map-cache-schedule.js';
 import { scheduleSideEffect } from './schedule-side-effect.js';
 import {
+  activityCatalogAllows,
+  activityCatalogDenialMessage,
   GROUP_REGION_LEVEL,
   readGroupRegionAtLevel,
   resolveCatalogSubmitterUserId,
@@ -294,8 +296,8 @@ export const suspendActivityById = async (activityId: string) => {
   if (!existing) {
     throw new Error('Activity not found.');
   }
-  if (existing.status !== ActivityStatus.PUBLISHED) {
-    throw new Error('Only published activities can be suspended.');
+  if (!activityCatalogAllows(existing.status, 'suspend')) {
+    throw new Error(activityCatalogDenialMessage('suspend'));
   }
   await patchActivityInMongo(activityId, { status: ActivityStatus.SUSPENDED });
   scheduleExploreMapCacheInvalidation('activities-store.map_cache');
@@ -312,8 +314,8 @@ export const resumeActivityById = async (activityId: string) => {
   if (!existing) {
     throw new Error('Activity not found.');
   }
-  if (existing.status !== ActivityStatus.SUSPENDED) {
-    throw new Error('Only suspended activities can be resumed.');
+  if (!activityCatalogAllows(existing.status, 'resume')) {
+    throw new Error(activityCatalogDenialMessage('resume'));
   }
   await patchActivityInMongo(activityId, { status: ActivityStatus.PUBLISHED });
   scheduleExploreMapCacheInvalidation('activities-store.map_cache');
@@ -329,7 +331,7 @@ export const deleteDraftActivityById = async (activityId: string, tenantId: stri
   if (!doc || doc.tenantId !== tenantId) {
     return false;
   }
-  if (doc.status !== ActivityStatus.DRAFT) {
+  if (!activityCatalogAllows(doc.status, 'delete_draft')) {
     return false;
   }
   return deleteActivityDocInMongo(activityId);

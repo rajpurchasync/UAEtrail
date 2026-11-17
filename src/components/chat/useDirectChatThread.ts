@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from 'react';
 import type { QueryClient } from '@tanstack/react-query';
 import type {
   ChatConversationDTO,
@@ -25,6 +32,10 @@ import {
   mergeOlderChatRows,
   shouldShowChatLoadMore,
 } from '../../utils/chatThreadPagination';
+import {
+  directChatThreadSeedForPartnerOpen,
+  directChatThreadSeedWhenPartnerClosed,
+} from './directChatThreadPartnerSeed';
 
 type PartnerBrief = { displayName: string; avatarUrl?: string | null };
 
@@ -55,31 +66,13 @@ export const useDirectChatThread = ({
 }: UseDirectChatThreadOptions) => {
   const [messages, setMessages] = useState<ChatMessageDTO[]>([]);
   const [draft, setDraft] = useState('');
-  const [activePartnerId, setActivePartnerId] = useState<string | null>(partnerUserId);
-  const [loadingMessages, setLoadingMessages] = useState(Boolean(partnerUserId));
+  const [loadingMessages, setLoadingMessages] = useState(false);
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [hasMoreOlder, setHasMoreOlder] = useState(false);
   const [scrollMode, setScrollMode] = useState<DirectChatScrollMode>('initial');
   const [partnerBrief, setPartnerBrief] = useState<PartnerBrief | null>(null);
   const oldestAnchorId = (rows: ChatMessageDTO[]) =>
     rows.find((row) => !isOptimisticChatId(row.id))?.id ?? null;
-
-  if (partnerUserId !== activePartnerId) {
-    setActivePartnerId(partnerUserId);
-    const cached =
-      partnerUserId && currentUserId
-        ? queryClient.getQueryData<DirectChatThreadCache>(directChatThreadQueryKey(currentUserId, partnerUserId))
-        : undefined;
-    if (cached?.messages.length) {
-      setMessages(cached.messages);
-      setHasMoreOlder(cached.hasMoreOlder);
-      setLoadingMessages(false);
-    } else {
-      setMessages([]);
-      setHasMoreOlder(false);
-      setLoadingMessages(Boolean(partnerUserId));
-    }
-  }
 
   const markThreadReadInInbox = useCallback(
     (userId: string) => {
@@ -165,24 +158,35 @@ export const useDirectChatThread = ({
     [hasMoreOlder, loadingOlder, messages, partnerUserId]
   );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!partnerUserId || !currentUserId) {
-      setMessages([]);
+      const closed = directChatThreadSeedWhenPartnerClosed();
+      setMessages(closed.messages);
+      setHasMoreOlder(closed.hasMoreOlder);
+      setLoadingMessages(closed.loadingMessages);
       setDraft('');
-      setHasMoreOlder(false);
       return;
     }
+
     setDraft('');
+    const cached = queryClient.getQueryData<DirectChatThreadCache>(
+      directChatThreadQueryKey(currentUserId, partnerUserId)
+    );
+    const seed = directChatThreadSeedForPartnerOpen({ partnerUserId, cached });
+    setMessages(seed.messages);
+    setHasMoreOlder(seed.hasMoreOlder);
+    setLoadingMessages(seed.loadingMessages);
+    setScrollMode('initial');
+  }, [currentUserId, partnerUserId, queryClient]);
+
+  useEffect(() => {
+    if (!partnerUserId || !currentUserId) return;
 
     const cacheKey = directChatThreadQueryKey(currentUserId, partnerUserId);
     const cached = queryClient.getQueryData<DirectChatThreadCache>(cacheKey);
     const hasCache = Boolean(cached?.messages.length);
 
     if (hasCache && cached) {
-      setMessages(cached.messages);
-      setHasMoreOlder(cached.hasMoreOlder);
-      setLoadingMessages(false);
-      setScrollMode('initial');
       void loadInitialMessages(partnerUserId, {
         background: true,
         seedMessages: cached.messages,

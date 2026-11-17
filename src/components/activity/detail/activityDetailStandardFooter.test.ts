@@ -63,6 +63,17 @@ describe('resolveActivityDetailStandardFooter', () => {
     expect(footer.right.label).toBe(ACTIVITY_PEEK_MANAGE_LABEL);
   });
 
+  it('does not treat invite-only join_request as a pending request', () => {
+    const footer = resolveActivityDetailStandardFooter({
+      isHost: false,
+      joinUiState: open,
+      joinLabel: 'Request to join',
+      viewerLevel: 'join_request',
+    });
+    expect(footer.mode).toBe('open');
+    expect(footer.left.action).toBe('request_join');
+  });
+
   it('does not change the pair when the outing is full', () => {
     const footer = resolveActivityDetailStandardFooter({
       isHost: false,

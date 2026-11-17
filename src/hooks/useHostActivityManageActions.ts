@@ -14,6 +14,10 @@ import { openPublishedActivityPreview } from '../components/activities';
 import { useInvalidatePublishingWorkspace } from './publishingWorkspaceQueries';
 import { useReloadExploreMap } from './useReloadExploreMap';
 import { openActivityGroupChat } from '../utils/openActivityGroupChat';
+import {
+  HOST_ACTIVITY_MANAGE_CONFIRM_NONE,
+  type HostActivityManageConfirm,
+} from './hostActivityManageConfirm';
 
 /** Tenant activity manage actions (`DELETE /publishing/activities/:id`, publish, duplicate, …). */
 export function useHostActivityManageActions(
@@ -23,9 +27,22 @@ export function useHostActivityManageActions(
   const navigate = useNavigate();
   const reloadExploreMap = useReloadExploreMap();
   const invalidateWorkspace = useInvalidatePublishingWorkspace(tenantId);
-  const [confirmCancel, setConfirmCancel] = useState<ActivityDTO | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState<ActivityDTO | null>(null);
-  const [confirmSuspend, setConfirmSuspend] = useState<ActivityDTO | null>(null);
+  const [confirm, setConfirm] = useState<HostActivityManageConfirm>(HOST_ACTIVITY_MANAGE_CONFIRM_NONE);
+  const confirmCancel =
+    confirm.kind === 'cancel' ? confirm.activity : null;
+  const confirmDelete =
+    confirm.kind === 'delete' ? confirm.activity : null;
+  const confirmSuspend =
+    confirm.kind === 'suspend' ? confirm.activity : null;
+  const setConfirmCancel = useCallback((activity: ActivityDTO | null) => {
+    setConfirm(activity ? { kind: 'cancel', activity } : HOST_ACTIVITY_MANAGE_CONFIRM_NONE);
+  }, []);
+  const setConfirmDelete = useCallback((activity: ActivityDTO | null) => {
+    setConfirm(activity ? { kind: 'delete', activity } : HOST_ACTIVITY_MANAGE_CONFIRM_NONE);
+  }, []);
+  const setConfirmSuspend = useCallback((activity: ActivityDTO | null) => {
+    setConfirm(activity ? { kind: 'suspend', activity } : HOST_ACTIVITY_MANAGE_CONFIRM_NONE);
+  }, []);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -115,7 +132,7 @@ export function useHostActivityManageActions(
     setError(null);
     try {
       await cancelTenantActivity(tenantId, confirmCancel.id);
-      setConfirmCancel(null);
+      setConfirm(HOST_ACTIVITY_MANAGE_CONFIRM_NONE);
       await afterChange();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not cancel activity.');
@@ -130,7 +147,7 @@ export function useHostActivityManageActions(
     setError(null);
     try {
       await cancelTenantActivity(tenantId, confirmDelete.id);
-      setConfirmDelete(null);
+      setConfirm(HOST_ACTIVITY_MANAGE_CONFIRM_NONE);
       await afterChange();
     } catch (err) {
       setError(
@@ -151,7 +168,7 @@ export function useHostActivityManageActions(
     setError(null);
     try {
       await suspendTenantActivity(tenantId, confirmSuspend.id);
-      setConfirmSuspend(null);
+      setConfirm(HOST_ACTIVITY_MANAGE_CONFIRM_NONE);
       await afterChange();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not suspend outing.');

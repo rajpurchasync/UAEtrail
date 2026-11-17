@@ -1,10 +1,12 @@
 import {
+  activityJoinEngagementSnapshotFromViewerFacts,
+  activityViewerLevelFromJoinEngagement,
   computeActivityDetailExposure,
   resolveActivityHostUserId,
   type ActivityViewerAccessDTO,
   type ActivityViewerAccessLevel,
 } from '@uaetrail/shared-types';
-import { MembershipRole, RequestStatus } from '../domain/enums.js';
+import { MembershipRole } from '../domain/enums.js';
 import { resolveJoinMode, type ActivityJoinMode } from '../domain/activity-join-mode.js';
 import {
   findActivityParticipantByEventAndUser,
@@ -25,12 +27,6 @@ const HOST_MEMBERSHIP_ROLES: MembershipRole[] = [
   MembershipRole.TENANT_OWNER,
   MembershipRole.TENANT_ADMIN,
   MembershipRole.TENANT_GUIDE,
-];
-
-const ACTIVE_REQUEST_STATUSES: RequestStatus[] = [
-  RequestStatus.PENDING,
-  RequestStatus.APPROVED,
-  RequestStatus.WAITLISTED,
 ];
 
 export type ActivityViewerAccessInput = {
@@ -79,13 +75,16 @@ const resolveActivityViewerLevel = async (
   }
 
   const participant = await findActivityParticipantByEventAndUser(input.activity.id, viewerUserId);
-  if (participant) {
-    return 'participant';
-  }
-
   const request = await findActivityRequestByEventAndUser(input.activity.id, viewerUserId);
-  if (request && ACTIVE_REQUEST_STATUSES.includes(request.status)) {
-    return 'join_request';
+  const fromJoin = activityViewerLevelFromJoinEngagement(
+    activityJoinEngagementSnapshotFromViewerFacts({
+      hasParticipation: Boolean(participant),
+      requestStatus: request?.status,
+      requestId: request?.id,
+    })
+  );
+  if (fromJoin) {
+    return fromJoin;
   }
 
   const activityGroup = await findGroupByActivityId(input.activity.id);

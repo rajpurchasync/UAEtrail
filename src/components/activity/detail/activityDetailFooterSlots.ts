@@ -100,9 +100,7 @@ export const resolveActivityDetailStandardFooter = (input: {
   const pending =
     !input.isHost &&
     !joined &&
-    (input.joinUiState.kind === 'pending' ||
-      level === 'join_request' ||
-      Boolean(input.wirePending));
+    (input.joinUiState.kind === 'pending' || Boolean(input.wirePending));
 
   if (input.isHost) {
     return {

@@ -1,4 +1,5 @@
-import { MembershipRole, RequestStatus } from '../domain/enums.js';
+import { ACTIVE_JOIN_REQUEST_STATUSES } from '../domain/active-join-request-statuses.js';
+import { MembershipRole } from '../domain/enums.js';
 import {
   countPublishedActivitiesHostedByUser,
   countPublishedActivitiesHostedByUserIds,
@@ -35,12 +36,6 @@ const HOST_MEMBERSHIP_ROLES: MembershipRole[] = [
   MembershipRole.TENANT_OWNER,
   MembershipRole.TENANT_ADMIN,
   MembershipRole.TENANT_GUIDE,
-];
-
-const ACTIVE_JOIN_REQUEST_STATUSES: RequestStatus[] = [
-  RequestStatus.PENDING,
-  RequestStatus.APPROVED,
-  RequestStatus.WAITLISTED,
 ];
 
 export const PRIVATE_PROFILE_MESSAGE = 'User has set their account private';

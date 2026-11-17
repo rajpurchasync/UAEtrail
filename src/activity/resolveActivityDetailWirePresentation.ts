@@ -1,9 +1,9 @@
 import {
+  mapPeekJoinRequestStatusFromUiKind,
   resolveActivityEngagementPolicy,
   type ActivityDetailDTO,
   type ActivityPresentationDTO,
   type ActivityViewerAccessDTO,
-  type MapPeekJoinRequestStatus,
 } from '@uaetrail/shared-types';
 import type { JoinRequestUiState } from '../utils/joinRequestUi';
 
@@ -33,13 +33,6 @@ export type ResolveActivityDetailWirePresentationInput = {
   joinUiState: JoinRequestUiState;
   myParticipation?: unknown | null;
   myRequest?: { status: string; canWithdraw: boolean } | null;
-};
-
-const joinRequestStatusFromUi = (
-  joinUiState: JoinRequestUiState
-): MapPeekJoinRequestStatus | null => {
-  if (joinUiState.kind !== 'pending') return null;
-  return joinUiState.status === 'waitlisted' ? 'waitlisted' : 'pending';
 };
 
 /**
@@ -88,7 +81,7 @@ export const resolveActivityDetailWirePresentation = (
     participationMode: input.activity.participationMode,
     requirements: input.activity.requirements,
     joinMode: input.activity.joinMode,
-    joinRequestStatus: joinRequestStatusFromUi(input.joinUiState),
+    joinRequestStatus: mapPeekJoinRequestStatusFromUiKind(input.joinUiState),
     meetingLat: input.activity.meetingLat ?? null,
     meetingLng: input.activity.meetingLng ?? null,
     startLat: input.activity.startLat ?? null,

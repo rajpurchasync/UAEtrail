@@ -1,8 +1,8 @@
 import {
+  mapPeekJoinRequestStatusFromUiKind,
   resolveActivityEngagementPolicy,
   resolveParticipationMode,
   type ActivityViewerAccessDTO,
-  type MapPeekJoinRequestStatus,
   type ParticipationMode,
 } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
@@ -18,13 +18,6 @@ export type ActivityPresentationInput = {
   isConfirmedParticipant: boolean;
 };
 
-const joinRequestStatusFromUi = (
-  joinUiState: JoinRequestUiState
-): MapPeekJoinRequestStatus | null => {
-  if (joinUiState.kind !== 'pending') return null;
-  return joinUiState.status === 'waitlisted' ? 'waitlisted' : 'pending';
-};
-
 /** Activity detail engagement flags — from L1 policy when `viewerAccess` is present. */
 export const resolveActivityDetailPresentation = (input: ActivityPresentationInput) => {
   const participationMode = resolveParticipationMode(input.participationMode, input.requirements);
@@ -36,7 +29,7 @@ export const resolveActivityDetailPresentation = (input: ActivityPresentationInp
       activityPublished: input.activityPublished,
       participationMode: input.participationMode,
       requirements: input.requirements,
-      joinRequestStatus: joinRequestStatusFromUi(input.joinUiState),
+      joinRequestStatus: mapPeekJoinRequestStatusFromUiKind(input.joinUiState),
       myParticipation: input.isConfirmedParticipant ? { onRoster: true } : null,
       myRequest: null,
     });

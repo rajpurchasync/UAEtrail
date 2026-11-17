@@ -47,6 +47,23 @@ describe('resolveDemandMapViewerAccess', () => {
     expect(access.exposure).toBe('full');
     expect(access.gateReason).toBeNull();
   });
+
+  it('projects demand join status through the join snapshot', () => {
+    expect(
+      resolveDemandMapViewerAccess({
+        viewerUserId: 'joiner',
+        requesterUserId: 'owner',
+        joinRequestStatus: 'approved',
+      }).level
+    ).toBe('participant');
+    expect(
+      resolveDemandMapViewerAccess({
+        viewerUserId: 'joiner',
+        requesterUserId: 'owner',
+        joinRequestStatus: 'pending',
+      }).level
+    ).toBe('join_request');
+  });
 });
 
 describe('resolveCommerceMapViewerAccess', () => {
@@ -317,6 +334,44 @@ describe('attachExploreMapViewerAccess', () => {
       { id: 'view_detail', prominence: 'text' },
       { id: 'message_host', prominence: 'secondary' },
     ]);
+  });
+
+  it('treats an approved request without a roster row as a participant', () => {
+    const enriched = attachExploreMapViewerAccess([openActivityItem()], {
+      viewerUserId: 'member-1',
+      isPlatformAdmin: false,
+      participantActivityIds: new Set(),
+      requestStatusByActivityId: new Map([['a1', RequestStatus.APPROVED]]),
+      staffTenantIds: new Set(),
+      demandJoinStatusByIntentId: new Map(),
+      hostStatus: null,
+      buddyUserIds: new Set(),
+      pendingJoinInviteCountByActivityId: new Map(),
+    });
+
+    expect(enriched[0].viewerAccess?.level).toBe('participant');
+    expect(enriched[0].viewerAccess?.canAccessCrewSurfaces).toBe(true);
+  });
+
+  it('attaches pending_join waitlisted for waitlisted join request', () => {
+    const enriched = attachExploreMapViewerAccess([openActivityItem()], {
+      viewerUserId: 'member-1',
+      isPlatformAdmin: false,
+      participantActivityIds: new Set(),
+      requestStatusByActivityId: new Map([['a1', RequestStatus.WAITLISTED]]),
+      staffTenantIds: new Set(),
+      demandJoinStatusByIntentId: new Map(),
+      hostStatus: null,
+      buddyUserIds: new Set(),
+      pendingJoinInviteCountByActivityId: new Map(),
+    });
+
+    expect(enriched[0].viewerAccess?.level).toBe('join_request');
+    expect(enriched[0].viewerAccess?.mapPeekActions?.[0]).toEqual({
+      id: 'pending_join',
+      prominence: 'primary',
+      joinRequestStatus: 'waitlisted',
+    });
   });
 
   it('gives tenant staff view_detail only on another hosts pin', () => {

@@ -47,7 +47,7 @@ import {
   PRODUCT_HOSTING_SCHEDULE_NAV_HINT,
   PRODUCT_PLAN_UPCOMING_HOSTING_CONTEXT,
 } from '../content/productNorthStar';
-import { HostingModeSwitcher } from './HostingModeSwitcher';
+import { HostingModeSwitcher } from '../components/hosting/HostingModeSwitcher';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { persistHostingSurfaceMode } from './hostingHubRouting';
 import { useAuth } from '../context/AuthContext';

@@ -2,6 +2,11 @@ import type { ActivityJoinMode } from './activity-join-mode.js';
 import type { ActivityMapPeekAction } from './activity-map-peek-actions.js';
 import type { ActivityEngagementStripsDTO } from './activity-engagement-policy.js';
 import type { ActivityViewerEntitlementsDTO } from './activity-viewer-entitlements.js';
+import {
+  canWithdrawJoinRequestStatus,
+  resolveActivityJoinEngagementPhase,
+  type ActivityJoinEngagementSnapshot,
+} from './activity-join-engagement.js';
 
 /** Payload depth for activity detail / peek surfaces. */
 export type DetailExposure = 'full' | 'redacted' | 'none';
@@ -63,6 +68,39 @@ export const activityViewerLevelHasFullDetail = (level: ActivityViewerAccessLeve
 export const activityViewerLevelCanAccessCrewSurfaces = (
   level: ActivityViewerAccessLevel
 ): boolean => CREW_SURFACES_LEVELS.has(level);
+
+/**
+ * Roster-adjacent viewer levels from the join engagement snapshot.
+ * Host / staff / invite / group stay outside this projection — do not merge enums.
+ * `join_request` here is in-flight pending/waitlisted only; approved is `participant`.
+ */
+export const activityViewerLevelFromJoinEngagement = (
+  snapshot: ActivityJoinEngagementSnapshot
+): Extract<ActivityViewerAccessLevel, 'participant' | 'join_request'> | null => {
+  const phase = resolveActivityJoinEngagementPhase(snapshot);
+  if (phase.kind === 'confirmed') return 'participant';
+  if (phase.kind === 'pending') return 'join_request';
+  return null;
+};
+
+/** Map/detail batch facts → join snapshot for {@link activityViewerLevelFromJoinEngagement}. */
+export const activityJoinEngagementSnapshotFromViewerFacts = (input: {
+  hasParticipation?: boolean;
+  requestStatus?: string | null;
+  requestId?: string;
+}): ActivityJoinEngagementSnapshot => {
+  const status = input.requestStatus?.trim();
+  return {
+    hasParticipation: input.hasParticipation,
+    myRequest: status
+      ? {
+          id: input.requestId,
+          status,
+          canWithdraw: canWithdrawJoinRequestStatus(status),
+        }
+      : null,
+  };
+};
 
 /**
  * Social/roster policy for activity detail exposure (layers 3 + 5 → 6).

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   ActivityDetailDTO,
@@ -32,6 +32,14 @@ import { resetPartyJoinIntent, usePartyJoinIntent } from '../../detail/partyJoin
 import { useSharedPartySize } from '../../detail/partySizeState';
 import { useAuth } from '../../context/AuthContext';
 import { Dialog } from './Dialog';
+import {
+  JOIN_REQUEST_MODAL_IDLE,
+  joinRequestModalFormError,
+  joinRequestModalFormWithError,
+  joinRequestModalIsSubmitting,
+  joinRequestModalShowSuccess,
+  type JoinRequestModalStatus,
+} from './joinRequestModalStatus';
 
 type JoinableActivity = Pick<
   ActivityDTO,
@@ -79,9 +87,11 @@ export const JoinRequestModal = ({
   const [agreed, setAgreed] = useState(false);
   const [packingCheckedIds, setPackingCheckedIds] = useState<string[]>([]);
   const [packingSignature, setPackingSignature] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<JoinRequestModalStatus>(JOIN_REQUEST_MODAL_IDLE);
+  const closeTimerRef = useRef<number | null>(null);
+  const submitting = joinRequestModalIsSubmitting(status);
+  const submitted = joinRequestModalShowSuccess(status);
+  const error = joinRequestModalFormError(status);
 
   const participationMode = useMemo(
     () => resolveParticipationMode(activity.participationMode, activity.requirements),
@@ -125,14 +135,22 @@ export const JoinRequestModal = ({
   });
 
   useEffect(() => {
+    return () => {
+      if (closeTimerRef.current != null) window.clearTimeout(closeTimerRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!open) return;
+    if (closeTimerRef.current != null) {
+      window.clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
     setNote('');
     setAgreed(false);
     setPackingCheckedIds([]);
     setPackingSignature('');
-    setSubmitting(false);
-    setSubmitted(false);
-    setError(null);
+    setStatus(JOIN_REQUEST_MODAL_IDLE);
     resetPartyJoinIntent();
   }, [open, activity.id]);
 
@@ -140,26 +158,26 @@ export const JoinRequestModal = ({
     e.preventDefault();
     if (full) return;
 
+    if (submitting || submitted) return;
+
     if (needsAgreement && !agreed) {
-      setError('Please read the mandatory instructions and confirm before joining.');
+      setStatus(joinRequestModalFormWithError('Please read the mandatory instructions and confirm before joining.'));
       return;
     }
     if (packingStrict && missingRequiredPackingIds(packing.items, packingCheckedIds).length > 0) {
-      setError('Tick every must-have item before joining.');
+      setStatus(joinRequestModalFormWithError('Tick every must-have item before joining.'));
       return;
     }
     if (packingStrict && !isPackingSignatureValid(packingSignature)) {
-      setError('Type your first and last name to confirm.');
+      setStatus(joinRequestModalFormWithError('Type your first and last name to confirm.'));
       return;
     }
     if (mode === 'team' && membershipIds.length === 0) {
-      setError('Pick at least one team member to bring on this outing.');
+      setStatus(joinRequestModalFormWithError('Pick at least one team member to bring on this outing.'));
       return;
     }
 
-    setSubmitting(true);
-    setError(null);
-    setSubmitted(true);
+    setStatus({ kind: 'submitting' });
     try {
       const packedNote = hasPacking
         ? formatPackingJoinNote({
@@ -187,15 +205,17 @@ export const JoinRequestModal = ({
         participationMode,
         exploreMapItemId,
       });
+      setStatus({ kind: 'success' });
       onSuccess?.(successMessage);
-      setTimeout(() => {
+      closeTimerRef.current = window.setTimeout(() => {
         onClose();
       }, 1500);
     } catch (err) {
-      setSubmitted(false);
-      setError(err instanceof Error ? err.message : 'We couldn\'t complete that — sign in and try again.');
-    } finally {
-      setSubmitting(false);
+      setStatus(
+        joinRequestModalFormWithError(
+          err instanceof Error ? err.message : 'We couldn\'t complete that — sign in and try again.'
+        )
+      );
     }
   };
 

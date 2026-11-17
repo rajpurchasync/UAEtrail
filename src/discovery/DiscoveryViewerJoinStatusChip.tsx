@@ -1,5 +1,8 @@
 import type { DiscoveryCardModel } from './discoveryCardModel';
-import { activityPeekViewerIsJoined } from '../activity/activityPeekEngagement';
+import {
+  activityPeekViewerIsJoined,
+  activityPeekViewerJoinIsPending,
+} from '../activity/activityPeekEngagement';
 import {
   ACTIVITY_STATUS_JOIN_REQUESTED,
   ACTIVITY_STATUS_JOINED,
@@ -13,7 +16,7 @@ export const resolveDiscoveryViewerJoinStatus = (
 ): DiscoveryViewerJoinStatus => {
   if (card.source !== 'activity') return null;
   if (activityPeekViewerIsJoined(card)) return 'joined';
-  if (card.viewerAccess?.level === 'join_request') return 'pending';
+  if (activityPeekViewerJoinIsPending(card)) return 'pending';
   return null;
 };
 

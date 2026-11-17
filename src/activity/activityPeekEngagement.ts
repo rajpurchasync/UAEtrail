@@ -1,5 +1,6 @@
 import {
   computeActivityMapPeekActions,
+  mapPeekJoinRequestStatusFromUiKind,
   mergeActivityMapPeekActionsWithEntitlements,
   projectActivityMapPeekActions,
   resolveActivityEngagementPolicy,
@@ -23,6 +24,28 @@ export const activityPeekViewerIsJoined = (
   return level === 'participant' || level === 'activity_group_member';
 };
 
+/** In-flight join only — `join_request` also covers invites/guides, so do not use the level. */
+export const activityPeekViewerJoinIsPending = (
+  card: DiscoveryCardModel,
+  joinUiState?: JoinRequestUiState
+): boolean => {
+  if (card.source !== 'activity') return false;
+  if (joinUiState?.kind === 'pending') return true;
+  return Boolean(card.viewerAccess?.mapPeekActions?.some((action) => action.id === 'pending_join'));
+};
+
+export const activityPeekPendingJoinStatus = (
+  card: DiscoveryCardModel,
+  joinUiState?: JoinRequestUiState
+): 'pending' | 'waitlisted' | null => {
+  if (joinUiState?.kind === 'pending') {
+    return joinUiState.status === 'waitlisted' ? 'waitlisted' : 'pending';
+  }
+  const pendingWire = card.viewerAccess?.mapPeekActions?.find((action) => action.id === 'pending_join');
+  if (!pendingWire) return null;
+  return pendingWire.joinRequestStatus === 'waitlisted' ? 'waitlisted' : 'pending';
+};
+
 /** Approved participant or host — outing group chat (not pre-join / pending approval). */
 export const activityPeekViewerCanOpenGroupChat = (
   card: DiscoveryCardModel,
@@ -44,13 +67,6 @@ const levelForPeekActions = (
     return 'participant';
   }
   return level;
-};
-
-const joinRequestStatusFromUi = (
-  joinUiState?: JoinRequestUiState
-): 'pending' | 'waitlisted' | null => {
-  if (joinUiState?.kind !== 'pending') return null;
-  return joinUiState.status === 'waitlisted' ? 'waitlisted' : 'pending';
 };
 
 const myRequestFromJoinUi = (
@@ -80,7 +96,7 @@ const resolvePeekFallbackEngagementPolicy = (
     isHostUser: level === 'host',
     activityPublished: card.activity?.status === 'published',
     joinMode: card.activity?.joinMode,
-    joinRequestStatus: joinRequestStatusFromUi(joinUiState),
+    joinRequestStatus: mapPeekJoinRequestStatusFromUiKind(joinUiState),
     participationMode: card.activity?.participationMode,
     requirements: card.activity?.requirements,
     rideshareEnabled: card.activity?.rideshareEnabled,

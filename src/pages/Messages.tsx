@@ -23,6 +23,7 @@ import {
 } from '../components/chat';
 import { formatWallInboxPreview } from '../utils/wallMessagePreview';
 import { groupsPath, MESSAGES_PATH } from '../config/routingCatalog';
+import { messagesMobileThreadVisible } from './messagesMobileThreadVisible';
 import { parseMessagesChatReturnTo } from '../utils/activityGroupChatNav';
 import { navigateBack } from '../utils/backStack';
 import { AUTH_RESUME_CREW_CHAT_QUERY } from '../utils/authReturnContext';
@@ -86,6 +87,7 @@ export const Messages = () => {
   const selectedGroupId = searchParams.get('group');
   const groupChatOpen = Boolean(selectedGroupId && searchParams.get('chat') !== '0');
   const contextActivityId = searchParams.get('activity');
+  const mobileShowThread = messagesMobileThreadVisible(searchParams);
   const [inboxQuery, setInboxQuery] = useState('');
   const [inboxFilter, setInboxFilter] = useState<InboxFilter>(DEFAULT_INBOX_FILTER);
   const {
@@ -104,7 +106,6 @@ export const Messages = () => {
   const [composeQuery, setComposeQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchUser[]>([]);
   const [searching, setSearching] = useState(false);
-  const [mobileShowThread, setMobileShowThread] = useState(!!searchParams.get('to'));
   const [showReport, setShowReport] = useState(false);
   const openReportDialog = useCallback(() => setShowReport(true), []);
 
@@ -177,10 +178,6 @@ export const Messages = () => {
     );
   }, [selectedGroupId, groupChatOpen, setGroupThreads]);
 
-  useEffect(() => {
-    setMobileShowThread(Boolean(searchParams.get('to') || searchParams.get('group')));
-  }, [searchParams]);
-
   const resumeCrewChat = searchParams.get(AUTH_RESUME_CREW_CHAT_QUERY) === '1';
 
   useEffect(() => {
@@ -196,7 +193,6 @@ export const Messages = () => {
           next.delete(AUTH_RESUME_CREW_CHAT_QUERY);
           return next;
         });
-        setMobileShowThread(true);
       })
       .catch(() => undefined);
     return () => {
@@ -213,7 +209,6 @@ export const Messages = () => {
         next.delete('chat');
         return next;
       });
-      setMobileShowThread(true);
     },
     [setSearchParams]
   );
@@ -330,7 +325,6 @@ export const Messages = () => {
         next.delete('to');
         return next;
       });
-      setMobileShowThread(true);
     },
     [setSearchParams]
   );
@@ -346,7 +340,6 @@ export const Messages = () => {
       navigateBack(navigate, chatReturnTo);
       return;
     }
-    setMobileShowThread(false);
     // Thread → inbox: pop the inbox entry underneath (keeps its scroll) rather than pushing a new one.
     navigateBack(navigate, MESSAGES_PATH);
   }, [chatReturnTo, navigate, selectedGroupId, selectedUserId]);

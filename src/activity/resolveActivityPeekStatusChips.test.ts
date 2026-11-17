@@ -25,7 +25,7 @@ describe('resolveActivityPeekStatusChips', () => {
     expect(chips).toEqual([{ label: ACTIVITY_STATUS_JOINED, tone: 'joined' }]);
   });
 
-  it('shows Pending for join_request wire level', () => {
+  it('shows Pending from pending_join wire, not bare join_request', () => {
     const base = buildDiscoveryCardViewModelCard(
       hostedExploreMapItem({
         activity: {
@@ -37,14 +37,31 @@ describe('resolveActivityPeekStatusChips', () => {
         },
       } as Parameters<typeof hostedExploreMapItem>[0])
     );
-    const card = {
+    const inviteOnly = {
       ...base,
       viewerAccess: {
         ...base.viewerAccess!,
         level: 'join_request' as const,
+        mapPeekActions: [{ id: 'request_join' as const, prominence: 'primary' as const }],
       },
     };
-    expect(resolveActivityPeekStatusChips(card)).toEqual([
+    expect(resolveActivityPeekStatusChips(inviteOnly)).toEqual([]);
+
+    const pending = {
+      ...base,
+      viewerAccess: {
+        ...base.viewerAccess!,
+        level: 'join_request' as const,
+        mapPeekActions: [
+          {
+            id: 'pending_join' as const,
+            prominence: 'primary' as const,
+            joinRequestStatus: 'pending' as const,
+          },
+        ],
+      },
+    };
+    expect(resolveActivityPeekStatusChips(pending)).toEqual([
       { label: 'Pending', tone: 'pending' },
     ]);
   });

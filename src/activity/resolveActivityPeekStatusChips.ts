@@ -4,7 +4,10 @@ import {
   ACTIVITY_STATUS_JOINED,
 } from '../content/activityParticipationCopy';
 import type { JoinRequestUiState } from '../utils/joinRequestUi';
-import { activityPeekViewerIsJoined } from './activityPeekEngagement';
+import {
+  activityPeekPendingJoinStatus,
+  activityPeekViewerIsJoined,
+} from './activityPeekEngagement';
 
 export type ActivityPeekStatusChip = {
   label: string;
@@ -20,14 +23,12 @@ export const resolveActivityPeekStatusChips = (
 
   const chips: ActivityPeekStatusChip[] = [];
 
-  if (joinUiState?.kind === 'pending') {
+  const pendingStatus = activityPeekPendingJoinStatus(card, joinUiState);
+  if (pendingStatus) {
     chips.push({
-      label:
-        joinUiState.status === 'waitlisted' ? 'On waitlist' : ACTIVITY_STATUS_JOIN_REQUESTED,
-      tone: joinUiState.status === 'waitlisted' ? 'waitlist' : 'pending',
+      label: pendingStatus === 'waitlisted' ? 'On waitlist' : ACTIVITY_STATUS_JOIN_REQUESTED,
+      tone: pendingStatus === 'waitlisted' ? 'waitlist' : 'pending',
     });
-  } else if (card.viewerAccess?.level === 'join_request') {
-    chips.push({ label: ACTIVITY_STATUS_JOIN_REQUESTED, tone: 'pending' });
   }
 
   if (activityPeekViewerIsJoined(card, joinUiState)) {
