@@ -303,7 +303,7 @@ export const ListExplorer = ({
         className={`${APP_SCROLL_BODY_CLASS} min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain ${
           embedded
             ? 'pb-6'
-            : 'pb-[calc(var(--bottom-nav-height,56px)+var(--safe-bottom,0px)+var(--explore-map-fab-inset,20px)+3.75rem)]'
+            : 'pb-[calc(var(--bottom-nav-height,56px)+var(--safe-bottom,0px)+var(--explore-map-fab-inset,2.75rem)+3.75rem)]'
         }`}
       >
         <div

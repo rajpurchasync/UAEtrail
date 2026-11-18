@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   formatMapPinRelativeDate,
-  MAP_PIN_SEEKING_CAPTION,
+  MAP_PIN_LOOKING_CAPTION,
   resolveExploreMapPinPlaceHub,
   resolveMapPinActivityCaption,
+  resolveMapPinPlaceCaption,
   resolveMapPinVenueTripLabel,
+  truncateMapPinVenueTwoWords,
 } from './exploreMapPinCaption';
 
 describe('exploreMapPinCaption', () => {
@@ -52,7 +54,7 @@ describe('exploreMapPinCaption', () => {
     ).toBe('Shawka');
   });
 
-  it('resolves activity captions with what, when, and where', () => {
+  it('resolves trip captions with activity type and date only', () => {
     expect(
       resolveMapPinActivityCaption({
         kind: 'hiking',
@@ -60,6 +62,7 @@ describe('exploreMapPinCaption', () => {
         activityMode: 'hosted',
         source: 'activity',
         mapZoom: 8,
+        mapStyle: 'map',
         now,
       })
     ).toBeNull();
@@ -67,29 +70,52 @@ describe('exploreMapPinCaption', () => {
     expect(
       resolveMapPinActivityCaption({
         kind: 'hiking',
-        placeHub: 'Hatta',
         scheduleDate: '2026-11-19',
         activityMode: 'hosted',
         source: 'activity',
         mapZoom: 9,
+        mapStyle: 'map',
+        selected: true,
         now,
       })
-    ).toEqual({ primary: 'Hiking · Tomorrow', where: 'Hatta' });
+    ).toEqual({ primary: 'Hiking', where: 'Tomorrow' });
 
     expect(
       resolveMapPinActivityCaption({
-        kind: 'rideshare',
-        placeHub: 'Shawka',
-        activityMode: 'seeking',
-        source: 'activity',
-        mapZoom: 11,
+        kind: 'hiking',
+        source: 'availability',
+        scheduleDate: '2026-11-20',
+        mapZoom: 9,
+        mapStyle: 'map',
         now,
       })
-    ).toEqual({ primary: MAP_PIN_SEEKING_CAPTION, where: 'Shawka' });
+    ).toEqual({ primary: MAP_PIN_LOOKING_CAPTION, where: 'Fri' });
+  });
+
+  it('resolves place captions as type + venue name (two words max)', () => {
+    expect(truncateMapPinVenueTwoWords('Wadi Ghalilah Trail Section')).toBe('Wadi Ghalilah');
+    expect(
+      resolveMapPinPlaceCaption({
+        kind: 'hiking',
+        source: 'place',
+        venueName: 'Wadi Ghalilah Trail #3',
+        mapZoom: 9,
+        mapStyle: 'map',
+      })
+    ).toEqual({ primary: 'Trail', where: 'Wadi Ghalilah' });
+    expect(
+      resolveMapPinPlaceCaption({
+        kind: 'camping',
+        source: 'place',
+        venueName: 'Al Qudra Lakes Camp',
+        mapZoom: 8,
+        mapStyle: 'map',
+      })
+    ).toBeNull();
   });
 
   it('formats venue trip labels', () => {
-    expect(resolveMapPinVenueTripLabel(1, 9)).toBeNull();
+    expect(resolveMapPinVenueTripLabel(1, 10)).toBeNull();
     expect(resolveMapPinVenueTripLabel(1, 11)).toBe('Trip');
     expect(resolveMapPinVenueTripLabel(3, 12)).toBe('3 trips');
   });

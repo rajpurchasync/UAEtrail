@@ -67,6 +67,7 @@ export const isScheduledActivityMapPin = (pin: {
   if (pin.activityMode === 'hosted' || pin.activityMode === 'seeking') return true;
   const source = pin.source;
   if (!source) return false;
+  if (source === 'availability') return true;
   if (source === 'activity') return true;
   if (isGeographyMapSource(source)) return false;
   if (source === 'shop' || source === 'agency' || source === 'area') return false;

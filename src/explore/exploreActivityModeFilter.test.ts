@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { hostedExploreMapItem, seekingExploreMapItem } from './exploreMapItemFixtures';
+import {
+  availabilityExploreMapItem,
+  hostedExploreMapItem,
+  seekingExploreMapItem,
+} from './exploreMapItemFixtures';
 import {
   exploreMapItemMatchesActivityModeFilter,
   parseExploreActivityModeFilter,
@@ -15,12 +19,14 @@ describe('exploreActivityModeFilter', () => {
     expect(serializeExploreActivityModeFilter('seeking')).toBe('seeking');
   });
 
-  it('filters hosted vs seeking map items', () => {
+  it('matches hosted vs availability for legacy activityMode=seeking URL', () => {
     const hosted = hostedExploreMapItem();
-    const seeking = seekingExploreMapItem();
+    const legacySeeking = seekingExploreMapItem();
+    const availability = availabilityExploreMapItem();
     expect(exploreMapItemMatchesActivityModeFilter(hosted, 'hosted')).toBe(true);
-    expect(exploreMapItemMatchesActivityModeFilter(seeking, 'hosted')).toBe(false);
-    expect(exploreMapItemMatchesActivityModeFilter(seeking, 'seeking')).toBe(true);
+    expect(exploreMapItemMatchesActivityModeFilter(legacySeeking, 'hosted')).toBe(false);
+    expect(exploreMapItemMatchesActivityModeFilter(legacySeeking, 'seeking')).toBe(false);
+    expect(exploreMapItemMatchesActivityModeFilter(availability, 'seeking')).toBe(true);
     expect(exploreMapItemMatchesActivityModeFilter(hosted, 'all')).toBe(true);
   });
 });

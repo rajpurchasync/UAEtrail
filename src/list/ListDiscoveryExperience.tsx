@@ -14,7 +14,6 @@ import type { ExploreSearchScopeKey } from '../explore/exploreBrowseTaxonomy';
 import { useBrowseListFeed } from './useBrowseListFeed';
 import { useListDiscoveryUrlState } from './useListDiscoveryUrlState';
 import { BrowseListCreateFab } from './ui/BrowseListCreateFab';
-import { BrowseListMapFab } from './ui/BrowseListMapFab';
 import { PeopleBrowsePanel } from '@/people-discovery/panel/PeopleBrowsePanel';
 import { usePeopleDiscoveryAvailabilityCatalog } from '@/people-discovery/hooks/usePeopleDiscoveryAvailabilityCatalog';
 import { exploreMapPathFromListSearch } from './routing';
@@ -610,10 +609,7 @@ export const ListDiscoveryExperience = ({
       )}
 
       {embeddedOnExplore || overlayImmersive ? null : (
-        <>
-          {!isPeopleCategory ? <BrowseListMapFab mapHref={mapHref} /> : null}
-          <BrowseListCreateFab onClick={handleCreateFabTap} label={createFabLabel} />
-        </>
+        <BrowseListCreateFab onClick={handleCreateFabTap} label={createFabLabel} />
       )}
     </>
   );

@@ -91,7 +91,7 @@ export const MeetingPointMap = ({
             key={mapStyle}
             tileUrl={tiles.tileUrl}
             labelTileUrl={tiles.labelTileUrl}
-            attribution={tiles.labelTileUrl ? MAP_ATTRIBUTION : ''}
+            attribution={tiles.attribution}
             deferLabels
           />
           <MapResize />
@@ -134,9 +134,6 @@ export const MeetingPointMap = ({
     </div>
   );
 };
-
-const MAP_ATTRIBUTION =
-  'Tiles &copy; <a href="https://www.esri.com/">Esri</a> &mdash; Esri, TomTom, Garmin, FAO, NOAA, USGS';
 
 interface MapPinFieldsProps {
   lat: string;

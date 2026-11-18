@@ -21,8 +21,12 @@ export interface PlaceMapPin {
   scheduleDate?: string | null;
   /** Upcoming hosted outings at this catalog place (venue pins). */
   hostedTripCount?: number;
-  /** Area / place hub for trip pin “where” line. */
+  /** Spot / venue name for trip pin captions (≤2 words on map). */
+  venueName?: string | null;
+  /** @deprecated Prefer `venueName` for trip captions. */
   placeHub?: string | null;
+  /** Catalog place cover for geography map circles. */
+  pinCoverImage?: string | null;
 }
 
 export interface ColocatedMapPinEntry {

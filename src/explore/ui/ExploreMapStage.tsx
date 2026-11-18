@@ -13,7 +13,7 @@ import { Plus } from 'lucide-react';
 import { isGeographyMapSource, type ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { MapBounds, PlaceMapPin } from '../../components/ui/PlacesMap';
 import { getMapBounds } from '../../config/regions';
-import { MAP_CONFIG, getExploreMapTiles, type ExploreMapStyle } from '../../config/platform';
+import { getExploreMapTiles, type ExploreMapStyle } from '../../config/platform';
 import { hasSessionExpiredQuery } from '../../config/surfacePaths';
 import { EXPLORE_Z } from '../../config/exploreTheme';
 import { ExploreMapMobileDock } from './ExploreMapMobileDock';
@@ -55,7 +55,10 @@ export type ExploreMapStageProps = {
   mapFilter: MapFilterKey;
   venueRegions: string[];
   activityDatePreset: ExploreActivityDatePreset;
-  onBrowsePanelChange: (panel: ExplorePanel) => void;
+  catalogListCount: number;
+  projectionMode: 'map' | 'list';
+  onSelectMapView: () => void;
+  onSelectListView: () => void;
   onMapFilterChange: (filter: MapFilterKey) => void;
   onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
   onVenueRegionsChange: (regions: string[]) => void;
@@ -72,7 +75,6 @@ export type ExploreMapStageProps = {
   onHasTripChange: (next: boolean) => void;
   onFacilityKindsChange: (next: PlaceKind[]) => void;
   onVenueFiltersChange: (next: ExploreVenueFilterPatch) => void;
-  onOpenCrewsPage: () => void;
   onOpenPeopleBrowsePanel?: () => void;
   peopleBrowsePanelAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
   peopleBrowsePanelFriendCount?: number;
@@ -102,7 +104,6 @@ export type ExploreMapStageProps = {
   locatingDevice: boolean;
   onAllowMapLocation: () => void;
   onDismissLocationPrompt: () => void;
-  onOpenBrowse: () => void;
   onPrimaryFab: () => void;
   primaryFabLabel: string;
   selected: ExploreMapItemDTO | null;
@@ -145,7 +146,10 @@ export const ExploreMapStage = ({
   mapFilter,
   venueRegions,
   activityDatePreset,
-  onBrowsePanelChange,
+  catalogListCount,
+  projectionMode,
+  onSelectMapView,
+  onSelectListView,
   onMapFilterChange,
   onActivityDatePresetChange,
   onVenueRegionsChange,
@@ -162,7 +166,6 @@ export const ExploreMapStage = ({
   onHasTripChange,
   onFacilityKindsChange,
   onVenueFiltersChange,
-  onOpenCrewsPage,
   onOpenPeopleBrowsePanel,
   peopleBrowsePanelAvatars,
   peopleBrowsePanelFriendCount,
@@ -192,7 +195,6 @@ export const ExploreMapStage = ({
   locatingDevice,
   onAllowMapLocation,
   onDismissLocationPrompt,
-  onOpenBrowse,
   onPrimaryFab,
   primaryFabLabel,
   selected,
@@ -265,7 +267,7 @@ export const ExploreMapStage = ({
           selectedExploreItemId={selectedId ?? undefined}
           highlightedExploreItemId={highlightedExploreItemId ?? undefined}
           tileUrl={exploreMapTiles.tileUrl}
-          tileAttribution={MAP_CONFIG.exploreTileAttribution}
+          tileAttribution={exploreMapTiles.attribution}
           labelTileUrl={exploreMapTiles.labelTileUrl}
           onPinClick={onPinClick}
           onVisibleBoundsChange={onVisibleBoundsChange}
@@ -277,6 +279,7 @@ export const ExploreMapStage = ({
           layoutRevision={mapLayoutRevision || listOpen || peopleMap}
           onSelectedPinScreenPoint={handleSelectedPinScreenPoint}
           onDismissMapPeek={selectedId ? onCloseSelection : undefined}
+          exploreMapStyle={exploreMapStyle}
         />
         </Suspense>
         </ExploreMapLoadErrorBoundary>
@@ -285,11 +288,12 @@ export const ExploreMapStage = ({
       {!(isDesktop) && !peopleMap ? (
       <ExploreMapChromeBar
         panel={panel}
-        mapFilter={mapFilter}
         venueRegions={venueRegions}
         activityDatePreset={activityDatePreset}
-        onBrowsePanelChange={onBrowsePanelChange}
-        onMapFilterChange={onMapFilterChange}
+        catalogListCount={catalogListCount}
+        projectionMode={projectionMode}
+        onSelectMapView={onSelectMapView}
+        onSelectListView={onSelectListView}
         onActivityDatePresetChange={onActivityDatePresetChange}
         onVenueRegionsChange={onVenueRegionsChange}
         venueFilter={venueFilter}
@@ -304,7 +308,6 @@ export const ExploreMapStage = ({
         onHasTripChange={onHasTripChange}
         onFacilityKindsChange={onFacilityKindsChange}
         onVenueFiltersChange={onVenueFiltersChange}
-        onOpenCrewsPage={onOpenCrewsPage}
         searchQuery={searchQuery}
         onSearchQueryChange={onSearchQueryChange}
         onSearchCommit={onSearchCommit}
@@ -362,7 +365,6 @@ export const ExploreMapStage = ({
 
       {!listOpen && !peopleMap ? (
         <ExploreMapMobileDock
-          onOpenBrowse={onOpenBrowse}
           onPrimaryFab={onPrimaryFab}
           primaryFabLabel={primaryFabLabel}
           onLocateMe={onLocateMe}

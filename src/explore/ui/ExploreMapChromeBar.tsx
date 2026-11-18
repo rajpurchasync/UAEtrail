@@ -13,11 +13,12 @@ type ExploreMapChromeBarProps = {
   onSearchCommit?: (scope?: ExploreSearchScopeKey | null) => void;
   searchScopeCounts?: ExploreSearchScopeCounts;
   panel: ExplorePanel;
-  mapFilter: MapFilterKey;
   venueRegions: string[];
   activityDatePreset: ExploreActivityDatePreset;
-  onBrowsePanelChange: (panel: ExplorePanel) => void;
-  onMapFilterChange: (filter: MapFilterKey) => void;
+  catalogListCount: number;
+  projectionMode: 'map' | 'list';
+  onSelectMapView: () => void;
+  onSelectListView: () => void;
   onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
   onVenueRegionsChange: (regions: string[]) => void;
   venueFilter?: VenueListFilterKey;
@@ -33,21 +34,21 @@ type ExploreMapChromeBarProps = {
   onFacilityKindsChange: (next: PlaceKind[]) => void;
   onVenueFiltersChange: (next: ExploreVenueFilterPatch) => void;
   onOpenExploreSearch?: () => void;
-  onOpenCrewsPage: () => void;
 };
 
-/** Map toolbar — Trips/Venues scope + same quick filters as list explorer. */
+/** Map toolbar — map/list projection toggle + quick filters (scope from bottom nav). */
 export const ExploreMapChromeBar = ({
   searchQuery = '',
   onSearchQueryChange,
   onSearchCommit,
   searchScopeCounts,
   panel,
-  mapFilter,
   venueRegions,
   activityDatePreset,
-  onBrowsePanelChange,
-  onMapFilterChange,
+  catalogListCount,
+  projectionMode,
+  onSelectMapView,
+  onSelectListView,
   onActivityDatePresetChange,
   onVenueRegionsChange,
   venueFilter,
@@ -63,7 +64,6 @@ export const ExploreMapChromeBar = ({
   onFacilityKindsChange,
   onVenueFiltersChange,
   onOpenExploreSearch,
-  onOpenCrewsPage,
 }: ExploreMapChromeBarProps) => (
   <div
     data-explore-map-chrome
@@ -72,12 +72,13 @@ export const ExploreMapChromeBar = ({
     <div className="pointer-events-auto flex w-full max-w-none flex-col items-stretch gap-2">
       <ExploreMapMobileLayerChrome
         panel={panel}
-        mapFilter={mapFilter}
         venueRegions={venueRegions}
         activityDatePreset={activityDatePreset}
-        onBrowsePanelChange={onBrowsePanelChange}
-        onMapFilterChange={onMapFilterChange}
         onActivityDatePresetChange={onActivityDatePresetChange}
+        catalogListCount={catalogListCount}
+        projectionMode={projectionMode}
+        onSelectMapView={onSelectMapView}
+        onSelectListView={onSelectListView}
         onVenueRegionsChange={onVenueRegionsChange}
         venueFilter={venueFilter}
         tripMapTopics={tripMapTopics}
@@ -96,7 +97,6 @@ export const ExploreMapChromeBar = ({
         onSearchCommit={onSearchCommit}
         searchScopeCounts={searchScopeCounts}
         onOpenExploreSearch={onOpenExploreSearch}
-        onOpenCrewsPage={onOpenCrewsPage}
       />
     </div>
   </div>

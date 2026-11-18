@@ -35,7 +35,7 @@ import { shouldShowMobileUnifiedTabHeader } from '../../config/mobileTabHeader';
 import { DesktopSideNav } from './desktop/DesktopSideNav';
 
 const productViewportShellClass =
-  'flex h-[100dvh] w-full max-w-full flex-col overflow-hidden consumer-bg md:bg-gray-50';
+  'product-shell-viewport flex h-[100svh] w-full max-w-full flex-col overflow-hidden consumer-bg md:h-[100dvh] md:bg-gray-50';
 
 /** Signed-in / product chrome — not used on guest marketing `/`. */
 export const ProductShell = ({ children }: { children: ReactNode }) => {

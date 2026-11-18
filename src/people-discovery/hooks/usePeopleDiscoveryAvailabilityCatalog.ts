@@ -5,8 +5,8 @@ import { useAuth } from '@/context/AuthContext';
 import { fetchExploreAvailabilityCatalog } from '@/hooks/exploreAvailabilityCatalogClientApi';
 import { catalogFreshQueryOptions, loadCachedCatalog } from '@/lib/catalogSnapshot';
 import {
-  selectAvailabilityFromExploreCatalog,
-  type ExploreAvailabilityCatalogFilters,
+  selectAvailabilityFromMapItems,
+  type MapAvailabilityFilters,
 } from '@/activity-discovery/catalog/availabilityCatalog';
 
 export const peopleDiscoveryAvailabilityCatalogQueryKey = () =>
@@ -15,7 +15,7 @@ export const peopleDiscoveryAvailabilityCatalogQueryKey = () =>
 type Args = {
   enabled: boolean;
   /** Client-side filters (map chips, search) — date omitted for People Looking for. */
-  filters: ExploreAvailabilityCatalogFilters;
+  filters: MapAvailabilityFilters;
   /** When the API is unavailable, filter this explore catalog slice instead. */
   exploreCatalogFallback: ExploreMapItemDTO[];
 };
@@ -39,7 +39,7 @@ export const usePeopleDiscoveryAvailabilityCatalog = ({
   const catalogSource = query.data ?? exploreCatalogFallback;
 
   const availabilityCatalogItems = useMemo(
-    () => selectAvailabilityFromExploreCatalog(catalogSource, filters),
+    () => selectAvailabilityFromMapItems(catalogSource, filters),
     [catalogSource, filters]
   );
 

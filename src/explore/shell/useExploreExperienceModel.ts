@@ -275,7 +275,7 @@ export const useExploreExperienceModel = () => {
     [mapItems, selection]
   );
 
-  const { mapPins, searchScopeCounts } = useExploreBrowseList({
+  const { mapPins, listItems, searchScopeCounts } = useExploreBrowseList({
     items: mapItems,
     ephemeralMapItems: linkOnlyPeekItems,
     mapFilter: browse.mapFilter,
@@ -398,6 +398,7 @@ export const useExploreExperienceModel = () => {
     setHighlightedExploreItemId,
     viewport,
     mapPins,
+    catalogListCount: listItems.length,
     exploreMapTiles,
     mapLoading,
     loadError,

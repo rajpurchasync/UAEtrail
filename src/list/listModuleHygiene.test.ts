@@ -35,9 +35,7 @@ describe('list module hygiene', () => {
     expect(experience).toMatch(/ListExplorer/);
     const explorer = readFileSync(join(process.cwd(), 'src/list/explorer/ListExplorer.tsx'), 'utf8');
     expect(explorer).toMatch(/ListGuestCatalogPreviewNotice/);
-    expect(readFileSync(join(process.cwd(), 'src/list/ui/BrowseListMapFab.tsx'), 'utf8')).toMatch(
-      /LIST_MAP_FLOAT/
-    );
+    expect(experience).not.toMatch(/BrowseListMapFab/);
     expect(readFileSync(join(process.cwd(), 'src/list/ui/BrowseListCreateFab.tsx'), 'utf8')).toMatch(
       /LIST_CREATE_FAB/
     );
@@ -152,6 +150,7 @@ describe('list module hygiene', () => {
     expect(header).toMatch(/stickySearch/);
     expect(header).toMatch(/ListExplorerViewSwitch/);
     expect(header).toMatch(/ListExplorerBucketToggle/);
+    expect(header).toMatch(/ExploreMapProjectionToggle/);
     expect(header).toMatch(/searchCounts/);
   });
 
@@ -238,8 +237,10 @@ describe('list module hygiene', () => {
 
   it('explore map pin pool uses discovery selectors via shell composer', () => {
     const browseList = readFileSync(join(process.cwd(), 'src/explore/ui/useExploreBrowseList.ts'), 'utf8');
-    expect(browseList).toMatch(/selectExploreMapPinCatalog/);
-    expect(browseList).toMatch(/selectActivitiesFromExploreCatalog/);
+    expect(browseList).toMatch(/selectExploreLensItems/);
+    expect(browseList).toMatch(/selectActivitiesFromMapItems/);
+    expect(browseList).not.toMatch(/selectExploreMapPinCatalog/);
+    expect(browseList).not.toMatch(/FromExploreCatalog/);
     expect(browseList).not.toMatch(/matchesBuddyMapFilter/);
   });
 

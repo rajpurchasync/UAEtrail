@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { hostedExploreMapItem, seekingExploreMapItem } from '../../explore/exploreMapItemFixtures';
-import { selectActivitiesFromExploreCatalog } from './activities';
+import {
+  availabilityExploreMapItem,
+  hostedExploreMapItem,
+  seekingExploreMapItem,
+} from '../../explore/exploreMapItemFixtures';
+import { selectActivitiesFromMapItems } from './activities';
 
 const baseFilters = {
   mapFilter: 'all' as const,
@@ -10,24 +14,33 @@ const baseFilters = {
   activityDatePreset: 'anyday' as const,
 };
 
-describe('selectActivitiesFromExploreCatalog', () => {
+describe('selectActivitiesFromMapItems', () => {
   it('returns hosted activities when mode is hosted', () => {
     const hosted = hostedExploreMapItem({ id: 'activity:host-1' });
     const seeking = seekingExploreMapItem({ id: 'activity:seek-1' });
-    const result = selectActivitiesFromExploreCatalog([hosted, seeking], {
+    const result = selectActivitiesFromMapItems([hosted, seeking], {
       ...baseFilters,
       activityModeFilter: 'hosted',
     });
     expect(result.map((i) => i.id)).toEqual(['activity:host-1']);
   });
 
-  it('delegates to seeking selector when mode is seeking', () => {
+  it('returns fixed availability when mode filter is seeking (legacy param)', () => {
     const hosted = hostedExploreMapItem({ id: 'activity:host-1' });
+    const availability = availabilityExploreMapItem({ userId: 'u1', slotId: 's1' });
     const seeking = seekingExploreMapItem({ id: 'activity:seek-1' });
-    const result = selectActivitiesFromExploreCatalog([hosted, seeking], {
+    const result = selectActivitiesFromMapItems([hosted, seeking, availability], {
       ...baseFilters,
       activityModeFilter: 'seeking',
     });
-    expect(result.map((i) => i.id)).toEqual(['activity:seek-1']);
+    expect(result.map((i) => i.id)).toEqual([availability.id]);
+  });
+
+  it('excludes legacy seeking activities from the default trips map pool', () => {
+    const hosted = hostedExploreMapItem({ id: 'activity:host-1' });
+    const seeking = seekingExploreMapItem({ id: 'activity:seek-1' });
+    const availability = availabilityExploreMapItem();
+    const result = selectActivitiesFromMapItems([hosted, seeking, availability], baseFilters);
+    expect(result.map((i) => i.id).sort()).toEqual([availability.id, 'activity:host-1'].sort());
   });
 });

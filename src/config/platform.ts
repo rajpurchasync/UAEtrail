@@ -32,6 +32,11 @@ import {
 import { INBOUND_PROFILE_HISTORY_ALIAS_PATH } from './inboundBookmarkPaths';
 import { SETTINGS_SURFACE_TITLE } from './settingsHub';
 import { AGENCY_PROFILE_PATH_PREFIX } from '@uaetrail/shared-types';
+import { resolveEsriExploreStylePreset, resolveExploreMapTiles } from '../explore/exploreMapBasemap';
+import type { ExploreMapStyle } from '../explore/exploreMapBasemap';
+
+export type { ExploreMapStyle, ExploreMapTileSet } from '../explore/exploreMapBasemap';
+export { resolveExploreMapTiles } from '../explore/exploreMapBasemap';
 
 export {
   ADMIN_PLACES_PATH,
@@ -293,8 +298,8 @@ export const PARTICIPANT_PRIVACY = {
 };
 
 /**
- * Map provider for Explore (Phase 2).
- * Esri light-gray base + reference labels — free, no API key, English place names.
+ * Map tiles — detail embeds default to Esri light gray; Explore uses `resolveExploreMapTiles`
+ * (MapTiler Outdoor when `VITE_MAPTILER_API_KEY` is set, else Esri). See `exploreMapBasemap.ts`.
  */
 const readEnvTileUrl = (raw: unknown): string | undefined => {
   if (typeof raw !== 'string') return undefined;
@@ -306,6 +311,7 @@ const envTileUrl = readEnvTileUrl(import.meta.env.VITE_MAP_TILE_URL);
 const envLabelTileUrl = readEnvTileUrl(import.meta.env.VITE_MAP_LABEL_TILE_URL);
 
 export const MAP_CONFIG = {
+  /** Detail / picker embeds without an explore provider key. */
   provider: 'esri' as const,
   defaultCenter: { lat: 24.4539, lng: 54.3773 },
   defaultZoom: 8,
@@ -335,25 +341,14 @@ export const MAP_CONFIG = {
     'Tiles &copy; <a href="https://www.esri.com/">Esri</a> &mdash; Esri, TomTom, Garmin, FAO, NOAA, USGS',
   tileAttribution:
     'Tiles &copy; <a href="https://www.esri.com/">Esri</a> &mdash; Esri, TomTom, Garmin, FAO, NOAA, USGS',
-  /** Explore map style presets (satellite vs street map). */
+  /** Esri-only explore presets (when no MapTiler/Mapbox key). */
   exploreStyles: {
-    satellite: {
-      tileUrl:
-        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      labelTileUrl:
-        'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
-    },
-    map: {
-      tileUrl:
-        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
-      labelTileUrl: null,
-    },
+    satellite: resolveEsriExploreStylePreset('satellite'),
+    map: resolveEsriExploreStylePreset('map'),
   },
   /** Explore — do not zoom out past emirate-level (keeps map readable on Trips). */
   exploreMinZoom: 8,
 } as const;
-
-export type ExploreMapStyle = 'satellite' | 'map';
 
 export const EXPLORE_MAP_STYLE_STORAGE_KEY = 'uaetrail-explore-map-style';
 
@@ -363,15 +358,8 @@ export const readExploreMapStyle = (): ExploreMapStyle => {
   return stored === 'map' ? 'map' : 'satellite';
 };
 
-export const getExploreMapTiles = (style: ExploreMapStyle) => {
-  if (envTileUrl) {
-    return {
-      tileUrl: envTileUrl,
-      labelTileUrl: envLabelTileUrl ?? null,
-    };
-  }
-  return MAP_CONFIG.exploreStyles[style];
-};
+/** Explore map tiles + attribution for the current style toggle. */
+export const getExploreMapTiles = (style: ExploreMapStyle) => resolveExploreMapTiles(style);
 
 /** Routes where bottom nav, footer padding, and mobile chrome are hidden. */
 const CONSUMER_CHROME_HIDDEN_PREFIXES = [

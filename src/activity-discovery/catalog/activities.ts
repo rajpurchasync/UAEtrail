@@ -1,4 +1,5 @@
-import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { exploreMapItemIsSeeking, type ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type { DiscoveryMapItems } from '@/discovery/discoveryMapPayload';
 import { sortExploreActivities } from '../../explore/exploreListSort';
 import { matchesActivityDateFilter } from '../../explore/exploreActivityDateFilter';
 import { exploreItemMatchesQuery } from '../../explore/exploreSearchMatches';
@@ -16,35 +17,39 @@ import {
 } from '../../explore/exploreOptionalFilters';
 import { isBuddyMapItem } from '../../explore/ui/exploreMapPinModel';
 import {
-  selectAvailabilityFromExploreCatalog,
-  type ExploreAvailabilityCatalogFilters,
+  selectAvailabilityFromMapItems,
+  type MapAvailabilityFilters,
 } from './availabilityCatalog';
 
-export type ExploreActivityCatalogFilters = ExploreAvailabilityCatalogFilters & {
+export type MapActivityFilters = MapAvailabilityFilters & {
   activityModeFilter?: ExploreActivityModeFilter;
   tripMapTopics?: TripMapTopicKey[];
   priceFilter?: ExplorePriceFilter;
 };
 
+/** @deprecated Use `MapActivityFilters`. */
+export type ExploreActivityCatalogFilters = MapActivityFilters;
+
 /**
- * Time-bound activities from `GET /explore/map` (hosted, seeking, or both).
- * Seeking uses {@link selectAvailabilityFromExploreCatalog}; hosted applies date + mode filters.
+ * Time-bound activities from the discovery map payload (hosted trips + fixed availability slice).
+ * Legacy `activityMode: seeking` rows are excluded from the Trips map; “Looking for” = availability pins.
  */
-export const selectActivitiesFromExploreCatalog = (
-  exploreCatalogItems: ExploreMapItemDTO[],
-  filters: ExploreActivityCatalogFilters
+export const selectActivitiesFromMapItems = (
+  mapItems: DiscoveryMapItems,
+  filters: MapActivityFilters
 ): ExploreMapItemDTO[] => {
   const activityModeFilter = filters.activityModeFilter ?? 'all';
 
   if (activityModeFilter === 'seeking') {
-    return selectAvailabilityFromExploreCatalog(exploreCatalogItems, filters);
+    return selectAvailabilityFromMapItems(mapItems, filters);
   }
 
   const datePreset = filters.activityDatePreset ?? 'anyday';
 
   return sortExploreActivities(
-    exploreCatalogItems
+    mapItems
       .filter(isBuddyMapItem)
+      .filter((item) => !exploreMapItemIsSeeking(item))
       .filter((item) =>
         matchesTripMapTopicFilter(
           item,
@@ -63,3 +68,6 @@ export const selectActivitiesFromExploreCatalog = (
       .filter((item) => exploreItemMatchesQuery(item, filters.query))
   );
 };
+
+/** @deprecated Use `selectActivitiesFromMapItems`. */
+export const selectActivitiesFromExploreCatalog = selectActivitiesFromMapItems;

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { HIKING_ACTIVITY_EMOJI, HIKING_VENUE_EMOJI, resolveMapPinEmoji } from '@uaetrail/shared-types';
 import {
+  buildActivityMapPinLayout,
   buildMapClusterIconHtml,
   buildMapCollidedPinIconHtml,
   buildMapColocatedPinIconHtml,
@@ -28,20 +29,35 @@ describe('mapPinIcons', () => {
     expect(venueHtml).toContain(HIKING_VENUE_EMOJI);
   });
 
-  it('renders venue map chips with labels from zoom 9', () => {
-    const withLabel = buildVenueMapPinHtml({
+  it('renders legacy venue chip captions as a typed two-line stack from zoom 9', () => {
+    const withCaption = buildVenueMapPinHtml({
       kind: 'camping',
       label: 'Al Qudra Lakes',
       mapZoom: 10,
+      caption: { primary: 'Camp', where: 'Al Qudra' },
     });
-    expect(withLabel.html).toContain('uaetrail-map-venue-chip');
-    expect(withLabel.html).toContain('uaetrail-map-venue-pin-badge');
-    expect(withLabel.html).not.toContain('uaetrail-map-pin-face');
-    expect(withLabel.html).toContain('Al Qudra Lakes');
+    expect(withCaption.html).toContain('uaetrail-map-venue-chip');
+    expect(withCaption.html).toContain('uaetrail-map-pin-caption-stack--trip');
+    expect(withCaption.html).toContain('Camp');
+    expect(withCaption.html).toContain('Al Qudra');
+  });
 
-    const iconOnly = buildVenueMapPinHtml({ kind: 'hiking', mapZoom: 8 });
-    expect(iconOnly.html).toContain('uaetrail-map-venue-pin-badge');
-    expect(iconOnly.html).not.toContain('uaetrail-map-venue-pin-label');
+  it('renders place pins like trip pins — label-only type + venue (≤2 words)', () => {
+    const layout = buildActivityMapPinLayout({
+      kind: 'hiking',
+      source: 'place',
+      ringColor: '#047857',
+      size: 32,
+      fontSizePx: 15,
+      ringWidth: 2.5,
+      labelOnly: true,
+      hidePinIcon: true,
+      caption: { primary: 'Trail', where: 'Wadi Ghalilah' },
+    });
+    expect(layout.html).toContain('uaetrail-map-pin-widget--label-only');
+    expect(layout.html).not.toContain('uaetrail-map-pin-marker');
+    expect(layout.html).toContain('Trail');
+    expect(layout.html).toContain('Wadi Ghalilah');
   });
 
   it('buildMapCollidedPinIconHtml stacks type glyphs with a total count', () => {
@@ -102,7 +118,7 @@ describe('mapPinIcons', () => {
       3
     );
     expect(html).toContain('uaetrail-map-pin-collided-icons--3');
-    expect(html).toContain('font-size:10px');
+    expect(html).toContain('uaetrail-map-pin-emoji');
     expect(html).toContain('width:12px;height:12px');
   });
 
@@ -129,25 +145,56 @@ describe('mapPinIcons', () => {
     expect(html).not.toContain('uaetrail-map-pin-face');
   });
 
-  it('keeps emoji circles for colocated activities', () => {
+  it('uses neutral dots for colocated activities', () => {
     const { html } = buildMapColocatedPinIconHtml([
       {
         kind: 'hiking',
         source: 'activity',
-        ringColor: '#059669',
+        ringColor: '#047857',
         exploreItemId: 'act:1',
         stackCount: 1,
       },
       {
         kind: 'camping',
         source: 'activity',
-        ringColor: '#d97706',
+        ringColor: '#b45309',
         exploreItemId: 'act:2',
         stackCount: 1,
       },
     ]);
-    expect(html).toContain('uaetrail-map-pin-face');
+    expect(html).toContain('uaetrail-map-pin-face--dot');
+    expect(html).not.toContain('uaetrail-map-pin-emoji');
     expect(html).not.toContain('uaetrail-map-venue-chip--colocated');
+  });
+
+  it('renders neutral trip dots and typed caption backgrounds', () => {
+    const face = buildMapPinFaceHtml({
+      kind: 'hiking',
+      source: 'activity',
+      ringColor: '#047857',
+      size: 32,
+      fontSizePx: 18,
+      ringWidth: 2.5,
+      hidePinIcon: true,
+    });
+    expect(face).toContain('uaetrail-map-pin-face--dot');
+    expect(face).not.toContain('uaetrail-map-pin-emoji');
+
+    const layout = buildActivityMapPinLayout({
+      kind: 'hiking',
+      source: 'activity',
+      ringColor: '#047857',
+      size: 32,
+      fontSizePx: 18,
+      ringWidth: 2.5,
+      labelOnly: true,
+      caption: { primary: 'Hiking', where: 'Tomorrow' },
+    });
+    expect(layout.html).toContain('uaetrail-map-pin-caption-wrap--typed');
+    expect(layout.html).toContain('uaetrail-map-pin-caption-tail');
+    expect(layout.html).toContain('--pin-caption-bg:#047857');
+    expect(layout.html).toContain('uaetrail-map-pin-widget--label-only');
+    expect(layout.html).not.toContain('uaetrail-map-pin-marker');
   });
 
   it('omits count badge for a single item at one pin', () => {

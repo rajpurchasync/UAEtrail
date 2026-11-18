@@ -1,7 +1,7 @@
 import { lazy, Suspense, useMemo } from 'react';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { getMapBounds } from '../../config/regions';
-import { MAP_CONFIG, getExploreMapTiles, readExploreMapStyle } from '../../config/platform';
+import { getExploreMapTiles, readExploreMapStyle } from '../../config/platform';
 import { useExploreMap } from '../../hooks/useExploreMap';
 import { expandMapPins, layoutColocatedMapPins } from '../../explore/ui/exploreMapPinModel';
 import { ExploreMapLoadingSkeleton } from '../../explore/ui/ExploreMapLoadingSkeleton';
@@ -61,7 +61,7 @@ export const GuestPreviewMapColumn = ({
           selectedExploreItemId={selectedExploreItemId ?? undefined}
           highlightedExploreItemId={highlightedExploreItemId ?? undefined}
           tileUrl={exploreMapTiles.tileUrl}
-          tileAttribution={MAP_CONFIG.exploreTileAttribution}
+          tileAttribution={exploreMapTiles.attribution}
           labelTileUrl={exploreMapTiles.labelTileUrl}
           onPinClick={handlePinClick}
           flyToHighlightedPin

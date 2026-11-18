@@ -1,4 +1,5 @@
 import { exploreMapItemIsAvailabilityCatalog, type ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type { DiscoveryMapItems } from '@/discovery/discoveryMapPayload';
 import { sortExploreActivities } from '../../explore/exploreListSort';
 import {
   matchesActivityDateFilter,
@@ -13,8 +14,8 @@ import {
   matchesBuddyMapFilter,
 } from '../../explore/ui/exploreMapPinModel';
 
-/** Filters for fixed availability catalog rows from `GET /explore/map`. */
-export type ExploreAvailabilityCatalogFilters = {
+/** Filters for fixed availability (`source: availability`) on the shared map payload. */
+export type MapAvailabilityFilters = {
   mapFilter: MapFilterKey;
   buddySubtype: ExploreBuddySubtypeKey;
   outingTopic: ExploreOutingTopicKey;
@@ -26,18 +27,21 @@ export type ExploreAvailabilityCatalogFilters = {
   activityDatePreset?: ExploreActivityDatePreset | null;
 };
 
+/** @deprecated Use `MapAvailabilityFilters`. */
+export type ExploreAvailabilityCatalogFilters = MapAvailabilityFilters;
+
 /**
- * Fixed crew availability from the explore catalog (`ExploreMapItemDTO[]`).
+ * Fixed crew availability from the discovery map payload.
  * Same entities as map pins (`source: availability`).
  */
-export const selectAvailabilityFromExploreCatalog = (
-  exploreCatalogItems: ExploreMapItemDTO[],
-  filters: ExploreAvailabilityCatalogFilters
+export const selectAvailabilityFromMapItems = (
+  mapItems: DiscoveryMapItems,
+  filters: MapAvailabilityFilters
 ): ExploreMapItemDTO[] => {
   const datePreset = filters.activityDatePreset ?? null;
 
   return sortExploreActivities(
-    exploreCatalogItems
+    mapItems
       .filter(isBuddyMapItem)
       .filter(exploreMapItemIsAvailabilityCatalog)
       .filter((item) =>
@@ -50,3 +54,6 @@ export const selectAvailabilityFromExploreCatalog = (
       .filter((item) => exploreItemMatchesQuery(item, filters.query))
   );
 };
+
+/** @deprecated Use `selectAvailabilityFromMapItems`. */
+export const selectAvailabilityFromExploreCatalog = selectAvailabilityFromMapItems;

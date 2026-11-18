@@ -2,6 +2,7 @@ import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   activityScheduleIncludesDate,
   activityScheduleOverlapsRange,
+  exploreMapItemIsAvailabilityCatalog,
   isGeographyMapSource,
 } from '@uaetrail/shared-types';
 import { resolveExploreItemScheduleWindow } from './ui/exploreMapPinModel';
@@ -221,7 +222,7 @@ export const matchesActivityDateFilter = (
   if (isGeographyMapSource(item.source) || item.source === 'shop' || item.source === 'agency') return true;
 
   const window = resolveExploreItemScheduleWindow(item);
-  if (!window) return false;
+  if (!window) return exploreMapItemIsAvailabilityCatalog(item);
 
   const custom = parseCustomActivityDateRange(preset);
   if (custom) {

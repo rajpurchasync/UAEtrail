@@ -29,6 +29,8 @@ type ListDiscoverySearchFieldProps = {
   placeholder?: string;
   /** When false, Enter commits query only — no multi-scope dropdown (e.g. Buddies category). */
   enableScopeHints?: boolean;
+  /** Focus the input when mounted (e.g. after expanding search on `/list` mobile). */
+  autoFocus?: boolean;
 };
 
 /** List discover — same scope hints + prompt as `ExploreBrowseSearchModal` (inline bar + dropdown). */
@@ -46,6 +48,7 @@ export const ListDiscoverySearchField = ({
   filterSlot,
   placeholder = EXPLORE_SEARCH_OPEN_PLACEHOLDER,
   enableScopeHints = true,
+  autoFocus = false,
 }: ListDiscoverySearchFieldProps) => {
   const anchorRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -54,6 +57,12 @@ export const ListDiscoverySearchField = ({
   const visibleScopes =
     enableScopeHints && hasQuery ? exploreSearchScopesForQuery(query, searchScopeCounts) : [];
   const showScopePanel = enableScopeHints && panelOpen && visibleScopes.length > 0;
+
+  useEffect(() => {
+    if (!autoFocus) return;
+    const id = window.setTimeout(() => inputRef.current?.focus(), 0);
+    return () => window.clearTimeout(id);
+  }, [autoFocus]);
 
   useEffect(() => {
     if (!panelOpen) return;

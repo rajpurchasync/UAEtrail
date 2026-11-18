@@ -1,11 +1,11 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
-  selectAvailabilityFromExploreCatalog,
-  type ExploreAvailabilityCatalogFilters,
+  selectAvailabilityFromMapItems,
+  type MapAvailabilityFilters,
 } from './availabilityCatalog';
 
-/** List `/list` has no map buddy/topic chips — seeking rows use neutral filters; query/date apply in `browseListFilters`. */
-export const LIST_AVAILABILITY_CATALOG_FILTERS: ExploreAvailabilityCatalogFilters = {
+/** List `/list` has no map buddy/topic chips — availability rows use neutral filters; query/date apply in `browseListFilters`. */
+export const LIST_AVAILABILITY_CATALOG_FILTERS: MapAvailabilityFilters = {
   mapFilter: 'all',
   buddySubtype: 'all',
   outingTopic: 'all',
@@ -16,4 +16,4 @@ export const LIST_AVAILABILITY_CATALOG_FILTERS: ExploreAvailabilityCatalogFilter
 export const selectAvailabilityForListCatalog = (
   exploreCatalogItems: ExploreMapItemDTO[]
 ): ExploreMapItemDTO[] =>
-  selectAvailabilityFromExploreCatalog(exploreCatalogItems, LIST_AVAILABILITY_CATALOG_FILTERS);
+  selectAvailabilityFromMapItems(exploreCatalogItems, LIST_AVAILABILITY_CATALOG_FILTERS);

@@ -1,5 +1,5 @@
 import {
-  exploreMapItemIsSeeking,
+  exploreMapItemIsAvailabilityCatalog,
   exploreVenueIsPlacesSpot,
   isFacilityMapSource,
   isFacilityPlaceKind,
@@ -12,7 +12,7 @@ import type { MapPinKind } from '../../components/ui/mapPinTypes';
 import { isGeographyMapSource } from '@uaetrail/shared-types';
 import type { PlaceMapPin } from '../../components/ui/PlacesMap';
 import { hostedOutingSummariesByPlaceId } from '../exploreOptionalFilters';
-import { resolveExploreMapPinPlaceHub } from '../exploreMapPinCaption';
+import { resolveExploreMapPinCoverImage } from '../exploreMapPinCaption';
 import { resolveMapPinItemSource } from '../exploreCopy';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
 import { isBuddyOthersMapItem, matchesBuddyOthersSubtype } from '../exploreBuddySubtype';
@@ -122,7 +122,7 @@ export const isAreaLensMapItem = (item: ExploreMapItemDTO): boolean => item.sour
 export const matchesExplorePinKindFilter = (item: ExploreMapItemDTO, pinKind: ExplorePinKindFilter): boolean => {
   if (pinKind === 'all') return true;
   if (pinKind === 'activities') return isTimeBoundExploreMapItem(item);
-  if (pinKind === 'looking') return exploreMapItemIsSeeking(item);
+  if (pinKind === 'looking') return exploreMapItemIsAvailabilityCatalog(item);
   if (pinKind === 'locations') return isPlacesMapItem(item) && !isShopListItem(item);
   if (pinKind === 'places') return isPlacesMapItem(item) && !isShopListItem(item);
   if (pinKind === 'shops') return isShopListItem(item);
@@ -278,7 +278,9 @@ export const resolveExploreItemScheduleWindow = (
 
 const mapPinKind = (item: ExploreMapItemDTO): MapPinKind => {
   if (item.source === 'area') return 'area';
-  if (exploreMapItemIsSeeking(item)) return item.kind === 'rideshare' ? 'rideshare' : (item.kind as MapPinKind);
+  if (exploreMapItemIsAvailabilityCatalog(item)) {
+    return item.kind === 'rideshare' ? 'rideshare' : (item.kind as MapPinKind);
+  }
   if (item.kind === 'shop') return 'shop';
   if (item.kind === 'rideshare') return 'rideshare';
   return item.kind as MapPinKind;
@@ -315,6 +317,8 @@ export const expandMapPins = (items: ExploreMapItemDTO[]): PlaceMapPin[] => {
       (Math.abs(item.toLatitude - item.latitude!) > 0.00001 ||
         Math.abs(item.toLongitude - item.longitude!) > 0.00001);
 
+    const pinCoverImage = isGeographyMapSource(source) ? resolveExploreMapPinCoverImage(item) : undefined;
+
     pins.push({
       id: item.id,
       exploreItemId: item.id,
@@ -330,7 +334,7 @@ export const expandMapPins = (items: ExploreMapItemDTO[]): PlaceMapPin[] => {
       placeKind: item.placeKind ?? undefined,
       scheduleDate: resolveExploreItemScheduleDate(item),
       hostedTripCount,
-      placeHub: !isGeographyMapSource(source) ? resolveExploreMapPinPlaceHub(item) : undefined,
+      pinCoverImage,
     });
 
     if (hasDistinctTo) {
@@ -348,7 +352,6 @@ export const expandMapPins = (items: ExploreMapItemDTO[]): PlaceMapPin[] => {
         activityMode: resolvedMode ?? undefined,
         rideshareEndpoint: item.kind === 'rideshare' ? 'to' : 'to',
         scheduleDate: resolveExploreItemScheduleDate(item),
-        placeHub: resolveExploreMapPinPlaceHub(item),
       });
     }
   }

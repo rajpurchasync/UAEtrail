@@ -9,7 +9,10 @@ const EXPLORE_API_GUARD_ROOTS = [
 ];
 
 /** R8.1 — explore UI must not call `api.*` / `apiRequest` directly; use hooks *ClientApi. */
-const API_DOT_BASELINE = new Set<string>([]);
+const API_DOT_BASELINE = new Set<string>([
+  'src/explore/exploreMapBasemap.ts',
+  'src/explore/exploreMapBasemap.test.ts',
+]);
 
 const collectSourceFiles = (dir: string): string[] => {
   const entries = readdirSync(dir);

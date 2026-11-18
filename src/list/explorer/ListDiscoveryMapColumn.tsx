@@ -2,7 +2,7 @@ import { lazy, Suspense, useMemo } from 'react';
 import { X } from 'lucide-react';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { getMapBounds } from '../../config/regions';
-import { MAP_CONFIG, getExploreMapTiles, readExploreMapStyle } from '../../config/platform';
+import { getExploreMapTiles, readExploreMapStyle } from '../../config/platform';
 import { expandMapPins, layoutColocatedMapPins } from '../../explore/ui/exploreMapPinModel';
 import { ExploreMapLoadingSkeleton } from '../../explore/ui/ExploreMapLoadingSkeleton';
 import { UiTooltip } from '../../components/ui/UiTooltip';
@@ -80,7 +80,7 @@ export const ListDiscoveryMapColumn = ({
           selectedExploreItemId={selectedExploreItemId ?? undefined}
           highlightedExploreItemId={highlightedExploreItemId ?? undefined}
           tileUrl={exploreMapTiles.tileUrl}
-          tileAttribution={MAP_CONFIG.exploreTileAttribution}
+          tileAttribution={exploreMapTiles.attribution}
           labelTileUrl={exploreMapTiles.labelTileUrl}
           onPinClick={handlePinClick}
           layoutRevision={layoutRevision}

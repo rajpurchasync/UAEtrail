@@ -1,6 +1,5 @@
 import { type ReactElement } from 'react';
 import type { PlaceKind } from '@uaetrail/shared-types';
-import { MOBILE_FIVE_TAB_UI_LABELS } from '../../config/mobileFiveTabNav';
 import type { ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
 import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
@@ -16,21 +15,16 @@ import { UiTooltip } from '../../components/ui/UiTooltip';
 import {
   EXPLORE_MAP_CHROME_FROST,
   EXPLORE_MAP_MOBILE_FLOAT_CHIP_MARK,
-  exploreMapScopeSegmentLabeledClass,
 } from '../../config/exploreTheme';
-import { EXPLORE_PLACES_LAYER_EMOJI, SEEKING_EMOJI } from '../exploreCopy';
 import { ExploreMarkEmoji } from './ExploreFilterIcon';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
-import { browsePanelForMobileLayer } from './exploreMapMobileMenus';
 import {
   exploreMapQuickFiltersBrowseState,
   explorePanelToListExplorerBucket,
 } from './exploreMapQuickFiltersState';
+import { ExploreMapProjectionToggle } from './ExploreMapProjectionToggle';
 
 const SCOPE_ROW = 'flex h-8 min-w-0 items-center gap-2';
-const SCOPE_TRAY =
-  `flex h-8 w-auto max-w-[calc(100%-2.25rem)] shrink-0 items-center gap-0.5 overflow-hidden rounded-full p-0.5 ring-1 ring-black/5 ${EXPLORE_MAP_CHROME_FROST}`;
-const CREWS_SCOPE_EMOJI = '👥';
 const MAP_SCOPE_MARK = EXPLORE_MAP_MOBILE_FLOAT_CHIP_MARK;
 
 const tip = (label: string, button: ReactElement) => (
@@ -39,14 +33,11 @@ const tip = (label: string, button: ReactElement) => (
   </UiTooltip>
 );
 
-type MobileLayer = 'activity' | 'places';
-
 type ExploreMapMobileLayerChromeProps = {
   panel: ExplorePanel;
   mapFilter: MapFilterKey;
   venueRegions: string[];
   activityDatePreset: ExploreActivityDatePreset;
-  onBrowsePanelChange: (panel: ExplorePanel) => void;
   onMapFilterChange: (filter: MapFilterKey) => void;
   onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
   onVenueRegionsChange: (regions: string[]) => void;
@@ -67,8 +58,10 @@ type ExploreMapMobileLayerChromeProps = {
   onSearchCommit?: (scope?: ExploreSearchScopeKey | null) => void;
   searchScopeCounts?: ExploreSearchScopeCounts;
   onOpenExploreSearch?: () => void;
-  /** Crews tab — full-screen people list (`/list?listCat=people`), not map scope. */
-  onOpenCrewsPage: () => void;
+  catalogListCount: number;
+  projectionMode: 'map' | 'list';
+  onSelectMapView: () => void;
+  onSelectListView: () => void;
 };
 
 export const ExploreMapMobileLayerChrome = ({
@@ -76,8 +69,6 @@ export const ExploreMapMobileLayerChrome = ({
   mapFilter,
   venueRegions,
   activityDatePreset,
-  onBrowsePanelChange,
-  onMapFilterChange,
   onActivityDatePresetChange,
   onVenueRegionsChange,
   tripMapTopics,
@@ -92,18 +83,11 @@ export const ExploreMapMobileLayerChrome = ({
   onFacilityKindsChange,
   onVenueFiltersChange,
   onOpenExploreSearch,
-  onOpenCrewsPage,
+  catalogListCount,
+  projectionMode,
+  onSelectMapView,
+  onSelectListView,
 }: ExploreMapMobileLayerChromeProps) => {
-  const layer: MobileLayer = panel === 'venues' || panel === 'shops' ? 'places' : 'activity';
-
-  const openLayer = (next: MobileLayer) => {
-    onBrowsePanelChange(browsePanelForMobileLayer(next));
-    if (next === 'places' && mapFilter === 'rideshare') onMapFilterChange('all');
-    if (next === 'activity' && (mapFilter === 'shops' || mapFilter === 'facilities')) {
-      onMapFilterChange('all');
-    }
-  };
-
   const filters = exploreMapQuickFiltersBrowseState({
     tripMapTopics,
     placeMapTopics,
@@ -133,43 +117,12 @@ export const ExploreMapMobileLayerChrome = ({
   return (
     <div className="flex w-full min-w-0 flex-col items-stretch gap-2">
       <div className={SCOPE_ROW}>
-        <div
-          className={SCOPE_TRAY}
-          role="tablist"
-          aria-label={`Trips, places, and ${MOBILE_FIVE_TAB_UI_LABELS.crews.toLowerCase()}`}
-        >
-          <button
-            type="button"
-            role="tab"
-            className={exploreMapScopeSegmentLabeledClass(layer === 'activity', 'activity')}
-            aria-selected={layer === 'activity'}
-            onClick={() => openLayer('activity')}
-          >
-            <ExploreMarkEmoji emoji={SEEKING_EMOJI} markClassName={MAP_SCOPE_MARK} />
-            <span className="whitespace-nowrap">Trips</span>
-          </button>
-          <button
-            type="button"
-            role="tab"
-            className={exploreMapScopeSegmentLabeledClass(layer === 'places', 'places')}
-            aria-selected={layer === 'places'}
-            onClick={() => openLayer('places')}
-          >
-            <ExploreMarkEmoji emoji={EXPLORE_PLACES_LAYER_EMOJI} markClassName={MAP_SCOPE_MARK} />
-            <span className="whitespace-nowrap">{MOBILE_FIVE_TAB_UI_LABELS.venues}</span>
-          </button>
-          <button
-            type="button"
-            role="tab"
-            className={exploreMapScopeSegmentLabeledClass(false, 'activity')}
-            aria-selected={false}
-            aria-label={MOBILE_FIVE_TAB_UI_LABELS.crews}
-            onClick={() => onOpenCrewsPage()}
-          >
-            <ExploreMarkEmoji emoji={CREWS_SCOPE_EMOJI} markClassName={MAP_SCOPE_MARK} lift="people" />
-            <span className="whitespace-nowrap">{MOBILE_FIVE_TAB_UI_LABELS.crews}</span>
-          </button>
-        </div>
+        <ExploreMapProjectionToggle
+          mode={projectionMode}
+          listCount={catalogListCount}
+          onSelectMap={onSelectMapView}
+          onSelectList={onSelectListView}
+        />
         {onOpenExploreSearch ? (
           <div className="ml-auto shrink-0">
             {tip(

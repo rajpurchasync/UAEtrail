@@ -1,6 +1,4 @@
-import { useLocation, useNavigate } from 'react-router-dom';
-import { exploreMapMobileBackState } from '../../utils/mobileBackNav';
-import { listPeopleDiscoveryPath } from '../../list/routing';
+import { useLocation } from 'react-router-dom';
 import { ExploreMapStage } from '../ui/ExploreMapStage';
 import { ExploreDesktopGuestGatePanel } from '../ui/ExploreDesktopGuestGatePanel';
 import { ExploreBrowseSearchModal } from '../ui/ExploreBrowseSearchModal';
@@ -29,6 +27,7 @@ type Props = Pick<
   | 'highlightedExploreItemId'
   | 'viewport'
   | 'mapPins'
+  | 'catalogListCount'
   | 'exploreMapTiles'
   | 'mapLoading'
   | 'loadError'
@@ -64,6 +63,7 @@ export const ExploreMapShell = ({
   highlightedExploreItemId,
   viewport,
   mapPins,
+  catalogListCount,
   exploreMapTiles,
   mapLoading,
   loadError,
@@ -86,7 +86,6 @@ export const ExploreMapShell = ({
   onVisibleMapBoundsChange,
 }: Props) => {
   const location = useLocation();
-  const navigate = useNavigate();
   const joinActions = selection.joinActions;
   const browseReturnPath = `${location.pathname}${location.search}`;
   const guestAuthReturnPath = resolveExploreGuestAuthReturnPath({
@@ -141,7 +140,12 @@ export const ExploreMapShell = ({
       mapFilter={browse.mapFilter}
       venueRegions={browse.venueRegions}
       activityDatePreset={browse.activityDatePreset}
-      onBrowsePanelChange={(next) => browse.applyBrowsePanel(next)}
+      catalogListCount={catalogListCount}
+      projectionMode="map"
+      onSelectMapView={() => {
+        if (browse.listOpen) browse.closeListPanel();
+      }}
+      onSelectListView={browse.openMapListPanel}
       onMapFilterChange={browse.applyMapFilter}
       onActivityDatePresetChange={browse.applyActivityDatePreset}
       onVenueRegionsChange={browse.applyVenueRegions}
@@ -158,12 +162,6 @@ export const ExploreMapShell = ({
       onHasTripChange={browse.applyHasTrip}
       onFacilityKindsChange={browse.applyFacilityKinds}
       onVenueFiltersChange={browse.applyVenueFilters}
-      onOpenCrewsPage={() => {
-        handleCloseMapSelection();
-        navigate(listPeopleDiscoveryPath(), {
-          state: exploreMapMobileBackState(browseReturnPath),
-        });
-      }}
       onOpenPeopleBrowsePanel={
         user ? openPeopleBrowsePanel : () => selection.handleGuestGatedAction('view_detail')
       }
@@ -211,7 +209,6 @@ export const ExploreMapShell = ({
       locatingDevice={viewport.locatingDevice}
       onAllowMapLocation={viewport.handleAllowMapLocation}
       onDismissLocationPrompt={viewport.dismissLocationPromptUi}
-      onOpenBrowse={browse.openMapListPanel}
       onPrimaryFab={handlePrimaryFabTap}
       primaryFabLabel={primaryFabLabel}
       selected={selection.selected}

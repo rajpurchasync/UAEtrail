@@ -1,5 +1,12 @@
-import type { DiscoveryCardKind, DiscoveryCardSource, ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type {
+  DiscoveryCardKind,
+  DiscoveryCardSource,
+  ExploreMapItemDTO,
+  PlaceKind,
+} from '@uaetrail/shared-types';
+import { PLACE_KIND_LABELS } from '@uaetrail/shared-types';
 import { browseCatalogHubLabelFromExploreItem } from '../list/browse/browseCatalogLabels';
+import { resolveExploreCoverImage } from './exploreCoverImage';
 import { formatExploreMapPinDateShort, isScheduledActivityMapPin } from './exploreMapPinTooltip';
 
 const MAP_PIN_KIND_LABEL: Partial<Record<DiscoveryCardKind, string>> = {
@@ -11,15 +18,29 @@ const MAP_PIN_KIND_LABEL: Partial<Record<DiscoveryCardKind, string>> = {
   shop: 'Shop',
 };
 
-/** Show activity what/when/where chips from explore default zoom (9) and in. */
-export const MAP_PIN_ACTIVITY_CAPTION_MIN_ZOOM = 9;
+/** Type · date labels — from explore default zoom (Booking price-pill equivalent). */
+export const MAP_PIN_ACTIVITY_CAPTION_MIN_ZOOM_MAP = 9;
+export const MAP_PIN_ACTIVITY_CAPTION_MIN_ZOOM_SATELLITE = 9;
+
+/** Date line on trip captions — matches primary caption zoom. */
+export const MAP_PIN_ACTIVITY_WHERE_MIN_ZOOM_MAP = 9;
+export const MAP_PIN_ACTIVITY_WHERE_MIN_ZOOM_SATELLITE = 9;
+
+/** @deprecated use style-specific mins in resolveMapPinActivityCaption */
+export const MAP_PIN_ACTIVITY_CAPTION_MIN_ZOOM = MAP_PIN_ACTIVITY_CAPTION_MIN_ZOOM_MAP;
 
 /** Show “Trip” text on venue chips (dot always when count &gt; 0). */
 export const MAP_PIN_VENUE_TRIP_LABEL_MIN_ZOOM = 11;
 
 const WEEKDAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
 
-export const MAP_PIN_SEEKING_CAPTION = 'Looking for';
+/** Fixed crew availability pins on the Trips map (`source: availability`). */
+export const MAP_PIN_LOOKING_CAPTION = 'Looking for';
+
+/** @deprecated Use {@link MAP_PIN_LOOKING_CAPTION} — not legacy participant-intent seeking. */
+export const MAP_PIN_SEEKING_CAPTION = MAP_PIN_LOOKING_CAPTION;
+
+const isMapAvailabilityCaptionSource = (source?: DiscoveryCardSource): boolean => source === 'availability';
 
 const MAP_PIN_HUB_MAX_LEN = 24;
 
@@ -28,6 +49,48 @@ const truncateMapPinHub = (label: string): string => {
   if (trimmed.length <= MAP_PIN_HUB_MAX_LEN) return trimmed;
   return `${trimmed.slice(0, MAP_PIN_HUB_MAX_LEN - 1)}…`;
 };
+
+/** Venue name on trip pins — at most two words so captions stay readable on mobile. */
+export const truncateMapPinVenueTwoWords = (label: string): string => {
+  const words = label.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return '';
+  return words.slice(0, 2).join(' ');
+};
+
+const OUTING_PLACE_KIND_LABEL: Partial<Record<DiscoveryCardKind, string>> = {
+  hiking: 'Trail',
+  camping: 'Camp',
+  event: 'Event venue',
+};
+
+export const resolveMapPinPlaceKindLabel = (
+  kind: DiscoveryCardKind,
+  placeKind?: PlaceKind | null,
+  source?: DiscoveryCardSource
+): string => {
+  if (source === 'facility' && placeKind && placeKind in PLACE_KIND_LABELS) {
+    return PLACE_KIND_LABELS[placeKind];
+  }
+  const outing = OUTING_PLACE_KIND_LABEL[kind];
+  if (outing) return outing;
+  if (placeKind && placeKind in PLACE_KIND_LABELS) return PLACE_KIND_LABELS[placeKind];
+  return 'Place';
+};
+
+/** Spot / trail name for hosted trip captions — not the area hub label. */
+export const resolveExploreMapPinVenueName = (item: ExploreMapItemDTO): string | null => {
+  const activityLoc = item.activity?.locationName?.trim();
+  if (activityLoc) return activityLoc;
+  const geoVenue = item.geoRef?.names?.venue?.trim();
+  if (geoVenue) return geoVenue;
+  const cardName = (item.locationCard as { name?: string } | null | undefined)?.name?.trim();
+  if (cardName) return cardName;
+  const hub = browseCatalogHubLabelFromExploreItem(item);
+  return hub ? truncateMapPinHub(hub) : null;
+};
+
+export const resolveExploreMapPinCoverImage = (item: ExploreMapItemDTO): string | null =>
+  resolveExploreCoverImage(item.image, item.locationCard?.images?.[0], item.locationCard?.images?.[1]);
 
 /** Curated area / place hub for map pin “where” line (Hatta, Shawka, …) — not trail or spot title. */
 export const resolveExploreMapPinPlaceHub = (item: ExploreMapItemDTO): string | null => {
@@ -72,25 +135,57 @@ export const formatMapPinRelativeDate = (
 export type MapPinActivityCaption = {
   /** What + when — e.g. `Hiking · Tomorrow` or `Looking for`. */
   primary: string;
-  /** Where — area / place hub name. */
+  /** Reserved — trip pins use a single caption line (type · date). */
   where: string | null;
+};
+
+export const resolveMapPinPlaceCaption = (options: {
+  kind: DiscoveryCardKind;
+  placeKind?: PlaceKind | null;
+  source?: DiscoveryCardSource;
+  venueName: string;
+  mapZoom: number;
+  mapStyle?: 'satellite' | 'map';
+  selected?: boolean;
+}): MapPinActivityCaption | null => {
+  const minZoom =
+    options.mapStyle === 'satellite'
+      ? MAP_PIN_ACTIVITY_CAPTION_MIN_ZOOM_SATELLITE
+      : MAP_PIN_ACTIVITY_CAPTION_MIN_ZOOM_MAP;
+  if (options.mapZoom < minZoom && !options.selected) return null;
+
+  const kindLabel = resolveMapPinPlaceKindLabel(options.kind, options.placeKind, options.source);
+  const venueShort = truncateMapPinVenueTwoWords(options.venueName);
+  if (!kindLabel && !venueShort) return null;
+  return {
+    primary: kindLabel || 'Place',
+    where: venueShort || null,
+  };
 };
 
 export const resolveMapPinActivityCaption = (options: {
   kind: DiscoveryCardKind;
-  placeHub?: string | null;
   scheduleDate?: string | null;
   activityMode?: 'hosted' | 'seeking' | null;
   source?: DiscoveryCardSource;
   mapZoom: number;
+  mapStyle?: 'satellite' | 'map';
+  selected?: boolean;
   now?: Date;
 }): MapPinActivityCaption | null => {
-  if (options.mapZoom < MAP_PIN_ACTIVITY_CAPTION_MIN_ZOOM) return null;
+  const minZoom =
+    options.mapStyle === 'satellite'
+      ? MAP_PIN_ACTIVITY_CAPTION_MIN_ZOOM_SATELLITE
+      : MAP_PIN_ACTIVITY_CAPTION_MIN_ZOOM_MAP;
+  if (options.mapZoom < minZoom && !options.selected) return null;
 
-  const where = options.placeHub?.trim() || null;
-
-  if (options.activityMode === 'seeking') {
-    return { primary: MAP_PIN_SEEKING_CAPTION, where };
+  if (isMapAvailabilityCaptionSource(options.source)) {
+    const kindLabel = MAP_PIN_KIND_LABEL[options.kind] ?? 'Outing';
+    const dateLabel = formatMapPinRelativeDate(options.scheduleDate, options.now);
+    return {
+      primary: MAP_PIN_LOOKING_CAPTION,
+      where: dateLabel ?? kindLabel,
+    };
   }
 
   if (!isScheduledActivityMapPin({ source: options.source, activityMode: options.activityMode })) {
@@ -100,12 +195,12 @@ export const resolveMapPinActivityCaption = (options: {
   const kindLabel = resolveMapPinActivityKindLabel(options.kind, options.activityMode);
   const dateLabel = formatMapPinRelativeDate(options.scheduleDate, options.now);
 
-  const primaryParts = [kindLabel, dateLabel].filter((part): part is string => Boolean(part));
-  if (primaryParts.length === 0 && !where) return null;
+  if (!kindLabel && !dateLabel) return null;
 
-  const primary = primaryParts.length > 0 ? primaryParts.join(' · ') : (kindLabel ?? 'Trip');
-
-  return { primary, where };
+  return {
+    primary: kindLabel ?? 'Trip',
+    where: dateLabel,
+  };
 };
 
 export const resolveMapPinVenueTripLabel = (

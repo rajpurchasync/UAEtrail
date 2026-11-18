@@ -1,7 +1,10 @@
-import { ChevronLeft, Map, Maximize2, Minimize2, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ChevronLeft, Map, Maximize2, Minimize2, Search, X } from 'lucide-react';
 import { UiTooltip } from '../../components/ui/UiTooltip';
 import { useExploreDesktopListDrawerChrome } from '../../explore/ui/ExploreDesktopListDrawer';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { ExploreMapProjectionToggle } from '../../explore/ui/ExploreMapProjectionToggle';
+import { EXPLORE_MAP_CHROME_FROST } from '../../config/exploreTheme';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../../explore/exploreBrowseTaxonomy';
 import { LIST_APP_BAR, LIST_CHROME, LIST_SEARCH } from '../listChromeTheme';
 import { ListDiscoverySearchField } from '../ui/ListDiscoverySearchField';
@@ -106,6 +109,36 @@ export const ListExplorerHeader = ({
         places: bucket === 'places' ? resultCount : null,
       };
   const drawer = useExploreDesktopListDrawerChrome();
+  const navigate = useNavigate();
+  const mobileListMapChrome = standaloneListSurface && hideBucketToggleOnMobile;
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(() => searching);
+
+  useEffect(() => {
+    if (query.trim().length > 0) {
+      setMobileSearchOpen(true);
+    }
+  }, [query]);
+
+  useEffect(() => {
+    if (!mobileSearchOpen || !mobileListMapChrome) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMobileSearchOpen(false);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [mobileSearchOpen, mobileListMapChrome]);
+
+  const filterFabProps =
+    onApplyFilters != null
+      ? {
+          placement: 'inline' as const,
+          bucket,
+          applied: filters,
+          regions,
+          filterCount,
+          onApply: onApplyFilters,
+        }
+      : null;
 
   return (
     <header
@@ -163,6 +196,49 @@ export const ListExplorerHeader = ({
           </div>
         </div>
       )}
+      {mobileListMapChrome ? (
+        <div className="md:hidden">
+          <div className="flex h-8 min-w-0 items-center gap-2">
+            <ExploreMapProjectionToggle
+              mode="list"
+              listCount={resultCount ?? 0}
+              onSelectMap={() => navigate(mapHref)}
+              onSelectList={() => {}}
+            />
+            <div className="ml-auto flex shrink-0 items-center gap-2">
+              <UiTooltip label="Search">
+                <button
+                  type="button"
+                  className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full ring-1 ring-black/5 ${EXPLORE_MAP_CHROME_FROST}`}
+                  aria-label="Search"
+                  aria-expanded={mobileSearchOpen}
+                  onClick={() => setMobileSearchOpen((open) => !open)}
+                >
+                  <Search className="h-4 w-4 text-neutral-800" strokeWidth={2.25} aria-hidden />
+                </button>
+              </UiTooltip>
+              {filterFabProps ? (
+                <ListExplorerFilterFab {...filterFabProps} inlineChrome="mapFrost" />
+              ) : null}
+            </div>
+          </div>
+          {mobileSearchOpen ? (
+            <ListDiscoverySearchField
+              query={query}
+              onQueryChange={onQueryChange}
+              onQuerySync={onQuerySync}
+              onSearchCommit={onSearchCommit}
+              onClearQuery={onClearQuery}
+              searchScopeCounts={searchScopeCounts}
+              mapHref={mapHref}
+              hideMapLink
+              compactTop
+              autoFocus
+              className="!mt-2"
+            />
+          ) : null}
+        </div>
+      ) : null}
       <ListDiscoverySearchField
         query={query}
         onQueryChange={onQueryChange}
@@ -173,19 +249,18 @@ export const ListExplorerHeader = ({
         mapHref={mapHref}
         hideMapLink={hideSideMapChrome || standaloneListSurface}
         filterSlot={
-          hideBucketToggleOnMobile && onApplyFilters ? (
-            <ListExplorerFilterFab
-              placement="inline"
-              bucket={bucket}
-              applied={filters}
-              regions={regions}
-              filterCount={filterCount}
-              onApply={onApplyFilters}
-            />
+          filterFabProps && hideBucketToggleOnMobile ? (
+            mobileListMapChrome ? (
+              <span className="hidden md:contents">
+                <ListExplorerFilterFab {...filterFabProps} />
+              </span>
+            ) : (
+              <ListExplorerFilterFab {...filterFabProps} />
+            )
           ) : null
         }
         compactTop
-        className="!mt-0"
+        className={`!mt-0 ${mobileListMapChrome ? 'hidden md:block' : ''}`}
       />
       <div
         className={`mt-1.5 flex min-w-0 flex-row items-center justify-between gap-1 ${

@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useProductLocation } from '../../routing/useEffectiveLocation';
 import { ProductNavLink } from '../navigation/ProductNavLink';
 import { ClipboardList, MapPin, MessageSquare, Users, type LucideIcon } from 'lucide-react';
@@ -24,7 +25,7 @@ const TAB_ICONS: Record<MobileFiveTabId, LucideIcon> = {
 
 const tabShellClass = (active: boolean) =>
   [
-    'flex min-h-[var(--bottom-nav-height)] min-w-0 flex-col items-center justify-center gap-0.5 px-0.5 pt-1.5 pb-0.5 transition-colors',
+    'flex h-full min-h-0 min-w-0 flex-col items-center justify-center gap-0.5 px-0.5 pt-1.5 pb-0.5 transition-colors',
     active ? 'text-emerald-700' : 'text-neutral-500 active:text-neutral-700',
   ].join(' ');
 
@@ -48,6 +49,11 @@ export const MobileBottomNav = () => {
   const { pathname, search } = useProductLocation();
   const activeTab = resolveMobileFiveTab(pathname, search);
   const unreadMessages = useInboxUnreadCount();
+  const [portalReady, setPortalReady] = useState(false);
+
+  useEffect(() => {
+    setPortalReady(true);
+  }, []);
 
   useEffect(() => {
     if (visible) {
@@ -58,12 +64,12 @@ export const MobileBottomNav = () => {
     return () => document.documentElement.removeAttribute('data-mobile-bottom-nav');
   }, [visible]);
 
-  if (!visible) return null;
+  if (!visible || !portalReady) return null;
 
-  return (
+  const nav = (
     <nav
       aria-label="Main"
-      className="safe-area-bottom fixed inset-x-0 bottom-0 z-[1200] border-t border-neutral-200/80 bg-white/95 backdrop-blur-md md:hidden"
+      className="mobile-bottom-nav fixed inset-x-0 bottom-0 z-[1200] border-t border-neutral-200/80 bg-white/95 pb-[var(--safe-bottom)] backdrop-blur-md md:hidden"
     >
       <div className="mx-auto grid h-[var(--bottom-nav-height)] max-w-lg grid-cols-5">
         {MOBILE_FIVE_TAB_ORDER.map((tab) => {
@@ -99,4 +105,6 @@ export const MobileBottomNav = () => {
       </div>
     </nav>
   );
+
+  return createPortal(nav, document.body);
 };

@@ -22,7 +22,7 @@ export const BROWSE_LIST_EMPTY = 'Nothing matches — try clearing filters or se
 export const BROWSE_LIST_CLEAR_FILTERS = 'Clear filters';
 
 /** Mobile list create FAB — Plus icon is rendered separately. */
-export const BROWSE_LIST_CREATE_TRIP = 'Create Trip';
+export const BROWSE_LIST_CREATE_TRIP = 'Host Trip';
 export const BROWSE_LIST_CREATE_VENUE = 'Add a venue';
 export const BROWSE_LIST_CREATE_CREW = 'Find a Crew';
 

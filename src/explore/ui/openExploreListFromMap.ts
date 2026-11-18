@@ -1,5 +1,7 @@
 import type { NavigateFunction } from 'react-router-dom';
 import { listDiscoveryPathFromExploreSearch } from '../../list/routing';
+import { writeMobileFiveTabProjection } from '../../config/mobileFiveTabNav';
+import { parseExplorePanel } from '../routing';
 import { exploreMapMobileBackState } from '../../utils/mobileBackNav';
 import type { ExploreBrowseUrlSyncPatch } from '../exploreBrowseUrlSync';
 
@@ -23,6 +25,11 @@ export const openExploreListFromMap = (input: {
     input.syncExploreUrl({ list: true, listMode: 'default', peopleBrowseOpen: false });
     return;
   }
+  const params = new URLSearchParams(input.searchParamsString);
+  const panel = parseExplorePanel(params.get('panel'));
+  const tab = panel === 'venues' || panel === 'shops' ? 'venues' : 'trips';
+  writeMobileFiveTabProjection(tab, 'list');
+
   const current = `${input.locationPathname}${input.locationSearch}`;
   input.navigate(listDiscoveryPathFromExploreSearch(input.searchParamsString), {
     state: exploreMapMobileBackState(current),

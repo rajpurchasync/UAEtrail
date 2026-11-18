@@ -6,7 +6,8 @@ import {
 } from '@uaetrail/shared-types';
 import type { MapPinKind, MapPinSource } from '../components/ui/mapPinTypes';
 import { isGeographyMapSource } from '@uaetrail/shared-types';
-import { buildVenueMapBadgeHtml } from './venueMapGlyphs';
+import { buildVenueMapBadgeHtml, resolveVenueMapGlyphSvg } from './venueMapGlyphs';
+import { exploreMapPinRingColor } from '../config/exploreTheme';
 import { type MapPinActivityCaption, resolveMapPinVenueTripLabel } from './exploreMapPinCaption';
 
 export const isCatalogVenueMapPin = (kind: MapPinKind, source: MapPinSource): boolean =>
@@ -19,16 +20,18 @@ const venueStackCountBadgeHtml = (stackCount: number): string => {
 };
 
 /** Short place name beside the icon (regional zoom). */
-export const VENUE_MAP_LABEL_MIN_ZOOM = 9;
+export const VENUE_MAP_LABEL_MIN_ZOOM = 10;
 /** Full name without truncation. */
-export const VENUE_MAP_FULL_LABEL_MIN_ZOOM = 11;
+export const VENUE_MAP_FULL_LABEL_MIN_ZOOM = 12;
 
 export const venueMapLabelForZoom = (
   label: string,
-  mapZoom: number
+  mapZoom: number,
+  selected = false
 ): { show: boolean; text: string } => {
   const trimmed = label.trim();
-  if (!trimmed || mapZoom < VENUE_MAP_LABEL_MIN_ZOOM) {
+  if (!trimmed) return { show: false, text: '' };
+  if (mapZoom < VENUE_MAP_LABEL_MIN_ZOOM && !selected) {
     return { show: false, text: '' };
   }
   if (mapZoom >= VENUE_MAP_FULL_LABEL_MIN_ZOOM) {
@@ -52,7 +55,18 @@ export type VenueMapPinLayout = {
   iconAnchor: [number, number];
 };
 
-/** Map chip: square badge + optional name (reads on satellite tiles). */
+const buildVenueMapCoverBadgeHtml = (kind: MapPinKind, coverImage: string): string => {
+  const cover = escapeMapPinHtml(coverImage.trim());
+  return `<span class="uaetrail-map-venue-pin-badge uaetrail-map-venue-pin-badge--cover ${kindClassForBadge(kind)}"><img class="uaetrail-map-venue-cover-img" src="${cover}" alt="" loading="lazy" decoding="async" /></span>`;
+};
+
+const kindClassForBadge = (kind: MapPinKind): string => {
+  if (kind === 'camping') return 'uaetrail-map-venue-pin-badge--camping';
+  if (kind === 'hiking') return 'uaetrail-map-venue-pin-badge--hiking';
+  return 'uaetrail-map-venue-pin-badge--default';
+};
+
+/** Map chip: circular cover (or glyph) + kind · venue caption. */
 export const buildVenueMapPinHtml = (options: {
   kind: MapPinKind;
   label?: string;
@@ -60,13 +74,21 @@ export const buildVenueMapPinHtml = (options: {
   selected?: boolean;
   stackCount?: number;
   hostedTripCount?: number;
+  coverImage?: string | null;
+  caption?: MapPinActivityCaption | null;
+  source?: MapPinSource;
+  ringColor?: string;
 }): VenueMapPinLayout => {
   const selectedClass = options.selected ? ' uaetrail-map-venue-pin--selected' : '';
   const stackCount = options.stackCount ?? 1;
   const clusterClass = stackCount > 1 ? ' uaetrail-map-venue-chip--cluster' : '';
   const badgeSize = 36;
   const glyphSize = 22;
-  const badgeHtml = buildVenueMapBadgeHtml(options.kind, glyphSize);
+  const cover = options.coverImage?.trim();
+  const resolvedBadgeHtml = cover
+    ? buildVenueMapCoverBadgeHtml(options.kind, cover)
+    : `<span class="uaetrail-map-venue-pin-badge uaetrail-map-venue-pin-badge--circle ${kindClassForBadge(options.kind)}">${resolveVenueMapGlyphSvg(options.kind, glyphSize)}</span>`;
+
   const tripCount = Math.max(0, options.hostedTripCount ?? 0);
   const tripDotHtml =
     tripCount > 0
@@ -76,24 +98,27 @@ export const buildVenueMapPinHtml = (options: {
   const tripLabelHtml = tripLabel
     ? `<span class="uaetrail-map-venue-trip-label">${escapeMapPinHtml(tripLabel)}</span>`
     : '';
-  const badgeWrapHtml = `<span class="uaetrail-map-venue-pin-badge-wrap">${badgeHtml}${tripDotHtml}</span>`;
-  const { show, text } = venueMapLabelForZoom(options.label ?? '', options.mapZoom);
-  const labelHtml = show
-    ? `<span class="uaetrail-map-venue-pin-label">${escapeMapPinHtml(text)}</span>`
-    : '';
+  const badgeWrapHtml = `<span class="uaetrail-map-venue-pin-badge-wrap">${resolvedBadgeHtml}${tripDotHtml}</span>`;
 
-  const chipClass = show ? ' uaetrail-map-venue-chip--labeled' : '';
+  const caption = options.caption;
+  const showCaption = Boolean(caption?.primary?.trim());
+  const captionAccent =
+    options.ringColor ?? exploreMapPinRingColor(options.kind, options.source === 'facility' ? 'facility' : 'place');
+  const captionHtml = showCaption && caption ? buildMapPinCaptionHtml(caption, captionAccent) : '';
   const tripChipClass = tripCount > 0 ? ' uaetrail-map-venue-chip--has-trip' : '';
   const countBadge = venueStackCountBadgeHtml(stackCount);
-  const html = `<span class="uaetrail-map-venue-chip${chipClass}${tripChipClass}${clusterClass}${selectedClass}">${badgeWrapHtml}${tripLabelHtml}${labelHtml}${countBadge}</span>`;
+  const widgetClass = showCaption
+    ? 'uaetrail-map-pin-widget uaetrail-map-pin-widget--captioned'
+    : 'uaetrail-map-pin-widget';
+  const chipBody = `<span class="uaetrail-map-venue-chip${tripChipClass}${clusterClass}${selectedClass}">${badgeWrapHtml}${tripLabelHtml}${countBadge}</span>`;
+  const html = `<span class="${widgetClass}">${captionHtml}${chipBody}</span>`;
 
-  const tripLabelWidth = tripLabel ? tripLabel.length * 6.2 + 14 : 0;
-  const width = show
-    ? Math.min(200, badgeSize + text.length * 6.2 + 14 + tripLabelWidth)
-    : Math.max(badgeSize, badgeSize + tripLabelWidth);
-  const height = badgeSize;
-  const iconAnchor: [number, number] = [badgeSize / 2, badgeSize];
+  const captionBand = showCaption ? (caption?.where ? 30 : 20) : 0;
+  const width = showCaption && caption ? mapPinCaptionWidth(caption, badgeSize) : badgeSize;
+  const height = badgeSize + captionBand;
+  const iconAnchor: [number, number] = [width / 2, height];
 
+  void options.label;
   return { html, width: Math.max(width, badgeSize), height, iconAnchor };
 };
 
@@ -131,6 +156,8 @@ export type MapPinFaceOptions = {
   /** Time-bound activity pins — corner badge (hosted vs seeking). */
   activityMode?: ExploreActivityMode | null;
   placeKind?: PlaceKind;
+  /** Neutral map dot — no emoji inside the circle (trip pins). */
+  hidePinIcon?: boolean;
 };
 
 /** One map circle — optional count badge and click target id. */
@@ -147,21 +174,20 @@ export const buildMapPinFaceHtml = ({
   positionStyle = '',
   activityMode = null,
   placeKind,
+  hidePinIcon = false,
 }: MapPinFaceOptions): string => {
   const selectedClass = selected ? ' uaetrail-map-pin-marker--selected' : '';
-  const iconHtml = resolveMapPinIconHtml(
-    kind,
-    source,
-    fontSizePx,
-    placeKind,
-    activityMode === 'seeking'
-  );
+  const iconHtml = hidePinIcon
+    ? ''
+    : resolveMapPinIconHtml(kind, source, fontSizePx, placeKind, activityMode === 'seeking');
+  const faceClass = hidePinIcon ? ' uaetrail-map-pin-face--dot' : '';
   const dataAttr = exploreItemId ? ` data-explore-item-id="${exploreItemId}"` : '';
   const countBadge = venueStackCountBadgeHtml(stackCount);
 
   void _ringWidth;
   const markerDataAttr = exploreItemId ? ` data-explore-item-id="${exploreItemId}"` : '';
-  const markerHtml = `<span class="uaetrail-map-pin-marker${selectedClass}"${markerDataAttr} style="--pin-ring:${ringColor};width:${size}px;height:${size}px;"><span class="uaetrail-map-pin-face"><span class="uaetrail-map-pin-icon">${iconHtml}</span></span>${countBadge}</span>`;
+  const iconInner = iconHtml ? `<span class="uaetrail-map-pin-icon">${iconHtml}</span>` : '';
+  const markerHtml = `<span class="uaetrail-map-pin-marker${selectedClass}"${markerDataAttr} style="--pin-ring:${ringColor};width:${size}px;height:${size}px;"><span class="uaetrail-map-pin-face${faceClass}">${iconInner}</span>${countBadge}</span>`;
 
   if (positionStyle) {
     return `<span class="uaetrail-map-pin-slot" style="${positionStyle}"${dataAttr}>${markerHtml}</span>`;
@@ -176,14 +202,24 @@ export const buildMapPinFaceHtml = ({
 
 const mapPinCaptionWidth = (caption: MapPinActivityCaption, markerSize: number): number => {
   const longest = Math.max(caption.primary.length, caption.where?.length ?? 0);
-  return Math.max(markerSize, Math.min(118, longest * 5.6 + 18));
+  return Math.max(markerSize, Math.min(140, longest * 6.4 + 22));
 };
 
-const buildMapPinCaptionHtml = (caption: MapPinActivityCaption): string => {
+const buildMapPinCaptionHtml = (caption: MapPinActivityCaption, accentColor?: string): string => {
+  const tripStack = caption.where ? ' uaetrail-map-pin-caption-stack--trip' : '';
+  const typedStack = accentColor ? ' uaetrail-map-pin-caption-wrap--typed' : '';
+  const accentAttr = accentColor
+    ? ` style="--pin-caption-bg:${escapeMapPinHtml(accentColor)}"`
+    : '';
+  const typeHtml = `<span class="uaetrail-map-pin-caption-line uaetrail-map-pin-caption-line--type">${escapeMapPinHtml(caption.primary)}</span>`;
   const whereHtml = caption.where
     ? `<span class="uaetrail-map-pin-caption-line uaetrail-map-pin-caption-line--where">${escapeMapPinHtml(caption.where)}</span>`
     : '';
-  return `<span class="uaetrail-map-pin-caption-stack"><span class="uaetrail-map-pin-caption-line">${escapeMapPinHtml(caption.primary)}</span>${whereHtml}</span>`;
+  const stackHtml = `<span class="uaetrail-map-pin-caption-stack${tripStack}${accentColor ? ' uaetrail-map-pin-caption-stack--typed' : ''}">${typeHtml}${whereHtml}</span>`;
+  const tailHtml = accentColor
+    ? `<span class="uaetrail-map-pin-caption-tail" aria-hidden="true"></span>`
+    : '';
+  return `<span class="uaetrail-map-pin-caption-wrap${typedStack}${tripStack}"${accentAttr}>${stackHtml}${tailHtml}</span>`;
 };
 
 export type ActivityMapPinLayout = {
@@ -193,19 +229,31 @@ export type ActivityMapPinLayout = {
   anchorX: number;
 };
 
-/** Circle activity / seeking pin with optional what/when/where caption above the marker. */
+/** Trip pin — colored label; optional circle only when the label is hidden (low zoom). */
 export const buildActivityMapPinLayout = (
-  options: MapPinFaceOptions & { caption?: MapPinActivityCaption | null }
+  options: MapPinFaceOptions & { caption?: MapPinActivityCaption | null; labelOnly?: boolean }
 ): ActivityMapPinLayout => {
-  const { caption = null, size, ...faceOptions } = options;
-  const markerHtml = buildMapPinFaceHtml({ ...faceOptions, size });
+  const { caption = null, size, labelOnly = false, ...faceOptions } = options;
   const showCaption = Boolean(caption?.primary?.trim());
-  const captionHtml = showCaption && caption ? buildMapPinCaptionHtml(caption) : '';
-  const widgetClass = showCaption ? 'uaetrail-map-pin-widget uaetrail-map-pin-widget--captioned' : 'uaetrail-map-pin-widget';
-  const html = `<span class="${widgetClass}">${captionHtml}${markerHtml}</span>`;
-  const captionBand = showCaption ? (caption?.where ? 30 : 20) : 0;
-  const width = showCaption && caption ? mapPinCaptionWidth(caption, size) : size;
-  const height = size + captionBand;
+  const useLabelOnly = labelOnly && showCaption;
+  const markerHtml = useLabelOnly ? '' : buildMapPinFaceHtml({ ...faceOptions, size });
+  const captionHtml =
+    showCaption && caption ? buildMapPinCaptionHtml(caption, faceOptions.ringColor) : '';
+  const widgetClass = [
+    'uaetrail-map-pin-widget',
+    showCaption ? 'uaetrail-map-pin-widget--captioned' : '',
+    useLabelOnly ? 'uaetrail-map-pin-widget--label-only' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const dataAttr = faceOptions.exploreItemId
+    ? ` data-explore-item-id="${faceOptions.exploreItemId}"`
+    : '';
+  const html = `<span class="${widgetClass}"${dataAttr}>${captionHtml}${markerHtml}</span>`;
+  const tailBand = useLabelOnly && showCaption && faceOptions.ringColor ? 8 : 0;
+  const captionBand = showCaption ? (caption?.where ? 38 : 24) + tailBand : 0;
+  const width = showCaption ? mapPinCaptionWidth(caption!, size) : size;
+  const height = useLabelOnly ? Math.max(captionBand, 20) : size + captionBand;
   return { html, width, height, anchorX: width / 2 };
 };
 
@@ -356,6 +404,7 @@ export const buildMapColocatedPinIconHtml = (
       }
 
       return buildMapPinFaceHtml({
+        hidePinIcon: true,
         kind: entry.kind,
         source: entry.source,
         ringColor: entry.ringColor,
@@ -434,6 +483,7 @@ export const buildMapClusterIconHtml = (
     stackCount: count,
     exploreItemId,
     selected,
+    hidePinIcon: !isCatalogVenueMapPin(kind, source),
   });
 
 const clusterIconRootFromPointerTarget = (target: EventTarget | null | undefined): HTMLElement | null => {

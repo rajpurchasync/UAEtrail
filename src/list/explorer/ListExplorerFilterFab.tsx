@@ -4,6 +4,7 @@ import type { BrowseListFilterState } from '../browseListFilters';
 import type { ListExplorerBucket } from './listExplorerBucket';
 import { ListExplorerFilterPop, type ListFilterPopFixedLayout } from './ListExplorerFilterPop';
 import { LIST_FILTER_FAB_Z } from '../listChromeTheme';
+import { EXPLORE_MAP_CHROME_FROST } from '../../config/exploreTheme';
 import {
   LIST_FILTER_FAB_DRAG_PX,
   LIST_FILTER_FAB_EDGE,
@@ -23,6 +24,8 @@ type ListExplorerFilterFabProps = {
   onApply: (state: BrowseListFilterState, regions: string[]) => void;
   /** Inline beside search on standalone mobile list; default floating FAB. */
   placement?: 'floating' | 'inline';
+  /** Match map toolbar frost pills (standalone `/list` mobile chrome). */
+  inlineChrome?: 'default' | 'mapFrost';
 };
 
 const readCssPx = (value: string, fallback: number): number => {
@@ -53,6 +56,7 @@ export const ListExplorerFilterFab = ({
   filterCount,
   onApply,
   placement = 'floating',
+  inlineChrome = 'default',
 }: ListExplorerFilterFabProps) => {
   const inline = placement === 'inline';
   const [corner, setCorner] = useState<ListFilterFabCorner>(() => readListFilterFabCorner());
@@ -185,11 +189,15 @@ export const ListExplorerFilterFab = ({
   const positionStyle = live ? { top: live.y, left: live.x } : snapped;
 
   const triggerClass = inline
-    ? `relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition ${
-        filterCount > 0
-          ? 'text-emerald-700 hover:bg-emerald-50'
-          : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800'
-      }`
+    ? inlineChrome === 'mapFrost'
+      ? `relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full ring-1 ring-black/5 transition ${EXPLORE_MAP_CHROME_FROST} ${
+          filterCount > 0 ? 'text-emerald-800' : 'text-neutral-800 hover:bg-white/80'
+        }`
+      : `relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition ${
+          filterCount > 0
+            ? 'text-emerald-700 hover:bg-emerald-50'
+            : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800'
+        }`
     : `inline-flex h-12 w-12 items-center justify-center rounded-full border shadow-[0_4px_20px_rgba(15,23,42,.18)] ring-1 ring-black/[0.06] transition md:h-9 md:w-9 ${
         filterCount > 0
           ? 'border-emerald-700 bg-emerald-700 text-white'

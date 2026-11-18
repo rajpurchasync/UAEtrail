@@ -530,21 +530,22 @@ export const exploreVenueListFilterActiveClass = (key: VenueListFilterKey): stri
 };
 
 export type MapPinRingKind = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'rideshare' | 'area';
-export type MapPinRingSource = 'activity' | 'venue' | 'shop' | 'agency' | 'seeking';
+export type MapPinRingSource = 'activity' | 'venue' | 'shop' | 'agency' | 'availability';
 
 /** Type-colored ring on map pins — matches filter / badge colors. */
+/** Map trip pin fill / ring — aligned with `exploreMapFilterActiveClass` tints. */
 export const exploreMapPinRingColor = (
   kind: MapPinRingKind,
   source?: MapPinRingSource
 ): string => {
-  if (source === 'seeking') return '#0d9488';
+  if (source === 'availability') return '#0f766e';
   switch (kind) {
     case 'camping':
-      return '#d97706';
+      return '#b45309';
     case 'event':
-      return '#7c3aed';
+      return '#6d28d9';
     case 'rideshare':
-      return '#0284c7';
+      return '#0369a1';
     case 'shop':
       return '#e11d48';
     case 'agency':
@@ -552,7 +553,7 @@ export const exploreMapPinRingColor = (
     case 'area':
       return '#64748b';
     default:
-      return '#059669';
+      return '#047857';
   }
 };
 

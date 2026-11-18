@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { isTimeBoundExploreMapItem, type ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { sortExploreActivities, sortExploreVenues } from '../exploreListSort';
-import { selectExploreMapPinCatalog } from '../shell/selectExploreMapPinCatalog';
+import { selectExploreLensItems } from '../shell/selectExploreLensItems';
 import type { ExploreActivityDatePreset, ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
 import type { PlaceKind } from '@uaetrail/shared-types';
 import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
@@ -22,11 +22,11 @@ import {
   type ExploreSearchScopeKey,
 } from '../exploreBrowseTaxonomy';
 import type { ExploreBrowseListMode } from './useExploreBrowseUrlState';
-import { selectActivitiesFromExploreCatalog } from '@/activity-discovery/catalog/activities';
+import { selectActivitiesFromMapItems } from '@/activity-discovery/catalog/activities';
 import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
 import {
-  selectPlacesFromExploreCatalog,
-  selectShopsFromExploreCatalog,
+  selectPlacesFromMapItems,
+  selectShopsFromMapItems,
 } from '@/places-discovery/catalog/places';
 import { countExploreSearchScopes, exploreItemMatchesQuery } from '../exploreSearchMatches';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
@@ -105,7 +105,7 @@ export const useExploreBrowseList = ({
       ...items,
       ...ephemeralMapItems.filter((entry) => !itemIds.has(entry.id)),
     ];
-    let pool = selectExploreMapPinCatalog({
+    let pool = selectExploreLensItems({
       catalog: merged,
       isDesktop,
       desktopBrowseTab,
@@ -154,7 +154,7 @@ export const useExploreBrowseList = ({
 
   const browseListBase = useMemo(() => {
     const timeBoundActivitiesForList = (catalog: ExploreMapItemDTO[]) => {
-      const selected = selectActivitiesFromExploreCatalog(catalog, {
+      const selected = selectActivitiesFromMapItems(catalog, {
         mapFilter,
         tripMapTopics,
         buddySubtype,
@@ -173,7 +173,7 @@ export const useExploreBrowseList = ({
         return dedupeExploreListById(timeBoundActivitiesForList(items));
       }
       return dedupeExploreListById(
-        selectPlacesFromExploreCatalog(items, {
+        selectPlacesFromMapItems(items, {
           mapFilter,
           venueFilter,
           placeMapTopics,
@@ -186,7 +186,7 @@ export const useExploreBrowseList = ({
 
     if (sidebarPanel === 'venues') {
       return dedupeExploreListById(
-        selectPlacesFromExploreCatalog(items, {
+        selectPlacesFromMapItems(items, {
           mapFilter,
           venueFilter,
           placeMapTopics,
@@ -198,7 +198,7 @@ export const useExploreBrowseList = ({
     }
 
     if (sidebarPanel === 'shops') {
-      return dedupeExploreListById(selectShopsFromExploreCatalog(items));
+      return dedupeExploreListById(selectShopsFromMapItems(items));
     }
 
     return dedupeExploreListById(timeBoundActivitiesForList(items));
@@ -233,7 +233,7 @@ export const useExploreBrowseList = ({
     }
 
     const activitySearchPool = () => {
-      const selected = selectActivitiesFromExploreCatalog(items, {
+      const selected = selectActivitiesFromMapItems(items, {
         mapFilter,
         buddySubtype,
         outingTopic,
@@ -253,7 +253,7 @@ export const useExploreBrowseList = ({
       activitySearchPool().filter((item) => mapItemMatchesSearchScope(item, 'people'));
 
     const placesListPool = () =>
-      selectPlacesFromExploreCatalog(items, {
+      selectPlacesFromMapItems(items, {
         mapFilter,
         venueRegions,
         hasTrip,
@@ -273,7 +273,7 @@ export const useExploreBrowseList = ({
     }
 
     if (hasQuery && searchScope === 'shops') {
-      return selectShopsFromExploreCatalog(items).filter(matchesQuery);
+      return selectShopsFromMapItems(items).filter(matchesQuery);
     }
 
     if (hasQuery && searchScope === 'agencies') {

@@ -1,4 +1,5 @@
 import type { ExploreMapItemDTO, PlaceKind } from '@uaetrail/shared-types';
+import type { DiscoveryMapItems } from '@/discovery/discoveryMapPayload';
 import { sortExploreVenues } from '../../explore/exploreListSort';
 import type { MapFilterKey, VenueListFilterKey } from '../../explore/routing';
 import {
@@ -14,7 +15,7 @@ import {
 import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
 import { isPlacesMapItem, isShopListItem } from '../../explore/ui/exploreMapPinModel';
 
-export type ExplorePlacesCatalogFilters = {
+export type MapPlaceFilters = {
   mapFilter: MapFilterKey;
   venueFilter?: VenueListFilterKey;
   venueRegions: string[];
@@ -23,20 +24,23 @@ export type ExplorePlacesCatalogFilters = {
   facilityKinds?: readonly PlaceKind[];
 };
 
-/** Venue + catalog place pins from the explore map read (`GET /explore/map`). */
-export const selectPlacesFromExploreCatalog = (
-  exploreCatalogItems: ExploreMapItemDTO[],
-  filters: ExplorePlacesCatalogFilters
+/** @deprecated Use `MapPlaceFilters`. */
+export type ExplorePlacesCatalogFilters = MapPlaceFilters;
+
+/** Venue + catalog place pins from the discovery map payload (`GET /explore/map`). */
+export const selectPlacesFromMapItems = (
+  mapItems: DiscoveryMapItems,
+  filters: MapPlaceFilters
 ): ExploreMapItemDTO[] => {
   const facilityKinds = filters.facilityKinds ?? [];
   const placeMapTopics = effectivePlaceTopicsForFacilityKinds(
     filters.placeMapTopics ?? [],
     facilityKinds
   );
-  const hostedIds = filters.hasTrip ? hostedPlaceLocationIdsFromCatalog(exploreCatalogItems) : null;
+  const hostedIds = filters.hasTrip ? hostedPlaceLocationIdsFromCatalog(mapItems) : null;
 
   return sortExploreVenues(
-    exploreCatalogItems
+    mapItems
       .filter(isPlacesMapItem)
       .filter((item) =>
         matchesPlaceMapTopicFilter(
@@ -52,7 +56,12 @@ export const selectPlacesFromExploreCatalog = (
   );
 };
 
-/** Shop pins (physical + online) from the same explore catalog. */
-export const selectShopsFromExploreCatalog = (
-  exploreCatalogItems: ExploreMapItemDTO[]
-): ExploreMapItemDTO[] => sortExploreVenues(exploreCatalogItems.filter(isShopListItem));
+/** Shop pins (physical + online) from the same discovery map payload. */
+export const selectShopsFromMapItems = (mapItems: DiscoveryMapItems): ExploreMapItemDTO[] =>
+  sortExploreVenues(mapItems.filter(isShopListItem));
+
+/** @deprecated Use `selectPlacesFromMapItems`. */
+export const selectPlacesFromExploreCatalog = selectPlacesFromMapItems;
+
+/** @deprecated Use `selectShopsFromMapItems`. */
+export const selectShopsFromExploreCatalog = selectShopsFromMapItems;
