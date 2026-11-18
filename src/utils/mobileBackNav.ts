@@ -200,7 +200,7 @@ export const resolveMobileTabHeaderLeadingBack = (
       return flowBack(BUDDIES_PATH, PRODUCT_SOCIAL_SURFACE_TITLE);
     }
     if (crewsOrigin) {
-      return flowBack(crewsHomePath(), 'Crews');
+      return flowBack(crewsHomePath(), PRODUCT_CREWS_TAB_LABEL);
     }
     return null;
   }

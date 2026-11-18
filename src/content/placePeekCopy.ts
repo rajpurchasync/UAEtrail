@@ -11,6 +11,8 @@ export const placePeekScheduledActivitiesCountLabel = (count: number): string =>
 export const PLACE_PEEK_ARRANGE_TRIP = 'Arrange trip';
 /** Compact map peek footer tile. */
 export const PLACE_PEEK_FOOTER_PLAN_TRIP = 'Plan trip';
+export const PLACE_PEEK_FOOTER_DIRECTIONS = 'Directions';
+export const PLACE_PEEK_FOOTER_EXPLORE = 'Explore place';
 export const PLACE_PEEK_FOOTER_DETAILS = 'Details';
 export const PLACE_PEEK_FOOTER_TRIP_ALERTS = 'Trip alerts';
 export const PLACE_PEEK_FOOTER_TRIP_ALERTS_ON = 'Alerts on';

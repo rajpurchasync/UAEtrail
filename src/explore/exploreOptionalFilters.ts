@@ -24,7 +24,8 @@ export type ExploreVenueFilterPatch = {
   facilityKinds: PlaceKind[];
 };
 
-export const EXPLORE_TRIP_SCOPE_RESTING_LABEL = 'All trips';
+export const EXPLORE_TRIP_SCOPE_RESTING_LABEL = 'All Trips';
+export const EXPLORE_TRIP_SCOPE_ALL_KEY = 'all';
 export const EXPLORE_PLACE_SCOPE_RESTING_LABEL = 'All kinds';
 export const EXPLORE_PRICE_SCOPE_RESTING_LABEL = 'Any price';
 export const EXPLORE_REGION_SCOPE_RESTING_LABEL = 'All UAE';
@@ -36,7 +37,13 @@ export const EXPLORE_TRIP_TOPIC_OPTIONS: ReadonlyArray<{ key: TripMapTopicKey; l
   { key: 'hiking', label: 'Hiking' },
   { key: 'camping', label: 'Camping' },
   { key: 'rideshare', label: 'Rideshare' },
-  { key: 'others', label: 'Other' },
+  { key: 'others', label: 'Others' },
+];
+
+/** Trip-type dropdown — explicit “All Trips” plus each topic (matches price pill pattern). */
+export const EXPLORE_TRIP_DROPDOWN_OPTIONS: ReadonlyArray<{ key: string; label: string }> = [
+  { key: EXPLORE_TRIP_SCOPE_ALL_KEY, label: EXPLORE_TRIP_SCOPE_RESTING_LABEL },
+  ...EXPLORE_TRIP_TOPIC_OPTIONS,
 ];
 
 export const EXPLORE_PLACE_TOPIC_OPTIONS: ReadonlyArray<{ key: PlaceMapTopicKey; label: string }> = [

@@ -97,7 +97,7 @@ describe('list explorer events/places bucket', () => {
 
   it('labels the current total and search counts on both buckets', () => {
     expect(listExplorerBucketTotalLabel('events', 17)).toBe('17 trips');
-    expect(listExplorerBucketTotalLabel('places', 1)).toBe('1 venue');
+    expect(listExplorerBucketTotalLabel('places', 1)).toBe('1 place');
     expect(
       listExplorerSearchBucketCounts({
         activities: 2,

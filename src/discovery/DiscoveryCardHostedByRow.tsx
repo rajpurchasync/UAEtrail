@@ -1,4 +1,5 @@
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Clock } from 'lucide-react';
+import { resolveActivityMapPeekScheduleLine } from '../activity/resolveActivityMapPeekScheduleLine';
 import { Link } from 'react-router-dom';
 import { HOSTED_BY_LABEL } from '../content/workspaceVocabulary';
 import { SecureAvatar } from '../components/ui/SecureAvatar';
@@ -21,6 +22,8 @@ type DiscoveryCardHostedByRowProps = {
   /** List thumb — host chip inside item link. */
   embedInItemLink?: boolean;
   mapPeekCompact?: boolean;
+  /** Map trip peek — schedule under name; no tour-operator kicker. */
+  tripMapPeek?: boolean;
   className?: string;
 };
 
@@ -31,8 +34,10 @@ export const DiscoveryCardHostedByRow = ({
   onBeforeNavigate,
   embedInItemLink = false,
   mapPeekCompact = false,
+  tripMapPeek = false,
   className = '',
 }: DiscoveryCardHostedByRowProps) => {
+  const scheduleLine = tripMapPeek ? resolveActivityMapPeekScheduleLine(card) : null;
   const publisher = resolveDiscoveryHostedByPublisher(card);
   const hostName = publisher.name?.trim();
   if (!hostName) return null;
@@ -68,11 +73,21 @@ export const DiscoveryCardHostedByRow = ({
     <>
       <SecureAvatar src={hostAvatar} name={hostName} className={avatarClass} />
       <div className="min-w-0 flex-1">
-        <p className={labelClass}>
-          {publisher.kind === 'company' ? 'Tour operator' : HOSTED_BY_LABEL}
-        </p>
+        {!tripMapPeek ? (
+          <p className={labelClass}>
+            {publisher.kind === 'company' ? 'Tour operator' : HOSTED_BY_LABEL}
+          </p>
+        ) : null}
         <p className={nameClass}>{hostName}</p>
-        {trustLabels.length > 0 ? (
+        {scheduleLine ? (
+          <p
+            className={`mt-0.5 flex items-center gap-1 text-[11px] font-medium leading-snug ${EXPLORE_TYPE.muted}`}
+          >
+            <Clock className="h-3 w-3 shrink-0 text-rose-500" aria-hidden />
+            <span className="truncate">{scheduleLine}</span>
+          </p>
+        ) : null}
+        {trustLabels.length > 0 && !tripMapPeek ? (
           <p
             className={
               mapPeekCompact
@@ -84,7 +99,7 @@ export const DiscoveryCardHostedByRow = ({
           </p>
         ) : null}
       </div>
-      {hostPath && !embedInItemLink ? (
+      {hostPath && !embedInItemLink && !tripMapPeek ? (
         <ChevronRight
           className={`${mapPeekCompact ? 'h-3.5 w-3.5' : 'h-4 w-4'} mt-1 shrink-0 text-gray-400`}
           aria-hidden

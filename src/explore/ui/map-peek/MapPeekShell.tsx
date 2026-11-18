@@ -4,7 +4,12 @@ import { isGeographyMapSource } from '@uaetrail/shared-types';
 import { Share2, X } from 'lucide-react';
 import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 import { EXPLORE_PEEK } from '../../../config/exploreTheme';
-import { layoutMapPeekBubble, mapPeekFitScale, type MapPeekPinAnchor } from '../../mapPeekBubbleLayout';
+import {
+  layoutMapPeekBottomSheet,
+  layoutMapPeekBubble,
+  mapPeekFitScale,
+  type MapPeekPinAnchor,
+} from '../../mapPeekBubbleLayout';
 import { EnvironmentImage } from '../../../components/ui/EnvironmentImage';
 import { ShareButton } from '../../../components/ui/ShareButton';
 import { ExploreFollowButton } from '../ExploreFollowButton';
@@ -46,6 +51,10 @@ export type MapPeekShellProps = {
   catalogPlaceSummary?: boolean;
   /** Activity pins — opens canonical outing share sheet (in-app + external). */
   onShareActivity?: () => void;
+  /** Map activity pins — trip stack (no browse poster / duplicate title meta). */
+  activityTripMapPeek?: boolean;
+  /** Map venue pins — compact hero + place stack. */
+  placeVenueMapPeek?: boolean;
 };
 
 /** Shared chrome for map/list pin summaries (activities, places, shops). */
@@ -61,9 +70,15 @@ export const MapPeekShell = ({
   statusBanner = null,
   catalogPlaceSummary = false,
   onShareActivity,
+  activityTripMapPeek: activityTripMapPeekProp,
+  placeVenueMapPeek: placeVenueMapPeekProp,
 }: MapPeekShellProps) => {
   const dismissVisible = showDismissChrome ?? !embedMode;
   const mapSummary = !embedMode;
+  const activityTripMapPeek =
+    activityTripMapPeekProp ?? (mapSummary && card.source === 'activity');
+  const placeVenueMapPeek =
+    placeVenueMapPeekProp ?? (mapSummary && catalogPlaceSummary);
   const location = useLocation();
   const titleDetailAccess = resolvePeekDetailAccess(card, {
     isGuest: Boolean(onGuestGatedAction),
@@ -73,7 +88,7 @@ export const MapPeekShell = ({
   const shellClass = embedMode
     ? 'overflow-hidden rounded-2xl bg-white shadow-[0_8px_32px_rgba(15,23,42,.16)] ring-1 ring-black/5'
     : EXPLORE_PEEK.shell;
-  const browseBannerPeek = mapSummary && !catalogPlaceSummary;
+  const browseBannerPeek = mapSummary && !catalogPlaceSummary && !activityTripMapPeek;
   const showCoverHero =
     !browseBannerPeek && Boolean(card.coverImage) && !catalogPlaceSummary;
   const showPlaceCatalogHero = catalogPlaceSummary && isGeographyMapSource(card.source);
@@ -82,7 +97,9 @@ export const MapPeekShell = ({
     ? peekBannerIconBtn
     : showCoverHero
       ? peekBannerIconBtn
-      : 'inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-neutral-700 shadow-sm ring-1 ring-neutral-200/90 hover:bg-neutral-50 transition-colors';
+      : activityTripMapPeek
+        ? EXPLORE_PEEK.tripChromeBtn
+        : 'inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-neutral-700 shadow-sm ring-1 ring-neutral-200/90 hover:bg-neutral-50 transition-colors';
 
   const peekLeadingActions =
     isGeographyMapSource(card.source) ? (
@@ -142,6 +159,7 @@ export const MapPeekShell = ({
         <PlacePeekHero
           card={card}
           embedMode={embedMode}
+          compactMapPeek={placeVenueMapPeek}
           onClose={onClose}
           onBeforeDetailNavigate={onClose}
         />
@@ -194,7 +212,13 @@ export const MapPeekShell = ({
             mapSummary ? 'px-3' : 'px-4'
           } ${showCoverHero ? (mapSummary ? 'pt-2' : 'pt-3') : mapSummary ? 'pt-2.5' : 'pt-4'}`}
         >
-          <DiscoveryCardTypeBadge card={card} size="sm" />
+          {activityTripMapPeek ? (
+            <span className={EXPLORE_PEEK.tripTypeBadge} aria-hidden>
+              {card.emoji?.trim() || '🥾'}
+            </span>
+          ) : (
+            <DiscoveryCardTypeBadge card={card} size="sm" />
+          )}
           <div className="flex shrink-0 items-start gap-1.5">
             {isGeographyMapSource(card.source) ? (
               <ExploreWishlistSaveButton card={card} light={!showCoverHero} />
@@ -231,7 +255,11 @@ export const MapPeekShell = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100 text-gray-700"
+                className={
+                  activityTripMapPeek
+                    ? EXPLORE_PEEK.tripChromeBtn
+                    : 'flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100 text-gray-700'
+                }
                 aria-label="Close"
               >
                 <X className="h-4 w-4" />
@@ -246,7 +274,9 @@ export const MapPeekShell = ({
         className={
           embedMode
             ? 'flex flex-col gap-3 px-4 pt-4 pb-1'
-            : 'map-peek-summary-body flex shrink-0 flex-col gap-3 overflow-hidden px-4 pt-3.5 pb-2'
+            : `map-peek-summary-body flex shrink-0 flex-col overflow-hidden px-4 pb-2 ${
+                activityTripMapPeek || placeVenueMapPeek ? 'gap-2 pt-2.5' : 'gap-3 pt-3.5'
+              }`
         }
       >
         {catalogPlaceSummary ? (
@@ -258,44 +288,48 @@ export const MapPeekShell = ({
           />
         ) : (
           <>
-            {browseBannerPeek ? (
-              <>
-                <MapPeekBrowseTitle
-                  card={card}
+            {!activityTripMapPeek ? (
+              browseBannerPeek ? (
+                <>
+                  <MapPeekBrowseTitle
+                    card={card}
+                    detailAccess={titleDetailAccess}
+                    onGuestGatedDetail={onGuestGatedAction}
+                    onBeforeDetailNavigate={onClose}
+                    detailLinkState={detailLinkState}
+                    joinStateLoading={joinStateLoading}
+                  />
+                  {activityBrowseCopy?.metaLine ? (
+                    <DiscoveryBrowseCardMetaSlot
+                      line={activityBrowseCopy.metaLine}
+                      href={activityBrowseCopy.metaHref}
+                      mode="peek"
+                    />
+                  ) : null}
+                </>
+              ) : (
+                <DiscoveryCardHeadline
+                  sections={card.sections}
+                  size={mapSummary ? 'sm' : 'lg'}
+                  lineClamp={mapSummary ? 2 : undefined}
+                  tone={card.tone}
                   detailAccess={titleDetailAccess}
                   onGuestGatedDetail={onGuestGatedAction}
                   onBeforeDetailNavigate={onClose}
                   detailLinkState={detailLinkState}
-                  joinStateLoading={joinStateLoading}
                 />
-                {activityBrowseCopy?.metaLine ? (
-                  <DiscoveryBrowseCardMetaSlot
-                    line={activityBrowseCopy.metaLine}
-                    href={activityBrowseCopy.metaHref}
-                    mode="peek"
-                  />
-                ) : null}
-              </>
-            ) : (
-              <DiscoveryCardHeadline
-                sections={card.sections}
-                size={mapSummary ? 'sm' : 'lg'}
-                lineClamp={mapSummary ? 2 : undefined}
-                tone={card.tone}
-                detailAccess={titleDetailAccess}
-                onGuestGatedDetail={onGuestGatedAction}
-                onBeforeDetailNavigate={onClose}
-                detailLinkState={detailLinkState}
-              />
-            )}
-            {card.source === 'activity' ? (
+              )
+            ) : null}
+            {!activityTripMapPeek && card.source === 'activity' ? (
               <ActivityDiscoveryPublishedBody
                 card={card}
                 mapPeekCompact={mapSummary}
                 mapPeekBrowseLayout={browseBannerPeek}
               />
             ) : null}
-            <DiscoveryCardRatingRow card={card} compact={mapSummary} />
+            {!activityTripMapPeek ? (
+              <DiscoveryCardRatingRow card={card} compact={mapSummary} />
+            ) : null}
           </>
         )}
         {children}
@@ -345,6 +379,7 @@ export const MapPeekOverlay = ({
   const [cardHeight, setCardHeight] = useState(280);
   const [peekFit, setPeekFit] = useState(1);
   const [insets, setInsets] = useState({ top: 12, bottom: 12 });
+  const [mobileDock, setMobileDock] = useState(false);
 
   useEffect(() => {
     if (!onClose) return;
@@ -369,6 +404,7 @@ export const MapPeekOverlay = ({
           ? Math.max(12, Math.round(chromeRect.bottom - overlayRect.top + 8))
           : 12;
       const compact = overlay.clientWidth < 768;
+      setMobileDock(compact);
       const bottom = compact ? 96 : 24;
       const available = Math.max(0, overlay.clientHeight - top - bottom);
       const fitEl = fitRef.current;
@@ -390,14 +426,22 @@ export const MapPeekOverlay = ({
     return () => observer.disconnect();
   }, [pinKey]);
 
-  const layout = layoutMapPeekBubble({
-    overlayWidth: overlaySize.width,
-    overlayHeight: overlaySize.height,
-    cardHeight,
-    pin: pinAnchor,
-    topInset: insets.top,
-    bottomInset: insets.bottom,
-  });
+  const layout = mobileDock
+    ? layoutMapPeekBottomSheet({
+        overlayWidth: overlaySize.width,
+        overlayHeight: overlaySize.height,
+        cardHeight,
+        topInset: insets.top,
+        bottomInset: insets.bottom,
+      })
+    : layoutMapPeekBubble({
+        overlayWidth: overlaySize.width,
+        overlayHeight: overlaySize.height,
+        cardHeight,
+        pin: pinAnchor,
+        topInset: insets.top,
+        bottomInset: insets.bottom,
+      });
 
   const bubbleStyle = {
     left: layout.left,
@@ -411,7 +455,12 @@ export const MapPeekOverlay = ({
   return (
     <div ref={overlayRef} className={EXPLORE_PEEK.position}>
       {onClose ? (
-        <button type="button" className={EXPLORE_PEEK.scrim} aria-label="Close" onClick={onClose} />
+        <button
+          type="button"
+          className={`${EXPLORE_PEEK.scrim} ${mobileDock ? 'bg-black/10' : ''}`}
+          aria-label="Dismiss"
+          onClick={onClose}
+        />
       ) : null}
       <div
         key={pinKey ?? 'peek'}

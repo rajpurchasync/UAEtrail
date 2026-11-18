@@ -30,4 +30,24 @@ describe('buildPlaceDetailDiscoveryCard', () => {
       expect.objectContaining({ locationId: 'p1', watchLatitude: 25.1, watchLongitude: 55.2 })
     );
   });
+
+  it('carries geoRef onto the discovery card model', () => {
+    const geoRef = {
+      chain: ['c1'],
+      countryId: 'c1',
+      stateId: 's1',
+      areaId: 'a1',
+      path: 'ae/dubai',
+      names: { country: 'UAE', state: 'Dubai', area: 'Hatta' },
+      searchTokens: ['hatta'],
+    };
+    const card = buildPlaceDetailDiscoveryCard({
+      kind: 'trail',
+      place: { ...basePlace(), geoRef },
+      placeId: 'p1',
+      detailPath: '/trail/p1',
+      shareText: 'Share',
+    });
+    expect(card.geoRef).toEqual(geoRef);
+  });
 });

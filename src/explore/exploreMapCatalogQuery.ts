@@ -56,8 +56,20 @@ export const exploreMapCatalogQuery = (input: {
   }
   if (trips.includes('rideshare')) sources.add('activity');
 
+  const mapShowsActivities =
+    pin === 'activities' ||
+    pin === 'looking' ||
+    pin === 'all' ||
+    trips.length > 0 ||
+    input.mapFilter === 'rideshare' ||
+    input.mapFilter === 'hiking' ||
+    input.mapFilter === 'camping' ||
+    input.mapFilter === 'others';
+  const allTripTopics =
+    trips.length === 0 && input.mapFilter === 'all' && mapShowsActivities;
+
   return {
     sources: [...sources].join(','),
-    includeRideshare: trips.includes('rideshare'),
+    includeRideshare: trips.includes('rideshare') || allTripTopics,
   };
 };

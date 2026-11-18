@@ -13,15 +13,15 @@ import {
 } from './mobileFiveTabNav';
 
 describe('mobile five-tab nav contract', () => {
-  it('orders tabs Trips · Venues · Plans · Crews · Chat', () => {
-    expect(MOBILE_FIVE_TAB_ORDER).toEqual(['trips', 'venues', 'plan', 'crews', 'chat']);
+  it('orders tabs Trips · Places · People · Chat · Plans', () => {
+    expect(MOBILE_FIVE_TAB_ORDER).toEqual(['trips', 'venues', 'crews', 'chat', 'plan']);
   });
 
-  it('exposes UI labels Trips · Venues · Plans · Crews · Chat', () => {
+  it('exposes UI labels Trips · Places · People · Chat · Plans', () => {
     expect(MOBILE_FIVE_TAB_UI_LABELS).toEqual({
       trips: 'Trips',
-      venues: 'Venues',
-      crews: 'Crews',
+      venues: 'Places',
+      crews: 'People',
       plan: 'Plans',
       chat: 'Chat',
     });

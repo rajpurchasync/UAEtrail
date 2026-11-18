@@ -22,7 +22,7 @@ import { DirectionsControl } from '../../../components/ui';
 import { DetailHeroShareButton } from '../../../detail/shared/DetailHeroShareButton';
 import { LazyMeetingPointMap } from '../../../detail/shared/LazyMeetingPointMap';
 import { PageMeta } from '../../../components/seo/PageMeta';
-import { detailBackPath } from '../../../config/routingCatalog';
+import { detailBackPath, geoNodePath } from '../../../config/routingCatalog';
 import {
   sendReferralClickBeacon,
 } from '../../../hooks/publicPlatformAlertsClientApi';
@@ -74,7 +74,11 @@ export const FacilityDetailSections = ({
     return publishedAreas.find((area) => area.id === id)?.slug ?? null;
   }, [facility.areaId, publishedAreas]);
   const { region, areaLabel, areaSlug } = resolveFacilityDetailAreaHero(facility, curatedAreaSlug);
-  const geoLinks = useGeoAncestorLinks({ region });
+  const geoHubPath = useMemo(() => {
+    const venueId = facility.geoRef?.venueId?.trim();
+    return venueId && !areaSlug ? geoNodePath(venueId) : null;
+  }, [areaSlug, facility.geoRef?.venueId]);
+  const geoLinks = useGeoAncestorLinks({ region, geoRef: facility.geoRef ?? null });
   const areaLinkState = useMemo(() => {
     const returnTo = `${location.pathname}${location.search}`;
     return consumerDetailChildLinkState(returnTo, headerChrome.label);
@@ -86,6 +90,7 @@ export const FacilityDetailSections = ({
         regionFallback={region}
         areaLabel={areaLabel}
         areaSlug={areaSlug}
+        geoHubPath={geoHubPath}
         areaLinkState={areaLinkState}
         geoLinkBackLabel={headerChrome.label}
       />

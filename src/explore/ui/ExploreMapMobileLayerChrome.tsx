@@ -1,5 +1,6 @@
 import { type ReactElement } from 'react';
 import type { PlaceKind } from '@uaetrail/shared-types';
+import { MOBILE_FIVE_TAB_UI_LABELS } from '../../config/mobileFiveTabNav';
 import type { ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
 import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
@@ -12,8 +13,13 @@ import type { BrowseTripTopicKey } from '../../list/browseListTripTopics';
 import type { ListVenuePlaceTopicKey } from '../../list/listVenuePlaceTopics';
 import { ListExplorerQuickFilters } from '../../list/explorer/ListExplorerQuickFilters';
 import { UiTooltip } from '../../components/ui/UiTooltip';
-import { EXPLORE_MAP_CHROME_FROST, exploreMapScopeSegmentLabeledClass } from '../../config/exploreTheme';
+import {
+  EXPLORE_MAP_CHROME_FROST,
+  EXPLORE_MAP_MOBILE_FLOAT_CHIP_MARK,
+  exploreMapScopeSegmentLabeledClass,
+} from '../../config/exploreTheme';
 import { EXPLORE_PLACES_LAYER_EMOJI, SEEKING_EMOJI } from '../exploreCopy';
+import { ExploreMarkEmoji } from './ExploreFilterIcon';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import { browsePanelForMobileLayer } from './exploreMapMobileMenus';
 import {
@@ -25,6 +31,7 @@ const SCOPE_ROW = 'flex h-8 min-w-0 items-center gap-2';
 const SCOPE_TRAY =
   `flex h-8 w-auto max-w-[calc(100%-2.25rem)] shrink-0 items-center gap-0.5 overflow-hidden rounded-full p-0.5 ring-1 ring-black/5 ${EXPLORE_MAP_CHROME_FROST}`;
 const CREWS_SCOPE_EMOJI = '👥';
+const MAP_SCOPE_MARK = EXPLORE_MAP_MOBILE_FLOAT_CHIP_MARK;
 
 const tip = (label: string, button: ReactElement) => (
   <UiTooltip label={label} className="flex items-center justify-center">
@@ -126,7 +133,11 @@ export const ExploreMapMobileLayerChrome = ({
   return (
     <div className="flex w-full min-w-0 flex-col items-stretch gap-2">
       <div className={SCOPE_ROW}>
-        <div className={SCOPE_TRAY} role="tablist" aria-label="Trips, venues, and crews">
+        <div
+          className={SCOPE_TRAY}
+          role="tablist"
+          aria-label={`Trips, places, and ${MOBILE_FIVE_TAB_UI_LABELS.crews.toLowerCase()}`}
+        >
           <button
             type="button"
             role="tab"
@@ -134,9 +145,7 @@ export const ExploreMapMobileLayerChrome = ({
             aria-selected={layer === 'activity'}
             onClick={() => openLayer('activity')}
           >
-            <span className="font-emoji shrink-0 text-base leading-none" aria-hidden>
-              {SEEKING_EMOJI}
-            </span>
+            <ExploreMarkEmoji emoji={SEEKING_EMOJI} markClassName={MAP_SCOPE_MARK} />
             <span className="whitespace-nowrap">Trips</span>
           </button>
           <button
@@ -146,23 +155,19 @@ export const ExploreMapMobileLayerChrome = ({
             aria-selected={layer === 'places'}
             onClick={() => openLayer('places')}
           >
-            <span className="font-emoji shrink-0 text-base leading-none" aria-hidden>
-              {EXPLORE_PLACES_LAYER_EMOJI}
-            </span>
-            <span className="whitespace-nowrap">Venues</span>
+            <ExploreMarkEmoji emoji={EXPLORE_PLACES_LAYER_EMOJI} markClassName={MAP_SCOPE_MARK} />
+            <span className="whitespace-nowrap">{MOBILE_FIVE_TAB_UI_LABELS.venues}</span>
           </button>
           <button
             type="button"
             role="tab"
             className={exploreMapScopeSegmentLabeledClass(false, 'activity')}
             aria-selected={false}
-            aria-label="Crews"
+            aria-label={MOBILE_FIVE_TAB_UI_LABELS.crews}
             onClick={() => onOpenCrewsPage()}
           >
-            <span className="font-emoji shrink-0 text-base leading-none" aria-hidden>
-              {CREWS_SCOPE_EMOJI}
-            </span>
-            <span className="whitespace-nowrap">Crews</span>
+            <ExploreMarkEmoji emoji={CREWS_SCOPE_EMOJI} markClassName={MAP_SCOPE_MARK} lift="people" />
+            <span className="whitespace-nowrap">{MOBILE_FIVE_TAB_UI_LABELS.crews}</span>
           </button>
         </div>
         {onOpenExploreSearch ? (
@@ -175,9 +180,7 @@ export const ExploreMapMobileLayerChrome = ({
                 aria-label="Search explore"
                 onClick={() => onOpenExploreSearch()}
               >
-                <span className="font-emoji text-[0.9375rem]" aria-hidden>
-                  🔍
-                </span>
+                <ExploreMarkEmoji emoji="🔍" markClassName={MAP_SCOPE_MARK} />
               </button>
             )}
           </div>

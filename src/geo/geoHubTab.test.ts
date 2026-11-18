@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { geoHubTabsForChildren, parseGeoHubTabParam } from './geoHubTab';
+import { geoHubTabsForChildren, geoHubTabsForNode, parseGeoHubTabParam } from './geoHubTab';
 
 describe('parseGeoHubTabParam', () => {
   it('defaults to overview', () => {
@@ -19,5 +19,14 @@ describe('geoHubTabsForChildren', () => {
   it('hides Places when the node has no sub-geo children', () => {
     expect(geoHubTabsForChildren(0)).toEqual(['overview', 'explore']);
     expect(geoHubTabsForChildren(3)).toEqual(['overview', 'places', 'explore']);
+  });
+
+  it('exposes Facilities tab when facility rollup count is positive', () => {
+    expect(parseGeoHubTabParam('facilities')).toBe('facilities');
+    expect(geoHubTabsForNode({ childCount: 0, facilityCount: 2 })).toEqual([
+      'overview',
+      'facilities',
+      'explore',
+    ]);
   });
 });

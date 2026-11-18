@@ -75,6 +75,19 @@ describe('exploreMapPinModel', () => {
     expect(matchesActivityDateFilter(venue, 'today')).toBe(true);
   });
 
+  it('expandMapPins sets hostedTripCount on venues with upcoming outings', () => {
+    const placeId = 'loc-trail-1';
+    const hosted = hostedExploreMapItem({
+      date: '2026-12-01',
+      activity: { locationId: placeId } as ExploreMapItemDTO['activity'],
+    });
+    const venue = venueExploreMapItem({
+      locationCard: { id: placeId, name: 'Trail', activityType: 'hiking' },
+    });
+    const pin = expandMapPins([hosted, venue]).find((row) => row.id === venue.id);
+    expect(pin?.hostedTripCount).toBe(1);
+  });
+
   it('expandMapPins resolves activityMode for hosted and seeking', () => {
     const hosted = expandMapPins([hostedExploreMapItem()])[0];
     const seeking = expandMapPins([seekingExploreMapItem()])[0];

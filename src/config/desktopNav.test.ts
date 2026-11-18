@@ -113,13 +113,13 @@ describe('desktop sidebar IA', () => {
     expect(hamburgerLabels).not.toContain('Explore');
     expect(hamburgerLabels).not.toContain('Outing history');
     expect(hamburgerLabels).toEqual(
-      expect.arrayContaining(['Trips', 'Venues', 'Plans', 'Crews', 'Chat', 'Profile'])
+      expect.arrayContaining(['Trips', 'Places', 'Plans', 'People', 'Chat', 'Profile'])
     );
     expect(hamburgerLabels).not.toContain('Social');
     expect(MOBILE_LANDING_USER_MENU.some((item) => item.label === 'Browse')).toBe(false);
     expect(MOBILE_LANDING_USER_MENU.find((item) => item.label === 'Explore')?.to).toBe(EXPLORE_MAP_PATH);
     expect(MOBILE_LANDING_USER_MENU.some((item) => item.label === 'Trips')).toBe(true);
-    expect(MOBILE_LANDING_USER_MENU.some((item) => item.label === 'Venues')).toBe(true);
+    expect(MOBILE_LANDING_USER_MENU.some((item) => item.label === 'Places')).toBe(true);
   });
 
   it('host mode hamburger leads with Hosting then the five-tab consumer rows', () => {

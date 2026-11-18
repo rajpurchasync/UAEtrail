@@ -7,6 +7,7 @@ import {
 import type { MapPinKind, MapPinSource } from '../components/ui/mapPinTypes';
 import { isGeographyMapSource } from '@uaetrail/shared-types';
 import { buildVenueMapBadgeHtml } from './venueMapGlyphs';
+import { type MapPinActivityCaption, resolveMapPinVenueTripLabel } from './exploreMapPinCaption';
 
 export const isCatalogVenueMapPin = (kind: MapPinKind, source: MapPinSource): boolean =>
   isGeographyMapSource(source) && (kind === 'hiking' || kind === 'camping');
@@ -58,6 +59,7 @@ export const buildVenueMapPinHtml = (options: {
   mapZoom: number;
   selected?: boolean;
   stackCount?: number;
+  hostedTripCount?: number;
 }): VenueMapPinLayout => {
   const selectedClass = options.selected ? ' uaetrail-map-venue-pin--selected' : '';
   const stackCount = options.stackCount ?? 1;
@@ -65,16 +67,30 @@ export const buildVenueMapPinHtml = (options: {
   const badgeSize = 36;
   const glyphSize = 22;
   const badgeHtml = buildVenueMapBadgeHtml(options.kind, glyphSize);
+  const tripCount = Math.max(0, options.hostedTripCount ?? 0);
+  const tripDotHtml =
+    tripCount > 0
+      ? `<span class="uaetrail-map-venue-trip-dot" aria-hidden="true" title="Trip scheduled"></span>`
+      : '';
+  const tripLabel = resolveMapPinVenueTripLabel(tripCount, options.mapZoom);
+  const tripLabelHtml = tripLabel
+    ? `<span class="uaetrail-map-venue-trip-label">${escapeMapPinHtml(tripLabel)}</span>`
+    : '';
+  const badgeWrapHtml = `<span class="uaetrail-map-venue-pin-badge-wrap">${badgeHtml}${tripDotHtml}</span>`;
   const { show, text } = venueMapLabelForZoom(options.label ?? '', options.mapZoom);
   const labelHtml = show
     ? `<span class="uaetrail-map-venue-pin-label">${escapeMapPinHtml(text)}</span>`
     : '';
 
   const chipClass = show ? ' uaetrail-map-venue-chip--labeled' : '';
+  const tripChipClass = tripCount > 0 ? ' uaetrail-map-venue-chip--has-trip' : '';
   const countBadge = venueStackCountBadgeHtml(stackCount);
-  const html = `<span class="uaetrail-map-venue-chip${chipClass}${clusterClass}${selectedClass}">${badgeHtml}${labelHtml}${countBadge}</span>`;
+  const html = `<span class="uaetrail-map-venue-chip${chipClass}${tripChipClass}${clusterClass}${selectedClass}">${badgeWrapHtml}${tripLabelHtml}${labelHtml}${countBadge}</span>`;
 
-  const width = show ? Math.min(200, badgeSize + text.length * 6.2 + 14) : badgeSize;
+  const tripLabelWidth = tripLabel ? tripLabel.length * 6.2 + 14 : 0;
+  const width = show
+    ? Math.min(200, badgeSize + text.length * 6.2 + 14 + tripLabelWidth)
+    : Math.max(badgeSize, badgeSize + tripLabelWidth);
   const height = badgeSize;
   const iconAnchor: [number, number] = [badgeSize / 2, badgeSize];
 
@@ -156,6 +172,41 @@ export const buildMapPinFaceHtml = ({
   }
 
   return markerHtml;
+};
+
+const mapPinCaptionWidth = (caption: MapPinActivityCaption, markerSize: number): number => {
+  const longest = Math.max(caption.primary.length, caption.where?.length ?? 0);
+  return Math.max(markerSize, Math.min(118, longest * 5.6 + 18));
+};
+
+const buildMapPinCaptionHtml = (caption: MapPinActivityCaption): string => {
+  const whereHtml = caption.where
+    ? `<span class="uaetrail-map-pin-caption-line uaetrail-map-pin-caption-line--where">${escapeMapPinHtml(caption.where)}</span>`
+    : '';
+  return `<span class="uaetrail-map-pin-caption-stack"><span class="uaetrail-map-pin-caption-line">${escapeMapPinHtml(caption.primary)}</span>${whereHtml}</span>`;
+};
+
+export type ActivityMapPinLayout = {
+  html: string;
+  width: number;
+  height: number;
+  anchorX: number;
+};
+
+/** Circle activity / seeking pin with optional what/when/where caption above the marker. */
+export const buildActivityMapPinLayout = (
+  options: MapPinFaceOptions & { caption?: MapPinActivityCaption | null }
+): ActivityMapPinLayout => {
+  const { caption = null, size, ...faceOptions } = options;
+  const markerHtml = buildMapPinFaceHtml({ ...faceOptions, size });
+  const showCaption = Boolean(caption?.primary?.trim());
+  const captionHtml = showCaption && caption ? buildMapPinCaptionHtml(caption) : '';
+  const widgetClass = showCaption ? 'uaetrail-map-pin-widget uaetrail-map-pin-widget--captioned' : 'uaetrail-map-pin-widget';
+  const html = `<span class="${widgetClass}">${captionHtml}${markerHtml}</span>`;
+  const captionBand = showCaption ? (caption?.where ? 30 : 20) : 0;
+  const width = showCaption && caption ? mapPinCaptionWidth(caption, size) : size;
+  const height = size + captionBand;
+  return { html, width, height, anchorX: width / 2 };
 };
 
 export type ColocatedPinIconEntry = {

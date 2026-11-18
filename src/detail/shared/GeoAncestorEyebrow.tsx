@@ -8,10 +8,16 @@ type GeoAncestorEyebrowProps = {
   links: GeoAncestorLink[];
   fallbackLabel?: string | null;
   linkState?: object;
+  linkClassName?: string;
 };
 
 /** Clickable country / emirate trail on a detail hero. */
-export const GeoAncestorEyebrow = ({ links, fallbackLabel, linkState }: GeoAncestorEyebrowProps) => {
+export const GeoAncestorEyebrow = ({
+  links,
+  fallbackLabel,
+  linkState,
+  linkClassName = HERO_CRUMB_CLASS,
+}: GeoAncestorEyebrowProps) => {
   if (links.length === 0) {
     const label = fallbackLabel?.trim();
     if (!label) return null;
@@ -30,7 +36,7 @@ export const GeoAncestorEyebrow = ({ links, fallbackLabel, linkState }: GeoAnces
             state={linkState}
             authReturnPath={link.href}
             inline
-            className={HERO_CRUMB_CLASS}
+            className={linkClassName}
           >
             {link.label}
           </GeoGuestDrillLink>

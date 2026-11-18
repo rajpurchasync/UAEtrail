@@ -7,7 +7,7 @@
  * Route loader: `pages/ActivityDetail.tsx` · Shell: `ActivityDetailPageShell` · Chrome: `ActivityDetailView`.
  */
 import { useMemo, type ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronRight, MapPin, Car } from 'lucide-react';
 import {
   activityScheduleSpanLabel,
@@ -58,6 +58,11 @@ import { activityDetailFriendsGoingLabel } from '../../../activity/activityDetai
 import { activityCrewPath, activityDetailPath } from '../../../config/routingCatalog';
 import { activityPlaceReturnState } from '../../../explore/mapPeekDetailNavState';
 import { buildActivityDetailPageShellCard } from '../activityDetailPageShellCard';
+import { resolveActivityDetailGeoHero } from '../resolveActivityDetailGeoHero';
+import { ConsumerDetailHeroGeoLine } from '../../../detail/shared/ConsumerDetailHeroGeoLine';
+import { useGeoAncestorLinks } from '../../../hooks/useGeoAncestorLinks';
+import { consumerDetailChildLinkState } from '../../../explore/mapPeekDetailNavState';
+import { resolveActivityDetailHeaderChrome } from '../../activityDetailHeaderChrome';
 import {
   extractActivityTransportReachLines,
   formatActivityAccessibleBySummary,
@@ -103,6 +108,7 @@ export const ActivityDetailSections = ({
   hostManageSurface = null,
 }: ActivityDetailSectionsProps) => {
   const { user } = useAuth();
+  const location = useLocation();
   if (!model.publicDetail) {
     return null;
   }
@@ -114,8 +120,35 @@ export const ActivityDetailSections = ({
   const canOpenParticipantRoster = sections?.canOpenParticipantRoster === true;
 
   const venueLabel =
-    model.registryPlaceName?.trim() || model.activity.locationName?.trim() || '';
+    model.registryPlaceName?.trim() ||
+    model.activity.location?.name?.trim() ||
+    '';
   const registryPath = model.registryPlacePath ?? activityRegistryPlacePath(model.activity);
+  const activityGeoHero = useMemo(
+    () => resolveActivityDetailGeoHero(model.activity),
+    [model.activity]
+  );
+  const geoLinks = useGeoAncestorLinks({
+    region: activityGeoHero.region,
+    geoRef: activityGeoHero.geoRef,
+  });
+  const headerChrome = resolveActivityDetailHeaderChrome(model.activity.activityType);
+  const areaLinkState = useMemo(() => {
+    const returnTo = `${location.pathname}${location.search}`;
+    return consumerDetailChildLinkState(returnTo, headerChrome.label);
+  }, [headerChrome.label, location.pathname, location.search]);
+  const activityGeoLine = (
+    <ConsumerDetailHeroGeoLine
+      geoLinks={geoLinks}
+      regionFallback={activityGeoHero.region}
+      areaLabel={activityGeoHero.areaLabel}
+      areaSlug={activityGeoHero.areaSlug}
+      geoHubPath={activityGeoHero.geoHubPath}
+      areaLinkState={areaLinkState}
+      geoLinkBackLabel={headerChrome.label}
+      tone="onLight"
+    />
+  );
   const hasLinkedPlaceCard = Boolean(
     model.activity.location?.name?.trim() && registryPath
   );
@@ -190,6 +223,7 @@ export const ActivityDetailSections = ({
         activity={model.activity}
         title={model.activityTitle}
         card={model.peekParityCard}
+        geoLine={activityGeoLine}
         venueLine={venueLine}
         statusChips={model.consumerStatusChips}
       />
@@ -327,12 +361,14 @@ const ActivityDetailLead = ({
   activity,
   title,
   card,
+  geoLine,
   venueLine,
   statusChips,
 }: {
   activity: ActivityDetailDTO;
   title: string;
   card: DiscoveryCardModel | null;
+  geoLine: ReactNode;
   venueLine: ReactNode;
   statusChips: ActivityDetailHeroStatusChip[];
 }) => {
@@ -369,6 +405,7 @@ const ActivityDetailLead = ({
 
   return (
     <div className="pb-4 lg:border-b lg:border-neutral-200/80 lg:pb-3">
+      {geoLine ? <div className="mb-1.5">{geoLine}</div> : null}
       <div className="flex items-start gap-3 lg:gap-3">
         <h1 className="min-w-0 flex-1 text-[1.5rem] font-bold leading-[1.15] tracking-tight text-neutral-950 md:text-[1.75rem] lg:text-[1.375rem] lg:leading-tight lg:tracking-tight">
           {title}

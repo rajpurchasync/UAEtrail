@@ -1,3 +1,4 @@
+import { PRODUCT_CREWS_TAB_LABEL } from '../../content/productNorthStar';
 import { LIST_CHIP_SCROLL, listCategoryPillClass } from '../listChromeTheme';
 import { CREWS_STAT_TAB_LABELS, type CrewsStatTab } from './crewsStatTab';
 
@@ -16,7 +17,7 @@ export const CrewsStatsTabs = ({ active, counts, onSelect, onClear }: CrewsStats
   <div
     className={`${LIST_CHIP_SCROLL} relative z-10 min-w-0 max-w-full snap-x snap-mandatory px-0.5`}
     role="tablist"
-    aria-label="Crews"
+    aria-label={PRODUCT_CREWS_TAB_LABEL}
   >
     {CREWS_STAT_ORDER.map((key) => {
       const selected = active === key;

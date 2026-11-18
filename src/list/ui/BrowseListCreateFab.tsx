@@ -19,6 +19,6 @@ export const BrowseListCreateFab = ({
     aria-label={label}
   >
     <Plus className={MOBILE_DOCK_ICON} strokeWidth={2.5} aria-hidden />
-    <span className="truncate">{label}</span>
+    <span className="mobile-dock-pill__label truncate">{label}</span>
   </button>
 );

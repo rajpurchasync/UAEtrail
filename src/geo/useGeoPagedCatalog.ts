@@ -106,3 +106,14 @@ export const useGeoPagedPlaces = (nodeId: string | null, enabled: boolean) =>
 
 export const useGeoPagedActivities = (nodeId: string | null, enabled: boolean) =>
   useGeoPagedList<GeoCatalogActivity>(enabled, nodeId, fetchActivitiesPage);
+
+type GeoCatalogFacility = { _id: string; name?: string };
+
+const fetchFacilitiesPage = (id: string, cursor?: string) =>
+  geoHierarchyApi.listGeoFacilities(id, { cursor, limit: GEO_CATALOG_PAGE_SIZE }).then((res) => ({
+    items: (res.data.items ?? []) as GeoCatalogFacility[],
+    nextCursor: res.data.nextCursor ?? null,
+  }));
+
+export const useGeoPagedFacilities = (nodeId: string | null, enabled: boolean) =>
+  useGeoPagedList<GeoCatalogFacility>(enabled, nodeId, fetchFacilitiesPage);

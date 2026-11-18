@@ -25,6 +25,7 @@
     --explore-map-fab-stack-gap: 1.25rem;
     /** Shared mobile dock pills (List · Create) and list Map/Create FABs */
     --mobile-dock-pill-height: 2.75rem;
+    --explore-pill-line-height: 1.25;
     --explore-map-overlay-size: 2.5rem;
     --explore-map-mobile-control: 3.5rem;
     --explore-map-mobile-control-gap: 0.625rem;
@@ -1282,9 +1283,12 @@
     width: 36px;
     height: 36px;
     border-radius: 10px;
-    background: rgba(255, 255, 255, 0.96);
-    border: 1.5px solid rgba(51, 65, 85, 0.35);
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.45);
     box-sizing: border-box;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.22);
   }
 
   .uaetrail-map-venue-pin-badge--hiking {
@@ -1303,19 +1307,99 @@
     display: block;
   }
 
+  .uaetrail-map-venue-pin-badge-wrap {
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+  }
+
+  .uaetrail-map-venue-trip-dot {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 9px;
+    height: 9px;
+    border-radius: 9999px;
+    background: #059669;
+    border: 1.5px solid #ffffff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.22);
+    pointer-events: none;
+  }
+
+  .uaetrail-map-venue-trip-label {
+    flex-shrink: 0;
+    padding: 2px 6px;
+    border-radius: 5px;
+    background: rgba(15, 23, 42, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #6ee7b7;
+    font-size: 9px;
+    font-weight: 600;
+    line-height: 1.25;
+    white-space: nowrap;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .uaetrail-map-pin-widget {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 2px;
+    line-height: 1;
+  }
+
+  .uaetrail-map-pin-caption-stack {
+    display: flex;
+    max-width: 7.25rem;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    padding: 3px 7px;
+    border-radius: 8px;
+    background: rgba(15, 23, 42, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    pointer-events: none;
+  }
+
+  .uaetrail-map-pin-caption-line {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 9px;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: 0.01em;
+    color: #f8fafc;
+  }
+
+  .uaetrail-map-pin-caption-line--where {
+    font-size: 8px;
+    font-weight: 500;
+    color: #cbd5e1;
+  }
+
   .uaetrail-map-venue-pin-label {
     max-width: 9.5rem;
     padding: 3px 7px;
     border-radius: 6px;
-    background: rgba(255, 255, 255, 0.94);
-    border: 1px solid rgba(51, 65, 85, 0.22);
-    color: #1e293b;
-    font-size: 11px;
+    background: rgba(15, 23, 42, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #f1f5f9;
+    font-size: 10px;
     font-weight: 600;
     letter-spacing: -0.01em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22);
   }
 
   .uaetrail-map-venue-pin--selected .uaetrail-map-venue-pin-badge {
@@ -1456,11 +1540,13 @@
     align-items: center;
     justify-content: center;
     border-radius: 9999px;
-    background: #fff;
+    background: rgba(255, 255, 255, 0.78);
     line-height: 1;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     box-shadow:
-      0 4px 14px rgba(15, 23, 42, 0.16),
-      0 1px 3px rgba(15, 23, 42, 0.08);
+      0 2px 8px rgba(15, 23, 42, 0.22),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.55);
   }
 
   .uaetrail-map-pin-icon {
@@ -2171,6 +2257,34 @@ html[data-theme='dark'] .explore-filter-quote-caret-shape--places {
   justify-content: center;
 }
 
+/* Map / list FAB pills — avoid clipping descenders (p, g, y) from leading-none + fixed height */
+.mobile-dock-pill {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  min-height: var(--mobile-dock-pill-height);
+  padding-inline: 1rem;
+  padding-block: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: var(--explore-pill-line-height, 1.25);
+}
+
+.mobile-dock-pill__label {
+  min-width: 0;
+  line-height: var(--explore-pill-line-height, 1.25);
+}
+
+:root {
+  --explore-mark-emoji-lift: -0.06em;
+  --explore-mark-emoji-lift-camp: -0.18em;
+  --explore-mark-emoji-lift-people: -0.18em;
+  --explore-mark-emoji-size-chip: 1.25rem;
+  --explore-mark-emoji-size: 1.4375rem;
+}
+
 .explore-filter-mark {
   display: inline-flex;
   height: 1.5625rem;
@@ -2179,7 +2293,14 @@ html[data-theme='dark'] .explore-filter-quote-caret-shape--places {
   align-items: center;
   justify-content: center;
   line-height: 1;
-  font-size: 1.4375rem;
+  font-size: var(--explore-mark-emoji-size);
+}
+
+/* Compact mark paired with map float pills & scope tabs (h-8 chrome). */
+.explore-filter-mark--chip {
+  height: var(--explore-mark-emoji-size-chip);
+  width: var(--explore-mark-emoji-size-chip);
+  font-size: var(--explore-mark-emoji-size-chip);
 }
 
 .explore-filter-mark svg {
@@ -2188,15 +2309,22 @@ html[data-theme='dark'] .explore-filter-quote-caret-shape--places {
   width: 1.4375rem;
 }
 
+.explore-filter-mark .explore-mark-emoji,
 .explore-filter-mark .font-emoji {
   display: block;
   line-height: 1;
-  font-size: 1.4375rem;
-  transform: translateY(-0.06em);
+  font-size: inherit;
+  transform: translateY(var(--explore-mark-emoji-lift));
 }
 
+.explore-filter-mark .explore-mark-emoji--camp,
 .explore-filter-mark .explore-filter-emoji-camp {
-  transform: translateY(-0.18em);
+  transform: translateY(var(--explore-mark-emoji-lift-camp));
+}
+
+/* 👥 (and similar) sit low vs 🙋 / 📍 in Apple & Segoe emoji fonts */
+.explore-filter-mark .explore-mark-emoji--people {
+  transform: translateY(var(--explore-mark-emoji-lift-people));
 }
 
 .explore-filter-mark--label {

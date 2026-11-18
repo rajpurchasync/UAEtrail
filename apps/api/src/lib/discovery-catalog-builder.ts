@@ -218,17 +218,23 @@ const attachExploreItemArea = (
   areaId: string | null | undefined,
   areaSlugById: Map<string, string>,
   areaNameById: Map<string, string>,
-  fallbackAreaLabel?: string | null
+  placeHubLabel?: string | null
 ): ExploreMapItemDTO => {
-  const label = fallbackAreaLabel?.trim() || null;
-  if (!areaId && !label) return item;
-  const slug = areaId ? areaSlugById.get(areaId) ?? null : null;
-  const hubName = areaId ? areaNameById.get(areaId) ?? null : null;
+  const hubLabel = placeHubLabel?.trim() || item.areaLabel?.trim() || null;
+  const resolvedAreaId = areaId?.trim() || item.areaId?.trim() || null;
+  if (!resolvedAreaId && !hubLabel) return item;
+  const slug = resolvedAreaId
+    ? areaSlugById.get(resolvedAreaId) ?? item.areaSlug ?? null
+    : item.areaSlug ?? null;
+  const curatedAreaName = resolvedAreaId
+    ? areaNameById.get(resolvedAreaId) ?? item.areaName ?? null
+    : item.areaName ?? null;
   return {
     ...item,
-    areaId: areaId ?? null,
+    areaId: resolvedAreaId,
     areaSlug: slug,
-    areaName: hubName ?? label,
+    areaName: curatedAreaName,
+    areaLabel: hubLabel,
     geoRef: item.geoRef ?? item.activity?.geoRef ?? null,
   };
 };
@@ -340,7 +346,8 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
         },
         event.location?.areaId ?? activity.areaId,
         areaSlugById,
-        areaNameById
+        areaNameById,
+        event.location?.areaLabel ?? null
       )
     );
   }

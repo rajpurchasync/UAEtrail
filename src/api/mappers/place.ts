@@ -42,5 +42,6 @@ export const mapLocationToPlace = (location: LocationDTO): Place => ({
   areaLabel: location.areaLabel ?? null,
   areaSlug: location.areaSlug ?? null,
   areaName: location.areaName ?? null,
+  geoRef: location.geoRef ?? null,
   ...mapLocationFields(location),
 });

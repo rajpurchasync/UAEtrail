@@ -1,6 +1,7 @@
 import { UPL_MESSAGE_HOST } from './upl-glossary';
 
 /** Participant lifecycle — map peek + activity detail + Plan chips (not host manage). */
+export const ACTIVITY_STATUS_HOSTED = 'Hosted';
 export const ACTIVITY_STATUS_JOIN_REQUESTED = 'Pending';
 export const ACTIVITY_STATUS_JOINED = 'Joined';
 export const ACTIVITY_CTA_PENDING_APPROVAL = 'Pending approval';

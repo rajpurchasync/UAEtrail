@@ -1,6 +1,8 @@
 import type { ActivityMapPeekActionId } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 import type { JoinRequestUiState } from '../../../utils/joinRequestUi';
+import type { ExplorePeekDetailAccess } from '../../../access/resolvePeekDetailAccess';
+import type { MapPeekDetailNavState } from '../../mapPeekDetailNavState';
 import { ActivityPeekActions } from '../peek/activity/ActivityPeekActions';
 import { ActivityPeekBody } from '../peek/activity/ActivityPeekBody';
 import { AreaPeekActions } from '../peek/area/AreaPeekActions';
@@ -25,6 +27,7 @@ export type MapPeekActionsSlotProps = {
   linkRideshareTenantId?: string | null;
   onOfferRideshare?: () => void;
   onGuestGatedAction?: (action: ActivityMapPeekActionId) => void;
+  mapPeekCompact?: boolean;
 };
 
 export const MapPeekActionsSlot = ({
@@ -69,7 +72,9 @@ export const MapPeekActionsSlot = ({
     );
   }
 
-  return <ActivityPeekActions card={card} onClose={onClose} {...rest} />;
+  return (
+    <ActivityPeekActions card={card} onClose={onClose} {...rest} mapPeekCompact={rest.mapPeekCompact ?? true} />
+  );
 };
 
 export type MapPeekBodySlotProps = {
@@ -79,6 +84,9 @@ export type MapPeekBodySlotProps = {
   onOfferTransport?: () => void;
   joinUiState?: JoinRequestUiState;
   mapPeekCompact?: boolean;
+  titleDetailAccess?: ExplorePeekDetailAccess | null;
+  detailLinkState?: MapPeekDetailNavState;
+  onBeforeDetailNavigate?: () => void;
 };
 
 export const MapPeekBodySlot = ({
@@ -88,6 +96,9 @@ export const MapPeekBodySlot = ({
   onOfferTransport,
   joinUiState,
   mapPeekCompact = false,
+  titleDetailAccess,
+  detailLinkState,
+  onBeforeDetailNavigate,
 }: MapPeekBodySlotProps) => {
   if (card.source === 'area') {
     return <AreaPeekBody card={card} />;
@@ -102,6 +113,9 @@ export const MapPeekBodySlot = ({
         onOfferTransport={onOfferTransport}
         joinUiState={joinUiState}
         mapPeekCompact={mapPeekCompact}
+        titleDetailAccess={titleDetailAccess}
+        detailLinkState={detailLinkState}
+        onBeforeDetailNavigate={onBeforeDetailNavigate}
       />
     );
   }

@@ -50,9 +50,9 @@ import {
 
 const HAMBURGER_FIVE_TAB_BY_LABEL: Record<string, MobileFiveTabId> = {
   Trips: 'trips',
-  Venues: 'venues',
+  Places: 'venues',
   Plans: 'plan',
-  Crews: 'crews',
+  People: 'crews',
   Chat: 'chat',
 };
 
@@ -72,11 +72,11 @@ const isConsumerHamburgerLinkActive = (
     }
     return isDiscoverBrowseRoute(pathname, search) && activeTab === 'trips';
   }
-  if (item.label === 'Venues') {
+  if (item.label === 'Places') {
     if (pathname === LIST_DISCOVERY_PATH && activeTab === 'venues') return true;
     return pathname === EXPLORE_MAP_PATH && activeTab === 'venues';
   }
-  if (item.label === 'Crews') {
+  if (item.label === 'People') {
     if (pathname === LIST_DISCOVERY_PATH && activeTab === 'crews') return true;
     return (
       (pathname === EXPLORE_MAP_PATH || pathname === '/discovery') && activeTab === 'crews'

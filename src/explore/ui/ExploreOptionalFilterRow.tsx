@@ -20,6 +20,8 @@ import {
   EXPLORE_TRIP_SCOPE_EMOJI,
   EXPLORE_PLACE_TOPIC_OPTIONS,
   EXPLORE_PRICE_FILTER_OPTIONS,
+  EXPLORE_TRIP_DROPDOWN_OPTIONS,
+  EXPLORE_TRIP_SCOPE_ALL_KEY,
   EXPLORE_TRIP_SCOPE_RESTING_LABEL,
   EXPLORE_TRIP_TOPIC_OPTIONS,
   clearExploreDestinationPlaceTopics,
@@ -36,16 +38,11 @@ import {
   type ExploreVenueFilterPatch,
 } from '../exploreOptionalFilters';
 import { ExploreFilterDropdownPill } from './ExploreFilterDropdownPill';
+import { ExploreMarkEmoji } from './ExploreFilterIcon';
 import { ExploreMapMobileAnydayPill } from './ExploreMapMobileAnydayPill';
 import { ExploreMapMobileUaePill } from './ExploreMapMobileUaePill';
 
 const FLOAT_CHIP_WRAP = 'relative flex shrink-0 items-center justify-center';
-
-const PillEmoji = ({ emoji }: { emoji: string }) => (
-  <span className={`explore-filter-mark ${EXPLORE_MAP_MOBILE_FLOAT_CHIP_MARK} font-emoji`} aria-hidden>
-    <span className="font-emoji">{emoji}</span>
-  </span>
-);
 
 type ExploreOptionalFilterRowProps = {
   layer: 'activity' | 'places';
@@ -121,7 +118,7 @@ export const ExploreOptionalFilterRow = ({
     <div
       className="flex w-full min-w-0 items-center gap-2 overflow-x-auto scrollbar-none py-0.5"
       role="toolbar"
-      aria-label={trips ? 'Trip filters' : 'Venue filters'}
+      aria-label={trips ? 'Trip filters' : 'Place filters'}
     >
       {trips ? (
         <>
@@ -137,12 +134,21 @@ export const ExploreOptionalFilterRow = ({
             label={tripLabel}
             ariaLabel={`Trips: ${tripLabel}`}
             active={tripTopics.length > 0}
-            options={EXPLORE_TRIP_TOPIC_OPTIONS}
-            selectedKeys={tripTopics}
-            onSelect={(key) => onTripTopicsChange(toggleTripMapTopic(tripTopics, key as TripMapTopicKey))}
-            onClear={() => onTripTopicsChange([])}
+            options={EXPLORE_TRIP_DROPDOWN_OPTIONS}
+            selectedKeys={
+              tripTopics.length === 0 ? [EXPLORE_TRIP_SCOPE_ALL_KEY] : [...tripTopics]
+            }
+            onSelect={(key) => {
+              if (key === EXPLORE_TRIP_SCOPE_ALL_KEY) {
+                onTripTopicsChange([]);
+                return;
+              }
+              onTripTopicsChange(toggleTripMapTopic(tripTopics, key as TripMapTopicKey));
+            }}
             multi
-            icon={<PillEmoji emoji={EXPLORE_TRIP_SCOPE_EMOJI} />}
+            icon={
+              <ExploreMarkEmoji emoji={EXPLORE_TRIP_SCOPE_EMOJI} markClassName={EXPLORE_MAP_MOBILE_FLOAT_CHIP_MARK} />
+            }
             pillClassName={trailingPillClass(tripTopics.length > 0, tripTopics[0] ?? 'all')}
           />
           <ExploreFilterDropdownPill
@@ -152,7 +158,9 @@ export const ExploreOptionalFilterRow = ({
             options={EXPLORE_PRICE_FILTER_OPTIONS}
             selectedKeys={[price]}
             onSelect={(key) => onPriceChange(key as ExplorePriceFilter)}
-            icon={<PillEmoji emoji={EXPLORE_PRICE_SCOPE_EMOJI} />}
+            icon={
+              <ExploreMarkEmoji emoji={EXPLORE_PRICE_SCOPE_EMOJI} markClassName={EXPLORE_MAP_MOBILE_FLOAT_CHIP_MARK} />
+            }
             pillClassName={trailingPillClass(price !== 'all', 'all')}
           />
           <ExploreMapMobileUaePill
@@ -193,7 +201,9 @@ export const ExploreOptionalFilterRow = ({
               })
             }
             multi
-            icon={<PillEmoji emoji={EXPLORE_PLACES_LAYER_EMOJI} />}
+            icon={
+              <ExploreMarkEmoji emoji={EXPLORE_PLACES_LAYER_EMOJI} markClassName={EXPLORE_MAP_MOBILE_FLOAT_CHIP_MARK} />
+            }
             pillClassName={trailingPillClass(destinationTopics.length > 0, destinationTopics[0] ?? 'all')}
           />
           <ExploreFilterDropdownPill
@@ -205,7 +215,9 @@ export const ExploreOptionalFilterRow = ({
             onSelect={(key) => commitVenueFilters(toggleExploreFacilityPillKey(placeTopics, facilityKinds, key as ExploreFacilityPillKey))}
             onClear={() => commitVenueFilters(clearExploreFacilityPill(placeTopics))}
             multi
-            icon={<PillEmoji emoji={EXPLORE_FACILITY_SCOPE_EMOJI} />}
+            icon={
+              <ExploreMarkEmoji emoji={EXPLORE_FACILITY_SCOPE_EMOJI} markClassName={EXPLORE_MAP_MOBILE_FLOAT_CHIP_MARK} />
+            }
             pillClassName={trailingPillClass(facilityActive, 'facilities')}
           />
           <span className={FLOAT_CHIP_WRAP}>
@@ -216,9 +228,7 @@ export const ExploreOptionalFilterRow = ({
               aria-pressed={hasTrip}
               aria-label={EXPLORE_HAS_TRIP_LABEL}
             >
-              <span className={`explore-filter-mark ${EXPLORE_MAP_MOBILE_FLOAT_CHIP_MARK} font-emoji`} aria-hidden>
-                {SEEKING_EMOJI}
-              </span>
+              <ExploreMarkEmoji emoji={SEEKING_EMOJI} markClassName={EXPLORE_MAP_MOBILE_FLOAT_CHIP_MARK} />
               <span>{EXPLORE_HAS_TRIP_LABEL}</span>
             </button>
           </span>

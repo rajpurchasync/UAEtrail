@@ -22,6 +22,7 @@ export type ActivityPeekActionsProps = {
   joinStateLoading?: boolean;
   linkRideshareTenantId?: string | null;
   onGuestGatedAction?: (action: ActivityMapPeekActionId) => void;
+  mapPeekCompact?: boolean;
 };
 
 const PeekLoading = () => (
@@ -40,6 +41,7 @@ export const ActivityPeekActions = ({
   joinUiState,
   joinStateLoading = false,
   onGuestGatedAction,
+  mapPeekCompact = true,
 }: ActivityPeekActionsProps) => {
   const location = useLocation();
   const gate = onGuestGatedAction;
@@ -93,6 +95,7 @@ export const ActivityPeekActions = ({
       onWithdraw={onWithdraw}
       onGuestGatedAction={gate}
       onBeforeDetailNavigate={onClose}
+      mapDualFooter={mapPeekCompact}
     />
   );
 };

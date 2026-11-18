@@ -16,7 +16,8 @@ describe('explore map mobile dock', () => {
     const theme = read('src/config/exploreTheme.ts');
     expect(theme).toMatch(/MOBILE_DOCK_SECONDARY/);
     expect(theme).toMatch(/MOBILE_DOCK_PRIMARY/);
-    expect(theme).toMatch(/h-\[var\(--mobile-dock-pill-height\)\]/);
+    expect(theme).toMatch(/mobile-dock-pill/);
+    expect(read('src/index.css')).toMatch(/\.mobile-dock-pill/);
     expect(read('src/index.css')).toMatch(/--mobile-dock-pill-height:\s*2\.75rem/);
     expect(read('src/index.css')).toMatch(/--explore-map-mobile-control:\s*3\.5rem/);
     const overlay = read('src/config/exploreTheme.ts');
@@ -44,7 +45,7 @@ describe('explore map mobile dock', () => {
     expect(layer).toMatch(/exploreMapQuickFiltersBrowseState/);
     expect(layer).toMatch(/exploreMapScopeSegmentLabeledClass/);
     expect(layer).toMatch(/whitespace-nowrap">Trips</);
-    expect(layer).toMatch(/whitespace-nowrap">Crews</);
+    expect(layer).toMatch(/MOBILE_FIVE_TAB_UI_LABELS\.crews/);
     expect(layer).toMatch(/SCOPE_TRAY/);
     expect(layer).toMatch(/onOpenCrewsPage/);
     expect(layer).not.toMatch(/EXPLORE_MOBILE_ACTIVITY_QUICK_FILTERS/);

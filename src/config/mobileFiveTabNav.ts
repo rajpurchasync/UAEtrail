@@ -18,9 +18,10 @@ import {
 } from '../list/routing';
 
 export { tripsListHomePath, venuesListHomePath } from '../list/routing';
+import { PRODUCT_CREWS_TAB_LABEL } from '../content/productNorthStar';
 import { LIST_CAT_PARAM, parseListCatParam } from '../list/browseListUrlState';
 
-export const MOBILE_FIVE_TAB_ORDER = ['trips', 'venues', 'plan', 'crews', 'chat'] as const;
+export const MOBILE_FIVE_TAB_ORDER = ['trips', 'venues', 'crews', 'chat', 'plan'] as const;
 
 export type MobileFiveTabId = (typeof MOBILE_FIVE_TAB_ORDER)[number];
 
@@ -41,8 +42,8 @@ export const MOBILE_FIVE_TAB_DEFAULTS = {
 
 export const MOBILE_FIVE_TAB_UI_LABELS: Record<MobileFiveTabId, string> = {
   trips: 'Trips',
-  venues: 'Venues',
-  crews: 'Crews',
+  venues: 'Places',
+  crews: PRODUCT_CREWS_TAB_LABEL,
   plan: 'Plans',
   chat: 'Chat',
 };

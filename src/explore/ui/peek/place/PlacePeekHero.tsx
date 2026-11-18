@@ -19,6 +19,8 @@ import { EXPLORE_PEEK } from '../../../../config/exploreTheme';
 type PlacePeekHeroProps = {
   card: DiscoveryCardModel;
   embedMode?: boolean;
+  /** Map pin bubble — shorter hero, share-only chrome. */
+  compactMapPeek?: boolean;
   onClose: () => void;
   onBeforeDetailNavigate?: () => void;
 };
@@ -26,6 +28,7 @@ type PlacePeekHeroProps = {
 export const PlacePeekHero = ({
   card,
   embedMode = false,
+  compactMapPeek = false,
   onClose,
   onBeforeDetailNavigate,
 }: PlacePeekHeroProps) => {
@@ -38,7 +41,7 @@ export const PlacePeekHero = ({
   return (
     <div
       className={`relative w-full shrink-0 overflow-hidden bg-neutral-100${
-        embedMode ? ' aspect-[2/1]' : ' h-[min(32dvh,240px)]'
+        embedMode ? ' aspect-[2/1]' : compactMapPeek ? ' h-24' : ' h-[min(32dvh,240px)]'
       }`}
     >
       {coverUrl ? (
@@ -56,14 +59,16 @@ export const PlacePeekHero = ({
       <div className="absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-2 px-3 pt-3">
         <span className={EXPLORE_PEEK.mediaEmojiBadge}>{emoji}</span>
         <div className="flex shrink-0 items-center gap-1.5">
-          {!isFacility ? <ExploreWishlistSaveButton card={card} /> : null}
+          {!isFacility && !compactMapPeek ? <ExploreWishlistSaveButton card={card} /> : null}
           <ShareButton
             title={card.shareTitle}
             text={card.shareText ?? undefined}
             path={card.sharePath}
             iconOnly
+            light={compactMapPeek}
+            bare={compactMapPeek}
           />
-          {!embedMode ? (
+          {!embedMode && !compactMapPeek ? (
             <button
               type="button"
               onClick={onClose}

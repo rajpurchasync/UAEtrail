@@ -4,6 +4,8 @@ export type PlaceDifficulty = 'easy' | 'moderate' | 'hard';
 export type PlaceCampingType = 'self-guided' | 'operator-led';
 export type PlaceAccessibility = 'car-accessible' | 'remote';
 export type PlaceSeason = 'winter' | 'summer' | 'year-round';
+import type { GeoRef } from '@uaetrail/shared-types';
+
 export type PlaceRegion = 'Dubai' | 'RAK' | 'Fujairah' | 'Abu Dhabi' | 'Al Ain' | 'Sharjah';
 
 /**
@@ -41,6 +43,7 @@ export interface Place {
   areaLabel?: string | null;
   areaSlug?: string | null;
   areaName?: string | null;
+  geoRef?: GeoRef | null;
 }
 
 /** @deprecated Use Place — hiking venue view slice. */

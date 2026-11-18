@@ -1,5 +1,6 @@
 import {
   exploreMapItemIsSeeking,
+  geoRefMatchesQuery,
   isTimeBoundExploreMapItem,
   type ExploreMapItemDTO,
 } from '@uaetrail/shared-types';
@@ -159,6 +160,7 @@ export const exploreItemSearchHaystack = (item: ExploreMapItemDTO): string => {
     item.priceDisplay,
     item.areaSlug,
     item.areaName,
+    item.areaLabel,
     item.geoRef?.names.country,
     item.geoRef?.names.state,
     item.geoRef?.names.area,
@@ -173,6 +175,10 @@ export const exploreItemSearchHaystack = (item: ExploreMapItemDTO): string => {
       activity.description,
       activity.locationName,
       activity.region,
+      activity.geoRef?.names.country,
+      activity.geoRef?.names.state,
+      activity.geoRef?.names.area,
+      activity.geoRef?.names.venue,
       activity.meetingPoint,
       activity.startPoint,
       activity.parkingPoint,
@@ -251,9 +257,14 @@ const exploreQueryMatchesItemRegions = (item: ExploreMapItemDTO, query: string):
   return false;
 };
 
+const itemGeoRef = (item: ExploreMapItemDTO) =>
+  item.geoRef ?? item.activity?.geoRef ?? item.locationCard?.geoRef ?? null;
+
 export const exploreItemMatchesQuery = (item: ExploreMapItemDTO, query: string): boolean => {
   const q = normalizeExploreSearchText(query);
   if (!q) return true;
+  const ref = itemGeoRef(item);
+  if (ref && geoRefMatchesQuery(ref, q)) return true;
   const haystack = exploreItemSearchHaystack(item);
   if (haystack.includes(q)) return true;
   return exploreQueryMatchesItemRegions(item, q);

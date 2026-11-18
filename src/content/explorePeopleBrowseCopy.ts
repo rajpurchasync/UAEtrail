@@ -11,19 +11,21 @@ import {
   memberAvailabilityCalendarDays,
 } from '@uaetrail/shared-types';
 
+import { PRODUCT_CREWS_TAB_LABEL } from './productNorthStar';
+
 export const EXPLORE_PEOPLE_BROWSE_PANEL_TITLE = 'Find your crew';
 
-export const EXPLORE_PEOPLE_BROWSE_MAP_BUTTON_LABEL = 'Crews';
+export { PRODUCT_CREWS_TAB_LABEL as EXPLORE_PEOPLE_BROWSE_MAP_BUTTON_LABEL };
 
 export const explorePeopleBrowseMapButtonAriaLabel = (friendCount: number): string =>
   friendCount > 0
-    ? `Crews. ${friendCount} friends`
-    : 'Crews. Browse members free to get outside';
+    ? `${PRODUCT_CREWS_TAB_LABEL}. ${friendCount} friends`
+    : `${PRODUCT_CREWS_TAB_LABEL}. Browse members free to get outside`;
 
 export const explorePeopleBrowseGuestMapButtonAriaLabel = (crewCount: number): string =>
   crewCount > 0
-    ? `Crews. ${crewCount} possible crew on outings`
-    : 'Crews. Join free to meet people going outside';
+    ? `${PRODUCT_CREWS_TAB_LABEL}. ${crewCount} possible crew on outings`
+    : `${PRODUCT_CREWS_TAB_LABEL}. Join free to meet people going outside`;
 
 export const EXPLORE_PEOPLE_BROWSE_LOADING = 'Loading your people…';
 export const EXPLORE_PEOPLE_BROWSE_LOOKING_LOADING = 'Loading outings…';

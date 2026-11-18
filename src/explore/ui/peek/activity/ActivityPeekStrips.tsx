@@ -32,6 +32,8 @@ export type ActivityPeekStripsProps = {
   onOfferTransport?: () => void;
   /** Detail fold renders dedicated host + participants blocks above requirements. */
   hideParticipantsStrip?: boolean;
+  /** Stat grid covers spots on map trip peek. */
+  hideSpotsStrip?: boolean;
   mapPeekCompact?: boolean;
 };
 
@@ -43,6 +45,7 @@ export const ActivityPeekStrips = ({
   onOpenLinkedPin,
   onOfferTransport,
   hideParticipantsStrip = false,
+  hideSpotsStrip = false,
   mapPeekCompact = false,
 }: ActivityPeekStripsProps) => {
   const strips = resolveActivityMapPeekStrips(card, joinUiState);
@@ -76,7 +79,7 @@ export const ActivityPeekStrips = ({
           ))}
         </ul>
       ) : null}
-      {showSpotsSection ? (
+      {showSpotsSection && !hideSpotsStrip ? (
         <ExploreActivityPeekSpotsSection card={card} compact={mapPeekCompact} />
       ) : null}
       {strips.showParticipantsStrip && !hideParticipantsStrip && !mapPeekCompact ? (

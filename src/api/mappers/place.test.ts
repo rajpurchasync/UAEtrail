@@ -35,4 +35,18 @@ describe('mapLocationToPlace', () => {
     expect(place.duration).toBe(3);
     expect(place.elevation).toBe(400);
   });
+
+  it('maps geoRef when present on LocationDTO', () => {
+    const geoRef = {
+      chain: ['c1', 's1', 'a1'],
+      countryId: 'c1',
+      stateId: 's1',
+      areaId: 'a1',
+      path: 'uae/rak/hatta',
+      names: { country: 'UAE', state: 'RAK', area: 'Hatta' },
+      searchTokens: ['hatta'],
+    };
+    const place = mapLocationToPlace(baseLocation({ geoRef }));
+    expect(place.geoRef).toEqual(geoRef);
+  });
 });

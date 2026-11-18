@@ -16,7 +16,7 @@ describe('discover browse navigation contract', () => {
     const linkLabels = CONSUMER_HAMBURGER_MENU.filter((item) => item.kind === 'link').map(
       (item) => item.label
     );
-    expect(linkLabels.slice(0, 5)).toEqual(['Trips', 'Venues', 'Plans', 'Crews', 'Chat']);
+    expect(linkLabels.slice(0, 5)).toEqual(['Trips', 'Places', 'Plans', 'People', 'Chat']);
     expect(linkLabels).not.toContain('Explore');
     expect(linkLabels).not.toContain('Browse');
     expect(linkLabels).not.toContain('Outing history');
@@ -37,7 +37,7 @@ describe('discover browse navigation contract', () => {
     const browse = MOBILE_LANDING_USER_MENU.find((item) => item.label === 'Browse');
     expect(explore?.to).toBe(EXPLORE_MAP_PATH);
     expect(MOBILE_LANDING_USER_MENU.some((item) => item.label === 'Trips')).toBe(true);
-    expect(MOBILE_LANDING_USER_MENU.some((item) => item.label === 'Venues')).toBe(true);
+    expect(MOBILE_LANDING_USER_MENU.some((item) => item.label === 'Places')).toBe(true);
     expect(browse).toBeUndefined();
   });
 

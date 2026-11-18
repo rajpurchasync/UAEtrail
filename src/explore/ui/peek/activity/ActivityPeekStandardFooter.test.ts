@@ -10,7 +10,9 @@ describe('ActivityPeekStandardFooter', () => {
     expect(footer).toMatch(/resolveActivityDetailStandardFooter/);
     expect(footer).toMatch(/resolveListFeedFooterModel/);
     expect(footer).toMatch(/data-activity-peek-standard-footer/);
-    expect(footer).toMatch(/View details/);
+    expect(footer).toMatch(/mapDualFooter/);
+    expect(footer).toMatch(/resolveActivityMapPeekDualFooter/);
+    expect(footer).toMatch(/PeekDualActionFooter/);
     expect(footer).toMatch(/share_activity/);
     expect(footer).toMatch(/manage_activity/);
     expect(footer).toMatch(/withdraw_join/);

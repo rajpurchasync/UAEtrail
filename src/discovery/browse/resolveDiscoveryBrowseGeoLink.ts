@@ -4,7 +4,7 @@ import { geoNodePath } from '../../config/surfacePaths';
 
 /**
  * L2 location tail tap target — geo destination hub first, else curated area guide.
- * @see docs/NAVIGATION.md (spatial drill)
+ * @see docs/NAVIGATION.md (geo tree drill)
  */
 export const resolveDiscoveryBrowseGeoHubPath = (card: DiscoveryCardModel): string | null => {
   const venueId = card.geoRef?.venueId?.trim();

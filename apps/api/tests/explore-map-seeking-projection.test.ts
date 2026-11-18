@@ -1,69 +1,39 @@
 import { beforeAll, describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import request from 'supertest';
 import type { Express } from 'express';
-import { UserRole, UserStatus } from '../src/domain/enums.js';
-import { createParticipantIntent } from '../src/lib/participant-intents-store.js';
-import { createAuthUser } from '../src/lib/auth-users-store.js';
-import { generateReferralCode } from '../src/lib/referral-code.js';
-import bcrypt from 'bcryptjs';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
 import { invalidateExploreMapCache } from '../src/lib/explore-map-cache.js';
-import {
-  buildTestParticipantIntentInput,
-  ensureCuratedAreasSeeded,
-} from './helpers/test-seed.js';
 
 let app: Express;
 
+const ROOT = join(process.cwd(), '..', '..');
+const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
+
 beforeAll(async () => {
   app = await bootstrapTestApp();
-  await ensureCuratedAreasSeeded();
 });
 
-describe('GET /api/explore/map seeking projection (M0)', () => {
-  it('emits participant intents as activity + activityMode seeking', async () => {
-    const suffix = `seek-proj-${Date.now()}`;
-    const user = await createAuthUser({
-      email: `seeker-${suffix}@test.local`,
-      passwordHash: await bcrypt.hash('TestPass1', 10),
-      googleId: null,
-      authProvider: 'EMAIL',
-      role: UserRole.PARTICIPANT,
-      status: UserStatus.ACTIVE,
-      emailVerifiedAt: new Date(),
-      referralCode: generateReferralCode(),
-      profile: { displayName: 'Seeker', phone: null, bio: null, avatarUrl: null },
-    });
+describe('GET /api/explore/map seeking projection retired (MIG-DISCO-REG)', () => {
+  it('catalog builder skips legacy activityMode seeking rows', () => {
+    const base = read('apps/api/src/lib/discovery-catalog-builder.ts');
+    expect(base).toMatch(/event\.activityMode === 'seeking'\) continue/);
+  });
 
-    const intent = await createParticipantIntent(
-      user._id,
-      buildTestParticipantIntentInput({
-        title: `Crew for Hatta ${suffix}`,
-        partySize: 4,
-        latitude: 25.12,
-        longitude: 55.21,
-      })
-    );
-
+  it('default map payload has no seeking activityMode or demand pins', async () => {
     await invalidateExploreMapCache();
-
     const response = await request(app).get('/api/explore/map');
     expect(response.status).toBe(200);
 
     const items = response.body.data.items as Array<{
-      id: string;
-      source: string;
-      activityMode?: string;
-      participantIntentId?: string;
-      composeIntent?: string | null;
+      id?: string;
+      activityMode?: string | null;
+      participantIntentId?: string | null;
     }>;
 
-    const row = items.find((item) => item.participantIntentId === intent.id);
-    expect(row).toBeDefined();
-    expect(row?.id.startsWith('activity:')).toBe(true);
-    expect(row?.source).toBe('activity');
-    expect(row?.activityMode).toBe('seeking');
-    expect(row?.composeIntent).toBe('seek');
-    expect(items.some((item) => item.id === `demand:${intent.id}`)).toBe(false);
+    expect(items.every((item) => item.activityMode !== 'seeking')).toBe(true);
+    expect(items.every((item) => !String(item.id ?? '').startsWith('demand:'))).toBe(true);
+    expect(items.every((item) => !item.participantIntentId)).toBe(true);
   });
 });

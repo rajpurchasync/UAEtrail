@@ -100,3 +100,34 @@ export const layoutMapPeekBubble = (input: {
     placement,
   };
 };
+
+/** Mobile map peek — docked above bottom nav / FAB stack. */
+export const layoutMapPeekBottomSheet = (input: {
+  overlayWidth: number;
+  overlayHeight: number;
+  cardHeight: number;
+  paddingX?: number;
+  bottomInset?: number;
+  topInset?: number;
+}): MapPeekBubbleLayout => {
+  const paddingX = input.paddingX ?? DEFAULT_PADDING_X;
+  const topInset = Math.max(0, input.topInset ?? DEFAULT_PADDING_X);
+  const bottomInset = Math.max(0, input.bottomInset ?? DEFAULT_PADDING_X);
+  const overlayWidth = Math.max(0, input.overlayWidth);
+  const overlayHeight = Math.max(0, input.overlayHeight);
+  const width = Math.max(0, overlayWidth - paddingX * 2);
+  const maxHeight = Math.max(0, overlayHeight - topInset - bottomInset);
+  const cardHeight = Math.min(Math.max(input.cardHeight, 120), maxHeight || input.cardHeight);
+  const left = paddingX;
+  const top = Math.max(topInset, overlayHeight - cardHeight - bottomInset);
+
+  return {
+    left,
+    top,
+    width,
+    maxHeight,
+    originX: width / 2,
+    originY: cardHeight,
+    placement: 'below',
+  };
+};

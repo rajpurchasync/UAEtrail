@@ -129,7 +129,7 @@ export const MOBILE_LANDING_USER_MENU = [
     match: [LIST_DISCOVERY_PATH, EXPLORE_DISCOVER_BROWSE_PATH, '/discovery'] as const,
   },
   {
-    label: 'Venues',
+    label: 'Places',
     to: VENUES_LIST_NAV_PATH,
     match: [LIST_DISCOVERY_PATH, EXPLORE_MAP_PATH, '/discovery'] as const,
   },
@@ -174,7 +174,7 @@ export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
   },
   {
     kind: 'link',
-    label: 'Venues',
+    label: 'Places',
     emoji: '📍',
     to: VENUES_LIST_NAV_PATH,
     match: [LIST_DISCOVERY_PATH, EXPLORE_MAP_PATH, '/discovery'],
@@ -189,7 +189,7 @@ export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
   },
   {
     kind: 'link',
-    label: 'Crews',
+    label: 'People',
     emoji: '👥',
     to: CREWS_LIST_NAV_PATH,
     match: [LIST_DISCOVERY_PATH, EXPLORE_MAP_PATH],
@@ -309,9 +309,9 @@ export const MAP_CONFIG = {
   provider: 'esri' as const,
   defaultCenter: { lat: 24.4539, lng: 54.3773 },
   defaultZoom: 8,
-  /** Explore browse — upper UAE / Emirates overview (not city street zoom). */
+  /** Explore browse — UAE emirates framing (not GCC / country overview). */
   exploreDefaultCenter: { lat: 25.42, lng: 55.72 },
-  exploreDefaultZoom: 8,
+  exploreDefaultZoom: 9,
   /** “Locate me” on Explore — street-level framing (never zoom out from current view). */
   exploreLocateZoom: 15,
   /** Explore / detail maps — light base + label overlay. */
@@ -349,8 +349,8 @@ export const MAP_CONFIG = {
       labelTileUrl: null,
     },
   },
-  /** Explore allows wider zoom-out than detail maps (GCC / regional context). */
-  exploreMinZoom: 5,
+  /** Explore — do not zoom out past emirate-level (keeps map readable on Trips). */
+  exploreMinZoom: 8,
 } as const;
 
 export type ExploreMapStyle = 'satellite' | 'map';

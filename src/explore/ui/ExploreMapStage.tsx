@@ -276,6 +276,7 @@ export const ExploreMapStage = ({
           onMapReady={handleMapReady}
           layoutRevision={mapLayoutRevision || listOpen || peopleMap}
           onSelectedPinScreenPoint={handleSelectedPinScreenPoint}
+          onDismissMapPeek={selectedId ? onCloseSelection : undefined}
         />
         </Suspense>
         </ExploreMapLoadErrorBoundary>
@@ -413,6 +414,11 @@ export const ExploreMapStage = ({
           onGuestGatedAction={guestGatedActionForPlace}
           pinAnchor={pinAnchor}
           pinKey={selected.id}
+          viewer={
+            deviceLocation
+              ? { lat: deviceLocation.lat, lng: deviceLocation.lng }
+              : null
+          }
         />
       ) : selectedCard ? (
         <ActivityMapPeekHost

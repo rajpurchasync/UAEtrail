@@ -31,8 +31,46 @@ interface ExploreFilterIconProps {
   markClassName?: string;
 }
 
-const EmojiIcon = ({ emoji, className }: { emoji: string; className: string }) => (
-  <span className={`font-emoji leading-none ${className}`} aria-hidden>
+/** Vertical lift inside `.explore-filter-mark` — offsets low-sitting emoji glyphs. */
+export type ExploreMarkEmojiLift = 'default' | 'camp' | 'people';
+
+const liftClassName = (lift: ExploreMarkEmojiLift): string => {
+  if (lift === 'camp') return 'explore-mark-emoji--camp';
+  if (lift === 'people') return 'explore-mark-emoji--people';
+  return '';
+};
+
+/**
+ * Map / list filter chrome — fixed mark box + optically centered emoji (see `index.css` `.explore-filter-mark`).
+ */
+export const ExploreMarkEmoji = ({
+  emoji,
+  markClassName = '',
+  lift = 'default',
+}: {
+  emoji: string;
+  markClassName?: string;
+  lift?: ExploreMarkEmojiLift;
+}) => {
+  const markClass = ['explore-filter-mark', markClassName].filter(Boolean).join(' ');
+  const emojiClass = ['font-emoji explore-mark-emoji leading-none', liftClassName(lift)].filter(Boolean).join(' ');
+  return (
+    <span className={markClass} aria-hidden>
+      <span className={emojiClass}>{emoji}</span>
+    </span>
+  );
+};
+
+const EmojiIcon = ({
+  emoji,
+  className,
+  lift = 'default',
+}: {
+  emoji: string;
+  className: string;
+  lift?: ExploreMarkEmojiLift;
+}) => (
+  <span className={`font-emoji explore-mark-emoji leading-none ${liftClassName(lift)} ${className}`} aria-hidden>
     {emoji}
   </span>
 );
@@ -55,7 +93,8 @@ const glyphFor = (filter: ExploreFilterKey, context: ExploreFilterEmojiContext, 
     return (
       <EmojiIcon
         emoji={context === 'venue' ? CAMPING_VENUE_EMOJI : CAMPING_ACTIVITY_EMOJI}
-        className={`explore-filter-emoji-camp ${className}`}
+        className={className}
+        lift="camp"
       />
     );
   }

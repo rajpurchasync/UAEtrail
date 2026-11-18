@@ -113,6 +113,9 @@ export interface DiscoveryCardModel {
   activityMode?: ExploreActivityMode | null;
   areaId?: string | null;
   areaSlug?: string | null;
+  /** Catalog place-hub bucket (`locations.areaLabel`). */
+  areaLabel?: string | null;
+  /** Curated Area guide name when `areaId` is set. */
   areaName?: string | null;
   areaLensStats?: ExploreAreaLensStatsDTO | null;
   /** Denormalised geo tree — map/list filters and L2 location links. */
@@ -309,6 +312,7 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
       item.longitude ?? activity?.displayLongitude ?? activity?.locationLongitude ?? null,
     areaId: item.areaId ?? null,
     areaSlug: item.areaSlug ?? null,
+    areaLabel: item.areaLabel ?? null,
     areaName: item.areaName ?? null,
     areaLensStats: item.areaLensStats ?? null,
     geoRef: item.geoRef ?? item.activity?.geoRef ?? item.locationCard?.geoRef ?? null,

@@ -11,6 +11,8 @@ import {
 import type { MapPinKind } from '../../components/ui/mapPinTypes';
 import { isGeographyMapSource } from '@uaetrail/shared-types';
 import type { PlaceMapPin } from '../../components/ui/PlacesMap';
+import { hostedOutingSummariesByPlaceId } from '../exploreOptionalFilters';
+import { resolveExploreMapPinPlaceHub } from '../exploreMapPinCaption';
 import { resolveMapPinItemSource } from '../exploreCopy';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
 import { isBuddyOthersMapItem, matchesBuddyOthersSubtype } from '../exploreBuddySubtype';
@@ -288,11 +290,25 @@ const pinLayerOrder = (source?: ExploreMapItemDTO['source']): number => {
   return 2;
 };
 
+const resolvePlaceCatalogLocationId = (item: ExploreMapItemDTO): string | null => {
+  const fromCard = item.locationCard?.id?.trim();
+  if (fromCard) return fromCard;
+  const fromActivity = item.activity?.locationId?.trim();
+  if (fromActivity) return fromActivity;
+  return null;
+};
+
 export const expandMapPins = (items: ExploreMapItemDTO[]): PlaceMapPin[] => {
   const pins: PlaceMapPin[] = [];
+  const hostedTripsByPlace = hostedOutingSummariesByPlaceId(items);
 
   for (const item of items.filter(isMapPin)) {
     const resolvedMode = resolveExploreMapActivityMode(item);
+    const source = resolveMapPinItemSource(item);
+    const placeLocationId = isGeographyMapSource(source) ? resolvePlaceCatalogLocationId(item) : null;
+    const hostedTripCount = placeLocationId
+      ? hostedTripsByPlace.get(placeLocationId)?.count ?? 0
+      : undefined;
     const hasDistinctTo =
       item.toLatitude != null &&
       item.toLongitude != null &&
@@ -308,11 +324,13 @@ export const expandMapPins = (items: ExploreMapItemDTO[]): PlaceMapPin[] => {
       activityType: mapPinKind(item),
       path: item.path,
       hostAvatar: item.hostAvatar,
-      source: resolveMapPinItemSource(item),
+      source,
       activityMode: resolvedMode ?? undefined,
       rideshareEndpoint: hasDistinctTo ? 'from' : undefined,
       placeKind: item.placeKind ?? undefined,
       scheduleDate: resolveExploreItemScheduleDate(item),
+      hostedTripCount,
+      placeHub: !isGeographyMapSource(source) ? resolveExploreMapPinPlaceHub(item) : undefined,
     });
 
     if (hasDistinctTo) {
@@ -330,6 +348,7 @@ export const expandMapPins = (items: ExploreMapItemDTO[]): PlaceMapPin[] => {
         activityMode: resolvedMode ?? undefined,
         rideshareEndpoint: item.kind === 'rideshare' ? 'to' : 'to',
         scheduleDate: resolveExploreItemScheduleDate(item),
+        placeHub: resolveExploreMapPinPlaceHub(item),
       });
     }
   }

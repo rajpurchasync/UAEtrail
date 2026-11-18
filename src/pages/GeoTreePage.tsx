@@ -104,6 +104,7 @@ export const GeoTreePage = () => {
         counts={{
           activities: totals.activities,
           places: totals.places,
+          facilities: 0,
           children: countries.length,
         }}
         childNodes={childNodes}

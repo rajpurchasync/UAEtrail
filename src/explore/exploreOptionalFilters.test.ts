@@ -67,7 +67,7 @@ describe('exploreOptionalFilters', () => {
 
   it('labels multi-select pills from the resting default', () => {
     expect(formatExploreMultiSelectPillLabel([], EXPLORE_TRIP_TOPIC_OPTIONS, EXPLORE_TRIP_SCOPE_RESTING_LABEL)).toBe(
-      'All trips'
+      'All Trips'
     );
     expect(
       formatExploreMultiSelectPillLabel(['hiking'], EXPLORE_TRIP_TOPIC_OPTIONS, EXPLORE_TRIP_SCOPE_RESTING_LABEL)

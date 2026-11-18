@@ -34,6 +34,7 @@ export const exploreMapItemMatchesGeoSearch = (
     item.title,
     item.subtitle,
     item.areaName,
+    item.areaLabel,
     item.areaSlug,
     item.locationCard?.region,
     item.activity?.locationName,

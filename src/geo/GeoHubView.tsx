@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { GuestFeatureUnlockPanel } from '../explore/ui/GuestFeatureUnlockPanel';
-import { Compass, LayoutGrid, Layers, MapPin } from 'lucide-react';
+import { Compass, LayoutGrid, Layers, MapPin, Droplets } from 'lucide-react';
+import { facilityDetailPath } from '@uaetrail/shared-types';
 import type { GeoCountsDTO, GeoKind, GeoNodeLite } from '@uaetrail/shared-types';
 import { areaDetailPath } from '@uaetrail/shared-types';
 import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
@@ -19,10 +20,10 @@ import { GeoBrowsePane } from './GeoBrowsePane';
 import { geoActivitiesToExploreItems, geoPlacesToExploreItems } from './geoCatalogToExploreItems';
 import {
   GEO_HUB_TAB_LABELS,
-  geoHubTabsForChildren,
+  geoHubTabsForNode,
   type GeoHubTabId,
 } from './geoHubTab';
-import { useGeoPagedActivities, useGeoPagedPlaces } from './useGeoPagedCatalog';
+import { useGeoPagedActivities, useGeoPagedFacilities, useGeoPagedPlaces } from './useGeoPagedCatalog';
 import {
   consumerDetailChildLinkState,
   readDetailBackToFromLocation,
@@ -34,6 +35,7 @@ import { areaGuideLinkLabel } from './areaGuideLinkLabel';
 const TAB_ICONS = {
   overview: LayoutGrid,
   places: MapPin,
+  facilities: Droplets,
   explore: Compass,
 } as const;
 
@@ -45,7 +47,7 @@ type GeoHubViewProps = {
   parentFallback?: string;
   backTo: string;
   backLabel: string;
-  counts: { activities: number; places: number; children: number };
+  counts: { activities: number; places: number; facilities: number; children: number };
   childNodes: Array<GeoNodeLite & { counts?: GeoCountsDTO }>;
   childrenHeading: string;
   catalogNodeId: string | null;
@@ -101,8 +103,15 @@ export const GeoHubView = ({
       ),
     [headerChrome.label, location.pathname, location.search]
   );
-  const visibleTabs = geoHubTabsForChildren(childNodes.length);
+  const visibleTabs = geoHubTabsForNode({
+    childCount: childNodes.length,
+    facilityCount: counts.facilities,
+  });
   const tab = visibleTabs.includes(activeTab) ? activeTab : 'overview';
+  const facilitiesPage = useGeoPagedFacilities(
+    catalogNodeId,
+    catalogEnabled && counts.facilities > 0 && tab === 'facilities'
+  );
   const [browseBucket, setBrowseBucket] = useState<ListExplorerBucket>('events');
 
   useEffect(() => {
@@ -263,6 +272,53 @@ export const GeoHubView = ({
                 linkState={childLinkState}
                 showCounts={member}
               />
+            </div>
+          </div>
+        ) : null}
+
+        {tab === 'facilities' ? (
+          <div className="min-h-0 min-w-0 flex-1 overflow-x-clip overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]">
+            <div className="mx-auto box-border w-full min-h-0 min-w-0 max-w-lg px-4 py-3 pb-4 md:max-w-5xl md:px-6 md:py-2 md:pb-3 lg:max-w-6xl lg:px-5">
+              {!member ? (
+                <GuestFeatureUnlockPanel feature="geo-places" presentation="inline" authReturnPath={authReturnPath} />
+              ) : null}
+              {member && facilitiesPage.loading ? (
+                <p className="text-sm text-slate-600">Loading facilities…</p>
+              ) : null}
+              {member && facilitiesPage.error ? (
+                <p className="text-sm text-red-700">{facilitiesPage.error}</p>
+              ) : null}
+              {member && !facilitiesPage.loading && !facilitiesPage.error ? (
+                <ul className="space-y-2">
+                  {facilitiesPage.items.map((row) => {
+                    const id = String(row._id ?? '');
+                    if (!id) return null;
+                    const label = row.name?.trim() || 'Facility';
+                    return (
+                      <li key={id}>
+                        <GeoGuestDrillLink
+                          to={facilityDetailPath(id)}
+                          authReturnPath={facilityDetailPath(id)}
+                          state={childLinkState}
+                          className="flex min-h-10 items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm hover:border-emerald-200"
+                        >
+                          {label}
+                        </GeoGuestDrillLink>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : null}
+              {member && facilitiesPage.nextCursor ? (
+                <button
+                  type="button"
+                  disabled={facilitiesPage.loadingMore}
+                  onClick={facilitiesPage.loadMore}
+                  className="mt-3 w-full rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-900"
+                >
+                  {facilitiesPage.loadingMore ? 'Loading…' : 'Load more'}
+                </button>
+              ) : null}
             </div>
           </div>
         ) : null}

@@ -182,7 +182,7 @@ export const EXPLORE_FLOW = {
     'explore-flow-choice-card w-full rounded-2xl border-2 px-4 py-3.5 text-left transition-colors duration-150 ease-out active:scale-[0.99] md:rounded-md md:border md:px-3 md:py-2 md:active:scale-100',
   choiceCardActive: 'explore-flow-choice-card--active border-emerald-600 bg-emerald-50/50',
   choiceCardInactive: 'explore-flow-choice-card--inactive border-neutral-200 bg-white',
-  choiceCardTitle: 'text-sm font-bold text-neutral-900',
+  choiceCardTitle: 'text-sm font-bold leading-snug text-neutral-900',
   choiceCardSubtitle: 'mt-0.5 text-xs leading-snug text-neutral-500',
   choiceGrid2: 'grid grid-cols-2 gap-3 md:gap-2',
   kindTile:
@@ -252,7 +252,7 @@ export const EXPLORE_MAP_OVERLAY_ICON_BTN_SIZE =
 
 /** Shared height + type — map List/Create, list Map/Create, hub FABs. */
 const MOBILE_DOCK_PILL =
-  'inline-flex h-[var(--mobile-dock-pill-height)] shrink-0 items-center justify-center gap-1.5 rounded-full px-4 text-sm font-bold leading-none transition active:scale-[0.98]';
+  'mobile-dock-pill shrink-0 rounded-full transition active:scale-[0.98]';
 
 export const MOBILE_DOCK_SECONDARY = `${MOBILE_DOCK_PILL} ${EXPLORE_MAP_CHROME_FROST} ring-1 ring-black/5 text-neutral-900 hover:bg-white/80`;
 
@@ -377,9 +377,9 @@ export const exploreMapChildChipClass = (
 export const EXPLORE_MAP_FILTER_ALL_CHIP_CLASS = 'lg:min-w-[6.5rem]';
 
 const MAP_MOBILE_FLOAT_CHIP_BASE =
-  'inline-flex h-8 max-w-[10.5rem] shrink-0 items-center justify-center gap-1.5 rounded-full px-2.5 py-0 text-xs font-semibold leading-none whitespace-nowrap transition [-webkit-tap-highlight-color:transparent] lg:h-9 lg:max-w-none lg:min-h-[2.375rem] lg:px-3';
+  'inline-flex min-h-8 max-w-[10.5rem] shrink-0 items-center justify-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold leading-snug whitespace-nowrap transition [-webkit-tap-highlight-color:transparent] lg:max-w-none lg:min-h-[2.375rem] lg:px-3 lg:py-2';
 
-/** Icon scale for mobile map float pills (matches `.explore-filter-mark--chip`). */
+/** Compact mark box for h-8 map chrome — pairs with `ExploreMarkEmoji` (`index.css` `--explore-mark-emoji-size-chip`). */
 export const EXPLORE_MAP_MOBILE_FLOAT_CHIP_MARK = 'explore-filter-mark--chip';
 
 /** Lucide / flag icons paired with float pills. */
@@ -401,7 +401,7 @@ export const exploreMapMobileFloatChipClass = (
 
 export const exploreMapScopeSegmentClass = (selected: boolean, layer: 'activity' | 'places'): string => {
   const base =
-    'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold leading-none transition [-webkit-tap-highlight-color:transparent]';
+    'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold leading-snug transition [-webkit-tap-highlight-color:transparent]';
   if (!selected) return `${base} text-neutral-700 hover:bg-white/80`;
   return layer === 'places'
     ? `${base} bg-sky-600 text-white shadow-sm shadow-sky-900/20`
@@ -413,7 +413,7 @@ export const exploreMapScopeSegmentLabeledClass = (
   selected: boolean,
   layer: 'activity' | 'places'
 ): string =>
-  `${exploreMapScopeSegmentClass(selected, layer)} !h-full !min-h-0 !w-auto !shrink-0 !justify-center !gap-1 !px-1.5 !py-0 !text-sm !leading-none`;
+  `${exploreMapScopeSegmentClass(selected, layer)} !h-full !min-h-0 !w-auto !shrink-0 !justify-center !gap-1 !px-1.5 !py-0.5 !text-sm !leading-snug`;
 
 /** Mobile explore — offsets for floating map chrome below the solid header. */
 export const EXPLORE_MOBILE_MAP_CHROME = {
@@ -469,6 +469,33 @@ export const EXPLORE_PEEK = {
     'inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm hover:bg-black/50 transition-colors',
   mediaEmojiBadge:
     'flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-black/35 text-lg backdrop-blur-sm',
+  /** Map trip peek — light type chip + neutral icon buttons (reference layout). */
+  tripTypeBadge:
+    'flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-lg ring-1 ring-emerald-100',
+  tripChromeBtn:
+    'inline-flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200/90 bg-white text-neutral-700 shadow-sm hover:bg-neutral-50',
+  tripShareBtn:
+    'inline-flex h-9 w-9 items-center justify-center text-neutral-600 hover:text-neutral-900',
+  venueTypePill:
+    'inline-flex rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-emerald-900 ring-1 ring-emerald-100',
+  venueTitle: 'text-base font-bold leading-snug tracking-tight text-neutral-950 line-clamp-2',
+  venueMeta: 'text-[11px] font-medium leading-snug text-neutral-600 line-clamp-2',
+  venueThumbBadge:
+    'absolute bottom-1 left-1 max-w-[calc(100%-0.5rem)] truncate rounded-md bg-black/55 px-1.5 py-0.5 text-[9px] font-semibold text-white',
+  venueAmenityChip:
+    'inline-flex max-w-full items-center rounded-full px-2 py-0.5 text-[10px] font-semibold leading-tight',
+  tripTitle: 'text-lg font-bold leading-snug tracking-tight text-neutral-950',
+  tripHostName: 'text-sm font-semibold text-neutral-950',
+  tripSchedule: 'text-xs font-medium text-neutral-600',
+  tripMetaRow: 'flex items-center gap-1.5 text-xs font-medium leading-snug text-neutral-700',
+  tripEssentials: 'text-xs font-semibold text-neutral-900',
+  tripPolicyChip:
+    'inline-flex max-w-full items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-tight',
+  tripCapacity: 'flex items-center gap-1.5 text-xs font-medium text-neutral-700',
+  tripStatChip:
+    'inline-flex max-w-full items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-tight',
+  tripSituationalBtn:
+    'flex w-full min-h-[2.75rem] items-center gap-2 rounded-2xl bg-teal-50 px-3 py-2 text-left text-[11px] font-semibold text-teal-900 ring-1 ring-teal-100 hover:bg-teal-100/80',
 } as const;
 
 export const EXPLORE_LIST_FILTER_INACTIVE =
@@ -547,6 +574,11 @@ export const EXPLORE_PEEK_CTA = {
     'w-full cursor-not-allowed rounded-lg bg-amber-50 py-2.5 text-[13px] font-bold leading-snug text-amber-900',
   peekTile:
     'flex min-h-[2.875rem] flex-1 flex-col items-center justify-center gap-0.5 rounded-lg border border-neutral-200 bg-white px-1 py-1.5 text-center text-[11px] font-semibold leading-tight text-neutral-800 no-underline hover:bg-neutral-50 hover:text-neutral-800 active:bg-neutral-100',
+  /** Icon-only secondary on map peek dual footer (message host, share, …). */
+  peekIconAction:
+    'flex h-[2.875rem] w-[2.875rem] shrink-0 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50 active:bg-neutral-100',
+  venueDirections:
+    'flex min-h-[2.75rem] items-center justify-center gap-1.5 rounded-xl border border-neutral-200 bg-neutral-50 px-2 py-2.5 text-[12px] font-bold text-neutral-900 hover:bg-neutral-100',
   /** Icon above peek footer tile label — brand stroke, no grey fill (tile is already white + border). */
   peekTileIcon: 'h-4 w-4 shrink-0 text-emerald-700',
 } as const;

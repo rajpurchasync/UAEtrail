@@ -54,10 +54,13 @@ export const buildPlaceDetailDiscoveryCard = (input: {
     longitude: lng,
     path: detailPath,
     image: place.images?.[0] ?? null,
-    subtitle: place.areaName?.trim() || place.areaLabel?.trim() || place.region,
+    subtitle: place.areaLabel?.trim() || place.region,
     areaId: place.areaId ?? undefined,
     areaSlug: place.areaSlug ?? undefined,
+    areaLabel: place.areaLabel ?? undefined,
     areaName: place.areaName ?? undefined,
+    geoRef: place.geoRef ?? null,
+    venueRegion: place.region,
     locationCard: locationCardFromPlace(place, placeId),
   } as ExploreMapItemDTO;
   const card = buildDiscoveryCardViewModelCard(item);

@@ -11,7 +11,11 @@ import { PeekDetailLink } from '../../map-peek/PeekDetailLink';
 import { useLocation } from 'react-router-dom';
 import { mapPeekDetailNavState } from '../../../mapPeekDetailNavState';
 import { ActivityPeekStrips } from './ActivityPeekStrips';
-import { DiscoveryCardHostedByRow } from '../../../../discovery/DiscoveryCardHostedByRow';
+import { useAuth } from '../../../../context/AuthContext';
+import { viewerIsActivityHostUser } from '../../../../utils/viewerHostsActivity';
+import type { ExplorePeekDetailAccess } from '../../../../access/resolvePeekDetailAccess';
+import type { MapPeekDetailNavState } from '../../../mapPeekDetailNavState';
+import { ActivityMapPeekCompactLayout } from './ActivityMapPeekCompactLayout';
 
 export type ActivityPeekBodyProps = {
   card: DiscoveryCardModel;
@@ -20,6 +24,9 @@ export type ActivityPeekBodyProps = {
   onOfferTransport?: () => void;
   joinUiState?: JoinRequestUiState;
   mapPeekCompact?: boolean;
+  titleDetailAccess?: ExplorePeekDetailAccess | null;
+  detailLinkState?: MapPeekDetailNavState;
+  onBeforeDetailNavigate?: () => void;
 };
 
 /** Hosted / seeking activity pin body (strips + joined chip). */
@@ -30,10 +37,23 @@ export const ActivityPeekBody = ({
   onOfferTransport,
   joinUiState,
   mapPeekCompact = false,
+  titleDetailAccess = null,
+  detailLinkState,
+  onBeforeDetailNavigate,
 }: ActivityPeekBodyProps) => {
   const location = useLocation();
+  const { user } = useAuth();
+  const activity = card.activity;
+  const hostOnRecord = Boolean(activity && (activity.hostUserId || activity.hostId));
+  const isHostUser =
+    activity && hostOnRecord
+      ? viewerIsActivityHostUser(activity, user?.id)
+      : card.viewerAccess?.level === 'host';
+
   const strips = resolveActivityMapPeekStrips(card, joinUiState);
-  const statusChips = resolveActivityPeekStatusChips(card, joinUiState);
+  const linkState = detailLinkState ?? mapPeekDetailNavState(location);
+
+  const statusChips = mapPeekCompact ? [] : resolveActivityPeekStatusChips(card, joinUiState);
   const chips =
     strips.showJoinedStatusChipOnPeek && !statusChips.some((chip) => chip.tone === 'joined')
       ? [...statusChips, { label: ACTIVITY_STATUS_JOINED, tone: 'joined' as const }]
@@ -53,7 +73,7 @@ export const ActivityPeekBody = ({
 
   const statusChipRow =
     chips.length > 0 ? (
-      <div className={`flex flex-wrap items-center gap-2 ${mapPeekCompact ? 'mt-0' : 'mt-2'}`}>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
         {chips.map((chip) => (
           <span key={`${chip.tone}-${chip.label}`} className={chipClass(chip.tone)}>
             {chip.label}
@@ -66,31 +86,40 @@ export const ActivityPeekBody = ({
             className="text-xs font-semibold text-emerald-800 underline underline-offset-2"
             hrefOverride={manageHref}
             onGuestGatedAction={onGuestGatedAction}
-            linkState={mapPeekDetailNavState(location)}
+            linkState={linkState}
           />
         ) : null}
       </div>
     ) : null;
 
+  if (mapPeekCompact) {
+    return (
+      <ActivityMapPeekCompactLayout
+        card={card}
+        joinUiState={joinUiState}
+        isHostUser={Boolean(isHostUser)}
+        titleDetailAccess={titleDetailAccess}
+        detailLinkState={linkState}
+        onGuestGatedAction={onGuestGatedAction}
+        onBeforeDetailNavigate={onBeforeDetailNavigate}
+        onOpenLinkedPin={onOpenLinkedPin}
+        onOfferTransport={onOfferTransport}
+      />
+    );
+  }
+
   return (
     <>
       {statusChipRow}
-      {mapPeekCompact ? (
-        <DiscoveryCardHostedByRow
+      <div className="mt-3">
+        <ActivityPeekStrips
           card={card}
+          joinUiState={joinUiState}
           onGuestGatedAction={onGuestGatedAction}
-          mapPeekCompact
+          onOpenLinkedPin={onOpenLinkedPin}
+          onOfferTransport={onOfferTransport}
+          mapPeekCompact={mapPeekCompact}
         />
-      ) : null}
-      <div className={mapPeekCompact ? 'mt-2.5' : 'mt-3'}>
-      <ActivityPeekStrips
-        card={card}
-        joinUiState={joinUiState}
-        onGuestGatedAction={onGuestGatedAction}
-        onOpenLinkedPin={onOpenLinkedPin}
-        onOfferTransport={onOfferTransport}
-        mapPeekCompact={mapPeekCompact}
-      />
       </div>
     </>
   );

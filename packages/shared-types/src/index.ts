@@ -957,7 +957,9 @@ export interface ExploreMapItemDTO {
   areaId?: string | null;
   areaSlug?: string | null;
   geoRef?: import('./geo-hierarchy.js').GeoRef | null;
-  /** Published curated area hub title when `areaId` is set. */
+  /** Catalog place-hub bucket (`locations.areaLabel`) — under geo venue / curated area; not the leaf spot name. */
+  areaLabel?: string | null;
+  /** Published curated **Area** guide title when `areaId` is set (`GET /area/:slug`) — not geo L4 venue. */
   areaName?: string | null;
   groupRegionLevels?: GroupRegionLevels | null;
   /** Set when a host converts this request into a published activity. */

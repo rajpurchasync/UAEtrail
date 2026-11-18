@@ -9,7 +9,9 @@ describe('geo hub tabs', () => {
     const hub = read('src/geo/GeoHubView.tsx');
     expect(hub).toMatch(/resolveGeoConsumerDetailHeaderChrome/);
     expect(hub).toMatch(/headerChrome/);
-    expect(hub).toMatch(/geoHubTabsForChildren/);
+    expect(hub).toMatch(/geoHubTabsForNode/);
+    expect(hub).toMatch(/useGeoPagedFacilities/);
+    expect(hub).toMatch(/tab === 'facilities'/);
     expect(hub).toMatch(/tab === 'places'/);
     expect(hub).toMatch(/tab === 'explore'/);
     expect(hub).toMatch(/resolveGeoConsumerDetailHeaderChrome/);
@@ -44,7 +46,7 @@ describe('geo hub tabs', () => {
 
   it('Places tab is child-geo links only — Browse stays on Explore', () => {
     const hub = read('src/geo/GeoHubView.tsx');
-    const placesBlock = hub.slice(hub.indexOf("tab === 'places'"), hub.indexOf("tab === 'explore'"));
+    const placesBlock = hub.slice(hub.indexOf("tab === 'places'"), hub.indexOf("tab === 'facilities'"));
     expect(placesBlock).toMatch(/GeoChildCards/);
     expect(placesBlock).not.toMatch(/GeoBrowsePane/);
     const exploreBlock = hub.slice(hub.indexOf("tab === 'explore'"));

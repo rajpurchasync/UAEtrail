@@ -1,4 +1,6 @@
+import { isGeographyMapSource, type ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
+import { groupRegionTextAtBrowseFilterLevel } from '../../config/groupRegionFilter';
 
 export const browseCatalogNormalize = (value: string | null | undefined): string =>
   value?.trim().toLowerCase().replace(/\s+/g, ' ') ?? '';
@@ -19,38 +21,90 @@ const stripTrailingRegion = (value: string, region: string | null): string => {
   return value;
 };
 
-/** Emirate / state — never the place title. */
+const rejectIfEntityTitle = (
+  value: string | null | undefined,
+  card: Pick<DiscoveryCardModel, 'listTitle' | 'headline'>
+): string | null => {
+  const trimmed = value?.trim();
+  if (!trimmed) return null;
+  const nameNorm = browseCatalogNormalize(browseCatalogEntityName(card as DiscoveryCardModel));
+  return browseCatalogNormalize(trimmed) !== nameNorm ? trimmed : null;
+};
+
+const distinctFromRegion = (value: string, regionPart: string | null): boolean =>
+  !regionPart || browseCatalogNormalize(value) !== browseCatalogNormalize(regionPart);
+
+/**
+ * State (geo L2 / emirate) for browse tail — never catalog leaf title.
+ * @see `GeoRef.names.state` · `groupRegionLevels`
+ */
 export const browseCatalogRegionLabel = (card: DiscoveryCardModel): string | null => {
   const nameNorm = browseCatalogNormalize(browseCatalogEntityName(card));
+  const fromGeo = card.geoRef?.names.state?.trim();
+  if (fromGeo && browseCatalogNormalize(fromGeo) !== nameNorm) return fromGeo;
   const region = card.venueRegion?.trim() || null;
   return region && browseCatalogNormalize(region) !== nameNorm ? region : null;
 };
 
-/** Place hub (Hatta, Wadi Shawka) — never the title or the emirate again. */
+/**
+ * Geo destination for L2 browse (geo L4 venue → L3 area → catalog `areaLabel`).
+ * Never trail/camp **spot** title (`listTitle` / activity `locationName`).
+ * @see `docs/DOMAIN_CANONICALS.md` §12.1.2 · `geo-hierarchy.ts`
+ */
 export const browseCatalogHubLabel = (card: DiscoveryCardModel): string | null => {
-  const nameNorm = browseCatalogNormalize(browseCatalogEntityName(card));
   const regionPart = browseCatalogRegionLabel(card);
-  const hubFromArea =
-    card.areaName?.trim() && browseCatalogNormalize(card.areaName) !== nameNorm
-      ? card.areaName.trim()
-      : null;
-  const hubFromSubtitle = card.subtitle?.trim()
-    ? stripTrailingRegion(card.subtitle.trim(), regionPart)
-    : '';
-  const subtitlePart =
-    hubFromSubtitle && browseCatalogNormalize(hubFromSubtitle) !== nameNorm ? hubFromSubtitle : null;
-  const locationPart = hubFromArea || subtitlePart || null;
-  if (
-    locationPart &&
-    regionPart &&
-    browseCatalogNormalize(locationPart) === browseCatalogNormalize(regionPart)
-  ) {
-    return null;
+  const reject = (v: string | null | undefined) => rejectIfEntityTitle(v, card);
+
+  const fromGeoVenue = reject(card.geoRef?.names.venue);
+  if (fromGeoVenue && distinctFromRegion(fromGeoVenue, regionPart)) return fromGeoVenue;
+
+  const fromGeoArea = reject(card.geoRef?.names.area);
+  if (fromGeoArea && distinctFromRegion(fromGeoArea, regionPart)) return fromGeoArea;
+
+  const fromPlaceHub = reject(card.areaLabel?.trim());
+  if (fromPlaceHub && distinctFromRegion(fromPlaceHub, regionPart)) return fromPlaceHub;
+
+  // Legacy wire: `areaName` carried place-hub before `areaLabel`; skip when `areaId` is curated Area.
+  if (!card.areaId?.trim()) {
+    const fromLegacy = reject(card.areaName?.trim());
+    if (fromLegacy && distinctFromRegion(fromLegacy, regionPart)) return fromLegacy;
   }
-  return locationPart;
+
+  if (isGeographyMapSource(card.source) && card.source !== 'activity') {
+    const hubFromSubtitle = card.subtitle?.trim()
+      ? stripTrailingRegion(card.subtitle.trim(), regionPart)
+      : '';
+    const subtitlePart = reject(hubFromSubtitle);
+    if (subtitlePart && distinctFromRegion(subtitlePart, regionPart)) return subtitlePart;
+  }
+
+  return null;
 };
 
-/** Emirate · place hub — never “Hiking trail location”. */
+/** Map pin “where” + list tail from explore wire — geo / place-hub, not spot or `locationName`. */
+export const browseCatalogHubLabelFromExploreItem = (item: ExploreMapItemDTO): string | null => {
+  const venueRegion =
+    groupRegionTextAtBrowseFilterLevel(item.groupRegionLevels) ??
+    groupRegionTextAtBrowseFilterLevel(item.locationCard?.groupRegionLevels) ??
+    groupRegionTextAtBrowseFilterLevel(item.activity?.groupRegionLevels) ??
+    item.locationCard?.region?.trim() ??
+    item.activity?.region?.trim() ??
+    null;
+
+  return browseCatalogHubLabel({
+    listTitle: item.presentation?.listTitle ?? item.title,
+    headline: item.presentation?.headline ?? item.title,
+    areaId: item.areaId ?? null,
+    areaLabel: item.areaLabel ?? null,
+    areaName: item.areaName ?? null,
+    subtitle: item.subtitle ?? item.presentation?.subtitle ?? null,
+    venueRegion,
+    geoRef: item.geoRef ?? item.activity?.geoRef ?? item.locationCard?.geoRef ?? null,
+    source: item.source,
+  } as DiscoveryCardModel);
+};
+
+/** State · geo destination — never spot title or generic venue hint. */
 export const browseCatalogHeaderLocationLine = (card: DiscoveryCardModel): string | null => {
   const regionPart = browseCatalogRegionLabel(card);
   const hubPart = browseCatalogHubLabel(card);

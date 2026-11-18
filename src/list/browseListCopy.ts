@@ -16,7 +16,7 @@ export const browseListResultsFoundLabel = (count: number): string =>
   count === 1 ? '1 found' : `${count.toLocaleString()} found`;
 export const BROWSE_LIST_SECTION_SOON = 'Happening soon';
 export const BROWSE_LIST_SECTION_OTHERS = 'Find a crew';
-export const BROWSE_LIST_SECTION_VENUES = 'Venues';
+export const BROWSE_LIST_SECTION_VENUES = 'Places';
 export const BROWSE_LIST_SECTION_SHOPS = 'Shops';
 export const BROWSE_LIST_EMPTY = 'Nothing matches — try clearing filters or search.';
 export const BROWSE_LIST_CLEAR_FILTERS = 'Clear filters';

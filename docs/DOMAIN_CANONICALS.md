@@ -335,7 +335,7 @@ Explore URL builders live in `src/explore/routing.ts` (re-exported from `config/
 | **Entity (document)** | `/activity/:id`, `/trail/:id`, `/venue/:id`, `/shop/:id`, `/agency/:slug`, `/member/:userId`, … | Share link, notification target, SEO snippet, per-record auth (`viewerAccess`) | Per-entity fetch + cache (`activity`, place, shop, tenant). **Not** used as “browse all hikes” hubs. |
 | **Personal (not public browse)** | `/plan`, `/profile/history`, `/profile`, `/settings` | Upcoming + goals; history + journey map; profile hub; **app settings** (not `/profile/edit`) | `/me/*` APIs; separate from explore map payload. |
 
-**Do not add** parallel browse roots such as `/map`, `/activities` (catalog), `/places`, `/shops` as top-level **category pages** — that duplicates filters already expressed on `/explore` and `/list`, splits analytics, and invites divergent APIs. Legacy `/map` and `/activities` → redirect only ([`NAVIGATION.md`](./NAVIGATION.md)). **Mobile bottom nav:** five tabs (Trips · Venues · Plans · Crews · Chat) — Trips/Venues use **map + list projections**, not a sixth “List” tab; use `mobileFiveTabHomePath()` instead of ad hoc `/list` links in chrome.
+**Do not add** parallel browse roots such as `/map`, `/activities` (catalog), `/places`, `/shops` as top-level **category pages** — that duplicates filters already expressed on `/explore` and `/list`, splits analytics, and invites divergent APIs. Legacy `/map` and `/activities` → redirect only ([`NAVIGATION.md`](./NAVIGATION.md)). **Mobile bottom nav:** five tabs (Trips · Places · People · Chat · Plans) — Trips/Venues use **map + list projections**, not a sixth “List” tab; use `mobileFiveTabHomePath()` instead of ad hoc `/list` links in chrome.
 
 **When a new path is justified:** marketing/SEO landings that **deep-link into** `explorePath({ … })` with the same filter params; partner embeds; or a **new bounded context** with its own read API (document in Tier-1 before shipping).
 
@@ -576,7 +576,7 @@ Wire: `publishingProfileKind` on `ActivityDTO`; paths via `resolveActivityPublis
 
 **Known read-path gap (do not confuse with write contract):** legacy or tenant-only shop pins may lack `areaId` on the explore payload until linked/backfilled; **new** catalog places and gated publishes must have **`place.areaId`**.
 
-#### 12.1.2 Geo tree drill (spatial hub — alongside curated Area)
+#### 12.1.2 Geo tree drill (geo hub — alongside curated Area)
 
 | Layer | Storage | Consumer URL | Role |
 |-------|---------|--------------|------|

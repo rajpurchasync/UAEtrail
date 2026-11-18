@@ -19,6 +19,10 @@ export interface PlaceMapPin {
   placeKind?: PlaceKind;
   /** ISO date (YYYY-MM-DD) for hosted / seeking outing pins — map hover tooltip. */
   scheduleDate?: string | null;
+  /** Upcoming hosted outings at this catalog place (venue pins). */
+  hostedTripCount?: number;
+  /** Area / place hub for trip pin “where” line. */
+  placeHub?: string | null;
 }
 
 export interface ColocatedMapPinEntry {

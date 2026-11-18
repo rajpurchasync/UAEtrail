@@ -61,7 +61,7 @@ export const PRODUCT_SOCIAL_SURFACE_TITLE = PRODUCT_MY_CREW_SURFACE_TITLE;
 export const PRODUCT_SOCIAL_NAV_HINT =
   'Friends and family teams — optional team chat for adults when you want to message.';
 export const PRODUCT_GROUPS_SURFACE_LABEL = 'Teams';
-export const PRODUCT_CREWS_TAB_LABEL = 'Crews';
+export const PRODUCT_CREWS_TAB_LABEL = 'People';
 export const PRODUCT_MY_CREW_CARD_TITLE = 'My crew';
 export const PRODUCT_MY_CREW_CARD_SUBTITLE = 'Friends you message and teams you travel with';
 export const PRODUCT_TEAM_CHAT_SUBTITLE = 'Optional team wall — adults only';

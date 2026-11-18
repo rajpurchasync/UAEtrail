@@ -7,7 +7,6 @@ import type {
   PlaceNearbyFacilityDTO,
   ReviewDTO,
 } from '@uaetrail/shared-types';
-import { areaDetailPath } from '@uaetrail/shared-types';
 import {
   facilityPlaceKindPinEmoji,
   isFacilityPlaceKind,
@@ -33,7 +32,10 @@ import { readDetailBackToFromLocation } from '../../../explore/mapPeekDetailNavS
 import { EXPLORE_PEEK_CTA } from '../../../config/exploreTheme';
 import { buildPlaceDetailPageModel } from '../buildPlaceDetailPageModel';
 import { resolvePlaceDisplayTitle, readPlaceArabicName } from '../../../utils/venueDetailDisplay';
-import { resolvePlaceAreaLabelFromTags } from '../resolvePlaceAreaFromTags';
+import { ConsumerDetailHeroGeoLine } from '../../../detail/shared/ConsumerDetailHeroGeoLine';
+import { useGeoAncestorLinks } from '../../../hooks/useGeoAncestorLinks';
+import { consumerDetailChildLinkState } from '../../../explore/mapPeekDetailNavState';
+import { resolvePlaceDetailGeoHero } from '../resolvePlaceDetailGeoHero';
 import { placeCoverFallbackClass, resolvePlaceCoverFromPlace } from '../../peek/resolvePlaceRegistryCoverImage';
 import { PlaceDetailKindFacts } from '../PlaceDetailKindFacts';
 import { splitPlacePracticalTags } from '../../../utils/placePracticalInfo';
@@ -100,8 +102,6 @@ export const PlaceDetailSections = ({
   const nameAr =
     readPlaceArabicName(place.tags) ||
     (displayName !== place.name.trim() ? place.name.trim() : null);
-  const areaLabel = place.areaName?.trim() || place.areaLabel?.trim() || resolvePlaceAreaLabelFromTags(place.tags);
-  const areaSlug = place.areaSlug?.trim() || null;
   const practical = splitPlacePracticalTags(place.tags);
   const avgRating =
     reviews.length > 0
@@ -127,6 +127,22 @@ export const PlaceDetailSections = ({
   const backTo =
     readDetailBackToFromLocation(location.state) ?? detailBackPath(pageModel.backKind);
   const headerChrome = resolvePlaceDetailHeaderChrome(kind);
+  const geoHero = useMemo(
+    () =>
+      resolvePlaceDetailGeoHero({
+        kind,
+        place,
+        placeId,
+        detailPath,
+        shareText: pageModel.shareText,
+      }),
+    [detailPath, kind, pageModel.shareText, place, placeId]
+  );
+  const geoLinks = useGeoAncestorLinks({ region: geoHero.region, geoRef: geoHero.geoRef });
+  const areaLinkState = useMemo(() => {
+    const returnTo = `${location.pathname}${location.search}`;
+    return consumerDetailChildLinkState(returnTo, headerChrome.label);
+  }, [headerChrome.label, location.pathname, location.search]);
 
   const catalogKind = placeKindFromLocationRow({
     activityType: place.activityType,
@@ -192,21 +208,15 @@ export const PlaceDetailSections = ({
             )}
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
             <div className="absolute inset-x-0 bottom-0 px-4 pb-4 text-white md:px-6 md:pb-6 lg:px-4 lg:pb-3">
-              <p className="text-sm font-medium text-white/90 lg:text-xs">{place.region}</p>
-              {areaLabel ? (
-                <p className="text-sm font-semibold">
-                  {areaSlug ? (
-                    <Link
-                      to={areaDetailPath(areaSlug)}
-                      className="underline decoration-white/40 underline-offset-2 hover:text-white"
-                    >
-                      {areaLabel}
-                    </Link>
-                  ) : (
-                    areaLabel
-                  )}
-                </p>
-              ) : null}
+              <ConsumerDetailHeroGeoLine
+                geoLinks={geoLinks}
+                regionFallback={geoHero.region}
+                areaLabel={geoHero.areaLabel}
+                areaSlug={geoHero.areaSlug}
+                geoHubPath={geoHero.geoHubPath}
+                areaLinkState={areaLinkState}
+                geoLinkBackLabel={headerChrome.label}
+              />
               <h1 className="mt-1 text-[1.5rem] font-bold leading-snug md:text-[1.85rem] lg:mt-0.5 lg:text-lg">{displayName}</h1>
               {nameAr && nameAr !== displayName ? (
                 <p className="mt-1 text-sm text-white/90" dir="rtl" lang="ar">{nameAr}</p>

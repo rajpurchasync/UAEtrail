@@ -121,6 +121,7 @@ export const GeoNodePage = () => {
       counts={{
         activities: geoCountsTotal(summary.counts.act),
         places: geoCountsTotal(summary.counts.pl),
+        facilities: geoCountsTotal(summary.counts.fac),
         children: summary.children.length,
       }}
       childNodes={summary.children}

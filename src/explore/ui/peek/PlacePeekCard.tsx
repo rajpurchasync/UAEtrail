@@ -1,8 +1,11 @@
 import type { ReactNode } from 'react';
 import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 import { MapPeekShell } from '../map-peek';
+import { MapVenuePeekCard } from '../map-peek/MapVenuePeekCard';
 import { FacilityPeekActions } from '../peek/facility/FacilityPeekActions';
 import { PlacePeekActions } from '../peek/place/PlacePeekActions';
+
+import type { ViewerFix } from '../../../list/explorer/placeDistance';
 
 export type PlacePeekCardProps = {
   card: DiscoveryCardModel;
@@ -10,13 +13,13 @@ export type PlacePeekCardProps = {
   onGuestGatedAction?: () => void;
   joinStateLoading?: boolean;
   embedMode?: boolean;
-  /** Override actions (tests / rails); default = arrange trip + view details. */
   actions?: ReactNode;
+  /** Device fix — distance line on map venue peek. */
+  viewer?: ViewerFix | null;
 };
 
 /**
- * Catalog place peek (`source: venue`) — trail / camp / event venue pins.
- * Detail depth: `PlaceDetailPage` (`kind` trail · camp · event).
+ * Venue peek facade — map pins use {@link MapVenuePeekCard}; embed uses legacy shell.
  */
 export const PlacePeekCard = ({
   card,
@@ -25,21 +28,37 @@ export const PlacePeekCard = ({
   joinStateLoading = false,
   embedMode = false,
   actions,
-}: PlacePeekCardProps) => (
-  <MapPeekShell
-    card={card}
-    onClose={onClose}
-    joinStateLoading={joinStateLoading}
-    onGuestGatedAction={onGuestGatedAction}
-    catalogPlaceSummary
-    embedMode={embedMode}
-    actions={
-      actions ??
-      (card.source === 'facility' ? (
-        <FacilityPeekActions card={card} onClose={onClose} onGuestGatedAction={onGuestGatedAction} />
-      ) : (
-        <PlacePeekActions card={card} onClose={onClose} onGuestGatedPlanTrip={onGuestGatedAction} />
-      ))
-    }
-  />
-);
+  viewer = null,
+}: PlacePeekCardProps) => {
+  if (!embedMode) {
+    return (
+      <MapVenuePeekCard
+        card={card}
+        onClose={onClose}
+        onGuestGatedAction={onGuestGatedAction}
+        joinStateLoading={joinStateLoading}
+        actions={actions}
+        viewer={viewer}
+      />
+    );
+  }
+
+  return (
+    <MapPeekShell
+      card={card}
+      onClose={onClose}
+      joinStateLoading={joinStateLoading}
+      onGuestGatedAction={onGuestGatedAction}
+      catalogPlaceSummary
+      embedMode
+      actions={
+        actions ??
+        (card.source === 'facility' ? (
+          <FacilityPeekActions card={card} onClose={onClose} onGuestGatedAction={onGuestGatedAction} />
+        ) : (
+          <PlacePeekActions card={card} onClose={onClose} onGuestGatedPlanTrip={onGuestGatedAction} mapPeekCompact={false} />
+        ))
+      }
+    />
+  );
+};

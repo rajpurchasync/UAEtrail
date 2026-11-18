@@ -1,3 +1,4 @@
+import { MOBILE_FIVE_TAB_UI_LABELS } from '../../config/mobileFiveTabNav';
 import type { ExploreSearchScopeCounts } from '../../explore/exploreBrowseTaxonomy';
 import type { BrowseMainCategoryKey } from '../browseListTaxonomy';
 
@@ -8,7 +9,7 @@ export const LIST_EXPLORER_BUCKETS: ReadonlyArray<{
   label: string;
 }> = [
   { key: 'events', label: 'Trips' },
-  { key: 'places', label: 'Venues' },
+  { key: 'places', label: MOBILE_FIVE_TAB_UI_LABELS.venues },
 ];
 
 /** Default catalog is events. Places is `listCat=venues`. */
@@ -30,5 +31,5 @@ export const listExplorerSearchBucketCounts = (
 
 export const listExplorerBucketTotalLabel = (bucket: ListExplorerBucket, count: number): string => {
   if (bucket === 'events') return count === 1 ? '1 trip' : `${count.toLocaleString()} trips`;
-  return count === 1 ? '1 venue' : `${count.toLocaleString()} venues`;
+  return count === 1 ? '1 place' : `${count.toLocaleString()} places`;
 };

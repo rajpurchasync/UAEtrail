@@ -44,7 +44,7 @@ export const ExploreMapMobileDock = ({
           aria-label="Open list view"
         >
           <List className={EXPLORE_MAP_MOBILE_DOCK_ICON} strokeWidth={2.25} aria-hidden />
-          List
+          <span className="mobile-dock-pill__label">List</span>
         </button>
       </UiTooltip>
       <div
@@ -66,7 +66,7 @@ export const ExploreMapMobileDock = ({
             aria-label={primaryFabLabel}
           >
             <Plus className={EXPLORE_MAP_MOBILE_DOCK_ICON} strokeWidth={2.5} aria-hidden />
-            <span className="truncate">{primaryFabLabel}</span>
+            <span className="mobile-dock-pill__label truncate">{primaryFabLabel}</span>
           </button>
         </UiTooltip>
       </div>

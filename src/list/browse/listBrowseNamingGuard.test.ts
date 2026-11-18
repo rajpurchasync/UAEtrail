@@ -203,6 +203,23 @@ describe('listBrowseNamingGuard', () => {
     expect(read('src/list/browse/TripBrowseCard.tsx')).not.toMatch(/listTripPosterPresentation/);
   });
 
+  it('BROWSE-NAME-17: catalog hub/tail resolvers stay in browseCatalogLabels', () => {
+    const allowed = new Set([
+      'src/list/browse/browseCatalogLabels.ts',
+      'src/list/listVenuePosterPresentation.ts',
+      'src/list/listTripPosterPresentation.ts',
+    ]);
+    const hubExport = /export const browseCatalog(?:HubLabel|HeaderLocationLine|RegionLabel)/;
+    const violations: string[] = [];
+    for (const file of collectSourceFiles(join(process.cwd(), 'src'))) {
+      const rel = relative(process.cwd(), file).replace(/\\/g, '/');
+      if (allowed.has(rel)) continue;
+      const source = read(rel);
+      if (hubExport.test(source)) violations.push(rel);
+    }
+    expect(violations).toEqual([]);
+  });
+
   it('BROWSE-NAME-13: feed wire footers mount through DiscoveryCardWireEngagementFooter only', () => {
     expect(existsSync(join(process.cwd(), 'src/list/ui/ListFeedPosterFooter.tsx'))).toBe(false);
     const allowed = new Set([

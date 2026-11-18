@@ -6,8 +6,10 @@ import type { GeoAncestorLink } from '../../geo/geoAncestorLinks';
 import { GeoAncestorEyebrow } from './GeoAncestorEyebrow';
 import { GeoGuestDrillLink } from '../../geo/GeoGuestDrillLink';
 
-const HERO_CRUMB_CLASS =
+const HERO_CRUMB_ON_DARK =
   'underline decoration-white/40 underline-offset-[3px] hover:text-white';
+const HERO_CRUMB_ON_LIGHT =
+  'underline decoration-emerald-400/50 underline-offset-[3px] hover:text-emerald-950';
 
 /** Region / geo trail plus curated area link — consumer detail hero subtitle. */
 export const ConsumerDetailHeroGeoLine = ({
@@ -15,16 +17,21 @@ export const ConsumerDetailHeroGeoLine = ({
   regionFallback,
   areaLabel,
   areaSlug,
+  geoHubPath,
   areaLinkState,
   geoLinkBackLabel = 'Back',
+  tone = 'onDark',
 }: {
   geoLinks: GeoAncestorLink[];
   regionFallback?: string | null;
   areaLabel?: string | null;
   areaSlug?: string | null;
+  /** Geo destination hub when no curated `/area/:slug`. */
+  geoHubPath?: string | null;
   /** Router state so area hub back returns to the opener detail. */
   areaLinkState?: object;
   geoLinkBackLabel?: string;
+  tone?: 'onDark' | 'onLight';
 }) => {
   const location = useLocation();
   const geoLinkState = useMemo(() => {
@@ -35,14 +42,23 @@ export const ConsumerDetailHeroGeoLine = ({
   const area = areaLabel?.trim() ?? '';
   if (!region && !area && geoLinks.length === 0) return null;
 
+  const crumbClass = tone === 'onLight' ? HERO_CRUMB_ON_LIGHT : HERO_CRUMB_ON_DARK;
+  const lineClass =
+    tone === 'onLight'
+      ? 'text-sm font-medium text-emerald-900/90'
+      : 'text-sm font-medium text-emerald-100/95 md:text-[0.8125rem]';
+
+  const hubPath = areaSlug?.trim()
+    ? areaDetailPath(areaSlug.trim())
+    : geoHubPath?.trim() || null;
   const areaNode = area ? (
-    areaSlug ? (
+    hubPath ? (
       <GeoGuestDrillLink
-        to={areaDetailPath(areaSlug)}
+        to={hubPath}
         state={areaLinkState}
-        authReturnPath={areaDetailPath(areaSlug)}
+        authReturnPath={hubPath}
         inline
-        className={HERO_CRUMB_CLASS}
+        className={crumbClass}
       >
         {area}
       </GeoGuestDrillLink>
@@ -56,13 +72,14 @@ export const ConsumerDetailHeroGeoLine = ({
       links={geoLinks}
       fallbackLabel={geoLinks.length === 0 ? region || null : null}
       linkState={geoLinkState}
+      linkClassName={crumbClass}
     />
   );
 
   const hasAncestor = geoLinks.length > 0 || Boolean(region);
 
   return (
-    <p className="text-sm font-medium text-emerald-100/95 md:text-[0.8125rem]">
+    <p className={lineClass}>
       {areaNode}
       {areaNode && hasAncestor ? <span aria-hidden> · </span> : null}
       {ancestorNode}

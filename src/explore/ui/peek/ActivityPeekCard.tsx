@@ -2,6 +2,11 @@ import type { ActivityMapPeekActionId } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 import type { JoinRequestUiState } from '../../../utils/joinRequestUi';
 import { MapPeekShell, MapPeekActionsSlot, MapPeekBodySlot } from '../map-peek';
+import { MapTripPeekCard } from '../map-peek/MapTripPeekCard';
+import { useLocation } from 'react-router-dom';
+import { resolvePeekDetailAccess } from '../../../access/resolvePeekDetailAccess';
+import { mapPeekDetailNavState } from '../../mapPeekDetailNavState';
+import { activityPeekHasMapWireActions } from '../../../activity/activityPeekEngagement';
 
 export type ActivityPeekCardProps = {
   card: DiscoveryCardModel;
@@ -24,30 +29,41 @@ export type ActivityPeekCardProps = {
 };
 
 /**
- * Hosted + seeking activity map peek (map/list).
- * Detail depth: `card.path` → kind `*ActivityDetailPage` on `/activity/:id`.
+ * Activity peek facade — map pins use {@link MapTripPeekCard}; embed/list rails use legacy shell.
  */
-export const ActivityPeekCard = ({
-  card,
-  onClose,
-  onJoin,
-  onMessage,
-  joinUiState,
-  onWithdraw,
-  joinStateLoading = false,
-  linkRideshareTenantId = null,
-  onGuestGatedAction,
-  onActivityMapPeekAction,
-  onOpenExploreItem,
-  onOfferTransport,
-  onOfferRideshare,
-  joinInvitePeekBanner = null,
-  embedMode = false,
-  showDismissChrome,
-  onShareActivity,
-}: ActivityPeekCardProps) => {
+export const ActivityPeekCard = (props: ActivityPeekCardProps) => {
+  const { embedMode = false, ...mapProps } = props;
+
+  if (!embedMode) {
+    return <MapTripPeekCard {...mapProps} />;
+  }
+
+  const {
+    card,
+    onClose,
+    onJoin,
+    onMessage,
+    joinUiState,
+    onWithdraw,
+    joinStateLoading = false,
+    linkRideshareTenantId = null,
+    onGuestGatedAction,
+    onActivityMapPeekAction,
+    onOpenExploreItem,
+    onOfferTransport,
+    onOfferRideshare,
+    joinInvitePeekBanner = null,
+    showDismissChrome,
+    onShareActivity,
+  } = props;
+
+  const location = useLocation();
   const shellGuestGate = onGuestGatedAction ? () => onGuestGatedAction('view_detail') : undefined;
-  const bodyGuestGate = shellGuestGate;
+  const titleDetailAccess = resolvePeekDetailAccess(card, {
+    isGuest: Boolean(onGuestGatedAction),
+    joinStateLoading: activityPeekHasMapWireActions(card) ? false : joinStateLoading,
+  });
+  const detailLinkState = mapPeekDetailNavState(location);
 
   return (
     <MapPeekShell
@@ -56,7 +72,7 @@ export const ActivityPeekCard = ({
       joinStateLoading={joinStateLoading}
       onGuestGatedAction={shellGuestGate}
       statusBanner={joinInvitePeekBanner}
-      embedMode={embedMode}
+      embedMode
       showDismissChrome={showDismissChrome}
       onShareActivity={onShareActivity}
       actions={
@@ -72,16 +88,20 @@ export const ActivityPeekCard = ({
           onGuestGatedAction={onGuestGatedAction}
           onActivityMapPeekAction={onActivityMapPeekAction}
           onOfferRideshare={onOfferRideshare}
+          mapPeekCompact={false}
         />
       }
     >
       <MapPeekBodySlot
         card={card}
-        onGuestGatedAction={bodyGuestGate}
+        onGuestGatedAction={shellGuestGate}
         onOpenLinkedPin={onOpenExploreItem}
         onOfferTransport={onOfferTransport}
         joinUiState={joinUiState}
-        mapPeekCompact={!embedMode}
+        mapPeekCompact={false}
+        titleDetailAccess={titleDetailAccess}
+        detailLinkState={detailLinkState}
+        onBeforeDetailNavigate={onClose}
       />
     </MapPeekShell>
   );

@@ -5,6 +5,12 @@ describe('explore map catalog query', () => {
   it('asks the home map for places and outings', () => {
     expect(exploreMapCatalogQuery({ pinKind: 'all', mapFilter: 'all' })).toEqual({
       sources: 'place,activity',
+      includeRideshare: true,
+    });
+  });
+
+  it('does not load rideshare when a single non-ride map filter is active', () => {
+    expect(exploreMapCatalogQuery({ pinKind: 'all', mapFilter: 'hiking' })).toMatchObject({
       includeRideshare: false,
     });
   });

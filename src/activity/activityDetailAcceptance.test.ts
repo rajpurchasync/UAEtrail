@@ -199,6 +199,8 @@ describe('activity detail program — wiring', () => {
     expect(joinSurfaces).toMatch(/consumerWireEngagementCta/);
     expect(consumerBody).toMatch(/ActivityDetailGettingThere/);
     expect(consumerBody).toMatch(/ActivityDetailLead/);
+    expect(consumerBody).toMatch(/ConsumerDetailHeroGeoLine/);
+    expect(consumerBody).toMatch(/resolveActivityDetailGeoHero/);
     expect(consumerBody).toMatch(/ActivityDetailSocialRow/);
     expect(consumerBody).toMatch(/activity-detail-meeting-point/);
     const actions = read('src/components/activity/detail/ActivityDetailEngagementActions.tsx');
@@ -357,6 +359,8 @@ describe('activity detail program — wiring', () => {
     const consumerBody = read('src/activity/detail/templates/ActivityDetailSections.tsx');
     expect(consumerBody).toMatch(/ActivityDetailGettingThere/);
     expect(consumerBody).toMatch(/ActivityDetailLead/);
+    expect(consumerBody).toMatch(/ConsumerDetailHeroGeoLine/);
+    expect(consumerBody).toMatch(/resolveActivityDetailGeoHero/);
     const view = read('src/components/activity/ActivityDetailView.tsx');
     expect(view).toMatch(/ActivityDetailSections/);
     expect(read('src/activity/detail/activityDetailPageShellCard.ts')).toMatch(
