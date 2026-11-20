@@ -9,9 +9,9 @@ import {
 import { type Location, useLocation } from 'react-router-dom';
 import {
   HISTORY_CHANGE_EVENT,
+  pickRouteMatchLocation,
   readBrowserLocationSnapshot,
   routerPathFromHistoryState,
-  snapshotLocationUrl,
 } from './routerLocationReconcile';
 
 const readBrowserLocation = (): Location => ({
@@ -45,18 +45,12 @@ export const useEffectiveLocation = (): Location => {
   }, []);
 
   return useMemo(() => {
-    const routerSnapshot = snapshotLocationUrl(
-      routerLocation.pathname,
-      routerLocation.search,
-      routerLocation.hash
-    );
     const browser = readBrowserLocation();
-    const pathnameDesynced = browser.pathname !== routerLocation.pathname;
-
-    if (pathnameDesynced && browserSnapshot !== routerSnapshot) {
-      return browser;
+    if (browser.pathname === routerLocation.pathname) {
+      return routerLocation;
     }
-    return routerLocation;
+    // Reconcile when HISTORY_CHANGE_EVENT updates browserSnapshot (pathname desync).
+    return pickRouteMatchLocation(routerLocation, browser);
   }, [browserSnapshot, routerLocation]);
 };
 

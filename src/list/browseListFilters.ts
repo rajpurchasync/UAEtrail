@@ -1,6 +1,9 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { isGeographyMapSource } from '@uaetrail/shared-types';
-import { selectAvailabilityForListCatalog } from '@/activity-discovery/catalog/listAvailabilityCatalog';
+import {
+  exploreMapItemIsAvailabilityCatalog,
+  exploreMapItemIsSeeking,
+  isGeographyMapSource,
+} from '@uaetrail/shared-types';
 import {
   filterListCatalogByVenueRegions,
   mergeListCatalogPlansAndPlaces,
@@ -27,6 +30,10 @@ import {
 import type { BrowseTripTopicKey } from './browseListTripTopics';
 import { matchesListVenuePlaceTopic } from './listVenuePlaceTopicFilter';
 import type { ListVenuePlaceTopicKey } from './listVenuePlaceTopics';
+import {
+  exploreItemMatchesBrowseAudienceFilter,
+  type BrowseAudienceFilter,
+} from './browseAudienceFilter';
 import type { BuddiesDiscoverySegment } from './buddiesDiscoverySegment';
 import { isPlacesMapItem, isShopListItem } from '../explore/ui/exploreMapPinModel';
 /** @deprecated Use BrowseMainCategoryKey — kept for imports migrating */
@@ -56,7 +63,11 @@ export type BrowseListFilterState = {
   hasTrip: boolean;
   /** Amenity subtypes — empty = all facilities when Facilities is selected. */
   facilityKinds: PlaceKind[];
+  /** Who can attend — list filter modal. */
+  audience: BrowseAudienceFilter;
 };
+
+export type { BrowseAudienceFilter };
 
 export const BROWSE_PRICE_OPTIONS: ReadonlyArray<{ key: BrowsePriceFilter; label: string }> =
   EXPLORE_PRICE_FILTER_OPTIONS;
@@ -102,7 +113,9 @@ export const filterExploreMapItemsForList = (
     state.categories.length === 0 || state.categories.includes('venues');
 
   if (tripsCategoryInScope && state.tripLookingOnly) {
-    pool = selectAvailabilityForListCatalog(pool);
+    pool = pool.filter(
+      (item) => exploreMapItemIsSeeking(item) || exploreMapItemIsAvailabilityCatalog(item)
+    );
   } else if (tripsCategoryInScope && state.tripTopics.length > 0) {
     pool = pool.filter((item) =>
       state.tripTopics.some((topic) => matchesUnifiedTopicFilter(item, topic, 'all', 'all'))
@@ -144,6 +157,11 @@ export const filterExploreMapItemsForList = (
       if (!isPlacesMapItem(item) && !isShopListItem(item)) return true;
       return explorePlaceHasHostedTrip(item, hostedIds);
     });
+  }
+
+  const audience = state.audience ?? 'anyone';
+  if (audience !== 'anyone') {
+    pool = pool.filter((item) => exploreItemMatchesBrowseAudienceFilter(item, audience));
   }
 
   pool = filterListCatalogByVenueRegions(pool, venueRegions);

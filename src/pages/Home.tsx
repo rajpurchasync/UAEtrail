@@ -13,7 +13,7 @@ import { HomeMarketingHeader } from '../components/home/marketing/HomeMarketingH
 import { HomeHeroSection } from '../components/home/marketing/sections/HomeHeroSection';
 import { HomeMarketingCarouselSyncProvider } from '../components/home/marketing/HomeMarketingCarouselSync';
 import { useIsMobile } from '../hooks/useIsMobile';
-import { sessionExpiredExplorePath } from '../utils/authSessionLanding';
+import { sessionExpiredLandingPath } from '../utils/authSessionLanding';
 
 const HomeActivitiesBlock = lazy(() =>
   import('../components/home/marketing/sections/HomeActivitiesBlock').then((m) => ({
@@ -39,7 +39,7 @@ export const Home = () => {
   const sessionExpired = hasSessionExpiredQuery(searchParams);
 
   if (!user && isMobile && sessionExpired) {
-    return <Navigate to={sessionExpiredExplorePath()} replace />;
+    return <Navigate to={sessionExpiredLandingPath()} replace />;
   }
 
   if (user) {

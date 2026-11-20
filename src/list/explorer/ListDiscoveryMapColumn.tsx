@@ -13,6 +13,8 @@ const PlacesMap = lazy(() =>
   import('../../components/ui/PlacesMap').then((module) => ({ default: module.PlacesMap }))
 );
 
+type ListDiscoveryMapPresentation = 'sideColumn' | 'primary';
+
 type Props = {
   items: ExploreMapItemDTO[];
   loading: boolean;
@@ -22,6 +24,8 @@ type Props = {
   onClose?: () => void;
   layoutRevision?: boolean | number | string;
   className?: string;
+  /** `sideColumn` = `/list` split pane (desktop). `primary` = full-stage map (search results view). */
+  presentation?: ListDiscoveryMapPresentation;
 };
 
 /** Standalone `/list` — filtered pins on the right; hover/select emphasis matches explore. */
@@ -34,6 +38,7 @@ export const ListDiscoveryMapColumn = ({
   onClose,
   layoutRevision,
   className = '',
+  presentation = 'sideColumn',
 }: Props) => {
   const exploreMapTiles = getExploreMapTiles(readExploreMapStyle());
 
@@ -50,11 +55,17 @@ export const ListDiscoveryMapColumn = ({
     }
   };
 
+  const surfaceClass =
+    presentation === 'primary'
+      ? 'relative flex min-h-0 min-w-0 flex-1 self-stretch bg-[#2a3441]'
+      : `relative hidden min-h-0 min-w-0 flex-1 self-stretch border-l border-neutral-200 bg-[#2a3441] md:flex`;
+
   return (
     <div
-      className={`relative hidden min-h-0 min-w-0 flex-1 self-stretch border-l border-neutral-200 bg-[#2a3441] md:flex ${className}`}
-      style={{ flex: '1 1 0%', minWidth: LIST_SIDE_MAP_MIN_PX }}
+      className={`${surfaceClass} ${className}`}
+      style={presentation === 'sideColumn' ? { flex: '1 1 0%', minWidth: LIST_SIDE_MAP_MIN_PX } : undefined}
       aria-label="Browse map"
+      data-list-discovery-map={presentation}
     >
       {onClose ? (
         <UiTooltip label="Close map">

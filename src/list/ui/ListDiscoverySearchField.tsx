@@ -31,6 +31,8 @@ type ListDiscoverySearchFieldProps = {
   enableScopeHints?: boolean;
   /** Focus the input when mounted (e.g. after expanding search on `/list` mobile). */
   autoFocus?: boolean;
+  /** Map/list toggle or other chrome to the right of the search shell (hub). */
+  trailingChrome?: ReactNode;
 };
 
 /** List discover — same scope hints + prompt as `ExploreBrowseSearchModal` (inline bar + dropdown). */
@@ -49,6 +51,7 @@ export const ListDiscoverySearchField = ({
   placeholder = EXPLORE_SEARCH_OPEN_PLACEHOLDER,
   enableScopeHints = true,
   autoFocus = false,
+  trailingChrome = null,
 }: ListDiscoverySearchFieldProps) => {
   const anchorRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -170,7 +173,9 @@ export const ListDiscoverySearchField = ({
             </div>
           ) : null}
         </div>
-        {hideMapLink ? null : (
+        {trailingChrome ? (
+          <div className="flex shrink-0 items-center self-center">{trailingChrome}</div>
+        ) : hideMapLink ? null : (
           <Link
             to={mapHref}
             className={`${LIST_SEARCH.sideAction} ${LIST_SEARCH.sideActionMap} shrink-0 text-emerald-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/35`}

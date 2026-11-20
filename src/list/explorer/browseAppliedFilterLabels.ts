@@ -2,6 +2,7 @@ import { exploreActivityDatePresetLabel } from '../../explore/exploreActivityDat
 import { BROWSE_PRICE_OPTIONS, BROWSE_WHEN_OPTIONS, type BrowseListFilterState } from '../browseListFilters';
 import { BROWSE_TRIP_TOPIC_FILTERS } from '../browseListTripTopics';
 import { LIST_VENUE_PLACE_TOPIC_FILTERS } from '../listVenuePlaceTopics';
+import { LIST_BROWSE_AUDIENCE_OPTIONS } from '../listBrowseFilterModal';
 import type { ListExplorerBucket } from './listExplorerBucket';
 
 /** Short labels for filters the member has turned on in browse. */
@@ -34,6 +35,10 @@ export const browseAppliedFilterLabels = (
     if (filters.activityDatePreset !== 'anyday') {
       labels.push(exploreActivityDatePresetLabel(filters.activityDatePreset));
     }
+  }
+  if (filters.audience !== 'anyone') {
+    const match = LIST_BROWSE_AUDIENCE_OPTIONS.find((option) => option.key === filters.audience);
+    if (match) labels.push(match.label);
   }
   for (const region of regions) {
     const name = region.trim();

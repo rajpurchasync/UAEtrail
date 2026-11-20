@@ -49,6 +49,7 @@ export const listDiscoveryPath = (options?: ListDiscoveryPathOptions): string =>
     buddiesSegment: options?.buddiesSegment ?? 'hub',
     hasTrip: options?.hasTrip ?? false,
     facilityKinds: options?.facilityKinds ?? [],
+    audience: options?.audience ?? 'anyone',
   };
   const params = serializeBrowseListSearchParams(state, options?.regions ?? []);
   if (options?.listCat) params.set(LIST_CAT_PARAM, options.listCat);

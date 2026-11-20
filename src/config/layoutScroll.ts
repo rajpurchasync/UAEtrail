@@ -31,7 +31,8 @@ export const getAppScrollContainer = (): HTMLElement | null => {
  * Routes where the page owns the scroll region (feed/map) — `#app-scroll-root` does not scroll.
  */
 export const isDelegatedProductScrollPath = (pathname: string): boolean =>
-  pathname === LIST_DISCOVERY_PATH;
+  pathname === LIST_DISCOVERY_PATH ||
+  pathname === '/explore/search';
 
 export const resetAppScroll = (): void => {
   const container = getAppScrollContainer();

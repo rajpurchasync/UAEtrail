@@ -10,6 +10,12 @@ export const ExploreExperience = lazy(() => {
   // Start the map library with the explore route. Home never calls this.
   return import('../explore/ui/ExploreExperience').then((m) => ({ default: m.ExploreExperience }));
 });
+export const ExploreSearchResultsPage = lazy(() =>
+  import('../explore/search/ExploreSearchResultsPage').then((m) => ({ default: m.ExploreSearchResultsPage }))
+);
+export const ExploreHubLegacyRedirect = lazy(() =>
+  import('../explore/search/ExploreHubLegacyRedirect').then((m) => ({ default: m.ExploreHubLegacyRedirect }))
+);
 export const BrowseListPage = lazy(() =>
   import('../list/BrowseListPage').then((m) => ({ default: m.BrowseListPage }))
 );

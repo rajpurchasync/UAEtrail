@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../../explore/exploreBrowseTaxonomy';
 import { APP_SCROLL_BODY_CLASS } from '../../config/layoutScroll';
 import type { ExploreAvailablePersonDTO, ExploreMapItemDTO, MemberDiscoveryQuotaDTO } from '@uaetrail/shared-types';
@@ -40,6 +41,11 @@ type ListCrewsExplorerProps = {
   discoveryQuota: MemberDiscoveryQuotaDTO | null;
   discoveryLoading: boolean;
   discoveryError: string | null;
+  suppressSearch?: boolean;
+  searchPlaceholder?: string;
+  enableSearchScopeHints?: boolean;
+  searchResultsChrome?: boolean;
+  exploreSearchResults?: boolean;
 };
 
 export const ListCrewsExplorer = ({
@@ -73,6 +79,11 @@ export const ListCrewsExplorer = ({
   discoveryQuota,
   discoveryLoading,
   discoveryError,
+  suppressSearch = false,
+  searchPlaceholder,
+  enableSearchScopeHints = true,
+  searchResultsChrome = false,
+  exploreSearchResults = false,
 }: ListCrewsExplorerProps) => {
   const stickySearch = query.trim().length > 0;
 
@@ -81,7 +92,11 @@ export const ListCrewsExplorer = ({
   };
 
   return (
-    <div className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-neutral-50">
+    <div
+      className={`relative flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden ${
+        'bg-neutral-50'
+      }`}
+    >
       <ListCrewsExplorerHeader
         query={query}
         onQueryChange={onQueryChange}
@@ -97,11 +112,21 @@ export const ListCrewsExplorer = ({
         statCounts={statCounts}
         onOpenAvailability={onOpenMarkAvailability}
         filterCount={filterCount}
+        suppressSearch={suppressSearch}
+        searchPlaceholder={searchPlaceholder}
+        enableSearchScopeHints={enableSearchScopeHints}
+        searchResultsChrome={searchResultsChrome}
+        exploreSearchResults={exploreSearchResults}
+        mapListResultCount={discoveryDirectory.length}
       />
       <div
         className={`${APP_SCROLL_BODY_CLASS} min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain pb-[calc(var(--bottom-nav-height,56px)+var(--safe-bottom,0px)+24px)]`}
       >
-        <div className="mx-auto w-full max-w-6xl px-4 py-3 md:px-6 md:py-5">
+        <div
+          className={`mx-auto w-full px-4 py-3 md:py-5 ${
+            searchResultsChrome ? 'max-w-lg md:px-5' : 'max-w-6xl md:px-6'
+          }`}
+        >
           <CrewsTabBody
             segment={peopleBrowseTab}
             crewsOpenLens={crewsOpenLens}

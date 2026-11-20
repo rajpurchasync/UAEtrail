@@ -2,20 +2,21 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useProductLocation } from '../../routing/useEffectiveLocation';
 import { ProductNavLink } from '../navigation/ProductNavLink';
-import { ClipboardList, MapPin, MessageSquare, Users, type LucideIcon } from 'lucide-react';
+import { ClipboardList, Home, MapPin, MessageSquare, Users, type LucideIcon } from 'lucide-react';
 
 import { NAV_ICONS } from '../../config/navIcons';
 import {
-  MOBILE_FIVE_TAB_UI_LABELS,
-  MOBILE_FIVE_TAB_ORDER,
-  mobileFiveTabHomePath,
-  resolveMobileFiveTab,
-  type MobileFiveTabId,
+  MOBILE_BOTTOM_TAB_UI_LABELS,
+  mobileBottomTabHomePath,
+  mobileBottomTabOrder,
+  resolveMobileBottomTab,
+  type MobileBottomTabId,
 } from '../../config/mobileFiveTabNav';
 import { useInboxUnreadCount } from '../../hooks/useInboxUnreadCount';
 import { useMobileBottomNav } from '../../hooks/useMobileBottomNav';
 
-const TAB_ICONS: Record<MobileFiveTabId, LucideIcon> = {
+const TAB_ICONS: Record<MobileBottomTabId, LucideIcon> = {
+  home: Home,
   trips: NAV_ICONS.trips,
   venues: MapPin,
   crews: Users,
@@ -47,7 +48,8 @@ const TabIcon = ({ icon: Icon, active }: { icon: LucideIcon; active: boolean }) 
 export const MobileBottomNav = () => {
   const visible = useMobileBottomNav();
   const { pathname, search } = useProductLocation();
-  const activeTab = resolveMobileFiveTab(pathname, search);
+  const tabs = mobileBottomTabOrder();
+  const activeTab = resolveMobileBottomTab(pathname, search);
   const unreadMessages = useInboxUnreadCount();
   const [portalReady, setPortalReady] = useState(false);
 
@@ -71,11 +73,14 @@ export const MobileBottomNav = () => {
       aria-label="Main"
       className="mobile-bottom-nav fixed inset-x-0 bottom-0 z-[1200] border-t border-neutral-200/80 bg-white/95 pb-[var(--safe-bottom)] backdrop-blur-md md:hidden"
     >
-      <div className="mx-auto grid h-[var(--bottom-nav-height)] max-w-lg grid-cols-5">
-        {MOBILE_FIVE_TAB_ORDER.map((tab) => {
-          const label = MOBILE_FIVE_TAB_UI_LABELS[tab];
+      <div
+        className="mx-auto grid h-[var(--bottom-nav-height)] max-w-lg"
+        style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
+      >
+        {tabs.map((tab) => {
+          const label = MOBILE_BOTTOM_TAB_UI_LABELS[tab];
           const active = activeTab === tab;
-          const href = mobileFiveTabHomePath(tab);
+          const href = mobileBottomTabHomePath(tab);
           const isChat = tab === 'chat';
 
           return (

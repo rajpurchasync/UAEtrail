@@ -8,7 +8,7 @@ type DiscoveryBrowseListEngagementFooterProps = {
   card: DiscoveryCardModel;
 };
 
-/** Trips browse card — join/RSVP when feed actions mount, else open the plan (§6.1.2 engagement slot). */
+/** Trips + venues browse thumbnails — wire footer when feed actions mount (§6.1.2 engagement slot). */
 export const DiscoveryBrowseListEngagementFooter = ({
   card,
 }: DiscoveryBrowseListEngagementFooterProps) => {

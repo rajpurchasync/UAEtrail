@@ -4,6 +4,7 @@ import {
   MOBILE_FIVE_TAB_UI_LABELS,
   crewsHomePath,
   mobileFiveTabHomePath,
+  resolveMobileBottomTab,
   resolveMobileFiveTab,
   tripsListHomePath,
   tripsMapHomePath,
@@ -13,15 +14,15 @@ import {
 } from './mobileFiveTabNav';
 
 describe('mobile five-tab nav contract', () => {
-  it('orders tabs Trips · Places · People · Chat · Plans', () => {
+  it('orders tabs Trips · Places · Crews · Chat · Plans', () => {
     expect(MOBILE_FIVE_TAB_ORDER).toEqual(['trips', 'venues', 'crews', 'chat', 'plan']);
   });
 
-  it('exposes UI labels Trips · Places · People · Chat · Plans', () => {
+  it('exposes UI labels Trips · Places · Crews · Chat · Plans', () => {
     expect(MOBILE_FIVE_TAB_UI_LABELS).toEqual({
       trips: 'Trips',
       venues: 'Places',
-      crews: 'People',
+      crews: 'Crews',
       plan: 'Plans',
       chat: 'Chat',
     });
@@ -47,6 +48,9 @@ describe('mobile five-tab nav contract', () => {
     expect(resolveMobileFiveTab('/explore', '')).toBe('trips');
     expect(resolveMobileFiveTab('/explore', '?panel=venues')).toBe('venues');
     expect(resolveMobileFiveTab('/explore', '?view=people')).toBe('crews');
+    expect(resolveMobileFiveTab('/explore/search', '')).toBe('trips');
+    expect(resolveMobileFiveTab('/explore/search', '?searchScope=places')).toBe('venues');
+    expect(resolveMobileFiveTab('/explore/search', '?searchScope=crew')).toBe('crews');
     expect(resolveMobileFiveTab('/activity/abc', '')).toBeNull();
   });
 

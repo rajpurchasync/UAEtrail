@@ -13,6 +13,7 @@ import {
 } from './browseCatalogLabels';
 import { resolveVenueBrowseCardFactLabels, resolveVenueCatalogFactLabels } from './venueBrowseFacts';
 import { resolveDiscoveryBrowseGeoHubPath } from '../../discovery/browse/resolveDiscoveryBrowseGeoLink';
+import { filterDiscoveryBrowseListBodyFactLabels } from '../../discovery/browse/resolveDiscoveryBrowseListImageChrome';
 
 const emptySchedule: BrowsePosterScheduleGrid = {
   dateLabel: null,
@@ -133,7 +134,10 @@ export const resolveVenueBrowseCardCopy = (
   const locationLine = browseCatalogHeaderLocationLine(card);
   const metaLine =
     regionLabel && hubLabel ? `${regionLabel} · ${hubLabel}` : locationLine?.trim() || null;
-  const factLabels = resolveVenueBrowseCardFactLabels(card);
+  const factLabels = filterDiscoveryBrowseListBodyFactLabels(
+    resolveVenueBrowseCardFactLabels(card),
+    card
+  );
 
   return {
   title: browseCatalogEntityName(card),

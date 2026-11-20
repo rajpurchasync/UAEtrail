@@ -1,7 +1,6 @@
 import { isGeographyMapSource, resolveActivityPublisherChip } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { browseCatalogHeaderLocationLine } from './browseCatalogLabels';
-import { browseListIsThisWeekSectionDate } from './browseListSectionDates';
 
 const BROWSE_ROW_MONTHS = [
   'Jan',
@@ -61,16 +60,21 @@ export const browseCardPriceLabel = (card: DiscoveryCardModel): string | null =>
   return price.badge;
 };
 
+/** Thumb hero foot — Free vs Paid (amount stays in detail / meta elsewhere). */
+export const browseCardListHeroPriceLabel = (card: DiscoveryCardModel): string | null => {
+  if (card.source !== 'activity') return null;
+  const price = card.price;
+  if (!price) return null;
+  return price.kind === 'free' ? 'Free' : 'Paid';
+};
+
 export const browseCardDateIso = (card: DiscoveryCardModel): string | null => {
   const rawDate = card.scheduleDate?.trim() || card.activity?.date?.trim() || '';
   return /^\d{4}-\d{2}-\d{2}/.test(rawDate) ? rawDate.slice(0, 10) : null;
 };
 
-/** Browse list row date column — `Fri 20 Nov 26`; prefix `This` for “This week” section dates. */
-export const formatBrowseRowDateLabel = (
-  iso: string | null,
-  now: Date = new Date()
-): string | null => {
+/** Browse list row date column — `Fri 20 Nov 26` (calendar labels, no “This week” prefix). */
+export const formatBrowseRowDateLabel = (iso: string | null): string | null => {
   if (!iso?.trim()) return null;
   const target = new Date(`${iso.trim().slice(0, 10)}T12:00:00`);
   if (Number.isNaN(target.getTime())) return null;
@@ -79,10 +83,7 @@ export const formatBrowseRowDateLabel = (
   const day = String(target.getDate()).padStart(2, '0');
   const month = BROWSE_ROW_MONTHS[target.getMonth()] ?? '';
   const year = String(target.getFullYear()).slice(-2);
-  const core = `${weekday} ${day} ${month} ${year}`;
-
-  if (browseListIsThisWeekSectionDate(iso, now)) return `This ${core}`;
-  return core;
+  return `${weekday} ${day} ${month} ${year}`;
 };
 
 const splitExploreWhenLabel = (when: string | null): { date: string; time: string | null } | null => {
@@ -102,7 +103,7 @@ export const browseRowWhenDisplay = (
   const iso = browseCardDateIso(card);
   const when = card.whenLabel?.trim() || null;
   const fromWhen = splitExploreWhenLabel(when);
-  const date = formatBrowseRowDateLabel(iso, now) ?? fromWhen?.date ?? null;
+  const date = formatBrowseRowDateLabel(iso) ?? fromWhen?.date ?? null;
   const time = fromWhen?.time ?? null;
   if (!date && !time) return null;
   return { date: date ?? '', time };

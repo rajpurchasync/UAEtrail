@@ -455,6 +455,9 @@ export const EXPLORE_Z = {
   shareSheet: 'z-[6800]',
 } as const;
 
+/** Where / when / state sheets from booking search — numeric `ConsumerBottomSheet` z-index (above browse sheet). */
+export const EXPLORE_BOOKING_SEARCH_PICK_SHEET_Z = 5600;
+
 /**
  * Map peek card — compact bubble over the pin (mobile + desktop), not a full-height dock.
  */

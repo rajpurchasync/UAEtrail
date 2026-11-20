@@ -1,7 +1,7 @@
 import { useLocation } from 'react-router-dom';
 import { ExploreMapStage } from '../ui/ExploreMapStage';
 import { ExploreDesktopGuestGatePanel } from '../ui/ExploreDesktopGuestGatePanel';
-import { ExploreBrowseSearchModal } from '../ui/ExploreBrowseSearchModal';
+import { ExploreBookingSearchModal } from '../search/ExploreBookingSearchModal';
 import { guestExplorePreviewCanSearch } from '../guestMapPreviewPolicy';
 import {
   ACTIVITY_JOIN_CTA_SELECTOR,
@@ -236,16 +236,13 @@ export const ExploreMapShell = ({
       mapSearchOpen={exploreSearchModalOpen}
       mapSearchOverlay={
         exploreSearchModalOpen ? (
-          <ExploreBrowseSearchModal
+          <ExploreBookingSearchModal
             open
+            overlayContained
             onClose={closeExploreSearchModal}
-            query={browse.query}
-            onQueryChange={browse.setQuery}
-            onCommit={handleExploreSearchCommit}
             scopeCounts={searchScopeCounts}
-            publishedAreas={publishedAreas}
-            onPickArea={handlePickExploreArea}
             signedIn={Boolean(user)}
+            onGuestBlocked={() => selection.handleGuestPreviewLimitGate()}
           />
         ) : null
       }

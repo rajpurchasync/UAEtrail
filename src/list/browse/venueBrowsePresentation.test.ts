@@ -18,6 +18,7 @@ import {
   resolveVenueBrowsePosterFactLabels,
   resolveVenueBrowseScheduleHint,
 } from './venueBrowseCardCopy';
+import { resolveDiscoveryBrowseListPolicyLabels } from '../../discovery/browse/resolveDiscoveryBrowseListImageChrome';
 
 const venueItem = (overrides: Partial<ExploreMapItemDTO> = {}): ExploreMapItemDTO =>
   ({
@@ -162,12 +163,8 @@ describe('venue browse presentation', () => {
     expect(browseCatalogHubLabel(card)).toBe('Wadi Ghalilah');
     expect(listing.locationLine).toBe('RAK · Wadi Ghalilah');
     expect(listing.rating).toEqual({ average: 4.8, count: 12 });
-    expect(listing.factLabels).toEqual([
-      'Moderate',
-      '8.5 km',
-      'Child-friendly',
-      'Parking available',
-    ]);
+    expect(listing.factLabels).toEqual(['Moderate', '8.5 km', 'Parking available']);
+    expect(resolveDiscoveryBrowseListPolicyLabels(card)).toContain('Child-friendly');
     expect(listing.hasDirections).toBe(true);
     expect(listing.canWishlist).toBe(true);
     expect(listing.rating).toEqual({ average: 4.8, count: 12 });
@@ -242,30 +239,30 @@ describe('venue browse presentation', () => {
     );
     const listing = resolveVenueBrowseCardCopy(card);
     expect(listing.rating).toBeNull();
-    expect(listing.factLabels).toHaveLength(5);
+    expect(listing.factLabels).toHaveLength(4);
     expect(listing.factLabels).toEqual([
       'Self-guided camping',
       'Sand',
-      'Child-friendly',
       'Parking available',
       'Toilet',
     ]);
+    expect(resolveDiscoveryBrowseListPolicyLabels(card)).toContain('Child-friendly');
   });
 
-  it('uses Plan trip + Details on place posters (map peek copy)', () => {
+  it('uses Plan Trip + Get Directions on place browse footers', () => {
     const card = buildDiscoveryCardViewModelCard(venueItem());
     const model = resolveListFeedFooterModel(card, { isGuest: true });
     expect(model.primary).toMatchObject({
       kind: 'plan_trip',
-      label: 'Plan trip',
+      label: 'Plan Trip',
     });
     expect(model.secondary).toMatchObject({
-      kind: 'link',
-      label: 'Details',
+      kind: 'directions',
+      label: 'Get Directions',
     });
   });
 
-  it('uses Get Directions + View Details on facility posters', () => {
+  it('uses Plan Trip + Get Directions on facility browse footers', () => {
     const card = buildDiscoveryCardViewModelCard(
       venueItem({
         id: 'facility:f1',
@@ -287,12 +284,12 @@ describe('venue browse presentation', () => {
     );
     const model = resolveListFeedFooterModel(card, { isGuest: true });
     expect(model.primary).toMatchObject({
-      kind: 'directions',
-      label: 'Get Directions',
+      kind: 'plan_trip',
+      label: 'Plan Trip',
     });
     expect(model.secondary).toMatchObject({
-      kind: 'link',
-      label: 'View Details',
+      kind: 'directions',
+      label: 'Get Directions',
     });
   });
 });

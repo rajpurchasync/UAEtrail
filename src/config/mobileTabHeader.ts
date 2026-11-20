@@ -31,9 +31,11 @@ import {
   PROFILE_SETTINGS_NOTIFICATIONS_PATH,
   PROFILE_SETTINGS_SAFETY_PATH,
 } from './surfacePaths';
+import { EXPLORE_SEARCH_RESULTS_PATH } from '../explore/search/exploreSearchRouting';
 
 const TAB_HEADER_ROUTES = new Set([
   '/explore',
+  EXPLORE_SEARCH_RESULTS_PATH,
   '/list',
   PROFILE_PATH,
   PLAN_PATH,
@@ -79,6 +81,7 @@ export const isLayoutMobileUnifiedHeaderRoute = (pathname: string): boolean => {
 
 export const resolveMobileTabHeaderTitle = (pathname: string, search: string): string | null => {
   if (pathname === '/explore') return null;
+  if (pathname === EXPLORE_SEARCH_RESULTS_PATH) return 'Search results';
   if (pathname === PROFILE_PATH) return 'Profile';
   if (pathname === PLAN_PATH) {
     const params = new URLSearchParams(search);

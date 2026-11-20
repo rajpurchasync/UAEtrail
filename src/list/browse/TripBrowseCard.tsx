@@ -24,22 +24,6 @@ export const TripBrowseCard = ({ card, onMapHover }: TripBrowseCardProps) => {
   const joinUiState = listActions?.joinUiStateForCard(card);
   const emitHover = (id: string | null) => onMapHover?.(id);
 
-  const cornerBadges =
-    listing.soldOut || listing.price ? (
-      <>
-        {listing.soldOut ? (
-          <span className="pointer-events-auto rounded-md bg-red-600 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
-            Sold out
-          </span>
-        ) : null}
-        {listing.price ? (
-          <span className="pointer-events-auto rounded-md bg-white/95 px-1.5 py-0.5 text-[10px] font-bold leading-none text-neutral-900 shadow-sm">
-            {listing.price}
-          </span>
-        ) : null}
-      </>
-    ) : null;
-
   return (
     <article
       className={BROWSE_CARD_SHELL}
@@ -52,7 +36,7 @@ export const TripBrowseCard = ({ card, onMapHover }: TripBrowseCardProps) => {
         onMapHover={onMapHover}
         className="group block"
       >
-        <DiscoveryBrowseCardHero card={card} hideHostBand cornerBadges={cornerBadges} />
+        <DiscoveryBrowseCardHero card={card} hideHostBand />
       </BrowseItemLink>
       <div className={BROWSE_CARD_BODY}>
         <BrowseItemLink
@@ -96,20 +80,21 @@ export const TripBrowseCard = ({ card, onMapHover }: TripBrowseCardProps) => {
             onMapHover={onMapHover}
           />
         ) : null}
-        <BrowseItemLink
-          to={card.path}
-          exploreItemId={card.id}
-          onMapHover={onMapHover}
-          className="group block min-w-0"
-        >
-          <DiscoveryBrowseCardChipRow
-            labels={listing.placeLogisticsLabels}
-            tone="logistics"
-            maxVisible={2}
-            ariaLabel="Trail access"
-          />
-          <DiscoveryBrowseCardChipRow labels={listing.visibleFactLabels} maxVisible={3} />
-        </BrowseItemLink>
+        {listing.placeLogisticsLabels.length > 0 ? (
+          <BrowseItemLink
+            to={card.path}
+            exploreItemId={card.id}
+            onMapHover={onMapHover}
+            className="group block min-w-0"
+          >
+            <DiscoveryBrowseCardChipRow
+              labels={listing.placeLogisticsLabels}
+              tone="logistics"
+              maxVisible={2}
+              ariaLabel="Trail access"
+            />
+          </BrowseItemLink>
+        ) : null}
       </div>
       <DiscoveryBrowseListEngagementFooter card={card} />
     </article>

@@ -11,7 +11,7 @@ export const DiscoveryBrowseCardMetaLine = ({
   className = '',
 }: DiscoveryBrowseCardMetaLineProps) => (
   <p
-    className={`min-w-0 truncate text-[12px] font-medium leading-snug text-neutral-600 ${EXPLORE_TYPE.muted} ${className}`.trim()}
+    className={`min-w-0 truncate text-[13px] font-medium leading-snug text-neutral-600 sm:text-sm ${EXPLORE_TYPE.muted} ${className}`.trim()}
   >
     {children}
   </p>

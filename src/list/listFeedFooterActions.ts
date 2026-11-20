@@ -189,23 +189,18 @@ export const resolveListFeedFooterModel = (
     joinUiState?: JoinRequestUiState;
   }
 ): ListFeedFooterModel => {
-  if (isFacilityMapSource(card.source) && discoveryCardHasMapCoords(card)) {
-    return {
-      primary: {
-        kind: 'directions',
-        label: LIST_FEED_CTA_GET_DIRECTIONS,
-        lat: card.mapLatitude!,
-        lng: card.mapLongitude!,
-      },
-      secondary: detailButton(card),
-      usesJoinFlow: false,
-    };
-  }
-
-  if (isPlaceMapSource(card.source)) {
+  if (isPlaceMapSource(card.source) || isFacilityMapSource(card.source)) {
+    const secondaryDirections: ListFeedFooterButton | null = discoveryCardHasMapCoords(card)
+      ? {
+          kind: 'directions',
+          label: LIST_FEED_CTA_GET_DIRECTIONS,
+          lat: card.mapLatitude!,
+          lng: card.mapLongitude!,
+        }
+      : null;
     return {
       primary: { kind: 'plan_trip', label: PLACE_PEEK_FOOTER_PLAN_TRIP },
-      secondary: detailButton(card),
+      secondary: secondaryDirections,
       usesJoinFlow: false,
     };
   }

@@ -31,4 +31,5 @@ export const exploreMapQuickFiltersBrowseState = (input: {
   buddiesSegment: 'available',
   hasTrip: input.hasTrip,
   facilityKinds: [...input.facilityKinds],
+  audience: 'anyone',
 });

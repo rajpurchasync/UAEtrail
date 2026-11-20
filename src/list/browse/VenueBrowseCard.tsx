@@ -1,21 +1,10 @@
 import { Star } from 'lucide-react';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import { DirectionsControl } from '../../components/ui/DirectionsControl';
 import { EXPLORE_TYPE } from '../../config/exploreTheme';
-import { ExploreWishlistSaveButton } from '../../explore/ui/ExploreWishlistSaveButton';
-import {
-  LIST_FEED_CTA_GET_DIRECTIONS,
-  LIST_FEED_CTA_WISHLIST,
-  LIST_FEED_CTA_WISHLIST_SAVED,
-} from '../listFeedCtaCopy';
 import { resolveVenueBrowseCardCopy, type VenueBrowseCardRating } from './venueBrowseCardCopy';
 import { BrowseItemLink } from './BrowseItemLink';
-import {
-  BROWSE_CARD_BODY,
-  BROWSE_CARD_FOOTER,
-  BROWSE_CARD_PRIMARY_CTA,
-  BROWSE_CARD_SHELL,
-} from './browseCardChrome';
+import { BROWSE_CARD_BODY, BROWSE_CARD_SHELL } from './browseCardChrome';
+import { DiscoveryBrowseListEngagementFooter } from '../../discovery/DiscoveryBrowseListEngagementFooter';
 import { DiscoveryBrowseCardHero } from '../../discovery/browse/DiscoveryBrowseCardHero';
 import { DiscoveryBrowseCardMetaSlot } from '../../discovery/browse/DiscoveryBrowseCardMetaSlot';
 import { DiscoveryBrowseCardChipRow } from '../../discovery/browse/DiscoveryBrowseCardChipRow';
@@ -54,7 +43,7 @@ export const VenueBrowseCard = ({ card, onMapHover }: VenueBrowseCardProps) => {
         onMapHover={onMapHover}
         className="group block"
       >
-        <DiscoveryBrowseCardHero card={card} />
+        <DiscoveryBrowseCardHero card={card} hideHostBand />
       </BrowseItemLink>
       <div className={BROWSE_CARD_BODY}>
         <BrowseItemLink
@@ -92,30 +81,7 @@ export const VenueBrowseCard = ({ card, onMapHover }: VenueBrowseCardProps) => {
           <DiscoveryBrowseCardChipRow labels={listing.visibleFactLabels} maxVisible={3} />
         </BrowseItemLink>
       </div>
-      {listing.hasDirections || listing.canWishlist ? (
-        <div className={BROWSE_CARD_FOOTER}>
-          {listing.hasDirections && card.mapLatitude != null && card.mapLongitude != null ? (
-            <DirectionsControl
-              lat={card.mapLatitude}
-              lng={card.mapLongitude}
-              variant="button"
-              label={LIST_FEED_CTA_GET_DIRECTIONS}
-              className="min-w-0 flex-1"
-              buttonClassName={BROWSE_CARD_PRIMARY_CTA}
-              showAppPickerAffordance={false}
-            />
-          ) : null}
-          {listing.canWishlist ? (
-            <ExploreWishlistSaveButton
-              card={card}
-              variant="cta"
-              compact
-              idleLabel={LIST_FEED_CTA_WISHLIST}
-              savedLabel={LIST_FEED_CTA_WISHLIST_SAVED}
-            />
-          ) : null}
-        </div>
-      ) : null}
+      <DiscoveryBrowseListEngagementFooter card={card} />
     </article>
   );
 };

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { EXPLORE_SEARCH_RESULTS_PATH } from '../explore/search/exploreSearchRouting';
 import { isLayoutMobileUnifiedHeaderRoute } from './mobileTabHeader';
 import {
   hasConsumerSelfHeader,
@@ -63,7 +64,7 @@ const ENTITY_DETAIL_SAMPLES = [
 ] as const;
 
 describe('mobileChromeGuard', () => {
-  it('layout unified header routes hide MobileConsumerNavBar (hasConsumerSelfHeader)', () => {
+  it('layout unified header routes use self header (no duplicate layout chrome)', () => {
     const paths = [
       ...MOBILE_BOTTOM_NAV_TAB_PATHS,
       PROFILE_PATH,
@@ -86,9 +87,14 @@ describe('mobileChromeGuard', () => {
     expect(missing).toEqual([]);
   });
 
-  it('ConsumerShell stack pages hide MobileConsumerNavBar', () => {
+  it('ConsumerShell stack pages declare self header', () => {
     const missing = CONSUMER_SHELL_STACK_PATHS.filter((p) => !hasConsumerSelfHeader(p));
     expect(missing).toEqual([]);
+  });
+
+  it('search results uses unified tab header chrome', () => {
+    expect(hasConsumerSelfHeader(EXPLORE_SEARCH_RESULTS_PATH)).toBe(true);
+    expect(isLayoutMobileUnifiedHeaderRoute(EXPLORE_SEARCH_RESULTS_PATH)).toBe(true);
   });
 
   it('unified header + navbar never stacks for signed-in bottom-nav surfaces', () => {
@@ -109,7 +115,7 @@ describe('mobileChromeGuard', () => {
     expect(dualRisk).toEqual([]);
   });
 
-  it('entity detail and member cards hide MobileConsumerNavBar via detail or self header', () => {
+  it('entity detail and member cards use detail or self header', () => {
     for (const p of ENTITY_DETAIL_SAMPLES) {
       expect(isEntityDetailRoute(p)).toBe(true);
       expect(hasConsumerSelfHeader(p) || isEntityDetailRoute(p)).toBe(true);

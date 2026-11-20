@@ -10,7 +10,7 @@ export const placePeekScheduledActivitiesCountLabel = (count: number): string =>
   count === 1 ? '1 scheduled activity' : `${count} scheduled activities`;
 export const PLACE_PEEK_ARRANGE_TRIP = 'Arrange trip';
 /** Compact map peek footer tile. */
-export const PLACE_PEEK_FOOTER_PLAN_TRIP = 'Plan trip';
+export const PLACE_PEEK_FOOTER_PLAN_TRIP = 'Plan Trip';
 export const PLACE_PEEK_FOOTER_DIRECTIONS = 'Directions';
 export const PLACE_PEEK_FOOTER_EXPLORE = 'Explore place';
 export const PLACE_PEEK_FOOTER_DETAILS = 'Details';

@@ -12,6 +12,7 @@ export type ExploreActivityDateNamedPreset =
   | 'today'
   | 'tomorrow'
   | 'week'
+  | 'nextweek'
   | 'month'
   | 'nextmonth'
   | 'thisyear'
@@ -27,6 +28,7 @@ export const EXPLORE_ACTIVITY_DATE_PRESET_OPTIONS: ReadonlyArray<{
   { value: 'today', label: 'Today' },
   { value: 'tomorrow', label: 'Tomorrow' },
   { value: 'week', label: 'This week' },
+  { value: 'nextweek', label: 'Next week' },
   { value: 'month', label: 'This month' },
   { value: 'nextmonth', label: 'Next month' },
   { value: 'thisyear', label: 'This year' },
@@ -139,6 +141,7 @@ export const parseExploreActivityDatePreset = (value: string | null): ExploreAct
     value === 'today' ||
     value === 'tomorrow' ||
     value === 'week' ||
+    value === 'nextweek' ||
     value === 'month' ||
     value === 'nextmonth' ||
     value === 'thisyear' ||
@@ -171,6 +174,7 @@ export const exploreActivityDatePresetCompactLabel = (
   if (custom) return formatCustomActivityDateRangeLabel(custom.from, custom.to);
   if (preset === 'tomorrow') return 'Tmrw';
   if (preset === 'week') return 'Week';
+  if (preset === 'nextweek') return 'Next wk';
   if (preset === 'month') return 'Month';
   if (preset === 'nextmonth') return 'Next mo';
   if (preset === 'thisyear') return 'This yr';
@@ -197,6 +201,10 @@ export const exploreActivityDatePresetToInclusiveRange = (
     }
     case 'week':
       return { from: startOfWeekIso(today), to: endOfWeekIso(today) };
+    case 'nextweek': {
+      const start = addDaysIso(endOfWeekIso(today), 1);
+      return { from: start, to: addDaysIso(start, 6) };
+    }
     case 'month':
       return { from: startOfMonthIso(today), to: endOfMonthIso(today) };
     case 'nextmonth':
@@ -245,6 +253,10 @@ export const matchesActivityDateFilter = (
         startOfWeekIso(today),
         endOfWeekIso(today)
       );
+    case 'nextweek': {
+      const start = addDaysIso(endOfWeekIso(today), 1);
+      return activityScheduleOverlapsRange(window.start, window.end, start, addDaysIso(start, 6));
+    }
     case 'month':
       return activityScheduleOverlapsRange(
         window.start,

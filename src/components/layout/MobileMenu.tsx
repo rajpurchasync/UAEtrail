@@ -1,6 +1,15 @@
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { isDiscoverBrowseRoute } from '../../explore/exploreDiscoverBrowse';
-import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -52,6 +61,8 @@ const HAMBURGER_FIVE_TAB_BY_LABEL: Record<string, MobileFiveTabId> = {
   Trips: 'trips',
   Places: 'venues',
   Plans: 'plan',
+  Crews: 'crews',
+  /** @deprecated Legacy hamburger label */
   People: 'crews',
   Chat: 'chat',
 };
@@ -76,7 +87,7 @@ const isConsumerHamburgerLinkActive = (
     if (pathname === LIST_DISCOVERY_PATH && activeTab === 'venues') return true;
     return pathname === EXPLORE_MAP_PATH && activeTab === 'venues';
   }
-  if (item.label === 'People') {
+  if (item.label === 'Crews' || item.label === 'People') {
     if (pathname === LIST_DISCOVERY_PATH && activeTab === 'crews') return true;
     return (
       (pathname === EXPLORE_MAP_PATH || pathname === '/discovery') && activeTab === 'crews'
@@ -137,10 +148,15 @@ import { SecureAvatar } from '../ui/SecureAvatar';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
 import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { DisplayPreferencesSection } from '../profile/DisplayPreferencesSection';
+import { syncConsumerMobileHeaderStack } from './syncConsumerMobileHeaderStack';
 
 export type MobileMenuTone = 'default' | 'light';
 
 const MOBILE_MENU_OVERLAY_Z = MOBILE_CONSUMER_MENU_Z.overlay;
+
+/** Drawer + dimmer top — measured on open; fallback matches `index.css`. */
+const MOBILE_MENU_TOP_INSET =
+  'top-[var(--consumer-mobile-header-stack,calc(var(--safe-top,0px)+3.75rem))]';
 
 const AnimatedBurgerIcon = ({ open }: { open: boolean }) => (
   <svg
@@ -263,23 +279,22 @@ const MobileDrawer = ({
       className={`fixed inset-0 ${MOBILE_MENU_OVERLAY_Z} pointer-events-none transition-opacity duration-200 ${
         open ? 'opacity-100' : 'opacity-0'
       }`}
-      aria-hidden={!open}
     >
       <button
         type="button"
-        className={`absolute inset-x-0 bottom-0 top-[var(--consumer-mobile-header-stack,3.375rem)] bg-black/50 backdrop-blur-[2px] ${
+        className={`absolute inset-x-0 bottom-0 ${MOBILE_MENU_TOP_INSET} bg-black/50 backdrop-blur-[2px] ${
           open ? 'pointer-events-auto' : 'pointer-events-none'
         }`}
         aria-label="Close menu"
-        aria-hidden={!open}
         tabIndex={open ? 0 : -1}
         onClick={closeMenu}
       />
       <aside
-        role="dialog"
-        aria-modal="true"
-        aria-label={ariaLabel}
-        aria-hidden={!open}
+        data-mobile-drawer
+        role={open ? 'dialog' : undefined}
+        aria-modal={open ? true : undefined}
+        aria-label={open ? ariaLabel : undefined}
+        {...(!open ? { inert: true as const } : {})}
         className={`${MOBILE_DRAWER.aside} ${open ? 'pointer-events-auto translate-x-0' : 'pointer-events-none translate-x-full'}`}
       >
         {header ? (
@@ -370,10 +385,51 @@ const DashboardDrawerSiteLink = ({ closeMenu }: { closeMenu: () => void }) => (
 export const MobileMenuProvider = ({ children }: MobileMenuProviderProps) => {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
+  const menuTriggerFocusRef = useRef<HTMLElement | null>(null);
 
-  const closeMenu = useCallback(() => setOpen(false), []);
-  const openMenu = useCallback(() => setOpen(true), []);
-  const toggleMenu = useCallback(() => setOpen((current) => !current), []);
+  const rememberMenuTrigger = useCallback(() => {
+    const active = document.activeElement;
+    if (active instanceof HTMLElement) {
+      menuTriggerFocusRef.current = active;
+    }
+  }, []);
+
+  const restoreMenuFocus = useCallback(() => {
+    const trigger = menuTriggerFocusRef.current;
+    const active = document.activeElement;
+    if (active instanceof HTMLElement && active.closest('[data-mobile-drawer]')) {
+      if (trigger && document.contains(trigger)) {
+        try {
+          trigger.focus({ preventScroll: true });
+          return;
+        } catch {
+          /* trigger unmounted */
+        }
+      }
+      active.blur();
+    }
+  }, []);
+
+  const closeMenu = useCallback(() => {
+    restoreMenuFocus();
+    setOpen(false);
+  }, [restoreMenuFocus]);
+
+  const openMenu = useCallback(() => {
+    rememberMenuTrigger();
+    setOpen(true);
+  }, [rememberMenuTrigger]);
+
+  const toggleMenu = useCallback(() => {
+    setOpen((current) => {
+      if (current) {
+        restoreMenuFocus();
+        return false;
+      }
+      rememberMenuTrigger();
+      return true;
+    });
+  }, [rememberMenuTrigger, restoreMenuFocus]);
 
   useEffect(() => {
     document.documentElement.dataset.mobileMenu = open ? 'open' : '';
@@ -385,6 +441,18 @@ export const MobileMenuProvider = ({ children }: MobileMenuProviderProps) => {
   useEffect(() => {
     closeMenu();
   }, [pathname, closeMenu]);
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    const sync = () => syncConsumerMobileHeaderStack();
+    sync();
+    const raf = requestAnimationFrame(sync);
+    window.addEventListener('resize', sync);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', sync);
+    };
+  }, [open, pathname]);
 
   useEffect(() => {
     if (!open) return;
@@ -452,6 +520,7 @@ export const MobileUserMenuButton = ({
   showOnDesktop = false,
 }: MobileMenuButtonProps) => {
   const [open, setOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
   const { pathname, search } = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -460,14 +529,27 @@ export const MobileUserMenuButton = ({
       ? 'text-white bg-white/15 backdrop-blur-sm border border-white/25 hover:bg-white/25'
       : 'text-neutral-600 bg-transparent border border-transparent hover:bg-neutral-100 hover:text-neutral-900';
 
-  useEffect(() => {
+  const closeLandingMenu = useCallback(() => {
+    try {
+      menuButtonRef.current?.focus({ preventScroll: true });
+    } catch {
+      /* noop */
+    }
+    const active = document.activeElement;
+    if (active instanceof HTMLElement && active.closest('[data-mobile-drawer]')) {
+      active.blur();
+    }
     setOpen(false);
-  }, [pathname, search]);
+  }, []);
+
+  useEffect(() => {
+    closeLandingMenu();
+  }, [pathname, search, closeLandingMenu]);
 
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(false);
+      if (event.key === 'Escape') closeLandingMenu();
     };
     document.body.style.overflow = 'hidden';
     window.addEventListener('keydown', onKeyDown);
@@ -475,9 +557,9 @@ export const MobileUserMenuButton = ({
       document.body.style.overflow = '';
       window.removeEventListener('keydown', onKeyDown);
     };
-  }, [open]);
+  }, [open, closeLandingMenu]);
 
-  const closeMenu = () => setOpen(false);
+  const closeMenu = closeLandingMenu;
 
   const isActive = (match: readonly string[]) =>
     match.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
@@ -485,6 +567,7 @@ export const MobileUserMenuButton = ({
   return (
     <>
       <button
+        ref={menuButtonRef}
         type="button"
         onClick={() => setOpen(true)}
         className={`${showOnDesktop ? '' : 'md:hidden'} relative h-11 w-11 shrink-0 inline-flex items-center justify-center rounded-full transition-colors active:scale-95 overflow-hidden ${toneClass} ${className}`}

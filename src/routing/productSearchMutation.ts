@@ -1,4 +1,3 @@
-import { flushSync } from 'react-dom';
 import type { NavigateFunction, SetURLSearchParams } from 'react-router-dom';
 
 export type ProductSearchMutationContext = {
@@ -15,23 +14,21 @@ export const applyProductSearchMutation = (
   mutate: (params: URLSearchParams) => void
 ): void => {
   let nextParams: URLSearchParams | null = null;
-  flushSync(() => {
-    ctx.setSearchParams(
-      (prev) => {
-        const params = new URLSearchParams(prev);
-        mutate(params);
-        nextParams = params;
-        return params;
-      },
-      { replace: true }
-    );
-  });
+  ctx.setSearchParams(
+    (prev) => {
+      const params = new URLSearchParams(prev);
+      mutate(params);
+      nextParams = params;
+      return params;
+    },
+    { replace: true }
+  );
   if (typeof window === 'undefined' || !nextParams) return;
   if (window.location.pathname !== ctx.pathname) return;
   const intended = nextParams.toString();
-  const bar = new URLSearchParams(window.location.search).toString();
-  if (bar !== intended) {
-    flushSync(() => {
+  queueMicrotask(() => {
+    const bar = new URLSearchParams(window.location.search).toString();
+    if (bar !== intended) {
       ctx.navigate(
         { pathname: ctx.pathname, search: intended ? `?${intended}` : '' },
         {
@@ -39,6 +36,6 @@ export const applyProductSearchMutation = (
           ...(ctx.locationState !== undefined ? { state: ctx.locationState } : {}),
         }
       );
-    });
-  }
+    }
+  });
 };

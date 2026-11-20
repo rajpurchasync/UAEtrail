@@ -26,6 +26,7 @@ export const countListExplorerFilters = (
     count += filters.placeTopics.length;
     if (filters.hasTrip) count += 1;
     if (filters.facilityKinds.length > 0) count += 1;
+    if (filters.audience !== 'anyone') count += 1;
     return count;
   }
   count += filters.tripTopics.length;
@@ -33,5 +34,6 @@ export const countListExplorerFilters = (
   if (filters.price !== 'all') count += 1;
   if (filters.when !== 'any') count += 1;
   if (filters.activityDatePreset !== 'anyday') count += 1;
+  if (filters.audience !== 'anyone') count += 1;
   return count;
 };

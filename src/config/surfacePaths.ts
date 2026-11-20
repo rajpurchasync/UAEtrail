@@ -98,6 +98,8 @@ export const isAppSettingsPath = (pathname: string): boolean =>
 
 /** In-app notification hub — history, preferences, saved map alerts (under Settings). */
 export const isNotificationHubPath = (pathname: string): boolean =>
+  pathname === NOTIFICATIONS_PATH ||
+  pathname.startsWith(`${NOTIFICATIONS_PATH}/`) ||
   pathname === APP_SETTINGS_NOTIFICATIONS_PATH ||
   pathname.startsWith(`${APP_SETTINGS_NOTIFICATIONS_PATH}/`);
 

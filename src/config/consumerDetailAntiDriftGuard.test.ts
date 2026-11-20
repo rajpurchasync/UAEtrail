@@ -27,10 +27,10 @@ describe('consumerDetailAntiDriftGuard (plan §15.3)', () => {
     expect(read('src/config/platform.ts')).toMatch(/isEntityDetailRoute/);
   });
 
-  it('facility detail is an entity route (hides MobileConsumerNavBar — single detail header)', () => {
+  it('facility detail is an entity route (single detail header)', () => {
     expect(isMobileDetailRoute('/facility/seed-toilet-01')).toBe(true);
     expect(isEntityDetailRoute('/facility/seed-toilet-01')).toBe(true);
-    expect(read('src/components/layout/ProductShell.tsx')).toMatch(/!isEntityDetailRoute/);
+    expect(read('src/components/layout/ProductShell.tsx')).not.toMatch(/MobileConsumerNavBar/);
     const tabHeader = read('src/config/mobileTabHeader.ts');
     expect(tabHeader).toMatch(/isEntityDetailRoute/);
     expect(tabHeader).not.toMatch(/isConsumerEntityDetailRoute/);

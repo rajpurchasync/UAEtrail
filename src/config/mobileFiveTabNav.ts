@@ -20,10 +20,21 @@ import {
 export { tripsListHomePath, venuesListHomePath } from '../list/routing';
 import { PRODUCT_CREWS_TAB_LABEL } from '../content/productNorthStar';
 import { LIST_CAT_PARAM, parseListCatParam } from '../list/browseListUrlState';
+import {
+  EXPLORE_SEARCH_RESULTS_PATH,
+  parseExploreSearchScopeFromParams,
+} from '../explore/search/exploreSearchRouting';
 
 export const MOBILE_FIVE_TAB_ORDER = ['trips', 'venues', 'crews', 'chat', 'plan'] as const;
 
 export type MobileFiveTabId = (typeof MOBILE_FIVE_TAB_ORDER)[number];
+
+export const MOBILE_HUB_HOME_TAB_ID = 'home' as const;
+
+export type MobileBottomTabId = MobileFiveTabId | typeof MOBILE_HUB_HOME_TAB_ID;
+
+/** Five-tab bar — no separate booking home (search is modal + `/explore/search`). */
+export const mobileBottomTabOrder = (): readonly MobileBottomTabId[] => MOBILE_FIVE_TAB_ORDER;
 
 export type MobileFiveTabProjection = 'map' | 'list';
 
@@ -46,6 +57,11 @@ export const MOBILE_FIVE_TAB_UI_LABELS: Record<MobileFiveTabId, string> = {
   crews: PRODUCT_CREWS_TAB_LABEL,
   plan: 'Plans',
   chat: 'Chat',
+};
+
+export const MOBILE_BOTTOM_TAB_UI_LABELS: Record<MobileBottomTabId, string> = {
+  home: 'Home',
+  ...MOBILE_FIVE_TAB_UI_LABELS,
 };
 
 const SESSION_PROJECTION_KEY: Record<'trips' | 'venues', string> = {
@@ -93,9 +109,13 @@ export const crewsHomePath = (): string => listPeopleDiscoveryPath();
 export const mobileFiveTabHomePath = (tab: MobileFiveTabId): string => {
   switch (tab) {
     case 'trips':
-      return readMobileFiveTabProjection('trips') === 'list' ? tripsListHomePath() : tripsMapHomePath();
+      return readMobileFiveTabProjection('trips') === 'list'
+        ? tripsListHomePath()
+        : tripsMapHomePath();
     case 'venues':
-      return readMobileFiveTabProjection('venues') === 'list' ? venuesListHomePath() : venuesMapHomePath();
+      return readMobileFiveTabProjection('venues') === 'list'
+        ? venuesListHomePath()
+        : venuesMapHomePath();
     case 'crews':
       return crewsHomePath();
     case 'plan':
@@ -107,6 +127,11 @@ export const mobileFiveTabHomePath = (tab: MobileFiveTabId): string => {
       return _exhaustive;
     }
   }
+};
+
+export const mobileBottomTabHomePath = (tab: MobileBottomTabId): string => {
+  if (tab === MOBILE_HUB_HOME_TAB_ID) return tripsMapHomePath();
+  return mobileFiveTabHomePath(tab);
 };
 
 const EXPLORE_PEOPLE_VIEW_KEYS = new Set(['people', 'social', 'going']);
@@ -132,7 +157,14 @@ const exploreIsVenuesScope = (search: string): boolean => {
  * Which bottom-tab is active for mobile chrome highlight + back semantics.
  * Returns `null` on routes that are not a five-tab home (entity detail, threads, host console, …).
  */
-export const resolveMobileFiveTab = (pathname: string, search = ''): MobileFiveTabId | null => {
+export const resolveMobileBottomTab = (pathname: string, search = ''): MobileBottomTabId | null => {
+  if (pathname === EXPLORE_SEARCH_RESULTS_PATH) {
+    const params = new URLSearchParams(search.replace(/^\?/, ''));
+    const mode = parseExploreSearchScopeFromParams(params);
+    if (mode === 'places') return 'venues';
+    if (mode === 'crew') return 'crews';
+    return 'trips';
+  }
   if (pathname === PLAN_PATH) return 'plan';
   if (pathname === MESSAGES_PATH || pathname === '/publishing/messages') {
     const params = new URLSearchParams(search.replace(/^\?/, ''));
@@ -157,8 +189,14 @@ export const resolveMobileFiveTab = (pathname: string, search = ''): MobileFiveT
   return null;
 };
 
-/** @deprecated Use {@link resolveMobileFiveTab} — old three-tab name. */
-export const resolveMobileBottomNavTab = resolveMobileFiveTab;
+export const resolveMobileFiveTab = (pathname: string, search = ''): MobileFiveTabId | null => {
+  const tab = resolveMobileBottomTab(pathname, search);
+  if (!tab || tab === MOBILE_HUB_HOME_TAB_ID) return null;
+  return tab;
+};
+
+/** @deprecated Use {@link resolveMobileBottomTab}. */
+export const resolveMobileBottomNavTab = resolveMobileBottomTab;
 
 export const isMobileFiveTabHomePath = (pathname: string, search: string): boolean =>
-  resolveMobileFiveTab(pathname, search) != null;
+  resolveMobileBottomTab(pathname, search) != null;

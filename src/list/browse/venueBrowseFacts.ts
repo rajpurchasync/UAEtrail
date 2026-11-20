@@ -188,7 +188,7 @@ export const resolveActivityLinkedPlaceLogisticsLabels = (card: DiscoveryCardMod
   return labels.slice(0, ACTIVITY_PLACE_LOGISTICS_CAP);
 };
 
-/** Venues browse card chips — kind first (trail vs camp), then amenities, capped for scan. */
+/** Venues browse card chips — trail/camp logistics + amenities (policy/child-friendly lives on hero only). */
 export const resolveVenueBrowseCardFactLabels = (card: DiscoveryCardModel): string[] => {
   if (card.source === 'shop') return ['Outdoor shop'];
   const kindFacts =
@@ -197,6 +197,6 @@ export const resolveVenueBrowseCardFactLabels = (card: DiscoveryCardModel): stri
       : card.kind === 'camping'
         ? resolveCampingPlaceFactLabels(card).slice(0, 2)
         : [];
-  const shared = resolveSharedPlaceFactLabels(card);
+  const shared = resolveSharedPlaceFactLabels(card).filter((label) => label !== 'Child-friendly');
   return [...new Set([...kindFacts, ...shared])].slice(0, VENUE_BROWSE_CARD_FACT_LIMIT);
 };

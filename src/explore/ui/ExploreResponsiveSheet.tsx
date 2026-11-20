@@ -199,7 +199,7 @@ export const ExploreResponsiveSheet = ({
     <div
       className={`${overlayInsetClass} ${zClass} flex ${shellClass} ${
         fullscreen ? '' : overlayScrimClass
-      } ${overlayContained || composeFab ? 'pointer-events-auto' : ''} ${
+      } ${overlayFixed || overlayContained || composeFab ? 'pointer-events-auto' : ''} ${
         overlayFixed || fullscreen || composeFab || overlayContained ? '' : 'lg:fixed'
       }`}
       style={pullDismissGestures ? overlayStyle : undefined}
@@ -260,7 +260,7 @@ export const ExploreResponsiveSheet = ({
     </div>
   );
 
-  if (composeFab && typeof document !== 'undefined') {
+  if ((composeFab || (overlayFixed && !overlayContained)) && typeof document !== 'undefined') {
     return createPortal(sheetTree, document.body);
   }
 

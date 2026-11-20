@@ -104,5 +104,6 @@ describe('exploreItemMatchesQuery', () => {
     expect(exploreItemMatchesQuery(item, 'united arab emirates')).toBe(true);
     expect(exploreItemMatchesQuery(item, 'hatta')).toBe(true);
     expect(exploreItemMatchesQuery(item, 'hatnub ridge')).toBe(true);
+    expect(exploreItemMatchesQuery(item, 'Dubai, United Arab Emirates')).toBe(true);
   });
 });

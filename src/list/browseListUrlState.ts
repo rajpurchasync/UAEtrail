@@ -40,6 +40,11 @@ import {
   parseBuddiesDiscoverySegment,
   serializeBuddiesDiscoverySegment,
 } from './buddiesDiscoverySegment';
+import {
+  BROWSE_AUDIENCE_PARAM,
+  parseBrowseAudienceFilter,
+  serializeBrowseAudienceFilter,
+} from './browseAudienceFilter';
 
 const WHEN_PARAM = 'when';
 
@@ -174,6 +179,7 @@ export const parseBrowseListFilterState = (
     buddiesSegment: parseBuddiesDiscoverySegment(searchParams.get(BUDDIES_SEGMENT_URL_PARAM)),
     hasTrip: parseExploreHasTrip(searchParams.get(EXPLORE_HAS_TRIP_PARAM)),
     facilityKinds: parseExploreFacilityKinds(searchParams.get(EXPLORE_FACILITY_KINDS_PARAM)),
+    audience: parseBrowseAudienceFilter(searchParams.get(BROWSE_AUDIENCE_PARAM)),
   };
 };
 
@@ -225,6 +231,9 @@ export const serializeBrowseListSearchParams = (
   }
 
   if (regions.length > 0) params.set('regions', regions.join(','));
+
+  const audience = serializeBrowseAudienceFilter(state.audience);
+  if (audience) params.set(BROWSE_AUDIENCE_PARAM, audience);
 
   const buddies = serializeBuddiesDiscoverySegment(state.buddiesSegment);
   if (buddies) params.set(BUDDIES_SEGMENT_URL_PARAM, buddies);

@@ -76,6 +76,8 @@ export const ConsumerShell = ({
   const layout: ConsumerLayout = layoutProp ?? (back ? 'stack' : 'tab');
   const layoutUnifiedHeader = shouldShowMobileUnifiedTabHeader(pathname, search, Boolean(user));
   const effectiveSuppressMobileHeader = suppressMobileHeader || layoutUnifiedHeader;
+  /** Layout `MobileTabHeader` already clears safe-area; avoid double top inset on the scroll body. */
+  const omitMobileScrollTopSafeInset = effectiveSuppressMobileHeader && layoutUnifiedHeader && !isDesktopMd;
   const shellHamburger = shouldShowProductShellHamburger(pathname);
   const shellMenu = shellHamburger ? <ConsumerHeaderActions showOnDesktop={false} /> : null;
   const headerTrailing =
@@ -264,7 +266,7 @@ export const ConsumerShell = ({
 
       <div
         className={`${APP_SCROLL_BODY_CLASS} ${maxWidthClass[maxWidth]} w-full max-w-full min-w-0 mx-auto ${flush ? '' : `${pad} py-3 md:py-4`} ${
-          !hasStickyChrome && !banner ? 'pt-safe-plus-2' : ''
+          !hasStickyChrome && !banner && !omitMobileScrollTopSafeInset ? 'pt-safe-plus-2' : ''
         } ${banner && !hasStickyChrome ? 'pt-0 md:pt-2' : ''}`}
       >
         {title && layout === 'editorial' && !banner && (

@@ -1,5 +1,5 @@
-import { type ReactElement } from 'react';
 import type { PlaceKind } from '@uaetrail/shared-types';
+import { Search } from 'lucide-react';
 import type { ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
 import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
@@ -11,12 +11,7 @@ import {
 import type { BrowseTripTopicKey } from '../../list/browseListTripTopics';
 import type { ListVenuePlaceTopicKey } from '../../list/listVenuePlaceTopics';
 import { ListExplorerQuickFilters } from '../../list/explorer/ListExplorerQuickFilters';
-import { UiTooltip } from '../../components/ui/UiTooltip';
-import {
-  EXPLORE_MAP_CHROME_FROST,
-  EXPLORE_MAP_MOBILE_FLOAT_CHIP_MARK,
-} from '../../config/exploreTheme';
-import { ExploreMarkEmoji } from './ExploreFilterIcon';
+import { EXPLORE_MAP_CHROME_FROST } from '../../config/exploreTheme';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import {
   exploreMapQuickFiltersBrowseState,
@@ -25,13 +20,6 @@ import {
 import { ExploreMapProjectionToggle } from './ExploreMapProjectionToggle';
 
 const SCOPE_ROW = 'flex h-8 min-w-0 items-center gap-2';
-const MAP_SCOPE_MARK = EXPLORE_MAP_MOBILE_FLOAT_CHIP_MARK;
-
-const tip = (label: string, button: ReactElement) => (
-  <UiTooltip label={label} className="flex items-center justify-center">
-    {button}
-  </UiTooltip>
-);
 
 type ExploreMapMobileLayerChromeProps = {
   panel: ExplorePanel;
@@ -124,19 +112,15 @@ export const ExploreMapMobileLayerChrome = ({
           onSelectList={onSelectListView}
         />
         {onOpenExploreSearch ? (
-          <div className="ml-auto shrink-0">
-            {tip(
-              'Search',
-              <button
-                type="button"
-                className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full ring-1 ring-black/5 ${EXPLORE_MAP_CHROME_FROST}`}
-                aria-label="Search explore"
-                onClick={() => onOpenExploreSearch()}
-              >
-                <ExploreMarkEmoji emoji="🔍" markClassName={MAP_SCOPE_MARK} />
-              </button>
-            )}
-          </div>
+          <button
+            type="button"
+            className={`ml-auto inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-neutral-900 ring-1 ring-black/5 ${EXPLORE_MAP_CHROME_FROST}`}
+            aria-label="Search explore"
+            onClick={() => onOpenExploreSearch()}
+          >
+            <Search className="h-4 w-4 shrink-0 text-neutral-800" strokeWidth={2.25} aria-hidden />
+            <span>Search</span>
+          </button>
         ) : null}
       </div>
 

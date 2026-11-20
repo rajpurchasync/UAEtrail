@@ -50,3 +50,35 @@ export const routerPathFromHistoryState = (state: unknown, fallback: string): st
   const key = (state as { key?: unknown } | null)?.key;
   return typeof key === 'string' && key ? key : fallback;
 };
+
+export type RouteMatchLocationParts = {
+  pathname: string;
+  search: string;
+  hash: string;
+};
+
+/**
+ * When pathname diverges between router and the address bar, prefer the deeper path when
+ * one is a strict parent of the other so `/explore/hub/home` is not matched as `/explore/hub`.
+ */
+export const pickRouteMatchLocation = <T extends RouteMatchLocationParts>(
+  router: T,
+  browser: T
+): T => {
+  if (router.pathname === browser.pathname) {
+    return router;
+  }
+
+  const routerPath = router.pathname;
+  const browserPath = browser.pathname;
+
+  if (routerPath.startsWith(`${browserPath}/`)) {
+    return router;
+  }
+
+  if (browserPath.startsWith(`${routerPath}/`)) {
+    return browser;
+  }
+
+  return browser;
+};

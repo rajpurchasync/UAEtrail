@@ -2,11 +2,7 @@ import { useEffect, type ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useProductLocation } from '../../routing/useEffectiveLocation';
 import { ComposeRailProvider } from '../../context/ComposeRailContext';
-import {
-  hasConsumerSelfHeader,
-  isConsumerChromeHidden,
-  isEntityDetailRoute,
-} from '../../config/platform';
+import { isConsumerChromeHidden } from '../../config/platform';
 import {
   APP_SCROLL_PANE_CLASS,
   APP_SCROLL_PANE_DELEGATED_CLASS,
@@ -20,7 +16,6 @@ import { ComposeRail } from './ComposeRail';
 import { Header } from './Header';
 import { MobileBottomNav } from './MobileBottomNav';
 import { MobileTabHeader } from '../mobile/MobileTabHeader';
-import { MobileConsumerNavBar } from './MobileConsumerNavBar';
 import { MobileMenuProvider } from './MobileMenu';
 import { ApiStatusBanner } from './ApiStatusBanner';
 import { AuthUnavailableNotice } from '../auth/AuthUnavailableNotice';
@@ -31,7 +26,6 @@ import { useAuth } from '../../context/AuthContext';
 import { isConsumerProfilePath, isPlatformAdmin, isPlatformAdminConsolePath } from '../../utils/roles';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import { shouldShowDesktopSideNav } from '../../config/desktopNav';
-import { shouldShowMobileUnifiedTabHeader } from '../../config/mobileTabHeader';
 import { DesktopSideNav } from './desktop/DesktopSideNav';
 
 const productViewportShellClass =
@@ -99,16 +93,6 @@ export const ProductShell = ({ children }: { children: ReactNode }) => {
     );
   }
 
-  const layoutUnifiedMobileHeader = shouldShowMobileUnifiedTabHeader(
-    location.pathname,
-    location.search,
-    Boolean(user)
-  );
-  const showMobileConsumerNavBar =
-    showConsumerChrome &&
-    !hasConsumerSelfHeader(location.pathname) &&
-    !isEntityDetailRoute(location.pathname) &&
-    !(isMobile && layoutUnifiedMobileHeader);
   const showDesktopSideNav =
     !isMobile && showConsumerChrome && shouldShowDesktopSideNav(location.pathname, Boolean(user));
 
@@ -120,7 +104,6 @@ export const ProductShell = ({ children }: { children: ReactNode }) => {
         <div className={productViewportShellClass}>
           <ApiStatusBanner />
           <AuthUnavailableNotice />
-          {showMobileConsumerNavBar && <MobileConsumerNavBar />}
           {showConsumerChrome && !isMobile ? (
             <div className="hidden md:block shrink-0">
               <Header />

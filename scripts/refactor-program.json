@@ -540,6 +540,19 @@
       "successMetric": "docs/NAVIGATION.md § Mobile five-tab — Phase 1 shipped; Phase 2–5 complete; resolveMobileFiveTab + handoff; memberSurfacesAcceptance + mobileFiveTabNav.test.ts; verify:system"
     },
     {
+      "id": "MIG-EXPLORE-HUB-PARALLEL",
+      "phase": "P4b",
+      "status": "wip",
+      "owner": "product-eng",
+      "contextIds": ["discovery"],
+      "feRoots": [
+        "src/explore/hub",
+        "src/routing/AppRoutes.tsx",
+        "src/config/platform.ts"
+      ],
+      "successMetric": "/explore/hub + E1 join home + hub map handoff; FEATURE_FLAGS.exploreHubPreview; exploreHubAcceptance.test.ts; five-tab unchanged"
+    },
+    {
       "id": "MIG-TEAM-MODEL-SPLIT",
       "phase": "P4b",
       "status": "complete",

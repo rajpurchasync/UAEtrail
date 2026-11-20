@@ -94,11 +94,8 @@ describe('list module hygiene', () => {
     expect(readFileSync(join(process.cwd(), 'src/discovery/DiscoveryBrowseThumbnailPoster.tsx'), 'utf8')).toMatch(
       /typeIconBare/
     );
-    expect(listing).toMatch(/ExploreWishlistSaveButton/);
-    expect(listing).toMatch(/LIST_FEED_CTA_GET_DIRECTIONS/);
-    expect(listing).toMatch(/LIST_FEED_CTA_WISHLIST/);
-    expect(listing).toMatch(/BROWSE_CARD_FOOTER/);
-    expect(listing).toMatch(/compact/);
+    expect(listing).toMatch(/DiscoveryBrowseListEngagementFooter/);
+    expect(listing).toMatch(/hideHostBand/);
     expect(listing).toMatch(/DiscoveryBrowseCardHero/);
     expect(listing).not.toMatch(/overlayContent/);
     expect(listing).toMatch(/resolveVenueBrowseCardCopy/);
@@ -107,7 +104,9 @@ describe('list module hygiene', () => {
     expect(listing).toMatch(/TitleRating/);
     expect(listing).not.toMatch(/\bNew\b/);
     expect(tripListing).toMatch(/DiscoveryBrowseCardHero/);
-    expect(tripListing).not.toMatch(/overlayContent/);
+    expect(
+      readFileSync(join(process.cwd(), 'src/discovery/browse/DiscoveryBrowseCardHero.tsx'), 'utf8')
+    ).toMatch(/overlayContent/);
     expect(tripListing).toMatch(/hideHostBand/);
     expect(tripListing).toMatch(/resolveTripBrowseCardCopy/);
     const thumbPoster = readFileSync(
@@ -160,9 +159,12 @@ describe('list module hygiene', () => {
     expect(fab).toMatch(/snapListFilterFabCorner/);
     expect(fab).toMatch(/filterCount/);
     expect(fab).toMatch(/ListExplorerFilterPop/);
+    expect(pop).toMatch(/LIST_BROWSE_TRIP_TYPE_OPTIONS/);
+    expect(pop).toMatch(/Who can attend/);
+    expect(pop).not.toMatch(/By facilities/);
     expect(fab).toMatch(/LIST_FILTER_FAB_Z/);
     expect(fab).toMatch(/bucket/);
-    expect(pop).toMatch(/listVenuePlaceTopicsForUi/);
+    expect(pop).toMatch(/LIST_BROWSE_PLACE_TYPE_OPTIONS/);
     expect(pop).toMatch(/bucket === 'places'/);
   });
 

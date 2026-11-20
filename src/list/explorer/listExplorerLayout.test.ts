@@ -19,6 +19,7 @@ import {
   browseCardMeta,
   browseCardTitle,
   browseCardPriceLabel,
+  browseCardListHeroPriceLabel,
   formatBrowseRowDateLabel,
   browseRowWhenDisplay,
 } from '../browse/browseCardMeta';
@@ -35,6 +36,7 @@ const emptyFilters = (): BrowseListFilterState => ({
   buddiesSegment: 'looking',
   hasTrip: false,
   facilityKinds: [],
+  audience: 'anyone',
 });
 
 describe('list explorer layout', () => {
@@ -146,6 +148,13 @@ describe('list explorer thumbnail copy', () => {
     expect(browseCardPriceLabel({ ...eventCard, price: { kind: 'free', badge: 'Free' } })).toBe('Free');
   });
 
+  it('uses Free/Paid on list hero foot (not AED on the thumb)', () => {
+    expect(browseCardListHeroPriceLabel(eventCard)).toBe('Paid');
+    expect(
+      browseCardListHeroPriceLabel({ ...eventCard, price: { kind: 'free', badge: 'Free' } })
+    ).toBe('Free');
+  });
+
   it('uses the company logo and name when the outing is published by an agency', () => {
     const companyCard = {
       ...eventCard,
@@ -179,10 +188,10 @@ describe('list explorer thumbnail copy', () => {
     expect(browseCardMeta(venueCard).location).not.toMatch(/Hiking trail location/);
   });
 
-  it('formats list row dates in full and prefixes This for this-week section', () => {
+  it('formats list row dates in full weekday form without relative prefixes', () => {
     const now = new Date('2026-10-30T10:00:00');
-    expect(formatBrowseRowDateLabel('2026-10-30', now)).toBe('Fri 30 Oct 26');
-    expect(formatBrowseRowDateLabel('2026-10-31', now)).toBe('This Sat 31 Oct 26');
+    expect(formatBrowseRowDateLabel('2026-10-30')).toBe('Fri 30 Oct 26');
+    expect(formatBrowseRowDateLabel('2026-10-31')).toBe('Sat 31 Oct 26');
 
     const weekCard = {
       ...eventCard,
@@ -191,7 +200,7 @@ describe('list explorer thumbnail copy', () => {
       activity: { title: 'Hatta Dam Loop', date: '2026-10-31', time: '16:00' },
     } as DiscoveryCardModel;
     expect(browseRowWhenDisplay(weekCard, now)).toEqual({
-      date: 'This Sat 31 Oct 26',
+      date: 'Sat 31 Oct 26',
       time: '4:00 PM',
     });
   });

@@ -15,11 +15,11 @@ describe('mobile bottom nav contract', () => {
     expect(MOBILE_BOTTOM_NAV_TAB_PATHS as readonly string[]).toContain(LIST_DISCOVERY_PATH);
   });
 
-  it('wires tab targets through mobileFiveTabHomePath', () => {
+  it('wires tab targets through mobileBottomTabHomePath', () => {
     const source = readFileSync(join(process.cwd(), 'src/components/layout/MobileBottomNav.tsx'), 'utf8');
-    expect(source).toContain('mobileFiveTabHomePath');
-    expect(source).toContain('resolveMobileFiveTab');
-    expect(source).toContain('grid-cols-5');
+    expect(source).toContain('mobileBottomTabHomePath');
+    expect(source).toContain('resolveMobileBottomTab');
+    expect(source).toMatch(/gridTemplateColumns|repeat\(\$\{tabs\.length\}/);
     expect(source).toMatch(/mobile-bottom-nav|safe-area-bottom/);
     expect(source).toMatch(/pb-\[var\(--safe-bottom\)\]|safe-area-bottom/);
   });
@@ -59,6 +59,11 @@ describe('shouldShowMobileBottomNav', () => {
   it('hides embedded list drawer on explore', () => {
     expect(shouldShowMobileBottomNav('/explore', '?list=1', true)).toBe(false);
   });
+
+  it('shows on explore search results', () => {
+    expect(shouldShowMobileBottomNav('/explore/search', '', true)).toBe(true);
+    expect(shouldShowMobileBottomNav('/explore/search', '?view=map', true)).toBe(true);
+  });
 });
 
 describe('product shell marketing footer', () => {
@@ -66,5 +71,10 @@ describe('product shell marketing footer', () => {
     const source = readFileSync(join(process.cwd(), 'src/components/layout/ProductShell.tsx'), 'utf8');
     expect(source).not.toMatch(/<Footer\b/);
     expect(source).not.toMatch(/shouldShowMarketingSiteFooter/);
+  });
+
+  it('does not mount the retired logo+hamburger MobileConsumerNavBar', () => {
+    const source = readFileSync(join(process.cwd(), 'src/components/layout/ProductShell.tsx'), 'utf8');
+    expect(source).not.toMatch(/MobileConsumerNavBar/);
   });
 });

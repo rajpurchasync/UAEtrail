@@ -1,43 +1,30 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { EXPLORE_BRAND_ACTIVE, EXPLORE_SHAPE } from '../../config/exploreTheme';
-import { getVenueStateFilterOptions } from '../../config/regions';
+import type { ExploreActivityDatePreset } from '../../explore/exploreActivityDateFilter';
 import {
-  EXPLORE_ACTIVITY_DATE_PRESET_OPTIONS,
-  type ExploreActivityDatePreset,
-} from '../../explore/exploreActivityDateFilter';
-import {
-  BROWSE_PRICE_OPTIONS,
-  BROWSE_WHEN_OPTIONS,
+  type BrowseAudienceFilter,
   type BrowseListFilterState,
   type BrowsePriceFilter,
-  type BrowseWhenFilter,
 } from '../browseListFilters';
+import { toggleBrowseTripTopicInList, type BrowseTripTopicKey } from '../browseListTripTopics';
 import {
-  BROWSE_TRIP_TOPIC_FILTERS,
-  toggleBrowseTripTopicInList,
-  type BrowseTripTopicKey,
-} from '../browseListTripTopics';
-import {
-  EXPLORE_FACILITY_PILL_OPTIONS,
   aliasListPlaceTopicToMap,
   aliasPlaceMapTopicToList,
-  clearExploreDestinationPlaceTopics,
-  clearExploreFacilityPill,
   destinationPlaceTopicsFrom,
-  exploreFacilityPillSelectedKeys,
   toggleExploreDestinationPlaceTopic,
-  toggleExploreFacilityPillKey,
-  type ExploreFacilityPillKey,
 } from '../../explore/exploreOptionalFilters';
-import { listVenuePlaceTopicsForUi } from '../listVenuePlaceTopics';
 import type { PlaceMapTopicKey } from '../../explore/exploreMapQuickTopicFilters';
-
-const mapPlaceTopics = (topics: readonly string[]): PlaceMapTopicKey[] =>
-  topics.map(aliasListPlaceTopicToMap).filter((key): key is PlaceMapTopicKey => key != null);
-import { LIST_FILTER_POP, LIST_OVERLAY_Z, listFilterPopChipClass, listFilterPopGridChipClass } from '../listChromeTheme';
+import { LIST_FILTER_POP, LIST_OVERLAY_Z, listFilterPopChipClass } from '../listChromeTheme';
 import type { ListExplorerBucket } from './listExplorerBucket';
 import type { ListFilterFabCorner } from './listExplorerFabSnap';
+import {
+  LIST_BROWSE_AUDIENCE_OPTIONS,
+  LIST_BROWSE_DATE_FILTER_OPTIONS,
+  LIST_BROWSE_PLACE_TYPE_OPTIONS,
+  LIST_BROWSE_PRICE_MODAL_OPTIONS,
+  LIST_BROWSE_TRIP_TYPE_OPTIONS,
+} from '../listBrowseFilterModal';
 
 export type ListFilterPopPlacement = ListFilterFabCorner | 'below-end';
 
@@ -56,36 +43,33 @@ type ListExplorerFilterPopProps = {
   regions: string[];
   onApply: (state: BrowseListFilterState, regions: string[]) => void;
   onClose: () => void;
-  /** Portaled fixed menu below an inline trigger (escapes header stacking). */
   fixedLayout?: ListFilterPopFixedLayout | null;
 };
 
-const ChipRow = <T extends string>({
-  label,
-  options,
-  value,
-  onChange,
+const mapPlaceTopics = (topics: readonly string[]): PlaceMapTopicKey[] =>
+  topics.map(aliasListPlaceTopicToMap).filter((key): key is PlaceMapTopicKey => key != null);
+
+const FilterSection = ({
+  title,
+  children,
 }: {
-  label: string;
-  options: ReadonlyArray<{ key: T; label: string }>;
-  value: T;
-  onChange: (key: T) => void;
+  title: string;
+  children: ReactNode;
 }) => (
-  <div className={LIST_FILTER_POP.block}>
-    <p className={LIST_FILTER_POP.label}>{label}</p>
-    <div className={LIST_FILTER_POP.chipRow}>
-      {options.map(({ key, label: optionLabel }) => (
-        <button
-          key={key}
-          type="button"
-          onClick={() => onChange(key)}
-          className={listFilterPopChipClass(value === key)}
-        >
-          {optionLabel}
-        </button>
-      ))}
-    </div>
-  </div>
+  <section className={LIST_FILTER_POP.section}>
+    <h3 className={LIST_FILTER_POP.label}>{title}</h3>
+    {children}
+  </section>
+);
+
+const ChipRow = ({
+  children,
+  grid,
+}: {
+  children: ReactNode;
+  grid?: boolean;
+}) => (
+  <div className={grid ? LIST_FILTER_POP.chipGrid : LIST_FILTER_POP.chipRow}>{children}</div>
 );
 
 const resetVisibleFilters = (
@@ -93,7 +77,7 @@ const resetVisibleFilters = (
   bucket: ListExplorerBucket
 ): BrowseListFilterState =>
   bucket === 'places'
-    ? { ...state, placeTopics: [], hasTrip: false, facilityKinds: [] }
+    ? { ...state, placeTopics: [], hasTrip: false, facilityKinds: [], audience: 'anyone' }
     : {
         ...state,
         tripTopics: [],
@@ -101,6 +85,7 @@ const resetVisibleFilters = (
         price: 'all',
         when: 'any',
         activityDatePreset: 'anyday',
+        audience: 'anyone',
       };
 
 export const ListExplorerFilterPop = ({
@@ -140,50 +125,44 @@ export const ListExplorerFilterPop = ({
 
   const zClass = corner === 'below-end' ? LIST_OVERLAY_Z : 'z-[20]';
 
+  const placeTopicsMap = mapPlaceTopics(draft.placeTopics);
+  const destinationTopics = destinationPlaceTopicsFrom(placeTopicsMap);
+
   const panel = (
     <div className={`${EXPLORE_SHAPE.control} ${LIST_FILTER_POP.panel}`}>
-        <div className={LIST_FILTER_POP.headerRow}>
-          <p className={LIST_FILTER_POP.title}>Filters</p>
-          <button
-            type="button"
-            onClick={() => {
-              const next = resetVisibleFilters(draft, bucket);
-              const nextRegions: string[] = [];
-              onApply(next, nextRegions);
-              setDraft(next);
-              setDraftRegions(nextRegions);
-            }}
-            className={LIST_FILTER_POP.reset}
-          >
-            Reset
-          </button>
-        </div>
-        <div className={LIST_FILTER_POP.sections}>
-          {bucket === 'places' ? (
-            <>
-            <div className={LIST_FILTER_POP.block}>
-              <p className={LIST_FILTER_POP.label}>Kinds</p>
-              <div className={LIST_FILTER_POP.chipRow}>
+      <div className={LIST_FILTER_POP.headerRow}>
+        <p className={LIST_FILTER_POP.title}>Filters</p>
+        <button
+          type="button"
+          onClick={() => {
+            const next = resetVisibleFilters(draft, bucket);
+            onApply(next, draftRegions);
+            setDraft(next);
+          }}
+          className={LIST_FILTER_POP.reset}
+        >
+          Reset
+        </button>
+      </div>
+      <div className={LIST_FILTER_POP.sections}>
+        {bucket === 'places' ? (
+          <>
+            <FilterSection title="Type">
+              <ChipRow>
                 <button
                   type="button"
                   onClick={() =>
                     setDraft((prev) => ({
                       ...prev,
-                      placeTopics: clearExploreDestinationPlaceTopics(mapPlaceTopics(prev.placeTopics)).map(
-                        aliasPlaceMapTopicToList
-                      ),
+                      placeTopics: [],
                     }))
                   }
-                  className={listFilterPopChipClass(
-                    destinationPlaceTopicsFrom(mapPlaceTopics(draft.placeTopics)).length === 0
-                  )}
+                  className={listFilterPopChipClass(destinationTopics.length === 0)}
                 >
                   All
                 </button>
-                {listVenuePlaceTopicsForUi().map(({ key, label }) => {
-                  const selected = destinationPlaceTopicsFrom(mapPlaceTopics(draft.placeTopics)).includes(
-                    aliasListPlaceTopicToMap(key) as PlaceMapTopicKey
-                  );
+                {LIST_BROWSE_PLACE_TYPE_OPTIONS.map(({ key, label }) => {
+                  const selected = destinationTopics.includes(key);
                   return (
                     <button
                       key={key}
@@ -193,7 +172,7 @@ export const ListExplorerFilterPop = ({
                           ...prev,
                           placeTopics: toggleExploreDestinationPlaceTopic(
                             mapPlaceTopics(prev.placeTopics),
-                            aliasListPlaceTopicToMap(key) as PlaceMapTopicKey
+                            key
                           ).map(aliasPlaceMapTopicToList),
                         }))
                       }
@@ -203,173 +182,127 @@ export const ListExplorerFilterPop = ({
                     </button>
                   );
                 })}
-              </div>
-            </div>
-            <div className={LIST_FILTER_POP.block}>
-              <p className={LIST_FILTER_POP.label}>By facilities</p>
-              <div className={LIST_FILTER_POP.chipRow}>
+              </ChipRow>
+            </FilterSection>
+            <FilterSection title="Who can attend">
+              <ChipRow>
+                {LIST_BROWSE_AUDIENCE_OPTIONS.map(({ key, label }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setDraft((prev) => ({ ...prev, audience: key }))}
+                    className={listFilterPopChipClass(draft.audience === key)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </ChipRow>
+            </FilterSection>
+          </>
+        ) : (
+          <>
+            <FilterSection title="Type">
+              <ChipRow>
                 <button
                   type="button"
                   onClick={() =>
-                    setDraft((prev) => {
-                      const cleared = clearExploreFacilityPill(mapPlaceTopics(prev.placeTopics));
-                      return {
-                        ...prev,
-                        placeTopics: cleared.placeTopics.map(aliasPlaceMapTopicToList),
-                        facilityKinds: cleared.facilityKinds,
-                      };
-                    })
+                    setDraft((prev) => ({ ...prev, tripTopics: [], tripLookingOnly: false }))
                   }
-                  className={listFilterPopChipClass(
-                    exploreFacilityPillSelectedKeys(mapPlaceTopics(draft.placeTopics), draft.facilityKinds)
-                      .length === 0
-                  )}
+                  className={listFilterPopChipClass(draft.tripTopics.length === 0 && !draft.tripLookingOnly)}
                 >
                   All
                 </button>
-                {EXPLORE_FACILITY_PILL_OPTIONS.map(({ key, label }) => {
-                  const selected = exploreFacilityPillSelectedKeys(
-                    mapPlaceTopics(draft.placeTopics),
-                    draft.facilityKinds
-                  ).includes(key);
-                  return (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() =>
-                        setDraft((prev) => {
-                          const next = toggleExploreFacilityPillKey(
-                            mapPlaceTopics(prev.placeTopics),
-                            prev.facilityKinds,
-                            key as ExploreFacilityPillKey
-                          );
-                          return {
-                            ...prev,
-                            placeTopics: next.placeTopics.map(aliasPlaceMapTopicToList),
-                            facilityKinds: next.facilityKinds,
-                          };
-                        })
-                      }
-                      className={listFilterPopChipClass(selected)}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-            </>
-          ) : (
-            <>
-              <div className={LIST_FILTER_POP.block}>
-                <p className={LIST_FILTER_POP.label}>Type</p>
-                <div className={LIST_FILTER_POP.chipRow}>
+                {LIST_BROWSE_TRIP_TYPE_OPTIONS.map(({ key, label }) => (
                   <button
-                    type="button"
-                    onClick={() => setDraft((prev) => ({ ...prev, tripTopics: [], tripLookingOnly: false }))}
-                    className={listFilterPopChipClass(draft.tripTopics.length === 0 && !draft.tripLookingOnly)}
-                  >
-                    All
-                  </button>
-                  {BROWSE_TRIP_TOPIC_FILTERS.map(({ key, label }) => (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() =>
-                        setDraft((prev) => ({
-                          ...prev,
-                          tripTopics: toggleBrowseTripTopicInList(prev.tripTopics, key as BrowseTripTopicKey),
-                          tripLookingOnly: false,
-                        }))
-                      }
-                      className={listFilterPopChipClass(draft.tripTopics.includes(key as BrowseTripTopicKey))}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                  <button
+                    key={key}
                     type="button"
                     onClick={() =>
-                      setDraft((prev) => ({ ...prev, tripLookingOnly: !prev.tripLookingOnly, tripTopics: [] }))
+                      setDraft((prev) => ({
+                        ...prev,
+                        tripTopics: toggleBrowseTripTopicInList(prev.tripTopics, key),
+                        tripLookingOnly: false,
+                      }))
                     }
-                    className={listFilterPopChipClass(draft.tripLookingOnly)}
+                    className={listFilterPopChipClass(draft.tripTopics.includes(key))}
                   >
-                    Looking for
+                    {label}
                   </button>
-                </div>
-              </div>
-              <ChipRow
-                label="When"
-                options={EXPLORE_ACTIVITY_DATE_PRESET_OPTIONS.map((option) => ({
-                  key: option.value,
-                  label: option.label,
-                }))}
-                value={draft.activityDatePreset}
-                onChange={(preset: ExploreActivityDatePreset) =>
-                  setDraft((prev) => ({ ...prev, activityDatePreset: preset }))
-                }
-              />
-              <ChipRow
-                label="Weekend"
-                options={BROWSE_WHEN_OPTIONS.filter((option) => option.key === 'any' || option.key === 'weekend')}
-                value={draft.when}
-                onChange={(when: BrowseWhenFilter) => setDraft((prev) => ({ ...prev, when }))}
-              />
-              <ChipRow
-                label="Price"
-                options={BROWSE_PRICE_OPTIONS}
-                value={draft.price}
-                onChange={(price: BrowsePriceFilter) => setDraft((prev) => ({ ...prev, price }))}
-              />
-            </>
-          )}
-          <div className={LIST_FILTER_POP.block}>
-            <p className={LIST_FILTER_POP.label}>Area</p>
-            <div className={LIST_FILTER_POP.areaGrid}>
-              {getVenueStateFilterOptions().map((option) => {
-                const checked = draftRegions.includes(option.key);
-                return (
+                ))}
+              </ChipRow>
+            </FilterSection>
+            <FilterSection title="Date">
+              <ChipRow grid>
+                {LIST_BROWSE_DATE_FILTER_OPTIONS.map(({ value, label }) => (
                   <button
-                    key={option.key}
+                    key={value}
                     type="button"
                     onClick={() =>
-                      setDraftRegions((prev) =>
-                        prev.includes(option.key)
-                          ? prev.filter((region) => region !== option.key)
-                          : [...prev, option.key]
-                      )
+                      setDraft((prev) => ({
+                        ...prev,
+                        activityDatePreset: value,
+                        when: 'any',
+                      }))
                     }
-                    className={listFilterPopGridChipClass(checked)}
-                    aria-pressed={checked}
-                    title={option.label}
+                    className={listFilterPopChipClass(draft.activityDatePreset === value)}
                   >
-                    <span className="block w-full truncate text-center">{option.label}</span>
+                    {label}
                   </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-        <div className={LIST_FILTER_POP.footer}>
-          <button
-            type="button"
-            onClick={onClose}
-            className={`${LIST_FILTER_POP.footerBtn} border border-neutral-200 text-neutral-700`}
-          >
-            Close
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              onApply(draft, draftRegions);
-              onClose();
-            }}
-            className={`${LIST_FILTER_POP.footerBtn} font-bold ${EXPLORE_BRAND_ACTIVE}`}
-          >
-            Apply
-          </button>
-        </div>
+                ))}
+              </ChipRow>
+            </FilterSection>
+            <FilterSection title="Free / Paid">
+              <ChipRow>
+                {LIST_BROWSE_PRICE_MODAL_OPTIONS.map(({ key, label }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setDraft((prev) => ({ ...prev, price: key as BrowsePriceFilter }))}
+                    className={listFilterPopChipClass(draft.price === key)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </ChipRow>
+            </FilterSection>
+            <FilterSection title="Who can attend">
+              <ChipRow>
+                {LIST_BROWSE_AUDIENCE_OPTIONS.map(({ key, label }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() =>
+                      setDraft((prev) => ({ ...prev, audience: key as BrowseAudienceFilter }))
+                    }
+                    className={listFilterPopChipClass(draft.audience === key)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </ChipRow>
+            </FilterSection>
+          </>
+        )}
       </div>
+      <div className={LIST_FILTER_POP.footer}>
+        <button
+          type="button"
+          onClick={onClose}
+          className={`${LIST_FILTER_POP.footerBtn} border border-neutral-200 text-neutral-700`}
+        >
+          Close
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            onApply(draft, draftRegions);
+            onClose();
+          }}
+          className={`${LIST_FILTER_POP.footerBtn} font-bold ${EXPLORE_BRAND_ACTIVE}`}
+        >
+          Apply
+        </button>
+      </div>
+    </div>
   );
 
   if (fixedLayout) {

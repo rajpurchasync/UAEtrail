@@ -3,6 +3,15 @@ import { inferListCatFromExploreHandoff, scopeBrowseListStateForListCat } from '
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { applyProductSearchMutation } from '../routing/productSearchMutation';
 import { LIST_DISCOVERY_PATH } from '../config/platform';
+import {
+  EXPLORE_SEARCH_RESULTS_PATH,
+  EXPLORE_SEARCH_SCOPE_PARAM,
+  EXPLORE_SEARCH_VIEW_PARAM,
+  LEGACY_HUB_MODE_PARAM,
+  exploreSearchListCatForScope,
+  exploreSearchScopeForListCat,
+  parseExploreSearchBrowseState,
+} from '../explore/search/exploreSearchRouting';
 import type { BrowseTripTopicKey } from './browseListTripTopics';
 import type { BrowseListFilterState } from './browseListFilters';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
@@ -77,10 +86,13 @@ const EXPLORE_PRESERVE_PARAM_KEYS = [
 type UseListDiscoveryUrlStateOptions = {
   /** Keep `browse=1` on `/explore` when discover filters change. */
   mapOverlay?: boolean;
+  /** `/explore/search` — minimal listCat repair only (no category scope loop). */
+  searchResultsBrowse?: boolean;
 };
 
 export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptions) => {
   const mapOverlay = options?.mapOverlay ?? false;
+  const searchResultsBrowse = options?.searchResultsBrowse ?? false;
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -91,13 +103,16 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
   );
 
   const listCat = useMemo(() => {
+    if (location.pathname === EXPLORE_SEARCH_RESULTS_PATH) {
+      return exploreSearchListCatForScope(parseExploreSearchBrowseState(searchParams).searchScope);
+    }
     if (mapOverlay) return rawListCat;
     if (rawListCat === 'people' || rawListCat === 'agencies') return rawListCat;
     if (rawListCat) return rawListCat;
     const inferred = inferListCatFromExploreHandoff(parseBrowseListFilterState(searchParams), searchParams);
     if (inferred) return inferred;
     return 'activities';
-  }, [mapOverlay, rawListCat, searchParams]);
+  }, [location.pathname, mapOverlay, rawListCat, searchParams]);
 
   const filters = useMemo(() => {
     const raw = parseBrowseListFilterState(searchParams);
@@ -201,6 +216,15 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
             params.set('list', '1');
             params.delete(BROWSE_DISCOVER_PARAM);
           }
+          if (location.pathname === EXPLORE_SEARCH_RESULTS_PATH) {
+            const scope = exploreSearchScopeForListCat(patchedListCat);
+            if (scope === 'join') params.delete(EXPLORE_SEARCH_SCOPE_PARAM);
+            else params.set(EXPLORE_SEARCH_SCOPE_PARAM, scope);
+            params.delete(LEGACY_HUB_MODE_PARAM);
+            const resultsView = searchParams.get(EXPLORE_SEARCH_VIEW_PARAM);
+            if (resultsView === 'map') params.set(EXPLORE_SEARCH_VIEW_PARAM, 'map');
+            else params.delete(EXPLORE_SEARCH_VIEW_PARAM);
+          }
         }
       );
     },
@@ -223,6 +247,18 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
   const scopeRepairRef = useRef<string | null>(null);
   useEffect(() => {
     if (mapOverlay) return;
+    if (searchResultsBrowse || location.pathname === EXPLORE_SEARCH_RESULTS_PATH) {
+      const paramCat = parseListCatParam(searchParams.get(LIST_CAT_PARAM));
+      if (paramCat === listCat) {
+        scopeRepairRef.current = null;
+        return;
+      }
+      const fingerprint = `hub-cat|${listCat}`;
+      if (scopeRepairRef.current === fingerprint) return;
+      scopeRepairRef.current = fingerprint;
+      syncUrl({ listCat });
+      return;
+    }
     if (listCat === 'people' || listCat === 'agencies') {
       const paramCat = parseListCatParam(searchParams.get(LIST_CAT_PARAM));
       if (paramCat === listCat) return;
@@ -245,7 +281,7 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
     if (scopeRepairRef.current === fingerprint) return;
     scopeRepairRef.current = fingerprint;
     syncUrl({ ...scoped, listCat, regions });
-  }, [listCat, mapOverlay, listSearchKey, syncUrl]);
+  }, [searchResultsBrowse, listCat, location.pathname, mapOverlay, listSearchKey, searchParams, syncUrl]);
 
   const setQuery = useCallback((query: string) => syncUrl({ query }), [syncUrl]);
 

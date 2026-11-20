@@ -17,6 +17,8 @@ type ExploreMapMobileUaePillProps = {
   wrapClassName?: string;
   triggerFullWidth?: boolean;
   onOpen?: () => void;
+  /** Default trigger label when no emirate selected (list uses “State”). */
+  restingLabel?: string;
 };
 
 /** UAE emirates — multi-select dropdown (not a second pill row). */
@@ -28,7 +30,9 @@ export const ExploreMapMobileUaePill = ({
   wrapClassName = 'relative flex min-w-0 flex-1 basis-0',
   triggerFullWidth = true,
   onOpen,
+  restingLabel: restingLabelProp,
 }: ExploreMapMobileUaePillProps) => {
+  const scopeRestingLabel = restingLabelProp ?? EXPLORE_REGION_SCOPE_RESTING_LABEL;
   const [open, setOpen] = useState(false);
   const panelId = useId();
   const { anchorRef, menuRef, menuStyle, caretLeftPx } = useExploreMapPillDropdown({
@@ -102,13 +106,15 @@ export const ExploreMapMobileUaePill = ({
   const selectedLabels = options
     .filter((option) => venueRegions.includes(option.key))
     .map((option) => option.label);
-  const restingLabel =
+  const triggerLabel =
     selectedLabels.length === 1
       ? selectedLabels[0]
       : selectedLabels.length > 1
-        ? `UAE (${selectedLabels.length})`
-        : EXPLORE_REGION_SCOPE_RESTING_LABEL;
-  const uaeLabel = active ? `UAE, ${venueRegions.length} emirates selected` : EXPLORE_REGION_SCOPE_RESTING_LABEL;
+        ? `${scopeRestingLabel} (${selectedLabels.length})`
+        : scopeRestingLabel;
+  const uaeLabel = active
+    ? `${scopeRestingLabel}, ${venueRegions.length} selected`
+    : scopeRestingLabel;
   const trigger = (
     <button
       type="button"
@@ -148,7 +154,7 @@ export const ExploreMapMobileUaePill = ({
           >
             <UaeFlagIcon className="explore-map-float-chip-uae-flag shrink-0" aria-hidden />
           </span>
-          <span className="max-w-[7.5rem] truncate">{restingLabel}</span>
+          <span className="max-w-[7.5rem] truncate">{triggerLabel}</span>
         </>
       )}
     </button>

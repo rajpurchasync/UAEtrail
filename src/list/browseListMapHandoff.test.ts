@@ -18,6 +18,7 @@ const baseState: BrowseListFilterState = {
   buddiesSegment: 'looking',
   hasTrip: false,
   facilityKinds: [],
+  audience: 'anyone',
 };
 
 describe('browseListMapHandoff', () => {

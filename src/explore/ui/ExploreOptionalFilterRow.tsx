@@ -6,10 +6,16 @@ import {
 import { EXPLORE_PLACES_LAYER_EMOJI, SEEKING_EMOJI } from '../exploreCopy';
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
 import {
+  togglePlaceMapTopic,
   toggleTripMapTopic,
   type PlaceMapTopicKey,
   type TripMapTopicKey,
 } from '../exploreMapQuickTopicFilters';
+import {
+  LIST_QUICK_FILTER_REGION_LABEL,
+  LIST_QUICK_TRIP_TOPIC_PILLS,
+  LIST_QUICK_VENUE_TOPIC_PILLS,
+} from '../../list/listQuickFilterPills';
 import {
   EXPLORE_FACILITY_PILL_OPTIONS,
   EXPLORE_FACILITY_SCOPE_EMOJI,
@@ -45,6 +51,7 @@ import { ExploreMapMobileUaePill } from './ExploreMapMobileUaePill';
 const FLOAT_CHIP_WRAP = 'relative flex shrink-0 items-center justify-center';
 
 type ExploreOptionalFilterRowProps = {
+  surface?: 'map' | 'list';
   layer: 'activity' | 'places';
   activityDatePreset: ExploreActivityDatePreset;
   onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
@@ -64,6 +71,7 @@ type ExploreOptionalFilterRowProps = {
 };
 
 export const ExploreOptionalFilterRow = ({
+  surface = 'map',
   layer,
   activityDatePreset,
   onActivityDatePresetChange,
@@ -113,6 +121,76 @@ export const ExploreOptionalFilterRow = ({
   );
   const facilityActive = exploreFacilityPillIsActive(placeTopics, facilityKinds);
   const priceLabel = explorePriceFilterLabel(price);
+
+  if (surface === 'list') {
+    return (
+      <div
+        className="flex w-full min-w-0 items-center gap-2 overflow-x-auto scrollbar-none py-0.5"
+        role="toolbar"
+        aria-label={trips ? 'Trip filters' : 'Place filters'}
+      >
+        {trips ? (
+          <>
+            <ExploreMapMobileAnydayPill
+              activityDatePreset={activityDatePreset}
+              onActivityDatePresetChange={onActivityDatePresetChange}
+              pillClassName={trailingPillClass(activityDatePreset !== 'anyday', 'all')}
+              wrapClassName={FLOAT_CHIP_WRAP}
+              triggerFullWidth={false}
+              compact={false}
+            />
+            {LIST_QUICK_TRIP_TOPIC_PILLS.map(({ key, label }) => {
+              const active = tripTopics.includes(key);
+              return (
+                <span key={key} className={FLOAT_CHIP_WRAP}>
+                  <button
+                    type="button"
+                    aria-pressed={active}
+                    className={trailingPillClass(active, key)}
+                    onClick={() => onTripTopicsChange(toggleTripMapTopic(tripTopics, key))}
+                  >
+                    <span>{label}</span>
+                  </button>
+                </span>
+              );
+            })}
+          </>
+        ) : (
+          <>
+            <ExploreMapMobileUaePill
+              venueRegions={regions}
+              onVenueRegionsChange={onRegionsChange}
+              restingLabel={LIST_QUICK_FILTER_REGION_LABEL}
+              pillClassName={trailingPillClass(regions.length > 0, 'all')}
+              wrapClassName={FLOAT_CHIP_WRAP}
+              triggerFullWidth={false}
+              compact={false}
+            />
+            {LIST_QUICK_VENUE_TOPIC_PILLS.map(({ key, label }) => {
+              const active = destinationTopics.includes(key);
+              return (
+                <span key={key} className={FLOAT_CHIP_WRAP}>
+                  <button
+                    type="button"
+                    aria-pressed={active}
+                    className={trailingPillClass(active, key)}
+                    onClick={() =>
+                      commitVenueFilters({
+                        placeTopics: togglePlaceMapTopic(placeTopics, key),
+                        facilityKinds,
+                      })
+                    }
+                  >
+                    <span>{label}</span>
+                  </button>
+                </span>
+              );
+            })}
+          </>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div

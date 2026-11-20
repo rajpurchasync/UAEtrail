@@ -9,7 +9,7 @@ export const MOBILE_CONSUMER_MENU_Z = {
 
 export const MOBILE_DRAWER = {
   aside:
-    'absolute bottom-0 right-0 top-[var(--consumer-mobile-header-stack)] flex w-[min(100vw-3rem,20rem)] max-w-full flex-col border-l border-t border-neutral-200/80 bg-neutral-50 shadow-2xl transition-transform duration-300 ease-out',
+    'absolute bottom-0 right-0 top-[var(--consumer-mobile-header-stack,calc(var(--safe-top,0px)+3.75rem))] flex w-[min(100vw-3rem,20rem)] max-w-full flex-col border-l border-t border-neutral-200/80 bg-neutral-50 shadow-2xl transition-transform duration-300 ease-out',
   nav: 'flex-1 overflow-y-auto overscroll-y-contain px-2.5 pt-1.5 pb-2 pb-safe',
   stack: 'space-y-2',
   menuStack: 'space-y-1',

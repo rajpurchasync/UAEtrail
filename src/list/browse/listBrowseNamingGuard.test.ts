@@ -136,6 +136,7 @@ describe('listBrowseNamingGuard', () => {
       expect(source).not.toMatch(/DiscoveryBrowsePosterBanner/);
     }
     expect(read('src/discovery/browse/DiscoveryBrowseCardHero.tsx')).toMatch(/DiscoveryBrowseThumbnailPoster/);
+    expect(read('src/discovery/browse/DiscoveryBrowseCardHero.tsx')).toMatch(/resolveDiscoveryBrowseListTypeLabel/);
     expect(read('src/discovery/DiscoveryBrowseThumbnailPoster.tsx')).toMatch(
       /DiscoveryBrowsePosterBanner/
     );
@@ -174,8 +175,9 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/discovery/DiscoveryCardMapPeekEngagementFooter.tsx'))).toBe(
       true
     );
-    const trip = read('src/list/browse/TripBrowseCard.tsx');
-    expect(trip).toMatch(/DiscoveryBrowseListEngagementFooter/);
+    for (const file of ['src/list/browse/TripBrowseCard.tsx', 'src/list/browse/VenueBrowseCard.tsx']) {
+      expect(read(file)).toMatch(/DiscoveryBrowseListEngagementFooter/);
+    }
     expect(read('src/components/activity/ActivityMapPeekWireFooter.tsx')).toMatch(
       /DiscoveryCardMapPeekEngagementFooter/
     );
@@ -238,5 +240,21 @@ describe('listBrowseNamingGuard', () => {
     expect(read('src/discovery/DiscoveryBrowseListEngagementFooter.tsx')).toMatch(
       /DiscoveryCardWireEngagementFooter/
     );
+  });
+
+  it('BROWSE-NAME-17: list thumb hero chrome tokens + price in S3 meta (not photo corner)', () => {
+    expect(existsSync(join(process.cwd(), 'src/discovery/browse/discoveryBrowseListChrome.ts'))).toBe(true);
+    const poster = read('src/discovery/DiscoveryBrowsePosterBanner.tsx');
+    expect(poster).toMatch(/BROWSE_LIST_HERO_TYPE/);
+    expect(read('src/discovery/browse/DiscoveryBrowseListImageOverlays.tsx')).toMatch(
+      /BROWSE_LIST_HERO_POLICY_CHIP/
+    );
+    const trip = read('src/list/browse/TripBrowseCard.tsx');
+    expect(trip).not.toMatch(/cornerBadges/);
+    expect(read('src/discovery/browse/DiscoveryBrowseCardHero.tsx')).toMatch(/DiscoveryBrowseListHeroFootOverlay/);
+    expect(read('src/discovery/browse/discoveryBrowseListChrome.ts')).toMatch(/BROWSE_LIST_HERO_TYPE_WRAP/);
+    expect(read('src/explore/ui/ExploreMapProjectionToggle.tsx')).not.toMatch(/List \(\$\{/);
+    expect(read('src/discovery/browse/DiscoveryBrowseCardHero.tsx')).not.toMatch(/cornerBadges/);
+    expect(read('src/list/browse/venueBrowseCardCopy.ts')).toMatch(/filterDiscoveryBrowseListBodyFactLabels/);
   });
 });

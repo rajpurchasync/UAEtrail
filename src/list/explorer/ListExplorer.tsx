@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { EXPLORE_BRAND_ACTIVE } from '../../config/exploreTheme';
 import { APP_SCROLL_BODY_CLASS } from '../../config/layoutScroll';
@@ -71,6 +71,14 @@ type ListExplorerProps = {
   onVenueRegionsChange: (regions: string[]) => void;
   /** Standalone `/list` on mobile — Trips/Venues use bottom nav instead of in-page toggle. */
   hideBucketToggleOnMobile?: boolean;
+  suppressSearch?: boolean;
+  suppressMapListToggle?: boolean;
+  searchResultsChrome?: boolean;
+  /** `/explore/search` — map/list only via results chrome (not hub toggle). */
+  exploreSearchResults?: boolean;
+  suppressDateSectionHeaders?: boolean;
+  searchPlaceholder?: string;
+  enableSearchScopeHints?: boolean;
 };
 
 const thumbGridClass = (sideMap: boolean) =>
@@ -224,6 +232,13 @@ export const ListExplorer = ({
   onActivityDatePresetChange,
   onVenueRegionsChange,
   hideBucketToggleOnMobile = false,
+  suppressSearch = false,
+  suppressMapListToggle = false,
+  searchResultsChrome = false,
+  exploreSearchResults = false,
+  suppressDateSectionHeaders = false,
+  searchPlaceholder,
+  enableSearchScopeHints = true,
 }: ListExplorerProps) => {
   const [scrollElement, setScrollElement] = useState<HTMLElement | null>(null);
   const stickySearch = query.trim().length > 0;
@@ -240,8 +255,13 @@ export const ListExplorer = ({
   const { units } = useDisplayPreferences();
   const listSections = useMemo(() => {
     const sorted = sortListExplorerCards(cards, sort, viewer);
+    if (suppressDateSectionHeaders) {
+      return sorted.length
+        ? [{ key: 'all', label: '', cards: sorted }]
+        : [];
+    }
     return groupListExplorerSections(sorted, sort, viewer);
-  }, [cards, sort, viewer]);
+  }, [cards, sort, suppressDateSectionHeaders, viewer]);
   const calendarCards = useMemo(
     () => sortListExplorerCards(cards, sort, viewer),
     [cards, sort, viewer]
@@ -249,7 +269,9 @@ export const ListExplorer = ({
 
   return (
     <div
-      className={`relative flex h-full min-h-0 flex-col overflow-hidden bg-neutral-50 ${
+      className={`relative flex h-full min-h-0 flex-col overflow-hidden ${
+        'bg-neutral-50'
+      } ${
         mapColumnVisible && listPanelWidthPx != null
           ? 'shrink-0'
           : mapColumnVisible
@@ -295,8 +317,14 @@ export const ListExplorer = ({
         onActivityDatePresetChange={onActivityDatePresetChange}
         onVenueRegionsChange={onVenueRegionsChange}
         hideBucketToggleOnMobile={hideBucketToggleOnMobile}
+        suppressSearch={suppressSearch}
+        suppressMapListToggle={suppressMapListToggle}
+        searchResultsChrome={searchResultsChrome}
+        exploreSearchResults={exploreSearchResults}
         filterCount={filterCount}
         onApplyFilters={onApplyFilters}
+        searchPlaceholder={searchPlaceholder}
+        enableSearchScopeHints={enableSearchScopeHints}
       />
       <div
         ref={setScrollElement}
@@ -307,10 +335,12 @@ export const ListExplorer = ({
         }`}
       >
         <div
-          className={`mx-auto w-full px-3 py-3 ${
-            embedded || mapColumnVisible
-              ? 'max-w-none md:px-4 md:py-4'
-              : 'max-w-6xl md:px-6 md:py-5'
+          className={`mx-auto w-full py-3 ${
+            searchResultsChrome
+              ? 'max-w-lg px-4 md:px-5 md:py-4'
+              : embedded || mapColumnVisible
+                ? 'max-w-none px-3 md:px-4 md:py-4'
+                : 'max-w-6xl px-3 md:px-6 md:py-5'
           }`}
         >
           {showGuestCatalogPreview ? <ListGuestCatalogPreviewNotice className="mb-3" /> : null}

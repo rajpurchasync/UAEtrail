@@ -66,6 +66,7 @@ describe('browseListUrlState trip topics', () => {
         buddiesSegment: 'available',
         hasTrip: false,
         facilityKinds: [],
+        audience: 'anyone',
       },
       []
     );

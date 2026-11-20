@@ -16,6 +16,9 @@ import { MobileConsumerIdentityBar } from './MobileConsumerIdentityBar';
 interface MobileUnifiedTabHeaderProps {
   trailing?: ReactNode;
   profileActive?: boolean;
+  center?: ReactNode;
+  /** Override default profile identity (e.g. compact avatar on discover home). */
+  leading?: ReactNode;
   /** Profile hub sub-screens (Plans, History, …) — match ConsumerShell back chrome. */
   leadingBack?: { fallbackTo: string; label: string; backBehavior?: 'history' | 'fallback' };
 }
@@ -24,6 +27,8 @@ interface MobileUnifiedTabHeaderProps {
 export const MobileUnifiedTabHeader = ({
   trailing,
   profileActive = false,
+  center,
+  leading: leadingOverride,
   leadingBack,
 }: MobileUnifiedTabHeaderProps) => {
   const headerFrosted = useAppScrollFrostedHeader();
@@ -34,14 +39,16 @@ export const MobileUnifiedTabHeader = ({
       ? MOBILE_PRODUCT_HEADER_FROSTED
       : MOBILE_PRODUCT_HEADER_REST;
 
-  const leading = leadingBack ? (
-    <MobileBackButton
-      fallbackTo={leadingBack.fallbackTo}
-      label={leadingBack.label}
-      backBehavior={leadingBack.backBehavior ?? 'fallback'}
-      className="min-h-[36px] py-0 -ml-1"
-    />
-  ) : undefined;
+  const leading =
+    leadingOverride ??
+    (leadingBack ? (
+      <MobileBackButton
+        fallbackTo={leadingBack.fallbackTo}
+        label={leadingBack.label}
+        backBehavior={leadingBack.backBehavior ?? 'fallback'}
+        className="min-h-[36px] py-0 -ml-1"
+      />
+    ) : undefined);
 
   return (
     <header
@@ -54,6 +61,7 @@ export const MobileUnifiedTabHeader = ({
     >
       <MobileConsumerIdentityBar
         leading={leading}
+        center={center}
         profileActive={profileActive}
         trailing={trailing}
       />

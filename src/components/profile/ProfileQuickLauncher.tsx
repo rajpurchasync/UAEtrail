@@ -12,6 +12,7 @@ import {
 } from '../../config/routingCatalog';
 import type { LucideIcon } from 'lucide-react';
 import { Award, MapPin, MessageCircle, Mountain, Settings, UserRound, Users, Backpack } from 'lucide-react';
+import { PRODUCT_CREWS_TAB_LABEL } from '../../content/productNorthStar';
 
 export type ProfileQuickLauncherItem = {
   key: string;
@@ -73,7 +74,7 @@ export const buildProfileQuickLauncherItems = (input: {
   const items: ProfileQuickLauncherItem[] = [
     {
       key: 'people-browse',
-      label: 'People',
+      label: PRODUCT_CREWS_TAB_LABEL,
       to: listPeopleDiscoveryPath(),
       icon: UserRound,
       iconWrapClassName: 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200',

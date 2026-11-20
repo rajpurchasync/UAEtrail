@@ -113,7 +113,7 @@ describe('desktop sidebar IA', () => {
     expect(hamburgerLabels).not.toContain('Explore');
     expect(hamburgerLabels).not.toContain('Outing history');
     expect(hamburgerLabels).toEqual(
-      expect.arrayContaining(['Trips', 'Places', 'Plans', 'People', 'Chat', 'Profile'])
+      expect.arrayContaining(['Trips', 'Places', 'Plans', 'Crews', 'Chat', 'Profile'])
     );
     expect(hamburgerLabels).not.toContain('Social');
     expect(MOBILE_LANDING_USER_MENU.some((item) => item.label === 'Browse')).toBe(false);

@@ -14,6 +14,8 @@ import type { ListVenuePlaceTopicKey } from '../listVenuePlaceTopics';
 import type { ListExplorerBucket } from './listExplorerBucket';
 
 type ListExplorerQuickFiltersProps = {
+  /** Map drawer keeps dropdown filters; `/list` uses fixed quick pills. */
+  surface?: 'map' | 'list';
   bucket: ListExplorerBucket;
   filters: BrowseListFilterState;
   regions: string[];
@@ -28,6 +30,7 @@ type ListExplorerQuickFiltersProps = {
 };
 
 export const ListExplorerQuickFilters = ({
+  surface = 'map',
   bucket,
   filters,
   regions,
@@ -56,6 +59,7 @@ export const ListExplorerQuickFilters = ({
 
   return (
     <ExploreOptionalFilterRow
+      surface={surface}
       layer={bucket === 'places' ? 'places' : 'activity'}
       activityDatePreset={filters.activityDatePreset}
       onActivityDatePresetChange={onActivityDatePresetChange}

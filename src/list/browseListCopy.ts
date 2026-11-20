@@ -1,5 +1,8 @@
 import { resolveMobileFiveTab } from '../config/mobileFiveTabNav';
-import { parseListCatParam } from './browseListUrlState';
+import { EXPLORE_PEOPLE_BROWSE_SEARCH_PLACEHOLDER } from '../content/explorePeopleBrowseCopy';
+import { EXPLORE_SEARCH_OPEN_PLACEHOLDER } from '../explore/exploreBrowseTaxonomy';
+import { LIST_CAT_PARAM, parseListCatParam } from './browseListUrlState';
+import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import type { ListExplorerBucket } from './explorer/listExplorerBucket';
 
 /** List discovery page strings */
@@ -9,6 +12,28 @@ export const LIST_DISCOVER_RAIL_TRIPS = 'Upcoming';
 export const LIST_DISCOVER_RAIL_PLACES = 'Near you';
 export const LIST_DISCOVER_RAIL_SHOPS = 'Gear Shops';
 export const BROWSE_LIST_SEARCH_PLACEHOLDER = 'Search…';
+/** `/list` + explore hub Trips tab */
+export const BROWSE_LIST_SEARCH_PLACEHOLDER_TRIPS = 'Search hikes, trips, hosts…';
+/** `/list` + explore hub Places tab */
+export const BROWSE_LIST_SEARCH_PLACEHOLDER_PLACES = 'Search trails, camps, venues…';
+export const BROWSE_LIST_SEARCH_PLACEHOLDER_AGENCIES = 'Search outdoor brands and shops…';
+
+export const resolveBrowseListSearchPlaceholder = (
+  listCat: BrowseMainCategoryKey | null | undefined,
+  bucket?: ListExplorerBucket
+): string => {
+  if (listCat === 'people') return EXPLORE_PEOPLE_BROWSE_SEARCH_PLACEHOLDER;
+  if (listCat === 'venues') return BROWSE_LIST_SEARCH_PLACEHOLDER_PLACES;
+  if (listCat === 'agencies') return BROWSE_LIST_SEARCH_PLACEHOLDER_AGENCIES;
+  if (listCat === 'activities') return BROWSE_LIST_SEARCH_PLACEHOLDER_TRIPS;
+  if (bucket === 'places') return BROWSE_LIST_SEARCH_PLACEHOLDER_PLACES;
+  if (bucket === 'events') return BROWSE_LIST_SEARCH_PLACEHOLDER_TRIPS;
+  return EXPLORE_SEARCH_OPEN_PLACEHOLDER;
+};
+
+/** Multi-scope search dropdown — only when the list is not pinned to one main category. */
+export const browseListSearchUsesScopeHints = (listCat: BrowseMainCategoryKey | null | undefined): boolean =>
+  listCat == null;
 export const BROWSE_LIST_MAP_CTA = 'Map';
 export const BROWSE_LIST_VIEW_ON_MAP = 'View on map';
 export const BROWSE_LIST_FULL_SCREEN_CTA = 'Full screen browse';

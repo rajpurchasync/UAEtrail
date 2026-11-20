@@ -1,26 +1,41 @@
-import type { ReactNode } from 'react';
 import type { DiscoveryCardModel } from '../discoveryCardModel';
 import { DiscoveryBrowseThumbnailPoster } from '../DiscoveryBrowseThumbnailPoster';
+import { DiscoveryBrowseListHeroFootOverlay } from './DiscoveryBrowseListImageOverlays';
+import { browseCardListHeroPriceLabel, browseCardMeta } from '../../list/browse/browseCardMeta';
+import {
+  resolveDiscoveryBrowseListPolicyLabels,
+  resolveDiscoveryBrowseListTypeLabel,
+} from './resolveDiscoveryBrowseListImageChrome';
 
 type DiscoveryBrowseCardHeroProps = {
   card: DiscoveryCardModel;
   hideHostBand?: boolean;
-  /** Price / sold-out pill — top-right on hero only. */
-  cornerBadges?: ReactNode;
 };
 
-/** List browse hero — photo chrome only (§6.1.3 S1). */
-export const DiscoveryBrowseCardHero = ({
-  card,
-  hideHostBand = false,
-  cornerBadges = null,
-}: DiscoveryBrowseCardHeroProps) => (
-  <div className="relative">
-    <DiscoveryBrowseThumbnailPoster card={card} hideHostBand={hideHostBand} overlayContent={null} />
-    {cornerBadges ? (
-      <div className="pointer-events-none absolute right-2 top-2 z-20 flex flex-col items-end gap-1">
-        {cornerBadges}
-      </div>
-    ) : null}
-  </div>
-);
+/**
+ * List browse hero — S1 type + foot (price above policy on photo). When/where in S3 meta under title.
+ * @see docs/SYSTEM_COHERENCE.md §6.1.3
+ */
+export const DiscoveryBrowseCardHero = ({ card, hideHostBand = false }: DiscoveryBrowseCardHeroProps) => {
+  const typeLabel = resolveDiscoveryBrowseListTypeLabel(card);
+  const policyLabels = resolveDiscoveryBrowseListPolicyLabels(card);
+  const { soldOut } = browseCardMeta(card);
+  const heroPrice = browseCardListHeroPriceLabel(card);
+  const overlayContent = (
+    <DiscoveryBrowseListHeroFootOverlay
+      priceLabel={heroPrice}
+      soldOut={soldOut}
+      policyLabels={policyLabels}
+    />
+  );
+  const hasFootOverlay = soldOut || Boolean(heroPrice?.trim()) || policyLabels.length > 0;
+
+  return (
+    <DiscoveryBrowseThumbnailPoster
+      card={card}
+      hideHostBand={hideHostBand}
+      typeLabel={typeLabel}
+      overlayContent={hasFootOverlay ? overlayContent : null}
+    />
+  );
+};

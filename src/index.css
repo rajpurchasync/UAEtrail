@@ -16,6 +16,8 @@
     --explore-map-fab-inset: 2.75rem;
     /** Mobile explore tab header (safe area + avatar row). */
     --explore-mobile-tab-header-stack: calc(var(--safe-top, 0px) + 2.75rem);
+    /** Hamburger drawer — under identity header; JS remeasures on open (`syncConsumerMobileHeaderStack`). */
+    --consumer-mobile-header-stack: calc(var(--safe-top, 0px) + 3.75rem);
     /** Map intent + activity filter toolbar — peek sheets start below this stack. */
     --explore-mobile-map-filter-stack: 4.75rem;
     --explore-browse-peek-top: calc(
@@ -3507,6 +3509,7 @@ html.uaetrail-panel-resizing * {
   cursor: ew-resize !important;
 }
 
-html[data-mobile-menu='open'] [data-consumer-chrome-header] {
+html[data-mobile-menu='open'] [data-consumer-chrome-header],
+html[data-mobile-menu='open'] [data-hub-identity-header] {
   z-index: 5100;
 }

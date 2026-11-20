@@ -4,7 +4,11 @@ import { useProductLocation, useProductSearchParams } from '../routing/useEffect
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
-import { useCreateFlow } from '../create/CreateFlowProvider';
+import { useCreateFlowOptional } from '../create/CreateFlowProvider';
+import {
+  listDiscoverySearchComposeStub,
+  listDiscoverySearchRegisterBridgeStub,
+} from './listDiscoverySearchCreateFlowStub';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { reloadExploreMap } from '../hooks/useExploreMap';
 import { browseListFilterPatchForSearchScope } from './listDiscoverySearchCommit';
@@ -17,7 +21,23 @@ import { BrowseListCreateFab } from './ui/BrowseListCreateFab';
 import { PeopleBrowsePanel } from '@/people-discovery/panel/PeopleBrowsePanel';
 import { usePeopleDiscoveryAvailabilityCatalog } from '@/people-discovery/hooks/usePeopleDiscoveryAvailabilityCatalog';
 import { exploreMapPathFromListSearch } from './routing';
-import { listDiscoveryEmbeddedOnExplore, type ListDiscoverySurface } from './listDiscoverySurface';
+import {
+  listDiscoveryEmbeddedOnExplore,
+  listDiscoveryExploreSearch,
+  listDiscoverySearchChrome,
+  type ListDiscoverySurface,
+} from './listDiscoverySurface';
+import {
+  exploreSearchMapViewPathFromListSearch,
+  exploreSearchResultsPath,
+  parseExploreSearchBrowseState,
+} from '../explore/search/exploreSearchRouting';
+import { resolveExploreHubTripPool, resolveExploreHubVenuePool } from '../explore/hub/exploreHubJoinableTrips';
+import { exploreHubWhereBrowseQuery } from '../explore/hub/exploreHubWhereDisplay';
+import { buildListFeedCards } from './buildListFeedCards';
+import { sortListExplorerCards } from './explorer/listExplorerSort';
+import { setExploreClockStyle } from '@uaetrail/shared-types';
+import { useDisplayPreferences } from '../preferences/useDisplayPreferences';
 import { useMemberDiscoveryRoster } from '@/people-discovery/hooks/useMemberDiscoveryRoster';
 import { useExplorePeopleAvailability } from '@/people-discovery/hooks/usePeopleAvailability';
 import { parseExploreAreaSlug } from '../explore/exploreAreaFilter';
@@ -46,7 +66,11 @@ import {
 } from './listDiscoveryMapLayout';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { ExploreActivityDatePreset } from '../explore/exploreActivityDateFilter';
-import { resolveBrowseListCreateFabLabel } from './browseListCopy';
+import {
+  browseListSearchUsesScopeHints,
+  resolveBrowseListCreateFabLabel,
+  resolveBrowseListSearchPlaceholder,
+} from './browseListCopy';
 import { resolveCreateFabComposeEntry } from '../explore/create/composeFabEntry';
 import { availabilityFlexibleCompose } from '../explore/compose';
 import { useHostingFromActivity } from '../explore/create/hooks/useHostingFromActivity';
@@ -62,6 +86,8 @@ type ListDiscoveryExperienceProps = {
   prefetchedCatalogItems?: ExploreMapItemDTO[];
   /** Explore embed — host compose for offer-rideshare lives on explore shell. */
   onOfferRideshareForAvailabilityItem?: (item: ExploreMapItemDTO) => void;
+  /** Search results — hide in-list search; chrome owns query. */
+  suppressSearch?: boolean;
 };
 
 const readListMapColumnOpen = (): boolean => {
@@ -103,9 +129,20 @@ export const ListDiscoveryExperience = ({
   onImmersiveSubtitleChange,
   prefetchedCatalogItems,
   onOfferRideshareForAvailabilityItem: embeddedOfferRideshare,
+  suppressSearch = false,
 }: ListDiscoveryExperienceProps) => {
   const embeddedOnExplore = listDiscoveryEmbeddedOnExplore(surface);
+  const searchResultsChrome = listDiscoverySearchChrome(surface);
+  const exploreSearch = listDiscoveryExploreSearch(surface);
+  const suppressListSearch = suppressSearch || exploreSearch;
+  const createFlowCtx = useCreateFlowOptional();
+  if (!createFlowCtx && !exploreSearch) {
+    throw new Error('useCreateFlow must be used under CreateFlowProvider (ProductShell).');
+  }
+  const compose = createFlowCtx?.compose ?? listDiscoverySearchComposeStub();
+  const registerBridge = createFlowCtx?.registerBridge ?? listDiscoverySearchRegisterBridgeStub;
   const { user } = useAuth();
+  const { clock } = useDisplayPreferences();
   const navigate = useNavigate();
   const location = useProductLocation();
   const { pathname } = location;
@@ -114,14 +151,16 @@ export const ListDiscoveryExperience = ({
   const search = searchParams.toString() ? `?${searchParams.toString()}` : '';
 
   const { refresh: refreshHostGate, tenantId } = useMemberStatus({ enabled: Boolean(user) });
-  const { compose, registerBridge } = useCreateFlow();
 
   const reloadFeed = useCallback(async () => {
     await reloadExploreMap(queryClient);
     void refreshHostGate();
   }, [queryClient, refreshHostGate]);
 
-  const browseUrl = useListDiscoveryUrlState({ mapOverlay: embeddedOnExplore });
+  const browseUrl = useListDiscoveryUrlState({
+    mapOverlay: embeddedOnExplore,
+    searchResultsBrowse: searchResultsChrome,
+  });
   const {
     filters,
     syncUrl,
@@ -141,6 +180,12 @@ export const ListDiscoveryExperience = ({
     }),
     [isPeopleCategory, explorerBucket]
   );
+
+  const listSearchPlaceholder = useMemo(
+    () => resolveBrowseListSearchPlaceholder(listCat, explorerBucket),
+    [listCat, explorerBucket]
+  );
+  const listSearchScopeHints = useMemo(() => browseListSearchUsesScopeHints(listCat), [listCat]);
 
   const createFabLabel = useMemo(
     () => resolveBrowseListCreateFabLabel(location.pathname, location.search, createFabContext),
@@ -189,7 +234,7 @@ export const ListDiscoveryExperience = ({
   });
 
   useExploreCreateFlowBridge({
-    enabled: !embeddedOnExplore,
+    enabled: !embeddedOnExplore && Boolean(createFlowCtx),
     registerBridge,
     hostingWizardPrefill: hostingLauncher.hostingWizardPrefill,
     closeCreateFlow: hostingLauncher.closeCreateFlow,
@@ -251,7 +296,14 @@ export const ListDiscoveryExperience = ({
     }
   }, [user, queryClient]);
 
-  const { cards, filteredItems, items, isLoading, isError, refetch: reloadMap } = useBrowseListFeed({
+  const {
+    cards: feedCards,
+    filteredItems,
+    items,
+    isLoading,
+    isError,
+    refetch: reloadMap,
+  } = useBrowseListFeed({
     filters: isPeopleCategory
       ? { ...filters, query: draftQuery, categories: [] }
       : {
@@ -268,6 +320,53 @@ export const ListDiscoveryExperience = ({
         (crewsOpenLens === 'all' || crewsOpenLens === 'looking')),
     catalogItems: embeddedOnExplore ? prefetchedCatalogItems : undefined,
   });
+
+  const searchResultsBrowse = useMemo(
+    () => (exploreSearch ? parseExploreSearchBrowseState(searchParams) : null),
+    [exploreSearch, searchParams]
+  );
+  const searchResultsMapView = searchResultsBrowse?.view === 'map';
+
+  const exploreSearchMapPool = useMemo(() => {
+    if (!exploreSearch || isPeopleCategory) return null;
+    const searchBrowse = searchResultsBrowse ?? parseExploreSearchBrowseState(searchParams);
+    const browseQuery = exploreHubWhereBrowseQuery(searchBrowse.query.trim() || filters.query);
+    const scopedFilters =
+      listCat === 'venues'
+        ? scopeBrowseListStateForListCat({ ...filters, query: browseQuery }, 'venues')
+        : scopeBrowseListStateForListCat(
+            {
+              ...filters,
+              query: browseQuery,
+              activityDatePreset:
+                searchBrowse.searchScope === 'places'
+                  ? filters.activityDatePreset
+                  : searchBrowse.activityDatePreset,
+            },
+            'activities'
+          );
+    return listCat === 'venues'
+      ? resolveExploreHubVenuePool(items, scopedFilters, venueRegions).pool
+      : resolveExploreHubTripPool(items, scopedFilters, venueRegions).pool;
+  }, [
+    exploreSearch,
+    filters,
+    isPeopleCategory,
+    items,
+    listCat,
+    searchParams,
+    searchResultsBrowse,
+    venueRegions,
+  ]);
+
+  const exploreSearchCards = useMemo(() => {
+    if (!exploreSearchMapPool) return null;
+    setExploreClockStyle(clock);
+    const built = buildListFeedCards(exploreSearchMapPool, user, items);
+    return sortListExplorerCards(built, sort, null);
+  }, [clock, exploreSearchMapPool, items, sort, user]);
+
+  const cards = exploreSearchCards ?? feedCards;
 
   const { availabilityCatalogItems } = usePeopleDiscoveryAvailabilityCatalog({
     enabled: isPeopleCategory && crewsNeedsAvailability,
@@ -384,6 +483,7 @@ export const ListDiscoveryExperience = ({
       buddiesSegment: filters.buddiesSegment,
       hasTrip: false,
       facilityKinds: [],
+      audience: 'anyone',
     };
   const scoped =
       cat === 'venues' || cat === 'activities'
@@ -409,8 +509,14 @@ export const ListDiscoveryExperience = ({
 
   const mapHref = useMemo(() => {
     if (onCloseMapOverlay) return EXPLORE_MAP_PATH;
+    if (exploreSearch) {
+      const searchBrowse = parseExploreSearchBrowseState(searchParams);
+      return searchBrowse.view === 'map'
+        ? exploreSearchResultsPath({ ...searchBrowse, view: 'list' })
+        : exploreSearchMapViewPathFromListSearch(search);
+    }
     return exploreMapPathFromListSearch(search);
-  }, [onCloseMapOverlay, search]);
+  }, [exploreSearch, onCloseMapOverlay, search, searchParams]);
 
   const desktopMd = useMinWidthMd();
   const wideListMapSplit = useMinWidthPx(LIST_DISCOVERY_MAP_AUTO_MIN_PX);
@@ -418,7 +524,7 @@ export const ListDiscoveryExperience = ({
   const [listMapDismissed, setListMapDismissed] = useState(readListMapDismissed);
   const [listMapHighlightedId, setListMapHighlightedId] = useState<string | null>(null);
   const [listMapSelectedId, setListMapSelectedId] = useState<string | null>(null);
-  const listMapSplitEnabled = !embeddedOnExplore && !isPeopleCategory;
+  const listMapSplitEnabled = !embeddedOnExplore && !isPeopleCategory && !exploreSearch;
   const showListMapColumn =
     listMapSplitEnabled && desktopMd && !listMapDismissed && (wideListMapSplit || listMapColumnOpen);
   const showListMapColumnPrompt =
@@ -453,15 +559,25 @@ export const ListDiscoveryExperience = ({
     }
   }, [wideListMapSplit, listMapDismissed]);
 
-  const handleListMapSelectItem = useCallback((item: ExploreMapItemDTO) => {
-    setListMapSelectedId(item.id);
-    setListMapHighlightedId(item.id);
-  }, []);
+  const handleListMapSelectItem = useCallback(
+    (item: ExploreMapItemDTO) => {
+      setListMapSelectedId(item.id);
+      setListMapHighlightedId(item.id);
+      if (exploreSearch && item.path) {
+        const returnTo = `${location.pathname}${location.search}`;
+        navigate(item.path, { state: listExplorerEntityLinkState(returnTo) });
+      }
+    },
+    [exploreSearch, location.pathname, location.search, navigate]
+  );
 
   const sideMapWidth = useListSideMapWidth(showListMapColumn);
 
+  const hubListRoot =
+    searchResultsChrome ? 'flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden' : undefined;
+
   return (
-    <>
+    <div className={hubListRoot}>
       {isPeopleCategory ? (
         embeddedOnExplore ? (
           <PeopleBrowsePanel
@@ -507,6 +623,11 @@ export const ListDiscoveryExperience = ({
             onClearQuery={() => syncUrl({ query: '' })}
             searchScopeCounts={searchScopeCounts}
             mapHref={mapHref}
+            suppressSearch={suppressListSearch}
+            searchPlaceholder={listSearchPlaceholder}
+            enableSearchScopeHints={listSearchScopeHints}
+            searchResultsChrome={searchResultsChrome}
+            exploreSearchResults={exploreSearch}
             peopleBrowseTab={filters.buddiesSegment}
             onPeopleBrowseTabChange={(tab) => syncUrl({ buddiesSegment: tab, crewsOpen: null })}
             crewsOpenLens={crewsOpenLens}
@@ -531,6 +652,17 @@ export const ListDiscoveryExperience = ({
             discoveryError={memberRoster.error}
           />
         )
+      ) : exploreSearch && searchResultsMapView && !isPeopleCategory ? (
+        <ListDiscoveryMapColumn
+          presentation="primary"
+          items={exploreSearchMapPool ?? []}
+          loading={isLoading}
+          highlightedExploreItemId={listMapHighlightedId}
+          selectedExploreItemId={listMapSelectedId}
+          onSelectItem={handleListMapSelectItem}
+          layoutRevision={searchResultsMapView}
+          className="mx-auto w-full max-w-lg rounded-2xl border border-neutral-200"
+        />
       ) : (
         <ListFeedActionsProvider>
         <div ref={sideMapWidth.splitRef} className="flex h-full min-h-0 min-w-0 flex-1 flex-row">
@@ -561,7 +693,12 @@ export const ListDiscoveryExperience = ({
                 ...(next === 'places' && layout === 'calendar' ? { layout: 'thumbnails' as const } : {}),
               });
             }}
-            hideBucketToggleOnMobile={!embeddedOnExplore}
+            hideBucketToggleOnMobile={!embeddedOnExplore || searchResultsChrome}
+            suppressSearch={suppressListSearch}
+            searchResultsChrome={searchResultsChrome}
+            exploreSearchResults={exploreSearch}
+            suppressMapListToggle={searchResultsChrome}
+            suppressDateSectionHeaders={listCat === 'activities'}
             filters={filters}
             regions={venueRegions}
             filterCount={filterCount}
@@ -583,6 +720,8 @@ export const ListDiscoveryExperience = ({
             onVenueFiltersChange={(next) => syncUrl({ placeTopics: next.placeTopics, facilityKinds: next.facilityKinds })}
             onActivityDatePresetChange={handleActivityDatePresetChange}
             onVenueRegionsChange={handleVenueRegionsChange}
+            searchPlaceholder={listSearchPlaceholder}
+            enableSearchScopeHints={listSearchScopeHints}
           />
           {showListMapColumn ? (
             <>
@@ -608,9 +747,9 @@ export const ListDiscoveryExperience = ({
         </ListFeedActionsProvider>
       )}
 
-      {embeddedOnExplore || overlayImmersive ? null : (
+      {embeddedOnExplore || overlayImmersive || exploreSearch ? null : (
         <BrowseListCreateFab onClick={handleCreateFabTap} label={createFabLabel} />
       )}
-    </>
+    </div>
   );
 };

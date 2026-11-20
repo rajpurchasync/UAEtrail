@@ -7,6 +7,7 @@ import { DiscoveryCardTypeIcon } from '../explore/ui/DiscoveryCardTypeIcon';
 import { resolveBrowsePosterCoverUrl, browsePosterFallbackClass } from '../list/browsePosterCover';
 import { browseCardMeta } from '../list/browse/browseCardMeta';
 import { DiscoveryCardHostProfileNav } from './DiscoveryCardHostProfileNav';
+import { BROWSE_LIST_HERO_TYPE, BROWSE_LIST_HERO_TYPE_WRAP } from './browse/discoveryBrowseListChrome';
 
 export type DiscoveryBrowsePosterBannerProps = {
   card: DiscoveryCardModel;
@@ -22,6 +23,8 @@ export type DiscoveryBrowsePosterBannerProps = {
   overlayTitle?: string | null;
   /** Emoji without the colored circle. */
   typeIconBare?: boolean;
+  /** List thumb — white bold kind label top-left (text only, no emoji). */
+  typeLabel?: string | null;
   /** Venue listing puts title/location in the body — photo is chrome only. */
   showOverlayMeta?: boolean;
   /** Catalogue overlay (emirate · hub, rating, trips) — replaces trip when/price. */
@@ -47,6 +50,7 @@ export const DiscoveryBrowsePosterBanner = ({
   imageHoverZoom = false,
   overlayTitle = null,
   typeIconBare = false,
+  typeLabel = null,
   showOverlayMeta = true,
   overlayContent = null,
   hideHostBand = false,
@@ -94,21 +98,27 @@ export const DiscoveryBrowsePosterBanner = ({
         />
       )}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/10" />
-      <div className="pointer-events-auto absolute left-2.5 top-2.5 z-20 flex items-center gap-1.5">
-        <DiscoveryCardTypeIcon
-          tone={card.tone}
-          source={card.source}
-          kind={card.kind}
-          emoji={card.emoji}
-          size="overlay"
-          bare={typeIconBare}
-          className={
-            typeIconBare
-              ? 'shrink-0'
-              : 'h-5 w-5 shrink-0 text-xs shadow-sm ring-2 ring-white/90 md:h-[1.125rem] md:w-[1.125rem]'
-          }
-        />
-        {leadingActions}
+      <div className="pointer-events-auto absolute left-2.5 top-2.5 z-20 flex max-w-[min(70%,10.5rem)] flex-col items-start gap-1">
+        {typeLabel ? (
+          <span className={BROWSE_LIST_HERO_TYPE_WRAP}>
+            <span className={`min-w-0 line-clamp-2 ${BROWSE_LIST_HERO_TYPE}`}>{typeLabel}</span>
+          </span>
+        ) : (
+          <DiscoveryCardTypeIcon
+            tone={card.tone}
+            source={card.source}
+            kind={card.kind}
+            emoji={card.emoji}
+            size="overlay"
+            bare={typeIconBare}
+            className={
+              typeIconBare
+                ? 'shrink-0'
+                : 'h-5 w-5 shrink-0 text-xs shadow-sm ring-2 ring-white/90 md:h-[1.125rem] md:w-[1.125rem]'
+            }
+          />
+        )}
+        {leadingActions ? <div className="flex items-center gap-1.5">{leadingActions}</div> : null}
       </div>
       {headerActions ? (
         <div className="pointer-events-auto absolute right-2 top-2.5 z-20 flex items-center justify-end gap-1">
@@ -147,8 +157,8 @@ export const DiscoveryBrowsePosterBanner = ({
       ) : null}
       {showBottom ? (
         <div
-          className={`pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/45 to-transparent px-2.5 pb-2 ${
-            overlayTitle ? 'pt-12' : overlayContent ? 'pt-10' : 'pt-8'
+          className={`pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent ${
+            overlayTitle ? 'px-2.5 pb-2 pt-12' : overlayContent ? 'px-2.5 pb-2.5 pt-10' : 'px-2.5 pb-2 pt-8'
           }`}
         >
           {overlayContent ? (

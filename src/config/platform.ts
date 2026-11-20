@@ -32,6 +32,7 @@ import {
 import { INBOUND_PROFILE_HISTORY_ALIAS_PATH } from './inboundBookmarkPaths';
 import { SETTINGS_SURFACE_TITLE } from './settingsHub';
 import { AGENCY_PROFILE_PATH_PREFIX } from '@uaetrail/shared-types';
+import { PRODUCT_CREWS_TAB_LABEL } from '../content/productNorthStar';
 import { resolveEsriExploreStylePreset, resolveExploreMapTiles } from '../explore/exploreMapBasemap';
 import type { ExploreMapStyle } from '../explore/exploreMapBasemap';
 
@@ -194,7 +195,7 @@ export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
   },
   {
     kind: 'link',
-    label: 'People',
+    label: PRODUCT_CREWS_TAB_LABEL,
     emoji: '👥',
     to: CREWS_LIST_NAV_PATH,
     match: [LIST_DISCOVERY_PATH, EXPLORE_MAP_PATH],
@@ -404,7 +405,7 @@ export const isConsumerEntityDetailRoute = isEntityDetailRoute;
 
 /**
  * Product pages that render their own sticky header (ProductShell / MobileScreen / MobileDetailShell).
- * Layout must not also show MobileConsumerNavBar on these routes.
+ * Layout must not stack a second layout header (unified tab header) on these routes.
  */
 export const CONSUMER_SELF_HEADER_EXACT = [
   '/',
@@ -434,6 +435,7 @@ export const CONSUMER_SELF_HEADER_EXACT = [
   '/about',
   '/contact',
   '/sitemap',
+  '/explore/search',
 ] as const;
 
 export const CONSUMER_SELF_HEADER_PREFIXES = [
@@ -462,7 +464,13 @@ export const shouldShowProductShellHamburger = (pathname: string): boolean => {
   if (isConsumerChromeHidden(pathname)) return false;
   if (isEntityDetailRoute(pathname)) return false;
   if (pathname.startsWith('/member/')) return false;
-  if (pathname === EXPLORE_MAP_PATH || pathname === LIST_DISCOVERY_PATH) return false;
+  if (
+    pathname === EXPLORE_MAP_PATH ||
+    pathname === LIST_DISCOVERY_PATH ||
+    pathname === '/explore/search'
+  ) {
+    return false;
+  }
   if (
     pathname === '/profile' ||
     pathname === PLAN_PATH ||
@@ -525,6 +533,9 @@ export const shouldShowMobileBottomNav = (
   if (pathname === EXPLORE_MAP_PATH) {
     const params = new URLSearchParams(search);
     if (params.get('list') === '1') return false;
+  }
+  if (pathname === '/explore/search') {
+    return true;
   }
   if (pathname === MESSAGES_PATH || pathname === '/publishing/messages') {
     const params = new URLSearchParams(search);

@@ -6,6 +6,8 @@ import {
   APP_SETTINGS_ACCOUNT_PATH,
   APP_SETTINGS_NOTIFICATIONS_PATH,
   APP_SETTINGS_NOTIFICATIONS_PREFERENCES_PATH,
+  NOTIFICATIONS_PATH,
+  NOTIFICATIONS_SAVED_PATH,
   APP_SETTINGS_PATH,
   inboundNotificationsRedirectTarget,
   APP_SETTINGS_PRIVACY_PATH,
@@ -49,13 +51,15 @@ const collectSourceFiles = (dir: string): string[] => {
 };
 
 describe('appSettingsRoutingGuard', () => {
-  it('app settings use layout unified header only (hide MobileConsumerNavBar)', () => {
+  it('app settings use layout unified header via self-header contract', () => {
     expect(hasConsumerSelfHeader(APP_SETTINGS_PATH)).toBe(true);
     expect(hasConsumerSelfHeader(APP_SETTINGS_DISPLAY_PATH)).toBe(true);
     expect(hasConsumerSelfHeader(APP_SETTINGS_PRIVACY_PATH)).toBe(true);
     expect(hasConsumerSelfHeader(APP_SETTINGS_SAFETY_PATH)).toBe(true);
     expect(hasConsumerSelfHeader(APP_SETTINGS_NOTIFICATIONS_PATH)).toBe(true);
     expect(hasConsumerSelfHeader(APP_SETTINGS_NOTIFICATIONS_PREFERENCES_PATH)).toBe(true);
+    expect(hasConsumerSelfHeader(NOTIFICATIONS_PATH)).toBe(true);
+    expect(hasConsumerSelfHeader(NOTIFICATIONS_SAVED_PATH)).toBe(true);
   });
 
   it('canonical app settings paths live at /settings (not under /profile)', () => {

@@ -139,7 +139,7 @@ describe('mobileBackNav', () => {
     expect(resolveMobileTabHeaderLeadingBack('/groups', null)).toBeNull();
     expect(resolveMobileTabHeaderLeadingBack('/groups', null, '?from=crews')).toMatchObject({
       fallbackTo: expect.stringContaining('/list'),
-      label: 'People',
+      label: 'Crews',
     });
     expect(resolveMobileTabHeaderLeadingBack('/groups', null, '?group=g1')).toEqual({
       fallbackTo: '/groups',

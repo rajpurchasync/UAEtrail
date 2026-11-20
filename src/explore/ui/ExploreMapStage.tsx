@@ -456,7 +456,7 @@ export const ExploreMapStage = ({
 
     {mapSearchOverlay ? (
       <div
-        className={`pointer-events-none absolute inset-0 min-h-0 ${EXPLORE_Z.browseSheet}`}
+        className={`pointer-events-auto absolute inset-0 min-h-0 ${EXPLORE_Z.browseSheet}`}
         role="presentation"
       >
         {mapSearchOverlay}

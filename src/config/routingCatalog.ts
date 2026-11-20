@@ -200,6 +200,15 @@ export {
 } from '../explore/routing';
 
 export {
+  EXPLORE_SEARCH_RESULTS_PATH,
+  exploreSearchResultsPath,
+  exploreSearchExploreMapPath,
+  exploreSearchListPathFromMapSearch,
+  exploreSearchMapViewPathFromListSearch,
+  type ExploreSearchScope,
+} from '../explore/search/exploreSearchRouting';
+
+export {
   listDiscoveryPath,
   listPeopleDiscoveryPath,
   exploreMapPathFromListSearch,

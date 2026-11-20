@@ -15,6 +15,7 @@ const baseState: BrowseListFilterState = {
   buddiesSegment: 'available',
   hasTrip: false,
   facilityKinds: [],
+  audience: 'anyone',
 };
 
 const hikingActivity = (id: string): ExploreMapItemDTO =>

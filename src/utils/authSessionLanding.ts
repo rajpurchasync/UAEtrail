@@ -4,6 +4,7 @@ import {
   SESSION_EXPIRED_QUERY_VALUE,
   sessionExpiredHomePath,
 } from '../config/surfacePaths';
+import { EXPLORE_SEARCH_RESULTS_PATH } from '../explore/search/exploreSearchRouting';
 
 const MOBILE_VIEWPORT_QUERY = '(max-width: 767px)';
 
@@ -14,9 +15,29 @@ export const isMobileAuthViewport = (): boolean =>
 export const sessionExpiredExplorePath = (): string =>
   `${EXPLORE_MAP_PATH}?${SESSION_EXPIRED_QUERY_KEY}=${SESSION_EXPIRED_QUERY_VALUE}`;
 
-/** Desktop: guest marketing home. Phone: Explore map. */
-export const sessionExpiredLandingPath = (): string =>
-  isMobileAuthViewport() ? sessionExpiredExplorePath() : sessionExpiredHomePath();
+export const withSessionExpiredQuery = (pathname: string, search = ''): string => {
+  const params = new URLSearchParams(search.replace(/^\?/, ''));
+  params.set(SESSION_EXPIRED_QUERY_KEY, SESSION_EXPIRED_QUERY_VALUE);
+  const qs = params.toString();
+  return qs ? `${pathname}?${qs}` : pathname;
+};
+
+export const isExploreSearchSessionPreservePath = (pathname: string): boolean =>
+  pathname === EXPLORE_SEARCH_RESULTS_PATH || pathname.startsWith('/explore/hub/');
+
+/** @deprecated */
+export const isExploreHubSessionPreservePath = isExploreSearchSessionPreservePath;
+
+/** Desktop: guest marketing home. Phone: explore map — preserve `/explore/search` when already there. */
+export const sessionExpiredLandingPath = (): string => {
+  if (typeof window !== 'undefined') {
+    const { pathname, search } = window.location;
+    if (isExploreSearchSessionPreservePath(pathname)) {
+      return withSessionExpiredQuery(pathname, search);
+    }
+  }
+  return isMobileAuthViewport() ? sessionExpiredExplorePath() : sessionExpiredHomePath();
+};
 
 /** After logout — never send phones back to the marketing page. */
 export const signedOutLandingPath = (): string =>

@@ -7,7 +7,8 @@ import {
 /** List discovery chrome — super-app tokens (not map overlay pills). */
 
 export const LIST_CHROME = {
-  pageBg: 'bg-neutral-50',
+  /** Matches {@link ProductShell} `consumer-bg` mesh (emerald tint). */
+  pageBg: 'consumer-bg md:bg-gray-50',
   chromeBg: 'bg-white/95 backdrop-blur-md',
   chromeBorder: 'border-b border-neutral-200/60 shadow-[0_1px_0_rgba(15,23,42,.04)]',
   maxWidth: 'mx-auto w-full max-w-lg md:max-w-xl lg:max-w-lg',
@@ -34,6 +35,19 @@ export const LIST_SEARCH = {
   sideAction:
     'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-neutral-100 bg-white shadow-[0_1px_3px_rgba(15,23,42,.06)] transition active:scale-[0.97] hover:bg-neutral-50',
   sideActionMap: '!text-emerald-700',
+} as const;
+
+/** Hub list search row — Map + Filter align to {@link LIST_SEARCH.shell} min height. */
+export const LIST_HUB_SEARCH_ROW = {
+  mapAction: `${LIST_SEARCH.sideAction} ${LIST_SEARCH.sideActionMap} !w-auto min-w-11 gap-1.5 px-3 text-sm font-semibold`,
+  filterAction: (active: boolean): string =>
+    [
+      listFilterIconButtonClass(),
+      'relative',
+      active ? 'text-emerald-700' : 'text-neutral-700',
+    ].join(' '),
+  filterBadge:
+    'absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-emerald-600 px-1 text-[10px] font-bold text-white ring-2 ring-white',
 } as const;
 
 export const LIST_CHIP_SCROLL =
@@ -82,13 +96,15 @@ export const listFilterPopGridChipClass = (active: boolean): string =>
 
 /** Filter pop layout tokens (mobile touch targets, desktop compact, no inner scroll). */
 export const LIST_FILTER_POP = {
-  shell: 'w-[min(20.5rem,calc(100vw-2rem))] md:w-[17.25rem]',
+  shell: 'w-[min(22rem,calc(100vw-2rem))] md:w-[18.5rem]',
   panel:
-    'border border-neutral-200/90 bg-white p-3 shadow-[0_12px_40px_rgba(15,23,42,.18)] md:p-2 md:rounded-xl',
-  sections: 'space-y-2.5 md:space-y-1',
+    'rounded-2xl border border-neutral-200/90 bg-white p-3.5 shadow-[0_16px_48px_rgba(15,23,42,.16)] md:rounded-xl md:p-3',
+  sections: 'space-y-3 md:space-y-2',
+  section: 'space-y-2 rounded-xl border border-neutral-100 bg-neutral-50/90 p-2.5 md:p-2',
   block: 'space-y-1 md:space-y-0.5',
-  label: 'text-[10px] font-semibold uppercase tracking-wide text-neutral-500 md:text-[9px] md:tracking-wider',
-  chipRow: 'flex flex-wrap gap-1.5 md:gap-0.5',
+  label: 'text-[11px] font-bold uppercase tracking-wide text-neutral-600 md:text-[10px]',
+  chipRow: 'flex flex-wrap gap-1.5',
+  chipGrid: 'grid grid-cols-2 gap-1.5 sm:grid-cols-3',
   headerRow: 'mb-2 flex items-center justify-between gap-2 md:mb-1',
   title: 'text-sm font-bold text-neutral-900 md:text-xs',
   reset: 'text-sm font-semibold text-emerald-700 md:text-[11px]',

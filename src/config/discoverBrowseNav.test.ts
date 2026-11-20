@@ -16,7 +16,8 @@ describe('discover browse navigation contract', () => {
     const linkLabels = CONSUMER_HAMBURGER_MENU.filter((item) => item.kind === 'link').map(
       (item) => item.label
     );
-    expect(linkLabels.slice(0, 5)).toEqual(['Trips', 'Places', 'Plans', 'People', 'Chat']);
+    const fiveTabLabels = linkLabels.filter((label) => label !== 'Home');
+    expect(fiveTabLabels.slice(0, 5)).toEqual(['Trips', 'Places', 'Plans', 'Crews', 'Chat']);
     expect(linkLabels).not.toContain('Explore');
     expect(linkLabels).not.toContain('Browse');
     expect(linkLabels).not.toContain('Outing history');

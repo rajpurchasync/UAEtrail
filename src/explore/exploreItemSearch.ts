@@ -1,4 +1,5 @@
 import {
+  exploreGeoQueryTokens,
   exploreMapItemIsSeeking,
   geoRefMatchesQuery,
   isTimeBoundExploreMapItem,
@@ -260,12 +261,29 @@ const exploreQueryMatchesItemRegions = (item: ExploreMapItemDTO, query: string):
 const itemGeoRef = (item: ExploreMapItemDTO) =>
   item.geoRef ?? item.activity?.geoRef ?? item.locationCard?.geoRef ?? null;
 
+const EXPLORE_SEARCH_QUERY_STOPWORDS = new Set([
+  'united',
+  'arab',
+  'emirates',
+  'the',
+  'and',
+  'uae',
+]);
+
+const exploreItemMatchesQueryToken = (item: ExploreMapItemDTO, token: string): boolean => {
+  const ref = itemGeoRef(item);
+  if (ref && geoRefMatchesQuery(ref, token)) return true;
+  const haystack = exploreItemSearchHaystack(item);
+  if (haystack.includes(token)) return true;
+  return exploreQueryMatchesItemRegions(item, token);
+};
+
 export const exploreItemMatchesQuery = (item: ExploreMapItemDTO, query: string): boolean => {
   const q = normalizeExploreSearchText(query);
   if (!q) return true;
-  const ref = itemGeoRef(item);
-  if (ref && geoRefMatchesQuery(ref, q)) return true;
-  const haystack = exploreItemSearchHaystack(item);
-  if (haystack.includes(q)) return true;
-  return exploreQueryMatchesItemRegions(item, q);
+  if (exploreItemMatchesQueryToken(item, q)) return true;
+
+  const tokens = exploreGeoQueryTokens(q).filter((token) => !EXPLORE_SEARCH_QUERY_STOPWORDS.has(token));
+  if (tokens.length === 0) return false;
+  return tokens.some((token) => exploreItemMatchesQueryToken(item, token));
 };

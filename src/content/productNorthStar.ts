@@ -61,7 +61,8 @@ export const PRODUCT_SOCIAL_SURFACE_TITLE = PRODUCT_MY_CREW_SURFACE_TITLE;
 export const PRODUCT_SOCIAL_NAV_HINT =
   'Friends, family, or colleagues on a team — optional team chat for adults when you want to message.';
 export const PRODUCT_GROUPS_SURFACE_LABEL = 'Teams';
-export const PRODUCT_CREWS_TAB_LABEL = 'People';
+/** Mobile tab + hub discover scope — crew, guides, partners (not “people” directory only). */
+export const PRODUCT_CREWS_TAB_LABEL = 'Crews';
 export const PRODUCT_MY_CREW_CARD_TITLE = 'My crew';
 export const PRODUCT_MY_CREW_CARD_SUBTITLE = 'Friends you message and teams you travel with';
 export const PRODUCT_TEAM_CHAT_SUBTITLE = 'Optional team wall — adults only';

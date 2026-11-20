@@ -103,7 +103,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const path = window.location.pathname;
       if (!path.startsWith('/signin') && !path.startsWith('/signup') && !path.startsWith('/verify')) {
         const next = sessionExpiredLandingPath();
-        if (`${path}${window.location.search}` !== next) {
+        const current = `${path}${window.location.search}`;
+        if (current === next) return;
+        const nextPathname = next.split('?')[0]?.split('#')[0] ?? next;
+        if (nextPathname === path) {
+          window.location.replace(next);
+        } else {
           window.location.assign(next);
         }
       }
