@@ -13,7 +13,7 @@ export const ACTIVITY_INVITE_SEND_LABEL = (count: number): string =>
   count > 0 ? `Send (${count})` : 'Send';
 export const ACTIVITY_INVITE_GROUPS_SEND_LABEL = (count: number): string =>
   count > 0 ? `Post (${count})` : 'Post to groups';
-export const ACTIVITY_INVITE_NO_GROUPS = 'Create a family or friends group to share with your crew.';
+export const ACTIVITY_INVITE_NO_GROUPS = 'Create a team to share with your crew.';
 export const ACTIVITY_INVITE_GROUPS_POSTED_TOAST = (count: number): string =>
   count === 1 ? 'Posted to your group.' : `Posted to ${count} groups.`;
 export const ACTIVITY_INVITE_NO_FRIENDS = 'Add friends from Social or member profiles first.';

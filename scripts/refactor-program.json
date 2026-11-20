@@ -540,6 +540,44 @@
       "successMetric": "docs/NAVIGATION.md § Mobile five-tab — Phase 1 shipped; Phase 2–5 complete; resolveMobileFiveTab + handoff; memberSurfacesAcceptance + mobileFiveTabNav.test.ts; verify:system"
     },
     {
+      "id": "MIG-TEAM-MODEL-SPLIT",
+      "phase": "P4b",
+      "status": "complete",
+      "owner": "social_graph",
+      "contextIds": ["social_graph", "communication"],
+      "apiRoots": [
+        "apps/api/src/lib/social-groups-store.ts",
+        "apps/api/src/lib/mongo-migrations.ts",
+        "packages/shared-types/src/member-group.ts"
+      ],
+      "feRoots": ["src/api/types.ts", "src/pages/Groups.tsx"],
+      "successMetric": "member_groups collection; kind team|outing_crew + teamLabel; member-group-model-guard.test.ts; DOMAIN_CANONICALS §1.6a–§1.6b"
+    },
+    {
+      "id": "MIG-TEAMS-LABEL-WIDEN",
+      "phase": "P4b",
+      "status": "complete",
+      "owner": "social_graph",
+      "contextIds": ["social_graph", "communication"],
+      "apiRoots": [
+        "apps/api/src/lib/social-groups-store.ts",
+        "apps/api/src/routes/user/registerGroupRoutes.ts",
+        "apps/api/src/domain/family-kid-profile.ts"
+      ],
+      "feRoots": ["src/pages/Groups.tsx", "packages/shared-types/src/social-group-limits.ts"],
+      "successMetric": "Team type labels family|friends|colleagues; kid roster family-only under SOCIAL_TEAM_KID_ROSTER_MAX_AGE_YEARS; DOMAIN_CANONICALS §1.6a"
+    },
+    {
+      "id": "MIG-COMMUNITY-DISCOVER",
+      "phase": "P5",
+      "status": "planned",
+      "owner": "social_graph",
+      "contextIds": ["social_graph", "discovery", "member_discovery"],
+      "apiRoots": [],
+      "feRoots": ["src/people-discovery", "src/list", "src/explore"],
+      "successMetric": "community_groups + geoRef; GET discover communities; Find crew Communities list (country→city sort); community home route; activities host-as-community; bounded-context manifest + guards"
+    },
+    {
       "id": "MIG-SURFACE-MEMBER-PEOPLE",
       "phase": "P4b",
       "status": "complete",

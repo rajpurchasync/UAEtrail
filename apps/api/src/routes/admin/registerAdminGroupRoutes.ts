@@ -33,7 +33,7 @@ const groupStatusSchema = suspendCommentSchema
 
 const groupListQuerySchema = paginationSchema.extend({
   search: z.string().optional(),
-  type: z.enum(['family', 'friends']).optional(),
+  type: z.enum(['family', 'friends', 'colleagues']).optional(),
   status: z.enum(['active', 'suspended']).optional(),
 });
 

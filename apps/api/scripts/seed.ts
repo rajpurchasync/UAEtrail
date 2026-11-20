@@ -134,7 +134,7 @@ const seedGroupWallReaction = async (input: {
   userId: string;
   kind: GroupWallReactionKind;
 }) => {
-  await db().collection('social_group_wall_reactions').updateOne(
+  await db().collection('member_group_wall_reactions').updateOne(
     { groupId: input.groupId, messageId: input.messageId, userId: input.userId, kind: input.kind },
     {
       $setOnInsert: {
@@ -152,20 +152,20 @@ const seedGroupWallReaction = async (input: {
 
 const resetDemoFriendsGroup = async (participantId: string) => {
   const existing = await db()
-    .collection('social_groups')
+    .collection('member_groups')
     .find({ adminUserId: participantId, name: 'Weekend Hikers UAE', type: 'friends' })
     .toArray();
   for (const group of existing) {
-    await db().collection('social_group_wall_reactions').deleteMany({ groupId: group._id });
-    await db().collection('social_group_wall').deleteMany({ groupId: group._id });
-    await db().collection('social_group_members').deleteMany({ groupId: group._id });
-    await db().collection('social_groups').deleteOne({ _id: group._id });
+    await db().collection('member_group_wall_reactions').deleteMany({ groupId: group._id });
+    await db().collection('member_group_wall').deleteMany({ groupId: group._id });
+    await db().collection('member_group_members').deleteMany({ groupId: group._id });
+    await db().collection('member_groups').deleteOne({ _id: group._id });
   }
 };
 
 const clearGroupWall = async (groupId: string) => {
-  await db().collection('social_group_wall_reactions').deleteMany({ groupId });
-  await db().collection('social_group_wall').deleteMany({ groupId });
+  await db().collection('member_group_wall_reactions').deleteMany({ groupId });
+  await db().collection('member_group_wall').deleteMany({ groupId });
 };
 
 const seedMobileInboxDemo = async (input: {

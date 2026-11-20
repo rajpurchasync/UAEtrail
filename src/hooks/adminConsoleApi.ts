@@ -296,7 +296,7 @@ export const fetchAdminMemberDetail = async (
 
 export const fetchAdminSocialGroups = async (filters?: {
   search?: string;
-  type?: 'family' | 'friends';
+  type?: 'family' | 'friends' | 'colleagues';
   status?: 'active' | 'suspended';
   page?: number;
   pageSize?: number;

@@ -42,6 +42,10 @@ import type {
   groupSettingsPatchSchema,
   groupWallReactionSchema,
 } from '../routes/user/schemas.js';
+import {
+  isOutingCrewMemberGroup,
+  memberTeamAllowsKidRoster,
+} from '../domain/member-group.js';
 import { isActivityGroupChatOpen } from './activity-group-chat.js';
 import { publishGroupWallStreamToMembers } from './group-wall-stream.js';
 import { notifyGroupInvite, notifyGroupWallPost } from './social-notifications.js';
@@ -52,7 +56,7 @@ export const createMySocialGroup = (
 ) =>
   createSocialGroup({
     creatorUserId: userId,
-    type: body.type,
+    teamLabel: body.teamLabel,
     name: body.name,
     slogan: body.slogan,
     bannerUrl: body.bannerUrl,
@@ -67,7 +71,7 @@ export const deleteMySocialGroup = async (groupId: string, userId: string) => {
   if (group.adminUserId !== userId) {
     throw new ApiError(403, 'forbidden', 'Only the group creator can delete this group.');
   }
-  if (group.type === 'activity') {
+  if (isOutingCrewMemberGroup(group)) {
     throw new ApiError(400, 'activity_group_locked', 'Activity chats are managed with their activity.');
   }
 
@@ -90,7 +94,7 @@ export const updateMyGroupChatSettings = async (
     throw new ApiError(404, 'group_not_found', 'Group not found.');
   }
 
-  if (body.photoUrl !== undefined && group.type === 'activity') {
+  if (body.photoUrl !== undefined && isOutingCrewMemberGroup(group)) {
     throw new ApiError(
       400,
       'activity_group_locked',
@@ -128,7 +132,7 @@ export const inviteToMyGroup = async (
   }
 
   const group = await findGroupById(groupId);
-  if (group?.type === 'activity') {
+  if (group && isOutingCrewMemberGroup(group)) {
     throw new ApiError(400, 'activity_group_locked', 'Activity chats add members when requests are approved.');
   }
 
@@ -290,6 +294,14 @@ export const createMyGroupKidMember = async (
   if (!membership || membership.role !== 'admin') {
     throw new ApiError(403, 'forbidden', 'Only group admins can add kids.');
   }
+  const group = await findGroupById(groupId);
+  if (!group || !memberTeamAllowsKidRoster(group)) {
+    throw new ApiError(
+      400,
+      'kids_family_teams_only',
+      'Child roster is only available on Family teams.'
+    );
+  }
 
   if ('rosterOnly' in body && body.rosterOnly === true) {
     return createKidGroupMember({
@@ -386,7 +398,7 @@ export const postToMyGroupWall = async (
   if (!canMemberPostToGroupWall(group, membership)) {
     throw new ApiError(403, 'wall_post_forbidden', 'Only admins can post in this group chat.');
   }
-  if (group.type === 'activity' && group.activityId) {
+  if (isOutingCrewMemberGroup(group) && group.activityId) {
     const eventDoc = await findActivityDocInMongo(group.activityId);
     if (eventDoc && !isActivityGroupChatOpen(eventDoc.startAt)) {
       throw new ApiError(403, 'activity_chat_closed', 'Activity chat closed one week after the activity.');

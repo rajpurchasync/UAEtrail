@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { MEDICAL_CONDITIONS_NA } from '@uaetrail/shared-types';
+import { MEDICAL_CONDITIONS_NA, SOCIAL_TEAM_KID_ROSTER_MAX_AGE_YEARS } from '@uaetrail/shared-types';
 import { ApiError } from '../lib/api-error.js';
 import { isValidE164Phone } from '../lib/phone.js';
 import { mediaUrlSchema } from './location-submit.js';
@@ -49,6 +49,22 @@ export const assertKidProfileComplete = (fields: FamilyKidProfileFields | null |
   );
 };
 
+/** Team roster children must be under {@link SOCIAL_TEAM_KID_ROSTER_MAX_AGE_YEARS}. */
+export const isKidRosterAge = (dob: Date, at = new Date()): boolean => {
+  const oldestAllowedBirthday = new Date(at);
+  oldestAllowedBirthday.setFullYear(oldestAllowedBirthday.getFullYear() - SOCIAL_TEAM_KID_ROSTER_MAX_AGE_YEARS);
+  return dob.getTime() > oldestAllowedBirthday.getTime();
+};
+
+export const assertKidRosterAge = (dob: Date): void => {
+  if (isKidRosterAge(dob)) return;
+  throw new ApiError(
+    400,
+    'kid_roster_age_limit',
+    `Children on a team roster must be under ${SOCIAL_TEAM_KID_ROSTER_MAX_AGE_YEARS} years old.`
+  );
+};
+
 const kidDobSchema = z
   .string()
   .trim()
@@ -56,7 +72,10 @@ const kidDobSchema = z
   .refine((value) => {
     const dob = new Date(value);
     return !Number.isNaN(dob.getTime()) && dob.getTime() <= Date.now();
-  }, 'Enter a valid date of birth.');
+  }, 'Enter a valid date of birth.')
+  .refine((value) => isKidRosterAge(new Date(value)), {
+    message: `Date of birth must be under ${SOCIAL_TEAM_KID_ROSTER_MAX_AGE_YEARS} years ago.`,
+  });
 
 const kidGenderSchema = z.enum(['male', 'female', 'prefer_not_to_say']);
 
@@ -134,9 +153,13 @@ export const normalizeKidProfileInput = (input: {
   if (input.emergencyContactPhone) {
     validateMedicalSafetyPhone(input.emergencyContactPhone);
   }
+  const dateOfBirth = input.dateOfBirth !== undefined ? new Date(input.dateOfBirth) : undefined;
+  if (dateOfBirth !== undefined) {
+    assertKidRosterAge(dateOfBirth);
+  }
   return {
     ...(input.displayName !== undefined ? { displayName: input.displayName.trim() } : {}),
-    ...(input.dateOfBirth !== undefined ? { dateOfBirth: new Date(input.dateOfBirth) } : {}),
+    ...(dateOfBirth !== undefined ? { dateOfBirth } : {}),
     ...(input.emergencyContactName !== undefined
       ? { emergencyContactName: input.emergencyContactName.trim() }
       : {}),

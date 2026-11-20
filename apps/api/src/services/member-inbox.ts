@@ -16,6 +16,8 @@ import { logger } from '../lib/logger.js';
 
 const serializeInboxGroup = (group: GroupRecordWithChatPreview): MemberInboxGroupDTO => ({
   id: group.id,
+  kind: group.kind,
+  teamLabel: group.teamLabel,
   type: group.type,
   name: group.name,
   slogan: group.slogan,

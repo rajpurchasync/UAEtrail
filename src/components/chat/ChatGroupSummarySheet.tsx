@@ -36,7 +36,7 @@ export const ChatGroupSummarySheet = ({
   const activeCount = members.filter((m) => m.memberType === 'adult' && m.isActive !== false).length;
   const postPolicy = resolveGroupWallPostPolicy(group);
   const admin = isSocialGroupAdmin(group, membership, currentUserId);
-  const isActivity = group.type === 'activity';
+  const isActivity = group.kind === 'outing_crew' || group.type === 'activity' || group.type === 'outing_crew';
   const activityId = group.activityId?.trim() || null;
 
   const actions = [

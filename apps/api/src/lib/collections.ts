@@ -58,11 +58,18 @@ export const COLLECTIONS = {
   CHAT_MESSAGE_REACTIONS: 'chat_message_reactions',
   CONTENT_REPORTS: 'content_reports',
   SOCIAL_REVIEWS: 'social_reviews',
-  SOCIAL_GROUPS: 'social_groups',
-  SOCIAL_GROUP_MEMBERS: 'social_group_members',
-  SOCIAL_GROUP_INVITES: 'social_group_invites',
-  SOCIAL_GROUP_WALL: 'social_group_wall',
-  SOCIAL_GROUP_WALL_REACTIONS: 'social_group_wall_reactions',
+  /** Private teams + activity crew threads (renamed from `social_groups`). */
+  MEMBER_GROUPS: 'member_groups',
+  MEMBER_GROUP_MEMBERS: 'member_group_members',
+  MEMBER_GROUP_INVITES: 'member_group_invites',
+  MEMBER_GROUP_WALL: 'member_group_wall',
+  MEMBER_GROUP_WALL_REACTIONS: 'member_group_wall_reactions',
+  /** @deprecated Pre-split collection names — migrated on startup. */
+  LEGACY_SOCIAL_GROUPS: 'social_groups',
+  LEGACY_SOCIAL_GROUP_MEMBERS: 'social_group_members',
+  LEGACY_SOCIAL_GROUP_INVITES: 'social_group_invites',
+  LEGACY_SOCIAL_GROUP_WALL: 'social_group_wall',
+  LEGACY_SOCIAL_GROUP_WALL_REACTIONS: 'social_group_wall_reactions',
   /** Adult family members invited onto a specific outing join request. */
   ACTIVITY_FAMILY_INVITES: 'activity_family_invites',
   BUDDY_REQUESTS: 'buddy_requests',

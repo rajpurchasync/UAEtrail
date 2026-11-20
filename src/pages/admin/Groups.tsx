@@ -13,12 +13,15 @@ import { formatAdminDate } from '../../utils/formatAdminDate';
 const GROUP_TYPE_OPTIONS = [
   { value: 'family' as const, label: 'Family' },
   { value: 'friends' as const, label: 'Friends' },
+  { value: 'colleagues' as const, label: 'Colleagues' },
 ];
 
 const typeLabel: Record<string, string> = {
   family: 'Family',
   friends: 'Friends',
-  activity: 'Activity chat',
+  colleagues: 'Colleagues',
+  activity: 'Outing crew chat',
+  outing_crew: 'Outing crew chat',
 };
 
 const inviteStatusClass: Record<string, string> = {

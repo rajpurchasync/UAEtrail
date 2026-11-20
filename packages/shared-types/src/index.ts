@@ -2047,7 +2047,25 @@ export { groupWallBodySnippet } from './group-wall.js';
 export {
   SOCIAL_GROUP_NAME_MIN_LENGTH,
   SOCIAL_GROUP_NAME_MAX_LENGTH,
+  SOCIAL_TEAM_KID_ROSTER_MAX_AGE_YEARS,
+  SOCIAL_TEAM_LABEL_TYPES,
+  isSocialTeamLabelType,
 } from './social-group-limits.js';
+export type { SocialTeamLabelType } from './social-group-limits.js';
+export {
+  MEMBER_GROUP_INBOUND_TYPES,
+  MEMBER_GROUP_KINDS,
+  isMemberGroupKind,
+  isOutingCrewGroupRow,
+  isOutingCrewMemberGroup,
+  memberGroupInboundTypeFromKind,
+  memberGroupKindFromInboundType,
+  memberGroupTeamLabelFromInboundType,
+  normalizeMemberGroupKind,
+  resolveMemberGroupShape,
+  teamAllowsKidRoster,
+} from './member-group.js';
+export type { MemberGroupInboundType, MemberGroupKind } from './member-group.js';
 
 export type {
   AreaBoundsRing,

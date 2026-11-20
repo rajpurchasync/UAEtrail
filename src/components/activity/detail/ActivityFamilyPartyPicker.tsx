@@ -55,7 +55,9 @@ export const ActivityFamilyPartyPicker = ({
     queryKey: meFamilyPartyPickerGroupsQueryKey,
     queryFn: async (): Promise<SocialGroupView[]> => {
       const groups = await fetchMeGroups();
-      return groups.filter((g) => g.type === 'family' || g.type === 'friends');
+      return groups.filter(
+        (g) => g.type === 'family' || g.type === 'friends' || g.type === 'colleagues'
+      );
     },
     enabled,
     staleTime: 60_000,

@@ -1,4 +1,5 @@
 import type { ChatConversationDTO } from '@uaetrail/shared-types';
+import { isOutingCrewGroupRow } from '@uaetrail/shared-types';
 import type { SocialGroupView } from '../api/types';
 import { messagingApi } from '../messaging';
 import { formatWallInboxPreview } from './wallMessagePreview';
@@ -61,7 +62,7 @@ export type InboxThread =
       id: string;
       title: string;
       avatarUrl?: string;
-      groupType: 'family' | 'friends';
+      groupType: 'family' | 'friends' | 'colleagues';
       lastMessage: string;
       lastMessageAt: string;
       unreadCount: number;
@@ -100,7 +101,7 @@ export const groupThreadFromSocialGroup = (group: SocialGroupView): InboxThread 
   const lastMessageAt = preview?.lastMessageAt ?? group.updatedAt;
   const unreadCount = preview?.unreadCount ?? 0;
 
-  if (group.type === 'activity') {
+  if (isOutingCrewGroupRow(group)) {
     return {
       kind: 'activity-chat',
       id: group.id,

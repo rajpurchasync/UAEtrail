@@ -27,7 +27,8 @@ export const GroupEditPanel = ({
   onDeleteClick,
 }: GroupEditPanelProps) => {
   const [nameDraft, setNameDraft] = useState(group.name);
-  const isActivity = group.type === 'activity';
+  const isActivity =
+    group.kind === 'outing_crew' || group.type === 'activity' || group.type === 'outing_crew';
 
   useEffect(() => {
     setNameDraft(group.name);

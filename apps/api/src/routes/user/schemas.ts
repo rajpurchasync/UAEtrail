@@ -181,13 +181,34 @@ export const roleSwitchSchema = z.object({
   target: z.enum(['participant', 'original'])
 });
 
-export const createGroupSchema = z.object({
-  type: z.enum(['family', 'friends']),
-  name: z.string().min(SOCIAL_GROUP_NAME_MIN_LENGTH).max(SOCIAL_GROUP_NAME_MAX_LENGTH),
-  slogan: z.string().max(120).optional(),
-  bannerUrl: mediaUrlSchema.optional(),
-  photoUrl: mediaUrlSchema.optional()
-});
+const teamLabelSchema = z.enum(['family', 'friends', 'colleagues']);
+
+export const createGroupSchema = z
+  .object({
+    teamLabel: teamLabelSchema.optional(),
+    /** @deprecated Send `teamLabel` — kept for older clients. */
+    type: teamLabelSchema.optional(),
+    name: z.string().min(SOCIAL_GROUP_NAME_MIN_LENGTH).max(SOCIAL_GROUP_NAME_MAX_LENGTH),
+    slogan: z.string().max(120).optional(),
+    bannerUrl: mediaUrlSchema.optional(),
+    photoUrl: mediaUrlSchema.optional(),
+  })
+  .superRefine((body, ctx) => {
+    if (!body.teamLabel && !body.type) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'teamLabel is required.',
+        path: ['teamLabel'],
+      });
+    }
+  })
+  .transform((body) => ({
+    teamLabel: body.teamLabel ?? body.type!,
+    name: body.name,
+    slogan: body.slogan,
+    bannerUrl: body.bannerUrl,
+    photoUrl: body.photoUrl,
+  }));
 
 export const groupIdParamSchema = z.object({ groupId: z.string().min(1) });
 export const groupMembershipIdParamSchema = z.object({ groupId: z.string().min(1), membershipId: z.string().min(1) });

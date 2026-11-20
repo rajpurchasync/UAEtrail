@@ -217,7 +217,10 @@ export type { GroupWallPostPolicy };
 
 export interface SocialGroupView {
   id: string;
-  type: 'family' | 'friends' | 'activity';
+  kind: 'team' | 'outing_crew';
+  teamLabel: 'family' | 'friends' | 'colleagues' | null;
+  /** @deprecated Use kind + teamLabel — `activity` is inbound compat only. */
+  type: 'family' | 'friends' | 'colleagues' | 'outing_crew' | 'activity';
   name: string;
   slogan?: string | null;
   bannerUrl?: string | null;

@@ -62,11 +62,12 @@ import {
   kidFullProfilePayload,
   resolveKidEmergencyFromForm,
 } from '../groups/groupKidForm';
+import { isOutingCrewGroupRow } from '@uaetrail/shared-types';
 import { useAuth } from '../context/AuthContext';
 import { useMeProfile } from '../hooks/useMeProfile';
 import type { MobileBackChrome } from '../utils/mobileBackNav';
 
-type GroupType = 'family' | 'friends';
+type GroupType = 'family' | 'friends' | 'colleagues';
 
 type GroupDetail = {
   group: SocialGroupView;
@@ -78,12 +79,15 @@ type GroupDetail = {
 const typeLabel: Record<string, string> = {
   family: 'Family',
   friends: 'Friends',
-  activity: 'Activity chat',
+  colleagues: 'Colleagues',
+  activity: 'Outing crew chat',
+  outing_crew: 'Outing crew chat',
 };
 
 const GROUP_TYPE_OPTIONS = [
   { value: 'family' as const, label: 'Family' },
   { value: 'friends' as const, label: 'Friends' },
+  { value: 'colleagues' as const, label: 'Colleagues' },
 ];
 
 const emptyGroupForm = {
@@ -312,14 +316,14 @@ export const Groups = () => {
     void loadGroups();
   }, [loadGroups]);
 
-  const socialGroups = useMemo(
-    () => groups.filter((group) => group.type === 'family' || group.type === 'friends'),
-    [groups]
-  );
-  const outingGroups = useMemo(
-    () => groups.filter((group) => group.type === 'activity'),
-    [groups]
-  );
+  const isTeamRow = (group: SocialGroupView) =>
+    group.kind === 'team' ||
+    (group.kind == null && group.type !== 'activity');
+
+  const isOutingCrewRow = (group: SocialGroupView) => isOutingCrewGroupRow(group);
+
+  const socialGroups = useMemo(() => groups.filter(isTeamRow), [groups]);
+  const outingGroups = useMemo(() => groups.filter(isOutingCrewRow), [groups]);
 
   useEffect(() => {
     setSelectedGroupId(searchParams.get('group'));
@@ -415,7 +419,7 @@ export const Groups = () => {
     setError(null);
     try {
       const created = await createMeGroup({
-        type: groupForm.type,
+        teamLabel: groupForm.type,
         name: groupForm.name.trim(),
         bannerUrl: groupForm.bannerUrl || undefined,
         photoUrl: groupForm.photoUrl || undefined,
@@ -428,8 +432,8 @@ export const Groups = () => {
       openGroupManage(created.id, 'hub');
       setSuccess(
         createdType === 'family'
-          ? 'Family group created. Invite people or add kids whenever you like.'
-          : 'Group created. Invite people when you are ready — or skip for now.'
+          ? 'Family team created. Invite people or add children under 12 on the roster whenever you like.'
+          : 'Team created. Invite people when you are ready — or skip for now.'
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not create group');
@@ -656,8 +660,10 @@ export const Groups = () => {
   const renderGroupHub = () => {
     if (!detail) return null;
 
-    const isFamily = detail.group.type === 'family';
-    const isActivity = detail.group.type === 'activity';
+    const isFamily =
+      detail.group.teamLabel === 'family' ||
+      (detail.group.teamLabel == null && detail.group.type === 'family');
+    const isActivity = isOutingCrewGroupRow(detail.group);
     const showSetupPrompt = isAdmin && setupPromptGroupId === detail.group.id && !isActivity;
 
     return (
@@ -755,7 +761,7 @@ export const Groups = () => {
 
   const renderGroupRows = (rows: SocialGroupView[]) =>
     rows.map((group) => {
-      const isOutingChat = group.type === 'activity';
+      const isOutingChat = isOutingCrewGroupRow(group);
       const unread = group.chatPreview?.unreadCount ?? 0;
       const subtitle =
         unread > 0 ? `${unread} unread · ${typeLabel[group.type]}` : typeLabel[group.type];
@@ -802,7 +808,7 @@ export const Groups = () => {
           </div>
           <p className="font-semibold text-neutral-900">No groups yet</p>
           <p className="mt-1 text-sm text-neutral-500">
-            Create a family or friends group. Invite people or add kids whenever you are ready.
+            Name your team, pick a type, then invite people. Family teams can add children under 12 on the roster.
           </p>
           <button
             type="button"
@@ -815,13 +821,13 @@ export const Groups = () => {
         </GlassCard>
       ) : (
         <>
-          <SettingsMenuGroup title="Family & friends">
+          <SettingsMenuGroup title="Teams">
             {socialGroups.length > 0 ? (
               renderGroupRows(socialGroups)
             ) : (
               <SettingsMenuRow
-                label="Create a group"
-                subtitle="Family or friends — invite by email"
+                label="Create a team"
+                subtitle="Family, friends, or colleagues — invite by email"
                 icon={Plus}
                 onClick={() => setShowCreateModal(true)}
               />
@@ -883,13 +889,16 @@ export const Groups = () => {
         </div>
       </ConsumerShell>
 
-      <Dialog open={showCreateModal} onClose={() => !saving && setShowCreateModal(false)} title="Create group">
+      <Dialog open={showCreateModal} onClose={() => !saving && setShowCreateModal(false)} title="Create team">
         <p className="text-sm text-neutral-600 mb-4">
-          Creates your group and its chat. You can invite people or add kids anytime from Members.
+          Name your team and pick a type label. Invite members anytime; Family teams can add children under 12 on the
+          roster.
         </p>
         <div className="space-y-3">
           <div>
-            <label className="text-xs font-semibold uppercase tracking-wide text-neutral-400 mb-1 block">Type</label>
+            <label className="text-xs font-semibold uppercase tracking-wide text-neutral-400 mb-1 block">
+              Team type
+            </label>
             <AppSelect
               value={groupForm.type}
               onChange={(type) => setGroupForm((prev) => ({ ...prev, type }))}
@@ -898,7 +907,9 @@ export const Groups = () => {
             />
           </div>
           <div>
-            <label className="text-xs font-semibold uppercase tracking-wide text-neutral-400 mb-1 block">Group name *</label>
+            <label className="text-xs font-semibold uppercase tracking-wide text-neutral-400 mb-1 block">
+              Team name *
+            </label>
             <input
               value={groupForm.name}
               onChange={(e) =>

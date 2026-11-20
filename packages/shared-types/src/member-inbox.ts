@@ -1,11 +1,18 @@
 import type { GroupWallPostPolicy, SocialGroupChatPreviewDTO } from './group-wall.js';
+import type { MemberGroupInboundType, MemberGroupKind } from './member-group.js';
+import type { SocialTeamLabelType } from './social-group-limits.js';
 
-export type MemberInboxGroupType = 'family' | 'friends' | 'activity';
+/** @deprecated Use {@link MemberGroupKind} + teamLabel — legacy inbox filter only. */
+/** @deprecated Parse with {@link memberGroupKindFromInboundType} — not the Activity entity. */
+export type MemberInboxGroupType = MemberGroupInboundType;
 
 /** Group row in `GET /chat/inbox` (matches `/me/groups` + chatPreview). */
 export interface MemberInboxGroupDTO {
   id: string;
-  type: MemberInboxGroupType;
+  kind: MemberGroupKind;
+  teamLabel: SocialTeamLabelType | null;
+  /** @deprecated Compatibility — use kind + teamLabel. */
+  type: MemberGroupInboundType;
   name: string;
   slogan?: string | null;
   bannerUrl?: string | null;

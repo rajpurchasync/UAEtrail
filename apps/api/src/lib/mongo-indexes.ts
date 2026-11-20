@@ -242,16 +242,17 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { entityType: 1, entityId: 1, createdAt: -1 } },
       { key: { tenantId: 1, createdAt: -1 }, sparse: true }
     ]),
-    db.collection(COLLECTIONS.SOCIAL_GROUPS).createIndexes([
+    db.collection(COLLECTIONS.MEMBER_GROUPS).createIndexes([
       { key: { adminUserId: 1, createdAt: -1 } },
-      { key: { activityId: 1 }, unique: true, sparse: true }
+      { key: { activityId: 1 }, unique: true, sparse: true },
+      { key: { kind: 1, teamLabel: 1 } },
     ]),
-    db.collection(COLLECTIONS.SOCIAL_GROUP_MEMBERS).createIndexes([
+    db.collection(COLLECTIONS.MEMBER_GROUP_MEMBERS).createIndexes([
       { key: { groupId: 1, userId: 1 }, unique: true, partialFilterExpression: { userId: { $type: 'string' } } },
       { key: { userId: 1, createdAt: -1 } },
       { key: { groupId: 1, createdAt: 1 } }
     ]),
-    db.collection(COLLECTIONS.SOCIAL_GROUP_INVITES).createIndexes([
+    db.collection(COLLECTIONS.MEMBER_GROUP_INVITES).createIndexes([
       { key: { groupId: 1, email: 1, status: 1 } },
       { key: { token: 1 }, unique: true },
       { key: { email: 1, status: 1 } }
@@ -262,10 +263,10 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { activityId: 1, inviteeUserId: 1, status: 1 } },
       { key: { activityId: 1, requestId: 1, membershipId: 1, status: 1 } },
     ]),
-    db.collection(COLLECTIONS.SOCIAL_GROUP_WALL).createIndexes([
+    db.collection(COLLECTIONS.MEMBER_GROUP_WALL).createIndexes([
       { key: { groupId: 1, createdAt: -1 } }
     ]),
-    db.collection(COLLECTIONS.SOCIAL_GROUP_WALL_REACTIONS).createIndexes([
+    db.collection(COLLECTIONS.MEMBER_GROUP_WALL_REACTIONS).createIndexes([
       { key: { messageId: 1, userId: 1, kind: 1 }, unique: true },
       { key: { groupId: 1, messageId: 1 } }
     ]),

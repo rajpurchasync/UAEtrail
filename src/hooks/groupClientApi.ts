@@ -33,7 +33,8 @@ export const fetchMeGroupDetail = async (groupId: string): Promise<MeGroupDetail
 };
 
 export const createMeGroup = async (payload: {
-  type: 'family' | 'friends';
+  teamLabel: 'family' | 'friends' | 'colleagues';
+  type?: 'family' | 'friends' | 'colleagues';
   name: string;
   slogan?: string;
   bannerUrl?: string;

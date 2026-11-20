@@ -1,5 +1,12 @@
 import type { Collection } from 'mongodb';
-import type { GroupWallReplyPreviewDTO } from '@uaetrail/shared-types';
+import type {
+  GroupWallReplyPreviewDTO,
+  MemberGroupInboundType,
+  MemberGroupKind,
+  SocialTeamLabelType,
+} from '@uaetrail/shared-types';
+import { resolveMemberGroupShape } from '@uaetrail/shared-types';
+import { COLLECTIONS } from './collections.js';
 import { buildGroupWallReplyPreview } from './reply-preview.js';
 import { newEntityId } from './entity-builders.js';
 import { findAuthUsersByIds } from './auth-users-store.js';
@@ -13,7 +20,8 @@ import { isKidProfileComplete } from '../domain/family-kid-profile.js';
 
 export { GROUP_WALL_REACTION_KINDS, type GroupWallReactionKind };
 
-export type GroupType = 'family' | 'friends' | 'activity';
+/** @deprecated Use {@link MemberGroupKind} + {@link SocialTeamLabelType}. */
+export type GroupType = MemberGroupInboundType;
 export type GroupRole = 'admin' | 'buddy';
 export type GroupMemberType = 'adult' | 'kid';
 export type GroupInviteStatus = 'pending' | 'accepted' | 'expired' | 'cancelled';
@@ -24,7 +32,10 @@ export type GroupWallPostPolicy = 'all_members' | 'admins_only';
 
 export type GroupRecord = {
   id: string;
-  type: GroupType;
+  kind: MemberGroupKind;
+  teamLabel: SocialTeamLabelType | null;
+  /** @deprecated API compat — derived from kind + teamLabel. */
+  type: MemberGroupInboundType;
   name: string;
   slogan: string | null;
   bannerUrl: string | null;
@@ -102,7 +113,9 @@ export type PresentedGroupWallMessage = GroupWallMessageRecord & {
 
 type MongoGroup = {
   _id: string;
-  type: GroupType;
+  kind?: MemberGroupKind;
+  teamLabel?: SocialTeamLabelType | null;
+  type: MemberGroupInboundType;
   name: string;
   slogan: string | null;
   bannerUrl: string | null;
@@ -170,34 +183,43 @@ type MongoGroupWallReaction = {
 };
 
 const groupsCollection = (): Collection<MongoGroup> =>
-  getMongoClient()!.db().collection<MongoGroup>('social_groups');
+  getMongoClient()!.db().collection<MongoGroup>(COLLECTIONS.MEMBER_GROUPS);
 
 const membersCollection = (): Collection<MongoGroupMember> =>
-  getMongoClient()!.db().collection<MongoGroupMember>('social_group_members');
+  getMongoClient()!.db().collection<MongoGroupMember>(COLLECTIONS.MEMBER_GROUP_MEMBERS);
 
 const invitesCollection = (): Collection<MongoGroupInvite> =>
-  getMongoClient()!.db().collection<MongoGroupInvite>('social_group_invites');
+  getMongoClient()!.db().collection<MongoGroupInvite>(COLLECTIONS.MEMBER_GROUP_INVITES);
 
 const wallCollection = (): Collection<MongoGroupWallMessage> =>
-  getMongoClient()!.db().collection<MongoGroupWallMessage>('social_group_wall');
+  getMongoClient()!.db().collection<MongoGroupWallMessage>(COLLECTIONS.MEMBER_GROUP_WALL);
 
 const wallReactionsCollection = (): Collection<MongoGroupWallReaction> =>
-  getMongoClient()!.db().collection<MongoGroupWallReaction>('social_group_wall_reactions');
+  getMongoClient()!.db().collection<MongoGroupWallReaction>(COLLECTIONS.MEMBER_GROUP_WALL_REACTIONS);
 
-const mapGroup = (row: MongoGroup): GroupRecord => ({
-  id: row._id,
-  type: row.type,
-  name: row.name,
-  slogan: row.slogan,
-  bannerUrl: row.bannerUrl,
-  photoUrl: row.photoUrl,
-  adminUserId: row.adminUserId,
-  activityId: row.activityId ?? null,
-  status: row.status ?? 'active',
-  wallPostPolicy: row.wallPostPolicy ?? 'all_members',
-  createdAt: row.createdAt,
-  updatedAt: row.updatedAt
-});
+const mapGroup = (row: MongoGroup): GroupRecord => {
+  const shape = resolveMemberGroupShape({
+    kind: row.kind ?? null,
+    teamLabel: row.teamLabel ?? null,
+    type: row.type,
+  });
+  return {
+    id: row._id,
+    kind: shape.kind,
+    teamLabel: shape.teamLabel,
+    type: shape.inboundType,
+    name: row.name,
+    slogan: row.slogan,
+    bannerUrl: row.bannerUrl,
+    photoUrl: row.photoUrl,
+    adminUserId: row.adminUserId,
+    activityId: row.activityId ?? null,
+    status: row.status ?? 'active',
+    wallPostPolicy: row.wallPostPolicy ?? 'all_members',
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+};
 
 const mapMember = (row: MongoGroupMember): GroupMemberRecord => {
   const base: GroupMemberRecord = {
@@ -298,7 +320,9 @@ export const createActivityGroup = async (input: {
   const groupId = newEntityId();
   const groupDoc: MongoGroup = {
     _id: groupId,
-    type: 'activity',
+    kind: 'outing_crew',
+    teamLabel: null,
+    type: 'outing_crew',
     name: input.activityTitle.trim() || 'Activity chat',
     slogan: null,
     bannerUrl: null,
@@ -363,7 +387,7 @@ export const updateGroupChatSettings = async (
 
 export const createSocialGroup = async (input: {
   creatorUserId: string;
-  type: GroupType;
+  teamLabel: SocialTeamLabelType;
   name: string;
   slogan?: string;
   bannerUrl?: string;
@@ -373,7 +397,9 @@ export const createSocialGroup = async (input: {
   const groupId = newEntityId();
   const groupDoc: MongoGroup = {
     _id: groupId,
-    type: input.type,
+    kind: 'team',
+    teamLabel: input.teamLabel,
+    type: input.teamLabel,
     name: input.name.trim(),
     slogan: input.slogan?.trim() || null,
     bannerUrl: input.bannerUrl?.trim() || null,
@@ -418,7 +444,25 @@ const listGroupsForMemberships = async (
 
   const uniqueGroupIds = [...new Set(memberships.map((m) => m.groupId))];
   const typeQuery =
-    kind === 'activity' ? { type: 'activity' as const } : kind === 'user' ? { type: { $ne: 'activity' as const } } : {};
+    kind === 'activity'
+      ? {
+          $or: [
+            { kind: 'outing_crew' as const },
+            { kind: { $exists: false }, type: { $in: ['activity', 'outing_crew'] as const } },
+            { activityId: { $exists: true, $ne: null } },
+          ],
+        }
+      : kind === 'user'
+        ? {
+            $or: [
+              { kind: 'team' as const },
+              {
+                kind: { $exists: false },
+                type: { $nin: ['activity', 'outing_crew'] as const },
+              },
+            ],
+          }
+        : {};
   const groups = await groupsCollection()
     .find({ _id: { $in: uniqueGroupIds }, ...typeQuery })
     .toArray();

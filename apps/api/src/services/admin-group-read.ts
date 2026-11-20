@@ -8,7 +8,7 @@ export const listAdminSocialGroupsPage = async (input: {
   page: number;
   pageSize: number;
   search?: string;
-  type?: 'family' | 'friends';
+  type?: 'family' | 'friends' | 'colleagues';
   status?: 'active' | 'suspended';
 }) => {
   const skip = (input.page - 1) * input.pageSize;

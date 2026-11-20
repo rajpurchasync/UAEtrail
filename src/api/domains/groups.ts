@@ -14,7 +14,9 @@ export const groupsApi = {
   getMeGroups: () => apiRequest<{ data: SocialGroupView[] }>('/me/groups', { auth: true }),
 
   createMeGroup: (payload: {
-    type: 'family' | 'friends';
+    teamLabel?: 'family' | 'friends' | 'colleagues';
+    /** @deprecated Use teamLabel. */
+    type?: 'family' | 'friends' | 'colleagues';
     name: string;
     slogan?: string;
     bannerUrl?: string;

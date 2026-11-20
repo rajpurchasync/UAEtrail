@@ -60,7 +60,7 @@ Do **not** merge transports in storage without a product decision — inbox alre
 
 ### Group wall (`/me/groups/.../wall`)
 
-Used for **family/friends groups** and **activity crew** (`social_groups.type === 'activity'`).
+Used for **Teams** (`member_groups.kind === 'team'`) and **outing crew chat** (`kind === 'outing_crew'`).
 
 - **List groups + inbox preview:** `GET /me/groups` → each row includes **`chatPreview`**: `{ lastMessageBody, lastMessageAt, unreadCount }`
 - **Full thread (initial):** `GET /me/groups/:groupId/wall` (default limit 120, oldest→newest)
@@ -76,12 +76,12 @@ Shared types: `GroupWallPostPolicy`, `SocialGroupChatPreviewDTO`, `GroupWallRepl
 
 ## Four chat surfaces (product)
 
-| Surface | Storage (`social_groups`) | Route | Who chats | Kids |
-|---------|---------------------------|--------|-----------|------|
+| Surface | Storage (`member_groups`) | Route | Who chats | Kids |
+|---------|-------------------------|--------|-----------|------|
 | **Direct** | `chat_messages` | `/chat?to=` | Buddies / approved partners | — |
-| **Team** | `type` family/friends + wall | `/chat?group=` | **Adults with `userId` only** — optional team wall (`GroupWallMembersSheet` filters `memberType === 'adult'`) | Roster rows **no** `userId`; **not** in wall/stream; trip-only |
-| **Outing crew** | `type: activity`, `activityId` | `/chat?group=` (+ optional `activity=`) | Confirmed participants | Kids on **`activity_requests` / `partyMembers`** when profile complete (`assertKidProfileComplete`) |
-| **Community** | *Deferred* — not another `social_groups.type` | TBD | TBD | TBD |
+| **Team** | `kind: team` + optional wall | `/chat?group=` | **Adults with `userId` only** — optional team wall (`GroupWallMembersSheet` filters `memberType === 'adult'`) | Roster rows **no** `userId`; **not** in wall/stream; trip-only |
+| **Outing crew** | `kind: outing_crew`, `activityId` | `/chat?group=` (+ optional `activity=`) | Confirmed participants | Kids on **`activity_requests` / `partyMembers`** when profile complete (`assertKidProfileComplete`) |
+| **Community** | *Deferred* — `community_groups`, not `member_groups` | TBD | TBD | TBD |
 
 **Teams are not chat-first** — roster + optional wall for adults; **Crews tab** (`/list?listCat=people`, hub segment) is discovery + **My crew** (Friends `/buddies`, Teams `/groups`). Member-facing **“Social”** label is retired in favor of **My crew** / **Teams** (`productNorthStar.ts`).
 

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  createKidSchema,
   isKidProfileComplete,
+  isKidRosterAge,
   normalizeKidProfileInput,
 } from '../src/domain/family-kid-profile.js';
 
@@ -75,5 +77,25 @@ describe('family kid profile', () => {
     expect(normalized.gender).toBe('female');
     expect(normalized.photoUrl).toBe('https://cdn.example.com/kid.webp');
     expect(normalized.emergencyContactRelation).toBe('Me');
+  });
+
+  it('rejects kid DOB at or above roster max age', () => {
+    const teen = new Date();
+    teen.setFullYear(teen.getFullYear() - 13);
+    expect(isKidRosterAge(teen)).toBe(false);
+
+    const child = new Date();
+    child.setFullYear(child.getFullYear() - 8);
+    expect(isKidRosterAge(child)).toBe(true);
+
+    expect(() =>
+      createKidSchema.parse({
+        displayName: 'Teen',
+        dateOfBirth: teen.toISOString().slice(0, 10),
+        emergencyContactName: 'Parent',
+        emergencyContactPhone: '+971501234567',
+        medicalConditions: 'N/A',
+      })
+    ).toThrow();
   });
 });

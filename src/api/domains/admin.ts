@@ -54,7 +54,7 @@ export const adminApi = {
 
     getAdminGroups: (filters?: {
       search?: string;
-      type?: 'family' | 'friends';
+      type?: 'family' | 'friends' | 'colleagues';
       status?: 'active' | 'suspended';
       page?: number;
       pageSize?: number;

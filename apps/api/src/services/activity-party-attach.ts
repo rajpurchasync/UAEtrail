@@ -9,6 +9,7 @@ import {
   findGroupsByIds,
   getAdultMembershipsInGroups,
 } from '../lib/social-groups-store.js';
+import { isTeamMemberGroup, memberTeamAllowsKidRoster } from '../domain/member-group.js';
 import { createActivityFamilyInvitesBatch } from '../lib/activity-family-invites-store.js';
 import { createNotificationRecord } from '../lib/notifications-store.js';
 import { NotificationType } from '../domain/enums.js';
@@ -60,10 +61,10 @@ export const buildPartyRosterFromMembershipIds = async (input: {
     }
 
     const group = groupById.get(member.groupId);
-    if (!group || (group.type !== 'family' && group.type !== 'friends')) {
+    if (!group || !isTeamMemberGroup(group)) {
       throw new ApiError(400, 'party_member_not_team', 'Only team roster members can join an outing together.');
     }
-    if (member.memberType === 'kid' && group.type !== 'family') {
+    if (member.memberType === 'kid' && !memberTeamAllowsKidRoster(group)) {
       throw new ApiError(400, 'party_kid_not_friends_team', 'Kids can only be attached from a family team.');
     }
 

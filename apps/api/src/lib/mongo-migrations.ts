@@ -1072,8 +1072,63 @@ const ensureRevampCollectionsExist = async (db: Db): Promise<void> => {
   }
 };
 
+const renameCollectionIfExists = async (db: Db, from: string, to: string): Promise<void> => {
+  const names = new Set((await db.listCollections().toArray()).map((c) => c.name));
+  if (!names.has(from) || names.has(to)) return;
+  await db.collection(from).rename(to);
+};
+
+/** Rename social_* collections → member_* and backfill kind / teamLabel. */
+const migrateMemberGroupModelSplit = async (db: Db): Promise<void> => {
+  await renameCollectionIfExists(db, COLLECTIONS.LEGACY_SOCIAL_GROUPS, COLLECTIONS.MEMBER_GROUPS);
+  await renameCollectionIfExists(db, COLLECTIONS.LEGACY_SOCIAL_GROUP_MEMBERS, COLLECTIONS.MEMBER_GROUP_MEMBERS);
+  await renameCollectionIfExists(db, COLLECTIONS.LEGACY_SOCIAL_GROUP_INVITES, COLLECTIONS.MEMBER_GROUP_INVITES);
+  await renameCollectionIfExists(db, COLLECTIONS.LEGACY_SOCIAL_GROUP_WALL, COLLECTIONS.MEMBER_GROUP_WALL);
+  await renameCollectionIfExists(
+    db,
+    COLLECTIONS.LEGACY_SOCIAL_GROUP_WALL_REACTIONS,
+    COLLECTIONS.MEMBER_GROUP_WALL_REACTIONS
+  );
+
+  const groups = db.collection(COLLECTIONS.MEMBER_GROUPS);
+  const cursor = groups.find({ kind: { $exists: false } });
+  for await (const doc of cursor) {
+    const storedType = typeof doc.type === 'string' ? doc.type : 'friends';
+    const kind =
+      storedType === 'activity' || storedType === 'outing_crew' ? 'outing_crew' : 'team';
+    const teamLabel =
+      kind === 'team'
+        ? storedType === 'family' || storedType === 'friends' || storedType === 'colleagues'
+          ? storedType
+          : 'friends'
+        : null;
+    await groups.updateOne({ _id: doc._id }, { $set: { kind, teamLabel } });
+  }
+};
+
+/** `activity_crew` → `outing_crew`; legacy `type: activity` → `outing_crew`. */
+const migrateOutingCrewKindRename = async (db: Db): Promise<void> => {
+  const groups = db.collection(COLLECTIONS.MEMBER_GROUPS);
+  await groups.updateMany({ kind: 'activity_crew' }, { $set: { kind: 'outing_crew' } });
+  await groups.updateMany(
+    {
+      $or: [
+        { kind: 'outing_crew' },
+        { kind: 'activity_crew' },
+        { type: { $in: ['activity', 'outing_crew'] } },
+        { activityId: { $exists: true, $ne: null } },
+      ],
+    },
+    { $set: { type: 'outing_crew' } }
+  );
+  await groups.updateMany(
+    { activityId: { $exists: true, $ne: null } },
+    { $set: { kind: 'outing_crew', teamLabel: null } }
+  );
+};
+
 /** Bump when adding a new migration step so existing deployments run it once. */
-export const MONGO_MIGRATION_VERSION = 2025110607;
+export const MONGO_MIGRATION_VERSION = 2025112002;
 
 /** One-time migrations for activity terminology and role model alignment. */
 export const runMongoMigrations = async (db: Db): Promise<void> => {
@@ -1132,6 +1187,8 @@ export const runMongoMigrations = async (db: Db): Promise<void> => {
   await migrateDemandExplorePinPaths(db);
   await dropRemovedCommerceCollections(db);
   await backfillShopPublicContactFlags(db);
+  await migrateMemberGroupModelSplit(db);
+  await migrateOutingCrewKindRename(db);
   const { backfillGeoRefOnPins } = await import('./geo-backfill.js');
   await backfillGeoRefOnPins(db);
   const { seedCatalogsIfEmpty } = await import('./catalogs-store.js');

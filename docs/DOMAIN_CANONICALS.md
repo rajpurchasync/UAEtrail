@@ -195,6 +195,36 @@ Evolve from today’s `GET /places/registry` → **`GET /places/catalog`** (plac
 
 ---
 
+### 1.6a Teams vs Communities (private vs discoverable)
+
+| Product | Job | Storage (today) | Discover? |
+|---------|-----|-----------------|-----------|
+| **Team** | Private crew — roster-first; optional team wall chat for adults | `member_groups` with `kind: team` + `teamLabel` (`family` \| `friends` \| `colleagues` — labels only) | **No** — invite / link only |
+| **Outing crew** | Chat for one published activity | `member_groups` with `kind: outing_crew` + `activityId` — **not** a team | No |
+| **Community** | City-scoped discoverable group (e.g. women’s hiking · Dubai) — Strava-club style | **Future** `community_groups` + `geoRef` — **not** `social_groups` | **Yes** — Find crew → **Communities** list, sorted country → city |
+
+**Teams:** Create = name + team type label + invite adults; **Family** teams may add **children under 12** on the roster (`SOCIAL_TEAM_KID_ROSTER_MAX_AGE_YEARS`). **Operators / Partners** remain tenants (`agency`, `partner`) — monetization and campaigns, not Teams.
+
+**Communities (program `MIG-COMMUNITY-DISCOVER`):** public/private visibility, join policies (open · request · invite), community home, activities hosted **as** the community; directory under Explore Find crew — same projection discipline as `GET /explore/map` / list (no parallel client catalog merge).
+
+**Do not** call Teams “social groups” in consumer copy. **Do not** overload **Community host** (buddy publish tier in `MEMBER_MODEL.md`) with **Community** (discoverable group).
+
+### 1.6b Group primitives (consumer model)
+
+| Primitive | Job | Storage | Discoverable? | Not this |
+|-----------|-----|---------|---------------|----------|
+| **Team** | Private roster (labels: Family · Friends · Colleagues); optional wall chat (adults) | `member_groups`, `kind: team`, `teamLabel` | No | Outing crew; operator tenant |
+| **Outing crew chat** | One thread per confirmed **Activity** outing | `member_groups`, `kind: outing_crew`, `activityId` | No — inbox **Outings** | A Team; the Activity entity row |
+| **Community** | City-scoped discoverable club (Strava-style) | Future `community_groups` + `geoRef` | Yes — Explore Find crew | `member_groups`; buddy **Community** publish tier |
+| **Direct chat** | 1:1 member messages | `chat_messages` (peer pair) | — | Group wall |
+| **Operator / Partner** | Brand storefront, trips, campaigns | `tenants`, activities they host | Via map / deals (future) | Teams or Communities |
+
+**Wire:** Prefer `kind` + `teamLabel` on group DTOs. Legacy `type: activity` is inbound compat only — normalize to `outing_crew` in storage and API responses (`resolveMemberGroupShape` in `@uaetrail/shared-types`).
+
+**Out of scope for “groups”:** generic chat-only rows without roster or `activityId`, and **`member_groups` for operators** — those stay on tenant / publishing surfaces.
+
+---
+
 ## 2. Three naming layers (always specify which you mean)
 
 | Layer | Use for | Examples |
