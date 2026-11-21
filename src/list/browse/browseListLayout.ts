@@ -3,20 +3,20 @@ import type { BrowseListBucket } from './browseListBucket';
 
 export const LIST_LAYOUT_PARAM = 'layout';
 
-export type ListExplorerLayout = 'thumbnails' | 'list' | 'calendar';
+export type BrowseListLayout = 'thumbnails' | 'list' | 'calendar';
 
-const LAYOUTS = new Set<ListExplorerLayout>(['thumbnails', 'list', 'calendar']);
+const LAYOUTS = new Set<BrowseListLayout>(['thumbnails', 'list', 'calendar']);
 
-export const parseListExplorerLayout = (value: string | null): ListExplorerLayout => {
-  if (value && LAYOUTS.has(value as ListExplorerLayout)) return value as ListExplorerLayout;
+export const parseBrowseListLayout = (value: string | null): BrowseListLayout => {
+  if (value && LAYOUTS.has(value as BrowseListLayout)) return value as BrowseListLayout;
   return 'thumbnails';
 };
 
-export const serializeListExplorerLayout = (layout: ListExplorerLayout): string | null =>
+export const serializeBrowseListLayout = (layout: BrowseListLayout): string | null =>
   layout === 'thumbnails' ? null : layout;
 
 /** Count refine chips for the open Events/Places view (search and the bucket itself are separate). */
-export const countListExplorerFilters = (
+export const countBrowseListFilters = (
   filters: BrowseListFilterState,
   regions: readonly string[],
   bucket: BrowseListBucket = 'events',

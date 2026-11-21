@@ -14,8 +14,8 @@ import {
   browseListSearchBucketCounts,
   type BrowseListBucket,
 } from '../browse/browseListBucket';
-import type { ListExplorerLayout } from '../browse/browseListLayout';
-import type { ListExplorerSortMode } from '../browse/listBrowseSort';
+import type { BrowseListLayout } from '../browse/browseListLayout';
+import type { BrowseListSortMode } from '../browse/listBrowseSort';
 import { ListExplorerSortControl } from './ListExplorerSortControl';
 import type { BrowseListFilterState } from '../browseListFilters';
 import type { PlaceKind } from '@uaetrail/shared-types';
@@ -34,8 +34,8 @@ type ListExplorerHeaderProps = {
   onClearQuery: () => void;
   searchScopeCounts: ExploreSearchScopeCounts;
   mapHref: string;
-  layout: ListExplorerLayout;
-  onLayoutChange: (layout: ListExplorerLayout) => void;
+  layout: BrowseListLayout;
+  onLayoutChange: (layout: BrowseListLayout) => void;
   bucket: BrowseListBucket;
   onBucketChange: (bucket: BrowseListBucket) => void;
   resultCount: number | null;
@@ -44,8 +44,8 @@ type ListExplorerHeaderProps = {
   showMapColumnPrompt?: boolean;
   onOpenMapColumn?: () => void;
   mapColumnVisible?: boolean;
-  sort: ListExplorerSortMode;
-  onSortChange: (mode: ListExplorerSortMode) => void;
+  sort: BrowseListSortMode;
+  onSortChange: (mode: BrowseListSortMode) => void;
   locationPending?: boolean;
   locationDenied?: boolean;
   filters: BrowseListFilterState;

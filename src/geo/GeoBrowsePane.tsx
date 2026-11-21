@@ -23,10 +23,10 @@ import {
   type BrowseListBucket,
 } from '../list/browse/browseListBucket';
 import {
-  DEFAULT_LIST_EXPLORER_SORT,
-  type ListExplorerSortMode,
+  DEFAULT_BROWSE_LIST_SORT,
+  type BrowseListSortMode,
 } from '../list/browse/listBrowseSort';
-import { countListExplorerFilters, type ListExplorerLayout } from '../list/browse/browseListLayout';
+import { countBrowseListFilters, type BrowseListLayout } from '../list/browse/browseListLayout';
 import type { ExploreSearchScopeKey } from '../explore/exploreBrowseTaxonomy';
 import { useExplorePublishedAreasQuery } from '../explore/useExplorePublishedAreas';
 import { useBrowseGeoScopeHydration } from '../list/useBrowseGeoScopeHydration';
@@ -92,8 +92,8 @@ export const GeoBrowsePane = ({
     if (!lockGeoId) return;
     setGeoIds((prev) => (prev[0] === lockGeoId ? prev : [lockGeoId]));
   }, [lockGeoId]);
-  const [layout, setLayout] = useState<ListExplorerLayout>('thumbnails');
-  const [sort, setSort] = useState<ListExplorerSortMode>(DEFAULT_LIST_EXPLORER_SORT);
+  const [layout, setLayout] = useState<BrowseListLayout>('thumbnails');
+  const [sort, setSort] = useState<BrowseListSortMode>(DEFAULT_BROWSE_LIST_SORT);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -133,7 +133,7 @@ export const GeoBrowsePane = ({
     [catalogItems, draftQuery, filters.activityDatePreset, regions]
   );
 
-  const filterCount = countListExplorerFilters(
+  const filterCount = countBrowseListFilters(
     filters,
     regions,
     bucket,

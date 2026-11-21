@@ -43,7 +43,7 @@ import {
 } from '../explore/search/exploreSearchJoinablePools';
 import { exploreSearchWhereBrowseQuery } from '../explore/search/exploreSearchWhereQuery';
 import { buildListFeedCards } from './buildListFeedCards';
-import { sortListExplorerCards } from './browse/listBrowseSort';
+import { sortBrowseListCards } from './browse/listBrowseSort';
 import { setExploreClockStyle } from '@uaetrail/shared-types';
 import { useDisplayPreferences } from '../preferences/useDisplayPreferences';
 import { useMemberDiscoveryRoster } from '@/people-discovery/hooks/useMemberDiscoveryRoster';
@@ -51,7 +51,7 @@ import { useExplorePeopleAvailability } from '@/people-discovery/hooks/usePeople
 import { resolveEffectiveBrowseVenueRegions } from './browseGeoPath';
 import { useBrowseGeoScopeHydration } from './useBrowseGeoScopeHydration';
 import { browseListEntityLinkState } from './browse/browseListNavState';
-import { countListExplorerFilters } from './browse/browseListLayout';
+import { countBrowseListFilters } from './browse/browseListLayout';
 import {
   browseListBucketCategories,
   parseBrowseListBucket,
@@ -381,7 +381,7 @@ export const ListDiscoveryExperience = ({
     if (!exploreSearchMapPool) return null;
     setExploreClockStyle(clock);
     const built = buildListFeedCards(exploreSearchMapPool, user, items);
-    return sortListExplorerCards(built, sort, null);
+    return sortBrowseListCards(built, sort, null);
   }, [clock, exploreSearchMapPool, items, sort, user]);
 
   const cards = exploreSearchCards ?? feedCards;
@@ -414,7 +414,7 @@ export const ListDiscoveryExperience = ({
     ? filters.activityDatePreset !== 'anyday'
       ? 1
       : 0
-    : countListExplorerFilters(filters, venueRegions, explorerBucket, geoPath.length);
+    : countBrowseListFilters(filters, venueRegions, explorerBucket, geoPath.length);
 
   const crewsStatCounts = useMemo(() => {
     const buddiesCount = memberRoster.loading ? null : memberRoster.friendsGoing.length;

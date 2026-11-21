@@ -9,7 +9,7 @@ import { browseCardDateIso, browseCardTitle } from './browseCardMeta';
 
 export const LIST_SORT_PARAM = 'sort';
 
-export type ListExplorerSortMode =
+export type BrowseListSortMode =
   | 'event_asc'
   | 'event_desc'
   | 'post_asc'
@@ -18,7 +18,7 @@ export type ListExplorerSortMode =
   | 'name_desc'
   | 'near_me';
 
-const SORT_MODES = new Set<ListExplorerSortMode>([
+const SORT_MODES = new Set<BrowseListSortMode>([
   'event_asc',
   'event_desc',
   'post_asc',
@@ -28,15 +28,15 @@ const SORT_MODES = new Set<ListExplorerSortMode>([
   'near_me',
 ]);
 
-export const DEFAULT_LIST_EXPLORER_SORT: ListExplorerSortMode = 'event_asc';
+export const DEFAULT_BROWSE_LIST_SORT: BrowseListSortMode = 'event_asc';
 
-export type ListExplorerSortGroupDef = {
+export type BrowseListSortGroupDef = {
   title: string;
-  options: ReadonlyArray<{ mode: ListExplorerSortMode; label: string }>;
+  options: ReadonlyArray<{ mode: BrowseListSortMode; label: string }>;
 };
 
 /** Menu + button copy — keep in sync with `ListExplorerSortControl`. */
-export const LIST_EXPLORER_SORT_GROUP_DEFS: ReadonlyArray<ListExplorerSortGroupDef> = [
+export const BROWSE_LIST_SORT_GROUP_DEFS: ReadonlyArray<BrowseListSortGroupDef> = [
   {
     title: 'Event date / time',
     options: [
@@ -64,23 +64,23 @@ export const LIST_EXPLORER_SORT_GROUP_DEFS: ReadonlyArray<ListExplorerSortGroupD
   },
 ];
 
-export const findListExplorerSortOption = (
-  mode: ListExplorerSortMode
-): { groupTitle: string; mode: ListExplorerSortMode; label: string } | null => {
-  for (const group of LIST_EXPLORER_SORT_GROUP_DEFS) {
+export const findBrowseListSortOption = (
+  mode: BrowseListSortMode
+): { groupTitle: string; mode: BrowseListSortMode; label: string } | null => {
+  for (const group of BROWSE_LIST_SORT_GROUP_DEFS) {
     const option = group.options.find((entry) => entry.mode === mode);
     if (option) return { groupTitle: group.title, ...option };
   }
   return null;
 };
 
-export type ListExplorerSortTrigger = {
+export type BrowseListSortTrigger = {
   label: string;
   direction: 'asc' | 'desc';
 };
 
 /** Trigger copy — field name only; direction is the arrow. Distinct from menu item labels. */
-export const listExplorerSortTrigger = (mode: ListExplorerSortMode): ListExplorerSortTrigger => {
+export const browseListSortTrigger = (mode: BrowseListSortMode): BrowseListSortTrigger => {
   switch (mode) {
     case 'event_desc':
       return { label: 'Date', direction: 'desc' };
@@ -101,33 +101,33 @@ export const listExplorerSortTrigger = (mode: ListExplorerSortMode): ListExplore
 };
 
 /** Compact label on the sort trigger button. */
-export const listExplorerSortButtonLabel = (mode: ListExplorerSortMode): string =>
-  listExplorerSortTrigger(mode).label;
+export const browseListSortButtonLabel = (mode: BrowseListSortMode): string =>
+  browseListSortTrigger(mode).label;
 
-export const listExplorerSortAriaLabel = (mode: ListExplorerSortMode): string => {
-  const { label, direction } = listExplorerSortTrigger(mode);
+export const browseListSortAriaLabel = (mode: BrowseListSortMode): string => {
+  const { label, direction } = browseListSortTrigger(mode);
   return `Sort by ${label}, ${direction === 'asc' ? 'ascending' : 'descending'}`;
 };
 
-export const parseListExplorerSort = (value: string | null): ListExplorerSortMode => {
-  if (value && SORT_MODES.has(value as ListExplorerSortMode)) {
-    return value as ListExplorerSortMode;
+export const parseBrowseListSort = (value: string | null): BrowseListSortMode => {
+  if (value && SORT_MODES.has(value as BrowseListSortMode)) {
+    return value as BrowseListSortMode;
   }
-  return DEFAULT_LIST_EXPLORER_SORT;
+  return DEFAULT_BROWSE_LIST_SORT;
 };
 
-export const serializeListExplorerSort = (mode: ListExplorerSortMode): string | null =>
-  mode === DEFAULT_LIST_EXPLORER_SORT ? null : mode;
+export const serializeBrowseListSort = (mode: BrowseListSortMode): string | null =>
+  mode === DEFAULT_BROWSE_LIST_SORT ? null : mode;
 
 /** Post/listing stamp when the API exposes it; otherwise undated for post grouping. */
-export const listExplorerCardPostDateIso = (card: DiscoveryCardModel): string | null => {
+export const browseListCardPostDateIso = (card: DiscoveryCardModel): string | null => {
   const activity = card.activity as { createdAt?: string; updatedAt?: string } | undefined;
   const raw = activity?.createdAt ?? activity?.updatedAt;
   if (raw && /^\d{4}-\d{2}-\d{2}/.test(raw)) return raw.slice(0, 10);
   return null;
 };
 
-export const listExplorerCardDistanceMeters = (
+export const browseListCardDistanceMeters = (
   card: DiscoveryCardModel,
   viewer: ViewerFix | null
 ): number | null => {
@@ -144,8 +144,8 @@ const compareEventDate = (a: DiscoveryCardModel, b: DiscoveryCardModel): number 
 };
 
 const comparePostDate = (a: DiscoveryCardModel, b: DiscoveryCardModel): number => {
-  const left = listExplorerCardPostDateIso(a) ?? '9999-99-99';
-  const right = listExplorerCardPostDateIso(b) ?? '9999-99-99';
+  const left = browseListCardPostDateIso(a) ?? '9999-99-99';
+  const right = browseListCardPostDateIso(b) ?? '9999-99-99';
   const byDate = left.localeCompare(right);
   if (byDate !== 0) return byDate;
   return browseCardTitle(a).localeCompare(browseCardTitle(b));
@@ -159,15 +159,15 @@ const compareNear = (
   b: DiscoveryCardModel,
   viewer: ViewerFix | null
 ): number => {
-  const left = listExplorerCardDistanceMeters(a, viewer) ?? Number.POSITIVE_INFINITY;
-  const right = listExplorerCardDistanceMeters(b, viewer) ?? Number.POSITIVE_INFINITY;
+  const left = browseListCardDistanceMeters(a, viewer) ?? Number.POSITIVE_INFINITY;
+  const right = browseListCardDistanceMeters(b, viewer) ?? Number.POSITIVE_INFINITY;
   if (left !== right) return left - right;
   return compareName(a, b);
 };
 
-export const sortListExplorerCards = (
+export const sortBrowseListCards = (
   cards: DiscoveryCardModel[],
-  mode: ListExplorerSortMode,
+  mode: BrowseListSortMode,
   viewer: ViewerFix | null
 ): DiscoveryCardModel[] => {
   const copy = [...cards];
@@ -312,7 +312,7 @@ const groupByDistance = (
 ): ListExplorerDateSection[] => {
   const buckets = new Map<string, ListExplorerDateSection & { order: number }>();
   for (const card of cards) {
-    const meters = listExplorerCardDistanceMeters(card, viewer);
+    const meters = browseListCardDistanceMeters(card, viewer);
     const slot = distanceBucket(meters);
     const existing = buckets.get(slot.key);
     if (existing) existing.cards.push(card);
@@ -349,7 +349,7 @@ const groupByPostDate = (
   desc: boolean,
   now: Date
 ): ListExplorerDateSection[] => {
-  const sections = groupListExplorerByIso(cards, listExplorerCardPostDateIso, now)
+  const sections = groupListExplorerByIso(cards, browseListCardPostDateIso, now)
     .map(relabelPostDateSection)
     .map((section) => ({
       ...section,
@@ -360,9 +360,9 @@ const groupByPostDate = (
 };
 
 /** Section headers for the active sort (default = event date ascending). */
-export const groupListExplorerSections = (
+export const groupBrowseListSections = (
   cards: DiscoveryCardModel[],
-  mode: ListExplorerSortMode,
+  mode: BrowseListSortMode,
   viewer: ViewerFix | null,
   now: Date = new Date()
 ): ListExplorerDateSection[] => {
@@ -394,9 +394,9 @@ export const groupListExplorerSections = (
   }
 };
 
-export const listExplorerSortUsesViewerLocation = (mode: ListExplorerSortMode): boolean =>
+export const browseListSortUsesViewerLocation = (mode: BrowseListSortMode): boolean =>
   mode === 'near_me';
 
-/** @deprecated Prefer `listExplorerSortButtonLabel` for UI. */
-export const listExplorerSortLabel = (mode: ListExplorerSortMode): string =>
-  listExplorerSortButtonLabel(mode);
+/** @deprecated Prefer `browseListSortButtonLabel` for UI. */
+export const browseListSortLabel = (mode: BrowseListSortMode): string =>
+  browseListSortButtonLabel(mode);

@@ -38,15 +38,15 @@ import {
 } from './crews/crewsOpenSegment';
 import {
   LIST_LAYOUT_PARAM,
-  parseListExplorerLayout,
-  serializeListExplorerLayout,
-  type ListExplorerLayout,
+  parseBrowseListLayout,
+  serializeBrowseListLayout,
+  type BrowseListLayout,
 } from './browse/browseListLayout';
 import {
   LIST_SORT_PARAM,
-  parseListExplorerSort,
-  serializeListExplorerSort,
-  type ListExplorerSortMode,
+  parseBrowseListSort,
+  serializeBrowseListSort,
+  type BrowseListSortMode,
 } from './browse/listBrowseSort';
 
 const LIST_FILTER_PARAM_KEYS = [
@@ -131,12 +131,12 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
   const geoPath = useMemo(() => parseBrowseListGeoPath(searchParams), [searchParams]);
 
   const layout = useMemo(
-    () => parseListExplorerLayout(searchParams.get(LIST_LAYOUT_PARAM)),
+    () => parseBrowseListLayout(searchParams.get(LIST_LAYOUT_PARAM)),
     [searchParams]
   );
 
   const sort = useMemo(
-    () => parseListExplorerSort(searchParams.get(LIST_SORT_PARAM)),
+    () => parseBrowseListSort(searchParams.get(LIST_SORT_PARAM)),
     [searchParams]
   );
 
@@ -146,8 +146,8 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
         regions?: string[];
         geoPath?: string[];
         listCat?: BrowseMainCategoryKey | null;
-        layout?: ListExplorerLayout;
-        sort?: ListExplorerSortMode;
+        layout?: BrowseListLayout;
+        sort?: BrowseListSortMode;
         crewsOpen?: CrewsAvailableOpenLens | null;
         availabilitySheet?: boolean | null;
       }
@@ -173,11 +173,11 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
           }
           const listParams = serializeBrowseListSearchParams(next, regions, nextGeo);
           const nextLayout = patch.layout ?? layout;
-          const layoutParam = serializeListExplorerLayout(nextLayout);
+          const layoutParam = serializeBrowseListLayout(nextLayout);
           if (layoutParam) listParams.set(LIST_LAYOUT_PARAM, layoutParam);
 
           const nextSort = patch.sort ?? sort;
-          const sortParam = serializeListExplorerSort(nextSort);
+          const sortParam = serializeBrowseListSort(nextSort);
           if (sortParam) listParams.set(LIST_SORT_PARAM, sortParam);
           else listParams.delete(LIST_SORT_PARAM);
 

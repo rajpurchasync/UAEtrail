@@ -7,7 +7,7 @@ import {
   type BrowseListFilterState,
 } from '../../list/browseListFilters';
 import { resolveEffectiveBrowseVenueRegions } from '../../list/browseGeoPath';
-import { sortListExplorerCards } from '../../list/browse/listBrowseSort';
+import { sortBrowseListCards } from '../../list/browse/listBrowseSort';
 import { exploreSearchWhereBrowseQuery } from './exploreSearchWhereQuery';
 import {
   EXPLORE_SEARCH_HOME_UPCOMING_LIMIT,
@@ -118,7 +118,7 @@ export const resolveExploreSearchJoinableTripCards = (
 
   setExploreClockStyle(clock);
   const built = buildListFeedCards(pool, user, items);
-  const sorted = sortListExplorerCards(built, 'event_asc', null);
+  const sorted = sortBrowseListCards(built, 'event_asc', null);
   const hint = relaxation === 'where' ? '' : exploreSearchWhereBrowseQuery(regionHint);
   const cards = pickExploreSearchUpcomingTripCards(sorted, hint, limit);
 

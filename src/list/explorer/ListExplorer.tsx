@@ -25,14 +25,14 @@ import { BrowsePlaceDistanceProvider } from '../browse/browsePlaceDistanceContex
 import { useBrowseViewerLocation } from '../browse/useBrowseViewerLocation';
 import { useDisplayPreferences } from '../../preferences/useDisplayPreferences';
 import type { BrowseListBucket } from '../browse/browseListBucket';
-import type { ListExplorerLayout } from '../browse/browseListLayout';
+import type { BrowseListLayout } from '../browse/browseListLayout';
 import type { ListExplorerDateSection } from '../browse/browseListDateSections';
 import { ListGuestCatalogPreviewNotice } from '../ui/ListGuestCatalogPreviewNotice';
 import {
-  groupListExplorerSections,
-  listExplorerSortUsesViewerLocation,
-  sortListExplorerCards,
-  type ListExplorerSortMode,
+  groupBrowseListSections,
+  browseListSortUsesViewerLocation,
+  sortBrowseListCards,
+  type BrowseListSortMode,
 } from '../browse/listBrowseSort';
 
 type ListExplorerProps = {
@@ -47,8 +47,8 @@ type ListExplorerProps = {
   onClearQuery: () => void;
   searchScopeCounts: ExploreSearchScopeCounts;
   mapHref: string;
-  layout: ListExplorerLayout;
-  onLayoutChange: (layout: ListExplorerLayout) => void;
+  layout: BrowseListLayout;
+  onLayoutChange: (layout: BrowseListLayout) => void;
   bucket: BrowseListBucket;
   onBucketChange: (bucket: BrowseListBucket) => void;
   filters: BrowseListFilterState;
@@ -62,8 +62,8 @@ type ListExplorerProps = {
   showMapColumnPrompt?: boolean;
   onOpenMapColumn?: () => void;
   onMapHover?: (exploreItemId: string | null) => void;
-  sort: ListExplorerSortMode;
-  onSortChange: (mode: ListExplorerSortMode) => void;
+  sort: BrowseListSortMode;
+  onSortChange: (mode: BrowseListSortMode) => void;
   showGuestCatalogPreview?: boolean;
   listPanelWidthPx?: number;
   onTripTopicsChange: (next: BrowseTripTopicKey[]) => void;
@@ -141,7 +141,7 @@ const ListExplorerDateGroups = ({
   scrollElement,
 }: {
   sections: ListExplorerDateSection[];
-  layout: ListExplorerLayout;
+  layout: BrowseListLayout;
   onMapHover?: (exploreItemId: string | null) => void;
   compactThumbGrid?: boolean;
   scrollElement?: HTMLElement | null;
@@ -281,21 +281,21 @@ export const ListExplorer = ({
     : layout === 'calendar'
       ? 'thumbnails'
       : layout;
-  const locationEnabled = bucket === 'places' || listExplorerSortUsesViewerLocation(sort);
+  const locationEnabled = bucket === 'places' || browseListSortUsesViewerLocation(sort);
   const { fix: viewer, pending: locationPending, denied: locationDenied } =
     useBrowseViewerLocation(locationEnabled);
   const { units } = useDisplayPreferences();
   const listSections = useMemo(() => {
-    const sorted = sortListExplorerCards(cards, sort, viewer);
+    const sorted = sortBrowseListCards(cards, sort, viewer);
     if (suppressDateSectionHeaders) {
       return sorted.length
         ? [{ key: 'all', label: '', cards: sorted }]
         : [];
     }
-    return groupListExplorerSections(sorted, sort, viewer);
+    return groupBrowseListSections(sorted, sort, viewer);
   }, [cards, sort, suppressDateSectionHeaders, viewer]);
   const calendarCards = useMemo(
-    () => sortListExplorerCards(cards, sort, viewer),
+    () => sortBrowseListCards(cards, sort, viewer),
     [cards, sort, viewer]
   );
 

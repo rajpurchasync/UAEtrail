@@ -1,8 +1,8 @@
 import { CalendarDays, LayoutGrid, List } from 'lucide-react';
-import type { ListExplorerLayout } from '../browse/browseListLayout';
+import type { BrowseListLayout } from '../browse/browseListLayout';
 
 const OPTIONS: ReadonlyArray<{
-  key: ListExplorerLayout;
+  key: BrowseListLayout;
   label: string;
   icon: typeof LayoutGrid;
 }> = [
@@ -12,8 +12,8 @@ const OPTIONS: ReadonlyArray<{
 ];
 
 type ListExplorerViewSwitchProps = {
-  layout: ListExplorerLayout;
-  onChange: (layout: ListExplorerLayout) => void;
+  layout: BrowseListLayout;
+  onChange: (layout: BrowseListLayout) => void;
   /** Calendar is for dated outings. Places, shops, and spots hide it. */
   showCalendar?: boolean;
   compact?: boolean;

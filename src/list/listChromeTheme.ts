@@ -74,7 +74,7 @@ export const browseListBucketCountClass = (active: boolean): string =>
     : 'bg-neutral-200/90 text-neutral-600';
 
 /** Sort menu trigger — no `!` on text colors so dark-theme remaps apply. */
-export const listExplorerSortTriggerClass = (nonDefaultSort: boolean): string =>
+export const browseListSortTriggerClass = (nonDefaultSort: boolean): string =>
   [
     'list-explorer-sort-trigger',
     nonDefaultSort

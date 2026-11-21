@@ -56,6 +56,23 @@ describe('listBrowseNamingGuard', () => {
     expect(read('src/list/routing.ts')).toMatch(/browse\/browseListMapHandoff/);
   });
 
+  it('BROWSE-NAME-01i: browse list layout + sort URL API uses browse-prefixed exports', () => {
+    const layout = read('src/list/browse/browseListLayout.ts');
+    expect(layout).toMatch(/export type BrowseListLayout/);
+    expect(layout).toMatch(/export const parseBrowseListLayout/);
+    expect(layout).toMatch(/export const countBrowseListFilters/);
+    expect(layout).not.toMatch(/ListExplorerLayout/);
+    const sort = read('src/list/browse/listBrowseSort.ts');
+    expect(sort).toMatch(/export type BrowseListSortMode/);
+    expect(sort).toMatch(/export const parseBrowseListSort/);
+    expect(sort).toMatch(/export const sortBrowseListCards/);
+    expect(sort).not.toMatch(/parseListExplorerSort/);
+    expect(read('src/list/useListDiscoveryUrlState.ts')).toMatch(/parseBrowseListLayout/);
+    expect(read('src/list/useListDiscoveryUrlState.ts')).toMatch(/parseBrowseListSort/);
+    expect(read('src/list/listChromeTheme.ts')).toMatch(/browseListSortTriggerClass/);
+    expect(read('src/list/listChromeTheme.ts')).not.toMatch(/listExplorerSortTriggerClass/);
+  });
+
   it('BROWSE-NAME-01f: list layout + filter fab snap live under browse (not explorer)', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/browseListLayout.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/browse/listFilterFabSnap.ts'))).toBe(true);
@@ -69,7 +86,7 @@ describe('listBrowseNamingGuard', () => {
   it('BROWSE-NAME-01e: list sort implementation lives in listBrowseSort (not explorer)', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/listBrowseSort.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/explorer/listExplorerSort.ts'))).toBe(false);
-    expect(read('src/list/browse/listBrowseSort.ts')).toMatch(/export const sortListExplorerCards/);
+    expect(read('src/list/browse/listBrowseSort.ts')).toMatch(/export const sortBrowseListCards/);
     expect(read('src/list/browse/listBrowseSort.ts')).not.toMatch(/from '\.\.\/explorer\/listExplorerSort'/);
     expect(read('src/geo/GeoBrowsePane.tsx')).toMatch(/browse\/listBrowseSort/);
     expect(read('src/list/explorer/ListExplorerSortControl.tsx')).toMatch(/browse\/listBrowseSort/);

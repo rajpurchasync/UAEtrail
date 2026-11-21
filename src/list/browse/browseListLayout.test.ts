@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { BrowseListFilterState } from '../browseListFilters';
 import {
-  countListExplorerFilters,
-  parseListExplorerLayout,
-  serializeListExplorerLayout,
+  countBrowseListFilters,
+  parseBrowseListLayout,
+  serializeBrowseListLayout,
 } from './browseListLayout';
 import {
   browseListBucketCategories,
@@ -41,17 +41,17 @@ const emptyFilters = (): BrowseListFilterState => ({
 
 describe('list explorer layout', () => {
   it('defaults thumbnails and omits the URL param', () => {
-    expect(parseListExplorerLayout(null)).toBe('thumbnails');
-    expect(parseListExplorerLayout('list')).toBe('list');
-    expect(parseListExplorerLayout('calendar')).toBe('calendar');
-    expect(serializeListExplorerLayout('thumbnails')).toBeNull();
-    expect(serializeListExplorerLayout('list')).toBe('list');
+    expect(parseBrowseListLayout(null)).toBe('thumbnails');
+    expect(parseBrowseListLayout('list')).toBe('list');
+    expect(parseBrowseListLayout('calendar')).toBe('calendar');
+    expect(serializeBrowseListLayout('thumbnails')).toBeNull();
+    expect(serializeBrowseListLayout('list')).toBe('list');
   });
 
   it('counts applied filters for the open Events/Places view', () => {
-    expect(countListExplorerFilters(emptyFilters(), [])).toBe(0);
+    expect(countBrowseListFilters(emptyFilters(), [])).toBe(0);
     expect(
-      countListExplorerFilters(
+      countBrowseListFilters(
         {
           ...emptyFilters(),
           tripTopics: ['hiking', 'camping'],
@@ -62,7 +62,7 @@ describe('list explorer layout', () => {
       )
     ).toBe(5);
     expect(
-      countListExplorerFilters(
+      countBrowseListFilters(
         {
           ...emptyFilters(),
           tripTopics: ['hiking'],
@@ -72,7 +72,7 @@ describe('list explorer layout', () => {
       )
     ).toBe(1);
     expect(
-      countListExplorerFilters(
+      countBrowseListFilters(
         {
           ...emptyFilters(),
           tripTopics: ['hiking'],

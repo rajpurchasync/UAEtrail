@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import {
-  DEFAULT_LIST_EXPLORER_SORT,
-  groupListExplorerSections,
-  listExplorerCardPostDateIso,
-  listExplorerSortAriaLabel,
-  listExplorerSortButtonLabel,
-  parseListExplorerSort,
-  serializeListExplorerSort,
-  sortListExplorerCards,
+  DEFAULT_BROWSE_LIST_SORT,
+  groupBrowseListSections,
+  browseListCardPostDateIso,
+  browseListSortAriaLabel,
+  browseListSortButtonLabel,
+  parseBrowseListSort,
+  serializeBrowseListSort,
+  sortBrowseListCards,
 } from './listBrowseSort';
 
 const card = (id: string, title: string, dateIso?: string): DiscoveryCardModel =>
@@ -49,10 +49,10 @@ const cardWithPostDate = (
     activity: { createdAt: `${postIso}T08:00:00.000Z` },
   }) as DiscoveryCardModel;
 
-describe('listExplorerSort', () => {
+describe('browseListSort', () => {
   it('defaults event date ascending in URL', () => {
-    expect(parseListExplorerSort(null)).toBe(DEFAULT_LIST_EXPLORER_SORT);
-    expect(serializeListExplorerSort('event_asc')).toBeNull();
+    expect(parseBrowseListSort(null)).toBe(DEFAULT_BROWSE_LIST_SORT);
+    expect(serializeBrowseListSort('event_asc')).toBeNull();
   });
 
   it('orders events by schedule date ascending', () => {
@@ -60,12 +60,12 @@ describe('listExplorerSort', () => {
       card('b', 'Later', '2026-12-01'),
       card('a', 'Soon', '2026-11-01'),
     ];
-    const sorted = sortListExplorerCards(items, 'event_asc', null);
+    const sorted = sortBrowseListCards(items, 'event_asc', null);
     expect(sorted.map((entry) => entry.id)).toEqual(['a', 'b']);
   });
 
   it('groups names by distributed first letters', () => {
-    const sections = groupListExplorerSections(
+    const sections = groupBrowseListSections(
       [card('1', 'Alpha'), card('2', 'Echo'), card('3', 'November')],
       'name_asc',
       null
@@ -80,7 +80,7 @@ describe('listExplorerSort', () => {
 
   it('groups post date sorts with posted section headings', () => {
     const now = new Date('2026-10-30T10:00:00');
-    const sections = groupListExplorerSections(
+    const sections = groupBrowseListSections(
       [
         cardWithPostDate('today', 'Today post', '2026-10-30'),
         cardWithPostDate('week', 'Week post', '2026-10-31'),
@@ -96,14 +96,14 @@ describe('listExplorerSort', () => {
       'Posted this week',
       'Other',
     ]);
-    expect(listExplorerCardPostDateIso(card('undated', 'No stamp'))).toBeNull();
+    expect(browseListCardPostDateIso(card('undated', 'No stamp'))).toBeNull();
   });
 
   it('merges many first letters into at most five balanced sections', () => {
     const cards = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map((letter, index) =>
       card(String(index), `${letter} outing`)
     );
-    const sections = groupListExplorerSections(cards, 'name_asc', null);
+    const sections = groupBrowseListSections(cards, 'name_asc', null);
     expect(sections.length).toBeLessThanOrEqual(5);
     expect(sections.flatMap((section) => section.cards).length).toBe(26);
     const sizes = sections.map((section) => section.cards.length);
@@ -111,12 +111,12 @@ describe('listExplorerSort', () => {
   });
 
   it('labels the sort trigger from the active mode', () => {
-    expect(listExplorerSortButtonLabel('event_asc')).toBe('Date');
-    expect(listExplorerSortButtonLabel('post_desc')).toBe('Posting Date');
-    expect(listExplorerSortButtonLabel('name_asc')).toBe('Name');
-    expect(listExplorerSortButtonLabel('name_desc')).toBe('Name');
-    expect(listExplorerSortButtonLabel('near_me')).toBe('Near Me');
-    expect(listExplorerSortAriaLabel('name_asc')).toBe('Sort by Name, ascending');
-    expect(listExplorerSortAriaLabel('name_desc')).toBe('Sort by Name, descending');
+    expect(browseListSortButtonLabel('event_asc')).toBe('Date');
+    expect(browseListSortButtonLabel('post_desc')).toBe('Posting Date');
+    expect(browseListSortButtonLabel('name_asc')).toBe('Name');
+    expect(browseListSortButtonLabel('name_desc')).toBe('Name');
+    expect(browseListSortButtonLabel('near_me')).toBe('Near Me');
+    expect(browseListSortAriaLabel('name_asc')).toBe('Sort by Name, ascending');
+    expect(browseListSortAriaLabel('name_desc')).toBe('Sort by Name, descending');
   });
 });

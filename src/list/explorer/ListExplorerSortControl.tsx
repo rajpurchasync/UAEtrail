@@ -2,19 +2,19 @@ import { ArrowDown, ArrowDownAZ, ArrowDownZA, ArrowUp, Calendar, MapPin, Newspap
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { UiTooltip } from '../../components/ui/UiTooltip';
-import { LIST_OVERLAY_Z, LIST_SEARCH, listExplorerSortTriggerClass } from '../listChromeTheme';
+import { LIST_OVERLAY_Z, LIST_SEARCH, browseListSortTriggerClass } from '../listChromeTheme';
 import {
-  DEFAULT_LIST_EXPLORER_SORT,
-  LIST_EXPLORER_SORT_GROUP_DEFS,
-  listExplorerSortAriaLabel,
-  listExplorerSortButtonLabel,
-  listExplorerSortTrigger,
-  type ListExplorerSortMode,
+  DEFAULT_BROWSE_LIST_SORT,
+  BROWSE_LIST_SORT_GROUP_DEFS,
+  browseListSortAriaLabel,
+  browseListSortButtonLabel,
+  browseListSortTrigger,
+  type BrowseListSortMode,
 } from '../browse/listBrowseSort';
 
 type Props = {
-  sort: ListExplorerSortMode;
-  onSortChange: (mode: ListExplorerSortMode) => void;
+  sort: BrowseListSortMode;
+  onSortChange: (mode: BrowseListSortMode) => void;
   locationPending?: boolean;
   locationDenied?: boolean;
   className?: string;
@@ -23,12 +23,12 @@ type Props = {
 };
 
 type SortOption = {
-  mode: ListExplorerSortMode;
+  mode: BrowseListSortMode;
   label: string;
   icon: typeof Calendar;
 };
 
-const SORT_OPTION_ICONS: Record<ListExplorerSortMode, typeof Calendar> = {
+const SORT_OPTION_ICONS: Record<BrowseListSortMode, typeof Calendar> = {
   event_asc: Calendar,
   event_desc: Calendar,
   post_asc: Newspaper,
@@ -39,7 +39,7 @@ const SORT_OPTION_ICONS: Record<ListExplorerSortMode, typeof Calendar> = {
 };
 
 const SORT_GROUPS: ReadonlyArray<{ title: string; options: SortOption[] }> =
-  LIST_EXPLORER_SORT_GROUP_DEFS.map((group) => ({
+  BROWSE_LIST_SORT_GROUP_DEFS.map((group) => ({
     title: group.title,
     options: group.options.map((option) => ({
       ...option,
@@ -83,8 +83,8 @@ const measureDropdownMenu = (anchor: HTMLElement): MenuLayout => {
 };
 
 type SortMenuBodyProps = {
-  sort: ListExplorerSortMode;
-  onSortChange: (mode: ListExplorerSortMode) => void;
+  sort: BrowseListSortMode;
+  onSortChange: (mode: BrowseListSortMode) => void;
   onClose: () => void;
   locationPending?: boolean;
   locationDenied?: boolean;
@@ -215,8 +215,8 @@ export const ListExplorerSortControl = ({
     return () => document.removeEventListener('mousedown', onPointerDown);
   }, [open, useSheet]);
 
-  const activeSort = sort !== DEFAULT_LIST_EXPLORER_SORT;
-  const triggerMeta = listExplorerSortTrigger(sort);
+  const activeSort = sort !== DEFAULT_BROWSE_LIST_SORT;
+  const triggerMeta = browseListSortTrigger(sort);
   const SortDirectionIcon = triggerMeta.direction === 'asc' ? ArrowUp : ArrowDown;
 
   const dropdownMenu =
@@ -267,7 +267,7 @@ export const ListExplorerSortControl = ({
                 <div className="min-w-0">
                   <p className="text-base font-bold text-neutral-900">Sort</p>
                   <p className="truncate text-xs font-medium text-emerald-800">
-                    {listExplorerSortButtonLabel(sort)}
+                    {browseListSortButtonLabel(sort)}
                   </p>
                 </div>
                 <button
@@ -299,10 +299,10 @@ export const ListExplorerSortControl = ({
     <button
       type="button"
       onClick={() => setOpen((value) => !value)}
-      className={`${LIST_SEARCH.sideAction} ${listExplorerSortTriggerClass(activeSort)} !inline-flex min-w-9 !w-auto max-w-full ${
+      className={`${LIST_SEARCH.sideAction} ${browseListSortTriggerClass(activeSort)} !inline-flex min-w-9 !w-auto max-w-full ${
         compact ? '!h-7 min-w-7 max-w-[6.5rem] gap-0.5 px-1.5' : '!h-8 gap-1 px-2'
       }`}
-      aria-label={listExplorerSortAriaLabel(sort)}
+      aria-label={browseListSortAriaLabel(sort)}
       aria-expanded={open}
       aria-haspopup="dialog"
     >
@@ -322,7 +322,7 @@ export const ListExplorerSortControl = ({
 
   return (
     <div ref={anchorRef} className={`relative min-w-0 ${className}`}>
-      {useSheet ? trigger : <UiTooltip label={listExplorerSortAriaLabel(sort)}>{trigger}</UiTooltip>}
+      {useSheet ? trigger : <UiTooltip label={browseListSortAriaLabel(sort)}>{trigger}</UiTooltip>}
       {dropdownMenu}
       {sheetMenu}
     </div>

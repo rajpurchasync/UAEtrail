@@ -46,7 +46,7 @@ describe('list module hygiene', () => {
       /GuestCatalogPreviewBanner/
     );
     expect(experience).toMatch(/showGuestCatalogPreview=\{!user && !embeddedOnExplore/);
-    expect(experience).toMatch(/countListExplorerFilters/);
+    expect(experience).toMatch(/countBrowseListFilters/);
     expect(experience).toMatch(/browseListEntityLinkState/);
     expect(experience).toMatch(/parseBrowseListBucket/);
     expect(experience).toMatch(/browseListBucketCategories/);

@@ -1,7 +1,7 @@
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import type { BrowseListFilterState } from '../../list/browseListFilters';
 import { browseCardDateIso } from '../../list/browse/browseCardMeta';
-import { sortListExplorerCards } from '../../list/browse/listBrowseSort';
+import { sortBrowseListCards } from '../../list/browse/listBrowseSort';
 import { todayIso } from '../exploreActivityDateFilter';
 import { exploreSearchJoinListFilters } from './exploreSearchRouting';
 
@@ -44,7 +44,7 @@ export const pickExploreSearchUpcomingTripCards = (
   limit = EXPLORE_SEARCH_HOME_UPCOMING_LIMIT
 ): DiscoveryCardModel[] => {
   const today = todayIso();
-  const sorted = sortListExplorerCards(cards, 'event_asc', null);
+  const sorted = sortBrowseListCards(cards, 'event_asc', null);
   const dated = sorted.filter((card) => {
     const iso = browseCardDateIso(card);
     return Boolean(iso && iso >= today);
