@@ -10,7 +10,7 @@ import {
   allowedActivityPricingModes,
   type PublishingProfileKind,
   exploreMapKindToPlanMapKind,
-  resolveHostCreateKindFromSeekingMapItem,
+  resolveHostCreateKindFromAvailabilityMapItem,
   RIDESHARE_DESTINATION_ACTIVITY_PREFIX,
   RIDESHARE_DESTINATION_PLACE_PREFIX,
   RIDESHARE_PENDING_DESTINATION_PLACE_PREFIX,
@@ -408,7 +408,7 @@ export const defaultCapacityForKind = (kind: CreateActivityKind): number =>
 
 /** Prefill a host publish draft from a fixed availability map pin (legacy seeking rows use the same shape). */
 export const createDraftFromAvailabilityMapItem = (item: ExploreMapItemDTO): CreateActivityDraft => {
-  const kind = resolveHostCreateKindFromSeekingMapItem({
+  const kind = resolveHostCreateKindFromAvailabilityMapItem({
     outingCategory: item.outingCategory ?? null,
     kind: exploreMapKindToPlanMapKind(item.kind),
   }) as CreateActivityKind;
@@ -447,9 +447,6 @@ export const createDraftFromAvailabilityMapItem = (item: ExploreMapItemDTO): Cre
     trailName: structured && hasPin ? areaLabel.slice(0, 120) : base.trailName,
   };
 };
-
-/** @deprecated Use {@link createDraftFromAvailabilityMapItem} */
-export const createDraftFromSeekingMapItem = createDraftFromAvailabilityMapItem;
 
 export const hydrateCreateActivityDraft = (
   draft?: Partial<CreateActivityDraft> | null

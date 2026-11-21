@@ -1,5 +1,5 @@
 /**
- * M1 backfill: active participant intents → published seeking activities.
+ * Ops backfill: active legacy `participant_intents` → fixed `member_availability` slots.
  *
  * Usage:
  *   npm --workspace @uaetrail/api run backfill-seeking-activities

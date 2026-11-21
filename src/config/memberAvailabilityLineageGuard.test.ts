@@ -87,4 +87,23 @@ describe('memberAvailabilityLineageGuard (MIG-DISCO-REG)', () => {
     expect(seed).not.toMatch(/createSeekingActivityForIntent/);
     expect(seed).not.toMatch(/upsertSeedSeekingActivity/);
   });
+
+  it('AVAIL-LINE-13: host prefill uses availability naming (no createDraftFromSeekingMapItem export)', () => {
+    const engine = read('src/explore/ui/hostingFlowEngine.ts');
+    expect(engine).toMatch(/createDraftFromAvailabilityMapItem/);
+    expect(engine).toMatch(/resolveHostCreateKindFromAvailabilityMapItem/);
+    expect(engine).not.toMatch(/export const createDraftFromSeekingMapItem/);
+  });
+
+  it('AVAIL-LINE-12: retired seeking schedule/activity write modules are gone', () => {
+    expect(
+      existsSync(join(process.cwd(), 'apps/api/src/services/participant-intent-seeking-activity.ts'))
+    ).toBe(false);
+    expect(existsSync(join(process.cwd(), 'apps/api/scripts/seed-demo-seeking-schedules.ts'))).toBe(
+      false
+    );
+    expect(read('apps/api/scripts/refresh-availability-schedules.ts')).toMatch(
+      /refreshPublicAvailabilityFixedSchedules/
+    );
+  });
 });

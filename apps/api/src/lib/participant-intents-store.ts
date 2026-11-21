@@ -175,7 +175,7 @@ export const cancelParticipantIntent = async (
     isSeekingActivityEditable(seekingActivity)
   ) {
     const { cancelSeekingActivityForIntent } = await import(
-      '../services/participant-intent-seeking-activity.js'
+      '../services/participant-intent-activity-readthrough.js'
     );
     await cancelSeekingActivityForIntent(seekingActivity._id);
 

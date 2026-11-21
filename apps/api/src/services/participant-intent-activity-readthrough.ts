@@ -8,6 +8,8 @@ import { ActivityStatus } from '../domain/enums.js';
 import type { MongoActivityDoc } from '../lib/entity-builders.js';
 import { COLLECTIONS } from '../lib/collections.js';
 import { formatActivityLocal } from '../lib/datetime.js';
+import { patchActivityInMongo } from '../lib/entity-sync.js';
+import { scheduleExploreMapCacheInvalidation } from '../lib/explore-map-cache-schedule.js';
 import { getMongoClient } from '../lib/mongo.js';
 
 /**
@@ -145,4 +147,15 @@ export const seekingActivityToCreateInput = (
     toLongitude: dto.toLongitude,
     areaId: activity.areaId ?? null,
   };
+};
+
+/** Ops / legacy archive — cancel a published `activityMode: seeking` row. */
+export const cancelSeekingActivityForIntent = async (
+  activityId: string | null | undefined
+): Promise<void> => {
+  if (!activityId) return;
+  await patchActivityInMongo(activityId, {
+    status: ActivityStatus.CANCELLED,
+  });
+  scheduleExploreMapCacheInvalidation('seeking-activity.cancel_map_cache');
 };

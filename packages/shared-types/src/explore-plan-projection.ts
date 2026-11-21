@@ -123,8 +123,8 @@ export const outingCategoryToHostCreateKind = (
   }
 };
 
-/** Host fulfill: seeking map row → hosting catalog create kind (outing category wins). */
-export const resolveHostCreateKindFromSeekingMapItem = (item: {
+/** Host fulfill: availability (or legacy seeking) map row → hosting create kind (outing category wins). */
+export const resolveHostCreateKindFromAvailabilityMapItem = (item: {
   outingCategory?: OutingCategory | null;
   kind: ExploreMapPlanActivityKind;
   participantIntentKind?: ParticipantIntentKindForPlan | null;
@@ -142,6 +142,9 @@ export const resolveHostCreateKindFromSeekingMapItem = (item: {
   if (item.kind === 'camping') return 'camping';
   return 'event';
 };
+
+/** @deprecated Use {@link resolveHostCreateKindFromAvailabilityMapItem} */
+export const resolveHostCreateKindFromSeekingMapItem = resolveHostCreateKindFromAvailabilityMapItem;
 
 /**
  * Map item id for a seeking post — `activity:` only.

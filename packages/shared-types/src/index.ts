@@ -1413,6 +1413,7 @@ export {
   outingCategoryToHostCreateKind,
   participantIntentKindToOutingCategory,
   resolveActivityOutingTopic,
+  resolveHostCreateKindFromAvailabilityMapItem,
   resolveHostCreateKindFromSeekingMapItem,
   OUTING_TOPICS,
   mapItemMatchesOutingTopic,

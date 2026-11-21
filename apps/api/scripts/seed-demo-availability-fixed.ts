@@ -82,23 +82,28 @@ const slotRollForward = (
   };
 };
 
-/** After seed upserts demo fixed slots, roll dates forward so `GET /explore/map` stays populated. */
-export const refreshSeedAvailabilityFixedSchedules = async (): Promise<{ updated: number }> => {
+const refreshAvailabilityFixedSlots = async (options?: {
+  slotIdFilter?: Set<string>;
+  daysAheadWhenStale?: number;
+}): Promise<{ updated: number; rolledForward: number }> => {
   const db = getMongoClient()!.db();
   const col = db.collection(COLLECTIONS.MEMBER_AVAILABILITY);
-  const seedSlotIds = new Set<string>(SEED_FIXED_AVAILABILITY_SLOT_IDS);
+  const daysAhead = options?.daysAheadWhenStale ?? 5;
   let updatedDocs = 0;
+  let rolledForward = 0;
 
   const docs = await col.find({ visibility: 'public' }).toArray();
   for (const doc of docs) {
     let docChanged = false;
     const slots = (doc.slots ?? []).map((raw) => {
       const slot = raw as MemberAvailabilitySlotDTO;
-      if (slot.scheduleKind !== 'fixed' || !slot.slotId || !seedSlotIds.has(slot.slotId)) {
-        return slot;
+      if (slot.scheduleKind !== 'fixed' || !slot.slotId) return slot;
+      if (options?.slotIdFilter && !options.slotIdFilter.has(slot.slotId)) return slot;
+      const { slot: next, rolled } = slotRollForward(slot, daysAhead);
+      if (rolled) {
+        docChanged = true;
+        rolledForward += 1;
       }
-      const { slot: next, rolled } = slotRollForward(slot, 5);
-      if (rolled) docChanged = true;
       return next;
     });
     if (docChanged) {
@@ -111,6 +116,22 @@ export const refreshSeedAvailabilityFixedSchedules = async (): Promise<{ updated
     await invalidateExploreMapCache();
   }
 
+  return { updated: updatedDocs, rolledForward };
+};
+
+/** Dev/ops — roll stale public fixed slots forward (all members). */
+export const refreshPublicAvailabilityFixedSchedules = async (): Promise<{
+  updated: number;
+  rolledForward: number;
+}> => refreshAvailabilityFixedSlots();
+
+/** After seed upserts demo fixed slots, roll dates forward so `GET /explore/map` stays populated. */
+export const refreshSeedAvailabilityFixedSchedules = async (): Promise<{ updated: number }> => {
+  const db = getMongoClient()!.db();
+  const result = await refreshAvailabilityFixedSlots({
+    slotIdFilter: new Set(SEED_FIXED_AVAILABILITY_SLOT_IDS),
+  });
+
   await db.collection(COLLECTIONS.ACTIVITIES).updateMany(
     {
       activityMode: 'seeking',
@@ -120,5 +141,5 @@ export const refreshSeedAvailabilityFixedSchedules = async (): Promise<{ updated
     { $set: { status: ActivityStatus.CANCELLED, updatedAt: new Date() } }
   );
 
-  return { updated: updatedDocs };
+  return { updated: result.updated };
 };

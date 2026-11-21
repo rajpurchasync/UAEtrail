@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+const apiScripts = 'scripts';
+
 const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 
 describe('availability notification lineage (MIG-DISCO-REG)', () => {
@@ -27,5 +29,16 @@ describe('availability notification lineage (MIG-DISCO-REG)', () => {
     expect(intents).not.toMatch(/publishType: 'seeking'/);
     expect(intents).toMatch(/activity_mode_seeking_retired/);
     expect(intents).toMatch(/mergeMemberAvailabilityFixedSlotsMigration/);
+  });
+
+  it('seeking schedule + write modules retired (availability ops only)', () => {
+    expect(existsSync(join(process.cwd(), 'src/services/participant-intent-seeking-activity.ts'))).toBe(
+      false
+    );
+    expect(existsSync(join(process.cwd(), `${apiScripts}/seed-demo-seeking-schedules.ts`))).toBe(false);
+    expect(read('scripts/refresh-availability-schedules.ts')).toMatch(
+      /refreshPublicAvailabilityFixedSchedules/
+    );
+    expect(existsSync(join(process.cwd(), 'scripts/refresh-seeking-schedules.ts'))).toBe(false);
   });
 });

@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { connectMongo } from '../src/lib/mongo.js';
@@ -22,6 +22,11 @@ describe('seeking storage ops', () => {
       /"seeking:storage-status":\s*"npm --workspace @uaetrail\/api run seeking-storage-status --"/
     );
     expect(rootPkg).toMatch(/"seeking:deploy-gate":\s*"npm run seeking:storage-status -- --strict"/);
+    expect(existsSync(join(process.cwd(), 'scripts/seed-demo-seeking-schedules.ts'))).toBe(false);
+    const backfill = read('scripts/backfill-seeking-activities.ts');
+    expect(backfill).toMatch(/member_availability/);
+    const apiPkg = readFileSync(join(process.cwd(), 'package.json'), 'utf8');
+    expect(apiPkg).toMatch(/refresh-availability-schedules/);
   });
 
   it('strict gate fails when backfill incomplete', () => {

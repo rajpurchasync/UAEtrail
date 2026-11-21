@@ -1,28 +1,27 @@
 import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { createDraftFromSeekingMapItem } from './hostingFlowEngine';
-import { seekingExploreMapItem } from '../exploreMapItemFixtures';
+import { createDraftFromAvailabilityMapItem } from './hostingFlowEngine';
+import { availabilityExploreMapItem } from '../exploreMapItemFixtures';
 
-const seekingItem = (overrides: Partial<ExploreMapItemDTO> = {}): ExploreMapItemDTO =>
-  seekingExploreMapItem({
-    intentId: 'intent-1',
+const availabilityItem = (overrides: Partial<ExploreMapItemDTO> = {}): ExploreMapItemDTO =>
+  availabilityExploreMapItem({
     kind: 'event',
     title: 'Sunday run crew',
     outingCategory: 'activities',
     ...overrides,
   });
 
-describe('createDraftFromSeekingMapItem', () => {
-  it('routes find.event (activities) seeking pin to organize activity wizard', () => {
-    const draft = createDraftFromSeekingMapItem(seekingItem());
+describe('createDraftFromAvailabilityMapItem', () => {
+  it('routes availability event pin to organize activity wizard', () => {
+    const draft = createDraftFromAvailabilityMapItem(availabilityItem());
     expect(draft.kind).toBe('activity');
     expect(draft.meetingLatitude).toBe(25.1);
     expect(draft.meetingLongitude).toBe(55.2);
   });
 
-  it('routes hiking seeking pin with map coords to custom venue (no registry trap)', () => {
-    const draft = createDraftFromSeekingMapItem(
-      seekingItem({
+  it('routes hiking availability pin with map coords to custom venue (no registry trap)', () => {
+    const draft = createDraftFromAvailabilityMapItem(
+      availabilityItem({
         kind: 'hiking',
         outingCategory: 'hiking',
         subtitle: 'Jebel Jais area',
@@ -34,9 +33,9 @@ describe('createDraftFromSeekingMapItem', () => {
     expect(draft.trailName).toBe('Jebel Jais area');
   });
 
-  it('routes rideshare seeking pin to carpool hosting flow', () => {
-    const draft = createDraftFromSeekingMapItem(
-      seekingItem({
+  it('routes rideshare availability pin to carpool hosting flow', () => {
+    const draft = createDraftFromAvailabilityMapItem(
+      availabilityItem({
         kind: 'rideshare',
         outingCategory: 'rideshare',
         toLatitude: 25.2,

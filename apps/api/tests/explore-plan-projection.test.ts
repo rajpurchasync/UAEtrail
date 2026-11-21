@@ -10,6 +10,7 @@ import {
   resolveSeekingExploreMapItemId,
   participantIntentKindToOutingCategory,
   resolveActivityOutingTopic,
+  resolveHostCreateKindFromAvailabilityMapItem,
   resolveHostCreateKindFromSeekingMapItem,
 } from '@uaetrail/shared-types';
 
@@ -34,19 +35,25 @@ describe('explore plan projection mappers', () => {
     expect(participantIntentKindToOutingCategory('event')).toBe('activities');
   });
 
-  it('maps seeking outing category to host create kind', () => {
+  it('maps availability (or legacy seeking) outing category to host create kind', () => {
+    expect(
+      resolveHostCreateKindFromAvailabilityMapItem({
+        outingCategory: 'activities',
+        kind: 'event',
+      })
+    ).toBe('activity');
+    expect(
+      resolveHostCreateKindFromAvailabilityMapItem({
+        outingCategory: 'events',
+        kind: 'event',
+      })
+    ).toBe('event');
     expect(
       resolveHostCreateKindFromSeekingMapItem({
         outingCategory: 'activities',
         kind: 'event',
       })
     ).toBe('activity');
-    expect(
-      resolveHostCreateKindFromSeekingMapItem({
-        outingCategory: 'events',
-        kind: 'event',
-      })
-    ).toBe('event');
   });
 
   it('does not mint leftover demand: pins from a bare intent id', () => {
