@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { useExploreDesktopListDrawerChrome } from '../../explore/ui/ExploreDesktopListDrawer';
 import { useExplorePublishedAreas } from '../../explore/useExplorePublishedAreas';
-import { buildBrowseCollapsedRailLabels } from '../browseCollapsedRailLabels';
+import { buildBrowseCollapsedRailLabels } from '../browse/browseCollapsedRailLabels';
 import { useBrowseGeoScopeHydration } from '../useBrowseGeoScopeHydration';
 import { BrowsePanelCollapsedRail } from './BrowsePanelCollapsedRail';
 import { useVirtualizer } from '@tanstack/react-virtual';

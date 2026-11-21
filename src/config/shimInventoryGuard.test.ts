@@ -38,6 +38,7 @@ const RETIRED_LIST_BROWSE_SHIMS = [
   'src/list/explorer/listExplorerDateSections.test.ts',
   'src/list/browseListMapHandoff.ts',
   'src/list/browseListMapHandoff.test.ts',
+  'src/list/browseCollapsedRailLabels.ts',
 ];
 
 const collectTsUnder = (dir: string): string[] => {

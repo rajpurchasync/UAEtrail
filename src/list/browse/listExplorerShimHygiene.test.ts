@@ -29,6 +29,7 @@ const RETIRED_BROWSE_SHIMS = [
   'src/list/explorer/listExplorerFabSnap.ts',
   'src/list/browseListMapHandoff.ts',
   'src/list/browseListMapHandoff.test.ts',
+  'src/list/browseCollapsedRailLabels.ts',
   'src/list/explorer/listExplorerDateSections.ts',
   'src/list/explorer/listExplorerDateSections.test.ts',
   'src/list/explorer/listExplorerBucket.ts',

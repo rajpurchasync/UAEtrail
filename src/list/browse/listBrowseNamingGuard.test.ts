@@ -92,6 +92,13 @@ describe('listBrowseNamingGuard', () => {
     expect(read('src/list/explorer/ListExplorerSortControl.tsx')).toMatch(/browse\/listBrowseSort/);
   });
 
+  it('BROWSE-NAME-01k: collapsed rail labels live under browse', () => {
+    expect(existsSync(join(process.cwd(), 'src/list/browse/browseCollapsedRailLabels.ts'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/list/browseCollapsedRailLabels.ts'))).toBe(false);
+    expect(read('src/list/browse/browseCollapsedRailLabels.ts')).toMatch(/export const buildBrowseCollapsedRailLabels/);
+    expect(read('src/list/explorer/ListExplorer.tsx')).toMatch(/browse\/browseCollapsedRailLabels/);
+  });
+
   it('BROWSE-NAME-01j: browse date sections use browse-prefixed exports', () => {
     const sections = read('src/list/browse/browseListDateSections.ts');
     expect(sections).toMatch(/export type BrowseListDateSection/);
