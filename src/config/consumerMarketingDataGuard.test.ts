@@ -32,6 +32,6 @@ describe('consumerMarketingDataGuard (UI projects API-backed inventory)', () => 
   });
 
   it('CTX-MKT-05: booking search default where is not a hardcoded emirate', () => {
-    expect(read('src/explore/hub/exploreHubDetectedWhere.ts')).not.toMatch(/return 'Dubai'/);
+    expect(read('src/explore/search/exploreSearchDetectedWhere.ts')).not.toMatch(/return 'Dubai'/);
   });
 });

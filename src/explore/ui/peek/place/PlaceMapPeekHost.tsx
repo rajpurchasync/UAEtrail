@@ -1,6 +1,6 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { buildDiscoveryCardViewModelCard } from '../../../../discovery';
-import type { ViewerFix } from '../../../../list/explorer/placeDistance';
+import type { ViewerFix } from '../../../../list/browse/placeDistance';
 import type { MapPeekPinAnchor } from '../../../mapPeekBubbleLayout';
 import { MapPeekOverlay } from '../../map-peek';
 import { PlacePeekCard } from '../PlacePeekCard';

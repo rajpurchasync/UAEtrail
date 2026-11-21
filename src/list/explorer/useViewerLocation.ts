@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { ViewerFix } from './placeDistance';
+import type { ViewerFix } from '../browse/placeDistance';
 
 const STORAGE_KEY = 'uaetrail:viewer-location';
 const FRESH_MS = 5 * 60 * 1000;

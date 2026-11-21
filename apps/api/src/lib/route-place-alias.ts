@@ -16,6 +16,8 @@ export const placePathAlias = (path: string): string | null => {
 
 type HttpMethod = 'get' | 'post' | 'patch' | 'delete';
 
+const WRITE_METHODS = new Set<HttpMethod>(['post', 'patch', 'delete']);
+
 /** Register a handler on canonical `/places` paths and legacy `/locations` alias when applicable. */
 export const registerPlaceAlias = (
   router: Router,
@@ -25,7 +27,16 @@ export const registerPlaceAlias = (
 ): void => {
   router[method](path, ...handlers);
   const alias = placePathAlias(path);
-  if (alias && alias !== path) {
-    router[method](alias, ...handlers);
+  if (!alias || alias === path) return;
+  if (WRITE_METHODS.has(method)) {
+    router[method](alias, (_req, res) => {
+      res.setHeader('Deprecation', 'true');
+      res.status(410).json({
+        error: 'gone',
+        message: `${method.toUpperCase()} ${alias} is retired; use ${method.toUpperCase()} ${path}.`,
+      });
+    });
+    return;
   }
+  router[method](alias, ...handlers);
 };

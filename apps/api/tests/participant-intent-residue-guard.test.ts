@@ -23,6 +23,20 @@ describe('participant intent residue (MIG-DISCO-REG)', () => {
     expect(joinStore).toMatch(/resolveIntentPublishedActivityId/);
   });
 
+  it('retired seeking wishlist fan-out module removed', () => {
+    expect(existsSync(join(process.cwd(), 'src/services/wishlist-archived-seeking-ops.ts'))).toBe(
+      false
+    );
+  });
+
+  it('graduate ops module is isolated from product store', () => {
+    expect(existsSync(join(process.cwd(), 'src/services/participant-intent-graduate-ops.ts'))).toBe(
+      true
+    );
+    const store = read('src/lib/participant-intents-store.ts');
+    expect(store).toMatch(/participant-intent-graduate-ops/);
+  });
+
   it('participant_intents Mongo collection is backfill-only in participant-intents-store', () => {
     const store = read('src/lib/participant-intents-store.ts');
     const backfillIdx = store.indexOf('export const backfillSeekingActivitiesForActiveIntents');

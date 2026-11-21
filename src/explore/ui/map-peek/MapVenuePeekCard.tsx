@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
-import type { ViewerFix } from '../../../list/explorer/placeDistance';
+import type { ViewerFix } from '../../../list/browse/placeDistance';
 import { EXPLORE_PEEK } from '../../../config/exploreTheme';
 import { ShareButton } from '../../../components/ui/ShareButton';
 import { PlaceMapPeekCompactLayout } from '../peek/place/PlaceMapPeekCompactLayout';

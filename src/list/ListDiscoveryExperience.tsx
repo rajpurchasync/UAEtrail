@@ -32,10 +32,13 @@ import {
   exploreSearchResultsPath,
   parseExploreSearchBrowseState,
 } from '../explore/search/exploreSearchRouting';
-import { resolveExploreHubTripPool, resolveExploreHubVenuePool } from '../explore/hub/exploreHubJoinableTrips';
-import { exploreHubWhereBrowseQuery } from '../explore/hub/exploreHubWhereDisplay';
+import {
+  resolveExploreSearchTripPool,
+  resolveExploreSearchVenuePool,
+} from '../explore/search/exploreSearchJoinablePools';
+import { exploreSearchWhereBrowseQuery } from '../explore/search/exploreSearchWhereQuery';
 import { buildListFeedCards } from './buildListFeedCards';
-import { sortListExplorerCards } from './explorer/listExplorerSort';
+import { sortListExplorerCards } from './browse/listBrowseSort';
 import { setExploreClockStyle } from '@uaetrail/shared-types';
 import { useDisplayPreferences } from '../preferences/useDisplayPreferences';
 import { useMemberDiscoveryRoster } from '@/people-discovery/hooks/useMemberDiscoveryRoster';
@@ -341,7 +344,7 @@ export const ListDiscoveryExperience = ({
   const exploreSearchMapPool = useMemo(() => {
     if (!exploreSearch || isPeopleCategory) return null;
     const searchBrowse = searchResultsBrowse ?? parseExploreSearchBrowseState(searchParams);
-    const browseQuery = exploreHubWhereBrowseQuery(searchBrowse.query.trim() || filters.query);
+    const browseQuery = exploreSearchWhereBrowseQuery(searchBrowse.query.trim() || filters.query);
     const scopedFilters =
       listCat === 'venues'
         ? scopeBrowseListStateForListCat({ ...filters, query: browseQuery }, 'venues')
@@ -357,8 +360,8 @@ export const ListDiscoveryExperience = ({
             'activities'
           );
     return listCat === 'venues'
-      ? resolveExploreHubVenuePool(items, scopedFilters, hubVenueRegions, geoPath, publishedAreas).pool
-      : resolveExploreHubTripPool(items, scopedFilters, hubVenueRegions, geoPath, publishedAreas).pool;
+      ? resolveExploreSearchVenuePool(items, scopedFilters, hubVenueRegions, geoPath, publishedAreas).pool
+      : resolveExploreSearchTripPool(items, scopedFilters, hubVenueRegions, geoPath, publishedAreas).pool;
   }, [
     exploreSearch,
     filters,

@@ -8,11 +8,11 @@ import {
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import {
   matchesActivityDateFilter,
+  exploreItemMatchesQuery,
+  matchesUnifiedTopicFilter,
+  resolveExploreItemScheduleDate,
   type ExploreActivityDatePreset,
-} from '../explore/exploreActivityDateFilter';
-import { exploreItemMatchesQuery } from '../explore/exploreSearchMatches';
-import { matchesUnifiedTopicFilter } from '../explore/ui/exploreMapPinModel';
-import { resolveExploreItemScheduleDate } from '../explore/ui/exploreMapPinModel';
+} from '../explore/discoveryRuntime';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import { mapItemMatchesBrowseMainCategories } from './browseListTaxonomy';
 import type { PlaceKind } from '@uaetrail/shared-types';
@@ -23,7 +23,7 @@ import {
   explorePlaceHasHostedTrip,
   hostedPlaceLocationIdsFromCatalog,
   type ExplorePriceFilter,
-} from '../explore/exploreOptionalFilters';
+} from '../explore/discoveryRuntime';
 import type { BrowseTripTopicKey } from './browseListTripTopics';
 import { matchesListVenuePlaceTopic } from './listVenuePlaceTopicFilter';
 import type { ListVenuePlaceTopicKey } from './listVenuePlaceTopics';
@@ -32,9 +32,12 @@ import {
   type BrowseAudienceFilter,
 } from './browseAudienceFilter';
 import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
-import { isPlacesMapItem, isShopListItem } from '../explore/ui/exploreMapPinModel';
+import {
+  deriveVenueRegionSortOrder,
+  isPlacesMapItem,
+  isShopListItem,
+} from '../explore/discoveryRuntime';
 import { exploreItemMatchesBrowseGeoPath } from './browseGeoPath';
-import { deriveVenueRegionSortOrder } from '../explore/exploreListSort';
 /** @deprecated Use BrowseMainCategoryKey — kept for imports migrating */
 export type BrowseCategoryKey = BrowseMainCategoryKey;
 

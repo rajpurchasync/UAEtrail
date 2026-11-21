@@ -24,11 +24,23 @@ describe('availability notification lineage (MIG-DISCO-REG)', () => {
   it('legacy participant intent create does not wire seeking-area fan-out', () => {
     const intents = read('src/lib/participant-intents-store.ts');
     expect(intents).not.toMatch(/seeking-area-match-notifications/);
-    expect(intents).not.toMatch(/notifyWishlistForNewSeeking/);
+    const wishlist = read('src/services/wishlist-alerts.ts');
+    expect(wishlist).not.toMatch(/notifyWishlistForNewSeeking/);
+    expect(existsSync(join(process.cwd(), 'src/services/wishlist-archived-seeking-ops.ts'))).toBe(
+      false
+    );
     expect(intents).not.toMatch(/notifyMemberPublishSubscribers/);
     expect(intents).not.toMatch(/publishType: 'seeking'/);
     expect(intents).toMatch(/activity_mode_seeking_retired/);
     expect(intents).toMatch(/mergeMemberAvailabilityFixedSlotsMigration/);
+  });
+
+  it('member publish fan-out is activity + availability only (no seeking publishType)', () => {
+    const publish = read('src/services/member-publish-notifications.ts');
+    expect(publish).toMatch(/publishType: 'availability'/);
+    expect(publish).toMatch(/publishType: 'activity'/);
+    expect(publish).not.toMatch(/publishType: 'seeking'/);
+    expect(publish).not.toMatch(/exploreSeekingMapItemPath/);
   });
 
   it('seeking schedule + write modules retired (availability ops only)', () => {

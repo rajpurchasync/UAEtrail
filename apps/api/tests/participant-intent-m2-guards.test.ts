@@ -30,7 +30,7 @@ describe('participant intent M2 guards', () => {
     const store = read('src/lib/participant-intents-store.ts');
     const updateIdx = store.indexOf('export const updateParticipantIntent');
     const cancelIdx = store.indexOf('export const cancelParticipantIntent');
-    const linkIdx = store.indexOf('export const linkParticipantIntentToActivityForOwner');
+    const linkIdx = store.indexOf('export { linkParticipantIntentToActivityForOwner');
     expect(updateIdx).toBeGreaterThan(-1);
     expect(cancelIdx).toBeGreaterThan(-1);
     const updateBody = store.slice(updateIdx, cancelIdx);

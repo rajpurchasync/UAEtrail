@@ -211,6 +211,19 @@ describe('crossContextFoundationsGuard', () => {
     expect(violations).toEqual([]);
   });
 
+  it('CTX-FOUND-13: discovery runtime exports map client + card projection', () => {
+    expect(existsSync(join(ROOT, 'src/explore/discoveryRuntime.ts'))).toBe(true);
+    const runtime = read('src/explore/discoveryRuntime.ts');
+    expect(runtime).toMatch(/fetchExploreMapItems/);
+    expect(runtime).toMatch(/discoveryUrlParams/);
+    expect(existsSync(join(ROOT, 'src/discovery/index.ts'))).toBe(true);
+    expect(read('src/discovery/index.ts')).toMatch(/buildDiscoveryCardViewModel/);
+    const manifestDiscovery = manifest.contexts.find((c) => c.id === 'discovery');
+    expect(manifestDiscovery?.feRoots?.some((p) => p === 'src/explore/discoveryRuntime.ts')).toBe(
+      true
+    );
+  });
+
   it('CTX-FOUND-12: public facility detail — GET /facilities/:id client only in facilities domain', () => {
     const domainDir = join(ROOT, 'src/api/domains');
     const violations: string[] = [];

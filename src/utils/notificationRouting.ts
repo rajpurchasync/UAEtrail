@@ -30,7 +30,6 @@ import { planWishlistTabPath } from '../plan/planTab';
 import {
   NotificationDTO,
   exploreAvailabilityMapItemPath,
-  exploreSeekingMapItemPath,
   placeDetailPath,
 } from '@uaetrail/shared-types';
 import { resolveInboundPlanHubPath } from '../member-plan/resolveInboundPlanHubPath';
@@ -258,16 +257,10 @@ export const inferNotificationPath = (
     if (availabilityPin?.startsWith('availability:')) {
       return exploreAvailabilityMapItemPath(availabilityPin);
     }
-    const intentId = toStringValue(meta?.intentId);
-    if (intentId) {
-      const publishedActivityId =
-        toStringValue(meta?.activityId) ?? toStringValue(meta?.seekingActivityId);
-      if (publishedActivityId) {
-        return exploreSeekingMapItemPath({
-          intentId,
-          activityId: publishedActivityId,
-        });
-      }
+    const publishedActivityId =
+      toStringValue(meta?.activityId) ?? toStringValue(meta?.seekingActivityId);
+    if (publishedActivityId) {
+      return activityDetailPath(publishedActivityId);
     }
     const actorUserId = toStringValue(meta?.actorUserId) ?? toStringValue(meta?.hostUserId);
     if (actorUserId) {

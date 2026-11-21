@@ -330,7 +330,7 @@ Canonical paths only in **new UI**. Bookmark aliases mount in `src/App.tsx` and 
 
 ## Consumer detail surfaces (entity pages)
 
-**S9 shells (eng complete):** `consumerDetailQaMatrixGuard` · `npm run consumer-detail:qa-routes` (**S10f** manual). **Shell:** `MobileDetailShell` for entity detail; hubs use `ConsumerShell`. Tab wire ids: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §3.1.
+**S9 shells (eng complete):** `consumerDetailQaMatrixGuard` · `npm run s10f:ops:checklist` then `BASE_URL=… npm run s10f:ops:print-routes` (**S10f** manual). **Shell:** `MobileDetailShell` for entity detail; hubs use `ConsumerShell`. Tab wire ids: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §3.1.
 
 | Surface | Route | Tabs / layout (today → target) | Not a standalone page |
 |---------|-------|--------------------------------|-------------------------|

@@ -1,5 +1,5 @@
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import { distanceMeters, type ViewerFix } from './placeDistance';
+import { distanceMeters, type ViewerFix } from '../browse/placeDistance';
 import {
   groupListExplorerDateSections,
   groupListExplorerByIso,

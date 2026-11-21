@@ -4,7 +4,7 @@
 
 **Not a duplicate of:** [`ARCHITECTURE.md`](./ARCHITECTURE.md) (deployment & layer diagram), [`DOMAIN.md`](./DOMAIN.md) (entity glossary), [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) (naming & route builders), [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) (person vs host tier). **This file ties them together.**
 
-**Index:** [`DOCS_INDEX.md`](./DOCS_INDEX.md) · **Checks:** `npm run verify:system` · **Manifest:** `scripts/bounded-context-manifest.json`
+**Index:** [`DOCS_INDEX.md`](./DOCS_INDEX.md) · **Checks:** `npm run verify:system` · **Manifest:** `scripts/bounded-context-manifest.json` · **Generated module map:** `npm run context:map` → `scripts/context-map.md` (code-first; do not duplicate by hand)
 
 ---
 
@@ -523,7 +523,7 @@ Ordered for **coherence**, not feature count:
 | **S7b** | **Activity detail tabs** (Plan · Place · Buddies · Transport) + unified engagement policy | **Done** — program `complete`; wire footers + `activityDetailAcceptance` / AD-CTA matrix |
 | **S7c** | **Viewer access naming** (wire-first, collapse resolver soup) | **Done (NA-1–NA-6)** — plan §22; API `buildActivityViewerAccess`; [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15.11 |
 | **S8** | **Discovery architecture** — card VM, explore shell, seeking read cleanup, map bbox spec | **Wave closed (R0–R6, R4 read, R8)** — R5 bbox **promote** via [`EXPLORE_MAP_RUNBOOK.md`](./operations/EXPLORE_MAP_RUNBOOK.md); §3 metrics (seeking branches, slim map default) = optional follow-up |
-| **S9** | **Consumer detail shell alignment** — place/area/shop/agency IA + shared chrome vs activity reference | **Eng complete** — shells Phases 1–7; lineage **§3.2** + API `detail-surface-lineage-contract`; §8.1 `consumerDetailQaMatrixGuard`; §15.3 `consumerDetailAntiDriftGuard`. **Pending:** S10f manual (`npm run consumer-detail:qa-routes`) |
+| **S9** | **Consumer detail shell alignment** — place/area/shop/agency IA + shared chrome vs activity reference | **Eng complete** — shells Phases 1–7; lineage **§3.2** + API `detail-surface-lineage-contract`; §8.1 `consumerDetailQaMatrixGuard`; §15.3 `consumerDetailAntiDriftGuard`. **Pending:** S10f manual (`npm run s10f:ops:print-routes`) |
 | **S10** | **Production hygiene audit (Oct 2026)** — security, trust, perf, stability (not new audit markdown) | **Eng complete** — **§8.1** waves **core + S10a–d** shipped; **S10e/f** = ops/human gates ([`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md)); **S10g** deferred. **Out of scope:** **C18** rewrite; **C19** prod default = staging promote only |
 | **S11** | **Structural module naming (P5 SN-1–SN-8)** — context folders, not synonym renames | **SN-1–SN-8 done** — `useMemberStatus`, `tenantActivityClientApi`, `/publishing` mount, `moduleNamingGuard` SN-6 | §8.8 (this doc) P5 |
 | **S12** | **Hosted + seeking activity coherence** (one host, one map pin, linked transport) | **S12a–d done** | [`CREATE_FLOW.md`](./CREATE_FLOW.md) § Coherence program |
@@ -590,7 +590,7 @@ flowchart LR
 | Publishing workspace vs consumer Organize split | Done | S12, `CREATE_FLOW` |
 | Module naming / domain API clients | Done | S11, S4 |
 
-**Known gaps (S13 fixes):** human consumer-detail QA sign-off (**W10** — `npm run consumer-detail:qa-routes`). **Closed (W1–W9 eng):** profile lenses · people browse VM/shim · guest kit · profile section gates · activity L3 columns + kind composers (**C23**) · place L1 + **camp/event hero facts** · area tabbed hub (S9 Ph 4) · shop/agency `EntityPublicDetailShell` (`publicEntityShellAcceptance`) · admin catalog (C25).
+**Known gaps (S13 fixes):** human consumer-detail QA sign-off (**W10** — `npm run s10f:ops:print-routes`). **Closed (W1–W9 eng):** profile lenses · people browse VM/shim · guest kit · profile section gates · activity L3 columns + kind composers (**C23**) · place L1 + **camp/event hero facts** · area tabbed hub (S9 Ph 4) · shop/agency `EntityPublicDetailShell` (`publicEntityShellAcceptance`) · admin catalog (C25).
 
 #### 8.3.3 Implementation waves (order + PR boundaries)
 
@@ -608,7 +608,7 @@ Work **top to bottom**. Each wave ends with **`npm run verify:system:quick`** (w
 | **7** | **S13-W7** | **Activity L3 kind composers** | `buildActivityDetailPageModel(wire)`; per-kind `*ActivityDetailPage` composes sections (place pattern); remove unwired `planFacts` / shrink `ActivityDetailBody` | `activityDetailAcceptance` per kind; C23 closed |
 | **8** | **S13-W8** | **Entity L3 leftovers (S9)** | Optional: area tabbed hub; place Facts/Transport tab labels; shop/agency `EntityPublicDetailShell` parity audit | `consumerDetailQaMatrixGuard` rows green |
 | **9** | **S13-W9** | **Ops surfaces catalog** | `NAVIGATION.md` § Platform admin table; `adminSurfacesAcceptance` lists `/admin/*` routes; manifest `feRoots` (C25) | No consumer peek imports in `src/pages/admin/*` |
-| **10** | **S13-W10** | **Release gates** | Human QA `npm run consumer-detail:qa-routes`; ops S10e bbox promote if scheduled | `PRE_DEPLOY_CHECKLIST` |
+| **10** | **S13-W10** | **Release gates** | `npm run release:ops:checklist` (CI); human `s10f:ops:print-routes`; S10e bbox promote if scheduled | `PRE_DEPLOY_CHECKLIST` |
 
 **Parallelism:** W1–W2 can ship as one PR if small. **W7** (activity kinds) should not start until **W6** guest kit is stable (same join surfaces). **W8** can run parallel to **W7** by another owner. **W9** is doc/guard-only anytime after W0.
 
@@ -668,7 +668,7 @@ Work **in order**; extend `systemCoherenceGuard.test.ts` / `naming-coherence.tes
 | **S10c** | API **read batching** (N+1) | Read/list paths batched (incl. member browse, wishlist, group unread, publish notify actor labels); private-profile notify fan-out may still resolve per recipient | `naming-coherence.test.ts` | **Done** (Oct 2026) |
 | **S10d** | Explore **runtime hygiene** (not C18 rewrite) | Browse URL migrations, organize/pin-deep-link callback deps, rideshare gate deps | `systemCoherenceGuard` S10d | **Done** (Oct 2026) |
 | **S10e** | **C19** map bbox **promote** | Staging flags `EXPLORE_MAP_BBOX` + `VITE_EXPLORE_MAP_BBOX`; p95 bbox vs full map per runbook | `npm run s10e:staging-checklist` (`--verify` optional); [`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md) | **Deferred (eng)** — prod/staging promote pending ops; P2 eng may proceed behind flags |
-| **S10f** | **Manual QA** | S9 §8 routes + C9 notification edge cases | `npm run consumer-detail:qa-routes` (prints both checklists); eng bridge `activityDetailS10fBridgeGuard` | **Pending (human)** |
+| **S10f** | **Manual QA** | S9 §8 routes + C9 notification edge cases | `npm run s10f:ops:checklist` (CI) · `BASE_URL=… s10f:ops:print-routes` (human); `activityDetailS10fBridgeGuard` | **Pending (human)** |
 | **S10g** | **C1** platform admin hardening | MFA, impersonation, cross-tenant — not a quick slice | `MEMBER_MODEL` / security review | Deferred |
 
 Phases **S0–S4** (guards), **S6–S8** (core), and **S7/S7b/S7c** are in place; **S5** manual QA + knip optional. **S8** coded tracks are complete — remaining discovery scale work is **R5 promotion** (ops) and optional metrics (**C19**); discovery execution archive = [`archive/system-refactor-plan-2026-10.md`](./archive/system-refactor-plan-2026-10.md). **Platform program (P0–P6):** §8.6 + [`refactor-program.json`](../scripts/refactor-program.json). **S7** supersedes ad-hoc peek/detail gating in the SPA (**C16** mitigated). **S9** eng is complete; §8 manual QA overlaps **S10f**. **S10** engineering remediation closed Oct 2026 — run **`npm run verify:system`** before release; staging bbox (**S10e**) and printed QA routes (**S10f**) are the remaining human/ops gates.
@@ -994,7 +994,7 @@ Legacy shim (one release, no new imports): `placeRegistry.ts`. `placeCatalogApi.
 
 #### 8.6.0 Authorization (CTO charter — 2026-10-17)
 
-> **CTO coherence program (PCOH): complete (`MIG-COH-00`…`12`). Remaining schedule: `MIG-SURFACE-ACTIVITY-DETAIL` (S10f), `MIG-P5-SLO-SMOKE`. S10e/S10f gate release.**
+> **CTO coherence program (PCOH): complete (`MIG-COH-00`…`12`). P4b surface eng complete; ops: S10f staging QA, P5 SLO smoke, MIG-DISCO-REG migrate + strict storage gate.**
 
 | Rule | Detail |
 |------|--------|
@@ -1002,7 +1002,7 @@ Legacy shim (one release, no new imports): `placeRegistry.ts`. `placeCatalogApi.
 | **WIP limit** | At most **2** migrations `in_progress` at once (`refactor-program.json` → `capacity.maxInProgressMigrations`; enforced by `verify:refactor-program`) |
 | **P0–P1** | **Complete** (Oct 2026) — census, W0 audit, CPC catalog wire, seeking storage gate |
 | **P4** | **API routes only** — CQRS-light complete (eng); not whole-product UI/storage unification |
-| **P4b** | **In progress** — remaining `MIG-SURFACE-*` + identity boundary after PCOH |
+| **P4b** | **Eng complete** — all `MIG-SURFACE-*` shipped; **S10f** human QA on staging (`s10f:ops:print-routes`) |
 | **PCOH** | **Complete** — §8.8 UPL/BWL separation, domain dedup, `MIG-COH-00`…`12` |
 | **P5–P6** | P5 SLO with COH-08 ops; P6 gated on §7 / S10g |
 
@@ -1026,12 +1026,12 @@ Board one-liner: *P4 thinned the API; **PCOH** (§8.8) finished UPL/BWL coherenc
 | **P2** | platform | 6–10 wk | **MIG-OUTBOX**, **MIG-EXPLORE-READ** (flags); **S10e** promote ops | **Complete** (eng) |
 | **P3** | platform | 6–10 wk | **MIG-CLIENT-QUERY** (TanStack Query on consumer reads) | **Complete** (eng) |
 | **P4** | platform | 8–12 wk | **API only** — CQRS-light; all **`apps/api/src/routes/**`** → `services/*` (no `*-store` in routes) | **Complete** (eng) |
-| **P4b** | product-eng | 8–16 wk | Remaining surface unification after PCOH | **In progress** |
+| **P4b** | product-eng | 8–16 wk | Surface unification after PCOH | **Eng complete** — phase open until S10f signed |
 | **PCOH** | product-eng + platform | pre-launch | §8.8 coherence program (`MIG-COH-*`) | **Complete** |
-| **P5** | platform | 4–6 wk | SLO smoke + staging baselines (`p5:slo-smoke`) | **In progress** (eng preflight; ops/staging before close) |
+| **P5** | platform | 4–6 wk | SLO smoke + staging baselines (`p5:slo-smoke`) | **Eng complete** — PRE_DEPLOY § SLO baseline sign-off pending |
 | **P6** | platform | ongoing | **C1**/S10g, §7 burn-down | **Gated** |
 
-**Relationship to S0–S13:** **S8–S11** eng closed. **S13** methodology + guards shipped; **product parity** (W10, peek→detail, explore IA) is **P4b**, not “done” because P4 API passed. **P*** = platform capacity (~30–40%) on top of product slices.
+**Relationship to S0–S13:** **S8–S11** eng closed. **S13** methodology + guards shipped; **P4b** `MIG-SURFACE-*` eng **complete** (`p4bPhaseProgramGuard`) — phase **`in_progress`** only until **S10f** staging sign-off. **P*** = platform capacity (~30–40%) on top of product slices.
 
 #### 8.6.2 Migration register (machine + human)
 
@@ -1050,8 +1050,8 @@ Board one-liner: *P4 thinned the API; **PCOH** (§8.8) finished UPL/BWL coherenc
 | **MIG-CQRS-ROUTES** | P4 | Route CQRS guard; entire `apps/api/src/routes/**` tree → read/command services (no `*-store`) | **Complete** |
 | **MIG-CQRS-ROUTE-DATA** | P4 | Route layer → services for `auth-users`, `chat-data`, `social-data` (guard enforced) | **Complete** |
 | **MIG-CQRS-ROUTE-AUTH** | P4 | `auth.ts` → `auth-*-commands` + `auth-session-flow`; HTTP cookies in `auth-route-http` | **Complete** |
-| **MIG-P5-SLO-SMOKE** | P5 | `npm run p5:slo-preflight` in `verify:domain` + staging `p5:slo-smoke` + PRE_DEPLOY SLO checklist | **In progress** (eng probes in `verify:domain`; ops/staging before close) |
-| **MIG-SURFACE-ACTIVITY-DETAIL** | P4b | Activity L3 + guest/join + peek parity (S13-W6–W7, S10f) | **In progress** |
+| **MIG-P5-SLO-SMOKE** | P5 | `p5SloProgramGuard` + `p5:slo-preflight` in `verify:domain` + probes contract | **Eng complete** — staging `p5:slo-smoke` + PRE_DEPLOY SLO sign-off pending |
+| **MIG-SURFACE-ACTIVITY-DETAIL** | P4b | Activity L3 + guest/join + peek/list parity (`participationPresentationGuard`) | **Eng complete** — S10f staging sign-off pending |
 | **MIG-SURFACE-EXPLORE-IA** | P4b | Map / browse / list / discover one IA | **Complete** |
 | **MIG-SURFACE-MEMBER-PEOPLE** | P4b | Profile lenses + people browse unity | **Complete** |
 | **MIG-SURFACE-ADMIN-OPS** | P4b | Admin surface catalog + boundaries | **Complete** (folded into COH-11) |

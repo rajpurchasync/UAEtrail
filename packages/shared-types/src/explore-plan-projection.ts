@@ -146,10 +146,8 @@ export const resolveHostCreateKindFromAvailabilityMapItem = (item: {
 /** @deprecated Use {@link resolveHostCreateKindFromAvailabilityMapItem} */
 export const resolveHostCreateKindFromSeekingMapItem = resolveHostCreateKindFromAvailabilityMapItem;
 
-/**
- * Map item id for a seeking post — `activity:` only.
- */
-export const resolveSeekingExploreMapItemId = (input: {
+/** Map peek pin id — `availability:` or published `activity:` only (no bare intent / `demand:`). */
+export const resolveCrewExploreMapItemId = (input: {
   intentId: string;
   activityId?: string | null;
   availabilityMapItemId?: string | null;
@@ -161,18 +159,22 @@ export const resolveSeekingExploreMapItemId = (input: {
   return null;
 };
 
-/** Canonical explore deep link for seeking (notifications, share, map `path`). */
+/** @deprecated Use {@link resolveCrewExploreMapItemId} */
+export const resolveSeekingExploreMapItemId = resolveCrewExploreMapItemId;
+
+const activityDetailPathFromWireId = (activityId: string): string =>
+  `/activity/${encodeURIComponent(activityId)}`;
+
+/**
+ * @deprecated Archived `activityMode: seeking` — activity detail or explore list (no map pin).
+ */
 export const exploreSeekingMapItemPath = (input: {
   intentId: string;
   activityId?: string | null;
 }): string => {
-  const pin = resolveSeekingExploreMapItemId(input);
-  const params = new URLSearchParams({
-    list: '1',
-    panel: 'activities',
-  });
-  if (pin) params.set('pin', pin);
-  return `/explore?${params.toString()}`;
+  const activityId = input.activityId?.trim();
+  if (activityId) return activityDetailPathFromWireId(activityId);
+  return `/explore?${new URLSearchParams({ list: '1' }).toString()}`;
 };
 
 /** Explore list + map peek for fixed availability pins (`availability:{userId}:{slotId}`). */

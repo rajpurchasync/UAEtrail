@@ -349,7 +349,7 @@ Map/list **peek** and entity **detail** share one engagement contract per viewer
 | Map home | `EXPLORE_MAP_PATH` (`/explore`) | `/map`, bare `/shop` |
 | FAB deep link (wire) | `compose=host:*` \| `seek:fixed:*` \| `seek:flexible` \| `add:*` — param name **compose** is wire-only; product = **Host · Find crew · Add on map** | User-facing “Compose”; `/host/activities/new` for consumers |
 | Panel/filter query | `explorePath({ panel, filter, … })` | Raw `` `/explore?${...}` `` outside `explore/routing.ts` |
-| Seeking pin | `exploreSeekingMapItemPath` (`pin=activity:{id}`) | `/demand/:id`; leftover `demand:` pin ids |
+| Archived seeking (ops only) | Activity detail or `/explore?list=1`; map pin `availability:{userId}:{slotId}` | `exploreSeekingMapItemPath` map pins; `/demand/:id`; `demand:` pin ids |
 | Full-screen list browse | `LIST_DISCOVERY_PATH` (`/list`) + `listDiscoveryPath()` | `/list/hiking`, `/shops` as category site roots |
 | List ↔ map handoff | `exploreMapPathFromListSearch()`, `listDiscoveryPathFromExploreSearch()` | Second filter vocabulary on `/list` |
 
@@ -563,7 +563,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 | Entity | Who sets `areaId` | Rule |
 |--------|-------------------|------|
 | **Area** | Admin `/admin/areas` | Curated **name** + optional center/bounds as camera hint for the hub page — **no explore map pin**. Geography labels (country, state, region) come from the map, not from Area. |
-| **Place** | Admin `/admin/places` or member **Add** (`curatedArea` then pin) | **`locations.areaId` required** on submit (`POST /me/locations`, host `/locations`) |
+| **Place** | Admin `/admin/places` or member **Add** (`curatedArea` then pin) | **`locations.areaId` required** on submit (`POST /me/places`; legacy location **writes** → 410) |
 | **Hosted activity** | Host publish | **No `activity.areaId` on write.** `activity.locationId` → catalog **place** with **`place.areaId`**. `validateHostingPlaceArea` / publish gate. Meeting / going-from pin does **not** define area. |
 | **Find crew (fixed map slot)** | Find FAB | **`member_availability`** slot with time/place; optional **`areaId`** on slot — not an activity row. |
 | **Availability** | Plan / profile | Member picks **`areaId`** (optional region fallback) — not an activity. |

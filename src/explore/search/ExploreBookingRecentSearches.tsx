@@ -2,14 +2,14 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { EXPLORE_SEARCH_RECENT_TITLE } from '../hub/exploreHubHomeCopy';
-import { exploreHubHomePlaceLabel, exploreHubHomeWhenSummary } from '../hub/exploreHubHomeWhenLabel';
-import { exploreHubHomeStateSummary } from '../hub/exploreHubVenueState';
+import { EXPLORE_SEARCH_RECENT_TITLE } from './exploreSearchHomeCopy';
+import { exploreSearchPlaceLabel, exploreSearchWhenSummary } from './exploreSearchWhenLabel';
+import { exploreSearchStateSummary } from './exploreSearchVenueState';
 import { useExploreRegionPillOptions } from '../../config/useExploreRegionPillOptions';
 import {
   exploreSearchStorageScope,
   readExploreRecentSearches,
-} from '../hub/exploreHubLastSearch';
+} from './exploreSearchLastSearch';
 import { exploreSearchResultsPath } from './exploreSearchRouting';
 
 type ExploreBookingRecentSearchesProps = {
@@ -37,12 +37,12 @@ export const ExploreBookingRecentSearches = ({ onPick, refreshKey = 0 }: Explore
       </h2>
       <ul className="space-y-2">
         {recent.map((entry) => {
-          const where = exploreHubHomePlaceLabel(entry.query);
+          const where = exploreSearchPlaceLabel(entry.query);
           const secondLine =
-            entry.hubMode === 'places'
-              ? exploreHubHomeStateSummary(entry.venueRegions ?? [], regionPillOptions)
-              : exploreHubHomeWhenSummary(entry.activityDatePreset);
-          const key = `${entry.hubMode}|${entry.query}|${entry.activityDatePreset}|${(entry.venueRegions ?? []).join(',')}`;
+            entry.searchScope === 'places'
+              ? exploreSearchStateSummary(entry.venueRegions ?? [], regionPillOptions)
+              : exploreSearchWhenSummary(entry.activityDatePreset);
+          const key = `${entry.searchScope}|${entry.query}|${entry.activityDatePreset}|${(entry.venueRegions ?? []).join(',')}`;
           return (
             <li key={key}>
               <button
@@ -52,7 +52,7 @@ export const ExploreBookingRecentSearches = ({ onPick, refreshKey = 0 }: Explore
                     exploreSearchResultsPath({
                       query: entry.query,
                       activityDatePreset: entry.activityDatePreset,
-                      searchScope: entry.hubMode,
+                      searchScope: entry.searchScope,
                       venueRegions: entry.venueRegions ?? [],
                     })
                   );
@@ -64,7 +64,7 @@ export const ExploreBookingRecentSearches = ({ onPick, refreshKey = 0 }: Explore
                   <p className="truncate text-sm font-bold text-neutral-900">{where}</p>
                   <p className="text-xs font-medium text-neutral-600">
                     {secondLine}
-                    {entry.hubMode !== 'places' && !entry.query.trim() ? ' · everywhere' : ''}
+                    {entry.searchScope !== 'places' && !entry.query.trim() ? ' · everywhere' : ''}
                   </p>
                 </div>
                 <ChevronRight className="h-5 w-5 shrink-0 text-neutral-400" aria-hidden />

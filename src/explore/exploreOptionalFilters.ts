@@ -6,12 +6,18 @@ import {
   type ExploreMapItemDTO,
   type PlaceKind,
 } from '@uaetrail/shared-types';
-import { isBuddyMapItem, isPlacesMapItem, isShopListItem } from './ui/exploreMapPinModel';
+import { isBuddyMapItem, isPlacesMapItem, isShopListItem } from './exploreMapItemKind';
 import {
   togglePlaceMapTopic,
   type PlaceMapTopicKey,
   type TripMapTopicKey,
-} from './exploreMapQuickTopicFilters';
+} from './exploreMapTopicUrlParams';
+
+export {
+  EXPLORE_PLACE_TOPIC_OPTIONS,
+  aliasListPlaceTopicToMap,
+  aliasPlaceMapTopicToList,
+} from './exploreMapTopicUrlParams';
 
 export const EXPLORE_PRICE_PARAM = 'price';
 export const EXPLORE_HAS_TRIP_PARAM = 'hasTrip';
@@ -44,12 +50,6 @@ export const EXPLORE_TRIP_TOPIC_OPTIONS: ReadonlyArray<{ key: TripMapTopicKey; l
 export const EXPLORE_TRIP_DROPDOWN_OPTIONS: ReadonlyArray<{ key: string; label: string }> = [
   { key: EXPLORE_TRIP_SCOPE_ALL_KEY, label: EXPLORE_TRIP_SCOPE_RESTING_LABEL },
   ...EXPLORE_TRIP_TOPIC_OPTIONS,
-];
-
-export const EXPLORE_PLACE_TOPIC_OPTIONS: ReadonlyArray<{ key: PlaceMapTopicKey; label: string }> = [
-  { key: 'hiking', label: 'Hiking trail' },
-  { key: 'camping', label: 'Camping spots' },
-  { key: 'others', label: 'Hubs' },
 ];
 
 export const EXPLORE_FACILITY_SCOPE_RESTING_LABEL = 'By facilities';
@@ -197,18 +197,6 @@ export const explorePriceFilterLabel = (price: ExplorePriceFilter): string =>
   EXPLORE_PRICE_FILTER_OPTIONS.find((option) => option.key === price)?.label ??
   EXPLORE_PRICE_SCOPE_RESTING_LABEL;
 
-/** List `filter=shop` / `placeTopics: shop` ↔ map `placeTypes=shops`. */
-export const aliasListPlaceTopicToMap = (key: string): PlaceMapTopicKey | null => {
-  if (key === 'shop' || key === 'shops') return 'shops';
-  if (key === 'hubs' || key === 'others') return 'others';
-  if (key === 'hiking' || key === 'camping' || key === 'facilities') return key;
-  return null;
-};
-
-export const aliasPlaceMapTopicToList = (
-  key: PlaceMapTopicKey
-): 'hiking' | 'camping' | 'facilities' | 'shop' | 'others' => (key === 'shops' ? 'shop' : key);
-
 export const exploreItemPriceKind = (item: ExploreMapItemDTO): ExplorePriceFilter => {
   if (item.priceLabel === 'free' || item.priceLabel === 'shared' || item.priceLabel === 'paid') {
     return item.priceLabel;
@@ -244,71 +232,11 @@ const catalogLocationId = (item: ExploreMapItemDTO): string | null => {
   return null;
 };
 
-export const hostedPlaceLocationIdsFromCatalog = (catalog: readonly ExploreMapItemDTO[]): Set<string> => {
-  const ids = new Set<string>();
-  for (const item of catalog) {
-    if (!isBuddyMapItem(item)) continue;
-    if (item.activityMode === 'seeking') continue;
-    const locationId = catalogLocationId(item);
-    if (locationId) ids.add(locationId);
-  }
-  return ids;
-};
-
-export type HostedOutingPlaceSummary = {
-  count: number;
-  nextDateIso: string | null;
-  nextPath: string | null;
-  nextExploreItemId: string | null;
-};
-
-const outingPath = (item: ExploreMapItemDTO): string | null => {
-  const fromItem = item.path?.trim();
-  if (fromItem) return fromItem;
-  const activityId = item.activity?.id?.trim();
-  return activityId ? `/activity/${activityId}` : null;
-};
-
-const outingDateIso = (item: ExploreMapItemDTO): string | null => {
-  const raw = item.date?.trim() || item.activity?.date?.trim() || '';
-  const iso = raw.slice(0, 10);
-  return /^\d{4}-\d{2}-\d{2}$/.test(iso) ? iso : null;
-};
-
-/** Upcoming hosted outings keyed by catalog place id — list venue “trips here” hint. */
-export const hostedOutingSummariesByPlaceId = (
-  catalog: readonly ExploreMapItemDTO[]
-): Map<string, HostedOutingPlaceSummary> => {
-  const byPlace = new Map<string, HostedOutingPlaceSummary>();
-  for (const item of catalog) {
-    if (!isBuddyMapItem(item)) continue;
-    if (item.activityMode === 'seeking') continue;
-    const locationId = catalogLocationId(item);
-    if (!locationId) continue;
-    const dateIso = outingDateIso(item);
-    const path = outingPath(item);
-    const current = byPlace.get(locationId) ?? {
-      count: 0,
-      nextDateIso: null,
-      nextPath: null,
-      nextExploreItemId: null,
-    };
-    current.count += 1;
-    if (!current.nextPath && path) {
-      current.nextPath = path;
-      current.nextExploreItemId = item.id;
-    }
-    if (dateIso && (!current.nextDateIso || dateIso < current.nextDateIso)) {
-      current.nextDateIso = dateIso;
-      if (path) {
-        current.nextPath = path;
-        current.nextExploreItemId = item.id;
-      }
-    }
-    byPlace.set(locationId, current);
-  }
-  return byPlace;
-};
+export {
+  hostedPlaceLocationIdsFromCatalog,
+  hostedOutingSummariesByPlaceId,
+  type HostedOutingPlaceSummary,
+} from './exploreHostedPlaceOutings';
 
 export const explorePlaceHasHostedTrip = (
   place: ExploreMapItemDTO,

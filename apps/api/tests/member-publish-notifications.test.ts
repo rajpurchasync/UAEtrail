@@ -86,25 +86,4 @@ describe('notifyMemberPublishSubscribers', () => {
     expect(row.meta.path).toContain('availability%3Apub-1%3Aslot-9');
   });
 
-  it('notifies buddies only for legacy seeking posts (followers excluded)', async () => {
-    mocks.listBuddiesForUser.mockResolvedValue([{ userId: 'buddy-1' }]);
-    mocks.listFollowerIdsForUser.mockResolvedValue(['follower-1']);
-
-    await notifyMemberPublishSubscribers('publisher', {
-      publishType: 'seeking',
-      intentId: 'seek-1',
-      title: 'Looking for a crew',
-    });
-
-    expect(mocks.listFollowerIdsForUser).not.toHaveBeenCalled();
-    const recipients = mocks.createNotificationsMany.mock.calls[0]![0]!.map(
-      (row: { userId: string }) => row.userId
-    );
-    expect(recipients).toEqual(['buddy-1']);
-    const row = mocks.createNotificationsMany.mock.calls[0]![0]![0] as {
-      meta: Record<string, string>;
-    };
-    expect(row.meta.kind).toBe('friend_published');
-    expect(row.meta.intentId).toBe('seek-1');
-  });
 });

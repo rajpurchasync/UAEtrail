@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  isExploreHubSessionPreservePath,
+  isExploreSearchSessionPreservePath,
   sessionExpiredExplorePath,
   sessionExpiredLandingPath,
   signedOutLandingPath,
@@ -29,10 +29,10 @@ describe('authSessionLanding', () => {
     expect(withSessionExpiredQuery('/explore/search')).toBe('/explore/search?session=expired');
   });
 
-  it('isExploreHubSessionPreservePath covers search results and legacy hub URLs', () => {
-    expect(isExploreHubSessionPreservePath('/explore/search')).toBe(true);
-    expect(isExploreHubSessionPreservePath('/explore/hub/search')).toBe(true);
-    expect(isExploreHubSessionPreservePath('/explore')).toBe(false);
+  it('isExploreSearchSessionPreservePath covers search results and legacy hub URLs', () => {
+    expect(isExploreSearchSessionPreservePath('/explore/search')).toBe(true);
+    expect(isExploreSearchSessionPreservePath('/explore/hub/search')).toBe(true);
+    expect(isExploreSearchSessionPreservePath('/explore')).toBe(false);
   });
 
   describe('legacy explore landing', () => {

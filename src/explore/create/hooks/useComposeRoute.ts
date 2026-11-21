@@ -8,7 +8,7 @@ import {
   isAddWizard,
   isComposeMenu,
   isAvailabilityFixedWizard,
-  isAvailabilityFlexibleWizard,
+  isAvailabilityOpenWizard,
   isHostWizard,
   COMPOSE_QUERY_KEY,
   parseExploreCompose,
@@ -68,7 +68,7 @@ export const useComposeRoute = ({
   const hostComposeRoute = isHostWizard(composeRoute) ? composeRoute : null;
   const availabilityFixedRoute = isAvailabilityFixedWizard(composeRoute) ? composeRoute : null;
   const addRoute = isAddWizard(composeRoute) ? composeRoute : null;
-  const availabilityFlexibleOpen = isAvailabilityFlexibleWizard(composeRoute);
+  const availabilityOpenWizard = isAvailabilityOpenWizard(composeRoute);
 
   const applySearchMutation = useCallback(
     (mutate: (params: URLSearchParams) => void) => {
@@ -135,7 +135,7 @@ export const useComposeRoute = ({
       Boolean(next && prev && isComposeMenu(prev)) &&
       (isHostWizard(next) ||
         isAvailabilityFixedWizard(next) ||
-        isAvailabilityFlexibleWizard(next) ||
+        isAvailabilityOpenWizard(next) ||
         isAddWizard(next));
 
     if (openedWizardFromMenu && next) {
@@ -245,7 +245,9 @@ export const useComposeRoute = ({
     hostComposeRoute,
     availabilityFixedRoute,
     addRoute,
-    availabilityFlexibleOpen,
+    availabilityOpenWizard,
+    /** @deprecated Use availabilityOpenWizard */
+    availabilityFlexibleOpen: availabilityOpenWizard,
     setComposeRoute,
     closeCompose,
     handleCreateTap,

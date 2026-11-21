@@ -52,6 +52,22 @@ describe('doc coherence (Tier 1)', () => {
     }
   });
 
+  it('ARCHITECTURE describes shipped HTTP (no live seeking-posts)', () => {
+    const arch = readFileSync(join(DOCS, 'ARCHITECTURE.md'), 'utf8');
+    expect(arch).toMatch(/\/me\/availability/);
+    expect(arch).toMatch(/Trips · Venues · Crews · Chat · Plan/);
+    expect(arch).not.toMatch(/seeking-posts/);
+    expect(arch).toMatch(/context:map/);
+  });
+
+  it('context map generator is wired (code-first onboarding)', () => {
+    expect(existsSync(join(process.cwd(), 'scripts/context-map.mjs'))).toBe(true);
+    const pkg = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8')) as {
+      scripts?: Record<string, string>;
+    };
+    expect(pkg.scripts?.['context:map']).toMatch(/context-map/);
+  });
+
   it('DOMAIN_CANONICALS §10 teaches getMemberStatus (not removed host-status client)', () => {
     const canon = readFileSync(join(DOCS, 'DOMAIN_CANONICALS.md'), 'utf8');
     expect(canon).toMatch(/getMemberStatus\(\)/);

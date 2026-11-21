@@ -17,15 +17,12 @@ import { createNotificationsMany } from '../lib/notifications-store.js';
 import {
   activityDetailPath,
   exploreAvailabilityPinNotificationPath,
-  explorePublishedActivityPinPath,
 } from '../lib/member-routes.js';
 import { logger } from '../lib/logger.js';
 
 export type MemberPublishEvent =
   | { publishType: 'activity'; activityId: string; title: string }
-  | { publishType: 'availability'; availabilityMapItemId: string; title: string }
-  /** Legacy ops/tests — `activityMode: seeking` rows (not product map). */
-  | { publishType: 'seeking'; intentId: string; title: string; activityId?: string | null };
+  | { publishType: 'availability'; availabilityMapItemId: string; title: string };
 
 const notificationCopy = (
   actorName: string,
@@ -39,21 +36,10 @@ const notificationCopy = (
       kind: 'friend_activity_published',
     };
   }
-  if (event.publishType === 'availability') {
-    return {
-      title: `${actorName} posted on the map`,
-      body: event.title,
-      path: exploreAvailabilityPinNotificationPath(event.availabilityMapItemId),
-      kind: 'friend_published',
-    };
-  }
   return {
     title: `${actorName} posted on the map`,
     body: event.title,
-    path: explorePublishedActivityPinPath({
-      intentId: event.intentId,
-      activityId: event.activityId,
-    }),
+    path: exploreAvailabilityPinNotificationPath(event.availabilityMapItemId),
     kind: 'friend_published',
   };
 };
@@ -94,12 +80,9 @@ export const notifyMemberPublishSubscribers = async (
         path,
       };
       if (event.publishType === 'activity') meta.activityId = event.activityId;
-      else if (event.publishType === 'availability') {
+      else {
         meta.availabilityMapItemId = event.availabilityMapItemId;
         meta.exploreItemId = event.availabilityMapItemId;
-      } else {
-        meta.intentId = event.intentId;
-        if (event.activityId) meta.activityId = event.activityId;
       }
       return {
         userId,

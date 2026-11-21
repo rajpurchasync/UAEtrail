@@ -345,9 +345,6 @@ export const isAvailabilityOpenWizard = (
   );
 
 /** @deprecated Use isAvailabilityOpenWizard */
-export const isAvailabilityFlexibleWizard = isAvailabilityOpenWizard;
-
-/** @deprecated Use isAvailabilityOpenWizard */
 export const isSeekFlexibleWizard = isAvailabilityOpenWizard;
 
 export const isAddWizard = (

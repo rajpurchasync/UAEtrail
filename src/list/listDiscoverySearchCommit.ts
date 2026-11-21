@@ -1,4 +1,4 @@
-import type { ExploreSearchScopeKey } from '../explore/exploreBrowseTaxonomy';
+import type { ExploreSearchScopeKey } from '../explore/discoveryRuntime';
 import type { BrowseListFilterState } from './browseListFilters';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 

@@ -3,7 +3,7 @@ import { signInPathForReturn } from '../../utils/authReturnContext';
 import {
   isAddWizard,
   isAvailabilityFixedWizard,
-  isAvailabilityFlexibleWizard,
+  isAvailabilityOpenWizard,
   isComposeMenu,
   isHostWizard,
   type ExploreCompose,
@@ -39,7 +39,7 @@ export const composeRouteRequiresAuth = (route: ExploreCompose | null): boolean 
   return (
     isHostWizard(route) ||
     isAvailabilityFixedWizard(route) ||
-    isAvailabilityFlexibleWizard(route) ||
+    isAvailabilityOpenWizard(route) ||
     isAddWizard(route)
   );
 };
@@ -59,7 +59,7 @@ export const resolveComposeRouteChange = (
   if (
     route &&
     (isAvailabilityFixedWizard(route) ||
-      isAvailabilityFlexibleWizard(route) ||
+      isAvailabilityOpenWizard(route) ||
       isAddWizard(route)) &&
     !ctx.user
   ) {

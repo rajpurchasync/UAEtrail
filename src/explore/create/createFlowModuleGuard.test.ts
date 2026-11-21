@@ -122,7 +122,7 @@ describe('create flow module boundaries (CPC-9b)', () => {
     expect(guard).toMatch(/Availability/);
     const routeHook = read('src/explore/create/hooks/useComposeRoute.ts');
     expect(routeHook).toMatch(/availabilityFixedRoute/);
-    expect(routeHook).toMatch(/isAvailabilityFlexibleWizard\(next\)/);
+    expect(routeHook).toMatch(/isAvailabilityOpenWizard\(next\)/);
     for (const hook of [
       'useHostingFromActivity.ts',
       'useHostingWizardPrefill.ts',

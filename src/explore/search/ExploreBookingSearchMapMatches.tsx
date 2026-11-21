@@ -6,18 +6,18 @@ import {
 import { exploreSearchScopeUsesMapMatchCounts } from '../exploreSearchScopeUi';
 import { EXPLORE_TYPE } from '../../config/exploreTheme';
 import {
-  EXPLORE_HUB_SEARCH_SECTION_CREW,
-  EXPLORE_HUB_SEARCH_SECTION_SPOTS,
-  EXPLORE_HUB_SEARCH_SECTION_TRIPS,
-} from '../hub/exploreHubHomeCopy';
+  EXPLORE_SEARCH_SECTION_CREW,
+  EXPLORE_SEARCH_SECTION_SPOTS,
+  EXPLORE_SEARCH_SECTION_TRIPS,
+} from './exploreSearchHomeCopy';
 import type { ExploreSearchScope } from './exploreSearchRouting';
 
 const BOOKING_MATCH_COUNT_KEYS: readonly ExploreSearchScopeKey[] = ['activities', 'places', 'people'];
 
 const BOOKING_MATCH_LABEL: Record<(typeof BOOKING_MATCH_COUNT_KEYS)[number], string> = {
-  activities: EXPLORE_HUB_SEARCH_SECTION_TRIPS,
-  places: EXPLORE_HUB_SEARCH_SECTION_SPOTS,
-  people: EXPLORE_HUB_SEARCH_SECTION_CREW,
+  activities: EXPLORE_SEARCH_SECTION_TRIPS,
+  places: EXPLORE_SEARCH_SECTION_SPOTS,
+  people: EXPLORE_SEARCH_SECTION_CREW,
 };
 
 export const exploreBookingScopeFromMatchKey = (key: ExploreSearchScopeKey): ExploreSearchScope => {

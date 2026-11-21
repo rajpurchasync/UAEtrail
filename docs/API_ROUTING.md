@@ -372,7 +372,7 @@ SPA: `/admin/hosts` → `pages/admin/Organisations` (see [`NAVIGATION.md`](./NAV
 | GET | `/places/:id` | Public + `viewerAccess` | **(today)** |
 | GET | `/places/registry` | Organize picker (legacy) | **(today)** |
 | GET | `/places/catalog` | Places-only catalog (`segment=place`) | **(today)** |
-| POST | `/me/places` | Member place submit | **(today)** canonical; `/me/locations` legacy alias |
+| POST | `/me/places` | Member place submit | **(today)** canonical; `POST /me/locations` → **410** |
 | GET | `/me/places` | My submitted places | **(today)** |
 | GET | `/facilities` | Listed amenities (paginated) | **(today)** |
 | GET | `/facilities/:id` | Public facility detail + `viewerAccess` | **(today)** — map `source: facility` |
@@ -402,7 +402,7 @@ SPA: `/admin/hosts` → `pages/admin/Organisations` (see [`NAVIGATION.md`](./NAV
 | `groups.ts`, `chat.ts` | Groups, DMs, inbox |
 | `buddies.ts` | `/me/buddies`, `/me/following` |
 | `wishlist.ts`, `entityFollow.ts`, `reviews.ts` | `/me/wishlist`, `/me/entity-follows`, `/reviews` |
-| `places.ts` | `/me/places` (canonical), `/me/locations` (legacy alias) |
+| `places.ts` | `/me/places` (canonical); `GET /me/locations` read alias only |
 | `facilities.ts` | `/me/facilities`, `/admin/facilities` |
 | `organisation.ts` | `/me/pro-application` (alias `/me/host-application`) |
 | `admin.ts` | `/admin/pro-applications` (alias `/admin/host-applications`) |

@@ -1,5 +1,5 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { exploreSeekingMapItemPath } from '@uaetrail/shared-types';
+import { activityDetailPath } from '../config/routingCatalog';
 
 const base = (
   partial: Partial<ExploreMapItemDTO> & Pick<ExploreMapItemDTO, 'id' | 'kind'>
@@ -39,7 +39,7 @@ export const seekingExploreMapItem = (
     source: 'activity',
     activityMode: 'seeking',
     participantIntentId: intentId,
-    path: exploreSeekingMapItemPath({ intentId, activityId }),
+    path: activityDetailPath(activityId),
     composeIntent: 'seek',
     ...partial,
   });

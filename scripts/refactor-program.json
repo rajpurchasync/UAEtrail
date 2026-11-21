@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "description": "Platform program spine. Work unit = bounded context (manifest id). Remaining schedule: MIG-SURFACE-ACTIVITY-DETAIL (S10f), MIG-P5-SLO-SMOKE.",
+  "description": "Platform program spine. Work unit = bounded context (manifest id). Eng schedule closed; ops gates: S10f consumer-detail QA, P5 SLO smoke, MIG-DISCO-REG Mongo migrate.",
   "updated": "2026-10-18",
   "authorization": {
     "approvedOn": "2026-10-17",
-    "statement": "CTO coherence program (PCOH): complete (`MIG-COH-00`…`12`). Remaining schedule: `MIG-SURFACE-ACTIVITY-DETAIL` (S10f), `MIG-P5-SLO-SMOKE`. S10e/S10f gate release.",
+    "statement": "CTO coherence program (PCOH): complete (`MIG-COH-00`…`12`). P4b surface eng complete; ops: S10f staging QA, P5 SLO smoke, MIG-DISCO-REG migrate + strict storage gate.",
     "authorizedPhases": ["PCOH", "P4b", "P5"],
     "p2PlusRequires": [
       "P0.status is complete",
@@ -93,7 +93,7 @@
       "exitCriteria": [
         "P4 complete",
         "MIG-SURFACE-* complete per bounded context (horizontal: feRoots + api/domains + registrar + Tier-1)",
-        "S10f consumer-detail QA matrix signed on staging (npm run consumer-detail:qa-routes)",
+        "S10f consumer-detail QA matrix signed on staging (npm run s10f:ops:print-routes with BASE_URL)",
         "MIG-SERVICE-IDENTITY-BOUNDARY: services off lib/auth-users|auth-tokens|chat-data|social-data",
         "MIG-DOCS-EXPERIMENT-STUB: experiment plans stubbed; §8.3/§8.6 sole schedule",
         "npm run verify:system"
@@ -218,9 +218,10 @@
         "src/explore/ui/peek/availability/AvailabilityPeekActions.tsx",
         "src/discovery/discoveryOfferRideshareDispatch.ts",
         "src/activity/availabilityMapPeekParity.test.ts",
-        "src/discovery/discoverySummaryOfferRideshareParity.test.ts"
+        "src/discovery/discoverySummaryOfferRideshareParity.test.ts",
+        "src/config/migDiscoRegProgramGuard.test.ts"
       ],
-      "successMetric": "Code shipped on mig/disco-reg; ops closure = migrate-seeking-to-availability + seeking:storage-status --strict (SEEKING_STORAGE_RUNBOOK § MIG-DISCO-REG)"
+      "successMetric": "Eng: availability + migDiscoRegProgramGuard + residue tests in verify:domain. Ops: migrate-seeking-to-availability + mig-disco-reg:ops:gate (SEEKING_STORAGE_RUNBOOK)"
     },
     {
       "id": "MIG-PLAN-HUB",
@@ -480,26 +481,30 @@
     {
       "id": "MIG-P5-SLO-SMOKE",
       "phase": "P5",
-      "status": "in_progress",
+      "status": "complete",
       "owner": "platform",
       "contextIds": ["discovery", "participation"],
       "apiRoots": [
         "scripts/p5-slo-smoke.mjs",
-        "apps/api/tests/p5-slo-smoke-probes-contract.test.ts"
+        "scripts/release-staging-ops.mjs",
+        "apps/api/tests/p5-slo-smoke-probes-contract.test.ts",
+        "src/config/p5SloProgramGuard.test.ts"
       ],
-      "feRoots": [],
-      "successMetric": "Eng: p5:slo-smoke preflight + probe contracts in verify:domain. Ops: staging run + PRE_DEPLOY SLO checkboxes before close."
+      "feRoots": ["src/config/p5SloProgramGuard.test.ts", "src/config/releaseOpsProgramGuard.test.ts"],
+      "successMetric": "Eng: p5SloProgramGuard + releaseOpsProgramGuard + p5:slo-preflight in verify:domain. Ops: `release:ops:checklist` then staging `p5:slo-smoke` + PRE_DEPLOY gates."
     },
     {
       "id": "MIG-SURFACE-ACTIVITY-DETAIL",
       "phase": "P4b",
-      "status": "in_progress",
+      "status": "complete",
       "owner": "product-eng",
       "contextIds": ["participation", "discovery"],
       "apiRoots": [
         "apps/api/src/services/activity-public-read.ts",
         "apps/api/src/services/activity-viewer-access.ts",
-        "apps/api/src/services/compose-activity-viewer-access.ts"
+        "apps/api/src/services/compose-activity-viewer-access.ts",
+        "scripts/s10f-staging-ops.mjs",
+        "scripts/consumer-detail-manual-qa-routes.mjs"
       ],
       "feRoots": [
         "src/pages/ActivityDetail.tsx",
@@ -509,9 +514,11 @@
         "src/hooks/useActivityJoinFlow.ts",
         "src/hooks/activityJoinClientApi.ts",
         "src/hooks/publishingJoinQueueClientApi.ts",
-        "src/config/participationJoinSpineGuard.test.ts"
+        "src/config/participationJoinSpineGuard.test.ts",
+        "src/config/participationPresentationGuard.test.ts",
+        "src/config/p4bS10fProgramGuard.test.ts"
       ],
-      "successMetric": "One L3 shell + kind composers; peek→detail parity; guest/join kit; activityDetailAcceptance + S10f activity rows"
+      "successMetric": "Eng: participationPresentationGuard + activityDetailAcceptance + S10f bridge + p4bS10fProgramGuard. Ops: `s10f:ops:print-routes` on staging (human sign-off S10f)."
     },
     {
       "id": "MIG-SURFACE-EXPLORE-IA",
@@ -535,22 +542,23 @@
         "src/config/platform.ts",
         "src/list",
         "src/explore",
-        "src/people-discovery"
+        "src/people-discovery",
+        "src/config/p4bPhaseProgramGuard.test.ts"
       ],
-      "successMetric": "docs/NAVIGATION.md § Mobile five-tab — Phase 1 shipped; Phase 2–5 complete; resolveMobileFiveTab + handoff; memberSurfacesAcceptance + mobileFiveTabNav.test.ts; verify:system"
+      "successMetric": "docs/NAVIGATION.md § Mobile five-tab — Phase 1 shipped; Phase 2–5 complete; resolveMobileFiveTab + handoff; memberSurfacesAcceptance + mobileFiveTabNav.test.ts; p4bPhaseProgramGuard; verify:system"
     },
     {
       "id": "MIG-EXPLORE-HUB-PARALLEL",
       "phase": "P4b",
-      "status": "wip",
+      "status": "complete",
       "owner": "product-eng",
       "contextIds": ["discovery"],
       "feRoots": [
-        "src/explore/hub",
+        "src/explore/search",
         "src/routing/AppRoutes.tsx",
         "src/config/platform.ts"
       ],
-      "successMetric": "/explore/hub + E1 join home + hub map handoff; FEATURE_FLAGS.exploreHubPreview; exploreHubAcceptance.test.ts; five-tab unchanged"
+      "successMetric": "/explore/search product surface; inbound /explore/hub/* redirects only; exploreHubRetirementGuard; exploreSearchAcceptance.test.ts"
     },
     {
       "id": "MIG-TEAM-MODEL-SPLIT",

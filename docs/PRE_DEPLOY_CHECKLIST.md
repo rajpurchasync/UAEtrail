@@ -67,12 +67,13 @@ CI / no live API: `npm run p5:slo-preflight` (wired into `verify:domain`). Recor
 
 - [ ] Side-effect outbox: production API runs with `NODE_ENV=production` (outbox on by default — do **not** set `SIDE_EFFECT_OUTBOX=0`); confirm outbox drain logs on startup
 - [ ] `npm run verify:system` (or `verify:system:quick` on CI) on the release commit
+- [ ] **Release ops wiring (CI):** `npm run release:ops:checklist` — then complete staging-only gates below (P5 SLO, S10e, S10f, MIG-DISCO-REG)
 - [ ] Optional hot-path snapshot (API running locally or staging): `npm run perf:api -- --label staging` — compare with `npm run perf:api:compare` after updating `scripts/perf-results/*.json`
 - [ ] **Catalog CPC (places + facilities):** after deploy, if amenity pins are missing on explore map, run `npm --workspace @uaetrail/api run seed:catalog-facilities` (see [`operations/EXPLORE_MAP_RUNBOOK.md`](./operations/EXPLORE_MAP_RUNBOOK.md)); smoke `GET /api/facilities/catalog` and `/place/:id` + `/facility/:id` on staging
 - [ ] `npm run test:explore-alignment` when explore/FAB changed (S10e automated gate before C19 promote)
 - [ ] **Explore map bbox promote (S10e / C19):** `npm run s10e:staging-checklist` (add `--verify` for quick system gate); then set `EXPLORE_MAP_BBOX=1` (API) and `VITE_EXPLORE_MAP_BBOX=1` (FE build) on **staging only**; smoke per [`operations/EXPLORE_MAP_RUNBOOK.md`](./operations/EXPLORE_MAP_RUNBOOK.md) § bbox bbox fetch; do **not** enable in production until p95 metrics pass
 - [ ] Staging smoke aligned with [`NAVIGATION.md`](./NAVIGATION.md) (explore-first IA — not legacy organizer/community nav)
-- [ ] **Consumer detail + notifications (S9 / S10f):** `BASE_URL=https://staging-host npm run consumer-detail:qa-routes` (prints QA routes + S10f notification edge checklist; matrix in script output / `consumerDetailQaMatrixGuard`)
+- [ ] **Consumer detail + notifications (S9 / S10f):** `npm run s10f:ops:checklist` (CI wiring), then `BASE_URL=https://staging-host npm run s10f:ops:print-routes` (prints QA routes + S10f notification edge checklist; matrix in `consumerDetailQaMatrixGuard`)
 - [ ] **Staging ops (ordered, per env)** — detail: [`operations/SEEKING_STORAGE_RUNBOOK.md`](./operations/SEEKING_STORAGE_RUNBOOK.md). On the server with production `.env` / compose API container:
   1. `npm run seeking:storage-status` — read JSON; fix any `activeIntentsMissingSeekingActivity` before step 2
   2. `npm --workspace @uaetrail/api run backfill-seeking-activities -- --dry-run`, then without `--dry-run` until step 1 reports zero missing

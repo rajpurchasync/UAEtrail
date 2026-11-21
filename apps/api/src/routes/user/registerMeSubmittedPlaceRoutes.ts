@@ -17,7 +17,7 @@ const placeSubmitBodySchema = locationSubmitBodySchema.superRefine((body, ctx) =
 });
 
 /**
- * Member **place catalog submit** (`POST /me/places`; `/me/locations` legacy alias).
+ * Member **place catalog submit** (`POST /me/places`; `POST /me/locations` → 410 retired).
  * HTTP surface: signed-in member — not `GET /me/status` / publish tier (`SYSTEM_COHERENCE` §5.1).
  * Domain: `place-submit` + `locations` place row (`SYSTEM_COHERENCE` §8.4.9).
  */

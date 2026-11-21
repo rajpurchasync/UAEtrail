@@ -1406,6 +1406,7 @@ export {
   deriveOutingTopicFromRequirements,
   exploreAvailabilityMapItemPath,
   exploreSeekingMapItemPath,
+  resolveCrewExploreMapItemId,
   resolveSeekingExploreMapItemId,
   exploreMapKindToPlanMapKind,
   canonicalizeMapComposeIntent,

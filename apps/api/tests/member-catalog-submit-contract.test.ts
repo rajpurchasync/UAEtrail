@@ -28,7 +28,7 @@ const placeSubmitBody = (suffix: string) => ({
 });
 
 describe('member catalog submit (CPC-4)', () => {
-  it('accepts POST /me/places and legacy POST /me/locations alias', async () => {
+  it('accepts POST /me/places and returns 410 for retired POST /me/locations', async () => {
     const suffix = `mcs-${Date.now()}`;
     const member = await registerVerifiedVisitor(app, suffix);
 
@@ -43,8 +43,8 @@ describe('member catalog submit (CPC-4)', () => {
       .post('/api/me/locations')
       .set('Authorization', `Bearer ${member.accessToken}`)
       .send(placeSubmitBody(`${suffix}-legacy`));
-    expect(legacy.status).toBe(201);
-    expect(legacy.body.data.id).toBeTruthy();
+    expect(legacy.status).toBe(410);
+    expect(legacy.body.message).toMatch(/POST \/me\/places/);
   });
 
   it('rejects facilityKind on POST /me/places', async () => {

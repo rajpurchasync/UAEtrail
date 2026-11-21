@@ -1,7 +1,4 @@
-import {
-  exploreAvailabilityMapItemPath,
-  exploreSeekingMapItemPath,
-} from '@uaetrail/shared-types';
+import { exploreAvailabilityMapItemPath } from '@uaetrail/shared-types';
 
 /** Deep links in API notification meta — keep in sync with `src/config/surfacePaths.ts`. */
 export const PRO_MEMBERSHIP_PATH = '/profile/pro-membership';
@@ -46,6 +43,7 @@ export const planHostedSchedulePath = (): string => HOSTING_HUB_PATH;
 /** @deprecated Name kept for imports — value is canonical {@link PLAN_PATH}. */
 export const TRIPS_JOINED_TAB_PATH = planJoinedSchedulePath();
 
+/** @deprecated Legacy demand peek — use `myRequestDetailPath` or activity detail. */
 export const planSelfDemandPeekPath = (intentId: string): string => {
   const params = new URLSearchParams();
   params.set('view', 'plans');
@@ -84,8 +82,16 @@ export const exploreActivityPinPath = (activityId: string): string =>
 export const exploreAvailabilityPinNotificationPath = (availabilityMapItemId: string): string =>
   exploreAvailabilityMapItemPath(availabilityMapItemId);
 
-/** Deep link when a legacy find post has a published activity row. */
-export const explorePublishedActivityPinPath = exploreSeekingMapItemPath;
+/** Deep link for archived `activityMode: seeking` rows (off map — activity detail). */
+export const explorePublishedActivityPinPath = (input: {
+  intentId: string;
+  activityId?: string | null;
+}): string => {
+  const activityId = input.activityId?.trim();
+  if (activityId) return activityDetailPath(activityId);
+  const params = new URLSearchParams({ list: '1' });
+  return `/explore?${params.toString()}`;
+};
 
 /** @deprecated Use {@link explorePublishedActivityPinPath}. */
 export const exploreSeekingPinPath = (input: {
@@ -93,7 +99,7 @@ export const exploreSeekingPinPath = (input: {
   seekingActivityId?: string | null;
   activityId?: string | null;
 }): string =>
-  exploreSeekingMapItemPath({
+  explorePublishedActivityPinPath({
     intentId: input.intentId,
     activityId: input.activityId ?? input.seekingActivityId ?? null,
   });

@@ -58,17 +58,15 @@ describe('explore plan projection mappers', () => {
 
   it('does not mint leftover demand: pins from a bare intent id', () => {
     expect(resolveSeekingExploreMapItemId({ intentId: 'abc' })).toBeNull();
-    expect(exploreSeekingMapItemPath({ intentId: 'abc' })).toBe('/explore?list=1&panel=activities');
+    expect(exploreSeekingMapItemPath({ intentId: 'abc' })).toBe('/explore?list=1');
     expect(resolveSeekingExploreMapItemId({ intentId: 'demand:abc' })).toBeNull();
-    expect(exploreSeekingMapItemPath({ intentId: 'demand:abc' })).toBe(
-      '/explore?list=1&panel=activities'
-    );
+    expect(exploreSeekingMapItemPath({ intentId: 'demand:abc' })).toBe('/explore?list=1');
   });
 
-  it('exploreSeekingMapItemPath prefers activity pin when activityId is set', () => {
+  it('exploreSeekingMapItemPath opens activity detail when activityId is set', () => {
     expect(
       exploreSeekingMapItemPath({ intentId: 'int-1', activityId: 'act-9' })
-    ).toBe('/explore?list=1&panel=activities&pin=activity%3Aact-9');
+    ).toBe('/activity/act-9');
   });
 
   it('prefers stored outing category over mapKind for activities', () => {

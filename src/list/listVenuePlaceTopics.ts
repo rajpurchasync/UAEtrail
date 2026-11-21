@@ -2,7 +2,7 @@ import type { MapFilterKey } from '../config/routingCatalog';
 import {
   EXPLORE_PLACE_TOPIC_OPTIONS,
   aliasPlaceMapTopicToList,
-} from '../explore/exploreOptionalFilters';
+} from '../explore/exploreMapTopicUrlParams';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 
 /**

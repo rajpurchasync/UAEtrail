@@ -12,7 +12,7 @@ Monorepo with three layers:
 | API | `apps/api/` | Express + MongoDB |
 | Shared contracts | `packages/shared-types/` | DTOs consumed by both sides |
 
-**Documentation map:** [`DOCS_INDEX.md`](./DOCS_INDEX.md) · [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md). **Domain glossary:** [`DOMAIN.md`](./DOMAIN.md) (Place, Activity, Organisation). **Member / host tiers / roles:** [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) — single map for users, `HostStatusDTO`, and routes.
+**Documentation map:** [`DOCS_INDEX.md`](./DOCS_INDEX.md) · [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md). **Generated module map:** `npm run context:map` → `scripts/context-map.md` (from `bounded-context-manifest.json`). **Domain glossary:** [`DOMAIN.md`](./DOMAIN.md) (Place, Activity, Organisation). **Member / host tiers / roles:** [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) — single map for users, `HostStatusDTO`, and routes.
 
 ## Backend (`apps/api`)
 
@@ -28,7 +28,7 @@ Catalog HTTP is **surface-first** (path + mount middleware), not **profile-first
 **Route map** — detail in [`API_ROUTING.md`](./API_ROUTING.md)
 
 - `/auth` — JWT + refresh
-- `/` (userRouter) — public catalog (`/places`, `/activities`, `/explore/map`, **`/reviews`**), `/me/*` (profile, seeking-posts, groups, buddies, wishlist)
+- `/` (userRouter) — public catalog (`/places`, `/activities`, `/explore/map`, **`/reviews`**), `/me/*` (profile, **`/me/availability`**, groups, buddies, wishlist, member-discovery)
 - `/publishing` — tenant-scoped activities, check-in, join queue (`x-organisation-id`; no `/host` or `/operator` API)
 - `/admin` — platform ops (thin `admin.ts` → `routes/admin/registerAdmin*`; user management at `/admin/users`, staff grant at `/admin/platform-admins` for master admin)
 - `/shop` — operator shop **profiles** (public read + merchant manage); no product catalog or shop checkout routes
@@ -37,9 +37,9 @@ Catalog HTTP is **surface-first** (path + mount middleware), not **profile-first
 
 **Key flows**
 
-1. **Join / waitlist** — `POST /activities/:id/requests` creates `PENDING` or `WAITLISTED`. Find crew uses `POST /me/seeking-posts/:id/requests` (same `activity_requests` row when `activityId` is set). Slot opens → waitlist promotion + notification.
+1. **Join / waitlist** — `POST /activities/:id/requests` (signed-in) creates `PENDING` or `WAITLISTED` on **`activity_requests`**. Slot opens → waitlist promotion + notification. **Find crew** is **`PUT /me/availability`** → map pins `source: availability` (not join on the pin). Legacy seeking HTTP retired — [`API_ROUTING.md`](./API_ROUTING.md).
 2. **Post-event review** — host check-in triggers `REVIEW_PROMPT` notification if user has not reviewed the location.
-3. **Explore map** — unified `/explore/map` payload (`source`: **activity** · **place** · **facility** · **shop**; `agency` wire-compat). **Area** is an admin-curated name (`areaId` on rows) — not a pin. Country / state / region come from map geography. Seeking outings are **activities**, not a separate demand source.
+3. **Explore map** — unified `/explore/map` payload (`source`: **activity** · **place** · **facility** · **shop** · **availability**; `agency` wire-compat). **Area** is an admin-curated name (`areaId` on rows) — not a pin. Country / state / region come from map geography. Archived **`activityMode: seeking`** rows are not a product path (ops migrate to availability).
 4. **Shop** — public profile at `/shop/:id` (about, contact, reviews, outbound website); operator tenants may have map pins; community gear shops from FAB Add resolve to the same public page model without a product grid.
 5. **Publishing profiles** — individuals publish as members (`/member/:userId`); agencies use `/agency/:slug`. They do **not** appear as explore map pins.
 6. **Push** — Web Push (VAPID) via `PushSubscription` model; optional when keys configured.
@@ -54,7 +54,8 @@ See [`DOMAIN.md`](./DOMAIN.md) for the full glossary. Summary:
 | Place (trail/camp/spot) | `locations` (HTTP `/places`) | `/trail`, `/camp`, `/venue` | Yes (`source: place`) |
 | Facility (amenity) | `facilities` | `/facility/:id` | Yes (`source: facility` — coords for navigation) |
 | Area (admin-curated name) | `areas` | `/area/:slug` | **No** — filter `?area=` and hub page; country/state/region from geography |
-| Activity (hosted + seeking) | `activities` | `/activity/:id` | Yes (`source: activity`) |
+| Activity (hosted outings) | `activities` | `/activity/:id` | Yes (`source: activity`) |
+| Member availability (find crew) | `member_availability` | profile + map pin | Yes (`source: availability`) |
 | Shop (organisation) | `tenants` (SHOP) + `merchant_profiles` | `/shop/:id` | Physical only (`source: shop`) |
 | Individual Pro | `tenants` (professional) + member | `/member/:userId` | No |
 | Agency (organisation) | `tenants` (agency) | `/agency/:slug` | No |
@@ -65,14 +66,16 @@ Shop identity is split between **tenant** (Pro Membership / shop application: we
 
 ```
 pages/          Route-level views (lazy-loaded in App.tsx)
-components/     layout/, ui/, seo/, explore/, host/, participant-intent/, shop/
+components/     layout/, ui/, seo/, explore/, shop/
+discovery/      Card projections (list/map/browse) — import runtime via `src/explore/discoveryRuntime.ts`
+list/           List/browse projections (full-screen + explore list handoff)
 api/            client.ts → domains/* → services.ts (`api` facade) — see `src/api/index.ts`
 config/         platform.ts, regions.ts, exploreTheme.ts
 context/        AuthContext
 utils/          authRouting, shopPaths — explore URL builders live in `src/explore/routing.ts` (`routingCatalog`)
 ```
 
-**Mobile IA:** Bottom tabs **Trips · Places · People · Chat · Plans** — shell routes `/explore`, `/list`, `/plan`, `/chat` (`src/config/mobileFiveTabNav.ts`); Profile via header avatar. Signed-in default landing is `/explore` (Trips map). Guest marketing is `/` only — see [`NAVIGATION.md`](./NAVIGATION.md), [`LANDING.md`](./LANDING.md), [`NORTHSTAR.md`](./NORTHSTAR.md). Plan manage surfaces link to Chat for crew threads — not embedded chat on `/plan`.
+**Mobile IA:** Bottom tabs **Trips · Venues · Crews · Chat · Plan** (`src/config/mobileFiveTabNav.ts`) — map-first **Trips** at `/explore`, list routes via `/list` and tab handoffs; Profile via header avatar. Signed-in default landing is **`/explore`**. Guest marketing is **`/`** only — see [`NAVIGATION.md`](./NAVIGATION.md), [`LANDING.md`](./LANDING.md), [`NORTHSTAR.md`](./NORTHSTAR.md). Plan surfaces link to Chat for crew threads — not embedded chat on `/plan`.
 
 **SEO & agents:** `PageMeta` updates title/description/canonical per route; static `robots.txt`, `sitemap.xml`, `llms.txt`, and `/.well-known/agent.json` in `public/`. Public agent discovery: `GET /api/agent/manifest.json` and `GET /api/agent/discover` (see [`API_ROUTING.md`](./API_ROUTING.md)).
 

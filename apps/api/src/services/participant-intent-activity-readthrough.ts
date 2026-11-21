@@ -16,7 +16,7 @@ import { getMongoClient } from '../lib/mongo.js';
  * COH-01 — Find posts only write `activities` (`activityMode: seeking`);
  * `/me/seeking-posts/*` read/manage via activity read-through (no `participant_intents` inserts).
  */
-/** @deprecated Always false after MIG-COH-01 — env ignored. */
+/** Retired — always false; `PARTICIPANT_INTENT_STUB_WRITE` removed from deploy env. */
 export const isParticipantIntentStubWriteEnabled = (): boolean => false;
 
 /** Published seeking activity id — legacy intent rows may store both aliases. */

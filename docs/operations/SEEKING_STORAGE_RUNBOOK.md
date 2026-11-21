@@ -152,6 +152,6 @@ npm run mig-disco-reg:ops:gate         # must exit 0
 - `npm run seeking:storage-status -- --strict` exits **0** on every env for **≥30 days** with no rollback.
 - `activeIntentsMissingSeekingActivity === 0` and no new `participant_intents` inserts in ops metrics.
 
-**Then remove:** `PARTICIPANT_INTENT_STUB_WRITE`, stub insert path, `demand:` compat, stale seeking activities (cancel or migrate).
+**Then remove (code shipped):** stub insert path, archived seeking wishlist fan-out, map-pin deep links for seeking, leftover **`demand:`** pin ids. **Ops still:** cancel or migrate stale seeking activities; drain `participant_intents` via backfill until strict gate passes 30d. **`PARTICIPANT_INTENT_STUB_WRITE`** — removed from app code and `.env.example` (always off).
 
 **Keep:** **`member_availability`** registry, Find crew FAB → `PUT /me/availability`, explore `source: availability` pins.

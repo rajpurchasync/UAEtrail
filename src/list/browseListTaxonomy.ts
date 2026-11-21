@@ -6,11 +6,11 @@ import {
   type ExploreMapItemDTO,
 } from '@uaetrail/shared-types';
 import { BROWSE_LIST_CATEGORY_PLACES } from '../place/geographyVocabulary';
-import type { ExploreMapFilterPillKey } from '../explore/exploreBrowseTaxonomy';
 import {
   parseExploreMapFilterPillsParam,
   serializeExploreMapFilterPillsParam,
-} from '../explore/exploreBrowseTaxonomy';
+  type ExploreMapFilterPillKey,
+} from '../explore/discoveryRuntime';
 import { PRODUCT_CREWS_TAB_LABEL } from '../content/productNorthStar';
 
 /**

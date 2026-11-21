@@ -11,7 +11,7 @@ import {
 import type { MapPinKind } from '../../components/ui/mapPinTypes';
 import { isGeographyMapSource } from '@uaetrail/shared-types';
 import type { PlaceMapPin } from '../../components/ui/PlacesMap';
-import { hostedOutingSummariesByPlaceId } from '../exploreOptionalFilters';
+import { hostedOutingSummariesByPlaceId } from '../exploreHostedPlaceOutings';
 import { resolveExploreMapPinCoverImage } from '../exploreMapPinCaption';
 import { resolveMapPinItemSource } from '../exploreCopy';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
@@ -38,25 +38,20 @@ export const matchesVenueFilter = (item: ExploreMapItemDTO, venueFilter: VenueLi
   return true;
 };
 
-export const isMerchantShopMapItem = (item: ExploreMapItemDTO): boolean =>
-  item.source === 'shop' && item.kind === 'shop' && !item.id.startsWith('product:');
-
-/** Community-submitted gear shop pin — map peek only (not merchant profile). */
-export const isCommunityShopMapItem = (item: ExploreMapItemDTO): boolean =>
-  item.kind === 'shop' && isPeekOnlyCatalogProfile(item.catalogProfileExposure);
-
-export const isShopListItem = (item: ExploreMapItemDTO): boolean =>
-  isMerchantShopMapItem(item) || isCommunityShopMapItem(item);
-
-/** Permanent catalog: trails, camp spots, shops — not outings or event venues. */
-export const isPlacesMapItem = (item: ExploreMapItemDTO): boolean => {
-  if (isShopListItem(item)) return true;
-  if (!isGeographyMapSource(item.source)) return false;
-  return exploreVenueIsPlacesSpot(item.kind, item.placeKind);
-};
-
-/** Time-bound social layer: hosted outings and looking-for posts. */
-export const isBuddyMapItem = (item: ExploreMapItemDTO): boolean => isTimeBoundExploreMapItem(item);
+export {
+  isBuddyMapItem,
+  isCommunityShopMapItem,
+  isMerchantShopMapItem,
+  isPlacesMapItem,
+  isShopListItem,
+} from '../exploreMapItemKind';
+import {
+  isBuddyMapItem,
+  isCommunityShopMapItem,
+  isMerchantShopMapItem,
+  isPlacesMapItem,
+  isShopListItem,
+} from '../exploreMapItemKind';
 
 export const isPhysicalShopItem = (item: ExploreMapItemDTO): boolean =>
   isShopListItem(item) && item.shopPresence !== 'online' && item.latitude != null && item.longitude != null;
@@ -128,22 +123,8 @@ export const matchesExplorePinKindFilter = (item: ExploreMapItemDTO, pinKind: Ex
   return true;
 };
 
-/** Topic chip — same hiking/camping/… axis for hosted trips, demand, and catalog places. */
-export const matchesUnifiedTopicFilter = (
-  item: ExploreMapItemDTO,
-  mapFilter: MapFilterKey,
-  buddySubtype: ExploreBuddySubtypeKey = 'all',
-  outingTopic: ExploreOutingTopicKey = 'all'
-): boolean => {
-  if (mapFilter === 'all') return true;
-  if (isBuddyMapItem(item)) {
-    return matchesBuddyMapFilter(item, mapFilter, buddySubtype, outingTopic);
-  }
-  if (isPlacesMapItem(item) || isShopListItem(item)) {
-    return matchesPlacesMapFilter(item, mapFilter);
-  }
-  return false;
-};
+export { matchesUnifiedTopicFilter } from '../exploreMapTopicFilterMatch';
+import { matchesUnifiedTopicFilter } from '../exploreMapTopicFilterMatch';
 
 export type UnifiedExploreMapFilterInput = {
   mapFilter: MapFilterKey;
@@ -258,11 +239,8 @@ export const matchesMobileExploreMapItem = (
   return false;
 };
 
-export const resolveExploreItemScheduleDate = (item: ExploreMapItemDTO): string | null => {
-  const raw = item.date ?? item.activity?.date ?? null;
-  if (!raw?.trim()) return null;
-  return raw.slice(0, 10);
-};
+export { resolveExploreItemScheduleDate } from '../exploreMapItemSchedule';
+import { resolveExploreItemScheduleDate } from '../exploreMapItemSchedule';
 
 /** Inclusive host outing window for map date filters (start day … end day). */
 export const resolveExploreItemScheduleWindow = (

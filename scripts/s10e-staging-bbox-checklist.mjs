@@ -73,6 +73,6 @@ console.log(
 console.log('Target: bbox JSON < ~40% of full map at comparable catalog size (see explore-map-bbox-spec §8).\n');
 
 console.log('## 6. After S10e — S10f manual QA\n');
-console.log(`BASE_URL=${feBase} npm run s10f:qa-checklist\n`);
+console.log(`BASE_URL=${feBase} npm run s10f:ops:print-routes\n`);
 
 console.log('Canonical: docs/operations/EXPLORE_MAP_RUNBOOK.md · docs/PRE_DEPLOY_CHECKLIST.md');

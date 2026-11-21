@@ -1,6 +1,6 @@
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import { browseCatalogHeaderLocationLine } from '../list/browse/browseCatalogLabels';
-import { distanceMeters, formatPlaceDistance, type ViewerFix } from '../list/explorer/placeDistance';
+import { distanceMeters, formatPlaceDistance, type ViewerFix } from '../list/browse/placeDistance';
 
 const joinMetaParts = (parts: (string | null | undefined)[]): string | null => {
   const next = parts.map((p) => p?.trim()).filter((p): p is string => Boolean(p));

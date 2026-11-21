@@ -88,6 +88,29 @@ describe('memberAvailabilityLineageGuard (MIG-DISCO-REG)', () => {
     expect(seed).not.toMatch(/upsertSeedSeekingActivity/);
   });
 
+  it('AVAIL-LINE-16: retired seeking wishlist + graduate ops isolated', () => {
+    expect(
+      existsSync(join(process.cwd(), 'apps/api/src/services/wishlist-archived-seeking-ops.ts'))
+    ).toBe(false);
+    expect(
+      existsSync(join(process.cwd(), 'apps/api/src/services/participant-intent-graduate-ops.ts'))
+    ).toBe(true);
+  });
+
+  it('AVAIL-LINE-15: buddy publish fan-out excludes retired seeking publishType', () => {
+    const publish = read('apps/api/src/services/member-publish-notifications.ts');
+    expect(publish).toMatch(/publishType: 'availability'/);
+    expect(publish).not.toMatch(/publishType: 'seeking'/);
+    expect(publish).not.toMatch(/exploreSeekingMapItemPath/);
+  });
+
+  it('AVAIL-LINE-14: notification routing prefers availability pin and activity detail over seek map', () => {
+    const routing = read('src/utils/notificationRouting.ts');
+    expect(routing).toMatch(/exploreAvailabilityMapItemPath/);
+    expect(routing).toMatch(/activityDetailPath\(publishedActivityId\)/);
+    expect(routing).not.toMatch(/exploreSeekingMapItemPath\(/);
+  });
+
   it('AVAIL-LINE-13: host prefill uses availability naming (no createDraftFromSeekingMapItem export)', () => {
     const engine = read('src/explore/ui/hostingFlowEngine.ts');
     expect(engine).toMatch(/createDraftFromAvailabilityMapItem/);

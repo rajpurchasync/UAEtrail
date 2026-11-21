@@ -1,6 +1,6 @@
 import { createContext, useContext, type ReactNode } from 'react';
 import type { UnitSystem } from '../../preferences/displayPreferences';
-import { distanceMeters, formatPlaceDistance, type ViewerFix } from './placeDistance';
+import { distanceMeters, formatPlaceDistance, type ViewerFix } from '../browse/placeDistance';
 
 type PlaceDistanceValue = {
   viewer: ViewerFix | null;

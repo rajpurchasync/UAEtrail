@@ -22,6 +22,13 @@ describe('places HTTP canonical guard (COH-02)', () => {
     expect(alias).not.toMatch(/startsWith\('\/locations'\)/);
   });
 
+  it('route-place-alias retires write verbs on /locations paths (410)', () => {
+    const alias = read('apps/api/src/lib/route-place-alias.ts');
+    expect(alias).toMatch(/WRITE_METHODS/);
+    expect(alias).toMatch(/status\(410\)/);
+    expect(alias).toMatch(/Deprecation/);
+  });
+
   it('admin place CRUD mounts /admin/places only', () => {
     const admin = read('apps/api/src/routes/admin/registerAdminPlaceRoutes.ts');
     expect(admin).toMatch(/adminPlaceCollectionPaths = \['\/places'\]/);

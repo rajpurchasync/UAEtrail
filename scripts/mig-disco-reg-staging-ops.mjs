@@ -9,12 +9,13 @@
  *   MIG_DISCO_REG_OPS_CONFIRM=1 npm run mig-disco-reg:ops:migrate
  *   MIG_DISCO_REG_OPS_CONFIRM=1 npm run mig-disco-reg:ops:migrate -- --cancel-seeking
  *   npm run mig-disco-reg:ops:gate
+ *   npm run mig-disco-reg:ops:checklist  # CI — wiring only (no Mongo)
  *
  * Docker (API container has env + network):
  *   docker compose exec api npm run mig-disco-reg:ops:preflight
  */
 import { execSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -91,6 +92,37 @@ switch (step) {
   case 'gate':
     run('npm run seeking:deploy-gate');
     break;
+  case 'checklist': {
+    const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+    const required = [
+      'seeking:storage-status',
+      'seeking:deploy-gate',
+      'mig-disco-reg:ops:preflight',
+      'mig-disco-reg:ops:migrate',
+      'mig-disco-reg:ops:gate',
+    ];
+    const missing = required.filter((id) => !pkg.scripts?.[id]);
+    if (missing.length > 0) {
+      console.error(`[mig-disco-reg:ops] checklist FAILED — missing scripts: ${missing.join(', ')}`);
+      process.exit(1);
+    }
+    const apiPkg = JSON.parse(readFileSync(join(root, 'apps/api/package.json'), 'utf8'));
+    if (!apiPkg.scripts?.['migrate-seeking-to-availability']) {
+      console.error('[mig-disco-reg:ops] checklist FAILED — api migrate-seeking-to-availability script');
+      process.exit(1);
+    }
+    if (!existsSync(join(root, 'apps/api/scripts/migrate-seeking-to-availability.ts'))) {
+      console.error('[mig-disco-reg:ops] checklist FAILED — migrate-seeking-to-availability.ts missing');
+      process.exit(1);
+    }
+    const runbook = readFileSync(join(root, 'docs/operations/SEEKING_STORAGE_RUNBOOK.md'), 'utf8');
+    if (!runbook.includes('mig-disco-reg:ops:gate')) {
+      console.error('[mig-disco-reg:ops] checklist FAILED — runbook missing gate command');
+      process.exit(1);
+    }
+    console.log('[mig-disco-reg:ops] checklist OK — eng wiring (run gate on staging with Mongo)');
+    break;
+  }
   case 'preflight':
     run('npm run seeking:storage-status');
     legacyBackfillIfNeeded();

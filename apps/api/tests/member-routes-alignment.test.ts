@@ -57,10 +57,12 @@ describe('member-routes alignment (API notification meta ↔ FE surfacePaths)', 
     );
   });
 
-  it('seeking explore pins use explorePublishedActivityPinPath (no exploreDemandPinPath)', () => {
+  it('legacy find posts deep-link to activity detail (not demand pins)', () => {
     const apiRoutes = readFileSync(join(apiRoot, 'src/lib/member-routes.ts'), 'utf8');
     expect(apiRoutes).toContain('explorePublishedActivityPinPath');
-    expect(apiRoutes).toContain('exploreSeekingMapItemPath');
+    expect(apiRoutes).toMatch(/activityDetailPath\(activityId\)/);
+    expect(apiRoutes).toContain('exploreAvailabilityPinNotificationPath');
     expect(apiRoutes).not.toMatch(/exploreDemandPinPath/);
+    expect(apiRoutes).not.toMatch(/exploreSeekingMapItemPath/);
   });
 });

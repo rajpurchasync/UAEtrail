@@ -2,7 +2,7 @@ import {
   exploreAreaQueryParam,
   exploreAvailabilityMapItemPath,
   formatExploreEventDateLabel,
-  resolveSeekingExploreMapItemId,
+  resolveCrewExploreMapItemId as resolveCrewExploreMapItemIdFromWire,
 } from '@uaetrail/shared-types';
 import type { HostComposeKind } from './compose';
 import { EXPLORE_MAP_PATH, LIST_DISCOVERY_PATH } from '../config/platform';
@@ -28,26 +28,22 @@ import {
   type ExploreOutingTopicKey,
 } from './exploreOutingTopic';
 
-export type ExplorePanel = 'activities' | 'venues' | 'shops';
+export type { ExplorePanel, MapFilterKey } from './discoveryUrlParams';
+import {
+  parseExplorePanel,
+  parseMapFilter,
+  parseVenueRegionsParam,
+  type ExplorePanel,
+  type MapFilterKey,
+} from './discoveryUrlParams';
 
-/** Map overlay filter — controls which pins appear on the map. */
-export type MapFilterKey = 'all' | 'hiking' | 'camping' | 'facilities' | 'rideshare' | 'others' | 'shops';
+export { parseExplorePanel, parseMapFilter, parseVenueRegionsParam };
 
 /** Side-panel activity list filter. */
 export type ActivityListFilterKey = 'all' | 'hiking' | 'camping' | 'event' | 'rideshare';
 
 /** Side-panel venue list filter. */
 export type VenueListFilterKey = 'all' | 'hiking' | 'camping' | 'facilities' | 'shop' | 'event';
-
-const MAP_FILTERS = new Set<MapFilterKey>([
-  'all',
-  'hiking',
-  'camping',
-  'facilities',
-  'rideshare',
-  'others',
-  'shops',
-]);
 
 const ACTIVITY_LIST_FILTER_SET = new Set<ActivityListFilterKey>([
   'all',
@@ -66,18 +62,6 @@ const VENUE_LIST_FILTER_SET = new Set<VenueListFilterKey>([
   'event',
 ]);
 
-const INBOUND_MAP_FILTER: Record<string, MapFilterKey> = {
-  shop: 'shops',
-  shops: 'shops',
-  facility: 'facilities',
-  facilities: 'facilities',
-  activities: 'all',
-  venues: 'all',
-  looking: 'all',
-  event: 'others',
-  events: 'others',
-};
-
 const INBOUND_ACTIVITY_FROM_FILTER: Record<string, ActivityListFilterKey> = {
   hiking: 'hiking',
   camping: 'camping',
@@ -86,8 +70,6 @@ const INBOUND_ACTIVITY_FROM_FILTER: Record<string, ActivityListFilterKey> = {
   others: 'event',
   carpool: 'rideshare',
 };
-
-const EXPLORE_PANELS = new Set<ExplorePanel>(['activities', 'venues', 'shops']);
 
 /** Open a specific explore map item (peek card), e.g. `activity:uuid`. */
 export const EXPLORE_PIN_QUERY_KEY = 'pin';
@@ -122,7 +104,7 @@ export const resolveCrewExploreMapItemId = (input: {
   availabilityMapItemId?: string | null;
   activityId?: string | null;
 }): string | null =>
-  resolveSeekingExploreMapItemId({
+  resolveCrewExploreMapItemIdFromWire({
     intentId: '',
     activityId: input.activityId ?? null,
     availabilityMapItemId: input.availabilityMapItemId ?? null,
@@ -193,12 +175,6 @@ export const exploreHostFromActivityReturnPath = (
   return `${pathname}?${params.toString()}`;
 };
 
-export const parseMapFilter = (value: string | null): MapFilterKey => {
-  if (value && MAP_FILTERS.has(value as MapFilterKey)) return value as MapFilterKey;
-  if (value && INBOUND_MAP_FILTER[value]) return INBOUND_MAP_FILTER[value];
-  return 'all';
-};
-
 export {
   parseExploreActivityDatePreset,
   exploreActivityDatePresetLabel,
@@ -220,16 +196,6 @@ export const parseActivityListFilter = (
     return INBOUND_ACTIVITY_FROM_FILTER[inboundFilterParam];
   }
   return 'all';
-};
-
-const EXPLORE_PANEL_ALIASES: Record<string, ExplorePanel> = {
-  locations: 'venues',
-};
-
-export const parseExplorePanel = (value: string | null): ExplorePanel => {
-  if (value && EXPLORE_PANELS.has(value as ExplorePanel)) return value as ExplorePanel;
-  if (value && EXPLORE_PANEL_ALIASES[value]) return EXPLORE_PANEL_ALIASES[value];
-  return 'activities';
 };
 
 const inferMapFilterFromLegacySubfilter = (raw: string | null): MapFilterKey | null => {
@@ -260,16 +226,6 @@ export const compactExploreParentFilterSearchParams = (params: URLSearchParams):
   params.delete('places');
   params.delete('activity');
   return true;
-};
-
-/** Parse venue state/emirate filters from URL (`regions=Dubai,RAK` or inbound `region=RAK`). */
-export const parseVenueRegionsParam = (searchParams: Pick<URLSearchParams, 'get'>): string[] => {
-  const multi = searchParams.get('regions');
-  if (multi) {
-    return [...new Set(multi.split(',').map((part) => part.trim()).filter(Boolean))];
-  }
-  const single = searchParams.get('region');
-  return single ? [single] : [];
 };
 
 export const explorePath = (options?: {

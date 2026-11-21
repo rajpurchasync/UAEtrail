@@ -22,25 +22,27 @@ describe('explore search results', () => {
     expect(exploreIndex).toBeGreaterThan(searchIndex);
   });
 
-  it('search modules use exploreSearchRouting (not deprecated exploreHubRouting)', () => {
-    const hubSources = [
-      'src/explore/hub/exploreHubLastSearch.ts',
-      'src/explore/hub/ExploreHubScopePills.tsx',
-      'src/explore/hub/ExploreHubSearchHero.tsx',
-      'src/explore/hub/exploreHubUpcomingTrips.ts',
+  it('explore search modules are self-contained (no explore/hub code island)', () => {
+    const canonicalSources = [
+      'src/explore/search/exploreSearchLastSearch.ts',
+      'src/explore/search/ExploreSearchScopePills.tsx',
+      'src/explore/search/ExploreSearchBookingHero.tsx',
+      'src/explore/search/exploreSearchUpcomingTrips.ts',
     ];
-    for (const file of hubSources) {
+    for (const file of canonicalSources) {
       const source = read(file);
-      expect(source).not.toMatch(/from ['"]\.\/exploreHubRouting['"]/);
-      expect(source).toMatch(/exploreSearchRouting/);
+      expect(source).not.toMatch(/from ['"]\.\.\/hub\//);
+      expect(source).not.toMatch(/ExploreHub/);
+      expect(source).not.toMatch(/EXPLORE_HUB_/);
     }
+    expect(read('src/config/exploreHubRetirementGuard.test.ts')).toMatch(/HUB-RET-01/);
   });
 
   it('redirects legacy /explore/hub bookmarks', () => {
     expect(exploreInboundHubRedirectTarget('/explore/hub/search', '?q=camp')).toBe(
       `${EXPLORE_SEARCH_RESULTS_PATH}?q=camp`
     );
-    expect(exploreInboundHubRedirectTarget('/explore/hub/map', '?hubMode=places&q=camp')).toContain(
+    expect(exploreInboundHubRedirectTarget('/explore/hub/map', '?searchScope=places&q=camp')).toContain(
       `${EXPLORE_SEARCH_RESULTS_PATH}?`
     );
     expect(exploreInboundHubRedirectTarget('/explore/hub/home', '')).toContain('search=1');
@@ -51,13 +53,13 @@ describe('explore search results', () => {
     expect(read('src/explore/shell/ExploreMapShell.tsx')).toMatch(/overlayContained/);
     expect(read('src/explore/ui/ExploreMapStage.tsx')).toMatch(/mapSearchOverlay[\s\S]*pointer-events-auto/);
     expect(read('src/list/BrowseListPage.tsx')).toMatch(/ExploreBookingSearchModalHost/);
-    expect(read('src/explore/search/ExploreBookingSearchModal.tsx')).toMatch(/ExploreHubScopePills/);
-    expect(read('src/explore/search/ExploreBookingSearchModal.tsx')).toMatch(/ExploreHubSearchHero/);
+    expect(read('src/explore/search/ExploreBookingSearchModal.tsx')).toMatch(/ExploreSearchScopePills/);
+    expect(read('src/explore/search/ExploreBookingSearchModal.tsx')).toMatch(/ExploreSearchBookingHero/);
     expect(read('src/explore/search/ExploreBookingSearchModal.tsx')).toMatch(/ExploreBookingRecentSearches/);
     expect(read('src/explore/search/ExploreBookingSearchModal.tsx')).toMatch(/EXPLORE_SEARCH_MAP_MATCHES_TITLE/);
     expect(read('src/explore/search/ExploreBookingSearchModal.tsx')).toMatch(/ExploreBookingSearchMapMatches/);
-    expect(read('src/explore/search/ExploreBookingSearchMapMatches.tsx')).toMatch(/EXPLORE_HUB_SEARCH_SECTION_TRIPS/);
-    expect(read('src/explore/search/ExploreBookingSearchMapMatches.tsx')).toMatch(/EXPLORE_HUB_SEARCH_SECTION_CREW/);
+    expect(read('src/explore/search/ExploreBookingSearchMapMatches.tsx')).toMatch(/EXPLORE_SEARCH_SECTION_TRIPS/);
+    expect(read('src/explore/search/ExploreBookingSearchMapMatches.tsx')).toMatch(/EXPLORE_SEARCH_SECTION_CREW/);
   });
 
   it('embeds unified list on search results', () => {
@@ -73,7 +75,7 @@ describe('explore search results', () => {
     );
     expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/!exploreSearch/);
     expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/exploreSearch/);
-    expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/resolveExploreHubTripPool/);
+    expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/resolveExploreSearchTripPool/);
   });
 
   it('resolves five-tab highlight from search scope', () => {

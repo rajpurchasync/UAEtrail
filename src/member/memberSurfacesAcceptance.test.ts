@@ -153,10 +153,14 @@ describe('member surfaces §11 acceptance (automated)', () => {
       /notifyWishlistForMemberAvailability/
     );
     expect(read('apps/api/src/lib/activities-store.ts')).toMatch(/notifyWishlistForPublishedActivity/);
+    expect(read('apps/api/src/services/wishlist-alerts.ts')).not.toMatch(/notifyWishlistForNewSeeking/);
+    expect(
+      existsSync(join(process.cwd(), 'apps/api/src/services/wishlist-archived-seeking-ops.ts'))
+    ).toBe(false);
     expect(read('apps/api/src/lib/participant-intents-store.ts')).not.toMatch(
-      /notifyWishlistForNewSeeking/
+      /publishType: 'seeking'/
     );
-    expect(read('apps/api/src/lib/participant-intents-store.ts')).not.toMatch(
+    expect(read('apps/api/src/services/member-publish-notifications.ts')).not.toMatch(
       /publishType: 'seeking'/
     );
   });

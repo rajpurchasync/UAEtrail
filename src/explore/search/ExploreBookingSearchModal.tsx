@@ -3,10 +3,10 @@ import { EXPLORE_Z } from '../../config/exploreTheme';
 import { ExploreResponsiveSheet } from '../ui/ExploreResponsiveSheet';
 import { guestExplorePreviewCanSearch } from '../guestMapPreviewPolicy';
 import { ExploreGuestPreviewLimitPanel } from '../ui/ExploreGuestPreviewLimitPanel';
-import { ExploreHubScopePills } from '../hub/ExploreHubScopePills';
-import { ExploreHubSearchHero } from '../hub/ExploreHubSearchHero';
+import { ExploreSearchScopePills } from './ExploreSearchScopePills';
+import { ExploreSearchBookingHero } from './ExploreSearchBookingHero';
 import { ExploreBookingSearchMapMatches } from './ExploreBookingSearchMapMatches';
-import { EXPLORE_SEARCH_MAP_MATCHES_TITLE } from '../hub/exploreHubHomeCopy';
+import { EXPLORE_SEARCH_MAP_MATCHES_TITLE } from './exploreSearchHomeCopy';
 import { useExploreBookingSearchState } from './useExploreBookingSearchState';
 import { ExploreBookingRecentSearches } from './ExploreBookingRecentSearches';
 import type { ExploreSearchScopeCounts } from '../exploreBrowseTaxonomy';
@@ -65,11 +65,11 @@ export const ExploreBookingSearchModal = ({
         <ExploreGuestPreviewLimitPanel />
       ) : (
         <div className="min-w-0 space-y-4">
-          <ExploreHubScopePills
+          <ExploreSearchScopePills
             active={booking.searchScope}
             onChange={(mode) => booking.setSearchScope(mode)}
           />
-          <ExploreHubSearchHero
+          <ExploreSearchBookingHero
             homeScope={booking.searchScope}
             detectedWhere={booking.detectedWhere}
             committedWhere={booking.committedWhere}

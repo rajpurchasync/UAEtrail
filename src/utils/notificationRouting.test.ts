@@ -157,7 +157,7 @@ describe('inferNotificationPath', () => {
     ).toBe('/explore?pin=demand:int-1&list=1');
   });
 
-  it('routes friend publish notifications to seeking explore pins when no top-level activityId', () => {
+  it('routes friend publish notifications to activity detail when meta has archived seeking activity', () => {
     expect(
       inferNotificationPath(
         notif({
@@ -166,7 +166,7 @@ describe('inferNotificationPath', () => {
           seekingActivityId: 'act-seek-2',
         })
       )
-    ).toBe('/explore?list=1&panel=activities&pin=activity%3Aact-seek-2');
+    ).toBe('/activity/act-seek-2');
     expect(
       inferNotificationPath(
         notif({

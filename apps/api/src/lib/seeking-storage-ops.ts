@@ -5,7 +5,8 @@ import { isParticipantIntentStubWriteEnabled } from '../services/participant-int
 
 const intentsCollection = () => getMongoClient()!.db().collection(COLLECTIONS.PARTICIPANT_INTENTS);
 
-const activeIntentMissingSeekingActivityFilter = {
+/** Active legacy `participant_intents` rows not yet migrated (ops backfill marks `fulfilled`). */
+const activeLegacyParticipantIntentPendingMigrationFilter = {
   status: 'active',
   $and: [
     { $or: [{ activityId: { $exists: false } }, { activityId: null }] },
@@ -25,12 +26,15 @@ const missingMapCoordinatesClause = {
 /** Active intents backfill cannot migrate (no lat/lng). */
 export const activeParticipantIntentMissingCoordsFilter = {
   status: 'active',
-  $and: [...activeIntentMissingSeekingActivityFilter.$and, missingMapCoordinatesClause],
+  $and: [...activeLegacyParticipantIntentPendingMigrationFilter.$and, missingMapCoordinatesClause],
 };
 
 export type SeekingStorageStatusReport = {
+  /** Always false in code — env flag removed (MIG-DISCO-REG). */
   participantIntentStubWriteEnabled: boolean;
+  /** @deprecated Alias — use `activeLegacyIntentsPendingMigration`. */
   activeIntentsMissingSeekingActivity: number;
+  activeLegacyIntentsPendingMigration: number;
   activeIntentsMissingCoordsSkippedByBackfill: number;
   readyToDisableStubWrite: boolean;
   recommendedSteps: string[];
@@ -40,7 +44,7 @@ export const loadSeekingStorageStatus = async (): Promise<SeekingStorageStatusRe
   const participantIntentStubWriteEnabled = isParticipantIntentStubWriteEnabled();
 
   const [missingSeekingActivity, missingCoords] = await Promise.all([
-    intentsCollection().countDocuments(activeIntentMissingSeekingActivityFilter),
+    intentsCollection().countDocuments(activeLegacyParticipantIntentPendingMigrationFilter),
     intentsCollection().countDocuments(activeParticipantIntentMissingCoordsFilter),
   ]);
 
@@ -50,6 +54,9 @@ export const loadSeekingStorageStatus = async (): Promise<SeekingStorageStatusRe
   if (missingSeekingActivity > 0) {
     recommendedSteps.push(
       `Run intent backfill (migrates to member_availability): npm --workspace @uaetrail/api run backfill-seeking-activities -- --dry-run then without --dry-run (${missingSeekingActivity} active intent(s) pending).`
+    );
+    recommendedSteps.push(
+      'Optional: migrate published seeking activities → fixed slots: npm --workspace @uaetrail/api run migrate-seeking-to-availability -- --dry-run'
     );
   }
   if (missingCoords > 0) {
@@ -67,13 +74,14 @@ export const loadSeekingStorageStatus = async (): Promise<SeekingStorageStatusRe
   return {
     participantIntentStubWriteEnabled,
     activeIntentsMissingSeekingActivity: missingSeekingActivity,
+    activeLegacyIntentsPendingMigration: missingSeekingActivity,
     activeIntentsMissingCoordsSkippedByBackfill: missingCoords,
     readyToDisableStubWrite,
     recommendedSteps,
   };
 };
 
-/** Deploy gate — legacy intent rows backfilled to seeking activities. */
+/** Deploy gate — no active unmigrated `participant_intents` rows remain. */
 export const seekingStorageStrictGateFails = (report: SeekingStorageStatusReport): boolean =>
   !report.readyToDisableStubWrite;
 

@@ -19,13 +19,11 @@ import { wishlistWatchMatchesPin, type WishlistPinEvent } from '../lib/wishlist-
 import {
   activityDetailPath,
   exploreAvailabilityPinNotificationPath,
-  explorePublishedActivityPinPath,
 } from '../lib/member-routes.js';
-import { findSeekingActivityByParticipantIntentId } from './participant-intent-activity-readthrough.js';
 import { resolveNotificationActorDisplayNamesForRecipients } from './notification-actor-label.js';
 import { logger } from '../lib/logger.js';
 
-const resolveActivityPinCoords = (
+export const resolveActivityPinCoords = (
   doc: {
     meetingLat: number | null;
     meetingLng: number | null;
@@ -54,7 +52,7 @@ const availabilityKindsToOutingCategory = (kinds: AvailabilityKind[]): OutingCat
   return null;
 };
 
-const resolveActivityOutingCategory = (doc: {
+export const resolveActivityOutingCategory = (doc: {
   outingCategory?: string | null;
   activityType?: string | null;
 }): OutingCategory | null => {
@@ -74,7 +72,7 @@ type WishlistNotifyRow = {
   meta: Record<string, unknown>;
 };
 
-const fanOutWishlistNotifications = async (
+export const fanOutWishlistNotifications = async (
   event: WishlistPinEvent,
   title: string,
   body: string,
@@ -164,7 +162,7 @@ const fanOutSavedPlaceWishlistNotifications = async (
 };
 
 /** Saved curated area (`areaId` on wishlist) — trip alerts for outings published in that area. */
-const fanOutSavedAreaWishlistNotifications = async (
+export const fanOutSavedAreaWishlistNotifications = async (
   input: {
     activityId: string;
     title: string;
@@ -331,49 +329,3 @@ export const notifyWishlistForMemberAvailability = async (input: {
   }
 };
 
-/** Ops/tests — legacy `activityMode: seeking` row (not product map). */
-export const notifyWishlistForNewSeeking = async (intentId: string, requesterUserId: string): Promise<void> => {
-  try {
-    const activity = await findSeekingActivityByParticipantIntentId(intentId);
-    if (!activity) return;
-
-    const path = explorePublishedActivityPinPath({
-      intentId,
-      activityId: activity._id,
-    });
-    const notified = new Set<string>();
-    const activityAreaId = activity.areaId?.trim() || null;
-    if (activityAreaId) {
-      await fanOutSavedAreaWishlistNotifications(
-        {
-          activityId: activity._id,
-          title: activity.title,
-          hostUserId: requesterUserId,
-          areaId: activityAreaId,
-          path,
-        },
-        notified
-      );
-    }
-
-    const { latitude, longitude } = resolveActivityPinCoords(activity);
-    const event: WishlistPinEvent = {
-      composeIntent: 'seek',
-      outingCategory: resolveActivityOutingCategory(activity),
-      latitude,
-      longitude,
-      actorUserId: requesterUserId,
-    };
-
-    await fanOutWishlistNotifications(
-      event,
-      'Someone is looking for a crew near you',
-      activity.title,
-      path,
-      { intentId, activityId: activity._id },
-      notified
-    );
-  } catch (error) {
-    logger.warn({ err: error, intentId }, 'wishlist notify for seeking failed');
-  }
-};

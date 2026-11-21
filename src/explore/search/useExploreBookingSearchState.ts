@@ -14,13 +14,13 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import {
   exploreSearchStorageScope,
-  readExploreHubHomeScope,
-  writeExploreHubHomeScope,
-  writeExploreHubLastSearch,
-} from '../hub/exploreHubLastSearch';
-import { resolveExploreHubDetectedWhereQuery } from '../hub/exploreHubDetectedWhere';
-import { exploreHubWhereEffectiveQuery } from '../hub/exploreHubWhereDisplay';
-import { resolveExploreHubDefaultVenueRegions } from '../hub/exploreHubVenueState';
+  readExploreSearchHomeScope,
+  writeExploreSearchHomeScope,
+  writeExploreSearchLastSearchEntry,
+} from './exploreSearchLastSearch';
+import { resolveExploreSearchDetectedWhereQuery } from './exploreSearchDetectedWhere';
+import { exploreSearchWhereEffectiveQuery } from './exploreSearchWhereDisplay';
+import { resolveExploreSearchDefaultVenueRegions } from './exploreSearchVenueState';
 import { useExploreRegionPillOptions } from '../../config/useExploreRegionPillOptions';
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { LIST_DISCOVERY_PATH } from '../../config/platform';
@@ -47,7 +47,7 @@ export const useExploreBookingSearchState = () => {
     (parsedScope: ExploreSearchScope): ExploreSearchScope => {
       if (searchParams.get(EXPLORE_SEARCH_SCOPE_PARAM)) return parsedScope;
       if (parsedScope !== 'join') return parsedScope;
-      return readExploreHubHomeScope(searchStorageScope);
+      return readExploreSearchHomeScope(searchStorageScope);
     },
     [searchParams, searchStorageScope]
   );
@@ -56,7 +56,7 @@ export const useExploreBookingSearchState = () => {
     hydrateScopeFromParams(parsed.searchScope)
   );
   const [draftQuery, setDraftQuery] = useState(() =>
-    parsed.query.trim() || resolveExploreHubDetectedWhereQuery()
+    parsed.query.trim() || resolveExploreSearchDetectedWhereQuery()
   );
   const [activityDatePreset, setActivityDatePreset] = useState<ExploreActivityDatePreset>(
     () => parsed.activityDatePreset
@@ -76,7 +76,7 @@ export const useExploreBookingSearchState = () => {
     modalHydratedRef.current = true;
 
     setSearchScopeState(hydrateScopeFromParams(parsed.searchScope));
-    setDraftQuery(parsed.query.trim() || resolveExploreHubDetectedWhereQuery());
+    setDraftQuery(parsed.query.trim() || resolveExploreSearchDetectedWhereQuery());
     setActivityDatePreset(parsed.activityDatePreset);
     setVenueRegionsState(
       parsed.venueRegions.length > 0
@@ -85,18 +85,18 @@ export const useExploreBookingSearchState = () => {
     );
   }, [hydrateScopeFromParams, modalOpen, parsed, searchParams]);
 
-  const detectedWhere = useMemo(() => resolveExploreHubDetectedWhereQuery(), []);
+  const detectedWhere = useMemo(() => resolveExploreSearchDetectedWhereQuery(), []);
   const committedWhere = useMemo(
-    () => exploreHubWhereEffectiveQuery('', parsed.query.trim() || detectedWhere),
+    () => exploreSearchWhereEffectiveQuery('', parsed.query.trim() || detectedWhere),
     [detectedWhere, parsed.query]
   );
 
   const setSearchScope = useCallback(
     (scope: ExploreSearchScope) => {
       setSearchScopeState(scope);
-      writeExploreHubHomeScope(scope, searchStorageScope);
+      writeExploreSearchHomeScope(scope, searchStorageScope);
       if (scope === 'places' && venueRegions.length === 0) {
-        const defaultRegions = resolveExploreHubDefaultVenueRegions(regionPillOptions);
+        const defaultRegions = resolveExploreSearchDefaultVenueRegions(regionPillOptions);
         if (defaultRegions.length > 0) setVenueRegionsState(defaultRegions);
       }
     },
@@ -128,14 +128,14 @@ export const useExploreBookingSearchState = () => {
       const scope = scopeOverride ?? searchScope;
       if (scopeOverride && scopeOverride !== searchScope) {
         setSearchScopeState(scopeOverride);
-        writeExploreHubHomeScope(scopeOverride, searchStorageScope);
+        writeExploreSearchHomeScope(scopeOverride, searchStorageScope);
       }
-      const query = exploreHubWhereEffectiveQuery(draftQuery, parsed.query.trim() || detectedWhere);
-      writeExploreHubLastSearch(
+      const query = exploreSearchWhereEffectiveQuery(draftQuery, parsed.query.trim() || detectedWhere);
+      writeExploreSearchLastSearchEntry(
         {
           query,
           activityDatePreset,
-          hubMode: scope,
+          searchScope: scope,
           venueRegions,
         },
         searchStorageScope

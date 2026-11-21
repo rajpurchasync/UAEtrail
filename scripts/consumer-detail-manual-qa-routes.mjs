@@ -25,7 +25,8 @@ const ROUTES = [
   {
     surface: 'Activity (seeking)',
     path: '/activity/:id',
-    note: 'activityMode seeking — same L3 shell; request to join; no demand: hop',
+    note:
+      'activityMode seeking — archived find post; join disabled; availability CTA in notice (no demand: hop)',
   },
   { surface: 'Activity (rideshare)', path: '/activity/:id', note: 'Transport tab emphasis' },
   {

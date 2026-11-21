@@ -3,7 +3,7 @@ import { discoveryCardHasMapCoords } from '../discovery/discoveryCardModel';
 import { browseCatalogEntityName } from '../list/browse/browseCatalogLabels';
 import { resolvePlaceRegistryCoverUrl } from './peek/resolvePlaceRegistryCoverImage';
 import { resolvePlacePeekCuratedArea } from './placePeekPresentation';
-import type { ViewerFix } from '../list/explorer/placeDistance';
+import type { ViewerFix } from '../list/browse/placeDistance';
 import { resolvePlaceMapPeekKindLabel } from './resolvePlaceMapPeekKindLabel';
 import { resolvePlaceMapPeekMetaLine } from './resolvePlaceMapPeekMetaLine';
 import { resolvePlaceMapPeekAmenityChips } from './resolvePlaceMapPeekAmenityChips';

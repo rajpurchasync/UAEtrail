@@ -4,7 +4,7 @@ import { join, relative } from 'node:path';
 import {
   EXPLORE_SEARCH_SCOPES_SHIPPED,
   type ExploreSearchScopeKey,
-} from '../explore/exploreBrowseTaxonomy';
+} from '../explore/discoveryRuntime';
 import { browseCategoriesForSearchScope, browseListFilterPatchForSearchScope } from './listDiscoverySearchCommit';
 
 const LIST_ROOT = join(process.cwd(), 'src/list');
@@ -269,5 +269,24 @@ describe('list module hygiene', () => {
     const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
     expect(feed).toMatch(/buildListFeedCards/);
     expect(experience).not.toMatch(/buildBrowseCardsFromMapItems/);
+  });
+
+  /** Explore shell may import `explore/search`, map chrome, compose — list projections use {@link discoveryRuntime}. */
+  it('list projection sources import explore only via discoveryRuntime', () => {
+    const exploreShellSources = new Set([
+      'src/list/ListDiscoveryExperience.tsx',
+      'src/list/BrowseListPage.tsx',
+      'src/list/listDiscoverySearchCreateFlowStub.ts',
+      'src/list/useListDiscoveryUrlState.ts',
+    ]);
+    const deepExploreImport =
+      /from ['"]\.\.\/explore\/(?!discoveryRuntime|exploreMapTopicUrlParams)/;
+    const violations: string[] = [];
+    for (const file of sources) {
+      if (exploreShellSources.has(file)) continue;
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (deepExploreImport.test(content)) violations.push(file);
+    }
+    expect(violations, `Use src/explore/discoveryRuntime.ts:\n${violations.join('\n')}`).toEqual([]);
   });
 });

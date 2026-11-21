@@ -113,9 +113,9 @@ describe('productDataLineageGuard (system-wide)', () => {
   it('CTX-DATA-06: published areas API backs consumer emirate pickers (hooks present)', () => {
     expect(existsSync(join(ROOT, 'src/config/useVenueStateFilterOptions.ts'))).toBe(true);
     expect(existsSync(join(ROOT, 'src/config/useExploreRegionPillOptions.ts'))).toBe(true);
-    expect(read('src/explore/hub/ExploreHubSearchPickSheets.tsx')).toMatch(/useExploreRegionPillOptions/);
+    expect(read('src/explore/search/ExploreSearchPickSheets.tsx')).toMatch(/useExploreRegionPillOptions/);
     expect(read('src/explore/ui/ExploreMapMobileUaePill.tsx')).toMatch(/useVenueStateFilterOptions/);
-    expect(read('src/explore/hub/exploreHubWhereSuggestions.ts')).toMatch(/mergeExploreRegionPillOptionsWithAreas/);
+    expect(read('src/explore/search/exploreSearchWhereSuggestions.ts')).toMatch(/mergeExploreRegionPillOptionsWithAreas/);
     expect(read('src/explore/search/ExploreSearchResultsChrome.tsx')).toMatch(/useExploreRegionPillOptions/);
     expect(read('src/explore/ui/EmirateFromPinField.tsx')).toMatch(/useVenueStateFilterOptions/);
   });

@@ -1,5 +1,8 @@
 import { NotificationType } from '../domain/enums.js';
-import { explorePublishedActivityPinPath, planSelfDemandPeekPath } from '../lib/member-routes.js';
+import {
+  explorePublishedActivityPinPath,
+  myRequestDetailPath,
+} from '../lib/member-routes.js';
 import { scheduleNotification } from './notifications.js';
 
 export const notifyDemandJoinRequestSubmitted = async (input: {
@@ -20,7 +23,7 @@ export const notifyDemandJoinRequestSubmitted = async (input: {
       intentId: input.intentId,
       requestId: input.requestId,
       actorUserId: input.requesterUserId,
-      path: planSelfDemandPeekPath(input.intentId),
+      path: myRequestDetailPath(input.requestId),
     },
   }, 'demand_join_notification');
 

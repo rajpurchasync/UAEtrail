@@ -74,7 +74,7 @@ export type AvailabilityFixedDraft = {
   areaId: string | null;
 };
 
-/** Same order and labels as FAB `SEEK_FIXED_COMPOSE_OPTIONS` / compose catalog `find.*`. */
+/** Same order and labels as FAB `AVAILABILITY_FIXED_COMPOSE_OPTIONS` / compose catalog `find.*`. */
 export const AVAILABILITY_FIXED_TYPE_OPTIONS: Array<{
   key: AvailabilityFixedKind;
   title: string;

@@ -1,6 +1,6 @@
 import { resolveMobileFiveTab } from '../config/mobileFiveTabNav';
 import { EXPLORE_PEOPLE_BROWSE_SEARCH_PLACEHOLDER } from '../content/explorePeopleBrowseCopy';
-import { EXPLORE_SEARCH_OPEN_PLACEHOLDER } from '../explore/exploreBrowseTaxonomy';
+import { EXPLORE_SEARCH_OPEN_PLACEHOLDER } from '../explore/discoveryRuntime';
 import { LIST_CAT_PARAM, parseListCatParam } from './browseListUrlState';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import type { ListExplorerBucket } from './explorer/listExplorerBucket';
@@ -80,4 +80,4 @@ export const resolveBrowseListCreateFabLabel = (
   return browseListCreateFabLabel(parseListCatParam(params.get(LIST_CAT_PARAM)));
 };
 /** Guest list preview — same copy as the map banner. */
-export { EXPLORE_GUEST_MAP_PREVIEW_NOTICE as LIST_GUEST_CATALOG_PREVIEW_NOTICE } from '../explore/exploreBrowseTaxonomy';
+export { EXPLORE_GUEST_MAP_PREVIEW_NOTICE as LIST_GUEST_CATALOG_PREVIEW_NOTICE } from '../explore/discoveryRuntime';

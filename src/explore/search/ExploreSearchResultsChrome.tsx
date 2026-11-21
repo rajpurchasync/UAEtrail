@@ -1,19 +1,19 @@
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  EXPLORE_HUB_SEARCH_EDIT,
-  EXPLORE_HUB_SEARCH_RESULT_SCOPES,
-  EXPLORE_HUB_SEARCH_RESULTS_COUNT,
-} from '../hub/exploreHubHomeCopy';
+  EXPLORE_SEARCH_EDIT,
+  EXPLORE_SEARCH_RESULT_SCOPES,
+  EXPLORE_SEARCH_RESULTS_COUNT,
+} from './exploreSearchHomeCopy';
 import { ExploreSearchResultsViewToggle } from './ExploreSearchResultsViewToggle';
-import { exploreHubHomeWhenSummary } from '../hub/exploreHubHomeWhenLabel';
+import { exploreSearchWhenSummary } from './exploreSearchWhenLabel';
 import {
   exploreSearchModalEntryPath,
   exploreSearchResultsPath,
   type ExploreSearchBrowseState,
   type ExploreSearchScope,
 } from './exploreSearchRouting';
-import { formatExploreHubWhereDisplay } from '../hub/exploreHubWhereDisplay';
-import { exploreHubHomeStateSummary } from '../hub/exploreHubVenueState';
+import { formatExploreSearchWhereDisplay } from './exploreSearchWhereDisplay';
+import { exploreSearchStateSummary } from './exploreSearchVenueState';
 import { useExploreRegionPillOptions } from '../../config/useExploreRegionPillOptions';
 import { ProductNavLink } from '../../components/navigation/ProductNavLink';
 
@@ -52,11 +52,11 @@ export const ExploreSearchResultsChrome = ({
 }: ExploreSearchResultsChromeProps) => {
   const navigate = useNavigate();
   const regionPillOptions = useExploreRegionPillOptions('AE');
-  const whereLine = formatExploreHubWhereDisplay(state.query.trim() || 'Everywhere');
+  const whereLine = formatExploreSearchWhereDisplay(state.query.trim() || 'Everywhere');
   const contextLine =
     state.searchScope === 'places'
-      ? exploreHubHomeStateSummary(state.venueRegions, regionPillOptions)
-      : exploreHubHomeWhenSummary(state.activityDatePreset);
+      ? exploreSearchStateSummary(state.venueRegions, regionPillOptions)
+      : exploreSearchWhenSummary(state.activityDatePreset);
 
   const resultsCount = activeResultCount(state.searchScope, tripCount, placeCount, crewCount);
   const mapView = state.view === 'map';
@@ -72,13 +72,13 @@ export const ExploreSearchResultsChrome = ({
           to={exploreSearchModalEntryPath(state)}
           className="shrink-0 text-xs font-semibold text-emerald-700"
         >
-          {EXPLORE_HUB_SEARCH_EDIT}
+          {EXPLORE_SEARCH_EDIT}
         </ProductNavLink>
       </div>
 
       <div className="flex items-center justify-between gap-3 border-t border-neutral-100 pt-3">
         <p className="text-sm font-semibold text-neutral-900">
-          {loading ? '…' : EXPLORE_HUB_SEARCH_RESULTS_COUNT(resultsCount)}
+          {loading ? '…' : EXPLORE_SEARCH_RESULTS_COUNT(resultsCount)}
         </p>
         {state.searchScope !== 'crew' ? (
           <ExploreSearchResultsViewToggle
@@ -99,7 +99,7 @@ export const ExploreSearchResultsChrome = ({
         role="tablist"
         aria-label="Result categories"
       >
-        {EXPLORE_HUB_SEARCH_RESULT_SCOPES.map(({ mode, label }) => {
+        {EXPLORE_SEARCH_RESULT_SCOPES.map(({ mode, label }) => {
           const selected = state.searchScope === mode;
           const count = tabCount(mode, tripCount, placeCount, crewCount);
           const countLabel = !loading ? ` (${count})` : '';

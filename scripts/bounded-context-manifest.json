@@ -26,6 +26,7 @@
       ],
       "feDomains": ["src/api/domains/explore.ts", "src/api/domains/weather.ts"],
       "feRoots": [
+        "src/explore/discoveryRuntime.ts",
         "src/explore",
         "src/explore/shell",
         "src/activity-discovery",
