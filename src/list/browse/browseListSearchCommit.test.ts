@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   browseCategoriesForSearchScope,
   browseListFilterPatchForSearchScope,
-} from './listDiscoverySearchCommit';
+} from './browseListSearchCommit';
 
-describe('listDiscoverySearchCommit', () => {
+describe('browseListSearchCommit', () => {
   it('maps explore scopes to list categories', () => {
     expect(browseCategoriesForSearchScope('activities')).toEqual(['activities']);
     expect(browseCategoriesForSearchScope('places')).toEqual(['venues']);

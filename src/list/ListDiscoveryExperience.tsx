@@ -11,7 +11,7 @@ import {
 } from './listDiscoverySearchCreateFlowStub';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { reloadExploreMap } from '../hooks/useExploreMap';
-import { browseListFilterPatchForSearchScope } from './listDiscoverySearchCommit';
+import { browseListFilterPatchForSearchScope } from './browse/browseListSearchCommit';
 import type { BrowseListFilterState } from './browseListFilters';
 import {
   countExploreSearchScopes,

@@ -5,7 +5,7 @@ import {
   EXPLORE_SEARCH_SCOPES_SHIPPED,
   type ExploreSearchScopeKey,
 } from './discoveryListRuntime';
-import { browseCategoriesForSearchScope, browseListFilterPatchForSearchScope } from './listDiscoverySearchCommit';
+import { browseCategoriesForSearchScope, browseListFilterPatchForSearchScope } from './browse/browseListSearchCommit';
 
 const LIST_ROOT = join(process.cwd(), 'src/list');
 

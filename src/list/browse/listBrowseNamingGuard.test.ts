@@ -92,6 +92,15 @@ describe('listBrowseNamingGuard', () => {
     expect(read('src/list/explorer/ListExplorerSortControl.tsx')).toMatch(/browse\/listBrowseSort/);
   });
 
+  it('BROWSE-NAME-01l: search-scope commit + audience filter live under browse', () => {
+    expect(existsSync(join(process.cwd(), 'src/list/browse/browseListSearchCommit.ts'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/list/listDiscoverySearchCommit.ts'))).toBe(false);
+    expect(existsSync(join(process.cwd(), 'src/list/browse/browseAudienceFilter.ts'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/list/browseAudienceFilter.ts'))).toBe(false);
+    expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/browse\/browseListSearchCommit/);
+    expect(read('src/list/browseListFilters.ts')).toMatch(/browse\/browseAudienceFilter/);
+  });
+
   it('BROWSE-NAME-01k: collapsed rail labels live under browse', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/browseCollapsedRailLabels.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/browseCollapsedRailLabels.ts'))).toBe(false);

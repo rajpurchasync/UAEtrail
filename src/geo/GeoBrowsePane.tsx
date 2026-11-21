@@ -13,7 +13,7 @@ import {
   filterExploreMapItemsForList,
   type BrowseListFilterState,
 } from '../list/browseListFilters';
-import { browseListFilterPatchForSearchScope } from '../list/listDiscoverySearchCommit';
+import { browseListFilterPatchForSearchScope } from '../list/browse/browseListSearchCommit';
 import { ListExplorer } from '../list/explorer/ListExplorer';
 import { ListDiscoveryMapColumn } from '../list/explorer/ListDiscoveryMapColumn';
 import { ListSideMapResizeHandle } from '../list/explorer/ListSideMapResizeHandle';

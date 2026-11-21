@@ -31,7 +31,7 @@ import type { ListVenuePlaceTopicKey } from './listVenuePlaceTopics';
 import {
   exploreItemMatchesBrowseAudienceFilter,
   type BrowseAudienceFilter,
-} from './browseAudienceFilter';
+} from './browse/browseAudienceFilter';
 import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
 import { exploreItemMatchesBrowseGeoPath } from './browseGeoPath';
 /** @deprecated Use BrowseMainCategoryKey — kept for imports migrating */

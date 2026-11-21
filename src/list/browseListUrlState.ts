@@ -42,7 +42,7 @@ import {
   BROWSE_AUDIENCE_PARAM,
   parseBrowseAudienceFilter,
   serializeBrowseAudienceFilter,
-} from './browseAudienceFilter';
+} from './browse/browseAudienceFilter';
 import {
   BROWSE_GEO_PARAM,
   parseBrowseGeoPath,
