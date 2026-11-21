@@ -29,6 +29,8 @@ const RETIRED_BROWSE_SHIMS = [
   'src/list/explorer/listExplorerFabSnap.ts',
   'src/list/browseListMapHandoff.ts',
   'src/list/browseListMapHandoff.test.ts',
+  'src/list/explorer/listExplorerDateSections.ts',
+  'src/list/explorer/listExplorerDateSections.test.ts',
 ];
 
 const SHIM_CONSUMERS_OUTSIDE_EXPLORER = [

@@ -1,9 +1,9 @@
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { distanceMeters, type ViewerFix } from './placeDistance';
 import {
-  groupListExplorerDateSections,
-  groupListExplorerByIso,
-  type ListExplorerDateSection,
+  groupBrowseListDateSections,
+  groupBrowseListByIso,
+  type BrowseListDateSection,
 } from './browseListDateSections';
 import { browseCardDateIso, browseCardTitle } from './browseCardMeta';
 
@@ -276,7 +276,7 @@ const buildNameLetterGroups = (
   }));
 };
 
-const groupByName = (cards: DiscoveryCardModel[], desc: boolean): ListExplorerDateSection[] => {
+const groupByName = (cards: DiscoveryCardModel[], desc: boolean): BrowseListDateSection[] => {
   const letterGroups = buildNameLetterGroups(cards);
   const sections = letterGroups.map((group) => {
     const groupCards = cards.filter((card) =>
@@ -309,8 +309,8 @@ const distanceBucket = (meters: number | null): DistanceBucket => {
 const groupByDistance = (
   cards: DiscoveryCardModel[],
   viewer: ViewerFix | null
-): ListExplorerDateSection[] => {
-  const buckets = new Map<string, ListExplorerDateSection & { order: number }>();
+): BrowseListDateSection[] => {
+  const buckets = new Map<string, BrowseListDateSection & { order: number }>();
   for (const card of cards) {
     const meters = browseListCardDistanceMeters(card, viewer);
     const slot = distanceBucket(meters);
@@ -325,7 +325,7 @@ const groupByDistance = (
   return sections;
 };
 
-const relabelPostDateSection = (section: ListExplorerDateSection): ListExplorerDateSection => {
+const relabelPostDateSection = (section: BrowseListDateSection): BrowseListDateSection => {
   const { key } = section;
   if (key === 'all') {
     return { ...section, label: 'No post date' };
@@ -348,8 +348,8 @@ const groupByPostDate = (
   cards: DiscoveryCardModel[],
   desc: boolean,
   now: Date
-): ListExplorerDateSection[] => {
-  const sections = groupListExplorerByIso(cards, browseListCardPostDateIso, now)
+): BrowseListDateSection[] => {
+  const sections = groupBrowseListByIso(cards, browseListCardPostDateIso, now)
     .map(relabelPostDateSection)
     .map((section) => ({
       ...section,
@@ -365,7 +365,7 @@ export const groupBrowseListSections = (
   mode: BrowseListSortMode,
   viewer: ViewerFix | null,
   now: Date = new Date()
-): ListExplorerDateSection[] => {
+): BrowseListDateSection[] => {
   if (cards.length === 0) return [];
 
   switch (mode) {
@@ -380,7 +380,7 @@ export const groupBrowseListSections = (
     case 'post_desc':
       return groupByPostDate(cards, true, now);
     case 'event_desc': {
-      const sections = groupListExplorerDateSections(cards, now);
+      const sections = groupBrowseListDateSections(cards, now);
       return sections
         .map((section) => ({
           ...section,
@@ -390,7 +390,7 @@ export const groupBrowseListSections = (
     }
     case 'event_asc':
     default:
-      return groupListExplorerDateSections(cards, now);
+      return groupBrowseListDateSections(cards, now);
   }
 };
 

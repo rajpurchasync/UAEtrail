@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import { groupListExplorerDateSections, listExplorerIsThisWeekSectionDate } from './browseListDateSections';
+import { groupBrowseListDateSections, browseListIsThisWeekSectionDate } from './browseListDateSections';
 
 const card = (id: string, scheduleDate: string | null): DiscoveryCardModel =>
   ({ id, scheduleDate, activity: scheduleDate ? { date: scheduleDate } : undefined }) as DiscoveryCardModel;
 
-describe('groupListExplorerDateSections', () => {
+describe('groupBrowseListDateSections', () => {
   const now = new Date('2026-10-30T10:00:00');
 
   it('groups into Today, This week, This month, and Other', () => {
-    const sections = groupListExplorerDateSections(
+    const sections = groupBrowseListDateSections(
       [
         card('later-year', '2027-01-02'),
         card('nov', '2026-11-06'),
@@ -49,14 +49,14 @@ describe('groupListExplorerDateSections', () => {
   });
 
   it('skips headings when nothing is dated', () => {
-    const sections = groupListExplorerDateSections([card('place', null)], now);
+    const sections = groupBrowseListDateSections([card('place', null)], now);
     expect(sections).toEqual([{ key: 'all', label: '', cards: [card('place', null)] }]);
   });
 
   it('flags Sun–Sat week dates excluding today for row “This” prefix', () => {
-    expect(listExplorerIsThisWeekSectionDate('2026-10-30', now)).toBe(false);
-    expect(listExplorerIsThisWeekSectionDate('2026-10-31', now)).toBe(true);
-    expect(listExplorerIsThisWeekSectionDate('2026-10-25', now)).toBe(true);
-    expect(listExplorerIsThisWeekSectionDate('2026-11-06', now)).toBe(false);
+    expect(browseListIsThisWeekSectionDate('2026-10-30', now)).toBe(false);
+    expect(browseListIsThisWeekSectionDate('2026-10-31', now)).toBe(true);
+    expect(browseListIsThisWeekSectionDate('2026-10-25', now)).toBe(true);
+    expect(browseListIsThisWeekSectionDate('2026-11-06', now)).toBe(false);
   });
 });

@@ -2,31 +2,30 @@ import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { browseCardDateIso } from './browseCardMeta';
 import { browseListSectionSlot, browseListIsThisWeekSectionDate } from './browseListSectionDates';
 
-export type ListExplorerDateSection = {
+export type BrowseListDateSection = {
   key: string;
   label: string;
   cards: DiscoveryCardModel[];
 };
 
-/** Matches the “This week” list section — not Today or later buckets. */
-export const listExplorerIsThisWeekSectionDate = browseListIsThisWeekSectionDate;
+export { browseListIsThisWeekSectionDate };
 
-export const groupListExplorerDateSections = (
+export const groupBrowseListDateSections = (
   cards: DiscoveryCardModel[],
   now: Date = new Date()
-): ListExplorerDateSection[] => groupListExplorerByIso(cards, browseCardDateIso, now);
+): BrowseListDateSection[] => groupBrowseListByIso(cards, browseCardDateIso, now);
 
-export const groupListExplorerByIso = (
+export const groupBrowseListByIso = (
   cards: DiscoveryCardModel[],
   isoForCard: (card: DiscoveryCardModel) => string | null,
   now: Date = new Date()
-): ListExplorerDateSection[] => {
+): BrowseListDateSection[] => {
   const dated = cards.some((card) => isoForCard(card));
   if (!dated) {
     return [{ key: 'all', label: '', cards }];
   }
 
-  const buckets = new Map<string, ListExplorerDateSection & { sort: number }>();
+  const buckets = new Map<string, BrowseListDateSection & { sort: number }>();
   const undated: DiscoveryCardModel[] = [];
 
   for (const card of cards) {

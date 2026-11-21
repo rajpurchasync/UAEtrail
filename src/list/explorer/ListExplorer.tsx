@@ -26,7 +26,7 @@ import { useBrowseViewerLocation } from '../browse/useBrowseViewerLocation';
 import { useDisplayPreferences } from '../../preferences/useDisplayPreferences';
 import type { BrowseListBucket } from '../browse/browseListBucket';
 import type { BrowseListLayout } from '../browse/browseListLayout';
-import type { ListExplorerDateSection } from '../browse/browseListDateSections';
+import type { BrowseListDateSection } from '../browse/browseListDateSections';
 import { ListGuestCatalogPreviewNotice } from '../ui/ListGuestCatalogPreviewNotice';
 import {
   groupBrowseListSections,
@@ -140,7 +140,7 @@ const ListExplorerDateGroups = ({
   compactThumbGrid = false,
   scrollElement,
 }: {
-  sections: ListExplorerDateSection[];
+  sections: BrowseListDateSection[];
   layout: BrowseListLayout;
   onMapHover?: (exploreItemId: string | null) => void;
   compactThumbGrid?: boolean;

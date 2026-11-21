@@ -92,6 +92,17 @@ describe('listBrowseNamingGuard', () => {
     expect(read('src/list/explorer/ListExplorerSortControl.tsx')).toMatch(/browse\/listBrowseSort/);
   });
 
+  it('BROWSE-NAME-01j: browse date sections use browse-prefixed exports', () => {
+    const sections = read('src/list/browse/browseListDateSections.ts');
+    expect(sections).toMatch(/export type BrowseListDateSection/);
+    expect(sections).toMatch(/export const groupBrowseListDateSections/);
+    expect(sections).toMatch(/export const groupBrowseListByIso/);
+    expect(sections).not.toMatch(/ListExplorerDateSection/);
+    expect(sections).not.toMatch(/groupListExplorerDateSections/);
+    expect(read('src/list/browse/listBrowseSort.ts')).toMatch(/groupBrowseListDateSections/);
+    expect(read('src/list/explorer/ListExplorer.tsx')).toMatch(/BrowseListDateSection/);
+  });
+
   it('BROWSE-NAME-01d: list bucket + date sections live under browse (not explorer)', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/browseListBucket.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/browse/browseListDateSections.ts'))).toBe(true);
