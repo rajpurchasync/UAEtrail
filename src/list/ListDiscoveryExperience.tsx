@@ -50,7 +50,7 @@ import { useMemberDiscoveryRoster } from '@/people-discovery/hooks/useMemberDisc
 import { useExplorePeopleAvailability } from '@/people-discovery/hooks/usePeopleAvailability';
 import { resolveEffectiveBrowseVenueRegions } from './browseGeoPath';
 import { useBrowseGeoScopeHydration } from './useBrowseGeoScopeHydration';
-import { listExplorerEntityLinkState } from './explorer/listExplorerNavState';
+import { browseListEntityLinkState } from './browse/browseListNavState';
 import { countListExplorerFilters } from './explorer/listExplorerLayout';
 import {
   listExplorerBucketCategories,
@@ -400,7 +400,7 @@ export const ListDiscoveryExperience = ({
   const handleOpenAvailabilityCatalogItem = useCallback(
     (item: { path: string }) => {
       const returnTo = `${location.pathname}${location.search}`;
-      navigate(item.path, { state: listExplorerEntityLinkState(returnTo) });
+      navigate(item.path, { state: browseListEntityLinkState(returnTo) });
     },
     [location.pathname, location.search, navigate]
   );
@@ -590,7 +590,7 @@ export const ListDiscoveryExperience = ({
       setListMapHighlightedId(item.id);
       if (exploreSearch && item.path) {
         const returnTo = `${location.pathname}${location.search}`;
-        navigate(item.path, { state: listExplorerEntityLinkState(returnTo) });
+        navigate(item.path, { state: browseListEntityLinkState(returnTo) });
       }
     },
     [exploreSearch, location.pathname, location.search, navigate]

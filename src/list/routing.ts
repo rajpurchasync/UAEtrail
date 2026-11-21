@@ -77,9 +77,6 @@ export const exploreMapPathFromListSearch = (search: string): string => {
   return qs ? `${EXPLORE_MAP_PATH}?${qs}` : EXPLORE_MAP_PATH;
 };
 
-/** @deprecated Use {@link exploreMapPathFromListSearch} */
-export const exploreMapPathFromList = (search: string): string => exploreMapPathFromListSearch(search);
-
 /** Build `/list` from current explore query (`q`, `topics`, `date`, `regions`, `price`). */
 export const listDiscoveryPathFromExploreSearch = (search: string): string => {
   const params = new URLSearchParams(search.replace(/^\?/, '').trim());

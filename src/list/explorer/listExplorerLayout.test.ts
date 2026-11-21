@@ -13,7 +13,7 @@ import {
   serializeListExplorerBucket,
 } from './listExplorerBucket';
 import { parseListFilterFabCorner, snapListFilterFabCorner } from './listExplorerFabSnap';
-import { listExplorerEntityLinkState } from './listExplorerNavState';
+import { browseListEntityLinkState } from '../browse/browseListNavState';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import {
   browseCardMeta,
@@ -208,7 +208,7 @@ describe('list explorer thumbnail copy', () => {
 
 describe('list explorer entity back state', () => {
   it('returns to the list URL after nested detail screens', () => {
-    expect(listExplorerEntityLinkState('/list?q=hatta')).toEqual({
+    expect(browseListEntityLinkState('/list?q=hatta')).toEqual({
       from: '/list?q=hatta',
       backLabel: 'Browse',
       detailBackTo: '/list?q=hatta',

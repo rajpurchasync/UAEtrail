@@ -132,7 +132,7 @@ describe('activity detail program — wiring', () => {
 
   it('AD-PEEK-07: list explorer opens entity detail; people rows omit join CTAs without provider', () => {
     const explorerLink = read('src/list/browse/BrowseItemLink.tsx');
-    expect(explorerLink).toMatch(/listExplorerEntityLinkState/);
+    expect(explorerLink).toMatch(/browseListEntityLinkState/);
     const browsePanels = read('src/explore/shell/ExploreExperienceBrowsePanels.tsx');
     expect(browsePanels).not.toMatch(/ListFeedActionsProvider/);
     const listRow = read('src/explore/ui/ExploreListRow.tsx');

@@ -38,6 +38,13 @@ describe('listBrowseNamingGuard', () => {
     );
   });
 
+  it('BROWSE-NAME-01b: list entity link state lives under browse (not listExplorerNavState)', () => {
+    expect(existsSync(join(process.cwd(), 'src/list/browse/browseListNavState.ts'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/list/explorer/listExplorerNavState.ts'))).toBe(false);
+    expect(read('src/list/browse/BrowseItemLink.tsx')).toMatch(/browseListEntityLinkState/);
+    expect(read('src/list/routing.ts')).not.toMatch(/exploreMapPathFromList\b/);
+  });
+
   it('BROWSE-NAME-02: ListExplorer shell composes browse cards', () => {
     const explorer = read('src/list/explorer/ListExplorer.tsx');
     expect(explorer).toMatch(/BrowseThumbnailCard/);

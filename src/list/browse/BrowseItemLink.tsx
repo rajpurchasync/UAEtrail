@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useExploreMapChrome } from '../../explore/ExploreMapChromeContext';
-import { listExplorerEntityLinkState } from '../explorer/listExplorerNavState';
+import { browseListEntityLinkState } from './browseListNavState';
 
 type BrowseItemLinkProps = {
   to: string;
@@ -39,7 +39,7 @@ export const BrowseItemLink = ({
   return (
     <Link
       to={to}
-      state={listExplorerEntityLinkState(returnTo)}
+      state={browseListEntityLinkState(returnTo)}
       className={className}
       onMouseEnter={() => {
         if (!exploreItemId) return;
