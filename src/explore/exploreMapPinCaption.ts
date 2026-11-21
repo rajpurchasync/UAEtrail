@@ -5,7 +5,7 @@ import type {
   PlaceKind,
 } from '@uaetrail/shared-types';
 import { PLACE_KIND_LABELS } from '@uaetrail/shared-types';
-import { browseCatalogHubLabelFromExploreItem } from '../list/browse/browseCatalogLabels';
+import { exploreCatalogHubLabelFromExploreItem } from './exploreCatalogHubLabel';
 import { resolveExploreCoverImage } from './exploreCoverImage';
 import { formatExploreMapPinDateShort, isScheduledActivityMapPin } from './exploreMapPinTooltip';
 
@@ -85,7 +85,7 @@ export const resolveExploreMapPinVenueName = (item: ExploreMapItemDTO): string |
   if (geoVenue) return geoVenue;
   const cardName = (item.locationCard as { name?: string } | null | undefined)?.name?.trim();
   if (cardName) return cardName;
-  const hub = browseCatalogHubLabelFromExploreItem(item);
+  const hub = exploreCatalogHubLabelFromExploreItem(item);
   return hub ? truncateMapPinHub(hub) : null;
 };
 
@@ -94,7 +94,7 @@ export const resolveExploreMapPinCoverImage = (item: ExploreMapItemDTO): string 
 
 /** Curated area / place hub for map pin “where” line (Hatta, Shawka, …) — not trail or spot title. */
 export const resolveExploreMapPinPlaceHub = (item: ExploreMapItemDTO): string | null => {
-  const hub = browseCatalogHubLabelFromExploreItem(item);
+  const hub = exploreCatalogHubLabelFromExploreItem(item);
   return hub ? truncateMapPinHub(hub) : null;
 };
 

@@ -1,4 +1,4 @@
-import { isGeographyMapSource, type ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { isGeographyMapSource } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { groupRegionTextAtBrowseFilterLevel } from '../../config/groupRegionFilter';
 
@@ -81,28 +81,7 @@ export const browseCatalogHubLabel = (card: DiscoveryCardModel): string | null =
   return null;
 };
 
-/** Map pin “where” + list tail from explore wire — geo / place-hub, not spot or `locationName`. */
-export const browseCatalogHubLabelFromExploreItem = (item: ExploreMapItemDTO): string | null => {
-  const venueRegion =
-    groupRegionTextAtBrowseFilterLevel(item.groupRegionLevels) ??
-    groupRegionTextAtBrowseFilterLevel(item.locationCard?.groupRegionLevels) ??
-    groupRegionTextAtBrowseFilterLevel(item.activity?.groupRegionLevels) ??
-    item.locationCard?.region?.trim() ??
-    item.activity?.region?.trim() ??
-    null;
-
-  return browseCatalogHubLabel({
-    listTitle: item.presentation?.listTitle ?? item.title,
-    headline: item.presentation?.headline ?? item.title,
-    areaId: item.areaId ?? null,
-    areaLabel: item.areaLabel ?? null,
-    areaName: item.areaName ?? null,
-    subtitle: item.subtitle ?? item.presentation?.subtitle ?? null,
-    venueRegion,
-    geoRef: item.geoRef ?? item.activity?.geoRef ?? item.locationCard?.geoRef ?? null,
-    source: item.source,
-  } as DiscoveryCardModel);
-};
+export { exploreCatalogHubLabelFromExploreItem as browseCatalogHubLabelFromExploreItem } from '../../explore/exploreCatalogHubLabel';
 
 /** State · geo destination — never spot title or generic venue hint. */
 export const browseCatalogHeaderLocationLine = (card: DiscoveryCardModel): string | null => {
