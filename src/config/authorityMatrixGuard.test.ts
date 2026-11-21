@@ -83,6 +83,40 @@ describe('authorityMatrixGuard (DMCP Phase 0)', () => {
     expect(workspaceResolver).not.toMatch(/\bisHostRole\b/);
   });
 
+  it('AUTH-12: release ops spine wired (DMCP Phase 8)', () => {
+    const matrix = JSON.parse(read('scripts/authority-matrix.json'));
+    expect(matrix.dmcpPhase).toBeGreaterThanOrEqual(8);
+    expect(matrix.actions?.find((a: { id: string }) => a.id === 'ops.release_checklist')).toBeTruthy();
+    expect(read('package.json')).toMatch(/verify:release-ops/);
+    expect(read('src/config/releaseOpsSpineGuard.test.ts')).toMatch(/RELEASE-SPINE-05/);
+  });
+
+  it('AUTH-11: people graph uses Team wire, Communities stay planned (DMCP Phase 7)', () => {
+    const matrix = JSON.parse(read('scripts/authority-matrix.json'));
+    expect(matrix.dmcpPhase).toBeGreaterThanOrEqual(7);
+    const byId = new Map((matrix.actions ?? []).map((a: { id: string }) => [a.id, a]));
+    expect(byId.get('social.group_create')?.note).toMatch(/Team/);
+    expect(byId.get('social.buddy_request')?.note).toMatch(/Friends/);
+    expect(byId.get('people.plan_hub')?.note).toMatch(/No Plan aggregate/);
+    const program = JSON.parse(read('scripts/refactor-program.json'));
+    expect(program.migrations?.find((m: { id: string }) => m.id === 'MIG-COMMUNITY-DISCOVER')?.status).toBe(
+      'planned'
+    );
+    expect(read('src/config/peopleGraphPlanSpineGuard.test.ts')).toMatch(/PEOPLE-SPINE-06/);
+    expect(read('package.json')).toMatch(/verify:people-graph-plan/);
+  });
+
+  it('AUTH-10: storefront kinds and Pro path stay matrix-resolved (DMCP Phase 6)', () => {
+    const matrix = JSON.parse(read('scripts/authority-matrix.json'));
+    expect(matrix.dmcpPhase).toBeGreaterThanOrEqual(6);
+    const byId = new Map((matrix.actions ?? []).map((a: { id: string }) => [a.id, a]));
+    expect(byId.get('client.pro_membership')?.resolver?.module).toBe('src/config/memberRoutes.ts');
+    expect(byId.get('shop.public_profile')?.resolver?.symbol).toBe('inferHostStorefrontKindFromTenantWire');
+    expect(byId.get('storefront.agency_public')?.axis).toBe('C_STOREFRONT');
+    expect(read('src/config/operatorStorefrontSpineGuard.test.ts')).toMatch(/STOREFRONT-SPINE-06/);
+    expect(read('package.json')).toMatch(/verify:storefront-spine/);
+  });
+
   it('AUTH-09: participation join clients are sole FE mutators (DMCP Phase 5)', () => {
     const matrix = JSON.parse(read('scripts/authority-matrix.json'));
     expect(matrix.dmcpPhase).toBeGreaterThanOrEqual(5);

@@ -19,7 +19,7 @@ export const HostingCrewChatPostPolicyField = ({
 }: HostingCrewChatPostPolicyFieldProps) => (
   <div className="mt-6 rounded-2xl border border-neutral-200/80 bg-neutral-50/80 p-4">
     <p className="text-sm font-semibold text-neutral-900">{HOSTING_CREW_CHAT_POLICY_TITLE}</p>
-    <p className="mt-1 text-xs text-neutral-600">You can change this later on the activity Buddies tab.</p>
+    <p className="mt-1 text-xs text-neutral-600">You can change this later on the activity Crew tab.</p>
     <div className="mt-3 space-y-2">
       {POLICIES.map((policy) => {
         const selected = value === policy;

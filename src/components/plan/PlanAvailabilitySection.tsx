@@ -15,6 +15,7 @@ import { mergeVenueStateFilterOptionsWithAreas } from '../../config/regions';
 import { AppButton } from '../mobile/AppButton';
 import { useMemberAvailability } from '../../hooks/useMemberAvailability';
 import { PlanAvailabilityDaysCalendar } from './PlanAvailabilityDaysCalendar';
+import { PRODUCT_AVAILABILITY_VISIBILITY_FRIENDS_LABEL } from '../../content/productNorthStar';
 
 const KIND_LABELS: Record<AvailabilityKind, string> = {
   hiking: 'Hiking',
@@ -296,7 +297,7 @@ export const PlanAvailabilitySection = ({
           value={visibility}
           onChange={(e) => setVisibility(e.target.value as AvailabilityVisibility)}
         >
-          <option value="buddies">Buddies only</option>
+          <option value="buddies">{PRODUCT_AVAILABILITY_VISIBILITY_FRIENDS_LABEL}</option>
           <option value="public">Everyone signed in</option>
           <option value="hidden">Hidden</option>
         </select>

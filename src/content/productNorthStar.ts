@@ -54,6 +54,8 @@ export const PRODUCT_PEOPLE_DISCOVERY_LABEL = 'Find your crew';
 /** Social hub tab — discover people to add as friends. */
 export const PRODUCT_FIND_FRIENDS_HUB_LABEL = 'Find friends';
 export const PRODUCT_FRIENDS_SURFACE_LABEL = 'Friends';
+/** `AvailabilityVisibility` wire value `buddies` — friends-only calendar visibility. */
+export const PRODUCT_AVAILABILITY_VISIBILITY_FRIENDS_LABEL = 'Friends only';
 /** Friends + teams hub (desktop GO + hamburger; `/buddies` index). */
 export const PRODUCT_MY_CREW_SURFACE_TITLE = 'My crew';
 /** @deprecated Use {@link PRODUCT_MY_CREW_SURFACE_TITLE} — retained for import stability. */

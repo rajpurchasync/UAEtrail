@@ -33,9 +33,9 @@ export type ActivityDetailStickyFooterProps = {
   showInviteShare: boolean;
   sharePayload: { title: string; text: string; path: string };
   showParticipantFooterShortcuts: boolean;
-  /** Host Plan/Buddies footer — Chat + Manage under share (wire `plan_host_share`). */
+  /** Host Plan/Crew footer — Chat + Manage under share (wire `plan_host_share`). */
   hostSecondaryActions?: ReactNode;
-  /** Host Plan/Buddies — open invite + share sheet (friends / link) instead of web Share API only. */
+  /** Host Plan/Crew — open invite + share sheet (friends / link) instead of web Share API only. */
   onHostShareOuting?: () => void;
   /** Consumer wire CTAs already on page — skip tab share duplicate. */
   consumerWireOwnsEngagement?: boolean;

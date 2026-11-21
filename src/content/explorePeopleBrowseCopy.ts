@@ -11,7 +11,7 @@ import {
   memberAvailabilityCalendarDays,
 } from '@uaetrail/shared-types';
 
-import { PRODUCT_CREWS_TAB_LABEL } from './productNorthStar';
+import { PRODUCT_CREWS_TAB_LABEL, PRODUCT_FRIENDS_SURFACE_LABEL } from './productNorthStar';
 
 export const EXPLORE_PEOPLE_BROWSE_PANEL_TITLE = 'Find your crew';
 
@@ -32,7 +32,7 @@ export const EXPLORE_PEOPLE_BROWSE_LOOKING_LOADING = 'Loading outings…';
 export const EXPLORE_PEOPLE_BROWSE_EMPTY_ALL =
   'No friends or follows yet — connect on outings or follow hosts you like.';
 export const EXPLORE_PEOPLE_BROWSE_EMPTY_FRIENDS =
-  'No friends yet — send a buddy request from a member profile.';
+  'No friends yet — send a friend request from a member profile.';
 export const EXPLORE_PEOPLE_BROWSE_EMPTY_FOLLOWED =
   'You are not following anyone yet — follow hosts and members from their profile.';
 export const EXPLORE_PEOPLE_BROWSE_FOLLOWED_SEGMENT_PEOPLE = 'People';
@@ -48,8 +48,9 @@ export const EXPLORE_PEOPLE_BROWSE_DISCOVER_SEARCH_PLACEHOLDER = 'Search by name
 
 export const EXPLORE_PEOPLE_BROWSE_TAB_DISCOVER = 'Discover';
 
-export const EXPLORE_SEARCH_SCOPE_BUDDIES_LABEL = 'Buddies';
-export const EXPLORE_SEARCH_SCOPE_BUDDIES_DESCRIPTION =
+/** Map/search scope key `people` — not Friends list route. */
+export const EXPLORE_SEARCH_SCOPE_PEOPLE_LABEL = PRODUCT_FRIENDS_SURFACE_LABEL;
+export const EXPLORE_SEARCH_SCOPE_PEOPLE_DESCRIPTION =
   'Find members on outings and public profiles — connect with hosts and hikers (Pro unlocks more)';
 
 export const EXPLORE_PEOPLE_BROWSE_DISCOVER_ON_TRIPS_TITLE = 'On outings';
@@ -62,7 +63,7 @@ export const EXPLORE_PEOPLE_BROWSE_EMPTY_DISCOVER_LOOKING =
 export const EXPLORE_PEOPLE_BROWSE_AVAILABILITY_LOADING = 'Loading…';
 export const EXPLORE_PEOPLE_BROWSE_AVAILABILITY_EMPTY = 'No one available for these dates.';
 export const EXPLORE_PEOPLE_BROWSE_FRIENDS_GOING_EMPTY =
-  'No friends yet — send a buddy request from a member profile.';
+  'No friends yet — send a friend request from a member profile.';
 export const EXPLORE_PEOPLE_BROWSE_FRIEND_NO_OUTING_FOR_FILTER =
   'No outing on the map for these dates';
 export const EXPLORE_PEOPLE_BROWSE_CONNECT_EMPTY = 'No public profiles match right now.';
@@ -72,7 +73,7 @@ export const EXPLORE_PEOPLE_BROWSE_EVERYONE_PRO_LOCK_LABEL =
   'Unlock unlimited profile views with pro membership';
 export const EXPLORE_PEOPLE_BROWSE_EMPTY_DISCOVER_FOLLOWED =
   'You are not following anyone yet — follow hosts and members from their profile.';
-export const BUDDIES_DISCOVERY_INTRO =
+export const EXPLORE_PEOPLE_DISCOVERY_INTRO =
   'Find members on live outings or browse public profiles — add friends, message, or plan something together.';
 
 export const EXPLORE_PEOPLE_BROWSE_DISCOVER_DIRECTORY_TITLE = 'Public profiles';

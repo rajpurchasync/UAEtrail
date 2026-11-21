@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const ROOT = join(process.cwd(), 'src');
@@ -76,5 +76,43 @@ describe('crewsTerminologyGuard (Crews / peopleTab — not buddies segment)', ()
     const taxonomy = readFileSync(join(process.cwd(), 'src/list/browseListTaxonomy.ts'), 'utf8');
     expect(taxonomy).toMatch(/PRODUCT_CREWS_TAB_LABEL/);
     expect(taxonomy).not.toMatch(/label:\s*['"]Buddies['"]/);
+  });
+
+  it('CREWS-05: people copy + crews stats use Friends (not Buddies product label)', () => {
+    const copy = readFileSync(join(process.cwd(), 'src/content/explorePeopleBrowseCopy.ts'), 'utf8');
+    expect(copy).toMatch(/EXPLORE_SEARCH_SCOPE_PEOPLE_LABEL/);
+    expect(copy).not.toMatch(/EXPLORE_SEARCH_SCOPE_BUDDIES_LABEL/);
+    expect(copy).not.toMatch(/= 'Buddies'/);
+    const stats = readFileSync(join(process.cwd(), 'src/list/crews/crewsStatTab.ts'), 'utf8');
+    expect(stats).toMatch(/friends: 'Friends'/);
+    expect(stats).not.toMatch(/buddies: 'Buddies'/);
+    const inbound = readFileSync(join(process.cwd(), 'src/routing/productUrlInbound.ts'), 'utf8');
+    expect(inbound).toMatch(/key === 'buddies'\) return 'people'/);
+  });
+
+  it('CREWS-06: no Buddies product string in consumer content/components', () => {
+    const violations: string[] = [];
+    const scanRoots = ['src/content', 'src/components', 'src/explore/ui', 'src/list/crews'];
+    const allow = new Set([
+      'src/content/upl-glossary.ts',
+      'src/content/workspaceProductLanguageGuard.test.ts',
+    ]);
+    const wireOk = /value="buddies"|'buddies'\s*\|/;
+
+    for (const root of scanRoots) {
+      const abs = join(process.cwd(), root);
+      if (!existsSync(abs)) continue;
+      for (const file of collectTs(abs)) {
+        if (allow.has(file)) continue;
+        if (file.endsWith('.test.ts') || file.endsWith('.test.tsx')) continue;
+        const content = readFileSync(join(process.cwd(), file), 'utf8');
+        if (/\bBuddies\b/.test(content)) {
+          const lines = content.split('\n');
+          const hit = lines.some((line) => /\bBuddies\b/.test(line) && !wireOk.test(line) && !line.trim().startsWith('//'));
+          if (hit) violations.push(file);
+        }
+      }
+    }
+    expect(violations, violations.join('\n')).toEqual([]);
   });
 });

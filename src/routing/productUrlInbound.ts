@@ -69,7 +69,7 @@ export const normalizeExploreSearchScopeInbound = (value: string | null): string
   ) {
     return 'places';
   }
-  if (key === 'looking' || key === 'demand' || key === 'person') return 'people';
+  if (key === 'looking' || key === 'demand' || key === 'person' || key === 'buddies') return 'people';
   if (key === 'shop' || key === 'shops') return 'shops';
   if (key === 'agency' || key === 'agencies' || key === 'operator' || key === 'operators') {
     return 'agencies';
@@ -85,6 +85,7 @@ export const INBOUND_BUDDIES_LIST_TAB_PARAM = 'buddies';
 export const INBOUND_SOCIAL_TAB_PARAM = 'socialTab';
 export const INBOUND_GOING_TAB_PARAM = 'goingTab';
 
+/** Sole people-tab segment read (canonical `peopleTab` + inbound-only aliases). */
 export const readPeopleCrewsTabParam = (
   searchParams: Pick<URLSearchParams, 'get'>
 ): string | null => {
@@ -93,7 +94,12 @@ export const readPeopleCrewsTabParam = (
   const buddies = searchParams.get(INBOUND_BUDDIES_LIST_TAB_PARAM)?.trim();
   if (buddies) return buddies;
   const social = searchParams.get(INBOUND_SOCIAL_TAB_PARAM)?.trim();
-  return social || null;
+  if (social) return social;
+  const goingTab = searchParams.get(INBOUND_GOING_TAB_PARAM)?.trim();
+  if (goingTab === 'people') return 'going';
+  if (goingTab === 'discover') return 'available';
+  if (goingTab === 'trips') return 'connect';
+  return null;
 };
 
 /** Retired `peopleTab` values (not param names). */

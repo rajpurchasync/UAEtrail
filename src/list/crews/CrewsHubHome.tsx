@@ -26,7 +26,7 @@ export const CrewsHubHome = ({
 }: CrewsHubHomeProps) => {
   const guides = filterCrewsGuideDirectoryCards(directory);
   const teasers: { tab: CrewsStatTab; count: number; blurb: string }[] = [
-    { tab: 'buddies', count: buddiesCount, blurb: 'Friends and people you follow with outings coming up' },
+    { tab: 'friends', count: buddiesCount, blurb: 'Friends and people you follow with outings coming up' },
     { tab: 'available', count: availableCount, blurb: 'Looking for crew or free on the calendar' },
     { tab: 'everyone', count: everyoneCount, blurb: 'Discover hosts, guides, and members nearby' },
   ];

@@ -3,7 +3,8 @@ import { SITE_TITLE_BRAND } from '../config/seo';
 /** Consumer activity detail — tab labels only (not API / domain names). */
 export const ACTIVITY_DETAIL_TAB_PLAN = 'Plan';
 export const ACTIVITY_DETAIL_TAB_PLACE = 'Place';
-export const ACTIVITY_DETAIL_TAB_BUDDIES = 'Buddies';
+/** Outing roster + crew chat tab (`?tab=buddies` wire). */
+export const ACTIVITY_DETAIL_TAB_BUDDIES = 'Crew';
 export const ACTIVITY_DETAIL_TAB_TRANSPORT = 'Transport';
 
 export const ACTIVITY_DETAIL_CREW_LOCKED_HINT =
@@ -50,7 +51,7 @@ export const ACTIVITY_DETAIL_PRO_HOST_PROFILE_HINT =
   'Pro members can view host profiles and message before joining.';
 
 export const ACTIVITY_DETAIL_PRO_ROSTER_HINT =
-  'Pro members see everyone going — you’re viewing buddies on this outing.';
+  'Pro members see everyone going — you’re viewing the full crew on this outing.';
 
 export const ACTIVITY_DETAIL_PRO_SOCIAL_CTA = 'See Pro options';
 
@@ -82,7 +83,7 @@ export const ACTIVITY_DETAIL_PLACE_LOCKED_BODY =
 export const ACTIVITY_DETAIL_PLACE_LOCKED_CTA = 'Back to Plan';
 
 export const ACTIVITY_DETAIL_TRANSPORT_REACH_TITLE = 'How to get there';
-export const ACTIVITY_DETAIL_HOST_BUDDIES_TOOLS_HINT = 'Host tools on Buddies';
+export const ACTIVITY_DETAIL_HOST_BUDDIES_TOOLS_HINT = 'Host tools on Crew';
 
 export const ACTIVITY_DETAIL_TAB_FOOTER_VIEW_RIDE = 'View shared ride';
 export const ACTIVITY_DETAIL_TAB_FOOTER_DIRECTIONS = 'Directions';

@@ -33,6 +33,7 @@ describe('productUrlInbound', () => {
 
   it('search scope normalizes retired tokens', () => {
     expect(normalizeExploreSearchScopeInbound('demand')).toBe('people');
+    expect(normalizeExploreSearchScopeInbound('buddies')).toBe('people');
     expect(normalizeExploreSearchScopeInbound('trip')).toBe('activities');
     expect(readExploreSearchScopeParam(new URLSearchParams('searchFocus=people'))).toBe('people');
   });
@@ -41,6 +42,8 @@ describe('productUrlInbound', () => {
     expect(readPeopleCrewsTabParam(new URLSearchParams('peopleTab=going'))).toBe('going');
     expect(readPeopleCrewsTabParam(new URLSearchParams('buddies=available'))).toBe('available');
     expect(readPeopleCrewsTabParam(new URLSearchParams('socialTab=connect'))).toBe('connect');
+    expect(readPeopleCrewsTabParam(new URLSearchParams('goingTab=people'))).toBe('going');
+    expect(readPeopleCrewsTabParam(new URLSearchParams('goingTab=discover'))).toBe('available');
   });
 
   it('sanitizes retired map pins and overlay query keys', () => {

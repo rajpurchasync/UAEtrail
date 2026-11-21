@@ -67,7 +67,7 @@ export interface ActivityDetailViewProps {
   canAccessCrewSurfaces?: boolean;
   /** Mobile sticky footer — group chat + alerts (confirmed participant, not host). */
   showParticipantFooterShortcuts?: boolean;
-  /** Mobile Buddies tab lock card — from `resolveActivityPresentation.showCrewLockedHint`. */
+  /** Mobile Crew tab lock card — from `resolveActivityPresentation.showCrewLockedHint`. */
   showCrewLockedHint?: boolean;
   /** Layer 7 from `viewerAccess.entitlements` — roster / host profile gates. */
   viewerEntitlements?: ActivityViewerEntitlementsDTO | null;
@@ -79,7 +79,7 @@ export interface ActivityDetailViewProps {
     onSaved?: (policy: ActivityGroupChatPostPolicy) => void;
     onError?: (message: string) => void;
   };
-  /** Host Buddies tab — roster, pending queue, check-in (detail shell). */
+  /** Host Crew tab — roster, pending queue, check-in (detail shell; wire `?tab=buddies`). */
   hostBuddiesHub?: {
     joinRequests: ActivityRequestView[];
     requestsLoading: boolean;

@@ -5,8 +5,8 @@ import {
 } from '@uaetrail/shared-types';
 import { isMerchantShopMapItem, mapItemMatchesShopsPill } from './exploreMapItemKind';
 import {
-  EXPLORE_SEARCH_SCOPE_BUDDIES_DESCRIPTION,
-  EXPLORE_SEARCH_SCOPE_BUDDIES_LABEL,
+  EXPLORE_SEARCH_SCOPE_PEOPLE_DESCRIPTION,
+  EXPLORE_SEARCH_SCOPE_PEOPLE_LABEL,
 } from '../content/explorePeopleBrowseCopy';
 import type { ExplorePanel } from './routing';
 import { MAP_LENS_SPOTS_LABEL } from '../place/geographyVocabulary';
@@ -90,8 +90,8 @@ export const EXPLORE_SEARCH_SCOPE_COPY: Record<
     shipped: true,
   },
   people: {
-    label: EXPLORE_SEARCH_SCOPE_BUDDIES_LABEL,
-    description: EXPLORE_SEARCH_SCOPE_BUDDIES_DESCRIPTION,
+    label: EXPLORE_SEARCH_SCOPE_PEOPLE_LABEL,
+    description: EXPLORE_SEARCH_SCOPE_PEOPLE_DESCRIPTION,
     shipped: true,
   },
   shops: {

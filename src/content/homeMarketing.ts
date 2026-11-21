@@ -82,7 +82,7 @@ export const HOME_HOW_IT_WORKS = {
     },
     {
       title: 'Meet up outdoors',
-      description: 'Add buddies and keep the chat so your next outing is one tap away.'
+      description: 'Add friends and keep the chat so your next outing is one tap away.'
     }
   ] as const
 } as const;

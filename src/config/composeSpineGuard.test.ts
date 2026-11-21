@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 
-describe('composeSpineGuard (DMCP Phase 4)', () => {
+describe('composeSpineGuard (DMCP Phase 4 rollup)', () => {
   it('COMPOSE-SPINE-01: wire emit prefixes are host · availability · add only', () => {
     const wire = read('packages/shared-types/src/compose-route.ts');
     expect(wire).toMatch(/formatComposeWire/);

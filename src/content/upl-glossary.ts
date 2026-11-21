@@ -38,9 +38,10 @@ export { MAP_LENS_SPOTS_LABEL as UPL_MAP_LENS_SPOTS } from '../place/geographyVo
 export const UPL_PEOPLE = 'People';
 export const UPL_FIND_YOUR_CREW = 'Find your crew';
 
-/** Social graph (UI). Wire uses `buddy`. */
-export const UPL_BUDDIES_PAGE = 'Buddies';
+/** Friends list (`/buddies` route — wire only). */
 export const UPL_FRIENDS_LIST = 'Friends';
+/** @deprecated Use {@link UPL_FRIENDS_LIST}. */
+export const UPL_BUDDIES_PAGE = UPL_FRIENDS_LIST;
 export const UPL_FOLLOWING = 'Following';
 
 /** Plan hub */

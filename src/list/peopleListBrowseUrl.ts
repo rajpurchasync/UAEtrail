@@ -1,27 +1,19 @@
 import {
   parsePeopleBrowseTab,
-  parsePeopleBrowseTabFromUrl,
   serializePeopleBrowseTab,
   type PeopleBrowseTab,
 } from '@/people-discovery/peopleBrowseTab';
 import {
   INBOUND_BUDDIES_LIST_TAB_PARAM,
-  INBOUND_GOING_TAB_PARAM,
-  INBOUND_SOCIAL_TAB_PARAM,
   PEOPLE_LIST_TAB_URL_PARAM,
   readPeopleCrewsTabParam,
 } from '../routing/productUrlInbound';
 
 export type { PeopleBrowseTab };
 
-export {
-  INBOUND_BUDDIES_LIST_TAB_PARAM,
-  INBOUND_GOING_TAB_PARAM,
-  INBOUND_SOCIAL_TAB_PARAM,
-  PEOPLE_LIST_TAB_URL_PARAM,
-};
+export { PEOPLE_LIST_TAB_URL_PARAM, readPeopleCrewsTabParam };
 
-/** @see readPeopleCrewsTabParam */
+/** @deprecated Prefer {@link readPeopleCrewsTabParam} from `productUrlInbound`. */
 export const readPeopleListBrowseTabParam = readPeopleCrewsTabParam;
 
 /** Full-screen `/list?listCat=people` — default **Overview** when tab param omitted. */
@@ -33,11 +25,7 @@ export const parsePeopleListBrowseTab = (raw: string | null): PeopleBrowseTab =>
 /** Explore map people rail — default **Looking for** when tab param omitted. */
 export const parseExplorePeopleBrowseTab = (
   searchParams: Pick<URLSearchParams, 'get'>
-): PeopleBrowseTab =>
-  parsePeopleBrowseTabFromUrl(
-    readPeopleListBrowseTabParam(searchParams),
-    searchParams.get(INBOUND_GOING_TAB_PARAM)
-  );
+): PeopleBrowseTab => parsePeopleBrowseTab(readPeopleCrewsTabParam(searchParams));
 
 export const serializePeopleListBrowseTab = (tab: PeopleBrowseTab): string | null => {
   if (tab === 'hub') return null;

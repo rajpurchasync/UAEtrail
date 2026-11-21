@@ -74,7 +74,7 @@ const COPY: Record<GuestFeatureUnlockKey, GuestFeatureUnlockCopy> = {
     emoji: '👋',
     title: 'Member profiles',
     lead: 'Learn who you’ll hike with — experience, vibe, and what they’re into outside.',
-    bullets: ['Trusted view of hosts and buddies', 'Connect from outings you share', 'Stay in sync before meet-up'],
+    bullets: ['Trusted view of hosts and friends', 'Connect from outings you share', 'Stay in sync before meet-up'],
     signUpLabel: PRODUCT_JOIN_CTA,
   },
   chat: {
@@ -88,7 +88,7 @@ const COPY: Record<GuestFeatureUnlockKey, GuestFeatureUnlockCopy> = {
     emoji: '🤝',
     title: 'Friends on UAE Trail',
     lead: 'Build your outdoor circle — people you trust for hikes, camps, and weekend plans.',
-    bullets: ['See buddies who get outside', 'Find plans together faster', 'Grow your crew over time'],
+    bullets: ['See friends who get outside', 'Find plans together faster', 'Grow your crew over time'],
     signUpLabel: PRODUCT_JOIN_CTA,
   },
   groups: {

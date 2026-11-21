@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "dmcpPhase": 5,
+  "dmcpPhase": 8,
   "description": "DMCP Phase 0 — product actions → capability axis → sole resolver. Normative for gates; not user-facing copy.",
   "program": "refactor-program.json · P4b/P5",
   "minActions": 40,
@@ -287,6 +287,22 @@
       "http": { "method": "PATCH", "path": "/shop/manage" }
     },
     {
+      "id": "storefront.agency_public",
+      "label": "Public agency / partner storefront",
+      "axis": "C_STOREFRONT",
+      "contextId": "shop_profiles",
+      "resolver": { "module": "src/hooks/organisationConsoleApi.ts", "symbol": "fetchOrganisationProfileBySlug" },
+      "http": { "method": "GET", "path": "/organisations/:slug" }
+    },
+    {
+      "id": "client.pro_membership",
+      "label": "Consumer Pro / agency / shop application entry",
+      "axis": "B_PUBLISH",
+      "contextId": "member_publish_capabilities",
+      "resolver": { "module": "src/config/memberRoutes.ts", "symbol": "PRO_MEMBERSHIP_PATH" },
+      "note": "Inbound /become-host redirects only"
+    },
+    {
       "id": "member.status_read",
       "label": "Read member capabilities",
       "axis": "B_PUBLISH",
@@ -328,11 +344,12 @@
     },
     {
       "id": "social.buddy_request",
-      "label": "Send buddy request",
+      "label": "Send friend connection request",
       "axis": "D_PARTICIPATE",
       "contextId": "social_graph",
       "resolver": { "module": "apps/api/src/lib/buddy-store.ts", "symbol": "createBuddyRequest" },
-      "http": { "method": "POST", "path": "/me/buddies/requests" }
+      "http": { "method": "POST", "path": "/me/buddies/requests" },
+      "note": "Product: Friends (`/buddies` route + buddy_* wire). No buddies= list URL segment."
     },
     {
       "id": "social.follow",
@@ -348,7 +365,24 @@
       "axis": "D_PARTICIPATE",
       "contextId": "social_graph",
       "resolver": { "module": "apps/api/src/lib/social-groups-store.ts", "symbol": "createSocialGroup" },
-      "http": { "method": "POST", "path": "/me/groups" }
+      "http": { "method": "POST", "path": "/me/groups" },
+      "note": "Product: Team (`member_groups` kind team + teamLabel). Not discoverable Community."
+    },
+    {
+      "id": "people.plan_hub",
+      "label": "Plan tab hub (joined · goals · availability)",
+      "axis": "D_PARTICIPATE",
+      "contextId": "member_publish_capabilities",
+      "resolver": { "module": "src/api/domains/memberCommitmentHub.ts", "symbol": "memberCommitmentHubApi" },
+      "note": "No Plan aggregate — read model shell only"
+    },
+    {
+      "id": "ops.release_checklist",
+      "label": "CI release ops wiring",
+      "axis": "A_RBAC",
+      "contextId": "platform_ops",
+      "resolver": { "module": "scripts/release-staging-ops.mjs", "symbol": "checklist" },
+      "note": "S10e/S10f/P5/MIG-DISCO-REG — human gates remain on staging"
     },
     {
       "id": "communication.direct_chat",

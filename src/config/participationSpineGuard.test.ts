@@ -44,6 +44,6 @@ describe('participationSpineGuard (DMCP Phase 5)', () => {
     expect(read('package.json')).toMatch(/verify:participation-spine/);
     expect(existsSync(join(process.cwd(), 'scripts/verify-participation-spine.mjs'))).toBe(true);
     const matrix = JSON.parse(read('scripts/authority-matrix.json'));
-    expect(matrix.dmcpPhase).toBe(5);
+    expect(matrix.dmcpPhase).toBeGreaterThanOrEqual(5);
   });
 });
