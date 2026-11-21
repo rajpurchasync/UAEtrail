@@ -3,7 +3,7 @@ import { EXPLORE_REGION_PILL_LABELS } from '../config/regions';
 import { formatBrowseGeoPathLabel } from './browseGeoPath';
 import type { BrowseListFilterState } from './browseListFilters';
 import { BROWSE_TRIP_TOPIC_FILTERS } from './browseListTripTopics';
-import type { ListExplorerBucket } from './browse/browseListBucket';
+import type { BrowseListBucket } from './browse/browseListBucket';
 
 const MAX_COLLAPSED_LABELS = 14;
 
@@ -18,7 +18,7 @@ export const buildBrowseCollapsedRailLabels = ({
   filters: BrowseListFilterState;
   regions: readonly string[];
   geoPath: readonly string[];
-  bucket: ListExplorerBucket;
+  bucket: BrowseListBucket;
   publishedAreas: readonly AreaPublicDTO[];
 }): string[] => {
   const labels: string[] = [];

@@ -16,7 +16,7 @@ import {
 } from '../../explore/exploreOptionalFilters';
 import type { PlaceMapTopicKey } from '../../explore/exploreMapQuickTopicFilters';
 import { LIST_FILTER_POP, LIST_OVERLAY_Z, listFilterPopChipClass } from '../listChromeTheme';
-import type { ListExplorerBucket } from '../browse/browseListBucket';
+import type { BrowseListBucket } from '../browse/browseListBucket';
 import type { ListFilterFabCorner } from '../browse/listFilterFabSnap';
 import {
   LIST_BROWSE_AUDIENCE_OPTIONS,
@@ -38,7 +38,7 @@ export type ListFilterPopFixedLayout = {
 type ListExplorerFilterPopProps = {
   open: boolean;
   corner: ListFilterPopPlacement;
-  bucket: ListExplorerBucket;
+  bucket: BrowseListBucket;
   applied: BrowseListFilterState;
   regions: string[];
   onApply: (state: BrowseListFilterState, regions: string[]) => void;
@@ -74,7 +74,7 @@ const ChipRow = ({
 
 const resetVisibleFilters = (
   state: BrowseListFilterState,
-  bucket: ListExplorerBucket
+  bucket: BrowseListBucket
 ): BrowseListFilterState =>
   bucket === 'places'
     ? { ...state, placeTopics: [], hasTrip: false, facilityKinds: [], audience: 'anyone' }

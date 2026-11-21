@@ -1,5 +1,5 @@
 import type { BrowseListFilterState } from '../browseListFilters';
-import type { ListExplorerBucket } from './browseListBucket';
+import type { BrowseListBucket } from './browseListBucket';
 
 export const LIST_LAYOUT_PARAM = 'layout';
 
@@ -19,7 +19,7 @@ export const serializeListExplorerLayout = (layout: ListExplorerLayout): string 
 export const countListExplorerFilters = (
   filters: BrowseListFilterState,
   regions: readonly string[],
-  bucket: ListExplorerBucket = 'events',
+  bucket: BrowseListBucket = 'events',
   geoPathDepth = 0,
   lockedGeoDepth = 0
 ): number => {

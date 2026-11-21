@@ -84,6 +84,20 @@ describe('listBrowseNamingGuard', () => {
     expect(read('src/geo/GeoBrowsePane.tsx')).toMatch(/browse\/browseListBucket/);
   });
 
+  it('BROWSE-NAME-01h: browse list bucket API uses browse-prefixed exports (not listExplorerBucket*)', () => {
+    const bucket = read('src/list/browse/browseListBucket.ts');
+    expect(bucket).toMatch(/export type BrowseListBucket/);
+    expect(bucket).toMatch(/export const parseBrowseListBucket/);
+    expect(bucket).toMatch(/export const browseListBucketCategories/);
+    expect(bucket).not.toMatch(/ListExplorerBucket/);
+    expect(bucket).not.toMatch(/listExplorerBucket/);
+    expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/parseBrowseListBucket/);
+    expect(read('src/list/ListDiscoveryExperience.tsx')).not.toMatch(/parseListExplorerBucket/);
+    expect(read('src/explore/ui/exploreMapQuickFiltersState.ts')).toMatch(/explorePanelToBrowseListBucket/);
+    expect(read('src/list/listChromeTheme.ts')).toMatch(/browseListBucketTabClass/);
+    expect(read('src/list/listChromeTheme.ts')).not.toMatch(/listExplorerBucketTabClass/);
+  });
+
   it('BROWSE-NAME-01b: list entity link state lives under browse (not listExplorerNavState)', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/browseListNavState.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/explorer/listExplorerNavState.ts'))).toBe(false);

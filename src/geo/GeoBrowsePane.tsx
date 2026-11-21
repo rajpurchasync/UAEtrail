@@ -19,8 +19,8 @@ import { ListDiscoveryMapColumn } from '../list/explorer/ListDiscoveryMapColumn'
 import { ListSideMapResizeHandle } from '../list/explorer/ListSideMapResizeHandle';
 import { useListSideMapWidth } from '../list/explorer/useListSideMapWidth';
 import {
-  listExplorerBucketCategories,
-  type ListExplorerBucket,
+  browseListBucketCategories,
+  type BrowseListBucket,
 } from '../list/browse/browseListBucket';
 import {
   DEFAULT_LIST_EXPLORER_SORT,
@@ -50,8 +50,8 @@ const EMPTY_FILTERS: BrowseListFilterState = {
 };
 
 type GeoBrowsePaneProps = {
-  bucket: ListExplorerBucket;
-  onBucketChange: (bucket: ListExplorerBucket) => void;
+  bucket: BrowseListBucket;
+  onBucketChange: (bucket: BrowseListBucket) => void;
   items: ExploreMapItemDTO[];
   catalogItems: ExploreMapItemDTO[];
   loading: boolean;
@@ -104,7 +104,7 @@ export const GeoBrowsePane = ({
     () => ({
       ...filters,
       query: draftQuery,
-      categories: listExplorerBucketCategories(bucket),
+      categories: browseListBucketCategories(bucket),
     }),
     [filters, draftQuery, bucket]
   );
@@ -190,7 +190,7 @@ export const GeoBrowsePane = ({
     const listCat = bucket === 'places' ? 'venues' : 'activities';
     return listDiscoveryPath({
       listCat,
-      categories: listExplorerBucketCategories(bucket),
+      categories: browseListBucketCategories(bucket),
       geoPath: geoIds,
     });
   }, [lockGeoId, bucket, geoIds]);

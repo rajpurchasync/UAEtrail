@@ -60,7 +60,7 @@ export const listChipClass = (active: boolean): string =>
   ].join(' ');
 
 /** Events / Places tabs — brand fill on selection (contrast vs track in dark theme). */
-export const listExplorerBucketTabClass = (active: boolean): string =>
+export const browseListBucketTabClass = (active: boolean): string =>
   [
     'border',
     active
@@ -68,7 +68,7 @@ export const listExplorerBucketTabClass = (active: boolean): string =>
       : 'border-transparent bg-transparent text-neutral-500 hover:text-neutral-800',
   ].join(' ');
 
-export const listExplorerBucketCountClass = (active: boolean): string =>
+export const browseListBucketCountClass = (active: boolean): string =>
   active
     ? 'list-explorer-bucket-count list-explorer-bucket-count--active bg-white text-emerald-900 shadow-sm ring-1 ring-emerald-950/10'
     : 'bg-neutral-200/90 text-neutral-600';

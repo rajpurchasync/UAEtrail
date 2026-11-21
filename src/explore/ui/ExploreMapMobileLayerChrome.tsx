@@ -16,7 +16,7 @@ import { EXPLORE_MAP_CHROME_FROST } from '../../config/exploreTheme';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import {
   exploreMapQuickFiltersBrowseState,
-  explorePanelToListExplorerBucket,
+  explorePanelToBrowseListBucket,
 } from './exploreMapQuickFiltersState';
 import { ExploreMapProjectionToggle } from './ExploreMapProjectionToggle';
 
@@ -140,7 +140,7 @@ export const ExploreMapMobileLayerChrome = ({
       ) : null}
 
       <ListExplorerQuickFilters
-        bucket={explorePanelToListExplorerBucket(panel)}
+        bucket={explorePanelToBrowseListBucket(panel)}
         filters={filters}
         regions={venueRegions}
         onTripTopicsChange={(next: BrowseTripTopicKey[]) => onTripTopicsChange(next)}

@@ -11,12 +11,12 @@ import {
 import type { BrowseListFilterState } from '../browseListFilters';
 import type { BrowseTripTopicKey } from '../browseListTripTopics';
 import type { ListVenuePlaceTopicKey } from '../listVenuePlaceTopics';
-import type { ListExplorerBucket } from '../browse/browseListBucket';
+import type { BrowseListBucket } from '../browse/browseListBucket';
 
 type ListExplorerQuickFiltersProps = {
   /** Map drawer keeps dropdown filters; `/list` uses fixed quick pills. */
   surface?: 'map' | 'list';
-  bucket: ListExplorerBucket;
+  bucket: BrowseListBucket;
   filters: BrowseListFilterState;
   regions: string[];
   onTripTopicsChange: (next: BrowseTripTopicKey[]) => void;

@@ -6,11 +6,11 @@ import {
   serializeListExplorerLayout,
 } from './browseListLayout';
 import {
-  listExplorerBucketCategories,
-  listExplorerBucketTotalLabel,
-  listExplorerSearchBucketCounts,
-  parseListExplorerBucket,
-  serializeListExplorerBucket,
+  browseListBucketCategories,
+  browseListBucketTotalLabel,
+  browseListSearchBucketCounts,
+  parseBrowseListBucket,
+  serializeBrowseListBucket,
 } from './browseListBucket';
 import { parseListFilterFabCorner, snapListFilterFabCorner } from './listFilterFabSnap';
 import { browseListEntityLinkState } from './browseListNavState';
@@ -88,20 +88,20 @@ describe('list explorer layout', () => {
 
 describe('list explorer events/places bucket', () => {
   it('defaults to events and omits listCat', () => {
-    expect(parseListExplorerBucket(null)).toBe('events');
-    expect(parseListExplorerBucket('activities')).toBe('events');
-    expect(parseListExplorerBucket('venues')).toBe('places');
-    expect(serializeListExplorerBucket('events')).toBeNull();
-    expect(serializeListExplorerBucket('places')).toBe('venues');
-    expect(listExplorerBucketCategories('events')).toEqual(['activities']);
-    expect(listExplorerBucketCategories('places')).toEqual(['venues']);
+    expect(parseBrowseListBucket(null)).toBe('events');
+    expect(parseBrowseListBucket('activities')).toBe('events');
+    expect(parseBrowseListBucket('venues')).toBe('places');
+    expect(serializeBrowseListBucket('events')).toBeNull();
+    expect(serializeBrowseListBucket('places')).toBe('venues');
+    expect(browseListBucketCategories('events')).toEqual(['activities']);
+    expect(browseListBucketCategories('places')).toEqual(['venues']);
   });
 
   it('labels the current total and search counts on both buckets', () => {
-    expect(listExplorerBucketTotalLabel('events', 17)).toBe('17 trips');
-    expect(listExplorerBucketTotalLabel('places', 1)).toBe('1 place');
+    expect(browseListBucketTotalLabel('events', 17)).toBe('17 trips');
+    expect(browseListBucketTotalLabel('places', 1)).toBe('1 place');
     expect(
-      listExplorerSearchBucketCounts({
+      browseListSearchBucketCounts({
         activities: 2,
         places: 1,
         people: 0,

@@ -4,7 +4,7 @@ import type { ExploreCompose } from '../compose';
 import type { ExplorePinKindFilter } from '../explorePinKindFilter';
 import type { ExploreBrowseListMode } from '../exploreBrowseUrlSync';
 import type { ExplorePanel } from '../routing';
-import { explorePanelToListExplorerBucket } from '../ui/exploreMapQuickFiltersState';
+import { explorePanelToBrowseListBucket } from '../ui/exploreMapQuickFiltersState';
 
 /** Live map browse scope — URL can lag while Trips/Venues tabs update. */
 export const resolveExploreMapCreateFabHints = (input: {
@@ -19,7 +19,7 @@ export const resolveExploreMapCreateFabHints = (input: {
   }
   if (
     input.placesMode ||
-    explorePanelToListExplorerBucket(input.panel) === 'places' ||
+    explorePanelToBrowseListBucket(input.panel) === 'places' ||
     input.pinKind === 'places' ||
     input.pinKind === 'shops'
   ) {

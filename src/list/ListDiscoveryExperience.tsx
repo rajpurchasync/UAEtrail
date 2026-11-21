@@ -53,9 +53,9 @@ import { useBrowseGeoScopeHydration } from './useBrowseGeoScopeHydration';
 import { browseListEntityLinkState } from './browse/browseListNavState';
 import { countListExplorerFilters } from './browse/browseListLayout';
 import {
-  listExplorerBucketCategories,
-  parseListExplorerBucket,
-  serializeListExplorerBucket,
+  browseListBucketCategories,
+  parseBrowseListBucket,
+  serializeBrowseListBucket,
 } from './browse/browseListBucket';
 import { browseListCatForBucket, scopeBrowseListStateForListCat } from './browse/browseListMapHandoff';
 import { ListExplorer } from './explorer/ListExplorer';
@@ -182,7 +182,7 @@ export const ListDiscoveryExperience = ({
   } = browseUrl;
   useBrowseGeoScopeHydration(geoPath);
   const isPeopleCategory = listCat === 'people';
-  const explorerBucket = parseListExplorerBucket(listCat);
+  const explorerBucket = parseBrowseListBucket(listCat);
   const createFabContext = useMemo(
     () => ({
       isPeopleCategory,
@@ -325,7 +325,7 @@ export const ListDiscoveryExperience = ({
           ...filters,
           query: draftQuery,
           categories:
-            listCat === 'agencies' ? ['agencies'] : listExplorerBucketCategories(explorerBucket),
+            listCat === 'agencies' ? ['agencies'] : browseListBucketCategories(explorerBucket),
         },
     venueRegions,
     geoPath,

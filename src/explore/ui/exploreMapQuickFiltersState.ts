@@ -1,12 +1,12 @@
 import type { PlaceKind } from '@uaetrail/shared-types';
 import type { BrowseListFilterState } from '../../list/browseListFilters';
-import type { ListExplorerBucket } from '../../list/browse/browseListBucket';
+import type { BrowseListBucket } from '../../list/browse/browseListBucket';
 import type { ListVenuePlaceTopicKey } from '../../list/listVenuePlaceTopics';
 import type { ExploreActivityDatePreset, ExplorePanel } from '../routing';
 import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
 import { aliasPlaceMapTopicToList, type ExplorePriceFilter } from '../exploreOptionalFilters';
 
-export const explorePanelToListExplorerBucket = (panel: ExplorePanel): ListExplorerBucket =>
+export const explorePanelToBrowseListBucket = (panel: ExplorePanel): BrowseListBucket =>
   panel === 'venues' || panel === 'shops' ? 'places' : 'events';
 
 /** Map chrome quick filters — same `BrowseListFilterState` slice as `/list` (`ListExplorerQuickFilters`). */

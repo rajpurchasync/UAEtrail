@@ -2,10 +2,10 @@ import { MOBILE_FIVE_TAB_UI_LABELS } from '../../config/mobileFiveTabNav';
 import type { ExploreSearchScopeCounts } from '../../explore/exploreBrowseTaxonomy';
 import type { BrowseMainCategoryKey } from '../browseListTaxonomy';
 
-export type ListExplorerBucket = 'events' | 'places';
+export type BrowseListBucket = 'events' | 'places';
 
-export const LIST_EXPLORER_BUCKETS: ReadonlyArray<{
-  key: ListExplorerBucket;
+export const BROWSE_LIST_BUCKETS: ReadonlyArray<{
+  key: BrowseListBucket;
   label: string;
 }> = [
   { key: 'events', label: 'Trips' },
@@ -13,23 +13,23 @@ export const LIST_EXPLORER_BUCKETS: ReadonlyArray<{
 ];
 
 /** Default catalog is events. Places is `listCat=venues`. */
-export const parseListExplorerBucket = (listCat: BrowseMainCategoryKey | null): ListExplorerBucket =>
+export const parseBrowseListBucket = (listCat: BrowseMainCategoryKey | null): BrowseListBucket =>
   listCat === 'venues' ? 'places' : 'events';
 
-export const serializeListExplorerBucket = (bucket: ListExplorerBucket): BrowseMainCategoryKey | null =>
+export const serializeBrowseListBucket = (bucket: BrowseListBucket): BrowseMainCategoryKey | null =>
   bucket === 'places' ? 'venues' : null;
 
-export const listExplorerBucketCategories = (bucket: ListExplorerBucket): BrowseMainCategoryKey[] =>
+export const browseListBucketCategories = (bucket: BrowseListBucket): BrowseMainCategoryKey[] =>
   bucket === 'places' ? ['venues'] : ['activities'];
 
-export const listExplorerSearchBucketCounts = (
+export const browseListSearchBucketCounts = (
   counts: ExploreSearchScopeCounts
-): Record<ListExplorerBucket, number> => ({
+): Record<BrowseListBucket, number> => ({
   events: counts.activities,
   places: counts.places + counts.shops,
 });
 
-export const listExplorerBucketTotalLabel = (bucket: ListExplorerBucket, count: number): string => {
+export const browseListBucketTotalLabel = (bucket: BrowseListBucket, count: number): string => {
   if (bucket === 'events') return count === 1 ? '1 trip' : `${count.toLocaleString()} trips`;
   return count === 1 ? '1 place' : `${count.toLocaleString()} places`;
 };

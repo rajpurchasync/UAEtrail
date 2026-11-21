@@ -11,8 +11,8 @@ import { ListDiscoverySearchField } from '../ui/ListDiscoverySearchField';
 import { ListExplorerBucketToggle } from './ListExplorerBucketToggle';
 import { ListExplorerViewSwitch } from './ListExplorerViewSwitch';
 import {
-  listExplorerSearchBucketCounts,
-  type ListExplorerBucket,
+  browseListSearchBucketCounts,
+  type BrowseListBucket,
 } from '../browse/browseListBucket';
 import type { ListExplorerLayout } from '../browse/browseListLayout';
 import type { ListExplorerSortMode } from '../browse/listBrowseSort';
@@ -36,8 +36,8 @@ type ListExplorerHeaderProps = {
   mapHref: string;
   layout: ListExplorerLayout;
   onLayoutChange: (layout: ListExplorerLayout) => void;
-  bucket: ListExplorerBucket;
-  onBucketChange: (bucket: ListExplorerBucket) => void;
+  bucket: BrowseListBucket;
+  onBucketChange: (bucket: BrowseListBucket) => void;
   resultCount: number | null;
   stickySearch: boolean;
   onClose?: () => void;
@@ -120,8 +120,8 @@ export const ListExplorerHeader = ({
   const hideSideMapChrome = mapColumnVisible || showMapColumnPrompt;
   const standaloneListSurface = !onClose;
   const searching = query.trim().length > 0;
-  const searchCounts = searching ? listExplorerSearchBucketCounts(searchScopeCounts) : null;
-  const bucketTabCounts: Record<ListExplorerBucket, number | null> = searchCounts
+  const searchCounts = searching ? browseListSearchBucketCounts(searchScopeCounts) : null;
+  const bucketTabCounts: Record<BrowseListBucket, number | null> = searchCounts
     ? { events: searchCounts.events, places: searchCounts.places }
     : {
         events: bucket === 'events' ? resultCount : null,

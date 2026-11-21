@@ -11,7 +11,7 @@ import { ConsumerEntityTabBar } from '../components/mobile/ConsumerEntityTabBar'
 import { PageMeta } from '../components/seo/PageMeta';
 import { DetailHeroPhotoStrip } from '../detail/shared/DetailHeroPhotoStrip';
 import { GeoAncestorEyebrow } from '../detail/shared/GeoAncestorEyebrow';
-import type { ListExplorerBucket } from '../list/browse/browseListBucket';
+import type { BrowseListBucket } from '../list/browse/browseListBucket';
 import type { GeoAncestorLink } from './geoAncestorLinks';
 import { GeoChildCards } from './GeoChildCards';
 import { GeoGuestDrillLink } from './GeoGuestDrillLink';
@@ -112,7 +112,7 @@ export const GeoHubView = ({
     catalogNodeId,
     catalogEnabled && counts.facilities > 0 && tab === 'facilities'
   );
-  const [browseBucket, setBrowseBucket] = useState<ListExplorerBucket>('events');
+  const [browseBucket, setBrowseBucket] = useState<BrowseListBucket>('events');
 
   useEffect(() => {
     if (activeTab === 'places' && childNodes.length === 0) onTabChange('overview');

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { SlidersHorizontal } from 'lucide-react';
 import type { BrowseListFilterState } from '../browseListFilters';
-import type { ListExplorerBucket } from '../browse/browseListBucket';
+import type { BrowseListBucket } from '../browse/browseListBucket';
 import { ListExplorerFilterPop, type ListFilterPopFixedLayout } from './ListExplorerFilterPop';
 import { LIST_FILTER_FAB_Z, LIST_HUB_SEARCH_ROW } from '../listChromeTheme';
 import { EXPLORE_MAP_CHROME_FROST } from '../../config/exploreTheme';
@@ -17,7 +17,7 @@ import {
 } from '../browse/listFilterFabSnap';
 
 type ListExplorerFilterFabProps = {
-  bucket: ListExplorerBucket;
+  bucket: BrowseListBucket;
   applied: BrowseListFilterState;
   regions: string[];
   filterCount: number;
