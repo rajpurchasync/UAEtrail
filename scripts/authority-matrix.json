@@ -1,7 +1,8 @@
 {
   "version": 1,
   "dmcpPhase": 8,
-  "description": "DMCP Phase 0 — product actions → capability axis → sole resolver. Normative for gates; not user-facing copy.",
+  "dmcpStatus": "complete",
+  "description": "DMCP eng complete (phases 0–8) — product actions → capability axis → sole resolver. Normative for gates; not user-facing copy.",
   "program": "refactor-program.json · P4b/P5",
   "minActions": 40,
   "axes": {
@@ -22,6 +23,12 @@
       "id": "map-source-inbound",
       "module": "packages/shared-types/src/wire-lexicon.ts",
       "rule": "normalizeExploreMapSource / isPlaceMapSource for venue|catalog_place aliases"
+    },
+    {
+      "id": "people-crews-tab-inbound",
+      "module": "src/routing/productUrlInbound.ts",
+      "rule": "readPeopleCrewsTabParam — peopleTab, buddies, socialTab, goingTab inbound only; product label Friends",
+      "forbidEmitIn": ["src/list", "src/explore", "src/people-discovery"]
     }
   ],
   "forbiddenPatterns": [

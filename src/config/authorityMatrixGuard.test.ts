@@ -91,6 +91,17 @@ describe('authorityMatrixGuard (DMCP Phase 0)', () => {
     expect(read('src/config/releaseOpsSpineGuard.test.ts')).toMatch(/RELEASE-SPINE-05/);
   });
 
+  it('AUTH-13: DMCP eng program closed in matrix + program JSON', () => {
+    const matrix = JSON.parse(read('scripts/authority-matrix.json'));
+    expect(matrix.dmcpStatus).toBe('complete');
+    const choke = (matrix.readCompatChokePoints ?? []).find(
+      (c: { id: string }) => c.id === 'people-crews-tab-inbound'
+    );
+    expect(choke?.module).toBe('src/routing/productUrlInbound.ts');
+    const program = JSON.parse(read('scripts/refactor-program.json'));
+    expect(program.authorization?.statement).toMatch(/DMCP eng verify complete/);
+  });
+
   it('AUTH-11: people graph uses Team wire, Communities stay planned (DMCP Phase 7)', () => {
     const matrix = JSON.parse(read('scripts/authority-matrix.json'));
     expect(matrix.dmcpPhase).toBeGreaterThanOrEqual(7);

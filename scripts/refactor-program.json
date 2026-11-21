@@ -4,7 +4,7 @@
   "updated": "2026-10-18",
   "authorization": {
     "approvedOn": "2026-10-17",
-    "statement": "CTO coherence program (PCOH): complete (`MIG-COH-00`…`12`). P4b surface eng complete; ops: S10f staging QA, P5 SLO smoke, MIG-DISCO-REG migrate + strict storage gate.",
+    "statement": "CTO coherence program (PCOH): complete (`MIG-COH-00`…`12`). DMCP eng verify complete (phases 0–8). P4b surface eng complete; ops: S10f staging QA, P5 SLO smoke, MIG-DISCO-REG migrate + strict storage gate.",
     "authorizedPhases": ["PCOH", "P4b", "P5"],
     "p2PlusRequires": [
       "P0.status is complete",

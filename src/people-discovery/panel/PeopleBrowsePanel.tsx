@@ -63,7 +63,7 @@ export interface PeopleBrowsePanelProps {
 }
 
 /**
- * Find your crew — map sheet + list Buddies (`embedded`).
+ * Find your crew — map sheet + Friends list (`embedded`).
  * List body: `peopleBrowse/PeopleBrowseTabContent` (same rows as map plan list).
  */
 export const PeopleBrowsePanel = ({

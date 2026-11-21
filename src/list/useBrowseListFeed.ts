@@ -19,7 +19,7 @@ type UseBrowseListFeedArgs = {
   venueRegions: string[];
   /** Slash path (`?geo=`) — filters catalog rows under a geo drill. */
   geoPath?: string[];
-  /** Buddies category uses member-discovery only — skip map fetch. */
+  /** People/Friends list category uses member-discovery only — skip map fetch. */
   mapEnabled?: boolean;
   /** When embedded on explore, reuse the map catalog instead of a second fetch. */
   catalogItems?: ExploreMapItemDTO[];

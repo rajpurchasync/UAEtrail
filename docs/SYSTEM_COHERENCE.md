@@ -994,7 +994,7 @@ Legacy shim (one release, no new imports): `placeRegistry.ts`. `placeCatalogApi.
 
 #### 8.6.0 Authorization (CTO charter — 2026-10-17)
 
-> **CTO coherence program (PCOH): complete (`MIG-COH-00`…`12`). P4b surface eng complete; ops: S10f staging QA, P5 SLO smoke, MIG-DISCO-REG migrate + strict storage gate.**
+> **CTO coherence program (PCOH): complete (`MIG-COH-00`…`12`). DMCP eng verify complete (phases 0–8). P4b surface eng complete; ops: S10f staging QA, P5 SLO smoke, MIG-DISCO-REG migrate + strict storage gate.**
 
 | Rule | Detail |
 |------|--------|
@@ -1102,6 +1102,7 @@ Board one-liner: *P4 thinned the API; **PCOH** (§8.8) finished UPL/BWL coherenc
 - [x] DMCP Phase 6 — `verify:storefront-spine` (`PublishingProfileKind` · `/publishing` console · shop/agency facades · `PRO_MEMBERSHIP_PATH`; `operatorStorefrontSpineGuard`)
 - [x] DMCP Phase 7 — `verify:people-graph-plan` (Teams · outing crew · **Friends** · `/plan` hub; retired `buddies=` browse segment; **not** discoverable Communities — `MIG-COMMUNITY-DISCOVER` stays `planned`; `peopleGraphPlanSpineGuard` + `crewsTerminologyGuard`)
 - [x] DMCP Phase 8 — `verify:release-ops` (`releaseOpsSpineGuard` + S10f/P5/MIG-DISCO-REG program guards; `release:ops:checklist` — staging sign-off still human)
+- [x] DMCP eng complete — `authority-matrix.json` `dmcpStatus: complete` (phases 0–8); `MIG-COMMUNITY-DISCOVER` remains `planned`
 - [x] Archive [`system-refactor-plan`](./archive/system-refactor-plan-2026-10.md) + [`system-structure-deep-audit`](./archive/system-structure-deep-audit-2026-10.md); experiment stubs
 - [x] `repo:census` baseline — SPA `<Route>` count, API `register*Routes` files, knip `issueCount`
 - [x] Tier-1 dedupe policy — no duplicate phase schedules in `experiment/*` ([`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md))

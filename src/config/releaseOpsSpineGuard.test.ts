@@ -40,4 +40,9 @@ describe('releaseOpsSpineGuard (DMCP Phase 8)', () => {
   it('RELEASE-SPINE-05: dmcpPhase 8', () => {
     expect(JSON.parse(read('scripts/authority-matrix.json')).dmcpPhase).toBe(8);
   });
+
+  it('RELEASE-SPINE-06: DMCP eng marked complete', () => {
+    expect(JSON.parse(read('scripts/authority-matrix.json')).dmcpStatus).toBe('complete');
+    expect(JSON.parse(read('scripts/refactor-program.json')).authorization?.statement).toMatch(/DMCP eng verify complete/);
+  });
 });

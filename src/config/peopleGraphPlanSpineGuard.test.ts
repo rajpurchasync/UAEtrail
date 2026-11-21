@@ -67,4 +67,13 @@ describe('peopleGraphPlanSpineGuard (DMCP Phase 7)', () => {
     const matrix = JSON.parse(read('scripts/authority-matrix.json'));
     expect(matrix.dmcpPhase).toBeGreaterThanOrEqual(7);
   });
+
+  it('PEOPLE-SPINE-07: crews tab inbound choke documented in authority matrix', () => {
+    const matrix = JSON.parse(read('scripts/authority-matrix.json'));
+    const choke = (matrix.readCompatChokePoints ?? []).find(
+      (c: { id: string }) => c.id === 'people-crews-tab-inbound'
+    );
+    expect(choke?.rule).toMatch(/readPeopleCrewsTabParam/);
+    expect(read('src/routing/productUrlInbound.ts')).toMatch(/export const readPeopleCrewsTabParam/);
+  });
 });

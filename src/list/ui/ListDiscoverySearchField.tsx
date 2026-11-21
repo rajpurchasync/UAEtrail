@@ -27,7 +27,7 @@ type ListDiscoverySearchFieldProps = {
   /** Filters control — trailing icon inside the search shell. */
   filterSlot?: ReactNode;
   placeholder?: string;
-  /** When false, Enter commits query only — no multi-scope dropdown (e.g. Buddies category). */
+  /** When false, Enter commits query only — no multi-scope dropdown (e.g. People/Friends category). */
   enableScopeHints?: boolean;
   /** Focus the input when mounted (e.g. after expanding search on `/list` mobile). */
   autoFocus?: boolean;
