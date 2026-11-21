@@ -5,6 +5,7 @@
 export {
   sortListExplorerCards,
   DEFAULT_LIST_EXPLORER_SORT,
+  LIST_SORT_PARAM,
   type ListExplorerSortMode,
   parseListExplorerSort,
   serializeListExplorerSort,

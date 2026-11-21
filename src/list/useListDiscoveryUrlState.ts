@@ -47,7 +47,7 @@ import {
   parseListExplorerSort,
   serializeListExplorerSort,
   type ListExplorerSortMode,
-} from './explorer/listExplorerSort';
+} from './browse/listBrowseSort';
 
 const LIST_FILTER_PARAM_KEYS = [
   'q',

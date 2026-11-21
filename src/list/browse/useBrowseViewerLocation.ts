@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import type { ViewerFix } from '../browse/placeDistance';
+import type { ViewerFix } from './placeDistance';
 
 const STORAGE_KEY = 'uaetrail:viewer-location';
 const FRESH_MS = 5 * 60 * 1000;
 
 type CachedFix = ViewerFix & { at: number };
 
-export type ViewerLocationState = {
+export type BrowseViewerLocationState = {
   fix: ViewerFix | null;
   pending: boolean;
   denied: boolean;
@@ -24,10 +24,8 @@ const readCache = (): CachedFix | null => {
   }
 };
 
-/**
- * One coarse location fix, reused for 5 minutes. No watch and no server round-trip.
- */
-export const useViewerLocation = (enabled: boolean): ViewerLocationState => {
+/** One coarse location fix, reused for 5 minutes (browse near-me sort). */
+export const useBrowseViewerLocation = (enabled: boolean): BrowseViewerLocationState => {
   const [fix, setFix] = useState<ViewerFix | null>(null);
   const [pending, setPending] = useState(false);
   const [denied, setDenied] = useState(false);

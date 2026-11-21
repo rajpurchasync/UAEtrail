@@ -21,8 +21,8 @@ import { ListExplorerFilterFab } from './ListExplorerFilterFab';
 import { ListExplorerHeader } from './ListExplorerHeader';
 import { BrowseCompactRow } from '../browse/BrowseCompactRow';
 import { BrowseThumbnailCard } from '../browse/BrowseThumbnailCard';
-import { PlaceDistanceProvider } from './listPlaceDistance';
-import { useViewerLocation } from './useViewerLocation';
+import { BrowsePlaceDistanceProvider } from '../browse/browsePlaceDistanceContext';
+import { useBrowseViewerLocation } from '../browse/useBrowseViewerLocation';
 import { useDisplayPreferences } from '../../preferences/useDisplayPreferences';
 import type { ListExplorerBucket } from './listExplorerBucket';
 import type { ListExplorerLayout } from './listExplorerLayout';
@@ -282,7 +282,8 @@ export const ListExplorer = ({
       ? 'thumbnails'
       : layout;
   const locationEnabled = bucket === 'places' || listExplorerSortUsesViewerLocation(sort);
-  const { fix: viewer, pending: locationPending, denied: locationDenied } = useViewerLocation(locationEnabled);
+  const { fix: viewer, pending: locationPending, denied: locationDenied } =
+    useBrowseViewerLocation(locationEnabled);
   const { units } = useDisplayPreferences();
   const listSections = useMemo(() => {
     const sorted = sortListExplorerCards(cards, sort, viewer);
@@ -414,7 +415,7 @@ export const ListExplorer = ({
           ) : effectiveLayout === 'calendar' ? (
             <ListExplorerCalendar cards={calendarCards} onMapHover={onMapHover} />
           ) : (
-            <PlaceDistanceProvider viewer={viewer} units={units}>
+            <BrowsePlaceDistanceProvider viewer={viewer} units={units}>
               <ListExplorerDateGroups
                 sections={listSections}
                 layout={effectiveLayout}
@@ -422,7 +423,7 @@ export const ListExplorer = ({
                 compactThumbGrid={mapColumnVisible}
                 scrollElement={scrollElement}
               />
-            </PlaceDistanceProvider>
+            </BrowsePlaceDistanceProvider>
           )}
           {scrollFooter}
         </div>

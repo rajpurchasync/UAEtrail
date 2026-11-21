@@ -38,6 +38,15 @@ describe('listBrowseNamingGuard', () => {
     );
   });
 
+  it('BROWSE-NAME-01c: browse distance + viewer location helpers live under browse', () => {
+    expect(existsSync(join(process.cwd(), 'src/list/browse/browsePlaceDistanceContext.tsx'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/list/browse/useBrowseViewerLocation.ts'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/list/explorer/listPlaceDistance.tsx'))).toBe(false);
+    expect(existsSync(join(process.cwd(), 'src/list/explorer/useViewerLocation.ts'))).toBe(false);
+    expect(existsSync(join(process.cwd(), 'src/list/explorer/browseAppliedFilterLabels.ts'))).toBe(false);
+    expect(read('src/list/useListDiscoveryUrlState.ts')).toMatch(/from '\.\/browse\/listBrowseSort'/);
+  });
+
   it('BROWSE-NAME-01b: list entity link state lives under browse (not listExplorerNavState)', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/browseListNavState.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/explorer/listExplorerNavState.ts'))).toBe(false);
@@ -122,7 +131,7 @@ describe('listBrowseNamingGuard', () => {
   it('BROWSE-NAME-09: browse/discovery surfaces omit travel-distance chips (trail km stays on hike facts)', () => {
     const poster = read('src/discovery/DiscoveryBrowsePosterBanner.tsx');
     expect(poster).not.toMatch(/ListExplorerDistanceChip/);
-    expect(poster).not.toMatch(/usePlaceDistanceLabel/);
+    expect(poster).not.toMatch(/useBrowsePlaceDistanceLabel/);
     expect(poster).not.toMatch(/showDistance/);
     const row = read('src/list/browse/BrowseCompactRow.tsx');
     expect(row).not.toMatch(/ListExplorerDistanceChip/);
