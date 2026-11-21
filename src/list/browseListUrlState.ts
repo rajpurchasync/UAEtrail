@@ -255,7 +255,7 @@ export const serializeBrowseListSearchParams = (
   return params;
 };
 
-/** Re-export — implementation in `browseListMapHandoff.ts` (map pinKind + listCat stripping). */
-export { serializeBrowseListToExploreSearchParams } from './browseListMapHandoff';
+/** Re-export — implementation in `browse/browseListMapHandoff.ts` (map pinKind + listCat stripping). */
+export { serializeBrowseListToExploreSearchParams } from './browse/browseListMapHandoff';
 
 export type { BrowseMainCategoryKey };

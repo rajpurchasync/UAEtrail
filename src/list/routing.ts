@@ -4,7 +4,7 @@ import {
   inferListCatFromExploreHandoff,
   scopeBrowseListStateForListCat,
   serializeBrowseListToExploreSearchParams,
-} from './browseListMapHandoff';
+} from './browse/browseListMapHandoff';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import {
   LIST_CAT_PARAM,

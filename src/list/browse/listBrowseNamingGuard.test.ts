@@ -47,6 +47,15 @@ describe('listBrowseNamingGuard', () => {
     expect(read('src/list/useListDiscoveryUrlState.ts')).toMatch(/from '\.\/browse\/listBrowseSort'/);
   });
 
+  it('BROWSE-NAME-01g: map handoff + bucket listCat mapping live under browse', () => {
+    expect(existsSync(join(process.cwd(), 'src/list/browse/browseListMapHandoff.ts'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/list/browseListMapHandoff.ts'))).toBe(false);
+    expect(read('src/list/browse/browseListMapHandoff.ts')).toMatch(/export const browseListCatForBucket/);
+    expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/browseListCatForBucket/);
+    expect(read('src/list/ListDiscoveryExperience.tsx')).not.toMatch(/listCatForListExplorerBucket/);
+    expect(read('src/list/routing.ts')).toMatch(/browse\/browseListMapHandoff/);
+  });
+
   it('BROWSE-NAME-01f: list layout + filter fab snap live under browse (not explorer)', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/browseListLayout.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/browse/listFilterFabSnap.ts'))).toBe(true);

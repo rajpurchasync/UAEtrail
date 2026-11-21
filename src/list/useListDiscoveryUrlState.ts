@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { inferListCatFromExploreHandoff, scopeBrowseListStateForListCat } from './browseListMapHandoff';
+import { inferListCatFromExploreHandoff, scopeBrowseListStateForListCat } from './browse/browseListMapHandoff';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { applyProductSearchMutation } from '../routing/productSearchMutation';
 import { stripRetiredPeopleListTabParams } from '../routing/productUrlInbound';

@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useProductSearchParams } from '../../routing/useEffectiveLocation';
 import { useBrowseListFeed } from '../../list/useBrowseListFeed';
 import type { BrowseListFilterState } from '../../list/browseListFilters';
-import { scopeBrowseListStateForListCat } from '../../list/browseListMapHandoff';
+import { scopeBrowseListStateForListCat } from '../../list/browse/browseListMapHandoff';
 import { ListDiscoveryExperience } from '../../list/ListDiscoveryExperience';
 import { parseBrowseListFilterState, parseBrowseListGeoPath } from '../../list/browseListUrlState';
 import { useBrowseGeoScopeHydration } from '../../list/useBrowseGeoScopeHydration';

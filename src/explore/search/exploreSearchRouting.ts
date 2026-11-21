@@ -10,7 +10,7 @@ import {
   parseListCatParam,
   serializeBrowseListSearchParams,
 } from '../../list/browseListUrlState';
-import { scopeBrowseListStateForListCat } from '../../list/browseListMapHandoff';
+import { scopeBrowseListStateForListCat } from '../../list/browse/browseListMapHandoff';
 import { parseExplorePanel } from '../routing';
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { LIST_DISCOVERY_PATH } from '../../config/platform';

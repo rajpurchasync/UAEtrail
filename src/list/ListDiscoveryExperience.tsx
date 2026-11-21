@@ -57,7 +57,7 @@ import {
   parseListExplorerBucket,
   serializeListExplorerBucket,
 } from './browse/browseListBucket';
-import { listCatForListExplorerBucket, scopeBrowseListStateForListCat } from './browseListMapHandoff';
+import { browseListCatForBucket, scopeBrowseListStateForListCat } from './browse/browseListMapHandoff';
 import { ListExplorer } from './explorer/ListExplorer';
 import { ListFeedActionsProvider } from './ui/ListFeedActionsProvider';
 import { ListCrewsExplorer } from './explorer/ListCrewsExplorer';
@@ -479,7 +479,7 @@ export const ListDiscoveryExperience = ({
       syncUrl({ query: draftQuery, listCat: 'agencies', categories: ['agencies'] });
       return;
     }
-    const cat = listCat ?? listCatForListExplorerBucket(explorerBucket);
+    const cat = listCat ?? browseListCatForBucket(explorerBucket);
     syncUrl({
       query: draftQuery,
       listCat: cat,
@@ -488,7 +488,7 @@ export const ListDiscoveryExperience = ({
   };
 
   const clearAllFilters = () => {
-    const cat = listCat ?? listCatForListExplorerBucket(explorerBucket);
+    const cat = listCat ?? browseListCatForBucket(explorerBucket);
     const emptyBase: BrowseListFilterState = {
       query: '',
       categories: [],
@@ -709,7 +709,7 @@ export const ListDiscoveryExperience = ({
             onLayoutChange={(next) => syncUrl({ layout: next })}
             bucket={explorerBucket}
             onBucketChange={(next) => {
-              const cat = listCatForListExplorerBucket(next);
+              const cat = browseListCatForBucket(next);
               syncUrl({
                 query: draftQuery,
                 listCat: cat,

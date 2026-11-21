@@ -3,18 +3,18 @@ import {
   parseExplorePinKindFilter,
   serializeExplorePinKindFilter,
   type ExplorePinKindFilter,
-} from './discoveryListRuntime';
-import type { BrowseListFilterState } from './browseListFilters';
-import type { BrowseMainCategoryKey } from './browseListTaxonomy';
+} from '../discoveryListRuntime';
+import type { BrowseListFilterState } from '../browseListFilters';
+import type { BrowseMainCategoryKey } from '../browseListTaxonomy';
 import {
   PEOPLE_LIST_TAB_URL_PARAM,
   serializePeopleListBrowseTab,
-} from './peopleListBrowseUrl';
+} from '../peopleListBrowseUrl';
 import {
   LIST_CAT_PARAM,
   serializeBrowseListSearchParams,
-} from './browseListUrlState';
-import { stripRetiredPeopleListTabParams } from '../routing/productUrlInbound';
+} from '../browseListUrlState';
+import { stripRetiredPeopleListTabParams } from '../../routing/productUrlInbound';
 
 /** Explore `pinKind` when opening the map from list browse state. */
 export const resolveListBrowseExplorePinKind = (
@@ -93,7 +93,7 @@ export const scopeBrowseListStateForListCat = (
   return state;
 };
 
-export const listCatForListExplorerBucket = (
+export const browseListCatForBucket = (
   bucket: 'events' | 'places'
 ): 'activities' | 'venues' => (bucket === 'places' ? 'venues' : 'activities');
 
