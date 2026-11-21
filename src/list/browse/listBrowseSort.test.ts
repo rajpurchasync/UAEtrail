@@ -9,7 +9,7 @@ import {
   parseListExplorerSort,
   serializeListExplorerSort,
   sortListExplorerCards,
-} from './listExplorerSort';
+} from './listBrowseSort';
 
 const card = (id: string, title: string, dateIso?: string): DiscoveryCardModel =>
   ({

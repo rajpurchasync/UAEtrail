@@ -10,7 +10,7 @@ import {
   listExplorerSortButtonLabel,
   listExplorerSortTrigger,
   type ListExplorerSortMode,
-} from './listExplorerSort';
+} from '../browse/listBrowseSort';
 
 type Props = {
   sort: ListExplorerSortMode;

@@ -33,7 +33,7 @@ import {
   listExplorerSortUsesViewerLocation,
   sortListExplorerCards,
   type ListExplorerSortMode,
-} from './listExplorerSort';
+} from '../browse/listBrowseSort';
 
 type ListExplorerProps = {
   cards: DiscoveryCardModel[];

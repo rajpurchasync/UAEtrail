@@ -25,7 +25,7 @@ import {
 import {
   DEFAULT_LIST_EXPLORER_SORT,
   type ListExplorerSortMode,
-} from '../list/explorer/listExplorerSort';
+} from '../list/browse/listBrowseSort';
 import { countListExplorerFilters, type ListExplorerLayout } from '../list/explorer/listExplorerLayout';
 import type { ExploreSearchScopeKey } from '../explore/exploreBrowseTaxonomy';
 import { useExplorePublishedAreasQuery } from '../explore/useExplorePublishedAreas';

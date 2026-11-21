@@ -28,6 +28,8 @@ const RETIRED_LIST_BROWSE_SHIMS = [
   'src/list/browse/BrowseCardJoinFooter.tsx',
   'src/list/listTripPosterPresentation.ts',
   'src/list/listVenuePosterPresentation.ts',
+  'src/list/explorer/listExplorerSort.ts',
+  'src/list/explorer/listExplorerSort.test.ts',
 ];
 
 const collectTsUnder = (dir: string): string[] => {
@@ -116,7 +118,7 @@ describe('shimInventoryGuard (repo-wide coherence)', () => {
       for (const file of collectTsUnder(join(ROOT, root))) {
         const content = read(file);
         if (/list\/explorer\/listExplorerSort/.test(content)) {
-          violations.push(`${file}: listExplorerSort`);
+          violations.push(`${file}: listExplorerSort (use list/browse/listBrowseSort)`);
         }
         if (/list\/explorer\/placeDistance/.test(content)) {
           violations.push(`${file}: placeDistance`);

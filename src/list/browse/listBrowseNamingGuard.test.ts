@@ -47,6 +47,15 @@ describe('listBrowseNamingGuard', () => {
     expect(read('src/list/useListDiscoveryUrlState.ts')).toMatch(/from '\.\/browse\/listBrowseSort'/);
   });
 
+  it('BROWSE-NAME-01e: list sort implementation lives in listBrowseSort (not explorer)', () => {
+    expect(existsSync(join(process.cwd(), 'src/list/browse/listBrowseSort.ts'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/list/explorer/listExplorerSort.ts'))).toBe(false);
+    expect(read('src/list/browse/listBrowseSort.ts')).toMatch(/export const sortListExplorerCards/);
+    expect(read('src/list/browse/listBrowseSort.ts')).not.toMatch(/from '\.\.\/explorer\/listExplorerSort'/);
+    expect(read('src/geo/GeoBrowsePane.tsx')).toMatch(/browse\/listBrowseSort/);
+    expect(read('src/list/explorer/ListExplorerSortControl.tsx')).toMatch(/browse\/listBrowseSort/);
+  });
+
   it('BROWSE-NAME-01d: list bucket + date sections live under browse (not explorer)', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/browseListBucket.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/browse/browseListDateSections.ts'))).toBe(true);
