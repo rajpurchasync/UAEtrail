@@ -1,5 +1,5 @@
 import type { ExploreMapItemDTO, WishlistItemDTO } from '@uaetrail/shared-types';
-import { exploreMapItemIsSeeking, resolveMapPinEmoji } from '@uaetrail/shared-types';
+import { exploreMapItemIsLegacySeekingActivity, resolveMapPinEmoji } from '@uaetrail/shared-types';
 import { wishlistItemTitle } from '../member-plan/wishlistSavedItem';
 
 export type PlanWishlistSuggestion = {
@@ -16,7 +16,7 @@ const isUpcomingMapItem = (
   item: ExploreMapItemDTO,
   joinedActivityIds: ReadonlySet<string>
 ): boolean => {
-  if (exploreMapItemIsSeeking(item)) {
+  if (exploreMapItemIsLegacySeekingActivity(item)) {
     return !item.convertedActivityId;
   }
   const activity = item.activity;

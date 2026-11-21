@@ -17,7 +17,7 @@ import {
   buildDiscoveryCardPresentation,
   canonicalizeMapComposeIntent,
   exploreMapItemIsAvailabilityCatalog,
-  exploreMapItemIsSeeking,
+  exploreMapItemIsLegacySeekingActivity,
   isGeographyMapSource,
   isPeekOnlyCatalogProfile,
   memberProfilePath,
@@ -83,7 +83,6 @@ export interface DiscoveryCardModel {
   /** Place catalog type when known (`locationCard.activityType`) — not the outing type. */
   locationActivityType?: 'hiking' | 'camping' | 'event' | null;
   activityId?: string | null;
-  participantIntentId?: string | null;
   outingCategory?: OutingCategory | null;
   composeIntent?: ExploreMapComposeIntent | null;
   merchantId?: string | null;
@@ -131,13 +130,9 @@ const resolveCoverImage = (item: ExploreMapItemDTO): string | null =>
   );
 
 const LIST_META_ICONS = new Set(['location', 'time', 'spots']);
-/** Seeking pins — same rules as `exploreMapItemIsSeeking` on map wire. */
-export const discoveryCardIsSeeking = (
-  card: Pick<
-    DiscoveryCardModel,
-    'source' | 'composeIntent' | 'participantIntentId' | 'id' | 'activityMode'
-  >
-): boolean => exploreMapItemIsSeeking(card);
+/** Fixed Find crew pin (`source: availability`) — not legacy `activityMode: seeking` activities. */
+export const discoveryCardIsAvailabilityPin = (card: Pick<DiscoveryCardModel, 'source'>): boolean =>
+  card.source === 'availability';
 
 /** Map/list peek uses `resolveActivityPeekEngagement` (hosted + M0 seeking). */
 export const discoveryCardUsesActivityPeekEngagement = (
@@ -149,7 +144,7 @@ export const buildDiscoveryListMeta = (card: DiscoveryCardModel): string | null 
   if (card.source === 'shop' || card.source === 'agency' || isGeographyMapSource(card.source)) {
     return null;
   }
-  const allowRoute = discoveryCardIsSeeking(card) || card.kind === 'rideshare';
+  const allowRoute = discoveryCardIsAvailabilityPin(card) || card.kind === 'rideshare';
   const labels = card.sections.details
     .filter(
       (detail) =>
@@ -167,7 +162,7 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
     ? buildDiscoveryCardPresentation(item)
     : (item.presentation ?? buildDiscoveryCardPresentation(item));
   const kind = presentation.kind;
-  const source = exploreMapItemIsSeeking(item) ? 'activity' : presentation.source;
+  const source = presentation.source;
   const featuredPerson = item.featuredPerson ?? presentation.featuredPerson ?? resolveExploreFeaturedPerson(item);
   const isRideshare = kind === 'rideshare';
   const activity = item.activity;
@@ -175,10 +170,9 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
   const fromLabel = item.fromLabel ?? activity?.meetingPoint ?? null;
   const toLabel = item.toLabel ?? activity?.startPoint ?? activity?.locationName ?? null;
   const routeLabel = presentation.routeLabel ?? buildExploreRouteLabel(fromLabel, toLabel, kind);
-  const seeking = exploreMapItemIsSeeking(item);
+  const retiredSeekingActivity = exploreMapItemIsLegacySeekingActivity(item);
   const availability = exploreMapItemIsAvailabilityCatalog(item);
-  const whenSuffix =
-    seeking && !availability ? 'flexible' : kind === 'rideshare' || availability ? 'fixed' : null;
+  const whenSuffix = kind === 'rideshare' || availability ? 'fixed' : null;
   const whenLabel =
     presentation.whenLabel ??
     buildExploreWhenSegment(
@@ -226,18 +220,16 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
     secondaryCta: presentation.secondaryCta,
     showJoinActions:
       !availability &&
-      ((source === 'activity' && Boolean(activity)) ||
-        (seeking && Boolean(item.requesterUserId))),
+      !retiredSeekingActivity &&
+      source === 'activity' &&
+      Boolean(activity),
     websiteUrl: item.websiteUrl ?? null,
     contactPhone: item.contactPhone ?? null,
     shareTitle: headline,
     sharePath:
       activity?.joinMode === 'private' && activity.id
         ? `/activity/${activity.id}`
-        : exploreMapItemSharePath(item.id, {
-            activityId: seeking ? activity?.id : undefined,
-            intentId: seeking ? item.participantIntentId ?? undefined : undefined,
-          }),
+        : exploreMapItemSharePath(item.id),
     shareText: presentation.shareText,
     requesterUserId: featuredPerson?.userId ?? item.requesterUserId ?? null,
     routeLabel,
@@ -258,9 +250,6 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
     locationId: item.locationCard?.id ?? item.activity?.locationId ?? null,
     locationActivityType: item.locationCard?.activityType ?? null,
     activityId: item.activity?.id ?? null,
-    /** Manage/deeplink only for legacy seeking rows without a published activity id. */
-    participantIntentId:
-      seeking && !activity?.id ? item.participantIntentId ?? null : null,
     outingCategory: item.outingCategory ?? null,
     composeIntent: canonicalizeMapComposeIntent(item.composeIntent) ?? null,
     merchantId: item.merchantId ?? null,
@@ -292,7 +281,6 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
       : undefined,
     requirementBadges: [
       ...(availability ? ['Available'] : []),
-      ...(exploreMapItemIsSeeking(item) ? ['Seeking'] : []),
       ...enrichExploreActivityRequirementBadges(activity?.requirements, {
         kind: kind === 'area' ? 'event' : kind,
         rideshareEnabled: Boolean(
@@ -321,7 +309,8 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
         ? item.linkedRideshareActivities
         : undefined,
     viewerAccess: item.viewerAccess ?? null,
-    activityMode: item.activityMode ?? (seeking ? 'seeking' : source === 'activity' ? 'hosted' : null),
+    activityMode:
+      item.activityMode ?? (source === 'activity' && !retiredSeekingActivity ? 'hosted' : null),
   };
 };
 
@@ -437,7 +426,7 @@ export type ExploreEntityFollowPayload = {
 export const resolveExploreEntityFollowTarget = (
   card: DiscoveryCardModel
 ): ExploreEntityFollowPayload | null => {
-  if (discoveryCardIsSeeking(card)) return null;
+  if (discoveryCardIsAvailabilityPin(card)) return null;
   if (isGeographyMapSource(card.source) && card.locationId) return { locationId: card.locationId };
   if (card.source === 'activity') {
     if (card.locationId) return { locationId: card.locationId };
@@ -479,7 +468,7 @@ const watchMetaFromCard = (card: DiscoveryCardModel) => ({
 /** Wishlist = private venue, area, or activity save — not demand, shops, or people (use Follow). */
 export const resolveExploreWishlistTarget = (card: DiscoveryCardModel): ExploreWishlistTarget | null => {
   const watch = watchMetaFromCard(card);
-  if (discoveryCardIsSeeking(card)) return null;
+  if (discoveryCardIsAvailabilityPin(card)) return null;
   if (card.source === 'activity' && card.activityId) return { activityId: card.activityId, ...watch };
   if (card.source === 'area' && card.areaId) return { areaId: card.areaId, ...watch };
   if (isGeographyMapSource(card.source) && card.locationId) return { locationId: card.locationId, ...watch };

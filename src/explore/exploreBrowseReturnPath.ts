@@ -1,6 +1,11 @@
 import { EXPLORE_MAP_PATH } from '../config/platform';
 import { BROWSE_DISCOVER_PARAM, LIST_CAT_PARAM } from '../list/browseListUrlState';
-import { BUDDIES_SEGMENT_URL_PARAM } from '../list/buddiesDiscoverySegment';
+import {
+  INBOUND_BUDDIES_LIST_TAB_PARAM,
+  INBOUND_GOING_TAB_PARAM,
+  INBOUND_SOCIAL_TAB_PARAM,
+  PEOPLE_LIST_TAB_URL_PARAM,
+} from '../routing/productUrlInbound';
 
 /**
  * After full-screen Find People, return to the map — not the mobile list sheet or discover browse.
@@ -14,10 +19,10 @@ export const exploreMapPathAfterPeopleFullScreen = (returnTo: string): string =>
   params.set('list', '0');
   params.delete(BROWSE_DISCOVER_PARAM);
   params.delete('view');
-  params.delete('peopleTab');
-  params.delete('socialTab');
-  params.delete('goingTab');
-  params.delete(BUDDIES_SEGMENT_URL_PARAM);
+  params.delete(PEOPLE_LIST_TAB_URL_PARAM);
+  params.delete(INBOUND_SOCIAL_TAB_PARAM);
+  params.delete(INBOUND_GOING_TAB_PARAM);
+  params.delete(INBOUND_BUDDIES_LIST_TAB_PARAM);
   params.delete(LIST_CAT_PARAM);
 
   const qs = params.toString();

@@ -1,5 +1,8 @@
-import { randomUUID } from 'crypto';
-import type { ParticipantIntentDTO } from '@uaetrail/shared-types';
+import type {
+  AvailabilityKind,
+  MemberAvailabilitySlotDTO,
+  ParticipantIntentDTO,
+} from '@uaetrail/shared-types';
 import { seekingFallbackTitle, type OutingCategory } from '@uaetrail/shared-types';
 import {
   parseMergedParticipantIntent,
@@ -8,6 +11,7 @@ import {
   type UpdateParticipantIntentInput,
 } from '../domain/participant-intent.js';
 import { findAuthUserById } from './auth-users-store.js';
+import { parseLocalDateTime } from './datetime.js';
 import { ApiError } from './api-error.js';
 import { scheduleExploreMapCacheInvalidation } from './explore-map-cache-schedule.js';
 import { scheduleSideEffect } from './schedule-side-effect.js';
@@ -61,65 +65,10 @@ export const findParticipantIntentById = async (
 };
 
 export const createParticipantIntent = async (
-  userId: string,
-  input: CreateParticipantIntentInput
+  _userId: string,
+  _input: CreateParticipantIntentInput
 ): Promise<ParticipantIntentDTO> => {
-  const areaId = input.areaId?.trim() ? input.areaId.trim() : null;
-  if (input.latitude != null && input.longitude != null) {
-    if (!areaId) {
-      const { ApiError } = await import('./api-error.js');
-      throw new ApiError(400, 'activity_area_required', 'Choose a curated area for this map post.');
-    }
-    const { findPublishedAreaById } = await import('./areas-store.js');
-    const area = await findPublishedAreaById(areaId);
-    if (!area) {
-      const { ApiError } = await import('./api-error.js');
-      throw new ApiError(400, 'area_not_found', 'Choose a published area.');
-    }
-  }
-  const intentId = randomUUID();
-  const { createSeekingActivityForIntent, cancelSeekingActivityForIntent } = await import(
-    '../services/participant-intent-seeking-activity.js'
-  );
-  const publishedActivityId = await createSeekingActivityForIntent(userId, intentId, input, areaId);
-
-  const { activityDocToParticipantIntentDto } = await import(
-    '../services/participant-intent-activity-readthrough.js'
-  );
-
-  scheduleExploreMapCacheInvalidation('participant-intents.map_cache');
-  const { notifyMemberPublishSubscribers } = await import('../services/member-publish-notifications.js');
-  void notifyMemberPublishSubscribers(userId, {
-    publishType: 'seeking',
-    intentId,
-    title: input.title.trim(),
-    activityId: publishedActivityId,
-  });
-  const { notifyWishlistForNewSeeking } = await import('../services/wishlist-alerts.js');
-  scheduleSideEffect(
-    notifyWishlistForNewSeeking(intentId, userId),
-    'participant-intents.wishlist_notify'
-  );
-  if (areaId) {
-    const { notifySeekerOfHostedActivitiesInArea } = await import(
-      '../services/seeking-area-match-notifications.js'
-    );
-    void notifySeekerOfHostedActivitiesInArea({
-      seekerUserId: userId,
-      areaId,
-      intentId,
-      seekingActivityId: publishedActivityId,
-      intentDate: input.date ?? null,
-    });
-  }
-  const { findActivityDocInMongo } = await import('./entity-sync.js');
-  const activity = await findActivityDocInMongo(publishedActivityId);
-  if (!activity) {
-    await cancelSeekingActivityForIntent(publishedActivityId);
-    throw new Error('Seeking activity missing after create.');
-  }
-  const user = await findAuthUserById(userId);
-  return activityDocToParticipantIntentDto(activity, user);
+  throw new ApiError(410, 'activity_mode_seeking_retired', 'Find crew uses PUT /me/availability.');
 };
 
 export const participantIntentDocToCreateInput = (
@@ -332,7 +281,37 @@ export const countParticipantIntentsByUser = async (userId: string): Promise<num
   return countActiveSeekingActivitiesForOwner(userId);
 };
 
-/** M1 backfill — active intents without published `activityId` (pre-dual-write rows). */
+const intentKindToAvailabilityKind = (kind: ParticipantIntentKind): AvailabilityKind => {
+  if (kind === 'hiking' || kind === 'camping' || kind === 'rideshare' || kind === 'event') return kind;
+  return 'other';
+};
+
+const participantIntentDocToFixedSlot = (
+  doc: MongoParticipantIntent,
+  countryCode = 'AE'
+): MemberAvailabilitySlotDTO | null => {
+  if (doc.latitude == null || doc.longitude == null) return null;
+  const day =
+    doc.date?.trim() ||
+    new Date(Date.now() + 5 * 86400000).toISOString().slice(0, 10);
+  const time = doc.time?.trim() || '09:00';
+  const startAt = parseLocalDateTime(day, time, countryCode).toISOString();
+  return {
+    slotId: doc._id,
+    scheduleKind: 'fixed',
+    startDate: day,
+    endDate: day,
+    startAt,
+    endAt: startAt,
+    title: resolveStoredDemandTitle(doc),
+    latitude: doc.latitude,
+    longitude: doc.longitude,
+    locationPrecision: doc.locationPrecision ?? 'general',
+    timeBand: null,
+  };
+};
+
+/** Ops backfill — active legacy intents → fixed `member_availability` slots (no new seeking activities). */
 export const backfillSeekingActivitiesForActiveIntents = async (options?: {
   dryRun?: boolean;
   limit?: number;
@@ -350,8 +329,8 @@ export const backfillSeekingActivitiesForActiveIntents = async (options?: {
     .limit(limit)
     .toArray();
 
-  const { createSeekingActivityForIntent } = await import(
-    '../services/participant-intent-seeking-activity.js'
+  const { mergeMemberAvailabilityFixedSlotsMigration } = await import(
+    './member-availability-store.js'
   );
 
   let created = 0;
@@ -359,7 +338,8 @@ export const backfillSeekingActivitiesForActiveIntents = async (options?: {
   const errors: string[] = [];
 
   for (const doc of docs) {
-    if (doc.latitude == null || doc.longitude == null) {
+    const slot = participantIntentDocToFixedSlot(doc);
+    if (!slot) {
       skipped += 1;
       continue;
     }
@@ -369,21 +349,19 @@ export const backfillSeekingActivitiesForActiveIntents = async (options?: {
       continue;
     }
 
-    const input = participantIntentDocToCreateInput(doc);
     try {
-      const publishedActivityId = await createSeekingActivityForIntent(
-        doc.userId,
-        doc._id,
-        input,
-        doc.areaId ?? null,
-        { deferCacheInvalidate: true }
-      );
+      await mergeMemberAvailabilityFixedSlotsMigration(doc.userId, {
+        kinds: [intentKindToAvailabilityKind(doc.kind)],
+        visibility: 'public',
+        areaId: doc.areaId ?? null,
+        note: doc.comment?.trim() || null,
+        fixedSlots: [slot],
+      });
       await collection().updateOne(
         { _id: doc._id },
         {
           $set: {
-            activityId: publishedActivityId,
-            seekingActivityId: publishedActivityId,
+            status: 'fulfilled',
             updatedAt: new Date(),
           },
         }

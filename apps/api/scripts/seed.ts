@@ -56,12 +56,7 @@ import {
 import { DEMO_ACCOUNTS, resolveDemoAccountPassword } from '../src/lib/demo-accounts.js';
 import { logOmarHostQaPlaybook } from './logOmarHostQaPlaybook.js';
 import { seedCuratedAreas } from '../src/lib/seed-areas.js';
-import { backfillSeekingActivitiesForActiveIntents } from '../src/lib/participant-intents-store.js';
-import { parseLocalDateTime } from '../src/lib/datetime.js';
-import { createSeekingActivityForIntent } from '../src/services/participant-intent-seeking-activity.js';
-import { findSeekingActivityByParticipantIntentId } from '../src/services/participant-intent-activity-readthrough.js';
-import type { CreateParticipantIntentInput } from '../src/domain/participant-intent.js';
-import { curatedAreaSeedId } from '@uaetrail/shared-types';
+import { curatedAreaSeedId, type AvailabilityKind } from '@uaetrail/shared-types';
 import { deactivateOrphanActiveLocations } from './cleanup-orphan-activity-anchor-locations.js';
 import { backfillSeedCatalogLocationAreaIds, seedLocationAreaId } from './seed-location-area-map.js';
 import {
@@ -79,7 +74,10 @@ import {
 } from './seed-demo-scheduled-activities.js';
 import { seedDevRichCatalog } from './seed-dev-rich-catalog.js';
 import { seedDevMonthlyActivities } from './seed-dev-monthly-activities.js';
-import { refreshSeedParticipantSeekingSchedules } from './seed-demo-seeking-schedules.js';
+import {
+  refreshSeedAvailabilityFixedSchedules,
+  upsertSeedAvailabilityFixedPin,
+} from './seed-demo-availability-fixed.js';
 import { seedCatalogFacilities } from './seed-catalog-facilities.js';
 import { runDevQaBundleSeed } from './seed-dev-qa-bundle.js';
 import { resolveCliScriptName, runCliScript } from './cli-script-runner.js';
@@ -744,36 +742,6 @@ const upsertMerchantProfile = async (
 
 const seedDemandId = (label: string): string => `seed-${label}`;
 
-const upsertSeedSeekingActivity = async (input: {
-  intentId: string;
-  userId: string;
-  areaId: string;
-  payload: CreateParticipantIntentInput;
-}): Promise<void> => {
-  const existing = await findSeekingActivityByParticipantIntentId(input.intentId);
-  if (existing) {
-    const time = input.payload.time?.trim() || '09:00';
-    const startAt = input.payload.date
-      ? parseLocalDateTime(input.payload.date, time, 'AE')
-      : existing.startAt;
-    await patchActivityInMongo(existing._id, {
-      title: input.payload.title.trim(),
-      description: input.payload.comment.trim(),
-      capacity: input.payload.partySize,
-      ...(startAt ? { startAt } : {}),
-      meetingLat: input.payload.latitude ?? null,
-      meetingLng: input.payload.longitude ?? null,
-      meetingPoint: input.payload.preferredArea?.trim() || null,
-      startLat: input.payload.toLatitude ?? null,
-      startLng: input.payload.toLongitude ?? null,
-      areaId: input.areaId,
-      status: ActivityStatus.PUBLISHED,
-    });
-    return;
-  }
-
-  await createSeekingActivityForIntent(input.userId, input.intentId, input.payload, input.areaId);
-};
 
 const upsertReview = async (input: {
   userId: string;
@@ -2176,97 +2144,75 @@ Share your live location and carry extra water in summer months.`
   const seedSeekingDate = (daysAhead: number): string =>
     new Date(Date.now() + daysAhead * 86400000).toISOString().slice(0, 10);
 
-  await upsertSeedSeekingActivity({
-    intentId: seedDemandId('demand-hike-hatta'),
+  const seedAvailabilityPin = async (input: {
+    slotId: string;
+    userId: string;
+    areaId: string;
+    kind: AvailabilityKind;
+    title: string;
+    date: string;
+    time: string | null;
+    latitude: number;
+    longitude: number;
+    note: string;
+  }) => {
+    await upsertSeedAvailabilityFixedPin(input);
+  };
+
+  await seedAvailabilityPin({
+    slotId: seedDemandId('demand-hike-hatta'),
     userId: participant._id,
     areaId: curatedAreaSeedId('hatta'),
-    payload: {
-      kind: 'hiking',
-      title: 'Hiking buddies near Hatta',
-      date: seedSeekingDate(5),
-      time: null,
-      preferredArea: 'Hatta Dam loop, Wadi Hub area',
-      latitude: 24.7847,
-      longitude: 56.1136,
-      locationPrecision: 'general',
-      toLatitude: null,
-      toLongitude: null,
-      partySize: 2,
-      comment: 'Looking for hiking buddies around Hatta this weekend.',
-      areaId: curatedAreaSeedId('hatta'),
-    },
+    kind: 'hiking',
+    title: 'Hiking buddies near Hatta',
+    date: seedSeekingDate(5),
+    time: null,
+    latitude: 24.7847,
+    longitude: 56.1136,
+    note: 'Looking for hiking buddies around Hatta this weekend.',
   });
 
-  await upsertSeedSeekingActivity({
-    intentId: seedDemandId('demand-camp-fossil-rock'),
+  await seedAvailabilityPin({
+    slotId: seedDemandId('demand-camp-fossil-rock'),
     userId: individualHost._id,
     areaId: curatedAreaSeedId('fossilRock'),
-    payload: {
-      kind: 'camping',
-      title: 'Weekend desert camp at Fossil Rock',
-      date: seedSeekingDate(8),
-      time: '16:00',
-      preferredArea: 'Fossil Rock, Sharjah desert',
-      latitude: 25.22,
-      longitude: 55.85,
-      locationPrecision: 'general',
-      toLatitude: null,
-      toLongitude: null,
-      partySize: 4,
-      comment: 'Looking for people to join a weekend desert camp — tents and 4x4 preferred.',
-      areaId: curatedAreaSeedId('fossilRock'),
-    },
+    kind: 'camping',
+    title: 'Weekend desert camp at Fossil Rock',
+    date: seedSeekingDate(8),
+    time: '16:00',
+    latitude: 25.22,
+    longitude: 55.85,
+    note: 'Looking for people to join a weekend desert camp — tents and 4x4 preferred.',
   });
 
-  await upsertSeedSeekingActivity({
-    intentId: seedDemandId('demand-event-kite-beach'),
+  await seedAvailabilityPin({
+    slotId: seedDemandId('demand-event-kite-beach'),
     userId: agencyGuide._id,
     areaId: curatedAreaSeedId('jumeirah'),
-    payload: {
-      kind: 'event',
-      title: 'Sunrise yoga at Kite Beach',
-      date: seedSeekingDate(6),
-      time: '06:00',
-      preferredArea: 'Kite Beach running track, Dubai',
-      latitude: 25.1654,
-      longitude: 55.2553,
-      locationPrecision: 'specific',
-      toLatitude: null,
-      toLongitude: null,
-      partySize: 6,
-      comment: 'Casual sunrise yoga meetup — bring your mat and water.',
-      areaId: curatedAreaSeedId('jumeirah'),
-    },
+    kind: 'event',
+    title: 'Sunrise yoga at Kite Beach',
+    date: seedSeekingDate(6),
+    time: '06:00',
+    latitude: 25.1654,
+    longitude: 55.2553,
+    note: 'Casual sunrise yoga meetup — bring your mat and water.',
   });
 
-  await upsertSeedSeekingActivity({
-    intentId: seedDemandId('demand-rideshare-dxb-rak'),
+  await seedAvailabilityPin({
+    slotId: seedDemandId('demand-rideshare-dxb-rak'),
     userId: pendingParticipant._id,
     areaId: curatedAreaSeedId('jebelJais'),
-    payload: {
-      kind: 'rideshare',
-      title: 'Ride to Jebel Jais hike',
-      date: seedSeekingDate(3),
-      time: '07:30',
-      preferredArea: 'Dubai Marina → Jebel Jais',
-      latitude: 25.0782,
-      longitude: 55.1394,
-      locationPrecision: 'specific',
-      toLatitude: 25.9433,
-      toLongitude: 56.1422,
-      partySize: 3,
-      comment: 'Need a ride to Jebel Jais hike — happy to share fuel.',
-      areaId: curatedAreaSeedId('jebelJais'),
-    },
+    kind: 'rideshare',
+    title: 'Ride to Jebel Jais hike',
+    date: seedSeekingDate(3),
+    time: '07:30',
+    latitude: 25.0782,
+    longitude: 55.1394,
+    note: 'Need a ride to Jebel Jais hike — happy to share fuel.',
   });
 
-  const seekingBackfill = await backfillSeekingActivitiesForActiveIntents({ limit: 50 });
-  console.log(
-    `Seeking activities backfill: created=${seekingBackfill.created} skipped=${seekingBackfill.skipped} errors=${seekingBackfill.errors.length}`
-  );
-
-  const seekingScheduleRefresh = await refreshSeedParticipantSeekingSchedules();
-  console.log(`Seeking demo schedule refresh: updated=${seekingScheduleRefresh.updated}`);
+  const availabilityScheduleRefresh = await refreshSeedAvailabilityFixedSchedules();
+  console.log(`Availability demo schedule refresh: updated=${availabilityScheduleRefresh.updated}`);
 
   console.log('Seed complete.');
   const demoPassword = (email: keyof typeof DEMO_ACCOUNTS) => resolveDemoAccountPassword(email);

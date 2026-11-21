@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
+  availabilityExploreMapItem,
   hostedExploreMapItem,
   seekingExploreMapItem,
   venueExploreMapItem,
@@ -27,12 +28,13 @@ describe('exploreBrowseTaxonomy', () => {
   it('classifies trips vs spots', () => {
     const trail = venueExploreMapItem({ id: 'venue:v1' });
     const hosted = hostedExploreMapItem({ id: 'activity:a1', kind: 'event' });
-    const seeking = seekingExploreMapItem({ intentId: 'x' });
+    const legacySeeking = seekingExploreMapItem({ intentId: 'x' });
+    const fixedCrew = availabilityExploreMapItem({ userId: 'u1', slotId: 's1' });
     expect(mapItemMatchesFilterPill(trail, 'spots')).toBe(true);
     expect(mapItemMatchesFilterPill(hosted, 'trips')).toBe(true);
-    expect(mapItemMatchesFilterPill(seeking, 'trips')).toBe(true);
-    expect(mapItemMatchesFilterPill(seeking, 'looking')).toBe(true);
-    expect(mapItemMatchesFilterPill(hosted, 'looking')).toBe(false);
+    expect(mapItemMatchesFilterPill(legacySeeking, 'trips')).toBe(true);
+    expect(mapItemMatchesFilterPill(fixedCrew, 'trips')).toBe(true);
+    expect(mapItemMatchesFilterPill(legacySeeking, 'trips')).toBe(true);
   });
 
   it('parses leftover and new search scopes', () => {

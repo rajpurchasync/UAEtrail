@@ -26,7 +26,7 @@ import {
 } from '../exploreBrowseTaxonomy';
 import type { BrowseMainCategoryKey } from '../../list/browseListTaxonomy';
 import type { ExploreBrowseUrlSyncPatch } from '../exploreBrowseUrlSync';
-import type { BuddiesDiscoverySegment } from '../../list/buddiesDiscoverySegment';
+import type { PeopleBrowseTab } from '../../list/peopleListBrowseUrl';
 import type { ExplorePinKindFilter } from '../explorePinKindFilter';
 import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
@@ -58,7 +58,6 @@ type Setters = {
   setListMode: (v: ExploreBrowseListMode) => void;
   setPeopleBrowseOpen: (v: boolean) => void;
   setPeopleBrowseTab: (v: PeopleBrowseTab) => void;
-  setBuddiesDiscoverSegment: (v: BuddiesDiscoverySegment) => void;
   setDesktopBrowseTab: (v: DesktopBrowseTab) => void;
   setActivityDatePreset: (v: ExploreActivityDatePreset) => void;
   setActivityModeFilter: (v: ExploreActivityModeFilter) => void;
@@ -318,7 +317,7 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
           : listDiscoveryPath({
               listCat: 'people',
               categories: ['people'],
-              buddiesSegment: initialTab,
+              peopleBrowseTab: initialTab,
               query,
               activityDatePreset: 'anyday',
             });
@@ -344,13 +343,11 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
   const applyPeopleBrowseTab = useCallback(
     (tab: PeopleBrowseTab) => {
       setters.setPeopleBrowseTab(tab);
-      setters.setBuddiesDiscoverSegment(tab);
       if (isDesktop) {
         syncExploreUrl({
           peopleBrowseOpen: true,
           listMode: 'default',
           peopleBrowseTab: tab,
-          buddiesDiscoverSegment: tab,
           list: listOpen,
         });
         return;
@@ -358,31 +355,6 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
       syncExploreUrl({
         listMode: 'people',
         peopleBrowseTab: tab,
-        buddiesDiscoverSegment: tab,
-        list: listOpen,
-      });
-    },
-    [isDesktop, listOpen, setters, syncExploreUrl]
-  );
-
-  const applyBuddiesDiscoverSegment = useCallback(
-    (segment: BuddiesDiscoverySegment) => {
-      setters.setBuddiesDiscoverSegment(segment);
-      setters.setPeopleBrowseTab(segment);
-      if (isDesktop) {
-        syncExploreUrl({
-          buddiesDiscoverSegment: segment,
-          peopleBrowseTab: segment,
-          peopleBrowseOpen: true,
-          listMode: 'default',
-          list: listOpen,
-        });
-        return;
-      }
-      syncExploreUrl({
-        buddiesDiscoverSegment: segment,
-        peopleBrowseTab: segment,
-        listMode: 'people',
         list: listOpen,
       });
     },
@@ -721,7 +693,6 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
     openPeopleBrowsePanel,
     closePeopleBrowsePanel,
     applyPeopleBrowseTab,
-    applyBuddiesDiscoverSegment,
     closeListPanel,
     applyBuddySubtype,
     applyOutingTopic,

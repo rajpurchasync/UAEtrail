@@ -14,7 +14,7 @@ export const resolvePlanCalendarRowOpenAction = (
   if (row.kind === 'joined' || row.kind === 'requested') {
     return { type: 'navigate', href: activityDetailPath(row.activityId) };
   }
-  if (row.kind === 'hosting' || row.kind === 'seeking') {
+  if (row.kind === 'hosting' || row.kind === 'mapSlot') {
     return { type: 'navigate', href: row.href };
   }
   return { type: 'none' };

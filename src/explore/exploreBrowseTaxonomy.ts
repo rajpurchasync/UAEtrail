@@ -1,5 +1,4 @@
 import {
-  exploreMapItemIsSeeking,
   isGeographyMapSource,
   isTimeBoundExploreMapItem,
   type ExploreMapItemDTO,
@@ -12,6 +11,7 @@ import type { ExplorePanel } from './routing';
 import { MAP_LENS_SPOTS_LABEL } from '../place/geographyVocabulary';
 import type { ExplorePinKindFilter } from './explorePinKindFilter';
 import type { DesktopBrowseTab } from './ui/exploreBrowsePanelCopy';
+import { normalizeExploreSearchScopeInbound } from '../routing/productUrlInbound';
 
 /**
  * Canonical explore browse taxonomy — map pills + search scopes.
@@ -40,9 +40,9 @@ export const EXPLORE_GUEST_MAP_PREVIEW_NOTICE = `${EXPLORE_GUEST_MAP_PREVIEW_LEA
 export const EXPLORE_SEARCH_GUEST_PREVIEW_NOTICE = 'Preview only — 3 outings & 3 places.';
 
 /** Map chrome — multi-select filter pills. */
-export type ExploreMapFilterPillKey = 'trips' | 'looking' | 'spots' | 'shops';
+export type ExploreMapFilterPillKey = 'trips' | 'spots' | 'shops';
 
-/** Map multi-select pills — seeking rolls into **Activities** (M0); `looking` key kept for legacy `topics=` parse. */
+/** Map multi-select pills — availability pins roll up under **Activities**. */
 export const EXPLORE_MAP_FILTER_PILLS: ReadonlyArray<{ key: ExploreMapFilterPillKey; label: string }> = [
   { key: 'trips', label: 'Activities' },
   { key: 'spots', label: MAP_LENS_SPOTS_LABEL },
@@ -119,11 +119,9 @@ export const mapItemIsAgencyHostedActivity = (item: ExploreMapItemDTO): boolean 
   item.activityMode !== 'seeking' &&
   item.activity?.publishingProfileKind === 'agency';
 
-/** Hosted + seeking time-bound plans (unified activity pins). */
+/** Hosted activities + fixed availability pins (excludes legacy `activityMode: seeking` activities). */
 export const mapItemMatchesTripsPill = (item: ExploreMapItemDTO): boolean =>
   isTimeBoundExploreMapItem(item);
-
-export const mapItemMatchesLookingPill = (item: ExploreMapItemDTO): boolean => exploreMapItemIsSeeking(item);
 
 /** Catalog venues (trails, camps, places) — not shops. */
 export const mapItemMatchesSpotsPill = (item: ExploreMapItemDTO): boolean =>
@@ -136,8 +134,6 @@ export const mapItemMatchesFilterPill = (item: ExploreMapItemDTO, pill: ExploreM
   switch (pill) {
     case 'trips':
       return mapItemMatchesTripsPill(item);
-    case 'looking':
-      return mapItemMatchesLookingPill(item);
     case 'spots':
       return mapItemMatchesSpotsPill(item);
     case 'shops':
@@ -225,14 +221,13 @@ const SEARCH_SCOPE_SET = new Set<ExploreSearchScopeKey>([
 ]);
 
 export const parseExploreSearchScope = (value: string | null): ExploreSearchScopeKey | null => {
-  const key = value?.trim().toLowerCase();
+  const key = normalizeExploreSearchScopeInbound(value);
   if (!key) return null;
-  if (key === 'trips' || key === 'trip' || key === 'activity' || key === 'activities') return 'activities';
-  if (key === 'spots' || key === 'spot' || key === 'venue' || key === 'venues' || key === 'place' || key === 'places')
-    return 'places';
-  if (key === 'looking' || key === 'demand' || key === 'people' || key === 'person') return 'people';
-  if (key === 'shop' || key === 'shops') return 'shops';
-  if (key === 'agency' || key === 'agencies' || key === 'operator' || key === 'operators') return 'agencies';
+  if (key === 'activities') return 'activities';
+  if (key === 'places') return 'places';
+  if (key === 'people') return 'people';
+  if (key === 'shops') return 'shops';
+  if (key === 'agencies') return 'agencies';
   if (SEARCH_SCOPE_SET.has(key as ExploreSearchScopeKey)) return key as ExploreSearchScopeKey;
   return null;
 };

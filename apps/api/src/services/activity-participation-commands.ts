@@ -86,6 +86,15 @@ export const submitPublicActivityJoinRequest = async (input: {
     isPlatformAdmin: input.isPlatformAdmin,
   });
 
+  const activityDoc = await findActivityDocInMongo(input.activityId);
+  if (activityDoc?.activityMode === 'seeking') {
+    throw new ApiError(
+      410,
+      'legacy_seeking_retired',
+      'This archived find post no longer accepts joins. Share availability on the map instead.'
+    );
+  }
+
   const party = await resolveJoinPartyFromBody({
     actorUserId: input.userId,
     partyMemberIds: input.partyMemberIds,

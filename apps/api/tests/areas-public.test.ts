@@ -28,7 +28,7 @@ describe('GET /api/areas', () => {
     expect(res.body.data.counts).toMatchObject({
       activities: expect.any(Number),
       places: expect.any(Number),
-      seeking: expect.any(Number),
+      availability: expect.any(Number),
     });
     expect(res.body.data.preview).toMatchObject({
       activities: expect.any(Array),

@@ -12,7 +12,8 @@ import type { PlanCommitmentFilter } from './planTab';
 export type PlanCalendarDayMarkers = {
   available: boolean;
   hosting: boolean;
-  seeking: boolean;
+  /** Fixed `member_availability` map slot (not legacy `activityMode: seeking`). */
+  mapSlot: boolean;
   joined: boolean;
   requested: boolean;
 };
@@ -29,13 +30,13 @@ export type PlanCalendarJoinedDetail = {
 export type PlanCalendarDayDetail =
   | { kind: 'available' }
   | { kind: 'hosting'; title: string; href: string; activityId: string }
-  | { kind: 'seeking'; title: string; href: string; slotId?: string }
+  | { kind: 'mapSlot'; title: string; href: string; slotId?: string }
   | PlanCalendarJoinedDetail;
 
 export const emptyPlanCalendarDayMarkers = (): PlanCalendarDayMarkers => ({
   available: false,
   hosting: false,
-  seeking: false,
+  mapSlot: false,
   joined: false,
   requested: false,
 });
@@ -96,9 +97,9 @@ export const buildPlanCalendarMaps = (input: BuildPlanCalendarInput) => {
     if (!day) continue;
     ensureDay(markers, details, day);
     const m = markers.get(day)!;
-    m.seeking = true;
+    m.mapSlot = true;
     details.get(day)!.push({
-      kind: 'seeking',
+      kind: 'mapSlot',
       title: slot.title?.trim() || 'On the map',
       href: input.fixedAvailabilityManageHref(),
       slotId: slot.slotId,
@@ -164,7 +165,7 @@ export const buildPlanCalendarMaps = (input: BuildPlanCalendarInput) => {
   return { markers, details };
 };
 
-const HOSTING_KINDS = new Set<PlanCalendarDayDetail['kind']>(['available', 'hosting', 'seeking']);
+const HOSTING_KINDS = new Set<PlanCalendarDayDetail['kind']>(['available', 'hosting', 'mapSlot']);
 const JOINED_KINDS = new Set<PlanCalendarDayDetail['kind']>(['joined', 'requested']);
 
 const markersFromDetails = (rows: PlanCalendarDayDetail[]): PlanCalendarDayMarkers => {
@@ -172,7 +173,7 @@ const markersFromDetails = (rows: PlanCalendarDayDetail[]): PlanCalendarDayMarke
   for (const row of rows) {
     if (row.kind === 'available') m.available = true;
     if (row.kind === 'hosting') m.hosting = true;
-    if (row.kind === 'seeking') m.seeking = true;
+    if (row.kind === 'mapSlot') m.mapSlot = true;
     if (row.kind === 'joined') m.joined = true;
     if (row.kind === 'requested') m.requested = true;
   }

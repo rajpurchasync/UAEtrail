@@ -1,14 +1,14 @@
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import {
   discoveryCardActivityShowsPeekSpots,
-  discoveryCardIsSeeking,
+  discoveryCardIsAvailabilityPin,
 } from '../discovery/discoveryCardModel';
 import { resolveActivityMapPeekSpotsChipLabel } from './resolveActivityMapPeekChipLabels';
 
 /** Spots remaining — plain line under policies, not mixed with rules chips. */
 export const resolveActivityMapPeekCapacityLine = (card: DiscoveryCardModel): string | null => {
   if (card.source !== 'activity') return null;
-  if (discoveryCardIsSeeking(card)) return null;
+  if (discoveryCardIsAvailabilityPin(card)) return null;
   if (!discoveryCardActivityShowsPeekSpots(card)) return null;
 
   const compact = resolveActivityMapPeekSpotsChipLabel(card);

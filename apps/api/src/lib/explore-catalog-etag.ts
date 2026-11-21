@@ -2,12 +2,14 @@ import type { Request, Response } from 'express';
 import { getRedisClient } from './redis.js';
 import { sendNotModifiedIfMatch, weakEtagFromJson } from './http-etag.js';
 
-export type CatalogEtagSlot = 'map' | 'seeking';
+/** Map catalog only — legacy `seeking` etag slot retired (MIG-DISCO-REG). */
+export type CatalogEtagSlot = 'map';
 
 const REDIS_KEY: Record<CatalogEtagSlot, string> = {
   map: 'explore:catalog-etag:map',
-  seeking: 'explore:catalog-etag:seeking',
 };
+
+const RETIRED_SEEKING_ETAG_KEY = 'explore:catalog-etag:seeking';
 
 const memory = new Map<CatalogEtagSlot, string>();
 let payloadTag: string | null = null;
@@ -23,7 +25,7 @@ const deleteRedisEtags = async (): Promise<void> => {
   const redis = await getRedisClient();
   if (!redis) return;
   try {
-    await redis.del([REDIS_KEY.map, REDIS_KEY.seeking]);
+    await redis.del([REDIS_KEY.map, RETIRED_SEEKING_ETAG_KEY]);
   } catch {
     /* non-fatal */
   }

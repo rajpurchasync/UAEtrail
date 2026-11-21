@@ -1,6 +1,6 @@
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import { formatExploreEventDateLabel, formatExploreTime, isGeographyMapSource } from '@uaetrail/shared-types';
-import { buildDiscoveryListMeta, discoveryCardIsSeeking } from '../discovery/discoveryCardModel';
+import { buildDiscoveryListMeta, discoveryCardIsAvailabilityPin } from '../discovery/discoveryCardModel';
 import { ACTIVITY_TYPE_LABELS, type ActivityType } from '../config/activityTypes';
 import { resolveListFeedPosterRequirementLabels } from './listFeedPosterStandard';
 
@@ -8,7 +8,7 @@ export type BrowsePosterMetaPart = { key: string; label: string };
 
 /** Small eye row — venue / meeting place name. */
 export const resolveBrowsePosterPlaceLine = (card: DiscoveryCardModel): string | null => {
-  if (card.source === 'activity' || discoveryCardIsSeeking(card)) {
+  if (card.source === 'activity' || discoveryCardIsAvailabilityPin(card)) {
     const activity = card.activity;
     const fromActivity =
       activity?.locationName?.trim() ||
@@ -128,7 +128,7 @@ const resolveListFeedPriceLabel = (card: DiscoveryCardModel): string | null => {
 };
 
 const resolveListFeedSpotsLabel = (card: DiscoveryCardModel): string | null => {
-  if (card.source !== 'activity' && !discoveryCardIsSeeking(card)) return null;
+  if (card.source !== 'activity' && !discoveryCardIsAvailabilityPin(card)) return null;
 
   const activity = card.activity;
   if (activity && card.source === 'activity') {
@@ -173,7 +173,7 @@ export const resolveBrowsePosterScheduleGrid = (card: DiscoveryCardModel): Brows
     timeLabel = split.time ?? timeLabel;
   }
 
-  if (timeLabel && (card.source === 'activity' || discoveryCardIsSeeking(card))) {
+  if (timeLabel && (card.source === 'activity' || discoveryCardIsAvailabilityPin(card))) {
     timeLabel = withStartsTimePrefix(timeLabel);
   }
 
@@ -246,7 +246,7 @@ export const resolveBrowsePosterActivityTypeLabel = (card: DiscoveryCardModel): 
     return ACTIVITY_TYPE_LABELS[card.kind as ActivityType];
   }
   if (card.kind === 'rideshare') return 'Rideshare';
-  if (discoveryCardIsSeeking(card) && card.sections.activityHighlight?.trim()) {
+  if (discoveryCardIsAvailabilityPin(card) && card.sections.activityHighlight?.trim()) {
     const word = card.sections.activityHighlight.trim().split(/\s+/)[0];
     if (word) return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
   }
@@ -260,7 +260,7 @@ export const resolveBrowsePosterRequirementLabels = resolveListFeedPosterRequire
 export const resolveBrowsePosterLabels = (card: DiscoveryCardModel): string[] => {
   const labels: string[] = [];
   if (card.source === 'activity') labels.push('Trip');
-  if (discoveryCardIsSeeking(card)) labels.push('Looking for');
+  if (discoveryCardIsAvailabilityPin(card)) labels.push('Looking for');
   if (isGeographyMapSource(card.source)) labels.push('Spot');
   if (card.source === 'shop') labels.push('Shop');
   const typeLabel = resolveBrowsePosterActivityTypeLabel(card);

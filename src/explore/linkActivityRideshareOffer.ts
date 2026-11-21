@@ -1,9 +1,7 @@
 import {
   exploreMapItemIsAvailabilityCatalog,
-  exploreMapItemIsSeeking,
   type ActivityDTO,
   type ExploreMapItemDTO,
-  type ParticipantIntentDTO,
 } from '@uaetrail/shared-types';
 import { fetchPublicActivityDetail } from '../hooks/usePublicActivityDetail';
 import { updateActivity } from '../hooks/tenantActivityClientApi';
@@ -158,7 +156,7 @@ export const canLinkRideshareToActivity = (activity: ActivityDTO | null | undefi
 /** Availability or legacy activity peek — offer a rideshare alongside someone's plan (not rideshare pins). */
 export const canOfferRideshareForAvailabilityItem = (item: ExploreMapItemDTO | null | undefined): boolean => {
   if (!item) return false;
-  const crewPin = exploreMapItemIsAvailabilityCatalog(item) || exploreMapItemIsSeeking(item);
+  const crewPin = exploreMapItemIsAvailabilityCatalog(item);
   if (!crewPin) return false;
   if (item.convertedActivityId) return false;
   return parentMapKindMayOfferLinkedRideshare(item.kind);
@@ -169,11 +167,3 @@ export const canShowAvailabilityLinkRideshareOffer = (item: ExploreMapItemDTO | 
   canOfferRideshareForAvailabilityItem(item) &&
   Boolean(item?.viewerAccess?.entitlements?.canOfferTransport);
 
-/** Trips → My plans manage sheet — same rules as map host-manage peek. */
-export const canOfferRideshareForParticipantIntent = (
-  intent: ParticipantIntentDTO | null | undefined
-): boolean => {
-  if (!intent || intent.status !== 'active') return false;
-  if (intent.convertedActivityId) return false;
-  return parentMapKindMayOfferLinkedRideshare(intent.kind);
-};

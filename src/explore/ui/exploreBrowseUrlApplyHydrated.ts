@@ -14,7 +14,7 @@ import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
 import type { ExplorePinKindFilter } from '../explorePinKindFilter';
 import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
-import type { BuddiesDiscoverySegment } from '../../list/buddiesDiscoverySegment';
+import type { PeopleBrowseTab } from '../../list/peopleListBrowseUrl';
 import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
 import type { ExplorePriceFilter } from '../exploreOptionalFilters';
 import type { DesktopBrowseTab } from './exploreBrowsePanelCopy';
@@ -39,7 +39,6 @@ export type ExploreBrowseUrlSetterBundle = {
   setPeopleBrowseOpen: (v: boolean) => void;
   setSearchScope: (v: ExploreSearchScopeKey | null) => void;
   setPeopleBrowseTab: (v: PeopleBrowseTab) => void;
-  setBuddiesDiscoverSegment: (v: BuddiesDiscoverySegment) => void;
   setTripMapTopics: (v: TripMapTopicKey[]) => void;
   setPlaceMapTopics: (v: PlaceMapTopicKey[]) => void;
   setPriceFilter: (v: ExplorePriceFilter) => void;
@@ -73,7 +72,6 @@ export const applyExploreBrowseHydratedState = (
   setters.setPeopleBrowseOpen(state.peopleBrowseOpen);
   setters.setSearchScope(state.searchScope);
   setters.setPeopleBrowseTab(state.peopleBrowseTab);
-  setters.setBuddiesDiscoverSegment(state.buddiesDiscoverSegment);
   setters.setTripMapTopics(state.tripMapTopics);
   setters.setPlaceMapTopics(state.placeMapTopics);
   setters.setPriceFilter(state.priceFilter);

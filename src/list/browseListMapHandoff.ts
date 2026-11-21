@@ -3,7 +3,10 @@ import { parseExplorePanel } from '../explore/routing';
 import type { ExplorePinKindFilter } from '../explore/explorePinKindFilter';
 import type { BrowseListFilterState } from './browseListFilters';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
-import { BUDDIES_SEGMENT_URL_PARAM, serializeBuddiesDiscoverySegment } from './buddiesDiscoverySegment';
+import {
+  PEOPLE_LIST_TAB_URL_PARAM,
+  serializePeopleListBrowseTab,
+} from './peopleListBrowseUrl';
 import {
   LIST_CAT_PARAM,
   serializeBrowseListSearchParams,
@@ -19,9 +22,9 @@ export const resolveListBrowseExplorePinKind = (
     if (state.placeTopics.length === 1 && state.placeTopics[0] === 'shop') return 'shops';
     return 'places';
   }
-  if (listCat === 'activities') return state.tripLookingOnly ? 'looking' : 'activities';
+  if (listCat === 'activities') return 'activities';
 
-  if (state.tripLookingOnly) return 'looking';
+  if (state.tripAvailabilityOnly) return 'activities';
 
   const cats = new Set(state.categories);
   const hasTrips = cats.has('activities');
@@ -48,7 +51,7 @@ export const inferListCatFromExploreHandoff = (
   const pinKind = parseExplorePinKindFilter(searchParams.get('pinKind'));
   if (pinKind === 'places') return 'venues';
   if (pinKind === 'shops') return 'venues';
-  if (pinKind === 'activities' || pinKind === 'looking') return 'activities';
+  if (pinKind === 'activities') return 'activities';
 
   const panel = parseExplorePanel(searchParams.get('panel'));
   if (panel === 'venues' || panel === 'shops') return 'venues';
@@ -69,7 +72,7 @@ export const scopeBrowseListStateForListCat = (
       ...state,
       categories: ['activities'],
       placeTopics: [],
-      tripLookingOnly: state.tripLookingOnly,
+      tripAvailabilityOnly: state.tripAvailabilityOnly,
     };
   }
   if (listCat === 'venues') {
@@ -77,7 +80,7 @@ export const scopeBrowseListStateForListCat = (
       ...state,
       categories: ['venues'],
       tripTopics: [],
-      tripLookingOnly: false,
+      tripAvailabilityOnly: false,
       activityDatePreset: 'anyday',
       when: 'any',
       price: 'all',
@@ -112,9 +115,9 @@ export const serializeBrowseListToExploreSearchParams = (
 
   if (listCat === 'people') {
     params.delete(LIST_CAT_PARAM);
-    const serializedBuddies = serializeBuddiesDiscoverySegment(state.buddiesSegment);
-    if (serializedBuddies) params.set(BUDDIES_SEGMENT_URL_PARAM, serializedBuddies);
-    else params.delete(BUDDIES_SEGMENT_URL_PARAM);
+    const serializedPeopleTab = serializePeopleListBrowseTab(state.peopleBrowseTab);
+    if (serializedPeopleTab) params.set(PEOPLE_LIST_TAB_URL_PARAM, serializedPeopleTab);
+    else params.delete(PEOPLE_LIST_TAB_URL_PARAM);
     params.set('view', 'people');
     params.set('list', '1');
     params.delete('date');

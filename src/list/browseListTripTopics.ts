@@ -14,38 +14,6 @@ export type BrowseTripTopicKey = (typeof BROWSE_TRIP_TOPIC_FILTERS)[number]['key
 export const isBrowseTripTopicKey = (key: string): key is BrowseTripTopicKey =>
   BROWSE_TRIP_TOPIC_FILTERS.some((t) => t.key === key);
 
-/** Trips category type dropdown — topics plus demand-only “looking for”. */
-export type BrowseTripPlanTypeKey = 'all' | BrowseTripTopicKey | 'looking';
-
-export const BROWSE_TRIP_PLAN_TYPE_OPTIONS: ReadonlyArray<{
-  key: BrowseTripPlanTypeKey;
-  label: string;
-  filterKey?: MapFilterKey | 'looking';
-}> = [
-  { key: 'all', label: 'All types' },
-  { key: 'hiking', label: 'Hiking', filterKey: 'hiking' },
-  { key: 'camping', label: 'Camping', filterKey: 'camping' },
-  { key: 'rideshare', label: 'Rideshare', filterKey: 'rideshare' },
-  { key: 'looking', label: 'Looking for', filterKey: 'looking' },
-];
-
-export const resolveBrowseTripPlanType = (
-  tripTopics: readonly BrowseTripTopicKey[],
-  tripLookingOnly: boolean
-): BrowseTripPlanTypeKey => {
-  if (tripLookingOnly) return 'looking';
-  if (tripTopics.length === 1) return tripTopics[0];
-  return 'all';
-};
-
-export const browseTripPlanTypeToState = (
-  key: BrowseTripPlanTypeKey
-): { tripTopics: BrowseTripTopicKey[]; tripLookingOnly: boolean } => {
-  if (key === 'looking') return { tripTopics: [], tripLookingOnly: true };
-  if (key === 'all') return { tripTopics: [], tripLookingOnly: false };
-  return { tripTopics: [key], tripLookingOnly: false };
-};
-
 export const browseTripTopicIsActive = (
   tripTopics: readonly BrowseTripTopicKey[],
   key: BrowseTripTopicKey

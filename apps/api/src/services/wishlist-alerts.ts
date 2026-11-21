@@ -1,4 +1,10 @@
-import { activityTypeToOutingCategory, type OutingCategory } from '@uaetrail/shared-types';
+import {
+  activityTypeToOutingCategory,
+  type AvailabilityKind,
+  type MemberAvailabilityDTO,
+  type MemberAvailabilitySlotDTO,
+  type OutingCategory,
+} from '@uaetrail/shared-types';
 import { NotificationType } from '../domain/enums.js';
 import { findActivityDocInMongo, findLocationInMongo } from '../lib/entity-sync.js';
 import { findActivityPrivateById } from '../lib/activity-private-store.js';
@@ -10,7 +16,11 @@ import {
   listWishlistWatchCandidates,
 } from '../lib/wishlist-store.js';
 import { wishlistWatchMatchesPin, type WishlistPinEvent } from '../lib/wishlist-match.js';
-import { activityDetailPath, explorePublishedActivityPinPath } from '../lib/member-routes.js';
+import {
+  activityDetailPath,
+  exploreAvailabilityPinNotificationPath,
+  explorePublishedActivityPinPath,
+} from '../lib/member-routes.js';
 import { findSeekingActivityByParticipantIntentId } from './participant-intent-activity-readthrough.js';
 import { resolveNotificationActorDisplayNamesForRecipients } from './notification-actor-label.js';
 import { logger } from '../lib/logger.js';
@@ -34,6 +44,14 @@ const resolveActivityPinCoords = (
     return { latitude: doc.startLat, longitude: doc.startLng };
   }
   return { latitude: null, longitude: null };
+};
+
+const availabilityKindsToOutingCategory = (kinds: AvailabilityKind[]): OutingCategory | null => {
+  const raw = kinds[0]?.toLowerCase();
+  if (raw === 'hiking' || raw === 'camping' || raw === 'event' || raw === 'rideshare') {
+    return activityTypeToOutingCategory(raw);
+  }
+  return null;
 };
 
 const resolveActivityOutingCategory = (doc: {
@@ -263,7 +281,57 @@ export const notifyWishlistForPublishedActivity = async (activityId: string): Pr
   }
 };
 
-/** Notify wishlist watchers when a new public seeking pin matches their saved intent. */
+/** Wishlist match when a member publishes a fixed map availability pin. */
+export const notifyWishlistForMemberAvailability = async (input: {
+  userId: string;
+  availability: MemberAvailabilityDTO;
+  fixedSlot: MemberAvailabilitySlotDTO;
+  availabilityMapItemId: string;
+}): Promise<void> => {
+  try {
+    if (input.availability.visibility !== 'public') return;
+    const { latitude, longitude } = input.fixedSlot;
+    if (latitude == null || longitude == null) return;
+
+    const path = exploreAvailabilityPinNotificationPath(input.availabilityMapItemId);
+    const title = input.fixedSlot.title?.trim() || 'On the map';
+    const notified = new Set<string>();
+    const areaId = input.availability.areaId?.trim() || null;
+    if (areaId) {
+      await fanOutSavedAreaWishlistNotifications(
+        {
+          activityId: input.availabilityMapItemId,
+          title,
+          hostUserId: input.userId,
+          areaId,
+          path,
+        },
+        notified
+      );
+    }
+
+    const event: WishlistPinEvent = {
+      composeIntent: 'seek',
+      outingCategory: availabilityKindsToOutingCategory(input.availability.kinds),
+      latitude,
+      longitude,
+      actorUserId: input.userId,
+    };
+
+    await fanOutWishlistNotifications(
+      event,
+      'Someone shared availability near your saved map',
+      title,
+      path,
+      { intentId: input.availabilityMapItemId },
+      notified
+    );
+  } catch (error) {
+    logger.warn({ err: error, userId: input.userId }, 'wishlist notify for availability failed');
+  }
+};
+
+/** Ops/tests — legacy `activityMode: seeking` row (not product map). */
 export const notifyWishlistForNewSeeking = async (intentId: string, requesterUserId: string): Promise<void> => {
   try {
     const activity = await findSeekingActivityByParticipantIntentId(intentId);

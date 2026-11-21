@@ -27,11 +27,6 @@ import { applyProductSearchMutation } from '../routing/productSearchMutation';
 import type { BrowseMainCategoryKey } from '../list/browseListTaxonomy';
 import { BROWSE_DISCOVER_PARAM, LIST_CAT_PARAM } from '../list/browseListUrlState';
 import {
-  BUDDIES_SEGMENT_URL_PARAM,
-  serializeBuddiesDiscoverySegment,
-  type BuddiesDiscoverySegment,
-} from '../list/buddiesDiscoverySegment';
-import {
   serializeExplorePinKindFilter,
   type ExplorePinKindFilter,
 } from './explorePinKindFilter';
@@ -63,6 +58,14 @@ import {
 } from './exploreOptionalFilters';
 import type { PlaceKind } from '@uaetrail/shared-types';
 import { BROWSE_GEO_PARAM, serializeBrowseGeoPath } from '../list/browseGeoPath';
+import {
+  INBOUND_BUDDIES_LIST_TAB_PARAM,
+  INBOUND_GOING_TAB_PARAM,
+  INBOUND_SEARCH_SCOPE_FOCUS_PARAM,
+  INBOUND_SOCIAL_TAB_PARAM,
+  PEOPLE_LIST_TAB_URL_PARAM,
+  stripRetiredExploreOverlayParams,
+} from '../routing/productUrlInbound';
 export type ExploreBrowseListMode = 'default' | 'people';
 
 export type ExploreBrowseUrlSyncPatch = {
@@ -85,7 +88,6 @@ export type ExploreBrowseUrlSyncPatch = {
   peopleBrowseOpen?: boolean;
   searchScope?: ExploreSearchScopeKey | null;
   peopleBrowseTab?: PeopleBrowseTab;
-  buddiesDiscoverSegment?: BuddiesDiscoverySegment;
   listCat?: BrowseMainCategoryKey | null;
   tripMapTopics?: TripMapTopicKey[];
   placeMapTopics?: PlaceMapTopicKey[];
@@ -233,19 +235,18 @@ export const buildExploreBrowseSearchParams = (input: {
   const peopleBrowseTabValue = patch.peopleBrowseTab ?? state.peopleBrowseTab;
   if (peoplePanelActive) {
     params.set('view', 'people');
-    params.delete('goingTab');
-    params.delete('socialTab');
+    params.delete(INBOUND_GOING_TAB_PARAM);
+    params.delete(INBOUND_SOCIAL_TAB_PARAM);
     const serializedPeopleTab = serializePeopleBrowseTab(peopleBrowseTabValue);
-    if (serializedPeopleTab) params.set('peopleTab', serializedPeopleTab);
-    else params.delete('peopleTab');
-    const serializedBuddies = serializeBuddiesDiscoverySegment(peopleBrowseTabValue);
-    if (serializedBuddies) params.set(BUDDIES_SEGMENT_URL_PARAM, serializedBuddies);
-    else params.delete(BUDDIES_SEGMENT_URL_PARAM);
+    if (serializedPeopleTab) params.set(PEOPLE_LIST_TAB_URL_PARAM, serializedPeopleTab);
+    else params.delete(PEOPLE_LIST_TAB_URL_PARAM);
+    params.delete(INBOUND_BUDDIES_LIST_TAB_PARAM);
   } else {
+    params.delete(INBOUND_BUDDIES_LIST_TAB_PARAM);
     params.delete('view');
-    params.delete('peopleTab');
-    params.delete('socialTab');
-    params.delete('goingTab');
+    params.delete(PEOPLE_LIST_TAB_URL_PARAM);
+    params.delete(INBOUND_SOCIAL_TAB_PARAM);
+    params.delete(INBOUND_GOING_TAB_PARAM);
   }
 
   params.delete('followedKind');
@@ -253,7 +254,7 @@ export const buildExploreBrowseSearchParams = (input: {
   const serializedSearchScope = serializeExploreSearchScope(searchScopeValue);
   if (serializedSearchScope) params.set('searchScope', serializedSearchScope);
   else params.delete('searchScope');
-  params.delete('searchFocus');
+  params.delete(INBOUND_SEARCH_SCOPE_FOCUS_PARAM);
 
   if (regionValue.length > 0) {
     params.set('regions', regionValue.join(','));
@@ -271,8 +272,7 @@ export const buildExploreBrowseSearchParams = (input: {
   /* Keep create/join overlays (`compose`, etc.) — browse sync must not dismiss FAB sessions. */
   params.delete('contribute');
   params.delete('request');
-  params.delete('fulfillIntent');
-  params.delete('hostDemand');
+  stripRetiredExploreOverlayParams(params);
 
   if (patch.listCat === null) params.delete(LIST_CAT_PARAM);
   else if (patch.listCat) params.set(LIST_CAT_PARAM, patch.listCat);

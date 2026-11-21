@@ -11,10 +11,10 @@ import {
   parseExploreMapFilterPillsParam,
   serializeExploreMapFilterPillsParam,
 } from '../explore/exploreBrowseTaxonomy';
+import { PRODUCT_CREWS_TAB_LABEL } from '../content/productNorthStar';
 
 /**
- * List main categories — **activities** (hosted + seeking), places, people, brands.
- * Map `topics` still uses explore wire `trips,looking` when activities category is selected.
+ * List main categories — activities, places, crews (people), agencies.
  */
 export type BrowseMainCategoryKey = 'activities' | 'venues' | 'people' | 'agencies';
 
@@ -31,7 +31,7 @@ const isAgencyBrandItem = (item: ExploreMapItemDTO): boolean =>
   item.source === 'agency' &&
   (item.path.includes('/agency/') || item.path.includes('/partner/'));
 
-/** Time-bound map rows — hosted + seeking activities. */
+/** Time-bound map rows — hosted activities + availability pins. */
 export const mapItemMatchesBrowseActivitiesCategory = (item: ExploreMapItemDTO): boolean =>
   isTimeBoundExploreMapItem(item);
 
@@ -70,7 +70,7 @@ export const parseBrowseMainCategoriesFromTopics = (
   const pills = parseExploreMapFilterPillsParam(topicsParam);
   const keys = new Set<BrowseMainCategoryKey>();
   for (const pill of pills) {
-    if (pill === 'trips' || pill === 'looking') keys.add('activities');
+    if (pill === 'trips') keys.add('activities');
     if (pill === 'spots' || pill === 'shops') keys.add(BROWSE_LIST_CATEGORY_PLACES);
   }
   return [...keys];
@@ -81,7 +81,7 @@ export const serializeBrowseMainCategoriesToTopics = (
 ): string | null => {
   const pills: ExploreMapFilterPillKey[] = [];
   if (categories.includes('activities')) {
-    pills.push('trips', 'looking');
+    pills.push('trips');
   }
   if (categories.includes(BROWSE_LIST_CATEGORY_PLACES)) {
     pills.push('spots', 'shops');
@@ -94,7 +94,7 @@ export const browseMainCategoriesToTopicPills = (
   categories: readonly BrowseMainCategoryKey[]
 ): ExploreMapFilterPillKey[] => {
   const pills: ExploreMapFilterPillKey[] = [];
-  if (categories.includes('activities')) pills.push('trips', 'looking');
+  if (categories.includes('activities')) pills.push('trips');
   if (categories.includes(BROWSE_LIST_CATEGORY_PLACES)) {
     pills.push('spots', 'shops');
   }
@@ -104,6 +104,6 @@ export const browseMainCategoriesToTopicPills = (
 export const BROWSE_MAIN_CATEGORY_LABELS: ReadonlyArray<{ key: BrowseMainCategoryKey; label: string }> = [
   { key: 'activities', label: 'Activities' },
   { key: BROWSE_LIST_CATEGORY_PLACES, label: 'Places' },
-  { key: 'people', label: 'Buddies' },
+  { key: 'people', label: PRODUCT_CREWS_TAB_LABEL },
   { key: 'agencies', label: 'Agencies' },
 ];

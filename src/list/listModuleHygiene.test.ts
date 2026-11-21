@@ -197,7 +197,7 @@ describe('list module hygiene', () => {
   it('people search scope opens member discovery list category', () => {
     expect(browseListFilterPatchForSearchScope('people')).toEqual({
       categories: ['people'],
-      tripLookingOnly: false,
+      tripAvailabilityOnly: false,
       tripTopics: [],
       placeTopics: [],
     });
@@ -259,7 +259,7 @@ describe('list module hygiene', () => {
 
   it('list map feed filters delegate seeking and place merge to discovery modules', () => {
     const filters = readFileSync(join(process.cwd(), 'src/list/browseListFilters.ts'), 'utf8');
-    expect(filters).toMatch(/activity-discovery\/catalog\/listDemandCatalog/);
+    expect(filters).toMatch(/activity-discovery\/catalog\/listAvailabilityCatalog/);
     expect(filters).toMatch(/places-discovery\/catalog\/listCatalog/);
     expect(filters).not.toMatch(/exploreMapItemIsSeeking/);
   });

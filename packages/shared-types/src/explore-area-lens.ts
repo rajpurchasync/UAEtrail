@@ -2,7 +2,8 @@
 
 export interface ExploreAreaLensStatsDTO {
   hostedActivities: number;
-  seekingPosts: number;
+  /** Fixed `member_availability` pins in this hub (not legacy seeking activities). */
+  availabilityPins: number;
   trailSpots: number;
   campSpots: number;
   /** Amenities (toilet, parking, …) — counted from catalog rows, not Spots lens pins yet. */
@@ -15,8 +16,8 @@ export const exploreAreaLensStatsSummary = (stats: ExploreAreaLensStatsDTO): str
   if (stats.hostedActivities > 0) {
     parts.push(`${stats.hostedActivities} outing${stats.hostedActivities === 1 ? '' : 's'}`);
   }
-  if (stats.seekingPosts > 0) {
-    parts.push(`${stats.seekingPosts} looking`);
+  if (stats.availabilityPins > 0) {
+    parts.push(`${stats.availabilityPins} available`);
   }
   const spots = stats.trailSpots + stats.campSpots;
   if (spots > 0) {

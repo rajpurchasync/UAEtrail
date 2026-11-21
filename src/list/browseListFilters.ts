@@ -1,6 +1,6 @@
 import type { AreaPublicDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { isGeographyMapSource } from '@uaetrail/shared-types';
-import { filterListCatalogDemandItems } from '@/activity-discovery/catalog/listDemandCatalog';
+import { filterListAvailabilityCatalogItems } from '@/activity-discovery/catalog/listAvailabilityCatalog';
 import {
   filterListCatalogByVenueRegions,
   mergeListCatalogPlansAndPlaces,
@@ -31,7 +31,7 @@ import {
   exploreItemMatchesBrowseAudienceFilter,
   type BrowseAudienceFilter,
 } from './browseAudienceFilter';
-import type { BuddiesDiscoverySegment } from './buddiesDiscoverySegment';
+import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
 import { isPlacesMapItem, isShopListItem } from '../explore/ui/exploreMapPinModel';
 import { exploreItemMatchesBrowseGeoPath } from './browseGeoPath';
 import { deriveVenueRegionSortOrder } from '../explore/exploreListSort';
@@ -48,16 +48,16 @@ export type BrowseListFilterState = {
   categories: BrowseMainCategoryKey[];
   /** Hosted trip topics — empty = all; OR match when multiple selected. */
   tripTopics: BrowseTripTopicKey[];
-  /** Demand-only — explore pin kind `looking` (`filter=looking`). */
-  tripLookingOnly: boolean;
+  /** Availability-only browse — `filter=availability` on `/list` (inbound `filter=looking` still parses). */
+  tripAvailabilityOnly: boolean;
   /** Places category — hiking · camping · hubs, plus facilities/shop URL keys. */
   placeTopics: ListVenuePlaceTopicKey[];
   price: BrowsePriceFilter;
   when: BrowseWhenFilter;
   /** Aligns with explore map `?date=` (today · tomorrow · week · month). */
   activityDatePreset: ExploreActivityDatePreset;
-  /** Buddies list category — who's going · looking for · followed. */
-  buddiesSegment: BuddiesDiscoverySegment;
+  /** Crews list tab — mirrors explore `peopleTab` (Overview = hub). */
+  peopleBrowseTab: PeopleBrowseTab;
   /** Venues with an upcoming hosted outing. Default off = all kinds. */
   hasTrip: boolean;
   /** Amenity subtypes — empty = all facilities when Facilities is selected. */
@@ -113,8 +113,8 @@ export const filterExploreMapItemsForList = (
   const placesCategoryInScope =
     state.categories.length === 0 || state.categories.includes('venues');
 
-  if (tripsCategoryInScope && state.tripLookingOnly) {
-    pool = filterListCatalogDemandItems(pool);
+  if (tripsCategoryInScope && state.tripAvailabilityOnly) {
+    pool = filterListAvailabilityCatalogItems(pool);
   } else if (tripsCategoryInScope && state.tripTopics.length > 0) {
     pool = pool.filter((item) =>
       state.tripTopics.some((topic) => matchesUnifiedTopicFilter(item, topic, 'all', 'all'))

@@ -25,7 +25,7 @@ const legendForFilter = (filter: PlanCommitmentFilter) => {
     return [
       { className: 'bg-emerald-500', label: 'You’re available' },
       { className: 'bg-amber-500', label: 'Hosting' },
-      { className: 'bg-violet-500', label: 'Looking for company' },
+      { className: 'bg-violet-500', label: 'On the map' },
     ];
   }
   return [
@@ -40,8 +40,8 @@ const detailLabel = (row: PlanCalendarDayDetail): string => {
       return 'Available';
     case 'hosting':
       return `Hosting · ${row.title}`;
-    case 'seeking':
-      return `Looking for company · ${row.title}`;
+    case 'mapSlot':
+      return `On the map · ${row.title}`;
     case 'joined':
       return `Joined · ${row.title}`;
     case 'requested':
@@ -202,7 +202,7 @@ export const PlanCalendarSection = ({
                     ? `${row.kind}-${row.activityId}`
                     : row.kind === 'hosting'
                       ? `hosting-${row.activityId}`
-                      : row.kind === 'seeking'
+                      : row.kind === 'mapSlot'
                         ? `crew-${row.slotId ?? index}`
                         : `available-${index}`;
 

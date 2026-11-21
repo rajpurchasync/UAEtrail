@@ -69,6 +69,12 @@ import {
   activityDetailJoinWelcomeShouldOpen,
   type ActivityDetailJoinWelcomeUi,
 } from './activityDetailJoinWelcome';
+import {
+  activityDetailIsRetiredSeekingPost,
+  RETIRED_SEEKING_ACTIVITY_DETAIL_NOTICE,
+} from '../activity/retiredSeekingActivityDetail';
+import { availabilityFixedCompose } from '../explore/compose';
+import { explorePath } from '../explore/routing';
 
 /**
  * Activity detail **route loader** (`/activity/:id`): fetch, join modals, SEO, host sheets.
@@ -437,6 +443,7 @@ export const ActivityDetail = () => {
   }
 
   const isRedactedPreview = detailExposure === 'redacted';
+  const isRetiredSeekingPost = activity ? activityDetailIsRetiredSeekingPost(activity) : false;
 
   const heroImage = resolveActivityHeroImage({
     id: activity.id,
@@ -470,6 +477,20 @@ export const ActivityDetail = () => {
       />
       <JsonLd data={activityEventSchema(activity)} id={`activity-${activity.id}`} />
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      {isRetiredSeekingPost ? (
+        <p
+          className="mx-auto max-w-3xl shrink-0 px-4 pt-4 text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl py-3"
+          role="status"
+        >
+          {RETIRED_SEEKING_ACTIVITY_DETAIL_NOTICE}{' '}
+          <Link
+            to={explorePath({ compose: availabilityFixedCompose('hiking') })}
+            className="font-semibold text-emerald-800 underline"
+          >
+            Share availability
+          </Link>
+        </p>
+      ) : null}
       {(fromJoinInvite || activity.myJoinInvite) && !isConfirmedParticipant ? (
         <p
           className="mx-auto max-w-3xl shrink-0 px-4 pt-4 text-sm font-medium text-emerald-900 bg-emerald-50 border border-emerald-100 rounded-xl py-3"
@@ -481,6 +502,7 @@ export const ActivityDetail = () => {
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <ActivityDetailByKind
         activity={activity}
+        joinDisabled={isRetiredSeekingPost}
         backTo={detailBackTo ?? detailBackPath('activity')}
         requiresSignIn={requiresSignIn}
         showJoinRequiredHint={showJoinRequiredHint}

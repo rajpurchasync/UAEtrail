@@ -67,7 +67,26 @@ describe('notifyMemberPublishSubscribers', () => {
     expect(row.meta.path).toBe('/activity/act-1');
   });
 
-  it('notifies buddies only for seeking posts (followers excluded)', async () => {
+  it('notifies buddies for availability map pins with availability explore path', async () => {
+    mocks.listBuddiesForUser.mockResolvedValue([{ userId: 'buddy-1' }]);
+
+    await notifyMemberPublishSubscribers('publisher', {
+      publishType: 'availability',
+      availabilityMapItemId: 'availability:pub-1:slot-9',
+      title: 'Hatta Sunday',
+    });
+
+    expect(mocks.listFollowerIdsForUser).not.toHaveBeenCalled();
+    const row = mocks.createNotificationsMany.mock.calls[0]![0]![0] as {
+      meta: Record<string, string>;
+    };
+    expect(row.meta.kind).toBe('friend_published');
+    expect(row.meta.availabilityMapItemId).toBe('availability:pub-1:slot-9');
+    expect(row.meta.path).toContain('panel=people');
+    expect(row.meta.path).toContain('availability%3Apub-1%3Aslot-9');
+  });
+
+  it('notifies buddies only for legacy seeking posts (followers excluded)', async () => {
     mocks.listBuddiesForUser.mockResolvedValue([{ userId: 'buddy-1' }]);
     mocks.listFollowerIdsForUser.mockResolvedValue(['follower-1']);
 

@@ -31,10 +31,10 @@ export const exploreMapCatalogQuery = (input: {
   );
   const pin = input.pinKind;
   const onlyFacilities =
-    places.length === 1 && places[0] === 'facilities' && trips.length === 0 && pin !== 'activities' && pin !== 'looking';
+    places.length === 1 && places[0] === 'facilities' && trips.length === 0 && pin !== 'activities';
   const onlyShops =
     pin === 'shops' ||
-    (places.length === 1 && places[0] === 'shops' && trips.length === 0 && pin !== 'activities' && pin !== 'looking');
+    (places.length === 1 && places[0] === 'shops' && trips.length === 0 && pin !== 'activities');
   const onlyRides =
     trips.length === 1 && trips[0] === 'rideshare' && places.length === 0 && pin !== 'places' && pin !== 'locations';
 
@@ -43,7 +43,7 @@ export const exploreMapCatalogQuery = (input: {
   if (onlyRides) return { sources: 'activity', includeRideshare: true };
 
   const sources = new Set<string>();
-  if (pin === 'activities' || pin === 'looking') sources.add('activity');
+  if (pin === 'activities') sources.add('activity');
   else if (pin === 'places' || pin === 'locations') sources.add('place');
   else {
     sources.add('place');
@@ -58,7 +58,6 @@ export const exploreMapCatalogQuery = (input: {
 
   const mapShowsActivities =
     pin === 'activities' ||
-    pin === 'looking' ||
     pin === 'all' ||
     trips.length > 0 ||
     input.mapFilter === 'rideshare' ||

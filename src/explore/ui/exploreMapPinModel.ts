@@ -122,7 +122,6 @@ export const isAreaLensMapItem = (item: ExploreMapItemDTO): boolean => item.sour
 export const matchesExplorePinKindFilter = (item: ExploreMapItemDTO, pinKind: ExplorePinKindFilter): boolean => {
   if (pinKind === 'all') return true;
   if (pinKind === 'activities') return isTimeBoundExploreMapItem(item);
-  if (pinKind === 'looking') return exploreMapItemIsAvailabilityCatalog(item);
   if (pinKind === 'locations') return isPlacesMapItem(item) && !isShopListItem(item);
   if (pinKind === 'places') return isPlacesMapItem(item) && !isShopListItem(item);
   if (pinKind === 'shops') return isShopListItem(item);

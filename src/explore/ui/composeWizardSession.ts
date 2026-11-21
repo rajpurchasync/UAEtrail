@@ -34,12 +34,10 @@ const sessionKey = (flowId: ComposeFlowId, scope?: string) =>
   `${STORAGE_PREFIX}:${flowId}${scope ? `:${scope}` : ''}`;
 
 export const hostingWizardSessionScope = (prefill?: {
-  participantIntentId?: string;
   sourceActivityId?: string;
   linkToParentActivityId?: string;
 } | null): string | undefined => {
   if (!prefill) return undefined;
-  if (prefill.participantIntentId) return `intent:${prefill.participantIntentId}`;
   if (prefill.linkToParentActivityId) return `link:${prefill.linkToParentActivityId}`;
   if (prefill.sourceActivityId) return `from:${prefill.sourceActivityId}`;
   return undefined;

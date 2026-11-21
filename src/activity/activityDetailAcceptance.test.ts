@@ -258,19 +258,20 @@ describe('activity detail program — wiring', () => {
     );
   });
 
-  it('AD-SEEK-01: seeking outings use the same L3 shell (no demand detail hop)', () => {
+  it('AD-SEEK-01: legacy seeking outings stay on activity route but join is disabled', () => {
     const page = read('src/pages/ActivityDetail.tsx');
     expect(page).toMatch(/ActivityDetailByKind/);
     expect(page).not.toMatch(/demand:/);
     expect(page).not.toMatch(/ParticipantIntentManageSheet/);
+    expect(page).toMatch(/activityDetailIsRetiredSeekingPost/);
+    expect(page).toMatch(/joinDisabled=\{isRetiredSeekingPost\}/);
+    expect(page).toMatch(/RETIRED_SEEKING_ACTIVITY_DETAIL_NOTICE/);
     const header = read('src/activity/activityDetailHeaderChrome.ts');
-    expect(header).toMatch(/activityMode === 'seeking'/);
-    expect(header).toMatch(/Looking for company/);
+    expect(header).toMatch(/activityDetailIsRetiredSeekingPost/);
+    expect(header).toMatch(/RETIRED_SEEKING_ACTIVITY_DETAIL_HEADER/);
     const app = readAppRouteRegistry();
     expect(app).toMatch(/path="\/activity\/:id"/);
     expect(app).not.toMatch(/path="\/demand/);
-    const qaRoutes = read('scripts/consumer-detail-manual-qa-routes.mjs');
-    expect(qaRoutes).toMatch(/Activity \(seeking\)/);
   });
 
   it('AD-TEMPLATE-01: `/activity/:id` routes through per-kind consumer page templates', () => {

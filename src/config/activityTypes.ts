@@ -118,13 +118,13 @@ export const activityFormTitle = (type: ScheduledActivityType, mode: 'create' | 
 export const activityDetailEyebrow = (type: ScheduledActivityType): string =>
   ACTIVITY_TYPE_LABELS[type] ?? 'Activity';
 
-/** Banner eyebrow when `activityMode` is on the wire (seeking Find posts). */
+/** Banner eyebrow when `activityMode` is on the wire (retired seeking posts use archive label). */
 export const activityDetailEyebrowForActivity = (
   type: ScheduledActivityType,
   activityMode?: 'hosted' | 'seeking' | null
 ): string => {
-  const kind = activityDetailEyebrow(type);
-  return activityMode === 'seeking' ? `Seeking · ${kind}` : kind;
+  if (activityMode === 'seeking') return 'Archived find post';
+  return activityDetailEyebrow(type);
 };
 
 /** Empty-state copy when filtering Activities by kind. */

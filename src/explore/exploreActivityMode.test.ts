@@ -1,27 +1,37 @@
 import { describe, expect, it } from 'vitest';
-import { exploreMapItemIsSeeking, resolveExploreMapActivityMode } from '@uaetrail/shared-types';
+import {
+  exploreMapItemIsLegacySeekingActivity,
+  resolveExploreMapActivityMode,
+} from '@uaetrail/shared-types';
 import { buildDiscoveryCardViewModelCard } from '../discovery';
-import { hostedExploreMapItem, seekingExploreMapItem } from './exploreMapItemFixtures';
+import {
+  availabilityExploreMapItem,
+  hostedExploreMapItem,
+  seekingExploreMapItem,
+} from './exploreMapItemFixtures';
 
-describe('exploreActivityMode (M0)', () => {
-  it('resolveExploreMapActivityMode uses activityMode and hosted activity source', () => {
+describe('exploreActivityMode (availability catalog)', () => {
+  it('resolveExploreMapActivityMode uses explicit activityMode only', () => {
     expect(resolveExploreMapActivityMode(seekingExploreMapItem())).toBe('seeking');
     expect(resolveExploreMapActivityMode(hostedExploreMapItem())).toBe('hosted');
     expect(
       resolveExploreMapActivityMode({
-        id: 'demand:int-1',
-        source: 'demand' as never,
+        id: 'activity:x',
+        source: 'activity',
         participantIntentId: 'int-1',
       })
-    ).toBeNull();
+    ).toBe('hosted');
   });
 
-  it('discovery VM adds Seeking badge with activity wire source', () => {
-    const item = seekingExploreMapItem();
-    const card = buildDiscoveryCardViewModelCard(item);
-    expect(exploreMapItemIsSeeking(item)).toBe(true);
-    expect(card.source).toBe('activity');
-    expect(card.composeIntent).toBe('seek');
-    expect(card.requirementBadges).toContain('Seeking');
+  it('discovery VM badges availability pins only', () => {
+    const item = availabilityExploreMapItem({ userId: 'u1', slotId: 's1' });
+    const legacy = seekingExploreMapItem();
+    const availabilityCard = buildDiscoveryCardViewModelCard(item);
+    const legacyCard = buildDiscoveryCardViewModelCard(legacy);
+    expect(availabilityCard.source).toBe('availability');
+    expect(availabilityCard.requirementBadges).toContain('Available');
+    expect(exploreMapItemIsLegacySeekingActivity(legacy)).toBe(true);
+    expect(legacyCard.requirementBadges).not.toContain('Seeking');
+    expect(legacyCard.showJoinActions).toBe(false);
   });
 });

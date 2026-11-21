@@ -33,6 +33,14 @@ const INBOUND_DOC_PATH_ALLOWLIST = new Set(['docs/NAVIGATION.md', 'docs/DOMAIN.m
 /** Documents that intentionally list banned phrases as guidance */
 const BANNED_PHRASE_ALLOWLIST = new Set(['docs/DOCS_GOVERNANCE.md']);
 
+/** Root-level narrative retired in favor of Tier-1 — must stay a short stub */
+const DOC_ROOT_STUBS = [
+  'docs/UAE_Trail_Homepage.md',
+  'docs/design-tokens.md',
+  'docs/monitoringPlan.md',
+  'docs/detailPagesRevampPlan.md',
+];
+
 const BANNED = [
   { pattern: /\/become-host\?intent=/, label: 'Pro entry must use /profile/pro-membership, not /become-host?intent=' },
   { pattern: /profile chips route to `\/become-host/i, label: 'Update ENGINEERING-style chip routing to PRO_MEMBERSHIP_PATH' },
@@ -62,6 +70,24 @@ for (const rel of TIER1) {
       console.error(`[verify:docs] ${rel}: ${label}`);
       failed = true;
     }
+  }
+}
+
+for (const rel of DOC_ROOT_STUBS) {
+  const abs = join(root, rel);
+  if (!existsSync(abs)) {
+    console.error(`[verify:docs] missing doc stub: ${rel}`);
+    failed = true;
+    continue;
+  }
+  const text = readFileSync(abs, 'utf8');
+  if (!text.startsWith('> Superseded by')) {
+    console.error(`[verify:docs] ${rel} must start with "> Superseded by" — archive body under docs/archive/`);
+    failed = true;
+  }
+  if (text.split('\n').length > 8) {
+    console.error(`[verify:docs] ${rel}: stub must stay ≤8 lines — move narrative to docs/archive/`);
+    failed = true;
   }
 }
 

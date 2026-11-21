@@ -110,7 +110,6 @@ export const ExploreMapFilterPillIcon = ({
   pill: ExploreMapFilterPillKey;
   className?: string;
 }) => {
-  if (pill === 'looking') return <EmojiIcon emoji={SEEKING_EMOJI} className={className} />;
   if (pill === 'spots') return <LocationSpotGlyph className={className} />;
   if (pill === 'shops') return <EmojiIcon emoji={SHOP_MAP_EMOJI} className={className} />;
   return <EmojiIcon emoji={HIKING_ACTIVITY_EMOJI} className={className} />;

@@ -1,6 +1,6 @@
 import {
   exploreAreaQueryParam,
-  exploreSeekingMapItemPath,
+  exploreAvailabilityMapItemPath,
   formatExploreEventDateLabel,
   resolveSeekingExploreMapItemId,
 } from '@uaetrail/shared-types';
@@ -117,42 +117,29 @@ export const parseExplorePinMapItemId = (searchParams: Pick<URLSearchParams, 'ge
 export const exploreSavedPinPath = (mapItemId: string): string =>
   explorePath({ pin: mapItemId, panel: 'activities', list: true });
 
-/** Map item id for a seeking post — `activity:` when published. */
-export const resolveParticipantIntentMapItemId = (intent: {
-  id: string;
+/** Map `pin` id — `availability:` fixed slot preferred; else published activity when present. */
+export const resolveCrewExploreMapItemId = (input: {
+  availabilityMapItemId?: string | null;
   activityId?: string | null;
-  seekingActivityId?: string | null;
 }): string | null =>
   resolveSeekingExploreMapItemId({
-    intentId: intent.id,
-    activityId: intent.activityId ?? intent.seekingActivityId ?? null,
+    intentId: '',
+    activityId: input.activityId ?? null,
+    availabilityMapItemId: input.availabilityMapItemId ?? null,
   });
 
-export const participantIntentExplorePinPath = (
-  intent: {
-    id: string;
-    activityId?: string | null;
-    seekingActivityId?: string | null;
-  }
-): string => {
-  const pin = resolveParticipantIntentMapItemId(intent);
+export const exploreCrewMapPinPath = (input: {
+  availabilityMapItemId?: string | null;
+  activityId?: string | null;
+}): string => {
+  const pin = resolveCrewExploreMapItemId(input);
+  if (pin?.startsWith('availability:')) return exploreAvailabilityMapItemPath(pin);
   return pin ? exploreSavedPinPath(pin) : explorePath({ list: true, panel: 'activities' });
 };
 
 /** Share link for map items — opens explore peek (guests and members). */
-export const exploreMapItemSharePath = (
-  mapItemId: string,
-  options?: { activityId?: string | null; intentId?: string | null }
-): string => {
-  const id = mapItemId.trim();
-  if (options?.activityId && options.intentId) {
-    return exploreSeekingMapItemPath({
-      intentId: options.intentId,
-      activityId: options.activityId,
-    });
-  }
-  return explorePath({ pin: id });
-};
+export const exploreMapItemSharePath = (mapItemId: string): string =>
+  explorePath({ pin: mapItemId.trim() });
 
 /** Prefill the hosting wizard from a prior outing (new id on publish). */
 export const HOST_FROM_ACTIVITY_QUERY_KEY = 'hostFrom';
@@ -582,13 +569,11 @@ export const exploreHostPath = (kind?: HostComposeKind): string =>
     ? explorePath({ compose: hostCompose(kind) })
     : explorePath({ compose: { surface: 'menu', intent: 'host' } });
 
-/** Host with publish access — prefill rideshare organize from a crew availability pin. */
-export const exploreOfferRideshareForAvailabilityPath = (intent: {
-  id: string;
-  activityId?: string | null;
-  seekingActivityId?: string | null;
-}): string => {
-  const pin = resolveParticipantIntentMapItemId(intent);
+/** Host with publish access — prefill rideshare organize from a map pin (`availability:` or `activity:`). */
+export const exploreOfferRideshareForAvailabilityPath = (
+  mapItemId: string | null | undefined
+): string => {
+  const pin = mapItemId?.trim() || null;
   return explorePath({
     ...(pin ? { pin } : {}),
     compose: hostCompose('rideshare'),

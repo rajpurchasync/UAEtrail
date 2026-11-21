@@ -29,6 +29,7 @@ import { PUBLISHING_CONSOLE_PREFIX } from '../config/surfacePaths';
 import { planWishlistTabPath } from '../plan/planTab';
 import {
   NotificationDTO,
+  exploreAvailabilityMapItemPath,
   exploreSeekingMapItemPath,
   placeDetailPath,
 } from '@uaetrail/shared-types';
@@ -252,6 +253,11 @@ export const inferNotificationPath = (
   }
   if (kind === 'member_published' || kind === 'friend_published' || kind === 'friend_activity_published') {
     if (activityId) return activityDetailPath(activityId);
+    const availabilityPin =
+      toStringValue(meta?.availabilityMapItemId) ?? toStringValue(meta?.exploreItemId);
+    if (availabilityPin?.startsWith('availability:')) {
+      return exploreAvailabilityMapItemPath(availabilityPin);
+    }
     const intentId = toStringValue(meta?.intentId);
     if (intentId) {
       const publishedActivityId =

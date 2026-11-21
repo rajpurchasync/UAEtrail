@@ -21,7 +21,7 @@ import {
 import { resolveExplorePrice } from './explorePriceLabel';
 import { extractExploreRequirementBadges } from './exploreRequirementBadges';
 import { resolveExploreHostLabel, resolveExploreHostPersonName } from '../utils/userDisplay';
-import { seekingExploreMapItem } from './exploreMapItemFixtures';
+import { availabilityExploreMapItem, seekingExploreMapItem } from './exploreMapItemFixtures';
 
 describe('resolveMapPinEmoji', () => {
   it('uses activity emojis', () => {
@@ -563,37 +563,30 @@ describe('buildDiscoveryCardViewModelCard (explore list copy)', () => {
     expect(buildDiscoveryCardViewModelCard(limited).requirementBadges).toEqual(['Women only', 'No pets']);
   });
 
-  it('builds one-line demand card', () => {
-    const demand: ExploreMapItemDTO = seekingExploreMapItem({
-      intentId: '1',
+  it('builds one-line availability (fixed Find crew) card', () => {
+    const pin = availabilityExploreMapItem({
+      userId: 'user-1',
+      slotId: 'slot-1',
       kind: 'rideshare',
-      title: 'Rideshare request',
+      title: 'Rideshare window',
       subtitle: 'Dubai to Fujairah',
-      latitude: 25.3,
-      longitude: 55.3,
-      path: '/demand/1',
-      featuredPerson: {
-        userId: 'user-1',
-        displayName: 'Alex Rider',
-        role: 'requester',
-      },
       date: '2026-09-13',
       time: '14:00',
       fromLabel: 'Dubai',
       toLabel: 'Fujairah',
       requesterUserId: 'user-1',
+      featuredPerson: {
+        userId: 'user-1',
+        displayName: 'Alex Rider',
+        role: 'requester',
+      },
     });
-    const card = buildDiscoveryCardViewModelCard(demand);
+    const card = buildDiscoveryCardViewModelCard(pin);
+    expect(card.source).toBe('availability');
     expect(card.featuredPerson?.role).toBe('requester');
-    expect(card.listTitle).toBe('Rideshare · Alex Rider');
-    expect(card.headline).toBe(
-      'Alex Rider is looking for Rideshare on Sun - Dubai to Fujairah - Sun at 2:00 PM (flexible)'
-    );
-    expect(card.routeLabel).toBe('Dubai to Fujairah');
     expect(card.secondaryCta).toBe('Message');
-    expect(buildDiscoveryListMeta(card)).toContain('Dubai to Fujairah');
-    expect(card.sections.highlightName).toBe('Alex');
-    expect(card.sections.listTitle).toBe('Rideshare · Alex Rider');
-    expect(card.sections.listWhen).toContain('Sun');
+    expect(card.primaryCta).toBe('View profile');
+    expect(card.requirementBadges).toContain('Available');
+    expect(card.showJoinActions).toBe(false);
   });
 });

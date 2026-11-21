@@ -12,8 +12,8 @@ import {
   compactExploreParentFilterSearchParams,
   myActivitiesPath,
   exploreSavedPinPath,
-  participantIntentExplorePinPath,
-  resolveParticipantIntentMapItemId,
+  exploreCrewMapPinPath,
+  resolveCrewExploreMapItemId,
   exploreDiscoverBrowsePath,
   parseExplorePinMapItemId,
   exploreOfferRideshareForAvailabilityPath,
@@ -52,22 +52,29 @@ describe('exploreRouting navigation contract', () => {
     expect(explorePath({ filter: 'others', outingTopic: 'climbing' })).toBe('/explore?filter=others');
   });
 
-  it('rideshare offer deep link prefers activity pin when parent activity exists', () => {
-    const href = exploreOfferRideshareForAvailabilityPath({ id: 'int-1', activityId: 'act-1' });
-    const params = new URLSearchParams(href.split('?')[1] ?? '');
-    expect(params.get('pin')).toBe('activity:act-1');
+  it('rideshare offer deep link encodes availability or activity pin', () => {
+    expect(exploreOfferRideshareForAvailabilityPath('activity:act-1')).toContain('pin=activity%3Aact-1');
+    expect(exploreOfferRideshareForAvailabilityPath('availability:u1:slot-9')).toContain(
+      'pin=availability%3Au1%3Aslot-9'
+    );
+    const params = new URLSearchParams(
+      exploreOfferRideshareForAvailabilityPath('activity:act-1').split('?')[1] ?? ''
+    );
     expect(params.get('compose')).toBe('host:rideshare');
   });
 
-  it('resolves participant intent pins to activity when activityId is set', () => {
+  it('resolveCrewExploreMapItemId prefers availability pins', () => {
     expect(
-      resolveParticipantIntentMapItemId({ id: 'int-1', activityId: 'act-1' })
-    ).toBe('activity:act-1');
-    expect(participantIntentExplorePinPath({ id: 'int-1', activityId: 'act-1' })).toBe(
-      '/explore?list=1&pin=activity%3Aact-1'
+      resolveCrewExploreMapItemId({
+        availabilityMapItemId: 'availability:u1:slot-1',
+        activityId: 'act-1',
+      })
+    ).toBe('availability:u1:slot-1');
+    expect(resolveCrewExploreMapItemId({ activityId: 'act-1' })).toBe('activity:act-1');
+    expect(exploreCrewMapPinPath({ availabilityMapItemId: 'availability:u1:slot-1' })).toContain(
+      'panel=people'
     );
-    expect(resolveParticipantIntentMapItemId({ id: 'int-1' })).toBeNull();
-    expect(resolveParticipantIntentMapItemId({ id: 'demand:int-1' })).toBeNull();
+    expect(exploreCrewMapPinPath({ activityId: 'act-1' })).toBe('/explore?list=1&pin=activity%3Aact-1');
   });
 
   it('buildMapPeekReturnPath preserves explore filters and pin', () => {

@@ -12,7 +12,7 @@ import {
   discoveryCardActivityJoinIsFull,
   discoveryCardActivityShowsPeekSpots,
   discoveryCardCanOpenHostProfile,
-  discoveryCardIsSeeking,
+  discoveryCardIsAvailabilityPin,
   discoveryCardToneTextClass,
   resolveDiscoveryCardHostProfilePath,
 } from '../../discovery/discoveryCardModel';
@@ -502,7 +502,7 @@ export const DiscoveryCardPeopleRow = ({
     Boolean(hostName || card.hostAvatar) &&
     (card.source === 'activity' ||
       card.source === 'shop' ||
-      (discoveryCardIsSeeking(card) && participants.length === 0));
+      (discoveryCardIsAvailabilityPin(card) && participants.length === 0));
 
   if (!showHostRow && participants.length === 0) return null;
 

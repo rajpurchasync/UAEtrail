@@ -191,7 +191,6 @@ export const AreaHubPreviewSections = ({
                   <span className="font-medium leading-snug text-slate-900 [overflow-wrap:anywhere]">{activity.title}</span>
                   <span className="text-xs text-slate-500">
                     {formatActivityWhen(activity)}
-                    {activity.activityMode === 'seeking' ? ' · Seeking crew' : ''}
                   </span>
                 </Link>
               </li>

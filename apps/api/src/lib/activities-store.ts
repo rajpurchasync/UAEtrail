@@ -487,13 +487,16 @@ export const publishActivityById = async (activityId: string) => {
     });
   }
   if (areaId && mongoDoc.activityMode !== 'seeking') {
-    const { notifySeekersOfHostedActivityInArea } = await import('../services/seeking-area-match-notifications.js');
-    void notifySeekersOfHostedActivityInArea({
+    const { notifyAvailabilityHoldersInAreaOfHostedActivity } = await import(
+      '../services/availability-hosted-match-notifications.js'
+    );
+    void notifyAvailabilityHoldersInAreaOfHostedActivity({
       activityId,
       hostUserId: actorUserId,
       areaId,
       activityTitle: mongoDoc.title,
       activityStartAt: mongoDoc.startAt ?? publishedAt,
+      activityType: mongoDoc.activityType,
     });
   }
   return mapMongoActivityToPublishResult({ ...mongoDoc, status: ActivityStatus.PUBLISHED, publishedAt });

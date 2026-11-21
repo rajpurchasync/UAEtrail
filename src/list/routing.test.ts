@@ -11,7 +11,7 @@ describe('list discovery routing', () => {
     expect(listPeopleDiscoveryPath()).toBe('/list?listCat=people');
   });
 
-  it('listDiscoveryPath maps Trips to activity + demand topics', () => {
+  it('listDiscoveryPath maps Trips + venues browse topics', () => {
     expect(
       listDiscoveryPath({
         query: 'hatta',
@@ -21,13 +21,13 @@ describe('list discovery routing', () => {
         activityDatePreset: 'week',
       })
     ).toBe(
-      '/list?q=hatta&topics=trips%2Clooking%2Cspots%2Cshops&filter=hiking&tripTypes=hiking&price=free&date=week'
+      '/list?q=hatta&topics=trips%2Cspots%2Cshops&filter=hiking&tripTypes=hiking&price=free&date=week'
     );
   });
 
   it('exploreMapPathFromListSearch keeps shared price on the map and drops weekend-only when', () => {
     expect(exploreMapPathFromListSearch('q=dxb&topics=trips&price=paid&when=weekend')).toBe(
-      '/explore?q=dxb&topics=trips%2Clooking&price=paid&pinKind=activities'
+      '/explore?q=dxb&topics=trips&price=paid&pinKind=activities'
     );
   });
 
@@ -55,13 +55,13 @@ describe('list discovery routing', () => {
     expect(
       listDiscoveryPathFromExploreSearch('?q=hatta&topics=trips&filter=hiking&date=week&regions=Dubai')
     ).toBe(
-      '/list?q=hatta&topics=trips%2Clooking&filter=hiking&tripTypes=hiking&date=week&regions=Dubai&listCat=activities'
+      '/list?q=hatta&topics=trips&filter=hiking&tripTypes=hiking&date=week&regions=Dubai&listCat=activities'
     );
   });
 
   it('listDiscoveryPathFromExploreSearch scopes trips from panel=activities', () => {
     expect(listDiscoveryPathFromExploreSearch('?panel=activities&filter=hiking&topics=spots')).toBe(
-      '/list?topics=trips%2Clooking&filter=hiking&tripTypes=hiking&listCat=activities'
+      '/list?topics=trips&filter=hiking&tripTypes=hiking&listCat=activities'
     );
   });
 

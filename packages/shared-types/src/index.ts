@@ -341,7 +341,7 @@ export interface ActivityDTO {
   participantIntentId?: string | null;
 
   /**
-   * Detail revamp (Mongo schema v2) — see `docs/detailPagesRevampPlan.md` §13.4.
+   * Detail revamp (Mongo schema v2) — see `docs/DOMAIN_CANONICALS.md` §3.2.1 · `activity-detail-revamp.ts`.
    * `1` = legacy row; `2` = migrated / new writes.
    */
   schemaVersion?: ActivityDetailSchemaVersion;
@@ -813,6 +813,7 @@ export type { ExploreActivityMode } from './explore-activity-mode.js';
 export {
   exploreMapItemIsAvailabilityCatalog,
   exploreMapItemIsHostedActivity,
+  exploreMapItemIsLegacySeekingActivity,
   exploreMapItemIsSeeking,
   isTimeBoundExploreMapItem,
   resolveExploreMapActivityMode,

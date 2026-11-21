@@ -271,7 +271,7 @@ export const ListDiscoveryExperience = ({
     () => resolveEffectiveBrowseVenueRegions(venueRegions, geoPath, publishedAreas),
     [venueRegions, geoPath, publishedAreas]
   );
-  const peopleSegment = filters.buddiesSegment;
+  const peopleSegment = filters.peopleBrowseTab;
   const crewsNeedsRoster =
     peopleSegment === 'hub' ||
     peopleSegment === 'going' ||
@@ -443,7 +443,7 @@ export const ListDiscoveryExperience = ({
         query: draftQuery,
         listCat: 'people',
         categories: ['people'],
-        tripLookingOnly: false,
+        tripAvailabilityOnly: false,
         tripTopics: [],
         placeTopics: [],
         activityDatePreset: 'anyday',
@@ -489,11 +489,11 @@ export const ListDiscoveryExperience = ({
       categories: [],
       tripTopics: [],
       placeTopics: [],
-      tripLookingOnly: false,
+      tripAvailabilityOnly: false,
       price: 'all',
       when: 'any',
       activityDatePreset: 'anyday',
-      buddiesSegment: filters.buddiesSegment,
+      peopleBrowseTab: filters.peopleBrowseTab,
       hasTrip: false,
       facilityKinds: [],
       audience: 'anyone',
@@ -607,8 +607,8 @@ export const ListDiscoveryExperience = ({
             onQueryChange={setDraftQuery}
             onQuerySync={commitQuery}
             onClose={() => syncUrl({ listCat: null, categories: [] })}
-            peopleBrowseTab={filters.buddiesSegment === 'hub' ? 'looking' : filters.buddiesSegment}
-            onPeopleBrowseTabChange={(tab) => syncUrl({ buddiesSegment: tab })}
+            peopleBrowseTab={filters.peopleBrowseTab === 'hub' ? 'looking' : filters.peopleBrowseTab}
+            onPeopleBrowseTabChange={(tab) => syncUrl({ peopleBrowseTab: tab })}
             memberPeopleNetwork={[]}
             memberPeopleLoading={false}
             memberPeopleError={null}
@@ -648,8 +648,8 @@ export const ListDiscoveryExperience = ({
             enableSearchScopeHints={listSearchScopeHints}
             searchResultsChrome={searchResultsChrome}
             exploreSearchResults={exploreSearch}
-            peopleBrowseTab={filters.buddiesSegment}
-            onPeopleBrowseTabChange={(tab) => syncUrl({ buddiesSegment: tab, crewsOpen: null })}
+            peopleBrowseTab={filters.peopleBrowseTab}
+            onPeopleBrowseTabChange={(tab) => syncUrl({ peopleBrowseTab: tab, crewsOpen: null })}
             crewsOpenLens={crewsOpenLens}
             onCrewsOpenLensChange={(lens) => syncUrl({ crewsOpen: lens })}
             onOpenMarkAvailability={handleOpenMarkAvailability}
@@ -732,7 +732,7 @@ export const ListDiscoveryExperience = ({
             onSortChange={(next) => syncUrl({ sort: next })}
             showGuestCatalogPreview={!user && !embeddedOnExplore && !isPeopleCategory}
             listPanelWidthPx={showListMapColumn ? sideMapWidth.listPanelWidth : undefined}
-            onTripTopicsChange={(next) => syncUrl({ tripTopics: next, tripLookingOnly: false })}
+            onTripTopicsChange={(next) => syncUrl({ tripTopics: next, tripAvailabilityOnly: false })}
             onPlaceTopicsChange={(next) => syncUrl({ placeTopics: next })}
             onPriceChange={(next) => syncUrl({ price: next })}
             onHasTripChange={(next) => syncUrl({ hasTrip: next })}

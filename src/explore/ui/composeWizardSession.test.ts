@@ -26,8 +26,8 @@ describe('composeWizardSession', () => {
   });
 
   it('scopes prefill-linked sessions', () => {
-    const scope = hostingWizardSessionScope({ participantIntentId: 'abc' });
-    expect(scope).toBe('intent:abc');
+    const scope = hostingWizardSessionScope({ sourceActivityId: 'act-abc' });
+    expect(scope).toBe('from:act-abc');
     writeHostingWizardSession(
       'host.hiking',
       { step: 'title', draft: emptyCreateActivityDraft(), selectedKind: 'hiking' },

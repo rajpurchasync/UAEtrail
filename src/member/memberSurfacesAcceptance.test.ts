@@ -138,19 +138,26 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(catalog).not.toMatch(/activityMode === 'seeking' \? 'demand'/);
   });
 
-  it('G-seek: publish fan-out prefers activity pin when seeking id exists', () => {
+  it('G-seek: publish fan-out uses availability pin for map saves', () => {
     const publish = read('apps/api/src/services/member-publish-notifications.ts');
-    expect(publish).toMatch(/explorePublishedActivityPinPath|exploreSeekingPinPath/);
-    expect(publish).toContain('activityId');
+    expect(publish).toMatch(/publishType: 'availability'/);
+    expect(publish).toMatch(/exploreAvailabilityPinNotificationPath/);
+    expect(publish).toMatch(/availabilityMapItemId/);
   });
 
-  it('G-seek: wishlist demand alerts use explorePublishedActivityPinPath with activityId', () => {
+  it('G-seek: wishlist alerts fan out from member_availability (not seeking create)', () => {
     const wishlist = read('apps/api/src/services/wishlist-alerts.ts');
-    expect(wishlist).toContain('explorePublishedActivityPinPath');
-    expect(wishlist).toMatch(/activityId|seekingActivityId/);
+    expect(wishlist).toMatch(/notifyWishlistForMemberAvailability/);
+    expect(wishlist).toMatch(/exploreAvailabilityPinNotificationPath/);
+    expect(read('apps/api/src/services/me-availability-commands.ts')).toMatch(
+      /notifyWishlistForMemberAvailability/
+    );
     expect(read('apps/api/src/lib/activities-store.ts')).toMatch(/notifyWishlistForPublishedActivity/);
-    expect(read('apps/api/src/lib/participant-intents-store.ts')).toMatch(
+    expect(read('apps/api/src/lib/participant-intents-store.ts')).not.toMatch(
       /notifyWishlistForNewSeeking/
+    );
+    expect(read('apps/api/src/lib/participant-intents-store.ts')).not.toMatch(
+      /publishType: 'seeking'/
     );
   });
 

@@ -763,9 +763,7 @@ export const CreateHostingActivityFlow = ({
     editActivity
       ? 'Edit outing'
       : step === 'type' || !kind
-        ? wizardPrefill?.participantIntentId
-          ? HOSTING_SEEKING_PREFILL_TITLE
-          : 'Host an outing'
+        ? 'Host an outing'
         : widePageSteps.length > 1
           ? 'Outing details'
           : createFlowStepTitle(step as CreateFlowStepId, kind, stepTitleOptions);

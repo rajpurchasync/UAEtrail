@@ -333,7 +333,7 @@ Track what is **spec** vs **shipped**. Update this table in the same PR that lan
 | Host publish — Find crew availability count notice (explore map banner; operator activities list) | ✅ | ✅ (`hostPublishAvailabilityNoticeMessage` + `GET /explore/people/availability`) |
 | Compose shell (`ComposeHost` — host + availability + add wizards) | ✅ | ✅ (single `CreateFlowProvider` session; list crews “mark available” uses `?compose=seek:flexible`, not duplicate sheet) |
 | Explore **Locations** lens (legacy URL) | Alias of **Spots** — Area is **not** a pin | ✅ (`pinKind=locations` → places) |
-| Area match notifications (seeking ↔ hosted in area) | ✅ | ✅ (`seeking-area-match-notifications.ts`) |
+| Area match notifications (availability ↔ hosted in area) | ✅ | ✅ (`availability-hosted-match-notifications.ts` — `notifyAvailabilityHoldersInAreaOfHostedActivity`) |
 | Availability ↔ hosted (date + activity type; notify + FAB hosted preview) | ✅ | ✅ (`availability-hosted-match-notifications.ts`, `GET /me/availability/match-preview` → `hostedOutings` only) |
 | **Find crew → Available** tab (all members with future slots in range) | ✅ | ✅ (`GET /explore/people/availability` — not match-preview) |
 

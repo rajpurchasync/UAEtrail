@@ -1,14 +1,14 @@
-import type { ExploreHubMode } from './exploreHubRouting';
+import type { ExploreSearchScope } from '../search/exploreSearchRouting';
 
-const SCOPES: ReadonlyArray<{ mode: ExploreHubMode; label: string }> = [
+const SCOPES: ReadonlyArray<{ mode: ExploreSearchScope; label: string }> = [
   { mode: 'join', label: 'Trips' },
   { mode: 'places', label: 'Places' },
   { mode: 'crew', label: 'Go with' },
 ];
 
 type ExploreHubScopePillsProps = {
-  active: ExploreHubMode;
-  onChange: (mode: ExploreHubMode) => void;
+  active: ExploreSearchScope;
+  onChange: (mode: ExploreSearchScope) => void;
 };
 
 /** Booking-style product pills — scope before search commit. */

@@ -1,4 +1,4 @@
-import { exploreMapItemIsSeeking, type ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { exploreMapItemIsLegacySeekingActivity, type ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { DiscoveryMapItems } from '@/discovery/discoveryMapPayload';
 import { sortExploreActivities } from '../../explore/exploreListSort';
 import { matchesActivityDateFilter } from '../../explore/exploreActivityDateFilter';
@@ -40,7 +40,7 @@ export const selectActivitiesFromMapItems = (
 ): ExploreMapItemDTO[] => {
   const activityModeFilter = filters.activityModeFilter ?? 'all';
 
-  if (activityModeFilter === 'seeking') {
+  if (activityModeFilter === 'availability') {
     return selectAvailabilityFromMapItems(mapItems, filters);
   }
 
@@ -49,7 +49,7 @@ export const selectActivitiesFromMapItems = (
   return sortExploreActivities(
     mapItems
       .filter(isBuddyMapItem)
-      .filter((item) => !exploreMapItemIsSeeking(item))
+      .filter((item) => !exploreMapItemIsLegacySeekingActivity(item))
       .filter((item) =>
         matchesTripMapTopicFilter(
           item,

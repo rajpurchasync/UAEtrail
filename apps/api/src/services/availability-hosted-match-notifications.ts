@@ -7,6 +7,8 @@ import { getMongoClient } from '../lib/mongo.js';
 import { listPublishedActivitiesForExploreMapFromMongo } from '../lib/activity-read-assembler.js';
 import { createNotificationsMany } from '../lib/notifications-store.js';
 import { activityDetailPath } from '../lib/member-routes.js';
+import { findAreaById } from '../lib/areas-store.js';
+import { isFixedAvailabilitySlot } from '@uaetrail/shared-types';
 import { logger } from '../lib/logger.js';
 import type { AvailabilityKind, MemberAvailabilityDTO } from '@uaetrail/shared-types';
 import {
@@ -140,5 +142,60 @@ export const notifyMemberOfHostedActivitiesForAvailability = async (input: {
     ]);
   } catch (error) {
     logger.warn({ err: error, input: { userId: input.userId } }, 'availability find match notify failed');
+  }
+};
+
+/** Hosted activity in an area — members with public fixed availability in that hub. */
+export const notifyAvailabilityHoldersInAreaOfHostedActivity = async (input: {
+  activityId: string;
+  hostUserId: string;
+  areaId: string;
+  activityTitle: string;
+  activityStartAt: Date;
+  activityType: string | null | undefined;
+}): Promise<void> => {
+  try {
+    const area = await findAreaById(input.areaId);
+    const areaName = area?.name ?? 'this area';
+    const kindFilter = availabilityKindsForActivityType(input.activityType);
+    if (kindFilter.length === 0) return;
+
+    const db = getMongoClient()!.db();
+    const docs = await db
+      .collection(COLLECTIONS.MEMBER_AVAILABILITY)
+      .find({
+        visibility: 'public',
+        areaId: input.areaId,
+        userId: { $ne: input.hostUserId },
+        kinds: { $in: kindFilter },
+      })
+      .limit(MAX_NOTIFY)
+      .toArray();
+
+    const rows = [];
+    for (const doc of docs) {
+      const availability = availabilityFromDoc(doc as Record<string, unknown>);
+      const hasFixed =
+        (availability.slots ?? []).filter(isFixedAvailabilitySlot).length > 0;
+      if (!hasFixed) continue;
+      if (!slotsOverlapActivityDay(availability, input.activityStartAt)) continue;
+      if (!availabilityKindMatchesActivityType(availability.kinds, input.activityType)) continue;
+      rows.push({
+        userId: availability.userId,
+        title: `An outing in ${areaName} fits your availability`,
+        body: input.activityTitle,
+        type: NotificationType.ACTIVITY,
+        meta: {
+          kind: 'availability_area_hosted_match',
+          areaId: input.areaId,
+          activityId: input.activityId,
+          path: activityDetailPath(input.activityId),
+        },
+      });
+    }
+    if (rows.length === 0) return;
+    await createNotificationsMany(rows);
+  } catch (error) {
+    logger.warn({ err: error, input }, 'availability area hosted match notify failed');
   }
 };

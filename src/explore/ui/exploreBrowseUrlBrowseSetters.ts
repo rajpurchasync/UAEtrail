@@ -9,7 +9,6 @@ import type { ExplorePriceFilter } from '../exploreOptionalFilters';
 import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
 import type { PlaceKind } from '@uaetrail/shared-types';
 import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
-import type { BuddiesDiscoverySegment } from '../../list/buddiesDiscoverySegment';
 import type { DesktopBrowseTab } from './exploreBrowsePanelCopy';
 
 export type ExploreBrowseUrlBrowseSetters = ReturnType<typeof createExploreBrowseUrlBrowseSetters>;
@@ -28,7 +27,6 @@ export const createExploreBrowseUrlBrowseSetters = (input: {
   setListMode: (v: ExploreBrowseListMode) => void;
   setPeopleBrowseOpen: (v: boolean) => void;
   setPeopleBrowseTab: (v: PeopleBrowseTab) => void;
-  setBuddiesDiscoverSegment: (v: BuddiesDiscoverySegment) => void;
   setDesktopBrowseTab: (v: DesktopBrowseTab) => void;
   setActivityDatePreset: (v: ExploreActivityDatePreset) => void;
   setActivityModeFilter: (v: ExploreActivityModeFilter) => void;
@@ -56,7 +54,6 @@ export const createExploreBrowseUrlBrowseSetters = (input: {
   setListMode: input.setListMode,
   setPeopleBrowseOpen: input.setPeopleBrowseOpen,
   setPeopleBrowseTab: input.setPeopleBrowseTab,
-  setBuddiesDiscoverSegment: input.setBuddiesDiscoverSegment,
   setDesktopBrowseTab: input.setDesktopBrowseTab,
   setActivityDatePreset: input.setActivityDatePreset,
   setActivityModeFilter: input.setActivityModeFilter,

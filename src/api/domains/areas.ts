@@ -9,7 +9,7 @@ import type {
 
 export type AreaDetailPayload = {
   area: AreaPublicDTO;
-  counts: { activities: number; places: number; seeking: number };
+  counts: { activities: number; places: number; availability: number };
   preview: {
     activities: ActivityDTO[];
     places: LocationDTO[];

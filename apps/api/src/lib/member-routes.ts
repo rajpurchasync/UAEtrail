@@ -1,4 +1,7 @@
-import { exploreSeekingMapItemPath } from '@uaetrail/shared-types';
+import {
+  exploreAvailabilityMapItemPath,
+  exploreSeekingMapItemPath,
+} from '@uaetrail/shared-types';
 
 /** Deep links in API notification meta — keep in sync with `src/config/surfacePaths.ts`. */
 export const PRO_MEMBERSHIP_PATH = '/profile/pro-membership';
@@ -77,7 +80,11 @@ export const exploreActivityPinPath = (activityId: string): string =>
     panel: 'activities',
   }).toString()}`;
 
-/** Deep link when a find post has a published activity row (any `activityMode`). */
+/** Notification deep link — fixed `member_availability` map pin. */
+export const exploreAvailabilityPinNotificationPath = (availabilityMapItemId: string): string =>
+  exploreAvailabilityMapItemPath(availabilityMapItemId);
+
+/** Deep link when a legacy find post has a published activity row. */
 export const explorePublishedActivityPinPath = exploreSeekingMapItemPath;
 
 /** @deprecated Use {@link explorePublishedActivityPinPath}. */

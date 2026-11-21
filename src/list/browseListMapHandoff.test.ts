@@ -11,11 +11,11 @@ const baseState: BrowseListFilterState = {
   categories: [],
   tripTopics: [],
   placeTopics: [],
-  tripLookingOnly: false,
+  tripAvailabilityOnly: false,
   price: 'all',
   when: 'any',
   activityDatePreset: 'anyday',
-  buddiesSegment: 'looking',
+  peopleBrowseTab: 'looking',
   hasTrip: false,
   facilityKinds: [],
   audience: 'anyone',
@@ -49,14 +49,14 @@ describe('browseListMapHandoff', () => {
   it('resolves trips pinKind for activities category', () => {
     expect(resolveListBrowseExplorePinKind({ ...baseState, categories: ['activities'] }, 'activities')).toBe('activities');
     expect(
-      resolveListBrowseExplorePinKind({ ...baseState, categories: ['activities'], tripLookingOnly: true }, 'activities')
-    ).toBe('looking');
+      resolveListBrowseExplorePinKind({ ...baseState, categories: ['activities'], tripAvailabilityOnly: true }, 'activities')
+    ).toBe('activities');
   });
 
-  it('omits pinKind for Buddies list category', () => {
+  it('omits pinKind for Crews list category', () => {
     expect(resolveListBrowseExplorePinKind({ ...baseState, categories: ['people'] }, 'people')).toBeNull();
     const params = serializeBrowseListToExploreSearchParams(
-      { ...baseState, categories: ['people'], buddiesSegment: 'hub' },
+      { ...baseState, categories: ['people'], peopleBrowseTab: 'hub' },
       [],
       { listCat: 'people' }
     );
@@ -68,13 +68,14 @@ describe('browseListMapHandoff', () => {
     expect(params.get('buddies')).toBeNull();
   });
 
-  it('hands off Buddies segment and clears date on map', () => {
+  it('hands off crews peopleTab and clears date on map', () => {
     const params = serializeBrowseListToExploreSearchParams(
-      { ...baseState, categories: ['people'], buddiesSegment: 'going', activityDatePreset: 'today' },
+      { ...baseState, categories: ['people'], peopleBrowseTab: 'going', activityDatePreset: 'today' },
       [],
       { listCat: 'people' }
     );
-    expect(params.get('buddies')).toBe('going');
+    expect(params.get('peopleTab')).toBe('going');
+    expect(params.get('buddies')).toBeNull();
     expect(params.get('date')).toBeNull();
   });
 

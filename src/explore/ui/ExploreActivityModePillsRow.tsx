@@ -6,7 +6,7 @@ import { EXPLORE_FILTER_PILL, EXPLORE_LIST_PILLS_SCROLL, EXPLORE_MAP_FILTER_INAC
 const OPTIONS: ReadonlyArray<{ key: ExploreActivityModeFilter; label: string }> = [
   { key: 'all', label: 'All' },
   { key: 'hosted', label: 'Hosted' },
-  { key: 'seeking', label: 'Seeking' },
+  { key: 'availability', label: 'Available' },
 ];
 
 type ExploreActivityModePillsRowProps = {
@@ -16,7 +16,7 @@ type ExploreActivityModePillsRowProps = {
   className?: string;
 };
 
-/** Activities layer — hosted publish vs member seeking (§2.5 / §3.2). */
+/** Activities layer — hosted publish vs fixed member availability. */
 export const ExploreActivityModePillsRow = ({
   value,
   onChange,

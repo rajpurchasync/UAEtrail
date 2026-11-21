@@ -22,7 +22,8 @@ const AREA_PREVIEW_OPERATOR_LIMIT = 8;
 export type PublishedAreaPreviewCounts = {
   activities: number;
   places: number;
-  seeking: number;
+  /** Public `member_availability` rows scoped to this hub. */
+  availability: number;
 };
 
 /** Read model for public area card aggregates (`GET /areas/:slug`). */
@@ -30,22 +31,22 @@ export const countPublishedAreaPreviewByAreaId = async (
   areaId: string
 ): Promise<PublishedAreaPreviewCounts> => {
   const db = getMongoClient()!.db();
-  const [activities, places, seeking] = await Promise.all([
+  const [activities, places, availability] = await Promise.all([
     db.collection(COLLECTIONS.ACTIVITIES).countDocuments({
       areaId,
       status: ActivityStatus.PUBLISHED,
+      activityMode: { $ne: 'seeking' },
     }),
     db.collection(COLLECTIONS.LOCATIONS).countDocuments({
       areaId,
       status: LocationStatus.ACTIVE,
     }),
-    db.collection(COLLECTIONS.ACTIVITIES).countDocuments({
+    db.collection(COLLECTIONS.MEMBER_AVAILABILITY).countDocuments({
       areaId,
-      activityMode: 'seeking',
-      status: ActivityStatus.PUBLISHED,
+      visibility: 'public',
     }),
   ]);
-  return { activities, places, seeking };
+  return { activities, places, availability };
 };
 
 export const listPublishedAreasForPublic = async (): Promise<AreaPublicDTO[]> => {

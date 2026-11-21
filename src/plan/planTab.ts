@@ -8,7 +8,7 @@ export const PLAN_MAIN_TABS: { key: PlanMainTab; label: string }[] = [
   { key: 'wishlist', label: 'Wishlist' },
 ];
 
-/** Upcoming feed filter — hosting includes “looking for company” posts. */
+/** Upcoming feed filter — hosting includes fixed map availability slots. */
 export type PlanCommitmentFilter = 'hosting' | 'joined';
 
 export type PlanUpcomingLayout = 'list' | 'calendar';

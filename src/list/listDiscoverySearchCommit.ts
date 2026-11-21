@@ -31,16 +31,16 @@ export const browseListFilterPatchForSearchScope = (
   const categories = browseCategoriesForSearchScope(scope);
   if (!categories) return null;
   if (scope === 'people') {
-    return { categories, tripLookingOnly: false, tripTopics: [], placeTopics: [] };
+    return { categories, tripAvailabilityOnly: false, tripTopics: [], placeTopics: [] };
   }
   if (scope === 'activities') {
-    return { categories, tripLookingOnly: false, placeTopics: [] };
+    return { categories, tripAvailabilityOnly: false, placeTopics: [] };
   }
   if (scope === 'places') {
-    return { categories, tripLookingOnly: false, tripTopics: [], placeTopics: [] };
+    return { categories, tripAvailabilityOnly: false, tripTopics: [], placeTopics: [] };
   }
   if (scope === 'shops') {
-    return { categories, tripLookingOnly: false, tripTopics: [], placeTopics: ['shop'] };
+    return { categories, tripAvailabilityOnly: false, tripTopics: [], placeTopics: ['shop'] };
   }
   return { categories };
 };

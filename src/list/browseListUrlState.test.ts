@@ -14,17 +14,27 @@ describe('browseListUrlState trip topics', () => {
   it('defaults crews list to hub when buddies is omitted', () => {
     const params = new URLSearchParams('listCat=people');
     const state = parseBrowseListFilterState(params);
-    expect(state.buddiesSegment).toBe('hub');
+    expect(state.peopleBrowseTab).toBe('hub');
     const serialized = serializeBrowseListSearchParams(state, []);
     expect(serialized.get('buddies')).toBeNull();
   });
 
-  it('parses explicit buddies=looking on people list', () => {
+  it('parses inbound buddies=looking but serializes peopleTab only', () => {
     const params = new URLSearchParams('listCat=people&buddies=looking');
     const state = parseBrowseListFilterState(params);
-    expect(state.buddiesSegment).toBe('looking');
+    expect(state.peopleBrowseTab).toBe('looking');
     const serialized = serializeBrowseListSearchParams(state, []);
-    expect(serialized.get('buddies')).toBe('looking');
+    expect(serialized.get('buddies')).toBeNull();
+    expect(serialized.get('peopleTab')).toBeNull();
+  });
+
+  it('round-trips peopleTab=going on crews list', () => {
+    const params = new URLSearchParams('listCat=people&peopleTab=going');
+    const state = parseBrowseListFilterState(params);
+    expect(state.peopleBrowseTab).toBe('going');
+    const serialized = serializeBrowseListSearchParams(state, []);
+    expect(serialized.get('peopleTab')).toBe('going');
+    expect(serialized.get('buddies')).toBeNull();
   });
 
   it('round-trips geo drill path', () => {
@@ -33,6 +43,29 @@ describe('browseListUrlState trip topics', () => {
     const state = parseBrowseListFilterState(params);
     const serialized = serializeBrowseListSearchParams(state, [], ['dubai', 'hatta']);
     expect(serialized.get('geo')).toBe('dubai/hatta');
+  });
+
+  it('round-trips availability-only list filter (inbound looking)', () => {
+    expect(parseBrowseListFilterState(new URLSearchParams('filter=looking')).tripAvailabilityOnly).toBe(true);
+    expect(parseBrowseListFilterState(new URLSearchParams('filter=availability')).tripAvailabilityOnly).toBe(true);
+    const serialized = serializeBrowseListSearchParams(
+      {
+        query: '',
+        categories: ['activities'],
+        tripTopics: [],
+        placeTopics: [],
+        tripAvailabilityOnly: true,
+        price: 'all',
+        when: 'any',
+        activityDatePreset: 'anyday',
+        peopleBrowseTab: 'hub',
+        hasTrip: false,
+        facilityKinds: [],
+        audience: 'anyone',
+      },
+      []
+    );
+    expect(serialized.get('filter')).toBe('availability');
   });
 
   it('round-trips multiple filter topics', () => {
@@ -68,11 +101,11 @@ describe('browseListUrlState trip topics', () => {
         categories: ['venues'],
         tripTopics: [],
         placeTopics: ['hiking', 'others'],
-        tripLookingOnly: false,
+        tripAvailabilityOnly: false,
         price: 'all',
         when: 'any',
         activityDatePreset: 'anyday',
-        buddiesSegment: 'available',
+        peopleBrowseTab: 'available',
         hasTrip: false,
         facilityKinds: [],
         audience: 'anyone',

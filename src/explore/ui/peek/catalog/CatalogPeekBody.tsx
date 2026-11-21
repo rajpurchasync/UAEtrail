@@ -1,5 +1,5 @@
 import type { DiscoveryCardModel } from '../../../../discovery/discoveryCardModel';
-import { discoveryCardIsSeeking } from '../../../../discovery/discoveryCardModel';
+import { discoveryCardIsAvailabilityPin } from '../../../../discovery/discoveryCardModel';
 import {
   DiscoveryCardCapacityRow,
   DiscoveryCardPeopleRow,
@@ -20,7 +20,7 @@ export const CatalogPeekBody = ({
   const isShop = card.source === 'shop';
   const showPeopleRow =
     card.source === 'shop' ||
-    (discoveryCardIsSeeking(card) && Boolean(card.listHost || card.hostAvatar));
+    (discoveryCardIsAvailabilityPin(card) && Boolean(card.listHost || card.hostAvatar));
 
   return (
     <>

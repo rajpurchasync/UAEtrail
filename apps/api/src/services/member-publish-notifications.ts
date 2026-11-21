@@ -3,9 +3,9 @@
  *
  * Domain terms:
  * - **Member** — auth user (subscriptions are always userId → userId).
- * - **Buddy** — mutual connection; notified for hosted activities and seeking posts.
- * - **Follow** — one-way subscription; notified **only when they host/publish an activity** (not seeking posts).
- * - **Publish** — activity moved to published, or new seeking post on the map.
+ * - **Buddy** — mutual connection; notified for hosted activities and map availability.
+ * - **Follow** — one-way subscription; notified **only when they host/publish an activity** (not map availability).
+ * - **Publish** — activity moved to published, or fixed availability on the map (`member_availability`).
  *
  * **Place / team / shop** subscriptions use `entity_follows` — see `entity-publish-notifications.ts`.
  */
@@ -14,11 +14,17 @@ import { listBuddiesForUser } from '../lib/buddy-store.js';
 import { resolveNotificationActorDisplayNamesForRecipients } from './notification-actor-label.js';
 import { listFollowerIdsForUser } from '../lib/follow-store.js';
 import { createNotificationsMany } from '../lib/notifications-store.js';
-import { activityDetailPath, explorePublishedActivityPinPath } from '../lib/member-routes.js';
+import {
+  activityDetailPath,
+  exploreAvailabilityPinNotificationPath,
+  explorePublishedActivityPinPath,
+} from '../lib/member-routes.js';
 import { logger } from '../lib/logger.js';
 
 export type MemberPublishEvent =
   | { publishType: 'activity'; activityId: string; title: string }
+  | { publishType: 'availability'; availabilityMapItemId: string; title: string }
+  /** Legacy ops/tests — `activityMode: seeking` rows (not product map). */
   | { publishType: 'seeking'; intentId: string; title: string; activityId?: string | null };
 
 const notificationCopy = (
@@ -31,6 +37,14 @@ const notificationCopy = (
       body: event.title,
       path: activityDetailPath(event.activityId),
       kind: 'friend_activity_published',
+    };
+  }
+  if (event.publishType === 'availability') {
+    return {
+      title: `${actorName} posted on the map`,
+      body: event.title,
+      path: exploreAvailabilityPinNotificationPath(event.availabilityMapItemId),
+      kind: 'friend_published',
     };
   }
   return {
@@ -80,7 +94,10 @@ export const notifyMemberPublishSubscribers = async (
         path,
       };
       if (event.publishType === 'activity') meta.activityId = event.activityId;
-      else {
+      else if (event.publishType === 'availability') {
+        meta.availabilityMapItemId = event.availabilityMapItemId;
+        meta.exploreItemId = event.availabilityMapItemId;
+      } else {
         meta.intentId = event.intentId;
         if (event.activityId) meta.activityId = event.activityId;
       }

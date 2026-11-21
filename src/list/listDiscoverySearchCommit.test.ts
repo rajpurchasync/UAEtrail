@@ -17,7 +17,7 @@ describe('listDiscoverySearchCommit', () => {
   it('builds filter patch for shops scope under Places', () => {
     expect(browseListFilterPatchForSearchScope('shops')).toEqual({
       categories: ['venues'],
-      tripLookingOnly: false,
+      tripAvailabilityOnly: false,
       tripTopics: [],
       placeTopics: ['shop'],
     });
@@ -26,7 +26,7 @@ describe('listDiscoverySearchCommit', () => {
   it('builds filter patch for people scope', () => {
     expect(browseListFilterPatchForSearchScope('people')).toEqual({
       categories: ['people'],
-      tripLookingOnly: false,
+      tripAvailabilityOnly: false,
       tripTopics: [],
       placeTopics: [],
     });

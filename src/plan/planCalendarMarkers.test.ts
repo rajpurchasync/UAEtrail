@@ -48,11 +48,11 @@ describe('buildPlanCalendarMaps', () => {
     expect(markers.get('2026-10-15')).toMatchObject({ available: true });
     expect(markers.get('2026-10-16')).toMatchObject({ joined: true });
     expect(markers.get('2026-10-17')).toMatchObject({ hosting: true });
-    expect(markers.get('2026-10-18')).toMatchObject({ seeking: true });
+    expect(markers.get('2026-10-18')).toMatchObject({ mapSlot: true });
     expect(details.get('2026-10-15')?.some((d) => d.kind === 'available')).toBe(true);
     const joinedRow = details.get('2026-10-16')?.find((d) => d.kind === 'joined');
     expect(joinedRow).toMatchObject({ activityId: 'a-join', title: 'Sunrise hike' });
-    const crewRow = details.get('2026-10-18')?.find((d) => d.kind === 'seeking');
+    const crewRow = details.get('2026-10-18')?.find((d) => d.kind === 'mapSlot');
     expect(crewRow).toMatchObject({ title: 'Hatta crew', slotId: 'slot-1' });
   });
 

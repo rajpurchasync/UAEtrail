@@ -1,6 +1,6 @@
 import {
   exploreGeoQueryTokens,
-  exploreMapItemIsSeeking,
+  exploreMapItemIsAvailabilityCatalog,
   geoRefMatchesQuery,
   isTimeBoundExploreMapItem,
   type ExploreMapItemDTO,
@@ -75,8 +75,8 @@ const exploreItemCategorySearchTerms = (item: ExploreMapItemDTO): string[] => {
     terms.push('trip', 'trips', 'outing', 'outings', 'activity', 'activities');
     push(terms, EXPLORE_SEARCH_SCOPE_COPY.activities.label);
   }
-  if (exploreMapItemIsSeeking(item)) {
-    terms.push('seeking', 'looking for', 'looking', 'demand', 'buddy', 'people', 'person');
+  if (exploreMapItemIsAvailabilityCatalog(item)) {
+    terms.push('availability', 'seeking', 'looking for', 'looking', 'crew', 'buddy', 'people', 'person');
     push(terms, EXPLORE_SEARCH_SCOPE_COPY.people.label);
   }
   if (isGeographyMapSource(item.source)) {

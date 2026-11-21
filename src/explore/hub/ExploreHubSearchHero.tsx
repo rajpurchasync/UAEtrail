@@ -11,7 +11,7 @@ import {
   ExploreHubWhenPickSheet,
   ExploreHubWhereSuggestSheet,
 } from './ExploreHubSearchPickSheets';
-import type { ExploreHubMode } from './exploreHubRouting';
+import type { ExploreSearchScope } from '../search/exploreSearchRouting';
 import { exploreHubHomeStateSummary } from './exploreHubVenueState';
 import { useExploreRegionPillOptions } from '../../config/useExploreRegionPillOptions';
 import { formatExploreHubWhereDisplay } from './exploreHubWhereDisplay';
@@ -22,7 +22,7 @@ const HUB_SEARCH_ROW =
   'flex min-h-[52px] w-full items-center gap-3 border-b border-neutral-200 px-3 py-3 text-left';
 
 type ExploreHubSearchHeroProps = {
-  homeScope: ExploreHubMode;
+  homeScope: ExploreSearchScope;
   detectedWhere: string;
   committedWhere: string;
   draftQuery: string;

@@ -51,6 +51,37 @@ describe('buildExploreAreaLensItems', () => {
     expect(rows[0]?.subtitle).toContain('outing');
   });
 
+  it('counts member_availability pins in availabilityPins rollup field', () => {
+    const areas = [area(testAreas.hatta.slug, testAreas.hatta.id)];
+    const catalog: ExploreMapItemDTO[] = [
+      {
+        id: 'availability:u1:s1',
+        kind: 'hiking',
+        source: 'availability',
+        title: 'Free Saturday',
+        latitude: 1,
+        longitude: 2,
+        path: '/profile/u1',
+        areaId: testAreas.hatta.id,
+      },
+      {
+        id: 'activity:seek',
+        kind: 'hiking',
+        source: 'activity',
+        activityMode: 'seeking',
+        title: 'Legacy seeking',
+        latitude: 1,
+        longitude: 2,
+        path: '/activity/seek',
+        areaId: testAreas.hatta.id,
+      },
+    ];
+    const rows = buildExploreAreaLensItems(areas, catalog);
+    expect(rows[0]?.areaLensStats?.availabilityPins).toBe(1);
+    expect(rows[0]?.areaLensStats?.hostedActivities).toBe(0);
+    expect(rows[0]?.subtitle).toContain('available');
+  });
+
   it('counts facility pins from explore map items (facilities collection)', () => {
     const areas = [area(testAreas.hatta.slug, testAreas.hatta.id)];
     const catalog: ExploreMapItemDTO[] = [

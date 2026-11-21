@@ -1,5 +1,5 @@
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
-import { discoveryCardIsSeeking } from '../discovery/discoveryCardModel';
+import { discoveryCardIsAvailabilityPin } from '../discovery/discoveryCardModel';
 import { truncateMapPeekChipLabel } from './resolveActivityMapPeekChipLabels';
 import { resolveTripBrowseCardCopy } from '../list/browse/tripBrowseCardCopy';
 import { LIST_FEED_CTA_CARPOOL } from '../list/listFeedCtaCopy';
@@ -56,7 +56,7 @@ export const resolveActivityMapPeekStatChips = (card: DiscoveryCardModel): Activ
     if (seats != null && seats > 0 && chips.length < 4) {
       push('rideshare-seats', `${seats} seat${seats === 1 ? '' : 's'}`, 'accent', 'spots');
     }
-  } else if (discoveryCardIsSeeking(card)) {
+  } else if (discoveryCardIsAvailabilityPin(card)) {
     push(
       'seeking',
       browse.factLabels.find((l) => /looking/i.test(l)) ?? 'Looking for crew',

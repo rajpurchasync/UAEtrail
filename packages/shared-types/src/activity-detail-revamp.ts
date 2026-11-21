@@ -1,5 +1,5 @@
 /**
- * Detail-page revamp (schema v2) — activity shell fields aligned with docs/detailPagesRevampPlan.md §13.4.
+ * Detail-page revamp (schema v2) — activity shell fields aligned with docs/DOMAIN_CANONICALS.md §3.2.1.
  * Stored on Mongo `activities` alongside legacy scalars; `schemaVersion === 2` after migration.
  */
 

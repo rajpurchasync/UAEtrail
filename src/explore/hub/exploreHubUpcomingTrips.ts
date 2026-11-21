@@ -3,17 +3,19 @@ import type { BrowseListFilterState } from '../../list/browseListFilters';
 import { browseCardDateIso } from '../../list/browse/browseCardMeta';
 import { sortListExplorerCards } from '../../list/explorer/listExplorerSort';
 import { todayIso } from '../exploreActivityDateFilter';
-import { exploreHubJoinListFilters } from './exploreHubRouting';
+import { exploreSearchJoinListFilters } from '../search/exploreSearchRouting';
 
 export const EXPLORE_HUB_HOME_UPCOMING_LIMIT = 3;
 
 /** Home “next up” — not tied to draft search or This week (those apply on Search). */
 export const exploreHubUpcomingTripFilters = (): BrowseListFilterState => ({
-  ...exploreHubJoinListFilters({
-    hubMode: 'join',
+  ...exploreSearchJoinListFilters({
+    searchScope: 'join',
     query: '',
     activityDatePreset: 'anyday',
     price: 'all',
+    venueRegions: [],
+    view: 'list',
   }),
   categories: ['activities'],
   query: '',

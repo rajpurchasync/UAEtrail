@@ -40,10 +40,9 @@ describe('seekingPeekUnificationGuard (S12 — one activity peek stack)', () => 
     expect(read('src/list/enrichListFeedCard.ts')).toMatch(/enrichDiscoveryPeekSelection/);
   });
 
-  it('SEEK-PEEK-04: L1 card normalizes seeking to source activity', () => {
-    expect(read('src/discovery/discoveryCardModel.ts')).toMatch(
-      /exploreMapItemIsSeeking\(item\) \? 'activity'/
-    );
+  it('SEEK-PEEK-04: Find crew pins use availability source (not legacy seeking activities)', () => {
+    expect(read('src/discovery/discoveryCardModel.ts')).toMatch(/discoveryCardIsAvailabilityPin/);
+    expect(read('src/discovery/discoveryCardModel.ts')).not.toMatch(/participantIntentId/);
   });
 
   it('SEEK-PEEK-05: map peek join hook is activity-only', () => {

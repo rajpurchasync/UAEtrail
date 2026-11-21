@@ -41,7 +41,7 @@ export const buildBrowseCollapsedRailLabels = ({
       const match = BROWSE_TRIP_TOPIC_FILTERS.find((row) => row.key === topic);
       if (match) labels.push(match.label);
     }
-    if (filters.tripLookingOnly) labels.push('Looking for');
+    if (filters.tripAvailabilityOnly) labels.push('Available');
     if (filters.price !== 'all') labels.push(filters.price === 'free' ? 'Free' : 'Paid');
     if (filters.when !== 'any') labels.push('When');
     if (filters.activityDatePreset !== 'anyday') labels.push('Date');

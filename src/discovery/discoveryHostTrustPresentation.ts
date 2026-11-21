@@ -4,14 +4,14 @@ import {
   resolveActivityPublisherChip,
 } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from './discoveryCardModel';
-import { discoveryCardIsSeeking } from './discoveryCardModel';
+import { discoveryCardIsAvailabilityPin } from './discoveryCardModel';
 import { browseCardHostName } from '../list/browse/browseCardMeta';
 
 /** Trust chips under the host name — not navigation hints. */
 export const resolveDiscoveryHostTrustLabels = (card: DiscoveryCardModel): string[] => {
   if (card.source !== 'activity' && card.source !== 'shop') return [];
 
-  if (discoveryCardIsSeeking(card)) {
+  if (discoveryCardIsAvailabilityPin(card)) {
     return ['Community request'];
   }
 

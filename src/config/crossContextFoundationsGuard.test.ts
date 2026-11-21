@@ -170,7 +170,7 @@ describe('crossContextFoundationsGuard', () => {
 
   it('CTX-FOUND-11: product data lineage — one map catalog read model; marketing + list delegate to API/modules', () => {
     expect(read('src/config/productDataLineageGuard.test.ts')).toMatch(/CTX-DATA-01/);
-    expect(read('src/list/browseListFilters.ts')).toMatch(/listDemandCatalog/);
+    expect(read('src/list/browseListFilters.ts')).toMatch(/listAvailabilityCatalog/);
     expect(read('apps/api/src/lib/discovery-catalog-builder.ts')).not.toMatch(
       /overlayCatalogDefaultsOnLocation/
     );

@@ -26,7 +26,7 @@ import {
   serializeBrowseListSearchParams,
 } from './browseListUrlState';
 
-import { BUDDIES_SEGMENT_URL_PARAM } from './buddiesDiscoverySegment';
+import { PEOPLE_LIST_TAB_URL_PARAM } from './peopleListBrowseUrl';
 import {
   CREWS_AVAILABILITY_SHEET_PARAM,
   CREWS_OPEN_URL_PARAM,
@@ -62,7 +62,7 @@ const LIST_FILTER_PARAM_KEYS = [
   'hasTrip',
   'facilityKinds',
   LIST_CAT_PARAM,
-  BUDDIES_SEGMENT_URL_PARAM,
+  PEOPLE_LIST_TAB_URL_PARAM,
   LIST_LAYOUT_PARAM,
   LIST_SORT_PARAM,
   CREWS_OPEN_URL_PARAM,
@@ -283,7 +283,7 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
       JSON.stringify(raw.categories) !== JSON.stringify(scoped.categories) ||
       raw.tripTopics.join(',') !== scoped.tripTopics.join(',') ||
       raw.placeTopics.join(',') !== scoped.placeTopics.join(',') ||
-      raw.tripLookingOnly !== scoped.tripLookingOnly;
+      raw.tripAvailabilityOnly !== scoped.tripAvailabilityOnly;
     if (!needsListCat && !needsScope) return;
     const fingerprint = `${searchParams.toString()}|${listCat}`;
     if (scopeRepairRef.current === fingerprint) return;

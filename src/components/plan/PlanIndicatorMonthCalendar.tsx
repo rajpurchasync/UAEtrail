@@ -12,10 +12,10 @@ const parseIso = (iso: string): { year: number; month: number; day: number } => 
   return { year, month: month - 1, day };
 };
 
-const dotClass: Record<'available' | 'hosting' | 'seeking' | 'joined' | 'requested', string> = {
+const dotClass: Record<'available' | 'hosting' | 'mapSlot' | 'joined' | 'requested', string> = {
   available: 'bg-emerald-500',
   hosting: 'bg-amber-500',
-  seeking: 'bg-violet-500',
+  mapSlot: 'bg-violet-500',
   joined: 'bg-sky-500',
   requested: 'bg-sky-300',
 };
@@ -24,7 +24,7 @@ const DayDots = ({ markers }: { markers: PlanCalendarDayMarkers }) => {
   const keys: Array<keyof typeof dotClass> = [];
   if (markers.available) keys.push('available');
   if (markers.hosting) keys.push('hosting');
-  if (markers.seeking) keys.push('seeking');
+  if (markers.mapSlot) keys.push('mapSlot');
   if (markers.joined) keys.push('joined');
   if (markers.requested) keys.push('requested');
   if (keys.length === 0) return null;

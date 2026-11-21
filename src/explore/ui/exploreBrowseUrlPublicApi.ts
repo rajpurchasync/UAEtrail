@@ -9,7 +9,7 @@ import type { ExplorePriceFilter } from '../exploreOptionalFilters';
 import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
 import type { PlaceKind } from '@uaetrail/shared-types';
 import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
-import type { BuddiesDiscoverySegment } from '../../list/buddiesDiscoverySegment';
+import type { PeopleBrowseTab } from '../../list/peopleListBrowseUrl';
 import type { DesktopBrowseTab } from './exploreBrowsePanelCopy';
 import { UNIFIED_MAP_FILTER_KEYS } from './exploreBrowseUrlConstants';
 import type { useExploreBrowseUrlApplyHandlers } from './useExploreBrowseUrlApplyHandlers';
@@ -42,7 +42,6 @@ export type ExploreBrowseUrlPublicApiContext = {
   pinKind: ExplorePinKindFilter;
   topicPills: ExploreMapFilterPillKey[];
   peopleBrowseTab: PeopleBrowseTab;
-  buddiesDiscoverSegment: BuddiesDiscoverySegment;
   listMode: ExploreBrowseListMode;
   peopleBrowseOpen: boolean;
   tripMapTopics: TripMapTopicKey[];
@@ -117,8 +116,6 @@ export const buildExploreBrowseUrlPublicApi = (ctx: ExploreBrowseUrlPublicApiCon
   closePeopleBrowsePanel: ctx.handlers.closePeopleBrowsePanel,
   peopleBrowseTab: ctx.peopleBrowseTab,
   applyPeopleBrowseTab: ctx.handlers.applyPeopleBrowseTab,
-  buddiesDiscoverSegment: ctx.buddiesDiscoverSegment,
-  applyBuddiesDiscoverSegment: ctx.handlers.applyBuddiesDiscoverSegment,
   listMode: ctx.listMode,
   peopleBrowseOpen: ctx.peopleBrowseOpen,
   tripMapTopics: ctx.tripMapTopics,

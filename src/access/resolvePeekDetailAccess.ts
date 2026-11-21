@@ -5,12 +5,12 @@ import {
 } from '@uaetrail/shared-types';
 import { activityPeekHasMapWireActions } from '../activity/activityPeekEngagement';
 import { mapViewerAccessToExplorePeekDetail, type ExplorePeekDetailAccess } from './mapViewerAccessToUi';
-import { discoveryCardIsSeeking, type DiscoveryCardModel } from '../discovery/discoveryCardModel';
+import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 
 export type { ExplorePeekDetailAccess };
 
 export const discoveryCardIsHostedPlanPeek = (card: DiscoveryCardModel): boolean =>
-  card.source === 'activity' || discoveryCardIsSeeking(card);
+  card.source === 'activity';
 
 const discoveryCardIsCommerceCatalogPeek = (card: DiscoveryCardModel): boolean =>
   card.source === 'shop' || card.source === 'agency';

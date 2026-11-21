@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { RequestStatus } from '../src/domain/enums.js';
 import { resolveCommerceMapViewerAccess } from '@uaetrail/shared-types';
-import {
-  attachExploreMapViewerAccess,
-  resolveDemandMapViewerAccess,
-} from '../src/lib/explore-map-viewer-access.js';
+import { attachExploreMapViewerAccess } from '../src/lib/explore-map-viewer-access.js';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 
 const openActivityItem = (): ExploreMapItemDTO => ({
@@ -24,46 +21,6 @@ const openActivityItem = (): ExploreMapItemDTO => ({
     joinMode: 'open',
     requirements: [],
   } as ExploreMapItemDTO['activity'],
-});
-
-describe('resolveDemandMapViewerAccess', () => {
-  it('gates guests with sign_in', () => {
-    const access = resolveDemandMapViewerAccess({
-      viewerUserId: null,
-      requesterUserId: 'owner',
-      joinRequestStatus: null,
-    });
-    expect(access.gateReason).toBe('sign_in');
-    expect(access.exposure).toBe('none');
-    expect(access.canOpenDetailPage).toBe(false);
-  });
-
-  it('grants full detail to requester', () => {
-    const access = resolveDemandMapViewerAccess({
-      viewerUserId: 'owner',
-      requesterUserId: 'owner',
-      joinRequestStatus: null,
-    });
-    expect(access.exposure).toBe('full');
-    expect(access.gateReason).toBeNull();
-  });
-
-  it('projects demand join status through the join snapshot', () => {
-    expect(
-      resolveDemandMapViewerAccess({
-        viewerUserId: 'joiner',
-        requesterUserId: 'owner',
-        joinRequestStatus: 'approved',
-      }).level
-    ).toBe('participant');
-    expect(
-      resolveDemandMapViewerAccess({
-        viewerUserId: 'joiner',
-        requesterUserId: 'owner',
-        joinRequestStatus: 'pending',
-      }).level
-    ).toBe('join_request');
-  });
 });
 
 describe('resolveCommerceMapViewerAccess', () => {
@@ -107,7 +64,6 @@ describe('attachExploreMapViewerAccess', () => {
       participantActivityIds: new Set(),
       requestStatusByActivityId: new Map(),
       staffTenantIds: new Set(),
-      demandJoinStatusByIntentId: new Map(),
       hostStatus: null,
       buddyUserIds: new Set(),
       pendingJoinInviteCountByActivityId: new Map(),
@@ -150,7 +106,6 @@ describe('attachExploreMapViewerAccess', () => {
       participantActivityIds: new Set(),
       requestStatusByActivityId: new Map(),
       staffTenantIds: new Set(),
-      demandJoinStatusByIntentId: new Map(),
       hostStatus: null,
       buddyUserIds: new Set(),
       pendingJoinInviteCountByActivityId: new Map(),
@@ -180,7 +135,6 @@ describe('attachExploreMapViewerAccess', () => {
       participantActivityIds: new Set(),
       requestStatusByActivityId: new Map(),
       staffTenantIds: new Set(),
-      demandJoinStatusByIntentId: new Map(),
       hostStatus: null,
       buddyUserIds: new Set(),
       pendingJoinInviteCountByActivityId: new Map(),
@@ -196,7 +150,6 @@ describe('attachExploreMapViewerAccess', () => {
       participantActivityIds: new Set(),
       requestStatusByActivityId: new Map(),
       staffTenantIds: new Set(),
-      demandJoinStatusByIntentId: new Map(),
       hostStatus: null,
       buddyUserIds: new Set(),
       pendingJoinInviteCountByActivityId: new Map([['a1', 2]]),
@@ -234,7 +187,6 @@ describe('attachExploreMapViewerAccess', () => {
       participantActivityIds: new Set(),
       requestStatusByActivityId: new Map(),
       staffTenantIds: new Set(),
-      demandJoinStatusByIntentId: new Map(),
       hostStatus: null,
       buddyUserIds: new Set(),
       pendingJoinInviteCountByActivityId: new Map(),
@@ -277,7 +229,6 @@ describe('attachExploreMapViewerAccess', () => {
       participantActivityIds: new Set(['a1']),
       requestStatusByActivityId: new Map(),
       staffTenantIds: new Set(),
-      demandJoinStatusByIntentId: new Map(),
       hostStatus: null,
       buddyUserIds: new Set(),
       pendingJoinInviteCountByActivityId: new Map(),
@@ -301,7 +252,6 @@ describe('attachExploreMapViewerAccess', () => {
       participantActivityIds: new Set(),
       requestStatusByActivityId: new Map(),
       staffTenantIds: new Set(),
-      demandJoinStatusByIntentId: new Map(),
       hostStatus: null,
       buddyUserIds: new Set(),
       pendingJoinInviteCountByActivityId: new Map(),
@@ -321,7 +271,6 @@ describe('attachExploreMapViewerAccess', () => {
       participantActivityIds: new Set(),
       requestStatusByActivityId: new Map([['a1', RequestStatus.PENDING]]),
       staffTenantIds: new Set(),
-      demandJoinStatusByIntentId: new Map(),
       hostStatus: null,
       buddyUserIds: new Set(),
       pendingJoinInviteCountByActivityId: new Map(),
@@ -343,7 +292,6 @@ describe('attachExploreMapViewerAccess', () => {
       participantActivityIds: new Set(),
       requestStatusByActivityId: new Map([['a1', RequestStatus.APPROVED]]),
       staffTenantIds: new Set(),
-      demandJoinStatusByIntentId: new Map(),
       hostStatus: null,
       buddyUserIds: new Set(),
       pendingJoinInviteCountByActivityId: new Map(),
@@ -360,7 +308,6 @@ describe('attachExploreMapViewerAccess', () => {
       participantActivityIds: new Set(),
       requestStatusByActivityId: new Map([['a1', RequestStatus.WAITLISTED]]),
       staffTenantIds: new Set(),
-      demandJoinStatusByIntentId: new Map(),
       hostStatus: null,
       buddyUserIds: new Set(),
       pendingJoinInviteCountByActivityId: new Map(),
@@ -381,7 +328,6 @@ describe('attachExploreMapViewerAccess', () => {
       participantActivityIds: new Set(),
       requestStatusByActivityId: new Map(),
       staffTenantIds: new Set(['t1']),
-      demandJoinStatusByIntentId: new Map(),
       hostStatus: null,
       buddyUserIds: new Set(),
       pendingJoinInviteCountByActivityId: new Map(),
@@ -410,7 +356,6 @@ describe('attachExploreMapViewerAccess', () => {
       participantActivityIds: new Set(),
       requestStatusByActivityId: new Map(),
       staffTenantIds: new Set(),
-      demandJoinStatusByIntentId: new Map(),
       hostStatus: null,
       buddyUserIds: new Set(),
       pendingJoinInviteCountByActivityId: new Map(),

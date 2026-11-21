@@ -31,7 +31,7 @@ describe('selectActivitiesFromMapItems', () => {
     const seeking = seekingExploreMapItem({ id: 'activity:seek-1' });
     const result = selectActivitiesFromMapItems([hosted, seeking, availability], {
       ...baseFilters,
-      activityModeFilter: 'seeking',
+      activityModeFilter: 'availability',
     });
     expect(result.map((i) => i.id)).toEqual([availability.id]);
   });

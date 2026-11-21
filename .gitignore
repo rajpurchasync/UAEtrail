@@ -47,6 +47,9 @@ apps/api/uploads/
 src/explore/ui/organizeWizard/.regen-wizard-slice.tsx
 
 # Local debug dumps (explore payload, one-off stats)
+.tunnel-log.txt
+build-log.txt
+
 .tmp-*.json
 _acts.json
 _map.json

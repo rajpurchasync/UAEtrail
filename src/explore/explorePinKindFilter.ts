@@ -1,9 +1,13 @@
 import { MAP_LENS_SPOTS_LABEL } from '../place/geographyVocabulary';
+import {
+  EXPLORE_PIN_KIND_INBOUND_TOKENS,
+  canonicalizeExplorePinKindToken,
+} from '../routing/productUrlInbound';
 
-/** Second-row browse filter — what kind of pin (within topic). See `explore-browse-ia.md`. */
-export type ExplorePinKindFilter = 'all' | 'activities' | 'looking' | 'locations' | 'places' | 'shops';
+/** Second-row browse filter — what kind of pin (within topic). */
+export type ExplorePinKindFilter = 'all' | 'activities' | 'places' | 'shops';
 
-/** Visible map pills — Area is not a pin; inbound `locations` URL maps to Spots. */
+/** Visible map pills — fixed availability shares the Activities lens (no separate pill). */
 export const EXPLORE_PIN_KIND_PILLS: ReadonlyArray<{ key: ExplorePinKindFilter; label: string }> = [
   { key: 'all', label: 'All' },
   { key: 'activities', label: 'Activities' },
@@ -14,9 +18,7 @@ export const EXPLORE_PIN_KIND_PILLS: ReadonlyArray<{ key: ExplorePinKindFilter; 
 const PIN_KIND_QUERY = new Set<string>([
   'all',
   'activities',
-  'trips',
-  'looking',
-  'locations',
+  ...EXPLORE_PIN_KIND_INBOUND_TOKENS,
   'places',
   'shops',
 ]);
@@ -24,9 +26,9 @@ const PIN_KIND_QUERY = new Set<string>([
 export const parseExplorePinKindFilter = (value: string | null): ExplorePinKindFilter => {
   const key = value?.trim().toLowerCase();
   if (!key || !PIN_KIND_QUERY.has(key)) return 'all';
-  if (key === 'trips') return 'activities';
-  if (key === 'locations') return 'places';
-  return key as ExplorePinKindFilter;
+  const canonical = canonicalizeExplorePinKindToken(key);
+  if (canonical === 'activities' || canonical === 'places' || canonical === 'shops') return canonical;
+  return 'all';
 };
 
 export const serializeExplorePinKindFilter = (value: ExplorePinKindFilter): string | null =>

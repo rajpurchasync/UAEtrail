@@ -1,6 +1,6 @@
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
 import { EXPLORE_RECENT_SEARCHES_MAX } from './exploreHubHomeCopy';
-import type { ExploreHubMode } from './exploreHubRouting';
+import type { ExploreSearchScope } from '../search/exploreSearchRouting';
 
 export const EXPLORE_HUB_LAST_SEARCH_KEY = 'uaetrail:hub.lastSearch';
 export const EXPLORE_RECENT_SEARCHES_KEY = 'uaetrail:explore.recentSearches';
@@ -17,7 +17,7 @@ const storageKey = (base: string, scope: ExploreSearchStorageScope): string => `
 
 export const readExploreHubHomeScope = (
   scope: ExploreSearchStorageScope = 'guest'
-): ExploreHubMode => {
+): ExploreSearchScope => {
   try {
     const raw = sessionStorage.getItem(storageKey(EXPLORE_HUB_HOME_SCOPE_KEY, scope));
     if (raw === 'places' || raw === 'crew' || raw === 'join') return raw;
@@ -28,7 +28,7 @@ export const readExploreHubHomeScope = (
 };
 
 export const writeExploreHubHomeScope = (
-  mode: ExploreHubMode,
+  mode: ExploreSearchScope,
   scope: ExploreSearchStorageScope = 'guest'
 ): void => {
   try {
@@ -41,7 +41,7 @@ export const writeExploreHubHomeScope = (
 export type ExploreHubLastSearch = {
   query: string;
   activityDatePreset: ExploreActivityDatePreset;
-  hubMode: ExploreHubMode;
+  hubMode: ExploreSearchScope;
   venueRegions?: string[];
 };
 

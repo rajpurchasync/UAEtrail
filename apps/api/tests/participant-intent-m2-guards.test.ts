@@ -19,12 +19,11 @@ describe('participant intent M2 guards', () => {
     expect(exploreMapBase).not.toMatch(/source:\s*'demand'/);
   });
 
-  it('Find create writes seeking activity only (no participant_intents insert)', () => {
+  it('Find create is retired (member_availability is product write)', () => {
     const store = read('src/lib/participant-intents-store.ts');
-    const createIdx = store.indexOf('createSeekingActivityForIntent');
-    expect(createIdx).toBeGreaterThan(-1);
+    expect(store).toMatch(/activity_mode_seeking_retired/);
     expect(store).not.toMatch(/insertOne\(doc\)/);
-    expect(store).toMatch(/activityDocToParticipantIntentDto/);
+    expect(store).toMatch(/mergeMemberAvailabilityFixedSlotsMigration/);
   });
 
   it('update/cancel are seeking-activity only (no participant_intents writes)', () => {

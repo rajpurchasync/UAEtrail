@@ -36,10 +36,11 @@ import {
   type BrowseMainCategoryKey,
 } from './browseListTaxonomy';
 import {
-  BUDDIES_SEGMENT_URL_PARAM,
-  parseBuddiesDiscoverySegment,
-  serializeBuddiesDiscoverySegment,
-} from './buddiesDiscoverySegment';
+  PEOPLE_LIST_TAB_URL_PARAM,
+  parsePeopleListBrowseTab,
+  readPeopleListBrowseTabParam,
+  serializePeopleListBrowseTab,
+} from './peopleListBrowseUrl';
 import {
   BROWSE_AUDIENCE_PARAM,
   parseBrowseAudienceFilter,
@@ -50,6 +51,7 @@ import {
   parseBrowseGeoPath,
   serializeBrowseGeoPath,
 } from './browseGeoPath';
+import { listFilterMeansAvailabilityOnly } from '../routing/productUrlInbound';
 
 const WHEN_PARAM = 'when';
 
@@ -98,14 +100,14 @@ const parseTripAndPlaceTopics = (
   listCat: BrowseMainCategoryKey | null
 ): {
   tripTopics: BrowseTripTopicKey[];
-  tripLookingOnly: boolean;
+  tripAvailabilityOnly: boolean;
   placeTopics: ListVenuePlaceTopicKey[];
 } => {
   if (!filterParam || filterParam === 'all') {
-    return { tripTopics: [], tripLookingOnly: false, placeTopics: [] };
+    return { tripTopics: [], tripAvailabilityOnly: false, placeTopics: [] };
   }
-  if (filterParam === 'looking') {
-    return { tripTopics: [], tripLookingOnly: true, placeTopics: [] };
+  if (listFilterMeansAvailabilityOnly(filterParam)) {
+    return { tripTopics: [], tripAvailabilityOnly: true, placeTopics: [] };
   }
 
   const tripTopics: BrowseTripTopicKey[] = [];
@@ -135,7 +137,7 @@ const parseTripAndPlaceTopics = (
       placeTopics.push(trimmed);
     }
   }
-  return { tripTopics, tripLookingOnly: false, placeTopics };
+  return { tripTopics, tripAvailabilityOnly: false, placeTopics };
 };
 
 const resolveBrowseActivityDatePreset = (
@@ -176,12 +178,12 @@ export const parseBrowseListFilterState = (
     query: searchParams.get('q')?.trim() ?? '',
     categories: parseBrowseMainCategoriesFromTopics(searchParams.get('topics')),
     tripTopics,
-    tripLookingOnly: topicParse.tripLookingOnly,
+    tripAvailabilityOnly: topicParse.tripAvailabilityOnly,
     placeTopics,
     price: parseBrowseListPriceParam(searchParams.get(EXPLORE_PRICE_PARAM)),
     when: whenNormalized,
     activityDatePreset,
-    buddiesSegment: parseBuddiesDiscoverySegment(searchParams.get(BUDDIES_SEGMENT_URL_PARAM)),
+    peopleBrowseTab: parsePeopleListBrowseTab(readPeopleListBrowseTabParam(searchParams)),
     hasTrip: parseExploreHasTrip(searchParams.get(EXPLORE_HAS_TRIP_PARAM)),
     facilityKinds: parseExploreFacilityKinds(searchParams.get(EXPLORE_FACILITY_KINDS_PARAM)),
     audience: parseBrowseAudienceFilter(searchParams.get(BROWSE_AUDIENCE_PARAM)),
@@ -209,8 +211,8 @@ export const serializeBrowseListSearchParams = (
   const topics = serializeBrowseMainCategoriesToTopics(state.categories);
   if (topics) params.set('topics', topics);
 
-  if (state.tripLookingOnly) {
-    params.set('filter', 'looking');
+  if (state.tripAvailabilityOnly) {
+    params.set('filter', 'availability');
   } else if (state.tripTopics.length > 0) {
     params.set('filter', state.tripTopics.join(','));
   } else if (state.placeTopics.length > 0) {
@@ -250,8 +252,8 @@ export const serializeBrowseListSearchParams = (
   const audience = serializeBrowseAudienceFilter(state.audience);
   if (audience) params.set(BROWSE_AUDIENCE_PARAM, audience);
 
-  const buddies = serializeBuddiesDiscoverySegment(state.buddiesSegment);
-  if (buddies) params.set(BUDDIES_SEGMENT_URL_PARAM, buddies);
+  const peopleTab = serializePeopleListBrowseTab(state.peopleBrowseTab);
+  if (peopleTab) params.set(PEOPLE_LIST_TAB_URL_PARAM, peopleTab);
 
   return params;
 };

@@ -11,7 +11,7 @@ export { enrichDiscoveryPeekSelection } from './enrichDiscoveryPeekSelection';
 export { buildDiscoveryMapListRowCard } from './buildDiscoveryMapListRowCard';
 export {
   buildDiscoveryListMeta,
-  discoveryCardIsSeeking,
+  discoveryCardIsAvailabilityPin,
   type DiscoveryCardModel,
 } from './discoveryCardModel';
 export { ActivityDiscoveryPublishedBody } from './ActivityDiscoveryPublishedBody';

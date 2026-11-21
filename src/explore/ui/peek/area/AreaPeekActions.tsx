@@ -33,7 +33,7 @@ export const AreaPeekActions = ({
   onClose,
 }: AreaPeekActionsProps) => {
   const hosted = stats?.hostedActivities ?? 0;
-  const seeking = stats?.seekingPosts ?? 0;
+  const available = stats?.availabilityPins ?? 0;
   const trails = stats?.trailSpots ?? 0;
   const camps = stats?.campSpots ?? 0;
   const facilities = stats?.facilities ?? 0;
@@ -50,9 +50,13 @@ export const AreaPeekActions = ({
           Activities ({hosted})
         </Link>
       ) : null}
-      {seeking > 0 ? (
-        <Link to={scopedExplore(areaSlug, 'looking')} className={linkClass} onClick={onClose}>
-          Looking for crew ({seeking})
+      {available > 0 ? (
+        <Link
+          to={`${scopedExplore(areaSlug, 'activities')}&activityMode=availability`}
+          className={linkClass}
+          onClick={onClose}
+        >
+          Available ({available})
         </Link>
       ) : null}
       {trails > 0 ? (

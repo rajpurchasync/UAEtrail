@@ -25,7 +25,7 @@ export const browseAppliedFilterLabels = (
       const match = BROWSE_TRIP_TOPIC_FILTERS.find((option) => option.key === topic);
       if (match) labels.push(match.label);
     }
-    if (filters.tripLookingOnly) labels.push('Looking for');
+    if (filters.tripAvailabilityOnly) labels.push('Available');
     if (filters.price !== 'all') {
       labels.push(BROWSE_PRICE_OPTIONS.find((option) => option.key === filters.price)?.label ?? filters.price);
     }

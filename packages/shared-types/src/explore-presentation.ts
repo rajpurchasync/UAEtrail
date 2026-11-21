@@ -19,7 +19,7 @@ import {
   resolveParticipationMode,
   type ParticipationMode,
 } from './activity-participation-mode.js';
-import { exploreMapItemIsSeeking } from './explore-activity-mode.js';
+import { exploreMapItemIsLegacySeekingActivity } from './explore-activity-mode.js';
 import type { ExploreActivityMode } from './explore-activity-mode.js';
 import {
   facilityPlaceKindPinEmoji,
@@ -170,7 +170,7 @@ export const resolveExploreItemSource = (
   item: Pick<DiscoveryCardBuildInput, 'id' | 'source' | 'activityMode' | 'participantIntentId'>
 ): DiscoveryCardSource => {
   const { id, source } = item;
-  if (exploreMapItemIsSeeking(item)) return 'activity';
+  if (exploreMapItemIsLegacySeekingActivity(item)) return 'activity';
   if (
     source === 'activity' ||
     source === 'availability' ||
@@ -264,10 +264,8 @@ interface ExploreHeadlineInput extends ExploreFeaturedPersonInput {
   activity?: DiscoveryCardBuildInput['activity'];
 }
 
-const headlineIsSeeking = (input: ExploreHeadlineInput): boolean =>
-  input.isSeekingPin === true ||
-  exploreMapItemIsSeeking(input) ||
-  input.source === 'availability';
+const headlineIsFindCrew = (input: ExploreHeadlineInput): boolean =>
+  input.isSeekingPin === true || input.source === 'availability';
 
 const joinExploreParts = (...parts: (string | null | undefined)[]): string =>
   parts.filter((part): part is string => Boolean(part?.trim())).join(' - ');
@@ -665,7 +663,7 @@ export const buildExploreListWhen = (
 const buildExploreListGoingLabel = (
   input: ExploreHeadlineInput & { participantCount?: number }
 ): string | null => {
-  if (headlineIsSeeking(input)) {
+  if (headlineIsFindCrew(input)) {
     const count = input.slotsTotal ?? 0;
     return count > 0 ? `${count} going` : null;
   }
@@ -715,7 +713,7 @@ const seekingPersonLabel = (input: ExploreHeadlineInput, form: 'peek' | 'headlin
 
 /** Person label for headlines — always a member name, never operator brand. */
 const exploreHeadlinePersonLabel = (input: ExploreHeadlineInput): string => {
-  if (headlineIsSeeking(input)) {
+  if (headlineIsFindCrew(input)) {
     return seekingPersonLabel(input, 'headline');
   }
   if (input.source === 'activity') {
@@ -731,7 +729,7 @@ const buildExploreListTitle = (input: ExploreHeadlineInput): string => {
     return input.title.trim() || 'Listing';
   }
 
-  if (headlineIsSeeking(input)) {
+  if (headlineIsFindCrew(input)) {
     const user = exploreHeadlinePersonLabel(input);
     const trimmed = input.title.trim();
     if (trimmed && !isGenericSeekingTitle(trimmed, mapSeekingTitleKind(input.kind))) {
@@ -759,7 +757,7 @@ export const exploreHeadline = (input: ExploreHeadlineInput): string => {
 
   const route = buildExploreRouteLabel(input.fromLabel, input.toLabel, input.kind);
   const whenSuffix =
-    headlineIsSeeking(input) ? 'flexible' : input.kind === 'rideshare' ? 'fixed' : null;
+    headlineIsFindCrew(input) ? 'flexible' : input.kind === 'rideshare' ? 'fixed' : null;
   const when = buildExploreWhenSegment(
     input.date,
     input.time,
@@ -769,7 +767,7 @@ export const exploreHeadline = (input: ExploreHeadlineInput): string => {
   );
   const location = sanitizeExploreLocation(input.location);
 
-  if (headlineIsSeeking(input)) {
+  if (headlineIsFindCrew(input)) {
     const user = exploreHeadlinePersonLabel(input);
     const day = formatExploreDayForHeadline(input.date);
     const activityLabel = resolveSeekingActivityHighlight(input.title, input.kind);
@@ -865,7 +863,7 @@ export const buildDiscoveryCardSections = (input: ExploreHeadlineInput): Discove
 
   const route = buildExploreRouteLabel(input.fromLabel, input.toLabel, input.kind);
   const whenSuffix =
-    headlineIsSeeking(input) ? 'flexible' : input.kind === 'rideshare' ? 'fixed' : null;
+    headlineIsFindCrew(input) ? 'flexible' : input.kind === 'rideshare' ? 'fixed' : null;
   const when = buildExploreWhenSegment(
     input.date,
     input.time,
@@ -874,7 +872,7 @@ export const buildDiscoveryCardSections = (input: ExploreHeadlineInput): Discove
     input.endTime
   );
   const spots =
-    input.source === 'activity' && !headlineIsSeeking(input) && input.kind !== 'rideshare'
+    input.source === 'activity' && !headlineIsFindCrew(input) && input.kind !== 'rideshare'
       ? buildExploreSpotsSegment(input.slotsAvailable, input.slotsTotal)
       : null;
   const partyLabel = buildExplorePeekSpotsLabel(
@@ -884,7 +882,7 @@ export const buildDiscoveryCardSections = (input: ExploreHeadlineInput): Discove
   );
   const location = sanitizeExploreLocation(input.location);
 
-  if (headlineIsSeeking(input)) {
+  if (headlineIsFindCrew(input)) {
     const user = seekingPersonLabel(input, 'peek');
     push('route', route);
     push('location', input.kind !== 'rideshare' ? location : null);
@@ -945,7 +943,7 @@ export const exploreSubtitle = (
   source: DiscoveryCardSource
 ): string | null => {
   if (isGeographyMapSource(source)) return item.subtitle?.trim() || null;
-  if (exploreMapItemIsSeeking(item)) {
+  if (item.source === 'availability') {
     if (kind === 'rideshare') return null;
     return item.subtitle?.trim() || null;
   }
@@ -954,7 +952,7 @@ export const exploreSubtitle = (
 };
 
 export const exploreSpotsLabel = (item: DiscoveryCardBuildInput): string | null => {
-  if (exploreMapItemIsSeeking(item)) return null;
+  if (item.source === 'availability') return null;
   if (item.source !== 'activity') return null;
   return buildExploreSpotsSegment(item.slotsAvailable, item.slotsTotal);
 };
@@ -1083,14 +1081,13 @@ export const buildDiscoveryCardPresentation = (
   }
   const kind = resolveDiscoveryCardKind(item);
   const isAvailabilityPin = item.source === 'availability';
-  const isSeekingPin = exploreMapItemIsSeeking(item);
-  const isCrewHeadlinePin = isSeekingPin || isAvailabilityPin;
+  const isCrewHeadlinePin = isAvailabilityPin;
   const activity = item.activity;
 
   const fromLabel = item.fromLabel ?? activity?.meetingPoint ?? null;
   const toLabel = item.toLabel ?? activity?.startPoint ?? activity?.locationName ?? null;
   const routeLabel = buildExploreRouteLabel(fromLabel, toLabel, kind);
-  const whenSuffix = isCrewHeadlinePin && !isAvailabilityPin ? 'flexible' : kind === 'rideshare' || isAvailabilityPin ? 'fixed' : null;
+  const whenSuffix = kind === 'rideshare' || isAvailabilityPin ? 'fixed' : null;
   const endDate = item.endDate ?? activity?.endDate ?? null;
   const endTime = item.endTime ?? activity?.endTime ?? null;
   const whenLabel = buildExploreWhenSegment(
@@ -1144,7 +1141,7 @@ export const buildDiscoveryCardPresentation = (
       source,
       undefined,
       item.placeKind ?? undefined,
-      isSeekingPin && !isAvailabilityPin
+      false
     ),
     headline: exploreHeadline(headlineInput),
     listTitle: sections.listTitle,
@@ -1161,17 +1158,15 @@ export const buildDiscoveryCardPresentation = (
     featuredPerson,
     subtitle,
     spotsLabel: exploreSpotsLabel(item),
-    venueHint: exploreVenueHint(source, kind, item.shopPresence, isSeekingPin && !isAvailabilityPin),
+    venueHint: exploreVenueHint(source, kind, item.shopPresence, false),
     primaryCta: explorePrimaryCtaLabel(source, {
       participationMode: itemParticipationMode(item),
       requirements: activity?.requirements,
-      seeking: isSeekingPin && !isAvailabilityPin,
       slotsTotal: item.slotsTotal,
       slotsAvailable: item.slotsAvailable,
     }),
     secondaryCta: exploreSecondaryCtaLabel(source, {
       websiteUrl: item.websiteUrl,
-      seeking: isSeekingPin && !isAvailabilityPin,
     }),
     shareText: [routeLabel, whenLabel].filter(Boolean).join(' · ') || item.subtitle || null,
     routeLabel,

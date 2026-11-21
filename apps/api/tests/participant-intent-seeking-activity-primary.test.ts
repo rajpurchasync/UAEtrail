@@ -44,6 +44,6 @@ describe('Find create retired (MIG-DISCO-REG)', () => {
           longitude: 56.12,
         })
       )
-    ).rejects.toThrow(/activity_mode_seeking_retired/);
+    ).rejects.toMatchObject({ code: 'activity_mode_seeking_retired' });
   });
 });

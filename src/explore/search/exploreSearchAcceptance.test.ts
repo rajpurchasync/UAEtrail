@@ -22,6 +22,20 @@ describe('explore search results', () => {
     expect(exploreIndex).toBeGreaterThan(searchIndex);
   });
 
+  it('search modules use exploreSearchRouting (not deprecated exploreHubRouting)', () => {
+    const hubSources = [
+      'src/explore/hub/exploreHubLastSearch.ts',
+      'src/explore/hub/ExploreHubScopePills.tsx',
+      'src/explore/hub/ExploreHubSearchHero.tsx',
+      'src/explore/hub/exploreHubUpcomingTrips.ts',
+    ];
+    for (const file of hubSources) {
+      const source = read(file);
+      expect(source).not.toMatch(/from ['"]\.\/exploreHubRouting['"]/);
+      expect(source).toMatch(/exploreSearchRouting/);
+    }
+  });
+
   it('redirects legacy /explore/hub bookmarks', () => {
     expect(exploreInboundHubRedirectTarget('/explore/hub/search', '?q=camp')).toBe(
       `${EXPLORE_SEARCH_RESULTS_PATH}?q=camp`

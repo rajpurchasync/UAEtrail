@@ -21,7 +21,7 @@ describe('resolvePlanCalendarRowOpenAction', () => {
     });
   });
 
-  it('navigates hosting and seeking to manage href', () => {
+  it('navigates hosting and map availability slots to manage href', () => {
     expect(
       resolvePlanCalendarRowOpenAction({
         kind: 'hosting',
@@ -30,5 +30,13 @@ describe('resolvePlanCalendarRowOpenAction', () => {
         activityId: 'h1',
       })
     ).toEqual({ type: 'navigate', href: '/plan?peek=h1' });
+    expect(
+      resolvePlanCalendarRowOpenAction({
+        kind: 'mapSlot',
+        title: 'On the map',
+        href: '/plan',
+        slotId: 'slot-1',
+      })
+    ).toEqual({ type: 'navigate', href: '/plan' });
   });
 });

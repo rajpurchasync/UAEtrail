@@ -81,7 +81,7 @@ const resetVisibleFilters = (
     : {
         ...state,
         tripTopics: [],
-        tripLookingOnly: false,
+        tripAvailabilityOnly: false,
         price: 'all',
         when: 'any',
         activityDatePreset: 'anyday',
@@ -206,9 +206,9 @@ export const ListExplorerFilterPop = ({
                 <button
                   type="button"
                   onClick={() =>
-                    setDraft((prev) => ({ ...prev, tripTopics: [], tripLookingOnly: false }))
+                    setDraft((prev) => ({ ...prev, tripTopics: [], tripAvailabilityOnly: false }))
                   }
-                  className={listFilterPopChipClass(draft.tripTopics.length === 0 && !draft.tripLookingOnly)}
+                  className={listFilterPopChipClass(draft.tripTopics.length === 0 && !draft.tripAvailabilityOnly)}
                 >
                   All
                 </button>
@@ -220,7 +220,7 @@ export const ListExplorerFilterPop = ({
                       setDraft((prev) => ({
                         ...prev,
                         tripTopics: toggleBrowseTripTopicInList(prev.tripTopics, key),
-                        tripLookingOnly: false,
+                        tripAvailabilityOnly: false,
                       }))
                     }
                     className={listFilterPopChipClass(draft.tripTopics.includes(key))}

@@ -3,17 +3,18 @@ import type { AreaDTO, ExploreAreaLensStatsDTO, ExploreMapItemDTO } from '@uaetr
 import {
   areaDetailPath,
   exploreAreaLensStatsSummary,
-  exploreMapItemIsSeeking,
+  exploreMapItemIsAvailabilityCatalog,
+  exploreMapItemIsHostedActivity,
+  exploreMapItemIsLegacySeekingActivity,
   isFacilityMapSource,
   isPlaceMapSource,
-  isTimeBoundExploreMapItem,
   isFacilityPlaceKind,
   placeKindFromLocationRow,
 } from '@uaetrail/shared-types';
 
 const emptyStats = (): ExploreAreaLensStatsDTO => ({
   hostedActivities: 0,
-  seekingPosts: 0,
+  availabilityPins: 0,
   trailSpots: 0,
   campSpots: 0,
   facilities: 0,
@@ -37,9 +38,13 @@ const accumulateAreaLensStats = (items: ExploreMapItemDTO[]): Map<string, Explor
     if (!areaId) continue;
     const stats = bucket(areaId);
 
-    if (isTimeBoundExploreMapItem(item)) {
-      if (exploreMapItemIsSeeking(item)) stats.seekingPosts += 1;
-      else stats.hostedActivities += 1;
+    if (exploreMapItemIsLegacySeekingActivity(item)) continue;
+    if (exploreMapItemIsAvailabilityCatalog(item)) {
+      stats.availabilityPins += 1;
+      continue;
+    }
+    if (exploreMapItemIsHostedActivity(item)) {
+      stats.hostedActivities += 1;
       continue;
     }
     if (isFacilityMapSource(item.source)) {

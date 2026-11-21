@@ -8,6 +8,10 @@ import {
   parseBrowseDiscoverOpen,
 } from '../../list/browseListUrlState';
 import { compactExploreParentFilterSearchParams, EXPLORE_PIN_QUERY_KEY } from '../routing';
+import {
+  sanitizeInboundExplorePinId,
+  stripRetiredExploreOverlayParams,
+} from '../../routing/productUrlInbound';
 
 const isPeopleView = (view: string | null): boolean =>
   view === 'people' || view === 'social' || view === 'going';
@@ -26,12 +30,17 @@ export const useExploreBrowseUrlInboundMigrations = (input: {
 
   useEffect(() => {
     const params = new URLSearchParams(search);
+    const sanitizedPin = sanitizeInboundExplorePinId(params.get(EXPLORE_PIN_QUERY_KEY));
+    if (!sanitizedPin) params.delete(EXPLORE_PIN_QUERY_KEY);
+    else params.set(EXPLORE_PIN_QUERY_KEY, sanitizedPin);
+    stripRetiredExploreOverlayParams(params);
+    const wireSanitized = params.toString() !== search;
     const browse = parseBrowseDiscoverOpen(params.get(BROWSE_DISCOVER_PARAM));
     const list = params.get('list') === '1';
     const people = isPeopleView(params.get('view'));
     const pin = params.get(EXPLORE_PIN_QUERY_KEY)?.trim();
 
-    if (compactExploreParentFilterSearchParams(params)) {
+    if (wireSanitized || compactExploreParentFilterSearchParams(params)) {
       const next = params.toString();
       if (next !== search) {
         applyProductSearchMutation({ pathname, navigate, setSearchParams }, (draft) => {

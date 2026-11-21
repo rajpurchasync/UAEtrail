@@ -49,7 +49,7 @@ export const loadSeekingStorageStatus = async (): Promise<SeekingStorageStatusRe
   const recommendedSteps: string[] = [];
   if (missingSeekingActivity > 0) {
     recommendedSteps.push(
-      `Run backfill: npm --workspace @uaetrail/api run backfill-seeking-activities -- --dry-run then without --dry-run (${missingSeekingActivity} active intent(s) still missing seeking activity).`
+      `Run intent backfill (migrates to member_availability): npm --workspace @uaetrail/api run backfill-seeking-activities -- --dry-run then without --dry-run (${missingSeekingActivity} active intent(s) pending).`
     );
   }
   if (missingCoords > 0) {
@@ -58,7 +58,7 @@ export const loadSeekingStorageStatus = async (): Promise<SeekingStorageStatusRe
     );
   }
   if (readyToDisableStubWrite) {
-    recommendedSteps.push('Seeking storage ready — Find writes activities only (COH-01).');
+    recommendedSteps.push('Seeking storage ready — Find crew uses member_availability (MIG-DISCO-REG).');
   }
   if (recommendedSteps.length === 0) {
     recommendedSteps.push('No action required.');

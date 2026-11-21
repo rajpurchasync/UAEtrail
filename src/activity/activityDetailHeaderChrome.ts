@@ -2,8 +2,11 @@ import type { ActivityDetailDTO } from '@uaetrail/shared-types';
 import { resolveMapPinEmoji } from '@uaetrail/shared-types';
 import type { DetailHeaderMark } from '../components/mobile/DetailHeaderChrome';
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
-import { discoveryCardIsSeeking } from '../discovery/discoveryCardModel';
 import { activityKindChromeEmoji } from './activityKindChrome';
+import {
+  activityDetailIsRetiredSeekingPost,
+  RETIRED_SEEKING_ACTIVITY_DETAIL_HEADER,
+} from './retiredSeekingActivityDetail';
 
 export type ActivityDetailHeaderChrome = {
   emoji: string;
@@ -30,21 +33,13 @@ export const resolveActivityDetailHeaderChrome = (
     return { emoji, label };
   }
 
-  if (card?.source === 'activity' && card.emoji && card.tone) {
-    const seeking = activity.activityMode === 'seeking' || discoveryCardIsSeeking(card);
-    if (seeking) {
-      return {
-        emoji: card.emoji,
-        label: 'Looking for company',
-      };
-    }
+  if (activityDetailIsRetiredSeekingPost(activity)) {
+    const emoji = card?.emoji ?? activityKindChromeEmoji(activity.activityType);
+    return { emoji, label: RETIRED_SEEKING_ACTIVITY_DETAIL_HEADER };
   }
 
   const type = activity.activityType;
   const emoji = card?.emoji ?? activityKindChromeEmoji(type);
-  if (activity.activityMode === 'seeking') {
-    return { emoji, label: 'Looking for company' };
-  }
 
   switch (type) {
     case 'rideshare':

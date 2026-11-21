@@ -8,7 +8,7 @@ import { PlanUpcomingDetailLink } from './PlanUpcomingDetailLink';
 
 export type PlanCommitmentBadge =
   | 'Hosting'
-  | 'Looking for company'
+  | 'On the map'
   | 'Joined'
   | 'Joined with family'
   | 'Joined · family pending'
@@ -19,7 +19,7 @@ export type PlanCommitmentBadge =
 
 const badgeClass: Record<PlanCommitmentBadge, string> = {
   Hosting: 'bg-emerald-500/15 text-emerald-800',
-  'Looking for company': 'bg-violet-500/15 text-violet-800',
+  'On the map': 'bg-violet-500/15 text-violet-800',
   Joined: 'bg-sky-500/15 text-sky-800',
   'Joined with family': 'bg-sky-500/15 text-sky-800',
   'Joined · family pending': 'bg-amber-500/15 text-amber-900',

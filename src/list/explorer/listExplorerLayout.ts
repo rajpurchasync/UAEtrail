@@ -34,7 +34,7 @@ export const countListExplorerFilters = (
     return count;
   }
   count += filters.tripTopics.length;
-  if (filters.tripLookingOnly) count += 1;
+  if (filters.tripAvailabilityOnly) count += 1;
   if (filters.price !== 'all') count += 1;
   if (filters.when !== 'any') count += 1;
   if (filters.activityDatePreset !== 'anyday') count += 1;

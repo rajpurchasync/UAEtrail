@@ -21,14 +21,14 @@ export const exploreMapQuickFiltersBrowseState = (input: {
   query: '',
   categories: [],
   tripTopics: [...input.tripMapTopics],
-  tripLookingOnly: false,
+  tripAvailabilityOnly: false,
   placeTopics: input.placeMapTopics
     .map(aliasPlaceMapTopicToList)
     .filter((key): key is ListVenuePlaceTopicKey => key != null),
   price: input.priceFilter,
   when: 'any',
   activityDatePreset: input.activityDatePreset,
-  buddiesSegment: 'available',
+  peopleBrowseTab: 'available',
   hasTrip: input.hasTrip,
   facilityKinds: [...input.facilityKinds],
   audience: 'anyone',

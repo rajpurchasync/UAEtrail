@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { backfillSeekingActivitiesForActiveIntents } from '../src/lib/participant-intents-store.js';
-import { findActivityDocInMongo } from '../src/lib/entity-sync.js';
+import { getMemberAvailability } from '../src/lib/member-availability-store.js';
 import { createAuthUser } from '../src/lib/auth-users-store.js';
 import { generateReferralCode } from '../src/lib/referral-code.js';
 import bcrypt from 'bcryptjs';
@@ -18,7 +18,7 @@ beforeAll(async () => {
 });
 
 describe('backfillSeekingActivitiesForActiveIntents', () => {
-  it('links seeking activities for legacy active intents', async () => {
+  it('migrates legacy active intents into member_availability fixed slots', async () => {
     const suffix = `bf-${Date.now()}`;
     const user = await createAuthUser({
       email: `bf-${suffix}@test.local`,
@@ -73,9 +73,11 @@ describe('backfillSeekingActivitiesForActiveIntents', () => {
       .db()
       .collection(COLLECTIONS.PARTICIPANT_INTENTS)
       .findOne({ _id: intentId });
-    expect(intentDoc?.seekingActivityId).toBeTruthy();
+    expect(intentDoc?.status).toBe('fulfilled');
 
-    const activity = await findActivityDocInMongo(intentDoc!.seekingActivityId as string);
-    expect(activity?.participantIntentId).toBe(intentId);
+    const availability = await getMemberAvailability(user._id);
+    expect(availability?.slots.some((s) => s.slotId === intentId && s.scheduleKind === 'fixed')).toBe(
+      true
+    );
   });
 });

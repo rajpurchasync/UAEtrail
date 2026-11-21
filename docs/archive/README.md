@@ -4,7 +4,7 @@
 
 | Removed / retired | Use instead |
 |-------------------|-------------|
-| `HOST_CLEANUP_ROADMAP.md`, `TRIPS_HOST_MANAGE.md`, `UAE_Trail_Homepage.md`, `design-tokens.md`, `monitoringPlan.md`, experiment plan bodies | Tier-1 + `wire-lexicon.ts` / `upl-glossary.ts` · §8.8 |
+| `HOST_CLEANUP_ROADMAP.md`, `TRIPS_HOST_MANAGE.md`, `UAE_Trail_Homepage.md`, `design-tokens.md`, `monitoringPlan.md`, `detail-pages-revamp-plan.md` (was `detailPagesRevampPlan.md`), experiment plan bodies | Tier-1 + `wire-lexicon.ts` / `upl-glossary.ts` · §8.8 |
 | `system-refactor-plan-2026-10.md`, `system-structure-deep-audit-2026-10.md` | §8.8 · `npm run system:audit` |
 | `docs/archive/experiment/*.md`, `docs/experiment/*-plan.md` (deleted Oct 2026) | §8 only — [`experiment/README.md`](../experiment/README.md) |
 

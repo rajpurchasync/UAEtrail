@@ -26,7 +26,7 @@ import {
 import { useExploreBrowseUrlInboundMigrations } from './useExploreBrowseUrlInboundMigrations';
 import { useExploreBrowsePeekDismissOnFilterChange } from './useExploreBrowsePeekDismissOnFilterChange';
 import { useExploreBrowseUrlApplyHandlers } from './useExploreBrowseUrlApplyHandlers';
-import type { BuddiesDiscoverySegment } from '../../list/buddiesDiscoverySegment';
+import type { PeopleBrowseTab } from '../../list/peopleListBrowseUrl';
 import type { ExplorePinKindFilter } from '../explorePinKindFilter';
 import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
@@ -81,9 +81,6 @@ export const useExploreBrowseUrlState = ({
   const [peopleBrowseOpen, setPeopleBrowseOpen] = useState(initial.peopleBrowseOpen);
   const [searchScope, setSearchScope] = useState<ExploreSearchScopeKey | null>(initial.searchScope);
   const [peopleBrowseTab, setPeopleBrowseTab] = useState<PeopleBrowseTab>(initial.peopleBrowseTab);
-  const [buddiesDiscoverSegment, setBuddiesDiscoverSegment] = useState<BuddiesDiscoverySegment>(
-    initial.buddiesDiscoverSegment
-  );
   const [tripMapTopics, setTripMapTopics] = useState<TripMapTopicKey[]>(initial.tripMapTopics);
   const [placeMapTopics, setPlaceMapTopics] = useState<PlaceMapTopicKey[]>(initial.placeMapTopics);
   const [priceFilter, setPriceFilter] = useState<ExplorePriceFilter>(initial.priceFilter);
@@ -171,7 +168,6 @@ export const useExploreBrowseUrlState = ({
         setListMode,
         setPeopleBrowseOpen,
         setPeopleBrowseTab,
-        setBuddiesDiscoverSegment,
         setDesktopBrowseTab,
         setActivityDatePreset,
         setActivityModeFilter,
@@ -280,7 +276,6 @@ export const useExploreBrowseUrlState = ({
     pinKind,
     topicPills,
     peopleBrowseTab,
-    buddiesDiscoverSegment,
     listMode,
     peopleBrowseOpen,
     tripMapTopics,

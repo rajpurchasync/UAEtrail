@@ -38,12 +38,12 @@ const EMPTY_FILTERS: BrowseListFilterState = {
   query: '',
   categories: [],
   tripTopics: [],
-  tripLookingOnly: false,
+  tripAvailabilityOnly: false,
   placeTopics: [],
   price: 'all',
   when: 'any',
   activityDatePreset: 'anyday',
-  buddiesSegment: 'looking',
+  peopleBrowseTab: 'looking',
   hasTrip: false,
   facilityKinds: [],
   audience: 'anyone',
@@ -155,7 +155,7 @@ export const GeoBrowsePane = ({
         ...prev,
         query: draftQuery,
         tripTopics: [],
-        tripLookingOnly: false,
+        tripAvailabilityOnly: false,
         placeTopics: patch?.placeTopics ?? [],
       }));
       onBucketChange('places');
@@ -247,7 +247,7 @@ export const GeoBrowsePane = ({
         }}
         onClearFilters={clearFilters}
         onTripTopicsChange={(next) =>
-          setFilters((prev) => ({ ...prev, tripTopics: next, tripLookingOnly: false }))
+          setFilters((prev) => ({ ...prev, tripTopics: next, tripAvailabilityOnly: false }))
         }
         onPlaceTopicsChange={(next) => setFilters((prev) => ({ ...prev, placeTopics: next }))}
         onPriceChange={(next) => setFilters((prev) => ({ ...prev, price: next }))}

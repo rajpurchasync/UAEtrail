@@ -575,6 +575,7 @@ export const listPublishedUpcomingActivitiesByAreaFromMongo = async (
       status: ActivityStatus.PUBLISHED,
       startAt: { $gte: startOfToday },
       joinMode: { $ne: 'private' },
+      activityMode: { $ne: 'seeking' },
       $or: [
         { locationId: { $in: locationIdList } },
         { areaId },

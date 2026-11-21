@@ -1,6 +1,6 @@
 /**
  * Public shell keeps meeting coordinates rounded (~1 km); exact pins live in `activity_private`.
- * @see docs/detailPagesRevampPlan.md §13.4
+ * @see docs/DOMAIN_CANONICALS.md §3.2.1
  */
 export const roundMeetingCoordForShell = (value: number): number => Math.round(value * 100) / 100;
 

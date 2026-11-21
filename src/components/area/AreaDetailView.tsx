@@ -207,9 +207,9 @@ export const AreaDetailView = ({
             icon={keyFactIconFromLabel('Places')}
           />
           <StatTile
-            label="Seeking"
-            value={String(counts.seeking)}
-            icon={keyFactIconFromLabel('Seeking')}
+            label="Available"
+            value={String(counts.availability)}
+            icon={keyFactIconFromLabel('Available')}
           />
         </StatGrid>
       }

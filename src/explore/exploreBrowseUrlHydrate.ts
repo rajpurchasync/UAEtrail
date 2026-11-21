@@ -25,13 +25,10 @@ import {
 } from './exploreBrowseTaxonomy';
 import { BROWSE_DISCOVER_PARAM, LIST_CAT_PARAM, parseListCatParam } from '../list/browseListUrlState';
 import type { ExploreBrowseListMode } from './exploreBrowseUrlSync';
-import {
-  BUDDIES_SEGMENT_URL_PARAM,
-  parseBuddiesDiscoverySegment,
-  type BuddiesDiscoverySegment,
-} from '../list/buddiesDiscoverySegment';
+import { parseExplorePeopleBrowseTab } from '../list/peopleListBrowseUrl';
+import { readExploreSearchScopeParam } from '../routing/productUrlInbound';
 import { parseExplorePinKindFilter, type ExplorePinKindFilter } from './explorePinKindFilter';
-import { parsePeopleBrowseTabFromUrl, type PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
+import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
 import {
   EXPLORE_ACTIVITY_MODE_FILTER_PARAM,
   parseExploreActivityModeFilter,
@@ -57,9 +54,6 @@ import {
 import type { PlaceKind } from '@uaetrail/shared-types';
 import { BROWSE_GEO_PARAM, parseBrowseGeoPath } from '../list/browseGeoPath';
 
-const readPeopleBrowseTabParam = (params: URLSearchParams): string | null =>
-  params.get('peopleTab') ?? params.get('socialTab');
-
 const isPeopleBrowseListView = (view: string | null): boolean =>
   view === 'people' || view === 'social' || view === 'going';
 
@@ -83,7 +77,6 @@ export type ExploreBrowseUrlHydratedState = {
   peopleBrowseOpen: boolean;
   searchScope: ExploreSearchScopeKey | null;
   peopleBrowseTab: PeopleBrowseTab;
-  buddiesDiscoverSegment: BuddiesDiscoverySegment;
   desktopBrowseTab: DesktopBrowseTab;
   expandSearch: boolean;
   tripMapTopics: TripMapTopicKey[];
@@ -172,14 +165,8 @@ export const parseExploreBrowseStateFromSearchParams = (
     listMode:
       !isDesktop && isPeopleBrowseListView(searchParams.get('view')) ? 'people' : 'default',
     peopleBrowseOpen: isDesktop && isPeopleBrowseListView(searchParams.get('view')),
-    searchScope: parseExploreSearchScope(
-      searchParams.get('searchScope') ?? searchParams.get('searchFocus')
-    ),
-    peopleBrowseTab: parsePeopleBrowseTabFromUrl(
-      readPeopleBrowseTabParam(searchParams),
-      searchParams.get('goingTab')
-    ),
-    buddiesDiscoverSegment: parseBuddiesDiscoverySegment(searchParams.get(BUDDIES_SEGMENT_URL_PARAM)),
+    searchScope: parseExploreSearchScope(readExploreSearchScopeParam(searchParams)),
+    peopleBrowseTab: parseExplorePeopleBrowseTab(searchParams),
     desktopBrowseTab: parseDesktopBrowseTab(nextPanel),
     expandSearch: Boolean(isDesktop && searchParams.get('q')?.trim()),
     tripMapTopics: parseTripMapTopicsParam(searchParams.get(EXPLORE_TRIP_TYPES_PARAM)),

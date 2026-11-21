@@ -12,18 +12,14 @@ import {
   type ActivityViewerAccessDTO,
   type ActivityViewerAccessLevel,
   type ExploreMapItemDTO,
-  exploreMapItemIsSeeking,
   isGeographyMapSource,
 } from '@uaetrail/shared-types';
 import { MembershipRole, RequestStatus, UserRole } from '../domain/enums.js';
 import { resolveJoinMode } from '../domain/activity-join-mode.js';
 import { listActivityEngagementForUserOnActivities } from './activity-engagement-store.js';
-import { mapIntentJoinRequestStatusByIntentIdsForUser } from './participant-intent-requests-store.js';
 import { listActiveTenantMembershipsByUser } from './tenant-access.js';
 import { listBuddiesForUser } from './buddy-store.js';
 import { countPendingActivityInvitesByActivityIdsForSender } from './activity-invites-store.js';
-import { findAuthUsersByIds } from './auth-users-store.js';
-import { filterSubjectsVisibleInFindCrew } from './find-crew-visibility-gate.js';
 import { resolveMemberStatusForExploreOverlay } from '../services/member-status-overlay-cache.js';
 import { applyActivityViewEntitlements } from '../services/member-entitlements.js';
 import type { HostStatusDTO } from '@uaetrail/shared-types';
@@ -41,42 +37,9 @@ export type ExploreMapViewerAccessContext = {
   participantActivityIds: Set<string>;
   requestStatusByActivityId: Map<string, RequestStatus>;
   staffTenantIds: Set<string>;
-  demandJoinStatusByIntentId: Map<string, 'pending' | 'approved'>;
   hostStatus: HostStatusDTO | null;
   buddyUserIds: Set<string>;
   pendingJoinInviteCountByActivityId: Map<string, number>;
-};
-
-export const resolveDemandMapViewerAccess = (input: {
-  viewerUserId: string | null;
-  requesterUserId: string | null;
-  joinRequestStatus: 'pending' | 'approved' | null;
-}): ActivityViewerAccessDTO => {
-  const joinMode: ActivityJoinMode = 'open';
-  if (!input.viewerUserId) {
-    return computeActivityDetailExposure({
-      joinMode,
-      level: 'public',
-      viewerUserId: null,
-    });
-  }
-  if (input.requesterUserId && input.requesterUserId === input.viewerUserId) {
-    return computeActivityDetailExposure({
-      joinMode,
-      level: 'host',
-      viewerUserId: input.viewerUserId,
-    });
-  }
-  const fromJoin = activityViewerLevelFromJoinEngagement(
-    activityJoinEngagementSnapshotFromViewerFacts({
-      requestStatus: input.joinRequestStatus,
-    })
-  );
-  return computeActivityDetailExposure({
-    joinMode,
-    level: fromJoin ?? 'link_holder',
-    viewerUserId: input.viewerUserId,
-  });
 };
 
 export const resolveActivityMapViewerLevel = (input: {
@@ -138,7 +101,6 @@ export const buildExploreMapViewerAccessContext = async (input: {
       participantActivityIds: new Set(),
       requestStatusByActivityId: new Map(),
       staffTenantIds: new Set(),
-      demandJoinStatusByIntentId: new Map(),
       hostStatus: null,
       buddyUserIds: new Set(),
       pendingJoinInviteCountByActivityId: new Map(),
@@ -149,15 +111,10 @@ export const buildExploreMapViewerAccessContext = async (input: {
     .filter((item) => item.source === 'activity' && item.activity?.id)
     .map((item) => item.activity!.id);
 
-  const intentIds = input.items
-    .filter((item) => exploreMapItemIsSeeking(item) && item.participantIntentId)
-    .map((item) => item.participantIntentId as string);
-
-  const [engagement, memberships, demandJoinStatusByIntentId, hostStatus, buddies, pendingJoinInviteCountByActivityId] =
+  const [engagement, memberships, hostStatus, buddies, pendingJoinInviteCountByActivityId] =
     await Promise.all([
       listActivityEngagementForUserOnActivities(viewerUserId, activityIds),
       listActiveTenantMembershipsByUser(viewerUserId),
-      mapIntentJoinRequestStatusByIntentIdsForUser(viewerUserId, intentIds),
       resolveMemberStatusForExploreOverlay(viewerUserId),
       listBuddiesForUser(viewerUserId),
       countPendingActivityInvitesByActivityIdsForSender({
@@ -178,7 +135,6 @@ export const buildExploreMapViewerAccessContext = async (input: {
     participantActivityIds: engagement.participantActivityIds,
     requestStatusByActivityId: engagement.requestStatusByActivityId,
     staffTenantIds,
-    demandJoinStatusByIntentId,
     hostStatus,
     buddyUserIds: new Set(buddies.map((buddy) => buddy.userId)),
     pendingJoinInviteCountByActivityId,
@@ -272,26 +228,6 @@ export const attachExploreMapViewerAccess = (
       };
     }
 
-    if (exploreMapItemIsSeeking(item)) {
-      const intentId = item.participantIntentId;
-      const requesterUserId =
-        item.featuredPerson?.userId ?? item.requesterUserId ?? null;
-      const joinRequestStatus = intentId
-        ? ctx.demandJoinStatusByIntentId.get(intentId) ?? null
-        : null;
-      return {
-        ...item,
-        viewerAccess: withEntitlements(
-          ctx,
-          resolveDemandMapViewerAccess({
-            viewerUserId: ctx.viewerUserId,
-            requesterUserId,
-            joinRequestStatus,
-          })
-        ),
-      };
-    }
-
     if (item.source === 'shop' || item.kind === 'shop' || item.source === 'agency') {
       return {
         ...item,
@@ -318,27 +254,5 @@ export const enrichExploreMapPayloadViewerAccess = async (
     userRole: input.userRole,
     items: payload.items,
   });
-  const withAccess = attachExploreMapViewerAccess(payload.items, ctx);
-
-  const seekerIds = new Set<string>();
-  for (const item of withAccess) {
-    if (!exploreMapItemIsSeeking(item)) continue;
-    const seekerId = item.featuredPerson?.userId ?? item.requesterUserId ?? null;
-    if (seekerId) seekerIds.add(seekerId);
-  }
-  if (seekerIds.size === 0) {
-    return { items: withAccess };
-  }
-
-  const seekers = await findAuthUsersByIds([...seekerIds]);
-  const visibleSeekers = await filterSubjectsVisibleInFindCrew(seekers, input.viewerUserId);
-  const items = withAccess.filter((item) => {
-    if (!exploreMapItemIsSeeking(item)) return true;
-    const seekerId = item.featuredPerson?.userId ?? item.requesterUserId ?? null;
-    if (!seekerId) return true;
-    // Own seeking pins always remain visible.
-    if (input.viewerUserId && seekerId === input.viewerUserId) return true;
-    return visibleSeekers.has(seekerId);
-  });
-  return { items };
+  return { items: attachExploreMapViewerAccess(payload.items, ctx) };
 };

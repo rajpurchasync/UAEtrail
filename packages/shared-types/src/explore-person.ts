@@ -5,7 +5,10 @@ import {
 } from './host-display.js';
 import type { PublishingProfileKind } from './publishing-profile-kind.js';
 import { isRolePlaceholderDisplayName } from './host-display.js';
-import { exploreMapItemIsSeeking, type ExploreMapItemActivityModeFields } from './explore-activity-mode.js';
+import {
+  exploreMapItemIsAvailabilityCatalog,
+  type ExploreMapItemActivityModeFields,
+} from './explore-activity-mode.js';
 import type { ExploreMapSourceWire } from './wire-lexicon.js';
 
 /** How a featured user relates to an explore map/list item. */
@@ -120,7 +123,7 @@ export const resolveExploreFeaturedPerson = (
   const source = item.source;
   const activity = item.activity;
 
-  if (exploreMapItemIsSeeking(item)) {
+  if (exploreMapItemIsAvailabilityCatalog(item)) {
     const displayName =
       resolveHostPersonDisplayName({
         guideName: activity?.hostName ?? item.hostName,
