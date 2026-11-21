@@ -35,7 +35,7 @@ export type BrowseListSortGroupDef = {
   options: ReadonlyArray<{ mode: BrowseListSortMode; label: string }>;
 };
 
-/** Menu + button copy — keep in sync with `ListExplorerSortControl`. */
+/** Menu + button copy — keep in sync with `ListExplorerSortControl` shell. */
 export const BROWSE_LIST_SORT_GROUP_DEFS: ReadonlyArray<BrowseListSortGroupDef> = [
   {
     title: 'Event date / time',

@@ -30,6 +30,14 @@ const RETIRED_LIST_BROWSE_SHIMS = [
   'src/list/listVenuePosterPresentation.ts',
   'src/list/explorer/listExplorerSort.ts',
   'src/list/explorer/listExplorerSort.test.ts',
+  'src/list/explorer/listExplorerLayout.ts',
+  'src/list/explorer/listExplorerLayout.test.ts',
+  'src/list/explorer/listExplorerFabSnap.ts',
+  'src/list/explorer/listExplorerBucket.ts',
+  'src/list/explorer/listExplorerDateSections.ts',
+  'src/list/explorer/listExplorerDateSections.test.ts',
+  'src/list/browseListMapHandoff.ts',
+  'src/list/browseListMapHandoff.test.ts',
 ];
 
 const collectTsUnder = (dir: string): string[] => {
@@ -117,8 +125,11 @@ describe('shimInventoryGuard (repo-wide coherence)', () => {
     for (const root of scanRoots) {
       for (const file of collectTsUnder(join(ROOT, root))) {
         const content = read(file);
-        if (/list\/explorer\/listExplorerSort/.test(content)) {
-          violations.push(`${file}: listExplorerSort (use list/browse/listBrowseSort)`);
+        if (
+          /list\/explorer\/listExplorerSort/.test(content) ||
+          /list\/explorer\/listExplorer(Layout|Bucket|DateSections|FabSnap)/.test(content)
+        ) {
+          violations.push(`${file}: retired list explorer browse module (use src/list/browse/)`);
         }
         if (/list\/explorer\/placeDistance/.test(content)) {
           violations.push(`${file}: placeDistance`);
@@ -148,5 +159,17 @@ describe('shimInventoryGuard (repo-wide coherence)', () => {
     };
     expect(usesBrowseSort('src/explore/search/exploreSearchJoinablePools.ts')).toBe(true);
     expect(usesBrowseSort('src/list/ListDiscoveryExperience.tsx')).toBe(true);
+    expect(read('src/list/browse/listBrowseSort.ts')).toMatch(/export const sortBrowseListCards/);
+  });
+
+  it('SHIM-INV-10: list subtree (except explorer shell) does not import retired explorer browse modules', () => {
+    const violations: string[] = [];
+    const pattern =
+      /from ['"][^'"]*list\/explorer\/(listExplorerSort|listExplorerLayout|listExplorerBucket|listExplorerDateSections|listExplorerFabSnap)/;
+    for (const file of collectTsUnder(join(ROOT, 'src/list'))) {
+      if (file.startsWith('src/list/explorer/')) continue;
+      if (pattern.test(read(file))) violations.push(file);
+    }
+    expect(violations).toEqual([]);
   });
 });
