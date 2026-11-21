@@ -22,7 +22,6 @@ import { LocationStatus } from '../domain/enums.js';
 import { newEntityId } from './entity-builders.js';
 import { ApiError } from './api-error.js';
 import { bumpGeoTreeVersion } from './geo-tree.js';
-import { seedGeoNodesFromCatalog } from './geo-backfill.js';
 
 const col = (): Collection<SubmissionDoc> =>
   getMongoClient()!.db().collection<SubmissionDoc>(COLLECTIONS.SUBMISSIONS);
@@ -366,7 +365,6 @@ const materializeArea = async (sub: SubmissionDoc): Promise<string> => {
     updatedAt: new Date(),
   } as never);
   await bumpGeoTreeVersion();
-  await seedGeoNodesFromCatalog(db);
   return id;
 };
 

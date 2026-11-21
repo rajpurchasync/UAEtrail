@@ -10,7 +10,8 @@ import {
 } from '../../hooks/organisationConsoleApi';
 import { fetchMeProfile } from '../../hooks/memberProfileApi';
 import { COUNTRIES } from '../../constants';
-import { DEFAULT_COUNTRY, getRegionsForCountry } from '../../config/regions';
+import { DEFAULT_COUNTRY, mergeVenueStateFilterOptionsWithAreas } from '../../config/regions';
+import { useExplorePublishedAreasQuery } from '../../explore/useExplorePublishedAreas';
 import { MAP_CONFIG } from '../../config/platform';
 import { PhoneInput } from '../ui/PhoneInput';
 import { AppSelect } from '../ui/AppSelect';
@@ -136,6 +137,12 @@ export const ProProfileApplicationFlow = ({
         return true;
       }),
     [hasGuideProfile, hasAgencyProfile, hasShopProfile]
+  );
+
+  const { data: publishedAreas = [] } = useExplorePublishedAreasQuery(open);
+  const emirateOptions = useMemo(
+    () => mergeVenueStateFilterOptionsWithAreas(publishedAreas, DEFAULT_COUNTRY),
+    [publishedAreas]
   );
 
   const [step, setStep] = useState<HostFlowStep>('pick');
@@ -557,18 +564,18 @@ export const ProProfileApplicationFlow = ({
               <div>
                 <span className="mb-2 block text-sm font-medium text-neutral-700">Based in (UAE)</span>
                 <div className="flex flex-wrap gap-2">
-                  {getRegionsForCountry(DEFAULT_COUNTRY).map((region) => {
-                    const active = form.residence === region;
+                  {emirateOptions.map((region) => {
+                    const active = form.residence === region.key;
                     return (
                       <button
-                        key={region}
+                        key={region.key}
                         type="button"
-                        onClick={() => patchForm({ residence: region })}
+                        onClick={() => patchForm({ residence: region.key })}
                         className={`rounded-full px-3 py-2 text-sm font-semibold ${
                           active ? 'bg-emerald-600 text-white' : 'bg-neutral-100 text-neutral-800'
                         }`}
                       >
-                        {region}
+                        {region.label}
                       </button>
                     );
                   })}
@@ -691,18 +698,18 @@ export const ProProfileApplicationFlow = ({
             <div className="mt-4">
               <span className="mb-2 block text-sm font-medium text-neutral-700">Region (optional)</span>
               <div className="flex flex-wrap gap-2">
-                {getRegionsForCountry(DEFAULT_COUNTRY).map((region) => {
-                  const active = form.region === region;
+                {emirateOptions.map((region) => {
+                  const active = form.region === region.key;
                   return (
                     <button
-                      key={region}
+                      key={region.key}
                       type="button"
-                      onClick={() => patchForm({ region })}
+                      onClick={() => patchForm({ region: region.key })}
                       className={`rounded-full px-3 py-2 text-sm font-semibold ${
                         active ? 'bg-emerald-600 text-white' : 'bg-neutral-100 text-neutral-800'
                       }`}
                     >
-                      {region}
+                      {region.label}
                     </button>
                   );
                 })}

@@ -149,6 +149,13 @@ export const ExploreMapShell = ({
       onMapFilterChange={browse.applyMapFilter}
       onActivityDatePresetChange={browse.applyActivityDatePreset}
       onVenueRegionsChange={browse.applyVenueRegions}
+      geoPath={browse.geoPath}
+      onClearGeoScope={() => browse.applyGeoPath([])}
+      onPopGeoScope={
+        browse.geoPath.length > 1
+          ? () => browse.applyGeoPath(browse.geoPath.slice(0, -1))
+          : undefined
+      }
       venueFilter={browse.venueFilter}
       onVenueFilterChange={browse.applyVenueFilter}
       tripMapTopics={browse.tripMapTopics}

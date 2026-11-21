@@ -53,6 +53,8 @@ export const HOME_ACTIVITIES = {
   title: 'Upcoming activities',
   subtitle: 'Real group plans from hosts and members. Pick one and go together.',
   viewAll: 'View all →',
+  emptyCatalog:
+    'No upcoming plans are live yet. Explore the map to see places and crews, or join free to post one.',
   emptyFilter: (emirate: string) => `No plans in ${emirate} yet. Post one or view all`,
   error: "Couldn't load outings.",
   retry: PRODUCT_RETRY_LABEL,
@@ -87,32 +89,9 @@ export const HOME_HOW_IT_WORKS = {
 
 export const HOME_REVIEWS = {
   title: 'People who found their outdoor crew',
-  featured: {
-    quote:
-      'I moved to Dubai solo and kept bailing on weekend hikes. One RAK trip through UAE Trail turned into a regular crew — we still chat before every outing.',
-    name: 'Sarah M.',
-    emirate: 'Dubai'
-  },
-  compact: [
-    {
-      quote:
-        'The host approval and group chat meant I knew who I was meeting before I drove to Fujairah. Felt safe and actually fun.',
-      name: 'Omar K.',
-      emirate: 'Abu Dhabi'
-    },
-    {
-      quote:
-        'As a visitor I just wanted one real camp, not a WhatsApp ghost list. Found a Shawka plan in minutes on the map.',
-      name: 'Priya N.',
-      emirate: 'Sharjah'
-    },
-    {
-      quote:
-        'Jebel Jais sunrise with people who actually showed up at 4 AM — that is the whole product for me.',
-      name: 'James L.',
-      emirate: 'RAK'
-    }
-  ] as const
+  /** Shown when `GET /reviews/marketing-highlights` returns rows. */
+  liveDisclosure: 'Recent comments from members on UAE Trail — refreshed from live reviews.',
+  loadingDisclosure: 'Loading recent member feedback…',
 } as const;
 
 export const HOME_FAQ = {
@@ -177,13 +156,3 @@ export const HOME_FOOTER_FOUNDERS = [
   }
 ] as const;
 
-export const HOME_EMIRATE_FILTER_ORDER = [
-  { id: 'all', label: 'All' },
-  { id: 'dubai', label: 'Dubai' },
-  { id: 'abu-dhabi', label: 'Abu Dhabi' },
-  { id: 'sharjah', label: 'Sharjah' },
-  { id: 'rak', label: 'RAK' },
-  { id: 'fujairah', label: 'Fujairah' },
-  { id: 'ajman', label: 'Ajman' },
-  { id: 'uaq', label: 'UAQ' }
-] as const;

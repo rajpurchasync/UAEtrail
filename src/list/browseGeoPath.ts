@@ -1,5 +1,6 @@
 import type { ExploreMapItemDTO, GeoKind, GeoNodeLite } from '@uaetrail/shared-types';
-import { getVenueStateFilterOptions } from '../config/regions';
+import type { AreaPublicDTO } from '@uaetrail/shared-types';
+import { mergeVenueStateFilterOptionsWithAreas } from '../config/regions';
 import { geoStore } from '../geo/geoStore';
 import { venueItemMatchesRegions } from '../utils/venueRegionFilter';
 
@@ -15,11 +16,17 @@ export const serializeBrowseGeoPath = (ids: readonly string[]): string | null =>
   return next.length > 0 ? next.join('/') : null;
 };
 
-export const geoStateToRegionKey = (node: GeoNodeLite): string => {
+const venueStateOptionsForGeo = (areas: readonly AreaPublicDTO[] = []) =>
+  mergeVenueStateFilterOptionsWithAreas(areas, 'AE');
+
+export const geoStateToRegionKey = (
+  node: GeoNodeLite,
+  publishedAreas: readonly AreaPublicDTO[] = []
+): string => {
   const name = node.n.trim().toLowerCase();
   const iso = node.iso?.trim().toLowerCase() ?? '';
   const slug = node.s.trim().toLowerCase();
-  for (const option of getVenueStateFilterOptions()) {
+  for (const option of venueStateOptionsForGeo(publishedAreas)) {
     const key = option.key.toLowerCase();
     const label = option.label.toLowerCase();
     if (name === key || name === label || slug === key || slug === label) return option.key;
@@ -31,10 +38,15 @@ export const geoStateToRegionKey = (node: GeoNodeLite): string => {
   return node.n;
 };
 
-export const findGeoStateNodeForRegionKey = (regionKey: string): GeoNodeLite | null => {
+export const findGeoStateNodeForRegionKey = (
+  regionKey: string,
+  publishedAreas: readonly AreaPublicDTO[] = []
+): GeoNodeLite | null => {
   const needle = regionKey.trim().toLowerCase();
   if (!needle) return null;
-  const label = getVenueStateFilterOptions().find((option) => option.key.toLowerCase() === needle)?.label.toLowerCase();
+  const label = venueStateOptionsForGeo(publishedAreas)
+    .find((option) => option.key.toLowerCase() === needle)
+    ?.label.toLowerCase();
   for (const node of geoStore.byId.values()) {
     if (node.kind !== 'state') continue;
     const name = node.n.toLowerCase();
@@ -48,17 +60,26 @@ export const findGeoStateNodeForRegionKey = (regionKey: string): GeoNodeLite | n
   return null;
 };
 
-export const resolveBrowseGeoNode = (id: string): GeoNodeLite | null =>
-  geoStore.byId.get(id) ?? findGeoStateNodeForRegionKey(id);
+export const resolveBrowseGeoNode = (
+  id: string,
+  publishedAreas: readonly AreaPublicDTO[] = []
+): GeoNodeLite | null =>
+  geoStore.byId.get(id) ?? findGeoStateNodeForRegionKey(id, publishedAreas);
 
-export const browseGeoPathLabels = (ids: readonly string[]): string[] =>
+export const browseGeoPathLabels = (
+  ids: readonly string[],
+  publishedAreas: readonly AreaPublicDTO[] = []
+): string[] =>
   ids
-    .map((id) => resolveBrowseGeoNode(id))
+    .map((id) => resolveBrowseGeoNode(id, publishedAreas))
     .filter((node): node is GeoNodeLite => node != null && node.kind !== 'country')
     .map((node) => node.n);
 
-export const formatBrowseGeoPathLabel = (ids: readonly string[]): string | null => {
-  const labels = browseGeoPathLabels(ids);
+export const formatBrowseGeoPathLabel = (
+  ids: readonly string[],
+  publishedAreas: readonly AreaPublicDTO[] = []
+): string | null => {
+  const labels = browseGeoPathLabels(ids, publishedAreas);
   return labels.length > 0 ? labels.join(' → ') : null;
 };
 
@@ -69,27 +90,42 @@ export const browseGeoChildKindLabel = (kind: GeoKind | undefined): string => {
   return 'Area';
 };
 
-export const regionsFromBrowseGeoPath = (ids: readonly string[]): string[] => {
+export const resolveEffectiveBrowseVenueRegions = (
+  venueRegions: readonly string[],
+  geoPath: readonly string[],
+  publishedAreas: readonly AreaPublicDTO[] = []
+): string[] => {
+  if (venueRegions.length > 0) return [...venueRegions];
+  return regionsFromBrowseGeoPath(geoPath, publishedAreas);
+};
+
+export const regionsFromBrowseGeoPath = (
+  ids: readonly string[],
+  publishedAreas: readonly AreaPublicDTO[] = []
+): string[] => {
   for (const id of ids) {
-    const node = resolveBrowseGeoNode(id);
-    if (node?.kind === 'state') return [geoStateToRegionKey(node)];
-    if (!node && getVenueStateFilterOptions().some((option) => option.key === id)) return [id];
+    const node = resolveBrowseGeoNode(id, publishedAreas);
+    if (node?.kind === 'state') return [geoStateToRegionKey(node, publishedAreas)];
+    if (!node && venueStateOptionsForGeo(publishedAreas).some((option) => option.key === id)) {
+      return [id];
+    }
   }
   return [];
 };
 
 export const exploreItemMatchesBrowseGeoPath = (
   item: ExploreMapItemDTO,
-  geoIds: readonly string[]
+  geoIds: readonly string[],
+  publishedAreas: readonly AreaPublicDTO[] = []
 ): boolean => {
   if (geoIds.length === 0) return true;
   const leaf = geoIds[geoIds.length - 1]!;
   const chain = item.geoRef?.chain;
-  const node = resolveBrowseGeoNode(leaf);
+  const node = resolveBrowseGeoNode(leaf, publishedAreas);
   if (chain?.includes(leaf) || (node && chain?.includes(node.id))) return true;
   if (node?.kind === 'country' && chain?.includes(node.id)) return true;
   if ((!node || node.kind === 'state') && geoIds.length === 1) {
-    const regionKey = node ? geoStateToRegionKey(node) : leaf;
+    const regionKey = node ? geoStateToRegionKey(node, publishedAreas) : leaf;
     return venueItemMatchesRegions(item, [regionKey]);
   }
 

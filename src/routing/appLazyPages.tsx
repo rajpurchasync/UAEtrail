@@ -13,8 +13,8 @@ export const ExploreExperience = lazy(() => {
 export const ExploreSearchResultsPage = lazy(() =>
   import('../explore/search/ExploreSearchResultsPage').then((m) => ({ default: m.ExploreSearchResultsPage }))
 );
-export const ExploreHubLegacyRedirect = lazy(() =>
-  import('../explore/search/ExploreHubLegacyRedirect').then((m) => ({ default: m.ExploreHubLegacyRedirect }))
+export const ExploreInboundHubRedirect = lazy(() =>
+  import('../explore/search/ExploreInboundHubRedirect').then((m) => ({ default: m.ExploreInboundHubRedirect }))
 );
 export const BrowseListPage = lazy(() =>
   import('../list/BrowseListPage').then((m) => ({ default: m.BrowseListPage }))

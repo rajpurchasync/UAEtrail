@@ -37,11 +37,16 @@ export const buildExploreMapItemFromActivity = (
       : { latitude: null, longitude: null };
 
   const display = buildExploreActivityDisplay(activity);
+  const location =
+    'location' in activity && activity.location && typeof activity.location === 'object'
+      ? activity.location
+      : null;
 
   return {
     id: `activity:${activity.id}`,
     kind: rideshare ? 'rideshare' : activity.activityType,
     source: 'activity',
+    activityMode: activity.activityMode ?? 'hosted',
     title: activity.title,
     subtitle: rideshare
       ? [display.fromLabel, display.toLabel].filter(Boolean).join(' → ') || activity.locationName
@@ -70,7 +75,12 @@ export const buildExploreMapItemFromActivity = (
     priceDisplay: display.priceDisplay,
     fromLabel: display.fromLabel,
     toLabel: display.toLabel,
-    groupRegionLevels: activity.groupRegionLevels ?? null,
+    groupRegionLevels: activity.groupRegionLevels ?? location?.groupRegionLevels ?? null,
+    geoRef: activity.geoRef ?? location?.geoRef ?? null,
+    areaId: activity.areaId ?? location?.areaId ?? null,
+    areaSlug: location?.areaSlug ?? undefined,
+    areaLabel: location?.areaLabel ?? undefined,
+    areaName: location?.areaName ?? undefined,
     activity,
     viewerAccess: viewerAccess ?? undefined,
   };

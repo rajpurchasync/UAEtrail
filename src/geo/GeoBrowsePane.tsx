@@ -4,7 +4,9 @@ import { useAuth } from '../context/AuthContext';
 import { useDisplayPreferences } from '../preferences/useDisplayPreferences';
 import { useMinWidthMd } from '../hooks/useMinWidthMd';
 import { countExploreSearchScopes } from '../explore/exploreSearchMatches';
+import { Link } from 'react-router-dom';
 import { explorePath } from '../explore/routing';
+import { listDiscoveryPath } from '../list/routing';
 import { buildListFeedCards } from '../list/buildListFeedCards';
 import {
   cardMatchesBrowsePrice,
@@ -26,6 +28,8 @@ import {
 } from '../list/explorer/listExplorerSort';
 import { countListExplorerFilters, type ListExplorerLayout } from '../list/explorer/listExplorerLayout';
 import type { ExploreSearchScopeKey } from '../explore/exploreBrowseTaxonomy';
+import { useExplorePublishedAreasQuery } from '../explore/useExplorePublishedAreas';
+import { useBrowseGeoScopeHydration } from '../list/useBrowseGeoScopeHydration';
 import '../styles/explore-map-chrome.css';
 
 const EMPTY_GEO_IDS: string[] = [];
@@ -40,6 +44,9 @@ const EMPTY_FILTERS: BrowseListFilterState = {
   when: 'any',
   activityDatePreset: 'anyday',
   buddiesSegment: 'looking',
+  hasTrip: false,
+  facilityKinds: [],
+  audience: 'anyone',
 };
 
 type GeoBrowsePaneProps = {
@@ -69,8 +76,9 @@ export const GeoBrowsePane = ({
   onLoadMore,
   leading,
   lockGeoId = null,
-  lockGeoKind = null,
+  lockGeoKind: _lockGeoKind = null,
 }: GeoBrowsePaneProps) => {
+  void _lockGeoKind;
   const { user } = useAuth();
   const { clock } = useDisplayPreferences();
   const desktopMd = useMinWidthMd();
@@ -90,6 +98,7 @@ export const GeoBrowsePane = ({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const sideMapWidth = useListSideMapWidth(desktopMd);
+  const { data: publishedAreas = [] } = useExplorePublishedAreasQuery();
 
   const scopedFilters = useMemo<BrowseListFilterState>(
     () => ({
@@ -101,9 +110,16 @@ export const GeoBrowsePane = ({
   );
 
   const drillGeoIds = geoIds.length > lockGeoIds.length ? geoIds : EMPTY_GEO_IDS;
+  useBrowseGeoScopeHydration(drillGeoIds);
+
+  const handleClearGeoScope = useCallback(() => setGeoIds(lockGeoIds), [lockGeoIds]);
+  const handlePopGeoScope = useCallback(
+    () => setGeoIds((prev) => (prev.length > lockGeoIds.length ? prev.slice(0, -1) : prev)),
+    [lockGeoIds.length]
+  );
   const filteredItems = useMemo(
-    () => filterExploreMapItemsForList(items, scopedFilters, regions, drillGeoIds),
-    [items, scopedFilters, regions, drillGeoIds]
+    () => filterExploreMapItemsForList(items, scopedFilters, regions, drillGeoIds, publishedAreas),
+    [items, scopedFilters, regions, drillGeoIds, publishedAreas]
   );
 
   const cards = useMemo(() => {
@@ -117,7 +133,13 @@ export const GeoBrowsePane = ({
     [catalogItems, draftQuery, filters.activityDatePreset, regions]
   );
 
-  const filterCount = countListExplorerFilters(filters, regions, bucket, geoIds, lockGeoIds.length);
+  const filterCount = countListExplorerFilters(
+    filters,
+    regions,
+    bucket,
+    geoIds.length,
+    lockGeoIds.length
+  );
 
   const clearFilters = () => {
     setFilters(EMPTY_FILTERS);
@@ -163,6 +185,30 @@ export const GeoBrowsePane = ({
     setHighlightedId(item.id);
   }, []);
 
+  const fullListHref = useMemo(() => {
+    if (!lockGeoId) return null;
+    const listCat = bucket === 'places' ? 'venues' : 'activities';
+    return listDiscoveryPath({
+      listCat,
+      categories: listExplorerBucketCategories(bucket),
+      geoPath: geoIds,
+    });
+  }, [lockGeoId, bucket, geoIds]);
+
+  const scrollLeading = (
+    <>
+      {leading ? <div className="mb-4">{leading}</div> : null}
+      {fullListHref ? (
+        <Link
+          to={fullListHref}
+          className="mb-3 inline-flex text-sm font-semibold text-emerald-700 hover:underline"
+        >
+          Open in full list
+        </Link>
+      ) : null}
+    </>
+  );
+
   return (
     <div
       ref={sideMapWidth.splitRef}
@@ -194,23 +240,35 @@ export const GeoBrowsePane = ({
         }}
         filters={scopedFilters}
         regions={regions}
-        geoIds={geoIds}
-        lockGeoIds={lockGeoIds}
-        lockGeoKind={lockGeoKind}
         filterCount={filterCount}
-        onApplyFilters={(state, nextRegions, nextGeoIds) => {
+        onApplyFilters={(state, nextRegions) => {
           setFilters({ ...state, query: draftQuery });
           setRegions(nextRegions);
-          setGeoIds(nextGeoIds.length > 0 ? nextGeoIds : lockGeoIds);
         }}
         onClearFilters={clearFilters}
+        onTripTopicsChange={(next) =>
+          setFilters((prev) => ({ ...prev, tripTopics: next, tripLookingOnly: false }))
+        }
+        onPlaceTopicsChange={(next) => setFilters((prev) => ({ ...prev, placeTopics: next }))}
+        onPriceChange={(next) => setFilters((prev) => ({ ...prev, price: next }))}
+        onHasTripChange={(next) => setFilters((prev) => ({ ...prev, hasTrip: next }))}
+        onFacilityKindsChange={(next) => setFilters((prev) => ({ ...prev, facilityKinds: next }))}
+        onActivityDatePresetChange={(next) =>
+          setFilters((prev) => ({ ...prev, activityDatePreset: next }))
+        }
+        onVenueRegionsChange={setRegions}
         embedded
         mapColumnVisible={desktopMd}
         onMapHover={desktopMd ? setHighlightedId : undefined}
         sort={sort}
         onSortChange={setSort}
         listPanelWidthPx={desktopMd ? sideMapWidth.listPanelWidth : undefined}
-        scrollLeading={leading ? <div className="mb-4">{leading}</div> : null}
+        scrollLeading={scrollLeading}
+        geoPath={geoIds.length > lockGeoIds.length ? geoIds : undefined}
+        onClearGeoScope={geoIds.length > lockGeoIds.length ? handleClearGeoScope : undefined}
+        onPopGeoScope={
+          geoIds.length > lockGeoIds.length && geoIds.length > 1 ? handlePopGeoScope : undefined
+        }
         scrollFooter={
           hasMore ? (
             <div ref={sentinelRef} className="flex justify-center py-3">

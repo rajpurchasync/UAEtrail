@@ -39,8 +39,8 @@ export const compareGuestPreviewPlaces = (a: ExploreMapItemDTO, b: ExploreMapIte
 
 /**
  * Guest catalog cap helper — legacy seeking-activities route retired (MIG-DISCO-REG); kept for guest map slice limits.
- * `GET /explore/map` returns the full catalog for guests; peek depth is enforced in the client.
- * Set `EXPLORE_MAP_GUEST_CATALOG_CAP=0` to disable caps on auxiliary guest reads.
+ * Applied in `loadExploreMapForRequest` for unauthenticated viewers when enabled (default in production).
+ * Client peek depth still applies on top. Set `EXPLORE_MAP_GUEST_CATALOG_CAP=0` to return the full catalog.
  */
 export const isGuestExploreMapCatalogCapEnabled = (): boolean => {
   const raw = process.env.EXPLORE_MAP_GUEST_CATALOG_CAP?.trim().toLowerCase();

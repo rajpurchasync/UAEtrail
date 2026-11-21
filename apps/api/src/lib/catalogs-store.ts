@@ -6,6 +6,7 @@ import { getMongoClient } from './mongo.js';
 const col = (): Collection<CatalogEntryDoc> =>
   getMongoClient()!.db().collection<CatalogEntryDoc>(COLLECTIONS.CATALOGS);
 
+/** Dev / migration seed only — production must run `mongo-migrations` (see `seedCatalogsIfEmpty`). */
 const DEFAULTS: CatalogEntryDoc[] = [
   { _id: 'gear-water', kind: 'gear', key: 'water', labelEn: 'Water' },
   { _id: 'gear-headlamp', kind: 'gear', key: 'headlamp', labelEn: 'Headlamp' },
@@ -24,38 +25,54 @@ const DEFAULTS: CatalogEntryDoc[] = [
 
 let memory: CatalogEntryDoc[] | null = null;
 
+const allowRuntimeCatalogSeed = (): boolean =>
+  process.env.NODE_ENV !== 'production' || process.env.CATALOGS_ALLOW_RUNTIME_SEED?.trim() === '1';
+
+/** Idempotent migration helper — not invoked on ordinary catalog reads in production. */
 export const seedCatalogsIfEmpty = async (): Promise<void> => {
   const count = await col().countDocuments();
   if (count > 0) {
     memory = await col().find({}).toArray();
     return;
   }
+  if (!allowRuntimeCatalogSeed()) {
+    memory = [];
+    return;
+  }
   await col().insertMany(DEFAULTS, { ordered: false }).catch(() => undefined);
-  memory = DEFAULTS;
+  memory = await col().find({}).toArray();
 };
 
 export const listCatalogs = async (): Promise<CatalogEntryDoc[]> => {
   if (memory) return memory;
-  await seedCatalogsIfEmpty();
-  return memory ?? [];
+  const docs = await col().find({}).toArray();
+  if (docs.length > 0) {
+    memory = docs;
+    return docs;
+  }
+  if (allowRuntimeCatalogSeed()) {
+    await seedCatalogsIfEmpty();
+    return memory ?? [];
+  }
+  return [];
 };
 
 export const assertDetailArrayCaps = (input: {
   gear?: unknown[];
   itinerary?: unknown[];
-  gallery?: unknown[];
-  goingPreview?: unknown[];
+  images?: unknown[];
+  requirements?: unknown[];
 }): void => {
   if ((input.gear?.length ?? 0) > DETAIL_ARRAY_CAPS.gear) {
-    throw new Error(`gear exceeds cap ${DETAIL_ARRAY_CAPS.gear}`);
+    throw new Error('gear list exceeds cap');
   }
   if ((input.itinerary?.length ?? 0) > DETAIL_ARRAY_CAPS.itinerary) {
-    throw new Error(`itinerary exceeds cap ${DETAIL_ARRAY_CAPS.itinerary}`);
+    throw new Error('itinerary exceeds cap');
   }
-  if ((input.gallery?.length ?? 0) > DETAIL_ARRAY_CAPS.galleryActivity) {
-    throw new Error(`gallery exceeds cap ${DETAIL_ARRAY_CAPS.galleryActivity}`);
+  if ((input.images?.length ?? 0) > DETAIL_ARRAY_CAPS.galleryActivity) {
+    throw new Error('images exceed cap');
   }
-  if ((input.goingPreview?.length ?? 0) > DETAIL_ARRAY_CAPS.goingPreview) {
-    throw new Error(`goingPreview exceeds cap ${DETAIL_ARRAY_CAPS.goingPreview}`);
+  if ((input.requirements?.length ?? 0) > DETAIL_ARRAY_CAPS.includesExcludes) {
+    throw new Error('requirements exceed cap');
   }
 };

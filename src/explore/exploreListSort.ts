@@ -1,5 +1,5 @@
-import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { getRegionsForCountry } from '../config/regions';
+import type { AreaPublicDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { consumerEmirateKeys, getRegionsForCountry } from '../config/regions';
 import { resolveVenueItemRegion } from '../utils/venueRegionFilter';
 
 const GCC_OFFSET: Record<string, string> = {
@@ -54,12 +54,15 @@ const venuePopularityScore = (item: ExploreMapItemDTO): number => {
   return reviewCount * 1000 + averageRating * 100 + featured * 10;
 };
 
-const venueRegionSortIndex = (item: ExploreMapItemDTO): number => {
+/** Published-area region order for list sorting — falls back to static UAE when empty. */
+export const deriveVenueRegionSortOrder = (areas: readonly AreaPublicDTO[]): string[] =>
+  consumerEmirateKeys(areas, 'AE');
+
+const venueRegionSortIndex = (item: ExploreMapItemDTO, regionOrder: readonly string[]): number => {
   const raw = resolveVenueItemRegion(item);
   if (!raw?.trim()) return 999;
   const normalized = raw.trim().toLowerCase();
-  const order = getRegionsForCountry('AE');
-  const idx = order.findIndex(
+  const idx = regionOrder.findIndex(
     (region) =>
       normalized === region.toLowerCase() ||
       normalized.includes(region.toLowerCase()) ||
@@ -69,9 +72,12 @@ const venueRegionSortIndex = (item: ExploreMapItemDTO): number => {
 };
 
 /** Places & shops — group by emirate/state, then name (not distance). */
-export const sortExploreVenues = (items: ExploreMapItemDTO[]): ExploreMapItemDTO[] =>
+export const sortExploreVenues = (
+  items: ExploreMapItemDTO[],
+  regionOrder: readonly string[] = getRegionsForCountry('AE')
+): ExploreMapItemDTO[] =>
   [...items].sort((left, right) => {
-    const regionDiff = venueRegionSortIndex(left) - venueRegionSortIndex(right);
+    const regionDiff = venueRegionSortIndex(left, regionOrder) - venueRegionSortIndex(right, regionOrder);
     if (regionDiff !== 0) return regionDiff;
     const scoreDiff = venuePopularityScore(right) - venuePopularityScore(left);
     if (scoreDiff !== 0) return scoreDiff;

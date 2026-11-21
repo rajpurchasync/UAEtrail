@@ -39,6 +39,7 @@ import {
   resolveExploreMapCreateFabHints,
 } from '../create/composeFabEntry';
 import { availabilityFlexibleCompose } from '../compose';
+import { useBrowseGeoScopeHydration } from '../../list/useBrowseGeoScopeHydration';
 
 /** Explore map + browse + compose + selection orchestration (R2). */
 export const useExploreExperienceModel = () => {
@@ -104,6 +105,7 @@ export const useExploreExperienceModel = () => {
     setSearchParams,
     clearSelection,
   });
+  useBrowseGeoScopeHydration(browse.geoPath);
 
   useEffect(() => {
     if (!browse.listOpen) setHighlightedExploreItemId(null);
@@ -283,6 +285,7 @@ export const useExploreExperienceModel = () => {
     tripMapTopics: browse.tripMapTopics,
     placeMapTopics: browse.placeMapTopics,
     venueRegions: browse.venueRegions,
+    geoPath: browse.geoPath,
     priceFilter: browse.priceFilter,
     hasTrip: browse.hasTrip,
     facilityKinds: browse.facilityKinds,

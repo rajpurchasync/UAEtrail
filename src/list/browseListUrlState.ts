@@ -45,6 +45,11 @@ import {
   parseBrowseAudienceFilter,
   serializeBrowseAudienceFilter,
 } from './browseAudienceFilter';
+import {
+  BROWSE_GEO_PARAM,
+  parseBrowseGeoPath,
+  serializeBrowseGeoPath,
+} from './browseGeoPath';
 
 const WHEN_PARAM = 'when';
 
@@ -187,9 +192,16 @@ export const parseBrowseListVenueRegions = (
   searchParams: Pick<URLSearchParams, 'get'>
 ): string[] => parseVenueRegionsParam(searchParams);
 
+export const parseBrowseListGeoPath = (
+  searchParams: Pick<URLSearchParams, 'get'>
+): string[] => parseBrowseGeoPath(searchParams.get(BROWSE_GEO_PARAM));
+
+export { BROWSE_GEO_PARAM };
+
 export const serializeBrowseListSearchParams = (
   state: BrowseListFilterState,
-  regions: string[]
+  regions: string[],
+  geoPath: readonly string[] = []
 ): URLSearchParams => {
   const params = new URLSearchParams();
   if (state.query.trim()) params.set('q', state.query.trim());
@@ -231,6 +243,9 @@ export const serializeBrowseListSearchParams = (
   }
 
   if (regions.length > 0) params.set('regions', regions.join(','));
+
+  const geoSerialized = serializeBrowseGeoPath(geoPath);
+  if (geoSerialized) params.set(BROWSE_GEO_PARAM, geoSerialized);
 
   const audience = serializeBrowseAudienceFilter(state.audience);
   if (audience) params.set(BROWSE_AUDIENCE_PARAM, audience);

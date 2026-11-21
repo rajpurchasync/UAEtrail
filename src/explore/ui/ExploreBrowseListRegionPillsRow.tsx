@@ -1,5 +1,5 @@
 import { ChevronLeft } from 'lucide-react';
-import { getVenueStateFilterOptions } from '../../config/regions';
+import { useVenueStateFilterOptions } from '../../config/useVenueStateFilterOptions';
 import { mapFilterLabel } from '../../config/exploreMapFilters';
 import type { MapFilterKey } from '../routing';
 import {
@@ -27,7 +27,7 @@ export const ExploreBrowseListRegionPillsRow = ({
   filterEmojiContext = 'activity',
   onBackToCategoryFilters,
 }: Props) => {
-  const options = getVenueStateFilterOptions();
+  const options = useVenueStateFilterOptions();
   const showTypeBack = mapFilter != null && mapFilter !== 'all' && onBackToCategoryFilters != null;
   const columnCount = options.length + (showTypeBack ? 1 : 0);
 

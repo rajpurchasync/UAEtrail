@@ -45,7 +45,7 @@ import {
   INBOUND_JOURNEY_MAP_ALIAS_PATH,
   INBOUND_PROFILE_HISTORY_ALIAS_PATH,
 } from '../config/inboundBookmarkPaths';
-import { ProtectedRoute, Home, ExploreExperience, ExploreSearchResultsPage, ExploreHubLegacyRedirect, BrowseListPage, DiscoveryRedirect, InboundCanonicalPlaceRedirect, InboundMerchantPublicRedirect, InboundProductPathRedirect, InboundMessagesRedirect, InboundProMembershipRedirect, InboundProfileWishlistRedirect, InboundRetiredPublishingConsoleRedirect, InboundProfileHistoryAliasRedirect, InboundJourneyMapAliasRedirect, InboundLegacyProfileSettingsRedirect, InboundLegacyNotificationsRedirect, ShopBrowseRoute, CalendarRedirect, PeopleRedirect, PlanBrowseRoute, HostingHubPage, CanonicalPlaceDetailPage, VenuePlaceDetailPage, FacilityDetailPage, ProfileProMembership, ShopPublic, ActivityDetail, ActivityCrewPage, OrganisationProfile, MemberProfile, SignUp, SignIn, VerifyOTP, WelcomeSignup, ForgotPassword, AdminInbox, AdminSubmissions, AdminPlaces, AdminAreas, AreaDetailPage, AdminOrganisations, AdminActivities, AdminMembers, AdminGroups, AdminAuditLog, AdminReports, AdminSettings, AdminAccount, AdminNotifications, AdminAlerts, GeoTreePage, GeoCountryPage, GeoNodePage, PlanTodayPage, PublishingOverview, PublishingActivities, PublishingJoinRequests, PublishingTeam, PublishingPublicProfileEdit, PublishingPlaces, PublishingHistory, UserRequests, MessagesGate, ShopManageRedirect, AgencyManageRedirect, PublishingManage, ProfileHistoryPage, JourneyMapPage, Profile, ProfileSettings, ProfileSettingsDisplay, ProfileSettingsAccount, ProfileSettingsPrivacy, ProfileSettingsNotifications, ProfileSettingsSafety, ProfileVehiclesPage, ProfileVehicleNewPage, ProfileVehicleEditPage, ProfileEdit, ProfileBadges, Submissions, ProfileReviews, JoinRequestDetail, Groups, Buddies, SecurityPrivacy, Terms, Privacy, Faq, About, Contact, SiteMap, NotFound, DashboardRedirect } from './appLazyPages';
+import { ProtectedRoute, Home, ExploreExperience, ExploreSearchResultsPage, ExploreInboundHubRedirect, BrowseListPage, DiscoveryRedirect, InboundCanonicalPlaceRedirect, InboundMerchantPublicRedirect, InboundProductPathRedirect, InboundMessagesRedirect, InboundProMembershipRedirect, InboundProfileWishlistRedirect, InboundRetiredPublishingConsoleRedirect, InboundProfileHistoryAliasRedirect, InboundJourneyMapAliasRedirect, InboundLegacyProfileSettingsRedirect, InboundLegacyNotificationsRedirect, ShopBrowseRoute, CalendarRedirect, PeopleRedirect, PlanBrowseRoute, HostingHubPage, CanonicalPlaceDetailPage, VenuePlaceDetailPage, FacilityDetailPage, ProfileProMembership, ShopPublic, ActivityDetail, ActivityCrewPage, OrganisationProfile, MemberProfile, SignUp, SignIn, VerifyOTP, WelcomeSignup, ForgotPassword, AdminInbox, AdminSubmissions, AdminPlaces, AdminAreas, AreaDetailPage, AdminOrganisations, AdminActivities, AdminMembers, AdminGroups, AdminAuditLog, AdminReports, AdminSettings, AdminAccount, AdminNotifications, AdminAlerts, GeoTreePage, GeoCountryPage, GeoNodePage, PlanTodayPage, PublishingOverview, PublishingActivities, PublishingJoinRequests, PublishingTeam, PublishingPublicProfileEdit, PublishingPlaces, PublishingHistory, UserRequests, MessagesGate, ShopManageRedirect, AgencyManageRedirect, PublishingManage, ProfileHistoryPage, JourneyMapPage, Profile, ProfileSettings, ProfileSettingsDisplay, ProfileSettingsAccount, ProfileSettingsPrivacy, ProfileSettingsNotifications, ProfileSettingsSafety, ProfileVehiclesPage, ProfileVehicleNewPage, ProfileVehicleEditPage, ProfileEdit, ProfileBadges, Submissions, ProfileReviews, JoinRequestDetail, Groups, Buddies, SecurityPrivacy, Terms, Privacy, Faq, About, Contact, SiteMap, NotFound, DashboardRedirect } from './appLazyPages';
 import { PageLoader, AuthAliasRedirect } from './appRouteChrome';
 
 export const AppRoutes = ({ location }: { location: Location }) => (
@@ -60,10 +60,10 @@ export const AppRoutes = ({ location }: { location: Location }) => (
               </Suspense>
             }
           />
-          <Route path="/explore/hub/map" element={<ExploreHubLegacyRedirect />} />
-          <Route path="/explore/hub/home" element={<ExploreHubLegacyRedirect />} />
-          <Route path="/explore/hub/search" element={<ExploreHubLegacyRedirect />} />
-          <Route path="/explore/hub" element={<ExploreHubLegacyRedirect />} />
+          <Route path="/explore/hub/map" element={<ExploreInboundHubRedirect />} />
+          <Route path="/explore/hub/home" element={<ExploreInboundHubRedirect />} />
+          <Route path="/explore/hub/search" element={<ExploreInboundHubRedirect />} />
+          <Route path="/explore/hub" element={<ExploreInboundHubRedirect />} />
           <Route
             path="/explore"
             element={<ExploreExperience />}

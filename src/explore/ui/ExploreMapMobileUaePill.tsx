@@ -3,7 +3,7 @@ import { useId, useState } from 'react';
 import { Check, MapPin } from 'lucide-react';
 import { EXPLORE_MAP_MOBILE_FLOAT_CHIP_MARK } from '../../config/exploreTheme';
 import { EXPLORE_REGION_SCOPE_RESTING_LABEL } from '../exploreOptionalFilters';
-import { getVenueStateFilterOptions } from '../../config/regions';
+import { useVenueStateFilterOptions } from '../../config/useVenueStateFilterOptions';
 import { UiTooltip } from '../../components/ui/UiTooltip';
 import { UaeFlagIcon } from '../../components/ui/UaeFlagIcon';
 import { ExploreMapFilterMenuShell } from './ExploreMapFilterMenuShell';
@@ -41,7 +41,7 @@ export const ExploreMapMobileUaePill = ({
     minWidthPx: 220,
     showCaret: true,
   });
-  const options = getVenueStateFilterOptions();
+  const options = useVenueStateFilterOptions();
   const active = venueRegions.length > 0;
 
   const toggle = (key: string) => {

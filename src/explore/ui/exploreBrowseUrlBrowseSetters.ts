@@ -33,6 +33,7 @@ export const createExploreBrowseUrlBrowseSetters = (input: {
   setActivityDatePreset: (v: ExploreActivityDatePreset) => void;
   setActivityModeFilter: (v: ExploreActivityModeFilter) => void;
   setVenueRegions: (v: string[]) => void;
+  setGeoPath: (v: string[]) => void;
   setSearchScope: (v: ExploreSearchScopeKey | null) => void;
   setTripMapTopics: (v: TripMapTopicKey[]) => void;
   setPlaceMapTopics: (v: PlaceMapTopicKey[]) => void;
@@ -60,6 +61,7 @@ export const createExploreBrowseUrlBrowseSetters = (input: {
   setActivityDatePreset: input.setActivityDatePreset,
   setActivityModeFilter: input.setActivityModeFilter,
   setVenueRegions: input.setVenueRegions,
+  setGeoPath: input.setGeoPath,
   setSearchScope: input.setSearchScope,
   setTripMapTopics: input.setTripMapTopics,
   setPlaceMapTopics: input.setPlaceMapTopics,

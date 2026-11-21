@@ -4,7 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { groupRegionTextAtBrowseFilterLevel } from '../config/groupRegionFilter';
 import { buildExploreWhenSegment } from '@uaetrail/shared-types';
 import { fetchApiActivities } from './publicActivitiesClientApi';
-import { HOME_LANDING_FALLBACK_ACTIVITIES, type HomeLandingActivity } from '../content/homeLanding';
+import { activitiesApi } from '../api/domains/activities';
+import type { HomeLandingActivity } from '../content/homeLanding';
 import { homeLandingActivitiesQueryKey } from './clientQueryKeys';
 import { useApiHealth } from './useApiHealth';
 import {
@@ -12,12 +13,12 @@ import {
   HOME_LANDING_ACTIVITY_LIMIT,
   selectDiverseHomeLandingActivities,
 } from '../utils/selectDiverseHomeLandingActivities';
+import { resolveActivityHeroImage } from '../utils/activityHeroImage';
 
 export interface HomeLandingActivitiesState {
   activities: HomeLandingActivity[];
   totalCount: number;
   loading: boolean;
-  fromLiveApi: boolean;
   error: boolean;
   refetch: () => void;
 }
@@ -47,34 +48,42 @@ const toLandingActivity = (activity: ActivityDTO): HomeLandingActivity => ({
   paymentTerms: activity.paymentTerms,
   pricingMode: activity.pricingMode,
   path: `/activity/${activity.id}`,
+  coverImageUrl: resolveActivityHeroImage({
+    id: activity.id,
+    activityType: activity.activityType,
+    images: activity.images,
+    bannerUrl: activity.bannerUrl,
+    location: activity.location,
+  }),
 });
 
-type HomeLandingActivitiesPayload = {
-  activities: HomeLandingActivity[];
-  totalCount: number;
-  fromLiveApi: boolean;
-};
-
-const fallbackPayload = (): HomeLandingActivitiesPayload => ({
-  activities: HOME_LANDING_FALLBACK_ACTIVITIES,
-  totalCount: HOME_LANDING_FALLBACK_ACTIVITIES.length,
-  fromLiveApi: false,
+const emptyPayload = () => ({
+  activities: [] as HomeLandingActivity[],
+  totalCount: 0,
 });
 
-const fetchHomeLandingActivities = async (): Promise<HomeLandingActivitiesPayload> => {
-  const listings = await fetchApiActivities('upcoming', HOME_LANDING_ACTIVITY_FETCH_SIZE);
+const fetchHomeLandingActivities = async () => {
+  let listings: ActivityDTO[] = [];
+  try {
+    const featured = await activitiesApi.getFeaturedActivities(HOME_LANDING_ACTIVITY_FETCH_SIZE);
+    listings = featured.data ?? [];
+  } catch {
+    listings = [];
+  }
   if (listings.length === 0) {
-    return fallbackPayload();
+    listings = await fetchApiActivities('upcoming', HOME_LANDING_ACTIVITY_FETCH_SIZE);
+  }
+  if (listings.length === 0) {
+    return emptyPayload();
   }
   const diverse = selectDiverseHomeLandingActivities(listings, HOME_LANDING_ACTIVITY_LIMIT);
   return {
     activities: diverse.map(toLandingActivity),
     totalCount: listings.length,
-    fromLiveApi: true,
   };
 };
 
-/** Public upcoming activities for marketing landing — falls back to curated cards. */
+/** Public upcoming activities for marketing landing — API-only; empty state when none published. */
 export const useHomeLandingActivities = (): HomeLandingActivitiesState => {
   const { isSuccess: apiReady } = useApiHealth();
 
@@ -85,32 +94,28 @@ export const useHomeLandingActivities = (): HomeLandingActivitiesState => {
     retry: 2,
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 5000),
     refetchOnWindowFocus: true,
-    // Retry briefly while API boots; stop after a few attempts to avoid guest polling storms.
     refetchInterval: (query) => {
-      if (query.state.data?.fromLiveApi) return false;
+      if (query.state.status === 'success') return false;
       const attempts = query.state.dataUpdateCount + query.state.errorUpdateCount;
       if (attempts >= 5) return false;
       if (query.state.status === 'error') return 8000;
-      if (query.state.data && !query.state.data.fromLiveApi) return 8000;
       return false;
     },
   });
 
   useEffect(() => {
-    if (!apiReady || data?.fromLiveApi) return;
+    if (!apiReady || data) return;
     void refetch();
-    // One catch-up when health flips ready; capped interval covers further retries.
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional apiReady edge only
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- catch-up when API health flips ready
   }, [apiReady]);
 
-  const payload = isError ? fallbackPayload() : (data ?? fallbackPayload());
+  const payload = isError ? emptyPayload() : (data ?? emptyPayload());
 
   return {
     activities: payload.activities,
     totalCount: payload.totalCount,
-    loading: isLoading || (isFetching && !payload.fromLiveApi),
-    fromLiveApi: !isError && payload.fromLiveApi,
-    error: isError && !payload.fromLiveApi,
+    loading: isLoading || (isFetching && payload.activities.length === 0 && !isError),
+    error: isError,
     refetch: () => {
       void refetch();
     },

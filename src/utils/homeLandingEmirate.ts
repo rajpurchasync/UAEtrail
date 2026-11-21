@@ -1,4 +1,4 @@
-import { HOME_EMIRATE_FILTER_ORDER } from '../content/homeMarketing';
+import { EXPLORE_REGION_PILL_LABELS } from '../config/regions';
 
 const REGION_TO_ID: Record<string, string> = {
   dubai: 'dubai',
@@ -22,5 +22,19 @@ export const emirateIdFromRegion = (region: string): string | null => {
   return null;
 };
 
-export const emirateLabelFromId = (id: string): string =>
-  HOME_EMIRATE_FILTER_ORDER.find((e) => e.id === id)?.label ?? id;
+const EMIRATE_ID_TO_REGION_KEY: Record<string, string> = {
+  dubai: 'Dubai',
+  'abu-dhabi': 'Abu Dhabi',
+  sharjah: 'Sharjah',
+  rak: 'RAK',
+  fujairah: 'Fujairah',
+  ajman: 'Ajman',
+  uaq: 'Umm Al Quwain',
+};
+
+export const emirateLabelFromId = (id: string): string => {
+  if (id === 'all') return 'All';
+  const regionKey = EMIRATE_ID_TO_REGION_KEY[id];
+  if (regionKey) return EXPLORE_REGION_PILL_LABELS[regionKey] ?? regionKey;
+  return id.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+};

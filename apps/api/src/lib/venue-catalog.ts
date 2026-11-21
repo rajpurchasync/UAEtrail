@@ -133,7 +133,13 @@ const resolveCatalogLocationId = (location: Location): string | null => {
   return getVenueCatalogEntryById(location.id) ? location.id : null;
 };
 
-/** Fill sparse DB rows from curated JSON — safe on every explore map read (no wipe of admin/GPX data). */
+/**
+ * Explore map catalog reads Mongo only — venue JSON is for `import-venue-catalog` / migrations, not runtime overlay.
+ * @deprecated No longer called from `discovery-catalog-builder`; kept for import tests and one-off backfills.
+ */
+export const isVenueCatalogRuntimeOverlayEnabled = (): boolean => false;
+
+/** Fill sparse DB rows from curated JSON — import scripts/tests only; not wired on `GET /explore/map`. */
 export const overlayCatalogDefaultsOnLocation = (location: Location): Location => {
   const catalogId = resolveCatalogLocationId(location);
   if (!catalogId) return location;

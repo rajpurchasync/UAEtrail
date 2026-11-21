@@ -7,7 +7,7 @@ import { sanitizeUserGeneratedText } from '../../lib/content-moderation.js';
 import { ApiError } from '../../lib/api-error.js';
 import { listMyReviews, updateMyReview } from '../../services/my-reviews.js';
 import { createMemberReview } from '../../services/review-commands.js';
-import { listPublicReviews } from '../../services/review-read.js';
+import { listMarketingReviewHighlights, listPublicReviews } from '../../services/review-read.js';
 
 const idParamSchema = z.object({ id: z.string().min(1) });
 
@@ -30,6 +30,10 @@ const reviewCreateSchema = z.object({
 const reviewUpdateSchema = z.object({
   rating: z.number().int().min(1).max(5),
   comment: z.string().min(10).max(1000),
+});
+
+const marketingHighlightsSchema = z.object({
+  limit: z.coerce.number().int().min(1).max(8).default(4),
 });
 
 /** Place, host/shop, and activity reviews (`social_reviews`). */
@@ -74,6 +78,20 @@ export const registerReviewRoutes = (router: Router): void => {
           rating: body.rating,
           comment: sanitizedComment,
         });
+        res.json({ data });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  router.get(
+    '/reviews/marketing-highlights',
+    validate({ query: marketingHighlightsSchema }),
+    async (req, res, next) => {
+      try {
+        const { limit } = req.query as unknown as z.infer<typeof marketingHighlightsSchema>;
+        const data = await listMarketingReviewHighlights(limit);
         res.json({ data });
       } catch (error) {
         next(error);

@@ -2,7 +2,6 @@ import type { HomeLandingActivity } from '../content/homeLanding';
 import { HOME_ACTIVITIES } from '../content/homeMarketing';
 import type { ActivityCardProps } from '../components/home/marketing/ActivityCard';
 import type { PriceTagVariant } from '../components/home/marketing/PriceTag';
-import { resolveActivityTypeCoverImage } from '../config/activityCoverImages';
 import { activityPriceLabel, inferActivityPricingMode } from './activityPricing';
 import { emirateIdFromRegion } from './homeLandingEmirate';
 
@@ -39,15 +38,11 @@ export const mapHomeLandingActivityToCard = (
 ): ActivityCardProps & { emirateId: string | null } => {
   const variant = toPriceVariant(activity);
   const href = activity.path.startsWith('/') ? activity.path : `/activity/${activity.id}`;
-  const cover = resolveActivityTypeCoverImage(activity.activityType, null, {
-    activityId: activity.id
-  });
-
   return {
     href,
     title: activity.title,
     description: activity.description,
-    imageUrl: cover,
+    imageUrl: activity.coverImageUrl,
     imageAlt: `${activity.title} in ${activity.region}`,
     emirate: activity.region,
     startsAt: toStartsAtIso(activity),

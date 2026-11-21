@@ -28,6 +28,7 @@ export type ExploreBrowseUrlSetterBundle = {
   setBrowseOpen: (v: boolean) => void;
   setQuery: (v: string) => void;
   setVenueRegions: (v: string[]) => void;
+  setGeoPath: (v: string[]) => void;
   setActivityDatePreset: (v: ExploreActivityDatePreset) => void;
   setActivityModeFilter: (v: ExploreActivityModeFilter) => void;
   setBuddySubtype: (v: ExploreBuddySubtypeKey) => void;
@@ -61,6 +62,7 @@ export const applyExploreBrowseHydratedState = (
   setters.setBrowseOpen(state.browseOpen);
   setters.setQuery(state.query);
   setters.setVenueRegions(state.venueRegions);
+  setters.setGeoPath(state.geoPath);
   setters.setActivityDatePreset(state.activityDatePreset);
   setters.setActivityModeFilter(state.activityModeFilter);
   setters.setBuddySubtype(state.buddySubtype);

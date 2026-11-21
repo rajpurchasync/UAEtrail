@@ -4,7 +4,7 @@
 import {
   EXPLORE_SEARCH_RESULTS_PATH,
   EXPLORE_SEARCH_SCOPE_PARAM,
-  LEGACY_HUB_MODE_PARAM,
+  INBOUND_HUB_SCOPE_PARAM,
   defaultExploreSearchBrowseState,
   exploreSearchJoinListFilters,
   exploreSearchExploreMapPath,
@@ -26,7 +26,7 @@ import {
 export {
   EXPLORE_SEARCH_RESULTS_PATH,
   EXPLORE_SEARCH_SCOPE_PARAM,
-  LEGACY_HUB_MODE_PARAM,
+  INBOUND_HUB_SCOPE_PARAM,
   defaultExploreSearchBrowseState,
   exploreSearchJoinListFilters,
   exploreSearchExploreMapPath,
@@ -40,7 +40,7 @@ export {
   parseExploreSearchBrowseState,
   parseExploreSearchScope,
   parseExploreSearchScopeFromParams,
-  exploreHubLegacyRedirectTarget,
+  exploreInboundHubRedirectTarget,
 } from '../search/exploreSearchRouting';
 
 /** @deprecated */
@@ -52,7 +52,7 @@ export const EXPLORE_HUB_HOME_PATH = '/explore/hub/home';
 /** @deprecated */
 export const EXPLORE_HUB_SEARCH_PATH = EXPLORE_SEARCH_RESULTS_PATH;
 /** @deprecated */
-export const EXPLORE_HUB_MODE_PARAM = LEGACY_HUB_MODE_PARAM;
+export const EXPLORE_HUB_MODE_PARAM = INBOUND_HUB_SCOPE_PARAM;
 
 /** @deprecated */
 export type ExploreHubMode = ExploreSearchScope;

@@ -546,7 +546,20 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
     (next: string[]) => {
       setters.setVenueRegions(next);
       clearSelection();
-      syncExploreUrl({ venueRegions: next, list: listOpen });
+      syncExploreUrl({
+        venueRegions: next,
+        ...(next.length > 0 ? { geoPath: [] as string[] } : {}),
+        list: listOpen,
+      });
+    },
+    [clearSelection, listOpen, setters, syncExploreUrl]
+  );
+
+  const applyGeoPath = useCallback(
+    (next: string[]) => {
+      setters.setGeoPath(next);
+      clearSelection();
+      syncExploreUrl({ geoPath: next, list: listOpen });
     },
     [clearSelection, listOpen, setters, syncExploreUrl]
   );
@@ -724,6 +737,7 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
     applyActivityDatePreset,
     applyActivityModeFilter,
     applyVenueRegions,
+    applyGeoPath,
     commitExploreSearch,
     toggleTripMapTopic,
     togglePlaceMapTopic,

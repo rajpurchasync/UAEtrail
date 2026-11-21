@@ -40,7 +40,7 @@ Homepage v2 (`src/components/home/marketing/sections/*`, `src/content/homeMarket
 | Section | Component | Job |
 |---------|-----------|-----|
 | Hero carousel | `HomeHeroSection` | Promise, CTAs; **static** photo carousel (no live outing cards) |
-| Upcoming outings | `HomeActivitiesSection` | Real upcoming outings, emirate filter (public API + curated fallback) |
+| Upcoming outings | `HomeActivitiesSection` | Public `GET /activities` only; honest empty state when none live |
 | How it works | `HomeHowItWorksSection` | Only place for ordered steps |
 | Reviews + FAQ | `HomeReviewsFaqSection` | Social proof + objections |
 
@@ -69,7 +69,10 @@ Home may **mention** host-approved joins and the map — that is the acquisition
 | What | Where |
 |------|--------|
 | Marketing strings | `src/content/homeMarketing.ts` |
-| Fallback activity cards (API empty/error) | `src/content/homeLanding.ts` |
+| Activity rail (featured → upcoming, wire photos) | `useHomeLandingActivities` → `GET /activities` |
+| Activity rail shape (types only) | `src/content/homeLanding.ts` |
+| Home emirate chips | Derived from loaded activity cards only (`HomeActivitiesSection`) |
+| Review carousel | `GET /reviews/marketing-highlights` via `useHomeMarketingReviews` (hidden when empty) |
 | Canonical CTA labels | `src/content/productNorthStar.ts` (`PRODUCT_EXPLORE_CTA`, `PRODUCT_JOIN_CTA`) |
 | Full FAQ corpus + JSON-LD | `src/content/platformFaqs.ts` |
 | Page shell | `src/pages/Home.tsx` |

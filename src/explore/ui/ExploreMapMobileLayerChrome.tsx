@@ -10,6 +10,7 @@ import {
 } from '../exploreOptionalFilters';
 import type { BrowseTripTopicKey } from '../../list/browseListTripTopics';
 import type { ListVenuePlaceTopicKey } from '../../list/listVenuePlaceTopics';
+import { ListExplorerGeoScopeChip } from '../../list/explorer/ListExplorerGeoScopeChip';
 import { ListExplorerQuickFilters } from '../../list/explorer/ListExplorerQuickFilters';
 import { EXPLORE_MAP_CHROME_FROST } from '../../config/exploreTheme';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
@@ -29,6 +30,9 @@ type ExploreMapMobileLayerChromeProps = {
   onMapFilterChange: (filter: MapFilterKey) => void;
   onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
   onVenueRegionsChange: (regions: string[]) => void;
+  geoPath?: readonly string[];
+  onClearGeoScope?: () => void;
+  onPopGeoScope?: () => void;
   venueFilter?: VenueListFilterKey;
   tripMapTopics: TripMapTopicKey[];
   placeMapTopics: PlaceMapTopicKey[];
@@ -59,6 +63,9 @@ export const ExploreMapMobileLayerChrome = ({
   activityDatePreset,
   onActivityDatePresetChange,
   onVenueRegionsChange,
+  geoPath = [],
+  onClearGeoScope,
+  onPopGeoScope,
   tripMapTopics,
   placeMapTopics,
   priceFilter,
@@ -123,6 +130,14 @@ export const ExploreMapMobileLayerChrome = ({
           </button>
         ) : null}
       </div>
+
+      {geoPath.length > 0 && onClearGeoScope ? (
+        <ListExplorerGeoScopeChip
+          geoPath={geoPath}
+          onClear={onClearGeoScope}
+          onPopLevel={onPopGeoScope}
+        />
+      ) : null}
 
       <ListExplorerQuickFilters
         bucket={explorePanelToListExplorerBucket(panel)}

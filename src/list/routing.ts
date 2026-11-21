@@ -9,6 +9,7 @@ import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import {
   LIST_CAT_PARAM,
   parseBrowseListFilterState,
+  parseBrowseListGeoPath,
   parseBrowseListVenueRegions,
   parseListCatParam,
   serializeBrowseListSearchParams,
@@ -16,6 +17,7 @@ import {
 
 export type ListDiscoveryPathOptions = Partial<BrowseListFilterState> & {
   regions?: string[];
+  geoPath?: string[];
   listCat?: BrowseMainCategoryKey | null;
 };
 
@@ -51,7 +53,11 @@ export const listDiscoveryPath = (options?: ListDiscoveryPathOptions): string =>
     facilityKinds: options?.facilityKinds ?? [],
     audience: options?.audience ?? 'anyone',
   };
-  const params = serializeBrowseListSearchParams(state, options?.regions ?? []);
+  const params = serializeBrowseListSearchParams(
+    state,
+    options?.regions ?? [],
+    options?.geoPath ?? []
+  );
   if (options?.listCat) params.set(LIST_CAT_PARAM, options.listCat);
   const qs = params.toString();
   return qs ? `${LIST_DISCOVERY_PATH}?${qs}` : LIST_DISCOVERY_PATH;
@@ -61,11 +67,12 @@ export const exploreMapPathFromListSearch = (search: string): string => {
   const params = new URLSearchParams(search.replace(/^\?/, '').trim());
   let state = parseBrowseListFilterState(params);
   const regions = parseBrowseListVenueRegions(params);
+  const geoPath = parseBrowseListGeoPath(params);
   const listCat = parseListCatParam(params.get(LIST_CAT_PARAM));
   if (listCat === 'activities' || listCat === 'venues') {
     state = scopeBrowseListStateForListCat(state, listCat);
   }
-  const exploreParams = serializeBrowseListToExploreSearchParams(state, regions, { listCat });
+  const exploreParams = serializeBrowseListToExploreSearchParams(state, regions, { listCat, geoPath });
   const qs = exploreParams.toString();
   return qs ? `${EXPLORE_MAP_PATH}?${qs}` : EXPLORE_MAP_PATH;
 };
@@ -78,13 +85,14 @@ export const listDiscoveryPathFromExploreSearch = (search: string): string => {
   const params = new URLSearchParams(search.replace(/^\?/, '').trim());
   let state = parseBrowseListFilterState(params);
   const regions = parseBrowseListVenueRegions(params);
+  const geoPath = parseBrowseListGeoPath(params);
   const explicitListCat = parseListCatParam(params.get(LIST_CAT_PARAM));
   const inferredListCat = inferListCatFromExploreHandoff(state, params);
   const listCat = explicitListCat ?? inferredListCat;
   if (listCat === 'activities' || listCat === 'venues') {
     state = scopeBrowseListStateForListCat(state, listCat);
   }
-  const listParams = serializeBrowseListSearchParams(state, regions);
+  const listParams = serializeBrowseListSearchParams(state, regions, geoPath);
   if (listCat) listParams.set(LIST_CAT_PARAM, listCat);
   const qs = listParams.toString();
   return qs ? `${LIST_DISCOVERY_PATH}?${qs}` : LIST_DISCOVERY_PATH;

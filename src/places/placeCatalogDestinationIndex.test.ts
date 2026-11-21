@@ -108,7 +108,7 @@ describe('placeCatalogDestinationIndex', () => {
       place({ id: 't-3', name: 'Jais summit', region: 'RAK', areaId: 'a-jais', areaLabel: 'Summit trail' }),
     ];
 
-    expect(buildPlaceCatalogStateOptions('AE').map((row) => row.value)).toContain('Dubai');
+    expect(buildPlaceCatalogStateOptions('AE', areas).map((row) => row.value)).toContain('Dubai');
     const dubaiAreas = buildPlaceCatalogAreaOptions(places, areas, 'Dubai');
     expect(dubaiAreas.map((row) => row.id)).toEqual(['a-hatta']);
 

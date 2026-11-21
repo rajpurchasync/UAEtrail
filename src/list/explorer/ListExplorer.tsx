@@ -1,4 +1,9 @@
 import { useMemo, useState, type ReactNode } from 'react';
+import { useExploreDesktopListDrawerChrome } from '../../explore/ui/ExploreDesktopListDrawer';
+import { useExplorePublishedAreas } from '../../explore/useExplorePublishedAreas';
+import { buildBrowseCollapsedRailLabels } from '../browseCollapsedRailLabels';
+import { useBrowseGeoScopeHydration } from '../useBrowseGeoScopeHydration';
+import { BrowsePanelCollapsedRail } from './BrowsePanelCollapsedRail';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { EXPLORE_BRAND_ACTIVE } from '../../config/exploreTheme';
 import { APP_SCROLL_BODY_CLASS } from '../../config/layoutScroll';
@@ -79,6 +84,11 @@ type ListExplorerProps = {
   suppressDateSectionHeaders?: boolean;
   searchPlaceholder?: string;
   enableSearchScopeHints?: boolean;
+  scrollLeading?: ReactNode;
+  scrollFooter?: ReactNode;
+  geoPath?: string[];
+  onClearGeoScope?: () => void;
+  onPopGeoScope?: () => void;
 };
 
 const thumbGridClass = (sideMap: boolean) =>
@@ -239,7 +249,28 @@ export const ListExplorer = ({
   suppressDateSectionHeaders = false,
   searchPlaceholder,
   enableSearchScopeHints = true,
+  scrollLeading,
+  scrollFooter,
+  geoPath = [],
+  onClearGeoScope,
+  onPopGeoScope,
 }: ListExplorerProps) => {
+  const drawer = useExploreDesktopListDrawerChrome();
+  const publishedAreas = useExplorePublishedAreas();
+  useBrowseGeoScopeHydration(geoPath);
+
+  const collapsedRailLabels = useMemo(
+    () =>
+      buildBrowseCollapsedRailLabels({
+        filters,
+        regions,
+        geoPath,
+        bucket,
+        publishedAreas,
+      }),
+    [bucket, filters, geoPath, publishedAreas, regions]
+  );
+
   const [scrollElement, setScrollElement] = useState<HTMLElement | null>(null);
   const stickySearch = query.trim().length > 0;
   const resultCount = loading ? null : cards.length;
@@ -266,6 +297,12 @@ export const ListExplorer = ({
     () => sortListExplorerCards(cards, sort, viewer),
     [cards, sort, viewer]
   );
+
+  if (drawer?.collapsed) {
+    return (
+      <BrowsePanelCollapsedRail labels={collapsedRailLabels} onExpand={drawer.toggleCollapsed} />
+    );
+  }
 
   return (
     <div
@@ -325,6 +362,9 @@ export const ListExplorer = ({
         onApplyFilters={onApplyFilters}
         searchPlaceholder={searchPlaceholder}
         enableSearchScopeHints={enableSearchScopeHints}
+        geoPath={geoPath}
+        onClearGeoScope={onClearGeoScope}
+        onPopGeoScope={onPopGeoScope}
       />
       <div
         ref={setScrollElement}
@@ -343,6 +383,7 @@ export const ListExplorer = ({
                 : 'max-w-6xl px-3 md:px-6 md:py-5'
           }`}
         >
+          {scrollLeading}
           {showGuestCatalogPreview ? <ListGuestCatalogPreviewNotice className="mb-3" /> : null}
           {loading ? (
             <ThumbnailSkeleton compactThumbGrid={mapColumnVisible} />
@@ -383,6 +424,7 @@ export const ListExplorer = ({
               />
             </PlaceDistanceProvider>
           )}
+          {scrollFooter}
         </div>
       </div>
       {hideBucketToggleOnMobile ? null : (

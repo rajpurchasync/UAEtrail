@@ -1,9 +1,6 @@
-import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import {
-  exploreMapItemIsAvailabilityCatalog,
-  exploreMapItemIsSeeking,
-  isGeographyMapSource,
-} from '@uaetrail/shared-types';
+import type { AreaPublicDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { isGeographyMapSource } from '@uaetrail/shared-types';
+import { filterListCatalogDemandItems } from '@/activity-discovery/catalog/listDemandCatalog';
 import {
   filterListCatalogByVenueRegions,
   mergeListCatalogPlansAndPlaces,
@@ -36,6 +33,8 @@ import {
 } from './browseAudienceFilter';
 import type { BuddiesDiscoverySegment } from './buddiesDiscoverySegment';
 import { isPlacesMapItem, isShopListItem } from '../explore/ui/exploreMapPinModel';
+import { exploreItemMatchesBrowseGeoPath } from './browseGeoPath';
+import { deriveVenueRegionSortOrder } from '../explore/exploreListSort';
 /** @deprecated Use BrowseMainCategoryKey — kept for imports migrating */
 export type BrowseCategoryKey = BrowseMainCategoryKey;
 
@@ -99,7 +98,9 @@ const matchesWeekendBrowseFilter = (item: ExploreMapItemDTO): boolean => {
 export const filterExploreMapItemsForList = (
   items: ExploreMapItemDTO[],
   state: BrowseListFilterState,
-  venueRegions: string[]
+  venueRegions: string[],
+  geoIds: readonly string[] = [],
+  publishedAreas: readonly AreaPublicDTO[] = []
 ): ExploreMapItemDTO[] => {
   let pool = items;
 
@@ -113,9 +114,7 @@ export const filterExploreMapItemsForList = (
     state.categories.length === 0 || state.categories.includes('venues');
 
   if (tripsCategoryInScope && state.tripLookingOnly) {
-    pool = pool.filter(
-      (item) => exploreMapItemIsSeeking(item) || exploreMapItemIsAvailabilityCatalog(item)
-    );
+    pool = filterListCatalogDemandItems(pool);
   } else if (tripsCategoryInScope && state.tripTopics.length > 0) {
     pool = pool.filter((item) =>
       state.tripTopics.some((topic) => matchesUnifiedTopicFilter(item, topic, 'all', 'all'))
@@ -164,7 +163,12 @@ export const filterExploreMapItemsForList = (
     pool = pool.filter((item) => exploreItemMatchesBrowseAudienceFilter(item, audience));
   }
 
+  if (geoIds.length > 0) {
+    pool = pool.filter((item) => exploreItemMatchesBrowseGeoPath(item, geoIds, publishedAreas));
+  }
+
   pool = filterListCatalogByVenueRegions(pool, venueRegions);
 
-  return mergeListCatalogPlansAndPlaces(pool);
+  const venueRegionOrder = deriveVenueRegionSortOrder(publishedAreas);
+  return mergeListCatalogPlansAndPlaces(pool, venueRegionOrder);
 };

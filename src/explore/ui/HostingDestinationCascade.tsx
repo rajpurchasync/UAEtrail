@@ -138,7 +138,10 @@ export const HostingDestinationCascade = ({
     [catalogPlaces, areas, countryCode]
   );
 
-  const stateOptions = useMemo(() => buildPlaceCatalogStateOptions(countryCode), [countryCode]);
+  const stateOptions = useMemo(
+    () => buildPlaceCatalogStateOptions(countryCode, areas),
+    [areas, countryCode]
+  );
 
   const areaOptions = useMemo(
     () => buildPlaceCatalogAreaOptions(catalogPlaces, areas, state, countryCode),

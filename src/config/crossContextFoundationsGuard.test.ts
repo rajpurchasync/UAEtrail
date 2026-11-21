@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 const ROOT = process.cwd();
@@ -166,6 +166,17 @@ describe('crossContextFoundationsGuard', () => {
       if (/\/me\/member-discovery/.test(content)) violations.push(`src/api/domains/${name}`);
     }
     expect(violations).toEqual([]);
+  });
+
+  it('CTX-FOUND-11: product data lineage — one map catalog read model; marketing + list delegate to API/modules', () => {
+    expect(read('src/config/productDataLineageGuard.test.ts')).toMatch(/CTX-DATA-01/);
+    expect(read('src/list/browseListFilters.ts')).toMatch(/listDemandCatalog/);
+    expect(read('apps/api/src/lib/discovery-catalog-builder.ts')).not.toMatch(
+      /overlayCatalogDefaultsOnLocation/
+    );
+    expect(read('src/hooks/useHomeLandingActivities.ts')).not.toMatch(/HOME_LANDING_FALLBACK/);
+    expect(read('src/hooks/useHomeLandingActivities.ts')).toMatch(/getFeaturedActivities/);
+    expect(existsSync(join(ROOT, 'src/hooks/useHomeMarketingReviews.ts'))).toBe(true);
   });
 
   it('CTX-FOUND-10: communication — /chat/* wire paths only in chat domain (messaging is façade)', () => {

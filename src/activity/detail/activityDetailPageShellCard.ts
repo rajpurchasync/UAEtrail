@@ -7,7 +7,7 @@ import type {
 import { buildExploreActivityDisplay } from '@uaetrail/shared-types';
 import { buildDiscoveryCardViewModelCard } from '../../discovery';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import { hostedExploreMapItem } from '../../explore/exploreMapItemFixtures';
+import { buildExploreMapItemFromActivity } from '../../explore/privateActivityExploreItem';
 import { activityDetailPath } from '../../config/routingCatalog';
 
 const linkedRidesharesFromDetail = (
@@ -49,7 +49,6 @@ export const buildActivityDetailPageShellCard = (input: {
       : viewerAccess;
 
   const exploreDisplay = buildExploreActivityDisplay(activity);
-
   const location = activity.location;
   const browseSubtitle =
     location?.areaLabel?.trim() ||
@@ -58,30 +57,19 @@ export const buildActivityDetailPageShellCard = (input: {
     activity.region?.trim() ||
     null;
 
-  const item = hostedExploreMapItem({
-    id: `activity:${activity.id}`,
-    kind: activity.activityType,
-    path: activityDetailPath(activity.id),
+  const item = {
+    ...buildExploreMapItemFromActivity(activity, mergedViewerAccess ?? undefined),
     title: activity.title || activity.locationName,
     subtitle: browseSubtitle,
-    areaId: activity.areaId ?? location?.areaId ?? null,
-    areaSlug: location?.areaSlug ?? undefined,
-    areaLabel: location?.areaLabel ?? undefined,
-    areaName: location?.areaName ?? undefined,
-    geoRef: activity.geoRef ?? location?.geoRef ?? null,
-    groupRegionLevels: activity.groupRegionLevels ?? location?.groupRegionLevels ?? null,
-    latitude: activity.meetingLat ?? activity.startLat ?? null,
-    longitude: activity.meetingLng ?? activity.startLng ?? null,
     priceLabel: exploreDisplay.priceLabel,
     priceDisplay: exploreDisplay.priceDisplay,
     fromLabel: exploreDisplay.fromLabel,
     toLabel: exploreDisplay.toLabel,
-    activity,
     participantPreviews: activity.participants ?? [],
     linkedRideshareActivities: linkedRidesharesFromDetail(activity),
     rideshareEnabled: activity.rideshareEnabled,
     viewerAccess: mergedViewerAccess ?? undefined,
-  });
+  };
 
   return buildDiscoveryCardViewModelCard(item, [item]);
 };

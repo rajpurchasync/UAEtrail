@@ -1,6 +1,6 @@
 import type { AreaPublicDTO, PlaceDTO } from '@uaetrail/shared-types';
 import type { PlaceCatalogDestinationSearchHit } from '../../places/placeCatalogDestinationIndex';
-import { getExploreRegionPillOptions } from '../../config/regions';
+import { mergeExploreRegionPillOptionsWithAreas } from '../../config/regions';
 import {
   HOSTING_DESTINATION_SEARCH_GROUP_AREA,
   HOSTING_DESTINATION_SEARCH_GROUP_PLACE,
@@ -45,7 +45,7 @@ export const buildExploreHubWhereSuggestions = (
   if (!q) return [];
 
   const out: ExploreHubWhereSuggestion[] = [];
-  const emirates = getExploreRegionPillOptions('AE');
+  const emirates = mergeExploreRegionPillOptionsWithAreas(areas, 'AE');
   for (const row of emirates) {
     if (row.key === 'all') continue;
     const matches =

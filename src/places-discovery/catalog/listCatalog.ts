@@ -32,8 +32,11 @@ export const filterListCatalogByVenueRegions = (
 };
 
 /** Sort merge: scheduled outings first, then venues/shops (list feed order). */
-export const mergeListCatalogPlansAndPlaces = (pool: ExploreMapItemDTO[]): ExploreMapItemDTO[] => {
+export const mergeListCatalogPlansAndPlaces = (
+  pool: ExploreMapItemDTO[],
+  venueRegionOrder?: readonly string[]
+): ExploreMapItemDTO[] => {
   const plans = pool.filter((item) => isTimeBoundExploreMapItem(item));
   const places = pool.filter(isListCatalogPlaceItem);
-  return [...sortExploreActivities(plans), ...sortExploreVenues(places)];
+  return [...sortExploreActivities(plans), ...sortExploreVenues(places, venueRegionOrder)];
 };

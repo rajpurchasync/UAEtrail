@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { ChevronLeft, Map, Maximize2, Minimize2, Search, X } from 'lucide-react';
+import { ChevronLeft, Map, Maximize2, Minimize2, PanelLeftClose, Search, X } from 'lucide-react';
 import { UiTooltip } from '../../components/ui/UiTooltip';
 import { useExploreDesktopListDrawerChrome } from '../../explore/ui/ExploreDesktopListDrawer';
 import { Link, useNavigate } from 'react-router-dom';
@@ -25,6 +25,7 @@ import type { ListVenuePlaceTopicKey } from '../listVenuePlaceTopics';
 import type { ExploreActivityDatePreset } from '../../explore/exploreActivityDateFilter';
 import { ListExplorerQuickFilters } from './ListExplorerQuickFilters';
 import { ListExplorerFilterFab } from './ListExplorerFilterFab';
+import { ListExplorerGeoScopeChip } from './ListExplorerGeoScopeChip';
 type ListExplorerHeaderProps = {
   query: string;
   onQueryChange: (value: string) => void;
@@ -66,6 +67,9 @@ type ListExplorerHeaderProps = {
   onApplyFilters?: (state: BrowseListFilterState, regions: string[]) => void;
   searchPlaceholder?: string;
   enableSearchScopeHints?: boolean;
+  geoPath?: string[];
+  onClearGeoScope?: () => void;
+  onPopGeoScope?: () => void;
 };
 
 export const ListExplorerHeader = ({
@@ -109,6 +113,9 @@ export const ListExplorerHeader = ({
   onApplyFilters,
   searchPlaceholder,
   enableSearchScopeHints = true,
+  geoPath = [],
+  onClearGeoScope,
+  onPopGeoScope,
 }: ListExplorerHeaderProps) => {
   const hideSideMapChrome = mapColumnVisible || showMapColumnPrompt;
   const standaloneListSurface = !onClose;
@@ -193,6 +200,19 @@ export const ListExplorerHeader = ({
             </button>
           </div>
           <div className="flex items-center gap-1">
+            {drawer ? (
+              <UiTooltip label={drawer.collapsed ? 'Show browse panel' : 'Collapse browse panel'}>
+                <button
+                  type="button"
+                  onClick={drawer.toggleCollapsed}
+                  className={`${LIST_SEARCH.sideAction} !h-10 !w-10 text-neutral-700`}
+                  aria-label={drawer.collapsed ? 'Show browse panel' : 'Collapse browse panel'}
+                  aria-pressed={drawer.collapsed}
+                >
+                  <PanelLeftClose className="h-5 w-5 stroke-[2.25]" aria-hidden />
+                </button>
+              </UiTooltip>
+            ) : null}
             {drawer ? (
               <UiTooltip label={drawer.maximized ? 'Exit full screen' : 'Full screen'}>
                 <button
@@ -378,6 +398,13 @@ export const ListExplorerHeader = ({
         </div>
       </div>
       <div className={`mt-2.5 ${searchResultsChrome ? 'max-md:mt-2' : ''}`}>
+        {geoPath.length > 0 && onClearGeoScope ? (
+          <ListExplorerGeoScopeChip
+            geoPath={geoPath}
+            onClear={onClearGeoScope}
+            onPopLevel={onPopGeoScope}
+          />
+        ) : null}
         <ListExplorerQuickFilters
           surface="list"
           bucket={bucket}

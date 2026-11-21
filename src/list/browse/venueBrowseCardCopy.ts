@@ -12,7 +12,7 @@ import {
   browseCatalogRegionLabel,
 } from './browseCatalogLabels';
 import { resolveVenueBrowseCardFactLabels, resolveVenueCatalogFactLabels } from './venueBrowseFacts';
-import { resolveDiscoveryBrowseGeoHubPath } from '../../discovery/browse/resolveDiscoveryBrowseGeoLink';
+import { resolveDiscoveryBrowseLocationHref } from '../../discovery/browse/resolveDiscoveryBrowseGeoLink';
 import { filterDiscoveryBrowseListBodyFactLabels } from '../../discovery/browse/resolveDiscoveryBrowseListImageChrome';
 
 const emptySchedule: BrowsePosterScheduleGrid = {
@@ -142,7 +142,7 @@ export const resolveVenueBrowseCardCopy = (
   return {
   title: browseCatalogEntityName(card),
   metaLine,
-  metaHref: metaLine ? resolveDiscoveryBrowseGeoHubPath(card) : null,
+  metaHref: metaLine ? resolveDiscoveryBrowseLocationHref(card, 'list') : null,
   regionLabel,
   hubLabel,
   locationLine,

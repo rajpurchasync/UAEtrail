@@ -9,6 +9,10 @@ import {
   parseExploreMapLimitParam,
 } from './explore-map-bbox.js';
 import { applyExploreMapHttpProjection } from './explore-map-list-projection.js';
+import {
+  applyGuestExploreMapCatalogCap,
+  isGuestExploreMapCatalogCapEnabled,
+} from './explore-map-guest-catalog-cap.js';
 
 export type ExploreMapRouteQuery = {
   bbox?: string;
@@ -52,7 +56,7 @@ export type ExploreMapRouteResult = {
   nextCursor?: string | null;
   region?: { slug: string | null; bbox: { south: number; west: number; north: number; east: number } };
   cacheGeneration?: number | null;
-  /** Anonymous map — full pin catalog; peek depth gated in the client (3 unique items). */
+  /** Anonymous map — subset of pins when server cap enabled; client still limits peek depth. */
   guestCatalogPreview?: boolean;
 };
 
@@ -102,7 +106,14 @@ export const loadExploreMapForRequest = async (input: {
     if (!applyGuestCap) {
       return { items, guestCatalogPreview: false };
     }
-    return { items, guestCatalogPreview: true };
+    if (!isGuestExploreMapCatalogCapEnabled()) {
+      return { items, guestCatalogPreview: true };
+    }
+    const capped = applyGuestExploreMapCatalogCap(items);
+    return {
+      items: capped,
+      guestCatalogPreview: true,
+    };
   };
 
   const { items: catalogItems, pageMeta } = await resolveExploreMapCatalogItemsForQuery(input.query);

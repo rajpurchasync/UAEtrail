@@ -15,7 +15,25 @@ const ALLOWLIST = new Set([
 
 const listTestFiles = (): string[] => listGitTrackedFiles('"**/*.test.ts"');
 
+const listProductionSources = (): string[] =>
+  listGitTrackedFiles('"src/**/*.ts" "src/**/*.tsx"').filter(
+    (file) =>
+      !file.endsWith('.test.ts') &&
+      !file.endsWith('.test.tsx') &&
+      file !== 'src/explore/exploreMapItemFixtures.ts'
+  );
+
 describe('exploreFixtureResidueGuard', () => {
+  it('production code does not import exploreMapItemFixtures', () => {
+    const pattern = /from\s+['"][^'"]*exploreMapItemFixtures['"]/;
+    const violations: string[] = [];
+    for (const file of listProductionSources()) {
+      const content = readFileSync(file, 'utf8');
+      if (pattern.test(content)) violations.push(file);
+    }
+    expect(violations).toEqual([]);
+  });
+
   it('tests do not introduce new source: demand map rows (use seekingExploreMapItem)', () => {
     const violations: string[] = [];
     const pattern = /source:\s*['"]demand['"]/;

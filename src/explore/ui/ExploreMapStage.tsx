@@ -23,6 +23,7 @@ import { ExploreDismissibleNotice } from './ExploreDismissibleNotice';
 import { ExploreGuestPreviewLimitBanner } from './ExploreGuestPreviewLimitBanner';
 import { ActivityMapPeekHost } from './ActivityMapPeekHost';
 import { ExploreMapChromeBar } from './ExploreMapChromeBar';
+import { ListExplorerGeoScopeChip } from '../../list/explorer/ListExplorerGeoScopeChip';
 import { ExploreMapLoadErrorBoundary } from './ExploreMapLoadErrorBoundary';
 import { ExploreMapLoadingSkeleton } from './ExploreMapLoadingSkeleton';
 import { ExploreMapLocationPrompt } from './ExploreMapLocationPrompt';
@@ -62,6 +63,9 @@ export type ExploreMapStageProps = {
   onMapFilterChange: (filter: MapFilterKey) => void;
   onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
   onVenueRegionsChange: (regions: string[]) => void;
+  geoPath?: readonly string[];
+  onClearGeoScope?: () => void;
+  onPopGeoScope?: () => void;
   venueFilter?: VenueListFilterKey;
   onVenueFilterChange?: (filter: VenueListFilterKey) => void;
   tripMapTopics: TripMapTopicKey[];
@@ -153,6 +157,9 @@ export const ExploreMapStage = ({
   onMapFilterChange,
   onActivityDatePresetChange,
   onVenueRegionsChange,
+  geoPath = [],
+  onClearGeoScope,
+  onPopGeoScope,
   venueFilter,
   onVenueFilterChange,
   tripMapTopics,
@@ -285,6 +292,20 @@ export const ExploreMapStage = ({
         </ExploreMapLoadErrorBoundary>
       </div>
 
+      {isDesktop && !peopleMap && geoPath.length > 0 && onClearGeoScope ? (
+        <div
+          className={`pointer-events-none absolute inset-x-0 top-0 px-3 pt-3 lg:px-4 ${EXPLORE_Z.mapFilters}`}
+        >
+          <div className="pointer-events-auto max-w-md">
+            <ListExplorerGeoScopeChip
+              geoPath={geoPath}
+              onClear={onClearGeoScope}
+              onPopLevel={onPopGeoScope}
+            />
+          </div>
+        </div>
+      ) : null}
+
       {!(isDesktop) && !peopleMap ? (
       <ExploreMapChromeBar
         panel={panel}
@@ -296,6 +317,9 @@ export const ExploreMapStage = ({
         onSelectListView={onSelectListView}
         onActivityDatePresetChange={onActivityDatePresetChange}
         onVenueRegionsChange={onVenueRegionsChange}
+        geoPath={geoPath}
+        onClearGeoScope={onClearGeoScope}
+        onPopGeoScope={onPopGeoScope}
         venueFilter={venueFilter}
         tripMapTopics={tripMapTopics}
         placeMapTopics={placeMapTopics}

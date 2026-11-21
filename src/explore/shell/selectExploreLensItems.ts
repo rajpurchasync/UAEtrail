@@ -33,6 +33,7 @@ export type ExploreLensArgs = {
   priceFilter?: ExplorePriceFilter;
   hasTrip?: boolean;
   facilityKinds?: readonly PlaceKind[];
+  venueRegionOrder?: readonly string[];
 };
 
 const activitySliceFilters = (args: ExploreLensArgs) => ({
@@ -53,6 +54,7 @@ const placeSliceFilters = (args: ExploreLensArgs) => ({
   venueRegions: args.venueRegions,
   hasTrip: args.hasTrip ?? false,
   facilityKinds: args.facilityKinds ?? [],
+  venueRegionOrder: args.venueRegionOrder,
 });
 
 /**
@@ -77,7 +79,7 @@ export const selectExploreLensItems = (args: ExploreLensArgs): DiscoveryMapItems
   }
 
   if (sidebarPanel === 'shops') {
-    return selectShopsFromMapItems(catalog);
+    return selectShopsFromMapItems(catalog, args.venueRegionOrder);
   }
 
   const activities = selectActivitiesFromMapItems(catalog, activitySliceFilters(args));

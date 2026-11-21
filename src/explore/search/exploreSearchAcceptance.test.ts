@@ -6,7 +6,7 @@ import {
   exploreSearchListPathFromMapSearch,
   exploreSearchMapViewPathFromListSearch,
   exploreSearchResultsPath,
-  exploreHubLegacyRedirectTarget,
+  exploreInboundHubRedirectTarget,
 } from './exploreSearchRouting';
 import { resolveMobileBottomTab } from '../../config/mobileFiveTabNav';
 
@@ -23,13 +23,13 @@ describe('explore search results', () => {
   });
 
   it('redirects legacy /explore/hub bookmarks', () => {
-    expect(exploreHubLegacyRedirectTarget('/explore/hub/search', '?q=camp')).toBe(
+    expect(exploreInboundHubRedirectTarget('/explore/hub/search', '?q=camp')).toBe(
       `${EXPLORE_SEARCH_RESULTS_PATH}?q=camp`
     );
-    expect(exploreHubLegacyRedirectTarget('/explore/hub/map', '?hubMode=places&q=camp')).toContain(
+    expect(exploreInboundHubRedirectTarget('/explore/hub/map', '?hubMode=places&q=camp')).toContain(
       `${EXPLORE_SEARCH_RESULTS_PATH}?`
     );
-    expect(exploreHubLegacyRedirectTarget('/explore/hub/home', '')).toContain('search=1');
+    expect(exploreInboundHubRedirectTarget('/explore/hub/home', '')).toContain('search=1');
   });
 
   it('uses booking search modal on map and list', () => {

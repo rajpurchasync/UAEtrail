@@ -2,7 +2,21 @@ import type { MyReviewDTO, ReviewDTO } from '@uaetrail/shared-types';
 import { apiRequest } from '../client';
 
 /** Place, host/shop, and activity reviews (`/reviews`, `/me/reviews`). */
+export type MarketingReviewHighlightDTO = {
+  id: string;
+  quote: string;
+  name: string;
+  emirate: string | null;
+  rating: number;
+};
+
 export const reviewsApi = {
+  getMarketingHighlights: (limit = 4) =>
+    apiRequest<{ data: MarketingReviewHighlightDTO[] }>(
+      `/reviews/marketing-highlights?limit=${limit}`,
+      { auth: false }
+    ),
+
   getOrganisationReviews: (organisationId: string, page = 1) =>
     apiRequest<{
       data: ReviewDTO[];

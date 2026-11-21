@@ -21,6 +21,7 @@ import {
 import { resolveExploreHubDetectedWhereQuery } from '../hub/exploreHubDetectedWhere';
 import { exploreHubWhereEffectiveQuery } from '../hub/exploreHubWhereDisplay';
 import { resolveExploreHubDefaultVenueRegions } from '../hub/exploreHubVenueState';
+import { useExploreRegionPillOptions } from '../../config/useExploreRegionPillOptions';
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { LIST_DISCOVERY_PATH } from '../../config/platform';
 
@@ -35,6 +36,7 @@ export const useExploreBookingSearchState = () => {
     () => exploreSearchStorageScope(user?.id),
     [user?.id]
   );
+  const regionPillOptions = useExploreRegionPillOptions('AE');
   const [searchParams, setSearchParams] = useProductSearchParams();
   const parsed = useMemo(() => parseExploreSearchBrowseState(searchParams), [searchParams]);
 
@@ -94,11 +96,11 @@ export const useExploreBookingSearchState = () => {
       setSearchScopeState(scope);
       writeExploreHubHomeScope(scope, searchStorageScope);
       if (scope === 'places' && venueRegions.length === 0) {
-        const defaultRegions = resolveExploreHubDefaultVenueRegions();
+        const defaultRegions = resolveExploreHubDefaultVenueRegions(regionPillOptions);
         if (defaultRegions.length > 0) setVenueRegionsState(defaultRegions);
       }
     },
-    [searchStorageScope, venueRegions.length]
+    [regionPillOptions, searchStorageScope, venueRegions.length]
   );
 
   const setVenueRegions = useCallback((regions: string[]) => {

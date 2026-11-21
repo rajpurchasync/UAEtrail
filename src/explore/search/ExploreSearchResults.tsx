@@ -4,7 +4,10 @@ import { useBrowseListFeed } from '../../list/useBrowseListFeed';
 import type { BrowseListFilterState } from '../../list/browseListFilters';
 import { scopeBrowseListStateForListCat } from '../../list/browseListMapHandoff';
 import { ListDiscoveryExperience } from '../../list/ListDiscoveryExperience';
-import { parseBrowseListFilterState } from '../../list/browseListUrlState';
+import { parseBrowseListFilterState, parseBrowseListGeoPath } from '../../list/browseListUrlState';
+import { useBrowseGeoScopeHydration } from '../../list/useBrowseGeoScopeHydration';
+import { resolveEffectiveBrowseVenueRegions } from '../../list/browseGeoPath';
+import { useExplorePublishedAreasQuery } from '../useExplorePublishedAreas';
 import { resolveExploreHubTripPool, resolveExploreHubVenuePool } from '../hub/exploreHubJoinableTrips';
 import { exploreHubWhereBrowseQuery } from '../hub/exploreHubWhereDisplay';
 import { parseExploreSearchBrowseState, type ExploreSearchBrowseState } from './exploreSearchRouting';
@@ -40,11 +43,19 @@ export const ExploreSearchResults = ({ state: stateProp }: ExploreSearchResultsP
 
   const parsedFilters = useMemo(() => parseBrowseListFilterState(searchParams), [searchParams]);
   const venueRegions = searchState.venueRegions;
+  const geoPath = useMemo(() => parseBrowseListGeoPath(searchParams), [searchParams]);
+  useBrowseGeoScopeHydration(geoPath);
+  const { data: publishedAreas = [] } = useExplorePublishedAreasQuery();
+  const hubVenueRegions = useMemo(
+    () => resolveEffectiveBrowseVenueRegions(venueRegions, geoPath, publishedAreas),
+    [venueRegions, geoPath, publishedAreas]
+  );
   const browseQuery = searchState.query.trim() || parsedFilters.query;
 
   const { items, isLoading } = useBrowseListFeed({
     filters: catalogFilters(),
     venueRegions,
+    geoPath,
   });
 
   const tripScoped = useMemo(
@@ -75,13 +86,13 @@ export const ExploreSearchResults = ({ state: stateProp }: ExploreSearchResultsP
   );
 
   const tripListingCount = useMemo(
-    () => resolveExploreHubTripPool(items, tripScoped, venueRegions).pool.length,
-    [items, tripScoped, venueRegions]
+    () => resolveExploreHubTripPool(items, tripScoped, hubVenueRegions, geoPath, publishedAreas).pool.length,
+    [geoPath, hubVenueRegions, items, publishedAreas, tripScoped]
   );
 
   const placeListingCount = useMemo(
-    () => resolveExploreHubVenuePool(items, placeScoped, venueRegions).pool.length,
-    [items, placeScoped, venueRegions]
+    () => resolveExploreHubVenuePool(items, placeScoped, hubVenueRegions, geoPath, publishedAreas).pool.length,
+    [geoPath, hubVenueRegions, items, placeScoped, publishedAreas]
   );
 
   const crewCount = useMemo(() => {

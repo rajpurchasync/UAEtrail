@@ -37,6 +37,7 @@ export const HomeHeroSection = () => {
             <h1 className="landing-hero-headline font-black leading-[1.18] md:max-w-3xl md:text-[3.15rem] md:leading-[1.1] lg:max-w-4xl lg:text-[3.85rem] lg:leading-[1.06]">
               {HOME_HERO.headline}
             </h1>
+            <p className="sr-only">Hero background photos are curated landscapes, not live outings from the map.</p>
 
             <p className="home-hero-intro max-w-md text-sm leading-snug text-white/85 md:hidden">
               {HOME_HERO.subcopy}

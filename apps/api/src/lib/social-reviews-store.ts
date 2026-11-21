@@ -50,6 +50,26 @@ export const listSocialReviews = async (input: {
   return { items: items.map(mapReview), total };
 };
 
+/** Recent high-signal comments for guest marketing — not tied to a single target. */
+export const listRecentMarketingSocialReviews = async (
+  take: number
+): Promise<SocialReview[]> => {
+  const safeTake = Math.min(Math.max(take, 1), 12);
+  const items = await reviewsCollection()
+    .find({
+      rating: { $gte: 4 },
+      comment: { $type: 'string' },
+    })
+    .sort({ createdAt: -1 })
+    .limit(safeTake * 3)
+    .toArray();
+  const filtered = items
+    .map(mapReview)
+    .filter((review) => review.comment.trim().length >= 24)
+    .slice(0, safeTake);
+  return filtered;
+};
+
 export const listSocialReviewsByUserId = async (input: {
   userId: string;
   skip: number;

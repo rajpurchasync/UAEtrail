@@ -19,7 +19,7 @@ const readViewerFix = (): { lat: number; lng: number } | null => {
 const emirateToSearchQuery = (emirate: string): string =>
   EXPLORE_REGION_PILL_LABELS[emirate] ?? emirate;
 
-/** Best-effort “near you” label for hub home where — map pref, then session fix, then Dubai. */
+/** Best-effort “near you” label for booking search — map pref or session fix; empty when unknown. */
 export const resolveExploreHubDetectedWhereQuery = (): string => {
   const pref = getExploreMapLocationPreference();
   if (pref.lastLat != null && pref.lastLng != null) {
@@ -31,5 +31,5 @@ export const resolveExploreHubDetectedWhereQuery = (): string => {
     const emirate = inferEmirateFromPin(viewer.lat, viewer.lng, []);
     if (emirate) return emirateToSearchQuery(emirate);
   }
-  return 'Dubai';
+  return '';
 };

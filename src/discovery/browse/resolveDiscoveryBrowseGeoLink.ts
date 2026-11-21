@@ -1,6 +1,7 @@
-import { areaDetailPath, type GeoRef } from '@uaetrail/shared-types';
+import { areaDetailPath, isGeographyMapSource, type GeoRef } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../discoveryCardModel';
 import { geoNodePath } from '../../config/surfacePaths';
+import { listDiscoveryPath } from '../../list/routing';
 
 /**
  * L2 location tail tap target — geo destination hub first, else curated area guide.
@@ -18,3 +19,48 @@ export const resolveDiscoveryBrowseGeoHubPath = (card: DiscoveryCardModel): stri
 
 export const discoveryCardCarriesGeoRef = (geoRef: GeoRef | null | undefined): boolean =>
   Boolean(geoRef?.venueId?.trim() || geoRef?.areaId?.trim());
+
+const geoDrillPathFromRef = (geoRef: GeoRef): string[] => {
+  const chain = geoRef.chain?.map((id) => id.trim()).filter(Boolean) ?? [];
+  if (chain.length > 0) {
+    const withoutCountry = chain.length > 1 ? chain.slice(1) : chain;
+    return withoutCountry.slice(0, 3);
+  }
+  const leaf =
+    geoRef.venueId?.trim() ||
+    geoRef.areaId?.trim() ||
+    geoRef.stateId?.trim() ||
+    null;
+  return leaf ? [leaf] : [];
+};
+
+const listCatForBrowseCard = (card: DiscoveryCardModel): 'activities' | 'venues' => {
+  if (card.source === 'activity' || card.source === 'demand') return 'activities';
+  if (isGeographyMapSource(card.source) || card.source === 'shop') return 'venues';
+  return 'activities';
+};
+
+/** Full-screen list scoped to the card's geo tree (`/list?geo=…`). */
+export const resolveDiscoveryBrowseGeoListPath = (card: DiscoveryCardModel): string | null => {
+  const geoRef = card.geoRef;
+  if (!geoRef) return null;
+  const geoPath = geoDrillPathFromRef(geoRef);
+  if (geoPath.length === 0) return null;
+  const listCat = listCatForBrowseCard(card);
+  return listDiscoveryPath({
+    listCat,
+    categories: [listCat],
+    geoPath,
+  });
+};
+
+/** List location tail prefers geo-scoped browse; map peek keeps geo/area hub. */
+export const resolveDiscoveryBrowseLocationHref = (
+  card: DiscoveryCardModel,
+  target: 'hub' | 'list'
+): string | null => {
+  if (target === 'list') {
+    return resolveDiscoveryBrowseGeoListPath(card) ?? resolveDiscoveryBrowseGeoHubPath(card);
+  }
+  return resolveDiscoveryBrowseGeoHubPath(card);
+};

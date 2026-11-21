@@ -55,6 +55,7 @@ import {
   type ExplorePriceFilter,
 } from './exploreOptionalFilters';
 import type { PlaceKind } from '@uaetrail/shared-types';
+import { BROWSE_GEO_PARAM, parseBrowseGeoPath } from '../list/browseGeoPath';
 
 const readPeopleBrowseTabParam = (params: URLSearchParams): string | null =>
   params.get('peopleTab') ?? params.get('socialTab');
@@ -71,6 +72,7 @@ export type ExploreBrowseUrlHydratedState = {
   query: string;
   venueFilter: VenueListFilterKey;
   venueRegions: string[];
+  geoPath: string[];
   activityDatePreset: ExploreActivityDatePreset;
   activityModeFilter: ExploreActivityModeFilter;
   buddySubtype: ExploreBuddySubtypeKey;
@@ -158,6 +160,7 @@ export const parseExploreBrowseStateFromSearchParams = (
     query: searchParams.get('q') ?? '',
     venueFilter,
     venueRegions: parseVenueRegionsParam(searchParams),
+    geoPath: parseBrowseGeoPath(searchParams.get(BROWSE_GEO_PARAM)),
     activityDatePreset: parseExploreActivityDatePreset(searchParams.get('date')),
     activityModeFilter: parseExploreActivityModeFilter(
       searchParams.get(EXPLORE_ACTIVITY_MODE_FILTER_PARAM)

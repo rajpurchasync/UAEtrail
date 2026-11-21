@@ -35,7 +35,7 @@ export const ExploreMapProjectionToggle = ({
           type="button"
           className={LIST_HUB_SEARCH_ROW.mapAction}
           onClick={onSelectMap}
-          aria-label="Open map view"
+          aria-label="Map view"
         >
           <Map className="h-5 w-5 shrink-0 stroke-[2.25]" aria-hidden />
           <span className="whitespace-nowrap">Map</span>
@@ -43,7 +43,7 @@ export const ExploreMapProjectionToggle = ({
       );
     }
     return (
-      <div className={TRAY} role="group" aria-label="Open map view">
+      <div className={TRAY} role="group" aria-label="Map view">
         <button
           type="button"
           className={`${exploreMapScopeSegmentClass(false, 'activity')} !h-full !min-h-0 !gap-1 !px-2.5 !py-0.5 !text-sm`}

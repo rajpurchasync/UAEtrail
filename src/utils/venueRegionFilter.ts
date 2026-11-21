@@ -2,7 +2,7 @@ import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { groupRegionLevelTexts } from '@uaetrail/shared-types';
 import { DEFAULT_BROWSE_COUNTRY_CODE, groupRegionTextAtBrowseFilterLevel } from '../config/groupRegionFilter';
 import { EXPLORE_REGION_PILL_LABELS } from '../config/regions';
-import { EXPLORE_EMIRATE_REGION_ALIASES } from '../config/exploreRegionAliases';
+import { matchesRegionLabel } from './locationSearch';
 
 export const normalizeVenueRegionToken = (value: string): string =>
   value.trim().toLowerCase().replace(/\s+/g, ' ');
@@ -48,23 +48,6 @@ export const resolveVenueItemRegion = (
   exploreItemRegionTexts(item, countryCode)[0] ??
   null;
 
-const regionMatchTokens = (regionKey: string): string[] => {
-  const aliases = EXPLORE_EMIRATE_REGION_ALIASES[regionKey] ?? [normalizeVenueRegionToken(regionKey)];
-  const label = EXPLORE_REGION_PILL_LABELS[regionKey];
-  const tokens = new Set(aliases.map(normalizeVenueRegionToken));
-  if (label) tokens.add(normalizeVenueRegionToken(label));
-  tokens.add(normalizeVenueRegionToken(regionKey));
-  return [...tokens];
-};
-
-const textMatchesRegionKey = (normalizedText: string, regionKey: string): boolean =>
-  regionMatchTokens(regionKey).some(
-    (token) =>
-      normalizedText === token ||
-      normalizedText.includes(token) ||
-      token.includes(normalizedText)
-  );
-
 export const venueItemMatchesRegions = (
   item: ExploreMapItemDTO,
   selectedRegions: string[],
@@ -76,7 +59,7 @@ export const venueItemMatchesRegions = (
   if (regionTexts.length === 0) return false;
 
   return selectedRegions.some((regionKey) =>
-    regionTexts.some((raw) => textMatchesRegionKey(normalizeVenueRegionToken(raw), regionKey))
+    regionTexts.some((raw) => matchesRegionLabel(raw, regionKey))
   );
 };
 

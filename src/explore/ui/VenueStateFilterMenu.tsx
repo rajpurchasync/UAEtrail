@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { SlidersHorizontal } from 'lucide-react';
-import { getVenueStateFilterOptions } from '../../config/regions';
+import { useVenueStateFilterOptions } from '../../config/useVenueStateFilterOptions';
 import { FilterIconButton } from '../../components/mobile/FilterIconButton';
 import { EXPLORE_BROWSE_SHEET_CONTROL } from '../../config/exploreTheme';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
@@ -19,7 +19,7 @@ export const VenueStateFilterMenu = ({
   toolbarTrigger = false,
 }: VenueStateFilterMenuProps) => {
   const [open, setOpen] = useState(false);
-  const options = getVenueStateFilterOptions();
+  const options = useVenueStateFilterOptions();
   const active = selected.length > 0;
 
   const toggle = (key: string) => {

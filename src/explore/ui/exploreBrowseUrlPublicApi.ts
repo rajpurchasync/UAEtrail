@@ -28,6 +28,7 @@ export type ExploreBrowseUrlPublicApiContext = {
   setQuery: (v: string) => void;
   venueFilter: VenueListFilterKey;
   venueRegions: string[];
+  geoPath: string[];
   desktopBrowseTab: DesktopBrowseTab;
   searchExpanded: boolean;
   setSearchExpanded: (v: boolean) => void;
@@ -71,6 +72,7 @@ export const buildExploreBrowseUrlPublicApi = (ctx: ExploreBrowseUrlPublicApiCon
   setQuery: ctx.setQuery,
   venueFilter: ctx.venueFilter,
   venueRegions: ctx.venueRegions,
+  geoPath: ctx.geoPath,
   desktopBrowseTab: ctx.desktopBrowseTab,
   searchExpanded: ctx.searchExpanded,
   setSearchExpanded: ctx.setSearchExpanded,
@@ -98,6 +100,7 @@ export const buildExploreBrowseUrlPublicApi = (ctx: ExploreBrowseUrlPublicApiCon
   browseFilterKeys: ctx.browseFilterKeys,
   placesMode: ctx.placesMode,
   applyVenueRegions: ctx.handlers.applyVenueRegions,
+  applyGeoPath: ctx.handlers.applyGeoPath,
   buddySubtype: ctx.buddySubtype,
   applyBuddySubtype: ctx.handlers.applyBuddySubtype,
   outingTopic: ctx.outingTopic,

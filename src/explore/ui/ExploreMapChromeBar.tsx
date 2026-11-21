@@ -21,6 +21,9 @@ type ExploreMapChromeBarProps = {
   onSelectListView: () => void;
   onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
   onVenueRegionsChange: (regions: string[]) => void;
+  geoPath?: readonly string[];
+  onClearGeoScope?: () => void;
+  onPopGeoScope?: () => void;
   venueFilter?: VenueListFilterKey;
   tripMapTopics: TripMapTopicKey[];
   placeMapTopics: PlaceMapTopicKey[];
@@ -51,6 +54,9 @@ export const ExploreMapChromeBar = ({
   onSelectListView,
   onActivityDatePresetChange,
   onVenueRegionsChange,
+  geoPath = [],
+  onClearGeoScope,
+  onPopGeoScope,
   venueFilter,
   tripMapTopics,
   placeMapTopics,
@@ -80,6 +86,9 @@ export const ExploreMapChromeBar = ({
         onSelectMapView={onSelectMapView}
         onSelectListView={onSelectListView}
         onVenueRegionsChange={onVenueRegionsChange}
+        geoPath={geoPath}
+        onClearGeoScope={onClearGeoScope}
+        onPopGeoScope={onPopGeoScope}
         venueFilter={venueFilter}
         tripMapTopics={tripMapTopics}
         placeMapTopics={placeMapTopics}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseBrowseGeoPath, serializeBrowseGeoPath } from './browseGeoPath';
+import { parseBrowseGeoPath, resolveEffectiveBrowseVenueRegions, serializeBrowseGeoPath } from './browseGeoPath';
 
 describe('browseGeoPath', () => {
   it('parses slash-separated geo ids', () => {
@@ -11,5 +11,10 @@ describe('browseGeoPath', () => {
   it('serializes a geo drill path', () => {
     expect(serializeBrowseGeoPath(['dubai', 'hatta'])).toBe('dubai/hatta');
     expect(serializeBrowseGeoPath([])).toBeNull();
+  });
+
+  it('derives emirate regions from geo path when region chips empty', () => {
+    expect(resolveEffectiveBrowseVenueRegions([], ['Dubai'], [])).toEqual(['Dubai']);
+    expect(resolveEffectiveBrowseVenueRegions(['Sharjah'], ['Dubai'], [])).toEqual(['Sharjah']);
   });
 });

@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { isTimeBoundExploreMapItem, type ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { sortExploreActivities, sortExploreVenues } from '../exploreListSort';
+import { deriveVenueRegionSortOrder, sortExploreActivities, sortExploreVenues } from '../exploreListSort';
+import { useExplorePublishedAreasQuery } from '../useExplorePublishedAreas';
 import { selectExploreLensItems } from '../shell/selectExploreLensItems';
 import type { ExploreActivityDatePreset, ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
 import type { PlaceKind } from '@uaetrail/shared-types';
@@ -24,6 +25,7 @@ import {
 import type { ExploreBrowseListMode } from './useExploreBrowseUrlState';
 import { selectActivitiesFromMapItems } from '@/activity-discovery/catalog/activities';
 import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
+import { exploreItemMatchesBrowseGeoPath, resolveEffectiveBrowseVenueRegions } from '../../list/browseGeoPath';
 import {
   selectPlacesFromMapItems,
   selectShopsFromMapItems,
@@ -40,6 +42,7 @@ type UseExploreBrowseListArgs = {
   tripMapTopics: TripMapTopicKey[];
   placeMapTopics: PlaceMapTopicKey[];
   venueRegions: string[];
+  geoPath?: string[];
   query: string;
   activityDatePreset: ExploreActivityDatePreset;
   listMode: ExploreBrowseListMode;
@@ -66,14 +69,18 @@ const dedupeExploreListById = (list: ExploreMapItemDTO[]): ExploreMapItemDTO[] =
   return unique;
 };
 
-const listFromPool = (pool: ExploreMapItemDTO[], matchesQuery: (item: ExploreMapItemDTO) => boolean) => {
+const listFromPool = (
+  pool: ExploreMapItemDTO[],
+  matchesQuery: (item: ExploreMapItemDTO) => boolean,
+  regionOrder: readonly string[]
+) => {
   const matching = dedupeExploreListById(pool.filter(matchesQuery));
   const plans = matching.filter((item) => isTimeBoundExploreMapItem(item));
   const spots = matching.filter((item) => mapItemMatchesSearchScope(item, 'places'));
   const shops = matching.filter((item) => mapItemMatchesSearchScope(item, 'shops'));
   return dedupeExploreListById([
     ...sortExploreActivities(plans),
-    ...sortExploreVenues([...spots, ...shops]),
+    ...sortExploreVenues([...spots, ...shops], regionOrder),
   ]);
 };
 
@@ -98,7 +105,17 @@ export const useExploreBrowseList = ({
   priceFilter = 'all',
   hasTrip = false,
   facilityKinds = [],
+  geoPath = [],
 }: UseExploreBrowseListArgs) => {
+  const { data: publishedAreas = [] } = useExplorePublishedAreasQuery();
+  const venueRegionOrder = useMemo(
+    () => deriveVenueRegionSortOrder(publishedAreas),
+    [publishedAreas]
+  );
+  const effectiveVenueRegions = useMemo(
+    () => resolveEffectiveBrowseVenueRegions(venueRegions, geoPath, publishedAreas),
+    [venueRegions, geoPath, publishedAreas]
+  );
   const mapItems = useMemo(() => {
     const itemIds = new Set(items.map((entry) => entry.id));
     const merged = [
@@ -114,7 +131,7 @@ export const useExploreBrowseList = ({
       venueFilter,
       tripMapTopics,
       placeMapTopics,
-      venueRegions,
+      venueRegions: effectiveVenueRegions,
       activityDatePreset,
       buddySubtype,
       outingTopic,
@@ -122,9 +139,13 @@ export const useExploreBrowseList = ({
       priceFilter,
       hasTrip,
       facilityKinds,
+      venueRegionOrder,
     });
     if (query.trim()) {
       pool = pool.filter((item) => exploreItemMatchesQuery(item, query));
+    }
+    if (geoPath.length > 0) {
+      pool = pool.filter((item) => exploreItemMatchesBrowseGeoPath(item, geoPath, publishedAreas));
     }
     return pool;
   }, [
@@ -139,13 +160,16 @@ export const useExploreBrowseList = ({
     tripMapTopics,
     placeMapTopics,
     activityDatePreset,
-    venueRegions,
+    effectiveVenueRegions,
     buddySubtype,
     outingTopic,
     activityModeFilter,
     priceFilter,
     hasTrip,
     facilityKinds,
+    venueRegionOrder,
+    geoPath,
+    publishedAreas,
   ]);
 
   const browseListMode: ExploreBrowseListMode = isDesktop ? 'default' : listMode;
@@ -164,8 +188,8 @@ export const useExploreBrowseList = ({
         activityModeFilter,
         priceFilter,
       });
-      if (venueRegions.length === 0) return selected;
-      return selected.filter((item) => venueItemMatchesRegions(item, venueRegions));
+      if (effectiveVenueRegions.length === 0) return selected;
+      return selected.filter((item) => venueItemMatchesRegions(item, effectiveVenueRegions));
     };
 
     if (isDesktop) {
@@ -177,9 +201,10 @@ export const useExploreBrowseList = ({
           mapFilter,
           venueFilter,
           placeMapTopics,
-          venueRegions,
+          venueRegions: effectiveVenueRegions,
           hasTrip,
           facilityKinds,
+          venueRegionOrder,
         })
       );
     }
@@ -190,15 +215,16 @@ export const useExploreBrowseList = ({
           mapFilter,
           venueFilter,
           placeMapTopics,
-          venueRegions,
+          venueRegions: effectiveVenueRegions,
           hasTrip,
           facilityKinds,
+          venueRegionOrder,
         })
       );
     }
 
     if (sidebarPanel === 'shops') {
-      return dedupeExploreListById(selectShopsFromMapItems(items));
+      return dedupeExploreListById(selectShopsFromMapItems(items, venueRegionOrder));
     }
 
     return dedupeExploreListById(timeBoundActivitiesForList(items));
@@ -209,7 +235,7 @@ export const useExploreBrowseList = ({
     tripMapTopics,
     placeMapTopics,
     activityDatePreset,
-    venueRegions,
+    effectiveVenueRegions,
     isDesktop,
     desktopBrowseTab,
     sidebarPanel,
@@ -219,6 +245,7 @@ export const useExploreBrowseList = ({
     priceFilter,
     hasTrip,
     facilityKinds,
+    venueRegionOrder,
   ]);
 
   const listItems = useMemo(() => {
@@ -242,8 +269,8 @@ export const useExploreBrowseList = ({
         activityModeFilter,
         priceFilter,
       });
-      if (venueRegions.length === 0) return selected;
-      return selected.filter((item) => venueItemMatchesRegions(item, venueRegions));
+      if (effectiveVenueRegions.length === 0) return selected;
+      return selected.filter((item) => venueItemMatchesRegions(item, effectiveVenueRegions));
     };
 
     const hostedTripsPool = () =>
@@ -255,9 +282,10 @@ export const useExploreBrowseList = ({
     const placesListPool = () =>
       selectPlacesFromMapItems(items, {
         mapFilter,
-        venueRegions,
+        venueRegions: effectiveVenueRegions,
         hasTrip,
         facilityKinds,
+        venueRegionOrder,
       });
 
     if (hasQuery && searchScope === 'activities') {
@@ -269,22 +297,23 @@ export const useExploreBrowseList = ({
     }
 
     if (hasQuery && searchScope === 'places') {
-      return sortExploreVenues(placesListPool().filter(matchesQuery));
+      return sortExploreVenues(placesListPool().filter(matchesQuery), venueRegionOrder);
     }
 
     if (hasQuery && searchScope === 'shops') {
-      return selectShopsFromMapItems(items).filter(matchesQuery);
+      return selectShopsFromMapItems(items, venueRegionOrder).filter(matchesQuery);
     }
 
     if (hasQuery && searchScope === 'agencies') {
       return sortExploreVenues(
-        items.filter((item) => mapItemIsAgencyHostedActivity(item)).filter(matchesQuery)
+        items.filter((item) => mapItemIsAgencyHostedActivity(item)).filter(matchesQuery),
+        venueRegionOrder
       );
     }
 
     if (hasQuery && searchScope === null) {
       const pool = dedupeExploreListById([...activitySearchPool(), ...placesListPool()]);
-      return listFromPool(pool, matchesQuery);
+      return listFromPool(pool, matchesQuery, venueRegionOrder);
     }
 
     return dedupeExploreListById(browseListBase.filter(matchesQuery));
@@ -301,11 +330,15 @@ export const useExploreBrowseList = ({
     outingTopic,
     activityModeFilter,
     isDesktop,
+    venueRegionOrder,
+    priceFilter,
+    hasTrip,
+    facilityKinds,
   ]);
 
   const searchScopeCounts = useMemo(
-    () => countExploreSearchScopes(items, query, activityDatePreset, venueRegions),
-    [items, query, activityDatePreset, venueRegions]
+    () => countExploreSearchScopes(items, query, activityDatePreset, effectiveVenueRegions),
+    [items, query, activityDatePreset, effectiveVenueRegions]
   );
 
   const shopListSections = useMemo(() => {
@@ -314,10 +347,10 @@ export const useExploreBrowseList = ({
     /** Physical vs online split is for shops-only browse — not the mixed "All places" list. */
     const shopsOnlyView = mapFilter === 'shops' || sidebarPanel === 'shops';
     if (!shopsOnlyView) return null;
-    const physical = sortExploreVenues(listItems.filter(isPhysicalShopItem));
-    const online = sortExploreVenues(listItems.filter(isOnlineShopItem));
+    const physical = sortExploreVenues(listItems.filter(isPhysicalShopItem), venueRegionOrder);
+    const online = sortExploreVenues(listItems.filter(isOnlineShopItem), venueRegionOrder);
     return { physical, online };
-  }, [listItems, isDesktop, desktopBrowseTab, sidebarPanel, mapFilter]);
+  }, [listItems, isDesktop, desktopBrowseTab, sidebarPanel, mapFilter, venueRegionOrder]);
 
   return {
     mapPins,

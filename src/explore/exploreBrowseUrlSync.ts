@@ -62,6 +62,7 @@ import {
   type ExplorePriceFilter,
 } from './exploreOptionalFilters';
 import type { PlaceKind } from '@uaetrail/shared-types';
+import { BROWSE_GEO_PARAM, serializeBrowseGeoPath } from '../list/browseGeoPath';
 export type ExploreBrowseListMode = 'default' | 'people';
 
 export type ExploreBrowseUrlSyncPatch = {
@@ -73,6 +74,7 @@ export type ExploreBrowseUrlSyncPatch = {
   browse?: boolean;
   q?: string;
   venueRegions?: string[];
+  geoPath?: string[];
   activityDatePreset?: ExploreActivityDatePreset;
   activityModeFilter?: ExploreActivityModeFilter;
   buddySubtype?: ExploreBuddySubtypeKey;
@@ -101,6 +103,7 @@ export type ExploreBrowseUrlSyncState = {
   browseOpen: boolean;
   query: string;
   venueRegions: string[];
+  geoPath: string[];
   activityDatePreset: ExploreActivityDatePreset;
   activityModeFilter: ExploreActivityModeFilter;
   buddySubtype: ExploreBuddySubtypeKey;
@@ -139,6 +142,7 @@ export const buildExploreBrowseSearchParams = (input: {
   }
   const queryValue = patch.q ?? state.query;
   const regionValue = patch.venueRegions ?? state.venueRegions;
+  const geoPathValue = patch.geoPath ?? state.geoPath ?? [];
   const dateValue =
     patch.activityDatePreset !== undefined ? patch.activityDatePreset : state.activityDatePreset;
   const activityModeValue =
@@ -258,6 +262,10 @@ export const buildExploreBrowseSearchParams = (input: {
     params.delete('regions');
     params.delete('region');
   }
+
+  const geoSerialized = serializeBrowseGeoPath(geoPathValue);
+  if (geoSerialized) params.set(BROWSE_GEO_PARAM, geoSerialized);
+  else params.delete(BROWSE_GEO_PARAM);
 
   params.delete('addLocation');
   /* Keep create/join overlays (`compose`, etc.) — browse sync must not dismiss FAB sessions. */

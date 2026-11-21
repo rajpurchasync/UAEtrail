@@ -13,6 +13,7 @@ import {
 } from './ExploreHubSearchPickSheets';
 import type { ExploreHubMode } from './exploreHubRouting';
 import { exploreHubHomeStateSummary } from './exploreHubVenueState';
+import { useExploreRegionPillOptions } from '../../config/useExploreRegionPillOptions';
 import { formatExploreHubWhereDisplay } from './exploreHubWhereDisplay';
 import { ExploreHubWhereSearchDropdown } from './ExploreHubWhereSearchDropdown';
 import { useExploreHubWhereSuggestions } from './useExploreHubWhereSuggestions';
@@ -46,6 +47,7 @@ export const ExploreHubSearchHero = ({
   venueRegions,
   onVenueRegionsChange,
 }: ExploreHubSearchHeroProps) => {
+  const regionPillOptions = useExploreRegionPillOptions('AE');
   const placesScope = homeScope === 'places';
   const [whenSheetOpen, setWhenSheetOpen] = useState(false);
   const [stateSheetOpen, setStateSheetOpen] = useState(false);
@@ -148,7 +150,7 @@ export const ExploreHubSearchHero = ({
               >
                 <MapPinned className="h-[22px] w-[22px] shrink-0 text-neutral-800" strokeWidth={2.25} aria-hidden />
                 <span className="min-w-0 flex-1 text-[15px] font-medium leading-snug text-neutral-900">
-                  {exploreHubHomeStateSummary(venueRegions)}
+                  {exploreHubHomeStateSummary(venueRegions, regionPillOptions)}
                 </span>
                 <span className="shrink-0 text-xs font-medium text-neutral-500">Change</span>
               </button>

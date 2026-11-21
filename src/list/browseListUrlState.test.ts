@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   parseBrowseListFilterState,
+  parseBrowseListGeoPath,
   parseListCatParam,
   serializeBrowseListSearchParams,
 } from './browseListUrlState';
@@ -24,6 +25,14 @@ describe('browseListUrlState trip topics', () => {
     expect(state.buddiesSegment).toBe('looking');
     const serialized = serializeBrowseListSearchParams(state, []);
     expect(serialized.get('buddies')).toBe('looking');
+  });
+
+  it('round-trips geo drill path', () => {
+    const params = new URLSearchParams('geo=dubai/hatta');
+    expect(parseBrowseListGeoPath(params)).toEqual(['dubai', 'hatta']);
+    const state = parseBrowseListFilterState(params);
+    const serialized = serializeBrowseListSearchParams(state, [], ['dubai', 'hatta']);
+    expect(serialized.get('geo')).toBe('dubai/hatta');
   });
 
   it('round-trips multiple filter topics', () => {

@@ -41,6 +41,9 @@ import { useDisplayPreferences } from '../preferences/useDisplayPreferences';
 import { useMemberDiscoveryRoster } from '@/people-discovery/hooks/useMemberDiscoveryRoster';
 import { useExplorePeopleAvailability } from '@/people-discovery/hooks/usePeopleAvailability';
 import { parseExploreAreaSlug } from '../explore/exploreAreaFilter';
+import { useExplorePublishedAreasQuery } from '../explore/useExplorePublishedAreas';
+import { resolveEffectiveBrowseVenueRegions } from './browseGeoPath';
+import { useBrowseGeoScopeHydration } from './useBrowseGeoScopeHydration';
 import { listExplorerEntityLinkState } from './explorer/listExplorerNavState';
 import { countListExplorerFilters } from './explorer/listExplorerLayout';
 import {
@@ -165,12 +168,14 @@ export const ListDiscoveryExperience = ({
     filters,
     syncUrl,
     venueRegions,
+    geoPath,
     listCat,
     layout,
     sort,
     crewsOpenLens,
     availabilitySheetOpen,
   } = browseUrl;
+  useBrowseGeoScopeHydration(geoPath);
   const isPeopleCategory = listCat === 'people';
   const explorerBucket = parseListExplorerBucket(listCat);
   const createFabContext = useMemo(
@@ -261,6 +266,11 @@ export const ListDiscoveryExperience = ({
     setDraftQuery(filters.query);
   }, [filters.query]);
   const areaSlug = parseExploreAreaSlug(searchParams);
+  const { data: publishedAreas = [] } = useExplorePublishedAreasQuery(!isPeopleCategory);
+  const hubVenueRegions = useMemo(
+    () => resolveEffectiveBrowseVenueRegions(venueRegions, geoPath, publishedAreas),
+    [venueRegions, geoPath, publishedAreas]
+  );
   const peopleSegment = filters.buddiesSegment;
   const crewsNeedsRoster =
     peopleSegment === 'hub' ||
@@ -313,6 +323,7 @@ export const ListDiscoveryExperience = ({
             listCat === 'agencies' ? ['agencies'] : listExplorerBucketCategories(explorerBucket),
         },
     venueRegions,
+    geoPath,
     mapEnabled:
       !isPeopleCategory ||
       peopleSegment === 'looking' ||
@@ -346,17 +357,19 @@ export const ListDiscoveryExperience = ({
             'activities'
           );
     return listCat === 'venues'
-      ? resolveExploreHubVenuePool(items, scopedFilters, venueRegions).pool
-      : resolveExploreHubTripPool(items, scopedFilters, venueRegions).pool;
+      ? resolveExploreHubVenuePool(items, scopedFilters, hubVenueRegions, geoPath, publishedAreas).pool
+      : resolveExploreHubTripPool(items, scopedFilters, hubVenueRegions, geoPath, publishedAreas).pool;
   }, [
     exploreSearch,
     filters,
+    geoPath,
+    hubVenueRegions,
     isPeopleCategory,
     items,
     listCat,
+    publishedAreas,
     searchParams,
     searchResultsBrowse,
-    venueRegions,
   ]);
 
   const exploreSearchCards = useMemo(() => {
@@ -396,7 +409,7 @@ export const ListDiscoveryExperience = ({
     ? filters.activityDatePreset !== 'anyday'
       ? 1
       : 0
-    : countListExplorerFilters(filters, venueRegions, explorerBucket);
+    : countListExplorerFilters(filters, venueRegions, explorerBucket, geoPath.length);
 
   const crewsStatCounts = useMemo(() => {
     const buddiesCount = memberRoster.loading ? null : memberRoster.friendsGoing.length;
@@ -489,13 +502,20 @@ export const ListDiscoveryExperience = ({
       cat === 'venues' || cat === 'activities'
         ? scopeBrowseListStateForListCat(emptyBase, cat)
         : emptyBase;
-    syncUrl({ ...scoped, listCat: cat, regions: [] });
+    syncUrl({ ...scoped, listCat: cat, regions: [], geoPath: [] });
     setDraftQuery('');
   };
 
   const handleActivityDatePresetChange = useCallback(
     (preset: ExploreActivityDatePreset) => syncUrl({ activityDatePreset: preset }),
     [syncUrl]
+  );
+
+  const handleClearGeoScope = useCallback(() => syncUrl({ geoPath: [] }), [syncUrl]);
+
+  const handlePopGeoScope = useCallback(
+    () => syncUrl({ geoPath: geoPath.slice(0, -1) }),
+    [geoPath, syncUrl]
   );
 
   const handleVenueRegionsChange = useCallback(
@@ -722,6 +742,9 @@ export const ListDiscoveryExperience = ({
             onVenueRegionsChange={handleVenueRegionsChange}
             searchPlaceholder={listSearchPlaceholder}
             enableSearchScopeHints={listSearchScopeHints}
+            geoPath={geoPath}
+            onClearGeoScope={handleClearGeoScope}
+            onPopGeoScope={geoPath.length > 1 ? handlePopGeoScope : undefined}
           />
           {showListMapColumn ? (
             <>

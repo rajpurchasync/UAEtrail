@@ -25,8 +25,8 @@ describe('workspaceVocabulary', () => {
   });
 
   it('landing copy uses verified host (UPL) not verified organizer', () => {
-    const landing = readFileSync(join(process.cwd(), 'src/content/homeLanding.ts'), 'utf8');
-    expect(landing).toMatch(/verified host/i);
-    expect(landing).not.toMatch(/verified organizer/i);
+    const marketing = readFileSync(join(process.cwd(), 'src/content/homeMarketing.ts'), 'utf8');
+    expect(marketing).toMatch(/verified host/i);
+    expect(marketing).not.toMatch(/verified organizer/i);
   });
 });

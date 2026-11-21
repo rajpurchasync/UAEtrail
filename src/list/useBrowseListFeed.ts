@@ -11,10 +11,14 @@ import {
   filterExploreMapItemsForList,
   type BrowseListFilterState,
 } from './browseListFilters';
+import { useExplorePublishedAreasQuery } from '../explore/useExplorePublishedAreas';
+import { resolveEffectiveBrowseVenueRegions } from './browseGeoPath';
 
 type UseBrowseListFeedArgs = {
   filters: BrowseListFilterState;
   venueRegions: string[];
+  /** Slash path (`?geo=`) — filters catalog rows under a geo drill. */
+  geoPath?: string[];
   /** Buddies category uses member-discovery only — skip map fetch. */
   mapEnabled?: boolean;
   /** When embedded on explore, reuse the map catalog instead of a second fetch. */
@@ -24,11 +28,17 @@ type UseBrowseListFeedArgs = {
 export const useBrowseListFeed = ({
   filters,
   venueRegions,
+  geoPath = [],
   mapEnabled = true,
   catalogItems,
 }: UseBrowseListFeedArgs) => {
   const { user } = useAuth();
   const { clock } = useDisplayPreferences();
+  const { data: publishedAreas = [] } = useExplorePublishedAreasQuery(mapEnabled);
+  const effectiveRegions = useMemo(
+    () => resolveEffectiveBrowseVenueRegions(venueRegions, geoPath, publishedAreas),
+    [venueRegions, geoPath, publishedAreas]
+  );
   const useExternalCatalog = catalogItems !== undefined && mapEnabled;
   const { data: fetchedItems = [], isError, error, refetch, isFetching, isPending } = useExploreMap({
     enabled: mapEnabled && !useExternalCatalog,
@@ -38,8 +48,11 @@ export const useBrowseListFeed = ({
   const feedLoading = mapEnabled && !useExternalCatalog && isPending && items.length === 0;
 
   const filteredItems = useMemo(
-    () => (mapEnabled ? filterExploreMapItemsForList(items, filters, venueRegions) : []),
-    [mapEnabled, items, filters, venueRegions]
+    () =>
+      mapEnabled
+        ? filterExploreMapItemsForList(items, filters, effectiveRegions, geoPath, publishedAreas)
+        : [],
+    [mapEnabled, items, filters, effectiveRegions, geoPath, publishedAreas]
   );
 
   const cards: DiscoveryCardModel[] = useMemo(() => {

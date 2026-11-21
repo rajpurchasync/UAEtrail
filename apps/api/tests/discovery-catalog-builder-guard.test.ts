@@ -25,4 +25,9 @@ describe('discovery-catalog-builder (MIG-DISCO-REG)', () => {
     expect(builder).toMatch(/buildAvailabilityFixedMapItems/);
     expect(builder).not.toMatch(/participantIntentId/);
   });
+
+  it('reads locations from Mongo only — no venue JSON overlay', () => {
+    const builder = read('src/lib/discovery-catalog-builder.ts');
+    expect(builder).not.toMatch(/overlayCatalogDefaultsOnLocation/);
+  });
 });

@@ -22,6 +22,7 @@ export type MapPlaceFilters = {
   placeMapTopics?: PlaceMapTopicKey[];
   hasTrip?: boolean;
   facilityKinds?: readonly PlaceKind[];
+  venueRegionOrder?: readonly string[];
 };
 
 /** @deprecated Use `MapPlaceFilters`. */
@@ -52,13 +53,16 @@ export const selectPlacesFromMapItems = (
       )
       .filter((item) => exploreItemMatchesFacilityKinds(item, facilityKinds))
       .filter((item) => (hostedIds ? explorePlaceHasHostedTrip(item, hostedIds) : true))
-      .filter((item) => venueItemMatchesRegions(item, filters.venueRegions))
+      .filter((item) => venueItemMatchesRegions(item, filters.venueRegions)),
+    filters.venueRegionOrder
   );
 };
 
 /** Shop pins (physical + online) from the same discovery map payload. */
-export const selectShopsFromMapItems = (mapItems: DiscoveryMapItems): ExploreMapItemDTO[] =>
-  sortExploreVenues(mapItems.filter(isShopListItem));
+export const selectShopsFromMapItems = (
+  mapItems: DiscoveryMapItems,
+  venueRegionOrder?: readonly string[]
+): ExploreMapItemDTO[] => sortExploreVenues(mapItems.filter(isShopListItem), venueRegionOrder);
 
 /** @deprecated Use `selectPlacesFromMapItems`. */
 export const selectPlacesFromExploreCatalog = selectPlacesFromMapItems;

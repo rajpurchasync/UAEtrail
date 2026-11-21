@@ -64,6 +64,7 @@ export const useExploreBrowseUrlState = ({
   const [query, setQuery] = useState(initial.query);
   const [venueFilter, setVenueFilter] = useState<VenueListFilterKey>(initial.venueFilter);
   const [venueRegions, setVenueRegions] = useState<string[]>(initial.venueRegions);
+  const [geoPath, setGeoPath] = useState<string[]>(initial.geoPath);
   const [desktopBrowseTab, setDesktopBrowseTab] = useState<DesktopBrowseTab>(initial.desktopBrowseTab);
   const [searchExpanded, setSearchExpanded] = useState(initial.expandSearch);
   const [activityDatePreset, setActivityDatePreset] = useState<ExploreActivityDatePreset>(
@@ -100,6 +101,7 @@ export const useExploreBrowseUrlState = ({
         browseOpen,
         query,
         venueRegions,
+        geoPath,
         activityDatePreset,
         activityModeFilter,
         buddySubtype,
@@ -130,6 +132,7 @@ export const useExploreBrowseUrlState = ({
       browseOpen,
       query,
       venueRegions,
+      geoPath,
       activityDatePreset,
       activityModeFilter,
       buddySubtype,
@@ -173,6 +176,7 @@ export const useExploreBrowseUrlState = ({
         setActivityDatePreset,
         setActivityModeFilter,
         setVenueRegions,
+        setGeoPath,
         setSearchScope,
         setTripMapTopics,
         setPlaceMapTopics,
@@ -262,6 +266,7 @@ export const useExploreBrowseUrlState = ({
     setQuery,
     venueFilter,
     venueRegions,
+    geoPath,
     desktopBrowseTab,
     searchExpanded,
     setSearchExpanded,

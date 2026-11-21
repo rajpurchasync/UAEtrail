@@ -1,19 +1,14 @@
 import { AppSelect } from '../../components/ui/AppSelect';
 import { EXPLORE_FLOW, EXPLORE_SHAPE } from '../../config/exploreTheme';
 import {
-  EMIRATE_SELECT_OPTIONS,
   SUPPORTED_COUNTRIES,
   getRegionsForCountry,
   subdivisionNoun,
   type CountryCode,
 } from '../../config/regions';
+import { useVenueStateFilterOptions } from '../../config/useVenueStateFilterOptions';
 
 const selectClass = `w-full ${EXPLORE_SHAPE.control} border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900`;
-
-const regionOptions = (country: CountryCode): Array<{ value: string; label: string }> =>
-  country === 'AE'
-    ? EMIRATE_SELECT_OPTIONS.map((option) => ({ value: option.key, label: option.label }))
-    : getRegionsForCountry(country).map((region) => ({ value: region, label: region }));
 
 type EmirateFromPinFieldProps = {
   inferred: string | null;
@@ -36,15 +31,27 @@ export const EmirateFromPinField = ({
   pinned,
   countryLocked = false,
 }: EmirateFromPinFieldProps) => {
+  const uaeVenueOptions = useVenueStateFilterOptions('AE');
   if (!pinned) return null;
 
+  const regionKeysForCountry = (code: CountryCode): string[] =>
+    code === 'AE'
+      ? uaeVenueOptions.map((option) => option.key)
+      : getRegionsForCountry(code);
+
   const noun = subdivisionNoun(countryCode);
-  const options = regionOptions(countryCode);
+  const options = regionKeysForCountry(countryCode).map((region) => ({
+    value: region,
+    label:
+      countryCode === 'AE'
+        ? uaeVenueOptions.find((option) => option.key === region)?.label ?? region
+        : region,
+  }));
   const selected = value || (countryCode === 'AE' ? inferred ?? '' : '');
 
   const changeCountry = (next: CountryCode) => {
     onCountryChange(next);
-    const allowed = new Set(regionOptions(next).map((option) => option.value));
+    const allowed = new Set(regionKeysForCountry(next));
     const kept = next === 'AE' && inferred && allowed.has(inferred) ? inferred : '';
     if (!allowed.has(value)) onChange(kept);
   };

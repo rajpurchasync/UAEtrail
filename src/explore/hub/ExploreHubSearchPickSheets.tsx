@@ -1,7 +1,6 @@
-import { useMemo } from 'react';
 import { Check } from 'lucide-react';
 import { ConsumerBottomSheet } from '../../components/mobile/ConsumerBottomSheet';
-import { getExploreRegionPillOptions } from '../../config/regions';
+import { useExploreRegionPillOptions } from '../../config/useExploreRegionPillOptions';
 import { LIST_BROWSE_DATE_FILTER_OPTIONS } from '../../list/listBrowseFilterModal';
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
 import { EXPLORE_BOOKING_SEARCH_PICK_SHEET_Z } from '../../config/exploreTheme';
@@ -21,7 +20,7 @@ export const ExploreHubWhereSuggestSheet = ({
   onClose,
   onSelect,
 }: ExploreHubWhereSuggestSheetProps) => {
-  const emirateOptions = useMemo(() => getExploreRegionPillOptions('AE'), []);
+  const emirateOptions = useExploreRegionPillOptions('AE');
   const activeNorm = normalize(draftQuery);
 
   return (
@@ -81,7 +80,7 @@ export const ExploreHubStatePickSheet = ({
   onClose,
   onSelect,
 }: ExploreHubStatePickSheetProps) => {
-  const emirateOptions = useMemo(() => getExploreRegionPillOptions('AE'), []);
+  const emirateOptions = useExploreRegionPillOptions('AE');
   const activeKey = venueRegions.length === 1 ? venueRegions[0] : venueRegions.length === 0 ? 'all' : null;
 
   return (

@@ -11,7 +11,7 @@ import type { MemberAvailabilityMatchPreviewDTO } from '@uaetrail/shared-types';
 import { fetchMyAvailabilityMatchPreview } from '../../hooks/memberAvailabilityApi';
 import { useExplorePublishedAreasQuery } from '../../explore/useExplorePublishedAreas';
 import { AvailabilityMatchPreview } from '../../explore/ui/AvailabilityMatchPreview';
-import { getRegionsForCountry } from '../../config/regions';
+import { mergeVenueStateFilterOptionsWithAreas } from '../../config/regions';
 import { AppButton } from '../mobile/AppButton';
 import { useMemberAvailability } from '../../hooks/useMemberAvailability';
 import { PlanAvailabilityDaysCalendar } from './PlanAvailabilityDaysCalendar';
@@ -73,7 +73,10 @@ export const PlanAvailabilitySection = ({
   const [formError, setFormError] = useState<string | null>(null);
   const [matchPreview, setMatchPreview] = useState<MemberAvailabilityMatchPreviewDTO | null>(null);
 
-  const regionOptions = useMemo(() => getRegionsForCountry(), []);
+  const regionOptions = useMemo(
+    () => mergeVenueStateFilterOptionsWithAreas(publishedAreas, 'AE').map((row) => row.key),
+    [publishedAreas]
+  );
 
   useEffect(() => {
     if (!data) return;

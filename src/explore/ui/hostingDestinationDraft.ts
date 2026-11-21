@@ -178,7 +178,7 @@ export const applyHostingDestinationSearchHit = (
     };
   }
   const area = areas.find((row) => row.id === hit.areaId);
-  const state = area ? resolvePlaceCatalogStateFromArea(area, countryCode) : '';
+  const state = area ? resolvePlaceCatalogStateFromArea(area, countryCode, areas) : '';
   return {
     venueCascadeState: state,
     registryPlaceAreaId: hit.areaId,

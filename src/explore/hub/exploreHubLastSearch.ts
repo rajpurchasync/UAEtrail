@@ -97,19 +97,19 @@ const parseRecentSearchList = (raw: string | null): ExploreHubLastSearch[] => {
   }
 };
 
-const migrateLegacyRecentSearches = (scope: ExploreSearchStorageScope): ExploreHubLastSearch[] => {
+const migrateUnscopedRecentSearches = (scope: ExploreSearchStorageScope): ExploreHubLastSearch[] => {
   if (scope === 'guest') return [];
-  const legacyRaw = sessionStorage.getItem(EXPLORE_RECENT_SEARCHES_KEY);
-  if (!legacyRaw) return [];
-  const legacy = parseRecentSearchList(legacyRaw);
-  if (legacy.length > 0) {
+  const unscopedRaw = sessionStorage.getItem(EXPLORE_RECENT_SEARCHES_KEY);
+  if (!unscopedRaw) return [];
+  const unscoped = parseRecentSearchList(unscopedRaw);
+  if (unscoped.length > 0) {
     sessionStorage.setItem(
       storageKey(EXPLORE_RECENT_SEARCHES_KEY, scope),
-      JSON.stringify(legacy.slice(0, EXPLORE_RECENT_SEARCHES_MAX))
+      JSON.stringify(unscoped.slice(0, EXPLORE_RECENT_SEARCHES_MAX))
     );
     sessionStorage.removeItem(EXPLORE_RECENT_SEARCHES_KEY);
   }
-  return legacy;
+  return unscoped;
 };
 
 /** Up to {@link EXPLORE_RECENT_SEARCHES_MAX} distinct recent commits (newest first). */
@@ -122,7 +122,7 @@ export const readExploreRecentSearches = (
       sessionStorage.getItem(storageKey(EXPLORE_RECENT_SEARCHES_KEY, scope))
     );
     if (list.length === 0 && scope !== 'guest') {
-      list = migrateLegacyRecentSearches(scope);
+      list = migrateUnscopedRecentSearches(scope);
     }
     if (list.length > 0) return list.slice(0, limit);
 

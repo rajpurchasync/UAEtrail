@@ -17,6 +17,7 @@ import type { AreaPublicDTO, PlaceDTO } from '@uaetrail/shared-types';
 import {
   DEFAULT_COUNTRY,
   getSubdivisionOptionsForCountry,
+  mergeVenueStateFilterOptionsWithAreas,
   SUPPORTED_COUNTRIES,
   type CountryCode,
   type CountrySubdivisionOption,
@@ -212,8 +213,17 @@ export const placeCatalogRowBelongsToArea = (
 };
 
 export const buildPlaceCatalogStateOptions = (
-  countryCode: CountryCode = DEFAULT_PLACE_CATALOG_COUNTRY
-): CountrySubdivisionOption[] => getSubdivisionOptionsForCountry(countryCode);
+  countryCode: CountryCode = DEFAULT_PLACE_CATALOG_COUNTRY,
+  areas: readonly AreaPublicDTO[] = []
+): CountrySubdivisionOption[] => {
+  if (countryCode === 'AE') {
+    return mergeVenueStateFilterOptionsWithAreas(areas, countryCode).map((row) => ({
+      value: row.key,
+      label: row.label,
+    }));
+  }
+  return getSubdivisionOptionsForCountry(countryCode);
+};
 
 export const buildPlaceCatalogAreaOptions = (
   places: PlaceDTO[],
@@ -279,7 +289,7 @@ export const resolvePlaceCatalogStateKeyForRow = (
     const catalog = normalizeGroupRegionLabel(raw);
     if (catalog) return catalog;
   }
-  const options = getSubdivisionOptionsForCountry(countryCode);
+  const options = buildPlaceCatalogStateOptions(countryCode, areas);
   const hit = options.find((option) =>
     placeCatalogSubdivisionMatchesState(raw, option.value, countryCode)
   );
@@ -303,14 +313,16 @@ export const inferPlaceCatalogLadderFromRow = (
 
 export const resolvePlaceCatalogStateFromArea = (
   area: AreaPublicDTO,
-  countryCode: CountryCode = DEFAULT_PLACE_CATALOG_COUNTRY
+  countryCode: CountryCode = DEFAULT_PLACE_CATALOG_COUNTRY,
+  areas: readonly AreaPublicDTO[] = []
 ): string => {
   const raw = area.region;
   if (countryCode === 'AE') {
     const catalog = normalizeGroupRegionLabel(raw);
     if (catalog) return catalog;
   }
-  const options = getSubdivisionOptionsForCountry(countryCode);
+  const catalogAreas = areas.length > 0 ? areas : [area];
+  const options = buildPlaceCatalogStateOptions(countryCode, catalogAreas);
   const hit = options.find((option) =>
     placeCatalogSubdivisionMatchesState(raw, option.value, countryCode)
   );
@@ -397,7 +409,7 @@ export const searchPlaceCatalogDestination = (
       : [];
   } else if (scope.state?.trim()) {
     catalogAreas = catalogAreas.filter(
-      (row) => resolvePlaceCatalogStateFromArea(row, countryCode) === scope.state
+      (row) => resolvePlaceCatalogStateFromArea(row, countryCode, scoped.areas) === scope.state
     );
     const areaIds = new Set(catalogAreas.map((row) => row.id));
     catalogPlaces = catalogPlaces.filter((place) => {
@@ -440,7 +452,7 @@ export const searchPlaceCatalogDestination = (
       const sample = trailsInGroup[0];
       const state = sample
         ? inferPlaceCatalogLadderFromRow(sample, scoped.areas, countryCode, catalogPlaces).state
-        : resolvePlaceCatalogStateFromArea(area, countryCode);
+        : resolvePlaceCatalogStateFromArea(area, countryCode, scoped.areas);
       placeHits.push({
         kind: 'place',
         placeGroupKey: group.key,

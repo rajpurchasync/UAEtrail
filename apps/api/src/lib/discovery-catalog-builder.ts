@@ -46,7 +46,6 @@ import { listPublishedAreas } from './areas-store.js';
 import { buildAvailabilityFixedMapItems } from './availability-fixed-map-items.js';
 import { listFacilitiesForExploreMap } from './facilities-store.js';
 import { resolveAreaIdFromPoint } from './area-resolution.js';
-import { overlayCatalogDefaultsOnLocation } from './venue-catalog.js';
 
 const catalogTimestampIso = (
   ...candidates: Array<Date | string | null | undefined>
@@ -355,10 +354,9 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
   for (const location of locationsResult.items) {
     if (String(location.activityType).toUpperCase() === 'RIDESHARE') continue;
 
-    const catalogLocation = overlayCatalogDefaultsOnLocation(location);
-    const dto = toLocationDto(catalogLocation);
+    const dto = toLocationDto(location);
     if (!dto.images?.[0]?.trim()) continue;
-    const catalogAreaLabel = catalogLocation.areaLabel ?? dto.areaLabel ?? null;
+    const catalogAreaLabel = location.areaLabel ?? dto.areaLabel ?? null;
     if (dto.activityType === 'shop') {
       const latitude = dto.latitude ?? null;
       const longitude = dto.longitude ?? null;
@@ -386,7 +384,7 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
             about: dto.description,
             catalogProfileExposure: 'peek',
             geoRef: dto.geoRef ?? null,
-            ...catalogUpdatedAtField(catalogLocation.updatedAt, catalogLocation.createdAt),
+            ...catalogUpdatedAtField(location.updatedAt, location.createdAt),
           },
           dto.areaId,
           areaSlugById,
@@ -399,7 +397,7 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
 
     const catalogPlaceKind = placeKindFromLocationRow({
       activityType: dto.activityType,
-      tags: catalogLocation.tags,
+      tags: location.tags,
     });
 
     const latitude = dto.latitude ?? null;
@@ -444,9 +442,9 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
               season: dto.season ?? [],
               images: dto.images ?? [],
               featured: dto.featured,
-              ...resolveLocationAmenities(catalogLocation.tags, dto.id, amenitiesByParentId),
+              ...resolveLocationAmenities(location.tags, dto.id, amenitiesByParentId),
             },
-            ...catalogUpdatedAtField(catalogLocation.updatedAt, catalogLocation.createdAt),
+            ...catalogUpdatedAtField(location.updatedAt, location.createdAt),
           },
           dto.areaId,
           areaSlugById,
@@ -462,7 +460,7 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
 
     const venueLabels = resolveVenueExploreLabels(
       dto.name,
-      catalogLocation.tags,
+      location.tags,
       dto.region,
       catalogAreaLabel
     );
@@ -501,10 +499,10 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
             featured: dto.featured,
             parkingLat: dto.parkingLat ?? null,
             parkingLng: dto.parkingLng ?? null,
-            parkingPoint: catalogLocation.parkingLink ?? null,
-            ...resolveLocationAmenities(catalogLocation.tags, dto.id, amenitiesByParentId),
+            parkingPoint: location.parkingLink ?? null,
+            ...resolveLocationAmenities(location.tags, dto.id, amenitiesByParentId),
           },
-          ...catalogUpdatedAtField(catalogLocation.updatedAt, catalogLocation.createdAt),
+          ...catalogUpdatedAtField(location.updatedAt, location.createdAt),
         },
         dto.areaId,
         areaSlugById,

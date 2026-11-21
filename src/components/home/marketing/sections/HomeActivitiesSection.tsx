@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { EXPLORE_MAP_PATH } from '../../../../config/routingCatalogLite';
 import type { HomeLandingActivity } from '../../../../content/homeLanding';
-import { HOME_ACTIVITIES, HOME_EMIRATE_FILTER_ORDER } from '../../../../content/homeMarketing';
+import { HOME_ACTIVITIES } from '../../../../content/homeMarketing';
 import { emirateLabelFromId } from '../../../../utils/homeLandingEmirate';
 import { mapHomeLandingActivityToCard } from '../../../../utils/mapHomeLandingActivity';
 import { HOME_LANDING_ACTIVITY_LIMIT } from '../../../../utils/selectDiverseHomeLandingActivities';
@@ -30,17 +30,21 @@ export const HomeActivitiesSection = ({
 
   const chipOptions = useMemo(() => {
     const counts = new Map<string, number>();
+    const labels = new Map<string, string>();
     for (const card of cards) {
       if (!card.emirateId) continue;
       counts.set(card.emirateId, (counts.get(card.emirateId) ?? 0) + 1);
+      if (card.emirate?.trim()) labels.set(card.emirateId, card.emirate.trim());
     }
-    return HOME_EMIRATE_FILTER_ORDER.filter(
-      (option) => option.id === 'all' || counts.has(option.id)
-    ).map((option) => ({
-      id: option.id,
-      label: option.label,
-      count: option.id === 'all' ? undefined : counts.get(option.id)
-    }));
+    const emirates = [...counts.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .map(([id, count]) => ({
+        id,
+        label: labels.get(id) ?? emirateLabelFromId(id),
+        count,
+      }));
+    if (emirates.length <= 1) return emirates.length === 0 ? [] : emirates;
+    return [{ id: 'all', label: 'All' }, ...emirates];
   }, [cards]);
 
   const filtered = useMemo(() => {
@@ -72,9 +76,21 @@ export const HomeActivitiesSection = ({
             <p className="text-home-ink">{HOME_ACTIVITIES.error}</p>
             <AppButton className="mt-4" onClick={onRetry}>{HOME_ACTIVITIES.retry}</AppButton>
           </div>
+        ) : !loading && cards.length === 0 ? (
+          <div
+            className="rounded-home-md border border-dashed border-[var(--gray-200)] bg-home-muted/60 p-8 text-center text-neutral-600"
+            role="status"
+          >
+            <p>{HOME_ACTIVITIES.emptyCatalog}</p>
+            <Link to={EXPLORE_MAP_PATH} className="landing-text-cta mt-3 inline-block">
+              {HOME_ACTIVITIES.viewAll.replace(' →', '')}
+            </Link>
+          </div>
         ) : (
           <>
-            <EmirateChips options={chipOptions} value={emirate} onChange={setEmirate} />
+            {chipOptions.length > 1 ? (
+              <EmirateChips options={chipOptions} value={emirate} onChange={setEmirate} />
+            ) : null}
             <div className="mt-5 transition-opacity duration-[var(--duration-hover)] md:mt-6">
               <ActivityCardCarousel
                 cards={filtered}

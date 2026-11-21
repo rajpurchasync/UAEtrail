@@ -1,11 +1,12 @@
 import { setExploreClockStyle, type ExploreClockStyle } from '@uaetrail/shared-types';
-import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type { AreaPublicDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { buildListFeedCards } from '../../list/buildListFeedCards';
 import {
   filterExploreMapItemsForList,
   type BrowseListFilterState,
 } from '../../list/browseListFilters';
+import { resolveEffectiveBrowseVenueRegions } from '../../list/browseGeoPath';
 import { sortListExplorerCards } from '../../list/explorer/listExplorerSort';
 import { exploreHubWhereBrowseQuery } from './exploreHubWhereDisplay';
 import {
@@ -23,26 +24,33 @@ export type ExploreHubJoinableTripResult = {
 const tripPoolFromFilters = (
   items: ExploreMapItemDTO[],
   filters: BrowseListFilterState,
-  venueRegions: string[]
-): ExploreMapItemDTO[] => filterExploreMapItemsForList(items, filters, venueRegions);
+  venueRegions: string[],
+  geoPath: readonly string[] = [],
+  publishedAreas: readonly AreaPublicDTO[] = []
+): ExploreMapItemDTO[] =>
+  filterExploreMapItemsForList(items, filters, venueRegions, geoPath, publishedAreas);
 
 /** Same widen logic as the trip list — counts must match visible cards. */
 export const resolveExploreHubTripPool = (
   items: ExploreMapItemDTO[],
   filters: BrowseListFilterState,
-  venueRegions: string[]
+  venueRegions: string[],
+  geoPath: readonly string[] = [],
+  publishedAreas: readonly AreaPublicDTO[] = []
 ): { pool: ExploreMapItemDTO[]; relaxation: ExploreHubTripRelaxation } => {
   const browseQuery = exploreHubWhereBrowseQuery(filters.query);
   const strict: BrowseListFilterState = { ...filters, query: browseQuery };
 
-  let pool = tripPoolFromFilters(items, strict, venueRegions);
+  let pool = tripPoolFromFilters(items, strict, venueRegions, geoPath, publishedAreas);
   let relaxation: ExploreHubTripRelaxation = false;
 
   if (pool.length === 0 && strict.activityDatePreset !== 'anyday') {
     pool = tripPoolFromFilters(
       items,
       { ...strict, activityDatePreset: 'anyday' },
-      venueRegions
+      venueRegions,
+      geoPath,
+      publishedAreas
     );
     if (pool.length > 0) relaxation = 'date';
   }
@@ -51,7 +59,9 @@ export const resolveExploreHubTripPool = (
     pool = tripPoolFromFilters(
       items,
       { ...strict, query: '', activityDatePreset: 'anyday' },
-      venueRegions
+      venueRegions,
+      geoPath,
+      publishedAreas
     );
     if (pool.length > 0) relaxation = 'where';
   }
@@ -62,15 +72,17 @@ export const resolveExploreHubTripPool = (
 export const resolveExploreHubVenuePool = (
   items: ExploreMapItemDTO[],
   filters: BrowseListFilterState,
-  venueRegions: string[]
+  venueRegions: string[],
+  geoPath: readonly string[] = [],
+  publishedAreas: readonly AreaPublicDTO[] = []
 ): { pool: ExploreMapItemDTO[]; relaxed: boolean } => {
   const browseQuery = exploreHubWhereBrowseQuery(filters.query);
   const strict: BrowseListFilterState = { ...filters, query: browseQuery };
-  let pool = tripPoolFromFilters(items, strict, venueRegions);
+  let pool = tripPoolFromFilters(items, strict, venueRegions, geoPath, publishedAreas);
   let relaxed = false;
 
   if (pool.length === 0 && browseQuery.trim()) {
-    pool = tripPoolFromFilters(items, { ...strict, query: '' }, venueRegions);
+    pool = tripPoolFromFilters(items, { ...strict, query: '' }, venueRegions, geoPath, publishedAreas);
     relaxed = pool.length > 0;
   }
 
@@ -85,9 +97,18 @@ export const resolveExploreHubJoinableTripCards = (
   filters: BrowseListFilterState,
   venueRegions: string[],
   regionHint: string,
-  limit = EXPLORE_HUB_HOME_UPCOMING_LIMIT
+  limit = EXPLORE_HUB_HOME_UPCOMING_LIMIT,
+  geoPath: readonly string[] = [],
+  publishedAreas: readonly AreaPublicDTO[] = []
 ): ExploreHubJoinableTripResult & { listingCount: number } => {
-  const { pool, relaxation } = resolveExploreHubTripPool(items, filters, venueRegions);
+  const effectiveRegions = resolveEffectiveBrowseVenueRegions(venueRegions, geoPath, publishedAreas);
+  const { pool, relaxation } = resolveExploreHubTripPool(
+    items,
+    filters,
+    effectiveRegions,
+    geoPath,
+    publishedAreas
+  );
 
   setExploreClockStyle(clock);
   const built = buildListFeedCards(pool, user, items);
@@ -110,9 +131,18 @@ export const resolveExploreHubVenueCards = (
   clock: ExploreClockStyle,
   filters: BrowseListFilterState,
   venueRegions: string[],
-  limit = 10
+  limit = 10,
+  geoPath: readonly string[] = [],
+  publishedAreas: readonly AreaPublicDTO[] = []
 ): { cards: DiscoveryCardModel[]; relaxed: boolean; listingCount: number } => {
-  const { pool, relaxed } = resolveExploreHubVenuePool(items, filters, venueRegions);
+  const effectiveRegions = resolveEffectiveBrowseVenueRegions(venueRegions, geoPath, publishedAreas);
+  const { pool, relaxed } = resolveExploreHubVenuePool(
+    items,
+    filters,
+    effectiveRegions,
+    geoPath,
+    publishedAreas
+  );
 
   setExploreClockStyle(clock);
   const cards = buildListFeedCards(pool, user, items).slice(0, limit);

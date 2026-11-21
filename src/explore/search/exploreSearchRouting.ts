@@ -5,6 +5,7 @@ import type { BrowseMainCategoryKey } from '../../list/browseListTaxonomy';
 import {
   LIST_CAT_PARAM,
   parseBrowseListFilterState,
+  parseBrowseListGeoPath,
   parseBrowseListVenueRegions,
   parseListCatParam,
   serializeBrowseListSearchParams,
@@ -18,8 +19,8 @@ import { LIST_DISCOVERY_PATH } from '../../config/platform';
 export const EXPLORE_SEARCH_RESULTS_PATH = '/explore/search';
 
 export const EXPLORE_SEARCH_SCOPE_PARAM = 'searchScope';
-/** @deprecated Read via {@link parseExploreSearchScope} — inbound `/explore/hub` links only. */
-export const LEGACY_HUB_MODE_PARAM = 'hubMode';
+/** Inbound bookmark query — old `/explore/hub?hubMode=` links; prefer {@link EXPLORE_SEARCH_SCOPE_PARAM}. */
+export const INBOUND_HUB_SCOPE_PARAM = 'hubMode';
 export const EXPLORE_SEARCH_VIEW_PARAM = 'view';
 
 export type ExploreSearchView = 'list' | 'map';
@@ -36,7 +37,7 @@ export const parseExploreSearchScope = (raw: string | null): ExploreSearchScope 
 
 export const parseExploreSearchScopeFromParams = (params: URLSearchParams): ExploreSearchScope => {
   const explicit =
-    params.get(EXPLORE_SEARCH_SCOPE_PARAM) ?? params.get(LEGACY_HUB_MODE_PARAM);
+    params.get(EXPLORE_SEARCH_SCOPE_PARAM) ?? params.get(INBOUND_HUB_SCOPE_PARAM);
   return parseExploreSearchScope(explicit);
 };
 
@@ -110,7 +111,7 @@ const appendSearchBrowseParams = (params: URLSearchParams, state: ExploreSearchB
   } else {
     params.delete(EXPLORE_SEARCH_SCOPE_PARAM);
   }
-  params.delete(LEGACY_HUB_MODE_PARAM);
+  params.delete(INBOUND_HUB_SCOPE_PARAM);
   params.set(LIST_CAT_PARAM, exploreSearchListCatForScope(state.searchScope));
   if (state.query.trim()) {
     params.set('q', state.query.trim());
@@ -211,7 +212,8 @@ export const exploreSearchListPathFromMapSearch = (search: string): string => {
     activityDatePreset: browse.activityDatePreset,
   };
   const regions = parseBrowseListVenueRegions(params);
-  const listParams = serializeBrowseListSearchParams(state, regions);
+  const geoPath = parseBrowseListGeoPath(params);
+  const listParams = serializeBrowseListSearchParams(state, regions, geoPath);
   listParams.set(LIST_CAT_PARAM, listCat);
   if (derivedScope !== 'join') listParams.set(EXPLORE_SEARCH_SCOPE_PARAM, derivedScope);
   listParams.delete(EXPLORE_SEARCH_VIEW_PARAM);
@@ -240,20 +242,20 @@ export const isExploreSearchResultsPath = (pathname: string): boolean =>
   pathname === EXPLORE_SEARCH_RESULTS_PATH;
 
 /** Migrate inbound `/explore/hub/*` bookmarks. */
-export const exploreHubLegacyRedirectTarget = (pathname: string, search: string): string => {
+export const exploreInboundHubRedirectTarget = (pathname: string, search: string): string => {
   const params = new URLSearchParams(search.replace(/^\?/, ''));
   if (pathname === '/explore/hub/search') {
-    if (!params.has(EXPLORE_SEARCH_SCOPE_PARAM) && params.has(LEGACY_HUB_MODE_PARAM)) {
-      params.set(EXPLORE_SEARCH_SCOPE_PARAM, params.get(LEGACY_HUB_MODE_PARAM)!);
-      params.delete(LEGACY_HUB_MODE_PARAM);
+    if (!params.has(EXPLORE_SEARCH_SCOPE_PARAM) && params.has(INBOUND_HUB_SCOPE_PARAM)) {
+      params.set(EXPLORE_SEARCH_SCOPE_PARAM, params.get(INBOUND_HUB_SCOPE_PARAM)!);
+      params.delete(INBOUND_HUB_SCOPE_PARAM);
     }
     const qs = params.toString();
     return qs ? `${EXPLORE_SEARCH_RESULTS_PATH}?${qs}` : EXPLORE_SEARCH_RESULTS_PATH;
   }
   if (pathname === '/explore/hub/map') {
-    if (!params.has(EXPLORE_SEARCH_SCOPE_PARAM) && params.has(LEGACY_HUB_MODE_PARAM)) {
-      params.set(EXPLORE_SEARCH_SCOPE_PARAM, params.get(LEGACY_HUB_MODE_PARAM)!);
-      params.delete(LEGACY_HUB_MODE_PARAM);
+    if (!params.has(EXPLORE_SEARCH_SCOPE_PARAM) && params.has(INBOUND_HUB_SCOPE_PARAM)) {
+      params.set(EXPLORE_SEARCH_SCOPE_PARAM, params.get(INBOUND_HUB_SCOPE_PARAM)!);
+      params.delete(INBOUND_HUB_SCOPE_PARAM);
     }
     params.set(EXPLORE_SEARCH_VIEW_PARAM, 'map');
     const qs = params.toString();

@@ -14,6 +14,7 @@ import {
 } from './exploreSearchRouting';
 import { formatExploreHubWhereDisplay } from '../hub/exploreHubWhereDisplay';
 import { exploreHubHomeStateSummary } from '../hub/exploreHubVenueState';
+import { useExploreRegionPillOptions } from '../../config/useExploreRegionPillOptions';
 import { ProductNavLink } from '../../components/navigation/ProductNavLink';
 
 type ExploreSearchResultsChromeProps = {
@@ -50,10 +51,11 @@ export const ExploreSearchResultsChrome = ({
   crewCount = 0,
 }: ExploreSearchResultsChromeProps) => {
   const navigate = useNavigate();
+  const regionPillOptions = useExploreRegionPillOptions('AE');
   const whereLine = formatExploreHubWhereDisplay(state.query.trim() || 'Everywhere');
   const contextLine =
     state.searchScope === 'places'
-      ? exploreHubHomeStateSummary(state.venueRegions)
+      ? exploreHubHomeStateSummary(state.venueRegions, regionPillOptions)
       : exploreHubHomeWhenSummary(state.activityDatePreset);
 
   const resultsCount = activeResultCount(state.searchScope, tripCount, placeCount, crewCount);

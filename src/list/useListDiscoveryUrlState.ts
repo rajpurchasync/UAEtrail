@@ -7,7 +7,7 @@ import {
   EXPLORE_SEARCH_RESULTS_PATH,
   EXPLORE_SEARCH_SCOPE_PARAM,
   EXPLORE_SEARCH_VIEW_PARAM,
-  LEGACY_HUB_MODE_PARAM,
+  INBOUND_HUB_SCOPE_PARAM,
   exploreSearchListCatForScope,
   exploreSearchScopeForListCat,
   parseExploreSearchBrowseState,
@@ -18,7 +18,9 @@ import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import {
   BROWSE_DISCOVER_PARAM,
   LIST_CAT_PARAM,
+  BROWSE_GEO_PARAM,
   parseBrowseListFilterState,
+  parseBrowseListGeoPath,
   parseBrowseListVenueRegions,
   parseListCatParam,
   serializeBrowseListSearchParams,
@@ -56,6 +58,7 @@ const LIST_FILTER_PARAM_KEYS = [
   'when',
   'date',
   'regions',
+  BROWSE_GEO_PARAM,
   'hasTrip',
   'facilityKinds',
   LIST_CAT_PARAM,
@@ -124,6 +127,8 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
 
   const venueRegions = useMemo(() => parseBrowseListVenueRegions(searchParams), [searchParams]);
 
+  const geoPath = useMemo(() => parseBrowseListGeoPath(searchParams), [searchParams]);
+
   const layout = useMemo(
     () => parseListExplorerLayout(searchParams.get(LIST_LAYOUT_PARAM)),
     [searchParams]
@@ -138,6 +143,7 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
     (
       patch: Partial<BrowseListFilterState> & {
         regions?: string[];
+        geoPath?: string[];
         listCat?: BrowseMainCategoryKey | null;
         layout?: ListExplorerLayout;
         sort?: ListExplorerSortMode;
@@ -160,10 +166,11 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
             ...patch,
           };
           let regions = patch.regions ?? venueRegions;
+          const nextGeo = patch.geoPath ?? geoPath;
           if (!mapOverlay && (patchedListCat === 'activities' || patchedListCat === 'venues')) {
             next = scopeBrowseListStateForListCat(next, patchedListCat);
           }
-          const listParams = serializeBrowseListSearchParams(next, regions);
+          const listParams = serializeBrowseListSearchParams(next, regions, nextGeo);
           const nextLayout = patch.layout ?? layout;
           const layoutParam = serializeListExplorerLayout(nextLayout);
           if (layoutParam) listParams.set(LIST_LAYOUT_PARAM, layoutParam);
@@ -220,7 +227,7 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
             const scope = exploreSearchScopeForListCat(patchedListCat);
             if (scope === 'join') params.delete(EXPLORE_SEARCH_SCOPE_PARAM);
             else params.set(EXPLORE_SEARCH_SCOPE_PARAM, scope);
-            params.delete(LEGACY_HUB_MODE_PARAM);
+            params.delete(INBOUND_HUB_SCOPE_PARAM);
             const resultsView = searchParams.get(EXPLORE_SEARCH_VIEW_PARAM);
             if (resultsView === 'map') params.set(EXPLORE_SEARCH_VIEW_PARAM, 'map');
             else params.delete(EXPLORE_SEARCH_VIEW_PARAM);
@@ -231,6 +238,7 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
     [
       filters,
       venueRegions,
+      geoPath,
       listCat,
       layout,
       sort,
@@ -317,6 +325,7 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
     crewsOpenLens,
     availabilitySheetOpen,
     venueRegions,
+    geoPath,
     listCat,
     layout,
     sort,

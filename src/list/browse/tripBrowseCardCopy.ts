@@ -4,7 +4,7 @@ import { browseCardMeta, browseRowWhenDisplay } from './browseCardMeta';
 import { LIST_FEED_CTA_CARPOOL } from '../listFeedCtaCopy';
 import { resolveListFeedPosterRequirementLabels } from '../listFeedPosterStandard';
 import { resolveActivityLinkedPlaceLogisticsLabels } from './venueBrowseFacts';
-import { resolveDiscoveryBrowseGeoHubPath } from '../../discovery/browse/resolveDiscoveryBrowseGeoLink';
+import { resolveDiscoveryBrowseLocationHref } from '../../discovery/browse/resolveDiscoveryBrowseGeoLink';
 
 const TRIP_BROWSE_FACT_LIMIT = 5;
 export const TRIP_BROWSE_VISIBLE_FACT_LIMIT = 3;
@@ -76,7 +76,9 @@ export const resolveTripBrowseCardCopy = (card: DiscoveryCardModel): TripBrowseC
   return {
     title: meta.title,
     metaLine: joinMetaParts([whenLine, meta.location]),
-    metaHref: resolveDiscoveryBrowseGeoHubPath(card),
+    metaHref: meta.location
+      ? resolveDiscoveryBrowseLocationHref(card, 'list')
+      : null,
     locationLine: meta.location,
     whenLine,
     price: meta.price,

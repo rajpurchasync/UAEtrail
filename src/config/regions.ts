@@ -1,3 +1,5 @@
+import type { AreaPublicDTO } from '@uaetrail/shared-types';
+
 /** GCC country catalog — extend as platform expands beyond UAE. */
 export const SUPPORTED_COUNTRIES = [
   { code: 'AE', label: 'United Arab Emirates', default: true },
@@ -74,6 +76,56 @@ export const getVenueStateFilterOptions = (code: CountryCode = DEFAULT_COUNTRY) 
     key: region,
     label: EXPLORE_REGION_PILL_LABELS[region] ?? region,
   }));
+
+const venueStateOptionsFromPublishedAreas = (
+  areas: readonly AreaPublicDTO[]
+): Array<{ key: string; label: string }> => {
+  const byKey = new Map<string, { key: string; label: string }>();
+  for (const area of areas) {
+    const region = area.region?.trim();
+    if (!region) continue;
+    if (!byKey.has(region)) {
+      byKey.set(region, { key: region, label: EXPLORE_REGION_PILL_LABELS[region] ?? region });
+    }
+  }
+  return [...byKey.values()].sort((a, b) => a.label.localeCompare(b.label));
+};
+
+/** Consumer emirate keys — `GET /areas` when published rows exist; static UAE list only when empty. */
+export const mergeVenueStateFilterOptionsWithAreas = (
+  areas: readonly AreaPublicDTO[],
+  code: CountryCode = DEFAULT_COUNTRY
+): Array<{ key: string; label: string }> => {
+  if (code === 'AE' && areas.length > 0) {
+    return venueStateOptionsFromPublishedAreas(areas);
+  }
+  return getVenueStateFilterOptions(code);
+};
+
+/** Canonical emirate/region keys for browse filters and text matching — DB-first when areas exist. */
+export const consumerEmirateKeys = (
+  areas: readonly AreaPublicDTO[],
+  code: CountryCode = DEFAULT_COUNTRY
+): string[] => mergeVenueStateFilterOptionsWithAreas(areas, code).map((row) => row.key);
+
+export const mergeExploreRegionPillOptionsWithAreas = (
+  areas: readonly AreaPublicDTO[],
+  code: CountryCode = DEFAULT_COUNTRY
+): Array<{ key: string; label: string }> => {
+  const allLabel = code === 'AE' ? 'All UAE' : 'All';
+  const states = mergeVenueStateFilterOptionsWithAreas(areas, code);
+  return [{ key: 'all', label: allLabel }, ...states.map((row) => ({ key: row.key, label: row.label }))];
+};
+
+/** Geo/list helpers — union of static UAE keys + any published area regions (sync-safe). */
+export const resolveVenueStateFilterKeys = (areas: readonly AreaPublicDTO[]): string[] => {
+  const keys = new Set(getVenueStateFilterOptions('AE').map((row) => row.key));
+  for (const area of areas) {
+    const region = area.region?.trim();
+    if (region) keys.add(region);
+  }
+  return [...keys];
+};
 
 /** Emirate picker when a pin cannot be matched — same labels as search/Home, plus Ajman / UAQ. */
 export const EMIRATE_SELECT_OPTIONS: Array<{ key: string; label: string }> = [

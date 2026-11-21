@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { EXPLORE_SEARCH_RECENT_TITLE } from '../hub/exploreHubHomeCopy';
 import { exploreHubHomePlaceLabel, exploreHubHomeWhenSummary } from '../hub/exploreHubHomeWhenLabel';
 import { exploreHubHomeStateSummary } from '../hub/exploreHubVenueState';
+import { useExploreRegionPillOptions } from '../../config/useExploreRegionPillOptions';
 import {
   exploreSearchStorageScope,
   readExploreRecentSearches,
@@ -21,6 +22,7 @@ export const ExploreBookingRecentSearches = ({ onPick, refreshKey = 0 }: Explore
   const navigate = useNavigate();
   const { user } = useAuth();
   const storageScope = exploreSearchStorageScope(user?.id);
+  const regionPillOptions = useExploreRegionPillOptions('AE');
   const recent = useMemo(
     () => readExploreRecentSearches(3, storageScope),
     [refreshKey, storageScope]
@@ -38,7 +40,7 @@ export const ExploreBookingRecentSearches = ({ onPick, refreshKey = 0 }: Explore
           const where = exploreHubHomePlaceLabel(entry.query);
           const secondLine =
             entry.hubMode === 'places'
-              ? exploreHubHomeStateSummary(entry.venueRegions ?? [])
+              ? exploreHubHomeStateSummary(entry.venueRegions ?? [], regionPillOptions)
               : exploreHubHomeWhenSummary(entry.activityDatePreset);
           const key = `${entry.hubMode}|${entry.query}|${entry.activityDatePreset}|${(entry.venueRegions ?? []).join(',')}`;
           return (

@@ -42,6 +42,19 @@ describe('exploreBrowseUrlHydrate', () => {
     ).toBe('available');
   });
 
+  it('round-trips geo drill on explore map URL', () => {
+    const params = new URLSearchParams('geo=dubai%2Fhatta');
+    const parsed = parseExploreBrowseStateFromSearchParams(params, false);
+    expect(parsed.geoPath).toEqual(['dubai', 'hatta']);
+    const next = buildExploreBrowseSearchParams({
+      base: params,
+      isDesktop: false,
+      state: { ...parsed, listOpen: false, browseOpen: false },
+      patch: {},
+    });
+    expect(next.get('geo')).toBe('dubai/hatta');
+  });
+
   it('derives map panel from list browse bucket on desktop', () => {
     const places = parseExploreBrowseStateFromSearchParams(
       new URLSearchParams('list=1&listCat=venues'),
