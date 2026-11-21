@@ -101,6 +101,8 @@ describe('listBrowseNamingGuard', () => {
     expect(sections).not.toMatch(/groupListExplorerDateSections/);
     expect(read('src/list/browse/listBrowseSort.ts')).toMatch(/groupBrowseListDateSections/);
     expect(read('src/list/explorer/ListExplorer.tsx')).toMatch(/BrowseListDateSection/);
+    expect(read('src/list/explorer/ListExplorer.tsx')).toMatch(/BrowseListDateSectionGroups/);
+    expect(read('src/list/explorer/ListExplorer.tsx')).not.toMatch(/ListExplorerDateGroups/);
   });
 
   it('BROWSE-NAME-01d: list bucket + date sections live under browse (not explorer)', () => {

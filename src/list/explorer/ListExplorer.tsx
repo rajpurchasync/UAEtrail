@@ -133,7 +133,7 @@ const VirtualizedListRows = ({
   );
 };
 
-const ListExplorerDateGroups = ({
+const BrowseListDateSectionGroups = ({
   sections,
   layout,
   onMapHover,
@@ -416,7 +416,7 @@ export const ListExplorer = ({
             <ListExplorerCalendar cards={calendarCards} onMapHover={onMapHover} />
           ) : (
             <BrowsePlaceDistanceProvider viewer={viewer} units={units}>
-              <ListExplorerDateGroups
+              <BrowseListDateSectionGroups
                 sections={listSections}
                 layout={effectiveLayout}
                 onMapHover={onMapHover}

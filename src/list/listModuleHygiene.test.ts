@@ -299,4 +299,25 @@ describe('list module hygiene', () => {
     expect(facade).toMatch(/export \* from '\.\.\/explore\/discoveryRuntime'/);
     expect(existsSync(join(process.cwd(), 'src/list/discoveryListRuntime.ts'))).toBe(true);
   });
+
+  it('browse logic APIs stay under src/list/browse (no revived explorer browse modules)', () => {
+    const banned =
+      /\b(parseListExplorer(Layout|Sort|Bucket)|sortListExplorerCards|listCatForListExplorerBucket|listExplorerBucketCategories)\b/;
+    const importBanned =
+      /from ['"][^'"]*list\/explorer\/(listExplorerSort|listExplorerLayout|listExplorerBucket|listExplorerDateSections|listExplorerFabSnap)/;
+    const violations: string[] = [];
+    for (const file of sources) {
+      if (file.startsWith('src/list/explorer/')) continue;
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (banned.test(content)) violations.push(`${file}: legacy listExplorer browse API`);
+      if (importBanned.test(content)) violations.push(`${file}: import from retired explorer browse module`);
+    }
+    expect(violations).toEqual([]);
+    expect(readFileSync(join(process.cwd(), 'src/list/explorer/ListExplorerFilterFab.tsx'), 'utf8')).toMatch(
+      /browse\/listFilterFabSnap/
+    );
+    expect(readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8')).toMatch(
+      /browse\/browseListBucket/
+    );
+  });
 });
