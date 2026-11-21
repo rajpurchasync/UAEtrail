@@ -13,9 +13,6 @@ export type { PeopleBrowseTab };
 
 export { PEOPLE_LIST_TAB_URL_PARAM, readPeopleCrewsTabParam };
 
-/** @deprecated Prefer {@link readPeopleCrewsTabParam} from `productUrlInbound`. */
-export const readPeopleListBrowseTabParam = readPeopleCrewsTabParam;
-
 /** Full-screen `/list?listCat=people` — default **Overview** when tab param omitted. */
 export const parsePeopleListBrowseTab = (raw: string | null): PeopleBrowseTab => {
   if (!raw || raw === INBOUND_BUDDIES_LIST_TAB_PARAM) return 'hub';

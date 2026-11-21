@@ -1,2 +1,0 @@
-/** @deprecated Use `BrowseActivityStatusChips` from `src/list/browse/BrowseActivityStatusChips.tsx`. */
-export { BrowseActivityStatusChips as ListExplorerActivityStatusChips } from '../browse/BrowseActivityStatusChips';

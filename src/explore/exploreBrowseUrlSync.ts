@@ -59,12 +59,10 @@ import {
 import type { PlaceKind } from '@uaetrail/shared-types';
 import { BROWSE_GEO_PARAM, serializeBrowseGeoPath } from '../list/browseGeoPath';
 import {
-  INBOUND_BUDDIES_LIST_TAB_PARAM,
-  INBOUND_GOING_TAB_PARAM,
   INBOUND_SEARCH_SCOPE_FOCUS_PARAM,
-  INBOUND_SOCIAL_TAB_PARAM,
   PEOPLE_LIST_TAB_URL_PARAM,
   stripRetiredExploreOverlayParams,
+  stripRetiredPeopleListTabParams,
 } from '../routing/productUrlInbound';
 export type ExploreBrowseListMode = 'default' | 'people';
 
@@ -235,19 +233,14 @@ export const buildExploreBrowseSearchParams = (input: {
   const peopleBrowseTabValue = patch.peopleBrowseTab ?? state.peopleBrowseTab;
   if (peoplePanelActive) {
     params.set('view', 'people');
-    params.delete(INBOUND_GOING_TAB_PARAM);
-    params.delete(INBOUND_SOCIAL_TAB_PARAM);
     const serializedPeopleTab = serializePeopleBrowseTab(peopleBrowseTabValue);
     if (serializedPeopleTab) params.set(PEOPLE_LIST_TAB_URL_PARAM, serializedPeopleTab);
     else params.delete(PEOPLE_LIST_TAB_URL_PARAM);
-    params.delete(INBOUND_BUDDIES_LIST_TAB_PARAM);
   } else {
-    params.delete(INBOUND_BUDDIES_LIST_TAB_PARAM);
     params.delete('view');
     params.delete(PEOPLE_LIST_TAB_URL_PARAM);
-    params.delete(INBOUND_SOCIAL_TAB_PARAM);
-    params.delete(INBOUND_GOING_TAB_PARAM);
   }
+  stripRetiredPeopleListTabParams(params);
 
   params.delete('followedKind');
 

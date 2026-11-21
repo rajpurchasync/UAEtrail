@@ -32,10 +32,10 @@ import {
   serializeBrowseMainCategoriesToTopics,
   type BrowseMainCategoryKey,
 } from './browseListTaxonomy';
+import { readPeopleCrewsTabParam } from '../routing/productUrlInbound';
 import {
   PEOPLE_LIST_TAB_URL_PARAM,
   parsePeopleListBrowseTab,
-  readPeopleListBrowseTabParam,
   serializePeopleListBrowseTab,
 } from './peopleListBrowseUrl';
 import {
@@ -180,7 +180,7 @@ export const parseBrowseListFilterState = (
     price: parseBrowseListPriceParam(searchParams.get(EXPLORE_PRICE_PARAM)),
     when: whenNormalized,
     activityDatePreset,
-    peopleBrowseTab: parsePeopleListBrowseTab(readPeopleListBrowseTabParam(searchParams)),
+    peopleBrowseTab: parsePeopleListBrowseTab(readPeopleCrewsTabParam(searchParams)),
     hasTrip: parseExploreHasTrip(searchParams.get(EXPLORE_HAS_TRIP_PARAM)),
     facilityKinds: parseExploreFacilityKinds(searchParams.get(EXPLORE_FACILITY_KINDS_PARAM)),
     audience: parseBrowseAudienceFilter(searchParams.get(BROWSE_AUDIENCE_PARAM)),

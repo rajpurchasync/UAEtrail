@@ -12,7 +12,7 @@ const LEGACY_LISTING_FILES = [
   'src/list/explorer/ListExplorerDistanceChip.tsx',
 ];
 
-const EXPLORER_DEPRECATED_SHIMS = [
+const RETIRED_BROWSE_SHIMS = [
   'src/list/explorer/DiscoveryBrowsePosterBanner.tsx',
   'src/list/explorer/DiscoveryPosterOverlayNav.tsx',
   'src/list/explorer/ListExplorerItemLink.tsx',
@@ -20,10 +20,8 @@ const EXPLORER_DEPRECATED_SHIMS = [
   'src/list/explorer/ListExplorerActivityStatusChips.tsx',
   'src/list/explorer/listExplorerCardMeta.ts',
   'src/list/explorer/listExplorerListingChrome.tsx',
+  'src/list/explorer/placeDistance.ts',
   'src/list/browse/BrowseCardJoinFooter.tsx',
-];
-
-const LIST_DEPRECATED_SHIMS = [
   'src/list/listTripPosterPresentation.ts',
   'src/list/listVenuePosterPresentation.ts',
 ];
@@ -43,21 +41,12 @@ describe('listExplorerShimHygiene', () => {
     }
   });
 
-  it('BROWSE-SHIM-02: list/explorer browse shims remain thin deprecated re-exports', () => {
-    for (const file of EXPLORER_DEPRECATED_SHIMS) {
-      const source = read(file);
-      expect(source).toMatch(/@deprecated/i);
-      expect(source.split('\n').length).toBeLessThan(16);
+  it('BROWSE-SHIM-02: retired browse shims stay absent', () => {
+    const revived: string[] = [];
+    for (const file of RETIRED_BROWSE_SHIMS) {
+      if (existsSync(join(process.cwd(), file))) revived.push(file);
     }
-    for (const file of LIST_DEPRECATED_SHIMS) {
-      const source = read(file);
-      expect(source).toMatch(/@deprecated/i);
-      expect(source.split('\n').length).toBeLessThan(36);
-      expect(source).not.toMatch(/export const resolve|formatListFeedPosterTitleLines/);
-    }
-    expect(read('src/list/explorer/ListExplorerListingJoinFooter.tsx')).toMatch(
-      /DiscoveryBrowseListEngagementFooter/
-    );
+    expect(revived).toEqual([]);
   });
 
   it('BROWSE-SHIM-03: product surfaces do not import list/explorer browse shims', () => {

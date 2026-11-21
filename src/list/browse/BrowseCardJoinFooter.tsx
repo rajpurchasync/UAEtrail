@@ -1,2 +1,0 @@
-/** @deprecated Use `DiscoveryBrowseListEngagementFooter` from `src/discovery/DiscoveryBrowseListEngagementFooter.tsx`. */
-export { DiscoveryBrowseListEngagementFooter as BrowseCardJoinFooter } from '../../discovery/DiscoveryBrowseListEngagementFooter';

@@ -16,8 +16,7 @@ const HUB_IMPORT_FORBIDDEN = [
 
 const LIST_MODULE_ROOTS = ['src/list/', 'src/discovery/', 'src/activity-discovery/'];
 
-const THIN_SHIM_MAX_LINES = 16;
-const EXPLORER_SHIMS = [
+const RETIRED_LIST_BROWSE_SHIMS = [
   'src/list/explorer/DiscoveryBrowsePosterBanner.tsx',
   'src/list/explorer/DiscoveryPosterOverlayNav.tsx',
   'src/list/explorer/ListExplorerItemLink.tsx',
@@ -27,6 +26,8 @@ const EXPLORER_SHIMS = [
   'src/list/explorer/listExplorerListingChrome.tsx',
   'src/list/explorer/placeDistance.ts',
   'src/list/browse/BrowseCardJoinFooter.tsx',
+  'src/list/listTripPosterPresentation.ts',
+  'src/list/listVenuePosterPresentation.ts',
 ];
 
 const collectTsUnder = (dir: string): string[] => {
@@ -79,20 +80,12 @@ describe('shimInventoryGuard (repo-wide coherence)', () => {
     expect(existsSync(join(ROOT, 'src/explore/hub'))).toBe(false);
   });
 
-  it('SHIM-INV-04: explorer browse shims remain thin @deprecated files', () => {
-    const offenders: string[] = [];
-    for (const file of EXPLORER_SHIMS) {
-      if (!existsSync(join(ROOT, file))) {
-        offenders.push(`${file}: missing`);
-        continue;
-      }
-      const source = read(file);
-      if (!/@deprecated/i.test(source)) offenders.push(`${file}: not deprecated`);
-      if (source.split('\n').length > THIN_SHIM_MAX_LINES) {
-        offenders.push(`${file}: >${THIN_SHIM_MAX_LINES} lines`);
-      }
+  it('SHIM-INV-04: retired list browse shims stay deleted (canonical browse + discovery only)', () => {
+    const revived: string[] = [];
+    for (const file of RETIRED_LIST_BROWSE_SHIMS) {
+      if (existsSync(join(ROOT, file))) revived.push(file);
     }
-    expect(offenders).toEqual([]);
+    expect(revived).toEqual([]);
   });
 
   it('SHIM-INV-05: search subtree does not import exploreHubRouting', () => {

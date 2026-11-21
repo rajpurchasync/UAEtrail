@@ -54,9 +54,11 @@ describe('crewsTerminologyGuard (Crews / peopleTab — not buddies segment)', ()
   });
 
   it('CREWS-02: explore browse sync strips retired crews inbound params', () => {
+    const inbound = readFileSync(join(process.cwd(), 'src/routing/productUrlInbound.ts'), 'utf8');
+    expect(inbound).toMatch(/stripRetiredPeopleListTabParams/);
+    expect(inbound).toMatch(/params\.delete\(INBOUND_BUDDIES_LIST_TAB_PARAM\)/);
     const sync = readFileSync(join(process.cwd(), 'src/explore/exploreBrowseUrlSync.ts'), 'utf8');
-    expect(sync).toMatch(/INBOUND_BUDDIES_LIST_TAB_PARAM/);
-    expect(sync).toMatch(/params\.delete\(INBOUND_BUDDIES_LIST_TAB_PARAM\)/);
+    expect(sync).toMatch(/stripRetiredPeopleListTabParams/);
     expect(sync).toMatch(/PEOPLE_LIST_TAB_URL_PARAM/);
     expect(sync).not.toMatch(/params\.set\('buddies'/);
   });

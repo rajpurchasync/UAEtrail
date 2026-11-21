@@ -11,6 +11,7 @@ import { compactExploreParentFilterSearchParams, EXPLORE_PIN_QUERY_KEY } from '.
 import {
   sanitizeInboundExplorePinId,
   stripRetiredExploreOverlayParams,
+  stripRetiredPeopleListTabParams,
 } from '../../routing/productUrlInbound';
 
 const isPeopleView = (view: string | null): boolean =>
@@ -34,6 +35,7 @@ export const useExploreBrowseUrlInboundMigrations = (input: {
     if (!sanitizedPin) params.delete(EXPLORE_PIN_QUERY_KEY);
     else params.set(EXPLORE_PIN_QUERY_KEY, sanitizedPin);
     stripRetiredExploreOverlayParams(params);
+    stripRetiredPeopleListTabParams(params);
     const wireSanitized = params.toString() !== search;
     const browse = parseBrowseDiscoverOpen(params.get(BROWSE_DISCOVER_PARAM));
     const list = params.get('list') === '1';

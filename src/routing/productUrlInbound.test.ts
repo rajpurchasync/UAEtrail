@@ -7,6 +7,7 @@ import {
   mapInboundPeopleBrowseTabValue,
   sanitizeInboundExplorePinId,
   stripRetiredExploreOverlayParams,
+  stripRetiredPeopleListTabParams,
   normalizeExploreSearchScopeInbound,
   parseInboundExploreActivityMode,
   readExploreSearchScopeParam,
@@ -44,6 +45,17 @@ describe('productUrlInbound', () => {
     expect(readPeopleCrewsTabParam(new URLSearchParams('socialTab=connect'))).toBe('connect');
     expect(readPeopleCrewsTabParam(new URLSearchParams('goingTab=people'))).toBe('going');
     expect(readPeopleCrewsTabParam(new URLSearchParams('goingTab=discover'))).toBe('available');
+  });
+
+  it('strips retired people list tab aliases on outbound sync', () => {
+    const params = new URLSearchParams(
+      'peopleTab=going&buddies=available&socialTab=connect&goingTab=discover'
+    );
+    stripRetiredPeopleListTabParams(params);
+    expect(params.get('peopleTab')).toBe('going');
+    expect(params.get('buddies')).toBeNull();
+    expect(params.get('socialTab')).toBeNull();
+    expect(params.get('goingTab')).toBeNull();
   });
 
   it('sanitizes retired map pins and overlay query keys', () => {

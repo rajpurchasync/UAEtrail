@@ -79,9 +79,7 @@ describe('listBrowseNamingGuard', () => {
     expect(peekTitle).not.toMatch(/listExplorerCardTitle/);
     const row = read('src/list/browse/BrowseCompactRow.tsx');
     expect(row).toMatch(/from '\.\/browseCardMeta'/);
-    const shim = read('src/list/explorer/listExplorerCardMeta.ts');
-    expect(shim).toMatch(/@deprecated/);
-    expect(shim).toMatch(/browse\/browseCardMeta/);
+    expect(existsSync(join(process.cwd(), 'src/list/explorer/listExplorerCardMeta.ts'))).toBe(false);
   });
 
   it('BROWSE-NAME-06: venue browse copy lives under browse (not listVenuePosterPresentation)', () => {
@@ -188,9 +186,7 @@ describe('listBrowseNamingGuard', () => {
   it('BROWSE-NAME-15: venue browse tests live under browse (not listVenuePosterPresentation)', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/venueBrowsePresentation.test.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/listVenuePosterPresentation.test.ts'))).toBe(false);
-    const shim = read('src/list/listVenuePosterPresentation.ts');
-    expect(shim).toMatch(/@deprecated/);
-    expect(shim.split('\n').length).toBeLessThan(35);
+    expect(existsSync(join(process.cwd(), 'src/list/listVenuePosterPresentation.ts'))).toBe(false);
     expect(read('src/list/browse/VenueBrowseCard.tsx')).not.toMatch(/listVenuePosterPresentation/);
     expect(read('src/discovery/discoveryCardViewModel.test.ts')).toMatch(/venueBrowseCardCopy/);
     expect(read('src/discovery/discoveryCardViewModel.test.ts')).not.toMatch(/listVenuePosterPresentation/);
@@ -199,18 +195,13 @@ describe('listBrowseNamingGuard', () => {
   it('BROWSE-NAME-14: trip browse copy tests live at browse/tripBrowseCardCopy (not listTripPosterPresentation)', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/tripBrowseCardCopy.test.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/listTripPosterPresentation.test.ts'))).toBe(false);
-    const shim = read('src/list/listTripPosterPresentation.ts');
-    expect(shim).toMatch(/@deprecated/);
+    expect(existsSync(join(process.cwd(), 'src/list/listTripPosterPresentation.ts'))).toBe(false);
     expect(read('src/list/browse/TripBrowseCard.tsx')).toMatch(/resolveTripBrowseCardCopy/);
     expect(read('src/list/browse/TripBrowseCard.tsx')).not.toMatch(/listTripPosterPresentation/);
   });
 
   it('BROWSE-NAME-17: catalog hub/tail resolvers stay in browseCatalogLabels', () => {
-    const allowed = new Set([
-      'src/list/browse/browseCatalogLabels.ts',
-      'src/list/listVenuePosterPresentation.ts',
-      'src/list/listTripPosterPresentation.ts',
-    ]);
+    const allowed = new Set(['src/list/browse/browseCatalogLabels.ts']);
     const hubExport = /export const browseCatalog(?:HubLabel|HeaderLocationLine|RegionLabel)/;
     const violations: string[] = [];
     for (const file of collectSourceFiles(join(process.cwd(), 'src'))) {

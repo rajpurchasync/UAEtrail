@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { inferListCatFromExploreHandoff, scopeBrowseListStateForListCat } from './browseListMapHandoff';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { applyProductSearchMutation } from '../routing/productSearchMutation';
+import { stripRetiredPeopleListTabParams } from '../routing/productUrlInbound';
 import { LIST_DISCOVERY_PATH } from '../config/platform';
 import {
   EXPLORE_SEARCH_RESULTS_PATH,
@@ -232,6 +233,7 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
             if (resultsView === 'map') params.set(EXPLORE_SEARCH_VIEW_PARAM, 'map');
             else params.delete(EXPLORE_SEARCH_VIEW_PARAM);
           }
+          stripRetiredPeopleListTabParams(params);
         }
       );
     },

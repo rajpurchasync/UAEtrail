@@ -33,6 +33,11 @@ describe('productUrlInboundGuard (single inbound alias registry)', () => {
   it('INBOUND-05: crews tab params centralized', () => {
     const inbound = read('src/routing/productUrlInbound.ts');
     expect(inbound).toMatch(/readPeopleCrewsTabParam/);
+    expect(inbound).toMatch(/stripRetiredPeopleListTabParams/);
     expect(read('src/list/peopleListBrowseUrl.ts')).toMatch(/readPeopleCrewsTabParam/);
+    expect(read('src/explore/exploreBrowseUrlSync.ts')).toMatch(/stripRetiredPeopleListTabParams/);
+    expect(read('src/list/browseListMapHandoff.ts')).toMatch(/stripRetiredPeopleListTabParams/);
+    expect(read('src/list/useListDiscoveryUrlState.ts')).toMatch(/stripRetiredPeopleListTabParams/);
+    expect(read('src/list/browseListUrlState.ts')).not.toMatch(/readPeopleListBrowseTabParam/);
   });
 });

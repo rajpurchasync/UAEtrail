@@ -27,7 +27,7 @@
     {
       "id": "people-crews-tab-inbound",
       "module": "src/routing/productUrlInbound.ts",
-      "rule": "readPeopleCrewsTabParam — peopleTab, buddies, socialTab, goingTab inbound only; product label Friends",
+      "rule": "readPeopleCrewsTabParam inbound; stripRetiredPeopleListTabParams on outbound (peopleTab canonical)",
       "forbidEmitIn": ["src/list", "src/explore", "src/people-discovery"]
     }
   ],

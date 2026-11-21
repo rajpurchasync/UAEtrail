@@ -112,6 +112,13 @@ export const stripRetiredExploreOverlayParams = (params: URLSearchParams): void 
   params.delete(INBOUND_EXPLORE_HOST_DEMAND_PARAM);
 };
 
+/** Inbound-only aliases — never emit on outbound URL sync. */
+export const stripRetiredPeopleListTabParams = (params: URLSearchParams): void => {
+  params.delete(INBOUND_BUDDIES_LIST_TAB_PARAM);
+  params.delete(INBOUND_SOCIAL_TAB_PARAM);
+  params.delete(INBOUND_GOING_TAB_PARAM);
+};
+
 /** Drop non-product map pins (`demand:` retired with MIG-DISCO-REG). */
 export const sanitizeInboundExplorePinId = (pin: string | null | undefined): string | null => {
   const raw = pin?.trim();
