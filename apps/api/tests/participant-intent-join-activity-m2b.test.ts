@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import bcrypt from 'bcryptjs';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
-import { createParticipantIntent } from '../src/lib/participant-intents-store.js';
+import { seedLegacySeekingActivityIntent } from './helpers/legacy-seeking-fixture.js';
 import { createJoinOrWaitlistRequest } from '../src/lib/activity-engagement-store.js';
 import { createAuthUser } from '../src/lib/auth-users-store.js';
 import { generateReferralCode } from '../src/lib/referral-code.js';
@@ -52,7 +52,7 @@ describe('seeking join M2b/M2c (activity canonical)', () => {
       },
     });
 
-    const intent = await createParticipantIntent(host._id, {
+    const intent = await seedLegacySeekingActivityIntent(host._id, {
       kind: 'hiking',
       title: `M2b ${suffix}`,
       date: '2026-12-22',

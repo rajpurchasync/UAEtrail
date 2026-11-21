@@ -406,8 +406,8 @@ export const locationPickerHint = (
 export const defaultCapacityForKind = (kind: CreateActivityKind): number =>
   kind === 'rideshare' ? 4 : 6;
 
-/** Prefill a host publish draft from a seeking map item (Find post / legacy demand wire). */
-export const createDraftFromSeekingMapItem = (item: ExploreMapItemDTO): CreateActivityDraft => {
+/** Prefill a host publish draft from a fixed availability map pin (legacy seeking rows use the same shape). */
+export const createDraftFromAvailabilityMapItem = (item: ExploreMapItemDTO): CreateActivityDraft => {
   const kind = resolveHostCreateKindFromSeekingMapItem({
     outingCategory: item.outingCategory ?? null,
     kind: exploreMapKindToPlanMapKind(item.kind),
@@ -447,6 +447,9 @@ export const createDraftFromSeekingMapItem = (item: ExploreMapItemDTO): CreateAc
     trailName: structured && hasPin ? areaLabel.slice(0, 120) : base.trailName,
   };
 };
+
+/** @deprecated Use {@link createDraftFromAvailabilityMapItem} */
+export const createDraftFromSeekingMapItem = createDraftFromAvailabilityMapItem;
 
 export const hydrateCreateActivityDraft = (
   draft?: Partial<CreateActivityDraft> | null

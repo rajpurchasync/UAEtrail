@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import bcrypt from 'bcryptjs';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
-import { createParticipantIntent } from '../src/lib/participant-intents-store.js';
+import { seedLegacySeekingActivityIntent } from './helpers/legacy-seeking-fixture.js';
 import {
   approveParticipantIntentJoinRequest,
   createParticipantIntentJoinRequest,
@@ -55,7 +55,7 @@ describe('participant intent join (M2c activity store)', () => {
       },
     });
 
-    const intent = await createParticipantIntent(host._id, {
+    const intent = await seedLegacySeekingActivityIntent(host._id, {
       kind: 'hiking',
       title: `Join mirror ${suffix}`,
       date: '2026-12-22',

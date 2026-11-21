@@ -12,10 +12,8 @@ import {
   approveParticipantIntentJoinRequest,
   createParticipantIntentJoinRequest,
 } from '../src/lib/participant-intent-requests-store.js';
-import {
-  createParticipantIntent,
-  linkParticipantIntentToActivityForOwner,
-} from '../src/lib/participant-intents-store.js';
+import { linkParticipantIntentToActivityForOwner } from '../src/lib/participant-intents-store.js';
+import { seedLegacySeekingActivityIntent } from './helpers/legacy-seeking-fixture.js';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
 import {
   cleanupEventFixture,
@@ -59,7 +57,7 @@ beforeAll(async () => {
   });
   joinerId = joiner._id;
 
-  const intent = await createParticipantIntent(fixture.organizerId, {
+  const intent = await seedLegacySeekingActivityIntent(fixture.organizerId, {
     kind: 'event',
     title: 'Weekend hike crew',
     date: '2026-12-15',
@@ -85,7 +83,6 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await db().collection('participant_intent_requests').deleteMany({ intentId });
-  await db().collection('participant_intents').deleteMany({ _id: intentId });
   await cleanupEventFixture(fixture);
   await cleanupTestUsers();
 });
