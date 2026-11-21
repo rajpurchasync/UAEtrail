@@ -26,7 +26,7 @@ import {
   DEFAULT_LIST_EXPLORER_SORT,
   type ListExplorerSortMode,
 } from '../list/browse/listBrowseSort';
-import { countListExplorerFilters, type ListExplorerLayout } from '../list/explorer/listExplorerLayout';
+import { countListExplorerFilters, type ListExplorerLayout } from '../list/browse/browseListLayout';
 import type { ExploreSearchScopeKey } from '../explore/exploreBrowseTaxonomy';
 import { useExplorePublishedAreasQuery } from '../explore/useExplorePublishedAreas';
 import { useBrowseGeoScopeHydration } from '../list/useBrowseGeoScopeHydration';

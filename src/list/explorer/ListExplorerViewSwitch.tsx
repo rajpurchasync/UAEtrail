@@ -1,5 +1,5 @@
 import { CalendarDays, LayoutGrid, List } from 'lucide-react';
-import type { ListExplorerLayout } from './listExplorerLayout';
+import type { ListExplorerLayout } from '../browse/browseListLayout';
 
 const OPTIONS: ReadonlyArray<{
   key: ListExplorerLayout;

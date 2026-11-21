@@ -47,6 +47,16 @@ describe('listBrowseNamingGuard', () => {
     expect(read('src/list/useListDiscoveryUrlState.ts')).toMatch(/from '\.\/browse\/listBrowseSort'/);
   });
 
+  it('BROWSE-NAME-01f: list layout + filter fab snap live under browse (not explorer)', () => {
+    expect(existsSync(join(process.cwd(), 'src/list/browse/browseListLayout.ts'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/list/browse/listFilterFabSnap.ts'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/list/explorer/listExplorerLayout.ts'))).toBe(false);
+    expect(existsSync(join(process.cwd(), 'src/list/explorer/listExplorerFabSnap.ts'))).toBe(false);
+    expect(read('src/list/useListDiscoveryUrlState.ts')).toMatch(/browse\/browseListLayout/);
+    expect(read('src/list/explorer/ListExplorerFilterFab.tsx')).toMatch(/browse\/listFilterFabSnap/);
+    expect(read('src/geo/GeoBrowsePane.tsx')).toMatch(/browse\/browseListLayout/);
+  });
+
   it('BROWSE-NAME-01e: list sort implementation lives in listBrowseSort (not explorer)', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/listBrowseSort.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/explorer/listExplorerSort.ts'))).toBe(false);

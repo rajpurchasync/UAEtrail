@@ -25,7 +25,7 @@ import { BrowsePlaceDistanceProvider } from '../browse/browsePlaceDistanceContex
 import { useBrowseViewerLocation } from '../browse/useBrowseViewerLocation';
 import { useDisplayPreferences } from '../../preferences/useDisplayPreferences';
 import type { ListExplorerBucket } from '../browse/browseListBucket';
-import type { ListExplorerLayout } from './listExplorerLayout';
+import type { ListExplorerLayout } from '../browse/browseListLayout';
 import type { ListExplorerDateSection } from '../browse/browseListDateSections';
 import { ListGuestCatalogPreviewNotice } from '../ui/ListGuestCatalogPreviewNotice';
 import {

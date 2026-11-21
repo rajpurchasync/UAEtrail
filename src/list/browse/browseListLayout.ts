@@ -1,5 +1,5 @@
 import type { BrowseListFilterState } from '../browseListFilters';
-import type { ListExplorerBucket } from '../browse/browseListBucket';
+import type { ListExplorerBucket } from './browseListBucket';
 
 export const LIST_LAYOUT_PARAM = 'layout';
 

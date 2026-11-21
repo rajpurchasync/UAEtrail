@@ -24,6 +24,9 @@ const RETIRED_BROWSE_SHIMS = [
   'src/list/browse/BrowseCardJoinFooter.tsx',
   'src/list/listTripPosterPresentation.ts',
   'src/list/listVenuePosterPresentation.ts',
+  'src/list/explorer/listExplorerLayout.ts',
+  'src/list/explorer/listExplorerLayout.test.ts',
+  'src/list/explorer/listExplorerFabSnap.ts',
 ];
 
 const SHIM_CONSUMERS_OUTSIDE_EXPLORER = [

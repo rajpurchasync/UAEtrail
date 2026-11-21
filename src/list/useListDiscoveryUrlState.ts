@@ -41,7 +41,7 @@ import {
   parseListExplorerLayout,
   serializeListExplorerLayout,
   type ListExplorerLayout,
-} from './explorer/listExplorerLayout';
+} from './browse/browseListLayout';
 import {
   LIST_SORT_PARAM,
   parseListExplorerSort,

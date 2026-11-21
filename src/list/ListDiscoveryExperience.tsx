@@ -51,7 +51,7 @@ import { useExplorePeopleAvailability } from '@/people-discovery/hooks/usePeople
 import { resolveEffectiveBrowseVenueRegions } from './browseGeoPath';
 import { useBrowseGeoScopeHydration } from './useBrowseGeoScopeHydration';
 import { browseListEntityLinkState } from './browse/browseListNavState';
-import { countListExplorerFilters } from './explorer/listExplorerLayout';
+import { countListExplorerFilters } from './browse/browseListLayout';
 import {
   listExplorerBucketCategories,
   parseListExplorerBucket,

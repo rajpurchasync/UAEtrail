@@ -14,7 +14,7 @@ import {
   listExplorerSearchBucketCounts,
   type ListExplorerBucket,
 } from '../browse/browseListBucket';
-import type { ListExplorerLayout } from './listExplorerLayout';
+import type { ListExplorerLayout } from '../browse/browseListLayout';
 import type { ListExplorerSortMode } from '../browse/listBrowseSort';
 import { ListExplorerSortControl } from './ListExplorerSortControl';
 import type { BrowseListFilterState } from '../browseListFilters';

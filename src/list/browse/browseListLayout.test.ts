@@ -4,16 +4,16 @@ import {
   countListExplorerFilters,
   parseListExplorerLayout,
   serializeListExplorerLayout,
-} from './listExplorerLayout';
+} from './browseListLayout';
 import {
   listExplorerBucketCategories,
   listExplorerBucketTotalLabel,
   listExplorerSearchBucketCounts,
   parseListExplorerBucket,
   serializeListExplorerBucket,
-} from '../browse/browseListBucket';
-import { parseListFilterFabCorner, snapListFilterFabCorner } from './listExplorerFabSnap';
-import { browseListEntityLinkState } from '../browse/browseListNavState';
+} from './browseListBucket';
+import { parseListFilterFabCorner, snapListFilterFabCorner } from './listFilterFabSnap';
+import { browseListEntityLinkState } from './browseListNavState';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import {
   browseCardMeta,
@@ -22,7 +22,7 @@ import {
   browseCardListHeroPriceLabel,
   formatBrowseRowDateLabel,
   browseRowWhenDisplay,
-} from '../browse/browseCardMeta';
+} from './browseCardMeta';
 
 const emptyFilters = (): BrowseListFilterState => ({
   query: 'wadi',

@@ -14,7 +14,7 @@ import {
   readListFilterFabCorner,
   snapListFilterFabCorner,
   type ListFilterFabCorner,
-} from './listExplorerFabSnap';
+} from '../browse/listFilterFabSnap';
 
 type ListExplorerFilterFabProps = {
   bucket: ListExplorerBucket;
