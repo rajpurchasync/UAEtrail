@@ -4,7 +4,7 @@ import { join, relative } from 'node:path';
 import {
   EXPLORE_SEARCH_SCOPES_SHIPPED,
   type ExploreSearchScopeKey,
-} from '../explore/discoveryRuntime';
+} from './discoveryListRuntime';
 import { browseCategoriesForSearchScope, browseListFilterPatchForSearchScope } from './listDiscoverySearchCommit';
 
 const LIST_ROOT = join(process.cwd(), 'src/list');
@@ -280,13 +280,23 @@ describe('list module hygiene', () => {
       'src/list/useListDiscoveryUrlState.ts',
     ]);
     const deepExploreImport =
-      /from ['"]\.\.\/explore\/(?!discoveryRuntime|exploreMapTopicUrlParams)/;
+      /from ['"]\.\.\/explore\/(?!exploreMapTopicUrlParams|exploreMapItemKind)/;
     const violations: string[] = [];
     for (const file of sources) {
       if (exploreShellSources.has(file)) continue;
+      if (file === 'src/list/discoveryListRuntime.ts') continue;
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       if (deepExploreImport.test(content)) violations.push(file);
     }
-    expect(violations, `Use src/explore/discoveryRuntime.ts:\n${violations.join('\n')}`).toEqual([]);
+    expect(
+      violations,
+      `Use src/list/discoveryListRuntime.ts (shell files exempt):\n${violations.join('\n')}`
+    ).toEqual([]);
+  });
+
+  it('discoveryListRuntime is the sole list→explore facade for projections', () => {
+    const facade = readFileSync(join(process.cwd(), 'src/list/discoveryListRuntime.ts'), 'utf8');
+    expect(facade).toMatch(/export \* from '\.\.\/explore\/discoveryRuntime'/);
+    expect(existsSync(join(process.cwd(), 'src/list/discoveryListRuntime.ts'))).toBe(true);
   });
 });

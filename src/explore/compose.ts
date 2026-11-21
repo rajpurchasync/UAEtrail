@@ -7,10 +7,10 @@ import {
   type HostComposeKind,
 } from '@uaetrail/shared-types';
 import {
-  BROWSE_LIST_CREATE_CREW,
-  BROWSE_LIST_CREATE_TRIP,
-  BROWSE_LIST_CREATE_VENUE,
-} from '../list/browseListCopy';
+  EXPLORE_CREATE_FAB_ADD_VENUE,
+  EXPLORE_CREATE_FAB_FIND_CREW,
+  EXPLORE_CREATE_FAB_HOST_TRIP,
+} from '../content/exploreCreateFabCopy';
 import type { CreateActivityKind } from './ui/hostingFlowEngine';
 import type { AddVenueKind } from './addTypes';
 
@@ -183,14 +183,14 @@ export const hostingPublishSeed = (kind: HostComposeKind): HostingPublishSeed =>
   participationMode: defaultParticipationForHostKind(kind),
 });
 
-export const COMPOSE_HOST_KIND_TITLE = BROWSE_LIST_CREATE_TRIP;
-export const COMPOSE_AVAILABILITY_MODE_TITLE = BROWSE_LIST_CREATE_CREW;
+export const COMPOSE_HOST_KIND_TITLE = EXPLORE_CREATE_FAB_HOST_TRIP;
+export const COMPOSE_AVAILABILITY_MODE_TITLE = EXPLORE_CREATE_FAB_FIND_CREW;
 /** @deprecated Use COMPOSE_AVAILABILITY_MODE_TITLE */
 export const COMPOSE_SEEK_MODE_TITLE = COMPOSE_AVAILABILITY_MODE_TITLE;
 export const COMPOSE_AVAILABILITY_FIXED_KIND_TITLE = 'Fixed time and place';
 /** @deprecated */
 export const COMPOSE_SEEK_FIXED_KIND_TITLE = COMPOSE_AVAILABILITY_FIXED_KIND_TITLE;
-export const COMPOSE_ADD_TARGET_TITLE = BROWSE_LIST_CREATE_VENUE;
+export const COMPOSE_ADD_TARGET_TITLE = EXPLORE_CREATE_FAB_ADD_VENUE;
 export const COMPOSE_ADD_PLACE_TITLE = 'Place';
 
 export const composeMenuTitle = (route: ExploreCompose | null): string => {

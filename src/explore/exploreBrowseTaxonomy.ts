@@ -3,6 +3,7 @@ import {
   isTimeBoundExploreMapItem,
   type ExploreMapItemDTO,
 } from '@uaetrail/shared-types';
+import { isMerchantShopMapItem, mapItemMatchesShopsPill } from './exploreMapItemKind';
 import {
   EXPLORE_SEARCH_SCOPE_BUDDIES_DESCRIPTION,
   EXPLORE_SEARCH_SCOPE_BUDDIES_LABEL,
@@ -110,8 +111,9 @@ export const EXPLORE_SEARCH_SCOPE_COPY: Record<
   },
 };
 
-const isShopPin = (item: ExploreMapItemDTO): boolean =>
-  item.source === 'shop' && item.kind === 'shop' && !item.id.startsWith('product:');
+const isShopPin = (item: ExploreMapItemDTO): boolean => isMerchantShopMapItem(item);
+
+export { mapItemMatchesShopsPill } from './exploreMapItemKind';
 
 /** Agency storefronts are not map pins — match hosted activities they publish. */
 export const mapItemIsAgencyHostedActivity = (item: ExploreMapItemDTO): boolean =>
@@ -126,9 +128,6 @@ export const mapItemMatchesTripsPill = (item: ExploreMapItemDTO): boolean =>
 /** Catalog venues (trails, camps, places) — not shops. */
 export const mapItemMatchesSpotsPill = (item: ExploreMapItemDTO): boolean =>
   isGeographyMapSource(item.source) && !isShopPin(item);
-
-export const mapItemMatchesShopsPill = (item: ExploreMapItemDTO): boolean =>
-  isShopPin(item) || item.kind === 'shop';
 
 export const mapItemMatchesFilterPill = (item: ExploreMapItemDTO, pill: ExploreMapFilterPillKey): boolean => {
   switch (pill) {

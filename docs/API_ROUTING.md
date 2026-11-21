@@ -300,7 +300,8 @@ Signed-in **member capabilities** — profile gates, **publish** workspace eligi
 | `profileComplete` | Host/publish after `/welcome` (`signupProfileComplete` on `GET /me/profile` only) |
 | `medicalSafetyProfileComplete` | Join/RSVP gate — blood group, conditions (or `N/A`), emergency contact. Incomplete profiles return `medical_safety_profile_required`. |
 | `publish.canPublish` | May create/publish tenant activities |
-| `publish.canAccessPublishingWorkspace` | May open publishing workspace (`/publishing/*` UI) |
+| `publish.canAccessPublishingWorkspace` | May open publishing workspace (`/publishing/*` UI); sole resolver `resolvePublishingWorkspaceAccess` |
+| `publish.isPlatformStaff` | Platform operator shell — not community host tier |
 | `publish.ownedProfiles` | Tenants member may publish as |
 | `profileRoleLabel` | Display key for profile chrome |
 

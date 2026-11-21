@@ -27,6 +27,7 @@ describe('member status contract', () => {
       profileRoleLabel: 'community_member',
       canPublish: true,
       canAccessPublishingWorkspace: true,
+      isPlatformStaff: false,
       applicationStatus: 'none',
       tenantId: 't1',
       isHostRole: false,
@@ -41,10 +42,38 @@ describe('member status contract', () => {
     });
     expect(dto.publish.canPublish).toBe(true);
     expect(dto.publish.canAccessPublishingWorkspace).toBe(true);
+    expect(dto.publish.isPlatformStaff).toBe(false);
     expect(dto.profileComplete).toBe(true);
     expect(dto.profileRoleLabel).toBe('community_member');
     expect('canPublish' in dto).toBe(false);
     expect('signupProfileComplete' in dto).toBe(false);
     expect('tenantId' in dto).toBe(false);
+    expect('isHostRole' in dto).toBe(false);
+    expect('isPlatformStaff' in dto).toBe(false);
+  });
+
+  it('exposes isPlatformStaff under publish (DMCP Phase 1)', () => {
+    const dto = buildMemberStatusDto({
+      profileComplete: true,
+      medicalSafetyProfileComplete: true,
+      isCommunityHost: false,
+      hostTiers: { community: false, professional: false, business: false },
+      profileRoleLabel: 'community_member',
+      canPublish: true,
+      canAccessPublishingWorkspace: true,
+      isPlatformStaff: true,
+      applicationStatus: 'none',
+      tenantId: null,
+      isHostRole: false,
+      hasTenant: false,
+      tenantType: null,
+      businessMode: null,
+      canHostPaidActivities: false,
+      hasGuideProfile: false,
+      hasAgencyProfile: false,
+      hasShopProfile: false,
+      ownedProfiles: [],
+    });
+    expect(dto.publish.isPlatformStaff).toBe(true);
   });
 });

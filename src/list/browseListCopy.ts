@@ -1,6 +1,6 @@
 import { resolveMobileFiveTab } from '../config/mobileFiveTabNav';
 import { EXPLORE_PEOPLE_BROWSE_SEARCH_PLACEHOLDER } from '../content/explorePeopleBrowseCopy';
-import { EXPLORE_SEARCH_OPEN_PLACEHOLDER } from '../explore/discoveryRuntime';
+import { EXPLORE_GUEST_MAP_PREVIEW_NOTICE, EXPLORE_SEARCH_OPEN_PLACEHOLDER } from './discoveryListRuntime';
 import { LIST_CAT_PARAM, parseListCatParam } from './browseListUrlState';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import type { ListExplorerBucket } from './explorer/listExplorerBucket';
@@ -47,9 +47,15 @@ export const BROWSE_LIST_EMPTY = 'Nothing matches — try clearing filters or se
 export const BROWSE_LIST_CLEAR_FILTERS = 'Clear filters';
 
 /** Mobile list create FAB — Plus icon is rendered separately. */
-export const BROWSE_LIST_CREATE_TRIP = 'Host Trip';
-export const BROWSE_LIST_CREATE_VENUE = 'Add a venue';
-export const BROWSE_LIST_CREATE_CREW = 'Find a Crew';
+import {
+  EXPLORE_CREATE_FAB_ADD_VENUE,
+  EXPLORE_CREATE_FAB_FIND_CREW,
+  EXPLORE_CREATE_FAB_HOST_TRIP,
+} from '../content/exploreCreateFabCopy';
+
+export const BROWSE_LIST_CREATE_TRIP = EXPLORE_CREATE_FAB_HOST_TRIP;
+export const BROWSE_LIST_CREATE_VENUE = EXPLORE_CREATE_FAB_ADD_VENUE;
+export const BROWSE_LIST_CREATE_CREW = EXPLORE_CREATE_FAB_FIND_CREW;
 
 export const browseListCreateFabLabel = (listCat: 'activities' | 'venues' | 'people' | null): string => {
   if (listCat === 'venues') return BROWSE_LIST_CREATE_VENUE;
@@ -80,4 +86,4 @@ export const resolveBrowseListCreateFabLabel = (
   return browseListCreateFabLabel(parseListCatParam(params.get(LIST_CAT_PARAM)));
 };
 /** Guest list preview — same copy as the map banner. */
-export { EXPLORE_GUEST_MAP_PREVIEW_NOTICE as LIST_GUEST_CATALOG_PREVIEW_NOTICE } from '../explore/discoveryRuntime';
+export const LIST_GUEST_CATALOG_PREVIEW_NOTICE = EXPLORE_GUEST_MAP_PREVIEW_NOTICE;

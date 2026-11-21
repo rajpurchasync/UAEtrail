@@ -25,6 +25,7 @@ import { isMedicalSafetyProfileComplete, resolvePublishingProfileKind } from '@u
 import { medicalSafetyFieldsFromAuthProfile } from '../lib/member-medical-safety-profile.js';
 import type { HostStatusDTO, MemberProfileRoleLabel } from '@uaetrail/shared-types';
 import { inferTenantPublishingPurpose } from '../domain/tenant-publishing.js';
+import { resolvePublishingWorkspaceAccess } from './member-publishing-workspace-access.js';
 
 /** Read-only role labels for member browse directory (no buddy-tenant side effects). */
 export const batchResolveMemberProfileRoleLabelsForDirectory = async (
@@ -176,8 +177,12 @@ export const resolveMemberStatus = async (userId: string): Promise<HostStatusDTO
     hasShopProfile,
   });
 
-  const canAccessPublishingWorkspace =
-    isPlatformAdmin || canPublish || hostTiers.business || isHostRole;
+  const canAccessPublishingWorkspace = resolvePublishingWorkspaceAccess({
+    isPlatformAdmin,
+    canPublish,
+    hostTiers,
+  });
+  const isPlatformStaff = isPlatformAdmin;
 
   return {
     profileComplete,
@@ -187,6 +192,7 @@ export const resolveMemberStatus = async (userId: string): Promise<HostStatusDTO
     profileRoleLabel,
     canPublish,
     canAccessPublishingWorkspace,
+    isPlatformStaff,
     applicationStatus,
     tenantId,
     isHostRole,

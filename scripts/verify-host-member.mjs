@@ -20,7 +20,7 @@ const run = (label, command) => {
 
 try {
   run('API typecheck', 'npm run typecheck:api');
-  run('API host-member contracts', 'npm --workspace @uaetrail/api run test -- --run tests/host-member-contract.test.ts');
+  run('API host-member contracts', 'npm --workspace @uaetrail/api run test -- --run tests/host-member-contract.test.ts tests/member-publishing-workspace-access.test.ts');
   run('API member-discovery contracts', 'npm --workspace @uaetrail/api run test -- --run tests/member-discovery-contract.test.ts');
   run('Frontend host-member guard', 'npx vitest run src/member/hostMemberGuard.test.ts');
   console.log('\n[verify:host-member] OK');

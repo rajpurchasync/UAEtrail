@@ -72,6 +72,15 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(participantHostBookmarkRedirect('/publishing/activities')).toBe('/hosting');
   });
 
+  it('G-dmcp-1: member status hook gates workspace from publish slice only', () => {
+    const hook = read('src/hooks/useMemberStatus.ts');
+    expect(hook).toMatch(/publish\?\.canAccessPublishingWorkspace/);
+    expect(hook).toMatch(/publish\?\.isPlatformStaff/);
+    expect(hook).not.toMatch(/\bisHostRole\b/);
+    const workspace = read('apps/api/src/services/member-publishing-workspace-access.ts');
+    expect(workspace).toMatch(/resolvePublishingWorkspaceAccess/);
+  });
+
   it('G-arch: publishing console path helper matches /publishing workspace only', () => {
     expect(isPublishingConsolePath('/operator/overview')).toBe(false);
     expect(isPublishingConsolePath('/publishing/overview')).toBe(true);

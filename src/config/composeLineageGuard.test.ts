@@ -75,4 +75,17 @@ describe('composeLineageGuard (MIG-DISCO-REG compose)', () => {
     expect(engine).not.toMatch(/createSeekingPost/);
     expect(engine).not.toMatch(/`demand:\$\{/);
   });
+
+  it('COMPOSE-LINE-05: compose wire does not import list projections (routing → compose stays list-free)', () => {
+    const compose = read('src/explore/compose.ts');
+    expect(compose).not.toMatch(/from ['"]\.\.\/list\//);
+    expect(compose).toMatch(/exploreCreateFabCopy/);
+  });
+
+  it('COMPOSE-LINE-06: plan + list FAB hand off to shared compose (DMCP Phase 4)', () => {
+    expect(read('src/plan/usePlanAddFlow.ts')).toMatch(/compose\.handleCreateTap/);
+    expect(read('src/explore/create/composeFabEntry.ts')).toMatch(/intent: 'host'/);
+    expect(read('src/list/browseListCopy.ts')).toMatch(/exploreCreateFabCopy/);
+    expect(read('src/explore/composeFlowCatalog.ts')).not.toMatch(/seekingFlow/);
+  });
 });

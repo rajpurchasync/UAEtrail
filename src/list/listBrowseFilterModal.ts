@@ -1,7 +1,6 @@
-import type { ExploreActivityDatePreset } from '../explore/discoveryRuntime';
+import type { ExploreActivityDatePreset, PlaceMapTopicKey } from './discoveryListRuntime';
 import type { BrowsePriceFilter } from './browseListFilters';
 import type { BrowseTripTopicKey } from './browseListTripTopics';
-import type { PlaceMapTopicKey } from '../explore/discoveryRuntime';
 import { LIST_BROWSE_AUDIENCE_OPTIONS } from './browseAudienceFilter';
 
 export const LIST_BROWSE_TRIP_TYPE_OPTIONS: ReadonlyArray<{ key: BrowseTripTopicKey; label: string }> = [

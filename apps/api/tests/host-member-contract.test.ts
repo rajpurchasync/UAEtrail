@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { allowedActivityPricingModes } from '@uaetrail/shared-types';
+import { resolvePublishingWorkspaceAccess } from '../src/services/member-publishing-workspace-access.js';
 
 const API_SRC = join(process.cwd(), 'src');
 const PUBLISHING_ROUTES_DIR = join(API_SRC, 'routes', 'publishing');
@@ -79,6 +80,34 @@ describe('host-member API contracts', () => {
     );
     expect(routes).not.toMatch(/['"]\/me\/host-status['"]/);
     expect(routes).not.toMatch(/['"]\/me\/operator-status['"]/);
+  });
+
+  it('DMCP-1: publishing workspace access uses sole resolver (not UserRole)', () => {
+    const status = readFileSync(join(API_SRC, 'services', 'member-status.ts'), 'utf8');
+    expect(status).toMatch(/resolvePublishingWorkspaceAccess/);
+    expect(status).not.toMatch(/\|\|\s*isHostRole/);
+
+    expect(
+      resolvePublishingWorkspaceAccess({
+        isPlatformAdmin: false,
+        canPublish: false,
+        hostTiers: { community: true, professional: false, business: false },
+      })
+    ).toBe(false);
+  });
+
+  it('DMCP-1: /me/status wire carries isPlatformStaff under publish only', () => {
+    const shared = readFileSync(
+      join(process.cwd(), '../../packages/shared-types/src/index.ts'),
+      'utf8'
+    );
+    expect(shared).toMatch(/isPlatformStaff: status\.isPlatformStaff/);
+    expect(shared).toMatch(/isPlatformStaff: boolean/);
+    const statusWire = readFileSync(
+      join(API_SRC, 'routes/user/registerMemberStatusRoutes.ts'),
+      'utf8'
+    );
+    expect(statusWire).toMatch(/buildMemberStatusDto/);
   });
 
   it('member capabilities resolver lives in member-status service only', () => {

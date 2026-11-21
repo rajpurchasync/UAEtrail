@@ -13,8 +13,13 @@ import { useMemberStatus } from '../hooks/useMemberStatus';
 import { reloadExploreMap } from '../hooks/useExploreMap';
 import { browseListFilterPatchForSearchScope } from './listDiscoverySearchCommit';
 import type { BrowseListFilterState } from './browseListFilters';
-import { countExploreSearchScopes } from '../explore/exploreSearchMatches';
-import type { ExploreSearchScopeKey } from '../explore/exploreBrowseTaxonomy';
+import {
+  countExploreSearchScopes,
+  parseExploreAreaSlug,
+  useExplorePublishedAreasQuery,
+  type ExploreActivityDatePreset,
+  type ExploreSearchScopeKey,
+} from './discoveryListRuntime';
 import { useBrowseListFeed } from './useBrowseListFeed';
 import { useListDiscoveryUrlState } from './useListDiscoveryUrlState';
 import { BrowseListCreateFab } from './ui/BrowseListCreateFab';
@@ -43,8 +48,6 @@ import { setExploreClockStyle } from '@uaetrail/shared-types';
 import { useDisplayPreferences } from '../preferences/useDisplayPreferences';
 import { useMemberDiscoveryRoster } from '@/people-discovery/hooks/useMemberDiscoveryRoster';
 import { useExplorePeopleAvailability } from '@/people-discovery/hooks/usePeopleAvailability';
-import { parseExploreAreaSlug } from '../explore/exploreAreaFilter';
-import { useExplorePublishedAreasQuery } from '../explore/useExplorePublishedAreas';
 import { resolveEffectiveBrowseVenueRegions } from './browseGeoPath';
 import { useBrowseGeoScopeHydration } from './useBrowseGeoScopeHydration';
 import { listExplorerEntityLinkState } from './explorer/listExplorerNavState';
@@ -71,7 +74,6 @@ import {
   LIST_DISCOVERY_MAP_OPEN_STORAGE_KEY,
 } from './listDiscoveryMapLayout';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import type { ExploreActivityDatePreset } from '../explore/exploreActivityDateFilter';
 import {
   browseListSearchUsesScopeHints,
   resolveBrowseListCreateFabLabel,

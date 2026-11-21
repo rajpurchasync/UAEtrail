@@ -79,7 +79,6 @@ export {
   EXPLORE_SEARCH_OPEN_PLACEHOLDER,
   EXPLORE_SEARCH_SCOPES_SHIPPED,
   EXPLORE_GUEST_MAP_PREVIEW_NOTICE,
-  mapItemMatchesShopsPill,
   parseExploreMapFilterPillsParam,
   serializeExploreMapFilterPillsParam,
   type ExploreMapFilterPillKey,
@@ -92,7 +91,7 @@ export { resolveExploreCoverImage } from './exploreCoverImage';
 
 export { matchesUnifiedTopicFilter } from './exploreMapTopicFilterMatch';
 export { resolveExploreItemScheduleDate } from './exploreMapItemSchedule';
-export { isPlacesMapItem, isShopListItem } from './exploreMapItemKind';
+export { isPlacesMapItem, isShopListItem, mapItemMatchesShopsPill } from './exploreMapItemKind';
 
 export { deriveVenueRegionSortOrder } from './exploreListSort';
 

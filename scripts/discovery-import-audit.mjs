@@ -63,16 +63,33 @@ for (const relRoot of SOURCE_ROOTS) {
   }
 }
 
+const listExplore = matrix['src/list']?.explore ?? 0;
+const limits = {
+  maxListExploreImports: 25,
+  listFacade: 'src/list/discoveryListRuntime.ts',
+};
+
 const report = {
   version: 1,
+  dmcpPhase: 3,
   generated: new Date().toISOString().slice(0, 10),
-  description: 'Cross-import counts from list/discovery/* into sibling folders. Prefer src/explore/discoveryRuntime.ts over deep explore/* paths.',
+  description: 'Cross-import counts from list/discovery/* into sibling folders. Prefer src/list/discoveryListRuntime.ts over deep explore/* paths.',
   sourceRoots: SOURCE_ROOTS,
   matrix,
   byTarget,
+  limits,
+  listExploreImports: listExplore,
   canonicalRuntime: 'src/explore/discoveryRuntime.ts',
 };
 
 writeFileSync(outPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
 console.log(`[discovery:import-audit] wrote ${outPath}`);
+console.log(`[discovery:import-audit] src/list → explore: ${listExplore} (max ${limits.maxListExploreImports})`);
 console.log(JSON.stringify(byTarget, null, 2));
+
+if (listExplore > limits.maxListExploreImports) {
+  console.error(
+    `[discovery:import-audit] FAILED — list explore imports ${listExplore} > ${limits.maxListExploreImports}`
+  );
+  process.exit(1);
+}

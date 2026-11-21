@@ -57,6 +57,7 @@ export const useMemberStatus = ({ enabled = true }: UseMemberStatusOptions = {})
     isCommunityHost: publish?.isCommunityHost ?? false,
     hostTiers: publish?.hostTiers ?? emptyHostTiers,
     canAccessPublishingWorkspace: publish?.canAccessPublishingWorkspace ?? false,
+    isPlatformStaff: publish?.isPlatformStaff ?? false,
     canPublish: publish?.canPublish ?? false,
     canHostPaidActivities: publish?.canHostPaidActivities ?? false,
     applicationStatus: publish?.applicationStatus ?? 'none',

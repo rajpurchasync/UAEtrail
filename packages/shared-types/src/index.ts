@@ -542,8 +542,11 @@ export interface HostStatusDTO {
   canPublish: boolean;
   /** Publishing workspace (publish queue, team) when publish-capable or business member. */
   canAccessPublishingWorkspace: boolean;
+  /** Platform operator shell — not a community host tier. */
+  isPlatformStaff: boolean;
   applicationStatus: HostApplicationStatus;
   tenantId: string | null;
+  /** Tenant job role flag (server resolver only — not on `GET /me/status` wire). */
   isHostRole: boolean;
   hasTenant: boolean;
   tenantType: TenantType | null;
@@ -565,6 +568,8 @@ export type OwnedOrganisationProfileDTO = OwnedHostProfileDTO;
 export interface MemberPublishCapabilitiesDTO {
   canPublish: boolean;
   canAccessPublishingWorkspace: boolean;
+  /** Platform operator — use for admin shell; not `isCommunityHost`. */
+  isPlatformStaff: boolean;
   canHostPaidActivities: boolean;
   applicationStatus: HostApplicationStatus;
   isCommunityHost: boolean;
@@ -596,6 +601,7 @@ export const buildMemberPublishCapabilities = (
 ): MemberPublishCapabilitiesDTO => ({
   canPublish: status.canPublish,
   canAccessPublishingWorkspace: status.canAccessPublishingWorkspace,
+  isPlatformStaff: status.isPlatformStaff,
   canHostPaidActivities: status.canHostPaidActivities,
   applicationStatus: status.applicationStatus,
   isCommunityHost: status.isCommunityHost,

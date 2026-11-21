@@ -1093,6 +1093,12 @@ Board one-liner: *P4 thinned the API; **PCOH** (§8.8) finished UPL/BWL coherenc
 #### 8.6.4 P0 checklist (doc trim targets)
 
 - [x] `refactor-program.json` + `verify:refactor-program` in `verify:system` (incl. CTO line + WIP limit)
+- [x] DMCP Phase 0 — `scripts/authority-matrix.json` + `verify:authority-matrix` in `verify:system` (five capability axes → sole resolvers)
+- [x] DMCP Phase 1 — `resolvePublishingWorkspaceAccess` (no `UserRole` broaden) + `publish.isPlatformStaff` on `GET /me/status`
+- [x] DMCP Phase 2 — `verify:catalog-truth` (single `GET /explore/map` catalog; find crew = `member_availability`; seeking/demand product paths guarded)
+- [x] DMCP Phase 3 — `src/list/discoveryListRuntime.ts` + `verify:discovery-graph` (list→explore import budget ≤25; shell-only deep explore)
+- [x] DMCP Phase 4 — `verify:compose-spine` (host · availability · add wire; FAB + plan → `CreateFlowProvider`; `composeSpineGuard` + COMPOSE-LINE-06)
+- [x] DMCP Phase 5 — `verify:participation-spine` (`activityJoinClientApi` · `publishingJoinQueueClientApi`; L3/peek presentation; S10f bridge guards; human sign-off still `s10f:ops:print-routes`)
 - [x] Archive [`system-refactor-plan`](./archive/system-refactor-plan-2026-10.md) + [`system-structure-deep-audit`](./archive/system-structure-deep-audit-2026-10.md); experiment stubs
 - [x] `repo:census` baseline — SPA `<Route>` count, API `register*Routes` files, knip `issueCount`
 - [x] Tier-1 dedupe policy — no duplicate phase schedules in `experiment/*` ([`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md))

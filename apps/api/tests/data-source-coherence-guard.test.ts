@@ -33,4 +33,11 @@ describe('data source coherence guard', () => {
     expect(store).toMatch(/allowRuntimeCatalogSeed/);
     expect(store).toMatch(/NODE_ENV !== 'production'/);
   });
+
+  it('DMCP-2: product map catalog skips seeking activities and availability only pins', () => {
+    const builder = read('src/lib/discovery-catalog-builder.ts');
+    expect(builder).toMatch(/activityMode === 'seeking'\) continue/);
+    expect(builder).toMatch(/buildAvailabilityFixedMapItems/);
+    expect(builder).not.toMatch(/listActiveParticipantIntentsForMap/);
+  });
 });
