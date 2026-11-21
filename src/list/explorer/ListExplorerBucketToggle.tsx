@@ -2,7 +2,7 @@ import {
   LIST_EXPLORER_BUCKETS,
   listExplorerBucketTotalLabel,
   type ListExplorerBucket,
-} from './listExplorerBucket';
+} from '../browse/browseListBucket';
 import {
   listExplorerBucketCountClass,
   listExplorerBucketTabClass,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import { groupListExplorerDateSections, listExplorerIsThisWeekSectionDate } from './listExplorerDateSections';
+import { groupListExplorerDateSections, listExplorerIsThisWeekSectionDate } from './browseListDateSections';
 
 const card = (id: string, scheduleDate: string | null): DiscoveryCardModel =>
   ({ id, scheduleDate, activity: scheduleDate ? { date: scheduleDate } : undefined }) as DiscoveryCardModel;

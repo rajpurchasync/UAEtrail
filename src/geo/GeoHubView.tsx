@@ -11,7 +11,7 @@ import { ConsumerEntityTabBar } from '../components/mobile/ConsumerEntityTabBar'
 import { PageMeta } from '../components/seo/PageMeta';
 import { DetailHeroPhotoStrip } from '../detail/shared/DetailHeroPhotoStrip';
 import { GeoAncestorEyebrow } from '../detail/shared/GeoAncestorEyebrow';
-import type { ListExplorerBucket } from '../list/explorer/listExplorerBucket';
+import type { ListExplorerBucket } from '../list/browse/browseListBucket';
 import type { GeoAncestorLink } from './geoAncestorLinks';
 import { GeoChildCards } from './GeoChildCards';
 import { GeoGuestDrillLink } from './GeoGuestDrillLink';

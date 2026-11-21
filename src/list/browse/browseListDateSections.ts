@@ -1,6 +1,6 @@
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import { browseCardDateIso } from '../browse/browseCardMeta';
-import { browseListSectionSlot, browseListIsThisWeekSectionDate } from '../browse/browseListSectionDates';
+import { browseCardDateIso } from './browseCardMeta';
+import { browseListSectionSlot, browseListIsThisWeekSectionDate } from './browseListSectionDates';
 
 export type ListExplorerDateSection = {
   key: string;
@@ -14,8 +14,7 @@ export const listExplorerIsThisWeekSectionDate = browseListIsThisWeekSectionDate
 export const groupListExplorerDateSections = (
   cards: DiscoveryCardModel[],
   now: Date = new Date()
-): ListExplorerDateSection[] =>
-  groupListExplorerByIso(cards, browseCardDateIso, now);
+): ListExplorerDateSection[] => groupListExplorerByIso(cards, browseCardDateIso, now);
 
 export const groupListExplorerByIso = (
   cards: DiscoveryCardModel[],

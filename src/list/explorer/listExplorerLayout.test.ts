@@ -11,7 +11,7 @@ import {
   listExplorerSearchBucketCounts,
   parseListExplorerBucket,
   serializeListExplorerBucket,
-} from './listExplorerBucket';
+} from '../browse/browseListBucket';
 import { parseListFilterFabCorner, snapListFilterFabCorner } from './listExplorerFabSnap';
 import { browseListEntityLinkState } from '../browse/browseListNavState';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';

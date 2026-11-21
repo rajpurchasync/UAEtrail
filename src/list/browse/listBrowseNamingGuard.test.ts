@@ -47,6 +47,15 @@ describe('listBrowseNamingGuard', () => {
     expect(read('src/list/useListDiscoveryUrlState.ts')).toMatch(/from '\.\/browse\/listBrowseSort'/);
   });
 
+  it('BROWSE-NAME-01d: list bucket + date sections live under browse (not explorer)', () => {
+    expect(existsSync(join(process.cwd(), 'src/list/browse/browseListBucket.ts'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/list/browse/browseListDateSections.ts'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/list/explorer/listExplorerBucket.ts'))).toBe(false);
+    expect(existsSync(join(process.cwd(), 'src/list/explorer/listExplorerDateSections.ts'))).toBe(false);
+    expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/browse\/browseListBucket/);
+    expect(read('src/geo/GeoBrowsePane.tsx')).toMatch(/browse\/browseListBucket/);
+  });
+
   it('BROWSE-NAME-01b: list entity link state lives under browse (not listExplorerNavState)', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/browseListNavState.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/explorer/listExplorerNavState.ts'))).toBe(false);

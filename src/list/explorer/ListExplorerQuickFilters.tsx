@@ -11,7 +11,7 @@ import {
 import type { BrowseListFilterState } from '../browseListFilters';
 import type { BrowseTripTopicKey } from '../browseListTripTopics';
 import type { ListVenuePlaceTopicKey } from '../listVenuePlaceTopics';
-import type { ListExplorerBucket } from './listExplorerBucket';
+import type { ListExplorerBucket } from '../browse/browseListBucket';
 
 type ListExplorerQuickFiltersProps = {
   /** Map drawer keeps dropdown filters; `/list` uses fixed quick pills. */

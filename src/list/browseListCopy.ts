@@ -3,7 +3,7 @@ import { EXPLORE_PEOPLE_BROWSE_SEARCH_PLACEHOLDER } from '../content/explorePeop
 import { EXPLORE_GUEST_MAP_PREVIEW_NOTICE, EXPLORE_SEARCH_OPEN_PLACEHOLDER } from './discoveryListRuntime';
 import { LIST_CAT_PARAM, parseListCatParam } from './browseListUrlState';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
-import type { ListExplorerBucket } from './explorer/listExplorerBucket';
+import type { ListExplorerBucket } from './browse/browseListBucket';
 
 /** List discovery page strings */
 export const BROWSE_LIST_SIGN_IN = 'Sign in';

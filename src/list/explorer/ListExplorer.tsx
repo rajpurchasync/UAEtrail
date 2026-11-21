@@ -24,9 +24,9 @@ import { BrowseThumbnailCard } from '../browse/BrowseThumbnailCard';
 import { BrowsePlaceDistanceProvider } from '../browse/browsePlaceDistanceContext';
 import { useBrowseViewerLocation } from '../browse/useBrowseViewerLocation';
 import { useDisplayPreferences } from '../../preferences/useDisplayPreferences';
-import type { ListExplorerBucket } from './listExplorerBucket';
+import type { ListExplorerBucket } from '../browse/browseListBucket';
 import type { ListExplorerLayout } from './listExplorerLayout';
-import type { ListExplorerDateSection } from './listExplorerDateSections';
+import type { ListExplorerDateSection } from '../browse/browseListDateSections';
 import { ListGuestCatalogPreviewNotice } from '../ui/ListGuestCatalogPreviewNotice';
 import {
   groupListExplorerSections,

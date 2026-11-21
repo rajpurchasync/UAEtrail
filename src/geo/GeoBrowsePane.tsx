@@ -21,7 +21,7 @@ import { useListSideMapWidth } from '../list/explorer/useListSideMapWidth';
 import {
   listExplorerBucketCategories,
   type ListExplorerBucket,
-} from '../list/explorer/listExplorerBucket';
+} from '../list/browse/browseListBucket';
 import {
   DEFAULT_LIST_EXPLORER_SORT,
   type ListExplorerSortMode,

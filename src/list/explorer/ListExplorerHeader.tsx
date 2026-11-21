@@ -13,7 +13,7 @@ import { ListExplorerViewSwitch } from './ListExplorerViewSwitch';
 import {
   listExplorerSearchBucketCounts,
   type ListExplorerBucket,
-} from './listExplorerBucket';
+} from '../browse/browseListBucket';
 import type { ListExplorerLayout } from './listExplorerLayout';
 import type { ListExplorerSortMode } from './listExplorerSort';
 import { ListExplorerSortControl } from './ListExplorerSortControl';

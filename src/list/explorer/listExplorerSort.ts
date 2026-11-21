@@ -4,7 +4,7 @@ import {
   groupListExplorerDateSections,
   groupListExplorerByIso,
   type ListExplorerDateSection,
-} from './listExplorerDateSections';
+} from '../browse/browseListDateSections';
 import { browseCardDateIso, browseCardTitle } from '../browse/browseCardMeta';
 
 export const LIST_SORT_PARAM = 'sort';

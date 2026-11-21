@@ -56,7 +56,7 @@ import {
   listExplorerBucketCategories,
   parseListExplorerBucket,
   serializeListExplorerBucket,
-} from './explorer/listExplorerBucket';
+} from './browse/browseListBucket';
 import { listCatForListExplorerBucket, scopeBrowseListStateForListCat } from './browseListMapHandoff';
 import { ListExplorer } from './explorer/ListExplorer';
 import { ListFeedActionsProvider } from './ui/ListFeedActionsProvider';
