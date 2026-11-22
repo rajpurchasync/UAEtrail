@@ -39,7 +39,7 @@ describe('productDataLineageGuard (system-wide)', () => {
   });
 
   it('CTX-DATA-02: list discovery filters delegate looking + place merge to discovery modules', () => {
-    const filters = read('src/list/browseListFilters.ts');
+    const filters = read('src/list/browse/browseListFilters.ts');
     expect(filters).toMatch(/activity-discovery\/catalog\/listAvailabilityCatalog/);
     expect(filters).toMatch(/places-discovery\/catalog\/listCatalog/);
     expect(filters).not.toMatch(/exploreMapItemIsSeeking/);

@@ -92,13 +92,22 @@ describe('listBrowseNamingGuard', () => {
     expect(read('src/list/explorer/ListExplorerSortControl.tsx')).toMatch(/browse\/listBrowseSort/);
   });
 
+  it('BROWSE-NAME-01o: browse filters + URL state live under browse', () => {
+    expect(existsSync(join(process.cwd(), 'src/list/browse/browseListFilters.ts'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/list/browse/browseListUrlState.ts'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/list/browseListFilters.ts'))).toBe(false);
+    expect(existsSync(join(process.cwd(), 'src/list/browseListUrlState.ts'))).toBe(false);
+    expect(read('src/list/useListDiscoveryUrlState.ts')).toMatch(/browse\/browseListUrlState/);
+    expect(read('src/explore/exploreBrowseUrlHydrate.ts')).toMatch(/browse\/browseListUrlState/);
+  });
+
   it('BROWSE-NAME-01n: taxonomy, venue topics, and geo hydration live under browse', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/browseListTaxonomy.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/browseListTaxonomy.ts'))).toBe(false);
     expect(existsSync(join(process.cwd(), 'src/list/browse/useBrowseGeoScopeHydration.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/useBrowseGeoScopeHydration.ts'))).toBe(false);
     expect(read('src/explore/exploreBrowseUrlSync.ts')).toMatch(/browse\/browseListTaxonomy/);
-    expect(read('src/list/browseListFilters.ts')).toMatch(/browse\/listVenuePlaceTopics/);
+    expect(read('src/list/browse/browseListFilters.ts')).toMatch(/listVenuePlaceTopics/);
   });
 
   it('BROWSE-NAME-01m: geo path, trip topics, and poster cover live under browse', () => {
@@ -116,7 +125,7 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/browseAudienceFilter.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/browseAudienceFilter.ts'))).toBe(false);
     expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/browse\/browseListSearchCommit/);
-    expect(read('src/list/browseListFilters.ts')).toMatch(/browse\/browseAudienceFilter/);
+    expect(read('src/list/browse/browseListFilters.ts')).toMatch(/browseAudienceFilter/);
   });
 
   it('BROWSE-NAME-01k: collapsed rail labels live under browse', () => {

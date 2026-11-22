@@ -1,7 +1,7 @@
 import { resolveMobileFiveTab } from '../config/mobileFiveTabNav';
 import { EXPLORE_PEOPLE_BROWSE_SEARCH_PLACEHOLDER } from '../content/explorePeopleBrowseCopy';
 import { EXPLORE_GUEST_MAP_PREVIEW_NOTICE, EXPLORE_SEARCH_OPEN_PLACEHOLDER } from './discoveryListRuntime';
-import { LIST_CAT_PARAM, parseListCatParam } from './browseListUrlState';
+import { LIST_CAT_PARAM, parseListCatParam } from './browse/browseListUrlState';
 import type { BrowseMainCategoryKey } from './browse/browseListTaxonomy';
 import type { BrowseListBucket } from './browse/browseListBucket';
 

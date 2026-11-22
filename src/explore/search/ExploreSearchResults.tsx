@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 import { useProductSearchParams } from '../../routing/useEffectiveLocation';
 import { useBrowseListFeed } from '../../list/useBrowseListFeed';
-import type { BrowseListFilterState } from '../../list/browseListFilters';
+import type { BrowseListFilterState } from '../../list/browse/browseListFilters';
 import { scopeBrowseListStateForListCat } from '../../list/browse/browseListMapHandoff';
 import { ListDiscoveryExperience } from '../../list/ListDiscoveryExperience';
-import { parseBrowseListFilterState, parseBrowseListGeoPath } from '../../list/browseListUrlState';
+import { parseBrowseListFilterState, parseBrowseListGeoPath } from '../../list/browse/browseListUrlState';
 import { useBrowseGeoScopeHydration } from '../../list/browse/useBrowseGeoScopeHydration';
 import { resolveEffectiveBrowseVenueRegions } from '../../list/browse/browseGeoPath';
 import { useExplorePublishedAreasQuery } from '../useExplorePublishedAreas';

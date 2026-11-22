@@ -47,7 +47,7 @@ describe('consumerAppSurfacesDataGuard (in-app hubs — not guest marketing)', (
     expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/onClearGeoScope/);
     expect(read('src/list/explorer/ListExplorerHeader.tsx')).toMatch(/ListExplorerGeoScopeChip/);
     expect(read('src/list/routing.ts')).toMatch(/parseBrowseListGeoPath/);
-    expect(read('src/list/browseListFilters.ts')).toMatch(/deriveVenueRegionSortOrder/);
+    expect(read('src/list/browse/browseListFilters.ts')).toMatch(/deriveVenueRegionSortOrder/);
     expect(read('src/places-discovery/catalog/listCatalog.ts')).toMatch(/venueRegionOrder/);
   });
 
@@ -76,7 +76,7 @@ describe('consumerAppSurfacesDataGuard (in-app hubs — not guest marketing)', (
     expect(read('src/list/useListDiscoveryUrlState.ts')).toMatch(/serializeBrowseListSearchParams/);
     expect(read('src/explore/exploreBrowseUrlSync.ts')).toMatch(/BROWSE_GEO_PARAM/);
     expect(read('src/explore/ui/useExploreBrowseUrlState.ts')).toMatch(/geoPath/);
-    expect(read('src/list/browseListFilters.ts')).toMatch(/deriveVenueRegionSortOrder\(publishedAreas\)/);
+    expect(read('src/list/browse/browseListFilters.ts')).toMatch(/deriveVenueRegionSortOrder\(publishedAreas\)/);
   });
 
   it('CTX-APP-16: venue region filter defers alias matching to locationSearch', () => {
@@ -121,8 +121,8 @@ describe('consumerAppSurfacesDataGuard (in-app hubs — not guest marketing)', (
   });
 
   it('CTX-APP-06: list geo URL, venue sort order, and Pro emirates follow published areas', () => {
-    expect(read('src/list/browseListUrlState.ts')).toMatch(/BROWSE_GEO_PARAM/);
-    expect(read('src/list/browseListFilters.ts')).toMatch(/exploreItemMatchesBrowseGeoPath/);
+    expect(read('src/list/browse/browseListUrlState.ts')).toMatch(/BROWSE_GEO_PARAM/);
+    expect(read('src/list/browse/browseListFilters.ts')).toMatch(/exploreItemMatchesBrowseGeoPath/);
     expect(read('src/explore/exploreListSort.ts')).toMatch(/deriveVenueRegionSortOrder/);
     expect(read('src/explore/ui/useExploreBrowseList.ts')).toMatch(/deriveVenueRegionSortOrder/);
     expect(read('src/components/organisation-console/ProProfileApplicationFlow.tsx')).toMatch(

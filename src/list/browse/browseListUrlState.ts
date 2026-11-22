@@ -22,33 +22,33 @@ import {
   serializeTripMapTopicsParam,
   type ExploreActivityDatePreset,
   type MapFilterKey,
-} from './discoveryListRuntime';
+} from '../discoveryListRuntime';
 import type { BrowseListFilterState, BrowsePriceFilter, BrowseWhenFilter } from './browseListFilters';
-import { isBrowseTripTopicKey, type BrowseTripTopicKey } from './browse/browseListTripTopics';
-import { isListVenuePlaceTopicKey } from './browse/listVenuePlaceTopicFilter';
-import type { ListVenuePlaceTopicKey } from './browse/listVenuePlaceTopics';
+import { isBrowseTripTopicKey, type BrowseTripTopicKey } from './browseListTripTopics';
+import { isListVenuePlaceTopicKey } from './listVenuePlaceTopicFilter';
+import type { ListVenuePlaceTopicKey } from './listVenuePlaceTopics';
 import {
   parseBrowseMainCategoriesFromTopics,
   serializeBrowseMainCategoriesToTopics,
   type BrowseMainCategoryKey,
-} from './browse/browseListTaxonomy';
-import { readPeopleCrewsTabParam } from '../routing/productUrlInbound';
+} from './browseListTaxonomy';
+import { readPeopleCrewsTabParam } from '../../routing/productUrlInbound';
 import {
   PEOPLE_LIST_TAB_URL_PARAM,
   parsePeopleListBrowseTab,
   serializePeopleListBrowseTab,
-} from './peopleListBrowseUrl';
+} from '../peopleListBrowseUrl';
 import {
   BROWSE_AUDIENCE_PARAM,
   parseBrowseAudienceFilter,
   serializeBrowseAudienceFilter,
-} from './browse/browseAudienceFilter';
+} from './browseAudienceFilter';
 import {
   BROWSE_GEO_PARAM,
   parseBrowseGeoPath,
   serializeBrowseGeoPath,
-} from './browse/browseGeoPath';
-import { listFilterMeansAvailabilityOnly } from '../routing/productUrlInbound';
+} from './browseGeoPath';
+import { listFilterMeansAvailabilityOnly } from '../../routing/productUrlInbound';
 
 const WHEN_PARAM = 'when';
 
@@ -256,6 +256,6 @@ export const serializeBrowseListSearchParams = (
 };
 
 /** Re-export — implementation in `browse/browseListMapHandoff.ts` (map pinKind + listCat stripping). */
-export { serializeBrowseListToExploreSearchParams } from './browse/browseListMapHandoff';
+export { serializeBrowseListToExploreSearchParams } from './browseListMapHandoff';
 
 export type { BrowseMainCategoryKey };

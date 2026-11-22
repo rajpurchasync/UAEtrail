@@ -12,7 +12,7 @@ import {
   cardMatchesBrowsePrice,
   filterExploreMapItemsForList,
   type BrowseListFilterState,
-} from '../list/browseListFilters';
+} from '../list/browse/browseListFilters';
 import { browseListFilterPatchForSearchScope } from '../list/browse/browseListSearchCommit';
 import { ListExplorer } from '../list/explorer/ListExplorer';
 import { ListDiscoveryMapColumn } from '../list/explorer/ListDiscoveryMapColumn';

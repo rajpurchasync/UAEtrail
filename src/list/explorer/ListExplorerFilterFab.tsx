@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { SlidersHorizontal } from 'lucide-react';
-import type { BrowseListFilterState } from '../browseListFilters';
+import type { BrowseListFilterState } from '../browse/browseListFilters';
 import type { BrowseListBucket } from '../browse/browseListBucket';
 import { ListExplorerFilterPop, type ListFilterPopFixedLayout } from './ListExplorerFilterPop';
 import { LIST_FILTER_FAB_Z, LIST_HUB_SEARCH_ROW } from '../listChromeTheme';

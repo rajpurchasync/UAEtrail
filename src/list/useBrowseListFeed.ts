@@ -10,7 +10,7 @@ import {
   cardMatchesBrowsePrice,
   filterExploreMapItemsForList,
   type BrowseListFilterState,
-} from './browseListFilters';
+} from './browse/browseListFilters';
 import { useExplorePublishedAreasQuery } from './discoveryListRuntime';
 import { resolveEffectiveBrowseVenueRegions } from './browse/browseGeoPath';
 

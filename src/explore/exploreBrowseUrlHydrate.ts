@@ -23,7 +23,7 @@ import {
   type ExploreMapFilterPillKey,
   type ExploreSearchScopeKey,
 } from './exploreBrowseTaxonomy';
-import { BROWSE_DISCOVER_PARAM, LIST_CAT_PARAM, parseListCatParam } from '../list/browseListUrlState';
+import { BROWSE_DISCOVER_PARAM, LIST_CAT_PARAM, parseListCatParam } from '../list/browse/browseListUrlState';
 import type { ExploreBrowseListMode } from './exploreBrowseUrlSync';
 import { parseExplorePeopleBrowseTab } from '../list/peopleListBrowseUrl';
 import { readExploreSearchScopeParam } from '../routing/productUrlInbound';

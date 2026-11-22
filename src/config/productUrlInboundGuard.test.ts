@@ -6,7 +6,7 @@ const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 
 describe('productUrlInboundGuard (single inbound alias registry)', () => {
   it('INBOUND-01: availability list filter delegates to productUrlInbound', () => {
-    const urlState = read('src/list/browseListUrlState.ts');
+    const urlState = read('src/list/browse/browseListUrlState.ts');
     expect(urlState).toMatch(/listFilterMeansAvailabilityOnly/);
     expect(urlState).not.toMatch(/filterParam === 'looking'/);
   });
@@ -38,6 +38,6 @@ describe('productUrlInboundGuard (single inbound alias registry)', () => {
     expect(read('src/explore/exploreBrowseUrlSync.ts')).toMatch(/stripRetiredPeopleListTabParams/);
     expect(read('src/list/browse/browseListMapHandoff.ts')).toMatch(/stripRetiredPeopleListTabParams/);
     expect(read('src/list/useListDiscoveryUrlState.ts')).toMatch(/stripRetiredPeopleListTabParams/);
-    expect(read('src/list/browseListUrlState.ts')).not.toMatch(/readPeopleListBrowseTabParam/);
+    expect(read('src/list/browse/browseListUrlState.ts')).not.toMatch(/readPeopleListBrowseTabParam/);
   });
 });

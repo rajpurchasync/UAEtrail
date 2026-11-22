@@ -10,7 +10,7 @@ import { APP_SCROLL_BODY_CLASS } from '../../config/layoutScroll';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../../explore/exploreBrowseTaxonomy';
 import { BROWSE_LIST_CLEAR_FILTERS, BROWSE_LIST_EMPTY } from '../browseListCopy';
-import type { BrowseListFilterState } from '../browseListFilters';
+import type { BrowseListFilterState } from '../browse/browseListFilters';
 import type { PlaceKind } from '@uaetrail/shared-types';
 import type { ExplorePriceFilter } from '../../explore/exploreOptionalFilters';
 import type { BrowseTripTopicKey } from '../browse/browseListTripTopics';

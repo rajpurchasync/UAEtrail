@@ -9,7 +9,7 @@ import {
   parseBrowseListVenueRegions,
   parseListCatParam,
   serializeBrowseListSearchParams,
-} from '../../list/browseListUrlState';
+} from '../../list/browse/browseListUrlState';
 import { scopeBrowseListStateForListCat } from '../../list/browse/browseListMapHandoff';
 import { parseExplorePanel } from '../routing';
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
@@ -223,7 +223,7 @@ export const exploreSearchListPathFromMapSearch = (search: string): string => {
 
 export const exploreSearchJoinListFilters = (
   state: ExploreSearchBrowseState
-): Omit<import('../../list/browseListFilters').BrowseListFilterState, 'categories'> => ({
+): Omit<import('../../list/browse/browseListFilters').BrowseListFilterState, 'categories'> => ({
   query: state.query,
   tripTopics: [],
   tripAvailabilityOnly: false,

@@ -1,5 +1,5 @@
 import { EXPLORE_MAP_PATH, LIST_DISCOVERY_PATH } from '../config/platform';
-import type { BrowseListFilterState } from './browseListFilters';
+import type { BrowseListFilterState } from './browse/browseListFilters';
 import {
   inferListCatFromExploreHandoff,
   scopeBrowseListStateForListCat,
@@ -13,7 +13,7 @@ import {
   parseBrowseListVenueRegions,
   parseListCatParam,
   serializeBrowseListSearchParams,
-} from './browseListUrlState';
+} from './browse/browseListUrlState';
 
 export type ListDiscoveryPathOptions = Partial<BrowseListFilterState> & {
   regions?: string[];

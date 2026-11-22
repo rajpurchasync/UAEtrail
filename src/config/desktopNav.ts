@@ -40,7 +40,7 @@ import {
   PRODUCT_SOCIAL_NAV_HINT,
   PRODUCT_SOCIAL_SURFACE_TITLE,
 } from '../content/productNorthStar';
-import { LIST_CAT_PARAM } from '../list/browseListUrlState';
+import { LIST_CAT_PARAM } from '../list/browse/browseListUrlState';
 import { isPlanHostingFilterRoute } from '../plan/planRouting';
 import { isPublishingConsolePath } from './surfacePaths';
 

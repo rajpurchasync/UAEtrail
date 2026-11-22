@@ -14,7 +14,7 @@ import {
   parseExploreSearchBrowseState,
 } from '../explore/search/exploreSearchRouting';
 import type { BrowseTripTopicKey } from './browse/browseListTripTopics';
-import type { BrowseListFilterState } from './browseListFilters';
+import type { BrowseListFilterState } from './browse/browseListFilters';
 import type { BrowseMainCategoryKey } from './browse/browseListTaxonomy';
 import {
   BROWSE_DISCOVER_PARAM,
@@ -25,7 +25,7 @@ import {
   parseBrowseListVenueRegions,
   parseListCatParam,
   serializeBrowseListSearchParams,
-} from './browseListUrlState';
+} from './browse/browseListUrlState';
 
 import { PEOPLE_LIST_TAB_URL_PARAM } from './peopleListBrowseUrl';
 import {

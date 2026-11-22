@@ -4,7 +4,7 @@ import {
   resolveListBrowseExplorePinKind,
   serializeBrowseListToExploreSearchParams,
 } from './browseListMapHandoff';
-import type { BrowseListFilterState } from '../browseListFilters';
+import type { BrowseListFilterState } from './browseListFilters';
 
 const baseState: BrowseListFilterState = {
   query: '',

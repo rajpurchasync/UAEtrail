@@ -19,7 +19,7 @@ import {
 
 export { tripsListHomePath, venuesListHomePath } from '../list/routing';
 import { PRODUCT_CREWS_TAB_LABEL } from '../content/productNorthStar';
-import { LIST_CAT_PARAM, parseListCatParam } from '../list/browseListUrlState';
+import { LIST_CAT_PARAM, parseListCatParam } from '../list/browse/browseListUrlState';
 import {
   EXPLORE_SEARCH_RESULTS_PATH,
   parseExploreSearchScopeFromParams,

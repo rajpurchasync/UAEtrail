@@ -1,5 +1,5 @@
 import type { PlaceKind } from '@uaetrail/shared-types';
-import type { BrowseListFilterState } from '../../list/browseListFilters';
+import type { BrowseListFilterState } from '../../list/browse/browseListFilters';
 import type { BrowseListBucket } from '../../list/browse/browseListBucket';
 import type { ListVenuePlaceTopicKey } from '../../list/browse/listVenuePlaceTopics';
 import type { ExploreActivityDatePreset, ExplorePanel } from '../routing';

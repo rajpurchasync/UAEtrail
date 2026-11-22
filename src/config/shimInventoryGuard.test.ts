@@ -54,6 +54,10 @@ const RETIRED_LIST_BROWSE_SHIMS = [
   'src/list/listVenuePlaceTopics.test.ts',
   'src/list/listVenuePlaceTopicFilter.ts',
   'src/list/useBrowseGeoScopeHydration.ts',
+  'src/list/browseListFilters.ts',
+  'src/list/browseListFilters.test.ts',
+  'src/list/browseListUrlState.ts',
+  'src/list/browseListUrlState.test.ts',
 ];
 
 const collectTsUnder = (dir: string): string[] => {

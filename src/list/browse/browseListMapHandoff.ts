@@ -4,7 +4,7 @@ import {
   serializeExplorePinKindFilter,
   type ExplorePinKindFilter,
 } from '../discoveryListRuntime';
-import type { BrowseListFilterState } from '../browseListFilters';
+import type { BrowseListFilterState } from './browseListFilters';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import {
   PEOPLE_LIST_TAB_URL_PARAM,
@@ -13,7 +13,7 @@ import {
 import {
   LIST_CAT_PARAM,
   serializeBrowseListSearchParams,
-} from '../browseListUrlState';
+} from './browseListUrlState';
 import { stripRetiredPeopleListTabParams } from '../../routing/productUrlInbound';
 
 /** Explore `pinKind` when opening the map from list browse state. */

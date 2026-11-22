@@ -12,7 +12,7 @@ import {
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { reloadExploreMap } from '../hooks/useExploreMap';
 import { browseListFilterPatchForSearchScope } from './browse/browseListSearchCommit';
-import type { BrowseListFilterState } from './browseListFilters';
+import type { BrowseListFilterState } from './browse/browseListFilters';
 import {
   countExploreSearchScopes,
   parseExploreAreaSlug,

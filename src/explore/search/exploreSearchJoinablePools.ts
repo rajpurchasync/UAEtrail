@@ -5,7 +5,7 @@ import { buildListFeedCards } from '../../list/buildListFeedCards';
 import {
   filterExploreMapItemsForList,
   type BrowseListFilterState,
-} from '../../list/browseListFilters';
+} from '../../list/browse/browseListFilters';
 import { resolveEffectiveBrowseVenueRegions } from '../../list/browse/browseGeoPath';
 import { sortBrowseListCards } from '../../list/browse/listBrowseSort';
 import { exploreSearchWhereBrowseQuery } from './exploreSearchWhereQuery';

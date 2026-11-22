@@ -34,7 +34,7 @@ describe('memberAvailabilityLineageGuard (MIG-DISCO-REG)', () => {
   });
 
   it('AVAIL-LINE-05: Looking browse + pills use availability catalog only', () => {
-    expect(read('src/list/browseListFilters.ts')).toMatch(/filterListAvailabilityCatalogItems/);
+    expect(read('src/list/browse/browseListFilters.ts')).toMatch(/filterListAvailabilityCatalogItems/);
     expect(read('src/activity-discovery/catalog/listAvailabilityCatalog.ts')).not.toMatch(
       /exploreMapItemIsSeeking|exploreMapItemIsLegacySeekingActivity/
     );

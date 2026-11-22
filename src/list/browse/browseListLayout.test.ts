@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { BrowseListFilterState } from '../browseListFilters';
+import type { BrowseListFilterState } from './browseListFilters';
 import {
   countBrowseListFilters,
   parseBrowseListLayout,

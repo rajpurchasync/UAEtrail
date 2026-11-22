@@ -17,7 +17,7 @@ import {
 import type { BrowseListLayout } from '../browse/browseListLayout';
 import type { BrowseListSortMode } from '../browse/listBrowseSort';
 import { ListExplorerSortControl } from './ListExplorerSortControl';
-import type { BrowseListFilterState } from '../browseListFilters';
+import type { BrowseListFilterState } from '../browse/browseListFilters';
 import type { PlaceKind } from '@uaetrail/shared-types';
 import type { ExplorePriceFilter } from '../../explore/exploreOptionalFilters';
 import type { BrowseTripTopicKey } from '../browse/browseListTripTopics';

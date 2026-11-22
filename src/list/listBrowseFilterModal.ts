@@ -1,5 +1,5 @@
 import type { ExploreActivityDatePreset, PlaceMapTopicKey } from './discoveryListRuntime';
-import type { BrowsePriceFilter } from './browseListFilters';
+import type { BrowsePriceFilter } from './browse/browseListFilters';
 import type { BrowseTripTopicKey } from './browse/browseListTripTopics';
 import { LIST_BROWSE_AUDIENCE_OPTIONS } from './browse/browseAudienceFilter';
 

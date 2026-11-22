@@ -6,7 +6,7 @@ import { listDiscoveryPathFromExploreSearch } from '../../list/routing';
 import {
   BROWSE_DISCOVER_PARAM,
   parseBrowseDiscoverOpen,
-} from '../../list/browseListUrlState';
+} from '../../list/browse/browseListUrlState';
 import { compactExploreParentFilterSearchParams, EXPLORE_PIN_QUERY_KEY } from '../routing';
 import {
   sanitizeInboundExplorePinId,

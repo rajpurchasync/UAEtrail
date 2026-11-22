@@ -64,7 +64,7 @@ describe('availabilityLineageRepoGuard', () => {
   });
 
   it('AVAIL-REPO-02: list URL serializes availability-only as filter=availability', () => {
-    const url = readFileSync(join(process.cwd(), 'src/list/browseListUrlState.ts'), 'utf8');
+    const url = readFileSync(join(process.cwd(), 'src/list/browse/browseListUrlState.ts'), 'utf8');
     expect(url).toMatch(/params\.set\('filter', 'availability'\)/);
     expect(url).toMatch(/listFilterMeansAvailabilityOnly/);
   });

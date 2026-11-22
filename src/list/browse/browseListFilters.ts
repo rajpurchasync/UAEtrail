@@ -5,7 +5,7 @@ import {
   filterListCatalogByVenueRegions,
   mergeListCatalogPlansAndPlaces,
 } from '@/places-discovery/catalog/listCatalog';
-import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
+import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import {
   EXPLORE_PRICE_FILTER_OPTIONS,
   deriveVenueRegionSortOrder,
@@ -21,19 +21,19 @@ import {
   resolveExploreItemScheduleDate,
   type ExploreActivityDatePreset,
   type ExplorePriceFilter,
-} from './discoveryListRuntime';
-import type { BrowseMainCategoryKey } from './browse/browseListTaxonomy';
-import { mapItemMatchesBrowseMainCategories } from './browse/browseListTaxonomy';
+} from '../discoveryListRuntime';
+import type { BrowseMainCategoryKey } from './browseListTaxonomy';
+import { mapItemMatchesBrowseMainCategories } from './browseListTaxonomy';
 import type { PlaceKind } from '@uaetrail/shared-types';
-import type { BrowseTripTopicKey } from './browse/browseListTripTopics';
-import { matchesListVenuePlaceTopic } from './browse/listVenuePlaceTopicFilter';
-import type { ListVenuePlaceTopicKey } from './browse/listVenuePlaceTopics';
+import type { BrowseTripTopicKey } from './browseListTripTopics';
+import { matchesListVenuePlaceTopic } from './listVenuePlaceTopicFilter';
+import type { ListVenuePlaceTopicKey } from './listVenuePlaceTopics';
 import {
   exploreItemMatchesBrowseAudienceFilter,
   type BrowseAudienceFilter,
-} from './browse/browseAudienceFilter';
+} from './browseAudienceFilter';
 import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
-import { exploreItemMatchesBrowseGeoPath } from './browse/browseGeoPath';
+import { exploreItemMatchesBrowseGeoPath } from './browseGeoPath';
 /** @deprecated Use BrowseMainCategoryKey — kept for imports migrating */
 export type BrowseCategoryKey = BrowseMainCategoryKey;
 

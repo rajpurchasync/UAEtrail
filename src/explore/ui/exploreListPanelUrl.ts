@@ -1,4 +1,4 @@
-import { parseBrowseDiscoverOpen } from '../../list/browseListUrlState';
+import { parseBrowseDiscoverOpen } from '../../list/browse/browseListUrlState';
 import type { ExplorePanel, MapFilterKey } from '../routing';
 
 /**

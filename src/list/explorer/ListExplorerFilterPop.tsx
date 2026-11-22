@@ -6,7 +6,7 @@ import {
   type BrowseAudienceFilter,
   type BrowseListFilterState,
   type BrowsePriceFilter,
-} from '../browseListFilters';
+} from '../browse/browseListFilters';
 import { toggleBrowseTripTopicInList, type BrowseTripTopicKey } from '../browse/browseListTripTopics';
 import {
   aliasListPlaceTopicToMap,
