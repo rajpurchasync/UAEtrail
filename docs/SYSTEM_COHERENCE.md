@@ -198,7 +198,7 @@ Canonical navigation: [`NAVIGATION.md`](./NAVIGATION.md). Structural rules:
 
 Aligned with [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §4.1 and [`NORTHSTAR.md`](./NORTHSTAR.md):
 
-- **Few browse surfaces, many filterable views** — `/explore` map-first; **list explorer** (`/list`) shares filter vocabulary (`src/list/routing.ts` ↔ `explorePath()`). **Mobile bottom nav — five tabs** — Trips · Places · People · Chat · Plans; tab contract `src/config/mobileFiveTabNav.ts` ([`NAVIGATION.md`](./NAVIGATION.md) § Mobile five-tab).
+- **Few browse surfaces, many filterable views** — `/explore` map-first; **list explorer** (`/list`) shares filter vocabulary (`src/list/browse/browseListRouting.ts` ↔ `explorePath()`). **Mobile bottom nav — five tabs** — Trips · Places · People · Chat · Plans; tab contract `src/config/mobileFiveTabNav.ts` ([`NAVIGATION.md`](./NAVIGATION.md) § Mobile five-tab).
 - **One discovery catalog on the server** — `GET /explore/map` (+ query). Map stage, explore list sheet, and list discovery UI are **projections**; avoid separate “catalog” endpoints per category unless a new bounded context is approved in Tier-1. Signed-in peek/engagement is **`GET /me/discover/overlay`** (`viewerAccess` by item id) — not a second catalog. Product writes bust the Redis map via **`scheduleExploreMapCacheInvalidation`** (durable outbox in production — §8.9).
 - **Many entity URLs where identity matters** — `/activity`, place paths, `/shop`, brand paths: sharing, notifications, per-id cache and `viewerAccess`. These are **not** browse department homepages.
 - **Private engagement off the public map** — wishlist, entity follow, member follow, goals: `/me/*` and trips/profile UI ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Follow · Wishlist · Goal).

@@ -1,11 +1,11 @@
-import { EXPLORE_MAP_PATH, LIST_DISCOVERY_PATH } from '../config/platform';
-import type { BrowseListFilterState } from './browse/browseListFilters';
+import { EXPLORE_MAP_PATH, LIST_DISCOVERY_PATH } from '../../config/platform';
+import type { BrowseListFilterState } from './browseListFilters';
 import {
   inferListCatFromExploreHandoff,
   scopeBrowseListStateForListCat,
   serializeBrowseListToExploreSearchParams,
-} from './browse/browseListMapHandoff';
-import type { BrowseMainCategoryKey } from './browse/browseListTaxonomy';
+} from './browseListMapHandoff';
+import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import {
   LIST_CAT_PARAM,
   parseBrowseListFilterState,
@@ -13,7 +13,7 @@ import {
   parseBrowseListVenueRegions,
   parseListCatParam,
   serializeBrowseListSearchParams,
-} from './browse/browseListUrlState';
+} from './browseListUrlState';
 
 export type ListDiscoveryPathOptions = Partial<BrowseListFilterState> & {
   regions?: string[];

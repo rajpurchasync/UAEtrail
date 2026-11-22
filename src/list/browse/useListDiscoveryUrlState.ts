@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { inferListCatFromExploreHandoff, scopeBrowseListStateForListCat } from './browse/browseListMapHandoff';
+import { inferListCatFromExploreHandoff, scopeBrowseListStateForListCat } from './browseListMapHandoff';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { applyProductSearchMutation } from '../routing/productSearchMutation';
-import { stripRetiredPeopleListTabParams } from '../routing/productUrlInbound';
-import { LIST_DISCOVERY_PATH } from '../config/platform';
+import { applyProductSearchMutation } from '../../routing/productSearchMutation';
+import { stripRetiredPeopleListTabParams } from '../../routing/productUrlInbound';
+import { LIST_DISCOVERY_PATH } from '../../config/platform';
 import {
   EXPLORE_SEARCH_RESULTS_PATH,
   EXPLORE_SEARCH_SCOPE_PARAM,
@@ -12,10 +12,10 @@ import {
   exploreSearchListCatForScope,
   exploreSearchScopeForListCat,
   parseExploreSearchBrowseState,
-} from '../explore/search/exploreSearchRouting';
-import type { BrowseTripTopicKey } from './browse/browseListTripTopics';
-import type { BrowseListFilterState } from './browse/browseListFilters';
-import type { BrowseMainCategoryKey } from './browse/browseListTaxonomy';
+} from '../../explore/search/exploreSearchRouting';
+import type { BrowseTripTopicKey } from './browseListTripTopics';
+import type { BrowseListFilterState } from './browseListFilters';
+import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import {
   BROWSE_DISCOVER_PARAM,
   LIST_CAT_PARAM,
@@ -25,9 +25,9 @@ import {
   parseBrowseListVenueRegions,
   parseListCatParam,
   serializeBrowseListSearchParams,
-} from './browse/browseListUrlState';
+} from './browseListUrlState';
 
-import { PEOPLE_LIST_TAB_URL_PARAM } from './browse/peopleListBrowseUrl';
+import { PEOPLE_LIST_TAB_URL_PARAM } from './peopleListBrowseUrl';
 import {
   CREWS_AVAILABILITY_SHEET_PARAM,
   CREWS_OPEN_URL_PARAM,
@@ -35,19 +35,19 @@ import {
   parseCrewsAvailableOpenLens,
   serializeCrewsAvailableOpenLens,
   type CrewsAvailableOpenLens,
-} from './crews/crewsOpenSegment';
+} from '../crews/crewsOpenSegment';
 import {
   LIST_LAYOUT_PARAM,
   parseBrowseListLayout,
   serializeBrowseListLayout,
   type BrowseListLayout,
-} from './browse/browseListLayout';
+} from './browseListLayout';
 import {
   LIST_SORT_PARAM,
   parseBrowseListSort,
   serializeBrowseListSort,
   type BrowseListSortMode,
-} from './browse/listBrowseSort';
+} from './listBrowseSort';
 
 const LIST_FILTER_PARAM_KEYS = [
   'q',

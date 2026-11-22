@@ -8,7 +8,7 @@ const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
 describe('consumerAppSurfacesDataGuard (in-app hubs — not guest marketing)', () => {
   it('CTX-APP-01: explore map + list discovery load catalog from hooks', () => {
     expect(read('src/explore/shell/useExploreMapCatalog.ts')).toMatch(/useExploreMap/);
-    expect(read('src/list/useBrowseListFeed.ts')).toMatch(/useExploreMap/);
+    expect(read('src/list/browse/useBrowseListFeed.ts')).toMatch(/useExploreMap/);
     expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/useBrowseListFeed/);
     expect(read('src/explore/search/ExploreSearchResults.tsx')).toMatch(/useBrowseListFeed/);
   });
@@ -46,7 +46,7 @@ describe('consumerAppSurfacesDataGuard (in-app hubs — not guest marketing)', (
     expect(read('src/list/explorer/ListExplorerGeoScopeChip.tsx')).toMatch(/formatBrowseGeoPathLabel/);
     expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/onClearGeoScope/);
     expect(read('src/list/explorer/ListExplorerHeader.tsx')).toMatch(/ListExplorerGeoScopeChip/);
-    expect(read('src/list/routing.ts')).toMatch(/parseBrowseListGeoPath/);
+    expect(read('src/list/browse/browseListRouting.ts')).toMatch(/parseBrowseListGeoPath/);
     expect(read('src/list/browse/browseListFilters.ts')).toMatch(/deriveVenueRegionSortOrder/);
     expect(read('src/places-discovery/catalog/listCatalog.ts')).toMatch(/venueRegionOrder/);
   });
@@ -72,8 +72,8 @@ describe('consumerAppSurfacesDataGuard (in-app hubs — not guest marketing)', (
   });
 
   it('CTX-APP-13: browse filter + geo state uses URL on list and explore', () => {
-    expect(read('src/list/useListDiscoveryUrlState.ts')).toMatch(/parseBrowseListGeoPath/);
-    expect(read('src/list/useListDiscoveryUrlState.ts')).toMatch(/serializeBrowseListSearchParams/);
+    expect(read('src/list/browse/useListDiscoveryUrlState.ts')).toMatch(/parseBrowseListGeoPath/);
+    expect(read('src/list/browse/useListDiscoveryUrlState.ts')).toMatch(/serializeBrowseListSearchParams/);
     expect(read('src/explore/exploreBrowseUrlSync.ts')).toMatch(/BROWSE_GEO_PARAM/);
     expect(read('src/explore/ui/useExploreBrowseUrlState.ts')).toMatch(/geoPath/);
     expect(read('src/list/browse/browseListFilters.ts')).toMatch(/deriveVenueRegionSortOrder\(publishedAreas\)/);

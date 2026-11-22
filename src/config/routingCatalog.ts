@@ -213,7 +213,7 @@ export {
   listPeopleDiscoveryPath,
   exploreMapPathFromListSearch,
   listDiscoveryPathFromExploreSearch,
-} from '../list/routing';
+} from '../list/browse/browseListRouting';
 
 export {
   MOBILE_FIVE_TAB_DEFAULTS,

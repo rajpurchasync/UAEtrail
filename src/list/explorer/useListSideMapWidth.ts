@@ -5,7 +5,7 @@ import {
   maxListPanelWidthInSplit,
   persistListPanelWidth,
   readStoredListPanelWidth,
-} from '../listDiscoverySideMapSplit';
+} from '../browse/listDiscoverySideMapSplit';
 
 /** Browse column width when the side map is open (map fills remaining space). */
 export const useListSideMapWidth = (enabled: boolean) => {

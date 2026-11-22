@@ -77,6 +77,14 @@ const RETIRED_LIST_BROWSE_SHIMS = [
   'src/list/listPosterPresentation.test.ts',
   'src/list/listMapPeekEngagementParity.test.ts',
   'src/list/listChromeTheme.ts',
+  'src/list/routing.ts',
+  'src/list/routing.test.ts',
+  'src/list/listDiscoverySurface.ts',
+  'src/list/listDiscoveryMapLayout.ts',
+  'src/list/listDiscoverySideMapSplit.ts',
+  'src/list/useBrowseListFeed.ts',
+  'src/list/useListDiscoveryUrlState.ts',
+  'src/list/listDiscoverySearchCreateFlowStub.ts',
 ];
 
 const collectTsUnder = (dir: string): string[] => {

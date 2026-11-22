@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { SetURLSearchParams } from 'react-router-dom';
 import { applyProductSearchMutation } from '../../routing/productSearchMutation';
-import { listDiscoveryPathFromExploreSearch } from '../../list/routing';
+import { listDiscoveryPathFromExploreSearch } from '../../list/browse/browseListRouting';
 import {
   BROWSE_DISCOVER_PARAM,
   parseBrowseDiscoverOpen,

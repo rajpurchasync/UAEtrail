@@ -7,7 +7,7 @@ import { expandMapPins, layoutColocatedMapPins } from '../../explore/ui/exploreM
 import { ExploreMapLoadingSkeleton } from '../../explore/ui/ExploreMapLoadingSkeleton';
 import { UiTooltip } from '../../components/ui/UiTooltip';
 import { LIST_MAP_COLUMN_CLOSE } from '../browse/listChromeTheme';
-import { LIST_SIDE_MAP_MIN_PX } from '../listDiscoverySideMapSplit';
+import { LIST_SIDE_MAP_MIN_PX } from '../browse/listDiscoverySideMapSplit';
 
 const PlacesMap = lazy(() =>
   import('../../components/ui/PlacesMap').then((module) => ({ default: module.PlacesMap }))

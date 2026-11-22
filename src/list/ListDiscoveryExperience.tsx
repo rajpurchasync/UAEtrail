@@ -8,7 +8,7 @@ import { useCreateFlowOptional } from '../create/CreateFlowProvider';
 import {
   listDiscoverySearchComposeStub,
   listDiscoverySearchRegisterBridgeStub,
-} from './listDiscoverySearchCreateFlowStub';
+} from './browse/listDiscoverySearchCreateFlowStub';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { reloadExploreMap } from '../hooks/useExploreMap';
 import { browseListFilterPatchForSearchScope } from './browse/browseListSearchCommit';
@@ -20,18 +20,18 @@ import {
   type ExploreActivityDatePreset,
   type ExploreSearchScopeKey,
 } from './browse/discoveryListRuntime';
-import { useBrowseListFeed } from './useBrowseListFeed';
-import { useListDiscoveryUrlState } from './useListDiscoveryUrlState';
+import { useBrowseListFeed } from './browse/useBrowseListFeed';
+import { useListDiscoveryUrlState } from './browse/useListDiscoveryUrlState';
 import { BrowseListCreateFab } from './ui/BrowseListCreateFab';
 import { PeopleBrowsePanel } from '@/people-discovery/panel/PeopleBrowsePanel';
 import { usePeopleDiscoveryAvailabilityCatalog } from '@/people-discovery/hooks/usePeopleDiscoveryAvailabilityCatalog';
-import { exploreMapPathFromListSearch } from './routing';
+import { exploreMapPathFromListSearch } from './browse/browseListRouting';
 import {
   listDiscoveryEmbeddedOnExplore,
   listDiscoveryExploreSearch,
   listDiscoverySearchChrome,
   type ListDiscoverySurface,
-} from './listDiscoverySurface';
+} from './browse/listDiscoverySurface';
 import {
   exploreSearchMapViewPathFromListSearch,
   exploreSearchResultsPath,
@@ -72,7 +72,7 @@ import {
   LIST_DISCOVERY_MAP_AUTO_MIN_PX,
   LIST_DISCOVERY_MAP_DISMISSED_STORAGE_KEY,
   LIST_DISCOVERY_MAP_OPEN_STORAGE_KEY,
-} from './listDiscoveryMapLayout';
+} from './browse/listDiscoveryMapLayout';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   browseListSearchUsesScopeHints,

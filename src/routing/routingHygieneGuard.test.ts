@@ -34,7 +34,7 @@ describe('routingHygieneGuard', () => {
 
   it('routes explore, list, and plan query sync through applyProductSearchMutation', () => {
     expect(read('src/explore/ui/useExploreBrowseUrlState.ts')).toMatch(/commitExploreBrowseUrlSync/);
-    expect(read('src/list/useListDiscoveryUrlState.ts')).toMatch(/applyProductSearchMutation/);
+    expect(read('src/list/browse/useListDiscoveryUrlState.ts')).toMatch(/applyProductSearchMutation/);
     expect(read('src/plan/usePlanAddFlow.ts')).toMatch(/applyProductSearchMutation/);
     expect(read('src/plan/PlanPage.tsx')).toMatch(/applyProductSearchMutation/);
     expect(read('src/explore/exploreBrowseUrlSync.ts')).toMatch(/commitExploreBrowseUrlSync/);

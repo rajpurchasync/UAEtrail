@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
-import { listDiscoveryPath, listPeopleDiscoveryPath } from '../../list/routing';
+import { listDiscoveryPath, listPeopleDiscoveryPath } from '../../list/browse/browseListRouting';
 import { exploreMapMobileBackState } from '../../utils/mobileBackNav';
 import {
   activityFilterToMapFilter,

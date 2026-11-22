@@ -1,7 +1,7 @@
 import { areaDetailPath, isGeographyMapSource, type GeoRef } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../discoveryCardModel';
 import { geoNodePath } from '../../config/surfacePaths';
-import { listDiscoveryPath } from '../../list/routing';
+import { listDiscoveryPath } from '../../list/browse/browseListRouting';
 
 /**
  * L2 location tail tap target — geo destination hub first, else curated area guide.

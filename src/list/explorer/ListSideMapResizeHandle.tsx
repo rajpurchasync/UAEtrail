@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { applyPanelResizeCursor, clearPanelResizeCursor } from '../../config/panelResizeCursor';
-import { LIST_BROWSE_MAX_PX, LIST_BROWSE_MIN_PX } from '../listDiscoverySideMapSplit';
+import { LIST_BROWSE_MAX_PX, LIST_BROWSE_MIN_PX } from '../browse/listDiscoverySideMapSplit';
 
 type Props = {
   onWidthChange: (width: number) => void;

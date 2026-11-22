@@ -188,7 +188,7 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 | Sign-in with return | `buildSignInRedirect(location)`, `signInPathForReturn(path)` | `src/utils/authReturnContext.ts` |
 | Post-auth fallback | `resolveAuthExitFallback()` → explore | `src/utils/authRedirect.ts` |
 | Plan + history URL helpers | `planUpcomingPath`, `normalizePlanHubSearchParams`, `profileHistoryCompletedPath`, … | Import **`config/routingCatalog`** in app code; implement in `src/plan/planRouting.ts` + `src/member-plan/planHubRouting.ts` |
-| List discovery URLs | `listDiscoveryPath()`, `listDiscoveryPathFromExploreSearch()` | `src/list/routing.ts` |
+| List discovery URLs | `listDiscoveryPath()`, `listDiscoveryPathFromExploreSearch()` | `src/list/browse/browseListRouting.ts` |
 | Crew chat deep link | `activityGroupChatPath()`, `navigateToActivityGroupChat()` | `src/utils/activityGroupChatNav.ts` |
 | Open crew chat from activity id | `openActivityGroupChat()` | `src/utils/openActivityGroupChat.ts` |
 | Notification → route | `resolveNotificationPath()` | `src/utils/notificationRouting.ts` |

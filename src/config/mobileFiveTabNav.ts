@@ -15,9 +15,9 @@ import {
   listPeopleDiscoveryPath,
   tripsListHomePath,
   venuesListHomePath,
-} from '../list/routing';
+} from '../list/browse/browseListRouting';
 
-export { tripsListHomePath, venuesListHomePath } from '../list/routing';
+export { tripsListHomePath, venuesListHomePath } from '../list/browse/browseListRouting';
 import { PRODUCT_CREWS_TAB_LABEL } from '../content/productNorthStar';
 import { LIST_CAT_PARAM, parseListCatParam } from '../list/browse/browseListUrlState';
 import {

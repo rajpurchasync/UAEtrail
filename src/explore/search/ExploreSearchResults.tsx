@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useProductSearchParams } from '../../routing/useEffectiveLocation';
-import { useBrowseListFeed } from '../../list/useBrowseListFeed';
+import { useBrowseListFeed } from '../../list/browse/useBrowseListFeed';
 import type { BrowseListFilterState } from '../../list/browse/browseListFilters';
 import { scopeBrowseListStateForListCat } from '../../list/browse/browseListMapHandoff';
 import { ListDiscoveryExperience } from '../../list/ListDiscoveryExperience';

@@ -353,7 +353,7 @@ Map/list **peek** and entity **detail** share one engagement contract per viewer
 | Full-screen list browse | `LIST_DISCOVERY_PATH` (`/list`) + `listDiscoveryPath()` | `/list/hiking`, `/shops` as category site roots |
 | List ↔ map handoff | `exploreMapPathFromListSearch()`, `listDiscoveryPathFromExploreSearch()` | Second filter vocabulary on `/list` |
 
-Explore URL builders live in `src/explore/routing.ts` (re-exported from `config/routingCatalog`); list helpers in `src/list/routing.ts`. The old `utils/exploreRouting` shim is **removed** (`exploreModuleBoundary.test.ts`).
+Explore URL builders live in `src/explore/routing.ts` (re-exported from `config/routingCatalog`); list helpers in `src/list/browse/browseListRouting.ts`. The old `utils/exploreRouting` shim is **removed** (`exploreModuleBoundary.test.ts`).
 
 ### 4.1 Browse vs entity paths (mental model)
 

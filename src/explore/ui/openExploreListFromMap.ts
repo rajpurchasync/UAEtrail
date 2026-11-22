@@ -1,5 +1,5 @@
 import type { NavigateFunction } from 'react-router-dom';
-import { listDiscoveryPathFromExploreSearch } from '../../list/routing';
+import { listDiscoveryPathFromExploreSearch } from '../../list/browse/browseListRouting';
 import { writeMobileFiveTabProjection } from '../../config/mobileFiveTabNav';
 import { parseExplorePanel } from '../routing';
 import { exploreMapMobileBackState } from '../../utils/mobileBackNav';

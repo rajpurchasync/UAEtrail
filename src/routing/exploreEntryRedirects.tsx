@@ -1,6 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { explorePath } from '../explore/routing';
-import { listPeopleDiscoveryPath } from '../list/routing';
+import { listPeopleDiscoveryPath } from '../list/browse/browseListRouting';
 
 /** Legacy shop browse → explore shops panel. Loaded only when that route matches. */
 export const ShopBrowseRoute = () => (

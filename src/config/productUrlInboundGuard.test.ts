@@ -37,7 +37,7 @@ describe('productUrlInboundGuard (single inbound alias registry)', () => {
     expect(read('src/list/browse/peopleListBrowseUrl.ts')).toMatch(/readPeopleCrewsTabParam/);
     expect(read('src/explore/exploreBrowseUrlSync.ts')).toMatch(/stripRetiredPeopleListTabParams/);
     expect(read('src/list/browse/browseListMapHandoff.ts')).toMatch(/stripRetiredPeopleListTabParams/);
-    expect(read('src/list/useListDiscoveryUrlState.ts')).toMatch(/stripRetiredPeopleListTabParams/);
+    expect(read('src/list/browse/useListDiscoveryUrlState.ts')).toMatch(/stripRetiredPeopleListTabParams/);
     expect(read('src/list/browse/browseListUrlState.ts')).not.toMatch(/readPeopleListBrowseTabParam/);
   });
 });

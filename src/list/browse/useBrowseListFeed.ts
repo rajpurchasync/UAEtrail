@@ -1,18 +1,18 @@
 import { useMemo } from 'react';
 import { setExploreClockStyle } from '@uaetrail/shared-types';
-import { useDisplayPreferences } from '../preferences/useDisplayPreferences';
-import { useAuth } from '../context/AuthContext';
-import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
+import { useDisplayPreferences } from '../../preferences/useDisplayPreferences';
+import { useAuth } from '../../context/AuthContext';
+import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { useExploreMap } from '../hooks/useExploreMap';
-import { buildListFeedCards } from './browse/buildListFeedCards';
+import { useExploreMap } from '../../hooks/useExploreMap';
+import { buildListFeedCards } from './buildListFeedCards';
 import {
   cardMatchesBrowsePrice,
   filterExploreMapItemsForList,
   type BrowseListFilterState,
-} from './browse/browseListFilters';
-import { useExplorePublishedAreasQuery } from './browse/discoveryListRuntime';
-import { resolveEffectiveBrowseVenueRegions } from './browse/browseGeoPath';
+} from './browseListFilters';
+import { useExplorePublishedAreasQuery } from './discoveryListRuntime';
+import { resolveEffectiveBrowseVenueRegions } from './browseGeoPath';
 
 type UseBrowseListFeedArgs = {
   filters: BrowseListFilterState;

@@ -265,7 +265,7 @@ describe('list module hygiene', () => {
   });
 
   it('builds enriched cards through buildListFeedCards', () => {
-    const feed = readFileSync(join(process.cwd(), 'src/list/useBrowseListFeed.ts'), 'utf8');
+    const feed = readFileSync(join(process.cwd(), 'src/list/browse/useBrowseListFeed.ts'), 'utf8');
     const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
     expect(feed).toMatch(/buildListFeedCards/);
     expect(experience).not.toMatch(/buildBrowseCardsFromMapItems/);
@@ -276,8 +276,8 @@ describe('list module hygiene', () => {
     const exploreShellSources = new Set([
       'src/list/ListDiscoveryExperience.tsx',
       'src/list/BrowseListPage.tsx',
-      'src/list/listDiscoverySearchCreateFlowStub.ts',
-      'src/list/useListDiscoveryUrlState.ts',
+      'src/list/browse/listDiscoverySearchCreateFlowStub.ts',
+      'src/list/browse/useListDiscoveryUrlState.ts',
     ]);
     const deepExploreImport =
       /from ['"]\.\.\/explore\/(?!exploreMapTopicUrlParams|exploreMapItemKind)/;

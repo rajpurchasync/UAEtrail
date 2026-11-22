@@ -4,7 +4,7 @@ import {
   listDiscoveryPath,
   listDiscoveryPathFromExploreSearch,
   listPeopleDiscoveryPath,
-} from './routing';
+} from './browseListRouting';
 
 describe('list discovery routing', () => {
   it('listPeopleDiscoveryPath opens dedicated people category on /list', () => {
