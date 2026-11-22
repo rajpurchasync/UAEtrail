@@ -41,15 +41,19 @@ export const CommunityClubDetailPage = () => {
     );
   }
 
-  const isMember = data.viewerMembership?.status === 'member';
-  const canJoinOpen = data.joinPolicy === 'open' && !isMember;
+  const membershipStatus = data.viewerMembership?.status;
+  const isMember = membershipStatus === 'member';
+  const isPending = membershipStatus === 'pending';
+  const canJoinOpen = data.joinPolicy === 'open' && !membershipStatus;
+  const canRequestJoin = data.joinPolicy === 'request' && !membershipStatus;
 
   const onJoin = () => {
     if (!user) {
       navigate(joinAuthPath(communityClubPath(data.slug)));
       return;
     }
-    if (!canJoinOpen || joinMutation.isPending) return;
+    if (joinMutation.isPending) return;
+    if (!canJoinOpen && !canRequestJoin) return;
     joinMutation.mutate(data.id);
   };
 
@@ -71,17 +75,23 @@ export const CommunityClubDetailPage = () => {
             <span className="rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800 ring-1 ring-emerald-200">
               You&apos;re a member
             </span>
-          ) : canJoinOpen ? (
+          ) : isPending ? (
+            <span className="rounded-full bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-900 ring-1 ring-amber-200">
+              Request pending — the host will review soon
+            </span>
+          ) : canJoinOpen || canRequestJoin ? (
             <button
               type="button"
               onClick={onJoin}
               disabled={joinMutation.isPending}
               className="rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
             >
-              {joinMutation.isPending ? 'Joining…' : 'Join community'}
+              {joinMutation.isPending
+                ? 'Sending…'
+                : canRequestJoin
+                  ? 'Request to join'
+                  : 'Join community'}
             </button>
-          ) : data.joinPolicy === 'request' ? (
-            <span className="text-sm text-neutral-600">Request to join — coming soon.</span>
           ) : (
             <span className="text-sm text-neutral-600">Invite-only community.</span>
           )}

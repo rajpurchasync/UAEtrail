@@ -25,7 +25,9 @@ describe('communityDiscoverGuard (MIG-COMMUNITY-DISCOVER)', () => {
     expect(read('src/routing/AppRoutes.tsx')).toMatch(/COMMUNITY_CLUB_PATH_PREFIX/);
   });
 
-  it('MIG-COMM-03: member join registrar separate from member_groups', () => {
+  it('MIG-COMM-03: request join + admin seed registrars', () => {
+    expect(read('apps/api/src/services/community-discover-commands.ts')).toMatch(/pending/);
+    expect(read('apps/api/src/routes/admin/registerAdminCommunityRoutes.ts')).toMatch(/\/communities/);
     expect(read('apps/api/src/routes/user/registerMeCommunityDiscoverRoutes.ts')).toMatch(
       /\/me\/communities\/:communityId\/join/
     );

@@ -17,20 +17,19 @@ export const joinDiscoverableCommunity = async (
   if (community.joinPolicy === 'invite') {
     throw new ApiError(400, 'community_join_invite_only', 'This community is invite-only.');
   }
-  if (community.joinPolicy === 'request') {
-    throw new ApiError(400, 'community_join_request_only', 'Request to join is not available yet.');
-  }
-
   const existing = await findCommunityMembership(communityId, userId);
   if (existing) {
     return { status: existing.status };
   }
 
+  const joinStatus = community.joinPolicy === 'request' ? 'pending' : 'member';
   const row = await insertCommunityMember({
     communityId,
     userId,
-    status: 'member',
+    status: joinStatus,
   });
-  await incrementCommunityMemberCount(communityId, 1);
+  if (joinStatus === 'member') {
+    await incrementCommunityMemberCount(communityId, 1);
+  }
   return { status: row.status };
 };

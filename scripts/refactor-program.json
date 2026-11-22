@@ -600,10 +600,12 @@
         "apps/api/src/services/community-discover-read.ts",
         "apps/api/src/services/community-discover-commands.ts",
         "apps/api/src/routes/user/registerExploreCommunityRoutes.ts",
-        "apps/api/src/routes/user/registerMeCommunityDiscoverRoutes.ts"
+        "apps/api/src/routes/user/registerMeCommunityDiscoverRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminCommunityRoutes.ts",
+        "apps/api/src/services/admin-community-commands.ts"
       ],
       "feRoots": ["src/crew-discovery", "src/list", "src/explore"],
-      "successMetric": "Phase 2: community_group_members + GET /explore/communities/:slug + POST /me/communities/:id/join (open) + /clubs/:slug FE. Remaining: request/invite join, admin/seed, host-as-community activities, flip default flag."
+      "successMetric": "Phase 3: request join (pending) + admin GET/POST /admin/communities + approve pending member. Remaining: invite join, admin console UI, host-as-community activities, flip default flag."
     },
     {
       "id": "MIG-SURFACE-MEMBER-PEOPLE",

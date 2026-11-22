@@ -383,6 +383,7 @@
         "apps/api/src/routes/admin/registerAdminUserRoutes.ts",
         "apps/api/src/routes/admin/registerAdminTenantRoutes.ts",
         "apps/api/src/routes/admin/registerAdminGroupRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminCommunityRoutes.ts",
         "apps/api/src/routes/admin/registerAdminContentReportRoutes.ts",
         "apps/api/src/routes/admin/registerAdminAuditRoutes.ts",
         "apps/api/src/routes/admin/registerAdminNotificationRoutes.ts",

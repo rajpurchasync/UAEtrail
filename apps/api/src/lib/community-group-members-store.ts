@@ -48,3 +48,15 @@ export const insertCommunityMember = async (input: {
   await collection().insertOne(doc);
   return toRecord(doc);
 };
+
+export const promotePendingCommunityMember = async (
+  communityId: string,
+  userId: string
+): Promise<CommunityGroupMemberRecord | null> => {
+  const updated = await collection().findOneAndUpdate(
+    { communityId, userId, status: 'pending' },
+    { $set: { status: 'member' } },
+    { returnDocument: 'after' }
+  );
+  return updated ? toRecord(updated) : null;
+};

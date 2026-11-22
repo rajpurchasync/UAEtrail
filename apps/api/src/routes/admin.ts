@@ -6,6 +6,7 @@ import { registerAdminActivityModerationRoutes } from './admin/registerAdminActi
 import { registerAdminAuditRoutes } from './admin/registerAdminAuditRoutes.js';
 import { registerAdminContentReportRoutes } from './admin/registerAdminContentReportRoutes.js';
 import { registerAdminGroupRoutes } from './admin/registerAdminGroupRoutes.js';
+import { registerAdminCommunityRoutes } from './admin/registerAdminCommunityRoutes.js';
 import { registerAdminHostApplicationRoutes } from './admin/registerAdminHostApplicationRoutes.js';
 import { registerAdminMetricsRoutes } from './admin/registerAdminMetricsRoutes.js';
 import { registerAdminNotificationRoutes } from './admin/registerAdminNotificationRoutes.js';
@@ -38,6 +39,7 @@ registerAdminMetricsRoutes(adminRouter);
 registerAdminUserRoutes(adminRouter);
 registerAdminTenantRoutes(adminRouter);
 registerAdminGroupRoutes(adminRouter);
+registerAdminCommunityRoutes(adminRouter);
 registerAdminContentReportRoutes(adminRouter);
 registerAdminAuditRoutes(adminRouter);
 registerAdminNotificationRoutes(adminRouter);
