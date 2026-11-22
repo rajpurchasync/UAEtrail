@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import type { ActivityDTO } from '@uaetrail/shared-types';
+import type { ActivityDTO, ActivityRequestView } from '@uaetrail/shared-types';
 import { activityDetailPath } from '../../config/routingCatalog';
 import { ActivityManageSheet } from '../activity/ActivityManageSheet';
 import { useActivityInviteShareSheet } from '../../hooks/useActivityInviteShareSheet';
@@ -8,6 +8,7 @@ import type { HostActivityManageActions } from '../../hooks/useHostActivityManag
 type PlanHostingManageSheetsProps = {
   tenantId: string | null;
   actions: HostActivityManageActions;
+  pendingRequests: ActivityRequestView[];
   onHostReload: () => void;
   manageActivity: ActivityDTO | null;
   onManageActivityClose: () => void;
@@ -16,6 +17,7 @@ type PlanHostingManageSheetsProps = {
 export const PlanHostingManageSheets = ({
   tenantId,
   actions,
+  pendingRequests,
   onHostReload,
   manageActivity,
   onManageActivityClose,
@@ -31,6 +33,7 @@ export const PlanHostingManageSheets = ({
       activity={manageActivity}
       tenantId={tenantId}
       actions={actions}
+      pendingRequests={pendingRequests}
       initialView="overview"
       onOpenPublicPage={(a) => navigate(activityDetailPath(a.id))}
       onShare={(a) => inviteShare.openShareFromActivity(a, { canSendBuddyInvites: true })}

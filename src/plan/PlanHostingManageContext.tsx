@@ -65,6 +65,7 @@ export const PlanHostingManageProvider = ({
       <PlanHostingManageSheets
         tenantId={host.tenantId}
         actions={hostActions}
+        pendingRequests={host.pendingRequests}
         onHostReload={host.reload}
         manageActivity={manageActivity}
         onManageActivityClose={() => setManageActivity(null)}

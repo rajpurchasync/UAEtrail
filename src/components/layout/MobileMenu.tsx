@@ -107,6 +107,38 @@ const isConsumerHamburgerLinkActive = (
   );
 };
 
+const isMobileLandingUserMenuItemActive = (
+  item: (typeof MOBILE_LANDING_USER_MENU)[number],
+  pathname: string,
+  search: string
+): boolean => {
+  const activeTab = resolveMobileFiveTab(pathname, search);
+  if (item.label === 'Trips') {
+    if (pathname === LIST_DISCOVERY_PATH && activeTab === 'trips') return true;
+    if ((pathname === EXPLORE_MAP_PATH || pathname === '/discovery') && activeTab === 'trips') {
+      const params = new URLSearchParams(search);
+      if (params.get('list') !== '1' && !isDiscoverBrowseRoute(pathname, search)) return true;
+    }
+    return isDiscoverBrowseRoute(pathname, search) && activeTab === 'trips';
+  }
+  if (item.label === 'Places') {
+    if (pathname === LIST_DISCOVERY_PATH && activeTab === 'venues') return true;
+    return pathname === EXPLORE_MAP_PATH && activeTab === 'venues';
+  }
+  if (item.label === 'Explore') {
+    return (
+      (pathname === EXPLORE_MAP_PATH || pathname === '/discovery') &&
+      !isDiscoverBrowseRoute(pathname, search)
+    );
+  }
+  if ('match' in item) {
+    return item.match.some((prefix) =>
+      prefix === '/' ? pathname === '/' : pathname === prefix || pathname.startsWith(`${prefix}/`)
+    );
+  }
+  return false;
+};
+
 const resolveConsumerHamburgerDestination = (
   item: ConsumerHamburgerLinkItem,
   user: { id: string } | null,
@@ -607,15 +639,7 @@ export const MobileUserMenuButton = ({
               </Link>
             ) : null}
             {MOBILE_LANDING_USER_MENU.map((item) => {
-              const active =
-                'match' in item && item.label === 'Browse'
-                  ? isDiscoverBrowseRoute(pathname, search)
-                  : 'match' in item && item.label === 'Explore'
-                    ? (pathname === EXPLORE_MAP_PATH || pathname === '/discovery') &&
-                      !isDiscoverBrowseRoute(pathname, search)
-                    : 'match' in item
-                      ? isActive(item.match)
-                      : false;
+              const active = isMobileLandingUserMenuItemActive(item, pathname, search);
               const Icon = MOBILE_NAV_ICON_MAP[item.label] ?? User;
 
               if ('href' in item) {

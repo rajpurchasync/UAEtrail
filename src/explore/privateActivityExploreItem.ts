@@ -1,4 +1,9 @@
-import type { ActivityDTO, ActivityViewerAccessDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type {
+  ActivityDTO,
+  ActivityViewerAccessDTO,
+  ExploreMapItemDTO,
+  LocationDTO,
+} from '@uaetrail/shared-types';
 import {
   buildExploreActivityDisplay,
   buildExploreFeaturedPerson,
@@ -37,10 +42,8 @@ export const buildExploreMapItemFromActivity = (
       : { latitude: null, longitude: null };
 
   const display = buildExploreActivityDisplay(activity);
-  const location =
-    'location' in activity && activity.location && typeof activity.location === 'object'
-      ? activity.location
-      : null;
+  const location: LocationDTO | null =
+    activity.location && typeof activity.location === 'object' ? activity.location : null;
 
   return {
     id: `activity:${activity.id}`,

@@ -259,7 +259,7 @@ const exploreQueryMatchesItemRegions = (item: ExploreMapItemDTO, query: string):
 };
 
 const itemGeoRef = (item: ExploreMapItemDTO) =>
-  item.geoRef ?? item.activity?.geoRef ?? item.locationCard?.geoRef ?? null;
+  item.geoRef ?? item.activity?.geoRef ?? null;
 
 const EXPLORE_SEARCH_QUERY_STOPWORDS = new Set([
   'united',

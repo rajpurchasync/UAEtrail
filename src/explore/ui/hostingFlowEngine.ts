@@ -194,6 +194,10 @@ export type CreateActivityDraft = {
   customPlaceCountry: CountryCode;
   /** Region for search/Home filters — inferred from the pin, else picked. */
   customPlaceEmirate: string;
+  /** L1 state on the venue cascade ladder (`HostingDestinationField`). */
+  venueCascadeState: string;
+  /** Place hub bucket key on the venue cascade ladder. */
+  venueCascadePlaceGroup: string;
 };
 
 export const resolveLimitedAudienceAccess = (draft: Pick<
@@ -534,6 +538,8 @@ export const emptyCreateActivityDraft = (): CreateActivityDraft => ({
   customPlaceProposedAreaName: '',
   customPlaceCountry: 'AE',
   customPlaceEmirate: '',
+  venueCascadeState: '',
+  venueCascadePlaceGroup: '',
 });
 
 

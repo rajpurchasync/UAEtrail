@@ -29,7 +29,6 @@ import {
   INBOUND_BECOME_ORGANIZER_PATH,
   INBOUND_RETIRED_CONSOLE_PREFIXES,
 } from './inboundRoutePaths';
-import { INBOUND_PROFILE_HISTORY_ALIAS_PATH } from './inboundBookmarkPaths';
 import { SETTINGS_SURFACE_TITLE } from './settingsHub';
 import { AGENCY_PROFILE_PATH_PREFIX } from '@uaetrail/shared-types';
 import { PRODUCT_CREWS_TAB_LABEL } from '../content/productNorthStar';

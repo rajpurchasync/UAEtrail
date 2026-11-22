@@ -2,7 +2,7 @@ import {
   isGeographyMapSource,
   type DiscoveryCardSource,
   type ExploreMapItemDTO,
-  type GeoRefDTO,
+  type GeoRef,
 } from '@uaetrail/shared-types';
 import { groupRegionTextAtBrowseFilterLevel } from '../config/groupRegionFilter';
 
@@ -14,7 +14,7 @@ export type ExploreCatalogHubLabelInput = {
   areaName?: string | null;
   subtitle?: string | null;
   venueRegion?: string | null;
-  geoRef?: GeoRefDTO | null;
+  geoRef?: GeoRef | null;
   source?: DiscoveryCardSource;
 };
 
@@ -106,7 +106,7 @@ export const exploreCatalogHubLabelFromExploreItem = (item: ExploreMapItemDTO): 
     areaName: item.areaName ?? null,
     subtitle: item.subtitle ?? item.presentation?.subtitle ?? null,
     venueRegion,
-    geoRef: item.geoRef ?? item.activity?.geoRef ?? item.locationCard?.geoRef ?? null,
+    geoRef: item.geoRef ?? item.activity?.geoRef ?? null,
     source: item.source,
   });
 };

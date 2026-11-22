@@ -32,6 +32,7 @@ export const MOBILE_NAV_ICON_MAP: Record<
   | 'Browse'
   | 'Trips'
   | 'Venues'
+  | 'Places'
   | 'Activities'
   | 'Shop'
   | 'Profile'
@@ -62,6 +63,8 @@ export const MOBILE_NAV_ICON_MAP: Record<
   Browse: NAV_ICONS.activities,
   Trips: NAV_ICONS.trips,
   Venues: MapPin,
+  Places: MapPin,
+  Join: NAV_ICONS.activities,
   'Join free': NAV_ICONS.activities,
   'Log in': LogIn,
   Contact: MessageCircle,

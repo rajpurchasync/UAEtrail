@@ -171,6 +171,7 @@ export const HostedActivitiesSection = ({
           activity={manageActivity}
           tenantId={host.tenantId}
           actions={hostActions}
+          pendingRequests={host.pendingRequests}
           onClose={() => {
             setManageActivity(null);
           }}
@@ -256,6 +257,7 @@ export const HostedActivitiesSection = ({
         activity={manageActivity}
         tenantId={host.tenantId}
         actions={hostActions}
+        pendingRequests={host.pendingRequests}
         onOpenPublicPage={(a) => navigate(activityDetailPath(a.id), { state: historyReturn })}
         onShare={(a) =>
           inviteShare.openShareFromActivity(a, { canSendBuddyInvites: true })

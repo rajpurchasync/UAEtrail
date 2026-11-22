@@ -16,7 +16,7 @@ import {
   exploreSearchStorageScope,
   readExploreSearchHomeScope,
   writeExploreSearchHomeScope,
-  writeExploreSearchLastSearchEntry,
+  writeExploreSearchLastSearch,
 } from './exploreSearchLastSearch';
 import { resolveExploreSearchDetectedWhereQuery } from './exploreSearchDetectedWhere';
 import { exploreSearchWhereEffectiveQuery } from './exploreSearchWhereDisplay';
@@ -25,7 +25,10 @@ import { useExploreRegionPillOptions } from '../../config/useExploreRegionPillOp
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { LIST_DISCOVERY_PATH } from '../../config/platform';
 
-const SEARCH_MODAL_PATHS = new Set([EXPLORE_MAP_PATH, LIST_DISCOVERY_PATH]);
+type SearchModalPath = typeof EXPLORE_MAP_PATH | typeof LIST_DISCOVERY_PATH;
+
+const isSearchModalPath = (path: string): path is SearchModalPath =>
+  path === EXPLORE_MAP_PATH || path === LIST_DISCOVERY_PATH;
 
 /** Booking search modal — scope, where/when, commit → `/explore/search`. */
 export const useExploreBookingSearchState = () => {
@@ -41,7 +44,7 @@ export const useExploreBookingSearchState = () => {
   const parsed = useMemo(() => parseExploreSearchBrowseState(searchParams), [searchParams]);
 
   const modalOpen =
-    searchParams.get('search') === '1' && SEARCH_MODAL_PATHS.has(pathname);
+    searchParams.get('search') === '1' && isSearchModalPath(pathname);
 
   const hydrateScopeFromParams = useCallback(
     (parsedScope: ExploreSearchScope): ExploreSearchScope => {
@@ -110,7 +113,7 @@ export const useExploreBookingSearchState = () => {
   const setActivityDatePresetOnUrl = useCallback(
     (preset: ExploreActivityDatePreset) => {
       setActivityDatePreset(preset);
-      if (!SEARCH_MODAL_PATHS.has(pathname)) return;
+      if (!isSearchModalPath(pathname)) return;
       applyProductSearchMutation(
         { pathname, navigate, setSearchParams },
         (params) => {
@@ -131,7 +134,7 @@ export const useExploreBookingSearchState = () => {
         writeExploreSearchHomeScope(scopeOverride, searchStorageScope);
       }
       const query = exploreSearchWhereEffectiveQuery(draftQuery, parsed.query.trim() || detectedWhere);
-      writeExploreSearchLastSearchEntry(
+      writeExploreSearchLastSearch(
         {
           query,
           activityDatePreset,

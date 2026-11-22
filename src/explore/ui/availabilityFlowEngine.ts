@@ -533,6 +533,8 @@ export const validateAvailabilityFixedDraft = (draft: AvailabilityFixedDraft): s
 export type AvailabilityFixedSubmitResult = {
   visibleOnMap: boolean;
   mapItemId: string;
+  /** Set when publish creates or links a hosted activity (optional for map-only availability). */
+  activityId?: string | null;
 };
 
 const fixedWizardKindToAvailabilityKind = (kind: AvailabilityFixedKind): AvailabilityKind => {

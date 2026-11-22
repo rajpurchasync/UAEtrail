@@ -36,6 +36,7 @@ const steps = [
   ['Domain + routing + naming guards', 'npm run verify:domain'],
   ['Detail bundle / lazy-map graph', 'npm run verify:perf'],
   ['Host/member contracts', 'npm run verify:host-member'],
+  ['List + explore shell types', 'npm run typecheck:consumer-shell'],
   [
     'Doc coherence (Tier 1 + experiment)',
     'npx vitest run src/content/docCoherence.test.ts',
