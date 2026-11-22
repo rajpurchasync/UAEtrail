@@ -33,7 +33,7 @@ import { useExplorePeopleBrowseBundle } from './useExplorePeopleBrowseBundle';
 import { useExplorePinDeepLink } from './useExplorePinDeepLink';
 import { useExploreMapCatalog } from './useExploreMapCatalog';
 import { useExploreMapInteractionHandlers } from './useExploreMapInteractionHandlers';
-import { resolveBrowseListCreateFabLabel } from '../../list/browseListCopy';
+import { resolveBrowseListCreateFabLabel } from '../../list/browse/browseListCopy';
 import {
   resolveCreateFabComposeEntry,
   resolveExploreMapCreateFabHints,

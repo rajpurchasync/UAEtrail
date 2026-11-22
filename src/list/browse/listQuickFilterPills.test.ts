@@ -26,6 +26,6 @@ describe('listQuickFilterPills', () => {
   it('venues list uses State + hiking, camping, others pills', () => {
     expect(LIST_QUICK_VENUE_TOPIC_PILLS.map((p) => p.label)).toEqual(['Hiking', 'Camping', 'Others']);
     expect(read('src/explore/ui/ExploreOptionalFilterRow.tsx')).toMatch(/LIST_QUICK_VENUE_TOPIC_PILLS/);
-    expect(read('src/list/listQuickFilterPills.ts')).toMatch(/LIST_QUICK_FILTER_REGION_LABEL = 'State'/);
+    expect(read('src/list/browse/listQuickFilterPills.ts')).toMatch(/LIST_QUICK_FILTER_REGION_LABEL = 'State'/);
   });
 });

@@ -1,9 +1,9 @@
-import { resolveMobileFiveTab } from '../config/mobileFiveTabNav';
-import { EXPLORE_PEOPLE_BROWSE_SEARCH_PLACEHOLDER } from '../content/explorePeopleBrowseCopy';
-import { EXPLORE_GUEST_MAP_PREVIEW_NOTICE, EXPLORE_SEARCH_OPEN_PLACEHOLDER } from './browse/discoveryListRuntime';
-import { LIST_CAT_PARAM, parseListCatParam } from './browse/browseListUrlState';
-import type { BrowseMainCategoryKey } from './browse/browseListTaxonomy';
-import type { BrowseListBucket } from './browse/browseListBucket';
+import { resolveMobileFiveTab } from '../../config/mobileFiveTabNav';
+import { EXPLORE_PEOPLE_BROWSE_SEARCH_PLACEHOLDER } from '../../content/explorePeopleBrowseCopy';
+import { EXPLORE_GUEST_MAP_PREVIEW_NOTICE, EXPLORE_SEARCH_OPEN_PLACEHOLDER } from './discoveryListRuntime';
+import { LIST_CAT_PARAM, parseListCatParam } from './browseListUrlState';
+import type { BrowseMainCategoryKey } from './browseListTaxonomy';
+import type { BrowseListBucket } from './browseListBucket';
 
 /** List discovery page strings */
 export const BROWSE_LIST_SIGN_IN = 'Sign in';
@@ -51,7 +51,7 @@ import {
   EXPLORE_CREATE_FAB_ADD_VENUE,
   EXPLORE_CREATE_FAB_FIND_CREW,
   EXPLORE_CREATE_FAB_HOST_TRIP,
-} from '../content/exploreCreateFabCopy';
+} from '../../content/exploreCreateFabCopy';
 
 export const BROWSE_LIST_CREATE_TRIP = EXPLORE_CREATE_FAB_HOST_TRIP;
 export const BROWSE_LIST_CREATE_VENUE = EXPLORE_CREATE_FAB_ADD_VENUE;

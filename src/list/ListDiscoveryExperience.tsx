@@ -78,7 +78,7 @@ import {
   browseListSearchUsesScopeHints,
   resolveBrowseListCreateFabLabel,
   resolveBrowseListSearchPlaceholder,
-} from './browseListCopy';
+} from './browse/browseListCopy';
 import { resolveCreateFabComposeEntry } from '../explore/create/composeFabEntry';
 import { availabilityFlexibleCompose } from '../explore/compose';
 import { useHostingFromActivity } from '../explore/create/hooks/useHostingFromActivity';

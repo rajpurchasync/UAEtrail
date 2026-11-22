@@ -63,6 +63,10 @@ const RETIRED_LIST_BROWSE_SHIMS = [
   'src/list/peopleListBrowseUrl.test.ts',
   'src/list/listBrowseFilterModal.ts',
   'src/list/listBrowseFilterModal.test.ts',
+  'src/list/browseListCopy.ts',
+  'src/list/browseListCreateFab.test.ts',
+  'src/list/listQuickFilterPills.ts',
+  'src/list/listQuickFilterPills.test.ts',
 ];
 
 const collectTsUnder = (dir: string): string[] => {

@@ -85,7 +85,7 @@ describe('composeLineageGuard (MIG-DISCO-REG compose)', () => {
   it('COMPOSE-LINE-06: plan + list FAB hand off to shared compose (DMCP Phase 4)', () => {
     expect(read('src/plan/usePlanAddFlow.ts')).toMatch(/compose\.handleCreateTap/);
     expect(read('src/explore/create/composeFabEntry.ts')).toMatch(/intent: 'host'/);
-    expect(read('src/list/browseListCopy.ts')).toMatch(/exploreCreateFabCopy/);
+    expect(read('src/list/browse/browseListCopy.ts')).toMatch(/exploreCreateFabCopy/);
     expect(read('src/explore/composeFlowCatalog.ts')).not.toMatch(/seekingFlow/);
   });
 });

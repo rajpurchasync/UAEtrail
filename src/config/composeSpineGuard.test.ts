@@ -28,9 +28,9 @@ describe('composeSpineGuard (DMCP Phase 4 rollup)', () => {
 
   it('COMPOSE-SPINE-03: FAB copy is canonical via exploreCreateFabCopy', () => {
     expect(read('src/explore/compose.ts')).toMatch(/exploreCreateFabCopy/);
-    expect(read('src/list/browseListCopy.ts')).toMatch(/exploreCreateFabCopy/);
+    expect(read('src/list/browse/browseListCopy.ts')).toMatch(/exploreCreateFabCopy/);
     const listFab = read('src/list/ui/BrowseListCreateFab.tsx');
-    expect(listFab).toMatch(/browseListCopy/);
+    expect(listFab).toMatch(/browse\/browseListCopy/);
     expect(listFab).not.toMatch(/EXPLORE_CREATE_FAB_HOST_TRIP/);
   });
 

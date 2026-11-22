@@ -92,6 +92,14 @@ describe('listBrowseNamingGuard', () => {
     expect(read('src/list/explorer/ListExplorerSortControl.tsx')).toMatch(/browse\/listBrowseSort/);
   });
 
+  it('BROWSE-NAME-01r: browse copy + quick filter pills live under browse', () => {
+    expect(existsSync(join(process.cwd(), 'src/list/browse/browseListCopy.ts'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/list/browse/listQuickFilterPills.ts'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/list/browseListCopy.ts'))).toBe(false);
+    expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/browse\/browseListCopy/);
+    expect(read('src/explore/ui/ExploreOptionalFilterRow.tsx')).toMatch(/browse\/listQuickFilterPills/);
+  });
+
   it('BROWSE-NAME-01q: people list URL + browse filter modal live under browse', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/peopleListBrowseUrl.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/browse/listBrowseFilterModal.ts'))).toBe(true);

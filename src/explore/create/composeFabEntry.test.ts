@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { BROWSE_LIST_CREATE_TRIP, BROWSE_LIST_CREATE_VENUE } from '../../list/browseListCopy';
-import { resolveBrowseListCreateFabLabel } from '../../list/browseListCopy';
+import { BROWSE_LIST_CREATE_TRIP, BROWSE_LIST_CREATE_VENUE } from '../../list/browse/browseListCopy';
+import { resolveBrowseListCreateFabLabel } from '../../list/browse/browseListCopy';
 import {
   resolveCreateFabComposeEntry,
   resolveExploreMapCreateFabHints,

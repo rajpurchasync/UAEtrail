@@ -15,7 +15,7 @@ import {
   LIST_QUICK_FILTER_REGION_LABEL,
   LIST_QUICK_TRIP_TOPIC_PILLS,
   LIST_QUICK_VENUE_TOPIC_PILLS,
-} from '../../list/listQuickFilterPills';
+} from '../../list/browse/listQuickFilterPills';
 import {
   EXPLORE_FACILITY_PILL_OPTIONS,
   EXPLORE_FACILITY_SCOPE_EMOJI,
