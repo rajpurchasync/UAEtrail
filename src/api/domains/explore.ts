@@ -1,4 +1,5 @@
 import type {
+  CommunityDiscoverActivitiesDTO,
   CommunityDiscoverCardDTO,
   CommunityDiscoverDetailDTO,
   ExploreMapItemDTO,
@@ -65,5 +66,10 @@ export const exploreApi = {
     apiRequest<{ data: CommunityDiscoverDetailDTO }>(
       `/explore/communities/${encodeURIComponent(slug)}`,
       options?.auth ? { auth: true } : undefined
+    ),
+
+  getExploreCommunityActivities: (slug: string) =>
+    apiRequest<{ data: CommunityDiscoverActivitiesDTO }>(
+      `/explore/communities/${encodeURIComponent(slug)}/activities`
     ),
 } as const;

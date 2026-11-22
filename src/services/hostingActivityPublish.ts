@@ -336,6 +336,8 @@ export const buildHostingActivityPublishInput = (
           }
         : undefined,
     groupChatPostPolicy: draft.groupChatPostPolicy,
+    discoverCommunityId:
+      draft.joinMode !== 'private' ? draft.discoverCommunityId?.trim() || null : null,
   };
 };
 

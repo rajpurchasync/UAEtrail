@@ -182,6 +182,8 @@ export type CreateActivityDraft = {
   limitedMinAgeEnabled: boolean;
   /** Crew group chat — who can post after publish (synced to activity group wall). */
   groupChatPostPolicy: ActivityGroupChatPostPolicy;
+  /** Tagged discoverable club (`discoverCommunityId` on publish). */
+  discoverCommunityId: string | null;
   /** Extra on-ground guides (creator is always included). */
   guideUserIds: string[];
   /** New catalog spot — photos for admin review (custom venue). */
@@ -532,6 +534,7 @@ export const emptyCreateActivityDraft = (): CreateActivityDraft => ({
   limitedFamilyOnly: false,
   limitedMinAgeEnabled: false,
   groupChatPostPolicy: 'all_participants',
+  discoverCommunityId: null,
   guideUserIds: [],
   customPlaceImages: [],
   customPlaceAreaId: null,

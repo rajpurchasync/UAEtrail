@@ -4,7 +4,12 @@ import type { Express } from 'express';
 import type { GeoRef } from '@uaetrail/shared-types';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
 import { findAuthUserByEmail } from '../src/lib/auth-users-store.js';
-import { cleanupTestUsers, registerVerifiedPlatformAdmin, registerVerifiedVisitor } from './helpers/fixtures.js';
+import {
+  cleanupTestUsers,
+  createPublishedEventFixture,
+  registerVerifiedPlatformAdmin,
+  registerVerifiedVisitor,
+} from './helpers/fixtures.js';
 import { getMongoClient } from '../src/lib/mongo.js';
 import { COLLECTIONS } from '../src/lib/collections.js';
 import { readFileSync } from 'node:fs';
@@ -32,6 +37,7 @@ beforeAll(async () => {
     await cleanupTestUsers();
     const db = getMongoClient().db();
     await db.collection(COLLECTIONS.COMMUNITY_GROUP_INVITES).deleteMany({});
+    await db.collection(COLLECTIONS.COMMUNITY_GROUP_ADMINS).deleteMany({});
     await db.collection(COLLECTIONS.COMMUNITY_GROUP_MEMBERS).deleteMany({});
     await db.collection(COLLECTIONS.COMMUNITY_GROUPS).deleteMany({});
   });
@@ -46,8 +52,28 @@ describe('community discover (MIG-COMMUNITY-DISCOVER)', () => {
     expect(read('src/routes/admin.ts')).toMatch(/registerAdminCommunityRoutes/);
     expect(read('src/lib/collections.ts')).toMatch(/COMMUNITY_GROUPS: 'community_groups'/);
     expect(read('src/lib/collections.ts')).toMatch(/COMMUNITY_GROUP_MEMBERS/);
+    expect(read('src/lib/collections.ts')).toMatch(/COMMUNITY_GROUP_ADMINS/);
+    expect(read('src/services/community-host-access.ts')).toMatch(/isCommunityAdministrator/);
+    expect(read('src/routes/user/registerMeCommunityDiscoverRoutes.ts')).toMatch(/\/admins\/:userId/);
+    expect(read('src/routes/user/registerMeCommunityDiscoverRoutes.ts')).toMatch(/\/status/);
     expect(read('../../packages/shared-types/src/community-discover.ts')).toMatch(/compareCommunityDiscoverByGeo/);
     expect(read('../../packages/shared-types/src/community-discover.ts')).toMatch(/CommunityDiscoverDetailDTO/);
+    expect(read('../../packages/shared-types/src/community-discover.ts')).toMatch(/viewerIsHost/);
+    expect(read('src/services/community-host-commands.ts')).toMatch(/leaveDiscoverableCommunity/);
+    expect(read('src/services/community-host-read.ts')).toMatch(/loadCommunityHostManageSurface/);
+    expect(read('src/services/community-host-notifications.ts')).toMatch(/notifyCommunityHostJoinRequest/);
+    expect(read('src/routes/user/registerMeCommunityDiscoverRoutes.ts')).toMatch(/host-manage/);
+    expect(read('src/routes/user/registerMeCommunityDiscoverRoutes.ts')).toMatch(/\/approve/);
+    expect(read('src/lib/publishing-tenant-activity-schemas.ts')).toMatch(/discoverCommunityId/);
+    expect(read('src/services/community-discover-publish-gate.ts')).toMatch(
+      /assertDiscoverCommunityIdForActivityPublish/
+    );
+    expect(read('../../src/utils/notificationRouting.ts')).toMatch(/community_join_request/);
+    expect(read('../../src/explore/ui/HostingCommunityPublishField.tsx')).toMatch(/discoverCommunityId/);
+    expect(read('../../packages/shared-types/src/index.ts')).toMatch(/discoverCommunityId/);
+    expect(read('../../src/explore/ui/hostingFromActivity.ts')).toMatch(/discoverCommunityId/);
+    expect(read('src/services/community-discover-activities-read.ts')).toMatch(/loadExploreCommunityDiscoverActivities/);
+    expect(read('src/routes/user/registerExploreCommunityRoutes.ts')).toMatch(/\/explore\/communities\/:slug\/activities/);
   });
 
   it('lists public active communities sorted country → city', async () => {
@@ -242,6 +268,62 @@ describe('community discover (MIG-COMMUNITY-DISCOVER)', () => {
     expect(publicList.body.data.some((row: { id: string }) => row.id === communityId)).toBe(false);
   });
 
+  it('supports host profile patch, leave, and public description fields', async () => {
+    const admin = await registerVerifiedPlatformAdmin(app, `comm-host-${Date.now()}`);
+    const suffix = `host-${Date.now()}`;
+    const host = await registerVerifiedVisitor(app, suffix);
+    const hostUser = await findAuthUserByEmail(host.email);
+    expect(hostUser).toBeTruthy();
+
+    const createRes = await request(app)
+      .post('/api/admin/communities')
+      .set('Authorization', `Bearer ${admin.accessToken}`)
+      .send({
+        name: 'Host Edit Club',
+        slug: `host-edit-${suffix}`,
+        summary: 'Short',
+        description: 'Long about',
+        policies: 'Be kind',
+        visibility: 'public',
+        joinPolicy: 'open',
+        adminUserId: hostUser!._id,
+        geoRef: sampleGeo('United Arab Emirates', 'Dubai'),
+      });
+    expect(createRes.status).toBe(201);
+    const communityId = createRes.body.data.id as string;
+    const slug = createRes.body.data.slug as string;
+
+    const guestDetail = await request(app).get(`/api/explore/communities/${slug}`);
+    expect(guestDetail.body.data.description).toBe('Long about');
+    expect(guestDetail.body.data.policies).toBe('Be kind');
+    expect(guestDetail.body.data.viewerIsHost).toBe(false);
+
+    const hostDetail = await request(app)
+      .get(`/api/explore/communities/${slug}`)
+      .set('Authorization', `Bearer ${host.accessToken}`);
+    expect(hostDetail.body.data.viewerIsHost).toBe(true);
+
+    const patchRes = await request(app)
+      .patch(`/api/me/communities/${communityId}/profile`)
+      .set('Authorization', `Bearer ${host.accessToken}`)
+      .send({ summary: 'Updated short', description: 'Updated long' });
+    expect(patchRes.status).toBe(200);
+    expect(patchRes.body.data.summary).toBe('Updated short');
+
+    const member = await registerVerifiedVisitor(app, `leave-${suffix}`);
+    const joinRes = await request(app)
+      .post(`/api/me/communities/${communityId}/join`)
+      .set('Authorization', `Bearer ${member.accessToken}`);
+    expect(joinRes.status).toBe(201);
+
+    const leaveRes = await request(app)
+      .post(`/api/me/communities/${communityId}/leave`)
+      .set('Authorization', `Bearer ${member.accessToken}`);
+    expect(leaveRes.status).toBe(200);
+    expect(leaveRes.body.data.viewerMembership).toBeNull();
+    expect(leaveRes.body.data.memberCount).toBe(0);
+  });
+
   it('invite-only communities require invite before join', async () => {
     const admin = await registerVerifiedPlatformAdmin(app, `comm-inv-${Date.now()}`);
     const suffix = `invite-${Date.now()}`;
@@ -283,5 +365,224 @@ describe('community discover (MIG-COMMUNITY-DISCOVER)', () => {
       .set('Authorization', `Bearer ${member.accessToken}`);
     expect(joinRes.status).toBe(201);
     expect(joinRes.body.data.status).toBe('member');
+  });
+
+  it('lists me communities and supports self-serve create', async () => {
+    const suffix = `me-comm-${Date.now()}`;
+    const member = await registerVerifiedVisitor(app, suffix);
+
+    const emptyList = await request(app)
+      .get('/api/me/communities')
+      .set('Authorization', `Bearer ${member.accessToken}`);
+    expect(emptyList.status).toBe(200);
+    expect(emptyList.body.data.created).toEqual([]);
+    expect(emptyList.body.data.joined).toEqual([]);
+
+    const createRes = await request(app)
+      .post('/api/me/communities')
+      .set('Authorization', `Bearer ${member.accessToken}`)
+      .send({
+        name: 'My Trail Club',
+        slug: `my-club-${suffix}`,
+        visibility: 'public',
+        joinPolicy: 'request',
+        geoRef: sampleGeo('United Arab Emirates', 'Dubai'),
+      });
+    expect(createRes.status).toBe(201);
+    expect(createRes.body.data.detail.viewerIsHost).toBe(true);
+    expect(createRes.body.data.detail.viewerMembership).toEqual({ status: 'member' });
+
+    const listRes = await request(app)
+      .get('/api/me/communities')
+      .set('Authorization', `Bearer ${member.accessToken}`);
+    expect(listRes.body.data.created).toHaveLength(1);
+    expect(listRes.body.data.created[0].slug).toBe(`my-club-${suffix}`);
+  });
+
+  it('lists linked community outings and host can link a published activity', async () => {
+    const admin = await registerVerifiedPlatformAdmin(app, `comm-out-${Date.now()}`);
+    const suffix = `out-${Date.now()}`;
+    const host = await registerVerifiedVisitor(app, suffix);
+    const hostUser = await findAuthUserByEmail(host.email);
+    expect(hostUser).toBeTruthy();
+
+    const createRes = await request(app)
+      .post('/api/admin/communities')
+      .set('Authorization', `Bearer ${admin.accessToken}`)
+      .send({
+        name: 'Outing Club',
+        slug: `outing-club-${suffix}`,
+        visibility: 'public',
+        joinPolicy: 'open',
+        adminUserId: hostUser!._id,
+        geoRef: sampleGeo('United Arab Emirates', 'Dubai'),
+      });
+    expect(createRes.status).toBe(201);
+    const communityId = createRes.body.data.id as string;
+    const slug = createRes.body.data.slug as string;
+
+    const fixture = await createPublishedEventFixture(`${suffix}-linked`);
+    await getMongoClient()
+      .db()
+      .collection(COLLECTIONS.ACTIVITIES)
+      .updateOne({ _id: fixture.activityId }, { $set: { discoverCommunityId: communityId, hostId: hostUser!._id } });
+
+    const listRes = await request(app).get(`/api/explore/communities/${slug}/activities`);
+    expect(listRes.status).toBe(200);
+    expect(listRes.body.data.upcoming.some((row: { id: string }) => row.id === fixture.activityId)).toBe(true);
+
+    const extra = await createPublishedEventFixture(`${suffix}-linkme`);
+    await getMongoClient()
+      .db()
+      .collection(COLLECTIONS.ACTIVITIES)
+      .updateOne({ _id: extra.activityId }, { $set: { hostId: hostUser!._id, createdById: hostUser!._id } });
+
+    const linkRes = await request(app)
+      .post(`/api/me/communities/${communityId}/activities/${extra.activityId}/link`)
+      .set('Authorization', `Bearer ${host.accessToken}`);
+    expect(linkRes.status).toBe(200);
+    expect(linkRes.body.data.discoverCommunityId).toBe(communityId);
+
+    const afterLink = await request(app).get(`/api/explore/communities/${slug}/activities`);
+    expect(afterLink.body.data.upcoming.some((row: { id: string }) => row.id === extra.activityId)).toBe(true);
+  });
+
+  it('host can load manage surface and approve pending join requests', async () => {
+    const admin = await registerVerifiedPlatformAdmin(app, `comm-host-${Date.now()}`);
+    const suffix = `host-appr-${Date.now()}`;
+    const host = await registerVerifiedVisitor(app, `${suffix}-host`);
+    const joiner = await registerVerifiedVisitor(app, `${suffix}-joiner`);
+    const hostUser = await findAuthUserByEmail(host.email);
+    const joinerUser = await findAuthUserByEmail(joiner.email);
+    expect(hostUser).toBeTruthy();
+    expect(joinerUser).toBeTruthy();
+
+    const createRes = await request(app)
+      .post('/api/admin/communities')
+      .set('Authorization', `Bearer ${admin.accessToken}`)
+      .send({
+        name: 'Host Approve Club',
+        slug: `host-appr-${suffix}`,
+        visibility: 'public',
+        joinPolicy: 'request',
+        adminUserId: hostUser!._id,
+        geoRef: sampleGeo('United Arab Emirates', 'Dubai'),
+      });
+    expect(createRes.status).toBe(201);
+    const communityId = createRes.body.data.id as string;
+    const slug = createRes.body.data.slug as string;
+
+    const joinRes = await request(app)
+      .post(`/api/me/communities/${communityId}/join`)
+      .set('Authorization', `Bearer ${joiner.accessToken}`);
+    expect(joinRes.status).toBe(201);
+    expect(joinRes.body.data.status).toBe('pending');
+
+    const forbidden = await request(app)
+      .get(`/api/me/communities/${communityId}/host-manage`)
+      .set('Authorization', `Bearer ${joiner.accessToken}`);
+    expect(forbidden.status).toBe(403);
+
+    const manageRes = await request(app)
+      .get(`/api/me/communities/${communityId}/host-manage`)
+      .set('Authorization', `Bearer ${host.accessToken}`);
+    expect(manageRes.status).toBe(200);
+    expect(manageRes.body.data.pending).toHaveLength(1);
+    expect(manageRes.body.data.pending[0].userId).toBe(joinerUser!._id);
+
+    const approveRes = await request(app)
+      .post(`/api/me/communities/${communityId}/members/${joinerUser!._id}/approve`)
+      .set('Authorization', `Bearer ${host.accessToken}`);
+    expect(approveRes.status).toBe(200);
+    expect(approveRes.body.data.viewerIsHost).toBe(true);
+    expect(approveRes.body.data.memberCount).toBe(1);
+
+    const afterManage = await request(app)
+      .get(`/api/me/communities/${communityId}/host-manage`)
+      .set('Authorization', `Bearer ${host.accessToken}`);
+    expect(afterManage.body.data.pending).toHaveLength(0);
+    expect(afterManage.body.data.members.some((row: { userId: string }) => row.userId === joinerUser!._id)).toBe(
+      true
+    );
+
+    const joinerDetail = await request(app)
+      .get(`/api/explore/communities/${slug}`)
+      .set('Authorization', `Bearer ${joiner.accessToken}`);
+    expect(joinerDetail.body.data.viewerMembership).toEqual({ status: 'member' });
+  });
+
+  it('owner can add co-host, co-host can approve, and host can pause community', async () => {
+    const admin = await registerVerifiedPlatformAdmin(app, `comm-coadmin-${Date.now()}`);
+    const suffix = `coadmin-${Date.now()}`;
+    const host = await registerVerifiedVisitor(app, `${suffix}-host`);
+    const helper = await registerVerifiedVisitor(app, `${suffix}-helper`);
+    const hostUser = await findAuthUserByEmail(host.email);
+    const helperUser = await findAuthUserByEmail(helper.email);
+    expect(hostUser).toBeTruthy();
+    expect(helperUser).toBeTruthy();
+
+    const createRes = await request(app)
+      .post('/api/admin/communities')
+      .set('Authorization', `Bearer ${admin.accessToken}`)
+      .send({
+        name: 'Co-host Club',
+        slug: `coadmin-club-${suffix}`,
+        visibility: 'public',
+        joinPolicy: 'request',
+        adminUserId: hostUser!._id,
+        geoRef: sampleGeo('United Arab Emirates', 'Dubai'),
+      });
+    expect(createRes.status).toBe(201);
+    const communityId = createRes.body.data.id as string;
+    const slug = createRes.body.data.slug as string;
+
+    const helperJoin = await request(app)
+      .post(`/api/me/communities/${communityId}/join`)
+      .set('Authorization', `Bearer ${helper.accessToken}`);
+    expect(helperJoin.status).toBe(201);
+    await request(app)
+      .post(`/api/me/communities/${communityId}/members/${helperUser!._id}/approve`)
+      .set('Authorization', `Bearer ${host.accessToken}`);
+
+    const addCoHost = await request(app)
+      .post(`/api/me/communities/${communityId}/admins/${helperUser!._id}`)
+      .set('Authorization', `Bearer ${host.accessToken}`);
+    expect(addCoHost.status).toBe(201);
+    expect(addCoHost.body.data.admins.some((row: { userId: string; role: string }) => row.userId === helperUser!._id && row.role === 'admin')).toBe(true);
+
+    const newJoiner = await registerVerifiedVisitor(app, `${suffix}-pending`);
+    const newJoinerUser = await findAuthUserByEmail(newJoiner.email);
+    await request(app)
+      .post(`/api/me/communities/${communityId}/join`)
+      .set('Authorization', `Bearer ${newJoiner.accessToken}`);
+
+    const coApprove = await request(app)
+      .post(`/api/me/communities/${communityId}/members/${newJoinerUser!._id}/approve`)
+      .set('Authorization', `Bearer ${helper.accessToken}`);
+    expect(coApprove.status).toBe(200);
+    expect(coApprove.body.data.viewerIsHost).toBe(true);
+
+    const suspend = await request(app)
+      .patch(`/api/me/communities/${communityId}/status`)
+      .set('Authorization', `Bearer ${host.accessToken}`)
+      .send({ status: 'suspended' });
+    expect(suspend.status).toBe(200);
+    expect(suspend.body.data.status).toBe('suspended');
+
+    const publicList = await request(app).get('/api/explore/communities');
+    expect(publicList.body.data.some((row: { slug: string }) => row.slug === slug)).toBe(false);
+
+    const hostDetail = await request(app)
+      .get(`/api/explore/communities/${slug}`)
+      .set('Authorization', `Bearer ${host.accessToken}`);
+    expect(hostDetail.status).toBe(200);
+    expect(hostDetail.body.data.status).toBe('suspended');
+
+    const reactivate = await request(app)
+      .patch(`/api/me/communities/${communityId}/status`)
+      .set('Authorization', `Bearer ${helper.accessToken}`)
+      .send({ status: 'active' });
+    expect(reactivate.status).toBe(200);
+    expect(reactivate.body.data.status).toBe('active');
   });
 });

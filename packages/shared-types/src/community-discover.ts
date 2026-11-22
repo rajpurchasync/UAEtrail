@@ -1,3 +1,4 @@
+import type { ActivityDTO } from './index.js';
 import type { GeoRef } from './geo-hierarchy.js';
 
 /** Discoverable club directory — not private `member_groups` teams. */
@@ -19,6 +20,9 @@ export type CommunityDiscoverCardDTO = {
   memberCount: number;
 };
 
+export const COMMUNITY_GROUP_STATUSES = ['active', 'suspended'] as const;
+export type CommunityGroupStatus = (typeof COMMUNITY_GROUP_STATUSES)[number];
+
 export const COMMUNITY_MEMBERSHIP_STATUSES = ['member', 'pending'] as const;
 export type CommunityMembershipStatus = (typeof COMMUNITY_MEMBERSHIP_STATUSES)[number];
 
@@ -27,9 +31,81 @@ export type CommunityViewerMembershipDTO = {
 };
 
 export type CommunityDiscoverDetailDTO = CommunityDiscoverCardDTO & {
+  /** Long-form about copy (public detail). */
+  description: string | null;
+  /** House rules / expectations (open text). */
+  policies: string | null;
   viewerMembership: CommunityViewerMembershipDTO | null;
   /** Signed-in viewer may redeem an outstanding invite (`joinPolicy: invite`). */
   viewerHasInvite: boolean;
+  /** Owner or co-admin — can manage profile from consumer surface. */
+  viewerIsHost: boolean;
+  status: CommunityGroupStatus;
+};
+
+export type CommunityHostProfilePatchDTO = {
+  summary?: string | null;
+  description?: string | null;
+  policies?: string | null;
+  bannerUrl?: string | null;
+};
+
+/** Published outings tagged `discoverCommunityId` on the activity document. */
+export type CommunityDiscoverActivitiesDTO = {
+  upcoming: ActivityDTO[];
+  past: ActivityDTO[];
+};
+
+export type MeCommunityDiscoverRelation = 'host' | 'member' | 'pending';
+
+export type MeCommunityDiscoverRowDTO = CommunityDiscoverCardDTO & {
+  membershipStatus: CommunityMembershipStatus | null;
+  relation: MeCommunityDiscoverRelation;
+};
+
+export type MeCommunityDiscoverListDTO = {
+  created: MeCommunityDiscoverRowDTO[];
+  joined: MeCommunityDiscoverRowDTO[];
+};
+
+export type CommunityHostAdminRole = 'owner' | 'admin';
+
+export type CommunityHostAdminRowDTO = {
+  userId: string;
+  email: string;
+  displayName: string | null;
+  role: CommunityHostAdminRole;
+};
+
+export type CommunityHostMemberRowDTO = {
+  userId: string;
+  email: string;
+  displayName: string | null;
+  status: CommunityMembershipStatus;
+  joinedAt: string;
+};
+
+export type CommunityHostManageDTO = {
+  communityId: string;
+  slug: string;
+  name: string;
+  joinPolicy: CommunityJoinPolicy;
+  status: CommunityGroupStatus;
+  viewerAdminRole: CommunityHostAdminRole | null;
+  pending: CommunityHostMemberRowDTO[];
+  members: CommunityHostMemberRowDTO[];
+  admins: CommunityHostAdminRowDTO[];
+  pendingInvites: number;
+};
+
+export type MeCreateCommunityDiscoverDTO = {
+  name: string;
+  slug?: string;
+  summary?: string | null;
+  bannerUrl?: string | null;
+  visibility: CommunityDiscoverVisibility;
+  joinPolicy: CommunityJoinPolicy;
+  geoRef: GeoRef;
 };
 
 export const COMMUNITY_INVITE_STATUSES = ['pending', 'accepted', 'revoked'] as const;
@@ -44,9 +120,6 @@ export type AdminCommunityInviteRowDTO = {
   createdAt: string;
   acceptedAt: string | null;
 };
-
-export const COMMUNITY_GROUP_STATUSES = ['active', 'suspended'] as const;
-export type CommunityGroupStatus = (typeof COMMUNITY_GROUP_STATUSES)[number];
 
 export type AdminCommunityHostContactDTO = {
   id: string;

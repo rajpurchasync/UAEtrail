@@ -74,6 +74,18 @@ describe('hostingFromActivity', () => {
     expect(draft.guideUserIds).toEqual(['guide-2']);
   });
 
+  it('prefills discoverCommunityId from activity unless private', () => {
+    const withClub = createDraftFromPastActivity(
+      baseActivity({ discoverCommunityId: 'club-abc', joinMode: 'open' })
+    );
+    expect(withClub.discoverCommunityId).toBe('club-abc');
+
+    const privateOuting = createDraftFromPastActivity(
+      baseActivity({ discoverCommunityId: 'club-abc', joinMode: 'private' })
+    );
+    expect(privateOuting.discoverCommunityId).toBeNull();
+  });
+
   it('maps activities outing category to organize activity kind', () => {
     const activity = baseActivity({
       activityType: 'event',

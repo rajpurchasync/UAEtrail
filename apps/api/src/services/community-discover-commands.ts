@@ -9,6 +9,11 @@ import {
   findPublicCommunityById,
   incrementCommunityMemberCount,
 } from '../lib/community-groups-store.js';
+import {
+  notifyCommunityHostJoinRequest,
+  notifyCommunityHostNewMember,
+} from './community-host-notifications.js';
+import { listCommunityAdministratorUserIds } from './community-host-access.js';
 
 export const joinDiscoverableCommunity = async (
   userId: string,
@@ -51,6 +56,31 @@ export const joinDiscoverableCommunity = async (
   });
   if (joinStatus === 'member') {
     await incrementCommunityMemberCount(communityId, 1);
+    const hostUserIds = (await listCommunityAdministratorUserIds(communityId)).filter((id) => id !== userId);
+    await Promise.all(
+      hostUserIds.map((hostUserId) =>
+        notifyCommunityHostNewMember({
+          hostUserId,
+          communityId: community.id,
+          communityName: community.name,
+          slug: community.slug,
+          memberUserId: userId,
+        })
+      )
+    );
+  } else if (joinStatus === 'pending') {
+    const hostUserIds = await listCommunityAdministratorUserIds(communityId);
+    await Promise.all(
+      hostUserIds.map((hostUserId) =>
+        notifyCommunityHostJoinRequest({
+          hostUserId,
+          communityId: community.id,
+          communityName: community.name,
+          slug: community.slug,
+          applicantUserId: userId,
+        })
+      )
+    );
   }
   return { status: row.status };
 };

@@ -28,6 +28,7 @@ import type { HostingWizardContext } from '../hostingWizardContext';
 import { formatHostingWhenPreview } from '../../hostingScheduleDraft';
 import { HostingPublishAsField } from '../../HostingPublishAsField';
 import { HostingGuidesField } from '../../HostingGuidesField';
+import { HostingCommunityPublishField } from '../../HostingCommunityPublishField';
 import { RidesharePublishLogisticsPreview } from '../bodies/rideshare';
 
 export function renderPublishStep(ctx: HostingWizardContext): ReactNode | null {
@@ -406,6 +407,14 @@ export function renderPublishStep(ctx: HostingWizardContext): ReactNode | null {
       {!canPublish && !hostGateLoading && (
         <p className="mt-3 rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-900">{HOSTING_INTRO_PROMPT}</p>
       )}
+
+      {canPublish && draft.joinMode !== 'private' ? (
+        <HostingCommunityPublishField
+          value={draft.discoverCommunityId}
+          onChange={(discoverCommunityId) => patchDraft({ discoverCommunityId })}
+          disabled={submitting || hostGateLoading}
+        />
+      ) : null}
 
       {canPublish && publishTenantId ? (
         <HostingPublishAsField

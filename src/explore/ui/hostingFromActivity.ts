@@ -108,5 +108,8 @@ export const createDraftFromPastActivity = (activity: ActivityDTO): CreateActivi
     guideUserIds: (activity.guides ?? [])
       .map((guide) => guide.userId)
       .filter((id) => id && id !== activity.hostUserId && id !== activity.createdById),
+    groupChatPostPolicy: activity.groupChatPostPolicy ?? base.groupChatPostPolicy,
+    discoverCommunityId:
+      activity.joinMode === 'private' ? null : activity.discoverCommunityId?.trim() || null,
   };
 };

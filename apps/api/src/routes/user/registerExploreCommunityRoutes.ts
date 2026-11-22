@@ -6,6 +6,7 @@ import {
   loadExploreCommunityDiscoverDetail,
   loadExploreCommunityDiscoverList,
 } from '../../services/community-discover-read.js';
+import { loadExploreCommunityDiscoverActivities } from '../../services/community-discover-activities-read.js';
 
 const communitySlugParamSchema = z.object({ slug: z.string().min(1).max(120) });
 
@@ -31,6 +32,20 @@ export const registerExploreCommunityRoutes = (router: Router): void => {
           slug,
           req.auth ? { userId: req.auth.userId, email: req.auth.email } : null
         );
+        res.json({ data });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  router.get(
+    '/explore/communities/:slug/activities',
+    validate({ params: communitySlugParamSchema }),
+    async (req, res, next) => {
+      try {
+        const { slug } = req.params as z.infer<typeof communitySlugParamSchema>;
+        const data = await loadExploreCommunityDiscoverActivities(slug);
         res.json({ data });
       } catch (error) {
         next(error);

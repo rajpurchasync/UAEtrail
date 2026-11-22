@@ -249,8 +249,13 @@ export const hostModeHamburgerMenu = (_hostingHubPath?: string): readonly Consum
  * Accounts are ACTIVE on signup/OAuth; publisher tenants may still require approval.
  */
 
-const readCommunityDiscoverFlag = (): boolean =>
-  (import.meta.env.VITE_COMMUNITY_DISCOVER as string | undefined)?.trim() === '1';
+const readCommunityDiscoverFlag = (): boolean => {
+  const env = import.meta.env.VITE_COMMUNITY_DISCOVER as string | undefined;
+  const raw = env?.trim().toLowerCase();
+  if (raw === '0' || raw === 'false') return false;
+  if (raw === '1' || raw === 'true') return true;
+  return true;
+};
 
 /** Feature toggles — flip without redeploying copy in many files. */
 export const FEATURE_FLAGS = {
@@ -258,7 +263,7 @@ export const FEATURE_FLAGS = {
   membershipEnabled: false,
   /** Gear shops on explore map — profile + outbound links only (no catalog). */
   shopComingSoon: false,
-  /** Discoverable clubs in Find crew → Community (`MIG-COMMUNITY-DISCOVER`). Set `VITE_COMMUNITY_DISCOVER=1` locally. */
+  /** Discoverable clubs in Find crew → Community (`MIG-COMMUNITY-DISCOVER`). Opt out with `VITE_COMMUNITY_DISCOVER=0`. */
   communityDiscover: readCommunityDiscoverFlag(),
 } as const;
 

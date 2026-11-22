@@ -202,7 +202,7 @@ Trusted fields (year goal, upcoming list, etc.) appear only on **trusted** expos
 | People | Available | Member availability + fixed intent catalog; sub-lens `open=` |
 | People | Everyone | `GET /me/member-discovery/browse` + quota |
 | Professional | — | Guide/porter directory + agency rows (`source: agency`) |
-| Community | — | UI shell; `FEATURE_FLAGS.communityDiscover` until `MIG-COMMUNITY-DISCOVER` API |
+| Community | — | `GET /explore/communities`, `GET/POST /me/communities`, `/clubs/:slug`; `FEATURE_FLAGS.communityDiscover` (default on) |
 
 Legacy inbound `peopleTab=hub|buddies|going|connect|available|looking` maps to lane + facet in `productUrlInbound` — **never emit** `hub`. Profile opens `GET /member/:userId/profile?from=discover` (**3 unique profiles / 30d**; Pro unlimited). **Chat** is [`COMMUNICATION.md`](./COMMUNICATION.md) (`/chat/*`). **Join me (participation):** `GET/POST /activities/:id/invites`. See [`NAVIGATION.md`](./NAVIGATION.md) § Browse — people & crew and [`API_ROUTING.md`](./API_ROUTING.md).
 

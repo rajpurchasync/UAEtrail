@@ -84,6 +84,7 @@ export type ActivityPublishInput = {
   /** Parent hike/camp/event when publishing a linked rideshare. */
   linkedActivityId?: string | null;
   groupChatPostPolicy?: ActivityGroupChatPostPolicy;
+  discoverCommunityId?: string | null;
   /** Consented home/start point. Label is community + city; coordinates match neighbours later. */
   originLabel?: string;
   originLat?: number;
@@ -198,6 +199,9 @@ export const buildHostActivityPublishPayload = (input: ActivityPublishInput): Re
   }
   if (input.groupChatPostPolicy) {
     payload.groupChatPostPolicy = input.groupChatPostPolicy;
+  }
+  if (input.discoverCommunityId !== undefined) {
+    payload.discoverCommunityId = input.discoverCommunityId?.trim() || null;
   }
 
   if (isRideshare || rideshare.rideshareEnabled) {

@@ -3,8 +3,8 @@ import { crewBrowseLanesForProduct } from './crewBrowseFeatureGates';
 import { FEATURE_FLAGS } from '@/config/platform';
 
 describe('crewBrowseFeatureGates', () => {
-  it('hides Community tab until MIG-COMMUNITY-DISCOVER', () => {
-    expect(FEATURE_FLAGS.communityDiscover).toBe(false);
-    expect(crewBrowseLanesForProduct()).toEqual(['people', 'professional']);
+  it('exposes Community tab when community discover ships', () => {
+    expect(FEATURE_FLAGS.communityDiscover).toBe(true);
+    expect(crewBrowseLanesForProduct()).toEqual(['people', 'professional', 'community']);
   });
 });

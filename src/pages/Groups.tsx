@@ -66,6 +66,7 @@ import { isOutingCrewGroupRow } from '@uaetrail/shared-types';
 import { useAuth } from '../context/AuthContext';
 import { useMeProfile } from '../hooks/useMeProfile';
 import type { MobileBackChrome } from '../utils/mobileBackNav';
+import { GroupsCommunitiesSection } from '../groups/GroupsCommunitiesSection';
 
 type GroupType = 'family' | 'friends' | 'colleagues';
 
@@ -785,6 +786,7 @@ export const Groups = () => {
 
   const renderGroupsList = () => (
     <div className="space-y-3">
+      <GroupsCommunitiesSection />
       <div className="flex justify-end">
         <button
           type="button"

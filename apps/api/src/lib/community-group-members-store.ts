@@ -68,3 +68,21 @@ export const listCommunityGroupMembers = async (
   const docs = await cursor.toArray();
   return docs.map(toRecord);
 };
+
+export const listCommunityMembershipsForUser = async (
+  userId: string
+): Promise<CommunityGroupMemberRecord[]> => {
+  const cursor = collection().find({ userId }, { sort: { joinedAt: -1 } });
+  const docs = await cursor.toArray();
+  return docs.map(toRecord);
+};
+
+export const deleteCommunityMembership = async (
+  communityId: string,
+  userId: string
+): Promise<CommunityGroupMemberRecord | null> => {
+  const existing = await collection().findOne({ communityId, userId });
+  if (!existing) return null;
+  await collection().deleteOne({ communityId, userId });
+  return toRecord(existing);
+};

@@ -64,6 +64,7 @@ export const COLLECTIONS = {
   COMMUNITY_GROUPS: 'community_groups',
   COMMUNITY_GROUP_MEMBERS: 'community_group_members',
   COMMUNITY_GROUP_INVITES: 'community_group_invites',
+  COMMUNITY_GROUP_ADMINS: 'community_group_admins',
   MEMBER_GROUP_MEMBERS: 'member_group_members',
   MEMBER_GROUP_INVITES: 'member_group_invites',
   MEMBER_GROUP_WALL: 'member_group_wall',

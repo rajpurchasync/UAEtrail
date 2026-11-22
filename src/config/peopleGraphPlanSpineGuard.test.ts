@@ -29,7 +29,7 @@ describe('peopleGraphPlanSpineGuard (DMCP Phase 7)', () => {
     expect(read('docs/MEMBER_MODEL.md')).toMatch(/PublishingProfileKind.*`community`/);
     const program = JSON.parse(read('scripts/refactor-program.json'));
     const mig = program.migrations?.find((m: { id: string }) => m.id === 'MIG-COMMUNITY-DISCOVER');
-    expect(mig?.status).toBe('in_progress');
+    expect(mig?.status).toBe('complete');
   });
 
   it('PEOPLE-SPINE-03: Plan tab is a hub over activities/goals/availability (no Plan entity)', () => {

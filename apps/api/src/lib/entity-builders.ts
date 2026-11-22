@@ -122,6 +122,8 @@ export type ActivityCreateInput = {
   outingTopic?: string | null;
   activityMode?: 'hosted' | 'seeking' | null;
   participantIntentId?: string | null;
+  /** Discoverable community club that published this outing (`MIG-COMMUNITY-DISCOVER`). */
+  discoverCommunityId?: string | null;
   groupChatPostPolicy?: 'all_participants' | 'host_only' | null;
   areaId?: string | null;
   groupRegionLevels?: import('@uaetrail/shared-types').GroupRegionLevels | null;
@@ -183,6 +185,7 @@ export type ActivityUpdateInput = {
   outingTopic?: string | null;
   activityMode?: 'hosted' | 'seeking' | null;
   participantIntentId?: string | null;
+  discoverCommunityId?: string | null;
   groupChatPostPolicy?: 'all_participants' | 'host_only' | null;
   areaId?: string | null;
   groupRegionLevels?: import('@uaetrail/shared-types').GroupRegionLevels | null;
@@ -308,6 +311,8 @@ export type MongoActivityDoc = {
   groupRegionLevels?: import('@uaetrail/shared-types').GroupRegionLevels | null;
   activityMode?: 'hosted' | 'seeking' | null;
   participantIntentId?: string | null;
+  /** Discoverable community club that published this outing (`MIG-COMMUNITY-DISCOVER`). */
+  discoverCommunityId?: string | null;
   /** Hosted activity id when a seeking pin was fulfilled (M2d activity-primary rows). */
   seekingConvertedActivityId?: string | null;
   groupChatPostPolicy?: 'all_participants' | 'host_only' | null;
@@ -473,6 +478,7 @@ export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: stri
     groupRegionLevels: data.groupRegionLevels ?? null,
     activityMode: data.activityMode ?? 'hosted',
     participantIntentId: data.participantIntentId ?? null,
+    discoverCommunityId: data.discoverCommunityId ?? null,
     groupChatPostPolicy: data.groupChatPostPolicy ?? null,
     schemaVersion: revamp.schemaVersion,
     summary: revamp.summary,

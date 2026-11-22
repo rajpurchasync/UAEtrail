@@ -179,6 +179,11 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { originLat: 1, originLng: 1 }, name: 'origin_lat_lng', sparse: true },
       { key: { geo: '2dsphere' }, sparse: true },
       { key: { status: 1, groupRegionBrowseKey: 1, startAt: 1 }, sparse: true },
+      {
+        key: { discoverCommunityId: 1, status: 1, startAt: 1 },
+        sparse: true,
+        name: 'discoverCommunityId_status_startAt',
+      },
     ]),
     db.collection(COLLECTIONS.PUSH_SUBSCRIPTIONS).createIndexes([{ key: { userId: 1 } }]),
     db.collection(COLLECTIONS.TENANTS).createIndexes([
@@ -258,6 +263,10 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
     db.collection(COLLECTIONS.COMMUNITY_GROUP_INVITES).createIndexes([
       { key: { communityId: 1, email: 1, status: 1 } },
       { key: { communityId: 1, userId: 1, status: 1 }, sparse: true },
+    ]),
+    db.collection(COLLECTIONS.COMMUNITY_GROUP_ADMINS).createIndexes([
+      { key: { communityId: 1, userId: 1 }, unique: true },
+      { key: { userId: 1, role: 1 } },
     ]),
     db.collection(COLLECTIONS.MEMBER_GROUP_MEMBERS).createIndexes([
       { key: { groupId: 1, userId: 1 }, unique: true, partialFilterExpression: { userId: { $type: 'string' } } },

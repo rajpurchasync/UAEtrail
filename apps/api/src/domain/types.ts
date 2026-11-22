@@ -161,6 +161,8 @@ export interface Activity {
   joinMode?: 'open' | 'private' | null;
   participationMode?: 'rsvp' | 'approval' | null;
   groupChatPostPolicy?: 'all_participants' | 'host_only' | null;
+  /** Discoverable club — outings listed on `/clubs/:slug` (`MIG-COMMUNITY-DISCOVER`). */
+  discoverCommunityId?: string | null;
   images: string[];
   bannerUrl: string | null;
   signupUrl: string | null;

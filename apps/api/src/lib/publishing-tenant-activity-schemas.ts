@@ -87,6 +87,8 @@ const publishingTenantActivityFieldsSchema = z.object({
   clonedFromActivityId: z.string().uuid().optional(),
   linkedActivityId: z.string().uuid().nullable().optional(),
   linkedRideshareActivityId: z.string().uuid().nullable().optional(),
+  /** Discoverable club — `community_groups` id (`MIG-COMMUNITY-DISCOVER`). */
+  discoverCommunityId: z.string().min(1).nullable().optional(),
   /** Crew-only — stored in `activity_private` (E.164 phone). */
   privateEmergencyContactName: z.string().trim().min(2).max(80).optional().nullable(),
   privateEmergencyContactPhone: z.string().trim().min(8).max(30).optional().nullable(),

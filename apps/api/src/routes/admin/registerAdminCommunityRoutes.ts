@@ -28,7 +28,9 @@ const geoRefSchema = z.object({
 const communityCreateSchema = z.object({
   name: z.string().min(2).max(120),
   slug: z.string().min(2).max(120).regex(/^[a-z0-9-]+$/),
-  summary: z.string().max(2000).nullable().optional(),
+  summary: z.string().max(500).nullable().optional(),
+  description: z.string().max(8000).nullable().optional(),
+  policies: z.string().max(8000).nullable().optional(),
   bannerUrl: z.string().url().nullable().optional(),
   visibility: z.enum(['public', 'private']),
   joinPolicy: z.enum(['open', 'request', 'invite']),

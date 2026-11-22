@@ -19,11 +19,14 @@ import {
 } from '../lib/community-groups-store.js';
 import { loadAdminCommunityDetail } from './admin-community-read.js';
 import { notifyUserAdminAction } from './admin-notifications.js';
+import { seedCommunityOwnerAdmin } from './community-host-access.js';
 
 export type AdminCreateCommunityInput = {
   name: string;
   slug: string;
   summary?: string | null;
+  description?: string | null;
+  policies?: string | null;
   bannerUrl?: string | null;
   visibility: CommunityDiscoverVisibility;
   joinPolicy: CommunityJoinPolicy;
@@ -46,6 +49,8 @@ export const createAdminDiscoverableCommunity = async (
       name: input.name,
       slug: input.slug.trim().toLowerCase(),
       summary: input.summary ?? null,
+      description: input.description ?? null,
+      policies: input.policies ?? null,
       bannerUrl: input.bannerUrl ?? null,
       visibility: input.visibility,
       joinPolicy: input.joinPolicy,
@@ -60,6 +65,8 @@ export const createAdminDiscoverableCommunity = async (
     }
     throw error;
   }
+
+  await seedCommunityOwnerAdmin(row.id, input.adminUserId);
 
   const detail = await loadAdminCommunityDetail(row.id);
   return detail.community;

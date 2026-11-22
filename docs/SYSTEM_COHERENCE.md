@@ -1100,9 +1100,10 @@ Board one-liner: *P4 thinned the API; **PCOH** (§8.8) finished UPL/BWL coherenc
 - [x] DMCP Phase 4 — `verify:compose-spine` (host · availability · add wire; FAB + plan → `CreateFlowProvider`; `composeSpineGuard` + COMPOSE-LINE-06)
 - [x] DMCP Phase 5 — `verify:participation-spine` (`activityJoinClientApi` · `publishingJoinQueueClientApi`; L3/peek presentation; S10f bridge guards; human sign-off still `s10f:ops:print-routes`)
 - [x] DMCP Phase 6 — `verify:storefront-spine` (`PublishingProfileKind` · `/publishing` console · shop/agency facades · `PRO_MEMBERSHIP_PATH`; `operatorStorefrontSpineGuard`)
-- [x] DMCP Phase 7 — `verify:people-graph-plan` (Teams · outing crew · **Friends** · `/plan` hub; retired `buddies=` browse segment; **not** discoverable Communities — `MIG-COMMUNITY-DISCOVER` stays `planned`; `peopleGraphPlanSpineGuard` + `crewsTerminologyGuard`)
+- [x] DMCP Phase 7 — `verify:people-graph-plan` (Teams · outing crew · **Friends** · `/plan` hub; retired `buddies=` browse segment; `peopleGraphPlanSpineGuard` + `crewsTerminologyGuard`)
 - [x] DMCP Phase 8 — `verify:release-ops` (`releaseOpsSpineGuard` + S10f/P5/MIG-DISCO-REG program guards; `release:ops:checklist` — staging sign-off still human)
-- [x] DMCP eng complete — `authority-matrix.json` `dmcpStatus: complete` (phases 0–8); `MIG-COMMUNITY-DISCOVER` remains `planned`
+- [x] DMCP eng complete — `authority-matrix.json` `dmcpStatus: complete` (phases 0–8)
+- [x] **MIG-COMMUNITY-DISCOVER** — `complete` in `refactor-program.json` (explore/me/admin community APIs · `/clubs/:slug` · `communityDiscoverGuard`)
 - [x] Archive [`system-refactor-plan`](./archive/system-refactor-plan-2026-10.md) + [`system-structure-deep-audit`](./archive/system-structure-deep-audit-2026-10.md); experiment stubs
 - [x] `repo:census` baseline — SPA `<Route>` count, API `register*Routes` files, knip `issueCount`
 - [x] Tier-1 dedupe policy — no duplicate phase schedules in `experiment/*` ([`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md))

@@ -335,6 +335,8 @@ export interface ActivityDTO {
   groupChatId?: string | null;
   /** Crew group wall — who may post (`host_only` = host admin only; members may still read). */
   groupChatPostPolicy?: ActivityGroupChatPostPolicy | null;
+  /** Discoverable club id when the outing is listed on a community page (`MIG-COMMUNITY-DISCOVER`). */
+  discoverCommunityId?: string | null;
   /** Map/Plan mode — `seeking` = Find post (M1 activity row); default hosted outings omit or `hosted`. */
   activityMode?: ExploreActivityMode | null;
   /** Correlation id for `/me/seeking-posts/:postId` when `activityMode: seeking`. */
@@ -2100,6 +2102,16 @@ export type {
   CommunityJoinPolicy,
   CommunityMembershipStatus,
   CommunityViewerMembershipDTO,
+  CommunityHostProfilePatchDTO,
+  CommunityDiscoverActivitiesDTO,
+  MeCommunityDiscoverListDTO,
+  MeCommunityDiscoverRowDTO,
+  MeCommunityDiscoverRelation,
+  MeCreateCommunityDiscoverDTO,
+  CommunityHostManageDTO,
+  CommunityHostAdminRowDTO,
+  CommunityHostAdminRole,
+  CommunityHostMemberRowDTO,
 } from './community-discover.js';
 export {
   COMMUNITY_DISCOVER_VISIBILITY,

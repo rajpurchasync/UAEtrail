@@ -62,7 +62,7 @@ export const SocialHubIndex = ({ requestCount = 0 }: SocialHubIndexProps) => {
         />
         <SettingsMenuRow
           label={PRODUCT_GROUPS_SURFACE_LABEL}
-          subtitle="Family & friends teams — optional team chat (adults)"
+          subtitle="Communities + family & friends teams"
           to={GROUPS_PATH}
           linkState={back}
           icon={UsersRound}

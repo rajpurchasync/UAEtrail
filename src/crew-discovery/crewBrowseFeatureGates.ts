@@ -1,7 +1,7 @@
 import { FEATURE_FLAGS } from '@/config/platform';
 import { CREW_BROWSE_LANE_ORDER, type CrewBrowseLane } from './crewBrowseState';
 
-/** Top-level Find crew tabs shown in product UI (Community gated until API ships). */
+/** Top-level Find crew tabs — Community hidden when `VITE_COMMUNITY_DISCOVER=0`. */
 export const crewBrowseLanesForProduct = (): CrewBrowseLane[] =>
   FEATURE_FLAGS.communityDiscover
     ? [...CREW_BROWSE_LANE_ORDER]

@@ -38,6 +38,8 @@ import {
   listPublishedUpcomingActivitiesByLocationFromMongo,
   listPublishedUpcomingActivitiesByMemberFromMongo,
   listPublishedPastActivitiesByMemberFromMongo,
+  listPublishedUpcomingActivitiesByDiscoverCommunityFromMongo,
+  listPublishedPastActivitiesByDiscoverCommunityFromMongo,
   listPublishedUpcomingActivitiesByAreaFromMongo,
   listActiveCatalogPlacesByAreaFromMongo,
   listTenantActivitiesFromMongo,
@@ -188,6 +190,7 @@ export const updateActivityDetailed = async (
   if (data.outingCategory !== undefined) patch.outingCategory = data.outingCategory;
   if (data.outingTopic !== undefined) patch.outingTopic = data.outingTopic;
   if (data.groupChatPostPolicy !== undefined) patch.groupChatPostPolicy = data.groupChatPostPolicy;
+  if (data.discoverCommunityId !== undefined) patch.discoverCommunityId = data.discoverCommunityId;
   if (data.host !== undefined) {
     patch.hostId =
       'disconnect' in data.host && data.host.disconnect ? null : data.host.connect?.id ?? null;
@@ -615,6 +618,16 @@ export const listPublishedPastActivitiesByMember = async (userId: string, take =
 
 export const listPublishedUpcomingActivitiesByArea = async (areaId: string, take = 8) =>
   listPublishedUpcomingActivitiesByAreaFromMongo(areaId, take);
+
+export const listPublishedUpcomingActivitiesByDiscoverCommunity = async (
+  communityId: string,
+  take = 12
+) => listPublishedUpcomingActivitiesByDiscoverCommunityFromMongo(communityId, take);
+
+export const listPublishedPastActivitiesByDiscoverCommunity = async (
+  communityId: string,
+  take = 12
+) => listPublishedPastActivitiesByDiscoverCommunityFromMongo(communityId, take);
 
 export const listActiveCatalogPlacesByArea = async (areaId: string, take = 12) =>
   listActiveCatalogPlacesByAreaFromMongo(areaId, take);

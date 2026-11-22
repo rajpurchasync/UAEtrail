@@ -591,13 +591,15 @@
     {
       "id": "MIG-COMMUNITY-DISCOVER",
       "phase": "P5",
-      "status": "in_progress",
+      "status": "complete",
       "owner": "social_graph",
       "contextIds": ["social_graph", "discovery", "member_discovery"],
       "apiRoots": [
         "apps/api/src/lib/community-groups-store.ts",
         "apps/api/src/lib/community-group-members-store.ts",
         "apps/api/src/lib/community-group-invites-store.ts",
+        "apps/api/src/lib/community-group-admins-store.ts",
+        "apps/api/src/services/community-host-access.ts",
         "apps/api/src/services/community-discover-read.ts",
         "apps/api/src/services/community-discover-commands.ts",
         "apps/api/src/routes/user/registerExploreCommunityRoutes.ts",
@@ -606,7 +608,7 @@
         "apps/api/src/services/admin-community-commands.ts"
       ],
       "feRoots": ["src/crew-discovery", "src/list", "src/explore", "src/pages/admin/Communities.tsx"],
-      "successMetric": "Phase 5: invite-only join via community_group_invites + admin send invite + viewerHasInvite. Remaining: host-as-community activities, flip default consumer flag, mark migration complete."
+      "successMetric": "Shipped: explore/me/admin community APIs; /clubs/:slug; co-host admins; self-serve create (summary, banner, emirate); host pause/reactivate; host manage + notifications; discoverCommunityId on publish; contract + guards."
     },
     {
       "id": "MIG-SURFACE-MEMBER-PEOPLE",

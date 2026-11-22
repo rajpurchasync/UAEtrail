@@ -80,6 +80,18 @@ describe('inferNotificationPath', () => {
     ).toBe('/activity/act-9');
   });
 
+  it('routes community membership notifications to club pages', () => {
+    expect(
+      inferNotificationPath(notif({ kind: 'community_join_request', slug: 'dubai-hikers' }))
+    ).toBe('/clubs/dubai-hikers#community-members');
+    expect(
+      inferNotificationPath(notif({ kind: 'community_member_joined', slug: 'dubai-hikers' }))
+    ).toBe('/clubs/dubai-hikers#community-members');
+    expect(
+      inferNotificationPath(notif({ kind: 'community_join_approved', slug: 'dubai-hikers' }))
+    ).toBe('/clubs/dubai-hikers');
+  });
+
   it('rewrites legacy explore invite paths to activity detail', () => {
     expect(
       inferNotificationPath(

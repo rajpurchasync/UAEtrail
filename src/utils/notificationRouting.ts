@@ -11,6 +11,7 @@ import {
   INBOUND_PLAN_HUB_TRIPS_PATH,
   memberProfileLink,
   GROUPS_PATH,
+  communityClubPath,
   groupsPath,
   MESSAGES_PATH,
   PROFILE_BADGES_PATH,
@@ -268,6 +269,17 @@ export const inferNotificationPath = (
       return memberProfileLink(actorUserId);
     }
     return explorePath({ list: true });
+  }
+  if (
+    kind === 'community_join_request' ||
+    kind === 'community_member_joined'
+  ) {
+    const slug = toStringValue(meta?.slug);
+    if (slug) return `${communityClubPath(slug)}#community-members`;
+  }
+  if (kind === 'community_join_approved') {
+    const slug = toStringValue(meta?.slug);
+    if (slug) return communityClubPath(slug);
   }
   if (kind === 'buddy_request' && toStringValue(meta?.groupId)) {
     const inviteToken = toStringValue(meta?.inviteToken);

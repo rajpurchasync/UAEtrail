@@ -7,6 +7,7 @@ import type {
 import { COLLECTIONS } from './collections.js';
 import { newEntityId } from './entity-builders.js';
 import { getMongoClient } from './mongo.js';
+import { listCommunityIdsCoAdministeredByUser } from './community-group-admins-store.js';
 
 export type CommunityGroupStatus = 'active' | 'suspended';
 
@@ -15,6 +16,8 @@ export type CommunityGroupRecord = {
   name: string;
   slug: string;
   summary: string | null;
+  description: string | null;
+  policies: string | null;
   bannerUrl: string | null;
   visibility: CommunityDiscoverVisibility;
   joinPolicy: CommunityJoinPolicy;
@@ -34,7 +37,13 @@ const collection = (): Collection<CommunityGroupDoc> =>
 
 const toRecord = (doc: CommunityGroupDoc): CommunityGroupRecord => {
   const { _id, ...rest } = doc;
-  return { ...rest, id: _id, adminUserId: rest.adminUserId ?? null };
+  return {
+    ...rest,
+    id: _id,
+    adminUserId: rest.adminUserId ?? null,
+    description: rest.description ?? null,
+    policies: rest.policies ?? null,
+  };
 };
 
 /** Public discover directory — `visibility: public` + `status: active` only. */
@@ -66,6 +75,31 @@ export const findCommunityById = async (id: string): Promise<CommunityGroupRecor
   return doc ? toRecord(doc) : null;
 };
 
+export const listCommunityGroupsHostedByUser = async (adminUserId: string): Promise<CommunityGroupRecord[]> => {
+  const cursor = collection().find({ adminUserId }, { sort: { createdAt: -1 } });
+  const docs = await cursor.toArray();
+  return docs.map(toRecord);
+};
+
+/** Owner rows plus communities where user is a co-admin. */
+export const listCommunityGroupsManagedByUser = async (userId: string): Promise<CommunityGroupRecord[]> => {
+  const ownedDocs = await collection().find({ adminUserId: userId }).sort({ createdAt: -1 }).toArray();
+  const ownedIds = new Set(ownedDocs.map((doc) => doc._id));
+  const coAdminIds = (await listCommunityIdsCoAdministeredByUser(userId)).filter((id) => !ownedIds.has(id));
+  const coDocs = coAdminIds.length
+    ? await collection()
+        .find({ _id: { $in: coAdminIds } })
+        .sort({ createdAt: -1 })
+        .toArray()
+    : [];
+  return [...ownedDocs, ...coDocs].map(toRecord);
+};
+
+export const findCommunityBySlug = async (slug: string): Promise<CommunityGroupRecord | null> => {
+  const doc = await collection().findOne({ slug });
+  return doc ? toRecord(doc) : null;
+};
+
 export const listAdminCommunityGroups = async (): Promise<CommunityGroupRecord[]> => {
   const cursor = collection().find({}, { sort: { 'geoRef.names.country': 1, name: 1 } });
   const docs = await cursor.toArray();
@@ -80,10 +114,30 @@ export const updateCommunityGroupStatus = async (
   return result.matchedCount > 0;
 };
 
+export const patchCommunityGroupProfile = async (
+  id: string,
+  patch: {
+    summary?: string | null;
+    description?: string | null;
+    policies?: string | null;
+    bannerUrl?: string | null;
+  }
+): Promise<CommunityGroupRecord | null> => {
+  const $set: Record<string, unknown> = { updatedAt: new Date() };
+  if ('summary' in patch) $set.summary = patch.summary ?? null;
+  if ('description' in patch) $set.description = patch.description ?? null;
+  if ('policies' in patch) $set.policies = patch.policies ?? null;
+  if ('bannerUrl' in patch) $set.bannerUrl = patch.bannerUrl ?? null;
+  const updated = await collection().findOneAndUpdate({ _id: id }, { $set }, { returnDocument: 'after' });
+  return updated ? toRecord(updated) : null;
+};
+
 export const insertCommunityGroup = async (input: {
   name: string;
   slug: string;
   summary: string | null;
+  description?: string | null;
+  policies?: string | null;
   bannerUrl: string | null;
   visibility: CommunityDiscoverVisibility;
   joinPolicy: CommunityJoinPolicy;
@@ -99,6 +153,8 @@ export const insertCommunityGroup = async (input: {
     name: input.name,
     slug: input.slug,
     summary: input.summary,
+    description: input.description ?? null,
+    policies: input.policies ?? null,
     bannerUrl: input.bannerUrl,
     visibility: input.visibility,
     joinPolicy: input.joinPolicy,

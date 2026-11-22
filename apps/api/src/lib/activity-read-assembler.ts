@@ -140,6 +140,7 @@ const mongoEventToEvent = (doc: MongoActivityDoc): Activity => {
   activityMode: doc.activityMode ?? null,
   participantIntentId: doc.participantIntentId ?? null,
   groupChatPostPolicy: doc.groupChatPostPolicy ?? null,
+  discoverCommunityId: doc.discoverCommunityId ?? null,
   guides: doc.guides ?? [],
   schemaVersion: doc.schemaVersion,
   summary: doc.summary ?? null,
@@ -531,6 +532,50 @@ export const listPublishedUpcomingActivitiesByMemberFromMongo = async (
   );
   return assembleEventsWithPublicRelations(visible.slice(0, take));
 };
+
+const listPublishedActivitiesByDiscoverCommunityFromMongo = async (input: {
+  communityId: string;
+  window: 'upcoming' | 'past';
+  take: number;
+}): Promise<ActivityWithPublicRelations[]> => {
+  const now = new Date();
+  const baseFilter = {
+    status: ActivityStatus.PUBLISHED,
+    discoverCommunityId: input.communityId,
+    activityMode: { $ne: 'seeking' as const },
+    joinMode: { $ne: 'private' as const },
+  };
+  const timeFilter =
+    input.window === 'upcoming'
+      ? { startAt: { $gte: now } }
+      : { startAt: { $lt: now } };
+
+  const docs = await activitiesCollection()
+    .find({ ...baseFilter, ...timeFilter })
+    .sort({ startAt: input.window === 'upcoming' ? 1 : -1 })
+    .limit(Math.max(input.take, 1) * 3)
+    .toArray();
+
+  const filtered = await filterPublishedDocs(docs, input.window);
+  const visible = filtered.filter(
+    (doc) => !shouldHideActivityFromExploreMap(doc.joinMode, doc.requirements)
+  );
+  return assembleEventsWithPublicRelations(visible.slice(0, input.take));
+};
+
+/** Upcoming published outings for a discoverable community. */
+export const listPublishedUpcomingActivitiesByDiscoverCommunityFromMongo = async (
+  communityId: string,
+  take: number
+): Promise<ActivityWithPublicRelations[]> =>
+  listPublishedActivitiesByDiscoverCommunityFromMongo({ communityId, window: 'upcoming', take });
+
+/** Past published outings for a discoverable community. */
+export const listPublishedPastActivitiesByDiscoverCommunityFromMongo = async (
+  communityId: string,
+  take: number
+): Promise<ActivityWithPublicRelations[]> =>
+  listPublishedActivitiesByDiscoverCommunityFromMongo({ communityId, window: 'past', take });
 
 /** Published past outings hosted or created by a member (public profile trip history). */
 export const listPublishedPastActivitiesByMemberFromMongo = async (

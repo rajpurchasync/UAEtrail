@@ -121,7 +121,7 @@ describe('authorityMatrixGuard (DMCP Phase 0)', () => {
     expect(byId.get('people.plan_hub')?.note).toMatch(/No Plan aggregate/);
     const program = JSON.parse(read('scripts/refactor-program.json'));
     expect(program.migrations?.find((m: { id: string }) => m.id === 'MIG-COMMUNITY-DISCOVER')?.status).toBe(
-      'in_progress'
+      'complete'
     );
     expect(read('src/config/peopleGraphPlanSpineGuard.test.ts')).toMatch(/PEOPLE-SPINE-06/);
     expect(read('package.json')).toMatch(/verify:people-graph-plan/);

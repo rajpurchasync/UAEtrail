@@ -68,6 +68,7 @@ import {
   resolveActivityLocation,
 } from './host-activity.js';
 import { buildPublishingTenantActivityDto } from './publishing-tenant-activity-read.js';
+import { assertDiscoverCommunityIdForActivityPublish } from './community-discover-publish-gate.js';
 import { resolveRideshareVehicleForActivityPublish } from './me-vehicles-publish.js';
 import { syncActivityGuides } from './activity-guides.js';
 
@@ -97,6 +98,13 @@ export const createPublishingTenantActivity = async (input: {
 
   const hostId = body.hostId ?? input.actorId;
   await assertActivityHost(input.tenantId, hostId, tenant, { platformAdmin: input.platformAdmin });
+
+  const resolvedJoinMode = resolveJoinMode(body.joinMode, body.requirements);
+  await assertDiscoverCommunityIdForActivityPublish(
+    hostId,
+    body.discoverCommunityId ?? null,
+    resolvedJoinMode
+  );
 
   const countryCode = tenant.countryCode ?? location.countryCode ?? 'AE';
   const hostStatus = await resolveMemberStatus(input.actorId);
@@ -195,6 +203,7 @@ export const createPublishingTenantActivity = async (input: {
     linkedActivityId: body.linkedActivityId ?? null,
     linkedRideshareActivityId: body.linkedRideshareActivityId ?? null,
     groupChatPostPolicy: body.groupChatPostPolicy ?? null,
+    discoverCommunityId: body.discoverCommunityId?.trim() || null,
   });
 
   await createAuditLog({
@@ -336,6 +345,19 @@ export const updatePublishingTenantActivity = async (input: {
     assertActivityJoinInstructions(nextRequirements);
   }
 
+  const nextJoinMode =
+    body.joinMode !== undefined
+      ? resolveJoinMode(body.joinMode, body.requirements ?? existing.requirements)
+      : resolveJoinMode(existing.joinMode, body.requirements ?? existing.requirements);
+  if (body.discoverCommunityId !== undefined) {
+    const nextCommunityId = body.discoverCommunityId?.trim() || null;
+    await assertDiscoverCommunityIdForActivityPublish(
+      input.actorId,
+      nextCommunityId,
+      nextJoinMode
+    );
+  }
+
   const updated = await updateActivityDetailed(activityId, {
     location: body.locationId ? { connect: { id: body.locationId } } : undefined,
     title: body.title,
@@ -420,6 +442,9 @@ export const updatePublishingTenantActivity = async (input: {
     linkedActivityId: body.linkedActivityId,
     linkedRideshareActivityId: body.linkedRideshareActivityId,
     groupChatPostPolicy: body.groupChatPostPolicy,
+    ...(body.discoverCommunityId !== undefined
+      ? { discoverCommunityId: body.discoverCommunityId?.trim() || null }
+      : {}),
   });
 
   if (body.groupChatPostPolicy !== undefined) {

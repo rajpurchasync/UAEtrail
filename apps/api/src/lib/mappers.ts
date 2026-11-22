@@ -464,6 +464,7 @@ const toEventDto = ({
   outingTopic: event.outingTopic ?? null,
   activityMode: event.activityMode ?? null,
   participantIntentId: event.participantIntentId ?? null,
-  groupChatPostPolicy: event.groupChatPostPolicy ?? null
+  groupChatPostPolicy: event.groupChatPostPolicy ?? null,
+  discoverCommunityId: event.discoverCommunityId ?? null,
 };
 };
