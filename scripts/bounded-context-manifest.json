@@ -260,7 +260,8 @@
         "src/list/shell/useListDiscoveryExperienceModel.ts",
         "src/list/shell/useListDiscoveryCrewsCategoryModel.ts",
         "src/list/shell/useListDiscoveryExploreSearchFeedModel.ts",
-        "src/list/shell/useListDiscoveryComposeBridgeModel.ts"
+        "src/list/shell/useListDiscoveryComposeBridgeModel.ts",
+        "src/list/shell/useListDiscoveryBrowseActionsModel.ts"
       ]
     },
     {

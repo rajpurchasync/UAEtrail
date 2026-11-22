@@ -195,7 +195,7 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/listDiscoverySearchCommit.ts'))).toBe(false);
     expect(existsSync(join(process.cwd(), 'src/list/browse/browseAudienceFilter.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/browseAudienceFilter.ts'))).toBe(false);
-    expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(/browse\/browseListSearchCommit/);
+    expect(read('src/list/shell/useListDiscoveryBrowseActionsModel.ts')).toMatch(/browse\/browseListSearchCommit/);
     expect(read('src/list/browse/browseListFilters.ts')).toMatch(/browseAudienceFilter/);
   });
 

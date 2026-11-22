@@ -33,6 +33,8 @@ describe('list module hygiene', () => {
     readFileSync(join(process.cwd(), 'src/list/shell/useListDiscoveryExperienceModel.ts'), 'utf8');
   const listDiscoveryCrewsModel = () =>
     readFileSync(join(process.cwd(), 'src/list/shell/useListDiscoveryCrewsCategoryModel.ts'), 'utf8');
+  const listDiscoveryBrowseActionsModel = () =>
+    readFileSync(join(process.cwd(), 'src/list/shell/useListDiscoveryBrowseActionsModel.ts'), 'utf8');
 
   it('renders the full-screen explorer instead of poster or map-list rows', () => {
     const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
@@ -239,7 +241,7 @@ describe('list module hygiene', () => {
     const model = listDiscoveryModel();
     expect(experience).toMatch(/PeopleBrowsePanel/);
     expect(experience).toMatch(/embedded/);
-    expect(model).toMatch(/listCat: 'people'/);
+    expect(listDiscoveryBrowseActionsModel()).toMatch(/listCat: 'people'/);
     expect(listDiscoveryCrewsModel()).toMatch(/useMemberDiscoveryRoster/);
   });
 
@@ -288,6 +290,7 @@ describe('list module hygiene', () => {
       'src/list/shell/useListDiscoveryExperienceModel.ts',
       'src/list/shell/useListDiscoveryExploreSearchFeedModel.ts',
       'src/list/shell/useListDiscoveryComposeBridgeModel.ts',
+      'src/list/shell/useListDiscoveryBrowseActionsModel.ts',
       'src/list/browse/listDiscoverySearchCreateFlowStub.ts',
       'src/list/browse/useListDiscoveryUrlState.ts',
     ]);

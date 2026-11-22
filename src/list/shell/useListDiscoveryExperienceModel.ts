@@ -1,23 +1,18 @@
 /** List discovery orchestration — browse + people + map split (R2, mirrors explore shell model). */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProductLocation, useProductSearchParams } from '../../routing/useEffectiveLocation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
 import { reloadExploreMap } from '../../hooks/useExploreMap';
-import { browseListFilterPatchForSearchScope } from '../browse/browseListSearchCommit';
-import type { BrowseListFilterState } from '../browse/browseListFilters';
 import {
   countExploreSearchScopes,
   parseExploreAreaSlug,
   useExplorePublishedAreasQuery,
-  type ExploreActivityDatePreset,
-  type ExploreSearchScopeKey,
 } from '../browse/discoveryListRuntime';
 import { useBrowseListFeed } from '../browse/useBrowseListFeed';
 import { useListDiscoveryUrlState } from '../browse/useListDiscoveryUrlState';
-import { exploreMapPathFromListSearch } from '../browse/browseListRouting';
 import {
   listDiscoveryEmbeddedOnExplore,
   listDiscoveryExploreSearch,
@@ -32,7 +27,6 @@ import {
   browseListBucketCategories,
   parseBrowseListBucket,
 } from '../browse/browseListBucket';
-import { browseListCatForBucket, scopeBrowseListStateForListCat } from '../browse/browseListMapHandoff';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   crewsCategoryMapFeedEnabled,
@@ -49,6 +43,7 @@ import {
   resolveBrowseListSearchPlaceholder,
 } from '../browse/browseListCopy';
 import { useListDiscoveryComposeBridgeModel } from './useListDiscoveryComposeBridgeModel';
+import { useListDiscoveryBrowseActionsModel } from './useListDiscoveryBrowseActionsModel';
 
 export type ListDiscoveryExperienceProps = {
   surface: ListDiscoverySurface;
@@ -235,96 +230,23 @@ export const useListDiscoveryExperienceModel = ({
       : 0
     : countBrowseListFilters(filters, venueRegions, explorerBucket, geoPath.length);
 
-  const commitQuery = () => {
-    syncUrl({ query: draftQuery });
-  };
-
-  const handleSearchCommit = (scope?: ExploreSearchScopeKey | null) => {
-    if (scope === 'facilities') return;
-    if (scope === 'people') {
-      syncUrl({
-        query: draftQuery,
-        listCat: 'people',
-        categories: ['people'],
-        tripAvailabilityOnly: false,
-        tripTopics: [],
-        placeTopics: [],
-        activityDatePreset: 'anyday',
-      });
-      return;
-    }
-    if (scope === 'activities') {
-      syncUrl({
-        query: draftQuery,
-        listCat: 'activities',
-        ...scopeBrowseListStateForListCat(filters, 'activities'),
-      });
-      return;
-    }
-    if (scope === 'places' || scope === 'shops') {
-      const patch = browseListFilterPatchForSearchScope(scope);
-      syncUrl({
-        query: draftQuery,
-        listCat: 'venues',
-        ...scopeBrowseListStateForListCat(
-          { ...filters, placeTopics: patch?.placeTopics ?? [] },
-          'venues'
-        ),
-      });
-      return;
-    }
-    if (scope === 'agencies') {
-      syncUrl({ query: draftQuery, listCat: 'agencies', categories: ['agencies'] });
-      return;
-    }
-    const cat = listCat ?? browseListCatForBucket(explorerBucket);
-    syncUrl({
-      query: draftQuery,
-      listCat: cat,
-      ...scopeBrowseListStateForListCat(filters, cat === 'venues' ? 'venues' : 'activities'),
-    });
-  };
-
-  const clearAllFilters = () => {
-    const cat = listCat ?? browseListCatForBucket(explorerBucket);
-    const emptyBase: BrowseListFilterState = {
-      query: '',
-      categories: [],
-      tripTopics: [],
-      placeTopics: [],
-      tripAvailabilityOnly: false,
-      price: 'all',
-      when: 'any',
-      activityDatePreset: 'anyday',
-      peopleBrowseTab: filters.peopleBrowseTab,
-      hasTrip: false,
-      facilityKinds: [],
-      audience: 'anyone',
-    };
-  const scoped =
-      cat === 'venues' || cat === 'activities'
-        ? scopeBrowseListStateForListCat(emptyBase, cat)
-        : emptyBase;
-    syncUrl({ ...scoped, listCat: cat, regions: [], geoPath: [] });
-    setDraftQuery('');
-  };
-
-  const handleActivityDatePresetChange = useCallback(
-    (preset: ExploreActivityDatePreset) => syncUrl({ activityDatePreset: preset }),
-    [syncUrl]
-  );
-
-  const handleClearGeoScope = useCallback(() => syncUrl({ geoPath: [] }), [syncUrl]);
-
-  const handlePopGeoScope = useCallback(
-    () => syncUrl({ geoPath: geoPath.slice(0, -1) }),
-    [geoPath, syncUrl]
-  );
-
-  const handleVenueRegionsChange = useCallback(
-    (regions: string[]) => syncUrl({ regions }),
-    [syncUrl]
-  );
+  const {
+    commitQuery,
+    handleSearchCommit,
+    clearAllFilters,
+    handleActivityDatePresetChange,
+    handleClearGeoScope,
+    handlePopGeoScope,
+    handleVenueRegionsChange,
+  } = useListDiscoveryBrowseActionsModel({
+    draftQuery,
+    setDraftQuery,
+    filters,
+    listCat,
+    explorerBucket,
+    geoPath,
+    syncUrl,
+  });
 
   useEffect(() => {
     onImmersiveSubtitleChange?.(null);
