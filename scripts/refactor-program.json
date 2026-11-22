@@ -591,12 +591,16 @@
     {
       "id": "MIG-COMMUNITY-DISCOVER",
       "phase": "P5",
-      "status": "planned",
+      "status": "in_progress",
       "owner": "social_graph",
       "contextIds": ["social_graph", "discovery", "member_discovery"],
-      "apiRoots": [],
+      "apiRoots": [
+        "apps/api/src/lib/community-groups-store.ts",
+        "apps/api/src/services/community-discover-read.ts",
+        "apps/api/src/routes/user/registerExploreCommunityRoutes.ts"
+      ],
       "feRoots": ["src/crew-discovery", "src/list", "src/explore"],
-      "successMetric": "community_groups + geoRef; GET discover communities; Find crew Communities list (country→city sort); community home route; activities host-as-community; bounded-context manifest + guards"
+      "successMetric": "Phase 1 shipped: community_groups collection + GET /explore/communities + FE list behind FEATURE_FLAGS.communityDiscover. Remaining: join flows, community home, host-as-community activities."
     },
     {
       "id": "MIG-SURFACE-MEMBER-PEOPLE",

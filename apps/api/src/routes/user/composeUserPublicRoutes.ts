@@ -11,6 +11,7 @@ import { registerPublicTenantRoutes } from './registerPublicTenantRoutes.js';
 import { registerReviewRoutes } from './registerReviewRoutes.js';
 import { registerPublicWeatherRoutes } from './registerPublicWeatherRoutes.js';
 import { registerPublicVitalsRoutes } from './registerPublicVitalsRoutes.js';
+import { registerExploreCommunityRoutes } from './registerExploreCommunityRoutes.js';
 
 /** Guest + signed-out catalog reads, auth lifecycle, public reviews (before `requireAuth`). */
 export const composeUserPublicRoutes = (userRouter: Router): void => {
@@ -21,6 +22,7 @@ export const composeUserPublicRoutes = (userRouter: Router): void => {
   registerPublicFacilityRoutes(userRouter);
   registerPublicAreaRoutes(userRouter);
   registerExploreAvailabilityRoutes(userRouter);
+  registerExploreCommunityRoutes(userRouter);
   registerPublicTenantRoutes(userRouter);
   registerPublicActivityRoutes(userRouter);
   registerAccountLifecycleRoutes(userRouter);

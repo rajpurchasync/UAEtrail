@@ -8,7 +8,7 @@ const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
  * DMCP Phase 7 — product: Teams · outing crew · Friends · /plan hub.
  * Not "social" or "buddies" product copy (`buddies=` URL segment retired — see crewsTerminologyGuard).
  * Wire: `/buddies`, `buddy-store`, `buddiesApi` are stable paths only.
- * Not discoverable Communities (MIG-COMMUNITY-DISCOVER stays planned).
+ * Discoverable Communities: MIG-COMMUNITY-DISCOVER (in_progress — API phase 1).
  */
 describe('peopleGraphPlanSpineGuard (DMCP Phase 7)', () => {
   it('PEOPLE-SPINE-01: Teams and outing crew are distinct member_group kinds', () => {
@@ -29,7 +29,7 @@ describe('peopleGraphPlanSpineGuard (DMCP Phase 7)', () => {
     expect(read('docs/MEMBER_MODEL.md')).toMatch(/PublishingProfileKind.*`community`/);
     const program = JSON.parse(read('scripts/refactor-program.json'));
     const mig = program.migrations?.find((m: { id: string }) => m.id === 'MIG-COMMUNITY-DISCOVER');
-    expect(mig?.status).toBe('planned');
+    expect(mig?.status).toBe('in_progress');
   });
 
   it('PEOPLE-SPINE-03: Plan tab is a hub over activities/goals/availability (no Plan entity)', () => {

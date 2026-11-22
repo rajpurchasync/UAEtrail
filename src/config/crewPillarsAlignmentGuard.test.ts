@@ -30,7 +30,7 @@ describe('crewPillarsAlignmentGuard (MIG-PEOPLE-VOCAB-2026)', () => {
     expect(read('src/pages/Groups.tsx')).toMatch(/PRODUCT_GROUPS_SURFACE_LABEL|Teams/);
     const program = JSON.parse(read('scripts/refactor-program.json'));
     const mig = program.migrations?.find((m: { id: string }) => m.id === 'MIG-COMMUNITY-DISCOVER');
-    expect(mig?.status).toBe('planned');
+    expect(mig?.status).toBe('in_progress');
   });
 
   it('CREW-PILLAR-03: Friends surface vs guides directory', () => {

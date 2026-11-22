@@ -1,4 +1,8 @@
-import type { ExploreMapItemDTO, ExploreMapOverlayDTO } from '@uaetrail/shared-types';
+import type {
+  CommunityDiscoverCardDTO,
+  ExploreMapItemDTO,
+  ExploreMapOverlayDTO,
+} from '@uaetrail/shared-types';
 import { apiRequest } from '../client';
 
 export type ExploreMapQueryParams = {
@@ -51,4 +55,8 @@ export const exploreApi = {
   /** Per-viewer peek/engagement for the public map catalog. */
   getExploreMapOverlay: (params?: ExploreMapQueryParams) =>
     apiRequest<{ data: ExploreMapOverlayDTO }>(exploreOverlayHttpPath(params), { auth: true }),
+
+  /** Public discoverable communities (`MIG-COMMUNITY-DISCOVER`). */
+  getExploreCommunities: () =>
+    apiRequest<{ data: CommunityDiscoverCardDTO[] }>('/explore/communities'),
 } as const;

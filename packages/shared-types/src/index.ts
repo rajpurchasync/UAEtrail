@@ -2086,6 +2086,17 @@ export {
 } from './member-group.js';
 export type { MemberGroupInboundType, MemberGroupKind } from './member-group.js';
 
+export type {
+  CommunityDiscoverCardDTO,
+  CommunityDiscoverVisibility,
+  CommunityJoinPolicy,
+} from './community-discover.js';
+export {
+  COMMUNITY_DISCOVER_VISIBILITY,
+  COMMUNITY_JOIN_POLICIES,
+  compareCommunityDiscoverByGeo,
+} from './community-discover.js';
+
 export type { CrewPillarBoundedContext, CrewPillarId, CrewPillarSpec } from './crew-pillars.js';
 export {
   CREW_PILLAR_IDS,
