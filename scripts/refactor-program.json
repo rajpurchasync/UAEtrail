@@ -241,7 +241,7 @@
       "feRoots": [
         "src/hooks",
         "src/explore/useExplorePublishedAreas.ts",
-        "src/pages/Notifications.tsx",
+        "src/routing/inboundBookmarkRedirects.tsx",
         "src/pages/ShopPublic.tsx",
         "src/pages/ProfileBadges.tsx",
         "src/explore/ui/HostingPublishSuccessSheet.tsx",

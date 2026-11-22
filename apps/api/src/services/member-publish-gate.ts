@@ -1,5 +1,6 @@
-import { memberProfileComplete } from '@uaetrail/shared-types';
+import { memberProfileComplete, type MemberStatusDTO } from '@uaetrail/shared-types';
 import { ApiError } from '../lib/api-error.js';
+import { canPublishFromMemberStatus } from '../lib/product-capability-gate.js';
 import { resolveMemberStatus } from './member-status.js';
 
 /** Enforce organize/publish rules before creating or publishing activities. */
@@ -17,7 +18,10 @@ export const assertMemberCanPublishActivities = async (
       'Complete your profile before publishing activities.'
     );
   }
-  if (!status.canPublish) {
+  const publishStatus = {
+    publish: { canPublish: status.canPublish, canAccessPublishingWorkspace: status.canAccessPublishingWorkspace },
+  } as MemberStatusDTO;
+  if (!canPublishFromMemberStatus(publishStatus)) {
     throw new ApiError(403, 'publish_not_allowed', 'You cannot publish activities yet.');
   }
   if (options?.pricingMode === 'paid' && !status.canHostPaidActivities) {

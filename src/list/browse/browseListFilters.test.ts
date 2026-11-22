@@ -4,7 +4,7 @@ import {
   availabilityExploreMapItem,
   seekingExploreMapItem,
   hostedExploreMapItem,
-} from '../explore/exploreMapItemFixtures';
+} from '../../explore/exploreMapItemFixtures';
 import { filterExploreMapItemsForList, type BrowseListFilterState } from './browseListFilters';
 
 const baseState: BrowseListFilterState = {

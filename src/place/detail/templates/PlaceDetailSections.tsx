@@ -49,6 +49,7 @@ import type { DiscoveryCardTone } from '../../../discovery/discoveryCardModel';
 import { PLACE_DETAIL_TAB_LABELS } from '../../../place/placeDetailTab';
 import { resolvePlaceDetailHeaderChrome } from '../resolvePlaceDetailHeaderChrome';
 import { PlacePremiumGuidePanel } from '../../../components/place/PlacePremiumGuidePanel';
+import { PlaceDetailGuestGate } from '../../../components/place/detail/PlaceDetailGuestGate';
 
 const toneForKind = (kind: PlaceDetailKind): DiscoveryCardTone => {
   if (kind === 'camp') return 'camping';
@@ -87,6 +88,7 @@ export const PlaceDetailSections = ({
   unlockNotice,
   onDismissUnlockNotice,
   onReviewSubmitted,
+  guestPreview = false,
 }: PlaceDetailSectionsProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -226,6 +228,9 @@ export const PlaceDetailSections = ({
           </div>
 
           <div className="flex flex-col gap-6 lg:gap-3">
+            {guestPreview && !user ? (
+              <PlaceDetailGuestGate placeId={placeId} placeName={displayName} className="mb-1" />
+            ) : null}
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between md:gap-6">
             <section className="min-w-0 flex-1" aria-label="At a glance">
               <PlaceDetailKindFacts kind={kind} place={place} />

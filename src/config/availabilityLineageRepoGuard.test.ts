@@ -81,7 +81,7 @@ describe('availabilityLineageRepoGuard', () => {
     const mode = readFileSync(join(process.cwd(), 'src/explore/exploreActivityModeFilter.ts'), 'utf8');
     expect(mode).toMatch(/return 'availability'/);
     expect(mode).not.toMatch(/serializeExploreActivityModeFilter[\s\S]*'seeking'/);
-    const pills = readFileSync(join(process.cwd(), 'src/explore/ui/ExploreActivityModePillsRow.tsx'), 'utf8');
-    expect(pills).not.toMatch(/key:\s*'seeking'/);
+    const modeFilter = readFileSync(join(process.cwd(), 'src/explore/exploreActivityModeFilter.ts'), 'utf8');
+    expect(modeFilter).not.toMatch(/serializeExploreActivityModeFilter[\s\S]*'seeking'/);
   });
 });

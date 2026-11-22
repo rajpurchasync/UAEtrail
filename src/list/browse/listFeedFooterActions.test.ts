@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { buildDiscoveryCardViewModelCard } from '../discovery';
-import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
+import { buildDiscoveryCardViewModelCard } from '../../discovery';
+import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { resolveListFeedFooterModel } from './listFeedFooterActions';
 
 const activityCard = (viewerAccess: DiscoveryCardModel['viewerAccess']): DiscoveryCardModel => {

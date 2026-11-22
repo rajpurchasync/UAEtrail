@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildDiscoveryCardViewModelCard } from '../discovery';
+import { buildDiscoveryCardViewModelCard } from '../../discovery';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   formatListFeedPosterTitleLines,
@@ -11,8 +11,8 @@ import {
   resolveBrowsePosterScheduleGrid,
 } from './listPosterPresentation';
 import { resolveListFeedFooterModel } from './listFeedFooterActions';
-import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
-import { seekingExploreMapItem } from '../explore/exploreMapItemFixtures';
+import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
+import { seekingExploreMapItem } from '../../explore/exploreMapItemFixtures';
 
 describe('list poster presentation', () => {
   it('joins seeking highlight and date with a space', () => {

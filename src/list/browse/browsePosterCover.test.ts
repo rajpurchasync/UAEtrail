@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { buildDiscoveryCardViewModelCard } from '../discovery';
-import { HOME_HERO_OG_PATH } from '../config/seo';
+import { buildDiscoveryCardViewModelCard } from '../../discovery';
+import { HOME_HERO_OG_PATH } from '../../config/seo';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   buildVenueCoverByLocationId,

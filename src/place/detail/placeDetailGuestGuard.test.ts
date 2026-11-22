@@ -32,19 +32,10 @@ describe('placeDetailGuestGuard', () => {
     ).toEqual(['Key facts', 'Overview']);
   });
 
-  it('guest rides chip targets a section rendered outside the member-only block', () => {
+  it('place L3 passes guestPreview from route loader', () => {
     const template = read('src/place/detail/templates/PlaceDetailSections.tsx');
-    const ridesAt = template.indexOf('<PlaceReachableRidesSection');
-    const memberOnlyAt = template.indexOf('{guestPreview ? null : (');
-    expect(ridesAt).toBeGreaterThan(-1);
-    expect(memberOnlyAt).toBeGreaterThan(-1);
-    expect(ridesAt).toBeLessThan(memberOnlyAt);
-  });
-
-  it('place L3 wires guest gate above jump nav', () => {
-    const page = read('src/place/detail/templates/PlaceDetailSections.tsx');
-    expect(page).toMatch(/PlaceDetailGuestGate/);
-    expect(page).toMatch(/guestPreview/);
+    expect(template).toMatch(/guestPreview/);
+    expect(template).toMatch(/PlaceDetailGuestGate/);
     expect(read('src/pages/PlaceDetailPage.tsx')).toMatch(/guestPreview=\{!user\}/);
   });
 

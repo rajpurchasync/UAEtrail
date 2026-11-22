@@ -30,9 +30,9 @@ describe('mapChromeRetiredTermsGuard (no Find-crew map pill)', () => {
     expect(read('src/discovery/discoveryCardModel.ts')).not.toMatch(/discoveryCardIsFindCrewPin/);
   });
 
-  it('MAP-CHROME-05: activity-mode row uses availability (not Seeking pill key)', () => {
-    const pills = read('src/explore/ui/ExploreActivityModePillsRow.tsx');
-    expect(pills).toMatch(/key:\s*'availability'/);
-    expect(pills).not.toMatch(/key:\s*'seeking'/);
+  it('MAP-CHROME-05: activity-mode filter uses availability (not seeking)', () => {
+    const mode = read('src/explore/exploreActivityModeFilter.ts');
+    expect(mode).toMatch(/return 'availability'/);
+    expect(mode).not.toMatch(/'seeking'/);
   });
 });
