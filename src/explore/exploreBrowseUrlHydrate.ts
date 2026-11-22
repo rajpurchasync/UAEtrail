@@ -25,7 +25,7 @@ import {
 } from './exploreBrowseTaxonomy';
 import { BROWSE_DISCOVER_PARAM, LIST_CAT_PARAM, parseListCatParam } from '../list/browse/browseListUrlState';
 import type { ExploreBrowseListMode } from './exploreBrowseUrlSync';
-import { parseExplorePeopleBrowseTab } from '../list/peopleListBrowseUrl';
+import { parseExplorePeopleBrowseTab } from '../list/browse/peopleListBrowseUrl';
 import { readExploreSearchScopeParam } from '../routing/productUrlInbound';
 import { parseExplorePinKindFilter, type ExplorePinKindFilter } from './explorePinKindFilter';
 import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';

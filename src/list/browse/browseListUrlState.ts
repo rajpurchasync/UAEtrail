@@ -37,7 +37,7 @@ import {
   PEOPLE_LIST_TAB_URL_PARAM,
   parsePeopleListBrowseTab,
   serializePeopleListBrowseTab,
-} from '../peopleListBrowseUrl';
+} from './peopleListBrowseUrl';
 import {
   BROWSE_AUDIENCE_PARAM,
   parseBrowseAudienceFilter,

@@ -9,7 +9,7 @@ import type { ExplorePriceFilter } from '../exploreOptionalFilters';
 import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
 import type { PlaceKind } from '@uaetrail/shared-types';
 import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
-import type { PeopleBrowseTab } from '../../list/peopleListBrowseUrl';
+import type { PeopleBrowseTab } from '../../list/browse/peopleListBrowseUrl';
 import type { DesktopBrowseTab } from './exploreBrowsePanelCopy';
 import { UNIFIED_MAP_FILTER_KEYS } from './exploreBrowseUrlConstants';
 import type { useExploreBrowseUrlApplyHandlers } from './useExploreBrowseUrlApplyHandlers';

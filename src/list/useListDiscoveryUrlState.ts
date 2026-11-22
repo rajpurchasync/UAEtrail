@@ -27,7 +27,7 @@ import {
   serializeBrowseListSearchParams,
 } from './browse/browseListUrlState';
 
-import { PEOPLE_LIST_TAB_URL_PARAM } from './peopleListBrowseUrl';
+import { PEOPLE_LIST_TAB_URL_PARAM } from './browse/peopleListBrowseUrl';
 import {
   CREWS_AVAILABILITY_SHEET_PARAM,
   CREWS_OPEN_URL_PARAM,

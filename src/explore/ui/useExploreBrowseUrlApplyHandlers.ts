@@ -26,7 +26,7 @@ import {
 } from '../exploreBrowseTaxonomy';
 import type { BrowseMainCategoryKey } from '../../list/browse/browseListTaxonomy';
 import type { ExploreBrowseUrlSyncPatch } from '../exploreBrowseUrlSync';
-import type { PeopleBrowseTab } from '../../list/peopleListBrowseUrl';
+import type { PeopleBrowseTab } from '../../list/browse/peopleListBrowseUrl';
 import type { ExplorePinKindFilter } from '../explorePinKindFilter';
 import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';

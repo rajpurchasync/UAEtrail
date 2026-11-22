@@ -34,7 +34,7 @@ describe('productUrlInboundGuard (single inbound alias registry)', () => {
     const inbound = read('src/routing/productUrlInbound.ts');
     expect(inbound).toMatch(/readPeopleCrewsTabParam/);
     expect(inbound).toMatch(/stripRetiredPeopleListTabParams/);
-    expect(read('src/list/peopleListBrowseUrl.ts')).toMatch(/readPeopleCrewsTabParam/);
+    expect(read('src/list/browse/peopleListBrowseUrl.ts')).toMatch(/readPeopleCrewsTabParam/);
     expect(read('src/explore/exploreBrowseUrlSync.ts')).toMatch(/stripRetiredPeopleListTabParams/);
     expect(read('src/list/browse/browseListMapHandoff.ts')).toMatch(/stripRetiredPeopleListTabParams/);
     expect(read('src/list/useListDiscoveryUrlState.ts')).toMatch(/stripRetiredPeopleListTabParams/);

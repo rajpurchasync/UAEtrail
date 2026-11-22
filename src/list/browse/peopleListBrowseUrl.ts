@@ -7,7 +7,7 @@ import {
   INBOUND_BUDDIES_LIST_TAB_PARAM,
   PEOPLE_LIST_TAB_URL_PARAM,
   readPeopleCrewsTabParam,
-} from '../routing/productUrlInbound';
+} from '../../routing/productUrlInbound';
 
 export type { PeopleBrowseTab };
 

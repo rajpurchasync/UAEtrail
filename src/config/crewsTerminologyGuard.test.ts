@@ -31,7 +31,7 @@ const FORBIDDEN: Array<{ pattern: RegExp; label: string }> = [
 
 const ALLOWLIST = new Set([
   'src/config/crewsTerminologyGuard.test.ts',
-  'src/list/peopleListBrowseUrl.ts',
+  'src/list/browse/peopleListBrowseUrl.ts',
 ]);
 
 describe('crewsTerminologyGuard (Crews / peopleTab — not buddies segment)', () => {
@@ -66,7 +66,7 @@ describe('crewsTerminologyGuard (Crews / peopleTab — not buddies segment)', ()
   it('CREWS-03: single crews tab read path (productUrlInbound)', () => {
     const inbound = readFileSync(join(process.cwd(), 'src/routing/productUrlInbound.ts'), 'utf8');
     expect(inbound).toMatch(/readPeopleCrewsTabParam/);
-    expect(readFileSync(join(process.cwd(), 'src/list/peopleListBrowseUrl.ts'), 'utf8')).toMatch(
+    expect(readFileSync(join(process.cwd(), 'src/list/browse/peopleListBrowseUrl.ts'), 'utf8')).toMatch(
       /readPeopleCrewsTabParam/
     );
     const hydrate = readFileSync(join(process.cwd(), 'src/explore/exploreBrowseUrlHydrate.ts'), 'utf8');

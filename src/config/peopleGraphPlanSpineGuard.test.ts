@@ -46,7 +46,7 @@ describe('peopleGraphPlanSpineGuard (DMCP Phase 7)', () => {
     expect(read('src/content/productNorthStar.ts')).toMatch(/PRODUCT_FRIENDS_SURFACE_LABEL = 'Friends'/);
     expect(read('src/content/explorePeopleBrowseCopy.ts')).toMatch(/EXPLORE_SEARCH_SCOPE_PEOPLE_LABEL/);
     expect(read('src/routing/productUrlInbound.ts')).toMatch(/readPeopleCrewsTabParam/);
-    expect(read('src/list/peopleListBrowseUrl.ts')).not.toMatch(/parsePeopleBrowseTabFromUrl/);
+    expect(read('src/list/browse/peopleListBrowseUrl.ts')).not.toMatch(/parsePeopleBrowseTabFromUrl/);
     expect(read('src/config/mobileTabHeader.ts')).toMatch(/BUDDIES_PATH.*Friends/s);
     expect(read('src/list/browse/browseListTaxonomy.ts')).not.toMatch(/label:\s*['"]Buddies['"]/);
     expect(read('src/pages/Groups.tsx')).toMatch(/teamLabel|Team/);

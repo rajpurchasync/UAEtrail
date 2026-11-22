@@ -9,7 +9,7 @@ import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import {
   PEOPLE_LIST_TAB_URL_PARAM,
   serializePeopleListBrowseTab,
-} from '../peopleListBrowseUrl';
+} from './peopleListBrowseUrl';
 import {
   LIST_CAT_PARAM,
   serializeBrowseListSearchParams,

@@ -24,7 +24,7 @@ import {
   LIST_BROWSE_PLACE_TYPE_OPTIONS,
   LIST_BROWSE_PRICE_MODAL_OPTIONS,
   LIST_BROWSE_TRIP_TYPE_OPTIONS,
-} from '../listBrowseFilterModal';
+} from '../browse/listBrowseFilterModal';
 
 export type ListFilterPopPlacement = ListFilterFabCorner | 'below-end';
 

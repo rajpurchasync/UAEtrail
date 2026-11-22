@@ -26,7 +26,7 @@ import {
 import { useExploreBrowseUrlInboundMigrations } from './useExploreBrowseUrlInboundMigrations';
 import { useExploreBrowsePeekDismissOnFilterChange } from './useExploreBrowsePeekDismissOnFilterChange';
 import { useExploreBrowseUrlApplyHandlers } from './useExploreBrowseUrlApplyHandlers';
-import type { PeopleBrowseTab } from '../../list/peopleListBrowseUrl';
+import type { PeopleBrowseTab } from '../../list/browse/peopleListBrowseUrl';
 import type { ExplorePinKindFilter } from '../explorePinKindFilter';
 import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
