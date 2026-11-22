@@ -129,6 +129,13 @@ describe('peopleVocabularyTouchpointsGuard (MIG-PEOPLE-VOCAB-2026)', () => {
     expect(read('src/config/crossContextFoundationsGuard.test.ts')).toMatch(/CTX-FOUND-09/);
   });
 
+  it('PVOC-09b: P7 — GET /me/friends alias + friendsApi facade', () => {
+    expect(read('apps/api/src/routes/user/registerBuddyRoutes.ts')).toMatch(/\/me\/friends/);
+    expect(read('src/api/domains/buddies.ts')).toMatch(/export const friendsApi/);
+    expect(read('src/api/domains/buddies.ts')).toMatch(/getMeFriends/);
+    expect(read('src/hooks/activityInviteClientApi.ts')).toMatch(/fetchMeFriends/);
+  });
+
   it('PVOC-09: authority matrix documents Friends product vs buddy wire', () => {
     const matrix = JSON.parse(read('scripts/authority-matrix.json'));
     const buddy = (matrix.actions ?? []).find((a: { id: string }) => a.id === 'social.buddy_request');

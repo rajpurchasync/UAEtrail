@@ -22,7 +22,7 @@ Find crew must **not** mount directory browse as the My crew hub body (`PVOC-00b
 | P0 lexicon · P1 friends · P4 outing roster · P5-intent · P5c lenses · P5d three tabs · P6 wishlist · P8 docs | **Complete** |
 | P2 teams (Teams copy + group model); Community API | **Complete** UI; **`MIG-COMMUNITY-DISCOVER`** remains **planned** |
 | P3 guides directory (`crewsGuides`, `proKind`, profileRoleLabel) | **Complete** |
-| P7 wire cleanup | **Optional backlog** (not blocking close) |
+| P7 wire cleanup | **Complete** — `GET /me/friends` + `friendsApi` |
 
 Detailed Find crew UX: `.cursor/plans/crews_three_tabs_recommended_2026.plan.md` (P5d — all §12 checks done).
 
@@ -47,4 +47,4 @@ Covered by **MIG-PLATFORM-COMPOSE-OPERATOR-2026** (see `compose_kind_wire_refact
 | Item | Owner |
 |------|--------|
 | `MIG-COMMUNITY-DISCOVER` API + Community tab data | `refactor-program.json` |
-| P7 optional buddy wire rename | eng debt |
+| Full `buddiesApi` → `friendsApi` rename across all imports | optional eng debt |

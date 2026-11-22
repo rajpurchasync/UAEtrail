@@ -11,7 +11,7 @@ export type MeFriendsNetworkData = {
   outgoingRequests: BuddyRequestDTO[];
 };
 
-/** Product-facing friends roster — HTTP remains `GET /me/buddies` (BWL). */
+/** Product-facing friends roster — `GET /me/friends` (alias) or `/me/buddies` (BWL canonical). */
 export const useMeFriendsNetwork = (enabled = true) => {
   const wire = useMeBuddiesNetwork(enabled);
   return {

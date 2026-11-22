@@ -77,6 +77,12 @@ describe('connections API — buddy requests', () => {
       true
     );
 
+    const friendsRes = await request(app)
+      .get('/api/me/friends')
+      .set('Authorization', `Bearer ${sender.accessToken}`);
+    expect(friendsRes.status).toBe(200);
+    expect(friendsRes.body.data).toEqual(buddiesRes.body.data);
+
     const senderFollowsRecipient = await request(app)
       .get(`/api/me/follow-state/${recipientUser!._id}`)
       .set('Authorization', `Bearer ${sender.accessToken}`);

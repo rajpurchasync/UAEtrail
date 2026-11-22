@@ -112,8 +112,12 @@
     },
     {
       "id": "P7-wire-cleanup",
-      "status": "planned",
-      "deliverables": ["optional /me/friends alias", "buddiesApi facade rename"]
+      "status": "complete",
+      "deliverables": [
+        "GET /me/friends read alias",
+        "friendsApi facade (+ buddiesApi compat)",
+        "getMeFriends · fetchMeFriends"
+      ]
     }
   ],
   "terms": {

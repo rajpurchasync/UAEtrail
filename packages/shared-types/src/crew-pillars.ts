@@ -57,7 +57,7 @@ export const CREW_PILLAR_SPECS: Record<CrewPillarId, CrewPillarSpec> = {
     id: 'friends',
     boundedContexts: ['social_graph', 'communication'],
     routes: ['/crews', '/chat?to='],
-    wire: ['/me/buddies', '/me/buddy-requests', 'buddy_*', 'segment=buddies'],
+    wire: ['/me/buddies', '/me/friends', '/me/buddy-requests', 'buddy_*', 'segment=buddies'],
     notSameAs: ['teams', 'communities', 'outing_roster'],
   },
   teams: {
