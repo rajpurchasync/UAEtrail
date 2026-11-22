@@ -139,6 +139,8 @@ export const ListDiscoveryExperience = (props: ListDiscoveryExperienceProps) => 
             onCrewPeopleFacetChange={(facet) =>
               syncUrl({ crewPeopleFacet: facet, crewsOpen: null, crewsAvailGuide: null })
             }
+            crewProfessionalKind={filters.crewProfessionalKind}
+            onCrewProfessionalKindChange={(kind) => syncUrl({ crewProfessionalKind: kind })}
             crewsOpenLens={crewsOpenLens}
             onCrewsOpenLensChange={(lens) => syncUrl({ crewsOpen: lens })}
             crewsAvailabilityGuideFilter={crewsAvailabilityGuideFilter}

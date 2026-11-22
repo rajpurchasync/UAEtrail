@@ -14,7 +14,12 @@ describe('resolveBrowseListCreateFabLabel', () => {
     expect(resolveBrowseListCreateFabLabel('/explore', '?panel=venues&pinKind=places')).toBe(
       BROWSE_LIST_CREATE_VENUE
     );
-    expect(resolveBrowseListCreateFabLabel('/explore', '?view=people')).toBe(BROWSE_LIST_CREATE_CREW);
+    expect(resolveBrowseListCreateFabLabel('/explore', '?list=1&listCat=people')).toBe(
+      BROWSE_LIST_CREATE_CREW
+    );
+    expect(resolveBrowseListCreateFabLabel('/explore', '?view=people&list=1&listCat=people')).toBe(
+      BROWSE_LIST_CREATE_CREW
+    );
   });
 
   it('falls back to list bucket hints when tab is ambiguous', () => {

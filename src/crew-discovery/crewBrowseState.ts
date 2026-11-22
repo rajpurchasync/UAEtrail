@@ -9,12 +9,28 @@ export type CrewPeopleFacet = 'recommended' | 'friends' | 'available' | 'everyon
 /** Legacy list content lanes (member-discovery APIs). */
 export type CrewDataLane = 'available' | 'going' | 'connect';
 
+/** Professional lane sub-filter (`proKind` URL param). */
+export type CrewProfessionalKind = 'all' | 'guide' | 'porter' | 'agency';
+
 export type CrewBrowseState = {
   lane: CrewBrowseLane;
   facet: CrewPeopleFacet;
+  proKind: CrewProfessionalKind;
 };
 
 export const PEOPLE_FACET_URL_PARAM = 'peopleFacet';
+export const PRO_KIND_URL_PARAM = 'proKind';
+
+export const CREW_PROFESSIONAL_KIND_ORDER: CrewProfessionalKind[] = ['all', 'guide', 'porter', 'agency'];
+
+export const CREW_PROFESSIONAL_KIND_LABELS: Record<CrewProfessionalKind, string> = {
+  all: 'All',
+  guide: 'Guides',
+  porter: 'Porters',
+  agency: 'Operators',
+};
+
+export const DEFAULT_CREW_PROFESSIONAL_KIND: CrewProfessionalKind = 'all';
 
 export const CREW_BROWSE_LANE_ORDER: CrewBrowseLane[] = ['people', 'professional', 'community'];
 
@@ -41,6 +57,11 @@ export const CREW_PEOPLE_FACET_LABELS: Record<CrewPeopleFacet, string> = {
 export const DEFAULT_CREW_BROWSE_LANE: CrewBrowseLane = 'people';
 export const DEFAULT_CREW_PEOPLE_FACET: CrewPeopleFacet = 'recommended';
 
+export const parseCrewProfessionalKind = (raw: string | null): CrewProfessionalKind => {
+  if (raw === 'guide' || raw === 'porter' || raw === 'agency' || raw === 'all') return raw;
+  return DEFAULT_CREW_PROFESSIONAL_KIND;
+};
+
 export const parseCrewPeopleFacet = (raw: string | null): CrewPeopleFacet => {
   if (raw === 'friends' || raw === 'available' || raw === 'everyone' || raw === 'recommended') {
     return raw;
@@ -50,29 +71,36 @@ export const parseCrewPeopleFacet = (raw: string | null): CrewPeopleFacet => {
 
 const inboundPeopleTabToState = (raw: string): CrewBrowseState => {
   if (raw === 'professional' || raw === 'community') {
-    return { lane: raw, facet: DEFAULT_CREW_PEOPLE_FACET };
+    return { lane: raw, facet: DEFAULT_CREW_PEOPLE_FACET, proKind: DEFAULT_CREW_PROFESSIONAL_KIND };
   }
   if (raw === 'people') {
-    return { lane: 'people', facet: DEFAULT_CREW_PEOPLE_FACET };
+    return { lane: 'people', facet: DEFAULT_CREW_PEOPLE_FACET, proKind: DEFAULT_CREW_PROFESSIONAL_KIND };
   }
   if (raw === 'available' || raw === 'looking' || raw === 'discover') {
-    return { lane: 'people', facet: 'available' };
+    return { lane: 'people', facet: 'available', proKind: DEFAULT_CREW_PROFESSIONAL_KIND };
   }
   if (raw === 'going' || raw === 'friends' || raw === 'followed') {
-    return { lane: 'people', facet: 'friends' };
+    return { lane: 'people', facet: 'friends', proKind: DEFAULT_CREW_PROFESSIONAL_KIND };
   }
   if (raw === 'connect' || raw === 'all') {
-    return { lane: 'people', facet: 'everyone' };
+    return { lane: 'people', facet: 'everyone', proKind: DEFAULT_CREW_PROFESSIONAL_KIND };
   }
   if (raw === 'hub' || raw === 'buddies') {
-    return { lane: 'people', facet: 'recommended' };
+    return { lane: 'people', facet: 'recommended', proKind: DEFAULT_CREW_PROFESSIONAL_KIND };
   }
-  if (raw === 'agencies' || raw === 'operators' || raw === 'guides') {
-    return { lane: 'professional', facet: DEFAULT_CREW_PEOPLE_FACET };
+  if (raw === 'agencies' || raw === 'operators') {
+    return { lane: 'professional', facet: DEFAULT_CREW_PEOPLE_FACET, proKind: 'agency' };
+  }
+  if (raw === 'guides') {
+    return { lane: 'professional', facet: DEFAULT_CREW_PEOPLE_FACET, proKind: 'guide' };
   }
   const mapped = mapInboundCrewBrowseTabValue(raw);
   if (mapped) return inboundPeopleTabToState(mapped);
-  return { lane: DEFAULT_CREW_BROWSE_LANE, facet: DEFAULT_CREW_PEOPLE_FACET };
+  return {
+    lane: DEFAULT_CREW_BROWSE_LANE,
+    facet: DEFAULT_CREW_PEOPLE_FACET,
+    proKind: DEFAULT_CREW_PROFESSIONAL_KIND,
+  };
 };
 
 /** Parse lane + facet from explore/list URL params. */
@@ -81,11 +109,14 @@ export const parseCrewBrowseState = (
 ): CrewBrowseState => {
   const rawTab = readPeopleCrewsTabParam(searchParams);
   const facetRaw = searchParams.get(PEOPLE_FACET_URL_PARAM)?.trim() ?? null;
+  const proKindRaw = searchParams.get(PRO_KIND_URL_PARAM)?.trim() ?? null;
+  const proKind = parseCrewProfessionalKind(proKindRaw);
 
   if (rawTab === null) {
     return {
       lane: DEFAULT_CREW_BROWSE_LANE,
       facet: parseCrewPeopleFacet(facetRaw),
+      proKind: DEFAULT_CREW_PROFESSIONAL_KIND,
     };
   }
 
@@ -93,18 +124,33 @@ export const parseCrewBrowseState = (
     return {
       lane: 'people',
       facet: parseCrewPeopleFacet(facetRaw),
+      proKind: DEFAULT_CREW_PROFESSIONAL_KIND,
     };
   }
 
   if (rawTab === 'professional' || rawTab === 'community') {
-    return { lane: rawTab, facet: DEFAULT_CREW_PEOPLE_FACET };
+    return {
+      lane: rawTab,
+      facet: DEFAULT_CREW_PEOPLE_FACET,
+      proKind: rawTab === 'professional' ? proKind : DEFAULT_CREW_PROFESSIONAL_KIND,
+    };
   }
 
   const fromTab = inboundPeopleTabToState(rawTab);
   if (fromTab.lane === 'people' && facetRaw) {
-    return { lane: 'people', facet: parseCrewPeopleFacet(facetRaw) };
+    return { lane: 'people', facet: parseCrewPeopleFacet(facetRaw), proKind: DEFAULT_CREW_PROFESSIONAL_KIND };
   }
-  return fromTab;
+  return fromTab.lane === 'professional'
+    ? { ...fromTab, proKind: proKindRaw ? proKind : fromTab.proKind }
+    : fromTab;
+};
+
+export const serializeCrewProfessionalKind = (
+  lane: CrewBrowseLane,
+  proKind: CrewProfessionalKind
+): string | null => {
+  if (lane !== 'professional') return null;
+  return proKind === DEFAULT_CREW_PROFESSIONAL_KIND ? null : proKind;
 };
 
 export const serializeCrewBrowseLane = (lane: CrewBrowseLane): string | null =>

@@ -26,7 +26,7 @@ import {
 import { useExploreBrowseUrlInboundMigrations } from './useExploreBrowseUrlInboundMigrations';
 import { useExploreBrowsePeekDismissOnFilterChange } from './useExploreBrowsePeekDismissOnFilterChange';
 import { useExploreBrowseUrlApplyHandlers } from './useExploreBrowseUrlApplyHandlers';
-import type { CrewBrowseLane, CrewPeopleFacet } from '@/crew-discovery/crewBrowseState';
+import type { CrewBrowseLane, CrewPeopleFacet, CrewProfessionalKind } from '@/crew-discovery/crewBrowseState';
 import type { ExplorePinKindFilter } from '../explorePinKindFilter';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
@@ -81,6 +81,9 @@ export const useExploreBrowseUrlState = ({
   const [searchScope, setSearchScope] = useState<ExploreSearchScopeKey | null>(initial.searchScope);
   const [crewBrowseLane, setCrewBrowseLane] = useState<CrewBrowseLane>(initial.crewBrowseLane);
   const [crewPeopleFacet, setCrewPeopleFacet] = useState<CrewPeopleFacet>(initial.crewPeopleFacet);
+  const [crewProfessionalKind, setCrewProfessionalKind] = useState<CrewProfessionalKind>(
+    initial.crewProfessionalKind
+  );
   const [tripMapTopics, setTripMapTopics] = useState<TripMapTopicKey[]>(initial.tripMapTopics);
   const [placeMapTopics, setPlaceMapTopics] = useState<PlaceMapTopicKey[]>(initial.placeMapTopics);
   const [priceFilter, setPriceFilter] = useState<ExplorePriceFilter>(initial.priceFilter);
@@ -110,6 +113,7 @@ export const useExploreBrowseUrlState = ({
         searchScope,
         crewBrowseLane,
         crewPeopleFacet,
+        crewProfessionalKind,
         tripMapTopics,
         placeMapTopics,
         priceFilter,
@@ -142,6 +146,7 @@ export const useExploreBrowseUrlState = ({
       searchScope,
       crewBrowseLane,
       crewPeopleFacet,
+      crewProfessionalKind,
       tripMapTopics,
       placeMapTopics,
       priceFilter,
@@ -171,6 +176,7 @@ export const useExploreBrowseUrlState = ({
         setCrewsBrowseOpen,
         setCrewBrowseLane,
         setCrewPeopleFacet,
+        setCrewProfessionalKind,
         setDesktopBrowseTab,
         setActivityDatePreset,
         setActivityModeFilter,

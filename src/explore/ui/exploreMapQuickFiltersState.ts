@@ -30,6 +30,7 @@ export const exploreMapQuickFiltersBrowseState = (input: {
   activityDatePreset: input.activityDatePreset,
   crewBrowseLane: 'people',
   crewPeopleFacet: 'recommended',
+  crewProfessionalKind: 'all',
   hasTrip: input.hasTrip,
   facilityKinds: [...input.facilityKinds],
   audience: 'anyone',

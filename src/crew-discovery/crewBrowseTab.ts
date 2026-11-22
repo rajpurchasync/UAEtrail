@@ -3,22 +3,30 @@ import {
   CREW_BROWSE_LANE_ORDER,
   DEFAULT_CREW_BROWSE_LANE,
   DEFAULT_CREW_PEOPLE_FACET,
+  DEFAULT_CREW_PROFESSIONAL_KIND,
   type CrewBrowseLane,
+  type CrewProfessionalKind,
   type CrewBrowseState,
   type CrewPeopleFacet,
   parseCrewBrowseState,
   serializeCrewBrowseLane,
 } from './crewBrowseState';
 
-export type { CrewBrowseLane, CrewPeopleFacet, CrewBrowseState };
+export type { CrewBrowseLane, CrewPeopleFacet, CrewProfessionalKind, CrewBrowseState };
 export {
   CREW_BROWSE_LANE_LABELS,
   CREW_BROWSE_LANE_ORDER,
   CREW_PEOPLE_FACET_LABELS,
   CREW_PEOPLE_FACET_ORDER,
+  CREW_PROFESSIONAL_KIND_LABELS,
+  CREW_PROFESSIONAL_KIND_ORDER,
   DEFAULT_CREW_BROWSE_LANE,
   DEFAULT_CREW_PEOPLE_FACET,
+  DEFAULT_CREW_PROFESSIONAL_KIND,
   PEOPLE_FACET_URL_PARAM,
+  PRO_KIND_URL_PARAM,
+  parseCrewProfessionalKind,
+  serializeCrewProfessionalKind,
   crewBrowseNeedsAvailability,
   crewBrowseNeedsRoster,
   crewBrowseOmitDirectory,
@@ -59,4 +67,5 @@ export const serializeCrewBrowseTab = (tab: CrewBrowseTab): string | null =>
 export const defaultCrewBrowseState = (): CrewBrowseState => ({
   lane: DEFAULT_CREW_BROWSE_LANE,
   facet: DEFAULT_CREW_PEOPLE_FACET,
+  proKind: DEFAULT_CREW_PROFESSIONAL_KIND,
 });

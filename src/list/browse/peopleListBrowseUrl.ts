@@ -1,7 +1,9 @@
 import {
   parseCrewBrowseState,
+  PRO_KIND_URL_PARAM,
   serializeCrewBrowseLane,
   serializeCrewPeopleFacet,
+  serializeCrewProfessionalKind,
   type CrewBrowseLane,
   type CrewBrowseState,
   type CrewPeopleFacet,
@@ -43,10 +45,14 @@ export const parseExploreCrewBrowseTab = (
 export const serializePeopleListBrowseState = (state: CrewBrowseState): {
   peopleTab: string | null;
   peopleFacet: string | null;
+  proKind: string | null;
 } => ({
   peopleTab: serializeCrewBrowseLane(state.lane),
   peopleFacet: serializeCrewPeopleFacet(state.lane, state.facet),
+  proKind: serializeCrewProfessionalKind(state.lane, state.proKind),
 });
+
+export { PRO_KIND_URL_PARAM };
 
 /** @deprecated Use serializePeopleListBrowseState */
 export const serializePeopleListBrowseTab = (tab: CrewBrowseLane): string | null =>

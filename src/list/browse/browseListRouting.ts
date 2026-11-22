@@ -29,6 +29,7 @@ export const listPeopleDiscoveryPath = (): string =>
     activityDatePreset: 'anyday',
     crewBrowseLane: 'people',
     crewPeopleFacet: 'recommended',
+    crewProfessionalKind: 'all',
   });
 
 /** Scoped list homes — mobile five-tab + drawer (import here, not `platform.ts`, to avoid cycles). */
@@ -51,6 +52,7 @@ export const listDiscoveryPath = (options?: ListDiscoveryPathOptions): string =>
     activityDatePreset: options?.activityDatePreset ?? 'anyday',
     crewBrowseLane: options?.crewBrowseLane ?? 'people',
     crewPeopleFacet: options?.crewPeopleFacet ?? 'recommended',
+    crewProfessionalKind: options?.crewProfessionalKind ?? 'all',
     hasTrip: options?.hasTrip ?? false,
     facilityKinds: options?.facilityKinds ?? [],
     audience: options?.audience ?? 'anyone',

@@ -101,6 +101,7 @@ export const useListDiscoveryBrowseActionsModel = ({
       activityDatePreset: 'anyday',
       crewBrowseLane: filters.crewBrowseLane,
       crewPeopleFacet: filters.crewPeopleFacet,
+      crewProfessionalKind: filters.crewProfessionalKind,
       hasTrip: false,
       facilityKinds: [],
       audience: 'anyone',

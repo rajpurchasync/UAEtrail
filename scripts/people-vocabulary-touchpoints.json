@@ -70,7 +70,7 @@
     },
     {
       "id": "P5-intent-spine",
-      "status": "in_progress",
+      "status": "complete",
       "deliverables": ["intentFixedFlowEngine", "UPL_INTENT Plan/Crews", "wizard intentFixedFlow"]
     },
     {

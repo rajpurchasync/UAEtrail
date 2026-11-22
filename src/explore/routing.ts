@@ -345,9 +345,19 @@ export const explorePath = (options?: {
   return qs ? `${EXPLORE_MAP_PATH}?${qs}` : EXPLORE_MAP_PATH;
 };
 
-/** Explore map with **Crews** panel open (`view=people`). */
+/** Desktop crews list drawer on explore (list-first — no docked `view=people` rail). */
+export const exploreCrewsListDrawerPath = (): string => {
+  const params = new URLSearchParams();
+  params.set('list', '1');
+  params.set('listCat', 'people');
+  return `${EXPLORE_MAP_PATH}?${params.toString()}`;
+};
+
+/** Explore map crews — prefers list drawer; legacy `view=people` when `list: false`. */
 export const exploreCrewsPath = (options?: { list?: boolean }): string =>
-  explorePath({ crews: true, list: options?.list ?? true });
+  options?.list === false
+    ? explorePath({ crews: true, list: false })
+    : exploreCrewsListDrawerPath();
 
 /** Full-screen list explorer. */
 export const exploreDiscoverBrowsePath = (): string => LIST_DISCOVERY_PATH;

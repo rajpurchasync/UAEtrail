@@ -18,6 +18,7 @@ const baseState: BrowseListFilterState = {
   activityDatePreset: 'anyday',
   crewBrowseLane: 'people',
   crewPeopleFacet: 'available',
+  crewProfessionalKind: 'all',
   hasTrip: false,
   facilityKinds: [],
   audience: 'anyone',

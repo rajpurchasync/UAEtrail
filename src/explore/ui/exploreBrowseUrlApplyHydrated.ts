@@ -13,7 +13,7 @@ import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
 import type { ExplorePinKindFilter } from '../explorePinKindFilter';
-import type { CrewBrowseLane, CrewPeopleFacet } from '@/crew-discovery/crewBrowseState';
+import type { CrewBrowseLane, CrewPeopleFacet, CrewProfessionalKind } from '@/crew-discovery/crewBrowseState';
 import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
 import type { ExplorePriceFilter } from '../exploreOptionalFilters';
 import type { DesktopBrowseTab } from './exploreBrowsePanelCopy';
@@ -39,6 +39,7 @@ export type ExploreBrowseUrlSetterBundle = {
   setSearchScope: (v: ExploreSearchScopeKey | null) => void;
   setCrewBrowseLane: (v: CrewBrowseLane) => void;
   setCrewPeopleFacet: (v: CrewPeopleFacet) => void;
+  setCrewProfessionalKind: (v: CrewProfessionalKind) => void;
   setTripMapTopics: (v: TripMapTopicKey[]) => void;
   setPlaceMapTopics: (v: PlaceMapTopicKey[]) => void;
   setPriceFilter: (v: ExplorePriceFilter) => void;
@@ -73,6 +74,7 @@ export const applyExploreBrowseHydratedState = (
   setters.setSearchScope(state.searchScope);
   setters.setCrewBrowseLane(state.crewBrowseLane);
   setters.setCrewPeopleFacet(state.crewPeopleFacet);
+  setters.setCrewProfessionalKind(state.crewProfessionalKind);
   setters.setTripMapTopics(state.tripMapTopics);
   setters.setPlaceMapTopics(state.placeMapTopics);
   setters.setPriceFilter(state.priceFilter);

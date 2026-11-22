@@ -120,16 +120,20 @@ export const serializeBrowseListToExploreSearchParams = (
 
   if (listCat === 'people') {
     params.delete(LIST_CAT_PARAM);
-    const { peopleTab, peopleFacet } = serializePeopleListBrowseState({
+    const { peopleTab, peopleFacet, proKind } = serializePeopleListBrowseState({
       lane: state.crewBrowseLane,
       facet: state.crewPeopleFacet,
+      proKind: state.crewProfessionalKind,
     });
     if (peopleTab) params.set(PEOPLE_LIST_TAB_URL_PARAM, peopleTab);
     else params.delete(PEOPLE_LIST_TAB_URL_PARAM);
     if (peopleFacet) params.set(PEOPLE_FACET_URL_PARAM, peopleFacet);
     else params.delete(PEOPLE_FACET_URL_PARAM);
-    params.set('view', 'people');
+    if (proKind) params.set('proKind', proKind);
+    else params.delete('proKind');
+    params.delete('view');
     params.set('list', '1');
+    params.set(LIST_CAT_PARAM, 'people');
     params.delete('date');
     params.delete('when');
   } else if (listCat === 'venues') {

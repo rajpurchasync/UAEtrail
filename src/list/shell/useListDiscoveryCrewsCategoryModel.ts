@@ -29,6 +29,7 @@ export type ListDiscoveryCrewsCategoryModelInput = {
   draftQuery: string;
   crewBrowseLane: CrewBrowseState['lane'];
   crewPeopleFacet: CrewBrowseState['facet'];
+  crewProfessionalKind: CrewBrowseState['proKind'];
   activityDatePreset: ExploreActivityDatePreset;
   areaSlug: string | null;
 };
@@ -39,12 +40,17 @@ export const useListDiscoveryCrewsCategoryModel = ({
   draftQuery,
   crewBrowseLane,
   crewPeopleFacet,
+  crewProfessionalKind,
   activityDatePreset,
   areaSlug,
 }: ListDiscoveryCrewsCategoryModelInput) => {
   const signedIn = Boolean(user);
   const active = enabled && signedIn;
-  const browseState: CrewBrowseState = { lane: crewBrowseLane, facet: crewPeopleFacet };
+  const browseState: CrewBrowseState = {
+    lane: crewBrowseLane,
+    facet: crewPeopleFacet,
+    proKind: crewProfessionalKind,
+  };
 
   const crewsNeedsRoster = crewBrowseNeedsRoster(browseState);
   const crewsNeedsAvailability = crewBrowseNeedsAvailability(browseState);
@@ -75,6 +81,7 @@ export type ListDiscoveryCrewsCategoryAugmentInput = {
   enabled: boolean;
   crewBrowseLane: CrewBrowseState['lane'];
   crewPeopleFacet: CrewBrowseState['facet'];
+  crewProfessionalKind: CrewBrowseState['proKind'];
   crewsNeedsAvailability: boolean;
   draftQuery: string;
   exploreCatalogItems: ExploreMapItemDTO[];
@@ -91,6 +98,7 @@ export const useListDiscoveryCrewsCategoryAugment = ({
   enabled,
   crewBrowseLane,
   crewPeopleFacet,
+  crewProfessionalKind,
   crewsNeedsAvailability,
   draftQuery,
   exploreCatalogItems,
@@ -102,7 +110,11 @@ export const useListDiscoveryCrewsCategoryAugment = ({
   locationSearch,
   crewsOpenLens,
 }: ListDiscoveryCrewsCategoryAugmentInput) => {
-  const browseState: CrewBrowseState = { lane: crewBrowseLane, facet: crewPeopleFacet };
+  const browseState: CrewBrowseState = {
+    lane: crewBrowseLane,
+    facet: crewPeopleFacet,
+    proKind: crewProfessionalKind,
+  };
 
   const { availabilityCatalogItems } = useCrewDiscoveryAvailabilityCatalog({
     enabled:

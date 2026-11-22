@@ -32,7 +32,11 @@ import {
   exploreItemMatchesBrowseAudienceFilter,
   type BrowseAudienceFilter,
 } from './browseAudienceFilter';
-import type { CrewBrowseLane, CrewPeopleFacet } from '@/crew-discovery/crewBrowseState';
+import type {
+  CrewBrowseLane,
+  CrewPeopleFacet,
+  CrewProfessionalKind,
+} from '@/crew-discovery/crewBrowseState';
 import { exploreItemMatchesBrowseGeoPath } from './browseGeoPath';
 
 export type BrowsePriceFilter = ExplorePriceFilter;
@@ -57,6 +61,8 @@ export type BrowseListFilterState = {
   crewBrowseLane: CrewBrowseLane;
   /** People tab facet — `peopleFacet` query (default Recommended). */
   crewPeopleFacet: CrewPeopleFacet;
+  /** Professional lane sub-filter — `proKind` query. */
+  crewProfessionalKind: CrewProfessionalKind;
   /** Venues with an upcoming hosted outing. Default off = all kinds. */
   hasTrip: boolean;
   /** Amenity subtypes — empty = all facilities when Facilities is selected. */

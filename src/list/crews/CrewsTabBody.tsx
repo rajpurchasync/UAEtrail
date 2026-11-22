@@ -5,7 +5,13 @@ import type {
   MemberDiscoveryQuotaDTO,
   SocialPersonRowDTO,
 } from '@uaetrail/shared-types';
-import type { CrewBrowseLane, CrewPeopleFacet } from '@/crew-discovery/crewBrowseState';
+import type {
+  CrewBrowseLane,
+  CrewBrowseState,
+  CrewPeopleFacet,
+  CrewProfessionalKind,
+} from '@/crew-discovery/crewBrowseState';
+import { DEFAULT_CREW_PROFESSIONAL_KIND } from '@/crew-discovery/crewBrowseState';
 import { normalizeCrewBrowseLaneForProduct } from '@/crew-discovery/crewBrowseFeatureGates';
 import { crewDataLaneFromState } from '@/crew-discovery/crewBrowseState';
 import { CrewBrowseTabContent } from '@/crew-discovery/panel/crewBrowse';
@@ -19,6 +25,7 @@ import type { CrewsAvailabilityGuideFilter, CrewsAvailableOpenLens } from './cre
 type CrewsTabBodyProps = {
   lane: CrewBrowseLane;
   facet: CrewPeopleFacet;
+  professionalKind?: CrewProfessionalKind;
   crewsOpenLens: CrewsAvailableOpenLens;
   onCrewsOpenLensChange: (lens: CrewsAvailableOpenLens) => void;
   crewsAvailabilityGuideFilter: CrewsAvailabilityGuideFilter;
@@ -45,6 +52,7 @@ type CrewsTabBodyProps = {
 export const CrewsTabBody = ({
   lane,
   facet,
+  professionalKind = DEFAULT_CREW_PROFESSIONAL_KIND,
   crewsOpenLens,
   onCrewsOpenLensChange,
   crewsAvailabilityGuideFilter,
@@ -79,6 +87,7 @@ export const CrewsTabBody = ({
         exploreCatalogItems={exploreCatalogItems}
         exploreCatalogLoading={exploreCatalogLoading}
         onOpenAgencyItem={onOpenAvailabilityCatalogItem}
+        professionalKind={professionalKind}
       />
     );
   }
@@ -125,7 +134,13 @@ export const CrewsTabBody = ({
         <CrewBrowseRecommendedBody {...contentProps} />
       ) : (
         <CrewBrowseTabContent
-          tab={crewDataLaneFromState({ lane: activeLane, facet }) ?? 'available'}
+          tab={
+            crewDataLaneFromState({
+              lane: activeLane,
+              facet,
+              proKind: professionalKind,
+            } satisfies CrewBrowseState) ?? 'available'
+          }
           {...contentProps}
           crewsOpenLens={isAvailableFacet ? crewsOpenLens : undefined}
           availabilityGuideFilter={isAvailableFacet ? crewsAvailabilityGuideFilter : undefined}

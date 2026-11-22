@@ -35,6 +35,7 @@ const emptyFilters = (): BrowseListFilterState => ({
   activityDatePreset: 'anyday',
   crewBrowseLane: 'people',
   crewPeopleFacet: 'recommended',
+  crewProfessionalKind: 'all',
   hasTrip: false,
   facilityKinds: [],
   audience: 'anyone',

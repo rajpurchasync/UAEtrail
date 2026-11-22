@@ -8,7 +8,7 @@ import type { ExploreBrowseListMode } from '../exploreBrowseUrlSync';
 import type { ExplorePriceFilter } from '../exploreOptionalFilters';
 import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
 import type { PlaceKind } from '@uaetrail/shared-types';
-import type { CrewBrowseLane, CrewPeopleFacet } from '@/crew-discovery/crewBrowseState';
+import type { CrewBrowseLane, CrewPeopleFacet, CrewProfessionalKind } from '@/crew-discovery/crewBrowseState';
 import type { DesktopBrowseTab } from './exploreBrowsePanelCopy';
 
 export type ExploreBrowseUrlBrowseSetters = ReturnType<typeof createExploreBrowseUrlBrowseSetters>;
@@ -28,6 +28,7 @@ export const createExploreBrowseUrlBrowseSetters = (input: {
   setCrewsBrowseOpen: (v: boolean) => void;
   setCrewBrowseLane: (v: CrewBrowseLane) => void;
   setCrewPeopleFacet: (v: CrewPeopleFacet) => void;
+  setCrewProfessionalKind: (v: CrewProfessionalKind) => void;
   setDesktopBrowseTab: (v: DesktopBrowseTab) => void;
   setActivityDatePreset: (v: ExploreActivityDatePreset) => void;
   setActivityModeFilter: (v: ExploreActivityModeFilter) => void;
@@ -56,6 +57,7 @@ export const createExploreBrowseUrlBrowseSetters = (input: {
   setCrewsBrowseOpen: input.setCrewsBrowseOpen,
   setCrewBrowseLane: input.setCrewBrowseLane,
   setCrewPeopleFacet: input.setCrewPeopleFacet,
+  setCrewProfessionalKind: input.setCrewProfessionalKind,
   setDesktopBrowseTab: input.setDesktopBrowseTab,
   setActivityDatePreset: input.setActivityDatePreset,
   setActivityModeFilter: input.setActivityModeFilter,

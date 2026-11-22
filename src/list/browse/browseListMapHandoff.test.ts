@@ -17,6 +17,7 @@ const baseState: BrowseListFilterState = {
   activityDatePreset: 'anyday',
   crewBrowseLane: 'people',
   crewPeopleFacet: 'available',
+  crewProfessionalKind: 'all',
   hasTrip: false,
   facilityKinds: [],
   audience: 'anyone',
@@ -62,9 +63,9 @@ describe('browseListMapHandoff', () => {
       { listCat: 'people' }
     );
     expect(params.get('pinKind')).toBeNull();
-    expect(params.get('listCat')).toBeNull();
+    expect(params.get('listCat')).toBe('people');
     expect(params.get('browse')).toBeNull();
-    expect(params.get('view')).toBe('people');
+    expect(params.get('view')).toBeNull();
     expect(params.get('list')).toBe('1');
     expect(params.get('buddies')).toBeNull();
   });

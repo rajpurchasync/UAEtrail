@@ -12,6 +12,29 @@ describe('exploreBrowseUrlHydrate', () => {
     expect(state.crewsBrowseOpen).toBe(false);
   });
 
+  it('desktop view=people without list=1 opens list drawer (no docked rail)', () => {
+    const state = parseExploreBrowseStateFromSearchParams(new URLSearchParams('view=people'), true);
+    expect(state.listOpen).toBe(true);
+    expect(state.crewsBrowseOpen).toBe(false);
+    const next = buildExploreBrowseSearchParams({
+      base: new URLSearchParams('view=people'),
+      isDesktop: true,
+      state: {
+        ...state,
+        geoPath: state.geoPath,
+        tripMapTopics: state.tripMapTopics,
+        placeMapTopics: state.placeMapTopics,
+        priceFilter: state.priceFilter,
+        hasTrip: state.hasTrip,
+        facilityKinds: state.facilityKinds,
+      },
+      patch: {},
+    });
+    expect(next.get('view')).toBeNull();
+    expect(next.get('list')).toBe('1');
+    expect(next.get('listCat')).toBe('people');
+  });
+
   it('parses people browse view and round-trips through sync', () => {
     const params = new URLSearchParams('view=people&peopleTab=available&list=1&listCat=people');
     const state = parseExploreBrowseStateFromSearchParams(params, true);

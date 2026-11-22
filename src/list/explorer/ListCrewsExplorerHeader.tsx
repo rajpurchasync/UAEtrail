@@ -3,8 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { ExploreMapProjectionToggle } from '../../explore/ui/ExploreMapProjectionToggle';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../../explore/exploreBrowseTaxonomy';
 import { EXPLORE_CREWS_SEARCH_PLACEHOLDER } from '../../content/exploreCrewsCopy';
-import type { CrewBrowseLane, CrewPeopleFacet } from '@/crew-discovery/crewBrowseState';
+import type { CrewBrowseLane, CrewPeopleFacet, CrewProfessionalKind } from '@/crew-discovery/crewBrowseState';
 import { DEFAULT_CREW_PEOPLE_FACET } from '@/crew-discovery/crewBrowseState';
+import {
+  CrewsProfessionalKindChips,
+  crewsProfessionalKindClearTarget,
+} from '../crews/CrewsProfessionalKindChips';
 import { normalizeCrewBrowseLaneForProduct } from '@/crew-discovery/crewBrowseFeatureGates';
 import { CrewBrowsePanelTabs } from '@/crew-discovery/panel/CrewBrowsePanelTabs';
 import { LIST_CHROME, LIST_HUB_SEARCH_ROW } from '../browse/listChromeTheme';
@@ -25,6 +29,8 @@ type ListCrewsExplorerHeaderProps = {
   crewPeopleFacet: CrewPeopleFacet;
   onCrewBrowseLaneChange: (lane: CrewBrowseLane) => void;
   onCrewPeopleFacetChange: (facet: CrewPeopleFacet) => void;
+  crewProfessionalKind: CrewProfessionalKind;
+  onCrewProfessionalKindChange: (kind: CrewProfessionalKind) => void;
   stickySearch?: boolean;
   isSignedIn: boolean;
   statCounts: CrewsStatCounts;
@@ -51,6 +57,8 @@ export const ListCrewsExplorerHeader = ({
   crewPeopleFacet,
   onCrewBrowseLaneChange,
   onCrewPeopleFacetChange,
+  crewProfessionalKind,
+  onCrewProfessionalKindChange,
   stickySearch = false,
   isSignedIn,
   statCounts,
@@ -138,6 +146,13 @@ export const ListCrewsExplorerHeader = ({
               counts={statCounts}
               onSelect={(tab) => onCrewPeopleFacetChange(facetFromCrewsStatTab(tab))}
               onClear={() => onCrewPeopleFacetChange(DEFAULT_CREW_PEOPLE_FACET)}
+            />
+          ) : null}
+          {displayLane === 'professional' ? (
+            <CrewsProfessionalKindChips
+              active={crewProfessionalKind}
+              onSelect={onCrewProfessionalKindChange}
+              onClear={() => onCrewProfessionalKindChange(crewsProfessionalKindClearTarget())}
             />
           ) : null}
         </div>

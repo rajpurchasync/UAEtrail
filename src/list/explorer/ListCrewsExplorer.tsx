@@ -7,7 +7,11 @@ import type {
   MemberBrowseCardDTO,
   SocialPersonRowDTO,
 } from '@uaetrail/shared-types';
-import type { CrewBrowseLane, CrewPeopleFacet } from '@/crew-discovery/crewBrowseState';
+import type {
+  CrewBrowseLane,
+  CrewPeopleFacet,
+  CrewProfessionalKind,
+} from '@/crew-discovery/crewBrowseState';
 import { ListCrewsExplorerHeader } from './ListCrewsExplorerHeader';
 import { CrewsTabBody } from '../crews/CrewsTabBody';
 import type { CrewsStatCounts } from '../crews/CrewsStatsTabs';
@@ -25,6 +29,8 @@ type ListCrewsExplorerProps = {
   crewPeopleFacet: CrewPeopleFacet;
   onCrewBrowseLaneChange: (lane: CrewBrowseLane) => void;
   onCrewPeopleFacetChange: (facet: CrewPeopleFacet) => void;
+  crewProfessionalKind: CrewProfessionalKind;
+  onCrewProfessionalKindChange: (kind: CrewProfessionalKind) => void;
   crewsOpenLens: CrewsAvailableOpenLens;
   onCrewsOpenLensChange: (lens: CrewsAvailableOpenLens) => void;
   crewsAvailabilityGuideFilter: CrewsAvailabilityGuideFilter;
@@ -67,6 +73,8 @@ export const ListCrewsExplorer = ({
   crewPeopleFacet,
   onCrewBrowseLaneChange,
   onCrewPeopleFacetChange,
+  crewProfessionalKind,
+  onCrewProfessionalKindChange,
   crewsOpenLens,
   onCrewsOpenLensChange,
   crewsAvailabilityGuideFilter,
@@ -112,6 +120,8 @@ export const ListCrewsExplorer = ({
         crewPeopleFacet={crewPeopleFacet}
         onCrewBrowseLaneChange={onCrewBrowseLaneChange}
         onCrewPeopleFacetChange={onCrewPeopleFacetChange}
+        crewProfessionalKind={crewProfessionalKind}
+        onCrewProfessionalKindChange={onCrewProfessionalKindChange}
         stickySearch={stickySearch}
         isSignedIn={isSignedIn}
         statCounts={statCounts}
@@ -135,6 +145,7 @@ export const ListCrewsExplorer = ({
           <CrewsTabBody
             lane={crewBrowseLane}
             facet={crewPeopleFacet}
+            professionalKind={crewProfessionalKind}
             crewsOpenLens={crewsOpenLens}
             onCrewsOpenLensChange={onCrewsOpenLensChange}
             crewsAvailabilityGuideFilter={crewsAvailabilityGuideFilter}

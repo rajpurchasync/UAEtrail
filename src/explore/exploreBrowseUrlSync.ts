@@ -30,7 +30,12 @@ import {
   serializeExplorePinKindFilter,
   type ExplorePinKindFilter,
 } from './explorePinKindFilter';
-import type { CrewBrowseLane, CrewPeopleFacet } from '@/crew-discovery/crewBrowseState';
+import {
+  PRO_KIND_URL_PARAM,
+  type CrewBrowseLane,
+  type CrewPeopleFacet,
+  type CrewProfessionalKind,
+} from '@/crew-discovery/crewBrowseState';
 import {
   PEOPLE_FACET_URL_PARAM,
   PEOPLE_LIST_TAB_URL_PARAM,
@@ -88,6 +93,7 @@ export type ExploreBrowseUrlSyncPatch = {
   searchScope?: ExploreSearchScopeKey | null;
   crewBrowseLane?: CrewBrowseLane;
   crewPeopleFacet?: CrewPeopleFacet;
+  crewProfessionalKind?: CrewProfessionalKind;
   listCat?: BrowseMainCategoryKey | null;
   tripMapTopics?: TripMapTopicKey[];
   placeMapTopics?: PlaceMapTopicKey[];
@@ -117,6 +123,7 @@ export type ExploreBrowseUrlSyncState = {
   searchScope: ExploreSearchScopeKey | null;
   crewBrowseLane: CrewBrowseLane;
   crewPeopleFacet: CrewPeopleFacet;
+  crewProfessionalKind: CrewProfessionalKind;
   tripMapTopics: TripMapTopicKey[];
   placeMapTopics: PlaceMapTopicKey[];
   priceFilter: ExplorePriceFilter;
@@ -161,7 +168,8 @@ export const buildExploreBrowseSearchParams = (input: {
   const facilityKindsValue = patch.facilityKinds ?? state.facilityKinds ?? [];
   const listModeValue = patch.listMode ?? state.listMode;
   const crewsBrowseOpenValue = patch.crewsBrowseOpen ?? state.crewsBrowseOpen;
-  const crewsBrowsePanelActive = crewsBrowseOpenValue || listModeValue === 'crews';
+  const crewsBrowsePanelActive =
+    !input.isDesktop && (crewsBrowseOpenValue || listModeValue === 'crews');
   const searchScopeValue = patch.searchScope !== undefined ? patch.searchScope : state.searchScope;
 
   if (filterValue === 'all') {
@@ -235,8 +243,15 @@ export const buildExploreBrowseSearchParams = (input: {
 
   const crewLane = patch.crewBrowseLane ?? state.crewBrowseLane;
   const crewFacet = patch.crewPeopleFacet ?? state.crewPeopleFacet;
-  const listCatForCrews =
+  const crewProKind = patch.crewProfessionalKind ?? state.crewProfessionalKind;
+  let listCatForCrews =
     patch.listCat !== undefined ? patch.listCat : parseListCatParam(input.base.get(LIST_CAT_PARAM));
+  if (input.isDesktop && listValue && listCatForCrews !== 'people') {
+    const view = input.base.get('view');
+    if (view === 'people' || view === 'social' || view === 'going') {
+      listCatForCrews = 'people';
+    }
+  }
   const crewsListDrawer = listValue && listCatForCrews === 'people';
   if (crewsBrowsePanelActive) {
     params.set('view', 'people');
@@ -244,14 +259,17 @@ export const buildExploreBrowseSearchParams = (input: {
     params.delete('view');
   }
   if (crewsBrowsePanelActive || crewsListDrawer) {
-    const { peopleTab, peopleFacet } = serializePeopleListBrowseState({
+    const { peopleTab, peopleFacet, proKind } = serializePeopleListBrowseState({
       lane: crewLane,
       facet: crewFacet,
+      proKind: crewProKind,
     });
     if (peopleTab) params.set(PEOPLE_LIST_TAB_URL_PARAM, peopleTab);
     else params.delete(PEOPLE_LIST_TAB_URL_PARAM);
     if (peopleFacet) params.set(PEOPLE_FACET_URL_PARAM, peopleFacet);
     else params.delete(PEOPLE_FACET_URL_PARAM);
+    if (proKind) params.set(PRO_KIND_URL_PARAM, proKind);
+    else params.delete(PRO_KIND_URL_PARAM);
   } else {
     params.delete(PEOPLE_LIST_TAB_URL_PARAM);
     params.delete(PEOPLE_FACET_URL_PARAM);
@@ -285,6 +303,7 @@ export const buildExploreBrowseSearchParams = (input: {
 
   if (patch.listCat === null) params.delete(LIST_CAT_PARAM);
   else if (patch.listCat) params.set(LIST_CAT_PARAM, patch.listCat);
+  else if (crewsListDrawer) params.set(LIST_CAT_PARAM, 'people');
 
   return params;
 };

@@ -115,6 +115,7 @@ export const useListDiscoveryExperienceModel = ({
     draftQuery,
     crewBrowseLane: filters.crewBrowseLane,
     crewPeopleFacet: filters.crewPeopleFacet,
+    crewProfessionalKind: filters.crewProfessionalKind,
     activityDatePreset: filters.activityDatePreset,
     areaSlug,
   });
@@ -150,7 +151,11 @@ export const useListDiscoveryExperienceModel = ({
     mapEnabled:
       !isPeopleCategory ||
       crewsCategoryMapFeedEnabled(
-        { lane: filters.crewBrowseLane, facet: filters.crewPeopleFacet },
+        {
+          lane: filters.crewBrowseLane,
+          facet: filters.crewPeopleFacet,
+          proKind: filters.crewProfessionalKind,
+        },
         crewsOpenLens
       ),
     catalogItems: embeddedOnExplore ? prefetchedCatalogItems : undefined,
@@ -182,6 +187,7 @@ export const useListDiscoveryExperienceModel = ({
       enabled: isPeopleCategory,
       crewBrowseLane: filters.crewBrowseLane,
       crewPeopleFacet: filters.crewPeopleFacet,
+      crewProfessionalKind: filters.crewProfessionalKind,
       crewsNeedsAvailability,
       crewsOpenLens,
       draftQuery,

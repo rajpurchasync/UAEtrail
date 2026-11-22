@@ -14,7 +14,8 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { isDiscoverBrowseRoute } from '../explore/exploreDiscoverBrowse';
-import { explorePath, exploreCrewsPath } from '../explore/routing';
+import { explorePath } from '../explore/routing';
+import { LIST_CAT_PARAM } from '../list/browse/browseListUrlState';
 import {
   BUDDIES_PATH,
   EXPLORE_DISCOVER_BROWSE_PATH,
@@ -38,7 +39,6 @@ import {
   PRODUCT_SOCIAL_NAV_HINT,
   PRODUCT_MY_CREW_SURFACE_TITLE,
 } from '../content/productNorthStar';
-import { LIST_CAT_PARAM } from '../list/browse/browseListUrlState';
 import { isPlanHostingFilterRoute } from '../plan/planRouting';
 import { isOperatorConsolePath } from './surfacePaths';
 
@@ -70,12 +70,21 @@ const matchesPrefix = (pathname: string, prefix: string) =>
 export const isPeopleListDiscoveryRoute = (pathname: string, search: string): boolean =>
   pathname === LIST_DISCOVERY_PATH && new URLSearchParams(search).get(LIST_CAT_PARAM) === 'people';
 
+/** Desktop/mobile explore map with crews list drawer (`list=1&listCat=people`; legacy `view=people`). */
+export const isExploreCrewsListDrawerRoute = (pathname: string, search: string): boolean => {
+  if (pathname !== EXPLORE_MAP_PATH) return false;
+  const params = new URLSearchParams(search);
+  if (params.get('list') !== '1') return false;
+  if (params.get(LIST_CAT_PARAM) === 'people') return true;
+  const view = params.get('view');
+  return view === 'people' || view === 'social' || view === 'going';
+};
+
 /** Explore map URLs owned by a sibling sidebar item (Find crew, Search, Post) — not the Explore hub. */
 const isExploreMapExclusiveNavMode = (pathname: string, search: string): boolean => {
   if (pathname !== EXPLORE_MAP_PATH) return false;
+  if (isExploreCrewsListDrawerRoute(pathname, search)) return true;
   const params = new URLSearchParams(search);
-  const view = params.get('view');
-  if (view === 'people' || view === 'social' || view === 'going') return true;
   if (params.get('search') === '1') return true;
   if (params.get('compose')) return true;
   return false;
@@ -136,7 +145,7 @@ export const DESKTOP_PEOPLE_NAV: readonly DesktopNavItem[] = [
   {
     key: 'findCrew',
     label: 'Find Crew',
-    to: exploreCrewsPath({ list: false }),
+    to: `${EXPLORE_MAP_PATH}?list=1&${LIST_CAT_PARAM}=people`,
     icon: UserSearch,
     match: [],
     authGate: true,
@@ -226,8 +235,7 @@ export const isDesktopNavItemActive = (item: DesktopNavItem, pathname: string, s
   if (item.key === 'social') return isDesktopSocialNavActive(pathname, search);
   const params = new URLSearchParams(search);
   if (item.key === 'findCrew') {
-    const view = params.get('view');
-    return pathname === EXPLORE_MAP_PATH && (view === 'people' || view === 'social' || view === 'going');
+    return isExploreCrewsListDrawerRoute(pathname, search);
   }
   if (item.key === 'search') {
     return pathname === EXPLORE_MAP_PATH && params.get('search') === '1';

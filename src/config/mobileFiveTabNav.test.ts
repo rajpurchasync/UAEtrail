@@ -47,7 +47,8 @@ describe('mobile five-tab nav contract', () => {
     expect(resolveMobileFiveTab('/list', '?listCat=people')).toBe('crews');
     expect(resolveMobileFiveTab('/explore', '')).toBe('trips');
     expect(resolveMobileFiveTab('/explore', '?panel=venues')).toBe('venues');
-    expect(resolveMobileFiveTab('/explore', '?view=people')).toBe('crews');
+    expect(resolveMobileFiveTab('/explore', '?list=1&listCat=people')).toBe('crews');
+    expect(resolveMobileFiveTab('/explore', '?view=people&list=1')).toBe('crews');
     expect(resolveMobileFiveTab('/explore/search', '')).toBe('trips');
     expect(resolveMobileFiveTab('/explore/search', '?searchScope=places')).toBe('venues');
     expect(resolveMobileFiveTab('/explore/search', '?searchScope=crew')).toBe('crews');

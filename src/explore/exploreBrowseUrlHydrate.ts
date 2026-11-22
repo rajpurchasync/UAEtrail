@@ -31,6 +31,7 @@ import {
   parseCrewBrowseState,
   type CrewBrowseLane,
   type CrewPeopleFacet,
+  type CrewProfessionalKind,
 } from '@/crew-discovery/crewBrowseTab';
 import {
   EXPLORE_ACTIVITY_MODE_FILTER_PARAM,
@@ -81,6 +82,7 @@ export type ExploreBrowseUrlHydratedState = {
   searchScope: ExploreSearchScopeKey | null;
   crewBrowseLane: CrewBrowseLane;
   crewPeopleFacet: CrewPeopleFacet;
+  crewProfessionalKind: CrewProfessionalKind;
   desktopBrowseTab: DesktopBrowseTab;
   expandSearch: boolean;
   tripMapTopics: TripMapTopicKey[];
@@ -148,7 +150,7 @@ export const parseExploreBrowseStateFromSearchParams = (
     activityFilter,
     panel: nextPanel,
     listOpen: isDesktop
-      ? searchParams.get('list') === '1'
+      ? searchParams.get('list') === '1' || isCrewsBrowseListView(searchParams.get('view'))
       : parseListOpen(
           searchParams.get('list'),
           false,
@@ -170,14 +172,15 @@ export const parseExploreBrowseStateFromSearchParams = (
     topicPills: parseExploreMapFilterPillsParam(searchParams.get('topics')),
     listMode:
       !isDesktop && isCrewsBrowseListView(searchParams.get('view')) ? 'crews' : 'default',
-    crewsBrowseOpen:
-      isDesktop &&
-      isCrewsBrowseListView(searchParams.get('view')) &&
-      searchParams.get('list') !== '1',
+    crewsBrowseOpen: false,
     searchScope: parseExploreSearchScope(readExploreSearchScopeParam(searchParams)),
     ...(() => {
       const crew = parseCrewBrowseState(searchParams);
-      return { crewBrowseLane: crew.lane, crewPeopleFacet: crew.facet };
+      return {
+        crewBrowseLane: crew.lane,
+        crewPeopleFacet: crew.facet,
+        crewProfessionalKind: crew.proKind,
+      };
     })(),
     desktopBrowseTab: parseDesktopBrowseTab(nextPanel),
     expandSearch: Boolean(isDesktop && searchParams.get('q')?.trim()),

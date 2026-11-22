@@ -193,6 +193,7 @@ Trusted fields (year goal, upcoming list, etc.) appear only on **trusted** expos
 |-------|--------|-------------------------|
 | `peopleTab` | `people` · `professional` · `community` | `people` |
 | `peopleFacet` | `recommended` · `friends` · `available` · `everyone` | `recommended` (People lane only) |
+| `proKind` | `guide` · `porter` · `agency` | `all` (Professional lane only; omit param) |
 
 | Lane | Facet | Data |
 |------|-------|------|

@@ -138,6 +138,7 @@ const EXPLORE_PEOPLE_VIEW_KEYS = new Set(['people', 'social', 'going']);
 
 const exploreIsPeopleScope = (search: string): boolean => {
   const params = new URLSearchParams(search.replace(/^\?/, ''));
+  if (parseListCatParam(params.get(LIST_CAT_PARAM)) === 'people') return true;
   const view = params.get('view');
   if (view && EXPLORE_PEOPLE_VIEW_KEYS.has(view)) return true;
   if (params.get('searchScope') === 'people') return true;

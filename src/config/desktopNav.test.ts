@@ -56,12 +56,13 @@ describe('desktop sidebar IA', () => {
   });
 
   it('does not mark Explore active when Find crew, Search, or Post own /explore', () => {
-    expect(isDesktopExploreNavActive('/explore', '?view=people')).toBe(false);
+    expect(isDesktopExploreNavActive('/explore', '?list=1&listCat=people')).toBe(false);
     expect(isDesktopExploreNavActive('/explore', '?view=people&list=1')).toBe(false);
     expect(isDesktopExploreNavActive('/explore', '?search=1')).toBe(false);
     expect(isDesktopExploreNavActive('/explore', '?compose=menu')).toBe(false);
-    expect(isDesktopNavItemActive(findCrewItem!, '/explore', '?view=people')).toBe(true);
-    expect(isDesktopNavItemActive(exploreItem!, '/explore', '?view=people')).toBe(false);
+    expect(isDesktopNavItemActive(findCrewItem!, '/explore', '?list=1&listCat=people')).toBe(true);
+    expect(isDesktopNavItemActive(findCrewItem!, '/explore', '?view=people&list=1')).toBe(true);
+    expect(isDesktopNavItemActive(exploreItem!, '/explore', '?list=1&listCat=people')).toBe(false);
     expect(isDesktopNavItemActive(searchItem!, '/explore', '?search=1')).toBe(true);
   });
 
