@@ -11,7 +11,7 @@ export const listDiscoverySearchComposeStub = (): ComposeApi =>
     closeCompose: () => undefined,
     closeGuestComposeSignIn: () => undefined,
     guestComposeSignInReturnPath: '',
-    hostComposeRoute: null,
+    activityComposeRoute: null,
     guestComposeSignInOpen: false,
   }) as unknown as ComposeApi;
 

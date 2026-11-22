@@ -19,10 +19,10 @@ export const buddiesIncomingRequestsPath = (): string => `${BUDDIES_PATH}?tab=re
 export const exploreActivityInvitePath = (activityId: string): string =>
   `/activity/${encodeURIComponent(activityId)}?join=1`;
 
-/** Publishing console — canonical notification + email deep links. */
-export const PUBLISHING_REQUESTS_PATH = '/publishing/requests';
-export const PUBLISHING_ACTIVITIES_PATH = '/publishing/activities';
-export const PUBLISHING_OVERVIEW_PATH = '/publishing/overview';
+/** Operator console — canonical notification + email deep links (SPA only; HTTP API stays `/publishing`). */
+export const OPERATOR_REQUESTS_PATH = '/operator/requests';
+export const OPERATOR_ACTIVITIES_PATH = '/operator/activities';
+export const OPERATOR_OVERVIEW_PATH = '/operator/overview';
 
 /** Admin console deep links (notification meta for platform admins). */
 export const ADMIN_USERS_PATH = '/admin/users';

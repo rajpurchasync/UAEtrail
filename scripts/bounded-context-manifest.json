@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "description": "Maps SYSTEM_COHERENCE §3 bounded contexts to API, FE client, and UI roots. Implementation schedule: §8.8 PCOH. UPL: src/content/upl-glossary.ts · BWL: packages/shared-types/src/wire-lexicon.ts",
+  "description": "Maps SYSTEM_COHERENCE §3 bounded contexts to API, FE client, and UI roots. Implementation schedule: §8.8 PCOH; compose wire migration MIG-PLATFORM-COMPOSE-OPERATOR-2026 (activity|place|intent emit; availability API unchanged). UPL: src/content/upl-glossary.ts · BWL: packages/shared-types/src/wire-lexicon.ts",
   "contexts": [
     {
       "id": "discovery",

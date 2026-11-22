@@ -4,7 +4,7 @@ import type { AreaDetailPayload } from '../../hooks/areaHubClientApi';
 import type { ExploreAvailabilityIndex } from '../../hooks/memberPeopleClientApi';
 import { PageMeta } from '../seo/PageMeta';
 import { explorePath } from '../../explore/routing';
-import { availabilityFixedCompose, hostCompose } from '../../explore/compose';
+import { intentFixedCompose, activityCompose } from '../../explore/compose';
 import { areaDetailPath } from '@uaetrail/shared-types';
 import { type AreaDetailTabId } from '../../area/areaDetailTab';
 import { AreaHubMapStrip } from './AreaHubMapStrip';
@@ -31,7 +31,7 @@ import { buildAreaDetailDiscoveryCard } from '../../area/detail/buildAreaDetailD
 import { CONSUMER_DETAIL_OVERVIEW_LABEL } from '../../content/consumerDetailSectionLabels';
 import { keyFactIconFromLabel } from '../../detail/shell/keyFactIcons';
 import { AreaDetailMobileActionBar } from './AreaDetailMobileActionBar';
-import { addPlaceCompose } from '../../explore/compose';
+import { placeCompose } from '../../explore/compose';
 import { PlaceDetailWeatherSection } from '../place/PlaceDetailWeatherSection';
 
 const AREA_TAB_SCROLL_ANCHORS: Record<AreaDetailTabId, string> = {
@@ -110,15 +110,15 @@ export const AreaDetailView = ({
 
   const findCrewPath = explorePath({
     area: area.slug,
-    compose: availabilityFixedCompose('hiking'),
+    compose: intentFixedCompose('hiking'),
   });
   const hostPath = explorePath({
     area: area.slug,
-    compose: hostCompose('hiking'),
+    compose: activityCompose('hiking'),
   });
   const addPlacePath = explorePath({
     area: area.slug,
-    compose: addPlaceCompose('hiking'),
+    compose: placeCompose('hiking'),
   });
 
   const mobileFooter = (

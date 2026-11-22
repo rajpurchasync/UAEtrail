@@ -9,9 +9,9 @@ import { EXPLORE_MAP_PATH, LIST_DISCOVERY_PATH } from '../config/platform';
 import { PLAN_PATH } from '../constants';
 import { planHostedSchedulePath } from '../plan/planRouting';
 import {
-  addFacilityCompose,
+  placeFacilityCompose,
   formatComposeQuery,
-  hostCompose,
+  activityCompose,
   type ExploreCompose,
 } from './compose';
 import {
@@ -148,7 +148,7 @@ export const clearFacilityOnPlaceParams = (params: URLSearchParams): void => {
 /** Deep link: add toilet / water / … along a trail (`parentPlaceId` on submit). */
 export const exploreAddFacilityOnPlacePath = (placeId: string, facilityKind = 'toilet'): string =>
   explorePath({
-    compose: addFacilityCompose(facilityKind),
+    compose: placeFacilityCompose(facilityKind),
     facilityOnPlace: placeId,
     panel: 'venues',
     pinKind: 'places',
@@ -160,7 +160,7 @@ export const exploreHostFromActivityPath = (
   kind: HostComposeKind
 ): string =>
   explorePath({
-    compose: hostCompose(kind),
+    compose: activityCompose(kind),
     hostFrom: activityId,
   });
 
@@ -235,11 +235,9 @@ export const explorePath = (options?: {
   list?: boolean;
   /** Open visual discover browse (`browse=1`) — poster feed, not map-aligned list. */
   browse?: boolean;
-  /** @deprecated Prefer `regions` for multi-select venue filters. */
-  region?: string;
   /** Selected venue states/emirates (multi-select). */
   regions?: string[];
-  /** Compose menu or wizard route (`menu`, `host.hiking` wire, …). */
+  /** Compose menu or wizard route (`menu`, `activity:hiking` wire, …). */
   compose?: ExploreCompose | 'menu';
   q?: string;
   /** Scheduled activity day on the map (`YYYY-MM-DD`). */
@@ -256,8 +254,6 @@ export const explorePath = (options?: {
   myPlan?: boolean;
   /** Open browse member people panel (`view=people`). */
   peopleBrowse?: boolean;
-  /** @deprecated Use `peopleBrowse` — writes `view=people`. */
-  social?: boolean;
   /** Prefill compose — buddy to plan with (post-publish invite). */
   planWith?: string;
   /** Activity join-invite deep link — use with `pin=activity:{id}`. */
@@ -286,8 +282,6 @@ export const explorePath = (options?: {
   }
   if (options?.regions && options.regions.length > 0) {
     params.set('regions', options.regions.join(','));
-  } else if (options?.region) {
-    params.set('region', options.region);
   }
   if (options?.compose) {
     const route: ExploreCompose =
@@ -327,7 +321,7 @@ export const explorePath = (options?: {
   if (options?.myPlan) {
     params.set(MY_PLAN_MAP_QUERY_KEY, '1');
   }
-  if (options?.peopleBrowse || options?.social) {
+  if (options?.peopleBrowse) {
     params.set('view', 'people');
     if (options.list !== false) {
       params.set('list', '1');
@@ -368,8 +362,8 @@ export const explorePlanWithBuddyPath = (
     planWith: buddyUserId,
     compose:
       mode === 'host'
-        ? hostCompose('activity')
-        : { surface: 'menu', intent: 'availability' },
+        ? activityCompose('activity')
+        : { surface: 'menu', composeKind: 'intent' },
   });
 
 /** Join me notification target — map peek with invite banner. */
@@ -480,7 +474,7 @@ export const exploreActivitiesPath = (options?: {
 
 /** Places (trails, spots, shops) on the explore map — URL panel stays `venues`. */
 export const explorePlacesPath = (options?: {
-  region?: string;
+  regions?: string[];
   q?: string;
   list?: boolean;
 }): string => explorePath({ panel: 'venues', ...options });
@@ -522,8 +516,8 @@ export const myActivitiesPath = (tab: 'joined' | 'hosted' = 'joined'): string =>
 /** Consumer create flow — explore compose organize menu or a specific kind. */
 export const exploreHostPath = (kind?: HostComposeKind): string =>
   kind
-    ? explorePath({ compose: hostCompose(kind) })
-    : explorePath({ compose: { surface: 'menu', intent: 'host' } });
+    ? explorePath({ compose: activityCompose(kind) })
+    : explorePath({ compose: { surface: 'menu', composeKind: 'activity' } });
 
 /** Host with publish access — prefill rideshare organize from a map pin (`availability:` or `activity:`). */
 export const exploreOfferRideshareForAvailabilityPath = (
@@ -532,7 +526,7 @@ export const exploreOfferRideshareForAvailabilityPath = (
   const pin = mapItemId?.trim() || null;
   return explorePath({
     ...(pin ? { pin } : {}),
-    compose: hostCompose('rideshare'),
+    compose: activityCompose('rideshare'),
   });
 };
 
@@ -577,7 +571,9 @@ export const discoveryToExploreSearch = (search: string): string => {
   }
 
   const region = incoming.get('region');
-  if (region) next.set('region', region);
+  const regions = incoming.get('regions');
+  if (regions) next.set('regions', regions);
+  else if (region) next.set('regions', region);
 
   const q = incoming.get('q');
   if (q) next.set('q', q);

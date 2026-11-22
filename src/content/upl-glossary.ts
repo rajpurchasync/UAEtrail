@@ -40,14 +40,28 @@ export const UPL_FIND_YOUR_CREW = 'Find your crew';
 
 /** Friends list (`/buddies` route — wire only). */
 export const UPL_FRIENDS_LIST = 'Friends';
-/** @deprecated Use {@link UPL_FRIENDS_LIST}. */
-export const UPL_BUDDIES_PAGE = UPL_FRIENDS_LIST;
 export const UPL_FOLLOWING = 'Following';
 
-/** Plan hub */
-export const UPL_PLAN = 'Plan';
+/** My Plans surface (`/plan`) — not a generic “plan the weekend” verb */
+export const UPL_PLAN = 'My Plans';
 export const UPL_GOALS = 'Goals';
+/** BWL field `member_availability` — product compose kind is Intent (UPL_INTENT_*). */
 export const UPL_AVAILABILITY = 'Availability';
+
+/** Compose kinds (`?compose=` emit — MIG-PLATFORM-COMPOSE-OPERATOR-2026) */
+export const UPL_COMPOSE_KIND_ACTIVITY = 'Activity';
+export const UPL_COMPOSE_KIND_PLACE = 'Place';
+export const UPL_COMPOSE_KIND_INTENT = 'Intent';
+
+/** Explore people browse vs My Crews roster (DEC-003, DEC-005) */
+export const UPL_DISCOVER_CREWS = 'Discover crews';
+export const UPL_MY_CREWS = 'My crew';
+
+/** Profile → host dashboard (`/operator`) — not “Publishing workspace” in member chrome */
+export const UPL_OPERATOR_DASHBOARD = 'Dashboard';
+
+/** Plan Add a Plan → publish open intent (DEC-008) */
+export const UPL_INTENT_OPEN_ACTION = "Share when I'm free";
 
 /**
  * Pro membership — upgrade for individual guides and for shops/agencies.

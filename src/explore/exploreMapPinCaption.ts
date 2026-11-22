@@ -25,9 +25,6 @@ export const MAP_PIN_ACTIVITY_CAPTION_MIN_ZOOM_SATELLITE = 9;
 export const MAP_PIN_ACTIVITY_WHERE_MIN_ZOOM_MAP = 9;
 export const MAP_PIN_ACTIVITY_WHERE_MIN_ZOOM_SATELLITE = 9;
 
-/** @deprecated use style-specific mins in resolveMapPinActivityCaption */
-export const MAP_PIN_ACTIVITY_CAPTION_MIN_ZOOM = MAP_PIN_ACTIVITY_CAPTION_MIN_ZOOM_MAP;
-
 /** Show “Trip” text on venue chips (dot always when count &gt; 0). */
 export const MAP_PIN_VENUE_TRIP_LABEL_MIN_ZOOM = 11;
 
@@ -35,9 +32,6 @@ const WEEKDAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
 
 /** Fixed crew availability pins on the Trips map (`source: availability`). */
 export const MAP_PIN_LOOKING_CAPTION = 'Looking for';
-
-/** @deprecated Use {@link MAP_PIN_LOOKING_CAPTION} — not legacy participant-intent seeking. */
-export const MAP_PIN_SEEKING_CAPTION = MAP_PIN_LOOKING_CAPTION;
 
 const isMapAvailabilityCaptionSource = (source?: DiscoveryCardSource): boolean => source === 'availability';
 

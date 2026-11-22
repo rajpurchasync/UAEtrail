@@ -5,13 +5,13 @@
  * Three+ images per kind — UAE/GCC rocky hills, desert, and outdoor groups
  * (not alpine snow or temperate forest). Landing carousels cycle by index.
  */
-import type { ActivityType } from '../types';
+import type { ScheduledActivityType } from '@uaetrail/shared-types';
 
 const unsplashPhoto = (photoId: string, width = 800) =>
   `https://images.unsplash.com/${photoId}?w=${width}&fit=crop&q=80`;
 
 /** Placeholder pools — at least three distinct images per activity kind. */
-export const ACTIVITY_TYPE_COVER_IMAGE_POOLS: Record<ActivityType, readonly string[]> = {
+export const ACTIVITY_TYPE_COVER_IMAGE_POOLS: Record<ScheduledActivityType, readonly string[]> = {
   hiking: [
     unsplashPhoto('photo-1680425982087-9f6f25861db1'), // Jebel Jais ridges, RAK
     unsplashPhoto('photo-1646641678252-52aee3025261'), // Hatta Dam & Hajar mountains
@@ -34,14 +34,6 @@ export const ACTIVITY_TYPE_COVER_IMAGE_POOLS: Record<ActivityType, readonly stri
   ],
 };
 
-/** @deprecated Use {@link ACTIVITY_TYPE_COVER_IMAGE_POOLS} — first image in each pool. */
-export const ACTIVITY_TYPE_COVER_IMAGES: Record<ActivityType, string> = {
-  hiking: ACTIVITY_TYPE_COVER_IMAGE_POOLS.hiking[0],
-  camping: ACTIVITY_TYPE_COVER_IMAGE_POOLS.camping[0],
-  event: ACTIVITY_TYPE_COVER_IMAGE_POOLS.event[0],
-  rideshare: ACTIVITY_TYPE_COVER_IMAGE_POOLS.rideshare[0],
-};
-
 const pickFromPool = (pool: readonly string[], key: string): string => {
   if (pool.length === 1) return pool[0];
   let hash = 0;
@@ -53,7 +45,7 @@ const pickFromPool = (pool: readonly string[], key: string): string => {
 
 /** Prefer uploaded photos; otherwise pick a kind-specific placeholder from the pool. */
 export const resolveActivityTypeCoverImage = (
-  activityType: ActivityType,
+  activityType: ScheduledActivityType,
   uploadedImages?: string[] | null,
   options?: { activityId?: string; variantIndex?: number }
 ): string => {

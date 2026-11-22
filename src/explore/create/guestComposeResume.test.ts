@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { hostCompose } from '../compose';
+import { activityCompose } from '../compose';
 import {
   buildComposeAuthReturnPath,
   clearGuestComposeResumeSession,
@@ -16,12 +16,12 @@ describe('guestComposeResume', () => {
     const path = buildComposeAuthReturnPath(
       '/explore',
       '?list=1&filter=hiking',
-      hostCompose('rideshare')
+      activityCompose('rideshare')
     );
     expect(path).toContain('/explore');
     expect(path).toContain('list=1');
     expect(path).toContain('filter=hiking');
-    expect(path).toContain('compose=host%3Arideshare');
+    expect(path).toContain('compose=activity%3Arideshare');
   });
 
   it('persists resume payload in session', () => {

@@ -9,7 +9,7 @@ import { TenantSwitcher } from '../../components/ui';
 import { OrganisationPublicProfile } from '../../components/organisation-console/OrganisationPublicProfile';
 import { ConsoleShell } from '../../console/ConsoleShell';
 import { GlassCard } from '../../components/mobile/GlassCard';
-import { PUBLISHING_PROFILE_PATH, signInPath } from '../../config/routingCatalog';
+import { OPERATOR_PROFILE_PATH, signInPath } from '../../config/routingCatalog';
 import { navigateToVisitorHome } from '../../hosting/navigateHostRoleHome';
 
 export const PublicProfileEdit = () => {
@@ -74,9 +74,9 @@ export const PublicProfileEdit = () => {
   if (!user) {
     return (
       <Navigate
-        to={signInPath({ redirect: PUBLISHING_PROFILE_PATH })}
+        to={signInPath({ redirect: OPERATOR_PROFILE_PATH })}
         replace
-        state={{ from: PUBLISHING_PROFILE_PATH }}
+        state={{ from: OPERATOR_PROFILE_PATH }}
       />
     );
   }

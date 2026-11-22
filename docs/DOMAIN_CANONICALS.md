@@ -118,7 +118,7 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 
 ### 1.7 Program CPC — catalog ontology, FAB, compose wire
 
-**Tracker:** [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4 (debt **C26**). Implementation checklists live there — not a separate doc.
+**Tracker:** [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4 (debt **C26**). **`MIG-PLATFORM-COMPOSE-OPERATOR-2026`** — target compose emit **`activity:*` \| `place:*` \| `intent:*`**; wishlist **not** a compose kind; legacy **`seek`/`host`/`add`/`availability` emit forbidden** from `src/` after PR-A (inbound parse in shared-types only).
 
 **Simple lens (product):** **What** = Activity · **Where** = Area / Place / Facility · **Who** = Person / Host / Operator · **How** = participate (**context only** — not a fourth catalog entity) — see [`DOMAIN.md`](./DOMAIN.md) § What · Where · Who · How. Do **not** use “destination place” in copy or new code names.
 

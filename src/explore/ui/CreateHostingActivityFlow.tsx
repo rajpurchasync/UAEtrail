@@ -276,7 +276,7 @@ export const CreateHostingActivityFlow = ({
   const hostingFlowId = useMemo(
     () =>
       hostComposeKind
-        ? composeFlowIdFromRoute({ intent: 'host', kind: hostComposeKind })
+        ? composeFlowIdFromRoute({ composeKind: 'activity', kind: hostComposeKind })
         : null,
     [hostComposeKind]
   );

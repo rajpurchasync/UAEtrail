@@ -1011,6 +1011,7 @@ Board one-liner: *P4 thinned the API; **PCOH** (§8.8) finished UPL/BWL coherenc
 | Artifact | Role |
 |----------|------|
 | [`scripts/refactor-program.json`](../scripts/refactor-program.json) | Phases **P0–P6** + **P4b**, migrations **MIG-***, `authorization`, `capacity`, P5 `slos` |
+| **`MIG-PLATFORM-COMPOSE-OPERATOR-2026`** | **In progress (P4b)** — compose kinds **activity · place · intent**; operator **`/operator/*`**; anti-regression **`migPlatformComposeOperatorProgramGuard`** |
 | [`scripts/repo-census-baseline.json`](../scripts/repo-census-baseline.json) | P0 inventory (`npm run repo:census`; knip issue count optional) |
 | [`scripts/bounded-context-manifest.json`](../scripts/bounded-context-manifest.json) | Context → API/FE roots (update per migration PR) |
 | §7 register | **C27** (docs) · **C28** (program spine) · close rows when migrations complete |

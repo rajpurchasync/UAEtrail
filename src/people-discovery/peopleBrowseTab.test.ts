@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
   parsePeopleBrowseTab,
-  parsePeopleBrowseTabFromUrl,
   serializePeopleBrowseTab,
 } from './peopleBrowseTab';
+import {
+  INBOUND_GOING_TAB_PARAM,
+  PEOPLE_LIST_TAB_URL_PARAM,
+  readPeopleCrewsTabParam,
+} from '../routing/productUrlInbound';
 
 describe('parsePeopleBrowseTab', () => {
   it('defaults to looking', () => {
@@ -26,19 +30,26 @@ describe('parsePeopleBrowseTab', () => {
   });
 });
 
-describe('parsePeopleBrowseTabFromUrl', () => {
+describe('people tab inbound choke', () => {
+  const tabFromUrl = (peopleTab: string | null, inboundGoingTab: string | null) => {
+    const params = new URLSearchParams();
+    if (peopleTab) params.set(PEOPLE_LIST_TAB_URL_PARAM, peopleTab);
+    else if (inboundGoingTab) params.set(INBOUND_GOING_TAB_PARAM, inboundGoingTab);
+    return parsePeopleBrowseTab(readPeopleCrewsTabParam(params));
+  };
+
   it('defaults to looking', () => {
-    expect(parsePeopleBrowseTabFromUrl(null, null)).toBe('looking');
+    expect(tabFromUrl(null, null)).toBe('looking');
   });
 
   it('prefers peopleTab over goingTab', () => {
-    expect(parsePeopleBrowseTabFromUrl('connect', 'discover')).toBe('connect');
+    expect(tabFromUrl('connect', 'discover')).toBe('connect');
   });
 
   it('maps legacy goingTab when peopleTab absent', () => {
-    expect(parsePeopleBrowseTabFromUrl(null, 'people')).toBe('going');
-    expect(parsePeopleBrowseTabFromUrl(null, 'discover')).toBe('available');
-    expect(parsePeopleBrowseTabFromUrl(null, 'trips')).toBe('connect');
+    expect(tabFromUrl(null, 'people')).toBe('going');
+    expect(tabFromUrl(null, 'discover')).toBe('available');
+    expect(tabFromUrl(null, 'trips')).toBe('connect');
   });
 });
 

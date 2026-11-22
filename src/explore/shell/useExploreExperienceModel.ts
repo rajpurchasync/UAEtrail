@@ -38,7 +38,7 @@ import {
   resolveCreateFabComposeEntry,
   resolveExploreMapCreateFabHints,
 } from '../create/composeFabEntry';
-import { availabilityFlexibleCompose } from '../compose';
+import { intentOpenCompose } from '../compose';
 import { useBrowseGeoScopeHydration } from '../../list/browse/useBrowseGeoScopeHydration';
 import { reloadExploreMap } from '../../hooks/useExploreMap';
 
@@ -140,7 +140,7 @@ export const useExploreExperienceModel = () => {
     searchParams,
     setSearchParams,
     setComposeRoute: compose.setComposeRoute,
-    hostComposeKind: compose.hostComposeRoute?.kind ?? null,
+    hostComposeKind: compose.activityComposeRoute?.kind ?? null,
   });
 
   const selected = selectionItems.find((item) => item.id === selectedId) ?? null;
@@ -195,7 +195,7 @@ export const useExploreExperienceModel = () => {
   }, [clearSelection, compose, pathname, fabSearch, createFabHints]);
 
   const handleOpenMarkAvailability = useCallback(() => {
-    compose.handleCreateTap(availabilityFlexibleCompose());
+    compose.handleCreateTap(intentOpenCompose());
   }, [compose]);
 
   const planWithBuddyUserId = parsePlanWithUserId(searchParams);

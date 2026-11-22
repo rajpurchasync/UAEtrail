@@ -1,7 +1,7 @@
 import { PROFILE_PATH, PROFILE_SETTINGS_PATH } from '../config/routingCatalog';
 import { SETTINGS_SURFACE_TITLE } from '../config/settingsHub';
 import { BUDDIES_PATH, PROFILE_VEHICLES_PATH } from '../config/surfacePaths';
-import { PRODUCT_SOCIAL_SURFACE_TITLE } from '../content/productNorthStar';
+import { PRODUCT_MY_CREW_SURFACE_TITLE } from '../content/productNorthStar';
 import { useMobileBackChrome } from './useMobileBackChrome';
 
 export const useProfileHubBackChrome = () =>
@@ -25,6 +25,6 @@ export const useProfileVehiclesBackChrome = () =>
 export const useSocialHubBackChrome = () =>
   useMobileBackChrome({
     fallbackTo: BUDDIES_PATH,
-    label: PRODUCT_SOCIAL_SURFACE_TITLE,
+    label: PRODUCT_MY_CREW_SURFACE_TITLE,
     backBehavior: 'fallback',
   });

@@ -28,15 +28,15 @@ import {
   INBOUND_PROFILE_SETTINGS_PRIVACY_PATH,
   INBOUND_PROFILE_SETTINGS_NOTIFICATIONS_PATH,
   INBOUND_PROFILE_SETTINGS_SAFETY_PATH,
-  PUBLISHING_ACTIVITIES_NEW_PATH,
-  PUBLISHING_ACTIVITIES_PATH,
-  PUBLISHING_HISTORY_PATH,
-  PUBLISHING_OVERVIEW_PATH,
-  PUBLISHING_PLACES_PATH,
-  PUBLISHING_PROFILE_PATH,
-  PUBLISHING_REQUESTS_PATH,
-  PUBLISHING_SECURITY_PRIVACY_PATH,
-  PUBLISHING_TEAM_PATH,
+  OPERATOR_ACTIVITIES_NEW_PATH,
+  OPERATOR_ACTIVITIES_PATH,
+  OPERATOR_HISTORY_PATH,
+  OPERATOR_OVERVIEW_PATH,
+  OPERATOR_PLACES_PATH,
+  OPERATOR_PROFILE_PATH,
+  OPERATOR_REQUESTS_PATH,
+  OPERATOR_SECURITY_PRIVACY_PATH,
+  OPERATOR_TEAM_PATH,
   SIGNIN_PATH,
   SIGNUP_PATH,
 } from '../config/surfacePaths';
@@ -99,16 +99,7 @@ export const AppRoutes = ({ location }: { location: Location }) => (
             }
           />
           <Route path="/plan" element={<PlanBrowseRoute />} />
-          <Route
-            path={HOSTING_HUB_PATH}
-            element={
-              <ProtectedRoute>
-                <Suspense fallback={<PageLoader />}>
-                  <HostingHubPage />
-                </Suspense>
-              </ProtectedRoute>
-            }
-          />
+          <Route path={HOSTING_HUB_PATH} element={<InboundRetiredPublishingConsoleRedirect />} />
           <Route
             path="/geo"
             element={
@@ -554,12 +545,15 @@ export const AppRoutes = ({ location }: { location: Location }) => (
             element={<Navigate to="/admin/hosts" replace />}
           />
           <Route path="/host/*" element={<InboundRetiredPublishingConsoleRedirect />} />
-          <Route path="/operator/*" element={<InboundRetiredPublishingConsoleRedirect />} />
           <Route path="/organizer/*" element={<InboundRetiredPublishingConsoleRedirect />} />
-          <Route path="/publishing" element={<Navigate to={PUBLISHING_OVERVIEW_PATH} replace />} />
+          <Route path="/operator" element={<Navigate to={OPERATOR_OVERVIEW_PATH} replace />} />
+          <Route path="/operator/messages" element={<InboundMessagesRedirect />} />
           <Route path="/publishing/messages" element={<InboundMessagesRedirect />} />
+          <Route path="/publishing/locations" element={<Navigate to={OPERATOR_PLACES_PATH} replace />} />
+          <Route path="/publishing" element={<Navigate to={OPERATOR_OVERVIEW_PATH} replace />} />
+          <Route path="/publishing/*" element={<InboundRetiredPublishingConsoleRedirect />} />
           <Route
-            path={PUBLISHING_OVERVIEW_PATH}
+            path={OPERATOR_OVERVIEW_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <PublishingOverview />
@@ -567,7 +561,7 @@ export const AppRoutes = ({ location }: { location: Location }) => (
             }
           />
           <Route
-            path={PUBLISHING_ACTIVITIES_PATH}
+            path={OPERATOR_ACTIVITIES_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <PublishingActivities />
@@ -575,7 +569,7 @@ export const AppRoutes = ({ location }: { location: Location }) => (
             }
           />
           <Route
-            path={PUBLISHING_ACTIVITIES_NEW_PATH}
+            path={OPERATOR_ACTIVITIES_NEW_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <PublishingActivities />
@@ -583,7 +577,7 @@ export const AppRoutes = ({ location }: { location: Location }) => (
             }
           />
           <Route
-            path={PUBLISHING_REQUESTS_PATH}
+            path={OPERATOR_REQUESTS_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <PublishingJoinRequests />
@@ -591,7 +585,7 @@ export const AppRoutes = ({ location }: { location: Location }) => (
             }
           />
           <Route
-            path={PUBLISHING_TEAM_PATH}
+            path={OPERATOR_TEAM_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <PublishingTeam />
@@ -599,7 +593,7 @@ export const AppRoutes = ({ location }: { location: Location }) => (
             }
           />
           <Route
-            path={PUBLISHING_PROFILE_PATH}
+            path={OPERATOR_PROFILE_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <PublishingPublicProfileEdit />
@@ -607,7 +601,7 @@ export const AppRoutes = ({ location }: { location: Location }) => (
             }
           />
           <Route
-            path={PUBLISHING_SECURITY_PRIVACY_PATH}
+            path={OPERATOR_SECURITY_PRIVACY_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <SecurityPrivacy />
@@ -615,16 +609,15 @@ export const AppRoutes = ({ location }: { location: Location }) => (
             }
           />
           <Route
-            path={PUBLISHING_PLACES_PATH}
+            path={OPERATOR_PLACES_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <PublishingPlaces />
               </ProtectedRoute>
             }
           />
-          <Route path="/publishing/locations" element={<Navigate to={PUBLISHING_PLACES_PATH} replace />} />
           <Route
-            path={PUBLISHING_HISTORY_PATH}
+            path={OPERATOR_HISTORY_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <PublishingHistory />

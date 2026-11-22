@@ -25,7 +25,7 @@ import {
   planHostedSchedulePath,
 } from '../config/routingCatalog';
 import { INBOUND_RETIRED_CONSOLE_PREFIXES } from '../config/inboundRoutePaths';
-import { PUBLISHING_CONSOLE_PREFIX } from '../config/surfacePaths';
+import { OPERATOR_CONSOLE_PREFIX } from '../config/surfacePaths';
 import { planWishlistTabPath } from '../plan/planTab';
 import {
   NotificationDTO,
@@ -50,6 +50,7 @@ const normalizeConsumerChatDeepLinkPath = (
 
   if (
     pathname === INBOUND_MESSAGES_PATH ||
+    pathname === '/operator/messages' ||
     pathname === '/publishing/messages' ||
     pathname === '/host/messages'
   ) {
@@ -111,6 +112,7 @@ const normalizeDirectNotificationPath = (
 
   if (
     pathname === INBOUND_MESSAGES_PATH ||
+    pathname === '/operator/messages' ||
     pathname === '/publishing/messages' ||
     pathname === '/host/messages'
   ) {
@@ -122,7 +124,7 @@ const normalizeDirectNotificationPath = (
   );
   if (retiredPrefix && !pathname.endsWith('/messages')) {
     const suffix = pathname.slice(retiredPrefix.length) || '/overview';
-    return `${PUBLISHING_CONSOLE_PREFIX}${suffix}${search}`;
+    return `${OPERATOR_CONSOLE_PREFIX}${suffix}${search}`;
   }
 
   const resolvedPlanHub = resolveInboundPlanHubPath(pathname, search);
@@ -299,7 +301,7 @@ export const inferNotificationPath = (
     return PROFILE_PATH;
   }
   if (kind === 'location_rejected') {
-    return explorePath({ panel: 'venues', compose: { surface: 'menu', intent: 'add' } });
+    return explorePath({ panel: 'venues', compose: { surface: 'menu', composeKind: 'place' } });
   }
 
   if (options?.preferAdminRoutes) {

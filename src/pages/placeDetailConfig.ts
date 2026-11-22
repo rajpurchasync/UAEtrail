@@ -1,6 +1,6 @@
 import type { ActivityType } from '@uaetrail/shared-types';
 import { normalizePlaceActivityType } from '@uaetrail/shared-types';
-import { VENUE_TYPE_LABELS } from '../config/activityTypes';
+import { LOCATION_TYPE_LABELS } from '../config/activityTypes';
 
 /** URL segment kind for place detail pages (`/trail`, `/camp`, `/venue`). */
 export type PlaceDetailKind = 'trail' | 'camp' | 'event';
@@ -73,9 +73,9 @@ export const PLACE_DETAIL_CONFIG: Record<PlaceDetailKind, PlaceDetailKindConfig>
     accent: 'violet',
     pathPrefix: '/venue',
     loadingTitle: 'Loading event venue',
-    notFoundTitle: `${VENUE_TYPE_LABELS.event} not found`,
-    imageAltSuffix: `${VENUE_TYPE_LABELS.event.toLowerCase()} venue`,
-    shareSuffix: `${VENUE_TYPE_LABELS.event.toLowerCase()} venue on UAE Trails`,
+    notFoundTitle: `${LOCATION_TYPE_LABELS.event} not found`,
+    imageAltSuffix: `${LOCATION_TYPE_LABELS.event.toLowerCase()} venue`,
+    shareSuffix: `${LOCATION_TYPE_LABELS.event.toLowerCase()} venue on UAE Trails`,
     activitiesHeading: 'Upcoming Events',
     activitiesSubheading: 'Trail runs, races, and community events at this venue',
     activitiesBrowseLabel: 'View all events',
@@ -83,6 +83,6 @@ export const PLACE_DETAIL_CONFIG: Record<PlaceDetailKind, PlaceDetailKindConfig>
     emptyActivitiesLinkLabel: 'Browse all events',
     spinnerBorderClass: 'border-violet-600',
     notFoundLinkClass: 'text-violet-600 hover:text-violet-700',
-    typeBadge: VENUE_TYPE_LABELS.event,
+    typeBadge: LOCATION_TYPE_LABELS.event,
   },
 };

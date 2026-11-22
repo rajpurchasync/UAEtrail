@@ -32,23 +32,26 @@ describe('publishing console routing (MIG-ROUTING-CANON-P1)', () => {
     expect(existsSync(join(ROOT, 'src/hooks/useOperatorActivityManageActions.ts'))).toBe(false);
   });
 
-  it('App uses publishing workspace and retired-console bookmark redirects only', () => {
+  it('App mounts /operator/* console and legacy inbound redirects only', () => {
     const app = readAppRouteRegistry();
     expect(app).not.toMatch(/LegacyPublishingConsoleRedirect/);
     expect(app).toMatch(/InboundRetiredPublishingConsoleRedirect/);
     expect(app).toMatch(/path="\/host\/\*"/);
     expect(app).toMatch(/path="\/organizer\/\*"/);
-    expect(app).toMatch(/path="\/publishing"/);
+    expect(app).toMatch(/path="\/publishing\/\*"/);
+    expect(app).toMatch(/OPERATOR_OVERVIEW_PATH/);
+    expect(app).not.toMatch(/path="\/operator\/\*".*InboundRetiredPublishingConsoleRedirect/);
     expect(app).not.toMatch(/OperatorPublishingAlias/);
     expect(app).toMatch(/path="\/publishing\/messages"/);
+    expect(app).toMatch(/path="\/operator\/messages"/);
   });
 
-  it('surfacePaths exposes publishing workspace (/publishing) paths', () => {
+  it('surfacePaths exposes operator workspace (/operator) paths', () => {
     const surface = readFileSync(join(ROOT, 'src/config/surfacePaths.ts'), 'utf8');
     expect(surface).not.toMatch(/HOST_OVERVIEW_PATH/);
     expect(surface).not.toMatch(/rewriteLegacyPublishingConsolePath/);
-    expect(surface).toMatch(/PUBLISHING_OVERVIEW_PATH/);
-    expect(surface).toMatch(/PUBLISHING_CONSOLE_PREFIX/);
+    expect(surface).toMatch(/OPERATOR_OVERVIEW_PATH/);
+    expect(surface).toMatch(/OPERATOR_CONSOLE_PREFIX/);
     expect(surface).not.toMatch(/rewriteOperatorConsoleToPublishingPath/);
   });
 

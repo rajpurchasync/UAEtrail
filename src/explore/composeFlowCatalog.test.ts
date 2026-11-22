@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 
-  ADD_COMPOSE_OPTIONS,
+  CREATE_VENUE_ADD_COMPOSE_OPTIONS,
 
   AVAILABILITY_FIXED_COMPOSE_OPTIONS,
 
@@ -10,7 +10,7 @@ import {
 
   hostCreateActivityKind,
 
-  addComposeFromVenueKind,
+  placeComposeFromVenueKind,
 } from './compose';
 
 import {
@@ -39,19 +39,19 @@ import { getCreateFlowSteps } from './ui/hostingFlowEngine';
 
 describe('compose flow catalog', () => {
 
-  it('maps every FAB host option to host.* flowId', () => {
+  it('maps every FAB activity option to activity.* flowId', () => {
 
     for (const option of HOST_COMPOSE_OPTIONS) {
 
-      const id = composeFlowIdFromRoute({ intent: 'host', kind: option.kind });
+      const id = composeFlowIdFromRoute({ composeKind: 'activity', kind: option.kind });
 
       expect(id).toBeTruthy();
 
-      expect(id).toMatch(/^host\./);
+      expect(id).toMatch(/^activity\./);
 
       expect(COMPOSE_FLOW_CATALOG[id!].wizard).toBe('hostingFlow');
 
-      expect(COMPOSE_FLOW_CATALOG[id!].intent).toBe('host');
+      expect(COMPOSE_FLOW_CATALOG[id!].composeKind).toBe('activity');
 
       expect(COMPOSE_FLOW_CATALOG[id!].label.length).toBeGreaterThan(0);
 
@@ -61,19 +61,19 @@ describe('compose flow catalog', () => {
 
 
 
-  it('maps every FAB availability option to seek.fixed.* flowId', () => {
+  it('maps every FAB intent fixed option to intent.fixed.* flowId', () => {
 
     for (const option of AVAILABILITY_FIXED_COMPOSE_OPTIONS) {
 
-      const id = composeFlowIdFromRoute({ intent: 'availability', mode: 'fixed', kind: option.kind });
+      const id = composeFlowIdFromRoute({ composeKind: 'intent', mode: 'fixed', kind: option.kind });
 
       expect(id).toBeTruthy();
 
-      expect(id).toMatch(/^seek\.fixed\./);
+      expect(id).toMatch(/^intent\.fixed\./);
 
       expect(COMPOSE_FLOW_CATALOG[id!].wizard).toBe('availabilityFlow');
 
-      expect(COMPOSE_FLOW_CATALOG[id!].intent).toBe('availability');
+      expect(COMPOSE_FLOW_CATALOG[id!].composeKind).toBe('intent');
 
     }
 
@@ -81,17 +81,17 @@ describe('compose flow catalog', () => {
 
 
 
-  it('maps every FAB add option to add.* flowId', () => {
+  it('maps every FAB place option to place.* flowId', () => {
 
-    for (const option of ADD_COMPOSE_OPTIONS) {
+    for (const option of CREATE_VENUE_ADD_COMPOSE_OPTIONS) {
 
-      const id = composeFlowIdFromRoute(addComposeFromVenueKind(option.kind));
+      const id = composeFlowIdFromRoute(placeComposeFromVenueKind(option.kind));
 
       expect(id).toBeTruthy();
 
-      expect(id).toMatch(/^add\./);
+      expect(id).toMatch(/^place\./);
 
-      expect(COMPOSE_FLOW_CATALOG[id!].intent).toBe('add');
+      expect(COMPOSE_FLOW_CATALOG[id!].composeKind).toBe('place');
 
     }
 
@@ -99,11 +99,11 @@ describe('compose flow catalog', () => {
 
 
 
-  it('parses host rideshare from compose URL', () => {
+  it('parses activity rideshare from compose URL', () => {
 
-    expect(composeFlowIdFromRoute({ intent: 'host', kind: 'rideshare' })).toBe(
+    expect(composeFlowIdFromRoute({ composeKind: 'activity', kind: 'rideshare' })).toBe(
 
-      'host.rideshare'
+      'activity.rideshare'
 
     );
 
@@ -129,13 +129,13 @@ describe('compose flow catalog', () => {
 
 
 
-  it('catalog ids are host/availability/add only', () => {
+  it('catalog ids are activity/intent/place only', () => {
 
-    expect(isCanonicalComposeFlowId('host.hiking')).toBe(true);
+    expect(isCanonicalComposeFlowId('activity.hiking')).toBe(true);
 
-    expect(isCanonicalComposeFlowId('seek.fixed.camping')).toBe(true);
+    expect(isCanonicalComposeFlowId('intent.fixed.camping')).toBe(true);
 
-    expect(isCanonicalComposeFlowId('add.place.hiking')).toBe(true);
+    expect(isCanonicalComposeFlowId('place.hiking')).toBe(true);
 
     expect(isCanonicalComposeFlowId('organize.hiking')).toBe(false);
 
@@ -171,7 +171,7 @@ describe('compose flow catalog', () => {
 
     for (const option of HOST_COMPOSE_OPTIONS) {
 
-      const id = composeFlowIdFromRoute({ intent: 'host', kind: option.kind });
+      const id = composeFlowIdFromRoute({ composeKind: 'activity', kind: option.kind });
 
       expect(id).toBeTruthy();
 
@@ -189,7 +189,7 @@ describe('compose flow catalog', () => {
 
     for (const option of HOST_COMPOSE_OPTIONS) {
 
-      const id = composeFlowIdFromRoute({ intent: 'host', kind: option.kind });
+      const id = composeFlowIdFromRoute({ composeKind: 'activity', kind: option.kind });
 
       expect(id).toBeTruthy();
 
@@ -207,7 +207,7 @@ describe('compose flow catalog', () => {
 
     for (const option of AVAILABILITY_FIXED_COMPOSE_OPTIONS) {
 
-      const id = composeFlowIdFromRoute({ intent: 'availability', mode: 'fixed', kind: option.kind });
+      const id = composeFlowIdFromRoute({ composeKind: 'intent', mode: 'fixed', kind: option.kind });
 
       expect(id).toBeTruthy();
 
@@ -223,9 +223,9 @@ describe('compose flow catalog', () => {
 
   it('catalog addSteps stay aligned with add-flow step lists', () => {
 
-    for (const option of ADD_COMPOSE_OPTIONS) {
+    for (const option of CREATE_VENUE_ADD_COMPOSE_OPTIONS) {
 
-      const id = composeFlowIdFromRoute(addComposeFromVenueKind(option.kind));
+      const id = composeFlowIdFromRoute(placeComposeFromVenueKind(option.kind));
 
       expect(id).toBeTruthy();
 

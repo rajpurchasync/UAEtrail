@@ -33,6 +33,24 @@ const FORBIDDEN: Array<{ pattern: RegExp; label: string }> = [
   { pattern: /kind: 'seeking'/, label: 'plan calendar seeking detail kind (use mapSlot)' },
   { pattern: /\bmarkers\.seeking\b/, label: 'plan calendar seeking marker (use mapSlot)' },
   { pattern: /m\.seeking\b/, label: 'plan calendar seeking marker assign (use mapSlot)' },
+  { pattern: /\bseekFixedCompose\b/, label: 'seekFixedCompose (use intentFixedCompose)' },
+  { pattern: /\bseekFlexibleCompose\b/, label: 'seekFlexibleCompose (use intentOpenCompose)' },
+  { pattern: /\bavailabilityFlexibleCompose\b/, label: 'availabilityFlexibleCompose (use intentOpenCompose)' },
+  { pattern: /\bavailabilityFixedCompose\b/, label: 'availabilityFixedCompose (use intentFixedCompose)' },
+  { pattern: /\bavailabilityOpenCompose\b/, label: 'availabilityOpenCompose (use intentOpenCompose)' },
+  { pattern: /\bisSeekFixedWizard\b/, label: 'isSeekFixedWizard (use isIntentFixedWizard)' },
+  { pattern: /\bisSeekFlexibleWizard\b/, label: 'isSeekFlexibleWizard (use isIntentOpenWizard)' },
+  { pattern: /\bisAvailabilityFixedWizard\b/, label: 'isAvailabilityFixedWizard (use isIntentFixedWizard)' },
+  { pattern: /\bisAvailabilityOpenWizard\b/, label: 'isAvailabilityOpenWizard (use isIntentOpenWizard)' },
+  { pattern: /\bSEEK_FIXED_COMPOSE_OPTIONS\b/, label: 'SEEK_FIXED_COMPOSE_OPTIONS' },
+  { pattern: /\bSEEK_MODE_OPTIONS\b/, label: 'SEEK_MODE_OPTIONS' },
+  { pattern: /\bADD_COMPOSE_OPTIONS\b/, label: 'ADD_COMPOSE_OPTIONS (use CREATE_VENUE_ADD_COMPOSE_OPTIONS)' },
+  { pattern: /\bSeekFlexibleComposeSheet\b/, label: 'SeekFlexibleComposeSheet (use IntentOpenComposeSheet)' },
+  { pattern: /\bMarkAvailabilityComposeSheet\b/, label: 'MarkAvailabilityComposeSheet (use IntentOpenComposeSheet)' },
+  { pattern: /\bCreateIntentSheet\b/, label: 'CreateIntentSheet (use CreateKindSheet)' },
+  { pattern: /\bexport const hostCompose\b/, label: 'hostCompose export (use activityCompose)' },
+  { pattern: /\bFabTopLevel\b/, label: 'FabTopLevel (use ComposeKind)' },
+  { pattern: /\bSeekFlexibleCompose\b/, label: 'SeekFlexibleCompose (retired seeking product name)' },
 ];
 
 const ALLOWLIST = new Set([
@@ -41,6 +59,7 @@ const ALLOWLIST = new Set([
   'src/config/memberAvailabilityLineageGuard.test.ts',
   'src/config/seekingPeekUnificationGuard.test.ts',
   'src/explore/exploreMapItemWireGuard.test.ts',
+  'src/explore/compose.test.ts',
 ]);
 
 /** Product `src/` must not reintroduce demand/looking map list paths (MIG-DISCO-REG). */

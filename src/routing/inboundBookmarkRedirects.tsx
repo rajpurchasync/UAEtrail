@@ -12,7 +12,7 @@ import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
 import {
   JOURNEY_MAP_PATH,
   PROFILE_HISTORY_PATH,
-  PUBLISHING_CONSOLE_PREFIX,
+  OPERATOR_CONSOLE_PREFIX,
   inboundNotificationsRedirectTarget,
   inboundProfileSettingsRedirectTarget,
 } from '../config/surfacePaths';
@@ -40,7 +40,7 @@ export const DiscoveryRedirect = () => {
   return <Navigate to={`${explorePath()}?${discoveryToExploreSearch(search)}`} replace />;
 };
 
-/** `/host/*`, `/operator/*`, `/organizer/*` → `/publishing/*` (retired console prefixes). */
+/** `/publishing/*`, `/host/*`, `/organizer/*`, `/hosting` → `/operator/*` (legacy console bookmarks). */
 export const InboundRetiredPublishingConsoleRedirect = () => {
   const { pathname, search, hash } = useLocation();
   const prefix = INBOUND_RETIRED_CONSOLE_PREFIXES.find(
@@ -50,7 +50,7 @@ export const InboundRetiredPublishingConsoleRedirect = () => {
     return <Navigate to={EXPLORE_MAP_PATH} replace />;
   }
   const suffix = pathname.slice(prefix.length) || '/overview';
-  return <Navigate to={`${PUBLISHING_CONSOLE_PREFIX}${suffix}${search}${hash}`} replace />;
+  return <Navigate to={`${OPERATOR_CONSOLE_PREFIX}${suffix}${search}${hash}`} replace />;
 };
 
 /** Inbound `/product/:id` — product catalog removed; send guests to shop browse. */

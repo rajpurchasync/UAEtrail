@@ -44,18 +44,26 @@ describe('composeLineageGuard (MIG-DISCO-REG compose)', () => {
   });
 
   it('COMPOSE-LINE-02: route hooks use availability open wizard (not flexible alias)', () => {
-    expect(read('src/explore/create/hooks/useComposeRoute.ts')).toMatch(/isAvailabilityOpenWizard/);
-    expect(read('src/explore/create/composeRouteGuard.ts')).toMatch(/isAvailabilityOpenWizard/);
+    expect(read('src/explore/create/hooks/useComposeRoute.ts')).toMatch(/isIntentOpenWizard/);
+    expect(read('src/explore/create/composeRouteGuard.ts')).toMatch(/isIntentOpenWizard/);
     expect(read('src/explore/create/hooks/useComposeRoute.ts')).not.toMatch(
       /isAvailabilityFlexibleWizard/
     );
     expect(read('src/explore/compose.ts')).not.toMatch(/export const isAvailabilityFlexibleWizard/);
+    const composeSrc = read('src/explore/compose.ts');
+    expect(composeSrc).not.toMatch(/export const seekFixedCompose/);
+    expect(composeSrc).not.toMatch(/export const isSeekFixedWizard/);
+    expect(composeSrc).not.toMatch(/export const availabilityFlexibleCompose/);
+    expect(composeSrc).not.toMatch(/export const SEEK_FIXED_COMPOSE_OPTIONS/);
+    expect(composeSrc).not.toMatch(/export const SEEK_MODE_OPTIONS/);
+    expect(composeSrc).not.toMatch(/export const ADD_COMPOSE_OPTIONS/);
+    expect(composeSrc).not.toMatch(/export type SeekingComposeKind/);
   });
 
-  it('COMPOSE-LINE-03: product compose emit uses availability wire (read-compat seek: in shared-types only)', () => {
+  it('COMPOSE-LINE-03: product compose emit uses intent wire (legacy parse in shared-types only)', () => {
     const compose = read('src/explore/compose.ts');
-    expect(compose).toMatch(/availabilityFixedCompose/);
-    expect(compose).toMatch(/availabilityOpenCompose/);
+    expect(compose).toMatch(/intentFixedCompose/);
+    expect(compose).toMatch(/intentOpenCompose/);
     expect(compose).not.toMatch(/intent:\s*'seeking'/);
     const violations: string[] = [];
     for (const file of collectAppTs('src/explore/ui')) {
@@ -84,7 +92,7 @@ describe('composeLineageGuard (MIG-DISCO-REG compose)', () => {
 
   it('COMPOSE-LINE-06: plan + list FAB hand off to shared compose (DMCP Phase 4)', () => {
     expect(read('src/plan/usePlanAddFlow.ts')).toMatch(/compose\.handleCreateTap/);
-    expect(read('src/explore/create/composeFabEntry.ts')).toMatch(/intent: 'host'/);
+    expect(read('src/explore/create/composeFabEntry.ts')).toMatch(/composeKind: 'activity'/);
     expect(read('src/list/browse/browseListCopy.ts')).toMatch(/exploreCreateFabCopy/);
     expect(read('src/explore/composeFlowCatalog.ts')).not.toMatch(/seekingFlow/);
   });

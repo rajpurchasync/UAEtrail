@@ -10,11 +10,11 @@ import { renderRideshareHostingWizardStep } from './flows/rideshareHostingWizard
 const CATALOG_STEP_RENDERERS: Partial<
   Record<CanonicalComposeFlowId, (ctx: HostingWizardContext) => ReactNode | null>
 > = {
-  'host.hiking': renderHikingHostingWizardStep,
-  'host.camping': renderCampingHostingWizardStep,
-  'host.event': renderEventsHostingWizardStep,
-  'host.activity': renderActivitiesHostingWizardStep,
-  'host.rideshare': renderRideshareHostingWizardStep,
+  'activity.hiking': renderHikingHostingWizardStep,
+  'activity.camping': renderCampingHostingWizardStep,
+  'activity.event': renderEventsHostingWizardStep,
+  'activity.activity': renderActivitiesHostingWizardStep,
+  'activity.rideshare': renderRideshareHostingWizardStep,
 };
 
 /**

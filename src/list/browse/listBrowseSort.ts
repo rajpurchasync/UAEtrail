@@ -397,6 +397,3 @@ export const groupBrowseListSections = (
 export const browseListSortUsesViewerLocation = (mode: BrowseListSortMode): boolean =>
   mode === 'near_me';
 
-/** @deprecated Prefer `browseListSortButtonLabel` for UI. */
-export const browseListSortLabel = (mode: BrowseListSortMode): string =>
-  browseListSortButtonLabel(mode);

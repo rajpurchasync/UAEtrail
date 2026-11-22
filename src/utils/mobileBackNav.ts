@@ -3,7 +3,7 @@ import {
   PRODUCT_CREWS_TAB_LABEL,
   PRODUCT_GROUPS_SURFACE_LABEL,
   PRODUCT_PLAN_SURFACE_TITLE,
-  PRODUCT_SOCIAL_SURFACE_TITLE,
+  PRODUCT_MY_CREW_SURFACE_TITLE,
 } from '../content/productNorthStar';
 import { planWishlistTabPath } from '../plan/planTab';
 import { EXPLORE_MAP_PATH, MESSAGES_PATH, PLAN_PATH, PROFILE_PATH } from '../config/routingCatalog';
@@ -197,7 +197,7 @@ export const resolveMobileTabHeaderLeadingBack = (
     const section = params.get('section') ?? params.get('tab');
     const crewsOrigin = isCrewsOriginQuery(params.get('from'));
     if (section === 'friends' || section === 'requests' || section === 'following') {
-      return flowBack(BUDDIES_PATH, PRODUCT_SOCIAL_SURFACE_TITLE);
+      return flowBack(BUDDIES_PATH, PRODUCT_MY_CREW_SURFACE_TITLE);
     }
     if (crewsOrigin) {
       return flowBack(crewsHomePath(), PRODUCT_CREWS_TAB_LABEL);

@@ -5,11 +5,11 @@ import { clearPlanAddQuery } from '../../../create/planAddQuery';
 import {
   clearExploreComposeParams,
   formatComposeQuery,
-  isAddWizard,
   isComposeMenu,
-  isAvailabilityFixedWizard,
-  isAvailabilityOpenWizard,
-  isHostWizard,
+  isIntentFixedWizard,
+  isIntentOpenWizard,
+  isActivityWizard,
+  isPlaceWizard,
   COMPOSE_QUERY_KEY,
   parseExploreCompose,
   setExploreComposeParam,
@@ -65,10 +65,10 @@ export const useComposeRoute = ({
   const prevComposeRouteRef = useRef<ExploreCompose | null>(null);
 
   const composeMenuOpen = isComposeMenu(composeRoute);
-  const hostComposeRoute = isHostWizard(composeRoute) ? composeRoute : null;
-  const availabilityFixedRoute = isAvailabilityFixedWizard(composeRoute) ? composeRoute : null;
-  const addRoute = isAddWizard(composeRoute) ? composeRoute : null;
-  const availabilityOpenWizard = isAvailabilityOpenWizard(composeRoute);
+  const activityComposeRoute = isActivityWizard(composeRoute) ? composeRoute : null;
+  const intentFixedRoute = isIntentFixedWizard(composeRoute) ? composeRoute : null;
+  const placeRoute = isPlaceWizard(composeRoute) ? composeRoute : null;
+  const intentOpenWizard = isIntentOpenWizard(composeRoute);
 
   const applySearchMutation = useCallback(
     (mutate: (params: URLSearchParams) => void) => {
@@ -133,10 +133,10 @@ export const useComposeRoute = ({
 
     const openedWizardFromMenu =
       Boolean(next && prev && isComposeMenu(prev)) &&
-      (isHostWizard(next) ||
-        isAvailabilityFixedWizard(next) ||
-        isAvailabilityOpenWizard(next) ||
-        isAddWizard(next));
+      (isActivityWizard(next) ||
+        isIntentFixedWizard(next) ||
+        isIntentOpenWizard(next) ||
+        isPlaceWizard(next));
 
     if (openedWizardFromMenu && next) {
       clearComposeWizardSessionForRoute(next);
@@ -242,12 +242,10 @@ export const useComposeRoute = ({
   return {
     composeRoute,
     composeMenuOpen,
-    hostComposeRoute,
-    availabilityFixedRoute,
-    addRoute,
-    availabilityOpenWizard,
-    /** @deprecated Use availabilityOpenWizard */
-    availabilityFlexibleOpen: availabilityOpenWizard,
+    activityComposeRoute,
+    intentFixedRoute,
+    placeRoute,
+    intentOpenWizard,
     setComposeRoute,
     closeCompose,
     handleCreateTap,

@@ -325,14 +325,6 @@ export const peopleBrowseAvailabilityDateLine = (slots: MemberAvailabilitySlotDT
   return parts.join(' · ');
 };
 
-/** @deprecated Use `peopleBrowseAvailabilitySentence`. */
-export const peopleBrowseAvailableSentence = (
-  displayName: string,
-  kindLabels: string[],
-  slots: MemberAvailabilitySlotDTO[],
-  now: Date = new Date()
-): string => peopleBrowseAvailabilitySentence(displayName, kindLabels, slots, now);
-
 export type PeopleBrowseGoingCopyParts = {
   prefix: string;
   outingLabel: string;

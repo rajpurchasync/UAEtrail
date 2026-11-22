@@ -8,7 +8,6 @@
  */
 
 import type { ScheduledActivityType } from '@uaetrail/shared-types';
-import { placeDetailPath } from '@uaetrail/shared-types';
 import { EXPLORE_MAP_PATH } from './platform';
 import { PRODUCT_ACTIVITIES_EXPLORE_BLURB } from '../content/productNorthStar';
 
@@ -25,7 +24,7 @@ export const ACTIVITY_TYPES = ['hiking', 'camping', 'event'] as const satisfies 
 
 export type ActivityPickerType = (typeof ACTIVITY_TYPES)[number];
 
-/** @deprecated Prefer {@link ScheduledActivityType} from shared-types — alias for wire parity. */
+/** Scheduled listing wire kind — re-export for FE modules that predate direct shared-types imports. */
 export type ActivityType = ScheduledActivityType;
 
 /** Umbrella product name for scheduled listings (singular). */
@@ -74,9 +73,6 @@ export const LOCATION_TYPE_LABELS: Record<ActivityPickerType, string> = {
   camping: 'Camping location',
   event: 'Event location',
 };
-
-/** @deprecated use LOCATION_TYPE_LABELS */
-export const VENUE_TYPE_LABELS = LOCATION_TYPE_LABELS;
 
 /** Normalize API/query aliases to the canonical activity type. */
 export const parseActivityTypeParam = (value: string | null | undefined): ScheduledActivityType | null => {
@@ -148,6 +144,3 @@ export const activitiesBrowsePath = (activityType?: ScheduledActivityType | null
   return `${EXPLORE_MAP_PATH}?${params.toString()}`;
 };
 
-/** @deprecated Prefer `placeDetailPath` / `placeDetailPathForId` — kept for older call sites. */
-export const locationPathForActivity = (activityType: ActivityPickerType, id: string): string =>
-  placeDetailPath(activityType, id);

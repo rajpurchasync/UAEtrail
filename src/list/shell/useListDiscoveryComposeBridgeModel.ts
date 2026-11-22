@@ -13,7 +13,7 @@ import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { reloadExploreMap } from '../../hooks/useExploreMap';
 import { useExploreCreateFlowBridge } from '../../explore/shell/useExploreCreateFlowBridge';
 import { resolveCreateFabComposeEntry } from '../../explore/create/composeFabEntry';
-import { availabilityFlexibleCompose } from '../../explore/compose';
+import { intentOpenCompose } from '../../explore/compose';
 import type { BrowseListCreateFabHints } from '../browse/browseListCopy';
 import { useHostingFromActivity } from '../../explore/create/hooks/useHostingFromActivity';
 import { useHostingWizardPrefill } from '../../explore/create/hooks/useHostingWizardPrefill';
@@ -79,7 +79,7 @@ export const useListDiscoveryComposeBridgeModel = ({
   }, [compose, locationPathname, locationSearch, createFabContext]);
 
   const handleOpenMarkAvailability = useCallback(() => {
-    compose.handleCreateTap(availabilityFlexibleCompose());
+    compose.handleCreateTap(intentOpenCompose());
   }, [compose]);
 
   const availabilityLegacyMigratedRef = useRef(false);
@@ -87,7 +87,7 @@ export const useListDiscoveryComposeBridgeModel = ({
     if (!availabilitySheetOpen || availabilityLegacyMigratedRef.current) return;
     availabilityLegacyMigratedRef.current = true;
     syncUrl({ availabilitySheet: false });
-    compose.handleCreateTap(availabilityFlexibleCompose());
+    compose.handleCreateTap(intentOpenCompose());
   }, [availabilitySheetOpen, compose, syncUrl]);
 
   const hostingFrom = useHostingFromActivity({
@@ -96,7 +96,7 @@ export const useListDiscoveryComposeBridgeModel = ({
     searchParams,
     setSearchParams,
     setComposeRoute: compose.setComposeRoute,
-    hostComposeKind: compose.hostComposeRoute?.kind ?? null,
+    hostComposeKind: compose.activityComposeRoute?.kind ?? null,
   });
 
   const [, setListSelectedId] = useState<string | null>(null);

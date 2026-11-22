@@ -6,6 +6,18 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 
 **Product intent:** Help people **find like-minded company outdoors** in the UAE & GCC — discover plans, connect, chat, go together. See north star for voice and audience (residents, expats, visitors; hikes, camps, runs, and more).
 
+### Five member surfaces + projections (`MIG-PLATFORM-COMPOSE-OPERATOR-2026`)
+
+| Surface | Route(s) | Job |
+|---------|----------|-----|
+| **Explore** | `/explore`, `/list` | Discovery — browse **Trips** · **Places** · **Discover crews** (not My Crews roster) |
+| **Plans** | `/plan` | **My Plans** — joined, goals, wishlist, hosted projection (`/me/*` data) |
+| **Crews** | `/buddies`, `/groups` | **My Crews** — friends, teams, groups |
+| **Chat** | `/chat` | Threads |
+| **Profile** | `/profile`, `/settings` | Identity; **Dashboard** → **`/operator`** (host manage — migration in progress) |
+
+**Mobile five-tab** (`mobileFiveTabNav`) **splits Explore**: **Trips** · **Places** · **Crews** (tab home = discover list `listCat=people`, not `/buddies`) · **Plans** · **Chat**. **Discover crews** ≠ **My Crews** (`/buddies` via card / desktop Social). Alignment: program **HOST-SURFACE-UNIFY** + **PR-C** in canonical plan.
+
 ## Three surfaces
 
 | Surface | Route | Purpose |

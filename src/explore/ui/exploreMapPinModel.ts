@@ -51,12 +51,9 @@ export const isPhysicalShopItem = (item: ExploreMapItemDTO): boolean =>
 export const isOnlineShopItem = (item: ExploreMapItemDTO): boolean =>
   isShopListItem(item) && (item.shopPresence === 'online' || item.latitude == null || item.longitude == null);
 
-/** @deprecated Use isShopListItem */
-export const isShopMapItem = isShopListItem;
-
 const isMapPin = (item: ExploreMapItemDTO): boolean => {
   if (item.latitude == null || item.longitude == null) return false;
-  if (!isShopMapItem(item) && item.source === 'shop' && item.id.startsWith('product:')) return false;
+  if (!isShopListItem(item) && item.source === 'shop' && item.id.startsWith('product:')) return false;
   if (item.source === 'area') return true;
   return true;
 };
@@ -65,12 +62,12 @@ const isMapPin = (item: ExploreMapItemDTO): boolean => {
 export const matchesPlacesMapFilter = (item: ExploreMapItemDTO, mapFilter: MapFilterKey): boolean => {
   if (!isPlacesMapItem(item)) return false;
   if (mapFilter === 'all') return true;
-  if (mapFilter === 'shops') return isShopMapItem(item) || item.kind === 'shop';
+  if (mapFilter === 'shops') return isShopListItem(item) || item.kind === 'shop';
   if (mapFilter === 'facilities') return isFacilityExploreMapItem(item);
   if (mapFilter === 'rideshare') return false;
   if (mapFilter === 'others') {
     return (
-      !isShopMapItem(item) &&
+      !isShopListItem(item) &&
       !isFacilityExploreMapItem(item) &&
       item.kind !== 'hiking' &&
       item.kind !== 'camping'
@@ -150,38 +147,6 @@ export const matchesUnifiedExploreMapItem = (
   }
 
   return true;
-};
-
-/**
- * Mixed Activities + Places filter — topic only (no pin-kind / date / region).
- * @deprecated Prefer {@link matchesUnifiedExploreMapItem} on the map.
- */
-export const matchesMapFilter = (item: ExploreMapItemDTO, mapFilter: MapFilterKey): boolean => {
-  if (mapFilter === 'all') return true;
-  if (mapFilter === 'shops') return isShopMapItem(item) || item.kind === 'shop';
-
-  const kind = item.kind;
-
-  if (mapFilter === 'hiking') {
-    return kind === 'hiking' && (isTimeBoundExploreMapItem(item) || isGeographyMapSource(item.source));
-  }
-  if (mapFilter === 'camping') {
-    return kind === 'camping' && (isTimeBoundExploreMapItem(item) || isGeographyMapSource(item.source));
-  }
-  if (mapFilter === 'rideshare') {
-    return kind === 'rideshare' && isTimeBoundExploreMapItem(item);
-  }
-  if (mapFilter === 'facilities') {
-    return isFacilityExploreMapItem(item);
-  }
-  if (mapFilter === 'others') {
-    if (isFacilityExploreMapItem(item)) return false;
-    const eventKind =
-      kind === 'event' || (item.source === 'activity' && item.activity?.activityType === 'event');
-    return eventKind && (isTimeBoundExploreMapItem(item) || isGeographyMapSource(item.source));
-  }
-
-  return false;
 };
 
 export const matchesActivityFilter = (item: ExploreMapItemDTO, activityFilter: ActivityListFilterKey): boolean => {

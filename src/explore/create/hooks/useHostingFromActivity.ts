@@ -59,7 +59,7 @@ export const useHostingFromActivity = (args: UseHostingFromActivityArgs) => {
 
         const kind = hostComposeKind ?? resolveHostComposeKindFromActivity(data);
         if (!hostComposeKind) {
-          setComposeRoute({ intent: 'host', kind });
+          setComposeRoute({ composeKind: 'activity', kind });
         }
 
         setHostingFromActivityPrefill({

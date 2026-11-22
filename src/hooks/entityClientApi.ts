@@ -94,6 +94,3 @@ export const fetchPlaceEntity = async (
     nearbyFacilities: result.nearbyFacilities ?? [],
   };
 };
-
-/** Alias for place detail pages — same as {@link fetchPlaceEntity}. */
-export const fetchPlaceDetail = fetchPlaceEntity;

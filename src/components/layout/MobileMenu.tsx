@@ -43,8 +43,8 @@ import { PROFILE_SETTINGS_PATH } from '../../config/routingCatalog';
 import { MESSAGES_PATH, PLAN_PATH } from '../../config/surfacePaths';
 import { resolveMobileTabHeaderTitle } from '../../config/mobileTabHeader';
 import { exploreMapMobileBackState, mobileBackNavState, type MobileBackNavState } from '../../utils/mobileBackNav';
-import { isPublishingConsolePath } from '../../config/surfacePaths';
-import { ADMIN_LINKS, PUBLISHING_CONSOLE_LINKS } from '../../constants';
+import { isOperatorConsolePath } from '../../config/surfacePaths';
+import { ADMIN_LINKS, OPERATOR_CONSOLE_LINKS } from '../../constants';
 import { ADMIN_OVERVIEW_PATH } from '../../config/adminSurfacePaths';
 import { isAdminConsoleNavActive } from '../../admin/adminNavActive';
 import { useAuth } from '../../context/AuthContext';
@@ -94,7 +94,7 @@ const isConsumerHamburgerLinkActive = (
     );
   }
   if (item.label === 'Chat') {
-    if (pathname !== MESSAGES_PATH && pathname !== '/publishing/messages') return false;
+    if (pathname !== MESSAGES_PATH && pathname !== '/operator/messages' && pathname !== '/publishing/messages') return false;
     const params = new URLSearchParams(search.replace(/^\?/, ''));
     if (params.get('to') || params.get('group')) return false;
     return true;
@@ -711,7 +711,7 @@ const MobileMenuPanel = () => {
   const isAdminRole = user?.role === 'platform_admin';
   const isPrivilegedRole = canAccessPublishingWorkspace || isAdminRole;
   const onAdminConsole = pathname.startsWith('/admin');
-  const onPublishingConsole = isPublishingConsolePath(pathname);
+  const onPublishingConsole = isOperatorConsolePath(pathname);
   const canSwitchBack = user?.role === 'participant' && Boolean(user?.switchedFromRole);
 
   // Console shells use dashboard drawers; consumer map/browse always use CONSUMER_HAMBURGER_MENU.
@@ -789,7 +789,7 @@ const MobileMenuPanel = () => {
         ariaLabel="Workspace navigation"
         header={{ eyebrow: 'Organise', title: user?.displayName || 'Account' }}
       >
-        <DashboardDrawerLinks links={PUBLISHING_CONSOLE_LINKS} pathname={pathname} closeMenu={closeMenu} />
+        <DashboardDrawerLinks links={OPERATOR_CONSOLE_LINKS} pathname={pathname} closeMenu={closeMenu} />
         <DashboardDrawerSiteLink closeMenu={closeMenu} />
         <button type="button" onClick={() => void switchRole('participant')} className={dashboardActionClass}>
           Switch to Visitor

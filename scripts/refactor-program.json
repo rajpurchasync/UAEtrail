@@ -892,6 +892,39 @@
       ],
       "feRoots": [],
       "successMetric": "W0–W3 eng defaults shipped: outbox prod-on; Vercel entry cache; memory token; CSP script boot files; local media ACL; sharp 4096; explore slim pin + overlay index + participant Mongo cap + catalog thumbs; demo-login staging gate; SSE connection cap; platform-admin TOTP when PLATFORM_ADMIN_MFA_SECRET set; S10e/S10f/P5 ops gates remain in PRE_DEPLOY"
+    },
+    {
+      "id": "MIG-PLATFORM-COMPOSE-OPERATOR-2026",
+      "phase": "P4b",
+      "status": "in_progress",
+      "owner": "product-eng",
+      "contextIds": [
+        "compose",
+        "availability",
+        "engagement",
+        "publishing_workspace",
+        "member_identity"
+      ],
+      "apiRoots": [
+        "packages/shared-types/src/compose-route.ts",
+        "scripts/authority-matrix.json",
+        "scripts/verify-compose-spine.mjs"
+      ],
+      "feRoots": [
+        "src/explore/compose.ts",
+        "src/explore/create",
+        "src/create",
+        "src/config/composeSpineGuard.test.ts",
+        "src/config/composeLineageGuard.test.ts",
+        "src/config/migPlatformComposeOperatorProgramGuard.test.ts",
+        "src/config/crewsTerminologyGuard.test.ts",
+        "src/content/upl-glossary.ts",
+        "src/routing/inboundBookmarkRedirects.tsx",
+        "src/config/surfacePaths.ts",
+        "src/console",
+        "src/hosting"
+      ],
+      "successMetric": "Tracks MIG-COMPOSE-KIND + HOST-SURFACE-UNIFY + HUB-TERM. Target compose emit activity|place|intent (legacy parse shared-types only); operator SPA /operator/*; wishlist POST /me/wishlist not compose. Closed by migPlatformComposeOperatorProgramGuard + verify:system. Canonical plan: .cursor/plans/compose_kind_wire_refactor_1cc2bc46.plan.md"
     }
   ],
   "stranglerRules": [

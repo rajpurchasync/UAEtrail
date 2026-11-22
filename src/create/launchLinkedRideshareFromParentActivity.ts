@@ -1,6 +1,6 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import type { NavigateFunction } from 'react-router-dom';
-import { hostCompose } from '../explore/compose';
+import { activityCompose } from '../explore/compose';
 import { composeFlowIdFromRoute } from '../explore/composeFlowCatalog';
 import { buildRideshareDraftFromParentActivity } from '../explore/linkRidesharePrefill';
 import { launchHostWizard } from './launchHostWizard';
@@ -14,7 +14,7 @@ export const launchLinkedRideshareFromParentActivity = (
   parent: ActivityDTO,
   location?: { pathname: string; search: string }
 ): void => {
-  const composeRoute = hostCompose('rideshare');
+  const composeRoute = activityCompose('rideshare');
   const flowId = composeFlowIdFromRoute(composeRoute);
   launchHostWizard({
     navigate,

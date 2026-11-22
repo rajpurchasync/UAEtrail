@@ -10,10 +10,10 @@ import {
   ADMIN_SETTINGS_PATH,
   ADMIN_ACCOUNT_PATH,
   ADMIN_USERS_PATH,
-  PUBLISHING_ACTIVITIES_PATH,
-  PUBLISHING_OVERVIEW_PATH,
-  PUBLISHING_PROFILE_PATH,
-  PUBLISHING_REQUESTS_PATH,
+  OPERATOR_ACTIVITIES_PATH,
+  OPERATOR_OVERVIEW_PATH,
+  OPERATOR_PROFILE_PATH,
+  OPERATOR_REQUESTS_PATH,
   MESSAGES_PATH,
   MY_REQUESTS_PATH,
   PLAN_PATH,
@@ -33,7 +33,7 @@ export const defaultRouteByRole = (role: UserRole): string => {
   if (isPlatformAdmin(role)) return ADMIN_INBOX_PATH;
   if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') {
     /** Sync fallback — prefer `resolveHostingHubPath` / `navigateToHostModeHome` when status is loaded. */
-    return PUBLISHING_OVERVIEW_PATH;
+    return OPERATOR_OVERVIEW_PATH;
   }
   return EXPLORE_MAP_PATH;
 };
@@ -48,14 +48,14 @@ export const accountRouteByRole = (role: UserRole): string => {
 export const hostModeHomeRouteByRole = (role: UserRole): string => {
   if (isPlatformAdmin(role)) return ADMIN_INBOX_PATH;
   if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') {
-    return PUBLISHING_OVERVIEW_PATH;
+    return OPERATOR_OVERVIEW_PATH;
   }
   return EXPLORE_MAP_PATH;
 };
 
-/** `/publishing/*` console bookmarks for members without tenant console roles — consumer surfaces. */
+/** Legacy `/publishing/*` and `/operator/*` bookmarks for members without tenant console roles — consumer surfaces (O0.5 removes shunt). */
 export const participantHostBookmarkRedirect = (pathname: string): string => {
-  const rest = pathname.replace(/^\/publishing(?=\/|$)/, '') || '/';
+  const rest = pathname.replace(/^\/(?:publishing|operator)(?=\/|$)/, '') || '/';
   if (rest.startsWith('/messages')) {
     return MESSAGES_PATH;
   }
@@ -97,13 +97,13 @@ export const hostDashboardRedirect = (subpath: string): string => {
     case 'messages':
       return MESSAGES_PATH;
     case 'requests':
-      return PUBLISHING_REQUESTS_PATH;
+      return OPERATOR_REQUESTS_PATH;
     case 'activities':
-      return PUBLISHING_ACTIVITIES_PATH;
+      return OPERATOR_ACTIVITIES_PATH;
     case 'profile':
-      return PUBLISHING_PROFILE_PATH;
+      return OPERATOR_PROFILE_PATH;
     default:
-      return PUBLISHING_OVERVIEW_PATH;
+      return OPERATOR_OVERVIEW_PATH;
   }
 };
 

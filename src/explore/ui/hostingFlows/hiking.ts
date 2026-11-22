@@ -95,7 +95,7 @@ const validateStep = (step: CreateFlowStepId, draft: CreateActivityDraft): strin
 };
 
 export const hikingHostingFlow: HostingKindFlow = {
-  id: 'host.hiking',
+  id: 'activity.hiking',
   createKind: 'hiking',
   defaultSteps: DEFAULT_STEPS,
   registryVenue: { placeType: 'hiking', omitWhenRegistry: REGISTRY_OMIT },

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * DMCP Phase 4 — Host · Availability · Add compose spine (wire + wizards + plan handoff).
+ * DMCP Phase 4 — compose spine (wire + wizards + plan handoff).
+ * Program: MIG-PLATFORM-COMPOSE-OPERATOR-2026 → target emit activity|place|intent.
  */
 import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -26,7 +27,7 @@ console.log(`  readCompat choke points: ${(matrix.readCompatChokePoints ?? []).l
 try {
   run(
     'FE compose guards',
-    'npx vitest run src/config/composeSpineGuard.test.ts src/config/composeLineageGuard.test.ts src/explore/create/createFlowModuleGuard.test.ts'
+    'npx vitest run src/config/composeSpineGuard.test.ts src/config/composeLineageGuard.test.ts src/explore/create/createFlowModuleGuard.test.ts src/config/migPlatformComposeOperatorProgramGuard.test.ts'
   );
   run(
     'shared-types compose wire',

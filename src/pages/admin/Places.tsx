@@ -50,7 +50,7 @@ const TAG_OPTIONS = ['Child-free', 'Pet-friendly', 'Family-friendly', 'Solo-frie
 import { SUPPORTED_COUNTRIES, DEFAULT_COUNTRY, getRegionsForCountry, CountryCode } from '../../config/regions';
 import { ADMIN_AREAS_PATH, ADMIN_INBOX_SUBMISSIONS_PATH } from '../../config/adminSurfacePaths';
 import { AdminCatalogWizard } from '../../components/admin/AdminCatalogWizard';
-import { VENUE_TYPE_LABELS } from '../../config/activityTypes';
+import { LOCATION_TYPE_LABELS } from '../../config/activityTypes';
 const SEASONS = ['winter', 'spring', 'summer', 'autumn', 'year-round'];
 const PLACE_DETAIL_STEPS = [
   { id: 'identity', label: 'Identity' },
@@ -85,10 +85,10 @@ const isTrailLike = (type?: PlaceDTO['activityType']) =>
   type === 'hiking' || type === 'event';
 
 const activityTypeLabel = (type: PlaceDTO['activityType']) => {
-  if (type === 'hiking') return `🥾 ${VENUE_TYPE_LABELS.hiking}`;
-  if (type === 'event') return `🏃 ${VENUE_TYPE_LABELS.event}`;
+  if (type === 'hiking') return `🥾 ${LOCATION_TYPE_LABELS.hiking}`;
+  if (type === 'event') return `🏃 ${LOCATION_TYPE_LABELS.event}`;
   if (type === 'shop') return '🛍️ Shop (community pin)';
-  return `⛺ ${VENUE_TYPE_LABELS.camping}`;
+  return `⛺ ${LOCATION_TYPE_LABELS.camping}`;
 };
 
 const activityTypeBadgeClass = (type: PlaceDTO['activityType']) => {
@@ -877,7 +877,7 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
                   <button type="button" onClick={() => selectType('event')}
                     className="group rounded-xl border-2 border-gray-200 p-8 text-center transition-all hover:border-violet-400 hover:shadow-md">
                     <div className="mb-3 text-5xl">🏃</div>
-                    <h3 className="text-lg font-semibold text-gray-900 group-hover:text-violet-700">{VENUE_TYPE_LABELS.event}</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 group-hover:text-violet-700">{LOCATION_TYPE_LABELS.event}</h3>
                     <p className="mt-1 text-xs text-gray-500">Trail runs, triathlons, races</p>
                   </button>
                 </div>
@@ -895,7 +895,7 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
                     : form.activityType === 'hiking'
                       ? 'Add hiking trail'
                       : form.activityType === 'event'
-                        ? `Add ${VENUE_TYPE_LABELS.event}`
+                        ? `Add ${LOCATION_TYPE_LABELS.event}`
                         : 'Add camping place'
                 }
                 steps={PLACE_DETAIL_STEPS}

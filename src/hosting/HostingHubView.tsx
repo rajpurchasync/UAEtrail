@@ -36,12 +36,12 @@ import type { PlanHostingScheduleLens } from '../plan/planHostingTimeRange';
 import {
   HOSTING_HUB_PATH,
   MESSAGES_PATH,
-  PUBLISHING_ACTIVITIES_PATH,
-  PUBLISHING_HISTORY_PATH,
-  PUBLISHING_PLACES_PATH,
-  PUBLISHING_PROFILE_PATH,
-  PUBLISHING_REQUESTS_PATH,
-  PUBLISHING_TEAM_PATH,
+  OPERATOR_ACTIVITIES_PATH,
+  OPERATOR_HISTORY_PATH,
+  OPERATOR_PLACES_PATH,
+  OPERATOR_PROFILE_PATH,
+  OPERATOR_REQUESTS_PATH,
+  OPERATOR_TEAM_PATH,
 } from '../config/routingCatalog';
 import {
   PRODUCT_HOSTING_SCHEDULE_NAV_HINT,
@@ -180,26 +180,26 @@ export const HostingHubView = ({ refreshKey, onCreateNew }: HostingHubViewProps)
       {
         label: 'Upcoming',
         value: upcomingCount,
-        to: PUBLISHING_ACTIVITIES_PATH,
+        to: OPERATOR_ACTIVITIES_PATH,
         highlight: upcomingCount > 0,
       },
       {
         label: 'Pending',
         value: host.pendingJoinRequests,
-        to: PUBLISHING_REQUESTS_PATH,
+        to: OPERATOR_REQUESTS_PATH,
         highlight: host.pendingJoinRequests > 0,
         tone: 'amber',
       },
       {
         label: 'This week',
         value: rangeCounts.loading ? 0 : rangeCounts.counts.week,
-        to: PUBLISHING_ACTIVITIES_PATH,
+        to: OPERATOR_ACTIVITIES_PATH,
         highlight: !rangeCounts.loading && rangeCounts.counts.week > 0,
       },
       {
         label: 'History',
         value: pastPreview.total,
-        to: PUBLISHING_HISTORY_PATH,
+        to: OPERATOR_HISTORY_PATH,
       },
     ],
     [
@@ -269,7 +269,7 @@ export const HostingHubView = ({ refreshKey, onCreateNew }: HostingHubViewProps)
         <AccountLinkList
           items={[
             {
-              to: PUBLISHING_REQUESTS_PATH,
+              to: OPERATOR_REQUESTS_PATH,
               icon: <Users className="h-4 w-4" />,
               label: 'Approvals',
               badge: host.pendingJoinRequests || undefined,
@@ -281,30 +281,30 @@ export const HostingHubView = ({ refreshKey, onCreateNew }: HostingHubViewProps)
               label: 'Chat groups',
             },
             {
-              to: PUBLISHING_ACTIVITIES_PATH,
+              to: OPERATOR_ACTIVITIES_PATH,
               icon: <CalendarDays className="h-4 w-4" />,
               label: 'Manage trips',
               accent: 'emerald',
             },
             {
-              to: PUBLISHING_HISTORY_PATH,
+              to: OPERATOR_HISTORY_PATH,
               icon: <History className="h-4 w-4" />,
               label: 'Past trips',
             },
             {
-              to: PUBLISHING_PROFILE_PATH,
+              to: OPERATOR_PROFILE_PATH,
               icon: <UserCircle className="h-4 w-4" />,
               label: 'Public profile',
               accent: 'emerald',
             },
             {
-              to: PUBLISHING_PLACES_PATH,
+              to: OPERATOR_PLACES_PATH,
               icon: <MapPin className="h-4 w-4" />,
               label: 'Submit a place',
               accent: 'blue',
             },
             {
-              to: PUBLISHING_TEAM_PATH,
+              to: OPERATOR_TEAM_PATH,
               icon: <UsersRound className="h-4 w-4" />,
               label: 'Manage team',
             },
@@ -357,7 +357,7 @@ export const HostingHubView = ({ refreshKey, onCreateNew }: HostingHubViewProps)
       <section aria-labelledby="plan-hosting-schedule-heading" className="min-w-0 space-y-2">
         <AccountSectionHeader
           title="Upcoming schedule"
-          actionTo={PUBLISHING_ACTIVITIES_PATH}
+          actionTo={OPERATOR_ACTIVITIES_PATH}
           actionLabel="Manage all"
         />
         <h2 id="plan-hosting-schedule-heading" className="sr-only">
@@ -416,7 +416,7 @@ export const HostingHubView = ({ refreshKey, onCreateNew }: HostingHubViewProps)
       <section aria-labelledby="plan-hosting-history-heading" className="min-w-0 space-y-2">
         <AccountSectionHeader
           title="Past trips"
-          actionTo={PUBLISHING_HISTORY_PATH}
+          actionTo={OPERATOR_HISTORY_PATH}
           actionLabel="Full history"
         />
         <h2 id="plan-hosting-history-heading" className="sr-only">
@@ -438,7 +438,7 @@ export const HostingHubView = ({ refreshKey, onCreateNew }: HostingHubViewProps)
               ))}
             </div>
             <Link
-              to={PUBLISHING_HISTORY_PATH}
+              to={OPERATOR_HISTORY_PATH}
               className="inline-flex text-sm font-semibold text-emerald-700"
             >
               Open full history
@@ -456,7 +456,7 @@ export const HostingHubView = ({ refreshKey, onCreateNew }: HostingHubViewProps)
                   : 'Past hosted outings will show up here.'
             }
             actionLabel={pastPreview.total > 0 ? 'Full history' : undefined}
-            actionTo={pastPreview.total > 0 ? PUBLISHING_HISTORY_PATH : undefined}
+            actionTo={pastPreview.total > 0 ? OPERATOR_HISTORY_PATH : undefined}
           />
         )}
       </section>

@@ -5,7 +5,7 @@ import {
   groupsManagePath,
   groupsPath,
   hasSessionExpiredQuery,
-  isPublishingConsolePath,
+  isOperatorConsolePath,
   messagesGroupPath,
   messagesGroupChatPath,
   sessionExpiredHomePath,
@@ -47,10 +47,10 @@ describe('surfacePaths', () => {
     expect(messagesGroupChatPath('g-1', 'act-1')).toBe('/chat?group=g-1&chat=1&activity=act-1');
   });
 
-  it('isPublishingConsolePath matches /publishing workspace only', () => {
-    expect(isPublishingConsolePath('/publishing/overview')).toBe(true);
-    expect(isPublishingConsolePath('/publishing')).toBe(true);
-    expect(isPublishingConsolePath('/operator/overview')).toBe(false);
-    expect(isPublishingConsolePath('/guide/acme')).toBe(false);
+  it('isOperatorConsolePath matches /operator workspace only', () => {
+    expect(isOperatorConsolePath('/operator/overview')).toBe(true);
+    expect(isOperatorConsolePath('/operator')).toBe(true);
+    expect(isOperatorConsolePath('/publishing/overview')).toBe(false);
+    expect(isOperatorConsolePath('/guide/acme')).toBe(false);
   });
 });

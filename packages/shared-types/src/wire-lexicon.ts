@@ -82,6 +82,11 @@ export const resolveHostNote = (input: {
 };
 
 /** HTTP mount prefixes (canonical). */
+/** Consumer SPA route prefix — tenant HTTP remains {@link BWL_API_MOUNTS.PUBLISHING_WORKSPACE}. */
+export const BWL_SPA_ROUTES = {
+  OPERATOR_CONSOLE_PREFIX: '/operator',
+} as const;
+
 export const BWL_API_MOUNTS = {
   PUBLISHING_WORKSPACE: '/publishing',
   MEMBER_DISCOVERY: '/me/member-discovery',

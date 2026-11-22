@@ -6,8 +6,8 @@ import { getActiveTenantId } from '../api/tenant';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { ConsumerHeaderActions } from '../components/layout/ConsumerHeaderActions';
 import { FilterChips } from '../components/mobile/FilterChips';
-import { PUBLISHING_CONSOLE_LINKS } from '../constants';
-import { PUBLISHING_PROFILE_PATH } from '../config/routingCatalog';
+import { OPERATOR_CONSOLE_LINKS } from '../constants';
+import { OPERATOR_PROFILE_PATH } from '../config/routingCatalog';
 import { useProfileHubBackChrome } from '../hooks/useProfileHubBackChrome';
 import { ConsoleRatingChip } from './ConsoleRatingChip';
 
@@ -27,14 +27,14 @@ export const ConsoleShell = ({ title, children, cta, headerExtra }: ConsoleShell
   const [avgRating, setAvgRating] = useState<number | null>(null);
   const [reviewCount, setReviewCount] = useState(0);
 
-  const navOptions = PUBLISHING_CONSOLE_LINKS.map((link) => ({
+  const navOptions = OPERATOR_CONSOLE_LINKS.map((link) => ({
     key: link.to,
     label: link.label,
   }));
 
   const activePath =
-    PUBLISHING_CONSOLE_LINKS.find((link) => location.pathname === link.to)?.to ??
-    PUBLISHING_CONSOLE_LINKS.find((link) => location.pathname.startsWith(`${link.to}/`))?.to ??
+    OPERATOR_CONSOLE_LINKS.find((link) => location.pathname === link.to)?.to ??
+    OPERATOR_CONSOLE_LINKS.find((link) => location.pathname.startsWith(`${link.to}/`))?.to ??
     location.pathname;
 
   useSafeAsyncEffect(async (isActive) => {
@@ -64,7 +64,7 @@ export const ConsoleShell = ({ title, children, cta, headerExtra }: ConsoleShell
             <ConsoleRatingChip
               rating={avgRating}
               reviewCount={reviewCount}
-              onClick={() => navigate(PUBLISHING_PROFILE_PATH)}
+              onClick={() => navigate(OPERATOR_PROFILE_PATH)}
             />
           ) : null}
           {/* Publishing chrome hides global consumer hamburger — keep drawer on console headers. */}

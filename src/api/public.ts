@@ -1,7 +1,6 @@
 export { mapLocationToPlace } from './mappers/place';
 export {
   fetchEntity,
-  fetchPlaceDetail,
   fetchPlaceEntity,
   type EntityFetchResult,
 } from '../hooks/entityClientApi';

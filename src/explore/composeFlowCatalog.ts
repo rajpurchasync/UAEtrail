@@ -16,7 +16,7 @@ import type { ActivityType } from '../config/activityTypes';
 
 import type {
 
-  FabTopLevel,
+  ComposeKind,
 
   ExploreCompose,
 
@@ -78,9 +78,9 @@ export type ComposeFlowSpec = {
 
   id: CanonicalComposeFlowId;
 
-  /** Canonical FAB wire ids (`host.*` / `seek.fixed.*` / `add.*`). */
+  /** Catalog ids (`activity.*` · `intent.fixed.*` · `place.*`) — parallel to compose wire emit. */
 
-  intent: FabTopLevel;
+  composeKind: ComposeKind;
 
   outingCategory: OutingCategory | null;
 
@@ -114,11 +114,11 @@ export type ComposeFlowSpec = {
 
 export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpec> = {
 
-  'host.hiking': {
+  'activity.hiking': {
 
-    id: 'host.hiking',
+    id: 'activity.hiking',
 
-    intent: 'host',
+    composeKind: 'activity',
 
     outingCategory: 'hiking',
 
@@ -140,11 +140,11 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
   },
 
-  'host.camping': {
+  'activity.camping': {
 
-    id: 'host.camping',
+    id: 'activity.camping',
 
-    intent: 'host',
+    composeKind: 'activity',
 
     outingCategory: 'camping',
 
@@ -166,11 +166,11 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
   },
 
-  'host.event': {
+  'activity.event': {
 
-    id: 'host.event',
+    id: 'activity.event',
 
-    intent: 'host',
+    composeKind: 'activity',
 
     outingCategory: 'events',
 
@@ -192,11 +192,11 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
   },
 
-  'host.activity': {
+  'activity.activity': {
 
-    id: 'host.activity',
+    id: 'activity.activity',
 
-    intent: 'host',
+    composeKind: 'activity',
 
     outingCategory: 'activities',
 
@@ -218,11 +218,11 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
   },
 
-  'host.rideshare': {
+  'activity.rideshare': {
 
-    id: 'host.rideshare',
+    id: 'activity.rideshare',
 
-    intent: 'host',
+    composeKind: 'activity',
 
     outingCategory: 'rideshare',
 
@@ -244,11 +244,11 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
   },
 
-  'seek.fixed.hiking': {
+  'intent.fixed.hiking': {
 
-    id: 'seek.fixed.hiking',
+    id: 'intent.fixed.hiking',
 
-    intent: 'availability',
+    composeKind: 'intent',
 
     outingCategory: 'hiking',
 
@@ -268,11 +268,11 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
   },
 
-  'seek.fixed.camping': {
+  'intent.fixed.camping': {
 
-    id: 'seek.fixed.camping',
+    id: 'intent.fixed.camping',
 
-    intent: 'availability',
+    composeKind: 'intent',
 
     outingCategory: 'camping',
 
@@ -292,11 +292,11 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
   },
 
-  'seek.fixed.event': {
+  'intent.fixed.event': {
 
-    id: 'seek.fixed.event',
+    id: 'intent.fixed.event',
 
-    intent: 'availability',
+    composeKind: 'intent',
 
     outingCategory: 'activities',
 
@@ -316,11 +316,11 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
   },
 
-  'seek.fixed.rideshare': {
+  'intent.fixed.rideshare': {
 
-    id: 'seek.fixed.rideshare',
+    id: 'intent.fixed.rideshare',
 
-    intent: 'availability',
+    composeKind: 'intent',
 
     outingCategory: 'rideshare',
 
@@ -340,11 +340,11 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
   },
 
-  'add.place.hiking': {
+  'place.hiking': {
 
-    id: 'add.place.hiking',
+    id: 'place.hiking',
 
-    intent: 'add',
+    composeKind: 'place',
 
     outingCategory: null,
 
@@ -364,11 +364,11 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
   },
 
-  'add.place.camping': {
+  'place.camping': {
 
-    id: 'add.place.camping',
+    id: 'place.camping',
 
-    intent: 'add',
+    composeKind: 'place',
 
     outingCategory: null,
 
@@ -388,11 +388,11 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
   },
 
-  'add.place.shop': {
+  'place.shop': {
 
-    id: 'add.place.shop',
+    id: 'place.shop',
 
-    intent: 'add',
+    composeKind: 'place',
 
     outingCategory: null,
 
@@ -412,11 +412,11 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
   },
 
-  'add.place.outdoor_other': {
+  'place.outdoor_other': {
 
-    id: 'add.place.outdoor_other',
+    id: 'place.outdoor_other',
 
-    intent: 'add',
+    composeKind: 'place',
 
     outingCategory: null,
 
@@ -434,11 +434,11 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
   },
 
-  'add.facility': {
+  'place.facility': {
 
-    id: 'add.facility',
+    id: 'place.facility',
 
-    intent: 'add',
+    composeKind: 'place',
 
     outingCategory: null,
 
@@ -468,15 +468,15 @@ export const composeFlowSpec = (id: ComposeFlowId): ComposeFlowSpec =>
 
 const HOST_KIND_TO_FLOW_ID: Record<HostComposeKind, CanonicalComposeFlowId> = {
 
-  hiking: 'host.hiking',
+  hiking: 'activity.hiking',
 
-  camping: 'host.camping',
+  camping: 'activity.camping',
 
-  event: 'host.event',
+  event: 'activity.event',
 
-  rideshare: 'host.rideshare',
+  rideshare: 'activity.rideshare',
 
-  activity: 'host.activity',
+  activity: 'activity.activity',
 
 };
 
@@ -490,13 +490,13 @@ export const composeFlowSpecForHostKind = (kind: HostComposeKind): ComposeFlowSp
 
 const AVAILABILITY_FIXED_KIND_TO_FLOW_ID: Record<AvailabilityFixedComposeKind, CanonicalComposeFlowId> = {
 
-  hiking: 'seek.fixed.hiking',
+  hiking: 'intent.fixed.hiking',
 
-  camping: 'seek.fixed.camping',
+  camping: 'intent.fixed.camping',
 
-  event: 'seek.fixed.event',
+  event: 'intent.fixed.event',
 
-  rideshare: 'seek.fixed.rideshare',
+  rideshare: 'intent.fixed.rideshare',
 
 };
 
@@ -504,13 +504,13 @@ const AVAILABILITY_FIXED_KIND_TO_FLOW_ID: Record<AvailabilityFixedComposeKind, C
 
 const addPlaceKindToId = (kind: string): CanonicalComposeFlowId | null => {
 
-  if (kind === 'hiking') return 'add.place.hiking';
+  if (kind === 'hiking') return 'place.hiking';
 
-  if (kind === 'camping') return 'add.place.camping';
+  if (kind === 'camping') return 'place.camping';
 
-  if (kind === 'event' || kind === 'outdoor_other') return 'add.place.outdoor_other';
+  if (kind === 'event' || kind === 'outdoor_other') return 'place.outdoor_other';
 
-  if (kind === 'shop') return 'add.place.shop';
+  if (kind === 'shop') return 'place.shop';
 
   return null;
 
@@ -522,12 +522,12 @@ const addPlaceKindToId = (kind: string): CanonicalComposeFlowId | null => {
 export const composeFlowIdFromRoute = (route: ExploreCompose | null): CanonicalComposeFlowId | null => {
   if (!route) return null;
   if ('surface' in route) return null;
-  if (route.intent === 'host' && route.kind) return HOST_KIND_TO_FLOW_ID[route.kind];
-  if (route.intent === 'availability' && route.mode === 'fixed' && route.kind) {
+  if (route.composeKind === 'activity' && route.kind) return HOST_KIND_TO_FLOW_ID[route.kind];
+  if (route.composeKind === 'intent' && route.mode === 'fixed' && route.kind) {
     return AVAILABILITY_FIXED_KIND_TO_FLOW_ID[route.kind];
   }
-  if (route.intent === 'add' && 'target' in route) {
-    if (route.target === 'facility') return 'add.facility';
+  if (route.composeKind === 'place' && 'target' in route) {
+    if (route.target === 'facility') return 'place.facility';
     return addPlaceKindToId(route.kind);
   }
   return null;
@@ -553,7 +553,7 @@ export const defaultParticipationForHostRoute = (
 
 ): ParticipationMode | null => {
 
-  const spec = composeFlowSpecFromRoute({ intent: 'host', kind });
+  const spec = composeFlowSpecFromRoute({ composeKind: 'activity', kind });
 
   return spec?.defaultParticipation ?? null;
 

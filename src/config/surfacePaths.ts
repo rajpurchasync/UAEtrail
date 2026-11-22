@@ -48,19 +48,19 @@ export const isJourneyMapPath = (pathname: string): boolean =>
 /** Admin / host place registry consoles */
 export const ADMIN_PLACES_PATH = '/admin/places' as const;
 
-/** Publishing workspace SPA prefix (MIG-COH-04). */
-export const PUBLISHING_CONSOLE_PREFIX = '/publishing' as const;
+/** Operator workspace SPA prefix (HOST-SURFACE-UNIFY · MIG-PLATFORM-COMPOSE-OPERATOR-2026). */
+export const OPERATOR_CONSOLE_PREFIX = '/operator' as const;
 
-/** Publishing console (organizer + operator tenants) — canonical URLs. Sync `apps/api/src/lib/member-routes.ts`. */
-export const PUBLISHING_OVERVIEW_PATH = '/publishing/overview' as const;
-export const PUBLISHING_ACTIVITIES_PATH = '/publishing/activities' as const;
-export const PUBLISHING_ACTIVITIES_NEW_PATH = '/publishing/activities/new' as const;
-export const PUBLISHING_REQUESTS_PATH = '/publishing/requests' as const;
-export const PUBLISHING_TEAM_PATH = '/publishing/team' as const;
-export const PUBLISHING_PROFILE_PATH = '/publishing/profile' as const;
-export const PUBLISHING_HISTORY_PATH = '/publishing/history' as const;
-export const PUBLISHING_PLACES_PATH = '/publishing/places' as const;
-export const PUBLISHING_SECURITY_PRIVACY_PATH = '/publishing/security-privacy' as const;
+/** Operator console (community host + tenant workspaces) — canonical URLs. Sync `apps/api/src/lib/member-routes.ts`. */
+export const OPERATOR_OVERVIEW_PATH = '/operator/overview' as const;
+export const OPERATOR_ACTIVITIES_PATH = '/operator/activities' as const;
+export const OPERATOR_ACTIVITIES_NEW_PATH = '/operator/activities/new' as const;
+export const OPERATOR_REQUESTS_PATH = '/operator/requests' as const;
+export const OPERATOR_TEAM_PATH = '/operator/team' as const;
+export const OPERATOR_PROFILE_PATH = '/operator/profile' as const;
+export const OPERATOR_HISTORY_PATH = '/operator/history' as const;
+export const OPERATOR_PLACES_PATH = '/operator/places' as const;
+export const OPERATOR_SECURITY_PRIVACY_PATH = '/operator/security-privacy' as const;
 
 export const PROFILE_EDIT_PATH = '/profile/edit' as const;
 export const PROFILE_REVIEWS_PATH = '/profile/reviews' as const;
@@ -229,9 +229,9 @@ export const MESSAGES_PATH = '/chat' as const;
 export const INBOUND_MESSAGES_PATH = '/messages' as const;
 export const MY_REQUESTS_PATH = '/my-requests' as const;
 
-export const isPublishingConsolePath = (pathname: string): boolean =>
-  pathname.startsWith(`${PUBLISHING_CONSOLE_PREFIX}/`) ||
-  pathname === PUBLISHING_CONSOLE_PREFIX;
+export const isOperatorConsolePath = (pathname: string): boolean =>
+  pathname.startsWith(`${OPERATOR_CONSOLE_PREFIX}/`) ||
+  pathname === OPERATOR_CONSOLE_PREFIX;
 
 /** Auth funnel */
 export const SIGNIN_PATH = '/signin' as const;

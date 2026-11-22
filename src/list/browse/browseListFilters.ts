@@ -34,8 +34,6 @@ import {
 } from './browseAudienceFilter';
 import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
 import { exploreItemMatchesBrowseGeoPath } from './browseGeoPath';
-/** @deprecated Use BrowseMainCategoryKey — kept for imports migrating */
-export type BrowseCategoryKey = BrowseMainCategoryKey;
 
 export type BrowsePriceFilter = ExplorePriceFilter;
 

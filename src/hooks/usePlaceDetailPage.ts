@@ -13,7 +13,7 @@ import {
   fetchPlaceReviews,
   trackPlaceDetailView,
 } from './placeDetailClientApi';
-import { fetchPlaceDetail } from './entityClientApi';
+import { fetchPlaceEntity } from './entityClientApi';
 import type { Place } from '../types/place';
 import {
   PLACE_DETAIL_CONFIG,
@@ -34,7 +34,7 @@ type Args = {
 };
 
 type PlaceDetailCorePayload = {
-  placeResult: Awaited<ReturnType<typeof fetchPlaceDetail>>;
+  placeResult: Awaited<ReturnType<typeof fetchPlaceEntity>>;
   activities: ActivityDTO[];
   reviews: ReviewDTO[];
 };
@@ -96,7 +96,7 @@ export const usePlaceDetailCore = ({
     queryFn: async (): Promise<PlaceDetailCorePayload> => {
       void trackPlaceDetailView(placeId!).catch(() => undefined);
       const [placeResult, placeActivities, placeReviews] = await Promise.all([
-        fetchPlaceDetail(placeId!),
+        fetchPlaceEntity(placeId!),
         fetchPlaceActivities(placeId!).catch(() => []),
         fetchPlaceReviews(placeId!).catch(() => []),
       ]);
@@ -152,7 +152,7 @@ export const usePlaceDetailCore = ({
 
     if (unlock === 'success') {
       setUnlockNotice('Premium guide unlocked. Your route map and guide are ready below.');
-      void fetchPlaceDetail(placeId)
+      void fetchPlaceEntity(placeId)
         .then((result) => {
           if (!result.premium || !placeId) return;
           queryClient.setQueryData<PlaceDetailCorePayload>(

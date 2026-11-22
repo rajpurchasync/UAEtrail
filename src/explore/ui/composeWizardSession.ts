@@ -1,6 +1,7 @@
 import type { ComposeFlowId } from '../composeFlowCatalog';
+import { priorCatalogComposeFlowId } from '../composeFlowIds';
 import type { ExploreCompose } from '../compose';
-import { addComposeFromVenueKind } from '../compose';
+import { placeComposeFromVenueKind } from '../compose';
 import { composeFlowIdFromRoute } from '../composeFlowCatalog';
 import type { CreateActivityDraft, CreateActivityKind } from './hostingFlowEngine';
 import type { AvailabilityFixedDraft, AvailabilityFixedKind } from './availabilityFlowEngine';
@@ -43,8 +44,7 @@ export const hostingWizardSessionScope = (prefill?: {
   return undefined;
 };
 
-/** Session scope `link:{parentId}` written by `launchLinkedRideshareFromParentActivity`. */
-export const findHostingWizardLinkSessionScope = (flowId: ComposeFlowId): string | undefined => {
+const findLinkScopeForFlowPrefix = (flowId: string): string | undefined => {
   try {
     const prefix = `${STORAGE_PREFIX}:${flowId}:link:`;
     for (let i = 0; i < sessionStorage.length; i++) {
@@ -57,6 +57,14 @@ export const findHostingWizardLinkSessionScope = (flowId: ComposeFlowId): string
     /* ignore */
   }
   return undefined;
+};
+
+/** Session scope `link:{parentId}` written by `launchLinkedRideshareFromParentActivity`. */
+export const findHostingWizardLinkSessionScope = (flowId: ComposeFlowId): string | undefined => {
+  const found = findLinkScopeForFlowPrefix(flowId);
+  if (found) return found;
+  const priorId = priorCatalogComposeFlowId(flowId);
+  return priorId ? findLinkScopeForFlowPrefix(priorId) : undefined;
 };
 
 export const readHostingWizardSession = (
@@ -73,6 +81,8 @@ export const writeHostingWizardSession = (
 export const clearHostingWizardSession = (flowId: ComposeFlowId, scope?: string): void => {
   try {
     sessionStorage.removeItem(sessionKey(flowId, scope));
+    const priorId = priorCatalogComposeFlowId(flowId);
+    if (priorId) sessionStorage.removeItem(sessionKey(priorId as ComposeFlowId, scope));
   } catch {
     /* ignore */
   }
@@ -87,13 +97,15 @@ export const writeAvailabilityWizardSession = (flowId: ComposeFlowId, data: Avai
 export const clearAvailabilityWizardSession = (flowId: ComposeFlowId): void => {
   try {
     sessionStorage.removeItem(sessionKey(flowId));
+    const priorId = priorCatalogComposeFlowId(flowId);
+    if (priorId) sessionStorage.removeItem(sessionKey(priorId as ComposeFlowId));
   } catch {
     /* ignore */
   }
 };
 
 const addFlowId = (kind: AddVenueKind): ComposeFlowId | null =>
-  composeFlowIdFromRoute(addComposeFromVenueKind(kind));
+  composeFlowIdFromRoute(placeComposeFromVenueKind(kind));
 
 export const readAddWizardSession = (
   kind: AddVenueKind
@@ -125,15 +137,15 @@ export const clearComposeWizardSessionForRoute = (route: ExploreCompose | null):
   if (!route) return;
   const flowId = composeFlowIdFromRoute(route);
   if (!flowId || 'surface' in route) return;
-  if (route.intent === 'host') {
+  if (route.composeKind === 'activity') {
     clearHostingWizardSession(flowId);
     return;
   }
-  if (route.intent === 'availability') {
+  if (route.composeKind === 'intent') {
     clearAvailabilityWizardSession(flowId);
     return;
   }
-  if (route.intent === 'add' && 'target' in route) {
+  if (route.composeKind === 'place' && 'target' in route) {
     if (route.target === 'facility') {
       clearAddWizardSession('facility');
       return;
@@ -156,8 +168,13 @@ function readJson<T>(key: string): T | null {
   }
 }
 
-const readSessionJson = <T>(flowId: ComposeFlowId, scope?: string): T | null =>
-  readJson<T>(sessionKey(flowId, scope));
+const readSessionJson = <T>(flowId: ComposeFlowId, scope?: string): T | null => {
+  const primary = readJson<T>(sessionKey(flowId, scope));
+  if (primary) return primary;
+  const priorId = priorCatalogComposeFlowId(flowId);
+  if (!priorId) return null;
+  return readJson<T>(sessionKey(priorId as ComposeFlowId, scope));
+};
 
 function writeJson(key: string, value: unknown): void {
   try {

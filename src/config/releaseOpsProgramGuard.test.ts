@@ -18,6 +18,7 @@ const PROGRAM_GUARDS = [
   'p4bS10fProgramGuard.test.ts',
   'p5SloProgramGuard.test.ts',
   'migDiscoRegProgramGuard.test.ts',
+  'migPlatformComposeOperatorProgramGuard.test.ts',
   'releaseOpsProgramGuard.test.ts',
 ] as const;
 

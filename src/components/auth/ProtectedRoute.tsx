@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { isSignupProfileComplete } from '../../constants/userProfileOptions';
 import { accountRouteByRole, participantHostBookmarkRedirect } from '../../utils/authRouting';
 import { isConsumerProfilePath, isPlatformAdmin } from '../../utils/roles';
-import { isPublishingConsolePath, WELCOME_PATH } from '../../config/surfacePaths';
+import { isOperatorConsolePath, WELCOME_PATH } from '../../config/surfacePaths';
 import { ADMIN_ACCOUNT_PATH } from '../../config/adminSurfacePaths';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
 import { GuestGatedSurfaceLayout } from './GuestGatedSurfaceLayout';
@@ -74,7 +74,7 @@ export const ProtectedRoute = ({ roles, children }: ProtectedRouteProps) => {
   }
 
   if (roles && !roles.includes(user.role)) {
-    if (!isPlatformAdmin(user.role) && isPublishingConsolePath(location.pathname)) {
+    if (!isPlatformAdmin(user.role) && isOperatorConsolePath(location.pathname)) {
       return <Navigate to={participantHostBookmarkRedirect(location.pathname)} replace />;
     }
     return <Navigate to={accountRouteByRole(user.role)} replace />;

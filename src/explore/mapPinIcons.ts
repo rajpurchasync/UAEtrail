@@ -135,14 +135,6 @@ export const resolveMapPinIconHtml = (
   return `<span class="uaetrail-map-pin-emoji font-emoji" style="font-size:${fontSizePx}px" aria-hidden="true">${emoji}</span>`;
 };
 
-/** @deprecated Use resolveMapPinIconHtml — kept for callers migrating off SVG. */
-export const resolveMapPinIconSvg = (
-  kind: MapPinKind,
-  source: MapPinSource = 'activity',
-  _color: string,
-  fontSizePx: number
-): string => resolveMapPinIconHtml(kind, source, fontSizePx);
-
 export type MapPinFaceOptions = {
   kind: MapPinKind;
   source: MapPinSource;

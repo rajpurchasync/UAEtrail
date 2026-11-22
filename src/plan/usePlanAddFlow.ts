@@ -4,7 +4,7 @@ import { PLAN_PATH } from '../constants';
 import { applyProductSearchMutation } from '../routing/productSearchMutation';
 import { useCreateFlow } from '../create/CreateFlowProvider';
 import { clearPlanAddQuery, parsePlanAddQuery, setPlanAddQuery } from '../create/planAddQuery';
-import { availabilityOpenCompose, clearExploreComposeParams } from '../explore/compose';
+import { intentOpenCompose, clearExploreComposeParams } from '../explore/compose';
 import { signInPathForReturn } from '../utils/authReturnContext';
 import { useAuth } from '../context/AuthContext';
 import type { PlanAddOptionId } from './planAdd';
@@ -50,11 +50,11 @@ export const usePlanAddFlow = () => {
   const selectOption = useCallback(
     (id: PlanAddOptionId) => {
       if (id === 'trip') {
-        compose.handleCreateTap({ surface: 'menu', intent: 'host' });
+        compose.handleCreateTap({ surface: 'menu', composeKind: 'activity' });
         return;
       }
       if (id === 'availability') {
-        compose.handleCreateTap(availabilityOpenCompose());
+        compose.handleCreateTap(intentOpenCompose());
         return;
       }
       if (id === 'goal') {

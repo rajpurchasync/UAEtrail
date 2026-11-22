@@ -5,7 +5,7 @@ import {
   type ActivityDTO,
   type ExploreMapItemDTO,
 } from '@uaetrail/shared-types';
-import { hostCompose } from '../../compose';
+import { activityCompose } from '../../compose';
 import {
   canOfferRideshareForAvailabilityItem,
   resolveAvailabilityParentActivityId,
@@ -45,7 +45,7 @@ export const useHostingWizardPrefill = (input: {
   } = input;
   const setComposeRoute = compose.setComposeRoute;
   const closeCompose = compose.closeCompose;
-  const hostComposeRoute = compose.hostComposeRoute;
+  const activityComposeRoute = compose.activityComposeRoute;
   const clearHostingFromActivityPrefill = hostingFrom.clearHostingFromActivityPrefill;
   const hostingFromActivityPrefill = hostingFrom.hostingFromActivityPrefill;
   const [rideshareLinkAvailability, setRideshareLinkAvailability] = useState<ExploreMapItemDTO | null>(
@@ -74,7 +74,7 @@ export const useHostingWizardPrefill = (input: {
 
       setRideshareLinkAvailability(item);
       setSelectedId(null);
-      setComposeRoute(hostCompose('rideshare'));
+      setComposeRoute(activityCompose('rideshare'));
     },
     [navigate, pathname, search, setComposeRoute, setSelectedId, user]
   );
@@ -108,11 +108,11 @@ export const useHostingWizardPrefill = (input: {
   }, [clearHostingFromActivityPrefill, closeCompose]);
 
   const onHostingBackToIntent = useCallback(() => {
-    clearComposeWizardSessionForRoute(hostComposeRoute);
+    clearComposeWizardSessionForRoute(activityComposeRoute);
     clearHostingFromActivityPrefill();
     setRideshareLinkAvailability(null);
-    setComposeRoute({ surface: 'menu', intent: 'host' });
-  }, [clearHostingFromActivityPrefill, hostComposeRoute, setComposeRoute]);
+    setComposeRoute({ surface: 'menu', composeKind: 'activity' });
+  }, [clearHostingFromActivityPrefill, activityComposeRoute, setComposeRoute]);
 
   return {
     rideshareLinkAvailability,

@@ -15,12 +15,6 @@ export const INBOX_QUICK_SORT_PILLS: Array<{ key: InboxFilter; label: string }> 
   { key: 'people', label: 'Friends' },
 ];
 
-/** @deprecated Use {@link INBOX_QUICK_SORT_PILLS}. */
-export const INBOX_FILTER_OPTIONS = INBOX_QUICK_SORT_PILLS;
-
-/** @deprecated Use {@link INBOX_QUICK_SORT_PILLS}. */
-export const INBOX_FILTER_OPTIONS_COMPACT = INBOX_QUICK_SORT_PILLS;
-
 export const DEFAULT_INBOX_FILTER: InboxFilter = 'all';
 
 export type InboxFilterCounts = Record<InboxFilter, number>;

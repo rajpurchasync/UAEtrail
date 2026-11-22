@@ -135,10 +135,10 @@ describe('crossContextFoundationsGuard', () => {
     expect(read('src/hooks/useActivityJoinFlow.ts')).toBeTruthy();
   });
 
-  it('CTX-FOUND-07: SPA paths use routing catalog — publishing console constants are /publishing/*', () => {
+  it('CTX-FOUND-07: SPA paths use routing catalog — operator console constants are /operator/*', () => {
     const surface = read('src/config/surfacePaths.ts');
-    expect(surface).toMatch(/PUBLISHING_OVERVIEW_PATH = '\/publishing\/overview'/);
-    expect(surface).toMatch(/PUBLISHING_REQUESTS_PATH = '\/publishing\/requests'/);
+    expect(surface).toMatch(/OPERATOR_OVERVIEW_PATH = '\/operator\/overview'/);
+    expect(surface).toMatch(/OPERATOR_REQUESTS_PATH = '\/operator\/requests'/);
     expect(read('src/config/routingCatalog.ts')).toMatch(/surfacePaths/);
   });
 

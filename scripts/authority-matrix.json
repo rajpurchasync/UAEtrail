@@ -16,7 +16,7 @@
     {
       "id": "compose-seek-inbound",
       "module": "packages/shared-types/src/compose-route.ts",
-      "rule": "parseComposeWire migrates seek:* → availability:* inbound only",
+      "rule": "migrateLegacyComposeWire / parseComposeWire migrates seek:* · host:* · availability:* · add:* → activity · intent · place inbound only",
       "forbidEmitIn": ["src/explore", "src/list", "apps/api/src/routes"]
     },
     {
@@ -206,28 +206,28 @@
       "queryKey": "compose"
     },
     {
-      "id": "compose.emit_host",
-      "label": "Emit host compose wire",
+      "id": "compose.emit_activity",
+      "label": "Emit activity compose wire",
       "axis": "B_PUBLISH",
       "contextId": "compose",
       "resolver": { "module": "packages/shared-types/src/compose-route.ts", "symbol": "formatComposeWire" },
-      "wirePrefix": "host:"
+      "wirePrefix": "activity:"
     },
     {
-      "id": "compose.emit_availability",
-      "label": "Emit availability compose wire",
+      "id": "compose.emit_intent",
+      "label": "Emit intent compose wire",
       "axis": "B_PUBLISH",
       "contextId": "compose",
       "resolver": { "module": "packages/shared-types/src/compose-route.ts", "symbol": "formatComposeWire" },
-      "wirePrefix": "availability:"
+      "wirePrefix": "intent:"
     },
     {
-      "id": "compose.emit_add",
-      "label": "Emit add place/facility wire",
+      "id": "compose.emit_place",
+      "label": "Emit place / facility compose wire",
       "axis": "B_PUBLISH",
       "contextId": "compose",
       "resolver": { "module": "packages/shared-types/src/compose-route.ts", "symbol": "formatComposeWire" },
-      "wirePrefix": "add:"
+      "wirePrefix": "place:"
     },
     {
       "id": "compose.plan_launch",

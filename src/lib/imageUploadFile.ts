@@ -313,5 +313,3 @@ export const prepareImageUploadFile = async (file: File): Promise<File> => {
   return prepareImageViaApi(file);
 };
 
-/** @deprecated Use prepareImageUploadFile */
-export const normalizeImageUploadFile = prepareImageUploadFile;

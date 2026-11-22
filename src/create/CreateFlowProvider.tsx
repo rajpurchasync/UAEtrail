@@ -128,7 +128,7 @@ export const CreateFlowProvider = ({ children }: { children: ReactNode }) => {
   }, [queryClient, refreshHostGate]);
 
   const hostingWizardPrefill = bridge?.hostingWizardPrefill ?? null;
-  const hostWizardOpen = Boolean(user) && Boolean(compose.hostComposeRoute);
+  const activityWizardOpen = Boolean(user) && Boolean(compose.activityComposeRoute);
   const composeWizardActive = Boolean(user) && isComposeWizardRoute(compose.composeRoute);
   const guestComposeSignInOpen =
     compose.guestComposeSignInOpen && !composeWizardActive;
@@ -137,8 +137,8 @@ export const CreateFlowProvider = ({ children }: { children: ReactNode }) => {
   const onHostingBackToIntent =
     bridge?.onHostingBackToIntent ??
     (() => {
-      clearComposeWizardSessionForRoute(compose.hostComposeRoute);
-      compose.setComposeRoute({ surface: 'menu', intent: 'host' });
+      clearComposeWizardSessionForRoute(compose.activityComposeRoute);
+      compose.setComposeRoute({ surface: 'menu', composeKind: 'activity' });
     });
 
   const skipGuestComposeSheet = isDesktop && !user && pathname === EXPLORE_MAP_PATH;
@@ -154,13 +154,13 @@ export const CreateFlowProvider = ({ children }: { children: ReactNode }) => {
       <ComposeHost
         composeRoute={compose.composeRoute}
         composeMenuOpen={compose.composeMenuOpen}
-        hostWizardOpen={hostWizardOpen}
-        availabilityFixedWizardOpen={Boolean(compose.availabilityFixedRoute) && Boolean(user)}
-        addWizardOpen={Boolean(compose.addRoute) && Boolean(user)}
-        availabilityFlexibleOpen={compose.availabilityFlexibleOpen && Boolean(user)}
-        hostComposeKind={compose.hostComposeRoute?.kind ?? null}
-        availabilityFixedKind={compose.availabilityFixedRoute?.kind}
-        addVenueKind={addVenueKindFromRoute(compose.addRoute)}
+        activityWizardOpen={activityWizardOpen}
+        intentFixedWizardOpen={Boolean(compose.intentFixedRoute) && Boolean(user)}
+        placeWizardOpen={Boolean(compose.placeRoute) && Boolean(user)}
+        intentOpenWizardOpen={compose.intentOpenWizard && Boolean(user)}
+        activityComposeKind={compose.activityComposeRoute?.kind ?? null}
+        intentFixedKind={compose.intentFixedRoute?.kind}
+        addVenueKind={addVenueKindFromRoute(compose.placeRoute)}
         hostingWizardPrefill={hostingWizardPrefill}
         signInHref={signInHref}
         onComposeRouteChange={compose.handleComposeRouteChange}
@@ -171,11 +171,11 @@ export const CreateFlowProvider = ({ children }: { children: ReactNode }) => {
         onHostingBackToIntent={onHostingBackToIntent}
         onAvailabilityBackToIntent={() => {
           clearComposeWizardSessionForRoute(compose.composeRoute);
-          compose.setComposeRoute({ surface: 'menu', intent: 'availability' });
+          compose.setComposeRoute({ surface: 'menu', composeKind: 'intent' });
         }}
         onAddBackToIntent={() => {
-          clearComposeWizardSessionForRoute(compose.addRoute);
-          compose.setComposeRoute({ surface: 'menu', intent: 'add' });
+          clearComposeWizardSessionForRoute(compose.placeRoute);
+          compose.setComposeRoute({ surface: 'menu', composeKind: 'place' });
         }}
         onActivityPublished={async (activity) => {
           if (bridge?.onActivityPublished) {

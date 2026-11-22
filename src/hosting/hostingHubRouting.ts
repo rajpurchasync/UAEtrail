@@ -1,5 +1,5 @@
 import type { HostTierFlags, OwnedHostProfileDTO, UserRole } from '@uaetrail/shared-types';
-import { HOSTING_HUB_PATH, PUBLISHING_OVERVIEW_PATH } from '../config/routingCatalog';
+import { HOSTING_HUB_PATH, OPERATOR_OVERVIEW_PATH } from '../config/routingCatalog';
 import {
   listHostingPublishProfiles,
   resolveHostingPublishingProfileKind,
@@ -63,7 +63,7 @@ export const resolveHostingModeAvailability = (
 };
 
 export const hostingHubPathForMode = (mode: HostingSurfaceMode): string =>
-  mode === 'community' ? HOSTING_HUB_PATH : PUBLISHING_OVERVIEW_PATH;
+  mode === 'community' ? HOSTING_HUB_PATH : OPERATOR_OVERVIEW_PATH;
 
 export const resolveHostingSurfaceMode = (input: {
   ownedProfiles: readonly OwnedHostProfileDTO[];

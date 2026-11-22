@@ -32,17 +32,17 @@ import {
   PROFILE_PATH,
   PROFILE_SETTINGS_PATH,
   PROFILE_SUBMISSIONS_PATH,
-  PUBLISHING_CONSOLE_PREFIX,
+  OPERATOR_CONSOLE_PREFIX,
 } from './routingCatalog';
 import {
   PRODUCT_PLAN_SURFACE_TITLE,
   PRODUCT_PLAN_MEMBER_NAV_HINT,
   PRODUCT_SOCIAL_NAV_HINT,
-  PRODUCT_SOCIAL_SURFACE_TITLE,
+  PRODUCT_MY_CREW_SURFACE_TITLE,
 } from '../content/productNorthStar';
 import { LIST_CAT_PARAM } from '../list/browse/browseListUrlState';
 import { isPlanHostingFilterRoute } from '../plan/planRouting';
-import { isPublishingConsolePath } from './surfacePaths';
+import { isOperatorConsolePath } from './surfacePaths';
 
 /** Wide app chrome (Tailwind `md`, ≥768px) — left sidebar + slim top bar. Mobile uses bottom nav + drawer. */
 export const DESKTOP_MIN_WIDTH_PX = 768;
@@ -139,7 +139,7 @@ export const DESKTOP_HOST_PRIMARY_NAV: readonly DesktopNavItem[] = [
     // Static default only — `DesktopSideNav` resolves the per-member hub via `resolveHostingHubPath`.
     to: HOSTING_HUB_PATH,
     icon: Briefcase,
-    match: [PUBLISHING_CONSOLE_PREFIX, PLAN_PATH],
+    match: [OPERATOR_CONSOLE_PREFIX, PLAN_PATH],
     authGate: true,
     navHint: 'Your hosting hub — outings, requests, and workspace.',
   },
@@ -178,7 +178,7 @@ export const DESKTOP_PEOPLE_NAV: readonly DesktopNavItem[] = [
   },
   {
     key: 'social',
-    label: PRODUCT_SOCIAL_SURFACE_TITLE,
+    label: PRODUCT_MY_CREW_SURFACE_TITLE,
     to: BUDDIES_PATH,
     icon: Users,
     match: [BUDDIES_PATH, GROUPS_PATH],
@@ -207,7 +207,7 @@ export const DESKTOP_MAP_NAV: readonly DesktopNavItem[] = [
   {
     key: 'post',
     label: 'Post',
-    to: explorePath({ compose: { surface: 'menu', intent: 'host' } }),
+    to: explorePath({ compose: { surface: 'menu', composeKind: 'activity' } }),
     icon: PlusCircle,
     match: [],
     authGate: true,
@@ -252,7 +252,7 @@ export const isDesktopExploreBrowseView = (pathname: string, search: string): bo
   !isPeopleListDiscoveryRoute(pathname, search) && isDiscoverBrowseRoute(pathname, search);
 
 export const isDesktopHostingNavActive = (pathname: string, search: string): boolean =>
-  isPublishingConsolePath(pathname) || isPlanHostingFilterRoute(pathname, search);
+  isOperatorConsolePath(pathname) || isPlanHostingFilterRoute(pathname, search);
 
 export const isDesktopNavItemActive = (item: DesktopNavItem, pathname: string, search: string): boolean => {
   if (item.key === 'explore') return isDesktopExploreNavActive(pathname, search);

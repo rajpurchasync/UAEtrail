@@ -35,9 +35,6 @@ const isAgencyBrandItem = (item: ExploreMapItemDTO): boolean =>
 export const mapItemMatchesBrowseActivitiesCategory = (item: ExploreMapItemDTO): boolean =>
   isTimeBoundExploreMapItem(item);
 
-/** @deprecated Use {@link mapItemMatchesBrowseActivitiesCategory}. */
-export const mapItemMatchesBrowseTripsCategory = mapItemMatchesBrowseActivitiesCategory;
-
 export const mapItemMatchesBrowseMainCategory = (
   item: ExploreMapItemDTO,
   key: BrowseMainCategoryKey
@@ -87,18 +84,6 @@ export const serializeBrowseMainCategoriesToTopics = (
     pills.push('spots', 'shops');
   }
   return serializeExploreMapFilterPillsParam(pills);
-};
-
-/** @deprecated Use {@link mapItemMatchesBrowseMainCategories} */
-export const browseMainCategoriesToTopicPills = (
-  categories: readonly BrowseMainCategoryKey[]
-): ExploreMapFilterPillKey[] => {
-  const pills: ExploreMapFilterPillKey[] = [];
-  if (categories.includes('activities')) pills.push('trips');
-  if (categories.includes(BROWSE_LIST_CATEGORY_PLACES)) {
-    pills.push('spots', 'shops');
-  }
-  return pills;
 };
 
 export const BROWSE_MAIN_CATEGORY_LABELS: ReadonlyArray<{ key: BrowseMainCategoryKey; label: string }> = [

@@ -15,7 +15,7 @@ export const createFlowPath = (
   if (pathname.startsWith('/admin') || pathname.startsWith('/signin') || pathname.startsWith('/signup')) {
     return explorePath({ compose: route });
   }
-  if (pathname.startsWith('/publishing') || pathname.startsWith('/hosting')) {
+  if (pathname.startsWith('/operator') || pathname.startsWith('/publishing') || pathname.startsWith('/hosting')) {
     return explorePath({ compose: route });
   }
   if (

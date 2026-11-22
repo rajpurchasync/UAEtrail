@@ -45,9 +45,9 @@ describe('auth routing by role', () => {
     const cases: Array<[UserRole, string]> = [
       ['participant', '/explore'],
       ['merchant_admin', '/explore'],
-      ['tenant_owner', '/publishing/overview'],
-      ['tenant_admin', '/publishing/overview'],
-      ['tenant_guide', '/publishing/overview'],
+      ['tenant_owner', '/operator/overview'],
+      ['tenant_admin', '/operator/overview'],
+      ['tenant_guide', '/operator/overview'],
       ['platform_admin', '/admin/inbox'],
     ];
 
@@ -57,8 +57,8 @@ describe('auth routing by role', () => {
   });
 
   it('maps host-mode home to publishing overview for console roles', () => {
-    expect(hostModeHomeRouteByRole('tenant_owner')).toBe('/publishing/overview');
-    expect(hostModeHomeRouteByRole('tenant_guide')).toBe('/publishing/overview');
+    expect(hostModeHomeRouteByRole('tenant_owner')).toBe('/operator/overview');
+    expect(hostModeHomeRouteByRole('tenant_guide')).toBe('/operator/overview');
     expect(hostModeHomeRouteByRole('participant')).toBe('/explore');
   });
 
@@ -73,10 +73,10 @@ describe('auth routing by role', () => {
 
   it('maps host dashboard aliases', () => {
     expect(hostDashboardRedirect('messages')).toBe('/chat');
-    expect(hostDashboardRedirect('requests')).toBe('/publishing/requests');
-    expect(hostDashboardRedirect('activities')).toBe('/publishing/activities');
-    expect(hostDashboardRedirect('profile')).toBe('/publishing/profile');
-    expect(hostDashboardRedirect('unknown')).toBe('/publishing/overview');
+    expect(hostDashboardRedirect('requests')).toBe('/operator/requests');
+    expect(hostDashboardRedirect('activities')).toBe('/operator/activities');
+    expect(hostDashboardRedirect('profile')).toBe('/operator/profile');
+    expect(hostDashboardRedirect('unknown')).toBe('/operator/overview');
   });
 
   it('maps admin dashboard aliases', () => {
@@ -103,7 +103,7 @@ describe('auth routing by role', () => {
   });
 
   it('maps /publishing bookmarks to Plan, explore host, or pro membership (not tenant console)', () => {
-    expect(participantHostBookmarkRedirect('/publishing/overview')).toBe('/explore?compose=host');
+    expect(participantHostBookmarkRedirect('/publishing/overview')).toBe('/explore?compose=activity');
     expect(participantHostBookmarkRedirect('/publishing/activities')).toBe('/hosting');
     expect(participantHostBookmarkRedirect('/publishing/requests')).toBe('/my-requests');
     expect(participantHostBookmarkRedirect('/publishing/messages')).toBe('/chat');

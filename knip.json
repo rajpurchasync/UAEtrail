@@ -5,7 +5,8 @@
     ".": {
       "entry": [
         "index.html",
-        "src/main.tsx",
+        "src/index.css",
+        "src/styles/fonts.css",
         "src/**/*.{test,spec}.{ts,tsx}",
         "scripts/**/*.{mjs,js}"
       ],
@@ -13,10 +14,7 @@
     },
     "apps/api": {
       "entry": [
-        "src/index.ts",
         "scripts/*.ts",
-        "tests/setup.ts",
-        "tests/global-setup.ts",
         "tests/**/*.test.ts"
       ],
       "project": ["src/**/*.ts", "scripts/**/*.ts", "tests/**/*.ts"]
@@ -25,7 +23,15 @@
       "project": ["src/**/*.ts"]
     }
   },
-  "ignoreDependencies": ["@capacitor/android", "@capacitor/ios", "@lhci/cli"],
+  "ignoreDependencies": [
+    "@capacitor/android",
+    "@capacitor/ios",
+    "@lhci/cli",
+    "@emnapi/core",
+    "@emnapi/runtime",
+    "playwright"
+  ],
+  "ignoreBinaries": ["adb"],
   "ignoreFiles": [
     "src/pages/admin/Overview.tsx"
   ],

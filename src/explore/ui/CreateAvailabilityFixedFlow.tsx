@@ -34,7 +34,7 @@ import {
   type AvailabilityFixedKind,
 } from './availabilityFlowEngine';
 import type { LocationPrecision } from './createFlowShared';
-import { availabilityFixedCompose, type AvailabilityFixedComposeKind } from '../compose';
+import { intentFixedCompose, type IntentFixedComposeKind } from '../compose';
 import { areaIdForExploreAreaSlug } from '../exploreAreaFilter';
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
 import { composeFlowIdFromRoute } from '../composeFlowCatalog';
@@ -67,7 +67,7 @@ interface CreateAvailabilityFixedFlowProps {
   onBackToIntent?: () => void;
   onSubmitted?: (result: AvailabilityFixedSubmitResult) => void;
   signInHref: string;
-  availabilityFixedKind?: AvailabilityFixedComposeKind | null;
+  availabilityFixedKind?: IntentFixedComposeKind | null;
   exploreAreaSlug?: string | null;
   tenantId?: string | null;
   onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
@@ -146,7 +146,7 @@ export const CreateAvailabilityFixedFlow = ({
 
   const availabilityFixedFlowId = useMemo(
     () =>
-      availabilityFixedKind ? composeFlowIdFromRoute(availabilityFixedCompose(availabilityFixedKind)) : null,
+      availabilityFixedKind ? composeFlowIdFromRoute(intentFixedCompose(availabilityFixedKind)) : null,
     [availabilityFixedKind]
   );
   const availabilityFixedInitKey = availabilityFixedFlowId ?? null;

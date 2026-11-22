@@ -64,7 +64,7 @@ const validateStep = (step: CreateFlowStepId, draft: CreateActivityDraft): strin
 };
 
 export const activitiesHostingFlow: HostingKindFlow = {
-  id: 'host.activity',
+  id: 'activity.activity',
   createKind: 'activity',
   defaultSteps: DEFAULT_STEPS,
   postPublishRideshare: true,

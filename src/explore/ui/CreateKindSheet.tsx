@@ -1,7 +1,7 @@
 import { useProductSearchParams } from '../../routing/useEffectiveLocation';
 import { ChevronRight } from 'lucide-react';
 import { CreateKindGrid } from '../../create/CreateKindGrid';
-import type { AvailabilityFixedComposeKind } from '@uaetrail/shared-types';
+import type { IntentFixedComposeKind } from '@uaetrail/shared-types';
 import { EXPLORE_COMPOSE, EXPLORE_FLOW, EXPLORE_Z } from '../../config/exploreTheme';
 import {
   ADD_PLACE_OPTIONS,
@@ -11,21 +11,21 @@ import {
   CREATE_VENUE_ADD_COMPOSE_OPTIONS,
   AVAILABILITY_FIXED_COMPOSE_OPTIONS,
   AVAILABILITY_MODE_OPTIONS,
-  addComposeFromVenueKind,
-  addPlaceCompose,
+  activityCompose,
   composeMenuTitle,
-  hostCompose,
+  intentFixedCompose,
+  intentOpenCompose,
   isComposeMenu,
   parseExploreCompose,
-  availabilityFixedCompose,
-  availabilityOpenCompose,
+  placeCompose,
+  placeComposeFromVenueKind,
   type ExploreCompose,
 } from '../compose';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { FlowSheetHeader } from './ExploreFlowSheetChrome';
 import { finishComposeFlowClose, requestComposeFlowClose } from './composeFlowClose';
 
-interface CreateIntentSheetProps {
+interface CreateKindSheetProps {
   route: ExploreCompose | null;
   onRouteChange: (route: ExploreCompose | null) => void;
   onClose: () => void;
@@ -34,36 +34,36 @@ interface CreateIntentSheetProps {
 const menuGroupClass =
   'overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-[0_1px_8px_rgba(15,23,42,.06)]';
 
-const isAvailabilityFixedKindStep = (
+const isIntentFixedKindStep = (
   route: ExploreCompose
-): route is Extract<ExploreCompose, { surface: 'menu'; intent: 'availability'; mode: 'fixed' }> =>
+): route is Extract<ExploreCompose, { surface: 'menu'; composeKind: 'intent'; mode: 'fixed' }> =>
   Boolean(
     isComposeMenu(route) &&
-      route.intent === 'availability' &&
+      route.composeKind === 'intent' &&
       'mode' in route &&
       route.mode === 'fixed'
   );
 
-export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateIntentSheetProps) => {
+/** FAB compose kind picker — activity · place · intent drill-down (wire `?compose=` menu). */
+export const CreateKindSheet = ({ route, onRouteChange, onClose }: CreateKindSheetProps) => {
   const [searchParams] = useProductSearchParams();
   const urlCompose = parseExploreCompose(searchParams);
   const open = Boolean(route) && isComposeMenu(route) && isComposeMenu(urlCompose);
   if (!open || !route) return null;
 
   const headerTitle = composeMenuTitle(route);
-  const composeInProgress = Boolean(route.intent);
+  const composeInProgress = Boolean(route.composeKind);
   const finishClose = () => finishComposeFlowClose(onClose);
   const requestClose = () =>
     requestComposeFlowClose({ hasDraft: false, inProgress: composeInProgress }, finishClose);
 
-  const showTopLevel = !route.intent;
-  const showHostKinds = route.intent === 'host';
-  const showAvailabilityModes =
-    route.intent === 'availability' && !isAvailabilityFixedKindStep(route);
-  const showAvailabilityFixedKinds = isAvailabilityFixedKindStep(route);
-  const showAddVenueKinds = route.intent === 'add' && !('target' in route);
-  const showAddPlaceKinds =
-    route.intent === 'add' && 'target' in route && route.target === 'place';
+  const showTopLevel = !route.composeKind;
+  const showActivityKinds = route.composeKind === 'activity';
+  const showIntentModes = route.composeKind === 'intent' && !isIntentFixedKindStep(route);
+  const showIntentFixedKinds = isIntentFixedKindStep(route);
+  const showPlaceVenueKinds = route.composeKind === 'place' && !('target' in route);
+  const showPlaceKinds =
+    route.composeKind === 'place' && 'target' in route && route.target === 'place';
 
   return (
     <ExploreResponsiveSheet
@@ -88,7 +88,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
                 <button
                   key={option.top}
                   type="button"
-                  onClick={() => onRouteChange({ surface: 'menu', intent: option.top })}
+                  onClick={() => onRouteChange({ surface: 'menu', composeKind: option.top })}
                   className="flex w-full items-center gap-4 px-4 py-4 text-left transition active:bg-emerald-50/40 lg:px-5 lg:py-[1.125rem]"
                 >
                   <span
@@ -108,17 +108,17 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
         ) : (
           <>
             <FlowSheetHeader title={headerTitle} onClose={requestClose} pickerTitle />
-            {showHostKinds ? (
+            {showActivityKinds ? (
               <CreateKindGrid
                 options={CREATE_TRIP_HOST_COMPOSE_OPTIONS.map((option) => ({
                   id: option.kind,
                   label: option.label,
                   emoji: option.emoji,
                 }))}
-                onSelect={(kind) => onRouteChange(hostCompose(kind))}
+                onSelect={(kind) => onRouteChange(activityCompose(kind))}
               />
             ) : null}
-            {showAvailabilityModes ? (
+            {showIntentModes ? (
               <CreateKindGrid
                 options={AVAILABILITY_MODE_OPTIONS.map((option) => ({
                   id: option.mode,
@@ -127,14 +127,14 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
                 }))}
                 onSelect={(mode) => {
                   if (mode === 'open') {
-                    onRouteChange(availabilityOpenCompose());
+                    onRouteChange(intentOpenCompose());
                     return;
                   }
-                  onRouteChange({ surface: 'menu', intent: 'availability', mode: 'fixed' });
+                  onRouteChange({ surface: 'menu', composeKind: 'intent', mode: 'fixed' });
                 }}
               />
             ) : null}
-            {showAvailabilityFixedKinds ? (
+            {showIntentFixedKinds ? (
               <CreateKindGrid
                 options={AVAILABILITY_FIXED_COMPOSE_OPTIONS.map((option) => ({
                   id: option.kind,
@@ -142,28 +142,28 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
                   emoji: option.emoji,
                 }))}
                 onSelect={(kind) =>
-                  onRouteChange(availabilityFixedCompose(kind as AvailabilityFixedComposeKind))
+                  onRouteChange(intentFixedCompose(kind as IntentFixedComposeKind))
                 }
               />
             ) : null}
-            {showAddVenueKinds ? (
+            {showPlaceVenueKinds ? (
               <CreateKindGrid
                 options={CREATE_VENUE_ADD_COMPOSE_OPTIONS.map((option) => ({
                   id: option.kind,
                   label: option.label,
                   emoji: option.emoji,
                 }))}
-                onSelect={(kind) => onRouteChange(addComposeFromVenueKind(kind))}
+                onSelect={(kind) => onRouteChange(placeComposeFromVenueKind(kind))}
               />
             ) : null}
-            {showAddPlaceKinds ? (
+            {showPlaceKinds ? (
               <CreateKindGrid
                 options={ADD_PLACE_OPTIONS.map((option) => ({
                   id: option.kind,
                   label: option.label,
                   emoji: option.emoji,
                 }))}
-                onSelect={(kind) => onRouteChange(addPlaceCompose(kind))}
+                onSelect={(kind) => onRouteChange(placeCompose(kind))}
               />
             ) : null}
           </>

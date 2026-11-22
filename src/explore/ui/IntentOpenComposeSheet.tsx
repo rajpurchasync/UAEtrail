@@ -9,19 +9,22 @@ import { AvailabilityMatchPreview } from './AvailabilityMatchPreview';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { FlowSheetHeader } from './ExploreFlowSheetChrome';
 
-type SeekFlexibleComposeSheetProps = {
+export type IntentOpenComposeSheetProps = {
   open: boolean;
   onClose: () => void;
   /** Map `?area=` slug — optional area prefill in the editor. */
   exploreAreaSlug?: string | null;
 };
 
-/** FAB path — share member availability (no map pin). */
-export const SeekFlexibleComposeSheet = ({
+/**
+ * Explore FAB — `compose=intent:open` (open intent / share availability signal).
+ * Member availability schedule on profile/map (open days), not a map pin.
+ */
+export const IntentOpenComposeSheet = ({
   open,
   onClose,
   exploreAreaSlug = null,
-}: SeekFlexibleComposeSheetProps) => {
+}: IntentOpenComposeSheetProps) => {
   const publishedAreas = useExplorePublishedAreas();
   const [step, setStep] = useState<'form' | 'preview'>('form');
   const [preview, setPreview] = useState<MemberAvailabilityMatchPreviewDTO | null>(null);
@@ -55,7 +58,7 @@ export const SeekFlexibleComposeSheet = ({
     <ExploreResponsiveSheet
       open={open}
       onClose={onClose}
-      title="Share my availability"
+      title="Share when you're free"
       maxWidthClass="lg:max-w-lg"
       zClass={EXPLORE_Z.composeFlow}
       overlayFixed

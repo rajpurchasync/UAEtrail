@@ -4,7 +4,7 @@ import { HorizontalDragScroll } from '../ui/HorizontalDragScroll';
 import type { ActivityDTO, LocationDTO } from '@uaetrail/shared-types';
 import { activityDetailPath, placeDetailPath } from '@uaetrail/shared-types';
 import { explorePath, exploreShopsPath } from '../../explore/routing';
-import { addPlaceCompose, hostCompose } from '../../explore/compose';
+import { placeCompose, activityCompose } from '../../explore/compose';
 import { exploreMapPeekPath } from '@uaetrail/shared-types';
 import { communityShopPlaceToView } from '../../utils/communityShopPlace';
 import {
@@ -173,7 +173,7 @@ export const AreaHubPreviewSections = ({
             <Link
               to={explorePath({
             area: areaSlug,
-            compose: hostCompose('hiking'),
+            compose: activityCompose('hiking'),
           })}
               className="font-semibold text-emerald-800"
             >
@@ -226,7 +226,7 @@ export const AreaHubPreviewSections = ({
             <Link
               to={explorePath({
             area: areaSlug,
-            compose: addPlaceCompose('hiking'),
+            compose: placeCompose('hiking'),
           })}
               className="font-semibold text-emerald-800"
             >

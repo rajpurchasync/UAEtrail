@@ -6,5 +6,10 @@
 export const INBOUND_BECOME_HOST_PATH = '/become-host' as const;
 export const INBOUND_BECOME_ORGANIZER_PATH = '/become-organizer' as const;
 
-/** Retired publishing console prefixes (no SPA routes — chrome/auth matchers only). */
-export const INBOUND_RETIRED_CONSOLE_PREFIXES = ['/host', '/operator', '/organizer'] as const;
+/** Legacy console prefixes — inbound bookmarks redirect to {@link OPERATOR_CONSOLE_PREFIX} in surfacePaths. */
+export const INBOUND_RETIRED_CONSOLE_PREFIXES = [
+  '/publishing',
+  '/host',
+  '/organizer',
+  '/hosting',
+] as const;

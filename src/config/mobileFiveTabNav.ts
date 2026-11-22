@@ -166,7 +166,7 @@ export const resolveMobileBottomTab = (pathname: string, search = ''): MobileBot
     return 'trips';
   }
   if (pathname === PLAN_PATH) return 'plan';
-  if (pathname === MESSAGES_PATH || pathname === '/publishing/messages') {
+  if (pathname === MESSAGES_PATH || pathname === '/operator/messages' || pathname === '/publishing/messages') {
     const params = new URLSearchParams(search.replace(/^\?/, ''));
     if (params.get('to') || params.get('group')) return null;
     return 'chat';
@@ -194,9 +194,6 @@ export const resolveMobileFiveTab = (pathname: string, search = ''): MobileFiveT
   if (!tab || tab === MOBILE_HUB_HOME_TAB_ID) return null;
   return tab;
 };
-
-/** @deprecated Use {@link resolveMobileBottomTab}. */
-export const resolveMobileBottomNavTab = resolveMobileBottomTab;
 
 export const isMobileFiveTabHomePath = (pathname: string, search: string): boolean =>
   resolveMobileBottomTab(pathname, search) != null;

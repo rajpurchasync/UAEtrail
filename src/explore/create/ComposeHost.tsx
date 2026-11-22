@@ -1,5 +1,9 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
-import type { ExploreCompose, AvailabilityFixedComposeKind, HostComposeKind } from '../compose';
+import type {
+  ExploreCompose,
+  IntentFixedComposeKind,
+  ActivityComposeKind,
+} from '../compose';
 import type { AddVenueKind } from '../addTypes';
 import { HostingFlowHost } from './hosting/HostingFlowHost';
 import { CreateAddFlow } from '../ui/CreateAddFlow';
@@ -7,22 +11,22 @@ import { CreateAddFacilityFlow } from '../ui/CreateAddFacilityFlow';
 import type { AddSubmitResult } from '../ui/addFlow';
 import { CreateAvailabilityFixedFlow } from '../ui/CreateAvailabilityFixedFlow';
 import type { AvailabilityFixedSubmitResult } from '../ui/availabilityFlowEngine';
-import { CreateIntentSheet } from '../ui/CreateIntentSheet';
-import { SeekFlexibleComposeSheet } from '../ui/SeekFlexibleComposeSheet';
+import { CreateKindSheet } from '../ui/CreateKindSheet';
+import { IntentOpenComposeSheet } from '../ui/IntentOpenComposeSheet';
 import { ComposeSheetExpandedProvider } from './ComposeSheetExpandedContext';
 import { ComposeWizardNavigationProvider } from './ComposeWizardNavigationContext';
 
 export interface ComposeHostProps {
   composeRoute: ExploreCompose | null;
   composeMenuOpen: boolean;
-  hostWizardOpen: boolean;
-  /** Availability — fixed map slot (`availability:fixed:*` wire; `seek:fixed:*` read-compat). */
-  availabilityFixedWizardOpen: boolean;
-  addWizardOpen: boolean;
-  /** Availability — open days (`availability:flexible` / `seek:flexible` read-compat). */
-  availabilityFlexibleOpen: boolean;
-  hostComposeKind: HostComposeKind | null;
-  availabilityFixedKind: AvailabilityFixedComposeKind | null | undefined;
+  activityWizardOpen: boolean;
+  /** Intent — fixed map slot (`intent:fixed:*` wire; legacy inbound compat in shared-types). */
+  intentFixedWizardOpen: boolean;
+  placeWizardOpen: boolean;
+  /** Intent — open days (`intent:open` wire). */
+  intentOpenWizardOpen: boolean;
+  activityComposeKind: ActivityComposeKind | null;
+  intentFixedKind: IntentFixedComposeKind | null | undefined;
   addVenueKind: AddVenueKind | null;
   hostingWizardPrefill: import('../ui/hostingWizardPrefill').HostingWizardPrefill | null;
   signInHref: string;
@@ -48,16 +52,16 @@ export interface ComposeHostProps {
   intentMenuSuppressed?: boolean;
 }
 
-/** Create-flow shell: Host · Add · Availability wizards on the current surface (`ComposeHost`). */
+/** Create-flow shell: activity · place · intent wizards on the current surface. */
 export const ComposeHost = ({
   composeRoute,
   composeMenuOpen,
-  hostWizardOpen,
-  availabilityFixedWizardOpen,
-  addWizardOpen,
-  availabilityFlexibleOpen,
-  hostComposeKind,
-  availabilityFixedKind,
+  activityWizardOpen,
+  intentFixedWizardOpen,
+  placeWizardOpen,
+  intentOpenWizardOpen,
+  activityComposeKind,
+  intentFixedKind,
   addVenueKind,
   hostingWizardPrefill,
   signInHref,
@@ -81,15 +85,15 @@ export const ComposeHost = ({
 }: ComposeHostProps) => {
   const composeSessionOpen =
     composeMenuOpen ||
-    hostWizardOpen ||
-    availabilityFixedWizardOpen ||
-    addWizardOpen ||
-    availabilityFlexibleOpen;
+    activityWizardOpen ||
+    intentFixedWizardOpen ||
+    placeWizardOpen ||
+    intentOpenWizardOpen;
   const immersiveWizardOpen =
-    hostWizardOpen ||
-    availabilityFixedWizardOpen ||
-    addWizardOpen ||
-    availabilityFlexibleOpen;
+    activityWizardOpen ||
+    intentFixedWizardOpen ||
+    placeWizardOpen ||
+    intentOpenWizardOpen;
 
   return (
     <ComposeWizardNavigationProvider value={wizardEnteredFromMenu}>
@@ -98,16 +102,16 @@ export const ComposeHost = ({
       immersiveWizardOpen={immersiveWizardOpen}
     >
     {composeMenuOpen && composeRoute && !intentMenuSuppressed && (
-      <CreateIntentSheet
+      <CreateKindSheet
         route={composeRoute}
         onRouteChange={onComposeRouteChange}
         onClose={onCloseCompose}
       />
     )}
 
-    {addWizardOpen && addVenueKind === 'facility' && (
+    {placeWizardOpen && addVenueKind === 'facility' && (
       <CreateAddFacilityFlow
-        open={addWizardOpen}
+        open={placeWizardOpen}
         exploreAreaSlug={composeAreaSlug}
         facilityOnPlaceId={facilityOnPlaceId}
         onClose={onCloseCompose}
@@ -117,9 +121,9 @@ export const ComposeHost = ({
       />
     )}
 
-    {addWizardOpen && addVenueKind && addVenueKind !== 'facility' && (
+    {placeWizardOpen && addVenueKind && addVenueKind !== 'facility' && (
       <CreateAddFlow
-        open={addWizardOpen}
+        open={placeWizardOpen}
         kind={addVenueKind}
         exploreAreaSlug={composeAreaSlug}
         onClose={onCloseCompose}
@@ -129,11 +133,11 @@ export const ComposeHost = ({
       />
     )}
 
-    {hostWizardOpen && (
+    {activityWizardOpen && (
       <HostingFlowHost
-        open={hostWizardOpen}
+        open={activityWizardOpen}
         onClose={onCloseCreateFlow}
-        hostComposeKind={hostComposeKind}
+        hostComposeKind={activityComposeKind}
         hostingWizardPrefill={hostingWizardPrefill}
         onCreateLinkedRideshare={onCreateLinkedRideshare}
         onBackToIntent={onHostingBackToIntent}
@@ -144,19 +148,19 @@ export const ComposeHost = ({
       />
     )}
 
-    {availabilityFlexibleOpen && (
-      <SeekFlexibleComposeSheet
-        open={availabilityFlexibleOpen}
+    {intentOpenWizardOpen && (
+      <IntentOpenComposeSheet
+        open={intentOpenWizardOpen}
         onClose={onCloseCompose}
         exploreAreaSlug={composeAreaSlug}
       />
     )}
 
-    {availabilityFixedWizardOpen && (
+    {intentFixedWizardOpen && (
       <CreateAvailabilityFixedFlow
-        open={availabilityFixedWizardOpen}
+        open={intentFixedWizardOpen}
         onClose={onCloseCompose}
-        availabilityFixedKind={availabilityFixedKind ?? null}
+        availabilityFixedKind={intentFixedKind ?? null}
         exploreAreaSlug={composeAreaSlug}
         onBackToIntent={onAvailabilityBackToIntent}
         onSubmitted={onAvailabilityFixedSubmitted}

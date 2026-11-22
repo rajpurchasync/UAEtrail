@@ -27,9 +27,6 @@ export type MapActivityFilters = MapAvailabilityFilters & {
   priceFilter?: ExplorePriceFilter;
 };
 
-/** @deprecated Use `MapActivityFilters`. */
-export type ExploreActivityCatalogFilters = MapActivityFilters;
-
 /**
  * Time-bound activities from the discovery map payload (hosted trips + fixed availability slice).
  * Legacy `activityMode: seeking` rows are excluded from the Trips map; “Looking for” = availability pins.
@@ -68,6 +65,3 @@ export const selectActivitiesFromMapItems = (
       .filter((item) => exploreItemMatchesQuery(item, filters.query))
   );
 };
-
-/** @deprecated Use `selectActivitiesFromMapItems`. */
-export const selectActivitiesFromExploreCatalog = selectActivitiesFromMapItems;

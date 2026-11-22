@@ -3,7 +3,7 @@ import { isPlaceMapSource } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { launchHostWizard } from '../../create/launchHostWizard';
 import { composeFlowIdFromRoute } from '../../explore/composeFlowCatalog';
-import { hostCompose } from '../../explore/compose';
+import { activityCompose } from '../../explore/compose';
 import {
   createDraftFromRegistryPlace,
   resolveCreateActivityKindFromVenueCardKind,
@@ -26,7 +26,7 @@ const launchHostFromPlaceDto = (
   kind: 'hiking' | 'camping' | 'event',
   areas: Awaited<ReturnType<typeof fetchPublishedAreas>>
 ): void => {
-  const composeRoute = hostCompose(kind === 'event' ? 'activity' : kind);
+  const composeRoute = activityCompose(kind === 'event' ? 'activity' : kind);
   const flowId = composeFlowIdFromRoute(composeRoute);
   launchHostWizard({
     navigate,

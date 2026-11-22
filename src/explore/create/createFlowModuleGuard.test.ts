@@ -99,7 +99,8 @@ describe('create flow module boundaries (CPC-9b)', () => {
       expect(src).toMatch(/ComposeWizardShell/);
       expect(src).not.toMatch(/mobileComposeChrome/);
     }
-    expect(read('src/explore/ui/CreateIntentSheet.tsx')).toMatch(/composePresentation="menu"/);
+    expect(read('src/explore/ui/CreateKindSheet.tsx')).toMatch(/composePresentation="menu"/);
+    expect(existsSync(join(ROOT, 'src/explore/ui/CreateIntentSheet.tsx'))).toBe(false);
   });
 
   it('create session is product-shell, not Explore-owned', () => {
@@ -111,18 +112,27 @@ describe('create flow module boundaries (CPC-9b)', () => {
     expect(read('src/plan/PlanPage.tsx')).not.toMatch(/explorePath\(\{ compose/);
   });
 
-  it('compose module documents product pillars (Host · Add · Availability)', () => {
+  it('compose module documents activity · place · intent pillars', () => {
     const compose = read('src/explore/compose.ts');
-    expect(compose).toMatch(/availabilityFixedCompose/);
-    expect(compose).toMatch(/availabilityFlexibleCompose/);
-    expect(compose).toMatch(/export const isAvailabilityFixedWizard =/);
-    expect(compose).toMatch(/export const seekFixedCompose = availabilityFixedCompose/);
+    expect(compose).toMatch(/intentFixedCompose/);
+    expect(compose).toMatch(/intentOpenCompose/);
+    expect(compose).toMatch(/export const isIntentFixedWizard =/);
+    expect(compose).not.toMatch(/FabTopLevel/);
+    expect(compose).not.toMatch(/export const hostCompose/);
+    expect(compose).not.toMatch(/export const seekFixedCompose/);
+    expect(compose).not.toMatch(/availabilityFlexibleCompose/);
+    const composeHost = read('src/explore/create/ComposeHost.tsx');
+    expect(composeHost).toMatch(/intentOpenWizardOpen/);
+    expect(composeHost).toMatch(/IntentOpenComposeSheet/);
+    expect(composeHost).not.toMatch(/MarkAvailabilityComposeSheet/);
+    expect(existsSync(join(ROOT, 'src/explore/ui/MarkAvailabilityComposeSheet.tsx'))).toBe(false);
+    expect(read('src/explore/routing.ts')).not.toMatch(/params\.set\('region'/);
     const guard = read('src/explore/create/composeRouteGuard.ts');
     expect(guard).not.toMatch(/canPublish/);
-    expect(guard).toMatch(/Availability/);
+    expect(guard).toMatch(/isIntentOpenWizard/);
     const routeHook = read('src/explore/create/hooks/useComposeRoute.ts');
-    expect(routeHook).toMatch(/availabilityFixedRoute/);
-    expect(routeHook).toMatch(/isAvailabilityOpenWizard\(next\)/);
+    expect(routeHook).toMatch(/intentFixedRoute/);
+    expect(routeHook).toMatch(/isIntentOpenWizard\(next\)/);
     for (const hook of [
       'useHostingFromActivity.ts',
       'useHostingWizardPrefill.ts',
@@ -144,16 +154,16 @@ describe('create flow module boundaries (CPC-9b)', () => {
 
   it('tab FABs skip the stale Host · Find crew · Add top-level menu', () => {
     const entry = read('src/explore/create/composeFabEntry.ts');
-    expect(entry).toMatch(/intent: 'host'/);
-    expect(entry).toMatch(/intent: 'add'/);
-    expect(entry).toMatch(/intent: 'availability'/);
+    expect(entry).toMatch(/composeKind: 'activity'/);
+    expect(entry).toMatch(/composeKind: 'place'/);
+    expect(entry).toMatch(/composeKind: 'intent'/);
     const mapShell = read('src/explore/shell/ExploreMapShell.tsx');
     expect(mapShell).toMatch(/onPrimaryFab=\{handlePrimaryFabTap\}/);
     expect(mapShell).not.toMatch(/onPrimaryFab=\{compose\.handleCreateTap\}/);
-    const sheet = read('src/explore/ui/CreateIntentSheet.tsx');
+    const sheet = read('src/explore/ui/CreateKindSheet.tsx');
     expect(sheet).toMatch(/CREATE_TRIP_HOST_COMPOSE_OPTIONS/);
     expect(sheet).toMatch(/CREATE_VENUE_ADD_COMPOSE_OPTIONS/);
-    expect(sheet).toMatch(/showAddVenueKinds/);
+    expect(sheet).toMatch(/showPlaceVenueKinds/);
     expect(sheet).toMatch(/CreateKindGrid/);
     expect(sheet).not.toMatch(/ADD_TARGET_OPTIONS/);
     const planAdd = read('src/plan/planAdd.ts');

@@ -37,11 +37,11 @@ export const resolveCreateFabComposeEntry = (
   search: string,
   hints?: BrowseListCreateFabHints
 ): ExploreCompose => {
-  if (hints?.isPeopleCategory) return { surface: 'menu', intent: 'availability' };
-  if (hints?.explorerBucket === 'places') return { surface: 'menu', intent: 'add' };
+  if (hints?.isPeopleCategory) return { surface: 'menu', composeKind: 'intent' };
+  if (hints?.explorerBucket === 'places') return { surface: 'menu', composeKind: 'place' };
 
   const tab = resolveMobileFiveTab(pathname, search);
-  if (tab === 'venues') return { surface: 'menu', intent: 'add' };
-  if (tab === 'crews') return { surface: 'menu', intent: 'availability' };
-  return { surface: 'menu', intent: 'host' };
+  if (tab === 'venues') return { surface: 'menu', composeKind: 'place' };
+  if (tab === 'crews') return { surface: 'menu', composeKind: 'intent' };
+  return { surface: 'menu', composeKind: 'activity' };
 };

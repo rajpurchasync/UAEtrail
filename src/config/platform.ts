@@ -7,7 +7,7 @@ import {
   BUDDIES_PATH,
   PROFILE_SUBMISSIONS_PATH,
   INBOUND_CONTRIBUTIONS_PATH,
-  PUBLISHING_CONSOLE_PREFIX,
+  OPERATOR_CONSOLE_PREFIX,
   GROUPS_PATH,
   MESSAGES_PATH,
   MY_REQUESTS_PATH,
@@ -21,7 +21,7 @@ import {
   isAppSettingsPath,
   isNotificationHubPath,
   ADMIN_PLACES_PATH,
-  PUBLISHING_PLACES_PATH,
+  OPERATOR_PLACES_PATH,
   signUpPath,
 } from './surfacePaths';
 import { INBOUND_BECOME_HOST_PATH, PRO_MEMBERSHIP_PATH } from './memberRoutes';
@@ -40,7 +40,7 @@ export { resolveExploreMapTiles } from '../explore/exploreMapBasemap';
 
 export {
   ADMIN_PLACES_PATH,
-  PUBLISHING_PLACES_PATH,
+  OPERATOR_PLACES_PATH,
   AGENCY_PROFILE_PATH_PREFIX,
 };
 
@@ -79,7 +79,7 @@ export const DOMAIN_GLOSSARY = {
     inboundApiPath: '/locations',
     publicRoutes: ['/trail/:id', '/camp/:id', '/venue/:id', '/shop/:id'],
     adminRoute: ADMIN_PLACES_PATH,
-    hostRoute: PUBLISHING_PLACES_PATH,
+    hostRoute: OPERATOR_PLACES_PATH,
   },
   Activity: {
     product: 'Activity',
@@ -93,7 +93,7 @@ export const DOMAIN_GLOSSARY = {
     description: 'Host tenant — guide, agency, partner, or shop brand profiles.',
     storage: 'Tenant',
     api: '/publishing, /tenants/:slug',
-    consoleRoute: '/publishing/*',
+    consoleRoute: '/operator/*',
     publicRoute: '/agency/:slug · /partner/:slug · /member/:userId (individuals)',
     manageRoute: '/organisation/manage',
   },
@@ -205,7 +205,7 @@ export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
     label: 'Chat',
     emoji: '💬',
     to: MESSAGES_PATH,
-    match: [MESSAGES_PATH, '/publishing/messages'],
+    match: [MESSAGES_PATH, '/operator/messages', '/publishing/messages'],
     authGate: true,
   },
   {
@@ -241,7 +241,7 @@ export const HOST_MODE_HAMBURGER_HOSTING_ITEM = {
   label: 'Hosting',
   emoji: '📋',
   to: HOSTING_HUB_PATH,
-  match: [HOSTING_HUB_PATH, PUBLISHING_CONSOLE_PREFIX],
+  match: [HOSTING_HUB_PATH, OPERATOR_CONSOLE_PREFIX],
   authGate: true,
 } as const satisfies ConsumerHamburgerMenuItem;
 
@@ -364,7 +364,7 @@ export const getExploreMapTiles = (style: ExploreMapStyle) => resolveExploreMapT
 /** Routes where bottom nav, footer padding, and mobile chrome are hidden. */
 const CONSUMER_CHROME_HIDDEN_PREFIXES = [
   '/admin',
-  PUBLISHING_CONSOLE_PREFIX,
+  OPERATOR_CONSOLE_PREFIX,
   ...INBOUND_RETIRED_CONSOLE_PREFIXES,
   '/dashboard',
 ] as const;
@@ -399,8 +399,6 @@ export const isEntityDetailRoute = (pathname: string): boolean =>
   pathname.startsWith('/agency/') ||
   pathname.startsWith('/partner/');
 
-/** @deprecated Use {@link isEntityDetailRoute}. */
-export const isConsumerEntityDetailRoute = isEntityDetailRoute;
 
 /**
  * Product pages that render their own sticky header (ProductShell / MobileScreen / MobileDetailShell).
@@ -421,7 +419,7 @@ export const CONSUMER_SELF_HEADER_EXACT = [
   BUDDIES_PATH,
   PROFILE_SUBMISSIONS_PATH,
   INBOUND_CONTRIBUTIONS_PATH,
-  PUBLISHING_CONSOLE_PREFIX,
+  OPERATOR_CONSOLE_PREFIX,
   MESSAGES_PATH,
   MY_REQUESTS_PATH,
   INBOUND_BECOME_HOST_PATH,
@@ -444,11 +442,11 @@ export const CONSUMER_SELF_HEADER_PREFIXES = [
   '/agency/',
   '/partner/',
   '/venue/',
-  '/publishing/',
+  '/operator/',
   '/organisation/manage',
   '/shop/manage',
   '/agency/manage',
-  '/publishing/security-privacy',
+  '/operator/security-privacy',
 ] as const;
 
 export const hasConsumerSelfHeader = (pathname: string): boolean =>
@@ -485,8 +483,6 @@ export const shouldShowProductShellHamburger = (pathname: string): boolean => {
   return MOBILE_BOTTOM_NAV_PROFILE_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 };
 
-/** @deprecated Use {@link shouldShowProductShellHamburger}. */
-export const shouldShowConsumerShellHamburger = shouldShowProductShellHamburger;
 
 /**
  * Route pathnames that host the five-tab mobile shell (Trips/Venues share `/explore` + `/list`).
@@ -510,7 +506,7 @@ export const MOBILE_BOTTOM_NAV_PROFILE_PATHS = [
   BUDDIES_PATH,
   PROFILE_SUBMISSIONS_PATH,
   INBOUND_CONTRIBUTIONS_PATH,
-  PUBLISHING_CONSOLE_PREFIX,
+  OPERATOR_CONSOLE_PREFIX,
   HOSTING_HUB_PATH,
   GROUPS_PATH,
   MY_REQUESTS_PATH,
@@ -536,7 +532,7 @@ export const shouldShowMobileBottomNav = (
   if (pathname === '/explore/search') {
     return true;
   }
-  if (pathname === MESSAGES_PATH || pathname === '/publishing/messages') {
+  if (pathname === MESSAGES_PATH || pathname === '/operator/messages' || pathname === '/publishing/messages') {
     const params = new URLSearchParams(search);
     if (params.get('to') || params.get('group')) return false;
   }

@@ -1,11 +1,11 @@
-/** Unified route gate for Host · Add · Availability — sign-in only; publish gate stays in hosting wizard. */
+/** Unified route gate for activity · place · intent — sign-in only; publish gate stays in hosting wizard. */
 import { signInPathForReturn } from '../../utils/authReturnContext';
 import {
-  isAddWizard,
-  isAvailabilityFixedWizard,
-  isAvailabilityOpenWizard,
+  isPlaceWizard,
+  isIntentFixedWizard,
+  isIntentOpenWizard,
   isComposeMenu,
-  isHostWizard,
+  isActivityWizard,
   type ExploreCompose,
 } from '../compose';
 import { buildComposeAuthReturnPath } from './guestComposeResume';
@@ -37,10 +37,10 @@ export const composeRouteRequiresAuth = (route: ExploreCompose | null): boolean 
   if (!route) return false;
   if (isComposeMenu(route)) return false;
   return (
-    isHostWizard(route) ||
-    isAvailabilityFixedWizard(route) ||
-    isAvailabilityOpenWizard(route) ||
-    isAddWizard(route)
+    isActivityWizard(route) ||
+    isIntentFixedWizard(route) ||
+    isIntentOpenWizard(route) ||
+    isPlaceWizard(route)
   );
 };
 
@@ -49,18 +49,18 @@ export const resolveComposeRouteChange = (
   route: ExploreCompose | null,
   ctx: ComposeRouteGuardContext
 ): ComposeRouteGuardDecision => {
-  if (route && isHostWizard(route)) {
+  if (route && isActivityWizard(route)) {
     if (!ctx.user) {
       return { type: 'sign-in', href: signInPathForReturn(composeAuthReturnPath(route, ctx)) };
     }
-    // Host publish gate runs in the hosting wizard (publish step) — not before `?compose=host:*` opens.
+    // Publish gate runs in the hosting wizard (publish step) — not before `?compose=activity:*` opens.
   }
 
   if (
     route &&
-    (isAvailabilityFixedWizard(route) ||
-      isAvailabilityOpenWizard(route) ||
-      isAddWizard(route)) &&
+    (isIntentFixedWizard(route) ||
+      isIntentOpenWizard(route) ||
+      isPlaceWizard(route)) &&
     !ctx.user
   ) {
     return { type: 'sign-in', href: signInPathForReturn(composeAuthReturnPath(route, ctx)) };

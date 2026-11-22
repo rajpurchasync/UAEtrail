@@ -73,7 +73,7 @@ import {
   activityDetailIsRetiredSeekingPost,
   RETIRED_SEEKING_ACTIVITY_DETAIL_NOTICE,
 } from '../activity/retiredSeekingActivityDetail';
-import { availabilityFixedCompose } from '../explore/compose';
+import { intentFixedCompose } from '../explore/compose';
 import { explorePath } from '../explore/routing';
 
 /**
@@ -484,7 +484,7 @@ export const ActivityDetail = () => {
         >
           {RETIRED_SEEKING_ACTIVITY_DETAIL_NOTICE}{' '}
           <Link
-            to={explorePath({ compose: availabilityFixedCompose('hiking') })}
+            to={explorePath({ compose: intentFixedCompose('hiking') })}
             className="font-semibold text-emerald-800 underline"
           >
             Share availability

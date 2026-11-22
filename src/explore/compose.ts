@@ -1,10 +1,11 @@
 import {
   formatComposeWire,
   parseComposeWire,
-  type AddTarget,
-  type AvailabilityFixedComposeKind,
+  type ComposeKind,
+  type PlaceTarget,
+  type IntentFixedComposeKind,
   type ExploreComposeWire,
-  type HostComposeKind,
+  type ActivityComposeKind,
 } from '@uaetrail/shared-types';
 import {
   EXPLORE_CREATE_FAB_ADD_VENUE,
@@ -14,49 +15,55 @@ import {
 import type { CreateActivityKind } from './ui/hostingFlowEngine';
 import type { AddVenueKind } from './addTypes';
 
-export type { HostComposeKind, AvailabilityFixedComposeKind } from '@uaetrail/shared-types';
-/** @deprecated Use AvailabilityFixedComposeKind */
-export type SeekingComposeKind = AvailabilityFixedComposeKind;
+export type {
+  ActivityComposeKind,
+  HostComposeKind,
+  IntentFixedComposeKind,
+  AvailabilityFixedComposeKind,
+  ComposeKind,
+  PlaceTarget,
+} from '@uaetrail/shared-types';
+
+/** @deprecated Use PlaceTarget */
+export type AddTarget = PlaceTarget;
 
 /**
  * FAB create-route (`?compose=` wire).
- * Registry: **Host** · **Add** · **Mark availability** (`host` · `add` · `availability`).
+ * Registry: **activity** · **place** · **intent**.
  */
 export type ExploreCompose = ExploreComposeWire;
 
 export type ParticipationMode = 'rsvp' | 'approval';
 
-export type FabTopLevel = 'host' | 'availability' | 'add';
-
 export const COMPOSE_QUERY_KEY = 'compose';
 
 export const COMPOSE_MENU_OPTIONS: Array<{
-  top: FabTopLevel;
+  top: ComposeKind;
   label: string;
   hint: string;
   emoji: string;
 }> = [
   {
-    top: 'host',
+    top: 'activity',
     label: 'Publish an event',
     hint: 'Publish an outing you lead — hike, camp, ride, event',
     emoji: '🧭',
   },
   {
-    top: 'availability',
+    top: 'intent',
     label: 'Mark availability',
     hint: 'Share when you are free — open days or a fixed meetup on the map',
     emoji: '🙋',
   },
   {
-    top: 'add',
+    top: 'place',
     label: 'Add on map',
     hint: 'Contribute to the community by adding places and facilities',
     emoji: '📍',
   },
 ];
 
-export const HOST_COMPOSE_OPTIONS: Array<{ kind: HostComposeKind; label: string; emoji: string }> = [
+export const HOST_COMPOSE_OPTIONS: Array<{ kind: ActivityComposeKind; label: string; emoji: string }> = [
   { kind: 'hiking', label: 'Hiking', emoji: '🥾' },
   { kind: 'camping', label: 'Camping', emoji: '⛺' },
   { kind: 'event', label: 'Outdoor event', emoji: '🏃' },
@@ -64,9 +71,9 @@ export const HOST_COMPOSE_OPTIONS: Array<{ kind: HostComposeKind; label: string;
   { kind: 'activity', label: 'Other activities', emoji: '✨' },
 ];
 
-/** Trips create FAB — host kind grid (Hiking · Camping · Rideshare · Others). */
+/** Trips create FAB — activity kind grid (Hiking · Camping · Rideshare · Others). */
 export const CREATE_TRIP_HOST_COMPOSE_OPTIONS: Array<{
-  kind: HostComposeKind;
+  kind: ActivityComposeKind;
   label: string;
   emoji: string;
 }> = [
@@ -77,7 +84,7 @@ export const CREATE_TRIP_HOST_COMPOSE_OPTIONS: Array<{
 ];
 
 export const AVAILABILITY_FIXED_COMPOSE_OPTIONS: Array<{
-  kind: AvailabilityFixedComposeKind;
+  kind: IntentFixedComposeKind;
   label: string;
   emoji: string;
 }> = [
@@ -86,9 +93,6 @@ export const AVAILABILITY_FIXED_COMPOSE_OPTIONS: Array<{
   { kind: 'camping', label: 'Camping', emoji: '⛺' },
   { kind: 'event', label: 'Activities', emoji: '✨' },
 ];
-
-/** @deprecated Use AVAILABILITY_FIXED_COMPOSE_OPTIONS */
-export const SEEK_FIXED_COMPOSE_OPTIONS = AVAILABILITY_FIXED_COMPOSE_OPTIONS;
 
 export const AVAILABILITY_MODE_OPTIONS: Array<{
   mode: 'fixed' | 'open';
@@ -110,14 +114,8 @@ export const AVAILABILITY_MODE_OPTIONS: Array<{
   },
 ];
 
-/** @deprecated Use AVAILABILITY_MODE_OPTIONS */
-export const SEEK_MODE_OPTIONS = AVAILABILITY_MODE_OPTIONS.map((o) => ({
-  ...o,
-  mode: o.mode === 'open' ? ('flexible' as const) : ('fixed' as const),
-}));
-
 export const ADD_TARGET_OPTIONS: Array<{
-  target: AddTarget;
+  target: PlaceTarget;
   label: string;
   hint: string;
   emoji: string;
@@ -154,9 +152,6 @@ export const CREATE_VENUE_ADD_COMPOSE_OPTIONS: Array<{
   { kind: 'event', label: 'Others', emoji: '✨' },
 ];
 
-/** @deprecated Use {@link CREATE_VENUE_ADD_COMPOSE_OPTIONS} — catalog + flow-id tests. */
-export const ADD_COMPOSE_OPTIONS = CREATE_VENUE_ADD_COMPOSE_OPTIONS;
-
 export const COMPOSE_MENU_TITLE = 'I would like to…';
 
 export const COMPOSE_MENU_THINKING_EMOJI = '✨';
@@ -165,7 +160,7 @@ export const BUDDY_TITLE_PLACEHOLDER = 'Run, jog, trail run — whatever gets yo
 
 export const PARTICIPATION_TOGGLE_QUESTION = 'Do people need my OK to join?';
 
-export const defaultParticipationForHostKind = (kind: HostComposeKind): ParticipationMode =>
+export const defaultParticipationForHostKind = (kind: ActivityComposeKind): ParticipationMode =>
   kind === 'event' ? 'rsvp' : 'approval';
 
 export type HostingPublishSeed = {
@@ -174,10 +169,10 @@ export type HostingPublishSeed = {
   participationMode: ParticipationMode;
 };
 
-export const hostCreateActivityKind = (kind: HostComposeKind): CreateActivityKind =>
+export const hostCreateActivityKind = (kind: ActivityComposeKind): CreateActivityKind =>
   kind === 'activity' ? 'activity' : kind;
 
-export const hostingPublishSeed = (kind: HostComposeKind): HostingPublishSeed => ({
+export const hostingPublishSeed = (kind: ActivityComposeKind): HostingPublishSeed => ({
   createKind: hostCreateActivityKind(kind),
   genericBuddy: false,
   participationMode: defaultParticipationForHostKind(kind),
@@ -185,23 +180,19 @@ export const hostingPublishSeed = (kind: HostComposeKind): HostingPublishSeed =>
 
 export const COMPOSE_HOST_KIND_TITLE = EXPLORE_CREATE_FAB_HOST_TRIP;
 export const COMPOSE_AVAILABILITY_MODE_TITLE = EXPLORE_CREATE_FAB_FIND_CREW;
-/** @deprecated Use COMPOSE_AVAILABILITY_MODE_TITLE */
-export const COMPOSE_SEEK_MODE_TITLE = COMPOSE_AVAILABILITY_MODE_TITLE;
 export const COMPOSE_AVAILABILITY_FIXED_KIND_TITLE = 'Fixed time and place';
-/** @deprecated */
-export const COMPOSE_SEEK_FIXED_KIND_TITLE = COMPOSE_AVAILABILITY_FIXED_KIND_TITLE;
 export const COMPOSE_ADD_TARGET_TITLE = EXPLORE_CREATE_FAB_ADD_VENUE;
 export const COMPOSE_ADD_PLACE_TITLE = 'Place';
 
 export const composeMenuTitle = (route: ExploreCompose | null): string => {
   if (!route) return COMPOSE_MENU_TITLE;
   if (!('surface' in route)) return COMPOSE_MENU_TITLE;
-  if (route.intent === 'host') return COMPOSE_HOST_KIND_TITLE;
-  if (route.intent === 'availability') {
+  if (route.composeKind === 'activity') return COMPOSE_HOST_KIND_TITLE;
+  if (route.composeKind === 'intent') {
     if ('mode' in route && route.mode === 'fixed') return COMPOSE_AVAILABILITY_FIXED_KIND_TITLE;
     return COMPOSE_AVAILABILITY_MODE_TITLE;
   }
-  if (route.intent === 'add') {
+  if (route.composeKind === 'place') {
     if ('target' in route && route.target === 'place') return COMPOSE_ADD_PLACE_TITLE;
     return COMPOSE_ADD_TARGET_TITLE;
   }
@@ -211,10 +202,10 @@ export const composeMenuTitle = (route: ExploreCompose | null): string => {
 /** Emoji for the compose top bar — selected item, or the menu step. */
 export const composeItemEmoji = (route: ExploreCompose | null): string => {
   if (!route) return COMPOSE_MENU_THINKING_EMOJI;
-  if (route.intent === 'host' && 'kind' in route && route.kind) {
+  if ('composeKind' in route && route.composeKind === 'activity' && 'kind' in route && route.kind) {
     return HOST_COMPOSE_OPTIONS.find((option) => option.kind === route.kind)?.emoji ?? '🧭';
   }
-  if (route.intent === 'availability') {
+  if ('composeKind' in route && route.composeKind === 'intent') {
     if ('kind' in route && route.kind) {
       return (
         AVAILABILITY_FIXED_COMPOSE_OPTIONS.find((option) => option.kind === route.kind)?.emoji ??
@@ -229,10 +220,12 @@ export const composeItemEmoji = (route: ExploreCompose | null): string => {
     }
     return '🙋';
   }
-  if (route.intent === 'add') {
+  if ('composeKind' in route && route.composeKind === 'place') {
     if ('kind' in route && route.kind) {
-      return ADD_PLACE_OPTIONS.find((option) => option.kind === route.kind)?.emoji
-        ?? (route.target === 'facility' ? '🚻' : '📍');
+      return (
+        ADD_PLACE_OPTIONS.find((option) => option.kind === route.kind)?.emoji ??
+        (route.target === 'facility' ? '🚻' : '📍')
+      );
     }
     if ('target' in route && route.target === 'place') return '🥾';
     if ('target' in route && route.target === 'facility') return '🚻';
@@ -241,54 +234,45 @@ export const composeItemEmoji = (route: ExploreCompose | null): string => {
   return COMPOSE_MENU_THINKING_EMOJI;
 };
 
-export const hostCompose = (kind: HostComposeKind): ExploreCompose => ({
-  intent: 'host',
+export const activityCompose = (kind: ActivityComposeKind): ExploreCompose => ({
+  composeKind: 'activity',
   kind,
 });
 
-export const availabilityFixedCompose = (kind: AvailabilityFixedComposeKind): ExploreCompose => ({
-  intent: 'availability',
+export const intentFixedCompose = (kind: IntentFixedComposeKind): ExploreCompose => ({
+  composeKind: 'intent',
   mode: 'fixed',
   kind,
 });
 
-/** @deprecated Use availabilityFixedCompose */
-export const seekFixedCompose = availabilityFixedCompose;
-
-export const availabilityOpenCompose = (): ExploreCompose => ({
-  intent: 'availability',
+export const intentOpenCompose = (): ExploreCompose => ({
+  composeKind: 'intent',
   mode: 'open',
 });
 
-/** @deprecated Use availabilityOpenCompose */
-export const availabilityFlexibleCompose = availabilityOpenCompose;
-
-/** @deprecated Use availabilityOpenCompose */
-export const seekFlexibleCompose = availabilityOpenCompose;
-
-export const addPlaceCompose = (kind: string): ExploreCompose => ({
-  intent: 'add',
+export const placeCompose = (kind: string): ExploreCompose => ({
+  composeKind: 'place',
   target: 'place',
   kind,
 });
 
-export const addFacilityCompose = (kind: string): ExploreCompose => ({
-  intent: 'add',
+export const placeFacilityCompose = (kind: string): ExploreCompose => ({
+  composeKind: 'place',
   target: 'facility',
   kind,
 });
 
-export const addComposeFromVenueKind = (kind: AddVenueKind): ExploreCompose => {
-  if (kind === 'facility') return addFacilityCompose('toilet');
-  if (kind === 'shop') return addPlaceCompose('shop');
-  if (kind === 'hiking' || kind === 'camping') return addPlaceCompose(kind);
-  return addPlaceCompose('outdoor_other');
+export const placeComposeFromVenueKind = (kind: AddVenueKind): ExploreCompose => {
+  if (kind === 'facility') return placeFacilityCompose('toilet');
+  if (kind === 'shop') return placeCompose('shop');
+  if (kind === 'hiking' || kind === 'camping') return placeCompose(kind);
+  return placeCompose('outdoor_other');
 };
 
 /** Serialize an explore compose route to the `compose` query value. */
 export const formatComposeQuery = (route: ExploreCompose): string => formatComposeWire(route);
 
-/** Read compose route from explore search params — host / availability / add only. */
+/** Read compose route from explore search params — activity · place · intent only. */
 export const parseExploreCompose = (
   searchParams: Pick<URLSearchParams, 'get'>
 ): ExploreCompose | null => {
@@ -316,56 +300,46 @@ export const isComposeMenu = (
 ): route is Extract<ExploreCompose, { surface: 'menu' }> =>
   Boolean(route && 'surface' in route && route.surface === 'menu');
 
-export const isHostWizard = (
+export const isActivityWizard = (
   route: ExploreCompose | null
-): route is { intent: 'host'; kind: HostComposeKind } =>
-  Boolean(route && !('surface' in route) && route.intent === 'host');
+): route is { composeKind: 'activity'; kind: ActivityComposeKind } =>
+  Boolean(route && !('surface' in route) && route.composeKind === 'activity');
 
-/** Mark availability — fixed window on map. Wire: `availability:fixed:*`. */
-export const isAvailabilityFixedWizard = (
+/** Intent — fixed window on map. Wire: `intent:fixed:*`. */
+export const isIntentFixedWizard = (
   route: ExploreCompose | null
-): route is { intent: 'availability'; mode: 'fixed'; kind: AvailabilityFixedComposeKind } =>
+): route is { composeKind: 'intent'; mode: 'fixed'; kind: IntentFixedComposeKind } =>
   Boolean(
     route &&
       !('surface' in route) &&
-      route.intent === 'availability' &&
+      route.composeKind === 'intent' &&
       route.mode === 'fixed' &&
       'kind' in route
   );
 
-/** @deprecated Use isAvailabilityFixedWizard */
-export const isSeekFixedWizard = isAvailabilityFixedWizard;
-
-/** Mark availability — open days. Wire: `availability:open`. */
-export const isAvailabilityOpenWizard = (
+/** Intent — open days. Wire: `intent:open`. */
+export const isIntentOpenWizard = (
   route: ExploreCompose | null
-): route is { intent: 'availability'; mode: 'open' } =>
-  Boolean(
-    route && !('surface' in route) && route.intent === 'availability' && route.mode === 'open'
-  );
+): route is { composeKind: 'intent'; mode: 'open' } =>
+  Boolean(route && !('surface' in route) && route.composeKind === 'intent' && route.mode === 'open');
 
-/** @deprecated Use isAvailabilityOpenWizard */
-export const isSeekFlexibleWizard = isAvailabilityOpenWizard;
-
-export const isAddWizard = (
+export const isPlaceWizard = (
   route: ExploreCompose | null
-): route is { intent: 'add'; target: AddTarget; kind: string } =>
-  Boolean(route && !('surface' in route) && route.intent === 'add' && 'target' in route);
+): route is { composeKind: 'place'; target: PlaceTarget; kind: string } =>
+  Boolean(route && !('surface' in route) && route.composeKind === 'place' && 'target' in route);
 
-/** Signed-in immersive create wizard (host · add · availability). */
+/** Signed-in immersive create wizard (activity · place · intent). */
 export const isComposeWizardRoute = (route: ExploreCompose | null): boolean =>
   Boolean(
     route &&
-      (isHostWizard(route) ||
-        isAvailabilityFixedWizard(route) ||
-        isAvailabilityOpenWizard(route) ||
-        isAddWizard(route))
+      (isActivityWizard(route) ||
+        isIntentFixedWizard(route) ||
+        isIntentOpenWizard(route) ||
+        isPlaceWizard(route))
   );
 
-export const addVenueKindFromRoute = (
-  route: ExploreCompose | null
-): AddVenueKind | null => {
-  if (!isAddWizard(route)) return null;
+export const addVenueKindFromRoute = (route: ExploreCompose | null): AddVenueKind | null => {
+  if (!isPlaceWizard(route)) return null;
   if (route.target === 'facility') return 'facility';
   if (route.kind === 'hiking') return 'hiking';
   if (route.kind === 'camping') return 'camping';

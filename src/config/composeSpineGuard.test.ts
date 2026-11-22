@@ -5,21 +5,22 @@ import { join } from 'node:path';
 const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 
 describe('composeSpineGuard (DMCP Phase 4 rollup)', () => {
-  it('COMPOSE-SPINE-01: wire emit prefixes are host · availability · add only', () => {
+  it('COMPOSE-SPINE-01: wire emit prefixes are activity · intent · place only', () => {
     const wire = read('packages/shared-types/src/compose-route.ts');
     expect(wire).toMatch(/formatComposeWire/);
-    expect(wire).toMatch(/availability:open/);
-    expect(wire).toMatch(/host:\$\{route\.kind\}/);
-    expect(wire).toMatch(/add:\$\{route\.target\}/);
+    expect(wire).toMatch(/intent:open/);
+    expect(wire).toMatch(/activity:\$\{route\.kind\}/);
+    expect(wire).toMatch(/place:facility:/);
     expect(wire).not.toMatch(/return `seek:/);
-    expect(wire).toMatch(/migrateSeekWireToAvailability/);
+    expect(wire).toMatch(/migrateLegacyComposeWire/);
   });
 
   it('COMPOSE-SPINE-02: plan launcher delegates to CreateFlow (no parallel compose stack)', () => {
     const planFlow = read('src/plan/usePlanAddFlow.ts');
     expect(planFlow).toMatch(/useCreateFlow/);
     expect(planFlow).toMatch(/compose\.handleCreateTap/);
-    expect(planFlow).toMatch(/availabilityOpenCompose/);
+    expect(planFlow).toMatch(/intentOpenCompose/);
+    expect(planFlow).not.toMatch(/availabilityOpenCompose/);
     expect(planFlow).not.toMatch(/CreateHostingActivityFlow/);
     const planPage = read('src/plan/PlanPage.tsx');
     expect(planPage).toMatch(/usePlanAddFlow/);

@@ -1,9 +1,9 @@
-import type { ActivityType } from '../types';
+import type { ScheduledActivityType } from '@uaetrail/shared-types';
 import { resolveActivityTypeCoverImage } from '../config/activityCoverImages';
 
 type ActivityHeroSource = {
   id?: string;
-  activityType: ActivityType | string;
+  activityType: ScheduledActivityType | string;
   images?: string[] | null;
   bannerUrl?: string | null;
   location?: { images?: string[] | null } | null;
@@ -18,7 +18,7 @@ export const resolveActivityHeroImage = (activity: ActivityHeroSource): string =
 
   if (uploaded) return uploaded;
 
-  const kind = activity.activityType as ActivityType;
+  const kind = activity.activityType as ScheduledActivityType;
   if (kind === 'hiking' || kind === 'camping' || kind === 'event' || kind === 'rideshare') {
     return resolveActivityTypeCoverImage(kind, null, { activityId: activity.id });
   }

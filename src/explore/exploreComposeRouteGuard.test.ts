@@ -7,18 +7,20 @@ describe('composeRouteRequiresAuth', () => {
   });
 
   it('keeps FAB menu drill-down public until a wizard opens', () => {
-    expect(composeRouteRequiresAuth({ surface: 'menu', intent: 'host' })).toBe(false);
-    expect(composeRouteRequiresAuth({ surface: 'menu', intent: 'availability' })).toBe(false);
-    expect(composeRouteRequiresAuth({ surface: 'menu', intent: 'add' })).toBe(false);
+    expect(composeRouteRequiresAuth({ surface: 'menu', composeKind: 'activity' })).toBe(false);
+    expect(composeRouteRequiresAuth({ surface: 'menu', composeKind: 'intent' })).toBe(false);
+    expect(composeRouteRequiresAuth({ surface: 'menu', composeKind: 'place' })).toBe(false);
   });
 
   it('requires auth for create wizards', () => {
-    expect(composeRouteRequiresAuth({ intent: 'host', kind: 'hiking' })).toBe(true);
-    expect(composeRouteRequiresAuth({ intent: 'availability', mode: 'fixed', kind: 'hiking' })).toBe(
+    expect(composeRouteRequiresAuth({ composeKind: 'activity', kind: 'hiking' })).toBe(true);
+    expect(composeRouteRequiresAuth({ composeKind: 'intent', mode: 'fixed', kind: 'hiking' })).toBe(
       true
     );
-    expect(composeRouteRequiresAuth({ intent: 'add', target: 'place', kind: 'hiking' })).toBe(true);
-    expect(composeRouteRequiresAuth({ intent: 'availability', mode: 'open' })).toBe(true);
+    expect(composeRouteRequiresAuth({ composeKind: 'place', target: 'place', kind: 'hiking' })).toBe(
+      true
+    );
+    expect(composeRouteRequiresAuth({ composeKind: 'intent', mode: 'open' })).toBe(true);
     expect(composeRouteRequiresAuth(null)).toBe(false);
   });
 });
@@ -31,40 +33,40 @@ describe('resolveComposeRouteChange', () => {
     user: null,
   };
 
-  it('requires sign-in for host wizard when logged out', () => {
-    const route = { intent: 'host' as const, kind: 'hiking' as const };
+  it('requires sign-in for activity wizard when logged out', () => {
+    const route = { composeKind: 'activity' as const, kind: 'hiking' as const };
     const decision = resolveComposeRouteChange(route, signedOut);
     expect(decision.type).toBe('sign-in');
     if (decision.type === 'sign-in') {
       expect(decision.href).toContain('/signin');
       expect(decision.href).toContain('compose');
-      expect(decision.href).toContain('host');
+      expect(decision.href).toContain('activity');
     }
   });
 
-  it('opens host wizard before publish gate (gate is on publish step in hosting wizard)', () => {
-    const route = { intent: 'host' as const, kind: 'event' as const };
+  it('opens activity wizard before publish gate (gate is on publish step in hosting wizard)', () => {
+    const route = { composeKind: 'activity' as const, kind: 'event' as const };
     expect(resolveComposeRouteChange(route, signedIn)).toEqual({ type: 'set', route });
   });
 
   it('lets guests open FAB menu drill-down; gates on wizard routes', () => {
-    for (const intent of ['host', 'availability', 'add'] as const) {
-      expect(resolveComposeRouteChange({ surface: 'menu', intent }, signedOut)).toEqual({
+    for (const composeKind of ['activity', 'intent', 'place'] as const) {
+      expect(resolveComposeRouteChange({ surface: 'menu', composeKind }, signedOut)).toEqual({
         type: 'set',
-        route: { surface: 'menu', intent },
+        route: { surface: 'menu', composeKind },
       });
     }
   });
 
-  it('allows availability/add for signed-in users and closing compose', () => {
+  it('allows intent/place for signed-in users and closing compose', () => {
     expect(
       resolveComposeRouteChange(
-        { intent: 'availability', mode: 'fixed', kind: 'hiking' },
+        { composeKind: 'intent', mode: 'fixed', kind: 'hiking' },
         signedIn
       )
     ).toEqual({
       type: 'set',
-      route: { intent: 'availability', mode: 'fixed', kind: 'hiking' },
+      route: { composeKind: 'intent', mode: 'fixed', kind: 'hiking' },
     });
     expect(resolveComposeRouteChange(null, signedIn)).toEqual({ type: 'set', route: null });
   });

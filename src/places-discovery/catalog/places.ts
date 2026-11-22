@@ -25,9 +25,6 @@ export type MapPlaceFilters = {
   venueRegionOrder?: readonly string[];
 };
 
-/** @deprecated Use `MapPlaceFilters`. */
-export type ExplorePlacesCatalogFilters = MapPlaceFilters;
-
 /** Venue + catalog place pins from the discovery map payload (`GET /explore/map`). */
 export const selectPlacesFromMapItems = (
   mapItems: DiscoveryMapItems,
@@ -63,9 +60,3 @@ export const selectShopsFromMapItems = (
   mapItems: DiscoveryMapItems,
   venueRegionOrder?: readonly string[]
 ): ExploreMapItemDTO[] => sortExploreVenues(mapItems.filter(isShopListItem), venueRegionOrder);
-
-/** @deprecated Use `selectPlacesFromMapItems`. */
-export const selectPlacesFromExploreCatalog = selectPlacesFromMapItems;
-
-/** @deprecated Use `selectShopsFromMapItems`. */
-export const selectShopsFromExploreCatalog = selectShopsFromMapItems;

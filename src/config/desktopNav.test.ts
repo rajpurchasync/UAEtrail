@@ -87,7 +87,7 @@ describe('desktop sidebar IA', () => {
       'plan',
       'chat',
     ]);
-    expect(isDesktopHostingNavActive('/publishing/overview', '')).toBe(true);
+    expect(isDesktopHostingNavActive('/operator/overview', '')).toBe(true);
     expect(isDesktopHostingNavActive('/hosting', '')).toBe(true);
     expect(isDesktopHostingNavActive('/plan', '?filter=hosting')).toBe(true);
     expect(isDesktopHostingNavActive('/explore', '')).toBe(false);
@@ -123,7 +123,7 @@ describe('desktop sidebar IA', () => {
   });
 
   it('host mode hamburger leads with Hosting then the five-tab consumer rows', () => {
-    const labels = hostModeHamburgerMenu('/publishing/overview')
+    const labels = hostModeHamburgerMenu('/operator/overview')
       .filter((item) => item.kind === 'link')
       .map((item) => item.label);
     expect(labels[0]).toBe('Hosting');

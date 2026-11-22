@@ -1,9 +1,4 @@
-import {
-  INBOUND_GOING_TAB_PARAM,
-  mapInboundPeopleBrowseTabValue,
-  PEOPLE_LIST_TAB_URL_PARAM,
-  readPeopleCrewsTabParam,
-} from '../routing/productUrlInbound';
+import { mapInboundPeopleBrowseTabValue } from '../routing/productUrlInbound';
 
 /** People panel — Looking for · Free · Friends · Everyone (directory). List crews adds `hub` overview. */
 export type PeopleBrowseTab = 'hub' | 'looking' | 'available' | 'going' | 'connect';
@@ -37,17 +32,3 @@ export const parsePeopleBrowseTab = (raw: string | null): PeopleBrowseTab => {
 /** URL `peopleTab` — omit default Looking for. */
 export const serializePeopleBrowseTab = (tab: PeopleBrowseTab): string | null =>
   tab === 'looking' ? null : tab;
-
-/**
- * @deprecated Use `readPeopleCrewsTabParam` + `parsePeopleBrowseTab` (single inbound choke).
- * Kept for unit tests that pass split params.
- */
-export const parsePeopleBrowseTabFromUrl = (
-  peopleTab: string | null,
-  inboundGoingTab: string | null
-): PeopleBrowseTab => {
-  const params = new URLSearchParams();
-  if (peopleTab) params.set(PEOPLE_LIST_TAB_URL_PARAM, peopleTab);
-  else if (inboundGoingTab) params.set(INBOUND_GOING_TAB_PARAM, inboundGoingTab);
-  return parsePeopleBrowseTab(readPeopleCrewsTabParam(params));
-};

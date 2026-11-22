@@ -33,7 +33,7 @@ import {
 } from '../../hooks/publishingWorkspaceQueries';
 import { useAuth } from '../../context/AuthContext';
 import { hostPublishAvailabilityNoticeMessage } from '../../plan/hostPublishAvailabilityNotice';
-import { PUBLISHING_ACTIVITIES_NEW_PATH, PUBLISHING_ACTIVITIES_PATH } from '../../config/routingCatalog';
+import { OPERATOR_ACTIVITIES_NEW_PATH, OPERATOR_ACTIVITIES_PATH } from '../../config/routingCatalog';
 import {
   formatActivityCapacity,
   formatActivityPrice,
@@ -121,7 +121,7 @@ export const Activities = () => {
   };
 
   useEffect(() => {
-    if (location.pathname !== PUBLISHING_ACTIVITIES_NEW_PATH) return;
+    if (location.pathname !== OPERATOR_ACTIVITIES_NEW_PATH) return;
     const type = parseActivityTypeParam(searchParams.get('type'));
     navigateToExploreHost(navigate, type ? activityTypeToHostComposeKind(type) : null);
   }, [location.pathname, navigate, searchParams]);
@@ -138,7 +138,7 @@ export const Activities = () => {
       manageActivity: () => openManage(activity, 'overview'),
       openCrewChat: () =>
         void hostActions.openGroupChat(activity.id, activity.groupChatId, {
-          returnTo: PUBLISHING_ACTIVITIES_PATH,
+          returnTo: OPERATOR_ACTIVITIES_PATH,
         }),
     }),
     [hostActions, inviteShare, openManage]
@@ -154,7 +154,7 @@ export const Activities = () => {
 
   const openActivityDetail = (event: ActivityDTO) => {
     navigate(`/activity/${event.id}`, {
-      state: consumerDetailChildLinkState(PUBLISHING_ACTIVITIES_PATH, 'Activities'),
+      state: consumerDetailChildLinkState(OPERATOR_ACTIVITIES_PATH, 'Activities'),
     });
   };
 
@@ -389,7 +389,7 @@ export const Activities = () => {
                                 return hostPath ? (
                                   <Link
                                     to={hostPath}
-                                    state={mobileBackNavState(PUBLISHING_ACTIVITIES_PATH, 'Activities')}
+                                    state={mobileBackNavState(OPERATOR_ACTIVITIES_PATH, 'Activities')}
                                     className="font-medium text-emerald-700 hover:underline"
                                   >
                                     {hostName}
@@ -405,7 +405,7 @@ export const Activities = () => {
                                   <Link
                                     key={guide.userId}
                                     to={guidePath}
-                                    state={mobileBackNavState(PUBLISHING_ACTIVITIES_PATH, 'Activities')}
+                                    state={mobileBackNavState(OPERATOR_ACTIVITIES_PATH, 'Activities')}
                                     className="text-xs text-emerald-700 hover:underline"
                                   >
                                     {guide.displayName}

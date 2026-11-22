@@ -18,8 +18,8 @@ const SURFACE_LINKS: Array<{ path: string; constant: string }> = [
   { path: '/settings/notifications', constant: 'APP_SETTINGS_NOTIFICATIONS_PATH' },
   { path: '/profile', constant: 'PROFILE_PATH' },
   { path: '/settings', constant: 'APP_SETTINGS_PATH' },
-  { path: '/publishing/activities', constant: 'PUBLISHING_ACTIVITIES_PATH' },
-  { path: '/publishing/requests', constant: 'PUBLISHING_REQUESTS_PATH' },
+  { path: '/operator/activities', constant: 'OPERATOR_ACTIVITIES_PATH' },
+  { path: '/operator/requests', constant: 'OPERATOR_REQUESTS_PATH' },
 ];
 
 const SURFACE_LITERAL_ALLOWLIST = new Set([
@@ -191,9 +191,9 @@ describe('systemCoherenceGuard', () => {
     expect(missing).toEqual([]);
   });
 
-  it('ProtectedRoute redirects non-tenant roles off publishing console via isPublishingConsolePath', () => {
+  it('ProtectedRoute redirects non-tenant roles off publishing console via isOperatorConsolePath', () => {
     const content = readFileSync(join(ROOT, 'src/components/auth/ProtectedRoute.tsx'), 'utf8');
-    expect(content).toMatch(/isPublishingConsolePath/);
+    expect(content).toMatch(/isOperatorConsolePath/);
     expect(content).toMatch(/participantHostBookmarkRedirect/);
     expect(content).not.toMatch(/pathname\.startsWith\(['"]\/host['"]\)/);
   });

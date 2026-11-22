@@ -1,70 +1,67 @@
 import { describe, expect, it } from 'vitest';
 import {
-  availabilityFixedCompose,
-  availabilityOpenCompose,
+  intentFixedCompose,
+  intentOpenCompose,
   clearExploreComposeParams,
   formatComposeQuery,
-  isAvailabilityFixedWizard,
-  isAvailabilityOpenWizard,
+  isIntentFixedWizard,
+  isIntentOpenWizard,
   isComposeWizardRoute,
-  isSeekFixedWizard,
-  isSeekFlexibleWizard,
   parseExploreCompose,
-  seekFixedCompose,
   setExploreComposeParam,
 } from './compose';
 
 describe('explore compose routing', () => {
   it('formats and parses menu + wizard routes (compose wire)', () => {
     expect(formatComposeQuery({ surface: 'menu' })).toBe('1');
-    expect(formatComposeQuery({ surface: 'menu', intent: 'host' })).toBe('host');
-    expect(formatComposeQuery({ intent: 'host', kind: 'hiking' })).toBe('host:hiking');
-    expect(formatComposeQuery({ intent: 'availability', mode: 'fixed', kind: 'rideshare' })).toBe(
-      'availability:fixed:rideshare'
+    expect(formatComposeQuery({ surface: 'menu', composeKind: 'activity' })).toBe('activity');
+    expect(formatComposeQuery({ composeKind: 'activity', kind: 'hiking' })).toBe('activity:hiking');
+    expect(formatComposeQuery({ composeKind: 'intent', mode: 'fixed', kind: 'rideshare' })).toBe(
+      'intent:fixed:rideshare'
     );
-    expect(formatComposeQuery({ intent: 'availability', mode: 'open' })).toBe('availability:open');
-    expect(formatComposeQuery({ intent: 'add', target: 'place', kind: 'hiking' })).toBe(
-      'add:place:hiking'
+    expect(formatComposeQuery({ composeKind: 'intent', mode: 'open' })).toBe('intent:open');
+    expect(formatComposeQuery({ composeKind: 'place', target: 'place', kind: 'hiking' })).toBe(
+      'place:hiking'
     );
-    expect(formatComposeQuery({ intent: 'add', target: 'facility', kind: 'toilet' })).toBe(
-      'add:facility:toilet'
+    expect(formatComposeQuery({ composeKind: 'place', target: 'facility', kind: 'toilet' })).toBe(
+      'place:facility:toilet'
     );
 
-    expect(parseExploreCompose(new URLSearchParams('compose=host:hiking'))).toEqual({
-      intent: 'host',
+    expect(parseExploreCompose(new URLSearchParams('compose=activity:hiking'))).toEqual({
+      composeKind: 'activity',
       kind: 'hiking',
     });
-    expect(parseExploreCompose(new URLSearchParams('compose=availability:fixed:camping'))).toEqual({
-      intent: 'availability',
+    expect(parseExploreCompose(new URLSearchParams('compose=intent:fixed:camping'))).toEqual({
+      composeKind: 'intent',
       mode: 'fixed',
       kind: 'camping',
     });
-    expect(parseExploreCompose(new URLSearchParams('compose=add:place:hiking'))).toEqual({
-      intent: 'add',
+    expect(parseExploreCompose(new URLSearchParams('compose=place:hiking'))).toEqual({
+      composeKind: 'place',
       target: 'place',
       kind: 'hiking',
     });
-    expect(parseExploreCompose(new URLSearchParams('compose=add:facility:toilet'))).toEqual({
-      intent: 'add',
+    expect(parseExploreCompose(new URLSearchParams('compose=place:facility:toilet'))).toEqual({
+      composeKind: 'place',
       target: 'facility',
       kind: 'toilet',
     });
 
     expect(parseExploreCompose(new URLSearchParams('compose=1'))).toEqual({ surface: 'menu' });
-    expect(parseExploreCompose(new URLSearchParams('compose=host'))).toEqual({
+    expect(parseExploreCompose(new URLSearchParams('compose=activity'))).toEqual({
       surface: 'menu',
-      intent: 'host',
+      composeKind: 'activity',
     });
-    expect(formatComposeQuery({ surface: 'menu', intent: 'add', target: 'place' })).toBe(
-      'add:place'
+    expect(formatComposeQuery({ surface: 'menu', composeKind: 'place', target: 'place' })).toBe(
+      'place'
     );
-    expect(parseExploreCompose(new URLSearchParams('compose=add:place'))).toEqual({
+    expect(parseExploreCompose(new URLSearchParams('compose=place'))).toEqual({
       surface: 'menu',
-      intent: 'add',
+      composeKind: 'place',
       target: 'place',
     });
-    expect(parseExploreCompose(new URLSearchParams('compose=host:activity'))).toEqual({
-      intent: 'host',
+    expect(parseExploreCompose(new URLSearchParams('compose=activity:activity'))).toEqual({
+      composeKind: 'activity',
       kind: 'activity',
     });
   });
@@ -85,8 +82,8 @@ describe('explore compose routing', () => {
 
   it('sets and clears compose params', () => {
     const params = new URLSearchParams('request=1&contribute=shop&addLocation=1');
-    setExploreComposeParam(params, { intent: 'host', kind: 'event' });
-    expect(params.get('compose')).toBe('host:event');
+    setExploreComposeParam(params, { composeKind: 'activity', kind: 'event' });
+    expect(params.get('compose')).toBe('activity:event');
     expect(params.has('request')).toBe(false);
     expect(params.has('contribute')).toBe(false);
     expect(params.has('addLocation')).toBe(false);
@@ -95,44 +92,47 @@ describe('explore compose routing', () => {
     expect(params.toString()).toBe('');
   });
 
-  it('availability compose builders are canonical; seek names alias wire', () => {
-    const fixed = availabilityFixedCompose('hiking');
-    expect(seekFixedCompose('hiking')).toEqual(fixed);
-    expect(formatComposeQuery(fixed)).toBe('availability:fixed:hiking');
-    expect(formatComposeQuery(availabilityOpenCompose())).toBe('availability:open');
+  it('intent compose builders emit intent wire', () => {
+    const fixed = intentFixedCompose('hiking');
+    expect(formatComposeQuery(fixed)).toBe('intent:fixed:hiking');
+    expect(formatComposeQuery(intentOpenCompose())).toBe('intent:open');
   });
 
-  it('legacy seek wire normalizes to availability on parse', () => {
+  it('legacy host/availability/add/seek wire normalizes on parse', () => {
+    expect(parseExploreCompose(new URLSearchParams('compose=host:hiking'))).toEqual({
+      composeKind: 'activity',
+      kind: 'hiking',
+    });
     expect(parseExploreCompose(new URLSearchParams('compose=seek:fixed:camping'))).toEqual({
-      intent: 'availability',
+      composeKind: 'intent',
       mode: 'fixed',
       kind: 'camping',
     });
     expect(parseExploreCompose(new URLSearchParams('compose=seek:flexible'))).toEqual({
-      intent: 'availability',
+      composeKind: 'intent',
       mode: 'open',
+    });
+    expect(parseExploreCompose(new URLSearchParams('compose=add:place:hiking'))).toEqual({
+      composeKind: 'place',
+      target: 'place',
+      kind: 'hiking',
     });
   });
 
-  it('seek wire predicates alias availability implementations', () => {
-    const fixed = {
-      intent: 'availability' as const,
-      mode: 'fixed' as const,
-      kind: 'hiking' as const,
-    };
-    const open = { intent: 'availability' as const, mode: 'open' as const };
-    expect(isSeekFixedWizard(fixed)).toBe(isAvailabilityFixedWizard(fixed));
-    expect(isSeekFlexibleWizard(open)).toBe(isAvailabilityOpenWizard(open));
-  });
-
-  it('isComposeWizardRoute covers host, add, and availability wizards', () => {
+  it('isComposeWizardRoute covers activity, place, and intent wizards', () => {
     expect(isComposeWizardRoute(null)).toBe(false);
-    expect(isComposeWizardRoute({ surface: 'menu', intent: 'host' })).toBe(false);
-    expect(isComposeWizardRoute({ intent: 'host', kind: 'hiking' })).toBe(true);
-    expect(isComposeWizardRoute({ intent: 'add', target: 'place', kind: 'hiking' })).toBe(true);
-    expect(isComposeWizardRoute({ intent: 'availability', mode: 'fixed', kind: 'camping' })).toBe(
+    expect(isComposeWizardRoute({ surface: 'menu', composeKind: 'activity' })).toBe(false);
+    expect(isComposeWizardRoute({ composeKind: 'activity', kind: 'hiking' })).toBe(true);
+    expect(isComposeWizardRoute({ composeKind: 'place', target: 'place', kind: 'hiking' })).toBe(
       true
     );
-    expect(isComposeWizardRoute({ intent: 'availability', mode: 'open' })).toBe(true);
+    expect(isComposeWizardRoute({ composeKind: 'intent', mode: 'fixed', kind: 'camping' })).toBe(
+      true
+    );
+    expect(isComposeWizardRoute({ composeKind: 'intent', mode: 'open' })).toBe(true);
+    expect(isIntentFixedWizard({ composeKind: 'intent', mode: 'fixed', kind: 'hiking' })).toBe(
+      true
+    );
+    expect(isIntentOpenWizard({ composeKind: 'intent', mode: 'open' })).toBe(true);
   });
 });

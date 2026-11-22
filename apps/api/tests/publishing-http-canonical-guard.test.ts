@@ -38,16 +38,16 @@ describe('publishing HTTP canonical guard (COH-04)', () => {
     expect(orgHeaders).not.toMatch(/x-tenant-id/);
   });
 
-  it('SPA surface paths are /publishing/*', () => {
+  it('SPA surface paths are /operator/*', () => {
     const surface = read('src/config/surfacePaths.ts');
-    expect(surface).toMatch(/PUBLISHING_OVERVIEW_PATH = '\/publishing\/overview'/);
+    expect(surface).toMatch(/OPERATOR_OVERVIEW_PATH = '\/operator\/overview'/);
     expect(surface).not.toMatch(/rewriteOperatorConsoleToPublishingPath/);
   });
 
-  it('BWL wire-lexicon documents /publishing only (no /operator mount)', () => {
+  it('BWL wire-lexicon documents HTTP /publishing and SPA /operator', () => {
     const lexicon = read('packages/shared-types/src/wire-lexicon.ts');
     expect(lexicon).toMatch(/PUBLISHING_WORKSPACE: '\/publishing'/);
+    expect(lexicon).toMatch(/OPERATOR_CONSOLE_PREFIX: '\/operator'/);
     expect(lexicon).not.toMatch(/PUBLISHING_WORKSPACE_CURRENT/);
-    expect(lexicon).not.toMatch(/['"]\/operator['"]/);
   });
 });

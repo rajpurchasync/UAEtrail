@@ -6,6 +6,8 @@
 
 **Program:** Implementation follows **Program CPC** ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4, debt **C26**). **CPC-9+** ships v3 `?compose=` wire (`host` \| `seek` \| `add`); leftover plan/contribute/organize/find tokens are not accepted.
 
+**Migration — [`MIG-PLATFORM-COMPOSE-OPERATOR-2026`](../scripts/refactor-program.json) (in progress):** **Target emit** (product code after wire PRs): `activity:*` \| `place:*` \| `intent:open` \| `intent:fixed:*` — inbound legacy `host` / `add` / `availability` / `seek` **parse-only** in [`packages/shared-types/src/compose-route.ts`](../packages/shared-types/src/compose-route.ts). **Intent** publishes via **`PUT /me/availability`**; **wishlist** saves via **`POST /me/wishlist`** only (**no** compose branch). **Operator** member console → SPA **`/operator/*`** (HTTP **`/publishing/*`** unchanged). Until PR-A merges, **running app** still emits v3 below; `migPlatformComposeOperatorProgramGuard` tracks program alignment.
+
 **Vocabulary (UI):** Tab FABs **Create Trip** · **Add a venue** · **Find a Crew** skip straight to kind options. Do not open **Host · Find crew · Add on map** (“I would like to…”) from a tab FAB. **Compose** stays reserved for **message / email compose** later. Bottom nav **Plans** (`/plan`) **Add a Plan** = commitments launcher (Create Trip · Mark Availability · Set a Goal · Want to go) — not a fourth Explore lens.
 
 **Vocabulary (wire):** Create query `?compose=…` — **v3** `host:<kind>` \| `seek:fixed:<kind>` \| `seek:flexible` \| `add:place:*` \| `add:facility:*`. Leftover plan/contribute/organize/find tokens are not accepted ([`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.7).
@@ -18,7 +20,7 @@
 
 Companion docs: [`DOCS_INDEX.md`](./DOCS_INDEX.md), [`NORTHSTAR.md`](./NORTHSTAR.md), [`MEMBER_MODEL.md`](./MEMBER_MODEL.md), [`DOMAIN.md`](./DOMAIN.md), [`NAVIGATION.md`](./NAVIGATION.md), [`COMMUNICATION.md`](./COMMUNICATION.md), `src/explore/exploreCopy.ts`.
 
-Code (today): `src/create/` (session + kind tiles) · `src/plan/planAdd.ts` · `src/explore/compose.ts`, `CreateIntentSheet.tsx`, `SeekFlexibleComposeSheet.tsx`, `hostingFlowEngine.ts` / `hostingFlows/*`, `availabilityFlowEngine.ts`, `addFlow.ts`.
+Code (today): `src/create/` (session + kind tiles) · `src/plan/planAdd.ts` · `src/explore/compose.ts`, `CreateKindSheet.tsx`, `IntentOpenComposeSheet.tsx`, `hostingFlowEngine.ts` / `hostingFlows/*`, `availabilityFlowEngine.ts`, `addFlow.ts`.
 
 **Status:** Spec **approved (CPC)** · per-tab create FABs skip to kind options + v3 compose wire **shipped** (`host` \| `seek` \| `add` only; see [Implementation status](#implementation-status))
 
@@ -312,7 +314,7 @@ Track what is **spec** vs **shipped**. Update this table in the same PR that lan
 
 | Area | Spec (CPC) | Code (today) |
 |------|------------|--------------|
-| FAB **Host · Find crew · Add on map** | ✅ | ✅ (`CreateIntentSheet`, `compose.ts`) |
+| FAB **activity · place · intent** kind menu | ✅ | ✅ (`CreateKindSheet`, `compose.ts`) |
 | FAB header “I would like to…” | ✅ | ✅ |
 | `?compose=` (`host` / `seek` / `add`) only | ✅ | ✅ (`compose-route.ts`) |
 | Level-2 drill-down in one sheet | ✅ | ✅ |
@@ -328,7 +330,7 @@ Track what is **spec** vs **shipped**. Update this table in the same PR that lan
 | Find crew (fixed) **area + pin** step | ✅ | ✅ (`curatedArea`, `member_availability` fixed slot) |
 | Add on map place **area-first** | ✅ | ✅ (`curatedArea`, `areaId` on submit) |
 | Host **custom spot → admin review** (pin + photo; city from coords) | ✅ | ✅ (`PENDING_VENUE_PLACE_PREFIX`; auto-publish on place approve) |
-| Find crew (flexible) **Share availability** FAB sheet | ✅ | ✅ (`SeekFlexibleComposeSheet`, `PlanAvailabilitySection` variant `fab`) |
+| Intent **open** (`intent:open`) FAB sheet | ✅ | ✅ (`IntentOpenComposeSheet`, `PlanAvailabilitySection` variant `fab`) |
 | Plan **Available** lens — hosted outing hint after save | ✅ | ✅ (`PlanAvailabilitySection` + `match-preview` when outings align) |
 | Host publish — Find crew availability count notice (explore map banner; operator activities list) | ✅ | ✅ (`hostPublishAvailabilityNoticeMessage` + `GET /explore/people/availability`) |
 | Compose shell (`ComposeHost` — host + availability + add wizards) | ✅ | ✅ (single `CreateFlowProvider` session; list crews “mark available” uses `?compose=seek:flexible`, not duplicate sheet) |
@@ -360,10 +362,10 @@ One responsive stack — not separate mobile/desktop implementations.
 
 | Product (FAB) | UI host / wizard | Flow logic (legacy module names) |
 |----------------------------|------------------|----------------------------------|
-| Compose shell | `create/ComposeHost.tsx`, `CreateIntentSheet.tsx` | `compose.ts`, `create/composeRouteGuard.ts`, `create/hooks/useComposeRoute.ts` |
+| Compose shell | `create/ComposeHost.tsx`, `CreateKindSheet.tsx` | `compose.ts`, `create/composeRouteGuard.ts`, `create/hooks/useComposeRoute.ts` |
 | **Host** | `create/hosting/HostingFlowHost` → `CreateHostingActivityFlow.tsx` | `hostingFlowEngine.ts`, `hostingFlows/*` |
 | **Find crew** (fixed) | `CreateAvailabilityFixedFlow.tsx` | `availabilityFlowEngine.ts` |
-| **Find crew** (flexible) | `SeekFlexibleComposeSheet.tsx` | `PlanAvailabilitySection` (`variant=fab`) |
+| **Intent open** | `IntentOpenComposeSheet.tsx` | `PlanAvailabilitySection` (`variant=fab`) |
 | **Add on map** | `CreateAddFlow.tsx`, `CreateAddFacilityFlow.tsx` | `addFlow.ts`, `addFacilityFlow.ts` |
 | Map browse shell | `ExploreExperience.tsx` | `useExploreExperienceModel`, map hooks |
 | Place picker | `CreatePlacePicker.tsx` | — |
@@ -398,7 +400,7 @@ Do **not** ship Event Host with RSVP marketing until Phase C exists.
 | Hosting prefill / open | `create/hooks/useHostingWizardPrefill.ts`, `useHostingFromActivity.ts` |
 | Wizard host (FAB) | `create/ComposeHost.tsx` |
 | Explore URL helpers | `src/explore/routing.ts` (`explorePath`, `compose=…`) |
-| FAB entry | `CreateIntentSheet.tsx` |
+| FAB entry | `CreateKindSheet.tsx` |
 | Map shell | `ExploreExperience.tsx`, `useExploreExperienceModel` (map/browse hooks only) |
 | Hosting wizard | `CreateHostingActivityFlow.tsx`, `hostingFlowEngine.ts`, `hostingFlows/*` |
 | Seeking wizard | `CreateAvailabilityFixedFlow.tsx`, `availabilityFlowEngine.ts` |

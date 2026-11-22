@@ -5,10 +5,10 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { parsePeopleBrowseTabFromUrl } from '../people-discovery/peopleBrowseTab';
+import { parsePeopleBrowseTab } from '../people-discovery/peopleBrowseTab';
 import { readAppRouteRegistry } from '../../scripts/readAppRouteRegistry.mjs';
 import { PLAN_MAIN_TABS } from '../plan/planTab';
-import { isPublishingConsolePath } from '../config/surfacePaths';
+import { isOperatorConsolePath } from '../config/surfacePaths';
 import { participantHostBookmarkRedirect } from '../utils/authRouting';
 import { inferNotificationPath } from '../utils/notificationRouting';
 import type { NotificationDTO } from '@uaetrail/shared-types';
@@ -67,7 +67,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('G-arch: participant /host bookmarks redirect off host console', () => {
-    expect(participantHostBookmarkRedirect('/publishing/overview')).toBe('/explore?compose=host');
+    expect(participantHostBookmarkRedirect('/publishing/overview')).toBe('/explore?compose=activity');
     // Hosting schedule is the dedicated `/hosting` hub — My Plans (`/plan`) stays joined/wishlist/goals.
     expect(participantHostBookmarkRedirect('/publishing/activities')).toBe('/hosting');
   });
@@ -81,12 +81,12 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(workspace).toMatch(/resolvePublishingWorkspaceAccess/);
   });
 
-  it('G-arch: publishing console path helper matches /publishing workspace only', () => {
-    expect(isPublishingConsolePath('/operator/overview')).toBe(false);
-    expect(isPublishingConsolePath('/publishing/overview')).toBe(true);
-    expect(isPublishingConsolePath('/host/activities')).toBe(false);
-    expect(isPublishingConsolePath('/organizer/requests')).toBe(false);
-    expect(isPublishingConsolePath('/explore')).toBe(false);
+  it('G-arch: operator console path helper matches /operator workspace only', () => {
+    expect(isOperatorConsolePath('/operator/overview')).toBe(true);
+    expect(isOperatorConsolePath('/publishing/overview')).toBe(false);
+    expect(isOperatorConsolePath('/host/activities')).toBe(false);
+    expect(isOperatorConsolePath('/organizer/requests')).toBe(false);
+    expect(isOperatorConsolePath('/explore')).toBe(false);
   });
 
   it('G-lang: mobile tab bar labels Plans (not Trips hub)', () => {
@@ -113,7 +113,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('G-avail-map: People browse defaults to Free tab', () => {
-    expect(parsePeopleBrowseTabFromUrl(null, null)).toBe('looking');
+    expect(parsePeopleBrowseTab(null)).toBe('looking');
     expect(read('src/people-discovery/peopleBrowseTab.ts')).toMatch(/available: 'Free'/);
   });
 
@@ -334,7 +334,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
     // Owner no longer gets a "Manage events" link here (the console Activities chip owns that list).
     expect(orgProfile).toContain('PRO_MEMBERSHIP_PATH');
     expect(orgProfile).not.toMatch(/HOST_(ACTIVITIES|TEAM|REQUESTS)_PATH/);
-    expect(orgProfile).not.toMatch(/PUBLISHING_(ACTIVITIES|TEAM|REQUESTS|OVERVIEW)_PATH/);
+    expect(orgProfile).not.toMatch(/OPERATOR_(ACTIVITIES|TEAM|REQUESTS|OVERVIEW)_PATH/);
     expect(orgProfile).not.toMatch(/['"]\/(?:host|operator|publishing)\//);
   });
 
@@ -361,8 +361,8 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(plan).toMatch(/usePlanAddFlow/);
     expect(plan).toMatch(/PLAN_ADD_FAB_LABEL/);
     expect(plan).toMatch(/PlanAddIntentSheet/);
-    expect(add).toMatch(/handleCreateTap\(\{ surface: 'menu', intent: 'host' \}\)/);
-    expect(add).toMatch(/availabilityOpenCompose/);
+    expect(add).toMatch(/handleCreateTap\(\{ surface: 'menu', composeKind: 'activity' \}\)/);
+    expect(add).toMatch(/intentOpenCompose/);
     expect(plan).not.toMatch(/explorePath\(\{ compose/);
     expect(plan).not.toMatch(/CreateHostingActivityFlow|HostingFlowHost/);
   });
@@ -610,7 +610,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
 
   it('Social hub: Settings menu rows only — no stacked FormTabBar / hub tab strips', () => {
     const buddies = read('src/pages/Buddies.tsx');
-    const hub = read('src/components/social/SocialHubNav.tsx');
+    const hub = read('src/components/social/SocialHubIndex.tsx');
     const groups = read('src/pages/Groups.tsx');
     expect(buddies).not.toMatch(/FormTabBar/);
     expect(buddies).toMatch(/SocialHubIndex/);
@@ -623,7 +623,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(groups).toMatch(/photoUrl/);
     expect(groups).toMatch(/GroupMembersPanel/);
     expect(hub).toMatch(/SettingsMenuRow/);
-    expect(hub).toMatch(/SocialHubIndex/);
+    expect(hub).not.toMatch(/SocialHubNav/);
     expect(hub).not.toMatch(/border-b-2/);
   });
 });

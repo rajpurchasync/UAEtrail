@@ -36,6 +36,12 @@ describe('exploreRouting navigation contract', () => {
     expect(detailBackPath('host')).toBe(EXPLORE_MAP_PATH);
   });
 
+  it('explorePlacesPath serializes venue regions multi-select only', () => {
+    expect(explorePlacesPath({ regions: ['Dubai', 'RAK'] })).toBe(
+      '/explore?panel=venues&regions=Dubai%2CRAK'
+    );
+  });
+
   it('explore helpers omit list=1 by default', () => {
     expect(exploreActivitiesPath()).toBe('/explore');
     expect(explorePlacesPath()).toBe('/explore?panel=venues');
@@ -60,7 +66,7 @@ describe('exploreRouting navigation contract', () => {
     const params = new URLSearchParams(
       exploreOfferRideshareForAvailabilityPath('activity:act-1').split('?')[1] ?? ''
     );
-    expect(params.get('compose')).toBe('host:rideshare');
+    expect(params.get('compose')).toBe('activity:rideshare');
   });
 
   it('resolveCrewExploreMapItemId prefers availability pins', () => {
@@ -126,15 +132,15 @@ describe('exploreRouting navigation contract', () => {
   });
 
   it('exploreHostPath opens compose host menu or hosting wizard', () => {
-    expect(exploreHostPath()).toBe('/explore?compose=host');
-    expect(exploreHostPath('hiking')).toBe('/explore?compose=host%3Ahiking');
-    expect(exploreHostPath('activity')).toBe('/explore?compose=host%3Aactivity');
-    expect(exploreHostPath('rideshare')).toBe('/explore?compose=host%3Arideshare');
+    expect(exploreHostPath()).toBe('/explore?compose=activity');
+    expect(exploreHostPath('hiking')).toBe('/explore?compose=activity%3Ahiking');
+    expect(exploreHostPath('activity')).toBe('/explore?compose=activity%3Aactivity');
+    expect(exploreHostPath('rideshare')).toBe('/explore?compose=activity%3Arideshare');
   });
 
   it('exploreHostFromActivityPath deep-links host wizard prefill', () => {
     expect(exploreHostFromActivityPath('act-uuid', 'event')).toBe(
-      '/explore?compose=host%3Aevent&hostFrom=act-uuid'
+      '/explore?compose=activity%3Aevent&hostFrom=act-uuid'
     );
   });
 
@@ -160,9 +166,9 @@ describe('exploreRouting navigation contract', () => {
   });
 
   it('inboundCreateParamToHostPath redirects old activity create URLs', () => {
-    expect(inboundCreateParamToHostPath('hiking')).toBe('/explore?compose=host%3Ahiking');
-    expect(inboundCreateParamToHostPath('EVENT')).toBe('/explore?compose=host%3Aevent');
-    expect(inboundCreateParamToHostPath('rideshare')).toBe('/explore?compose=host%3Arideshare');
+    expect(inboundCreateParamToHostPath('hiking')).toBe('/explore?compose=activity%3Ahiking');
+    expect(inboundCreateParamToHostPath('EVENT')).toBe('/explore?compose=activity%3Aevent');
+    expect(inboundCreateParamToHostPath('rideshare')).toBe('/explore?compose=activity%3Arideshare');
     expect(inboundCreateParamToHostPath(null)).toBeNull();
   });
 });

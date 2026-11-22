@@ -6,7 +6,7 @@ import {
   expandMapPins,
   isShopListItem,
   layoutColocatedMapPins,
-  matchesMapFilter,
+  matchesUnifiedExploreMapItem,
   matchesPlacesMapFilter,
   matchesBuddyMapFilter,
   isPlacesMapItem,
@@ -27,12 +27,13 @@ const baseItem = (overrides: Partial<ExploreMapItemDTO>): ExploreMapItemDTO =>
   }) as ExploreMapItemDTO;
 
 describe('exploreMapPinModel', () => {
-  it('matchesMapFilter respects hiking activities and venues', () => {
+  it('matchesUnifiedExploreMapItem respects hiking topic across activities and venues', () => {
     const activity = baseItem({ id: 'a1', source: 'activity', kind: 'hiking' });
     const venue = baseItem({ id: 'v1', source: 'venue', kind: 'hiking' });
-    expect(matchesMapFilter(activity, 'hiking')).toBe(true);
-    expect(matchesMapFilter(venue, 'hiking')).toBe(true);
-    expect(matchesMapFilter(activity, 'camping')).toBe(false);
+    const filter = { mapFilter: 'hiking' as const, pinKind: 'all' as const };
+    expect(matchesUnifiedExploreMapItem(activity, filter)).toBe(true);
+    expect(matchesUnifiedExploreMapItem(venue, filter)).toBe(true);
+    expect(matchesUnifiedExploreMapItem(activity, { ...filter, mapFilter: 'camping' })).toBe(false);
   });
 
   it('places facilities filter matches amenity pins and excludes camp spots', () => {

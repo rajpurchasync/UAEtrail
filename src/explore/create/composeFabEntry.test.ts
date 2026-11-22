@@ -7,32 +7,32 @@ import {
 } from './composeFabEntry';
 
 describe('resolveCreateFabComposeEntry', () => {
-  it('opens host kinds on trips context', () => {
+  it('opens activity kinds on trips context', () => {
     expect(resolveCreateFabComposeEntry('/list', '?listCat=activities')).toEqual({
       surface: 'menu',
-      intent: 'host',
+      composeKind: 'activity',
     });
     expect(resolveCreateFabComposeEntry('/explore', '')).toEqual({
       surface: 'menu',
-      intent: 'host',
+      composeKind: 'activity',
     });
   });
 
-  it('opens add venue kind grid on venues context', () => {
+  it('opens place venue kind grid on venues context', () => {
     expect(resolveCreateFabComposeEntry('/list', '?listCat=venues')).toEqual({
       surface: 'menu',
-      intent: 'add',
+      composeKind: 'place',
     });
     expect(resolveCreateFabComposeEntry('/explore', '?panel=venues&pinKind=places')).toEqual({
       surface: 'menu',
-      intent: 'add',
+      composeKind: 'place',
     });
   });
 
   it('opens find crew on crews context', () => {
     expect(resolveCreateFabComposeEntry('/list', '?listCat=people')).toEqual({
       surface: 'menu',
-      intent: 'availability',
+      composeKind: 'intent',
     });
   });
 });
@@ -49,7 +49,7 @@ describe('resolveExploreMapCreateFabHints', () => {
     expect(resolveBrowseListCreateFabLabel('/explore', '', hints)).toBe(BROWSE_LIST_CREATE_VENUE);
     expect(resolveCreateFabComposeEntry('/explore', '', hints)).toEqual({
       surface: 'menu',
-      intent: 'add',
+      composeKind: 'place',
     });
   });
 

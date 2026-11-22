@@ -1,5 +1,3 @@
-/** @deprecated Legacy section label — peek uses kind fact grid. */
-export const PLACE_PEEK_SECTION_FACTS = 'Facts';
 /** Ratings sit below kind facts on peek and consumer detail (not on hero). */
 export const PLACE_PEEK_SECTION_REVIEWS = 'Reviews';
 export const PLACE_PEEK_SECTION_OUTINGS = 'Outings here';

@@ -6,7 +6,7 @@ import {
   toggleAdminEventFeatured,
   updateAdminActivityStatus,
 } from '../lib/admin-store.js';
-import { PUBLISHING_ACTIVITIES_PATH } from '../lib/member-routes.js';
+import { OPERATOR_ACTIVITIES_PATH } from '../lib/member-routes.js';
 import { notifyUserAdminAction } from './admin-notifications.js';
 
 export const moderateAdminActivity = async (input: {
@@ -40,7 +40,7 @@ export const moderateAdminActivity = async (input: {
         ? `Your activity "${event.title}" has been suspended. Reason: ${input.comment}`
         : `Your activity "${event.title}" has been suspended by an administrator.`,
       reason: input.comment,
-      meta: { kind: 'activity_suspended', activityId: event.id, path: PUBLISHING_ACTIVITIES_PATH },
+      meta: { kind: 'activity_suspended', activityId: event.id, path: OPERATOR_ACTIVITIES_PATH },
     });
   }
 
