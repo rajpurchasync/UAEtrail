@@ -1,8 +1,13 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { api } from '../api/index';
-import type { AdminSocialGroupDetail, TenantDetail } from '../api/types';
+import type { AdminCommunityDetail, AdminSocialGroupDetail, TenantDetail } from '../api/types';
 
-export type { AdminSocialGroupDetail, TenantDetail };
+export type { AdminCommunityDetail, AdminSocialGroupDetail, TenantDetail };
+
+export const fetchAdminCommunityDetail = async (id: string): Promise<AdminCommunityDetail> => {
+  const res = await api.getAdminCommunityDetail(id);
+  return res.data;
+};
 
 export const fetchAdminTenantDetail = async (id: string): Promise<TenantDetail> => {
   const res = await api.getAdminTenantDetail(id);

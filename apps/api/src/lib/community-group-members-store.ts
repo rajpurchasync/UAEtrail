@@ -60,3 +60,11 @@ export const promotePendingCommunityMember = async (
   );
   return updated ? toRecord(updated) : null;
 };
+
+export const listCommunityGroupMembers = async (
+  communityId: string
+): Promise<CommunityGroupMemberRecord[]> => {
+  const cursor = collection().find({ communityId }, { sort: { joinedAt: -1 } });
+  const docs = await cursor.toArray();
+  return docs.map(toRecord);
+};

@@ -1,7 +1,34 @@
-import type { CommunityDiscoverCardDTO } from '@uaetrail/shared-types';
-import { listAdminCommunityGroups } from '../lib/community-groups-store.js';
+import type {
+  AdminCommunityDetailDTO,
+  AdminCommunityHostContactDTO,
+  AdminCommunityListItemDTO,
+  AdminCommunityMemberRowDTO,
+} from '@uaetrail/shared-types';
+import { ApiError } from '../lib/api-error.js';
+import { findAuthUsersByIds } from '../lib/auth-users-store.js';
+import { listCommunityGroupMembers } from '../lib/community-group-members-store.js';
+import {
+  findCommunityById,
+  listAdminCommunityGroups,
+  type CommunityGroupRecord,
+} from '../lib/community-groups-store.js';
 
-const toCard = (row: Awaited<ReturnType<typeof listAdminCommunityGroups>>[number]): CommunityDiscoverCardDTO => ({
+const toHostContact = (
+  user: Awaited<ReturnType<typeof findAuthUsersByIds>>[number] | undefined
+): AdminCommunityHostContactDTO | null =>
+  user
+    ? {
+        id: user._id,
+        email: user.email,
+        displayName: user.profile.displayName ?? null,
+        avatarUrl: user.profile.avatarUrl ?? null,
+      }
+    : null;
+
+const toListItem = (
+  row: CommunityGroupRecord,
+  admin: AdminCommunityHostContactDTO | null
+): AdminCommunityListItemDTO => ({
   id: row.id,
   name: row.name,
   slug: row.slug,
@@ -11,9 +38,57 @@ const toCard = (row: Awaited<ReturnType<typeof listAdminCommunityGroups>>[number
   joinPolicy: row.joinPolicy,
   geoRef: row.geoRef,
   memberCount: row.memberCount,
+  status: row.status,
+  adminUserId: row.adminUserId,
+  admin,
+  createdAt: row.createdAt.toISOString(),
+  updatedAt: row.updatedAt.toISOString(),
 });
 
-export const listAdminDiscoverableCommunities = async (): Promise<CommunityDiscoverCardDTO[]> => {
+export const listAdminDiscoverableCommunities = async (): Promise<AdminCommunityListItemDTO[]> => {
   const rows = await listAdminCommunityGroups();
-  return rows.map(toCard);
+  const adminIds = [...new Set(rows.map((row) => row.adminUserId).filter(Boolean))] as string[];
+  const users = await findAuthUsersByIds(adminIds);
+  const userById = new Map(users.map((user) => [user._id, user]));
+
+  return rows.map((row) =>
+    toListItem(row, row.adminUserId ? toHostContact(userById.get(row.adminUserId)) : null)
+  );
+};
+
+export const loadAdminCommunityDetail = async (communityId: string): Promise<AdminCommunityDetailDTO> => {
+  const row = await findCommunityById(communityId);
+  if (!row) {
+    throw new ApiError(404, 'community_not_found', 'Community not found.');
+  }
+
+  const memberRows = await listCommunityGroupMembers(communityId);
+  const memberUserIds = [...new Set(memberRows.map((member) => member.userId))];
+  const lookupIds = [...new Set([...(row.adminUserId ? [row.adminUserId] : []), ...memberUserIds])];
+  const users = await findAuthUsersByIds(lookupIds);
+  const userById = new Map(users.map((user) => [user._id, user]));
+
+  const host = row.adminUserId ? toHostContact(userById.get(row.adminUserId)) : null;
+  const community = toListItem(row, host);
+
+  const members: AdminCommunityMemberRowDTO[] = memberRows.map((member) => {
+    const user = userById.get(member.userId);
+    return {
+      userId: member.userId,
+      email: user?.email ?? '—',
+      displayName: user?.profile.displayName ?? null,
+      status: member.status,
+      joinedAt: member.joinedAt.toISOString(),
+    };
+  });
+
+  const pendingCount = members.filter((member) => member.status === 'pending').length;
+  const memberCount = members.filter((member) => member.status === 'member').length;
+
+  return {
+    community,
+    host,
+    members,
+    stats: { memberCount, pendingCount },
+  };
 };

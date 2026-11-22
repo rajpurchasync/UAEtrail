@@ -6,6 +6,7 @@ import {
   CalendarDays,
   FileClock,
   Flag,
+  Globe2,
   Inbox,
   LayoutDashboard,
   MapPin,
@@ -24,6 +25,7 @@ import {
   ADMIN_AUDIT_LOG_PATH,
   ADMIN_FACILITIES_PATH,
   ADMIN_GROUPS_PATH,
+  ADMIN_COMMUNITIES_PATH,
   ADMIN_HOSTS_PATH,
   ADMIN_INBOX_PATH,
   ADMIN_INBOX_SUBMISSIONS_PATH,
@@ -77,6 +79,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     links: [
       { to: ADMIN_USERS_PATH, label: 'Users & Members', icon: Users },
       { to: ADMIN_GROUPS_PATH, label: 'Groups', icon: UsersRound },
+      { to: ADMIN_COMMUNITIES_PATH, label: 'Communities', icon: Globe2 },
     ],
   },
   {

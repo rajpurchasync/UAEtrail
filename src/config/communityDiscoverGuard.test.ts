@@ -25,6 +25,13 @@ describe('communityDiscoverGuard (MIG-COMMUNITY-DISCOVER)', () => {
     expect(read('src/routing/AppRoutes.tsx')).toMatch(/COMMUNITY_CLUB_PATH_PREFIX/);
   });
 
+  it('MIG-COMM-04: admin console list + detail', () => {
+    expect(existsSync(join(ROOT, 'src/pages/admin/Communities.tsx'))).toBe(true);
+    expect(read('src/admin/adminNav.ts')).toMatch(/ADMIN_COMMUNITIES_PATH/);
+    expect(read('apps/api/src/routes/admin/registerAdminCommunityRoutes.ts')).toMatch(/\/communities\/:id/);
+    expect(read('apps/api/src/lib/community-groups-store.ts')).toMatch(/adminUserId/);
+  });
+
   it('MIG-COMM-03: request join + admin seed registrars', () => {
     expect(read('apps/api/src/services/community-discover-commands.ts')).toMatch(/pending/);
     expect(read('apps/api/src/routes/admin/registerAdminCommunityRoutes.ts')).toMatch(/\/communities/);

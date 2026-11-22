@@ -82,6 +82,25 @@ export const adminApi = {
       body: JSON.stringify({ status, comment })
     }),
 
+  getAdminCommunities: () =>
+    apiRequest<{ data: import('../types').AdminCommunityListItem[] }>('/admin/communities', { auth: true }),
+
+  getAdminCommunityDetail: (id: string) =>
+    apiRequest<{ data: import('../types').AdminCommunityDetail }>(`/admin/communities/${id}`, { auth: true }),
+
+  updateAdminCommunityStatus: (id: string, status: 'active' | 'suspended', comment?: string) =>
+    apiRequest<{ data: import('../types').AdminCommunityListItem }>(`/admin/communities/${id}/status`, {
+      method: 'PATCH',
+      auth: true,
+      body: JSON.stringify({ status, comment }),
+    }),
+
+  approveAdminCommunityMember: (communityId: string, userId: string) =>
+    apiRequest<{ data: { status: 'member' | 'pending' } }>(
+      `/admin/communities/${encodeURIComponent(communityId)}/members/${encodeURIComponent(userId)}/approve`,
+      { method: 'POST', auth: true }
+    ),
+
     setAdminTenantHidden: (id: string, hidden: boolean) =>
       apiRequest<{ message: string; hiddenFromPublic: boolean }>(`/admin/tenants/${id}/hidden`, {
         method: 'PATCH',

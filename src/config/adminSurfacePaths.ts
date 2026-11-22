@@ -20,6 +20,8 @@ export const adminPlacesPath = (areaId?: string | null): string =>
 export const adminFacilitiesPath = (areaId?: string | null): string =>
   areaId ? `${ADMIN_FACILITIES_PATH}?areaId=${encodeURIComponent(areaId)}` : ADMIN_FACILITIES_PATH;
 export const ADMIN_GROUPS_PATH = '/admin/groups' as const;
+/** Discoverable clubs (`MIG-COMMUNITY-DISCOVER`) — not {@link ADMIN_GROUPS_PATH} teams. */
+export const ADMIN_COMMUNITIES_PATH = '/admin/communities' as const;
 /** Inbound bookmark only — retired shop catalog admin; redirects to {@link ADMIN_HOSTS_PATH}. */
 export const INBOUND_ADMIN_SHOP_PATH = '/admin/shop' as const;
 export const ADMIN_NOTIFICATIONS_PATH = '/admin/notifications' as const;

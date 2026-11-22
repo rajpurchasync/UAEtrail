@@ -120,6 +120,9 @@ export const AdminOrganisations = lazy(() =>
 export const AdminActivities = lazy(() => import('../pages/admin/Activities').then((m) => ({ default: m.Activities })));
 export const AdminMembers = lazy(() => import('../pages/admin/Members').then((m) => ({ default: m.Members })));
 export const AdminGroups = lazy(() => import('../pages/admin/Groups').then((m) => ({ default: m.Groups })));
+export const AdminCommunities = lazy(() =>
+  import('../pages/admin/Communities').then((m) => ({ default: m.Communities }))
+);
 export const AdminAuditLog = lazy(() => import('../pages/admin/AuditLog').then((m) => ({ default: m.AuditLog })));
 export const AdminReports = lazy(() => import('../pages/admin/Reports').then((m) => ({ default: m.Reports })));
 export const AdminSettings = lazy(() => import('../pages/admin/Settings').then((m) => ({ default: m.Settings })));

@@ -19,6 +19,8 @@ export type CommunityGroupRecord = {
   visibility: CommunityDiscoverVisibility;
   joinPolicy: CommunityJoinPolicy;
   geoRef: GeoRef;
+  /** Community host for platform ops contact — not private Teams admin. */
+  adminUserId: string | null;
   status: CommunityGroupStatus;
   memberCount: number;
   createdAt: Date;
@@ -32,7 +34,7 @@ const collection = (): Collection<CommunityGroupDoc> =>
 
 const toRecord = (doc: CommunityGroupDoc): CommunityGroupRecord => {
   const { _id, ...rest } = doc;
-  return { ...rest, id: _id };
+  return { ...rest, id: _id, adminUserId: rest.adminUserId ?? null };
 };
 
 /** Public discover directory — `visibility: public` + `status: active` only. */
@@ -70,6 +72,14 @@ export const listAdminCommunityGroups = async (): Promise<CommunityGroupRecord[]
   return docs.map(toRecord);
 };
 
+export const updateCommunityGroupStatus = async (
+  id: string,
+  status: CommunityGroupStatus
+): Promise<boolean> => {
+  const result = await collection().updateOne({ _id: id }, { $set: { status, updatedAt: new Date() } });
+  return result.matchedCount > 0;
+};
+
 export const insertCommunityGroup = async (input: {
   name: string;
   slug: string;
@@ -78,6 +88,7 @@ export const insertCommunityGroup = async (input: {
   visibility: CommunityDiscoverVisibility;
   joinPolicy: CommunityJoinPolicy;
   geoRef: GeoRef;
+  adminUserId?: string | null;
   status?: CommunityGroupStatus;
 }): Promise<CommunityGroupRecord> => {
   const now = new Date();
@@ -92,6 +103,7 @@ export const insertCommunityGroup = async (input: {
     visibility: input.visibility,
     joinPolicy: input.joinPolicy,
     geoRef: input.geoRef,
+    adminUserId: input.adminUserId ?? null,
     status: input.status ?? 'active',
     memberCount: 0,
     createdAt: now,

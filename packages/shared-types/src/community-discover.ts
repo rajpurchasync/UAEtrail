@@ -30,6 +30,42 @@ export type CommunityDiscoverDetailDTO = CommunityDiscoverCardDTO & {
   viewerMembership: CommunityViewerMembershipDTO | null;
 };
 
+export const COMMUNITY_GROUP_STATUSES = ['active', 'suspended'] as const;
+export type CommunityGroupStatus = (typeof COMMUNITY_GROUP_STATUSES)[number];
+
+export type AdminCommunityHostContactDTO = {
+  id: string;
+  email: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+};
+
+export type AdminCommunityListItemDTO = CommunityDiscoverCardDTO & {
+  status: CommunityGroupStatus;
+  adminUserId: string | null;
+  admin: AdminCommunityHostContactDTO | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AdminCommunityMemberRowDTO = {
+  userId: string;
+  email: string;
+  displayName: string | null;
+  status: CommunityMembershipStatus;
+  joinedAt: string;
+};
+
+export type AdminCommunityDetailDTO = {
+  community: AdminCommunityListItemDTO;
+  host: AdminCommunityHostContactDTO | null;
+  members: AdminCommunityMemberRowDTO[];
+  stats: {
+    memberCount: number;
+    pendingCount: number;
+  };
+};
+
 /** Find crew → Communities list sort: country → city/area → name. */
 export const compareCommunityDiscoverByGeo = (
   a: Pick<CommunityDiscoverCardDTO, 'geoRef' | 'name'>,

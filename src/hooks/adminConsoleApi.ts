@@ -14,6 +14,7 @@ import {
 } from '../place/adminFacilityPlaceAdapter';
 import { api } from '../api/index';
 import type {
+  AdminCommunityListItem,
   AdminContentReportEntry,
   AdminMetrics,
   AdminSocialGroupDetail,
@@ -24,6 +25,7 @@ import type {
 } from '../api/types';
 
 export type {
+  AdminCommunityListItem,
   AdminContentReportEntry,
   AdminMetrics,
   AdminSocialGroupDetail,
@@ -313,6 +315,27 @@ export const updateAdminSocialGroupStatus = async (
   comment?: string
 ): Promise<void> => {
   await api.updateAdminGroupStatus(id, status, comment);
+};
+
+export const fetchAdminCommunities = async (): Promise<AdminCommunityListItem[]> => {
+  const res = await api.getAdminCommunities();
+  return res.data;
+};
+
+export const updateAdminCommunityStatus = async (
+  id: string,
+  status: 'active' | 'suspended',
+  comment?: string
+): Promise<AdminCommunityListItem> => {
+  const res = await api.updateAdminCommunityStatus(id, status, comment);
+  return res.data;
+};
+
+export const approveAdminCommunityMemberRequest = async (
+  communityId: string,
+  userId: string
+): Promise<void> => {
+  await api.approveAdminCommunityMember(communityId, userId);
 };
 
 export const fetchAdminAreas = async (): Promise<AreaDTO[]> => {

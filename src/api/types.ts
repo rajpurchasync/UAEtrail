@@ -342,6 +342,44 @@ export interface AdminSocialGroupListItem extends SocialGroupView {
 
 export type AdminSocialGroupInviteView = Omit<SocialGroupInviteView, 'token'>;
 
+export interface AdminCommunityListItem {
+  id: string;
+  name: string;
+  slug: string;
+  summary: string | null;
+  bannerUrl: string | null;
+  visibility: 'public' | 'private';
+  joinPolicy: 'open' | 'request' | 'invite';
+  geoRef: import('@uaetrail/shared-types').GeoRef;
+  memberCount: number;
+  status: 'active' | 'suspended';
+  adminUserId: string | null;
+  admin: {
+    id: string;
+    email: string;
+    displayName?: string | null;
+    avatarUrl?: string | null;
+  } | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminCommunityDetail {
+  community: AdminCommunityListItem;
+  host: AdminCommunityListItem['admin'];
+  members: Array<{
+    userId: string;
+    email: string;
+    displayName: string | null;
+    status: 'member' | 'pending';
+    joinedAt: string;
+  }>;
+  stats: {
+    memberCount: number;
+    pendingCount: number;
+  };
+}
+
 export interface AdminSocialGroupDetail {
   group: SocialGroupView;
   admin: {

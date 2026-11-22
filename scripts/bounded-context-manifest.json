@@ -392,6 +392,7 @@
       ],
       "feDomains": ["src/api/domains/admin.ts", "src/api/domains/safety.ts"],
       "feRoots": [
+        "src/pages/admin/Communities.tsx",
         "src/hooks/contentReportClientApi.ts",
         "src/hooks/adminAlertsClientApi.ts",
         "src/pages/admin/Overview.tsx",

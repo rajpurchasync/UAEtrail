@@ -112,7 +112,8 @@ Grouped nav (`ADMIN_NAV_GROUPS` / flat `ADMIN_LINKS`). Legacy `/admin/overview` 
 | `/admin/facilities` | `pages/admin/Places` (`catalogSegment=facility`) | Facilities | Amenity POIs (parking, toilet, …) — `facilities` collection, map `source: facility` |
 | `/admin/areas` | `pages/admin/Areas` | Areas | Curated **names** (not map pins); country/state/region from geography |
 | `/admin/users` | `pages/admin/Members` | Users & Members | Member search, suspend, staff grant (`MEMBER_MODEL.md`) |
-| `/admin/groups` | `pages/admin/Groups` | Groups | Platform groups |
+| `/admin/groups` | `pages/admin/Groups` | Groups | Private teams (`member_groups`) |
+| `/admin/communities` | `pages/admin/Communities` | Communities | Discoverable clubs (`community_groups`) — host contact, suspend, pending joins |
 | `/admin/activities` | `pages/admin/Activities` | Activities | Outing moderation |
 | `/admin/settings` | `pages/admin/Settings` | Broadcast | Platform broadcast |
 | `/admin/audit-log` | `pages/admin/AuditLog` | Audit Log | Audit trail |

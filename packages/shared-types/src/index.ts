@@ -2087,15 +2087,21 @@ export {
 export type { MemberGroupInboundType, MemberGroupKind } from './member-group.js';
 
 export type {
+  AdminCommunityDetailDTO,
+  AdminCommunityHostContactDTO,
+  AdminCommunityListItemDTO,
+  AdminCommunityMemberRowDTO,
   CommunityDiscoverCardDTO,
   CommunityDiscoverDetailDTO,
   CommunityDiscoverVisibility,
+  CommunityGroupStatus,
   CommunityJoinPolicy,
   CommunityMembershipStatus,
   CommunityViewerMembershipDTO,
 } from './community-discover.js';
 export {
   COMMUNITY_DISCOVER_VISIBILITY,
+  COMMUNITY_GROUP_STATUSES,
   COMMUNITY_JOIN_POLICIES,
   COMMUNITY_MEMBERSHIP_STATUSES,
   compareCommunityDiscoverByGeo,

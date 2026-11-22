@@ -200,6 +200,7 @@ describe('community discover (MIG-COMMUNITY-DISCOVER)', () => {
         summary: 'Admin seeded',
         visibility: 'public',
         joinPolicy: 'request',
+        adminUserId: applicantUser!._id,
         geoRef: sampleGeo('United Arab Emirates', 'Dubai'),
       });
     expect(createRes.status).toBe(201);
@@ -222,5 +223,21 @@ describe('community discover (MIG-COMMUNITY-DISCOVER)', () => {
       .set('Authorization', `Bearer ${applicant.accessToken}`);
     expect(detailRes.body.data.viewerMembership).toEqual({ status: 'member' });
     expect(detailRes.body.data.memberCount).toBe(1);
+
+    const adminDetailRes = await request(app)
+      .get(`/api/admin/communities/${communityId}`)
+      .set('Authorization', `Bearer ${admin.accessToken}`);
+    expect(adminDetailRes.status).toBe(200);
+    expect(adminDetailRes.body.data.host?.email).toBe(applicant.email);
+
+    const suspendRes = await request(app)
+      .patch(`/api/admin/communities/${communityId}/status`)
+      .set('Authorization', `Bearer ${admin.accessToken}`)
+      .send({ status: 'suspended', comment: 'Policy review' });
+    expect(suspendRes.status).toBe(200);
+    expect(suspendRes.body.data.status).toBe('suspended');
+
+    const publicList = await request(app).get('/api/explore/communities');
+    expect(publicList.body.data.some((row: { id: string }) => row.id === communityId)).toBe(false);
   });
 });
