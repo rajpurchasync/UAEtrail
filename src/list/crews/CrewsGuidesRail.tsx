@@ -32,7 +32,7 @@ export const CrewsGuidesRail = ({ guides, onBrowseEveryone }: CrewsGuidesRailPro
         {guides.slice(0, 12).map((guide) => (
           <li key={guide.id} className="w-36 shrink-0">
             <Link
-              to={memberProfileLink(guide.id, 'connect')}
+              to={memberProfileLink(guide.id, 'discover')}
               className="flex flex-col items-center gap-2 rounded-2xl bg-white p-3 text-center ring-1 ring-neutral-200/80"
             >
               <SecureAvatar

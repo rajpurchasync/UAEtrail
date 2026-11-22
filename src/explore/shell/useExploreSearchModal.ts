@@ -4,7 +4,10 @@ import { LIST_DISCOVERY_PATH } from '../../config/platform';
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { applyProductSearchMutation } from '../../routing/productSearchMutation';
 
-const SEARCH_MODAL_PATHS = new Set([EXPLORE_MAP_PATH, LIST_DISCOVERY_PATH]);
+type SearchModalPath = typeof EXPLORE_MAP_PATH | typeof LIST_DISCOVERY_PATH;
+
+const isSearchModalPath = (path: string): path is SearchModalPath =>
+  path === EXPLORE_MAP_PATH || path === LIST_DISCOVERY_PATH;
 
 /** Booking search modal — driven by `?search=1` on map and list. */
 export const useExploreSearchModal = (
@@ -13,7 +16,7 @@ export const useExploreSearchModal = (
   navigate: NavigateFunction,
   setSearchParams: SetURLSearchParams
 ) => {
-  const wireOpen = searchParams.get('search') === '1' && SEARCH_MODAL_PATHS.has(pathname);
+  const wireOpen = searchParams.get('search') === '1' && isSearchModalPath(pathname);
   const [exploreSearchModalOpen, setExploreSearchModalOpen] = useState(() => wireOpen);
 
   useEffect(() => {
@@ -24,7 +27,7 @@ export const useExploreSearchModal = (
   const closeExploreSearchModal = useCallback(() => {
     setExploreSearchModalOpen(false);
     if (searchParams.get('search') !== '1') return;
-    if (!SEARCH_MODAL_PATHS.has(pathname)) return;
+    if (!isSearchModalPath(pathname)) return;
     applyProductSearchMutation({ pathname, navigate, setSearchParams }, (params) => {
       params.delete('search');
     });

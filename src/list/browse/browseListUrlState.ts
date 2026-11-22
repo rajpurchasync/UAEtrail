@@ -21,7 +21,6 @@ import {
   serializePlaceMapTopicsParam,
   serializeTripMapTopicsParam,
   type ExploreActivityDatePreset,
-  type MapFilterKey,
 } from './discoveryListRuntime';
 import type { BrowseListFilterState, BrowsePriceFilter, BrowseWhenFilter } from './browseListFilters';
 import { isBrowseTripTopicKey, type BrowseTripTopicKey } from './browseListTripTopics';

@@ -1,6 +1,5 @@
 import { isGeographyMapSource } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import { groupRegionTextAtBrowseFilterLevel } from '../../config/groupRegionFilter';
 
 export const browseCatalogNormalize = (value: string | null | undefined): string =>
   value?.trim().toLowerCase().replace(/\s+/g, ' ') ?? '';

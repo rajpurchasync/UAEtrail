@@ -80,9 +80,9 @@ export const ExploreMapShell = ({
   setExploreSearchModalOpen,
   exploreSearchModalOpen,
   closeExploreSearchModal,
-  handleExploreSearchCommit,
-  publishedAreas,
-  handlePickExploreArea,
+  handleExploreSearchCommit: _handleExploreSearchCommit,
+  publishedAreas: _publishedAreas,
+  handlePickExploreArea: _handlePickExploreArea,
   onVisibleMapBoundsChange,
 }: Props) => {
   const location = useLocation();

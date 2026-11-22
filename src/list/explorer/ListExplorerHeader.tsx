@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { ChevronLeft, Map, Maximize2, Minimize2, PanelLeftClose, Search, X } from 'lucide-react';
 import { UiTooltip } from '../../components/ui/UiTooltip';
 import { useExploreDesktopListDrawerChrome } from '../../explore/ui/ExploreDesktopListDrawer';

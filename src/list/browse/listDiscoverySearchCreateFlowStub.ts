@@ -13,6 +13,6 @@ export const listDiscoverySearchComposeStub = (): ComposeApi =>
     guestComposeSignInReturnPath: '',
     hostComposeRoute: null,
     guestComposeSignInOpen: false,
-  }) as ComposeApi;
+  }) as unknown as ComposeApi;
 
 export const listDiscoverySearchRegisterBridgeStub = (_bridge: CreateFlowBridge | null) => undefined;

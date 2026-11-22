@@ -12,8 +12,8 @@
   ],
   "matrix": {
     "src/list": {
-      "..": 198,
-      "browse": 84,
+      "..": 195,
+      "browse": 85,
       "crews": 10,
       "components": 1,
       "config": 1,
@@ -52,8 +52,8 @@
     }
   },
   "byTarget": {
-    "..": 247,
-    "browse": 84,
+    "..": 244,
+    "browse": 85,
     "crews": 10,
     "components": 5,
     "config": 4,

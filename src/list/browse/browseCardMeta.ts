@@ -98,7 +98,7 @@ const splitExploreWhenLabel = (when: string | null): { date: string; time: strin
 /** Date/time column for browse list rows — full date from ISO; time from explore when label. */
 export const browseRowWhenDisplay = (
   card: DiscoveryCardModel,
-  now: Date = new Date()
+  _now: Date = new Date()
 ): { date: string; time: string | null } | null => {
   const iso = browseCardDateIso(card);
   const when = card.whenLabel?.trim() || null;

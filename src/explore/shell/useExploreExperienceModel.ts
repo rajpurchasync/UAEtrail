@@ -40,6 +40,7 @@ import {
 } from '../create/composeFabEntry';
 import { availabilityFlexibleCompose } from '../compose';
 import { useBrowseGeoScopeHydration } from '../../list/browse/useBrowseGeoScopeHydration';
+import { reloadExploreMap } from '../../hooks/useExploreMap';
 
 /** Explore map + browse + compose + selection orchestration (R2). */
 export const useExploreExperienceModel = () => {

@@ -117,6 +117,11 @@ export interface DiscoveryCardModel {
   /** Curated Area guide name when `areaId` is set. */
   areaName?: string | null;
   areaLensStats?: ExploreAreaLensStatsDTO | null;
+  /** Hosted outings at this venue — list venue posters (`buildListFeedCards`). */
+  venueUpcomingOutingCount?: number;
+  venueNextOutingIso?: string | null;
+  venueNextOutingPath?: string | null;
+  venueNextOutingExploreItemId?: string | null;
   /** Denormalised geo tree — map/list filters and L2 location links. */
   geoRef?: import('@uaetrail/shared-types').GeoRef | null;
 }
@@ -303,7 +308,7 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
     areaLabel: item.areaLabel ?? null,
     areaName: item.areaName ?? null,
     areaLensStats: item.areaLensStats ?? null,
-    geoRef: item.geoRef ?? item.activity?.geoRef ?? item.locationCard?.geoRef ?? null,
+    geoRef: item.geoRef ?? item.activity?.geoRef ?? null,
     linkedRideshares:
       item.linkedRideshareActivities && item.linkedRideshareActivities.length > 0
         ? item.linkedRideshareActivities

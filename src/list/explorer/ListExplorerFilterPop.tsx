@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { EXPLORE_BRAND_ACTIVE, EXPLORE_SHAPE } from '../../config/exploreTheme';
-import type { ExploreActivityDatePreset } from '../../explore/exploreActivityDateFilter';
 import {
   type BrowseAudienceFilter,
   type BrowseListFilterState,
   type BrowsePriceFilter,
 } from '../browse/browseListFilters';
-import { toggleBrowseTripTopicInList, type BrowseTripTopicKey } from '../browse/browseListTripTopics';
+import { toggleBrowseTripTopicInList } from '../browse/browseListTripTopics';
 import {
   aliasListPlaceTopicToMap,
   aliasPlaceMapTopicToList,

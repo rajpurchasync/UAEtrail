@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../../explore/exploreBrowseTaxonomy';
 import { APP_SCROLL_BODY_CLASS } from '../../config/layoutScroll';
 import type { ExploreAvailablePersonDTO, ExploreMapItemDTO, MemberDiscoveryQuotaDTO } from '@uaetrail/shared-types';

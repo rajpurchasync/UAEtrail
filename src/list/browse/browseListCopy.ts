@@ -57,7 +57,7 @@ export const BROWSE_LIST_CREATE_TRIP = EXPLORE_CREATE_FAB_HOST_TRIP;
 export const BROWSE_LIST_CREATE_VENUE = EXPLORE_CREATE_FAB_ADD_VENUE;
 export const BROWSE_LIST_CREATE_CREW = EXPLORE_CREATE_FAB_FIND_CREW;
 
-export const browseListCreateFabLabel = (listCat: 'activities' | 'venues' | 'people' | null): string => {
+export const browseListCreateFabLabel = (listCat: BrowseMainCategoryKey | null): string => {
   if (listCat === 'venues') return BROWSE_LIST_CREATE_VENUE;
   if (listCat === 'people') return BROWSE_LIST_CREATE_CREW;
   return BROWSE_LIST_CREATE_TRIP;
