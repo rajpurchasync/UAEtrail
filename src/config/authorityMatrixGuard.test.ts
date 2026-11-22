@@ -112,7 +112,7 @@ describe('authorityMatrixGuard (DMCP Phase 0)', () => {
     expect(program.authorization?.statement).toMatch(/DMCP eng verify complete/);
   });
 
-  it('AUTH-11: people graph uses Team wire, Communities stay planned (DMCP Phase 7)', () => {
+  it('AUTH-11: people graph uses Team wire, Communities migration tracked (DMCP Phase 7)', () => {
     const matrix = JSON.parse(read('scripts/authority-matrix.json'));
     expect(matrix.dmcpPhase).toBeGreaterThanOrEqual(7);
     const byId = new Map((matrix.actions ?? []).map((a: { id: string }) => [a.id, a]));
@@ -121,7 +121,7 @@ describe('authorityMatrixGuard (DMCP Phase 0)', () => {
     expect(byId.get('people.plan_hub')?.note).toMatch(/No Plan aggregate/);
     const program = JSON.parse(read('scripts/refactor-program.json'));
     expect(program.migrations?.find((m: { id: string }) => m.id === 'MIG-COMMUNITY-DISCOVER')?.status).toBe(
-      'planned'
+      'in_progress'
     );
     expect(read('src/config/peopleGraphPlanSpineGuard.test.ts')).toMatch(/PEOPLE-SPINE-06/);
     expect(read('package.json')).toMatch(/verify:people-graph-plan/);

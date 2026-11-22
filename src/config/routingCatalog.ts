@@ -106,6 +106,8 @@ export {
   JOURNEY_MAP_PATH,
   isProfileHistoryListPath,
   isJourneyMapPath,
+  COMMUNITY_CLUB_PATH_PREFIX,
+  communityClubPath,
 } from './surfacePaths';
 
 export {

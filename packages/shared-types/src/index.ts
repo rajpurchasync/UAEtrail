@@ -2088,12 +2088,16 @@ export type { MemberGroupInboundType, MemberGroupKind } from './member-group.js'
 
 export type {
   CommunityDiscoverCardDTO,
+  CommunityDiscoverDetailDTO,
   CommunityDiscoverVisibility,
   CommunityJoinPolicy,
+  CommunityMembershipStatus,
+  CommunityViewerMembershipDTO,
 } from './community-discover.js';
 export {
   COMMUNITY_DISCOVER_VISIBILITY,
   COMMUNITY_JOIN_POLICIES,
+  COMMUNITY_MEMBERSHIP_STATUSES,
   compareCommunityDiscoverByGeo,
 } from './community-discover.js';
 

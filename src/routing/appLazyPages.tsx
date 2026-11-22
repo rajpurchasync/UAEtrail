@@ -197,6 +197,9 @@ export const Groups = lazy(() => import('../pages/Groups').then((m) => ({ defaul
 export const MyCrewsPage = lazy(() =>
   import('../pages/MyCrews').then((m) => ({ default: m.MyCrewsPage }))
 );
+export const CommunityClubDetailPage = lazy(() =>
+  import('../pages/CommunityClubDetailPage').then((m) => ({ default: m.CommunityClubDetailPage }))
+);
 /** @deprecated Use {@link MyCrewsPage}. */
 export const Buddies = MyCrewsPage;
 export const SecurityPrivacy = lazy(() =>

@@ -1,5 +1,6 @@
 import type {
   CommunityDiscoverCardDTO,
+  CommunityDiscoverDetailDTO,
   ExploreMapItemDTO,
   ExploreMapOverlayDTO,
 } from '@uaetrail/shared-types';
@@ -59,4 +60,10 @@ export const exploreApi = {
   /** Public discoverable communities (`MIG-COMMUNITY-DISCOVER`). */
   getExploreCommunities: () =>
     apiRequest<{ data: CommunityDiscoverCardDTO[] }>('/explore/communities'),
+
+  getExploreCommunityBySlug: (slug: string, options?: { auth?: boolean }) =>
+    apiRequest<{ data: CommunityDiscoverDetailDTO }>(
+      `/explore/communities/${encodeURIComponent(slug)}`,
+      options?.auth ? { auth: true } : undefined
+    ),
 } as const;

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import type { CommunityDiscoverCardDTO } from '@uaetrail/shared-types';
-import { exploreApi } from '../../api/domains/explore';
+import { fetchExploreCommunities } from '../../hooks/communityDiscoverClientApi';
 import { FEATURE_FLAGS } from '../../config/platform';
 
 const communityDiscoverQueryKey = ['explore', 'communities'] as const;
@@ -10,8 +10,7 @@ export const useCommunityDiscoverList = (enabled?: boolean) => {
   return useQuery({
     queryKey: communityDiscoverQueryKey,
     queryFn: async (): Promise<CommunityDiscoverCardDTO[]> => {
-      const res = await exploreApi.getExploreCommunities();
-      return res.data;
+      return fetchExploreCommunities();
     },
     enabled: active,
     staleTime: 60_000,

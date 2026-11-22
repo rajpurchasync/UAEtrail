@@ -596,11 +596,14 @@
       "contextIds": ["social_graph", "discovery", "member_discovery"],
       "apiRoots": [
         "apps/api/src/lib/community-groups-store.ts",
+        "apps/api/src/lib/community-group-members-store.ts",
         "apps/api/src/services/community-discover-read.ts",
-        "apps/api/src/routes/user/registerExploreCommunityRoutes.ts"
+        "apps/api/src/services/community-discover-commands.ts",
+        "apps/api/src/routes/user/registerExploreCommunityRoutes.ts",
+        "apps/api/src/routes/user/registerMeCommunityDiscoverRoutes.ts"
       ],
       "feRoots": ["src/crew-discovery", "src/list", "src/explore"],
-      "successMetric": "Phase 1 shipped: community_groups collection + GET /explore/communities + FE list behind FEATURE_FLAGS.communityDiscover. Remaining: join flows, community home, host-as-community activities."
+      "successMetric": "Phase 2: community_group_members + GET /explore/communities/:slug + POST /me/communities/:id/join (open) + /clubs/:slug FE. Remaining: request/invite join, admin/seed, host-as-community activities, flip default flag."
     },
     {
       "id": "MIG-SURFACE-MEMBER-PEOPLE",

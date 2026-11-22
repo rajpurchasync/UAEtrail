@@ -120,6 +120,11 @@ export const MEMBERSHIP_MARKETING_PATH = '/membership' as const;
 
 /** Social subgraph */
 export const GROUPS_PATH = '/groups' as const;
+
+/** Discoverable club detail (`MIG-COMMUNITY-DISCOVER`) — not retired `/community` feed. */
+export const COMMUNITY_CLUB_PATH_PREFIX = '/clubs' as const;
+export const communityClubPath = (slug: string): string =>
+  `${COMMUNITY_CLUB_PATH_PREFIX}/${encodeURIComponent(slug)}`;
 /** My Crews friends hub — canonical SPA route (`/buddies` bookmarks redirect here). */
 export const MY_CREWS_PATH = '/crews' as const;
 /** Legacy name — same route as {@link MY_CREWS_PATH}. */

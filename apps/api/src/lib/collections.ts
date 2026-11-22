@@ -62,6 +62,7 @@ export const COLLECTIONS = {
   MEMBER_GROUPS: 'member_groups',
   /** Discoverable clubs (`MIG-COMMUNITY-DISCOVER`) — not `member_groups`. */
   COMMUNITY_GROUPS: 'community_groups',
+  COMMUNITY_GROUP_MEMBERS: 'community_group_members',
   MEMBER_GROUP_MEMBERS: 'member_group_members',
   MEMBER_GROUP_INVITES: 'member_group_invites',
   MEMBER_GROUP_WALL: 'member_group_wall',

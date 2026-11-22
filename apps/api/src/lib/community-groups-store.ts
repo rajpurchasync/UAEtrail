@@ -43,3 +43,17 @@ export const listDiscoverableCommunityGroups = async (): Promise<CommunityGroupR
   const docs = await cursor.toArray();
   return docs.map(toRecord);
 };
+
+export const findPublicCommunityBySlug = async (slug: string): Promise<CommunityGroupRecord | null> => {
+  const doc = await collection().findOne({ slug, status: 'active', visibility: 'public' });
+  return doc ? toRecord(doc) : null;
+};
+
+export const findPublicCommunityById = async (id: string): Promise<CommunityGroupRecord | null> => {
+  const doc = await collection().findOne({ _id: id, status: 'active', visibility: 'public' });
+  return doc ? toRecord(doc) : null;
+};
+
+export const incrementCommunityMemberCount = async (communityId: string, delta: number): Promise<void> => {
+  await collection().updateOne({ _id: communityId }, { $inc: { memberCount: delta } });
+};

@@ -1,5 +1,7 @@
+import { Link } from 'react-router-dom';
 import { EXPLORE_CREWS_TAB_DISCOVER } from '@/content/exploreCrewsCopy';
 import { FEATURE_FLAGS } from '@/config/platform';
+import { communityClubPath } from '@/config/routingCatalog';
 import { useCommunityDiscoverList } from '@/crew-discovery/hooks/useCommunityDiscoverList';
 
 const CommunityDirectoryPlaceholder = () => (
@@ -48,19 +50,21 @@ export const CrewsCommunityBody = () => {
   return (
     <ul className="space-y-3">
       {data.map((row) => (
-        <li
-          key={row.id}
-          className="rounded-2xl bg-white px-4 py-4 ring-1 ring-neutral-200/80"
-        >
-          <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
-            {row.geoRef.names.country}
-            {row.geoRef.names.area ? ` · ${row.geoRef.names.area}` : ''}
-          </p>
-          <p className="mt-1 text-base font-semibold text-neutral-900">{row.name}</p>
-          {row.summary ? <p className="mt-1 text-sm text-neutral-600">{row.summary}</p> : null}
-          <p className="mt-2 text-xs text-neutral-500">
-            {row.memberCount} member{row.memberCount === 1 ? '' : 's'} · Join: {row.joinPolicy}
-          </p>
+        <li key={row.id}>
+          <Link
+            to={communityClubPath(row.slug)}
+            className="block rounded-2xl bg-white px-4 py-4 ring-1 ring-neutral-200/80 transition hover:ring-emerald-200"
+          >
+            <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
+              {row.geoRef.names.country}
+              {row.geoRef.names.area ? ` · ${row.geoRef.names.area}` : ''}
+            </p>
+            <p className="mt-1 text-base font-semibold text-neutral-900">{row.name}</p>
+            {row.summary ? <p className="mt-1 text-sm text-neutral-600">{row.summary}</p> : null}
+            <p className="mt-2 text-xs text-neutral-500">
+              {row.memberCount} member{row.memberCount === 1 ? '' : 's'} · Join: {row.joinPolicy}
+            </p>
+          </Link>
         </li>
       ))}
     </ul>

@@ -251,9 +251,10 @@
       "routeRegistrars": [
         "apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts"
       ],
-      "feDomains": ["src/api/domains/account.ts"],
+      "feDomains": ["src/api/domains/account.ts", "src/api/domains/explore.ts", "src/api/domains/member.ts"],
       "feRoots": [
         "src/pages/MemberProfile.tsx",
+        "src/hooks/communityDiscoverClientApi.ts",
         "src/crew-discovery",
         "src/member/memberProfileLink.ts",
         "src/list/ListDiscoveryExperience.tsx",

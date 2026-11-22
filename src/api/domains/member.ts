@@ -1,4 +1,5 @@
 import type {
+  CommunityViewerMembershipDTO,
   MemberCoordinationAttentionDTO,
   MemberStatusDTO,
   VerificationDocumentType,
@@ -36,4 +37,10 @@ export const memberApi = {
       auth: true,
       body: JSON.stringify(body),
     }),
+
+  joinDiscoverableCommunity: (communityId: string) =>
+    apiRequest<{ data: CommunityViewerMembershipDTO }>(
+      `/me/communities/${encodeURIComponent(communityId)}/join`,
+      { method: 'POST', auth: true }
+    ),
 } as const;

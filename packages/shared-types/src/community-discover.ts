@@ -19,6 +19,17 @@ export type CommunityDiscoverCardDTO = {
   memberCount: number;
 };
 
+export const COMMUNITY_MEMBERSHIP_STATUSES = ['member', 'pending'] as const;
+export type CommunityMembershipStatus = (typeof COMMUNITY_MEMBERSHIP_STATUSES)[number];
+
+export type CommunityViewerMembershipDTO = {
+  status: CommunityMembershipStatus;
+};
+
+export type CommunityDiscoverDetailDTO = CommunityDiscoverCardDTO & {
+  viewerMembership: CommunityViewerMembershipDTO | null;
+};
+
 /** Find crew → Communities list sort: country → city/area → name. */
 export const compareCommunityDiscoverByGeo = (
   a: Pick<CommunityDiscoverCardDTO, 'geoRef' | 'name'>,

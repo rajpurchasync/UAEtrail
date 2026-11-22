@@ -15,8 +15,21 @@ describe('communityDiscoverGuard (MIG-COMMUNITY-DISCOVER)', () => {
 
   it('MIG-COMM-02: FE reads explore communities when feature flag on', () => {
     expect(read('src/api/domains/explore.ts')).toMatch(/getExploreCommunities/);
-    expect(read('src/crew-discovery/hooks/useCommunityDiscoverList.ts')).toMatch(/getExploreCommunities/);
-    expect(read('src/list/crews/CrewsCommunityBody.tsx')).toMatch(/useCommunityDiscoverList/);
-    expect(read('src/config/platform.ts')).toMatch(/communityDiscover/);
+    expect(read('src/api/domains/explore.ts')).toMatch(/getExploreCommunityBySlug/);
+    expect(read('src/api/domains/member.ts')).toMatch(/joinDiscoverableCommunity/);
+    expect(read('src/hooks/communityDiscoverClientApi.ts')).toMatch(/fetchExploreCommunities/);
+    expect(read('src/crew-discovery/hooks/useCommunityDiscoverList.ts')).toMatch(/fetchExploreCommunities/);
+    expect(read('src/crew-discovery/hooks/useCommunityDiscoverDetail.ts')).toMatch(/joinDiscoverableCommunity/);
+    expect(read('src/list/crews/CrewsCommunityBody.tsx')).toMatch(/communityClubPath/);
+    expect(read('src/config/platform.ts')).toMatch(/VITE_COMMUNITY_DISCOVER/);
+    expect(read('src/routing/AppRoutes.tsx')).toMatch(/COMMUNITY_CLUB_PATH_PREFIX/);
+  });
+
+  it('MIG-COMM-03: member join registrar separate from member_groups', () => {
+    expect(read('apps/api/src/routes/user/registerMeCommunityDiscoverRoutes.ts')).toMatch(
+      /\/me\/communities\/:communityId\/join/
+    );
+    expect(read('apps/api/src/lib/collections.ts')).toMatch(/COMMUNITY_GROUP_MEMBERS/);
+    expect(read('apps/api/src/routes/user/registerExploreCommunityRoutes.ts')).toMatch(/\/explore\/communities\/:slug/);
   });
 });

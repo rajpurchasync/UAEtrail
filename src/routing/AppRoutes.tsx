@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { Route, Routes, Navigate, type Location } from 'react-router-dom';
 import { EXPLORE_MAP_PATH, LIST_DISCOVERY_PATH } from '../config/routingCatalogLite';
+import { COMMUNITY_CLUB_PATH_PREFIX } from '../config/routingCatalog';
 import { EXPLORE_SEARCH_RESULTS_PATH } from '../explore/search/exploreSearchRouting';
 import {
   INBOUND_CONTRIBUTIONS_PATH,
@@ -50,7 +51,7 @@ import {
   INBOUND_JOURNEY_MAP_ALIAS_PATH,
   INBOUND_PROFILE_HISTORY_ALIAS_PATH,
 } from '../config/inboundBookmarkPaths';
-import { ProtectedRoute, Home, ExploreExperience, ExploreSearchResultsPage, ExploreInboundHubRedirect, BrowseListPage, DiscoveryRedirect, InboundCanonicalPlaceRedirect, InboundMerchantPublicRedirect, InboundProductPathRedirect, InboundMessagesRedirect, InboundProMembershipRedirect, InboundProfileWishlistRedirect, InboundRetiredPublishingConsoleRedirect, InboundProfileHistoryAliasRedirect, InboundJourneyMapAliasRedirect, InboundLegacyProfileSettingsRedirect, InboundLegacyNotificationsRedirect, InboundLegacyBuddiesRedirect, ShopBrowseRoute, CalendarRedirect, PeopleRedirect, PlanBrowseRoute, CanonicalPlaceDetailPage, VenuePlaceDetailPage, FacilityDetailPage, ProfileProMembership, ShopPublic, ActivityDetail, ActivityCrewPage, OrganisationProfile, MemberProfile, SignUp, SignIn, VerifyOTP, WelcomeSignup, ForgotPassword, AdminInbox, AdminSubmissions, AdminPlaces, AdminAreas, AreaDetailPage, AdminOrganisations, AdminActivities, AdminMembers, AdminGroups, AdminAuditLog, AdminReports, AdminSettings, AdminAccount, AdminNotifications, AdminAlerts, GeoTreePage, GeoCountryPage, GeoNodePage, PlanTodayPage, PublishingOverview, PublishingActivities, PublishingJoinRequests, PublishingTeam, PublishingPublicProfileEdit, PublishingPlaces, PublishingHistory, UserRequests, MessagesGate, ShopManageRedirect, AgencyManageRedirect, PublishingManage, ProfileHistoryPage, JourneyMapPage, Profile, ProfileSettings, ProfileSettingsDisplay, ProfileSettingsAccount, ProfileSettingsPrivacy, ProfileSettingsNotifications, ProfileSettingsSafety, ProfileVehiclesPage, ProfileVehicleNewPage, ProfileVehicleEditPage, ProfileEdit, ProfileBadges, Submissions, ProfileReviews, JoinRequestDetail, Groups, MyCrewsPage, SecurityPrivacy, Terms, Privacy, Faq, About, Contact, SiteMap, NotFound, DashboardRedirect } from './appLazyPages';
+import { ProtectedRoute, Home, ExploreExperience, ExploreSearchResultsPage, ExploreInboundHubRedirect, BrowseListPage, DiscoveryRedirect, InboundCanonicalPlaceRedirect, InboundMerchantPublicRedirect, InboundProductPathRedirect, InboundMessagesRedirect, InboundProMembershipRedirect, InboundProfileWishlistRedirect, InboundRetiredPublishingConsoleRedirect, InboundProfileHistoryAliasRedirect, InboundJourneyMapAliasRedirect, InboundLegacyProfileSettingsRedirect, InboundLegacyNotificationsRedirect, InboundLegacyBuddiesRedirect, ShopBrowseRoute, CalendarRedirect, PeopleRedirect, PlanBrowseRoute, CanonicalPlaceDetailPage, VenuePlaceDetailPage, FacilityDetailPage, ProfileProMembership, ShopPublic, ActivityDetail, ActivityCrewPage, OrganisationProfile, MemberProfile, SignUp, SignIn, VerifyOTP, WelcomeSignup, ForgotPassword, AdminInbox, AdminSubmissions, AdminPlaces, AdminAreas, AreaDetailPage, AdminOrganisations, AdminActivities, AdminMembers, AdminGroups, AdminAuditLog, AdminReports, AdminSettings, AdminAccount, AdminNotifications, AdminAlerts, GeoTreePage, GeoCountryPage, GeoNodePage, PlanTodayPage, PublishingOverview, PublishingActivities, PublishingJoinRequests, PublishingTeam, PublishingPublicProfileEdit, PublishingPlaces, PublishingHistory, UserRequests, MessagesGate, ShopManageRedirect, AgencyManageRedirect, PublishingManage, ProfileHistoryPage, JourneyMapPage, Profile, ProfileSettings, ProfileSettingsDisplay, ProfileSettingsAccount, ProfileSettingsPrivacy, ProfileSettingsNotifications, ProfileSettingsSafety, ProfileVehiclesPage, ProfileVehicleNewPage, ProfileVehicleEditPage, ProfileEdit, ProfileBadges, Submissions, ProfileReviews, JoinRequestDetail, Groups, CommunityClubDetailPage, MyCrewsPage, SecurityPrivacy, Terms, Privacy, Faq, About, Contact, SiteMap, NotFound, DashboardRedirect } from './appLazyPages';
 import { PageLoader, AuthAliasRedirect } from './appRouteChrome';
 
 export const AppRoutes = ({ location }: { location: Location }) => (
@@ -329,6 +330,14 @@ export const AppRoutes = ({ location }: { location: Location }) => (
           <Route path={NOTIFICATIONS_SETTINGS_PATH} element={<InboundLegacyNotificationsRedirect />} />
           <Route path={NOTIFICATIONS_SAVED_PATH} element={<InboundLegacyNotificationsRedirect />} />
           <Route path={NOTIFICATIONS_PATH} element={<InboundLegacyNotificationsRedirect />} />
+          <Route
+            path={`${COMMUNITY_CLUB_PATH_PREFIX}/:slug`}
+            element={
+              <Suspense fallback={<PageLoader />}>
+                <CommunityClubDetailPage />
+              </Suspense>
+            }
+          />
           <Route
             path="/groups"
             element={

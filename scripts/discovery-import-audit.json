@@ -41,19 +41,19 @@
       "..": 8
     },
     "src/crew-discovery": {
+      "..": 17,
       "lib": 4,
       "config": 1,
       "content": 1,
       "member": 3,
       "explore": 2,
-      "..": 15,
       "crewBrowseFeatureGates": 1,
       "crewBrowseTab": 1,
       "crewBrowseState": 2
     }
   },
   "byTarget": {
-    "..": 243,
+    "..": 245,
     "browse": 87,
     "crews": 9,
     "components": 5,
