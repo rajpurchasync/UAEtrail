@@ -12,6 +12,7 @@ import {
 } from '@uaetrail/shared-types';
 
 import { PRODUCT_CREWS_TAB_LABEL, PRODUCT_FRIENDS_SURFACE_LABEL } from './productNorthStar';
+import { UPL_SEEKING } from './upl-glossary';
 
 export const EXPLORE_PEOPLE_BROWSE_PANEL_TITLE = 'Find your crew';
 
@@ -56,7 +57,8 @@ export const EXPLORE_SEARCH_SCOPE_PEOPLE_DESCRIPTION =
 export const EXPLORE_PEOPLE_BROWSE_DISCOVER_ON_TRIPS_TITLE = 'On outings';
 export const EXPLORE_PEOPLE_BROWSE_DISCOVER_FRIENDS_GOING_TITLE = 'Friends';
 export const EXPLORE_PEOPLE_BROWSE_DISCOVER_HOSTS_GOING_TITLE = 'Hosts';
-export const EXPLORE_PEOPLE_BROWSE_DISCOVER_LOOKING_TITLE = 'Looking for company';
+/** Intent signals on map/list — not legacy “seeking” product noun. */
+export const EXPLORE_PEOPLE_BROWSE_DISCOVER_LOOKING_TITLE = UPL_SEEKING;
 export const EXPLORE_PEOPLE_BROWSE_EMPTY_DISCOVER_LOOKING =
   'No one is looking for crew in this view yet — try another tab, zoom out, or post from Find on the map.';
 

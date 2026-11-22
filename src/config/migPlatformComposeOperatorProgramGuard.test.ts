@@ -20,6 +20,13 @@ describe('migPlatformComposeOperatorProgramGuard (compose + operator program)', 
     expect(row?.phase).toBe('P4b');
   });
 
+  it('PCO-13: Plan upcoming has no availability lens UI (compose intent:open only)', () => {
+    const upcoming = read('src/components/plan/PlanUpcomingView.tsx');
+    expect(upcoming).not.toMatch(/PlanAvailabilitySection/);
+    expect(read('src/plan/PlanPage.tsx')).toMatch(/planAvailabilityPath/);
+    expect(read('src/explore/ui/IntentOpenComposeSheet.tsx')).toMatch(/PlanAvailabilitySection/);
+  });
+
   it('PCO-12: productNorthStar operator dashboard nav (not /hosting hub copy)', () => {
     const north = read('src/content/productNorthStar.ts');
     expect(north).toMatch(/\/operator\/overview/);

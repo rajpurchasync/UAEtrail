@@ -3,17 +3,12 @@ import { planWishlistTabPath } from './planTab';
 
 /**
  * Legacy `?lens=` values on `/plan` — normalize via `normalizePlanMobileParams`.
- * New links: `tab=upcoming|wishlist`, `layout=calendar`, `lens=availability` only.
+ * New links: `tab=upcoming|wishlist`, `layout=calendar`. Legacy `lens=availability` → explore compose.
  */
-export type PlanLens = 'schedule' | 'calendar' | 'saved' | 'goals' | 'availability';
+export type PlanLens = 'schedule' | 'calendar' | 'saved' | 'goals';
 
 export const parsePlanLens = (raw: string | null): PlanLens => {
-  if (
-    raw === 'calendar' ||
-    raw === 'saved' ||
-    raw === 'goals' ||
-    raw === 'availability'
-  ) {
+  if (raw === 'calendar' || raw === 'saved' || raw === 'goals') {
     return raw;
   }
   return 'schedule';

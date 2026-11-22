@@ -2,11 +2,9 @@ import { useState } from 'react';
 import { CalendarDays, List, Search } from 'lucide-react';
 import type { PlanCommitmentFilter, PlanUpcomingLayout } from '../../plan/planTab';
 import { PRODUCT_PLAN_UPCOMING_JOINED_CONTEXT } from '../../content/productNorthStar';
-import { PlanAvailabilitySection } from './PlanAvailabilitySection';
 import { PlanCalendarSection } from './PlanCalendarSection';
 import { PlanJoinedUpcoming } from './PlanJoinedUpcoming';
 import { PlanNeedsYouStrip } from './PlanNeedsYouStrip';
-import { parsePlanLens } from '../../plan/planLens';
 import { PLAN_SUMMARY_FOCUS_ELEMENT_IDS } from '../../plan/planSummaryFocusScroll';
 
 const PLAN_SUMMARY_SCROLL_MT = 'scroll-mt-[calc(var(--safe-top)+7.5rem)] outline-none';
@@ -20,24 +18,22 @@ type PlanUpcomingViewProps = {
   onLayoutChange: (layout: PlanUpcomingLayout) => void;
 };
 
-/** My Plans → Upcoming tab (joined + calendar + availability). Hosting lives at `/hosting`. */
+/** My Plans → Upcoming tab (joined + calendar). Mark availability → explore `intent:open` compose. */
 export const PlanUpcomingView = ({
   refreshKey,
   canHost,
   filter,
   layout,
-  lensRaw,
+  lensRaw: _lensRaw,
   onLayoutChange,
 }: PlanUpcomingViewProps) => {
+  void _lensRaw;
   const [searchQuery, setSearchQuery] = useState('');
-  const planLens = parsePlanLens(lensRaw);
-  const listSections = planLens !== 'availability' && layout === 'list';
+  const listSections = layout === 'list';
   const searchPlaceholder = 'Search joined outings…';
 
   const upcomingBody =
-    planLens === 'availability' ? (
-      <PlanAvailabilitySection />
-    ) : layout === 'calendar' ? (
+    layout === 'calendar' ? (
       <PlanCalendarSection refreshKey={refreshKey} canHost={canHost} filter={filter} />
     ) : (
       <PlanJoinedUpcoming refreshKey={refreshKey} searchQuery={searchQuery} />
@@ -45,14 +41,13 @@ export const PlanUpcomingView = ({
 
   return (
     <div className="space-y-3 md:space-y-2">
-      {planLens !== 'availability' && layout === 'list' ? (
+      {layout === 'list' ? (
         <p className="text-xs leading-snug text-neutral-500 md:text-[11px]">
           {PRODUCT_PLAN_UPCOMING_JOINED_CONTEXT}
         </p>
       ) : null}
       <div className="flex items-center gap-3">
-        {planLens !== 'availability' ? (
-          <div className="relative min-w-0 flex-1">
+        <div className="relative min-w-0 flex-1">
             <Search
               className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400"
               aria-hidden
@@ -65,8 +60,7 @@ export const PlanUpcomingView = ({
               aria-label={searchPlaceholder.replace('…', '')}
               className="w-full rounded-xl border border-neutral-200/80 bg-white py-2.5 pl-10 pr-3 text-sm text-neutral-900 shadow-sm outline-none ring-emerald-600/30 placeholder:text-neutral-400 focus:ring-2"
             />
-          </div>
-        ) : null}
+        </div>
         <div className="flex shrink-0 rounded-xl border border-neutral-200/80 bg-white p-0.5 ms-auto">
           <button
             type="button"

@@ -25,6 +25,7 @@ describe('hostingSurfaceNamingGuard', () => {
   it('HOST-NAMING-02: Plan upcoming tab does not mount legacy PlanHosting* lists', () => {
     const upcoming = read('src/components/plan/PlanUpcomingView.tsx');
     expect(upcoming).not.toMatch(/PlanHostingUpcoming/);
+    expect(upcoming).not.toMatch(/PlanAvailabilitySection/);
     expect(upcoming).not.toMatch(/filter === 'hosting'/);
     expect(read('src/plan/PlanPage.tsx')).toMatch(/setCommitmentFilter\('hosting'\)/);
   });

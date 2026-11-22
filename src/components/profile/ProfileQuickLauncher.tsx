@@ -12,7 +12,7 @@ import {
 } from '../../config/routingCatalog';
 import type { LucideIcon } from 'lucide-react';
 import { Award, MapPin, MessageCircle, Mountain, Settings, UserRound, Users, Backpack } from 'lucide-react';
-import { PRODUCT_CREWS_TAB_LABEL } from '../../content/productNorthStar';
+import { PRODUCT_CREWS_TAB_LABEL, PRODUCT_HOSTING_SCHEDULE_NAV_LABEL } from '../../content/productNorthStar';
 
 export type ProfileQuickLauncherItem = {
   key: string;
@@ -127,8 +127,8 @@ export const buildProfileQuickLauncherItems = (input: {
 
   if (input.showHosting) {
     items.push({
-      key: 'hosting',
-      label: 'Hosting',
+      key: 'operator-dashboard',
+      label: PRODUCT_HOSTING_SCHEDULE_NAV_LABEL,
       to: planHostedSchedulePath(),
       icon: Mountain,
       iconWrapClassName: 'bg-violet-50 text-violet-700 dark:bg-violet-950 dark:text-violet-200',
