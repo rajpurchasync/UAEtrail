@@ -69,8 +69,8 @@ describe('listBrowseNamingGuard', () => {
     expect(sort).not.toMatch(/parseListExplorerSort/);
     expect(read('src/list/useListDiscoveryUrlState.ts')).toMatch(/parseBrowseListLayout/);
     expect(read('src/list/useListDiscoveryUrlState.ts')).toMatch(/parseBrowseListSort/);
-    expect(read('src/list/listChromeTheme.ts')).toMatch(/browseListSortTriggerClass/);
-    expect(read('src/list/listChromeTheme.ts')).not.toMatch(/listExplorerSortTriggerClass/);
+    expect(read('src/list/browse/listChromeTheme.ts')).toMatch(/browseListSortTriggerClass/);
+    expect(read('src/list/browse/listChromeTheme.ts')).not.toMatch(/listExplorerSortTriggerClass/);
   });
 
   it('BROWSE-NAME-01f: list layout + filter fab snap live under browse (not explorer)', () => {
@@ -90,6 +90,12 @@ describe('listBrowseNamingGuard', () => {
     expect(read('src/list/browse/listBrowseSort.ts')).not.toMatch(/from '\.\.\/explorer\/listExplorerSort'/);
     expect(read('src/geo/GeoBrowsePane.tsx')).toMatch(/browse\/listBrowseSort/);
     expect(read('src/list/explorer/ListExplorerSortControl.tsx')).toMatch(/browse\/listBrowseSort/);
+  });
+
+  it('BROWSE-NAME-01t: list chrome theme tokens live under browse', () => {
+    expect(existsSync(join(process.cwd(), 'src/list/browse/listChromeTheme.ts'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/list/listChromeTheme.ts'))).toBe(false);
+    expect(read('src/list/explorer/ListExplorerHeader.tsx')).toMatch(/browse\/listChromeTheme/);
   });
 
   it('BROWSE-NAME-01s: list feed card pipeline lives under browse', () => {
@@ -197,8 +203,8 @@ describe('listBrowseNamingGuard', () => {
     expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/parseBrowseListBucket/);
     expect(read('src/list/ListDiscoveryExperience.tsx')).not.toMatch(/parseListExplorerBucket/);
     expect(read('src/explore/ui/exploreMapQuickFiltersState.ts')).toMatch(/explorePanelToBrowseListBucket/);
-    expect(read('src/list/listChromeTheme.ts')).toMatch(/browseListBucketTabClass/);
-    expect(read('src/list/listChromeTheme.ts')).not.toMatch(/listExplorerBucketTabClass/);
+    expect(read('src/list/browse/listChromeTheme.ts')).toMatch(/browseListBucketTabClass/);
+    expect(read('src/list/browse/listChromeTheme.ts')).not.toMatch(/listExplorerBucketTabClass/);
   });
 
   it('BROWSE-NAME-01b: list entity link state lives under browse (not listExplorerNavState)', () => {

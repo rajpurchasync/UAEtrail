@@ -66,7 +66,7 @@ describe('explore map mobile dock', () => {
   });
 
   it('list Create FAB reuses map dock pill tokens; map toggle lives in header chrome', () => {
-    const chrome = read('src/list/listChromeTheme.ts');
+    const chrome = read('src/list/browse/listChromeTheme.ts');
     expect(chrome).toMatch(/MOBILE_DOCK_PRIMARY/);
     expect(chrome).toMatch(/explore-float-base/);
     expect(read('src/list/ui/BrowseListCreateFab.tsx')).toMatch(/LIST_CREATE_FAB/);

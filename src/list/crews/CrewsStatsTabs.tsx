@@ -1,5 +1,5 @@
 import { PRODUCT_CREWS_TAB_LABEL } from '../../content/productNorthStar';
-import { LIST_CHIP_SCROLL, listCategoryPillClass } from '../listChromeTheme';
+import { LIST_CHIP_SCROLL, listCategoryPillClass } from '../browse/listChromeTheme';
 import { CREWS_STAT_TAB_LABELS, type CrewsStatTab } from './crewsStatTab';
 
 export type CrewsStatCounts = Record<CrewsStatTab, number | null>;

@@ -15,7 +15,7 @@ import {
   toggleExploreDestinationPlaceTopic,
 } from '../../explore/exploreOptionalFilters';
 import type { PlaceMapTopicKey } from '../../explore/exploreMapQuickTopicFilters';
-import { LIST_FILTER_POP, LIST_OVERLAY_Z, listFilterPopChipClass } from '../listChromeTheme';
+import { LIST_FILTER_POP, LIST_OVERLAY_Z, listFilterPopChipClass } from '../browse/listChromeTheme';
 import type { BrowseListBucket } from '../browse/browseListBucket';
 import type { ListFilterFabCorner } from '../browse/listFilterFabSnap';
 import {

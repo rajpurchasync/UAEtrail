@@ -3,7 +3,7 @@ import { SlidersHorizontal } from 'lucide-react';
 import type { BrowseListFilterState } from '../browse/browseListFilters';
 import type { BrowseListBucket } from '../browse/browseListBucket';
 import { ListExplorerFilterPop, type ListFilterPopFixedLayout } from './ListExplorerFilterPop';
-import { LIST_FILTER_FAB_Z, LIST_HUB_SEARCH_ROW } from '../listChromeTheme';
+import { LIST_FILTER_FAB_Z, LIST_HUB_SEARCH_ROW } from '../browse/listChromeTheme';
 import { EXPLORE_MAP_CHROME_FROST } from '../../config/exploreTheme';
 import {
   LIST_FILTER_FAB_DRAG_PX,

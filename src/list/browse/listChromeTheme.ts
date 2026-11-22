@@ -2,7 +2,7 @@ import {
   EXPLORE_BRAND_ACTIVE,
   MOBILE_DOCK_PRIMARY,
   MOBILE_DOCK_SECONDARY,
-} from '../config/exploreTheme';
+} from '../../config/exploreTheme';
 
 /** List discovery chrome — super-app tokens (not map overlay pills). */
 

@@ -6,7 +6,7 @@ import { getExploreMapTiles, readExploreMapStyle } from '../../config/platform';
 import { expandMapPins, layoutColocatedMapPins } from '../../explore/ui/exploreMapPinModel';
 import { ExploreMapLoadingSkeleton } from '../../explore/ui/ExploreMapLoadingSkeleton';
 import { UiTooltip } from '../../components/ui/UiTooltip';
-import { LIST_MAP_COLUMN_CLOSE } from '../listChromeTheme';
+import { LIST_MAP_COLUMN_CLOSE } from '../browse/listChromeTheme';
 import { LIST_SIDE_MAP_MIN_PX } from '../listDiscoverySideMapSplit';
 
 const PlacesMap = lazy(() =>

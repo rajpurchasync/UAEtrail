@@ -11,7 +11,7 @@ import {
 import { exploreSearchScopesForQuery } from '../../explore/exploreSearchScopeUi';
 import { ExploreSearchScopeHints } from '../../explore/ui/ExploreSearchScopeHints';
 import { BROWSE_LIST_MAP_CTA } from '../browse/browseListCopy';
-import { LIST_SEARCH } from '../listChromeTheme';
+import { LIST_SEARCH } from '../browse/listChromeTheme';
 
 type ListDiscoverySearchFieldProps = {
   query: string;

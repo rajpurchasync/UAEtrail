@@ -6,7 +6,7 @@ import {
 import {
   browseListBucketCountClass,
   browseListBucketTabClass,
-} from '../listChromeTheme';
+} from '../browse/listChromeTheme';
 
 type ListExplorerBucketToggleProps = {
   bucket: BrowseListBucket;

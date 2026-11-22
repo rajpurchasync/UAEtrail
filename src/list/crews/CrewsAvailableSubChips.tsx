@@ -1,4 +1,4 @@
-import { LIST_CHIP_SCROLL, listCategoryPillClass } from '../listChromeTheme';
+import { LIST_CHIP_SCROLL, listCategoryPillClass } from '../browse/listChromeTheme';
 import type { CrewsAvailableOpenLens } from './crewsOpenSegment';
 
 const OPEN_LABELS: Record<CrewsAvailableOpenLens, string> = {

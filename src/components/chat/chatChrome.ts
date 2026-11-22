@@ -1,4 +1,4 @@
-import { LIST_CHROME } from '../../list/listChromeTheme';
+import { LIST_CHROME } from '../../list/browse/listChromeTheme';
 
 /** Chat hub + thread chrome — align with standalone list discovery (`/list` Trips/Venues). */
 

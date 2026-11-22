@@ -1,7 +1,7 @@
 import { Plus } from 'lucide-react';
 import { MOBILE_DOCK_ICON } from '../../config/exploreTheme';
 import { BROWSE_LIST_CREATE_TRIP } from '../browse/browseListCopy';
-import { LIST_CREATE_FAB, LIST_MAP_FLOAT_POSITION } from '../listChromeTheme';
+import { LIST_CREATE_FAB, LIST_MAP_FLOAT_POSITION } from '../browse/listChromeTheme';
 
 interface BrowseListCreateFabProps {
   onClick: () => void;

@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { LIST_CHIP_SCROLL, listCategoryPillClass } from '../../list/listChromeTheme';
+import { LIST_CHIP_SCROLL, listCategoryPillClass } from '../../list/browse/listChromeTheme';
 import { useHorizontalDragScroll } from '../../hooks/useHorizontalDragScroll';
 import {
   PEOPLE_BROWSE_TAB_LABELS,

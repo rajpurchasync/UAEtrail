@@ -39,7 +39,7 @@ describe('list module hygiene', () => {
     expect(readFileSync(join(process.cwd(), 'src/list/ui/BrowseListCreateFab.tsx'), 'utf8')).toMatch(
       /LIST_CREATE_FAB/
     );
-    expect(readFileSync(join(process.cwd(), 'src/list/listChromeTheme.ts'), 'utf8')).toMatch(
+    expect(readFileSync(join(process.cwd(), 'src/list/browse/listChromeTheme.ts'), 'utf8')).toMatch(
       /MOBILE_DOCK_PRIMARY/
     );
     expect(readFileSync(join(process.cwd(), 'src/list/ui/ListGuestCatalogPreviewNotice.tsx'), 'utf8')).toMatch(
@@ -170,7 +170,7 @@ describe('list module hygiene', () => {
 
   it('sort overlay stacks above filter fab', () => {
     const sort = readFileSync(join(process.cwd(), 'src/list/explorer/ListExplorerSortControl.tsx'), 'utf8');
-    const theme = readFileSync(join(process.cwd(), 'src/list/listChromeTheme.ts'), 'utf8');
+    const theme = readFileSync(join(process.cwd(), 'src/list/browse/listChromeTheme.ts'), 'utf8');
     expect(sort).toMatch(/LIST_OVERLAY_Z/);
     expect(theme).toMatch(/LIST_FILTER_FAB_Z/);
     expect(theme).toMatch(/LIST_OVERLAY_Z/);

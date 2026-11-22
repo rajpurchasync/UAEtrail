@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { PageMeta } from '../../components/seo/PageMeta';
 import { APP_SCROLL_BODY_CLASS } from '../../config/layoutScroll';
-import { LIST_CHROME } from '../../list/listChromeTheme';
+import { LIST_CHROME } from '../../list/browse/listChromeTheme';
 import { useProductSearchParams } from '../../routing/useEffectiveLocation';
 import { EXPLORE_SEARCH_RESULTS_PATH, parseExploreSearchBrowseState } from './exploreSearchRouting';
 import { EXPLORE_SEARCH_RESULTS_TITLE } from './exploreSearchHomeCopy';

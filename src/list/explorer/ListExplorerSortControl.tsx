@@ -2,7 +2,7 @@ import { ArrowDown, ArrowDownAZ, ArrowDownZA, ArrowUp, Calendar, MapPin, Newspap
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { UiTooltip } from '../../components/ui/UiTooltip';
-import { LIST_OVERLAY_Z, LIST_SEARCH, browseListSortTriggerClass } from '../listChromeTheme';
+import { LIST_OVERLAY_Z, LIST_SEARCH, browseListSortTriggerClass } from '../browse/listChromeTheme';
 import {
   DEFAULT_BROWSE_LIST_SORT,
   BROWSE_LIST_SORT_GROUP_DEFS,

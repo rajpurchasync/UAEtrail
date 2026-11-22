@@ -6,7 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ExploreMapProjectionToggle } from '../../explore/ui/ExploreMapProjectionToggle';
 import { EXPLORE_MAP_CHROME_FROST } from '../../config/exploreTheme';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../../explore/exploreBrowseTaxonomy';
-import { LIST_APP_BAR, LIST_CHROME, LIST_SEARCH } from '../listChromeTheme';
+import { LIST_APP_BAR, LIST_CHROME, LIST_SEARCH } from '../browse/listChromeTheme';
 import { ListDiscoverySearchField } from '../ui/ListDiscoverySearchField';
 import { ListExplorerBucketToggle } from './ListExplorerBucketToggle';
 import { ListExplorerViewSwitch } from './ListExplorerViewSwitch';

@@ -67,6 +67,7 @@ const RETIRED_BROWSE_SHIMS = [
   'src/list/listPosterPresentation.ts',
   'src/list/listPosterPresentation.test.ts',
   'src/list/listMapPeekEngagementParity.test.ts',
+  'src/list/listChromeTheme.ts',
   'src/list/explorer/listExplorerDateSections.ts',
   'src/list/explorer/listExplorerDateSections.test.ts',
   'src/list/explorer/listExplorerBucket.ts',
