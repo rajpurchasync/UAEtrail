@@ -5,13 +5,13 @@ import {
   isTimeBoundExploreMapItem,
   type ExploreMapItemDTO,
 } from '@uaetrail/shared-types';
-import { BROWSE_LIST_CATEGORY_PLACES } from '../place/geographyVocabulary';
+import { BROWSE_LIST_CATEGORY_PLACES } from '../../place/geographyVocabulary';
 import {
   parseExploreMapFilterPillsParam,
   serializeExploreMapFilterPillsParam,
   type ExploreMapFilterPillKey,
-} from './discoveryListRuntime';
-import { PRODUCT_CREWS_TAB_LABEL } from '../content/productNorthStar';
+} from '../discoveryListRuntime';
+import { PRODUCT_CREWS_TAB_LABEL } from '../../content/productNorthStar';
 
 /**
  * List main categories — activities, places, crews (people), agencies.

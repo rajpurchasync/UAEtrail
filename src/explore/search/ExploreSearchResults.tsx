@@ -5,7 +5,7 @@ import type { BrowseListFilterState } from '../../list/browseListFilters';
 import { scopeBrowseListStateForListCat } from '../../list/browse/browseListMapHandoff';
 import { ListDiscoveryExperience } from '../../list/ListDiscoveryExperience';
 import { parseBrowseListFilterState, parseBrowseListGeoPath } from '../../list/browseListUrlState';
-import { useBrowseGeoScopeHydration } from '../../list/useBrowseGeoScopeHydration';
+import { useBrowseGeoScopeHydration } from '../../list/browse/useBrowseGeoScopeHydration';
 import { resolveEffectiveBrowseVenueRegions } from '../../list/browse/browseGeoPath';
 import { useExplorePublishedAreasQuery } from '../useExplorePublishedAreas';
 import {

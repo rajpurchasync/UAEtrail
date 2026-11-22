@@ -15,7 +15,7 @@ import {
 } from '../explore/search/exploreSearchRouting';
 import type { BrowseTripTopicKey } from './browse/browseListTripTopics';
 import type { BrowseListFilterState } from './browseListFilters';
-import type { BrowseMainCategoryKey } from './browseListTaxonomy';
+import type { BrowseMainCategoryKey } from './browse/browseListTaxonomy';
 import {
   BROWSE_DISCOVER_PARAM,
   LIST_CAT_PARAM,

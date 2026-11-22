@@ -48,7 +48,7 @@ describe('peopleGraphPlanSpineGuard (DMCP Phase 7)', () => {
     expect(read('src/routing/productUrlInbound.ts')).toMatch(/readPeopleCrewsTabParam/);
     expect(read('src/list/peopleListBrowseUrl.ts')).not.toMatch(/parsePeopleBrowseTabFromUrl/);
     expect(read('src/config/mobileTabHeader.ts')).toMatch(/BUDDIES_PATH.*Friends/s);
-    expect(read('src/list/browseListTaxonomy.ts')).not.toMatch(/label:\s*['"]Buddies['"]/);
+    expect(read('src/list/browse/browseListTaxonomy.ts')).not.toMatch(/label:\s*['"]Buddies['"]/);
     expect(read('src/pages/Groups.tsx')).toMatch(/teamLabel|Team/);
   });
 

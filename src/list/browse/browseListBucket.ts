@@ -1,6 +1,6 @@
 import { MOBILE_FIVE_TAB_UI_LABELS } from '../../config/mobileFiveTabNav';
 import type { ExploreSearchScopeCounts } from '../../explore/exploreBrowseTaxonomy';
-import type { BrowseMainCategoryKey } from '../browseListTaxonomy';
+import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 
 export type BrowseListBucket = 'events' | 'places';
 

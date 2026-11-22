@@ -39,7 +39,7 @@ import {
   resolveExploreMapCreateFabHints,
 } from '../create/composeFabEntry';
 import { availabilityFlexibleCompose } from '../compose';
-import { useBrowseGeoScopeHydration } from '../../list/useBrowseGeoScopeHydration';
+import { useBrowseGeoScopeHydration } from '../../list/browse/useBrowseGeoScopeHydration';
 
 /** Explore map + browse + compose + selection orchestration (R2). */
 export const useExploreExperienceModel = () => {

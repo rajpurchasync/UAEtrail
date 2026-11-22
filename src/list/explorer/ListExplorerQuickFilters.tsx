@@ -10,7 +10,7 @@ import {
 } from '../../explore/exploreOptionalFilters';
 import type { BrowseListFilterState } from '../browseListFilters';
 import type { BrowseTripTopicKey } from '../browse/browseListTripTopics';
-import type { ListVenuePlaceTopicKey } from '../listVenuePlaceTopics';
+import type { ListVenuePlaceTopicKey } from '../browse/listVenuePlaceTopics';
 import type { BrowseListBucket } from '../browse/browseListBucket';
 
 type ListExplorerQuickFiltersProps = {

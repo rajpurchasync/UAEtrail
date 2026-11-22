@@ -65,7 +65,7 @@ describe('consumerAppSurfacesDataGuard (in-app hubs — not guest marketing)', (
   });
 
   it('CTX-APP-11: browse geo scope hydrates geo tree from registry', () => {
-    expect(read('src/list/useBrowseGeoScopeHydration.ts')).toMatch(/fetchGeoTreeIntoStore/);
+    expect(read('src/list/browse/useBrowseGeoScopeHydration.ts')).toMatch(/fetchGeoTreeIntoStore/);
     expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/useBrowseGeoScopeHydration/);
     expect(read('src/explore/shell/useExploreExperienceModel.ts')).toMatch(/useBrowseGeoScopeHydration/);
     expect(read('src/explore/search/ExploreSearchResults.tsx')).toMatch(/useBrowseGeoScopeHydration/);

@@ -5,7 +5,7 @@ import {
   type ExplorePinKindFilter,
 } from '../discoveryListRuntime';
 import type { BrowseListFilterState } from '../browseListFilters';
-import type { BrowseMainCategoryKey } from '../browseListTaxonomy';
+import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import {
   PEOPLE_LIST_TAB_URL_PARAM,
   serializePeopleListBrowseTab,

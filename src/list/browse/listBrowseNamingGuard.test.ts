@@ -92,6 +92,15 @@ describe('listBrowseNamingGuard', () => {
     expect(read('src/list/explorer/ListExplorerSortControl.tsx')).toMatch(/browse\/listBrowseSort/);
   });
 
+  it('BROWSE-NAME-01n: taxonomy, venue topics, and geo hydration live under browse', () => {
+    expect(existsSync(join(process.cwd(), 'src/list/browse/browseListTaxonomy.ts'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/list/browseListTaxonomy.ts'))).toBe(false);
+    expect(existsSync(join(process.cwd(), 'src/list/browse/useBrowseGeoScopeHydration.ts'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/list/useBrowseGeoScopeHydration.ts'))).toBe(false);
+    expect(read('src/explore/exploreBrowseUrlSync.ts')).toMatch(/browse\/browseListTaxonomy/);
+    expect(read('src/list/browseListFilters.ts')).toMatch(/browse\/listVenuePlaceTopics/);
+  });
+
   it('BROWSE-NAME-01m: geo path, trip topics, and poster cover live under browse', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/browseGeoPath.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/browseGeoPath.ts'))).toBe(false);

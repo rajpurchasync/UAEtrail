@@ -1,7 +1,7 @@
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
 import { parseExploreActivityDatePreset, serializeExploreActivityDatePreset } from '../routing';
 import { parseExplorePriceFilter, type ExplorePriceFilter } from '../exploreOptionalFilters';
-import type { BrowseMainCategoryKey } from '../../list/browseListTaxonomy';
+import type { BrowseMainCategoryKey } from '../../list/browse/browseListTaxonomy';
 import {
   LIST_CAT_PARAM,
   parseBrowseListFilterState,

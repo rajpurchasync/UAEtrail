@@ -17,7 +17,7 @@ const ALLOWLIST = new Set([
   'src/explore/exploreItemSearch.ts',
   'src/explore/explorePinKindFilter.ts',
   'src/explore/routing.ts',
-  'src/list/browseListTaxonomy.ts',
+  'src/list/browse/browseListTaxonomy.ts',
 ]);
 
 const DEPRECATED_TRIPS_SHIM_PREFIX = 'src/trips/';

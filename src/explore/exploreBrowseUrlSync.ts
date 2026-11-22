@@ -24,7 +24,7 @@ import {
 } from './exploreBrowseTaxonomy';
 import type { ProductSearchMutationContext } from '../routing/productSearchMutation';
 import { applyProductSearchMutation } from '../routing/productSearchMutation';
-import type { BrowseMainCategoryKey } from '../list/browseListTaxonomy';
+import type { BrowseMainCategoryKey } from '../list/browse/browseListTaxonomy';
 import { BROWSE_DISCOVER_PARAM, LIST_CAT_PARAM } from '../list/browseListUrlState';
 import {
   serializeExplorePinKindFilter,

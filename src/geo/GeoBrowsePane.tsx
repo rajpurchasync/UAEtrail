@@ -29,7 +29,7 @@ import {
 import { countBrowseListFilters, type BrowseListLayout } from '../list/browse/browseListLayout';
 import type { ExploreSearchScopeKey } from '../explore/exploreBrowseTaxonomy';
 import { useExplorePublishedAreasQuery } from '../explore/useExplorePublishedAreas';
-import { useBrowseGeoScopeHydration } from '../list/useBrowseGeoScopeHydration';
+import { useBrowseGeoScopeHydration } from '../list/browse/useBrowseGeoScopeHydration';
 import '../styles/explore-map-chrome.css';
 
 const EMPTY_GEO_IDS: string[] = [];

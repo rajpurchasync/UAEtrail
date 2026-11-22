@@ -24,7 +24,7 @@ import {
   type ExploreMapFilterPillKey,
   type ExploreSearchScopeKey,
 } from '../exploreBrowseTaxonomy';
-import type { BrowseMainCategoryKey } from '../../list/browseListTaxonomy';
+import type { BrowseMainCategoryKey } from '../../list/browse/browseListTaxonomy';
 import type { ExploreBrowseUrlSyncPatch } from '../exploreBrowseUrlSync';
 import type { PeopleBrowseTab } from '../../list/peopleListBrowseUrl';
 import type { ExplorePinKindFilter } from '../explorePinKindFilter';

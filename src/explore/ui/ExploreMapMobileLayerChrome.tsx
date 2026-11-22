@@ -9,7 +9,7 @@ import {
   type ExploreVenueFilterPatch,
 } from '../exploreOptionalFilters';
 import type { BrowseTripTopicKey } from '../../list/browse/browseListTripTopics';
-import type { ListVenuePlaceTopicKey } from '../../list/listVenuePlaceTopics';
+import type { ListVenuePlaceTopicKey } from '../../list/browse/listVenuePlaceTopics';
 import { ListExplorerGeoScopeChip } from '../../list/explorer/ListExplorerGeoScopeChip';
 import { ListExplorerQuickFilters } from '../../list/explorer/ListExplorerQuickFilters';
 import { EXPLORE_MAP_CHROME_FROST } from '../../config/exploreTheme';

@@ -25,13 +25,13 @@ import {
 } from './discoveryListRuntime';
 import type { BrowseListFilterState, BrowsePriceFilter, BrowseWhenFilter } from './browseListFilters';
 import { isBrowseTripTopicKey, type BrowseTripTopicKey } from './browse/browseListTripTopics';
-import { isListVenuePlaceTopicKey } from './listVenuePlaceTopicFilter';
-import type { ListVenuePlaceTopicKey } from './listVenuePlaceTopics';
+import { isListVenuePlaceTopicKey } from './browse/listVenuePlaceTopicFilter';
+import type { ListVenuePlaceTopicKey } from './browse/listVenuePlaceTopics';
 import {
   parseBrowseMainCategoriesFromTopics,
   serializeBrowseMainCategoriesToTopics,
   type BrowseMainCategoryKey,
-} from './browseListTaxonomy';
+} from './browse/browseListTaxonomy';
 import { readPeopleCrewsTabParam } from '../routing/productUrlInbound';
 import {
   PEOPLE_LIST_TAB_URL_PARAM,

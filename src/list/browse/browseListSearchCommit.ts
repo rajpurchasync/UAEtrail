@@ -1,6 +1,6 @@
 import type { ExploreSearchScopeKey } from '../discoveryListRuntime';
 import type { BrowseListFilterState } from '../browseListFilters';
-import type { BrowseMainCategoryKey } from '../browseListTaxonomy';
+import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 
 /** Map explore search scope picks to list category URL state. */
 export const browseCategoriesForSearchScope = (

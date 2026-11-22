@@ -49,7 +49,7 @@ import { useDisplayPreferences } from '../preferences/useDisplayPreferences';
 import { useMemberDiscoveryRoster } from '@/people-discovery/hooks/useMemberDiscoveryRoster';
 import { useExplorePeopleAvailability } from '@/people-discovery/hooks/usePeopleAvailability';
 import { resolveEffectiveBrowseVenueRegions } from './browse/browseGeoPath';
-import { useBrowseGeoScopeHydration } from './useBrowseGeoScopeHydration';
+import { useBrowseGeoScopeHydration } from './browse/useBrowseGeoScopeHydration';
 import { browseListEntityLinkState } from './browse/browseListNavState';
 import { countBrowseListFilters } from './browse/browseListLayout';
 import {

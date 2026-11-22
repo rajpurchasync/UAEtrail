@@ -22,12 +22,12 @@ import {
   type ExploreActivityDatePreset,
   type ExplorePriceFilter,
 } from './discoveryListRuntime';
-import type { BrowseMainCategoryKey } from './browseListTaxonomy';
-import { mapItemMatchesBrowseMainCategories } from './browseListTaxonomy';
+import type { BrowseMainCategoryKey } from './browse/browseListTaxonomy';
+import { mapItemMatchesBrowseMainCategories } from './browse/browseListTaxonomy';
 import type { PlaceKind } from '@uaetrail/shared-types';
 import type { BrowseTripTopicKey } from './browse/browseListTripTopics';
-import { matchesListVenuePlaceTopic } from './listVenuePlaceTopicFilter';
-import type { ListVenuePlaceTopicKey } from './listVenuePlaceTopics';
+import { matchesListVenuePlaceTopic } from './browse/listVenuePlaceTopicFilter';
+import type { ListVenuePlaceTopicKey } from './browse/listVenuePlaceTopics';
 import {
   exploreItemMatchesBrowseAudienceFilter,
   type BrowseAudienceFilter,

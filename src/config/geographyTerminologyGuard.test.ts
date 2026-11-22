@@ -29,7 +29,7 @@ describe('geographyTerminologyGuard (Place · Facility · Area)', () => {
     expect(vocab).toMatch(/facilities/);
     expect(read('src/explore/explorePinKindFilter.ts')).toMatch(/MAP_LENS_SPOTS_LABEL/);
     expect(read('src/content/upl-glossary.ts')).toMatch(/geographyVocabulary/);
-    expect(read('src/list/browseListTaxonomy.ts')).toMatch(/BROWSE_LIST_CATEGORY_PLACES/);
+    expect(read('src/list/browse/browseListTaxonomy.ts')).toMatch(/BROWSE_LIST_CATEGORY_PLACES/);
     const canon = read('docs/DOMAIN_CANONICALS.md');
     expect(canon).toMatch(/12\.1\.1 Explore UI — Place · Facility · Area \(Area is a name, not a pin\)/);
     expect(canon).toMatch(/source: facility/);

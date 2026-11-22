@@ -75,7 +75,7 @@ describe('crewsTerminologyGuard (Crews / peopleTab — not buddies segment)', ()
   });
 
   it('CREWS-04: list taxonomy people category uses Crews label', () => {
-    const taxonomy = readFileSync(join(process.cwd(), 'src/list/browseListTaxonomy.ts'), 'utf8');
+    const taxonomy = readFileSync(join(process.cwd(), 'src/list/browse/browseListTaxonomy.ts'), 'utf8');
     expect(taxonomy).toMatch(/PRODUCT_CREWS_TAB_LABEL/);
     expect(taxonomy).not.toMatch(/label:\s*['"]Buddies['"]/);
   });

@@ -1,8 +1,8 @@
-import type { MapFilterKey } from '../config/routingCatalog';
+import type { MapFilterKey } from '../../config/routingCatalog';
 import {
   EXPLORE_PLACE_TOPIC_OPTIONS,
   aliasPlaceMapTopicToList,
-} from '../explore/exploreMapTopicUrlParams';
+} from '../../explore/exploreMapTopicUrlParams';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 
 /**

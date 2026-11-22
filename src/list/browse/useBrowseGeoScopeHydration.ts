@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { fetchGeoTreeIntoStore } from '../hooks/geoHierarchyClientApi';
-import { geoStore } from '../geo/geoStore';
+import { fetchGeoTreeIntoStore } from '../../hooks/geoHierarchyClientApi';
+import { geoStore } from '../../geo/geoStore';
 
 /** Load `GET /geo/tree` when browse scope uses `?geo=` so chip labels resolve from registry nodes. */
 export const useBrowseGeoScopeHydration = (geoPath: readonly string[]): number => {

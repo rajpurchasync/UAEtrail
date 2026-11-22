@@ -5,7 +5,7 @@ import {
   scopeBrowseListStateForListCat,
   serializeBrowseListToExploreSearchParams,
 } from './browse/browseListMapHandoff';
-import type { BrowseMainCategoryKey } from './browseListTaxonomy';
+import type { BrowseMainCategoryKey } from './browse/browseListTaxonomy';
 import {
   LIST_CAT_PARAM,
   parseBrowseListFilterState,
