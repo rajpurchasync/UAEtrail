@@ -26,12 +26,11 @@ export const PLAN_WANT_TO_GO_LABEL = 'Want to go';
 export const PLAN_GOALS_SECTION_TITLE = 'Goals';
 export const PLAN_WANT_TO_GO_SECTION_TITLE = 'Want to go';
 
-export const PLAN_ADD_OPTION_IDS = ['trip', 'availability', 'goal', 'wishlist'] as const;
+export const PLAN_ADD_OPTION_IDS = ['goal', 'wishlist'] as const;
 export type PlanAddOptionId = (typeof PLAN_ADD_OPTION_IDS)[number];
 
+/** Plan-local add flows only — host/availability use compose (`createFlowPath`). */
 export const PLAN_ADD_OPTIONS: ReadonlyArray<CreateKindOption<PlanAddOptionId>> = [
-  { id: 'trip', label: 'Create Trip', emoji: '🥾' },
-  { id: 'availability', label: 'Mark Availability', emoji: '📅' },
   { id: 'goal', label: PLAN_GOAL_OPTION_LABEL, emoji: '🎯' },
   { id: 'wishlist', label: PLAN_WANT_TO_GO_LABEL, emoji: '📍' },
 ];

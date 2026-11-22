@@ -1,6 +1,6 @@
 /** List surfaces — CreateFlow bridge, FAB, availability compose, offer-rideshare launcher. */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { NavigateFunction, SetURLSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
@@ -32,8 +32,6 @@ export type ListDiscoveryComposeBridgeInput = {
   locationPathname: string;
   locationSearch: string;
   createFabContext: BrowseListCreateFabHints;
-  availabilitySheetOpen: boolean;
-  syncUrl: (patch: { availabilitySheet?: boolean }) => void;
 };
 
 export const useListDiscoveryComposeBridgeModel = ({
@@ -49,8 +47,6 @@ export const useListDiscoveryComposeBridgeModel = ({
   locationPathname,
   locationSearch,
   createFabContext,
-  availabilitySheetOpen,
-  syncUrl,
 }: ListDiscoveryComposeBridgeInput) => {
   const createFlowCtx = useCreateFlowOptional();
   if (!createFlowCtx && !exploreSearch) {
@@ -81,14 +77,6 @@ export const useListDiscoveryComposeBridgeModel = ({
   const handleOpenMarkAvailability = useCallback(() => {
     compose.handleCreateTap(intentOpenCompose());
   }, [compose]);
-
-  const availabilityLegacyMigratedRef = useRef(false);
-  useEffect(() => {
-    if (!availabilitySheetOpen || availabilityLegacyMigratedRef.current) return;
-    availabilityLegacyMigratedRef.current = true;
-    syncUrl({ availabilitySheet: false });
-    compose.handleCreateTap(intentOpenCompose());
-  }, [availabilitySheetOpen, compose, syncUrl]);
 
   const hostingFrom = useHostingFromActivity({
     user,

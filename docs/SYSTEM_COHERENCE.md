@@ -696,8 +696,8 @@ Phases **S0–S4** (guards), **S6–S8** (core), and **S7/S7b/S7c** are in place
 | **Registry** | **Named catalog queries** — `GET /places/catalog` (places), `GET /facilities/catalog` — not separate Mongo “registry” collections. |
 | **Lifecycle (catalog)** | **Moderation** (`pending` \| `approved` \| `rejected` \| `suspended`) + **publication** (`listed` \| `unlisted` \| `anchor_only`) — migrate from `LocationStatus` + `registryListed`. **No member-facing draft editor** — profile **submissions** + pending copy. |
 | **Policy** | Parity with activities: `viewerAccess` + `allowedActions[]` + `presentation` on **place** and **facility** GET (and peek). |
-| **FAB (UI)** | **Host** · **Find crew** · **Add on map**. Bottom nav **My Plans** = **`/plan`** (commitments hub — not FAB). |
-| **Compose (wire)** | v3 `host:*` \| `seek:*` \| `add:*` only ([`CREATE_FLOW.md`](./CREATE_FLOW.md)). |
+| **FAB (UI)** | **Create Trip** · **Add a venue** · **Find a Crew** (per map/list tab). Bottom nav **My Plans** = **`/plan`** (commitments hub — not FAB). |
+| **Compose (wire)** | `activity:*` \| `place:*` \| `intent:*` emit; legacy `host`/`seek`/`add` parse-only ([`CREATE_FLOW.md`](./CREATE_FLOW.md)). |
 | **URLs (target)** | `/place/:id`, `/facility/:id`, `/profile/submissions`; 301 from `/trail`, `/camp`, `/venue`, `/event`, `/contributions`. |
 
 #### 8.4.2 Geography (why Facility is separate)
@@ -745,7 +745,7 @@ Region → Area (areaId)
 | D5 | Operator = **workspace**; all tenant kinds → `/publishing/*` |
 | D6 | Pending catalog UX: **submissions list**, no public draft URL for unlisted rows |
 | D7 | Cutover: optional `CATALOG_V2` read flag → single deploy → redirects **CPC-6** |
-| F1–F6 | FAB **Host · Find crew · Add on map**; compose wire host/seek/add only ([`CREATE_FLOW.md`](./CREATE_FLOW.md)) |
+| F1–F6 | FAB **Create Trip · Add a venue · Find a Crew**; compose wire `activity` \| `place` \| `intent` ([`CREATE_FLOW.md`](./CREATE_FLOW.md)) |
 
 #### 8.4.6 Phase plan & checklists
 
@@ -757,7 +757,7 @@ Mark `[x]` in the PR that completes the item. **Gate:** `npm run verify:system:q
 *Context for implementers: §8.4.1–8.4.5; no code required.*
 
 - [x] `SYSTEM_COHERENCE.md` §8.4 + **C26** (this section)
-- [x] `CREATE_FLOW.md` — FAB **Host · Find crew · Add on map**, compose wire, legacy map
+- [x] `CREATE_FLOW.md` — tab FABs + `activity` \| `place` \| `intent` compose wire, legacy inbound map
 - [x] `DOMAIN.md` — Place vs Facility vs Shop layers; geography §8.4.2
 - [x] `DOMAIN_CANONICALS.md` §1.7 — ontology + compose wire
 - [x] `NAVIGATION.md` — FAB, `/profile/submissions` target, contributions redirect note
@@ -878,21 +878,20 @@ Mark `[x]` in the PR that completes the item. **Gate:** `npm run verify:system:q
 
 ---
 
-**CPC-9 — FAB Host · Find crew · Add on map + compose wire**  
-*Can start after CPC-1; must finish before CPC-7. Context: `CreateIntentSheet`, `composeFlowCatalog`.*
+**CPC-9 — Tab FABs + `activity` \| `place` \| `intent` compose wire**  
+*Can start after CPC-1; must finish before CPC-7. Context: `CreateKindSheet`, `composeFabEntry`.*
 
-- [x] `COMPOSE_MENU_OPTIONS` → **Host** · **Find crew** · **Add on map** (bottom nav **Plan** = schedule, not FAB)
-- [x] compose wire: `host:*` \| `seek:fixed:*` \| `seek:flexible` \| `add:*`
-- [x] Find crew: fixed → `availabilityFlowEngine`; flexible → `SeekFlexibleComposeSheet` / `member_availability`
-- [x] Add on map: **Place** (trail/camp/other) \| **Facility** (kinds); drop standalone **Shops** chip
-- [x] `formatComposeQuery` / `parseExploreCompose` v3 canonical only (`packages/shared-types/compose-route.ts`)
-- [x] `composeFlowCatalog.ts` storage ids: `host.*` / `seek.fixed.*` / `add.*`
-- [x] Update area CTAs (`AreaDetailView` find links → `seek.fixed.*`)
-- [x] `composeFlowCatalog.test.ts` / `exploreComposeRouteGuard` (host/seek/add only)
+- [x] Per-tab FABs → **Create Trip** · **Add a venue** · **Find a Crew** (bottom nav **Plan** = schedule, not FAB)
+- [x] compose wire emit: `activity:*` \| `place:*` \| `intent:open` \| `intent:fixed:*` (legacy inbound parse in shared-types)
+- [x] Find crew: fixed → `availabilityFlowEngine`; flexible → `IntentOpenComposeSheet` / `member_availability`
+- [x] Add a venue: **Place** (trail/camp/other) \| **Facility** (kinds)
+- [x] `formatComposeQuery` / `parseExploreCompose` canonical emit (`packages/shared-types/compose-route.ts`)
+- [x] `composeFlowCatalog.ts` flow ids: `activity.*` / `place.*` / `intent.*`
+- [x] `composeWireEmitGuard` / explore compose route guards
 - [x] Add-on-map wizard modules: `addFlow.ts` / `addFacilityFlow.ts` / `CreateAddFlow.tsx`
 - [ ] `src/content/productNorthStar.ts` if FAB strings centralized
 
-**Supersession (shipped):** Product FAB **Host · Find crew · Add on map** with v3 `?compose=` (`host` \| `seek` \| `add` only); leftover `plan` / `contribute` / `organize` / `find` tokens are not accepted — [`CREATE_FLOW.md`](./CREATE_FLOW.md).
+**Supersession (shipped):** Tab FAB product copy with canonical `?compose=` emit (`activity` \| `place` \| `intent`); inbound `host` \| `seek` \| `add` bookmarks parse only — [`CREATE_FLOW.md`](./CREATE_FLOW.md).
 
 ---
 

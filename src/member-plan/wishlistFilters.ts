@@ -1,5 +1,5 @@
 import type { WishlistItemDTO } from '@uaetrail/shared-types';
-import type { PlanHubWishlistLayer } from './planHubRouting';
+import type { PlanHubWishlistLayer } from '../plan/planRouting';
 
 /** Wishlist rows are private saves — seeking posts are never stored here. */
 export const wishlistItemIsPersonal = (_item: WishlistItemDTO): boolean => true;

@@ -3,7 +3,6 @@ import { Navigate, useSearchParams } from 'react-router-dom';
 import { GuestGatedSurfaceLayout } from '../components/auth/GuestGatedSurfaceLayout';
 import { useAuth } from '../context/AuthContext';
 import { PRODUCT_PLAN_SURFACE_TITLE } from '../content/productNorthStar';
-import { HOSTING_HUB_PATH } from '../config/surfacePaths';
 import { explorePath, inboundCreateParamToHostPath, parseActivityListFilter } from '../explore/routing';
 import { AsyncLoadingState } from '../components/ui/AsyncLoadingState';
 
@@ -21,10 +20,6 @@ export const PlanBrowseRoute = () => {
   const inboundCreatePath = inboundCreateParamToHostPath(searchParams.get('create'));
   if (inboundCreatePath) {
     return <Navigate to={inboundCreatePath} replace />;
-  }
-  // Hosting hub is dedicated — never render My Plans for hosting filters.
-  if (filter === 'hosting' || role === 'hosted') {
-    return <Navigate to={HOSTING_HUB_PATH} replace />;
   }
   if (user) {
     return (

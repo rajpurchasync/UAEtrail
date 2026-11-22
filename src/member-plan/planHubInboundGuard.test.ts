@@ -7,6 +7,7 @@ const SCAN_ROOT = join(process.cwd(), 'src');
 const ALLOWLIST = new Set([
   'src/member-plan/planHubInboundGuard.test.ts',
   'src/member-plan/planHubRouting.ts',
+  'src/plan/planRouting.ts',
   'src/member-plan/resolveInboundPlanHubPath.ts',
   'src/member-plan/resolvePlanHubView.ts',
   'src/config/inboundBookmarkPaths.ts',
@@ -165,8 +166,8 @@ describe('planHubInboundGuard', { timeout: 30_000 }, () => {
     expect(violations).toEqual([]);
   });
 
-  it('planHubRouting has no leftover trips* symbol exports', () => {
-    const hub = readFileSync(join(process.cwd(), 'src/member-plan/planHubRouting.ts'), 'utf8');
+  it('planRouting has no leftover trips* symbol exports', () => {
+    const hub = readFileSync(join(process.cwd(), 'src/plan/planRouting.ts'), 'utf8');
     expect(hub).not.toMatch(/\bexport const trips/);
     expect(hub).not.toMatch(/\bexport type Trips/);
     expect(hub).not.toMatch(/\bnormalizeTripsSearchParams\b/);

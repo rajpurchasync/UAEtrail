@@ -1,21 +1,14 @@
 import type { HostTierFlags, OwnedHostProfileDTO, UserRole } from '@uaetrail/shared-types';
-import { HOSTING_HUB_PATH, OPERATOR_OVERVIEW_PATH } from '../config/routingCatalog';
+import { OPERATOR_OVERVIEW_PATH } from '../config/routingCatalog';
 import {
   listHostingPublishProfiles,
   resolveHostingPublishingProfileKind,
 } from '../explore/hostingPublishTenants';
 import {
   normalizeWorkspaceBrandKind,
-  workspaceConsoleLabel,
   type WorkspaceBrandKind,
 } from '../content/workspaceVocabulary';
-import {
-  readStoredHostingMode,
-  writeStoredHostingMode,
-  type HostingSurfaceMode,
-} from './hostingModeStorage';
 
-export type { HostingSurfaceMode } from './hostingModeStorage';
 export type HostingModeAvailability = {
   hasCommunity: boolean;
   hasWorkspace: boolean;
@@ -62,47 +55,12 @@ export const resolveHostingModeAvailability = (
   };
 };
 
-export const hostingHubPathForMode = (mode: HostingSurfaceMode): string =>
-  mode === 'community' ? HOSTING_HUB_PATH : OPERATOR_OVERVIEW_PATH;
-
-export const resolveHostingSurfaceMode = (input: {
-  ownedProfiles: readonly OwnedHostProfileDTO[];
-  hostTiers?: HostTierFlags | null;
-  preferredMode?: HostingSurfaceMode | null;
-}): HostingSurfaceMode => {
-  const availability = resolveHostingModeAvailability(input.ownedProfiles, input.hostTiers);
-  if (availability.both) {
-    return input.preferredMode ?? readStoredHostingMode() ?? 'workspace';
-  }
-  if (availability.hasWorkspace) return 'workspace';
-  return 'community';
-};
-
-/** Default home when acting as a host (not visitor Explore). */
-export const resolveHostingHubPath = (input: {
+/** Default operator home for hosts (community + workspace share one console). */
+export const resolveHostingHubPath = (_input?: {
   ownedProfiles?: readonly OwnedHostProfileDTO[] | null;
   hostTiers?: HostTierFlags | null;
-  preferredMode?: HostingSurfaceMode | null;
-}): string => {
-  const mode = resolveHostingSurfaceMode({
-    ownedProfiles: input.ownedProfiles ?? [],
-    hostTiers: input.hostTiers,
-    preferredMode: input.preferredMode,
-  });
-  return hostingHubPathForMode(mode);
-};
-
-export const persistHostingSurfaceMode = (mode: HostingSurfaceMode): void => {
-  writeStoredHostingMode(mode);
-};
-
-export const hostingModeSwitcherLabel = (
-  mode: HostingSurfaceMode,
-  workspaceBrand?: WorkspaceBrandKind | null
-): string => {
-  if (mode === 'community') return 'Community';
-  return workspaceConsoleLabel(workspaceBrand);
-};
+  preferredMode?: unknown;
+}): string => OPERATOR_OVERVIEW_PATH;
 
 /** Visitor → host control copy (role restore). */
 export const switchToHostLabel = (switchedFromRole?: string | null): string => {

@@ -19,7 +19,8 @@ describe('composeSpineGuard (DMCP Phase 4 rollup)', () => {
     const planFlow = read('src/plan/usePlanAddFlow.ts');
     expect(planFlow).toMatch(/useCreateFlow/);
     expect(planFlow).toMatch(/compose\.handleCreateTap/);
-    expect(planFlow).toMatch(/intentOpenCompose/);
+    expect(planFlow).toMatch(/openComposeOuting/);
+    expect(planFlow).toMatch(/composeKind: 'activity'/);
     expect(planFlow).not.toMatch(/availabilityOpenCompose/);
     expect(planFlow).not.toMatch(/CreateHostingActivityFlow/);
     const planPage = read('src/plan/PlanPage.tsx');

@@ -50,10 +50,12 @@ describe('memberAvailabilityLineageGuard (MIG-DISCO-REG)', () => {
     expect(area).not.toMatch(/activityMode: 'seeking'/);
   });
 
-  it('AVAIL-LINE-07: compose catalog routes seek:* to availabilityFlow', () => {
+  it('AVAIL-LINE-07: compose catalog routes intent.fixed.* to availabilityFlow', () => {
     const catalog = read('src/explore/composeFlowCatalog.ts');
+    expect(catalog).toMatch(/'intent\.fixed\.hiking'/);
     expect(catalog).toMatch(/wizard: 'availabilityFlow'/);
     expect(catalog).not.toMatch(/seekingFlow/);
+    expect(catalog).not.toMatch(/'seek\.fixed/);
   });
 
   it('AVAIL-LINE-08: hosted publish area match uses member_availability (not seeking activities)', () => {

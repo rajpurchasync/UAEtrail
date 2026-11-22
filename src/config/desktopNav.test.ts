@@ -88,7 +88,7 @@ describe('desktop sidebar IA', () => {
       'chat',
     ]);
     expect(isDesktopHostingNavActive('/operator/overview', '')).toBe(true);
-    expect(isDesktopHostingNavActive('/hosting', '')).toBe(true);
+    expect(isDesktopHostingNavActive('/operator/overview', '')).toBe(true);
     expect(isDesktopHostingNavActive('/plan', '?filter=hosting')).toBe(true);
     expect(isDesktopHostingNavActive('/explore', '')).toBe(false);
   });

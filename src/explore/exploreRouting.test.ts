@@ -20,6 +20,7 @@ import {
   parseHostFromActivityId,
 } from './routing';
 import { EXPLORE_MAP_PATH } from '../config/platform';
+import { planHostedSchedulePath } from '../plan/planRouting';
 import {
   buildExploreReturnFromEntityDetail,
   buildMapPeekReturnPath,
@@ -114,7 +115,7 @@ describe('exploreRouting navigation contract', () => {
 
   it('myActivitiesPath targets trips hub tabs', () => {
     expect(myActivitiesPath()).toBe('/plan');
-    expect(myActivitiesPath('hosted')).toBe('/hosting');
+    expect(myActivitiesPath('hosted')).toBe(planHostedSchedulePath());
   });
 
   it('explorePath supports join-invite deep link on activity pin', () => {

@@ -34,7 +34,7 @@ import type { ActivityRequestView } from '../api/types';
 import { matchesActivitySearch } from '../utils/activitySearch';
 import type { PlanHostingScheduleLens } from '../plan/planHostingTimeRange';
 import {
-  HOSTING_HUB_PATH,
+  OPERATOR_OVERVIEW_PATH,
   MESSAGES_PATH,
   OPERATOR_ACTIVITIES_PATH,
   OPERATOR_HISTORY_PATH,
@@ -47,10 +47,6 @@ import {
   PRODUCT_HOSTING_SCHEDULE_NAV_HINT,
   PRODUCT_PLAN_UPCOMING_HOSTING_CONTEXT,
 } from '../content/productNorthStar';
-import { HostingModeSwitcher } from '../components/hosting/HostingModeSwitcher';
-import { useMemberStatus } from '../hooks/useMemberStatus';
-import { persistHostingSurfaceMode } from './hostingHubRouting';
-import { useAuth } from '../context/AuthContext';
 import {
   AccountLinkList,
   AccountSectionHeader,
@@ -77,21 +73,15 @@ type HostingHubViewProps = {
 };
 
 /**
- * Dedicated `/hosting` hub (mobile + tablet + desktop) — hosting workspace only
+ * Community host schedule on `/operator/overview` — hosting workspace only
  * (upcoming, approvals, chat, manage, history — not My Plans).
  */
 export const HostingHubView = ({ refreshKey, onCreateNew }: HostingHubViewProps) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { ownedProfiles, hostTiers } = useMemberStatus({ enabled: Boolean(user) });
   // Join queue only — schedule / counts / past use scoped queries (no full tenant dump).
   const host = useConsoleHubData(true, { fetchActivities: false });
   const hostActions = useHostActivityManageActions(host.tenantId, host.reload);
   const inviteShare = useActivityInviteShareSheet();
-
-  useEffect(() => {
-    persistHostingSurfaceMode('community');
-  }, []);
 
   const [timeRange, setTimeRange] = useState<PlanHostingScheduleLens>('week');
   const [searchQuery, setSearchQuery] = useState('');
@@ -159,7 +149,7 @@ export const HostingHubView = ({ refreshKey, onCreateNew }: HostingHubViewProps)
       manageActivity: () => openManage(activity),
       openCrewChat: () =>
         void hostActions.openGroupChat(activity.id, activity.groupChatId, {
-          returnTo: HOSTING_HUB_PATH,
+          returnTo: OPERATOR_OVERVIEW_PATH,
         }),
     }),
     [hostActions, inviteShare, openManage]
@@ -228,7 +218,8 @@ export const HostingHubView = ({ refreshKey, onCreateNew }: HostingHubViewProps)
       <ConsumerInlineEmpty
         message="Host profile is still loading — try again in a moment."
         actionLabel="Refresh"
-        actionTo={HOSTING_HUB_PATH}      />
+        actionTo={OPERATOR_OVERVIEW_PATH}
+      />
     );
   }
 
@@ -236,12 +227,6 @@ export const HostingHubView = ({ refreshKey, onCreateNew }: HostingHubViewProps)
 
   return (
     <div className="space-y-4 md:space-y-5">
-      <HostingModeSwitcher
-        active="community"
-        ownedProfiles={ownedProfiles}
-        hostTiers={hostTiers}
-      />
-
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 space-y-1 px-0.5">
           <p className="text-sm font-semibold text-neutral-900 md:text-[15px]">

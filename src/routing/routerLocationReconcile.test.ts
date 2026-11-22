@@ -7,8 +7,8 @@ import {
 
 describe('routerLocationReconcile', () => {
   it('snapshots pathname search hash', () => {
-    expect(snapshotLocationUrl('/explore', '?compose=host', '#peek')).toBe(
-      '/explore?compose=host#peek'
+    expect(snapshotLocationUrl('/explore', '?compose=activity:hiking', '#peek')).toBe(
+      '/explore?compose=activity:hiking#peek'
     );
   });
 

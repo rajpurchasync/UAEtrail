@@ -57,6 +57,17 @@ describe('member-routes alignment (API notification meta ↔ FE surfacePaths)', 
     );
   });
 
+  it('planHostedSchedulePath matches FE operator overview', () => {
+    const apiRoutes = readFileSync(join(apiRoot, 'src/lib/member-routes.ts'), 'utf8');
+    const feOperator = fePathConstant('OPERATOR_OVERVIEW_PATH');
+    expect(feOperator).toBeTruthy();
+    expect(apiRoutes).toMatch(
+      /export const planHostedSchedulePath = \(\): string => OPERATOR_OVERVIEW_PATH/
+    );
+    expect(apiRoutes).toContain(`OPERATOR_OVERVIEW_PATH`);
+    expect(exportStringConst('OPERATOR_OVERVIEW_PATH', apiRoutes)).toBe(feOperator);
+  });
+
   it('legacy find posts deep-link to activity detail (not demand pins)', () => {
     const apiRoutes = readFileSync(join(apiRoot, 'src/lib/member-routes.ts'), 'utf8');
     expect(apiRoutes).toContain('explorePublishedActivityPinPath');

@@ -76,10 +76,6 @@ export const PeopleRedirect = lazy(() =>
 export const PlanBrowseRoute = lazy(() =>
   import('./planBrowseRoute').then((m) => ({ default: m.PlanBrowseRoute }))
 );
-export const HostingHubPage = lazy(() =>
-  import('../hosting/HostingHubPage').then((m) => ({ default: m.HostingHubPage }))
-);
-
 // ─── Lazy-loaded pages ───────────────────────────────────────────────────────
 export const VenuePlaceDetailPage = lazy(() =>
   import('../pages/PlaceDetailPage').then((m) => ({ default: m.VenuePlaceDetailPage }))

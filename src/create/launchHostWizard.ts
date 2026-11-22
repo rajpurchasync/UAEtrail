@@ -8,7 +8,7 @@ import {
 import { createFlowPath, createFlowPathFromWindow } from './createFlowPath';
 
 /**
- * Open a host wizard on the current product surface (`?compose=host:*`).
+ * Open an activity compose wizard on the current product surface (`?compose=activity:*`).
  * Optional session write = create-time **prefill** (place, parent activity, seeking offer).
  * Post-publish **activity graph** links (`linkedActivityId`) are separate — see `linkActivityRideshareOffer`.
  */

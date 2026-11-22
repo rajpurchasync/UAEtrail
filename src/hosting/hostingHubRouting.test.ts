@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { OwnedHostProfileDTO } from '@uaetrail/shared-types';
 import {
-  hostingHubPathForMode,
   isHostModeSession,
   resolveHostingHubPath,
   resolveHostingModeAvailability,
-  resolveHostingSurfaceMode,
   switchToHostLabel,
 } from './hostingHubRouting';
 
@@ -45,21 +43,10 @@ describe('hosting hub routing', () => {
     });
   });
 
-  it('defaults dual hosts to workspace unless preferred community', () => {
-    expect(resolveHostingSurfaceMode({ ownedProfiles: [community, agency] })).toBe('workspace');
-    expect(
-      resolveHostingSurfaceMode({
-        ownedProfiles: [community, agency],
-        preferredMode: 'community',
-      })
-    ).toBe('community');
-  });
-
-  it('resolves hub paths for each mode', () => {
-    expect(hostingHubPathForMode('community')).toBe('/hosting');
-    expect(hostingHubPathForMode('workspace')).toBe('/publishing/overview');
-    expect(resolveHostingHubPath({ ownedProfiles: [agency] })).toBe('/publishing/overview');
-    expect(resolveHostingHubPath({ ownedProfiles: [community] })).toBe('/hosting');
+  it('resolves a single operator overview for all host profiles', () => {
+    expect(resolveHostingHubPath({ ownedProfiles: [agency] })).toBe('/operator/overview');
+    expect(resolveHostingHubPath({ ownedProfiles: [community] })).toBe('/operator/overview');
+    expect(resolveHostingHubPath()).toBe('/operator/overview');
   });
 
   it('labels host restore as Switch to Host', () => {

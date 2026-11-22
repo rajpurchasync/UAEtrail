@@ -31,7 +31,6 @@ import { PEOPLE_LIST_TAB_URL_PARAM } from './peopleListBrowseUrl';
 import {
   CREWS_AVAILABILITY_SHEET_PARAM,
   CREWS_OPEN_URL_PARAM,
-  parseCrewsAvailabilitySheetOpen,
   parseCrewsAvailableOpenLens,
   serializeCrewsAvailableOpenLens,
   type CrewsAvailableOpenLens,
@@ -149,7 +148,6 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
         layout?: BrowseListLayout;
         sort?: BrowseListSortMode;
         crewsOpen?: CrewsAvailableOpenLens | null;
-        availabilitySheet?: boolean | null;
       }
     ) => {
       applyProductSearchMutation(
@@ -200,9 +198,6 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
               : null;
             if (serializedOpen) params.set(CREWS_OPEN_URL_PARAM, serializedOpen);
             else params.delete(CREWS_OPEN_URL_PARAM);
-          }
-          if (patch.availabilitySheet === false) {
-            params.delete(CREWS_AVAILABILITY_SHEET_PARAM);
           }
           if (mapOverlay) {
             preserved.forEach((value, key) => {
@@ -317,15 +312,27 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
     [searchParams]
   );
 
-  const availabilitySheetOpen = useMemo(
-    () => parseCrewsAvailabilitySheetOpen(searchParams.get(CREWS_AVAILABILITY_SHEET_PARAM)),
-    [searchParams]
-  );
+  const availabilityParamStrippedRef = useRef(false);
+  useEffect(() => {
+    if (availabilityParamStrippedRef.current) return;
+    if (searchParams.get(CREWS_AVAILABILITY_SHEET_PARAM) !== '1') return;
+    availabilityParamStrippedRef.current = true;
+    applyProductSearchMutation(
+      {
+        pathname: location.pathname,
+        navigate,
+        setSearchParams,
+        locationState: location.state,
+      },
+      (params) => {
+        params.delete(CREWS_AVAILABILITY_SHEET_PARAM);
+      }
+    );
+  }, [location.pathname, location.state, navigate, searchParams, setSearchParams]);
 
   return {
     filters,
     crewsOpenLens,
-    availabilitySheetOpen,
     venueRegions,
     geoPath,
     listCat,

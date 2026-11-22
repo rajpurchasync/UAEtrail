@@ -12,17 +12,10 @@ import {
 } from './planAdd';
 
 describe('planAdd launcher', () => {
-  it('exposes four commitment options without hint copy', () => {
+  it('exposes goal and wishlist options without hint copy', () => {
     expect(PLAN_ADD_FAB_LABEL).toBe('Add a Plan');
-    expect(PLAN_ADD_OPTIONS.map((row) => row.id)).toEqual([
-      'trip',
-      'availability',
-      'goal',
-      'wishlist',
-    ]);
+    expect(PLAN_ADD_OPTIONS.map((row) => row.id)).toEqual(['goal', 'wishlist']);
     expect(PLAN_ADD_OPTIONS.map((row) => row.label)).toEqual([
-      'Create Trip',
-      'Mark Availability',
       PLAN_GOAL_OPTION_LABEL,
       PLAN_WANT_TO_GO_LABEL,
     ]);

@@ -21,7 +21,7 @@ import {
   EXPLORE_DISCOVER_BROWSE_PATH,
   EXPLORE_MAP_PATH,
   GROUPS_PATH,
-  HOSTING_HUB_PATH,
+  OPERATOR_OVERVIEW_PATH,
   JOURNEY_MAP_PATH,
   LIST_DISCOVERY_PATH,
   MESSAGES_PATH,
@@ -137,11 +137,11 @@ export const DESKTOP_HOST_PRIMARY_NAV: readonly DesktopNavItem[] = [
     key: 'hosting',
     label: 'Hosting',
     // Static default only — `DesktopSideNav` resolves the per-member hub via `resolveHostingHubPath`.
-    to: HOSTING_HUB_PATH,
+    to: OPERATOR_OVERVIEW_PATH,
     icon: Briefcase,
-    match: [OPERATOR_CONSOLE_PREFIX, PLAN_PATH],
+    match: [OPERATOR_CONSOLE_PREFIX],
     authGate: true,
-    navHint: 'Your hosting hub — outings, requests, and workspace.',
+    navHint: 'Operator console — hosted outings, requests, and workspace.',
   },
   {
     key: 'plan',

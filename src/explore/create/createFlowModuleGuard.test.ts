@@ -156,7 +156,7 @@ describe('create flow module boundaries (CPC-9b)', () => {
     const entry = read('src/explore/create/composeFabEntry.ts');
     expect(entry).toMatch(/composeKind: 'activity'/);
     expect(entry).toMatch(/composeKind: 'place'/);
-    expect(entry).toMatch(/composeKind: 'intent'/);
+    expect(entry).toMatch(/intentOpenCompose/);
     const mapShell = read('src/explore/shell/ExploreMapShell.tsx');
     expect(mapShell).toMatch(/onPrimaryFab=\{handlePrimaryFabTap\}/);
     expect(mapShell).not.toMatch(/onPrimaryFab=\{compose\.handleCreateTap\}/);
@@ -167,10 +167,10 @@ describe('create flow module boundaries (CPC-9b)', () => {
     expect(sheet).toMatch(/CreateKindGrid/);
     expect(sheet).not.toMatch(/ADD_TARGET_OPTIONS/);
     const planAdd = read('src/plan/planAdd.ts');
-    expect(planAdd).toMatch(/Create Trip/);
-    expect(planAdd).toMatch(/Mark Availability/);
     expect(planAdd).toMatch(/Set a Goal/);
     expect(planAdd).toMatch(/Want to go/);
+    expect(planAdd).not.toMatch(/Create Trip/);
+    expect(planAdd).not.toMatch(/Mark Availability/);
     expect(planAdd).not.toMatch(/Create Wishlist/);
     expect(read('src/components/plan/PlanAddIntentSheet.tsx')).toMatch(/CreateIntentPickerSheet/);
   });

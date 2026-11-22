@@ -238,24 +238,21 @@ export {
   planSelfDemandManagePath,
   planPlansRolePath,
   normalizePlanSearchParams,
+  normalizePlanHubSearchParams,
   planSavedPath,
   planLensPath,
-} from '../plan/planRouting';
-
-export {
   planHubPath,
   profileHistoryCompletedPath,
   journeyMapPath,
   planWishlistRedirectPath,
   planJoinedUpcomingPath,
   planUpcomingDefaultPath,
-  normalizePlanHubSearchParams,
   parsePlanHistoryMainView,
   parsePlanHistoryRole,
   profileHistoryRoleChips,
   PROFILE_HISTORY_MAIN_TABS,
   type PlanHistoryMainView,
   type PlanHistoryRole,
-} from '../member-plan/planHubRouting';
+} from '../plan/planRouting';
 
 export { memberProfileLink, memberPublicPreviewLink } from '../member/memberProfileLink';

@@ -65,15 +65,8 @@ describe('composeLineageGuard (MIG-DISCO-REG compose)', () => {
     expect(compose).toMatch(/intentFixedCompose/);
     expect(compose).toMatch(/intentOpenCompose/);
     expect(compose).not.toMatch(/intent:\s*'seeking'/);
-    const violations: string[] = [];
-    for (const file of collectAppTs('src/explore/ui')) {
-      if (file.includes('availabilityFlowEngine')) continue;
-      const source = read(file);
-      if (/`seek:fixed:/.test(source) || /`seek:flexible`/.test(source)) {
-        violations.push(`${file}: outbound seek: compose literal`);
-      }
-    }
-    expect(violations).toEqual([]);
+    expect(compose).not.toMatch(/export const hostCompose/);
+    expect(read('src/config/composeWireEmitGuard.test.ts')).toMatch(/PR-E1-01/);
   });
 
   it('COMPOSE-LINE-04: availability engine has no demand map pin or seeking post writes', () => {

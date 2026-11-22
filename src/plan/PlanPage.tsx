@@ -21,12 +21,7 @@ import {
 import { PlanPageTabs } from '../components/plan/PlanPageTabs';
 import { PlanUpcomingView } from '../components/plan/PlanUpcomingView';
 import { PlanWishlistView } from '../components/plan/PlanWishlistView';
-import {
-  HOSTING_HUB_PATH,
-  JOURNEY_MAP_PATH,
-  PLAN_TODAY_PATH,
-  PROFILE_HISTORY_PATH,
-} from '../config/surfacePaths';
+import { JOURNEY_MAP_PATH, PLAN_TODAY_PATH, PROFILE_HISTORY_PATH } from '../config/surfacePaths';
 import {
   parsePlanCommitmentFilter,
   parsePlanMainTab,
@@ -35,7 +30,7 @@ import {
   type PlanMainTab,
   type PlanUpcomingLayout,
 } from './planTab';
-import { normalizePlanSearchParams } from './planRouting';
+import { normalizePlanSearchParams, planAvailabilityPath } from './planRouting';
 import { PLAN_ADD_FAB_LABEL } from './planAdd';
 import { scrollToPlanSummaryFocus } from './planSummaryFocusScroll';
 import { usePlanAddFlow } from './usePlanAddFlow';
@@ -66,14 +61,11 @@ export const PlanPage = () => {
   const planSearchKey = searchParams.toString();
 
   useEffect(() => {
-    const view = searchParams.get('view');
-    const filter = searchParams.get('filter');
-    const role = searchParams.get('role');
-    // Hosting is a dedicated surface — never render inside My Plans.
-    if (filter === 'hosting' || role === 'hosted') {
-      navigate(HOSTING_HUB_PATH, { replace: true });
+    if (searchParams.get('lens') === 'availability') {
+      navigate(planAvailabilityPath(), { replace: true });
       return;
     }
+    const view = searchParams.get('view');
     // History + journey map live on profile — not the My Plans hub.
     if (view === 'map') {
       const qs = searchParams.toString();
@@ -160,7 +152,8 @@ export const PlanPage = () => {
         focus === 'hosting' || focus === 'joined' ? 'upcoming' : 'wishlist';
 
       if (focus === 'hosting') {
-        navigate(HOSTING_HUB_PATH);
+        setCommitmentFilter('hosting');
+        if (mainTab !== 'upcoming') setMainTab('upcoming');
         return;
       }
 
@@ -251,7 +244,7 @@ export const PlanPage = () => {
                   <PlanUpcomingView
                     refreshKey={refreshKey}
                     canHost={canHost}
-                    filter={commitmentFilter === 'hosting' ? 'joined' : commitmentFilter}
+                    filter={commitmentFilter}
                     layout={upcomingLayout}
                     lensRaw={lensRaw}
                     onLayoutChange={setUpcomingLayout}

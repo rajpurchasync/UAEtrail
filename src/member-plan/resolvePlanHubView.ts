@@ -1,4 +1,4 @@
-import type { PlanHistoryRole } from './planHubRouting';
+import type { PlanHistoryRole } from '../plan/planRouting';
 
 /** Profile history list panel — `/profile/history` only (not My Plans `/plan`). */
 export type ProfileHistoryContentKey =

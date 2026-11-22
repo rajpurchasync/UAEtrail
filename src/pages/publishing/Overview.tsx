@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -8,35 +8,67 @@ import { GlassCard } from '../../components/mobile/GlassCard';
 import { FloatingActionButton } from '../../components/mobile/FloatingActionButton';
 import { LoadingRing } from '../../components/ui/loadingPrimitives';
 import { navigateToExploreHost } from '../../explore/navigateExploreHost';
-import { HostingModeSwitcher } from '../../components/hosting/HostingModeSwitcher';
 import { useMemberStatus } from '../../hooks/useMemberStatus';
-import { persistHostingSurfaceMode } from '../../hosting/hostingHubRouting';
+import { HostingHubView } from '../../hosting/HostingHubView';
+import { resolveHostingPublishingProfileKind } from '../../explore/hostingPublishTenants';
+import { PlanHostingManageProvider } from '../../plan/PlanHostingManageContext';
+import { memberCanManageHostedActivities } from '../../utils/hostedActivitiesGate';
 
 export const Overview = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const refreshKey = 0;
   const host = useConsoleHubData();
-  const { ownedProfiles, hostTiers } = useMemberStatus({ enabled: Boolean(user) });
+  const gate = useMemberStatus({ enabled: Boolean(user) });
+  const { ownedProfiles } = gate;
+  const canHost = memberCanManageHostedActivities(user, gate.canAccessPublishingWorkspace);
 
-  useEffect(() => {
-    persistHostingSurfaceMode('workspace');
-  }, []);
+  const activeProfile = useMemo(
+    () => ownedProfiles.find((profile) => profile.tenantId === host.tenantId),
+    [ownedProfiles, host.tenantId]
+  );
+  const isCommunityTenant =
+    activeProfile != null &&
+    resolveHostingPublishingProfileKind(activeProfile) === 'community';
+
+  const handleCreate = useCallback(() => {
+    navigateToExploreHost(navigate);
+  }, [navigate]);
 
   const loading = host.loading;
+
+  const workspaceOverview = (
+    <ConsoleHubSections
+      activitiesCount={host.activities.length}
+      pendingJoinRequests={host.pendingJoinRequests}
+      upcomingActivitiesCount={host.upcomingActivitiesCount}
+      pastActivitiesCount={host.pastActivitiesCount}
+      upcomingActivities={[]}
+      showUpcomingPreview={false}
+      showConsoleLinks
+    />
+  );
+
+  const communityOverview =
+    canHost && host.tenantId ? (
+      <PlanHostingManageProvider
+        refreshKey={refreshKey}
+        canHost={canHost}
+        active
+        scopedActivityLists
+      >
+        <HostingHubView refreshKey={refreshKey} onCreateNew={handleCreate} />
+      </PlanHostingManageProvider>
+    ) : (
+      workspaceOverview
+    );
 
   return (
     <>
       <ConsoleShell
         title="Overview"
         headerExtra={
-          <div className="flex w-full flex-col gap-2">
-            <HostingModeSwitcher
-              active="workspace"
-              ownedProfiles={ownedProfiles}
-              hostTiers={hostTiers}
-            />
-            <TenantSwitcher onChange={(value) => host.setTenantId(value)} />
-          </div>
+          <TenantSwitcher onChange={(value) => host.setTenantId(value)} />
         }
       >
         {host.error && !loading && (
@@ -63,28 +95,24 @@ export const Overview = () => {
             <div className="flex justify-center py-8" role="status" aria-label="Loading">
               <LoadingRing size="md" />
             </div>
+          ) : isCommunityTenant ? (
+            communityOverview
           ) : (
-            <ConsoleHubSections
-              activitiesCount={host.activities.length}
-              pendingJoinRequests={host.pendingJoinRequests}
-              upcomingActivitiesCount={host.upcomingActivitiesCount}
-              pastActivitiesCount={host.pastActivitiesCount}
-              upcomingActivities={[]}
-              showUpcomingPreview={false}
-              showConsoleLinks
-            />
+            workspaceOverview
           )}
         </div>
       </ConsoleShell>
 
-      <FloatingActionButton
-        icon={<Plus className="h-6 w-6" strokeWidth={2.5} aria-hidden />}
-        label="Add activity"
-        extended
-        text="Add activity"
-        disabled={!host.tenantId}
-        onClick={() => navigateToExploreHost(navigate)}
-      />
+      {!isCommunityTenant ? (
+        <FloatingActionButton
+          icon={<Plus className="h-6 w-6" strokeWidth={2.5} aria-hidden />}
+          label="Add activity"
+          extended
+          text="Add activity"
+          disabled={!host.tenantId}
+          onClick={handleCreate}
+        />
+      ) : null}
     </>
   );
 };

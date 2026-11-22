@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 const ROOT = process.cwd();
@@ -222,6 +222,30 @@ describe('crossContextFoundationsGuard', () => {
     expect(manifestDiscovery?.feRoots?.some((p) => p === 'src/explore/discoveryRuntime.ts')).toBe(
       true
     );
+  });
+
+  it('CTX-FOUND-14: operator console UI uses publishing workspace API (not GET /me/activities)', () => {
+    const scanDirs = ['src/pages/publishing', 'src/hosting'];
+    const violations: string[] = [];
+    for (const dirRel of scanDirs) {
+      const dir = join(ROOT, dirRel);
+      if (!existsSync(dir)) continue;
+      const walk = (dirPath: string) => {
+        for (const entry of readdirSync(dirPath)) {
+          const full = join(dirPath, entry);
+          const st = statSync(full);
+          if (st.isDirectory()) walk(full);
+          else if ((entry.endsWith('.ts') || entry.endsWith('.tsx')) && !entry.endsWith('.test.ts')) {
+            const rel = full.replace(/\\/g, '/').slice(ROOT.length + 1);
+            const content = read(rel);
+            if (/\/me\/activities/.test(content)) violations.push(rel);
+          }
+        }
+      };
+      walk(dir);
+    }
+    expect(violations).toEqual([]);
+    expect(read('src/api/domains/publishingWorkspace.ts')).toMatch(/\/publishing\/activities/);
   });
 
   it('CTX-FOUND-12: public facility detail — GET /facilities/:id client only in facilities domain', () => {

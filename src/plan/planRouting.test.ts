@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { OPERATOR_OVERVIEW_PATH } from '../config/surfacePaths';
 import {
   normalizePlanSearchParams,
   planAvailabilityPath,
@@ -25,11 +26,11 @@ describe('planRouting', () => {
   });
 
   it('builds canonical upcoming and wishlist paths', () => {
-    expect(planUpcomingPath('hosting')).toBe('/hosting');
+    expect(planUpcomingPath('hosting')).toBe('/plan?view=plans&filter=hosting');
     expect(planUpcomingPath('joined')).toBe('/plan?view=plans&filter=joined');
     expect(planWishlistTabPath()).toBe('/plan?view=plans&tab=wishlist');
-    expect(planAvailabilityPath()).toBe('/plan?view=plans&lens=availability');
-    expect(planHostedSchedulePath()).toBe('/hosting');
+    expect(planAvailabilityPath()).toBe('/explore?list=1&view=people&compose=intent%3Aopen');
+    expect(planHostedSchedulePath()).toBe(OPERATOR_OVERVIEW_PATH);
     expect(planJoinedSchedulePath()).toBe(planUpcomingPath('joined'));
     expect(planPlansRolePath('hosted')).toBe(planHostedSchedulePath());
     expect(planPlansRolePath('wishlist')).toBe(planWishlistTabPath());
@@ -51,11 +52,11 @@ describe('planRouting', () => {
     expect(params.get('lens')).toBeNull();
   });
 
-  it('keeps availability lens for deep links', () => {
+  it('strips availability lens (compose lives on explore)', () => {
     const params = new URLSearchParams('view=plans&lens=availability');
     const { changed } = normalizePlanSearchParams(params, true);
-    expect(params.get('lens')).toBe('availability');
-    expect(changed).toBe(false);
+    expect(params.get('lens')).toBeNull();
+    expect(changed).toBe(true);
   });
 
   it('preserves tab=wishlist when normalizing plan hub params', () => {

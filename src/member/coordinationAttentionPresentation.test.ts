@@ -1,15 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import type { MemberCoordinationAttentionItemDTO } from '@uaetrail/shared-types';
+import { planHostedSchedulePath } from '../plan/planRouting';
 import {
   coordinationAttentionLabel,
   coordinationAttentionPath,
 } from './coordinationAttentionPresentation';
 
 describe('coordinationAttentionPresentation', () => {
-  it('maps host queue to dedicated Hosting hub', () => {
+  it('maps host queue to operator schedule hub', () => {
     const item: MemberCoordinationAttentionItemDTO = { kind: 'host_join_queue', count: 2 };
     const path = coordinationAttentionPath(item);
-    expect(path).toBe('/hosting');
+    expect(path).toBe(planHostedSchedulePath());
     expect(coordinationAttentionLabel(item)).toContain('2 people');
   });
 

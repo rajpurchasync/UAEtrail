@@ -29,10 +29,10 @@ describe('resolveCreateFabComposeEntry', () => {
     });
   });
 
-  it('opens find crew on crews context', () => {
+  it('opens intent open compose on crews context', () => {
     expect(resolveCreateFabComposeEntry('/list', '?listCat=people')).toEqual({
-      surface: 'menu',
       composeKind: 'intent',
+      mode: 'open',
     });
   });
 });

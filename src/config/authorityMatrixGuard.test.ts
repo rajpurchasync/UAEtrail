@@ -56,17 +56,27 @@ describe('authorityMatrixGuard (DMCP Phase 0)', () => {
     }
   });
 
-  it('AUTH-03: seek compose emit only in shared-types compose-route', () => {
+  it('AUTH-03: legacy compose emit only in shared-types compose-route (+ parse tests)', () => {
     const violations: string[] = [];
-    for (const file of collectTs('src/explore/ui', { skipTests: true })) {
-      if (file.includes('availabilityFlowEngine')) continue;
-      const source = read(file);
-      if (/`seek:fixed:/.test(source) || /`seek:flexible`/.test(source)) {
-        violations.push(`${file}: outbound seek: compose literal`);
+    const roots = ['src/explore/ui', 'src/explore', 'src/list', 'src/create'] as const;
+    for (const root of roots) {
+      for (const file of collectTs(root, { skipTests: true })) {
+        if (file.includes('availabilityFlowEngine')) continue;
+        const source = read(file);
+        if (
+          /`seek:fixed:/.test(source) ||
+          /`seek:flexible`/.test(source) ||
+          /`host:\$\{/.test(source) ||
+          /compose=host(?:[:\&]|$)/.test(source)
+        ) {
+          violations.push(`${file}: outbound legacy compose literal`);
+        }
       }
     }
     expect(violations).toEqual([]);
     expect(read('packages/shared-types/src/compose-route.ts')).toMatch(/seek:flexible/);
+    expect(read('packages/shared-types/src/compose-route.ts')).toMatch(/migrateLegacyComposeWire/);
+    expect(read('src/config/composeWireEmitGuard.test.ts')).toMatch(/PR-E1-01/);
     expect(read('src/config/composeLineageGuard.test.ts')).toMatch(/COMPOSE-LINE-03/);
   });
 

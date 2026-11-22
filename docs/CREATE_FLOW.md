@@ -4,13 +4,13 @@
 
 **Explore is discovery** (`/explore` map, `/list` browse). It is **not** the create product. Per-tab **FABs are launchers** into these flows; `?compose=` is the create-flow session on the **current surface** (`/explore`, `/list`, later `/plan`).
 
-**Program:** Implementation follows **Program CPC** ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4, debt **C26**). **CPC-9+** ships v3 `?compose=` wire (`host` \| `seek` \| `add`); leftover plan/contribute/organize/find tokens are not accepted.
+**Program:** **Program CPC** ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4) + **`MIG-PLATFORM-COMPOSE-OPERATOR-2026`** ([`refactor-program.json`](../scripts/refactor-program.json)).
 
-**Migration — [`MIG-PLATFORM-COMPOSE-OPERATOR-2026`](../scripts/refactor-program.json) (in progress):** **Target emit** (product code after wire PRs): `activity:*` \| `place:*` \| `intent:open` \| `intent:fixed:*` — inbound legacy `host` / `add` / `availability` / `seek` **parse-only** in [`packages/shared-types/src/compose-route.ts`](../packages/shared-types/src/compose-route.ts). **Intent** publishes via **`PUT /me/availability`**; **wishlist** saves via **`POST /me/wishlist`** only (**no** compose branch). **Operator** member console → SPA **`/operator/*`** (HTTP **`/publishing/*`** unchanged). Until PR-A merges, **running app** still emits v3 below; `migPlatformComposeOperatorProgramGuard` tracks program alignment.
+**Compose wire (shipped emit):** `?compose=` → **`activity:*`** \| **`place:*`** \| **`intent:open`** \| **`intent:fixed:*`** only. Inbound bookmarks `host` / `add` / `availability` / `seek` → **parse-only** in [`packages/shared-types/src/compose-route.ts`](../packages/shared-types/src/compose-route.ts) (`migrateLegacyComposeWire`). **Intent** publishes via **`PUT /me/availability`**. **Wishlist** → **`POST /me/wishlist`** only ([`saveWishlistTarget`](../src/wishlist/saveWishlistTarget.ts) — not compose). **Operator** schedule + workspace → SPA **`/operator/*`** (tenant HTTP **`/publishing/*`**). Guards: `composeWireEmitGuard`, `migPlatformComposeOperatorProgramGuard`.
 
-**Vocabulary (UI):** Tab FABs **Create Trip** · **Add a venue** · **Find a Crew** skip straight to kind options. Do not open **Host · Find crew · Add on map** (“I would like to…”) from a tab FAB. **Compose** stays reserved for **message / email compose** later. Bottom nav **Plans** (`/plan`) **Add a Plan** = commitments launcher (Create Trip · Mark Availability · Set a Goal · Want to go) — not a fourth Explore lens.
+**Vocabulary (UI):** Tab FABs **Create Trip** · **Add a venue** · **Find a Crew** open kind-specific compose (no stale top-level Host · Find crew · Add menu). **Compose** stays reserved for **message / email compose** later. **My Plans** (`/plan`) **Add a Plan** sheet = **Set a Goal** · **Want to go** only; publish an outing or mark availability use the same **`?compose=`** session as Explore.
 
-**Vocabulary (wire):** Create query `?compose=…` — **v3** `host:<kind>` \| `seek:fixed:<kind>` \| `seek:flexible` \| `add:place:*` \| `add:facility:*`. Leftover plan/contribute/organize/find tokens are not accepted ([`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.7).
+**Vocabulary (wire):** See [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.7. Legacy `host` / `seek` / `add` tokens are **not** emitted from `src/`.
 
 **URL updates:** Browse/list filters and Plan hub query (`?planAdd=`, tabs) commit via `applyProductSearchMutation` (`src/routing/productSearchMutation.ts`); explore browse also uses `syncExploreUrl`. Query reads use React Router `useSearchParams` (via `useProductSearchParams`). Do not call raw `history.replaceState` for product navigation.
 
@@ -22,9 +22,9 @@ Companion docs: [`DOCS_INDEX.md`](./DOCS_INDEX.md), [`NORTHSTAR.md`](./NORTHSTAR
 
 Code (today): `src/create/` (session + kind tiles) · `src/plan/planAdd.ts` · `src/explore/compose.ts`, `CreateKindSheet.tsx`, `IntentOpenComposeSheet.tsx`, `hostingFlowEngine.ts` / `hostingFlows/*`, `availabilityFlowEngine.ts`, `addFlow.ts`.
 
-**Status:** Spec **approved (CPC)** · per-tab create FABs skip to kind options + v3 compose wire **shipped** (`host` \| `seek` \| `add` only; see [Implementation status](#implementation-status))
+**Status:** Spec **approved (CPC)** · compose kinds **activity · place · intent** + operator **`/operator/*`** **shipped** (see [Implementation status](#implementation-status))
 
-**Last updated:** 2026-11-16
+**Last updated:** 2026-11-22
 
 ---
 
@@ -51,16 +51,16 @@ Tab context is known. **Do not** show `I would like to…` / Host · Find crew �
 
 | Tab FAB | Opens first | Wire |
 |---------|-------------|------|
-| **Create Trip** (Trips map/list) | Hiking · Camping · Rideshare · Others | `compose=host` |
-| **Add a venue** (Venues map/list) | Hiking Trail · Camping Spots · Facilities · Others | `compose=add` |
-| **Find a Crew** (Crews) | Post on the map · Share availability | `compose=seek` |
-| **Add a Plan** (`/plan`) | Create Trip · Mark Availability · Set a Goal · Want to go | `planAdd=menu` then existing flows |
+| **Create Trip** (Trips map/list) | Hiking · Camping · Rideshare · Others | `compose=activity` (kind grid) |
+| **Add a venue** (Venues map/list) | Hiking Trail · Camping Spots · Facilities · Others | `compose=place` |
+| **Find a Crew** (Crews) | Share availability (intent open) | `compose=intent:open` |
+| **Add a Plan** (`/plan`) | Set a Goal · Want to go | `planSheet=menu` (goals/wishlist — not compose) |
 
-Kind pick → the matching create wizard (`hostingFlowEngine`, `addFlow`, `availabilityFlowEngine`). Venue options map via `addComposeFromVenueKind` (not a Place vs Facility submenu).
+Kind pick → wizards: `hostingFlowEngine` (activity), `addFlow` (place), `availabilityFlowEngine` (intent fixed), `IntentOpenComposeSheet` (intent open).
 
-**Plans FAB** reuses those wizards — it does not add a second compose stack. **Create Trip** → `compose=host` kind grid. **Mark Availability** → `compose=seek:flexible` (`PlanAvailabilitySection`). **Set a Goal** → existing goal sheet on Wishlist. **Want to go** → catalog venue picker (`planAdd=wishlist`, `locationId` on `user_wishlist`; journey map composes those places). Shared tiles: `src/create/CreateKindGrid.tsx`. FAB shows on mobile and desktop.
+**Plans FAB** does not duplicate compose: **Want to go** → `saveWishlistTarget` / `planSheet=wishlist`. **Set a Goal** → wishlist tab goal sheet. **Host an outing** / **mark availability** → `usePlanAddFlow.openComposeOuting` or explore/list FABs (`activity` / `intent:open`). Tiles: `src/create/CreateKindGrid.tsx`.
 
-The leftover **Host · Find crew · Add on map** sheet (`compose=1`) is only for an explicit combined menu, not tab FABs.
+Optional combined menu: `compose=menu` (`CreateKindSheet`) — not used from tab FABs.
 
 **Disambiguation:** Bottom nav **Plans** (`/plan`) = upcoming commitments, wishlist, goals, availability. Explore FABs publish to the catalog; Plan FAB records *your* next commitments.
 
@@ -78,15 +78,15 @@ The leftover **Host · Find crew · Add on map** sheet (`compose=1`) is only for
 
 ## Level 2 — Host (activity kinds)
 
-Kind grid (hiking, camping, rideshare, event, other activity) → hosting wizard. Wire: `host:<kind>`.
+Kind grid (hiking, camping, rideshare, event, other activity) → hosting wizard. Wire: `activity:<kind>`.
 
 ## Product pillars vs compose wire
 
-| Product pillar | FAB / Plan entry | Wire `?compose=` (code only) |
-|----------------|------------------|------------------------------|
-| **Host** (Create Trip) | Trips tab FAB; Plan → Create Trip | `host:<kind>` |
-| **Add** (venue / place / facility) | Venues tab FAB | `add:place:*` \| `add:facility:*` |
-| **Availability** (Find a Crew) | Crews tab FAB; Plan → Mark Availability | `seek:flexible` (share availability) · `seek:fixed:<kind>` (post on map) |
+| Product pillar | FAB / Plan entry | Wire `?compose=` (emit) |
+|----------------|------------------|-------------------------|
+| **Activity** (Create Trip) | Trips tab FAB; compose from Plan | `activity:<kind>` |
+| **Place** (venue / place / facility) | Venues tab FAB | `place:<kind>` \| `place:facility:<kind>` |
+| **Intent** (Find a Crew) | Crews tab FAB; calendar “edit availability” | `intent:open` (flexible) · `intent:fixed:<kind>` (map slot) |
 
 **Compose route guard:** sign-in only before wizards open. **Host** `publish.canPublish` runs at the hosting wizard **publish** step; Add / availability never use publish gate on the route layer.
 
@@ -96,11 +96,11 @@ Kind grid (hiking, camping, rideshare, event, other activity) → hosting wizard
 |-------|------|-----------|----------|
 | **Compose entry** | User starts a wizard | `?compose=…` + optional `writeHostingWizardSession` scope (`launchHostWizard`) | Host from place card · linked rideshare from parent activity · map offer ride (explore bridge prefill) |
 | **Activity graph** | After publish / host tools | API updates on `activities` | `linkParentToRideshareActivity`, paste link panels, `linkedActivityId` / `linkedRideshareActivityId` |
-| **Plan / social** | Commitments, not map create | `/plan`, wishlist, goals | Want to go, Mark Availability (`?compose=seek:flexible`) |
+| **Plan / social** | Commitments, not map create | `/plan`, wishlist, goals | Want to go (`POST /me/wishlist`); mark availability → explore `intent:open` |
 
 Do not bounce consumers to `/explore` for compose when `createFlowPath` can keep the current surface (`/list`, `/plan`, `/activity/:id`).
 
-**Flexible availability** (`seek:flexible`) entry: FAB Find a Crew → Share availability · Plan → Mark Availability · list/explore people **Available** → edit (compose). Legacy list `?availability=1` migrates once to compose — do not open a second sheet.
+**Intent open** (`intent:open`) entry: FAB Find a Crew · `planAvailabilityPath()` · list/explore **Available** → compose. Legacy list `?availability=1` and Plan `?lens=availability` strip or redirect — no second sheet.
 
 ## Level 2 — Find crew (availability pillar)
 
@@ -333,13 +333,13 @@ Track what is **spec** vs **shipped**. Update this table in the same PR that lan
 | Intent **open** (`intent:open`) FAB sheet | ✅ | ✅ (`IntentOpenComposeSheet`, `PlanAvailabilitySection` variant `fab`) |
 | Plan **Available** lens — hosted outing hint after save | ✅ | ✅ (`PlanAvailabilitySection` + `match-preview` when outings align) |
 | Host publish — Find crew availability count notice (explore map banner; operator activities list) | ✅ | ✅ (`hostPublishAvailabilityNoticeMessage` + `GET /explore/people/availability`) |
-| Compose shell (`ComposeHost` — host + availability + add wizards) | ✅ | ✅ (single `CreateFlowProvider` session; list crews “mark available” uses `?compose=seek:flexible`, not duplicate sheet) |
+| Compose shell (`ComposeHost` — activity + place + intent wizards) | ✅ | ✅ (single `CreateFlowProvider`; crews FAB → `intent:open`) |
 | Explore **Locations** lens (legacy URL) | Alias of **Spots** — Area is **not** a pin | ✅ (`pinKind=locations` → places) |
 | Area match notifications (availability ↔ hosted in area) | ✅ | ✅ (`availability-hosted-match-notifications.ts` — `notifyAvailabilityHoldersInAreaOfHostedActivity`) |
 | Availability ↔ hosted (date + activity type; notify + FAB hosted preview) | ✅ | ✅ (`availability-hosted-match-notifications.ts`, `GET /me/availability/match-preview` → `hostedOutings` only) |
 | **Find crew → Available** tab (all members with future slots in range) | ✅ | ✅ (`GET /explore/people/availability` — not match-preview) |
 
-**Current code:** `/explore?compose=…` is **host / seek / add** (`host:hiking`, `seek:fixed:hiking`, `seek:flexible`, `add:place:hiking`, `add:facility:*`). Leftover plan/contribute/organize/find/request/addLocation query keys are not compose. One Host tree: `create/hosting` + `hostingFlowEngine` + `hostingFlows`. Seeking: `availabilityFlowEngine` (no `demandFlow.ts` shim).
+**Current code:** Emit **`activity:*` \| `place:*` \| `intent:*`** only. Wizards: `hostingFlowEngine` + `hostingFlows` (activity), `addFlow` (place), `availabilityFlowEngine` + `IntentOpenComposeSheet` (intent). Plan wishlist: `saveWishlistTarget`. Operator console: `/operator/overview` (`HostingHubView`).
 
 ### Module naming (CPC-9a)
 
@@ -349,11 +349,11 @@ Track what is **spec** vs **shipped**. Update this table in the same PR that lan
 |------|---------|
 | **`Explore*` on hooks/components** | Map/browse shell only (`useExploreMapViewport`, pin peek). **Not** FAB compose — compose mounts on `/explore` **and** `/list`. |
 | **`src/explore/create/`** | Cross-surface compose: URL state, guards, `ComposeHost`, hosting prefill/reorganize. |
-| **Product verbs in shell props** | `ComposeHost`: `hostWizardOpen`, `availabilityFixedWizardOpen`, `availabilityFlexibleOpen`, `addWizardOpen` — availability uses product names; wire stays `seek:*`. |
-| **Wizard modules (catalog `wizard` field)** | `hostingFlow` → `hostingFlowEngine.ts` + `hostingFlows/*`; `seekingFlow` → `availabilityFlowEngine.ts`. Removed: `hostingFlow.ts` facade, `seekingFlow.ts`, `organizeFlow.ts`, `organizeFlows/`, `createOrganize/`, `hostingCatalog/`, `CreateActivityFlow.tsx`. |
-| **“Catalog” in code** | **Place/facility inventory only** (`GET */catalog`, Add-on-map submit). Per-kind **hosting** wizards = `hostingFlows` (`HostingKindFlow`) — not catalog. |
-| **“Plan” in code** | Bottom nav `/plan` (schedule + availability) — **not** the FAB. FAB wire: `host:*` \| `seek:*` \| `add:*`. |
-| **Compose flow ids** | `host.*` / `seek.fixed.*` / `add.*` via `composeFlowIds.ts`. |
+| **Product verbs in shell props** | `ComposeHost`: activity / place / intent wizard open flags (`intentOpenWizardOpen`, …). |
+| **Wizard modules (catalog `wizard` field)** | `hostingFlow` (activity), `availabilityFlow` (intent), `addFlow` (place). Retired: `seekingFlow`, `organizeFlow`, `CreateActivityFlow`. |
+| **“Catalog” in code** | **Place/facility inventory** (`GET */catalog`). Activity wizards = `hostingFlows` — not catalog. |
+| **“Plan” in code** | `/plan` schedule + goals/wishlist — FAB `planSheet` only. Compose emit: `activity` \| `place` \| `intent`. |
+| **Compose flow ids** | `activity.*` / `intent.fixed.*` / `intent.open` / `place.*` via `composeFlowIds.ts`. |
 | **`Explore` in URLs** | `explorePath({ compose })` stays — that is the **route**, not the module name. |
 
 ### Naming (no `Mobile` prefix)

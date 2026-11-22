@@ -16,8 +16,8 @@
     {
       "id": "compose-seek-inbound",
       "module": "packages/shared-types/src/compose-route.ts",
-      "rule": "migrateLegacyComposeWire / parseComposeWire migrates seek:* · host:* · availability:* · add:* → activity · intent · place inbound only",
-      "forbidEmitIn": ["src/explore", "src/list", "apps/api/src/routes"]
+      "rule": "migrateLegacyComposeWire / parseComposeWire — inbound only: seek:* · host:* · availability:* · add:* → activity · intent · place; no wishlist:* compose",
+      "forbidEmitIn": ["src/explore", "src/list", "src/plan", "src/create", "apps/api/src/routes"]
     },
     {
       "id": "map-source-inbound",
@@ -36,6 +36,29 @@
       "id": "seek-compose-emit",
       "pattern": "`seek:fixed:`|`seek:flexible`",
       "allowedModules": ["packages/shared-types/src/compose-route.ts", "packages/shared-types/src/compose-route.test.ts"]
+    },
+    {
+      "id": "host-compose-emit",
+      "pattern": "`host:`|compose=host",
+      "allowedModules": [
+        "packages/shared-types/src/compose-route.ts",
+        "packages/shared-types/src/compose-route.test.ts",
+        "src/explore/compose.test.ts"
+      ]
+    },
+    {
+      "id": "add-compose-emit",
+      "pattern": "`add:place:`|compose=add",
+      "allowedModules": [
+        "packages/shared-types/src/compose-route.ts",
+        "packages/shared-types/src/compose-route.test.ts",
+        "src/explore/compose.test.ts"
+      ]
+    },
+    {
+      "id": "wishlist-compose-emit",
+      "pattern": "`wishlist:`|compose=wishlist|composeKind.*wishlist",
+      "allowedModules": ["src/wishlist/wishlistWriteFacadeGuard.test.ts"]
     },
     {
       "id": "explore-hub-module",

@@ -96,6 +96,16 @@ describe('availabilityLineageRepoGuard', () => {
     expect(plan).not.toMatch(/\bseeking: boolean/);
   });
 
+  it('AVAIL-REPO-05: intent open compose sheet replaces MarkAvailabilityComposeSheet', () => {
+    expect(
+      statSync(join(process.cwd(), 'src/explore/ui/IntentOpenComposeSheet.tsx')).isFile()
+    ).toBe(true);
+    const composeHost = readFileSync(join(process.cwd(), 'src/explore/create/ComposeHost.tsx'), 'utf8');
+    expect(composeHost).toMatch(/intentOpenWizardOpen/);
+    expect(composeHost).toMatch(/IntentOpenComposeSheet/);
+    expect(composeHost).not.toMatch(/MarkAvailabilityComposeSheet/);
+  });
+
   it('AVAIL-REPO-03: activity mode filter uses availability wire (not seeking serialize)', () => {
     const mode = readFileSync(join(process.cwd(), 'src/explore/exploreActivityModeFilter.ts'), 'utf8');
     expect(mode).toMatch(/return 'availability'/);

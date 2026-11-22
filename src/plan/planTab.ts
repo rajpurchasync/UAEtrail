@@ -1,4 +1,4 @@
-import { HOSTING_HUB_PATH, PLAN_PATH } from '../config/surfacePaths';
+import { PLAN_PATH } from '../config/surfacePaths';
 
 /** Primary Plan mobile tabs (bottom of Plan chrome). */
 export type PlanMainTab = 'upcoming' | 'wishlist';
@@ -66,8 +66,9 @@ export const planMainTabPath = (
   return `${PLAN_PATH}?${params.toString()}`;
 };
 
-/** Dedicated community hosting hub (not a My Plans filter). */
-export const planHostingFilterPath = (): string => HOSTING_HUB_PATH;
+/** Hosting lens on My Plans upcoming tab (`filter=hosting`). */
+export const planHostingFilterPath = (): string =>
+  planMainTabPath('upcoming', { filter: 'hosting' });
 
 export const planJoinedFilterPath = (): string =>
   planMainTabPath('upcoming', { filter: 'joined' });
@@ -127,8 +128,9 @@ export const normalizePlanMobileParams = (
     params.delete('layout');
   }
 
-  if (lens === 'availability' && params.get('tab') !== 'wishlist') {
-    // Keep availability as lens for deep links until moved to profile sheet.
+  if (lens === 'availability') {
+    params.delete('lens');
+    changed = true;
   }
 
   return { changed };

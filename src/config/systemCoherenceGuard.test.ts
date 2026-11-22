@@ -263,7 +263,7 @@ describe('systemCoherenceGuard', () => {
   it('workspace vocabulary module is canonical for organizer/operator copy', () => {
     expect(existsSync(join(ROOT, 'src/content/workspaceVocabulary.ts'))).toBe(true);
     const vocab = readFileSync(join(ROOT, 'src/content/workspaceVocabulary.ts'), 'utf8');
-    expect(vocab).toMatch(/Publishing workspace/);
+    expect(vocab).toMatch(/Operator dashboard/);
     expect(vocab).toMatch(/Operator workspace/);
     expect(existsSync(join(ROOT, 'src/content/workspaceVocabulary.ts'))).toBe(true);
     expect(existsSync(join(ROOT, 'src/content/workspaceProductLanguageGuard.test.ts'))).toBe(true);

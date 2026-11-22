@@ -17,7 +17,7 @@ import { AccountAvatarModal } from '../components/account';
 import { useParticipantHubData } from '../hooks/useParticipantHubData';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { useMemberGoals } from '../hooks/useMemberGoals';
-import { ProfileConsumerHub } from '../components/profile/ProfileConsumerHub';
+import { ProfileHome } from '../components/profile/ProfileHome';
 import type { ProfileHubEditFocus } from '../components/profile/ProfileHubDetailsCard';
 import { ProfileHubFieldSheets } from '../components/profile/ProfileHubFieldSheets';
 import { buildProfileCompletion } from '../utils/profileCompletion';
@@ -239,7 +239,7 @@ export const Profile = () => {
         ) : null}
 
         <PullToRefresh onRefresh={handleRefresh} disabled={loading}>
-          <ProfileConsumerHub
+          <ProfileHome
             displayName={displayName}
             roleLabel={roleLabel}
             avatarUrl={avatarUrl}

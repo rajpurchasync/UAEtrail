@@ -6,7 +6,7 @@ This glossary maps **product concepts** to **code and routes**. Use it when nami
 
 **Product north star:** [`NORTHSTAR.md`](./NORTHSTAR.md) — people finding company outdoors; code entities below are *how* the product delivers that.
 
-See also [`NAVIGATION.md`](./NAVIGATION.md) for browse vs personal-hub routing rules and [`CREATE_FLOW.md`](./CREATE_FLOW.md) for FAB **Host · Find crew · Add on map**.
+See also [`NAVIGATION.md`](./NAVIGATION.md) for browse vs personal-hub routing rules and [`CREATE_FLOW.md`](./CREATE_FLOW.md) for tab FABs **Create Trip · Add a venue · Find a Crew**.
 
 ## What · Where · Who · How (simple map)
 
@@ -83,7 +83,7 @@ There is **no** `Trip` table, `TripDTO`, or trips API. Everything on the map tha
 | **Outing / plan** | Product copy | Same as activity — emotional, member-facing | UI strings, north star |
 | **Host** | Action (FAB) | Host flow that **creates or edits** an activity | `compose=host`, hosting wizards — not an entity |
 | **Event** | Overloaded — read context | (1) **Place kind** → venue page `/venue/:id` (2) **Host chip** → scheduled outing `activityType: event` → `/activity/:id` (3) Legacy JSON `event` on some payloads → use **`activity`** | Never a fourth entity; prefer **place** vs **activity** in code |
-| **Trip / Trips** | **Legacy UI label** | Redirects to **`/plan`** (My Plans) and **`/profile/history`** — not a domain type | `planHubRouting.ts`, `components/plan/*`, `components/profile-history/*` — **not** API module names |
+| **Trip / Trips** | **Legacy UI label** | Redirects to **`/plan`** (My Plans) and **`/profile/history`** — not a domain type | `planRouting.ts`, `components/plan/*`, `components/profile-history/*` — **not** API module names |
 | **Hosted** | Relationship | You publish/manage an activity as a host tenant | `HostedActivitiesSection`, org hub — not a type of outing |
 | **Joined** | Relationship | You RSVP’d or have a pending join request | `getMeActivities`, `getMeRequests` |
 | **Self / My plans** | Relationship | Demand or self-started compose (not host publish) | Trips tab slice; still activities or demand when persisted |

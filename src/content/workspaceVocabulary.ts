@@ -38,12 +38,15 @@ export const normalizeWorkspaceBrandKind = (
   return null;
 };
 
-/** Management shell title (`/publishing/*` routes). */
+/**
+ * Management shell title — member SPA **`/operator/*`** (HTTP API stays `/publishing/*`).
+ * Buddy hosts see community schedule on **`/operator/overview`** (`UPL_OPERATOR_DASHBOARD`).
+ */
 export const workspaceConsoleLabel = (kind?: WorkspaceBrandKind | null): string => {
   if (kind === 'guide') return 'Guide workspace';
   if (kind === 'agency') return 'Operator workspace';
   if (kind === 'shop') return 'Operator workspace';
-  return 'Publishing workspace';
+  return 'Operator dashboard';
 };
 
 export const workspaceProfileLabel = (kind?: WorkspaceBrandKind | null): string => {

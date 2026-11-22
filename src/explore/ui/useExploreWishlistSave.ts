@@ -5,11 +5,11 @@ import { useNavigate } from 'react-router-dom';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { resolveExploreWishlistTarget } from '../../discovery/discoveryCardModel';
 import {
-  addWishlistTarget,
   checkWishlistTarget,
   invalidateMeWishlistQueries,
   removeWishlistItemById,
 } from '../../hooks/wishlistClientApi';
+import { saveWishlistFromResolvedTarget } from '../../wishlist/saveWishlistTarget';
 import { wishlistTargetStateQueryKey } from '../../hooks/clientQueryKeys';
 import { useAuth } from '../../context/AuthContext';
 
@@ -68,7 +68,7 @@ export const useExploreWishlistSave = (card: DiscoveryCardModel): ExploreWishlis
         queryClient.setQueryData(wishlistQueryKey, { saved: false, wishlistItemId: null });
         setNotice('Removed from your wishlist.');
       } else {
-        const item = await addWishlistTarget(target);
+        const item = await saveWishlistFromResolvedTarget(target);
         queryClient.setQueryData(wishlistQueryKey, { saved: true, wishlistItemId: item.id });
         setNotice(
           target.locationId || target.areaId

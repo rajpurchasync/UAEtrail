@@ -15,6 +15,7 @@ import {
   JOURNEY_MAP_PATH,
   PROFILE_HISTORY_PATH,
   HOSTING_HUB_PATH,
+  OPERATOR_OVERVIEW_PATH,
   PLAN_PATH,
   PLAN_TODAY_PATH,
   PROFILE_SETTINGS_PATH,
@@ -240,7 +241,7 @@ export const HOST_MODE_HAMBURGER_HOSTING_ITEM = {
   kind: 'link',
   label: 'Hosting',
   emoji: '📋',
-  to: HOSTING_HUB_PATH,
+  to: OPERATOR_OVERVIEW_PATH,
   match: [HOSTING_HUB_PATH, OPERATOR_CONSOLE_PREFIX],
   authGate: true,
 } as const satisfies ConsumerHamburgerMenuItem;

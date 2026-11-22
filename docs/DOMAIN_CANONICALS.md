@@ -26,7 +26,7 @@ There are **five public entity kinds** on the wire (`EntityKind` / `EntityRef`):
 
 **Find crew** is not a sixth entity kind on URLs — **discover** label only. Fixed time/place posts are **`member_availability`** map items (`source: availability`, `pin=availability:{userId}:{slotId}` → member profile). Legacy **`activityMode: seeking`** rows are retired from the catalog. Not `/demand/:id`.
 
-**Plan** (`/plan`) is the active member tab — **My Plans**: upcoming list or **calendar** (`layout=calendar` — joined, hosting, availability markers), wishlist + goals; **share availability** editor is `?lens=availability` (`planAvailabilityPath()`), not the calendar layout. **Outing history** (`/profile/history`) is profile inventory (past outings, journey map). Wishlist deep links: `planWishlistTabPath()` / `planSavedPath()` (`tab=wishlist`; legacy `lens=saved|goals` normalizes on load). Page module: `src/plan/PlanPage.tsx`. Inbound `/trips` and `/trips/map` redirect via `INBOUND_TRIPS_MAP_PATH` / `resolveInboundTripsHubRedirect` (`inboundTripsRedirect.ts`) — not a domain type. Consumer path helpers: import `config/routingCatalog` (not `member-plan/planHubRouting` directly).
+**Plan** (`/plan`) is the active member tab — **My Plans**: upcoming list or **calendar** (`layout=calendar` — joined, hosting, availability markers on the feed), wishlist + goals; **share availability** → explore **`compose=intent:open`** (`planAvailabilityPath()`). **Outing history** (`/profile/history`) is profile inventory. Wishlist: `tab=wishlist` / `planSheet=wishlist` (legacy `planAdd` parses). Operator schedule: **`/operator/overview`** — not a second `/hosting` page. Path helpers: `config/routingCatalog` + `src/plan/planRouting.ts` (inbound trip-hub query normalization merged in E3).
 
 **Campaigns** (future) are not a seventh entity kind — they are **surfaces** that promote Activities and/or link to host storefronts (agencies, partners, shops) in “What’s happening” feeds. See §1.2.
 
@@ -147,14 +147,15 @@ Member **Add** → typically `pending` + `unlisted`; public `/place` or `/facili
 
 #### FAB product verbs vs wire
 
-| UI (FAB) | Meaning | Wire `compose` |
-|----------|---------|---------------------|-------------|
-| **Host** | Publish outing you lead | `host:<kind>` |
-| **Find crew** → fixed | Map seeking post | `seek:fixed:<kind>` |
-| **Find crew** → flexible | Member availability | `seek:flexible` |
-| **Add on map** | Submit **place** or **facility** | `add:place:<kind>` \| `add:facility:<kind>` |
+| UI (FAB) | Meaning | Wire `compose` (emit) |
+|----------|---------|------------------------|
+| **Create Trip** | Publish outing you lead | `activity:<kind>` |
+| **Find crew** → fixed | Fixed map availability slot | `intent:fixed:<kind>` |
+| **Find crew** → flexible | Member availability (open days) | `intent:open` |
+| **Add on map** | Submit **place** or **facility** | `place:<kind>` \| `place:facility:<kind>` |
+| **Want to go** (Plan) | Save venue for later | *(none)* — `POST /me/wishlist` |
 
-**Availability** (product pillar) = **Find crew** FAB — flexible (share days) + fixed (post on map); wire stays `seek:*`. Detail: [`CREATE_FLOW.md`](./CREATE_FLOW.md) § Product pillars vs compose wire.
+**Intent** = Find crew product pillar (flexible + fixed). Inbound `host` / `seek` / `add` bookmarks parse to the rows above. Detail: [`CREATE_FLOW.md`](./CREATE_FLOW.md).
 
 **Compose** remains the **query param name** only — not FAB copy ([§1.1](#11-words-that-must-not-be-confused)).
 
@@ -255,7 +256,7 @@ Built only via **`routingCatalog`** or `@uaetrail/shared-types` `entity-path` he
 | Person (community host) | `/member/:userId` | `memberProfilePath(userId)` |
 | Shop | `/shop/:id` | `shopPublicPath({ id })` |
 | Browse | `/explore` (+ query) | `explorePath()` in `src/explore/routing.ts` |
-| Plan tab | `/plan` | `PLAN_PATH` · UI label **My Plans** (`PRODUCT_PLAN_SURFACE_TITLE`) · path helpers `src/plan/planRouting.ts` + legacy query normalization `src/member-plan/planHubRouting.ts` (not “trips” product term) |
+| Plan tab | `/plan` | `PLAN_PATH` · UI label **My Plans** (`PRODUCT_PLAN_SURFACE_TITLE`) · path helpers `src/plan/planRouting.ts` (not “trips” product term) |
 | Outing history (profile) | `/profile/history` | `PROFILE_HISTORY_PATH` |
 | Journey map | `/profile/history/map` | `JOURNEY_MAP_PATH` |
 | Legacy my-trips URL | `/profile/my-trips` | Redirect → `PROFILE_HISTORY_PATH` (`MY_TRIPS_PATH` deprecated) |
@@ -347,7 +348,7 @@ Map/list **peek** and entity **detail** share one engagement contract per viewer
 | Concern | Canonical | Avoid |
 |---------|-----------|--------|
 | Map home | `EXPLORE_MAP_PATH` (`/explore`) | `/map`, bare `/shop` |
-| FAB deep link (wire) | `compose=host:*` \| `seek:fixed:*` \| `seek:flexible` \| `add:*` — param name **compose** is wire-only; product = **Host · Find crew · Add on map** | User-facing “Compose”; `/host/activities/new` for consumers |
+| FAB deep link (wire) | `compose=activity:*` \| `place:*` \| `intent:open` \| `intent:fixed:*` — inbound `host`/`seek`/`add` parse only; product = **Create Trip · Add a venue · Find a Crew** | User-facing “Compose”; `/host/activities/new` for consumers |
 | Panel/filter query | `explorePath({ panel, filter, … })` | Raw `` `/explore?${...}` `` outside `explore/routing.ts` |
 | Archived seeking (ops only) | Activity detail or `/explore?list=1`; map pin `availability:{userId}:{slotId}` | `exploreSeekingMapItemPath` map pins; `/demand/:id`; `demand:` pin ids |
 | Full-screen list browse | `LIST_DISCOVERY_PATH` (`/list`) + `listDiscoveryPath()` | `/list/hiking`, `/shops` as category site roots |
@@ -528,7 +529,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 | **Wishlist** (private saves) | `user_wishlist` | `WishlistItemDTO`, `GET/POST /me/wishlist` | “Favorite”, demand bookmarks, saving people/shops to wishlist |
 | **Goal** (time + count) | `user_goals` | `MemberGoalDTO`, `GET/POST /me/goals` | Wishlist rows, visited map pins as goal progress |
 | **Host** (FAB) | `activities` publish | `hostingFlowEngine`, `hostingFlows/*`, `create/hosting`, `hostingActivityPublish` | `organizeFlow.ts`, `createOrganize/`, `CreateActivityFlow` shims |
-| **Plan** (tab) | joined/hosted/self plans | `src/plan/PlanPage.tsx`, `src/plan/planRouting.ts`, `src/member-plan/planHubRouting.ts`, `components/plan/*`; history chrome: `components/profile-history/*`, `components/journey/*` (journey map only on profile) | `/activities` hub naming, trips-era tabs on `/plan` |
+| **Plan** (tab) | joined/hosted/self plans | `src/plan/PlanPage.tsx`, `src/plan/planRouting.ts`, `components/plan/*`; history chrome: `components/profile-history/*`, `components/journey/*` (journey map only on profile) | `/activities` hub naming, trips-era tabs on `/plan` |
 | **Member discovery roster** | map + directory compose | `availabilityOnMap[]` (`availabilityTitle`, `exploreItemId`) on `GET /me/member-discovery/roster` | Wire field `lookingFor`, `demandTitle`, `seekingOnMap` |
 | **Journey map** (`/profile/history/map`) | `GET /me/journey-map`, `POST/PATCH/DELETE /me/map-pins`, `JourneyMapEntryDTO` | `memberJourneyMapApi`, `src/member-plan/journeyMap*` | `GET /me/trips/map`, `outdoorMap*` |
 | **Explore map** | `GET /explore/map` (guest catalog) + `GET /me/discover/overlay` (signed-in peek) | `src/explore/*`, `exploreMapPinModel`, `applyExploreMapOverlay` | `journeyMap*` (wrong surface); mixing viewer engagement into the public map cache |

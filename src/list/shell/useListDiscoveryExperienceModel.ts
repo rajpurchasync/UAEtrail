@@ -75,7 +75,6 @@ export const useListDiscoveryExperienceModel = ({
     layout,
     sort,
     crewsOpenLens,
-    availabilitySheetOpen,
     isPeopleCategory,
     explorerBucket,
     createFabContext,
@@ -107,8 +106,6 @@ export const useListDiscoveryExperienceModel = ({
       locationPathname: location.pathname,
       locationSearch: location.search,
       createFabContext,
-      availabilitySheetOpen,
-      syncUrl,
     });
 
   const peopleSegment = filters.peopleBrowseTab;

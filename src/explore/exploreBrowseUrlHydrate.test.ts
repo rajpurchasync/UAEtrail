@@ -126,7 +126,7 @@ describe('exploreBrowseUrlHydrate', () => {
   });
 
   it('preserves compose overlay when browse filters sync', () => {
-    const params = new URLSearchParams('compose=host&filter=hiking');
+    const params = new URLSearchParams('compose=activity:hiking&filter=hiking');
     const state = parseExploreBrowseStateFromSearchParams(params, true);
     const next = buildExploreBrowseSearchParams({
       base: params,
@@ -153,7 +153,7 @@ describe('exploreBrowseUrlHydrate', () => {
       },
       patch: { list: true },
     });
-    expect(next.get('compose')).toBe('host');
+    expect(next.get('compose')).toBe('activity:hiking');
   });
 
   it('strips leftover followedKind from explore URL on sync', () => {

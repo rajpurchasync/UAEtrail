@@ -80,6 +80,15 @@ describe('migPlatformComposeOperatorProgramGuard (compose + operator program)', 
     expect(ids).toMatch(/normalizeComposeFlowId/);
   });
 
+  it('PCO-10: wishlist saves use POST /me/wishlist facade (not compose)', () => {
+    expect(existsSync(join(ROOT, 'src/wishlist/saveWishlistTarget.ts'))).toBe(true);
+    const facade = read('src/wishlist/saveWishlistTarget.ts');
+    expect(facade).toMatch(/addWishlistTarget/);
+    expect(read('packages/shared-types/src/compose-route.ts')).not.toMatch(/wishlist:/);
+    expect(read('src/explore/ui/useExploreWishlistSave.ts')).toMatch(/saveWishlistFromResolvedTarget/);
+    expect(read('src/components/plan/PlanWishlistPickSheet.tsx')).toMatch(/saveWishlistTarget/);
+  });
+
   it('PCO-07: shared-types emits activity|place|intent wire (legacy inbound only)', () => {
     const wire = read('packages/shared-types/src/compose-route.ts');
     expect(wire).toMatch(/migrateLegacyComposeWire/);

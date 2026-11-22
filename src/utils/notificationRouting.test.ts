@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { NotificationDTO } from '@uaetrail/shared-types';
+import { planHostedSchedulePath } from '../plan/planRouting';
 import { inferNotificationPath } from './notificationRouting';
 
 const notif = (meta: Record<string, unknown>): NotificationDTO => ({
@@ -175,6 +176,19 @@ describe('inferNotificationPath', () => {
         })
       )
     ).toBe('/explore?list=1');
+  });
+
+  it('rewrites legacy /hosting bookmarks to operator overview', () => {
+    expect(inferNotificationPath(notif({ path: '/hosting' }))).toBe('/operator/overview');
+    expect(inferNotificationPath(notif({ path: '/hosting?tab=upcoming' }))).toBe(
+      '/operator/overview?tab=upcoming'
+    );
+  });
+
+  it('routes host withdrawal notices to operator schedule', () => {
+    expect(inferNotificationPath(notif({ kind: 'request_withdrawal' }))).toBe(
+      planHostedSchedulePath()
+    );
   });
 
   it('rewrites stale host overview notification paths to pro membership', () => {

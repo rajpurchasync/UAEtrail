@@ -27,7 +27,7 @@ console.log(`  readCompat choke points: ${(matrix.readCompatChokePoints ?? []).l
 try {
   run(
     'FE compose guards',
-    'npx vitest run src/config/composeSpineGuard.test.ts src/config/composeLineageGuard.test.ts src/explore/create/createFlowModuleGuard.test.ts src/config/migPlatformComposeOperatorProgramGuard.test.ts'
+    'npx vitest run src/config/composeSpineGuard.test.ts src/config/composeLineageGuard.test.ts src/config/composeWireEmitGuard.test.ts src/explore/create/createFlowModuleGuard.test.ts src/config/migPlatformComposeOperatorProgramGuard.test.ts src/wishlist/wishlistWriteFacadeGuard.test.ts src/wishlist/saveWishlistTarget.test.ts'
   );
   run(
     'shared-types compose wire',

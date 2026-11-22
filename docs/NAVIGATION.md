@@ -56,12 +56,12 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 
 - **Bottom nav middle tab** — UI label **My Plans**; route **`/plan`** (`PLAN_PATH`) — not `/me/plans` (API) or `/profile/plans` (alias redirect only).
 - **Forward commitments** only — past outings → **`/profile/history`** · journey map → **`/profile/history/map`**.
-- **Canonical query** (new links; legacy still parses): `view=plans` · `tab=upcoming|wishlist` · `filter=hosting|joined` · `layout=list|calendar` · `lens=availability` (Find crew **share availability** editor only — `planAvailabilityPath()`) · `planAdd=menu|goal|wishlist` (Add a Plan FAB). Page: **`src/plan/PlanPage.tsx`** · URL helpers: **`src/plan/planRouting.ts`**. Signed-in **today briefing** for the next joined outing: **`/plan/today`** (`PLAN_TODAY_PATH`).
-- **Add a Plan** (FAB, all breakpoints): Create Trip (same `compose=host` as Trips) · Mark Availability (`compose=seek:flexible`) · Set a Goal · Want to go (catalog venues). Not an Explore lens.
+- **Canonical query** (new links; legacy still parses): `view=plans` · `tab=upcoming|wishlist` · `filter=hosting|joined` · `layout=list|calendar` · `planSheet=menu|goal|wishlist` (Add a Plan FAB; legacy `planAdd=` parses). Inbound `?lens=availability` → explore **`compose=intent:open`** (`planAvailabilityPath()`). Page: **`src/plan/PlanPage.tsx`** · URL helpers: **`src/plan/planRouting.ts`**. Signed-in **today briefing** for the next joined outing: **`/plan/today`** (`PLAN_TODAY_PATH`).
+- **Add a Plan** (FAB, all breakpoints): **Set a Goal** · **Want to go** on Plan; publish an outing / mark availability use **compose** (`?compose=`) like Explore — not the Plan sheet menu.
 - **Geo tree (country → state → area → venue counts):** **`/geo`** (country count chips), **`/geo/country/:code`**, and **`/geo/n/:id`**. **Geo tree drill** for destination rollups (places, outings, facilities under a node) lives on **`/geo/n/:id`** (`GeoHubView`: Overview · Places · **Facilities** when counts exist · Explore). **Curated area guides** stay **`/area/:slug`** — editorial hub, not a replacement for the geo tree. List/map **decision cards** show a **location tail** only (`area · destination`), not the full country → state breadcrumb. Search still uses country/area/venue names. **`/venue/:id`** is the event-venue detail hub (`PlaceDetailPage` kind `event`; `placeDetailPath('event', id)`). **Geo L4 `venue` node** (destination name in `geoRef`) is not the same as event **`/venue/:id`**. **`/trail`** and **`/camp`** inbound aliases still redirect to `/place/:id`. `/event/:id` bookmarks redirect to `/venue/:id`.
 - **Summary** on the hub counts hosting, joined, goals, and want-to-go venues from the same catalog queries as the lists (`usePlanHubSummary`). Host console data loads only when the member can host, and stays fresh for 60s so the summary and the hosting list share one fetch.
-- **Upcoming list and calendar** open the outing (`/activity/:id`) for going and pending rows. Hosting and looking-for-company rows open the same manage paths as before (`planHostedActivityManagePath` / intent manage). **Back** returns to the same Plan URL (filter, layout, scroll) with that row focused. **Available** is an indicator strip only; **edit availability** via the calendar link or `planAvailabilityPath()` (`lens=availability`).
-- **Hosting hub** (`/hosting`, all breakpoints): dedicated **Hosting** workspace — stats (upcoming / pending / week / history), host tools (approvals, chat, manage, past trips, profile, places, team), upcoming schedule, past trips list + `/publishing/history`. Same glass/account chrome as Profile and publishing overview. **My Plans** stays on `/plan` only. Legacy `/plan?filter=hosting` redirects to `/hosting`.
+- **Upcoming list and calendar** open the outing (`/activity/:id`) for going and pending rows. Hosting and looking-for-company rows open the same manage paths as before (`planHostedActivityManagePath` / intent manage). **Back** returns to the same Plan URL (filter, layout, scroll) with that row focused. **Available** is an indicator strip only; **edit availability** via the calendar link or `planAvailabilityPath()` (explore **`compose=intent:open`**).
+- **Hosting (operator console):** full community host schedule + tools on **`/operator/overview`** (`planHostedSchedulePath()`). **`/hosting`** inbound → operator. **My Plans** upcoming **`filter=hosting`** stays on **`/plan`** for the member feed; operator is the manage console.
 - **Mobile chrome** (`src/plan/planTab.ts`): **Upcoming** · **Wishlist**; goals on Wishlist. Legacy `?lens=saved|goals|calendar` normalizes on load (`calendar` → `layout=calendar`).
 - **`/profile/plans`** → **`/plan`**. **`/trips`**, **`/activities`** → `/plan` or history (`inboundTripsRedirect.ts`).
 
@@ -69,9 +69,9 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 
 | Term | Meaning |
 |------|---------|
-| **My Plans** (tab) | **`/plan`** — upcoming (list + **calendar**), wishlist + goals; availability **editor** via `planAvailabilityPath()` |
+| **My Plans** (tab) | **`/plan`** — upcoming (list + **calendar**), wishlist + goals; share availability via `planAvailabilityPath()` → explore compose |
 | **Create Trip / Add a venue / Find a Crew** (tab FABs) | Create-flow session **`?compose=`** on the current surface — not the Plan tab |
-| **Add a Plan** (Plan FAB) | `?planAdd=` launcher on `/plan` — Create Trip / availability reuse `?compose=`; Set a Goal / Want to go stay on Plan |
+| **Add a Plan** (Plan FAB) | `?planSheet=` on `/plan` — goals + wishlist only |
 | **Activity detail Plan** | Outing facts on L3 — not **`/plan`** |
 | **`GET /me/*`** | API prefix — not the My Plans page URL |
 
@@ -81,15 +81,14 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Main tabs (list surface):** History · My Map (`PROFILE_HISTORY_MAIN_TABS`).
 - **Manage & crew chat:** Hosted/joined **Manage outing** sheets and explore map peek **`open_crew_chat`** → **`/chat?group=<id>`**. See [`COMMUNICATION.md`](./COMMUNICATION.md) and [`NAVIGATION.md`](./NAVIGATION.md) § `/plan`.
 
-### Publishing console (`/publishing/*` routes)
+### Operator console (`/operator/*` routes)
 
-- **Canonical SPA `/publishing/*`** — publishing workspace routes only (no `/operator` SPA alias). Product UI uses **Organizer workspace** (community / Pro) or **Operator workspace** (agency / shop); capabilities from **`GET /me/status`** (`useMemberStatus`, `publish.*`). No `/host` or `/organizer` SPA trees. Tenant HTTP API: **`/publishing/*`** only. `/operator/:slug` is **not** a public storefront.
-- **Host mode home:** Pro/agency/guide console roles land on the **hosting hub** after sign-in and **Switch to Host** (`resolveHostingHubPath` / `navigateToHostModeHome`) — not Explore or Profile. **Switch to Visitor** returns to `/explore`.
-- **Host mode chrome:** while role is `tenant_*` (not visitor), primary nav is **Hosting (`/hosting`) · My Plans (`/plan`) · Chat** — no Explore tab, no Map tools, no Find crew. Hamburger leads with **Hosting** and still includes **Explore**. Visitor switch restores the consumer Explore chrome.
-- **Combined hosting (two modes):** when the same account has **community** buddy outings and a **workspace** (guide / agency / shop), `HostingModeSwitcher` toggles **Community** (`/hosting`) ↔ **Operator/Guide workspace** (`/publishing/overview`). Preference stored in `uaetrail.hostingSurfaceMode`.
-- **Shell nav:** `PUBLISHING_CONSOLE_LINKS` + `ConsoleShell` (`src/console/*`); route pages in `src/pages/publishing/*`. Copy: `src/content/workspaceVocabulary.ts`.
-- **`/publishing/overview`:** `ConsoleHubSections` — stats, **Up next** preview, header **Add activity** — not a second copy of the shell link list. Below that: **personal** shortcuts (trips as participant, **Chat** → `/chat`, explore map).
-- **Member profile (`/profile`):** consumer hub only; buddies open **Organizing** → `planHostedSchedulePath()` (hosted filter on `/plan`), not `/publishing/overview`. Pro/agency/shop management remains `/publishing/*`.
+- **Canonical SPA `/operator/*`** — one console for community hosts and workspace tenants; inbound `/publishing/*`, `/hosting`, `/host/*`, `/organizer/*` redirect to `/operator/*`. Capabilities from **`GET /me/status`** (`useMemberStatus`, `publish.*`). Tenant HTTP API remains **`/publishing/*`** only. `/operator/:slug` is **not** a public storefront.
+- **Host mode home:** hosts land on **`/operator/overview`** (`resolveHostingHubPath` / `navigateToHostModeHome`) — not Explore or Profile. **Switch to Visitor** returns to `/explore`.
+- **Host mode chrome:** while role is `tenant_*` (not visitor), primary nav is **Hosting (`/operator/overview`) · My Plans (`/plan`) · Chat**. Hamburger leads with **Hosting** and still includes **Explore**.
+- **Shell nav:** `OPERATOR_CONSOLE_LINKS` + `ConsoleShell` (`src/console/*`); route pages in `src/pages/publishing/*`. Copy: `src/content/workspaceVocabulary.ts`.
+- **`/operator/overview`:** workspace tenants see `ConsoleHubSections`; **community** tenants see `HostingHubView` (schedule + host tools) inside the same shell — no mode switcher.
+- **Member profile (`/profile`):** consumer hub only; organizing shortcuts → operator overview, not a second `/hosting` surface.
 
 ### Admin console (`/admin/*`)
 
@@ -199,7 +198,7 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 | Discover browse on explore | `exploreDiscoverBrowsePath()` | `src/explore/routing.ts` |
 | Sign-in with return | `buildSignInRedirect(location)`, `signInPathForReturn(path)` | `src/utils/authReturnContext.ts` |
 | Post-auth fallback | `resolveAuthExitFallback()` → explore | `src/utils/authRedirect.ts` |
-| Plan + history URL helpers | `planUpcomingPath`, `normalizePlanHubSearchParams`, `profileHistoryCompletedPath`, … | Import **`config/routingCatalog`** in app code; implement in `src/plan/planRouting.ts` + `src/member-plan/planHubRouting.ts` |
+| Plan + history URL helpers | `planUpcomingPath`, `normalizePlanHubSearchParams`, `profileHistoryCompletedPath`, … | Import **`config/routingCatalog`** in app code; implement in `src/plan/planRouting.ts` |
 | List discovery URLs | `listDiscoveryPath()`, `listDiscoveryPathFromExploreSearch()` | `src/list/browse/browseListRouting.ts` |
 | Crew chat deep link | `activityGroupChatPath()`, `navigateToActivityGroupChat()` | `src/utils/activityGroupChatNav.ts` |
 | Open crew chat from activity id | `openActivityGroupChat()` | `src/utils/openActivityGroupChat.ts` |
@@ -240,7 +239,7 @@ Cards show city, outings attended, and a subtle upcoming outing hint (link opens
 
 ## Explore FAB (+)
 
-**Shipped (CPC v3):** **Host** · **Find crew** · **Add on map** — see [`CREATE_FLOW.md`](./CREATE_FLOW.md). **Not** the bottom nav **My Plans** tab (`/plan`). Domain lens: **What** (Host / fixed seek → activity) · **Where** (Add → place/facility) · **Who** / **How** on detail only — [`DOMAIN.md`](./DOMAIN.md) § What · Where · Who · How.
+**Shipped (MIG compose):** tab FABs **Create Trip** · **Add a venue** · **Find a Crew** (`activity` · `place` · `intent` wire) — see [`CREATE_FLOW.md`](./CREATE_FLOW.md). **Not** the bottom nav **My Plans** tab (`/plan`). Domain lens: **What** (activity) · **Where** (place/facility) · **Who** / **How** on detail only — [`DOMAIN.md`](./DOMAIN.md) § What · Where · Who · How.
 
 Signed-in members tap **+** on `/explore` (or list FAB) to compose. **Guests** → sign-in sheet, then the same compose URL. Closing the wizard returns to the explore or list surface the member opened it from (scroll and the control that opened compose are restored). Community rideshare **To** uses `GET /geo/rideshare-destinations` (see [`API_ROUTING.md`](./API_ROUTING.md) § Geo search). **My cars** and **Safety** opened from that step use the same back stack as the profile hub.
 
@@ -250,11 +249,11 @@ Signed-in members tap **+** on `/explore` (or list FAB) to compose. **Guests** �
 | **Find crew** | Fixed map seek (`availabilityFlowEngine`) or **Share availability** (`member_availability`) |
 | **Add on map** | Place or facility submit |
 
-Compose URLs are `host:*` / `seek:*` / `add:*` only.
+Compose URLs emit `activity:*` / `place:*` / `intent:*` only (legacy `host` / `seek` / `add` parse on load).
 
-**Going from:** required map pin on **Host** / **Find crew (fixed)** activity flows; **Add on map** uses place/facility pin only.
+**Going from:** required map pin on **activity** / **intent:fixed** flows; **place** uses place/facility pin only.
 
-**Components:** `CreateIntentSheet.tsx`, `ExploreExperience.tsx` (compose URL via `parseExploreCompose`).
+**Components:** `CreateKindSheet.tsx`, `IntentOpenComposeSheet.tsx`, `ComposeHost.tsx` (compose via `parseExploreCompose` / `formatComposeWire`).
 
 ## Activity detail (`/activity/:id`)
 

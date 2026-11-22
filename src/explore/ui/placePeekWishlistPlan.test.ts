@@ -10,6 +10,7 @@ describe('place peek save → Plan wishlist (trip alerts)', () => {
     expect(actions).toMatch(/useExploreWishlistSave/);
     expect(actions).not.toMatch(/useExploreEntityFollow/);
     expect(actions).not.toMatch(/invalidateMeWishlistQueries/);
+    expect(read('src/explore/ui/useExploreWishlistSave.ts')).toMatch(/saveWishlistFromResolvedTarget/);
     expect(read('src/explore/ui/useExploreWishlistSave.ts')).toMatch(/invalidateMeWishlistQueries/);
     expect(read('src/components/plan/PlanSavedSection.tsx')).toMatch(/useMeWishlist/);
     expect(read('src/components/plan/PlanSavedSection.tsx')).toMatch(/isPlanWantToGoVenue/);

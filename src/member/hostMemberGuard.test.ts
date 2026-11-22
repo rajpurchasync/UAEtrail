@@ -25,6 +25,10 @@ const ALLOW_HOST_CONSOLE_PATHS = new Set([
   'src/member/memberSurfacesAcceptance.test.ts',
   'src/member/hostMemberGuard.test.ts',
   'src/config/desktopNav.test.ts',
+  'src/config/desktopNav.ts',
+  'src/config/platform.ts',
+  'src/routing/planBrowseRoute.tsx',
+  'src/pages/publishing/Overview.tsx',
 ]);
 
 /** Legacy host workspace (`/host/*` pages) — not consumer Plan/Profile surfaces. */

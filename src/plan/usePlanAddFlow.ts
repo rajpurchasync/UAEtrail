@@ -4,12 +4,12 @@ import { PLAN_PATH } from '../constants';
 import { applyProductSearchMutation } from '../routing/productSearchMutation';
 import { useCreateFlow } from '../create/CreateFlowProvider';
 import { clearPlanAddQuery, parsePlanAddQuery, setPlanAddQuery } from '../create/planAddQuery';
-import { intentOpenCompose, clearExploreComposeParams } from '../explore/compose';
+import { clearExploreComposeParams } from '../explore/compose';
 import { signInPathForReturn } from '../utils/authReturnContext';
 import { useAuth } from '../context/AuthContext';
 import type { PlanAddOptionId } from './planAdd';
 
-/** Plan FAB launcher — trip/availability hand off to create session; goal/wishlist stay on Plan. */
+/** Plan FAB — compose for outings; `planSheet` for goals / wishlist only. */
 export const usePlanAddFlow = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -43,32 +43,33 @@ export const usePlanAddFlow = () => {
     patchPlanAdd('menu');
   }, [navigate, patchPlanAdd, user]);
 
+  const openComposeOuting = useCallback(() => {
+    if (!user) {
+      navigate(signInPathForReturn(PLAN_PATH));
+      return;
+    }
+    compose.handleCreateTap({ surface: 'menu', composeKind: 'activity' });
+  }, [compose, navigate, user]);
+
   const close = useCallback(() => {
     patchPlanAdd(null);
   }, [patchPlanAdd]);
 
   const selectOption = useCallback(
     (id: PlanAddOptionId) => {
-      if (id === 'trip') {
-        compose.handleCreateTap({ surface: 'menu', composeKind: 'activity' });
-        return;
-      }
-      if (id === 'availability') {
-        compose.handleCreateTap(intentOpenCompose());
-        return;
-      }
       if (id === 'goal') {
         patchPlanAdd('goal', true);
         return;
       }
       patchPlanAdd('wishlist', true);
     },
-    [compose, patchPlanAdd]
+    [patchPlanAdd]
   );
 
   return {
     step,
     openMenu,
+    openComposeOuting,
     close,
     selectOption,
   };

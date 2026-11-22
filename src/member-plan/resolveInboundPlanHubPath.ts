@@ -8,7 +8,7 @@ import {
   PROFILE_HISTORY_PATH,
 } from '../config/surfacePaths';
 import { planSavedPath } from '../plan/planLens';
-import { normalizePlanHubSearchParams } from './planHubRouting';
+import { normalizePlanHubSearchParams } from '../plan/planRouting';
 
 /** Map stale plan-hub URLs in notification meta to {@link PLAN_PATH} or history. */
 export const resolveInboundPlanHubPath = (

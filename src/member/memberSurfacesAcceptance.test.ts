@@ -68,7 +68,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
 
   it('G-arch: participant /host bookmarks redirect off host console', () => {
     expect(participantHostBookmarkRedirect('/publishing/overview')).toBe('/explore?compose=activity');
-    // Hosting schedule is the dedicated `/hosting` hub — My Plans (`/plan`) stays joined/wishlist/goals.
+    // Participants bookmarking `/publishing/*` land on consumer Plan or compose — not `/operator/*`.
     expect(participantHostBookmarkRedirect('/publishing/activities')).toBe('/plan');
   });
 
@@ -256,17 +256,16 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(api).not.toContain('/host/requests');
   });
 
-  it('G-manage: desktop hosting schedule uses dedicated hub (not consumer Plan summary)', () => {
-    // Hub is mounted on its own route (`/hosting`); My Plans redirects the hosting filter there.
-    const hostingPage = read('src/hosting/HostingHubPage.tsx');
-    expect(hostingPage).toContain('HostingHubView');
-    expect(hostingPage).toContain('PlanHostingManageProvider');
-    expect(hostingPage).toContain('HOSTING_HUB_PATH');
-    expect(hostingPage).not.toContain('PlanGoalsProgressSummary');
-    expect(hostingPage).not.toContain('PlanWishlistView');
+  it('G-manage: desktop hosting schedule uses operator overview (not consumer Plan summary)', () => {
+  const overview = read('src/pages/publishing/Overview.tsx');
+    expect(overview).toContain('HostingHubView');
+    expect(overview).toContain('PlanHostingManageProvider');
+    expect(overview).not.toContain('HostingModeSwitcher');
+    expect(overview).not.toContain('PlanGoalsProgressSummary');
+    expect(overview).not.toContain('PlanWishlistView');
     const plan = read('src/plan/PlanPage.tsx');
     expect(plan).not.toContain('HostingHubView');
-    expect(plan).toMatch(/navigate\(HOSTING_HUB_PATH/);
+    expect(plan).toMatch(/setCommitmentFilter\('hosting'\)/);
     const hub = read('src/hosting/HostingHubView.tsx');
     expect(hub).not.toContain('PlanGoalsProgressSummary');
     expect(hub).not.toContain('PlanWishlistView');
@@ -313,7 +312,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('G-profile: goals teaser links to Plan lens (no duplicate goals CRUD on hub)', () => {
-    const hub = read('src/components/profile/ProfileConsumerHub.tsx');
+    const hub = read('src/components/profile/ProfileHome.tsx');
     expect(hub).toContain('ProfilePlanGoalsTeaser');
     expect(hub).not.toContain('ProfileGoalsSection');
     const teaser = read('src/components/profile/ProfilePlanGoalsTeaser.tsx');
@@ -321,7 +320,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('G-arch: Profile business entry uses pro membership (not host overview)', () => {
-    const hub = read('src/components/profile/ProfileConsumerHub.tsx');
+    const hub = read('src/components/profile/ProfileHome.tsx');
     expect(hub).toContain('PRO_MEMBERSHIP_PATH');
     expect(hub).not.toMatch(/\/host\/overview/);
     const launcher = read('src/components/profile/ProfileQuickLauncher.tsx');
@@ -361,8 +360,8 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(plan).toMatch(/usePlanAddFlow/);
     expect(plan).toMatch(/PLAN_ADD_FAB_LABEL/);
     expect(plan).toMatch(/PlanAddIntentSheet/);
-    expect(add).toMatch(/handleCreateTap\(\{ surface: 'menu', composeKind: 'activity' \}\)/);
-    expect(add).toMatch(/intentOpenCompose/);
+    expect(add).toMatch(/openComposeOuting/);
+    expect(add).toMatch(/composeKind: 'activity'/);
     expect(plan).not.toMatch(/explorePath\(\{ compose/);
     expect(plan).not.toMatch(/CreateHostingActivityFlow|HostingFlowHost/);
   });
@@ -381,7 +380,8 @@ describe('member surfaces §11 acceptance (automated)', () => {
 
   it('G-plan: Plan routing helpers live under src/member-plan', () => {
     const catalog = read('src/config/routingCatalog.ts');
-    expect(catalog).toContain("from '../member-plan/planHubRouting'");
+    expect(catalog).not.toContain("from '../member-plan/planHubRouting'");
+    expect(catalog).toContain("from '../plan/planRouting'");
     expect(catalog).not.toMatch(/from '\.\.\/trips\//);
   });
 
@@ -558,13 +558,13 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(shared).not.toMatch(/level === 'public'[\s\S]*message_host/);
   });
 
-  it('G-plan: Tier-1 FAB vocabulary is Host · Find crew · Add on map', () => {
+  it('G-plan: Tier-1 FAB vocabulary is Create Trip · Add a venue · Find a Crew', () => {
     const create = read('docs/CREATE_FLOW.md');
-    expect(create).toMatch(/Host · Find crew · Add on map/);
+    expect(create).toMatch(/Create Trip.*Add a venue.*Find a Crew/);
     const index = read('docs/DOCS_INDEX.md');
-    expect(index).toMatch(/Host · Find crew · Add on map/);
+    expect(index).toMatch(/activity · place · intent/);
     const coherence = read('docs/SYSTEM_COHERENCE.md');
-    expect(coherence).toMatch(/\*\*FAB \(UI\)\*\* \| \*\*Host\*\*/);
+    expect(coherence).toMatch(/\*\*FAB \(UI\)\*\* \| \*\*Create Trip\*\*/);
     expect(coherence).not.toMatch(/\| F1–F6 \| FAB \*\*Plan·Contribute\*\*/);
   });
 
@@ -580,7 +580,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
     const planPage = read('src/plan/PlanPage.tsx');
     expect(planPage).toContain('normalizePlanSearchParams');
     const nav = read('docs/NAVIGATION.md');
-    expect(nav).toMatch(/Host.*Find crew.*Add on map/);
+    expect(nav).toMatch(/Create Trip.*Add a venue.*Find a Crew/);
     expect(nav).toContain('disambiguation');
   });
 

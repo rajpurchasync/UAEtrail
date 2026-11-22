@@ -6,11 +6,8 @@ import { ExploreResponsiveSheet } from '../../explore/ui/ExploreResponsiveSheet'
 import { FlowSheetHeader } from '../../explore/ui/ExploreFlowSheetChrome';
 import { usePlaceRegistry } from '../../hooks/usePlaceRegistry';
 import { useMeWishlist } from '../../hooks/useMeWishlist';
-import {
-  addWishlistTarget,
-  checkWishlistTarget,
-  invalidateMeWishlistQueries,
-} from '../../hooks/wishlistClientApi';
+import { checkWishlistTarget, invalidateMeWishlistQueries } from '../../hooks/wishlistClientApi';
+import { saveWishlistTarget } from '../../wishlist/saveWishlistTarget';
 import { PLAN_WISHLIST_PICK_TITLE } from '../../plan/planAdd';
 
 type PlanWishlistPickSheetProps = {
@@ -56,7 +53,7 @@ export const PlanWishlistPickSheet = ({ open, onClose }: PlanWishlistPickSheetPr
     try {
       const target = { locationId: row.id };
       const existing = await checkWishlistTarget(target);
-      if (!existing.saved) await addWishlistTarget(target);
+      if (!existing.saved) await saveWishlistTarget({ kind: 'venue', locationId: row.id });
       setJustSavedIds((prev) => {
         const next = new Set(prev);
         next.add(row.id);

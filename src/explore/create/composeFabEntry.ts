@@ -1,6 +1,6 @@
 import { resolveMobileFiveTab } from '../../config/mobileFiveTabNav';
 import type { BrowseListCreateFabHints } from '../../list/browse/browseListCopy';
-import type { ExploreCompose } from '../compose';
+import { intentOpenCompose, type ExploreCompose } from '../compose';
 import type { ExplorePinKindFilter } from '../explorePinKindFilter';
 import type { ExploreBrowseListMode } from '../exploreBrowseUrlSync';
 import type { ExplorePanel } from '../routing';
@@ -29,19 +29,19 @@ export const resolveExploreMapCreateFabHints = (input: {
 };
 
 /**
- * Tab FAB entry — maps to product pillar menu (`host` · `add` · `availability` wire).
- * Trips → Host · Venues → Add · Crews → Availability (Find a Crew).
+ * Tab FAB entry — `activity` · `place` · `intent:open` compose kinds.
+ * Trips → activity · Venues → place · Crews → intent open (mark availability).
  */
 export const resolveCreateFabComposeEntry = (
   pathname: string,
   search: string,
   hints?: BrowseListCreateFabHints
 ): ExploreCompose => {
-  if (hints?.isPeopleCategory) return { surface: 'menu', composeKind: 'intent' };
+  if (hints?.isPeopleCategory) return intentOpenCompose();
   if (hints?.explorerBucket === 'places') return { surface: 'menu', composeKind: 'place' };
 
   const tab = resolveMobileFiveTab(pathname, search);
   if (tab === 'venues') return { surface: 'menu', composeKind: 'place' };
-  if (tab === 'crews') return { surface: 'menu', composeKind: 'intent' };
+  if (tab === 'crews') return intentOpenCompose();
   return { surface: 'menu', composeKind: 'activity' };
 };
