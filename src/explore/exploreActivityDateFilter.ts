@@ -99,8 +99,6 @@ const endOfYearIso = (year: number): string => `${year}-12-31`;
 
 const calendarYearFromIso = (referenceIso: string): number => parseIsoDate(referenceIso).getFullYear();
 
-const isIsoInInclusiveRange = (iso: string, start: string, end: string): boolean => iso >= start && iso <= end;
-
 const CUSTOM_ACTIVITY_DATE_RANGE = /^(\d{4}-\d{2}-\d{2})\.\.(\d{4}-\d{2}-\d{2})$/;
 
 const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];

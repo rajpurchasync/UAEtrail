@@ -161,7 +161,7 @@ export const ExploreMapStage = ({
   onClearGeoScope,
   onPopGeoScope,
   venueFilter,
-  onVenueFilterChange,
+  onVenueFilterChange: _onVenueFilterChange,
   tripMapTopics,
   placeMapTopics,
   priceFilter,
@@ -173,11 +173,11 @@ export const ExploreMapStage = ({
   onHasTripChange,
   onFacilityKindsChange,
   onVenueFiltersChange,
-  onOpenPeopleBrowsePanel,
-  peopleBrowsePanelAvatars,
-  peopleBrowsePanelFriendCount,
-  peopleBrowseGuest = false,
-  peopleBrowsePossibleCrewCount = 0,
+  onOpenPeopleBrowsePanel: _onOpenPeopleBrowsePanel,
+  peopleBrowsePanelAvatars: _peopleBrowsePanelAvatars,
+  peopleBrowsePanelFriendCount: _peopleBrowsePanelFriendCount,
+  peopleBrowseGuest: _peopleBrowseGuest = false,
+  peopleBrowsePossibleCrewCount: _peopleBrowsePossibleCrewCount = 0,
   exploreMapStyle,
   exploreMapTiles,
   onToggleMapStyle,
@@ -309,6 +309,8 @@ export const ExploreMapStage = ({
       {!(isDesktop) && !peopleMap ? (
       <ExploreMapChromeBar
         panel={panel}
+        mapFilter={mapFilter}
+        onMapFilterChange={onMapFilterChange}
         venueRegions={venueRegions}
         activityDatePreset={activityDatePreset}
         catalogListCount={catalogListCount}

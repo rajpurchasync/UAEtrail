@@ -85,7 +85,7 @@ export const getAddFlowSteps = (kind: AddVenueKind): AddFlowStepId[] => {
     case 'event':
       return EVENT_ADD_STEPS;
     case 'facility':
-      return FACILITY_ADD_STEPS;
+      return FACILITY_ADD_STEPS as AddFlowStepId[];
     default:
       return getOutdoorAddFlowSteps('camping');
   }

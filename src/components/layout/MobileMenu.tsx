@@ -132,7 +132,7 @@ const isMobileLandingUserMenuItemActive = (
     );
   }
   if ('match' in item) {
-    return item.match.some((prefix) =>
+    return (item.match as readonly string[]).some((prefix) =>
       prefix === '/' ? pathname === '/' : pathname === prefix || pathname.startsWith(`${prefix}/`)
     );
   }
@@ -592,9 +592,6 @@ export const MobileUserMenuButton = ({
   }, [open, closeLandingMenu]);
 
   const closeMenu = closeLandingMenu;
-
-  const isActive = (match: readonly string[]) =>
-    match.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 
   return (
     <>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, type SetURLSearchParams } from 'react-router-dom';
 import {
   type ActivityListFilterKey,
@@ -26,9 +26,8 @@ import {
 import { useExploreBrowseUrlInboundMigrations } from './useExploreBrowseUrlInboundMigrations';
 import { useExploreBrowsePeekDismissOnFilterChange } from './useExploreBrowsePeekDismissOnFilterChange';
 import { useExploreBrowseUrlApplyHandlers } from './useExploreBrowseUrlApplyHandlers';
-import type { PeopleBrowseTab } from '../../list/browse/peopleListBrowseUrl';
-import type { ExplorePinKindFilter } from '../explorePinKindFilter';
 import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
+import type { ExplorePinKindFilter } from '../explorePinKindFilter';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
@@ -191,6 +190,7 @@ export const useExploreBrowseUrlState = ({
   const handlers = useExploreBrowseUrlApplyHandlers({
     isDesktop,
     isSignedIn,
+    navigate,
     clearSelection,
     syncExploreUrl,
     listOpen,
@@ -232,7 +232,6 @@ export const useExploreBrowseUrlState = ({
     showListPanel,
     showDesktopCatalogDrawer,
     sidebarPanel,
-    contextualMapFilters,
     desktopFilterKeys,
     browseFilterKeys,
     placesMode,

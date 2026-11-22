@@ -14,7 +14,6 @@ import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
 import type { ExplorePinKindFilter } from '../explorePinKindFilter';
 import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
-import type { PeopleBrowseTab } from '../../list/browse/peopleListBrowseUrl';
 import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
 import type { ExplorePriceFilter } from '../exploreOptionalFilters';
 import type { DesktopBrowseTab } from './exploreBrowsePanelCopy';

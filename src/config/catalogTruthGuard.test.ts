@@ -25,8 +25,10 @@ describe('catalogTruthGuard (DMCP Phase 2 · MIG-DISCO-REG)', () => {
 
   it('CAT-02-03: FE uses single explore map client (no parallel catalog fetch)', () => {
     const client = read('src/hooks/exploreMapClientApi.ts');
+    const exploreDomain = read('src/api/domains/explore.ts');
     expect(client).toMatch(/fetchExploreMapItems/);
-    expect(client).toMatch(/\/explore\/map/);
+    expect(client).toMatch(/exploreMapHttpPath/);
+    expect(exploreDomain).toMatch(/\/explore\/map/);
     expect(client).not.toMatch(/\/explore\/seeking-activities/);
     expect(existsSync(join(process.cwd(), 'src/list/listDemandCatalog.ts'))).toBe(false);
     const runtime = read('src/explore/discoveryRuntime.ts');

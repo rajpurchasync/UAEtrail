@@ -1,5 +1,5 @@
 import { sniffHeicContainerBytes } from '@uaetrail/shared-types';
-import { getStoredSession } from '../api/client';
+import { mediaApi } from '../api/domains/media';
 
 const HEIC_EXTENSION_PATTERN = /\.(heic|heif)$/i;
 const HEIC_MIME_PATTERN = /^image\/hei[cf]/i;
@@ -210,39 +210,12 @@ export const canBrowserDecodeAsImage = async (file: File): Promise<boolean> => {
 };
 
 const prepareImageViaApi = async (file: File): Promise<File> => {
-  const session = getStoredSession();
-  const headers: Record<string, string> = {
-    'Content-Type': file.type || 'application/octet-stream',
-  };
-  if (session?.accessToken) {
-    headers.Authorization = `Bearer ${session.accessToken}`;
-  }
-
-  const response = await withTimeout(
-    fetch('/api/media/prepare-image', {
-      method: 'POST',
-      headers,
-      body: file,
-    }),
+  const blob = await withTimeout(
+    mediaApi.prepareImage(file),
     CONVERT_TIMEOUT_MS,
     'Image conversion timed out. Try a smaller photo or export as JPG.'
   );
 
-  if (!response.ok) {
-    let message = 'Could not prepare this photo. Sign in and try again, or use JPG/PNG.';
-    try {
-      const payload = (await response.json()) as { error?: { message?: string } };
-      if (payload.error?.message) message = payload.error.message;
-    } catch {
-      /* non-JSON error body */
-    }
-    if (response.status === 401 || response.status === 403) {
-      message = 'Sign in to upload photos, then try again.';
-    }
-    throw new Error(message);
-  }
-
-  const blob = await response.blob();
   if (!(blob instanceof Blob) || blob.size === 0) {
     throw new Error('Could not prepare this photo.');
   }

@@ -62,7 +62,7 @@ export type InboxThread =
       id: string;
       title: string;
       avatarUrl?: string;
-      groupType: 'family' | 'friends' | 'colleagues';
+      groupType: 'family' | 'friends' | 'colleagues' | 'outing_crew';
       lastMessage: string;
       lastMessageAt: string;
       unreadCount: number;
@@ -119,7 +119,10 @@ export const groupThreadFromSocialGroup = (group: SocialGroupView): InboxThread 
     id: group.id,
     title: group.name,
     avatarUrl: group.photoUrl ?? undefined,
-    groupType: group.type,
+    groupType:
+      group.type === 'activity'
+        ? 'outing_crew'
+        : (group.type as 'family' | 'friends' | 'colleagues' | 'outing_crew'),
     lastMessage,
     lastMessageAt,
     unreadCount,

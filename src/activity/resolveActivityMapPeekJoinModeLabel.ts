@@ -7,7 +7,7 @@ const MAP_PEEK_JOIN_MODE_APPROVAL = 'Host approval';
 /** How joining works — separate from footer CTA wording. */
 export const resolveActivityMapPeekJoinModeLabel = (card: DiscoveryCardModel): string | null => {
   if (card.source !== 'activity') return null;
-  if (card.kind === 'seeking') return null;
+  if (card.activityMode === 'seeking') return null;
 
   const mode = resolveParticipationMode(
     card.activity?.participationMode,

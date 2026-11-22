@@ -17,6 +17,7 @@ export const ActivityDetailSidebarColumn = ({ model }: ActivityDetailSidebarColu
       showMobileTabs={model.showMobileTabs}
       showCrewLockedHint={model.buddiesCrewLockedHint}
       activityId={model.activity.id}
+      activityTitle={model.activityTitle}
       hostBuddiesHub={model.requiresSignIn ? undefined : model.showHostManageHub ? model.hostBuddiesHub : undefined}
       hostCrewChatPolicy={model.requiresSignIn ? undefined : model.hostCrewChatPolicy}
     />

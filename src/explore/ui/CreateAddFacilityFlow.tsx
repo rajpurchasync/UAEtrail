@@ -268,12 +268,12 @@ export const CreateAddFacilityFlow = ({
         latitude={lat}
         longitude={lng}
         onPrecisionChange={setMapPrecision}
-        onLocationChange={(nextLat, nextLng) => {
+            onLocationChange={(nextLat: number, nextLng: number) => {
           patchDraft({ latitude: nextLat, longitude: nextLng });
         }}
         onBack={goBack}
         onClose={requestClose}
-        onConfirm={(confirmLat, confirmLng) => {
+            onConfirm={(confirmLat: number, confirmLng: number) => {
           const inferred = inferEmirateFromPin(confirmLat, confirmLng, publishedAreas);
           patchDraft({
             latitude: confirmLat,

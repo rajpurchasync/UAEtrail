@@ -350,10 +350,10 @@ export const ProProfileApplicationFlow = ({
         headerTitle={locationPickerTitle(profileType)}
         confirmLabel="Use this location"
         onPrecisionChange={setMapPrecision}
-        onLocationChange={(latitude, longitude) => patchForm({ latitude, longitude })}
+        onLocationChange={(latitude: number, longitude: number) => patchForm({ latitude, longitude })}
         onBack={() => mapSession.closeMap()}
         onClose={handleClose}
-        onConfirm={(_lat, _lng) => {
+        onConfirm={(_lat: number, _lng: number) => {
           mapSession.closeMap();
         }}
       />

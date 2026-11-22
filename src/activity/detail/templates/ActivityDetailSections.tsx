@@ -132,7 +132,7 @@ export const ActivityDetailSections = ({
     region: activityGeoHero.region,
     geoRef: activityGeoHero.geoRef,
   });
-  const headerChrome = resolveActivityDetailHeaderChrome(model.activity.activityType);
+  const headerChrome = resolveActivityDetailHeaderChrome(model.activity, null);
   const areaLinkState = useMemo(() => {
     const returnTo = `${location.pathname}${location.search}`;
     return consumerDetailChildLinkState(returnTo, headerChrome.label);

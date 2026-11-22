@@ -5,7 +5,6 @@ import {
   CAMPING_VENUE_EMOJI,
   HIKING_ACTIVITY_EMOJI,
   RIDESHARE_EMOJI,
-  SEEKING_EMOJI,
   SHOP_MAP_EMOJI,
 } from '../exploreCopy';
 import { FacilityGlyph, HikingVenueGlyph, LocationSpotGlyph, OtherPlaceGlyph } from './exploreActionGlyphs';

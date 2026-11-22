@@ -474,7 +474,6 @@ export const DiscoveryCardPeopleRow = ({
   const hostName = publisher.name;
   const hostAvatar = publisher.avatarUrl ?? card.hostAvatar;
   const acceptedGuideCount = card.activity?.acceptedGuideCount ?? card.activity?.guides?.length ?? 0;
-  const publishingProfileKind = card.activity?.publishingProfileKind;
   const hostProfilePath = resolveDiscoveryCardHostProfilePath(card);
   const isGuestViewer = Boolean(onGuestGatedAction);
   const canOpenHostProfile = discoveryCardCanOpenHostProfile(card, { isGuest: isGuestViewer });

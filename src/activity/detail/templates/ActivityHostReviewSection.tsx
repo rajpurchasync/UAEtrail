@@ -1,7 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import {
   activityScheduleHasEnded,
-  publishesActivityAsIndividual,
   resolveActivityHostReviewTarget,
   type ActivityDetailDTO,
   type ReviewDTO,
@@ -30,10 +29,6 @@ export const ActivityHostReviewSection = ({
 
   const participantCheckedIn = Boolean(activity.myParticipation?.checkedInAt);
   const activityEnded = activityScheduleHasEnded(activity);
-  const heading = publishesActivityAsIndividual(activity.publishingProfileKind ?? 'community')
-    ? 'Host'
-    : 'Operator';
-
   return (
     <ReviewSection
       targetType={target.targetType}
@@ -51,9 +46,6 @@ export const ActivityHostReviewSection = ({
       }}
       canWriteReview={canWriteReview}
       activityAwaitingCompletion={participantCheckedIn && !activityEnded}
-      reviewGate="activity"
-      heading={heading}
-      sectionId="host-reviews"
       accent="sky"
       collapsible
       defaultExpanded

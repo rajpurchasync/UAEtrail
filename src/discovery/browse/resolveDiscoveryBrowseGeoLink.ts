@@ -35,7 +35,7 @@ const geoDrillPathFromRef = (geoRef: GeoRef): string[] => {
 };
 
 const listCatForBrowseCard = (card: DiscoveryCardModel): 'activities' | 'venues' => {
-  if (card.source === 'activity' || card.source === 'demand') return 'activities';
+  if (card.source === 'activity' || card.source === 'availability') return 'activities';
   if (isGeographyMapSource(card.source) || card.source === 'shop') return 'venues';
   return 'activities';
 };

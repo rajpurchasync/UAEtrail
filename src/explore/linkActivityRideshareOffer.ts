@@ -2,6 +2,7 @@ import {
   exploreMapItemIsAvailabilityCatalog,
   type ActivityDTO,
   type ExploreMapItemDTO,
+  type ParticipantIntentDTO,
 } from '@uaetrail/shared-types';
 import { fetchPublicActivityDetail } from '../hooks/usePublicActivityDetail';
 import { updateActivity } from '../hooks/tenantActivityClientApi';

@@ -15,8 +15,7 @@ export const resolveActivityMapPeekEssentials = (card: DiscoveryCardModel): Acti
   }
 
   const browse = resolveTripBrowseCardCopy(card);
-  const priceRaw =
-    typeof card.price === 'string' ? card.price.trim() : browse.price?.trim() ?? '';
+  const priceRaw = card.price?.badge?.trim() ?? browse.price?.trim() ?? '';
   const priceLabel = priceRaw || null;
   const joinModeLabel = resolveActivityMapPeekJoinModeLabel(card);
 

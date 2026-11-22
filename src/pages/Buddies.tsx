@@ -27,7 +27,6 @@ import {
   PRODUCT_CREWS_TAB_LABEL,
   PRODUCT_EXPLORE_CTA,
   PRODUCT_MY_CREW_SURFACE_TITLE,
-  PRODUCT_SOCIAL_SURFACE_TITLE,
 } from '../content/productNorthStar';
 import { crewsHomePath } from '../config/mobileFiveTabNav';
 import { isCrewsOriginQuery } from '../config/surfacePaths';

@@ -54,7 +54,6 @@ export const mergeActivityDetailWirePresentation = (
       ...fromApi,
       sections: fromApi.sections,
       engagement: fromApi.engagement ?? resolved?.engagement,
-      tabs: fromApi.tabs ?? resolved?.tabs,
       footerByTab: fromApi.footerByTab ?? resolved?.footerByTab,
       consumerLayout: fromApi.consumerLayout ?? resolved?.consumerLayout,
       strips: fromApi.strips ?? resolved?.strips,

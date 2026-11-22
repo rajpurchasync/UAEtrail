@@ -2,7 +2,14 @@ export { placeApi } from './places';
 export { facilityApi } from './facilities';
 export { areasApi } from './areas';
 export { fetchPlaceCatalog, type PlaceCatalogQuery } from './placeCatalogClient';
-export { exploreApi } from './explore';
+export { exploreApi, buildExploreMapQueryString, exploreMapHttpPath, type ExploreMapQueryParams } from './explore';
+export { geoSearchApi } from './geoSearch';
+export type {
+  CommunityCityLabel,
+  PlaceSearchProvider,
+  PlaceSearchResult,
+  RideshareDestinationSearchRow,
+} from './geoSearch';
 export { geoHierarchyApi } from './geoHierarchy';
 export { weatherApi } from './weather';
 export { platformAlertsApi, sendReferralClickBeacon } from './platformAlerts';

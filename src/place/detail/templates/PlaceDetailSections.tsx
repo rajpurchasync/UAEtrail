@@ -70,6 +70,7 @@ export type PlaceDetailSectionsProps = {
   unlockNotice: string | null;
   onDismissUnlockNotice: () => void;
   onReviewSubmitted: (review: ReviewDTO) => void;
+  guestPreview?: boolean;
 };
 
 export const PlaceDetailSections = ({

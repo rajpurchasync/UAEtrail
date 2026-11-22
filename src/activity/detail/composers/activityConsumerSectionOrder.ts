@@ -67,7 +67,6 @@ const RIDESHARE: ActivityConsumerSectionId[] = [
 export const ACTIVITY_CONSUMER_SECTION_ORDER: Record<ActivityDetailKind, ActivityConsumerSectionId[]> = {
   hiking: HIKING,
   camping: CAMPING,
-  event: EVENT,
   rideshare: RIDESHARE,
   other: EVENT,
 };

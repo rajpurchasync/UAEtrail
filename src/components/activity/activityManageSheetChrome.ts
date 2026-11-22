@@ -25,7 +25,7 @@ export const activityManageSheetChromeIsCoherent = (chrome: ActivityManageSheetC
 };
 
 export const activityManageSheetOpenOptions = (
-  chrome: ActivityManageSheetChrome
+  _chrome: ActivityManageSheetChrome
 ): ActivityManageSheetChrome => ({
   view: 'overview',
   optionsOpen: true,

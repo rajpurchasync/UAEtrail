@@ -2,14 +2,10 @@ import { ActivityDetailPlanFactsSection } from '../../../components/activity/det
 import type { ActivityDetailPlanSectionsProps } from './activityDetailPlanSectionsProps';
 
 /** Event plan column extensions (`/activity/:id` consumer template). */
-export const EventActivityDetailPlanSections = ({
-  model,
-  consumerInline = false,
-}: ActivityDetailPlanSectionsProps) => (
+export const EventActivityDetailPlanSections = ({ model }: ActivityDetailPlanSectionsProps) => (
   <ActivityDetailPlanFactsSection
-    kind="event"
+    kind="other"
     activity={model.activity}
     panelClassName={model.mobilePlanPanel}
-    consumerSection={consumerInline}
   />
 );

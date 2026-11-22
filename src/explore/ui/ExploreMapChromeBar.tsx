@@ -13,6 +13,8 @@ type ExploreMapChromeBarProps = {
   onSearchCommit?: (scope?: ExploreSearchScopeKey | null) => void;
   searchScopeCounts?: ExploreSearchScopeCounts;
   panel: ExplorePanel;
+  mapFilter: MapFilterKey;
+  onMapFilterChange: (filter: MapFilterKey) => void;
   venueRegions: string[];
   activityDatePreset: ExploreActivityDatePreset;
   catalogListCount: number;
@@ -46,6 +48,8 @@ export const ExploreMapChromeBar = ({
   onSearchCommit,
   searchScopeCounts,
   panel,
+  mapFilter,
+  onMapFilterChange,
   venueRegions,
   activityDatePreset,
   catalogListCount,
@@ -78,6 +82,8 @@ export const ExploreMapChromeBar = ({
     <div className="pointer-events-auto flex w-full max-w-none flex-col items-stretch gap-2">
       <ExploreMapMobileLayerChrome
         panel={panel}
+        mapFilter={mapFilter}
+        onMapFilterChange={onMapFilterChange}
         venueRegions={venueRegions}
         activityDatePreset={activityDatePreset}
         onActivityDatePresetChange={onActivityDatePresetChange}

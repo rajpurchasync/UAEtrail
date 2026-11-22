@@ -173,7 +173,11 @@ export const PeopleBrowsePanel = ({
         }`}
       >
         <PeopleBrowseTabContent
-          tab={peopleBrowseTab}
+          tab={
+            peopleBrowseTab === 'hub'
+              ? 'connect'
+              : (peopleBrowseTab as import('./peopleBrowse/PeopleBrowseTabContent').PeopleBrowseTabKey)
+          }
           isSignedIn={isSignedIn}
           availabilityCatalogItems={availabilityCatalogItems}
           exploreCatalogItems={exploreCatalogItems}

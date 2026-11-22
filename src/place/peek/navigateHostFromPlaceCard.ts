@@ -51,7 +51,9 @@ export const navigateHostFromPlaceCard = async (
   const locationId = card.locationId?.trim();
   if (!locationId || !isPlaceMapSource(card.source)) return;
 
-  const kind = resolveCreateActivityKindFromVenueCardKind(card.kind);
+  const rawKind = resolveCreateActivityKindFromVenueCardKind(card.kind);
+  const kind: 'hiking' | 'camping' | 'event' =
+    rawKind === 'hiking' || rawKind === 'camping' || rawKind === 'event' ? rawKind : 'event';
   const [place, areas] = await Promise.all([
     fetchPublicPlaceDetail(locationId),
     fetchPublishedAreas(),

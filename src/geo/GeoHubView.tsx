@@ -108,6 +108,7 @@ export const GeoHubView = ({
     facilityCount: counts.facilities,
   });
   const tab = visibleTabs.includes(activeTab) ? activeTab : 'overview';
+  const catalogEnabled = Boolean(catalogNodeId) && member;
   const facilitiesPage = useGeoPagedFacilities(
     catalogNodeId,
     catalogEnabled && counts.facilities > 0 && tab === 'facilities'
@@ -117,8 +118,6 @@ export const GeoHubView = ({
   useEffect(() => {
     if (activeTab === 'places' && childNodes.length === 0) onTabChange('overview');
   }, [activeTab, childNodes.length, onTabChange]);
-
-  const catalogEnabled = Boolean(catalogNodeId) && member;
   const placesPage = useGeoPagedPlaces(catalogNodeId, catalogEnabled);
   const activitiesPage = useGeoPagedActivities(catalogNodeId, catalogEnabled);
   const heroPhotos = useMemo(

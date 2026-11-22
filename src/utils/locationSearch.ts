@@ -40,7 +40,7 @@ export const resolveRegionFilter = (
 const regionMatchesToken = (
   region: string,
   token: string,
-  publishedAreas: readonly AreaPublicDTO[] = []
+  _publishedAreas: readonly AreaPublicDTO[] = []
 ): boolean => {
   const regionLower = region.toLowerCase();
   if (regionLower.includes(token) || token.includes(regionLower)) return true;

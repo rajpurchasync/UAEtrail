@@ -29,7 +29,7 @@ type ExploreFilterDropdownPillProps = {
 export const ExploreFilterDropdownPill = ({
   label,
   ariaLabel,
-  active,
+  active: _active,
   options,
   selectedKeys,
   onSelect,

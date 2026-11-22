@@ -366,7 +366,7 @@ export const CreateAvailabilityFixedFlow = ({
         }
             confirmLabel="Use this location"
             onPrecisionChange={(locationPrecision: LocationPrecision) => patchDraft({ locationPrecision })}
-            onLocationChange={(latitude, longitude) => {
+            onLocationChange={(latitude: number, longitude: number) => {
               if (isToStep) {
                 patchDraft({ toLatitude: latitude, toLongitude: longitude });
               } else {
@@ -375,7 +375,7 @@ export const CreateAvailabilityFixedFlow = ({
             }}
             onBack={goBack}
             onClose={requestClose}
-            onConfirm={(confirmLat, confirmLng) => {
+            onConfirm={(confirmLat: number, confirmLng: number) => {
               if (isToStep) {
                 patchDraft({
                   toLatitude: confirmLat,

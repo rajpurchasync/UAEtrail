@@ -19,7 +19,7 @@ const isShopMapItem = (item: ExploreMapItemDTO): boolean => isShopListItem(item)
 const matchesVenueKindFilter = (item: ExploreMapItemDTO, mapFilter: MapFilterKey): boolean => {
   if (mapFilter === 'hiking') return item.kind === 'hiking';
   if (mapFilter === 'camping') return item.kind === 'camping';
-  if (mapFilter === 'event') return item.kind === 'event' && isGeographyMapSource(item.source);
+  if (mapFilter === 'others') return item.kind === 'event' && isGeographyMapSource(item.source);
   return true;
 };
 

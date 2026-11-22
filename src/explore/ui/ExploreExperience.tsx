@@ -65,6 +65,9 @@ export const ExploreExperience = () => {
               publishedAreas={model.publishedAreas}
               handlePickExploreArea={model.handlePickExploreArea}
               onVisibleMapBoundsChange={model.onVisibleMapBoundsChange}
+              catalogListCount={model.catalogListCount}
+              openPeopleBrowsePanel={model.openPeopleBrowsePanel}
+              peopleBrowseMapChip={model.peopleBrowseMapChip}
             />
           }
         />

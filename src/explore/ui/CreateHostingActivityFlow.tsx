@@ -48,17 +48,14 @@ import {
   nearestPlaceCatalogHostingLeaf,
 } from '../../places/placeCatalogDestinationIndex';
 import {
-  applyHostingDestinationSearchHit,
   enrichHostingCatalogPlacePick,
   patchPickHostingCatalogPlace,
 } from './hostingDestinationDraft';
 import {
   HOSTING_DESTINATION_MAP_SEARCH_TITLE,
 } from '../createFlowCopy';
-import type { PlaceCatalogDestinationSearchHit } from '../../places/placeCatalogDestinationIndex';
 import {
   applyHostDestinationMapLocation,
-  hostDestinationCatalogSearch,
   hostDestinationMapCenter,
   isHostDestinationCatalogMap,
   isHostDestinationCustomMap,
@@ -100,7 +97,6 @@ import {
 import { usePlaceRegistry } from '../../hooks/usePlaceRegistry';
 import {
   fromLocationLabel,
-  HOSTING_SEEKING_PREFILL_TITLE,
   HOSTING_RIDESHARE_LINKED_NOTICE,
   HOME_START_UNMATCHED,
   HOSTING_PROFILE_INCOMPLETE_ERROR,
@@ -448,19 +444,6 @@ export const CreateHostingActivityFlow = ({
       });
     },
     [catalogCountry, catalogPlaces, closeMapOverlay, destinationAreas, draft, patchDraft]
-  );
-
-  const handleHostingCatalogSearchHit = useCallback(
-    (hit: PlaceCatalogDestinationSearchHit) => {
-      if (hit.kind === 'trail') {
-        pickHostingCatalogPlaceById(hit.placeId);
-        return;
-      }
-      const ladderPatch = applyHostingDestinationSearchHit(hit, destinationAreas, catalogCountry);
-      if (ladderPatch) patchDraft(ladderPatch);
-      closeMapOverlay();
-    },
-    [catalogCountry, closeMapOverlay, destinationAreas, patchDraft, pickHostingCatalogPlaceById]
   );
 
   const openDestinationCatalogMap = useCallback(() => {
@@ -988,7 +971,7 @@ export const CreateHostingActivityFlow = ({
             startCoordsEditing={hikeCampMeeting && meetingPickerIntent === 'edit'}
             onPlaceLabel={
               isMeetingPin
-                ? (label) => {
+                ? (label: string) => {
                     const trimmed = label.trim();
                     if (trimmed) patchDraft({ meetingPointLabel: trimmed });
                   }
@@ -1002,22 +985,10 @@ export const CreateHostingActivityFlow = ({
                 ? HOSTING_DESTINATION_MAP_SEARCH_TITLE
                 : locationPickerTitle(mapStep, kind, mapEndpoint, stepTitleOptions)
             }
-            hostingCatalogSearch={
-              isCatalogDestinationPin
-                ? hostDestinationCatalogSearch({
-                    catalogPlaces,
-                    areas: destinationAreas,
-                    countryCode: catalogCountry,
-                    state: draft.venueCascadeState,
-                    areaId: draft.registryPlaceAreaId,
-                    onPickHit: handleHostingCatalogSearchHit,
-                  })
-                : undefined
-            }
             confirmLabel={locationPickerConfirmLabel(kind, mapStep, mapEndpoint)}
             hint={locationPickerHint(kind, draft.locationPrecision)}
             onPrecisionChange={(locationPrecision: LocationPrecision) => patchDraft({ locationPrecision })}
-            onLocationChange={(latitude, longitude) => {
+            onLocationChange={(latitude: number, longitude: number) => {
               if (isHostDestinationMap(mapIntent)) {
                 const patch = applyHostDestinationMapLocation(mapIntent, latitude, longitude);
                 if (patch) patchDraft(patch);
@@ -1048,7 +1019,7 @@ export const CreateHostingActivityFlow = ({
             }}
             onBack={goBack}
             onClose={requestClose}
-            onConfirm={(_confirmLat, _confirmLng) => {
+            onConfirm={(_confirmLat: number, _confirmLng: number) => {
               if (isCatalogDestinationPin) {
                 const pinLat = draft.trailLatitude;
                 const pinLng = draft.trailLongitude;

@@ -303,3 +303,60 @@ export const downloadAuthenticatedFile = async (path: string): Promise<{ blob: B
   const blob = await response.blob();
   return { blob, filename };
 };
+
+/** POST raw body (e.g. image bytes). Optional auth attaches Bearer + refresh on 401. */
+export const postAuthenticatedBlob = async (
+  path: string,
+  body: Blob,
+  init?: { contentType?: string; auth?: boolean; signal?: AbortSignal }
+): Promise<Blob> => {
+  const makeRequest = async (token?: string): Promise<Response> => {
+    const headers: Record<string, string> = {};
+    if (init?.contentType) headers['Content-Type'] = init.contentType;
+    const accessToken = token ?? (init?.auth ? getStoredSession()?.accessToken : undefined);
+    if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+    return fetch(formatEnvironmentUrl(`${API_BASE}${path}`), {
+      method: 'POST',
+      credentials: 'include',
+      headers,
+      body,
+      signal: init?.signal,
+    });
+  };
+
+  let response = await makeRequest();
+
+  if (response.status === 401 && init?.auth) {
+    const newSession = await refreshAccessToken();
+    if (!newSession) {
+      throw new Error('Session expired. Please sign in again.');
+    }
+    response = await makeRequest(newSession.accessToken);
+    if (response.status === 401) {
+      clearLocalSession();
+      throw new Error('Session expired. Please sign in again.');
+    }
+  }
+
+  if (!response.ok) {
+    let message = `Request failed with status ${response.status}`;
+    try {
+      const payload = (await response.json()) as { error?: { message?: string } };
+      if (payload.error?.message) message = payload.error.message;
+    } catch {
+      /* non-JSON error body */
+    }
+    if (response.status === 401 || response.status === 403) {
+      message = 'Sign in to upload photos, then try again.';
+    }
+    const error = new Error(message) as Error & { status: number };
+    error.status = response.status;
+    throw error;
+  }
+
+  const blob = await response.blob();
+  if (!(blob instanceof Blob) || blob.size === 0) {
+    throw new Error('Empty response body');
+  }
+  return blob;
+};

@@ -6,7 +6,7 @@ import type { ActivityDetailViewProps } from '../../../components/activity/Activ
 export const EventActivityDetailPage = (props: ActivityDetailViewProps) => (
   <ActivityDetailPageShell
     {...props}
-    detailKind="event"
+    detailKind="other"
     planSections={EventActivityDetailPlanSections}
   />
 );

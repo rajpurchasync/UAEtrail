@@ -12,7 +12,7 @@ import {
 } from './exploreSearchHomeCopy';
 import type { ExploreSearchScope } from './exploreSearchRouting';
 
-const BOOKING_MATCH_COUNT_KEYS: readonly ExploreSearchScopeKey[] = ['activities', 'places', 'people'];
+const BOOKING_MATCH_COUNT_KEYS = ['activities', 'places', 'people'] as const;
 
 const BOOKING_MATCH_LABEL: Record<(typeof BOOKING_MATCH_COUNT_KEYS)[number], string> = {
   activities: EXPLORE_SEARCH_SECTION_TRIPS,

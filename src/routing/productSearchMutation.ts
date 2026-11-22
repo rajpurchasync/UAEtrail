@@ -13,7 +13,7 @@ export const applyProductSearchMutation = (
   ctx: ProductSearchMutationContext,
   mutate: (params: URLSearchParams) => void
 ): void => {
-  let nextParams: URLSearchParams | null = null;
+  let nextParams: URLSearchParams | undefined;
   ctx.setSearchParams(
     (prev) => {
       const params = new URLSearchParams(prev);

@@ -26,9 +26,8 @@ import {
 } from '../exploreBrowseTaxonomy';
 import type { BrowseMainCategoryKey } from '../../list/browse/browseListTaxonomy';
 import type { ExploreBrowseUrlSyncPatch } from '../exploreBrowseUrlSync';
-import type { PeopleBrowseTab } from '../../list/browse/peopleListBrowseUrl';
-import type { ExplorePinKindFilter } from '../explorePinKindFilter';
 import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
+import type { ExplorePinKindFilter } from '../explorePinKindFilter';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
 import type { ExploreBrowseListMode } from '../exploreBrowseUrlSync';
 import type { PlaceKind } from '@uaetrail/shared-types';
@@ -62,6 +61,7 @@ type Setters = {
   setActivityDatePreset: (v: ExploreActivityDatePreset) => void;
   setActivityModeFilter: (v: ExploreActivityModeFilter) => void;
   setVenueRegions: (v: string[]) => void;
+  setGeoPath: (v: string[]) => void;
   setSearchScope: (v: ExploreSearchScopeKey | null) => void;
   setTripMapTopics: (v: TripMapTopicKey[]) => void;
   setPlaceMapTopics: (v: PlaceMapTopicKey[]) => void;
@@ -111,7 +111,7 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
     topicPills,
     tripMapTopics,
     placeMapTopics,
-    activityFilter,
+    activityFilter: _activityFilter,
     venueFilter,
     query,
     searchScope,

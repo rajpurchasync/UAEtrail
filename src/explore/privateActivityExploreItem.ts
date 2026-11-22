@@ -42,8 +42,11 @@ export const buildExploreMapItemFromActivity = (
       : { latitude: null, longitude: null };
 
   const display = buildExploreActivityDisplay(activity);
+  const activityWithPlace = activity as ActivityDTO & { location?: LocationDTO | null };
   const location: LocationDTO | null =
-    activity.location && typeof activity.location === 'object' ? activity.location : null;
+    activityWithPlace.location && typeof activityWithPlace.location === 'object'
+      ? activityWithPlace.location
+      : null;
 
   return {
     id: `activity:${activity.id}`,

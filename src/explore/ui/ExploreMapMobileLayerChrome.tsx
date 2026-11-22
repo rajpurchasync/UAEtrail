@@ -58,7 +58,8 @@ type ExploreMapMobileLayerChromeProps = {
 
 export const ExploreMapMobileLayerChrome = ({
   panel,
-  mapFilter,
+  mapFilter: _mapFilter,
+  onMapFilterChange: _onMapFilterChange,
   venueRegions,
   activityDatePreset,
   onActivityDatePresetChange,

@@ -113,7 +113,9 @@ export const ActivityCrewPage = () => {
               rideshareHasPayment={Boolean(activity.ridesharePriceAed)}
               joinRequests={joinRequests}
               requestsLoading={requestsLoading}
-              onRequestsChanged={() => refetchJoinRequests()}
+              onRequestsChanged={() => {
+                void refetchJoinRequests();
+              }}
               onError={setActionError}
             />
           ) : isHost ? (

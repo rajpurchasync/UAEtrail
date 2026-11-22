@@ -148,7 +148,6 @@ export const ComposeHost = ({
       <SeekFlexibleComposeSheet
         open={availabilityFlexibleOpen}
         onClose={onCloseCompose}
-        onBackToIntent={onAvailabilityBackToIntent}
         exploreAreaSlug={composeAreaSlug}
       />
     )}

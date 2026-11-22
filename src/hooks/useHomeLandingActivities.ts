@@ -53,7 +53,7 @@ const toLandingActivity = (activity: ActivityDTO): HomeLandingActivity => ({
     activityType: activity.activityType,
     images: activity.images,
     bannerUrl: activity.bannerUrl,
-    location: activity.location,
+    location: (activity as ActivityDTO & { location?: { images?: string[] } }).location,
   }),
 });
 

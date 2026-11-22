@@ -69,7 +69,7 @@ const MapLocate = ({ onLocated }: { onLocated: (lat: number, lng: number) => voi
   return null;
 };
 
-interface CreatePlacePickerProps {
+export interface CreatePlacePickerProps {
   precision: LocationPrecision;
   latitude: number;
   longitude: number;

@@ -1,9 +1,7 @@
 import {
   exploreMapItemIsAvailabilityCatalog,
-  exploreVenueIsPlacesSpot,
   isFacilityMapSource,
   isFacilityPlaceKind,
-  isPeekOnlyCatalogProfile,
   isTimeBoundExploreMapItem,
   resolveExploreMapActivityMode,
   type ExploreMapItemDTO,
@@ -45,13 +43,7 @@ export {
   isPlacesMapItem,
   isShopListItem,
 } from '../exploreMapItemKind';
-import {
-  isBuddyMapItem,
-  isCommunityShopMapItem,
-  isMerchantShopMapItem,
-  isPlacesMapItem,
-  isShopListItem,
-} from '../exploreMapItemKind';
+import { isBuddyMapItem, isPlacesMapItem, isShopListItem } from '../exploreMapItemKind';
 
 export const isPhysicalShopItem = (item: ExploreMapItemDTO): boolean =>
   isShopListItem(item) && item.shopPresence !== 'online' && item.latitude != null && item.longitude != null;
@@ -117,7 +109,6 @@ export const isAreaLensMapItem = (item: ExploreMapItemDTO): boolean => item.sour
 export const matchesExplorePinKindFilter = (item: ExploreMapItemDTO, pinKind: ExplorePinKindFilter): boolean => {
   if (pinKind === 'all') return true;
   if (pinKind === 'activities') return isTimeBoundExploreMapItem(item);
-  if (pinKind === 'locations') return isPlacesMapItem(item) && !isShopListItem(item);
   if (pinKind === 'places') return isPlacesMapItem(item) && !isShopListItem(item);
   if (pinKind === 'shops') return isShopListItem(item);
   return true;

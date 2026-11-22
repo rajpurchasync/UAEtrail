@@ -123,7 +123,7 @@ export const useActivityJoinActions = ({
   const guestSheetIntent =
     guestOverlay.kind === 'open' ? guestOverlay.intent : ('activity' as const);
   const guestSheetSurface =
-    guestOverlay.kind === 'open' ? guestOverlay.surface : ('join' as GuestSheetSurface);
+    guestOverlay.kind === 'open' ? guestOverlay.surface : ('join' as const);
   const guestBrowseGateIntent: GuestBrowseGateIntent =
     guestOverlay.kind === 'open' ? guestOverlay.browseGateIntent : 'peek-details';
   const guestPendingPeekAction =

@@ -342,7 +342,7 @@ export const Groups = () => {
       normalizeGroupManageSection(searchParams.get('section'), searchParams.get('tab'))
     );
     const focus = searchParams.get('focus');
-    if (focus === 'add-kid') setShowKidForm(true);
+    if (focus === 'add-kid') setShowKidTripForm(true);
   }, [searchParams]);
 
   useEffect(() => {

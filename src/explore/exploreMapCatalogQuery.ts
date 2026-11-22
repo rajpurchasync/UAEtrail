@@ -36,7 +36,7 @@ export const exploreMapCatalogQuery = (input: {
     pin === 'shops' ||
     (places.length === 1 && places[0] === 'shops' && trips.length === 0 && pin !== 'activities');
   const onlyRides =
-    trips.length === 1 && trips[0] === 'rideshare' && places.length === 0 && pin !== 'places' && pin !== 'locations';
+    trips.length === 1 && trips[0] === 'rideshare' && places.length === 0 && pin !== 'places';
 
   if (onlyFacilities) return { sources: 'facility', includeRideshare: false };
   if (onlyShops) return { sources: 'shop,agency', includeRideshare: false };
@@ -44,7 +44,7 @@ export const exploreMapCatalogQuery = (input: {
 
   const sources = new Set<string>();
   if (pin === 'activities') sources.add('activity');
-  else if (pin === 'places' || pin === 'locations') sources.add('place');
+  else if (pin === 'places') sources.add('place');
   else {
     sources.add('place');
     sources.add('activity');

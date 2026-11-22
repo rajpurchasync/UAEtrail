@@ -7,7 +7,6 @@ import {
   parseBrowseListFilterState,
   parseBrowseListGeoPath,
   parseBrowseListVenueRegions,
-  parseListCatParam,
   serializeBrowseListSearchParams,
 } from '../../list/browse/browseListUrlState';
 import { scopeBrowseListStateForListCat } from '../../list/browse/browseListMapHandoff';
@@ -155,12 +154,6 @@ export const exploreSearchModalEntryPath = (
   params.set('search', '1');
   const qs = params.toString();
   return qs ? `${base}?${qs}` : `${base}?search=1`;
-};
-
-const resolveSearchListCat = (params: URLSearchParams): BrowseMainCategoryKey => {
-  const fromListCat = parseListCatParam(params.get(LIST_CAT_PARAM));
-  if (fromListCat) return fromListCat;
-  return exploreSearchListCatForScope(parseExploreSearchScopeFromParams(params));
 };
 
 /** Map handoff from search results list URL. */

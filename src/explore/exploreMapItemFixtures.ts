@@ -59,7 +59,7 @@ export const availabilityExploreMapItem = (
     path: `/member/${userId}?lens=available`,
     featuredPerson: {
       userId,
-      name: 'Sam',
+      displayName: 'Sam',
       avatarUrl: null,
       role: 'host',
     },

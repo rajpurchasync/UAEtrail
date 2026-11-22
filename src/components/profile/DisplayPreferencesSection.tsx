@@ -109,7 +109,7 @@ export const DisplayPreferencesSection = ({
   const preferences = useDisplayPreferences();
   const themeCurrent = resolveUiTheme(preferences.theme);
 
-  const setTheme = (theme: 'light' | 'dark') => writeActiveDisplayPreferences({ theme });
+  const setTheme = (theme: ThemePreference) => writeActiveDisplayPreferences({ theme });
 
   if (themeOnly && compact) {
     return <DrawerThemeIconToggle current={themeCurrent} onSelect={setTheme} />;

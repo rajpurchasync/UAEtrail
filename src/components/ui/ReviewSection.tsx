@@ -17,8 +17,10 @@ import {
 } from '../../content/activityDetailCopy';
 
 interface ReviewSectionProps {
-  targetType: 'location' | 'tenant' | 'place' | 'activity';
+  targetType: 'location' | 'tenant' | 'place' | 'activity' | 'user';
   targetId: string;
+  /** Host review on an activity — required when `targetType` is `user`. */
+  contextActivityId?: string;
   reviews: ReviewDTO[];
   onReviewSubmitted: (review: ReviewDTO) => void;
   accent?: 'emerald' | 'amber' | 'violet' | 'sky';
@@ -37,7 +39,7 @@ interface ReviewSectionProps {
 
 const reviewWireTargetType = (
   targetType: ReviewSectionProps['targetType']
-): 'location' | 'tenant' | 'activity' => {
+): 'location' | 'tenant' | 'activity' | 'user' => {
   if (targetType === 'place') return 'location';
   return targetType;
 };
@@ -45,6 +47,7 @@ const reviewWireTargetType = (
 export const ReviewSection = ({
   targetType,
   targetId,
+  contextActivityId,
   reviews,
   onReviewSubmitted,
   accent = 'emerald',
@@ -116,7 +119,13 @@ export const ReviewSection = ({
           ? { kind: 'activity', activityId: targetId }
           : wireTarget === 'tenant'
             ? { kind: 'tenant', organisationId: targetId }
-            : { kind: 'place', placeId: targetId },
+            : wireTarget === 'user'
+              ? {
+                  kind: 'user',
+                  userId: targetId,
+                  activityId: contextActivityId ?? '',
+                }
+              : { kind: 'place', placeId: targetId },
         { rating, comment: comment.trim() }
       );
       onReviewSubmitted(review);

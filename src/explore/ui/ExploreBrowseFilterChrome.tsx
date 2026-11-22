@@ -126,7 +126,7 @@ export const ExploreBrowseFilterChrome = ({
     showBuddySubtype && buddySubtype === 'activities' && onOutingTopicChange != null;
   const showPinKindRow = unifiedMap && onPinKindChange != null;
   const mapShowsPlans = pinKind === 'all' || pinKind === 'activities';
-  const mapShowsPlaces = pinKind === 'all' || pinKind === 'places' || pinKind === 'locations';
+  const mapShowsPlaces = pinKind === 'all' || pinKind === 'places';
   const showActivityModeRow =
     layout === 'map' &&
     onActivityModeFilterChange != null &&

@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
-import type { ActivityDTO, ActivityRequestView } from '@uaetrail/shared-types';
+import type { ActivityDTO } from '@uaetrail/shared-types';
+import type { ActivityRequestView } from '../../api/types';
 import { activityDetailPath } from '../../config/routingCatalog';
 import { ActivityManageSheet } from '../activity/ActivityManageSheet';
 import { useActivityInviteShareSheet } from '../../hooks/useActivityInviteShareSheet';

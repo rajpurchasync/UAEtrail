@@ -42,7 +42,7 @@ export const Profile = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
-  const { profile, setProfile, incomingBuddyRequests, loading, error, reload, profileLoaded } = useParticipantHubData();
+  const { profile, setProfile, loading, error, reload, profileLoaded } = useParticipantHubData();
 
   const {
     ownedProfiles,

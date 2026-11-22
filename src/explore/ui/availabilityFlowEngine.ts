@@ -589,7 +589,7 @@ export const publishAvailabilityFixedSlot = async (draft: AvailabilityFixedDraft
         s.startAt === fixedSlot.startAt &&
         s.latitude === fixedSlot.latitude &&
         s.longitude === fixedSlot.longitude
-    ) ?? fixedSlots.at(-1);
+    ) ?? fixedSlots[fixedSlots.length - 1];
   const slotId = savedSlot?.slotId ?? 'fixed';
   const mapItemId = availabilityMapItemId(updated.userId, slotId);
 

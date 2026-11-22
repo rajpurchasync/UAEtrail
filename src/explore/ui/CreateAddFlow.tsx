@@ -262,7 +262,7 @@ export const CreateAddFlow = ({
             latitude={lat}
             longitude={lng}
             onPrecisionChange={setMapPrecision}
-            onLocationChange={(nextLat, nextLng) => {
+            onLocationChange={(nextLat: number, nextLng: number) => {
           if (isParkingMap) {
                 patchDraft({ parkingLat: nextLat, parkingLng: nextLng });
               } else {
@@ -271,7 +271,7 @@ export const CreateAddFlow = ({
             }}
             onBack={goBack}
             onClose={requestClose}
-            onConfirm={(confirmLat, confirmLng) => {
+            onConfirm={(confirmLat: number, confirmLng: number) => {
               if (isParkingMap) {
                 patchDraft({
                   parkingLat: confirmLat,

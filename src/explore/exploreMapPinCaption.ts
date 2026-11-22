@@ -14,7 +14,6 @@ const MAP_PIN_KIND_LABEL: Partial<Record<DiscoveryCardKind, string>> = {
   camping: 'Camping',
   rideshare: 'Rideshare',
   event: 'Event',
-  activity: 'Outing',
   shop: 'Shop',
 };
 
@@ -188,7 +187,12 @@ export const resolveMapPinActivityCaption = (options: {
     };
   }
 
-  if (!isScheduledActivityMapPin({ source: options.source, activityMode: options.activityMode })) {
+  if (
+    !isScheduledActivityMapPin({
+      source: options.source,
+      activityMode: options.activityMode ?? undefined,
+    })
+  ) {
     return null;
   }
 

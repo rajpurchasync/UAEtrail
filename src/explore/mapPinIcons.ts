@@ -103,7 +103,8 @@ export const buildVenueMapPinHtml = (options: {
   const caption = options.caption;
   const showCaption = Boolean(caption?.primary?.trim());
   const captionAccent =
-    options.ringColor ?? exploreMapPinRingColor(options.kind, options.source === 'facility' ? 'facility' : 'place');
+    options.ringColor ??
+    exploreMapPinRingColor(options.kind, options.source === 'facility' ? 'venue' : 'venue');
   const captionHtml = showCaption && caption ? buildMapPinCaptionHtml(caption, captionAccent) : '';
   const tripChipClass = tripCount > 0 ? ' uaetrail-map-venue-chip--has-trip' : '';
   const countBadge = venueStackCountBadgeHtml(stackCount);

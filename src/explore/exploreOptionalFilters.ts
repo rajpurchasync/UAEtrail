@@ -255,7 +255,8 @@ export const exploreItemMatchesFacilityKinds = (
   if (item.placeKind && isFacilityPlaceKind(item.placeKind)) {
     return kinds.includes(item.placeKind);
   }
-  const amenityKinds = item.locationCard?.amenityKinds ?? [];
+  const amenityKinds =
+    (item.locationCard as { amenityKinds?: PlaceKind[] } | null | undefined)?.amenityKinds ?? [];
   return kinds.some((kind) => amenityKinds.includes(kind));
 };
 

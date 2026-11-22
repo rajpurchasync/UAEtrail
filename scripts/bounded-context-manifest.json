@@ -321,9 +321,14 @@
       "routeRegistrars": [
         "apps/api/src/routes/user/registerPublicAreaRoutes.ts",
         "apps/api/src/routes/user/registerPublicGeoHierarchyRoutes.ts",
-        "apps/api/src/routes/admin/registerAdminAreaRoutes.ts"
+        "apps/api/src/routes/admin/registerAdminAreaRoutes.ts",
+        "apps/api/src/routes/geo-search.ts"
       ],
-      "feDomains": ["src/api/domains/areas.ts", "src/api/domains/geoHierarchy.ts"],
+      "feDomains": [
+        "src/api/domains/areas.ts",
+        "src/api/domains/geoHierarchy.ts",
+        "src/api/domains/geoSearch.ts"
+      ],
       "feRoots": [
         "src/pages/AreaDetailPage.tsx",
         "src/components/area/AreaDetailView.tsx",
@@ -435,6 +440,7 @@
     "facilities",
     "goals",
     "geoHierarchy",
+    "geoSearch",
     "groups",
     "media",
     "member",
