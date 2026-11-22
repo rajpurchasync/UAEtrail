@@ -2,6 +2,7 @@ import { CalendarPlus } from 'lucide-react';
 import { memberAvailabilitySlotsAsDayPicks } from '@uaetrail/shared-types';
 import { useMemberAvailability } from '../../hooks/useMemberAvailability';
 import { AppButton } from '../../components/mobile/AppButton';
+import { UPL_INTENT_OPEN_ACTION } from '../../content/upl-glossary';
 
 type CrewsAvailabilityStripProps = {
   isSignedIn: boolean;
@@ -9,7 +10,7 @@ type CrewsAvailabilityStripProps = {
 };
 
 const summarizeDays = (count: number): string => {
-  if (count === 0) return 'Share when you’re free to find crew';
+  if (count === 0) return `${UPL_INTENT_OPEN_ACTION} to find crew`;
   if (count === 1) return '1 day marked available';
   return `${count} days marked available`;
 };

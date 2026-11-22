@@ -35,7 +35,7 @@ import { useExploreMapCatalog } from './useExploreMapCatalog';
 import { useExploreMapInteractionHandlers } from './useExploreMapInteractionHandlers';
 import { resolveBrowseListCreateFabLabel } from '../../list/browse/browseListCopy';
 import {
-  resolveCreateFabComposeEntry,
+  resolveCreateEntryPreset,
   resolveExploreMapCreateFabHints,
 } from '../create/composeFabEntry';
 import { intentOpenCompose } from '../compose';
@@ -191,7 +191,7 @@ export const useExploreExperienceModel = () => {
 
   const handlePrimaryFabTap = useCallback(() => {
     clearSelection();
-    compose.handleCreateTap(resolveCreateFabComposeEntry(pathname, fabSearch, createFabHints));
+    compose.handleCreateTap(resolveCreateEntryPreset(pathname, fabSearch, createFabHints));
   }, [clearSelection, compose, pathname, fabSearch, createFabHints]);
 
   const handleOpenMarkAvailability = useCallback(() => {
@@ -314,7 +314,7 @@ export const useExploreExperienceModel = () => {
       onOpenExploreActivity: openExploreActivityFromRef,
       onOpenAvailabilityCatalogItem: selection.openItem,
       onOfferRideshareForAvailabilityItem: hostingLauncher.offerRideshareForAvailabilityItem,
-      onOpenMarkAvailability: handleOpenMarkAvailability,
+      onOpenIntentOpen: handleOpenMarkAvailability,
       searchFocusNonce,
     });
 

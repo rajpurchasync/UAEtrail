@@ -62,6 +62,9 @@ export const InboundLegacyProfileSettingsRedirect = lazy(() =>
 export const InboundLegacyNotificationsRedirect = lazy(() =>
   loadInboundRedirects().then((m) => ({ default: m.InboundLegacyNotificationsRedirect }))
 );
+export const InboundLegacyBuddiesRedirect = lazy(() =>
+  loadInboundRedirects().then((m) => ({ default: m.InboundLegacyBuddiesRedirect }))
+);
 
 export const loadExploreEntryRedirects = () => import('./exploreEntryRedirects');
 export const ShopBrowseRoute = lazy(() =>

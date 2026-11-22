@@ -145,7 +145,7 @@ describe('create flow module boundaries (CPC-9b)', () => {
     expect(offerRideshare).not.toMatch(/memberPublishGateHref/);
     const crewsList = read('src/list/explorer/ListCrewsExplorer.tsx');
     expect(crewsList).not.toMatch(/SeekFlexibleComposeSheet/);
-    expect(crewsList).toMatch(/onOpenMarkAvailability/);
+    expect(crewsList).toMatch(/onOpenIntentOpen/);
     expect(read('src/create/launchHostWizard.ts')).toMatch(/createFlowPath/);
     const placeNav = read('src/place/peek/navigateHostFromPlaceCard.ts');
     expect(placeNav).toMatch(/launchHostWizard/);

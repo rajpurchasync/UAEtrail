@@ -120,9 +120,12 @@ export const MEMBERSHIP_MARKETING_PATH = '/membership' as const;
 
 /** Social subgraph */
 export const GROUPS_PATH = '/groups' as const;
-export const BUDDIES_PATH = '/buddies' as const;
+/** My Crews friends hub — canonical SPA route (`/buddies` bookmarks redirect here). */
+export const MY_CREWS_PATH = '/crews' as const;
+/** Legacy name — same route as {@link MY_CREWS_PATH}. */
+export const BUDDIES_PATH = MY_CREWS_PATH;
 
-/** Query on `/buddies` or `/groups` when opened from the Crews list hub — back returns to `crewsHomePath()`. */
+/** Query on `/crews` or `/groups` when opened from the Crews list hub — back returns to `crewsHomePath()`. */
 export const CREWS_ORIGIN_QUERY = 'crews' as const;
 
 export const isCrewsOriginQuery = (from: string | null | undefined): boolean =>
@@ -134,7 +137,7 @@ export const buddiesPath = (options?: { from?: string }): string => {
   return `${BUDDIES_PATH}?${params.toString()}`;
 };
 
-/** Social hub child screens under `/buddies` (Settings-style sections, not tabs). */
+/** Social hub child screens under {@link MY_CREWS_PATH} (Settings-style sections, not tabs). */
 export type SocialFriendsSection = 'friends' | 'requests' | 'following';
 
 export const socialFriendsPath = (): string => `${BUDDIES_PATH}?section=friends`;

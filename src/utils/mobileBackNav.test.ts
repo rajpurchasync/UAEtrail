@@ -127,12 +127,12 @@ describe('mobileBackNav', () => {
   });
 
   it('shows profile leading on Social hub root', () => {
-    expect(resolveMobileTabHeaderLeadingBack('/buddies', null)).toBeNull();
+    expect(resolveMobileTabHeaderLeadingBack('/crews', null)).toBeNull();
   });
 
   it('sends My crew child screens back to the hub', () => {
-    expect(resolveMobileTabHeaderLeadingBack('/buddies', null, '?section=friends')).toEqual({
-      fallbackTo: '/buddies',
+    expect(resolveMobileTabHeaderLeadingBack('/crews', null, '?section=friends')).toEqual({
+      fallbackTo: '/crews',
       label: 'My crew',
       backBehavior: 'fallback',
     });
@@ -158,8 +158,8 @@ describe('mobileBackNav', () => {
     expect(mobileUnifiedHeaderShowsProfileLeading(EXPLORE_MAP_PATH, null)).toBe(true);
     expect(mobileUnifiedHeaderShowsProfileLeading(PLAN_PATH, null)).toBe(true);
     expect(mobileUnifiedHeaderShowsProfileLeading(MESSAGES_PATH, null)).toBe(true);
-    expect(mobileUnifiedHeaderShowsProfileLeading('/buddies', null)).toBe(true);
+    expect(mobileUnifiedHeaderShowsProfileLeading('/crews', null)).toBe(true);
     expect(mobileUnifiedHeaderShowsProfileLeading('/settings', null)).toBe(true);
-    expect(mobileUnifiedHeaderShowsProfileLeading('/buddies', null, '?section=friends')).toBe(false);
+    expect(mobileUnifiedHeaderShowsProfileLeading('/crews', null, '?section=friends')).toBe(false);
   });
 });

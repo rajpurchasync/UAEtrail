@@ -8,6 +8,7 @@ import { areaIdForExploreAreaSlug } from '../exploreAreaFilter';
 import { AvailabilityMatchPreview } from './AvailabilityMatchPreview';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { FlowSheetHeader } from './ExploreFlowSheetChrome';
+import { UPL_INTENT_OPEN_ACTION } from '../../content/upl-glossary';
 
 export type IntentOpenComposeSheetProps = {
   open: boolean;
@@ -58,7 +59,7 @@ export const IntentOpenComposeSheet = ({
     <ExploreResponsiveSheet
       open={open}
       onClose={onClose}
-      title="Share when you're free"
+      title={UPL_INTENT_OPEN_ACTION}
       maxWidthClass="lg:max-w-lg"
       zClass={EXPLORE_Z.composeFlow}
       overlayFixed

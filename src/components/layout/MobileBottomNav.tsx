@@ -44,7 +44,7 @@ const TabIcon = ({ icon: Icon, active }: { icon: LucideIcon; active: boolean }) 
   />
 );
 
-/** Mobile tab bar — Trips · Places · People · Chat · Plans (`MOBILE_FIVE_TAB_ORDER`). */
+/** Mobile tab bar — Trips · Places · Crews · Chat · Plans (`MOBILE_FIVE_TAB_ORDER`). */
 export const MobileBottomNav = () => {
   const visible = useMobileBottomNav();
   const { pathname, search } = useProductLocation();

@@ -11,9 +11,8 @@ import { fetchMeProfile } from '../hooks/memberProfileApi';
 import { fetchMemberStatus } from '../hooks/memberStatusApi';
 import { GoogleAuthSection } from '../components/auth/GoogleAuthSection';
 import { useAuth } from '../context/AuthContext';
-import { defaultRouteByRole, hostModeHomeRouteByRole } from '../utils/authRouting';
+import { defaultRouteByRole } from '../utils/authRouting';
 import { isPlatformAdmin } from '../utils/roles';
-import { resolveHostingHubPath, isHostConsoleRole } from '../hosting/hostingHubRouting';
 import {
   AUTH_UNAVAILABLE_COPY,
   isRejectedAuthRedirectParam,
@@ -124,14 +123,7 @@ export const SignIn = () => {
       setActiveTenantId(tenantId);
     }
 
-    const postAuthDefault = isHostConsoleRole(signedInUser.role)
-      ? resolveHostingHubPath({
-          ownedProfiles: memberStatus?.publish.ownedProfiles ?? [],
-          hostTiers: memberStatus?.publish.hostTiers ?? null,
-        })
-      : signedInUser.role === 'participant' || isPlatformAdmin(signedInUser.role)
-        ? defaultRouteByRole(signedInUser.role)
-        : hostModeHomeRouteByRole(signedInUser.role);
+    const postAuthDefault = defaultRouteByRole(signedInUser.role);
     const welcomeRedirectTo = resolveWelcomeFinishExplorePath(
       resolvePostAuthReturnPath(from, signedInUser.role) ?? postAuthDefault
     );

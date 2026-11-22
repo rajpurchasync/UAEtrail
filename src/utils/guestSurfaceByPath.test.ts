@@ -5,7 +5,7 @@ describe('resolveGuestSurfaceForPath', () => {
   it('maps member sidebar routes to feature gates', () => {
     expect(resolveGuestSurfaceForPath('/plan')?.feature).toBe('plan');
     expect(resolveGuestSurfaceForPath('/chat')?.feature).toBe('chat');
-    expect(resolveGuestSurfaceForPath('/buddies')?.feature).toBe('friends');
+    expect(resolveGuestSurfaceForPath('/crews')?.feature).toBe('friends');
     expect(resolveGuestSurfaceForPath('/groups')?.feature).toBe('groups');
     expect(resolveGuestSurfaceForPath('/notifications')?.feature).toBe('settings-hub');
     expect(resolveGuestSurfaceForPath('/settings/notifications')?.feature).toBe('settings-hub');

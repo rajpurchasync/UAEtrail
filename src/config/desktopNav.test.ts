@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DESKTOP_HOST_PRIMARY_NAV,
   DESKTOP_MAP_NAV,
   DESKTOP_PEOPLE_NAV,
   DESKTOP_PRIMARY_NAV,
@@ -36,8 +35,8 @@ describe('desktop sidebar IA', () => {
   it('groups Find Crew and Social under People, not the map tools', () => {
     expect(DESKTOP_PEOPLE_NAV.map((item) => item.key)).toEqual(['findCrew', 'social']);
     expect(DESKTOP_MAP_NAV.map((item) => item.key)).toEqual(['search', 'post']);
-    expect(socialItem?.to).toBe('/buddies');
-    expect(socialItem?.match).toEqual(['/buddies', '/groups']);
+    expect(socialItem?.to).toBe('/crews');
+    expect(socialItem?.match).toEqual(['/crews', '/groups']);
   });
 
   it('treats /list as the Browse view and /explore as the map view', () => {
@@ -67,7 +66,7 @@ describe('desktop sidebar IA', () => {
   });
 
   it('marks Social active on friends, groups, and people catalog', () => {
-    expect(isDesktopSocialNavActive('/buddies', '')).toBe(true);
+    expect(isDesktopSocialNavActive('/crews', '')).toBe(true);
     expect(isDesktopSocialNavActive('/groups', '?group=abc')).toBe(true);
     expect(isDesktopSocialNavActive('/list', '?listCat=people')).toBe(true);
     expect(isDesktopSocialNavActive('/explore', '?view=people')).toBe(false);
@@ -80,14 +79,8 @@ describe('desktop sidebar IA', () => {
     expect(memberKeys).toEqual(['explore', 'plan', 'chat']);
   });
 
-  it('host mode primary nav is Hosting · Plans · Chat without Explore', () => {
-    expect(DESKTOP_HOST_PRIMARY_NAV.map((item) => item.key)).toEqual(['hosting', 'plan', 'chat']);
-    expect(desktopPrimaryNavForSession(true, { hostMode: true }).map((item) => item.key)).toEqual([
-      'hosting',
-      'plan',
-      'chat',
-    ]);
-    expect(isDesktopHostingNavActive('/operator/overview', '')).toBe(true);
+  it('uses the same primary nav for tenant roles as members (Explore · Plans · Chat)', () => {
+    expect(desktopPrimaryNavForSession(true).map((item) => item.key)).toEqual(['explore', 'plan', 'chat']);
     expect(isDesktopHostingNavActive('/operator/overview', '')).toBe(true);
     expect(isDesktopHostingNavActive('/plan', '?filter=hosting')).toBe(true);
     expect(isDesktopHostingNavActive('/explore', '')).toBe(false);
@@ -122,13 +115,15 @@ describe('desktop sidebar IA', () => {
     expect(MOBILE_LANDING_USER_MENU.some((item) => item.label === 'Places')).toBe(true);
   });
 
-  it('host mode hamburger leads with Hosting then the five-tab consumer rows', () => {
-    const labels = hostModeHamburgerMenu('/operator/overview')
+  it('hostModeHamburgerMenu is alias to consumer drawer (no alternate host shell)', () => {
+    const consumerLabels = CONSUMER_HAMBURGER_MENU.filter((item) => item.kind === 'link').map(
+      (item) => item.label
+    );
+    const hostLabels = hostModeHamburgerMenu('/operator/overview')
       .filter((item) => item.kind === 'link')
       .map((item) => item.label);
-    expect(labels[0]).toBe('Hosting');
-    expect(labels).not.toContain('Explore');
-    expect(labels).toContain('Trips');
-    expect(labels).toContain('Plans');
+    expect(hostLabels).toEqual(consumerLabels);
+    expect(hostLabels).toContain('Trips');
+    expect(hostLabels).toContain('Plans');
   });
 });

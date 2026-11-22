@@ -12,6 +12,7 @@ import {
   EXPLORE_CREATE_FAB_FIND_CREW,
   EXPLORE_CREATE_FAB_HOST_TRIP,
 } from '../content/exploreCreateFabCopy';
+import { UPL_INTENT_OPEN_ACTION } from '../content/upl-glossary';
 import type { CreateActivityKind } from './ui/hostingFlowEngine';
 import type { AddVenueKind } from './addTypes';
 
@@ -51,8 +52,8 @@ export const COMPOSE_MENU_OPTIONS: Array<{
   },
   {
     top: 'intent',
-    label: 'Mark availability',
-    hint: 'Share when you are free — open days or a fixed meetup on the map',
+    label: UPL_INTENT_OPEN_ACTION,
+    hint: 'Open days or a fixed meetup on the map — find crew',
     emoji: '🙋',
   },
   {

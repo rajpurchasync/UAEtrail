@@ -2,6 +2,8 @@ import type { NavigateFunction } from 'react-router-dom';
 import {
   APP_SETTINGS_PATH,
   APP_SETTINGS_SAFETY_PATH,
+  BUDDIES_PATH,
+  GROUPS_PATH,
   INBOUND_PROFILE_SETTINGS_PATH,
   INBOUND_PROFILE_SETTINGS_SAFETY_PATH,
   isNotificationHubPath,
@@ -223,8 +225,8 @@ export const inferBackParent = (pathKey: string): string | null => {
   if (pathname === '/profile/history/map') return '/profile/history?view=completed';
   if (pathname.startsWith('/profile/') && pathname !== '/profile') return '/profile';
   if (
-    pathname === '/buddies' ||
-    pathname === '/groups' ||
+    pathname === BUDDIES_PATH ||
+    pathname === GROUPS_PATH ||
     pathname === '/settings/notifications' ||
     pathname.startsWith('/settings/notifications/') ||
     pathname === '/my-requests'

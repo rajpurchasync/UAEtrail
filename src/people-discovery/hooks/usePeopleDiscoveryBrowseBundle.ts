@@ -23,7 +23,7 @@ type Args = {
   onOpenExploreActivity: (activity: { exploreItemId: string }) => void;
   onOpenAvailabilityCatalogItem: (item: ExploreMapItemDTO) => void;
   onOfferRideshareForAvailabilityItem?: (item: ExploreMapItemDTO) => void;
-  onOpenMarkAvailability?: () => void;
+  onOpenIntentOpen?: () => void;
   searchFocusNonce: number;
 };
 
@@ -38,7 +38,7 @@ export const useExplorePeopleBrowseBundle = ({
   onOpenExploreActivity,
   onOpenAvailabilityCatalogItem,
   onOfferRideshareForAvailabilityItem,
-  onOpenMarkAvailability,
+  onOpenIntentOpen,
   searchFocusNonce,
 }: Args) => {
   const peopleBrowsePanelOpen =
@@ -142,7 +142,7 @@ export const useExplorePeopleBrowseBundle = ({
     exploreCatalogLoading: mapLoading || availabilityDiscovery.loading,
     onOpenAvailabilityCatalogItem,
     onOfferRideshareForAvailabilityItem,
-    onOpenMarkAvailability,
+    onOpenIntentOpen,
     buddyUserIds,
   };
 

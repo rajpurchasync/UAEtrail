@@ -81,7 +81,7 @@ There is **no** `Trip` table, `TripDTO`, or trips API. Everything on the map tha
 |------|--------|---------|-----------------|
 | **Activity** | Domain | Scheduled outing (hike, camp, rideshare, run, …) | `ActivityDTO`, `activityId`, org/host activity APIs |
 | **Outing / plan** | Product copy | Same as activity — emotional, member-facing | UI strings, north star |
-| **Host** | Action (FAB) | Host flow that **creates or edits** an activity | `compose=host`, hosting wizards — not an entity |
+| **Host** | Action (FAB) | Host flow that **creates or edits** an activity | `compose=activity:*` (legacy `compose=host` inbound only), hosting wizards — not an entity |
 | **Event** | Overloaded — read context | (1) **Place kind** → venue page `/venue/:id` (2) **Host chip** → scheduled outing `activityType: event` → `/activity/:id` (3) Legacy JSON `event` on some payloads → use **`activity`** | Never a fourth entity; prefer **place** vs **activity** in code |
 | **Trip / Trips** | **Legacy UI label** | Redirects to **`/plan`** (My Plans) and **`/profile/history`** — not a domain type | `planRouting.ts`, `components/plan/*`, `components/profile-history/*` — **not** API module names |
 | **Hosted** | Relationship | You publish/manage an activity as a host tenant | `HostedActivitiesSection`, org hub — not a type of outing |
@@ -127,7 +127,7 @@ Discovery: **`/area/:slug`** (hub), and explore **`?area=`** filter by **`areaSl
 | Upcoming **calendar** (`layout=calendar`) | **Projection** of the same joined/hosting data — going / pending open `/activity/:id`; organizing / looking for company open Plan manage URLs; **available** = indicator strip only (`planCalendarOpen`) |
 | Wishlist tab (`tab=wishlist`; legacy `lens=saved`) | Private venue + activity saves (`/me/wishlist`, place rows keyed by `locationId`) — not demand, not Follow. A published outing at a saved place notifies those members |
 | Goals (on Wishlist tab) | `GET/POST /me/goals` |
-| Share availability editor (`?lens=availability`) | `GET/POST /me/availability` — Find crew; deep link only, not the calendar toggle |
+| Share availability (intent open compose) | `PUT /me/availability` — Find crew **Free** tab; inbound `?lens=availability` → explore `compose=intent:open` |
 | Journey map (`/profile/history/map`) | `memberJourneyMapApi` → `GET /me/journey-map`; pin CRUD → `/me/map-pins` |
 
 Do **not** add `trips*` API clients or `Trip*` domain types for hosted/joined lists — reuse **activity** and **member engagement** APIs.
@@ -406,7 +406,7 @@ Every durable entity has a **stable UUID** in Mongo and a **canonical public rou
 | Flow | What happens | New activity id? |
 |------|----------------|------------------|
 | **Publishing workspace · Duplicate** | `POST /publishing/activities/:id/duplicate` → draft in workspace | Yes — audit `activity.duplicate` + `metadata.sourceActivityId` |
-| **Explore · Reorganize on map** | `?compose=host:…&hostFrom=:activityId` → FAB wizard prefill → publish | Yes — `activity.create` with optional `metadata.sourceActivityId` (`clonedFromActivityId` on create body) |
+| **Explore · Reorganize on map** | `?compose=activity:…&hostFrom=:activityId` → FAB wizard prefill → publish | Yes — `activity.create` with optional `metadata.sourceActivityId` (`clonedFromActivityId` on create body) |
 
 Reorganize never updates the source row; venue registry ids are **reused** when the draft still points at the same registry place.
 

@@ -236,26 +236,9 @@ export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
   },
 ];
 
-/** Hosting hub row injected at the top of the hamburger in host mode. */
-export const HOST_MODE_HAMBURGER_HOSTING_ITEM = {
-  kind: 'link',
-  label: 'Hosting',
-  emoji: '📋',
-  to: OPERATOR_OVERVIEW_PATH,
-  match: [HOSTING_HUB_PATH, OPERATOR_CONSOLE_PREFIX],
-  authGate: true,
-} as const satisfies ConsumerHamburgerMenuItem;
-
-/** Host mode drawer — Hosting first, then full consumer menu including Explore. */
-export const hostModeHamburgerMenu = (
-  hostingHubPath: string
-): readonly ConsumerHamburgerMenuItem[] => {
-  const hostingItem: ConsumerHamburgerMenuItem = {
-    ...HOST_MODE_HAMBURGER_HOSTING_ITEM,
-    to: hostingHubPath,
-  };
-  return [hostingItem, ...CONSUMER_HAMBURGER_MENU];
-};
+/** @deprecated Host-mode drawer retired — same consumer menu for all roles (PCO-14). */
+export const hostModeHamburgerMenu = (_hostingHubPath?: string): readonly ConsumerHamburgerMenuItem[] =>
+  CONSUMER_HAMBURGER_MENU;
 
 /**
  * User taxonomy (admin + product):

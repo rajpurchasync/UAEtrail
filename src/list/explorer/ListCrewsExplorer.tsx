@@ -21,7 +21,7 @@ type ListCrewsExplorerProps = {
   onPeopleBrowseTabChange: (tab: PeopleBrowseTab) => void;
   crewsOpenLens: CrewsAvailableOpenLens;
   onCrewsOpenLensChange: (lens: CrewsAvailableOpenLens) => void;
-  onOpenMarkAvailability: () => void;
+  onOpenIntentOpen: () => void;
   isSignedIn: boolean;
   filterCount: number;
   statCounts: CrewsStatCounts;
@@ -59,7 +59,7 @@ export const ListCrewsExplorer = ({
   onPeopleBrowseTabChange,
   crewsOpenLens,
   onCrewsOpenLensChange,
-  onOpenMarkAvailability,
+  onOpenIntentOpen,
   isSignedIn,
   filterCount,
   statCounts,
@@ -109,7 +109,7 @@ export const ListCrewsExplorer = ({
         stickySearch={stickySearch}
         isSignedIn={isSignedIn}
         statCounts={statCounts}
-        onOpenAvailability={onOpenMarkAvailability}
+        onOpenAvailability={onOpenIntentOpen}
         filterCount={filterCount}
         suppressSearch={suppressSearch}
         searchPlaceholder={searchPlaceholder}
@@ -151,7 +151,7 @@ export const ListCrewsExplorer = ({
             discoveryQuota={discoveryQuota}
             discoveryLoading={discoveryLoading}
             discoveryError={discoveryError}
-            onOpenAvailability={onOpenMarkAvailability}
+            onOpenAvailability={onOpenIntentOpen}
           />
         </div>
       </div>

@@ -1,6 +1,5 @@
 import {
   Award,
-  Briefcase,
   CalendarDays,
   ClipboardList,
   History,
@@ -21,7 +20,6 @@ import {
   EXPLORE_DISCOVER_BROWSE_PATH,
   EXPLORE_MAP_PATH,
   GROUPS_PATH,
-  OPERATOR_OVERVIEW_PATH,
   JOURNEY_MAP_PATH,
   LIST_DISCOVERY_PATH,
   MESSAGES_PATH,
@@ -128,38 +126,6 @@ export const DESKTOP_PRIMARY_NAV: readonly DesktopNavItem[] = [
     badge: 'chat',
     authGate: true,
     guestVisible: true,
-  },
-];
-
-/** Pro/agency/guide host mode — hosting hub first; no Explore. */
-export const DESKTOP_HOST_PRIMARY_NAV: readonly DesktopNavItem[] = [
-  {
-    key: 'hosting',
-    label: 'Hosting',
-    // Static default only — `DesktopSideNav` resolves the per-member hub via `resolveHostingHubPath`.
-    to: OPERATOR_OVERVIEW_PATH,
-    icon: Briefcase,
-    match: [OPERATOR_CONSOLE_PREFIX],
-    authGate: true,
-    navHint: 'Operator console — hosted outings, requests, and workspace.',
-  },
-  {
-    key: 'plan',
-    label: PRODUCT_PLAN_SURFACE_TITLE,
-    to: PLAN_PATH,
-    icon: CalendarDays,
-    match: [PLAN_PATH],
-    authGate: true,
-    navHint: PRODUCT_PLAN_MEMBER_NAV_HINT,
-  },
-  {
-    key: 'chat',
-    label: 'Chat',
-    to: MESSAGES_PATH,
-    icon: MessageCircle,
-    match: [MESSAGES_PATH],
-    badge: 'chat',
-    authGate: true,
   },
 ];
 
@@ -270,20 +236,14 @@ export const isDesktopNavItemActive = (item: DesktopNavItem, pathname: string, s
     return pathname === EXPLORE_MAP_PATH && Boolean(params.get('compose'));
   }
   if (item.key === 'plan') {
-    // Host mode: hosting filter belongs to the Hosting tab, not My Plans.
     if (isPlanHostingFilterRoute(pathname, search)) return false;
     return matchesPrefix(pathname, PLAN_PATH);
   }
   return item.match.some((prefix) => matchesPrefix(pathname, prefix));
 };
 
-export const desktopPrimaryNavForSession = (
-  signedIn: boolean,
-  options?: { hostMode?: boolean }
-): readonly DesktopNavItem[] => {
-  const source = options?.hostMode ? DESKTOP_HOST_PRIMARY_NAV : DESKTOP_PRIMARY_NAV;
-  return source.filter((item) => signedIn || item.guestVisible || !item.authGate);
-};
+export const desktopPrimaryNavForSession = (signedIn: boolean): readonly DesktopNavItem[] =>
+  DESKTOP_PRIMARY_NAV.filter((item) => signedIn || item.guestVisible || !item.authGate);
 
 /** Tablet/desktop chrome — explore map and stacked product views (guests and members). */
 export const shouldShowDesktopSideNav = (pathname: string, _signedIn: boolean): boolean => {

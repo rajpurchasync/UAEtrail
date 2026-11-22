@@ -71,6 +71,16 @@ const ROUTES = [
     path: '/plan?tab=upcoming&filter=hosting',
     note: 'My Plans hosting projection — operator schedule separate',
   },
+  {
+    surface: 'My Crews',
+    path: '/crews',
+    note: 'Friends hub — canonical; legacy /buddies redirects here',
+  },
+  {
+    surface: 'Post-auth default',
+    path: '/explore',
+    note: 'tenant roles land Explore — operator via Profile Dashboard',
+  },
 ];
 
 console.log(`# Consumer detail §8 manual QA — BASE_URL=${base}\n`);
@@ -89,7 +99,7 @@ const NOTIFICATION_EDGE = [
   },
   {
     case: 'Buddy request (connection_buddy_request)',
-    steps: 'Send buddy request → recipient notification → /buddies or profile path',
+    steps: 'Send buddy request → recipient notification → /crews or profile path',
   },
   {
     case: 'Join approved + group chat (join_request_approved)',

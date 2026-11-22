@@ -38,7 +38,7 @@ describe('shouldShowMobileBottomNav', () => {
     expect(shouldShowMobileBottomNav('/profile', '', true)).toBe(true);
     expect(shouldShowMobileBottomNav('/settings', '', true)).toBe(true);
     expect(shouldShowMobileBottomNav('/profile/reviews', '', true)).toBe(true);
-    expect(shouldShowMobileBottomNav('/buddies', '', true)).toBe(true);
+    expect(shouldShowMobileBottomNav('/crews', '', true)).toBe(true);
     expect(shouldShowMobileBottomNav('/profile/submissions', '', true)).toBe(true);
     expect(shouldShowMobileBottomNav('/contributions', '', true)).toBe(true);
   });

@@ -268,7 +268,7 @@ Product-facing **who is viewing** for **capabilities** (Host / publish, console,
 | Concern | Rule |
 |---------|------|
 | **Storage** | `member_availability` — one row per user with `slots[]`, `kinds[]`, optional `areaId` / `region` |
-| **Edit** | Plan → **Available** lens (`lens=availability`) |
+| **Edit** | Explore **`compose=intent:open`** (`planAvailabilityPath()`); legacy `?lens=availability` redirects — no Plan sheet |
 | **Discover** | `GET /explore/people/availability` · Explore People filters (date range, area, kind) |
 | **Visibility** | `public` · `buddies` · `hidden` — enforced on index and public profile `availability` slice |
 | **vs legacy seeking** | Retired: `activityMode: seeking` activities and `/me/seeking-posts`. **Find crew** = fixed **`member_availability`** slots on the map (`source: availability`); peek → profile + message, not join. |

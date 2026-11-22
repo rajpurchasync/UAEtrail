@@ -50,6 +50,11 @@ describe('memberAvailabilityLineageGuard (MIG-DISCO-REG)', () => {
     expect(area).not.toMatch(/activityMode: 'seeking'/);
   });
 
+  it('AVAIL-LINE-07b: member-facing intent open action uses UPL', () => {
+    expect(read('src/explore/ui/IntentOpenComposeSheet.tsx')).toMatch(/UPL_INTENT_OPEN_ACTION/);
+    expect(read('src/explore/compose.ts')).toMatch(/UPL_INTENT_OPEN_ACTION/);
+  });
+
   it('AVAIL-LINE-07: compose catalog routes intent.fixed.* to availabilityFlow', () => {
     const catalog = read('src/explore/composeFlowCatalog.ts');
     expect(catalog).toMatch(/'intent\.fixed\.hiking'/);

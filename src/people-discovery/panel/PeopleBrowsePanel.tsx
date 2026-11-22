@@ -57,8 +57,8 @@ export interface PeopleBrowsePanelProps {
   exploreCatalogLoading: boolean;
   onOpenAvailabilityCatalogItem: (item: ExploreMapItemDTO) => void;
   onOfferRideshareForAvailabilityItem?: (item: ExploreMapItemDTO) => void;
-  /** Share availability — opens compose `availability` (open/fixed) on the current surface. */
-  onOpenMarkAvailability?: () => void;
+  /** Opens `intent:open` / fixed intent compose on the current surface. */
+  onOpenIntentOpen?: () => void;
   buddyUserIds?: Set<string>;
 }
 
@@ -95,7 +95,7 @@ export const PeopleBrowsePanel = ({
   exploreCatalogLoading,
   onOpenAvailabilityCatalogItem,
   onOfferRideshareForAvailabilityItem,
-  onOpenMarkAvailability,
+  onOpenIntentOpen,
   buddyUserIds,
 }: PeopleBrowsePanelProps) => {
   const mobileSheetPad = !isDesktop && mobileSheetChrome && !embedded;
@@ -194,7 +194,7 @@ export const PeopleBrowsePanel = ({
           discoveryQuota={discoveryQuota}
           discoveryLoading={discoveryLoading}
           discoveryError={discoveryError}
-          onOpenAvailability={onOpenMarkAvailability}
+          onOpenAvailability={onOpenIntentOpen}
         />
       </div>
     </div>

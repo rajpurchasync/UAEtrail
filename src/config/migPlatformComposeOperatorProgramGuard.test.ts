@@ -68,6 +68,14 @@ describe('migPlatformComposeOperatorProgramGuard (compose + operator program)', 
     expect(buddies).toMatch(/from '\.\.\/components\/social\/SocialHubIndex'/);
   });
 
+  it('PCO-05b: manual QA script includes compose + operator + crews routes', () => {
+    const qa = read('scripts/consumer-detail-manual-qa-routes.mjs');
+    expect(qa).toMatch(/compose=activity/);
+    expect(qa).toMatch(/compose=intent:open/);
+    expect(qa).toMatch(/\/operator\/overview/);
+    expect(qa).toMatch(/path: '\/crews'/);
+  });
+
   it('PCO-05: verify-compose-spine runs program guard', () => {
     const script = read('scripts/verify-compose-spine.mjs');
     expect(script).toMatch(/migPlatformComposeOperatorProgramGuard/);
@@ -117,5 +125,41 @@ describe('migPlatformComposeOperatorProgramGuard (compose + operator program)', 
     expect(wire).toMatch(/intent:open/);
     expect(wire).not.toMatch(/return `host:/);
     expect(read('scripts/authority-matrix.json')).toMatch(/compose.emit_activity/);
+  });
+
+  it('PCO-14: desktop host-mode nav retired — Explore primary for all roles', () => {
+    const nav = read('src/config/desktopNav.ts');
+    expect(nav).not.toMatch(/DESKTOP_HOST_PRIMARY_NAV/);
+    expect(nav).not.toMatch(/hostMode\?/);
+    const sideNav = read('src/components/layout/desktop/DesktopSideNav.tsx');
+    expect(sideNav).not.toMatch(/isHostModeSession/);
+    expect(read('src/explore/ui/IntentOpenComposeSheet.tsx')).toMatch(/UPL_INTENT_OPEN_ACTION/);
+    expect(read('src/list/explorer/ListCrewsExplorer.tsx')).toMatch(/onOpenIntentOpen/);
+    expect(read('src/people-discovery/panel/PeopleBrowsePanel.tsx')).toMatch(/onOpenIntentOpen/);
+  });
+
+  it('PCO-15: post-auth default consumer home is Explore (not operator)', () => {
+    const auth = read('src/utils/authRouting.ts');
+    expect(auth).toMatch(/return EXPLORE_MAP_PATH/);
+    expect(auth).not.toMatch(/tenant_owner.*OPERATOR_OVERVIEW/);
+    const signIn = read('src/pages/SignIn.tsx');
+    expect(signIn).toMatch(/defaultRouteByRole\(signedInUser\.role\)/);
+    expect(signIn).not.toMatch(/isHostConsoleRole/);
+  });
+
+  it('PCO-17: five-surface projection — mobile crews tab + My Crews route /crews', () => {
+    const mobile = read('src/config/mobileFiveTabNav.ts');
+    expect(mobile).toMatch(/MOBILE_FIVE_TAB_ORDER/);
+    expect(mobile).toMatch(/PRODUCT_CREWS_TAB_LABEL/);
+    expect(read('src/config/surfacePaths.ts')).toMatch(/MY_CREWS_PATH = '\/crews'/);
+    expect(read('src/components/layout/MobileBottomNav.tsx')).toMatch(/Trips · Places · Crews/);
+  });
+
+  it('PCO-16: Phase 8 Tier-1 — intent edit path + create entry preset name', () => {
+    expect(read('docs/MEMBER_MODEL.md')).toMatch(/compose=intent:open/);
+    expect(read('docs/MEMBER_MODEL.md')).not.toMatch(/lens=availability\)/);
+    expect(read('src/explore/create/composeFabEntry.ts')).toMatch(/resolveCreateEntryPreset/);
+    expect(read('src/explore/create/composeFabEntry.ts')).not.toMatch(/resolveCreateFabComposeEntry/);
+    expect(read('src/content/explorePeopleBrowseCopy.ts')).toMatch(/UPL_SEEKING/);
   });
 });

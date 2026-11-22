@@ -3,6 +3,8 @@
  * Do not link these in product UI; use the canonical path helpers instead.
  */
 
+export const INBOUND_LEGACY_BUDDIES_PATH = '/buddies' as const;
+
 export const INBOUND_BECOME_HOST_PATH = '/become-host' as const;
 export const INBOUND_BECOME_ORGANIZER_PATH = '/become-organizer' as const;
 

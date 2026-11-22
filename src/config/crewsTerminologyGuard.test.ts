@@ -92,6 +92,17 @@ describe('crewsTerminologyGuard (Crews / peopleTab — not buddies segment)', ()
     expect(inbound).toMatch(/key === 'buddies'\) return 'people'/);
   });
 
+  it('CREWS-07: My Crews canonical route is /crews with /buddies inbound only', () => {
+    const surface = readFileSync(join(process.cwd(), 'src/config/surfacePaths.ts'), 'utf8');
+    expect(surface).toMatch(/MY_CREWS_PATH = '\/crews'/);
+    expect(surface).toMatch(/BUDDIES_PATH = MY_CREWS_PATH/);
+    const inbound = readFileSync(join(process.cwd(), 'src/routing/inboundBookmarkRedirects.tsx'), 'utf8');
+    expect(inbound).toMatch(/InboundLegacyBuddiesRedirect/);
+    expect(readFileSync(join(process.cwd(), 'apps/api/src/lib/member-routes.ts'), 'utf8')).toMatch(
+      /BUDDIES_PATH = '\/crews'/
+    );
+  });
+
   it('CREWS-06: no Buddies product string in consumer content/components', () => {
     const violations: string[] = [];
     const scanRoots = ['src/content', 'src/components', 'src/explore/ui', 'src/list/crews'];

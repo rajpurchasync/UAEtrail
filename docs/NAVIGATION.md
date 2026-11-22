@@ -12,7 +12,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 |---------|----------|-----|
 | **Explore** | `/explore`, `/list` | Discovery — browse **Trips** · **Places** · **Discover crews** (not My Crews roster) |
 | **Plans** | `/plan` | **My Plans** — joined, goals, wishlist, hosted projection (`/me/*` data) |
-| **Crews** | `/buddies`, `/groups` | **My Crews** — friends, teams, groups |
+| **Crews** | `/crews`, `/groups` (inbound `/buddies` → `/crews`) | **My Crews** — friends, teams, groups |
 | **Chat** | `/chat` | Threads |
 | **Profile** | `/profile`, `/settings` | Identity; **Dashboard** → **`/operator`** (host manage — migration in progress) |
 

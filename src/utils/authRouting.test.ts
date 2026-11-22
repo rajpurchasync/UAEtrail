@@ -41,25 +41,20 @@ describe('auth routing by role', () => {
     expect(isConsumerProfilePath('/admin/account')).toBe(false);
   });
 
-  it('maps default post-login routes for each role', () => {
+  it('maps default post-login routes — consumer home is Explore for all non-admin roles', () => {
     const cases: Array<[UserRole, string]> = [
       ['participant', '/explore'],
       ['merchant_admin', '/explore'],
-      ['tenant_owner', '/operator/overview'],
-      ['tenant_admin', '/operator/overview'],
-      ['tenant_guide', '/operator/overview'],
+      ['tenant_owner', '/explore'],
+      ['tenant_admin', '/explore'],
+      ['tenant_guide', '/explore'],
       ['platform_admin', '/admin/inbox'],
     ];
 
     for (const [role, expected] of cases) {
       expect(defaultRouteByRole(role)).toBe(expected);
+      expect(hostModeHomeRouteByRole(role)).toBe(expected);
     }
-  });
-
-  it('maps host-mode home to publishing overview for console roles', () => {
-    expect(hostModeHomeRouteByRole('tenant_owner')).toBe('/operator/overview');
-    expect(hostModeHomeRouteByRole('tenant_guide')).toBe('/operator/overview');
-    expect(hostModeHomeRouteByRole('participant')).toBe('/explore');
   });
 
   it('maps participant dashboard aliases', () => {

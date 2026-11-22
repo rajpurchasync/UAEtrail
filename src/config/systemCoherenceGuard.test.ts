@@ -9,7 +9,7 @@ const API_SRC = join(ROOT, 'apps', 'api', 'src');
 
 /** Surface literals that must come from routingCatalog in UI code. */
 const SURFACE_LINKS: Array<{ path: string; constant: string }> = [
-  { path: '/buddies', constant: 'BUDDIES_PATH' },
+  { path: '/crews', constant: 'BUDDIES_PATH' },
   { path: '/groups', constant: 'GROUPS_PATH' },
   { path: '/profile/submissions', constant: 'PROFILE_SUBMISSIONS_PATH' },
   { path: '/profile/badges', constant: 'PROFILE_BADGES_PATH' },

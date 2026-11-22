@@ -132,7 +132,7 @@ export const ListDiscoveryExperience = (props: ListDiscoveryExperienceProps) => 
             onPeopleBrowseTabChange={(tab) => syncUrl({ peopleBrowseTab: tab, crewsOpen: null })}
             crewsOpenLens={crewsOpenLens}
             onCrewsOpenLensChange={(lens) => syncUrl({ crewsOpen: lens })}
-            onOpenMarkAvailability={handleOpenMarkAvailability}
+            onOpenIntentOpen={handleOpenMarkAvailability}
             isSignedIn={Boolean(user)}
             filterCount={filterCount}
             statCounts={crewsStatCounts}

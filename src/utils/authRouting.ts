@@ -30,10 +30,6 @@ import { isPlatformAdmin } from './roles';
 
 export const defaultRouteByRole = (role: UserRole): string => {
   if (isPlatformAdmin(role)) return ADMIN_INBOX_PATH;
-  if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') {
-    /** Sync fallback — prefer `resolveHostingHubPath` / `navigateToHostModeHome` when status is loaded. */
-    return OPERATOR_OVERVIEW_PATH;
-  }
   return EXPLORE_MAP_PATH;
 };
 
@@ -43,14 +39,11 @@ export const accountRouteByRole = (role: UserRole): string => {
   return PROFILE_PATH;
 };
 
-/** Host-mode app home after login / Switch to Host (workspace overview until dual-mode status loads). */
-export const hostModeHomeRouteByRole = (role: UserRole): string => {
-  if (isPlatformAdmin(role)) return ADMIN_INBOX_PATH;
-  if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') {
-    return OPERATOR_OVERVIEW_PATH;
-  }
-  return EXPLORE_MAP_PATH;
-};
+/**
+ * @deprecated Use `defaultRouteByRole` — consumer default is always Explore (MIG-PLATFORM-COMPOSE-OPERATOR).
+ * Kept for legacy imports; Switch to Host uses `resolveHostModeHomePath` → operator.
+ */
+export const hostModeHomeRouteByRole = (role: UserRole): string => defaultRouteByRole(role);
 
 /**
  * Legacy `/publishing/*` and `/operator/*` bookmarks for members **without** `canAccessPublishingWorkspace`.

@@ -30,9 +30,9 @@ export const resolveExploreMapCreateFabHints = (input: {
 
 /**
  * Tab FAB entry — `activity` · `place` · `intent:open` compose kinds.
- * Trips → activity · Venues → place · Crews → intent open (mark availability).
+ * Trips → activity · Venues → place · Crews → intent:open.
  */
-export const resolveCreateFabComposeEntry = (
+export const resolveCreateEntryPreset = (
   pathname: string,
   search: string,
   hints?: BrowseListCreateFabHints

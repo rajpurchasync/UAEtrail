@@ -12,7 +12,7 @@ import {
 import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { reloadExploreMap } from '../../hooks/useExploreMap';
 import { useExploreCreateFlowBridge } from '../../explore/shell/useExploreCreateFlowBridge';
-import { resolveCreateFabComposeEntry } from '../../explore/create/composeFabEntry';
+import { resolveCreateEntryPreset } from '../../explore/create/composeFabEntry';
 import { intentOpenCompose } from '../../explore/compose';
 import type { BrowseListCreateFabHints } from '../browse/browseListCopy';
 import { useHostingFromActivity } from '../../explore/create/hooks/useHostingFromActivity';
@@ -70,7 +70,7 @@ export const useListDiscoveryComposeBridgeModel = ({
 
   const handleCreateFabTap = useCallback(() => {
     compose.handleCreateTap(
-      resolveCreateFabComposeEntry(locationPathname, locationSearch, createFabContext)
+      resolveCreateEntryPreset(locationPathname, locationSearch, createFabContext)
     );
   }, [compose, locationPathname, locationSearch, createFabContext]);
 

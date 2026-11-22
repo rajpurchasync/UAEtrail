@@ -80,4 +80,16 @@ describe('publishing console routing (MIG-ROUTING-CANON-P1)', () => {
     }
     expect(violations).toEqual([]);
   });
+
+  it('operator console pages do not call member /me activity CRUD (O3)', () => {
+    const dir = join(ROOT, 'src/pages/publishing');
+    const violations: string[] = [];
+    for (const file of collectTs(dir)) {
+      const text = readFileSync(join(ROOT, file), 'utf8');
+      if (/\/me\/activities|memberApi\.(create|update|delete)Activity/.test(text)) {
+        violations.push(file);
+      }
+    }
+    expect(violations).toEqual([]);
+  });
 });

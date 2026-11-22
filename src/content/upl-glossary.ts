@@ -38,7 +38,7 @@ export { MAP_LENS_SPOTS_LABEL as UPL_MAP_LENS_SPOTS } from '../place/geographyVo
 export const UPL_PEOPLE = 'People';
 export const UPL_FIND_YOUR_CREW = 'Find your crew';
 
-/** Friends list (`/buddies` route — wire only). */
+/** Friends list (`/crews` route — wire only). */
 export const UPL_FRIENDS_LIST = 'Friends';
 export const UPL_FOLLOWING = 'Following';
 

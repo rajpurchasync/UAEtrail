@@ -10,6 +10,7 @@ import {
 import { INBOUND_RETIRED_CONSOLE_PREFIXES } from '../config/inboundRoutePaths';
 import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
 import {
+  BUDDIES_PATH,
   JOURNEY_MAP_PATH,
   PROFILE_HISTORY_PATH,
   OPERATOR_CONSOLE_PREFIX,
@@ -17,6 +18,12 @@ import {
   inboundProfileSettingsRedirectTarget,
 } from '../config/surfacePaths';
 import { shopPublicPath } from '../utils/shopPaths';
+
+/** Legacy `/buddies` → canonical My Crews (`/crews`). */
+export const InboundLegacyBuddiesRedirect = () => {
+  const { search, hash } = useLocation();
+  return <Navigate to={`${BUDDIES_PATH}${search}${hash}`} replace />;
+};
 
 /** Inbound `/messages` and `/publishing/messages` → `/chat`. */
 export const InboundMessagesRedirect = () => {
