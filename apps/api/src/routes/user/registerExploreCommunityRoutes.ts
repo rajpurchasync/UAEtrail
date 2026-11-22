@@ -27,7 +27,10 @@ export const registerExploreCommunityRoutes = (router: Router): void => {
     async (req, res, next) => {
       try {
         const { slug } = req.params as z.infer<typeof communitySlugParamSchema>;
-        const data = await loadExploreCommunityDiscoverDetail(slug, req.auth?.userId ?? null);
+        const data = await loadExploreCommunityDiscoverDetail(
+          slug,
+          req.auth ? { userId: req.auth.userId, email: req.auth.email } : null
+        );
         res.json({ data });
       } catch (error) {
         next(error);

@@ -331,6 +331,13 @@ export const updateAdminCommunityStatus = async (
   return res.data;
 };
 
+export const createAdminCommunityInvite = async (
+  communityId: string,
+  body: { email?: string; userId?: string }
+): Promise<void> => {
+  await api.createAdminCommunityInvite(communityId, body);
+};
+
 export const approveAdminCommunityMemberRequest = async (
   communityId: string,
   userId: string

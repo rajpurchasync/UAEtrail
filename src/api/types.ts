@@ -374,9 +374,19 @@ export interface AdminCommunityDetail {
     status: 'member' | 'pending';
     joinedAt: string;
   }>;
+  invites: Array<{
+    id: string;
+    email: string;
+    userId: string | null;
+    status: 'pending' | 'accepted' | 'revoked';
+    invitedByUserId: string;
+    createdAt: string;
+    acceptedAt: string | null;
+  }>;
   stats: {
     memberCount: number;
     pendingCount: number;
+    pendingInvites: number;
   };
 }
 

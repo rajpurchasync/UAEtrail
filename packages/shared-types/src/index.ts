@@ -2090,7 +2090,9 @@ export type {
   AdminCommunityDetailDTO,
   AdminCommunityHostContactDTO,
   AdminCommunityListItemDTO,
+  AdminCommunityInviteRowDTO,
   AdminCommunityMemberRowDTO,
+  CommunityInviteStatus,
   CommunityDiscoverCardDTO,
   CommunityDiscoverDetailDTO,
   CommunityDiscoverVisibility,
@@ -2102,6 +2104,7 @@ export type {
 export {
   COMMUNITY_DISCOVER_VISIBILITY,
   COMMUNITY_GROUP_STATUSES,
+  COMMUNITY_INVITE_STATUSES,
   COMMUNITY_JOIN_POLICIES,
   COMMUNITY_MEMBERSHIP_STATUSES,
   compareCommunityDiscoverByGeo,

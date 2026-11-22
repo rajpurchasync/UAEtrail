@@ -4,6 +4,7 @@ import {
   type CommunityDiscoverDetailDTO,
 } from '@uaetrail/shared-types';
 import { findCommunityMembership } from '../lib/community-group-members-store.js';
+import { findPendingCommunityInviteForUser } from '../lib/community-group-invites-store.js';
 import {
   findPublicCommunityBySlug,
   listDiscoverableCommunityGroups,
@@ -31,19 +32,29 @@ export const loadExploreCommunityDiscoverList = async (): Promise<CommunityDisco
 /** `GET /explore/communities/:slug` — optional signed-in viewer membership. */
 export const loadExploreCommunityDiscoverDetail = async (
   slug: string,
-  viewerUserId: string | null
+  viewer: { userId: string; email: string } | null
 ): Promise<CommunityDiscoverDetailDTO> => {
   const row = await findPublicCommunityBySlug(slug);
   if (!row) {
     throw new ApiError(404, 'community_not_found', 'Community not found.');
   }
   const card = toCard(row);
-  if (!viewerUserId) {
-    return { ...card, viewerMembership: null };
+  if (!viewer) {
+    return { ...card, viewerMembership: null, viewerHasInvite: false };
   }
-  const membership = await findCommunityMembership(row.id, viewerUserId);
+  const membership = await findCommunityMembership(row.id, viewer.userId);
+  let viewerHasInvite = false;
+  if (!membership && row.joinPolicy === 'invite') {
+    const invite = await findPendingCommunityInviteForUser({
+      communityId: row.id,
+      userId: viewer.userId,
+      email: viewer.email,
+    });
+    viewerHasInvite = Boolean(invite);
+  }
   return {
     ...card,
     viewerMembership: membership ? { status: membership.status } : null,
+    viewerHasInvite,
   };
 };

@@ -4,6 +4,7 @@ import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import type { AdminCommunityDetail, AdminCommunityListItem } from '../../api/types';
 import {
   approveAdminCommunityMemberRequest,
+  createAdminCommunityInvite,
   fetchAdminCommunities,
   updateAdminCommunityStatus,
 } from '../../hooks/adminConsoleApi';
@@ -39,6 +40,8 @@ export const Communities = () => {
   const [confirmTarget, setConfirmTarget] = useState<AdminCommunityListItem | null>(null);
   const [suspendComment, setSuspendComment] = useState('');
   const [approvingUserId, setApprovingUserId] = useState<string | null>(null);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteSending, setInviteSending] = useState(false);
 
   const loadCommunities = async (isActive: () => boolean = () => true) => {
     setLoading(true);
@@ -125,6 +128,26 @@ export const Communities = () => {
       await loadCommunities();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update community status');
+    }
+  };
+
+  const sendInvite = async (communityId: string) => {
+    const email = inviteEmail.trim();
+    if (!email) {
+      setError('Enter an email to invite.');
+      return;
+    }
+    setInviteSending(true);
+    setError(null);
+    try {
+      await createAdminCommunityInvite(communityId, { email });
+      setInviteEmail('');
+      const refreshed = await fetchAdminCommunityDetail(communityId);
+      setDetail(refreshed);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send invite');
+    } finally {
+      setInviteSending(false);
     }
   };
 
@@ -364,6 +387,7 @@ export const Communities = () => {
               {[
                 { label: 'Members', value: detail.stats.memberCount },
                 { label: 'Pending requests', value: detail.stats.pendingCount },
+                { label: 'Pending invites', value: detail.stats.pendingInvites },
                 { label: 'Listed count', value: detail.community.memberCount },
               ].map((stat) => (
                 <div key={stat.label} className="rounded-lg bg-gray-50 px-3 py-2">
@@ -392,6 +416,44 @@ export const Communities = () => {
                 <p className="text-sm text-gray-500">No host assigned — set `adminUserId` when seeding the club.</p>
               )}
             </div>
+
+            {detail.community.joinPolicy === 'invite' ? (
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">Invites ({detail.invites.length})</h3>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  <input
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder="Email to invite"
+                    className={`${ADMIN_INPUT_CLASS} flex-1 min-w-[200px]`}
+                  />
+                  <button
+                    type="button"
+                    disabled={inviteSending}
+                    onClick={() => void sendInvite(detail.community.id)}
+                    className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
+                  >
+                    {inviteSending ? 'Sending…' : 'Send invite'}
+                  </button>
+                </div>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {detail.invites.length === 0 ? (
+                    <p className="text-sm text-gray-500">No invites yet.</p>
+                  ) : (
+                    detail.invites.map((invite) => (
+                      <div
+                        key={invite.id}
+                        className="rounded-lg border border-gray-100 px-3 py-2 flex justify-between gap-2 text-sm"
+                      >
+                        <span>{invite.email}</span>
+                        <span className="capitalize text-gray-500">{invite.status}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            ) : null}
 
             <div>
               <h3 className="text-sm font-semibold text-gray-900 mb-2">Members ({detail.members.length})</h3>

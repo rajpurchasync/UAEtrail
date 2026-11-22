@@ -28,12 +28,13 @@ beforeAll(async () => {
   app = await bootstrapTestApp();
 });
 
-afterAll(async () => {
-  await cleanupTestUsers();
-  const db = getMongoClient().db();
-  await db.collection(COLLECTIONS.COMMUNITY_GROUP_MEMBERS).deleteMany({});
-  await db.collection(COLLECTIONS.COMMUNITY_GROUPS).deleteMany({});
-});
+  afterAll(async () => {
+    await cleanupTestUsers();
+    const db = getMongoClient().db();
+    await db.collection(COLLECTIONS.COMMUNITY_GROUP_INVITES).deleteMany({});
+    await db.collection(COLLECTIONS.COMMUNITY_GROUP_MEMBERS).deleteMany({});
+    await db.collection(COLLECTIONS.COMMUNITY_GROUPS).deleteMany({});
+  });
 
 describe('community discover (MIG-COMMUNITY-DISCOVER)', () => {
   it('registrar exposes GET /explore/communities', () => {
@@ -239,5 +240,48 @@ describe('community discover (MIG-COMMUNITY-DISCOVER)', () => {
 
     const publicList = await request(app).get('/api/explore/communities');
     expect(publicList.body.data.some((row: { id: string }) => row.id === communityId)).toBe(false);
+  });
+
+  it('invite-only communities require invite before join', async () => {
+    const admin = await registerVerifiedPlatformAdmin(app, `comm-inv-${Date.now()}`);
+    const suffix = `invite-${Date.now()}`;
+    const member = await registerVerifiedVisitor(app, suffix);
+    const memberUser = await findAuthUserByEmail(member.email);
+    expect(memberUser).toBeTruthy();
+
+    const createRes = await request(app)
+      .post('/api/admin/communities')
+      .set('Authorization', `Bearer ${admin.accessToken}`)
+      .send({
+        name: 'Invite Club',
+        slug: `invite-club-${suffix}`,
+        visibility: 'public',
+        joinPolicy: 'invite',
+        adminUserId: memberUser!._id,
+        geoRef: sampleGeo('United Arab Emirates', 'Dubai'),
+      });
+    const communityId = createRes.body.data.id as string;
+
+    const blockedJoin = await request(app)
+      .post(`/api/me/communities/${communityId}/join`)
+      .set('Authorization', `Bearer ${member.accessToken}`);
+    expect(blockedJoin.status).toBe(403);
+
+    const inviteRes = await request(app)
+      .post(`/api/admin/communities/${communityId}/invites`)
+      .set('Authorization', `Bearer ${admin.accessToken}`)
+      .send({ userId: memberUser!._id });
+    expect(inviteRes.status).toBe(201);
+
+    const detailBefore = await request(app)
+      .get(`/api/explore/communities/invite-club-${suffix}`)
+      .set('Authorization', `Bearer ${member.accessToken}`);
+    expect(detailBefore.body.data.viewerHasInvite).toBe(true);
+
+    const joinRes = await request(app)
+      .post(`/api/me/communities/${communityId}/join`)
+      .set('Authorization', `Bearer ${member.accessToken}`);
+    expect(joinRes.status).toBe(201);
+    expect(joinRes.body.data.status).toBe('member');
   });
 });

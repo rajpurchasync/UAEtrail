@@ -2,10 +2,12 @@ import type {
   AdminCommunityDetailDTO,
   AdminCommunityHostContactDTO,
   AdminCommunityListItemDTO,
+  AdminCommunityInviteRowDTO,
   AdminCommunityMemberRowDTO,
 } from '@uaetrail/shared-types';
 import { ApiError } from '../lib/api-error.js';
 import { findAuthUsersByIds } from '../lib/auth-users-store.js';
+import { listCommunityGroupInvites } from '../lib/community-group-invites-store.js';
 import { listCommunityGroupMembers } from '../lib/community-group-members-store.js';
 import {
   findCommunityById,
@@ -82,13 +84,26 @@ export const loadAdminCommunityDetail = async (communityId: string): Promise<Adm
     };
   });
 
+  const inviteRows = await listCommunityGroupInvites(communityId);
+  const invites: AdminCommunityInviteRowDTO[] = inviteRows.map((invite) => ({
+    id: invite.id,
+    email: invite.email,
+    userId: invite.userId,
+    status: invite.status,
+    invitedByUserId: invite.invitedByUserId,
+    createdAt: invite.createdAt.toISOString(),
+    acceptedAt: invite.acceptedAt?.toISOString() ?? null,
+  }));
+
   const pendingCount = members.filter((member) => member.status === 'pending').length;
   const memberCount = members.filter((member) => member.status === 'member').length;
+  const pendingInvites = invites.filter((invite) => invite.status === 'pending').length;
 
   return {
     community,
     host,
     members,
-    stats: { memberCount, pendingCount },
+    invites,
+    stats: { memberCount, pendingCount, pendingInvites },
   };
 };

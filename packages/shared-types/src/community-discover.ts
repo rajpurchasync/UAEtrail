@@ -28,6 +28,21 @@ export type CommunityViewerMembershipDTO = {
 
 export type CommunityDiscoverDetailDTO = CommunityDiscoverCardDTO & {
   viewerMembership: CommunityViewerMembershipDTO | null;
+  /** Signed-in viewer may redeem an outstanding invite (`joinPolicy: invite`). */
+  viewerHasInvite: boolean;
+};
+
+export const COMMUNITY_INVITE_STATUSES = ['pending', 'accepted', 'revoked'] as const;
+export type CommunityInviteStatus = (typeof COMMUNITY_INVITE_STATUSES)[number];
+
+export type AdminCommunityInviteRowDTO = {
+  id: string;
+  email: string;
+  userId: string | null;
+  status: CommunityInviteStatus;
+  invitedByUserId: string;
+  createdAt: string;
+  acceptedAt: string | null;
 };
 
 export const COMMUNITY_GROUP_STATUSES = ['active', 'suspended'] as const;
@@ -60,9 +75,11 @@ export type AdminCommunityDetailDTO = {
   community: AdminCommunityListItemDTO;
   host: AdminCommunityHostContactDTO | null;
   members: AdminCommunityMemberRowDTO[];
+  invites: AdminCommunityInviteRowDTO[];
   stats: {
     memberCount: number;
     pendingCount: number;
+    pendingInvites: number;
   };
 };
 

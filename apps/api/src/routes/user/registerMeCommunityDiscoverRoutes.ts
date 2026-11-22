@@ -12,7 +12,7 @@ export const registerMeCommunityDiscoverRoutes = (router: Router): void => {
     async (req, res, next) => {
       try {
         const { communityId } = req.params as z.infer<typeof communityIdParamSchema>;
-        const data = await joinDiscoverableCommunity(req.auth!.userId, communityId);
+        const data = await joinDiscoverableCommunity(req.auth!.userId, communityId, req.auth!.email);
         res.status(201).json({ data });
       } catch (error) {
         next(error);

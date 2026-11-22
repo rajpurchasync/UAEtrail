@@ -39,6 +39,7 @@ describe('communityDiscoverGuard (MIG-COMMUNITY-DISCOVER)', () => {
       /\/me\/communities\/:communityId\/join/
     );
     expect(read('apps/api/src/lib/collections.ts')).toMatch(/COMMUNITY_GROUP_MEMBERS/);
+    expect(read('apps/api/src/lib/collections.ts')).toMatch(/COMMUNITY_GROUP_INVITES/);
     expect(read('apps/api/src/routes/user/registerExploreCommunityRoutes.ts')).toMatch(/\/explore\/communities\/:slug/);
   });
 });

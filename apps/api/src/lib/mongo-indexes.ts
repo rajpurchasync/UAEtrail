@@ -255,6 +255,10 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { communityId: 1, userId: 1 }, unique: true },
       { key: { userId: 1, joinedAt: -1 } },
     ]),
+    db.collection(COLLECTIONS.COMMUNITY_GROUP_INVITES).createIndexes([
+      { key: { communityId: 1, email: 1, status: 1 } },
+      { key: { communityId: 1, userId: 1, status: 1 }, sparse: true },
+    ]),
     db.collection(COLLECTIONS.MEMBER_GROUP_MEMBERS).createIndexes([
       { key: { groupId: 1, userId: 1 }, unique: true, partialFilterExpression: { userId: { $type: 'string' } } },
       { key: { userId: 1, createdAt: -1 } },

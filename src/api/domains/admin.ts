@@ -95,6 +95,16 @@ export const adminApi = {
       body: JSON.stringify({ status, comment }),
     }),
 
+  createAdminCommunityInvite: (
+    communityId: string,
+    body: { email?: string; userId?: string }
+  ) =>
+    apiRequest<{ data: { ok: true } }>(`/admin/communities/${encodeURIComponent(communityId)}/invites`, {
+      method: 'POST',
+      auth: true,
+      body: JSON.stringify(body),
+    }),
+
   approveAdminCommunityMember: (communityId: string, userId: string) =>
     apiRequest<{ data: { status: 'member' | 'pending' } }>(
       `/admin/communities/${encodeURIComponent(communityId)}/members/${encodeURIComponent(userId)}/approve`,

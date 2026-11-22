@@ -8,6 +8,7 @@ import type {
 import { createAuditLog } from '../lib/audit.js';
 import { ApiError } from '../lib/api-error.js';
 import { findAuthUserById } from '../lib/auth-users-store.js';
+import { insertCommunityGroupInvite } from '../lib/community-group-invites-store.js';
 import { promotePendingCommunityMember } from '../lib/community-group-members-store.js';
 import {
   findCommunityById,
@@ -101,6 +102,42 @@ export const setAdminCommunityStatus = async (input: {
 
   const detail = await loadAdminCommunityDetail(input.communityId);
   return detail.community;
+};
+
+export const createAdminCommunityInvite = async (input: {
+  actorId: string;
+  communityId: string;
+  email?: string;
+  userId?: string;
+}): Promise<void> => {
+  const community = await findCommunityById(input.communityId);
+  if (!community) {
+    throw new ApiError(404, 'community_not_found', 'Community not found.');
+  }
+  if (community.joinPolicy !== 'invite') {
+    throw new ApiError(400, 'community_not_invite_only', 'Invites apply to invite-only communities.');
+  }
+
+  let email = input.email?.trim().toLowerCase();
+  let userId = input.userId ?? null;
+  if (userId) {
+    const user = await findAuthUserById(userId);
+    if (!user) {
+      throw new ApiError(400, 'community_invite_user_not_found', 'Invite target user not found.');
+    }
+    email = user.email.toLowerCase();
+    userId = user._id;
+  }
+  if (!email) {
+    throw new ApiError(400, 'community_invite_email_required', 'Provide email or userId for the invite.');
+  }
+
+  await insertCommunityGroupInvite({
+    communityId: input.communityId,
+    email,
+    userId,
+    invitedByUserId: input.actorId,
+  });
 };
 
 export const approveAdminCommunityMember = async (

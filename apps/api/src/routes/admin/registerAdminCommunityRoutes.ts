@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { validate } from '../../middleware/validate.js';
 import {
   approveAdminCommunityMember,
+  createAdminCommunityInvite,
   createAdminDiscoverableCommunity,
   setAdminCommunityStatus,
 } from '../../services/admin-community-commands.js';
@@ -115,6 +116,35 @@ export const registerAdminCommunityRoutes = (adminRouter: Router): void => {
           comment,
         });
         res.json({ data });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  const communityInviteBodySchema = z
+    .object({
+      email: z.string().email().optional(),
+      userId: z.string().min(1).optional(),
+    })
+    .refine((body) => Boolean(body.email || body.userId), {
+      message: 'Provide email or userId',
+    });
+
+  adminRouter.post(
+    '/communities/:id/invites',
+    validate({ params: idParamSchema, body: communityInviteBodySchema }),
+    async (req, res, next) => {
+      try {
+        const { id } = req.params as z.infer<typeof idParamSchema>;
+        const body = req.body as z.infer<typeof communityInviteBodySchema>;
+        await createAdminCommunityInvite({
+          actorId: req.auth!.userId,
+          communityId: id,
+          email: body.email,
+          userId: body.userId,
+        });
+        res.status(201).json({ data: { ok: true } });
       } catch (error) {
         next(error);
       }

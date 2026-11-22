@@ -46,6 +46,7 @@ export const CommunityClubDetailPage = () => {
   const isPending = membershipStatus === 'pending';
   const canJoinOpen = data.joinPolicy === 'open' && !membershipStatus;
   const canRequestJoin = data.joinPolicy === 'request' && !membershipStatus;
+  const canAcceptInvite = data.joinPolicy === 'invite' && data.viewerHasInvite && !membershipStatus;
 
   const onJoin = () => {
     if (!user) {
@@ -53,7 +54,7 @@ export const CommunityClubDetailPage = () => {
       return;
     }
     if (joinMutation.isPending) return;
-    if (!canJoinOpen && !canRequestJoin) return;
+    if (!canJoinOpen && !canRequestJoin && !canAcceptInvite) return;
     joinMutation.mutate(data.id);
   };
 
@@ -79,7 +80,7 @@ export const CommunityClubDetailPage = () => {
             <span className="rounded-full bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-900 ring-1 ring-amber-200">
               Request pending — the host will review soon
             </span>
-          ) : canJoinOpen || canRequestJoin ? (
+          ) : canJoinOpen || canRequestJoin || canAcceptInvite ? (
             <button
               type="button"
               onClick={onJoin}
@@ -88,12 +89,14 @@ export const CommunityClubDetailPage = () => {
             >
               {joinMutation.isPending
                 ? 'Sending…'
-                : canRequestJoin
-                  ? 'Request to join'
-                  : 'Join community'}
+                : canAcceptInvite
+                  ? 'Accept invite'
+                  : canRequestJoin
+                    ? 'Request to join'
+                    : 'Join community'}
             </button>
           ) : (
-            <span className="text-sm text-neutral-600">Invite-only community.</span>
+            <span className="text-sm text-neutral-600">Invite-only — ask the host for an invite.</span>
           )}
           <Link
             to={EXPLORE_MAP_PATH}
