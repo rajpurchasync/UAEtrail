@@ -73,9 +73,9 @@ describe('explore search results', () => {
     expect(read('src/explore/search/ExploreSearchResultsChrome.tsx')).toMatch(
       /ExploreSearchResultsViewToggle/
     );
-    expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/!exploreSearch/);
+    expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(/!exploreSearch/);
     expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/exploreSearch/);
-    expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(/resolveExploreSearchTripPool/);
+    expect(read('src/list/shell/useListDiscoveryExploreSearchFeedModel.ts')).toMatch(/resolveExploreSearchTripPool/);
   });
 
   it('resolves five-tab highlight from search scope', () => {

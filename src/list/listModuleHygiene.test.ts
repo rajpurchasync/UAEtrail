@@ -31,6 +31,8 @@ describe('list module hygiene', () => {
   const sources = collectListSources();
   const listDiscoveryModel = () =>
     readFileSync(join(process.cwd(), 'src/list/shell/useListDiscoveryExperienceModel.ts'), 'utf8');
+  const listDiscoveryCrewsModel = () =>
+    readFileSync(join(process.cwd(), 'src/list/shell/useListDiscoveryCrewsCategoryModel.ts'), 'utf8');
 
   it('renders the full-screen explorer instead of poster or map-list rows', () => {
     const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
@@ -50,7 +52,7 @@ describe('list module hygiene', () => {
     );
     expect(experience).toMatch(/showGuestCatalogPreview=\{!user && !embeddedOnExplore/);
     expect(model).toMatch(/countBrowseListFilters/);
-    expect(model).toMatch(/browseListEntityLinkState/);
+    expect(listDiscoveryCrewsModel()).toMatch(/browseListEntityLinkState/);
     expect(model).toMatch(/parseBrowseListBucket/);
     expect(model).toMatch(/browseListBucketCategories/);
     expect(experience).not.toMatch(/ListDiscoverHome/);
@@ -238,7 +240,7 @@ describe('list module hygiene', () => {
     expect(experience).toMatch(/PeopleBrowsePanel/);
     expect(experience).toMatch(/embedded/);
     expect(model).toMatch(/listCat: 'people'/);
-    expect(model).toMatch(/useMemberDiscoveryRoster/);
+    expect(listDiscoveryCrewsModel()).toMatch(/useMemberDiscoveryRoster/);
   });
 
   it('explore map pin pool uses discovery selectors via shell composer', () => {
@@ -252,11 +254,12 @@ describe('list module hygiene', () => {
 
   it('people Looking for uses availability catalog read hook', () => {
     const model = listDiscoveryModel();
+    const crews = listDiscoveryCrewsModel();
     const bundle = readFileSync(
       join(process.cwd(), 'src/people-discovery/hooks/usePeopleDiscoveryBrowseBundle.ts'),
       'utf8'
     );
-    expect(model).toMatch(/usePeopleDiscoveryAvailabilityCatalog/);
+    expect(crews).toMatch(/usePeopleDiscoveryAvailabilityCatalog/);
     expect(bundle).toMatch(/usePeopleDiscoveryAvailabilityCatalog/);
     expect(bundle).not.toMatch(/from ['"]@\/api\/domains\//);
   });
@@ -283,6 +286,7 @@ describe('list module hygiene', () => {
       'src/list/ListDiscoveryExperience.tsx',
       'src/list/BrowseListPage.tsx',
       'src/list/shell/useListDiscoveryExperienceModel.ts',
+      'src/list/shell/useListDiscoveryExploreSearchFeedModel.ts',
       'src/list/browse/listDiscoverySearchCreateFlowStub.ts',
       'src/list/browse/useListDiscoveryUrlState.ts',
     ]);

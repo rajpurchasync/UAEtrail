@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { useProductLocation, useProductSearchParams } from '../../routing/useEffectiveLocation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
-import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { useCreateFlowOptional } from '../../create/CreateFlowProvider';
 import {
   listDiscoverySearchComposeStub,
@@ -24,7 +23,6 @@ import {
 } from '../browse/discoveryListRuntime';
 import { useBrowseListFeed } from '../browse/useBrowseListFeed';
 import { useListDiscoveryUrlState } from '../browse/useListDiscoveryUrlState';
-import { usePeopleDiscoveryAvailabilityCatalog } from '@/people-discovery/hooks/usePeopleDiscoveryAvailabilityCatalog';
 import { exploreMapPathFromListSearch } from '../browse/browseListRouting';
 import {
   listDiscoveryEmbeddedOnExplore,
@@ -32,42 +30,26 @@ import {
   listDiscoverySearchChrome,
   type ListDiscoverySurface,
 } from '../browse/listDiscoverySurface';
-import {
-  exploreSearchMapViewPathFromListSearch,
-  exploreSearchResultsPath,
-  parseExploreSearchBrowseState,
-} from '../../explore/search/exploreSearchRouting';
-import {
-  resolveExploreSearchTripPool,
-  resolveExploreSearchVenuePool,
-} from '../../explore/search/exploreSearchJoinablePools';
-import { exploreSearchWhereBrowseQuery } from '../../explore/search/exploreSearchWhereQuery';
-import { buildListFeedCards } from '../browse/buildListFeedCards';
-import { sortBrowseListCards } from '../browse/listBrowseSort';
-import { setExploreClockStyle } from '@uaetrail/shared-types';
 import { useDisplayPreferences } from '../../preferences/useDisplayPreferences';
-import { useMemberDiscoveryRoster } from '@/people-discovery/hooks/useMemberDiscoveryRoster';
-import { useExplorePeopleAvailability } from '@/people-discovery/hooks/usePeopleAvailability';
 import { resolveEffectiveBrowseVenueRegions } from '../browse/browseGeoPath';
 import { useBrowseGeoScopeHydration } from '../browse/useBrowseGeoScopeHydration';
-import { browseListEntityLinkState } from '../browse/browseListNavState';
 import { countBrowseListFilters } from '../browse/browseListLayout';
 import {
   browseListBucketCategories,
   parseBrowseListBucket,
 } from '../browse/browseListBucket';
 import { browseListCatForBucket, scopeBrowseListStateForListCat } from '../browse/browseListMapHandoff';
-import { useBindExploreListMapHover } from '../../explore/ExploreMapChromeContext';
-import { useMinWidthMd } from '../../hooks/useMinWidthMd';
-import { useMinWidthPx } from '../../hooks/useMinWidthPx';
-import { collapseDesktopSideNav } from '../../hooks/useDesktopSideNavExpanded';
-import { useListSideMapWidth } from '../explorer/useListSideMapWidth';
-import {
-  LIST_DISCOVERY_MAP_AUTO_MIN_PX,
-  LIST_DISCOVERY_MAP_DISMISSED_STORAGE_KEY,
-  LIST_DISCOVERY_MAP_OPEN_STORAGE_KEY,
-} from '../browse/listDiscoveryMapLayout';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import {
+  crewsCategoryMapFeedEnabled,
+  useListDiscoveryCrewsCategoryAugment,
+  useListDiscoveryCrewsCategoryModel,
+} from './useListDiscoveryCrewsCategoryModel';
+import { useListDiscoveryMapSplitModel } from './useListDiscoveryMapSplitModel';
+import {
+  resolveListDiscoveryMapHref,
+  useListDiscoveryExploreSearchFeedModel,
+} from './useListDiscoveryExploreSearchFeedModel';
 import {
   browseListSearchUsesScopeHints,
   resolveBrowseListCreateFabLabel,
@@ -90,38 +72,6 @@ export type ListDiscoveryExperienceProps = {
   onOfferRideshareForAvailabilityItem?: (item: ExploreMapItemDTO) => void;
   /** Search results — hide in-list search; chrome owns query. */
   suppressSearch?: boolean;
-};
-
-const readListMapColumnOpen = (): boolean => {
-  try {
-    return sessionStorage.getItem(LIST_DISCOVERY_MAP_OPEN_STORAGE_KEY) === '1';
-  } catch {
-    return false;
-  }
-};
-
-const writeListMapColumnOpen = (open: boolean) => {
-  try {
-    sessionStorage.setItem(LIST_DISCOVERY_MAP_OPEN_STORAGE_KEY, open ? '1' : '0');
-  } catch {
-    /* ignore */
-  }
-};
-
-const readListMapDismissed = (): boolean => {
-  try {
-    return sessionStorage.getItem(LIST_DISCOVERY_MAP_DISMISSED_STORAGE_KEY) === '1';
-  } catch {
-    return false;
-  }
-};
-
-const writeListMapDismissed = (dismissed: boolean) => {
-  try {
-    sessionStorage.setItem(LIST_DISCOVERY_MAP_DISMISSED_STORAGE_KEY, dismissed ? '1' : '0');
-  } catch {
-    /* ignore */
-  }
 };
 
 export const useListDiscoveryExperienceModel = ({
@@ -271,28 +221,13 @@ export const useListDiscoveryExperienceModel = ({
     [venueRegions, geoPath, publishedAreas]
   );
   const peopleSegment = filters.peopleBrowseTab;
-  const crewsNeedsRoster =
-    peopleSegment === 'hub' ||
-    peopleSegment === 'going' ||
-    peopleSegment === 'connect' ||
-    peopleSegment === 'available' ||
-    peopleSegment === 'looking';
-  const crewsNeedsAvailability =
-    peopleSegment === 'hub' ||
-    peopleSegment === 'available' ||
-    peopleSegment === 'looking';
-  const memberRoster = useMemberDiscoveryRoster({
-    enabled: isPeopleCategory && Boolean(user) && crewsNeedsRoster,
-    search: draftQuery,
-    activityDatePreset: filters.activityDatePreset,
-    omitDirectory: !(peopleSegment === 'connect' || peopleSegment === 'hub'),
-  });
-  const memberAvailability = useExplorePeopleAvailability({
-    enabled: isPeopleCategory && Boolean(user) && crewsNeedsAvailability,
-    search: draftQuery,
+  const { memberRoster, memberAvailability, crewsNeedsAvailability } = useListDiscoveryCrewsCategoryModel({
+    enabled: isPeopleCategory,
+    user,
+    draftQuery,
+    peopleBrowseTab: peopleSegment,
     activityDatePreset: filters.activityDatePreset,
     areaSlug,
-    mapFilter: 'all',
   });
   const wasGuestRef = useRef(!user);
   useEffect(() => {
@@ -324,80 +259,45 @@ export const useListDiscoveryExperienceModel = ({
     venueRegions,
     geoPath,
     mapEnabled:
-      !isPeopleCategory ||
-      peopleSegment === 'looking' ||
-      ((peopleSegment === 'available' || peopleSegment === 'hub') &&
-        (crewsOpenLens === 'all' || crewsOpenLens === 'looking')),
+      !isPeopleCategory || crewsCategoryMapFeedEnabled(peopleSegment, crewsOpenLens),
     catalogItems: embeddedOnExplore ? prefetchedCatalogItems : undefined,
   });
 
-  const searchResultsBrowse = useMemo(
-    () => (exploreSearch ? parseExploreSearchBrowseState(searchParams) : null),
-    [exploreSearch, searchParams]
-  );
-  const searchResultsMapView = searchResultsBrowse?.view === 'map';
-
-  const exploreSearchMapPool = useMemo(() => {
-    if (!exploreSearch || isPeopleCategory) return null;
-    const searchBrowse = searchResultsBrowse ?? parseExploreSearchBrowseState(searchParams);
-    const browseQuery = exploreSearchWhereBrowseQuery(searchBrowse.query.trim() || filters.query);
-    const scopedFilters =
-      listCat === 'venues'
-        ? scopeBrowseListStateForListCat({ ...filters, query: browseQuery }, 'venues')
-        : scopeBrowseListStateForListCat(
-            {
-              ...filters,
-              query: browseQuery,
-              activityDatePreset:
-                searchBrowse.searchScope === 'places'
-                  ? filters.activityDatePreset
-                  : searchBrowse.activityDatePreset,
-            },
-            'activities'
-          );
-    return listCat === 'venues'
-      ? resolveExploreSearchVenuePool(items, scopedFilters, hubVenueRegions, geoPath, publishedAreas).pool
-      : resolveExploreSearchTripPool(items, scopedFilters, hubVenueRegions, geoPath, publishedAreas).pool;
-  }, [
+  const {
+    searchResultsMapView: exploreSearchMapView,
+    exploreSearchMapPool,
+    cards,
+  } = useListDiscoveryExploreSearchFeedModel({
     exploreSearch,
-    filters,
-    geoPath,
-    hubVenueRegions,
     isPeopleCategory,
-    items,
-    listCat,
-    publishedAreas,
     searchParams,
-    searchResultsBrowse,
-  ]);
-
-  const exploreSearchCards = useMemo(() => {
-    if (!exploreSearchMapPool) return null;
-    setExploreClockStyle(clock);
-    const built = buildListFeedCards(exploreSearchMapPool, user, items);
-    return sortBrowseListCards(built, sort, null);
-  }, [clock, exploreSearchMapPool, items, sort, user]);
-
-  const cards = exploreSearchCards ?? feedCards;
-
-  const { availabilityCatalogItems } = usePeopleDiscoveryAvailabilityCatalog({
-    enabled: isPeopleCategory && crewsNeedsAvailability,
-    exploreCatalogFallback: items,
-    filters: {
-      mapFilter: 'all',
-      buddySubtype: 'all',
-      outingTopic: 'all',
-      query: draftQuery,
-    },
+    search,
+    filters,
+    listCat,
+    items,
+    hubVenueRegions,
+    geoPath,
+    publishedAreas,
+    clock,
+    sort,
+    user,
+    feedCards,
   });
 
-  const handleOpenAvailabilityCatalogItem = useCallback(
-    (item: { path: string }) => {
-      const returnTo = `${location.pathname}${location.search}`;
-      navigate(item.path, { state: browseListEntityLinkState(returnTo) });
-    },
-    [location.pathname, location.search, navigate]
-  );
+  const { availabilityCatalogItems, handleOpenAvailabilityCatalogItem, crewsStatCounts } =
+    useListDiscoveryCrewsCategoryAugment({
+      enabled: isPeopleCategory,
+      peopleBrowseTab: peopleSegment,
+      crewsNeedsAvailability,
+      draftQuery,
+      exploreCatalogItems: items,
+      exploreCatalogLoading: isLoading,
+      memberRoster,
+      memberAvailability,
+      navigate,
+      locationPathname: location.pathname,
+      locationSearch: location.search,
+    });
 
   const searchScopeCounts = useMemo(
     () => countExploreSearchScopes(items, draftQuery, filters.activityDatePreset, venueRegions),
@@ -409,27 +309,6 @@ export const useListDiscoveryExperienceModel = ({
       ? 1
       : 0
     : countBrowseListFilters(filters, venueRegions, explorerBucket, geoPath.length);
-
-  const crewsStatCounts = useMemo(() => {
-    const buddiesCount = memberRoster.loading ? null : memberRoster.friendsGoing.length;
-    const markedCount = memberAvailability.loading ? 0 : memberAvailability.people.length;
-    const lookingCount = isLoading ? 0 : availabilityCatalogItems.length;
-    const availableCount = markedCount + lookingCount;
-    const everyoneCount = memberRoster.loading ? null : memberRoster.directory.length;
-    return {
-      buddies: buddiesCount,
-      available: memberRoster.loading || memberAvailability.loading || isLoading ? null : availableCount,
-      everyone: everyoneCount,
-    };
-  }, [
-    memberRoster.loading,
-    memberRoster.friendsGoing.length,
-    memberRoster.directory.length,
-    memberAvailability.loading,
-    memberAvailability.people.length,
-    isLoading,
-    availabilityCatalogItems.length,
-  ]);
 
   const commitQuery = () => {
     syncUrl({ query: draftQuery });
@@ -526,71 +405,34 @@ export const useListDiscoveryExperienceModel = ({
     onImmersiveSubtitleChange?.(null);
   }, [onImmersiveSubtitleChange]);
 
-  const mapHref = useMemo(() => {
-    if (onCloseMapOverlay) return EXPLORE_MAP_PATH;
-    if (exploreSearch) {
-      const searchBrowse = parseExploreSearchBrowseState(searchParams);
-      return searchBrowse.view === 'map'
-        ? exploreSearchResultsPath({ ...searchBrowse, view: 'list' })
-        : exploreSearchMapViewPathFromListSearch(search);
-    }
-    return exploreMapPathFromListSearch(search);
-  }, [exploreSearch, onCloseMapOverlay, search, searchParams]);
-
-  const desktopMd = useMinWidthMd();
-  const wideListMapSplit = useMinWidthPx(LIST_DISCOVERY_MAP_AUTO_MIN_PX);
-  const [listMapColumnOpen, setListMapColumnOpen] = useState(readListMapColumnOpen);
-  const [listMapDismissed, setListMapDismissed] = useState(readListMapDismissed);
-  const [listMapHighlightedId, setListMapHighlightedId] = useState<string | null>(null);
-  const [listMapSelectedId, setListMapSelectedId] = useState<string | null>(null);
-  const listMapSplitEnabled = !embeddedOnExplore && !isPeopleCategory && !exploreSearch;
-  const showListMapColumn =
-    listMapSplitEnabled && desktopMd && !listMapDismissed && (wideListMapSplit || listMapColumnOpen);
-  const showListMapColumnPrompt =
-    listMapSplitEnabled &&
-    desktopMd &&
-    !showListMapColumn &&
-    (listMapDismissed || !wideListMapSplit);
-
-  useBindExploreListMapHover(setListMapHighlightedId);
-
-  const openListMapColumn = useCallback(() => {
-    collapseDesktopSideNav();
-    setListMapDismissed(false);
-    writeListMapDismissed(false);
-    setListMapColumnOpen(true);
-    writeListMapColumnOpen(true);
-  }, []);
-
-  const closeListMapColumn = useCallback(() => {
-    setListMapDismissed(true);
-    writeListMapDismissed(true);
-    setListMapColumnOpen(false);
-    writeListMapColumnOpen(false);
-    setListMapHighlightedId(null);
-    setListMapSelectedId(null);
-  }, []);
-
-  useEffect(() => {
-    if (wideListMapSplit && !listMapDismissed) {
-      setListMapColumnOpen(false);
-      writeListMapColumnOpen(false);
-    }
-  }, [wideListMapSplit, listMapDismissed]);
-
-  const handleListMapSelectItem = useCallback(
-    (item: ExploreMapItemDTO) => {
-      setListMapSelectedId(item.id);
-      setListMapHighlightedId(item.id);
-      if (exploreSearch && item.path) {
-        const returnTo = `${location.pathname}${location.search}`;
-        navigate(item.path, { state: browseListEntityLinkState(returnTo) });
-      }
-    },
-    [exploreSearch, location.pathname, location.search, navigate]
+  const mapHref = useMemo(
+    () =>
+      resolveListDiscoveryMapHref({
+        onCloseMapOverlay,
+        exploreSearch,
+        searchParams,
+        search,
+      }),
+    [exploreSearch, onCloseMapOverlay, search, searchParams]
   );
 
-  const sideMapWidth = useListSideMapWidth(showListMapColumn);
+  const {
+    showListMapColumn,
+    showListMapColumnPrompt,
+    openListMapColumn,
+    closeListMapColumn,
+    listMapHighlightedId,
+    setListMapHighlightedId,
+    listMapSelectedId,
+    handleListMapSelectItem,
+    sideMapWidth,
+  } = useListDiscoveryMapSplitModel({
+    enabled: !embeddedOnExplore && !isPeopleCategory && !exploreSearch,
+    exploreSearch,
+    navigate,
+    locationPathname: location.pathname,
+    locationSearch: location.search,
+  });
 
   const hubListRoot =
     searchResultsChrome ? 'flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden' : undefined;

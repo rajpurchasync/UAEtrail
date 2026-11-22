@@ -130,7 +130,7 @@ describe('shimInventoryGuard (repo-wide coherence)', () => {
   });
 
   it('SHIM-INV-02: canonical list + search surfaces use exploreSearchJoinablePools', () => {
-    expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(/exploreSearchJoinablePools/);
+    expect(read('src/list/shell/useListDiscoveryExploreSearchFeedModel.ts')).toMatch(/exploreSearchJoinablePools/);
     expect(read('src/list/ListDiscoveryExperience.tsx')).not.toMatch(/explore\/hub\/exploreHubJoinableTrips/);
     expect(read('src/explore/search/ExploreSearchResults.tsx')).toMatch(/exploreSearchJoinablePools/);
     expect(read('src/explore/search/ExploreSearchResults.tsx')).not.toMatch(/hub\/exploreHubJoinableTrips/);
@@ -211,7 +211,7 @@ describe('shimInventoryGuard (repo-wide coherence)', () => {
       );
     };
     expect(usesBrowseSort('src/explore/search/exploreSearchJoinablePools.ts')).toBe(true);
-    expect(usesBrowseSort('src/list/shell/useListDiscoveryExperienceModel.ts')).toBe(true);
+    expect(usesBrowseSort('src/list/shell/useListDiscoveryExploreSearchFeedModel.ts')).toBe(true);
     expect(read('src/list/browse/listBrowseSort.ts')).toMatch(/export const sortBrowseListCards/);
   });
 

@@ -256,7 +256,10 @@
         "src/pages/MemberProfile.tsx",
         "src/people-discovery",
         "src/member/memberProfileLink.ts",
-        "src/list/ListDiscoveryExperience.tsx"
+        "src/list/ListDiscoveryExperience.tsx",
+        "src/list/shell/useListDiscoveryExperienceModel.ts",
+        "src/list/shell/useListDiscoveryCrewsCategoryModel.ts",
+        "src/list/shell/useListDiscoveryExploreSearchFeedModel.ts"
       ]
     },
     {
