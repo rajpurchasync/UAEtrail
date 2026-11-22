@@ -35,6 +35,8 @@ describe('list module hygiene', () => {
     readFileSync(join(process.cwd(), 'src/list/shell/useListDiscoveryCrewsCategoryModel.ts'), 'utf8');
   const listDiscoveryBrowseActionsModel = () =>
     readFileSync(join(process.cwd(), 'src/list/shell/useListDiscoveryBrowseActionsModel.ts'), 'utf8');
+  const listDiscoveryBrowseUrlModel = () =>
+    readFileSync(join(process.cwd(), 'src/list/shell/useListDiscoveryBrowseUrlModel.ts'), 'utf8');
 
   it('renders the full-screen explorer instead of poster or map-list rows', () => {
     const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
@@ -53,9 +55,9 @@ describe('list module hygiene', () => {
       /GuestCatalogPreviewBanner/
     );
     expect(experience).toMatch(/showGuestCatalogPreview=\{!user && !embeddedOnExplore/);
-    expect(model).toMatch(/countBrowseListFilters/);
+    expect(listDiscoveryBrowseUrlModel()).toMatch(/countBrowseListFilters/);
     expect(listDiscoveryCrewsModel()).toMatch(/browseListEntityLinkState/);
-    expect(model).toMatch(/parseBrowseListBucket/);
+    expect(listDiscoveryBrowseUrlModel()).toMatch(/parseBrowseListBucket/);
     expect(model).toMatch(/browseListBucketCategories/);
     expect(experience).not.toMatch(/ListDiscoverHome/);
     expect(experience).not.toMatch(/ListFeedPosterCard/);
@@ -291,6 +293,7 @@ describe('list module hygiene', () => {
       'src/list/shell/useListDiscoveryExploreSearchFeedModel.ts',
       'src/list/shell/useListDiscoveryComposeBridgeModel.ts',
       'src/list/shell/useListDiscoveryBrowseActionsModel.ts',
+      'src/list/shell/useListDiscoveryBrowseUrlModel.ts',
       'src/list/browse/listDiscoverySearchCreateFlowStub.ts',
       'src/list/browse/useListDiscoveryUrlState.ts',
     ]);

@@ -144,7 +144,7 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/browseListCopy.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/browse/listQuickFilterPills.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/browseListCopy.ts'))).toBe(false);
-    expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(/browse\/browseListCopy/);
+    expect(read('src/list/shell/useListDiscoveryBrowseUrlModel.ts')).toMatch(/browse\/browseListCopy/);
     expect(read('src/explore/ui/ExploreOptionalFilterRow.tsx')).toMatch(/browse\/listQuickFilterPills/);
   });
 
@@ -235,7 +235,7 @@ describe('listBrowseNamingGuard', () => {
     expect(bucket).toMatch(/export const browseListBucketCategories/);
     expect(bucket).not.toMatch(/ListExplorerBucket/);
     expect(bucket).not.toMatch(/listExplorerBucket/);
-    expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(/parseBrowseListBucket/);
+    expect(read('src/list/shell/useListDiscoveryBrowseUrlModel.ts')).toMatch(/parseBrowseListBucket/);
     expect(read('src/list/ListDiscoveryExperience.tsx')).not.toMatch(/parseListExplorerBucket/);
     expect(read('src/explore/ui/exploreMapQuickFiltersState.ts')).toMatch(/explorePanelToBrowseListBucket/);
     expect(read('src/list/browse/listChromeTheme.ts')).toMatch(/browseListBucketTabClass/);

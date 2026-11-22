@@ -1,18 +1,13 @@
-/** List discovery orchestration — browse + people + map split (R2, mirrors explore shell model). */
+/** List discovery orchestration — composes browse URL, feed, crews, search, map, compose shells. */
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProductLocation, useProductSearchParams } from '../../routing/useEffectiveLocation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
 import { reloadExploreMap } from '../../hooks/useExploreMap';
-import {
-  countExploreSearchScopes,
-  parseExploreAreaSlug,
-  useExplorePublishedAreasQuery,
-} from '../browse/discoveryListRuntime';
+import { countExploreSearchScopes } from '../browse/discoveryListRuntime';
 import { useBrowseListFeed } from '../browse/useBrowseListFeed';
-import { useListDiscoveryUrlState } from '../browse/useListDiscoveryUrlState';
 import {
   listDiscoveryEmbeddedOnExplore,
   listDiscoveryExploreSearch,
@@ -20,13 +15,7 @@ import {
   type ListDiscoverySurface,
 } from '../browse/listDiscoverySurface';
 import { useDisplayPreferences } from '../../preferences/useDisplayPreferences';
-import { resolveEffectiveBrowseVenueRegions } from '../browse/browseGeoPath';
-import { useBrowseGeoScopeHydration } from '../browse/useBrowseGeoScopeHydration';
-import { countBrowseListFilters } from '../browse/browseListLayout';
-import {
-  browseListBucketCategories,
-  parseBrowseListBucket,
-} from '../browse/browseListBucket';
+import { browseListBucketCategories } from '../browse/browseListBucket';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   crewsCategoryMapFeedEnabled,
@@ -38,12 +27,9 @@ import {
   resolveListDiscoveryMapHref,
   useListDiscoveryExploreSearchFeedModel,
 } from './useListDiscoveryExploreSearchFeedModel';
-import {
-  browseListSearchUsesScopeHints,
-  resolveBrowseListSearchPlaceholder,
-} from '../browse/browseListCopy';
 import { useListDiscoveryComposeBridgeModel } from './useListDiscoveryComposeBridgeModel';
 import { useListDiscoveryBrowseActionsModel } from './useListDiscoveryBrowseActionsModel';
+import { useListDiscoveryBrowseUrlModel } from './useListDiscoveryBrowseUrlModel';
 
 export type ListDiscoveryExperienceProps = {
   surface: ListDiscoverySurface;
@@ -80,10 +66,6 @@ export const useListDiscoveryExperienceModel = ({
   const queryClient = useQueryClient();
   const search = searchParams.toString() ? `?${searchParams.toString()}` : '';
 
-  const browseUrl = useListDiscoveryUrlState({
-    mapOverlay: embeddedOnExplore,
-    searchResultsBrowse: searchResultsChrome,
-  });
   const {
     filters,
     syncUrl,
@@ -94,23 +76,22 @@ export const useListDiscoveryExperienceModel = ({
     sort,
     crewsOpenLens,
     availabilitySheetOpen,
-  } = browseUrl;
-  useBrowseGeoScopeHydration(geoPath);
-  const isPeopleCategory = listCat === 'people';
-  const explorerBucket = parseBrowseListBucket(listCat);
-  const createFabContext = useMemo(
-    () => ({
-      isPeopleCategory,
-      explorerBucket,
-    }),
-    [isPeopleCategory, explorerBucket]
-  );
-
-  const listSearchPlaceholder = useMemo(
-    () => resolveBrowseListSearchPlaceholder(listCat, explorerBucket),
-    [listCat, explorerBucket]
-  );
-  const listSearchScopeHints = useMemo(() => browseListSearchUsesScopeHints(listCat), [listCat]);
+    isPeopleCategory,
+    explorerBucket,
+    createFabContext,
+    listSearchPlaceholder,
+    listSearchScopeHints,
+    draftQuery,
+    setDraftQuery,
+    areaSlug,
+    publishedAreas,
+    hubVenueRegions,
+    filterCount,
+  } = useListDiscoveryBrowseUrlModel({
+    mapOverlay: embeddedOnExplore,
+    searchResultsBrowse: searchResultsChrome,
+    searchParams,
+  });
 
   const { handleCreateFabTap, handleOpenMarkAvailability, createFabLabel, offerRideshareForAvailabilityItem } =
     useListDiscoveryComposeBridgeModel({
@@ -130,16 +111,6 @@ export const useListDiscoveryExperienceModel = ({
       syncUrl,
     });
 
-  const [draftQuery, setDraftQuery] = useState(filters.query);
-  useEffect(() => {
-    setDraftQuery(filters.query);
-  }, [filters.query]);
-  const areaSlug = parseExploreAreaSlug(searchParams);
-  const { data: publishedAreas = [] } = useExplorePublishedAreasQuery(!isPeopleCategory);
-  const hubVenueRegions = useMemo(
-    () => resolveEffectiveBrowseVenueRegions(venueRegions, geoPath, publishedAreas),
-    [venueRegions, geoPath, publishedAreas]
-  );
   const peopleSegment = filters.peopleBrowseTab;
   const { memberRoster, memberAvailability, crewsNeedsAvailability } = useListDiscoveryCrewsCategoryModel({
     enabled: isPeopleCategory,
@@ -223,12 +194,6 @@ export const useListDiscoveryExperienceModel = ({
     () => countExploreSearchScopes(items, draftQuery, filters.activityDatePreset, venueRegions),
     [items, draftQuery, filters.activityDatePreset, venueRegions]
   );
-
-  const filterCount = isPeopleCategory
-    ? filters.activityDatePreset !== 'anyday'
-      ? 1
-      : 0
-    : countBrowseListFilters(filters, venueRegions, explorerBucket, geoPath.length);
 
   const {
     commitQuery,
