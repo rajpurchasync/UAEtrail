@@ -262,7 +262,8 @@
         "src/list/shell/useListDiscoveryExploreSearchFeedModel.ts",
         "src/list/shell/useListDiscoveryComposeBridgeModel.ts",
         "src/list/shell/useListDiscoveryBrowseActionsModel.ts",
-        "src/list/shell/useListDiscoveryBrowseUrlModel.ts"
+        "src/list/shell/useListDiscoveryBrowseUrlModel.ts",
+        "src/list/shell/useListDiscoveryMapSplitModel.ts"
       ]
     },
     {

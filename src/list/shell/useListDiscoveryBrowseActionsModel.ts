@@ -56,21 +56,21 @@ export const useListDiscoveryBrowseActionsModel = ({
       }
       if (scope === 'activities') {
         syncUrl({
-          query: draftQuery,
           listCat: 'activities',
           ...scopeBrowseListStateForListCat(filters, 'activities'),
+          query: draftQuery,
         });
         return;
       }
       if (scope === 'places' || scope === 'shops') {
         const patch = browseListFilterPatchForSearchScope(scope);
         syncUrl({
-          query: draftQuery,
           listCat: 'venues',
           ...scopeBrowseListStateForListCat(
             { ...filters, placeTopics: patch?.placeTopics ?? [] },
             'venues'
           ),
+          query: draftQuery,
         });
         return;
       }
@@ -80,9 +80,9 @@ export const useListDiscoveryBrowseActionsModel = ({
       }
       const cat = listCat ?? browseListCatForBucket(explorerBucket);
       syncUrl({
-        query: draftQuery,
         listCat: cat,
         ...scopeBrowseListStateForListCat(filters, cat === 'venues' ? 'venues' : 'activities'),
+        query: draftQuery,
       });
     },
     [draftQuery, explorerBucket, filters, listCat, syncUrl]

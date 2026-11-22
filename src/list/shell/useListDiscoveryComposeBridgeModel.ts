@@ -1,7 +1,7 @@
 /** List surfaces — CreateFlow bridge, FAB, availability compose, offer-rideshare launcher. */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { NavigateFunction } from 'react-router-dom';
+import type { NavigateFunction, SetURLSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { useCreateFlowOptional } from '../../create/CreateFlowProvider';
@@ -27,7 +27,7 @@ export type ListDiscoveryComposeBridgeInput = {
   pathname: string;
   search: string;
   searchParams: URLSearchParams;
-  setSearchParams: (next: URLSearchParams | ((prev: URLSearchParams) => URLSearchParams)) => void;
+  setSearchParams: SetURLSearchParams;
   navigate: NavigateFunction;
   locationPathname: string;
   locationSearch: string;

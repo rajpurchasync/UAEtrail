@@ -133,7 +133,7 @@ export const ListCrewsExplorer = ({
             onCrewsOpenLensChange={onCrewsOpenLensChange}
             onSelectStatTab={onSelectStatTab}
             onBrowseGuides={() => onPeopleBrowseTabChange('hub')}
-            buddiesCount={statCounts.buddies ?? 0}
+            buddiesCount={statCounts.friends ?? 0}
             availableCount={statCounts.available ?? 0}
             everyoneCount={statCounts.everyone ?? 0}
             isSignedIn={isSignedIn}

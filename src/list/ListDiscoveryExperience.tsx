@@ -152,7 +152,7 @@ export const ListDiscoveryExperience = (props: ListDiscoveryExperienceProps) => 
             discoveryError={memberRoster.error}
           />
         )
-      ) : exploreSearch && searchResultsMapView && !isPeopleCategory ? (
+      ) : exploreSearch && exploreSearchMapView && !isPeopleCategory ? (
         <ListDiscoveryMapColumn
           presentation="primary"
           items={exploreSearchMapPool ?? []}
@@ -160,7 +160,7 @@ export const ListDiscoveryExperience = (props: ListDiscoveryExperienceProps) => 
           highlightedExploreItemId={listMapHighlightedId}
           selectedExploreItemId={listMapSelectedId}
           onSelectItem={handleListMapSelectItem}
-          layoutRevision={searchResultsMapView}
+          layoutRevision={exploreSearchMapView}
           className="mx-auto w-full max-w-lg rounded-2xl border border-neutral-200"
         />
       ) : (
@@ -186,9 +186,9 @@ export const ListDiscoveryExperience = (props: ListDiscoveryExperienceProps) => 
               onBucketChange={(next) => {
                 const cat = browseListCatForBucket(next);
                 syncUrl({
-                  query: draftQuery,
                   listCat: cat,
                   ...scopeBrowseListStateForListCat(filters, cat),
+                  query: draftQuery,
                   regions: venueRegions,
                   ...(next === 'places' && layout === 'calendar' ? { layout: 'thumbnails' as const } : {}),
                 });

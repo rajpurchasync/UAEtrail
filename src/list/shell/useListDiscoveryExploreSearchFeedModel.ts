@@ -9,7 +9,7 @@ import type { BrowseMainCategoryKey } from '../browse/browseListTaxonomy';
 import { scopeBrowseListStateForListCat } from '../browse/browseListMapHandoff';
 import { exploreMapPathFromListSearch } from '../browse/browseListRouting';
 import { buildListFeedCards } from '../browse/buildListFeedCards';
-import { sortBrowseListCards, type BrowseListSortKey } from '../browse/listBrowseSort';
+import { sortBrowseListCards, type BrowseListSortMode } from '../browse/listBrowseSort';
 import {
   exploreSearchMapViewPathFromListSearch,
   exploreSearchResultsPath,
@@ -33,7 +33,7 @@ export type ListDiscoveryExploreSearchFeedInput = {
   geoPath: string[];
   publishedAreas: Parameters<typeof resolveExploreSearchTripPool>[4];
   clock: Parameters<typeof setExploreClockStyle>[0];
-  sort: BrowseListSortKey;
+  sort: BrowseListSortMode;
   user: { id: string } | null | undefined;
   feedCards: DiscoveryCardModel[];
   onCloseMapOverlay?: () => void;
@@ -43,7 +43,7 @@ export const useListDiscoveryExploreSearchFeedModel = ({
   exploreSearch,
   isPeopleCategory,
   searchParams,
-  search,
+  search: _search,
   filters,
   listCat,
   items,

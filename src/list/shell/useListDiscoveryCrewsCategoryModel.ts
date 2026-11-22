@@ -8,7 +8,8 @@
 
 import { useCallback, useMemo } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
-import type { ExploreActivityDatePreset, ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type { ExploreActivityDatePreset } from '../browse/discoveryListRuntime';
 import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
 import { usePeopleDiscoveryAvailabilityCatalog } from '@/people-discovery/hooks/usePeopleDiscoveryAvailabilityCatalog';
 import { useMemberDiscoveryRoster } from '@/people-discovery/hooks/useMemberDiscoveryRoster';
@@ -135,7 +136,7 @@ export const useListDiscoveryCrewsCategoryAugment = ({
     const availableCount = markedCount + lookingCount;
     const everyoneCount = memberRoster.loading ? null : memberRoster.directory.length;
     return {
-      buddies: buddiesCount,
+      friends: buddiesCount,
       available:
         memberRoster.loading || memberAvailability.loading || exploreCatalogLoading ? null : availableCount,
       everyone: everyoneCount,
