@@ -83,7 +83,7 @@ Shared types: `GroupWallPostPolicy`, `SocialGroupChatPreviewDTO`, `GroupWallRepl
 | **Outing crew** | `kind: outing_crew`, `activityId` | `/chat?group=` (+ optional `activity=`) | Confirmed participants | Kids on **`activity_requests` / `partyMembers`** when profile complete (`assertKidProfileComplete`) |
 | **Community** | *Deferred* — `community_groups`, not `member_groups` | TBD | TBD | TBD |
 
-**Teams are not chat-first** — roster + optional wall for adults; **Crews tab** (`/list?listCat=people`, hub segment) is discovery + **My crew** (Friends `/buddies`, Teams `/groups`). Member-facing **“Social”** label is retired in favor of **My crew** / **Teams** (`productNorthStar.ts`).
+**Teams are not chat-first** — roster + optional wall for adults; **Find crew** list (`/list?listCat=people`) is discover browse (People · Professional · Community lanes); **My crew** lives on **`/crews`** and **`/groups`** (inbound `/buddies` → `/crews`). Member-facing **“Social”** label is retired in favor of **My crew** / **Teams** (`productNorthStar.ts`).
 
 **Kid roster (team):** `POST …/kids` accepts **name-only** roster (`rosterOnly`) or full trip fields; `profileComplete` / `PATCH` completes trip details before outing attach.
 
