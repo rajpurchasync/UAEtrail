@@ -2,7 +2,7 @@ import { ChevronRight, MapPin } from 'lucide-react';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { EnvironmentImage } from '../../components/ui/EnvironmentImage';
 import { SecureAvatar } from '../../components/ui/SecureAvatar';
-import { DiscoveryCardTypeIcon } from '../../explore/ui/DiscoveryCardTypeIcon';
+import { DiscoveryCardTypeIcon } from './discoveryListRuntime';
 import { EXPLORE_LIST_ROW, EXPLORE_TYPE } from '../../config/exploreTheme';
 import { resolveBrowsePosterCoverUrl } from './browsePosterCover';
 import { BrowseItemLink } from './BrowseItemLink';

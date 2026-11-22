@@ -14,3 +14,19 @@ export {
 } from '../../explore/useExplorePublishedAreas';
 
 export { exploreCatalogHubLabelFromExploreItem as browseCatalogHubLabelFromExploreItem } from '../../explore/exploreCatalogHubLabel';
+
+export { EXPLORE_RIDESHARE_AVAILABLE_BADGE } from '../../explore/exploreRequirementBadges';
+
+export type { ExploreSearchScopeCounts } from '../../explore/exploreBrowseTaxonomy';
+
+export { DiscoveryCardTypeIcon } from '../../explore/ui/DiscoveryCardTypeIcon';
+
+export { ExploreJoinOverlays } from '../../explore/ui/ExploreJoinOverlays';
+
+export {
+  buildMapPeekReturnPath,
+  mapPeekDetailNavState,
+  type MapPeekDetailNavState,
+} from '../../explore/mapPeekDetailNavState';
+
+export { useExploreMapChrome } from '../../explore/ExploreMapChromeContext';

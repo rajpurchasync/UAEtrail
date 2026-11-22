@@ -46,6 +46,31 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(count).toBeLessThanOrEqual(max);
   });
 
+  it('DISC-03-06: browse leaves import explore only via discoveryListRuntime', () => {
+    const exempt = new Set([
+      'src/list/browse/discoveryListRuntime.ts',
+      'src/list/browse/listDiscoverySearchCreateFlowStub.ts',
+      'src/list/browse/useListDiscoveryUrlState.ts',
+    ]);
+    const violations: string[] = [];
+    const browseRoot = join(process.cwd(), 'src/list/browse');
+    const walk = (dir: string) => {
+      for (const ent of readdirSync(dir, { withFileTypes: true })) {
+        const full = join(dir, ent.name);
+        if (ent.isDirectory()) walk(full);
+        else if (/\.(ts|tsx)$/.test(ent.name) && !ent.name.endsWith('.test.ts')) {
+          const rel = relative(process.cwd(), full).replace(/\\/g, '/');
+          if (exempt.has(rel)) continue;
+          const content = read(rel);
+          if (/from ['"](?:\.\.\/)+explore\/exploreMapTopicUrlParams['"]/.test(content)) continue;
+          if (/from ['"](?:\.\.\/)+explore\//.test(content)) violations.push(rel);
+        }
+      }
+    };
+    walk(browseRoot);
+    expect(violations).toEqual([]);
+  });
+
   it('DISC-03-05: verify:discovery-graph wired', () => {
     expect(read('package.json')).toMatch(/verify:discovery-graph/);
     expect(existsSync(join(process.cwd(), 'scripts/verify-discovery-graph.mjs'))).toBe(true);

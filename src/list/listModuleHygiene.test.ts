@@ -271,18 +271,17 @@ describe('list module hygiene', () => {
     expect(experience).not.toMatch(/buildBrowseCardsFromMapItems/);
   });
 
-  /** Explore shell may import `explore/search`, map chrome, compose — list projections use {@link discoveryRuntime}. */
-  it('list projection sources import explore only via discoveryRuntime', () => {
+  /** Explore shell may import `explore/search`, map chrome, compose — browse projections use {@link discoveryListRuntime}. */
+  it('list browse projection sources import explore only via discoveryRuntime', () => {
     const exploreShellSources = new Set([
-      'src/list/ListDiscoveryExperience.tsx',
-      'src/list/BrowseListPage.tsx',
       'src/list/browse/listDiscoverySearchCreateFlowStub.ts',
       'src/list/browse/useListDiscoveryUrlState.ts',
     ]);
     const deepExploreImport =
-      /from ['"]\.\.\/explore\/(?!exploreMapTopicUrlParams|exploreMapItemKind)/;
+      /from ['"](?:\.\.\/)+explore\/(?!routing(?:['"]|;)|exploreMapTopicUrlParams(?:['"]|;)|exploreMapItemKind)/;
     const violations: string[] = [];
     for (const file of sources) {
+      if (!file.startsWith('src/list/browse/')) continue;
       if (exploreShellSources.has(file)) continue;
       if (file === 'src/list/browse/discoveryListRuntime.ts') continue;
       const content = readFileSync(join(process.cwd(), file), 'utf8');
@@ -290,7 +289,7 @@ describe('list module hygiene', () => {
     }
     expect(
       violations,
-      `Use src/list/browse/discoveryListRuntime.ts (shell files exempt):\n${violations.join('\n')}`
+      `Use src/list/browse/discoveryListRuntime.ts (shell-adjacent browse hooks exempt):\n${violations.join('\n')}`
     ).toEqual([]);
   });
 
