@@ -173,7 +173,7 @@ Trusted fields (year goal, upcoming list, etc.) appear only on **trusted** expos
 
 **Per-field visibility (`profile.fieldPrivacy` + `dateOfBirthShare`):** After the global `profileVisibility` gate, each card block uses `hidden` | `friends` (trusted exposure) | `friends_of_friends` (network one hop) | `public` (signed-in public card). Date of birth on the card is `dateOfBirthShare` (`hidden` | birth year | full date × friends / friends of friends / public). Includes bio, city, languages, stats, badges, trip history, year goal, availability, upcoming outings, cars, and optional plates. **City / start area** hidden also redacts directory city labels and availability `areaId` / region, and blocks area-filtered Find crew matching (others will not see you as going from their area). Hosts still receive gender/DOB on join requests when the outing has women-only or age rules — separate from card privacy. Settings: `/settings` (privacy sections) → **Field visibility** + **Friends list on profile** (`friendsListShare`: Only me · Friends & crew · Friends of friends · Mutual friends) + **Find crew** (`findCrewVisibility`: Friends only · Friends of friends · Hidden; default friends of friends) for Looking / Free / Everyone / seeking map pins; API `PATCH /me/profile/field-privacy`. **Common follows** on `/member/:id` are shown to signed-in visitors regardless of friends-list setting (`GET /member/:userId/social-graph`, optional `?parts=friends` or `?parts=commonFollows`). **Bundled profile:** `GET /member/:userId/profile?include=socialGraph,upcoming,past` returns profile `data`, `viewerAccess`, and optional `socialGraph`, `upcomingActivities`, `pastActivities` in one response (legacy `?socialGraph=1` still supported). Adjacency lists cache in-process and in Redis when `REDIS_URL` is set.
 
-**One profile page:** Every link to another member uses **`/member/:userId`** (`MemberProfile`) — friends list (`/buddies`), people browse panel, activity roster, chat. Browse entry may add `source=` / `discover=1` for quota and analytics; **layout is the same**. Lens × who may open: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §3.2.2.
+**One profile page:** Every link to another member uses **`/member/:userId`** (`MemberProfile`) — friends list (`/crews`), find-crew discover rows, activity roster, chat. Browse entry may add `source=` / `discover=1` for quota and analytics; **layout is the same**. Lens × who may open: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §3.2.2.
 
 **Naming (code vs UI — pick one term per layer, do not synonym-swap in types):**
 
@@ -181,12 +181,29 @@ Trusted fields (year goal, upcoming list, etc.) appear only on **trusted** expos
 |-------|-------------------|-----------------|
 | Account | **member**, `userId`, `/users/:id` | Member, host name on card |
 | Public card page | **profile**, `MemberProfile`, `memberProfilePath`, `GET …/public-profile` | Profile, “View profile” |
-| Map/list people panel | **people browse**, `CrewsBrowsePanel`, `peopleTab` | “Find your crew”, tab labels |
-| List category handoff | `listCat=people`, URL `buddies=` (legacy param name) | **Crews** (category circle only) |
-| Relationship | **buddy** / `social_graph`, `accepted_buddy` | Friends |
+| Find crew discover | **`crew-discovery`**, `crewBrowseLane`, `peopleTab` / `peopleFacet` URL params | People · Professional · Community; Recommended + facet pills |
+| List category handoff | `listCat=people` | **Crews** (triad pill / list category) |
+| My crew (social) | **`/crews`**, **`/groups`**, `social_graph`, wire `/me/buddies` | My Crews, Friends, Teams |
+| Relationship | **buddy** / `accepted_buddy` (wire) | Friends |
 | Directory quota | **member discovery**, `discover=1`, `memberDiscoverProfilePath` | Connect / discover |
 
-**Browse — member people (not chat):** Map People panel (`view=people`; legacy `view=social`) and **My Crews** (`/crews`) share `CrewBrowseTabContent` (`CrewsBrowsePanel` on map). **Network roster:** `GET /me/member-discovery/network` — `segment=buddies` (UPL Friends; alias `friends`) + followed; pill via `GET /me/member-discovery/network/preview`. **Discovery roster:** `GET /me/member-discovery/roster`; **directory:** `GET /me/member-discovery/browse`; **quota:** `GET /me/member-discovery/quota`; **search:** `GET /me/member-discovery/search`. Profile opens `GET /member/:userId/profile?from=discover` (**3 unique profiles / 30d**; Pro unlimited). **Chat** is [`COMMUNICATION.md`](./COMMUNICATION.md) (`/messages`, `/chat/*`). **Join me (participation):** `GET/POST /activities/:id/invites` — in-app nudge only; invitee still RSVPs or requests to join; host approval when required. See [`NAVIGATION.md`](./NAVIGATION.md) § Browse — people & crew and [`API_ROUTING.md`](./API_ROUTING.md).
+**Find crew browse (discover — not My Crews):** Primary surface = **list search** (`/list?listCat=people`, desktop drawer `list=1&listCat=people`). State spine: `src/crew-discovery/crewBrowseState.ts` (`CrewBrowseLane` + `CrewPeopleFacet`). Optional map dock: `view=people` + `CrewsBrowsePanel` when explore opens without `list=1` (legacy desktop rail). **My Crews** (`/crews`, `/groups`) is the **social hub** — requests, following, teams; it does **not** replace find-crew directory browse.
+
+| Param | Values | Default (omit from URL) |
+|-------|--------|-------------------------|
+| `peopleTab` | `people` · `professional` · `community` | `people` |
+| `peopleFacet` | `recommended` · `friends` · `available` · `everyone` | `recommended` (People lane only) |
+
+| Lane | Facet | Data |
+|------|-------|------|
+| People | Recommended | Client `buildRecommendedCrewFeed` (friends going + availability + catalog teaser + directory cap) |
+| People | Friends | `GET /me/member-discovery/roster` (going segment) |
+| People | Available | Member availability + fixed intent catalog; sub-lens `open=` |
+| People | Everyone | `GET /me/member-discovery/browse` + quota |
+| Professional | — | Guide/porter directory + agency rows (`source: agency`) |
+| Community | — | UI shell; `FEATURE_FLAGS.communityDiscover` until `MIG-COMMUNITY-DISCOVER` API |
+
+Legacy inbound `peopleTab=hub|buddies|going|connect|available|looking` maps to lane + facet in `productUrlInbound` — **never emit** `hub`. Profile opens `GET /member/:userId/profile?from=discover` (**3 unique profiles / 30d**; Pro unlimited). **Chat** is [`COMMUNICATION.md`](./COMMUNICATION.md) (`/chat/*`). **Join me (participation):** `GET/POST /activities/:id/invites`. See [`NAVIGATION.md`](./NAVIGATION.md) § Browse — people & crew and [`API_ROUTING.md`](./API_ROUTING.md).
 
 **Profile view analytics (shipped):** views recorded on `GET /member/:userId/profile`; owners with host Pro/business see `GET /me/profile-view-stats`.
 

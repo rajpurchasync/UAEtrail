@@ -16,7 +16,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 | **Chat** | `/chat` | Threads |
 | **Profile** | `/profile`, `/settings` | Identity; **Dashboard** → **`/operator`** (host manage — migration in progress) |
 
-**Mobile five-tab** (`mobileFiveTabNav`) **splits Explore**: **Trips** · **Places** · **Crews** (tab home = discover list `listCat=people`, not `/buddies`) · **Plans** · **Chat**. **Discover crews** ≠ **My Crews** (`/buddies` via card / desktop Social). Alignment: program **HOST-SURFACE-UNIFY** + **PR-C** in canonical plan.
+**Mobile five-tab** (`mobileFiveTabNav`) **splits Explore**: **Trips** · **Places** · **Crews** (tab home = discover list `listCat=people`, not `/crews`) · **Plans** · **Chat**. **Discover crews** ≠ **My Crews** (`/crews`, `/groups`). Alignment: program **HOST-SURFACE-UNIFY** + **PR-C** in canonical plan.
 
 ## Three surfaces
 
@@ -42,7 +42,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Outing history + map:** `/profile/history` — joined / hosted / self **past** outings; **History · My Map** tabs (`PROFILE_HISTORY_MAIN_TABS`). Journey map at `/profile/history/map`. Legacy `/profile/my-trips` redirects; `/trips`, `/trips/map`, `/activities` → `/plan` or history via `resolveInboundTripsHubRedirect`.
 - **Want to go (wishlist):** `/plan?view=plans&tab=wishlist` (`planWishlistTabPath()` / `planSavedPath()`). Catalog venues (`locationId`) sit with **Goals** on that tab and compose onto the journey map. Legacy `lens=saved|goals` and `/profile/wishlist` normalize on load. Profile shows a teaser only — not a second full list ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §6.2 · `src/plan/`).
 - **Cars & safety (profile hub):** **My cars** (`/profile/vehicles`, add/edit under that path) and **Safety & emergency** (`/settings/safety`) open from `/profile`, not the settings index. **App settings:** `/settings` → **Display** (theme, 12/24-hour time, metric/imperial — saved on this device; signed-out pages follow the guest theme, which starts as the system theme), Account, Privacy, **Notifications** (`/settings/notifications` — history, preferences, saved map alerts; legacy `/notifications*` redirects); **iPhone & iPad** (`#ios-install`, Safari steps) and **Android** (`#android-install`, Samsung Internet / Chrome manual steps — no in-app install prompt). Back returns to the screen that opened the page (profile, settings, or the rideshare host step) and restores that screen’s scroll position and the control that was used.
-- **Desktop/tablet shell (`md+`, `src/config/desktopNav.ts`):** Resizable left `DesktopSideNav` for **guests and members**. **Go:** one **Explore** (`/explore`). On desktop the browse list (thumbnails or rows) sits on the left of the map and is resizable and collapsible; outing filters live in that panel. Collapsing it leaves the applied filters visible, with **Show browse** to open it again. Signed-in **My Plans** · Chat. Guests see Explore + Chat only in Go. **People** (signed in): **Find Crew** (map `view=people` — seeking pins beside the crew list, without outing filters) and **Social** (Friends `/buddies` + Groups `/groups` + people catalog `/list?listCat=people`). **Map:** Search · Post. **You:** outing history (`/profile/history`, past trips — not upcoming My Plans) and the rest of your hub links; **notification history** lives under **Settings** (`/settings/notifications`), reached from the header **bell** (popover footer) or the settings hub — not a duplicate sidebar row. Hosts get **Hosting schedule** under **Hosting**. Slim `Header` — members use the account menu; guests use **Sign in / Join free**. Gated actions open a **right-rail feature explainer** (not a centered “Oops” popup) with sign up / log in. Anonymous **`GET /explore/map`** returns a **preview catalog** (max **3 outings** and **3 places**). Map search omits **People** until signed in. Hosts/operators with `canAccessPublishingWorkspace` get **Hosting schedule** (`planHostedSchedulePath()`) under **Hosting** — not a second My Plans. Map pin summary docks left on desktop. Mobile bottom nav stays Explore · My Plans · Chat.
+- **Desktop/tablet shell (`md+`, `src/config/desktopNav.ts`):** Resizable left `DesktopSideNav` for **guests and members**. **Go:** one **Explore** (`/explore`). On desktop the browse list (thumbnails or rows) sits on the left of the map and is resizable and collapsible; outing filters live in that panel. Collapsing it leaves the applied filters visible, with **Show browse** to open it again. Signed-in **My Plans** · Chat. Guests see Explore + Chat only in Go. **People** (signed in): **Find Crew** (`exploreCrewsPath({ list: false })` → map `view=people` docked rail, or map **Crews** pill / list handoff → `list=1&listCat=people` drawer — see § Browse — people & crew) and **My Crews** (`/crews` + `/groups`; inbound `/buddies` → `/crews`). Full-screen discover list: `/list?listCat=people`. **Map:** Search · Post. **You:** outing history (`/profile/history`, past trips — not upcoming My Plans) and the rest of your hub links; **notification history** lives under **Settings** (`/settings/notifications`), reached from the header **bell** (popover footer) or the settings hub — not a duplicate sidebar row. Hosts get **Hosting schedule** under **Hosting**. Slim `Header` — members use the account menu; guests use **Sign in / Join free**. Gated actions open a **right-rail feature explainer** (not a centered “Oops” popup) with sign up / log in. Anonymous **`GET /explore/map`** returns a **preview catalog** (max **3 outings** and **3 places**). Map search omits **People** until signed in. Hosts/operators with `canAccessPublishingWorkspace` get **Hosting schedule** (`planHostedSchedulePath()`) under **Hosting** — not a second My Plans. Map pin summary docks left on desktop. Mobile bottom nav stays Explore · My Plans · Chat.
 - **Hamburger (header, below `lg`):** next to the notifications bell on tab chrome and tablet `Header` — Explore, **My Plans**, **Social**, Outing history, Chat, Profile/Signup, **Install app** → Android (Chrome and Edge `beforeinstallprompt` when the browser offers it; otherwise the settings steps) / iOS (deep-link to the matching settings hash). **Platform admins** (`platform_admin`) also see **Admin console** → `/admin/overview` on consumer surfaces (admin drawer on `/admin/*`). Their identity, contact, bio, units, and time format live at **`/admin/account`**. Full **`/profile`** hub (privacy, cars, history, languages, and the rest) is after **Switch to visitor**. Guests do not see My Plans, Social, or Outing history in the drawer. Notifications are the bell only, not in the drawer.
 - **View public card (eye):** opens `/member/:userId` — preview should match what **other signed-in members** see (`public` visibility), not the owner’s full hub (API P3).
 - **Pro membership:** `/profile/pro-membership` — Individual, Business (subtype required), or Partner paths ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)).
@@ -121,10 +121,10 @@ Grouped nav (`ADMIN_NAV_GROUPS` / flat `ADMIN_LINKS`). Legacy `/admin/overview` 
 | `/admin/overview` | — | — | Redirect → `/admin/inbox` |
 | `/admin/login` | `SignIn` | — | Staff sign-in entry |
 
-### Friends (`/crews`)
+### My Crews — friends (`/crews`)
 
-- Consumer label **Friends** on **My Crews** (`MY_CREWS_PATH`; inbound `/buddies` → `/crews`); tabs `?tab=friends|requests|following`.
-- **Explore map people panel → Followed:** sub-segments **People** (member follows), **Places** and **Hosts & operators** (entity follows from map/profile); URL `followedKind=places|events`. (Panel URL `view=people`; legacy `view=social` — browse people, not chat; see § Browse — people & crew below.) Private **wishlist** venues live on **Plan → Want to go** (`planSavedPath()`; `/profile/wishlist` redirects).
+- Product label **My Crews** / **Friends** on **`/crews`** (`MY_CREWS_PATH`; inbound `/buddies` → `/crews`); tabs `?tab=friends|requests|following`. **Find crew** discover (list + map panel) is separate — § Browse — people & crew below; not the `/crews` roster hub.
+- Private **wishlist** venues live on **Plan → Want to go** (`planSavedPath()`; `/profile/wishlist` redirects).
 
 ### Chat (`/chat`)
 
@@ -141,12 +141,12 @@ Canonical detail: **[`COMMUNICATION.md`](./COMMUNICATION.md)**. Legacy `/message
 Product label **Teams** (`member_groups` with `kind: team` — roster-first, not discoverable). Optional **team chat** — adults only on the wall; outing crew is `kind: outing_crew`, not a team.
 
 - **List + manage:** create a **team** — **name**, **type label** (Family · Friends · Colleagues), invite adults; **Family** teams may add **children under 12** on the roster (`?section=members`, optional `focus=invite|add-kid`). Kid rows are trip-only (no team wall). **Edit group** (`?section=edit`) for name, image, delete. Chat **Permissions** (who can post) lives in the thread gear sheet — not Edit group. `groupsManagePath()`; legacy `?section=invite|kids|settings` and `?tab=` redirect.
-- **From Crews tab:** `?from=crews` on `/groups` or `/buddies` → back returns to `/list?listCat=people` hub (`crewsHomePath()`).
+- **From discover list:** `?from=crews` on `/groups` or `/crews` → back returns to `/list?listCat=people` (`crewsHomePath()`).
 - **Chat:** hub **Team chat** → `/chat?group=<id>` (single chat surface).
 
-### Crews tab home (`/list?listCat=people`, hub segment)
+### Find crew list home (`/list?listCat=people`)
 
-Mobile five-tab **Crews** — discovery rails + **My crew** card (signed in): **Friends** (`/crews?from=crews`), **Teams** (`/groups?from=crews`). Not the chat inbox.
+Mobile five-tab **Crews** opens **list search** first (`listDiscoveryPath({ listCat: 'people' })`). **Top lanes** (`peopleTab`): People (default) · Professional · Community (feature-gated). **People** facet pills (`peopleFacet`): Recommended (default) · Friends · Available · Everyone. Signed-in **My crew** shortcuts: **Friends** (`/crews?from=crews`), **Teams** (`/groups?from=crews`). Not chat.
 
 **Communities** (discoverable clubs) — planned `MIG-COMMUNITY-DISCOVER`; not private **Teams** on `/groups`.
 
@@ -239,7 +239,7 @@ Map pill **Crews** (see `exploreCrewsCopy.ts`); opens **list search** — mobile
 | `professional` | — | Guide/porter directory + **agency** map pins (`source: agency`) |
 | `community` | — | Planned `MIG-COMMUNITY-DISCOVER` (feature-gated) |
 
-Cards show city, outings attended, and a subtle upcoming outing hint (link opens activity on map). **Friends → Host an outing** opens compose (`explorePlanWithBuddyPath`). Profile quick launcher: **People** (this panel), **Friends** (`/buddies`), **Messages** (chat). **Join me** on activity detail (`ActivityInviteLauncher`). APIs: [`API_ROUTING.md`](./API_ROUTING.md) § Member people reads (browse).
+Cards show city, outings attended, and a subtle upcoming outing hint (link opens activity on map). **Friends → Host an outing** opens compose (`explorePlanWithBuddyPath`). Profile quick launcher: **People** (find crew), **Friends** (`/crews`), **Messages** (chat). **Join me** on activity detail (`ActivityInviteLauncher`). APIs: [`API_ROUTING.md`](./API_ROUTING.md) § Member people reads (browse).
 
 ## Explore FAB (+)
 
@@ -358,8 +358,8 @@ Canonical paths only in **new UI**. Bookmark aliases mount in `src/App.tsx` and 
 | **Agency / partner** | `/agency`, `/partner` | `EntityPublicDetailShell` — **About · Outings · Contact** (`?tab=`) | Individual Pro → `/member/:userId` |
 | **Member (person)** | `/member/:userId` | Profile card — not a tenant storefront | — |
 | **Goals** | — | Embedded on **Plan → Wishlist** (`planWishlistTabPath()`) | No `/goals` route |
-| **People (discovery)** | Explore `view=people` | Map panel **Find your crew** — **Available · Friends going · Everyone** | Legacy `/people` → explore people browse |
-| **People (friends)** | `/buddies` | **Friends** — requests · following (not the same as map People panel) | — |
+| **Find crew (discover)** | `/list?listCat=people`, `/explore?list=1&listCat=people`, legacy `view=people` | **People / Recommended** + facet pills; lanes **Professional** · **Community** (gated) | Legacy `/people` → explore; inbound `peopleTab=hub|going|…` → lane + facet |
+| **My Crews (friends)** | `/crews` | Friends · requests · following (not find-crew directory) | Inbound `/buddies` → `/crews` |
 | **My Map** | `/profile/history/map` | Journey map under **history** stack | Not a root tab |
 | **Explore / Plan / Chat** | see above | Discovery and commitments — **do not** force entity-detail template | — |
 
@@ -371,7 +371,7 @@ Canonical paths only in **new UI**. Bookmark aliases mount in `src/App.tsx` and 
 
 ## Copy
 
-User-facing labels: **Explore** = map-first product home (`/explore`). On desktop, browse (list or thumbnails) is the left panel of that view, not a second destination. **People** groups **Find Crew** and **Social** (friends, groups, and the people catalog). Internal URL panel name `venues` stays in query strings only.
+User-facing labels: **Explore** = map-first product home (`/explore`). On desktop, browse (list or thumbnails) is the left panel of that view, not a second destination. **People** (sidebar) groups **Find Crew** (discover list / map panel) and **My Crews** (`/crews`, `/groups`). Internal URL panel name `venues` stays in query strings only.
 
 ## Connections QA (local / staging seed)
 
@@ -388,9 +388,9 @@ After seed, the API logs a **Connections QA** playbook (buddies, incoming/outgoi
 
 | Scenario | Where |
 |----------|--------|
-| Accept / decline incoming | `/buddies`, `/member/:id` |
-| Cancel outgoing pending | `/buddies` (Sent), `/member/:id` (Cancel request) |
-| Unfriend | `/buddies`, member profile |
+| Accept / decline incoming | `/crews`, `/member/:id` |
+| Cancel outgoing pending | `/crews` (Sent), `/member/:id` (Cancel request) |
+| Unfriend | `/crews`, member profile |
 | Follow alerts | Notifications → **Connections** |
 | Leave friends/family group | `/groups` → **Leave group** (non-owner members) |
 

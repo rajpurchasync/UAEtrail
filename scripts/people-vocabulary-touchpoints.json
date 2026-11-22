@@ -98,8 +98,8 @@
     },
     {
       "id": "P8-docs",
-      "status": "in_progress",
-      "deliverables": ["MEMBER_MODEL", "NAVIGATION", "plan §1.5 surfaces"]
+      "status": "complete",
+      "deliverables": ["MEMBER_MODEL", "NAVIGATION", "plan §1.5 surfaces", "P5d browse tables aligned"]
     },
     {
       "id": "P7-wire-cleanup",

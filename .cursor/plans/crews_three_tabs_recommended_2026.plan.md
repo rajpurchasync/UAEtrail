@@ -231,10 +231,10 @@ No new API in v1 — guard with unit test on ordering/dedupe pure function `buil
 
 ## 12. Acceptance checklist
 
-- [ ] Crews pill opens list search on mobile and desktop  
-- [ ] Default land: **People / Recommended**  
-- [ ] No `hub` segment in URL, UI, or types  
-- [ ] Fixed intents visible on activity map and under People → Available  
-- [ ] Professional shows guides/porters + agencies  
-- [ ] Community tab gated; Teams not in discover  
-- [ ] Guards green; Tier-1 nav table matches code  
+- [x] Crews pill opens list search on mobile and desktop  
+- [x] Default land: **People / Recommended**  
+- [x] No `hub` segment in URL, UI, or types  
+- [x] Fixed intents visible on activity map and under People → Available  
+- [x] Professional shows guides/porters + agencies  
+- [x] Community tab gated; Teams not in discover  
+- [x] Guards green; Tier-1 nav table matches code  

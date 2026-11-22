@@ -143,7 +143,7 @@ Pick a **context id** when changing code; touch registrar + `src/api/domains/*` 
 | compose | `member_availability`, `activities` (hosted) | `PUT /me/availability`, `POST /publishing/activities` | `exploreApi`, `availabilityApi`, `organisationApi` | `src/explore/ui/*` |
 | participation | `activity_requests` (`note`, `hostNote`), `activity_participants`, `activity_invites` | **`POST /activities/:id/requests`** (hosted + rideshare); tenant **`GET /publishing/requests`** (console API, also Plan manage) | `activitiesApi` | Activity detail, Plan manage sheet, `JoinRequestDetail` |
 | *(cross-cut)* | — | `GET /activities/:id` (`viewerAccess`, `myJoinInvite`) | — | **`activity-viewer-access.ts`**, **`activity-invite.ts`** |
-| member_discovery | `member_profile_views` (+ read-only compose from map) | `/me/member-discovery/*` (roster, network, browse, quota, search); profile `?from=discover` | `accountApi` (`getMemberPeopleNetwork*`, discovery roster) | `src/crew-discovery` — Explore **Find crew** panel, list **Buddies** (`listCat=people`), `MemberProfile` discover |
+| member_discovery | `member_profile_views` (+ read-only compose from map) | `/me/member-discovery/*` (roster, network, browse, quota, search); profile `?from=discover` | `accountApi` (`getMemberPeopleNetwork*`, discovery roster) | `src/crew-discovery` — Find crew list (`listCat=people`), map `CrewsBrowsePanel`, `MemberProfile` discover |
 | member_identity | `auth_users` profile | `/me/profile`, `/users/:id` | `accountApi`, `memberApi` | `Profile*`, `src/member/*` |
 | member_publish_capabilities | `tenants`, `tenant_memberships` | **`GET /me/status`** (`profileComplete` + nested `publish`) | `memberApi` | **`useMemberStatus`** |
 | publishing_workspace | + `activities` | `/publishing/*` + `x-organisation-id` | `organisationApi`, `activitiesApi` | `src/pages/publishing/*`, `src/console/*`, `components/activity/*`, `activity/*` |
@@ -162,14 +162,14 @@ Pick a **context id** when changing code; touch registrar + `src/api/domains/*` 
 
 | User question | Bounded context | Surfaces | Not this |
 |---------------|-----------------|----------|----------|
-| Who can I go with? Who’s on an outing? Who’s looking for a crew? | **member_discovery** + **discovery** map | `/explore` People panel (`view=people`), `/list?listCat=people` (**Buddies**), shared `CrewBrowseTabContent` | `/messages`, group walls |
+| Who can I go with? Who’s on an outing? Who’s marked available? | **member_discovery** + **discovery** map | `/list?listCat=people` (primary), explore `list=1&listCat=people` or `view=people` rail; `CrewBrowseTabContent` rows | `/chat`, group walls |
 | Who do I talk to? What did the crew say? | **communication** | `/chat` (**Chat** tab; legacy `/messages` → `/chat`), `/groups` → Message → thread | Explore people panel, roster APIs |
 
 **One member model, two jobs:** browse reads show **relationship + outing status** (friend/following, trip hint, looking-for row, directory card). Chat surfaces use the **social graph** for eligibility but are a separate transport ([`COMMUNICATION.md`](./COMMUNICATION.md)).
 
 **Naming for new code:** prefer `memberDiscovery`, `memberPeople`, `browsePeople` — reserve **social** for `social_graph` mutations and **reviews** (`/reviews` on root router). Guest gate intent `explore-social` means **browse people panel**, not inbox.
 
-**Target consolidation (implementation):** one map-enriched **member people read** with views (`networkRoster`, `discoveryRoster`) behind stable routes; UI labels “Buddies” / map panel can diverge from code names.
+**Target consolidation (implementation):** one map-enriched **member people read** with views (`networkRoster`, `discoveryRoster`) behind stable routes; UI label **Crews** / **Find crew** vs wire `listCat=people` and `peopleTab` can diverge from code module names (`crew-discovery`).
 
 ---
 
@@ -376,13 +376,13 @@ Canon table: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) (Discovery UI file
 | **Plan & commitments** | `/plan` | `ConsumerShell` | Embeds manage sheets; may deep-link L3 |
 | **Communication** | `/chat`, `/messages`, `/groups` | Tab chrome / inbox | No peek; people **names** link to `/member` or storefront |
 | **Entity detail (L3)** | `/activity`, place URLs, `/area`, `/shop`, org slugs | `MobileDetailShell` / `EntityPublicDetailShell` | L3 — parity with L2 via `resolvePeekDetailAccess` |
-| **Member & people browse** | `/member/:id`, Explore `view=people`, `/list?listCat=people`, `/buddies` | `ConsumerShell` (profile) · `CrewsBrowsePanel` (discover) | **People rows** = own card VM (`memberPeople*`); seeking tab = **activity L1** |
+| **Member & find crew browse** | `/member/:id`, `/list?listCat=people`, explore `list=1&listCat=people` or `view=people` | `ConsumerShell` (profile) · `ListCrewsExplorer` · `CrewsBrowsePanel` (map rail) | **People rows** = `memberBrowseRowModel` / crew-discovery VM; fixed intents = availability L1 |
 | **Publishing workspace** | `/publishing/*` | `ConsoleShell` / `DashboardLayout` (tenant) | Preview may embed consumer L3 — **manage** is separate |
 | **Platform admin** | `/admin/*` | `DashboardLayout` + `ADMIN_LINKS` | **Never** reuse `MapPeekShell` or consumer detail footers |
 
 #### 6.2.2 Profile & publisher identity matrix
 
-One **person account**; **one consumer profile page** (`/member/:userId` — `MemberProfile` / `MemberProfileView`). `/buddies`, people browse, host rows, and chat link here; browse **lens** is query only (`memberProfilePath(…, { lens })`). Full lens × audience table: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §3.2.2. Capabilities (`GET /me/status` → `publish`) gate **organize/workspace** — not profile read ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)).
+One **person account**; **one consumer profile page** (`/member/:userId` — `MemberProfile` / `MemberProfileView`). `/crews`, find-crew browse, host rows, and chat link here; browse **lens** is query only (`memberProfilePath(…, { lens })`). Full lens × audience table: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §3.2.2. Capabilities (`GET /me/status` → `publish`) gate **organize/workspace** — not profile read ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)).
 
 | Viewer intent | Canonical route | Primary module | `viewerAccess` / policy |
 |---------------|-----------------|----------------|-------------------------|
@@ -396,7 +396,7 @@ One **person account**; **one consumer profile page** (`/member/:userId` — `Me
 | **Individual Pro** | `/member/:userId` | `MemberProfile` | Same person card + Pro membership — no `/guide` storefront |
 | **Agency / partner** | `/agency/:slug`, `/partner/:slug` | Same | Workspace team ≠ consumer buddy graph |
 | **Shop brand** | `/shop/:id` | `ShopPublicPage` | `shop_profiles` context |
-| **Available / roster** | Explore people tabs `available`, `going`, `connect` | `CrewBrowseTabContent` | Roster APIs (`member_discovery`); **not** full L3 until tap through |
+| **Available / roster / directory** | Find crew facets `available`, `friends`, `everyone` (`peopleFacet`) | `CrewBrowseTabContent` | Roster + browse APIs (`member_discovery`); **not** full L3 until tap through |
 | **Owner preview** | Eye from profile / console | Consumer L3 with `preview` / manage affordances | Same wire as public; extra actions only in workspace |
 
 **Target:** One **member browse row** projection (directory / availability / network roster) shared by `CrewsBrowsePanel` and list `listCat=people` — distinct from **`DiscoveryCardModel`** (map catalog entities). Keep **member** for person ids and profile routes; **people** for the browse surface name only.
@@ -412,9 +412,9 @@ One **person account**; **one consumer profile page** (`/member/:userId` — `Me
 | Map pins | `/explore` | L1 `buildDiscoveryCardViewModel` → L2 peek | `pin=` / selection |
 | List explorer | `/list` | Same L1 → thumbnails / list / calendar | Entity routes (back to `/list`) |
 | Header search | Explore search modal | `exploreItemSearch` taxonomy | Entity or filtered explore |
-| People — looking | `peopleTab=looking` | Activity L1 (seeking) | `/activity` |
-| People — network | `going` / `connect` | Network roster VM | `/member`, message |
-| People — available | `available` | Availability + directory VM | `memberProfilePath(id, { lens: 'available' })` — **not** discover quota |
+| Find crew — available | `peopleFacet=available` (+ `open=` sub-lens) | Availability + fixed intent catalog VM | `memberProfilePath(id, { lens: 'available' })` |
+| Find crew — friends | `peopleFacet=friends` | Roster / going VM | `/member`, message |
+| Find crew — everyone | `peopleFacet=everyone` | Directory VM | Discover quota on profile open |
 
 **URL sync:** `explorePath()` ↔ `listDiscoveryPath()` ↔ `exploreBrowseUrlSync` / hydrate — do not add parallel query dialects per surface ([`NAVIGATION.md`](./NAVIGATION.md) § Explore URLs).
 
