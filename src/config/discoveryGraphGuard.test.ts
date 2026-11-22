@@ -6,9 +6,9 @@ const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 
 describe('discoveryGraphGuard (DMCP Phase 3)', () => {
   it('DISC-03-01: list facade exists and re-exports discoveryRuntime', () => {
-    expect(existsSync(join(process.cwd(), 'src/list/discoveryListRuntime.ts'))).toBe(true);
-    const facade = read('src/list/discoveryListRuntime.ts');
-    expect(facade).toMatch(/export \* from '\.\.\/explore\/discoveryRuntime'/);
+    expect(existsSync(join(process.cwd(), 'src/list/browse/discoveryListRuntime.ts'))).toBe(true);
+    const facade = read('src/list/browse/discoveryListRuntime.ts');
+    expect(facade).toMatch(/export \* from '\.\.\/\.\.\/explore\/discoveryRuntime'/);
   });
 
   it('DISC-03-02: discoveryRuntime stays projection barrel (no list imports)', () => {

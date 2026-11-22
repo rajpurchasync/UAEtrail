@@ -511,7 +511,7 @@
       "label": "List projection imports discovery via facade",
       "axis": "A_RBAC",
       "contextId": "discovery",
-      "resolver": { "module": "src/list/discoveryListRuntime.ts", "symbol": "parseExploreAreaSlug" },
+      "resolver": { "module": "src/list/browse/discoveryListRuntime.ts", "symbol": "parseExploreAreaSlug" },
       "note": "No deep ../explore in list leaf modules"
     },
     {

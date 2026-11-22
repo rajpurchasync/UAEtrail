@@ -11,7 +11,7 @@ import {
   filterExploreMapItemsForList,
   type BrowseListFilterState,
 } from './browse/browseListFilters';
-import { useExplorePublishedAreasQuery } from './discoveryListRuntime';
+import { useExplorePublishedAreasQuery } from './browse/discoveryListRuntime';
 import { resolveEffectiveBrowseVenueRegions } from './browse/browseGeoPath';
 
 type UseBrowseListFeedArgs = {

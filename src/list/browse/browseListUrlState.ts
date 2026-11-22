@@ -22,7 +22,7 @@ import {
   serializeTripMapTopicsParam,
   type ExploreActivityDatePreset,
   type MapFilterKey,
-} from '../discoveryListRuntime';
+} from './discoveryListRuntime';
 import type { BrowseListFilterState, BrowsePriceFilter, BrowseWhenFilter } from './browseListFilters';
 import { isBrowseTripTopicKey, type BrowseTripTopicKey } from './browseListTripTopics';
 import { isListVenuePlaceTopicKey } from './listVenuePlaceTopicFilter';

@@ -92,6 +92,13 @@ describe('listBrowseNamingGuard', () => {
     expect(read('src/list/explorer/ListExplorerSortControl.tsx')).toMatch(/browse\/listBrowseSort/);
   });
 
+  it('BROWSE-NAME-01p: list discovery runtime facade lives under browse', () => {
+    expect(existsSync(join(process.cwd(), 'src/list/browse/discoveryListRuntime.ts'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/list/discoveryListRuntime.ts'))).toBe(false);
+    expect(read('src/list/browse/discoveryListRuntime.ts')).toMatch(/export \* from '\.\.\/\.\.\/explore\/discoveryRuntime'/);
+    expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/browse\/discoveryListRuntime/);
+  });
+
   it('BROWSE-NAME-01o: browse filters + URL state live under browse', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/browseListFilters.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/browse/browseListUrlState.ts'))).toBe(true);

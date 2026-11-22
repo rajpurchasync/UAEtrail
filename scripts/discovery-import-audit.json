@@ -2,7 +2,7 @@
   "version": 1,
   "dmcpPhase": 3,
   "generated": "2026-11-22",
-  "description": "Cross-import counts from list/discovery/* into sibling folders. Prefer src/list/discoveryListRuntime.ts over deep explore/* paths.",
+  "description": "Cross-import counts from list/discovery/* into sibling folders. Prefer src/list/browse/discoveryListRuntime.ts over deep explore/* paths.",
   "sourceRoots": [
     "src/list",
     "src/discovery",
@@ -12,8 +12,7 @@
   ],
   "matrix": {
     "src/list": {
-      "..": 142,
-      "discoveryListRuntime": 8,
+      "..": 146,
       "peopleListBrowseUrl": 2,
       "ui": 4,
       "listFeedCtaCopy": 1,
@@ -22,7 +21,7 @@
       "config": 7,
       "content": 4,
       "components": 1,
-      "explore": 16,
+      "explore": 12,
       "styles": 1,
       "discovery": 10,
       "listChromeTheme": 11,
@@ -71,8 +70,7 @@
     }
   },
   "byTarget": {
-    "..": 191,
-    "discoveryListRuntime": 8,
+    "..": 195,
     "peopleListBrowseUrl": 2,
     "ui": 4,
     "listFeedCtaCopy": 1,
@@ -81,7 +79,7 @@
     "config": 10,
     "content": 7,
     "components": 5,
-    "explore": 27,
+    "explore": 23,
     "styles": 1,
     "discovery": 14,
     "listChromeTheme": 11,
@@ -107,8 +105,8 @@
   },
   "limits": {
     "maxListExploreImports": 25,
-    "listFacade": "src/list/discoveryListRuntime.ts"
+    "listFacade": "src/list/browse/discoveryListRuntime.ts"
   },
-  "listExploreImports": 16,
+  "listExploreImports": 12,
   "canonicalRuntime": "src/explore/discoveryRuntime.ts"
 }

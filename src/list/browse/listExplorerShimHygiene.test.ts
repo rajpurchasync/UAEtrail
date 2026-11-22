@@ -49,6 +49,7 @@ const RETIRED_BROWSE_SHIMS = [
   'src/list/browseListFilters.test.ts',
   'src/list/browseListUrlState.ts',
   'src/list/browseListUrlState.test.ts',
+  'src/list/discoveryListRuntime.ts',
   'src/list/explorer/listExplorerDateSections.ts',
   'src/list/explorer/listExplorerDateSections.test.ts',
   'src/list/explorer/listExplorerBucket.ts',

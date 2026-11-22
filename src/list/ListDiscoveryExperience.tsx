@@ -19,7 +19,7 @@ import {
   useExplorePublishedAreasQuery,
   type ExploreActivityDatePreset,
   type ExploreSearchScopeKey,
-} from './discoveryListRuntime';
+} from './browse/discoveryListRuntime';
 import { useBrowseListFeed } from './useBrowseListFeed';
 import { useListDiscoveryUrlState } from './useListDiscoveryUrlState';
 import { BrowseListCreateFab } from './ui/BrowseListCreateFab';

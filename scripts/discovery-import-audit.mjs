@@ -66,14 +66,14 @@ for (const relRoot of SOURCE_ROOTS) {
 const listExplore = matrix['src/list']?.explore ?? 0;
 const limits = {
   maxListExploreImports: 25,
-  listFacade: 'src/list/discoveryListRuntime.ts',
+  listFacade: 'src/list/browse/discoveryListRuntime.ts',
 };
 
 const report = {
   version: 1,
   dmcpPhase: 3,
   generated: new Date().toISOString().slice(0, 10),
-  description: 'Cross-import counts from list/discovery/* into sibling folders. Prefer src/list/discoveryListRuntime.ts over deep explore/* paths.',
+  description: 'Cross-import counts from list/discovery/* into sibling folders. Prefer src/list/browse/discoveryListRuntime.ts over deep explore/* paths.',
   sourceRoots: SOURCE_ROOTS,
   matrix,
   byTarget,

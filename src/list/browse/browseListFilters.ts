@@ -21,7 +21,7 @@ import {
   resolveExploreItemScheduleDate,
   type ExploreActivityDatePreset,
   type ExplorePriceFilter,
-} from '../discoveryListRuntime';
+} from './discoveryListRuntime';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import { mapItemMatchesBrowseMainCategories } from './browseListTaxonomy';
 import type { PlaceKind } from '@uaetrail/shared-types';
