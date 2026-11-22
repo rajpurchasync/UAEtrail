@@ -55,13 +55,22 @@
     },
     {
       "id": "P2-teams-communities",
-      "status": "in_progress",
-      "deliverables": ["Groups Teams copy", "MIG-COMMUNITY-DISCOVER planned", "member-group-model-guard"]
+      "status": "complete",
+      "deliverables": [
+        "Groups Teams copy",
+        "MIG-COMMUNITY-DISCOVER planned (API follow-up)",
+        "member-group-model-guard"
+      ]
     },
     {
       "id": "P3-guides-directory",
-      "status": "in_progress",
-      "deliverables": ["crewsGuides rail", "connect segment", "guide kind vs profileRoleLabel"]
+      "status": "complete",
+      "deliverables": [
+        "crewsGuides rail",
+        "People everyone → connect data lane",
+        "guide kind vs profileRoleLabel",
+        "proKind chips on Professional lane"
+      ]
     },
     {
       "id": "P4-outing-roster",
@@ -93,8 +102,8 @@
     },
     {
       "id": "P6-wishlist",
-      "status": "planned",
-      "deliverables": ["saveWishlistTarget facade", "PVOC-07"]
+      "status": "complete",
+      "deliverables": ["saveWishlistTarget facade", "PVOC-07", "wishlistWriteFacadeGuard"]
     },
     {
       "id": "P8-docs",
@@ -132,7 +141,7 @@
       "id": "surface.find_crew",
       "matrixRows": ["C-06", "C-11", "C-12"],
       "contextIds": ["member_discovery", "discovery", "compose"],
-      "route": "/explore?view=people",
+      "route": "/list?listCat=people",
       "feRoots": [
         "src/crew-discovery/panel/CrewsBrowsePanel.tsx",
         "src/crew-discovery/panel/crewBrowse/CrewBrowseTabContent.tsx",
@@ -163,7 +172,7 @@
       "id": "surface.guides_directory",
       "matrixRows": ["C-04"],
       "contextIds": ["member_discovery", "member_identity"],
-      "route": "/explore?view=people",
+      "route": "/list?listCat=people&peopleTab=professional",
       "feRoots": ["src/list/crews/crewsGuides.ts", "src/crew-discovery/memberBrowseRowModel.ts"],
       "uiLabels": ["UPL_CREW_PILLAR_GUIDES"],
       "wire": ["/me/member-discovery/browse", "profileRoleLabel"]

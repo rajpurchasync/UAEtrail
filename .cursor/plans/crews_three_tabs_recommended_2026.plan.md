@@ -8,7 +8,7 @@
 
 | Layer | Behavior |
 |-------|----------|
-| **Crews map pill** | Opens **list discovery** (`/list?listCat=people` mobile; desktop → `/explore?list=1&view=people` drawer or navigate to `/list` — same as Activities/Venues list handoff). Retire desktop-only `crewsBrowseOpen` map overlay as primary. |
+| **Crews map pill** | Opens **list discovery** (`/list?listCat=people` mobile; desktop → `/explore?list=1&listCat=people` list drawer or `/list` — same as Activities/Venues list handoff). Retire desktop-only `crewsBrowseOpen` map overlay as primary. |
 | **Top tabs (3)** | **People** (default) · **Professional** · **Community** |
 | **People default** | **Recommended** facet + optional **pills** (Friends going · Available · Everyone) — not peer top-level tabs |
 | **Fixed intents** | Always on **Activities map** pins **and** in People → **Available** (open/marked sub-lenses unchanged) |
@@ -81,9 +81,9 @@ Serialize: `peopleFacet` omitted when `recommended` and `peopleTab=people` (or b
 
 ### 2.5 Explore sync
 
-- Mobile: `view=people` + `list=1` → full `/list` (existing).
-- Desktop Crews pill: prefer **`listDiscoveryPathFromExploreSearch`** → `/list` or `explore?list=1&view=people` drawer (match Activities list toggle).
-- Stop writing `crewsBrowseOpen: true` as default open path (deprecate overlay; keep parse for one release if needed).
+- Mobile: `/list?listCat=people` (Crews tab home); legacy `view=people` hydrates to list drawer params.
+- Desktop Crews pill: **`list=1&listCat=people`** on `/explore` (Find Crew sidebar) or **`listDiscoveryPathFromExploreSearch`** → `/list` (match Activities list toggle).
+- Do not use `crewsBrowseOpen: true` as the default open path (mobile overlay parse retained for legacy URLs only).
 
 ---
 
@@ -164,7 +164,7 @@ No new API in v1 — guard with unit test on ordering/dedupe pure function `buil
 **Behavior:**
 
 1. Guest: allow open → list with public slices (remove `if (!isSignedIn) return` or gate only protected facets).
-2. Desktop: navigate/open list drawer with `view=people&list=1` + default lane/facet — **not** `crewsBrowseOpen` full-map replacement.
+2. Desktop: navigate/open list drawer with `list=1&listCat=people` + default lane/facet — **not** `crewsBrowseOpen` full-map replacement.
 3. Mobile: keep `navigate(listDiscoveryPath({ listCat: 'people', crewBrowseLane: 'people', ... }))`.
 
 ---
@@ -238,3 +238,14 @@ No new API in v1 — guard with unit test on ordering/dedupe pure function `buil
 - [x] Professional shows guides/porters + agencies  
 - [x] Community tab gated; Teams not in discover  
 - [x] Guards green; Tier-1 nav table matches code  
+
+---
+
+## 13. Program follow-ups (outside P5d — not blocking)
+
+| Item | Status | Notes |
+|------|--------|--------|
+| `MIG-COMMUNITY-DISCOVER` API + Community tab body | **Planned** | UI tab gated (`FEATURE_FLAGS.communityDiscover`); see `refactor-program.json` |
+| `view=people` → `view=crews` emit rename | **Optional** | Inbound `view=people` still normalizes; list drawer is canonical |
+| P7 wire cleanup (`buddiesApi` rename, `/me/friends` alias) | **Planned** | `people-vocabulary-touchpoints.json` phase P7 |
+| P6 wishlist facade | **Shipped** | `saveWishlistTarget.ts` + `wishlistWriteFacadeGuard` |
