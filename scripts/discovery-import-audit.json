@@ -12,18 +12,14 @@
   ],
   "matrix": {
     "src/list": {
-      "..": 177,
-      "browse": 55,
+      "..": 196,
+      "browse": 73,
       "crews": 9,
       "components": 1,
-      "config": 2,
-      "explore": 10,
+      "config": 1,
+      "explore": 1,
       "styles": 1,
-      "routing": 1,
-      "context": 1,
-      "create": 1,
-      "hooks": 5,
-      "preferences": 1
+      "explorer": 1
     },
     "src/discovery": {
       "discovery": 4,
@@ -56,18 +52,14 @@
     }
   },
   "byTarget": {
-    "..": 226,
-    "browse": 55,
+    "..": 245,
+    "browse": 73,
     "crews": 9,
     "components": 5,
-    "config": 5,
-    "explore": 21,
+    "config": 4,
+    "explore": 12,
     "styles": 1,
-    "routing": 2,
-    "context": 1,
-    "create": 1,
-    "hooks": 5,
-    "preferences": 1,
+    "explorer": 1,
     "discovery": 4,
     "discoveryCardModel": 3,
     "DiscoveryBrowseThumbnailPoster": 1,
@@ -77,12 +69,13 @@
     "utils": 1,
     "lib": 4,
     "member": 3,
-    "peopleBrowseTab": 2
+    "peopleBrowseTab": 2,
+    "routing": 1
   },
   "limits": {
     "maxListExploreImports": 25,
     "listFacade": "src/list/browse/discoveryListRuntime.ts"
   },
-  "listExploreImports": 10,
+  "listExploreImports": 1,
   "canonicalRuntime": "src/explore/discoveryRuntime.ts"
 }

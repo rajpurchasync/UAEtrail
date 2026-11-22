@@ -9,7 +9,7 @@ describe('consumerAppSurfacesDataGuard (in-app hubs — not guest marketing)', (
   it('CTX-APP-01: explore map + list discovery load catalog from hooks', () => {
     expect(read('src/explore/shell/useExploreMapCatalog.ts')).toMatch(/useExploreMap/);
     expect(read('src/list/browse/useBrowseListFeed.ts')).toMatch(/useExploreMap/);
-    expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/useBrowseListFeed/);
+    expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(/useBrowseListFeed/);
     expect(read('src/explore/search/ExploreSearchResults.tsx')).toMatch(/useBrowseListFeed/);
   });
 
@@ -66,7 +66,7 @@ describe('consumerAppSurfacesDataGuard (in-app hubs — not guest marketing)', (
 
   it('CTX-APP-11: browse geo scope hydrates geo tree from registry', () => {
     expect(read('src/list/browse/useBrowseGeoScopeHydration.ts')).toMatch(/fetchGeoTreeIntoStore/);
-    expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/useBrowseGeoScopeHydration/);
+    expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(/useBrowseGeoScopeHydration/);
     expect(read('src/explore/shell/useExploreExperienceModel.ts')).toMatch(/useBrowseGeoScopeHydration/);
     expect(read('src/explore/search/ExploreSearchResults.tsx')).toMatch(/useBrowseGeoScopeHydration/);
   });

@@ -29,9 +29,12 @@ const collectListSources = (): string[] => {
 
 describe('list module hygiene', () => {
   const sources = collectListSources();
+  const listDiscoveryModel = () =>
+    readFileSync(join(process.cwd(), 'src/list/shell/useListDiscoveryExperienceModel.ts'), 'utf8');
 
   it('renders the full-screen explorer instead of poster or map-list rows', () => {
     const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
+    const model = listDiscoveryModel();
     expect(experience).toMatch(/ListExplorer/);
     const explorer = readFileSync(join(process.cwd(), 'src/list/explorer/ListExplorer.tsx'), 'utf8');
     expect(explorer).toMatch(/ListGuestCatalogPreviewNotice/);
@@ -46,10 +49,10 @@ describe('list module hygiene', () => {
       /GuestCatalogPreviewBanner/
     );
     expect(experience).toMatch(/showGuestCatalogPreview=\{!user && !embeddedOnExplore/);
-    expect(experience).toMatch(/countBrowseListFilters/);
-    expect(experience).toMatch(/browseListEntityLinkState/);
-    expect(experience).toMatch(/parseBrowseListBucket/);
-    expect(experience).toMatch(/browseListBucketCategories/);
+    expect(model).toMatch(/countBrowseListFilters/);
+    expect(model).toMatch(/browseListEntityLinkState/);
+    expect(model).toMatch(/parseBrowseListBucket/);
+    expect(model).toMatch(/browseListBucketCategories/);
     expect(experience).not.toMatch(/ListDiscoverHome/);
     expect(experience).not.toMatch(/ListFeedPosterCard/);
     expect(experience).not.toMatch(/ListCategoryDedicatedView/);
@@ -231,10 +234,11 @@ describe('list module hygiene', () => {
 
   it('list discover people category uses member discovery roster', () => {
     const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
+    const model = listDiscoveryModel();
     expect(experience).toMatch(/PeopleBrowsePanel/);
     expect(experience).toMatch(/embedded/);
-    expect(experience).toMatch(/listCat: 'people'/);
-    expect(experience).toMatch(/useMemberDiscoveryRoster/);
+    expect(model).toMatch(/listCat: 'people'/);
+    expect(model).toMatch(/useMemberDiscoveryRoster/);
   });
 
   it('explore map pin pool uses discovery selectors via shell composer', () => {
@@ -247,12 +251,12 @@ describe('list module hygiene', () => {
   });
 
   it('people Looking for uses availability catalog read hook', () => {
-    const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
+    const model = listDiscoveryModel();
     const bundle = readFileSync(
       join(process.cwd(), 'src/people-discovery/hooks/usePeopleDiscoveryBrowseBundle.ts'),
       'utf8'
     );
-    expect(experience).toMatch(/usePeopleDiscoveryAvailabilityCatalog/);
+    expect(model).toMatch(/usePeopleDiscoveryAvailabilityCatalog/);
     expect(bundle).toMatch(/usePeopleDiscoveryAvailabilityCatalog/);
     expect(bundle).not.toMatch(/from ['"]@\/api\/domains\//);
   });
@@ -268,12 +272,17 @@ describe('list module hygiene', () => {
     const feed = readFileSync(join(process.cwd(), 'src/list/browse/useBrowseListFeed.ts'), 'utf8');
     const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
     expect(feed).toMatch(/buildListFeedCards/);
-    expect(experience).not.toMatch(/buildBrowseCardsFromMapItems/);
+    expect(
+      readFileSync(join(process.cwd(), 'src/list/shell/useListDiscoveryExperienceModel.ts'), 'utf8')
+    ).not.toMatch(/buildBrowseCardsFromMapItems/);
   });
 
   /** Explore shell may import `explore/search`, map chrome, compose — browse projections use {@link discoveryListRuntime}. */
   it('list browse projection sources import explore only via discoveryRuntime', () => {
     const exploreShellSources = new Set([
+      'src/list/ListDiscoveryExperience.tsx',
+      'src/list/BrowseListPage.tsx',
+      'src/list/shell/useListDiscoveryExperienceModel.ts',
       'src/list/browse/listDiscoverySearchCreateFlowStub.ts',
       'src/list/browse/useListDiscoveryUrlState.ts',
     ]);
@@ -315,7 +324,7 @@ describe('list module hygiene', () => {
     expect(readFileSync(join(process.cwd(), 'src/list/explorer/ListExplorerFilterFab.tsx'), 'utf8')).toMatch(
       /browse\/listFilterFabSnap/
     );
-    expect(readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8')).toMatch(
+    expect(readFileSync(join(process.cwd(), 'src/list/shell/useListDiscoveryExperienceModel.ts'), 'utf8')).toMatch(
       /browse\/browseListBucket/
     );
   });

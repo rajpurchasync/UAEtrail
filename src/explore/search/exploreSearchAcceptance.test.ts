@@ -75,7 +75,7 @@ describe('explore search results', () => {
     );
     expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/!exploreSearch/);
     expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/exploreSearch/);
-    expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/resolveExploreSearchTripPool/);
+    expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(/resolveExploreSearchTripPool/);
   });
 
   it('resolves five-tab highlight from search scope', () => {

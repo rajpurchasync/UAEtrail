@@ -30,7 +30,7 @@ describe('discoverySummaryOfferRideshareParity (MIG-DISCO-REG)', () => {
   });
 
   it('list crews discovery wires offer-rideshare compose on standalone and explore embed', () => {
-    const list = read('src/list/ListDiscoveryExperience.tsx');
+    const list = read('src/list/shell/useListDiscoveryExperienceModel.ts');
     expect(list).toContain('offerRideshareForAvailabilityItem');
     expect(list).toContain('useHostingWizardPrefill');
     expect(list).toContain('useExploreCreateFlowBridge');

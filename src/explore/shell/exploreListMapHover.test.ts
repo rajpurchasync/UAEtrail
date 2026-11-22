@@ -10,7 +10,7 @@ describe('explore list → map pin hover', () => {
     const mapShell = read('src/explore/shell/ExploreMapShell.tsx');
     const itemLink = read('src/list/browse/BrowseItemLink.tsx');
     const chrome = read('src/explore/ExploreMapChromeContext.tsx');
-    const listDiscovery = read('src/list/ListDiscoveryExperience.tsx');
+    const listDiscovery = read('src/list/shell/useListDiscoveryExperienceModel.ts');
     expect(model).toMatch(/highlightedExploreItemId/);
     expect(model).toMatch(/setHighlightedExploreItemId/);
     expect(mapShell).toMatch(/highlightedExploreItemId=\{highlightedExploreItemId\}/);
