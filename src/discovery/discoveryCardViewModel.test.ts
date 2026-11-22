@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { buildDiscoveryCardViewModel, buildDiscoveryCardViewModelCard } from './discoveryCardViewModel';
-import { buildListFeedCards } from '../list/buildListFeedCards';
+import { buildListFeedCards } from '../list/browse/buildListFeedCards';
 import { buildDiscoveryCardModel } from '../discovery/discoveryCardModel';
 import {
   hostedExploreMapItem,

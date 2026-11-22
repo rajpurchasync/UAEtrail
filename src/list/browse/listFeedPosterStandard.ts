@@ -1,4 +1,4 @@
-import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
+import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 
 /**
  * Shared requirement labels for list explorer cards and place peek.

@@ -1,5 +1,5 @@
 import type { ActivityMapPeekActionId } from '@uaetrail/shared-types';
-import type { ListFeedFooterModel } from '../list/listFeedFooterActions';
+import type { ListFeedFooterModel } from '../list/browse/listFeedFooterActions';
 import {
   ListFeedMapPeekFooterButtons,
   type ListFeedMapPeekFooterVariant,

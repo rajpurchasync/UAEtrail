@@ -1,8 +1,8 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
-import { hostedOutingSummariesByPlaceId } from './browse/discoveryListRuntime';
-import { buildDiscoveryEnrichedCard } from '../discovery/buildDiscoveryEnrichedCard';
-import { buildVenueCoverByLocationId, enrichBrowsePosterCover } from './browse/browsePosterCover';
+import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
+import { hostedOutingSummariesByPlaceId } from './discoveryListRuntime';
+import { buildDiscoveryEnrichedCard } from '../../discovery/buildDiscoveryEnrichedCard';
+import { buildVenueCoverByLocationId, enrichBrowsePosterCover } from './browsePosterCover';
 
 /** Map explore items → enriched list poster card models (`listFeedPosterStandard.ts`). */
 export const buildListFeedCards = (

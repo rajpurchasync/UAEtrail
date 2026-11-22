@@ -1,7 +1,7 @@
-import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
+import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { formatExploreEventDateLabel, formatExploreTime, isGeographyMapSource } from '@uaetrail/shared-types';
-import { buildDiscoveryListMeta, discoveryCardIsAvailabilityPin } from '../discovery/discoveryCardModel';
-import { ACTIVITY_TYPE_LABELS, type ActivityType } from '../config/activityTypes';
+import { buildDiscoveryListMeta, discoveryCardIsAvailabilityPin } from '../../discovery/discoveryCardModel';
+import { ACTIVITY_TYPE_LABELS, type ActivityType } from '../../config/activityTypes';
 import { resolveListFeedPosterRequirementLabels } from './listFeedPosterStandard';
 
 export type BrowsePosterMetaPart = { key: string; label: string };

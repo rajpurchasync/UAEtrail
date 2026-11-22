@@ -1,7 +1,7 @@
 import { setExploreClockStyle, type ExploreClockStyle } from '@uaetrail/shared-types';
 import type { AreaPublicDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import { buildListFeedCards } from '../../list/buildListFeedCards';
+import { buildListFeedCards } from '../../list/browse/buildListFeedCards';
 import {
   filterExploreMapItemsForList,
   type BrowseListFilterState,

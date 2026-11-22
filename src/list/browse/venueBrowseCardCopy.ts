@@ -4,7 +4,7 @@ import {
   formatListFeedPosterTitleLines,
   type BrowsePosterScheduleGrid,
   type ListFeedPosterTitleLines,
-} from '../listPosterPresentation';
+} from './listPosterPresentation';
 import {
   browseCatalogEntityName,
   browseCatalogHeaderLocationLine,

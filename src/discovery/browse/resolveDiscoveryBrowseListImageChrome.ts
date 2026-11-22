@@ -1,7 +1,7 @@
 import type { DiscoveryCardModel } from '../discoveryCardModel';
 import { isGeographyMapSource } from '@uaetrail/shared-types';
-import { resolveListFeedPosterRequirementLabels } from '../../list/listFeedPosterStandard';
-import { resolveBrowsePosterActivityTypeLabel } from '../../list/listPosterPresentation';
+import { resolveListFeedPosterRequirementLabels } from '../../list/browse/listFeedPosterStandard';
+import { resolveBrowsePosterActivityTypeLabel } from '../../list/browse/listPosterPresentation';
 import { EXPLORE_RIDESHARE_AVAILABLE_BADGE } from '../../explore/exploreRequirementBadges';
 
 const POLICY_CHIP_CAP = 4;

@@ -88,7 +88,7 @@ describe('participationPresentationGuard (MIG-SURFACE-ACTIVITY-DETAIL)', () => {
   });
 
   it('PART-PRES-07: list feed footer delegates to resolveActivityPeekEngagement', () => {
-    const footer = read('src/list/listFeedFooterActions.ts');
+    const footer = read('src/list/browse/listFeedFooterActions.ts');
     expect(footer).toMatch(/resolveActivityPeekEngagement/);
     expect(footer).not.toMatch(/computeActivityMapPeekActions/);
   });

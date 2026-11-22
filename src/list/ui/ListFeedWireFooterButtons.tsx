@@ -2,7 +2,7 @@ import type { MouseEvent, ReactNode } from 'react';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { DirectionsControl } from '../../components/ui/DirectionsControl';
 import { EXPLORE_BRAND_ACTIVE, EXPLORE_TYPE } from '../../config/exploreTheme';
-import type { ListFeedFooterButton, ListFeedFooterModel } from '../listFeedFooterActions';
+import type { ListFeedFooterButton, ListFeedFooterModel } from '../browse/listFeedFooterActions';
 import { BROWSE_CARD_FOOTER, BROWSE_CARD_PRIMARY_CTA } from '../browse/browseCardChrome';
 
 export type ListFeedWireFooterVariant = 'poster' | 'compact' | 'listing';

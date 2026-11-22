@@ -42,7 +42,7 @@ import {
   resolveExploreSearchVenuePool,
 } from '../explore/search/exploreSearchJoinablePools';
 import { exploreSearchWhereBrowseQuery } from '../explore/search/exploreSearchWhereQuery';
-import { buildListFeedCards } from './buildListFeedCards';
+import { buildListFeedCards } from './browse/buildListFeedCards';
 import { sortBrowseListCards } from './browse/listBrowseSort';
 import { setExploreClockStyle } from '@uaetrail/shared-types';
 import { useDisplayPreferences } from '../preferences/useDisplayPreferences';

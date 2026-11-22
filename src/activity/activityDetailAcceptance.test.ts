@@ -442,7 +442,7 @@ describe('activity detail program — engagement wire (AD-PRO-01, AD-PRES-02)', 
 
 describe('discovery refactor — RF-01 list feed footers', () => {
   it('RF-01: list feed footer actions delegate join CTAs to L1 peek engagement', () => {
-    const footerActions = read('src/list/listFeedFooterActions.ts');
+    const footerActions = read('src/list/browse/listFeedFooterActions.ts');
     expect(footerActions).toMatch(/resolveActivityPeekEngagement/);
     expect(footerActions).toMatch(/resolveListFeedFooterModel/);
     expect(footerActions).not.toMatch(/\bswitch\s*\(/);
@@ -456,7 +456,7 @@ describe('discovery refactor — RF-01 list feed footers', () => {
     expect(read('src/discovery/DiscoveryBrowseListEngagementFooter.tsx')).not.toMatch(/primaryOnly/);
     expect(footerActions).toMatch(/resolveListFeedPeekSecondary/);
     expect(footerActions).toMatch(/peekActionLabelContext/);
-    expect(read('src/list/listMapPeekEngagementParity.test.ts')).toMatch(/listMapPeekEngagementParity/);
+    expect(read('src/list/browse/listMapPeekEngagementParity.test.ts')).toMatch(/listMapPeekEngagementParity/);
     expect(read('src/activity/resolveActivityPeekStatusChips.ts')).toMatch(/resolveActivityPeekStatusChips/);
     expect(read('src/list/browse/BrowseActivityStatusChips.tsx')).toMatch(
       /resolveActivityPeekStatusChips/

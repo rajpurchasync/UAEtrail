@@ -11,13 +11,13 @@ import {
   resolveActivityEngagementPolicy,
   type ActivityViewerAccessDTO,
 } from '@uaetrail/shared-types';
-import { buildDiscoveryCardViewModelCard } from '../discovery';
-import { hostedExploreMapItem } from '../explore/exploreMapItemFixtures';
-import { resolveActivityMapPeekActions } from '../activity/activityPeekEngagement';
+import { buildDiscoveryCardViewModelCard } from '../../discovery';
+import { hostedExploreMapItem } from '../../explore/exploreMapItemFixtures';
+import { resolveActivityMapPeekActions } from '../../activity/activityPeekEngagement';
 import { resolveListFeedFooterModel } from './listFeedFooterActions';
-import { ACTIVITY_CTA_OPEN_CHAT, ACTIVITY_PEEK_MANAGE_LABEL } from '../content/activityParticipationCopy';
-import { activityMapPeekActionLabel } from '../explore/exploreMapPeekActionCopy';
-import type { JoinRequestUiState } from '../utils/joinRequestUi';
+import { ACTIVITY_CTA_OPEN_CHAT, ACTIVITY_PEEK_MANAGE_LABEL } from '../../content/activityParticipationCopy';
+import { activityMapPeekActionLabel } from '../../explore/exploreMapPeekActionCopy';
+import type { JoinRequestUiState } from '../../utils/joinRequestUi';
 
 const meeting = { meetingLat: 25.1, meetingLng: 55.2 };
 

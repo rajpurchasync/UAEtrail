@@ -37,7 +37,7 @@ describe('seekingPeekUnificationGuard (S12 — one activity peek stack)', () => 
   it('SEEK-PEEK-03: peek selection enrich is single module (organizer join hide only)', () => {
     expect(read('src/discovery/enrichDiscoveryPeekSelection.ts')).not.toMatch(/showLegacySeeking/);
     expect(read('src/explore/exploreSelectionSelectedCard.ts')).toMatch(/enrichDiscoveryPeekSelection/);
-    expect(read('src/list/enrichListFeedCard.ts')).toMatch(/enrichDiscoveryPeekSelection/);
+    expect(read('src/list/browse/enrichListFeedCard.ts')).toMatch(/enrichDiscoveryPeekSelection/);
   });
 
   it('SEEK-PEEK-04: Find crew pins use availability source (not legacy seeking activities)', () => {

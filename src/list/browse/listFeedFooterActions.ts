@@ -1,20 +1,20 @@
 import type { ActivityMapPeekAction, ActivityMapPeekActionId } from '@uaetrail/shared-types';
 import { isFacilityMapSource, isPlaceMapSource } from '@uaetrail/shared-types';
-import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
-import { inferJoinUiStateFromDiscoveryCard } from '../activity/inferJoinUiStateFromDiscoveryCard';
-import { resolveActivityPeekEngagement } from '../activity/activityPeekEngagement';
-import { resolveActivityPeekTwoSlot } from '../activity/activityEngagementCtas';
+import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
+import { inferJoinUiStateFromDiscoveryCard } from '../../activity/inferJoinUiStateFromDiscoveryCard';
+import { resolveActivityPeekEngagement } from '../../activity/activityPeekEngagement';
+import { resolveActivityPeekTwoSlot } from '../../activity/activityEngagementCtas';
 import {
   activityMapPeekActionLabel,
   type ActivityMapPeekActionLabelContext,
-} from './browse/discoveryListRuntime';
-import { discoveryCardHasMapCoords } from '../discovery/discoveryCardModel';
-import type { JoinRequestUiState } from '../utils/joinRequestUi';
-import { ACTIVITY_CTA_MESSAGE_HOST, ACTIVITY_PEEK_MANAGE_LABEL } from '../content/activityParticipationCopy';
+} from './discoveryListRuntime';
+import { discoveryCardHasMapCoords } from '../../discovery/discoveryCardModel';
+import type { JoinRequestUiState } from '../../utils/joinRequestUi';
+import { ACTIVITY_CTA_MESSAGE_HOST, ACTIVITY_PEEK_MANAGE_LABEL } from '../../content/activityParticipationCopy';
 import {
   PLACE_PEEK_FOOTER_DETAILS,
   PLACE_PEEK_FOOTER_PLAN_TRIP,
-} from '../content/placePeekCopy';
+} from '../../content/placePeekCopy';
 import {
   LIST_FEED_CTA_GET_DIRECTIONS,
   LIST_FEED_CTA_VIEW_DETAILS,

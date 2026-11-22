@@ -92,6 +92,13 @@ describe('listBrowseNamingGuard', () => {
     expect(read('src/list/explorer/ListExplorerSortControl.tsx')).toMatch(/browse\/listBrowseSort/);
   });
 
+  it('BROWSE-NAME-01s: list feed card pipeline lives under browse', () => {
+    expect(existsSync(join(process.cwd(), 'src/list/browse/buildListFeedCards.ts'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/list/buildListFeedCards.ts'))).toBe(false);
+    expect(read('src/discovery/buildDiscoveryEnrichedCard.ts')).toMatch(/browse\/enrichListFeedCard/);
+    expect(read('src/list/useBrowseListFeed.ts')).toMatch(/browse\/buildListFeedCards/);
+  });
+
   it('BROWSE-NAME-01r: browse copy + quick filter pills live under browse', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/browseListCopy.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/browse/listQuickFilterPills.ts'))).toBe(true);
@@ -139,7 +146,7 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/browseListTripTopics.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/browse/browsePosterCover.ts'))).toBe(true);
     expect(read('src/explore/exploreBrowseUrlHydrate.ts')).toMatch(/list\/browse\/browseGeoPath/);
-    expect(read('src/list/buildListFeedCards.ts')).toMatch(/browse\/browsePosterCover/);
+    expect(read('src/list/browse/buildListFeedCards.ts')).toMatch(/browsePosterCover/);
   });
 
   it('BROWSE-NAME-01l: search-scope commit + audience filter live under browse', () => {

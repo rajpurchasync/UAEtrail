@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildDiscoveryCardViewModelCard } from '../../discovery';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { resolveTripBrowseCardCopy } from './tripBrowseCardCopy';
-import { LIST_FEED_CTA_CARPOOL } from '../listFeedCtaCopy';
+import { LIST_FEED_CTA_CARPOOL } from './listFeedCtaCopy';
 
 const hikeItem = (overrides: Partial<ExploreMapItemDTO> = {}): ExploreMapItemDTO =>
   ({

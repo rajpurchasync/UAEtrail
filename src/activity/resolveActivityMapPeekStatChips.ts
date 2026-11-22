@@ -2,7 +2,7 @@ import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import { discoveryCardIsAvailabilityPin } from '../discovery/discoveryCardModel';
 import { truncateMapPeekChipLabel } from './resolveActivityMapPeekChipLabels';
 import { resolveTripBrowseCardCopy } from '../list/browse/tripBrowseCardCopy';
-import { LIST_FEED_CTA_CARPOOL } from '../list/listFeedCtaCopy';
+import { LIST_FEED_CTA_CARPOOL } from '../list/browse/listFeedCtaCopy';
 
 export type ActivityMapPeekStatChipTone = 'neutral' | 'accent' | 'sky';
 

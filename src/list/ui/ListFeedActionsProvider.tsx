@@ -35,7 +35,7 @@ import {
   activityPeekHasMapWireActions,
 } from '../../activity/activityPeekEngagement';
 import { navigateHostFromPlaceCard } from '../../place/peek/navigateHostFromPlaceCard';
-import { resolveListFeedFooterModel } from '../listFeedFooterActions';
+import { resolveListFeedFooterModel } from '../browse/listFeedFooterActions';
 import { inferJoinUiStateFromDiscoveryCard } from '../../activity/inferJoinUiStateFromDiscoveryCard';
 import { applyPeekJoinOpenAfterClick } from '../../activity/resolvePeekJoinOpenAfterClick';
 import { activityDetailPath } from '../../config/routingCatalog';

@@ -1,6 +1,6 @@
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import { resolveTripBrowseCardCopy } from '../list/browse/tripBrowseCardCopy';
-import { LIST_FEED_CTA_CARPOOL } from '../list/listFeedCtaCopy';
+import { LIST_FEED_CTA_CARPOOL } from '../list/browse/listFeedCtaCopy';
 import { resolveActivityMapPeekStrips } from './activityPeekEngagement';
 import type { JoinRequestUiState } from '../utils/joinRequestUi';
 

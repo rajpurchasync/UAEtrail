@@ -1,6 +1,6 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
-import { enrichListFeedCardModel } from '../list/enrichListFeedCard';
+import { enrichListFeedCardModel } from '../list/browse/enrichListFeedCard';
 import { buildDiscoveryCardViewModel } from './discoveryCardViewModel';
 
 /**

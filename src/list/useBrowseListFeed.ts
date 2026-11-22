@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { useExploreMap } from '../hooks/useExploreMap';
-import { buildListFeedCards } from './buildListFeedCards';
+import { buildListFeedCards } from './browse/buildListFeedCards';
 import {
   cardMatchesBrowsePrice,
   filterExploreMapItemsForList,
