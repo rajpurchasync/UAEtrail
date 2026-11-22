@@ -24,6 +24,7 @@ import {
   PRODUCT_HOSTING_SCHEDULE_NAV_HINT,
   PRODUCT_HOSTING_SCHEDULE_NAV_LABEL,
 } from '../../../content/productNorthStar';
+import { UPL_OPERATOR_BUSINESS } from '../../../content/upl-glossary';
 import { isPlanMemberNavActive, planMemberNavPath } from '../../../plan/planRouting';
 import { useAuth } from '../../../context/AuthContext';
 import { useInboxUnreadCount } from '../../../hooks/useInboxUnreadCount';
@@ -272,8 +273,8 @@ export const DesktopSideNav = () => {
         ))}
 
         {user && ((!hostMode && canAccessPublishingWorkspace) || user.role === 'platform_admin') ? (
-          <div role="group" aria-label="Hosting">
-            <p className={sectionTitleClass}>Hosting</p>
+          <div role="group" aria-label={UPL_OPERATOR_BUSINESS}>
+            <p className={sectionTitleClass}>{UPL_OPERATOR_BUSINESS}</p>
             <div className={compact ? 'mt-1.5 border-t border-neutral-100 pt-1.5' : undefined}>
               {!hostMode && canAccessPublishingWorkspace ? (
                 <SideNavLink
@@ -281,7 +282,13 @@ export const DesktopSideNav = () => {
                   label={PRODUCT_HOSTING_SCHEDULE_NAV_LABEL}
                   icon={Briefcase}
                   active={isDesktopNavItemActive(
-                    { key: 'hosting', label: 'Hosting', to: hostingHubPath, icon: Briefcase, match: [] },
+                    {
+                      key: 'hosting',
+                      label: PRODUCT_HOSTING_SCHEDULE_NAV_LABEL,
+                      to: hostingHubPath,
+                      icon: Briefcase,
+                      match: [],
+                    },
                     pathname,
                     search
                   )}

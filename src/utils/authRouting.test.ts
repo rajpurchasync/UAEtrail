@@ -102,9 +102,11 @@ describe('auth routing by role', () => {
     expect(merchantDashboardRedirect('unknown')).toBe('/organisation/manage?kind=shop');
   });
 
-  it('maps /publishing bookmarks to Plan, explore host, or pro membership (not tenant console)', () => {
-    expect(participantHostBookmarkRedirect('/publishing/overview')).toBe('/explore?compose=activity');
-    expect(participantHostBookmarkRedirect('/publishing/activities')).toBe('/plan');
+  it('maps /publishing bookmarks to profile, plan, or pro membership (not tenant console or compose)', () => {
+    expect(participantHostBookmarkRedirect('/publishing/overview')).toBe('/profile');
+    expect(participantHostBookmarkRedirect('/publishing/activities')).toMatch(
+      /^\/plan\?.*filter=hosting/
+    );
     expect(participantHostBookmarkRedirect('/publishing/requests')).toBe('/my-requests');
     expect(participantHostBookmarkRedirect('/publishing/messages')).toBe('/chat');
     expect(participantHostBookmarkRedirect('/publishing/team')).toBe('/profile/pro-membership');

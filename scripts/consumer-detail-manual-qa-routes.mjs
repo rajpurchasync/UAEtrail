@@ -51,6 +51,26 @@ const ROUTES = [
   { surface: 'My Map', path: '/profile/history/map' },
   { surface: 'App settings', path: '/settings' },
   { surface: 'Landing (guest)', path: '/', note: 'signed-in should redirect to /explore' },
+  {
+    surface: 'Compose (Trips FAB)',
+    path: '/explore?compose=activity',
+    note: 'MIG compose — kind grid; emit activity|place|intent only',
+  },
+  {
+    surface: 'Compose (intent open)',
+    path: '/explore?compose=intent:open&list=1&peopleBrowse=1',
+    note: 'mark availability — not planAdd or lens=availability',
+  },
+  {
+    surface: 'Operator (workspace)',
+    path: '/operator/overview',
+    note: 'canAccessPublishingWorkspace; inbound /publishing/* redirects',
+  },
+  {
+    surface: 'Plan (hosting filter)',
+    path: '/plan?tab=upcoming&filter=hosting',
+    note: 'My Plans hosting projection — operator schedule separate',
+  },
 ];
 
 console.log(`# Consumer detail §8 manual QA — BASE_URL=${base}\n`);

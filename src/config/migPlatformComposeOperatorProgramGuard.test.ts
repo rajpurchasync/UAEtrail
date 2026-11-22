@@ -10,14 +10,28 @@ const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
  * Guards program registration + UPL spine so docs/guards do not drift back to stale compose wire.
  */
 describe('migPlatformComposeOperatorProgramGuard (compose + operator program)', () => {
-  it('PCO-01: migration registered in progress on P4b', () => {
+  it('PCO-01: migration registered complete on P4b', () => {
     const program = JSON.parse(read('scripts/refactor-program.json')) as {
       migrations?: Array<{ id: string; status: string; phase?: string }>;
     };
     const row = program.migrations?.find((m) => m.id === 'MIG-PLATFORM-COMPOSE-OPERATOR-2026');
     expect(row).toBeDefined();
-    expect(row?.status).toBe('in_progress');
+    expect(row?.status).toBe('complete');
     expect(row?.phase).toBe('P4b');
+  });
+
+  it('PCO-12: productNorthStar operator dashboard nav (not /hosting hub copy)', () => {
+    const north = read('src/content/productNorthStar.ts');
+    expect(north).toMatch(/\/operator\/overview/);
+    expect(north).toMatch(/PRODUCT_HOSTING_SCHEDULE_NAV_LABEL = 'Dashboard'/);
+    expect(north).not.toMatch(/`\/hosting`/);
+  });
+
+  it('PCO-11: HUB-TERM shims removed (planHubRouting, ProfileConsumerHub)', () => {
+    expect(existsSync(join(ROOT, 'src/member-plan/planHubRouting.ts'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/components/profile/ProfileConsumerHub.tsx'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/components/profile/ProfileHome.tsx'))).toBe(true);
+    expect(existsSync(join(ROOT, 'src/plan/planRouting.ts'))).toBe(true);
   });
 
   it('PCO-02: Tier-1 documents migration target wire (not seek as canonical emit)', () => {

@@ -6,7 +6,6 @@ const SCAN_ROOT = join(process.cwd(), 'src');
 
 const ALLOWLIST = new Set([
   'src/member-plan/planHubInboundGuard.test.ts',
-  'src/member-plan/planHubRouting.ts',
   'src/plan/planRouting.ts',
   'src/member-plan/resolveInboundPlanHubPath.ts',
   'src/member-plan/resolvePlanHubView.ts',
@@ -91,7 +90,7 @@ describe('planHubInboundGuard', { timeout: 30_000 }, () => {
     expect(violations).toEqual([]);
   });
 
-  it('tripsRouting shim is gone (planHubRouting / routingCatalog only)', () => {
+  it('tripsRouting shim is gone (planRouting / routingCatalog only)', () => {
     expect(existsSync(join(process.cwd(), 'src/member-plan/tripsRouting.ts'))).toBe(false);
   });
 
@@ -103,7 +102,7 @@ describe('planHubInboundGuard', { timeout: 30_000 }, () => {
       if (ALLOWLIST.has(file)) continue;
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       if (deprecatedImport.test(content)) {
-        violations.push(`${file}: use planHubRouting or routingCatalog — tripsRouting is removed`);
+        violations.push(`${file}: use planRouting or routingCatalog — tripsRouting is removed`);
       }
     }
 

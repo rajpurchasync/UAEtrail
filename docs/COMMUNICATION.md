@@ -156,7 +156,7 @@ Routing: `src/utils/notificationRouting.ts` — keep in sync with [`NAVIGATION.m
 
 ## Trips / architecture rules
 
-- **Plan** (`/plan`, `planHubRouting.ts`) owns **your** plans, hosted manage, and personal map — not chat APIs.
+- **Plan** (`/plan`, `planRouting.ts`) owns **your** plans, hosted manage, and personal map — not chat APIs.
 - Chat always goes through **Messages** + `/me/groups` / `/chat` — do not add `trips*Message` clients.
 - **Explore** discovery stays on `/explore`; opening crew chat leaves the map and returns via `messagesReturnTo` when launched from Trips/host manage.
 

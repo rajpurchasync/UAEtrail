@@ -19,9 +19,9 @@ import {
   PLAN_PATH,
   PROFILE_PATH,
   PRO_MEMBERSHIP_PATH,
-  exploreHostPath,
   messagesToUserPath,
 } from '../config/routingCatalog';
+import { planHostingFilterPath } from '../plan/planRouting';
 import { UserRole } from '@uaetrail/shared-types';
 
 import { myActivitiesPath } from '../explore/routing';
@@ -52,14 +52,17 @@ export const hostModeHomeRouteByRole = (role: UserRole): string => {
   return EXPLORE_MAP_PATH;
 };
 
-/** Legacy `/publishing/*` and `/operator/*` bookmarks for members without tenant console roles — consumer surfaces (O0.5 removes shunt). */
+/**
+ * Legacy `/publishing/*` and `/operator/*` bookmarks for members **without** `canAccessPublishingWorkspace`.
+ * Consumer equivalents only — not explore compose shims (O0.5).
+ */
 export const participantHostBookmarkRedirect = (pathname: string): string => {
   const rest = pathname.replace(/^\/(?:publishing|operator)(?=\/|$)/, '') || '/';
   if (rest.startsWith('/messages')) {
     return MESSAGES_PATH;
   }
   if (rest.startsWith('/requests')) return MY_REQUESTS_PATH;
-  if (rest.startsWith('/activities')) return myActivitiesPath();
+  if (rest.startsWith('/activities')) return planHostingFilterPath();
   if (rest.startsWith('/places') || rest.startsWith('/locations')) {
     return organisationManagePath();
   }
@@ -67,7 +70,7 @@ export const participantHostBookmarkRedirect = (pathname: string): string => {
     return PRO_MEMBERSHIP_PATH;
   }
   if (rest === '/overview' || rest.startsWith('/overview')) {
-    return exploreHostPath();
+    return PROFILE_PATH;
   }
   if (rest.startsWith('/history')) return PLAN_PATH;
   if (rest.startsWith('/security-privacy')) return PROFILE_PATH;

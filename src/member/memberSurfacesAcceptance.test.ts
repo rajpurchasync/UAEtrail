@@ -67,9 +67,11 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('G-arch: participant /host bookmarks redirect off host console', () => {
-    expect(participantHostBookmarkRedirect('/publishing/overview')).toBe('/explore?compose=activity');
-    // Participants bookmarking `/publishing/*` land on consumer Plan or compose — not `/operator/*`.
-    expect(participantHostBookmarkRedirect('/publishing/activities')).toBe('/plan');
+    expect(participantHostBookmarkRedirect('/publishing/overview')).toBe('/profile');
+    // Participants bookmarking `/publishing/*` land on consumer surfaces — not `/operator/*` or compose.
+    expect(participantHostBookmarkRedirect('/publishing/activities')).toMatch(
+      /^\/plan\?.*filter=hosting/
+    );
   });
 
   it('G-dmcp-1: member status hook gates workspace from publish slice only', () => {
@@ -378,10 +380,11 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(plan).not.toContain('SeekingIntentsSection');
   });
 
-  it('G-plan: Plan routing helpers live under src/member-plan', () => {
+  it('G-plan: Plan routing helpers live under src/plan/planRouting', () => {
     const catalog = read('src/config/routingCatalog.ts');
     expect(catalog).not.toContain("from '../member-plan/planHubRouting'");
     expect(catalog).toContain("from '../plan/planRouting'");
+    expect(() => read('src/member-plan/planHubRouting.ts')).toThrow();
     expect(catalog).not.toMatch(/from '\.\.\/trips\//);
   });
 
