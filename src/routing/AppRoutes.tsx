@@ -555,7 +555,7 @@ export const AppRoutes = ({ location }: { location: Location }) => (
           <Route
             path={OPERATOR_OVERVIEW_PATH}
             element={
-              <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
+              <ProtectedRoute publishingWorkspace>
                 <PublishingOverview />
               </ProtectedRoute>
             }
@@ -563,7 +563,7 @@ export const AppRoutes = ({ location }: { location: Location }) => (
           <Route
             path={OPERATOR_ACTIVITIES_PATH}
             element={
-              <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
+              <ProtectedRoute publishingWorkspace>
                 <PublishingActivities />
               </ProtectedRoute>
             }
@@ -571,7 +571,7 @@ export const AppRoutes = ({ location }: { location: Location }) => (
           <Route
             path={OPERATOR_ACTIVITIES_NEW_PATH}
             element={
-              <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
+              <ProtectedRoute publishingWorkspace>
                 <PublishingActivities />
               </ProtectedRoute>
             }
@@ -579,7 +579,7 @@ export const AppRoutes = ({ location }: { location: Location }) => (
           <Route
             path={OPERATOR_REQUESTS_PATH}
             element={
-              <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
+              <ProtectedRoute publishingWorkspace>
                 <PublishingJoinRequests />
               </ProtectedRoute>
             }
@@ -587,7 +587,7 @@ export const AppRoutes = ({ location }: { location: Location }) => (
           <Route
             path={OPERATOR_TEAM_PATH}
             element={
-              <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
+              <ProtectedRoute publishingWorkspace>
                 <PublishingTeam />
               </ProtectedRoute>
             }
@@ -595,7 +595,7 @@ export const AppRoutes = ({ location }: { location: Location }) => (
           <Route
             path={OPERATOR_PROFILE_PATH}
             element={
-              <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
+              <ProtectedRoute publishingWorkspace>
                 <PublishingPublicProfileEdit />
               </ProtectedRoute>
             }
@@ -603,7 +603,7 @@ export const AppRoutes = ({ location }: { location: Location }) => (
           <Route
             path={OPERATOR_SECURITY_PRIVACY_PATH}
             element={
-              <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
+              <ProtectedRoute publishingWorkspace>
                 <SecurityPrivacy />
               </ProtectedRoute>
             }
@@ -611,7 +611,7 @@ export const AppRoutes = ({ location }: { location: Location }) => (
           <Route
             path={OPERATOR_PLACES_PATH}
             element={
-              <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
+              <ProtectedRoute publishingWorkspace>
                 <PublishingPlaces />
               </ProtectedRoute>
             }
@@ -619,7 +619,7 @@ export const AppRoutes = ({ location }: { location: Location }) => (
           <Route
             path={OPERATOR_HISTORY_PATH}
             element={
-              <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
+              <ProtectedRoute publishingWorkspace>
                 <PublishingHistory />
               </ProtectedRoute>
             }

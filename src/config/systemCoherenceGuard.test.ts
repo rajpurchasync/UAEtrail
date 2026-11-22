@@ -191,9 +191,10 @@ describe('systemCoherenceGuard', () => {
     expect(missing).toEqual([]);
   });
 
-  it('ProtectedRoute redirects non-tenant roles off publishing console via isOperatorConsolePath', () => {
+  it('ProtectedRoute gates operator console on canAccessPublishingWorkspace', () => {
     const content = readFileSync(join(ROOT, 'src/components/auth/ProtectedRoute.tsx'), 'utf8');
-    expect(content).toMatch(/isOperatorConsolePath/);
+    expect(content).toMatch(/publishingWorkspace/);
+    expect(content).toMatch(/canAccessPublishingWorkspace/);
     expect(content).toMatch(/participantHostBookmarkRedirect/);
     expect(content).not.toMatch(/pathname\.startsWith\(['"]\/host['"]\)/);
   });

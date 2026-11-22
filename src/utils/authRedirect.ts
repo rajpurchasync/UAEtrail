@@ -69,13 +69,15 @@ export const canReturnAfterAuth = (path: string, role: UserRole | string): boole
   if (!isAuthGatedPath(pathname)) return true;
   if (isMemberSurfacePath(pathname)) return true;
 
-  const hostConsoleRoles = ['tenant_owner', 'tenant_admin', 'tenant_guide'];
-  if (hostConsoleRoles.includes(role)) {
-    return (
-      pathname.startsWith(OPERATOR_CONSOLE_PREFIX) ||
-      INBOUND_RETIRED_CONSOLE_PREFIXES.some((prefix) => pathname.startsWith(prefix))
-    );
+  if (
+    pathname.startsWith(OPERATOR_CONSOLE_PREFIX) ||
+    INBOUND_RETIRED_CONSOLE_PREFIXES.some(
+      (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+    )
+  ) {
+    return true;
   }
+
   if (role === 'platform_admin') return pathname.startsWith('/admin');
   if (role === 'merchant_admin') {
     return (

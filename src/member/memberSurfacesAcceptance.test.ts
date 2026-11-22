@@ -69,7 +69,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
   it('G-arch: participant /host bookmarks redirect off host console', () => {
     expect(participantHostBookmarkRedirect('/publishing/overview')).toBe('/explore?compose=activity');
     // Hosting schedule is the dedicated `/hosting` hub — My Plans (`/plan`) stays joined/wishlist/goals.
-    expect(participantHostBookmarkRedirect('/publishing/activities')).toBe('/hosting');
+    expect(participantHostBookmarkRedirect('/publishing/activities')).toBe('/plan');
   });
 
   it('G-dmcp-1: member status hook gates workspace from publish slice only', () => {

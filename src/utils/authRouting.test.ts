@@ -104,7 +104,7 @@ describe('auth routing by role', () => {
 
   it('maps /publishing bookmarks to Plan, explore host, or pro membership (not tenant console)', () => {
     expect(participantHostBookmarkRedirect('/publishing/overview')).toBe('/explore?compose=activity');
-    expect(participantHostBookmarkRedirect('/publishing/activities')).toBe('/hosting');
+    expect(participantHostBookmarkRedirect('/publishing/activities')).toBe('/plan');
     expect(participantHostBookmarkRedirect('/publishing/requests')).toBe('/my-requests');
     expect(participantHostBookmarkRedirect('/publishing/messages')).toBe('/chat');
     expect(participantHostBookmarkRedirect('/publishing/team')).toBe('/profile/pro-membership');

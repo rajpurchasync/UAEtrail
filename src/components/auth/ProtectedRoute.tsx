@@ -6,7 +6,8 @@ import { useAuth } from '../../context/AuthContext';
 import { isSignupProfileComplete } from '../../constants/userProfileOptions';
 import { accountRouteByRole, participantHostBookmarkRedirect } from '../../utils/authRouting';
 import { isConsumerProfilePath, isPlatformAdmin } from '../../utils/roles';
-import { isOperatorConsolePath, WELCOME_PATH } from '../../config/surfacePaths';
+import { WELCOME_PATH } from '../../config/surfacePaths';
+import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { ADMIN_ACCOUNT_PATH } from '../../config/adminSurfacePaths';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
 import { GuestGatedSurfaceLayout } from './GuestGatedSurfaceLayout';
@@ -22,12 +23,18 @@ import { AsyncLoadingState } from '../ui/AsyncLoadingState';
 
 interface ProtectedRouteProps {
   roles?: UserRole[];
+  /** Requires `publish.canAccessPublishingWorkspace` from {@link useMemberStatus}. */
+  publishingWorkspace?: boolean;
   children: ReactElement;
 }
 
-export const ProtectedRoute = ({ roles, children }: ProtectedRouteProps) => {
+export const ProtectedRoute = ({ roles, publishingWorkspace, children }: ProtectedRouteProps) => {
   const { user, initializing } = useAuth();
   const location = useLocation();
+  const memberStatusEnabled = Boolean(user) && Boolean(publishingWorkspace);
+  const { canAccessPublishingWorkspace, loading: memberStatusLoading } = useMemberStatus({
+    enabled: memberStatusEnabled,
+  });
 
   const gateEnabled =
     user != null &&
@@ -73,10 +80,14 @@ export const ProtectedRoute = ({ roles, children }: ProtectedRouteProps) => {
     return <Navigate to={ADMIN_ACCOUNT_PATH} replace />;
   }
 
-  if (roles && !roles.includes(user.role)) {
-    if (!isPlatformAdmin(user.role) && isOperatorConsolePath(location.pathname)) {
+  if (publishingWorkspace) {
+    if (memberStatusLoading) {
+      return <AsyncLoadingState variant="page" label="Loading workspace access" />;
+    }
+    if (!canAccessPublishingWorkspace && !isPlatformAdmin(user.role)) {
       return <Navigate to={participantHostBookmarkRedirect(location.pathname)} replace />;
     }
+  } else if (roles && !roles.includes(user.role)) {
     return <Navigate to={accountRouteByRole(user.role)} replace />;
   }
 

@@ -20,9 +20,10 @@ describe('canReturnAfterAuth', () => {
     expect(canReturnAfterAuth('/admin/overview', 'tenant_owner')).toBe(false);
   });
 
-  it('blocks participants from operator and admin consoles', () => {
+  it('blocks participants from admin but allows operator redirect targets', () => {
     expect(canReturnAfterAuth('/admin/overview', 'participant')).toBe(false);
-    expect(canReturnAfterAuth('/publishing/overview', 'participant')).toBe(false);
+    expect(canReturnAfterAuth('/operator/overview', 'participant')).toBe(true);
+    expect(canReturnAfterAuth('/publishing/overview', 'participant')).toBe(true);
     expect(canReturnAfterAuth('/profile', 'participant')).toBe(true);
   });
 });
