@@ -12,7 +12,7 @@ export const ACTIVITY_DETAIL_SCROLL_ANCHOR = {
 const TAB_TO_ANCHOR: Record<ActivityDetailTabId, string> = {
   plan: ACTIVITY_DETAIL_SCROLL_ANCHOR.top,
   place: ACTIVITY_DETAIL_SCROLL_ANCHOR.meetingPoint,
-  buddies: ACTIVITY_DETAIL_SCROLL_ANCHOR.participants,
+  crew: ACTIVITY_DETAIL_SCROLL_ANCHOR.participants,
   transport: ACTIVITY_DETAIL_SCROLL_ANCHOR.transport,
 };
 

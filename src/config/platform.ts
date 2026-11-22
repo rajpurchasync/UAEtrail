@@ -255,6 +255,8 @@ export const FEATURE_FLAGS = {
   membershipEnabled: false,
   /** Gear shops on explore map — profile + outbound links only (no catalog). */
   shopComingSoon: false,
+  /** Discoverable clubs in Find crew → Community (`MIG-COMMUNITY-DISCOVER`). */
+  communityDiscover: false,
 } as const;
 
 export const MEMBERSHIP_NAV_LINK = FEATURE_FLAGS.membershipEnabled

@@ -8,13 +8,13 @@
     "src/discovery",
     "src/activity-discovery",
     "src/places-discovery",
-    "src/people-discovery"
+    "src/crew-discovery"
   ],
   "matrix": {
     "src/list": {
       "..": 195,
-      "browse": 85,
-      "crews": 10,
+      "browse": 86,
+      "crews": 8,
       "components": 1,
       "config": 1,
       "explore": 1,
@@ -40,21 +40,22 @@
     "src/places-discovery": {
       "..": 8
     },
-    "src/people-discovery": {
+    "src/crew-discovery": {
       "lib": 4,
       "config": 1,
       "content": 1,
       "member": 3,
       "explore": 2,
-      "..": 13,
-      "peopleBrowseTab": 2,
-      "routing": 1
+      "..": 15,
+      "crewBrowseFeatureGates": 1,
+      "crewBrowseTab": 1,
+      "crewBrowseState": 2
     }
   },
   "byTarget": {
-    "..": 241,
-    "browse": 85,
-    "crews": 10,
+    "..": 243,
+    "browse": 86,
+    "crews": 8,
     "components": 5,
     "config": 4,
     "explore": 12,
@@ -69,8 +70,9 @@
     "utils": 1,
     "lib": 4,
     "member": 3,
-    "peopleBrowseTab": 2,
-    "routing": 1
+    "crewBrowseFeatureGates": 1,
+    "crewBrowseTab": 1,
+    "crewBrowseState": 2
   },
   "limits": {
     "maxListExploreImports": 25,

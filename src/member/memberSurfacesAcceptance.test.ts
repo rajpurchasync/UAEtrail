@@ -5,7 +5,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { parsePeopleBrowseTab } from '../people-discovery/peopleBrowseTab';
+import { parseCrewBrowseTab } from '../crew-discovery/crewBrowseTab';
 import { readAppRouteRegistry } from '../../scripts/readAppRouteRegistry.mjs';
 import { PLAN_MAIN_TABS } from '../plan/planTab';
 import { isOperatorConsolePath } from '../config/surfacePaths';
@@ -114,14 +114,14 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(goalBar).not.toMatch(/goalCount === 0.*return null/);
   });
 
-  it('G-avail-map: People browse defaults to Free tab', () => {
-    expect(parsePeopleBrowseTab(null)).toBe('looking');
-    expect(read('src/people-discovery/peopleBrowseTab.ts')).toMatch(/available: 'Free'/);
+  it('G-avail-map: People browse defaults to People / Recommended', () => {
+    expect(parseCrewBrowseTab(null)).toBe('people');
+    expect(read('src/crew-discovery/crewBrowseTab.ts')).toMatch(/people: 'People'/);
   });
 
   it('G-avail-guest: People browse requires sign-in (UI + API)', () => {
     const tabContent = read(
-      'src/people-discovery/panel/peopleBrowse/PeopleBrowseTabContent.tsx'
+      'src/crew-discovery/panel/crewBrowse/CrewBrowseTabContent.tsx'
     );
     expect(tabContent).toMatch(/!isSignedIn/);
     const availabilityRoute = read('apps/api/src/routes/user/registerExploreAvailabilityRoutes.ts');
@@ -206,15 +206,15 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('S13: member profile links use memberProfileLink (single FE entry)', () => {
-    const tab = read('src/people-discovery/panel/peopleBrowse/PeopleBrowseTabContent.tsx');
+    const tab = read('src/crew-discovery/panel/crewBrowse/CrewBrowseTabContent.tsx');
     expect(tab).toContain('memberBrowseRowModel');
     expect(tab).not.toContain('memberProfileLink(');
-    const buddies = read('src/pages/Buddies.tsx');
+    const buddies = read('src/pages/MyCrews.tsx');
     expect(buddies).toContain('memberProfileLink');
     expect(buddies).not.toMatch(/to=\{`\/member\/\$\{/);
     expect(existsSync(join(process.cwd(), 'src/explore/ui/peopleBrowse'))).toBe(false);
     expect(existsSync(join(process.cwd(), 'src/list/ui/ListDiscoverPeopleView.tsx'))).toBe(false);
-    expect(read('src/list/ListDiscoveryExperience.tsx')).toContain('PeopleBrowsePanel');
+    expect(read('src/list/ListDiscoveryExperience.tsx')).toContain('CrewsBrowsePanel');
     const profile = read('src/pages/Profile.tsx');
     expect(profile).toContain('memberPublicPreviewLink');
     expect(profile).not.toMatch(/`\/member\/\$\{/);
@@ -226,7 +226,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('G-seek: People browse wires availability roster to explore pin routes (no activity detail hop)', () => {
-    const panel = read('src/people-discovery/panel/PeopleBrowsePanel.tsx');
+    const panel = read('src/crew-discovery/panel/CrewsBrowsePanel.tsx');
     expect(panel).toContain('discoveryAvailabilityOnMap');
     expect(panel).toContain('availabilityCatalogItems');
     const routing = read('src/explore/memberDiscoveryAvailabilityRow.ts');
@@ -443,7 +443,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(audience).toContain('groupChatPostPolicy');
   });
 
-  it('AD-3 detail shell: tab footers, host Buddies hub, hero status on activity detail', () => {
+  it('AD-3 detail shell: tab footers, host crew hub, hero status on activity detail', () => {
     const planColumn = read('src/components/activity/detail/ActivityDetailPlanColumn.tsx');
     const sidebarColumn = read('src/components/activity/detail/ActivityDetailSidebarColumn.tsx');
     const model = read('src/components/activity/detail/useActivityDetailViewModel.tsx');
@@ -452,14 +452,14 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(read('src/activity/resolveActivityDetailEngagement.ts')).toContain(
       'resolveActivityDetailEngagementFooterKind'
     );
-    expect(sidebarColumn).toContain('ActivityDetailBuddiesAside');
+    expect(sidebarColumn).toContain('ActivityDetailCrewAside');
     expect(planColumn).toContain('ActivityDetailPlanExtras');
     expect(model).toContain('useActivityDetailJoinSurfaces');
     expect(read('src/components/activity/detail/useActivityDetailJoinSurfaces.tsx')).toContain(
       'ActivityDetailStickyFooter'
     );
-    const buddiesAside = read('src/components/activity/detail/tabs/ActivityDetailBuddiesAside.tsx');
-    expect(buddiesAside).toContain('ActivityDetailHostBuddiesHub');
+    const crewAside = read('src/components/activity/detail/tabs/ActivityDetailCrewAside.tsx');
+    expect(crewAside).toContain('ActivityDetailHostCrewHub');
     expect(model).toContain('resolveActivityDetailHeroStatusChips');
     const footersShim = read('src/activity/activityDetailTabFooters.ts');
     expect(footersShim).toContain('@uaetrail/shared-types');
@@ -472,7 +472,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(read('apps/api/src/services/activity-public-read.ts')).toContain('presentation');
   });
 
-  it('AD-8: post check-in review prompts on activity detail Plan/Buddies', () => {
+  it('AD-8: post check-in review prompts on activity detail Plan/Crew', () => {
     const planColumn = read('src/components/activity/detail/ActivityDetailPlanColumn.tsx');
     const sidebar = read('src/components/activity/detail/ActivityDetailPricingSidebar.tsx');
     const model = read('src/components/activity/detail/useActivityDetailViewModel.tsx');
@@ -612,7 +612,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('Social hub: Settings menu rows only — no stacked FormTabBar / hub tab strips', () => {
-    const buddies = read('src/pages/Buddies.tsx');
+    const buddies = read('src/pages/MyCrews.tsx');
     const hub = read('src/components/social/SocialHubIndex.tsx');
     const groups = read('src/pages/Groups.tsx');
     expect(buddies).not.toMatch(/FormTabBar/);

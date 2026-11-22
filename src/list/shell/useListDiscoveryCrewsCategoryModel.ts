@@ -10,10 +10,16 @@ import { useCallback, useMemo } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { ExploreActivityDatePreset } from '../browse/discoveryListRuntime';
-import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
-import { usePeopleDiscoveryAvailabilityCatalog } from '@/people-discovery/hooks/usePeopleDiscoveryAvailabilityCatalog';
-import { useMemberDiscoveryRoster } from '@/people-discovery/hooks/useMemberDiscoveryRoster';
-import { useExplorePeopleAvailability } from '@/people-discovery/hooks/usePeopleAvailability';
+import {
+  crewBrowseNeedsAvailability,
+  crewBrowseNeedsRoster,
+  crewBrowseOmitDirectory,
+  crewsCategoryMapFeedEnabled,
+  type CrewBrowseState,
+} from '@/crew-discovery/crewBrowseState';
+import { useCrewDiscoveryAvailabilityCatalog } from '@/crew-discovery/hooks/useCrewDiscoveryAvailabilityCatalog';
+import { useCrewDiscoveryRoster } from '@/crew-discovery/hooks/useCrewDiscoveryRoster';
+import { useCrewDiscoveryAvailability } from '@/crew-discovery/hooks/useCrewDiscoveryAvailability';
 import type { CrewsAvailableOpenLens } from '../crews/crewsOpenSegment';
 import { browseListEntityLinkState } from '../browse/browseListNavState';
 
@@ -21,53 +27,36 @@ export type ListDiscoveryCrewsCategoryModelInput = {
   enabled: boolean;
   user: { id: string } | null | undefined;
   draftQuery: string;
-  peopleBrowseTab: PeopleBrowseTab;
+  crewBrowseLane: CrewBrowseState['lane'];
+  crewPeopleFacet: CrewBrowseState['facet'];
   activityDatePreset: ExploreActivityDatePreset;
   areaSlug: string | null;
 };
-
-export const crewsCategoryNeedsRoster = (peopleSegment: PeopleBrowseTab): boolean =>
-  peopleSegment === 'hub' ||
-  peopleSegment === 'going' ||
-  peopleSegment === 'connect' ||
-  peopleSegment === 'available' ||
-  peopleSegment === 'looking';
-
-export const crewsCategoryNeedsAvailability = (peopleSegment: PeopleBrowseTab): boolean =>
-  peopleSegment === 'hub' || peopleSegment === 'available' || peopleSegment === 'looking';
-
-/** When false, list map feed is skipped for crews (member-discovery APIs only). */
-export const crewsCategoryMapFeedEnabled = (
-  peopleSegment: PeopleBrowseTab,
-  crewsOpenLens: CrewsAvailableOpenLens
-): boolean =>
-  peopleSegment === 'looking' ||
-  ((peopleSegment === 'available' || peopleSegment === 'hub') &&
-    (crewsOpenLens === 'all' || crewsOpenLens === 'looking'));
 
 export const useListDiscoveryCrewsCategoryModel = ({
   enabled,
   user,
   draftQuery,
-  peopleBrowseTab,
+  crewBrowseLane,
+  crewPeopleFacet,
   activityDatePreset,
   areaSlug,
 }: ListDiscoveryCrewsCategoryModelInput) => {
-  const peopleSegment = peopleBrowseTab;
   const signedIn = Boolean(user);
   const active = enabled && signedIn;
+  const browseState: CrewBrowseState = { lane: crewBrowseLane, facet: crewPeopleFacet };
 
-  const crewsNeedsRoster = crewsCategoryNeedsRoster(peopleSegment);
-  const crewsNeedsAvailability = crewsCategoryNeedsAvailability(peopleSegment);
+  const crewsNeedsRoster = crewBrowseNeedsRoster(browseState);
+  const crewsNeedsAvailability = crewBrowseNeedsAvailability(browseState);
 
-  const memberRoster = useMemberDiscoveryRoster({
+  const memberRoster = useCrewDiscoveryRoster({
     enabled: active && crewsNeedsRoster,
     search: draftQuery,
     activityDatePreset,
-    omitDirectory: !(peopleSegment === 'connect' || peopleSegment === 'hub'),
+    omitDirectory: crewBrowseOmitDirectory(browseState),
   });
 
-  const memberAvailability = useExplorePeopleAvailability({
+  const memberAvailability = useCrewDiscoveryAvailability({
     enabled: active && crewsNeedsAvailability,
     search: draftQuery,
     activityDatePreset,
@@ -84,22 +73,24 @@ export const useListDiscoveryCrewsCategoryModel = ({
 
 export type ListDiscoveryCrewsCategoryAugmentInput = {
   enabled: boolean;
-  peopleBrowseTab: PeopleBrowseTab;
+  crewBrowseLane: CrewBrowseState['lane'];
+  crewPeopleFacet: CrewBrowseState['facet'];
   crewsNeedsAvailability: boolean;
   draftQuery: string;
   exploreCatalogItems: ExploreMapItemDTO[];
   exploreCatalogLoading: boolean;
-  memberRoster: ReturnType<typeof useMemberDiscoveryRoster>;
-  memberAvailability: ReturnType<typeof useExplorePeopleAvailability>;
+  memberRoster: ReturnType<typeof useCrewDiscoveryRoster>;
+  memberAvailability: ReturnType<typeof useCrewDiscoveryAvailability>;
   navigate: NavigateFunction;
   locationPathname: string;
   locationSearch: string;
+  crewsOpenLens: CrewsAvailableOpenLens;
 };
 
-/** After map feed — looking rows compose from explore catalog fallback. */
 export const useListDiscoveryCrewsCategoryAugment = ({
   enabled,
-  peopleBrowseTab: _peopleBrowseTab,
+  crewBrowseLane,
+  crewPeopleFacet,
   crewsNeedsAvailability,
   draftQuery,
   exploreCatalogItems,
@@ -109,9 +100,15 @@ export const useListDiscoveryCrewsCategoryAugment = ({
   navigate,
   locationPathname,
   locationSearch,
+  crewsOpenLens,
 }: ListDiscoveryCrewsCategoryAugmentInput) => {
-  const { availabilityCatalogItems } = usePeopleDiscoveryAvailabilityCatalog({
-    enabled: enabled && crewsNeedsAvailability,
+  const browseState: CrewBrowseState = { lane: crewBrowseLane, facet: crewPeopleFacet };
+
+  const { availabilityCatalogItems } = useCrewDiscoveryAvailabilityCatalog({
+    enabled:
+      enabled &&
+      crewsNeedsAvailability &&
+      crewsCategoryMapFeedEnabled(browseState, crewsOpenLens),
     exploreCatalogFallback: exploreCatalogItems,
     filters: {
       mapFilter: 'all',
@@ -132,10 +129,11 @@ export const useListDiscoveryCrewsCategoryAugment = ({
   const crewsStatCounts = useMemo(() => {
     const buddiesCount = memberRoster.loading ? null : memberRoster.friendsGoing.length;
     const markedCount = memberAvailability.loading ? 0 : memberAvailability.people.length;
-    const lookingCount = exploreCatalogLoading ? 0 : availabilityCatalogItems.length;
-    const availableCount = markedCount + lookingCount;
+    const mapSignalsCount = exploreCatalogLoading ? 0 : availabilityCatalogItems.length;
+    const availableCount = markedCount + mapSignalsCount;
     const everyoneCount = memberRoster.loading ? null : memberRoster.directory.length;
     return {
+      recommended: null,
       friends: buddiesCount,
       available:
         memberRoster.loading || memberAvailability.loading || exploreCatalogLoading ? null : availableCount,

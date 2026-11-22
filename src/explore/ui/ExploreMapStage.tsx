@@ -79,11 +79,11 @@ export type ExploreMapStageProps = {
   onHasTripChange: (next: boolean) => void;
   onFacilityKindsChange: (next: PlaceKind[]) => void;
   onVenueFiltersChange: (next: ExploreVenueFilterPatch) => void;
-  onOpenPeopleBrowsePanel?: () => void;
-  peopleBrowsePanelAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
-  peopleBrowsePanelFriendCount?: number;
-  peopleBrowseGuest?: boolean;
-  peopleBrowsePossibleCrewCount?: number;
+  onOpenCrewsBrowsePanel?: () => void;
+  crewsBrowseMapAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
+  crewsBrowseMapFriendCount?: number;
+  crewsBrowseMapGuest?: boolean;
+  crewsBrowseMapCrewCount?: number;
   exploreMapStyle: ExploreMapStyle;
   exploreMapTiles: ExploreMapTiles;
   onToggleMapStyle: () => void;
@@ -130,7 +130,7 @@ export type ExploreMapStageProps = {
   /** Desktop overlay — guest sign-in gates centered over the map. */
   desktopRightPanelOverlay?: ReactNode;
   /** Find crew — people pins only, list docked beside the map, no outing filters. */
-  peopleMap?: boolean;
+  crewsBrowseMap?: boolean;
   /** Search modal + results — scoped to map pane. */
   mapSearchOverlay?: ReactNode;
   mapSearchOpen?: boolean;
@@ -173,11 +173,11 @@ export const ExploreMapStage = ({
   onHasTripChange,
   onFacilityKindsChange,
   onVenueFiltersChange,
-  onOpenPeopleBrowsePanel: _onOpenPeopleBrowsePanel,
-  peopleBrowsePanelAvatars: _peopleBrowsePanelAvatars,
-  peopleBrowsePanelFriendCount: _peopleBrowsePanelFriendCount,
-  peopleBrowseGuest: _peopleBrowseGuest = false,
-  peopleBrowsePossibleCrewCount: _peopleBrowsePossibleCrewCount = 0,
+  onOpenCrewsBrowsePanel: _onOpenCrewsBrowsePanel,
+  crewsBrowseMapAvatars: _crewsBrowseMapAvatars,
+  crewsBrowseMapFriendCount: _crewsBrowseMapFriendCount,
+  crewsBrowseMapGuest: _crewsBrowseMapGuest = false,
+  crewsBrowseMapCrewCount: _crewsBrowseMapCrewCount = 0,
   exploreMapStyle,
   exploreMapTiles,
   onToggleMapStyle,
@@ -222,7 +222,7 @@ export const ExploreMapStage = ({
   joinInvitePeekBanner = null,
   onShareActivity,
   desktopRightPanelOverlay = null,
-  peopleMap = false,
+  crewsBrowseMap = false,
   mapSearchOverlay = null,
   mapSearchOpen = false,
   mapLayoutRevision = false,
@@ -283,7 +283,7 @@ export const ExploreMapStage = ({
           deviceLocation={deviceLocation}
           className="h-full w-full min-h-[280px]"
           onMapReady={handleMapReady}
-          layoutRevision={mapLayoutRevision || listOpen || peopleMap}
+          layoutRevision={mapLayoutRevision || listOpen || crewsBrowseMap}
           onSelectedPinScreenPoint={handleSelectedPinScreenPoint}
           onDismissMapPeek={selectedId ? onCloseSelection : undefined}
           exploreMapStyle={exploreMapStyle}
@@ -292,7 +292,7 @@ export const ExploreMapStage = ({
         </ExploreMapLoadErrorBoundary>
       </div>
 
-      {isDesktop && !peopleMap && geoPath.length > 0 && onClearGeoScope ? (
+      {isDesktop && !crewsBrowseMap && geoPath.length > 0 && onClearGeoScope ? (
         <div
           className={`pointer-events-none absolute inset-x-0 top-0 px-3 pt-3 lg:px-4 ${EXPLORE_Z.mapFilters}`}
         >
@@ -306,7 +306,7 @@ export const ExploreMapStage = ({
         </div>
       ) : null}
 
-      {!(isDesktop) && !peopleMap ? (
+      {!(isDesktop) && !crewsBrowseMap ? (
       <ExploreMapChromeBar
         panel={panel}
         mapFilter={mapFilter}
@@ -389,7 +389,7 @@ export const ExploreMapStage = ({
 
       {loading && mapPins.length === 0 ? <ExploreMapLoadingSkeleton /> : null}
 
-      {!listOpen && !peopleMap ? (
+      {!listOpen && !crewsBrowseMap ? (
         <ExploreMapMobileDock
           onPrimaryFab={onPrimaryFab}
           primaryFabLabel={primaryFabLabel}
@@ -403,7 +403,7 @@ export const ExploreMapStage = ({
       <div
         className="pointer-events-none absolute right-4 z-[1100] hidden md:flex md:flex-col md:items-end"
         style={{
-          bottom: peopleMap
+          bottom: crewsBrowseMap
             ? 'var(--explore-map-desktop-fab-bottom)'
             : 'calc(var(--explore-map-desktop-fab-bottom) + var(--explore-map-desktop-primary-fab-height) + var(--explore-map-fab-stack-gap) + var(--explore-map-desktop-zoom-clearance))',
         }}
@@ -418,7 +418,7 @@ export const ExploreMapStage = ({
           onToggleMapStyle={onToggleMapStyle}
         />
       </div>
-      {!peopleMap ? (
+      {!crewsBrowseMap ? (
       <div
         className="pointer-events-none absolute right-4 z-[1100] hidden md:block"
         style={{ bottom: 'var(--explore-map-desktop-fab-bottom)' }}

@@ -4,7 +4,7 @@ import {
   INBOUND_LIST_FILTER_LOOKING,
   canonicalizeExplorePinKindToken,
   listFilterMeansAvailabilityOnly,
-  mapInboundPeopleBrowseTabValue,
+  mapInboundCrewBrowseTabValue,
   sanitizeInboundExplorePinId,
   stripRetiredExploreOverlayParams,
   stripRetiredPeopleListTabParams,
@@ -68,7 +68,7 @@ describe('productUrlInbound', () => {
   });
 
   it('maps retired peopleTab values', () => {
-    expect(mapInboundPeopleBrowseTabValue('discover')).toBe('available');
-    expect(mapInboundPeopleBrowseTabValue('buddies')).toBe('hub');
+    expect(mapInboundCrewBrowseTabValue('discover')).toBe('available');
+    expect(mapInboundCrewBrowseTabValue('buddies')).toBe('people');
   });
 });

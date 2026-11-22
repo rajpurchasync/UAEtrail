@@ -16,7 +16,7 @@ const SCAN_ROOTS = [
   join(process.cwd(), 'src', 'member-plan'),
   join(process.cwd(), 'src', 'wishlist'),
   join(process.cwd(), 'src', 'activity'),
-  join(process.cwd(), 'src', 'people-discovery'),
+  join(process.cwd(), 'src', 'crew-discovery'),
   join(process.cwd(), 'src', 'activity-discovery'),
   join(process.cwd(), 'src', 'places-discovery'),
 ];

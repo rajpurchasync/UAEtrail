@@ -75,7 +75,7 @@ export const ActivityDetailStickyFooter = ({
     );
   }
 
-  if (tabFooterKind === 'buddies_invite' && canSendJoinInvites) {
+  if (tabFooterKind === 'crew_invite' && canSendJoinInvites) {
     return wrapMobileFooter(
       <ActivityInviteLauncher
         activity={inviteActivity}

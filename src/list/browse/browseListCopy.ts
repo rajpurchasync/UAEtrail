@@ -1,5 +1,5 @@
 import { resolveMobileFiveTab } from '../../config/mobileFiveTabNav';
-import { EXPLORE_PEOPLE_BROWSE_SEARCH_PLACEHOLDER } from '../../content/explorePeopleBrowseCopy';
+import { EXPLORE_CREWS_SEARCH_PLACEHOLDER } from '../../content/exploreCrewsCopy';
 import { EXPLORE_GUEST_MAP_PREVIEW_NOTICE, EXPLORE_SEARCH_OPEN_PLACEHOLDER } from './discoveryListRuntime';
 import { LIST_CAT_PARAM, parseListCatParam } from './browseListUrlState';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
@@ -22,7 +22,7 @@ export const resolveBrowseListSearchPlaceholder = (
   listCat: BrowseMainCategoryKey | null | undefined,
   bucket?: BrowseListBucket
 ): string => {
-  if (listCat === 'people') return EXPLORE_PEOPLE_BROWSE_SEARCH_PLACEHOLDER;
+  if (listCat === 'people') return EXPLORE_CREWS_SEARCH_PLACEHOLDER;
   if (listCat === 'venues') return BROWSE_LIST_SEARCH_PLACEHOLDER_PLACES;
   if (listCat === 'agencies') return BROWSE_LIST_SEARCH_PLACEHOLDER_AGENCIES;
   if (listCat === 'activities') return BROWSE_LIST_SEARCH_PLACEHOLDER_TRIPS;

@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
-import { listDiscoveryPath, listPeopleDiscoveryPath } from '../../list/browse/browseListRouting';
+import { listDiscoveryPath } from '../../list/browse/browseListRouting';
 import { exploreMapMobileBackState } from '../../utils/mobileBackNav';
 import {
   activityFilterToMapFilter,
@@ -26,7 +26,8 @@ import {
 } from '../exploreBrowseTaxonomy';
 import type { BrowseMainCategoryKey } from '../../list/browse/browseListTaxonomy';
 import type { ExploreBrowseUrlSyncPatch } from '../exploreBrowseUrlSync';
-import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
+import type { CrewBrowseLane, CrewPeopleFacet } from '@/crew-discovery/crewBrowseState';
+import { DEFAULT_CREW_BROWSE_LANE, DEFAULT_CREW_PEOPLE_FACET } from '@/crew-discovery/crewBrowseState';
 import type { ExplorePinKindFilter } from '../explorePinKindFilter';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
 import type { ExploreBrowseListMode } from '../exploreBrowseUrlSync';
@@ -55,8 +56,9 @@ type Setters = {
   setPinKind: (v: ExplorePinKindFilter) => void;
   setTopicPills: (v: ExploreMapFilterPillKey[]) => void;
   setListMode: (v: ExploreBrowseListMode) => void;
-  setPeopleBrowseOpen: (v: boolean) => void;
-  setPeopleBrowseTab: (v: PeopleBrowseTab) => void;
+  setCrewsBrowseOpen: (v: boolean) => void;
+  setCrewBrowseLane: (v: CrewBrowseLane) => void;
+  setCrewPeopleFacet: (v: CrewPeopleFacet) => void;
   setDesktopBrowseTab: (v: DesktopBrowseTab) => void;
   setActivityDatePreset: (v: ExploreActivityDatePreset) => void;
   setActivityModeFilter: (v: ExploreActivityModeFilter) => void;
@@ -290,71 +292,91 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
     syncExploreUrl({ topicPills: [], list: listOpen });
   }, [clearSelection, listOpen, setters, syncExploreUrl]);
 
-  const openPeopleBrowsePanel = useCallback(
-    (initialTab: PeopleBrowseTab = 'looking') => {
-      if (!isSignedIn) return;
+  const openCrewsBrowsePanel = useCallback(
+    (initialLane: CrewBrowseLane = DEFAULT_CREW_BROWSE_LANE) => {
       clearSelection();
-      setters.setPeopleBrowseTab(initialTab);
+      setters.setCrewBrowseLane(initialLane);
+      setters.setCrewPeopleFacet(DEFAULT_CREW_PEOPLE_FACET);
       setters.setPanel('activities');
       setters.setDesktopBrowseTab('activities');
       if (isDesktop) {
-        setters.setPeopleBrowseOpen(true);
+        setters.setCrewsBrowseOpen(false);
         setters.setListMode('default');
-        setters.setListOpen(false);
+        setters.setListOpen(true);
         syncExploreUrl({
-          peopleBrowseOpen: true,
+          crewsBrowseOpen: false,
           listMode: 'default',
-          peopleBrowseTab: initialTab,
+          crewBrowseLane: initialLane,
+          crewPeopleFacet: DEFAULT_CREW_PEOPLE_FACET,
           panel: 'activities',
-          list: false,
+          list: true,
+          listCat: 'people',
         });
         return;
       }
-      setters.setPeopleBrowseTab(initialTab);
-      const peoplePath =
-        initialTab === 'hub'
-          ? listPeopleDiscoveryPath()
-          : listDiscoveryPath({
-              listCat: 'people',
-              categories: ['people'],
-              peopleBrowseTab: initialTab,
-              query,
-              activityDatePreset: 'anyday',
-            });
+      const peoplePath = listDiscoveryPath({
+        listCat: 'people',
+        categories: ['people'],
+        crewBrowseLane: initialLane,
+        crewPeopleFacet: DEFAULT_CREW_PEOPLE_FACET,
+        query,
+        activityDatePreset: 'anyday',
+      });
       navigate(peoplePath, {
         state: exploreMapMobileBackState(exploreReturnPath),
       });
     },
-    [isDesktop, isSignedIn, clearSelection, exploreReturnPath, navigate, query, setters, syncExploreUrl]
+    [isDesktop, clearSelection, exploreReturnPath, navigate, query, setters, syncExploreUrl]
   );
 
-  const closePeopleBrowsePanel = useCallback(() => {
+  const closeCrewsBrowsePanel = useCallback(() => {
     clearSelection();
     if (isDesktop) {
-      setters.setPeopleBrowseOpen(false);
+      setters.setCrewsBrowseOpen(false);
       setters.setListMode('default');
-      syncExploreUrl({ peopleBrowseOpen: false, listMode: 'default' });
+      syncExploreUrl({ crewsBrowseOpen: false, listMode: 'default' });
       return;
     }
     setters.setListMode('default');
     syncExploreUrl({ listMode: 'default' });
   }, [isDesktop, clearSelection, setters, syncExploreUrl]);
 
-  const applyPeopleBrowseTab = useCallback(
-    (tab: PeopleBrowseTab) => {
-      setters.setPeopleBrowseTab(tab);
+  const applyCrewBrowseLane = useCallback(
+    (lane: CrewBrowseLane) => {
+      setters.setCrewBrowseLane(lane);
       if (isDesktop) {
         syncExploreUrl({
-          peopleBrowseOpen: true,
+          crewsBrowseOpen: true,
           listMode: 'default',
-          peopleBrowseTab: tab,
+          crewBrowseLane: lane,
           list: listOpen,
         });
         return;
       }
       syncExploreUrl({
-        listMode: 'people',
-        peopleBrowseTab: tab,
+        listMode: 'crews',
+        crewBrowseLane: lane,
+        list: listOpen,
+      });
+    },
+    [isDesktop, listOpen, setters, syncExploreUrl]
+  );
+
+  const applyCrewPeopleFacet = useCallback(
+    (facet: CrewPeopleFacet) => {
+      setters.setCrewPeopleFacet(facet);
+      if (isDesktop) {
+        syncExploreUrl({
+          crewsBrowseOpen: true,
+          listMode: 'default',
+          crewPeopleFacet: facet,
+          list: listOpen,
+        });
+        return;
+      }
+      syncExploreUrl({
+        listMode: 'crews',
+        crewPeopleFacet: facet,
         list: listOpen,
       });
     },
@@ -364,7 +386,7 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
   const closeListPanel = useCallback(() => {
     setters.setListOpen(false);
     if (!isDesktop) {
-      if (listMode === 'people') {
+      if (listMode === 'crews') {
         setters.setListMode('default');
       }
       syncExploreUrl({ list: false, listMode: 'default' });
@@ -690,9 +712,11 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
     applyPinKindFilter,
     toggleMapTopicPill,
     clearMapTopicPills,
-    openPeopleBrowsePanel,
-    closePeopleBrowsePanel,
-    applyPeopleBrowseTab,
+    openCrewsBrowsePanel,
+    closeCrewsBrowsePanel,
+    applyCrewBrowseLane,
+    applyCrewPeopleFacet,
+    applyCrewBrowseTab: applyCrewBrowseLane,
     closeListPanel,
     applyBuddySubtype,
     applyOutingTopic,

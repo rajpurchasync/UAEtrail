@@ -49,8 +49,10 @@ export const PRODUCT_PLAN_UPCOMING_HOSTING_CONTEXT =
 export const PRODUCT_PLAN_GOALS_ON_WISHLIST =
   'Set outdoor goals on your Wishlist tab — track progress next to saved plans.';
 
-/** Explore people panel vs friends list (D11). */
-export const PRODUCT_PEOPLE_DISCOVERY_LABEL = 'Find your crew';
+/** Mobile tab + list category — Explore triad: Activities · Places · **Crews**. */
+export const PRODUCT_CREWS_TAB_LABEL = 'Crews';
+/** Explore map lens — same label as tab (`view=people` wire). Marketing CTA: `UPL_FIND_YOUR_CREW`. */
+export const PRODUCT_PEOPLE_DISCOVERY_LABEL = PRODUCT_CREWS_TAB_LABEL;
 /** Social hub tab — discover people to add as friends. */
 export const PRODUCT_FIND_FRIENDS_HUB_LABEL = 'Find friends';
 export const PRODUCT_FRIENDS_SURFACE_LABEL = 'Friends';
@@ -61,8 +63,6 @@ export const PRODUCT_MY_CREW_SURFACE_TITLE = 'My crew';
 export const PRODUCT_SOCIAL_NAV_HINT =
   'Friends, family, or colleagues on a team — optional team chat for adults when you want to message.';
 export const PRODUCT_GROUPS_SURFACE_LABEL = 'Teams';
-/** Mobile tab + hub discover scope — crew, guides, partners (not “people” directory only). */
-export const PRODUCT_CREWS_TAB_LABEL = 'Crews';
 export const PRODUCT_MY_CREW_CARD_TITLE = 'My crew';
 export const PRODUCT_MY_CREW_CARD_SUBTITLE = 'Friends you message and teams you travel with';
 export const PRODUCT_TEAM_CHAT_SUBTITLE = 'Optional team wall — adults only';

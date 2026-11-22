@@ -8,7 +8,7 @@ import type { ExploreBrowseListMode } from '../exploreBrowseUrlSync';
 import type { ExplorePriceFilter } from '../exploreOptionalFilters';
 import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
 import type { PlaceKind } from '@uaetrail/shared-types';
-import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
+import type { CrewBrowseLane, CrewPeopleFacet } from '@/crew-discovery/crewBrowseState';
 import type { DesktopBrowseTab } from './exploreBrowsePanelCopy';
 import { UNIFIED_MAP_FILTER_KEYS } from './exploreBrowseUrlConstants';
 import type { useExploreBrowseUrlApplyHandlers } from './useExploreBrowseUrlApplyHandlers';
@@ -40,9 +40,10 @@ export type ExploreBrowseUrlPublicApiContext = {
   searchScope: ExploreSearchScopeKey | null;
   pinKind: ExplorePinKindFilter;
   topicPills: ExploreMapFilterPillKey[];
-  peopleBrowseTab: PeopleBrowseTab;
+  crewBrowseLane: CrewBrowseLane;
+  crewPeopleFacet: CrewPeopleFacet;
   listMode: ExploreBrowseListMode;
-  peopleBrowseOpen: boolean;
+  crewsBrowseOpen: boolean;
   tripMapTopics: TripMapTopicKey[];
   placeMapTopics: PlaceMapTopicKey[];
   priceFilter: ExplorePriceFilter;
@@ -111,12 +112,17 @@ export const buildExploreBrowseUrlPublicApi = (ctx: ExploreBrowseUrlPublicApiCon
   topicPills: ctx.topicPills,
   toggleMapTopicPill: ctx.handlers.toggleMapTopicPill,
   clearMapTopicPills: ctx.handlers.clearMapTopicPills,
-  openPeopleBrowsePanel: ctx.handlers.openPeopleBrowsePanel,
-  closePeopleBrowsePanel: ctx.handlers.closePeopleBrowsePanel,
-  peopleBrowseTab: ctx.peopleBrowseTab,
-  applyPeopleBrowseTab: ctx.handlers.applyPeopleBrowseTab,
+  openCrewsBrowsePanel: ctx.handlers.openCrewsBrowsePanel,
+  closeCrewsBrowsePanel: ctx.handlers.closeCrewsBrowsePanel,
+  crewBrowseLane: ctx.crewBrowseLane,
+  crewPeopleFacet: ctx.crewPeopleFacet,
+  applyCrewBrowseLane: ctx.handlers.applyCrewBrowseLane,
+  applyCrewPeopleFacet: ctx.handlers.applyCrewPeopleFacet,
+  /** @deprecated Use applyCrewBrowseLane */
+  crewBrowseTab: ctx.crewBrowseLane,
+  applyCrewBrowseTab: ctx.handlers.applyCrewBrowseLane,
   listMode: ctx.listMode,
-  peopleBrowseOpen: ctx.peopleBrowseOpen,
+  crewsBrowseOpen: ctx.crewsBrowseOpen,
   tripMapTopics: ctx.tripMapTopics,
   placeMapTopics: ctx.placeMapTopics,
   priceFilter: ctx.priceFilter,

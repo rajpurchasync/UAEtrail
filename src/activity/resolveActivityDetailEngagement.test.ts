@@ -21,7 +21,7 @@ const tabFooterBase = {
 
 describe('resolveActivityDetailEngagement', () => {
   it('maps peek primary ids to detail footer kinds', () => {
-    expect(detailPlanFooterKindForPeekPrimary('invite_crew')).toBe('buddies_invite');
+    expect(detailPlanFooterKindForPeekPrimary('invite_crew')).toBe('crew_invite');
     expect(detailPlanFooterKindForPeekPrimary('request_join')).toBe('plan_join');
   });
 

@@ -213,7 +213,7 @@
       ],
       "feRoots": [
         "src/explore/compose.ts",
-        "src/explore/ui/availabilityFlowEngine.ts",
+        "src/explore/ui/intentFixedFlowEngine.ts",
         "src/hooks/exploreAvailabilityCatalogClientApi.ts",
         "src/explore/ui/peek/availability/AvailabilityPeekActions.tsx",
         "src/discovery/discoveryOfferRideshareDispatch.ts",
@@ -250,7 +250,7 @@
         "src/hooks/useMemberAvailability.ts",
         "src/pages/MemberProfile.tsx",
         "src/hooks/useMemberProfilePage.ts",
-        "src/pages/Buddies.tsx",
+        "src/pages/MyCrews.tsx",
         "src/hooks/useMeBuddiesNetwork.ts",
         "src/pages/ActivityDetail.tsx",
         "src/hooks/useActivityHostJoinRequests.ts",
@@ -542,7 +542,7 @@
         "src/config/platform.ts",
         "src/list",
         "src/explore",
-        "src/people-discovery",
+        "src/crew-discovery",
         "src/config/p4bPhaseProgramGuard.test.ts"
       ],
       "successMetric": "docs/NAVIGATION.md § Mobile five-tab — Phase 1 shipped; Phase 2–5 complete; resolveMobileFiveTab + handoff; memberSurfacesAcceptance + mobileFiveTabNav.test.ts; p4bPhaseProgramGuard; verify:system"
@@ -595,7 +595,7 @@
       "owner": "social_graph",
       "contextIds": ["social_graph", "discovery", "member_discovery"],
       "apiRoots": [],
-      "feRoots": ["src/people-discovery", "src/list", "src/explore"],
+      "feRoots": ["src/crew-discovery", "src/list", "src/explore"],
       "successMetric": "community_groups + geoRef; GET discover communities; Find crew Communities list (country→city sort); community home route; activities host-as-community; bounded-context manifest + guards"
     },
     {
@@ -608,7 +608,7 @@
         "apps/api/src/services/profile-viewer-access.ts",
         "apps/api/src/services/member-discovery-me-read.ts"
       ],
-      "feRoots": ["src/member", "src/people-discovery", "src/pages/MemberProfile.tsx", "src/pages/Buddies.tsx"],
+      "feRoots": ["src/member", "src/crew-discovery", "src/pages/MemberProfile.tsx", "src/pages/MyCrews.tsx"],
       "successMetric": "memberProfileLink lenses; one people browse module; memberBrowseRowModel everywhere; memberSurfacesAcceptance"
     },
     {
@@ -683,7 +683,7 @@
       "owner": "discovery",
       "contextIds": ["member_discovery"],
       "apiRoots": ["apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts"],
-      "feRoots": ["src/api/domains/account.ts", "src/people-discovery"],
+      "feRoots": ["src/api/domains/account.ts", "src/crew-discovery"],
       "successMetric": "No /social mount; member-discovery network + browse + search paths"
     },
     {
@@ -740,7 +740,7 @@
       "feRoots": [
         "src/api/domains/availability.ts",
         "src/hooks/memberAvailabilityApi.ts",
-        "src/explore/ui/availabilityFlowEngine.ts"
+        "src/explore/ui/intentFixedFlowEngine.ts"
       ],
       "successMetric": "Crew registry is member_availability; no /me/seeking-posts client or new activityMode seeking writes"
     },
@@ -785,7 +785,7 @@
       "owner": "discovery",
       "contextIds": ["member_discovery", "social_graph"],
       "apiRoots": ["apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts"],
-      "feRoots": ["src/people-discovery", "src/content/explorePeopleBrowseCopy.ts"],
+      "feRoots": ["src/crew-discovery", "src/content/exploreCrewsCopy.ts"],
       "successMetric": "No orphan /people registrar; buddies segment BWL; UPL People/Friends"
     },
     {
@@ -925,6 +925,44 @@
         "src/hosting"
       ],
       "successMetric": "Tracks MIG-COMPOSE-KIND + HOST-SURFACE-UNIFY + HUB-TERM. Target compose emit activity|place|intent (legacy parse shared-types only); operator SPA /operator/*; wishlist POST /me/wishlist not compose. Closed by migPlatformComposeOperatorProgramGuard + verify:system. Canonical plan: .cursor/plans/compose_kind_wire_refactor_1cc2bc46.plan.md"
+    },
+    {
+      "id": "MIG-PEOPLE-VOCAB-2026",
+      "phase": "P4b",
+      "status": "in_progress",
+      "owner": "product-eng",
+      "contextIds": [
+        "social_graph",
+        "member_discovery",
+        "communication",
+        "participation",
+        "compose",
+        "engagement"
+      ],
+      "apiRoots": [
+        "apps/api/src/routes/user/registerBuddyRoutes.ts",
+        "apps/api/src/services/member-people-engagement.ts",
+        "apps/api/src/services/chat-policy.ts",
+        "apps/api/src/services/me-availability-commands.ts",
+        "packages/shared-types/src/wire-lexicon.ts",
+        "packages/shared-types/src/crew-pillars.ts"
+      ],
+      "feRoots": [
+        "scripts/people-vocabulary-touchpoints.json",
+        "src/config/peopleVocabularyTouchpointsGuard.test.ts",
+        "src/config/crewPillarsAlignmentGuard.test.ts",
+        "src/crew/crewPillarSurfaces.ts",
+        "src/hooks/useMeFriendsNetwork.ts",
+        "src/pages/MyCrews.tsx",
+        "src/list/crews/crewsStatTab.ts",
+        "src/utils/notificationRouting.ts",
+        "src/components/activity/ActivityInviteModalBody.tsx",
+        "src/components/profile/MemberProfileFriendActions.tsx",
+        "src/member/coordinationAttentionPresentation.ts",
+        "src/content/upl-glossary.ts",
+        "src/explore/compose.ts"
+      ],
+      "successMetric": "Canonical plan: .cursor/plans/people_crew_vocab_mig_2026.plan.md (P0–P8, §1.5 three surfaces, P5c Find crew lenses). Manifest v2: scripts/people-vocabulary-touchpoints.json. Close when matrix C-01–C-13 + verify:system; no hireable/memberHireable source; My crew ≠ Find crew browse."
     }
   ],
   "stranglerRules": [

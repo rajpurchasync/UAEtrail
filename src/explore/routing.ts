@@ -252,8 +252,8 @@ export const explorePath = (options?: {
   hostFrom?: string;
   /** Limit pins to signed-in member activities + wishlist (requires auth). */
   myPlan?: boolean;
-  /** Open browse member people panel (`view=people`). */
-  peopleBrowse?: boolean;
+  /** Open **Crews** browse panel (`view=people` wire). */
+  crews?: boolean;
   /** Prefill compose — buddy to plan with (post-publish invite). */
   planWith?: string;
   /** Activity join-invite deep link — use with `pin=activity:{id}`. */
@@ -321,7 +321,7 @@ export const explorePath = (options?: {
   if (options?.myPlan) {
     params.set(MY_PLAN_MAP_QUERY_KEY, '1');
   }
-  if (options?.peopleBrowse) {
+  if (options?.crews) {
     params.set('view', 'people');
     if (options.list !== false) {
       params.set('list', '1');
@@ -345,9 +345,9 @@ export const explorePath = (options?: {
   return qs ? `${EXPLORE_MAP_PATH}?${qs}` : EXPLORE_MAP_PATH;
 };
 
-/** Explore map with member people browse panel open. */
-export const explorePeopleBrowsePath = (options?: { list?: boolean }): string =>
-  explorePath({ peopleBrowse: true, list: options?.list ?? true });
+/** Explore map with **Crews** panel open (`view=people`). */
+export const exploreCrewsPath = (options?: { list?: boolean }): string =>
+  explorePath({ crews: true, list: options?.list ?? true });
 
 /** Full-screen list explorer. */
 export const exploreDiscoverBrowsePath = (): string => LIST_DISCOVERY_PATH;

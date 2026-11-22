@@ -257,7 +257,7 @@ export const AreaDetailView = ({
               ))}
             </ul>
             <Link
-              to={explorePath({ peopleBrowse: true, area: area.slug, list: true })}
+              to={explorePath({ crews: true, area: area.slug, list: true })}
               className="text-sm font-semibold text-emerald-800"
             >
               Browse people on the map

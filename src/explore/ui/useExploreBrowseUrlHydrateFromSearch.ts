@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react';
-import { clampGuestPeopleBrowse, parseExploreBrowseStateFromSearchParams } from '../exploreBrowseUrlHydrate';
+import { clampGuestCrewsBrowse, parseExploreBrowseStateFromSearchParams } from '../exploreBrowseUrlHydrate';
 import { applyExploreBrowseHydratedState, type ExploreBrowseUrlSetterBundle } from './exploreBrowseUrlApplyHydrated';
 
 export const useExploreBrowseUrlHydrateFromSearch = (
@@ -16,7 +16,7 @@ export const useExploreBrowseUrlHydrateFromSearch = (
   const browseSearchKey = searchParams.toString();
   useEffect(() => {
     applyHydratedState(
-      clampGuestPeopleBrowse(parseExploreBrowseStateFromSearchParams(searchParams, isDesktop), isSignedIn)
+      clampGuestCrewsBrowse(parseExploreBrowseStateFromSearchParams(searchParams, isDesktop), isSignedIn)
     );
   }, [browseSearchKey, isDesktop, isSignedIn, applyHydratedState]);
 };

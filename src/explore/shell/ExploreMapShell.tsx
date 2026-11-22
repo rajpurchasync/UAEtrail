@@ -33,8 +33,8 @@ type Props = Pick<
   | 'loadError'
   | 'reloadMap'
   | 'handleMapPinClick'
-  | 'openPeopleBrowsePanel'
-  | 'peopleBrowseMapChip'
+  | 'openCrewsBrowsePanel'
+  | 'crewsBrowseMapChip'
   | 'joinInvitePeekBanner'
   | 'handleCloseMapSelection'
   | 'primaryFabLabel'
@@ -69,8 +69,8 @@ export const ExploreMapShell = ({
   loadError,
   reloadMap,
   handleMapPinClick,
-  openPeopleBrowsePanel,
-  peopleBrowseMapChip,
+  openCrewsBrowsePanel,
+  crewsBrowseMapChip,
   joinInvitePeekBanner,
   handleCloseMapSelection,
   primaryFabLabel,
@@ -102,8 +102,8 @@ export const ExploreMapShell = ({
   const desktopGuestComposeGateOpen =
     useDesktopGuestGatePanel && compose.guestComposeSignInOpen && !composeWizardActive;
   const desktopBrowseSplit =
-    isDesktop && (browse.showDesktopCatalogDrawer || browse.peopleBrowseOpen);
-  const mapLayoutRevision = desktopBrowseSplit || browse.listOpen || browse.peopleBrowseOpen;
+    isDesktop && (browse.showDesktopCatalogDrawer || browse.crewsBrowseOpen);
+  const mapLayoutRevision = desktopBrowseSplit || browse.listOpen || browse.crewsBrowseOpen;
 
   let desktopRightPanelOverlay = null;
   if (desktopGuestComposeGateOpen) {
@@ -169,13 +169,13 @@ export const ExploreMapShell = ({
       onHasTripChange={browse.applyHasTrip}
       onFacilityKindsChange={browse.applyFacilityKinds}
       onVenueFiltersChange={browse.applyVenueFilters}
-      onOpenPeopleBrowsePanel={
-        user ? openPeopleBrowsePanel : () => selection.handleGuestGatedAction('view_detail')
+      onOpenCrewsBrowsePanel={
+        user ? openCrewsBrowsePanel : () => selection.handleGuestGatedAction('view_detail')
       }
-      peopleBrowsePanelAvatars={user ? peopleBrowseMapChip?.avatars ?? [] : []}
-      peopleBrowsePanelFriendCount={peopleBrowseMapChip?.friendCount ?? 0}
-      peopleBrowseGuest={!user}
-      peopleBrowsePossibleCrewCount={peopleBrowseMapChip?.crewCount ?? 0}
+      crewsBrowseMapAvatars={user ? crewsBrowseMapChip?.avatars ?? [] : []}
+      crewsBrowseMapFriendCount={crewsBrowseMapChip?.friendCount ?? 0}
+      crewsBrowseMapGuest={!user}
+      crewsBrowseMapCrewCount={crewsBrowseMapChip?.crewCount ?? 0}
       searchQuery={browse.query}
       onSearchQueryChange={browse.setQuery}
       onOpenExploreSearch={() => {
@@ -191,11 +191,11 @@ export const ExploreMapShell = ({
       onToggleMapStyle={viewport.toggleExploreMapStyle}
       onLocateMe={viewport.handleLocateMe}
       mapPins={
-        browse.peopleBrowseOpen
+        browse.crewsBrowseOpen
           ? mapPins.filter((pin) => exploreMapItemIsAvailabilityCatalog(pin))
           : mapPins
       }
-      peopleMap={browse.peopleBrowseOpen}
+      crewsBrowseMap={browse.crewsBrowseOpen}
       mapLayoutRevision={mapLayoutRevision}
       selectedId={selectedId}
       highlightedExploreItemId={highlightedExploreItemId}

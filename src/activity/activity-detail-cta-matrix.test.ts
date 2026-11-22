@@ -115,7 +115,7 @@ describe('activity detail CTA matrix — runtime (AD-CTA-01)', () => {
       'offer_rideshare',
       'view_detail',
     ]);
-    expect(policy.presentation.footerByTab.buddies).toBe('plan_join');
+    expect(policy.presentation.footerByTab.crew).toBe('plan_join');
     expect(policy.strips.showJoinedStatusChipOnPeek).toBe(true);
     expect(policy.strips.showOfferRideInLogistics).toBe(true);
   });

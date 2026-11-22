@@ -159,7 +159,7 @@
         "apps/api/src/routes/user/registerGroupRoutes.ts"
       ],
       "feDomains": ["src/api/domains/buddies.ts", "src/api/domains/groups.ts"],
-      "feRoots": ["src/pages/Buddies.tsx", "src/pages/Groups.tsx"]
+      "feRoots": ["src/pages/MyCrews.tsx", "src/pages/Groups.tsx"]
     },
     {
       "id": "places",
@@ -254,7 +254,7 @@
       "feDomains": ["src/api/domains/account.ts"],
       "feRoots": [
         "src/pages/MemberProfile.tsx",
-        "src/people-discovery",
+        "src/crew-discovery",
         "src/member/memberProfileLink.ts",
         "src/list/ListDiscoveryExperience.tsx",
         "src/list/shell/useListDiscoveryExperienceModel.ts",

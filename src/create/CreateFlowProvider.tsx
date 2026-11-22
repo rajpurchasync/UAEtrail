@@ -22,7 +22,7 @@ import { parseExploreAreaSlug } from '../explore/exploreAreaFilter';
 import { parseFacilityOnPlaceId, parsePlanWithUserId } from '../explore/routing';
 import type { HostingWizardPrefill } from '../explore/ui/hostingWizardPrefill';
 import type { AddSubmitResult } from '../explore/ui/addFlow';
-import type { AvailabilityFixedSubmitResult } from '../explore/ui/availabilityFlowEngine';
+import type { AvailabilityFixedSubmitResult } from '../explore/ui/intentFixedFlowEngine';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { reloadExploreMap } from '../hooks/useExploreMap';
 import { useMinWidthMd } from '../hooks/useMinWidthMd';

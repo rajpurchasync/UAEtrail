@@ -69,7 +69,7 @@ export const resolveActivityDetailMobileTab = (
   const showTransportTab = resolveActivityDetailShowTransportTab(activity, pageModel.kind);
   const visible = resolveVisibleActivityDetailTabs(pageModel.tabVisibility, { showTransportTab });
   const requested = options.tabParam
-    ? (['plan', 'place', 'buddies', 'transport'] as const).includes(
+    ? (['plan', 'place', 'crew', 'transport'] as const).includes(
         options.tabParam as ActivityDetailTabId
       )
       ? (options.tabParam as ActivityDetailTabId)

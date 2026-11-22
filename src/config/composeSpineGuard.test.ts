@@ -39,7 +39,7 @@ describe('composeSpineGuard (DMCP Phase 4 rollup)', () => {
   it('COMPOSE-SPINE-04: compose catalog maps three wizards only', () => {
     const catalog = read('src/explore/composeFlowCatalog.ts');
     expect(catalog).toMatch(/wizard: 'hostingFlow'/);
-    expect(catalog).toMatch(/wizard: 'availabilityFlow'/);
+    expect(catalog).toMatch(/wizard: 'intentFixedFlow'/);
     expect(catalog).not.toMatch(/wizard: 'seekingFlow'/);
     expect(catalog).not.toMatch(/wizard: 'demandFlow'/);
     expect(catalog).toMatch(/COMPOSE_FLOW_SPEC_DOC/);

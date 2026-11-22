@@ -210,7 +210,7 @@ export const ActivityDetailSections = ({
               isHostViewer || canOpenParticipantRoster ? activityCrewPath(model.activity.id) : null
             }
             pendingReviewCount={
-              isHostViewer ? (model.hostBuddiesHub?.joinRequests.length ?? 0) : 0
+              isHostViewer ? (model.hostCrewHub?.joinRequests.length ?? 0) : 0
             }
           />
         ) : null}

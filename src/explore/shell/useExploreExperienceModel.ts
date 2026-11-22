@@ -29,7 +29,7 @@ import type { ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import { guestExplorePreviewCanSearch } from '../guestMapPreviewPolicy';
 import { useHostActivitySheetBundle } from '../../hooks/useHostActivitySheetBundle';
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
-import { useExplorePeopleBrowseBundle } from './useExplorePeopleBrowseBundle';
+import { useCrewDiscoveryBrowseBundle } from '@/crew-discovery/hooks/useCrewDiscoveryBrowseBundle';
 import { useExplorePinDeepLink } from './useExplorePinDeepLink';
 import { useExploreMapCatalog } from './useExploreMapCatalog';
 import { useExploreMapInteractionHandlers } from './useExploreMapInteractionHandlers';
@@ -165,14 +165,14 @@ export const useExploreExperienceModel = () => {
     () =>
       resolveExploreMapCreateFabHints({
         panel: browse.panel,
-        peopleBrowseOpen: browse.peopleBrowseOpen,
+        crewsBrowseOpen: browse.crewsBrowseOpen,
         listMode: browse.listMode,
         pinKind: browse.pinKind,
         placesMode: browse.placesMode,
       }),
     [
       browse.panel,
-      browse.peopleBrowseOpen,
+      browse.crewsBrowseOpen,
       browse.listMode,
       browse.pinKind,
       browse.placesMode,
@@ -302,8 +302,8 @@ export const useExploreExperienceModel = () => {
     activityModeFilter: browse.activityModeFilter,
   });
 
-  const { peopleBrowsePanelProps, openPeopleBrowsePanel, peopleBrowseMapChip } =
-    useExplorePeopleBrowseBundle({
+  const { crewsBrowsePanelProps, openCrewsBrowsePanel, crewsBrowseMapChip } =
+    useCrewDiscoveryBrowseBundle({
       user,
       hostStatus,
       browse,
@@ -391,9 +391,9 @@ export const useExploreExperienceModel = () => {
     areaSlug,
     mapItems,
     browse,
-    peopleBrowsePanelProps,
-    openPeopleBrowsePanel,
-    peopleBrowseMapChip,
+    crewsBrowsePanelProps,
+    openCrewsBrowsePanel,
+    crewsBrowseMapChip,
     compose,
     selection,
     selectionItems,

@@ -32,7 +32,7 @@ import {
   exploreItemMatchesBrowseAudienceFilter,
   type BrowseAudienceFilter,
 } from './browseAudienceFilter';
-import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
+import type { CrewBrowseLane, CrewPeopleFacet } from '@/crew-discovery/crewBrowseState';
 import { exploreItemMatchesBrowseGeoPath } from './browseGeoPath';
 
 export type BrowsePriceFilter = ExplorePriceFilter;
@@ -53,8 +53,10 @@ export type BrowseListFilterState = {
   when: BrowseWhenFilter;
   /** Aligns with explore map `?date=` (today · tomorrow · week · month). */
   activityDatePreset: ExploreActivityDatePreset;
-  /** Crews list tab — mirrors explore `peopleTab` (Overview = hub). */
-  peopleBrowseTab: PeopleBrowseTab;
+  /** Crews list lane — mirrors explore `peopleTab` (default People). */
+  crewBrowseLane: CrewBrowseLane;
+  /** People tab facet — `peopleFacet` query (default Recommended). */
+  crewPeopleFacet: CrewPeopleFacet;
   /** Venues with an upcoming hosted outing. Default off = all kinds. */
   hasTrip: boolean;
   /** Amenity subtypes — empty = all facilities when Facilities is selected. */

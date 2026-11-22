@@ -6,7 +6,7 @@ import { MobileDetailScrollShell } from '../components/mobile/MobileDetailScroll
 import { DetailPageLoadingState } from '../components/ui/DetailPageLoadingState';
 import { SecureAvatar } from '../components/ui';
 import { PageMeta } from '../components/seo/PageMeta';
-import { ActivityDetailHostBuddiesHub } from '../components/activity/detail/ActivityDetailHostBuddiesHub';
+import { ActivityDetailHostCrewHub } from '../components/activity/detail/ActivityDetailHostCrewHub';
 import { DETAIL_LOADING_ACTIVITY } from '../content/detailLoadingCopy';
 import { ACTIVITY_PARTICIPANTS_SECTION_LABEL } from '../content/activityParticipantsCopy';
 import { activityDetailParticipantCountLabel } from '../components/activity/detail/activityDetailParticipantCountLabel';
@@ -105,7 +105,7 @@ export const ActivityCrewPage = () => {
             </p>
           ) : null}
           {isHost && gate.tenantId ? (
-            <ActivityDetailHostBuddiesHub
+            <ActivityDetailHostCrewHub
               tenantId={gate.tenantId}
               activityId={activity.id}
               activityTitle={activity.title || activity.locationName}

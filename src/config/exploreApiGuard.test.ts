@@ -5,7 +5,7 @@ import { usesDirectApiFacade } from './apiGuardPatterns';
 
 const EXPLORE_API_GUARD_ROOTS = [
   join(process.cwd(), 'src', 'explore'),
-  join(process.cwd(), 'src', 'people-discovery'),
+  join(process.cwd(), 'src', 'crew-discovery'),
 ];
 
 /** R8.1 — explore UI must not call `api.*` / `apiRequest` directly; use hooks *ClientApi. */

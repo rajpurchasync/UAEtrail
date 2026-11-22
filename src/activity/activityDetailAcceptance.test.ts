@@ -89,7 +89,7 @@ describe('activity detail program — wiring', () => {
 
   it('AD-HYGIENE-01: People browse panel is not wrapped in ListFeedActionsProvider', () => {
     const browsePanels = read('src/explore/shell/ExploreExperienceBrowsePanels.tsx');
-    expect(browsePanels).toMatch(/PeopleBrowsePanel/);
+    expect(browsePanels).toMatch(/CrewsBrowsePanel/);
     expect(browsePanels).not.toMatch(/ListFeedActionsProvider/);
     expect(browsePanels).not.toMatch(/ExploreBrowsePanel/);
   });
@@ -159,9 +159,9 @@ describe('activity detail program — wiring', () => {
     expect(page).not.toMatch(/hostSheets/);
     expect(read('src/activity/detail/templates/ActivityDetailSections.tsx')).toMatch(/activityCrewPath/);
     expect(read('src/activity/detail/templates/ActivityDetailSections.tsx')).not.toMatch(
-      /ActivityDetailHostBuddiesHub/
+      /ActivityDetailHostCrewHub/
     );
-    expect(read('src/pages/ActivityCrewPage.tsx')).toMatch(/ActivityDetailHostBuddiesHub/);
+    expect(read('src/pages/ActivityCrewPage.tsx')).toMatch(/ActivityDetailHostCrewHub/);
     expect(read('src/routing/AppRoutes.tsx')).toMatch(/\/activity\/:id\/crew/);
     expect(page).not.toMatch(/CreateHostingActivityFlow/);
     expect(page).not.toMatch(/hostDetailCtas/);
@@ -170,8 +170,8 @@ describe('activity detail program — wiring', () => {
     expect(view).not.toMatch(/hostMobilePlanAccessory/);
   });
 
-  it('AD-PART-SPINE-01: host Buddies tab approves via publishingJoinQueueClientApi', () => {
-    const hub = read('src/components/activity/detail/ActivityDetailHostBuddiesHub.tsx');
+  it('AD-PART-SPINE-01: host Crew tab approves via publishingJoinQueueClientApi', () => {
+    const hub = read('src/components/activity/detail/ActivityDetailHostCrewHub.tsx');
     expect(hub).toMatch(/publishingJoinQueueClientApi/);
     expect(hub).toMatch(/afterHostJoinDecisionClientRefresh/);
     expect(hub).not.toMatch(/\bapi\./);
@@ -480,7 +480,7 @@ describe('activity detail program — structure (R6)', () => {
     expect(read('src/explore/shell/useExploreExperienceModel.ts')).toMatch(/useHostActivitySheetBundle/);
     const bundle = read('src/hooks/useHostActivitySheetBundle.tsx');
     expect(bundle).toMatch(/activityCrewPath/);
-    expect(read('src/pages/ActivityCrewPage.tsx')).toMatch(/ActivityDetailHostBuddiesHub/);
+    expect(read('src/pages/ActivityCrewPage.tsx')).toMatch(/ActivityDetailHostCrewHub/);
     expect(bundle).not.toMatch(/ActivityManageSheet/);
   });
 

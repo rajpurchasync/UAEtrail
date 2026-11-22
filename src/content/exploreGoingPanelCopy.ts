@@ -1,12 +1,12 @@
 /**
  * Join-me invites, member-discovery quota gates, and legacy aliases.
- * Explore People browse panel copy: `explorePeopleBrowseCopy.ts`.
+ * Explore **Crews** lens copy: `exploreCrewsCopy.ts`.
  */
 
 export {
-  EXPLORE_PEOPLE_BROWSE_MAP_BUTTON_LABEL as EXPLORE_GOING_MAP_BUTTON_LABEL,
-  explorePeopleBrowseMapButtonAriaLabel as exploreGoingMapButtonAriaLabel,
-} from './explorePeopleBrowseCopy';
+  EXPLORE_CREWS_MAP_BUTTON_LABEL as EXPLORE_GOING_MAP_BUTTON_LABEL,
+  exploreCrewsMapButtonAriaLabel as exploreGoingMapButtonAriaLabel,
+} from './exploreCrewsCopy';
 
 export const MEMBER_DISCOVERY_QUOTA_GATE_TITLE = 'Discovery limit reached';
 export const MEMBER_DISCOVERY_QUOTA_GATE_BODY =

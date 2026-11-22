@@ -7,7 +7,7 @@ import { isMerchantShopMapItem, mapItemMatchesShopsPill } from './exploreMapItem
 import {
   EXPLORE_SEARCH_SCOPE_PEOPLE_DESCRIPTION,
   EXPLORE_SEARCH_SCOPE_PEOPLE_LABEL,
-} from '../content/explorePeopleBrowseCopy';
+} from '../content/exploreCrewsCopy';
 import type { ExplorePanel } from './routing';
 import { MAP_LENS_SPOTS_LABEL } from '../place/geographyVocabulary';
 import type { ExplorePinKindFilter } from './explorePinKindFilter';
@@ -21,7 +21,7 @@ import { normalizeExploreSearchScopeInbound } from '../routing/productUrlInbound
 
 export const EXPLORE_SEARCH_PROMPT = 'What are you looking for?';
 
-export const EXPLORE_SEARCH_OPEN_PLACEHOLDER = 'Activities, places, people, shops…';
+export const EXPLORE_SEARCH_OPEN_PLACEHOLDER = 'Activities, places, crews, shops…';
 
 /** Guest map search — no member People scope until signed in. */
 export const EXPLORE_SEARCH_GUEST_PLACEHOLDER = 'Activities, places, spots, events, shops…';

@@ -22,7 +22,7 @@ import {
   usesHikingAvailabilityFlow,
   usesRideshareAvailabilityFlow,
   type AvailabilityFixedFlowStepId,
-} from '../../availabilityFlowEngine';
+} from '../../intentFixedFlowEngine';
 import type { TimeMode } from '../../createFlowShared';
 import { AvailabilityCuratedAreaStep } from '../../AvailabilityCuratedAreaStep';
 import {

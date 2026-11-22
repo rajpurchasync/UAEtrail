@@ -15,7 +15,7 @@ const SOURCE_ROOTS = [
   'src/discovery',
   'src/activity-discovery',
   'src/places-discovery',
-  'src/people-discovery',
+  'src/crew-discovery',
 ];
 
 const IMPORT_RE =

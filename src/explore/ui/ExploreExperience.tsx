@@ -32,7 +32,7 @@ export const ExploreExperience = () => {
         <ExploreExperienceBrowsePanels
           isDesktop={model.isDesktop}
           browse={model.browse}
-          peopleBrowsePanelProps={model.peopleBrowsePanelProps}
+          crewsBrowsePanelProps={model.crewsBrowsePanelProps}
           prefetchedCatalogItems={model.mapItems}
           mapStage={
             <ExploreMapShell
@@ -66,8 +66,8 @@ export const ExploreExperience = () => {
               handlePickExploreArea={model.handlePickExploreArea}
               onVisibleMapBoundsChange={model.onVisibleMapBoundsChange}
               catalogListCount={model.catalogListCount}
-              openPeopleBrowsePanel={model.openPeopleBrowsePanel}
-              peopleBrowseMapChip={model.peopleBrowseMapChip}
+              openCrewsBrowsePanel={model.openCrewsBrowsePanel}
+              crewsBrowseMapChip={model.crewsBrowseMapChip}
             />
           }
         />

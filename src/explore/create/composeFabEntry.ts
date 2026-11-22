@@ -9,12 +9,12 @@ import { explorePanelToBrowseListBucket } from '../ui/exploreMapQuickFiltersStat
 /** Live map browse scope — URL can lag while Trips/Venues tabs update. */
 export const resolveExploreMapCreateFabHints = (input: {
   panel: ExplorePanel;
-  peopleBrowseOpen: boolean;
+  crewsBrowseOpen: boolean;
   listMode: ExploreBrowseListMode;
   pinKind: ExplorePinKindFilter;
   placesMode: boolean;
 }): BrowseListCreateFabHints | undefined => {
-  if (input.peopleBrowseOpen || input.listMode === 'people') {
+  if (input.crewsBrowseOpen || input.listMode === 'crews') {
     return { isPeopleCategory: true };
   }
   if (

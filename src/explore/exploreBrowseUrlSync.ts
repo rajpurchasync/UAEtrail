@@ -25,15 +25,17 @@ import {
 import type { ProductSearchMutationContext } from '../routing/productSearchMutation';
 import { applyProductSearchMutation } from '../routing/productSearchMutation';
 import type { BrowseMainCategoryKey } from '../list/browse/browseListTaxonomy';
-import { BROWSE_DISCOVER_PARAM, LIST_CAT_PARAM } from '../list/browse/browseListUrlState';
+import { BROWSE_DISCOVER_PARAM, LIST_CAT_PARAM, parseListCatParam } from '../list/browse/browseListUrlState';
 import {
   serializeExplorePinKindFilter,
   type ExplorePinKindFilter,
 } from './explorePinKindFilter';
+import type { CrewBrowseLane, CrewPeopleFacet } from '@/crew-discovery/crewBrowseState';
 import {
-  serializePeopleBrowseTab,
-  type PeopleBrowseTab,
-} from '@/people-discovery/peopleBrowseTab';
+  PEOPLE_FACET_URL_PARAM,
+  PEOPLE_LIST_TAB_URL_PARAM,
+  serializePeopleListBrowseState,
+} from '../list/browse/peopleListBrowseUrl';
 import {
   EXPLORE_ACTIVITY_MODE_FILTER_PARAM,
   serializeExploreActivityModeFilter,
@@ -60,11 +62,10 @@ import type { PlaceKind } from '@uaetrail/shared-types';
 import { BROWSE_GEO_PARAM, serializeBrowseGeoPath } from '../list/browse/browseGeoPath';
 import {
   INBOUND_SEARCH_SCOPE_FOCUS_PARAM,
-  PEOPLE_LIST_TAB_URL_PARAM,
   stripRetiredExploreOverlayParams,
   stripRetiredPeopleListTabParams,
 } from '../routing/productUrlInbound';
-export type ExploreBrowseListMode = 'default' | 'people';
+export type ExploreBrowseListMode = 'default' | 'crews';
 
 export type ExploreBrowseUrlSyncPatch = {
   filter?: MapFilterKey;
@@ -83,9 +84,10 @@ export type ExploreBrowseUrlSyncPatch = {
   pinKind?: ExplorePinKindFilter;
   topicPills?: ExploreMapFilterPillKey[];
   listMode?: ExploreBrowseListMode;
-  peopleBrowseOpen?: boolean;
+  crewsBrowseOpen?: boolean;
   searchScope?: ExploreSearchScopeKey | null;
-  peopleBrowseTab?: PeopleBrowseTab;
+  crewBrowseLane?: CrewBrowseLane;
+  crewPeopleFacet?: CrewPeopleFacet;
   listCat?: BrowseMainCategoryKey | null;
   tripMapTopics?: TripMapTopicKey[];
   placeMapTopics?: PlaceMapTopicKey[];
@@ -111,9 +113,10 @@ export type ExploreBrowseUrlSyncState = {
   pinKind: ExplorePinKindFilter;
   topicPills: ExploreMapFilterPillKey[];
   listMode: ExploreBrowseListMode;
-  peopleBrowseOpen: boolean;
+  crewsBrowseOpen: boolean;
   searchScope: ExploreSearchScopeKey | null;
-  peopleBrowseTab: PeopleBrowseTab;
+  crewBrowseLane: CrewBrowseLane;
+  crewPeopleFacet: CrewPeopleFacet;
   tripMapTopics: TripMapTopicKey[];
   placeMapTopics: PlaceMapTopicKey[];
   priceFilter: ExplorePriceFilter;
@@ -157,8 +160,8 @@ export const buildExploreBrowseSearchParams = (input: {
   const hasTripValue = patch.hasTrip ?? state.hasTrip ?? false;
   const facilityKindsValue = patch.facilityKinds ?? state.facilityKinds ?? [];
   const listModeValue = patch.listMode ?? state.listMode;
-  const peopleBrowseOpenValue = patch.peopleBrowseOpen ?? state.peopleBrowseOpen;
-  const peoplePanelActive = peopleBrowseOpenValue || listModeValue === 'people';
+  const crewsBrowseOpenValue = patch.crewsBrowseOpen ?? state.crewsBrowseOpen;
+  const crewsBrowsePanelActive = crewsBrowseOpenValue || listModeValue === 'crews';
   const searchScopeValue = patch.searchScope !== undefined ? patch.searchScope : state.searchScope;
 
   if (filterValue === 'all') {
@@ -230,15 +233,28 @@ export const buildExploreBrowseSearchParams = (input: {
   if (serializedFacilityKinds) params.set(EXPLORE_FACILITY_KINDS_PARAM, serializedFacilityKinds);
   else params.delete(EXPLORE_FACILITY_KINDS_PARAM);
 
-  const peopleBrowseTabValue = patch.peopleBrowseTab ?? state.peopleBrowseTab;
-  if (peoplePanelActive) {
+  const crewLane = patch.crewBrowseLane ?? state.crewBrowseLane;
+  const crewFacet = patch.crewPeopleFacet ?? state.crewPeopleFacet;
+  const listCatForCrews =
+    patch.listCat !== undefined ? patch.listCat : parseListCatParam(input.base.get(LIST_CAT_PARAM));
+  const crewsListDrawer = listValue && listCatForCrews === 'people';
+  if (crewsBrowsePanelActive) {
     params.set('view', 'people');
-    const serializedPeopleTab = serializePeopleBrowseTab(peopleBrowseTabValue);
-    if (serializedPeopleTab) params.set(PEOPLE_LIST_TAB_URL_PARAM, serializedPeopleTab);
-    else params.delete(PEOPLE_LIST_TAB_URL_PARAM);
   } else {
     params.delete('view');
+  }
+  if (crewsBrowsePanelActive || crewsListDrawer) {
+    const { peopleTab, peopleFacet } = serializePeopleListBrowseState({
+      lane: crewLane,
+      facet: crewFacet,
+    });
+    if (peopleTab) params.set(PEOPLE_LIST_TAB_URL_PARAM, peopleTab);
+    else params.delete(PEOPLE_LIST_TAB_URL_PARAM);
+    if (peopleFacet) params.set(PEOPLE_FACET_URL_PARAM, peopleFacet);
+    else params.delete(PEOPLE_FACET_URL_PARAM);
+  } else {
     params.delete(PEOPLE_LIST_TAB_URL_PARAM);
+    params.delete(PEOPLE_FACET_URL_PARAM);
   }
   stripRetiredPeopleListTabParams(params);
 

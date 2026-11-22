@@ -94,7 +94,7 @@ export type ActivityDetailViewModelInput = {
     onSaved?: (policy: ActivityGroupChatPostPolicy) => void;
     onError?: (message: string) => void;
   };
-  hostBuddiesHub?: {
+  hostCrewHub?: {
     joinRequests: ActivityRequestView[];
     requestsLoading: boolean;
     onRequestsChanged: () => void | Promise<void>;
@@ -141,7 +141,7 @@ export const useActivityDetailViewModel = ({
   viewerEntitlements = null,
   layout = 'page',
   hostCrewChatPolicy,
-  hostBuddiesHub,
+  hostCrewHub,
   wireFooterByTab = null,
   wireStrips = null,
   wireSections = null,
@@ -210,7 +210,7 @@ export const useActivityDetailViewModel = ({
   const guestViewer = requiresSignIn && !previewMode && !isEmbedded;
   const showPlaceCrewBody = guestViewer ? false : wireShowPlaceCrewBody;
   const showPlaceLockedOnMobile = guestViewer ? true : wireShowPlaceLockedOnMobile;
-  const buddiesCrewLockedHint = wireCrewLockedHint || guestViewer;
+  const crewLockedHint = wireCrewLockedHint || guestViewer;
 
   const showTransportTab = resolveActivityDetailShowTransportTab(activity, pageModel.kind);
   const visibleMobileTabs = useMemo(
@@ -465,9 +465,9 @@ export const useActivityDetailViewModel = ({
     showMobileTabs,
     showPlaceCrewBody,
     showPlaceLockedOnMobile,
-    buddiesCrewLockedHint,
+    crewLockedHint,
     showHostManageHub,
-    hostBuddiesHub,
+    hostCrewHub,
     hostCrewChatPolicy,
     heroImage,
     heroImageFallback,

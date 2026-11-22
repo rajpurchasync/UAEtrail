@@ -127,8 +127,10 @@ export const sanitizeInboundExplorePinId = (pin: string | null | undefined): str
   return raw;
 };
 
-export const mapInboundPeopleBrowseTabValue = (raw: string): string | null => {
+export const mapInboundCrewBrowseTabValue = (raw: string): string | null => {
   switch (raw) {
+    case 'looking':
+      return 'available';
     case 'all':
       return 'connect';
     case 'friends':
@@ -137,7 +139,12 @@ export const mapInboundPeopleBrowseTabValue = (raw: string): string | null => {
     case 'discover':
       return 'available';
     case 'buddies':
-      return 'hub';
+    case 'hub':
+      return 'people';
+    case 'guides':
+    case 'operators':
+    case 'agencies':
+      return 'professional';
     default:
       return null;
   }

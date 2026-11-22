@@ -1,13 +1,13 @@
 import type { ActivityJoinEngagementKind } from './activity-join-engagement.js';
 
-export const ACTIVITY_DETAIL_TAB_IDS = ['plan', 'place', 'buddies', 'transport'] as const;
+export const ACTIVITY_DETAIL_TAB_IDS = ['plan', 'place', 'crew', 'transport'] as const;
 export type ActivityDetailTabId = (typeof ACTIVITY_DETAIL_TAB_IDS)[number];
 
 export type ActivityDetailTabFooterKind =
   | 'plan_join'
   | 'plan_host_share'
   | 'place_directions'
-  | 'buddies_invite'
+  | 'crew_invite'
   | 'transport_linked_ride'
   | 'transport_empty';
 
@@ -36,7 +36,7 @@ export const resolveActivityDetailTabFooterKind = (
   }
 
   if (input.isHostUser) {
-    if (input.tab === 'buddies' || input.tab === 'plan') return 'plan_host_share';
+    if (input.tab === 'crew' || input.tab === 'plan') return 'plan_host_share';
     if (input.tab === 'transport' && input.linkedRideshareId) return 'transport_linked_ride';
     return 'plan_host_share';
   }
@@ -50,8 +50,8 @@ export const resolveActivityDetailTabFooterKind = (
       return input.canAccessCrewSurfaces && input.hasMeetingCoordinates
         ? 'place_directions'
         : 'plan_join';
-    case 'buddies':
-      return input.showParticipantFooterShortcuts ? 'buddies_invite' : 'plan_join';
+    case 'crew':
+      return input.showParticipantFooterShortcuts ? 'crew_invite' : 'plan_join';
     case 'transport':
       if (input.linkedRideshareId || input.rideshareEnabled) return 'transport_linked_ride';
       return 'transport_empty';

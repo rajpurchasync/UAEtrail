@@ -9,7 +9,7 @@ const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
  */
 describe('guestParticipationKitGuard', () => {
   it('GPK-01: people browse panel gates with explore-people-browse intent', () => {
-    const tab = read('src/people-discovery/panel/peopleBrowse/PeopleBrowseTabContent.tsx');
+    const tab = read('src/crew-discovery/panel/crewBrowse/CrewBrowseTabContent.tsx');
     expect(tab).toMatch(/ExploreGuestSignInCard/);
     expect(tab).toMatch(/intent="explore-people-browse"/);
   });

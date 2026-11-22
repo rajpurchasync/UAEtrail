@@ -56,7 +56,7 @@ export interface ActivityDetailViewProps {
   /** Desktop sidebar — full crew chat / notifications cards (hidden on mobile; use footer shortcuts). */
   confirmedSidebarExtras?: ReactNode;
   joinDisabled?: boolean;
-  /** Confirmed participant — may send Join me invites to buddies (host uses console). */
+  /** Confirmed participant — may send Join me invites to friends (host uses console). */
   canSendJoinInvites?: boolean;
   activityReviews?: ReviewDTO[];
   onActivityReviewSubmitted?: (review: ReviewDTO) => void;
@@ -79,8 +79,8 @@ export interface ActivityDetailViewProps {
     onSaved?: (policy: ActivityGroupChatPostPolicy) => void;
     onError?: (message: string) => void;
   };
-  /** Host Crew tab — roster, pending queue, check-in (detail shell; wire `?tab=buddies`). */
-  hostBuddiesHub?: {
+  /** Host Crew tab — roster, pending queue, check-in (detail shell; wire `?tab=crew`). */
+  hostCrewHub?: {
     joinRequests: ActivityRequestView[];
     requestsLoading: boolean;
     onRequestsChanged: () => void | Promise<void>;
@@ -138,7 +138,7 @@ export const ActivityDetailView = ({
   viewerEntitlements = null,
   layout = 'page',
   hostCrewChatPolicy,
-  hostBuddiesHub,
+  hostCrewHub,
   wireFooterByTab = null,
   wireStrips = null,
   wireSections = null,
@@ -214,7 +214,7 @@ export const ActivityDetailView = ({
     viewerEntitlements,
     layout,
     hostCrewChatPolicy,
-    hostBuddiesHub,
+    hostCrewHub,
     wireFooterByTab,
     wireStrips,
     wireSections,

@@ -10,7 +10,7 @@ describe('parseActivityDetailTabParam', () => {
 
   it('parses section tabs', () => {
     expect(parseActivityDetailTabParam('place')).toBe('place');
-    expect(parseActivityDetailTabParam('buddies')).toBe('buddies');
+    expect(parseActivityDetailTabParam('buddies')).toBe('crew');
     expect(parseActivityDetailTabParam('transport')).toBe('transport');
   });
 });

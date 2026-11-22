@@ -1,4 +1,4 @@
-import { ActivityDetailBuddiesAside } from './tabs/ActivityDetailBuddiesAside';
+import { ActivityDetailCrewAside } from './tabs/ActivityDetailCrewAside';
 import { ActivityDetailPricingSidebar } from './ActivityDetailPricingSidebar';
 import type { useActivityDetailViewModel } from './useActivityDetailViewModel';
 
@@ -11,14 +11,14 @@ type ActivityDetailSidebarColumnProps = {
 /** Host sidebar: crew roster + pricing/join (S13-W7). */
 export const ActivityDetailSidebarColumn = ({ model }: ActivityDetailSidebarColumnProps) => (
   <div className={`space-y-4 ${model.mobileSidebarPanel}`}>
-    <ActivityDetailBuddiesAside
+    <ActivityDetailCrewAside
       panelClassName={model.mobileBuddiesPanel}
       previewMode={model.previewMode}
       showMobileTabs={model.showMobileTabs}
-      showCrewLockedHint={model.buddiesCrewLockedHint}
+      showCrewLockedHint={model.crewLockedHint}
       activityId={model.activity.id}
       activityTitle={model.activityTitle}
-      hostBuddiesHub={model.requiresSignIn ? undefined : model.showHostManageHub ? model.hostBuddiesHub : undefined}
+      hostCrewHub={model.requiresSignIn ? undefined : model.showHostManageHub ? model.hostCrewHub : undefined}
       hostCrewChatPolicy={model.requiresSignIn ? undefined : model.hostCrewChatPolicy}
     />
     <ActivityDetailPricingSidebar

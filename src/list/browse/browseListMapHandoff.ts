@@ -7,8 +7,9 @@ import {
 import type { BrowseListFilterState } from './browseListFilters';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import {
+  PEOPLE_FACET_URL_PARAM,
   PEOPLE_LIST_TAB_URL_PARAM,
-  serializePeopleListBrowseTab,
+  serializePeopleListBrowseState,
 } from './peopleListBrowseUrl';
 import {
   LIST_CAT_PARAM,
@@ -119,9 +120,14 @@ export const serializeBrowseListToExploreSearchParams = (
 
   if (listCat === 'people') {
     params.delete(LIST_CAT_PARAM);
-    const serializedPeopleTab = serializePeopleListBrowseTab(state.peopleBrowseTab);
-    if (serializedPeopleTab) params.set(PEOPLE_LIST_TAB_URL_PARAM, serializedPeopleTab);
+    const { peopleTab, peopleFacet } = serializePeopleListBrowseState({
+      lane: state.crewBrowseLane,
+      facet: state.crewPeopleFacet,
+    });
+    if (peopleTab) params.set(PEOPLE_LIST_TAB_URL_PARAM, peopleTab);
     else params.delete(PEOPLE_LIST_TAB_URL_PARAM);
+    if (peopleFacet) params.set(PEOPLE_FACET_URL_PARAM, peopleFacet);
+    else params.delete(PEOPLE_FACET_URL_PARAM);
     params.set('view', 'people');
     params.set('list', '1');
     params.delete('date');

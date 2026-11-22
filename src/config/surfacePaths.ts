@@ -131,11 +131,14 @@ export const CREWS_ORIGIN_QUERY = 'crews' as const;
 export const isCrewsOriginQuery = (from: string | null | undefined): boolean =>
   from === CREWS_ORIGIN_QUERY;
 
-export const buddiesPath = (options?: { from?: string }): string => {
-  if (!options?.from) return BUDDIES_PATH;
+export const myCrewsPath = (options?: { from?: string }): string => {
+  if (!options?.from) return MY_CREWS_PATH;
   const params = new URLSearchParams({ from: options.from });
-  return `${BUDDIES_PATH}?${params.toString()}`;
+  return `${MY_CREWS_PATH}?${params.toString()}`;
 };
+
+/** @deprecated Use {@link myCrewsPath}. */
+export const buddiesPath = myCrewsPath;
 
 /** Social hub child screens under {@link MY_CREWS_PATH} (Settings-style sections, not tabs). */
 export type SocialFriendsSection = 'friends' | 'requests' | 'following';

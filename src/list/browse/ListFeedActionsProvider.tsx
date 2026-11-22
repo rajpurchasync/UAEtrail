@@ -214,7 +214,7 @@ export const ListFeedActionsProvider = ({
             onOpenHostManage(activity, 'participants');
             return;
           }
-          navigate(`${activityDetailPath(activity.id)}?tab=buddies`, {
+          navigate(`${activityDetailPath(activity.id)}?tab=crew`, {
             state: mapPeekDetailNavState(location),
           });
         },

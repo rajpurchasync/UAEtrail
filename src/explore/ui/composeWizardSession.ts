@@ -4,7 +4,7 @@ import type { ExploreCompose } from '../compose';
 import { placeComposeFromVenueKind } from '../compose';
 import { composeFlowIdFromRoute } from '../composeFlowCatalog';
 import type { CreateActivityDraft, CreateActivityKind } from './hostingFlowEngine';
-import type { AvailabilityFixedDraft, AvailabilityFixedKind } from './availabilityFlowEngine';
+import type { AvailabilityFixedDraft, AvailabilityFixedKind } from './intentFixedFlowEngine';
 import type { AddDraft } from './addFlow';
 import type { FacilityAddDraft } from './addFacilityFlow';
 import type { AddVenueKind } from '../addTypes';

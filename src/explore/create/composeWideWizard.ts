@@ -1,6 +1,6 @@
 import type { AddFlowStepId } from '../ui/addFlow';
 import type { CreateFlowStepId } from '../ui/hostingFlowEngine';
-import type { AvailabilityFixedFlowStepId } from '../ui/availabilityFlowEngine';
+import type { AvailabilityFixedFlowStepId } from '../ui/intentFixedFlowEngine';
 
 /** Wider compose dialog on tablet/desktop single-page forms. */
 export const COMPOSE_WIDE_SHEET_MAX_WIDTH = 'md:max-w-2xl lg:max-w-3xl';

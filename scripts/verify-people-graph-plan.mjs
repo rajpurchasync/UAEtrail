@@ -28,7 +28,7 @@ console.log(`  dmcpPhase: ${matrix.dmcpPhase ?? 'unknown'}`);
 try {
   run(
     'FE teams · plan · crews guards',
-    'npx vitest run src/config/peopleGraphPlanSpineGuard.test.ts src/config/crewsTerminologyGuard.test.ts src/member-plan/planHubInboundGuard.test.ts src/config/planSurfaceApiGuard.test.ts packages/shared-types/src/member-group.test.ts'
+    'npx vitest run src/config/peopleGraphPlanSpineGuard.test.ts src/config/crewsTerminologyGuard.test.ts src/config/crewDiscoveryNamingGuard.test.ts src/config/peopleVocabularyTouchpointsGuard.test.ts src/config/crewPillarsAlignmentGuard.test.ts src/member-plan/planHubInboundGuard.test.ts src/config/planSurfaceApiGuard.test.ts packages/shared-types/src/member-group.test.ts packages/shared-types/src/crew-pillars.test.ts src/crew-discovery/buildRecommendedCrewFeed.test.ts src/crew-discovery/crewBrowseFeatureGates.test.ts'
   );
   run(
     'Cross-context people browse',

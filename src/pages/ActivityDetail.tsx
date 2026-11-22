@@ -554,7 +554,7 @@ export const ActivityDetail = () => {
               }
             : undefined
         }
-        hostBuddiesHub={
+        hostCrewHub={
           isActivityHostUser && gate.tenantId
             ? {
                 joinRequests: hostJoinRequests,

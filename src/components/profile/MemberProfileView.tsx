@@ -6,7 +6,7 @@ import { MemberProfileDeferredSectionAnchor } from './MemberProfileDeferredSecti
 import { MemberProfileSocialGraphAnchor } from './MemberProfileSocialGraphAnchor';
 import { MemberProfileSocialSections } from './MemberProfileSocialSections';
 import { MemberFollowControls } from './MemberFollowControls';
-import { MemberProfileBuddyActions } from './MemberProfileBuddyActions';
+import { MemberProfileFriendActions } from './MemberProfileFriendActions';
 import type { PersonPublicProfileDTO } from '../../api/types';
 import { GlassCard } from '../mobile/GlassCard';
 import { PublicProfileSectionHeading } from './PublicProfileSectionHeading';
@@ -184,7 +184,7 @@ export const MemberProfileView = ({
 
           {showConnectActions ? (
             <div className="lg:max-w-sm">
-            <MemberProfileBuddyActions
+            <MemberProfileFriendActions
               buddyRel={buddyRel}
               buddyBusy={buddyBusy}
               onSendBuddyRequest={onSendBuddyRequest}

@@ -2086,6 +2086,14 @@ export {
 } from './member-group.js';
 export type { MemberGroupInboundType, MemberGroupKind } from './member-group.js';
 
+export type { CrewPillarBoundedContext, CrewPillarId, CrewPillarSpec } from './crew-pillars.js';
+export {
+  CREW_PILLAR_IDS,
+  CREW_PILLAR_SPECS,
+  crewHubStatTabToPillar,
+  isCrewPillarId,
+} from './crew-pillars.js';
+
 export type {
   AreaBoundsRing,
   AreaCenter,

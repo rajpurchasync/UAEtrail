@@ -214,37 +214,37 @@ describe('list module hygiene', () => {
 
   it('explore peopleBrowse re-export shim is gone (EXPLORE-IA)', () => {
     expect(existsSync(join(process.cwd(), 'src/explore/ui/peopleBrowse'))).toBe(false);
-    expect(existsSync(join(process.cwd(), 'src/explore/peopleBrowseTab.ts'))).toBe(false);
+    expect(existsSync(join(process.cwd(), 'src/explore/CrewBrowseTab.ts'))).toBe(false);
   });
 
-  it('keeps explore People panel separate from the list explorer', () => {
+  it('keeps explore Crews browse panel separate from the list explorer', () => {
     const browsePanels = readFileSync(
       join(process.cwd(), 'src/explore/shell/ExploreExperienceBrowsePanels.tsx'),
       'utf8'
     );
-    const peoplePanel = readFileSync(
-      join(process.cwd(), 'src/people-discovery/panel/PeopleBrowsePanel.tsx'),
+    const crewsBrowsePanel = readFileSync(
+      join(process.cwd(), 'src/crew-discovery/panel/CrewsBrowsePanel.tsx'),
       'utf8'
     );
-    expect(browsePanels).toMatch(/PeopleBrowsePanel/);
+    expect(browsePanels).toMatch(/CrewsBrowsePanel/);
     expect(browsePanels).not.toMatch(/ExploreBrowsePanel/);
     expect(browsePanels).toMatch(/ListDiscoveryExperience/);
-    expect(peoplePanel).toMatch(/from '\.\/peopleBrowse'/);
-    const peopleLookingList = readFileSync(
-      join(process.cwd(), 'src/people-discovery/panel/peopleBrowse/PeopleBrowseLookingList.tsx'),
+    expect(crewsBrowsePanel).toMatch(/from '\.\/crewBrowse'/);
+    const crewLookingList = readFileSync(
+      join(process.cwd(), 'src/crew-discovery/panel/crewBrowse/CrewBrowseAvailabilityMapList.tsx'),
       'utf8'
     );
-    expect(peopleLookingList).toMatch(/ExploreListRow/);
-    expect(peoplePanel).not.toMatch(/buildListFeedCards/);
+    expect(crewLookingList).toMatch(/ExploreListRow/);
+    expect(crewsBrowsePanel).not.toMatch(/buildListFeedCards/);
   });
 
   it('list discover people category uses member discovery roster', () => {
     const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
     const model = listDiscoveryModel();
-    expect(experience).toMatch(/PeopleBrowsePanel/);
+    expect(experience).toMatch(/CrewsBrowsePanel/);
     expect(experience).toMatch(/embedded/);
     expect(listDiscoveryBrowseActionsModel()).toMatch(/listCat: 'people'/);
-    expect(listDiscoveryCrewsModel()).toMatch(/useMemberDiscoveryRoster/);
+    expect(listDiscoveryCrewsModel()).toMatch(/useCrewDiscoveryRoster/);
   });
 
   it('explore map pin pool uses discovery selectors via shell composer', () => {
@@ -256,15 +256,15 @@ describe('list module hygiene', () => {
     expect(browseList).not.toMatch(/matchesBuddyMapFilter/);
   });
 
-  it('people Looking for uses availability catalog read hook', () => {
+  it('crew Looking for uses availability catalog read hook', () => {
     const model = listDiscoveryModel();
     const crews = listDiscoveryCrewsModel();
     const bundle = readFileSync(
-      join(process.cwd(), 'src/people-discovery/hooks/usePeopleDiscoveryBrowseBundle.ts'),
+      join(process.cwd(), 'src/crew-discovery/hooks/useCrewDiscoveryBrowseBundle.ts'),
       'utf8'
     );
-    expect(crews).toMatch(/usePeopleDiscoveryAvailabilityCatalog/);
-    expect(bundle).toMatch(/usePeopleDiscoveryAvailabilityCatalog/);
+    expect(crews).toMatch(/useCrewDiscoveryAvailabilityCatalog/);
+    expect(bundle).toMatch(/useCrewDiscoveryAvailabilityCatalog/);
     expect(bundle).not.toMatch(/from ['"]@\/api\/domains\//);
   });
 

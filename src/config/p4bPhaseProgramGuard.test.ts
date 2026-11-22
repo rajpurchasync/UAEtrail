@@ -16,9 +16,16 @@ describe('p4bPhaseProgramGuard (P4b phase eng closure)', () => {
     };
     const p4b = (program.migrations ?? []).filter((m) => m.phase === 'P4b');
     expect(p4b.length).toBeGreaterThan(0);
+    const allowedWip = new Set([
+      'MIG-PLATFORM-COMPOSE-OPERATOR-2026',
+      'MIG-PEOPLE-VOCAB-2026',
+    ]);
     const open = p4b.filter((m) => m.status !== 'complete');
-    if (open.length === 1 && open[0]?.id === 'MIG-PLATFORM-COMPOSE-OPERATOR-2026') {
-      expect(open[0].status).toBe('in_progress');
+    if (
+      open.length > 0 &&
+      open.length <= allowedWip.size &&
+      open.every((m) => allowedWip.has(m.id) && m.status === 'in_progress')
+    ) {
       return;
     }
     expect(open.map((m) => m.id)).toEqual([]);

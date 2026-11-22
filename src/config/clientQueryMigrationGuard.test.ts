@@ -94,9 +94,9 @@ describe('clientQueryMigrationGuard (MIG-CLIENT-QUERY)', () => {
     expect(content).not.toMatch(/useSafeAsyncEffect/);
   });
 
-  it('Buddies uses useMeBuddiesNetwork', () => {
-    const content = read('src/pages/Buddies.tsx');
-    expect(content).toMatch(/useMeBuddiesNetwork/);
+  it('My Crews uses useMeFriendsNetwork', () => {
+    const content = read('src/pages/MyCrews.tsx');
+    expect(content).toMatch(/useMeFriendsNetwork/);
     expect(content).not.toMatch(/useSafeAsyncEffect/);
   });
 

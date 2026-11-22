@@ -76,7 +76,7 @@ export const useExploreSelectionMapPeekAction = (input: {
           }
           const detailState = mapPeekDetailNavState(location);
           setSelectedId(null);
-          navigate(`${activityDetailPath(activity.id)}?tab=buddies`, { state: detailState });
+          navigate(`${activityDetailPath(activity.id)}?tab=crew`, { state: detailState });
         },
         withdrawJoin: () => {
           if (peekJoin.joinUiState.kind === 'pending' || peekJoin.joinUiState.kind === 'confirmed') {

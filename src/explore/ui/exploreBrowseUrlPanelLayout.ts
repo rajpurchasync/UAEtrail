@@ -10,11 +10,11 @@ export const resolveExploreBrowsePanelLayout = (input: {
   desktopBrowseTab: DesktopBrowseTab;
   listOpen: boolean;
   listMode: ExploreBrowseListMode;
-  peopleBrowseOpen: boolean;
+  crewsBrowseOpen: boolean;
   mapFilter: MapFilterKey;
 }) => {
-  const showListPanel = input.listOpen && input.listMode === 'people';
-  const showDesktopCatalogDrawer = input.isDesktop && !input.peopleBrowseOpen;
+  const showListPanel = input.listOpen && input.listMode === 'crews';
+  const showDesktopCatalogDrawer = input.isDesktop && !input.crewsBrowseOpen;
   const sidebarPanel: ExplorePanel = input.isDesktop
     ? input.panel === 'venues'
       ? 'venues'

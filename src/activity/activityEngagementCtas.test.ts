@@ -41,7 +41,7 @@ describe('activityEngagementCtas', () => {
     const peek = computeActivityMapPeekActions({ level: 'host', activityPublished: true });
     const primary = resolveActivityPeekPrimaryActionId(peek);
     expect(primary).toBe('share_activity');
-    expect(detailPlanFooterKindForPeekPrimary('invite_crew')).toBe('buddies_invite');
+    expect(detailPlanFooterKindForPeekPrimary('invite_crew')).toBe('crew_invite');
     expect(detailPlanFooterKindForPeekPrimary('share_activity')).toBe('plan_host_share');
     expect(detailPlanFooterKindForPeekPrimary('open_crew_chat')).toBe('plan_join');
   });

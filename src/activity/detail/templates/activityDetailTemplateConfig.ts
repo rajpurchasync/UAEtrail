@@ -21,14 +21,14 @@ export type ActivityDetailTemplateConfig = {
 const ALL_TABS: ActivityDetailTemplateTabVisibility = {
   plan: true,
   place: true,
-  buddies: true,
+  crew: true,
   transport: true,
 };
 
 const RIDESHARE_TABS: ActivityDetailTemplateTabVisibility = {
   plan: true,
   place: false,
-  buddies: true,
+  crew: true,
   transport: true,
 };
 

@@ -25,10 +25,13 @@ import {
 } from './exploreBrowseTaxonomy';
 import { BROWSE_DISCOVER_PARAM, LIST_CAT_PARAM, parseListCatParam } from '../list/browse/browseListUrlState';
 import type { ExploreBrowseListMode } from './exploreBrowseUrlSync';
-import { parseExplorePeopleBrowseTab } from '../list/browse/peopleListBrowseUrl';
 import { readExploreSearchScopeParam } from '../routing/productUrlInbound';
 import { parseExplorePinKindFilter, type ExplorePinKindFilter } from './explorePinKindFilter';
-import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
+import {
+  parseCrewBrowseState,
+  type CrewBrowseLane,
+  type CrewPeopleFacet,
+} from '@/crew-discovery/crewBrowseTab';
 import {
   EXPLORE_ACTIVITY_MODE_FILTER_PARAM,
   parseExploreActivityModeFilter,
@@ -54,7 +57,7 @@ import {
 import type { PlaceKind } from '@uaetrail/shared-types';
 import { BROWSE_GEO_PARAM, parseBrowseGeoPath } from '../list/browse/browseGeoPath';
 
-const isPeopleBrowseListView = (view: string | null): boolean =>
+const isCrewsBrowseListView = (view: string | null): boolean =>
   view === 'people' || view === 'social' || view === 'going';
 
 export type ExploreBrowseUrlHydratedState = {
@@ -74,9 +77,10 @@ export type ExploreBrowseUrlHydratedState = {
   pinKind: ExplorePinKindFilter;
   topicPills: ExploreMapFilterPillKey[];
   listMode: ExploreBrowseListMode;
-  peopleBrowseOpen: boolean;
+  crewsBrowseOpen: boolean;
   searchScope: ExploreSearchScopeKey | null;
-  peopleBrowseTab: PeopleBrowseTab;
+  crewBrowseLane: CrewBrowseLane;
+  crewPeopleFacet: CrewPeopleFacet;
   desktopBrowseTab: DesktopBrowseTab;
   expandSearch: boolean;
   tripMapTopics: TripMapTopicKey[];
@@ -87,7 +91,7 @@ export type ExploreBrowseUrlHydratedState = {
 };
 
 /** Guests do not open the people browse rail from a shared URL. */
-export const clampGuestPeopleBrowse = (
+export const clampGuestCrewsBrowse = (
   state: ExploreBrowseUrlHydratedState,
   isSignedIn: boolean
 ): ExploreBrowseUrlHydratedState =>
@@ -95,8 +99,8 @@ export const clampGuestPeopleBrowse = (
     ? state
     : {
         ...state,
-        peopleBrowseOpen: false,
-        listMode: state.listMode === 'people' ? 'default' : state.listMode,
+        crewsBrowseOpen: false,
+        listMode: state.listMode === 'crews' ? 'default' : state.listMode,
       };
 
 /** Parse explore browse UI state from URL (R2 / C18). */
@@ -143,12 +147,14 @@ export const parseExploreBrowseStateFromSearchParams = (
     mapFilter: nextMapFilter,
     activityFilter,
     panel: nextPanel,
-    listOpen: parseListOpen(
-      searchParams.get('list'),
-      isDesktop,
-      searchParams.get(BROWSE_DISCOVER_PARAM),
-      isPeopleBrowseListView(searchParams.get('view'))
-    ),
+    listOpen: isDesktop
+      ? searchParams.get('list') === '1'
+      : parseListOpen(
+          searchParams.get('list'),
+          false,
+          searchParams.get(BROWSE_DISCOVER_PARAM),
+          isCrewsBrowseListView(searchParams.get('view'))
+        ),
     browseOpen: false,
     query: searchParams.get('q') ?? '',
     venueFilter,
@@ -163,10 +169,16 @@ export const parseExploreBrowseStateFromSearchParams = (
     pinKind: parseExplorePinKindFilter(searchParams.get('pinKind')),
     topicPills: parseExploreMapFilterPillsParam(searchParams.get('topics')),
     listMode:
-      !isDesktop && isPeopleBrowseListView(searchParams.get('view')) ? 'people' : 'default',
-    peopleBrowseOpen: isDesktop && isPeopleBrowseListView(searchParams.get('view')),
+      !isDesktop && isCrewsBrowseListView(searchParams.get('view')) ? 'crews' : 'default',
+    crewsBrowseOpen:
+      isDesktop &&
+      isCrewsBrowseListView(searchParams.get('view')) &&
+      searchParams.get('list') !== '1',
     searchScope: parseExploreSearchScope(readExploreSearchScopeParam(searchParams)),
-    peopleBrowseTab: parseExplorePeopleBrowseTab(searchParams),
+    ...(() => {
+      const crew = parseCrewBrowseState(searchParams);
+      return { crewBrowseLane: crew.lane, crewPeopleFacet: crew.facet };
+    })(),
     desktopBrowseTab: parseDesktopBrowseTab(nextPanel),
     expandSearch: Boolean(isDesktop && searchParams.get('q')?.trim()),
     tripMapTopics: parseTripMapTopicsParam(searchParams.get(EXPLORE_TRIP_TYPES_PARAM)),

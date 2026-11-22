@@ -31,11 +31,11 @@ import {
   serializeBrowseMainCategoriesToTopics,
   type BrowseMainCategoryKey,
 } from './browseListTaxonomy';
-import { readPeopleCrewsTabParam } from '../../routing/productUrlInbound';
 import {
+  PEOPLE_FACET_URL_PARAM,
   PEOPLE_LIST_TAB_URL_PARAM,
-  parsePeopleListBrowseTab,
-  serializePeopleListBrowseTab,
+  parsePeopleListBrowseState,
+  serializePeopleListBrowseState,
 } from './peopleListBrowseUrl';
 import {
   BROWSE_AUDIENCE_PARAM,
@@ -179,7 +179,10 @@ export const parseBrowseListFilterState = (
     price: parseBrowseListPriceParam(searchParams.get(EXPLORE_PRICE_PARAM)),
     when: whenNormalized,
     activityDatePreset,
-    peopleBrowseTab: parsePeopleListBrowseTab(readPeopleCrewsTabParam(searchParams)),
+    ...(() => {
+      const crew = parsePeopleListBrowseState(searchParams);
+      return { crewBrowseLane: crew.lane, crewPeopleFacet: crew.facet };
+    })(),
     hasTrip: parseExploreHasTrip(searchParams.get(EXPLORE_HAS_TRIP_PARAM)),
     facilityKinds: parseExploreFacilityKinds(searchParams.get(EXPLORE_FACILITY_KINDS_PARAM)),
     audience: parseBrowseAudienceFilter(searchParams.get(BROWSE_AUDIENCE_PARAM)),
@@ -248,8 +251,14 @@ export const serializeBrowseListSearchParams = (
   const audience = serializeBrowseAudienceFilter(state.audience);
   if (audience) params.set(BROWSE_AUDIENCE_PARAM, audience);
 
-  const peopleTab = serializePeopleListBrowseTab(state.peopleBrowseTab);
+  const { peopleTab, peopleFacet } = serializePeopleListBrowseState({
+    lane: state.crewBrowseLane,
+    facet: state.crewPeopleFacet,
+  });
   if (peopleTab) params.set(PEOPLE_LIST_TAB_URL_PARAM, peopleTab);
+  else params.delete(PEOPLE_LIST_TAB_URL_PARAM);
+  if (peopleFacet) params.set(PEOPLE_FACET_URL_PARAM, peopleFacet);
+  else params.delete(PEOPLE_FACET_URL_PARAM);
 
   return params;
 };

@@ -25,7 +25,7 @@ describe('activityJoinClientApi (R8.1)', () => {
   it('host join decision surfaces refresh client caches (R8.3)', () => {
     for (const file of [
       'src/pages/publishing/JoinRequests.tsx',
-      'src/components/activity/detail/ActivityDetailHostBuddiesHub.tsx',
+      'src/components/activity/detail/ActivityDetailHostCrewHub.tsx',
     ]) {
       const source = read(file);
       expect(source).toMatch(/afterHostJoinDecisionClientRefresh/);

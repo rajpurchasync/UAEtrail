@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react';
-import { PeopleBrowsePanel } from '@/people-discovery/panel/PeopleBrowsePanel';
-import { EXPLORE_PEOPLE_BROWSE_PANEL_TITLE } from '../../content/explorePeopleBrowseCopy';
+import { CrewsBrowsePanel } from '@/crew-discovery/panel/CrewsBrowsePanel';
+import { EXPLORE_CREWS_PANEL_TITLE } from '../../content/exploreCrewsCopy';
 import { ExploreDesktopDockedPanelRail } from '../ui/ExploreDesktopDockedPanelRail';
 import { ExploreDesktopListDrawer } from '../ui/ExploreDesktopListDrawer';
 import { ExploreMobileBrowseOverlay } from '../ui/ExploreMobileBrowseOverlay';
@@ -12,7 +12,7 @@ const ListDiscoveryExperience = lazy(() =>
   }))
 );
 
-type PeopleProps = ComponentProps<typeof PeopleBrowsePanel>;
+type CrewsBrowsePanelComponentProps = ComponentProps<typeof CrewsBrowsePanel>;
 
 type Props = {
   isDesktop: boolean;
@@ -20,35 +20,35 @@ type Props = {
     showListPanel: boolean;
     showDesktopCatalogDrawer: boolean;
     listMode: string;
-    peopleBrowseOpen: boolean;
+    crewsBrowseOpen: boolean;
     closeListPanel: () => void;
-    closePeopleBrowsePanel: () => void;
+    closeCrewsBrowsePanel: () => void;
   };
-  peopleBrowsePanelProps: PeopleProps;
+  crewsBrowsePanelProps: CrewsBrowsePanelComponentProps;
   mapStage: ReactNode;
   prefetchedCatalogItems?: import('@uaetrail/shared-types').ExploreMapItemDTO[];
 };
 
-/** Map stage plus desktop catalog drawer and mobile People sheet. */
+/** Map stage plus desktop catalog drawer and mobile Crews sheet. */
 export const ExploreExperienceBrowsePanels = ({
   isDesktop,
   browse,
-  peopleBrowsePanelProps,
+  crewsBrowsePanelProps,
   mapStage,
   prefetchedCatalogItems,
 }: Props) => {
-  const peopleSheet = browse.showListPanel && !isDesktop && browse.listMode === 'people';
+  const crewsMobileSheet = browse.showListPanel && !isDesktop && browse.listMode === 'crews';
   const desktopCatalog = isDesktop && browse.showDesktopCatalogDrawer;
-  const desktopCrewRail = isDesktop && browse.peopleBrowseOpen;
+  const desktopCrewsBrowseRail = isDesktop && browse.crewsBrowseOpen;
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 max-lg:flex-col lg:flex-row lg:items-stretch overflow-hidden">
-      {desktopCrewRail ? (
-        <ExploreDesktopDockedPanelRail ariaLabel="Find crew">
-          <PeopleBrowsePanel
-            {...peopleBrowsePanelProps}
-            onClose={browse.closePeopleBrowsePanel}
-            closePanelAriaLabel="Close Find crew"
+      {desktopCrewsBrowseRail ? (
+        <ExploreDesktopDockedPanelRail ariaLabel="Crews">
+          <CrewsBrowsePanel
+            {...crewsBrowsePanelProps}
+            onClose={browse.closeCrewsBrowsePanel}
+            closePanelAriaLabel="Close Crews"
             closeButtonVariant="dismiss"
           />
         </ExploreDesktopDockedPanelRail>
@@ -61,27 +61,27 @@ export const ExploreExperienceBrowsePanels = ({
               onCloseMapOverlay={browse.closeListPanel}
               prefetchedCatalogItems={prefetchedCatalogItems}
               onOfferRideshareForAvailabilityItem={
-                peopleBrowsePanelProps.onOfferRideshareForAvailabilityItem
+                crewsBrowsePanelProps.onOfferRideshareForAvailabilityItem
               }
             />
           </Suspense>
         </ExploreDesktopListDrawer>
       ) : null}
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">{mapStage}</div>
-      {peopleSheet ? (
+      {crewsMobileSheet ? (
         <ExploreMobileBrowseOverlay
           open
           onClose={browse.closeListPanel}
           sheetSize="full"
           immersive
-          immersiveTitle={EXPLORE_PEOPLE_BROWSE_PANEL_TITLE}
+          immersiveTitle={EXPLORE_CREWS_PANEL_TITLE}
           onExitImmersive={browse.closeListPanel}
           immersiveBackLabel="Back"
         >
-          <PeopleBrowsePanel
-            {...peopleBrowsePanelProps}
+          <CrewsBrowsePanel
+            {...crewsBrowsePanelProps}
             onClose={browse.closeListPanel}
-            closePanelAriaLabel="Close People"
+            closePanelAriaLabel="Close Crews"
             closeButtonVariant="dismiss"
             mobileSheetChrome
           />

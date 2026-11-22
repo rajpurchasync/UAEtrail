@@ -13,7 +13,7 @@ export * from './CreateHostingActivityFlow';
 export * from './CreateAddFlow';
 export * from './addFlow';
 export * from './hostingFlowEngine';
-export * from './availabilityFlowEngine';
+export * from './intentFixedFlowEngine';
 export * from './CreateAvailabilityFixedFlow';
 export * from './VenueStateFilterMenu';
 export * from './CreatePlacePicker';

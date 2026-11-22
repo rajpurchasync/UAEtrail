@@ -70,7 +70,7 @@ describe('composeLineageGuard (MIG-DISCO-REG compose)', () => {
   });
 
   it('COMPOSE-LINE-04: availability engine has no demand map pin or seeking post writes', () => {
-    const engine = read('src/explore/ui/availabilityFlowEngine.ts');
+    const engine = read('src/explore/ui/intentFixedFlowEngine.ts');
     expect(engine).toMatch(/memberAvailabilityApi/);
     expect(engine).not.toMatch(/participantIntentId/);
     expect(engine).not.toMatch(/createSeekingPost/);

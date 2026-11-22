@@ -86,7 +86,7 @@ export const ActivityOutingShareMenuBody = ({
                 {ACTIVITY_INVITE_FRIENDS_CTA}
               </span>
               <span className="block text-xs text-neutral-500">
-                Invite buddies and groups on UAE Trail
+                Invite friends and groups on UAE Trail
               </span>
             </span>
           </button>

@@ -40,6 +40,7 @@ export const useListDiscoveryBrowseUrlModel = ({
     layout,
     sort,
     crewsOpenLens,
+    crewsAvailabilityGuideFilter,
   } = browseUrl;
 
   useBrowseGeoScopeHydration(geoPath);
@@ -88,6 +89,7 @@ export const useListDiscoveryBrowseUrlModel = ({
     layout,
     sort,
     crewsOpenLens,
+    crewsAvailabilityGuideFilter,
     isPeopleCategory,
     explorerBucket,
     createFabContext,

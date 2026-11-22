@@ -16,13 +16,22 @@ import { AppButton } from '../mobile/AppButton';
 import { useMemberAvailability } from '../../hooks/useMemberAvailability';
 import { PlanAvailabilityDaysCalendar } from './PlanAvailabilityDaysCalendar';
 import { PRODUCT_AVAILABILITY_VISIBILITY_FRIENDS_LABEL } from '../../content/productNorthStar';
+import {
+  UPL_FIND_YOUR_CREW,
+  UPL_INTENT_LOADING,
+  UPL_INTENT_PLAN_SECTION,
+  UPL_INTENT_AVAILABLE_AS_GUIDE,
+  UPL_INTENT_SAVE,
+} from '../../content/upl-glossary';
+
+const ACTIVITY_AVAILABILITY_KINDS = AVAILABILITY_KINDS.filter((kind) => kind !== 'guide');
 
 const KIND_LABELS: Record<AvailabilityKind, string> = {
   hiking: 'Hiking',
   camping: 'Camping',
   rideshare: 'Rideshare',
   event: 'Events',
-  guide: 'Can guide',
+  guide: 'Guide',
   other: 'Other outdoors',
 };
 
@@ -110,6 +119,15 @@ export const PlanAvailabilitySection = ({
     );
   };
 
+  const availableAsGuide = kinds.includes('guide');
+
+  const setAvailableAsGuide = (next: boolean) => {
+    setKinds((prev) => {
+      if (next) return prev.includes('guide') ? prev : [...prev, 'guide'];
+      return prev.filter((k) => k !== 'guide');
+    });
+  };
+
   const selectedDayLabels = useMemo(
     () =>
       [...selectedDays]
@@ -172,7 +190,7 @@ export const PlanAvailabilitySection = ({
   };
 
   if (loading && !data) {
-    return <p className="text-sm text-slate-500">Loading availability…</p>;
+    return <p className="text-sm text-slate-500">{UPL_INTENT_LOADING}</p>;
   }
 
   const shellClass =
@@ -184,10 +202,10 @@ export const PlanAvailabilitySection = ({
     <div className={shellClass}>
       {variant === 'plan' ? (
         <div>
-          <h2 className="text-lg font-semibold text-slate-900">People availability</h2>
+          <h2 className="text-lg font-semibold text-slate-900">{UPL_INTENT_PLAN_SECTION}</h2>
           <p className="mt-1 text-sm text-slate-600">
-            Show up under <span className="font-medium">Find your crew → Available</span> when your
-            days and filters match.
+            Show up under <span className="font-medium">{UPL_FIND_YOUR_CREW} → Available</span> when
+            your days and filters match.
           </p>
         </div>
       ) : null}
@@ -208,10 +226,27 @@ export const PlanAvailabilitySection = ({
       </fieldset>
 
       <fieldset className="space-y-2">
+        <legend className="text-sm font-semibold text-slate-900">{UPL_INTENT_AVAILABLE_AS_GUIDE}</legend>
+        <p className="text-xs text-slate-600">
+          Optional — show on Find crew when others filter by Guides (intent signal, not a pro directory profile).
+        </p>
+        <button
+          type="button"
+          onClick={() => setAvailableAsGuide(!availableAsGuide)}
+          className={`rounded-full px-3 py-1.5 text-sm font-semibold ${
+            availableAsGuide ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-700'
+          }`}
+          aria-pressed={availableAsGuide}
+        >
+          {UPL_INTENT_AVAILABLE_AS_GUIDE}
+        </button>
+      </fieldset>
+
+      <fieldset className="space-y-2">
         <legend className="text-sm font-semibold text-slate-900">Available for</legend>
         <p className="text-xs text-slate-600">What you’re open to doing on those days.</p>
         <div className="flex flex-wrap gap-2">
-          {AVAILABILITY_KINDS.map((kind) => (
+          {ACTIVITY_AVAILABILITY_KINDS.map((kind) => (
             <button
               key={kind}
               type="button"
@@ -318,7 +353,7 @@ export const PlanAvailabilitySection = ({
       {error ? <p className="text-sm text-red-700">{error}</p> : null}
 
       <AppButton type="button" onClick={() => void onSubmit()} disabled={saving}>
-        {saving ? 'Saving…' : variant === 'fab' ? 'Save and close' : 'Save availability'}
+        {saving ? 'Saving…' : variant === 'fab' ? 'Save and close' : UPL_INTENT_SAVE}
       </AppButton>
 
       {variant === 'plan' && matchPreview ? (

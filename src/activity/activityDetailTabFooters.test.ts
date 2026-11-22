@@ -31,8 +31,8 @@ describe('resolveActivityDetailTabFooterKind', () => {
     ).toBe('plan_join');
   });
 
-  it('uses invite on Buddies for open join before crew membership', () => {
-    expect(resolveActivityDetailTabFooterKind({ ...base, tab: 'buddies' })).toBe('buddies_invite');
+  it('uses invite on Crew tab for open join before crew membership', () => {
+    expect(resolveActivityDetailTabFooterKind({ ...base, tab: 'crew' })).toBe('crew_invite');
   });
 
   it('uses linked ride on Transport when listing exists', () => {
@@ -45,11 +45,11 @@ describe('resolveActivityDetailTabFooterKind', () => {
     ).toBe('transport_linked_ride');
   });
 
-  it('host share on Buddies tab', () => {
+  it('host share on Crew tab', () => {
     expect(
       resolveActivityDetailTabFooterKind({
         ...base,
-        tab: 'buddies',
+        tab: 'crew',
         isHostUser: true,
       })
     ).toBe('plan_host_share');
@@ -76,7 +76,7 @@ describe('resolveActivityDetailTabFooterKind', () => {
       resolveActivityDetailTabFooterKind({ ...base, tab: 'transport', joinUiState: pending })
     ).toBe('plan_join');
     expect(
-      resolveActivityDetailTabFooterKind({ ...base, tab: 'buddies', joinUiState: pending })
+      resolveActivityDetailTabFooterKind({ ...base, tab: 'crew', joinUiState: pending })
     ).toBe('plan_join');
   });
 

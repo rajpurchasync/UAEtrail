@@ -6,7 +6,7 @@ const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 
 describe('memberAvailabilityLineageGuard (MIG-DISCO-REG)', () => {
   it('AVAIL-LINE-01: fixed Find crew compose writes member_availability', () => {
-    const engine = read('src/explore/ui/availabilityFlowEngine.ts');
+    const engine = read('src/explore/ui/intentFixedFlowEngine.ts');
     expect(engine).toMatch(/saveMyMemberAvailability/);
     expect(engine).not.toMatch(/\/me\/seeking-posts/);
     expect(engine).not.toMatch(/createSeekingPost/);
@@ -55,10 +55,10 @@ describe('memberAvailabilityLineageGuard (MIG-DISCO-REG)', () => {
     expect(read('src/explore/compose.ts')).toMatch(/UPL_INTENT_OPEN_ACTION/);
   });
 
-  it('AVAIL-LINE-07: compose catalog routes intent.fixed.* to availabilityFlow', () => {
+  it('AVAIL-LINE-07: compose catalog routes intent.fixed.* to intentFixedFlow', () => {
     const catalog = read('src/explore/composeFlowCatalog.ts');
     expect(catalog).toMatch(/'intent\.fixed\.hiking'/);
-    expect(catalog).toMatch(/wizard: 'availabilityFlow'/);
+    expect(catalog).toMatch(/wizard: 'intentFixedFlow'/);
     expect(catalog).not.toMatch(/seekingFlow/);
     expect(catalog).not.toMatch(/'seek\.fixed/);
   });

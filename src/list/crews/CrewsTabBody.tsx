@@ -5,24 +5,24 @@ import type {
   MemberDiscoveryQuotaDTO,
   SocialPersonRowDTO,
 } from '@uaetrail/shared-types';
-import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
-import { PeopleBrowseTabContent } from '@/people-discovery/panel/peopleBrowse';
-import { CrewsHubHome } from './CrewsHubHome';
+import type { CrewBrowseLane, CrewPeopleFacet } from '@/crew-discovery/crewBrowseState';
+import { normalizeCrewBrowseLaneForProduct } from '@/crew-discovery/crewBrowseFeatureGates';
+import { crewDataLaneFromState } from '@/crew-discovery/crewBrowseState';
+import { CrewBrowseTabContent } from '@/crew-discovery/panel/crewBrowse';
+import { CrewBrowseRecommendedBody } from '@/crew-discovery/panel/crewBrowse/CrewBrowseRecommendedBody';
 import { CrewsAvailableSubChips } from './CrewsAvailableSubChips';
-import { CrewsGuidesRail } from './CrewsGuidesRail';
-import { filterCrewsGuideDirectoryCards } from './crewsGuides';
-import type { CrewsStatTab } from './crewsStatTab';
-import type { CrewsAvailableOpenLens } from './crewsOpenSegment';
+import { CrewsAvailabilityGuideSubChips } from './CrewsAvailabilityGuideSubChips';
+import { CrewsCommunityBody } from './CrewsCommunityBody';
+import { CrewsProfessionalBody } from './CrewsProfessionalBody';
+import type { CrewsAvailabilityGuideFilter, CrewsAvailableOpenLens } from './crewsOpenSegment';
 
 type CrewsTabBodyProps = {
-  segment: PeopleBrowseTab;
+  lane: CrewBrowseLane;
+  facet: CrewPeopleFacet;
   crewsOpenLens: CrewsAvailableOpenLens;
   onCrewsOpenLensChange: (lens: CrewsAvailableOpenLens) => void;
-  onSelectStatTab: (tab: CrewsStatTab) => void;
-  onBrowseGuides: () => void;
-  buddiesCount: number;
-  availableCount: number;
-  everyoneCount: number;
+  crewsAvailabilityGuideFilter: CrewsAvailabilityGuideFilter;
+  onCrewsAvailabilityGuideFilterChange: (filter: CrewsAvailabilityGuideFilter) => void;
   isSignedIn: boolean;
   availabilityPeople: ExploreAvailablePersonDTO[];
   availabilityLoading: boolean;
@@ -43,14 +43,12 @@ type CrewsTabBodyProps = {
 };
 
 export const CrewsTabBody = ({
-  segment,
+  lane,
+  facet,
   crewsOpenLens,
   onCrewsOpenLensChange,
-  onSelectStatTab,
-  onBrowseGuides,
-  buddiesCount,
-  availableCount,
-  everyoneCount,
+  crewsAvailabilityGuideFilter,
+  onCrewsAvailabilityGuideFilterChange,
   isSignedIn,
   availabilityPeople,
   availabilityLoading,
@@ -69,64 +67,70 @@ export const CrewsTabBody = ({
   onOpenAvailability,
   buddyUserIds,
 }: CrewsTabBodyProps) => {
-  if (segment === 'hub') {
+  const activeLane = normalizeCrewBrowseLaneForProduct(lane);
+
+  if (activeLane === 'professional') {
+    const agencyItems = exploreCatalogItems.filter((item) => item.source === 'agency');
     return (
-      <CrewsHubHome
+      <CrewsProfessionalBody
         directory={directory}
-        buddiesCount={buddiesCount}
-        availableCount={availableCount}
-        everyoneCount={everyoneCount}
-        onSelectTab={onSelectStatTab}
-        isSignedIn={isSignedIn}
+        discoveryLoading={discoveryLoading}
+        agencyItems={agencyItems}
+        exploreCatalogItems={exploreCatalogItems}
+        exploreCatalogLoading={exploreCatalogLoading}
+        onOpenAgencyItem={onOpenAvailabilityCatalogItem}
       />
     );
   }
+  if (activeLane === 'community') {
+    return <CrewsCommunityBody />;
+  }
 
-  const showGuidesEscape = segment === 'connect';
-  const guides = filterCrewsGuideDirectoryCards(directory);
+  const contentProps = {
+    isSignedIn,
+    availabilityCatalogItems,
+    exploreCatalogItems,
+    exploreCatalogLoading,
+    onOpenAvailabilityCatalogItem,
+    onOfferRideshareForAvailabilityItem,
+    buddyUserIds,
+    availabilityPeople,
+    availabilityLoading,
+    availabilityError,
+    friendsGoing,
+    hostsGoing,
+    directory,
+    discoveryQuota,
+    discoveryLoading,
+    discoveryError,
+    onOpenAvailability,
+    crewsOpenLens,
+    availabilityGuideFilter: crewsAvailabilityGuideFilter,
+  };
 
-  const isAvailableLane = segment === 'available' || segment === 'looking';
-  const effectiveLens: CrewsAvailableOpenLens =
-    segment === 'looking' && crewsOpenLens === 'all' ? 'looking' : crewsOpenLens;
+  const isAvailableFacet = facet === 'available';
 
   return (
     <>
-      {showGuidesEscape && guides.length > 0 ? (
-        <div className="mb-4">
-          <CrewsGuidesRail guides={guides} />
-          <button
-            type="button"
-            className="mt-2 text-sm font-semibold text-emerald-700"
-            onClick={onBrowseGuides}
-          >
-            Browse guides on hub
-          </button>
-        </div>
+      {isAvailableFacet ? (
+        <CrewsAvailableSubChips lens={crewsOpenLens} onLensChange={onCrewsOpenLensChange} />
       ) : null}
-      {isAvailableLane ? (
-        <CrewsAvailableSubChips lens={effectiveLens} onLensChange={onCrewsOpenLensChange} />
+      {isAvailableFacet && (crewsOpenLens === 'all' || crewsOpenLens === 'marked') ? (
+        <CrewsAvailabilityGuideSubChips
+          filter={crewsAvailabilityGuideFilter}
+          onFilterChange={onCrewsAvailabilityGuideFilterChange}
+        />
       ) : null}
-      <PeopleBrowseTabContent
-        tab={segment === 'looking' ? 'available' : segment}
-        crewsOpenLens={isAvailableLane ? effectiveLens : undefined}
-        isSignedIn={isSignedIn}
-        availabilityCatalogItems={availabilityCatalogItems}
-        exploreCatalogItems={exploreCatalogItems}
-        exploreCatalogLoading={exploreCatalogLoading}
-        onOpenAvailabilityCatalogItem={onOpenAvailabilityCatalogItem}
-        onOfferRideshareForAvailabilityItem={onOfferRideshareForAvailabilityItem}
-        buddyUserIds={buddyUserIds}
-        availabilityPeople={availabilityPeople}
-        availabilityLoading={availabilityLoading}
-        availabilityError={availabilityError}
-        friendsGoing={friendsGoing}
-        hostsGoing={hostsGoing}
-        directory={directory}
-        discoveryQuota={discoveryQuota}
-        discoveryLoading={discoveryLoading}
-        discoveryError={discoveryError}
-        onOpenAvailability={onOpenAvailability}
-      />
+      {facet === 'recommended' ? (
+        <CrewBrowseRecommendedBody {...contentProps} />
+      ) : (
+        <CrewBrowseTabContent
+          tab={crewDataLaneFromState({ lane: activeLane, facet }) ?? 'available'}
+          {...contentProps}
+          crewsOpenLens={isAvailableFacet ? crewsOpenLens : undefined}
+          availabilityGuideFilter={isAvailableFacet ? crewsAvailabilityGuideFilter : undefined}
+        />
+      )}
     </>
   );
 };

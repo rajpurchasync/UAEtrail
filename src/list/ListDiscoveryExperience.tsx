@@ -1,4 +1,4 @@
-import { PeopleBrowsePanel } from '@/people-discovery/panel/PeopleBrowsePanel';
+import { CrewsBrowsePanel } from '@/crew-discovery/panel/CrewsBrowsePanel';
 import { ListFeedActionsProvider } from './browse/ListFeedActionsProvider';
 import { browseListCatForBucket, scopeBrowseListStateForListCat } from './browse/browseListMapHandoff';
 import { BrowseListCreateFab } from './explorer/BrowseListCreateFab';
@@ -41,6 +41,7 @@ export const ListDiscoveryExperience = (props: ListDiscoveryExperienceProps) => 
     listSearchPlaceholder,
     listSearchScopeHints,
     crewsOpenLens,
+    crewsAvailabilityGuideFilter,
     handleOpenMarkAvailability,
     filterCount,
     crewsStatCounts,
@@ -80,15 +81,17 @@ export const ListDiscoveryExperience = (props: ListDiscoveryExperienceProps) => 
     <div className={hubListRoot}>
       {isPeopleCategory ? (
         embeddedOnExplore ? (
-          <PeopleBrowsePanel
+          <CrewsBrowsePanel
             embedded
             isDesktop={surface === 'exploreSidebar'}
             query={draftQuery}
             onQueryChange={setDraftQuery}
             onQuerySync={commitQuery}
             onClose={() => syncUrl({ listCat: null, categories: [] })}
-            peopleBrowseTab={filters.peopleBrowseTab === 'hub' ? 'looking' : filters.peopleBrowseTab}
-            onPeopleBrowseTabChange={(tab) => syncUrl({ peopleBrowseTab: tab })}
+            crewBrowseLane={filters.crewBrowseLane}
+            crewPeopleFacet={filters.crewPeopleFacet}
+            onCrewBrowseLaneChange={(lane) => syncUrl({ crewBrowseLane: lane })}
+            onCrewPeopleFacetChange={(facet) => syncUrl({ crewPeopleFacet: facet })}
             memberPeopleNetwork={[]}
             memberPeopleLoading={false}
             memberPeopleError={null}
@@ -128,10 +131,18 @@ export const ListDiscoveryExperience = (props: ListDiscoveryExperienceProps) => 
             enableSearchScopeHints={listSearchScopeHints}
             searchResultsChrome={searchResultsChrome}
             exploreSearchResults={exploreSearch}
-            peopleBrowseTab={filters.peopleBrowseTab}
-            onPeopleBrowseTabChange={(tab) => syncUrl({ peopleBrowseTab: tab, crewsOpen: null })}
+            crewBrowseLane={filters.crewBrowseLane}
+            crewPeopleFacet={filters.crewPeopleFacet}
+            onCrewBrowseLaneChange={(lane) =>
+              syncUrl({ crewBrowseLane: lane, crewsOpen: null, crewsAvailGuide: null })
+            }
+            onCrewPeopleFacetChange={(facet) =>
+              syncUrl({ crewPeopleFacet: facet, crewsOpen: null, crewsAvailGuide: null })
+            }
             crewsOpenLens={crewsOpenLens}
             onCrewsOpenLensChange={(lens) => syncUrl({ crewsOpen: lens })}
+            crewsAvailabilityGuideFilter={crewsAvailabilityGuideFilter}
+            onCrewsAvailabilityGuideFilterChange={(filter) => syncUrl({ crewsAvailGuide: filter })}
             onOpenIntentOpen={handleOpenMarkAvailability}
             isSignedIn={Boolean(user)}
             filterCount={filterCount}

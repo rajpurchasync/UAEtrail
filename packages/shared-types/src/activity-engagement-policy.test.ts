@@ -114,7 +114,7 @@ describe('resolveActivityEngagementPolicy', () => {
       'offer_rideshare',
       'view_detail',
     ]);
-    expect(policy.presentation.footerByTab.buddies).toBe('plan_join');
+    expect(policy.presentation.footerByTab.crew).toBe('plan_join');
     expect(policy.strips.showJoinedStatusChipOnPeek).toBe(true);
     expect(policy.strips.maskRosterToFriendsOnly).toBe(false);
   });

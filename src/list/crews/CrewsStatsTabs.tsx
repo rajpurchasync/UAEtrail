@@ -11,7 +11,7 @@ type CrewsStatsTabsProps = {
   onClear?: () => void;
 };
 
-const CREWS_STAT_ORDER: CrewsStatTab[] = ['friends', 'available', 'everyone'];
+const CREWS_STAT_ORDER: CrewsStatTab[] = ['recommended', 'friends', 'available', 'everyone'];
 
 export const CrewsStatsTabs = ({ active, counts, onSelect, onClear }: CrewsStatsTabsProps) => (
   <div

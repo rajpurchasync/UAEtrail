@@ -3,43 +3,42 @@ import { parseExploreBrowseStateFromSearchParams } from './exploreBrowseUrlHydra
 import { buildExploreBrowseSearchParams } from './exploreBrowseUrlSync';
 
 describe('exploreBrowseUrlHydrate', () => {
+  it('mobile view=people hydrates listMode crews (not legacy people)', () => {
+    const state = parseExploreBrowseStateFromSearchParams(
+      new URLSearchParams('view=people&list=1'),
+      false
+    );
+    expect(state.listMode).toBe('crews');
+    expect(state.crewsBrowseOpen).toBe(false);
+  });
+
   it('parses people browse view and round-trips through sync', () => {
-    const params = new URLSearchParams('view=people&peopleTab=available&list=1');
+    const params = new URLSearchParams('view=people&peopleTab=available&list=1&listCat=people');
     const state = parseExploreBrowseStateFromSearchParams(params, true);
     expect(state.listMode).toBe('default');
-    expect(state.peopleBrowseOpen).toBe(true);
-    expect(state.peopleBrowseTab).toBe('available');
+    expect(state.crewsBrowseOpen).toBe(false);
+    expect(state.crewBrowseLane).toBe('people');
+    expect(state.crewPeopleFacet).toBe('available');
 
     const next = buildExploreBrowseSearchParams({
       base: params,
       isDesktop: true,
       state: {
-        mapFilter: state.mapFilter,
-        activityFilter: state.activityFilter,
-        venueFilter: state.venueFilter,
-        panel: state.panel,
-        listOpen: state.listOpen,
-        browseOpen: state.browseOpen,
-        query: state.query,
-        venueRegions: state.venueRegions,
-        activityDatePreset: state.activityDatePreset,
-        activityModeFilter: state.activityModeFilter,
-        buddySubtype: state.buddySubtype,
-        outingTopic: state.outingTopic,
-        pinKind: state.pinKind,
-        topicPills: state.topicPills,
-        listMode: state.listMode,
-        peopleBrowseOpen: state.peopleBrowseOpen,
-        searchScope: state.searchScope,
-        peopleBrowseTab: state.peopleBrowseTab,
+        ...state,
+        geoPath: state.geoPath,
+        tripMapTopics: state.tripMapTopics,
+        placeMapTopics: state.placeMapTopics,
+        priceFilter: state.priceFilter,
+        hasTrip: state.hasTrip,
+        facilityKinds: state.facilityKinds,
       },
       patch: {},
     });
-    expect(next.get('view')).toBe('people');
-    expect(next.get('peopleTab')).toBe('available');
-    expect(
-      parseExploreBrowseStateFromSearchParams(next, true).peopleBrowseTab
-    ).toBe('available');
+    expect(next.get('view')).toBeNull();
+    expect(next.get('list')).toBe('1');
+    expect(next.get('peopleFacet')).toBe('available');
+    const roundTrip = parseExploreBrowseStateFromSearchParams(next, true);
+    expect(roundTrip.crewPeopleFacet).toBe('available');
   });
 
   it('round-trips geo drill on explore map URL', () => {
@@ -97,9 +96,16 @@ describe('exploreBrowseUrlHydrate', () => {
         pinKind: state.pinKind,
         topicPills: state.topicPills,
         listMode: state.listMode,
-        peopleBrowseOpen: state.peopleBrowseOpen,
+        crewsBrowseOpen: state.crewsBrowseOpen,
         searchScope: state.searchScope,
-        peopleBrowseTab: state.peopleBrowseTab,
+        crewBrowseLane: state.crewBrowseLane,
+        crewPeopleFacet: state.crewPeopleFacet,
+        geoPath: state.geoPath,
+        tripMapTopics: state.tripMapTopics,
+        placeMapTopics: state.placeMapTopics,
+        priceFilter: state.priceFilter,
+        hasTrip: state.hasTrip,
+        facilityKinds: state.facilityKinds,
       },
       patch: {},
     });
@@ -147,9 +153,16 @@ describe('exploreBrowseUrlHydrate', () => {
         pinKind: state.pinKind,
         topicPills: state.topicPills,
         listMode: state.listMode,
-        peopleBrowseOpen: state.peopleBrowseOpen,
+        crewsBrowseOpen: state.crewsBrowseOpen,
         searchScope: state.searchScope,
-        peopleBrowseTab: state.peopleBrowseTab,
+        crewBrowseLane: state.crewBrowseLane,
+        crewPeopleFacet: state.crewPeopleFacet,
+        geoPath: state.geoPath,
+        tripMapTopics: state.tripMapTopics,
+        placeMapTopics: state.placeMapTopics,
+        priceFilter: state.priceFilter,
+        hasTrip: state.hasTrip,
+        facilityKinds: state.facilityKinds,
       },
       patch: { list: true },
     });
@@ -179,9 +192,16 @@ describe('exploreBrowseUrlHydrate', () => {
         pinKind: state.pinKind,
         topicPills: state.topicPills,
         listMode: state.listMode,
-        peopleBrowseOpen: state.peopleBrowseOpen,
+        crewsBrowseOpen: state.crewsBrowseOpen,
         searchScope: state.searchScope,
-        peopleBrowseTab: state.peopleBrowseTab,
+        crewBrowseLane: state.crewBrowseLane,
+        crewPeopleFacet: state.crewPeopleFacet,
+        geoPath: state.geoPath,
+        tripMapTopics: state.tripMapTopics,
+        placeMapTopics: state.placeMapTopics,
+        priceFilter: state.priceFilter,
+        hasTrip: state.hasTrip,
+        facilityKinds: state.facilityKinds,
       },
       patch: {},
     });

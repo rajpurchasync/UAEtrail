@@ -16,14 +16,14 @@ describe('discoverySummaryOfferRideshareParity (MIG-DISCO-REG)', () => {
   });
 
   it('people roster availability rows open explore pin (summary parity via map peek)', () => {
-    const roster = read('src/people-discovery/memberBrowseRowModel.ts');
+    const roster = read('src/crew-discovery/memberBrowseRowModel.ts');
     expect(roster).toMatch(/exploreMapItemPathFromAvailabilityRow|exploreItemId/);
     const stage = read('src/explore/shell/ExploreMapShell.tsx');
     expect(stage).toMatch(/showAvailabilityPeekOfferRideshare/);
   });
 
   it('people browse looking list wires Offer rideshare when entitlements allow', () => {
-    const list = read('src/people-discovery/panel/peopleBrowse/PeopleBrowseLookingList.tsx');
+    const list = read('src/crew-discovery/panel/crewBrowse/CrewBrowseAvailabilityMapList.tsx');
     expect(list).toContain('onOfferRideshareForAvailabilityItem');
     expect(list).toContain('discoverySelectionShowsOfferRideshare');
     expect(list).toContain('HOSTING_OFFER_RIDESHARE_LABEL');

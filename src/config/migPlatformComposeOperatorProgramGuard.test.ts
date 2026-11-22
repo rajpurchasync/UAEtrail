@@ -64,8 +64,8 @@ describe('migPlatformComposeOperatorProgramGuard (compose + operator program)', 
   it('PCO-04: SocialHubNav retired — SocialHubIndex canonical', () => {
     expect(existsSync(join(ROOT, 'src/components/social/SocialHubIndex.tsx'))).toBe(true);
     expect(existsSync(join(ROOT, 'src/components/social/SocialHubNav.tsx'))).toBe(false);
-    const buddies = read('src/pages/Buddies.tsx');
-    expect(buddies).toMatch(/from '\.\.\/components\/social\/SocialHubIndex'/);
+    const myCrews = read('src/pages/MyCrews.tsx');
+    expect(myCrews).toMatch(/from '\.\.\/components\/social\/SocialHubIndex'/);
   });
 
   it('PCO-05b: manual QA script includes compose + operator + crews routes', () => {
@@ -135,7 +135,7 @@ describe('migPlatformComposeOperatorProgramGuard (compose + operator program)', 
     expect(sideNav).not.toMatch(/isHostModeSession/);
     expect(read('src/explore/ui/IntentOpenComposeSheet.tsx')).toMatch(/UPL_INTENT_OPEN_ACTION/);
     expect(read('src/list/explorer/ListCrewsExplorer.tsx')).toMatch(/onOpenIntentOpen/);
-    expect(read('src/people-discovery/panel/PeopleBrowsePanel.tsx')).toMatch(/onOpenIntentOpen/);
+    expect(read('src/crew-discovery/panel/CrewsBrowsePanel.tsx')).toMatch(/onOpenIntentOpen/);
   });
 
   it('PCO-15: post-auth default consumer home is Explore (not operator)', () => {
@@ -160,6 +160,6 @@ describe('migPlatformComposeOperatorProgramGuard (compose + operator program)', 
     expect(read('docs/MEMBER_MODEL.md')).not.toMatch(/lens=availability\)/);
     expect(read('src/explore/create/composeFabEntry.ts')).toMatch(/resolveCreateEntryPreset/);
     expect(read('src/explore/create/composeFabEntry.ts')).not.toMatch(/resolveCreateFabComposeEntry/);
-    expect(read('src/content/explorePeopleBrowseCopy.ts')).toMatch(/UPL_SEEKING/);
+    expect(read('src/content/exploreCrewsCopy.ts')).toMatch(/UPL_SEEKING/);
   });
 });

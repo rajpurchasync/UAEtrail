@@ -1,7 +1,7 @@
 import type { AreaPublicDTO } from '@uaetrail/shared-types';
 import type { AvailabilityFixedComposeKind } from '../../compose';
 import { COMPOSE_MAP_INTENTS } from '../../create/interactions';
-import type { AvailabilityFixedDraft, AvailabilityFixedFlowStepId, AvailabilityFixedKind } from '../availabilityFlowEngine';
+import type { AvailabilityFixedDraft, AvailabilityFixedFlowStepId, AvailabilityFixedKind } from '../intentFixedFlowEngine';
 
 export type AvailabilityWizardFlowStep = 'type' | AvailabilityFixedFlowStepId;
 

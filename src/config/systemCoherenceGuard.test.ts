@@ -97,7 +97,7 @@ describe('systemCoherenceGuard', () => {
   it('notificationRouting uses catalog constants for social fallbacks', () => {
     const file = 'src/utils/notificationRouting.ts';
     const content = readFileSync(join(ROOT, file), 'utf8');
-    expect(content).toMatch(/BUDDIES_PATH/);
+    expect(content).toMatch(/MY_CREWS_PATH/);
     expect(content).toMatch(/GROUPS_PATH/);
     expect(content).toMatch(/messagesGroupPath/);
     expect(content).toMatch(/INBOUND_PLAN_HUB_TRIPS_MAP_PATH/);

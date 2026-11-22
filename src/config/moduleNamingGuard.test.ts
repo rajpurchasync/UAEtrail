@@ -12,7 +12,7 @@ const EXPLORE_PREFIX_ALLOW_PREFIXES = [
   'src/discovery/',
   'src/explore/',
   'src/activity-discovery/',
-  'src/people-discovery/',
+  'src/crew-discovery/',
   'src/places-discovery/',
   'src/api/domains/explore.ts',
   'src/api/domains/availability.ts',

@@ -45,8 +45,11 @@ export const UPL_FOLLOWING = 'Following';
 /** My Plans surface (`/plan`) — not a generic “plan the weekend” verb */
 export const UPL_PLAN = 'My Plans';
 export const UPL_GOALS = 'Goals';
-/** BWL field `member_availability` — product compose kind is Intent (UPL_INTENT_*). */
+/** @deprecated Product term is Intent — storage field remains `member_availability` (BWL). */
 export const UPL_AVAILABILITY = 'Availability';
+
+/** Intent — open calendar signal (compose `intent:open` → `member_availability` open slots). */
+export const UPL_INTENT = 'Intent';
 
 /** Compose kinds (`?compose=` emit — MIG-PLATFORM-COMPOSE-OPERATOR-2026) */
 export const UPL_COMPOSE_KIND_ACTIVITY = 'Activity';
@@ -62,6 +65,25 @@ export const UPL_OPERATOR_DASHBOARD = 'Dashboard';
 
 /** Plan Add a Plan → publish open intent (DEC-008) */
 export const UPL_INTENT_OPEN_ACTION = "Share when I'm free";
+
+/** Plan hub intent editor section title (BWL store `member_availability`). */
+export const UPL_INTENT_PLAN_SECTION = 'Intent';
+export const UPL_INTENT_SAVE = 'Save intent';
+export const UPL_INTENT_LOADING = 'Loading intent…';
+
+/** Open intent — optional `member_availability.kinds` includes `guide`. */
+export const UPL_INTENT_AVAILABLE_AS_GUIDE = 'Available as Guide';
+
+/** Intent compose — fixed window on the map (`intent:fixed:*`). */
+export const UPL_INTENT_FIXED_MENU = 'Fixed time and place';
+
+/** Crew umbrella — distinct pillars (friends · teams · communities · guides · outing roster · intent). */
+export const UPL_CREW_PILLAR_FRIENDS = 'Friends';
+export const UPL_CREW_PILLAR_TEAMS = 'Teams';
+export const UPL_CREW_PILLAR_COMMUNITIES = 'Communities';
+export const UPL_CREW_PILLAR_GUIDES = 'Guides & operators';
+export const UPL_CREW_PILLAR_OUTING = 'Crew';
+export const UPL_CREW_PILLAR_INTENT = 'Looking for crew';
 
 /**
  * Pro membership — upgrade for individual guides and for shops/agencies.

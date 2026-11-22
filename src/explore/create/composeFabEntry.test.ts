@@ -41,7 +41,7 @@ describe('resolveExploreMapCreateFabHints', () => {
   it('drives FAB label and compose when explore URL is bare but map scope is venues', () => {
     const hints = resolveExploreMapCreateFabHints({
       panel: 'venues',
-      peopleBrowseOpen: false,
+      crewsBrowseOpen: false,
       listMode: 'default',
       pinKind: 'places',
       placesMode: true,
@@ -56,7 +56,7 @@ describe('resolveExploreMapCreateFabHints', () => {
   it('stays on create trip for activities scope without query params', () => {
     const hints = resolveExploreMapCreateFabHints({
       panel: 'activities',
-      peopleBrowseOpen: false,
+      crewsBrowseOpen: false,
       listMode: 'default',
       pinKind: 'activities',
       placesMode: false,

@@ -23,7 +23,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 | Surface | Route | Purpose |
 |---------|-------|---------|
 | **Marketing** | `/` | First impression — story, trust, sign up (not live catalog) |
-| **Browse** | `/explore` | Map-first discovery — activities (`activity-discovery`), places/shops (`places-discovery`), people (`people-discovery`); map/list/search are projections |
+| **Browse** | `/explore` | Map-first discovery — activities (`activity-discovery`), places/shops (`places-discovery`), people (`crew-discovery`); map/list/search are projections |
 | **List discovery** | `/list` | Full-screen explorer (thumbnails · list · calendar, date-sorted; same filters as explore; `listDiscoveryPath()` ↔ map via `exploreMapPathFromListSearch()`) |
 | **Personal hub** | `/profile`, `/settings`, `/profile/edit`, `/profile/history` | Account hub, **app settings**, edit profile, outing **history** + journey map |
 | **Plan tab** | `/plan` | Active layer — goals, upcoming outings (bottom nav middle tab; UI label **My Plans** — `PRODUCT_PLAN_SURFACE_TITLE`) |
@@ -121,9 +121,9 @@ Grouped nav (`ADMIN_NAV_GROUPS` / flat `ADMIN_LINKS`). Legacy `/admin/overview` 
 | `/admin/overview` | — | — | Redirect → `/admin/inbox` |
 | `/admin/login` | `SignIn` | — | Staff sign-in entry |
 
-### Friends (`/buddies`)
+### Friends (`/crews`)
 
-- Consumer label **Friends**; tabs `?tab=friends|requests|following`.
+- Consumer label **Friends** on **My Crews** (`MY_CREWS_PATH`; inbound `/buddies` → `/crews`); tabs `?tab=friends|requests|following`.
 - **Explore map people panel → Followed:** sub-segments **People** (member follows), **Places** and **Hosts & operators** (entity follows from map/profile); URL `followedKind=places|events`. (Panel URL `view=people`; legacy `view=social` — browse people, not chat; see § Browse — people & crew below.) Private **wishlist** venues live on **Plan → Want to go** (`planSavedPath()`; `/profile/wishlist` redirects).
 
 ### Chat (`/chat`)
@@ -146,7 +146,9 @@ Product label **Teams** (`member_groups` with `kind: team` — roster-first, not
 
 ### Crews tab home (`/list?listCat=people`, hub segment)
 
-Mobile five-tab **Crews** — discovery rails + **My crew** card (signed in): **Friends** (`/buddies?from=crews`), **Teams** (`/groups?from=crews`). Not the chat inbox.
+Mobile five-tab **Crews** — discovery rails + **My crew** card (signed in): **Friends** (`/crews?from=crews`), **Teams** (`/groups?from=crews`). Not the chat inbox.
+
+**Communities** (discoverable clubs) — planned `MIG-COMMUNITY-DISCOVER`; not private **Teams** on `/groups`.
 
 ### Post-auth member details (`/welcome`)
 
@@ -224,16 +226,18 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 
 **Job:** who can I go with, who’s going, who’s looking — **not** chat. Chat is [`/chat`](#chat-chat) ([`COMMUNICATION.md`](./COMMUNICATION.md)).
 
-Map pill label **Find your crew** (see `explorePeopleBrowseCopy.ts`); opens `view=people` on desktop (`peopleBrowseOpen`; mobile `listMode=people`; legacy `view=social` / `view=going` still parse). Query `peopleTab=looking|available|going|connect` (default **looking** omitted in URL; legacy `socialTab`, `all`→`connect`, `friends`→`going`, `discover`→`available`). Panel title **Find your crew** — list **Crews** (`listCat=people`, URL `buddies=` mirrors `peopleTab`; hub segment = Crews home). **Looking for** tab is public (published seeking activities); other tabs → sign-in when needed.
+Map pill **Crews** (see `exploreCrewsCopy.ts`); opens **list search** — mobile navigates to `/list?listCat=people`; desktop sets `list=1&listCat=people` on `/explore` (catalog drawer). Legacy desktop `view=people` without `list=1` still opens the docked crews rail. Wire: `peopleTab=people|professional|community` (default **People** omitted); **People** facet `peopleFacet=recommended|friends|available|everyone` (default **Recommended** omitted). Inbound `peopleTab=available|going|connect|hub|buddies` maps to lane + facet. Available sub-lens `open=` (**On the map** — open/fixed intent signals) vs `marked` (calendar). Panel title **Crews** — list category **Crews** (`listCat=people`). **On the map** rows are public; marked calendar + Friends/Everyone → sign-in when needed.
 
 **Communities (planned — `MIG-COMMUNITY-DISCOVER`):** Strava-style **discoverable** groups (e.g. women’s hiking · Dubai), sorted **country → city**, listed under Find crew → **Communities** — separate from private **Teams** (`/groups`) and from **Operators / Partners**. Public/private visibility and join policy per community; activities may be published as the community. Not shipped until API exists — UI hides or feature-gates the segment.
 
-| Segment (`peopleTab`) | Label | Data / actions |
-|-----------------------|-------|----------------|
-| `looking` | Looking for | Published **`activities`** (`activityMode: seeking`) from **`GET /explore/map`** — same `ExploreListRow` as Activities list; not member availability. |
-| `available` | Free | `GET /explore/people/availability` — members who marked days + kinds; edit yours on Plan → **Available** (`planAvailabilityPath()`). |
-| `going` | Friends | `GET /me/member-discovery/roster` + social trip hints — buddies with upcoming outings. |
-| `connect` | Everyone | Directory from `GET /users/browse` / roster; **3** directory rows preview free, then Pro lock; profile opens count toward **3 unique profiles / 30d** (`MEMBER_DISCOVERY_QUOTA_LIMIT`). |
+| Lane (`peopleTab`) | Facet (`peopleFacet`) | Data / actions |
+|--------------------|----------------------|----------------|
+| `people` (default) | `recommended` (default) | Blended roster + availability + directory teaser |
+| `people` | `friends` | `GET /me/member-discovery/roster` — buddies with upcoming outings |
+| `people` | `available` | Marked calendar + map open/fixed intent catalog |
+| `people` | `everyone` | Directory from browse; Pro quota on profile opens |
+| `professional` | — | Guide/porter directory + **agency** map pins (`source: agency`) |
+| `community` | — | Planned `MIG-COMMUNITY-DISCOVER` (feature-gated) |
 
 Cards show city, outings attended, and a subtle upcoming outing hint (link opens activity on map). **Friends → Host an outing** opens compose (`explorePlanWithBuddyPath`). Profile quick launcher: **People** (this panel), **Friends** (`/buddies`), **Messages** (chat). **Join me** on activity detail (`ActivityInviteLauncher`). APIs: [`API_ROUTING.md`](./API_ROUTING.md) § Member people reads (browse).
 
@@ -246,7 +250,7 @@ Signed-in members tap **+** on `/explore` (or list FAB) to compose. **Guests** �
 | Choice | Opens |
 |--------|--------|
 | **Host** | `hostingFlowEngine` / per-kind hosting wizards |
-| **Find crew** | Fixed map seek (`availabilityFlowEngine`) or **Share availability** (`member_availability`) |
+| **Find crew** | Fixed map seek (`intentFixedFlowEngine`) or **Share availability** (`member_availability`) |
 | **Add on map** | Place or facility submit |
 
 Compose URLs emit `activity:*` / `place:*` / `intent:*` only (legacy `host` / `seek` / `add` parse on load).
@@ -320,7 +324,7 @@ Canonical paths only in **new UI**. Bookmark aliases mount in `src/App.tsx` and 
 | `/product/:id` | `/explore?panel=shops` (product catalog removed) | 2026-Q4 |
 | `/host/locations`, `/host/places` | `/publishing/places` | 2026-Q4 |
 | `/event-spot/:id`, `/community-activity/:id`, `/event/:id` (place) | `/venue/:id` | 2026-Q4 |
-| `/people` | `/explore?…` people browse (`explorePeopleBrowsePath`) | 2026-Q4 |
+| `/people` | `/explore?…` Crews browse (`exploreCrewsPath`) | 2026-Q4 |
 | `/merchant/:id` | `/shop/:id` | 2026-Q4 |
 | `/shop/manage`, `/agency/manage`, `/merchant/dashboard` | `/organisation/manage?kind=shop` or `?kind=agency` | 2026-Q4 |
 | `/sign-up`, `/sign-in` | auth aliases | keep |

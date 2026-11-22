@@ -10,7 +10,7 @@ import { CreateAddFlow } from '../ui/CreateAddFlow';
 import { CreateAddFacilityFlow } from '../ui/CreateAddFacilityFlow';
 import type { AddSubmitResult } from '../ui/addFlow';
 import { CreateAvailabilityFixedFlow } from '../ui/CreateAvailabilityFixedFlow';
-import type { AvailabilityFixedSubmitResult } from '../ui/availabilityFlowEngine';
+import type { AvailabilityFixedSubmitResult } from '../ui/intentFixedFlowEngine';
 import { CreateKindSheet } from '../ui/CreateKindSheet';
 import { IntentOpenComposeSheet } from '../ui/IntentOpenComposeSheet';
 import { ComposeSheetExpandedProvider } from './ComposeSheetExpandedContext';

@@ -17,7 +17,7 @@ import {
   sendActivityJoinInvitesToBuddies,
 } from '../../hooks/activityInviteClientApi';
 import { messagingApi } from '../../messaging';
-import { BUDDIES_PATH, GROUPS_PATH } from '../../config/routingCatalog';
+import { GROUPS_PATH, socialFriendsPath } from '../../config/routingCatalog';
 import { useAuth } from '../../context/AuthContext';
 import {
   ACTIVITY_INVITE_CLEAR_SELECTION,
@@ -287,7 +287,9 @@ export const ActivityInviteModalBody = ({
         ) : tab === 'friends' && buddies.length === 0 ? (
           <p className="text-sm text-neutral-600">
             {ACTIVITY_INVITE_NO_FRIENDS}{' '}
-            <Link to={BUDDIES_PATH} className="font-semibold text-emerald-700 hover:underline">Friends</Link>
+            <Link to={socialFriendsPath()} className="font-semibold text-emerald-700 hover:underline">
+              Friends
+            </Link>
           </p>
         ) : tab === 'groups' && groups.length === 0 ? (
           <p className="text-sm text-neutral-600">

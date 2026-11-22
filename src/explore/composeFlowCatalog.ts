@@ -1,6 +1,6 @@
 /**
  * Compose wizard catalog — one entry per product pillar:
- * **Host** (`hostingFlow`) · **Availability** (`availabilityFlow` + flexible sheet) · **Add** (`addFlow`).
+ * **Host** (`hostingFlow`) · **Availability** (`intentFixedFlow` + flexible sheet) · **Add** (`addFlow`).
  * Wire `availability:*` = mark availability. Spec: docs/CREATE_FLOW.md.
  */
 
@@ -36,9 +36,9 @@ import type { AddFlowStepId } from './ui/addFlow';
 
 import { getAddFlowSteps } from './ui/addFlow';
 
-import type { AvailabilityFixedFlowStepId, AvailabilityFixedKind } from './ui/availabilityFlowEngine';
+import type { AvailabilityFixedFlowStepId, AvailabilityFixedKind } from './ui/intentFixedFlowEngine';
 
-import { getAvailabilityFixedFlowSteps } from './ui/availabilityFlowEngine';
+import { getAvailabilityFixedFlowSteps } from './ui/intentFixedFlowEngine';
 
 import type { CreateFlowStepId } from './ui/hostingFlowEngine';
 
@@ -68,7 +68,7 @@ export type ComposeWizardModule =
 
   | 'hostingFlow'
 
-  | 'availabilityFlow'
+  | 'intentFixedFlow'
 
   | 'addFlow';
 
@@ -260,7 +260,7 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     defaultParticipation: null,
 
-    wizard: 'availabilityFlow',
+    wizard: 'intentFixedFlow',
 
     availabilityFixedSteps: getAvailabilityFixedFlowSteps('hiking'),
 
@@ -284,7 +284,7 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     defaultParticipation: null,
 
-    wizard: 'availabilityFlow',
+    wizard: 'intentFixedFlow',
 
     availabilityFixedSteps: getAvailabilityFixedFlowSteps('camping'),
 
@@ -308,7 +308,7 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     defaultParticipation: null,
 
-    wizard: 'availabilityFlow',
+    wizard: 'intentFixedFlow',
 
     availabilityFixedSteps: getAvailabilityFixedFlowSteps('event'),
 
@@ -332,7 +332,7 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     defaultParticipation: null,
 
-    wizard: 'availabilityFlow',
+    wizard: 'intentFixedFlow',
 
     availabilityFixedSteps: getAvailabilityFixedFlowSteps('rideshare'),
 

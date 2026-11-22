@@ -96,7 +96,7 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/shell/useListDiscoveryExperienceModel.ts'))).toBe(true);
     expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/useListDiscoveryExperienceModel/);
     expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(/useBrowseListFeed/);
-    expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/PeopleBrowsePanel/);
+    expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/CrewsBrowsePanel/);
     expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/ListExplorer/);
   });
 
@@ -153,7 +153,7 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/listBrowseFilterModal.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/peopleListBrowseUrl.ts'))).toBe(false);
     expect(read('src/list/browse/useListDiscoveryUrlState.ts')).toMatch(/from '\.\/peopleListBrowseUrl'/);
-    expect(read('src/explore/exploreBrowseUrlHydrate.ts')).toMatch(/browse\/peopleListBrowseUrl/);
+    expect(read('src/explore/exploreBrowseUrlHydrate.ts')).toMatch(/@\/crew-discovery\/crewBrowseTab/);
   });
 
   it('BROWSE-NAME-01p: list discovery runtime facade lives under browse', () => {

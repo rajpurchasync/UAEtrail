@@ -22,9 +22,9 @@ const collectTs = (dir: string): string[] => {
 };
 
 const FORBIDDEN: Array<{ pattern: RegExp; label: string }> = [
-  { pattern: /\bbuddiesDiscoverSegment\b/, label: 'buddiesDiscoverSegment (use peopleBrowseTab)' },
+  { pattern: /\bbuddiesDiscoverSegment\b/, label: 'buddiesDiscoverSegment (use CrewBrowseTab)' },
   { pattern: /\bBUDDIES_SEGMENT_URL_PARAM\b/, label: 'BUDDIES_SEGMENT_URL_PARAM (use PEOPLE_LIST_TAB_URL_PARAM)' },
-  { pattern: /\bapplyBuddiesDiscoverSegment\b/, label: 'applyBuddiesDiscoverSegment (use applyPeopleBrowseTab)' },
+  { pattern: /\bapplyBuddiesDiscoverSegment\b/, label: 'applyBuddiesDiscoverSegment (use applyCrewBrowseTab)' },
   { pattern: /\bsetBuddiesDiscoverSegment\b/, label: 'setBuddiesDiscoverSegment' },
   { pattern: /params\.set\(['"]buddies['"]/, label: 'serialize buddies= query (outbound retired)' },
 ];
@@ -70,7 +70,8 @@ describe('crewsTerminologyGuard (Crews / peopleTab — not buddies segment)', ()
       /readPeopleCrewsTabParam/
     );
     const hydrate = readFileSync(join(process.cwd(), 'src/explore/exploreBrowseUrlHydrate.ts'), 'utf8');
-    expect(hydrate).toMatch(/parseExplorePeopleBrowseTab/);
+    expect(hydrate).toMatch(/parseCrewBrowseState/);
+    expect(hydrate).toMatch(/@\/crew-discovery\/crewBrowseTab/);
     expect(hydrate).not.toMatch(/params\.get\('socialTab'\)/);
   });
 
@@ -81,8 +82,9 @@ describe('crewsTerminologyGuard (Crews / peopleTab — not buddies segment)', ()
   });
 
   it('CREWS-05: people copy + crews stats use Friends (not Buddies product label)', () => {
-    const copy = readFileSync(join(process.cwd(), 'src/content/explorePeopleBrowseCopy.ts'), 'utf8');
-    expect(copy).toMatch(/EXPLORE_SEARCH_SCOPE_PEOPLE_LABEL/);
+    const copy = readFileSync(join(process.cwd(), 'src/content/exploreCrewsCopy.ts'), 'utf8');
+    expect(copy).toMatch(/EXPLORE_SEARCH_SCOPE_PEOPLE_LABEL = PRODUCT_CREWS_TAB_LABEL/);
+    expect(copy).toMatch(/EXPLORE_CREWS_PANEL_TITLE = PRODUCT_CREWS_TAB_LABEL/);
     expect(copy).not.toMatch(/EXPLORE_SEARCH_SCOPE_BUDDIES_LABEL/);
     expect(copy).not.toMatch(/= 'Buddies'/);
     const stats = readFileSync(join(process.cwd(), 'src/list/crews/crewsStatTab.ts'), 'utf8');
@@ -103,9 +105,28 @@ describe('crewsTerminologyGuard (Crews / peopleTab — not buddies segment)', ()
     );
   });
 
+  it('CREWS-07: activity detail emits tab=crew (not tab=buddies)', () => {
+    const violations: string[] = [];
+    const scanRoots = ['src/list', 'src/explore', 'src/activity', 'src/pages'];
+    const allowLegacyParse = /parseActivityDetailTabParam|legacy.*buddies|`\?tab=buddies`/;
+
+    for (const root of scanRoots) {
+      const abs = join(process.cwd(), root);
+      if (!existsSync(abs)) continue;
+      for (const file of collectTs(abs)) {
+        if (file.endsWith('.test.ts') || file.endsWith('.test.tsx')) continue;
+        const content = readFileSync(join(process.cwd(), file), 'utf8');
+        if (!/tab=buddies/.test(content)) continue;
+        if (allowLegacyParse.test(content)) continue;
+        violations.push(file);
+      }
+    }
+    expect(violations, violations.join('\n')).toEqual([]);
+  });
+
   it('CREWS-06: no Buddies product string in consumer content/components', () => {
     const violations: string[] = [];
-    const scanRoots = ['src/content', 'src/components', 'src/explore/ui', 'src/list/crews'];
+    const scanRoots = ['src/content', 'src/components', 'src/explore/ui', 'src/list/crews', 'src/pages', 'src/activity'];
     const allow = new Set([
       'src/content/upl-glossary.ts',
       'src/content/workspaceProductLanguageGuard.test.ts',

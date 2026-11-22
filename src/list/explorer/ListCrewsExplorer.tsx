@@ -1,14 +1,18 @@
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../../explore/exploreBrowseTaxonomy';
 import { APP_SCROLL_BODY_CLASS } from '../../config/layoutScroll';
-import type { ExploreAvailablePersonDTO, ExploreMapItemDTO, MemberDiscoveryQuotaDTO } from '@uaetrail/shared-types';
-import type { MemberBrowseCardDTO, SocialPersonRowDTO } from '@uaetrail/shared-types';
-import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
+import type {
+  ExploreAvailablePersonDTO,
+  ExploreMapItemDTO,
+  MemberDiscoveryQuotaDTO,
+  MemberBrowseCardDTO,
+  SocialPersonRowDTO,
+} from '@uaetrail/shared-types';
+import type { CrewBrowseLane, CrewPeopleFacet } from '@/crew-discovery/crewBrowseState';
 import { ListCrewsExplorerHeader } from './ListCrewsExplorerHeader';
 import { CrewsTabBody } from '../crews/CrewsTabBody';
 import type { CrewsStatCounts } from '../crews/CrewsStatsTabs';
-import type { CrewsAvailableOpenLens } from '../crews/crewsOpenSegment';
-import type { CrewsStatTab } from '../crews/crewsStatTab';
-import { segmentFromCrewsStatTab } from '../crews/crewsStatTab';
+import type { CrewsAvailabilityGuideFilter, CrewsAvailableOpenLens } from '../crews/crewsOpenSegment';
+
 type ListCrewsExplorerProps = {
   query: string;
   onQueryChange: (value: string) => void;
@@ -17,10 +21,14 @@ type ListCrewsExplorerProps = {
   onClearQuery: () => void;
   searchScopeCounts: ExploreSearchScopeCounts;
   mapHref: string;
-  peopleBrowseTab: PeopleBrowseTab;
-  onPeopleBrowseTabChange: (tab: PeopleBrowseTab) => void;
+  crewBrowseLane: CrewBrowseLane;
+  crewPeopleFacet: CrewPeopleFacet;
+  onCrewBrowseLaneChange: (lane: CrewBrowseLane) => void;
+  onCrewPeopleFacetChange: (facet: CrewPeopleFacet) => void;
   crewsOpenLens: CrewsAvailableOpenLens;
   onCrewsOpenLensChange: (lens: CrewsAvailableOpenLens) => void;
+  crewsAvailabilityGuideFilter: CrewsAvailabilityGuideFilter;
+  onCrewsAvailabilityGuideFilterChange: (filter: CrewsAvailabilityGuideFilter) => void;
   onOpenIntentOpen: () => void;
   isSignedIn: boolean;
   filterCount: number;
@@ -55,10 +63,14 @@ export const ListCrewsExplorer = ({
   onClearQuery,
   searchScopeCounts,
   mapHref,
-  peopleBrowseTab,
-  onPeopleBrowseTabChange,
+  crewBrowseLane,
+  crewPeopleFacet,
+  onCrewBrowseLaneChange,
+  onCrewPeopleFacetChange,
   crewsOpenLens,
   onCrewsOpenLensChange,
+  crewsAvailabilityGuideFilter,
+  onCrewsAvailabilityGuideFilterChange,
   onOpenIntentOpen,
   isSignedIn,
   filterCount,
@@ -86,16 +98,8 @@ export const ListCrewsExplorer = ({
 }: ListCrewsExplorerProps) => {
   const stickySearch = query.trim().length > 0;
 
-  const onSelectStatTab = (tab: CrewsStatTab) => {
-    onPeopleBrowseTabChange(segmentFromCrewsStatTab(tab));
-  };
-
   return (
-    <div
-      className={`relative flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden ${
-        'bg-neutral-50'
-      }`}
-    >
+    <div className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-neutral-50">
       <ListCrewsExplorerHeader
         query={query}
         onQueryChange={onQueryChange}
@@ -104,8 +108,10 @@ export const ListCrewsExplorer = ({
         onClearQuery={onClearQuery}
         searchScopeCounts={searchScopeCounts}
         mapHref={mapHref}
-        peopleBrowseTab={peopleBrowseTab}
-        onPeopleBrowseTabChange={onPeopleBrowseTabChange}
+        crewBrowseLane={crewBrowseLane}
+        crewPeopleFacet={crewPeopleFacet}
+        onCrewBrowseLaneChange={onCrewBrowseLaneChange}
+        onCrewPeopleFacetChange={onCrewPeopleFacetChange}
         stickySearch={stickySearch}
         isSignedIn={isSignedIn}
         statCounts={statCounts}
@@ -127,14 +133,12 @@ export const ListCrewsExplorer = ({
           }`}
         >
           <CrewsTabBody
-            segment={peopleBrowseTab}
+            lane={crewBrowseLane}
+            facet={crewPeopleFacet}
             crewsOpenLens={crewsOpenLens}
             onCrewsOpenLensChange={onCrewsOpenLensChange}
-            onSelectStatTab={onSelectStatTab}
-            onBrowseGuides={() => onPeopleBrowseTabChange('hub')}
-            buddiesCount={statCounts.friends ?? 0}
-            availableCount={statCounts.available ?? 0}
-            everyoneCount={statCounts.everyone ?? 0}
+            crewsAvailabilityGuideFilter={crewsAvailabilityGuideFilter}
+            onCrewsAvailabilityGuideFilterChange={onCrewsAvailabilityGuideFilterChange}
             isSignedIn={isSignedIn}
             availabilityCatalogItems={availabilityCatalogItems}
             exploreCatalogItems={exploreCatalogItems}

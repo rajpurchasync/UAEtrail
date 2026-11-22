@@ -61,7 +61,7 @@ describe('authorityMatrixGuard (DMCP Phase 0)', () => {
     const roots = ['src/explore/ui', 'src/explore', 'src/list', 'src/create'] as const;
     for (const root of roots) {
       for (const file of collectTs(root, { skipTests: true })) {
-        if (file.includes('availabilityFlowEngine')) continue;
+        if (file.includes('intentFixedFlowEngine')) continue;
         const source = read(file);
         if (
           /`seek:fixed:/.test(source) ||

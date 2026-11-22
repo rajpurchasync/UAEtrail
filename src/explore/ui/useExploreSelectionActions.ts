@@ -20,7 +20,7 @@ import { readExploreMapItemsFromCache, reloadExploreMap } from '../../hooks/useE
 import { isExploreMapBboxEnabled } from '../exploreMapBbox';
 import { memberAvailabilityQueryKey } from '../../hooks/clientQueryKeys';
 import type { AddSubmitResult } from './addFlow';
-import type { AvailabilityFixedSubmitResult } from './availabilityFlowEngine';
+import type { AvailabilityFixedSubmitResult } from './intentFixedFlowEngine';
 import type { useExploreBrowseUrlState } from './useExploreBrowseUrlState';
 import type { ActivityManageInitialView } from '../../components/activity/activityManageViews';
 import { buildExploreSelectionSelectedCard } from '../exploreSelectionSelectedCard';

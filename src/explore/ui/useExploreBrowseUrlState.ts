@@ -20,13 +20,13 @@ import { buildExploreBrowseUrlPublicApi } from './exploreBrowseUrlPublicApi';
 import { createExploreBrowseUrlBrowseSetters } from './exploreBrowseUrlBrowseSetters';
 import { useExploreBrowseUrlHydrateFromSearch } from './useExploreBrowseUrlHydrateFromSearch';
 import {
-  clampGuestPeopleBrowse,
+  clampGuestCrewsBrowse,
   parseExploreBrowseStateFromSearchParams,
 } from '../exploreBrowseUrlHydrate';
 import { useExploreBrowseUrlInboundMigrations } from './useExploreBrowseUrlInboundMigrations';
 import { useExploreBrowsePeekDismissOnFilterChange } from './useExploreBrowsePeekDismissOnFilterChange';
 import { useExploreBrowseUrlApplyHandlers } from './useExploreBrowseUrlApplyHandlers';
-import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
+import type { CrewBrowseLane, CrewPeopleFacet } from '@/crew-discovery/crewBrowseState';
 import type { ExplorePinKindFilter } from '../explorePinKindFilter';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
@@ -53,7 +53,7 @@ export const useExploreBrowseUrlState = ({
 }: UseExploreBrowseUrlStateArgs) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const initial = useRef(clampGuestPeopleBrowse(parseExploreBrowseStateFromSearchParams(searchParams, isDesktop), isSignedIn)).current;
+  const initial = useRef(clampGuestCrewsBrowse(parseExploreBrowseStateFromSearchParams(searchParams, isDesktop), isSignedIn)).current;
 
   const [mapFilter, setMapFilter] = useState<MapFilterKey>(initial.mapFilter);
   const [activityFilter, setActivityFilter] = useState<ActivityListFilterKey>(initial.activityFilter);
@@ -77,9 +77,10 @@ export const useExploreBrowseUrlState = ({
   const [pinKind, setPinKind] = useState<ExplorePinKindFilter>(initial.pinKind);
   const [topicPills, setTopicPills] = useState<ExploreMapFilterPillKey[]>(initial.topicPills);
   const [listMode, setListMode] = useState<ExploreBrowseListMode>(initial.listMode);
-  const [peopleBrowseOpen, setPeopleBrowseOpen] = useState(initial.peopleBrowseOpen);
+  const [crewsBrowseOpen, setCrewsBrowseOpen] = useState(initial.crewsBrowseOpen);
   const [searchScope, setSearchScope] = useState<ExploreSearchScopeKey | null>(initial.searchScope);
-  const [peopleBrowseTab, setPeopleBrowseTab] = useState<PeopleBrowseTab>(initial.peopleBrowseTab);
+  const [crewBrowseLane, setCrewBrowseLane] = useState<CrewBrowseLane>(initial.crewBrowseLane);
+  const [crewPeopleFacet, setCrewPeopleFacet] = useState<CrewPeopleFacet>(initial.crewPeopleFacet);
   const [tripMapTopics, setTripMapTopics] = useState<TripMapTopicKey[]>(initial.tripMapTopics);
   const [placeMapTopics, setPlaceMapTopics] = useState<PlaceMapTopicKey[]>(initial.placeMapTopics);
   const [priceFilter, setPriceFilter] = useState<ExplorePriceFilter>(initial.priceFilter);
@@ -105,9 +106,10 @@ export const useExploreBrowseUrlState = ({
         pinKind,
         topicPills,
         listMode,
-        peopleBrowseOpen,
+        crewsBrowseOpen,
         searchScope,
-        peopleBrowseTab,
+        crewBrowseLane,
+        crewPeopleFacet,
         tripMapTopics,
         placeMapTopics,
         priceFilter,
@@ -136,9 +138,10 @@ export const useExploreBrowseUrlState = ({
       pinKind,
       topicPills,
       listMode,
-      peopleBrowseOpen,
+      crewsBrowseOpen,
       searchScope,
-      peopleBrowseTab,
+      crewBrowseLane,
+      crewPeopleFacet,
       tripMapTopics,
       placeMapTopics,
       priceFilter,
@@ -165,8 +168,9 @@ export const useExploreBrowseUrlState = ({
         setPinKind,
         setTopicPills,
         setListMode,
-        setPeopleBrowseOpen,
-        setPeopleBrowseTab,
+        setCrewsBrowseOpen,
+        setCrewBrowseLane,
+        setCrewPeopleFacet,
         setDesktopBrowseTab,
         setActivityDatePreset,
         setActivityModeFilter,
@@ -216,7 +220,7 @@ export const useExploreBrowseUrlState = ({
       openExploreListFromMap({
         clearSelection,
         isDesktop,
-        setPeopleBrowseOpen,
+        setCrewsBrowseOpen,
         setListMode,
         setListOpen,
         syncExploreUrl,
@@ -243,10 +247,10 @@ export const useExploreBrowseUrlState = ({
         desktopBrowseTab,
         listOpen,
         listMode,
-        peopleBrowseOpen,
+        crewsBrowseOpen,
         mapFilter,
       }),
-    [isDesktop, panel, desktopBrowseTab, listOpen, listMode, peopleBrowseOpen, mapFilter]
+    [isDesktop, panel, desktopBrowseTab, listOpen, listMode, crewsBrowseOpen, mapFilter]
   );
 
   return buildExploreBrowseUrlPublicApi({
@@ -274,9 +278,10 @@ export const useExploreBrowseUrlState = ({
     searchScope,
     pinKind,
     topicPills,
-    peopleBrowseTab,
+    crewBrowseLane,
+    crewPeopleFacet,
     listMode,
-    peopleBrowseOpen,
+    crewsBrowseOpen,
     tripMapTopics,
     placeMapTopics,
     priceFilter,

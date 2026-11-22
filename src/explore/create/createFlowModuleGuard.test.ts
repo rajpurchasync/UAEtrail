@@ -7,7 +7,7 @@ const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
 
 describe('create flow module boundaries (CPC-9b)', () => {
   it('availability fixed wizard does not import hosting engine', () => {
-    const availability = read('src/explore/ui/availabilityFlowEngine.ts');
+    const availability = read('src/explore/ui/intentFixedFlowEngine.ts');
     expect(availability).not.toMatch(/from ['"]\.\/hostingFlowEngine['"]/);
     expect(availability).not.toMatch(/from ['"]\.\/organizeFlow['"]/);
     expect(availability).toMatch(/createFlowShared/);
@@ -15,7 +15,7 @@ describe('create flow module boundaries (CPC-9b)', () => {
   });
 
   it('availability fixed publish uses availability map pins only (MIG-DISCO-REG)', () => {
-    const availability = read('src/explore/ui/availabilityFlowEngine.ts');
+    const availability = read('src/explore/ui/intentFixedFlowEngine.ts');
     expect(availability).toMatch(/availabilityMapItemId/);
     expect(availability).toMatch(/mapItemId,/);
     expect(availability).not.toMatch(/participantIntentId/);
@@ -51,7 +51,7 @@ describe('create flow module boundaries (CPC-9b)', () => {
     expect(existsSync(join(ROOT, 'src/explore/exploreCardModel.ts'))).toBe(false);
   });
 
-  it('leftover seekingFlow.ts shim is gone (engine is availabilityFlowEngine)', () => {
+  it('leftover seekingFlow.ts shim is gone (engine is intentFixedFlowEngine)', () => {
     expect(existsSync(join(ROOT, 'src/explore/ui/seekingFlow.ts'))).toBe(false);
     expect(existsSync(join(ROOT, 'src/explore/exploreSeekingCatalog.ts'))).toBe(false);
     expect(existsSync(join(ROOT, 'src/explore/ui/useExploreComposeRoute.ts'))).toBe(false);
@@ -71,14 +71,14 @@ describe('create flow module boundaries (CPC-9b)', () => {
 
   it('hostingFlows does not import seeking wizard', () => {
     const flows = read('src/explore/ui/hostingFlows/index.ts');
-    expect(flows).not.toMatch(/demandFlow|availabilityFlowEngine/);
+    expect(flows).not.toMatch(/demandFlow|intentFixedFlowEngine/);
   });
 
 
   it('compose catalog maps hosting and seeking wizard modules', () => {
     const catalog = read('src/explore/composeFlowCatalog.ts');
     expect(catalog).toMatch(/wizard: 'hostingFlow'/);
-    expect(catalog).toMatch(/wizard: 'availabilityFlow'/);
+    expect(catalog).toMatch(/wizard: 'intentFixedFlow'/);
   });
 
   it('ComposeWizardItemContext emoji provider is retired (wizard chrome uses FlowSheetHeader)', () => {

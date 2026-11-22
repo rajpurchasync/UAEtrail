@@ -52,7 +52,7 @@ describe('discover browse navigation contract', () => {
     expect(experience).toMatch(/ExploreExperienceBrowsePanels/);
     expect(experience).toMatch(/ExploreMapShell/);
     expect(mapShell).toMatch(/openMapListPanel/);
-    expect(browsePanels).toMatch(/PeopleBrowsePanel/);
+    expect(browsePanels).toMatch(/CrewsBrowsePanel/);
     expect(browsePanels).not.toMatch(/ExploreBrowsePanel/);
     expect(browsePanels).toMatch(/ListDiscoveryExperience/);
     expect(browsePanels).toMatch(/ExploreDesktopListDrawer/);

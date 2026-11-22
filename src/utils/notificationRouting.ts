@@ -10,7 +10,6 @@ import {
   INBOUND_PLAN_HUB_TRIPS_MAP_PATH,
   INBOUND_PLAN_HUB_TRIPS_PATH,
   memberProfileLink,
-  BUDDIES_PATH,
   GROUPS_PATH,
   groupsPath,
   MESSAGES_PATH,
@@ -25,7 +24,7 @@ import {
   planHostedSchedulePath,
 } from '../config/routingCatalog';
 import { INBOUND_RETIRED_CONSOLE_PREFIXES } from '../config/inboundRoutePaths';
-import { OPERATOR_CONSOLE_PREFIX } from '../config/surfacePaths';
+import { MY_CREWS_PATH, OPERATOR_CONSOLE_PREFIX } from '../config/surfacePaths';
 import { planWishlistTabPath } from '../plan/planTab';
 import {
   NotificationDTO,
@@ -239,7 +238,7 @@ export const inferNotificationPath = (
       toStringValue(meta?.fromUserId) ??
       toStringValue(meta?.buddyUserId);
     if (actorUserId) return memberProfileLink(actorUserId);
-    return BUDDIES_PATH;
+    return MY_CREWS_PATH;
   }
   if (kind === 'connection_member_followed') {
     const followerUserId = toStringValue(meta?.followerUserId);

@@ -34,7 +34,7 @@ describe('consumerAppSurfacesDataGuard (in-app hubs — not guest marketing)', (
   it('CTX-APP-04: profile + crews hubs surface API-fed stats (not fixture cards)', () => {
     expect(read('src/pages/Profile.tsx')).toMatch(/useMeProfileStats/);
     expect(read('src/pages/Profile.tsx')).toMatch(/useParticipantHubData/);
-    expect(read('src/list/crews/CrewsHubHome.tsx')).toMatch(/MemberBrowseCardDTO/);
+    expect(read('src/list/crews/CrewsTabBody.tsx')).toMatch(/MemberBrowseCardDTO/);
   });
 
   it('CTX-APP-05: consumer pages avoid static getRegionsForCountry pickers in explore/plan', () => {

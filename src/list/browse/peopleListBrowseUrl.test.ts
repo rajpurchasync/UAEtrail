@@ -1,47 +1,52 @@
 import { describe, expect, it } from 'vitest';
 import {
-  parseExplorePeopleBrowseTab,
+  parseExploreCrewBrowseState,
+  parsePeopleListBrowseState,
   parsePeopleListBrowseTab,
-  serializePeopleListBrowseTab,
+  serializePeopleListBrowseState,
 } from './peopleListBrowseUrl';
 
 describe('peopleListBrowseUrl', () => {
-  it('parses URL segment with hub default on crews list', () => {
-    expect(parsePeopleListBrowseTab(null)).toBe('hub');
-    expect(parsePeopleListBrowseTab('available')).toBe('available');
-    expect(parsePeopleListBrowseTab('going')).toBe('going');
-    expect(parsePeopleListBrowseTab('connect')).toBe('connect');
+  it('parses URL with People default on crews list', () => {
+    expect(parsePeopleListBrowseState(new URLSearchParams('listCat=people'))).toEqual({
+      lane: 'people',
+      facet: 'recommended',
+    });
+    expect(parsePeopleListBrowseTab(null)).toBe('people');
   });
 
-  it('maps legacy inbound values (not buddies= segment name)', () => {
-    expect(parsePeopleListBrowseTab('friends')).toBe('going');
-    expect(parsePeopleListBrowseTab('buddies')).toBe('hub');
-    expect(parsePeopleListBrowseTab('all')).toBe('connect');
-    expect(parsePeopleListBrowseTab('looking')).toBe('looking');
-    expect(parsePeopleListBrowseTab('followed')).toBe('going');
+  it('maps inbound buddies to People Recommended', () => {
+    expect(parsePeopleListBrowseTab('buddies')).toBe('people');
+    expect(
+      parsePeopleListBrowseState(new URLSearchParams('listCat=people&buddies=looking'))
+    ).toEqual({ lane: 'people', facet: 'available' });
   });
 
-  it('parseExplorePeopleBrowseTab reads peopleTab, buddies, socialTab, goingTab', () => {
-    expect(parseExplorePeopleBrowseTab(new URLSearchParams('view=people'))).toBe('looking');
+  it('parseExploreCrewBrowseState reads peopleTab and facet', () => {
+    expect(parseExploreCrewBrowseState(new URLSearchParams('view=people'))).toEqual({
+      lane: 'people',
+      facet: 'recommended',
+    });
     expect(
-      parseExplorePeopleBrowseTab(new URLSearchParams('view=people&peopleTab=available'))
-    ).toBe('available');
+      parseExploreCrewBrowseState(new URLSearchParams('view=people&peopleTab=professional'))
+    ).toEqual({ lane: 'professional', facet: 'recommended' });
     expect(
-      parseExplorePeopleBrowseTab(new URLSearchParams('view=people&buddies=going'))
-    ).toBe('going');
-    expect(
-      parseExplorePeopleBrowseTab(new URLSearchParams('view=people&socialTab=connect'))
-    ).toBe('connect');
-    expect(parseExplorePeopleBrowseTab(new URLSearchParams('view=people&goingTab=discover'))).toBe(
-      'available'
-    );
+      parseExploreCrewBrowseState(new URLSearchParams('view=people&peopleFacet=friends'))
+    ).toEqual({ lane: 'people', facet: 'friends' });
   });
 
-  it('serializes non-default segments to peopleTab', () => {
-    expect(serializePeopleListBrowseTab('hub')).toBeNull();
-    expect(serializePeopleListBrowseTab('looking')).toBeNull();
-    expect(serializePeopleListBrowseTab('available')).toBe('available');
-    expect(serializePeopleListBrowseTab('going')).toBe('going');
-    expect(serializePeopleListBrowseTab('connect')).toBe('connect');
+  it('serializes non-default lane and facet', () => {
+    expect(serializePeopleListBrowseState({ lane: 'people', facet: 'recommended' })).toEqual({
+      peopleTab: null,
+      peopleFacet: null,
+    });
+    expect(serializePeopleListBrowseState({ lane: 'people', facet: 'friends' })).toEqual({
+      peopleTab: null,
+      peopleFacet: 'friends',
+    });
+    expect(serializePeopleListBrowseState({ lane: 'professional', facet: 'recommended' })).toEqual({
+      peopleTab: 'professional',
+      peopleFacet: null,
+    });
   });
 });

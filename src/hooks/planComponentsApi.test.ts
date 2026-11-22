@@ -57,10 +57,10 @@ describe('componentsClientApi (R8.1)', () => {
   it('activity invite and host manage use hooks layer', () => {
     expect(read('src/components/activity/ActivityInviteModalBody.tsx')).toMatch(/activityInviteClientApi/);
     expectNoDirectApi('src/components/activity/ActivityInviteModalBody.tsx');
-    expect(read('src/components/activity/detail/ActivityDetailHostBuddiesHub.tsx')).toMatch(
+    expect(read('src/components/activity/detail/ActivityDetailHostCrewHub.tsx')).toMatch(
       /publishingJoinQueueClientApi/
     );
-    expectNoDirectApi('src/components/activity/detail/ActivityDetailHostBuddiesHub.tsx');
+    expectNoDirectApi('src/components/activity/detail/ActivityDetailHostCrewHub.tsx');
     expect(read('src/components/activity/ActivityManageSheet.tsx')).toMatch(/activityCrewPath/);
     expectNoDirectApi('src/components/activity/ActivityManageSheet.tsx');
     for (const file of [

@@ -17,7 +17,7 @@ export const detailPlanFooterKindForPeekPrimary = (
 ): ActivityDetailTabFooterKind => {
   switch (peekPrimaryId) {
     case 'invite_crew':
-      return 'buddies_invite';
+      return 'crew_invite';
     case 'link_rideshare':
       return 'transport_linked_ride';
     case 'share_activity':

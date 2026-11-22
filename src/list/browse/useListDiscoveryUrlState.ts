@@ -31,8 +31,12 @@ import { PEOPLE_LIST_TAB_URL_PARAM } from './peopleListBrowseUrl';
 import {
   CREWS_AVAILABILITY_SHEET_PARAM,
   CREWS_OPEN_URL_PARAM,
+  CREWS_AVAIL_GUIDE_PARAM,
+  parseCrewsAvailabilityGuideFilter,
   parseCrewsAvailableOpenLens,
+  serializeCrewsAvailabilityGuideFilter,
   serializeCrewsAvailableOpenLens,
+  type CrewsAvailabilityGuideFilter,
   type CrewsAvailableOpenLens,
 } from '../crews/crewsOpenSegment';
 import {
@@ -148,6 +152,7 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
         layout?: BrowseListLayout;
         sort?: BrowseListSortMode;
         crewsOpen?: CrewsAvailableOpenLens | null;
+        crewsAvailGuide?: CrewsAvailabilityGuideFilter | null;
       }
     ) => {
       applyProductSearchMutation(
@@ -198,6 +203,13 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
               : null;
             if (serializedOpen) params.set(CREWS_OPEN_URL_PARAM, serializedOpen);
             else params.delete(CREWS_OPEN_URL_PARAM);
+          }
+          if (patch.crewsAvailGuide !== undefined) {
+            const serializedGuide = patch.crewsAvailGuide
+              ? serializeCrewsAvailabilityGuideFilter(patch.crewsAvailGuide)
+              : null;
+            if (serializedGuide) params.set(CREWS_AVAIL_GUIDE_PARAM, serializedGuide);
+            else params.delete(CREWS_AVAIL_GUIDE_PARAM);
           }
           if (mapOverlay) {
             preserved.forEach((value, key) => {
@@ -312,6 +324,11 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
     [searchParams]
   );
 
+  const crewsAvailabilityGuideFilter = useMemo(
+    () => parseCrewsAvailabilityGuideFilter(searchParams.get(CREWS_AVAIL_GUIDE_PARAM)),
+    [searchParams]
+  );
+
   const availabilityParamStrippedRef = useRef(false);
   useEffect(() => {
     if (availabilityParamStrippedRef.current) return;
@@ -333,6 +350,7 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
   return {
     filters,
     crewsOpenLens,
+    crewsAvailabilityGuideFilter,
     venueRegions,
     geoPath,
     listCat,

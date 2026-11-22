@@ -20,7 +20,7 @@
 
 Companion docs: [`DOCS_INDEX.md`](./DOCS_INDEX.md), [`NORTHSTAR.md`](./NORTHSTAR.md), [`MEMBER_MODEL.md`](./MEMBER_MODEL.md), [`DOMAIN.md`](./DOMAIN.md), [`NAVIGATION.md`](./NAVIGATION.md), [`COMMUNICATION.md`](./COMMUNICATION.md), `src/explore/exploreCopy.ts`.
 
-Code (today): `src/create/` (session + kind tiles) · `src/plan/planAdd.ts` · `src/explore/compose.ts`, `CreateKindSheet.tsx`, `IntentOpenComposeSheet.tsx`, `hostingFlowEngine.ts` / `hostingFlows/*`, `availabilityFlowEngine.ts`, `addFlow.ts`.
+Code (today): `src/create/` (session + kind tiles) · `src/plan/planAdd.ts` · `src/explore/compose.ts`, `CreateKindSheet.tsx`, `IntentOpenComposeSheet.tsx`, `hostingFlowEngine.ts` / `hostingFlows/*`, `intentFixedFlowEngine.ts`, `addFlow.ts`.
 
 **Status:** Spec **approved (CPC)** · compose kinds **activity · place · intent** + operator **`/operator/*`** **shipped** (see [Implementation status](#implementation-status))
 
@@ -56,7 +56,7 @@ Tab context is known. **Do not** show `I would like to…` / Host · Find crew �
 | **Find a Crew** (Crews) | Share availability (intent open) | `compose=intent:open` |
 | **Add a Plan** (`/plan`) | Set a Goal · Want to go | `planSheet=menu` (goals/wishlist — not compose) |
 
-Kind pick → wizards: `hostingFlowEngine` (activity), `addFlow` (place), `availabilityFlowEngine` (intent fixed), `IntentOpenComposeSheet` (intent open).
+Kind pick → wizards: `hostingFlowEngine` (activity), `addFlow` (place), `intentFixedFlowEngine` (intent fixed), `IntentOpenComposeSheet` (intent open).
 
 **Plans FAB** does not duplicate compose: **Want to go** → `saveWishlistTarget` / `planSheet=wishlist`. **Set a Goal** → wishlist tab goal sheet. **Host an outing** / **mark availability** → `usePlanAddFlow.openComposeOuting` or explore/list FABs (`activity` / `intent:open`). Tiles: `src/create/CreateKindGrid.tsx`.
 
@@ -106,7 +106,7 @@ Do not bounce consumers to `/explore` for compose when `createFlowPath` can keep
 
 | Mode | User meaning | Wizard | Gates |
 |------|--------------|--------|-------|
-| **Post on map** (fixed) | Time/place window for company | `availabilityFlowEngine` → **`PUT /me/availability`** (fixed slot) | Sign-in only |
+| **Post on map** (fixed) | Time/place window for company | `intentFixedFlowEngine` → **`PUT /me/availability`** (fixed slot) | Sign-in only |
 | **Share availability** (flexible) | Days + activities; location **open**, region, or area (all optional) — no pin | `PlanAvailabilitySection` / `member_availability` | Sign-in only |
 
 **Find crew browse (Available tab):** directory of everyone who saved availability with slots in the selected date range (`GET /explore/people/availability`) — optional map area / activity filter only; **not** personalized match to the viewer. Day + activity-type **notifications** and optional post-save **hosted outing** preview are separate.
@@ -260,7 +260,7 @@ When a member is ready to run a **dated hosted outing**, they use **Create Trip*
 
 Still applies to **hosted** parents: publish child rideshare with `linkedActivityId`. **Never** link a parent when publishing `activityType: rideshare`. Gates unchanged (`canPublish`, `canOfferTransport`).
 
-**Catalog:** `src/explore/composeFlowCatalog.ts`. **Tests:** `npm run test:explore-alignment`, `availabilityMapPeekParity.test.ts`, `availabilityFlowEngine.test.ts`.
+**Catalog:** `src/explore/composeFlowCatalog.ts`. **Tests:** `npm run test:explore-alignment`, `availabilityMapPeekParity.test.ts`, `intentFixedFlowEngine.test.ts`.
 
 ---
 
@@ -339,7 +339,7 @@ Track what is **spec** vs **shipped**. Update this table in the same PR that lan
 | Availability ↔ hosted (date + activity type; notify + FAB hosted preview) | ✅ | ✅ (`availability-hosted-match-notifications.ts`, `GET /me/availability/match-preview` → `hostedOutings` only) |
 | **Find crew → Available** tab (all members with future slots in range) | ✅ | ✅ (`GET /explore/people/availability` — not match-preview) |
 
-**Current code:** Emit **`activity:*` \| `place:*` \| `intent:*`** only. Wizards: `hostingFlowEngine` + `hostingFlows` (activity), `addFlow` (place), `availabilityFlowEngine` + `IntentOpenComposeSheet` (intent). Plan wishlist: `saveWishlistTarget`. Operator console: `/operator/overview` (`HostingHubView`).
+**Current code:** Emit **`activity:*` \| `place:*` \| `intent:*`** only. Wizards: `hostingFlowEngine` + `hostingFlows` (activity), `addFlow` (place), `intentFixedFlowEngine` + `IntentOpenComposeSheet` (intent). Plan wishlist: `saveWishlistTarget`. Operator console: `/operator/overview` (`HostingHubView`).
 
 ### Module naming (CPC-9a)
 
@@ -350,7 +350,7 @@ Track what is **spec** vs **shipped**. Update this table in the same PR that lan
 | **`Explore*` on hooks/components** | Map/browse shell only (`useExploreMapViewport`, pin peek). **Not** FAB compose — compose mounts on `/explore` **and** `/list`. |
 | **`src/explore/create/`** | Cross-surface compose: URL state, guards, `ComposeHost`, hosting prefill/reorganize. |
 | **Product verbs in shell props** | `ComposeHost`: activity / place / intent wizard open flags (`intentOpenWizardOpen`, …). |
-| **Wizard modules (catalog `wizard` field)** | `hostingFlow` (activity), `availabilityFlow` (intent), `addFlow` (place). Retired: `seekingFlow`, `organizeFlow`, `CreateActivityFlow`. |
+| **Wizard modules (catalog `wizard` field)** | `hostingFlow` (activity), `intentFixedFlow` (intent fixed), `addFlow` (place). Retired: `seekingFlow`, `organizeFlow`, `CreateActivityFlow`. |
 | **“Catalog” in code** | **Place/facility inventory** (`GET */catalog`). Activity wizards = `hostingFlows` — not catalog. |
 | **“Plan” in code** | `/plan` schedule + goals/wishlist — FAB `planSheet` only. Compose emit: `activity` \| `place` \| `intent`. |
 | **Compose flow ids** | `activity.*` / `intent.fixed.*` / `intent.open` / `place.*` via `composeFlowIds.ts`. |
@@ -364,7 +364,7 @@ One responsive stack — not separate mobile/desktop implementations.
 |----------------------------|------------------|----------------------------------|
 | Compose shell | `create/ComposeHost.tsx`, `CreateKindSheet.tsx` | `compose.ts`, `create/composeRouteGuard.ts`, `create/hooks/useComposeRoute.ts` |
 | **Host** | `create/hosting/HostingFlowHost` → `CreateHostingActivityFlow.tsx` | `hostingFlowEngine.ts`, `hostingFlows/*` |
-| **Find crew** (fixed) | `CreateAvailabilityFixedFlow.tsx` | `availabilityFlowEngine.ts` |
+| **Find crew** (fixed) | `CreateAvailabilityFixedFlow.tsx` | `intentFixedFlowEngine.ts` |
 | **Intent open** | `IntentOpenComposeSheet.tsx` | `PlanAvailabilitySection` (`variant=fab`) |
 | **Add on map** | `CreateAddFlow.tsx`, `CreateAddFacilityFlow.tsx` | `addFlow.ts`, `addFacilityFlow.ts` |
 | Map browse shell | `ExploreExperience.tsx` | `useExploreExperienceModel`, map hooks |
@@ -403,7 +403,7 @@ Do **not** ship Event Host with RSVP marketing until Phase C exists.
 | FAB entry | `CreateKindSheet.tsx` |
 | Map shell | `ExploreExperience.tsx`, `useExploreExperienceModel` (map/browse hooks only) |
 | Hosting wizard | `CreateHostingActivityFlow.tsx`, `hostingFlowEngine.ts`, `hostingFlows/*` |
-| Seeking wizard | `CreateAvailabilityFixedFlow.tsx`, `availabilityFlowEngine.ts` |
+| Seeking wizard | `CreateAvailabilityFixedFlow.tsx`, `intentFixedFlowEngine.ts` |
 | Add on map wizard | `CreateAddFlow.tsx`, `CreateAddFacilityFlow.tsx`, `addFlow.ts`, `addFacilityFlow.ts`; `catalogPlaceSubmit.ts` / `catalogFacilitySubmit.ts` |
 | Map pin UI | `CreatePlacePicker.tsx` |
 | Join / RSVP UI | `JoinRequestModal.tsx`, `ActivityDetail.tsx`, `joinRequestUi.ts` |

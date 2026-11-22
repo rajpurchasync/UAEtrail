@@ -9,7 +9,7 @@ import { exploreSearchListPathFromMapSearch } from '../search/exploreSearchRouti
 export const openExploreListFromMap = (input: {
   clearSelection: () => void;
   isDesktop: boolean;
-  setPeopleBrowseOpen: (v: boolean) => void;
+  setCrewsBrowseOpen: (v: boolean) => void;
   setListMode: (v: import('../exploreBrowseUrlSync').ExploreBrowseListMode) => void;
   setListOpen: (v: boolean) => void;
   syncExploreUrl: (patch: ExploreBrowseUrlSyncPatch) => void;
@@ -21,19 +21,19 @@ export const openExploreListFromMap = (input: {
   input.clearSelection();
   if (input.locationPathname === '/explore/search' && input.locationSearch.includes('view=map')) {
     if (input.isDesktop) {
-      input.setPeopleBrowseOpen(false);
+      input.setCrewsBrowseOpen(false);
       input.setListMode('default');
       input.setListOpen(false);
-      input.syncExploreUrl({ list: false, listMode: 'default', peopleBrowseOpen: false });
+      input.syncExploreUrl({ list: false, listMode: 'default', crewsBrowseOpen: false });
     }
     input.navigate(exploreSearchListPathFromMapSearch(input.locationSearch), { replace: false });
     return;
   }
   if (input.isDesktop) {
-    input.setPeopleBrowseOpen(false);
+    input.setCrewsBrowseOpen(false);
     input.setListMode('default');
     input.setListOpen(true);
-    input.syncExploreUrl({ list: true, listMode: 'default', peopleBrowseOpen: false });
+    input.syncExploreUrl({ list: true, listMode: 'default', crewsBrowseOpen: false });
     return;
   }
   const params = new URLSearchParams(input.searchParamsString);

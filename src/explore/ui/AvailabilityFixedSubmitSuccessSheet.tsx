@@ -17,7 +17,7 @@ import {
   availabilityWhenShowsTime,
   type AvailabilityFixedDraft,
   type AvailabilityFixedKind,
-} from './availabilityFlowEngine';
+} from './intentFixedFlowEngine';
 import { LinkRidesharePanel } from './LinkRidesharePanel';
 import { canLinkRideshareToActivity, parentMapKindMayOfferLinkedRideshare } from '../linkActivityRideshareOffer';
 

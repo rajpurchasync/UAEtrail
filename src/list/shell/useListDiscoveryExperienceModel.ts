@@ -17,8 +17,8 @@ import {
 import { useDisplayPreferences } from '../../preferences/useDisplayPreferences';
 import { browseListBucketCategories } from '../browse/browseListBucket';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { crewsCategoryMapFeedEnabled } from '@/crew-discovery/crewBrowseState';
 import {
-  crewsCategoryMapFeedEnabled,
   useListDiscoveryCrewsCategoryAugment,
   useListDiscoveryCrewsCategoryModel,
 } from './useListDiscoveryCrewsCategoryModel';
@@ -75,6 +75,7 @@ export const useListDiscoveryExperienceModel = ({
     layout,
     sort,
     crewsOpenLens,
+    crewsAvailabilityGuideFilter,
     isPeopleCategory,
     explorerBucket,
     createFabContext,
@@ -108,12 +109,12 @@ export const useListDiscoveryExperienceModel = ({
       createFabContext,
     });
 
-  const peopleSegment = filters.peopleBrowseTab;
   const { memberRoster, memberAvailability, crewsNeedsAvailability } = useListDiscoveryCrewsCategoryModel({
     enabled: isPeopleCategory,
     user,
     draftQuery,
-    peopleBrowseTab: peopleSegment,
+    crewBrowseLane: filters.crewBrowseLane,
+    crewPeopleFacet: filters.crewPeopleFacet,
     activityDatePreset: filters.activityDatePreset,
     areaSlug,
   });
@@ -147,7 +148,11 @@ export const useListDiscoveryExperienceModel = ({
     venueRegions,
     geoPath,
     mapEnabled:
-      !isPeopleCategory || crewsCategoryMapFeedEnabled(peopleSegment, crewsOpenLens),
+      !isPeopleCategory ||
+      crewsCategoryMapFeedEnabled(
+        { lane: filters.crewBrowseLane, facet: filters.crewPeopleFacet },
+        crewsOpenLens
+      ),
     catalogItems: embeddedOnExplore ? prefetchedCatalogItems : undefined,
   });
 
@@ -175,8 +180,10 @@ export const useListDiscoveryExperienceModel = ({
   const { availabilityCatalogItems, handleOpenAvailabilityCatalogItem, crewsStatCounts } =
     useListDiscoveryCrewsCategoryAugment({
       enabled: isPeopleCategory,
-      peopleBrowseTab: peopleSegment,
+      crewBrowseLane: filters.crewBrowseLane,
+      crewPeopleFacet: filters.crewPeopleFacet,
       crewsNeedsAvailability,
+      crewsOpenLens,
       draftQuery,
       exploreCatalogItems: items,
       exploreCatalogLoading: isLoading,
@@ -273,6 +280,7 @@ export const useListDiscoveryExperienceModel = ({
     listSearchPlaceholder,
     listSearchScopeHints,
     crewsOpenLens,
+    crewsAvailabilityGuideFilter,
     handleOpenMarkAvailability,
     filterCount,
     crewsStatCounts,

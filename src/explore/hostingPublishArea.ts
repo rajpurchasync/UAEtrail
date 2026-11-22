@@ -7,7 +7,7 @@ import {
   type PlaceDTO,
   type UaeGroupRegionCatalogLabel,
 } from '@uaetrail/shared-types';
-import type { AvailabilityFixedDraft, AvailabilityFixedKind } from './ui/availabilityFlowEngine';
+import type { AvailabilityFixedDraft, AvailabilityFixedKind } from './ui/intentFixedFlowEngine';
 import type { CreateActivityDraft } from './ui/hostingFlowEngine';
 
 const PLACE_AREA_REQUIRED =

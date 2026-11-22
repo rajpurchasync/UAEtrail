@@ -14,7 +14,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { isDiscoverBrowseRoute } from '../explore/exploreDiscoverBrowse';
-import { explorePath, explorePeopleBrowsePath } from '../explore/routing';
+import { explorePath, exploreCrewsPath } from '../explore/routing';
 import {
   BUDDIES_PATH,
   EXPLORE_DISCOVER_BROWSE_PATH,
@@ -136,7 +136,7 @@ export const DESKTOP_PEOPLE_NAV: readonly DesktopNavItem[] = [
   {
     key: 'findCrew',
     label: 'Find Crew',
-    to: explorePeopleBrowsePath({ list: false }),
+    to: exploreCrewsPath({ list: false }),
     icon: UserSearch,
     match: [],
     authGate: true,

@@ -5,7 +5,7 @@ import { catalogFreshQueryOptions, catalogSnapshots, loadCachedCatalog } from '.
 import { fetchExploreMapItems } from './exploreMapClientApi';
 import type { ExploreMapFetchScope } from '../explore/exploreMapBbox';
 import { isExploreMapBboxEnabled } from '../explore/exploreMapBbox';
-import { peopleDiscoveryAvailabilityCatalogQueryKey } from '../people-discovery/hooks/usePeopleDiscoveryAvailabilityCatalog';
+import { crewDiscoveryAvailabilityCatalogQueryKey } from '../crew-discovery/hooks/useCrewDiscoveryAvailabilityCatalog';
 import { exploreMapQueryKey, exploreMapQueryKeyPrefix } from './exploreMapQuery';
 
 export { exploreMapQueryKey, exploreMapQueryKeyPrefix } from './exploreMapQuery';
@@ -16,9 +16,9 @@ export {
 
 export const reloadExploreMap = async (queryClient: QueryClient): Promise<void> => {
   catalogSnapshots.clearPrefix(exploreMapQueryKeyPrefix);
-  catalogSnapshots.clearPrefix(peopleDiscoveryAvailabilityCatalogQueryKey());
+  catalogSnapshots.clearPrefix(crewDiscoveryAvailabilityCatalogQueryKey());
   await queryClient.invalidateQueries({ queryKey: exploreMapQueryKeyPrefix });
-  await queryClient.invalidateQueries({ queryKey: peopleDiscoveryAvailabilityCatalogQueryKey() });
+  await queryClient.invalidateQueries({ queryKey: crewDiscoveryAvailabilityCatalogQueryKey() });
   await queryClient.refetchQueries({ queryKey: exploreMapQueryKeyPrefix, type: 'active' });
 };
 

@@ -194,7 +194,11 @@ export const JoinRequestDetail = lazy(() =>
   import('../pages/JoinRequestDetail').then((m) => ({ default: m.JoinRequestDetail }))
 );
 export const Groups = lazy(() => import('../pages/Groups').then((m) => ({ default: m.Groups })));
-export const Buddies = lazy(() => import('../pages/Buddies').then((m) => ({ default: m.Buddies })));
+export const MyCrewsPage = lazy(() =>
+  import('../pages/MyCrews').then((m) => ({ default: m.MyCrewsPage }))
+);
+/** @deprecated Use {@link MyCrewsPage}. */
+export const Buddies = MyCrewsPage;
 export const SecurityPrivacy = lazy(() =>
   import('../pages/SecurityPrivacy').then((m) => ({ default: m.SecurityPrivacy }))
 );

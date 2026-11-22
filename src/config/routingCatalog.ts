@@ -184,7 +184,7 @@ export {
   exploreShopsPath,
   exploreActivitiesPath,
   exploreHostPath,
-  explorePeopleBrowsePath,
+  exploreCrewsPath,
   exploreDiscoverBrowsePath,
   explorePlanWithBuddyPath,
   detailBackPath,

@@ -32,7 +32,7 @@ import {
   type AvailabilityFixedSubmitResult,
   type AvailabilityFixedDraft,
   type AvailabilityFixedKind,
-} from './availabilityFlowEngine';
+} from './intentFixedFlowEngine';
 import type { LocationPrecision } from './createFlowShared';
 import { intentFixedCompose, type IntentFixedComposeKind } from '../compose';
 import { areaIdForExploreAreaSlug } from '../exploreAreaFilter';

@@ -12,7 +12,7 @@ import {
   type AvailabilityFixedFitnessLevel,
   type AvailabilityFixedKind,
   type AvailabilityFixedVehicleType,
-} from './availabilityFlowEngine';
+} from './intentFixedFlowEngine';
 
 type PatchDraft = (patch: Partial<AvailabilityFixedDraft>) => void;
 

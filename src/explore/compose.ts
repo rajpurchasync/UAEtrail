@@ -12,7 +12,7 @@ import {
   EXPLORE_CREATE_FAB_FIND_CREW,
   EXPLORE_CREATE_FAB_HOST_TRIP,
 } from '../content/exploreCreateFabCopy';
-import { UPL_INTENT_OPEN_ACTION } from '../content/upl-glossary';
+import { UPL_INTENT_FIXED_MENU, UPL_INTENT_OPEN_ACTION } from '../content/upl-glossary';
 import type { CreateActivityKind } from './ui/hostingFlowEngine';
 import type { AddVenueKind } from './addTypes';
 
@@ -103,13 +103,13 @@ export const AVAILABILITY_MODE_OPTIONS: Array<{
 }> = [
   {
     mode: 'fixed',
-    label: 'Fixed time and place',
+    label: UPL_INTENT_FIXED_MENU,
     hint: 'Show on the map — when and where you are free to meet',
     emoji: '📌',
   },
   {
     mode: 'open',
-    label: 'Share my availability',
+    label: UPL_INTENT_OPEN_ACTION,
     hint: 'Days, region, and activities — discover in Find crew',
     emoji: '📅',
   },

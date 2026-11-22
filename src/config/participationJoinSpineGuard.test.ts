@@ -25,7 +25,7 @@ const HOST_JOIN_SURFACES = [
   'src/pages/publishing/JoinRequests.tsx',
   'src/pages/publishing/Activities.tsx',
   'src/components/activity/ActivityManageSheet.tsx',
-  'src/components/activity/detail/ActivityDetailHostBuddiesHub.tsx',
+  'src/components/activity/detail/ActivityDetailHostCrewHub.tsx',
   'src/console/useHubData.ts',
   'src/hooks/useActivityHostJoinRequests.ts',
 ] as const;

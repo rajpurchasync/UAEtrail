@@ -61,24 +61,24 @@ describe('discoveryUiMethodologyGuard', () => {
   });
 
   it('DISC-METH-07: member people browse uses L1 row model (parallel to discoveryCardModel)', () => {
-    expect(read('src/people-discovery/memberBrowseRowModel.ts')).toMatch(/MemberBrowseRowVm/);
-    const tab = read('src/people-discovery/panel/peopleBrowse/PeopleBrowseTabContent.tsx');
+    expect(read('src/crew-discovery/memberBrowseRowModel.ts')).toMatch(/MemberBrowseRowVm/);
+    const tab = read('src/crew-discovery/panel/crewBrowse/CrewBrowseTabContent.tsx');
     expect(tab).toMatch(/memberBrowseRowModel/);
     expect(tab).not.toMatch(/memberDiscoverProfilePath/);
   });
 
   it('DISC-METH-08: member profile links centralized in memberProfileLink', () => {
     expect(read('src/member/memberProfileLink.ts')).toMatch(/memberProfilePath/);
-    const model = read('src/people-discovery/memberBrowseRowModel.ts');
+    const model = read('src/crew-discovery/memberBrowseRowModel.ts');
     expect(model).toMatch(/memberProfileLink/);
     expect(model).not.toMatch(/`\/member\/\$\{/);
   });
 
   it('DISC-METH-09: list/map people browse shares people-discovery panel module', () => {
     expect(existsSync(join(process.cwd(), 'src/list/ui/ListDiscoverPeopleView.tsx'))).toBe(false);
-    expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/PeopleBrowsePanel/);
-    expect(read('src/people-discovery/panel/PeopleBrowsePanel.tsx')).toMatch(
-      /from '\.\/peopleBrowse'/
+    expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/CrewsBrowsePanel/);
+    expect(read('src/crew-discovery/panel/CrewsBrowsePanel.tsx')).toMatch(
+      /from '\.\/crewBrowse'/
     );
   });
 
@@ -103,9 +103,9 @@ describe('discoveryUiMethodologyGuard', () => {
 
   it('DISC-METH-11: explore does not re-export people browse (people-discovery owns the module)', () => {
     expect(existsSync(join(process.cwd(), 'src/explore/ui/peopleBrowse'))).toBe(false);
-    expect(existsSync(join(process.cwd(), 'src/explore/peopleBrowseTab.ts'))).toBe(false);
+    expect(existsSync(join(process.cwd(), 'src/explore/CrewBrowseTab.ts'))).toBe(false);
     expect(read('src/explore/exploreBrowseUrlHydrate.ts')).toMatch(
-      '@/people-discovery/peopleBrowseTab'
+      '@/crew-discovery/crewBrowseTab'
     );
   });
 });

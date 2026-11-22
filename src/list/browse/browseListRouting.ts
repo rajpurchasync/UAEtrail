@@ -27,7 +27,8 @@ export const listPeopleDiscoveryPath = (): string =>
     listCat: 'people',
     categories: ['people'],
     activityDatePreset: 'anyday',
-    peopleBrowseTab: 'hub',
+    crewBrowseLane: 'people',
+    crewPeopleFacet: 'recommended',
   });
 
 /** Scoped list homes — mobile five-tab + drawer (import here, not `platform.ts`, to avoid cycles). */
@@ -48,7 +49,8 @@ export const listDiscoveryPath = (options?: ListDiscoveryPathOptions): string =>
     price: options?.price ?? 'all',
     when: options?.when ?? 'any',
     activityDatePreset: options?.activityDatePreset ?? 'anyday',
-    peopleBrowseTab: options?.peopleBrowseTab ?? 'hub',
+    crewBrowseLane: options?.crewBrowseLane ?? 'people',
+    crewPeopleFacet: options?.crewPeopleFacet ?? 'recommended',
     hasTrip: options?.hasTrip ?? false,
     facilityKinds: options?.facilityKinds ?? [],
     audience: options?.audience ?? 'anyone',

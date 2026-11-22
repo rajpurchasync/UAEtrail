@@ -1,4 +1,4 @@
-import type { AvailabilityFixedSubmitResult } from './availabilityFlowEngine';
+import type { AvailabilityFixedSubmitResult } from './intentFixedFlowEngine';
 import {
   COMPOSE_SUBMIT_FLOW_IDLE,
   composeSubmitFlowBlocksSessionPersist,

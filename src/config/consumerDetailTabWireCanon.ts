@@ -3,7 +3,7 @@
  * Guards: `detailSurfaceTabWireGuard.test.ts`.
  */
 export const CONSUMER_DETAIL_TAB_WIRE_CANON = {
-  activity: ['plan', 'place', 'buddies', 'transport'],
+  activity: ['plan', 'place', 'crew', 'transport'],
   place: ['overview', 'facts', 'transport', 'guide'],
   area: ['overview', 'places', 'activities'],
   shop: ['about', 'location'],

@@ -11,29 +11,33 @@ describe('browseListUrlState trip topics', () => {
     expect(parseListCatParam('guides')).toBe('people');
   });
 
-  it('defaults crews list to hub when buddies is omitted', () => {
+  it('defaults crews list to People Recommended when tab params omitted', () => {
     const params = new URLSearchParams('listCat=people');
     const state = parseBrowseListFilterState(params);
-    expect(state.peopleBrowseTab).toBe('hub');
-    const serialized = serializeBrowseListSearchParams(state, []);
-    expect(serialized.get('buddies')).toBeNull();
-  });
-
-  it('parses inbound buddies=looking but serializes peopleTab only', () => {
-    const params = new URLSearchParams('listCat=people&buddies=looking');
-    const state = parseBrowseListFilterState(params);
-    expect(state.peopleBrowseTab).toBe('looking');
+    expect(state.crewBrowseLane).toBe('people');
+    expect(state.crewPeopleFacet).toBe('recommended');
     const serialized = serializeBrowseListSearchParams(state, []);
     expect(serialized.get('buddies')).toBeNull();
     expect(serialized.get('peopleTab')).toBeNull();
+    expect(serialized.get('peopleFacet')).toBeNull();
   });
 
-  it('round-trips peopleTab=going on crews list', () => {
+  it('parses inbound buddies=looking as available facet', () => {
+    const params = new URLSearchParams('listCat=people&buddies=looking');
+    const state = parseBrowseListFilterState(params);
+    expect(state.crewBrowseLane).toBe('people');
+    expect(state.crewPeopleFacet).toBe('available');
+    const serialized = serializeBrowseListSearchParams(state, []);
+    expect(serialized.get('buddies')).toBeNull();
+    expect(serialized.get('peopleFacet')).toBe('available');
+  });
+
+  it('round-trips legacy peopleTab=going as friends facet', () => {
     const params = new URLSearchParams('listCat=people&peopleTab=going');
     const state = parseBrowseListFilterState(params);
-    expect(state.peopleBrowseTab).toBe('going');
+    expect(state.crewPeopleFacet).toBe('friends');
     const serialized = serializeBrowseListSearchParams(state, []);
-    expect(serialized.get('peopleTab')).toBe('going');
+    expect(serialized.get('peopleFacet')).toBe('friends');
     expect(serialized.get('buddies')).toBeNull();
   });
 
@@ -58,7 +62,8 @@ describe('browseListUrlState trip topics', () => {
         price: 'all',
         when: 'any',
         activityDatePreset: 'anyday',
-        peopleBrowseTab: 'hub',
+        crewBrowseLane: 'people',
+        crewPeopleFacet: 'recommended',
         hasTrip: false,
         facilityKinds: [],
         audience: 'anyone',
@@ -105,7 +110,8 @@ describe('browseListUrlState trip topics', () => {
         price: 'all',
         when: 'any',
         activityDatePreset: 'anyday',
-        peopleBrowseTab: 'available',
+        crewBrowseLane: 'people',
+        crewPeopleFacet: 'available',
         hasTrip: false,
         facilityKinds: [],
         audience: 'anyone',
@@ -113,5 +119,6 @@ describe('browseListUrlState trip topics', () => {
       []
     );
     expect(serialized.get('filter')).toBe('hiking,others');
+    expect(serialized.get('peopleFacet')).toBe('available');
   });
 });

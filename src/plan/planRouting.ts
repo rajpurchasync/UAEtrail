@@ -96,7 +96,7 @@ export const isPlanMemberNavActive = (
 
 /** Mark open availability — explore list + `compose=intent:open`. */
 export const planAvailabilityPath = (): string =>
-  explorePath({ compose: intentOpenCompose(), list: true, peopleBrowse: true });
+  explorePath({ compose: intentOpenCompose(), list: true, crews: true });
 
 export type PlanHubWishlistLayer = 'activities' | 'places' | 'shops';
 

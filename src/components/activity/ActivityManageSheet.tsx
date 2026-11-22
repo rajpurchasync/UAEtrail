@@ -436,7 +436,7 @@ export const ActivityManageSheet = ({
                       }
                     : undefined
                 }
-                hostBuddiesHub={{
+                hostCrewHub={{
                   joinRequests: activityRequests,
                   requestsLoading,
                   onRequestsChanged,

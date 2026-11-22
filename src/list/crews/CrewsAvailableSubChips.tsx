@@ -1,9 +1,10 @@
 import { LIST_CHIP_SCROLL, listCategoryPillClass } from '../browse/listChromeTheme';
 import type { CrewsAvailableOpenLens } from './crewsOpenSegment';
+import { EXPLORE_CREWS_MAP_SIGNALS_TITLE } from '@/content/exploreCrewsCopy';
 
 const OPEN_LABELS: Record<CrewsAvailableOpenLens, string> = {
   all: 'All',
-  looking: 'Looking for crew',
+  open: EXPLORE_CREWS_MAP_SIGNALS_TITLE,
   marked: 'Marked available',
 };
 
@@ -12,7 +13,7 @@ type CrewsAvailableSubChipsProps = {
   onLensChange: (lens: CrewsAvailableOpenLens) => void;
 };
 
-const OPEN_ORDER: CrewsAvailableOpenLens[] = ['all', 'looking', 'marked'];
+const OPEN_ORDER: CrewsAvailableOpenLens[] = ['all', 'open', 'marked'];
 
 export const CrewsAvailableSubChips = ({ lens, onLensChange }: CrewsAvailableSubChipsProps) => (
   <div className={`${LIST_CHIP_SCROLL} mb-3 min-w-0 max-w-full snap-x px-0.5`} role="group" aria-label="Available filters">

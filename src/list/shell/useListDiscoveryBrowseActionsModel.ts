@@ -99,7 +99,8 @@ export const useListDiscoveryBrowseActionsModel = ({
       price: 'all',
       when: 'any',
       activityDatePreset: 'anyday',
-      peopleBrowseTab: filters.peopleBrowseTab,
+      crewBrowseLane: filters.crewBrowseLane,
+      crewPeopleFacet: filters.crewPeopleFacet,
       hasTrip: false,
       facilityKinds: [],
       audience: 'anyone',
@@ -110,7 +111,7 @@ export const useListDiscoveryBrowseActionsModel = ({
         : emptyBase;
     syncUrl({ ...scoped, listCat: cat, regions: [], geoPath: [] });
     setDraftQuery('');
-  }, [explorerBucket, filters.peopleBrowseTab, listCat, setDraftQuery, syncUrl]);
+  }, [explorerBucket, filters.crewBrowseLane, filters.crewPeopleFacet, listCat, setDraftQuery, syncUrl]);
 
   const handleActivityDatePresetChange = useCallback(
     (preset: ExploreActivityDatePreset) => syncUrl({ activityDatePreset: preset }),

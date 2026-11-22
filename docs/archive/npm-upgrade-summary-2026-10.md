@@ -30,7 +30,7 @@
 
 | Area | Files |
 |------|--------|
-| React 19 types | `ProtectedRoute.tsx`, `ComposeRail.tsx`, `PeopleBrowseSearchField.tsx` |
+| React 19 types | `ProtectedRoute.tsx`, `ComposeRail.tsx`, `CrewBrowseSearchField.tsx` |
 | lucide-react (removed `Facebook` icon) | `ShareButton.tsx` |
 | Zod 4 (`issues` vs `errors`, schema shape) | `env.ts`, `registerHostActivityRoutes.ts` |
 | Express / query typing | `registerPublicPlaceRoutes.ts`, `validate.ts` |

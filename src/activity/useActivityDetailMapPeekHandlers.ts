@@ -28,7 +28,7 @@ export type UseActivityDetailMapPeekHandlersInput = {
   onChatError?: (message: string) => void;
   isHostUser?: boolean;
   onOpenHostManage?: (activity: ActivityDTO, initialView?: ActivityManageInitialView) => void;
-  /** Public `/activity/:id` — no Buddies tab; open participation manage sheet instead. */
+  /** Public `/activity/:id` — no Crew tab; open participation manage sheet instead. */
   publicDetail?: boolean;
   onOpenParticipationManage?: () => void;
 };
@@ -84,7 +84,7 @@ export const useActivityDetailMapPeekHandlers = (
           input.onOpenParticipationManage();
           return;
         }
-        input.onMobileTabChange?.('buddies');
+        input.onMobileTabChange?.('crew');
       },
       withdrawJoin: () => {
         if (input.joinUiState.kind === 'pending' || input.joinUiState.kind === 'confirmed') {
