@@ -36,13 +36,13 @@ describe('list module hygiene', () => {
     const explorer = readFileSync(join(process.cwd(), 'src/list/explorer/ListExplorer.tsx'), 'utf8');
     expect(explorer).toMatch(/ListGuestCatalogPreviewNotice/);
     expect(experience).not.toMatch(/BrowseListMapFab/);
-    expect(readFileSync(join(process.cwd(), 'src/list/ui/BrowseListCreateFab.tsx'), 'utf8')).toMatch(
+    expect(readFileSync(join(process.cwd(), 'src/list/explorer/BrowseListCreateFab.tsx'), 'utf8')).toMatch(
       /LIST_CREATE_FAB/
     );
     expect(readFileSync(join(process.cwd(), 'src/list/browse/listChromeTheme.ts'), 'utf8')).toMatch(
       /MOBILE_DOCK_PRIMARY/
     );
-    expect(readFileSync(join(process.cwd(), 'src/list/ui/ListGuestCatalogPreviewNotice.tsx'), 'utf8')).toMatch(
+    expect(readFileSync(join(process.cwd(), 'src/list/explorer/ListGuestCatalogPreviewNotice.tsx'), 'utf8')).toMatch(
       /GuestCatalogPreviewBanner/
     );
     expect(experience).toMatch(/showGuestCatalogPreview=\{!user && !embeddedOnExplore/);
@@ -122,7 +122,7 @@ describe('list module hygiene', () => {
     expect(readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8')).toMatch(
       /ListFeedActionsProvider/
     );
-    expect(readFileSync(join(process.cwd(), 'src/list/ui/ListFeedWireFooterButtons.tsx'), 'utf8')).toMatch(
+    expect(readFileSync(join(process.cwd(), 'src/list/browse/ListFeedWireFooterButtons.tsx'), 'utf8')).toMatch(
       /listing/
     );
     const banner = readFileSync(
@@ -143,7 +143,7 @@ describe('list module hygiene', () => {
     expect(header).toMatch(/ListDiscoverySearchField/);
     expect(header).toMatch(/filterSlot/);
     expect(header).toMatch(/mt-2\.5/);
-    const searchField = readFileSync(join(process.cwd(), 'src/list/ui/ListDiscoverySearchField.tsx'), 'utf8');
+    const searchField = readFileSync(join(process.cwd(), 'src/list/explorer/ListDiscoverySearchField.tsx'), 'utf8');
     expect(searchField).toMatch(/LIST_SEARCH\.shell/);
     expect(searchField.indexOf('{filterSlot}')).toBeGreaterThan(searchField.indexOf('LIST_SEARCH.shell'));
     expect(header).toMatch(/stickySearch/);

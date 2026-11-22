@@ -3,7 +3,7 @@ import type { ListFeedFooterModel } from '../list/browse/listFeedFooterActions';
 import {
   ListFeedMapPeekFooterButtons,
   type ListFeedMapPeekFooterVariant,
-} from '../list/ui/ListFeedMapPeekFooterButtons';
+} from '../list/browse/ListFeedMapPeekFooterButtons';
 
 export type DiscoveryCardMapPeekEngagementFooterProps = {
   model: ListFeedFooterModel;

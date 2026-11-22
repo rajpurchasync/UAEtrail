@@ -1,7 +1,7 @@
 import type { MouseEvent, ReactNode } from 'react';
 import type { ActivityMapPeekActionId } from '@uaetrail/shared-types';
 import { EXPLORE_BRAND_ACTIVE, EXPLORE_TYPE } from '../../config/exploreTheme';
-import type { ListFeedFooterButton, ListFeedFooterModel } from '../browse/listFeedFooterActions';
+import type { ListFeedFooterButton, ListFeedFooterModel } from './listFeedFooterActions';
 
 export type ListFeedMapPeekFooterVariant = 'compact' | 'console';
 

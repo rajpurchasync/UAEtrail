@@ -5,7 +5,7 @@ import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../../expl
 import { EXPLORE_PEOPLE_BROWSE_SEARCH_PLACEHOLDER } from '../../content/explorePeopleBrowseCopy';
 import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
 import { LIST_CHROME, LIST_HUB_SEARCH_ROW } from '../browse/listChromeTheme';
-import { ListDiscoverySearchField } from '../ui/ListDiscoverySearchField';
+import { ListDiscoverySearchField } from './ListDiscoverySearchField';
 import { CrewsAvailabilityStrip } from '../crews/CrewsAvailabilityStrip';
 import { CrewsStatsTabs, type CrewsStatCounts } from '../crews/CrewsStatsTabs';
 import { crewsStatTabFromSegment, segmentFromCrewsStatTab } from '../crews/crewsStatTab';

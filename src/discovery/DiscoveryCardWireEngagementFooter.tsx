@@ -1,9 +1,9 @@
 import type { DiscoveryCardModel } from './discoveryCardModel';
-import { useListFeedActionsOptional } from '../list/ui/ListFeedActionsProvider';
+import { useListFeedActionsOptional } from '../list/browse/ListFeedActionsProvider';
 import {
   ListFeedWireFooterButtons,
   type ListFeedWireFooterVariant,
-} from '../list/ui/ListFeedWireFooterButtons';
+} from '../list/browse/ListFeedWireFooterButtons';
 
 export type DiscoveryCardWireEngagementFooterProps = {
   card: DiscoveryCardModel;

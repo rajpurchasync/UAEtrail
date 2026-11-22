@@ -22,7 +22,7 @@ import {
 } from './browse/discoveryListRuntime';
 import { useBrowseListFeed } from './browse/useBrowseListFeed';
 import { useListDiscoveryUrlState } from './browse/useListDiscoveryUrlState';
-import { BrowseListCreateFab } from './ui/BrowseListCreateFab';
+import { BrowseListCreateFab } from './explorer/BrowseListCreateFab';
 import { PeopleBrowsePanel } from '@/people-discovery/panel/PeopleBrowsePanel';
 import { usePeopleDiscoveryAvailabilityCatalog } from '@/people-discovery/hooks/usePeopleDiscoveryAvailabilityCatalog';
 import { exploreMapPathFromListSearch } from './browse/browseListRouting';
@@ -59,7 +59,7 @@ import {
 } from './browse/browseListBucket';
 import { browseListCatForBucket, scopeBrowseListStateForListCat } from './browse/browseListMapHandoff';
 import { ListExplorer } from './explorer/ListExplorer';
-import { ListFeedActionsProvider } from './ui/ListFeedActionsProvider';
+import { ListFeedActionsProvider } from './browse/ListFeedActionsProvider';
 import { ListCrewsExplorer } from './explorer/ListCrewsExplorer';
 import { ListDiscoveryMapColumn } from './explorer/ListDiscoveryMapColumn';
 import { ListSideMapResizeHandle } from './explorer/ListSideMapResizeHandle';

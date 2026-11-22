@@ -27,7 +27,7 @@ import { useDisplayPreferences } from '../../preferences/useDisplayPreferences';
 import type { BrowseListBucket } from '../browse/browseListBucket';
 import type { BrowseListLayout } from '../browse/browseListLayout';
 import type { BrowseListDateSection } from '../browse/browseListDateSections';
-import { ListGuestCatalogPreviewNotice } from '../ui/ListGuestCatalogPreviewNotice';
+import { ListGuestCatalogPreviewNotice } from './ListGuestCatalogPreviewNotice';
 import {
   groupBrowseListSections,
   browseListSortUsesViewerLocation,

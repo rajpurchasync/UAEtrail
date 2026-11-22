@@ -92,6 +92,13 @@ describe('listBrowseNamingGuard', () => {
     expect(read('src/list/explorer/ListExplorerSortControl.tsx')).toMatch(/browse\/listBrowseSort/);
   });
 
+  it('BROWSE-NAME-01w: list/ui dissolved — feed under browse, chrome under explorer', () => {
+    expect(existsSync(join(process.cwd(), 'src/list/ui'))).toBe(false);
+    expect(existsSync(join(process.cwd(), 'src/list/browse/ListFeedActionsProvider.tsx'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/list/explorer/ListDiscoverySearchField.tsx'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/list/explorer/BrowseListCreateFab.tsx'))).toBe(true);
+  });
+
   it('BROWSE-NAME-01v: browse feed + URL hooks live under browse', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/useBrowseListFeed.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/browse/useListDiscoveryUrlState.ts'))).toBe(true);
@@ -375,8 +382,8 @@ describe('listBrowseNamingGuard', () => {
     expect(read('src/components/activity/ActivityMapPeekWireFooter.tsx')).toMatch(
       /DiscoveryCardMapPeekEngagementFooter/
     );
-    expect(read('src/list/ui/ListFeedWireFooterButtons.tsx')).toMatch(/BROWSE_CARD_FOOTER/);
-    expect(read('src/list/ui/ListFeedWireFooterButtons.tsx')).not.toMatch(/LIST_EXPLORER_LISTING_FOOTER/);
+    expect(read('src/list/browse/ListFeedWireFooterButtons.tsx')).toMatch(/BROWSE_CARD_FOOTER/);
+    expect(read('src/list/browse/ListFeedWireFooterButtons.tsx')).not.toMatch(/LIST_EXPLORER_LISTING_FOOTER/);
   });
 
   it('BROWSE-NAME-15: venue browse tests live under browse (not listVenuePosterPresentation)', () => {
@@ -413,7 +420,7 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/ui/ListFeedPosterFooter.tsx'))).toBe(false);
     const allowed = new Set([
       'src/discovery/DiscoveryCardWireEngagementFooter.tsx',
-      'src/list/ui/ListFeedWireFooterButtons.tsx',
+      'src/list/browse/ListFeedWireFooterButtons.tsx',
     ]);
     const violations: string[] = [];
     for (const file of collectSourceFiles(join(process.cwd(), 'src'))) {

@@ -70,14 +70,14 @@ describe('activity detail program — wiring', () => {
     expect(read('src/components/activity/ActivityDetailView.tsx')).toMatch(/onOpenHostManage/);
     expect(actions).toMatch(/onShareHostedActivity/);
     expect(model).toMatch(/onShareHostedActivity: shareHostedActivity/);
-    const listFeed = read('src/list/ui/ListFeedActionsProvider.tsx');
+    const listFeed = read('src/list/browse/ListFeedActionsProvider.tsx');
     expect(listFeed).toMatch(/onShareHostedActivity/);
     const sticky = read('src/components/activity/detail/ActivityDetailStickyFooter.tsx');
     expect(sticky).toMatch(/onHostShareOuting/);
   });
 
   it('AD-HYGIENE-02: list wire footers share ListFeedWireFooterButtons', () => {
-    const shared = read('src/list/ui/ListFeedWireFooterButtons.tsx');
+    const shared = read('src/list/browse/ListFeedWireFooterButtons.tsx');
     expect(shared).toMatch(/ListFeedWireFooterVariant/);
     expect(existsSync(join(process.cwd(), 'src/list/ui/ListFeedPosterFooter.tsx'))).toBe(false);
     const compact = read('src/explore/ui/ExploreListRowWireFooter.tsx');
@@ -98,7 +98,7 @@ describe('activity detail program — wiring', () => {
     const executor = read('src/activity/executeActivityMapPeekAction.ts');
     expect(executor).toMatch(/withdraw_join/);
     expect(executor).toMatch(/offer_rideshare/);
-    const listFeed = read('src/list/ui/ListFeedActionsProvider.tsx');
+    const listFeed = read('src/list/browse/ListFeedActionsProvider.tsx');
     expect(listFeed).toMatch(/executeActivityMapPeekAction/);
     const exploreActions = read('src/explore/ui/useExploreSelectionActions.ts');
     expect(exploreActions).toMatch(/useExploreSelectionMapPeekAction/);
@@ -448,7 +448,7 @@ describe('discovery refactor — RF-01 list feed footers', () => {
     expect(footerActions).not.toMatch(/\bswitch\s*\(/);
     expect(footerActions).not.toMatch(/participantIntentId/);
 
-    const provider = read('src/list/ui/ListFeedActionsProvider.tsx');
+    const provider = read('src/list/browse/ListFeedActionsProvider.tsx');
     expect(provider).toMatch(/executeActivityMapPeekAction/);
     expect(provider).toMatch(/resolveListFeedFooterModel/);
     expect(provider).toMatch(/applyPeekJoinOpenAfterClick/);

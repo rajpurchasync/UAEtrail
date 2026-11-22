@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { DiscoveryCardModel } from './discoveryCardModel';
-import { useListFeedActionsOptional } from '../list/ui/ListFeedActionsProvider';
+import { useListFeedActionsOptional } from '../list/browse/ListFeedActionsProvider';
 import { BROWSE_CARD_FOOTER, BROWSE_CARD_PRIMARY_CTA } from '../list/browse/browseCardChrome';
 import { DiscoveryCardWireEngagementFooter } from './DiscoveryCardWireEngagementFooter';
 

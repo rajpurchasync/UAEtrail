@@ -97,7 +97,7 @@ describe('detailSurfaceWiringAcceptance', () => {
     for (const file of [
       'src/pages/ActivityDetail.tsx',
       'src/explore/ui/useExploreSelectionPeekJoin.ts',
-      'src/list/ui/ListFeedActionsProvider.tsx',
+      'src/list/browse/ListFeedActionsProvider.tsx',
     ]) {
       expect(read(file)).toMatch(/useActivityJoin/);
     }

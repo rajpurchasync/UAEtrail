@@ -5,7 +5,7 @@ import { BrowseItemLink } from './BrowseItemLink';
 import { DiscoveryBrowseListEngagementFooter } from '../../discovery/DiscoveryBrowseListEngagementFooter';
 import { DiscoveryCardHostedByRow } from '../../discovery/DiscoveryCardHostedByRow';
 import { BrowseActivityStatusChips } from './BrowseActivityStatusChips';
-import { useListFeedActionsOptional } from '../ui/ListFeedActionsProvider';
+import { useListFeedActionsOptional } from './ListFeedActionsProvider';
 import { BROWSE_CARD_BODY, BROWSE_CARD_SHELL } from './browseCardChrome';
 import { DiscoveryBrowseCardHero } from '../../discovery/browse/DiscoveryBrowseCardHero';
 import { DiscoveryBrowseCardMetaSlot } from '../../discovery/browse/DiscoveryBrowseCardMetaSlot';

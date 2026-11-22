@@ -69,7 +69,7 @@ describe('explore map mobile dock', () => {
     const chrome = read('src/list/browse/listChromeTheme.ts');
     expect(chrome).toMatch(/MOBILE_DOCK_PRIMARY/);
     expect(chrome).toMatch(/explore-float-base/);
-    expect(read('src/list/ui/BrowseListCreateFab.tsx')).toMatch(/LIST_CREATE_FAB/);
+    expect(read('src/list/explorer/BrowseListCreateFab.tsx')).toMatch(/LIST_CREATE_FAB/);
     expect(read('src/list/ListDiscoveryExperience.tsx')).not.toMatch(/BrowseListMapFab/);
     expect(read('src/list/explorer/ListExplorerHeader.tsx')).toMatch(/ExploreMapProjectionToggle/);
   });
