@@ -52,7 +52,7 @@ import {
   type ExplorePriceFilter,
 } from './exploreOptionalFilters';
 import type { PlaceKind } from '@uaetrail/shared-types';
-import { BROWSE_GEO_PARAM, parseBrowseGeoPath } from '../list/browseGeoPath';
+import { BROWSE_GEO_PARAM, parseBrowseGeoPath } from '../list/browse/browseGeoPath';
 
 const isPeopleBrowseListView = (view: string | null): boolean =>
   view === 'people' || view === 'social' || view === 'going';

@@ -25,7 +25,7 @@ import {
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import { mapItemMatchesBrowseMainCategories } from './browseListTaxonomy';
 import type { PlaceKind } from '@uaetrail/shared-types';
-import type { BrowseTripTopicKey } from './browseListTripTopics';
+import type { BrowseTripTopicKey } from './browse/browseListTripTopics';
 import { matchesListVenuePlaceTopic } from './listVenuePlaceTopicFilter';
 import type { ListVenuePlaceTopicKey } from './listVenuePlaceTopics';
 import {
@@ -33,7 +33,7 @@ import {
   type BrowseAudienceFilter,
 } from './browse/browseAudienceFilter';
 import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
-import { exploreItemMatchesBrowseGeoPath } from './browseGeoPath';
+import { exploreItemMatchesBrowseGeoPath } from './browse/browseGeoPath';
 /** @deprecated Use BrowseMainCategoryKey — kept for imports migrating */
 export type BrowseCategoryKey = BrowseMainCategoryKey;
 

@@ -1,5 +1,5 @@
-import type { MapFilterKey } from '../config/routingCatalog';
-import type { BrowseMainCategoryKey } from './browseListTaxonomy';
+import type { MapFilterKey } from '../../config/routingCatalog';
+import type { BrowseMainCategoryKey } from '../browseListTaxonomy';
 
 /** Trip topic row — same axis as explore map `filter=` (hiking · camping · rideshare). */
 export const BROWSE_TRIP_TOPIC_FILTERS: ReadonlyArray<{ key: MapFilterKey; label: string }> = [

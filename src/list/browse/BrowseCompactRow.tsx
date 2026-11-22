@@ -4,7 +4,7 @@ import { EnvironmentImage } from '../../components/ui/EnvironmentImage';
 import { SecureAvatar } from '../../components/ui/SecureAvatar';
 import { DiscoveryCardTypeIcon } from '../../explore/ui/DiscoveryCardTypeIcon';
 import { EXPLORE_LIST_ROW, EXPLORE_TYPE } from '../../config/exploreTheme';
-import { resolveBrowsePosterCoverUrl } from '../browsePosterCover';
+import { resolveBrowsePosterCoverUrl } from './browsePosterCover';
 import { BrowseItemLink } from './BrowseItemLink';
 import { browseCardMeta, browseRowWhenDisplay } from './browseCardMeta';
 import { DiscoveryCardHostProfileNav } from '../../discovery/DiscoveryCardHostProfileNav';

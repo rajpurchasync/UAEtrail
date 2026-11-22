@@ -24,7 +24,7 @@ import {
   type MapFilterKey,
 } from './discoveryListRuntime';
 import type { BrowseListFilterState, BrowsePriceFilter, BrowseWhenFilter } from './browseListFilters';
-import { isBrowseTripTopicKey, type BrowseTripTopicKey } from './browseListTripTopics';
+import { isBrowseTripTopicKey, type BrowseTripTopicKey } from './browse/browseListTripTopics';
 import { isListVenuePlaceTopicKey } from './listVenuePlaceTopicFilter';
 import type { ListVenuePlaceTopicKey } from './listVenuePlaceTopics';
 import {
@@ -47,7 +47,7 @@ import {
   BROWSE_GEO_PARAM,
   parseBrowseGeoPath,
   serializeBrowseGeoPath,
-} from './browseGeoPath';
+} from './browse/browseGeoPath';
 import { listFilterMeansAvailabilityOnly } from '../routing/productUrlInbound';
 
 const WHEN_PARAM = 'when';

@@ -20,7 +20,7 @@ describe('mapChromeRetiredTermsGuard (no Find-crew map pill)', () => {
   });
 
   it('MAP-CHROME-03: trip plan type row has no dead Looking-for dropdown', () => {
-    const topics = read('src/list/browseListTripTopics.ts');
+    const topics = read('src/list/browse/browseListTripTopics.ts');
     expect(topics).not.toMatch(/BROWSE_TRIP_PLAN_TYPE_OPTIONS/);
     expect(topics).not.toMatch(/tripAvailabilityOnly/);
   });

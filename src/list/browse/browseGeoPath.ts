@@ -1,8 +1,8 @@
 import type { ExploreMapItemDTO, GeoKind, GeoNodeLite } from '@uaetrail/shared-types';
 import type { AreaPublicDTO } from '@uaetrail/shared-types';
-import { mergeVenueStateFilterOptionsWithAreas } from '../config/regions';
-import { geoStore } from '../geo/geoStore';
-import { venueItemMatchesRegions } from '../utils/venueRegionFilter';
+import { mergeVenueStateFilterOptionsWithAreas } from '../../config/regions';
+import { geoStore } from '../../geo/geoStore';
+import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
 
 export const BROWSE_GEO_PARAM = 'geo';
 

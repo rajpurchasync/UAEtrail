@@ -1,8 +1,8 @@
 import type { AreaPublicDTO } from '@uaetrail/shared-types';
 import { EXPLORE_REGION_PILL_LABELS } from '../../config/regions';
-import { formatBrowseGeoPathLabel } from '../browseGeoPath';
+import { formatBrowseGeoPathLabel } from './browseGeoPath';
 import type { BrowseListFilterState } from '../browseListFilters';
-import { BROWSE_TRIP_TOPIC_FILTERS } from '../browseListTripTopics';
+import { BROWSE_TRIP_TOPIC_FILTERS } from './browseListTripTopics';
 import type { BrowseListBucket } from './browseListBucket';
 
 const MAX_COLLAPSED_LABELS = 14;

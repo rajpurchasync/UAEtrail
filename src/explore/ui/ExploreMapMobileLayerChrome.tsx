@@ -8,7 +8,7 @@ import {
   type ExplorePriceFilter,
   type ExploreVenueFilterPatch,
 } from '../exploreOptionalFilters';
-import type { BrowseTripTopicKey } from '../../list/browseListTripTopics';
+import type { BrowseTripTopicKey } from '../../list/browse/browseListTripTopics';
 import type { ListVenuePlaceTopicKey } from '../../list/listVenuePlaceTopics';
 import { ListExplorerGeoScopeChip } from '../../list/explorer/ListExplorerGeoScopeChip';
 import { ListExplorerQuickFilters } from '../../list/explorer/ListExplorerQuickFilters';

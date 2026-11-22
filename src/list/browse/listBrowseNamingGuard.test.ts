@@ -92,6 +92,15 @@ describe('listBrowseNamingGuard', () => {
     expect(read('src/list/explorer/ListExplorerSortControl.tsx')).toMatch(/browse\/listBrowseSort/);
   });
 
+  it('BROWSE-NAME-01m: geo path, trip topics, and poster cover live under browse', () => {
+    expect(existsSync(join(process.cwd(), 'src/list/browse/browseGeoPath.ts'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/list/browseGeoPath.ts'))).toBe(false);
+    expect(existsSync(join(process.cwd(), 'src/list/browse/browseListTripTopics.ts'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/list/browse/browsePosterCover.ts'))).toBe(true);
+    expect(read('src/explore/exploreBrowseUrlHydrate.ts')).toMatch(/list\/browse\/browseGeoPath/);
+    expect(read('src/list/buildListFeedCards.ts')).toMatch(/browse\/browsePosterCover/);
+  });
+
   it('BROWSE-NAME-01l: search-scope commit + audience filter live under browse', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/browseListSearchCommit.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/listDiscoverySearchCommit.ts'))).toBe(false);

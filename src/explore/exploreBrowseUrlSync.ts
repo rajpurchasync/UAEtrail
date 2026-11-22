@@ -57,7 +57,7 @@ import {
   type ExplorePriceFilter,
 } from './exploreOptionalFilters';
 import type { PlaceKind } from '@uaetrail/shared-types';
-import { BROWSE_GEO_PARAM, serializeBrowseGeoPath } from '../list/browseGeoPath';
+import { BROWSE_GEO_PARAM, serializeBrowseGeoPath } from '../list/browse/browseGeoPath';
 import {
   INBOUND_SEARCH_SCOPE_FOCUS_PARAM,
   PEOPLE_LIST_TAB_URL_PARAM,

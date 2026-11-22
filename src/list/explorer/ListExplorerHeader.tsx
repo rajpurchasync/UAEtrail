@@ -20,7 +20,7 @@ import { ListExplorerSortControl } from './ListExplorerSortControl';
 import type { BrowseListFilterState } from '../browseListFilters';
 import type { PlaceKind } from '@uaetrail/shared-types';
 import type { ExplorePriceFilter } from '../../explore/exploreOptionalFilters';
-import type { BrowseTripTopicKey } from '../browseListTripTopics';
+import type { BrowseTripTopicKey } from '../browse/browseListTripTopics';
 import type { ListVenuePlaceTopicKey } from '../listVenuePlaceTopics';
 import type { ExploreActivityDatePreset } from '../../explore/exploreActivityDateFilter';
 import { ListExplorerQuickFilters } from './ListExplorerQuickFilters';

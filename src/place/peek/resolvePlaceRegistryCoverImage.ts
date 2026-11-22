@@ -1,5 +1,5 @@
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import { resolveBrowsePosterCoverUrl, browsePosterFallbackClass } from '../../list/browsePosterCover';
+import { resolveBrowsePosterCoverUrl, browsePosterFallbackClass } from '../../list/browse/browsePosterCover';
 import type { Place } from '../../types/place';
 
 /** Registry places must ship `images[0]` — peek/detail always resolve a cover URL. */

@@ -13,7 +13,7 @@ import { BROWSE_LIST_CLEAR_FILTERS, BROWSE_LIST_EMPTY } from '../browseListCopy'
 import type { BrowseListFilterState } from '../browseListFilters';
 import type { PlaceKind } from '@uaetrail/shared-types';
 import type { ExplorePriceFilter } from '../../explore/exploreOptionalFilters';
-import type { BrowseTripTopicKey } from '../browseListTripTopics';
+import type { BrowseTripTopicKey } from '../browse/browseListTripTopics';
 import type { ListVenuePlaceTopicKey } from '../listVenuePlaceTopics';
 import type { ExploreActivityDatePreset } from '../../explore/exploreActivityDateFilter';
 import { ListExplorerCalendar } from './ListExplorerCalendar';

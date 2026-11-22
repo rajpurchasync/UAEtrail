@@ -55,7 +55,7 @@ describe('consumerAppSurfacesDataGuard (in-app hubs — not guest marketing)', (
     expect(read('src/explore/exploreBrowseUrlHydrate.ts')).toMatch(/geoPath/);
     expect(read('src/explore/exploreBrowseUrlSync.ts')).toMatch(/BROWSE_GEO_PARAM/);
     expect(read('src/explore/ui/useExploreBrowseList.ts')).toMatch(/exploreItemMatchesBrowseGeoPath/);
-    expect(read('src/list/browseGeoPath.ts')).toMatch(/resolveEffectiveBrowseVenueRegions/);
+    expect(read('src/list/browse/browseGeoPath.ts')).toMatch(/resolveEffectiveBrowseVenueRegions/);
   });
 
   it('CTX-APP-10: explore map mobile chrome shows geo scope chip', () => {

@@ -9,7 +9,7 @@ import {
   type ExploreVenueFilterPatch,
 } from '../../explore/exploreOptionalFilters';
 import type { BrowseListFilterState } from '../browseListFilters';
-import type { BrowseTripTopicKey } from '../browseListTripTopics';
+import type { BrowseTripTopicKey } from '../browse/browseListTripTopics';
 import type { ListVenuePlaceTopicKey } from '../listVenuePlaceTopics';
 import type { BrowseListBucket } from '../browse/browseListBucket';
 

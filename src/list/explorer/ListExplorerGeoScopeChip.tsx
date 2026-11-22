@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { MapPin, X } from 'lucide-react';
 import { geoNodePath } from '../../config/surfacePaths';
-import { formatBrowseGeoPathLabel } from '../browseGeoPath';
+import { formatBrowseGeoPathLabel } from '../browse/browseGeoPath';
 import { useExplorePublishedAreas } from '../../explore/useExplorePublishedAreas';
 
 type ListExplorerGeoScopeChipProps = {

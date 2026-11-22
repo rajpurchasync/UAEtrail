@@ -13,7 +13,7 @@ import {
   exploreSearchScopeForListCat,
   parseExploreSearchBrowseState,
 } from '../explore/search/exploreSearchRouting';
-import type { BrowseTripTopicKey } from './browseListTripTopics';
+import type { BrowseTripTopicKey } from './browse/browseListTripTopics';
 import type { BrowseListFilterState } from './browseListFilters';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import {

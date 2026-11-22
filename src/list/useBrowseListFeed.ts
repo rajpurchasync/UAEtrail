@@ -12,7 +12,7 @@ import {
   type BrowseListFilterState,
 } from './browseListFilters';
 import { useExplorePublishedAreasQuery } from './discoveryListRuntime';
-import { resolveEffectiveBrowseVenueRegions } from './browseGeoPath';
+import { resolveEffectiveBrowseVenueRegions } from './browse/browseGeoPath';
 
 type UseBrowseListFeedArgs = {
   filters: BrowseListFilterState;
