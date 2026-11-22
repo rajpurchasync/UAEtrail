@@ -929,7 +929,7 @@
     {
       "id": "MIG-PEOPLE-VOCAB-2026",
       "phase": "P4b",
-      "status": "in_progress",
+      "status": "complete",
       "owner": "product-eng",
       "contextIds": [
         "social_graph",
@@ -962,7 +962,7 @@
         "src/content/upl-glossary.ts",
         "src/explore/compose.ts"
       ],
-      "successMetric": "Canonical plan: .cursor/plans/people_crew_vocab_mig_2026.plan.md (P0–P8, §1.5 three surfaces, P5c Find crew lenses). Manifest v2: scripts/people-vocabulary-touchpoints.json. Close when matrix C-01–C-13 + verify:system; no hireable/memberHireable source; My crew ≠ Find crew browse."
+      "successMetric": "Closed 2026-11-22. Plan: .cursor/plans/people_crew_vocab_mig_2026.plan.md. Manifest v2: scripts/people-vocabulary-touchpoints.json. P5d crews_three_tabs plan. Follow-up: MIG-COMMUNITY-DISCOVER (planned), P7 wire cleanup (optional)."
     }
   ],
   "stranglerRules": [

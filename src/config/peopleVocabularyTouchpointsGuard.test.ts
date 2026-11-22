@@ -62,6 +62,13 @@ describe('peopleVocabularyTouchpointsGuard (MIG-PEOPLE-VOCAB-2026)', () => {
     expect(mig, manifest.programId).toBeTruthy();
   });
 
+  it('PVOC-01b: MIG-PEOPLE-VOCAB migration closed', () => {
+    const program = JSON.parse(read('scripts/refactor-program.json'));
+    const mig = program.migrations?.find((m: { id: string }) => m.id === manifest.programId);
+    expect(mig?.status).toBe('complete');
+    expect(existsSync(join(ROOT, '.cursor/plans/people_crew_vocab_mig_2026.plan.md'))).toBe(true);
+  });
+
   it('PVOC-02: every touchpoint primary file exists on disk', () => {
     const missing: string[] = [];
     for (const tp of manifest.touchpoints) {
