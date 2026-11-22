@@ -287,6 +287,7 @@ describe('list module hygiene', () => {
       'src/list/BrowseListPage.tsx',
       'src/list/shell/useListDiscoveryExperienceModel.ts',
       'src/list/shell/useListDiscoveryExploreSearchFeedModel.ts',
+      'src/list/shell/useListDiscoveryComposeBridgeModel.ts',
       'src/list/browse/listDiscoverySearchCreateFlowStub.ts',
       'src/list/browse/useListDiscoveryUrlState.ts',
     ]);

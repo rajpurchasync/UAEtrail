@@ -5,12 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { useProductLocation, useProductSearchParams } from '../../routing/useEffectiveLocation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
-import { useCreateFlowOptional } from '../../create/CreateFlowProvider';
-import {
-  listDiscoverySearchComposeStub,
-  listDiscoverySearchRegisterBridgeStub,
-} from '../browse/listDiscoverySearchCreateFlowStub';
-import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { reloadExploreMap } from '../../hooks/useExploreMap';
 import { browseListFilterPatchForSearchScope } from '../browse/browseListSearchCommit';
 import type { BrowseListFilterState } from '../browse/browseListFilters';
@@ -52,14 +46,9 @@ import {
 } from './useListDiscoveryExploreSearchFeedModel';
 import {
   browseListSearchUsesScopeHints,
-  resolveBrowseListCreateFabLabel,
   resolveBrowseListSearchPlaceholder,
 } from '../browse/browseListCopy';
-import { resolveCreateFabComposeEntry } from '../../explore/create/composeFabEntry';
-import { availabilityFlexibleCompose } from '../../explore/compose';
-import { useHostingFromActivity } from '../../explore/create/hooks/useHostingFromActivity';
-import { useHostingWizardPrefill } from '../../explore/create/hooks/useHostingWizardPrefill';
-import { useExploreCreateFlowBridge } from '../../explore/shell/useExploreCreateFlowBridge';
+import { useListDiscoveryComposeBridgeModel } from './useListDiscoveryComposeBridgeModel';
 
 export type ListDiscoveryExperienceProps = {
   surface: ListDiscoverySurface;
@@ -87,12 +76,6 @@ export const useListDiscoveryExperienceModel = ({
   const searchResultsChrome = listDiscoverySearchChrome(surface);
   const exploreSearch = listDiscoveryExploreSearch(surface);
   const suppressListSearch = suppressSearch || exploreSearch;
-  const createFlowCtx = useCreateFlowOptional();
-  if (!createFlowCtx && !exploreSearch) {
-    throw new Error('useCreateFlow must be used under CreateFlowProvider (ProductShell).');
-  }
-  const compose = createFlowCtx?.compose ?? listDiscoverySearchComposeStub();
-  const registerBridge = createFlowCtx?.registerBridge ?? listDiscoverySearchRegisterBridgeStub;
   const { user } = useAuth();
   const { clock } = useDisplayPreferences();
   const navigate = useNavigate();
@@ -101,13 +84,6 @@ export const useListDiscoveryExperienceModel = ({
   const [searchParams, setSearchParams] = useProductSearchParams();
   const queryClient = useQueryClient();
   const search = searchParams.toString() ? `?${searchParams.toString()}` : '';
-
-  const { refresh: refreshHostGate, tenantId } = useMemberStatus({ enabled: Boolean(user) });
-
-  const reloadFeed = useCallback(async () => {
-    await reloadExploreMap(queryClient);
-    void refreshHostGate();
-  }, [queryClient, refreshHostGate]);
 
   const browseUrl = useListDiscoveryUrlState({
     mapOverlay: embeddedOnExplore,
@@ -141,74 +117,23 @@ export const useListDiscoveryExperienceModel = ({
   );
   const listSearchScopeHints = useMemo(() => browseListSearchUsesScopeHints(listCat), [listCat]);
 
-  const createFabLabel = useMemo(
-    () => resolveBrowseListCreateFabLabel(location.pathname, location.search, createFabContext),
-    [location.pathname, location.search, createFabContext]
-  );
-
-  const handleCreateFabTap = useCallback(() => {
-    compose.handleCreateTap(
-      resolveCreateFabComposeEntry(location.pathname, location.search, createFabContext)
-    );
-  }, [compose, location.pathname, location.search, createFabContext]);
-
-  const handleOpenMarkAvailability = useCallback(() => {
-    compose.handleCreateTap(availabilityFlexibleCompose());
-  }, [compose]);
-
-  const availabilityLegacyMigratedRef = useRef(false);
-  useEffect(() => {
-    if (!availabilitySheetOpen || availabilityLegacyMigratedRef.current) return;
-    availabilityLegacyMigratedRef.current = true;
-    syncUrl({ availabilitySheet: false });
-    compose.handleCreateTap(availabilityFlexibleCompose());
-  }, [availabilitySheetOpen, compose, syncUrl]);
-
-  const hostingFrom = useHostingFromActivity({
-    user,
-    tenantId,
-    searchParams,
-    setSearchParams,
-    setComposeRoute: compose.setComposeRoute,
-    hostComposeKind: compose.hostComposeRoute?.kind ?? null,
-  });
-
-  const [listSelectedId, setListSelectedId] = useState<string | null>(null);
-  const hostingLauncher = useHostingWizardPrefill({
-    pathname,
-    search,
-    searchParams,
-    setSearchParams,
-    user,
-    navigate,
-    compose,
-    hostingFrom,
-    selected: null,
-    setSelectedId: setListSelectedId,
-  });
-
-  useExploreCreateFlowBridge({
-    enabled: !embeddedOnExplore && Boolean(createFlowCtx),
-    registerBridge,
-    hostingWizardPrefill: hostingLauncher.hostingWizardPrefill,
-    closeCreateFlow: hostingLauncher.closeCreateFlow,
-    onHostingBackToIntent: hostingLauncher.onHostingBackToIntent,
-    rideshareLinkAvailability: hostingLauncher.rideshareLinkAvailability,
-    setRideshareLinkAvailability: hostingLauncher.setRideshareLinkAvailability,
-    handleCreateLinkedRideshare: hostingLauncher.handleCreateLinkedRideshare,
-    handleActivityPublished: reloadFeed,
-    handleAvailabilityFixedSubmitted: () => void reloadFeed(),
-    handleAddSubmitted: () => void reloadFeed(),
-    planWithBuddyUserId: null,
-    composeAreaSlug: null,
-    facilityOnPlaceId: null,
-    tenantId,
-    refreshHostGate,
-  });
-
-  const offerRideshareForAvailabilityItem = embeddedOnExplore
-    ? embeddedOfferRideshare
-    : hostingLauncher.offerRideshareForAvailabilityItem;
+  const { handleCreateFabTap, handleOpenMarkAvailability, createFabLabel, offerRideshareForAvailabilityItem } =
+    useListDiscoveryComposeBridgeModel({
+      exploreSearch,
+      embeddedOnExplore,
+      embeddedOfferRideshare: embeddedOfferRideshare,
+      user,
+      pathname,
+      search,
+      searchParams,
+      setSearchParams,
+      navigate,
+      locationPathname: location.pathname,
+      locationSearch: location.search,
+      createFabContext,
+      availabilitySheetOpen,
+      syncUrl,
+    });
 
   const [draftQuery, setDraftQuery] = useState(filters.query);
   useEffect(() => {

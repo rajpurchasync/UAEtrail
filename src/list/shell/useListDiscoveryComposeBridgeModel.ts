@@ -1,0 +1,145 @@
+/** List surfaces — CreateFlow bridge, FAB, availability compose, offer-rideshare launcher. */
+
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { NavigateFunction } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { useCreateFlowOptional } from '../../create/CreateFlowProvider';
+import {
+  listDiscoverySearchComposeStub,
+  listDiscoverySearchRegisterBridgeStub,
+} from '../browse/listDiscoverySearchCreateFlowStub';
+import { useMemberStatus } from '../../hooks/useMemberStatus';
+import { reloadExploreMap } from '../../hooks/useExploreMap';
+import { useExploreCreateFlowBridge } from '../../explore/shell/useExploreCreateFlowBridge';
+import { resolveCreateFabComposeEntry } from '../../explore/create/composeFabEntry';
+import { availabilityFlexibleCompose } from '../../explore/compose';
+import type { BrowseListCreateFabHints } from '../browse/browseListCopy';
+import { useHostingFromActivity } from '../../explore/create/hooks/useHostingFromActivity';
+import { useHostingWizardPrefill } from '../../explore/create/hooks/useHostingWizardPrefill';
+import { resolveBrowseListCreateFabLabel } from '../browse/browseListCopy';
+
+export type ListDiscoveryComposeBridgeInput = {
+  exploreSearch: boolean;
+  embeddedOnExplore: boolean;
+  embeddedOfferRideshare?: (item: ExploreMapItemDTO) => void;
+  user: { id: string; role?: string } | null | undefined;
+  pathname: string;
+  search: string;
+  searchParams: URLSearchParams;
+  setSearchParams: (next: URLSearchParams | ((prev: URLSearchParams) => URLSearchParams)) => void;
+  navigate: NavigateFunction;
+  locationPathname: string;
+  locationSearch: string;
+  createFabContext: BrowseListCreateFabHints;
+  availabilitySheetOpen: boolean;
+  syncUrl: (patch: { availabilitySheet?: boolean }) => void;
+};
+
+export const useListDiscoveryComposeBridgeModel = ({
+  exploreSearch,
+  embeddedOnExplore,
+  embeddedOfferRideshare,
+  user,
+  pathname,
+  search,
+  searchParams,
+  setSearchParams,
+  navigate,
+  locationPathname,
+  locationSearch,
+  createFabContext,
+  availabilitySheetOpen,
+  syncUrl,
+}: ListDiscoveryComposeBridgeInput) => {
+  const createFlowCtx = useCreateFlowOptional();
+  if (!createFlowCtx && !exploreSearch) {
+    throw new Error('useCreateFlow must be used under CreateFlowProvider (ProductShell).');
+  }
+  const compose = createFlowCtx?.compose ?? listDiscoverySearchComposeStub();
+  const registerBridge = createFlowCtx?.registerBridge ?? listDiscoverySearchRegisterBridgeStub;
+
+  const queryClient = useQueryClient();
+  const { refresh: refreshHostGate, tenantId } = useMemberStatus({ enabled: Boolean(user) });
+
+  const reloadFeed = useCallback(async () => {
+    await reloadExploreMap(queryClient);
+    void refreshHostGate();
+  }, [queryClient, refreshHostGate]);
+
+  const createFabLabel = useMemo(
+    () => resolveBrowseListCreateFabLabel(locationPathname, locationSearch, createFabContext),
+    [locationPathname, locationSearch, createFabContext]
+  );
+
+  const handleCreateFabTap = useCallback(() => {
+    compose.handleCreateTap(
+      resolveCreateFabComposeEntry(locationPathname, locationSearch, createFabContext)
+    );
+  }, [compose, locationPathname, locationSearch, createFabContext]);
+
+  const handleOpenMarkAvailability = useCallback(() => {
+    compose.handleCreateTap(availabilityFlexibleCompose());
+  }, [compose]);
+
+  const availabilityLegacyMigratedRef = useRef(false);
+  useEffect(() => {
+    if (!availabilitySheetOpen || availabilityLegacyMigratedRef.current) return;
+    availabilityLegacyMigratedRef.current = true;
+    syncUrl({ availabilitySheet: false });
+    compose.handleCreateTap(availabilityFlexibleCompose());
+  }, [availabilitySheetOpen, compose, syncUrl]);
+
+  const hostingFrom = useHostingFromActivity({
+    user,
+    tenantId,
+    searchParams,
+    setSearchParams,
+    setComposeRoute: compose.setComposeRoute,
+    hostComposeKind: compose.hostComposeRoute?.kind ?? null,
+  });
+
+  const [, setListSelectedId] = useState<string | null>(null);
+  const hostingLauncher = useHostingWizardPrefill({
+    pathname,
+    search,
+    searchParams,
+    setSearchParams,
+    user,
+    navigate,
+    compose,
+    hostingFrom,
+    selected: null,
+    setSelectedId: setListSelectedId,
+  });
+
+  useExploreCreateFlowBridge({
+    enabled: !embeddedOnExplore && Boolean(createFlowCtx),
+    registerBridge,
+    hostingWizardPrefill: hostingLauncher.hostingWizardPrefill,
+    closeCreateFlow: hostingLauncher.closeCreateFlow,
+    onHostingBackToIntent: hostingLauncher.onHostingBackToIntent,
+    rideshareLinkAvailability: hostingLauncher.rideshareLinkAvailability,
+    setRideshareLinkAvailability: hostingLauncher.setRideshareLinkAvailability,
+    handleCreateLinkedRideshare: hostingLauncher.handleCreateLinkedRideshare,
+    handleActivityPublished: reloadFeed,
+    handleAvailabilityFixedSubmitted: () => void reloadFeed(),
+    handleAddSubmitted: () => void reloadFeed(),
+    planWithBuddyUserId: null,
+    composeAreaSlug: null,
+    facilityOnPlaceId: null,
+    tenantId,
+    refreshHostGate,
+  });
+
+  const offerRideshareForAvailabilityItem = embeddedOnExplore
+    ? embeddedOfferRideshare
+    : hostingLauncher.offerRideshareForAvailabilityItem;
+
+  return {
+    handleCreateFabTap,
+    handleOpenMarkAvailability,
+    createFabLabel,
+    offerRideshareForAvailabilityItem,
+  };
+};
