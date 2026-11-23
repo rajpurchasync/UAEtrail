@@ -1,17 +1,17 @@
 {
-  "generated": "2026-11-16",
+  "generated": "2026-11-23",
   "description": "CTO system audit baseline. Regenerate: npm run system:audit",
   "summary": {
-    "apiRegistrarFiles": 63,
-    "apiRouteEndpointsParsed": 195,
-    "mongoCollectionsDefined": 65,
+    "apiRegistrarFiles": 68,
+    "apiRouteEndpointsParsed": 214,
+    "mongoCollectionsDefined": 74,
     "mongoCollectionsOrphanInApi": 0,
     "mongoCollectionsMultiWriterOver4": 3,
     "routeRegistrarsWithDirectWrites": 0,
     "apiMounts": 8,
-    "spaRouteElements": 136,
-    "feDomainModules": 30,
-    "boundedContexts": 17
+    "spaRouteElements": 147,
+    "feDomainModules": 33,
+    "boundedContexts": 18
   },
   "risks": {
     "orphanCollections": [],
@@ -222,7 +222,7 @@
     },
     "LOCATIONS": {
       "mongoName": "locations",
-      "referencingFiles": 11,
+      "referencingFiles": 10,
       "writerFiles": 6,
       "sampleFiles": [
         "apps/api/src/lib/catalog-cpc-migrations.ts",
@@ -411,7 +411,7 @@
     },
     "ACTIVITIES": {
       "mongoName": "activities",
-      "referencingFiles": 11,
+      "referencingFiles": 9,
       "writerFiles": 5,
       "sampleFiles": [
         "apps/api/src/lib/explore-geo-search.ts",
@@ -455,12 +455,13 @@
     },
     "PARTICIPANT_INTENTS": {
       "mongoName": "participant_intents",
-      "referencingFiles": 4,
-      "writerFiles": 3,
+      "referencingFiles": 5,
+      "writerFiles": 4,
       "sampleFiles": [
         "apps/api/src/lib/mongo-indexes.ts",
         "apps/api/src/lib/mongo-migrations.ts",
         "apps/api/src/lib/participant-intents-store.ts",
+        "apps/api/src/lib/retired-seeking-storage-purge.ts",
         "apps/api/src/lib/seeking-storage-ops.ts"
       ]
     },
@@ -469,7 +470,7 @@
       "referencingFiles": 1,
       "writerFiles": 1,
       "sampleFiles": [
-        "apps/api/src/lib/participant-intent-requests-store.ts"
+        "apps/api/src/lib/retired-seeking-storage-purge.ts"
       ]
     },
     "MERCHANT_PROFILES": {
@@ -524,44 +525,130 @@
         "apps/api/src/lib/mongo-indexes.ts"
       ]
     },
-    "SOCIAL_GROUPS": {
+    "MEMBER_GROUPS": {
+      "mongoName": "member_groups",
+      "referencingFiles": 3,
+      "writerFiles": 2,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts",
+        "apps/api/src/lib/social-groups-store.ts"
+      ]
+    },
+    "COMMUNITY_GROUPS": {
+      "mongoName": "community_groups",
+      "referencingFiles": 2,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/community-groups-store.ts",
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "COMMUNITY_GROUP_MEMBERS": {
+      "mongoName": "community_group_members",
+      "referencingFiles": 2,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/community-group-members-store.ts",
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "COMMUNITY_GROUP_INVITES": {
+      "mongoName": "community_group_invites",
+      "referencingFiles": 2,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/community-group-invites-store.ts",
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "COMMUNITY_GROUP_ADMINS": {
+      "mongoName": "community_group_admins",
+      "referencingFiles": 2,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/community-group-admins-store.ts",
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "MEMBER_GROUP_MEMBERS": {
+      "mongoName": "member_group_members",
+      "referencingFiles": 3,
+      "writerFiles": 2,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts",
+        "apps/api/src/lib/social-groups-store.ts"
+      ]
+    },
+    "MEMBER_GROUP_INVITES": {
+      "mongoName": "member_group_invites",
+      "referencingFiles": 3,
+      "writerFiles": 2,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts",
+        "apps/api/src/lib/social-groups-store.ts"
+      ]
+    },
+    "MEMBER_GROUP_WALL": {
+      "mongoName": "member_group_wall",
+      "referencingFiles": 3,
+      "writerFiles": 2,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts",
+        "apps/api/src/lib/social-groups-store.ts"
+      ]
+    },
+    "MEMBER_GROUP_WALL_REACTIONS": {
+      "mongoName": "member_group_wall_reactions",
+      "referencingFiles": 3,
+      "writerFiles": 2,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts",
+        "apps/api/src/lib/social-groups-store.ts"
+      ]
+    },
+    "LEGACY_SOCIAL_GROUPS": {
       "mongoName": "social_groups",
       "referencingFiles": 1,
-      "writerFiles": 0,
+      "writerFiles": 1,
       "sampleFiles": [
-        "apps/api/src/lib/mongo-indexes.ts"
+        "apps/api/src/lib/mongo-migrations.ts"
       ]
     },
-    "SOCIAL_GROUP_MEMBERS": {
+    "LEGACY_SOCIAL_GROUP_MEMBERS": {
       "mongoName": "social_group_members",
       "referencingFiles": 1,
-      "writerFiles": 0,
+      "writerFiles": 1,
       "sampleFiles": [
-        "apps/api/src/lib/mongo-indexes.ts"
+        "apps/api/src/lib/mongo-migrations.ts"
       ]
     },
-    "SOCIAL_GROUP_INVITES": {
+    "LEGACY_SOCIAL_GROUP_INVITES": {
       "mongoName": "social_group_invites",
       "referencingFiles": 1,
-      "writerFiles": 0,
+      "writerFiles": 1,
       "sampleFiles": [
-        "apps/api/src/lib/mongo-indexes.ts"
+        "apps/api/src/lib/mongo-migrations.ts"
       ]
     },
-    "SOCIAL_GROUP_WALL": {
+    "LEGACY_SOCIAL_GROUP_WALL": {
       "mongoName": "social_group_wall",
       "referencingFiles": 1,
-      "writerFiles": 0,
+      "writerFiles": 1,
       "sampleFiles": [
-        "apps/api/src/lib/mongo-indexes.ts"
+        "apps/api/src/lib/mongo-migrations.ts"
       ]
     },
-    "SOCIAL_GROUP_WALL_REACTIONS": {
+    "LEGACY_SOCIAL_GROUP_WALL_REACTIONS": {
       "mongoName": "social_group_wall_reactions",
       "referencingFiles": 1,
-      "writerFiles": 0,
+      "writerFiles": 1,
       "sampleFiles": [
-        "apps/api/src/lib/mongo-indexes.ts"
+        "apps/api/src/lib/mongo-migrations.ts"
       ]
     },
     "ACTIVITY_FAMILY_INVITES": {
@@ -674,13 +761,14 @@
     },
     "MEMBER_AVAILABILITY": {
       "mongoName": "member_availability",
-      "referencingFiles": 4,
+      "referencingFiles": 5,
       "writerFiles": 1,
       "sampleFiles": [
         "apps/api/src/lib/availability-fixed-map-items.ts",
         "apps/api/src/lib/member-availability-store.ts",
         "apps/api/src/lib/mongo-indexes.ts",
-        "apps/api/src/services/availability-hosted-match-notifications.ts"
+        "apps/api/src/services/area-public-read.ts",
+        "apps/api/src/services/matching/availability-hosted-match.ts"
       ]
     },
     "MEMBER_MAP_PINS": {
@@ -785,7 +873,7 @@
     "ACTIVITY_REQUESTS": 1,
     "ACTIVITY_PARTICIPANTS": 2,
     "ACTIVITY_PRIVATE": 3,
-    "PARTICIPANT_INTENTS": 3,
+    "PARTICIPANT_INTENTS": 4,
     "PARTICIPANT_INTENT_REQUESTS": 1,
     "MERCHANT_PROFILES": 3,
     "STRIPE_WEBHOOK_EVENTS": 1,
@@ -793,11 +881,20 @@
     "CHAT_MESSAGE_REACTIONS": 1,
     "CONTENT_REPORTS": 1,
     "SOCIAL_REVIEWS": 0,
-    "SOCIAL_GROUPS": 0,
-    "SOCIAL_GROUP_MEMBERS": 0,
-    "SOCIAL_GROUP_INVITES": 0,
-    "SOCIAL_GROUP_WALL": 0,
-    "SOCIAL_GROUP_WALL_REACTIONS": 0,
+    "MEMBER_GROUPS": 2,
+    "COMMUNITY_GROUPS": 1,
+    "COMMUNITY_GROUP_MEMBERS": 1,
+    "COMMUNITY_GROUP_INVITES": 1,
+    "COMMUNITY_GROUP_ADMINS": 1,
+    "MEMBER_GROUP_MEMBERS": 2,
+    "MEMBER_GROUP_INVITES": 2,
+    "MEMBER_GROUP_WALL": 2,
+    "MEMBER_GROUP_WALL_REACTIONS": 2,
+    "LEGACY_SOCIAL_GROUPS": 1,
+    "LEGACY_SOCIAL_GROUP_MEMBERS": 1,
+    "LEGACY_SOCIAL_GROUP_INVITES": 1,
+    "LEGACY_SOCIAL_GROUP_WALL": 1,
+    "LEGACY_SOCIAL_GROUP_WALL_REACTIONS": 1,
     "ACTIVITY_FAMILY_INVITES": 1,
     "BUDDY_REQUESTS": 0,
     "BUDDY_PAIRS": 1,
@@ -839,6 +936,10 @@
     "apps/api/src/routes/admin/registerAdminAuditRoutes.ts": [
       "admin-audit-read"
     ],
+    "apps/api/src/routes/admin/registerAdminCommunityRoutes.ts": [
+      "admin-community-commands",
+      "admin-community-read"
+    ],
     "apps/api/src/routes/admin/registerAdminContentReportRoutes.ts": [
       "admin-content-reports-commands",
       "admin-content-reports-read"
@@ -846,10 +947,6 @@
     "apps/api/src/routes/admin/registerAdminFacilityRoutes.ts": [
       "admin-facility-commands",
       "admin-facility-read"
-    ],
-    "apps/api/src/routes/admin/registerAdminGroupRoutes.ts": [
-      "admin-group-commands",
-      "admin-group-read"
     ]
   },
   "auditPillars": [

@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-16",
+  "generated": "2026-11-23",
   "endpoints": [
     {
       "method": "GET",
@@ -143,6 +143,16 @@
     },
     {
       "method": "GET",
+      "path": "/discover/crew",
+      "registrar": "apps/api/src/routes/user/registerDiscoverCrewRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/discover/recommendations",
+      "registrar": "apps/api/src/routes/user/registerDiscoverRecommendationsRoutes.ts"
+    },
+    {
+      "method": "GET",
       "path": "/me/entity-follows",
       "registrar": "apps/api/src/routes/user/registerEntityFollowRoutes.ts"
     },
@@ -165,6 +175,21 @@
       "method": "GET",
       "path": "/explore/people/availability",
       "registrar": "apps/api/src/routes/user/registerExploreAvailabilityRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/explore/communities",
+      "registrar": "apps/api/src/routes/user/registerExploreCommunityRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/explore/communities/:slug",
+      "registrar": "apps/api/src/routes/user/registerExploreCommunityRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/explore/communities/:slug/activities",
+      "registrar": "apps/api/src/routes/user/registerExploreCommunityRoutes.ts"
     },
     {
       "method": "GET",
@@ -290,6 +315,71 @@
       "method": "GET",
       "path": "/me/badges",
       "registrar": "apps/api/src/routes/user/registerMeBadgesRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/me/communities",
+      "registrar": "apps/api/src/routes/user/registerMeCommunityDiscoverRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/me/communities",
+      "registrar": "apps/api/src/routes/user/registerMeCommunityDiscoverRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/me/communities/:communityId/join",
+      "registrar": "apps/api/src/routes/user/registerMeCommunityDiscoverRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/me/communities/:communityId/leave",
+      "registrar": "apps/api/src/routes/user/registerMeCommunityDiscoverRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/me/communities/:communityId/host-manage",
+      "registrar": "apps/api/src/routes/user/registerMeCommunityDiscoverRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/me/communities/:communityId/members/:userId/approve",
+      "registrar": "apps/api/src/routes/user/registerMeCommunityDiscoverRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/me/communities/:communityId/invites",
+      "registrar": "apps/api/src/routes/user/registerMeCommunityDiscoverRoutes.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/me/communities/:communityId/profile",
+      "registrar": "apps/api/src/routes/user/registerMeCommunityDiscoverRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/me/communities/:communityId/activities/:activityId/link",
+      "registrar": "apps/api/src/routes/user/registerMeCommunityDiscoverRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/me/communities/:communityId/members/:userId/remove",
+      "registrar": "apps/api/src/routes/user/registerMeCommunityDiscoverRoutes.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/me/communities/:communityId/status",
+      "registrar": "apps/api/src/routes/user/registerMeCommunityDiscoverRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/me/communities/:communityId/admins/:userId",
+      "registrar": "apps/api/src/routes/user/registerMeCommunityDiscoverRoutes.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/me/communities/:communityId/admins/:userId",
+      "registrar": "apps/api/src/routes/user/registerMeCommunityDiscoverRoutes.ts"
     },
     {
       "method": "GET",
@@ -713,6 +803,11 @@
     },
     {
       "method": "GET",
+      "path": "/reviews/marketing-highlights",
+      "registrar": "apps/api/src/routes/user/registerReviewRoutes.ts"
+    },
+    {
+      "method": "GET",
       "path": "/reviews",
       "registrar": "apps/api/src/routes/user/registerReviewRoutes.ts"
     },
@@ -996,6 +1091,10 @@
     "apps/api/src/routes/admin/registerAdminAuditRoutes.ts": [
       "admin-audit-read"
     ],
+    "apps/api/src/routes/admin/registerAdminCommunityRoutes.ts": [
+      "admin-community-commands",
+      "admin-community-read"
+    ],
     "apps/api/src/routes/admin/registerAdminContentReportRoutes.ts": [
       "admin-content-reports-commands",
       "admin-content-reports-read"
@@ -1085,12 +1184,23 @@
       "buddy-me-commands",
       "buddy-me-read"
     ],
+    "apps/api/src/routes/user/registerDiscoverCrewRoutes.ts": [
+      "discover-crew-feed"
+    ],
+    "apps/api/src/routes/user/registerDiscoverRecommendationsRoutes.ts": [
+      "discover-crew-recommendations",
+      "discover-map-recommendations"
+    ],
     "apps/api/src/routes/user/registerEntityFollowRoutes.ts": [
       "entity-follow-commands",
       "entity-follow-read"
     ],
     "apps/api/src/routes/user/registerExploreAvailabilityRoutes.ts": [
       "explore-availability-read"
+    ],
+    "apps/api/src/routes/user/registerExploreCommunityRoutes.ts": [
+      "community-discover-activities-read",
+      "community-discover-read"
     ],
     "apps/api/src/routes/user/registerFollowRoutes.ts": [
       "member-follow-commands",
@@ -1110,6 +1220,13 @@
     ],
     "apps/api/src/routes/user/registerMeBadgesRoutes.ts": [
       "member-badges"
+    ],
+    "apps/api/src/routes/user/registerMeCommunityDiscoverRoutes.ts": [
+      "community-discover-commands",
+      "community-host-commands",
+      "community-host-read",
+      "me-community-discover-commands",
+      "me-community-discover-read"
     ],
     "apps/api/src/routes/user/registerMeCoordinationAttentionRoutes.ts": [
       "member-coordination-attention"
@@ -1136,10 +1253,10 @@
       "me-map-pins-read"
     ],
     "apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts": [
+      "discover-crew-feed",
       "me-account-session-read",
       "member-discovery-me-read",
       "member-discovery-quota",
-      "member-discovery-roster",
       "member-people-engagement",
       "member-status"
     ],

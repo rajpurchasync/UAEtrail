@@ -1,15 +1,15 @@
 {
   "version": 1,
-  "generated": "2026-11-22",
+  "generated": "2026-11-23",
   "description": "Phase P0 repo census baseline. Regenerate: npm run repo:census",
-  "boundedContextCount": 17,
+  "boundedContextCount": 18,
   "manifestVersion": 1,
   "spaRouteElements": 0,
-  "apiRegistrarFileCount": 63,
+  "apiRegistrarFileCount": 68,
   "experimentPlanFiles": 0,
   "experimentStubbedFiles": 0,
-  "feRootsTotal": 103,
-  "apiRegistrarRefsInManifest": 68,
+  "feRootsTotal": 109,
+  "apiRegistrarRefsInManifest": 71,
   "knip": {
     "skipped": true
   }
