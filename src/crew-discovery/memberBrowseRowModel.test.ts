@@ -43,26 +43,54 @@ describe('memberBrowseRowModel', () => {
     expect(row.profileHref).not.toContain('discover=1');
   });
 
-  it('filters guide intent on availability roster', () => {
+  it('filters guide capacity on availability roster (not legacy kinds)', () => {
     const people = [
       {
         userId: 'g1',
         displayName: 'Guide',
-        kinds: ['guide', 'hiking'] as const,
-        slots: [{ startDate: '2026-11-01', endDate: '2026-11-01' }],
+        kinds: ['hiking'] as const,
+        slots: [
+          {
+            startDate: '2026-11-01',
+            endDate: '2026-11-01',
+            capacity: 'guide' as const,
+            modalities: ['hiking'] as const,
+          },
+        ],
         isBuddy: false,
       },
       {
         userId: 'p1',
         displayName: 'Pat',
         kinds: ['hiking'] as const,
-        slots: [{ startDate: '2026-11-02', endDate: '2026-11-02' }],
+        slots: [{ startDate: '2026-11-02', endDate: '2026-11-02', capacity: 'participant' as const }],
+        isBuddy: false,
+      },
+      {
+        userId: 'stale',
+        displayName: 'Stale kinds',
+        kinds: ['guide'] as const,
+        slots: [{ startDate: '2026-11-03', endDate: '2026-11-03', capacity: 'participant' as const }],
         isBuddy: false,
       },
     ];
     expect(filterAvailabilityPeopleByGuideIntent(people, 'guide').map((p) => p.userId)).toEqual(['g1']);
     const row = buildMemberBrowseRowFromAvailability(people[0]!);
     expect(row.badge?.label).toBe('Guide');
+
+    const withTerms = buildMemberBrowseRowFromAvailability({
+      ...people[0]!,
+      slots: [
+        {
+          startDate: '2026-11-01',
+          endDate: '2026-11-01',
+          capacity: 'guide',
+          modalities: ['hiking'],
+          engagementTerms: { pricingKind: 'free', tourShape: 'private' },
+        },
+      ],
+    });
+    expect(withTerms.footnote).toBe('Free · Private');
   });
 
   it('tags directory rows with discover lens', () => {

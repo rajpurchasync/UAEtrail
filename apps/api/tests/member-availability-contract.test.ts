@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import type { Express } from 'express';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
+import { completeTestGuideProfile } from './helpers/member-profile-test-helpers.js';
 import { createAuthUser } from '../src/lib/auth-users-store.js';
 import { UserRole, UserStatus } from '../src/domain/enums.js';
 import { generateReferralCode } from '../src/lib/referral-code.js';
@@ -76,7 +77,7 @@ describe('member availability', () => {
     });
   });
 
-  it('buddies-only visibility hides rows from strangers', async () => {
+  it('friends-only visibility hides rows from strangers', async () => {
     const suffix = `avail-bud-${Date.now()}`;
     const password = 'TestPass1!';
     const hash = await bcrypt.hash(password, 10);
@@ -114,7 +115,7 @@ describe('member availability', () => {
       .set('Authorization', `Bearer ${ownerToken}`)
       .send({
         kinds: ['camping'],
-        visibility: 'buddies',
+        visibility: 'friends',
         slots: [{ startDate: iso, endDate: iso }],
       });
 
@@ -126,5 +127,217 @@ describe('member availability', () => {
     expect(
       strangerRes.body.data.people.some((p: { userId: string }) => p.userId === owner._id)
     ).toBe(false);
+  });
+
+  it('normalizes legacy buddies visibility to friends on write', async () => {
+    const suffix = `avail-legacy-${Date.now()}`;
+    const password = 'TestPass1!';
+    const hash = await bcrypt.hash(password, 10);
+    const user = await createAuthUser({
+      email: `avail-legacy-${suffix}@test.local`,
+      passwordHash: hash,
+      googleId: null,
+      authProvider: 'EMAIL',
+      role: UserRole.PARTICIPANT,
+      status: UserStatus.ACTIVE,
+      emailVerifiedAt: new Date(),
+      referralCode: generateReferralCode(),
+      profile: { displayName: 'Legacy', phone: null, bio: null, avatarUrl: null },
+    });
+    const token = await signInToken(user.email, password);
+    const start = new Date();
+    start.setUTCDate(start.getUTCDate() + 2);
+    const iso = start.toISOString().slice(0, 10);
+
+    const put = await request(app)
+      .put('/api/me/availability')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        kinds: ['hiking'],
+        visibility: 'buddies',
+        slots: [{ startDate: iso, endDate: iso }],
+      });
+    expect(put.status).toBe(200);
+    expect(put.body.data.visibility).toBe('friends');
+
+    const get = await request(app)
+      .get('/api/me/availability')
+      .set('Authorization', `Bearer ${token}`);
+    expect(get.status).toBe(200);
+    expect(get.body.data.visibility).toBe('friends');
+  });
+
+  it('B1: derives kinds from slot modalities and ignores mismatched top-level kinds', async () => {
+    const suffix = `avail-b1-${Date.now()}`;
+    const password = 'TestPass1!';
+    const hash = await bcrypt.hash(password, 10);
+    const user = await createAuthUser({
+      email: `avail-b1-${suffix}@test.local`,
+      passwordHash: hash,
+      googleId: null,
+      authProvider: 'EMAIL',
+      role: UserRole.PARTICIPANT,
+      status: UserStatus.ACTIVE,
+      emailVerifiedAt: new Date(),
+      referralCode: generateReferralCode(),
+      profile: { displayName: 'B1', phone: null, bio: null, avatarUrl: null },
+    });
+    const token = await signInToken(user.email, password);
+    const start = new Date();
+    start.setUTCDate(start.getUTCDate() + 3);
+    const iso = start.toISOString().slice(0, 10);
+
+    const put = await request(app)
+      .put('/api/me/availability')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        kinds: ['camping'],
+        visibility: 'public',
+        slots: [
+          {
+            startDate: iso,
+            endDate: iso,
+            capacity: 'participant',
+            modalities: ['hiking'],
+          },
+        ],
+      });
+    expect(put.status).toBe(200);
+    expect(put.body.data.kinds).toEqual(['hiking']);
+    expect(put.body.data.slots[0].modalities).toEqual(['hiking']);
+    expect(put.body.data.slots[0].capacity).toBe('participant');
+  });
+
+  it('B1: rejects guide modality in slot', async () => {
+    const suffix = `avail-guide-mod-${Date.now()}`;
+    const password = 'TestPass1!';
+    const hash = await bcrypt.hash(password, 10);
+    const user = await createAuthUser({
+      email: `avail-guide-mod-${suffix}@test.local`,
+      passwordHash: hash,
+      googleId: null,
+      authProvider: 'EMAIL',
+      role: UserRole.PARTICIPANT,
+      status: UserStatus.ACTIVE,
+      emailVerifiedAt: new Date(),
+      referralCode: generateReferralCode(),
+      profile: { displayName: 'Mod', phone: null, bio: null, avatarUrl: null },
+    });
+    const token = await signInToken(user.email, password);
+    const iso = new Date();
+    iso.setUTCDate(iso.getUTCDate() + 3);
+    const day = iso.toISOString().slice(0, 10);
+
+    const put = await request(app)
+      .put('/api/me/availability')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        visibility: 'public',
+        slots: [
+          {
+            startDate: day,
+            endDate: day,
+            capacity: 'participant',
+            modalities: ['guide'],
+          },
+        ],
+      });
+    expect(put.status).toBe(400);
+    expect(put.body.error?.code ?? put.body.code).toBe('guide_modality_forbidden');
+  });
+
+  it('B1: guide capacity requires completed guide profile', async () => {
+    const suffix = `avail-guide-cap-${Date.now()}`;
+    const password = 'TestPass1!';
+    const hash = await bcrypt.hash(password, 10);
+    const user = await createAuthUser({
+      email: `avail-guide-cap-${suffix}@test.local`,
+      passwordHash: hash,
+      googleId: null,
+      authProvider: 'EMAIL',
+      role: UserRole.PARTICIPANT,
+      status: UserStatus.ACTIVE,
+      emailVerifiedAt: new Date(),
+      referralCode: generateReferralCode(),
+      profile: { displayName: 'Cap', phone: null, bio: null, avatarUrl: null },
+    });
+    const token = await signInToken(user.email, password);
+    const day = new Date();
+    day.setUTCDate(day.getUTCDate() + 3);
+    const iso = day.toISOString().slice(0, 10);
+
+    const blocked = await request(app)
+      .put('/api/me/availability')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        visibility: 'public',
+        slots: [{ startDate: iso, endDate: iso, capacity: 'guide', modalities: ['hiking'] }],
+      });
+    expect(blocked.status).toBe(400);
+    expect(blocked.body.error?.code ?? blocked.body.code).toBe('guide_profile_required');
+
+    await completeTestGuideProfile(app, token);
+    const ok = await request(app)
+      .put('/api/me/availability')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        visibility: 'public',
+        slots: [{ startDate: iso, endDate: iso, capacity: 'guide', modalities: ['hiking'] }],
+      });
+    expect(ok.status).toBe(200);
+    expect(ok.body.data.kinds).toContain('guide');
+    expect(ok.body.data.kinds).toContain('hiking');
+
+    const exploreGuide = await request(app)
+      .get(`/api/explore/people/availability?from=${iso}&to=${iso}&kind=guide`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(exploreGuide.status).toBe(200);
+    expect(
+      exploreGuide.body.data.people.some((p: { userId: string }) => p.userId === user._id)
+    ).toBe(true);
+    expect(exploreGuide.body.data.clusters.some((c: { kind: string }) => c.kind === 'guide')).toBe(
+      true
+    );
+  });
+
+  it('C1: rejects paid guide terms without Pro', async () => {
+    const suffix = `avail-paid-${Date.now()}`;
+    const password = 'TestPass1!';
+    const hash = await bcrypt.hash(password, 10);
+    const user = await createAuthUser({
+      email: `avail-paid-${suffix}@test.local`,
+      passwordHash: hash,
+      googleId: null,
+      authProvider: 'EMAIL',
+      role: UserRole.PARTICIPANT,
+      status: UserStatus.ACTIVE,
+      emailVerifiedAt: new Date(),
+      referralCode: generateReferralCode(),
+      profile: { displayName: 'Paid', phone: null, bio: null, avatarUrl: null },
+    });
+    const token = await signInToken(user.email, password);
+    const day = new Date();
+    day.setUTCDate(day.getUTCDate() + 4);
+    const iso = day.toISOString().slice(0, 10);
+
+    await completeTestGuideProfile(app, token);
+
+    const blocked = await request(app)
+      .put('/api/me/availability')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        visibility: 'public',
+        slots: [
+          {
+            startDate: iso,
+            endDate: iso,
+            capacity: 'guide',
+            modalities: ['hiking'],
+            engagementTerms: { pricingKind: 'paid', rate: 500 },
+          },
+        ],
+      });
+    expect(blocked.status).toBe(400);
+    expect(blocked.body.error?.code ?? blocked.body.code).toBe('paid_terms_not_allowed');
   });
 });

@@ -1,9 +1,10 @@
 import type { AvailabilityKind } from '@uaetrail/shared-types';
 import { availabilityMapItemId } from '@uaetrail/shared-types';
 import {
-  fetchMyMemberAvailability,
-  saveMyMemberAvailability,
-} from '../../hooks/memberAvailabilityApi';
+  buildFixedSlotFromDraft,
+  saveFixedAvailabilitySlot,
+} from '../../availability/availabilitySlotComposeEngine';
+import { fetchMyMemberAvailability } from '../../hooks/memberAvailabilityApi';
 import {
   validateAvailabilityCuratedAreaStep,
   validateAvailabilityPublishArea,
@@ -559,28 +560,9 @@ export const publishAvailabilityFixedSlot = async (draft: AvailabilityFixedDraft
   const startAt = timePart ? `${dateIso}T${timePart}:00.000Z` : `${dateIso}T12:00:00.000Z`;
 
   const existing = await fetchMyMemberAvailability();
-  const kind = fixedWizardKindToAvailabilityKind(draft.kind);
-  const fixedSlot = {
-    scheduleKind: 'fixed' as const,
-    startDate: dateIso,
-    endDate: dateIso,
-    startAt,
-    endAt: startAt,
-    title: draft.title.trim(),
-    latitude: draft.latitude,
-    longitude: draft.longitude,
-    locationPrecision: draft.locationPrecision,
-    timeBand: null,
-  };
+  const fixedSlot = buildFixedSlotFromDraft(draft, dateIso, startAt);
 
-  const updated = await saveMyMemberAvailability({
-    kinds: [...new Set([...existing.kinds, kind])],
-    visibility: existing.visibility === 'hidden' ? 'public' : existing.visibility,
-    region: draft.preferredArea.trim() || existing.region || null,
-    areaId: draft.areaId?.trim() || existing.areaId || null,
-    note: existing.note,
-    slots: [...existing.slots, fixedSlot],
-  });
+  const updated = await saveFixedAvailabilitySlot(existing, draft, fixedSlot);
 
   const fixedSlots = updated.slots.filter((s) => s.scheduleKind === 'fixed');
   const savedSlot =

@@ -110,6 +110,16 @@ describe('host-member API contracts', () => {
     expect(statusWire).toMatch(/buildMemberStatusDto/);
   });
 
+  it('MIG-SG-A1: guideProfileComplete gates community publish in member-status resolver', () => {
+    const path = join(API_SRC, 'services', 'member-status.ts');
+    const content = readFileSync(path, 'utf8');
+    expect(content).toMatch(/guideProfileComplete/);
+    expect(content).toMatch(/isGuideProfileComplete/);
+    expect(content).toMatch(
+      /canPublish\s*=\s*isPlatformAdmin\s*\|\|\s*\(\s*guideProfileComplete\s*&&\s*Boolean\(activityTenant\)\)/
+    );
+  });
+
   it('member capabilities resolver lives in member-status service only', () => {
     expect(existsSync(join(API_SRC, 'services', 'member-status.ts'))).toBe(true);
     expect(existsSync(join(API_SRC, 'services', 'member-host-status.ts'))).toBe(false);

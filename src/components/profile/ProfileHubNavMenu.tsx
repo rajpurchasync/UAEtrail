@@ -1,13 +1,15 @@
 import {
   PROFILE_BADGES_PATH,
+  PROFILE_GUIDE_PATH,
   PROFILE_HISTORY_PATH,
   PROFILE_REVIEWS_PATH,
   PROFILE_SETTINGS_PATH,
   PROFILE_SUBMISSIONS_PATH,
   PRO_MEMBERSHIP_PATH,
-  planUpcomingPath,
+  MEMBER_SCHEDULE_CALENDAR_PATH,
   planWishlistTabPath,
 } from '../../config/routingCatalog';
+import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { planGoalsWishlistPath } from '../../plan/planRouting';
 import { profileHubMobileBackState } from '../../utils/mobileBackNav';
 import {
@@ -21,12 +23,13 @@ import {
   Sparkles,
   Star,
   Target,
+  UserRound,
 } from 'lucide-react';
 import { ProfileHubMenuRow } from './ProfileHubMenuRow';
 
 const back = profileHubMobileBackState();
 
-export const PROFILE_HUB_CALENDAR_PATH = planUpcomingPath('all', 'calendar');
+export const PROFILE_HUB_CALENDAR_PATH = MEMBER_SCHEDULE_CALENDAR_PATH;
 
 type ProfileHubNavMenuProps = {
   badgesEarnedCount?: number;
@@ -36,10 +39,19 @@ type ProfileHubNavMenuProps = {
 export const ProfileHubNavMenu = ({
   badgesEarnedCount = 0,
   onSignOut,
-}: ProfileHubNavMenuProps) => (
+}: ProfileHubNavMenuProps) => {
+  const { guideProfileComplete } = useMemberStatus();
+  return (
   <div className="space-y-3">
     <div className="glass-card divide-y divide-neutral-100 overflow-hidden">
       <ProfileHubMenuRow label="Calendar" to={PROFILE_HUB_CALENDAR_PATH} icon={CalendarDays} linkState={back} />
+      <ProfileHubMenuRow
+        label="Guide profile"
+        to={PROFILE_GUIDE_PATH}
+        icon={UserRound}
+        linkState={back}
+        badge={guideProfileComplete ? '✓' : undefined}
+      />
       <ProfileHubMenuRow label="Wishlist" to={planWishlistTabPath()} icon={Heart} linkState={back} />
       <ProfileHubMenuRow label="Goals" to={planGoalsWishlistPath()} icon={Target} linkState={back} />
       <ProfileHubMenuRow label="Past trips" to={PROFILE_HISTORY_PATH} icon={Backpack} linkState={back} />
@@ -69,4 +81,5 @@ export const ProfileHubNavMenu = ({
       Sign out
     </button>
   </div>
-);
+  );
+};

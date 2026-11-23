@@ -19,6 +19,7 @@ describe('p4bPhaseProgramGuard (P4b phase eng closure)', () => {
     const allowedWip = new Set([
       'MIG-PLATFORM-COMPOSE-OPERATOR-2026',
       'MIG-PEOPLE-VOCAB-2026',
+      'MIG-SCHEDULE-GUIDE',
     ]);
     const open = p4b.filter((m) => m.status !== 'complete');
     if (

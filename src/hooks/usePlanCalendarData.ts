@@ -11,7 +11,7 @@ import {
   type PlanCalendarDayDetail,
   type PlanCalendarDayMarkers,
 } from '../plan/planCalendarMarkers';
-import type { PlanCommitmentFilter } from '../plan/planTab';
+import type { PlanCalendarScope } from '../plan/planTab';
 import { planHostedActivityManagePath } from '../plan/planRouting';
 import { PLAN_PATH, activityDetailPath } from '../config/routingCatalog';
 
@@ -26,7 +26,7 @@ type PlanCalendarData = {
 export const usePlanCalendarData = (
   enabled: boolean,
   canHost: boolean,
-  filter: PlanCommitmentFilter,
+  filter: PlanCalendarScope,
   refreshKey = 0
 ): PlanCalendarData => {
   const { user } = useAuth();

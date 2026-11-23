@@ -1,4 +1,8 @@
-import type { AvailabilityKind } from '@uaetrail/shared-types';
+import {
+  discoveryModalitiesFromSlots,
+  guideEngagementTermsBrowseLineFromSlots,
+  memberHasGuideCapacityInSlots,
+} from '@uaetrail/shared-types';
 import type {
   ExploreAvailablePersonDTO,
   MemberBrowseCardDTO,
@@ -20,7 +24,10 @@ import { memberProfileRoleLabel } from '../member/memberProfileRoleLabel';
 import { exploreMapItemPathFromAvailabilityRow } from '../explore/memberDiscoveryAvailabilityRow';
 import { explorePath } from '../explore/routing';
 import type { CrewBrowseMemberRowProps } from './panel/crewBrowse/CrewBrowseMemberRow';
-import { availabilityKindLabels } from './panel/crewBrowse/crewBrowseAvailabilityKinds';
+import {
+  availabilityKindLabels,
+  scheduleModalityLabels,
+} from './panel/crewBrowse/crewBrowseAvailabilityKinds';
 
 /** L1 projection for people-browse list rows (panel + list `listCat=people`). */
 export type MemberBrowseRowVm = CrewBrowseMemberRowProps & {
@@ -39,20 +46,36 @@ export const filterDirectoryBrowseCards = (
   );
 };
 
-export const filterAvailabilityPeopleByGuideIntent = (
+/** Guides lane — `capacity: guide` on slots (MIG-SG-B4). */
+export const filterAvailabilityPeopleByGuideCapacity = (
   people: ExploreAvailablePersonDTO[],
   filter: 'all' | 'guide'
 ): ExploreAvailablePersonDTO[] =>
-  filter === 'guide' ? people.filter((person) => person.kinds.includes('guide')) : people;
+  filter === 'guide'
+    ? people.filter((person) => memberHasGuideCapacityInSlots(person.slots ?? []))
+    : people;
 
-export const availabilityPersonShowsGuideIntentBadge = (kinds: readonly AvailabilityKind[]): boolean =>
+/** @deprecated Use `filterAvailabilityPeopleByGuideCapacity`. */
+export const filterAvailabilityPeopleByGuideIntent = filterAvailabilityPeopleByGuideCapacity;
+
+export const availabilityPersonShowsGuideCapacityBadge = (person: ExploreAvailablePersonDTO): boolean =>
+  memberHasGuideCapacityInSlots(person.slots ?? []);
+
+/** @deprecated Use `availabilityPersonShowsGuideCapacityBadge`. */
+export const availabilityPersonShowsGuideIntentBadge = (kinds: readonly string[]): boolean =>
   kinds.includes('guide');
 
 export const buildMemberBrowseRowFromAvailability = (
   person: ExploreAvailablePersonDTO
 ): MemberBrowseRowVm => {
-  const labels = availabilityKindLabels(person.kinds);
-  const showGuideBadge = availabilityPersonShowsGuideIntentBadge(person.kinds);
+  const modalityLabels = scheduleModalityLabels(discoveryModalitiesFromSlots(person.slots ?? []));
+  const labels = modalityLabels.length
+    ? modalityLabels
+    : availabilityKindLabels(person.kinds.filter((k) => k !== 'guide'));
+  const showGuideBadge = availabilityPersonShowsGuideCapacityBadge(person);
+  const guideTermsLine = showGuideBadge
+    ? guideEngagementTermsBrowseLineFromSlots(person.slots ?? [])
+    : null;
   return {
     key: person.userId,
     userId: person.userId,
@@ -64,6 +87,7 @@ export const buildMemberBrowseRowFromAvailability = (
     dateLine: crewBrowseAvailabilityDateLine(person.slots),
     titleClamp: 'wrap',
     badge: showGuideBadge ? { label: 'Guide' } : null,
+    footnote: guideTermsLine,
   };
 };
 

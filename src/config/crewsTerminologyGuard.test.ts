@@ -131,7 +131,7 @@ describe('crewsTerminologyGuard (Crews / peopleTab — not buddies segment)', ()
       'src/content/upl-glossary.ts',
       'src/content/workspaceProductLanguageGuard.test.ts',
     ]);
-    const wireOk = /value="buddies"|'buddies'\s*\|/;
+    const wireOk = /value="friends"|value="buddies"|'buddies'\s*\|/;
 
     for (const root of scanRoots) {
       const abs = join(process.cwd(), root);

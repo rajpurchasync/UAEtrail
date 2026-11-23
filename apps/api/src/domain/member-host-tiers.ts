@@ -8,11 +8,11 @@ export const resolveHostTiersFromTenants = (
     type: TenantType;
     businessMode?: TenantBusinessMode | null;
   }>,
-  profileComplete: boolean
+  guideProfileComplete: boolean
 ): HostTierFlags => {
   const purposes = tenants.map((t) => inferTenantPublishingPurpose(t));
   return {
-    community: profileComplete && purposes.includes('community'),
+    community: guideProfileComplete && purposes.includes('community'),
     professional: purposes.includes('professional'),
     business: purposes.some((p) => p === 'business'),
   };

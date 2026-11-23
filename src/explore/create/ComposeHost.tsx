@@ -45,6 +45,8 @@ export interface ComposeHostProps {
   planWithBuddyUserId?: string | null;
   /** When map is scoped with `?area=`, prefill seeking/add curated area steps. */
   composeAreaSlug?: string | null;
+  /** `?capacity=guide` on intent open compose. */
+  intentOpenCapacityParam?: string | null;
   /** `facilityOnPlace` query — link amenity to trail/camp catalog row. */
   facilityOnPlaceId?: string | null;
   wizardEnteredFromMenu: boolean;
@@ -79,6 +81,7 @@ export const ComposeHost = ({
   tenantId = null,
   planWithBuddyUserId = null,
   composeAreaSlug = null,
+  intentOpenCapacityParam = null,
   facilityOnPlaceId = null,
   wizardEnteredFromMenu,
   intentMenuSuppressed = false,
@@ -153,6 +156,7 @@ export const ComposeHost = ({
         open={intentOpenWizardOpen}
         onClose={onCloseCompose}
         exploreAreaSlug={composeAreaSlug}
+        intentOpenCapacityParam={intentOpenCapacityParam}
       />
     )}
 

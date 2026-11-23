@@ -107,7 +107,7 @@ Do not bounce consumers to `/explore` for compose when `createFlowPath` can keep
 | Mode | User meaning | Wizard | Gates |
 |------|--------------|--------|-------|
 | **Post on map** (fixed) | Time/place window for company | `intentFixedFlowEngine` → **`PUT /me/availability`** (fixed slot) | Sign-in only |
-| **Share availability** (flexible) | Days + activities; location **open**, region, or area (all optional) — no pin | `PlanAvailabilitySection` / `member_availability` | Sign-in only |
+| **Share availability** (flexible) | Days + activity modalities; optional **guide** capacity + `engagementTerms` (paid → Pro) | `AvailabilitySlotEditor` → `PUT /me/availability` | Sign-in; guide capacity → `guideProfileComplete` |
 
 **Find crew browse (Available tab):** directory of everyone who saved availability with slots in the selected date range (`GET /explore/people/availability`) — optional map area / activity filter only; **not** personalized match to the viewer. Day + activity-type **notifications** and optional post-save **hosted outing** preview are separate.
 

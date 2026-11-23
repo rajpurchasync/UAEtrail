@@ -22,7 +22,10 @@ try {
   run('API typecheck', 'npm run typecheck:api');
   run('API host-member contracts', 'npm --workspace @uaetrail/api run test -- --run tests/host-member-contract.test.ts tests/member-publishing-workspace-access.test.ts');
   run('API member-discovery contracts', 'npm --workspace @uaetrail/api run test -- --run tests/member-discovery-contract.test.ts');
-  run('Frontend host-member guard', 'npx vitest run src/member/hostMemberGuard.test.ts');
+  run(
+    'Frontend host-member + schedule/guide guards',
+    'npx vitest run src/member/hostMemberGuard.test.ts src/config/migScheduleGuideGuard.test.ts'
+  );
   console.log('\n[verify:host-member] OK');
 } catch (error) {
   console.error('\n[verify:host-member] FAILED');

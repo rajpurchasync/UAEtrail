@@ -63,6 +63,13 @@ export const OPERATOR_PLACES_PATH = '/operator/places' as const;
 export const OPERATOR_SECURITY_PRIVACY_PATH = '/operator/security-privacy' as const;
 
 export const PROFILE_EDIT_PATH = '/profile/edit' as const;
+/** Guide ladder — bio, languages, experience; gates community host / publish (MIG-SCHEDULE-GUIDE). */
+export const PROFILE_GUIDE_PATH = '/profile/guide' as const;
+export const guideProfilePath = (returnTo?: string): string => {
+  const base = PROFILE_GUIDE_PATH;
+  if (!returnTo?.trim()) return base;
+  return `${base}?redirect=${encodeURIComponent(returnTo.trim())}`;
+};
 export const PROFILE_REVIEWS_PATH = '/profile/reviews' as const;
 
 /** App settings hub (display, account, privacy, safety) — not edit profile (`PROFILE_EDIT_PATH`). */

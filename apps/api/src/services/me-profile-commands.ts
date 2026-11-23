@@ -70,6 +70,7 @@ export const patchAuthenticatedMemberProfile = async (
     city: data.city ?? undefined,
     countryCode: data.countryCode ?? undefined,
     languages: data.languages ?? undefined,
+    guideExperience: data.guideExperience ?? undefined,
   });
   const user = await findAuthUserById(userId);
   return {
@@ -85,6 +86,7 @@ export const patchAuthenticatedMemberProfile = async (
     city: user?.profile?.city ?? data.city ?? null,
     countryCode: user?.profile?.countryCode ?? data.countryCode ?? null,
     languages: user?.profile?.languages ?? data.languages ?? null,
+    guideExperience: user?.profile?.guideExperience ?? data.guideExperience ?? null,
     signupProfileComplete: isSignupProfileComplete(user?.profile),
   };
 };

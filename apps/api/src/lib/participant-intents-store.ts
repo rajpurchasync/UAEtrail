@@ -1,5 +1,5 @@
-import type { AvailabilityKind, MemberAvailabilitySlotDTO } from '@uaetrail/shared-types';
-import { seekingFallbackTitle } from '@uaetrail/shared-types';
+import type { AvailabilityKind, MemberAvailabilitySlotDTO, ScheduleModality } from '@uaetrail/shared-types';
+import { isScheduleModality, seekingFallbackTitle } from '@uaetrail/shared-types';
 import { parseLocalDateTime } from './datetime.js';
 import { scheduleExploreMapCacheInvalidation } from './explore-map-cache-schedule.js';
 import { COLLECTIONS } from './collections.js';
@@ -35,6 +35,9 @@ const intentKindToAvailabilityKind = (kind: LegacyParticipantIntentKind): Availa
   return 'other';
 };
 
+const intentKindToScheduleModality = (kind: LegacyParticipantIntentKind): ScheduleModality =>
+  isScheduleModality(kind) ? kind : 'other';
+
 const participantIntentDocToFixedSlot = (
   doc: MongoParticipantIntent,
   countryCode = 'AE'
@@ -57,6 +60,8 @@ const participantIntentDocToFixedSlot = (
     longitude: doc.longitude,
     locationPrecision: doc.locationPrecision ?? 'general',
     timeBand: null,
+    capacity: 'participant',
+    modalities: [intentKindToScheduleModality(doc.kind)],
   };
 };
 

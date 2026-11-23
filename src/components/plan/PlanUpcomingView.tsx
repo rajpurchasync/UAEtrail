@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { CalendarDays, List, Search } from 'lucide-react';
-import type { PlanCommitmentFilter, PlanUpcomingLayout } from '../../plan/planTab';
+import type { PlanCalendarScope, PlanUpcomingLayout } from '../../plan/planTab';
 import { PRODUCT_PLAN_UPCOMING_JOINED_CONTEXT } from '../../content/productNorthStar';
-import { PlanCalendarSection } from './PlanCalendarSection';
+import { MemberScheduleCalendar } from '../../availability/MemberScheduleCalendar';
 import { PlanJoinedUpcoming } from './PlanJoinedUpcoming';
 import { PlanNeedsYouStrip } from './PlanNeedsYouStrip';
 import { PLAN_SUMMARY_FOCUS_ELEMENT_IDS } from '../../plan/planSummaryFocusScroll';
@@ -12,7 +12,7 @@ const PLAN_SUMMARY_SCROLL_MT = 'scroll-mt-[calc(var(--safe-top)+7.5rem)] outline
 type PlanUpcomingViewProps = {
   refreshKey: number;
   canHost: boolean;
-  filter: PlanCommitmentFilter;
+  calendarScope: PlanCalendarScope;
   layout: PlanUpcomingLayout;
   lensRaw: string | null;
   onLayoutChange: (layout: PlanUpcomingLayout) => void;
@@ -22,7 +22,7 @@ type PlanUpcomingViewProps = {
 export const PlanUpcomingView = ({
   refreshKey,
   canHost,
-  filter,
+  calendarScope,
   layout,
   lensRaw: _lensRaw,
   onLayoutChange,
@@ -34,7 +34,7 @@ export const PlanUpcomingView = ({
 
   const upcomingBody =
     layout === 'calendar' ? (
-      <PlanCalendarSection refreshKey={refreshKey} canHost={canHost} filter={filter} />
+      <MemberScheduleCalendar refreshKey={refreshKey} canHost={canHost} scope={calendarScope} />
     ) : (
       <PlanJoinedUpcoming refreshKey={refreshKey} searchQuery={searchQuery} />
     );
@@ -85,7 +85,7 @@ export const PlanUpcomingView = ({
 
       <PlanNeedsYouStrip refreshKey={refreshKey} />
 
-      {listSections && filter === 'joined' ? (
+      {listSections && calendarScope === 'joined' ? (
         <section
           id={PLAN_SUMMARY_FOCUS_ELEMENT_IDS.joined}
           tabIndex={-1}

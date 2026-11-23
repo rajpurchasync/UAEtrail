@@ -20,7 +20,7 @@ describe('consumerAppSurfacesDataGuard (in-app hubs — not guest marketing)', (
   });
 
   it('CTX-APP-03: plan + host destination pickers merge published areas for emirates', () => {
-    expect(read('src/components/plan/PlanAvailabilitySection.tsx')).toMatch(
+    expect(read('src/availability/AvailabilitySlotEditor.tsx')).toMatch(
       /mergeVenueStateFilterOptionsWithAreas/
     );
     expect(read('src/explore/ui/HostingDestinationCascade.tsx')).toMatch(
@@ -38,7 +38,7 @@ describe('consumerAppSurfacesDataGuard (in-app hubs — not guest marketing)', (
   });
 
   it('CTX-APP-05: consumer pages avoid static getRegionsForCountry pickers in explore/plan', () => {
-    expect(read('src/components/plan/PlanAvailabilitySection.tsx')).not.toMatch(/getRegionsForCountry/);
+    expect(read('src/availability/AvailabilitySlotEditor.tsx')).not.toMatch(/getRegionsForCountry/);
     expect(read('src/explore/ui/HostingDestinationCascade.tsx')).not.toMatch(/getRegionsForCountry/);
   });
 
@@ -89,7 +89,7 @@ describe('consumerAppSurfacesDataGuard (in-app hubs — not guest marketing)', (
     expect(read('src/config/regions.ts')).toMatch(/consumerEmirateKeys/);
     expect(read('src/utils/locationSearch.ts')).toMatch(/consumerEmirateKeys/);
     expect(read('src/explore/exploreListSort.ts')).toMatch(/consumerEmirateKeys/);
-    expect(read('src/components/plan/PlanAvailabilitySection.tsx')).toMatch(
+    expect(read('src/availability/AvailabilitySlotEditor.tsx')).toMatch(
       /mergeVenueStateFilterOptionsWithAreas/
     );
   });

@@ -10,11 +10,12 @@ export const fetchMyMemberAvailability = async (): Promise<MemberAvailabilityDTO
   return res.data;
 };
 
+/** @deprecated Use `saveMemberAvailability` from `src/availability/saveMemberAvailability.ts`. */
 export const saveMyMemberAvailability = async (
   input: UpsertMemberAvailabilityInput
 ): Promise<MemberAvailabilityDTO> => {
-  const res = await api.putMyAvailability(input);
-  return res.data;
+  const { saveMemberAvailability } = await import('../availability/saveMemberAvailability');
+  return saveMemberAvailability(input);
 };
 
 export const fetchMyAvailabilityMatchPreview = async (): Promise<MemberAvailabilityMatchPreviewDTO> => {

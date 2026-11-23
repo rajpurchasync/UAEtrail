@@ -46,9 +46,9 @@ describe('crewPillarsAlignmentGuard (MIG-PEOPLE-VOCAB-2026)', () => {
     expect(read('packages/shared-types/src/member-availability.ts')).toMatch(/PUT \/me\/availability/);
     expect(read('src/content/upl-glossary.ts')).toMatch(/UPL_INTENT_OPEN_ACTION/);
     expect(read('src/explore/compose.ts')).toMatch(/UPL_INTENT_OPEN_ACTION/);
-    expect(read('src/components/plan/PlanAvailabilitySection.tsx')).toMatch(/UPL_INTENT_PLAN_SECTION/);
-    expect(read('src/components/plan/PlanAvailabilitySection.tsx')).toMatch(/UPL_INTENT_AVAILABLE_AS_GUIDE/);
-    expect(read('src/crew-discovery/memberBrowseRowModel.ts')).toMatch(/filterAvailabilityPeopleByGuideIntent/);
+    expect(read('src/availability/AvailabilitySlotEditor.tsx')).toMatch(/UPL_INTENT_PLAN_SECTION/);
+    expect(read('src/availability/AvailabilitySlotEditor.tsx')).toMatch(/UPL_INTENT_AVAILABLE_AS_GUIDE/);
+    expect(read('src/crew-discovery/memberBrowseRowModel.ts')).toMatch(/filterAvailabilityPeopleByGuideCapacity/);
   });
 
   it('CREW-PILLAR-05: Outing roster pillar uses crew tab wire', () => {

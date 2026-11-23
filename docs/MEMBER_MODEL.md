@@ -289,13 +289,14 @@ Product-facing **who is viewing** for **capabilities** (Host / publish, console,
 
 | Concern | Rule |
 |---------|------|
-| **Storage** | `member_availability` — one row per user with `slots[]`, `kinds[]`, optional `areaId` / `region` |
-| **Edit** | Explore **`compose=intent:open`** or **`intent:fixed:*`**; legacy `?lens=availability` redirects — no Plan sheet |
-| **Discover** | `GET /explore/people/availability` · map pins `source: availability` · Explore People filters |
-| **Visibility** | `public` · `buddies` · `hidden` — enforced on index and public profile `availability` slice |
+| **Storage** | `member_availability` — one row per user with `slots[]` (derived `kinds[]` index only), optional `areaId` / `region` |
+| **Slot shape** | `capacity` (`participant` \| `guide`) · `modalities[]` (no `guide` modality) · optional `engagementTerms` on guide blocks (`free` \| `paid` \| `upon_request` — paid requires Pro / business) |
+| **Edit** | **`AvailabilitySlotEditor`** via Plan, **`compose=intent:open`**, or **`intent:fixed:*`** · `PUT /me/availability` |
+| **Discover** | `GET /explore/people/availability` · Guides lane = `capacity: guide` · map pins `source: availability` |
+| **Visibility** | `public` · `friends` · `hidden` — enforced on index and public profile `availability` slice |
 | **vs join on Activity** | Join / RSVP / request → **`activity_requests`** on a **hosted** `activityId`. Availability peek → message / profile — not activity join. |
 | **vs retired seeking** | No `activityMode: seeking`, `/me/seeking-posts`, or `participantIntentId` on product wire. Ops: [`SEEKING_STORAGE_RUNBOOK.md`](./operations/SEEKING_STORAGE_RUNBOOK.md) · `npm run purge:seeking-legacy`. |
-| **Guide kind** | `guide` on availability kinds = casual pro signal; directory **`guides_operators`** + **hosted** activities / agency profiles for commercial guiding |
+| **Guide ladder** | `guideProfileComplete` (`/profile/guide`) before `capacity: guide` writes · commercial **`guides_operators`** + hosted activities remain separate |
 
 ---
 

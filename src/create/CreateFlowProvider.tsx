@@ -65,6 +65,7 @@ export const CreateFlowProvider = ({ children }: { children: ReactNode }) => {
   const {
     canPublish,
     profileComplete,
+    guideProfileComplete,
     isCommunityHost,
     hostTiers,
     tenantId,
@@ -113,13 +114,14 @@ export const CreateFlowProvider = ({ children }: { children: ReactNode }) => {
           memberPublishGateInputFromMemberStatus({
             viewerUserId: user?.id ?? null,
             profileComplete,
+            guideProfileComplete,
             canPublish,
             isCommunityHost,
             hostTiers,
           })
         )
       ),
-    [navigate, user?.id, profileComplete, canPublish, isCommunityHost, hostTiers]
+    [navigate, user?.id, profileComplete, guideProfileComplete, canPublish, isCommunityHost, hostTiers]
   );
 
   const defaultRefresh = useCallback(async () => {
@@ -196,6 +198,7 @@ export const CreateFlowProvider = ({ children }: { children: ReactNode }) => {
         tenantId={bridge?.tenantId ?? tenantId}
         planWithBuddyUserId={bridge?.planWithBuddyUserId ?? parsePlanWithUserId(searchParams)}
         composeAreaSlug={bridge?.composeAreaSlug ?? parseExploreAreaSlug(searchParams)}
+        intentOpenCapacityParam={searchParams.get('capacity')}
         facilityOnPlaceId={bridge?.facilityOnPlaceId ?? parseFacilityOnPlaceId(searchParams)}
         onOpenHostApplication={() => {
           onCloseCreateFlow();

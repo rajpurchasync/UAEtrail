@@ -1030,6 +1030,7 @@ Board one-liner: *P4 thinned the API; **PCOH** (§8.8) finished UPL/BWL coherenc
 | **PCOH** | product-eng + platform | pre-launch | §8.8 coherence program (`MIG-COH-*`) | **Complete** |
 | **P5** | platform | 4–6 wk | SLO smoke + staging baselines (`p5:slo-smoke`) | **Eng complete** — PRE_DEPLOY § SLO baseline sign-off pending |
 | **P6** | platform | ongoing | **C1**/S10g, §7 burn-down | **Gated** |
+| **MIG-SCHEDULE-GUIDE** | product-eng | 2026-Q4 | Guide ladder + schedule blocks + unified calendar | **Complete** |
 
 **Relationship to S0–S13:** **S8–S11** eng closed. **S13** methodology + guards shipped; **P4b** `MIG-SURFACE-*` eng **complete** (`p4bPhaseProgramGuard`) — phase **`in_progress`** only until **S10f** staging sign-off. **P*** = platform capacity (~30–40%) on top of product slices.
 
@@ -1292,6 +1293,10 @@ These are **rejected** for UAE Trail unless the CEO explicitly reopens platform 
 
 One bounded context per PR: API registrar + `src/api/domains/*` + UI root + guard when the invariant must not regress. Gate: **`npm run verify:system`**.
 
+### 8.10 Program **MIG-SCHEDULE-GUIDE** (retired)
+
+**Status:** **Complete** in [`refactor-program.json`](../scripts/refactor-program.json). Durable product truth lives in [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) (availability + guide ladder), [`CREATE_FLOW.md`](./CREATE_FLOW.md) (intent compose), and [`NAVIGATION.md`](./NAVIGATION.md) (unified calendar). Guards: `migScheduleGuideGuard`, `memberAvailabilityLineageGuard`.
+
 ---
 
 ## 9. Change checklist (any substantial PR)
@@ -1319,4 +1324,5 @@ One bounded context per PR: API registrar + `src/api/domains/*` + UI root + guar
 | System-wide debt register | §7–8 (this file) |
 | Platform north star (defaults + rejected stack) | **§8.9** (this file) |
 | Coherence implementation schedule | **§8.8** + `refactor-program.json` `MIG-COH-*` |
+| Schedule / guide / calendar (shipped) | `MEMBER_MODEL.md` · `CREATE_FLOW.md` · `NAVIGATION.md` · `migScheduleGuideGuard` |
 | UPL vs BWL | `src/content/upl-glossary.ts` · `packages/shared-types/src/wire-lexicon.ts` |

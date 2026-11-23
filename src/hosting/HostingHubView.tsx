@@ -34,6 +34,7 @@ import type { ActivityRequestView } from '../api/types';
 import { matchesActivitySearch } from '../utils/activitySearch';
 import type { PlanHostingScheduleLens } from '../plan/planHostingTimeRange';
 import {
+  MEMBER_SCHEDULE_CALENDAR_PATH,
   OPERATOR_OVERVIEW_PATH,
   MESSAGES_PATH,
   OPERATOR_ACTIVITIES_PATH,
@@ -253,6 +254,12 @@ export const HostingHubView = ({ refreshKey, onCreateNew }: HostingHubViewProps)
         </h2>
         <AccountLinkList
           items={[
+            {
+              to: MEMBER_SCHEDULE_CALENDAR_PATH,
+              icon: <CalendarDays className="h-4 w-4" />,
+              label: 'My calendar',
+              accent: 'emerald',
+            },
             {
               to: OPERATOR_REQUESTS_PATH,
               icon: <Users className="h-4 w-4" />,

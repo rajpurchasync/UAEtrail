@@ -23,6 +23,7 @@ import { PlanUpcomingView } from '../components/plan/PlanUpcomingView';
 import { PlanWishlistView } from '../components/plan/PlanWishlistView';
 import { JOURNEY_MAP_PATH, PLAN_TODAY_PATH, PROFILE_HISTORY_PATH } from '../config/surfacePaths';
 import {
+  parsePlanCalendarScope,
   parsePlanCommitmentFilter,
   parsePlanMainTab,
   parsePlanUpcomingLayout,
@@ -99,6 +100,12 @@ export const PlanPage = () => {
     canHost
   );
   const upcomingLayout = parsePlanUpcomingLayout(searchParams.get('layout'), searchParams.get('lens'));
+  const calendarScope = parsePlanCalendarScope(
+    searchParams.get('filter'),
+    upcomingLayout,
+    searchParams.get('role'),
+    canHost
+  );
   const lensRaw = searchParams.get('lens');
 
   const handleRefresh = useCallback(async () => {
@@ -192,8 +199,11 @@ export const PlanPage = () => {
     (layout: PlanUpcomingLayout) => {
       applyProductSearchMutation({ pathname, navigate, setSearchParams }, (params) => {
         params.set('view', 'plans');
-        if (layout === 'calendar') params.set('layout', 'calendar');
-        else params.delete('layout');
+        if (layout === 'calendar') {
+          params.set('layout', 'calendar');
+          const filter = params.get('filter');
+          if (!filter || filter === 'joined') params.set('filter', 'all');
+        } else params.delete('layout');
       });
     },
     [navigate, pathname, setSearchParams]
@@ -244,7 +254,7 @@ export const PlanPage = () => {
                   <PlanUpcomingView
                     refreshKey={refreshKey}
                     canHost={canHost}
-                    filter={commitmentFilter}
+                    calendarScope={calendarScope}
                     layout={upcomingLayout}
                     lensRaw={lensRaw}
                     onLayoutChange={setUpcomingLayout}

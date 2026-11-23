@@ -146,8 +146,10 @@ export interface UserProfile {
     | 'umm_al_quwain'
     | null;
   languages?: string | null;
+  guideExperience?: string | null;
   countryCode?: 'AE' | 'SA' | 'OM' | 'QA' | 'BH' | 'KW' | null;
   signupProfileComplete?: boolean;
+  guideProfileComplete?: boolean;
   bloodGroup?: import('@uaetrail/shared-types').BloodGroup | null;
   medicalConditions?: string | null;
   emergencyContactName?: string | null;

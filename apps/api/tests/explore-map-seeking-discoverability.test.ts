@@ -56,6 +56,8 @@ describe('GET /api/explore/map availability discoverability (MIG-DISCO-REG)', ()
             latitude: 25.12,
             longitude: 55.22,
             locationPrecision: 'specific',
+            capacity: 'participant',
+            modalities: ['hiking'],
           },
         ],
       });

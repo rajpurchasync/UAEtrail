@@ -321,16 +321,8 @@ describe('detail surface lineage (host publish → activity detail)', () => {
     expect(login.status).toBe(200);
     const hostToken = login.body.tokens.accessToken as string;
 
-    const signup = await request(app)
-      .patch('/api/me/profile/signup-details')
-      .set('Authorization', `Bearer ${hostToken}`)
-      .send({
-        dateOfBirth: '1990-01-15',
-        gender: 'prefer_not_to_say',
-        countryCode: 'AE',
-        languages: 'en',
-      });
-    expect(signup.status).toBe(200);
+    const { completeTestMemberPublishProfile } = await import('./helpers/member-profile-test-helpers.js');
+    await completeTestMemberPublishProfile(app, hostToken);
 
     const create = await request(app)
       .post('/api/publishing/activities')

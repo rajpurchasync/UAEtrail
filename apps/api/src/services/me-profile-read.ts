@@ -1,7 +1,7 @@
 import { UserRole } from '../domain/enums.js';
 import { resolveProfilePersonNames, wireMemberDisplayName } from '../domain/person-name.js';
 import { isSignupProfileComplete } from '../domain/user-profile.js';
-import { isMedicalSafetyProfileComplete } from '@uaetrail/shared-types';
+import { isGuideProfileComplete, isMedicalSafetyProfileComplete } from '@uaetrail/shared-types';
 import { medicalSafetyFieldsFromAuthProfile } from '../lib/member-medical-safety-profile.js';
 import { ApiError } from '../lib/api-error.js';
 import { isPlatformMasterAdmin } from '../lib/platform-master-admin.js';
@@ -51,7 +51,9 @@ export const getAuthenticatedMemberProfile = async (userId: string) => {
     city: user.profile?.city ?? null,
     countryCode: user.profile?.countryCode ?? null,
     languages: user.profile?.languages ?? null,
+    guideExperience: user.profile?.guideExperience ?? null,
     signupProfileComplete: isSignupProfileComplete(user.profile),
+    guideProfileComplete: isGuideProfileComplete(user.profile),
     bloodGroup: user.profile?.bloodGroup ?? null,
     medicalConditions: user.profile?.medicalConditions ?? null,
     emergencyContactName: user.profile?.emergencyContactName ?? null,

@@ -1,6 +1,15 @@
 import type { Router } from 'express';
 import { z } from 'zod';
-import { AVAILABILITY_KINDS, type AvailabilityKind } from '@uaetrail/shared-types';
+import {
+  AVAILABILITY_KINDS,
+  AVAILABILITY_PRICING_KINDS,
+  AVAILABILITY_SLOT_CAPACITIES,
+  AVAILABILITY_TOUR_SHAPES,
+  SCHEDULE_MODALITIES,
+  normalizeAvailabilityVisibility,
+  type AvailabilityKind,
+  type ScheduleModality,
+} from '@uaetrail/shared-types';
 import { requireAuth } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validate.js';
 import { upsertMyMemberAvailability } from '../../services/me-availability-commands.js';
@@ -15,6 +24,34 @@ const availabilityKindEnum = z.enum(
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 
+const scheduleModalityEnum = z.enum(
+  SCHEDULE_MODALITIES as unknown as [ScheduleModality, ...ScheduleModality[]]
+);
+
+const engagementTermsSchema = z
+  .object({
+    pricingKind: z.enum(
+      AVAILABILITY_PRICING_KINDS as unknown as [
+        (typeof AVAILABILITY_PRICING_KINDS)[number],
+        ...(typeof AVAILABILITY_PRICING_KINDS)[number][],
+      ]
+    ),
+    rate: z.number().min(0).optional().nullable(),
+    tourShape: z
+      .enum(
+        AVAILABILITY_TOUR_SHAPES as unknown as [
+          (typeof AVAILABILITY_TOUR_SHAPES)[number],
+          ...(typeof AVAILABILITY_TOUR_SHAPES)[number][],
+        ]
+      )
+      .optional()
+      .nullable(),
+    minParticipants: z.number().int().min(1).optional().nullable(),
+    maxParticipants: z.number().int().min(1).optional().nullable(),
+  })
+  .optional()
+  .nullable();
+
 const slotSchema = z.object({
   slotId: z.string().max(80).optional().nullable(),
   scheduleKind: z.enum(['open', 'fixed']).optional().nullable(),
@@ -28,11 +65,18 @@ const slotSchema = z.object({
   latitude: z.number().min(-90).max(90).optional().nullable(),
   longitude: z.number().min(-180).max(180).optional().nullable(),
   locationPrecision: z.enum(['general', 'specific']).optional().nullable(),
+  capacity: z.enum(AVAILABILITY_SLOT_CAPACITIES as unknown as ['participant', 'guide']).optional().nullable(),
+  /** Validated in `validateMemberAvailabilityWrite` (guide is forbidden as modality). */
+  modalities: z.array(z.string().max(32)).max(8).optional().nullable(),
+  engagementTerms: engagementTermsSchema,
 });
 
 const upsertSchema = z.object({
-  kinds: z.array(availabilityKindEnum).default([]),
-  visibility: z.enum(['public', 'buddies', 'hidden']),
+  /** @deprecated ignored on write — server derives from slots (MIG-SG-B1). */
+  kinds: z.array(availabilityKindEnum).optional(),
+  visibility: z
+    .enum(['public', 'friends', 'hidden', 'buddies'])
+    .transform(normalizeAvailabilityVisibility),
   region: z.string().max(80).optional().nullable(),
   areaId: z.string().max(80).optional().nullable(),
   note: z.string().max(500).optional().nullable(),

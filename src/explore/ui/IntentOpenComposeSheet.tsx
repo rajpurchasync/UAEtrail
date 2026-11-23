@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { MemberAvailabilityMatchPreviewDTO } from '@uaetrail/shared-types';
-import { PlanAvailabilitySection } from '../../components/plan/PlanAvailabilitySection';
+import { AvailabilitySlotEditor } from '../../availability/AvailabilitySlotEditor';
+import { prefillOpenIntentCompose } from '../../availability/availabilitySlotComposeEngine';
 import { EXPLORE_Z } from '../../config/exploreTheme';
 import { fetchMyAvailabilityMatchPreview } from '../../hooks/memberAvailabilityApi';
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
@@ -15,6 +16,8 @@ export type IntentOpenComposeSheetProps = {
   onClose: () => void;
   /** Map `?area=` slug — optional area prefill in the editor. */
   exploreAreaSlug?: string | null;
+  /** Compose URL `capacity=guide` prefill for open slots. */
+  intentOpenCapacityParam?: string | null;
 };
 
 /**
@@ -25,6 +28,7 @@ export const IntentOpenComposeSheet = ({
   open,
   onClose,
   exploreAreaSlug = null,
+  intentOpenCapacityParam = null,
 }: IntentOpenComposeSheetProps) => {
   const publishedAreas = useExplorePublishedAreas();
   const [step, setStep] = useState<'form' | 'preview'>('form');
@@ -38,6 +42,11 @@ export const IntentOpenComposeSheet = ({
   const prefillAreaId = useMemo(
     () => areaIdForExploreAreaSlug(publishedAreas, exploreAreaSlug),
     [publishedAreas, exploreAreaSlug]
+  );
+
+  const composePrefill = useMemo(
+    () => prefillOpenIntentCompose({ capacityParam: intentOpenCapacityParam }),
+    [intentOpenCapacityParam]
   );
 
   const handleSaved = async () => {
@@ -75,9 +84,10 @@ export const IntentOpenComposeSheet = ({
           onBack={step === 'preview' ? () => setStep('form') : undefined}
         />
         {open && step === 'form' ? (
-          <PlanAvailabilitySection
+          <AvailabilitySlotEditor
             variant="fab"
             prefillAreaId={prefillAreaId}
+            composePrefill={composePrefill}
             onSaved={handleSaved}
           />
         ) : null}

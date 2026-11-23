@@ -1,7 +1,8 @@
 import { useCallback, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { UpsertMemberAvailabilityInput } from '@uaetrail/shared-types';
-import { fetchMyMemberAvailability, saveMyMemberAvailability } from './memberAvailabilityApi';
+import { saveMemberAvailability } from '../availability/saveMemberAvailability';
+import { fetchMyMemberAvailability } from './memberAvailabilityApi';
 import { memberAvailabilityQueryKey } from './clientQueryKeys';
 import { useAuth } from '../context/AuthContext';
 
@@ -28,7 +29,7 @@ export const useMemberAvailability = (enabled: boolean) => {
       setSaving(true);
       setSaveError(null);
       try {
-        const availability = await saveMyMemberAvailability(input);
+        const availability = await saveMemberAvailability(input);
         queryClient.setQueryData(memberAvailabilityQueryKey(user.id), availability);
       } catch {
         setSaveError('Could not save availability.');

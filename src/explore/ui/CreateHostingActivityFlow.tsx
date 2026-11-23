@@ -165,6 +165,7 @@ export const CreateHostingActivityFlow = ({
   const {
     canPublish,
     profileComplete,
+    guideProfileComplete,
     isCommunityHost,
     hostTiers,
     canHostPaidActivities,
@@ -630,6 +631,7 @@ export const CreateHostingActivityFlow = ({
             memberPublishGateInputFromMemberStatus({
               viewerUserId: user?.id ?? null,
               profileComplete,
+              guideProfileComplete,
               canPublish,
               isCommunityHost,
               hostTiers,
@@ -706,6 +708,7 @@ export const CreateHostingActivityFlow = ({
     onOpenHostApplication,
     navigate,
     profileComplete,
+    guideProfileComplete,
     isCommunityHost,
     hostTiers,
     onClose,

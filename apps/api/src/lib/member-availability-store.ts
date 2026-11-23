@@ -12,6 +12,12 @@ import { profileDisplayNameFromAuthUser } from '../domain/person-name.js';
 import {
   AVAILABILITY_KINDS,
   availabilitySlotOverlapsRange,
+  deriveLegacyKindsFromSlots,
+  discoveryKindsFromSlots,
+  hydrateMemberAvailabilitySlots,
+  isFriendsOnlyAvailabilityVisibility,
+  personMatchesAvailabilityKindQuery,
+  normalizeAvailabilityVisibility,
   normalizeMemberAvailabilitySlotsForStorage,
   prunePastAvailabilitySlots,
 } from '@uaetrail/shared-types';
@@ -57,23 +63,42 @@ const ensureAvailabilitySlotIds = (slots: MemberAvailabilitySlotDTO[]): MemberAv
     slotId: slot.slotId?.trim() || randomUUID(),
   }));
 
-const sanitizeSlots = (slots: MemberAvailabilitySlotDTO[]): MemberAvailabilitySlotDTO[] => {
-  const today = todayIsoUtc();
-  return ensureAvailabilitySlotIds(
-    prunePastAvailabilitySlots(normalizeMemberAvailabilitySlotsForStorage(slots), today)
-  );
+const deriveKindsFromHydratedSlots = (slots: MemberAvailabilitySlotDTO[]): AvailabilityKind[] => {
+  const kinds = [...deriveLegacyKindsFromSlots(slots)] as AvailabilityKind[];
+  if (slots.some((slot) => slot.capacity === 'guide') && !kinds.includes('guide')) {
+    kinds.push('guide');
+  }
+  return sanitizeKinds(kinds);
 };
 
-const mapDto = (doc: MongoMemberAvailability): MemberAvailabilityDTO => ({
-  userId: doc.userId,
-  kinds: doc.kinds,
-  visibility: doc.visibility,
-  region: doc.region,
-  areaId: doc.areaId,
-  note: doc.note,
-  slots: doc.slots,
-  updatedAt: doc.updatedAt.toISOString(),
-});
+const sanitizeSlots = (
+  slots: MemberAvailabilitySlotDTO[],
+  docKindsHint?: AvailabilityKind[]
+): MemberAvailabilitySlotDTO[] => {
+  const today = todayIsoUtc();
+  const normalized = normalizeMemberAvailabilitySlotsForStorage(slots);
+  const hydrated = hydrateMemberAvailabilitySlots(
+    normalized,
+    docKindsHint
+  ) as MemberAvailabilitySlotDTO[];
+  return ensureAvailabilitySlotIds(prunePastAvailabilitySlots(hydrated, today));
+};
+
+const mapDto = (doc: MongoMemberAvailability): MemberAvailabilityDTO => {
+  const docKindsHint = doc.kinds?.length ? sanitizeKinds(doc.kinds) : undefined;
+  const slots = sanitizeSlots(doc.slots, docKindsHint);
+  const kinds = deriveKindsFromHydratedSlots(slots);
+  return {
+    userId: doc.userId,
+    kinds,
+    visibility: normalizeAvailabilityVisibility(doc.visibility),
+    region: doc.region,
+    areaId: doc.areaId,
+    note: doc.note,
+    slots,
+    updatedAt: doc.updatedAt.toISOString(),
+  };
+};
 
 /** Future-dated fixed slots listed on the explore map (`scheduleKind: fixed`). */
 export const countActiveFixedAvailabilityMapSlotsForUser = async (userId: string): Promise<number> => {
@@ -119,10 +144,8 @@ export const mergeMemberAvailabilityFixedSlotsMigration = async (
     fixedSlots: MemberAvailabilitySlotDTO[];
   }
 ): Promise<MemberAvailabilityDTO> => {
-  const kinds = sanitizeKinds(input.kinds);
-  const incoming = ensureAvailabilitySlotIds(
-    normalizeMemberAvailabilitySlotsForStorage(input.fixedSlots)
-  );
+  const docKindsHint = sanitizeKinds(input.kinds);
+  const incoming = sanitizeSlots(input.fixedSlots, docKindsHint);
   if (incoming.length === 0) {
     throw new ApiError(400, 'availability_slots_required', 'No fixed slots to migrate.');
   }
@@ -135,6 +158,7 @@ export const mergeMemberAvailabilityFixedSlotsMigration = async (
       s.scheduleKind === 'fixed' && !incomingTitles.has((s.title?.trim() ?? ''))
   );
   const slots = [...openAndOther, ...keptFixed, ...incoming];
+  const kinds = deriveKindsFromHydratedSlots(slots);
   const visibility = input.visibility ?? existing?.visibility ?? 'public';
   const now = new Date();
   const doc: MongoMemberAvailability = {
@@ -156,8 +180,10 @@ export const upsertMemberAvailability = async (
   userId: string,
   input: UpsertMemberAvailabilityInput
 ): Promise<MemberAvailabilityDTO> => {
-  const kinds = sanitizeKinds(input.kinds);
-  const slots = sanitizeSlots(input.slots ?? []);
+  const docKindsHint =
+    input.kinds && input.kinds.length > 0 ? sanitizeKinds(input.kinds) : undefined;
+  const slots = sanitizeSlots(input.slots ?? [], docKindsHint);
+  const kinds = deriveKindsFromHydratedSlots(slots);
   if (input.visibility !== 'hidden' && slots.length === 0) {
     throw new ApiError(
       400,
@@ -166,11 +192,12 @@ export const upsertMemberAvailability = async (
     );
   }
   const now = new Date();
+  const visibility = normalizeAvailabilityVisibility(input.visibility);
   const doc: MongoMemberAvailability = {
     _id: userId,
     userId,
     kinds,
-    visibility: input.visibility,
+    visibility,
     region: input.region?.trim() || null,
     areaId: input.areaId?.trim() || null,
     note: input.note?.trim() || null,
@@ -185,11 +212,15 @@ const viewerMaySeeAvailability = async (
   doc: MongoMemberAvailability,
   viewerUserId: string | null
 ): Promise<boolean> => {
-  if (doc.visibility === 'hidden' || doc.slots.length === 0) return false;
-  if (doc.visibility === 'public') return true;
+  const visibility = normalizeAvailabilityVisibility(doc.visibility);
+  if (visibility === 'hidden' || doc.slots.length === 0) return false;
+  if (visibility === 'public') return true;
   if (!viewerUserId) return false;
   if (doc.userId === viewerUserId) return true;
-  return areAcceptedBuddies(doc.userId, viewerUserId);
+  if (isFriendsOnlyAvailabilityVisibility(visibility)) {
+    return areAcceptedBuddies(doc.userId, viewerUserId);
+  }
+  return false;
 };
 
 export const getMemberAvailabilityPublicSnapshot = async (
@@ -212,7 +243,7 @@ export const getMemberAvailabilityPublicSnapshot = async (
           viewerUserId
         );
   return {
-    kinds: doc.kinds,
+    kinds: deriveKindsFromHydratedSlots(slots),
     region: maySeeLocation ? doc.region : null,
     areaId: maySeeLocation ? doc.areaId : null,
     note: doc.note,
@@ -246,7 +277,6 @@ export const loadExploreAvailabilityIndex = async (
   const docs = await collection()
     .find({
       visibility: { $ne: 'hidden' },
-      ...(query.kind ? { kinds: query.kind } : {}),
       ...(areaIdFilter ? { areaId: areaIdFilter } : {}),
     })
     .toArray();
@@ -264,7 +294,9 @@ export const loadExploreAvailabilityIndex = async (
       availabilitySlotOverlapsRange(slot, query.rangeStart, query.rangeEnd)
     );
     if (slots.length === 0) continue;
-    if (query.kind && !doc.kinds.includes(query.kind)) continue;
+    if (query.kind && !personMatchesAvailabilityKindQuery(slots, query.kind, query.rangeStart, query.rangeEnd)) {
+      continue;
+    }
 
     const maySee = await viewerMaySeeAvailability({ ...doc, slots }, query.viewerUserId);
     if (!maySee) continue;
@@ -288,18 +320,20 @@ export const loadExploreAvailabilityIndex = async (
     const region = maySeeLocation ? doc.region : null;
     const areaId = maySeeLocation ? doc.areaId : null;
 
+    const projectedKinds = discoveryKindsFromSlots(slots, query.rangeStart, query.rangeEnd);
+
     people.push({
       userId: doc.userId,
       displayName: profileDisplayNameFromAuthUser(user),
       avatarUrl: user.profile?.avatarUrl ?? null,
-      kinds: doc.kinds,
+      kinds: projectedKinds,
       region,
       areaId,
       slots,
       isBuddy,
     });
 
-    for (const kind of doc.kinds) {
+    for (const kind of projectedKinds) {
       if (query.kind && kind !== query.kind) continue;
       if (!maySeeLocation) continue;
       const clusterKey = `${areaId ?? region ?? 'any'}:${kind}`;

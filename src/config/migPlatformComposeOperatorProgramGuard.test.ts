@@ -25,7 +25,7 @@ describe('migPlatformComposeOperatorProgramGuard (compose + operator program)', 
     const upcoming = read('src/components/plan/PlanUpcomingView.tsx');
     expect(upcoming).not.toMatch(/PlanAvailabilitySection/);
     expect(read('src/plan/PlanPage.tsx')).toMatch(/planAvailabilityPath/);
-    expect(read('src/explore/ui/IntentOpenComposeSheet.tsx')).toMatch(/PlanAvailabilitySection/);
+    expect(read('src/explore/ui/IntentOpenComposeSheet.tsx')).toMatch(/AvailabilitySlotEditor/);
   });
 
   it('PCO-12: productNorthStar operator dashboard nav (not /hosting hub copy)', () => {

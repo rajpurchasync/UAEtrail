@@ -6,11 +6,13 @@ import {
 
 const signedInInput = (overrides: {
   profileComplete?: boolean;
+  guideProfileComplete?: boolean;
   canPublish?: boolean;
 }) =>
   memberPublishGateInputFromMemberStatus({
     viewerUserId: 'user-1',
     profileComplete: overrides.profileComplete ?? true,
+    guideProfileComplete: overrides.guideProfileComplete ?? true,
     canPublish: overrides.canPublish ?? true,
     hostTiers: { community: true, professional: false, business: false },
   });
@@ -23,6 +25,7 @@ describe('memberPublishGateHref', () => {
         memberPublishGateInputFromMemberStatus({
           viewerUserId: null,
           profileComplete: false,
+          guideProfileComplete: false,
           canPublish: false,
         })
       )
@@ -33,6 +36,7 @@ describe('memberPublishGateHref', () => {
         memberPublishGateInputFromMemberStatus({
           viewerUserId: null,
           profileComplete: false,
+          guideProfileComplete: false,
           canPublish: false,
         })
       )
@@ -46,6 +50,15 @@ describe('memberPublishGateHref', () => {
         signedInInput({ profileComplete: false, canPublish: false })
       )
     ).toBe('/welcome?redirect=%2Fexplore%3Fcompose%3Dhost%3Ahiking');
+  });
+
+  it('sends signup-complete users without guide profile to /profile/guide', () => {
+    expect(
+      memberPublishGateHref(
+        '/explore?compose=host:hiking',
+        signedInInput({ profileComplete: true, guideProfileComplete: false, canPublish: false })
+      )
+    ).toBe('/profile/guide?redirect=%2Fexplore%3Fcompose%3Dhost%3Ahiking');
   });
 
   it('sends complete but blocked users to profile hub', () => {

@@ -3,18 +3,25 @@ import type { HostTierFlags } from './host-publishing-tier.js';
 /** Subset of member status used for audience + Host / publish gates (avoid circular imports). */
 export type HostStatusAudienceSnapshot = {
   /**
-   * Member profile completion (DOB, gender, based-in) — required to **host/publish**.
+   * Signup profile completion (DOB, gender, based-in) — `/welcome` only.
    * Not required to join or participate on outings (signed-in member suffices).
    */
   profileComplete?: boolean;
+  /** Bio, languages, experience — gates community host / publish (`/profile/guide`). */
+  guideProfileComplete?: boolean;
   hostTiers: HostTierFlags;
   isCommunityHost: boolean;
 };
 
-/** Profile completion for host/publish gates. */
+/** Signup (`/welcome`) completion — participant ladder. */
 export const memberProfileComplete = (
   status: Pick<HostStatusAudienceSnapshot, 'profileComplete'> | null | undefined
 ): boolean => status?.profileComplete ?? false;
+
+/** Guide profile (`/profile/guide`) — community host + guide schedule capacity. */
+export const memberGuideProfileComplete = (
+  status: Pick<HostStatusAudienceSnapshot, 'guideProfileComplete'> | null | undefined
+): boolean => status?.guideProfileComplete ?? false;
 
 /**
  * Who the viewer is for **member / capability** gating (Host / publish, Pro, console).
@@ -44,6 +51,7 @@ export type PaidMembershipSku = 'none' | 'consumer_pro' | 'host_pro';
 export type MemberEntitlementId =
   | 'sign_in'
   | 'complete_profile'
+  | 'complete_guide_profile'
   | 'host_publish'
   | 'publishing_workspace'
   | 'paid_consumer_detail'
@@ -59,6 +67,7 @@ export type MemberEntitlementDenial = {
   gateReason:
     | 'sign_in'
     | 'profile_required'
+    | 'guide_profile_required'
     | 'join_required'
     | 'upgrade_required'
     | 'invite_only'
@@ -128,6 +137,9 @@ export const hostPublishEntitlementDenial = (input: {
   }
   if (audience === 'member_incomplete') {
     return { entitlement: 'complete_profile', gateReason: 'profile_required' };
+  }
+  if (!memberGuideProfileComplete(input.hostStatus)) {
+    return { entitlement: 'complete_guide_profile', gateReason: 'guide_profile_required' };
   }
   if (!input.canPublish) {
     return { entitlement: 'host_publish', gateReason: 'upgrade_required' };

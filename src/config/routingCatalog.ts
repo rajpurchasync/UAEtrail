@@ -25,6 +25,8 @@ export { PRO_MEMBERSHIP_PATH, proMembershipPath, proMembershipAnchorPath } from 
 export {
   PROFILE_PATH,
   PROFILE_EDIT_PATH,
+  PROFILE_GUIDE_PATH,
+  guideProfilePath,
   PROFILE_REVIEWS_PATH,
   APP_SETTINGS_PATH,
   APP_SETTINGS_DISPLAY_PATH,
@@ -233,6 +235,7 @@ export {
 
 export {
   planUpcomingPath,
+  MEMBER_SCHEDULE_CALENDAR_PATH,
   planHostedSchedulePath,
   planJoinedSchedulePath,
   planAvailabilityPath,

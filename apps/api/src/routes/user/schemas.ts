@@ -7,6 +7,7 @@ import {
 import { z } from 'zod';
 import { UserRole } from '../../domain/enums.js';
 import { personNameSchema } from '../../domain/person-name.js';
+import { guideExperienceSchema } from '../../domain/guide-profile.js';
 import { completeSignupProfileSchema, profileLanguagesSchema, USER_CITIES } from '../../domain/user-profile.js';
 import { GROUP_WALL_REACTION_KINDS } from '../../domain/group-wall-reactions.js';
 export const eventIdParamSchema = z.object({ id: z.string().min(1) });
@@ -78,6 +79,10 @@ export const updateProfileSchema = z
   city: z.enum(USER_CITIES).optional(),
   countryCode: completeSignupProfileSchema.shape.countryCode.optional(),
   languages: profileLanguagesSchema.optional(),
+  guideExperience: z.preprocess(
+    (value) => (value === '' || value === null ? undefined : value),
+    guideExperienceSchema.optional()
+  ),
 })
   .refine(
     (body) =>

@@ -11,6 +11,9 @@ export const PLAN_MAIN_TABS: { key: PlanMainTab; label: string }[] = [
 /** Upcoming feed filter — hosting includes fixed map availability slots. */
 export type PlanCommitmentFilter = 'hosting' | 'joined';
 
+/** Calendar scope — `all` shows busy (activities) + availability blocks together. */
+export type PlanCalendarScope = PlanCommitmentFilter | 'all';
+
 export type PlanUpcomingLayout = 'list' | 'calendar';
 
 export const parsePlanMainTab = (
@@ -34,6 +37,17 @@ export const parsePlanCommitmentFilter = (
   return 'joined';
 };
 
+export const parsePlanCalendarScope = (
+  filterRaw: string | null,
+  layout: PlanUpcomingLayout,
+  roleRaw: string | null,
+  canHost: boolean
+): PlanCalendarScope => {
+  if (filterRaw === 'all') return 'all';
+  if (layout === 'calendar' && !filterRaw && !roleRaw) return 'all';
+  return parsePlanCommitmentFilter(filterRaw, roleRaw, canHost);
+};
+
 export const parsePlanUpcomingLayout = (
   layoutRaw: string | null,
   lensRaw: string | null
@@ -45,7 +59,7 @@ export const parsePlanUpcomingLayout = (
 export const planMainTabPath = (
   tab: PlanMainTab = 'upcoming',
   options?: {
-    filter?: PlanCommitmentFilter;
+    filter?: PlanCommitmentFilter | 'all';
     layout?: PlanUpcomingLayout;
   }
 ): string => {
@@ -59,6 +73,8 @@ export const planMainTabPath = (
     params.set('filter', 'joined');
   } else if (options?.filter === 'hosting') {
     params.set('filter', 'hosting');
+  } else if (options?.filter === 'all') {
+    params.set('filter', 'all');
   }
   if (options?.layout === 'calendar') {
     params.set('layout', 'calendar');

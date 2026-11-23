@@ -7,8 +7,8 @@
  *   npm --workspace @uaetrail/api run migrate-seeking-to-availability -- --cancel-seeking
  */
 import { randomUUID } from 'node:crypto';
-import type { AvailabilityKind, MemberAvailabilitySlotDTO } from '@uaetrail/shared-types';
-import { AVAILABILITY_KINDS } from '@uaetrail/shared-types';
+import type { AvailabilityKind, MemberAvailabilitySlotDTO, ScheduleModality } from '@uaetrail/shared-types';
+import { AVAILABILITY_KINDS, isScheduleModality } from '@uaetrail/shared-types';
 import { ActivityStatus } from '../src/domain/enums.js';
 import { COLLECTIONS } from '../src/lib/collections.js';
 import { getMongoClient } from '../src/lib/mongo.js';
@@ -54,6 +54,9 @@ const activityTypeToKind = (activityType: string | null | undefined): Availabili
   return 'other';
 };
 
+const kindToScheduleModality = (kind: AvailabilityKind): ScheduleModality =>
+  isScheduleModality(kind) ? kind : 'other';
+
 const isoDay = (value: Date | string | null | undefined): string => {
   if (!value) return new Date().toISOString().slice(0, 10);
   const ms = value instanceof Date ? value.getTime() : Date.parse(value);
@@ -76,6 +79,8 @@ const buildFixedSlot = (row: SeekingActivityRow): MemberAvailabilitySlotDTO | nu
   const startAt = toIso(row.startAt) ?? `${isoDay(row.startAt)}T09:00:00.000Z`;
   const endAt = toIso(row.endAt) ?? startAt;
   const day = isoDay(row.startAt);
+  const kind = activityTypeToKind(row.activityType);
+  const modalities = [kindToScheduleModality(kind)];
 
   return {
     slotId: randomUUID(),
@@ -89,6 +94,8 @@ const buildFixedSlot = (row: SeekingActivityRow): MemberAvailabilitySlotDTO | nu
     longitude: lng,
     locationPrecision: 'specific',
     timeBand: null,
+    capacity: 'participant',
+    modalities,
   };
 };
 

@@ -14,11 +14,55 @@ export const AVAILABILITY_KINDS = [
 
 export type AvailabilityKind = (typeof AVAILABILITY_KINDS)[number];
 
-export type AvailabilityVisibility = 'public' | 'buddies' | 'hidden';
+export type AvailabilityVisibility = 'public' | 'friends' | 'hidden';
+
+/** Inbound legacy wire — normalized to `friends` on read/write (MIG-SCHEDULE-GUIDE A2b). */
+export type BuddiesVisibilityInboundWire = 'buddies';
+
+export const isFriendsOnlyAvailabilityVisibility = (
+  visibility: string | null | undefined
+): boolean => visibility === 'friends' || visibility === 'buddies';
+
+export const normalizeAvailabilityVisibility = (
+  visibility: string | null | undefined
+): AvailabilityVisibility => {
+  if (visibility === 'public' || visibility === 'hidden' || visibility === 'friends') {
+    return visibility;
+  }
+  if (visibility === 'buddies') return 'friends';
+  return 'hidden';
+};
 
 export type AvailabilityTimeBand = 'morning' | 'afternoon' | 'evening' | 'any';
 
 export type AvailabilityScheduleKind = 'open' | 'fixed';
+
+export type {
+  AvailabilityEngagementTerms,
+  AvailabilityPricingKind,
+  AvailabilitySlotCapacity,
+  AvailabilityTourShape,
+  ScheduleModality,
+} from './availability-slot.js';
+
+export {
+  SCHEDULE_MODALITIES,
+  AVAILABILITY_SLOT_CAPACITIES,
+  AVAILABILITY_PRICING_KINDS,
+  AVAILABILITY_TOUR_SHAPES,
+  assertNoGuideModality,
+  deriveLegacyKindsFromSlots,
+  hydrateMemberAvailabilitySlots,
+  isScheduleModality,
+  normalizeAvailabilitySlot,
+  validateMemberAvailabilityWrite,
+} from './availability-slot.js';
+
+import type {
+  AvailabilityEngagementTerms,
+  AvailabilitySlotCapacity,
+  ScheduleModality,
+} from './availability-slot.js';
 
 export interface MemberAvailabilitySlotDTO {
   /** Server-issued stable id for map pins and edits. */
@@ -40,6 +84,11 @@ export interface MemberAvailabilitySlotDTO {
   latitude?: number | null;
   longitude?: number | null;
   locationPrecision?: 'general' | 'specific' | null;
+  /** Participant (join) vs guide (supply) — default `participant`. */
+  capacity?: AvailabilitySlotCapacity | null;
+  /** Activity types for this block — never includes `guide`. */
+  modalities?: ScheduleModality[] | null;
+  engagementTerms?: AvailabilityEngagementTerms | null;
 }
 
 export const availabilityMapItemId = (userId: string, slotId: string): string =>
@@ -73,7 +122,8 @@ export interface MemberAvailabilityDTO {
 }
 
 export interface UpsertMemberAvailabilityInput {
-  kinds: AvailabilityKind[];
+  /** @deprecated Ignored on write — server derives from `slots[].modalities` (MIG-SG-B1). */
+  kinds?: AvailabilityKind[];
   visibility: AvailabilityVisibility;
   region?: string | null;
   areaId?: string | null;
@@ -267,6 +317,9 @@ export const memberAvailabilitySlotsAsDayPicks = (
         startDate: day,
         endDate: day,
         timeBand: slot.timeBand ?? 'any',
+        capacity: slot.capacity,
+        modalities: slot.modalities,
+        engagementTerms: slot.engagementTerms,
       });
     }
   }

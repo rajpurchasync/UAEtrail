@@ -6,6 +6,7 @@ export const PLAN_PATH = '/plan';
 /** Inbound bookmark only — redirects to {@link OPERATOR_OVERVIEW_PATH}. */
 export const HOSTING_HUB_PATH = '/hosting';
 export const PROFILE_PATH = '/profile';
+export const PROFILE_GUIDE_PATH = '/profile/guide';
 export const PROFILE_BADGES_PATH = '/profile/badges';
 export const GROUPS_PATH = '/groups';
 

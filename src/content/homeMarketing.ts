@@ -132,7 +132,7 @@ export const HOME_FAQ = {
       id: 'host',
       question: 'Can I host my own activity?',
       answer:
-        'Yes. Sign up, finish your profile, then use Host on the map to post a hike, camp, run, or group plan. Many members host buddy outings in the community. Paid or professional guiding goes through Pro membership in Profile when you\'re ready to publish those plans.'
+        'Yes. Sign up, finish your profile, then use Host on the map to post a hike, camp, run, or group plan. Many members host free outings in the community. Paid or professional guiding goes through Pro membership in Profile when you\'re ready to publish those plans.'
     }
   ] as const
 } as const;

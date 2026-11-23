@@ -7,26 +7,16 @@ import { createTenantRecord } from '../src/lib/tenant-store.js';
 import { TenantStatus, TenantType } from '../src/domain/enums.js';
 import { findAuthUserByEmail } from '../src/lib/auth-users-store.js';
 import { getMongoClient } from '../src/lib/mongo.js';
+import {
+  completeTestGuideProfile,
+  completeTestSignupProfile,
+} from './helpers/member-profile-test-helpers.js';
 
 let app: Express;
 
 beforeAll(async () => {
   app = await bootstrapTestApp();
 });
-
-const completeSignupProfile = async (accessToken: string) => {
-  const res = await request(app)
-    .patch('/api/me/profile/signup-details')
-    .set('Authorization', `Bearer ${accessToken}`)
-    .send({
-      dateOfBirth: '1990-01-15',
-      gender: 'prefer_not_to_say',
-      countryCode: 'AE',
-      languages: 'en',
-    });
-  expect(res.status).toBe(200);
-  expect(res.body.data.signupProfileComplete).toBe(true);
-};
 
 describe('buddy host access', () => {
   it('allows tenant owner without membership row on /publishing and backfills membership', async () => {
@@ -60,7 +50,7 @@ describe('buddy host access', () => {
     expect(membership?.role).toBe('TENANT_OWNER');
   });
 
-  it('sets canPublish and tenantId after signup profile is complete', async () => {
+  it('sets canPublish and tenantId after guide profile is complete', async () => {
     const visitor = await registerVerifiedVisitor(app, `buddy-publish-${Date.now()}`);
 
     const before = await request(app)
@@ -70,13 +60,23 @@ describe('buddy host access', () => {
     expect(before.body.data.publish.canPublish).toBe(false);
     expect(before.body.data.publish.isCommunityHost).toBe(false);
 
-    await completeSignupProfile(visitor.accessToken);
+    await completeTestSignupProfile(app, visitor.accessToken);
+
+    const afterSignup = await request(app)
+      .get('/api/me/status')
+      .set('Authorization', `Bearer ${visitor.accessToken}`);
+    expect(afterSignup.status).toBe(200);
+    expect(afterSignup.body.data.profileComplete).toBe(true);
+    expect(afterSignup.body.data.guideProfileComplete).toBe(false);
+    expect(afterSignup.body.data.publish.canPublish).toBe(false);
+
+    await completeTestGuideProfile(app, visitor.accessToken);
 
     const after = await request(app)
       .get('/api/me/status')
       .set('Authorization', `Bearer ${visitor.accessToken}`);
     expect(after.status).toBe(200);
-    expect(after.body.data.profileComplete).toBe(true);
+    expect(after.body.data.guideProfileComplete).toBe(true);
     expect(after.body.data.publish.canPublish).toBe(true);
     expect(after.body.data.publish.tenantId).toBeTruthy();
     expect(after.body.data.publish.hasGuideProfile).toBe(true);

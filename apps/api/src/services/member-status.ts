@@ -21,7 +21,11 @@ import {
   pickActivityTenant,
   resolveOwnedProfileType,
 } from '../lib/tenant-store.js';
-import { isMedicalSafetyProfileComplete, resolvePublishingProfileKind } from '@uaetrail/shared-types';
+import {
+  isGuideProfileComplete,
+  isMedicalSafetyProfileComplete,
+  resolvePublishingProfileKind,
+} from '@uaetrail/shared-types';
 import { medicalSafetyFieldsFromAuthProfile } from '../lib/member-medical-safety-profile.js';
 import type { HostStatusDTO, MemberProfileRoleLabel } from '@uaetrail/shared-types';
 import { inferTenantPublishingPurpose } from '../domain/tenant-publishing.js';
@@ -64,11 +68,12 @@ export const batchResolveMemberProfileRoleLabelsForDirectory = async (
   for (const user of users) {
     const role = user.role ?? UserRole.PARTICIPANT;
     const profileComplete = isSignupProfileComplete(user.profile);
+    const guideProfileComplete = isGuideProfileComplete(user.profile);
     const ownedTenants = mergeActiveTenantsForHostStatus(
       ownedByOwnerId.get(user._id) ?? [],
       membershipsByUser.get(user._id) ?? []
     );
-    const hostTiers = resolveHostTiersFromTenants(ownedTenants, profileComplete);
+    const hostTiers = resolveHostTiersFromTenants(ownedTenants, guideProfileComplete);
     const hasAgencyProfile = ownedTenants.some((tenant) => resolveOwnedProfileType(tenant) === 'agency');
     const hasShopProfile = ownedTenants.some((tenant) => resolveOwnedProfileType(tenant) === 'shop');
     labels.set(
@@ -97,6 +102,7 @@ export const resolveMemberStatus = async (userId: string): Promise<HostStatusDTO
   const isPlatformAdmin = role === UserRole.PLATFORM_ADMIN;
 
   const profileComplete = isSignupProfileComplete(user?.profile);
+  const guideProfileComplete = isGuideProfileComplete(user?.profile);
   const medicalSafetyProfileComplete = isMedicalSafetyProfileComplete(
     medicalSafetyFieldsFromAuthProfile(user?.profile)
   );
@@ -104,7 +110,7 @@ export const resolveMemberStatus = async (userId: string): Promise<HostStatusDTO
   let ownedByOwnerId = await listTenantsByOwnerId(userId);
   let memberships = await listActiveTenantMembershipsByUser(userId);
 
-  if (profileComplete) {
+  if (guideProfileComplete) {
     const mergedPre = mergeActiveTenantsForHostStatus(ownedByOwnerId, memberships);
     const activityPre = pickActivityTenant(mergedPre);
     if (!activityPre) {
@@ -151,9 +157,9 @@ export const resolveMemberStatus = async (userId: string): Promise<HostStatusDTO
     }
   }
 
-  const canPublish = isPlatformAdmin || (profileComplete && Boolean(activityTenant));
+  const canPublish = isPlatformAdmin || (guideProfileComplete && Boolean(activityTenant));
   const isCommunityHost = await isCommunityHostByUserId(userId);
-  const hostTiers = resolveHostTiersFromTenants(ownedTenants, profileComplete);
+  const hostTiers = resolveHostTiersFromTenants(ownedTenants, guideProfileComplete);
 
   let tenantType: HostStatusDTO['tenantType'] = null;
   let businessMode: HostStatusDTO['businessMode'] = null;
@@ -186,6 +192,7 @@ export const resolveMemberStatus = async (userId: string): Promise<HostStatusDTO
 
   return {
     profileComplete,
+    guideProfileComplete,
     medicalSafetyProfileComplete,
     isCommunityHost,
     hostTiers,

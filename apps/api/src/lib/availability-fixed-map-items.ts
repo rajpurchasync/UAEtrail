@@ -3,8 +3,10 @@ import {
   BWL_EXPLORE_MAP_SOURCE,
   availabilityMapItemId,
   isFixedAvailabilitySlot,
+  isScheduleModality,
   isValidAvailabilitySlot,
   memberProfilePath,
+  primaryMapPinKindFromSlot,
 } from '@uaetrail/shared-types';
 import { randomUUID } from 'node:crypto';
 import { profileDisplayNameFromAuthUser } from '../domain/person-name.js';
@@ -30,16 +32,11 @@ const collection = () =>
 
 const todayIsoUtc = (): string => new Date().toISOString().slice(0, 10);
 
-const primaryKind = (kinds: string[]): ExploreMapItemDTO['kind'] => {
-  const k = kinds[0];
-  if (k === 'hiking' || k === 'camping' || k === 'rideshare' || k === 'event') return k;
-  return 'hiking';
-};
-
-const slotTitle = (slot: MemberAvailabilitySlotDTO, kinds: string[]): string => {
+const slotTitle = (slot: MemberAvailabilitySlotDTO): string => {
   if (slot.title?.trim()) return slot.title.trim();
-  const label = kinds[0] ?? 'outdoor';
-  return `Available for ${label}`;
+  const label = slot.modalities?.find((m) => isScheduleModality(m)) ?? 'outdoors';
+  const capacity = slot.capacity === 'guide' ? 'Guide · ' : '';
+  return `${capacity}Available for ${label}`;
 };
 
 const formatDateTimeParts = (
@@ -97,9 +94,9 @@ export const buildAvailabilityFixedMapItems = async (input: {
 
       items.push({
         id: availabilityMapItemId(doc.userId, slotId),
-        kind: primaryKind(doc.kinds),
+        kind: primaryMapPinKindFromSlot(slot),
         source: BWL_EXPLORE_MAP_SOURCE.AVAILABILITY,
-        title: slotTitle(slot, doc.kinds),
+        title: slotTitle(slot),
         subtitle: displayName,
         latitude: lat,
         longitude: lng,

@@ -51,4 +51,18 @@ describe('migDiscoRegProgramGuard (MIG-DISCO-REG ops)', () => {
     expect(verifyApi).toMatch(/explore-seeking-activities-contract\.test\.ts/);
     expect(verifyApi).toMatch(/seeking-storage-ops-contract\.test\.ts/);
   });
+
+  it('DISCO-REG-05 (MIG-SG-B4): availability discovery reads project from slots', () => {
+    expect(existsSync(join(ROOT, 'packages/shared-types/src/availability-discovery-projection.ts'))).toBe(
+      true
+    );
+    const index = read('packages/shared-types/src/index.ts');
+    expect(index).toMatch(/availability-discovery-projection/);
+    const store = read('apps/api/src/lib/member-availability-store.ts');
+    expect(store).toMatch(/personMatchesAvailabilityKindQuery/);
+    expect(store).not.toMatch(/kinds:\s*query\.kind/);
+    expect(read('src/crew-discovery/panel/crewBrowse/CrewBrowseTabContent.tsx')).toMatch(
+      /filterAvailabilityPeopleByGuideCapacity/
+    );
+  });
 });

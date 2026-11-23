@@ -56,7 +56,7 @@ export const PRODUCT_PEOPLE_DISCOVERY_LABEL = PRODUCT_CREWS_TAB_LABEL;
 /** Social hub tab — discover people to add as friends. */
 export const PRODUCT_FIND_FRIENDS_HUB_LABEL = 'Find friends';
 export const PRODUCT_FRIENDS_SURFACE_LABEL = 'Friends';
-/** `AvailabilityVisibility` wire value `buddies` — friends-only calendar visibility. */
+/** `AvailabilityVisibility` wire value `friends` — friends-only calendar visibility (legacy `buddies` normalized on API). */
 export const PRODUCT_AVAILABILITY_VISIBILITY_FRIENDS_LABEL = 'Friends only';
 /** Friends + teams hub (desktop GO + hamburger; `/crews` My Crews). */
 export const PRODUCT_MY_CREW_SURFACE_TITLE = 'My crew';

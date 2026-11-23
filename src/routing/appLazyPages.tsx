@@ -104,6 +104,7 @@ export const SignUp = lazy(() => import('../pages/SignUp').then((m) => ({ defaul
 export const SignIn = lazy(() => import('../pages/SignIn').then((m) => ({ default: m.SignIn })));
 export const VerifyOTP = lazy(() => import('../pages/VerifyOTP').then((m) => ({ default: m.VerifyOTP })));
 export const WelcomeSignup = lazy(() => import('../pages/WelcomeSignup').then((m) => ({ default: m.WelcomeSignup })));
+export const ProfileGuide = lazy(() => import('../pages/ProfileGuide').then((m) => ({ default: m.ProfileGuide })));
 export const ForgotPassword = lazy(() => import('../pages/ForgotPassword').then((m) => ({ default: m.ForgotPassword })));
 export const AdminInbox = lazy(() => import('../pages/admin/Inbox').then((m) => ({ default: m.Inbox })));
 export const AdminSubmissions = lazy(() =>

@@ -1,4 +1,5 @@
-import type { AvailabilityKind, MemberAvailabilitySlotDTO } from '@uaetrail/shared-types';
+import type { AvailabilityKind, MemberAvailabilitySlotDTO, ScheduleModality } from '@uaetrail/shared-types';
+import { isScheduleModality } from '@uaetrail/shared-types';
 import { formatActivityLocal, parseLocalDateTime } from '../src/lib/datetime.js';
 import { COLLECTIONS } from '../src/lib/collections.js';
 import { getMongoClient } from '../src/lib/mongo.js';
@@ -12,12 +13,25 @@ export const SEED_FIXED_AVAILABILITY_SLOT_IDS = [
   'seed-demand-camp-fossil-rock',
   'seed-demand-event-kite-beach',
   'seed-demand-rideshare-dxb-rak',
+  'seed-demand-guide-wadi-shawka',
 ] as const;
 
 const DEFAULT_COUNTRY = 'AE';
 
 const rollForwardDaysFromNow = (daysAhead: number): string =>
   new Date(Date.now() + daysAhead * 86400000).toISOString().slice(0, 10);
+
+const seedFixedKindProjection = (
+  kind: AvailabilityKind
+): { capacity: 'participant' | 'guide'; modalities: ScheduleModality[] } => {
+  if (kind === 'guide') {
+    return { capacity: 'guide', modalities: ['hiking'] };
+  }
+  if (isScheduleModality(kind)) {
+    return { capacity: 'participant', modalities: [kind] };
+  }
+  return { capacity: 'participant', modalities: ['other'] };
+};
 
 export const upsertSeedAvailabilityFixedPin = async (input: {
   slotId: string;
@@ -33,6 +47,7 @@ export const upsertSeedAvailabilityFixedPin = async (input: {
 }): Promise<void> => {
   const time = input.time?.trim() || '09:00';
   const startAt = parseLocalDateTime(input.date, time, DEFAULT_COUNTRY).toISOString();
+  const projection = seedFixedKindProjection(input.kind);
   const slot: MemberAvailabilitySlotDTO = {
     slotId: input.slotId,
     scheduleKind: 'fixed',
@@ -45,10 +60,16 @@ export const upsertSeedAvailabilityFixedPin = async (input: {
     longitude: input.longitude,
     locationPrecision: 'specific',
     timeBand: null,
+    capacity: projection.capacity,
+    modalities: projection.modalities,
+    engagementTerms:
+      projection.capacity === 'guide'
+        ? { pricingKind: 'upon_request', tourShape: 'either' }
+        : null,
   };
 
   await mergeMemberAvailabilityFixedSlotsMigration(input.userId, {
-    kinds: [input.kind],
+    kinds: [...projection.modalities],
     visibility: 'public',
     areaId: input.areaId,
     note: input.note?.trim() || null,

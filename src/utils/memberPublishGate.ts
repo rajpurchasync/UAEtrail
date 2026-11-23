@@ -3,6 +3,7 @@ import {
   type HostStatusAudienceSnapshot,
   type HostTierFlags,
 } from '@uaetrail/shared-types';
+import { PROFILE_GUIDE_PATH } from '../config/surfacePaths';
 import { SIGNUP_PROFILE_WELCOME_PATH } from './signupProfileGate';
 import { signInPathForReturn } from './authReturnContext';
 
@@ -16,6 +17,7 @@ export type HostPublishGateInput = {
 export const memberPublishGateInputFromMemberStatus = (args: {
   viewerUserId: string | null;
   profileComplete: boolean;
+  guideProfileComplete: boolean;
   canPublish: boolean;
   isCommunityHost?: boolean;
   hostTiers?: HostTierFlags;
@@ -27,6 +29,7 @@ export const memberPublishGateInputFromMemberStatus = (args: {
       ? null
       : {
           profileComplete: args.profileComplete,
+          guideProfileComplete: args.guideProfileComplete,
           isCommunityHost: args.isCommunityHost ?? false,
           hostTiers:
             args.hostTiers ?? {
@@ -55,6 +58,8 @@ export const memberPublishGateHref = (
       return signInPathForReturn(safeReturn);
     case 'profile_required':
       return `${SIGNUP_PROFILE_WELCOME_PATH}${redirect}`;
+    case 'guide_profile_required':
+      return `${PROFILE_GUIDE_PATH}${redirect}`;
     case 'upgrade_required':
       return `/profile${redirect}`;
     default:

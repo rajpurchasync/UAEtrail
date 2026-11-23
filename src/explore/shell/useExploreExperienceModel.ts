@@ -49,6 +49,7 @@ export const useExploreExperienceModel = () => {
     status: hostStatus,
     canPublish,
     profileComplete,
+    guideProfileComplete,
     isCommunityHost,
     hostTiers,
     tenantId,
@@ -65,13 +66,14 @@ export const useExploreExperienceModel = () => {
           memberPublishGateInputFromMemberStatus({
             viewerUserId: user?.id ?? null,
             profileComplete,
+            guideProfileComplete,
             canPublish,
             isCommunityHost,
             hostTiers,
           })
         )
       ),
-    [navigate, user?.id, profileComplete, canPublish, isCommunityHost, hostTiers]
+    [navigate, user?.id, profileComplete, guideProfileComplete, canPublish, isCommunityHost, hostTiers]
   );
   const [searchParams, setSearchParams] = useProductSearchParams();
   const queryClient = useQueryClient();

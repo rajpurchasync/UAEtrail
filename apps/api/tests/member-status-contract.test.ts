@@ -21,6 +21,7 @@ describe('member status contract', () => {
   it('nests publish capabilities under publish on /me/status wire (no flat duplicate)', () => {
     const dto = buildMemberStatusDto({
       profileComplete: true,
+      guideProfileComplete: true,
       medicalSafetyProfileComplete: true,
       isCommunityHost: false,
       hostTiers: { community: true, professional: false, business: false },
@@ -44,6 +45,7 @@ describe('member status contract', () => {
     expect(dto.publish.canAccessPublishingWorkspace).toBe(true);
     expect(dto.publish.isPlatformStaff).toBe(false);
     expect(dto.profileComplete).toBe(true);
+    expect(dto.guideProfileComplete).toBe(true);
     expect(dto.profileRoleLabel).toBe('community_member');
     expect('canPublish' in dto).toBe(false);
     expect('signupProfileComplete' in dto).toBe(false);
@@ -55,6 +57,7 @@ describe('member status contract', () => {
   it('exposes isPlatformStaff under publish (DMCP Phase 1)', () => {
     const dto = buildMemberStatusDto({
       profileComplete: true,
+      guideProfileComplete: true,
       medicalSafetyProfileComplete: true,
       isCommunityHost: false,
       hostTiers: { community: false, professional: false, business: false },

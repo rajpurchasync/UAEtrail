@@ -2,7 +2,7 @@
  * Canonical product vocabulary — three axes (do not conflate):
  *
  * 1. **UI actor labels** — **Host** = individual on an outing; **Guide / Pro host** = individual Pro on
- *    `/member/:userId`; **Operator** = shop or agency **business** (tenant profile), not the buddy host.
+ *    `/member/:userId`; **Operator** = shop or agency **business** (tenant profile), not the community host ladder.
  * 2. **Capabilities** — **Host** / **publish** (`GET /me/status` → `publish.*`, `canPublish`);
  *    not HTTP personas or duplicate `/me/publishing-*` routes.
  * 3. **Gates** — **`profileComplete`** to host/publish; **signed in** suffices to participate

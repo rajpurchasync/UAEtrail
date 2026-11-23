@@ -12,8 +12,12 @@ const parseIso = (iso: string): { year: number; month: number; day: number } => 
   return { year, month: month - 1, day };
 };
 
-const dotClass: Record<'available' | 'hosting' | 'mapSlot' | 'joined' | 'requested', string> = {
+const dotClass: Record<
+  'available' | 'guideBlock' | 'hosting' | 'mapSlot' | 'joined' | 'requested',
+  string
+> = {
   available: 'bg-emerald-500',
+  guideBlock: 'bg-teal-600',
   hosting: 'bg-amber-500',
   mapSlot: 'bg-violet-500',
   joined: 'bg-sky-500',
@@ -23,6 +27,7 @@ const dotClass: Record<'available' | 'hosting' | 'mapSlot' | 'joined' | 'request
 const DayDots = ({ markers }: { markers: PlanCalendarDayMarkers }) => {
   const keys: Array<keyof typeof dotClass> = [];
   if (markers.available) keys.push('available');
+  if (markers.guideBlock) keys.push('guideBlock');
   if (markers.hosting) keys.push('hosting');
   if (markers.mapSlot) keys.push('mapSlot');
   if (markers.joined) keys.push('joined');

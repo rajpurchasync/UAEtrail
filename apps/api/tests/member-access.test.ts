@@ -7,6 +7,7 @@ import {
 
 const baseHostStatus = {
   profileComplete: true,
+  guideProfileComplete: true,
   isCommunityHost: false,
   hostTiers: { community: true, professional: false, business: false },
 };
@@ -63,6 +64,16 @@ describe('hostPublishEntitlementDenial', () => {
         canPublish: false,
       })
     ).toMatchObject({ gateReason: 'profile_required' });
+  });
+
+  it('requires guide profile before host / publish', () => {
+    expect(
+      hostPublishEntitlementDenial({
+        viewerUserId: 'u1',
+        hostStatus: { ...baseHostStatus, guideProfileComplete: false },
+        canPublish: false,
+      })
+    ).toMatchObject({ gateReason: 'guide_profile_required' });
   });
 
   it('allows host / publish when canPublish', () => {

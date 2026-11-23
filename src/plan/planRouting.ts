@@ -50,8 +50,12 @@ export const planUpcomingPath = (
 ): string => {
   if (filter === 'hosting') return planHostingFilterPath();
   if (filter === 'joined') return planMainTabPath('upcoming', { filter: 'joined', layout });
+  if (filter === 'all') return planMainTabPath('upcoming', { filter: 'all', layout });
   return planMainTabPath('upcoming', { layout });
 };
+
+/** Unified member calendar — busy outings + availability blocks (MIG-SG-B3). */
+export const MEMBER_SCHEDULE_CALENDAR_PATH = planUpcomingPath('all', 'calendar');
 
 /** Organizing / operator console home (hosted schedule management). */
 export const planHostedSchedulePath = (): string => OPERATOR_OVERVIEW_PATH;

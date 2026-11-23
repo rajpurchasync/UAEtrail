@@ -44,6 +44,7 @@ export type AuthUserRecord = {
     city?: UserCity | null;
     countryCode?: UserCountryCode | null;
     languages?: string | null;
+    guideExperience?: string | null;
     profileVisibility?: 'public' | 'group_members' | 'private';
     fieldPrivacy?: Partial<import('@uaetrail/shared-types').ProfileFieldPrivacySettings>;
     dateOfBirthShare?: import('@uaetrail/shared-types').ProfileDateOfBirthShare;
@@ -279,6 +280,9 @@ export const updateAuthUserProfile = async (
   if (patch.city !== undefined) setFields['profile.city'] = patch.city ?? null;
   if (patch.countryCode !== undefined) setFields['profile.countryCode'] = patch.countryCode ?? null;
   if (patch.languages !== undefined) setFields['profile.languages'] = patch.languages ?? null;
+  if (patch.guideExperience !== undefined) {
+    setFields['profile.guideExperience'] = patch.guideExperience ?? null;
+  }
   if (patch.profileVisibility !== undefined) {
     setFields['profile.profileVisibility'] = patch.profileVisibility;
   }

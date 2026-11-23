@@ -1,4 +1,8 @@
-import { memberProfileComplete, type MemberStatusDTO } from '@uaetrail/shared-types';
+import {
+  memberGuideProfileComplete,
+  memberProfileComplete,
+  type MemberStatusDTO,
+} from '@uaetrail/shared-types';
 import { ApiError } from '../lib/api-error.js';
 import { canPublishFromMemberStatus } from '../lib/product-capability-gate.js';
 import { resolveMemberStatus } from './member-status.js';
@@ -15,7 +19,14 @@ export const assertMemberCanPublishActivities = async (
     throw new ApiError(
       403,
       'profile_incomplete',
-      'Complete your profile before publishing activities.'
+      'Complete your signup profile before publishing activities.'
+    );
+  }
+  if (!memberGuideProfileComplete(status)) {
+    throw new ApiError(
+      403,
+      'guide_profile_incomplete',
+      'Complete your guide profile before publishing activities.'
     );
   }
   const publishStatus = {

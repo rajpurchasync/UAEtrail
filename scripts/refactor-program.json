@@ -1,7 +1,7 @@
 {
   "version": 1,
   "description": "Platform program spine. Work unit = bounded context (manifest id). Eng schedule closed; ops gates: S10f consumer-detail QA, P5 SLO smoke, MIG-DISCO-REG Mongo migrate.",
-  "updated": "2026-10-18",
+  "updated": "2026-11-23",
   "authorization": {
     "approvedOn": "2026-10-17",
     "statement": "CTO coherence program (PCOH): complete (`MIG-COH-00`…`12`). DMCP eng verify complete (phases 0–8). P4b surface eng complete; ops: S10f staging QA, P5 SLO smoke, MIG-DISCO-REG migrate + strict storage gate.",
@@ -975,6 +975,58 @@
         "src/explore/compose.ts"
       ],
       "successMetric": "Closed 2026-11-22. Plan: .cursor/plans/people_crew_vocab_mig_2026.plan.md. Manifest v2: scripts/people-vocabulary-touchpoints.json. P5d crews_three_tabs plan. Follow-up: MIG-COMMUNITY-DISCOVER (planned), P7 wire cleanup (optional)."
+    },
+    {
+      "id": "MIG-SCHEDULE-GUIDE",
+      "phase": "P4b",
+      "status": "complete",
+      "owner": "product-eng",
+      "contextIds": [
+        "availability",
+        "member_identity",
+        "member_publish_capabilities",
+        "compose",
+        "discovery",
+        "social_graph"
+      ],
+      "apiRoots": [
+        "apps/api/src/services/member-status.ts",
+        "apps/api/src/services/me-availability-commands.ts",
+        "apps/api/src/services/me-availability-read.ts",
+        "apps/api/src/services/explore-availability-read.ts",
+        "apps/api/src/lib/availability-fixed-map-items.ts",
+        "apps/api/src/lib/discovery-catalog-builder.ts",
+        "packages/shared-types/src/member-availability.ts"
+      ],
+      "feRoots": [
+        "src/pages/WelcomeSignup.tsx",
+        "src/components/signup",
+        "src/components/profile",
+        "src/components/plan",
+        "src/plan",
+        "src/explore/ui/intentFixedFlowEngine.ts",
+        "src/explore/ui/IntentOpenComposeSheet.tsx",
+        "src/explore/ui/CreateAvailabilityFixedFlow.tsx",
+        "src/crew-discovery",
+        "src/config/memberAvailabilityLineageGuard.test.ts",
+        "src/config/surfacePaths.ts",
+        "src/content/upl-glossary.ts",
+        "apps/api/scripts/seed.ts",
+        "apps/api/scripts/seedConnectionsDemo.ts"
+      ],
+      "executionPhases": [
+        "MIG-SG-A1: status gates; welcome not host",
+        "MIG-SG-A2: /profile/guide wizard",
+        "MIG-SG-A2b: friends-only UPL; visibility friends",
+        "MIG-SG-B1: slot schema; drop kinds[]",
+        "MIG-SG-B2: unified AvailabilitySlotEditor",
+        "MIG-SG-B3: unified calendar; operator route",
+        "MIG-SG-B4: discovery projections",
+        "MIG-SG-C1: Pro terms + nudges",
+        "MIG-SG-D1: seed + Tier-1 + verify:system"
+      ],
+      "successMetric": "docs/SYSTEM_COHERENCE.md §8.10 exit criteria; delete §8.10; guideProfileComplete gates host; schedule slots capacity+modalities+terms; no buddy UPL; npm run verify:system",
+      "scheduleDoc": "docs/SYSTEM_COHERENCE.md §8.10 (remove when status=complete)"
     }
   ],
   "stranglerRules": [

@@ -22,6 +22,8 @@ describe('assertMemberCanPublishActivities', () => {
   it('rejects incomplete profile', async () => {
     mockedStatus.mockResolvedValue({
       profileComplete: false,
+      guideProfileComplete: false,
+      medicalSafetyProfileComplete: false,
       canPublish: false,
       isCommunityHost: false,
       hostTiers: { community: false, professional: false, business: false },
@@ -50,6 +52,8 @@ describe('assertMemberCanPublishActivities', () => {
   it('rejects paid publish without canHostPaidActivities', async () => {
     mockedStatus.mockResolvedValue({
       profileComplete: true,
+      guideProfileComplete: true,
+      medicalSafetyProfileComplete: true,
       canPublish: true,
       isCommunityHost: true,
       hostTiers: { community: true, professional: false, business: false },
@@ -77,9 +81,41 @@ describe('assertMemberCanPublishActivities', () => {
     });
   });
 
+  it('rejects signup complete but guide profile incomplete', async () => {
+    mockedStatus.mockResolvedValue({
+      profileComplete: true,
+      guideProfileComplete: false,
+      medicalSafetyProfileComplete: true,
+      canPublish: false,
+      isCommunityHost: false,
+      hostTiers: { community: false, professional: false, business: false },
+      profileRoleLabel: 'community_member',
+      canAccessPublishingWorkspace: false,
+      isPlatformStaff: false,
+      applicationStatus: 'none',
+      tenantId: null,
+      isHostRole: false,
+      hasTenant: false,
+      tenantType: null,
+      businessMode: null,
+      canHostPaidActivities: false,
+      hasGuideProfile: false,
+      hasAgencyProfile: false,
+      hasShopProfile: false,
+      ownedProfiles: [],
+    });
+
+    await expect(assertMemberCanPublishActivities('user-1')).rejects.toMatchObject({
+      statusCode: 403,
+      code: 'guide_profile_incomplete',
+    });
+  });
+
   it('allows when profile complete and canPublish', async () => {
     mockedStatus.mockResolvedValue({
       profileComplete: true,
+      guideProfileComplete: true,
+      medicalSafetyProfileComplete: true,
       canPublish: true,
       isCommunityHost: false,
       hostTiers: { community: true, professional: false, business: false },
@@ -105,6 +141,8 @@ describe('assertMemberCanPublishActivities', () => {
   it('allows paid publish when canHostPaidActivities', async () => {
     mockedStatus.mockResolvedValue({
       profileComplete: true,
+      guideProfileComplete: true,
+      medicalSafetyProfileComplete: true,
       canPublish: true,
       isCommunityHost: true,
       hostTiers: { community: true, professional: false, business: true },

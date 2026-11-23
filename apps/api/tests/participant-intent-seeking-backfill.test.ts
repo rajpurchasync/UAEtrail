@@ -76,8 +76,9 @@ describe('backfillSeekingActivitiesForActiveIntents', () => {
     expect(intentDoc?.status).toBe('fulfilled');
 
     const availability = await getMemberAvailability(user._id);
-    expect(availability?.slots.some((s) => s.slotId === intentId && s.scheduleKind === 'fixed')).toBe(
-      true
-    );
+    const fixed = availability?.slots.find((s) => s.slotId === intentId && s.scheduleKind === 'fixed');
+    expect(fixed).toBeDefined();
+    expect(fixed?.capacity).toBe('participant');
+    expect(fixed?.modalities?.length).toBeGreaterThan(0);
   });
 });

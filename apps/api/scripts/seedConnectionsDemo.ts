@@ -1,5 +1,5 @@
 /**
- * Demo buddy requests, buddy pairs, and follows for local QA.
+ * Demo friend requests, accepted friends, and follows for local QA.
  * Primary tester: visitor@uaetrails.app (Samira Khan).
  */
 import {
@@ -11,6 +11,12 @@ import { followUser } from '../src/lib/follow-store.js';
 import { COLLECTIONS } from '../src/lib/collections.js';
 import { getMongoClient } from '../src/lib/mongo.js';
 import { notifyMemberFollowed } from '../src/services/social-notifications.js';
+import {
+  normalizeMemberAvailabilitySlotsForStorage,
+  type AvailabilityEngagementTerms,
+  type AvailabilitySlotCapacity,
+  type ScheduleModality,
+} from '@uaetrail/shared-types';
 import { upsertMemberAvailability } from '../src/lib/member-availability-store.js';
 import { RequestStatus } from '../src/domain/enums.js';
 import crypto from 'node:crypto';
@@ -23,19 +29,34 @@ const isoDayOffset = (days: number): string => {
 
 const seedPeopleBrowseDemoAvailability = async (
   userId: string,
-  input: { kinds: ('hiking' | 'camping')[]; region: string; slotDays: { start: number; end: number } }
+  input: {
+    capacity: AvailabilitySlotCapacity;
+    modalities: ScheduleModality[];
+    engagementTerms?: AvailabilityEngagementTerms | null;
+    region: string;
+    slotDays: { start: number; end: number };
+    timeBand?: 'morning' | 'afternoon' | 'evening' | 'any';
+    note?: string | null;
+  }
 ): Promise<void> => {
+  const terms =
+    input.capacity === 'guide' ? input.engagementTerms ?? { pricingKind: 'free' as const } : null;
+  const slots = normalizeMemberAvailabilitySlotsForStorage([
+    {
+      startDate: isoDayOffset(input.slotDays.start),
+      endDate: isoDayOffset(input.slotDays.end),
+      timeBand: input.timeBand ?? 'any',
+      scheduleKind: 'open',
+      capacity: input.capacity,
+      modalities: input.modalities,
+      engagementTerms: terms,
+    },
+  ]);
   await upsertMemberAvailability(userId, {
-    kinds: input.kinds,
     visibility: 'public',
     region: input.region,
-    slots: [
-      {
-        startDate: isoDayOffset(input.slotDays.start),
-        endDate: isoDayOffset(input.slotDays.end),
-        timeBand: 'any',
-      },
-    ],
+    note: input.note?.trim() || null,
+    slots,
   });
 };
 
@@ -158,30 +179,47 @@ export const seedConnectionsDemo = async (input: ConnectionsDemoInput): Promise<
   }
 
   await seedPeopleBrowseDemoAvailability(input.visitor2Id, {
-    kinds: ['hiking', 'camping'],
+    capacity: 'participant',
+    modalities: ['hiking', 'camping'],
     region: 'Dubai',
     slotDays: { start: 1, end: 4 },
   });
   await seedPeopleBrowseDemoAvailability(input.guideId, {
-    kinds: ['hiking'],
+    capacity: 'guide',
+    modalities: ['hiking'],
+    engagementTerms: { pricingKind: 'upon_request', tourShape: 'private' },
     region: 'Sharjah',
     slotDays: { start: 2, end: 5 },
+    note: 'Licensed guide — open for Wadi Shawka and Jebel Jais day hikes.',
   });
   await seedPeopleBrowseDemoAvailability(input.hostId, {
-    kinds: ['camping', 'hiking'],
+    capacity: 'participant',
+    modalities: ['camping', 'hiking'],
     region: 'Ras Al Khaimah',
     slotDays: { start: 0, end: 2 },
   });
   await seedPeopleBrowseDemoAvailability(input.visitorId, {
-    kinds: ['hiking'],
+    capacity: 'participant',
+    modalities: ['hiking'],
     region: 'Dubai',
     slotDays: { start: 3, end: 6 },
+    timeBand: 'morning',
+    note: 'Flexible mornings — happy to match with a fixed map pin later in seed.',
+  });
+
+  await seedPeopleBrowseDemoAvailability(input.organizerId, {
+    capacity: 'guide',
+    modalities: ['hiking', 'event'],
+    engagementTerms: { pricingKind: 'free', tourShape: 'group', minParticipants: 4 },
+    region: 'Dubai',
+    slotDays: { start: 5, end: 9 },
+    note: 'Agency roster — available to pair crews with certified guides.',
   });
 
   await seedBuddyOnShawkaHike(input.guideId, input.organizerId);
 
   console.log(
-    '[seed] Connections demo seeded (buddies, follows, people browse availability, host↔guide buddy)'
+    '[seed] Connections demo seeded (friend requests, follows, people browse availability, host↔guide link)'
   );
 };
 
@@ -191,7 +229,7 @@ export const logConnectionsDemoPlaybook = (): void => {
     : '(set DEMO_ACCOUNT_PASSWORD in .env — see docs/DEV_RUN.md)';
   console.log(
     `Connections QA (log in as visitor@uaetrails.app ${passwordHint}):\n` +
-      '  • Find your crew → Available: Maya, Fatima, Omar, Samira (public slots; map date Anyday)\n' +
+      '  • Find your crew → Available: Maya, Fatima, Omar, Samira, Khalid (open slots); Guides filter → Fatima + Khalid\n' +
       '  • Friends going (host@): Fatima hosting Wadi Shawka (+10d) — set date to This month\n' +
       '  • Buddies: Fatima (guide@) + Maya (visitor2@)\n' +
       '  • Outgoing pending: Omar (host@) — cancel on /buddies (Sent) or his profile\n' +

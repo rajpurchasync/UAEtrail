@@ -1,16 +1,21 @@
 import type { ActivityDTO, MemberAvailabilitySlotDTO } from '@uaetrail/shared-types';
 import {
+  expandMemberAvailabilitySlotDays,
   formatExploreEventDateLabel,
   isFixedAvailabilitySlot,
-  memberAvailabilityCalendarDays,
+  isOpenAvailabilitySlot,
 } from '@uaetrail/shared-types';
+import type { AvailabilitySlotCapacity, ScheduleModality } from '@uaetrail/shared-types';
 import type { ActivityRequestView } from '../api/types';
 import { getRequestEventDate } from '../utils/activityDates';
 import { viewerIsActivityHostUser } from '../utils/viewerHostsActivity';
-import type { PlanCommitmentFilter } from './planTab';
+import type { PlanCalendarScope } from './planTab';
 
 export type PlanCalendarDayMarkers = {
+  /** Open availability block (participant capacity). */
   available: boolean;
+  /** Open availability block (guide capacity). */
+  guideBlock: boolean;
   hosting: boolean;
   /** Fixed `member_availability` map slot (not legacy `activityMode: seeking`). */
   mapSlot: boolean;
@@ -27,7 +32,18 @@ export type PlanCalendarJoinedDetail = {
   locationLine: string;
 };
 
+export type PlanCalendarBlockDetail = {
+  kind: 'block';
+  scheduleKind: 'open' | 'fixed';
+  capacity: AvailabilitySlotCapacity;
+  modalitiesLabel: string;
+  title?: string;
+  href?: string;
+  slotId?: string;
+};
+
 export type PlanCalendarDayDetail =
+  | PlanCalendarBlockDetail
   | { kind: 'available' }
   | { kind: 'hosting'; title: string; href: string; activityId: string }
   | { kind: 'mapSlot'; title: string; href: string; slotId?: string }
@@ -35,11 +51,17 @@ export type PlanCalendarDayDetail =
 
 export const emptyPlanCalendarDayMarkers = (): PlanCalendarDayMarkers => ({
   available: false,
+  guideBlock: false,
   hosting: false,
   mapSlot: false,
   joined: false,
   requested: false,
 });
+
+const modalityLabel = (modalities: ScheduleModality[] | null | undefined): string => {
+  const list = (modalities ?? []).filter(Boolean);
+  return list.length ? list.join(', ') : 'outdoors';
+};
 
 export const activityScheduleDay = (dateStr: string | null | undefined): string | null => {
   if (!dateStr?.trim()) return null;
@@ -82,24 +104,47 @@ export const buildPlanCalendarMaps = (input: BuildPlanCalendarInput) => {
   const markers = new Map<string, PlanCalendarDayMarkers>();
   const details = new Map<string, PlanCalendarDayDetail[]>();
 
-  for (const day of memberAvailabilityCalendarDays(input.availabilitySlots)) {
-    ensureDay(markers, details, day);
-    const m = markers.get(day)!;
-    m.available = true;
-    if (!details.get(day)!.some((d) => d.kind === 'available')) {
-      details.get(day)!.push({ kind: 'available' });
-    }
-  }
-
   for (const slot of input.availabilitySlots) {
+    if (isOpenAvailabilitySlot(slot)) {
+      const capacity: AvailabilitySlotCapacity =
+        slot.capacity === 'guide' ? 'guide' : 'participant';
+      const modalitiesLabel = modalityLabel(slot.modalities as ScheduleModality[] | undefined);
+      for (const day of expandMemberAvailabilitySlotDays(slot)) {
+        ensureDay(markers, details, day);
+        const m = markers.get(day)!;
+        if (capacity === 'guide') m.guideBlock = true;
+        else m.available = true;
+        const exists = details.get(day)!.some(
+          (d) =>
+            d.kind === 'block' &&
+            d.scheduleKind === 'open' &&
+            d.capacity === capacity &&
+            d.modalitiesLabel === modalitiesLabel
+        );
+        if (exists) continue;
+        details.get(day)!.push({
+          kind: 'block',
+          scheduleKind: 'open',
+          capacity,
+          modalitiesLabel,
+        });
+      }
+      continue;
+    }
+
     if (!isFixedAvailabilitySlot(slot)) continue;
     const day = activityScheduleDay(slot.startAt ?? slot.startDate);
     if (!day) continue;
     ensureDay(markers, details, day);
     const m = markers.get(day)!;
     m.mapSlot = true;
+    const capacity: AvailabilitySlotCapacity =
+      slot.capacity === 'guide' ? 'guide' : 'participant';
     details.get(day)!.push({
-      kind: 'mapSlot',
+      kind: 'block',
+      scheduleKind: 'fixed',
+      capacity,
+      modalitiesLabel: modalityLabel(slot.modalities as ScheduleModality[] | undefined),
       title: slot.title?.trim() || 'On the map',
       href: input.fixedAvailabilityManageHref(),
       slotId: slot.slotId,
@@ -165,13 +210,23 @@ export const buildPlanCalendarMaps = (input: BuildPlanCalendarInput) => {
   return { markers, details };
 };
 
-const HOSTING_KINDS = new Set<PlanCalendarDayDetail['kind']>(['available', 'hosting', 'mapSlot']);
+const HOSTING_KINDS = new Set<PlanCalendarDayDetail['kind']>([
+  'block',
+  'available',
+  'hosting',
+  'mapSlot',
+]);
 const JOINED_KINDS = new Set<PlanCalendarDayDetail['kind']>(['joined', 'requested']);
 
 const markersFromDetails = (rows: PlanCalendarDayDetail[]): PlanCalendarDayMarkers => {
   const m = emptyPlanCalendarDayMarkers();
   for (const row of rows) {
+    if (row.kind === 'block' && row.scheduleKind === 'open') {
+      if (row.capacity === 'guide') m.guideBlock = true;
+      else m.available = true;
+    }
     if (row.kind === 'available') m.available = true;
+    if (row.kind === 'block' && row.scheduleKind === 'fixed') m.mapSlot = true;
     if (row.kind === 'hosting') m.hosting = true;
     if (row.kind === 'mapSlot') m.mapSlot = true;
     if (row.kind === 'joined') m.joined = true;
@@ -182,10 +237,11 @@ const markersFromDetails = (rows: PlanCalendarDayDetail[]): PlanCalendarDayMarke
 
 /** Scope calendar to Upcoming Hosting vs Joined filter (no map discovery rows). */
 export const filterPlanCalendarByCommitment = (
-  _markers: Map<string, PlanCalendarDayMarkers>,
+  markers: Map<string, PlanCalendarDayMarkers>,
   details: Map<string, PlanCalendarDayDetail[]>,
-  filter: PlanCommitmentFilter
+  filter: PlanCalendarScope
 ): { markers: Map<string, PlanCalendarDayMarkers>; details: Map<string, PlanCalendarDayDetail[]> } => {
+  if (filter === 'all') return { markers, details };
   const allowed = filter === 'hosting' ? HOSTING_KINDS : JOINED_KINDS;
   const nextMarkers = new Map<string, PlanCalendarDayMarkers>();
   const nextDetails = new Map<string, PlanCalendarDayDetail[]>();

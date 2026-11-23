@@ -529,8 +529,10 @@ export interface OwnedHostProfileDTO {
  */
 /** Server resolver shape (`resolveMemberStatus`) — not the `GET /me/status` HTTP wire (`MemberStatusDTO`). */
 export interface HostStatusDTO {
-  /** Member profile completion (DOB, gender, based-in) — required to **host/publish**. */
+  /** Signup completion (DOB, gender, based-in) — `/welcome` only. */
   profileComplete: boolean;
+  /** Guide bio, languages, experience — gates community host / publish. */
+  guideProfileComplete: boolean;
   medicalSafetyProfileComplete: boolean;
   /** First map publish (activity or seeking post) — earns Host badge. */
   isCommunityHost: boolean;
@@ -590,6 +592,7 @@ export interface MemberPublishCapabilitiesDTO {
  */
 export type MemberStatusDTO = {
   profileComplete: boolean;
+  guideProfileComplete: boolean;
   /** Blood group, medical conditions, emergency contact — required to join outings. */
   medicalSafetyProfileComplete: boolean;
   profileRoleLabel: MemberProfileRoleLabel;
@@ -618,6 +621,7 @@ export const buildMemberPublishCapabilities = (
 
 export const buildMemberStatusDto = (status: HostStatusDTO): MemberStatusDTO => ({
   profileComplete: status.profileComplete,
+  guideProfileComplete: status.guideProfileComplete,
   medicalSafetyProfileComplete: status.medicalSafetyProfileComplete,
   profileRoleLabel: status.profileRoleLabel,
   publish: buildMemberPublishCapabilities(status),
@@ -1630,9 +1634,12 @@ export {
   resolvePublicPlaceMapViewerAccess,
 } from './catalog-viewer-access.js';
 
+export { isGuideProfileComplete, type GuideProfileFields } from './guide-profile.js';
+
 export {
   memberAudienceMayAttemptHostPublish,
   memberHasHostFootprintBadge,
+  memberGuideProfileComplete,
   memberProfileComplete,
   hostPublishEntitlementDenial,
   resolveMemberAudience,
@@ -1773,6 +1780,17 @@ export {
   parseAvailabilityMapItemId,
   isFixedAvailabilitySlot,
   isOpenAvailabilitySlot,
+  isFriendsOnlyAvailabilityVisibility,
+  normalizeAvailabilityVisibility,
+  SCHEDULE_MODALITIES,
+  AVAILABILITY_SLOT_CAPACITIES,
+  AVAILABILITY_PRICING_KINDS,
+  AVAILABILITY_TOUR_SHAPES,
+  deriveLegacyKindsFromSlots,
+  hydrateMemberAvailabilitySlots,
+  normalizeAvailabilitySlot,
+  validateMemberAvailabilityWrite,
+  isScheduleModality,
 } from './member-availability.js';
 export type { MemberAvailabilityDayBlock } from './member-availability.js';
 export type {
@@ -1787,7 +1805,29 @@ export type {
   MemberAvailabilityMatchPreviewDTO,
   MemberAvailabilitySlotDTO,
   UpsertMemberAvailabilityInput,
+  AvailabilityEngagementTerms,
+  AvailabilitySlotCapacity,
+  ScheduleModality,
+  AvailabilityPricingKind,
+  AvailabilityTourShape,
 } from './member-availability.js';
+
+export {
+  discoveryKindsFromSlots,
+  discoveryModalitiesFromSlots,
+  memberHasGuideCapacityInSlots,
+  personMatchesAvailabilityKindQuery,
+  primaryMapPinKindFromSlot,
+  slotsOverlappingRange,
+} from './availability-discovery-projection.js';
+
+export {
+  defaultGuideEngagementTerms,
+  formatEngagementTermsPricingLabel,
+  formatGuideEngagementTermsBrowseLine,
+  guideEngagementTermsBrowseLineFromSlots,
+  pickGuideEngagementTermsFromSlots,
+} from './availability-engagement-terms.js';
 
 export {
   MEMBER_MAP_PIN_ACTIVITY_TYPES,

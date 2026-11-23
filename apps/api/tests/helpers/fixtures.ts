@@ -46,7 +46,14 @@ export const createPublishedEventFixture = async (suffix: string): Promise<Publi
     status: UserStatus.ACTIVE,
     emailVerifiedAt: new Date(),
     referralCode: generateReferralCode(),
-    profile: { displayName: 'Test Organizer', phone: null, bio: null, avatarUrl: null }
+    profile: {
+      displayName: 'Test Organizer',
+      phone: null,
+      bio: 'Integration test guide — hosts published fixture activities.',
+      avatarUrl: null,
+      languages: 'English',
+      guideExperience: '5+ years hiking in the UAE.',
+    },
   });
 
   const tenant = await createTenantRecord({

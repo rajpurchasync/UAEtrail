@@ -2,7 +2,7 @@ import { TenantBusinessMode, TenantType, UserRole } from '../domain/enums.js';
 import { resolveHostTiersFromTenants } from '../domain/member-host-tiers.js';
 import { resolveMemberProfileRoleLabel } from '../domain/member-profile-label.js';
 import { wireMemberDisplayName } from '../domain/person-name.js';
-import { isSignupProfileComplete } from '../domain/user-profile.js';
+import { isGuideProfileComplete } from '@uaetrail/shared-types';
 import { resolveOwnedProfileType } from '../lib/tenant-store.js';
 import type {
   MemberProfileRoleLabel,
@@ -284,8 +284,8 @@ export async function buildPublicMemberProfile(
   const hostProfileKind = businessOperatorTenant
     ? resolveHostProfileKind(businessOperatorTenant)
     : null;
-  const profileComplete = isSignupProfileComplete(user.profile);
-  const hostTiers = resolveHostTiersFromTenants(linkedTenants, profileComplete);
+  const guideProfileComplete = isGuideProfileComplete(user.profile);
+  const hostTiers = resolveHostTiersFromTenants(linkedTenants, guideProfileComplete);
   const hasAgencyProfile = linkedTenants.some((t) => resolveOwnedProfileType(t) === 'agency');
   const hasShopProfile = linkedTenants.some((t) => resolveOwnedProfileType(t) === 'shop');
   const isCommunityHost = activitiesHosted > 0 || demandPosts > 0;

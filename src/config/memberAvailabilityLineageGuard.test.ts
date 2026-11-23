@@ -7,7 +7,9 @@ const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 describe('memberAvailabilityLineageGuard (MIG-DISCO-REG)', () => {
   it('AVAIL-LINE-01: fixed Find crew compose writes member_availability', () => {
     const engine = read('src/explore/ui/intentFixedFlowEngine.ts');
-    expect(engine).toMatch(/saveMyMemberAvailability/);
+    expect(engine).toMatch(/saveFixedAvailabilitySlot/);
+    expect(read('src/availability/availabilitySlotComposeEngine.ts')).toMatch(/saveMemberAvailability/);
+    expect(read('src/availability/saveMemberAvailability.ts')).toMatch(/putMyAvailability/);
     expect(engine).not.toMatch(/\/me\/seeking-posts/);
     expect(engine).not.toMatch(/createSeekingPost/);
     expect(engine).not.toMatch(/participantIntentId/);
@@ -94,6 +96,26 @@ describe('memberAvailabilityLineageGuard (MIG-DISCO-REG)', () => {
     expect(seed).toMatch(/upsertSeedAvailabilityFixedPin/);
     expect(seed).not.toMatch(/createSeekingActivityForIntent/);
     expect(seed).not.toMatch(/upsertSeedSeekingActivity/);
+  });
+
+  it('AVAIL-LINE-13: ops backfill/migrate fixed slots set capacity + modalities', () => {
+    const intents = read('apps/api/src/lib/participant-intents-store.ts');
+    expect(intents).toMatch(/capacity: 'participant'/);
+    expect(intents).toMatch(/modalities: \[intentKindToScheduleModality/);
+    const migrate = read('apps/api/scripts/migrate-seeking-to-availability.ts');
+    expect(migrate).toMatch(/capacity: 'participant'/);
+    expect(migrate).toMatch(/modalities,/);
+  });
+
+  it('AVAIL-LINE-12 (MIG-SG-D1): demo open availability uses slot capacity (not kinds[] guide)', () => {
+    const connections = read('apps/api/scripts/seedConnectionsDemo.ts');
+    expect(connections).toMatch(/capacity: 'guide'/);
+    expect(connections).toMatch(/capacity: 'participant'/);
+    expect(connections).not.toMatch(/kinds:\s*\[[^\]]*'guide'/);
+    const fixed = read('apps/api/scripts/seed-demo-availability-fixed.ts');
+    expect(fixed).toMatch(/seedFixedKindProjection/);
+    expect(fixed).toMatch(/capacity: projection\.capacity/);
+    expect(fixed).not.toMatch(/kinds:\s*\[input\.kind\]/);
   });
 
   it('AVAIL-LINE-16: retired seeking wishlist + graduate ops removed', () => {

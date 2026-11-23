@@ -1093,7 +1093,14 @@ async function main() {
 
   await updateAuthUserProfile(agencyGuide._id, {
     bio: 'Certified mountain guide — Jebel Jais, Wadi Shawka, and family-friendly dam loops.',
-    phone: '+971502223344'
+    phone: '+971502223344',
+    languages: 'English, Arabic',
+    guideExperience: 'Licensed UAE mountain guide — Wadi Shawka, Jebel Jais, and family trails.',
+  });
+
+  await updateAuthUserProfile(agencyOwner._id, {
+    languages: 'English, Urdu',
+    guideExperience: 'Agency lead — pairs mixed-ability crews with certified guides.',
   });
 
   const agencyTenant = await upsertTenant({
@@ -2136,6 +2143,7 @@ Share your live location and carry extra water in summer months.`
     seedDemandId('demand-camp-fossil-rock'),
     seedDemandId('demand-event-kite-beach'),
     seedDemandId('demand-rideshare-dxb-rak'),
+    seedDemandId('demand-guide-wadi-shawka'),
   ];
   await db().collection('participant_intents').deleteMany({
     _id: { $in: demandSeedIds },
@@ -2211,6 +2219,19 @@ Share your live location and carry extra water in summer months.`
     note: 'Need a ride to Jebel Jais hike — happy to share fuel.',
   });
 
+  await seedAvailabilityPin({
+    slotId: seedDemandId('demand-guide-wadi-shawka'),
+    userId: agencyOwner._id,
+    areaId: curatedAreaSeedId('wadiShawka'),
+    kind: 'guide',
+    title: 'Licensed guide for Wadi Shawka loop',
+    date: seedSeekingDate(7),
+    time: '06:30',
+    latitude: 25.1338,
+    longitude: 56.0572,
+    note: 'Agency crew pairing — need a certified guide for a mixed-ability group.',
+  });
+
   const availabilityScheduleRefresh = await refreshSeedAvailabilityFixedSchedules();
   console.log(`Availability demo schedule refresh: updated=${availabilityScheduleRefresh.updated}`);
 
@@ -2236,7 +2257,12 @@ Share your live location and carry extra water in summer months.`
   const { invalidateExploreMapCache } = await import('../src/lib/explore-map-cache.js');
   await invalidateExploreMapCache();
 
-  console.log('Explore map demo pins: supply (hiking, camping, event, rideshare) + demand (all four types) + shops + agency');
+  console.log(
+    'Explore map demo pins: supply (hiking, camping, event, rideshare) + availability fixed (hiking, camping, event, rideshare, guide) + shops + agency'
+  );
+  console.log(
+    'Find crew QA: open availability (visitor@ participant; guide@+organizer@ guide capacity slots) + fixed map pins (guide supply = capacity on Wadi Shawka pin)'
+  );
   console.log(
     'Catalog facilities: Hatta / Shawka / Jais / Al Qudra — map pins `facility:*` + nearby on /place/hatta-dam-loop, /place/hatta-hill-park-camp, …'
   );

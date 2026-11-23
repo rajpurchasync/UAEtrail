@@ -45,14 +45,14 @@ describe('buildPlanCalendarMaps', () => {
       hostingManageHref: (id) => `/plan?peek=${id}`,
     });
 
-    expect(markers.get('2026-10-15')).toMatchObject({ available: true });
+    expect(markers.get('2026-10-15')).toMatchObject({ available: true, guideBlock: false });
     expect(markers.get('2026-10-16')).toMatchObject({ joined: true });
     expect(markers.get('2026-10-17')).toMatchObject({ hosting: true });
     expect(markers.get('2026-10-18')).toMatchObject({ mapSlot: true });
-    expect(details.get('2026-10-15')?.some((d) => d.kind === 'available')).toBe(true);
+    expect(details.get('2026-10-15')?.some((d) => d.kind === 'block')).toBe(true);
     const joinedRow = details.get('2026-10-16')?.find((d) => d.kind === 'joined');
     expect(joinedRow).toMatchObject({ activityId: 'a-join', title: 'Sunrise hike' });
-    const crewRow = details.get('2026-10-18')?.find((d) => d.kind === 'mapSlot');
+    const crewRow = details.get('2026-10-18')?.find((d) => d.kind === 'block' && d.scheduleKind === 'fixed');
     expect(crewRow).toMatchObject({ title: 'Hatta crew', slotId: 'slot-1' });
   });
 
@@ -91,5 +91,29 @@ describe('buildPlanCalendarMaps', () => {
     const joined = filterPlanCalendarByCommitment(built.markers, built.details, 'joined');
     expect(joined.details.has('2026-10-17')).toBe(false);
     expect(joined.details.has('2026-10-16')).toBe(true);
+  });
+
+  it('filter all keeps hosting and joined rows', () => {
+    const built = buildPlanCalendarMaps({
+      availabilitySlots: [{ startDate: '2026-10-15', endDate: '2026-10-15' }],
+      joinedActivities: [
+        {
+          id: 'a-join',
+          title: 'Join',
+          date: '2026-10-16',
+          status: 'published',
+          hostUserId: 'x',
+        } as never,
+      ],
+      joinRequests: [],
+      hostedActivities: [],
+      viewerUserId: 'me',
+      activityHref: (id) => `/activity/${id}`,
+      fixedAvailabilityManageHref: () => '/plan',
+      hostingManageHref: (id) => `/plan?peek=${id}`,
+    });
+    const all = filterPlanCalendarByCommitment(built.markers, built.details, 'all');
+    expect(all.details.has('2026-10-15')).toBe(true);
+    expect(all.details.has('2026-10-16')).toBe(true);
   });
 });
