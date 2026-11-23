@@ -335,8 +335,8 @@ Track what is **spec** vs **shipped**. Update this table in the same PR that lan
 | Host publish — Find crew availability count notice (explore map banner; operator activities list) | ✅ | ✅ (`hostPublishAvailabilityNoticeMessage` + `GET /explore/people/availability`) |
 | Compose shell (`ComposeHost` — activity + place + intent wizards) | ✅ | ✅ (single `CreateFlowProvider`; crews FAB → `intent:open`) |
 | Explore **Locations** lens (legacy URL) | Alias of **Spots** — Area is **not** a pin | ✅ (`pinKind=locations` → places) |
-| Area match notifications (availability ↔ hosted in area) | ✅ | ✅ (`availability-hosted-match-notifications.ts` — `notifyAvailabilityHoldersInAreaOfHostedActivity`) |
-| Availability ↔ hosted (date + activity type; notify + FAB hosted preview) | ✅ | ✅ (`availability-hosted-match-notifications.ts`, `GET /me/availability/match-preview` → `hostedOutings` only) |
+| Area match notifications (availability ↔ hosted in area) | ✅ | ✅ (`services/matching/availability-hosted-match.ts` — `notifyAvailabilityHoldersInAreaOfHostedActivity`) |
+| Availability ↔ hosted (date + activity type; notify + FAB hosted preview) | ✅ | ✅ (`services/matching/availability-hosted-match.ts`, `GET /me/availability/match-preview` → `hostedOutings` only) |
 | **Find crew → Available** tab (all members with future slots in range) | ✅ | ✅ (`GET /explore/people/availability` — not match-preview) |
 
 **Current code:** Emit **`activity:*` \| `place:*` \| `intent:*`** only. Wizards: `hostingFlowEngine` + `hostingFlows` (activity), `addFlow` (place), `intentFixedFlowEngine` + `IntentOpenComposeSheet` (intent). Plan wishlist: `saveWishlistTarget`. Operator console: `/operator/overview` (`HostingHubView`).

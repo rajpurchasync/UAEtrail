@@ -1039,7 +1039,7 @@ Engineering migrations are **largely complete**; the file is **not** an active r
 | Wave | Scope | Gate |
 |------|--------|------|
 | **GW-1** | Compact `platform-program.json` ledger; remove `.cursor/plans`; drop normalize-archive shim | `governanceSurfaceGuard` |
-| **GW-2** | Retire API read-compat + notification shims (`wishlist-alerts`, `availability-hosted-match-notifications`) | matching + catalog guards |
+| **GW-2** | Retire matching re-export shims (`wishlist-alerts`, `availability-hosted-match-notifications`) — **complete** | `platformLayerMatchingGuard` · `governanceSurfaceGuard` GW2-01 |
 | **GW-3** | Collapse redundant `verify:*-spine` runners into `verify:system-coherence` only where duplicated | CI time / ownership |
 
 #### 8.6.1 Phases (outcomes)
@@ -1094,7 +1094,7 @@ Engineering migrations are **largely complete**; the file is **not** an active r
 | **MIG-SCHEDULE-GUIDE** | P4b | Guide ladder + availability slots (capacity + modalities) | **Complete** |
 | **MIG-PLATFORM-LAYER-SPINE** | P4b | Six consumer layers + crew discover/join/connect/plan split (`platform-layers.ts`) | **Complete** — PLS-0–5 |
 
-**Platform layers (MIG-PLATFORM-LAYER-SPINE):** **Publish** (supply) · **Discover** (read catalogs/feeds) · **Join** (hosted activity commit only) · **Connect** (Friends, clubs, chat) · **Plan** (wishlist, personal hub) · **Manage** (host/operator after publish). Machine schedule: `scripts/platform-layer-spine-touchpoints.json`. Backend **matching** context (`apps/api/src/services/matching/*` — shared predicates + notify; legacy shims `wishlist-alerts`, `availability-hosted-match-notifications`) — **no** consumer `/matching` route; reads stay on **Discover** / **Plan** HTTP. Phases: `platform-layer-spine-touchpoints.json` → `decisions.matching`.
+**Platform layers (MIG-PLATFORM-LAYER-SPINE):** **Publish** (supply) · **Discover** (read catalogs/feeds) · **Join** (hosted activity commit only) · **Connect** (Friends, clubs, chat) · **Plan** (wishlist, personal hub) · **Manage** (host/operator after publish). Machine schedule: `scripts/platform-layer-spine-touchpoints.json`. Backend **matching** context (`apps/api/src/services/matching/*` — predicates + notify; import `services/matching/index` only) — **no** consumer `/matching` route; reads stay on **Discover** / **Plan** HTTP. Phases: `platform-layer-spine-touchpoints.json` → `decisions.matching`.
 
 #### 8.7 Routing alignment (end-to-end — no redirect shims)
 

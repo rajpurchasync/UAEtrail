@@ -381,9 +381,7 @@
         "apps/api/src/services/matching/rank-map-explore.ts",
         "apps/api/src/services/matching/rank-map-explore-place.ts",
         "apps/api/src/services/matching/recommendation-wishlist-context.ts",
-        "apps/api/src/services/discover-map-recommendations.ts",
-        "apps/api/src/services/wishlist-alerts.ts",
-        "apps/api/src/services/availability-hosted-match-notifications.ts"
+        "apps/api/src/services/discover-map-recommendations.ts"
       ],
       "routeRegistrars": [],
       "feDomains": [],

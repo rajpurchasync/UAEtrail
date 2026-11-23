@@ -25,6 +25,18 @@ describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
     expect(read('package.json')).not.toMatch(/program:normalize-archive/);
   });
 
+  it('GW2-01: matching notify re-export shims removed (GW-2)', () => {
+    expect(existsSync(join(ROOT, 'apps/api/src/services/wishlist-alerts.ts'))).toBe(false);
+    expect(existsSync(join(ROOT, 'apps/api/src/services/availability-hosted-match-notifications.ts'))).toBe(
+      false
+    );
+    const manifest = JSON.parse(read('scripts/bounded-context-manifest.json')) as {
+      contexts: { id: string; apiFiles?: string[] }[];
+    };
+    const matching = manifest.contexts.find((c) => c.id === 'matching');
+    expect(matching?.apiFiles ?? []).not.toContain('apps/api/src/services/wishlist-alerts.ts');
+  });
+
   it('GW1-04: platform-program has archivePolicy; no MIG-PROGRAM-ARCHIVE row', () => {
     const program = JSON.parse(read('scripts/platform-program.json')) as {
       archivePolicy?: string;

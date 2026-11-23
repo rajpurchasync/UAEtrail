@@ -226,7 +226,7 @@ Private saves — **venue** (`locationId`) or **activity** (`activityId`) only. 
 | DELETE | `/me/wishlist/:id` | Remove row |
 | GET | `/me/wishlist/check` | Query `locationId` or `activityId` → `{ saved, wishlistItemId }` |
 
-Registration: `registerMeWishlistRoutes.ts` · store: `wishlist-store.ts` · match alerts: `wishlist-alerts.ts`. Hosted publish (`notifyWishlistForPublishedActivity`) notifies members who saved that catalog place (`locationId`, index `wishlist_locationId`) and members whose geographic/category watch matches the pin. Fixed availability save → `notifyWishlistForMemberAvailability`. Place name and host display name come from the stored place and profile; a missing place row skips the saved-place fan-out.
+Registration: `registerMeWishlistRoutes.ts` · store: `wishlist-store.ts` · match notify: `services/matching/wishlist-match-notify.ts`. Hosted publish (`notifyWishlistForPublishedActivity`) notifies members who saved that catalog place (`locationId`, index `wishlist_locationId`) and members whose geographic/category watch matches the pin. Fixed availability save → `notifyWishlistForMemberAvailability`. Place name and host display name come from the stored place and profile; a missing place row skips the saved-place fan-out.
 
 ---
 

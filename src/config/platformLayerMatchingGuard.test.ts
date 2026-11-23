@@ -33,8 +33,13 @@ describe('platformLayerMatchingGuard (PLS-4)', () => {
     expect(commands).toMatch(/from '\.\/matching\/index\.js'/);
     expect(commands).not.toMatch(/wishlist-alerts/);
     expect(commands).not.toMatch(/availability-hosted-match-notifications/);
-    const wishlistShim = read('apps/api/src/services/wishlist-alerts.ts');
-    expect(wishlistShim).toMatch(/\.\/matching\/wishlist-match-notify/);
+  });
+
+  it('LAYER-14b (GW-2): matching notify shims deleted — barrel only', () => {
+    expect(existsSync(join(ROOT, 'apps/api/src/services/wishlist-alerts.ts'))).toBe(false);
+    expect(existsSync(join(ROOT, 'apps/api/src/services/availability-hosted-match-notifications.ts'))).toBe(
+      false
+    );
   });
 
   it('LAYER-15: Plan match-preview uses matching predicates (not duplicate filter)', () => {
