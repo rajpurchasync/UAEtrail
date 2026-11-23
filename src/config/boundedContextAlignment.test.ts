@@ -59,7 +59,7 @@ describe('boundedContextAlignment (frontend + manifest)', () => {
         assigned.add(domain.replace(/\\/g, '/'));
       }
     }
-    const shims = new Set(['src/api/domains/memberPlan.ts']);
+    const shims = new Set<string>();
     const domainDir = join(ROOT, 'src/api/domains');
     const orphans: string[] = [];
     for (const name of readdirSync(domainDir)) {

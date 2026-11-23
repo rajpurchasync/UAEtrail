@@ -120,4 +120,18 @@ describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
     expect(existsSync(join(ROOT, 'scripts/align-routing-imports.mjs'))).toBe(false);
     expect(existsSync(join(ROOT, 'scripts/gw5-restructure.mjs'))).toBe(false);
   });
+
+  it('GW6-01: retired FE stubs and lazy re-exports removed', () => {
+    expect(existsSync(join(ROOT, 'src/pages/admin/Overview.tsx'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/components/plan/PlanCalendarSection.tsx'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/activity/detail/templates/activityConsumerDetailSectionStyles.ts'))).toBe(
+      false
+    );
+    expect(existsSync(join(ROOT, 'src/api/domains/placeRegistry.test.ts'))).toBe(false);
+    const lazy = read('src/routing/appLazyPages.tsx');
+    expect(lazy).not.toMatch(/export const AdminOverview\b/);
+    expect(lazy).not.toMatch(/export const Buddies\b/);
+    const availabilityApi = read('src/hooks/memberAvailabilityApi.ts');
+    expect(availabilityApi).not.toMatch(/saveMyMemberAvailability/);
+  });
 });

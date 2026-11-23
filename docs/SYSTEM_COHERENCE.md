@@ -1042,6 +1042,7 @@ Gate: **`npm run verify:platform-governance`**. Behavior stays in code + vitest 
 | **GW-3** | Spine orchestrators scorecard/API-only where `verify:domain:fe` already runs FE guards; `verify:system` runs domain **before** spines — **complete** | `governanceSurfaceGuard` GW3-01 · GW3-02 |
 | **GW-4** | Retire `platform-program.json` → **`platform-governance.json`** (ops/phases) · **`platform-migration-archive.json`** (closed MIG ledger) · **`platform-touchpoint-registry.json`** (active schedules) — **complete** | `governanceSurfaceGuard` GW4-01 · `verify:platform-governance` |
 | **GW-5** | **`scripts/` layout** — `governance/` · `verify/` · `lib/` · `ops/` · `dev/` · `archive/`; retire one-off root shims (`verify-platform-program`, `align-routing-imports`, `verify-hero-gutter`, …) — **complete** | `governanceSurfaceGuard` GW5-01 · GW5-02 · `scripts/README.md` |
+| **GW-6** | FE stub tail — admin `Overview` re-export · unused lazy aliases · detail style shim · dead availability save delegate · empty component dirs — **complete** | `governanceSurfaceGuard` GW6-01 |
 
 #### 8.6.1 Phases (outcomes)
 

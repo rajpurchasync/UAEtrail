@@ -4,7 +4,10 @@ import {
   PLACE_DETAIL_FORECAST_DAYS,
   nextIsoDaysFromToday,
 } from '../../detail/weather/weatherDateRange';
-import { CONSUMER_DETAIL_PANEL, CONSUMER_DETAIL_SECTION_TITLE } from '../../activity/detail/templates/activityConsumerDetailSectionStyles';
+import {
+  DETAIL_SCROLL_PANEL,
+  DETAIL_SCROLL_SECTION_TITLE,
+} from '../mobile/detailScrollSectionStyles';
 
 type Props = {
   lat: number;
@@ -38,7 +41,7 @@ export const PlaceDetailWeatherSection = ({
 
   const panel = (
     <div
-      className={`${CONSUMER_DETAIL_PANEL.logistics} min-w-0 dark:border-sky-900/45 dark:from-sky-950/25 dark:via-neutral-900 dark:to-neutral-950`}
+      className={`${DETAIL_SCROLL_PANEL.logistics} min-w-0 dark:border-sky-900/45 dark:from-sky-950/25 dark:via-neutral-900 dark:to-neutral-950`}
     >
       <ConsumerWeatherMultiDayBlock
         lat={lat}
@@ -60,7 +63,7 @@ export const PlaceDetailWeatherSection = ({
       aria-label="Weather"
       className={`scroll-mt-[max(0.5rem,env(safe-area-inset-top))] ${className}`}
     >
-      <h2 className={`mb-2 ${CONSUMER_DETAIL_SECTION_TITLE}`}>Weather</h2>
+      <h2 className={`mb-2 ${DETAIL_SCROLL_SECTION_TITLE}`}>Weather</h2>
       {panel}
     </section>
   );

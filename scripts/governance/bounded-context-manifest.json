@@ -429,7 +429,6 @@
         "src/pages/admin/Communities.tsx",
         "src/hooks/contentReportClientApi.ts",
         "src/hooks/adminAlertsClientApi.ts",
-        "src/pages/admin/Overview.tsx",
         "src/pages/admin/Inbox.tsx",
         "src/pages/admin/Submissions.tsx",
         "src/pages/admin/Places.tsx",

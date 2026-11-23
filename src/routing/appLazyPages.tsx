@@ -110,8 +110,6 @@ export const AdminInbox = lazy(() => import('../pages/admin/Inbox').then((m) => 
 export const AdminSubmissions = lazy(() =>
   import('../pages/admin/Submissions').then((m) => ({ default: m.Submissions }))
 );
-/** @deprecated Use AdminInbox */
-export const AdminOverview = lazy(() => import('../pages/admin/Inbox').then((m) => ({ default: m.Inbox })));
 export const AdminPlaces = lazy(() => import('../pages/admin/Places').then((m) => ({ default: m.Places })));
 export const AdminAreas = lazy(() => import('../pages/admin/Areas').then((m) => ({ default: m.Areas })));
 export const AreaDetailPage = lazy(() => import('../pages/AreaDetailPage').then((m) => ({ default: m.AreaDetailPage })));
@@ -204,8 +202,6 @@ export const MyCrewsPage = lazy(() =>
 export const CommunityClubDetailPage = lazy(() =>
   import('../pages/CommunityClubDetailPage').then((m) => ({ default: m.CommunityClubDetailPage }))
 );
-/** @deprecated Use {@link MyCrewsPage}. */
-export const Buddies = MyCrewsPage;
 export const SecurityPrivacy = lazy(() =>
   import('../pages/SecurityPrivacy').then((m) => ({ default: m.SecurityPrivacy }))
 );
