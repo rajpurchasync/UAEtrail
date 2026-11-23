@@ -1,13 +1,18 @@
 #!/usr/bin/env node
 /**
  * Validates scripts/refactor-program.json against repo paths and Tier-1 spine.
+ * Complete migrations: archivedAt only (no feRoots/apiRoots) — MIG-PROGRAM-ARCHIVE.
  * @see docs/SYSTEM_COHERENCE.md §8.6
  */
+import { execSync } from 'node:child_process';
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { stripNpmDevdirEnv, stripNpmDevdirFromProcess } from './strip-npm-devdir-env.mjs';
 
+stripNpmDevdirFromProcess();
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const childEnv = () => stripNpmDevdirEnv();
 const programPath = join(root, 'scripts/refactor-program.json');
 const coherencePath = join(root, 'docs/SYSTEM_COHERENCE.md');
 const manifestPath = join(root, 'scripts/bounded-context-manifest.json');
@@ -62,10 +67,29 @@ for (const migration of program.migrations ?? []) {
   if (migration.phase && !phaseIds.has(migration.phase)) {
     fail(`migration ${migration.id} references unknown phase ${migration.phase}`);
   }
-  for (const rel of [...(migration.feRoots ?? []), ...(migration.apiRoots ?? [])]) {
-    const abs = join(root, rel);
-    if (!existsSync(abs)) {
-      fail(`migration ${migration.id}: missing path ${rel}`);
+
+  if (migration.status === 'complete') {
+    if (!migration.archivedAt) {
+      fail(`complete migration ${migration.id}: missing archivedAt (run normalize-refactor-program-archive.mjs)`);
+    }
+    if (migration.feRoots?.length) {
+      fail(`complete migration ${migration.id}: feRoots not allowed after archive`);
+    }
+    if (migration.apiRoots?.length) {
+      fail(`complete migration ${migration.id}: apiRoots not allowed after archive`);
+    }
+    if (migration.executionPhases?.length) {
+      fail(`complete migration ${migration.id}: executionPhases not allowed after archive`);
+    }
+    continue;
+  }
+
+  if (migration.status === 'in_progress' || migration.status === 'planned') {
+    for (const rel of [...(migration.feRoots ?? []), ...(migration.apiRoots ?? [])]) {
+      const abs = join(root, rel);
+      if (!existsSync(abs)) {
+        fail(`migration ${migration.id}: missing path ${rel}`);
+      }
     }
   }
 }
@@ -79,6 +103,17 @@ for (const phase of gatedPhases) {
 
 if (failed) {
   console.error('\n[verify:refactor-program] FAILED');
+  process.exit(1);
+}
+
+try {
+  execSync('npx vitest run src/config/programArchiveGuard.test.ts', {
+    cwd: root,
+    stdio: 'inherit',
+    env: childEnv(),
+  });
+} catch {
+  console.error('\n[verify:refactor-program] programArchiveGuard FAILED');
   process.exit(1);
 }
 

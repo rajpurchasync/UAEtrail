@@ -42,7 +42,7 @@
     },
     "src/crew-discovery": {
       "lib": 6,
-      "..": 18,
+      "..": 19,
       "discover": 1,
       "config": 1,
       "content": 1,
@@ -54,7 +54,7 @@
     }
   },
   "byTarget": {
-    "..": 246,
+    "..": 247,
     "browse": 87,
     "crews": 9,
     "components": 5,

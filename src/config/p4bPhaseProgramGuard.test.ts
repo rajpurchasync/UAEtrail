@@ -16,15 +16,7 @@ describe('p4bPhaseProgramGuard (P4b phase eng closure)', () => {
     };
     const p4b = (program.migrations ?? []).filter((m) => m.phase === 'P4b');
     expect(p4b.length).toBeGreaterThan(0);
-    const allowedWip = new Set(['MIG-PLATFORM-LAYER-SPINE']);
     const open = p4b.filter((m) => m.status !== 'complete');
-    if (
-      open.length > 0 &&
-      open.length <= allowedWip.size &&
-      open.every((m) => allowedWip.has(m.id) && m.status === 'in_progress')
-    ) {
-      return;
-    }
     expect(open.map((m) => m.id)).toEqual([]);
   });
 

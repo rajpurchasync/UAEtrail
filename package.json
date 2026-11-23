@@ -64,6 +64,7 @@
     "verify:docs": "node scripts/verify-docs-tier1.mjs",
     "verify:routing-canon": "node scripts/verify-routing-canon.mjs",
     "verify:refactor-program": "node scripts/verify-refactor-program.mjs",
+    "program:normalize-archive": "node scripts/normalize-refactor-program-archive.mjs",
     "verify:authority-matrix": "node scripts/verify-authority-matrix.mjs && npx vitest run src/config/authorityMatrixGuard.test.ts",
     "verify:catalog-truth": "node scripts/verify-catalog-truth.mjs",
     "verify:discovery-graph": "node scripts/verify-discovery-graph.mjs",

@@ -1,11 +1,15 @@
 {
   "version": 1,
-  "description": "Platform program spine. Work unit = bounded context (manifest id). Eng schedule closed; ops gates: S10f consumer-detail QA, P5 SLO smoke, MIG-DISCO-REG Mongo migrate.",
+  "description": "Platform program spine (index). Complete MIG-* rows archived — paths in manifest + touchpoints JSON, not here.",
   "updated": "2026-11-23",
   "authorization": {
     "approvedOn": "2026-10-17",
     "statement": "CTO coherence program (PCOH): complete (`MIG-COH-00`…`12`). DMCP eng verify complete (phases 0–8). P4b surface eng complete; ops: S10f staging QA, P5 SLO smoke, MIG-DISCO-REG migrate + strict storage gate.",
-    "authorizedPhases": ["PCOH", "P4b", "P5"],
+    "authorizedPhases": [
+      "PCOH",
+      "P4b",
+      "P5"
+    ],
     "p2PlusRequires": [
       "P0.status is complete",
       "P1.status is complete",
@@ -81,7 +85,10 @@
       "owner": "platform",
       "targetWindowWeeks": "8-12",
       "authorization": "gated",
-      "exitCriteria": ["P2 complete", "No new business rules in route handlers (guard)"]
+      "exitCriteria": [
+        "P2 complete",
+        "No new business rules in route handlers (guard)"
+      ]
     },
     {
       "id": "P4b",
@@ -120,7 +127,10 @@
       "owner": "platform",
       "targetWindowWeeks": "4-6",
       "authorization": "gated",
-      "exitCriteria": ["PRE_DEPLOY_CHECKLIST SLO section signed", "slos[] baselined in staging"],
+      "exitCriteria": [
+        "PRE_DEPLOY_CHECKLIST SLO section signed",
+        "slos[] baselined in staging"
+      ],
       "slos": [
         {
           "id": "SLO-EXPLORE-MAP",
@@ -151,7 +161,10 @@
       "owner": "platform",
       "targetWindowWeeks": "ongoing",
       "authorization": "gated",
-      "exitCriteria": ["§7 register: no open P0-severity rows", "S10g decision recorded"]
+      "exitCriteria": [
+        "§7 register: no open P0-severity rows",
+        "S10g decision recorded"
+      ]
     }
   ],
   "migrations": [
@@ -161,7 +174,8 @@
       "status": "complete",
       "owner": "platform",
       "contextIds": [],
-      "successMetric": "repo-census-baseline.json"
+      "successMetric": "repo-census-baseline.json",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-P0-DOCS",
@@ -169,16 +183,22 @@
       "status": "complete",
       "owner": "platform",
       "contextIds": [],
-      "successMetric": "experiment cap + archive stubs"
+      "successMetric": "experiment cap + archive stubs",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-MANIFEST-DOMAINS",
       "phase": "P0",
       "status": "complete",
       "owner": "platform",
-      "contextIds": ["participation", "media", "engagement", "availability"],
-      "feRoots": ["scripts/bounded-context-manifest.json"],
-      "successMetric": "boundedContextAlignment: all domain modules assigned; §3.1 matches manifest"
+      "contextIds": [
+        "participation",
+        "media",
+        "engagement",
+        "availability"
+      ],
+      "successMetric": "boundedContextAlignment: all domain modules assigned; §3.1 matches manifest",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-W0-SYSTEM-AUDIT",
@@ -186,107 +206,85 @@
       "status": "complete",
       "owner": "platform",
       "contextIds": [],
-      "feRoots": ["scripts/system-audit.mjs"],
-      "apiRoots": ["apps/api/src/routes"],
-      "successMetric": "system-audit-baseline.json; mounted *Router + registerActivityRoute in route graph; 0 route-layer write violations"
+      "successMetric": "system-audit-baseline.json; mounted *Router + registerActivityRoute in route graph; 0 route-layer write violations",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-CPC-P1",
       "phase": "P1",
       "status": "complete",
       "owner": "product-eng",
-      "contextIds": ["places", "facilities", "compose"],
-      "apiRoots": ["apps/api/src/services/place-catalog.ts", "apps/api/src/lib/facilities-store.ts"],
-      "successMetric": "CPC-7+; single catalog read/write vocabulary (C26)"
+      "contextIds": [
+        "places",
+        "facilities",
+        "compose"
+      ],
+      "successMetric": "CPC-7+; single catalog read/write vocabulary (C26)",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-DISCO-REG",
       "phase": "P1",
       "status": "complete",
       "owner": "discovery",
-      "contextIds": ["discovery", "availability", "compose"],
-      "apiRoots": [
-        "apps/api/src/lib/availability-fixed-map-items.ts",
-        "apps/api/src/lib/discovery-catalog-builder.ts",
-        "apps/api/src/services/me-availability-commands.ts",
-        "apps/api/scripts/migrate-seeking-to-availability.ts"
+      "contextIds": [
+        "discovery",
+        "availability",
+        "compose"
       ],
-      "feRoots": [
-        "src/explore/compose.ts",
-        "src/explore/ui/intentFixedFlowEngine.ts",
-        "src/hooks/exploreAvailabilityCatalogClientApi.ts",
-        "src/explore/ui/peek/availability/AvailabilityPeekActions.tsx",
-        "src/discovery/discoveryOfferRideshareDispatch.ts",
-        "src/activity/availabilityMapPeekParity.test.ts",
-        "src/discovery/discoverySummaryOfferRideshareParity.test.ts",
-        "src/config/migDiscoRegProgramGuard.test.ts"
-      ],
-      "successMetric": "Eng: availability + migDiscoRegProgramGuard + residue tests in verify:domain. Ops: migrate-seeking-to-availability + mig-disco-reg:ops:gate (SEEKING_STORAGE_RUNBOOK)"
+      "successMetric": "Eng: availability + migDiscoRegProgramGuard + residue tests in verify:domain. Ops: migrate-seeking-to-availability + mig-disco-reg:ops:gate (SEEKING_STORAGE_RUNBOOK)",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-PLAN-HUB",
       "phase": "P0",
       "status": "complete",
       "owner": "product-eng",
-      "contextIds": ["engagement", "availability", "publishing_workspace"],
-      "feRoots": ["src/plan", "src/member-plan"],
-      "successMetric": "One of many surfaces — not program center"
+      "contextIds": [
+        "engagement",
+        "availability",
+        "publishing_workspace"
+      ],
+      "successMetric": "One of many surfaces — not program center",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-CLIENT-QUERY",
       "phase": "P3",
       "status": "complete",
       "owner": "platform",
-      "contextIds": ["discovery", "participation", "member_identity", "engagement", "communication"],
-      "feRoots": [
-        "src/hooks",
-        "src/explore/useExplorePublishedAreas.ts",
-        "src/routing/inboundBookmarkRedirects.tsx",
-        "src/pages/ShopPublic.tsx",
-        "src/pages/ProfileBadges.tsx",
-        "src/explore/ui/HostingPublishSuccessSheet.tsx",
-        "src/pages/ProfileEdit.tsx",
-        "src/pages/Profile.tsx",
-        "src/hooks/useMemberAvailability.ts",
-        "src/pages/MemberProfile.tsx",
-        "src/hooks/useMemberProfilePage.ts",
-        "src/pages/MyCrews.tsx",
-        "src/hooks/useMeBuddiesNetwork.ts",
-        "src/pages/ActivityDetail.tsx",
-        "src/hooks/useActivityHostJoinRequests.ts",
-        "src/pages/Messages.tsx",
-        "src/hooks/useMessagesInbox.ts",
-        "src/pages/JourneyMapPage.tsx",
-        "src/hooks/useMemberJourneyMap.ts",
-        "src/hooks/usePlaceDetailPage.ts"
+      "contextIds": [
+        "discovery",
+        "participation",
+        "member_identity",
+        "engagement",
+        "communication"
       ],
-      "successMetric": "Query keys + domain hooks; no mount-fetch on touched surfaces"
+      "successMetric": "Query keys + domain hooks; no mount-fetch on touched surfaces",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-OUTBOX",
       "phase": "P2",
       "status": "complete",
       "owner": "platform",
-      "contextIds": ["communication", "engagement"],
-      "apiRoots": [
-        "apps/api/src/lib/schedule-side-effect.ts",
-        "apps/api/src/lib/side-effect-outbox-store.ts",
-        "apps/api/src/services/side-effect-outbox-processor.ts"
+      "contextIds": [
+        "communication",
+        "engagement"
       ],
-      "successMetric": "Outbox for notifications and fan-out (SIDE_EFFECT_OUTBOX=1)"
+      "successMetric": "Outbox for notifications and fan-out (SIDE_EFFECT_OUTBOX=1)",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-EXPLORE-READ",
       "phase": "P2",
       "status": "complete",
       "owner": "discovery",
-      "contextIds": ["discovery"],
-      "feRoots": ["src/explore", "src/discovery"],
-      "apiRoots": [
-        "apps/api/src/lib/explore-map.ts",
-        "apps/api/src/lib/explore-map-route.ts"
+      "contextIds": [
+        "discovery"
       ],
-      "successMetric": "Map presentation is the card copy; no second discoveryCard payload"
+      "successMetric": "Map presentation is the card copy; no second discoveryCard payload",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-CQRS-ROUTES",
@@ -302,351 +300,163 @@
         "social_graph",
         "engagement"
       ],
-      "apiRoots": [
-        "apps/api/src/services/area-public-read.ts",
-        "apps/api/src/services/facility-public-read.ts",
-        "apps/api/src/services/explore-availability-read.ts",
-        "apps/api/src/services/member-public-read.ts",
-        "apps/api/src/services/activity-public-read.ts",
-        "apps/api/src/services/activity-participation-commands.ts",
-        "apps/api/src/routes/user/registerPublicAreaRoutes.ts",
-        "apps/api/src/routes/user/registerPublicFacilityRoutes.ts",
-        "apps/api/src/routes/user/registerExploreAvailabilityRoutes.ts",
-        "apps/api/src/routes/user/registerPublicMemberRoutes.ts",
-        "apps/api/src/routes/user/registerPublicActivityRoutes.ts",
-        "apps/api/src/services/buddy-me-read.ts",
-        "apps/api/src/services/buddy-me-commands.ts",
-        "apps/api/src/services/me-wishlist-read.ts",
-        "apps/api/src/services/me-wishlist-commands.ts",
-        "apps/api/src/routes/user/registerBuddyRoutes.ts",
-        "apps/api/src/routes/user/registerMeWishlistRoutes.ts",
-        "apps/api/src/services/entity-follow-read.ts",
-        "apps/api/src/services/entity-follow-commands.ts",
-        "apps/api/src/services/member-follow-read.ts",
-        "apps/api/src/services/member-follow-commands.ts",
-        "apps/api/src/routes/user/registerEntityFollowRoutes.ts",
-        "apps/api/src/routes/user/registerFollowRoutes.ts",
-        "apps/api/src/services/place-public-read.ts",
-        "apps/api/src/services/place-premium-commands.ts",
-        "apps/api/src/routes/user/registerPublicPlaceRoutes.ts",
-        "apps/api/src/services/tenant-public-read.ts",
-        "apps/api/src/routes/user/registerPublicTenantRoutes.ts",
-        "apps/api/src/services/me-notifications-read.ts",
-        "apps/api/src/services/me-notifications-commands.ts",
-        "apps/api/src/routes/user/registerNotificationRoutes.ts",
-        "apps/api/src/services/member-discovery-me-read.ts",
-        "apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts",
-        "apps/api/src/services/me-availability-read.ts",
-        "apps/api/src/services/me-availability-commands.ts",
-        "apps/api/src/routes/user/registerMeAvailabilityRoutes.ts",
-        "apps/api/src/services/me-goals-read.ts",
-        "apps/api/src/services/me-goals-commands.ts",
-        "apps/api/src/routes/user/registerMeGoalsRoutes.ts",
-        "apps/api/src/services/me-activity-participation-read.ts",
-        "apps/api/src/services/activity-group-chat-me-commands.ts",
-        "apps/api/src/services/me-account-session-read.ts",
-        "apps/api/src/services/me-account-session-commands.ts",
-        "apps/api/src/routes/user/registerMeEngagementRoutes.ts",
-        "apps/api/src/services/host-application-me-read.ts",
-        "apps/api/src/services/host-application-me-commands.ts",
-        "apps/api/src/routes/user/registerHostApplicationRoutes.ts",
-        "apps/api/src/services/me-place-submit-read.ts",
-        "apps/api/src/services/me-place-submit-commands.ts",
-        "apps/api/src/routes/user/registerMeSubmittedPlaceRoutes.ts",
-        "apps/api/src/services/me-facility-submit-commands.ts",
-        "apps/api/src/routes/user/registerMeFacilityRoutes.ts",
-        "apps/api/src/services/me-map-pins-read.ts",
-        "apps/api/src/services/me-map-pins-commands.ts",
-        "apps/api/src/routes/user/registerMeMapPinsRoutes.ts",
-        "apps/api/src/services/social-groups-me-read.ts",
-        "apps/api/src/services/social-groups-me-commands.ts",
-        "apps/api/src/routes/user/registerGroupRoutes.ts",
-        "apps/api/src/services/publishing-activity-request-read.ts",
-        "apps/api/src/services/publishing-activity-request-commands.ts",
-        "apps/api/src/routes/publishing/registerPublishingActivityRequestRoutes.ts",
-        "apps/api/src/services/publishing-activity-participant-read.ts",
-        "apps/api/src/services/publishing-activity-participant-commands.ts",
-        "apps/api/src/routes/publishing/registerPublishingActivityParticipantRoutes.ts",
-        "apps/api/src/services/publishing-team-read.ts",
-        "apps/api/src/services/publishing-team-commands.ts",
-        "apps/api/src/routes/publishing/registerPublishingTeamRoutes.ts",
-        "apps/api/src/services/publishing-submitted-location-read.ts",
-        "apps/api/src/services/publishing-submitted-location-commands.ts",
-        "apps/api/src/routes/publishing/registerPublishingSubmittedLocationRoutes.ts",
-        "apps/api/src/services/admin-audit-read.ts",
-        "apps/api/src/routes/admin/registerAdminAuditRoutes.ts",
-        "apps/api/src/services/admin-metrics-read.ts",
-        "apps/api/src/routes/admin/registerAdminMetricsRoutes.ts",
-        "apps/api/src/services/admin-content-reports-read.ts",
-        "apps/api/src/routes/admin/registerAdminContentReportRoutes.ts",
-        "apps/api/src/services/admin-area-read.ts",
-        "apps/api/src/services/admin-area-commands.ts",
-        "apps/api/src/routes/admin/registerAdminAreaRoutes.ts",
-        "apps/api/src/services/admin-host-application-read.ts",
-        "apps/api/src/services/admin-host-application-commands.ts",
-        "apps/api/src/routes/admin/registerAdminHostApplicationRoutes.ts",
-        "apps/api/src/services/admin-notification-read.ts",
-        "apps/api/src/services/admin-notification-commands.ts",
-        "apps/api/src/routes/admin/registerAdminNotificationRoutes.ts",
-        "apps/api/src/services/admin-facility-read.ts",
-        "apps/api/src/services/admin-facility-commands.ts",
-        "apps/api/src/routes/admin/registerAdminFacilityRoutes.ts",
-        "apps/api/src/services/admin-group-read.ts",
-        "apps/api/src/services/admin-group-commands.ts",
-        "apps/api/src/routes/admin/registerAdminGroupRoutes.ts",
-        "apps/api/src/services/admin-tenant-read.ts",
-        "apps/api/src/services/admin-tenant-commands.ts",
-        "apps/api/src/routes/admin/registerAdminTenantRoutes.ts",
-        "apps/api/src/services/admin-user-read.ts",
-        "apps/api/src/services/admin-user-commands.ts",
-        "apps/api/src/routes/admin/registerAdminUserRoutes.ts",
-        "apps/api/src/services/admin-activity-moderation-read.ts",
-        "apps/api/src/services/admin-activity-moderation-commands.ts",
-        "apps/api/src/routes/admin/registerAdminActivityModerationRoutes.ts",
-        "apps/api/src/services/admin-place-read.ts",
-        "apps/api/src/services/admin-place-commands.ts",
-        "apps/api/src/routes/admin/registerAdminPlaceRoutes.ts",
-        "apps/api/src/services/publishing-tenant-activity-read.ts",
-        "apps/api/src/services/publishing-tenant-activity-commands.ts",
-        "apps/api/src/lib/publishing-tenant-activity-schemas.ts",
-        "apps/api/src/routes/publishing/registerPublishingActivityRoutes.ts",
-        "apps/api/src/routes/auth.ts",
-        "apps/api/src/routes/chat.ts",
-        "apps/api/src/routes/media.ts",
-        "apps/api/src/routes/shop.ts",
-        "apps/api/src/routes/safety.ts",
-        "apps/api/src/routes/og.ts",
-        "apps/api/src/routes/stripe-webhook.ts",
-        "apps/api/src/services/auth-registration-commands.ts",
-        "apps/api/src/services/content-report-commands.ts",
-        "apps/api/src/services/og-activity-read.ts",
-        "apps/api/src/services/media-asset-read.ts",
-        "apps/api/src/services/media-asset-commands.ts",
-        "apps/api/src/services/shop-public-read.ts",
-        "apps/api/src/services/shop-merchant-read.ts",
-        "apps/api/src/services/shop-merchant-commands.ts",
-        "apps/api/src/services/stripe-checkout-webhook-commands.ts",
-        "apps/api/src/domain/group-wall-reactions.ts"
-      ],
-      "feRoots": ["src/hooks/usePublicFacilityDetail.ts", "src/pages/FacilityDetailPage.tsx"],
-      "successMetric": "route-handler-cqrs-guard; all apps/api/src/routes/**/*.ts handlers delegate reads/writes to services (no *-store imports)"
+      "successMetric": "route-handler-cqrs-guard; all apps/api/src/routes/**/*.ts handlers delegate reads/writes to services (no *-store imports)",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-CQRS-ROUTE-DATA",
       "phase": "P4",
       "status": "complete",
       "owner": "platform",
-      "contextIds": ["member_identity", "communication", "engagement"],
-      "apiRoots": [
-        "apps/api/src/services/member-identity-read.ts",
-        "apps/api/src/services/member-identity-commands.ts",
-        "apps/api/src/services/chat-direct-messages-read.ts",
-        "apps/api/src/services/chat-direct-messages-commands.ts",
-        "apps/api/src/services/chat-message-reaction-commands.ts",
-        "apps/api/src/services/review-read.ts",
-        "apps/api/src/services/review-commands.ts",
-        "apps/api/src/services/me-profile-read.ts",
-        "apps/api/src/services/me-profile-commands.ts",
-        "apps/api/src/routes/chat.ts",
-        "apps/api/src/routes/auth.ts",
-        "apps/api/src/routes/user/registerProfileRoutes.ts",
-        "apps/api/src/routes/user/registerReviewRoutes.ts"
+      "contextIds": [
+        "member_identity",
+        "communication",
+        "engagement"
       ],
-      "feRoots": ["src/api/domains/member.ts", "src/api/domains/reviews.ts"],
-      "successMetric": "route-handler-cqrs-guard; no auth-users/chat-data/social-data imports in routes"
+      "successMetric": "route-handler-cqrs-guard; no auth-users/chat-data/social-data imports in routes",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-CQRS-ROUTE-AUTH",
       "phase": "P4",
       "status": "complete",
       "owner": "platform",
-      "contextIds": ["member_identity", "communication"],
-      "apiRoots": [
-        "apps/api/src/services/auth-session-flow.ts",
-        "apps/api/src/services/auth-session-read.ts",
-        "apps/api/src/services/auth-session-commands.ts",
-        "apps/api/src/services/auth-login-commands.ts",
-        "apps/api/src/services/auth-password-commands.ts",
-        "apps/api/src/services/auth-registration-commands.ts",
-        "apps/api/src/services/auth-google-commands.ts",
-        "apps/api/src/services/auth-demo-commands.ts",
-        "apps/api/src/lib/auth-route-http.ts",
-        "apps/api/src/routes/auth.ts",
-        "apps/api/src/services/me-profile-commands.ts",
-        "apps/api/tests/auth-command-layer-guard.test.ts"
+      "contextIds": [
+        "member_identity",
+        "communication"
       ],
-      "feRoots": ["src/api/domains/member.ts"],
-      "successMetric": "route-handler-cqrs-guard + auth-command-layer-guard; auth.ts delegates to auth-*-commands + auth-session-flow; no auth-tokens in routes"
+      "successMetric": "route-handler-cqrs-guard + auth-command-layer-guard; auth.ts delegates to auth-*-commands + auth-session-flow; no auth-tokens in routes",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-P5-SLO-SMOKE",
       "phase": "P5",
       "status": "complete",
       "owner": "platform",
-      "contextIds": ["discovery", "participation"],
-      "apiRoots": [
-        "scripts/p5-slo-smoke.mjs",
-        "scripts/release-staging-ops.mjs",
-        "apps/api/tests/p5-slo-smoke-probes-contract.test.ts",
-        "src/config/p5SloProgramGuard.test.ts"
+      "contextIds": [
+        "discovery",
+        "participation"
       ],
-      "feRoots": ["src/config/p5SloProgramGuard.test.ts", "src/config/releaseOpsProgramGuard.test.ts"],
-      "successMetric": "Eng: p5SloProgramGuard + releaseOpsProgramGuard + p5:slo-preflight in verify:domain. Ops: `release:ops:checklist` then staging `p5:slo-smoke` + PRE_DEPLOY gates."
+      "successMetric": "Eng: p5SloProgramGuard + releaseOpsProgramGuard + p5:slo-preflight in verify:domain. Ops: `release:ops:checklist` then staging `p5:slo-smoke` + PRE_DEPLOY gates.",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-SURFACE-ACTIVITY-DETAIL",
       "phase": "P4b",
       "status": "complete",
       "owner": "product-eng",
-      "contextIds": ["participation", "discovery"],
-      "apiRoots": [
-        "apps/api/src/services/activity-public-read.ts",
-        "apps/api/src/services/activity-viewer-access.ts",
-        "apps/api/src/services/compose-activity-viewer-access.ts",
-        "scripts/s10f-staging-ops.mjs",
-        "scripts/consumer-detail-manual-qa-routes.mjs"
+      "contextIds": [
+        "participation",
+        "discovery"
       ],
-      "feRoots": [
-        "src/pages/ActivityDetail.tsx",
-        "src/activity/detail",
-        "src/components/activity/detail",
-        "src/hooks/usePublicActivityDetail.ts",
-        "src/hooks/useActivityJoinFlow.ts",
-        "src/hooks/activityJoinClientApi.ts",
-        "src/hooks/publishingJoinQueueClientApi.ts",
-        "src/config/participationJoinSpineGuard.test.ts",
-        "src/config/participationPresentationGuard.test.ts",
-        "src/config/p4bS10fProgramGuard.test.ts"
-      ],
-      "successMetric": "Eng: participationPresentationGuard + activityDetailAcceptance + S10f bridge + p4bS10fProgramGuard. Ops: `s10f:ops:print-routes` on staging (human sign-off S10f)."
+      "successMetric": "Eng: participationPresentationGuard + activityDetailAcceptance + S10f bridge + p4bS10fProgramGuard. Ops: `s10f:ops:print-routes` on staging (human sign-off S10f).",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-SURFACE-EXPLORE-IA",
       "phase": "P4b",
       "status": "complete",
       "owner": "discovery",
-      "contextIds": ["discovery"],
-      "apiRoots": ["apps/api/src/lib/explore-map-route.ts"],
-      "feRoots": ["src/explore", "src/list", "src/discovery"],
-      "successMetric": "Single map/browse/list/discover IA in code + exploreRouting; DISC-METH guards; no duplicate browse chrome"
+      "contextIds": [
+        "discovery"
+      ],
+      "successMetric": "Single map/browse/list/discover IA in code + exploreRouting; DISC-METH guards; no duplicate browse chrome",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-SURFACE-MOBILE-FIVE-TAB",
       "phase": "P4b",
       "status": "complete",
       "owner": "product-eng",
-      "contextIds": ["discovery", "member_identity"],
-      "feRoots": [
-        "src/config/mobileFiveTabNav.ts",
-        "src/components/layout/MobileBottomNav.tsx",
-        "src/config/platform.ts",
-        "src/list",
-        "src/explore",
-        "src/crew-discovery",
-        "src/config/p4bPhaseProgramGuard.test.ts"
+      "contextIds": [
+        "discovery",
+        "member_identity"
       ],
-      "successMetric": "docs/NAVIGATION.md § Mobile five-tab — Phase 1 shipped; Phase 2–5 complete; resolveMobileFiveTab + handoff; memberSurfacesAcceptance + mobileFiveTabNav.test.ts; p4bPhaseProgramGuard; verify:system"
+      "successMetric": "docs/NAVIGATION.md § Mobile five-tab — Phase 1 shipped; Phase 2–5 complete; resolveMobileFiveTab + handoff; memberSurfacesAcceptance + mobileFiveTabNav.test.ts; p4bPhaseProgramGuard; verify:system",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-EXPLORE-HUB-PARALLEL",
       "phase": "P4b",
       "status": "complete",
       "owner": "product-eng",
-      "contextIds": ["discovery"],
-      "feRoots": [
-        "src/explore/search",
-        "src/routing/AppRoutes.tsx",
-        "src/config/platform.ts"
+      "contextIds": [
+        "discovery"
       ],
-      "successMetric": "/explore/search product surface; inbound /explore/hub/* redirects only; exploreHubRetirementGuard; exploreSearchAcceptance.test.ts"
+      "successMetric": "/explore/search product surface; inbound /explore/hub/* redirects only; exploreHubRetirementGuard; exploreSearchAcceptance.test.ts",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-TEAM-MODEL-SPLIT",
       "phase": "P4b",
       "status": "complete",
       "owner": "social_graph",
-      "contextIds": ["social_graph", "communication"],
-      "apiRoots": [
-        "apps/api/src/lib/social-groups-store.ts",
-        "apps/api/src/lib/mongo-migrations.ts",
-        "packages/shared-types/src/member-group.ts"
+      "contextIds": [
+        "social_graph",
+        "communication"
       ],
-      "feRoots": ["src/api/types.ts", "src/pages/Groups.tsx"],
-      "successMetric": "member_groups collection; kind team|outing_crew + teamLabel; member-group-model-guard.test.ts; DOMAIN_CANONICALS §1.6a–§1.6b"
+      "successMetric": "member_groups collection; kind team|outing_crew + teamLabel; member-group-model-guard.test.ts; DOMAIN_CANONICALS §1.6a–§1.6b",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-TEAMS-LABEL-WIDEN",
       "phase": "P4b",
       "status": "complete",
       "owner": "social_graph",
-      "contextIds": ["social_graph", "communication"],
-      "apiRoots": [
-        "apps/api/src/lib/social-groups-store.ts",
-        "apps/api/src/routes/user/registerGroupRoutes.ts",
-        "apps/api/src/domain/family-kid-profile.ts"
+      "contextIds": [
+        "social_graph",
+        "communication"
       ],
-      "feRoots": ["src/pages/Groups.tsx", "packages/shared-types/src/social-group-limits.ts"],
-      "successMetric": "Team type labels family|friends|colleagues; kid roster family-only under SOCIAL_TEAM_KID_ROSTER_MAX_AGE_YEARS; DOMAIN_CANONICALS §1.6a"
+      "successMetric": "Team type labels family|friends|colleagues; kid roster family-only under SOCIAL_TEAM_KID_ROSTER_MAX_AGE_YEARS; DOMAIN_CANONICALS §1.6a",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COMMUNITY-DISCOVER",
       "phase": "P5",
       "status": "complete",
       "owner": "social_graph",
-      "contextIds": ["social_graph", "discovery", "member_discovery"],
-      "apiRoots": [
-        "apps/api/src/lib/community-groups-store.ts",
-        "apps/api/src/lib/community-group-members-store.ts",
-        "apps/api/src/lib/community-group-invites-store.ts",
-        "apps/api/src/lib/community-group-admins-store.ts",
-        "apps/api/src/services/community-host-access.ts",
-        "apps/api/src/services/community-discover-read.ts",
-        "apps/api/src/services/community-discover-commands.ts",
-        "apps/api/src/routes/user/registerExploreCommunityRoutes.ts",
-        "apps/api/src/routes/user/registerMeCommunityDiscoverRoutes.ts",
-        "apps/api/src/routes/admin/registerAdminCommunityRoutes.ts",
-        "apps/api/src/services/admin-community-commands.ts"
+      "contextIds": [
+        "social_graph",
+        "discovery",
+        "member_discovery"
       ],
-      "feRoots": ["src/crew-discovery", "src/list", "src/explore", "src/pages/admin/Communities.tsx"],
-      "successMetric": "Shipped: explore/me/admin community APIs; /clubs/:slug; co-host admins; self-serve create (summary, banner, emirate); host pause/reactivate; host manage + notifications; discoverCommunityId on publish; contract + guards."
+      "successMetric": "Shipped: explore/me/admin community APIs; /clubs/:slug; co-host admins; self-serve create (summary, banner, emirate); host pause/reactivate; host manage + notifications; discoverCommunityId on publ…",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-SURFACE-MEMBER-PEOPLE",
       "phase": "P4b",
       "status": "complete",
       "owner": "product-eng",
-      "contextIds": ["member_identity", "social_graph"],
-      "apiRoots": [
-        "apps/api/src/services/profile-viewer-access.ts",
-        "apps/api/src/services/member-discovery-me-read.ts"
+      "contextIds": [
+        "member_identity",
+        "social_graph"
       ],
-      "feRoots": ["src/member", "src/crew-discovery", "src/pages/MemberProfile.tsx", "src/pages/MyCrews.tsx"],
-      "successMetric": "memberProfileLink lenses; one people browse module; memberBrowseRowModel everywhere; memberSurfacesAcceptance"
+      "successMetric": "memberProfileLink lenses; one people browse module; memberBrowseRowModel everywhere; memberSurfacesAcceptance",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-SURFACE-ADMIN-OPS",
       "phase": "P4b",
       "status": "complete",
       "owner": "platform",
-      "contextIds": ["platform_ops"],
-      "apiRoots": ["apps/api/src/routes/admin.ts"],
-      "feRoots": ["src/pages/admin/Overview.tsx", "src/pages/admin/Members.tsx"],
-      "successMetric": "Admin routes in NAVIGATION + adminSurfacesAcceptance; no consumer peek imports in Admin*"
+      "contextIds": [
+        "platform_ops"
+      ],
+      "successMetric": "Admin routes in NAVIGATION + adminSurfacesAcceptance; no consumer peek imports in Admin*",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-SERVICE-IDENTITY-BOUNDARY",
       "phase": "P4b",
       "status": "complete",
       "owner": "platform",
-      "contextIds": ["member_identity", "communication"],
-      "apiRoots": [
-        "apps/api/src/services/member-identity-read.ts",
-        "apps/api/src/services/member-identity-commands.ts",
-        "apps/api/src/services/auth-session-read.ts",
-        "apps/api/src/services/auth-session-commands.ts"
+      "contextIds": [
+        "member_identity",
+        "communication"
       ],
-      "feRoots": ["src/api/domains/member.ts", "src/api/domains/account.ts"],
-      "successMetric": "New service-layer guard: no lib/auth-users|auth-tokens|chat-data|social-data outside allowlist (middleware + *-store libs)"
+      "successMetric": "New service-layer guard: no lib/auth-users|auth-tokens|chat-data|social-data outside allowlist (middleware + *-store libs)",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-DOCS-EXPERIMENT-STUB",
@@ -654,9 +464,8 @@
       "status": "complete",
       "owner": "platform",
       "contextIds": [],
-      "apiRoots": ["scripts/verify-docs-tier1.mjs"],
-      "feRoots": ["docs/experiment"],
-      "successMetric": "experiment/README.md only; plan bodies removed (see docs/archive/README.md); verify:docs enforces stub shape"
+      "successMetric": "experiment/README.md only; plan bodies removed (see docs/archive/README.md); verify:docs enforces stub shape",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-ROUTING-CANON-P0",
@@ -664,59 +473,64 @@
       "status": "complete",
       "owner": "platform",
       "contextIds": [],
-      "apiRoots": ["scripts/routing-canonical-map.json", "scripts/verify-routing-canon.mjs"],
-      "feRoots": ["docs/SYSTEM_COHERENCE.md"],
-      "successMetric": "§8.7 schedule + map JSON; verify:routing-canon phase0; no breaking API until P1+"
+      "successMetric": "§8.7 schedule + map JSON; verify:routing-canon phase0; no breaking API until P1+",
+      "archivedAt": "2026-11-23",
+      "scheduleDoc": "scripts/routing-canonical-map.json"
     },
     {
       "id": "MIG-ROUTING-CANON-P1",
       "phase": "P4b",
       "status": "complete",
       "owner": "platform",
-      "contextIds": ["publishing_workspace"],
-      "apiRoots": ["apps/api/src/routes/publishing.ts"],
-      "feRoots": ["src/pages/publishing", "src/config/surfacePaths.ts"],
-      "successMetric": "No /host API rewrite or SPA tree; enforcement phase1 in routing-canonical-map"
+      "contextIds": [
+        "publishing_workspace"
+      ],
+      "successMetric": "No /host API rewrite or SPA tree; enforcement phase1 in routing-canonical-map",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-ROUTING-CANON-P2",
       "phase": "P4b",
       "status": "complete",
       "owner": "product-eng",
-      "contextIds": ["member_identity"],
-      "apiRoots": ["apps/api/src/routes/user/registerPublicMemberRoutes.ts"],
-      "feRoots": ["src/api/domains/account.ts", "src/pages/MemberProfile.tsx"],
-      "successMetric": "SPA /member/:id ↔ API /member/:userId/* only"
+      "contextIds": [
+        "member_identity"
+      ],
+      "successMetric": "SPA /member/:id ↔ API /member/:userId/* only",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-ROUTING-CANON-P3",
       "phase": "P4b",
       "status": "complete",
       "owner": "discovery",
-      "contextIds": ["member_discovery"],
-      "apiRoots": ["apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts"],
-      "feRoots": ["src/api/domains/account.ts", "src/crew-discovery"],
-      "successMetric": "No /social mount; member-discovery network + browse + search paths"
+      "contextIds": [
+        "member_discovery"
+      ],
+      "successMetric": "No /social mount; member-discovery network + browse + search paths",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-ROUTING-CANON-P4",
       "phase": "P4b",
       "status": "complete",
       "owner": "platform",
-      "contextIds": ["platform_ops"],
-      "apiRoots": ["apps/api/src/routes/safety.ts"],
-      "feRoots": ["src/api/domains/safety.ts", "src/hooks/contentReportClientApi.ts"],
-      "successMetric": "POST /safety/reports; safety domain module; no reportContent on socialApi"
+      "contextIds": [
+        "platform_ops"
+      ],
+      "successMetric": "POST /safety/reports; safety domain module; no reportContent on socialApi",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-ROUTING-CANON-P5",
       "phase": "P4b",
       "status": "complete",
       "owner": "product-eng",
-      "contextIds": ["engagement"],
-      "apiRoots": ["apps/api/src/routes/user/registerMeWishlistRoutes.ts"],
-      "feRoots": ["src/api/domains/goals.ts", "src/api/domains/wishlist.ts"],
-      "successMetric": "One feDomain module per /me resource; wishlistApi; apiClientSurfaceGuard boundaries"
+      "contextIds": [
+        "engagement"
+      ],
+      "successMetric": "One feDomain module per /me resource; wishlistApi; apiClientSurfaceGuard boundaries",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-ROUTING-CANON-P11",
@@ -724,9 +538,8 @@
       "status": "complete",
       "owner": "platform",
       "contextIds": [],
-      "apiRoots": [],
-      "feRoots": ["src/App.tsx", "src/config/routingHygiene.test.ts"],
-      "successMetric": "No legacy Navigate-only routes; routingHygiene bans"
+      "successMetric": "No legacy Navigate-only routes; routingHygiene bans",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COH-00",
@@ -734,146 +547,139 @@
       "status": "complete",
       "owner": "platform",
       "contextIds": [],
-      "apiRoots": ["packages/shared-types/src/wire-lexicon.ts", "apps/api/tests/terminology-leak-guard.test.ts"],
-      "feRoots": ["src/content/upl-glossary.ts", "src/config/terminologyLeakGuard.test.ts"],
-      "successMetric": "§8.8.7 governance; UPL/BWL modules; leak guards in verify:domain"
+      "successMetric": "§8.8.7 governance; UPL/BWL modules; leak guards in verify:domain",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COH-01",
       "phase": "PCOH",
       "status": "complete",
       "owner": "product-eng",
-      "contextIds": ["participation", "compose", "discovery"],
-      "apiRoots": [
-        "apps/api/src/routes/user/registerMeAvailabilityRoutes.ts",
-        "apps/api/src/services/me-availability-commands.ts",
-        "apps/api/src/lib/availability-fixed-map-items.ts"
+      "contextIds": [
+        "participation",
+        "compose",
+        "discovery"
       ],
-      "feRoots": [
-        "src/api/domains/availability.ts",
-        "src/hooks/memberAvailabilityApi.ts",
-        "src/explore/ui/intentFixedFlowEngine.ts"
-      ],
-      "successMetric": "Crew registry is member_availability; no /me/seeking-posts client or new activityMode seeking writes"
+      "successMetric": "Crew registry is member_availability; no /me/seeking-posts client or new activityMode seeking writes",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COH-02",
       "phase": "PCOH",
       "status": "complete",
       "owner": "product-eng",
-      "contextIds": ["places", "facilities", "discovery"],
-      "apiRoots": ["apps/api/src/lib/route-place-alias.ts", "apps/api/src/routes/user/registerPublicPlaceRoutes.ts"],
-      "feRoots": ["src/place/geographyVocabulary.ts", "src/api/domains/places.ts"],
-      "successMetric": "HTTP /places (+ /locations alias); map source place + facility; Area is a name not a pin; venue/catalog_place read-compat only"
+      "contextIds": [
+        "places",
+        "facilities",
+        "discovery"
+      ],
+      "successMetric": "HTTP /places (+ /locations alias); map source place + facility; Area is a name not a pin; venue/catalog_place read-compat only",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COH-03",
       "phase": "PCOH",
       "status": "complete",
       "owner": "product-eng",
-      "contextIds": ["member_publish_capabilities", "platform_ops"],
-      "apiRoots": [
-        "apps/api/src/lib/route-pro-application-alias.ts",
-        "apps/api/src/routes/user/registerHostApplicationRoutes.ts",
-        "apps/api/src/routes/admin/registerAdminHostApplicationRoutes.ts"
+      "contextIds": [
+        "member_publish_capabilities",
+        "platform_ops"
       ],
-      "feRoots": ["src/config/memberRoutes.ts", "src/pages/ProfileProMembership.tsx", "src/api/domains/organisation.ts"],
-      "successMetric": "HTTP /me/pro-application + /admin/pro-applications; UPL Pro membership; collection rename optional"
+      "successMetric": "HTTP /me/pro-application + /admin/pro-applications; UPL Pro membership; collection rename optional",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COH-04",
       "phase": "PCOH",
       "status": "complete",
       "owner": "platform",
-      "contextIds": ["publishing_workspace"],
-      "apiRoots": ["apps/api/src/routes/publishing.ts", "apps/api/src/routes/index.ts"],
-      "feRoots": ["src/config/surfacePaths.ts", "src/App.tsx"],
-      "successMetric": "HTTP /publishing/* API + SPA; no /operator HTTP mount; legacy host middleware gone"
+      "contextIds": [
+        "publishing_workspace"
+      ],
+      "successMetric": "HTTP /publishing/* API + SPA; no /operator HTTP mount; legacy host middleware gone",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COH-05",
       "phase": "PCOH",
       "status": "complete",
       "owner": "discovery",
-      "contextIds": ["member_discovery", "social_graph"],
-      "apiRoots": ["apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts"],
-      "feRoots": ["src/crew-discovery", "src/content/exploreCrewsCopy.ts"],
-      "successMetric": "No orphan /people registrar; buddies segment BWL; UPL People/Friends"
+      "contextIds": [
+        "member_discovery",
+        "social_graph"
+      ],
+      "successMetric": "No orphan /people registrar; buddies segment BWL; UPL People/Friends",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COH-06",
       "phase": "PCOH",
       "status": "complete",
       "owner": "product-eng",
-      "contextIds": ["participation"],
-      "apiRoots": ["apps/api/src/lib/activity-engagement-store.ts"],
-      "feRoots": ["src/content/joinWithdrawCopy.ts", "src/api/domains/activities.ts"],
-      "successMetric": "organizer_note renamed host_note BWL; UPL host copy"
+      "contextIds": [
+        "participation"
+      ],
+      "successMetric": "organizer_note renamed host_note BWL; UPL host copy",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COH-07",
       "phase": "PCOH",
       "status": "complete",
       "owner": "product-eng",
-      "contextIds": ["participation", "member_identity", "discovery"],
-      "apiRoots": ["packages/shared-types/src/activity-publisher-display.ts"],
-      "feRoots": ["src/activity/detail", "src/pages/ActivityDetail.tsx"],
-      "successMetric": "Publisher resolver; activity detail parity; /guide retired for individuals"
+      "contextIds": [
+        "participation",
+        "member_identity",
+        "discovery"
+      ],
+      "successMetric": "Publisher resolver; activity detail parity; /guide retired for individuals",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COH-08",
       "phase": "PCOH",
       "status": "complete",
       "owner": "platform",
-      "contextIds": ["discovery"],
-      "apiRoots": ["apps/api/src/lib/explore-map.ts", "scripts/p5-slo-smoke.mjs"],
-      "feRoots": ["src/explore/shell"],
-      "successMetric": "Map public vs overlay; outbox-only cache bust; SLO baseline"
+      "contextIds": [
+        "discovery"
+      ],
+      "successMetric": "Map public vs overlay; outbox-only cache bust; SLO baseline",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COH-09",
       "phase": "PCOH",
       "status": "complete",
       "owner": "platform",
-      "contextIds": ["engagement", "social_graph"],
-      "apiRoots": [
-        "apps/api/src/routes/user/registerMeWishlistRoutes.ts",
-        "apps/api/src/routes/user/registerReviewRoutes.ts",
-        "apps/api/src/lib/collections.ts"
+      "contextIds": [
+        "engagement",
+        "social_graph"
       ],
-      "feRoots": [
-        "src/api/domains/buddies.ts",
-        "src/api/domains/groups.ts",
-        "src/api/domains/wishlist.ts",
-        "src/api/domains/entityFollow.ts",
-        "src/api/domains/reviews.ts"
-      ],
-      "successMetric": "socialApi removed; buddies/groups/wishlist/entityFollow/reviews domains; user_wishlist collection"
+      "successMetric": "socialApi removed; buddies/groups/wishlist/entityFollow/reviews domains; user_wishlist collection",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COH-10",
       "phase": "PCOH",
       "status": "complete",
       "owner": "product-eng",
-      "contextIds": ["compose"],
-      "apiRoots": ["apps/api/src/services/member-publish-gate.ts"],
-      "feRoots": ["src/explore/create/hosting", "src/explore/ui/hostingFlows", "src/explore/ui/hostingFlowEngine.ts"],
-      "successMetric": "Single Host compose tree (create/hosting + hostingFlowEngine); organizeFlow/createOrganize/hostingCatalog/hostingFlow shims removed"
+      "contextIds": [
+        "compose"
+      ],
+      "successMetric": "Single Host compose tree (create/hosting + hostingFlowEngine); organizeFlow/createOrganize/hostingCatalog/hostingFlow shims removed",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COH-11",
       "phase": "PCOH",
       "status": "complete",
       "owner": "platform",
-      "contextIds": ["platform_ops", "shop_profiles"],
-      "apiRoots": [
-        "apps/api/src/routes/admin.ts",
-        "apps/api/src/routes/shop.ts",
-        "apps/api/src/routes/shop/registerShopPublicRoutes.ts",
-        "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
+      "contextIds": [
+        "platform_ops",
+        "shop_profiles"
       ],
-      "feRoots": ["src/pages/admin/Overview.tsx", "src/config/adminSurfacesAcceptance.test.ts"],
-      "successMetric": "adminSurfacesAcceptance; shop registerShop* split; socialGraphRouter and demandFlow.ts shims deleted"
+      "successMetric": "adminSurfacesAcceptance; shop registerShop* split; socialGraphRouter and demandFlow.ts shims deleted",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COH-12",
@@ -881,29 +687,20 @@
       "status": "complete",
       "owner": "platform",
       "contextIds": [],
-      "apiRoots": [
-        "scripts/verify-domain-canonicals.mjs",
-        "scripts/verify-domain-fe.mjs",
-        "scripts/verify-domain-api.mjs",
-        "scripts/verify-domain-journey.mjs"
-      ],
-      "feRoots": ["src/App.tsx", "src/config/routingHygiene.test.ts"],
-      "successMetric": "Navigate-only page shims deleted; verify:domain fe/api/journey shards; routingHygiene bans ShopManage/BecomeHost/Membership modules"
+      "successMetric": "Navigate-only page shims deleted; verify:domain fe/api/journey shards; routingHygiene bans ShopManage/BecomeHost/Membership modules",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-ARCH-W0",
       "phase": "P2",
       "status": "complete",
       "owner": "platform",
-      "contextIds": ["discovery", "communication"],
-      "apiRoots": [
-        "apps/api/src/lib/side-effect-outbox.ts",
-        "apps/api/src/config/env.ts",
-        "scripts/validate-env.mjs",
-        "vercel.json"
+      "contextIds": [
+        "discovery",
+        "communication"
       ],
-      "feRoots": [],
-      "successMetric": "W0–W3 eng defaults shipped: outbox prod-on; Vercel entry cache; memory token; CSP script boot files; local media ACL; sharp 4096; explore slim pin + overlay index + participant Mongo cap + catalog thumbs; demo-login staging gate; SSE connection cap; platform-admin TOTP when PLATFORM_ADMIN_MFA_SECRET set; S10e/S10f/P5 ops gates remain in PRE_DEPLOY"
+      "successMetric": "W0–W3 eng defaults shipped: outbox prod-on; Vercel entry cache; memory token; CSP script boot files; local media ACL; sharp 4096; explore slim pin + overlay index + participant Mongo cap + catalog …",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-PLATFORM-COMPOSE-OPERATOR-2026",
@@ -917,26 +714,9 @@
         "publishing_workspace",
         "member_identity"
       ],
-      "apiRoots": [
-        "packages/shared-types/src/compose-route.ts",
-        "scripts/authority-matrix.json",
-        "scripts/verify-compose-spine.mjs"
-      ],
-      "feRoots": [
-        "src/explore/compose.ts",
-        "src/explore/create",
-        "src/create",
-        "src/config/composeSpineGuard.test.ts",
-        "src/config/composeLineageGuard.test.ts",
-        "src/config/migPlatformComposeOperatorProgramGuard.test.ts",
-        "src/config/crewsTerminologyGuard.test.ts",
-        "src/content/upl-glossary.ts",
-        "src/routing/inboundBookmarkRedirects.tsx",
-        "src/config/surfacePaths.ts",
-        "src/console",
-        "src/hosting"
-      ],
-      "successMetric": "Tracks MIG-COMPOSE-KIND + HOST-SURFACE-UNIFY + HUB-TERM. Target compose emit activity|place|intent (legacy parse shared-types only); operator SPA /operator/*; wishlist POST /me/wishlist not compose. Closed by migPlatformComposeOperatorProgramGuard + verify:system. Canonical plan: .cursor/plans/compose_kind_wire_refactor_1cc2bc46.plan.md"
+      "successMetric": "Closed — npm run verify:compose-spine",
+      "archivedAt": "2026-11-23",
+      "scheduleDoc": "npm run verify:compose-spine"
     },
     {
       "id": "MIG-PEOPLE-VOCAB-2026",
@@ -951,30 +731,9 @@
         "compose",
         "engagement"
       ],
-      "apiRoots": [
-        "apps/api/src/routes/user/registerBuddyRoutes.ts",
-        "apps/api/src/services/member-people-engagement.ts",
-        "apps/api/src/services/chat-policy.ts",
-        "apps/api/src/services/me-availability-commands.ts",
-        "packages/shared-types/src/wire-lexicon.ts",
-        "packages/shared-types/src/crew-pillars.ts"
-      ],
-      "feRoots": [
-        "scripts/people-vocabulary-touchpoints.json",
-        "src/config/peopleVocabularyTouchpointsGuard.test.ts",
-        "src/config/crewPillarsAlignmentGuard.test.ts",
-        "src/crew/crewPillarSurfaces.ts",
-        "src/hooks/useMeBuddiesNetwork.ts",
-        "src/pages/MyCrews.tsx",
-        "src/list/crews/crewsStatTab.ts",
-        "src/utils/notificationRouting.ts",
-        "src/components/activity/ActivityInviteModalBody.tsx",
-        "src/components/profile/MemberProfileFriendActions.tsx",
-        "src/member/coordinationAttentionPresentation.ts",
-        "src/content/upl-glossary.ts",
-        "src/explore/compose.ts"
-      ],
-      "successMetric": "Closed 2026-11-22. Plan: .cursor/plans/people_crew_vocab_mig_2026.plan.md. Manifest v2: scripts/people-vocabulary-touchpoints.json. P5d crews_three_tabs plan. Follow-up: MIG-COMMUNITY-DISCOVER (planned), P7 wire cleanup (optional)."
+      "successMetric": "Closed 2026-11-22. Manifest: scripts/people-vocabulary-touchpoints.json. P5d + REC server rank: discover-recommendations-touchpoints.json. MIG-COMMUNITY-DISCOVER complete.",
+      "archivedAt": "2026-11-23",
+      "scheduleDoc": "scripts/people-vocabulary-touchpoints.json"
     },
     {
       "id": "MIG-SCHEDULE-GUIDE",
@@ -989,44 +748,9 @@
         "discovery",
         "social_graph"
       ],
-      "apiRoots": [
-        "apps/api/src/services/member-status.ts",
-        "apps/api/src/services/me-availability-commands.ts",
-        "apps/api/src/services/me-availability-read.ts",
-        "apps/api/src/services/explore-availability-read.ts",
-        "apps/api/src/lib/availability-fixed-map-items.ts",
-        "apps/api/src/lib/discovery-catalog-builder.ts",
-        "packages/shared-types/src/member-availability.ts"
-      ],
-      "feRoots": [
-        "src/pages/WelcomeSignup.tsx",
-        "src/components/signup",
-        "src/components/profile",
-        "src/components/plan",
-        "src/plan",
-        "src/explore/ui/intentFixedFlowEngine.ts",
-        "src/explore/ui/IntentOpenComposeSheet.tsx",
-        "src/explore/ui/CreateAvailabilityFixedFlow.tsx",
-        "src/crew-discovery",
-        "src/config/memberAvailabilityLineageGuard.test.ts",
-        "src/config/surfacePaths.ts",
-        "src/content/upl-glossary.ts",
-        "apps/api/scripts/seed.ts",
-        "apps/api/scripts/seedConnectionsDemo.ts"
-      ],
-      "executionPhases": [
-        "MIG-SG-A1: status gates; welcome not host",
-        "MIG-SG-A2: /profile/guide wizard",
-        "MIG-SG-A2b: friends-only UPL; visibility friends",
-        "MIG-SG-B1: slot schema; drop kinds[]",
-        "MIG-SG-B2: unified AvailabilitySlotEditor",
-        "MIG-SG-B3: unified calendar; operator route",
-        "MIG-SG-B4: discovery projections",
-        "MIG-SG-C1: Pro terms + nudges",
-        "MIG-SG-D1: seed + Tier-1 + verify:system"
-      ],
       "successMetric": "docs/SYSTEM_COHERENCE.md §8.10 exit criteria; delete §8.10; guideProfileComplete gates host; schedule slots capacity+modalities+terms; no buddy UPL; npm run verify:system",
-      "scheduleDoc": "docs/SYSTEM_COHERENCE.md §8.10 (remove when status=complete)"
+      "scheduleDoc": "docs/SYSTEM_COHERENCE.md §8.10 (remove when status=complete)",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-PLATFORM-LAYER-SPINE",
@@ -1044,82 +768,39 @@
         "participation",
         "matching"
       ],
-      "apiRoots": [
-        "packages/shared-types/src/platform-layers.ts",
-        "packages/shared-types/src/platform-layer-api.ts",
-        "packages/shared-types/src/platform-surface-action.ts",
-        "packages/shared-types/src/crew-pillars.ts",
-        "packages/shared-types/src/wire-lexicon.ts",
-        "apps/api/src/services/matching",
-        "apps/api/src/services/discover-crew-feed.ts",
-        "apps/api/src/routes/user/registerDiscoverCrewRoutes.ts"
-      ],
-      "feRoots": [
-        "scripts/platform-layer-spine-touchpoints.json",
-        "scripts/verify-platform-layer-spine.mjs",
-        "src/config/platformLayerSpineGuard.test.ts",
-        "src/config/platformLayerApiGuard.test.ts",
-        "src/config/platformLayerCrewDiscoverGuard.test.ts",
-        "src/config/platformLayerActionGuard.test.ts",
-        "src/config/platformLayerMatchingGuard.test.ts",
-        "src/config/platformLayerPls5Guard.test.ts",
-        "src/config/exploreMapRecommendedGuard.test.ts",
-        "src/explore/recommend",
-        "src/explore/ui/ExploreMapRecommendedSheet.tsx",
-        "src/api/domains/crewDiscover.ts",
-        "src/crew-discovery/discover",
-        "src/crew-discovery/panel",
-        "src/crew-discovery/memberBrowseRowModel.ts",
-        "src/plan",
-        "src/availability"
-      ],
-      "executionPhases": [
-        "PLS-0: platform-layers contract + touchpoints + guards",
-        "PLS-1: manifest + api client boundaries + crew pillar facet",
-        "PLS-2: GET /discover/crew federated feed",
-        "PLS-3: surface action projection (join|connect|plan)",
-        "PLS-4: matching service extraction",
-        "PLS-5: Crews FAB IA + residue removal + close"
-      ],
-      "successMetric": "Publish · Discover · Join · Connect · Plan · Manage aligned across crew/place/activity surfaces; scripts/platform-layer-spine-touchpoints.json phases complete; npm run verify:platform-layer-spine; npm run verify:system",
-      "scheduleDoc": "scripts/platform-layer-spine-touchpoints.json"
+      "successMetric": "Closed — scripts/platform-layer-spine-touchpoints.json",
+      "scheduleDoc": "scripts/platform-layer-spine-touchpoints.json",
+      "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-DISCOVER-RECOMMENDATIONS",
       "phase": "P4",
       "status": "complete",
       "owner": "product-eng",
-      "contextIds": ["discovery", "matching", "member_discovery"],
-      "apiRoots": [
-        "packages/shared-types/src/discover-recommendations.ts",
-        "apps/api/src/services/discover-map-recommendations.ts",
-        "apps/api/src/services/matching/rank-map-explore.ts",
-        "apps/api/src/routes/user/registerDiscoverRecommendationsRoutes.ts"
-      ],
-      "feRoots": [
-        "scripts/discover-recommendations-touchpoints.json",
-        "src/api/domains/discoverRecommendations.ts",
-        "src/hooks/useDiscoverMapRecommendations.ts",
-        "src/explore/recommend/resolveExploreMapRecommendationItems.ts",
-        "src/config/migDiscoverRecommendationsGuard.test.ts"
-      ],
-      "executionPhases": [
-        "REC-1: GET /discover/recommendations map surface + rank-map-explore",
-        "REC-2: signed-in map sheet uses server rank",
-        "REC-3: places + wishlist/geo boosts + signal chips in sheet",
-        "REC-4: surface=crew — Recommended tab server rank",
-        "REC-5: shared map explore recommendation scorer",
-        "REC-6: Tier-1 API_ROUTING + MEMBER_MODEL discover wires",
-        "REC-7: discover recommendations HTTP contract test"
+      "contextIds": [
+        "discovery",
+        "matching",
+        "member_discovery"
       ],
       "successMetric": "Server-ranked map recommendations; optionalAuth buddy boost; npm run verify:discover-recommendations",
-      "scheduleDoc": "scripts/discover-recommendations-touchpoints.json"
+      "scheduleDoc": "scripts/discover-recommendations-touchpoints.json",
+      "archivedAt": "2026-11-23"
+    },
+    {
+      "id": "MIG-PROGRAM-ARCHIVE",
+      "phase": "P4b",
+      "status": "complete",
+      "owner": "platform",
+      "contextIds": [],
+      "archivedAt": "2026-11-23",
+      "scheduleDoc": "scripts/normalize-refactor-program-archive.mjs",
+      "successMetric": "Complete migrations: archivedAt, no feRoots/apiRoots; WIP rows keep paths; verify:refactor-program enforces."
     }
   ],
   "stranglerRules": [
     "Work by bounded context id (manifest), not by page or experiment doc.",
-    "Each migration PR: registrar + src/api/domains + feRoots together.",
-    "Close or update §7 row when migration completes.",
+    "in_progress migration PR: registrar + src/api/domains + feRoots on the MIG row until close.",
+    "On close: npm run program:normalize-archive (strip paths; set archivedAt; scheduleDoc → touchpoints).",
     "At most maxInProgressMigrations in_progress."
   ]
 }

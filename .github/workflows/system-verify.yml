@@ -1,0 +1,43 @@
+# Full system coherence on main — complements PR `verify:system:quick` (ci.yml).
+# Adds explore-alignment and the full spine stack; expect ~15–25 min with Mongo + vitest.
+name: System verify (main)
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  verify-system:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.adminCommand({ ping: 1 }).ok'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      TEST_MONGODB_URI: mongodb://127.0.0.1:27017/uaetrail_test
+      JWT_ACCESS_SECRET: ci-test-access-secret-min-24-chars
+      JWT_REFRESH_SECRET: ci-test-refresh-secret-min-24-chars
+      NODE_ENV: test
+      NPM_CONFIG_DEVDIR: ''
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24.22.0
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: System coherence (full)
+        run: npm run verify:system

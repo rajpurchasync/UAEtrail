@@ -1009,7 +1009,7 @@ Board one-liner: *P4 thinned the API; **PCOH** (§8.8) finished UPL/BWL coherenc
 
 | Artifact | Role |
 |----------|------|
-| [`scripts/refactor-program.json`](../scripts/refactor-program.json) | Phases **P0–P6** + **P4b**, migrations **MIG-***, `authorization`, `capacity`, P5 `slos` |
+| [`scripts/refactor-program.json`](../scripts/refactor-program.json) | Phases **P0–P6** + **P4b**, migrations **MIG-*** (complete rows **`archivedAt`** only — paths in manifest / `*-touchpoints.json`; **`MIG-PROGRAM-ARCHIVE`**) |
 | **`MIG-PLATFORM-COMPOSE-OPERATOR-2026`** | **Complete (P4b)** — compose kinds **activity · place · intent**; operator **`/operator/*`**; anti-regression **`migPlatformComposeOperatorProgramGuard`** |
 | **`MIG-PLATFORM-LAYER-SPINE`** | **Complete (P4b)** — **Publish · Discover · Join · Connect · Plan · Manage**; schedule [`scripts/platform-layer-spine-touchpoints.json`](../scripts/platform-layer-spine-touchpoints.json); gate **`verify:platform-layer-spine`** |
 | **`MIG-DISCOVER-RECOMMENDATIONS`** | **Complete (P4)** — `GET /discover/recommendations` (`surface=map\|crew`); shared `map-explore-recommendation-score`; [`scripts/discover-recommendations-touchpoints.json`](../scripts/discover-recommendations-touchpoints.json); gate **`verify:discover-recommendations`** |
@@ -1018,6 +1018,8 @@ Board one-liner: *P4 thinned the API; **PCOH** (§8.8) finished UPL/BWL coherenc
 | §7 register | **C27** (docs) · **C28** (program spine) · close rows when migrations complete |
 
 **Gate every phase:** `npm run verify:system:quick` minimum; phase close → `npm run verify:system` + update this table + `refactor-program.json` status fields.
+
+**GitHub CI:** PR/push → `.github/workflows/ci.yml` runs **`verify:system:quick`**; push **`main`** → `.github/workflows/system-verify.yml` runs **`verify:system`** (full, incl. `test:explore-alignment`). PR Lighthouse → `lighthouse.yml` (warn-first).
 
 #### 8.6.1 Phases (outcomes)
 
