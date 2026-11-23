@@ -966,10 +966,6 @@ export interface ExploreMapItemDTO {
   path: string;
   /** Primary person on this card — name is identity; role is contextual (host, requester, contact). */
   featuredPerson?: ExploreMapPersonDTO | null;
-  /** @deprecated Use `featuredPerson` — kept for cached explore payloads during migration. */
-  hostName?: string | null;
-  /** @deprecated Use `featuredPerson.avatarUrl` */
-  hostAvatar?: string | null;
   date?: string | null;
   time?: string | null;
   endDate?: string | null;
@@ -992,8 +988,6 @@ export interface ExploreMapItemDTO {
   toLabel?: string | null;
   websiteUrl?: string | null;
   contactPhone?: string | null;
-  /** @deprecated Use `featuredPerson.userId`. */
-  requesterUserId?: string | null;
   /** Time-bound map mode — `hosted` for published outings. */
   activityMode?: 'hosted' | null;
   /** Curated area membership for explore `?area=` filters. */
@@ -1141,8 +1135,6 @@ export interface TenantPublicDTO {
   ownerAvatar: string | null;
   ownerBio: string | null;
   hostDetails?: OrganisationHostDetailsDTO;
-  /** @deprecated Use hostDetails — kept for legacy clients. */
-  organizerDetails?: OrganisationHostDetailsDTO;
   memberCount: number;
   team: TenantPublicTeamMemberDTO[];
   activities: ActivityDTO[];

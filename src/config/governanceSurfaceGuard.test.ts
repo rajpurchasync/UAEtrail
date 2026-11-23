@@ -148,6 +148,28 @@ describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
     expect(crewNav).not.toMatch(/buddiesPathFromCrews/);
   });
 
+  it('GW9-01: member profile operatorProfilePath (not hostProfilePath on wire)', () => {
+    const profile = read('apps/api/src/services/public-member-profile.ts');
+    expect(profile).toMatch(/operatorProfilePath/);
+    expect(profile).not.toMatch(/hostProfilePath:/);
+    expect(read('src/api/types.ts')).toMatch(/operatorProfilePath/);
+    expect(read('src/api/types.ts')).not.toMatch(/hostProfilePath:/);
+  });
+
+  it('GW10-01: ExploreMapItemDTO drops duplicate person fields on wire', () => {
+    const types = read('packages/shared-types/src/index.ts');
+    expect(types).not.toMatch(/Use `featuredPerson` — kept for cached/);
+    expect(types).not.toMatch(/organizerDetails\?: OrganisationHostDetailsDTO/);
+    const catalog = read('apps/api/src/lib/discovery-catalog-builder.ts');
+    expect(catalog).not.toMatch(/hostName: activity\.hostName \?\? null/);
+    expect(catalog).not.toMatch(/requesterUserId: owner/);
+  });
+
+  it('GW11-01: retired component prop aliases removed', () => {
+    expect(read('src/components/chat/MessageMemberButton.tsx')).not.toMatch(/\bhostUserId\b/);
+    expect(read('src/explore/ui/ExploreResponsiveSheet.tsx')).not.toMatch(/mobileComposeChrome/);
+  });
+
   it('GW8-01: retired FE/API compat aliases removed', () => {
     expect(read('src/utils/groupWallReply.ts')).not.toMatch(/formatGroupWallReplyBody/);
     expect(read('src/api/types.ts')).not.toMatch(/export type HostDetails\b/);

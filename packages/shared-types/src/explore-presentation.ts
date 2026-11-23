@@ -1112,7 +1112,7 @@ export const buildDiscoveryCardPresentation = (
     kind,
     title: item.title,
     featuredPerson,
-    hostName: activity?.hostName ?? item.hostName,
+    hostName: activity?.hostName ?? null,
     tenantName: activity?.tenantName ?? null,
     location,
     subtitle,
@@ -1126,8 +1126,6 @@ export const buildDiscoveryCardPresentation = (
     slotsAvailable: item.slotsAvailable,
     slotsTotal: item.slotsTotal,
     participantCount: item.participantPreviews?.length ?? 0,
-    requesterUserId: item.requesterUserId,
-    hostAvatar: item.hostAvatar,
     activity,
   };
 
@@ -1150,7 +1148,7 @@ export const buildDiscoveryCardPresentation = (
         ? resolveActivityPublisherRowPrimaryName({
             publishingProfileKind: activity.publishingProfileKind,
             tenantName: activity.tenantName ?? null,
-            hostName: activity.hostName ?? item.hostName,
+            hostName: activity.hostName ?? null,
             createdByName: activity.createdByName,
             featuredPerson,
           })

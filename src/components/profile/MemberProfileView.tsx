@@ -165,9 +165,9 @@ export const MemberProfileView = ({
           <div className="min-w-0 flex-1 lg:pt-1">
           <h1 className="mt-4 text-2xl font-bold tracking-tight text-neutral-900 lg:mt-0 lg:text-xl">{profile.displayName}</h1>
           <p className="mt-1 text-sm font-medium text-neutral-500">{roleLabel}</p>
-          {profile.linkedOperatorName && profile.hostProfilePath ? (
+          {profile.linkedOperatorName && profile.operatorProfilePath ? (
             <Link
-              to={profile.hostProfilePath}
+              to={profile.operatorProfilePath}
               className="mt-2 inline-block text-sm font-semibold text-emerald-700 hover:text-emerald-800"
             >
               {profile.linkedOperatorName}

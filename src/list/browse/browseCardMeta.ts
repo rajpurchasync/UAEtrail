@@ -124,7 +124,7 @@ export const browseCardMeta = (card: DiscoveryCardModel): BrowseCardMeta => {
         tenantName: card.activity?.tenantName,
         tenantLogoUrl: card.activity?.tenantLogoUrl,
         hostName: browseCardHostName(card),
-        hostAvatar: card.hostAvatar?.trim() || card.featuredPerson?.avatarUrl?.trim() || null,
+        hostAvatar: card.featuredPerson?.avatarUrl?.trim() || card.hostAvatar?.trim() || null,
         listHost: card.listHost,
       })
     : null;

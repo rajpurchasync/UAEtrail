@@ -75,7 +75,7 @@ export const resolveDiscoveryCardEntityRef = (item: DiscoveryMapItemWire): Disco
   }
   if (exploreMapItemIsAvailabilityCatalog(item)) {
     const userId =
-      item.featuredPerson?.userId ?? item.requesterUserId ?? item.activity?.hostUserId ?? null;
+      item.featuredPerson?.userId ?? item.activity?.hostUserId ?? null;
     if (userId) return { kind: 'person', userId };
   }
   if (item.source === 'activity' && !exploreMapItemIsLegacySeekingActivity(item)) {
@@ -86,7 +86,7 @@ export const resolveDiscoveryCardEntityRef = (item: DiscoveryMapItemWire): Disco
     return { kind: 'activity', activityId: item.activity.id };
   }
   const userId =
-    item.featuredPerson?.userId ?? item.requesterUserId ?? item.activity?.hostUserId ?? null;
+    item.featuredPerson?.userId ?? item.activity?.hostUserId ?? null;
   if (userId) return { kind: 'person', userId };
   if (item.locationCard?.id) return { kind: 'place', locationId: item.locationCard.id };
   return { kind: 'activity', activityId: item.id.replace(/^activity:/, '') };

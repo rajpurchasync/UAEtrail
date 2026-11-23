@@ -170,8 +170,8 @@ export type PublicMemberProfileData =
       isGuideStaff?: boolean;
       hostProfileKind: 'shop' | 'agency' | 'guide' | null;
       /** Public shop or agency profile URL when member is linked to a business operator. */
-      hostProfilePath: string | null;
-      /** Business operator display name — pairs with `hostProfilePath` (agency / shop only). */
+      operatorProfilePath: string | null;
+      /** Business operator display name — pairs with `operatorProfilePath` (agency / shop only). */
       linkedOperatorName: string | null;
       /** Buddy / guide publishing tenant — host reviews and ratings attach here. */
       publishingTenantId: string | null;
@@ -373,7 +373,7 @@ export async function buildPublicMemberProfile(
     profileRoleLabel,
     isGuideStaff,
     hostProfileKind,
-    hostProfilePath: businessOperatorTenant ? resolveHostProfilePath(businessOperatorTenant) : null,
+    operatorProfilePath: businessOperatorTenant ? resolveHostProfilePath(businessOperatorTenant) : null,
     linkedOperatorName: businessOperatorTenant?.name?.trim() ? businessOperatorTenant.name.trim() : null,
     publishingTenantId: publishingTenant?.id ?? null,
     badges: visibleBadges,

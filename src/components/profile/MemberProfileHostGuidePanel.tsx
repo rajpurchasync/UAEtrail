@@ -42,10 +42,10 @@ export const MemberProfileHostGuidePanel = ({
           {(profile.stats?.activitiesHosted ?? 0) === 1 ? '' : 's'} on UAE Trail.
         </p>
       ) : null}
-      {hostSurface && profile.hostProfilePath && profile.linkedOperatorName ? (
+      {hostSurface && profile.operatorProfilePath && profile.linkedOperatorName ? (
         <p className="text-sm text-neutral-700">
           Runs outings through{' '}
-          <Link to={profile.hostProfilePath} className="font-semibold text-emerald-700 hover:underline">
+          <Link to={profile.operatorProfilePath} className="font-semibold text-emerald-700 hover:underline">
             {profile.linkedOperatorName}
           </Link>
           .

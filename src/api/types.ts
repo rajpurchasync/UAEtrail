@@ -182,7 +182,7 @@ export type PublicMemberProfileDTO =
       profileRoleLabel?: import('@uaetrail/shared-types').MemberProfileRoleLabel;
       isGuideStaff?: boolean;
       hostProfileKind: 'shop' | 'agency' | 'guide' | null;
-      hostProfilePath: string | null;
+      operatorProfilePath: string | null;
       linkedOperatorName?: string | null;
       /** Publishing tenant for community host reviews (`targetType=tenant`). */
       publishingTenantId?: string | null;

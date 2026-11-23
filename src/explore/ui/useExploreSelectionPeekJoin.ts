@@ -84,7 +84,7 @@ export const useExploreSelectionPeekJoin = (input: {
 
   const messageHost = useCallback(
     (item: ExploreMapItemDTO) => {
-      const requesterId = item.requesterUserId ?? item.activity?.hostUserId;
+      const requesterId = item.featuredPerson?.userId ?? item.activity?.hostUserId;
       if (!requesterId) return;
       if (!input.user) {
         joinActions.openGuestBrowseGate('peek-details', 'message_host');

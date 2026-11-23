@@ -106,7 +106,7 @@ export const buildMemberDiscoveryHostsGoing = async (
     const hostId = activityHostUserId(item);
     if (!hostId || hostId === viewerUserId || buddyIds.has(hostId)) continue;
 
-    const displayName = item.featuredPerson?.displayName ?? item.hostName ?? 'Host';
+    const displayName = item.featuredPerson?.displayName ?? item.activity?.hostName ?? 'Host';
     if (needle && !displayName.toLowerCase().includes(needle) && !item.title?.toLowerCase().includes(needle)) {
       continue;
     }
@@ -114,7 +114,7 @@ export const buildMemberDiscoveryHostsGoing = async (
     if (!hostByUserId.has(hostId)) {
       hostByUserId.set(hostId, {
         displayName,
-        avatarUrl: item.featuredPerson?.avatarUrl ?? item.hostAvatar ?? null,
+        avatarUrl: item.featuredPerson?.avatarUrl ?? item.activity?.hostAvatar ?? null,
         item,
       });
     }

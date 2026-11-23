@@ -71,7 +71,7 @@ export const collectGoingPeopleFromMapItems = (
         const row: SocialMapChipAvatar = {
           id: featured.userId,
           name: featured.displayName,
-          avatar: featured.avatarUrl ?? item.hostAvatar ?? null,
+          avatar: featured.avatarUrl ?? null,
         };
         if (row.id !== excludeUserId && !seen.has(row.id)) {
           seen.add(row.id);

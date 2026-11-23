@@ -18,7 +18,7 @@ type ActivityDetailHostProfileCardProps = {
   hostPath: string | null;
   hostProfileHint: string;
   canOpenHostProfile: boolean;
-  hostUserId: string | null;
+  memberUserId: string | null;
   showHostProfileProUpsell: boolean;
   proSocialMembershipPath: string;
   /** Nested inside pricing sidebar — no second card chrome. */
@@ -33,7 +33,7 @@ export const ActivityDetailHostProfileCard = ({
   hostPath,
   hostProfileHint,
   canOpenHostProfile,
-  hostUserId,
+  memberUserId,
   showHostProfileProUpsell,
   proSocialMembershipPath,
   variant = 'card',
@@ -93,9 +93,9 @@ export const ActivityDetailHostProfileCard = ({
           </div>
         </div>
       )}
-      {variant !== 'marketing' && !previewMode && canOpenHostProfile && hostUserId ? (
+      {variant !== 'marketing' && !previewMode && canOpenHostProfile && memberUserId ? (
         <MessageMemberButton
-          memberUserId={hostUserId}
+          memberUserId={memberUserId}
           activityId={activity.id}
           size="md"
           messageLabel="Message host"

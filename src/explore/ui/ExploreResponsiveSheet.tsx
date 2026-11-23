@@ -48,8 +48,6 @@ interface ExploreResponsiveSheetProps {
    * Desktop uses the consumer main-column inset.
    */
   composePresentation?: ComposeFabPresentation;
-  /** @deprecated Use `composePresentation`. */
-  mobileComposeChrome?: boolean;
   /** Bottom sheet with drag handle: pull down to dismiss (non-compose sheets). */
   pullToDismiss?: boolean;
   /** Centered dialogs: shared max-height + short-viewport typography (see `.explore-desktop-popup-panel`). */
@@ -74,16 +72,12 @@ export const ExploreResponsiveSheet = ({
   title,
   ariaLabel = 'Panel',
   composePresentation,
-  mobileComposeChrome = false,
   pullToDismiss = false,
   viewportAdaptive = false,
   composePlainClose = false,
 }: ExploreResponsiveSheetProps) => {
-  const resolvedComposePresentation: ComposeFabPresentation | undefined =
-    composePresentation ?? (mobileComposeChrome ? 'wizard' : undefined);
-
-  const composeMenu = resolvedComposePresentation === 'menu';
-  const composeWizard = resolvedComposePresentation === 'wizard';
+  const composeMenu = composePresentation === 'menu';
+  const composeWizard = composePresentation === 'wizard';
   const composeFab = composeMenu || composeWizard;
 
   const titleId = useId();

@@ -31,9 +31,6 @@ type ExploreMapSourceLike = ExploreMapSourceWire;
 export type ExploreFeaturedPersonInput = ExploreMapItemActivityModeFields & {
   source?: ExploreMapSourceLike;
   featuredPerson?: ExploreMapPersonDTO | null;
-  hostName?: string | null;
-  hostAvatar?: string | null;
-  requesterUserId?: string | null;
   activity?: {
     hostName?: string | null;
     hostUserId?: string | null;
@@ -109,7 +106,7 @@ export const buildExploreFeaturedPerson = (input: {
   };
 };
 
-/** Resolve featured person from canonical field or legacy explore map fields (cached payloads). */
+/** Resolve featured person — canonical `featuredPerson` on map items; activity host fields as last resort. */
 export const resolveExploreFeaturedPerson = (
   item: ExploreFeaturedPersonInput
 ): ExploreMapPersonDTO | null => {
@@ -126,42 +123,34 @@ export const resolveExploreFeaturedPerson = (
   if (exploreMapItemIsAvailabilityCatalog(item)) {
     const displayName =
       resolveHostPersonDisplayName({
-        guideName: activity?.hostName ?? item.hostName,
+        guideName: activity?.hostName,
         createdByName: activity?.createdByName,
         tenantName: activity?.tenantName,
-      }) ??
-      activity?.createdByName ??
-      item.hostName;
+      }) ?? activity?.createdByName;
     return buildExploreFeaturedPerson({
-      userId: item.requesterUserId ?? activity?.hostUserId,
+      userId: activity?.hostUserId,
       displayName,
-      avatarUrl: item.hostAvatar ?? activity?.hostAvatar,
+      avatarUrl: activity?.hostAvatar,
       role: 'requester',
     });
   }
 
   if (source === 'shop') {
-    return buildExploreFeaturedPerson({
-      userId: item.requesterUserId,
-      displayName: item.hostName,
-      avatarUrl: item.hostAvatar,
-      role: 'contact',
-    });
+    return null;
   }
 
   if (source === 'activity') {
     const displayName =
       resolveHostPersonDisplayName({
-        guideName: activity?.hostName ?? item.hostName,
+        guideName: activity?.hostName,
         createdByName: activity?.createdByName,
         tenantName: activity?.tenantName,
       }) ??
-      activity?.hostName ??
-      item.hostName;
+      activity?.hostName;
     return buildExploreFeaturedPerson({
       userId: activity?.hostUserId,
       displayName,
-      avatarUrl: activity?.hostAvatar ?? item.hostAvatar,
+      avatarUrl: activity?.hostAvatar,
       role: 'host',
     });
   }

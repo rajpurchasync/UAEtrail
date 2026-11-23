@@ -330,7 +330,7 @@ UI labels vs capabilities vs wire — **host/join/buddy slice only**; entity + r
 | **Host (UI)** | **Individual** leading **this outing** on the map | Copy; wire `hostUserId`; not a `/me/*` resource |
 | **Guide / Pro host (UI)** | Pro **individual** — same person card, not a second storefront product | `/member/:userId`; Pro fields on profile |
 | **Operator (UI)** | **Shop or agency business** (tenant), always tied to ≥1 **user** | Public **agency / shop profile**; publishing workspace (`/publishing/*` SPA) |
-| **Operator on member profile** | When a user is linked to a shop/agency, their **`/member/:userId`** shows the **operator display name** as a link → operator profile | API: `linkedOperatorName` + `hostProfilePath` on `GET /member/:userId/profile` |
+| **Operator on member profile** | When a user is linked to a shop/agency, their **`/member/:userId`** shows the **operator display name** as a link → operator profile | API: `linkedOperatorName` + `operatorProfilePath` on `GET /member/:userId/profile` |
 | **Host / publish (capability)** | Member may create/publish outings | `GET /me/status` → `profileComplete` + `publish.canPublish` |
 | **Profile complete** | DOB, gender, based-in on `/welcome` | `profileComplete` on `/me/status`; `signupProfileComplete` on `/me/profile` only |
 | **Participate** | Join outings as attendee | Auth only; `activity_requests`, `/activities/:id/requests` |

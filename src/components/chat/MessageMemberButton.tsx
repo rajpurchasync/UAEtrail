@@ -6,8 +6,6 @@ import { signInPathForReturn } from '../../utils/authReturnContext';
 
 export interface MessageMemberButtonProps {
   memberUserId?: string | null;
-  /** @deprecated Use `memberUserId` (map from wire `hostUserId` at the call site). */
-  hostUserId?: string | null;
   /** Optional outing context — `?activity=` on `/messages`. */
   activityId?: string | null;
   size?: 'sm' | 'md';
@@ -37,13 +35,12 @@ const buildMessagePath = (memberUserId: string, activityId?: string | null): str
 /** Icon control: open `/messages` DM with a member. */
 export const MessageMemberButton = ({
   memberUserId,
-  hostUserId,
   activityId,
   size = 'sm',
   className = '',
   messageLabel = 'Message',
 }: MessageMemberButtonProps) => {
-  const peerId = memberUserId ?? hostUserId;
+  const peerId = memberUserId;
   const { user } = useAuth();
   const navigate = useNavigate();
 

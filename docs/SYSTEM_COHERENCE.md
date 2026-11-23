@@ -1045,6 +1045,9 @@ Gate: **`npm run verify:platform-governance`**. Behavior stays in code + vitest 
 | **GW-6** | FE hygiene — dead stubs + retired path/copy/scroll aliases (`messagesGroupChatPath`, `FIND_CREW` FAB copy, place path shims, buddy lazy exports) — **complete** | `governanceSurfaceGuard` GW6-01 · GW6-02 |
 | **GW-7** | Consumer SPA — drop `inboundBookmarkRedirects` / `exploreEntryRedirects`, `AppRoutes` `Navigate` legacy bookmarks, `discoveryListRuntime` facade; canonical `/settings` · `/crews` · `/operator` only — **complete** | `governanceSurfaceGuard` GW7-01 · `appSettingsRoutingGuard` · `productUrlInboundGuard` |
 | **GW-8** | FE/API alias trim — retired browse URL parsers, `formatGroupWallReplyBody`, `HostDetails`/`TenantProfile` FE types, API `member-routes` trip/seeking shims — **complete** | `governanceSurfaceGuard` GW8-01 · list browse URL tests · `groupWallReply.test` |
+| **GW-9** | Member profile wire — `operatorProfilePath` (replaces `hostProfilePath` on `GET /member/:id/profile`) — **complete** | `governanceSurfaceGuard` GW9-01 |
+| **GW-10** | Explore map wire — `featuredPerson` only on `ExploreMapItemDTO`; drop `hostName`/`hostAvatar`/`requesterUserId` item duplicates; `organizerDetails` off tenant public DTO — **complete** | `governanceSurfaceGuard` GW10-01 · `exploreMapItemWireGuard` |
+| **GW-11** | Component props — `MessageMemberButton.memberUserId` only; `ExploreResponsiveSheet.composePresentation` only — **complete** | `governanceSurfaceGuard` GW11-01 · `createFlowModuleGuard` |
 
 #### 8.6.1 Phases (outcomes)
 

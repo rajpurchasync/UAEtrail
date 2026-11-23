@@ -68,8 +68,6 @@ export const buildExploreMapItemFromActivity = (
       avatarUrl: resolveActivityHostAvatar(activity),
       role: 'host',
     }),
-    hostName: activity.hostName ?? null,
-    hostAvatar: resolveActivityHostAvatar(activity),
     date: activity.date,
     time: activity.time,
     slotsAvailable: activity.slotsAvailable,

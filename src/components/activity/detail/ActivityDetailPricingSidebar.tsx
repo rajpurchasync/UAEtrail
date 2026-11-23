@@ -106,7 +106,7 @@ export const ActivityDetailPricingSidebar = ({
         hostPath={hostPath}
         hostProfileHint={hostProfileHint}
         canOpenHostProfile={canOpenHostProfile}
-        hostUserId={hostUserId}
+        memberUserId={hostUserId}
         showHostProfileProUpsell={showHostProfileProUpsell}
         proSocialMembershipPath={proSocialMembershipPath}
       />

@@ -24,34 +24,33 @@ describe('explore featured person', () => {
     });
   });
 
-  it('resolves seeking activity hostName into requester role', () => {
+  it('resolves activity host from activity.hostName when featuredPerson absent', () => {
     expect(
       resolveExploreFeaturedPerson({
         source: 'activity',
-        activityMode: 'seeking',
-        requesterUserId: 'u2',
-        hostName: 'Sarah Host',
-        hostAvatar: null,
+        activity: {
+          hostUserId: 'u2',
+          hostName: 'Sarah Host',
+          hostAvatar: null,
+        },
       })
     ).toMatchObject({
       userId: 'u2',
       displayName: 'Sarah Host',
-      role: 'requester',
+      role: 'host',
     });
   });
 
-  it('prefers featuredPerson over legacy fields', () => {
+  it('prefers featuredPerson over activity host fields', () => {
     expect(
       resolveExploreFeaturedPerson({
         source: 'activity',
-        activityMode: 'seeking',
         featuredPerson: {
           userId: 'u3',
           displayName: 'Maya Hassan',
           role: 'requester',
         },
-        hostName: 'Legacy Name',
-        requesterUserId: 'legacy',
+        activity: { hostUserId: 'legacy', hostName: 'Legacy Name' },
       })?.displayName
     ).toBe('Maya Hassan');
   });
