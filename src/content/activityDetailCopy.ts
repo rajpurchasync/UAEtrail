@@ -5,8 +5,6 @@ export const ACTIVITY_DETAIL_TAB_PLAN = 'Plan';
 export const ACTIVITY_DETAIL_TAB_PLACE = 'Place';
 /** Outing roster + crew chat tab (`?tab=crew`; legacy `?tab=buddies` parses). */
 export const ACTIVITY_DETAIL_TAB_CREW = 'Crew';
-/** @deprecated Use {@link ACTIVITY_DETAIL_TAB_CREW}. */
-export const ACTIVITY_DETAIL_TAB_BUDDIES = ACTIVITY_DETAIL_TAB_CREW;
 export const ACTIVITY_DETAIL_TAB_TRANSPORT = 'Transport';
 
 export const ACTIVITY_DETAIL_CREW_LOCKED_HINT =
@@ -86,8 +84,6 @@ export const ACTIVITY_DETAIL_PLACE_LOCKED_CTA = 'Back to Plan';
 
 export const ACTIVITY_DETAIL_TRANSPORT_REACH_TITLE = 'How to get there';
 export const ACTIVITY_DETAIL_HOST_CREW_TOOLS_HINT = 'Host tools on Crew';
-/** @deprecated Use {@link ACTIVITY_DETAIL_HOST_CREW_TOOLS_HINT}. */
-export const ACTIVITY_DETAIL_HOST_BUDDIES_TOOLS_HINT = ACTIVITY_DETAIL_HOST_CREW_TOOLS_HINT;
 
 export const ACTIVITY_DETAIL_TAB_FOOTER_VIEW_RIDE = 'View shared ride';
 export const ACTIVITY_DETAIL_TAB_FOOTER_DIRECTIONS = 'Directions';

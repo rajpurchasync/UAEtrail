@@ -49,13 +49,13 @@ export const BROWSE_LIST_CLEAR_FILTERS = 'Clear filters';
 /** Mobile list create FAB — Plus icon is rendered separately. */
 import {
   EXPLORE_CREATE_FAB_ADD_VENUE,
-  EXPLORE_CREATE_FAB_FIND_CREW,
+  EXPLORE_CREATE_FAB_SHARE_AVAILABILITY,
   EXPLORE_CREATE_FAB_HOST_TRIP,
 } from '../../content/exploreCreateFabCopy';
 
 export const BROWSE_LIST_CREATE_TRIP = EXPLORE_CREATE_FAB_HOST_TRIP;
 export const BROWSE_LIST_CREATE_VENUE = EXPLORE_CREATE_FAB_ADD_VENUE;
-export const BROWSE_LIST_CREATE_CREW = EXPLORE_CREATE_FAB_FIND_CREW;
+export const BROWSE_LIST_CREATE_CREW = EXPLORE_CREATE_FAB_SHARE_AVAILABILITY;
 
 export const browseListCreateFabLabel = (listCat: BrowseMainCategoryKey | null): string => {
   if (listCat === 'venues') return BROWSE_LIST_CREATE_VENUE;

@@ -5,7 +5,6 @@ import {
   adminDashboardRedirect,
   defaultRouteByRole,
   hostDashboardRedirect,
-  hostModeHomeRouteByRole,
   merchantDashboardRedirect,
   participantDashboardRedirect,
   participantHostBookmarkRedirect,
@@ -53,7 +52,6 @@ describe('auth routing by role', () => {
 
     for (const [role, expected] of cases) {
       expect(defaultRouteByRole(role)).toBe(expected);
-      expect(hostModeHomeRouteByRole(role)).toBe(expected);
     }
   });
 

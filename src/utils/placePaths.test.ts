@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseEntityRefFromPathname } from '@uaetrail/shared-types';
-import {
-  locationDetailPath,
-  placeDetailPath,
-  placeSharePath,
-  venueLocationPath,
-} from './placePaths';
+import { placeDetailPath, placeReviewPath, placeSharePath } from './placePaths';
 
 describe('placePaths', () => {
   it('builds canonical public URLs for places', () => {
@@ -15,9 +10,8 @@ describe('placePaths', () => {
     expect(placeDetailPath('shop', 'abc')).toBe('/shop/abc');
   });
 
-  it('keeps legacy location and venue aliases in sync', () => {
-    expect(locationDetailPath('hiking', 'x')).toBe(placeDetailPath('hiking', 'x'));
-    expect(venueLocationPath('camping', 'x')).toBe(placeDetailPath('camping', 'x'));
+  it('builds review and share paths', () => {
+    expect(placeReviewPath('hiking', 'x')).toBe(`${placeDetailPath('hiking', 'x')}#reviews`);
     expect(placeSharePath('event', 'x')).toBe('/venue/x');
   });
 

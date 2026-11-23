@@ -149,8 +149,6 @@ export const myCrewsPath = (options?: { from?: string }): string => {
   return `${MY_CREWS_PATH}?${params.toString()}`;
 };
 
-/** @deprecated Use {@link myCrewsPath}. */
-export const buddiesPath = myCrewsPath;
 
 /** Social hub child screens under {@link MY_CREWS_PATH} (Settings-style sections, not tabs). */
 export type SocialFriendsSection = 'friends' | 'requests' | 'following';
@@ -318,8 +316,6 @@ export const messagesGroupPath = (groupId: string, activityId?: string): string 
   return `${MESSAGES_PATH}?${params.toString()}`;
 };
 
-/** @deprecated Alias of {@link messagesGroupPath} — inbox opens the thread directly. */
-export const messagesGroupChatPath = messagesGroupPath;
 
 export const myRequestDetailPath = (requestId: string): string =>
   `${MY_REQUESTS_PATH}/${encodeURIComponent(requestId)}`;

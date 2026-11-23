@@ -1,11 +1,11 @@
 import type { NavigateFunction } from 'react-router-dom';
-import { messagesGroupChatPath } from '../config/routingCatalog';
+import { messagesGroupPath } from '../config/routingCatalog';
 import { groupsManagePath, type GroupManageSection } from '../config/surfacePaths';
 import { resolveAuthRedirect } from './authRedirect';
 
 /** Deep link to the single group chat tied to an activity (Chat tab). */
 export const activityGroupChatPath = (groupId: string, activityId?: string): string =>
-  messagesGroupChatPath(groupId, activityId);
+  messagesGroupPath(groupId, activityId);
 
 /** Router state key — return path after closing an activity crew chat thread. */
 export const MESSAGES_CHAT_RETURN_TO_KEY = 'messagesReturnTo';

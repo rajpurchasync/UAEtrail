@@ -7,7 +7,7 @@ import {
   PRODUCT_MY_CREW_CARD_TITLE,
 } from '../../content/productNorthStar';
 import {
-  buddiesPathFromCrews,
+  myCrewsPathFromCrews,
   crewsReturnBackState,
   groupsPathFromCrews,
 } from '../../crew/crewSurfaceNav';
@@ -25,7 +25,7 @@ export const CrewsMyCrewCard = () => {
       </h2>
       <p className="mb-3 text-xs text-neutral-600">{PRODUCT_MY_CREW_CARD_SUBTITLE}</p>
       <div className="grid gap-2 sm:grid-cols-2">
-        <Link to={buddiesPathFromCrews()} state={back} className={rowClass}>
+        <Link to={myCrewsPathFromCrews()} state={back} className={rowClass}>
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-700 ring-1 ring-emerald-100">
             <Users className="h-5 w-5" aria-hidden />
           </span>

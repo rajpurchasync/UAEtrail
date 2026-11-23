@@ -8,7 +8,7 @@ import {
   EXPLORE_SHEET,
   exploreSheetPanelClass,
 } from '../../config/exploreTheme';
-import { COMPOSE_DESKTOP_INSET_FIXED, CONSUMER_MAIN_OVERLAY_INSET } from '../../config/consumerOverlayInset';
+import { CONSUMER_MAIN_OVERLAY_INSET } from '../../config/consumerOverlayInset';
 import {
   exploreCenteredSheetPopupBodyClass,
   exploreCenteredSheetPopupPanelClass,
@@ -186,7 +186,7 @@ export const ExploreResponsiveSheet = ({
   ) : null;
 
   const overlayInsetClass = composeFab
-    ? COMPOSE_DESKTOP_INSET_FIXED
+    ? CONSUMER_MAIN_OVERLAY_INSET
     : overlayFixed && !overlayContained
       ? CONSUMER_MAIN_OVERLAY_INSET
       : `${overlayPosition} inset-0`;

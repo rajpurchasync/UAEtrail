@@ -104,9 +104,3 @@ export const scrollEntityDetailToId = (
   }
   return true;
 };
-
-/** @deprecated Use {@link findEntityDetailScrollRoot}. */
-export const findConsumerDetailScrollRoot = findEntityDetailScrollRoot;
-
-/** @deprecated Use {@link scrollEntityDetailToId}. */
-export const scrollConsumerDetailToId = scrollEntityDetailToId;

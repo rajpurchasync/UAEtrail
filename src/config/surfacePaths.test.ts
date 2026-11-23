@@ -7,7 +7,6 @@ import {
   hasSessionExpiredQuery,
   isOperatorConsolePath,
   messagesGroupPath,
-  messagesGroupChatPath,
   sessionExpiredHomePath,
   signInPath,
 } from './surfacePaths';
@@ -44,7 +43,7 @@ describe('surfacePaths', () => {
       `${GROUPS_PATH}?group=g-1&section=members&focus=add-kid`
     );
     expect(messagesGroupPath('g-1', 'act-1')).toBe('/chat?group=g-1&chat=1&activity=act-1');
-    expect(messagesGroupChatPath('g-1', 'act-1')).toBe('/chat?group=g-1&chat=1&activity=act-1');
+    expect(messagesGroupPath('g-1', 'act-1')).toBe('/chat?group=g-1&chat=1&activity=act-1');
   });
 
   it('isOperatorConsolePath matches /operator workspace only', () => {

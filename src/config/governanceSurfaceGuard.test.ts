@@ -134,4 +134,17 @@ describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
     const availabilityApi = read('src/hooks/memberAvailabilityApi.ts');
     expect(availabilityApi).not.toMatch(/saveMyMemberAvailability/);
   });
+
+  it('GW6-02: retired FE compat alias exports removed', () => {
+    expect(read('src/config/surfacePaths.ts')).not.toMatch(/export const buddiesPath\b/);
+    expect(read('src/config/surfacePaths.ts')).not.toMatch(/messagesGroupChatPath/);
+    expect(read('src/content/exploreCreateFabCopy.ts')).not.toMatch(/EXPLORE_CREATE_FAB_FIND_CREW/);
+    expect(read('src/detail/shell/consumerDetailScrollTo.ts')).not.toMatch(/scrollConsumerDetailToId/);
+    expect(read('src/utils/placePaths.ts')).not.toMatch(/locationDetailPath/);
+    expect(read('src/utils/authRouting.ts')).not.toMatch(/hostModeHomeRouteByRole/);
+    expect(read('src/routing/appLazyPages.tsx')).not.toMatch(/buddiesPathFromCrews/);
+    const crewNav = read('src/crew/crewSurfaceNav.ts');
+    expect(crewNav).toMatch(/myCrewsPathFromCrews/);
+    expect(crewNav).not.toMatch(/buddiesPathFromCrews/);
+  });
 });

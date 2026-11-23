@@ -3,10 +3,10 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 describe('consumer detail in-page scroll', () => {
-  it('jump nav uses scrollConsumerDetailToId (nested overflow scroller)', () => {
+  it('jump nav uses scrollEntityDetailToId (nested overflow scroller)', () => {
     const jump = readFileSync(join(process.cwd(), 'src/detail/shell/ConsumerDetailSectionJumpNav.tsx'), 'utf8');
-    expect(jump).toMatch(/scrollConsumerDetailToId/);
-    expect(jump).toMatch(/findConsumerDetailScrollRoot/);
+    expect(jump).toMatch(/scrollEntityDetailToId/);
+    expect(jump).toMatch(/findEntityDetailScrollRoot/);
   });
 
   it('scroll shell marks entity scroll root', () => {

@@ -9,7 +9,7 @@ import {
 } from '@uaetrail/shared-types';
 import {
   EXPLORE_CREATE_FAB_ADD_VENUE,
-  EXPLORE_CREATE_FAB_FIND_CREW,
+  EXPLORE_CREATE_FAB_SHARE_AVAILABILITY,
   EXPLORE_CREATE_FAB_HOST_TRIP,
 } from '../content/exploreCreateFabCopy';
 import { UPL_INTENT_FIXED_MENU, UPL_INTENT_OPEN_ACTION } from '../content/upl-glossary';
@@ -183,7 +183,7 @@ export const hostingPublishSeed = (kind: ActivityComposeKind): HostingPublishSee
 });
 
 export const COMPOSE_HOST_KIND_TITLE = EXPLORE_CREATE_FAB_HOST_TRIP;
-export const COMPOSE_AVAILABILITY_MODE_TITLE = EXPLORE_CREATE_FAB_FIND_CREW;
+export const COMPOSE_AVAILABILITY_MODE_TITLE = EXPLORE_CREATE_FAB_SHARE_AVAILABILITY;
 export const COMPOSE_AVAILABILITY_FIXED_KIND_TITLE = 'Fixed time and place';
 export const COMPOSE_ADD_TARGET_TITLE = EXPLORE_CREATE_FAB_ADD_VENUE;
 export const COMPOSE_ADD_PLACE_TITLE = 'Place';

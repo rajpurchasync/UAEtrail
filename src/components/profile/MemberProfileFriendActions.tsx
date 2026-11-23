@@ -4,9 +4,6 @@ import { AppButton } from '../mobile/AppButton';
 
 export type MemberFriendConnectionLabel = 'friends' | 'pending_outgoing' | 'pending_incoming' | 'none';
 
-/** @deprecated Use {@link MemberFriendConnectionLabel}. */
-export type MemberBuddyConnectionLabel = MemberFriendConnectionLabel;
-
 export const resolveMemberFriendConnectionLabel = (
   buddyRel: BuddyRelationshipDTO | null
 ): MemberFriendConnectionLabel => {
@@ -16,9 +13,6 @@ export const resolveMemberFriendConnectionLabel = (
   if (buddyRel.outgoingRequest) return 'pending_outgoing';
   return 'none';
 };
-
-/** @deprecated Use {@link resolveMemberFriendConnectionLabel}. */
-export const resolveMemberBuddyConnectionLabel = resolveMemberFriendConnectionLabel;
 
 const FriendStatusPill = ({ label }: { label: MemberFriendConnectionLabel }) => {
   if (label === 'none') return null;
@@ -107,6 +101,3 @@ export const MemberProfileFriendActions = ({
     </div>
   );
 };
-
-/** @deprecated Use {@link MemberProfileFriendActions}. */
-export const MemberProfileBuddyActions = MemberProfileFriendActions;

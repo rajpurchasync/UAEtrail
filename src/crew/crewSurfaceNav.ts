@@ -1,6 +1,6 @@
 import { crewsHomePath } from '../config/mobileFiveTabNav';
 import {
-  buddiesPath,
+  myCrewsPath,
   CREWS_ORIGIN_QUERY,
   groupsPath,
   isCrewsOriginQuery,
@@ -10,7 +10,7 @@ import { mobileBackNavState } from '../utils/mobileBackNav';
 
 export { CREWS_ORIGIN_QUERY, isCrewsOriginQuery as isCrewsOrigin };
 
-export const buddiesPathFromCrews = (): string => buddiesPath({ from: CREWS_ORIGIN_QUERY });
+export const myCrewsPathFromCrews = (): string => myCrewsPath({ from: CREWS_ORIGIN_QUERY });
 
 export const groupsPathFromCrews = (options?: Omit<Parameters<typeof groupsPath>[0], 'from'>): string =>
   groupsPath({ ...options, from: CREWS_ORIGIN_QUERY });

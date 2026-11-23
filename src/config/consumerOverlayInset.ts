@@ -11,9 +11,6 @@ export const CONSUMER_MAIN_OVERLAY_INSET =
 export const CHAT_SPLIT_OVERLAY_INSET =
   'fixed max-md:inset-0 md:inset-y-0 md:right-0 md:left-[calc(var(--desktop-side-nav-width,72px)+var(--chat-inbox-width,0px))] md:w-auto';
 
-/** @deprecated Use {@link CONSUMER_MAIN_OVERLAY_INSET} */
-export const COMPOSE_DESKTOP_INSET_FIXED = CONSUMER_MAIN_OVERLAY_INSET;
-
 /** Left edge of the consumer overlay region (side nav + optional chat inbox column). */
 export const readConsumerOverlayContentLeftPx = (): number => {
   if (typeof window === 'undefined' || !window.matchMedia('(min-width: 768px)').matches) return 0;

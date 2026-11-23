@@ -98,7 +98,6 @@ export {
   signUpPath,
   messagesToUserPath,
   messagesGroupPath,
-  messagesGroupChatPath,
   myRequestDetailPath,
   INBOUND_TRAIL_POINTS_PATH,
   INBOUND_MY_REWARDS_PATH,

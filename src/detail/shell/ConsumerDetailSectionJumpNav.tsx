@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from 'react';
-import { findConsumerDetailScrollRoot, scrollConsumerDetailToId } from './consumerDetailScrollTo';
+import { findEntityDetailScrollRoot, scrollEntityDetailToId } from './consumerDetailScrollTo';
 
 export type ConsumerDetailJumpLink = {
   href: string;
@@ -40,7 +40,7 @@ export const ConsumerDetailSectionJumpNav = ({
     if (!enableScrollSpy || sectionIds.length === 0) return;
     if (typeof IntersectionObserver === 'undefined') return;
 
-    const scrollRoot = findConsumerDetailScrollRoot(navRef.current);
+    const scrollRoot = findEntityDetailScrollRoot(navRef.current);
     const visible = new Map<string, number>();
     const observer = new IntersectionObserver(
       (entries) => {
@@ -114,7 +114,7 @@ const JumpChip = ({
 }) => {
   const onPress = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
-    scrollConsumerDetailToId(sectionId);
+    scrollEntityDetailToId(sectionId);
   };
   return (
   <a

@@ -8,12 +8,4 @@ export const buildShareUrl = (path: string): string => {
 export const buildShareText = (title: string, detail?: string): string =>
   detail ? `${title} — ${detail}` : title;
 
-export {
-  placeDetailPath,
-  placeReviewPath,
-  placeSharePath,
-  locationDetailPath,
-  locationReviewPath,
-  locationSharePath,
-  venueLocationPath,
-} from './placePaths';
+export { placeDetailPath, placeReviewPath, placeSharePath } from './placePaths';

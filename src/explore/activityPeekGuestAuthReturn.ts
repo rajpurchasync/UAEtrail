@@ -1,7 +1,7 @@
 import type { ActivityMapPeekActionId } from '@uaetrail/shared-types';
 import {
   activityDetailPath,
-  messagesGroupChatPath,
+  messagesGroupPath,
   MESSAGES_PATH,
 } from '../config/routingCatalog';
 import type { GuestSheetSurface } from '../hooks/useActivityJoinFlow';
@@ -31,7 +31,7 @@ const messageHostChatPath = (activityId: string, hostUserId: string): string => 
 
 const crewChatPath = (activityId: string, groupChatId?: string | null): string => {
   if (groupChatId?.trim()) {
-    return messagesGroupChatPath(groupChatId.trim(), activityId);
+    return messagesGroupPath(groupChatId.trim(), activityId);
   }
   const params = new URLSearchParams({
     activity: activityId,

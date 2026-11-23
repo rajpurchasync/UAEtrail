@@ -40,12 +40,6 @@ export const accountRouteByRole = (role: UserRole): string => {
 };
 
 /**
- * @deprecated Use `defaultRouteByRole` — consumer default is always Explore (MIG-PLATFORM-COMPOSE-OPERATOR).
- * Kept for legacy imports; Switch to Host uses `resolveHostModeHomePath` → operator.
- */
-export const hostModeHomeRouteByRole = (role: UserRole): string => defaultRouteByRole(role);
-
-/**
  * Legacy `/publishing/*` and `/operator/*` bookmarks for members **without** `canAccessPublishingWorkspace`.
  * Consumer equivalents only — not explore compose shims (O0.5).
  */

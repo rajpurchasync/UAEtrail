@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { PageMeta } from '../components/seo/PageMeta';
-import { PLAN_PATH, PLAN_TODAY_PATH, activityDetailPath, messagesGroupChatPath } from '../config/routingCatalog';
+import { PLAN_PATH, PLAN_TODAY_PATH, activityDetailPath, messagesGroupPath } from '../config/routingCatalog';
 import { fetchJoinedUpcomingPlanData } from '../hooks/planUpcomingApi';
 import { fetchPublicActivityDetail } from '../hooks/publicActivityClientApi';
 import { getActivePlatformAlerts } from '../hooks/publicPlatformAlertsClientApi';
@@ -116,7 +116,7 @@ export const PlanTodayPage = () => {
               ) : null}
               {activity.groupChatId ? (
                 <Link
-                  to={messagesGroupChatPath(activity.groupChatId, activity.id)}
+                  to={messagesGroupPath(activity.groupChatId, activity.id)}
                   className="mt-2 inline-block text-sm font-semibold text-emerald-800"
                 >
                   Open group chat
