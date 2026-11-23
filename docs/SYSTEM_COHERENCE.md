@@ -1040,7 +1040,7 @@ Engineering migrations are **largely complete**; the file is **not** an active r
 |------|--------|------|
 | **GW-1** | Compact `platform-program.json` ledger; remove `.cursor/plans`; drop normalize-archive shim | `governanceSurfaceGuard` |
 | **GW-2** | Retire matching re-export shims (`wishlist-alerts`, `availability-hosted-match-notifications`) — **complete** | `platformLayerMatchingGuard` · `governanceSurfaceGuard` GW2-01 |
-| **GW-2b** | Remove `GET /me/member-discovery/roster` strangler — **complete**; canonical **`GET /discover/crew`** only | `governanceSurfaceGuard` GW2-02 · `platformLayerPls5Guard` LAYER-19 |
+| **GW-2b** | Roster strangler removed; FE **`@deprecated` re-export shims** (`activityPublicSeo`, detail header chrome, place header alias) — **complete** | `governanceSurfaceGuard` GW2-02 · GW2b-03 · `platformLayerPls5Guard` LAYER-19 |
 | **GW-3** | Spine orchestrators scorecard/API-only where `verify:domain:fe` already runs FE guards; `verify:system` runs domain **before** spines — **complete** | `governanceSurfaceGuard` GW3-01 · GW3-02 |
 
 #### 8.6.1 Phases (outcomes)

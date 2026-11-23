@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Lock } from 'lucide-react';
 import {
   activityIsConsumerDiscoverable,
+  activityPublicMetaDescription,
   activityScheduleHasEnded,
   type ReviewDTO,
 } from '@uaetrail/shared-types';
@@ -32,7 +33,6 @@ import { useActivityJoinGuardMessage } from '../hooks/useActivityJoinGuardMessag
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
 import { activityEventSchema } from '../components/seo/schemas';
-import { activityPublicMetaDescription } from '../utils/activityPublicSeo';
 import { resolveActivityHeroImage } from '../utils/activityHeroImage';
 import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
 import { JoinRequestModal, WithdrawRequestModal } from '../components/ui';

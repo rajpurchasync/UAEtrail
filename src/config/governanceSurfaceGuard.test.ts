@@ -51,6 +51,16 @@ describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
     expect(matching?.apiFiles ?? []).not.toContain('apps/api/src/services/wishlist-alerts.ts');
   });
 
+  it('GW2b-03: deprecated FE re-export shim files removed', () => {
+    expect(existsSync(join(ROOT, 'src/utils/activityPublicSeo.ts'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/components/mobile/ConsumerDetailHeaderChromeTitle.ts'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/place/detail/resolvePlaceConsumerDetailHeaderChrome.ts'))).toBe(false);
+    const tree = [read('src/pages/ActivityDetail.tsx'), read('src/pages/PlaceDetailPage.tsx')].join('\n');
+    expect(tree).not.toMatch(/activityPublicSeo/);
+    expect(tree).not.toMatch(/resolvePlaceConsumerDetailHeaderChrome/);
+    expect(tree).not.toMatch(/ConsumerDetailHeaderChromeTitle/);
+  });
+
   it('GW3-01: DMCP spine runners do not re-list verify:domain:fe vitest files', () => {
     const domain = new Set(domainFeVitest());
     const spines = [

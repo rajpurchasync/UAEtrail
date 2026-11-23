@@ -4,9 +4,7 @@ import { APP_PAGE_MIN_H_CLASS, APP_SCROLL_BODY_CLASS } from '../../config/layout
 import { createPortal } from 'react-dom';
 import { resolveMobileBackChrome } from '../../utils/mobileBackNav';
 import { ConsumerHeaderActions } from '../layout/ConsumerHeaderActions';
-import {
-  ConsumerDetailHeaderTypeMark,
-} from './ConsumerDetailHeaderChromeTitle';
+import { ConsumerDetailHeaderTypeMark } from './DetailHeaderChrome';
 import { ConsumerHeroBanner } from './ConsumerHeroBanner';
 import { MobileBackButton } from './MobileBackButton';
 import { EnvironmentImage } from '../ui/EnvironmentImage';

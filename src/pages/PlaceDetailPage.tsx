@@ -10,7 +10,7 @@ import { MobileBackButton } from '../components/mobile/MobileBackButton';
 import { PLACE_DETAIL_CONFIG, type PlaceDetailKind } from './placeDetailConfig';
 import { ConsumerEntityDetailLoading } from '../detail/shell/ConsumerEntityDetailLoading';
 import { ConsumerErrorCard } from '../components/mobile/ConsumerFeedback';
-import { resolvePlaceConsumerDetailHeaderChrome } from '../place/detail/resolvePlaceConsumerDetailHeaderChrome';
+import { resolvePlaceDetailHeaderChrome } from '../place/detail/resolvePlaceDetailHeaderChrome';
 import {
   DETAIL_LOADING_CAMP,
   DETAIL_LOADING_EVENT_VENUE,
@@ -61,7 +61,7 @@ export const PlaceDetailPage = ({ kind: kindProp }: PlaceDetailPageProps) => {
         <ConsumerEntityDetailLoading
           backTo={detailBackTo ?? detailBackPath(backKind)}
           backLabel={parseMobileBackNavState(location.state)?.backLabel ?? 'Explore'}
-          headerChrome={resolvePlaceConsumerDetailHeaderChrome(kind)}
+          headerChrome={resolvePlaceDetailHeaderChrome(kind)}
           label={PLACE_LOADING_LABEL[kind]}
         />
       </>

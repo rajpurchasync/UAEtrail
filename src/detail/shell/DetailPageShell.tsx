@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { MobileDetailScrollShell } from '../../components/mobile/MobileDetailScrollShell';
-import type { ConsumerDetailHeaderMark } from '../../components/mobile/ConsumerDetailHeaderChromeTitle';
+import type { ConsumerDetailHeaderMark } from '../../components/mobile/DetailHeaderChrome';
 
 /**
  * Shared consumer detail layout (plan §5).
