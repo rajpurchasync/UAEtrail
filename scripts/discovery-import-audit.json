@@ -41,8 +41,9 @@
       "..": 8
     },
     "src/crew-discovery": {
-      "..": 17,
-      "lib": 4,
+      "lib": 6,
+      "..": 18,
+      "discover": 1,
       "config": 1,
       "content": 1,
       "member": 3,
@@ -53,7 +54,7 @@
     }
   },
   "byTarget": {
-    "..": 245,
+    "..": 246,
     "browse": 87,
     "crews": 9,
     "components": 5,
@@ -68,7 +69,8 @@
     "activity": 2,
     "content": 3,
     "utils": 1,
-    "lib": 4,
+    "lib": 6,
+    "discover": 1,
     "member": 3,
     "crewBrowseFeatureGates": 1,
     "crewBrowseTab": 1,

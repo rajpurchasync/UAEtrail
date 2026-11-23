@@ -2,14 +2,15 @@ import { describe, expect, it } from 'vitest';
 import {
   CREW_PILLAR_IDS,
   CREW_PILLAR_SPECS,
-  crewHubStatTabToPillar,
+  crewPeopleFacetToPillar,
   isCrewPillarId,
 } from './crew-pillars.js';
 
 describe('crew pillars lexicon', () => {
-  it('defines six distinct pillars', () => {
-    expect(CREW_PILLAR_IDS).toHaveLength(6);
-    expect(new Set(CREW_PILLAR_IDS).size).toBe(6);
+  it('defines seven distinct pillars', () => {
+    expect(CREW_PILLAR_IDS).toHaveLength(7);
+    expect(new Set(CREW_PILLAR_IDS).size).toBe(7);
+    expect(CREW_PILLAR_IDS).toContain('directory');
   });
 
   it('every pillar has a spec with disjoint notSameAs targets', () => {
@@ -21,11 +22,12 @@ describe('crew pillars lexicon', () => {
     }
   });
 
-  it('maps crews hub tabs without collapsing friends and intent', () => {
-    expect(crewHubStatTabToPillar('friends')).toBe('friends');
-    expect(crewHubStatTabToPillar('available')).toBe('intent_signal');
-    expect(crewHubStatTabToPillar('everyone')).toBe('guides_operators');
-    expect(crewHubStatTabToPillar('friends')).not.toBe(crewHubStatTabToPillar('available'));
+  it('maps people facets without collapsing directory and guides', () => {
+    expect(crewPeopleFacetToPillar('friends')).toBe('friends');
+    expect(crewPeopleFacetToPillar('available')).toBe('intent_signal');
+    expect(crewPeopleFacetToPillar('everyone')).toBe('directory');
+    expect(crewPeopleFacetToPillar('everyone')).not.toBe('guides_operators');
+    expect(crewPeopleFacetToPillar('friends')).not.toBe(crewPeopleFacetToPillar('available'));
   });
 
   it('isCrewPillarId rejects buddy wire tokens', () => {

@@ -17,7 +17,7 @@ describe('wishlist area trip alerts', () => {
   });
 
   it('fans out published and seeking activity notifications to area savers', () => {
-    const alerts = read('src/services/wishlist-alerts.ts');
+    const alerts = read('src/services/matching/wishlist-match-notify.ts');
     expect(alerts).toMatch(/fanOutSavedAreaWishlistNotifications/);
     expect(alerts).toMatch(/listWishlistSaversForArea/);
     expect(alerts).toMatch(/New outing in/);

@@ -11,6 +11,7 @@ import type {
   SocialPersonRowDTO,
 } from '@uaetrail/shared-types';
 import type { ExploreAvailabilityIndex } from '../api/domains/availability';
+import { crewDiscoverApi } from '../api/domains/crewDiscover';
 import { api } from '../api/index';
 
 export type { ExploreAvailabilityIndex };
@@ -43,13 +44,14 @@ export const fetchMeMemberDiscoveryRoster = async (options?: {
   date?: string | null;
   omitDirectory?: boolean;
 }): Promise<MemberDiscoveryRosterPayload> => {
-  const res = await api.getMeMemberDiscoveryRoster(options);
+  const res = await crewDiscoverApi.getDiscoverCrewFeed(options);
+  const feed = res.data;
   return {
-    friendsGoing: res.data.friendsGoing ?? [],
-    hostsGoing: res.data.hostsGoing ?? [],
-    availabilityOnMap: res.data.availabilityOnMap ?? [],
-    followed: res.data.followed ?? [],
-    directory: res.data.directory ?? [],
+    friendsGoing: feed.friendsGoing ?? [],
+    hostsGoing: feed.hostsGoing ?? [],
+    availabilityOnMap: feed.availabilityOnMap ?? [],
+    followed: feed.followed ?? [],
+    directory: feed.directory ?? [],
     quota: res.meta.quota,
   };
 };

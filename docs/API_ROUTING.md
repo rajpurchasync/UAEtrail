@@ -19,7 +19,8 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`M
 | **`/publishing/*`** | Verified + **tenant** (`x-organisation-id`) | **Publishing workspace** (any tier): publish, roster, **activity** join queue. |
 | **`/member/:userId/*`** | Optional auth | Public member card (`profile`, `brief`, `upcoming-activities`) — `registerPublicMemberRoutes.ts` |
 | **`/me/discover/overlay`** | Auth | Per-viewer `viewerAccess` for public map item ids (not a second catalog) |
-| **`/me/member-discovery/*`** | Auth | People roster, network, directory browse, quota, user search |
+| **`/discover/*`** | Mixed | **Discover layer** — federated Find crew (`GET /discover/crew`, auth) · ranked recommendations (`GET /discover/recommendations`, `surface=map` optional auth · `surface=crew` auth) |
+| **`/me/member-discovery/*`** | Auth | People network, directory browse, quota, user search — **`/me/member-discovery/roster` legacy** (use `/discover/crew`) |
 | **`/safety/reports`** | Auth | Member **content reports** (trust/safety) — `safety.ts` |
 | **`/chat/*`** | Auth | DMs |
 | **`/reviews`** | Public read; auth write | Social reviews (not content reports) |
@@ -177,13 +178,26 @@ Explore **people browse panel** (map; URL `view=people`; legacy `view=social` / 
 |--------|------|-----|
 | GET | `/me/member-discovery/network/preview` | Network avatars + counts for explore map people pill |
 | GET | `/me/member-discovery/network` | **Network roster** — Friends (BWL `buddies`) / following. Query: `segment=all\|buddies\|followed` (`friends` alias of `buddies`) |
-| GET | `/me/member-discovery/roster` | **Discovery roster** — who’s going, hosts, looking-for **person rows**, followed, directory (`q`, `date`, `omitDirectory`, pagination); `meta.quota` |
+| GET | `/me/member-discovery/roster` | **Legacy** — same federated payload as **`GET /discover/crew`**; responds with **Deprecation** + `Link` successor. Prefer **`/discover/crew`**. |
 | GET | `/me/member-discovery/browse` | Directory only (paginated public members) |
 | GET | `/me/member-discovery/search` | User search (e.g. new chat) |
 | GET | `/me/member-discovery/quota` | Free vs Pro profile-open quota |
 | GET | `/explore/map?sources=availability` | **Looking for** — fixed crew availability pins (`source: availability`, `member_availability`) |
 
-Registration: `registerMemberDiscoveryRoutes.ts` · `registerPublicPlaceRoutes.ts` (`GET /explore/map`) · `availability-fixed-map-items.ts`, `member-people-engagement.ts`, `member-discovery-roster.ts`.
+Registration: `registerMemberDiscoveryRoutes.ts` · `registerDiscoverCrewRoutes.ts` · `registerPublicPlaceRoutes.ts` (`GET /explore/map`) · `availability-fixed-map-items.ts`, `member-people-engagement.ts`, `member-discovery-roster.ts`, `discover-crew-feed.ts`.
+
+---
+
+## Discover layer reads
+
+**Bounded context:** Discover platform layer ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) · `MIG-DISCOVER-RECOMMENDATIONS`). Matching is **engine-only** — no consumer `/matching` route.
+
+| Method | Path | Who |
+|--------|------|-----|
+| GET | `/discover/crew` | Signed-in · federated **Find crew** feed (friends going, hosts, followed, directory, availability-on-map). Query: `q`, `date`, `omitDirectory`, pagination; `meta.quota`. |
+| GET | `/discover/recommendations` | Ranked rows for a surface. Query: **`surface=map`** (`limit` 1–20) — **optionalAuth** (buddy + wishlist boosts when bearer). **`surface=crew`** — auth required (`limit`, `from`/`to`, `date`, `area`, `kind` aligned with availability browse). |
+
+Registration: `registerDiscoverCrewRoutes.ts` (member router) · `registerDiscoverRecommendationsRoutes.ts` (public router · `optionalAuth`) · services `discover-crew-feed.ts`, `discover-map-recommendations.ts`, `discover-crew-recommendations.ts` · shared scorer `packages/shared-types` `map-explore-recommendation-score.ts`.
 
 ---
 

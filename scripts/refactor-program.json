@@ -1027,6 +1027,93 @@
       ],
       "successMetric": "docs/SYSTEM_COHERENCE.md §8.10 exit criteria; delete §8.10; guideProfileComplete gates host; schedule slots capacity+modalities+terms; no buddy UPL; npm run verify:system",
       "scheduleDoc": "docs/SYSTEM_COHERENCE.md §8.10 (remove when status=complete)"
+    },
+    {
+      "id": "MIG-PLATFORM-LAYER-SPINE",
+      "phase": "P4b",
+      "status": "complete",
+      "owner": "product-eng",
+      "contextIds": [
+        "discovery",
+        "member_discovery",
+        "compose",
+        "availability",
+        "engagement",
+        "social_graph",
+        "communication",
+        "participation",
+        "matching"
+      ],
+      "apiRoots": [
+        "packages/shared-types/src/platform-layers.ts",
+        "packages/shared-types/src/platform-layer-api.ts",
+        "packages/shared-types/src/platform-surface-action.ts",
+        "packages/shared-types/src/crew-pillars.ts",
+        "packages/shared-types/src/wire-lexicon.ts",
+        "apps/api/src/services/matching",
+        "apps/api/src/services/discover-crew-feed.ts",
+        "apps/api/src/routes/user/registerDiscoverCrewRoutes.ts"
+      ],
+      "feRoots": [
+        "scripts/platform-layer-spine-touchpoints.json",
+        "scripts/verify-platform-layer-spine.mjs",
+        "src/config/platformLayerSpineGuard.test.ts",
+        "src/config/platformLayerApiGuard.test.ts",
+        "src/config/platformLayerCrewDiscoverGuard.test.ts",
+        "src/config/platformLayerActionGuard.test.ts",
+        "src/config/platformLayerMatchingGuard.test.ts",
+        "src/config/platformLayerPls5Guard.test.ts",
+        "src/config/exploreMapRecommendedGuard.test.ts",
+        "src/explore/recommend",
+        "src/explore/ui/ExploreMapRecommendedSheet.tsx",
+        "src/api/domains/crewDiscover.ts",
+        "src/crew-discovery/discover",
+        "src/crew-discovery/panel",
+        "src/crew-discovery/memberBrowseRowModel.ts",
+        "src/plan",
+        "src/availability"
+      ],
+      "executionPhases": [
+        "PLS-0: platform-layers contract + touchpoints + guards",
+        "PLS-1: manifest + api client boundaries + crew pillar facet",
+        "PLS-2: GET /discover/crew federated feed",
+        "PLS-3: surface action projection (join|connect|plan)",
+        "PLS-4: matching service extraction",
+        "PLS-5: Crews FAB IA + residue removal + close"
+      ],
+      "successMetric": "Publish · Discover · Join · Connect · Plan · Manage aligned across crew/place/activity surfaces; scripts/platform-layer-spine-touchpoints.json phases complete; npm run verify:platform-layer-spine; npm run verify:system",
+      "scheduleDoc": "scripts/platform-layer-spine-touchpoints.json"
+    },
+    {
+      "id": "MIG-DISCOVER-RECOMMENDATIONS",
+      "phase": "P4",
+      "status": "complete",
+      "owner": "product-eng",
+      "contextIds": ["discovery", "matching", "member_discovery"],
+      "apiRoots": [
+        "packages/shared-types/src/discover-recommendations.ts",
+        "apps/api/src/services/discover-map-recommendations.ts",
+        "apps/api/src/services/matching/rank-map-explore.ts",
+        "apps/api/src/routes/user/registerDiscoverRecommendationsRoutes.ts"
+      ],
+      "feRoots": [
+        "scripts/discover-recommendations-touchpoints.json",
+        "src/api/domains/discoverRecommendations.ts",
+        "src/hooks/useDiscoverMapRecommendations.ts",
+        "src/explore/recommend/resolveExploreMapRecommendationItems.ts",
+        "src/config/migDiscoverRecommendationsGuard.test.ts"
+      ],
+      "executionPhases": [
+        "REC-1: GET /discover/recommendations map surface + rank-map-explore",
+        "REC-2: signed-in map sheet uses server rank",
+        "REC-3: places + wishlist/geo boosts + signal chips in sheet",
+        "REC-4: surface=crew — Recommended tab server rank",
+        "REC-5: shared map explore recommendation scorer",
+        "REC-6: Tier-1 API_ROUTING + MEMBER_MODEL discover wires",
+        "REC-7: discover recommendations HTTP contract test"
+      ],
+      "successMetric": "Server-ranked map recommendations; optionalAuth buddy boost; npm run verify:discover-recommendations",
+      "scheduleDoc": "scripts/discover-recommendations-touchpoints.json"
     }
   ],
   "stranglerRules": [

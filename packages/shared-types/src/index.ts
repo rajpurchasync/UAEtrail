@@ -466,6 +466,42 @@ export type {
   MemberDiscoveryOnTripRowDTO,
   MemberDiscoveryRosterDTO,
 } from './member-discovery-roster.js';
+export type { CrewDiscoverFeedDTO, CrewDiscoverFeedMetaDTO } from './crew-discover-feed.js';
+export { CREW_DISCOVER_FEED_SCHEMA_VERSION } from './crew-discover-feed.js';
+export type {
+  DiscoverCrewRecommendationBucket,
+  DiscoverCrewRecommendationRowDTO,
+  DiscoverCrewRecommendationsDTO,
+  DiscoverMapRecommendationRowDTO,
+  DiscoverMapRecommendationsDTO,
+  DiscoverRecommendationSignal,
+  DiscoverRecommendationSurface,
+} from './discover-recommendations.js';
+export { DISCOVER_RECOMMENDATIONS_SCHEMA_VERSION } from './discover-recommendations.js';
+export {
+  MAP_EXPLORE_RECOMMEND_MS_PER_DAY,
+  MAP_EXPLORE_RECOMMEND_WEIGHTS,
+  buildExploreMapRecommendationOrder,
+  isExcludedFromMapExploreRecommendations,
+  resolveExploreMapItemStartAtMs,
+  scoreExploreMapCatalogItem,
+  scoreMapExploreActivityCore,
+  scoreMapExplorePlaceCore,
+  applyMapExploreGeoBoost,
+  haversineDistanceKm,
+  type MapExploreRecommendationBoosts,
+  type MapExploreRecommendationScore,
+  type MapExploreViewerGeo,
+} from './map-explore-recommendation-score.js';
+export {
+  DEFAULT_RECOMMENDED_CREW_FEED_CAPS,
+  buildRecommendedCrewFeedRefs,
+  filterDirectoryBrowseCards,
+  type BuildRecommendedCrewFeedInput,
+  type RecommendedCrewFeedBucket,
+  type RecommendedCrewFeedCaps,
+  type RecommendedCrewFeedRowRef,
+} from './recommended-crew-feed.js';
 export type {
   BuddyActivityPresenceDTO,
   BuddyActivityPresenceRowDTO,
@@ -2145,11 +2181,48 @@ export {
   slugifyCommunityDiscoverName,
 } from './community-discover.js';
 
-export type { CrewPillarBoundedContext, CrewPillarId, CrewPillarSpec } from './crew-pillars.js';
+export type { PlatformLayer, ProductModule } from './platform-layers.js';
+export {
+  JOIN_LAYER_MODULES,
+  MODULE_LAYER_MATRIX,
+  PLATFORM_LAYERS,
+  isPlatformLayer,
+} from './platform-layers.js';
+
+export { PLATFORM_LAYER_API_MODULES, apiDomainModulesForLayer } from './platform-layer-api.js';
+
+export type {
+  ConnectActionId,
+  DiscoverActionId,
+  JoinActionId,
+  LayerActionId,
+  ManageActionId,
+  PlaceActionId,
+  PlanActionId,
+  PublishActionId,
+  SurfaceActionDTO,
+} from './platform-surface-action.js';
+export {
+  CONNECT_ACTION_IDS,
+  DISCOVER_ACTION_IDS,
+  JOIN_ACTION_IDS,
+  LAYER_ACTION_WIRE,
+  MANAGE_ACTION_IDS,
+  PLACE_ACTION_IDS,
+  PLAN_ACTION_IDS,
+  PUBLISH_ACTION_IDS,
+  layerForCatalogAction,
+  layerForPeekAction,
+  projectCatalogSurfaceActions,
+  projectSurfaceActions,
+} from './platform-surface-action.js';
+
+export type { CrewPillarBoundedContext, CrewPillarId, CrewPillarSpec, CrewPeopleFacetWire } from './crew-pillars.js';
 export {
   CREW_PILLAR_IDS,
   CREW_PILLAR_SPECS,
   crewHubStatTabToPillar,
+  crewPeopleFacetToPillar,
   isCrewPillarId,
 } from './crew-pillars.js';
 

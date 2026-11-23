@@ -66,6 +66,7 @@ export const ExploreExperience = () => {
               handlePickExploreArea={model.handlePickExploreArea}
               onVisibleMapBoundsChange={model.onVisibleMapBoundsChange}
               catalogListCount={model.catalogListCount}
+              mapItems={model.mapItems}
               openCrewsBrowsePanel={model.openCrewsBrowsePanel}
               crewsBrowseMapChip={model.crewsBrowseMapChip}
             />

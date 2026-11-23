@@ -9,7 +9,7 @@ export type CrewDiscoveryRosterQueryParams = {
   omitDirectory: boolean;
 };
 
-/** Friends / Everyone roster (`GET /me/member-discovery/roster`). */
+/** Friends / Everyone feed (`GET /discover/crew`). */
 export const crewDiscoveryRosterQueryKey = (params: CrewDiscoveryRosterQueryParams) =>
   [
     ...CREW_DISCOVERY_ROOT,

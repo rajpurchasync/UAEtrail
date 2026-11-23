@@ -18,7 +18,7 @@ import {
   buildMemberBrowseRowFromAvailability,
   buildMemberBrowseRowFromGoing,
   buildMemberBrowseRowsFromDirectory,
-  filterAvailabilityPeopleByGuideCapacity,
+  filterAvailabilityByCapacity,
   filterDirectoryBrowseCards,
   type MemberBrowseRowVm,
 } from '../../memberBrowseRowModel';
@@ -114,7 +114,7 @@ export const CrewBrowseTabContent = ({
         />
       ) : null;
 
-    const markedPeople = filterAvailabilityPeopleByGuideCapacity(availabilityPeople, availabilityGuideFilter);
+    const markedPeople = filterAvailabilityByCapacity(availabilityPeople, availabilityGuideFilter);
     const markedRows = markedPeople.map(buildMemberBrowseRowFromAvailability);
     let markedBlock: ReactNode = null;
     if (showMarked) {

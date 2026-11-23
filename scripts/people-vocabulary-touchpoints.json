@@ -36,6 +36,7 @@
   },
   "crewPillars": [
     "friends",
+    "directory",
     "teams",
     "communities",
     "guides_operators",
@@ -125,7 +126,8 @@
     "friends_ui": "Mutual connections on /crews — not Everyone directory.",
     "teams_ui": "Private teams /groups — member_group.kind=team; not communities; not outing_crew.",
     "intent_guide_kind": "member_availability.kinds includes guide — product label Guide on Available rows.",
-    "guides_operators_ui": "Directory pros on connect/Everyone — profileRoleLabel; crewsGuides rail.",
+    "guides_operators_ui": "Professional tab — profileRoleLabel; crewsGuides rail.",
+    "directory_ui": "People tab Everyone — connect lane; not friends mutual graph; not Professional.",
     "buddy_wire": "HTTP /me/buddies, segment=buddies — UI says Friends.",
     "intent_compose": "?compose=intent:open|intent:fixed:* → PUT /me/availability.",
     "wishlist_engagement": "POST /me/wishlist on /plan — never compose wire."

@@ -135,7 +135,7 @@ describe('MIG-SCHEDULE-GUIDE guards', () => {
     expect(mapItems).not.toMatch(/primaryKind\(doc\.kinds\)/);
     const rowModel = readFileSync(join(ROOT, 'src/crew-discovery/memberBrowseRowModel.ts'), 'utf8');
     expect(rowModel).toMatch(/memberHasGuideCapacityInSlots/);
-    expect(rowModel).toMatch(/filterAvailabilityPeopleByGuideCapacity/);
+    expect(rowModel).toMatch(/filterAvailabilityByCapacity/);
     expect(rowModel).not.toMatch(/filterAvailabilityPeopleByGuideIntent/);
   });
 

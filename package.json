@@ -71,6 +71,8 @@
     "verify:participation-spine": "node scripts/verify-participation-spine.mjs",
     "verify:storefront-spine": "node scripts/verify-storefront-spine.mjs",
     "verify:people-graph-plan": "node scripts/verify-people-graph-plan.mjs",
+    "verify:platform-layer-spine": "node scripts/verify-platform-layer-spine.mjs",
+    "verify:discover-recommendations": "node scripts/verify-discover-recommendations.mjs",
     "verify:release-ops": "node scripts/verify-release-ops.mjs",
     "context:map": "node scripts/context-map.mjs",
     "discovery:import-audit": "node scripts/discovery-import-audit.mjs",

@@ -24,7 +24,7 @@ describe('availability notification lineage (MIG-DISCO-REG)', () => {
   it('legacy participant intent create does not wire seeking-area fan-out', () => {
     const intents = read('src/lib/participant-intents-store.ts');
     expect(intents).not.toMatch(/seeking-area-match-notifications/);
-    const wishlist = read('src/services/wishlist-alerts.ts');
+    const wishlist = read('src/services/matching/wishlist-match-notify.ts');
     expect(wishlist).not.toMatch(/notifyWishlistForNewSeeking/);
     expect(existsSync(join(process.cwd(), 'src/services/wishlist-archived-seeking-ops.ts'))).toBe(
       false

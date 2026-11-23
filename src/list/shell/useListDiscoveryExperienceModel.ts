@@ -109,7 +109,8 @@ export const useListDiscoveryExperienceModel = ({
       createFabContext,
     });
 
-  const { memberRoster, memberAvailability, crewsNeedsAvailability } = useListDiscoveryCrewsCategoryModel({
+  const { memberRoster, memberAvailability, crewsNeedsAvailability, crewRecommendationsQuery } =
+    useListDiscoveryCrewsCategoryModel({
     enabled: isPeopleCategory,
     user,
     draftQuery,
@@ -278,6 +279,7 @@ export const useListDiscoveryExperienceModel = ({
     isPeopleCategory,
     memberRoster,
     memberAvailability,
+    crewRecommendationsQuery,
     availabilityCatalogItems,
     offerRideshareForAvailabilityItem,
     handleOpenAvailabilityCatalogItem,

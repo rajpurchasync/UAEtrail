@@ -62,7 +62,7 @@ describe('migDiscoRegProgramGuard (MIG-DISCO-REG ops)', () => {
     expect(store).toMatch(/personMatchesAvailabilityKindQuery/);
     expect(store).not.toMatch(/kinds:\s*query\.kind/);
     expect(read('src/crew-discovery/panel/crewBrowse/CrewBrowseTabContent.tsx')).toMatch(
-      /filterAvailabilityPeopleByGuideCapacity/
+      /filterAvailabilityByCapacity/
     );
   });
 });

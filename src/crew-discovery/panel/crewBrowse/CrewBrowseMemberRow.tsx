@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
+import type { DiscoverCrewRecommendationBucket } from '@uaetrail/shared-types';
 import { SecureAvatar } from '../../../components/ui';
 import { EXPLORE_LIST_ROW, EXPLORE_TYPE } from '../../../config/exploreTheme';
+import { CrewRecommendationBucketChip } from './CrewRecommendationBucketChip';
 
 export type CrewBrowseMemberBadge = {
   label: string;
@@ -31,6 +33,7 @@ export type CrewBrowseMemberRowProps = {
   scheduleDetail?: ReactNode;
   /** `wrap` — full narrative (Available tab); default `truncate` for short titles. */
   titleClamp?: 'truncate' | 'line-clamp-2' | 'wrap';
+  recommendationBucket?: DiscoverCrewRecommendationBucket;
 };
 
 const avatarClass = (buddyHighlight: boolean) =>
@@ -58,6 +61,7 @@ export const CrewBrowseMemberRow = ({
   footnote,
   scheduleDetail,
   titleClamp = 'truncate',
+  recommendationBucket,
 }: CrewBrowseMemberRowProps) => {
   const linkTo = actionHref ?? profileHref;
   const titleClass =
@@ -69,6 +73,11 @@ export const CrewBrowseMemberRow = ({
   const textColumn = (
     <span className="min-w-0 flex-1 space-y-0.5">
       <p className={titleClass}>{title}</p>
+      {recommendationBucket ? (
+        <p className="!mt-1">
+          <CrewRecommendationBucketChip bucket={recommendationBucket} />
+        </p>
+      ) : null}
       {dateLine ? (
         <p className={`${EXPLORE_LIST_ROW.meta} !mt-0.5 leading-snug`}>{dateLine}</p>
       ) : null}

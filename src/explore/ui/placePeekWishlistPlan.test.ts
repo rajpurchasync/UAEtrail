@@ -15,7 +15,9 @@ describe('place peek save → Plan wishlist (trip alerts)', () => {
     expect(read('src/components/plan/PlanSavedSection.tsx')).toMatch(/useMeWishlist/);
     expect(read('src/components/plan/PlanSavedSection.tsx')).toMatch(/isPlanWantToGoVenue/);
     expect(read('src/components/plan/PlanSavedSection.tsx')).not.toMatch(/explorePlacesPath/);
-    expect(read('apps/api/src/services/wishlist-alerts.ts')).toMatch(/listWishlistSaversForLocation/);
+    expect(read('apps/api/src/services/matching/wishlist-match-notify.ts')).toMatch(
+      /listWishlistSaversForLocation/
+    );
     expect(read('src/utils/notificationRouting.ts')).toMatch(/wishlist_match/);
   });
 

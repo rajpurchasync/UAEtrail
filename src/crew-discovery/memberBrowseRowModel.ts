@@ -1,9 +1,11 @@
 import {
   discoveryModalitiesFromSlots,
+  filterDirectoryBrowseCards,
   guideEngagementTermsBrowseLineFromSlots,
   memberHasGuideCapacityInSlots,
 } from '@uaetrail/shared-types';
 import type {
+  DiscoverCrewRecommendationBucket,
   ExploreAvailablePersonDTO,
   MemberBrowseCardDTO,
   MemberDiscoveryQuotaDTO,
@@ -33,21 +35,13 @@ import {
 export type MemberBrowseRowVm = CrewBrowseMemberRowProps & {
   key: string;
   userId: string;
+  recommendationBucket?: DiscoverCrewRecommendationBucket;
 };
 
-export const filterDirectoryBrowseCards = (
-  directory: MemberBrowseCardDTO[],
-  friendsGoing: SocialPersonRowDTO[],
-  hostsGoing: SocialPersonRowDTO[]
-): MemberBrowseCardDTO[] => {
-  const friendUserIds = new Set(friendsGoing.map((person) => person.userId));
-  return directory.filter(
-    (row) => !friendUserIds.has(row.id) && !hostsGoing.some((host) => host.userId === row.id)
-  );
-};
+export { filterDirectoryBrowseCards } from '@uaetrail/shared-types';
 
-/** Guides lane — `capacity: guide` on slots (MIG-SG-B4). */
-export const filterAvailabilityPeopleByGuideCapacity = (
+/** Available tab — slot `capacity: guide` filter (MIG-SG-B4). */
+export const filterAvailabilityByCapacity = (
   people: ExploreAvailablePersonDTO[],
   filter: 'all' | 'guide'
 ): ExploreAvailablePersonDTO[] =>

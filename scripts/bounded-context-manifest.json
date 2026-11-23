@@ -16,15 +16,21 @@
         "apps/api/src/services/explore-map-overlay-read.ts",
         "apps/api/src/lib/explore-map-list-projection.ts",
         "apps/api/src/lib/activity-engagement-policy-input.ts",
-        "apps/api/src/lib/availability-fixed-map-items.ts"
+        "apps/api/src/lib/availability-fixed-map-items.ts",
+        "apps/api/src/services/discover-map-recommendations.ts"
       ],
       "routeRegistrars": [
         "apps/api/src/routes/user/registerPublicActivityRoutes.ts",
         "apps/api/src/routes/user/registerPublicPlaceRoutes.ts",
         "apps/api/src/routes/user/registerMeDiscoverOverlayRoutes.ts",
-        "apps/api/src/routes/user/registerPublicVitalsRoutes.ts"
+        "apps/api/src/routes/user/registerPublicVitalsRoutes.ts",
+        "apps/api/src/routes/user/registerDiscoverRecommendationsRoutes.ts"
       ],
-      "feDomains": ["src/api/domains/explore.ts", "src/api/domains/weather.ts"],
+      "feDomains": [
+        "src/api/domains/explore.ts",
+        "src/api/domains/weather.ts",
+        "src/api/domains/discoverRecommendations.ts"
+      ],
       "feRoots": [
         "src/explore/discoveryRuntime.ts",
         "src/explore",
@@ -248,10 +254,17 @@
         "apps/api/src/lib/member-profile-views-store.ts"
       ],
       "routeRegistrars": [
-        "apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts"
+        "apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts",
+        "apps/api/src/routes/user/registerDiscoverCrewRoutes.ts"
       ],
-      "feDomains": ["src/api/domains/account.ts", "src/api/domains/explore.ts", "src/api/domains/member.ts"],
+      "feDomains": [
+        "src/api/domains/account.ts",
+        "src/api/domains/crewDiscover.ts",
+        "src/api/domains/explore.ts",
+        "src/api/domains/member.ts"
+      ],
       "feRoots": [
+        "src/crew-discovery/discover",
         "src/pages/MemberProfile.tsx",
         "src/hooks/communityDiscoverClientApi.ts",
         "src/crew-discovery",
@@ -273,7 +286,6 @@
         "apps/api/src/services/member-badges.ts",
         "apps/api/src/lib/wishlist-store.ts",
         "apps/api/src/lib/entity-follow-store.ts",
-        "apps/api/src/services/wishlist-alerts.ts",
         "apps/api/src/services/entity-publish-notifications.ts",
         "apps/api/src/services/member-coordination-attention.ts"
       ],
@@ -350,7 +362,32 @@
         "apps/api/src/routes/user/registerExploreAvailabilityRoutes.ts"
       ],
       "feDomains": ["src/api/domains/availability.ts", "src/api/domains/memberCommitmentHub.ts"],
-      "feRoots": ["src/plan", "src/components/plan/PlanAvailabilitySection.tsx"]
+      "feRoots": [
+        "src/availability",
+        "src/plan",
+        "src/explore/ui/IntentOpenComposeSheet.tsx",
+        "src/explore/ui/CreateAvailabilityFixedFlow.tsx",
+        "src/components/plan/PlanAvailabilitySection.tsx"
+      ]
+    },
+    {
+      "id": "matching",
+      "label": "Match notifications (availability · wishlist · hosted)",
+      "apiFiles": [
+        "apps/api/src/services/matching/index.ts",
+        "apps/api/src/services/matching/hosted-availability-fit.ts",
+        "apps/api/src/services/matching/wishlist-match-notify.ts",
+        "apps/api/src/services/matching/availability-hosted-match.ts",
+        "apps/api/src/services/matching/rank-map-explore.ts",
+        "apps/api/src/services/matching/rank-map-explore-place.ts",
+        "apps/api/src/services/matching/recommendation-wishlist-context.ts",
+        "apps/api/src/services/discover-map-recommendations.ts",
+        "apps/api/src/services/wishlist-alerts.ts",
+        "apps/api/src/services/availability-hosted-match-notifications.ts"
+      ],
+      "routeRegistrars": [],
+      "feDomains": [],
+      "feRoots": []
     },
     {
       "id": "media",

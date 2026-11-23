@@ -33,6 +33,7 @@ export const ListDiscoveryExperience = (props: ListDiscoveryExperienceProps) => 
     isPeopleCategory,
     memberRoster,
     memberAvailability,
+    crewRecommendationsQuery,
     availabilityCatalogItems,
     offerRideshareForAvailabilityItem,
     handleOpenAvailabilityCatalogItem,
@@ -116,6 +117,7 @@ export const ListDiscoveryExperience = (props: ListDiscoveryExperienceProps) => 
             exploreCatalogLoading={isLoading}
             onOpenAvailabilityCatalogItem={handleOpenAvailabilityCatalogItem}
             onOfferRideshareForAvailabilityItem={offerRideshareForAvailabilityItem}
+            crewRecommendationsQuery={crewRecommendationsQuery}
           />
         ) : (
           <ListCrewsExplorer
@@ -163,6 +165,7 @@ export const ListDiscoveryExperience = (props: ListDiscoveryExperienceProps) => 
             discoveryQuota={memberRoster.quota}
             discoveryLoading={memberRoster.loading}
             discoveryError={memberRoster.error}
+            crewRecommendationsQuery={crewRecommendationsQuery}
           />
         )
       ) : exploreSearch && exploreSearchMapView && !isPeopleCategory ? (

@@ -16,11 +16,7 @@ describe('p4bPhaseProgramGuard (P4b phase eng closure)', () => {
     };
     const p4b = (program.migrations ?? []).filter((m) => m.phase === 'P4b');
     expect(p4b.length).toBeGreaterThan(0);
-    const allowedWip = new Set([
-      'MIG-PLATFORM-COMPOSE-OPERATOR-2026',
-      'MIG-PEOPLE-VOCAB-2026',
-      'MIG-SCHEDULE-GUIDE',
-    ]);
+    const allowedWip = new Set(['MIG-PLATFORM-LAYER-SPINE']);
     const open = p4b.filter((m) => m.status !== 'complete');
     if (
       open.length > 0 &&

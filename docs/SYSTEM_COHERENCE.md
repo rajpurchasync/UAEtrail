@@ -1010,7 +1010,9 @@ Board one-liner: *P4 thinned the API; **PCOH** (§8.8) finished UPL/BWL coherenc
 | Artifact | Role |
 |----------|------|
 | [`scripts/refactor-program.json`](../scripts/refactor-program.json) | Phases **P0–P6** + **P4b**, migrations **MIG-***, `authorization`, `capacity`, P5 `slos` |
-| **`MIG-PLATFORM-COMPOSE-OPERATOR-2026`** | **In progress (P4b)** — compose kinds **activity · place · intent**; operator **`/operator/*`**; anti-regression **`migPlatformComposeOperatorProgramGuard`** |
+| **`MIG-PLATFORM-COMPOSE-OPERATOR-2026`** | **Complete (P4b)** — compose kinds **activity · place · intent**; operator **`/operator/*`**; anti-regression **`migPlatformComposeOperatorProgramGuard`** |
+| **`MIG-PLATFORM-LAYER-SPINE`** | **Complete (P4b)** — **Publish · Discover · Join · Connect · Plan · Manage**; schedule [`scripts/platform-layer-spine-touchpoints.json`](../scripts/platform-layer-spine-touchpoints.json); gate **`verify:platform-layer-spine`** |
+| **`MIG-DISCOVER-RECOMMENDATIONS`** | **Complete (P4)** — `GET /discover/recommendations` (`surface=map\|crew`); shared `map-explore-recommendation-score`; [`scripts/discover-recommendations-touchpoints.json`](../scripts/discover-recommendations-touchpoints.json); gate **`verify:discover-recommendations`** |
 | [`scripts/repo-census-baseline.json`](../scripts/repo-census-baseline.json) | P0 inventory (`npm run repo:census`; knip issue count optional) |
 | [`scripts/bounded-context-manifest.json`](../scripts/bounded-context-manifest.json) | Context → API/FE roots (update per migration PR) |
 | §7 register | **C27** (docs) · **C28** (program spine) · close rows when migrations complete |
@@ -1065,6 +1067,11 @@ Board one-liner: *P4 thinned the API; **PCOH** (§8.8) finished UPL/BWL coherenc
 | **MIG-ROUTING-CANON-P4** | P4b | Trust: `POST /safety/reports` + `safetyApi` domain module | **Complete** |
 | **MIG-ROUTING-CANON-P5** | P4b | Engagement `/me/*` domain module boundaries (goals, wishlist, follows) | **Complete** (folded into COH-09) |
 | **MIG-ROUTING-CANON-P11** | P4b | SPA legacy route purge (no `Navigate` aliases) after API/client aligned | **Complete** (folded into COH-12) |
+| **MIG-PEOPLE-VOCAB-2026** | P4b | Friends/crews UPL; `people-vocabulary-touchpoints.json` | **Complete** |
+| **MIG-SCHEDULE-GUIDE** | P4b | Guide ladder + availability slots (capacity + modalities) | **Complete** |
+| **MIG-PLATFORM-LAYER-SPINE** | P4b | Six consumer layers + crew discover/join/connect/plan split (`platform-layers.ts`) | **Complete** — PLS-0–5 |
+
+**Platform layers (MIG-PLATFORM-LAYER-SPINE):** **Publish** (supply) · **Discover** (read catalogs/feeds) · **Join** (hosted activity commit only) · **Connect** (Friends, clubs, chat) · **Plan** (wishlist, personal hub) · **Manage** (host/operator after publish). Machine schedule: `scripts/platform-layer-spine-touchpoints.json`. Backend **matching** context (`apps/api/src/services/matching/*` — shared predicates + notify; legacy shims `wishlist-alerts`, `availability-hosted-match-notifications`) — **no** consumer `/matching` route; reads stay on **Discover** / **Plan** HTTP. Phases: `platform-layer-spine-touchpoints.json` → `decisions.matching`.
 
 #### 8.7 Routing alignment (end-to-end — no redirect shims)
 

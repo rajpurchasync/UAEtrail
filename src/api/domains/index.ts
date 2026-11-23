@@ -20,6 +20,8 @@ export { memberCommitmentHubApi } from './memberCommitmentHub';
 export { memberJourneyMapApi } from './memberJourneyMap';
 export { activitiesApi } from './activities';
 export { accountApi } from './account';
+export { crewDiscoverApi } from './crewDiscover';
+export { discoverRecommendationsApi } from './discoverRecommendations';
 export { buddiesApi } from './buddies';
 export { groupsApi } from './groups';
 export { wishlistApi } from './wishlist';

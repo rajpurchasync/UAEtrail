@@ -10,10 +10,12 @@ import {
 import { ApiError } from '../lib/api-error.js';
 import { scheduleExploreMapCacheInvalidation } from '../lib/explore-map-cache-schedule.js';
 import { upsertMemberAvailability } from '../lib/member-availability-store.js';
-import { notifyMemberOfHostedActivitiesForAvailability } from './availability-hosted-match-notifications.js';
+import {
+  notifyMemberOfHostedActivitiesForAvailability,
+  notifyWishlistForMemberAvailability,
+} from './matching/index.js';
 import { notifyMemberPublishSubscribers } from './member-publish-notifications.js';
 import { resolveMemberStatus } from './member-status.js';
-import { notifyWishlistForMemberAvailability } from './wishlist-alerts.js';
 
 export type UpsertMyMemberAvailabilityInput = {
   kinds?: AvailabilityKind[];

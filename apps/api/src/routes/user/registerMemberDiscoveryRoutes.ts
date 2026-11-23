@@ -14,7 +14,7 @@ import {
   loadMyProfileViewStats,
 } from '../../services/member-discovery-me-read.js';
 import { resolveMemberDiscoveryQuota } from '../../services/member-discovery-quota.js';
-import { loadMemberDiscoveryRoster } from '../../services/member-discovery-roster.js';
+import { loadDiscoverCrewFeed } from '../../services/discover-crew-feed.js';
 import { resolveMemberStatus } from '../../services/member-status.js';
 import { userSearchSchema } from './schemas.js';
 
@@ -40,7 +40,7 @@ export const registerMemberDiscoveryRoutes = (router: Router): void => {
     async (req, res, next) => {
       try {
         const pg = memberDiscoveryRosterQuerySchema.parse(req.query);
-        const { data, quota } = await loadMemberDiscoveryRoster({
+        const { data, quota } = await loadDiscoverCrewFeed({
           viewerUserId: req.auth!.userId,
           userRole: req.auth!.role,
           datePresetRaw: pg.date,
@@ -49,8 +49,16 @@ export const registerMemberDiscoveryRoutes = (router: Router): void => {
           take: pg.pageSize,
           omitDirectory: pg.omitDirectory === '1',
         });
+        res.setHeader('Deprecation', 'true');
+        res.setHeader('Link', '</api/discover/crew>; rel="successor-version"');
         res.json({
-          data,
+          data: {
+            friendsGoing: data.friendsGoing,
+            hostsGoing: data.hostsGoing,
+            availabilityOnMap: data.availabilityOnMap,
+            followed: data.followed,
+            directory: data.directory,
+          },
           meta: { page: pg.page, pageSize: pg.pageSize, quota },
         });
       } catch (error) {

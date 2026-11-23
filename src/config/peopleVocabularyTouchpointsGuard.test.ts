@@ -48,6 +48,7 @@ describe('peopleVocabularyTouchpointsGuard (MIG-PEOPLE-VOCAB-2026)', () => {
   it('PVOC-00: crew pillars match shared-types lexicon', () => {
     expect(manifest.crewPillars).toEqual([
       'friends',
+      'directory',
       'teams',
       'communities',
       'guides_operators',

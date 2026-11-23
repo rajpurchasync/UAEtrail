@@ -6,6 +6,8 @@
  * future public community groups (`MIG-COMMUNITY-DISCOVER`) — those use explore catalog / tenant APIs.
  */
 
+import type { DiscoverCrewRecommendationsQueryParams } from '@/crew-discovery/lib/crewRecommendationsQuery';
+import { serializeExploreActivityDatePreset } from '@/explore/exploreActivityDateFilter';
 import { useCallback, useMemo } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
@@ -70,10 +72,22 @@ export const useListDiscoveryCrewsCategoryModel = ({
     mapFilter: 'all',
   });
 
+  const crewRecommendationsQuery = useMemo((): DiscoverCrewRecommendationsQueryParams => {
+    const range = memberAvailability.range;
+    return {
+      from: range.from,
+      to: range.to,
+      date: serializeExploreActivityDatePreset(activityDatePreset),
+      area: areaSlug?.trim() || null,
+      kind: null,
+    };
+  }, [memberAvailability.range, activityDatePreset, areaSlug]);
+
   return {
     memberRoster,
     memberAvailability,
     crewsNeedsAvailability,
+    crewRecommendationsQuery,
   };
 };
 

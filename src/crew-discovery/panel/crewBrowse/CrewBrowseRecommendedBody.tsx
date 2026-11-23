@@ -5,7 +5,9 @@ import type {
   MemberDiscoveryQuotaDTO,
   SocialPersonRowDTO,
 } from '@uaetrail/shared-types';
-import { buildRecommendedCrewFeed } from '../../buildRecommendedCrewFeed';
+import type { DiscoverCrewRecommendationsQueryParams } from '../../lib/crewRecommendationsQuery';
+import { useDiscoverCrewRecommendations } from '@/hooks/useDiscoverCrewRecommendations';
+import { resolveRecommendedCrewFeedRows } from '../../resolveRecommendedCrewFeedRows';
 import { EXPLORE_CREWS_FRIENDS_GOING_EMPTY } from '@/content/exploreCrewsCopy';
 import type { CrewsAvailabilityGuideFilter, CrewsAvailableOpenLens } from '@/list/crews/crewsOpenSegment';
 import { CrewBrowseAvailabilityMapList } from './CrewBrowseAvailabilityMapList';
@@ -33,6 +35,7 @@ type Props = {
   onOpenAvailabilityCatalogItem: (item: ExploreMapItemDTO) => void;
   onOfferRideshareForAvailabilityItem?: (item: ExploreMapItemDTO) => void;
   buddyUserIds?: Set<string>;
+  crewRecommendationsQuery: DiscoverCrewRecommendationsQueryParams;
 };
 
 export const CrewBrowseRecommendedBody = ({
@@ -49,16 +52,22 @@ export const CrewBrowseRecommendedBody = ({
   onOpenAvailabilityCatalogItem,
   onOfferRideshareForAvailabilityItem,
   buddyUserIds,
+  crewRecommendationsQuery,
 }: Props) => {
+  const serverRecommendations = useDiscoverCrewRecommendations(
+    isSignedIn,
+    crewRecommendationsQuery
+  );
+
   if (!isSignedIn) {
     return <ExploreGuestSignInCard intent="explore-people-browse" compact />;
   }
 
-  if (discoveryLoading) {
+  if (discoveryLoading || serverRecommendations.isLoading) {
     return <CrewBrowseListLoading />;
   }
 
-  const rows = buildRecommendedCrewFeed({
+  const rows = resolveRecommendedCrewFeedRows(serverRecommendations.data, {
     friendsGoing,
     hostsGoing,
     availabilityPeople,

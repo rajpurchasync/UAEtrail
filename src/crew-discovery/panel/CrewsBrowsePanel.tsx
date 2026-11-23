@@ -13,6 +13,7 @@ import type {
   SocialPersonRowDTO,
 } from '@uaetrail/shared-types';
 import type { UserRole } from '@uaetrail/shared-types';
+import type { DiscoverCrewRecommendationsQueryParams } from '../lib/crewRecommendationsQuery';
 import { CrewBrowseSearchField } from './crewBrowse';
 import { CrewsTabBody } from '@/list/crews/CrewsTabBody';
 import { CrewsStatsTabs } from '@/list/crews/CrewsStatsTabs';
@@ -65,6 +66,7 @@ export interface CrewsBrowsePanelProps {
   onOfferRideshareForAvailabilityItem?: (item: ExploreMapItemDTO) => void;
   onOpenIntentOpen?: () => void;
   buddyUserIds?: Set<string>;
+  crewRecommendationsQuery: DiscoverCrewRecommendationsQueryParams;
 }
 
 export const CrewsBrowsePanel = ({
@@ -99,6 +101,7 @@ export const CrewsBrowsePanel = ({
   onOfferRideshareForAvailabilityItem,
   onOpenIntentOpen,
   buddyUserIds,
+  crewRecommendationsQuery,
 }: CrewsBrowsePanelProps) => {
   const mobileSheetPad = !isDesktop && mobileSheetChrome && !embedded;
   const queryInputRef = useRef<HTMLInputElement>(null);
@@ -211,6 +214,7 @@ export const CrewsBrowsePanel = ({
           discoveryLoading={discoveryLoading}
           discoveryError={discoveryError}
           onOpenAvailability={onOpenIntentOpen ?? (() => {})}
+          crewRecommendationsQuery={crewRecommendationsQuery}
         />
       </div>
     </div>

@@ -1,16 +1,11 @@
 import type { CrewPillarId } from '@uaetrail/shared-types';
-import { crewHubStatTabToPillar } from '@uaetrail/shared-types';
+import { crewPeopleFacetToPillar } from '@uaetrail/shared-types';
 import type { CrewBrowseLane, CrewPeopleFacet } from '@/crew-discovery/crewBrowseState';
 
 export type CrewsStatTab = CrewPeopleFacet;
 
 /** Browse facet pill → crew pillar. */
-export const crewsStatTabPillar = (tab: CrewsStatTab): CrewPillarId => {
-  if (tab === 'recommended') return 'friends';
-  if (tab === 'friends') return crewHubStatTabToPillar('friends');
-  if (tab === 'available') return crewHubStatTabToPillar('available');
-  return crewHubStatTabToPillar('everyone');
-};
+export const crewsStatTabPillar = (tab: CrewsStatTab): CrewPillarId => crewPeopleFacetToPillar(tab);
 
 export const CREWS_STAT_TAB_LABELS: Record<CrewsStatTab, string> = {
   recommended: 'Recommended',

@@ -199,8 +199,8 @@ Trusted fields (year goal, upcoming list, etc.) appear only on **trusted** expos
 
 | Lane | Facet | Data |
 |------|-------|------|
-| People | Recommended | Client `buildRecommendedCrewFeed` (friends going + availability + catalog teaser + directory cap) |
-| People | Friends | `GET /me/member-discovery/roster` (going segment) |
+| People | Recommended | **`GET /discover/recommendations?surface=crew`** (server rank) + list projection; map teaser from catalog |
+| People | Friends | **`GET /discover/crew`** (friends going + hosts in federated feed) |
 | People | Available | Member availability + fixed intent catalog; sub-lens `open=` |
 | People | Everyone | `GET /me/member-discovery/browse` + quota |
 | Professional | — | Guide/porter directory + agency rows (`source: agency`) |

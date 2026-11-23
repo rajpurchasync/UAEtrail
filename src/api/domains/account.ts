@@ -319,33 +319,4 @@ export const accountApi = {
       );
     },
 
-    getMeMemberDiscoveryRoster: (options?: {
-      page?: number;
-      pageSize?: number;
-      q?: string;
-      date?: string | null;
-      omitDirectory?: boolean;
-    }) => {
-      const params = new URLSearchParams({
-        page: String(options?.page ?? 1),
-        pageSize: String(options?.pageSize ?? 30),
-      });
-      if (options?.q?.trim()) params.set('q', options.q.trim());
-      if (options?.date) params.set('date', options.date);
-      if (options?.omitDirectory) params.set('omitDirectory', '1');
-      return apiRequest<{
-        data: {
-          friendsGoing: import('@uaetrail/shared-types').SocialPersonRowDTO[];
-          hostsGoing: import('@uaetrail/shared-types').SocialPersonRowDTO[];
-          availabilityOnMap: import('@uaetrail/shared-types').MemberDiscoveryAvailabilityRowDTO[];
-          followed: import('@uaetrail/shared-types').MemberBrowseCardDTO[];
-          directory: import('@uaetrail/shared-types').MemberBrowseCardDTO[];
-        };
-        meta: {
-          page: number;
-          pageSize: number;
-          quota: MemberDiscoveryQuotaDTO;
-        };
-      }>(`/me/member-discovery/roster?${params.toString()}`, { auth: true });
-    },
 } as const;

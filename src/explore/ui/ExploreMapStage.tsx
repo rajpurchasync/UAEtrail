@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useRef, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import type { Map as LeafletMap } from 'leaflet';
 import { SessionExpiredNotice } from '../../components/auth/SessionExpiredNotice';
@@ -37,6 +37,10 @@ import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicF
 import type { ExplorePriceFilter, ExploreVenueFilterPatch } from '../exploreOptionalFilters';
 import type { MapRecenterTarget } from '../../lib/mapRecenter';
 import type { MapPeekPinAnchor } from '../mapPeekBubbleLayout';
+import {
+  ExploreMapRecommendedSheet,
+  type ExploreMapRecommendedSheetSnap,
+} from './ExploreMapRecommendedSheet';
 
 const PlacesMap = lazy(() =>
   import('../../components/ui/PlacesMap').then((module) => ({ default: module.PlacesMap }))
@@ -136,6 +140,10 @@ export type ExploreMapStageProps = {
   mapSearchOpen?: boolean;
   /** Leaflet invalidateSize when left rails or list/crew modes change width. */
   mapLayoutRevision?: boolean;
+  /** Discover layer — client-ranked map recommendations (v0). */
+  mapRecommendationItems?: ExploreMapItemDTO[];
+  mapRecommendationSignalsByItemId?: Map<string, import('@uaetrail/shared-types').DiscoverRecommendationSignal[]>;
+  onOpenMapRecommendation?: (itemId: string) => void;
 };
 
 export const ExploreMapStage = ({
@@ -226,11 +234,21 @@ export const ExploreMapStage = ({
   mapSearchOverlay = null,
   mapSearchOpen = false,
   mapLayoutRevision = false,
+  mapRecommendationItems = [],
+  mapRecommendationSignalsByItemId,
+  onOpenMapRecommendation,
 }: ExploreMapStageProps) => {
   const [searchParams] = useSearchParams();
+  const [recommendSnap, setRecommendSnap] = useState<ExploreMapRecommendedSheetSnap>('peek');
   const [guestPreviewDismissed, setGuestPreviewDismissed] = useState(() =>
     readExploreGuestMapPreviewDismissed()
   );
+
+  useEffect(() => {
+    if (mapRecommendationItems.length > 0) {
+      setRecommendSnap((prev) => (prev === 'hidden' ? prev : 'peek'));
+    }
+  }, [mapRecommendationItems.length]);
   const [pinAnchor, setPinAnchor] = useState<MapPeekPinAnchor | null>(null);
   const handleSelectedPinScreenPoint = useCallback((point: MapPeekPinAnchor | null) => {
     setPinAnchor(point);
@@ -245,6 +263,15 @@ export const ExploreMapStage = ({
   const handleZoomOut = useCallback(() => {
     leafletMapRef.current?.zoomOut();
   }, []);
+  const showMapRecommendations =
+    mapRecommendationItems.length > 0 &&
+    onOpenMapRecommendation != null &&
+    !listOpen &&
+    !crewsBrowseMap &&
+    !mapSearchOpen &&
+    !selectedCard &&
+    !loadError;
+
   const showGuestMapPreviewNotice =
     isGuestMapCatalogPreviewLimited() &&
     !user &&
@@ -388,6 +415,18 @@ export const ExploreMapStage = ({
       ) : null}
 
       {loading && mapPins.length === 0 ? <ExploreMapLoadingSkeleton /> : null}
+
+      {showMapRecommendations ? (
+        <ExploreMapRecommendedSheet
+          items={mapRecommendationItems}
+          signedIn={Boolean(user)}
+          snap={recommendSnap}
+          onSnapChange={setRecommendSnap}
+          onOpenItem={onOpenMapRecommendation}
+          onOpenList={onSelectListView}
+          signalsByItemId={mapRecommendationSignalsByItemId}
+        />
+      ) : null}
 
       {!listOpen && !crewsBrowseMap ? (
         <ExploreMapMobileDock

@@ -36,7 +36,7 @@ describe('crossContextFoundationsGuard', () => {
     const coherence = read('docs/SYSTEM_COHERENCE.md');
     const manifestIds = new Set(manifest.contexts.map((c) => c.id));
     const missingInCoherence: string[] = [];
-    const EXTRA_MANIFEST_CONTEXTS = ['areas', 'availability', 'media'] as const;
+    const EXTRA_MANIFEST_CONTEXTS = ['areas', 'availability', 'media', 'matching'] as const;
     for (const id of manifestIds) {
       if (COHERENCE_CONTEXT_IDS.includes(id as (typeof COHERENCE_CONTEXT_IDS)[number])) continue;
       if (EXTRA_MANIFEST_CONTEXTS.includes(id as (typeof EXTRA_MANIFEST_CONTEXTS)[number])) {

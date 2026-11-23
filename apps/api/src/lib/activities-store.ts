@@ -473,14 +473,12 @@ export const publishActivityById = async (activityId: string) => {
     tenantName: tenant?.name ?? null,
   });
   if (mongoDoc.activityMode !== 'seeking') {
-    const { notifyWishlistForPublishedActivity } = await import('../services/wishlist-alerts.js');
+    const { notifyWishlistForPublishedActivity } = await import('../services/matching/index.js');
     scheduleSideEffect(
       notifyWishlistForPublishedActivity(activityId),
       'activities-store.wishlist_notify'
     );
-    const { notifyAvailabilityHoldersOfHostedActivity } = await import(
-      '../services/availability-hosted-match-notifications.js'
-    );
+    const { notifyAvailabilityHoldersOfHostedActivity } = await import('../services/matching/index.js');
     void notifyAvailabilityHoldersOfHostedActivity({
       activityId,
       hostUserId: actorUserId,
@@ -490,9 +488,7 @@ export const publishActivityById = async (activityId: string) => {
     });
   }
   if (areaId && mongoDoc.activityMode !== 'seeking') {
-    const { notifyAvailabilityHoldersInAreaOfHostedActivity } = await import(
-      '../services/availability-hosted-match-notifications.js'
-    );
+    const { notifyAvailabilityHoldersInAreaOfHostedActivity } = await import('../services/matching/index.js');
     void notifyAvailabilityHoldersInAreaOfHostedActivity({
       activityId,
       hostUserId: actorUserId,

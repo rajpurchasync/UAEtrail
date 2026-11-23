@@ -37,8 +37,17 @@ describe('member-discovery API contract', () => {
     const roster = read('src/services/member-discovery-roster.ts');
     expect(roster).toContain('availabilityOnMap');
     expect(roster).not.toMatch(/\blookingFor\b/);
-    expect(roster).toContain('availabilityTitle');
-    expect(roster).not.toMatch(/\bdemandTitle\b/);
-    expect(roster).toContain('exploreMapItemIsAvailabilityCatalog');
+    expect(roster).toMatch(/loadDiscoverCrewAvailabilityRows/);
+    expect(read('src/services/discover-crew-feed.ts')).toMatch(/availabilityFixed/);
+  });
+
+  it('discover crew feed route is registered (PLS-2)', () => {
+    expect(read('src/routes/user/registerDiscoverCrewRoutes.ts')).toMatch(/\/discover\/crew/);
+  });
+
+  it('legacy roster route delegates to discover feed (PLS-5)', () => {
+    const routes = read('src/routes/user/registerMemberDiscoveryRoutes.ts');
+    expect(routes).toMatch(/loadDiscoverCrewFeed/);
+    expect(routes).toMatch(/Deprecation/);
   });
 });

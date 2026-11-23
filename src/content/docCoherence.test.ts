@@ -113,6 +113,15 @@ describe('doc coherence (Tier 1)', () => {
     expect(system).toMatch(/src\/explore/);
   });
 
+  it('API_ROUTING documents Discover layer recommendations and crew feed', () => {
+    const routing = readFileSync(join(DOCS, 'API_ROUTING.md'), 'utf8');
+    expect(routing).toMatch(/## Discover layer reads/);
+    expect(routing).toMatch(/\/discover\/crew/);
+    expect(routing).toMatch(/\/discover\/recommendations/);
+    expect(routing).toMatch(/surface=map/);
+    expect(routing).toMatch(/surface=crew/);
+  });
+
   it('routing alignment schedule is in Tier-1 (§8.7)', () => {
     const system = readFileSync(join(DOCS, 'SYSTEM_COHERENCE.md'), 'utf8');
     expect(system).toMatch(/#### 8\.7 Routing alignment/);

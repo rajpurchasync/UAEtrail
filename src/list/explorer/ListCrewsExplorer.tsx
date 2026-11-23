@@ -1,5 +1,6 @@
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../../explore/exploreBrowseTaxonomy';
 import { APP_SCROLL_BODY_CLASS } from '../../config/layoutScroll';
+import type { DiscoverCrewRecommendationsQueryParams } from '@/crew-discovery/lib/crewRecommendationsQuery';
 import type {
   ExploreAvailablePersonDTO,
   ExploreMapItemDTO,
@@ -59,6 +60,7 @@ type ListCrewsExplorerProps = {
   enableSearchScopeHints?: boolean;
   searchResultsChrome?: boolean;
   exploreSearchResults?: boolean;
+  crewRecommendationsQuery: DiscoverCrewRecommendationsQueryParams;
 };
 
 export const ListCrewsExplorer = ({
@@ -103,6 +105,7 @@ export const ListCrewsExplorer = ({
   enableSearchScopeHints = true,
   searchResultsChrome = false,
   exploreSearchResults = false,
+  crewRecommendationsQuery,
 }: ListCrewsExplorerProps) => {
   const stickySearch = query.trim().length > 0;
 
@@ -167,6 +170,7 @@ export const ListCrewsExplorer = ({
             discoveryLoading={discoveryLoading}
             discoveryError={discoveryError}
             onOpenAvailability={onOpenIntentOpen}
+            crewRecommendationsQuery={crewRecommendationsQuery}
           />
         </div>
       </div>

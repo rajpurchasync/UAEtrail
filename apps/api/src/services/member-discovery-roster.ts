@@ -1,4 +1,3 @@
-import { exploreMapItemIsAvailabilityCatalog } from '@uaetrail/shared-types';
 import type {
   ExploreMapItemDTO,
   MemberBrowseCardDTO,
@@ -24,6 +23,7 @@ import {
 } from './member-discovery-going.js';
 import { listBrowsablePublicMembers } from './member-discovery.js';
 import { resolveMemberDiscoveryQuota } from './member-discovery-quota.js';
+import { loadDiscoverCrewAvailabilityRows } from './discover-crew-availability-rows.js';
 import { resolveMemberStatus } from './member-status.js';
 
 const matchesMemberDiscoverySearch = (
@@ -34,52 +34,6 @@ const matchesMemberDiscoverySearch = (
   if (!needle) return true;
   const haystack = parts.filter(Boolean).join(' ').toLowerCase();
   return haystack.includes(needle);
-};
-
-/** Members with fixed availability pins on the explore map. */
-export const buildMemberDiscoveryAvailabilityRowsFromMapItems = async (
-  items: ExploreMapItemDTO[],
-  input: {
-    viewerUserId: string;
-    excludeUserIds: Set<string>;
-    datePreset: ExploreActivityDatePreset;
-    search?: string;
-    /** When set, only these member user ids pass find-crew visibility. */
-    findCrewVisibleUserIds?: ReadonlySet<string>;
-  }
-): Promise<MemberDiscoveryAvailabilityRowDTO[]> => {
-  const seen = new Set<string>();
-  const rows: MemberDiscoveryAvailabilityRowDTO[] = [];
-
-  for (const item of items) {
-    if (!exploreMapItemIsAvailabilityCatalog(item)) continue;
-    if (!matchesExploreActivityDateFilter(item, input.datePreset)) continue;
-    if (item.viewerAccess?.exposure === 'none') continue;
-
-    const userId = item.featuredPerson?.userId ?? null;
-    if (!userId || input.excludeUserIds.has(userId) || seen.has(userId)) continue;
-    if (input.findCrewVisibleUserIds && !input.findCrewVisibleUserIds.has(userId)) continue;
-
-    const displayName =
-      item.featuredPerson?.displayName ?? item.subtitle ?? 'Member';
-    const availabilityTitle = item.title?.trim() || 'Available to go together';
-    if (
-      !matchesMemberDiscoverySearch([displayName, availabilityTitle, item.subtitle ?? null], input.search)
-    ) {
-      continue;
-    }
-
-    seen.add(userId);
-    rows.push({
-      userId,
-      displayName,
-      avatarUrl: item.featuredPerson?.avatarUrl ?? null,
-      availabilityTitle,
-      exploreItemId: item.id,
-    });
-  }
-
-  return rows;
 };
 
 const buildFollowedBrowseCards = async (
@@ -168,9 +122,9 @@ export const loadMemberDiscoveryRoster = async (input: {
     }
   );
 
-  // Map items already passed find-crew filtering in enrichExploreMapPayloadViewerAccess.
-  const availabilityOnMapPromise = buildMemberDiscoveryAvailabilityRowsFromMapItems(mapItems, {
+  const availabilityOnMapPromise = loadDiscoverCrewAvailabilityRows({
     viewerUserId: input.viewerUserId,
+    userRole: input.userRole,
     excludeUserIds,
     datePreset,
     search: input.search,

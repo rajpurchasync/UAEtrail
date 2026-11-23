@@ -7,7 +7,10 @@ import { useCrewDiscoveryRoster } from './useCrewDiscoveryRoster';
 import { useCrewDiscoveryAvailability } from './useCrewDiscoveryAvailability';
 import type { useExploreBrowseUrlState } from '@/explore/ui/useExploreBrowseUrlState';
 import type { MemberStatusDTO, UserRole } from '@uaetrail/shared-types';
+import type { DiscoverCrewRecommendationsQueryParams } from '../lib/crewRecommendationsQuery';
+import { serializeExploreActivityDatePreset } from '@/explore/exploreActivityDateFilter';
 import { buildExploreMemberPeopleMapChip } from '../lib/exploreMemberPeopleMapChip';
+import type { MapFilterKey } from '@/explore/routing';
 import {
   crewBrowseNeedsAvailability,
   crewBrowseOmitDirectory,
@@ -15,6 +18,13 @@ import {
 } from '@/crew-discovery/crewBrowseState';
 
 type BrowseState = ReturnType<typeof useExploreBrowseUrlState>;
+
+const mapFilterToAvailabilityKind = (mapFilter: MapFilterKey) => {
+  if (mapFilter === 'hiking' || mapFilter === 'camping' || mapFilter === 'rideshare') {
+    return mapFilter;
+  }
+  return null;
+};
 
 type Args = {
   user: { id: string; role?: string } | null;
@@ -110,6 +120,22 @@ export const useCrewDiscoveryBrowseBundle = ({
     hostStatus ? { hostTiers: hostStatus.publish.hostTiers } : null
   );
 
+  const crewRecommendationsQuery = useMemo((): DiscoverCrewRecommendationsQueryParams => {
+    const range = crewAvailability.range;
+    return {
+      from: range.from,
+      to: range.to,
+      date: serializeExploreActivityDatePreset(browse.activityDatePreset),
+      area: areaSlug?.trim() || null,
+      kind: mapFilterToAvailabilityKind(browse.mapFilter),
+    };
+  }, [
+    crewAvailability.range,
+    browse.activityDatePreset,
+    browse.mapFilter,
+    areaSlug,
+  ]);
+
   const crewsBrowsePanelProps = {
     isDesktop,
     query: browse.query,
@@ -153,6 +179,7 @@ export const useCrewDiscoveryBrowseBundle = ({
     onOfferRideshareForAvailabilityItem,
     onOpenIntentOpen,
     buddyUserIds,
+    crewRecommendationsQuery,
   };
 
   return {

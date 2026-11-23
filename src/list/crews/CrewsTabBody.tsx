@@ -1,3 +1,4 @@
+import type { DiscoverCrewRecommendationsQueryParams } from '@/crew-discovery/lib/crewRecommendationsQuery';
 import type {
   ExploreAvailablePersonDTO,
   ExploreMapItemDTO,
@@ -47,6 +48,7 @@ type CrewsTabBodyProps = {
   onOfferRideshareForAvailabilityItem?: (item: ExploreMapItemDTO) => void;
   onOpenAvailability: () => void;
   buddyUserIds?: Set<string>;
+  crewRecommendationsQuery: DiscoverCrewRecommendationsQueryParams;
 };
 
 export const CrewsTabBody = ({
@@ -74,6 +76,7 @@ export const CrewsTabBody = ({
   onOfferRideshareForAvailabilityItem,
   onOpenAvailability,
   buddyUserIds,
+  crewRecommendationsQuery,
 }: CrewsTabBodyProps) => {
   const activeLane = normalizeCrewBrowseLaneForProduct(lane);
 
@@ -115,6 +118,7 @@ export const CrewsTabBody = ({
     onOpenAvailability,
     crewsOpenLens,
     availabilityGuideFilter: crewsAvailabilityGuideFilter,
+    crewRecommendationsQuery,
   };
 
   const isAvailableFacet = facet === 'available';

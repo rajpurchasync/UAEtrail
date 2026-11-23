@@ -31,6 +31,8 @@ const steps = [
   ['Participation spine (DMCP Phase 5)', 'npm run verify:participation-spine'],
   ['Storefront spine (DMCP Phase 6)', 'npm run verify:storefront-spine'],
   ['People graph & plan (DMCP Phase 7)', 'npm run verify:people-graph-plan'],
+  ['Platform layer spine (PLS)', 'npm run verify:platform-layer-spine'],
+  ['Discover recommendations (REC)', 'npm run verify:discover-recommendations'],
   ['Release ops (DMCP Phase 8)', 'npm run verify:release-ops'],
   ['CTO system audit (W0)', 'npm run verify:system-audit'],
   ['Domain + routing + naming guards', 'npm run verify:domain'],

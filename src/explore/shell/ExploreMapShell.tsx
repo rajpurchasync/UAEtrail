@@ -1,4 +1,8 @@
+import { useCallback, useMemo } from 'react';
+import type { DiscoverRecommendationSignal } from '@uaetrail/shared-types';
 import { useLocation } from 'react-router-dom';
+import { resolveExploreMapRecommendationItems } from '../recommend/resolveExploreMapRecommendationItems';
+import { useDiscoverMapRecommendations } from '../../hooks/useDiscoverMapRecommendations';
 import { ExploreMapStage } from '../ui/ExploreMapStage';
 import { ExploreDesktopGuestGatePanel } from '../ui/ExploreDesktopGuestGatePanel';
 import { ExploreBookingSearchModal } from '../search/ExploreBookingSearchModal';
@@ -28,6 +32,7 @@ type Props = Pick<
   | 'viewport'
   | 'mapPins'
   | 'catalogListCount'
+  | 'mapItems'
   | 'exploreMapTiles'
   | 'mapLoading'
   | 'loadError'
@@ -64,6 +69,7 @@ export const ExploreMapShell = ({
   viewport,
   mapPins,
   catalogListCount,
+  mapItems,
   exploreMapTiles,
   mapLoading,
   loadError,
@@ -104,6 +110,35 @@ export const ExploreMapShell = ({
   const desktopBrowseSplit =
     isDesktop && (browse.showDesktopCatalogDrawer || browse.crewsBrowseOpen);
   const mapLayoutRevision = desktopBrowseSplit || browse.listOpen || browse.crewsBrowseOpen;
+
+  const recommendationViewerGeo = useMemo(() => {
+    const device = viewport.deviceLocationPointer;
+    if (device) return { lat: device.lat, lng: device.lng };
+    return { lat: viewport.exploreMapCenter.lat, lng: viewport.exploreMapCenter.lng };
+  }, [viewport.deviceLocationPointer, viewport.exploreMapCenter]);
+
+  const { data: serverRecommendationRows } = useDiscoverMapRecommendations(true, 8, recommendationViewerGeo);
+
+  const mapRecommendationItems = useMemo(
+    () => resolveExploreMapRecommendationItems(mapItems, serverRecommendationRows, 8, recommendationViewerGeo),
+    [mapItems, serverRecommendationRows, recommendationViewerGeo]
+  );
+
+  const mapRecommendationSignalsByItemId = useMemo(() => {
+    const map = new Map<string, DiscoverRecommendationSignal[]>();
+    for (const row of serverRecommendationRows ?? []) {
+      if (row.signals.length > 0) map.set(row.exploreItemId, row.signals);
+    }
+    return map;
+  }, [serverRecommendationRows]);
+
+  const handleOpenMapRecommendation = useCallback(
+    (itemId: string) => {
+      const pin = mapPins.find((p) => p.id === itemId);
+      if (pin) handleMapPinClick(pin);
+    },
+    [handleMapPinClick, mapPins]
+  );
 
   let desktopRightPanelOverlay = null;
   if (desktopGuestComposeGateOpen) {
@@ -247,6 +282,9 @@ export const ExploreMapShell = ({
       onGuestGatedAction={selection.handleGuestGatedAction}
       onShareActivity={selection.handleSharePeek}
       desktopRightPanelOverlay={desktopRightPanelOverlay}
+      mapRecommendationItems={mapRecommendationItems}
+      mapRecommendationSignalsByItemId={mapRecommendationSignalsByItemId}
+      onOpenMapRecommendation={handleOpenMapRecommendation}
       mapSearchOpen={exploreSearchModalOpen}
       mapSearchOverlay={
         exploreSearchModalOpen ? (

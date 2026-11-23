@@ -157,14 +157,16 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('G-seek: wishlist alerts fan out from member_availability (not seeking create)', () => {
-    const wishlist = read('apps/api/src/services/wishlist-alerts.ts');
+    const wishlist = read('apps/api/src/services/matching/wishlist-match-notify.ts');
     expect(wishlist).toMatch(/notifyWishlistForMemberAvailability/);
     expect(wishlist).toMatch(/exploreAvailabilityPinNotificationPath/);
     expect(read('apps/api/src/services/me-availability-commands.ts')).toMatch(
       /notifyWishlistForMemberAvailability/
     );
     expect(read('apps/api/src/lib/activities-store.ts')).toMatch(/notifyWishlistForPublishedActivity/);
-    expect(read('apps/api/src/services/wishlist-alerts.ts')).not.toMatch(/notifyWishlistForNewSeeking/);
+    expect(read('apps/api/src/services/matching/wishlist-match-notify.ts')).not.toMatch(
+      /notifyWishlistForNewSeeking/
+    );
     expect(
       existsSync(join(process.cwd(), 'apps/api/src/services/wishlist-archived-seeking-ops.ts'))
     ).toBe(false);

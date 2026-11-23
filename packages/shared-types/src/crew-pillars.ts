@@ -9,6 +9,11 @@
 export const CREW_PILLAR_IDS = [
   /** Mutual friend graph — `/me/buddies`, friend requests, DM eligibility. */
   'friends',
+  /**
+   * People tab **Everyone** — connect lane directory (`segment=connect`).
+   * Not mutual friends; not Professional (guides_operators).
+   */
+  'directory',
   /** Private adult teams — `/groups`, `member_group` kind `team` (family / friends / colleagues labels). */
   'teams',
   /**
@@ -58,7 +63,14 @@ export const CREW_PILLAR_SPECS: Record<CrewPillarId, CrewPillarSpec> = {
     boundedContexts: ['social_graph', 'communication'],
     routes: ['/crews', '/chat?to='],
     wire: ['/me/buddies', '/me/buddy-requests', 'buddy_*', 'segment=buddies'],
-    notSameAs: ['teams', 'communities', 'outing_roster'],
+    notSameAs: ['teams', 'communities', 'outing_roster', 'directory'],
+  },
+  directory: {
+    id: 'directory',
+    boundedContexts: ['member_discovery', 'social_graph'],
+    routes: ['/list?listCat=people&peopleFacet=everyone'],
+    wire: ['GET /me/member-discovery/browse', 'segment=connect', 'peopleFacet=everyone'],
+    notSameAs: ['friends', 'guides_operators', 'intent_signal'],
   },
   teams: {
     id: 'teams',
@@ -87,7 +99,7 @@ export const CREW_PILLAR_SPECS: Record<CrewPillarId, CrewPillarSpec> = {
       'profileRoleLabel: professional_guide | agency | shop_owner',
       'publishingPurpose: professional | business',
     ],
-    notSameAs: ['friends', 'intent_signal'],
+    notSameAs: ['friends', 'intent_signal', 'directory'],
   },
   outing_roster: {
     id: 'outing_roster',
@@ -117,18 +129,24 @@ export const CREW_PILLAR_SPECS: Record<CrewPillarId, CrewPillarSpec> = {
 export const isCrewPillarId = (value: string): value is CrewPillarId =>
   (CREW_PILLAR_IDS as readonly string[]).includes(value);
 
-/** Crews list hub stat tabs → pillar (browse projection). */
-export const crewHubStatTabToPillar = (
-  tab: 'friends' | 'available' | 'everyone'
-): CrewPillarId => {
-  switch (tab) {
+export type CrewPeopleFacetWire = 'recommended' | 'friends' | 'available' | 'everyone';
+
+/** People tab facet → pillar (discover browse). */
+export const crewPeopleFacetToPillar = (facet: CrewPeopleFacetWire): CrewPillarId => {
+  switch (facet) {
     case 'friends':
       return 'friends';
     case 'available':
       return 'intent_signal';
     case 'everyone':
-      return 'guides_operators';
+      return 'directory';
+    case 'recommended':
     default:
-      return 'friends';
+      return 'intent_signal';
   }
 };
+
+/** @deprecated Prefer {@link crewPeopleFacetToPillar}. */
+export const crewHubStatTabToPillar = (
+  tab: 'friends' | 'available' | 'everyone'
+): CrewPillarId => crewPeopleFacetToPillar(tab);

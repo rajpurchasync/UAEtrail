@@ -10,9 +10,10 @@ const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
  * MIG-PEOPLE-VOCAB-2026 Phase 1 — crew pillar separation (umbrella vs friends vs teams vs guides vs intent).
  */
 describe('crewPillarsAlignmentGuard (MIG-PEOPLE-VOCAB-2026)', () => {
-  it('CREW-PILLAR-01: shared lexicon defines six pillars with specs', () => {
+  it('CREW-PILLAR-01: shared lexicon defines crew pillars with specs', () => {
     expect(CREW_PILLAR_IDS).toEqual([
       'friends',
+      'directory',
       'teams',
       'communities',
       'guides_operators',
@@ -48,7 +49,8 @@ describe('crewPillarsAlignmentGuard (MIG-PEOPLE-VOCAB-2026)', () => {
     expect(read('src/explore/compose.ts')).toMatch(/UPL_INTENT_OPEN_ACTION/);
     expect(read('src/availability/AvailabilitySlotEditor.tsx')).toMatch(/UPL_INTENT_PLAN_SECTION/);
     expect(read('src/availability/AvailabilitySlotEditor.tsx')).toMatch(/UPL_INTENT_AVAILABLE_AS_GUIDE/);
-    expect(read('src/crew-discovery/memberBrowseRowModel.ts')).toMatch(/filterAvailabilityPeopleByGuideCapacity/);
+    expect(read('src/crew-discovery/memberBrowseRowModel.ts')).toMatch(/filterAvailabilityByCapacity/);
+    expect(read('packages/shared-types/src/crew-pillars.ts')).toMatch(/crewPeopleFacetToPillar/);
   });
 
   it('CREW-PILLAR-05: Outing roster pillar uses crew tab wire', () => {
