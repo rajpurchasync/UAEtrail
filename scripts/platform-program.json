@@ -499,5 +499,5 @@
     "At most maxInProgressMigrations in_progress."
   ],
   "archivePolicy": "Complete rows: id, phase, status, archivedAt, optional scheduleDoc. Contracts: bounded-context-manifest.json + *-touchpoints.json.",
-  "cleanupWave": "GW-2-matching-shims"
+  "cleanupWave": "GW-2b-roster-alias"
 }

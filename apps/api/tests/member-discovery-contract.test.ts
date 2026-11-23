@@ -7,7 +7,7 @@ const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 describe('member-discovery API contract', () => {
   it('registrar exposes object-centric member discovery paths only', () => {
     const source = read('src/routes/user/registerMemberDiscoveryRoutes.ts');
-    expect(source).toMatch(/\/me\/member-discovery\/roster/);
+    expect(source).not.toMatch(/\/me\/member-discovery\/roster/);
     expect(source).toMatch(/\/me\/member-discovery\/quota/);
     expect(source).toMatch(/\/me\/member-discovery\/browse/);
     expect(source).toMatch(/\/me\/member-discovery\/network/);
@@ -45,9 +45,9 @@ describe('member-discovery API contract', () => {
     expect(read('src/routes/user/registerDiscoverCrewRoutes.ts')).toMatch(/\/discover\/crew/);
   });
 
-  it('legacy roster route delegates to discover feed (PLS-5)', () => {
+  it('find crew feed is not duplicated under /me/member-discovery (GW-2b)', () => {
     const routes = read('src/routes/user/registerMemberDiscoveryRoutes.ts');
-    expect(routes).toMatch(/loadDiscoverCrewFeed/);
-    expect(routes).toMatch(/Deprecation/);
+    expect(routes).not.toMatch(/loadDiscoverCrewFeed/);
+    expect(routes).not.toMatch(/Deprecation/);
   });
 });

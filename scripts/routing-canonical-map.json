@@ -20,7 +20,7 @@
     "member_discovery": {
       "spa": ["/explore", "/list"],
       "api": [
-        "/me/member-discovery/roster",
+        "/discover/crew",
         "/me/member-discovery/quota",
         "/me/member-discovery/browse",
         "/me/member-discovery/network",

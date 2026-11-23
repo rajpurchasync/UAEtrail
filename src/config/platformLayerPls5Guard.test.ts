@@ -20,11 +20,11 @@ describe('platformLayerPls5Guard (MIG-PLATFORM-LAYER-SPINE closure)', () => {
     expect(read('src/api/domains/account.ts')).not.toMatch(/member-discovery\/roster/);
   });
 
-  it('LAYER-19: legacy roster HTTP aliases discover feed + Deprecation', () => {
+  it('LAYER-19: roster read is only GET /discover/crew (no /me/member-discovery/roster)', () => {
     const routes = read('apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts');
-    expect(routes).toMatch(/loadDiscoverCrewFeed/);
-    expect(routes).toMatch(/Deprecation/);
-    expect(routes).toMatch(/discover\/crew/);
+    expect(routes).not.toMatch(/\/me\/member-discovery\/roster/);
+    expect(routes).not.toMatch(/loadDiscoverCrewFeed/);
+    expect(read('apps/api/src/routes/user/registerDiscoverCrewRoutes.ts')).toMatch(/\/discover\/crew/);
   });
 
   it('LAYER-20: PLS-5 complete and migration closed in program', () => {

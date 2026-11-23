@@ -14,7 +14,7 @@
     },
     "find_crew": {
       "reads": [
-        "GET /me/member-discovery/roster",
+        "GET /discover/crew",
         "GET /me/member-discovery/browse",
         "GET /explore/map?sources=availability"
       ],
@@ -152,7 +152,7 @@
         "src/crew-discovery/crewBrowseTab.ts"
       ],
       "uiLabels": ["EXPLORE_CREWS_PANEL_TITLE", "PEOPLE_BROWSE_TAB_LABELS"],
-      "wire": ["/me/member-discovery/roster", "sources=availability", "segment=connect"]
+      "wire": ["GET /discover/crew", "sources=availability", "segment=connect"]
     },
     {
       "id": "surface.teams",

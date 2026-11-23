@@ -25,6 +25,13 @@ describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
     expect(read('package.json')).not.toMatch(/program:normalize-archive/);
   });
 
+  it('GW2-02: no dual Find crew HTTP path (/me/member-discovery/roster)', () => {
+    const routes = read('apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts');
+    expect(routes).not.toMatch(/\/me\/member-discovery\/roster/);
+    expect(routes).not.toMatch(/Deprecation/);
+    expect(read('apps/api/src/routes/user/registerDiscoverCrewRoutes.ts')).toMatch(/\/discover\/crew/);
+  });
+
   it('GW2-01: matching notify re-export shims removed (GW-2)', () => {
     expect(existsSync(join(ROOT, 'apps/api/src/services/wishlist-alerts.ts'))).toBe(false);
     expect(existsSync(join(ROOT, 'apps/api/src/services/availability-hosted-match-notifications.ts'))).toBe(

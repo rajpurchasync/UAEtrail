@@ -234,7 +234,7 @@ Map pill **Crews** (see `exploreCrewsCopy.ts`); opens **list search** — mobile
 | Lane (`peopleTab`) | Facet (`peopleFacet`) | Data / actions |
 |--------------------|----------------------|----------------|
 | `people` (default) | `recommended` (default) | Blended roster + availability + directory teaser |
-| `people` | `friends` | `GET /me/member-discovery/roster` — buddies with upcoming outings |
+| `people` | `friends` | `GET /discover/crew` — buddies with upcoming outings |
 | `people` | `available` | Marked calendar + map open/fixed intent catalog |
 | `people` | `everyone` | Directory from browse; Pro quota on profile opens |
 | `professional` | — | Guide/porter directory + **agency** map pins (`source: agency`) |

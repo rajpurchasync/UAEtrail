@@ -488,11 +488,6 @@
     },
     {
       "method": "GET",
-      "path": "/me/member-discovery/roster",
-      "registrar": "apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts"
-    },
-    {
-      "method": "GET",
       "path": "/me/member-discovery/quota",
       "registrar": "apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts"
     },
@@ -1253,7 +1248,6 @@
       "me-map-pins-read"
     ],
     "apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts": [
-      "discover-crew-feed",
       "me-account-session-read",
       "member-discovery-me-read",
       "member-discovery-quota",

@@ -20,7 +20,7 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`M
 | **`/member/:userId/*`** | Optional auth | Public member card (`profile`, `brief`, `upcoming-activities`) — `registerPublicMemberRoutes.ts` |
 | **`/me/discover/overlay`** | Auth | Per-viewer `viewerAccess` for public map item ids (not a second catalog) |
 | **`/discover/*`** | Mixed | **Discover layer** — federated Find crew (`GET /discover/crew`, auth) · ranked recommendations (`GET /discover/recommendations`, `surface=map` optional auth · `surface=crew` auth) |
-| **`/me/member-discovery/*`** | Auth | People network, directory browse, quota, user search — **`/me/member-discovery/roster` legacy** (use `/discover/crew`) |
+| **`/me/member-discovery/*`** | Auth | People network, directory browse, quota, user search (Find crew roster: **`GET /discover/crew`**) |
 | **`/safety/reports`** | Auth | Member **content reports** (trust/safety) — `safety.ts` |
 | **`/chat/*`** | Auth | DMs |
 | **`/reviews`** | Public read; auth write | Social reviews (not content reports) |
@@ -178,7 +178,6 @@ Explore **people browse panel** (map; URL `view=people`; legacy `view=social` / 
 |--------|------|-----|
 | GET | `/me/member-discovery/network/preview` | Network avatars + counts for explore map people pill |
 | GET | `/me/member-discovery/network` | **Network roster** — Friends (BWL `buddies`) / following. Query: `segment=all\|buddies\|followed` (`friends` alias of `buddies`) |
-| GET | `/me/member-discovery/roster` | **Legacy** — same federated payload as **`GET /discover/crew`**; responds with **Deprecation** + `Link` successor. Prefer **`/discover/crew`**. |
 | GET | `/me/member-discovery/browse` | Directory only (paginated public members) |
 | GET | `/me/member-discovery/search` | User search (e.g. new chat) |
 | GET | `/me/member-discovery/quota` | Free vs Pro profile-open quota |

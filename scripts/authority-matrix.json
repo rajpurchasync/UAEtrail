@@ -369,8 +369,8 @@
       "label": "People discovery roster",
       "axis": "D_PARTICIPATE",
       "contextId": "member_discovery",
-      "resolver": { "module": "apps/api/src/services/member-discovery-roster.ts", "symbol": "loadMemberDiscoveryRoster" },
-      "http": { "method": "GET", "path": "/me/member-discovery/roster" }
+      "resolver": { "module": "apps/api/src/services/discover-crew-feed.ts", "symbol": "loadDiscoverCrewFeed" },
+      "http": { "method": "GET", "path": "/discover/crew" }
     },
     {
       "id": "social.buddy_request",
