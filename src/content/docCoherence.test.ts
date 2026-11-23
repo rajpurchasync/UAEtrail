@@ -137,8 +137,8 @@ describe('doc coherence (Tier 1)', () => {
     expect(plans).toEqual([]);
   });
 
-  it('PCOH program spine is machine JSON (narrative sync: npm run verify:refactor-program)', () => {
-    const programPath = join(process.cwd(), 'scripts/refactor-program.json');
+  it('PCOH program spine is machine JSON (narrative sync: npm run verify:platform-program)', () => {
+    const programPath = join(process.cwd(), 'scripts/platform-program.json');
     expect(existsSync(programPath)).toBe(true);
     const program = JSON.parse(readFileSync(programPath, 'utf8'));
     expect(program.authorization?.statement).toMatch(/PCOH|coherence program/i);

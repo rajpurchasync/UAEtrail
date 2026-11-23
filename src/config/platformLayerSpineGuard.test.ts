@@ -18,7 +18,7 @@ describe('platformLayerSpineGuard (MIG-PLATFORM-LAYER-SPINE)', () => {
   const spine: SpineManifest = JSON.parse(read('scripts/platform-layer-spine-touchpoints.json'));
 
   it('LAYER-00: touchpoints manifest registered in refactor-program', () => {
-    const program = JSON.parse(read('scripts/refactor-program.json')) as {
+    const program = JSON.parse(read('scripts/platform-program.json')) as {
       migrations: { id: string; status: string; scheduleDoc?: string }[];
     };
     const mig = program.migrations?.find((m) => m.id === 'MIG-PLATFORM-LAYER-SPINE');

@@ -19,7 +19,7 @@ type Migration = {
  * MIG-PROGRAM-ARCHIVE — slim complete rows; path lists only on in_progress migrations.
  */
 describe('programArchiveGuard (MIG-PROGRAM-ARCHIVE)', () => {
-  const program = JSON.parse(read('scripts/refactor-program.json')) as {
+  const program = JSON.parse(read('scripts/platform-program.json')) as {
     migrations?: Migration[];
   };
 
@@ -50,7 +50,7 @@ describe('programArchiveGuard (MIG-PROGRAM-ARCHIVE)', () => {
   });
 
   it('PROG-ARCH-03: normalize script documents archive policy', () => {
-    expect(read('scripts/normalize-refactor-program-archive.mjs')).toMatch(/feRoots/);
-    expect(read('scripts/verify-refactor-program.mjs')).toMatch(/archivedAt/);
+    expect(read('scripts/program-normalize-archive.mjs')).toMatch(/feRoots/);
+    expect(read('scripts/verify-platform-program.mjs')).toMatch(/archivedAt/);
   });
 });

@@ -80,7 +80,7 @@ switch (step) {
       console.error('[s10f:ops] checklist FAILED — PRE_DEPLOY missing s10f:ops commands');
       process.exit(1);
     }
-    const program = JSON.parse(readFileSync(join(root, 'scripts/refactor-program.json'), 'utf8'));
+    const program = JSON.parse(readFileSync(join(root, 'scripts/platform-program.json'), 'utf8'));
     const mig = program.migrations?.find((m) => m.id === 'MIG-SURFACE-ACTIVITY-DETAIL');
     if (!mig || mig.status !== 'complete') {
       console.error('[s10f:ops] checklist FAILED — MIG-SURFACE-ACTIVITY-DETAIL must be complete');

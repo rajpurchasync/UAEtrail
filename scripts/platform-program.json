@@ -1,6 +1,7 @@
 {
   "version": 1,
-  "description": "Platform program spine (index). Complete MIG-* rows archived — paths in manifest + touchpoints JSON, not here.",
+  "description": "Platform program index (permanent governance — not an active refactor backlog).",
+  "purpose": "Migration ledger, ops phase gates (P4b/P5), WIP limit, authorization statement synced to Tier-1. Layer contracts live in *-touchpoints.json + bounded-context-manifest.json; CI enforces via verify:platform-program + domain guards.",
   "updated": "2026-11-23",
   "authorization": {
     "approvedOn": "2026-10-17",
@@ -36,7 +37,7 @@
         "repo-census-baseline.json",
         "system-audit-baseline.json",
         "boundedContextAlignment: every api/domains file assigned",
-        "refactor-program + §8.6",
+        "platform-program.json + §8.6",
         "npm run verify:system:quick"
       ]
     },
@@ -805,8 +806,8 @@
       "owner": "platform",
       "contextIds": [],
       "archivedAt": "2026-11-23",
-      "scheduleDoc": "scripts/normalize-refactor-program-archive.mjs",
-      "successMetric": "Complete migrations: archivedAt, no feRoots/apiRoots; WIP rows keep paths; verify:refactor-program enforces."
+      "scheduleDoc": "scripts/program-normalize-archive.mjs",
+      "successMetric": "Complete migrations: archivedAt, no feRoots/apiRoots; WIP rows keep paths; verify:platform-program enforces."
     }
   ],
   "stranglerRules": [

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Validates scripts/refactor-program.json against repo paths and Tier-1 spine.
+ * Validates scripts/platform-program.json against repo paths and Tier-1 spine.
  * Complete migrations: archivedAt only (no feRoots/apiRoots) — MIG-PROGRAM-ARCHIVE.
  * @see docs/SYSTEM_COHERENCE.md §8.6
  */
@@ -13,19 +13,19 @@ import { stripNpmDevdirEnv, stripNpmDevdirFromProcess } from './strip-npm-devdir
 stripNpmDevdirFromProcess();
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const childEnv = () => stripNpmDevdirEnv();
-const programPath = join(root, 'scripts/refactor-program.json');
+const programPath = join(root, 'scripts/platform-program.json');
 const coherencePath = join(root, 'docs/SYSTEM_COHERENCE.md');
 const manifestPath = join(root, 'scripts/bounded-context-manifest.json');
 
 let failed = false;
 
 const fail = (msg) => {
-  console.error(`[verify:refactor-program] ${msg}`);
+  console.error(`[verify:platform-program] ${msg}`);
   failed = true;
 };
 
 if (!existsSync(programPath)) {
-  fail('missing scripts/refactor-program.json');
+  fail('missing scripts/platform-program.json');
   process.exit(1);
 }
 
@@ -36,15 +36,15 @@ if (!coherence.includes('### 8.6 Platform program')) {
   fail('docs/SYSTEM_COHERENCE.md missing §8.6 Platform program');
 }
 
-if (!coherence.includes('refactor-program.json')) {
-  fail('docs/SYSTEM_COHERENCE.md must reference scripts/refactor-program.json');
+if (!coherence.includes('platform-program.json')) {
+  fail('docs/SYSTEM_COHERENCE.md must reference scripts/platform-program.json');
 }
 
 const ctoLine =
   program.authorization?.statement ??
   'Program confirmed; P0–P1 complete; P2+ gated on S10e/f + migration WIP limit.';
 if (!coherence.includes(ctoLine)) {
-  fail('docs/SYSTEM_COHERENCE.md must include authorization.statement from refactor-program.json');
+  fail('docs/SYSTEM_COHERENCE.md must include authorization.statement from platform-program.json');
 }
 
 if (!existsSync(manifestPath)) {
@@ -70,7 +70,7 @@ for (const migration of program.migrations ?? []) {
 
   if (migration.status === 'complete') {
     if (!migration.archivedAt) {
-      fail(`complete migration ${migration.id}: missing archivedAt (run normalize-refactor-program-archive.mjs)`);
+      fail(`complete migration ${migration.id}: missing archivedAt (run program-normalize-archive.mjs)`);
     }
     if (migration.feRoots?.length) {
       fail(`complete migration ${migration.id}: feRoots not allowed after archive`);
@@ -102,13 +102,13 @@ for (const phase of gatedPhases) {
 }
 
 if (failed) {
-  console.error('\n[verify:refactor-program] FAILED');
+  console.error('\n[verify:platform-program] FAILED');
   process.exit(1);
 }
 
 try {
   execSync(
-    'npx vitest run src/config/programArchiveGuard.test.ts src/config/programPhaseOpsGuard.test.ts src/config/repoCensusGuard.test.ts',
+    'npx vitest run src/config/programArchiveGuard.test.ts src/config/programPhaseOpsGuard.test.ts src/config/repoCensusGuard.test.ts src/config/platformProgramNamingGuard.test.ts',
     {
     cwd: root,
     stdio: 'inherit',
@@ -116,10 +116,10 @@ try {
     }
   );
 } catch {
-  console.error('\n[verify:refactor-program] programArchiveGuard FAILED');
+  console.error('\n[verify:platform-program] programArchiveGuard FAILED');
   process.exit(1);
 }
 
 console.log(
-  `[verify:refactor-program] OK — ${program.phases?.length ?? 0} phases, ${program.migrations?.length ?? 0} migrations, ${inProgress.length}/${maxWip} WIP`
+  `[verify:platform-program] OK — ${program.phases?.length ?? 0} phases, ${program.migrations?.length ?? 0} migrations, ${inProgress.length}/${maxWip} WIP`
 );

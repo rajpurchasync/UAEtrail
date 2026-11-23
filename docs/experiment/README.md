@@ -1,6 +1,6 @@
 # Experiment folder (retired)
 
-**Do not add plan files here.** The sole schedule is [`SYSTEM_COHERENCE.md`](../SYSTEM_COHERENCE.md) **§8** + [`scripts/refactor-program.json`](../../scripts/refactor-program.json).
+**Do not add plan files here.** The sole schedule is [`SYSTEM_COHERENCE.md`](../SYSTEM_COHERENCE.md) **§8** + [`scripts/platform-program.json`](../../scripts/platform-program.json).
 
 | Need | Read |
 |------|------|

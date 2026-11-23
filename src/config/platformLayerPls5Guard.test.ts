@@ -33,7 +33,7 @@ describe('platformLayerPls5Guard (MIG-PLATFORM-LAYER-SPINE closure)', () => {
     };
     const p5 = spine.phases.find((p) => p.id === 'PLS-5');
     expect(p5?.status).toBe('complete');
-    const program = JSON.parse(read('scripts/refactor-program.json')) as {
+    const program = JSON.parse(read('scripts/platform-program.json')) as {
       migrations: { id: string; status: string }[];
     };
     const mig = program.migrations.find((m) => m.id === 'MIG-PLATFORM-LAYER-SPINE');

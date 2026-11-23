@@ -2,14 +2,14 @@
 /**
  * One-shot / maintenance: strip feRoots·apiRoots·executionPhases from complete MIG-* rows.
  * Path truth → bounded-context-manifest.json + program *-touchpoints.json + guards.
- * @see MIG-PROGRAM-ARCHIVE · verify-refactor-program.mjs
+ * @see MIG-PROGRAM-ARCHIVE · verify-platform-program.mjs
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const programPath = join(root, 'scripts/refactor-program.json');
+const programPath = join(root, 'scripts/platform-program.json');
 const ARCHIVED_AT = '2026-11-23';
 
 /** Optional machine schedule when not already on the row */
@@ -60,9 +60,9 @@ if (!program.migrations.some((m) => m.id === archiveId)) {
     owner: 'platform',
     contextIds: [],
     archivedAt: ARCHIVED_AT,
-    scheduleDoc: 'scripts/normalize-refactor-program-archive.mjs',
+    scheduleDoc: 'scripts/program-normalize-archive.mjs',
     successMetric:
-      'Complete migrations: archivedAt, no feRoots/apiRoots; WIP rows keep paths; verify:refactor-program enforces.',
+      'Complete migrations: archivedAt, no feRoots/apiRoots; WIP rows keep paths; verify:platform-program enforces.',
   });
   touched += 1;
 }
@@ -72,4 +72,4 @@ program.description =
 program.updated = ARCHIVED_AT;
 
 writeFileSync(programPath, `${JSON.stringify(program, null, 2)}\n`, 'utf8');
-console.log(`[normalize-refactor-program-archive] updated refactor-program.json (${touched} migration touch/es)`);
+console.log(`[program-normalize-archive] updated platform-program.json (${touched} migration touch/es)`);

@@ -48,7 +48,7 @@ describe('releaseOpsProgramGuard (staging release ops spine)', () => {
     expect(preDeploy).toMatch(/s10e:staging-checklist/);
     expect(preDeploy).toMatch(/s10f:ops:print-routes/);
     expect(preDeploy).toMatch(/mig-disco-reg:ops:preflight/);
-    const program = JSON.parse(read('scripts/refactor-program.json')) as {
+    const program = JSON.parse(read('scripts/platform-program.json')) as {
       authorization?: { statement?: string };
     };
     const statement = program.authorization?.statement ?? '';

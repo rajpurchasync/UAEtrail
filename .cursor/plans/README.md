@@ -1,6 +1,6 @@
 # Cursor agent plans (retired)
 
-**Do not add new plan bodies here.** Sole schedules: [`docs/SYSTEM_COHERENCE.md`](../../docs/SYSTEM_COHERENCE.md) §8 + [`scripts/refactor-program.json`](../../scripts/refactor-program.json) + program `*-touchpoints.json` under `scripts/`.
+**Do not add new plan bodies here.** Sole schedules: [`docs/SYSTEM_COHERENCE.md`](../../docs/SYSTEM_COHERENCE.md) §8 + [`scripts/platform-program.json`](../../scripts/platform-program.json) + program `*-touchpoints.json` under `scripts/`.
 
 | Stub | Migration | Machine schedule |
 |------|-----------|------------------|

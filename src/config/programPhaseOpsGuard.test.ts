@@ -16,7 +16,7 @@ type Phase = {
  * P4b / P5 stay in_progress until human ops sign-off — engineering work is closed in-repo.
  */
 describe('programPhaseOpsGuard (P4b · P5 ops vs eng)', () => {
-  const program = JSON.parse(read('scripts/refactor-program.json')) as {
+  const program = JSON.parse(read('scripts/platform-program.json')) as {
     phases?: Phase[];
     migrations?: { id: string; phase?: string; status: string }[];
   };

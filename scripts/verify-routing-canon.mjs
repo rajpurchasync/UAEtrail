@@ -23,12 +23,12 @@ if (!existsSync(mapPath)) {
 
 const map = JSON.parse(readFileSync(mapPath, 'utf8'));
 const program = JSON.parse(
-  readFileSync(join(root, 'scripts/refactor-program.json'), 'utf8')
+  readFileSync(join(root, 'scripts/platform-program.json'), 'utf8')
 );
 
 const routingMigs = (program.migrations ?? []).filter((m) => m.id?.startsWith('MIG-ROUTING-CANON'));
 if (routingMigs.length === 0) {
-  fail('refactor-program.json must list MIG-ROUTING-CANON-* migrations (§8.7)');
+  fail('platform-program.json must list MIG-ROUTING-CANON-* migrations (§8.7)');
 }
 
 const coherence = readFileSync(join(root, 'docs/SYSTEM_COHERENCE.md'), 'utf8');

@@ -39,7 +39,7 @@ describe('p4bS10fProgramGuard (P4b S10f ops)', () => {
   });
 
   it('S10F-OPS-03: activity-detail migration complete and core guard files exist', () => {
-    const program = JSON.parse(read('scripts/refactor-program.json')) as {
+    const program = JSON.parse(read('scripts/platform-program.json')) as {
       migrations?: { id: string; status: string }[];
     };
     const mig = program.migrations?.find((m) => m.id === 'MIG-SURFACE-ACTIVITY-DETAIL');

@@ -5,7 +5,7 @@ import { join } from 'node:path';
 const ROOT = join(process.cwd(), '..', '..');
 const SMOKE_PATH = join(ROOT, 'scripts/p5-slo-smoke.mjs');
 const ROUTES_PATH = join(ROOT, 'scripts/system-audit-routes.json');
-const PROGRAM_PATH = join(ROOT, 'scripts/refactor-program.json');
+const PROGRAM_PATH = join(ROOT, 'scripts/platform-program.json');
 const APP_PATH = join(ROOT, 'apps/api/src/app.ts');
 const AUTH_ROUTES_PATH = join(ROOT, 'apps/api/src/routes/auth.ts');
 const PUBLIC_ACTIVITY_PATH = join(

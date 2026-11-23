@@ -1,7 +1,7 @@
 # Compose kind wire + operator surface (MIG-PLATFORM-COMPOSE-OPERATOR-2026)
 
 **Status:** **Closed** (2026-11-22)  
-**Migration:** `scripts/refactor-program.json` → `MIG-PLATFORM-COMPOSE-OPERATOR-2026` (`complete`)  
+**Migration:** `scripts/platform-program.json` → `MIG-PLATFORM-COMPOSE-OPERATOR-2026` (`complete`)  
 **Guards:** `migPlatformComposeOperatorProgramGuard`, `composeSpineGuard`, `composeLineageGuard`, `composeWireEmitGuard`  
 **Verify:** `npm run verify:compose-spine`
 

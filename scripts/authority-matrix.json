@@ -3,7 +3,7 @@
   "dmcpPhase": 8,
   "dmcpStatus": "complete",
   "description": "DMCP eng complete (phases 0–8) — product actions → capability axis → sole resolver. Normative for gates; not user-facing copy.",
-  "program": "refactor-program.json · P4b/P5",
+  "program": "platform-program.json · P4b/P5",
   "minActions": 40,
   "axes": {
     "A_RBAC": "Platform/job role — auth middleware, route mounts, admin/merchant API",

@@ -81,10 +81,10 @@ export function checklist() {
     console.error(`[release:ops] checklist FAILED — PRE_DEPLOY missing: ${missingDeploy.join(', ')}`);
     process.exit(1);
   }
-  const program = JSON.parse(readFileSync(join(root, 'scripts/refactor-program.json'), 'utf8'));
+  const program = JSON.parse(readFileSync(join(root, 'scripts/platform-program.json'), 'utf8'));
   const statement = program.authorization?.statement ?? '';
   if (!statement.includes('S10f') || !statement.includes('P5 SLO') || !statement.includes('MIG-DISCO-REG')) {
-    console.error('[release:ops] checklist FAILED — refactor-program authorization.statement missing ops gates');
+    console.error('[release:ops] checklist FAILED — platform-program authorization.statement missing ops gates');
     process.exit(1);
   }
   run('npm run s10f:ops:checklist');

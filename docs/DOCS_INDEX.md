@@ -43,7 +43,7 @@
 
 ## Tier 3 — stubs only (no schedules)
 
-[`experiment/README.md`](./experiment/README.md) — retired folder (pointer only). Schedule: **§8** + `refactor-program.json`. **QA:** `npm run release:ops:checklist` · staging `npm run s10f:ops:print-routes` · **FAB:** `CREATE_FLOW.md`.
+[`experiment/README.md`](./experiment/README.md) — retired folder (pointer only). Schedule: **§8** + `platform-program.json`. **QA:** `npm run release:ops:checklist` · staging `npm run s10f:ops:print-routes` · **FAB:** `CREATE_FLOW.md`.
 
 ---
 

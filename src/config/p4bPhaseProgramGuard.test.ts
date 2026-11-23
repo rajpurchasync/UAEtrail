@@ -11,7 +11,7 @@ const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
  */
 describe('p4bPhaseProgramGuard (P4b phase eng closure)', () => {
   it('P4B-PHASE-01: every P4b migration row is complete', () => {
-    const program = JSON.parse(read('scripts/refactor-program.json')) as {
+    const program = JSON.parse(read('scripts/platform-program.json')) as {
       migrations?: { id: string; phase?: string; status: string }[];
     };
     const p4b = (program.migrations ?? []).filter((m) => m.phase === 'P4b');
@@ -21,7 +21,7 @@ describe('p4bPhaseProgramGuard (P4b phase eng closure)', () => {
   });
 
   it('P4B-PHASE-02: P4b exit criteria reference S10f ops and verify:system', () => {
-    const program = JSON.parse(read('scripts/refactor-program.json')) as {
+    const program = JSON.parse(read('scripts/platform-program.json')) as {
       phases?: { id: string; exitCriteria?: string[] }[];
     };
     const p4b = program.phases?.find((p) => p.id === 'P4b');

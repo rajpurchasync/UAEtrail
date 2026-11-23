@@ -17,10 +17,10 @@ if (!existsSync(touchpointsPath)) {
 }
 
 const touchpoints = JSON.parse(readFileSync(touchpointsPath, 'utf8'));
-const program = JSON.parse(readFileSync(join(root, 'scripts/refactor-program.json'), 'utf8'));
+const program = JSON.parse(readFileSync(join(root, 'scripts/platform-program.json'), 'utf8'));
 const mig = program.migrations?.find((m) => m.id === touchpoints.programId);
 if (!mig) {
-  console.error('[verify:discover-recommendations] refactor-program missing', touchpoints.programId);
+  console.error('[verify:discover-recommendations] platform-program missing', touchpoints.programId);
   process.exit(1);
 }
 
