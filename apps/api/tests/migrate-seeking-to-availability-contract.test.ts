@@ -28,6 +28,7 @@ describe('migrate-seeking-to-availability (MIG-DISCO-REG ops)', () => {
     expect(script).toMatch(/mergeMemberAvailabilityFixedSlotsMigration/);
     expect(script).toMatch(/scheduleExploreMapCacheInvalidation/);
     expect(script).toMatch(/scheduleKind: 'fixed'/);
+    expect(script).toMatch(/capacity: 'participant'/);
     expect(script).toMatch(/--cancel-seeking/);
     expect(script).toMatch(/--dry-run/);
   });

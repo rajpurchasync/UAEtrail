@@ -136,6 +136,7 @@ describe('MIG-SCHEDULE-GUIDE guards', () => {
     const rowModel = readFileSync(join(ROOT, 'src/crew-discovery/memberBrowseRowModel.ts'), 'utf8');
     expect(rowModel).toMatch(/memberHasGuideCapacityInSlots/);
     expect(rowModel).toMatch(/filterAvailabilityPeopleByGuideCapacity/);
+    expect(rowModel).not.toMatch(/filterAvailabilityPeopleByGuideIntent/);
   });
 
   it('C1: guide engagement terms UI + Pro-paid validator', () => {

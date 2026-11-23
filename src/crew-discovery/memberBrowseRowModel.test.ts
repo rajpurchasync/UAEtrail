@@ -4,7 +4,7 @@ import {
   buildMemberBrowseRowFromGoing,
   buildMemberBrowseRowFromRosterAvailability,
   buildMemberBrowseRowsFromDirectory,
-  filterAvailabilityPeopleByGuideIntent,
+  filterAvailabilityPeopleByGuideCapacity,
   filterDirectoryBrowseCards,
 } from './memberBrowseRowModel';
 
@@ -74,7 +74,7 @@ describe('memberBrowseRowModel', () => {
         isBuddy: false,
       },
     ];
-    expect(filterAvailabilityPeopleByGuideIntent(people, 'guide').map((p) => p.userId)).toEqual(['g1']);
+    expect(filterAvailabilityPeopleByGuideCapacity(people, 'guide').map((p) => p.userId)).toEqual(['g1']);
     const row = buildMemberBrowseRowFromAvailability(people[0]!);
     expect(row.badge?.label).toBe('Guide');
 

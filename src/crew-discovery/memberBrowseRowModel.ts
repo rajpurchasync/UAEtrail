@@ -55,15 +55,8 @@ export const filterAvailabilityPeopleByGuideCapacity = (
     ? people.filter((person) => memberHasGuideCapacityInSlots(person.slots ?? []))
     : people;
 
-/** @deprecated Use `filterAvailabilityPeopleByGuideCapacity`. */
-export const filterAvailabilityPeopleByGuideIntent = filterAvailabilityPeopleByGuideCapacity;
-
 export const availabilityPersonShowsGuideCapacityBadge = (person: ExploreAvailablePersonDTO): boolean =>
   memberHasGuideCapacityInSlots(person.slots ?? []);
-
-/** @deprecated Use `availabilityPersonShowsGuideCapacityBadge`. */
-export const availabilityPersonShowsGuideIntentBadge = (kinds: readonly string[]): boolean =>
-  kinds.includes('guide');
 
 export const buildMemberBrowseRowFromAvailability = (
   person: ExploreAvailablePersonDTO
