@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   parseExploreCrewBrowseState,
   parsePeopleListBrowseState,
-  parsePeopleListBrowseTab,
   serializePeopleListBrowseState,
 } from './peopleListBrowseUrl';
 
@@ -13,14 +12,17 @@ describe('peopleListBrowseUrl', () => {
       facet: 'recommended',
       proKind: 'all',
     });
-    expect(parsePeopleListBrowseTab(null)).toBe('people');
+    expect(parsePeopleListBrowseState(new URLSearchParams())).toEqual({
+      lane: 'people',
+      facet: 'recommended',
+      proKind: 'all',
+    });
   });
 
-  it('maps inbound buddies to People Recommended', () => {
-    expect(parsePeopleListBrowseTab('buddies')).toBe('people');
+  it('ignores retired buddies= query (GW-7 canonical only)', () => {
     expect(
       parsePeopleListBrowseState(new URLSearchParams('listCat=people&buddies=looking'))
-    ).toEqual({ lane: 'people', facet: 'available', proKind: 'all' });
+    ).toEqual({ lane: 'people', facet: 'recommended', proKind: 'all' });
   });
 
   it('parseExploreCrewBrowseState reads peopleTab and facet', () => {

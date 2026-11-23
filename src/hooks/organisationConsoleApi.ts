@@ -1,8 +1,13 @@
-import type { PlaceDTO, ReviewDTO, TenantPublicDTO } from '@uaetrail/shared-types';
+import type {
+  OrganisationHostDetailsDTO,
+  PlaceDTO,
+  ReviewDTO,
+  TenantPublicDTO,
+} from '@uaetrail/shared-types';
 import { api } from '../api/index';
-import type { HostApplication, HostDetails, TeamMember } from '../api/types';
+import type { HostApplication, TeamMember } from '../api/types';
 
-export type { HostApplication, HostDetails, TeamMember };
+export type { HostApplication, OrganisationHostDetailsDTO, TeamMember };
 
 export const fetchOrganisationTeam = async (tenantId: string): Promise<TeamMember[]> => {
   const res = await api.getOrganisationTeam(tenantId);
@@ -66,6 +71,6 @@ export const fetchOrganisationReviews = async (organisationId: string): Promise<
   return res.data;
 };
 
-export const updateOrganisationDetails = async (data: HostDetails): Promise<void> => {
+export const updateOrganisationDetails = async (data: OrganisationHostDetailsDTO): Promise<void> => {
   await api.updateOrganisationDetails(data);
 };

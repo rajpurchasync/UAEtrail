@@ -22,14 +22,7 @@ export const wallMessageQuoteSnippet = (body: string): string => {
   return line.length > 160 ? `${line.slice(0, 157)}…` : line;
 };
 
-/** @deprecated New posts use plain `body` + `replyToMessageId`. Legacy embedded quote format. */
-export const formatGroupWallReplyBody = (target: GroupWallReplyTarget, text: string): string => {
-  const parsed = parseGroupWallMessageBody(target.body);
-  const snippetSource = parsed?.replyText ?? target.body;
-  const snippet = snippetSource.trim().split('\n')[0]?.slice(0, 160) ?? '';
-  return `↩[id:${target.id}] ${target.authorName}: “${snippet}”\n\n${text.trim()}`;
-};
-
+/** Parse legacy embedded quote bodies still stored in Mongo — new posts use `replyToMessageId` only. */
 export const parseGroupWallMessageBody = (body: string): ParsedGroupWallReply | null => {
   const match = body.match(REPLY_LINE);
   if (!match) return null;

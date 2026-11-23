@@ -1,7 +1,7 @@
 import { exploreMapPeekPath } from '@uaetrail/shared-types';
 import type { ShopPublicDTO } from '@uaetrail/shared-types';
 import { api } from '../api/index';
-import type { TenantProfile } from '../api/types';
+import type { TenantPublicDTO } from '@uaetrail/shared-types';
 import type { ShopPublicView } from '../components/shop/ShopPublicPage';
 import { fetchOrganisationProfileBySlug } from './organisationConsoleApi';
 import { fetchPublicPlaceDetail } from './placeDetailClientApi';
@@ -15,7 +15,7 @@ export const fetchShopPublic = async (id: string): Promise<ShopPublicDTO> => {
 const resolvePresence = (latitude?: number | null, longitude?: number | null): ShopPublicView['presence'] =>
   latitude != null && longitude != null ? 'physical' : 'online';
 
-const tenantToShopView = (tenant: TenantProfile): ShopPublicView => ({
+const tenantToShopView = (tenant: TenantPublicDTO): ShopPublicView => ({
   id: tenant.shopId ?? tenant.slug,
   reviewTargetId: tenant.id,
   shopName: tenant.name,
@@ -63,7 +63,7 @@ export const fetchShopPublicPage = async (id: string): Promise<ShopPublicPageRes
   } catch {
     try {
       const tenant = await fetchOrganisationProfileBySlug(id);
-      return { communityPeekOnly: false, shop: tenantToShopView(tenant as TenantProfile) };
+      return { communityPeekOnly: false, shop: tenantToShopView(tenant as TenantPublicDTO) };
     } catch {
       try {
         const place = await fetchPublicPlaceDetail(id);

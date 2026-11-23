@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { OrganisationPublicProfile } from '../components/organisation-console/OrganisationPublicProfile';
 import { EntityPublicDetailShell } from '../components/entity-public/EntityPublicDetailShell';
-import type { TenantProfile } from '../api/types';
+import type { TenantPublicDTO } from '@uaetrail/shared-types';
 import { fetchOrganisationProfileBySlug } from '../hooks/organisationConsoleApi';
 import { shopPublicPath } from '../utils/shopPaths';
 import { detailBackPath } from '../config/routingCatalog';
@@ -13,7 +13,7 @@ import {
   type OrganisationPublicDetailTabId,
 } from '../organisation/organisationPublicDetailTab';
 
-const isShopTenant = (tenant: TenantProfile): boolean =>
+const isShopTenant = (tenant: TenantPublicDTO): boolean =>
   tenant.businessMode === 'SHOP' || tenant.type === 'shop' || tenant.type === 'SHOP';
 
 /** Public brand profile — `/agency` or `/partner`. Shop tenants redirect to `/shop/:id`. Individual Pro is `/member/:userId`. */
@@ -27,7 +27,7 @@ export const OrganisationProfile = () => {
     setSearchParams(next, { replace: true });
   };
 
-  const [tenant, setTenant] = useState<TenantProfile | null>(null);
+  const [tenant, setTenant] = useState<TenantPublicDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [isShop, setIsShop] = useState(false);
 
@@ -38,8 +38,8 @@ export const OrganisationProfile = () => {
     setLoading(true);
     fetchOrganisationProfileBySlug(id)
       .then((tenant) => {
-        setTenant(tenant as TenantProfile);
-        setIsShop(isShopTenant(tenant as TenantProfile));
+        setTenant(tenant as TenantPublicDTO);
+        setIsShop(isShopTenant(tenant as TenantPublicDTO));
       })
       .catch(() => {
         setTenant(null);

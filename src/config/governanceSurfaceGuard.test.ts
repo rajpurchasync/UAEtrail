@@ -148,6 +148,18 @@ describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
     expect(crewNav).not.toMatch(/buddiesPathFromCrews/);
   });
 
+  it('GW8-01: retired FE/API compat aliases removed', () => {
+    expect(read('src/utils/groupWallReply.ts')).not.toMatch(/formatGroupWallReplyBody/);
+    expect(read('src/api/types.ts')).not.toMatch(/export type HostDetails\b/);
+    expect(read('src/api/types.ts')).not.toMatch(/export type TenantProfile\b/);
+    const memberRoutes = read('apps/api/src/lib/member-routes.ts');
+    expect(memberRoutes).not.toMatch(/TRIPS_JOINED_TAB_PATH/);
+    expect(memberRoutes).not.toMatch(/exploreSeekingPinPath/);
+    expect(memberRoutes).not.toMatch(/planSelfDemandPeekPath/);
+    expect(read('src/list/browse/peopleListBrowseUrl.ts')).not.toMatch(/parsePeopleListBrowseTab/);
+    expect(read('src/crew-discovery/crewBrowseTab.ts')).not.toMatch(/parseCrewBrowseTab/);
+  });
+
   it('GW7-01: SPA inbound redirect modules and AppRoutes Navigate shims removed', () => {
     expect(existsSync(join(ROOT, 'src/routing/inboundBookmarkRedirects.tsx'))).toBe(false);
     expect(existsSync(join(ROOT, 'src/routing/exploreEntryRedirects.tsx'))).toBe(false);

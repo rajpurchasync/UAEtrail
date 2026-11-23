@@ -297,9 +297,9 @@ Header **Back** walks the in-app stack (`src/utils/backStack.ts`) and pops brows
 | Organizer profile (wire kind) | `'host'` | `/explore` |
 | Generic / 404 | `'explore'` | `/explore` |
 
-## Legacy redirects (`App.tsx`)
+## Legacy bookmarks (no SPA redirects — GW-7)
 
-Canonical paths only in **new UI**. Bookmark aliases mount in `src/App.tsx` and delegate to `src/routing/inboundBookmarkRedirects.tsx` — do not add new links to legacy paths.
+Canonical paths only in **new UI**. Retired bookmark URLs are **not** mounted as routes; stale links normalize in `inferNotificationPath()` / auth return helpers (`src/config/inboundBookmarkPaths.ts`). Do not add new links to legacy paths.
 
 | Legacy path | Redirect target | Removal target |
 |-------------|-----------------|----------------|

@@ -1,16 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import {
-  formatGroupWallReplyBody,
-  parseGroupWallMessageBody,
-  wallMessageQuoteSnippet,
-} from './groupWallReply';
+import { parseGroupWallMessageBody, wallMessageQuoteSnippet } from './groupWallReply';
 
 describe('groupWallReply', () => {
-  it('round-trips reply metadata with message id', () => {
-    const body = formatGroupWallReplyBody(
-      { id: 'msg-1', authorName: 'Alex', body: 'Hello crew' },
-      'See you there'
-    );
+  it('parses legacy reply bodies with message id', () => {
+    const body = '↩[id:msg-1] Alex: “Hello crew”\n\nSee you there';
     const parsed = parseGroupWallMessageBody(body);
     expect(parsed?.replyToMessageId).toBe('msg-1');
     expect(parsed?.quoteAuthor).toBe('Alex');
@@ -26,10 +19,7 @@ describe('groupWallReply', () => {
 
   it('snippets plain or nested reply bodies', () => {
     expect(wallMessageQuoteSnippet('Line one\nline two')).toBe('Line one');
-    const nested = formatGroupWallReplyBody(
-      { id: 'x', authorName: 'A', body: 'Hi' },
-      'Nested reply'
-    );
+    const nested = '↩[id:x] A: “Hi”\n\nNested reply';
     expect(wallMessageQuoteSnippet(nested)).toBe('Nested reply');
   });
 });

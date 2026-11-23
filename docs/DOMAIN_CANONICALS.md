@@ -268,7 +268,7 @@ Built only via **`routingCatalog`** or `@uaetrail/shared-types` `entity-path` he
 
 **Parse inbound links:** `parseEntityRefFromPathname(pathname)` → `EntityRef`.
 
-**Legacy redirects only** (do not link in new UI): `/map`, `/discovery`, `/trips`, `/activities` → `/plan` or `/profile/history` (or journey map), `/become-host` → Pro Membership, `/merchant/:id` → `/shop/:id`, `/product/:id` → explore shops browse, `/profile/wishlist` → Plan wishlist tab, `/contributions` → `/profile/submissions`, `/messages` → `/chat`, `/host/*` and `/organizer/*` → `/publishing/*` where applicable. Implementations: `src/routing/inboundBookmarkRedirects.tsx` + `App.tsx` routes. Table: [`NAVIGATION.md`](./NAVIGATION.md) § Legacy redirects.
+**Stale bookmark paths** (do not link in new UI): legacy `/trips`, `/messages`, `/host/*`, profile-nested settings, etc. — **no SPA redirect routes** (GW-7). Stale links normalize in `inferNotificationPath()` and auth return context only; constants in `src/config/inboundBookmarkPaths.ts`. Table: [`NAVIGATION.md`](./NAVIGATION.md) § Legacy bookmarks.
 
 ### 3.1 Consumer detail tab wire ids
 
@@ -468,7 +468,7 @@ When renaming or adding routes:
 | `LocationDTO` vs Place | Mongo `locations` + historical API |
 | `tenant` vs Organisation | `x-organisation-id` header (`tenantId` in storage) |
 | `UserRole` vs `HostStatusDTO` | Auth shell vs product capabilities |
-| `src/routing/inboundBookmarkRedirects.tsx` | Central bookmark redirects (`/become-host`, `/messages`, `/product/:id`, `/profile/wishlist`, place kind paths, trips hub, …) — mounted from `App.tsx` |
+| Retired SPA bookmark redirects | Removed GW-7 — use notification/auth normalization only (`notificationRouting.ts`, `inboundBookmarkPaths.ts`) |
 | `ProProfileApplicationFlow` | Pro guide/agency/shop application wizard (not community Host / publish) |
 | `/activities` route | Bookmark redirect to `/plan` (or history) in `App.tsx` |
 
@@ -481,7 +481,7 @@ When renaming or adding routes:
 | Need | Import |
 |------|--------|
 | Path constants, entity URLs | `src/config/routingCatalog.ts` (`messagesToUserPath`, `messagesGroupPath`, `myRequestDetailPath`) |
-| Inbound bookmark segments (redirect targets only) | `src/config/inboundRoutePaths.ts` — paired with `src/routing/inboundBookmarkRedirects.tsx` |
+| Retired console/message path literals (normalize only) | `src/config/inboundRoutePaths.ts` · `src/config/inboundBookmarkPaths.ts` |
 | Explore query (`compose=`, panels) | `explorePath()` — `src/explore/routing.ts` |
 | Notification deep link | `inferNotificationPath()` — `src/utils/notificationRouting.ts` only |
 | Post-auth / legacy dashboard | `authRouting.ts` (shrink over time) |

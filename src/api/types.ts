@@ -1,7 +1,6 @@
 import {
   ActivityDetailDTO,
   GroupWallPostPolicy,
-  OrganisationHostDetailsDTO,
   RideshareRiderReputationDTO,
   SocialGroupChatPreviewDTO,
   TenantListDTO,
@@ -482,11 +481,3 @@ export interface TenantDetail {
   activities: Array<{ id: string; title: string; locationName: string; startAt: string; status: string; capacity: number; participantCount: number; checkedInCount: number; guideName: string | null }>;
 }
 
-/** @deprecated Use OrganisationHostDetailsDTO from @uaetrail/shared-types */
-export type HostDetails = OrganisationHostDetailsDTO;
-
-/** Domain alias — public organisation profile fields on guide/agency tenants. */
-export type OrganisationDetails = OrganisationHostDetailsDTO;
-
-/** @deprecated Import TenantPublicDTO from @uaetrail/shared-types */
-export type TenantProfile = TenantPublicDTO;

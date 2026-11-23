@@ -6,7 +6,7 @@ import {
 import { SITE_ORIGIN, toAbsoluteUrl } from '../../config/seo';
 import type { Place, PlaceAsCamp, PlaceAsEvent, PlaceAsTrail } from '../../types/place';
 import { placeDetailPath } from '../../utils/placePaths';
-import type { TenantProfile } from '../../api/types';
+import type { TenantPublicDTO } from '@uaetrail/shared-types';
 import { activityHostName } from '../../utils/hostLabels';
 import { buildActivityEventJsonLd } from '@uaetrail/shared-types';
 
@@ -118,7 +118,7 @@ const averageRating = (reviews: ReviewDTO[]) => {
 };
 
 export const organizationSchema = (
-  tenant: TenantProfile,
+  tenant: TenantPublicDTO,
   _slug: string,
   reviews: ReviewDTO[] = [],
   publicProfilePath: string

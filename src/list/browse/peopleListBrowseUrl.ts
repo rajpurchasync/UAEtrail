@@ -21,22 +21,9 @@ export const parsePeopleListBrowseState = (
   searchParams: Pick<URLSearchParams, 'get'>
 ): CrewBrowseState => parseCrewBrowseState(searchParams);
 
-/** @deprecated Use parsePeopleListBrowseState */
-export const parsePeopleListBrowseTab = (raw: string | null): CrewBrowseLane => {
-  if (!raw) return 'people';
-  const params = new URLSearchParams();
-  params.set(PEOPLE_LIST_TAB_URL_PARAM, raw);
-  return parseCrewBrowseState(params).lane;
-};
-
 export const parseExploreCrewBrowseState = (
   searchParams: Pick<URLSearchParams, 'get'>
 ): CrewBrowseState => parseCrewBrowseState(searchParams);
-
-/** @deprecated Use parseExploreCrewBrowseState */
-export const parseExploreCrewBrowseTab = (
-  searchParams: Pick<URLSearchParams, 'get'>
-): CrewBrowseLane => parseExploreCrewBrowseState(searchParams).lane;
 
 export const serializePeopleListBrowseState = (state: CrewBrowseState): {
   peopleTab: string | null;
@@ -49,7 +36,3 @@ export const serializePeopleListBrowseState = (state: CrewBrowseState): {
 });
 
 export { PRO_KIND_URL_PARAM };
-
-/** @deprecated Use serializePeopleListBrowseState */
-export const serializePeopleListBrowseTab = (tab: CrewBrowseLane): string | null =>
-  serializeCrewBrowseLane(tab);

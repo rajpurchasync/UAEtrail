@@ -6,7 +6,7 @@ import {
 } from '../lib/activity-engagement-store.js';
 import { createAuditLog } from '../lib/audit.js';
 import { notifyRequestDecision } from '../lib/email.js';
-import { activityDetailJoinedWelcomePath, TRIPS_JOINED_TAB_PATH } from '../lib/member-routes.js';
+import { activityDetailJoinedWelcomePath, planJoinedSchedulePath } from '../lib/member-routes.js';
 import { buildJoinApprovedBody, buildJoinRejectedBody } from '../lib/notification-copy.js';
 import { scheduleSideEffect } from '../lib/schedule-side-effect.js';
 import { ensureActivityGroupChat } from './activity-group-chat.js';
@@ -76,7 +76,7 @@ export const decideTenantActivityJoinRequest = async (input: {
         requestId: request.id,
         actorUserId: input.reviewerUserId,
         hostNote: input.hostNote?.trim() || null,
-        path: TRIPS_JOINED_TAB_PATH,
+        path: planJoinedSchedulePath(),
       },
     });
   }

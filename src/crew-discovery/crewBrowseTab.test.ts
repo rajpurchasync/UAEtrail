@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { parseCrewBrowseState, serializeCrewBrowseLane } from './crewBrowseState';
-import { parseCrewBrowseTab, serializeCrewBrowseTab } from './crewBrowseTab';
-import { readPeopleCrewsTabParam } from '../routing/productUrlInbound';
+import { serializeCrewBrowseLane } from './crewBrowseState';
+import { parseCrewBrowseState, serializeCrewBrowseTab } from './crewBrowseTab';
 
 const stateFromUrl = (
   peopleTab: string | null,
@@ -26,29 +25,26 @@ describe('parseCrewBrowseState', () => {
     });
   });
 
-  it('maps legacy available to People facet', () => {
-    expect(stateFromUrl('available', null)).toEqual({
+  it('reads peopleFacet for Available / Friends', () => {
+    expect(stateFromUrl(null, null, 'available')).toEqual({
       lane: 'people',
       facet: 'available',
       proKind: 'all',
     });
-    expect(stateFromUrl('looking', null)).toEqual({
-      lane: 'people',
-      facet: 'available',
-      proKind: 'all',
-    });
-  });
-
-  it('maps legacy going to friends facet', () => {
-    expect(stateFromUrl('going', null)).toEqual({
+    expect(stateFromUrl(null, null, 'friends')).toEqual({
       lane: 'people',
       facet: 'friends',
       proKind: 'all',
     });
   });
 
-  it('maps hub and buddies to Recommended', () => {
-    expect(stateFromUrl('hub', null)).toEqual({
+  it('ignores retired peopleTab lane aliases (GW-7)', () => {
+    expect(stateFromUrl('available', null)).toEqual({
+      lane: 'people',
+      facet: 'recommended',
+      proKind: 'all',
+    });
+    expect(stateFromUrl('going', null)).toEqual({
       lane: 'people',
       facet: 'recommended',
       proKind: 'all',
@@ -79,34 +75,31 @@ describe('parseCrewBrowseState', () => {
       facet: 'recommended',
       proKind: 'guide',
     });
-    expect(stateFromUrl('guides', null)).toEqual({
-      lane: 'professional',
-      facet: 'recommended',
-      proKind: 'guide',
-    });
-    expect(stateFromUrl('agencies', null)).toEqual({
-      lane: 'professional',
-      facet: 'recommended',
-      proKind: 'agency',
-    });
   });
 });
 
-describe('parseCrewBrowseTab (lane only)', () => {
-  it('defaults to people', () => {
-    expect(parseCrewBrowseTab(null)).toBe('people');
+describe('parseCrewBrowseState lane from peopleTab', () => {
+  it('defaults to people / Recommended', () => {
+    expect(parseCrewBrowseState(new URLSearchParams()).lane).toBe('people');
   });
 
-  it('reads peopleTab', () => {
-    expect(tabFromUrlParam('going')).toBe('people');
-    expect(tabFromUrlParam('looking')).toBe('people');
+  it('ignores non-lane peopleTab tokens (GW-7 canonical only)', () => {
+    expect(laneFromPeopleTab('going')).toBe('people');
+    expect(facetFromPeopleTab('going')).toBe('recommended');
+    expect(laneFromPeopleTab('professional')).toBe('professional');
   });
 });
 
-const tabFromUrlParam = (peopleTab: string) => {
+const laneFromPeopleTab = (peopleTab: string) => {
   const params = new URLSearchParams();
   params.set('peopleTab', peopleTab);
-  return parseCrewBrowseTab(readPeopleCrewsTabParam(params));
+  return parseCrewBrowseState(params).lane;
+};
+
+const facetFromPeopleTab = (peopleTab: string) => {
+  const params = new URLSearchParams();
+  params.set('peopleTab', peopleTab);
+  return parseCrewBrowseState(params).facet;
 };
 
 describe('serializeCrewBrowseTab', () => {

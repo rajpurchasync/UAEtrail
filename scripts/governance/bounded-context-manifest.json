@@ -201,7 +201,6 @@
         "src/place/detail",
         "src/places-discovery",
         "src/pages/place",
-        "src/routing/inboundBookmarkRedirects.tsx",
         "src/pages/PlaceDetailPage.tsx",
         "src/components/place",
         "src/hooks/usePlaceDetailPage.ts",

@@ -22,18 +22,18 @@ describe('browseListUrlState trip topics', () => {
     expect(serialized.get('peopleFacet')).toBeNull();
   });
 
-  it('parses inbound buddies=looking as available facet', () => {
+  it('ignores retired buddies=looking (canonical peopleFacet only)', () => {
     const params = new URLSearchParams('listCat=people&buddies=looking');
     const state = parseBrowseListFilterState(params);
     expect(state.crewBrowseLane).toBe('people');
-    expect(state.crewPeopleFacet).toBe('available');
+    expect(state.crewPeopleFacet).toBe('recommended');
     const serialized = serializeBrowseListSearchParams(state, []);
     expect(serialized.get('buddies')).toBeNull();
-    expect(serialized.get('peopleFacet')).toBe('available');
+    expect(serialized.get('peopleFacet')).toBeNull();
   });
 
-  it('round-trips legacy peopleTab=going as friends facet', () => {
-    const params = new URLSearchParams('listCat=people&peopleTab=going');
+  it('round-trips peopleFacet=friends', () => {
+    const params = new URLSearchParams('listCat=people&peopleFacet=friends');
     const state = parseBrowseListFilterState(params);
     expect(state.crewPeopleFacet).toBe('friends');
     const serialized = serializeBrowseListSearchParams(state, []);
@@ -49,8 +49,8 @@ describe('browseListUrlState trip topics', () => {
     expect(serialized.get('geo')).toBe('dubai/hatta');
   });
 
-  it('round-trips availability-only list filter (inbound looking)', () => {
-    expect(parseBrowseListFilterState(new URLSearchParams('filter=looking')).tripAvailabilityOnly).toBe(true);
+  it('round-trips availability-only list filter (canonical filter=availability)', () => {
+    expect(parseBrowseListFilterState(new URLSearchParams('filter=looking')).tripAvailabilityOnly).toBe(false);
     expect(parseBrowseListFilterState(new URLSearchParams('filter=availability')).tripAvailabilityOnly).toBe(true);
     const serialized = serializeBrowseListSearchParams(
       {

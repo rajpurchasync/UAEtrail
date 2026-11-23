@@ -11,12 +11,16 @@ import {
   ShieldCheck,
   Users,
 } from 'lucide-react';
-import { ReviewDTO, type ActivityDTO, type TenantPublicDTO } from '@uaetrail/shared-types';
+import {
+  ReviewDTO,
+  type ActivityDTO,
+  type OrganisationHostDetailsDTO,
+  type TenantPublicDTO,
+} from '@uaetrail/shared-types';
 import {
   fetchOrganisationProfileBySlug,
   fetchOrganisationReviews,
   updateOrganisationDetails,
-  type HostDetails as OrganisationDetails,
 } from '../../hooks/organisationConsoleApi';
 import { updateMeProfile } from '../../hooks/memberProfileApi';
 import { ReviewSection } from '../ui/ReviewSection';
@@ -112,7 +116,7 @@ export const OrganisationPublicProfile = ({
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [editBio, setEditBio] = useState('');
-  const [editDetails, setEditDetails] = useState<OrganisationDetails>({});
+  const [editDetails, setEditDetails] = useState<OrganisationHostDetailsDTO>({});
 
   const loadProfile = useCallback(() => {
     setLoading(true);

@@ -9,7 +9,7 @@ import {
 import { COLLECTIONS } from '../lib/collections.js';
 import { createNotificationRecord } from '../lib/notifications-store.js';
 import { getMongoClient } from '../lib/mongo.js';
-import { PROFILE_PATH, TRIPS_JOINED_TAB_PATH } from '../lib/member-routes.js';
+import { PROFILE_PATH, planJoinedSchedulePath } from '../lib/member-routes.js';
 
 const goalLabel = (filter: MemberGoalActivityFilter, plural = true): string => {
   if (filter === 'hiking') return plural ? 'hikes' : 'hike';
@@ -128,7 +128,7 @@ export const maybeNotifyGoalBehindPace = async (userId: string): Promise<void> =
     type: NotificationType.SYSTEM,
     title: 'Your outdoor goal',
     body: `${goal.currentCount} of ${goal.targetCount} ${goalLabel(goal.activityFilter)} so far — log outings or explore trips to catch up.`,
-    meta: { kind: 'goal_behind_pace', path: TRIPS_JOINED_TAB_PATH },
+    meta: { kind: 'goal_behind_pace', path: planJoinedSchedulePath() },
   });
 
   await getMongoClient()!

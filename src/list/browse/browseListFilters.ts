@@ -49,7 +49,7 @@ export type BrowseListFilterState = {
   categories: BrowseMainCategoryKey[];
   /** Hosted trip topics — empty = all; OR match when multiple selected. */
   tripTopics: BrowseTripTopicKey[];
-  /** Availability-only browse — `filter=availability` on `/list` (inbound `filter=looking` still parses). */
+  /** Availability-only browse — `filter=availability` on `/list`. */
   tripAvailabilityOnly: boolean;
   /** Places category — hiking · camping · hubs, plus facilities/shop URL keys. */
   placeTopics: ListVenuePlaceTopicKey[];

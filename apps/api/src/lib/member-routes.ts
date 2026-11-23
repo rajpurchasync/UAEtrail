@@ -41,18 +41,6 @@ export const planJoinedSchedulePath = (): string => `${PLAN_PATH}?view=plans&fil
 /** Operator schedule home — keep in sync with FE `planHostedSchedulePath()`. */
 export const planHostedSchedulePath = (): string => OPERATOR_OVERVIEW_PATH;
 
-/** @deprecated Name kept for imports — value is canonical {@link PLAN_PATH}. */
-export const TRIPS_JOINED_TAB_PATH = planJoinedSchedulePath();
-
-/** @deprecated Legacy demand peek — use `myRequestDetailPath` or activity detail. */
-export const planSelfDemandPeekPath = (intentId: string): string => {
-  const params = new URLSearchParams();
-  params.set('view', 'plans');
-  params.set('role', 'joined');
-  params.set('peek', intentId);
-  return `${PLAN_PATH}?${params.toString()}`;
-};
-
 export const messagesToUserPath = (userId: string): string =>
   `${MESSAGES_PATH}?to=${encodeURIComponent(userId)}`;
 
@@ -94,13 +82,3 @@ export const explorePublishedActivityPinPath = (input: {
   return `/explore?${params.toString()}`;
 };
 
-/** @deprecated Use {@link explorePublishedActivityPinPath}. */
-export const exploreSeekingPinPath = (input: {
-  intentId: string;
-  seekingActivityId?: string | null;
-  activityId?: string | null;
-}): string =>
-  explorePublishedActivityPinPath({
-    intentId: input.intentId,
-    activityId: input.activityId ?? input.seekingActivityId ?? null,
-  });

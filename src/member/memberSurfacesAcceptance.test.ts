@@ -5,7 +5,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { parseCrewBrowseTab } from '../crew-discovery/crewBrowseTab';
+import { parseCrewBrowseState } from '../crew-discovery/crewBrowseTab';
 import { readAppRouteRegistry } from '../../scripts/dev/readAppRouteRegistry.mjs';
 import { PLAN_MAIN_TABS } from '../plan/planTab';
 import { isOperatorConsolePath } from '../config/surfacePaths';
@@ -36,7 +36,8 @@ describe('member surfaces §11 acceptance (automated)', () => {
 
   it('G-arch: API join/goal notification paths use /plan not /trips', () => {
     const memberRoutes = read('apps/api/src/lib/member-routes.ts');
-    expect(memberRoutes).toMatch(/TRIPS_JOINED_TAB_PATH = planJoinedSchedulePath\(\)/);
+    expect(memberRoutes).toMatch(/export const planJoinedSchedulePath/);
+    expect(memberRoutes).not.toMatch(/TRIPS_JOINED_TAB_PATH/);
     expect(memberRoutes).toContain("export const PLAN_PATH = '/plan'");
 
     const staleTripsMeta: string[] = [];
@@ -115,7 +116,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('G-avail-map: People browse defaults to People / Recommended', () => {
-    expect(parseCrewBrowseTab(null)).toBe('people');
+    expect(parseCrewBrowseState(new URLSearchParams()).lane).toBe('people');
     expect(read('src/crew-discovery/crewBrowseTab.ts')).toMatch(/people: 'People'/);
   });
 

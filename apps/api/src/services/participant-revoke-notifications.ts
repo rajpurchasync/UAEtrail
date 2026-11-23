@@ -1,7 +1,7 @@
 import { NotificationType } from '../domain/enums.js';
 import { findActivityForRequestViewById } from '../lib/activities-store.js';
 import { buildParticipantRevokedBody } from '../lib/notification-copy.js';
-import { TRIPS_JOINED_TAB_PATH } from '../lib/member-routes.js';
+import { planJoinedSchedulePath } from '../lib/member-routes.js';
 import { scheduleNotification } from './notifications.js';
 
 export const notifyParticipantRevokedByHost = async (input: {
@@ -27,7 +27,7 @@ export const notifyParticipantRevokedByHost = async (input: {
         requestId: input.requestId,
         actorUserId: input.actorUserId,
         hostNote: input.hostNote.trim(),
-        path: TRIPS_JOINED_TAB_PATH,
+        path: planJoinedSchedulePath(),
       },
     },
     'activity_participant_revoked'

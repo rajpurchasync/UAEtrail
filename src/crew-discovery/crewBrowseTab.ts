@@ -48,18 +48,6 @@ export type CrewBrowseTab = CrewBrowseLane;
 export const CREW_BROWSE_TAB_ORDER = CREW_BROWSE_LANE_ORDER;
 export const CREW_BROWSE_TAB_LABELS = CREW_BROWSE_LANE_LABELS;
 
-/** @deprecated Use parseCrewBrowseState — returns lane only from URL tab param. */
-export const parseCrewBrowseTab = (raw: string | null): CrewBrowseTab => {
-  if (!raw || raw === 'hub' || raw === 'buddies') return DEFAULT_CREW_BROWSE_LANE;
-  if (raw === 'people' || raw === 'professional' || raw === 'community') return raw;
-  if (raw === 'available' || raw === 'going' || raw === 'connect' || raw === 'looking') {
-    return 'people';
-  }
-  const params = new URLSearchParams();
-  params.set('peopleTab', raw);
-  return parseCrewBrowseState(params).lane;
-};
-
 /** URL `peopleTab` — omit default People lane. */
 export const serializeCrewBrowseTab = (tab: CrewBrowseTab): string | null =>
   serializeCrewBrowseLane(tab);

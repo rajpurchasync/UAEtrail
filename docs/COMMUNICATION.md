@@ -14,7 +14,7 @@
 | **Plan (My Plans)** | `/plan` | Hosted manage sheet (`ActivityManageSheet`) → same detail shell + **Message crew**; joined peek sheet → full plan / group chat |
 | **Explore** | `/explore` | Map peek **`viewerAccess.mapPeekActions`** (join, pending, participant, …); activity **host user** sees **Chat · Manage** + **View details** on own pins; shops use **`PeekDetailLink`** (View / Rate); cancel/delete via **`HostActivityCancelDialog`**; withdraw on activity detail only |
 
-Legacy redirects only: `/messages`, `/host/messages`, `/operator/messages`, `/dashboard/messages`, `/publishing/messages` → `/chat` (`InboundMessagesRedirect` in `src/routing/inboundBookmarkRedirects.tsx`; [`NAVIGATION.md`](./NAVIGATION.md)). **Do not** add a second inbox route or host-only messages shell.
+Stale notification deep links for `/messages`, `/host/messages`, `/publishing/messages`, etc. normalize to `/chat` in `inferNotificationPath()` only — no SPA redirect routes (GW-7; [`NAVIGATION.md`](./NAVIGATION.md)). **Do not** add a second inbox route or host-only messages shell.
 
 **Open DM affordance (FE):** `MessageMemberButton` (`src/components/chat/MessageMemberButton.tsx`) — `memberUserId` + optional `activityId`; contextual label via `messageLabel`. Not `HostMessageButton` / `OrganizerMessageButton` (deprecated shims).
 

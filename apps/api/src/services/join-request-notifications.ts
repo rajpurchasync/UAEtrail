@@ -1,6 +1,6 @@
 import { NotificationType } from '../domain/enums.js';
 import { findActivityForRequestViewById } from '../lib/activities-store.js';
-import { myRequestDetailPath, TRIPS_JOINED_TAB_PATH } from '../lib/member-routes.js';
+import { myRequestDetailPath, planJoinedSchedulePath } from '../lib/member-routes.js';
 import { scheduleNotification } from './notifications.js';
 
 export const notifyParticipantJoinRequestSubmitted = async (input: {
@@ -54,7 +54,7 @@ export const notifyParticipantJoinRequestWithdrawn = async (input: {
         kind: 'join_request_withdrawn',
         activityId: input.activityId,
         requestId: input.requestId,
-        path: TRIPS_JOINED_TAB_PATH,
+        path: planJoinedSchedulePath(),
       },
     },
     'join_request_withdrawn'
