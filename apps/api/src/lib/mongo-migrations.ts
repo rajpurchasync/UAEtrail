@@ -1128,7 +1128,7 @@ const migrateOutingCrewKindRename = async (db: Db): Promise<void> => {
 };
 
 /** Bump when adding a new migration step so existing deployments run it once. */
-export const MONGO_MIGRATION_VERSION = 2025112002;
+export const MONGO_MIGRATION_VERSION = 2025112301;
 
 /** One-time migrations for activity terminology and role model alignment. */
 export const runMongoMigrations = async (db: Db): Promise<void> => {
@@ -1189,6 +1189,15 @@ export const runMongoMigrations = async (db: Db): Promise<void> => {
   await backfillShopPublicContactFlags(db);
   await migrateMemberGroupModelSplit(db);
   await migrateOutingCrewKindRename(db);
+  const { purgeRetiredSeekingStorage } = await import('./retired-seeking-storage-purge.js');
+  const seekingPurge = await purgeRetiredSeekingStorage(db);
+  if (
+    seekingPurge.participantIntentsCancelled > 0 ||
+    seekingPurge.seekingActivitiesRetired > 0 ||
+    seekingPurge.participantIntentRequestsDeleted > 0
+  ) {
+    console.log(`[mongo] Retired seeking legacy storage: ${JSON.stringify(seekingPurge)}`);
+  }
   const { backfillGeoRefOnPins } = await import('./geo-backfill.js');
   await backfillGeoRefOnPins(db);
   const { seedCatalogsIfEmpty } = await import('./catalogs-store.js');

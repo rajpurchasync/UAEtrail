@@ -192,7 +192,14 @@ export const ExploreMapShell = ({
       onLocateMe={viewport.handleLocateMe}
       mapPins={
         browse.crewsBrowseOpen
-          ? mapPins.filter((pin) => exploreMapItemIsAvailabilityCatalog(pin))
+          ? mapPins.filter((pin) =>
+              exploreMapItemIsAvailabilityCatalog({
+                source: pin.source,
+                id: pin.id,
+                activityMode:
+                  pin.activityMode === 'hosted' ? 'hosted' : null,
+              })
+            )
           : mapPins
       }
       crewsBrowseMap={browse.crewsBrowseOpen}

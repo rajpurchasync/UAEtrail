@@ -12,13 +12,12 @@ import {
 
 describe('exploreActivityMode (availability catalog)', () => {
   it('resolveExploreMapActivityMode uses explicit activityMode only', () => {
-    expect(resolveExploreMapActivityMode(seekingExploreMapItem())).toBe('seeking');
+    expect(resolveExploreMapActivityMode(seekingExploreMapItem())).toBe(null);
     expect(resolveExploreMapActivityMode(hostedExploreMapItem())).toBe('hosted');
     expect(
       resolveExploreMapActivityMode({
         id: 'activity:x',
         source: 'activity',
-        participantIntentId: 'int-1',
       })
     ).toBe('hosted');
   });

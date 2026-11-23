@@ -55,9 +55,10 @@ describe('naming coherence (API)', () => {
     expect(content).not.toMatch(/await findTenantById\(/);
   });
 
-  it('participant intent product paths are seeking-activity only', () => {
+  it('participant intent product paths are retired (ops backfill only)', () => {
     const content = readFileSync(join(API_SRC, 'lib', 'participant-intents-store.ts'), 'utf8');
-    expect(content).toMatch(/findSeekingActivityByParticipantIntentId/);
+    expect(content).toMatch(/backfillSeekingActivitiesForActiveIntents/);
+    expect(content).not.toMatch(/findSeekingActivityByParticipantIntentId/);
     expect(content).not.toMatch(/listActiveParticipantIntentsForMap/);
     expect(content).not.toMatch(/demand:\$\{/);
     const engagement = readFileSync(join(API_SRC, 'lib', 'activity-engagement-store.ts'), 'utf8');

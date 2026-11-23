@@ -5,14 +5,8 @@
 
 export type ComposeKind = 'activity' | 'place' | 'intent';
 
-/** @deprecated Use ComposeKind — menu step only (legacy name). */
-export type ComposeMenuIntent = ComposeKind;
-
 /** Open = calendar availability (no map pin). Fixed = time/place window (map catalog). */
 export type IntentComposeMode = 'fixed' | 'open';
-
-/** @deprecated Use IntentComposeMode */
-export type AvailabilityComposeMode = IntentComposeMode;
 
 export const ACTIVITY_COMPOSE_KINDS = [
   'hiking',
@@ -24,42 +18,15 @@ export const ACTIVITY_COMPOSE_KINDS = [
 
 export type ActivityComposeKind = (typeof ACTIVITY_COMPOSE_KINDS)[number];
 
-/** @deprecated Use ACTIVITY_COMPOSE_KINDS */
-export const HOST_COMPOSE_KINDS = ACTIVITY_COMPOSE_KINDS;
-
-/** @deprecated Use ActivityComposeKind */
-export type HostComposeKind = ActivityComposeKind;
-
 export const INTENT_FIXED_COMPOSE_KINDS = ['rideshare', 'hiking', 'camping', 'event'] as const;
 
 export type IntentFixedComposeKind = (typeof INTENT_FIXED_COMPOSE_KINDS)[number];
 
-/** @deprecated Use INTENT_FIXED_COMPOSE_KINDS */
-export const AVAILABILITY_FIXED_COMPOSE_KINDS = INTENT_FIXED_COMPOSE_KINDS;
-
-/** @deprecated Use IntentFixedComposeKind */
-export type AvailabilityFixedComposeKind = IntentFixedComposeKind;
-
-/** @deprecated Use IntentFixedComposeKind — legacy seek fixed kind name. */
-export type SeekingComposeKind = IntentFixedComposeKind;
-
-/** @deprecated Use INTENT_FIXED_COMPOSE_KINDS */
-export const SEEKING_COMPOSE_KINDS = INTENT_FIXED_COMPOSE_KINDS;
-
 export type PlaceTarget = 'place' | 'facility';
-
-/** @deprecated Use PlaceTarget */
-export type AddTarget = PlaceTarget;
 
 export const PLACE_COMPOSE_KINDS = ['hiking', 'camping', 'event', 'outdoor_other'] as const;
 
 export type PlaceComposeKind = (typeof PLACE_COMPOSE_KINDS)[number];
-
-/** @deprecated Use PLACE_COMPOSE_KINDS */
-export const ADD_PLACE_KINDS = PLACE_COMPOSE_KINDS;
-
-/** @deprecated Use PlaceComposeKind */
-export type AddPlaceKind = PlaceComposeKind;
 
 export type ExploreComposeWire =
   | { surface: 'menu'; composeKind?: ComposeKind }
@@ -100,45 +67,8 @@ const formatCanonicalComposeWire = (route: ExploreComposeWire): string => {
   return `place:${route.kind}`;
 };
 
-/** Inbound only — normalize legacy host · availability · add · seek wire to target emit tokens. */
-export const migrateLegacyComposeWire = (value: string): string => {
-  if (value === 'seek:flexible') return 'intent:open';
-  if (value === 'seek:fixed') return 'intent:fixed';
-  if (value.startsWith('seek:fixed:')) {
-    return value.replace(/^seek:fixed:/, 'intent:fixed:');
-  }
-  if (value === 'seek') return 'intent';
-
-  if (value === 'host') return 'activity';
-  if (value === 'availability') return 'intent';
-  if (value === 'add') return 'place';
-  if (value === 'availability:open') return 'intent:open';
-  if (value === 'availability:fixed') return 'intent:fixed';
-  if (value.startsWith('availability:fixed:')) {
-    return value.replace(/^availability:fixed:/, 'intent:fixed:');
-  }
-  if (value === 'add:place') return 'place';
-  if (value.startsWith('add:place:')) {
-    return `place:${value.slice('add:place:'.length)}`;
-  }
-  if (value.startsWith('add:facility:')) {
-    return `place:facility:${value.slice('add:facility:'.length)}`;
-  }
-  if (value.startsWith('host:')) {
-    return `activity:${value.slice('host:'.length)}`;
-  }
-
-  return value;
-};
-
-/** @deprecated Use migrateLegacyComposeWire */
-export const migrateSeekWireToAvailability = (value: string): string | null => {
-  const migrated = migrateLegacyComposeWire(value);
-  return migrated !== value ? migrated : null;
-};
-
 export const parseComposeWire = (value: string): ExploreComposeWire | null => {
-  const normalized = migrateLegacyComposeWire(value);
+  const normalized = value.trim();
   if (normalized === '1') return { surface: 'menu' };
   if (MENU_COMPOSE_KINDS.has(normalized)) {
     if (normalized === 'place') {

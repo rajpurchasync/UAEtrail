@@ -37,7 +37,6 @@ describe('resolveExploreEntityFollowTarget', () => {
           source: 'activity',
           activityMode: 'seeking',
           composeIntent: 'seek',
-          participantIntentId: 'd1',
           locationId: 'loc-1',
         })
       )

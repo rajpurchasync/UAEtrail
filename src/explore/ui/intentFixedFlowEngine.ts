@@ -1,4 +1,4 @@
-import type { AvailabilityKind, ParticipantIntentKind } from '@uaetrail/shared-types';
+import type { AvailabilityKind } from '@uaetrail/shared-types';
 import { availabilityMapItemId } from '@uaetrail/shared-types';
 import {
   fetchMyMemberAvailability,
@@ -11,7 +11,7 @@ import {
 import { MAP_CONFIG } from '../../config/platform';
 import { buildDateOptions, todayIso, type LocationPrecision, type TimeMode } from './createFlowShared';
 
-export type AvailabilityFixedKind = ParticipantIntentKind;
+export type AvailabilityFixedKind = AvailabilityKind;
 
 export type AvailabilityFixedFlowStepId =
   | 'title'

@@ -1,7 +1,6 @@
 /** Ops readiness for activity-canonical seeking storage — per-env runbook only. */
 import { COLLECTIONS } from './collections.js';
 import { getMongoClient } from './mongo.js';
-import { isParticipantIntentStubWriteEnabled } from '../services/participant-intent-activity-readthrough.js';
 
 const intentsCollection = () => getMongoClient()!.db().collection(COLLECTIONS.PARTICIPANT_INTENTS);
 
@@ -41,7 +40,7 @@ export type SeekingStorageStatusReport = {
 };
 
 export const loadSeekingStorageStatus = async (): Promise<SeekingStorageStatusReport> => {
-  const participantIntentStubWriteEnabled = isParticipantIntentStubWriteEnabled();
+  const participantIntentStubWriteEnabled = false;
 
   const [missingSeekingActivity, missingCoords] = await Promise.all([
     intentsCollection().countDocuments(activeLegacyParticipantIntentPendingMigrationFilter),

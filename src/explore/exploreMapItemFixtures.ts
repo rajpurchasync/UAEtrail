@@ -26,24 +26,23 @@ export const hostedExploreMapItem = (
     ...partial,
   });
 
-/** Canonical M0 seeking pin (published seeking activity on map). */
-export const seekingExploreMapItem = (
-  partial: Partial<ExploreMapItemDTO> & { intentId?: string; activityId?: string } = {}
+/** Retired seeking-as-activity row — catalog must exclude (regression tests only). */
+export const excludedSeekingActivityMapItem = (
+  partial: Partial<ExploreMapItemDTO> & { activityId?: string } = {}
 ): ExploreMapItemDTO => {
-  const intentId = partial.intentId ?? partial.participantIntentId ?? 'intent-1';
-  const activityId = partial.activityId ?? `seek-${intentId}`;
-  const id = partial.id ?? `activity:${activityId}`;
+  const activityId = partial.activityId ?? 'seek-legacy-1';
   return base({
-    id,
+    id: partial.id ?? `activity:${activityId}`,
     kind: 'hiking',
     source: 'activity',
-    activityMode: 'seeking',
-    participantIntentId: intentId,
+    activityMode: 'seeking' as ExploreMapItemDTO['activityMode'],
     path: activityDetailPath(activityId),
-    composeIntent: 'seek',
     ...partial,
   });
 };
+
+/** @deprecated Use {@link excludedSeekingActivityMapItem} */
+export const seekingExploreMapItem = excludedSeekingActivityMapItem;
 
 /** Fixed crew availability pin (`member_availability` on explore catalog). */
 export const availabilityExploreMapItem = (

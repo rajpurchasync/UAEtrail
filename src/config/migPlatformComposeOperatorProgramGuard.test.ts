@@ -121,7 +121,7 @@ describe('migPlatformComposeOperatorProgramGuard (compose + operator program)', 
 
   it('PCO-07: shared-types emits activity|place|intent wire (legacy inbound only)', () => {
     const wire = read('packages/shared-types/src/compose-route.ts');
-    expect(wire).toMatch(/migrateLegacyComposeWire/);
+    expect(wire).not.toMatch(/migrateLegacyComposeWire/);
     expect(wire).toMatch(/activity:\$\{route\.kind\}/);
     expect(wire).toMatch(/intent:open/);
     expect(wire).not.toMatch(/return `host:/);

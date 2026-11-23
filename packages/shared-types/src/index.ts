@@ -337,10 +337,8 @@ export interface ActivityDTO {
   groupChatPostPolicy?: ActivityGroupChatPostPolicy | null;
   /** Discoverable club id when the outing is listed on a community page (`MIG-COMMUNITY-DISCOVER`). */
   discoverCommunityId?: string | null;
-  /** Map/Plan mode — `seeking` = Find post (M1 activity row); default hosted outings omit or `hosted`. */
+  /** Map/Plan mode — hosted outings only (`hosted` or omitted). */
   activityMode?: ExploreActivityMode | null;
-  /** Correlation id for `/me/seeking-posts/:postId` when `activityMode: seeking`. */
-  participantIntentId?: string | null;
 
   /**
    * Detail revamp (Mongo schema v2) — see `docs/DOMAIN_CANONICALS.md` §3.2.1 · `activity-detail-revamp.ts`.
@@ -956,12 +954,8 @@ export interface ExploreMapItemDTO {
   contactPhone?: string | null;
   /** @deprecated Use `featuredPerson.userId`. */
   requesterUserId?: string | null;
-  /** Leftover intent id on seeking rows that still dual-wrote `participant_intents`. */
-  participantIntentId?: string | null;
-  /**
-   * Time-bound map mode — `hosted` for published outings; `seeking` for Find crew posts.
-   */
-  activityMode?: 'hosted' | 'seeking' | null;
+  /** Time-bound map mode — `hosted` for published outings. */
+  activityMode?: 'hosted' | null;
   /** Curated area membership for explore `?area=` filters. */
   areaId?: string | null;
   areaSlug?: string | null;
@@ -2016,29 +2010,17 @@ export {
 export {
   canonicalizeComposeWire,
   formatComposeWire,
-  migrateLegacyComposeWire,
   parseComposeWire,
   ACTIVITY_COMPOSE_KINDS,
-  HOST_COMPOSE_KINDS,
-  AVAILABILITY_FIXED_COMPOSE_KINDS,
   INTENT_FIXED_COMPOSE_KINDS,
-  SEEKING_COMPOSE_KINDS,
-  ADD_PLACE_KINDS,
   PLACE_COMPOSE_KINDS,
   type ActivityComposeKind,
-  type AvailabilityComposeMode,
-  type AvailabilityFixedComposeKind,
   type ComposeKind,
-  type ComposeMenuIntent,
-  type AddPlaceKind,
-  type AddTarget,
   type ExploreComposeWire,
-  type HostComposeKind,
   type IntentComposeMode,
   type IntentFixedComposeKind,
   type PlaceComposeKind,
   type PlaceTarget,
-  type SeekingComposeKind,
 } from './compose-route.js';
 
 export {
@@ -2120,6 +2102,7 @@ export {
   COMMUNITY_JOIN_POLICIES,
   COMMUNITY_MEMBERSHIP_STATUSES,
   compareCommunityDiscoverByGeo,
+  slugifyCommunityDiscoverName,
 } from './community-discover.js';
 
 export type { CrewPillarBoundedContext, CrewPillarId, CrewPillarSpec } from './crew-pillars.js';

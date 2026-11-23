@@ -169,3 +169,12 @@ export const compareCommunityDiscoverByGeo = (
   if (areaCmp !== 0) return areaCmp;
   return a.name.localeCompare(b.name);
 };
+
+/** Self-serve + admin community slug from display name. */
+export const slugifyCommunityDiscoverName = (name: string): string =>
+  name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80);

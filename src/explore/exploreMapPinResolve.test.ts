@@ -10,7 +10,7 @@ describe('exploreMapPinResolve', () => {
     const items = [
       seekingExploreMapItem({
         id: 'activity:act-seek',
-        participantIntentId: 'int-legacy',
+        activityId: 'act-seek',
       }),
     ];
     expect(findExploreMapItemForPinId(items, 'demand:int-legacy')).toBeNull();

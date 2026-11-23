@@ -12,7 +12,8 @@ describe('composeSpineGuard (DMCP Phase 4 rollup)', () => {
     expect(wire).toMatch(/activity:\$\{route\.kind\}/);
     expect(wire).toMatch(/place:facility:/);
     expect(wire).not.toMatch(/return `seek:/);
-    expect(wire).toMatch(/migrateLegacyComposeWire/);
+    expect(wire).not.toMatch(/migrateLegacyComposeWire/);
+    expect(wire).not.toMatch(/seek:flexible/);
   });
 
   it('COMPOSE-SPINE-02: plan launcher delegates to CreateFlow (no parallel compose stack)', () => {

@@ -90,16 +90,15 @@ There is **no** `Trip` table, `TripDTO`, or trips API. Everything on the map tha
 
 **Host menu labels** (Hiking, Camping, Event, Activity, Rideshare) are **kinds of activity** (`activityType` / compose intent), not separate products. **“Hosted activities”** in conversation means activities created via **Host** — still one `Activity` row.
 
-### Activity modes (map + Plan — phased)
+### Hosted outing vs Find crew vs join (do not conflate)
 
-Time-bound map pins are **Activities** with `activityMode` (target wire name; seeking storage per [`API_ROUTING.md`](./API_ROUTING.md) · [`operations/SEEKING_STORAGE_RUNBOOK.md`](./operations/SEEKING_STORAGE_RUNBOOK.md)):
+| Member move | Domain | Map / compose | Join mechanism |
+|-------------|--------|---------------|----------------|
+| **Host a scheduled outing** | **`Activity`** (`activityMode: hosted` or omit) | `source: activity`, compose `activity:*` | Others **join this activity** — RSVP / `activity_requests` on **`/activity/:id`** |
+| **Open to company / time window** | **`member_availability`** (not Activity) | `source: availability`, pin `availability:{userId}:{slotId}`, compose **`intent:*`** → `PUT /me/availability` | Peek → **profile + message**; optional rideshare offer — **not** activity join on the pin |
+| **Join someone else’s published trip** | Participation on **Activity** | Opens hosted activity detail | Same join spine as row 1 — tied to one `activityId` |
 
-| Mode | Meaning | Today (wire) | UX |
-|------|---------|--------------|-----|
-| **`hosted`** | Host-published outing | `activities` + organize compose | Join / RSVP / request on detail |
-| **`seeking`** | Member “looking for company” | **`activities`** row (`activityMode: seeking`); `participantIntentId` is the `/me/seeking-posts/:postId` correlation id | Find FAB; map pin `activity:{id}`; join via **`activity_requests`**; HTTP `/me/seeking-posts` |
-
-**Not an activity mode:** **Availability** — person + calendar slots (`member_availability` planned). Discover on Explore **People**; edit on Plan. Seeking ≠ availability.
+**Retired (ops cleanup only):** modeling Find crew as **`activityMode: seeking`** on `activities`, `/me/seeking-posts`, `participant_intents` map pins, and `demand:` ids. See [`operations/SEEKING_STORAGE_RUNBOOK.md`](./operations/SEEKING_STORAGE_RUNBOOK.md) · dev purge: `npm run purge:seeking-legacy`.
 
 ### Geography (Area + Place catalog)
 
@@ -111,13 +110,13 @@ Time-bound map pins are **Activities** with `activityMode` (target wire name; se
 | **Area** | Platform admin (`/admin/areas`) | Curated **name** + slug; optional `center` / bounds are a **camera hint for the hub page only**. **No** `source: area` pin on Explore |
 | **Place** | Admin `/admin/places` + member **Add** (`curatedArea` then pin) | Every place row has **`place.areaId`**; `POST /me/places` requires **`areaId`** |
 | **Facility** | Admin `/admin/facilities` + member **Add** | Own `facilities` collection; coords so people can navigate; **`areaId`** + optional `parentPlaceId` |
-| **Activity** | Member **Host** or Find crew → seeking | **No stored `activity.areaId` on write** (leftover rows may still have one). Geography = **`activity.locationId` → `place.areaId`**. Public publish requires a catalog **place** with **`areaId`**. Meeting / going-from pin does not define area |
+| **Activity** | Member **Host** (hosted outings only) | **No stored `activity.areaId` on write** (leftover rows may still have one). Geography = **`activity.locationId` → `place.areaId`**. Public publish requires a catalog **place** with **`areaId`**. Find crew uses **`member_availability`**, not Activity |
 
 **Explore map lenses:** **Activities** — emoji pin per outing (`source: activity`; host row → **member profile** and/or **operator profile** when published as a business). **Spots** — Place pins (`source: place`). **Facilities** share the map (`source: facility`, coords for navigation; peek still Place chrome until a dedicated facility peek ships). **Shops** — **operator** map pin + `/shop/…` profile. **Area** is a **filter** (`?area=`) and a **hub page** (`/area/:slug`) — never its own pin. Legacy `pinKind=locations` URLs alias to Spots. **Members / Pro guides / agencies** — **no** standalone person or agency pins; find via **search**, **people browse**, **activity peek/detail**, and **operator name** on linked users’ member profiles. Detail: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §12.1.
 
 **Curated area catalog (seed + tests):** 12 published areas in `CURATED_AREA_CATALOG` (`@uaetrail/shared-types`) — Hatta, Jebel Jais, Wadi Shawka, Jebel Hafeet, Al Qudra, Love Lake, Khorfakkan, Jumeirah Coast, Fossil Rock, Dibba, Remah Dunes, Kalba. Each has stable `area-seed-*` id, map bounds, and `summary` (editable in admin; re-seed restores defaults).
 
-Discovery: **`/area/:slug`** (hub), and explore **`?area=`** filter by **`areaSlug` / `areaId`** on Place, Facility, and activity rows (seeking posts carry `areaId` on the activity). Private link-only activities skip public map listing.
+Discovery: **`/area/:slug`** (hub), and explore **`?area=`** filter by **`areaSlug` / `areaId`** on Place, Facility, hosted activities, and availability pins. Private link-only activities skip public map listing.
 
 **My Plans** (`/plan`, UI tab **Plan**) groups **your** forward layer — upcoming schedule (list or **calendar**), wishlist, goals — plus relationships to activities. Past outings and journey map live on **profile history**, not `/plan`.
 
@@ -141,7 +140,7 @@ Do **not** add `trips*` API clients or `Trip*` domain types for hosted/joined li
 | **Direct message** | Chat messages collection | `/messages?to=` |
 | **Family / friends group** | `social_groups` + `social_group_wall` | `/groups` manage · `/messages?group=` chat |
 | **Activity crew chat** | Same wall; `social_groups.type === 'activity'`, `activityId` set | `/messages?group=`; roster from `activity-group-chat` service |
-| **Demand intent** | Seeking **`activities`** (`activityMode: seeking`) | No crew chat until organized to a hosted **Activity** |
+| **Find crew (fixed slot)** | **`member_availability`** | No activity crew chat until someone hosts a separate **Activity** |
 
 Wall post policy (`all_members` | `admins_only`) applies to group/crew threads. Unread for group threads uses membership `wallLastReadAt` + `chatPreview` on `GET /me/groups`.
 
@@ -394,8 +393,9 @@ Every durable entity has a **stable UUID** in Mongo and a **canonical public rou
 | **Place** (catalog) | `locations` | `location.id` | `/trail/:id`, `/camp/:id`, `/venue/:id` — map `source: place` |
 | **Facility** (amenity) | `facilities` | `facility.id` | `/facility/:id` — map `source: facility` |
 | **Area** (curated name) | `areas` | `area.id` | `/area/:slug` — **no map pin** |
-| **Activity** (hosted or seeking outing) | `activities` | `activity.id` | `/activity/:id` — map `source: activity` (`activity:{id}`) |
-| **Seeking** | leftover `participant_intents` (ops/backfill only) | — | Map id **`activity:{id}`** only; leftover `demand:` is not a product path |
+| **Activity** (hosted outing) | `activities` | `activity.id` | `/activity/:id` — map `source: activity` (`activity:{id}`) |
+| **Member availability** (Find crew) | `member_availability` | `userId` + slot id | Map `availability:{userId}:{slotId}` — not `/activity/:id` |
+| **Retired seeking storage** | `participant_intents` (ops backfill/purge only) | — | Not a product path; see runbook |
 
 **Registration:** members via `/signup` + OTP; Pro / agency / shop via `POST /me/pro-application` (collection `host_applications`) → tenant provision; catalog places/facilities via **member submit** (`POST /me/places`, `POST /me/facilities`) + admin approval — FAB label **Add on map**, not an API noun.
 

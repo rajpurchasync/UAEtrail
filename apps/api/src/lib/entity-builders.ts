@@ -120,8 +120,7 @@ export type ActivityCreateInput = {
   publishedAt?: Date | null;
   outingCategory?: string | null;
   outingTopic?: string | null;
-  activityMode?: 'hosted' | 'seeking' | null;
-  participantIntentId?: string | null;
+  activityMode?: 'hosted' | null;
   /** Discoverable community club that published this outing (`MIG-COMMUNITY-DISCOVER`). */
   discoverCommunityId?: string | null;
   groupChatPostPolicy?: 'all_participants' | 'host_only' | null;
@@ -183,8 +182,7 @@ export type ActivityUpdateInput = {
   location?: RelationConnect;
   outingCategory?: string | null;
   outingTopic?: string | null;
-  activityMode?: 'hosted' | 'seeking' | null;
-  participantIntentId?: string | null;
+  activityMode?: 'hosted' | null;
   discoverCommunityId?: string | null;
   groupChatPostPolicy?: 'all_participants' | 'host_only' | null;
   areaId?: string | null;
@@ -409,7 +407,7 @@ export const buildDetailRevampSnapshotFromLegacy = (input: {
 };
 
 export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: string): MongoActivityDoc => {
-  if (data.activityMode === 'seeking') {
+  if ((data.activityMode as string | undefined) === 'seeking') {
     throw new Error('activity_mode_seeking_retired');
   }
   const now = new Date();
@@ -477,7 +475,6 @@ export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: stri
     areaId: data.areaId?.trim() ? data.areaId.trim() : null,
     groupRegionLevels: data.groupRegionLevels ?? null,
     activityMode: data.activityMode ?? 'hosted',
-    participantIntentId: data.participantIntentId ?? null,
     discoverCommunityId: data.discoverCommunityId ?? null,
     groupChatPostPolicy: data.groupChatPostPolicy ?? null,
     schemaVersion: revamp.schemaVersion,

@@ -13,7 +13,7 @@ export const buildHostPublishAvailabilityNotice = async (
   activity: ActivityDTO,
   hostUserId: string
 ): Promise<string | null> => {
-  if (activity.activityMode === 'seeking' || activity.participantIntentId) return null;
+  if ((activity as { activityMode?: string | null }).activityMode === 'seeking') return null;
   const day = activity.date?.trim();
   if (!day) return null;
   const kind = primaryAvailabilityKind(activity.activityType);

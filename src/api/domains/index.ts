@@ -20,7 +20,7 @@ export { memberCommitmentHubApi } from './memberCommitmentHub';
 export { memberJourneyMapApi } from './memberJourneyMap';
 export { activitiesApi } from './activities';
 export { accountApi } from './account';
-export { buddiesApi, friendsApi } from './buddies';
+export { buddiesApi } from './buddies';
 export { groupsApi } from './groups';
 export { wishlistApi } from './wishlist';
 export { entityFollowApi } from './entityFollow';

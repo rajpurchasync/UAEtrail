@@ -1,4 +1,8 @@
-import type { GeoRef, MeCreateCommunityDiscoverDTO } from '@uaetrail/shared-types';
+import {
+  slugifyCommunityDiscoverName,
+  type GeoRef,
+  type MeCreateCommunityDiscoverDTO,
+} from '@uaetrail/shared-types';
 import { EXPLORE_REGION_PILL_LABELS, getRegionsForCountry, DEFAULT_COUNTRY } from '@/config/regions';
 
 const emirateId = (label: string) =>
@@ -40,14 +44,6 @@ export const communityGeoRefForEmirateKey = (emirateKey: string): GeoRef => {
 /** Default geo for self-serve community create (Dubai). */
 export const DEFAULT_COMMUNITY_CREATE_GEO: GeoRef = communityGeoRefForEmirateKey('Dubai');
 
-export const slugifyCommunityName = (name: string): string =>
-  name
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 80);
-
 export const buildDefaultCreateCommunityBody = (
   name: string,
   joinPolicy: MeCreateCommunityDiscoverDTO['joinPolicy'] = 'request',
@@ -58,7 +54,7 @@ export const buildDefaultCreateCommunityBody = (
   }
 ): MeCreateCommunityDiscoverDTO => ({
   name: name.trim(),
-  slug: slugifyCommunityName(name),
+  slug: slugifyCommunityDiscoverName(name),
   summary: options?.summary?.trim() || null,
   bannerUrl: options?.bannerUrl?.trim() || null,
   visibility: 'public',

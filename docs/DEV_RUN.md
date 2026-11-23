@@ -55,14 +55,14 @@ Explore FAB changes: [`CREATE_FLOW.md`](./CREATE_FLOW.md) + `src/explore/compose
 
 **Release verification (S10 hygiene, Oct 2026):** On the release commit run **`npm run verify:system`** (includes `test:explore-alignment`). Day-to-day: **`npm run verify:system:quick`**. Staging manual pass: **`npm run s10f:ops:checklist`**, then **`BASE_URL=https://staging-host npm run s10f:ops:print-routes`** (detail §8 routes + notification edge cases). Map bbox promote (**S10e**): `npm run s10e:staging-checklist` → [`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md) + [`operations/EXPLORE_MAP_RUNBOOK.md`](./operations/EXPLORE_MAP_RUNBOOK.md) — flags only after staging p95 gate. **Local ratio spot-check** (API must be up): `EXPLORE_MAP_BBOX=1 npm run dev:api` then **`npm run s10e:local-ratio`**. Tracker: [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.1.
 
-Seeking storage (activity-canonical Find): [`operations/SEEKING_STORAGE_RUNBOOK.md`](./operations/SEEKING_STORAGE_RUNBOOK.md). Local readiness: `npm run seeking:storage-status` (stub write should be **off** by default); gate before deploy: `npm run seeking:deploy-gate`. If backfill skips coord-less intents, use `cancel-coordless-participant-intents` (see runbook).
+**Find crew storage:** Product = **`member_availability`** (`intent:*` compose · `PUT /me/availability`). Retired seeking-as-activity: [`operations/SEEKING_STORAGE_RUNBOOK.md`](./operations/SEEKING_STORAGE_RUNBOOK.md). Local: `npm run seeking:storage-status`; deploy gate: `npm run seeking:deploy-gate`; dev DB purge: `npm run purge:seeking-legacy` (optional `--dry-run` via workspace script).
 
-**Local smoke — Find / looking for (manual, after `dev:local`):**
+**Local smoke — Find crew (manual, after `dev:local`):**
 
-1. Signed-in → Explore → **Find** (FAB) → publish a pin with location.
-2. Map/list: pin opens **same peek/card UX** as other activities (not a separate “demand” screen).
-3. **People** panel → **Available** tab: **Looking for company** row opens explore pin URL (`pin=activity:…` when backfilled).
-4. Plan → **Schedule** → **Seeking**: your post appears; **Needs you** is only for host coordination (not Find).
-5. API contracts (Mongo test DB): `npm run test:seeking-local` (stub default off, store + **POST /me/seeking-posts**, explore map `activity` + `activityMode: seeking`).
+1. Signed-in → Explore → FAB **Find crew** → fixed window or **Available** (intent open).
+2. Map: pin id `availability:{userId}:{slotId}`; peek → profile + message (not activity join).
+3. **People** / **Crews** browse: availability rows deep-link to same pin.
+4. Plan calendar: availability markers — not retired “seeking activity” rows.
+5. API: `npm run test:seeking-local` (backfill residue guards, retired route contracts, availability map projection).
 
 **G-manage (Needs you, not Find):** joiner requests on a hosted activity → host sees `host_join_queue` on `GET /me/coordination-attention` → approve via publishing workspace or Plan manage flow. API slice: `tests/g-manage-coordination-join-approve.test.ts` (included in `verify:system:quick`).

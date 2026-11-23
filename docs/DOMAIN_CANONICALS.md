@@ -24,7 +24,7 @@ There are **five public entity kinds** on the wire (`EntityKind` / `EntityRef`):
 | `shop` | **Shop** (outdoor retail brand — profile only, no SKU catalog) | `merchant_profiles` + SHOP `tenants` | “Merchant”, “Partner” for shops |
 | `person` | **Person** / member | `users` (profile fields) | “User” in consumer copy |
 
-**Find crew** is not a sixth entity kind on URLs — **discover** label only. Fixed time/place posts are **`member_availability`** map items (`source: availability`, `pin=availability:{userId}:{slotId}` → member profile). Legacy **`activityMode: seeking`** rows are retired from the catalog. Not `/demand/:id`.
+**Find crew** is not a sixth entity kind and **not** an Activity. Compose wire **`intent:*`** → **`member_availability`** (`PUT /me/availability`); map items use `source: availability`, pin `availability:{userId}:{slotId}`. **Hosting** remains compose **`activity:*`** → **`activities`**. **Joining a trip** is participation on one **hosted** `activityId` (`activity_requests` / RSVP) — distinct from posting availability. Retired: `activityMode: seeking` on activities, `/demand/:id`, `/me/seeking-posts`.
 
 **Plan** (`/plan`) is the active member tab — **My Plans**: upcoming list or **calendar** (`layout=calendar` — joined, hosting, availability markers on the feed), wishlist + goals; **share availability** → explore **`compose=intent:open`** (`planAvailabilityPath()`). **Outing history** (`/profile/history`) is profile inventory. Wishlist: `tab=wishlist` / `planSheet=wishlist` (legacy `planAdd` parses). Operator schedule: **`/operator/overview`** — not a second `/hosting` page. Path helpers: `config/routingCatalog` + `src/plan/planRouting.ts` (inbound trip-hub query normalization merged in E3).
 
@@ -760,7 +760,7 @@ Any **place, venue, activity meeting point, shop, parking pin**, or other consum
 | **Member profile** | `resolveProfileViewerAccess` + `computeProfileDetailExposure` (`profile-viewer-access.ts`) | `profile-viewer-access.test.ts`, shared-types | `GET /member/:userId/profile` → `{ data, viewerAccess }`; guests `sign_in` only |
 | **Place (catalog)** | Public read today — no roster | — | `GET /places/:id` |
 | **Shop / operator** | **TBD** — policy in §15.4 row “shop profile” | — | Shop public pages |
-| **Seeking activity** (`activityMode: seeking`) | Same as **Activity** — `buildActivityViewerAccess` on `GET /activities/:id`; map peek via explore enrich | `activity-viewer-access.test.ts`, `explore-map-viewer-access.test.ts` | `/activity/:id` secondary; primary discovery = explore pin |
+| **Member availability** (Find crew) | `member-availability-store`, explore availability pins | `memberAvailabilityLineageGuard`, map assembler skips retired seeking activities | `PUT /me/availability`; map `source: availability` — peek via `AvailabilityPeekActions` |
 
 **Rule:** Routes call the resolver; they do **not** embed parallel `if (!user)` trees. Frontend **must not** invent roster/detail policy (see §15.6 interim drift).
 

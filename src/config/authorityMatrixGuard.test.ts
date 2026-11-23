@@ -56,7 +56,7 @@ describe('authorityMatrixGuard (DMCP Phase 0)', () => {
     }
   });
 
-  it('AUTH-03: legacy compose emit only in shared-types compose-route (+ parse tests)', () => {
+  it('AUTH-03: product never emits legacy compose; shared-types rejects inbound host/seek', () => {
     const violations: string[] = [];
     const roots = ['src/explore/ui', 'src/explore', 'src/list', 'src/create'] as const;
     for (const root of roots) {
@@ -74,8 +74,9 @@ describe('authorityMatrixGuard (DMCP Phase 0)', () => {
       }
     }
     expect(violations).toEqual([]);
-    expect(read('packages/shared-types/src/compose-route.ts')).toMatch(/seek:flexible/);
-    expect(read('packages/shared-types/src/compose-route.ts')).toMatch(/migrateLegacyComposeWire/);
+    expect(read('packages/shared-types/src/compose-route.ts')).not.toMatch(/seek:flexible/);
+    expect(read('packages/shared-types/src/compose-route.ts')).not.toMatch(/migrateLegacyComposeWire/);
+    expect(read('packages/shared-types/src/compose-route.test.ts')).toMatch(/rejects legacy host/);
     expect(read('src/config/composeWireEmitGuard.test.ts')).toMatch(/PR-E1-01/);
     expect(read('src/config/composeLineageGuard.test.ts')).toMatch(/COMPOSE-LINE-03/);
   });

@@ -11,9 +11,6 @@ import { apiRequest } from '../client';
 export const buddiesApi = {
   getMeBuddies: () => apiRequest<{ data: BuddySummaryDTO[] }>('/me/buddies', { auth: true }),
 
-  /** Product Friends roster — `GET /me/friends` read alias (canonical BWL wire: `/me/buddies`). */
-  getMeFriends: () => apiRequest<{ data: BuddySummaryDTO[] }>('/me/friends', { auth: true }),
-
   getMeBuddyRequests: (direction: 'incoming' | 'outgoing' | 'all' = 'all') =>
     apiRequest<{ data: BuddyRequestDTO[] }>(`/me/buddy-requests?direction=${direction}`, { auth: true }),
 
@@ -69,6 +66,3 @@ export const buddiesApi = {
       auth: true,
     }),
 } as const;
-
-/** Product-facing facade — same surface as `buddiesApi` (P7); prefer in new Friends UI code. */
-export const friendsApi = buddiesApi;

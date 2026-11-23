@@ -247,5 +247,5 @@ No new API in v1 — guard with unit test on ordering/dedupe pure function `buil
 |------|--------|--------|
 | `MIG-COMMUNITY-DISCOVER` API + Community tab body | **Planned** | UI tab gated (`FEATURE_FLAGS.communityDiscover`); see `refactor-program.json` |
 | `view=people` → `view=crews` emit rename | **Optional** | Inbound `view=people` still normalizes; list drawer is canonical |
-| P7 wire cleanup (`buddiesApi` rename, `/me/friends` alias) | **Planned** | `people-vocabulary-touchpoints.json` phase P7 |
+| P7 wire cleanup (single `/me/buddies` wire) | **Complete** | `people-vocabulary-touchpoints.json` phase P7 |
 | P6 wishlist facade | **Shipped** | `saveWishlistTarget.ts` + `wishlistWriteFacadeGuard` |

@@ -13,7 +13,7 @@ describe('seeking storage ops', () => {
     expect(script).toContain('--strict');
     const ops = read('src/lib/seeking-storage-ops.ts');
     expect(ops).toContain('readyToDisableStubWrite');
-    expect(ops).toContain('isParticipantIntentStubWriteEnabled');
+    expect(ops).toMatch(/participantIntentStubWriteEnabled\s*=\s*false/);
     expect(ops).not.toMatch(/m2d/i);
     const cancelScript = read('scripts/cancel-coordless-participant-intents.ts');
     expect(cancelScript).toContain('cancelActiveParticipantIntentsMissingCoords');

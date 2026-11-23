@@ -82,10 +82,11 @@ describe('memberAvailabilityLineageGuard (MIG-DISCO-REG)', () => {
     expect(intents).not.toMatch(/seeking-area-match-notifications/);
   });
 
-  it('AVAIL-LINE-10: ops participant-intent create does not fan out buddy seeking publish', () => {
+  it('AVAIL-LINE-10: participant-intents-store is ops backfill only', () => {
     const intents = read('apps/api/src/lib/participant-intents-store.ts');
+    expect(intents).toMatch(/backfillSeekingActivitiesForActiveIntents/);
     expect(intents).not.toMatch(/notifyMemberPublishSubscribers/);
-    expect(intents).not.toMatch(/publishType: 'seeking'/);
+    expect(intents).not.toMatch(/createParticipantIntent/);
   });
 
   it('AVAIL-LINE-11: demo seed projects Find crew via member_availability (not seeking activities)', () => {
@@ -95,13 +96,13 @@ describe('memberAvailabilityLineageGuard (MIG-DISCO-REG)', () => {
     expect(seed).not.toMatch(/upsertSeedSeekingActivity/);
   });
 
-  it('AVAIL-LINE-16: retired seeking wishlist + graduate ops isolated', () => {
+  it('AVAIL-LINE-16: retired seeking wishlist + graduate ops removed', () => {
     expect(
       existsSync(join(process.cwd(), 'apps/api/src/services/wishlist-archived-seeking-ops.ts'))
     ).toBe(false);
     expect(
       existsSync(join(process.cwd(), 'apps/api/src/services/participant-intent-graduate-ops.ts'))
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it('AVAIL-LINE-15: buddy publish fan-out excludes retired seeking publishType', () => {

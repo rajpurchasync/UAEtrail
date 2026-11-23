@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  canonicalizeComposeWire,
-  formatComposeWire,
-  migrateLegacyComposeWire,
-  parseComposeWire,
-} from './compose-route.js';
+import { canonicalizeComposeWire, formatComposeWire, parseComposeWire } from './compose-route.js';
 
 describe('compose-route wire', () => {
   it('formats and parses activity, intent, and place tokens', () => {
@@ -51,22 +46,12 @@ describe('compose-route wire', () => {
     });
   });
 
-  it('normalizes legacy host, availability, add, and seek tokens on read', () => {
-    expect(parseComposeWire('host:hiking')).toEqual({ composeKind: 'activity', kind: 'hiking' });
-    expect(parseComposeWire('availability:open')).toEqual({ composeKind: 'intent', mode: 'open' });
-    expect(parseComposeWire('add:place:hiking')).toEqual({
-      composeKind: 'place',
-      target: 'place',
-      kind: 'hiking',
-    });
-    expect(parseComposeWire('seek:flexible')).toEqual({ composeKind: 'intent', mode: 'open' });
-    expect(parseComposeWire('seek:fixed:hiking')).toEqual({
-      composeKind: 'intent',
-      mode: 'fixed',
-      kind: 'hiking',
-    });
-    expect(migrateLegacyComposeWire('host:rideshare')).toBe('activity:rideshare');
-    expect(migrateLegacyComposeWire('add:facility:toilet')).toBe('place:facility:toilet');
+  it('rejects legacy host, availability, add, and seek tokens', () => {
+    expect(parseComposeWire('host:hiking')).toBeNull();
+    expect(parseComposeWire('availability:open')).toBeNull();
+    expect(parseComposeWire('add:place:hiking')).toBeNull();
+    expect(parseComposeWire('seek:flexible')).toBeNull();
+    expect(parseComposeWire('seek:fixed:hiking')).toBeNull();
   });
 
   it('rejects leftover plan/contribute/organize/find tokens', () => {

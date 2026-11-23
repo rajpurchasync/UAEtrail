@@ -19,41 +19,12 @@ describe('participant intent M2 guards', () => {
     expect(exploreMapBase).not.toMatch(/source:\s*'demand'/);
   });
 
-  it('Find create is retired (member_availability is product write)', () => {
+  it('participant-intents-store is ops backfill only', () => {
     const store = read('src/lib/participant-intents-store.ts');
-    expect(store).toMatch(/activity_mode_seeking_retired/);
-    expect(store).not.toMatch(/insertOne\(doc\)/);
+    expect(store).toMatch(/backfillSeekingActivitiesForActiveIntents/);
     expect(store).toMatch(/mergeMemberAvailabilityFixedSlotsMigration/);
-  });
-
-  it('update/cancel are seeking-activity only (no participant_intents writes)', () => {
-    const store = read('src/lib/participant-intents-store.ts');
-    const updateIdx = store.indexOf('export const updateParticipantIntent');
-    const cancelIdx = store.indexOf('export const cancelParticipantIntent');
-    const linkIdx = store.indexOf('export { linkParticipantIntentToActivityForOwner');
-    expect(updateIdx).toBeGreaterThan(-1);
-    expect(cancelIdx).toBeGreaterThan(-1);
-    const updateBody = store.slice(updateIdx, cancelIdx);
-    const cancelBody = store.slice(cancelIdx, linkIdx);
-    expect(updateBody).toMatch(/findSeekingActivityByParticipantIntentId/);
-    expect(cancelBody).toMatch(/findSeekingActivityByParticipantIntentId/);
-    expect(updateBody).not.toMatch(/collection\(\)/);
-    expect(cancelBody).not.toMatch(/collection\(\)/);
-    expect(store).toMatch(/patchSeekingActivityForOwner/);
-    expect(store).not.toMatch(/listActiveParticipantIntentsForMap/);
-  });
-
-  it('seeking join alias routes through activity_requests when activityId exists', () => {
-    const joinStore = read('src/lib/participant-intent-requests-store.ts');
-    expect(joinStore).toMatch(/findActivityRequestByIdAndActivity/);
-    expect(joinStore).not.toMatch(/participant-intent-join-activity-sync/);
-  });
-
-  it('activity read-through module documents COH-01 activities-only writes', () => {
-    const readthrough = read('src/services/participant-intent-activity-readthrough.ts');
-    expect(readthrough).toMatch(/isParticipantIntentStubWriteEnabled/);
-    expect(readthrough).toMatch(/COH-01/);
-    expect(readthrough).toMatch(/activityDocToParticipantIntentDto/);
+    expect(store).not.toMatch(/createParticipantIntent/);
+    expect(store).not.toMatch(/findSeekingActivityByParticipantIntentId/);
   });
 
   it('user router does not mount /me/seeking-posts (MIG-DISCO-REG)', () => {

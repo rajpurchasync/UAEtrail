@@ -179,6 +179,7 @@ export interface Activity {
   /** Curated area slug target — set on publish from place or point-in-polygon. */
   areaId?: string | null;
   geoRef?: import('@uaetrail/shared-types').GeoRef | null;
+  /** Wire omits `seeking`; Mongo may retain until purge. */
   activityMode?: 'hosted' | 'seeking' | null;
   participantIntentId?: string | null;
   /** On-ground guides. Pending rows stay off public DTOs. */

@@ -1,11 +1,10 @@
 import { useMemo, useState } from 'react';
-import type { CommunityJoinPolicy } from '@uaetrail/shared-types';
+import { slugifyCommunityDiscoverName, type CommunityJoinPolicy } from '@uaetrail/shared-types';
 import { Dialog } from '@/components/ui/Dialog';
 import { AppSelect } from '@/components/ui/AppSelect';
 import {
   buildDefaultCreateCommunityBody,
   COMMUNITY_CREATE_EMIRATE_OPTIONS,
-  slugifyCommunityName,
 } from '@/config/communityDiscoverDefaults';
 import { communityJoinPolicyLabel } from '@/content/communityDiscoverCopy';
 import { useCreateDiscoverableCommunity } from '@/crew-discovery/hooks/useMeCommunityDiscoverList';
@@ -30,7 +29,10 @@ export const CreateCommunityDialog = ({
   const [emirateKey, setEmirateKey] = useState(COMMUNITY_CREATE_EMIRATE_OPTIONS[0]?.key ?? 'Dubai');
   const [joinPolicy, setJoinPolicy] = useState<CommunityJoinPolicy>('request');
 
-  const slugPreview = useMemo(() => slugifyCommunityName(name || 'your-club'), [name]);
+  const slugPreview = useMemo(
+    () => slugifyCommunityDiscoverName(name || 'your-club'),
+    [name]
+  );
 
   const reset = () => {
     setName('');

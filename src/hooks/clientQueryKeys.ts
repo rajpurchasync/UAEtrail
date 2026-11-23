@@ -63,11 +63,6 @@ export const meProfileStatsQueryKey = (userId: string): QueryKey => ['me', 'prof
 
 export const meProfileViewStatsQueryKey = (userId: string): QueryKey => ['me', 'profile-view-stats', userId];
 
-export const participantIntentJoinRequestQueryKey = (
-  intentId: string,
-  userId: string
-): QueryKey => ['participant-intent-join-request', intentId, userId];
-
 export const personPublicProfileQueryKey = (
   userId: string,
   variant:

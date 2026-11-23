@@ -14,9 +14,9 @@
   },
   "readCompatChokePoints": [
     {
-      "id": "compose-seek-inbound",
+      "id": "compose-wire",
       "module": "packages/shared-types/src/compose-route.ts",
-      "rule": "migrateLegacyComposeWire / parseComposeWire — inbound only: seek:* · host:* · availability:* · add:* → activity · intent · place; no wishlist:* compose",
+      "rule": "parseComposeWire / formatComposeWire — activity:* · place:* · intent:open · intent:fixed:* only; legacy host/seek/add/availability tokens rejected",
       "forbidEmitIn": ["src/explore", "src/list", "src/plan", "src/create", "apps/api/src/routes"]
     },
     {

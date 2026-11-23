@@ -10,7 +10,6 @@ import {
   curatedAreaSeedId,
   type CuratedAreaSeedKey,
 } from '@uaetrail/shared-types';
-import type { CreateParticipantIntentInput } from '../../src/domain/participant-intent.js';
 import type { LocationSubmitBody } from '../../src/domain/location-submit.js';
 import { ActivityType, Difficulty, LocationStatus } from '../../src/domain/enums.js';
 import { createLocationRecord } from '../../src/lib/activities-store.js';
@@ -41,11 +40,27 @@ export const testAreaSummary = (key: CuratedAreaSeedKey): string =>
   CURATED_AREA_CATALOG_BY_KEY[key].summary;
 
 /** Minimal valid `locationSubmitBodySchema` body for unit tests (no DB). */
-/** Valid Find / `createParticipantIntent` body — defaults to Hatta + map pin. */
+type LegacyParticipantIntentSeedInput = {
+  kind: 'hiking' | 'camping' | 'rideshare' | 'event' | 'other';
+  title: string;
+  date: string | null;
+  time: string | null;
+  preferredArea: string | null;
+  partySize: number;
+  comment: string;
+  latitude: number | null;
+  longitude: number | null;
+  locationPrecision: 'general' | 'specific' | null;
+  areaId: string | null;
+  toLatitude?: number | null;
+  toLongitude?: number | null;
+};
+
+/** Legacy `participant_intents` Mongo row shape for ops backfill tests. */
 export const buildTestParticipantIntentInput = (
-  overrides: Partial<CreateParticipantIntentInput> = {},
+  overrides: Partial<LegacyParticipantIntentSeedInput> = {},
   areaKey: CuratedAreaSeedKey = 'hatta'
-): CreateParticipantIntentInput => {
+): LegacyParticipantIntentSeedInput => {
   const area = testAreas[areaKey];
   return {
     kind: 'hiking',

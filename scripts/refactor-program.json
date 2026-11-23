@@ -964,7 +964,7 @@
         "src/config/peopleVocabularyTouchpointsGuard.test.ts",
         "src/config/crewPillarsAlignmentGuard.test.ts",
         "src/crew/crewPillarSurfaces.ts",
-        "src/hooks/useMeFriendsNetwork.ts",
+        "src/hooks/useMeBuddiesNetwork.ts",
         "src/pages/MyCrews.tsx",
         "src/list/crews/crewsStatTab.ts",
         "src/utils/notificationRouting.ts",

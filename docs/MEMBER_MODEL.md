@@ -17,7 +17,7 @@ Do **not** re-implement tier logic in React hooks — consume **`GET /me/status`
 | Where | Folder | Names | Meaning |
 |--------|--------|--------|---------|
 | **`/plan` tab** | `src/plan/PlanPage.tsx` + `src/components/plan/*` | `PlanPage` (route shell), `PlanUpcomingView`, `PlanJoinedUpcoming`, … | **Feature module** for the My Plans hub. `Plan*` is a **namespace** for the surface, not a domain entity. Data: activities/join hooks + `memberGoalsApi` / `memberAvailabilityApi` / `memberCoordinationApi` — aggregate catalog `memberCommitmentHubApi` (`goals` + `availability` only). |
-| **Profile history / activity domain** | `components/activity/*`, `participant-intent/*`, `profile-history/*` | `JoinedSection`, `HostedActivitiesSection`, `SeekingIntentsSection` | **Relationship or entity** (joined, hosted, seeking) without `Plan` prefix. |
+| **Profile history / activity domain** | `components/activity/*`, `profile-history/*` | `JoinedSection`, `HostedActivitiesSection`, availability on profile | **Relationship or entity** (joined, hosted, availability) without `Plan` prefix. |
 
 `src/plan/planRouting.ts` + `planTab.ts` = URL/helpers for `/plan`. SN-6 allows `Plan*` under `src/plan/`, `src/components/plan/`, `src/member-plan/` only. **Do not** split the same upcoming list across `plan/` and `activity/` — that duplicates ownership.
 
@@ -64,7 +64,8 @@ flowchart TB
   subgraph storage [Persistence]
     T[tenants — publishingPurpose]
     TM[tenant_memberships — team link]
-    A[activities — hosted + seeking]
+    A[activities — hosted outings]
+    AV[member_availability — Find crew]
   end
 
   subgraph api [API surfaces]
@@ -84,6 +85,7 @@ flowchart TB
   C --> A
   P --> A
   B --> A
+  U --> AV
   ME --> PUBWS
   U --> ME
   U --> PUB
@@ -281,16 +283,19 @@ Product-facing **who is viewing** for **capabilities** (Host / publish, console,
 
 ---
 
-## Member availability (calendar — not seeking)
+## Member availability (Find crew — not Activity)
+
+**Compose `intent:*` is the create wire for availability** — it does not mean “intent nested under Activity.” Hosting stays **`activity:*`** → `activities`; Find crew stays **`intent:*`** → `PUT /me/availability`.
 
 | Concern | Rule |
 |---------|------|
 | **Storage** | `member_availability` — one row per user with `slots[]`, `kinds[]`, optional `areaId` / `region` |
-| **Edit** | Explore **`compose=intent:open`** (`planAvailabilityPath()`); legacy `?lens=availability` redirects — no Plan sheet |
-| **Discover** | `GET /explore/people/availability` · Explore People filters (date range, area, kind) |
+| **Edit** | Explore **`compose=intent:open`** or **`intent:fixed:*`**; legacy `?lens=availability` redirects — no Plan sheet |
+| **Discover** | `GET /explore/people/availability` · map pins `source: availability` · Explore People filters |
 | **Visibility** | `public` · `buddies` · `hidden` — enforced on index and public profile `availability` slice |
-| **vs legacy seeking** | Retired: `activityMode: seeking` activities and `/me/seeking-posts`. **Find crew** = fixed **`member_availability`** slots on the map (`source: availability`); peek → profile + message, not join. |
-| **Guide kind** | Casual “can guide” on availability; paid/commercial guiding = **hosted** activity or agency profile |
+| **vs join on Activity** | Join / RSVP / request → **`activity_requests`** on a **hosted** `activityId`. Availability peek → message / profile — not activity join. |
+| **vs retired seeking** | No `activityMode: seeking`, `/me/seeking-posts`, or `participantIntentId` on product wire. Ops: [`SEEKING_STORAGE_RUNBOOK.md`](./operations/SEEKING_STORAGE_RUNBOOK.md) · `npm run purge:seeking-legacy`. |
+| **Guide kind** | `guide` on availability kinds = casual pro signal; directory **`guides_operators`** + **hosted** activities / agency profiles for commercial guiding |
 
 ---
 

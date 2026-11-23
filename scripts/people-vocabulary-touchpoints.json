@@ -58,7 +58,7 @@
       "status": "complete",
       "deliverables": [
         "Groups Teams copy",
-        "MIG-COMMUNITY-DISCOVER planned (API follow-up)",
+        "MIG-COMMUNITY-DISCOVER complete (discoverable clubs API + Crews Community tab)",
         "member-group-model-guard"
       ]
     },
@@ -114,9 +114,9 @@
       "id": "P7-wire-cleanup",
       "status": "complete",
       "deliverables": [
-        "GET /me/friends read alias",
-        "friendsApi facade (+ buddiesApi compat)",
-        "getMeFriends · fetchMeFriends"
+        "Single buddies wire GET /me/buddies",
+        "fetchMeBuddies in invite client",
+        "Removed /me/friends alias + friendsApi facade"
       ]
     }
   ],

@@ -25,8 +25,8 @@ const buddyActivityPresenceQuerySchema = z.object({
   date: z.string().trim().max(32).optional(),
 });
 
-const registerListMyBuddiesRoute = (router: Router, path: '/me/buddies' | '/me/friends') => {
-  router.get(path, async (req, res, next) => {
+export const registerBuddyRoutes = (router: Router): void => {
+  router.get('/me/buddies', async (req, res, next) => {
     try {
       const data = await listMyBuddies(req.auth!.userId);
       res.json({ data });
@@ -34,12 +34,6 @@ const registerListMyBuddiesRoute = (router: Router, path: '/me/buddies' | '/me/f
       next(error);
     }
   });
-};
-
-export const registerBuddyRoutes = (router: Router): void => {
-  registerListMyBuddiesRoute(router, '/me/buddies');
-  /** Product label Friends — read alias of `GET /me/buddies` (P7 wire cleanup). */
-  registerListMyBuddiesRoute(router, '/me/friends');
 
   router.get(
     '/me/buddies/activity-presence',

@@ -18,14 +18,17 @@ import type { AddVenueKind } from './addTypes';
 
 export type {
   ActivityComposeKind,
-  HostComposeKind,
   IntentFixedComposeKind,
-  AvailabilityFixedComposeKind,
   ComposeKind,
   PlaceTarget,
 } from '@uaetrail/shared-types';
 
-/** @deprecated Use PlaceTarget */
+/** Hosting flows — same kinds as activity compose wire. */
+export type HostComposeKind = ActivityComposeKind;
+
+/** Fixed Find crew wizard — same kinds as intent fixed compose wire. */
+export type AvailabilityFixedComposeKind = IntentFixedComposeKind;
+
 export type AddTarget = PlaceTarget;
 
 /**

@@ -3,6 +3,7 @@ import type {
   MeCreateCommunityDiscoverDTO,
   MeCommunityDiscoverListDTO,
 } from '@uaetrail/shared-types';
+import { slugifyCommunityDiscoverName } from '@uaetrail/shared-types';
 import { ApiError } from '../lib/api-error.js';
 import { insertCommunityMember } from '../lib/community-group-members-store.js';
 import { findCommunityBySlug, incrementCommunityMemberCount, insertCommunityGroup } from '../lib/community-groups-store.js';
@@ -10,20 +11,12 @@ import { loadExploreCommunityDiscoverDetail } from './community-discover-read.js
 import { loadMeCommunityDiscoverList } from './me-community-discover-read.js';
 import { seedCommunityOwnerAdmin } from './community-host-access.js';
 
-const slugifyCommunityName = (name: string): string =>
-  name
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 80);
-
 export const createMeDiscoverableCommunity = async (
   userId: string,
   email: string,
   input: MeCreateCommunityDiscoverDTO
 ): Promise<{ list: MeCommunityDiscoverListDTO; detail: CommunityDiscoverDetailDTO }> => {
-  const slug = (input.slug?.trim().toLowerCase() || slugifyCommunityName(input.name));
+  const slug = (input.slug?.trim().toLowerCase() || slugifyCommunityDiscoverName(input.name));
   if (!/^[a-z0-9-]{2,120}$/.test(slug)) {
     throw new ApiError(400, 'community_slug_invalid', 'Community slug is invalid.');
   }

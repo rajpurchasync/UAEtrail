@@ -54,7 +54,7 @@ export const BWL_COLLECTIONS = {
   SIDE_EFFECT_OUTBOX: 'side_effect_outbox',
 } as const;
 
-export type ActivityModeWire = 'hosted' | 'seeking';
+export type ActivityModeWire = 'hosted';
 
 /** Activity document person fields (BWL). UPL label: Host. */
 export const BWL_ACTIVITY_PERSON_FIELDS = {

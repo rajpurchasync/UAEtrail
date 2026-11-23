@@ -139,9 +139,9 @@ npm run mig-disco-reg:ops:gate         # must exit 0
 3. `npm run mig-disco-reg:ops:gate` → exit 0.
 4. Legacy backfill if status shows `activeIntentsMissingSeekingActivity` (§2 above) — **before** step 2.
 
-**Code residue (shipped on branch — pre-ops):** HTTP `/me/participant-intents` service modules removed; join requests read published seeking activity ids via `participant-intent-activity-readthrough` only (`participant-intent-residue-guard.test.ts`). `participant_intents` Mongo writes are **backfill script only** until ops strict gate.
+**Code (product):** Find crew = **`PUT /me/availability`** only; no `/me/seeking-posts`; `participant-intents-store` = **ops backfill** (`backfillSeekingActivitiesForActiveIntents`). Startup/mongo migration + **`npm run purge:seeking-legacy`** call `purgeRetiredSeekingStorage` (cancel seeking activities, drain intent rows). Guards: `participant-intent-residue-guard.test.ts`.
 
-**Optional / follow-up (after strict gate + 30d):** delete `participant-intents-store` CRUD façade and legacy seeking join routes when no env still serves `activityMode: seeking` pins.
+**After strict gate:** drop empty `participant_intent_requests` / fulfilled `participant_intents` from ops metrics; no product reads of `activityMode: seeking`.
 
 ---
 

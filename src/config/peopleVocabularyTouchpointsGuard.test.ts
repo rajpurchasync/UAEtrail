@@ -83,9 +83,9 @@ describe('peopleVocabularyTouchpointsGuard (MIG-PEOPLE-VOCAB-2026)', () => {
     const page = read('src/pages/MyCrews.tsx');
     expect(page).not.toMatch(/CrewBrowseTabContent/);
     expect(page).toMatch(/SocialHubIndex/);
-    expect(page).toMatch(/useMeFriendsNetwork/);
+    expect(page).toMatch(/useMeBuddiesNetwork/);
     expect(page).toMatch(/PRODUCT_MY_CREW_SURFACE_TITLE/);
-    expect(page).not.toMatch(/useMeBuddiesNetwork/);
+    expect(page).not.toMatch(/useMeFriendsNetwork/);
     expect(existsSync(join(ROOT, 'src/pages/Buddies.tsx'))).toBe(false);
   });
 
@@ -105,7 +105,7 @@ describe('peopleVocabularyTouchpointsGuard (MIG-PEOPLE-VOCAB-2026)', () => {
   it('PVOC-06: Intent compose emits intent:* (availability/seek only inbound)', () => {
     const compose = read('src/explore/compose.ts');
     expect(compose).toMatch(/intent:open/);
-    expect(read('packages/shared-types/src/compose-route.ts')).toMatch(/migrateLegacyComposeWire/);
+    expect(read('packages/shared-types/src/compose-route.ts')).not.toMatch(/migrateLegacyComposeWire/);
     const violations: string[] = [];
     for (const rel of ['src/explore/compose.ts', 'src/explore/create/composeFabEntry.ts']) {
       const content = read(rel);
@@ -129,11 +129,13 @@ describe('peopleVocabularyTouchpointsGuard (MIG-PEOPLE-VOCAB-2026)', () => {
     expect(read('src/config/crossContextFoundationsGuard.test.ts')).toMatch(/CTX-FOUND-09/);
   });
 
-  it('PVOC-09b: P7 — GET /me/friends alias + friendsApi facade', () => {
-    expect(read('apps/api/src/routes/user/registerBuddyRoutes.ts')).toMatch(/\/me\/friends/);
-    expect(read('src/api/domains/buddies.ts')).toMatch(/export const friendsApi/);
-    expect(read('src/api/domains/buddies.ts')).toMatch(/getMeFriends/);
-    expect(read('src/hooks/activityInviteClientApi.ts')).toMatch(/fetchMeFriends/);
+  it('PVOC-09b: friends roster — single buddies wire (no /me/friends alias)', () => {
+    expect(read('apps/api/src/routes/user/registerBuddyRoutes.ts')).toMatch(/\/me\/buddies/);
+    expect(read('apps/api/src/routes/user/registerBuddyRoutes.ts')).not.toMatch(/\/me\/friends/);
+    expect(read('src/api/domains/buddies.ts')).toMatch(/getMeBuddies/);
+    expect(read('src/api/domains/buddies.ts')).not.toMatch(/getMeFriends/);
+    expect(read('src/hooks/activityInviteClientApi.ts')).toMatch(/fetchMeBuddies/);
+    expect(read('src/hooks/activityInviteClientApi.ts')).not.toMatch(/fetchMeFriends/);
   });
 
   it('PVOC-09: authority matrix documents Friends product vs buddy wire', () => {

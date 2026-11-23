@@ -256,7 +256,7 @@ export const buildExploreMapPlanProjection = (options: {
   storedOutingCategory?: OutingCategory | null;
   storedOutingTopic?: OutingTopic | null;
 }): ExploreMapPlanProjection => {
-  const isSeeking = options.activityMode === 'seeking';
+  const isSeeking = (options.activityMode as string | null | undefined) === 'seeking';
   const composeIntent: ExploreMapComposeIntent | null = isSeeking
     ? 'seek'
     : exploreMapSourceToComposeIntent(options.source);

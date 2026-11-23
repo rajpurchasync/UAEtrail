@@ -31,7 +31,7 @@ describe('availability notification lineage (MIG-DISCO-REG)', () => {
     );
     expect(intents).not.toMatch(/notifyMemberPublishSubscribers/);
     expect(intents).not.toMatch(/publishType: 'seeking'/);
-    expect(intents).toMatch(/activity_mode_seeking_retired/);
+    expect(intents).toMatch(/backfillSeekingActivitiesForActiveIntents/);
     expect(intents).toMatch(/mergeMemberAvailabilityFixedSlotsMigration/);
   });
 

@@ -30,13 +30,7 @@ describe('hostPublishAvailabilityNotice', () => {
   it('skips seeking outings and participant-intent rows', async () => {
     expect(
       await buildHostPublishAvailabilityNotice(
-        hostedActivity({ activityMode: 'seeking' }),
-        'host-1'
-      )
-    ).toBeNull();
-    expect(
-      await buildHostPublishAvailabilityNotice(
-        hostedActivity({ participantIntentId: 'pi-1' }),
+        hostedActivity({ activityMode: 'seeking' as ActivityDTO['activityMode'] }),
         'host-1'
       )
     ).toBeNull();

@@ -462,8 +462,7 @@ const toEventDto = ({
   displayLongitude: displayCoords.longitude,
   outingCategory: event.outingCategory ?? null,
   outingTopic: event.outingTopic ?? null,
-  activityMode: event.activityMode ?? null,
-  participantIntentId: event.participantIntentId ?? null,
+  activityMode: event.activityMode === 'seeking' ? null : event.activityMode ?? null,
   groupChatPostPolicy: event.groupChatPostPolicy ?? null,
   discoverCommunityId: event.discoverCommunityId ?? null,
 };

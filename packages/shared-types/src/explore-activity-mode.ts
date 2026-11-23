@@ -1,33 +1,36 @@
 import { BWL_EXPLORE_MAP_SOURCE } from './wire-lexicon.js';
 
-/** Map/list time-bound outings — hosted publish only on wire (`activityMode: seeking` is retired on the map). */
-export type ExploreActivityMode = 'hosted' | 'seeking';
+/** Map/list time-bound outings — hosted publish only on wire. */
+export type ExploreActivityMode = 'hosted';
 
 export type ExploreMapItemActivityModeFields = {
   source?: string;
   activityMode?: ExploreActivityMode | null;
+  /** @deprecated Legacy Mongo — never emitted on API wire; used only to filter leftovers in catalog. */
   id?: string;
 };
 
-/** Resolve mode from wire fields — does not infer seeking from legacy `participantIntentId`. */
+/** Legacy DB rows may still store `activityMode: seeking` until purge migration runs. */
+const isRetiredSeekingActivityMode = (item: { activityMode?: string | null }) =>
+  item.activityMode === 'seeking';
+
+/** Resolve mode from wire fields — does not infer seeking from legacy ids. */
 export const resolveExploreMapActivityMode = (
   item: ExploreMapItemActivityModeFields
 ): ExploreActivityMode | null => {
-  if (item.activityMode === 'hosted' || item.activityMode === 'seeking') {
-    return item.activityMode;
-  }
+  if (isRetiredSeekingActivityMode(item)) return null;
+  if (item.activityMode === 'hosted') return 'hosted';
   if (item.source === 'activity') return 'hosted';
   return null;
 };
 
 /**
- * Retired catalog row — published activities still stored as `activityMode: seeking`.
- * Excluded from `GET /explore/map`; use only to filter leftovers in client/tests.
+ * Retired catalog row — excluded from `GET /explore/map`.
  * Find crew on the map is {@link exploreMapItemIsAvailabilityCatalog} only.
  */
 export const exploreMapItemIsLegacySeekingActivity = (
   item: ExploreMapItemActivityModeFields
-): boolean => item.source === 'activity' && item.activityMode === 'seeking';
+): boolean => item.source === 'activity' && isRetiredSeekingActivityMode(item);
 
 /** @deprecated Use {@link exploreMapItemIsLegacySeekingActivity} — not for Find crew UX. */
 export const exploreMapItemIsSeeking = exploreMapItemIsLegacySeekingActivity;

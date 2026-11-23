@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-do
 import { MessageCircle, UserMinus } from 'lucide-react';
 import type { BuddyRequestDTO, BuddySummaryDTO, MemberFollowSummaryDTO } from '@uaetrail/shared-types';
 import { setMemberFollow } from '../hooks/memberFollowApi';
-import { useMeFriendsNetwork, useMeFollowingMembers } from '../hooks/useMeFriendsNetwork';
+import { useMeBuddiesNetwork, useMeFollowingMembers } from '../hooks/useMeBuddiesNetwork';
 import {
   acceptMemberBuddyRequest,
   cancelMemberBuddyRequest,
@@ -89,13 +89,13 @@ export const MyCrewsPage = () => {
   const shellTitle = isHub ? PRODUCT_MY_CREW_SURFACE_TITLE : SECTION_TITLES[activeSection];
 
   const {
-    friends,
+    buddies: friends,
     incomingRequests,
     outgoingRequests,
     loading,
     error: networkError,
     refetch: refetchFriendsNetwork,
-  } = useMeFriendsNetwork(Boolean(user));
+  } = useMeBuddiesNetwork(Boolean(user));
   const {
     following,
     loading: followingLoading,

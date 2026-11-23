@@ -113,7 +113,7 @@ export const listTenantActivitiesDetailed = async (input: {
 };
 
 export const createActivityDetailed = async (data: ActivityCreateInput): Promise<ActivityWithTenantRelations> => {
-  if (data.activityMode === 'seeking') {
+  if ((data.activityMode as string | undefined) === 'seeking') {
     throw new Error('activity_mode_seeking_retired');
   }
   const activityId = newEntityId();
@@ -140,7 +140,7 @@ export const updateActivityDetailed = async (
   activityId: string,
   data: ActivityUpdateInput
 ): Promise<ActivityWithTenantRelations> => {
-  if (data.activityMode === 'seeking') {
+  if ((data.activityMode as string | undefined) === 'seeking') {
     throw new Error('activity_mode_seeking_retired');
   }
   const patch: Partial<MongoActivityDoc> = { updatedAt: new Date() };

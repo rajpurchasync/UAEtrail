@@ -12,7 +12,7 @@ export const CREW_PILLAR_IDS = [
   /** Private adult teams — `/groups`, `member_group` kind `team` (family / friends / colleagues labels). */
   'teams',
   /**
-   * Discoverable clubs (Strava-style) — `MIG-COMMUNITY-DISCOVER` (planned).
+   * Discoverable clubs (Strava-style) — `community_groups` + `/clubs/:slug`.
    * Not private Teams; not `social_groups` outing chat.
    */
   'communities',
@@ -57,7 +57,7 @@ export const CREW_PILLAR_SPECS: Record<CrewPillarId, CrewPillarSpec> = {
     id: 'friends',
     boundedContexts: ['social_graph', 'communication'],
     routes: ['/crews', '/chat?to='],
-    wire: ['/me/buddies', '/me/friends', '/me/buddy-requests', 'buddy_*', 'segment=buddies'],
+    wire: ['/me/buddies', '/me/buddy-requests', 'buddy_*', 'segment=buddies'],
     notSameAs: ['teams', 'communities', 'outing_roster'],
   },
   teams: {
@@ -70,8 +70,13 @@ export const CREW_PILLAR_SPECS: Record<CrewPillarId, CrewPillarSpec> = {
   communities: {
     id: 'communities',
     boundedContexts: ['social_graph', 'member_discovery'],
-    routes: [],
-    wire: ['MIG-COMMUNITY-DISCOVER — not shipped'],
+    routes: ['/clubs/:slug', '/list?listCat=people&peopleTab=community'],
+    wire: [
+      'community_groups',
+      'GET /explore/communities',
+      'POST /me/communities',
+      'VITE_COMMUNITY_DISCOVER',
+    ],
     notSameAs: ['teams', 'friends'],
   },
   guides_operators: {

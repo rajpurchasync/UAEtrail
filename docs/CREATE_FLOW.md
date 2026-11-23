@@ -6,7 +6,7 @@
 
 **Program:** **Program CPC** ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4) + **`MIG-PLATFORM-COMPOSE-OPERATOR-2026`** ([`refactor-program.json`](../scripts/refactor-program.json)).
 
-**Compose wire (shipped emit):** `?compose=` → **`activity:*`** \| **`place:*`** \| **`intent:open`** \| **`intent:fixed:*`** only. Inbound bookmarks `host` / `add` / `availability` / `seek` → **parse-only** in [`packages/shared-types/src/compose-route.ts`](../packages/shared-types/src/compose-route.ts) (`migrateLegacyComposeWire`). **Intent** publishes via **`PUT /me/availability`**. **Wishlist** → **`POST /me/wishlist`** only ([`saveWishlistTarget`](../src/wishlist/saveWishlistTarget.ts) — not compose). **Operator** schedule + workspace → SPA **`/operator/*`** (tenant HTTP **`/publishing/*`**). Guards: `composeWireEmitGuard`, `migPlatformComposeOperatorProgramGuard`.
+**Compose wire (shipped emit):** `?compose=` → **`activity:*`** \| **`place:*`** \| **`intent:open`** \| **`intent:fixed:*`** only (legacy `host` / `add` / `availability` / `seek` tokens are **rejected**). Parser: [`packages/shared-types/src/compose-route.ts`](../packages/shared-types/src/compose-route.ts). **Intent** publishes via **`PUT /me/availability`**. **Wishlist** → **`POST /me/wishlist`** only ([`saveWishlistTarget`](../src/wishlist/saveWishlistTarget.ts) — not compose). **Operator** schedule + workspace → SPA **`/operator/*`** (tenant HTTP **`/publishing/*`**). Guards: `composeWireEmitGuard`, `migPlatformComposeOperatorProgramGuard`.
 
 **Vocabulary (UI):** Tab FABs **Create Trip** · **Add a venue** · **Find a Crew** open kind-specific compose (no stale top-level Host · Find crew · Add menu). **Compose** stays reserved for **message / email compose** later. **My Plans** (`/plan`) **Add a Plan** sheet = **Set a Goal** · **Want to go** only; publish an outing or mark availability use the same **`?compose=`** session as Explore.
 
@@ -14,7 +14,7 @@
 
 **URL updates:** Browse/list filters and Plan hub query (`?planAdd=`, tabs) commit via `applyProductSearchMutation` (`src/routing/productSearchMutation.ts`); explore browse also uses `syncExploreUrl`. Query reads use React Router `useSearchParams` (via `useProductSearchParams`). Do not call raw `history.replaceState` for product navigation.
 
-**Domain lens** ([`DOMAIN.md`](./DOMAIN.md) § What · Where · Who · How): **Host** / **Find crew (fixed)** → **What** (Activity). **Find crew (flexible)** → `member_availability` (people layer, no map pin). **Add on map** → **Where** (Place or Facility). **Who** (Person / Host / Operator) is chosen when publishing or on detail — not a FAB branch. **How** (join, RSVP, approvals) is **context only** on activity/place/facility surfaces — `viewerAccess`, not new nouns.
+**Domain lens** ([`DOMAIN.md`](./DOMAIN.md) § What · Where · Who · How): **Host (compose `activity:*`)** → hosted **Activity** only. **Find crew (compose `intent:*`)** → **`member_availability`** (fixed map pin or open calendar — **not** an Activity row). **Add on map (`place:*`)** → **Where** (Place or Facility). **Joining a trip** is **How** on a hosted **`activityId`** (RSVP / request) — separate from posting availability. **Who** (Person / Host / Operator) is chosen when publishing or on detail — not a FAB branch.
 
 **Publishing:** The **host is always a signed-in user**. **Host** shows **Publish as** when the member has multiple activity-capable tenants (`HostingPublishAsField`); wire uses `x-organisation-id` ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)). **Publishing workspace** (agency / shop / guide console) is **`/publishing/*`** (HTTP **`/publishing/*`**) — not on the FAB.
 
@@ -128,16 +128,16 @@ Do not bounce consumers to `/explore` for compose when `createFlowPath` can keep
 
 **Activity pricing (host / publish):** one mode per outing — `free` · `shared` · `paid` — with a single indicative AED amount when not free. **No tiered packages** and **no in-app payments** (amounts are informational; members settle with the host offline). **Who may set which mode** (`allowedActivityPricingModes`): everyone who can host → **free + shared**. **Paid** only when the member is **linked to a verified business** (`hostTiers.business`) **and** publishes as **agency, shop, or partner** — not as an individual guide (community / pro guide). External registration URLs are **parked** (not in product UI/API).
 
-### Seeking (was Find)
+### Find crew fixed kinds (map window)
 
-| UI label | Maps to (`ParticipantIntentKind`) |
-|----------|-----------------------------------|
+| UI label | Maps to (`AvailabilityKind` / fixed compose) |
+|----------|-----------------------------------------------|
 | **Rideshare** | `rideshare` |
 | **Hiking** | `hiking` |
 | **Camping** | `camping` |
 | **Activities** | `event` (runs, jogs, general outdoors) |
 
-Any signed-in member — no host approval to post seeking.
+Any signed-in member — no host approval; writes **`PUT /me/availability`** (fixed slot). Legacy **`activityMode: seeking`** is retired.
 
 ### Add on map (was Contribute)
 
@@ -276,7 +276,7 @@ Deep link: `exploreHostFromActivityPath(activityId, kind)` in `src/explore/routi
 
 ## Going from (activities only)
 
-**Required** for all **Host** and **Find crew** activity flows (hiking, camping, event, activity, rideshare seeking).
+**Required** for all **Host** and **Find crew fixed** flows (hiking, camping, event, activity, rideshare).
 
 | Flow | Label | Notes |
 |------|-------|-------|
@@ -403,7 +403,7 @@ Do **not** ship Event Host with RSVP marketing until Phase C exists.
 | FAB entry | `CreateKindSheet.tsx` |
 | Map shell | `ExploreExperience.tsx`, `useExploreExperienceModel` (map/browse hooks only) |
 | Hosting wizard | `CreateHostingActivityFlow.tsx`, `hostingFlowEngine.ts`, `hostingFlows/*` |
-| Seeking wizard | `CreateAvailabilityFixedFlow.tsx`, `intentFixedFlowEngine.ts` |
+| Intent fixed wizard | `CreateAvailabilityFixedFlow.tsx`, `intentFixedFlowEngine.ts` |
 | Add on map wizard | `CreateAddFlow.tsx`, `CreateAddFacilityFlow.tsx`, `addFlow.ts`, `addFacilityFlow.ts`; `catalogPlaceSubmit.ts` / `catalogFacilitySubmit.ts` |
 | Map pin UI | `CreatePlacePicker.tsx` |
 | Join / RSVP UI | `JoinRequestModal.tsx`, `ActivityDetail.tsx`, `joinRequestUi.ts` |
