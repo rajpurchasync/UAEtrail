@@ -28,12 +28,12 @@ describe('platformLayerPls5Guard (MIG-PLATFORM-LAYER-SPINE closure)', () => {
   });
 
   it('LAYER-20: PLS-5 complete and migration closed in program', () => {
-    const spine = JSON.parse(read('scripts/platform-layer-spine-touchpoints.json')) as {
+    const spine = JSON.parse(read('scripts/governance/platform-layer-spine-touchpoints.json')) as {
       phases: { id: string; status: string }[];
     };
     const p5 = spine.phases.find((p) => p.id === 'PLS-5');
     expect(p5?.status).toBe('complete');
-    const archive = JSON.parse(read('scripts/platform-migration-archive.json')) as {
+    const archive = JSON.parse(read('scripts/governance/platform-migration-archive.json')) as {
       migrations: { id: string; status: string }[];
     };
     const mig = archive.migrations.find((m) => m.id === 'MIG-PLATFORM-LAYER-SPINE');

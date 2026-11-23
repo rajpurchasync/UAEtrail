@@ -8,7 +8,7 @@
 
 ## Closed Tier-1 set (do not add files)
 
-Tier-1 is a **fixed list** (see `scripts/verify-docs-tier1.mjs`). When behavior changes:
+Tier-1 is a **fixed list** (see `scripts/verify/verify-docs-tier1.mjs`). When behavior changes:
 
 1. **Edit the existing Tier-1 file** for that topic (table below).
 2. **Do not** create `NAMING_*`, `ALIGNMENT_*`, `AUDIT_*`, or parallel “coherence” docs.
@@ -44,7 +44,7 @@ Product behavior and placement are defined by **implementation + automated guard
 | Priority | Source | Role |
 |----------|--------|------|
 | 1 | `packages/shared-types/src/wire-lexicon.ts`, `src/content/upl-glossary.ts` | Wire names and member-visible vocabulary |
-| 2 | `scripts/bounded-context-manifest.json`, `scripts/platform-governance.json` | Where modules belong; migration IDs |
+| 2 | `scripts/governance/bounded-context-manifest.json`, `scripts/governance/platform-governance.json` | Where modules belong; migration IDs |
 | 3 | Guards and contract tests (`verify:system`, `crossContextFoundationsGuard`, API domain tests) | Enforce invariants; fail CI on drift |
 | 4 | `apps/api/src/routes/*`, `src/api/domains/*`, services, UI | What actually runs |
 | 5 | Tier-1 docs (this table’s links) | **Supporting facts** for humans — update **after** (3–4) change, not instead of them |
@@ -66,7 +66,7 @@ Use **one row** per concern. Do not copy these tables into `experiment/*` or new
 | **HTTP routes** | [`API_ROUTING.md`](./API_ROUTING.md) + [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §4–5 | `/me/status`, `/publishing/*`, `/me/seeking-posts` |
 | **SPA paths & redirects** | [`NAVIGATION.md`](./NAVIGATION.md) + `src/config/routingCatalog.ts` | `/explore`, `/publishing/*`, legacy `/host/*` |
 | **Bounded context placement** | [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3 + §3.0 | Where code and clients live |
-| **Implementation schedule** | [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.6–8.8 + `scripts/platform-governance.json` | Migrations only — not parallel plan docs |
+| **Implementation schedule** | [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.6–8.8 + `scripts/governance/platform-governance.json` | Migrations only — not parallel plan docs |
 
 **Retired product paths (docs + code):** `/operator/*` and `/host/*` as **consumer or API** trees → **`/publishing/*`**; `/me/host-status` → **`GET /me/status`**; Find storage → **`/me/seeking-posts`** + `activityMode: seeking`; shop **product catalog** (`/product/:id`, `/shop/products`, `/shop/checkout`, `/admin/shop`) → explore shops browse or `/admin/hosts`. Legacy names may appear only in **redirect tables** (`NAVIGATION.md`, `DOMAIN.md`) or **Prefer \| Deprecated** columns (`DOMAIN_CANONICALS.md` §6).
 

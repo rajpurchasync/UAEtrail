@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "description": "Active program schedules (touchpoints + verify gates)",
+  "programs": [
+    {
+      "programId": "MIG-ROUTING-CANON-P0",
+      "status": "complete",
+      "scheduleDoc": "scripts/governance/routing-canonical-map.json",
+      "phase": "P4b"
+    },
+    {
+      "programId": "MIG-PLATFORM-COMPOSE-OPERATOR-2026",
+      "status": "complete",
+      "scheduleDoc": "npm run verify:compose-spine",
+      "phase": "P4b"
+    },
+    {
+      "programId": "MIG-PEOPLE-VOCAB-2026",
+      "status": "complete",
+      "scheduleDoc": "scripts/governance/people-vocabulary-touchpoints.json",
+      "phase": "P4b"
+    },
+    {
+      "programId": "MIG-SCHEDULE-GUIDE",
+      "status": "complete",
+      "scheduleDoc": "docs/SYSTEM_COHERENCE.md §8.10 (remove when status=complete)",
+      "phase": "P4b"
+    },
+    {
+      "programId": "MIG-PLATFORM-LAYER-SPINE",
+      "status": "complete",
+      "scheduleDoc": "scripts/governance/platform-layer-spine-touchpoints.json",
+      "phase": "P4b"
+    },
+    {
+      "programId": "MIG-DISCOVER-RECOMMENDATIONS",
+      "status": "complete",
+      "scheduleDoc": "scripts/governance/discover-recommendations-touchpoints.json",
+      "phase": "P4"
+    }
+  ]
+}

@@ -11,7 +11,7 @@ const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
  */
 describe('platformLayerApiGuard (PLS-1)', () => {
   it('LAYER-04: bounded manifest roots availability publish + matching ops', () => {
-    const manifest = JSON.parse(read('scripts/bounded-context-manifest.json')) as {
+    const manifest = JSON.parse(read('scripts/governance/bounded-context-manifest.json')) as {
       contexts: { id: string; feRoots?: string[]; apiFiles?: string[] }[];
     };
     const availability = manifest.contexts.find((c) => c.id === 'availability');

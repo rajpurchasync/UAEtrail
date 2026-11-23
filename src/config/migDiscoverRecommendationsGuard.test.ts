@@ -25,7 +25,7 @@ describe('migDiscoverRecommendationsGuard (MIG-DISCOVER-RECOMMENDATIONS)', () =>
   it('REC-02: map shell uses server rows when signed in', () => {
     expect(read('src/explore/shell/ExploreMapShell.tsx')).toMatch(/useDiscoverMapRecommendations/);
     expect(read('src/explore/ui/ExploreMapRecommendedSheet.tsx')).toMatch(/RecommendationSignalChips/);
-    expect(read('scripts/discover-recommendations-touchpoints.json')).toMatch(/REC-8/);
+    expect(read('scripts/governance/discover-recommendations-touchpoints.json')).toMatch(/REC-8/);
     expect(read('packages/shared-types/src/map-explore-recommendation-score.ts')).toMatch(/near_you/);
     expect(read('src/crew-discovery/panel/crewBrowse/CrewBrowseRecommendedBody.tsx')).toMatch(
       /resolveRecommendedCrewFeedRows/
@@ -47,11 +47,11 @@ describe('migDiscoverRecommendationsGuard (MIG-DISCOVER-RECOMMENDATIONS)', () =>
   });
 
   it('REC-03: program registered', () => {
-    const registry = JSON.parse(read('scripts/platform-touchpoint-registry.json')) as {
+    const registry = JSON.parse(read('scripts/governance/platform-touchpoint-registry.json')) as {
       programs: { programId: string; status: string; scheduleDoc?: string }[];
     };
     const row = registry.programs.find((m) => m.programId === 'MIG-DISCOVER-RECOMMENDATIONS');
-    expect(row?.scheduleDoc).toBe('scripts/discover-recommendations-touchpoints.json');
+    expect(row?.scheduleDoc).toBe('scripts/governance/discover-recommendations-touchpoints.json');
     expect(row?.status).toBe('complete');
   });
 });

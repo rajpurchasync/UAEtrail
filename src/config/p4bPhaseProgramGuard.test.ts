@@ -7,11 +7,11 @@ const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
 
 /**
  * P4b surface program — eng migrations closed; phase stays open until S10f ops sign-off.
- * @see refactor-program.json phases[].P4b · releaseOpsProgramGuard
+ * @see platform-governance.json phases[].P4b · releaseOpsProgramGuard
  */
 describe('p4bPhaseProgramGuard (P4b phase eng closure)', () => {
   it('P4B-PHASE-01: every P4b migration row is complete', () => {
-    const p4b = (JSON.parse(read('scripts/platform-migration-archive.json')).migrations ?? []).filter(
+    const p4b = (JSON.parse(read('scripts/governance/platform-migration-archive.json')).migrations ?? []).filter(
       (m: { phase?: string }) => m.phase === 'P4b'
     );
     expect(p4b.length).toBeGreaterThan(0);
@@ -20,7 +20,7 @@ describe('p4bPhaseProgramGuard (P4b phase eng closure)', () => {
   });
 
   it('P4B-PHASE-02: P4b exit criteria reference S10f ops and verify:system', () => {
-    const program = JSON.parse(read('scripts/platform-governance.json')) as {
+    const program = JSON.parse(read('scripts/governance/platform-governance.json')) as {
       phases?: { id: string; exitCriteria?: string[] }[];
     };
     const p4b = program.phases?.find((p) => p.id === 'P4b');
@@ -39,7 +39,7 @@ describe('p4bPhaseProgramGuard (P4b phase eng closure)', () => {
   });
 
   it('P4B-PHASE-04: guard wired in verify:domain:fe', () => {
-    const verifyFe = read('scripts/verify-domain-fe.mjs');
+    const verifyFe = read('scripts/verify/verify-domain-fe.mjs');
     expect(verifyFe).toMatch(/p4bPhaseProgramGuard\.test\.ts/);
     expect(verifyFe).toMatch(/p4bS10fProgramGuard\.test\.ts/);
     expect(verifyFe).toMatch(/releaseOpsProgramGuard\.test\.ts/);

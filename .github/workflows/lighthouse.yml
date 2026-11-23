@@ -1,5 +1,5 @@
 # Lighthouse CI on PRs for detail routes (/activity/demo, /place/demo via vite preview).
-# Plan §15.1 targets are warn-first in scripts/lighthouse-detail.config.json — noisy scores must not fail the PR.
+# Plan §15.1 targets are warn-first in scripts/governance/lighthouse-detail.config.json — noisy scores must not fail the PR.
 # This job fails only if Chrome, vite preview, or @lhci/cli crashes (or tools are missing on the runner).
 # Do not add this to npm run verify:system:quick (that gate is bundle-graph via verify:perf).
 name: Lighthouse detail

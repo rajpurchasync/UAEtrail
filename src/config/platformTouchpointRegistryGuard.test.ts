@@ -6,7 +6,7 @@ const ROOT = process.cwd();
 const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
 
 describe('platformTouchpointRegistryGuard (GW-4)', () => {
-  const registry = JSON.parse(read('scripts/platform-touchpoint-registry.json')) as {
+  const registry = JSON.parse(read('scripts/governance/platform-touchpoint-registry.json')) as {
     programs?: { programId: string; scheduleDoc: string; status: string }[];
   };
 
@@ -34,8 +34,8 @@ describe('platformTouchpointRegistryGuard (GW-4)', () => {
   });
 
   it('REG-03: people vocab touchpoints programId matches registry', () => {
-    const manifest = JSON.parse(read('scripts/people-vocabulary-touchpoints.json')) as { programId: string };
+    const manifest = JSON.parse(read('scripts/governance/people-vocabulary-touchpoints.json')) as { programId: string };
     const row = registry.programs?.find((p) => p.programId === manifest.programId);
-    expect(row?.scheduleDoc).toBe('scripts/people-vocabulary-touchpoints.json');
+    expect(row?.scheduleDoc).toBe('scripts/governance/people-vocabulary-touchpoints.json');
   });
 });

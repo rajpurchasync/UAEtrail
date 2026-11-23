@@ -5,7 +5,7 @@
  * **Projections:** `src/list/*`, `src/discovery/*`, map peek — import shared primitives from here,
  * not deep `explore/search/*` unless you own explore shell internals (`ListDiscoveryExperience`, map chrome).
  *
- * @see scripts/bounded-context-manifest.json · context `discovery`
+ * @see scripts/governance/bounded-context-manifest.json · context `discovery`
  * @see npm run discovery:import-audit
  */
 

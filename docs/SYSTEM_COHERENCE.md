@@ -4,7 +4,7 @@
 
 **Not a duplicate of:** [`ARCHITECTURE.md`](./ARCHITECTURE.md) (deployment & layer diagram), [`DOMAIN.md`](./DOMAIN.md) (entity glossary), [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) (naming & route builders), [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) (person vs host tier). **This file ties them together.**
 
-**Index:** [`DOCS_INDEX.md`](./DOCS_INDEX.md) · **Checks:** `npm run verify:system` · **Manifest:** `scripts/bounded-context-manifest.json` · **Generated module map:** `npm run context:map` → `scripts/context-map.md` (code-first; do not duplicate by hand)
+**Index:** [`DOCS_INDEX.md`](./DOCS_INDEX.md) · **Checks:** `npm run verify:system` · **Manifest:** `scripts/governance/bounded-context-manifest.json` · **Generated module map:** `npm run context:map` → `scripts/dev/context-map.md` (code-first; do not duplicate by hand)
 
 ---
 
@@ -105,7 +105,7 @@ Contexts **share** the same rules — they differ by **data and routes**, not by
 | **Chat façade** | Product inbox: `messagingApi` → `chatApi` (`/chat/*`) + `groupsApi` (crew wall) — no duplicate `/chat` clients | `crossContextFoundationsGuard` (CTX-FOUND-08, 10) |
 | **API registrars** | Surface-first `register*` modules under `routes/user`, `routes/operator`, `routes/shop`, `routes/admin` (+ shared `*-route-schemas.ts`) | `bounded-context-alignment` (API) |
 | **Places catalog (CPC)** | `GET /places/catalog` via `placeCatalogClient`; public `/places/:id` + `/facilities/:id` in `places` / `facilities` domains only | `crossContextFoundationsGuard` (CTX-FOUND-11–12), `places-http-canonical-guard` (API) |
-| **Context map** | `scripts/bounded-context-manifest.json` ↔ §3.1 matrix | `boundedContextAlignment`, `crossContextFoundationsGuard` |
+| **Context map** | `scripts/governance/bounded-context-manifest.json` ↔ §3.1 matrix | `boundedContextAlignment`, `crossContextFoundationsGuard` |
 
 **Integration rule:** Cross-context features compose **entities** (`Activity`, `Place`, `Facility`) and **shared-types** DTOs — e.g. participation joins on `POST /activities/:id/requests` while publishing mutates the same row via `/publishing/*`; discovery reads those rows through `explore-map`, not a second activity list API.
 
@@ -135,7 +135,7 @@ Each context has **one write path** and **one public read model** where possible
 
 ### 3.1 Context alignment matrix (API · FE · storage)
 
-Pick a **context id** when changing code; touch registrar + `src/api/domains/*` + UI roots together. Machine-readable paths: `scripts/bounded-context-manifest.json`.
+Pick a **context id** when changing code; touch registrar + `src/api/domains/*` + UI roots together. Machine-readable paths: `scripts/governance/bounded-context-manifest.json`.
 
 | Context | Collections (wire) | Key HTTP | FE domain module | UI roots |
 |---------|-------------------|----------|------------------|----------|
@@ -499,7 +499,7 @@ Track consolidation here; sub-roadmaps link out but **this table is the system-w
 | **C25** | ~~Admin / platform_ops FE roots under-documented~~ | — | **Done (S13-W9)** — `NAVIGATION.md` admin table, `adminSurfacesAcceptance`, manifest `feRoots` | **S13-W9** |
 | **C26** | Catalog POI model flat (`locations` + `place-kind` amenities); area-wide “nearby facilities”; FAB **Host·Find crew·Add on map**; v3 `?compose=` (`host` \| `seek` \| `add` only); contribute/submit/registry jargon split | Wrong trail amenities; organize picker pollution; duplicate shop semantics (member pin vs operator storefront) | **Program CPC** (§8.4): **Place** + **Facility** entities; catalog queries; `viewerAccess` on places; compose wire host/seek/add only | **Mitigated (CPC-0–6)** — CPC-7 dual-read tail + `verify:system` before close |
 | **C27** | ~~**Doc corpus sprawl**~~ | — | **Mitigated (Oct 2026)** — `experiment/README` only; retired narratives stubbed or deleted; schedules §8 only | [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md) · `verify:docs` |
-| **C28** | **Multi-quarter refactor without program spine** | Half-migrations, lost context mid-flight | **`scripts/platform-governance.json`** + §8.6 phase gates; manifest + migration IDs; strangler rules | §8.6 below |
+| **C28** | **Multi-quarter refactor without program spine** | Half-migrations, lost context mid-flight | **`scripts/governance/platform-governance.json`** + §8.6 phase gates; manifest + migration IDs; strangler rules | §8.6 below |
 | **C29** | ~~**Write-surface UI lag**~~ | — | **Done (S14-W5)** — location kit, compose shell, pillar steps, Host bodies, UAE destination modes | **S14** §8.3.6 |
 
 **Not debt (intentional):** legacy `/host/*` → `/publishing/*` SPA rewrite; Mongo `locations` collection name (wire **Place**); `x-organisation-id` header; `getOrganisationProfile` for **storefront** — not activity roster. Leftover inbound URLs: `/trail`·`/camp`·`/venue` → `/place/:id`; `/contributions` → `/profile/submissions`.
@@ -671,7 +671,7 @@ Work **in order**; extend `systemCoherenceGuard.test.ts` / `naming-coherence.tes
 | **S10f** | **Manual QA** | S9 §8 routes + C9 notification edge cases | `npm run s10f:ops:checklist` (CI) · `BASE_URL=… s10f:ops:print-routes` (human); `activityDetailS10fBridgeGuard` | **Pending (human)** |
 | **S10g** | **C1** platform admin hardening | MFA, impersonation, cross-tenant — not a quick slice | `MEMBER_MODEL` / security review | Deferred |
 
-Phases **S0–S4** (guards), **S6–S8** (core), and **S7/S7b/S7c** are in place; **S5** manual QA + knip optional. **S8** coded tracks are complete — remaining discovery scale work is **R5 promotion** (ops) and optional metrics (**C19**); discovery execution archive = [`archive/system-refactor-plan-2026-10.md`](./archive/system-refactor-plan-2026-10.md). **Platform program (P0–P6):** §8.6 + [`platform-governance.json`](../scripts/platform-governance.json). **S7** supersedes ad-hoc peek/detail gating in the SPA (**C16** mitigated). **S9** eng is complete; §8 manual QA overlaps **S10f**. **S10** engineering remediation closed Oct 2026 — run **`npm run verify:system`** before release; staging bbox (**S10e**) and printed QA routes (**S10f**) are the remaining human/ops gates.
+Phases **S0–S4** (guards), **S6–S8** (core), and **S7/S7b/S7c** are in place; **S5** manual QA + knip optional. **S8** coded tracks are complete — remaining discovery scale work is **R5 promotion** (ops) and optional metrics (**C19**); discovery execution archive = [`archive/system-refactor-plan-2026-10.md`](./archive/system-refactor-plan-2026-10.md). **Platform program (P0–P6):** §8.6 + [`platform-governance.json`](../scripts/governance/platform-governance.json). **S7** supersedes ad-hoc peek/detail gating in the SPA (**C16** mitigated). **S9** eng is complete; §8 manual QA overlaps **S10f**. **S10** engineering remediation closed Oct 2026 — run **`npm run verify:system`** before release; staging bbox (**S10e**) and printed QA routes (**S10f**) are the remaining human/ops gates.
 
 ### 8.4 Program CPC — Catalog & Publishing Coherence (**C26**)
 
@@ -763,7 +763,7 @@ Mark `[x]` in the PR that completes the item. **Gate:** `npm run verify:system:q
 - [x] `NAVIGATION.md` — FAB, `/profile/submissions` target, contributions redirect note
 - [x] `API_ROUTING.md` — target `/facilities`, `/places/catalog` (stubs marked **CPC**)
 - [x] `DOCS_INDEX.md` — CREATE_FLOW blurb
-- [x] `scripts/bounded-context-manifest.json` — **`facilities`** context stub (populate in CPC-2+)
+- [x] `scripts/governance/bounded-context-manifest.json` — **`facilities`** context stub (populate in CPC-2+)
 - [x] `npm run verify:docs`
 
 ---
@@ -989,7 +989,7 @@ Legacy shim (one release, no new imports): `placeRegistry.ts`. `placeCatalogApi.
 
 ### 8.6 Platform program (P0–P6) — CEO-approved Oct 2026
 
-**Purpose:** Whole-repo strategic refactor (scalability, performance, debt) **without losing context** between waves. **Engineering work is horizontal** (API registrar + `src/api/domains/*` + UI roots per §3.1) — JSON and gates track it; they do not replace code alignment. **CTO whole-system audit** (12 pillars, greenfield vs brownfield): `scripts/cto-audit-pillars.json` · baseline `npm run system:audit` → `scripts/system-audit-baseline.json`. **This section + machine JSON are the only living roadmap** — do not add `AUDIT_*`, `PLAN_*`, or parallel CTO markdown.
+**Purpose:** Whole-repo strategic refactor (scalability, performance, debt) **without losing context** between waves. **Engineering work is horizontal** (API registrar + `src/api/domains/*` + UI roots per §3.1) — JSON and gates track it; they do not replace code alignment. **CTO whole-system audit** (12 pillars, greenfield vs brownfield): `scripts/governance/cto-audit-pillars.json` · baseline `npm run system:audit` → `scripts/governance/system-audit-baseline.json`. **This section + machine JSON are the only living roadmap** — do not add `AUDIT_*`, `PLAN_*`, or parallel CTO markdown.
 
 #### 8.6.0 Authorization (CTO charter — 2026-10-17)
 
@@ -1009,12 +1009,12 @@ Board one-liner: *P4 thinned the API; **PCOH** (§8.8) finished UPL/BWL coherenc
 
 | Artifact | Role |
 |----------|------|
-| [`scripts/platform-governance.json`](../scripts/platform-governance.json) | Phases **P0–P6** + **P4b** ops · [`platform-migration-archive.json`](../scripts/platform-migration-archive.json) · [`platform-touchpoint-registry.json`](../scripts/platform-touchpoint-registry.json) |
+| [`scripts/governance/platform-governance.json`](../scripts/governance/platform-governance.json) | Phases **P0–P6** + **P4b** ops · [`platform-migration-archive.json`](../scripts/governance/platform-migration-archive.json) · [`platform-touchpoint-registry.json`](../scripts/governance/platform-touchpoint-registry.json) |
 | **`MIG-PLATFORM-COMPOSE-OPERATOR-2026`** | **Complete (P4b)** — compose kinds **activity · place · intent**; operator **`/operator/*`**; anti-regression **`migPlatformComposeOperatorProgramGuard`** |
-| **`MIG-PLATFORM-LAYER-SPINE`** | **Complete (P4b)** — **Publish · Discover · Join · Connect · Plan · Manage**; schedule [`scripts/platform-layer-spine-touchpoints.json`](../scripts/platform-layer-spine-touchpoints.json); gate **`verify:platform-layer-spine`** |
-| **`MIG-DISCOVER-RECOMMENDATIONS`** | **Complete (P4)** — `GET /discover/recommendations` (`surface=map\|crew`); shared `map-explore-recommendation-score`; [`scripts/discover-recommendations-touchpoints.json`](../scripts/discover-recommendations-touchpoints.json); gate **`verify:discover-recommendations`** |
-| [`scripts/repo-census-baseline.json`](../scripts/repo-census-baseline.json) | P0 inventory (`npm run repo:census`; knip issue count optional) |
-| [`scripts/bounded-context-manifest.json`](../scripts/bounded-context-manifest.json) | Context → API/FE roots (update per migration PR) |
+| **`MIG-PLATFORM-LAYER-SPINE`** | **Complete (P4b)** — **Publish · Discover · Join · Connect · Plan · Manage**; schedule [`scripts/governance/platform-layer-spine-touchpoints.json`](../scripts/governance/platform-layer-spine-touchpoints.json); gate **`verify:platform-layer-spine`** |
+| **`MIG-DISCOVER-RECOMMENDATIONS`** | **Complete (P4)** — `GET /discover/recommendations` (`surface=map\|crew`); shared `map-explore-recommendation-score`; [`scripts/governance/discover-recommendations-touchpoints.json`](../scripts/governance/discover-recommendations-touchpoints.json); gate **`verify:discover-recommendations`** |
+| [`scripts/governance/repo-census-baseline.json`](../scripts/governance/repo-census-baseline.json) | P0 inventory (`npm run repo:census`; knip issue count optional) |
+| [`scripts/governance/bounded-context-manifest.json`](../scripts/governance/bounded-context-manifest.json) | Context → API/FE roots (update per migration PR) |
 | §7 register | **C27** (docs) · **C28** (program spine) · close rows when migrations complete |
 
 **Gate every phase:** `npm run verify:system:quick` minimum; phase close → `npm run verify:system` + update this table + `platform-governance.json` status fields.
@@ -1023,7 +1023,7 @@ Board one-liner: *P4 thinned the API; **PCOH** (§8.8) finished UPL/BWL coherenc
 
 #### 8.6.2 Platform governance spine (GW-4)
 
-| File | Role |
+| File (`scripts/governance/`) | Role |
 |------|------|
 | **`platform-governance.json`** | Ops + phases + `authorization.statement` (sync `PRE_DEPLOY_CHECKLIST.md`), WIP cap |
 | **`platform-touchpoint-registry.json`** | Active `MIG-*` → `scheduleDoc` / verify gate |
@@ -1036,11 +1036,12 @@ Gate: **`npm run verify:platform-governance`**. Behavior stays in code + vitest 
 
 | Wave | Scope | Gate |
 |------|--------|------|
-| **GW-1** | Compact `platform-governance.json` ledger; remove `.cursor/plans`; drop normalize-archive shim | `governanceSurfaceGuard` |
+| **GW-1** | Compact migration ledger; remove `.cursor/plans`; drop normalize-archive shim — **complete** (ledger → GW-4 split) | `governanceSurfaceGuard` |
 | **GW-2** | Retire matching re-export shims (`wishlist-alerts`, `availability-hosted-match-notifications`) — **complete** | `platformLayerMatchingGuard` · `governanceSurfaceGuard` GW2-01 |
 | **GW-2b** | Roster strangler removed; FE **`@deprecated` re-export shims** (`activityPublicSeo`, detail header chrome, place header alias) — **complete** | `governanceSurfaceGuard` GW2-02 · GW2b-03 · `platformLayerPls5Guard` LAYER-19 |
 | **GW-3** | Spine orchestrators scorecard/API-only where `verify:domain:fe` already runs FE guards; `verify:system` runs domain **before** spines — **complete** | `governanceSurfaceGuard` GW3-01 · GW3-02 |
 | **GW-4** | Retire `platform-program.json` → **`platform-governance.json`** (ops/phases) · **`platform-migration-archive.json`** (closed MIG ledger) · **`platform-touchpoint-registry.json`** (active schedules) — **complete** | `governanceSurfaceGuard` GW4-01 · `verify:platform-governance` |
+| **GW-5** | **`scripts/` layout** — `governance/` · `verify/` · `lib/` · `ops/` · `dev/` · `archive/`; retire one-off root shims (`verify-platform-program`, `align-routing-imports`, `verify-hero-gutter`, …) — **complete** | `governanceSurfaceGuard` GW5-01 · GW5-02 · `scripts/README.md` |
 
 #### 8.6.1 Phases (outcomes)
 
@@ -1094,11 +1095,11 @@ Gate: **`npm run verify:platform-governance`**. Behavior stays in code + vitest 
 | **MIG-SCHEDULE-GUIDE** | P4b | Guide ladder + availability slots (capacity + modalities) | **Complete** |
 | **MIG-PLATFORM-LAYER-SPINE** | P4b | Six consumer layers + crew discover/join/connect/plan split (`platform-layers.ts`) | **Complete** — PLS-0–5 |
 
-**Platform layers (MIG-PLATFORM-LAYER-SPINE):** **Publish** (supply) · **Discover** (read catalogs/feeds) · **Join** (hosted activity commit only) · **Connect** (Friends, clubs, chat) · **Plan** (wishlist, personal hub) · **Manage** (host/operator after publish). Machine schedule: `scripts/platform-layer-spine-touchpoints.json`. Backend **matching** context (`apps/api/src/services/matching/*` — predicates + notify; import `services/matching/index` only) — **no** consumer `/matching` route; reads stay on **Discover** / **Plan** HTTP. Phases: `platform-layer-spine-touchpoints.json` → `decisions.matching`.
+**Platform layers (MIG-PLATFORM-LAYER-SPINE):** **Publish** (supply) · **Discover** (read catalogs/feeds) · **Join** (hosted activity commit only) · **Connect** (Friends, clubs, chat) · **Plan** (wishlist, personal hub) · **Manage** (host/operator after publish). Machine schedule: `scripts/governance/platform-layer-spine-touchpoints.json`. Backend **matching** context (`apps/api/src/services/matching/*` — predicates + notify; import `services/matching/index` only) — **no** consumer `/matching` route; reads stay on **Discover** / **Plan** HTTP. Phases: `platform-layer-spine-touchpoints.json` → `decisions.matching`.
 
 #### 8.7 Routing alignment (end-to-end — no redirect shims)
 
-**Machine map:** [`scripts/routing-canonical-map.json`](../scripts/routing-canonical-map.json) · **Gate:** `npm run verify:routing-canon` (strict enforcement after Phase 0).
+**Machine map:** [`scripts/governance/routing-canonical-map.json`](../scripts/governance/routing-canonical-map.json) · **Gate:** `npm run verify:routing-canon` (strict enforcement after Phase 0).
 
 | Phase | Migration | Delete (same PR as new canon) | Horizontal touch |
 |-------|-----------|-------------------------------|------------------|
@@ -1124,7 +1125,7 @@ Gate: **`npm run verify:platform-governance`**. Behavior stays in code + vitest 
 #### 8.6.4 P0 checklist (doc trim targets)
 
 - [x] `platform-governance.json` + `verify:platform-governance` in `verify:system` (incl. CTO line + WIP limit)
-- [x] DMCP Phase 0 — `scripts/authority-matrix.json` + `verify:authority-matrix` in `verify:system` (five capability axes → sole resolvers)
+- [x] DMCP Phase 0 — `scripts/governance/authority-matrix.json` + `verify:authority-matrix` in `verify:system` (five capability axes → sole resolvers)
 - [x] DMCP Phase 1 — `resolvePublishingWorkspaceAccess` (no `UserRole` broaden) + `publish.isPlatformStaff` on `GET /me/status`
 - [x] DMCP Phase 2 — `verify:catalog-truth` (single `GET /explore/map` catalog; find crew = `member_availability`; seeking/demand product paths guarded)
 - [x] DMCP Phase 3 — `src/list/browse/discoveryListRuntime.ts` + `verify:discovery-graph` (list→explore import budget ≤25; shell-only deep explore)
@@ -1144,7 +1145,7 @@ Gate: **`npm run verify:platform-governance`**. Behavior stays in code + vitest 
 
 ### 8.8 Coherence program 2026 (PCOH) — sole implementation schedule
 
-**Authority:** Pre-launch aggressive deduplication, strict **UPL / BWL separation**, one write path per entity. **Do not implement from** `docs/archive/**`, retired `docs/experiment/` plans, or superseded root stubs (`UAE_Trail_Homepage.md`, `design-tokens.md`, …) — **PCOH + `MIG-COH-*`** in [`platform-governance.json`](../scripts/platform-governance.json) drive work.
+**Authority:** Pre-launch aggressive deduplication, strict **UPL / BWL separation**, one write path per entity. **Do not implement from** `docs/archive/**`, retired `docs/experiment/` plans, or superseded root stubs (`UAE_Trail_Homepage.md`, `design-tokens.md`, …) — **PCOH + `MIG-COH-*`** in [`platform-governance.json`](../scripts/governance/platform-governance.json) drive work.
 
 **Code contracts (not prose docs):**
 
@@ -1305,7 +1306,7 @@ One seeking model · one join pipeline · one place HTTP prefix · one publishin
 | **W2** | Explore read model | Slim pin DTO default; overlay index; Mongo participant cap; catalog `-thumb.jpg` on local upload; `formatMediaCatalogUrl`; S10e bbox = ops promote |
 | **W3** | Program tail | Platform-admin TOTP when secret set; SSE per-user connection cap; P4b guards shipped — **S10f human QA** + **P5 staging SLO** + **participant_intent store removal** = ops/backfill gates |
 
-Track wave status in **`scripts/platform-governance.json`** (`MIG-ARCH-W0` + §8.9 table) — not new markdown plans.
+Track wave status in **`scripts/governance/platform-governance.json`** (`MIG-ARCH-W0` + §8.9 table) — not new markdown plans.
 
 #### Out of scope — do not propose or document as roadmap
 
@@ -1325,7 +1326,7 @@ One bounded context per PR: API registrar + `src/api/domains/*` + UI root + guar
 
 ### 8.10 Program **MIG-SCHEDULE-GUIDE** (retired)
 
-**Status:** **Complete** in [`platform-governance.json`](../scripts/platform-governance.json). Durable product truth lives in [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) (availability + guide ladder), [`CREATE_FLOW.md`](./CREATE_FLOW.md) (intent compose), and [`NAVIGATION.md`](./NAVIGATION.md) (unified calendar). Guards: `migScheduleGuideGuard`, `memberAvailabilityLineageGuard`.
+**Status:** **Complete** in [`platform-governance.json`](../scripts/governance/platform-governance.json). Durable product truth lives in [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) (availability + guide ladder), [`CREATE_FLOW.md`](./CREATE_FLOW.md) (intent compose), and [`NAVIGATION.md`](./NAVIGATION.md) (unified calendar). Guards: `migScheduleGuideGuard`, `memberAvailabilityLineageGuard`.
 
 ---
 
@@ -1335,7 +1336,7 @@ One bounded context per PR: API registrar + `src/api/domains/*` + UI root + guar
 2. Does it introduce a **second write path** for the same entity? If yes, stop and extend the existing service.
 3. Update **Tier 1** doc(s): `CREATE_FLOW`, `NAVIGATION`, `API_ROUTING`, or `MEMBER_MODEL` — not only experiment plans.
 4. **Program CPC** work: check off items in §8.4.6; run **`npm run verify:system`** (or `verify:system:quick` before push); explore/FAB also needs `test:explore-alignment`.
-5. **Platform program (P0–P6):** if touching a migration in [`platform-governance.json`](../scripts/platform-governance.json), update manifest roots + migration `status` in the same PR.
+5. **Platform program (P0–P6):** if touching a migration in [`platform-governance.json`](../scripts/governance/platform-governance.json), update manifest roots + migration `status` in the same PR.
 6. **Architecture defaults (§8.9):** do not add rejected stack items (Next.js rewrite, WebSockets for chat, microservices) to Tier-1 “future” lists.
 
 ---

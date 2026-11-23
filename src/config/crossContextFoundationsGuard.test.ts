@@ -6,7 +6,7 @@ const ROOT = process.cwd();
 const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
 
 const manifest = JSON.parse(
-  read('scripts/bounded-context-manifest.json')
+  read('scripts/governance/bounded-context-manifest.json')
 ) as { contexts: Array<{ id: string }> };
 
 /** §3.1 matrix rows (excludes cross-cut footnote row). */

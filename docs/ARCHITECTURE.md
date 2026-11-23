@@ -12,7 +12,7 @@ Monorepo with three layers:
 | API | `apps/api/` | Express + MongoDB |
 | Shared contracts | `packages/shared-types/` | DTOs consumed by both sides |
 
-**Documentation map:** [`DOCS_INDEX.md`](./DOCS_INDEX.md) · [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md). **Generated module map:** `npm run context:map` → `scripts/context-map.md` (from `bounded-context-manifest.json`). **Domain glossary:** [`DOMAIN.md`](./DOMAIN.md) (Place, Activity, Organisation). **Member / host tiers / roles:** [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) — single map for users, `HostStatusDTO`, and routes.
+**Documentation map:** [`DOCS_INDEX.md`](./DOCS_INDEX.md) · [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md). **Generated module map:** `npm run context:map` → `scripts/dev/context-map.md` (from `bounded-context-manifest.json`). **Domain glossary:** [`DOMAIN.md`](./DOMAIN.md) (Place, Activity, Organisation). **Member / host tiers / roles:** [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) — single map for users, `HostStatusDTO`, and routes.
 
 ## Backend (`apps/api`)
 

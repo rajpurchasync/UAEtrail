@@ -37,7 +37,7 @@ describe('catalogTruthGuard (DMCP Phase 2 · MIG-DISCO-REG)', () => {
   });
 
   it('CAT-02-04: authority matrix names availability for find crew', () => {
-    const matrix = JSON.parse(read('scripts/authority-matrix.json'));
+    const matrix = JSON.parse(read('scripts/governance/authority-matrix.json'));
     const ids = new Set((matrix.actions ?? []).map((a: { id: string }) => a.id));
     expect(ids.has('availability.write_open')).toBe(true);
     expect(ids.has('availability.map_pin')).toBe(true);
@@ -49,6 +49,6 @@ describe('catalogTruthGuard (DMCP Phase 2 · MIG-DISCO-REG)', () => {
 
   it('CAT-02-05: verify:catalog-truth wired in package scripts', () => {
     expect(read('package.json')).toMatch(/verify:catalog-truth/);
-    expect(existsSync(join(process.cwd(), 'scripts/verify-catalog-truth.mjs'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'scripts/verify/verify-catalog-truth.mjs'))).toBe(true);
   });
 });

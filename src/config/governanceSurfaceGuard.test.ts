@@ -10,7 +10,7 @@ const vitestPathsInScript = (rel: string) => {
   return [...new Set([...matches].map((m) => m[0]))];
 };
 
-const domainFeVitest = () => vitestPathsInScript('scripts/verify-domain-fe.mjs');
+const domainFeVitest = () => vitestPathsInScript('scripts/verify/verify-domain-fe.mjs');
 
 describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
   it('GW1-01: no Cursor agent plan markdown (schedule is manifest + touchpoints)', () => {
@@ -21,12 +21,12 @@ describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
   });
 
   it('GW1-02: people-vocabulary touchpoints omit planFile pointer', () => {
-    const raw = read('scripts/people-vocabulary-touchpoints.json');
+    const raw = read('scripts/governance/people-vocabulary-touchpoints.json');
     expect(raw).not.toMatch(/"planFile"/);
     expect(raw).not.toMatch(/\.cursor\/plans\//);
   });
 
-  it('GW1-03: no program-normalize-archive shim (use compact-platform-program)', () => {
+  it('GW1-03: no program-normalize-archive or compact-ledger shims', () => {
     expect(existsSync(join(ROOT, 'scripts/program-normalize-archive.mjs'))).toBe(false);
     expect(existsSync(join(ROOT, 'scripts/normalize-refactor-program-archive.mjs'))).toBe(false);
     expect(read('package.json')).not.toMatch(/program:normalize-archive/);
@@ -44,7 +44,7 @@ describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
     expect(existsSync(join(ROOT, 'apps/api/src/services/availability-hosted-match-notifications.ts'))).toBe(
       false
     );
-    const manifest = JSON.parse(read('scripts/bounded-context-manifest.json')) as {
+    const manifest = JSON.parse(read('scripts/governance/bounded-context-manifest.json')) as {
       contexts: { id: string; apiFiles?: string[] }[];
     };
     const matching = manifest.contexts.find((c) => c.id === 'matching');
@@ -64,11 +64,11 @@ describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
   it('GW3-01: DMCP spine runners do not re-list verify:domain:fe vitest files', () => {
     const domain = new Set(domainFeVitest());
     const spines = [
-      'scripts/verify-compose-spine.mjs',
-      'scripts/verify-participation-spine.mjs',
-      'scripts/verify-storefront-spine.mjs',
-      'scripts/verify-people-graph-plan.mjs',
-      'scripts/verify-release-ops.mjs',
+      'scripts/verify/verify-compose-spine.mjs',
+      'scripts/verify/verify-participation-spine.mjs',
+      'scripts/verify/verify-storefront-spine.mjs',
+      'scripts/verify/verify-people-graph-plan.mjs',
+      'scripts/verify/verify-release-ops.mjs',
     ];
     for (const spine of spines) {
       const overlap = vitestPathsInScript(spine).filter((p) => domain.has(p));
@@ -77,7 +77,7 @@ describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
   });
 
   it('GW3-02: verify:system runs domain before spine orchestrators', () => {
-    const order = read('scripts/verify-system-coherence.mjs');
+    const order = read('scripts/verify/verify-system-coherence.mjs');
     const domainAt = order.indexOf("npm run verify:domain");
     const composeAt = order.indexOf("npm run verify:compose-spine");
     expect(domainAt).toBeGreaterThan(-1);
@@ -85,8 +85,8 @@ describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
   });
 
   it('GW1-04: platform-governance has archivePolicy; no MIG-PROGRAM-ARCHIVE row', () => {
-    const governance = JSON.parse(read('scripts/platform-governance.json')) as { archivePolicy?: string };
-    const archive = JSON.parse(read('scripts/platform-migration-archive.json')) as {
+    const governance = JSON.parse(read('scripts/governance/platform-governance.json')) as { archivePolicy?: string };
+    const archive = JSON.parse(read('scripts/governance/platform-migration-archive.json')) as {
       migrations?: { id: string }[];
     };
     expect(governance.archivePolicy).toMatch(/touchpoint-registry/i);
@@ -94,11 +94,30 @@ describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
   });
 
   it('GW4-01: retired platform-program.json (GW-4 split spine)', () => {
-    expect(existsSync(join(ROOT, 'scripts/platform-governance.json'))).toBe(true);
-    expect(existsSync(join(ROOT, 'scripts/platform-migration-archive.json'))).toBe(true);
-    expect(existsSync(join(ROOT, 'scripts/platform-touchpoint-registry.json'))).toBe(true);
+    expect(existsSync(join(ROOT, 'scripts/governance/platform-governance.json'))).toBe(true);
+    expect(existsSync(join(ROOT, 'scripts/governance/platform-migration-archive.json'))).toBe(true);
+    expect(existsSync(join(ROOT, 'scripts/governance/platform-touchpoint-registry.json'))).toBe(true);
     expect(existsSync(join(ROOT, 'scripts/platform-program.json'))).toBe(false);
     expect(existsSync(join(ROOT, 'scripts/compact-platform-program.mjs'))).toBe(false);
     expect(existsSync(join(ROOT, 'scripts/verify-platform-program.mjs'))).toBe(false);
+  });
+
+  it('GW5-01: scripts/ subdirs (governance, verify, lib, ops, dev, archive)', () => {
+    for (const dir of ['governance', 'verify', 'lib', 'ops', 'dev', 'archive']) {
+      expect(existsSync(join(ROOT, 'scripts', dir)), `missing scripts/${dir}`).toBe(true);
+    }
+    expect(existsSync(join(ROOT, 'scripts/README.md'))).toBe(true);
+    expect(existsSync(join(ROOT, 'scripts/governance/bounded-context-manifest.json'))).toBe(true);
+    expect(existsSync(join(ROOT, 'scripts/verify/verify-system-coherence.mjs'))).toBe(true);
+  });
+
+  it('GW5-02: no verify runners or one-off shims at scripts/ root', () => {
+    const rootScripts = existsSync(join(ROOT, 'scripts'))
+      ? readdirSync(join(ROOT, 'scripts')).filter((f) => f.endsWith('.mjs') || f.endsWith('.json'))
+      : [];
+    expect(rootScripts, `move or delete: ${rootScripts.join(', ')}`).toEqual([]);
+    expect(existsSync(join(ROOT, 'scripts/verify-hero-gutter.mjs'))).toBe(false);
+    expect(existsSync(join(ROOT, 'scripts/align-routing-imports.mjs'))).toBe(false);
+    expect(existsSync(join(ROOT, 'scripts/gw5-restructure.mjs'))).toBe(false);
   });
 });

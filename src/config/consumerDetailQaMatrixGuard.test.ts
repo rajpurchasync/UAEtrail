@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { readAppRouteRegistry } from '../../scripts/readAppRouteRegistry.mjs';
+import { readAppRouteRegistry } from '../../scripts/dev/readAppRouteRegistry.mjs';
 
 const read = (relativePath: string) => readFileSync(join(process.cwd(), relativePath), 'utf8');
 
@@ -91,9 +91,9 @@ describe('consumerDetailQaMatrixGuard (plan §8 entity detail)', () => {
 
   it('automated guard tests referenced in §8.1 are in verify:domain bundle', () => {
     const verifyScript = [
-      read('scripts/verify-domain-canonicals.mjs'),
-      read('scripts/verify-domain-fe.mjs'),
-      read('scripts/verify-domain-api.mjs'),
+      read('scripts/verify/verify-domain-canonicals.mjs'),
+      read('scripts/verify/verify-domain-fe.mjs'),
+      read('scripts/verify/verify-domain-api.mjs'),
     ].join('\n');
     const missing: string[] = [];
     for (const { surface, automatedGuard } of ENTITY_DETAIL_QA_MATRIX) {

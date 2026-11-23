@@ -121,7 +121,7 @@ export APP_BASE_URLS="${APP_BASE_URLS:-http://localhost,http://localhost:5175}"
 export VITE_API_BASE_URL="${VITE_API_BASE_URL:-/api}"
 
 echo "[3/4] Verifying host versions and workspace dependencies..."
-node scripts/run-project-preflight.mjs
+node scripts/dev/run-project-preflight.mjs
 
 echo "[4/4] Starting project stack..."
-node scripts/run-project.mjs "$@"
+node scripts/dev/run-project.mjs "$@"

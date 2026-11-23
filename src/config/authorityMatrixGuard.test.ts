@@ -3,8 +3,8 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const ROOT = process.cwd();
-const matrixPath = join(ROOT, 'scripts/authority-matrix.json');
-const manifestPath = join(ROOT, 'scripts/bounded-context-manifest.json');
+const matrixPath = join(ROOT, 'scripts/governance/authority-matrix.json');
+const manifestPath = join(ROOT, 'scripts/governance/bounded-context-manifest.json');
 
 const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
 
@@ -28,8 +28,8 @@ const collectTs = (dirRel: string, opts?: { skipTests?: boolean }): string[] => 
 };
 
 describe('authorityMatrixGuard (DMCP Phase 0)', () => {
-  const matrix = JSON.parse(read('scripts/authority-matrix.json'));
-  const manifest = JSON.parse(read('scripts/bounded-context-manifest.json'));
+  const matrix = JSON.parse(read('scripts/governance/authority-matrix.json'));
+  const manifest = JSON.parse(read('scripts/governance/bounded-context-manifest.json'));
   const contextIds = new Set((manifest.contexts ?? []).map((c: { id: string }) => c.id));
 
   it('AUTH-00: matrix meets minimum action count', () => {
@@ -95,7 +95,7 @@ describe('authorityMatrixGuard (DMCP Phase 0)', () => {
   });
 
   it('AUTH-12: release ops spine wired (DMCP Phase 8)', () => {
-    const matrix = JSON.parse(read('scripts/authority-matrix.json'));
+    const matrix = JSON.parse(read('scripts/governance/authority-matrix.json'));
     expect(matrix.dmcpPhase).toBeGreaterThanOrEqual(8);
     expect(matrix.actions?.find((a: { id: string }) => a.id === 'ops.release_checklist')).toBeTruthy();
     expect(read('package.json')).toMatch(/verify:release-ops/);
@@ -103,26 +103,26 @@ describe('authorityMatrixGuard (DMCP Phase 0)', () => {
   });
 
   it('AUTH-13: DMCP eng program closed in matrix + program JSON', () => {
-    const matrix = JSON.parse(read('scripts/authority-matrix.json'));
+    const matrix = JSON.parse(read('scripts/governance/authority-matrix.json'));
     expect(matrix.dmcpStatus).toBe('complete');
     const choke = (matrix.readCompatChokePoints ?? []).find(
       (c: { id: string }) => c.id === 'people-crews-tab-inbound'
     );
     expect(choke?.module).toBe('src/routing/productUrlInbound.ts');
-    const program = JSON.parse(read('scripts/platform-governance.json'));
+    const program = JSON.parse(read('scripts/governance/platform-governance.json'));
     expect(program.authorization?.statement).toMatch(/DMCP eng verify complete/);
   });
 
   it('AUTH-11: people graph uses Team wire, Communities migration tracked (DMCP Phase 7)', () => {
-    const matrix = JSON.parse(read('scripts/authority-matrix.json'));
+    const matrix = JSON.parse(read('scripts/governance/authority-matrix.json'));
     expect(matrix.dmcpPhase).toBeGreaterThanOrEqual(7);
     const byId = new Map((matrix.actions ?? []).map((a: { id: string }) => [a.id, a]));
     expect(byId.get('social.group_create')?.note).toMatch(/Team/);
     expect(byId.get('social.buddy_request')?.note).toMatch(/Friends/);
     expect(byId.get('people.plan_hub')?.note).toMatch(/No Plan aggregate/);
-    const program = JSON.parse(read('scripts/platform-governance.json'));
+    const program = JSON.parse(read('scripts/governance/platform-governance.json'));
     expect(
-      JSON.parse(read('scripts/platform-migration-archive.json')).migrations?.find(
+      JSON.parse(read('scripts/governance/platform-migration-archive.json')).migrations?.find(
         (m: { id: string }) => m.id === 'MIG-COMMUNITY-DISCOVER'
       )?.status
     ).toBe(
@@ -133,7 +133,7 @@ describe('authorityMatrixGuard (DMCP Phase 0)', () => {
   });
 
   it('AUTH-10: storefront kinds and Pro path stay matrix-resolved (DMCP Phase 6)', () => {
-    const matrix = JSON.parse(read('scripts/authority-matrix.json'));
+    const matrix = JSON.parse(read('scripts/governance/authority-matrix.json'));
     expect(matrix.dmcpPhase).toBeGreaterThanOrEqual(6);
     const byId = new Map((matrix.actions ?? []).map((a: { id: string }) => [a.id, a]));
     expect(byId.get('client.pro_membership')?.resolver?.module).toBe('src/config/memberRoutes.ts');
@@ -144,7 +144,7 @@ describe('authorityMatrixGuard (DMCP Phase 0)', () => {
   });
 
   it('AUTH-09: participation join clients are sole FE mutators (DMCP Phase 5)', () => {
-    const matrix = JSON.parse(read('scripts/authority-matrix.json'));
+    const matrix = JSON.parse(read('scripts/governance/authority-matrix.json'));
     expect(matrix.dmcpPhase).toBeGreaterThanOrEqual(5);
     const byId = new Map((matrix.actions ?? []).map((a: { id: string }) => [a.id, a]));
     expect(byId.get('client.join_api')?.resolver?.module).toBe('src/hooks/activityJoinClientApi.ts');
@@ -157,7 +157,7 @@ describe('authorityMatrixGuard (DMCP Phase 0)', () => {
   });
 
   it('AUTH-08: find crew catalog rows name availability (DMCP Phase 2)', () => {
-    const matrix = JSON.parse(read('scripts/authority-matrix.json'));
+    const matrix = JSON.parse(read('scripts/governance/authority-matrix.json'));
     const byId = new Map((matrix.actions ?? []).map((a: { id: string }) => [a.id, a]));
     expect(byId.get('availability.map_pin')?.contextId).toBe('availability');
     expect(byId.get('discover.catalog_assembler')?.resolver?.module).toMatch(
@@ -170,6 +170,6 @@ describe('authorityMatrixGuard (DMCP Phase 0)', () => {
   it('AUTH-05: matrix file is wired to verifier script', () => {
     expect(existsSync(matrixPath)).toBe(true);
     expect(read('package.json')).toMatch(/verify:authority-matrix/);
-    expect(read('scripts/verify-authority-matrix.mjs')).toMatch(/authority-matrix\.json/);
+    expect(read('scripts/verify/verify-authority-matrix.mjs')).toMatch(/authority-matrix\.json/);
   });
 });

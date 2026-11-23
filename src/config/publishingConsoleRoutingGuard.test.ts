@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readAppRouteRegistry } from '../../scripts/readAppRouteRegistry.mjs';
+import { readAppRouteRegistry } from '../../scripts/dev/readAppRouteRegistry.mjs';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 

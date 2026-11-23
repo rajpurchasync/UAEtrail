@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig, loadEnv } from 'vite';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
-import { devQrPlugin } from './scripts/vite-plugin-dev-qr.mjs';
+import { devQrPlugin } from './scripts/dev/vite-plugin-dev-qr.mjs';
 
 const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 

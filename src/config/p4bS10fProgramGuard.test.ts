@@ -27,10 +27,10 @@ describe('p4bS10fProgramGuard (P4b S10f ops)', () => {
   });
 
   it('S10F-OPS-02: staging ops runner and manual QA script document S10f', () => {
-    const ops = read('scripts/s10f-staging-ops.mjs');
+    const ops = read('scripts/ops/s10f-staging-ops.mjs');
     expect(ops).toMatch(/case 'checklist'/);
     expect(ops).toMatch(/consumer-detail:qa-routes/);
-    const routes = read('scripts/consumer-detail-manual-qa-routes.mjs');
+    const routes = read('scripts/ops/consumer-detail-manual-qa-routes.mjs');
     expect(routes).toMatch(/consumerDetailQaMatrixGuard/);
     expect(routes).toMatch(/S10f/);
     const preDeploy = read('docs/PRE_DEPLOY_CHECKLIST.md');
@@ -39,7 +39,7 @@ describe('p4bS10fProgramGuard (P4b S10f ops)', () => {
   });
 
   it('S10F-OPS-03: activity-detail migration complete and core guard files exist', () => {
-    const mig = JSON.parse(read('scripts/platform-migration-archive.json')).migrations?.find(
+    const mig = JSON.parse(read('scripts/governance/platform-migration-archive.json')).migrations?.find(
       (m: { id: string; status: string }) => m.id === 'MIG-SURFACE-ACTIVITY-DETAIL'
     );
     expect(mig?.status).toBe('complete');
@@ -49,7 +49,7 @@ describe('p4bS10fProgramGuard (P4b S10f ops)', () => {
   });
 
   it('S10F-OPS-04: S10f guards stay in verify:domain:fe vitest bundle', () => {
-    const verifyFe = read('scripts/verify-domain-fe.mjs');
+    const verifyFe = read('scripts/verify/verify-domain-fe.mjs');
     expect(verifyFe).toMatch(/p4bS10fProgramGuard\.test\.ts/);
     expect(verifyFe).toMatch(/activityDetailS10fBridgeGuard\.test\.ts/);
     expect(verifyFe).toMatch(/consumerDetailQaMatrixGuard\.test\.ts/);

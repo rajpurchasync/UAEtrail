@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 const ROOT = process.cwd();
 const manifest = JSON.parse(
-  readFileSync(join(ROOT, 'scripts/bounded-context-manifest.json'), 'utf8')
+  readFileSync(join(ROOT, 'scripts/governance/bounded-context-manifest.json'), 'utf8')
 ) as {
   contexts: Array<{
     id: string;

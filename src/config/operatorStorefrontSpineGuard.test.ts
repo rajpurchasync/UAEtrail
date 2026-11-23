@@ -16,7 +16,7 @@ describe('operatorStorefrontSpineGuard (DMCP Phase 6)', () => {
   it('STOREFRONT-SPINE-02: Pro funnel uses PRO_MEMBERSHIP_PATH (become-host inbound only)', () => {
     expect(read('src/config/memberRoutes.ts')).toMatch(/PRO_MEMBERSHIP_PATH/);
     expect(read('src/routing/inboundBookmarkRedirects.tsx')).toMatch(/PRO_MEMBERSHIP_PATH/);
-    expect(read('scripts/authority-matrix.json')).toMatch(/consumer-become-host/);
+    expect(read('scripts/governance/authority-matrix.json')).toMatch(/consumer-become-host/);
     expect(read('src/member/hostMemberGuard.test.ts')).toMatch(/become-host/);
   });
 
@@ -29,7 +29,7 @@ describe('operatorStorefrontSpineGuard (DMCP Phase 6)', () => {
   it('STOREFRONT-SPINE-04: shop and agency public detail use client facades', () => {
     expect(read('src/config/detailSurfaceDataLineageGuard.test.ts')).toMatch(/shopPublicClientApi/);
     expect(read('src/config/detailSurfaceDataLineageGuard.test.ts')).toMatch(/organisationConsoleApi/);
-    const matrix = JSON.parse(read('scripts/authority-matrix.json'));
+    const matrix = JSON.parse(read('scripts/governance/authority-matrix.json'));
     const byId = new Map((matrix.actions ?? []).map((a: { id: string }) => [a.id, a]));
     expect(byId.get('shop.public_profile')?.axis).toBe('C_STOREFRONT');
     expect(byId.get('publish.as_tenant')?.resolver?.module).toMatch(/publishing-profile-kind/);
@@ -44,8 +44,8 @@ describe('operatorStorefrontSpineGuard (DMCP Phase 6)', () => {
 
   it('STOREFRONT-SPINE-06: verify:storefront-spine wired (DMCP Phase 6)', () => {
     expect(read('package.json')).toMatch(/verify:storefront-spine/);
-    expect(existsSync(join(process.cwd(), 'scripts/verify-storefront-spine.mjs'))).toBe(true);
-    const matrix = JSON.parse(read('scripts/authority-matrix.json'));
+    expect(existsSync(join(process.cwd(), 'scripts/verify/verify-storefront-spine.mjs'))).toBe(true);
+    const matrix = JSON.parse(read('scripts/governance/authority-matrix.json'));
     expect(matrix.dmcpPhase).toBeGreaterThanOrEqual(6);
   });
 });

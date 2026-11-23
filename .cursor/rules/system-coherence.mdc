@@ -5,7 +5,7 @@ alwaysApply: true
 
 # System coherence (code-first, breadth across contexts)
 
-**Truth order:** `packages/shared-types` wire-lexicon · `scripts/bounded-context-manifest.json` · **guards/tests** (`crossContextFoundationsGuard`, `bounded-context-alignment`, domain contracts) · **running code** (API registrars, `src/api/domains/*`, services) · Tier-1 markdown **last** (factual deltas only).
+**Truth order:** `packages/shared-types` wire-lexicon · `scripts/governance/bounded-context-manifest.json` · **guards/tests** (`crossContextFoundationsGuard`, `bounded-context-alignment`, domain contracts) · **running code** (API registrars, `src/api/domains/*`, services) · Tier-1 markdown **last** (factual deltas only).
 
 **Orientation (not specs):** `docs/SYSTEM_COHERENCE.md` §3 + §3.0 · `docs/DOMAIN_CANONICALS.md` · `docs/DOCS_GOVERNANCE.md` (closed Tier-1 — **no new canonical markdown**).
 

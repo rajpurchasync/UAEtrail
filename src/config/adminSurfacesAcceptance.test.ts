@@ -93,7 +93,7 @@ describe('adminSurfacesAcceptance (S13-W9)', () => {
   });
 
   it('W9-05: bounded-context manifest lists all admin pages (C25)', () => {
-    const manifest = JSON.parse(read('scripts/bounded-context-manifest.json'));
+    const manifest = JSON.parse(read('scripts/governance/bounded-context-manifest.json'));
     const ops = manifest.contexts.find((c: { id: string }) => c.id === 'platform_ops');
     expect(ops).toBeTruthy();
     const feRoots: string[] = ops.feRoots;

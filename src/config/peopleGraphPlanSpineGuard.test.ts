@@ -27,7 +27,7 @@ describe('peopleGraphPlanSpineGuard (DMCP Phase 7)', () => {
     expect(canon).toMatch(/social_groups/);
     expect(canon).toMatch(/Do not.*Teams.*social groups/i);
     expect(read('docs/MEMBER_MODEL.md')).toMatch(/PublishingProfileKind.*`community`/);
-    const archive = JSON.parse(read('scripts/platform-migration-archive.json'));
+    const archive = JSON.parse(read('scripts/governance/platform-migration-archive.json'));
     const mig = archive.migrations?.find((m: { id: string }) => m.id === 'MIG-COMMUNITY-DISCOVER');
     expect(mig?.status).toBe('complete');
   });
@@ -54,7 +54,7 @@ describe('peopleGraphPlanSpineGuard (DMCP Phase 7)', () => {
 
   it('PEOPLE-SPINE-05: Friends + Teams client spine (groupsApi; buddy wire only)', () => {
     expect(read('src/api/domains/messaging.ts')).toMatch(/groupsApi/);
-    const matrix = JSON.parse(read('scripts/authority-matrix.json'));
+    const matrix = JSON.parse(read('scripts/governance/authority-matrix.json'));
     const byId = new Map((matrix.actions ?? []).map((a: { id: string }) => [a.id, a]));
     expect(byId.get('social.group_create')?.label).toMatch(/team/i);
     expect(byId.get('social.buddy_request')?.note).toMatch(/Friends/);
@@ -63,13 +63,13 @@ describe('peopleGraphPlanSpineGuard (DMCP Phase 7)', () => {
 
   it('PEOPLE-SPINE-06: verify:people-graph-plan wired', () => {
     expect(read('package.json')).toMatch(/verify:people-graph-plan/);
-    expect(existsSync(join(process.cwd(), 'scripts/verify-people-graph-plan.mjs'))).toBe(true);
-    const matrix = JSON.parse(read('scripts/authority-matrix.json'));
+    expect(existsSync(join(process.cwd(), 'scripts/verify/verify-people-graph-plan.mjs'))).toBe(true);
+    const matrix = JSON.parse(read('scripts/governance/authority-matrix.json'));
     expect(matrix.dmcpPhase).toBeGreaterThanOrEqual(7);
   });
 
   it('PEOPLE-SPINE-07: crews tab inbound choke documented in authority matrix', () => {
-    const matrix = JSON.parse(read('scripts/authority-matrix.json'));
+    const matrix = JSON.parse(read('scripts/governance/authority-matrix.json'));
     const choke = (matrix.readCompatChokePoints ?? []).find(
       (c: { id: string }) => c.id === 'people-crews-tab-inbound'
     );

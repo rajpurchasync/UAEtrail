@@ -1,6 +1,6 @@
 /**
  * Product platform layers — Publish · Discover · Join · Connect · Plan · Manage.
- * Schedule: `scripts/platform-layer-spine-touchpoints.json` (MIG-PLATFORM-LAYER-SPINE).
+ * Schedule: `scripts/governance/platform-layer-spine-touchpoints.json` (MIG-PLATFORM-LAYER-SPINE).
  * UI copy: `src/content/upl-glossary.ts` · wire: `wire-lexicon.ts`.
  */
 

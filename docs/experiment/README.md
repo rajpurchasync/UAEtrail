@@ -1,6 +1,6 @@
 # Experiment folder (retired)
 
-**Do not add plan files here.** The sole schedule is [`SYSTEM_COHERENCE.md`](../SYSTEM_COHERENCE.md) **§8** + [`scripts/platform-governance.json`](../../scripts/platform-governance.json).
+**Do not add plan files here.** The sole schedule is [`SYSTEM_COHERENCE.md`](../SYSTEM_COHERENCE.md) **§8** + [`scripts/governance/platform-governance.json`](../../scripts/governance/platform-governance.json).
 
 | Need | Read |
 |------|------|

@@ -61,7 +61,7 @@ describe('doc coherence (Tier 1)', () => {
   });
 
   it('context map generator is wired (code-first onboarding)', () => {
-    expect(existsSync(join(process.cwd(), 'scripts/context-map.mjs'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'scripts/dev/context-map.mjs'))).toBe(true);
     const pkg = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8')) as {
       scripts?: Record<string, string>;
     };
@@ -126,7 +126,7 @@ describe('doc coherence (Tier 1)', () => {
     const system = readFileSync(join(DOCS, 'SYSTEM_COHERENCE.md'), 'utf8');
     expect(system).toMatch(/#### 8\.7 Routing alignment/);
     expect(system).toMatch(/MIG-ROUTING-CANON-P1/);
-    expect(existsSync(join(process.cwd(), 'scripts/routing-canonical-map.json'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'scripts/governance/routing-canonical-map.json'))).toBe(true);
   });
 
   it('experiment folder has README only (no competing plan markdown)', () => {
@@ -138,11 +138,11 @@ describe('doc coherence (Tier 1)', () => {
   });
 
   it('PCOH program spine is machine JSON (narrative sync: npm run verify:platform-governance)', () => {
-    const governancePath = join(process.cwd(), 'scripts/platform-governance.json');
+    const governancePath = join(process.cwd(), 'scripts/governance/platform-governance.json');
     expect(existsSync(governancePath)).toBe(true);
     expect(existsSync(join(process.cwd(), 'scripts/platform-program.json'))).toBe(false);
     const governance = JSON.parse(readFileSync(governancePath, 'utf8'));
-    const archive = JSON.parse(readFileSync(join(process.cwd(), 'scripts/platform-migration-archive.json'), 'utf8'));
+    const archive = JSON.parse(readFileSync(join(process.cwd(), 'scripts/governance/platform-migration-archive.json'), 'utf8'));
     expect(governance.authorization?.statement).toMatch(/PCOH|coherence program/i);
     expect(governance.authorization?.authorizedPhases).toContain('PCOH');
     expect(governance.capacity?.maxInProgressMigrations).toBe(2);
@@ -202,7 +202,7 @@ describe('doc coherence (Tier 1)', () => {
   });
 
   it('consumer detail QA gate is scripted (not experiment plan markdown)', () => {
-    expect(existsSync(join(process.cwd(), 'scripts/consumer-detail-manual-qa-routes.mjs'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'scripts/ops/consumer-detail-manual-qa-routes.mjs'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/config/consumerDetailQaMatrixGuard.test.ts'))).toBe(
       true
     );

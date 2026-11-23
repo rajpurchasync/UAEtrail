@@ -89,7 +89,7 @@ Home may **mention** host-approved joins and the map — that is the acquisition
 - **Hero images:** Art-directed `<picture>` at 768px; tiny LQIP optional per slide; first slide uses `landing/hero/hero-summit-hiker-*` (OG JPEG/WebP at repo root kept for meta). Neighbor slides prefetch after LCP; carousel crossfade uses `--hero-crossfade-*` in `home-tokens.css`.
 - **Fonts:** Self-hosted Plus Jakarta (`src/styles/fonts.css`) — no Google Fonts CDN.
 - **Dev:** Service worker is unregistered on localhost; production PWA uses `public/sw.js` (localhost fetch passthrough).
-- **Assets:** `npm run heroes:optimize` / `heroes:lqip` after banner imports (`scripts/optimize-hero-images.mjs`, `scripts/generate-hero-lqips.mjs`).
+- **Assets:** `npm run heroes:optimize` / `heroes:lqip` after banner imports (`scripts/dev/optimize-hero-images.mjs`, `scripts/dev/generate-hero-lqips.mjs`).
 
 ## Hero (v2 — current)
 

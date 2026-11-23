@@ -164,7 +164,7 @@ describe('MIG-SCHEDULE-GUIDE guards', () => {
     const fixed = readFileSync(join(ROOT, 'apps/api/scripts/seed-demo-availability-fixed.ts'), 'utf8');
     expect(fixed).toMatch(/modalities: projection\.modalities/);
     const archive = JSON.parse(
-      readFileSync(join(ROOT, 'scripts/platform-migration-archive.json'), 'utf8')
+      readFileSync(join(ROOT, 'scripts/governance/platform-migration-archive.json'), 'utf8')
     ) as {
       migrations: { id: string; status: string }[];
     };

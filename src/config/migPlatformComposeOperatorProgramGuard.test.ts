@@ -11,7 +11,7 @@ const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
  */
 describe('migPlatformComposeOperatorProgramGuard (compose + operator program)', () => {
   it('PCO-01: migration registered complete on P4b', () => {
-    const registry = JSON.parse(read('scripts/platform-touchpoint-registry.json')) as {
+    const registry = JSON.parse(read('scripts/governance/platform-touchpoint-registry.json')) as {
       programs?: Array<{ programId: string; status: string; phase?: string; scheduleDoc: string }>;
     };
     const row = registry.programs?.find((m) => m.programId === 'MIG-PLATFORM-COMPOSE-OPERATOR-2026');
@@ -70,7 +70,7 @@ describe('migPlatformComposeOperatorProgramGuard (compose + operator program)', 
   });
 
   it('PCO-05b: manual QA script includes compose + operator + crews routes', () => {
-    const qa = read('scripts/consumer-detail-manual-qa-routes.mjs');
+    const qa = read('scripts/ops/consumer-detail-manual-qa-routes.mjs');
     expect(qa).toMatch(/compose=activity/);
     expect(qa).toMatch(/compose=intent:open/);
     expect(qa).toMatch(/\/operator\/overview/);
@@ -78,8 +78,8 @@ describe('migPlatformComposeOperatorProgramGuard (compose + operator program)', 
   });
 
   it('PCO-05: compose program guard rolls up in verify:domain:fe (GW-3)', () => {
-    expect(read('scripts/verify-compose-spine.mjs')).toMatch(/verify:domain:fe/);
-    expect(read('scripts/verify-domain-fe.mjs')).toMatch(/migPlatformComposeOperatorProgramGuard\.test\.ts/);
+    expect(read('scripts/verify/verify-compose-spine.mjs')).toMatch(/verify:domain:fe/);
+    expect(read('scripts/verify/verify-domain-fe.mjs')).toMatch(/migPlatformComposeOperatorProgramGuard\.test\.ts/);
   });
 
   it('PCO-06: SYSTEM_COHERENCE references program id', () => {
@@ -125,7 +125,7 @@ describe('migPlatformComposeOperatorProgramGuard (compose + operator program)', 
     expect(wire).toMatch(/activity:\$\{route\.kind\}/);
     expect(wire).toMatch(/intent:open/);
     expect(wire).not.toMatch(/return `host:/);
-    expect(read('scripts/authority-matrix.json')).toMatch(/compose.emit_activity/);
+    expect(read('scripts/governance/authority-matrix.json')).toMatch(/compose.emit_activity/);
   });
 
   it('PCO-14: desktop host-mode nav retired — Explore primary for all roles', () => {

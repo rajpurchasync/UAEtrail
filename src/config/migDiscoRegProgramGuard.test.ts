@@ -26,7 +26,7 @@ describe('migDiscoRegProgramGuard (MIG-DISCO-REG ops)', () => {
   });
 
   it('DISCO-REG-02: staging ops runner documents runbook steps', () => {
-    const ops = read('scripts/mig-disco-reg-staging-ops.mjs');
+    const ops = read('scripts/ops/mig-disco-reg-staging-ops.mjs');
     expect(ops).toMatch(/migrate-seeking-to-availability/);
     expect(ops).toMatch(/seeking:deploy-gate/);
     expect(ops).toMatch(/case 'checklist'/);
@@ -39,18 +39,18 @@ describe('migDiscoRegProgramGuard (MIG-DISCO-REG ops)', () => {
     expect(existsSync(join(ROOT, 'apps/api/scripts/migrate-seeking-to-availability.ts'))).toBe(true);
     const apiPkg = JSON.parse(read('apps/api/package.json')) as { scripts?: Record<string, string> };
     expect(apiPkg.scripts?.['migrate-seeking-to-availability']).toBeTruthy();
-    const program = JSON.parse(read('scripts/platform-governance.json')) as {
+    const program = JSON.parse(read('scripts/governance/platform-governance.json')) as {
       migrations?: { id: string }[];
     };
     expect(
-      JSON.parse(read('scripts/platform-migration-archive.json')).migrations?.some(
+      JSON.parse(read('scripts/governance/platform-migration-archive.json')).migrations?.some(
         (m: { id: string }) => m.id === 'MIG-DISCO-REG'
       )
     ).toBe(true);
   });
 
   it('DISCO-REG-04: seek residue API guards stay in verify:domain:api', () => {
-    const verifyApi = read('scripts/verify-domain-api.mjs');
+    const verifyApi = read('scripts/verify/verify-domain-api.mjs');
     expect(verifyApi).toMatch(/participant-intent-residue-guard\.test\.ts/);
     expect(verifyApi).toMatch(/explore-seeking-activities-contract\.test\.ts/);
     expect(verifyApi).toMatch(/seeking-storage-ops-contract\.test\.ts/);

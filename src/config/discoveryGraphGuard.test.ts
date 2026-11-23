@@ -40,7 +40,7 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
   });
 
   it('DISC-03-04: import audit budget enforced', () => {
-    const audit = JSON.parse(read('scripts/discovery-import-audit.json'));
+    const audit = JSON.parse(read('scripts/governance/discovery-import-audit.json'));
     const max = audit.limits?.maxListExploreImports ?? 25;
     const count = audit.listExploreImports ?? audit.matrix?.['src/list']?.explore ?? 999;
     expect(count).toBeLessThanOrEqual(max);
@@ -73,6 +73,6 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
 
   it('DISC-03-05: verify:discovery-graph wired', () => {
     expect(read('package.json')).toMatch(/verify:discovery-graph/);
-    expect(existsSync(join(process.cwd(), 'scripts/verify-discovery-graph.mjs'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'scripts/verify/verify-discovery-graph.mjs'))).toBe(true);
   });
 });

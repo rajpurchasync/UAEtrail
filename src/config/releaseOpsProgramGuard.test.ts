@@ -23,7 +23,7 @@ const PROGRAM_GUARDS = [
 ] as const;
 
 /**
- * @see scripts/release-staging-ops.mjs · refactor-program.json authorization.statement
+ * @see scripts/ops/release-staging-ops.mjs · platform-governance.json authorization.statement
  */
 describe('releaseOpsProgramGuard (staging release ops spine)', () => {
   it('RELEASE-OPS-01: unified release checklist and per-gate ops scripts exist', () => {
@@ -31,11 +31,11 @@ describe('releaseOpsProgramGuard (staging release ops spine)', () => {
     const missing = RELEASE_SCRIPTS.filter((id) => !pkg.scripts?.[id]);
     expect(missing).toEqual([]);
     expect(pkg.scripts?.['release:ops:checklist']).toMatch(/release-staging-ops/);
-    expect(existsSync(join(ROOT, 'scripts/release-staging-ops.mjs'))).toBe(true);
+    expect(existsSync(join(ROOT, 'scripts/ops/release-staging-ops.mjs'))).toBe(true);
   });
 
   it('RELEASE-OPS-02: release runner delegates to S10f and MIG-DISCO-REG checklists', () => {
-    const ops = read('scripts/release-staging-ops.mjs');
+    const ops = read('scripts/ops/release-staging-ops.mjs');
     expect(ops).toMatch(/case 'checklist'/);
     expect(ops).toMatch(/s10f:ops:checklist/);
     expect(ops).toMatch(/mig-disco-reg:ops:checklist/);
@@ -48,7 +48,7 @@ describe('releaseOpsProgramGuard (staging release ops spine)', () => {
     expect(preDeploy).toMatch(/s10e:staging-checklist/);
     expect(preDeploy).toMatch(/s10f:ops:print-routes/);
     expect(preDeploy).toMatch(/mig-disco-reg:ops:preflight/);
-    const program = JSON.parse(read('scripts/platform-governance.json')) as {
+    const program = JSON.parse(read('scripts/governance/platform-governance.json')) as {
       authorization?: { statement?: string };
     };
     const statement = program.authorization?.statement ?? '';
@@ -58,7 +58,7 @@ describe('releaseOpsProgramGuard (staging release ops spine)', () => {
   });
 
   it('RELEASE-OPS-04: program guards stay in verify:domain:fe bundle', () => {
-    const verifyFe = read('scripts/verify-domain-fe.mjs');
+    const verifyFe = read('scripts/verify/verify-domain-fe.mjs');
     const missing = PROGRAM_GUARDS.filter((g) => !verifyFe.includes(g));
     expect(missing).toEqual([]);
   });

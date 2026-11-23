@@ -2,7 +2,7 @@
 
 **Start here.** Tier-1 is a **closed set** — see [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md) (do not add new canonical docs; update the file for your topic).
 
-**Checks:** `npm run verify:system` · **Manifest:** `scripts/bounded-context-manifest.json` · **Generated map:** `npm run context:map` → `scripts/context-map.md` · **Program / ops:** [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) **§8.6** (eng migrations closed; staging gates in [`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md)). UPL: `src/content/upl-glossary.ts` · BWL: `packages/shared-types/src/wire-lexicon.ts`. Do not implement from `docs/archive/**` or experiment plan bodies.
+**Checks:** `npm run verify:system` · **Manifest:** `scripts/governance/bounded-context-manifest.json` · **Generated map:** `npm run context:map` → `scripts/dev/context-map.md` · **Program / ops:** [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) **§8.6** (eng migrations closed; staging gates in [`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md)). UPL: `src/content/upl-glossary.ts` · BWL: `packages/shared-types/src/wire-lexicon.ts`. Do not implement from `docs/archive/**` or experiment plan bodies.
 
 ---
 

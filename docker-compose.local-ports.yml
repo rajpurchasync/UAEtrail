@@ -1,5 +1,5 @@
 # Local workstation alias: http://localhost (port 80) → same frontend nginx.
-# Applied automatically by scripts/run-project.mjs on Windows; optional elsewhere via COMPOSE_FILE.
+# Applied automatically by scripts/dev/run-project.mjs on Windows; optional elsewhere via COMPOSE_FILE.
 services:
   frontend:
     ports:

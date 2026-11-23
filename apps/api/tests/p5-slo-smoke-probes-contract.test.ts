@@ -3,9 +3,9 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const ROOT = join(process.cwd(), '..', '..');
-const SMOKE_PATH = join(ROOT, 'scripts/p5-slo-smoke.mjs');
-const ROUTES_PATH = join(ROOT, 'scripts/system-audit-routes.json');
-const PROGRAM_PATH = join(ROOT, 'scripts/platform-governance.json');
+const SMOKE_PATH = join(ROOT, 'scripts/ops/p5-slo-smoke.mjs');
+const ROUTES_PATH = join(ROOT, 'scripts/governance/system-audit-routes.json');
+const PROGRAM_PATH = join(ROOT, 'scripts/governance/platform-governance.json');
 const APP_PATH = join(ROOT, 'apps/api/src/app.ts');
 const AUTH_ROUTES_PATH = join(ROOT, 'apps/api/src/routes/auth.ts');
 const PUBLIC_ACTIVITY_PATH = join(
@@ -20,7 +20,7 @@ const stripApiQuery = (rawPath: string): string => {
 
 /**
  * P5 smoke probes must stay aligned with mounted API routes.
- * @see MIG-P5-SLO-SMOKE · scripts/p5-slo-smoke.mjs
+ * @see MIG-P5-SLO-SMOKE · scripts/ops/p5-slo-smoke.mjs
  */
 describe('P5 SLO smoke probes contract (MIG-P5-SLO-SMOKE)', () => {
   const smoke = readFileSync(SMOKE_PATH, 'utf8');

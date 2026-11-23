@@ -60,7 +60,7 @@ describe('participationPresentationGuard (MIG-SURFACE-ACTIVITY-DETAIL)', () => {
   });
 
   it('PART-PRES-04: peek↔detail parity tests stay in domain verify', () => {
-    const verify = read('scripts/verify-domain-fe.mjs');
+    const verify = read('scripts/verify/verify-domain-fe.mjs');
     expect(verify).toMatch(/mapDetailEngagementParity\.test\.ts/);
     expect(verify).toMatch(/listMapPeekEngagementParity\.test\.ts/);
     expect(verify).toMatch(/resolveActivityPresentation\.test\.ts/);
@@ -96,6 +96,6 @@ describe('participationPresentationGuard (MIG-SURFACE-ACTIVITY-DETAIL)', () => {
   it('PART-PRES-08: retired seeking detail is read-only archive (AD-SEEK-01)', () => {
     expect(read('src/pages/ActivityDetail.tsx')).toMatch(/activityDetailIsRetiredSeekingPost/);
     expect(read('src/activity/retiredSeekingActivityDetail.ts')).toMatch(/RETIRED_SEEKING_ACTIVITY_DETAIL_NOTICE/);
-    expect(read('scripts/consumer-detail-manual-qa-routes.mjs')).toMatch(/retired|Archived find post/i);
+    expect(read('scripts/ops/consumer-detail-manual-qa-routes.mjs')).toMatch(/retired|Archived find post/i);
   });
 });

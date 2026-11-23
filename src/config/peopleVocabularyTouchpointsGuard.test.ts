@@ -22,13 +22,13 @@ type Manifest = {
 
 /**
  * MIG-PEOPLE-VOCAB-2026 — system-level vocabulary boundaries (not a single-module rename).
- * Manifest: scripts/people-vocabulary-touchpoints.json
+ * Manifest: scripts/governance/people-vocabulary-touchpoints.json
  */
 describe('peopleVocabularyTouchpointsGuard (MIG-PEOPLE-VOCAB-2026)', () => {
-  const manifest: Manifest = JSON.parse(read('scripts/people-vocabulary-touchpoints.json'));
+  const manifest: Manifest = JSON.parse(read('scripts/governance/people-vocabulary-touchpoints.json'));
 
   it('PVOC-00a: manifest documents three surfaces (intent · find crew · my crew)', () => {
-    const raw = JSON.parse(read('scripts/people-vocabulary-touchpoints.json')) as {
+    const raw = JSON.parse(read('scripts/governance/people-vocabulary-touchpoints.json')) as {
       surfaces?: Record<string, unknown>;
     };
     expect(raw.surfaces).toBeTruthy();
@@ -58,16 +58,16 @@ describe('peopleVocabularyTouchpointsGuard (MIG-PEOPLE-VOCAB-2026)', () => {
   });
 
   it('PVOC-01: touchpoint manifest is registered in platform-touchpoint-registry', () => {
-    const registry = JSON.parse(read('scripts/platform-touchpoint-registry.json'));
+    const registry = JSON.parse(read('scripts/governance/platform-touchpoint-registry.json'));
     const row = registry.programs?.find((m: { programId: string }) => m.programId === manifest.programId);
     expect(row, manifest.programId).toBeTruthy();
   });
 
   it('PVOC-01b: MIG-PEOPLE-VOCAB migration closed', () => {
-    const registry = JSON.parse(read('scripts/platform-touchpoint-registry.json'));
+    const registry = JSON.parse(read('scripts/governance/platform-touchpoint-registry.json'));
     const row = registry.programs?.find((m: { programId: string }) => m.programId === manifest.programId);
     expect(row?.status).toBe('complete');
-    expect(row?.scheduleDoc).toBe('scripts/people-vocabulary-touchpoints.json');
+    expect(row?.scheduleDoc).toBe('scripts/governance/people-vocabulary-touchpoints.json');
   });
 
   it('PVOC-02: every touchpoint primary file exists on disk', () => {
@@ -140,7 +140,7 @@ describe('peopleVocabularyTouchpointsGuard (MIG-PEOPLE-VOCAB-2026)', () => {
   });
 
   it('PVOC-09: authority matrix documents Friends product vs buddy wire', () => {
-    const matrix = JSON.parse(read('scripts/authority-matrix.json'));
+    const matrix = JSON.parse(read('scripts/governance/authority-matrix.json'));
     const buddy = (matrix.actions ?? []).find((a: { id: string }) => a.id === 'social.buddy_request');
     expect(buddy?.note).toMatch(/Friends/);
     const intent = (matrix.actions ?? []).find((a: { id: string }) => a.id === 'compose.emit_intent');

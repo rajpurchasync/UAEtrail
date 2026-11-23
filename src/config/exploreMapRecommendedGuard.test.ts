@@ -14,7 +14,7 @@ describe('exploreMapRecommendedGuard', () => {
     expect(read('src/explore/shell/ExploreMapShell.tsx')).toMatch(/resolveExploreMapRecommendationItems/);
     expect(read('src/explore/shell/ExploreMapShell.tsx')).toMatch(/useDiscoverMapRecommendations/);
     expect(read('src/explore/ui/ExploreMapStage.tsx')).toMatch(/ExploreMapRecommendedSheet/);
-    const touchpoints = JSON.parse(read('scripts/platform-layer-spine-touchpoints.json')) as {
+    const touchpoints = JSON.parse(read('scripts/governance/platform-layer-spine-touchpoints.json')) as {
       decisions?: { matching?: { phases?: Record<string, string> } };
     };
     expect(touchpoints.decisions?.matching?.phases?.discoverV1).toMatch(/discover\/recommendations/i);

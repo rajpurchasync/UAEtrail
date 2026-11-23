@@ -7,7 +7,7 @@ const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
 
 describe('platformLayerMatchingGuard (PLS-4)', () => {
   it('LAYER-13: matching context owns wishlist + availability match modules', () => {
-    const manifest = JSON.parse(read('scripts/bounded-context-manifest.json')) as {
+    const manifest = JSON.parse(read('scripts/governance/bounded-context-manifest.json')) as {
       contexts: { id: string; apiFiles?: string[] }[];
     };
     const matching = manifest.contexts.find((c) => c.id === 'matching');

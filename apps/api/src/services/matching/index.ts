@@ -1,7 +1,7 @@
 /**
  * Matching bounded context — retrieval predicates + delivery (notify).
  * No consumer `/matching` URL; Discover/Plan HTTP routes call these modules.
- * Schedule: `scripts/platform-layer-spine-touchpoints.json` → `decisions.matching`.
+ * Schedule: `scripts/governance/platform-layer-spine-touchpoints.json` → `decisions.matching`.
  */
 export {
   activityCalendarDay,

@@ -29,7 +29,7 @@ describe('crewPillarsAlignmentGuard (MIG-PEOPLE-VOCAB-2026)', () => {
     const mg = read('packages/shared-types/src/member-group.ts');
     expect(mg).toMatch(/MEMBER_GROUP_KINDS = \['team', 'outing_crew'\]/);
     expect(read('src/pages/Groups.tsx')).toMatch(/PRODUCT_GROUPS_SURFACE_LABEL|Teams/);
-    const archive = JSON.parse(read('scripts/platform-migration-archive.json'));
+    const archive = JSON.parse(read('scripts/governance/platform-migration-archive.json'));
     const mig = archive.migrations?.find((m: { id: string }) => m.id === 'MIG-COMMUNITY-DISCOVER');
     expect(mig?.status).toBe('complete');
   });
@@ -62,7 +62,7 @@ describe('crewPillarsAlignmentGuard (MIG-PEOPLE-VOCAB-2026)', () => {
 
   it('CREW-PILLAR-06: FE surface map exists', () => {
     expect(read('src/crew/crewPillarSurfaces.ts')).toMatch(/CREW_PILLAR_SURFACE_PATH/);
-    expect(read('scripts/people-vocabulary-touchpoints.json')).toMatch(/"crewPillars"/);
+    expect(read('scripts/governance/people-vocabulary-touchpoints.json')).toMatch(/"crewPillars"/);
   });
 
   it('CREW-PILLAR-02b: Groups surface is Teams (not discoverable communities)', () => {
@@ -75,7 +75,7 @@ describe('crewPillarsAlignmentGuard (MIG-PEOPLE-VOCAB-2026)', () => {
     expect(existsSync(join(ROOT, 'src/member/memberHireableRoles.ts'))).toBe(false);
     expect(read('src/list/crews/crewsGuides.ts')).not.toMatch(/memberHireable|HIREABLE_/);
     expect(read('packages/shared-types/src/crew-pillars.ts')).not.toMatch(/'hireable'/);
-    expect(read('scripts/people-vocabulary-touchpoints.json')).toMatch(/"find_crew"/);
+    expect(read('scripts/governance/people-vocabulary-touchpoints.json')).toMatch(/"find_crew"/);
   });
 
   it('CREW-PILLAR-07: friend request coordination deep link uses socialRequestsPath', () => {

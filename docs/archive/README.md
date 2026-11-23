@@ -1,6 +1,6 @@
 # Archived documentation
 
-**Do not implement from this folder.** The sole schedule is [`SYSTEM_COHERENCE.md`](../SYSTEM_COHERENCE.md) **§8.8 (PCOH)** and [`scripts/platform-governance.json`](../../scripts/platform-governance.json) (`MIG-COH-*`).
+**Do not implement from this folder.** The sole schedule is [`SYSTEM_COHERENCE.md`](../SYSTEM_COHERENCE.md) **§8.8 (PCOH)** and [`scripts/governance/platform-governance.json`](../../scripts/governance/platform-governance.json) (`MIG-COH-*`).
 
 | Removed / retired | Use instead |
 |-------------------|-------------|

@@ -48,6 +48,6 @@ describe('composeSpineGuard (DMCP Phase 4 rollup)', () => {
 
   it('COMPOSE-SPINE-05: verify:compose-spine wired', () => {
     expect(read('package.json')).toMatch(/verify:compose-spine/);
-    expect(existsSync(join(process.cwd(), 'scripts/verify-compose-spine.mjs'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'scripts/verify/verify-compose-spine.mjs'))).toBe(true);
   });
 });

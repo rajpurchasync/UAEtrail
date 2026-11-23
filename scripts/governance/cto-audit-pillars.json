@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "description": "CTO whole-system audit pillars (greenfield lens vs brownfield). Outputs: npm run system:audit → scripts/governance/system-audit-baseline.json. Narrative: docs/SYSTEM_COHERENCE.md §8.6.",
+  "greenfieldPrinciples": [
+    "One write path per aggregate (activity, place, facility, join request, message thread).",
+    "Read models explicit (explore map, detail DTO, inbox, coordination attention) — not ad-hoc FE projection stacks.",
+    "Surface-first HTTP (public / me / operator / admin) sharing services — never profile-branching CRUD.",
+    "Async side effects durable (outbox) with idempotent consumers — production default on; not fire-and-forget in prod.",
+    "Contracts in shared-types; API domain/ for server-only rules.",
+    "Tenant boundary enforced at operator mount; member capabilities from GET /me/status only.",
+    "Redis required in prod for cache, rate limit, SSE; observability on by default in staging/prod.",
+    "Inbound webhooks idempotent with event store; no silent partial Stripe/config states."
+  ],
+  "pillars": [
+    {
+      "id": "A1",
+      "name": "Product capabilities & surfaces",
+      "scope": "North star → routes → who sees what",
+      "canon": ["docs/NORTHSTAR.md", "docs/NAVIGATION.md", "docs/SYSTEM_COHERENCE.md §1-4"],
+      "auditChecks": ["surface redirect graph", "guest vs member gates", "FAB compose contract", "operator vs consumer split"]
+    },
+    {
+      "id": "A2",
+      "name": "Domain model & aggregates",
+      "scope": "Entities, lifecycle, geography (area/place/facility/activity)",
+      "canon": ["docs/DOMAIN.md", "docs/DOMAIN_CANONICALS.md", "packages/shared-types"],
+      "auditChecks": ["CPC place vs facility", "seeking as activity primary", "shop three-layer model", "no Plan entity"]
+    },
+    {
+      "id": "A3",
+      "name": "API surface & routing",
+      "scope": "Mounts, registrars, deprecations, agent API",
+      "canon": ["docs/API_ROUTING.md", "apps/api/src/routes/index.ts"],
+      "auditChecks": ["register* inventory", "join path unification", "catalog surface-first", "legacy rewrites"]
+    },
+    {
+      "id": "A4",
+      "name": "Application & service boundaries",
+      "scope": "routes → services → domain → stores",
+      "canon": ["docs/ARCHITECTURE.md", "docs/SYSTEM_COHERENCE.md §5"],
+      "auditChecks": ["business rules not in handlers", "store vs service facades", "bounded-context-manifest coverage"]
+    },
+    {
+      "id": "A5",
+      "name": "Data layer & migrations",
+      "scope": "Mongo collections, indexes, backfills",
+      "canon": ["apps/api/src/lib/collections.ts", "apps/api/src/lib/mongo-indexes.ts", "apps/api/src/lib/mongo-migrations.ts"],
+      "auditChecks": ["collection ownership map", "legacy collections retired", "index parity with query paths"]
+    },
+    {
+      "id": "A6",
+      "name": "Read models & caching",
+      "scope": "Explore map, detail viewerAccess, inbox, people browse",
+      "canon": ["apps/api/src/lib/explore-map.ts", "SYSTEM_COHERENCE §6.1"],
+      "auditChecks": ["single map aggregator", "FE projection count", "Redis explore cache", "bbox fetch path"]
+    },
+    {
+      "id": "A7",
+      "name": "Async, notifications & workflows",
+      "scope": "scheduleSideEffect, notifications, fan-out",
+      "canon": ["apps/api/src/lib/schedule-side-effect.ts", "apps/api/src/services/notifications.ts"],
+      "auditChecks": ["outbox gap", "notification meta dialects", "join/waitlist promotion", "chat roster sync"]
+    },
+    {
+      "id": "A8",
+      "name": "Inbound integrations & webhooks",
+      "scope": "Stripe, email, push, OAuth, media presign",
+      "canon": ["apps/api/src/routes/stripe-webhook.ts", "apps/api/src/config/env.ts"],
+      "auditChecks": ["idempotent webhook store", "env partial config", "product-disabled vs code paths"]
+    },
+    {
+      "id": "A9",
+      "name": "Client architecture",
+      "scope": "SPA, domains, hooks, native shells",
+      "canon": ["src/api/domains", "src/config/routingCatalog.ts", "SYSTEM_COHERENCE §6"],
+      "auditChecks": ["api facade guards", "query layer coverage", "L0-L3 discovery methodology", "Capacitor release path"]
+    },
+    {
+      "id": "A10",
+      "name": "Security, auth & tenancy",
+      "scope": "JWT, roles, tenant header, media ACL, admin",
+      "canon": ["docs/MEMBER_MODEL.md", "apps/api/src/services/member-status.ts"],
+      "auditChecks": ["C1 admin MFA", "operator tenant isolation", "media-access tests", "demo login policy"]
+    },
+    {
+      "id": "A11",
+      "name": "Infrastructure & operations",
+      "scope": "Docker, Atlas, Redis, MinIO, deploy",
+      "canon": ["docs/DEPLOYMENT.md", "docker-compose.yml", "docs/PRE_DEPLOY_CHECKLIST.md"],
+      "auditChecks": ["prod REDIS_URL required", "monitoring stack optional gap", "S10e/S10f gates", "backup/restore"]
+    },
+    {
+      "id": "A12",
+      "name": "Quality, contracts & CI",
+      "scope": "verify:system, contract tests, knip",
+      "canon": ["package.json scripts", "apps/api/tests", "src/**/*.test.ts"],
+      "auditChecks": ["bounded-context tests", "explore-alignment", "knip burn-down", "typecheck both workspaces"]
+    }
+  ]
+}

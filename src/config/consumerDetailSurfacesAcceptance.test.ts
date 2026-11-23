@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { readAppRouteRegistry } from '../../scripts/readAppRouteRegistry.mjs';
+import { readAppRouteRegistry } from '../../scripts/dev/readAppRouteRegistry.mjs';
 
 const read = (relativePath: string) => readFileSync(join(process.cwd(), relativePath), 'utf8');
 

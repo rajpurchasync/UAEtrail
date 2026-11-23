@@ -8,7 +8,7 @@ const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
  * S10f manual QA rows for activity L3 must stay tied to automated program gates.
  * Human sign-off still required; this guard blocks shipping manual-only checklists.
  */
-const MANUAL_QA_SCRIPT = 'scripts/consumer-detail-manual-qa-routes.mjs';
+const MANUAL_QA_SCRIPT = 'scripts/ops/consumer-detail-manual-qa-routes.mjs';
 
 const ACTIVITY_S10F_BRIDGE: Array<{
   manualSurface: string;

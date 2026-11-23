@@ -70,7 +70,7 @@ describe('placeDetailCore (R3 consumer)', () => {
 
   it('places bounded context manifest lists R3 entry points', () => {
     const manifest = JSON.parse(
-      readFileSync(join(root, 'scripts/bounded-context-manifest.json'), 'utf8')
+      readFileSync(join(root, 'scripts/governance/bounded-context-manifest.json'), 'utf8')
     ) as { contexts: Array<{ id: string; feRoots: string[] }> };
     const places = manifest.contexts.find((c) => c.id === 'places');
     expect(places?.feRoots).toContain('src/pages/PlaceDetailPage.tsx');

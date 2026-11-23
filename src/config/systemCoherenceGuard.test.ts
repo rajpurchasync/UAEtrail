@@ -275,8 +275,8 @@ describe('systemCoherenceGuard', () => {
     ) as { scripts?: Record<string, string> };
     expect(pkg.scripts?.['s10e:staging-checklist']).toMatch(/s10e-staging-bbox-checklist/);
     expect(pkg.scripts?.['s10e:local-ratio']).toMatch(/s10e-local-bbox-ratio/);
-    expect(existsSync(join(ROOT, 'scripts/s10e-staging-bbox-checklist.mjs'))).toBe(true);
-    expect(existsSync(join(ROOT, 'scripts/s10e-local-bbox-ratio.mjs'))).toBe(true);
+    expect(existsSync(join(ROOT, 'scripts/ops/s10e-staging-bbox-checklist.mjs'))).toBe(true);
+    expect(existsSync(join(ROOT, 'scripts/ops/s10e-local-bbox-ratio.mjs'))).toBe(true);
   });
 
   it('P5 SLO smoke script is wired and documents join + bbox probes', () => {
@@ -285,7 +285,7 @@ describe('systemCoherenceGuard', () => {
     ) as { scripts?: Record<string, string> };
     expect(pkg.scripts?.['p5:slo-smoke']).toMatch(/p5-slo-smoke/);
     expect(pkg.scripts?.['p5:slo-preflight']).toMatch(/--preflight/);
-    const script = readFileSync(join(ROOT, 'scripts/p5-slo-smoke.mjs'), 'utf8');
+    const script = readFileSync(join(ROOT, 'scripts/ops/p5-slo-smoke.mjs'), 'utf8');
     expect(script).toMatch(/P5_JOIN_ACTIVITY_ID/);
     expect(script).toMatch(/P5_EXPLORE_MAP_BBOX/);
     expect(script).toMatch(/localhost:4000/);

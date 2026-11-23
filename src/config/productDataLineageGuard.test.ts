@@ -5,7 +5,7 @@ import { dirname, join, relative } from 'node:path';
 const ROOT = process.cwd();
 const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
 
-const manifest = JSON.parse(read('scripts/bounded-context-manifest.json')) as {
+const manifest = JSON.parse(read('scripts/governance/bounded-context-manifest.json')) as {
   contexts: Array<{ id: string; feRoots?: string[]; apiFiles?: string[] }>;
 };
 

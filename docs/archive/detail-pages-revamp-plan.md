@@ -1298,7 +1298,7 @@ Do not write any API yet. Output only the models, types and validators, plus a s
 
 ```text
 Using section 16 of the attached plan, create:
-1) scripts/create-indexes.ts that creates every index in 16.2 idempotently with the exact names given;
+1) scripts/dev/create-indexes.ts that creates every index in 16.2 idempotently with the exact names given;
 2) scripts/set-validators.ts that applies the JSON Schema validators in warn mode, as in 16.5, for activities and places;
 3) tests/indexes.test.ts with one expectIndexed test per row of table 16.1, against a seeded test database,
    asserting IXSCAN, no COLLSCAN, and totalDocsExamined <= nReturned * 3 + 5.

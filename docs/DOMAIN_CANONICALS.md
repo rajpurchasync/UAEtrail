@@ -6,9 +6,7 @@
 
 **Code entry:** `src/config/routingCatalog.ts` (paths — **import this in pages/components/utils**) · `src/config/platform.ts` (map config, feature flags, chrome helpers) · `packages/shared-types/src/entity-path.ts` (`EntityRef`)
 
-**Align script:** `node scripts/align-routing-imports.mjs` (repeatable after adding path constants to the catalog).
-
-**Checks:** `npm run verify:domain`
+**Checks:** `npm run verify:domain` · `npm run verify:routing-canon` (routing catalog vs `scripts/governance/routing-canonical-map.json`)
 
 ---
 
@@ -290,7 +288,7 @@ Query param **`tab`** where noted. **UI labels** may differ from wire ids (activ
 
 ### 3.2 Detail surface data lineage (read ↔ write)
 
-Detail UIs must load from the **canonical read API** for that entity; writes use the **same bounded context** (no parallel Mongo shapes in pages). **FE:** `src/hooks/*ClientApi` facades only (`detailSurfaceDataLineageGuard.test.ts`). **Manifest:** `scripts/bounded-context-manifest.json`.
+Detail UIs must load from the **canonical read API** for that entity; writes use the **same bounded context** (no parallel Mongo shapes in pages). **FE:** `src/hooks/*ClientApi` facades only (`detailSurfaceDataLineageGuard.test.ts`). **Manifest:** `scripts/governance/bounded-context-manifest.json`.
 
 | Surface | Route | Data owner (Mongo / service) | Who writes | Read HTTP | FE facade (consumer) | Notes |
 |---------|-------|------------------------------|------------|-----------|----------------------|--------|

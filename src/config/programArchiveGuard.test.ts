@@ -16,9 +16,9 @@ type Migration = {
 };
 
 describe('programArchiveGuard (GW-4 migration ledger)', () => {
-  const governance = JSON.parse(read('scripts/platform-governance.json')) as { archivePolicy?: string };
-  const archive = JSON.parse(read('scripts/platform-migration-archive.json')) as { migrations?: Migration[] };
-  const registry = JSON.parse(read('scripts/platform-touchpoint-registry.json')) as {
+  const governance = JSON.parse(read('scripts/governance/platform-governance.json')) as { archivePolicy?: string };
+  const archive = JSON.parse(read('scripts/governance/platform-migration-archive.json')) as { migrations?: Migration[] };
+  const registry = JSON.parse(read('scripts/governance/platform-touchpoint-registry.json')) as {
     programs?: { programId: string; scheduleDoc: string }[];
   };
 
@@ -47,8 +47,8 @@ describe('programArchiveGuard (GW-4 migration ledger)', () => {
   });
 
   it('PROG-ARCH-03: verify-platform-governance enforces archivedAt', () => {
-    expect(read('scripts/verify-platform-governance.mjs')).toMatch(/archivedAt/);
-    expect(existsSync(join(ROOT, 'scripts/platform-migration-archive.json'))).toBe(true);
+    expect(read('scripts/verify/verify-platform-governance.mjs')).toMatch(/archivedAt/);
+    expect(existsSync(join(ROOT, 'scripts/governance/platform-migration-archive.json'))).toBe(true);
     expect(existsSync(join(ROOT, 'scripts/platform-program.json'))).toBe(false);
   });
 });

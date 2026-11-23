@@ -13,11 +13,11 @@ const REQUIRED_SLO_IDS = [
 ];
 
 /**
- * @see MIG-P5-SLO-SMOKE · scripts/p5-slo-smoke.mjs · docs/PRE_DEPLOY_CHECKLIST.md § SLO baseline
+ * @see MIG-P5-SLO-SMOKE · scripts/ops/p5-slo-smoke.mjs · docs/PRE_DEPLOY_CHECKLIST.md § SLO baseline
  */
 describe('p5SloProgramGuard (MIG-P5-SLO-SMOKE)', () => {
   it('P5-SLO-01: verify:domain runs preflight before API contract tests', () => {
-    const verifyApi = read('scripts/verify-domain-api.mjs');
+    const verifyApi = read('scripts/verify/verify-domain-api.mjs');
     expect(verifyApi).toMatch(/p5:slo-preflight/);
     const preflightIdx = verifyApi.indexOf('p5:slo-preflight');
     const vitestIdx = verifyApi.indexOf('p5-slo-smoke-probes-contract');
@@ -26,14 +26,14 @@ describe('p5SloProgramGuard (MIG-P5-SLO-SMOKE)', () => {
   });
 
   it('P5-SLO-02: smoke script, package scripts, and migration row exist', () => {
-    expect(existsSync(join(ROOT, 'scripts/p5-slo-smoke.mjs'))).toBe(true);
+    expect(existsSync(join(ROOT, 'scripts/ops/p5-slo-smoke.mjs'))).toBe(true);
     const pkg = JSON.parse(read('package.json')) as { scripts?: Record<string, string> };
     expect(pkg.scripts?.['p5:slo-smoke']).toMatch(/p5-slo-smoke/);
     expect(pkg.scripts?.['p5:slo-preflight']).toMatch(/--preflight/);
-    const program = JSON.parse(read('scripts/platform-governance.json')) as {
+    const program = JSON.parse(read('scripts/governance/platform-governance.json')) as {
       migrations?: { id: string; status: string }[];
     };
-    const archive = JSON.parse(read('scripts/platform-migration-archive.json')) as {
+    const archive = JSON.parse(read('scripts/governance/platform-migration-archive.json')) as {
       migrations?: { id: string; status: string }[];
     };
     const mig = archive.migrations?.find((row) => row.id === 'MIG-P5-SLO-SMOKE');
@@ -41,7 +41,7 @@ describe('p5SloProgramGuard (MIG-P5-SLO-SMOKE)', () => {
   });
 
   it('P5-SLO-03: P5 slos[] and PRE_DEPLOY checklist list the same SLO ids', () => {
-    const program = JSON.parse(read('scripts/platform-governance.json')) as {
+    const program = JSON.parse(read('scripts/governance/platform-governance.json')) as {
       phases?: { id: string; slos?: { id: string }[] }[];
     };
     const p5 = program.phases?.find((phase) => phase.id === 'P5');
@@ -53,7 +53,7 @@ describe('p5SloProgramGuard (MIG-P5-SLO-SMOKE)', () => {
   });
 
   it('P5-SLO-04: probe contract test is in verify:domain:api vitest bundle', () => {
-    expect(read('scripts/verify-domain-api.mjs')).toMatch(/p5-slo-smoke-probes-contract\.test\.ts/);
+    expect(read('scripts/verify/verify-domain-api.mjs')).toMatch(/p5-slo-smoke-probes-contract\.test\.ts/);
     expect(read('apps/api/tests/p5-slo-smoke-probes-contract.test.ts')).toMatch(/MIG-P5-SLO-SMOKE/);
   });
 });

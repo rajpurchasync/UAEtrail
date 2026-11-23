@@ -6,7 +6,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { parseCrewBrowseTab } from '../crew-discovery/crewBrowseTab';
-import { readAppRouteRegistry } from '../../scripts/readAppRouteRegistry.mjs';
+import { readAppRouteRegistry } from '../../scripts/dev/readAppRouteRegistry.mjs';
 import { PLAN_MAIN_TABS } from '../plan/planTab';
 import { isOperatorConsolePath } from '../config/surfacePaths';
 import { participantHostBookmarkRedirect } from '../utils/authRouting';

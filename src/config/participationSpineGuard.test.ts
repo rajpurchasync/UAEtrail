@@ -19,13 +19,13 @@ describe('participationSpineGuard (DMCP Phase 5)', () => {
     expect(joinApi).toMatch(/export const submitActivityJoin/);
     expect(joinApi).toMatch(/createJoinRequest|rsvpActivity/);
     expect(joinApi).not.toMatch(/canPublish|isHostRole/);
-    expect(read('scripts/authority-matrix.json')).toMatch(/client\.join_api/);
+    expect(read('scripts/governance/authority-matrix.json')).toMatch(/client\.join_api/);
   });
 
   it('PART-SPINE-ROLLUP-03: host queue routes through publishingJoinQueueClientApi', () => {
     const queueApi = read('src/hooks/publishingJoinQueueClientApi.ts');
     expect(queueApi).toMatch(/getActivityJoinRequests|decideActivityJoinRequest/);
-    expect(read('scripts/authority-matrix.json')).toMatch(/client\.publishing_join_queue/);
+    expect(read('scripts/governance/authority-matrix.json')).toMatch(/client\.publishing_join_queue/);
   });
 
   it('PART-SPINE-ROLLUP-04: activity L3 + peek share presentation spine', () => {
@@ -42,8 +42,8 @@ describe('participationSpineGuard (DMCP Phase 5)', () => {
 
   it('PART-SPINE-ROLLUP-06: verify:participation-spine in system gate', () => {
     expect(read('package.json')).toMatch(/verify:participation-spine/);
-    expect(existsSync(join(process.cwd(), 'scripts/verify-participation-spine.mjs'))).toBe(true);
-    const matrix = JSON.parse(read('scripts/authority-matrix.json'));
+    expect(existsSync(join(process.cwd(), 'scripts/verify/verify-participation-spine.mjs'))).toBe(true);
+    const matrix = JSON.parse(read('scripts/governance/authority-matrix.json'));
     expect(matrix.dmcpPhase).toBeGreaterThanOrEqual(5);
   });
 });
