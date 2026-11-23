@@ -137,15 +137,17 @@ describe('doc coherence (Tier 1)', () => {
     expect(plans).toEqual([]);
   });
 
-  it('PCOH program spine is machine JSON (narrative sync: npm run verify:platform-program)', () => {
-    const programPath = join(process.cwd(), 'scripts/platform-program.json');
-    expect(existsSync(programPath)).toBe(true);
-    const program = JSON.parse(readFileSync(programPath, 'utf8'));
-    expect(program.authorization?.statement).toMatch(/PCOH|coherence program/i);
-    expect(program.authorization?.authorizedPhases).toContain('PCOH');
-    expect(program.capacity?.maxInProgressMigrations).toBe(2);
-    expect((program.migrations ?? []).some((m: { id: string }) => m.id === 'MIG-COH-00')).toBe(true);
-    expect((program.phases ?? []).some((p: { id: string }) => p.id === 'PCOH')).toBe(true);
+  it('PCOH program spine is machine JSON (narrative sync: npm run verify:platform-governance)', () => {
+    const governancePath = join(process.cwd(), 'scripts/platform-governance.json');
+    expect(existsSync(governancePath)).toBe(true);
+    expect(existsSync(join(process.cwd(), 'scripts/platform-program.json'))).toBe(false);
+    const governance = JSON.parse(readFileSync(governancePath, 'utf8'));
+    const archive = JSON.parse(readFileSync(join(process.cwd(), 'scripts/platform-migration-archive.json'), 'utf8'));
+    expect(governance.authorization?.statement).toMatch(/PCOH|coherence program/i);
+    expect(governance.authorization?.authorizedPhases).toContain('PCOH');
+    expect(governance.capacity?.maxInProgressMigrations).toBe(2);
+    expect((archive.migrations ?? []).some((m: { id: string }) => m.id === 'MIG-COH-00')).toBe(true);
+    expect((governance.phases ?? []).some((p: { id: string }) => p.id === 'PCOH')).toBe(true);
   });
 
   it('SYSTEM_COHERENCE §8.8 defines sole implementation schedule', () => {

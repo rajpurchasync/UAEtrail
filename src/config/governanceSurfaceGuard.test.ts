@@ -84,12 +84,21 @@ describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
     expect(composeAt).toBeGreaterThan(domainAt);
   });
 
-  it('GW1-04: platform-program has archivePolicy; no MIG-PROGRAM-ARCHIVE row', () => {
-    const program = JSON.parse(read('scripts/platform-program.json')) as {
-      archivePolicy?: string;
+  it('GW1-04: platform-governance has archivePolicy; no MIG-PROGRAM-ARCHIVE row', () => {
+    const governance = JSON.parse(read('scripts/platform-governance.json')) as { archivePolicy?: string };
+    const archive = JSON.parse(read('scripts/platform-migration-archive.json')) as {
       migrations?: { id: string }[];
     };
-    expect(program.archivePolicy).toMatch(/scheduleDoc/);
-    expect(program.migrations?.some((m) => m.id === 'MIG-PROGRAM-ARCHIVE')).toBe(false);
+    expect(governance.archivePolicy).toMatch(/touchpoint-registry/i);
+    expect(archive.migrations?.some((m) => m.id === 'MIG-PROGRAM-ARCHIVE')).toBe(false);
+  });
+
+  it('GW4-01: retired platform-program.json (GW-4 split spine)', () => {
+    expect(existsSync(join(ROOT, 'scripts/platform-governance.json'))).toBe(true);
+    expect(existsSync(join(ROOT, 'scripts/platform-migration-archive.json'))).toBe(true);
+    expect(existsSync(join(ROOT, 'scripts/platform-touchpoint-registry.json'))).toBe(true);
+    expect(existsSync(join(ROOT, 'scripts/platform-program.json'))).toBe(false);
+    expect(existsSync(join(ROOT, 'scripts/compact-platform-program.mjs'))).toBe(false);
+    expect(existsSync(join(ROOT, 'scripts/verify-platform-program.mjs'))).toBe(false);
   });
 });

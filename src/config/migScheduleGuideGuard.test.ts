@@ -163,10 +163,12 @@ describe('MIG-SCHEDULE-GUIDE guards', () => {
     expect(connections).toMatch(/engagementTerms:/);
     const fixed = readFileSync(join(ROOT, 'apps/api/scripts/seed-demo-availability-fixed.ts'), 'utf8');
     expect(fixed).toMatch(/modalities: projection\.modalities/);
-    const program = JSON.parse(readFileSync(join(ROOT, 'scripts/platform-program.json'), 'utf8')) as {
+    const archive = JSON.parse(
+      readFileSync(join(ROOT, 'scripts/platform-migration-archive.json'), 'utf8')
+    ) as {
       migrations: { id: string; status: string }[];
     };
-    const mig = program.migrations?.find((row) => row.id === 'MIG-SCHEDULE-GUIDE');
+    const mig = archive.migrations?.find((row) => row.id === 'MIG-SCHEDULE-GUIDE');
     expect(mig?.status).toBe('complete');
   });
 });

@@ -27,8 +27,8 @@ describe('peopleGraphPlanSpineGuard (DMCP Phase 7)', () => {
     expect(canon).toMatch(/social_groups/);
     expect(canon).toMatch(/Do not.*Teams.*social groups/i);
     expect(read('docs/MEMBER_MODEL.md')).toMatch(/PublishingProfileKind.*`community`/);
-    const program = JSON.parse(read('scripts/platform-program.json'));
-    const mig = program.migrations?.find((m: { id: string }) => m.id === 'MIG-COMMUNITY-DISCOVER');
+    const archive = JSON.parse(read('scripts/platform-migration-archive.json'));
+    const mig = archive.migrations?.find((m: { id: string }) => m.id === 'MIG-COMMUNITY-DISCOVER');
     expect(mig?.status).toBe('complete');
   });
 

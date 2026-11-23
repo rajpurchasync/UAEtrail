@@ -20,14 +20,14 @@ if (!existsSync(touchpointsPath)) {
 }
 
 const spine = JSON.parse(readFileSync(touchpointsPath, 'utf8'));
-const program = JSON.parse(readFileSync(join(root, 'scripts/platform-program.json'), 'utf8'));
-const mig = program.migrations?.find((m) => m.id === spine.programId);
-if (!mig) {
-  console.error('[verify:platform-layer-spine] platform-program missing migration', spine.programId);
+const registry = JSON.parse(readFileSync(join(root, 'scripts/platform-touchpoint-registry.json'), 'utf8'));
+const row = registry.programs?.find((p) => p.programId === spine.programId);
+if (!row) {
+  console.error('[verify:platform-layer-spine] registry missing', spine.programId);
   process.exit(1);
 }
 
-console.log('[verify:platform-layer-spine] program', spine.programId, 'migration status:', mig.status ?? '?');
+console.log('[verify:platform-layer-spine] program', spine.programId, 'status:', row.status ?? '?');
 const inProgress = (spine.phases ?? []).filter((p) => p.status === 'in_progress');
 console.log('[verify:platform-layer-spine] active phases:', inProgress.map((p) => p.id).join(', ') || 'none');
 

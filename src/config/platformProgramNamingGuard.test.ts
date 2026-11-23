@@ -4,21 +4,26 @@ import { join } from 'node:path';
 
 const ROOT = process.cwd();
 
-describe('platformProgramNamingGuard (post-refactor index)', () => {
-  it('PGM-NAME-01: platform-program.json is the sole program index', () => {
-    expect(existsSync(join(ROOT, 'scripts/platform-program.json'))).toBe(true);
+describe('platformProgramNamingGuard (GW-4 governance spine)', () => {
+  it('PGM-NAME-01: platform-governance is the ops index; no legacy program json', () => {
+    expect(existsSync(join(ROOT, 'scripts/platform-governance.json'))).toBe(true);
+    expect(existsSync(join(ROOT, 'scripts/platform-migration-archive.json'))).toBe(true);
+    expect(existsSync(join(ROOT, 'scripts/platform-touchpoint-registry.json'))).toBe(true);
+    expect(existsSync(join(ROOT, 'scripts/platform-program.json'))).toBe(false);
     expect(existsSync(join(ROOT, 'scripts/refactor-program.json'))).toBe(false);
-    const program = JSON.parse(readFileSync(join(ROOT, 'scripts/platform-program.json'), 'utf8'));
-    expect(program.description).toMatch(/not an active refactor backlog/i);
-    expect(program.archivePolicy).toMatch(/touchpoints/i);
+    const governance = JSON.parse(readFileSync(join(ROOT, 'scripts/platform-governance.json'), 'utf8'));
+    expect(governance.description).toMatch(/not an active refactor backlog/i);
+    expect(governance.archivePolicy).toMatch(/touchpoint-registry/i);
   });
 
-  it('PGM-NAME-02: verify script and npm gate use platform-program naming', () => {
-    expect(existsSync(join(ROOT, 'scripts/verify-platform-program.mjs'))).toBe(true);
+  it('PGM-NAME-02: verify script and npm gate use platform-governance naming', () => {
+    expect(existsSync(join(ROOT, 'scripts/verify-platform-governance.mjs'))).toBe(true);
     const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')) as {
       scripts?: Record<string, string>;
     };
-    expect(pkg.scripts?.['verify:platform-program']).toMatch(/verify-platform-program/);
+    expect(pkg.scripts?.['verify:platform-governance']).toMatch(/verify-platform-governance/);
+    expect(pkg.scripts?.['verify:platform-program']).toBeUndefined();
     expect(pkg.scripts?.['verify:refactor-program']).toBeUndefined();
+    expect(pkg.scripts?.['program:compact-ledger']).toBeUndefined();
   });
 });

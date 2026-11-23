@@ -17,14 +17,14 @@ if (!existsSync(touchpointsPath)) {
 }
 
 const touchpoints = JSON.parse(readFileSync(touchpointsPath, 'utf8'));
-const program = JSON.parse(readFileSync(join(root, 'scripts/platform-program.json'), 'utf8'));
-const mig = program.migrations?.find((m) => m.id === touchpoints.programId);
-if (!mig) {
-  console.error('[verify:discover-recommendations] platform-program missing', touchpoints.programId);
+const registry = JSON.parse(readFileSync(join(root, 'scripts/platform-touchpoint-registry.json'), 'utf8'));
+const row = registry.programs?.find((p) => p.programId === touchpoints.programId);
+if (!row) {
+  console.error('[verify:discover-recommendations] touchpoint registry missing', touchpoints.programId);
   process.exit(1);
 }
 
-console.log('[verify:discover-recommendations]', touchpoints.programId, 'status:', mig.status ?? '?');
+console.log('[verify:discover-recommendations]', touchpoints.programId, 'status:', row.status ?? '?');
 
 try {
   execSync(

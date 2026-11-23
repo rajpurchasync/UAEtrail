@@ -4,7 +4,7 @@
 
 **Explore is discovery** (`/explore` map, `/list` browse). It is **not** the create product. Per-tab **FABs are launchers** into these flows; `?compose=` is the create-flow session on the **current surface** (`/explore`, `/list`, later `/plan`).
 
-**Program:** **Program CPC** ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4) + **`MIG-PLATFORM-COMPOSE-OPERATOR-2026`** ([`platform-program.json`](../scripts/platform-program.json)).
+**Program:** **Program CPC** ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4) + **`MIG-PLATFORM-COMPOSE-OPERATOR-2026`** ([`platform-governance.json`](../scripts/platform-governance.json)).
 
 **Compose wire (shipped emit):** `?compose=` → **`activity:*`** \| **`place:*`** \| **`intent:open`** \| **`intent:fixed:*`** only (legacy `host` / `add` / `availability` / `seek` tokens are **rejected**). Parser: [`packages/shared-types/src/compose-route.ts`](../packages/shared-types/src/compose-route.ts). **Intent** publishes via **`PUT /me/availability`**. **Wishlist** → **`POST /me/wishlist`** only ([`saveWishlistTarget`](../src/wishlist/saveWishlistTarget.ts) — not compose). **Operator** schedule + workspace → SPA **`/operator/*`** (tenant HTTP **`/publishing/*`**). Guards: `composeWireEmitGuard`, `migPlatformComposeOperatorProgramGuard`.
 

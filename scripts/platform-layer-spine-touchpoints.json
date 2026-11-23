@@ -3,7 +3,7 @@
   "version": 1,
   "programId": "MIG-PLATFORM-LAYER-SPINE",
   "updated": "2026-11-23",
-  "parentProgram": "scripts/platform-program.json",
+  "parentProgram": "scripts/platform-governance.json",
   "layers": {
     "publish": "Create discoverable supply — compose activity|place|intent; community create; availability PUT.",
     "discover": "Read catalog and crew feeds — GET explore/map, member-discovery, communities; no writes.",
@@ -78,7 +78,7 @@
         "scripts/platform-layer-spine-touchpoints.json",
         "src/config/platformLayerSpineGuard.test.ts",
         "scripts/verify-platform-layer-spine.mjs",
-        "platform-program migration MIG-PLATFORM-LAYER-SPINE"
+        "platform-touchpoint-registry MIG-PLATFORM-LAYER-SPINE"
       ],
       "residueRemove": [],
       "guardsAdd": ["platformLayerSpineGuard"],

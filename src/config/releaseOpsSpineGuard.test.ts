@@ -33,7 +33,7 @@ describe('releaseOpsSpineGuard (DMCP Phase 8)', () => {
   it('RELEASE-SPINE-04: PRE_DEPLOY lists same gates as refactor-program authorization', () => {
     const preDeploy = read('docs/PRE_DEPLOY_CHECKLIST.md');
     expect(preDeploy).toMatch(/release:ops:checklist/);
-    const program = JSON.parse(read('scripts/platform-program.json'));
+    const program = JSON.parse(read('scripts/platform-governance.json'));
     expect(program.authorization?.statement).toMatch(/MIG-DISCO-REG/);
   });
 
@@ -43,6 +43,6 @@ describe('releaseOpsSpineGuard (DMCP Phase 8)', () => {
 
   it('RELEASE-SPINE-06: DMCP eng marked complete', () => {
     expect(JSON.parse(read('scripts/authority-matrix.json')).dmcpStatus).toBe('complete');
-    expect(JSON.parse(read('scripts/platform-program.json')).authorization?.statement).toMatch(/DMCP eng verify complete/);
+    expect(JSON.parse(read('scripts/platform-governance.json')).authorization?.statement).toMatch(/DMCP eng verify complete/);
   });
 });

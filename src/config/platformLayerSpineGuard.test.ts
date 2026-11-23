@@ -17,13 +17,13 @@ type SpineManifest = {
 describe('platformLayerSpineGuard (MIG-PLATFORM-LAYER-SPINE)', () => {
   const spine: SpineManifest = JSON.parse(read('scripts/platform-layer-spine-touchpoints.json'));
 
-  it('LAYER-00: touchpoints manifest registered in refactor-program', () => {
-    const program = JSON.parse(read('scripts/platform-program.json')) as {
-      migrations: { id: string; status: string; scheduleDoc?: string }[];
+  it('LAYER-00: touchpoints manifest registered in platform-touchpoint-registry', () => {
+    const registry = JSON.parse(read('scripts/platform-touchpoint-registry.json')) as {
+      programs: { programId: string; status: string; scheduleDoc?: string }[];
     };
-    const mig = program.migrations?.find((m) => m.id === 'MIG-PLATFORM-LAYER-SPINE');
-    expect(mig).toBeTruthy();
-    expect(mig?.scheduleDoc).toBe('scripts/platform-layer-spine-touchpoints.json');
+    const row = registry.programs?.find((m) => m.programId === 'MIG-PLATFORM-LAYER-SPINE');
+    expect(row).toBeTruthy();
+    expect(row?.scheduleDoc).toBe('scripts/platform-layer-spine-touchpoints.json');
     expect(spine.programId).toBe('MIG-PLATFORM-LAYER-SPINE');
   });
 

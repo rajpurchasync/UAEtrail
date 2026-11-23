@@ -47,11 +47,11 @@ describe('migDiscoverRecommendationsGuard (MIG-DISCOVER-RECOMMENDATIONS)', () =>
   });
 
   it('REC-03: program registered', () => {
-    const program = JSON.parse(read('scripts/platform-program.json')) as {
-      migrations: { id: string; status: string; scheduleDoc?: string }[];
+    const registry = JSON.parse(read('scripts/platform-touchpoint-registry.json')) as {
+      programs: { programId: string; status: string; scheduleDoc?: string }[];
     };
-    const mig = program.migrations.find((m) => m.id === 'MIG-DISCOVER-RECOMMENDATIONS');
-    expect(mig?.scheduleDoc).toBe('scripts/discover-recommendations-touchpoints.json');
-    expect(mig?.status).toBe('complete');
+    const row = registry.programs.find((m) => m.programId === 'MIG-DISCOVER-RECOMMENDATIONS');
+    expect(row?.scheduleDoc).toBe('scripts/discover-recommendations-touchpoints.json');
+    expect(row?.status).toBe('complete');
   });
 });

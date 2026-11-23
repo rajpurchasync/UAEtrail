@@ -6,15 +6,15 @@ const ROOT = process.cwd();
 const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
 
 /**
- * @see MIG-PLATFORM-COMPOSE-OPERATOR-2026 · scripts/platform-program.json
+ * @see MIG-PLATFORM-COMPOSE-OPERATOR-2026 · platform-touchpoint-registry.json
  * Guards program registration + UPL spine so docs/guards do not drift back to stale compose wire.
  */
 describe('migPlatformComposeOperatorProgramGuard (compose + operator program)', () => {
   it('PCO-01: migration registered complete on P4b', () => {
-    const program = JSON.parse(read('scripts/platform-program.json')) as {
-      migrations?: Array<{ id: string; status: string; phase?: string }>;
+    const registry = JSON.parse(read('scripts/platform-touchpoint-registry.json')) as {
+      programs?: Array<{ programId: string; status: string; phase?: string; scheduleDoc: string }>;
     };
-    const row = program.migrations?.find((m) => m.id === 'MIG-PLATFORM-COMPOSE-OPERATOR-2026');
+    const row = registry.programs?.find((m) => m.programId === 'MIG-PLATFORM-COMPOSE-OPERATOR-2026');
     expect(row).toBeDefined();
     expect(row?.status).toBe('complete');
     expect(row?.phase).toBe('P4b');

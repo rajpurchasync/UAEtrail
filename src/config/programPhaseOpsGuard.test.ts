@@ -16,26 +16,26 @@ type Phase = {
  * P4b / P5 stay in_progress until human ops sign-off — engineering work is closed in-repo.
  */
 describe('programPhaseOpsGuard (P4b · P5 ops vs eng)', () => {
-  const program = JSON.parse(read('scripts/platform-program.json')) as {
-    phases?: Phase[];
+  const governance = JSON.parse(read('scripts/platform-governance.json')) as { phases?: Phase[] };
+  const archive = JSON.parse(read('scripts/platform-migration-archive.json')) as {
     migrations?: { id: string; phase?: string; status: string }[];
   };
 
   it('PHASE-OPS-01: P4b eng closed; all P4b migrations complete', () => {
-    const p4b = program.phases?.find((p) => p.id === 'P4b');
+    const p4b = governance.phases?.find((p) => p.id === 'P4b');
     expect(p4b?.engineeringStatus).toBe('complete');
     expect((p4b?.opsGatesPending ?? []).length).toBeGreaterThan(0);
     expect(p4b?.status).toBe('in_progress');
-    const open = (program.migrations ?? []).filter((m) => m.phase === 'P4b' && m.status !== 'complete');
+    const open = (archive.migrations ?? []).filter((m) => m.phase === 'P4b' && m.status !== 'complete');
     expect(open).toEqual([]);
   });
 
   it('PHASE-OPS-02: P5 eng closed; MIG-P5-SLO-SMOKE migration complete', () => {
-    const p5 = program.phases?.find((p) => p.id === 'P5');
+    const p5 = governance.phases?.find((p) => p.id === 'P5');
     expect(p5?.engineeringStatus).toBe('complete');
     expect((p5?.opsGatesPending ?? []).length).toBeGreaterThan(0);
     expect(p5?.status).toBe('in_progress');
-    const mig = program.migrations?.find((m) => m.id === 'MIG-P5-SLO-SMOKE');
+    const mig = archive.migrations?.find((m) => m.id === 'MIG-P5-SLO-SMOKE');
     expect(mig?.status).toBe('complete');
   });
 

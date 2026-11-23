@@ -2,7 +2,7 @@
  * Mobile five-tab bottom nav — contract (path builders + active-tab resolver).
  *
  * **Product spec:** `docs/NAVIGATION.md` § Mobile five-tab bottom nav.
- * **Program ID:** `MIG-SURFACE-MOBILE-FIVE-TAB` (`scripts/platform-program.json`).
+ * **Program ID:** `MIG-SURFACE-MOBILE-FIVE-TAB` (`scripts/platform-governance.json`).
  *
  * UI wiring (`MobileBottomNav.tsx`) ships in later phases; import these helpers for all new links.
  */

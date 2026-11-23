@@ -15,18 +15,19 @@ type Migration = {
   scheduleDoc?: string;
 };
 
-describe('programArchiveGuard (platform-program ledger)', () => {
-  const program = JSON.parse(read('scripts/platform-program.json')) as {
-    migrations?: Migration[];
-    archivePolicy?: string;
+describe('programArchiveGuard (GW-4 migration ledger)', () => {
+  const governance = JSON.parse(read('scripts/platform-governance.json')) as { archivePolicy?: string };
+  const archive = JSON.parse(read('scripts/platform-migration-archive.json')) as { migrations?: Migration[] };
+  const registry = JSON.parse(read('scripts/platform-touchpoint-registry.json')) as {
+    programs?: { programId: string; scheduleDoc: string }[];
   };
 
-  it('PROG-ARCH-00: archivePolicy documented on platform-program', () => {
-    expect(program.archivePolicy).toMatch(/archivedAt/);
+  it('PROG-ARCH-00: archivePolicy documented on platform-governance', () => {
+    expect(governance.archivePolicy).toMatch(/touchpoint-registry/i);
   });
 
   it('PROG-ARCH-01: complete migrations have archivedAt and no path roots', () => {
-    const complete = (program.migrations ?? []).filter((m) => m.status === 'complete');
+    const complete = (archive.migrations ?? []).filter((m) => m.status === 'complete');
     expect(complete.length).toBeGreaterThan(10);
     const violations: string[] = [];
     for (const m of complete) {
@@ -38,15 +39,16 @@ describe('programArchiveGuard (platform-program ledger)', () => {
     expect(violations, violations.join('\n')).toEqual([]);
   });
 
-  it('PROG-ARCH-02: touchpoint-backed programs keep scheduleDoc', () => {
+  it('PROG-ARCH-02: touchpoint-backed programs keep scheduleDoc in registry', () => {
     for (const id of ['MIG-PLATFORM-LAYER-SPINE', 'MIG-DISCOVER-RECOMMENDATIONS', 'MIG-PEOPLE-VOCAB-2026']) {
-      const m = program.migrations?.find((row) => row.id === id);
-      expect(m?.scheduleDoc, id).toBeTruthy();
+      const row = registry.programs?.find((p) => p.programId === id);
+      expect(row?.scheduleDoc, id).toBeTruthy();
     }
   });
 
-  it('PROG-ARCH-03: verify-platform-program enforces archivedAt', () => {
-    expect(read('scripts/verify-platform-program.mjs')).toMatch(/archivedAt/);
-    expect(existsSync(join(ROOT, 'scripts/compact-platform-program.mjs'))).toBe(true);
+  it('PROG-ARCH-03: verify-platform-governance enforces archivedAt', () => {
+    expect(read('scripts/verify-platform-governance.mjs')).toMatch(/archivedAt/);
+    expect(existsSync(join(ROOT, 'scripts/platform-migration-archive.json'))).toBe(true);
+    expect(existsSync(join(ROOT, 'scripts/platform-program.json'))).toBe(false);
   });
 });

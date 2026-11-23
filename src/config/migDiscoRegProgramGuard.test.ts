@@ -39,10 +39,14 @@ describe('migDiscoRegProgramGuard (MIG-DISCO-REG ops)', () => {
     expect(existsSync(join(ROOT, 'apps/api/scripts/migrate-seeking-to-availability.ts'))).toBe(true);
     const apiPkg = JSON.parse(read('apps/api/package.json')) as { scripts?: Record<string, string> };
     expect(apiPkg.scripts?.['migrate-seeking-to-availability']).toBeTruthy();
-    const program = JSON.parse(read('scripts/platform-program.json')) as {
+    const program = JSON.parse(read('scripts/platform-governance.json')) as {
       migrations?: { id: string }[];
     };
-    expect(program.migrations?.some((m) => m.id === 'MIG-DISCO-REG')).toBe(true);
+    expect(
+      JSON.parse(read('scripts/platform-migration-archive.json')).migrations?.some(
+        (m: { id: string }) => m.id === 'MIG-DISCO-REG'
+      )
+    ).toBe(true);
   });
 
   it('DISCO-REG-04: seek residue API guards stay in verify:domain:api', () => {

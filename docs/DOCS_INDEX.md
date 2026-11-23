@@ -43,7 +43,7 @@
 
 ## Tier 3 — stubs only (no schedules)
 
-[`experiment/README.md`](./experiment/README.md) — retired folder (pointer only). Schedule: **§8** + `platform-program.json`. **QA:** `npm run release:ops:checklist` · staging `npm run s10f:ops:print-routes` · **FAB:** `CREATE_FLOW.md`.
+[`experiment/README.md`](./experiment/README.md) — retired folder (pointer only). Schedule: **§8** + `platform-governance.json`. **QA:** `npm run release:ops:checklist` · staging `npm run s10f:ops:print-routes` · **FAB:** `CREATE_FLOW.md`.
 
 ---
 
@@ -67,5 +67,5 @@ Map / FAB / publish?       → CREATE_FLOW + NORTHSTAR
 Names / api.* / meta?      → DOMAIN_CANONICALS §6–12
 Copy on map or home?       → exploreCopy / homeLanding + NORTHSTAR
 Go live?                   → PRE_DEPLOY_CHECKLIST + DEPLOYMENT
-Platform defaults / rejected stack? → SYSTEM_COHERENCE §8.9 + platform-program MIG-ARCH-*
+Platform defaults / rejected stack? → SYSTEM_COHERENCE §8.9 + platform-migration-archive MIG-ARCH-*
 ```

@@ -30,15 +30,18 @@ describe('p5SloProgramGuard (MIG-P5-SLO-SMOKE)', () => {
     const pkg = JSON.parse(read('package.json')) as { scripts?: Record<string, string> };
     expect(pkg.scripts?.['p5:slo-smoke']).toMatch(/p5-slo-smoke/);
     expect(pkg.scripts?.['p5:slo-preflight']).toMatch(/--preflight/);
-    const program = JSON.parse(read('scripts/platform-program.json')) as {
+    const program = JSON.parse(read('scripts/platform-governance.json')) as {
       migrations?: { id: string; status: string }[];
     };
-    const mig = program.migrations?.find((row) => row.id === 'MIG-P5-SLO-SMOKE');
+    const archive = JSON.parse(read('scripts/platform-migration-archive.json')) as {
+      migrations?: { id: string; status: string }[];
+    };
+    const mig = archive.migrations?.find((row) => row.id === 'MIG-P5-SLO-SMOKE');
     expect(mig).toBeTruthy();
   });
 
   it('P5-SLO-03: P5 slos[] and PRE_DEPLOY checklist list the same SLO ids', () => {
-    const program = JSON.parse(read('scripts/platform-program.json')) as {
+    const program = JSON.parse(read('scripts/platform-governance.json')) as {
       phases?: { id: string; slos?: { id: string }[] }[];
     };
     const p5 = program.phases?.find((phase) => phase.id === 'P5');

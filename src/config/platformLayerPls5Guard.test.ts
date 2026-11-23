@@ -33,10 +33,10 @@ describe('platformLayerPls5Guard (MIG-PLATFORM-LAYER-SPINE closure)', () => {
     };
     const p5 = spine.phases.find((p) => p.id === 'PLS-5');
     expect(p5?.status).toBe('complete');
-    const program = JSON.parse(read('scripts/platform-program.json')) as {
+    const archive = JSON.parse(read('scripts/platform-migration-archive.json')) as {
       migrations: { id: string; status: string }[];
     };
-    const mig = program.migrations.find((m) => m.id === 'MIG-PLATFORM-LAYER-SPINE');
+    const mig = archive.migrations.find((m) => m.id === 'MIG-PLATFORM-LAYER-SPINE');
     expect(mig?.status).toBe('complete');
   });
 });

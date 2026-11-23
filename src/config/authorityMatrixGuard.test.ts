@@ -109,7 +109,7 @@ describe('authorityMatrixGuard (DMCP Phase 0)', () => {
       (c: { id: string }) => c.id === 'people-crews-tab-inbound'
     );
     expect(choke?.module).toBe('src/routing/productUrlInbound.ts');
-    const program = JSON.parse(read('scripts/platform-program.json'));
+    const program = JSON.parse(read('scripts/platform-governance.json'));
     expect(program.authorization?.statement).toMatch(/DMCP eng verify complete/);
   });
 
@@ -120,8 +120,12 @@ describe('authorityMatrixGuard (DMCP Phase 0)', () => {
     expect(byId.get('social.group_create')?.note).toMatch(/Team/);
     expect(byId.get('social.buddy_request')?.note).toMatch(/Friends/);
     expect(byId.get('people.plan_hub')?.note).toMatch(/No Plan aggregate/);
-    const program = JSON.parse(read('scripts/platform-program.json'));
-    expect(program.migrations?.find((m: { id: string }) => m.id === 'MIG-COMMUNITY-DISCOVER')?.status).toBe(
+    const program = JSON.parse(read('scripts/platform-governance.json'));
+    expect(
+      JSON.parse(read('scripts/platform-migration-archive.json')).migrations?.find(
+        (m: { id: string }) => m.id === 'MIG-COMMUNITY-DISCOVER'
+      )?.status
+    ).toBe(
       'complete'
     );
     expect(read('src/config/peopleGraphPlanSpineGuard.test.ts')).toMatch(/PEOPLE-SPINE-06/);

@@ -22,13 +22,11 @@ if (!existsSync(mapPath)) {
 }
 
 const map = JSON.parse(readFileSync(mapPath, 'utf8'));
-const program = JSON.parse(
-  readFileSync(join(root, 'scripts/platform-program.json'), 'utf8')
-);
+const archive = JSON.parse(readFileSync(join(root, 'scripts/platform-migration-archive.json'), 'utf8'));
 
-const routingMigs = (program.migrations ?? []).filter((m) => m.id?.startsWith('MIG-ROUTING-CANON'));
+const routingMigs = (archive.migrations ?? []).filter((m) => m.id?.startsWith('MIG-ROUTING-CANON'));
 if (routingMigs.length === 0) {
-  fail('platform-program.json must list MIG-ROUTING-CANON-* migrations (§8.7)');
+  fail('platform-migration-archive.json must list MIG-ROUTING-CANON-* migrations (§8.7)');
 }
 
 const coherence = readFileSync(join(root, 'docs/SYSTEM_COHERENCE.md'), 'utf8');

@@ -29,8 +29,8 @@ describe('crewPillarsAlignmentGuard (MIG-PEOPLE-VOCAB-2026)', () => {
     const mg = read('packages/shared-types/src/member-group.ts');
     expect(mg).toMatch(/MEMBER_GROUP_KINDS = \['team', 'outing_crew'\]/);
     expect(read('src/pages/Groups.tsx')).toMatch(/PRODUCT_GROUPS_SURFACE_LABEL|Teams/);
-    const program = JSON.parse(read('scripts/platform-program.json'));
-    const mig = program.migrations?.find((m: { id: string }) => m.id === 'MIG-COMMUNITY-DISCOVER');
+    const archive = JSON.parse(read('scripts/platform-migration-archive.json'));
+    const mig = archive.migrations?.find((m: { id: string }) => m.id === 'MIG-COMMUNITY-DISCOVER');
     expect(mig?.status).toBe('complete');
   });
 

@@ -2,7 +2,7 @@
 /**
  * P5 staging baseline — latency + error-budget smoke (not load test).
  * `--preflight` / `P5_SLO_PREFLIGHT=1` asserts slos[] ↔ probes ↔ PRE_DEPLOY (no live API).
- * @see scripts/platform-program.json P5 slos · docs/PRE_DEPLOY_CHECKLIST.md § SLO baseline
+ * @see scripts/platform-governance.json P5 slos · docs/PRE_DEPLOY_CHECKLIST.md § SLO baseline
  *
  * Env:
  *   BASE_URL (default http://localhost:4000 — matches API PORT / docker-compose)
@@ -199,7 +199,7 @@ const assertApiReachable = async () => {
 };
 
 const runPreflight = () => {
-  const program = JSON.parse(readFileSync(join(ROOT, 'scripts/platform-program.json'), 'utf8'));
+  const program = JSON.parse(readFileSync(join(ROOT, 'scripts/platform-governance.json'), 'utf8'));
   const preDeploy = readFileSync(join(ROOT, 'docs/PRE_DEPLOY_CHECKLIST.md'), 'utf8');
   const smoke = readFileSync(join(ROOT, 'scripts/p5-slo-smoke.mjs'), 'utf8');
   const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'));

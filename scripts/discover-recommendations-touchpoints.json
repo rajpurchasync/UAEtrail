@@ -3,7 +3,7 @@
   "version": 1,
   "programId": "MIG-DISCOVER-RECOMMENDATIONS",
   "updated": "2026-11-23",
-  "parentProgram": "scripts/platform-program.json",
+  "parentProgram": "scripts/platform-governance.json",
   "phases": [
     {
       "id": "REC-1",

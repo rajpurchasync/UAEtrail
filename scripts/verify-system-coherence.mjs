@@ -23,7 +23,7 @@ const quick = process.argv.includes('--quick');
 const steps = [
   ['Node/npm engines', 'npm run verify:engines'],
   ['Tier-1 docs', 'npm run verify:docs'],
-  ['Platform program spine', 'npm run verify:platform-program'],
+  ['Platform governance spine', 'npm run verify:platform-governance'],
   ['Authority matrix (DMCP Phase 0)', 'npm run verify:authority-matrix'],
   ['Catalog truth (DMCP Phase 2)', 'npm run verify:catalog-truth'],
   ['Discovery graph (DMCP Phase 3)', 'npm run verify:discovery-graph'],
