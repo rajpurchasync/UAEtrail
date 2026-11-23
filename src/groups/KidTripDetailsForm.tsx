@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Baby } from 'lucide-react';
-import { PROFILE_SETTINGS_ACCOUNT_PATH } from '../config/surfacePaths';
+import { APP_SETTINGS_ACCOUNT_PATH } from '../config/surfacePaths';
 import { AppSelect } from '../components/ui/AppSelect';
 import { ProfilePhotoEditorField } from '../components/account/ProfilePhotoEditorField';
 import { SettingsContentGroup } from '../components/settings/SettingsMenuRow';
@@ -135,7 +135,7 @@ export const KidTripDetailsForm = ({
               <p className="text-amber-800">
                 Add your phone in{' '}
                 <Link
-                  to={PROFILE_SETTINGS_ACCOUNT_PATH}
+                  to={APP_SETTINGS_ACCOUNT_PATH}
                   className="font-semibold text-emerald-700 underline"
                 >
                   Account settings

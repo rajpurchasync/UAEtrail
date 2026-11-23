@@ -1,4 +1,4 @@
-import { mapInboundCrewBrowseTabValue, readPeopleCrewsTabParam } from '@/routing/productUrlInbound';
+import { readPeopleCrewsTabParam } from '@/routing/productUrlInbound';
 
 /** Top-level Find crew tabs (People · Professional · Community). */
 export type CrewBrowseLane = 'people' | 'professional' | 'community';
@@ -69,40 +69,6 @@ export const parseCrewPeopleFacet = (raw: string | null): CrewPeopleFacet => {
   return DEFAULT_CREW_PEOPLE_FACET;
 };
 
-const inboundPeopleTabToState = (raw: string): CrewBrowseState => {
-  if (raw === 'professional' || raw === 'community') {
-    return { lane: raw, facet: DEFAULT_CREW_PEOPLE_FACET, proKind: DEFAULT_CREW_PROFESSIONAL_KIND };
-  }
-  if (raw === 'people') {
-    return { lane: 'people', facet: DEFAULT_CREW_PEOPLE_FACET, proKind: DEFAULT_CREW_PROFESSIONAL_KIND };
-  }
-  if (raw === 'available' || raw === 'looking' || raw === 'discover') {
-    return { lane: 'people', facet: 'available', proKind: DEFAULT_CREW_PROFESSIONAL_KIND };
-  }
-  if (raw === 'going' || raw === 'friends' || raw === 'followed') {
-    return { lane: 'people', facet: 'friends', proKind: DEFAULT_CREW_PROFESSIONAL_KIND };
-  }
-  if (raw === 'connect' || raw === 'all') {
-    return { lane: 'people', facet: 'everyone', proKind: DEFAULT_CREW_PROFESSIONAL_KIND };
-  }
-  if (raw === 'hub' || raw === 'buddies') {
-    return { lane: 'people', facet: 'recommended', proKind: DEFAULT_CREW_PROFESSIONAL_KIND };
-  }
-  if (raw === 'agencies' || raw === 'operators') {
-    return { lane: 'professional', facet: DEFAULT_CREW_PEOPLE_FACET, proKind: 'agency' };
-  }
-  if (raw === 'guides') {
-    return { lane: 'professional', facet: DEFAULT_CREW_PEOPLE_FACET, proKind: 'guide' };
-  }
-  const mapped = mapInboundCrewBrowseTabValue(raw);
-  if (mapped) return inboundPeopleTabToState(mapped);
-  return {
-    lane: DEFAULT_CREW_BROWSE_LANE,
-    facet: DEFAULT_CREW_PEOPLE_FACET,
-    proKind: DEFAULT_CREW_PROFESSIONAL_KIND,
-  };
-};
-
 /** Parse lane + facet from explore/list URL params. */
 export const parseCrewBrowseState = (
   searchParams: Pick<URLSearchParams, 'get'>
@@ -136,13 +102,11 @@ export const parseCrewBrowseState = (
     };
   }
 
-  const fromTab = inboundPeopleTabToState(rawTab);
-  if (fromTab.lane === 'people' && facetRaw) {
-    return { lane: 'people', facet: parseCrewPeopleFacet(facetRaw), proKind: DEFAULT_CREW_PROFESSIONAL_KIND };
-  }
-  return fromTab.lane === 'professional'
-    ? { ...fromTab, proKind: proKindRaw ? proKind : fromTab.proKind }
-    : fromTab;
+  return {
+    lane: DEFAULT_CREW_BROWSE_LANE,
+    facet: parseCrewPeopleFacet(facetRaw),
+    proKind: DEFAULT_CREW_PROFESSIONAL_KIND,
+  };
 };
 
 export const serializeCrewProfessionalKind = (

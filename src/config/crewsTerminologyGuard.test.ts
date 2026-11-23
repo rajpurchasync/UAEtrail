@@ -56,7 +56,7 @@ describe('crewsTerminologyGuard (Crews / peopleTab — not buddies segment)', ()
   it('CREWS-02: explore browse sync strips retired crews inbound params', () => {
     const inbound = readFileSync(join(process.cwd(), 'src/routing/productUrlInbound.ts'), 'utf8');
     expect(inbound).toMatch(/stripRetiredPeopleListTabParams/);
-    expect(inbound).toMatch(/params\.delete\(INBOUND_BUDDIES_LIST_TAB_PARAM\)/);
+    expect(inbound).toMatch(/stripRetiredPeopleListTabParams/);
     const sync = readFileSync(join(process.cwd(), 'src/explore/exploreBrowseUrlSync.ts'), 'utf8');
     expect(sync).toMatch(/stripRetiredPeopleListTabParams/);
     expect(sync).toMatch(/PEOPLE_LIST_TAB_URL_PARAM/);
@@ -90,18 +90,17 @@ describe('crewsTerminologyGuard (Crews / peopleTab — not buddies segment)', ()
     const stats = readFileSync(join(process.cwd(), 'src/list/crews/crewsStatTab.ts'), 'utf8');
     expect(stats).toMatch(/friends: 'Friends'/);
     expect(stats).not.toMatch(/buddies: 'Buddies'/);
-    const inbound = readFileSync(join(process.cwd(), 'src/routing/productUrlInbound.ts'), 'utf8');
-    expect(inbound).toMatch(/key === 'buddies'\) return 'people'/);
+    const peopleUrl = readFileSync(join(process.cwd(), 'src/list/browse/peopleListBrowseUrl.ts'), 'utf8');
+    expect(peopleUrl).not.toMatch(/INBOUND_BUDDIES_LIST_TAB_PARAM/);
   });
 
   it('CREWS-07: My Crews canonical route is /crews with /buddies inbound only', () => {
     const surface = readFileSync(join(process.cwd(), 'src/config/surfacePaths.ts'), 'utf8');
     expect(surface).toMatch(/MY_CREWS_PATH = '\/crews'/);
-    expect(surface).toMatch(/BUDDIES_PATH = MY_CREWS_PATH/);
-    const inbound = readFileSync(join(process.cwd(), 'src/routing/inboundBookmarkRedirects.tsx'), 'utf8');
-    expect(inbound).toMatch(/InboundLegacyBuddiesRedirect/);
+    expect(surface).not.toMatch(/BUDDIES_PATH/);
+    expect(readFileSync(join(process.cwd(), 'src/routing/AppRoutes.tsx'), 'utf8')).toMatch(/MY_CREWS_PATH/);
     expect(readFileSync(join(process.cwd(), 'apps/api/src/lib/member-routes.ts'), 'utf8')).toMatch(
-      /BUDDIES_PATH = '\/crews'/
+      /MY_CREWS_PATH = '\/crews'|BUDDIES_PATH = '\/crews'/
     );
   });
 

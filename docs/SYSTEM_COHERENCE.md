@@ -1043,6 +1043,7 @@ Gate: **`npm run verify:platform-governance`**. Behavior stays in code + vitest 
 | **GW-4** | Retire `platform-program.json` → **`platform-governance.json`** (ops/phases) · **`platform-migration-archive.json`** (closed MIG ledger) · **`platform-touchpoint-registry.json`** (active schedules) — **complete** | `governanceSurfaceGuard` GW4-01 · `verify:platform-governance` |
 | **GW-5** | **`scripts/` layout** — `governance/` · `verify/` · `lib/` · `ops/` · `dev/` · `archive/`; retire one-off root shims (`verify-platform-program`, `align-routing-imports`, `verify-hero-gutter`, …) — **complete** | `governanceSurfaceGuard` GW5-01 · GW5-02 · `scripts/README.md` |
 | **GW-6** | FE hygiene — dead stubs + retired path/copy/scroll aliases (`messagesGroupChatPath`, `FIND_CREW` FAB copy, place path shims, buddy lazy exports) — **complete** | `governanceSurfaceGuard` GW6-01 · GW6-02 |
+| **GW-7** | Consumer SPA — drop `inboundBookmarkRedirects` / `exploreEntryRedirects`, `AppRoutes` `Navigate` legacy bookmarks, `discoveryListRuntime` facade; canonical `/settings` · `/crews` · `/operator` only | `governanceSurfaceGuard` GW7-01 · `appSettingsRoutingGuard` · `productUrlInboundGuard` |
 
 #### 8.6.1 Phases (outcomes)
 

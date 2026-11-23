@@ -40,7 +40,6 @@ describe('shouldShowMobileBottomNav', () => {
     expect(shouldShowMobileBottomNav('/profile/reviews', '', true)).toBe(true);
     expect(shouldShowMobileBottomNav('/crews', '', true)).toBe(true);
     expect(shouldShowMobileBottomNav('/profile/submissions', '', true)).toBe(true);
-    expect(shouldShowMobileBottomNav('/contributions', '', true)).toBe(true);
   });
 
   it('hides for guests and other routes', () => {

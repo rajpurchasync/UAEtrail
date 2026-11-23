@@ -15,7 +15,6 @@ export { messagingApi } from '../api/domains/messaging';
 export { groupsApi } from '../api/domains/groups';
 export {
   MESSAGES_PATH,
-  INBOUND_MESSAGES_PATH,
   messagesGroupPath,
   messagesToUserPath,
 } from '../config/routingCatalog';

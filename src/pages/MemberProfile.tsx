@@ -22,7 +22,7 @@ import {
   memberProfileLink,
   myActivitiesPath,
   PROFILE_PATH,
-  PROFILE_SETTINGS_PRIVACY_PATH,
+  APP_SETTINGS_PRIVACY_PATH,
   proMembershipPath,
   SIGNIN_PATH,
 } from '../config/routingCatalog';
@@ -285,7 +285,7 @@ export const MemberProfile = () => {
             This is what other people see. Your profile stays hidden until you make it public or share it with friends.
           </p>
           <Link
-            to={PROFILE_SETTINGS_PRIVACY_PATH}
+            to={APP_SETTINGS_PRIVACY_PATH}
             state={profileHubMobileBackState()}
             className="mt-4 inline-block text-sm font-semibold text-emerald-700"
           >

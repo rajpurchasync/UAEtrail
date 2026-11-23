@@ -17,7 +17,7 @@ import { isDiscoverBrowseRoute } from '../explore/exploreDiscoverBrowse';
 import { explorePath } from '../explore/routing';
 import { LIST_CAT_PARAM } from '../list/browse/browseListUrlState';
 import {
-  BUDDIES_PATH,
+  MY_CREWS_PATH,
   EXPLORE_DISCOVER_BROWSE_PATH,
   EXPLORE_MAP_PATH,
   GROUPS_PATH,
@@ -29,7 +29,7 @@ import {
   PROFILE_BADGES_PATH,
   PROFILE_HISTORY_PATH,
   PROFILE_PATH,
-  PROFILE_SETTINGS_PATH,
+  APP_SETTINGS_PATH,
   PROFILE_SUBMISSIONS_PATH,
   OPERATOR_CONSOLE_PREFIX,
 } from './routingCatalog';
@@ -103,7 +103,7 @@ export const isDesktopExploreNavActive = (pathname: string, search: string): boo
 };
 
 export const isDesktopSocialNavActive = (pathname: string, search: string): boolean => {
-  if (matchesPrefix(pathname, BUDDIES_PATH) || matchesPrefix(pathname, GROUPS_PATH)) return true;
+  if (matchesPrefix(pathname, MY_CREWS_PATH) || matchesPrefix(pathname, GROUPS_PATH)) return true;
   return isPeopleListDiscoveryRoute(pathname, search);
 };
 
@@ -154,9 +154,9 @@ export const DESKTOP_PEOPLE_NAV: readonly DesktopNavItem[] = [
   {
     key: 'social',
     label: PRODUCT_MY_CREW_SURFACE_TITLE,
-    to: BUDDIES_PATH,
+    to: MY_CREWS_PATH,
     icon: Users,
-    match: [BUDDIES_PATH, GROUPS_PATH],
+    match: [MY_CREWS_PATH, GROUPS_PATH],
     authGate: true,
     navHint: PRODUCT_SOCIAL_NAV_HINT,
   },
@@ -214,9 +214,9 @@ export const DESKTOP_SIDE_NAV_SECTIONS: readonly DesktopSideNavSection[] = [
       {
         key: 'settings',
         label: 'Settings',
-        to: PROFILE_SETTINGS_PATH,
+        to: APP_SETTINGS_PATH,
         icon: Settings,
-        match: [PROFILE_SETTINGS_PATH],
+        match: [APP_SETTINGS_PATH],
       },
     ],
   },
@@ -262,7 +262,7 @@ export const shouldShowDesktopSideNav = (pathname: string, _signedIn: boolean): 
 const NAV_ROOT_PATHS: readonly string[] = [
   PROFILE_PATH,
   LIST_DISCOVERY_PATH,
-  BUDDIES_PATH,
+  MY_CREWS_PATH,
   GROUPS_PATH,
   ...DESKTOP_PRIMARY_NAV.map((item) => item.to),
   ...DESKTOP_PEOPLE_NAV.map((item) => item.to.split('?')[0]),

@@ -1,6 +1,6 @@
 import type { RewardBadgeDTO } from '@uaetrail/shared-types';
 import {
-  BUDDIES_PATH,
+  MY_CREWS_PATH,
   PROFILE_SUBMISSIONS_PATH,
   EXPLORE_MAP_PATH,
   PLAN_PATH,
@@ -19,7 +19,7 @@ const MEMBER_BADGE_ACTIONS: Record<string, BadgeEarnAction> = {
   host: { label: 'Host an outing', to: exploreHostPath() },
   helpful_critic: { label: 'Write a review', to: explorePath({ list: true }) },
   goat: { label: 'Join more outings', to: PLAN_PATH },
-  ambassador: { label: 'Invite friends', to: BUDDIES_PATH },
+  ambassador: { label: 'Invite friends', to: MY_CREWS_PATH },
   contributor: { label: 'Add a spot', to: PROFILE_SUBMISSIONS_PATH },
   trusted_host: { label: 'Keep hosting outings', to: exploreHostPath() },
 };

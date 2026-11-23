@@ -5,10 +5,9 @@ import { join, relative } from 'node:path';
 const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 
 describe('discoveryGraphGuard (DMCP Phase 3)', () => {
-  it('DISC-03-01: list facade exists and re-exports discoveryRuntime', () => {
-    expect(existsSync(join(process.cwd(), 'src/list/browse/discoveryListRuntime.ts'))).toBe(true);
-    const facade = read('src/list/browse/discoveryListRuntime.ts');
-    expect(facade).toMatch(/export \* from '\.\.\/\.\.\/explore\/discoveryRuntime'/);
+  it('DISC-03-01: GW-7 retired list facade — import discoveryRuntime directly', () => {
+    expect(existsSync(join(process.cwd(), 'src/list/browse/discoveryListRuntime.ts'))).toBe(false);
+    expect(read('src/explore/discoveryRuntime.ts')).toMatch(/fetchExploreMapItems/);
   });
 
   it('DISC-03-02: discoveryRuntime stays projection barrel (no list imports)', () => {
@@ -46,29 +45,8 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(count).toBeLessThanOrEqual(max);
   });
 
-  it('DISC-03-06: browse leaves import explore only via discoveryListRuntime', () => {
-    const exempt = new Set([
-      'src/list/browse/discoveryListRuntime.ts',
-      'src/list/browse/listDiscoverySearchCreateFlowStub.ts',
-      'src/list/browse/useListDiscoveryUrlState.ts',
-    ]);
-    const violations: string[] = [];
-    const browseRoot = join(process.cwd(), 'src/list/browse');
-    const walk = (dir: string) => {
-      for (const ent of readdirSync(dir, { withFileTypes: true })) {
-        const full = join(dir, ent.name);
-        if (ent.isDirectory()) walk(full);
-        else if (/\.(ts|tsx)$/.test(ent.name) && !ent.name.endsWith('.test.ts')) {
-          const rel = relative(process.cwd(), full).replace(/\\/g, '/');
-          if (exempt.has(rel)) continue;
-          const content = read(rel);
-          if (/from ['"](?:\.\.\/)+explore\/exploreMapTopicUrlParams['"]/.test(content)) continue;
-          if (/from ['"](?:\.\.\/)+explore\//.test(content)) violations.push(rel);
-        }
-      }
-    };
-    walk(browseRoot);
-    expect(violations).toEqual([]);
+  it('DISC-03-06: GW-7 browse leaves may import explore directly', () => {
+    expect(read('src/list/browse/browseListFilters.ts')).toMatch(/explore\/discoveryRuntime/);
   });
 
   it('DISC-03-05: verify:discovery-graph wired', () => {

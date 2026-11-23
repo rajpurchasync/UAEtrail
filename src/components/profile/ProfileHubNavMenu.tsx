@@ -3,7 +3,7 @@ import {
   PROFILE_GUIDE_PATH,
   PROFILE_HISTORY_PATH,
   PROFILE_REVIEWS_PATH,
-  PROFILE_SETTINGS_PATH,
+  APP_SETTINGS_PATH,
   PROFILE_SUBMISSIONS_PATH,
   PRO_MEMBERSHIP_PATH,
   MEMBER_SCHEDULE_CALENDAR_PATH,
@@ -64,7 +64,7 @@ export const ProfileHubNavMenu = ({
       />
       <ProfileHubMenuRow label="Reviews" to={PROFILE_REVIEWS_PATH} icon={Star} linkState={back} />
       <ProfileHubMenuRow label="Contributions" to={PROFILE_SUBMISSIONS_PATH} icon={MapPin} linkState={back} />
-      <ProfileHubMenuRow label="Settings" to={PROFILE_SETTINGS_PATH} icon={Settings} linkState={back} />
+      <ProfileHubMenuRow label="Settings" to={APP_SETTINGS_PATH} icon={Settings} linkState={back} />
     </div>
 
     <div className="glass-card overflow-hidden">

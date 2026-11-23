@@ -15,7 +15,7 @@ describe('operatorStorefrontSpineGuard (DMCP Phase 6)', () => {
 
   it('STOREFRONT-SPINE-02: Pro funnel uses PRO_MEMBERSHIP_PATH (become-host inbound only)', () => {
     expect(read('src/config/memberRoutes.ts')).toMatch(/PRO_MEMBERSHIP_PATH/);
-    expect(read('src/routing/inboundBookmarkRedirects.tsx')).toMatch(/PRO_MEMBERSHIP_PATH/);
+    expect(read('src/routing/AppRoutes.tsx')).toMatch(/profile\/pro-membership/);
     expect(read('scripts/governance/authority-matrix.json')).toMatch(/consumer-become-host/);
     expect(read('src/member/hostMemberGuard.test.ts')).toMatch(/become-host/);
   });

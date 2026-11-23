@@ -1,74 +1,46 @@
 import { describe, expect, it } from 'vitest';
 import {
-  INBOUND_ACTIVITY_MODE_SEEKING,
-  INBOUND_LIST_FILTER_LOOKING,
   canonicalizeExplorePinKindToken,
   listFilterMeansAvailabilityOnly,
-  mapInboundCrewBrowseTabValue,
-  sanitizeInboundExplorePinId,
-  stripRetiredExploreOverlayParams,
-  stripRetiredPeopleListTabParams,
   normalizeExploreSearchScopeInbound,
   parseInboundExploreActivityMode,
   readExploreSearchScopeParam,
   readPeopleCrewsTabParam,
+  sanitizeInboundExplorePinId,
 } from './productUrlInbound';
 
-describe('productUrlInbound', () => {
-  it('list availability filter accepts canonical + retired looking', () => {
-    expect(listFilterMeansAvailabilityOnly(INBOUND_LIST_FILTER_LOOKING)).toBe(true);
+describe('productUrlInbound (GW-7 canonical only)', () => {
+  it('list availability filter accepts canonical token only', () => {
     expect(listFilterMeansAvailabilityOnly('availability')).toBe(true);
+    expect(listFilterMeansAvailabilityOnly('looking')).toBe(false);
     expect(listFilterMeansAvailabilityOnly('hiking')).toBe(false);
   });
 
-  it('activityMode seeking maps to availability', () => {
-    expect(parseInboundExploreActivityMode(INBOUND_ACTIVITY_MODE_SEEKING)).toBe('availability');
+  it('activityMode accepts hosted | availability | all only', () => {
+    expect(parseInboundExploreActivityMode('seeking')).toBeNull();
+    expect(parseInboundExploreActivityMode('availability')).toBe('availability');
     expect(parseInboundExploreActivityMode('hosted')).toBe('hosted');
   });
 
-  it('pinKind inbound tokens canonicalize to activities/places', () => {
-    expect(canonicalizeExplorePinKindToken('looking')).toBe('activities');
-    expect(canonicalizeExplorePinKindToken('trips')).toBe('activities');
-    expect(canonicalizeExplorePinKindToken('locations')).toBe('places');
+  it('pinKind tokens pass through unchanged', () => {
+    expect(canonicalizeExplorePinKindToken('activities')).toBe('activities');
+    expect(canonicalizeExplorePinKindToken('looking')).toBe('looking');
   });
 
-  it('search scope normalizes retired tokens', () => {
-    expect(normalizeExploreSearchScopeInbound('demand')).toBe('people');
-    expect(normalizeExploreSearchScopeInbound('buddies')).toBe('people');
-    expect(normalizeExploreSearchScopeInbound('trip')).toBe('activities');
-    expect(readExploreSearchScopeParam(new URLSearchParams('searchFocus=people'))).toBe('people');
+  it('search scope reads searchScope only and normalizes known keys', () => {
+    expect(readExploreSearchScopeParam(new URLSearchParams('searchFocus=people'))).toBeNull();
+    expect(readExploreSearchScopeParam(new URLSearchParams('searchScope=people'))).toBe('people');
+    expect(normalizeExploreSearchScopeInbound('demand')).toBeNull();
+    expect(normalizeExploreSearchScopeInbound('people')).toBe('people');
   });
 
-  it('crews tab param read prefers peopleTab', () => {
-    expect(readPeopleCrewsTabParam(new URLSearchParams('peopleTab=going'))).toBe('going');
-    expect(readPeopleCrewsTabParam(new URLSearchParams('buddies=available'))).toBe('available');
-    expect(readPeopleCrewsTabParam(new URLSearchParams('socialTab=connect'))).toBe('connect');
-    expect(readPeopleCrewsTabParam(new URLSearchParams('goingTab=people'))).toBe('going');
-    expect(readPeopleCrewsTabParam(new URLSearchParams('goingTab=discover'))).toBe('available');
+  it('crews tab param reads peopleTab only', () => {
+    expect(readPeopleCrewsTabParam(new URLSearchParams('peopleTab=professional'))).toBe('professional');
+    expect(readPeopleCrewsTabParam(new URLSearchParams('buddies=available'))).toBeNull();
   });
 
-  it('strips retired people list tab aliases on outbound sync', () => {
-    const params = new URLSearchParams(
-      'peopleTab=going&buddies=available&socialTab=connect&goingTab=discover'
-    );
-    stripRetiredPeopleListTabParams(params);
-    expect(params.get('peopleTab')).toBe('going');
-    expect(params.get('buddies')).toBeNull();
-    expect(params.get('socialTab')).toBeNull();
-    expect(params.get('goingTab')).toBeNull();
-  });
-
-  it('sanitizes retired map pins and overlay query keys', () => {
-    expect(sanitizeInboundExplorePinId('demand:int-1')).toBeNull();
-    expect(sanitizeInboundExplorePinId('availability:u1:s1')).toBe('availability:u1:s1');
-    const params = new URLSearchParams('fulfillIntent=1&hostDemand=1&list=1');
-    stripRetiredExploreOverlayParams(params);
-    expect(params.get('fulfillIntent')).toBeNull();
-    expect(params.get('list')).toBe('1');
-  });
-
-  it('maps retired peopleTab values', () => {
-    expect(mapInboundCrewBrowseTabValue('discover')).toBe('available');
-    expect(mapInboundCrewBrowseTabValue('buddies')).toBe('people');
+  it('sanitizes empty pins only', () => {
+    expect(sanitizeInboundExplorePinId('demand:int-1')).toBe('demand:int-1');
+    expect(sanitizeInboundExplorePinId('  ')).toBeNull();
   });
 });

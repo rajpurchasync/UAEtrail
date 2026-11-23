@@ -305,9 +305,9 @@ describe('member surfaces §11 acceptance (automated)', () => {
 
   it('G-profile: hub shortcuts use profile/plan paths (not host shell)', () => {
     const launcher = read('src/components/profile/ProfileQuickLauncher.tsx');
-    expect(launcher).toContain('BUDDIES_PATH');
+    expect(launcher).toContain('MY_CREWS_PATH');
     expect(launcher).toContain('PROFILE_HISTORY_PATH');
-    expect(launcher).toContain('PROFILE_SETTINGS_PATH');
+    expect(launcher).toContain('APP_SETTINGS_PATH');
     expect(launcher).not.toMatch(/\/profile\/settings/);
     expect(launcher).toContain('planHostedSchedulePath()');
     expect(launcher).not.toMatch(/HOST_OVERVIEW_PATH/);
@@ -573,13 +573,13 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(coherence).not.toMatch(/\| F1–F6 \| FAB \*\*Plan·Contribute\*\*/);
   });
 
-  it('G-plan: My Plans routing module and /profile/plans alias', () => {
+  it('G-plan: My Plans routing module at canonical /plan (GW-7: no /profile/plans shim)', () => {
     const routing = read('src/plan/planRouting.ts');
     expect(routing).toContain('normalizePlanSearchParams');
     expect(routing).toContain('planHostedSchedulePath');
     const app = readAppRouteRegistry();
-    expect(app).toContain('path="/profile/plans"');
     expect(app).toContain('PlanBrowseRoute');
+    expect(app).not.toContain('path="/profile/plans"');
     const planRoute = read('src/routing/planBrowseRoute.tsx');
     expect(planRoute).toContain("import('../plan/PlanPage')");
     const planPage = read('src/plan/PlanPage.tsx');

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EXPLORE_MAP_PATH, MESSAGES_PATH, PLAN_PATH, PROFILE_PATH, PROFILE_EDIT_PATH, PROFILE_SETTINGS_ACCOUNT_PATH, PROFILE_SETTINGS_PATH } from '../config/routingCatalog';
+import { EXPLORE_MAP_PATH, MESSAGES_PATH, PLAN_PATH, PROFILE_PATH, PROFILE_EDIT_PATH, APP_SETTINGS_ACCOUNT_PATH, APP_SETTINGS_PATH } from '../config/routingCatalog';
 import {
   parseMobileBackNavState,
   exploreMapMobileBackState,
@@ -86,9 +86,9 @@ describe('mobileBackNav', () => {
   });
 
   it('sends account settings back to Settings instead of an earlier edit screen', () => {
-    const chrome = resolveMobileTabHeaderLeadingBack(PROFILE_SETTINGS_ACCOUNT_PATH, null);
+    const chrome = resolveMobileTabHeaderLeadingBack(APP_SETTINGS_ACCOUNT_PATH, null);
     expect(chrome).toEqual({
-      fallbackTo: PROFILE_SETTINGS_PATH,
+      fallbackTo: APP_SETTINGS_PATH,
       label: 'Settings',
       backBehavior: 'fallback',
     });
@@ -96,12 +96,12 @@ describe('mobileBackNav', () => {
 
   it('sends notification preferences and saved map back to Settings, not Notifications', () => {
     expect(resolveMobileTabHeaderLeadingBack('/settings/notifications/preferences', null)).toEqual({
-      fallbackTo: PROFILE_SETTINGS_PATH,
+      fallbackTo: APP_SETTINGS_PATH,
       label: 'Settings',
       backBehavior: 'fallback',
     });
     expect(resolveMobileTabHeaderLeadingBack('/settings/notifications/saved', null)).toEqual({
-      fallbackTo: PROFILE_SETTINGS_PATH,
+      fallbackTo: APP_SETTINGS_PATH,
       label: 'Settings',
       backBehavior: 'fallback',
     });

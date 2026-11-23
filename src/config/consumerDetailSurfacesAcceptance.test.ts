@@ -7,11 +7,11 @@ const read = (relativePath: string) => readFileSync(join(process.cwd(), relative
 
 /** S9 Phase 7 — cross-surface wiring called out in consumer-detail-surfaces §8. */
 describe('consumerDetailSurfacesAcceptance', () => {
-  it('routes /people to full list people discovery (single crew URL)', () => {
+  it('GW7-01: no /people SPA redirect — list people discovery via /list', () => {
     const app = readAppRouteRegistry();
-    expect(app).toMatch(/path="\/people"/);
-    expect(app).toMatch(/PeopleRedirect/);
-    expect(read('src/routing/exploreEntryRedirects.tsx')).toMatch(/listPeopleDiscoveryPath\(\)/);
+    expect(app).not.toMatch(/path="\/people"/);
+    expect(app).not.toMatch(/PeopleRedirect/);
+    expect(read('src/list/browse/browseListRouting.ts')).toMatch(/listPeopleDiscoveryPath/);
   });
 
   it('entity detail views use tab wire modules and shared tab chrome', () => {

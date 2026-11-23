@@ -43,9 +43,10 @@ describe('placeDetailCore (R3 consumer)', () => {
       expect(existsSync(join(root, kindPage))).toBe(false);
     }
 
-    const inboundPlace = read('src/routing/inboundBookmarkRedirects.tsx');
-    expect(inboundPlace).toMatch(/InboundCanonicalPlaceRedirect/);
-    expect(inboundPlace).toMatch(/canonicalPlaceDetailPath/);
+    const routes = read('src/routing/AppRoutes.tsx');
+    expect(routes).toMatch(/CanonicalPlaceDetailPage/);
+    expect(routes).toMatch(/\/place\/:id/);
+    expect(routes).not.toMatch(/InboundCanonicalPlaceRedirect/);
     expect(read('src/pages/PlaceDetailPage.tsx')).toMatch(/CanonicalPlaceDetailPage/);
     expect(read('src/pages/FacilityDetailPage.tsx')).toMatch(/FacilityDetailSections/);
   });

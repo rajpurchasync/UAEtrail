@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   PLAN_ADD_FAB_LABEL,
   PLAN_ADD_OPTIONS,
-  PLAN_ADD_QUERY_KEY,
+  PLAN_SHEET_QUERY_KEY,
   PLAN_GOAL_OPTION_LABEL,
   PLAN_WANT_TO_GO_LABEL,
   PLAN_WISHLIST_PICK_TITLE,
@@ -27,7 +27,7 @@ describe('planAdd launcher', () => {
     const params = new URLSearchParams('view=plans&filter=joined');
     expect(parsePlanAddQuery(params)).toBeNull();
     setPlanAddQuery(params, 'menu');
-    expect(params.get(PLAN_ADD_QUERY_KEY)).toBe('menu');
+    expect(params.get(PLAN_SHEET_QUERY_KEY)).toBe('menu');
     expect(parsePlanAddQuery(params)).toBe('menu');
     setPlanAddQuery(params, 'wishlist');
     expect(parsePlanAddQuery(params)).toBe('wishlist');

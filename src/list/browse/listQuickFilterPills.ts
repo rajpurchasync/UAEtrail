@@ -1,4 +1,4 @@
-import type { PlaceMapTopicKey, TripMapTopicKey } from './discoveryListRuntime';
+import type { PlaceMapTopicKey, TripMapTopicKey } from '../../explore/discoveryRuntime';
 
 /** List explorer quick pill copy (map keeps dropdown + emoji scopes). */
 export const LIST_QUICK_FILTER_REGION_LABEL = 'State';

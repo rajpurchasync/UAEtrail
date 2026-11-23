@@ -17,11 +17,11 @@ import {
 } from '../../content/productNorthStar';
 import { mobileBackNavState } from '../../utils/mobileBackNav';
 import { SettingsMenuGroup, SettingsMenuRow } from '../settings/SettingsMenuRow';
-import { BUDDIES_PATH } from '../../config/surfacePaths';
+import { MY_CREWS_PATH } from '../../config/surfacePaths';
 
 /** Back state when opening Social child screens from the hub. */
 export const socialHubBackState = () =>
-  mobileBackNavState(BUDDIES_PATH, PRODUCT_MY_CREW_SURFACE_TITLE);
+  mobileBackNavState(MY_CREWS_PATH, PRODUCT_MY_CREW_SURFACE_TITLE);
 
 type SocialHubIndexProps = {
   /** Pending friend requests — shown as a badge on Friend requests. */

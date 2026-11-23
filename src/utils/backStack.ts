@@ -2,10 +2,10 @@ import type { NavigateFunction } from 'react-router-dom';
 import {
   APP_SETTINGS_PATH,
   APP_SETTINGS_SAFETY_PATH,
-  BUDDIES_PATH,
+  MY_CREWS_PATH,
   GROUPS_PATH,
-  INBOUND_PROFILE_SETTINGS_PATH,
-  INBOUND_PROFILE_SETTINGS_SAFETY_PATH,
+  INBOUND_APP_SETTINGS_PATH,
+  INBOUND_APP_SETTINGS_SAFETY_PATH,
   isNotificationHubPath,
 } from '../config/surfacePaths';
 import { armViewReturn, peekViewReturnSnapshot, viewReturnPathKey } from './viewReturnMemory';
@@ -210,22 +210,22 @@ export const inferBackParent = (pathKey: string): string | null => {
   }
   const form = pathname.match(/^(.*)\/(edit|new|create)$/);
   if (form?.[1]) return form[1];
-  if (pathname === APP_SETTINGS_SAFETY_PATH || pathname === INBOUND_PROFILE_SETTINGS_SAFETY_PATH) {
+  if (pathname === APP_SETTINGS_SAFETY_PATH || pathname === INBOUND_APP_SETTINGS_SAFETY_PATH) {
     return '/profile';
   }
   if (pathname.startsWith(`${APP_SETTINGS_PATH}/`) && pathname !== APP_SETTINGS_PATH) {
     return APP_SETTINGS_PATH;
   }
   if (
-    pathname.startsWith(`${INBOUND_PROFILE_SETTINGS_PATH}/`) &&
-    pathname !== INBOUND_PROFILE_SETTINGS_PATH
+    pathname.startsWith(`${INBOUND_APP_SETTINGS_PATH}/`) &&
+    pathname !== INBOUND_APP_SETTINGS_PATH
   ) {
     return APP_SETTINGS_PATH;
   }
   if (pathname === '/profile/history/map') return '/profile/history?view=completed';
   if (pathname.startsWith('/profile/') && pathname !== '/profile') return '/profile';
   if (
-    pathname === BUDDIES_PATH ||
+    pathname === MY_CREWS_PATH ||
     pathname === GROUPS_PATH ||
     pathname === '/settings/notifications' ||
     pathname.startsWith('/settings/notifications/') ||

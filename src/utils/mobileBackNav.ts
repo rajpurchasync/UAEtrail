@@ -14,7 +14,7 @@ import { exploreMapPathAfterPeopleFullScreen } from '../explore/exploreBrowseRet
 import { crewsHomePath } from '../config/mobileFiveTabNav';
 import { isMobileBottomNavTabPath } from '../config/platform';
 import {
-  BUDDIES_PATH,
+  MY_CREWS_PATH,
   CREWS_ORIGIN_QUERY,
   GROUPS_PATH,
   groupsManagePath,
@@ -24,14 +24,14 @@ import {
   isNotificationHubPath,
   MY_REQUESTS_PATH,
   PROFILE_HISTORY_PATH,
-  PROFILE_SETTINGS_PATH,
-  PROFILE_SETTINGS_DISPLAY_PATH,
-  PROFILE_SETTINGS_ACCOUNT_PATH,
-  PROFILE_SETTINGS_PRIVACY_PATH,
+  APP_SETTINGS_PATH,
+  APP_SETTINGS_DISPLAY_PATH,
+  APP_SETTINGS_ACCOUNT_PATH,
+  APP_SETTINGS_PRIVACY_PATH,
   APP_SETTINGS_NOTIFICATIONS_PREFERENCES_PATH,
   APP_SETTINGS_NOTIFICATIONS_SAVED_PATH,
-  PROFILE_SETTINGS_NOTIFICATIONS_PATH,
-  PROFILE_SETTINGS_SAFETY_PATH,
+  APP_SETTINGS_NOTIFICATIONS_PATH,
+  APP_SETTINGS_SAFETY_PATH,
   PROFILE_VEHICLES_PATH,
 } from '../config/surfacePaths';
 
@@ -71,11 +71,11 @@ export const notificationsInboxMobileBackState = (
   const pathOnly = pathname.split('?')[0] || pathname;
   const from = `${pathOnly}${search}`;
 
-  if (isNotificationHubPath(pathOnly) || pathOnly === PROFILE_SETTINGS_PATH) {
-    return mobileBackNavState(PROFILE_SETTINGS_PATH, SETTINGS_SURFACE_TITLE);
+  if (isNotificationHubPath(pathOnly) || pathOnly === APP_SETTINGS_PATH) {
+    return mobileBackNavState(APP_SETTINGS_PATH, SETTINGS_SURFACE_TITLE);
   }
   if (isAppSettingsPath(pathOnly)) {
-    return mobileBackNavState(PROFILE_SETTINGS_PATH, SETTINGS_SURFACE_TITLE);
+    return mobileBackNavState(APP_SETTINGS_PATH, SETTINGS_SURFACE_TITLE);
   }
   if (pathOnly === EXPLORE_MAP_PATH || pathOnly.startsWith(`${EXPLORE_MAP_PATH}/`)) {
     return mobileBackNavState(from || EXPLORE_MAP_PATH, 'Explore');
@@ -192,12 +192,12 @@ export const resolveMobileTabHeaderLeadingBack = (
     return flowBack(MESSAGES_PATH, 'Chat');
   }
 
-  if (pathname === BUDDIES_PATH) {
+  if (pathname === MY_CREWS_PATH) {
     const params = searchParamsOf(search);
     const section = params.get('section') ?? params.get('tab');
     const crewsOrigin = isCrewsOriginQuery(params.get('from'));
     if (section === 'friends' || section === 'requests' || section === 'following') {
-      return flowBack(BUDDIES_PATH, PRODUCT_MY_CREW_SURFACE_TITLE);
+      return flowBack(MY_CREWS_PATH, PRODUCT_MY_CREW_SURFACE_TITLE);
     }
     if (crewsOrigin) {
       return flowBack(crewsHomePath(), PRODUCT_CREWS_TAB_LABEL);
@@ -236,41 +236,41 @@ export const resolveMobileTabHeaderLeadingBack = (
     return null;
   }
 
-  if (pathname === PROFILE_SETTINGS_PATH) {
+  if (pathname === APP_SETTINGS_PATH) {
     return null;
   }
 
-  if (pathname === PROFILE_SETTINGS_DISPLAY_PATH) {
+  if (pathname === APP_SETTINGS_DISPLAY_PATH) {
     return profileStackBack(locationState, {
-      fallbackTo: PROFILE_SETTINGS_PATH,
+      fallbackTo: APP_SETTINGS_PATH,
       label: SETTINGS_SURFACE_TITLE,
     });
   }
-  if (pathname === PROFILE_SETTINGS_ACCOUNT_PATH) {
+  if (pathname === APP_SETTINGS_ACCOUNT_PATH) {
     return profileStackBack(locationState, {
-      fallbackTo: PROFILE_SETTINGS_PATH,
+      fallbackTo: APP_SETTINGS_PATH,
       label: SETTINGS_SURFACE_TITLE,
     });
   }
-  if (pathname === PROFILE_SETTINGS_PRIVACY_PATH) {
+  if (pathname === APP_SETTINGS_PRIVACY_PATH) {
     return profileStackBack(locationState, {
-      fallbackTo: PROFILE_SETTINGS_PATH,
+      fallbackTo: APP_SETTINGS_PATH,
       label: SETTINGS_SURFACE_TITLE,
     });
   }
   if (
-    pathname === PROFILE_SETTINGS_NOTIFICATIONS_PATH ||
+    pathname === APP_SETTINGS_NOTIFICATIONS_PATH ||
     pathname === APP_SETTINGS_NOTIFICATIONS_PREFERENCES_PATH ||
     pathname === APP_SETTINGS_NOTIFICATIONS_SAVED_PATH
   ) {
     return profileStackBack(locationState, {
-      fallbackTo: PROFILE_SETTINGS_PATH,
+      fallbackTo: APP_SETTINGS_PATH,
       label: SETTINGS_SURFACE_TITLE,
     });
   }
-  if (pathname === PROFILE_SETTINGS_SAFETY_PATH) {
+  if (pathname === APP_SETTINGS_SAFETY_PATH) {
     return profileStackBack(locationState, {
-      fallbackTo: PROFILE_SETTINGS_PATH,
+      fallbackTo: APP_SETTINGS_PATH,
       label: SETTINGS_SURFACE_TITLE,
     });
   }
@@ -325,7 +325,7 @@ export const mobileUnifiedHeaderShowsProfileLeading = (
     return true;
   }
   if (isMobileBottomNavTabPath(pathname)) return true;
-  if (pathname === BUDDIES_PATH) {
+  if (pathname === MY_CREWS_PATH) {
     const params = searchParamsOf(search);
     const section = params.get('section') ?? params.get('tab');
     return !section;
@@ -334,6 +334,6 @@ export const mobileUnifiedHeaderShowsProfileLeading = (
     return !searchParamsOf(search).get('group');
   }
   if (pathname === MY_REQUESTS_PATH) return true;
-  if (pathname === PROFILE_SETTINGS_PATH) return true;
+  if (pathname === APP_SETTINGS_PATH) return true;
   return false;
 };

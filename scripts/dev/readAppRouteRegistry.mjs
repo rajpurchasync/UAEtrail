@@ -8,7 +8,6 @@ const ROUTE_REGISTRY_FILES = [
   'src/App.tsx',
   'src/routing/AppRoutes.tsx',
   'src/routing/appLazyPages.tsx',
-  'src/routing/inboundBookmarkRedirects.tsx',
 ];
 
 const repoRoot = join(__dirname, '..', '..');

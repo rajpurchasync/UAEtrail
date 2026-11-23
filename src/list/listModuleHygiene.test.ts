@@ -4,7 +4,7 @@ import { join, relative } from 'node:path';
 import {
   EXPLORE_SEARCH_SCOPES_SHIPPED,
   type ExploreSearchScopeKey,
-} from './browse/discoveryListRuntime';
+} from '../explore/discoveryRuntime';
 import { browseCategoriesForSearchScope, browseListFilterPatchForSearchScope } from './browse/browseListSearchCommit';
 
 const LIST_ROOT = join(process.cwd(), 'src/list');
@@ -284,39 +284,19 @@ describe('list module hygiene', () => {
     ).not.toMatch(/buildBrowseCardsFromMapItems/);
   });
 
-  /** Explore shell may import `explore/search`, map chrome, compose — browse projections use {@link discoveryListRuntime}. */
-  it('list browse projection sources import explore only via discoveryRuntime', () => {
-    const exploreShellSources = new Set([
-      'src/list/ListDiscoveryExperience.tsx',
-      'src/list/BrowseListPage.tsx',
-      'src/list/shell/useListDiscoveryExperienceModel.ts',
-      'src/list/shell/useListDiscoveryExploreSearchFeedModel.ts',
-      'src/list/shell/useListDiscoveryComposeBridgeModel.ts',
-      'src/list/shell/useListDiscoveryBrowseActionsModel.ts',
-      'src/list/shell/useListDiscoveryBrowseUrlModel.ts',
-      'src/list/browse/listDiscoverySearchCreateFlowStub.ts',
-      'src/list/browse/useListDiscoveryUrlState.ts',
-    ]);
-    const deepExploreImport =
-      /from ['"](?:\.\.\/)+explore\/(?!routing(?:['"]|;)|exploreMapTopicUrlParams(?:['"]|;)|exploreMapItemKind)/;
+  /** GW-7: list browse may import explore modules directly (no list→explore facade). */
+  it('list browse does not import explore/routing.ts', () => {
     const violations: string[] = [];
     for (const file of sources) {
       if (!file.startsWith('src/list/browse/')) continue;
-      if (exploreShellSources.has(file)) continue;
-      if (file === 'src/list/browse/discoveryListRuntime.ts') continue;
       const content = readFileSync(join(process.cwd(), file), 'utf8');
-      if (deepExploreImport.test(content)) violations.push(file);
+      if (/from ['"](?:\.\.\/)+explore\/routing['"]/.test(content)) violations.push(file);
     }
-    expect(
-      violations,
-      `Use src/list/browse/discoveryListRuntime.ts (shell-adjacent browse hooks exempt):\n${violations.join('\n')}`
-    ).toEqual([]);
+    expect(violations).toEqual([]);
   });
 
-  it('discoveryListRuntime is the sole list→explore facade for projections', () => {
-    const facade = readFileSync(join(process.cwd(), 'src/list/browse/discoveryListRuntime.ts'), 'utf8');
-    expect(facade).toMatch(/export \* from '\.\.\/\.\.\/explore\/discoveryRuntime'/);
-    expect(existsSync(join(process.cwd(), 'src/list/browse/discoveryListRuntime.ts'))).toBe(true);
+  it('GW-7: retired list→explore discoveryListRuntime facade removed', () => {
+    expect(existsSync(join(process.cwd(), 'src/list/browse/discoveryListRuntime.ts'))).toBe(false);
   });
 
   it('browse logic APIs stay under src/list/browse (no revived explorer browse modules)', () => {

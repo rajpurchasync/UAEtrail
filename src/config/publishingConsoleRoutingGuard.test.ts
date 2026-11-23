@@ -32,18 +32,17 @@ describe('publishing console routing (MIG-ROUTING-CANON-P1)', () => {
     expect(existsSync(join(ROOT, 'src/hooks/useOperatorActivityManageActions.ts'))).toBe(false);
   });
 
-  it('App mounts /operator/* console and legacy inbound redirects only', () => {
+  it('GW7-01: App mounts canonical /operator/* console only (no inbound wildcards)', () => {
     const app = readAppRouteRegistry();
     expect(app).not.toMatch(/LegacyPublishingConsoleRedirect/);
-    expect(app).toMatch(/InboundRetiredPublishingConsoleRedirect/);
-    expect(app).toMatch(/path="\/host\/\*"/);
-    expect(app).toMatch(/path="\/organizer\/\*"/);
-    expect(app).toMatch(/path="\/publishing\/\*"/);
+    expect(app).not.toMatch(/InboundRetiredPublishingConsoleRedirect/);
+    expect(app).not.toMatch(/path="\/host\/\*"/);
+    expect(app).not.toMatch(/path="\/organizer\/\*"/);
+    expect(app).not.toMatch(/path="\/publishing\/\*"/);
     expect(app).toMatch(/OPERATOR_OVERVIEW_PATH/);
-    expect(app).not.toMatch(/path="\/operator\/\*".*InboundRetiredPublishingConsoleRedirect/);
-    expect(app).not.toMatch(/OperatorPublishingAlias/);
-    expect(app).toMatch(/path="\/publishing\/messages"/);
-    expect(app).toMatch(/path="\/operator\/messages"/);
+    expect(app).not.toMatch(/path="\/publishing\/messages"/);
+    expect(app).not.toMatch(/path="\/operator\/messages"/);
+    expect(app).toMatch(/ORGANISATION_MANAGE_PATH/);
   });
 
   it('surfacePaths exposes operator workspace (/operator) paths', () => {
@@ -59,7 +58,6 @@ describe('publishing console routing (MIG-ROUTING-CANON-P1)', () => {
     const allow = new Set([
       'src/App.tsx',
       'src/routing/AppRoutes.tsx',
-      'src/routing/inboundBookmarkRedirects.tsx',
       'src/config/publishingConsoleRoutingGuard.test.ts',
       'src/content/workspaceProductLanguageGuard.test.ts',
       'src/member/hostMemberGuard.test.ts',

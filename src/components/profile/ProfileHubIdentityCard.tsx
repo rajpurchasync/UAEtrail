@@ -4,7 +4,7 @@ import { profileHubMobileBackState } from '../../utils/mobileBackNav';
 import { Camera, Eye, Pencil } from 'lucide-react';
 import { SecureAvatar } from '../ui/SecureAvatar';
 import { ShareButton } from '../ui/ShareButton';
-import { PROFILE_SETTINGS_PRIVACY_PATH } from '../../config/routingCatalog';
+import { APP_SETTINGS_PRIVACY_PATH } from '../../config/routingCatalog';
 type ProfileHubStat = {
   key: string;
   label: string;
@@ -150,7 +150,7 @@ export const ProfileHubIdentityCard = ({
         </span>
         {visibilityLabel ? (
           <Link
-            to={PROFILE_SETTINGS_PRIVACY_PATH}
+            to={APP_SETTINGS_PRIVACY_PATH}
             state={profileHubMobileBackState()}
             data-nav-focus="profile-privacy"
             className="rounded-full bg-neutral-100 px-2.5 py-0.5 text-[11px] font-semibold text-neutral-600 ring-1 ring-neutral-200/80"

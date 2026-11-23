@@ -1,7 +1,6 @@
 import {
-  BUDDIES_PATH,
+  MY_CREWS_PATH,
   GROUPS_PATH,
-  INBOUND_CONTRIBUTIONS_PATH,
   MY_REQUESTS_PATH,
   PROFILE_SUBMISSIONS_PATH,
 } from './routingCatalog';
@@ -18,18 +17,17 @@ import {
 } from './platform';
 import {
   MESSAGES_PATH,
-  NOTIFICATIONS_PATH,
   PLAN_PATH,
   PROFILE_HISTORY_PATH,
   JOURNEY_MAP_PATH,
   PROFILE_PATH,
   PROFILE_REVIEWS_PATH,
   PROFILE_VEHICLES_PATH,
-  PROFILE_SETTINGS_PATH,
-  PROFILE_SETTINGS_ACCOUNT_PATH,
-  PROFILE_SETTINGS_PRIVACY_PATH,
-  PROFILE_SETTINGS_NOTIFICATIONS_PATH,
-  PROFILE_SETTINGS_SAFETY_PATH,
+  APP_SETTINGS_PATH,
+  APP_SETTINGS_ACCOUNT_PATH,
+  APP_SETTINGS_PRIVACY_PATH,
+  APP_SETTINGS_NOTIFICATIONS_PATH,
+  APP_SETTINGS_SAFETY_PATH,
 } from './surfacePaths';
 import { EXPLORE_SEARCH_RESULTS_PATH } from '../explore/search/exploreSearchRouting';
 
@@ -47,21 +45,19 @@ const TAB_HEADER_ROUTES = new Set([
 export const isMobileTabHeaderRoute = (pathname: string): boolean => TAB_HEADER_ROUTES.has(pathname);
 
 const LAYOUT_UNIFIED_HEADER_EXACT = new Set([
-  NOTIFICATIONS_PATH,
   '/faq',
   '/terms',
   '/privacy',
   '/security-privacy',
-  BUDDIES_PATH,
+  MY_CREWS_PATH,
   GROUPS_PATH,
   PROFILE_SUBMISSIONS_PATH,
-  INBOUND_CONTRIBUTIONS_PATH,
   MY_REQUESTS_PATH,
-  PROFILE_SETTINGS_PATH,
-  PROFILE_SETTINGS_ACCOUNT_PATH,
-  PROFILE_SETTINGS_PRIVACY_PATH,
-  PROFILE_SETTINGS_NOTIFICATIONS_PATH,
-  PROFILE_SETTINGS_SAFETY_PATH,
+  APP_SETTINGS_PATH,
+  APP_SETTINGS_ACCOUNT_PATH,
+  APP_SETTINGS_PRIVACY_PATH,
+  APP_SETTINGS_NOTIFICATIONS_PATH,
+  APP_SETTINGS_SAFETY_PATH,
   '/profile/edit',
   '/profile/pro-membership',
   '/profile/badges',
@@ -92,12 +88,11 @@ export const resolveMobileTabHeaderTitle = (pathname: string, search: string): s
   if (pathname === MESSAGES_PATH) return null;
   if (pathname === PROFILE_HISTORY_PATH) return 'History';
   if (pathname === JOURNEY_MAP_PATH) return 'My Map';
-  if (pathname === NOTIFICATIONS_PATH) return 'Notifications';
-  if (pathname === PROFILE_SETTINGS_PATH) return 'Settings';
-  if (pathname === PROFILE_SETTINGS_ACCOUNT_PATH) return 'Account';
-  if (pathname === PROFILE_SETTINGS_PRIVACY_PATH) return 'Privacy';
-  if (pathname === PROFILE_SETTINGS_NOTIFICATIONS_PATH) return 'Notifications';
-  if (pathname === PROFILE_SETTINGS_SAFETY_PATH) return 'Safety & emergency';
+  if (pathname === APP_SETTINGS_PATH) return 'Settings';
+  if (pathname === APP_SETTINGS_ACCOUNT_PATH) return 'Account';
+  if (pathname === APP_SETTINGS_PRIVACY_PATH) return 'Privacy';
+  if (pathname === APP_SETTINGS_NOTIFICATIONS_PATH) return 'Notifications';
+  if (pathname === APP_SETTINGS_SAFETY_PATH) return 'Safety & emergency';
   if (pathname === '/profile/edit') return 'Edit profile';
   if (pathname === '/profile/pro-membership') return 'Pro membership';
   if (pathname === '/profile/badges') return 'Badges';
@@ -105,10 +100,9 @@ export const resolveMobileTabHeaderTitle = (pathname: string, search: string): s
   if (pathname === PROFILE_VEHICLES_PATH) return 'My cars';
   if (pathname === `${PROFILE_VEHICLES_PATH}/new`) return 'Add car';
   if (/^\/profile\/vehicles\/[^/]+\/edit$/.test(pathname)) return 'Edit car';
-  if (pathname === BUDDIES_PATH) return 'Friends';
+  if (pathname === MY_CREWS_PATH) return 'Friends';
   if (pathname === GROUPS_PATH) return 'Groups';
   if (pathname === PROFILE_SUBMISSIONS_PATH) return 'Contributions';
-  if (pathname === INBOUND_CONTRIBUTIONS_PATH) return 'Contributions';
   if (pathname === MY_REQUESTS_PATH) return 'My requests';
   if (pathname === '/faq') return 'FAQ';
   if (pathname === '/terms') return 'Terms';

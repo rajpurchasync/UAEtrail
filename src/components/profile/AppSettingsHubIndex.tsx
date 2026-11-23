@@ -6,7 +6,7 @@ import {
   SETTINGS_SURFACE_TITLE,
   type SettingsHubSectionId,
 } from '../../config/settingsHub';
-import { PROFILE_SETTINGS_PATH } from '../../config/routingCatalog';
+import { APP_SETTINGS_PATH } from '../../config/routingCatalog';
 import { mobileBackNavState } from '../../utils/mobileBackNav';
 import { SettingsMenuGroup, SettingsMenuRow } from '../settings/SettingsMenuRow';
 
@@ -22,7 +22,7 @@ const SECTION_ICONS: Record<SettingsHubSectionId, LucideIcon> = {
 export const AppSettingsHubIndex = () => {
   const { user } = useAuth();
   const guest = !user;
-  const settingsChildBack = mobileBackNavState(PROFILE_SETTINGS_PATH, SETTINGS_SURFACE_TITLE);
+  const settingsChildBack = mobileBackNavState(APP_SETTINGS_PATH, SETTINGS_SURFACE_TITLE);
 
   return (
     <div className="space-y-4 pb-nav-safe">

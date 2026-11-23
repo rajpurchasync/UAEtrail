@@ -26,7 +26,7 @@ import {
 } from '../hooks/groupClientApi';
 import { crewsHomePath } from '../config/mobileFiveTabNav';
 import {
-  BUDDIES_PATH,
+  MY_CREWS_PATH,
   CREWS_ORIGIN_QUERY,
   GROUPS_PATH,
   groupsManagePath,
@@ -172,7 +172,7 @@ export const Groups = () => {
   const backChrome = useMemo((): MobileBackChrome => {
     if (!showingGroupDetail) {
       return {
-        fallbackTo: crewsOrigin ? crewsHomePath() : BUDDIES_PATH,
+        fallbackTo: crewsOrigin ? crewsHomePath() : MY_CREWS_PATH,
         label: crewsOrigin ? PRODUCT_CREWS_TAB_LABEL : PRODUCT_MY_CREW_SURFACE_TITLE,
         backBehavior: 'fallback',
       };

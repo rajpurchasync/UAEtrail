@@ -4,8 +4,6 @@ import {
   ADMIN_HOSTS_PATH,
   ADMIN_PLACES_PATH,
   explorePath,
-  isInboundRewardsWalletPath,
-  INBOUND_MESSAGES_PATH,
   INBOUND_PLAN_HUB_ACTIVITIES_PATH,
   INBOUND_PLAN_HUB_TRIPS_MAP_PATH,
   INBOUND_PLAN_HUB_TRIPS_PATH,
@@ -48,7 +46,7 @@ const normalizeConsumerChatDeepLinkPath = (
   const search = queryIndex === -1 ? '' : path.slice(queryIndex);
 
   if (
-    pathname === INBOUND_MESSAGES_PATH ||
+    pathname === '/messages' ||
     pathname === '/operator/messages' ||
     pathname === '/publishing/messages' ||
     pathname === '/host/messages'
@@ -110,7 +108,7 @@ const normalizeDirectNotificationPath = (
   const search = queryIndex === -1 ? '' : path.slice(queryIndex);
 
   if (
-    pathname === INBOUND_MESSAGES_PATH ||
+    pathname === '/messages' ||
     pathname === '/operator/messages' ||
     pathname === '/publishing/messages' ||
     pathname === '/host/messages'
@@ -141,7 +139,14 @@ export const inferNotificationPath = (
   const activityIdFromMeta = toStringValue(meta?.activityId);
   const directPath = toStringValue(meta?.path);
   if (directPath && directPath.startsWith('/')) {
-    if (isInboundRewardsWalletPath(directPath)) return PROFILE_BADGES_PATH;
+    if (
+      directPath === '/my-rewards' ||
+      directPath === '/rewards' ||
+      directPath === '/trail-points' ||
+      directPath.startsWith('/trail-points?')
+    ) {
+      return PROFILE_BADGES_PATH;
+    }
     const kindEarly = toStringValue(meta?.kind)?.toLowerCase() ?? '';
     if (
       kindEarly === 'activity_join_invite' &&

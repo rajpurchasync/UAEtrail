@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
@@ -28,6 +28,12 @@ describe('productUrlInboundGuard (single inbound alias registry)', () => {
     expect(routing).toMatch(/resolveCrewExploreMapItemId/);
     expect(routing).not.toMatch(/participantIntentExplorePinPath/);
     expect(routing).not.toMatch(/resolveParticipantIntentMapItemId/);
+  });
+
+  it('GW7-01: SPA inbound redirect modules removed', () => {
+    expect(existsSync(join(process.cwd(), 'src/routing/inboundBookmarkRedirects.tsx'))).toBe(false);
+    expect(existsSync(join(process.cwd(), 'src/routing/exploreEntryRedirects.tsx'))).toBe(false);
+    expect(read('src/routing/AppRoutes.tsx')).not.toMatch(/<Navigate\b/);
   });
 
   it('INBOUND-05: crews tab params centralized', () => {

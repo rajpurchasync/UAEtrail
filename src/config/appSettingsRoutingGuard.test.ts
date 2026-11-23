@@ -1,32 +1,23 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import {
   APP_SETTINGS_DISPLAY_PATH,
   APP_SETTINGS_ACCOUNT_PATH,
   APP_SETTINGS_NOTIFICATIONS_PATH,
   APP_SETTINGS_NOTIFICATIONS_PREFERENCES_PATH,
-  NOTIFICATIONS_PATH,
-  NOTIFICATIONS_SAVED_PATH,
   APP_SETTINGS_PATH,
-  inboundNotificationsRedirectTarget,
   APP_SETTINGS_PRIVACY_PATH,
   APP_SETTINGS_SAFETY_PATH,
-  INBOUND_PROFILE_SETTINGS_PATH,
-  PROFILE_SETTINGS_PATH,
-  inboundProfileSettingsRedirectTarget,
 } from './surfacePaths';
 import { hasConsumerSelfHeader } from './platform';
 
 const SCAN_ROOT = join(process.cwd(), 'src');
 
 const LEGACY_PROFILE_SETTINGS_LINK_ALLOWLIST = new Set([
-  'src/config/surfacePaths.ts',
   'src/config/inboundBookmarkPaths.ts',
   'src/config/appSettingsRoutingGuard.test.ts',
   'src/config/routingHygiene.test.ts',
-  'src/routing/AppRoutes.tsx',
-  'src/routing/inboundBookmarkRedirects.tsx',
   'src/utils/backStack.ts',
   'src/utils/authRouting.test.ts',
 ]);
@@ -50,6 +41,15 @@ const collectSourceFiles = (dir: string): string[] => {
   return files;
 };
 
+const LEGACY_INBOUND_ROUTE_PATTERNS = [
+  /path="\/map"/,
+  /InboundLegacyProfileSettingsRedirect/,
+  /InboundLegacyNotificationsRedirect/,
+  /InboundMessagesRedirect/,
+  /INBOUND_PROFILE_SETTINGS_PATH/,
+  /Navigate to=\{/,
+];
+
 describe('appSettingsRoutingGuard', () => {
   it('app settings use layout unified header via self-header contract', () => {
     expect(hasConsumerSelfHeader(APP_SETTINGS_PATH)).toBe(true);
@@ -58,8 +58,6 @@ describe('appSettingsRoutingGuard', () => {
     expect(hasConsumerSelfHeader(APP_SETTINGS_SAFETY_PATH)).toBe(true);
     expect(hasConsumerSelfHeader(APP_SETTINGS_NOTIFICATIONS_PATH)).toBe(true);
     expect(hasConsumerSelfHeader(APP_SETTINGS_NOTIFICATIONS_PREFERENCES_PATH)).toBe(true);
-    expect(hasConsumerSelfHeader(NOTIFICATIONS_PATH)).toBe(true);
-    expect(hasConsumerSelfHeader(NOTIFICATIONS_SAVED_PATH)).toBe(true);
   });
 
   it('canonical app settings paths live at /settings (not under /profile)', () => {
@@ -69,28 +67,13 @@ describe('appSettingsRoutingGuard', () => {
     expect(APP_SETTINGS_PRIVACY_PATH).toBe('/settings/privacy');
     expect(APP_SETTINGS_NOTIFICATIONS_PATH).toBe('/settings/notifications');
     expect(APP_SETTINGS_SAFETY_PATH).toBe('/settings/safety');
-    expect(PROFILE_SETTINGS_PATH).toBe(APP_SETTINGS_PATH);
-    expect(INBOUND_PROFILE_SETTINGS_PATH).toBe('/profile/settings');
   });
 
-  it('inboundProfileSettingsRedirectTarget preserves subpath suffixes', () => {
-    expect(inboundProfileSettingsRedirectTarget('/profile/settings')).toBe('/settings');
-    expect(inboundProfileSettingsRedirectTarget('/profile/settings/safety')).toBe('/settings/safety');
-    expect(inboundProfileSettingsRedirectTarget('/profile/settings/privacy')).toBe('/settings/privacy');
-  });
-
-  it('inboundNotificationsRedirectTarget maps legacy /notifications bookmarks', () => {
-    expect(inboundNotificationsRedirectTarget('/notifications')).toBe('/settings/notifications');
-    expect(inboundNotificationsRedirectTarget('/notifications/settings')).toBe(
-      '/settings/notifications/preferences'
-    );
-    expect(inboundNotificationsRedirectTarget('/notifications/saved')).toBe('/settings/notifications/saved');
-  });
-
-  it('routingCatalog re-exports APP_SETTINGS_* and inbound aliases', () => {
+  it('routingCatalog re-exports APP_SETTINGS_* only', () => {
     const catalog = readFileSync(join(process.cwd(), 'src/config/routingCatalog.ts'), 'utf8');
     expect(catalog).toMatch(/APP_SETTINGS_PATH/);
-    expect(catalog).toMatch(/INBOUND_PROFILE_SETTINGS_PATH/);
+    expect(catalog).not.toMatch(/PROFILE_SETTINGS_PATH/);
+    expect(catalog).not.toMatch(/INBOUND_PROFILE_SETTINGS_PATH/);
     expect(catalog).toMatch(/isAppSettingsPath/);
   });
 
@@ -131,12 +114,14 @@ describe('appSettingsRoutingGuard', () => {
     expect(violations).toEqual([]);
   });
 
-  it('AppRoutes mounts canonical /settings routes and legacy inbound redirects', () => {
+  it('GW7-01: AppRoutes mounts canonical /settings routes without legacy Navigate shims', () => {
     const routes = readFileSync(join(process.cwd(), 'src/routing/AppRoutes.tsx'), 'utf8');
     expect(routes).toContain(`path={APP_SETTINGS_PATH}`);
-    expect(routes).toContain('InboundLegacyProfileSettingsRedirect');
-    expect(routes).toContain('InboundLegacyNotificationsRedirect');
-    expect(routes).toContain('INBOUND_PROFILE_SETTINGS_PATH');
+    for (const pattern of LEGACY_INBOUND_ROUTE_PATTERNS) {
+      expect(routes, pattern.toString()).not.toMatch(pattern);
+    }
+    expect(existsSync(join(process.cwd(), 'src/routing/inboundBookmarkRedirects.tsx'))).toBe(false);
+    expect(existsSync(join(process.cwd(), 'src/routing/exploreEntryRedirects.tsx'))).toBe(false);
   });
 
   it('consumer UI does not link to /profile/settings (use APP_SETTINGS_PATH)', () => {

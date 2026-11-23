@@ -4,9 +4,8 @@
  */
 
 import {
-  BUDDIES_PATH,
+  MY_CREWS_PATH,
   PROFILE_SUBMISSIONS_PATH,
-  INBOUND_CONTRIBUTIONS_PATH,
   OPERATOR_CONSOLE_PREFIX,
   GROUPS_PATH,
   MESSAGES_PATH,
@@ -18,7 +17,7 @@ import {
   OPERATOR_OVERVIEW_PATH,
   PLAN_PATH,
   PLAN_TODAY_PATH,
-  PROFILE_SETTINGS_PATH,
+  APP_SETTINGS_PATH,
   isAppSettingsPath,
   isNotificationHubPath,
   ADMIN_PLACES_PATH,
@@ -223,8 +222,8 @@ export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
     kind: 'link',
     label: SETTINGS_SURFACE_TITLE,
     emoji: '⚙️',
-    to: PROFILE_SETTINGS_PATH,
-    match: [PROFILE_SETTINGS_PATH],
+    to: APP_SETTINGS_PATH,
+    match: [APP_SETTINGS_PATH],
   },
   {
     kind: 'download',
@@ -407,12 +406,10 @@ export const CONSUMER_SELF_HEADER_EXACT = [
   PLAN_TODAY_PATH,
   PROFILE_HISTORY_PATH,
   JOURNEY_MAP_PATH,
-  '/shop',
   PROFILE_PATH,
   GROUPS_PATH,
-  BUDDIES_PATH,
+  MY_CREWS_PATH,
   PROFILE_SUBMISSIONS_PATH,
-  INBOUND_CONTRIBUTIONS_PATH,
   OPERATOR_CONSOLE_PREFIX,
   MESSAGES_PATH,
   MY_REQUESTS_PATH,
@@ -438,8 +435,6 @@ export const CONSUMER_SELF_HEADER_PREFIXES = [
   '/venue/',
   '/operator/',
   '/organisation/manage',
-  '/shop/manage',
-  '/agency/manage',
   '/operator/security-privacy',
 ] as const;
 
@@ -497,9 +492,8 @@ export const isMobileBottomNavTabPath = (pathname: string): pathname is MobileBo
 /** Personal hub routes that keep the mobile tab bar visible (profile is not a tab). */
 export const MOBILE_BOTTOM_NAV_PROFILE_PATHS = [
   PROFILE_PATH,
-  BUDDIES_PATH,
+  MY_CREWS_PATH,
   PROFILE_SUBMISSIONS_PATH,
-  INBOUND_CONTRIBUTIONS_PATH,
   OPERATOR_CONSOLE_PREFIX,
   HOSTING_HUB_PATH,
   GROUPS_PATH,

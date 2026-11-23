@@ -1,14 +1,14 @@
 import { Link } from 'react-router-dom';
 import { profileHubMobileBackState } from '../../utils/mobileBackNav';
 import {
-  BUDDIES_PATH,
+  MY_CREWS_PATH,
   PROFILE_SUBMISSIONS_PATH,
   listPeopleDiscoveryPath,
   MESSAGES_PATH,
   planHostedSchedulePath,
   PROFILE_HISTORY_PATH,
   PROFILE_BADGES_PATH,
-  PROFILE_SETTINGS_PATH,
+  APP_SETTINGS_PATH,
 } from '../../config/routingCatalog';
 import type { LucideIcon } from 'lucide-react';
 import { Award, MapPin, MessageCircle, Mountain, Settings, UserRound, Users, Backpack } from 'lucide-react';
@@ -82,7 +82,7 @@ export const buildProfileQuickLauncherItems = (input: {
     {
       key: 'friends',
       label: 'Friends',
-      to: BUDDIES_PATH,
+      to: MY_CREWS_PATH,
       icon: Users,
       iconWrapClassName: 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-200',
       badge: input.buddyBadge,
@@ -119,7 +119,7 @@ export const buildProfileQuickLauncherItems = (input: {
     {
       key: 'settings',
       label: 'Settings',
-      to: PROFILE_SETTINGS_PATH,
+      to: APP_SETTINGS_PATH,
       icon: Settings,
       iconWrapClassName: 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200',
     },

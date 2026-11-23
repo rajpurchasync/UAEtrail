@@ -2,7 +2,7 @@
   "version": 1,
   "dmcpPhase": 3,
   "generated": "2026-11-23",
-  "description": "Cross-import counts from list/discovery/* into sibling folders. Prefer src/list/browse/discoveryListRuntime.ts over deep explore/* paths.",
+  "description": "Cross-import counts from list/discovery/* into sibling folders. GW-7: list imports explore modules directly (no list facade).",
   "sourceRoots": [
     "src/list",
     "src/discovery",
@@ -12,8 +12,8 @@
   ],
   "matrix": {
     "src/list": {
-      "..": 195,
-      "browse": 87,
+      "..": 213,
+      "browse": 83,
       "crews": 9,
       "components": 1,
       "config": 1,
@@ -54,8 +54,8 @@
     }
   },
   "byTarget": {
-    "..": 247,
-    "browse": 87,
+    "..": 265,
+    "browse": 83,
     "crews": 9,
     "components": 5,
     "config": 4,
@@ -78,7 +78,7 @@
   },
   "limits": {
     "maxListExploreImports": 25,
-    "listFacade": "src/list/browse/discoveryListRuntime.ts"
+    "listFacade": "src/explore/discoveryRuntime.ts"
   },
   "listExploreImports": 1,
   "canonicalRuntime": "src/explore/discoveryRuntime.ts"

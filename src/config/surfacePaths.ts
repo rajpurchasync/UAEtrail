@@ -1,5 +1,5 @@
 /**
- * Consumer surface paths (secondary hubs, profile, inbound redirect bookmarks).
+ * Consumer surface paths (secondary hubs, profile).
  * No imports — safe for platform.ts and routingCatalog.
  *
  * @see docs/NAVIGATION.md · docs/DOMAIN_CANONICALS.md
@@ -18,7 +18,6 @@ export const PLAN_TODAY_PATH = '/plan/today' as const;
 
 /**
  * Community hosting hub — dedicated surface (not My Plans).
- * Legacy inbound: `/plan?filter=hosting` redirects here.
  */
 export const HOSTING_HUB_PATH = '/hosting' as const;
 
@@ -34,16 +33,10 @@ export const PROFILE_HISTORY_PATH = '/profile/history' as const;
 export const JOURNEY_MAP_PATH = '/profile/history/map' as const;
 
 export const isProfileHistoryListPath = (pathname: string): boolean =>
-  pathname === PROFILE_HISTORY_PATH ||
-  pathname === '/profile/my-trips' ||
-  pathname.endsWith('/profile/history') ||
-  pathname.endsWith('/my-trips');
+  pathname === PROFILE_HISTORY_PATH || pathname.endsWith('/profile/history');
 
 export const isJourneyMapPath = (pathname: string): boolean =>
-  pathname === JOURNEY_MAP_PATH ||
-  pathname === '/profile/my-trips/map' ||
-  pathname.endsWith('/profile/history/map') ||
-  pathname.endsWith('/my-trips/map');
+  pathname === JOURNEY_MAP_PATH || pathname.endsWith('/profile/history/map');
 
 /** Admin / host place registry consoles */
 export const ADMIN_PLACES_PATH = '/admin/places' as const;
@@ -83,47 +76,16 @@ export const APP_SETTINGS_NOTIFICATIONS_PREFERENCES_PATH =
 export const APP_SETTINGS_NOTIFICATIONS_SAVED_PATH = '/settings/notifications/saved' as const;
 export const APP_SETTINGS_SAFETY_PATH = '/settings/safety' as const;
 
-/** @deprecated Bookmarks only — SPA redirects to {@link APP_SETTINGS_PATH}. */
-export const INBOUND_PROFILE_SETTINGS_PATH = '/profile/settings' as const;
-export const INBOUND_PROFILE_SETTINGS_ACCOUNT_PATH = '/profile/settings/account' as const;
-export const INBOUND_PROFILE_SETTINGS_PRIVACY_PATH = '/profile/settings/privacy' as const;
-export const INBOUND_PROFILE_SETTINGS_NOTIFICATIONS_PATH = '/profile/settings/notifications' as const;
-export const INBOUND_PROFILE_SETTINGS_SAFETY_PATH = '/profile/settings/safety' as const;
-
-/** Prefer `APP_SETTINGS_*` in new code. */
-export const PROFILE_SETTINGS_PATH = APP_SETTINGS_PATH;
-export const PROFILE_SETTINGS_DISPLAY_PATH = APP_SETTINGS_DISPLAY_PATH;
-export const PROFILE_SETTINGS_ACCOUNT_PATH = APP_SETTINGS_ACCOUNT_PATH;
-export const PROFILE_SETTINGS_PRIVACY_PATH = APP_SETTINGS_PRIVACY_PATH;
-export const PROFILE_SETTINGS_NOTIFICATIONS_PATH = APP_SETTINGS_NOTIFICATIONS_PATH;
-export const PROFILE_SETTINGS_NOTIFICATIONS_PREFERENCES_PATH = APP_SETTINGS_NOTIFICATIONS_PREFERENCES_PATH;
-export const PROFILE_SETTINGS_NOTIFICATIONS_SAVED_PATH = APP_SETTINGS_NOTIFICATIONS_SAVED_PATH;
-export const PROFILE_SETTINGS_SAFETY_PATH = APP_SETTINGS_SAFETY_PATH;
-
 export const isAppSettingsPath = (pathname: string): boolean =>
   pathname === APP_SETTINGS_PATH || pathname.startsWith(`${APP_SETTINGS_PATH}/`);
 
 /** In-app notification hub — history, preferences, saved map alerts (under Settings). */
 export const isNotificationHubPath = (pathname: string): boolean =>
-  pathname === NOTIFICATIONS_PATH ||
-  pathname.startsWith(`${NOTIFICATIONS_PATH}/`) ||
   pathname === APP_SETTINGS_NOTIFICATIONS_PATH ||
   pathname.startsWith(`${APP_SETTINGS_NOTIFICATIONS_PATH}/`);
 
-export const isInboundProfileSettingsPath = (pathname: string): boolean =>
-  pathname === INBOUND_PROFILE_SETTINGS_PATH || pathname.startsWith(`${INBOUND_PROFILE_SETTINGS_PATH}/`);
-
-/** Map retired `/profile/settings…` bookmarks to canonical `/settings…` (path only). */
-export const inboundProfileSettingsRedirectTarget = (pathname: string): string => {
-  const suffix = pathname.replace(/^\/profile\/settings/, '') || '';
-  return `${APP_SETTINGS_PATH}${suffix}`;
-};
-
 /** Member achievement badges (no Trail Points wallet) */
 export const PROFILE_BADGES_PATH = '/profile/badges' as const;
-
-/** Inbound bookmark — App.tsx redirects to explore. */
-export const MEMBERSHIP_MARKETING_PATH = '/membership' as const;
 
 /** Social subgraph */
 export const GROUPS_PATH = '/groups' as const;
@@ -132,10 +94,8 @@ export const GROUPS_PATH = '/groups' as const;
 export const COMMUNITY_CLUB_PATH_PREFIX = '/clubs' as const;
 export const communityClubPath = (slug: string): string =>
   `${COMMUNITY_CLUB_PATH_PREFIX}/${encodeURIComponent(slug)}`;
-/** My Crews friends hub — canonical SPA route (`/buddies` bookmarks redirect here). */
+/** My Crews friends hub — canonical SPA route. */
 export const MY_CREWS_PATH = '/crews' as const;
-/** Legacy name — same route as {@link MY_CREWS_PATH}. */
-export const BUDDIES_PATH = MY_CREWS_PATH;
 
 /** Query on `/crews` or `/groups` when opened from the Crews list hub — back returns to `crewsHomePath()`. */
 export const CREWS_ORIGIN_QUERY = 'crews' as const;
@@ -153,13 +113,10 @@ export const myCrewsPath = (options?: { from?: string }): string => {
 /** Social hub child screens under {@link MY_CREWS_PATH} (Settings-style sections, not tabs). */
 export type SocialFriendsSection = 'friends' | 'requests' | 'following';
 
-export const socialFriendsPath = (): string => `${BUDDIES_PATH}?section=friends`;
-export const socialRequestsPath = (): string => `${BUDDIES_PATH}?section=requests`;
-export const socialFollowingPath = (): string => `${BUDDIES_PATH}?section=following`;
+export const socialFriendsPath = (): string => `${MY_CREWS_PATH}?section=friends`;
+export const socialRequestsPath = (): string => `${MY_CREWS_PATH}?section=requests`;
+export const socialFollowingPath = (): string => `${MY_CREWS_PATH}?section=following`;
 export const PROFILE_SUBMISSIONS_PATH = '/profile/submissions' as const;
-
-/** Inbound bookmark — redirects to {@link PROFILE_SUBMISSIONS_PATH}. */
-export const INBOUND_CONTRIBUTIONS_PATH = '/contributions' as const;
 
 export const groupsPath = (options?: {
   create?: boolean;
@@ -223,26 +180,8 @@ export const groupsManagePath = (
   return `${GROUPS_PATH}?${params.toString()}`;
 };
 
-/** Inbound bookmarks — SPA redirects to {@link APP_SETTINGS_NOTIFICATIONS_PATH} and sub-routes. */
-export const NOTIFICATIONS_PATH = '/notifications' as const;
-export const NOTIFICATIONS_SETTINGS_PATH = '/notifications/settings' as const;
-export const NOTIFICATIONS_SAVED_PATH = '/notifications/saved' as const;
-
-/** Map retired `/notifications…` bookmarks to canonical settings notification routes. */
-export const inboundNotificationsRedirectTarget = (pathname: string): string => {
-  if (pathname.startsWith(NOTIFICATIONS_SETTINGS_PATH)) {
-    return APP_SETTINGS_NOTIFICATIONS_PREFERENCES_PATH;
-  }
-  if (pathname.startsWith(NOTIFICATIONS_SAVED_PATH)) {
-    return APP_SETTINGS_NOTIFICATIONS_SAVED_PATH;
-  }
-  return APP_SETTINGS_NOTIFICATIONS_PATH;
-};
-
 /** Consumer inbox + threads — keep string literal in sync with `apps/api/src/lib/member-routes.ts`. */
 export const MESSAGES_PATH = '/chat' as const;
-/** Inbound bookmark — redirects to {@link MESSAGES_PATH} in `App.tsx`. */
-export const INBOUND_MESSAGES_PATH = '/messages' as const;
 export const MY_REQUESTS_PATH = '/my-requests' as const;
 
 export const isOperatorConsolePath = (pathname: string): boolean =>
@@ -319,14 +258,3 @@ export const messagesGroupPath = (groupId: string, activityId?: string): string 
 
 export const myRequestDetailPath = (requestId: string): string =>
   `${MY_REQUESTS_PATH}/${encodeURIComponent(requestId)}`;
-
-/** Removed Trail Points wallet — inbound URLs redirect to badges in `App.tsx`. */
-export const INBOUND_TRAIL_POINTS_PATH = '/trail-points' as const;
-export const INBOUND_MY_REWARDS_PATH = '/my-rewards' as const;
-export const INBOUND_REWARDS_PATH = '/rewards' as const;
-
-export const isInboundRewardsWalletPath = (pathname: string): boolean =>
-  pathname === INBOUND_MY_REWARDS_PATH ||
-  pathname === INBOUND_REWARDS_PATH ||
-  pathname === INBOUND_TRAIL_POINTS_PATH ||
-  pathname.startsWith(`${INBOUND_TRAIL_POINTS_PATH}?`);

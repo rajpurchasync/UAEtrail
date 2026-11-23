@@ -11,7 +11,7 @@ import { serializeExploreActivityDatePreset } from '@/explore/exploreActivityDat
 import { useCallback, useMemo } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import type { ExploreActivityDatePreset } from '../browse/discoveryListRuntime';
+import type { ExploreActivityDatePreset } from '../../explore/discoveryRuntime';
 import {
   crewBrowseNeedsAvailability,
   crewBrowseNeedsRoster,

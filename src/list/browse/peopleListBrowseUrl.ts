@@ -9,11 +9,7 @@ import {
   type CrewPeopleFacet,
   PEOPLE_FACET_URL_PARAM,
 } from '@/crew-discovery/crewBrowseState';
-import {
-  INBOUND_BUDDIES_LIST_TAB_PARAM,
-  PEOPLE_LIST_TAB_URL_PARAM,
-  readPeopleCrewsTabParam,
-} from '../../routing/productUrlInbound';
+import { PEOPLE_LIST_TAB_URL_PARAM, readPeopleCrewsTabParam } from '../../routing/productUrlInbound';
 
 export type CrewBrowseTab = CrewBrowseLane;
 export type { CrewBrowseState, CrewPeopleFacet };
@@ -27,7 +23,7 @@ export const parsePeopleListBrowseState = (
 
 /** @deprecated Use parsePeopleListBrowseState */
 export const parsePeopleListBrowseTab = (raw: string | null): CrewBrowseLane => {
-  if (!raw || raw === INBOUND_BUDDIES_LIST_TAB_PARAM) return 'people';
+  if (!raw) return 'people';
   const params = new URLSearchParams();
   params.set(PEOPLE_LIST_TAB_URL_PARAM, raw);
   return parseCrewBrowseState(params).lane;

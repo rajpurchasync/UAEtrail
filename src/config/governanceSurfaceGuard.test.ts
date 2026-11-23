@@ -147,4 +147,21 @@ describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
     expect(crewNav).toMatch(/myCrewsPathFromCrews/);
     expect(crewNav).not.toMatch(/buddiesPathFromCrews/);
   });
+
+  it('GW7-01: SPA inbound redirect modules and AppRoutes Navigate shims removed', () => {
+    expect(existsSync(join(ROOT, 'src/routing/inboundBookmarkRedirects.tsx'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/routing/exploreEntryRedirects.tsx'))).toBe(false);
+    const routes = read('src/routing/AppRoutes.tsx');
+    expect(routes).not.toMatch(/<Navigate\b/);
+    expect(routes).not.toMatch(/InboundLegacyProfileSettingsRedirect/);
+    expect(routes).not.toMatch(/InboundRetiredPublishingConsoleRedirect/);
+    expect(routes).not.toMatch(/path="\/map"/);
+    expect(routes).not.toMatch(/path="\/discovery"/);
+    expect(routes).not.toMatch(/path="\/messages"/);
+    expect(routes).not.toMatch(/path="\/become-host"/);
+    const lazy = read('src/routing/appLazyPages.tsx');
+    expect(lazy).not.toMatch(/loadInboundRedirects/);
+    expect(lazy).not.toMatch(/loadExploreEntryRedirects/);
+    expect(lazy).not.toMatch(/DashboardRedirect/);
+  });
 });

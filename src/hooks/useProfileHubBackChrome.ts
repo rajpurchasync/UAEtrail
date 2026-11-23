@@ -1,6 +1,6 @@
-import { PROFILE_PATH, PROFILE_SETTINGS_PATH } from '../config/routingCatalog';
+import { PROFILE_PATH, APP_SETTINGS_PATH } from '../config/routingCatalog';
 import { SETTINGS_SURFACE_TITLE } from '../config/settingsHub';
-import { BUDDIES_PATH, PROFILE_VEHICLES_PATH } from '../config/surfacePaths';
+import { MY_CREWS_PATH, PROFILE_VEHICLES_PATH } from '../config/surfacePaths';
 import { PRODUCT_MY_CREW_SURFACE_TITLE } from '../content/productNorthStar';
 import { useMobileBackChrome } from './useMobileBackChrome';
 
@@ -9,7 +9,7 @@ export const useProfileHubBackChrome = () =>
 
 export const useProfileSettingsBackChrome = () =>
   useMobileBackChrome({
-    fallbackTo: PROFILE_SETTINGS_PATH,
+    fallbackTo: APP_SETTINGS_PATH,
     label: SETTINGS_SURFACE_TITLE,
     backBehavior: 'fallback',
   });
@@ -24,7 +24,7 @@ export const useProfileVehiclesBackChrome = () =>
 /** Child Social screens (Friends, Groups, …) — one shell back to the Social hub. */
 export const useSocialHubBackChrome = () =>
   useMobileBackChrome({
-    fallbackTo: BUDDIES_PATH,
+    fallbackTo: MY_CREWS_PATH,
     label: PRODUCT_MY_CREW_SURFACE_TITLE,
     backBehavior: 'fallback',
   });

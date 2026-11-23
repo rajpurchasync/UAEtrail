@@ -39,7 +39,7 @@ import {
 } from '../../config/phoneAppInstall';
 import { detectAndroidWebBrowser, resolveAndroidInstallSteps, resolveIosInstallSteps } from '../../utils/pwaInstallGuide';
 import { promptAndroidInstall } from '../../utils/pwaInstallPrompt';
-import { PROFILE_SETTINGS_PATH } from '../../config/routingCatalog';
+import { APP_SETTINGS_PATH } from '../../config/routingCatalog';
 import { MESSAGES_PATH, PLAN_PATH } from '../../config/surfacePaths';
 import { resolveMobileTabHeaderTitle } from '../../config/mobileTabHeader';
 import { exploreMapMobileBackState, mobileBackNavState, type MobileBackNavState } from '../../utils/mobileBackNav';
@@ -724,7 +724,7 @@ const MobileMenuPanel = () => {
     const hash = action === 'pwa-ios' ? IOS_INSTALL_SETTINGS_HASH : ANDROID_INSTALL_SETTINGS_HASH;
     const from = search ? `${pathname}${search}` : pathname;
     const label = resolveMobileTabHeaderTitle(pathname, search) ?? 'Back';
-    navigate(`${PROFILE_SETTINGS_PATH}${hash}`, {
+    navigate(`${APP_SETTINGS_PATH}${hash}`, {
       state: mobileBackNavState(from, label),
     });
   };

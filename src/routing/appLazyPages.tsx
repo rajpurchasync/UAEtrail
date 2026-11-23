@@ -1,6 +1,4 @@
 import { lazy } from 'react';
-import { Navigate } from 'react-router-dom';
-import { organisationManagePath } from '../member/organisationPaths';
 
 export const ProtectedRoute = lazy(() =>
   import('../components/auth/ProtectedRoute').then((m) => ({ default: m.ProtectedRoute }))
@@ -13,68 +11,11 @@ export const ExploreExperience = lazy(() => {
 export const ExploreSearchResultsPage = lazy(() =>
   import('../explore/search/ExploreSearchResultsPage').then((m) => ({ default: m.ExploreSearchResultsPage }))
 );
-export const ExploreInboundHubRedirect = lazy(() =>
-  import('../explore/search/ExploreInboundHubRedirect').then((m) => ({ default: m.ExploreInboundHubRedirect }))
-);
 export const BrowseListPage = lazy(() =>
   import('../list/BrowseListPage').then((m) => ({ default: m.BrowseListPage }))
 );
 export const NativeDeepLinkHandler = lazy(() =>
   import('../components/NativeDeepLinkHandler').then((m) => ({ default: m.NativeDeepLinkHandler }))
-);
-export const DashboardRedirect = lazy(() =>
-  import('../components/auth/DashboardRedirect').then((m) => ({ default: m.DashboardRedirect }))
-);
-export const loadInboundRedirects = () => import('./inboundBookmarkRedirects');
-export const DiscoveryRedirect = lazy(() =>
-  loadInboundRedirects().then((m) => ({ default: m.DiscoveryRedirect }))
-);
-export const InboundCanonicalPlaceRedirect = lazy(() =>
-  loadInboundRedirects().then((m) => ({ default: m.InboundCanonicalPlaceRedirect }))
-);
-export const InboundMerchantPublicRedirect = lazy(() =>
-  loadInboundRedirects().then((m) => ({ default: m.InboundMerchantPublicRedirect }))
-);
-export const InboundProductPathRedirect = lazy(() =>
-  loadInboundRedirects().then((m) => ({ default: m.InboundProductPathRedirect }))
-);
-export const InboundMessagesRedirect = lazy(() =>
-  loadInboundRedirects().then((m) => ({ default: m.InboundMessagesRedirect }))
-);
-export const InboundProMembershipRedirect = lazy(() =>
-  loadInboundRedirects().then((m) => ({ default: m.InboundProMembershipRedirect }))
-);
-export const InboundProfileWishlistRedirect = lazy(() =>
-  loadInboundRedirects().then((m) => ({ default: m.InboundProfileWishlistRedirect }))
-);
-export const InboundRetiredPublishingConsoleRedirect = lazy(() =>
-  loadInboundRedirects().then((m) => ({ default: m.InboundRetiredPublishingConsoleRedirect }))
-);
-export const InboundProfileHistoryAliasRedirect = lazy(() =>
-  loadInboundRedirects().then((m) => ({ default: m.InboundProfileHistoryAliasRedirect }))
-);
-export const InboundJourneyMapAliasRedirect = lazy(() =>
-  loadInboundRedirects().then((m) => ({ default: m.InboundJourneyMapAliasRedirect }))
-);
-export const InboundLegacyProfileSettingsRedirect = lazy(() =>
-  loadInboundRedirects().then((m) => ({ default: m.InboundLegacyProfileSettingsRedirect }))
-);
-export const InboundLegacyNotificationsRedirect = lazy(() =>
-  loadInboundRedirects().then((m) => ({ default: m.InboundLegacyNotificationsRedirect }))
-);
-export const InboundLegacyBuddiesRedirect = lazy(() =>
-  loadInboundRedirects().then((m) => ({ default: m.InboundLegacyBuddiesRedirect }))
-);
-
-export const loadExploreEntryRedirects = () => import('./exploreEntryRedirects');
-export const ShopBrowseRoute = lazy(() =>
-  loadExploreEntryRedirects().then((m) => ({ default: m.ShopBrowseRoute }))
-);
-export const CalendarRedirect = lazy(() =>
-  loadExploreEntryRedirects().then((m) => ({ default: m.CalendarRedirect }))
-);
-export const PeopleRedirect = lazy(() =>
-  loadExploreEntryRedirects().then((m) => ({ default: m.PeopleRedirect }))
 );
 export const PlanBrowseRoute = lazy(() =>
   import('./planBrowseRoute').then((m) => ({ default: m.PlanBrowseRoute }))
@@ -153,8 +94,6 @@ export const PublishingPlaces = lazy(() => import('../pages/publishing/Places').
 export const PublishingHistory = lazy(() => import('../pages/publishing/History').then((m) => ({ default: m.History })));
 export const UserRequests = lazy(() => import('../pages/UserRequests').then((m) => ({ default: m.UserRequests })));
 export const MessagesGate = lazy(() => import('../pages/Messages').then((m) => ({ default: m.MessagesGate })));
-export const ShopManageRedirect = () => <Navigate to={organisationManagePath('shop')} replace />;
-export const AgencyManageRedirect = () => <Navigate to={organisationManagePath('agency')} replace />;
 export const PublishingManage = lazy(() => import('../pages/publishing/Manage').then((m) => ({ default: m.Manage })));
 export const ProfileHistoryPage = lazy(() =>
   import('../pages/ProfileHistory').then((m) => ({ default: m.ProfileHistoryPage }))

@@ -1,10 +1,8 @@
 /** List browse URL state, draft query, and venue/geo read models for the discovery shell. */
 
 import { useEffect, useMemo, useState } from 'react';
-import {
-  parseExploreAreaSlug,
-  useExplorePublishedAreasQuery,
-} from '../browse/discoveryListRuntime';
+import { parseExploreAreaSlug } from '../../explore/exploreAreaFilter';
+import { useExplorePublishedAreasQuery } from '../../explore/discoveryRuntime';
 import { useListDiscoveryUrlState } from '../browse/useListDiscoveryUrlState';
 import { resolveEffectiveBrowseVenueRegions } from '../browse/browseGeoPath';
 import { useBrowseGeoScopeHydration } from '../browse/useBrowseGeoScopeHydration';

@@ -1,6 +1,6 @@
 import type { CreateKindOption } from '../create/CreateKindGrid';
 import {
-  PLAN_ADD_QUERY_KEY,
+  PLAN_SHEET_QUERY_KEY,
   PLAN_ADD_STEPS,
   clearPlanAddQuery,
   parsePlanAddQuery,
@@ -8,7 +8,7 @@ import {
 } from '../create/planAddQuery';
 
 export {
-  PLAN_ADD_QUERY_KEY,
+  PLAN_SHEET_QUERY_KEY,
   PLAN_ADD_STEPS,
   clearPlanAddQuery,
   parsePlanAddQuery,

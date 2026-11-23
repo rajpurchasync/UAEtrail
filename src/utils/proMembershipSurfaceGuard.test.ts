@@ -42,10 +42,12 @@ describe('proMembershipSurfaceGuard', () => {
     expect(violations).toEqual([]);
   });
 
-  it('App mounts InboundProMembershipRedirect for /become-host routes', () => {
+  it('GW7-01: no inbound become-host SPA shim; Pro at /profile/pro-membership', () => {
     const app = readAppRouteRegistry();
-    expect(app).toMatch(/InboundProMembershipRedirect/);
-    expect(app).toMatch(/loadInboundRedirects/);
+    expect(app).not.toMatch(/InboundProMembershipRedirect/);
+    expect(app).not.toMatch(/loadInboundRedirects/);
+    expect(app).not.toMatch(/path="\/become-host"/);
+    expect(app).toMatch(/profile\/pro-membership/);
     expect(app).not.toMatch(/pages\/BecomeHost/);
     expect(app).not.toMatch(/pages\/BecomeOrganisation/);
   });

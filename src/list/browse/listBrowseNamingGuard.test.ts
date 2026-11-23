@@ -156,11 +156,10 @@ describe('listBrowseNamingGuard', () => {
     expect(read('src/explore/exploreBrowseUrlHydrate.ts')).toMatch(/@\/crew-discovery\/crewBrowseTab/);
   });
 
-  it('BROWSE-NAME-01p: list discovery runtime facade lives under browse', () => {
-    expect(existsSync(join(process.cwd(), 'src/list/browse/discoveryListRuntime.ts'))).toBe(true);
-    expect(existsSync(join(process.cwd(), 'src/list/discoveryListRuntime.ts'))).toBe(false);
-    expect(read('src/list/browse/discoveryListRuntime.ts')).toMatch(/export \* from '\.\.\/\.\.\/explore\/discoveryRuntime'/);
-    expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(/browse\/discoveryListRuntime/);
+  it('BROWSE-NAME-01p: GW-7 — list imports explore discoveryRuntime directly', () => {
+    expect(existsSync(join(process.cwd(), 'src/list/browse/discoveryListRuntime.ts'))).toBe(false);
+    expect(read('src/list/browse/browseListFilters.ts')).toMatch(/explore\/discoveryRuntime/);
+    expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(/explore\/discoveryRuntime/);
   });
 
   it('BROWSE-NAME-01o: browse filters + URL state live under browse', () => {
