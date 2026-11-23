@@ -1030,9 +1030,9 @@ Board one-liner: *P4 thinned the API; **PCOH** (§8.8) finished UPL/BWL coherenc
 | **P2** | platform | 6–10 wk | **MIG-OUTBOX**, **MIG-EXPLORE-READ** (flags); **S10e** promote ops | **Complete** (eng) |
 | **P3** | platform | 6–10 wk | **MIG-CLIENT-QUERY** (TanStack Query on consumer reads) | **Complete** (eng) |
 | **P4** | platform | 8–12 wk | **API only** — CQRS-light; all **`apps/api/src/routes/**`** → `services/*` (no `*-store` in routes) | **Complete** (eng) |
-| **P4b** | product-eng | 8–16 wk | Surface unification after PCOH | **Eng complete** — phase open until S10f signed |
+| **P4b** | product-eng | 8–16 wk | Surface unification after PCOH | **`engineeringStatus: complete`** — `status` open until S10f/S10e ops signed |
 | **PCOH** | product-eng + platform | pre-launch | §8.8 coherence program (`MIG-COH-*`) | **Complete** |
-| **P5** | platform | 4–6 wk | SLO smoke + staging baselines (`p5:slo-smoke`) | **Eng complete** — PRE_DEPLOY § SLO baseline sign-off pending |
+| **P5** | platform | 4–6 wk | SLO smoke + staging baselines (`p5:slo-smoke`) | **`engineeringStatus: complete`** — staging `p5:slo-smoke` + PRE_DEPLOY § SLO sign-off pending |
 | **P6** | platform | ongoing | **C1**/S10g, §7 burn-down | **Gated** |
 | **MIG-SCHEDULE-GUIDE** | product-eng | 2026-Q4 | Guide ladder + schedule blocks + unified calendar | **Complete** |
 

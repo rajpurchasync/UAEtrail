@@ -107,11 +107,14 @@ if (failed) {
 }
 
 try {
-  execSync('npx vitest run src/config/programArchiveGuard.test.ts', {
+  execSync(
+    'npx vitest run src/config/programArchiveGuard.test.ts src/config/programPhaseOpsGuard.test.ts src/config/repoCensusGuard.test.ts',
+    {
     cwd: root,
     stdio: 'inherit',
     env: childEnv(),
-  });
+    }
+  );
 } catch {
   console.error('\n[verify:refactor-program] programArchiveGuard FAILED');
   process.exit(1);

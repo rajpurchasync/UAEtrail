@@ -17,7 +17,7 @@
       "S10f human QA checklist run on staging",
       "in_progress migrations ≤ maxInProgressMigrations"
     ],
-    "p2UnlockStatus": "P2–P4 API and PCOH complete; remaining ACTIVITY-DETAIL S10f + P5 SLO; S10e/S10f pending"
+    "p2UnlockStatus": "P2–P4 API and PCOH complete; P4b/P5 engineeringStatus complete — ops gates (S10f, P5 SLO smoke, MIG-DISCO-REG migrate) pending staging sign-off"
   },
   "capacity": {
     "platformEngineeringPercentTarget": "30-40",
@@ -94,6 +94,12 @@
       "id": "P4b",
       "name": "Surface unification — UI, flows, routing, hooks (S13 + §6.2 closure)",
       "status": "in_progress",
+      "engineeringStatus": "complete",
+      "engineeringClosedOn": "2026-11-23",
+      "opsGatesPending": [
+        "S10f: npm run s10f:ops:print-routes (+ checklist) on staging",
+        "S10e: bbox promote when scheduled (npm run s10e:staging-checklist)"
+      ],
       "owner": "product-eng",
       "targetWindowWeeks": "8-16",
       "authorization": "authorized",
@@ -124,6 +130,12 @@
       "id": "P5",
       "name": "Observability + load — SLO smoke (staging baselines)",
       "status": "in_progress",
+      "engineeringStatus": "complete",
+      "engineeringClosedOn": "2026-11-23",
+      "opsGatesPending": [
+        "PRE_DEPLOY_CHECKLIST.md § SLO baseline signed",
+        "npm run p5:slo-smoke on staging (P5_SMOKE_EMAIL/PASSWORD)"
+      ],
       "owner": "platform",
       "targetWindowWeeks": "4-6",
       "authorization": "gated",

@@ -4,7 +4,7 @@
   "description": "Phase P0 repo census baseline. Regenerate: npm run repo:census",
   "boundedContextCount": 18,
   "manifestVersion": 1,
-  "spaRouteElements": 0,
+  "spaRouteElements": 147,
   "apiRegistrarFileCount": 68,
   "experimentPlanFiles": 0,
   "experimentStubbedFiles": 0,

@@ -13,7 +13,8 @@ import { execSync } from 'node:child_process';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const skipKnip = process.argv.includes('--skip-knip');
 const manifestPath = join(root, 'scripts/bounded-context-manifest.json');
-const appRoutesPath = join(root, 'src/App.tsx');
+/** @see scripts/system-audit.mjs — SPA routes live in src/routing/AppRoutes.tsx. */
+const appRoutesPath = join(root, 'src/routing/AppRoutes.tsx');
 const apiRoutesDir = join(root, 'apps/api/src/routes');
 const outPath = join(root, 'scripts/repo-census-baseline.json');
 
