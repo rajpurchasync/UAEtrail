@@ -67,5 +67,5 @@ Map / FAB / publish?       → CREATE_FLOW + NORTHSTAR
 Names / api.* / meta?      → DOMAIN_CANONICALS §6–12
 Copy on map or home?       → exploreCopy / homeLanding + NORTHSTAR
 Go live?                   → PRE_DEPLOY_CHECKLIST + DEPLOYMENT
-Platform defaults / rejected stack? → SYSTEM_COHERENCE §8.9 + refactor-program MIG-ARCH-*
+Platform defaults / rejected stack? → SYSTEM_COHERENCE §8.9 + platform-program MIG-ARCH-*
 ```

@@ -2,7 +2,6 @@
   "$schema": "./people-vocabulary-touchpoints.schema.json",
   "version": 2,
   "programId": "MIG-PEOPLE-VOCAB-2026",
-  "planFile": ".cursor/plans/crews_three_tabs_recommended_2026.plan.md",
   "summary": "Three surfaces: Intent compose (write member_availability) · Find crew (discover read) · My crew (social hub). Six pillars in crew-pillars.ts. No hireable/memberHireable in source. Guide = intent kind; guides_operators = directory pros.",
   "surfaces": {
     "intent_compose": {
@@ -91,7 +90,6 @@
     {
       "id": "P5d-crews-three-tabs",
       "status": "complete",
-      "planFile": ".cursor/plans/crews_three_tabs_recommended_2026.plan.md",
       "deliverables": [
         "peopleTab people|professional|community",
         "peopleFacet recommended + pills",

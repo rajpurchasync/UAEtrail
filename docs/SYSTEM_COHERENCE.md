@@ -1034,6 +1034,14 @@ Engineering migrations are **largely complete**; the file is **not** an active r
 
 **Layer contracts** live in `*-touchpoints.json` + `bounded-context-manifest.json`; **behavior** lives in code + vitest guards. Removing the index would not remove complexity — it would scatter release metadata across markdown again (violates **C28** / `DOCS_GOVERNANCE`).
 
+**Governance cleanup waves** (no dual schedules, no agent plan markdown):
+
+| Wave | Scope | Gate |
+|------|--------|------|
+| **GW-1** | Compact `platform-program.json` ledger; remove `.cursor/plans`; drop normalize-archive shim | `governanceSurfaceGuard` |
+| **GW-2** | Retire API read-compat + notification shims (`wishlist-alerts`, `availability-hosted-match-notifications`) | matching + catalog guards |
+| **GW-3** | Collapse redundant `verify:*-spine` runners into `verify:system-coherence` only where duplicated | CI time / ownership |
+
 #### 8.6.1 Phases (outcomes)
 
 | Phase | Owner | Window | Outcome | Status |

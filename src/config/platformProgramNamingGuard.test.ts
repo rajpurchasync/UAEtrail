@@ -10,7 +10,7 @@ describe('platformProgramNamingGuard (post-refactor index)', () => {
     expect(existsSync(join(ROOT, 'scripts/refactor-program.json'))).toBe(false);
     const program = JSON.parse(readFileSync(join(ROOT, 'scripts/platform-program.json'), 'utf8'));
     expect(program.description).toMatch(/not an active refactor backlog/i);
-    expect(program.purpose).toMatch(/Migration ledger/i);
+    expect(program.archivePolicy).toMatch(/touchpoints/i);
   });
 
   it('PGM-NAME-02: verify script and npm gate use platform-program naming', () => {

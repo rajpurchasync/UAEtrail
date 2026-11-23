@@ -1,7 +1,6 @@
 {
   "version": 1,
   "description": "Platform program index (permanent governance — not an active refactor backlog).",
-  "purpose": "Migration ledger, ops phase gates (P4b/P5), WIP limit, authorization statement synced to Tier-1. Layer contracts live in *-touchpoints.json + bounded-context-manifest.json; CI enforces via verify:platform-program + domain guards.",
   "updated": "2026-11-23",
   "authorization": {
     "approvedOn": "2026-10-17",
@@ -183,637 +182,322 @@
   "migrations": [
     {
       "id": "MIG-P0-CENSUS",
-      "phase": "P0",
       "status": "complete",
-      "owner": "platform",
-      "contextIds": [],
-      "successMetric": "repo-census-baseline.json",
+      "phase": "P0",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-P0-DOCS",
-      "phase": "P0",
       "status": "complete",
-      "owner": "platform",
-      "contextIds": [],
-      "successMetric": "experiment cap + archive stubs",
+      "phase": "P0",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-MANIFEST-DOMAINS",
-      "phase": "P0",
       "status": "complete",
-      "owner": "platform",
-      "contextIds": [
-        "participation",
-        "media",
-        "engagement",
-        "availability"
-      ],
-      "successMetric": "boundedContextAlignment: all domain modules assigned; §3.1 matches manifest",
+      "phase": "P0",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-W0-SYSTEM-AUDIT",
-      "phase": "P0",
       "status": "complete",
-      "owner": "platform",
-      "contextIds": [],
-      "successMetric": "system-audit-baseline.json; mounted *Router + registerActivityRoute in route graph; 0 route-layer write violations",
+      "phase": "P0",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-CPC-P1",
-      "phase": "P1",
       "status": "complete",
-      "owner": "product-eng",
-      "contextIds": [
-        "places",
-        "facilities",
-        "compose"
-      ],
-      "successMetric": "CPC-7+; single catalog read/write vocabulary (C26)",
+      "phase": "P1",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-DISCO-REG",
-      "phase": "P1",
       "status": "complete",
-      "owner": "discovery",
-      "contextIds": [
-        "discovery",
-        "availability",
-        "compose"
-      ],
-      "successMetric": "Eng: availability + migDiscoRegProgramGuard + residue tests in verify:domain. Ops: migrate-seeking-to-availability + mig-disco-reg:ops:gate (SEEKING_STORAGE_RUNBOOK)",
+      "phase": "P1",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-PLAN-HUB",
-      "phase": "P0",
       "status": "complete",
-      "owner": "product-eng",
-      "contextIds": [
-        "engagement",
-        "availability",
-        "publishing_workspace"
-      ],
-      "successMetric": "One of many surfaces — not program center",
+      "phase": "P0",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-CLIENT-QUERY",
-      "phase": "P3",
       "status": "complete",
-      "owner": "platform",
-      "contextIds": [
-        "discovery",
-        "participation",
-        "member_identity",
-        "engagement",
-        "communication"
-      ],
-      "successMetric": "Query keys + domain hooks; no mount-fetch on touched surfaces",
+      "phase": "P3",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-OUTBOX",
-      "phase": "P2",
       "status": "complete",
-      "owner": "platform",
-      "contextIds": [
-        "communication",
-        "engagement"
-      ],
-      "successMetric": "Outbox for notifications and fan-out (SIDE_EFFECT_OUTBOX=1)",
+      "phase": "P2",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-EXPLORE-READ",
-      "phase": "P2",
       "status": "complete",
-      "owner": "discovery",
-      "contextIds": [
-        "discovery"
-      ],
-      "successMetric": "Map presentation is the card copy; no second discoveryCard payload",
+      "phase": "P2",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-CQRS-ROUTES",
-      "phase": "P4",
       "status": "complete",
-      "owner": "platform",
-      "contextIds": [
-        "places",
-        "facilities",
-        "availability",
-        "member_identity",
-        "participation",
-        "social_graph",
-        "engagement"
-      ],
-      "successMetric": "route-handler-cqrs-guard; all apps/api/src/routes/**/*.ts handlers delegate reads/writes to services (no *-store imports)",
+      "phase": "P4",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-CQRS-ROUTE-DATA",
-      "phase": "P4",
       "status": "complete",
-      "owner": "platform",
-      "contextIds": [
-        "member_identity",
-        "communication",
-        "engagement"
-      ],
-      "successMetric": "route-handler-cqrs-guard; no auth-users/chat-data/social-data imports in routes",
+      "phase": "P4",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-CQRS-ROUTE-AUTH",
-      "phase": "P4",
       "status": "complete",
-      "owner": "platform",
-      "contextIds": [
-        "member_identity",
-        "communication"
-      ],
-      "successMetric": "route-handler-cqrs-guard + auth-command-layer-guard; auth.ts delegates to auth-*-commands + auth-session-flow; no auth-tokens in routes",
+      "phase": "P4",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-P5-SLO-SMOKE",
-      "phase": "P5",
       "status": "complete",
-      "owner": "platform",
-      "contextIds": [
-        "discovery",
-        "participation"
-      ],
-      "successMetric": "Eng: p5SloProgramGuard + releaseOpsProgramGuard + p5:slo-preflight in verify:domain. Ops: `release:ops:checklist` then staging `p5:slo-smoke` + PRE_DEPLOY gates.",
+      "phase": "P5",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-SURFACE-ACTIVITY-DETAIL",
-      "phase": "P4b",
       "status": "complete",
-      "owner": "product-eng",
-      "contextIds": [
-        "participation",
-        "discovery"
-      ],
-      "successMetric": "Eng: participationPresentationGuard + activityDetailAcceptance + S10f bridge + p4bS10fProgramGuard. Ops: `s10f:ops:print-routes` on staging (human sign-off S10f).",
+      "phase": "P4b",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-SURFACE-EXPLORE-IA",
-      "phase": "P4b",
       "status": "complete",
-      "owner": "discovery",
-      "contextIds": [
-        "discovery"
-      ],
-      "successMetric": "Single map/browse/list/discover IA in code + exploreRouting; DISC-METH guards; no duplicate browse chrome",
+      "phase": "P4b",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-SURFACE-MOBILE-FIVE-TAB",
-      "phase": "P4b",
       "status": "complete",
-      "owner": "product-eng",
-      "contextIds": [
-        "discovery",
-        "member_identity"
-      ],
-      "successMetric": "docs/NAVIGATION.md § Mobile five-tab — Phase 1 shipped; Phase 2–5 complete; resolveMobileFiveTab + handoff; memberSurfacesAcceptance + mobileFiveTabNav.test.ts; p4bPhaseProgramGuard; verify:system",
+      "phase": "P4b",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-EXPLORE-HUB-PARALLEL",
-      "phase": "P4b",
       "status": "complete",
-      "owner": "product-eng",
-      "contextIds": [
-        "discovery"
-      ],
-      "successMetric": "/explore/search product surface; inbound /explore/hub/* redirects only; exploreHubRetirementGuard; exploreSearchAcceptance.test.ts",
+      "phase": "P4b",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-TEAM-MODEL-SPLIT",
-      "phase": "P4b",
       "status": "complete",
-      "owner": "social_graph",
-      "contextIds": [
-        "social_graph",
-        "communication"
-      ],
-      "successMetric": "member_groups collection; kind team|outing_crew + teamLabel; member-group-model-guard.test.ts; DOMAIN_CANONICALS §1.6a–§1.6b",
+      "phase": "P4b",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-TEAMS-LABEL-WIDEN",
-      "phase": "P4b",
       "status": "complete",
-      "owner": "social_graph",
-      "contextIds": [
-        "social_graph",
-        "communication"
-      ],
-      "successMetric": "Team type labels family|friends|colleagues; kid roster family-only under SOCIAL_TEAM_KID_ROSTER_MAX_AGE_YEARS; DOMAIN_CANONICALS §1.6a",
+      "phase": "P4b",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COMMUNITY-DISCOVER",
-      "phase": "P5",
       "status": "complete",
-      "owner": "social_graph",
-      "contextIds": [
-        "social_graph",
-        "discovery",
-        "member_discovery"
-      ],
-      "successMetric": "Shipped: explore/me/admin community APIs; /clubs/:slug; co-host admins; self-serve create (summary, banner, emirate); host pause/reactivate; host manage + notifications; discoverCommunityId on publ…",
+      "phase": "P5",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-SURFACE-MEMBER-PEOPLE",
-      "phase": "P4b",
       "status": "complete",
-      "owner": "product-eng",
-      "contextIds": [
-        "member_identity",
-        "social_graph"
-      ],
-      "successMetric": "memberProfileLink lenses; one people browse module; memberBrowseRowModel everywhere; memberSurfacesAcceptance",
+      "phase": "P4b",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-SURFACE-ADMIN-OPS",
-      "phase": "P4b",
       "status": "complete",
-      "owner": "platform",
-      "contextIds": [
-        "platform_ops"
-      ],
-      "successMetric": "Admin routes in NAVIGATION + adminSurfacesAcceptance; no consumer peek imports in Admin*",
+      "phase": "P4b",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-SERVICE-IDENTITY-BOUNDARY",
-      "phase": "P4b",
       "status": "complete",
-      "owner": "platform",
-      "contextIds": [
-        "member_identity",
-        "communication"
-      ],
-      "successMetric": "New service-layer guard: no lib/auth-users|auth-tokens|chat-data|social-data outside allowlist (middleware + *-store libs)",
+      "phase": "P4b",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-DOCS-EXPERIMENT-STUB",
-      "phase": "P4b",
       "status": "complete",
-      "owner": "platform",
-      "contextIds": [],
-      "successMetric": "experiment/README.md only; plan bodies removed (see docs/archive/README.md); verify:docs enforces stub shape",
+      "phase": "P4b",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-ROUTING-CANON-P0",
-      "phase": "P4b",
       "status": "complete",
-      "owner": "platform",
-      "contextIds": [],
-      "successMetric": "§8.7 schedule + map JSON; verify:routing-canon phase0; no breaking API until P1+",
+      "phase": "P4b",
       "archivedAt": "2026-11-23",
       "scheduleDoc": "scripts/routing-canonical-map.json"
     },
     {
       "id": "MIG-ROUTING-CANON-P1",
-      "phase": "P4b",
       "status": "complete",
-      "owner": "platform",
-      "contextIds": [
-        "publishing_workspace"
-      ],
-      "successMetric": "No /host API rewrite or SPA tree; enforcement phase1 in routing-canonical-map",
+      "phase": "P4b",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-ROUTING-CANON-P2",
-      "phase": "P4b",
       "status": "complete",
-      "owner": "product-eng",
-      "contextIds": [
-        "member_identity"
-      ],
-      "successMetric": "SPA /member/:id ↔ API /member/:userId/* only",
+      "phase": "P4b",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-ROUTING-CANON-P3",
-      "phase": "P4b",
       "status": "complete",
-      "owner": "discovery",
-      "contextIds": [
-        "member_discovery"
-      ],
-      "successMetric": "No /social mount; member-discovery network + browse + search paths",
+      "phase": "P4b",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-ROUTING-CANON-P4",
-      "phase": "P4b",
       "status": "complete",
-      "owner": "platform",
-      "contextIds": [
-        "platform_ops"
-      ],
-      "successMetric": "POST /safety/reports; safety domain module; no reportContent on socialApi",
+      "phase": "P4b",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-ROUTING-CANON-P5",
-      "phase": "P4b",
       "status": "complete",
-      "owner": "product-eng",
-      "contextIds": [
-        "engagement"
-      ],
-      "successMetric": "One feDomain module per /me resource; wishlistApi; apiClientSurfaceGuard boundaries",
+      "phase": "P4b",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-ROUTING-CANON-P11",
-      "phase": "P4b",
       "status": "complete",
-      "owner": "platform",
-      "contextIds": [],
-      "successMetric": "No legacy Navigate-only routes; routingHygiene bans",
+      "phase": "P4b",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COH-00",
-      "phase": "PCOH",
       "status": "complete",
-      "owner": "platform",
-      "contextIds": [],
-      "successMetric": "§8.8.7 governance; UPL/BWL modules; leak guards in verify:domain",
+      "phase": "PCOH",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COH-01",
-      "phase": "PCOH",
       "status": "complete",
-      "owner": "product-eng",
-      "contextIds": [
-        "participation",
-        "compose",
-        "discovery"
-      ],
-      "successMetric": "Crew registry is member_availability; no /me/seeking-posts client or new activityMode seeking writes",
+      "phase": "PCOH",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COH-02",
-      "phase": "PCOH",
       "status": "complete",
-      "owner": "product-eng",
-      "contextIds": [
-        "places",
-        "facilities",
-        "discovery"
-      ],
-      "successMetric": "HTTP /places (+ /locations alias); map source place + facility; Area is a name not a pin; venue/catalog_place read-compat only",
+      "phase": "PCOH",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COH-03",
-      "phase": "PCOH",
       "status": "complete",
-      "owner": "product-eng",
-      "contextIds": [
-        "member_publish_capabilities",
-        "platform_ops"
-      ],
-      "successMetric": "HTTP /me/pro-application + /admin/pro-applications; UPL Pro membership; collection rename optional",
+      "phase": "PCOH",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COH-04",
-      "phase": "PCOH",
       "status": "complete",
-      "owner": "platform",
-      "contextIds": [
-        "publishing_workspace"
-      ],
-      "successMetric": "HTTP /publishing/* API + SPA; no /operator HTTP mount; legacy host middleware gone",
+      "phase": "PCOH",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COH-05",
-      "phase": "PCOH",
       "status": "complete",
-      "owner": "discovery",
-      "contextIds": [
-        "member_discovery",
-        "social_graph"
-      ],
-      "successMetric": "No orphan /people registrar; buddies segment BWL; UPL People/Friends",
+      "phase": "PCOH",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COH-06",
-      "phase": "PCOH",
       "status": "complete",
-      "owner": "product-eng",
-      "contextIds": [
-        "participation"
-      ],
-      "successMetric": "organizer_note renamed host_note BWL; UPL host copy",
+      "phase": "PCOH",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COH-07",
-      "phase": "PCOH",
       "status": "complete",
-      "owner": "product-eng",
-      "contextIds": [
-        "participation",
-        "member_identity",
-        "discovery"
-      ],
-      "successMetric": "Publisher resolver; activity detail parity; /guide retired for individuals",
+      "phase": "PCOH",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COH-08",
-      "phase": "PCOH",
       "status": "complete",
-      "owner": "platform",
-      "contextIds": [
-        "discovery"
-      ],
-      "successMetric": "Map public vs overlay; outbox-only cache bust; SLO baseline",
+      "phase": "PCOH",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COH-09",
-      "phase": "PCOH",
       "status": "complete",
-      "owner": "platform",
-      "contextIds": [
-        "engagement",
-        "social_graph"
-      ],
-      "successMetric": "socialApi removed; buddies/groups/wishlist/entityFollow/reviews domains; user_wishlist collection",
+      "phase": "PCOH",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COH-10",
-      "phase": "PCOH",
       "status": "complete",
-      "owner": "product-eng",
-      "contextIds": [
-        "compose"
-      ],
-      "successMetric": "Single Host compose tree (create/hosting + hostingFlowEngine); organizeFlow/createOrganize/hostingCatalog/hostingFlow shims removed",
+      "phase": "PCOH",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COH-11",
-      "phase": "PCOH",
       "status": "complete",
-      "owner": "platform",
-      "contextIds": [
-        "platform_ops",
-        "shop_profiles"
-      ],
-      "successMetric": "adminSurfacesAcceptance; shop registerShop* split; socialGraphRouter and demandFlow.ts shims deleted",
+      "phase": "PCOH",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-COH-12",
-      "phase": "PCOH",
       "status": "complete",
-      "owner": "platform",
-      "contextIds": [],
-      "successMetric": "Navigate-only page shims deleted; verify:domain fe/api/journey shards; routingHygiene bans ShopManage/BecomeHost/Membership modules",
+      "phase": "PCOH",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-ARCH-W0",
-      "phase": "P2",
       "status": "complete",
-      "owner": "platform",
-      "contextIds": [
-        "discovery",
-        "communication"
-      ],
-      "successMetric": "W0–W3 eng defaults shipped: outbox prod-on; Vercel entry cache; memory token; CSP script boot files; local media ACL; sharp 4096; explore slim pin + overlay index + participant Mongo cap + catalog …",
+      "phase": "P2",
       "archivedAt": "2026-11-23"
     },
     {
       "id": "MIG-PLATFORM-COMPOSE-OPERATOR-2026",
-      "phase": "P4b",
       "status": "complete",
-      "owner": "product-eng",
-      "contextIds": [
-        "compose",
-        "availability",
-        "engagement",
-        "publishing_workspace",
-        "member_identity"
-      ],
-      "successMetric": "Closed — npm run verify:compose-spine",
+      "phase": "P4b",
       "archivedAt": "2026-11-23",
       "scheduleDoc": "npm run verify:compose-spine"
     },
     {
       "id": "MIG-PEOPLE-VOCAB-2026",
-      "phase": "P4b",
       "status": "complete",
-      "owner": "product-eng",
-      "contextIds": [
-        "social_graph",
-        "member_discovery",
-        "communication",
-        "participation",
-        "compose",
-        "engagement"
-      ],
-      "successMetric": "Closed 2026-11-22. Manifest: scripts/people-vocabulary-touchpoints.json. P5d + REC server rank: discover-recommendations-touchpoints.json. MIG-COMMUNITY-DISCOVER complete.",
+      "phase": "P4b",
       "archivedAt": "2026-11-23",
       "scheduleDoc": "scripts/people-vocabulary-touchpoints.json"
     },
     {
       "id": "MIG-SCHEDULE-GUIDE",
-      "phase": "P4b",
       "status": "complete",
-      "owner": "product-eng",
-      "contextIds": [
-        "availability",
-        "member_identity",
-        "member_publish_capabilities",
-        "compose",
-        "discovery",
-        "social_graph"
-      ],
-      "successMetric": "docs/SYSTEM_COHERENCE.md §8.10 exit criteria; delete §8.10; guideProfileComplete gates host; schedule slots capacity+modalities+terms; no buddy UPL; npm run verify:system",
-      "scheduleDoc": "docs/SYSTEM_COHERENCE.md §8.10 (remove when status=complete)",
-      "archivedAt": "2026-11-23"
+      "phase": "P4b",
+      "archivedAt": "2026-11-23",
+      "scheduleDoc": "docs/SYSTEM_COHERENCE.md §8.10 (remove when status=complete)"
     },
     {
       "id": "MIG-PLATFORM-LAYER-SPINE",
-      "phase": "P4b",
       "status": "complete",
-      "owner": "product-eng",
-      "contextIds": [
-        "discovery",
-        "member_discovery",
-        "compose",
-        "availability",
-        "engagement",
-        "social_graph",
-        "communication",
-        "participation",
-        "matching"
-      ],
-      "successMetric": "Closed — scripts/platform-layer-spine-touchpoints.json",
-      "scheduleDoc": "scripts/platform-layer-spine-touchpoints.json",
-      "archivedAt": "2026-11-23"
+      "phase": "P4b",
+      "archivedAt": "2026-11-23",
+      "scheduleDoc": "scripts/platform-layer-spine-touchpoints.json"
     },
     {
       "id": "MIG-DISCOVER-RECOMMENDATIONS",
+      "status": "complete",
       "phase": "P4",
-      "status": "complete",
-      "owner": "product-eng",
-      "contextIds": [
-        "discovery",
-        "matching",
-        "member_discovery"
-      ],
-      "successMetric": "Server-ranked map recommendations; optionalAuth buddy boost; npm run verify:discover-recommendations",
-      "scheduleDoc": "scripts/discover-recommendations-touchpoints.json",
-      "archivedAt": "2026-11-23"
-    },
-    {
-      "id": "MIG-PROGRAM-ARCHIVE",
-      "phase": "P4b",
-      "status": "complete",
-      "owner": "platform",
-      "contextIds": [],
       "archivedAt": "2026-11-23",
-      "scheduleDoc": "scripts/program-normalize-archive.mjs",
-      "successMetric": "Complete migrations: archivedAt, no feRoots/apiRoots; WIP rows keep paths; verify:platform-program enforces."
+      "scheduleDoc": "scripts/discover-recommendations-touchpoints.json"
     }
   ],
   "stranglerRules": [
-    "Work by bounded context id (manifest), not by page or experiment doc.",
-    "in_progress migration PR: registrar + src/api/domains + feRoots on the MIG row until close.",
-    "On close: npm run program:normalize-archive (strip paths; set archivedAt; scheduleDoc → touchpoints).",
+    "Work by bounded context id (scripts/bounded-context-manifest.json).",
+    "New in_progress MIG row: id + phase + feRoots/apiRoots until close; then compact via scripts/compact-platform-program.mjs.",
     "At most maxInProgressMigrations in_progress."
-  ]
+  ],
+  "archivePolicy": "Complete rows: id, phase, status, archivedAt, optional scheduleDoc. Contracts: bounded-context-manifest.json + *-touchpoints.json.",
+  "cleanupWave": "GW-1-governance-surface"
 }

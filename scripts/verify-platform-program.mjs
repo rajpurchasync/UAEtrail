@@ -108,7 +108,7 @@ if (failed) {
 
 try {
   execSync(
-    'npx vitest run src/config/programArchiveGuard.test.ts src/config/programPhaseOpsGuard.test.ts src/config/repoCensusGuard.test.ts src/config/platformProgramNamingGuard.test.ts',
+    'npx vitest run src/config/programArchiveGuard.test.ts src/config/programPhaseOpsGuard.test.ts src/config/repoCensusGuard.test.ts src/config/platformProgramNamingGuard.test.ts src/config/governanceSurfaceGuard.test.ts',
     {
     cwd: root,
     stdio: 'inherit',

@@ -18,7 +18,7 @@ describe('migPlatformComposeOperatorProgramGuard (compose + operator program)', 
     expect(row).toBeDefined();
     expect(row?.status).toBe('complete');
     expect(row?.phase).toBe('P4b');
-    expect(existsSync(join(ROOT, '.cursor/plans/compose_kind_wire_refactor_1cc2bc46.plan.md'))).toBe(true);
+    expect(row?.scheduleDoc).toMatch(/verify:compose-spine/);
   });
 
   it('PCO-13: Plan upcoming has no availability lens UI (compose intent:open only)', () => {

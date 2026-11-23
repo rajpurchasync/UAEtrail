@@ -57,7 +57,7 @@ describe('peopleVocabularyTouchpointsGuard (MIG-PEOPLE-VOCAB-2026)', () => {
     ]);
   });
 
-  it('PVOC-01: touchpoint manifest is registered in refactor-program', () => {
+  it('PVOC-01: touchpoint manifest is registered in platform-program', () => {
     const program = JSON.parse(read('scripts/platform-program.json'));
     const mig = program.migrations?.find((m: { id: string }) => m.id === manifest.programId);
     expect(mig, manifest.programId).toBeTruthy();
@@ -67,7 +67,7 @@ describe('peopleVocabularyTouchpointsGuard (MIG-PEOPLE-VOCAB-2026)', () => {
     const program = JSON.parse(read('scripts/platform-program.json'));
     const mig = program.migrations?.find((m: { id: string }) => m.id === manifest.programId);
     expect(mig?.status).toBe('complete');
-    expect(existsSync(join(ROOT, '.cursor/plans/people_crew_vocab_mig_2026.plan.md'))).toBe(true);
+    expect(mig?.scheduleDoc).toBe('scripts/people-vocabulary-touchpoints.json');
   });
 
   it('PVOC-02: every touchpoint primary file exists on disk', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const ROOT = process.cwd();
@@ -15,18 +15,14 @@ type Migration = {
   scheduleDoc?: string;
 };
 
-/**
- * MIG-PROGRAM-ARCHIVE — slim complete rows; path lists only on in_progress migrations.
- */
-describe('programArchiveGuard (MIG-PROGRAM-ARCHIVE)', () => {
+describe('programArchiveGuard (platform-program ledger)', () => {
   const program = JSON.parse(read('scripts/platform-program.json')) as {
     migrations?: Migration[];
+    archivePolicy?: string;
   };
 
-  it('PROG-ARCH-00: archive migration registered complete', () => {
-    const row = program.migrations?.find((m) => m.id === 'MIG-PROGRAM-ARCHIVE');
-    expect(row?.status).toBe('complete');
-    expect(row?.archivedAt).toBeTruthy();
+  it('PROG-ARCH-00: archivePolicy documented on platform-program', () => {
+    expect(program.archivePolicy).toMatch(/archivedAt/);
   });
 
   it('PROG-ARCH-01: complete migrations have archivedAt and no path roots', () => {
@@ -49,8 +45,8 @@ describe('programArchiveGuard (MIG-PROGRAM-ARCHIVE)', () => {
     }
   });
 
-  it('PROG-ARCH-03: normalize script documents archive policy', () => {
-    expect(read('scripts/program-normalize-archive.mjs')).toMatch(/feRoots/);
+  it('PROG-ARCH-03: verify-platform-program enforces archivedAt', () => {
     expect(read('scripts/verify-platform-program.mjs')).toMatch(/archivedAt/);
+    expect(existsSync(join(ROOT, 'scripts/compact-platform-program.mjs'))).toBe(true);
   });
 });
