@@ -21,11 +21,8 @@ const matrix = JSON.parse(readFileSync(join(root, 'scripts/authority-matrix.json
 console.log('[verify:release-ops] scorecard');
 console.log(`  dmcpPhase: ${matrix.dmcpPhase ?? 'unknown'}`);
 
+// Release ops vitest guards run via verify:domain:fe (GW-3).
 try {
-  run(
-    'Release ops program guards',
-    'npx vitest run src/config/releaseOpsSpineGuard.test.ts src/config/releaseOpsProgramGuard.test.ts src/config/p4bS10fProgramGuard.test.ts src/config/p5SloProgramGuard.test.ts src/config/migDiscoRegProgramGuard.test.ts'
-  );
   run('Release ops wiring smoke', 'npm run release:ops:checklist');
   run('P5 SLO preflight (eng)', 'npm run p5:slo-preflight');
   console.log('\n[verify:release-ops] OK (staging S10f/S10e/MIG migrate remain human)');

@@ -77,9 +77,9 @@ describe('migPlatformComposeOperatorProgramGuard (compose + operator program)', 
     expect(qa).toMatch(/path: '\/crews'/);
   });
 
-  it('PCO-05: verify-compose-spine runs program guard', () => {
-    const script = read('scripts/verify-compose-spine.mjs');
-    expect(script).toMatch(/migPlatformComposeOperatorProgramGuard/);
+  it('PCO-05: compose program guard rolls up in verify:domain:fe (GW-3)', () => {
+    expect(read('scripts/verify-compose-spine.mjs')).toMatch(/verify:domain:fe/);
+    expect(read('scripts/verify-domain-fe.mjs')).toMatch(/migPlatformComposeOperatorProgramGuard\.test\.ts/);
   });
 
   it('PCO-06: SYSTEM_COHERENCE references program id', () => {

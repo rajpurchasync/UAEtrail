@@ -23,11 +23,8 @@ console.log('[verify:participation-spine] scorecard');
 console.log(`  D_PARTICIPATE matrix rows: ${participate.length}`);
 console.log(`  dmcpPhase: ${matrix.dmcpPhase ?? 'unknown'}`);
 
+// FE participation guards run via verify:domain:fe (GW-3).
 try {
-  run(
-    'FE participation + S10f guards',
-    'npx vitest run src/config/participationSpineGuard.test.ts src/config/participationJoinSpineGuard.test.ts src/config/participationPresentationGuard.test.ts src/config/activityDetailS10fBridgeGuard.test.ts src/config/p4bS10fProgramGuard.test.ts src/activity/activityDetailAcceptance.test.ts src/hooks/activityJoinClientApi.test.ts'
-  );
   run(
     'API participation contracts',
     'npm --workspace @uaetrail/api run test -- --run tests/activity-rsvp-flow.test.ts tests/activity-participation-mode.test.ts tests/member-discovery-contract.test.ts tests/activity-engagement-policy-input.test.ts'

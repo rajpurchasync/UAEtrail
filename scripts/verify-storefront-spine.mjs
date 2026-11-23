@@ -23,12 +23,8 @@ console.log('[verify:storefront-spine] scorecard');
 console.log(`  C_STOREFRONT matrix rows: ${storefront.length}`);
 console.log(`  dmcpPhase: ${matrix.dmcpPhase ?? 'unknown'}`);
 
+// FE storefront guards + host-member run via verify:domain:fe / verify:host-member in verify:system (GW-3).
 try {
-  run(
-    'FE storefront + publishing console guards',
-    'npx vitest run src/config/operatorStorefrontSpineGuard.test.ts src/config/publishingConsoleRoutingGuard.test.ts src/member/publishingConsoleHookGuard.test.ts src/member/hostMemberGuard.test.ts src/member/organisationNamingGuard.test.ts src/config/detailSurfaceDataLineageGuard.test.ts src/utils/proMembershipSurfaceGuard.test.ts'
-  );
-  run('Host-member API contracts', 'npm run verify:host-member');
   run(
     'Detail + shop lineage API',
     'npm --workspace @uaetrail/api run test -- --run tests/detail-surface-lineage-contract.test.ts'

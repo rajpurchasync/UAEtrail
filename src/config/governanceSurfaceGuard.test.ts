@@ -5,6 +5,13 @@ import { join } from 'node:path';
 const ROOT = process.cwd();
 const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
 
+const vitestPathsInScript = (rel: string) => {
+  const matches = read(rel).matchAll(/(?:src|packages)\/[^\s'"`]+\.test\.(?:ts|tsx)/g);
+  return [...new Set([...matches].map((m) => m[0]))];
+};
+
+const domainFeVitest = () => vitestPathsInScript('scripts/verify-domain-fe.mjs');
+
 describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
   it('GW1-01: no Cursor agent plan markdown (schedule is manifest + touchpoints)', () => {
     const plansDir = join(ROOT, '.cursor/plans');
@@ -42,6 +49,29 @@ describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
     };
     const matching = manifest.contexts.find((c) => c.id === 'matching');
     expect(matching?.apiFiles ?? []).not.toContain('apps/api/src/services/wishlist-alerts.ts');
+  });
+
+  it('GW3-01: DMCP spine runners do not re-list verify:domain:fe vitest files', () => {
+    const domain = new Set(domainFeVitest());
+    const spines = [
+      'scripts/verify-compose-spine.mjs',
+      'scripts/verify-participation-spine.mjs',
+      'scripts/verify-storefront-spine.mjs',
+      'scripts/verify-people-graph-plan.mjs',
+      'scripts/verify-release-ops.mjs',
+    ];
+    for (const spine of spines) {
+      const overlap = vitestPathsInScript(spine).filter((p) => domain.has(p));
+      expect(overlap, `${spine}`).toEqual([]);
+    }
+  });
+
+  it('GW3-02: verify:system runs domain before spine orchestrators', () => {
+    const order = read('scripts/verify-system-coherence.mjs');
+    const domainAt = order.indexOf("npm run verify:domain");
+    const composeAt = order.indexOf("npm run verify:compose-spine");
+    expect(domainAt).toBeGreaterThan(-1);
+    expect(composeAt).toBeGreaterThan(domainAt);
   });
 
   it('GW1-04: platform-program has archivePolicy; no MIG-PROGRAM-ARCHIVE row', () => {

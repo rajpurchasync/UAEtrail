@@ -25,14 +25,11 @@ console.log('[verify:people-graph-plan] scorecard');
 console.log(`  people-graph matrix rows: ${peopleGraph.length}`);
 console.log(`  dmcpPhase: ${matrix.dmcpPhase ?? 'unknown'}`);
 
+// Overlap with verify:domain:fe (peopleGraphPlanSpine, crewsTerminology, planHub, crossContext) removed — GW-3.
 try {
   run(
-    'FE teams · plan · crews guards',
-    'npx vitest run src/config/peopleGraphPlanSpineGuard.test.ts src/config/crewsTerminologyGuard.test.ts src/config/crewDiscoveryNamingGuard.test.ts src/config/peopleVocabularyTouchpointsGuard.test.ts src/config/crewPillarsAlignmentGuard.test.ts src/config/communityDiscoverGuard.test.ts src/member-plan/planHubInboundGuard.test.ts src/config/planSurfaceApiGuard.test.ts packages/shared-types/src/member-group.test.ts packages/shared-types/src/crew-pillars.test.ts packages/shared-types/src/community-discover.test.ts src/crew-discovery/buildRecommendedCrewFeed.test.ts src/crew-discovery/crewBrowseFeatureGates.test.ts'
-  );
-  run(
-    'Cross-context people browse',
-    'npx vitest run src/config/crossContextFoundationsGuard.test.ts -t "CTX-FOUND-09|CTX-FOUND-08"'
+    'FE teams · plan · crews guards (delta)',
+    'npx vitest run src/config/crewDiscoveryNamingGuard.test.ts src/config/peopleVocabularyTouchpointsGuard.test.ts src/config/crewPillarsAlignmentGuard.test.ts src/config/communityDiscoverGuard.test.ts packages/shared-types/src/member-group.test.ts packages/shared-types/src/crew-pillars.test.ts packages/shared-types/src/community-discover.test.ts src/crew-discovery/buildRecommendedCrewFeed.test.ts src/crew-discovery/crewBrowseFeatureGates.test.ts'
   );
   run(
     'API member group model',
