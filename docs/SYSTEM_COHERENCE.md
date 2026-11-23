@@ -6,6 +6,8 @@
 
 **Index:** [`DOCS_INDEX.md`](./DOCS_INDEX.md) · **Checks:** `npm run verify:system` · **Manifest:** `scripts/governance/bounded-context-manifest.json` · **Generated module map:** `npm run context:map` → `scripts/dev/context-map.md` (code-first; do not duplicate by hand)
 
+**Agents:** Treat **§1–§3** + the manifest as placement truth. **§8** is program history and debt register — do not implement new behavior from §8 rows; grep guards and `wire-lexicon.ts` first. Prefer [`DOCS_INDEX.md`](./DOCS_INDEX.md) “Agent / developer” table over reading this file end-to-end.
+
 ---
 
 ## 1. North star → capabilities
@@ -33,7 +35,7 @@ flowchart TB
     E["/explore browse + FAB"]
     P["/profile /plan hub"]
     D["/activity /trail detail"]
-    MSG["/messages /buddies /groups"]
+    MSG["/messages /crews /groups"]
   end
 
   subgraph compose [Compose subsystem]
@@ -121,7 +123,7 @@ Each context has **one write path** and **one public read model** where possible
 | **Member publish capabilities** | Who may Host / publish & open publishing workspace (tier + `profileComplete`) | `useMemberStatus`, `memberPublishGate` | **`services/member-status.ts` only** | `tenants`, `tenant_memberships` |
 | **Publishing console** | Tenant-scoped CRUD, check-in, activity join queue | `src/pages/publishing/*`, `src/console/*`, `components/activity/` | `/publishing/*` + `x-organisation-id` | same + `activities` |
 | **Communication** | DMs, inbox, group & outing chat (product label **Chat**) | `Messages.tsx`, `src/messaging`, `@/chat` | `routes/chat.ts`, `activity-group-chat`, `member-inbox` | `chat_messages`, `social_groups`, wall collections |
-| **Social graph** | Relationship **writes** & group metadata (not browse roster UI) | `MyCrews.tsx`, `Groups.tsx`, `/crews` (inbound `/buddies`) | `registerBuddyRoutes`, `buddy-activity-presence.ts`, `registerGroupRoutes`, `registerFollowRoutes` | `buddy_*`, `user_follows`, `social_groups*` |
+| **Social graph** | Relationship **writes** & group metadata (not browse roster UI) | `MyCrews.tsx`, `Groups.tsx`, `/crews` | `registerFriendRoutes`, `friend-activity-presence.ts`, `registerGroupRoutes`, `registerFollowRoutes` | `friend_*`, `user_follows`, `member_groups*` |
 | **Places** | Place catalog read, place detail, **member place submit** | `src/places-discovery/*`, `PlaceDetail*`, FAB Add→place wizard (`compose` UI) | `place-catalog`, `place-submit`, `GET /places/catalog`, `POST /me/places` | `locations` (place rows) |
 | **Facilities** | Facility catalog read, facility detail, **member facility submit** | FAB Add→facility wizard; `adminFacilityPlaceAdapter` | `place-catalog` (facility half), `GET /facilities/catalog`, `POST /me/facilities`, `GET/PATCH /admin/facilities` | **`facilities`** |
 | **Areas** | Admin-curated **name** (`areas`, stable `areaId`) grouping Places/Facilities. **Not a map pin** — country / state / region come from map geography. Hub page `/area/:slug` + filter `?area=`. Children via **`place.areaId`** / **`facility.areaId`**. | `/area/:slug`, Find **Area then pin** (the pin is the seeking/place/facility, not the Area), admin **area** link | `areas-store`, `explore-map-area-lens.ts` (hub rollups, not map emit), `hostingPublishArea.ts` | `areas`; **`locations.areaId`**; **`facilities.areaId`**; seeking `areaId` on the activity/post; hosted geography = **`activity.locationId` → `place.areaId`** |
@@ -148,7 +150,7 @@ Pick a **context id** when changing code; touch registrar + `src/api/domains/*` 
 | member_publish_capabilities | `tenants`, `tenant_memberships` | **`GET /me/status`** (`profileComplete` + nested `publish`) | `memberApi` | **`useMemberStatus`** |
 | publishing_workspace | + `activities` | `/publishing/*` + `x-organisation-id` | `organisationApi`, `activitiesApi` | `src/pages/publishing/*`, `src/console/*`, `components/activity/*`, `activity/*` |
 | communication | `chat_messages`, group wall | `/chat/*`, group wall | `messagingApi` (`chatApi` + wall via `groupsApi`) | `Messages.tsx`, `src/messaging` |
-| social_graph | `buddy_*`, `user_follows`, `social_groups*` | `/me/buddies`, `/me/buddy-requests`, `/me/groups`, `/me/following`, … | `buddiesApi`, `groupsApi` | `MyCrews`, `Groups` — relationship admin; **not** the explore people browse panel |
+| social_graph | `buddy_*` (Mongo), `user_follows`, `social_groups*` | `/me/friends`, `/me/friend-requests`, `/me/groups`, `/me/following`, … | `friendsApi`, `groupsApi` | `MyCrews`, `Groups` — relationship admin; **not** the explore people browse panel |
 | places | `locations` (places), `submissions` | `GET /places/catalog`, `/places/:id`, `POST /me/places`, `POST /me/submissions` | `placeApi`, `placeCatalogClient`, `memberCatalogSubmitClientApi`, `geoHierarchyApi` | `PlaceDetail*`, `/profile/submissions` suggest form |
 | facilities | `facilities` | `GET /facilities/catalog`, `/facilities/:id`, `POST /me/facilities`, `/admin/facilities` | `facilityApi`, `memberCatalogSubmitClientApi` | Facility submit wizard, `AdminPlaces` (`catalogSegment=facility`) |
 | areas | `areas`, `geo_nodes`, `geo_stats`, `geo_outbox` | `GET /areas/:slug`, `GET /geo/tree`, `GET /geo/:id/summary`, `GET /geo/resolve` | `areasApi`, `geoHierarchyApi` | `/area/:slug`, `/geo` tree, `/geo/n/:id` summaries, IndexedDB + Redis/in-process geo cache, explore country/area/venue search |
@@ -389,7 +391,7 @@ One **person account**; **one consumer profile page** (`/member/:userId` — `Me
 | **Self** | `/profile`, `/profile/edit` | `Profile*` | N/A (authenticated `/me/*`) |
 | **Another member** | `/member/:userId` | `MemberProfile` | `resolveProfileViewerAccess` on `GET /member/:userId/profile` |
 | **Discover directory** | Same + `discover=1` / `lens: discover` | `MemberProfile` | Public visibility + discovery quota (Pro unlimited) |
-| **Friends / Going** | Same + `lens: friends` (optional) | `MemberProfile` | `accepted_buddy` → full exposure |
+| **Friends / Going** | Same + `lens: friends` (optional) | `MemberProfile` | `accepted_friend` → full exposure |
 | **Available tab** | Same + `lens: available` (optional) | `MemberProfile` | Signed-in → public card at minimum |
 | **Host / Looking for** | Same + `lens: host` (optional) | `MemberProfile` | Participant + host-of-activity levels |
 | **Host on activity** | Activity Plan tab **host row** | `ActivityDetail*` publisher strip | Link **person** (`/member`) vs **business** (`/agency`, `/shop`) via `resolveActivityPublisherProfilePath` |
@@ -1048,6 +1050,11 @@ Gate: **`npm run verify:platform-governance`**. Behavior stays in code + vitest 
 | **GW-9** | Member profile wire — `operatorProfilePath` (replaces `hostProfilePath` on `GET /member/:id/profile`) — **complete** | `governanceSurfaceGuard` GW9-01 |
 | **GW-10** | Explore map wire — `featuredPerson` only on `ExploreMapItemDTO`; drop `hostName`/`hostAvatar`/`requesterUserId` item duplicates; `organizerDetails` off tenant public DTO — **complete** | `governanceSurfaceGuard` GW10-01 · `exploreMapItemWireGuard` |
 | **GW-11** | Component props — `MessageMemberButton.memberUserId` only; `ExploreResponsiveSheet.composePresentation` only — **complete** | `governanceSurfaceGuard` GW11-01 · `createFlowModuleGuard` |
+| **GW-12** | Module alias purge — crews stat tab, availability catalog, browse URL handlers, hosting publish shim, admin userTypes, SEO place schemas, list map width, `TenantPublicDTO.merchantId` — **complete** | `governanceSurfaceGuard` GW12-01 · `hostingPublishArea.test` |
+| **GW-13** | Friends/crews UPL — canonical `/crews`; no `/buddies` inbound or notification shims (Mongo migration only); availability map `updatedAt` sort + index — **complete** | `governanceSurfaceGuard` GW13-01 · `crewsTerminologyGuard` |
+| **GW-14** | Wire hygiene — `resolveNotificationActorUserId`, drop duplicate discovery card person fields, `ListFeedActions` `joinStateLoadingForCard` only, member-group labels (`memberGroupRowLabel`) — **complete** | `governanceSurfaceGuard` GW14-01 · `notification-meta.test` · `member-group.test` |
+| **GW-15** | Client + HTTP friends naming — `GET /me/friends`, `friendsApi`, `useMeFriendsNetwork`, `exploreOthersSubtype`; no `seeking` search haystack — **complete** | `governanceSurfaceGuard` GW15-01 · `exploreOthersSubtype.test` · `people-http-canonical-guard` |
+| **GW-16** | Full friends wire — `friend-store`, `Friend*DTO`, no `segment=buddies`, `friendsOnly` query, group role `member`, notification `connection_friend_*` — **complete** | `governanceSurfaceGuard` GW16-01 · `memberAvailabilityLineageGuard` |
 
 #### 8.6.1 Phases (outcomes)
 
@@ -1223,7 +1230,7 @@ All **17** contexts: `discovery`, `compose`, `participation`, `member_identity`,
 
 #### 8.8.4 Canonical API flows (one BWL path each)
 
-Discover map `GET /explore/map` (guest catalog) · overlay `GET /me/discover/overlay` · People `GET /me/member-discovery/*` (`segment=buddies`) · Buddies `/me/buddies` · Follow `/me/following` · Goals `/me/goals` · Availability `/me/availability` · Wishlist `/me/wishlist` · Join/RSVP `/activities/:id/requests` · Host queue `/publishing/requests` · Pro apply `/me/pro-application` · Capability `GET /me/status` · Places `/places/*` · Facilities `/facilities/:id` · Areas `/areas` (names, not pins) · Safety `POST /safety/reports` · Chat `/chat` · Reviews `/reviews`.
+Discover map `GET /explore/map` (guest catalog) · overlay `GET /me/discover/overlay` · People `GET /me/member-discovery/*` (`segment=buddies`) · Buddies `/me/friends` · Follow `/me/following` · Goals `/me/goals` · Availability `/me/availability` · Wishlist `/me/wishlist` · Join/RSVP `/activities/:id/requests` · Host queue `/publishing/requests` · Pro apply `/me/pro-application` · Capability `GET /me/status` · Places `/places/*` · Facilities `/facilities/:id` · Areas `/areas` (names, not pins) · Safety `POST /safety/reports` · Chat `/chat` · Reviews `/reviews`.
 
 **Delete flows:** participant-intent CRUD/join, `demand:` map ids, dual `/locations` HTTP. `/people` orphan registrar removed (COH-05).
 

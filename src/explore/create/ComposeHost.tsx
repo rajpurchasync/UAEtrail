@@ -42,7 +42,7 @@ export interface ComposeHostProps {
   onAvailabilityFixedSubmitted: (result: AvailabilityFixedSubmitResult) => void;
   onCreateLinkedRideshare?: (parentActivity: ActivityDTO) => void;
   tenantId?: string | null;
-  planWithBuddyUserId?: string | null;
+  planWithFriendUserId?: string | null;
   /** When map is scoped with `?area=`, prefill seeking/add curated area steps. */
   composeAreaSlug?: string | null;
   /** `?capacity=guide` on intent open compose. */
@@ -79,7 +79,7 @@ export const ComposeHost = ({
   onAvailabilityFixedSubmitted,
   onCreateLinkedRideshare,
   tenantId = null,
-  planWithBuddyUserId = null,
+  planWithFriendUserId = null,
   composeAreaSlug = null,
   intentOpenCapacityParam = null,
   facilityOnPlaceId = null,
@@ -147,7 +147,7 @@ export const ComposeHost = ({
         onPublished={onActivityPublished}
         onOpenHostApplication={onOpenHostApplication}
         signInHref={signInHref}
-        planWithBuddyUserId={planWithBuddyUserId}
+        planWithFriendUserId={planWithFriendUserId}
       />
     )}
 

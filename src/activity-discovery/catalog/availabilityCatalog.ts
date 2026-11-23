@@ -7,17 +7,17 @@ import {
 } from '../../explore/exploreActivityDateFilter';
 import type { MapFilterKey } from '../../explore/routing';
 import { exploreItemMatchesQuery } from '../../explore/exploreSearchMatches';
-import type { ExploreBuddySubtypeKey } from '../../explore/exploreBuddySubtype';
+import type { ExploreOthersSubtypeKey } from '../../explore/exploreOthersSubtype';
 import type { ExploreOutingTopicKey } from '../../explore/exploreOutingTopic';
 import {
-  isBuddyMapItem,
-  matchesBuddyMapFilter,
+  isFriendMapItem,
+  matchesOthersMapFilter,
 } from '../../explore/ui/exploreMapPinModel';
 
 /** Filters for fixed availability (`source: availability`) on the shared map payload. */
 export type MapAvailabilityFilters = {
   mapFilter: MapFilterKey;
-  buddySubtype: ExploreBuddySubtypeKey;
+  othersSubtype: ExploreOthersSubtypeKey;
   outingTopic: ExploreOutingTopicKey;
   query: string;
   /**
@@ -26,9 +26,6 @@ export type MapAvailabilityFilters = {
    */
   activityDatePreset?: ExploreActivityDatePreset | null;
 };
-
-/** @deprecated Use `MapAvailabilityFilters`. */
-export type ExploreAvailabilityCatalogFilters = MapAvailabilityFilters;
 
 /**
  * Fixed crew availability from the discovery map payload.
@@ -42,10 +39,10 @@ export const selectAvailabilityFromMapItems = (
 
   return sortExploreActivities(
     mapItems
-      .filter(isBuddyMapItem)
+      .filter(isFriendMapItem)
       .filter(exploreMapItemIsAvailabilityCatalog)
       .filter((item) =>
-        matchesBuddyMapFilter(item, filters.mapFilter, filters.buddySubtype, filters.outingTopic)
+        matchesOthersMapFilter(item, filters.mapFilter, filters.othersSubtype, filters.outingTopic)
       )
       .filter((item) => {
         if (!datePreset || datePreset === 'anyday') return true;
@@ -54,6 +51,3 @@ export const selectAvailabilityFromMapItems = (
       .filter((item) => exploreItemMatchesQuery(item, filters.query))
   );
 };
-
-/** @deprecated Use `selectAvailabilityFromMapItems`. */
-export const selectAvailabilityFromExploreCatalog = selectAvailabilityFromMapItems;

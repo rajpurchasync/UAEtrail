@@ -241,7 +241,7 @@ export interface SocialGroupMemberView {
   id: string;
   groupId: string;
   userId?: string | null;
-  role: 'admin' | 'buddy';
+  role: 'admin' | 'member';
   memberType: 'adult' | 'kid';
   displayName?: string | null;
   invitedEmail?: string | null;
@@ -268,7 +268,7 @@ export interface SocialGroupMemberView {
 export type FamilyKidRosterCreatePayload = {
   rosterOnly: true;
   displayName: string;
-  role?: 'admin' | 'buddy';
+  role?: 'admin' | 'member';
 };
 
 export type FamilyKidProfileFullPayload = {
@@ -280,7 +280,7 @@ export type FamilyKidProfileFullPayload = {
   medicalConditions: string;
   gender?: FamilyKidGender | null;
   photoUrl?: string | null;
-  role?: 'admin' | 'buddy';
+  role?: 'admin' | 'member';
 };
 
 export type FamilyKidProfilePayload = FamilyKidRosterCreatePayload | FamilyKidProfileFullPayload;
@@ -294,7 +294,7 @@ export interface SocialGroupInviteView {
   groupId: string;
   invitedByUserId: string;
   email: string;
-  role: 'admin' | 'buddy';
+  role: 'admin' | 'member';
   token: string;
   status: 'pending' | 'accepted' | 'expired' | 'cancelled';
   acceptedByUserId?: string | null;

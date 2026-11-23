@@ -32,7 +32,7 @@ export const ensureOwnerMembershipForTenant = async (
  * Personal guide-owned tenant for buddy hosts (organize on map).
  * Idempotent when an activity-capable tenant already exists.
  */
-export const ensureBuddyHostTenant = async (userId: string): Promise<TenantRecord | null> => {
+export const ensureFriendHostTenant = async (userId: string): Promise<TenantRecord | null> => {
   const owned = await listTenantsByOwnerId(userId);
   const existing = pickActivityTenant(owned);
   if (existing) {

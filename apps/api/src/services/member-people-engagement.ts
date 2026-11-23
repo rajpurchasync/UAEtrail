@@ -1,19 +1,19 @@
 import {
-  isBuddyPeopleSegment,
+  isFriendsPeopleSegment,
   normalizePeopleSegment,
-  type BuddySummaryDTO,
+  type FriendSummaryDTO,
   type MemberFollowSummaryDTO,
   type SocialPeopleDTO,
   type SocialPeoplePreviewDTO,
   type SocialPeopleSegmentWire,
-  type SocialPersonBuddyRequestState,
+  type SocialPersonFriendRequestState,
   type SocialPersonRowDTO,
   type SocialPersonTripHintDTO,
 } from '@uaetrail/shared-types';
 import { USER_CITY_LABELS, type UserCity } from '../domain/user-profile.js';
 import { countCheckedInParticipationsForUserIds } from '../lib/activity-engagement-store.js';
 import { findAuthUsersByIds } from '../lib/auth-users-store.js';
-import { listBuddiesForUser, listBuddyRequestsForUser } from '../lib/buddy-store.js';
+import { listFriendsForUser, listFriendRequestsForUser } from '../lib/friend-store.js';
 import { listFollowingForUser } from '../lib/follow-store.js';
 import { loadExploreMapItemsForMemberEngagement } from '../lib/explore-map-member-engagement.js';
 import { filterInboxMessageablePartnerIds } from './chat-policy.js';
@@ -27,20 +27,20 @@ export type MemberPersonRowSeed = {
   upcomingTrip: SocialPersonTripHintDTO | null;
 };
 
-const buddyRequestStateForTarget = (
+const friendRequestStateForTarget = (
   targetUserId: string,
   pendingIncoming: Set<string>,
   pendingOutgoing: Set<string>
-): SocialPersonBuddyRequestState => {
+): SocialPersonFriendRequestState => {
   if (pendingIncoming.has(targetUserId)) return 'incoming';
   if (pendingOutgoing.has(targetUserId)) return 'outgoing';
   return 'none';
 };
 
-/** Hydrate browse person rows (relationship, messaging, attendance, buddy request state). */
+/** Hydrate browse person rows (relationship, messaging, attendance, friend request state). */
 export const enrichMemberPersonRows = async (
   viewerUserId: string,
-  buddyIds: Set<string>,
+  friendIds: Set<string>,
   seeds: MemberPersonRowSeed[]
 ): Promise<SocialPersonRowDTO[]> => {
   if (seeds.length === 0) return [];
@@ -48,7 +48,7 @@ export const enrichMemberPersonRows = async (
   const userIds = seeds.map((s) => s.userId);
   const [users, requests, attendedMap, messageablePartnerIds] = await Promise.all([
     findAuthUsersByIds(userIds),
-    listBuddyRequestsForUser(viewerUserId, 'all'),
+    listFriendRequestsForUser(viewerUserId, 'all'),
     countCheckedInParticipationsForUserIds(userIds),
     filterInboxMessageablePartnerIds(viewerUserId, userIds),
   ]);
@@ -73,16 +73,16 @@ export const enrichMemberPersonRows = async (
       const city = user?.profile?.city;
       const rawCityLabel =
         city && city in USER_CITY_LABELS ? USER_CITY_LABELS[city as UserCity] : null;
-      const relationship = buddyIds.has(seed.userId) ? 'friend' : 'following';
-      const buddyRequestState = buddyRequestStateForTarget(
+      const relationship = friendIds.has(seed.userId) ? 'friend' : 'following';
+      const friendRequestState = friendRequestStateForTarget(
         seed.userId,
         pendingIncoming,
         pendingOutgoing
       );
-      const areBuddies = relationship === 'friend';
+      const areFriends = relationship === 'friend';
       const cityLabel = user
         ? await resolveCityLabelForViewer(user, viewerUserId, rawCityLabel, {
-            isBuddy: areBuddies,
+            isFriend: areFriends,
           })
         : null;
 
@@ -93,10 +93,10 @@ export const enrichMemberPersonRows = async (
         cityLabel,
         activitiesAttended: attendedMap.get(seed.userId) ?? 0,
         relationship,
-        buddyRequestState,
-        canMessage: buddyIds.has(seed.userId) || messageablePartnerIds.has(seed.userId),
-        canSendBuddyRequest:
-          !areBuddies && buddyRequestState === 'none' && seed.userId !== viewerUserId,
+        friendRequestState,
+        canMessage: friendIds.has(seed.userId) || messageablePartnerIds.has(seed.userId),
+        canSendFriendRequest:
+          !areFriends && friendRequestState === 'none' && seed.userId !== viewerUserId,
         upcomingTrip: seed.upcomingTrip,
       };
     })
@@ -112,25 +112,25 @@ type PersonSeed = {
 };
 
 const mergeNetworkPeople = (
-  buddies: BuddySummaryDTO[],
+  friends: FriendSummaryDTO[],
   following: MemberFollowSummaryDTO[],
   segment: SocialPeopleSegmentWire
 ): PersonSeed[] => {
-  const buddyIds = new Set(buddies.map((b) => b.userId));
+  const friendIds = new Set(friends.map((b) => b.userId));
   const byId = new Map<string, PersonSeed>();
 
-  for (const buddy of buddies) {
-    byId.set(buddy.userId, {
-      userId: buddy.userId,
-      displayName: buddy.displayName,
-      avatarUrl: buddy.avatarUrl,
-      connectedAt: buddy.connectedAt,
+  for (const friend of friends) {
+    byId.set(friend.userId, {
+      userId: friend.userId,
+      displayName: friend.displayName,
+      avatarUrl: friend.avatarUrl,
+      connectedAt: friend.connectedAt,
     });
   }
 
   for (const row of following) {
-    if (segment === 'followed' && buddyIds.has(row.userId)) continue;
-    if (isBuddyPeopleSegment(segment)) continue;
+    if (segment === 'followed' && friendIds.has(row.userId)) continue;
+    if (isFriendsPeopleSegment(segment)) continue;
     if (!byId.has(row.userId)) {
       byId.set(row.userId, {
         userId: row.userId,
@@ -141,23 +141,23 @@ const mergeNetworkPeople = (
     }
   }
 
-  if (isBuddyPeopleSegment(segment)) {
-    return buddies.map((buddy) => byId.get(buddy.userId)!);
+  if (isFriendsPeopleSegment(segment)) {
+    return friends.map((friend) => byId.get(friend.userId)!);
   }
 
   if (segment === 'followed') {
     return following
-      .filter((row) => !buddyIds.has(row.userId))
+      .filter((row) => !friendIds.has(row.userId))
       .map((row) => byId.get(row.userId)!)
       .filter((row): row is PersonSeed => row != null);
   }
 
   const merged: PersonSeed[] = [];
   const seen = new Set<string>();
-  for (const buddy of buddies) {
-    if (seen.has(buddy.userId)) continue;
-    seen.add(buddy.userId);
-    merged.push(byId.get(buddy.userId)!);
+  for (const friend of friends) {
+    if (seen.has(friend.userId)) continue;
+    seen.add(friend.userId);
+    merged.push(byId.get(friend.userId)!);
   }
   for (const row of following) {
     if (seen.has(row.userId)) continue;
@@ -182,8 +182,8 @@ export const loadMemberPeopleNetworkRoster = async (input: {
   segment: SocialPeopleSegmentWire;
 }): Promise<SocialPeopleDTO> => {
   const segment = normalizePeopleSegment(input.segment);
-  const [buddies, following, mapItems] = await Promise.all([
-    listBuddiesForUser(input.viewerUserId),
+  const [friends, following, mapItems] = await Promise.all([
+    listFriendsForUser(input.viewerUserId),
     listFollowingForUser(input.viewerUserId),
     loadExploreMapItemsForMemberEngagement({
       viewerUserId: input.viewerUserId,
@@ -191,8 +191,8 @@ export const loadMemberPeopleNetworkRoster = async (input: {
     }),
   ]);
 
-  const networkSeeds = mergeNetworkPeople(buddies, following, segment);
-  const buddyIds = new Set(buddies.map((b) => b.userId));
+  const networkSeeds = mergeNetworkPeople(friends, following, segment);
+  const friendIds = new Set(friends.map((b) => b.userId));
   const tripHints = buildMemberTripHintMap(
     new Set(networkSeeds.map((s) => s.userId)),
     mapItems
@@ -205,7 +205,7 @@ export const loadMemberPeopleNetworkRoster = async (input: {
     upcomingTrip: tripHints.get(seed.userId) ?? null,
   }));
 
-  const people = await enrichMemberPersonRows(input.viewerUserId, buddyIds, rowSeeds);
+  const people = await enrichMemberPersonRows(input.viewerUserId, friendIds, rowSeeds);
   return { people: sortPeople(people) };
 };
 
@@ -214,12 +214,12 @@ export const loadMemberPeopleNetworkPreview = async (input: {
   viewerUserId: string;
   userRole?: string | null;
 }): Promise<SocialPeoplePreviewDTO> => {
-  const [buddies, following] = await Promise.all([
-    listBuddiesForUser(input.viewerUserId),
+  const [friends, following] = await Promise.all([
+    listFriendsForUser(input.viewerUserId),
     listFollowingForUser(input.viewerUserId),
   ]);
-  const buddyIds = new Set(buddies.map((b) => b.userId));
-  const followedOnly = following.filter((row) => !buddyIds.has(row.userId));
+  const friendIds = new Set(friends.map((b) => b.userId));
+  const followedOnly = following.filter((row) => !friendIds.has(row.userId));
 
   const merged: Array<{ userId: string; displayName: string; avatarUrl: string | null }> = [];
   const seen = new Set<string>();
@@ -229,11 +229,11 @@ export const loadMemberPeopleNetworkPreview = async (input: {
     merged.push(row);
   };
 
-  for (const buddy of buddies) {
+  for (const friend of friends) {
     push({
-      userId: buddy.userId,
-      displayName: buddy.displayName,
-      avatarUrl: buddy.avatarUrl,
+      userId: friend.userId,
+      displayName: friend.displayName,
+      avatarUrl: friend.avatarUrl,
     });
   }
   for (const row of followedOnly) {
@@ -246,9 +246,9 @@ export const loadMemberPeopleNetworkPreview = async (input: {
 
   return {
     avatars: merged.slice(0, 3),
-    friendUserIds: buddies.map((buddy) => buddy.userId),
-    friendCount: buddies.length,
+    friendUserIds: friends.map((friend) => friend.userId),
+    friendCount: friends.length,
     followedCount: followedOnly.length,
-    allCount: buddies.length + followedOnly.length,
+    allCount: friends.length + followedOnly.length,
   };
 };

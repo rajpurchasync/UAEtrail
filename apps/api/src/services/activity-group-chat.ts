@@ -143,7 +143,7 @@ export const addParticipantToActivityGroupChat = async (input: {
   await ensureGroupMember({
     groupId,
     userId: input.userId,
-    role: 'buddy',
+    role: 'member',
     createdByUserId: hostUserId,
   });
 };

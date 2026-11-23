@@ -19,7 +19,7 @@ export const PLATFORM_LAYER_API_MODULES: Record<PlatformLayer, readonly string[]
     'discoverRecommendations',
   ],
   join: ['activities', 'member', 'memberCommitmentHub'],
-  connect: ['buddies', 'groups', 'chat', 'messaging', 'entityFollow', 'reviews'],
+  connect: ['friends', 'groups', 'chat', 'messaging', 'entityFollow', 'reviews'],
   plan: ['wishlist', 'goals', 'availability', 'memberJourneyMap', 'badges'],
   manage: ['publishingWorkspace', 'organisation', 'admin', 'platformAlerts'],
 };

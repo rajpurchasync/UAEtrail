@@ -62,7 +62,7 @@ export const useCrewDiscoveryBrowseBundle = ({
     facet: browse.crewPeopleFacet,
   };
   const networkPreview = useCrewDiscoveryNetworkPreview(Boolean(user) && crewsBrowsePanelOpen);
-  const buddyUserIds = useMemo(
+  const friendUserIds = useMemo(
     () => (user ? new Set(networkPreview.preview?.friendUserIds ?? []) : undefined),
     [user, networkPreview.preview?.friendUserIds]
   );
@@ -97,7 +97,7 @@ export const useCrewDiscoveryBrowseBundle = ({
     exploreCatalogFallback: exploreCatalogItems,
     filters: {
       mapFilter: browse.mapFilter,
-      buddySubtype: browse.buddySubtype,
+      othersSubtype: browse.othersSubtype,
       outingTopic: browse.outingTopic,
       query: browse.query,
     },
@@ -178,7 +178,7 @@ export const useCrewDiscoveryBrowseBundle = ({
     onOpenAvailabilityCatalogItem,
     onOfferRideshareForAvailabilityItem,
     onOpenIntentOpen,
-    buddyUserIds,
+    friendUserIds,
     crewRecommendationsQuery,
   };
 

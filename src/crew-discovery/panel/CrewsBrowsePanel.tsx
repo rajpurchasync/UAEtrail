@@ -65,7 +65,7 @@ export interface CrewsBrowsePanelProps {
   onOpenAvailabilityCatalogItem: (item: ExploreMapItemDTO) => void;
   onOfferRideshareForAvailabilityItem?: (item: ExploreMapItemDTO) => void;
   onOpenIntentOpen?: () => void;
-  buddyUserIds?: Set<string>;
+  friendUserIds?: Set<string>;
   crewRecommendationsQuery: DiscoverCrewRecommendationsQueryParams;
 }
 
@@ -100,7 +100,7 @@ export const CrewsBrowsePanel = ({
   onOpenAvailabilityCatalogItem,
   onOfferRideshareForAvailabilityItem,
   onOpenIntentOpen,
-  buddyUserIds,
+  friendUserIds,
   crewRecommendationsQuery,
 }: CrewsBrowsePanelProps) => {
   const mobileSheetPad = !isDesktop && mobileSheetChrome && !embedded;
@@ -203,7 +203,7 @@ export const CrewsBrowsePanel = ({
           exploreCatalogLoading={exploreCatalogLoading}
           onOpenAvailabilityCatalogItem={onOpenAvailabilityCatalogItem}
           onOfferRideshareForAvailabilityItem={onOfferRideshareForAvailabilityItem}
-          buddyUserIds={buddyUserIds}
+          friendUserIds={friendUserIds}
           availabilityPeople={availabilityPeople}
           availabilityLoading={availabilityLoading}
           availabilityError={availabilityError}

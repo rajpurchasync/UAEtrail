@@ -1,5 +1,5 @@
 import { ApiError } from '../lib/api-error.js';
-import { listBuddiesForUser } from '../lib/buddy-store.js';
+import { listFriendsForUser } from '../lib/friend-store.js';
 import {
   countMemberProfileViewsSince,
   countUniqueMemberProfileViewersSince,
@@ -16,7 +16,7 @@ export const listBrowsableMembersForViewer = async (input: {
   skip: number;
   take: number;
 }) => {
-  const buddies = await listBuddiesForUser(input.viewerUserId);
+  const buddies = await listFriendsForUser(input.viewerUserId);
   const excludeUserIds = new Set<string>([input.viewerUserId]);
   for (const buddy of buddies) {
     if (buddy.userId) excludeUserIds.add(buddy.userId);

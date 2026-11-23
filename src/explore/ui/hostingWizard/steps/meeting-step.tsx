@@ -58,7 +58,7 @@ export function renderMeetingStep(ctx: HostingWizardContext): ReactNode | null {
                 <p className="mb-4 text-sm text-gray-600">{RIDESHARE_PICKUP_HINT}</p>
                 {fromRow(PICKUP_POINT_LABEL)}
               </>
-            ) : draft.genericBuddy ? (
+            ) : draft.communityHostFlow ? (
               <>
                 <p className="mb-4 text-sm text-gray-600">{GOING_FROM_HINT}</p>
                 {fromRow(GOING_FROM_LABEL)}
@@ -141,7 +141,7 @@ export function renderMeetingStep(ctx: HostingWizardContext): ReactNode | null {
                       (!goingFromFlow &&
                         !structuredFlow &&
                         kind !== 'rideshare' &&
-                        !draft.genericBuddy &&
+                        !draft.communityHostFlow &&
                         !draft.meetingTime.trim())
                 }
                 onClick={goNext}

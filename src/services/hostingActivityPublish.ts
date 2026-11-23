@@ -61,7 +61,7 @@ export const resolveOrganizeActivityLocationId = async (
   const { draft, tenantId } = ctx;
   if (!draft.kind) throw new Error('Choose an activity type.');
   const activityType = resolveActivityType(draft.kind);
-  const structured = isStructuredHostingFlow(draft.kind, draft.genericBuddy);
+  const structured = isStructuredHostingFlow(draft.kind, draft.communityHostFlow);
 
   const registryVenueId =
     structured && draft.registryPlaceId && draft.placeLabelSource === 'registry'
@@ -113,7 +113,7 @@ export const resolveOrganizeActivityLocationId = async (
       );
     }
     const countryCode = draft.customPlaceCountry.trim().toUpperCase();
-    const hiking = isHikingHostingFlow(draft.kind, draft.genericBuddy);
+    const hiking = isHikingHostingFlow(draft.kind, draft.communityHostFlow);
     const place = await submitMemberPlace(
       {
         name: name.slice(0, 120),
@@ -143,8 +143,8 @@ export const resolveOrganizeActivityLocationId = async (
     );
   }
 
-  const event = isEventHostingFlow(draft.kind, draft.genericBuddy);
-  const activityHost = isActivityHostingFlow(draft.kind, draft.genericBuddy);
+  const event = isEventHostingFlow(draft.kind, draft.communityHostFlow);
+  const activityHost = isActivityHostingFlow(draft.kind, draft.communityHostFlow);
   const anchorLat = event || activityHost ? draft.meetingLatitude : draft.latitude;
   const anchorLng = event || activityHost ? draft.meetingLongitude : draft.longitude;
 
@@ -201,10 +201,10 @@ export const buildHostingActivityPublishInput = (
 ): ActivityPublishInput => {
   const { draft, userId, locationId } = ctx;
   if (!draft.kind) throw new Error('Choose an activity type.');
-  const hiking = isHikingHostingFlow(draft.kind, draft.genericBuddy);
-  const activityHost = isActivityHostingFlow(draft.kind, draft.genericBuddy);
-  const goingFrom = usesGoingFromHostingStep(draft.kind, draft.genericBuddy);
-  const structured = isStructuredHostingFlow(draft.kind, draft.genericBuddy);
+  const hiking = isHikingHostingFlow(draft.kind, draft.communityHostFlow);
+  const activityHost = isActivityHostingFlow(draft.kind, draft.communityHostFlow);
+  const goingFrom = usesGoingFromHostingStep(draft.kind, draft.communityHostFlow);
+  const structured = isStructuredHostingFlow(draft.kind, draft.communityHostFlow);
   const structuredLike = structured || activityHost;
   const kind = draft.kind;
   const activityType = resolveActivityType(kind);
@@ -294,7 +294,7 @@ export const buildHostingActivityPublishInput = (
       meetingDifferent: structuredLike ? meetingDifferent : false,
     },
     ...(hiking &&
-    !draft.genericBuddy &&
+    !draft.communityHostFlow &&
     draft.fromLabel.trim() &&
     draft.latitude != null &&
     draft.longitude != null
@@ -350,10 +350,10 @@ export const publishHostingActivity = async (input: {
 }): Promise<ActivityDTO> => {
   const { draft, tenantId, userId, sourceActivityId, linkToParentActivityId } = input;
   if (!draft.kind) throw new Error('Choose an activity type.');
-  const structured = isStructuredHostingFlow(draft.kind, draft.genericBuddy);
-  const event = isEventHostingFlow(draft.kind, draft.genericBuddy);
-  const activityHost = isActivityHostingFlow(draft.kind, draft.genericBuddy);
-  const goingFrom = usesGoingFromHostingStep(draft.kind, draft.genericBuddy);
+  const structured = isStructuredHostingFlow(draft.kind, draft.communityHostFlow);
+  const event = isEventHostingFlow(draft.kind, draft.communityHostFlow);
+  const activityHost = isActivityHostingFlow(draft.kind, draft.communityHostFlow);
+  const goingFrom = usesGoingFromHostingStep(draft.kind, draft.communityHostFlow);
   const effectiveFromLat = draft.latitude ?? draft.meetingLatitude;
   const effectiveFromLng = draft.longitude ?? draft.meetingLongitude;
   if (goingFrom && (effectiveFromLat == null || effectiveFromLng == null)) {

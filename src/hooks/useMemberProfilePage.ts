@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import type { ActivityDTO, BuddyRelationshipDTO } from '@uaetrail/shared-types';
+import type { ActivityDTO, FriendRelationshipDTO } from '@uaetrail/shared-types';
 import type { PersonPublicProfileDTO } from '../api/types';
-import { fetchBuddyRelationship } from './memberPeopleClientApi';
+import { fetchFriendRelationship } from './memberPeopleClientApi';
 import {
   fetchMeProfilePublicPreview,
   fetchMemberProfileSocialGraph,
@@ -11,7 +11,7 @@ import {
 } from './memberPublicProfileApi';
 import { mergeMemberProfileSocialGraphParts } from './mergeMemberProfileSocialGraph';
 import {
-  buddyRelationshipQueryKey,
+  friendRelationshipQueryKey,
   personPublicProfileQueryKey,
   personSocialGraphCommonQueryKey,
   personSocialGraphFriendsQueryKey,
@@ -164,12 +164,12 @@ export const useMemberProfilePage = ({
     socialGraphLoadingFriends &&
     !socialGraph?.commonFollows.length;
 
-  const buddyQuery = useQuery({
+  const friendRelQuery = useQuery({
     queryKey:
       viewerId && userId && viewerId !== userId
-        ? buddyRelationshipQueryKey(viewerId, userId)
-        : ['buddy-relationship', '', ''],
-    queryFn: () => fetchBuddyRelationship(userId!),
+        ? friendRelationshipQueryKey(viewerId, userId)
+        : ['friend-relationship', '', ''],
+    queryFn: () => fetchFriendRelationship(userId!),
     enabled: Boolean(viewerId && userId && viewerId !== userId),
     staleTime: 15_000,
   });
@@ -233,13 +233,13 @@ export const useMemberProfilePage = ({
     upcomingActivities.length === 0 &&
     pastActivities.length === 0;
 
-  const setBuddyRel = (updater: (prev: BuddyRelationshipDTO | null) => BuddyRelationshipDTO | null) => {
+  const setFriendRel = (updater: (prev: FriendRelationshipDTO | null) => FriendRelationshipDTO | null) => {
     if (!viewerId || !userId || viewerId === userId) return;
-    const key = buddyRelationshipQueryKey(viewerId, userId);
-    queryClient.setQueryData<BuddyRelationshipDTO | null>(key, (prev) => updater(prev ?? null));
+    const key = friendRelationshipQueryKey(viewerId, userId);
+    queryClient.setQueryData<FriendRelationshipDTO | null>(key, (prev) => updater(prev ?? null));
   };
 
-  const reloadBuddy = () => buddyQuery.refetch();
+  const reloadFriendRel = () => friendRelQuery.refetch();
 
   return {
     profile: profile as PersonPublicProfileDTO | null,
@@ -254,9 +254,9 @@ export const useMemberProfilePage = ({
     socialGraphLoading,
     socialGraphLoadingFriends,
     socialGraphLoadingCommon,
-    buddyRel: buddyQuery.data ?? null,
-    setBuddyRel,
-    reloadBuddy,
+    friendRel: friendRelQuery.data ?? null,
+    setFriendRel,
+    reloadFriendRel,
     refreshProfile,
     refreshSocialGraph,
     refreshSocialGraphFriends,

@@ -61,7 +61,7 @@ export const LAYER_ACTION_WIRE: Record<PlatformLayer, Partial<Record<LayerAction
     activity_withdraw: 'DELETE /activities/:id/rsvp',
   },
   connect: {
-    friend_request: 'POST /me/buddies/requests',
+    friend_request: 'POST /me/friend-requests',
     message_dm: 'GET /chat',
     club_join: 'POST /me/communities/:id/join',
     crew_chat: 'POST /activities/:id/group-chat/join',

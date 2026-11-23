@@ -53,7 +53,7 @@ export const COLLECTIONS = {
   MERCHANT_PROFILES: 'merchant_profiles',
   STRIPE_WEBHOOK_EVENTS: 'stripe_webhook_events',
 
-  // Social graph (reviews, chat, groups, buddies)
+  // Social graph (reviews, chat, groups, friends)
   CHAT_MESSAGES: 'chat_messages',
   CHAT_MESSAGE_REACTIONS: 'chat_message_reactions',
   CONTENT_REPORTS: 'content_reports',
@@ -77,8 +77,12 @@ export const COLLECTIONS = {
   LEGACY_SOCIAL_GROUP_WALL_REACTIONS: 'social_group_wall_reactions',
   /** Adult family members invited onto a specific outing join request. */
   ACTIVITY_FAMILY_INVITES: 'activity_family_invites',
-  BUDDY_REQUESTS: 'buddy_requests',
-  BUDDY_PAIRS: 'buddy_pairs',
+  /** @deprecated Migrated on startup → {@link COLLECTIONS.FRIEND_REQUESTS}. */
+  LEGACY_BUDDY_REQUESTS: 'buddy_requests',
+  /** @deprecated Migrated on startup → {@link COLLECTIONS.FRIEND_PAIRS}. */
+  LEGACY_BUDDY_PAIRS: 'buddy_pairs',
+  FRIEND_REQUESTS: 'friend_requests',
+  FRIEND_PAIRS: 'friend_pairs',
   USER_FOLLOWS: 'user_follows',
   ENTITY_FOLLOWS: 'entity_follows',
 

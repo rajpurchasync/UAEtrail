@@ -1,3 +1,4 @@
+import { isOutingCrewGroupRow } from '@uaetrail/shared-types';
 import { Calendar, MessageSquare, Settings2, UserRound, Users } from 'lucide-react';
 import type { SocialGroupMemberView, SocialGroupView } from '../../api/types';
 import { groupsManagePath } from '../../config/routingCatalog';
@@ -36,7 +37,7 @@ export const ChatGroupSummarySheet = ({
   const activeCount = members.filter((m) => m.memberType === 'adult' && m.isActive !== false).length;
   const postPolicy = resolveGroupWallPostPolicy(group);
   const admin = isSocialGroupAdmin(group, membership, currentUserId);
-  const isActivity = group.kind === 'outing_crew' || group.type === 'activity' || group.type === 'outing_crew';
+  const isActivity = isOutingCrewGroupRow(group);
   const activityId = group.activityId?.trim() || null;
 
   const actions = [

@@ -70,7 +70,7 @@ describe('hostingFlowEngine', () => {
   });
 
   it('uses warm step titles for generic buddy and organize hiking', () => {
-    expect(createFlowStepTitle('title', 'hiking', { genericBuddy: true })).toBe('What do you want to do?');
+    expect(createFlowStepTitle('title', 'hiking', { communityHostFlow: true })).toBe('What do you want to do?');
     expect(createFlowStepTitle('title', 'hiking')).toBe('Give it a title');
     expect(createFlowStepTitle('spots', 'hiking')).toBe('Participants');
     expect(createFlowStepTitle('when', 'hiking')).toBe('When are you going?');

@@ -16,11 +16,11 @@ describe('applyActivityViewEntitlements', () => {
     const result = applyActivityViewEntitlements(
       { viewerUserId: 'u1', hostStatus: null },
       socialAccess,
-      { hostUserId: 'host-1', isFriendOfHost: false, buddyUserIdsOnActivity: [] }
+      { hostUserId: 'host-1', isFriendOfHost: false, friendUserIdsOnActivity: [] }
     );
     expect(result.canAccessCrewSurfaces).toBe(true);
     expect(result.entitlements?.isProMember).toBe(false);
-    expect(result.entitlements?.canViewFullBuddyRoster).toBe(false);
+    expect(result.entitlements?.canViewFullFriendRoster).toBe(false);
   });
 
   it('merges message_host on peek when friend of host pre-join', () => {
@@ -37,7 +37,7 @@ describe('applyActivityViewEntitlements', () => {
           { id: 'view_detail', prominence: 'text' },
         ],
       },
-      { hostUserId: 'host-1', isFriendOfHost: true, buddyUserIdsOnActivity: [] }
+      { hostUserId: 'host-1', isFriendOfHost: true, friendUserIdsOnActivity: [] }
     );
     expect(result.entitlements?.canMessageHostBeforeJoin).toBe(true);
     expect(result.mapPeekActions?.map((action) => action.id)).toContain('message_host');

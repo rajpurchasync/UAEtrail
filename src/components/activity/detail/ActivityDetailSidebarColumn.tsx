@@ -12,7 +12,7 @@ type ActivityDetailSidebarColumnProps = {
 export const ActivityDetailSidebarColumn = ({ model }: ActivityDetailSidebarColumnProps) => (
   <div className={`space-y-4 ${model.mobileSidebarPanel}`}>
     <ActivityDetailCrewAside
-      panelClassName={model.mobileBuddiesPanel}
+      panelClassName={model.mobileCrewPanel}
       previewMode={model.previewMode}
       showMobileTabs={model.showMobileTabs}
       showCrewLockedHint={model.crewLockedHint}
@@ -25,7 +25,7 @@ export const ActivityDetailSidebarColumn = ({ model }: ActivityDetailSidebarColu
       activity={model.activity}
       previewMode={model.previewMode}
       showMobileTabs={model.showMobileTabs}
-      mobileBuddiesPanel={model.mobileBuddiesPanel}
+      mobileCrewPanel={model.mobileCrewPanel}
       sharePayload={model.sharePayload}
       sidebarJoin={model.sidebarJoin}
       message={model.message}

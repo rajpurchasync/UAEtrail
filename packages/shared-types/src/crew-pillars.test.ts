@@ -30,7 +30,7 @@ describe('crew pillars lexicon', () => {
     expect(crewPeopleFacetToPillar('friends')).not.toBe(crewPeopleFacetToPillar('available'));
   });
 
-  it('isCrewPillarId rejects buddy wire tokens', () => {
+  it('isCrewPillarId rejects friends wire tokens', () => {
     expect(isCrewPillarId('friends')).toBe(true);
     expect(isCrewPillarId('buddies')).toBe(false);
   });

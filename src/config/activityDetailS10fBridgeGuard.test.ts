@@ -87,9 +87,9 @@ const S10F_NOTIFICATION_EDGE: Array<{
     mustMatch: /group_message/,
   },
   {
-    manualCase: 'Buddy request (connection_buddy_request)',
+    manualCase: 'Friend request (connection_friend_request)',
     automatedGuard: 'src/utils/notificationRouting.test.ts',
-    mustMatch: /connection_buddy_request/,
+    mustMatch: /connection_friend_request/,
   },
   {
     manualCase: 'Join approved + group chat (join_request_approved)',

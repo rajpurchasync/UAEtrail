@@ -111,13 +111,13 @@ export const personSocialGraphQueryKey = (userId: string, viewerId: string | und
   viewerId ?? 'guest',
 ];
 
-export const buddyRelationshipQueryKey = (viewerUserId: string, targetUserId: string): QueryKey => [
-  'buddy-relationship',
+export const friendRelationshipQueryKey = (viewerUserId: string, targetUserId: string): QueryKey => [
+  'friend-relationship',
   viewerUserId,
   targetUserId,
 ];
 
-export const meBuddiesNetworkQueryKey = (userId: string): QueryKey => ['me', 'buddies-network', userId];
+export const meFriendsNetworkQueryKey = (userId: string): QueryKey => ['me', 'friends-network', userId];
 
 export const meFollowingMembersQueryKey = (userId: string): QueryKey => ['me', 'following-members', userId];
 
@@ -171,8 +171,8 @@ export const myJoinedActivitiesQueryKey = ['me', 'activities'] as const;
 /** Member activity join requests (`GET /me/requests`). */
 export const myActivityJoinRequestsQueryKey = ['me', 'activity-requests'] as const;
 
-export const activityInviteBuddiesQueryKey = (activityId: string): QueryKey => [
-  'me-buddies',
+export const activityInviteFriendsQueryKey = (activityId: string): QueryKey => [
+  'me-friends',
   'invite',
   activityId,
 ];

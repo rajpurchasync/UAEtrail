@@ -16,7 +16,7 @@ const exploreAvailabilityQuerySchema = z.object({
   to: isoDate,
   kind: availabilityKindEnum.optional(),
   area: z.string().trim().max(80).optional(),
-  buddiesOnly: z.enum(['0', '1']).optional(),
+  friendsOnly: z.enum(['0', '1']).optional(),
 });
 
 /** Explore People — who is available in a date range (clusters + rows). */
@@ -34,7 +34,7 @@ export const registerExploreAvailabilityRoutes = (router: Router): void => {
           rangeEnd: q.to,
           kind: q.kind ?? null,
           areaSlug: q.area ?? null,
-          buddiesOnly: q.buddiesOnly === '1',
+          friendsOnly: q.friendsOnly === '1',
         });
         res.json({ data });
       } catch (error) {

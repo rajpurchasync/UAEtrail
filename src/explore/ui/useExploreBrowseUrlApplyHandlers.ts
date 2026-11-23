@@ -13,7 +13,7 @@ import {
   type MapFilterKey,
   type VenueListFilterKey,
 } from '../routing';
-import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
+import type { ExploreOthersSubtypeKey } from '../exploreOthersSubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
 import { MAP_FILTERS_BY_BROWSE_TAB, parseDesktopBrowseTab, type DesktopBrowseTab } from './exploreBrowsePanelCopy';
 import {
@@ -51,7 +51,7 @@ type Setters = {
   setPanel: (v: ExplorePanel) => void;
   setListOpen: (v: boolean) => void;
   setBrowseOpen: (v: boolean) => void;
-  setBuddySubtype: (v: ExploreBuddySubtypeKey) => void;
+  setOthersSubtype: (v: ExploreOthersSubtypeKey) => void;
   setOutingTopic: (v: ExploreOutingTopicKey) => void;
   setPinKind: (v: ExplorePinKindFilter) => void;
   setTopicPills: (v: ExploreMapFilterPillKey[]) => void;
@@ -82,7 +82,7 @@ export type UseExploreBrowseUrlApplyHandlersArgs = {
   browseOpen: boolean;
   panel: ExplorePanel;
   mapFilter: MapFilterKey;
-  buddySubtype: ExploreBuddySubtypeKey;
+  othersSubtype: ExploreOthersSubtypeKey;
   outingTopic: ExploreOutingTopicKey;
   topicPills: ExploreMapFilterPillKey[];
   tripMapTopics: TripMapTopicKey[];
@@ -108,7 +108,7 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
     browseOpen,
     panel,
     mapFilter,
-    buddySubtype,
+    othersSubtype,
     outingTopic,
     topicPills,
     tripMapTopics,
@@ -146,14 +146,14 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
       setters.setTripMapTopics(next);
       setters.setMapFilter('all');
       setters.setActivityFilter(nextActivityFilter);
-      setters.setBuddySubtype('all');
+      setters.setOthersSubtype('all');
       setters.setOutingTopic('all');
       clearSelection();
       syncExploreUrl({
         filter: 'all',
         tripMapTopics: next,
         activityFilter: nextActivityFilter,
-        buddySubtype: 'all',
+        othersSubtype: 'all',
         outingTopic: 'all',
         list: listOpen,
       });
@@ -185,10 +185,10 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
       setters.setMapFilter(next);
       setters.setTripMapTopics([]);
       setters.setPlaceMapTopics([]);
-      const nextSubtype = next === 'others' ? buddySubtype : 'all';
+      const nextSubtype = next === 'others' ? othersSubtype : 'all';
       const nextTopic = next === 'others' && nextSubtype === 'activities' ? outingTopic : 'all';
       if (next !== 'others') {
-        setters.setBuddySubtype('all');
+        setters.setOthersSubtype('all');
         setters.setOutingTopic('all');
       }
       clearSelection();
@@ -200,14 +200,14 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
         filter: next,
         activityFilter: syncedActivity,
         placesFilter: syncedVenue,
-        buddySubtype: nextSubtype,
+        othersSubtype: nextSubtype,
         outingTopic: nextTopic,
         tripMapTopics: [],
         placeMapTopics: [],
         list: listOpen,
       });
     },
-    [buddySubtype, outingTopic, clearSelection, listOpen, setters, syncExploreUrl]
+    [othersSubtype, outingTopic, clearSelection, listOpen, setters, syncExploreUrl]
   );
 
   const applyBrowsePanel = useCallback(
@@ -396,12 +396,12 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
   }, [isDesktop, listMode, setters, syncExploreUrl]);
 
   const applyBuddySubtype = useCallback(
-    (next: ExploreBuddySubtypeKey) => {
-      setters.setBuddySubtype(next);
+    (next: ExploreOthersSubtypeKey) => {
+      setters.setOthersSubtype(next);
       const nextTopic = next === 'activities' ? outingTopic : 'all';
       if (next !== 'activities') setters.setOutingTopic('all');
       clearSelection();
-      syncExploreUrl({ buddySubtype: next, outingTopic: nextTopic, list: listOpen });
+      syncExploreUrl({ othersSubtype: next, outingTopic: nextTopic, list: listOpen });
     },
     [outingTopic, clearSelection, listOpen, setters, syncExploreUrl]
   );
@@ -424,12 +424,12 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
       setters.setVenueFilter('all');
       const syncedPanel = next === 'venues' ? 'venues' : 'activities';
       setters.setPanel(syncedPanel);
-      setters.setBuddySubtype('all');
+      setters.setOthersSubtype('all');
       setters.setOutingTopic('all');
       syncExploreUrl({
         filter: 'all',
         activityFilter: 'all',
-        buddySubtype: 'all',
+        othersSubtype: 'all',
         outingTopic: 'all',
         panel: syncedPanel,
         list: listOpen,
@@ -564,14 +564,14 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
       setters.setTripMapTopics(next);
       setters.setMapFilter('all');
       setters.setActivityFilter(nextActivityFilter);
-      setters.setBuddySubtype('all');
+      setters.setOthersSubtype('all');
       setters.setOutingTopic('all');
       clearSelection();
       syncExploreUrl({
         filter: 'all',
         tripMapTopics: next,
         activityFilter: nextActivityFilter,
-        buddySubtype: 'all',
+        othersSubtype: 'all',
         outingTopic: 'all',
         list: listOpen,
       });
@@ -716,7 +716,6 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
     closeCrewsBrowsePanel,
     applyCrewBrowseLane,
     applyCrewPeopleFacet,
-    applyCrewBrowseTab: applyCrewBrowseLane,
     closeListPanel,
     applyBuddySubtype,
     applyOutingTopic,

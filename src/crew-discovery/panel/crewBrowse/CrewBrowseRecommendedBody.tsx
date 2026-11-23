@@ -34,7 +34,7 @@ type Props = {
   exploreCatalogLoading: boolean;
   onOpenAvailabilityCatalogItem: (item: ExploreMapItemDTO) => void;
   onOfferRideshareForAvailabilityItem?: (item: ExploreMapItemDTO) => void;
-  buddyUserIds?: Set<string>;
+  friendUserIds?: Set<string>;
   crewRecommendationsQuery: DiscoverCrewRecommendationsQueryParams;
 };
 
@@ -51,7 +51,7 @@ export const CrewBrowseRecommendedBody = ({
   exploreCatalogLoading,
   onOpenAvailabilityCatalogItem,
   onOfferRideshareForAvailabilityItem,
-  buddyUserIds,
+  friendUserIds,
   crewRecommendationsQuery,
 }: Props) => {
   const serverRecommendations = useDiscoverCrewRecommendations(
@@ -102,7 +102,7 @@ export const CrewBrowseRecommendedBody = ({
             loading={exploreCatalogLoading}
             onOpenAvailabilityCatalogItem={onOpenAvailabilityCatalogItem}
             onOfferRideshareForAvailabilityItem={onOfferRideshareForAvailabilityItem}
-            buddyUserIds={buddyUserIds}
+            friendUserIds={friendUserIds}
           />
         </section>
       ) : null}

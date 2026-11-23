@@ -107,26 +107,3 @@ export const PlaceCard = ({ place, actions, onDismiss }: PlaceCardProps) => {
     </PlaceCatalogCardFrame>
   );
 };
-
-/** @deprecated Use {@link PlaceCard} with a hiking {@link Place}. */
-export const TrailCard = ({
-  trail,
-  actions,
-  onDismiss,
-}: {
-  trail: Omit<Place, 'activityType'>;
-  actions?: PlaceCardActionsConfig;
-  onDismiss?: () => void;
-}) => <PlaceCard place={{ ...trail, activityType: 'hiking' }} actions={actions} onDismiss={onDismiss} />;
-
-/** @deprecated Use {@link PlaceCard} with a camping {@link Place}. */
-export const CampingCard = ({
-  camp,
-  actions,
-  onDismiss,
-}: {
-  camp: Omit<Place, 'activityType' | 'distance' | 'duration' | 'elevation' | 'childFriendly'> &
-    Partial<Pick<Place, 'distance' | 'duration' | 'elevation' | 'childFriendly'>>;
-  actions?: PlaceCardActionsConfig;
-  onDismiss?: () => void;
-}) => <PlaceCard place={{ ...camp, activityType: 'camping', childFriendly: camp.childFriendly ?? false }} actions={actions} onDismiss={onDismiss} />;

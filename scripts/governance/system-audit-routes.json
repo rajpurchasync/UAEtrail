@@ -98,48 +98,48 @@
     },
     {
       "method": "GET",
-      "path": "/me/buddies",
-      "registrar": "apps/api/src/routes/user/registerBuddyRoutes.ts"
+      "path": "/me/friends",
+      "registrar": "apps/api/src/routes/user/registerFriendRoutes.ts"
     },
     {
       "method": "GET",
-      "path": "/me/buddies/activity-presence",
-      "registrar": "apps/api/src/routes/user/registerBuddyRoutes.ts"
+      "path": "/me/friends/activity-presence",
+      "registrar": "apps/api/src/routes/user/registerFriendRoutes.ts"
     },
     {
       "method": "POST",
-      "path": "/me/buddies/:userId/unfriend",
-      "registrar": "apps/api/src/routes/user/registerBuddyRoutes.ts"
+      "path": "/me/friends/:userId/unfriend",
+      "registrar": "apps/api/src/routes/user/registerFriendRoutes.ts"
     },
     {
       "method": "GET",
-      "path": "/me/buddy-requests",
-      "registrar": "apps/api/src/routes/user/registerBuddyRoutes.ts"
+      "path": "/me/friend-requests",
+      "registrar": "apps/api/src/routes/user/registerFriendRoutes.ts"
     },
     {
       "method": "POST",
-      "path": "/me/buddy-requests",
-      "registrar": "apps/api/src/routes/user/registerBuddyRoutes.ts"
+      "path": "/me/friend-requests",
+      "registrar": "apps/api/src/routes/user/registerFriendRoutes.ts"
     },
     {
       "method": "POST",
-      "path": "/me/buddy-requests/:requestId/accept",
-      "registrar": "apps/api/src/routes/user/registerBuddyRoutes.ts"
+      "path": "/me/friend-requests/:requestId/accept",
+      "registrar": "apps/api/src/routes/user/registerFriendRoutes.ts"
     },
     {
       "method": "POST",
-      "path": "/me/buddy-requests/:requestId/decline",
-      "registrar": "apps/api/src/routes/user/registerBuddyRoutes.ts"
+      "path": "/me/friend-requests/:requestId/decline",
+      "registrar": "apps/api/src/routes/user/registerFriendRoutes.ts"
     },
     {
       "method": "POST",
-      "path": "/me/buddy-requests/:requestId/cancel",
-      "registrar": "apps/api/src/routes/user/registerBuddyRoutes.ts"
+      "path": "/me/friend-requests/:requestId/cancel",
+      "registrar": "apps/api/src/routes/user/registerFriendRoutes.ts"
     },
     {
       "method": "GET",
-      "path": "/me/buddy-relationship/:userId",
-      "registrar": "apps/api/src/routes/user/registerBuddyRoutes.ts"
+      "path": "/me/friend-relationship/:userId",
+      "registrar": "apps/api/src/routes/user/registerFriendRoutes.ts"
     },
     {
       "method": "GET",
@@ -1175,9 +1175,9 @@
     "apps/api/src/routes/user/registerActivityJoinInviteRoutes.ts": [
       "activity-invite"
     ],
-    "apps/api/src/routes/user/registerBuddyRoutes.ts": [
-      "buddy-me-commands",
-      "buddy-me-read"
+    "apps/api/src/routes/user/registerFriendRoutes.ts": [
+      "friend-me-commands",
+      "friend-me-read"
     ],
     "apps/api/src/routes/user/registerDiscoverCrewRoutes.ts": [
       "discover-crew-feed"

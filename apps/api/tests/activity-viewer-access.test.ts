@@ -156,7 +156,7 @@ describe('buildActivityViewerAccess', () => {
       id: 'member-1',
       groupId: 'group-1',
       userId: 'guest-2',
-      role: 'buddy',
+      role: 'member',
       memberType: 'adult',
       displayName: null,
       invitedEmail: null,

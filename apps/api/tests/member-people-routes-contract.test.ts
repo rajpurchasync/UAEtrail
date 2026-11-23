@@ -13,7 +13,7 @@ describe('member people browse API contract', () => {
 
   it('uses Redis-backed social adjacency read cache when REDIS_URL is set', () => {
     const cache = read('src/lib/social-adjacency-read-cache.ts');
-    expect(cache).toMatch(/social:adj:buddies:/);
+    expect(cache).toMatch(/social:adj:friends:/);
     expect(cache).toMatch(/getRedisClient/);
   });
 
@@ -41,6 +41,6 @@ describe('member people browse API contract', () => {
     expect(registrar).toMatch(/member-people-engagement/);
     expect(registrar).toMatch(/loadMemberPeopleNetworkRoster/);
     expect(registrar).toMatch(/loadMemberPeopleNetworkPreview/);
-    expect(registrar).toMatch(/'buddies'/);
+    expect(registrar).toMatch(/'friends'/);
   });
 });

@@ -18,5 +18,5 @@ export const activityDetailShowRosterProUpsell = (
   visibleParticipantCount: number
 ): boolean =>
   canAccessCrewSurfaces &&
-  Boolean(entitlements && !entitlements.canViewFullBuddyRoster) &&
+  Boolean(entitlements && !entitlements.canViewFullFriendRoster) &&
   totalParticipantCount > visibleParticipantCount;

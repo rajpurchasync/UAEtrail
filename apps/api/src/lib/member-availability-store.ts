@@ -26,7 +26,7 @@ import { COLLECTIONS } from './collections.js';
 import { getMongoClient } from './mongo.js';
 import { findAuthUsersByIds } from './auth-users-store.js';
 import { findAreaBySlug, findPublishedAreaById } from './areas-store.js';
-import { areAcceptedBuddies } from './buddy-store.js';
+import { areAcceptedFriends } from './friend-store.js';
 import {
   filterSubjectsVisibleInFindCrew,
   maySeeMemberLocationForViewer,
@@ -218,7 +218,7 @@ const viewerMaySeeAvailability = async (
   if (!viewerUserId) return false;
   if (doc.userId === viewerUserId) return true;
   if (isFriendsOnlyAvailabilityVisibility(visibility)) {
-    return areAcceptedBuddies(doc.userId, viewerUserId);
+    return areAcceptedFriends(doc.userId, viewerUserId);
   }
   return false;
 };
@@ -257,7 +257,7 @@ export type ExploreAvailabilityQuery = {
   rangeEnd: string;
   kind?: AvailabilityKind | null;
   areaSlug?: string | null;
-  buddiesOnly?: boolean;
+  friendsOnly?: boolean;
 };
 
 export type ExploreAvailabilityIndex = {
@@ -305,14 +305,14 @@ export const loadExploreAvailabilityIndex = async (
     const user = userMap.get(doc.userId);
     if (!user) continue;
 
-    const isBuddy =
+    const isFriend =
       query.viewerUserId != null && doc.userId !== query.viewerUserId
-        ? await areAcceptedBuddies(doc.userId, query.viewerUserId)
+        ? await areAcceptedFriends(doc.userId, query.viewerUserId)
         : false;
-    if (query.buddiesOnly && !isBuddy) continue;
+    if (query.friendsOnly && !isFriend) continue;
 
     const maySeeLocation = await maySeeMemberLocationForViewer(user, query.viewerUserId, {
-      isBuddy,
+      isFriend,
     });
     // Area-filtered Find Crew must not match members who hide their start area.
     if (areaIdFilter && !maySeeLocation) continue;
@@ -330,7 +330,7 @@ export const loadExploreAvailabilityIndex = async (
       region,
       areaId,
       slots,
-      isBuddy,
+      isFriend,
     });
 
     for (const kind of projectedKinds) {

@@ -108,7 +108,7 @@ export const DOMAIN_GLOSSARY = {
     product: 'Participant',
     description: 'End-user explorer role.',
     storage: 'User.role = participant',
-    note: 'Admin UI may say "Member"; social graph uses "Buddy".',
+    note: 'Admin UI may say "Member"; social graph uses "Friends".',
   },
 } as const;
 

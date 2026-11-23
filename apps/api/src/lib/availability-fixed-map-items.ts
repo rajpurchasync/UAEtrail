@@ -60,6 +60,7 @@ export const buildAvailabilityFixedMapItems = async (input: {
   const rangeEnd = '2099-12-31';
   const docs = await collection()
     .find({ visibility: 'public' })
+    .sort({ updatedAt: -1 })
     .limit(500)
     .toArray();
 

@@ -32,7 +32,7 @@ interface ShareButtonProps {
   /** Raise share menu above explore/activity sheets (z ~5100). */
   stackAboveModals?: boolean;
   /** Signed-in in-app invite (friends + groups) when sharing an activity link. */
-  canSendBuddyInvites?: boolean;
+  canSendFriendInvites?: boolean;
   activityShare?: ActivityShareInput | null;
   /** When set, activity share opens sign-in first (full sheet after auth). */
   gateShareUntilSignedIn?: () => void;
@@ -54,7 +54,7 @@ export const ShareButton = ({
   className = '',
   label,
   stackAboveModals = false,
-  canSendBuddyInvites = false,
+  canSendFriendInvites = false,
   activityShare = null,
   gateShareUntilSignedIn,
   shareSurface,
@@ -122,7 +122,7 @@ export const ShareButton = ({
       shareSheet.openShare(
         { title, text: text ?? '', path },
         {
-          canSendBuddyInvites: Boolean(canSendBuddyInvites && activityShare),
+          canSendFriendInvites: Boolean(canSendFriendInvites && activityShare),
           activity: activityShare,
           shareSurface: resolvedSurface,
           sheetTitle,

@@ -19,7 +19,7 @@ import { resolveMemberStatus } from './member-status.js';
 
 export type UpsertMyMemberAvailabilityInput = {
   kinds?: AvailabilityKind[];
-  visibility: AvailabilityVisibility | 'buddies';
+  visibility: AvailabilityVisibility;
   region?: string | null;
   areaId?: string | null;
   note?: string | null;

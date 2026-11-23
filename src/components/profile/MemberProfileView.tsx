@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { formatProfileMonthDayLabel, formatRideshareVehicleLabel } from '@uaetrail/shared-types';
 import { SIGNIN_PATH, memberProfileLink } from '../../config/routingCatalog';
-import type { ActivityDTO, BuddyRelationshipDTO, MemberProfileSocialGraphDTO } from '@uaetrail/shared-types';
+import type { ActivityDTO, FriendRelationshipDTO, MemberProfileSocialGraphDTO } from '@uaetrail/shared-types';
 import { MemberProfileDeferredSectionAnchor } from './MemberProfileDeferredSectionAnchor';
 import { MemberProfileSocialGraphAnchor } from './MemberProfileSocialGraphAnchor';
 import { MemberProfileSocialSections } from './MemberProfileSocialSections';
@@ -63,14 +63,14 @@ interface MemberProfileViewProps {
   isSelf: boolean;
   userId: string;
   userLoggedIn: boolean;
-  buddyRel: BuddyRelationshipDTO | null;
-  buddyBusy: boolean;
-  buddyMessage: string | null;
-  onBuddyMessage: (message: string | null) => void;
-  onSendBuddyRequest: () => void;
-  onAcceptBuddyRequest: () => void;
-  onDeclineBuddyRequest: () => void;
-  onCancelBuddyRequest: () => void;
+  friendRel: FriendRelationshipDTO | null;
+  friendActionBusy: boolean;
+  friendMessage: string | null;
+  onFriendMessage: (message: string | null) => void;
+  onSendFriendRequest: () => void;
+  onAcceptFriendRequest: () => void;
+  onDeclineFriendRequest: () => void;
+  onCancelFriendRequest: () => void;
   onMessage: () => void;
   upcomingActivities?: ActivityDTO[];
   pastActivities?: ActivityDTO[];
@@ -95,14 +95,14 @@ export const MemberProfileView = ({
   isSelf,
   userId,
   userLoggedIn,
-  buddyRel,
-  buddyBusy,
-  buddyMessage,
-  onBuddyMessage,
-  onSendBuddyRequest,
-  onAcceptBuddyRequest,
-  onDeclineBuddyRequest,
-  onCancelBuddyRequest,
+  friendRel,
+  friendActionBusy,
+  friendMessage,
+  onFriendMessage,
+  onSendFriendRequest,
+  onAcceptFriendRequest,
+  onDeclineFriendRequest,
+  onCancelFriendRequest,
   onMessage,
   upcomingActivities = [],
   pastActivities = [],
@@ -185,12 +185,12 @@ export const MemberProfileView = ({
           {showConnectActions ? (
             <div className="lg:max-w-sm">
             <MemberProfileFriendActions
-              buddyRel={buddyRel}
-              buddyBusy={buddyBusy}
-              onSendBuddyRequest={onSendBuddyRequest}
-              onAcceptBuddyRequest={onAcceptBuddyRequest}
-              onDeclineBuddyRequest={onDeclineBuddyRequest}
-              onCancelBuddyRequest={onCancelBuddyRequest}
+              friendRel={friendRel}
+              friendActionBusy={friendActionBusy}
+              onSendFriendRequest={onSendFriendRequest}
+              onAcceptFriendRequest={onAcceptFriendRequest}
+              onDeclineFriendRequest={onDeclineFriendRequest}
+              onCancelFriendRequest={onCancelFriendRequest}
               onMessage={onMessage}
             />
             </div>
@@ -206,8 +206,8 @@ export const MemberProfileView = ({
             </Link>
           ) : null}
 
-          {buddyMessage ? (
-            <p className="mt-2 text-center text-xs font-medium text-neutral-600 lg:text-left">{buddyMessage}</p>
+          {friendMessage ? (
+            <p className="mt-2 text-center text-xs font-medium text-neutral-600 lg:text-left">{friendMessage}</p>
           ) : null}
           </div>
         </div>
@@ -360,7 +360,7 @@ export const MemberProfileView = ({
       {showConnectActions && !hostView ? (
         <GlassCard padding className="space-y-3">
           <SectionHeading>More</SectionHeading>
-          <MemberFollowControls targetUserId={userId} onStatusMessage={onBuddyMessage} />
+          <MemberFollowControls targetUserId={userId} onStatusMessage={onFriendMessage} />
         </GlassCard>
       ) : null}
       </div>

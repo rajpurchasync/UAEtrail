@@ -11,10 +11,10 @@ export const isListAvailabilityCatalogItem = (item: ExploreMapItemDTO): boolean 
 export const filterListAvailabilityCatalogItems = (items: ExploreMapItemDTO[]): ExploreMapItemDTO[] =>
   items.filter(isListAvailabilityCatalogItem);
 
-/** List `/list` has no map buddy/topic chips — availability rows use neutral filters; query/date apply in `browseListFilters`. */
+/** List `/list` has no map friend/topic chips — availability rows use neutral filters; query/date apply in `browseListFilters`. */
 export const LIST_AVAILABILITY_CATALOG_FILTERS: MapAvailabilityFilters = {
   mapFilter: 'all',
-  buddySubtype: 'all',
+  othersSubtype: 'all',
   outingTopic: 'all',
   query: '',
   activityDatePreset: null,

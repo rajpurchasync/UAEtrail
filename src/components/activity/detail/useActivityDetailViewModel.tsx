@@ -232,11 +232,11 @@ export const useActivityDetailViewModel = ({
     if (canAccessCrewSurfaces) {
       return participants;
     }
-    if (!viewerEntitlements || viewerEntitlements.canViewFullBuddyRoster) {
+    if (!viewerEntitlements || viewerEntitlements.canViewFullFriendRoster) {
       return participants;
     }
-    const buddySet = new Set(viewerEntitlements?.buddyUserIdsOnActivity ?? []);
-    return participants.filter((row) => buddySet.has(row.id));
+    const friendSet = new Set(viewerEntitlements?.friendUserIdsOnActivity ?? []);
+    return participants.filter((row) => friendSet.has(row.id));
   }, [participants, viewerEntitlements, canAccessCrewSurfaces]);
 
   const participantReviewPrompts = useMemo(
@@ -313,7 +313,7 @@ export const useActivityDetailViewModel = ({
 
   const mobilePlanPanel = '';
   const mobilePlacePanel = '';
-  const mobileBuddiesPanel = '';
+  const mobileCrewPanel = '';
   const mobileTransportPanel = '';
   const mobileSidebarPanel = publicDetail ? 'hidden md:block' : 'block';
 
@@ -484,7 +484,7 @@ export const useActivityDetailViewModel = ({
     showTransportParticipantProUpsell,
     mobilePlanPanel,
     mobilePlacePanel,
-    mobileBuddiesPanel,
+    mobileCrewPanel,
     mobileTransportPanel,
     mobileSidebarPanel,
     showInviteShare,

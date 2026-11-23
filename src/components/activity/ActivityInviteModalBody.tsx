@@ -6,15 +6,15 @@ import { SecureAvatar } from '../ui';
 import { FormTabBar } from '../ui/FormTabBar';
 import { TabPageSearchRow } from '../mobile/TabPageSearchRow';
 import {
-  activityInviteBuddiesQueryKey,
+  activityInviteFriendsQueryKey,
   activityJoinInvitesSentQueryKey,
   meGroupsActivityInviteQueryKey,
 } from '../../hooks/clientQueryKeys';
 import {
   fetchActivityJoinInvitesSentInviteeIds,
-  fetchMeBuddies,
+  fetchMeFriends,
   fetchMeGroups,
-  sendActivityJoinInvitesToBuddies,
+  sendActivityJoinInvitesToFriends,
 } from '../../hooks/activityInviteClientApi';
 import { messagingApi } from '../../messaging';
 import { GROUPS_PATH, socialFriendsPath } from '../../config/routingCatalog';
@@ -37,7 +37,7 @@ import {
   ACTIVITY_INVITE_TAB_GROUPS,
   activityInviteSentSuccessLine,
 } from '../../content/activityInviteCopy';
-import { EXPLORE_BUDDY_JOIN_ME_INVITE_SENT_LABEL } from '../../content/exploreGoingPanelCopy';
+import { EXPLORE_JOIN_ME_INVITE_SENT_LABEL } from '../../content/exploreGoingPanelCopy';
 import { userCreatedSocialGroups } from '../../utils/userCreatedSocialGroups';
 
 type InviteTab = 'friends' | 'groups';
@@ -45,7 +45,7 @@ type InviteTab = 'friends' | 'groups';
 type ActivityInviteModalBodyProps = {
   activityId: string;
   messageWithUrl: string;
-  initialSelectedBuddyIds?: string[];
+  initialSelectedFriendIds?: string[];
   /** When modal opens */
   active: boolean;
   /** After a successful send — sheet closes when animation finishes. */
@@ -80,21 +80,21 @@ const ActivityInviteSentSuccess = ({
   </div>
 );
 
-const buddyDisplayName = (displayName: string | null | undefined) =>
+const friendDisplayName = (displayName: string | null | undefined) =>
   (displayName?.trim() || 'Member').toLowerCase();
 
 export const ActivityInviteModalBody = ({
   activityId,
   messageWithUrl,
-  initialSelectedBuddyIds,
+  initialSelectedFriendIds,
   active,
   onInviteSent,
 }: ActivityInviteModalBodyProps) => {
   const { user } = useAuth();
   const [tab, setTab] = useState<InviteTab>('friends');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedBuddyIds, setSelectedBuddyIds] = useState<Set<string>>(() => {
-    const seed = initialSelectedBuddyIds?.filter((id) => id.trim()) ?? [];
+  const [selectedFriendIds, setSelectedFriendIds] = useState<Set<string>>(() => {
+    const seed = initialSelectedFriendIds?.filter((id) => id.trim()) ?? [];
     return seed.length > 0 ? new Set(seed) : new Set();
   });
   const [selectedGroupIds, setSelectedGroupIds] = useState<Set<string>>(() => new Set());
@@ -119,9 +119,9 @@ export const ActivityInviteModalBody = ({
     return () => window.clearTimeout(timer);
   }, [sentSuccess, onInviteSent]);
 
-  const { data: buddies = [], isLoading: buddiesLoading } = useQuery({
-    queryKey: activityInviteBuddiesQueryKey(activityId),
-    queryFn: fetchMeBuddies,
+  const { data: friendsRoster = [], isLoading: friendsLoading } = useQuery({
+    queryKey: activityInviteFriendsQueryKey(activityId),
+    queryFn: fetchMeFriends,
     enabled: Boolean(user) && active,
   });
 
@@ -140,29 +140,29 @@ export const ActivityInviteModalBody = ({
   const sentInviteeSet = useMemo(() => new Set(sentInviteeIds), [sentInviteeIds]);
   const searchTrimmed = searchQuery.trim().toLowerCase();
 
-  const filteredBuddies = useMemo(() => {
-    if (!searchTrimmed || tab !== 'friends') return buddies;
-    return buddies.filter((buddy) => buddyDisplayName(buddy.displayName).includes(searchTrimmed));
-  }, [buddies, searchTrimmed, tab]);
+  const filteredFriends = useMemo(() => {
+    if (!searchTrimmed || tab !== 'friends') return friendsRoster;
+    return friendsRoster.filter((friend) => friendDisplayName(friend.displayName).includes(searchTrimmed));
+  }, [friendsRoster, searchTrimmed, tab]);
 
   const filteredGroups = useMemo(() => {
     if (!searchTrimmed || tab !== 'groups') return groups;
     return groups.filter((group) => group.name.trim().toLowerCase().includes(searchTrimmed));
   }, [groups, searchTrimmed, tab]);
 
-  const filteredSelectableBuddyIds = useMemo(
+  const filteredSelectableFriendIds = useMemo(
     () =>
-      filteredBuddies
-        .filter((buddy) => !sentInviteeSet.has(buddy.userId))
-        .map((b) => b.userId),
-    [filteredBuddies, sentInviteeSet]
+      filteredFriends
+        .filter((friend) => !sentInviteeSet.has(friend.userId))
+        .map((f) => f.userId),
+    [filteredFriends, sentInviteeSet]
   );
 
   const filteredGroupIds = useMemo(() => filteredGroups.map((g) => g.id), [filteredGroups]);
 
   const allFriendsSelected =
-    filteredSelectableBuddyIds.length > 0 &&
-    filteredSelectableBuddyIds.every((id) => selectedBuddyIds.has(id));
+    filteredSelectableFriendIds.length > 0 &&
+    filteredSelectableFriendIds.every((id) => selectedFriendIds.has(id));
 
   const allGroupsSelected =
     filteredGroupIds.length > 0 && filteredGroupIds.every((id) => selectedGroupIds.has(id));
@@ -173,16 +173,16 @@ export const ActivityInviteModalBody = ({
   const toggleSelectAll = () => {
     if (tab === 'friends') {
       if (allFriendsSelected) {
-        setSelectedBuddyIds((prev) => {
+        setSelectedFriendIds((prev) => {
           const next = new Set(prev);
-          for (const id of filteredSelectableBuddyIds) next.delete(id);
+          for (const id of filteredSelectableFriendIds) next.delete(id);
           return next;
         });
         return;
       }
-      setSelectedBuddyIds((prev) => {
+      setSelectedFriendIds((prev) => {
         const next = new Set(prev);
-        for (const id of filteredSelectableBuddyIds) next.add(id);
+        for (const id of filteredSelectableFriendIds) next.add(id);
         return next;
       });
       return;
@@ -202,18 +202,18 @@ export const ActivityInviteModalBody = ({
     });
   };
 
-  const selectedCount = tab === 'friends' ? selectedBuddyIds.size : selectedGroupIds.size;
+  const selectedCount = tab === 'friends' ? selectedFriendIds.size : selectedGroupIds.size;
 
   const send = async () => {
     setBusy(true);
     setError(null);
     try {
       if (tab === 'friends') {
-        const ids = [...selectedBuddyIds];
+        const ids = [...selectedFriendIds];
         if (ids.length === 0) return;
-        const sent = await sendActivityJoinInvitesToBuddies(activityId, ids);
+        const sent = await sendActivityJoinInvitesToFriends(activityId, ids);
         await refetchSentInvites();
-        setSelectedBuddyIds(new Set());
+        setSelectedFriendIds(new Set());
         setSentSuccess({
           headline: ACTIVITY_INVITE_SENT_SUCCESS_HEADLINE,
           detail: activityInviteSentSuccessLine(sent),
@@ -246,7 +246,7 @@ export const ActivityInviteModalBody = ({
     );
   }
 
-  const listLoading = tab === 'friends' ? buddiesLoading : groupsLoading;
+  const listLoading = tab === 'friends' ? friendsLoading : groupsLoading;
 
   if (sentSuccess) {
     return (
@@ -284,7 +284,7 @@ export const ActivityInviteModalBody = ({
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
             Loading…
           </p>
-        ) : tab === 'friends' && buddies.length === 0 ? (
+        ) : tab === 'friends' && friendsRoster.length === 0 ? (
           <p className="text-sm text-neutral-600">
             {ACTIVITY_INVITE_NO_FRIENDS}{' '}
             <Link to={socialFriendsPath()} className="font-semibold text-emerald-700 hover:underline">
@@ -298,7 +298,7 @@ export const ActivityInviteModalBody = ({
           </p>
         ) : (
           <>
-            {(tab === 'friends' ? filteredSelectableBuddyIds.length : filteredGroupIds.length) > 0 ? (
+            {(tab === 'friends' ? filteredSelectableFriendIds.length : filteredGroupIds.length) > 0 ? (
               <div className="flex items-center justify-between gap-2">
                 <button
                   type="button"
@@ -313,7 +313,7 @@ export const ActivityInviteModalBody = ({
               </div>
             ) : null}
 
-            {tab === 'friends' && filteredBuddies.length === 0 ? (
+            {tab === 'friends' && filteredFriends.length === 0 ? (
               <p className="text-sm text-neutral-500">{ACTIVITY_INVITE_NO_SEARCH_RESULTS}</p>
             ) : null}
             {tab === 'groups' && filteredGroups.length === 0 ? (
@@ -322,21 +322,21 @@ export const ActivityInviteModalBody = ({
 
             <ul className="max-h-[min(50vh,20rem)] space-y-1 overflow-y-auto overscroll-contain">
               {tab === 'friends'
-                ? filteredBuddies.map((buddy) => {
-                    const alreadyInvited = sentInviteeSet.has(buddy.userId);
-                    const selected = selectedBuddyIds.has(buddy.userId);
+                ? filteredFriends.map((friend) => {
+                    const alreadyInvited = sentInviteeSet.has(friend.userId);
+                    const selected = selectedFriendIds.has(friend.userId);
                     const selectable = !alreadyInvited;
                     return (
-                      <li key={buddy.userId}>
+                      <li key={friend.userId}>
                         <button
                           type="button"
                           disabled={!selectable || busy}
                           onClick={() => {
                             if (!selectable) return;
-                            setSelectedBuddyIds((prev) => {
+                            setSelectedFriendIds((prev) => {
                               const next = new Set(prev);
-                              if (next.has(buddy.userId)) next.delete(buddy.userId);
-                              else next.add(buddy.userId);
+                              if (next.has(friend.userId)) next.delete(friend.userId);
+                              else next.add(friend.userId);
                               return next;
                             });
                           }}
@@ -362,16 +362,16 @@ export const ActivityInviteModalBody = ({
                             ) : null}
                           </span>
                           <SecureAvatar
-                            src={buddy.avatarUrl}
-                            name={buddy.displayName || 'Member'}
+                            src={friend.avatarUrl}
+                            name={friend.displayName || 'Member'}
                             className="h-10 w-10 text-xs"
                           />
                           <span className="min-w-0 flex-1 truncate text-sm font-medium text-neutral-900">
-                            {buddy.displayName || 'Member'}
+                            {friend.displayName || 'Member'}
                           </span>
                           {alreadyInvited ? (
                             <span className="shrink-0 text-xs font-semibold text-neutral-500">
-                              {EXPLORE_BUDDY_JOIN_ME_INVITE_SENT_LABEL}
+                              {EXPLORE_JOIN_ME_INVITE_SENT_LABEL}
                             </span>
                           ) : null}
                         </button>

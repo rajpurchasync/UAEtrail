@@ -29,11 +29,11 @@ describe('resolveDiscoveryViewerJoinStatus', () => {
             entitlements: {
               isProMember: false,
               canViewHostProfileBeforeJoin: true,
-              canViewFullBuddyRoster: false,
+              canViewFullFriendRoster: false,
               canOfferTransport: true,
               canAddLinkedRide: true,
               canMessageHostBeforeJoin: true,
-              buddyUserIdsOnActivity: [],
+              friendUserIdsOnActivity: [],
             },
           },
         })
@@ -45,11 +45,11 @@ describe('resolveDiscoveryViewerJoinStatus', () => {
     const entitlements = {
       isProMember: false,
       canViewHostProfileBeforeJoin: true,
-      canViewFullBuddyRoster: false,
+      canViewFullFriendRoster: false,
       canOfferTransport: false,
       canAddLinkedRide: false,
       canMessageHostBeforeJoin: true,
-      buddyUserIdsOnActivity: [],
+      friendUserIdsOnActivity: [],
     };
     expect(
       resolveDiscoveryViewerJoinStatus(

@@ -138,7 +138,7 @@ export const useListDiscoveryCrewsCategoryAugment = ({
     exploreCatalogFallback: exploreCatalogItems,
     filters: {
       mapFilter: 'all',
-      buddySubtype: 'all',
+      othersSubtype: 'all',
       outingTopic: 'all',
       query: draftQuery,
     },

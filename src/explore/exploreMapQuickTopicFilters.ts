@@ -1,7 +1,7 @@
 import type { MapFilterKey } from './discoveryUrlParams';
 import type { VenueListFilterKey } from './routing';
-import { matchesBuddyMapFilter, matchesPlacesMapFilter } from './ui/exploreMapPinModel';
-import type { ExploreBuddySubtypeKey } from './exploreBuddySubtype';
+import { matchesOthersMapFilter, matchesPlacesMapFilter } from './ui/exploreMapPinModel';
+import type { ExploreOthersSubtypeKey } from './exploreOthersSubtype';
 import type { ExploreOutingTopicKey } from './exploreOutingTopic';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 
@@ -73,14 +73,14 @@ export const matchesTripMapTopicFilter = (
   item: ExploreMapItemDTO,
   tripMapTopics: TripMapTopicKey[],
   mapFilter: MapFilterKey,
-  buddySubtype: ExploreBuddySubtypeKey = 'all',
+  othersSubtype: ExploreOthersSubtypeKey = 'all',
   outingTopic: ExploreOutingTopicKey = 'all'
 ): boolean => {
   const effective = effectiveTripMapTopics(mapFilter, tripMapTopics);
   if (effective.length === 0) {
-    return matchesBuddyMapFilter(item, mapFilter, buddySubtype, outingTopic);
+    return matchesOthersMapFilter(item, mapFilter, othersSubtype, outingTopic);
   }
-  return effective.some((topic) => matchesBuddyMapFilter(item, topic, buddySubtype, outingTopic));
+  return effective.some((topic) => matchesOthersMapFilter(item, topic, othersSubtype, outingTopic));
 };
 
 const placeTopicToMapFilter = (topic: PlaceMapTopicKey): MapFilterKey => topic;

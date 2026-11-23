@@ -10,7 +10,7 @@ type Args = {
   user: { id: string } | null | undefined;
   onInviteActivity?: (
     activity: ActivityDTO,
-    options?: { canSendBuddyInvites?: boolean }
+    options?: { canSendFriendInvites?: boolean }
   ) => void;
   onShareHostedActivity?: (activity: ActivityDTO) => void;
   onGuestShareActivity?: (activity: ActivityDTO) => void;
@@ -37,7 +37,7 @@ export function useExplorePeekShareAction({
         onShareHostedActivity(activity);
         return;
       }
-      onInviteActivity?.(activity, { canSendBuddyInvites: Boolean(user) });
+      onInviteActivity?.(activity, { canSendFriendInvites: Boolean(user) });
       return;
     }
     if (!selectedCard?.sharePath) return;

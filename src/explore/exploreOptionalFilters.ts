@@ -6,7 +6,7 @@ import {
   type ExploreMapItemDTO,
   type PlaceKind,
 } from '@uaetrail/shared-types';
-import { isBuddyMapItem, isPlacesMapItem, isShopListItem } from './exploreMapItemKind';
+import { isFriendMapItem, isPlacesMapItem, isShopListItem } from './exploreMapItemKind';
 import {
   togglePlaceMapTopic,
   type PlaceMapTopicKey,
@@ -220,7 +220,7 @@ export const exploreItemMatchesPriceFilter = (
   price: ExplorePriceFilter
 ): boolean => {
   if (price === 'all') return true;
-  if (!isBuddyMapItem(item)) return true;
+  if (!isFriendMapItem(item)) return true;
   return exploreItemPriceKind(item) === price;
 };
 

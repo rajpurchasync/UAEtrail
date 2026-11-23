@@ -65,7 +65,7 @@ describe('attachExploreMapViewerAccess', () => {
       requestStatusByActivityId: new Map(),
       staffTenantIds: new Set(),
       hostStatus: null,
-      buddyUserIds: new Set(),
+      friendUserIds: new Set(),
       pendingJoinInviteCountByActivityId: new Map(),
     });
 
@@ -107,7 +107,7 @@ describe('attachExploreMapViewerAccess', () => {
       requestStatusByActivityId: new Map(),
       staffTenantIds: new Set(),
       hostStatus: null,
-      buddyUserIds: new Set(),
+      friendUserIds: new Set(),
       pendingJoinInviteCountByActivityId: new Map(),
     });
 
@@ -136,7 +136,7 @@ describe('attachExploreMapViewerAccess', () => {
       requestStatusByActivityId: new Map(),
       staffTenantIds: new Set(),
       hostStatus: null,
-      buddyUserIds: new Set(),
+      friendUserIds: new Set(),
       pendingJoinInviteCountByActivityId: new Map(),
     });
 
@@ -151,7 +151,7 @@ describe('attachExploreMapViewerAccess', () => {
       requestStatusByActivityId: new Map(),
       staffTenantIds: new Set(),
       hostStatus: null,
-      buddyUserIds: new Set(),
+      friendUserIds: new Set(),
       pendingJoinInviteCountByActivityId: new Map([['a1', 2]]),
     });
 
@@ -188,7 +188,7 @@ describe('attachExploreMapViewerAccess', () => {
       requestStatusByActivityId: new Map(),
       staffTenantIds: new Set(),
       hostStatus: null,
-      buddyUserIds: new Set(),
+      friendUserIds: new Set(),
       pendingJoinInviteCountByActivityId: new Map(),
     });
 
@@ -230,7 +230,7 @@ describe('attachExploreMapViewerAccess', () => {
       requestStatusByActivityId: new Map(),
       staffTenantIds: new Set(),
       hostStatus: null,
-      buddyUserIds: new Set(),
+      friendUserIds: new Set(),
       pendingJoinInviteCountByActivityId: new Map(),
     });
 
@@ -253,7 +253,7 @@ describe('attachExploreMapViewerAccess', () => {
       requestStatusByActivityId: new Map(),
       staffTenantIds: new Set(),
       hostStatus: null,
-      buddyUserIds: new Set(),
+      friendUserIds: new Set(),
       pendingJoinInviteCountByActivityId: new Map(),
     });
 
@@ -272,7 +272,7 @@ describe('attachExploreMapViewerAccess', () => {
       requestStatusByActivityId: new Map([['a1', RequestStatus.PENDING]]),
       staffTenantIds: new Set(),
       hostStatus: null,
-      buddyUserIds: new Set(),
+      friendUserIds: new Set(),
       pendingJoinInviteCountByActivityId: new Map(),
     });
 
@@ -293,7 +293,7 @@ describe('attachExploreMapViewerAccess', () => {
       requestStatusByActivityId: new Map([['a1', RequestStatus.APPROVED]]),
       staffTenantIds: new Set(),
       hostStatus: null,
-      buddyUserIds: new Set(),
+      friendUserIds: new Set(),
       pendingJoinInviteCountByActivityId: new Map(),
     });
 
@@ -309,7 +309,7 @@ describe('attachExploreMapViewerAccess', () => {
       requestStatusByActivityId: new Map([['a1', RequestStatus.WAITLISTED]]),
       staffTenantIds: new Set(),
       hostStatus: null,
-      buddyUserIds: new Set(),
+      friendUserIds: new Set(),
       pendingJoinInviteCountByActivityId: new Map(),
     });
 
@@ -329,7 +329,7 @@ describe('attachExploreMapViewerAccess', () => {
       requestStatusByActivityId: new Map(),
       staffTenantIds: new Set(['t1']),
       hostStatus: null,
-      buddyUserIds: new Set(),
+      friendUserIds: new Set(),
       pendingJoinInviteCountByActivityId: new Map(),
     });
 
@@ -357,7 +357,7 @@ describe('attachExploreMapViewerAccess', () => {
       requestStatusByActivityId: new Map(),
       staffTenantIds: new Set(),
       hostStatus: null,
-      buddyUserIds: new Set(),
+      friendUserIds: new Set(),
       pendingJoinInviteCountByActivityId: new Map(),
     });
 

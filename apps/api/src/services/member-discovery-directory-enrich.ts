@@ -1,11 +1,11 @@
 import type {
   MemberBrowseCardDTO,
   MemberProfileRoleLabel,
-  SocialPersonBuddyRequestState,
+  SocialPersonFriendRequestState,
 } from '@uaetrail/shared-types';
 import { countCheckedInParticipationsForUserIds } from '../lib/activity-engagement-store.js';
 import { findAuthUsersByIds } from '../lib/auth-users-store.js';
-import { listBuddyRequestsForUser } from '../lib/buddy-store.js';
+import { listFriendRequestsForUser } from '../lib/friend-store.js';
 import { filterInboxMessageablePartnerIds } from './chat-policy.js';
 import { batchResolveMemberProfileRoleLabelsForDirectory } from './member-status.js';
 
@@ -18,11 +18,11 @@ const trimBio = (bio: string | null | undefined): string | null => {
   return `${trimmed.slice(0, BIO_PREVIEW_MAX - 1).trimEnd()}…`;
 };
 
-const buddyRequestStateForTarget = (
+const friendRequestStateForTarget = (
   targetUserId: string,
   pendingIncoming: Set<string>,
   pendingOutgoing: Set<string>
-): SocialPersonBuddyRequestState => {
+): SocialPersonFriendRequestState => {
   if (pendingIncoming.has(targetUserId)) return 'incoming';
   if (pendingOutgoing.has(targetUserId)) return 'outgoing';
   return 'none';
@@ -39,7 +39,7 @@ export const enrichMemberBrowseDirectory = async (
   const userMap = new Map(users.map((user) => [user._id, user]));
 
   const [requests, attendedMap, messageablePartnerIds, roleMap] = await Promise.all([
-    listBuddyRequestsForUser(viewerUserId, 'all'),
+    listFriendRequestsForUser(viewerUserId, 'all'),
     countCheckedInParticipationsForUserIds(userIds),
     filterInboxMessageablePartnerIds(viewerUserId, userIds),
     batchResolveMemberProfileRoleLabelsForDirectory(users),
@@ -59,9 +59,9 @@ export const enrichMemberBrowseDirectory = async (
 
   return cards.map((card) => {
     const user = userMap.get(card.id);
-    const buddyRequestState = buddyRequestStateForTarget(card.id, pendingIncoming, pendingOutgoing);
-    const canSendBuddyRequest =
-      buddyRequestState === 'none' && card.id !== viewerUserId;
+    const friendRequestState = friendRequestStateForTarget(card.id, pendingIncoming, pendingOutgoing);
+    const canSendFriendRequest =
+      friendRequestState === 'none' && card.id !== viewerUserId;
 
     return {
       ...card,
@@ -69,8 +69,8 @@ export const enrichMemberBrowseDirectory = async (
       activitiesAttended: attendedMap.get(card.id) ?? 0,
       profileRoleLabel: (roleMap.get(card.id) ?? 'community_member') as MemberProfileRoleLabel,
       canMessage: messageablePartnerIds.has(card.id),
-      canSendBuddyRequest,
-      buddyRequestState,
+      canSendFriendRequest,
+      friendRequestState,
     };
   });
 };

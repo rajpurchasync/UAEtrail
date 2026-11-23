@@ -18,14 +18,4 @@ export const crewsStatTabFromFacet = (facet: CrewPeopleFacet): CrewsStatTab => f
 
 export const facetFromCrewsStatTab = (tab: CrewsStatTab): CrewPeopleFacet => tab;
 
-/** @deprecated Use crewsStatTabFromFacet */
-export const crewsStatTabFromSegment = (lane: CrewBrowseLane, facet: CrewPeopleFacet): CrewsStatTab | null =>
-  lane === 'people' ? facet : null;
-
-/** @deprecated Use facetFromCrewsStatTab */
-export const segmentFromCrewsStatTab = (tab: CrewsStatTab): { lane: CrewBrowseLane; facet: CrewPeopleFacet } => ({
-  lane: 'people',
-  facet: tab,
-});
-
 export const crewsShowsGuidesRail = (lane: CrewBrowseLane): boolean => lane === 'professional';

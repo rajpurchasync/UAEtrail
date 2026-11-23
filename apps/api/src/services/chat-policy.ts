@@ -10,7 +10,7 @@ import {
   hasSharedActivityParticipation,
   hasActivityInquiryAccess
 } from '../lib/activity-engagement-store.js';
-import { areAcceptedBuddies, listBuddiesForUser } from '../lib/buddy-store.js';
+import { areAcceptedFriends, listFriendsForUser } from '../lib/friend-store.js';
 import { hasDirectedMessageFromTo, listPartnersWhoSentToUser } from '../lib/chat-messages-store.js';
 import { listInboundChatEnabledShopAdminIds } from '../lib/shop-store.js';
 
@@ -32,8 +32,8 @@ export async function assertChatRateLimit(senderId: string): Promise<void> {
 }
 
 /**
- * Users may message when they are accepted buddies or share an active activity / request relationship.
- * A past DM thread alone does not grant access — unfriended buddies cannot keep messaging.
+ * Users may message when they are accepted friends or share an active activity / request relationship.
+ * A past DM thread alone does not grant access — unfriended members cannot keep messaging.
  *
  * Platform admins have no bypass: they cannot read private DMs or group chat unless they are
  * participants with the same relationship rules as any other member.
@@ -43,7 +43,7 @@ export async function canMessageUser(
   receiverId: string,
   options?: { activityId?: string }
 ): Promise<boolean> {
-  if (await areAcceptedBuddies(senderId, receiverId)) return true;
+  if (await areAcceptedFriends(senderId, receiverId)) return true;
 
   const sharedActivity = await hasSharedActivityParticipation(senderId, receiverId);
   if (sharedActivity) return true;
@@ -92,11 +92,11 @@ export async function assertCanMessageUser(
   throw new ApiError(
     403,
     'message_not_allowed',
-    'You can only message people you are connected with as buddies or share an activity connection with.'
+    'You can only message people you are connected with as friends or share an activity connection with.'
   );
 }
 
-/** Inbox: one buddy list read, then policy checks only for non-buddy partners. */
+/** Inbox: one friends list read, then policy checks only for non-friend partners. */
 export async function filterInboxMessageablePartnerIds(
   viewerId: string,
   partnerIds: string[]
@@ -104,13 +104,13 @@ export async function filterInboxMessageablePartnerIds(
   const unique = [...new Set(partnerIds.filter(Boolean))];
   if (unique.length === 0) return new Set();
 
-  const buddies = await listBuddiesForUser(viewerId);
-  const buddyIds = new Set(buddies.map((b) => b.userId));
+  const friends = await listFriendsForUser(viewerId);
+  const friendIds = new Set(friends.map((b) => b.userId));
   const allowed = new Set<string>();
   const toCheck: string[] = [];
 
   for (const partnerId of unique) {
-    if (buddyIds.has(partnerId)) {
+    if (friendIds.has(partnerId)) {
       allowed.add(partnerId);
     } else {
       toCheck.push(partnerId);

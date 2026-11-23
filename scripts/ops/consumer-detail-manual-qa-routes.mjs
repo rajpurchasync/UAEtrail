@@ -74,7 +74,7 @@ const ROUTES = [
   {
     surface: 'My Crews',
     path: '/crews',
-    note: 'Friends hub — canonical; legacy /buddies redirects here',
+    note: 'Friends hub — canonical /crews',
   },
   {
     surface: 'Post-auth default',
@@ -98,8 +98,8 @@ const NOTIFICATION_EDGE = [
     steps: 'Post in a group wall → recipient taps bell → lands in /messages group thread',
   },
   {
-    case: 'Buddy request (connection_buddy_request)',
-    steps: 'Send buddy request → recipient notification → /crews or profile path',
+    case: 'Friend request (connection_friend_request)',
+    steps: 'Send friend request → recipient notification → /crews or profile path',
   },
   {
     case: 'Join approved + group chat (join_request_approved)',

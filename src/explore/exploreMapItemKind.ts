@@ -24,7 +24,7 @@ export const isPlacesMapItem = (item: ExploreMapItemDTO): boolean => {
 };
 
 /** Time-bound social layer: hosted outings and looking-for posts. */
-export const isBuddyMapItem = (item: ExploreMapItemDTO): boolean => isTimeBoundExploreMapItem(item);
+export const isFriendMapItem = (item: ExploreMapItemDTO): boolean => isTimeBoundExploreMapItem(item);
 
 /** Map pills + list venue “shop” topic — merchant pins and any `kind: shop` row. */
 export const mapItemMatchesShopsPill = (item: ExploreMapItemDTO): boolean =>

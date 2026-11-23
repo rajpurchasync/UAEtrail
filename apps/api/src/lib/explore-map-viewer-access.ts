@@ -18,7 +18,7 @@ import { MembershipRole, RequestStatus, UserRole } from '../domain/enums.js';
 import { resolveJoinMode } from '../domain/activity-join-mode.js';
 import { listActivityEngagementForUserOnActivities } from './activity-engagement-store.js';
 import { listActiveTenantMembershipsByUser } from './tenant-access.js';
-import { listBuddiesForUser } from './buddy-store.js';
+import { listFriendsForUser } from './friend-store.js';
 import { countPendingActivityInvitesByActivityIdsForSender } from './activity-invites-store.js';
 import { resolveMemberStatusForExploreOverlay } from '../services/member-status-overlay-cache.js';
 import { applyActivityViewEntitlements } from '../services/member-entitlements.js';
@@ -38,7 +38,7 @@ export type ExploreMapViewerAccessContext = {
   requestStatusByActivityId: Map<string, RequestStatus>;
   staffTenantIds: Set<string>;
   hostStatus: HostStatusDTO | null;
-  buddyUserIds: Set<string>;
+  friendUserIds: Set<string>;
   pendingJoinInviteCountByActivityId: Map<string, number>;
 };
 
@@ -102,7 +102,7 @@ export const buildExploreMapViewerAccessContext = async (input: {
       requestStatusByActivityId: new Map(),
       staffTenantIds: new Set(),
       hostStatus: null,
-      buddyUserIds: new Set(),
+      friendUserIds: new Set(),
       pendingJoinInviteCountByActivityId: new Map(),
     };
   }
@@ -111,12 +111,12 @@ export const buildExploreMapViewerAccessContext = async (input: {
     .filter((item) => item.source === 'activity' && item.activity?.id)
     .map((item) => item.activity!.id);
 
-  const [engagement, memberships, hostStatus, buddies, pendingJoinInviteCountByActivityId] =
+  const [engagement, memberships, hostStatus, friends, pendingJoinInviteCountByActivityId] =
     await Promise.all([
       listActivityEngagementForUserOnActivities(viewerUserId, activityIds),
       listActiveTenantMembershipsByUser(viewerUserId),
       resolveMemberStatusForExploreOverlay(viewerUserId),
-      listBuddiesForUser(viewerUserId),
+      listFriendsForUser(viewerUserId),
       countPendingActivityInvitesByActivityIdsForSender({
         fromUserId: viewerUserId,
         activityIds,
@@ -136,7 +136,7 @@ export const buildExploreMapViewerAccessContext = async (input: {
     requestStatusByActivityId: engagement.requestStatusByActivityId,
     staffTenantIds,
     hostStatus,
-    buddyUserIds: new Set(buddies.map((buddy) => buddy.userId)),
+    friendUserIds: new Set(friends.map((friend) => friend.userId)),
     pendingJoinInviteCountByActivityId,
   };
 };
@@ -146,7 +146,7 @@ const withEntitlements = (
   viewerAccess: ActivityViewerAccessDTO,
   activityCtx?: {
     hostUserId: string | null;
-    buddyUserIdsOnActivity: string[];
+    friendUserIdsOnActivity: string[];
   }
 ): ActivityViewerAccessDTO =>
   applyActivityViewEntitlements(
@@ -156,9 +156,9 @@ const withEntitlements = (
       ? {
           hostUserId: activityCtx.hostUserId,
           isFriendOfHost: Boolean(
-            activityCtx.hostUserId && ctx.buddyUserIds.has(activityCtx.hostUserId)
+            activityCtx.hostUserId && ctx.friendUserIds.has(activityCtx.hostUserId)
           ),
-          buddyUserIdsOnActivity: activityCtx.buddyUserIdsOnActivity,
+          friendUserIdsOnActivity: activityCtx.friendUserIdsOnActivity,
         }
       : undefined
   );
@@ -193,7 +193,7 @@ export const attachExploreMapViewerAccess = (
       const joinRequestStatus = mapPeekJoinRequestStatusFromWire(rawRequestStatus);
       const hostUserId = item.activity.hostUserId ?? item.featuredPerson?.userId ?? null;
       const participantUserIds = (item.participantPreviews ?? []).map((preview) => preview.id);
-      const buddyOnActivity = participantUserIds.filter((id) => ctx.buddyUserIds.has(id));
+      const friendsOnActivity = participantUserIds.filter((id) => ctx.friendUserIds.has(id));
       const isHostUser = level === 'host';
       const onRoster = ctx.participantActivityIds.has(item.activity.id);
       const engagementPolicyInput = buildMapPeekEngagementPolicyInput({
@@ -213,7 +213,7 @@ export const attachExploreMapViewerAccess = (
           ...exposure,
           mapPeekActions: resolveActivityEngagementMapPeekActionsBase(engagementPolicyInput),
         },
-        { hostUserId, buddyUserIdsOnActivity: buddyOnActivity }
+        { hostUserId, friendUserIdsOnActivity: friendsOnActivity }
       );
 
       return {

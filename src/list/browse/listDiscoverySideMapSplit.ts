@@ -25,9 +25,6 @@ export const clampListPanelWidth = (width: number, splitWidthPx?: number): numbe
   return Math.min(Math.max(width, LIST_BROWSE_MIN_PX), max);
 };
 
-/** @deprecated Map-min-width storage — migrated to list panel width on read. */
-export const readStoredSideMapWidth = (): number => LIST_SIDE_LIST_DEFAULT_PX;
-
 export const readStoredListPanelWidth = (): number => {
   if (typeof window === 'undefined') return LIST_SIDE_LIST_DEFAULT_PX;
   const listRaw = Number.parseInt(window.localStorage.getItem(LIST_SIDE_LIST_WIDTH_STORAGE_KEY) ?? '', 10);
@@ -49,6 +46,3 @@ export const persistListPanelWidth = (width: number) => {
     /* ignore */
   }
 };
-
-/** @deprecated Use persistListPanelWidth */
-export const persistSideMapWidth = persistListPanelWidth;

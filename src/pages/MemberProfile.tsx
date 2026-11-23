@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Loader2, Lock } from 'lucide-react';
-import type { BuddyRelationshipDTO } from '@uaetrail/shared-types';
+import type { FriendRelationshipDTO } from '@uaetrail/shared-types';
 import type { PersonPublicProfileDTO } from '../api/types';
 import {
-  acceptMemberBuddyRequest,
-  cancelMemberBuddyRequest,
-  declineMemberBuddyRequest,
-  sendMemberBuddyRequest,
+  acceptMemberFriendRequest,
+  cancelMemberFriendRequest,
+  declineMemberFriendRequest,
+  sendMemberFriendRequest,
 } from '../hooks/memberPeopleClientApi';
 /** Public reads: `memberPublicProfileApi` via {@link useMemberProfilePage}. */
 import { useMemberProfilePage } from '../hooks/useMemberProfilePage';
@@ -69,8 +69,8 @@ export const MemberProfile = () => {
       }),
     [isSelf, location.state]
   );
-  const [buddyBusy, setBuddyBusy] = useState(false);
-  const [buddyMessage, setBuddyMessage] = useState<string | null>(null);
+  const [friendActionBusy, setFriendActionBusy] = useState(false);
+  const [friendMessage, setFriendMessage] = useState<string | null>(null);
   const browseLens = useMemo(() => parseMemberProfileBrowseLens(location.search), [location.search]);
   const [presentation, setPresentation] = useState<MemberProfilePresentationMode>('social');
   const [loadSocialGraph, setLoadSocialGraph] = useState(false);
@@ -96,9 +96,9 @@ export const MemberProfile = () => {
     socialGraphLoading,
     socialGraphLoadingFriends,
     socialGraphLoadingCommon,
-    buddyRel,
-    setBuddyRel,
-    reloadBuddy,
+    friendRel,
+    setFriendRel,
+    reloadFriendRel,
     refreshProfile,
     refreshSocialGraphFriends,
   } = useMemberProfilePage({
@@ -110,81 +110,81 @@ export const MemberProfile = () => {
     loadMemberActivities,
   });
 
-  const handleSendBuddyRequest = async () => {
-    if (!userId || buddyBusy) return;
-    setBuddyBusy(true);
-    setBuddyMessage(null);
+  const handleSendFriendRequest = async () => {
+    if (!userId || friendActionBusy) return;
+    setFriendActionBusy(true);
+    setFriendMessage(null);
     try {
-      const request = await sendMemberBuddyRequest(userId);
-      setBuddyRel((prev: BuddyRelationshipDTO | null) =>
+      const request = await sendMemberFriendRequest(userId);
+      setFriendRel((prev: FriendRelationshipDTO | null) =>
         prev
           ? {
               ...prev,
-              areBuddies: request.status === 'accepted',
+              areFriends: request.status === 'accepted',
               outgoingRequest: request.status === 'pending' ? request : null,
               incomingRequest: null,
               canSendRequest: false,
             }
           : null
       );
-      setBuddyMessage(request.status === 'accepted' ? 'You are now friends.' : 'Friend request sent.');
+      setFriendMessage(request.status === 'accepted' ? 'You are now friends.' : 'Friend request sent.');
       if (request.status === 'accepted') {
         setLoadSocialGraph(true);
         await refreshProfile();
         await refreshSocialGraphFriends();
       }
     } catch (err) {
-      setBuddyMessage(err instanceof Error ? err.message : 'Could not send buddy request.');
+      setFriendMessage(err instanceof Error ? err.message : 'Could not send friend request.');
     } finally {
-      setBuddyBusy(false);
+      setFriendActionBusy(false);
     }
   };
 
-  const handleAcceptBuddyRequest = async () => {
-    if (!buddyRel?.incomingRequest || buddyBusy) return;
-    setBuddyBusy(true);
-    setBuddyMessage(null);
+  const handleAcceptFriendRequest = async () => {
+    if (!friendRel?.incomingRequest || friendActionBusy) return;
+    setFriendActionBusy(true);
+    setFriendMessage(null);
     try {
-      await acceptMemberBuddyRequest(buddyRel.incomingRequest.id);
-      setBuddyMessage('Friend request accepted.');
-      await reloadBuddy();
+      await acceptMemberFriendRequest(friendRel.incomingRequest.id);
+      setFriendMessage('Friend request accepted.');
+      await reloadFriendRel();
       setLoadSocialGraph(true);
       await refreshProfile();
       await refreshSocialGraphFriends();
     } catch (err) {
-      setBuddyMessage(err instanceof Error ? err.message : 'Could not accept request.');
+      setFriendMessage(err instanceof Error ? err.message : 'Could not accept request.');
     } finally {
-      setBuddyBusy(false);
+      setFriendActionBusy(false);
     }
   };
 
-  const handleDeclineBuddyRequest = async () => {
-    if (!buddyRel?.incomingRequest || buddyBusy) return;
-    setBuddyBusy(true);
-    setBuddyMessage(null);
+  const handleDeclineFriendRequest = async () => {
+    if (!friendRel?.incomingRequest || friendActionBusy) return;
+    setFriendActionBusy(true);
+    setFriendMessage(null);
     try {
-      await declineMemberBuddyRequest(buddyRel.incomingRequest.id);
-      setBuddyMessage('Buddy request declined.');
-      await reloadBuddy();
+      await declineMemberFriendRequest(friendRel.incomingRequest.id);
+      setFriendMessage('Friend request declined.');
+      await reloadFriendRel();
     } catch (err) {
-      setBuddyMessage(err instanceof Error ? err.message : 'Could not decline request.');
+      setFriendMessage(err instanceof Error ? err.message : 'Could not decline request.');
     } finally {
-      setBuddyBusy(false);
+      setFriendActionBusy(false);
     }
   };
 
-  const handleCancelBuddyRequest = async () => {
-    if (!buddyRel?.outgoingRequest || buddyBusy) return;
-    setBuddyBusy(true);
-    setBuddyMessage(null);
+  const handleCancelFriendRequest = async () => {
+    if (!friendRel?.outgoingRequest || friendActionBusy) return;
+    setFriendActionBusy(true);
+    setFriendMessage(null);
     try {
-      await cancelMemberBuddyRequest(buddyRel.outgoingRequest.id);
-      setBuddyMessage('Buddy request cancelled.');
-      await reloadBuddy();
+      await cancelMemberFriendRequest(friendRel.outgoingRequest.id);
+      setFriendMessage('Friend request cancelled.');
+      await reloadFriendRel();
     } catch (err) {
-      setBuddyMessage(err instanceof Error ? err.message : 'Could not cancel request.');
+      setFriendMessage(err instanceof Error ? err.message : 'Could not cancel request.');
     } finally {
-      setBuddyBusy(false);
+      setFriendActionBusy(false);
     }
   };
 
@@ -317,14 +317,14 @@ export const MemberProfile = () => {
           isSelf={Boolean(isSelf)}
           userId={userId}
           userLoggedIn={Boolean(user)}
-          buddyRel={buddyRel}
-          buddyBusy={buddyBusy}
-          buddyMessage={buddyMessage}
-          onBuddyMessage={setBuddyMessage}
-          onSendBuddyRequest={() => void handleSendBuddyRequest()}
-          onAcceptBuddyRequest={() => void handleAcceptBuddyRequest()}
-          onDeclineBuddyRequest={() => void handleDeclineBuddyRequest()}
-          onCancelBuddyRequest={() => void handleCancelBuddyRequest()}
+          friendRel={friendRel}
+          friendActionBusy={friendActionBusy}
+          friendMessage={friendMessage}
+          onFriendMessage={setFriendMessage}
+          onSendFriendRequest={() => void handleSendFriendRequest()}
+          onAcceptFriendRequest={() => void handleAcceptFriendRequest()}
+          onDeclineFriendRequest={() => void handleDeclineFriendRequest()}
+          onCancelFriendRequest={() => void handleCancelFriendRequest()}
           onMessage={() => navigate(messagesRouteForRole(user!.role, fullProfile.id))}
           upcomingActivities={upcomingActivities}
           pastActivities={pastActivities}

@@ -26,7 +26,7 @@ export const initialsFromName = (name?: string | null): string => {
 
 const PLACEHOLDER_FIRST_NAMES = new Set(['pending', 'user', 'guest', 'account', 'new']);
 
-/** Explore list/detail host label — full display name from API hostName (legacy FE helper). */
+/** Explore list/detail host label — full display name from activity host fields. */
 export const resolveExploreHostLabel = (options: {
   hostName?: string | null;
   participantName?: string | null;
@@ -57,23 +57,5 @@ export const formatRequesterDisplayName = (name?: string | null, email?: string 
   if (PLACEHOLDER_FIRST_NAMES.has(parts[0].toLowerCase())) return 'Community member';
   return trimmed;
 };
-
-/** @deprecated Use resolveExploreHostLabel — kept for tests migrating off raw person names. */
-export const resolveExploreHostPersonName = (options: {
-  hostName?: string | null;
-  createdByName?: string | null;
-  tenantOwnerName?: string | null;
-  participantName?: string | null;
-  tenantName?: string | null;
-}): string | null =>
-  resolveHostPersonDisplayName({
-    guideName: options.hostName,
-    createdByName: options.createdByName,
-    tenantOwnerName: options.tenantOwnerName,
-    tenantName: options.tenantName,
-  }) ??
-  (options.participantName?.trim() && !isRolePlaceholderDisplayName(options.participantName)
-    ? options.participantName.trim()
-    : null);
 
 export { hostPersonFirstName };

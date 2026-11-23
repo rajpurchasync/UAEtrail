@@ -221,7 +221,7 @@ export const groupWallMessageIdParamSchema = z.object({ groupId: z.string().min(
 
 export const groupInviteSchema = z.object({
   email: z.string().email(),
-  role: z.enum(['buddy', 'admin']).default('buddy')
+  role: z.enum(['member', 'admin']).default('member')
 });
 
 export const acceptInviteSchema = z.object({
@@ -238,7 +238,7 @@ export {
 export const groupMembershipPatchSchema = z
   .object({
     isActive: z.boolean().optional(),
-    role: z.enum(['buddy', 'admin']).optional()
+    role: z.enum(['member', 'admin']).optional()
   })
   .refine((body) => body.isActive !== undefined || body.role !== undefined, {
     message: 'Provide isActive and/or role.'
@@ -248,13 +248,13 @@ export const groupWallReactionSchema = z.object({
   kind: z.enum(GROUP_WALL_REACTION_KINDS)
 });
 
-export const buddyRequestIdParamSchema = z.object({ requestId: z.string().min(1) });
-export const buddyRelationshipParamSchema = z.object({ userId: z.string().min(1) });
-export const createBuddyRequestSchema = z.object({
+export const friendRequestIdParamSchema = z.object({ requestId: z.string().min(1) });
+export const friendRelationshipParamSchema = z.object({ userId: z.string().min(1) });
+export const createFriendRequestSchema = z.object({
   targetUserId: z.string().min(1),
   message: z.string().max(300).optional(),
 });
-export const listBuddyRequestsQuerySchema = z.object({
+export const listFriendRequestsQuerySchema = z.object({
   direction: z.enum(['incoming', 'outgoing', 'all']).optional(),
 });
 

@@ -7,7 +7,7 @@ import type {
 } from '@uaetrail/shared-types';
 import { USER_CITY_LABELS, type UserCity } from '../domain/user-profile.js';
 import { findAuthUsersByIds } from '../lib/auth-users-store.js';
-import { listBuddiesForUser } from '../lib/buddy-store.js';
+import { listFriendsForUser } from '../lib/friend-store.js';
 import { listFollowingForUser } from '../lib/follow-store.js';
 import {
   matchesExploreActivityDateFilter,
@@ -38,11 +38,11 @@ const matchesMemberDiscoverySearch = (
 
 const buildFollowedBrowseCards = async (
   viewerUserId: string,
-  buddyIds: Set<string>,
+  friendIds: Set<string>,
   search?: string
 ): Promise<MemberBrowseCardDTO[]> => {
   const following = await listFollowingForUser(viewerUserId);
-  const rows = following.filter((row) => !buddyIds.has(row.userId));
+  const rows = following.filter((row) => !friendIds.has(row.userId));
   const filtered = rows.filter((row) =>
     matchesMemberDiscoverySearch([row.displayName], search)
   );
@@ -67,22 +67,22 @@ export const loadMemberDiscoveryRoster = async (input: {
   quota: MemberDiscoveryQuotaDTO;
 }> => {
   const datePreset = parseExploreActivityDatePreset(input.datePresetRaw);
-  const [hostStatus, mapItems, buddies] = await Promise.all([
+  const [hostStatus, mapItems, friends] = await Promise.all([
     resolveMemberStatus(input.viewerUserId),
     loadExploreMapItemsForMemberEngagement({
       viewerUserId: input.viewerUserId,
       userRole: input.userRole,
     }),
-    listBuddiesForUser(input.viewerUserId),
+    listFriendsForUser(input.viewerUserId),
   ]);
   const quota = await resolveMemberDiscoveryQuota(input.viewerUserId, hostStatus);
 
   const excludeUserIds = new Set<string>([input.viewerUserId]);
-  const buddyIds = new Set<string>();
-  for (const buddy of buddies) {
-    if (buddy.userId) {
-      excludeUserIds.add(buddy.userId);
-      buddyIds.add(buddy.userId);
+  const friendIds = new Set<string>();
+  for (const friend of friends) {
+    if (friend.userId) {
+      excludeUserIds.add(friend.userId);
+      friendIds.add(friend.userId);
     }
   }
 
@@ -98,7 +98,7 @@ export const loadMemberDiscoveryRoster = async (input: {
 
   const directory = await directoryPromise;
 
-  const followedPromise = buildFollowedBrowseCards(input.viewerUserId, buddyIds, input.search).then(
+  const followedPromise = buildFollowedBrowseCards(input.viewerUserId, friendIds, input.search).then(
     async (followedRaw) => {
       const followedUsers = await findAuthUsersByIds(followedRaw.map((card) => card.id));
       const userById = new Map(followedUsers.map((user) => [user._id, user] as const));
@@ -112,7 +112,7 @@ export const loadMemberDiscoveryRoster = async (input: {
           return [{ subject: user, cityLabel }];
         }),
         input.viewerUserId,
-        { viewerBuddyIds: buddyIds }
+        { viewerFriendIds: friendIds }
       );
       const followedWithCity = followedRaw.map((card) => ({
         ...card,
@@ -131,10 +131,10 @@ export const loadMemberDiscoveryRoster = async (input: {
   });
 
   const [friendsGoing, hostsGoing, availabilityOnMap, followed] = await Promise.all([
-    buildMemberDiscoveryFriendsGoing(input.viewerUserId, buddies, mapItems, datePreset),
+    buildMemberDiscoveryFriendsGoing(input.viewerUserId, friends, mapItems, datePreset),
     buildMemberDiscoveryHostsGoing(
       input.viewerUserId,
-      buddyIds,
+      friendIds,
       mapItems,
       datePreset,
       input.search

@@ -412,10 +412,10 @@ describe('activity detail program — wiring', () => {
 });
 
 describe('activity detail program — engagement wire (AD-PRO-01, AD-PRES-02)', () => {
-  it('AD-PRO-01: peek people row gates roster with canViewFullBuddyRoster', () => {
+  it('AD-PRO-01: peek people row gates roster with canViewFullFriendRoster', () => {
     const peopleRow = read('src/explore/ui/DiscoveryCardPresentation.tsx');
-    expect(peopleRow).toMatch(/canViewFullBuddyRoster/);
-    expect(peopleRow).toMatch(/buddyUserIdsOnActivity/);
+    expect(peopleRow).toMatch(/canViewFullFriendRoster/);
+    expect(peopleRow).toMatch(/friendUserIdsOnActivity/);
   });
 
   it('AD-PRES-02: public route uses presentation.sections; embed keeps tab wire', () => {

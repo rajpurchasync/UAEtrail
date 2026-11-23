@@ -7,7 +7,7 @@ import {
 import type { ExploreActivityDatePreset, ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
 import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
 import type { ExplorePriceFilter } from '../exploreOptionalFilters';
-import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
+import type { ExploreOthersSubtypeKey } from '../exploreOthersSubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
 import { mapItemMatchesFilterPills } from '../exploreBrowseTaxonomy';
@@ -27,7 +27,7 @@ export type ExploreLensArgs = {
   placeMapTopics: PlaceMapTopicKey[];
   venueRegions: string[];
   activityDatePreset: ExploreActivityDatePreset;
-  buddySubtype: ExploreBuddySubtypeKey;
+  othersSubtype: ExploreOthersSubtypeKey;
   outingTopic: ExploreOutingTopicKey;
   activityModeFilter: ExploreActivityModeFilter;
   priceFilter?: ExplorePriceFilter;
@@ -39,7 +39,7 @@ export type ExploreLensArgs = {
 const activitySliceFilters = (args: ExploreLensArgs) => ({
   mapFilter: args.mapFilter,
   tripMapTopics: args.tripMapTopics,
-  buddySubtype: args.buddySubtype,
+  othersSubtype: args.othersSubtype,
   outingTopic: args.outingTopic,
   query: '',
   activityDatePreset: args.activityDatePreset,

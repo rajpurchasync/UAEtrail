@@ -165,6 +165,70 @@ describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
     expect(catalog).not.toMatch(/requesterUserId: owner/);
   });
 
+  it('GW14-01: wire hygiene — notification actor, card input, list feed, group shape', () => {
+    expect(read('packages/shared-types/src/notification-meta.ts')).not.toMatch(/buddyUserId\?:/);
+    expect(read('packages/shared-types/src/notification-meta.ts')).not.toMatch(/'buddy\.request'/);
+    expect(read('packages/shared-types/src/explore-presentation.ts')).not.toMatch(
+      /requesterUserId\?:/
+    );
+    expect(read('src/list/browse/ListFeedActionsProvider.tsx')).not.toMatch(
+      /joinStateLoading:\s*boolean/
+    );
+    expect(read('src/pages/Groups.tsx')).toMatch(/memberGroupRowLabel/);
+    expect(read('src/pages/Groups.tsx')).not.toMatch(/typeLabel\[/);
+    expect(read('packages/shared-types/src/index.ts')).toMatch(/resolveNotificationActorUserId/);
+  });
+
+  it('GW16-01: no buddy product wire in FE (friends HTTP + availability find crew)', () => {
+    expect(existsSync(join(ROOT, 'src/api/domains/friends.ts'))).toBe(true);
+    expect(existsSync(join(ROOT, 'src/api/domains/buddies.ts'))).toBe(false);
+    const domain = read('src/api/domains/friends.ts');
+    expect(domain).not.toMatch(/\/me\/buddies/);
+    expect(domain).not.toMatch(/\bbuddiesApi\b/);
+    expect(read('apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts')).not.toMatch(/'buddies'/);
+    expect(read('packages/shared-types/src/wire-lexicon.ts')).not.toMatch(/BUDDIES_INBOUND|buddies.*alias/i);
+    expect(read('src/explore/ui/intentFixedFlowEngine.ts')).not.toMatch(/seeking-posts|createSeekingPost/);
+  });
+
+  it('GW15-01: client friends network + explore others subtype (HTTP /me/friends)', () => {
+    expect(existsSync(join(ROOT, 'src/explore/exploreOthersSubtype.ts'))).toBe(true);
+    expect(existsSync(join(ROOT, 'src/explore/exploreBuddySubtype.ts'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/hooks/useMeFriendsNetwork.ts'))).toBe(true);
+    expect(existsSync(join(ROOT, 'src/hooks/useMeBuddiesNetwork.ts'))).toBe(false);
+    expect(read('src/hooks/clientQueryKeys.ts')).toMatch(/meFriendsNetworkQueryKey/);
+    expect(read('src/hooks/clientQueryKeys.ts')).not.toMatch(/meBuddiesNetworkQueryKey/);
+    expect(read('src/pages/MyCrews.tsx')).toMatch(/useMeFriendsNetwork/);
+    const exploreSrc = read('src/explore/exploreBrowseUrlSync.ts');
+    expect(exploreSrc).not.toMatch(/\bbuddySubtype\b/);
+    expect(read('src/hooks/activityInviteClientApi.ts')).toMatch(/getMeFriends/);
+    expect(read('src/api/domains/friends.ts')).not.toMatch(/\/me\/buddies/);
+    expect(read('src/explore/exploreItemSearch.ts')).not.toMatch(/terms\.push\([^)]*'seeking'/);
+  });
+
+  it('GW13-01: product surface naming — Friends/crew, not buddies labels', () => {
+    expect(read('src/components/activity/detail/useActivityDetailViewModel.tsx')).not.toMatch(
+      /mobileBuddiesPanel/
+    );
+    expect(read('src/utils/notificationRouting.ts')).not.toMatch(/\/buddies|INBOUND_LEGACY_CREWS/);
+    expect(read('src/config/inboundRoutePaths.ts')).not.toMatch(/\/buddies|INBOUND_LEGACY_CREWS/);
+    expect(read('src/pages/MyCrews.tsx')).not.toMatch(/filteredBuddies/);
+    expect(read('src/explore/exploreSearchScopeUi.ts')).not.toMatch(/'buddies'/);
+    expect(read('src/components/activity/ActivityInviteModalBody.tsx')).not.toMatch(/filteredBuddies/);
+  });
+
+  it('GW12-01: retired module alias exports removed', () => {
+    expect(read('src/list/crews/crewsStatTab.ts')).not.toMatch(/crewsStatTabFromSegment/);
+    expect(read('src/activity-discovery/catalog/availabilityCatalog.ts')).not.toMatch(
+      /ExploreAvailabilityCatalogFilters/
+    );
+    expect(read('src/explore/ui/exploreBrowseUrlPublicApi.ts')).not.toMatch(/applyCrewBrowseTab/);
+    expect(read('src/explore/hostingPublishArea.ts')).not.toMatch(/validateHostingPublishArea/);
+    expect(read('src/constants/userTypes.ts')).not.toMatch(/USER_TYPE_LABELS/);
+    expect(read('src/utils/userDisplay.ts')).not.toMatch(/resolveExploreHostPersonName/);
+    expect(read('src/components/ui/PlaceCard.tsx')).not.toMatch(/export const TrailCard/);
+    expect(read('packages/shared-types/src/index.ts')).not.toMatch(/organizerDetails\?: OrganisationHostDetailsDTO/);
+  });
+
   it('GW11-01: retired component prop aliases removed', () => {
     expect(read('src/components/chat/MessageMemberButton.tsx')).not.toMatch(/\bhostUserId\b/);
     expect(read('src/explore/ui/ExploreResponsiveSheet.tsx')).not.toMatch(/mobileComposeChrome/);

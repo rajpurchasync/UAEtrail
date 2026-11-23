@@ -8,8 +8,8 @@ import { ActivityInviteExploreSheet } from './ActivityInviteExploreSheet';
 
 export type ActivityInviteLauncherProps = {
   activity: ActivityShareInput;
-  canSendBuddyInvites?: boolean;
-  initialSelectedBuddyIds?: string[];
+  canSendFriendInvites?: boolean;
+  initialSelectedFriendIds?: string[];
   /** Open modal once on mount (e.g. plan-with buddy). */
   defaultOpen?: boolean;
   className?: string;
@@ -19,8 +19,8 @@ export type ActivityInviteLauncherProps = {
 /** Single page CTA — opens tabbed friends / groups invite modal. */
 export const ActivityInviteLauncher = ({
   activity,
-  canSendBuddyInvites = false,
-  initialSelectedBuddyIds,
+  canSendFriendInvites = false,
+  initialSelectedFriendIds,
   defaultOpen = false,
   className = '',
   variant = 'button',
@@ -33,7 +33,7 @@ export const ActivityInviteLauncher = ({
     if (defaultOpen) setOpen(true);
   }, [defaultOpen]);
 
-  if (!canSendBuddyInvites) return null;
+  if (!canSendFriendInvites) return null;
 
   const triggerClass =
     variant === 'link'
@@ -57,7 +57,7 @@ export const ActivityInviteLauncher = ({
         <ActivityInviteModalBody
           activityId={activity.id}
           messageWithUrl={share.messageWithUrl}
-          initialSelectedBuddyIds={initialSelectedBuddyIds}
+          initialSelectedFriendIds={initialSelectedFriendIds}
           active={open && Boolean(user)}
           onInviteSent={() => setOpen(false)}
         />

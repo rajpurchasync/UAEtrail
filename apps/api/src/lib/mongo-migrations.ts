@@ -1078,6 +1078,12 @@ const renameCollectionIfExists = async (db: Db, from: string, to: string): Promi
   await db.collection(from).rename(to);
 };
 
+/** Rename legacy buddy_* graph collections → friend_*. */
+const migrateFriendGraphCollections = async (db: Db): Promise<void> => {
+  await renameCollectionIfExists(db, COLLECTIONS.LEGACY_BUDDY_REQUESTS, COLLECTIONS.FRIEND_REQUESTS);
+  await renameCollectionIfExists(db, COLLECTIONS.LEGACY_BUDDY_PAIRS, COLLECTIONS.FRIEND_PAIRS);
+};
+
 /** Rename social_* collections → member_* and backfill kind / teamLabel. */
 const migrateMemberGroupModelSplit = async (db: Db): Promise<void> => {
   await renameCollectionIfExists(db, COLLECTIONS.LEGACY_SOCIAL_GROUPS, COLLECTIONS.MEMBER_GROUPS);
@@ -1128,7 +1134,7 @@ const migrateOutingCrewKindRename = async (db: Db): Promise<void> => {
 };
 
 /** Bump when adding a new migration step so existing deployments run it once. */
-export const MONGO_MIGRATION_VERSION = 2025112301;
+export const MONGO_MIGRATION_VERSION = 2025112302;
 
 /** One-time migrations for activity terminology and role model alignment. */
 export const runMongoMigrations = async (db: Db): Promise<void> => {
@@ -1188,6 +1194,7 @@ export const runMongoMigrations = async (db: Db): Promise<void> => {
   await dropRemovedCommerceCollections(db);
   await backfillShopPublicContactFlags(db);
   await migrateMemberGroupModelSplit(db);
+  await migrateFriendGraphCollections(db);
   await migrateOutingCrewKindRename(db);
   const { purgeRetiredSeekingStorage } = await import('./retired-seeking-storage-purge.js');
   const seekingPurge = await purgeRetiredSeekingStorage(db);
@@ -1200,6 +1207,8 @@ export const runMongoMigrations = async (db: Db): Promise<void> => {
   }
   const { backfillGeoRefOnPins } = await import('./geo-backfill.js');
   await backfillGeoRefOnPins(db);
+  await migrateRetiredBuddiesInboundPaths(db);
+  await migrateMemberAvailabilityBuddiesVisibility(db);
   const { seedCatalogsIfEmpty } = await import('./catalogs-store.js');
   await seedCatalogsIfEmpty();
 
@@ -1208,6 +1217,54 @@ export const runMongoMigrations = async (db: Db): Promise<void> => {
     { $set: { version: MONGO_MIGRATION_VERSION, appliedAt: new Date() } },
     { upsert: true }
   );
+};
+
+const rewriteBuddiesPathToCrews = (path: string): string | null => {
+  if (!path.includes('/buddies')) return null;
+  return path.replace(/\/buddies(?=\?|$)/g, '/crews');
+};
+
+/** One-time: notification `path` / `meta.path` bookmarks `/buddies` → `/crews` (no runtime shim). */
+const migrateRetiredBuddiesInboundPaths = async (db: Db): Promise<void> => {
+  const notifications = db.collection(COLLECTIONS.NOTIFICATIONS);
+  const rows = await notifications
+    .find({
+      $or: [{ path: /\/buddies/ }, { 'meta.path': /\/buddies/ }],
+    })
+    .project({ _id: 1, path: 1, meta: 1 })
+    .toArray();
+  if (rows.length === 0) return;
+
+  let rewritten = 0;
+  for (const row of rows) {
+    const set: Record<string, string> = {};
+    if (typeof row.path === 'string') {
+      const next = rewriteBuddiesPathToCrews(row.path);
+      if (next && next !== row.path) set.path = next;
+    }
+    const meta =
+      row.meta && typeof row.meta === 'object' ? (row.meta as { path?: unknown }) : null;
+    const metaPath = typeof meta?.path === 'string' ? meta.path : null;
+    if (metaPath) {
+      const next = rewriteBuddiesPathToCrews(metaPath);
+      if (next && next !== metaPath) set['meta.path'] = next;
+    }
+    if (Object.keys(set).length === 0) continue;
+    await notifications.updateOne({ _id: row._id }, { $set: set });
+    rewritten += 1;
+  }
+  if (rewritten > 0) {
+    console.log(`[mongo] Retired /buddies notification path(s): ${rewritten}`);
+  }
+};
+
+/** One-time: stored availability visibility `buddies` → `friends`. */
+const migrateMemberAvailabilityBuddiesVisibility = async (db: Db): Promise<void> => {
+  const col = db.collection(COLLECTIONS.MEMBER_AVAILABILITY);
+  const result = await col.updateMany({ visibility: 'buddies' }, { $set: { visibility: 'friends' } });
+  if (result.modifiedCount > 0) {
+    console.log(`[mongo] member_availability visibility buddies→friends: ${result.modifiedCount}`);
+  }
 };
 
 /** One-time: leftover `pin=demand:` notification paths → `pin=activity:{id}`. */

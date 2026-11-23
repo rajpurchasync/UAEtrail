@@ -56,7 +56,7 @@ describe('listMapPeekEngagementParity', () => {
       isFriendOfHost: false,
       level: 'public',
       canAccessCrewSurfaces: false,
-      buddyUserIdsOnActivity: [],
+      friendUserIdsOnActivity: [],
     });
     const viewerAccess: ActivityViewerAccessDTO = {
       exposure: 'redacted',
@@ -112,7 +112,7 @@ describe('listMapPeekEngagementParity', () => {
       isFriendOfHost: false,
       level: 'public',
       canAccessCrewSurfaces: false,
-      buddyUserIdsOnActivity: [],
+      friendUserIdsOnActivity: [],
     });
     const viewerAccess: ActivityViewerAccessDTO = {
       exposure: 'redacted',
@@ -259,7 +259,7 @@ describe('listMapPeekEngagementParity', () => {
       isFriendOfHost: false,
       level: 'host',
       canAccessCrewSurfaces: true,
-      buddyUserIdsOnActivity: [],
+      friendUserIdsOnActivity: [],
     });
     const policy = resolveActivityEngagementPolicy({
       ...meeting,
@@ -324,7 +324,7 @@ describe('listMapPeekEngagementParity', () => {
       isFriendOfHost: false,
       level: 'host',
       canAccessCrewSurfaces: true,
-      buddyUserIdsOnActivity: ['p1'],
+      friendUserIdsOnActivity: ['p1'],
     });
     const policy = resolveActivityEngagementPolicy({
       ...meeting,

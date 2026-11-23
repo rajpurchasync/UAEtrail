@@ -1,13 +1,13 @@
 import type {
-  BuddyRequestDTO,
-  BuddySummaryDTO,
+  FriendRequestDTO,
+  FriendSummaryDTO,
   ChatConversationDTO,
   MemberInboxGroupDTO,
 } from '@uaetrail/shared-types';
 import { getAuthenticatedMemberProfile } from './me-profile-read.js';
 import { listMyNotifications } from './me-notifications-read.js';
 import { loadMemberInbox } from './member-inbox.js';
-import { listMyBuddies, listMyBuddyRequests } from './buddy-me-read.js';
+import { listMyFriends, listMyFriendRequests } from './friend-me-read.js';
 
 export type ParticipantHubSnapshotDTO = {
   profile: Awaited<ReturnType<typeof getAuthenticatedMemberProfile>>;
@@ -26,20 +26,20 @@ export type ParticipantHubSnapshotDTO = {
     groups: MemberInboxGroupDTO[];
     directConversationsDegraded?: boolean;
   };
-  buddies: BuddySummaryDTO[];
-  incomingBuddyRequests: BuddyRequestDTO[];
+  friends: FriendSummaryDTO[];
+  incomingBuddyRequests: FriendRequestDTO[];
 };
 
 /** BFF for profile hub — one round trip instead of five parallel client calls. */
 export const loadParticipantHubSnapshot = async (
   userId: string
 ): Promise<ParticipantHubSnapshotDTO> => {
-  const [profile, notifPage, inbox, buddies, buddyRequests] = await Promise.all([
+  const [profile, notifPage, inbox, friends, buddyRequests] = await Promise.all([
     getAuthenticatedMemberProfile(userId),
     listMyNotifications({ userId, skip: 0, take: 20 }),
     loadMemberInbox(userId),
-    listMyBuddies(userId),
-    listMyBuddyRequests(userId, 'incoming'),
+    listMyFriends(userId),
+    listMyFriendRequests(userId, 'incoming'),
   ]);
 
   return {
@@ -60,7 +60,7 @@ export const loadParticipantHubSnapshot = async (
       groups: inbox.groups ?? [],
       directConversationsDegraded: inbox.directConversationsDegraded,
     },
-    buddies,
+    friends,
     incomingBuddyRequests: buddyRequests.filter((request) => request.status === 'pending'),
   };
 };

@@ -129,7 +129,7 @@ describe('member availability', () => {
     ).toBe(false);
   });
 
-  it('normalizes legacy buddies visibility to friends on write', async () => {
+  it('rejects retired buddies visibility wire on write', async () => {
     const suffix = `avail-legacy-${Date.now()}`;
     const password = 'TestPass1!';
     const hash = await bcrypt.hash(password, 10);
@@ -157,14 +157,7 @@ describe('member availability', () => {
         visibility: 'buddies',
         slots: [{ startDate: iso, endDate: iso }],
       });
-    expect(put.status).toBe(200);
-    expect(put.body.data.visibility).toBe('friends');
-
-    const get = await request(app)
-      .get('/api/me/availability')
-      .set('Authorization', `Bearer ${token}`);
-    expect(get.status).toBe(200);
-    expect(get.body.data.visibility).toBe('friends');
+    expect(put.status).toBe(400);
   });
 
   it('B1: derives kinds from slot modalities and ignores mismatched top-level kinds', async () => {

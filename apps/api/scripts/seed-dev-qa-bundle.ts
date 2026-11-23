@@ -13,9 +13,9 @@ import {
 } from '../src/lib/auth-users-store.js';
 import { AuthProvider, UserStatus } from '../src/domain/enums.js';
 import {
-  acceptBuddyRequest,
-  createBuddyRequest,
-} from '../src/lib/buddy-store.js';
+  acceptFriendRequest,
+  createFriendRequest,
+} from '../src/lib/friend-store.js';
 import { followUser } from '../src/lib/follow-store.js';
 import {
   buildActivityFromCreateInput,
@@ -201,8 +201,8 @@ export const seedDevQaSocialGraph = async (): Promise<void> => {
   ];
   for (const [from, to] of buddyPairs) {
     try {
-      const req = await createBuddyRequest({ fromUserId: from, toUserId: to, message: 'QA buddy link' });
-      if (req.status === 'pending') await acceptBuddyRequest(req.id, to);
+      const req = await createFriendRequest({ fromUserId: from, toUserId: to, message: 'QA buddy link' });
+      if (req.status === 'pending') await acceptFriendRequest(req.id, to);
     } catch (error) {
       if (!(error instanceof ApiError) || error.code !== 'already_buddies') throw error;
     }

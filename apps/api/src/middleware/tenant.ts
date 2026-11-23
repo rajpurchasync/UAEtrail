@@ -1,7 +1,7 @@
 import { MembershipRole, UserRole } from '../domain/enums.js';
 import { NextFunction, Request, Response } from 'express';
 import { ApiError } from '../lib/api-error.js';
-import { ensureOwnerMembershipForTenant } from '../lib/buddy-host-tenant.js';
+import { ensureOwnerMembershipForTenant } from '../lib/friend-host-tenant.js';
 import { findTenantMembershipContext } from '../lib/tenant-access.js';
 import { findTenantById } from '../lib/tenant-store.js';
 import { auditPlatformAdminTenantScope } from '../lib/platform-security-audit.js';

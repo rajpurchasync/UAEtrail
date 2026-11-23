@@ -87,7 +87,7 @@ const kidRelationSchema = z.string().trim().min(1).max(40);
 export const createKidRosterSchema = z.object({
   rosterOnly: z.literal(true),
   displayName: z.string().trim().min(2).max(80),
-  role: z.enum(['buddy', 'admin']).optional(),
+  role: z.enum(['member', 'admin']).optional(),
 });
 
 export const createKidSchema = z.object({
@@ -99,7 +99,7 @@ export const createKidSchema = z.object({
   medicalConditions: z.string().trim().min(1).max(500),
   gender: kidGenderSchema.optional().nullable(),
   photoUrl: kidPhotoUrlSchema.optional(),
-  role: z.enum(['buddy', 'admin']).optional(),
+  role: z.enum(['member', 'admin']).optional(),
 });
 
 export const createKidBodySchema = z.union([createKidRosterSchema, createKidSchema]);

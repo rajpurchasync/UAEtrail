@@ -1,41 +1,41 @@
-import type { BuddyRequestDTO, BuddySummaryDTO } from '@uaetrail/shared-types';
-import { buddyPairKey, sortedBuddyUserIds, type BuddyRequestStatus } from '../domain/buddy-connection.js';
+import type { FriendRequestDTO, FriendSummaryDTO } from '@uaetrail/shared-types';
+import { friendPairKey, sortedFriendUserIds, type FriendRequestStatus } from '../domain/friend-connection.js';
 import { findAuthUserById, findAuthUsersByIds } from './auth-users-store.js';
 import { newEntityId } from './entity-builders.js';
 import { ApiError } from './api-error.js';
 import { COLLECTIONS } from './collections.js';
 import { getMongoClient } from './mongo.js';
 import {
-  invalidateBuddyIdsCacheForPair,
-  readBuddyAdjacencyIds,
-  writeBuddyAdjacencyIds,
+  invalidateFriendIdsCacheForPair,
+  readFriendAdjacencyIds,
+  writeFriendAdjacencyIds,
 } from './social-adjacency-read-cache.js';
 import { profileDisplayNameFromAuthUser } from '../domain/person-name.js';
 import { followUser } from './follow-store.js';
 
-const REQUESTS_COLLECTION = 'buddy_requests';
-const PAIRS_COLLECTION = 'buddy_pairs';
+const REQUESTS_COLLECTION = 'friend_requests';
+const PAIRS_COLLECTION = 'friend_pairs';
 
-type MongoBuddyRequest = {
+type MongoFriendRequest = {
   _id: string;
   fromUserId: string;
   toUserId: string;
-  status: BuddyRequestStatus;
+  status: FriendRequestStatus;
   message: string | null;
   createdAt: Date;
   updatedAt: Date;
   respondedAt: Date | null;
 };
 
-type MongoBuddyPair = {
+type MongoFriendPair = {
   _id: string;
   userIds: [string, string];
   requestId: string;
   createdAt: Date;
 };
 
-const requestsCollection = () => getMongoClient()!.db().collection<MongoBuddyRequest>(REQUESTS_COLLECTION);
-const pairsCollection = () => getMongoClient()!.db().collection<MongoBuddyPair>(PAIRS_COLLECTION);
+const requestsCollection = () => getMongoClient()!.db().collection<MongoFriendRequest>(REQUESTS_COLLECTION);
+const pairsCollection = () => getMongoClient()!.db().collection<MongoFriendPair>(PAIRS_COLLECTION);
 
 const mapUserPreview = (user: Awaited<ReturnType<typeof findAuthUserById>>) =>
   user
@@ -47,9 +47,9 @@ const mapUserPreview = (user: Awaited<ReturnType<typeof findAuthUserById>>) =>
     : null;
 
 const mapRequestDto = (
-  doc: MongoBuddyRequest,
+  doc: MongoFriendRequest,
   users?: Map<string, NonNullable<ReturnType<typeof mapUserPreview>>>
-): BuddyRequestDTO => ({
+): FriendRequestDTO => ({
   id: doc._id,
   fromUserId: doc.fromUserId,
   toUserId: doc.toUserId,
@@ -61,7 +61,7 @@ const mapRequestDto = (
   toUser: users?.get(doc.toUserId) ?? undefined,
 });
 
-const loadUserMapForRequests = async (docs: MongoBuddyRequest[]) => {
+const loadUserMapForRequests = async (docs: MongoFriendRequest[]) => {
   const userIds = [...new Set(docs.flatMap((doc) => [doc.fromUserId, doc.toUserId]))];
   const users = await findAuthUsersByIds(userIds);
   const map = new Map<string, NonNullable<ReturnType<typeof mapUserPreview>>>();
@@ -72,38 +72,38 @@ const loadUserMapForRequests = async (docs: MongoBuddyRequest[]) => {
   return map;
 };
 
-export const areAcceptedBuddies = async (userA: string, userB: string): Promise<boolean> => {
+export const areAcceptedFriends = async (userA: string, userB: string): Promise<boolean> => {
   if (!userA || !userB || userA === userB) return userA === userB;
-  const pair = await pairsCollection().findOne({ _id: buddyPairKey(userA, userB) });
+  const pair = await pairsCollection().findOne({ _id: friendPairKey(userA, userB) });
   return Boolean(pair);
 };
 
-const ensurePairForAcceptedRequest = async (request: MongoBuddyRequest): Promise<void> => {
-  const pairId = buddyPairKey(request.fromUserId, request.toUserId);
+const ensurePairForAcceptedRequest = async (request: MongoFriendRequest): Promise<void> => {
+  const pairId = friendPairKey(request.fromUserId, request.toUserId);
   const now = new Date();
   await pairsCollection().updateOne(
     { _id: pairId },
     {
       $setOnInsert: {
         _id: pairId,
-        userIds: sortedBuddyUserIds(request.fromUserId, request.toUserId),
+        userIds: sortedFriendUserIds(request.fromUserId, request.toUserId),
         requestId: request._id,
         createdAt: now,
       },
     },
     { upsert: true }
   );
-  void invalidateBuddyIdsCacheForPair(request.fromUserId, request.toUserId);
+  void invalidateFriendIdsCacheForPair(request.fromUserId, request.toUserId);
 };
 
-export const createBuddyRequest = async (input: {
+export const createFriendRequest = async (input: {
   fromUserId: string;
   toUserId: string;
   message?: string | null;
-}): Promise<BuddyRequestDTO> => {
+}): Promise<FriendRequestDTO> => {
   const { fromUserId, toUserId } = input;
   if (fromUserId === toUserId) {
-    throw new ApiError(400, 'invalid_buddy_request', 'You cannot add yourself as a buddy.');
+    throw new ApiError(400, 'invalid_friend_request', 'You cannot add yourself as a friend.');
   }
 
   const target = await findAuthUserById(toUserId);
@@ -111,7 +111,7 @@ export const createBuddyRequest = async (input: {
     throw new ApiError(404, 'user_not_found', 'User not found.');
   }
 
-  if (await areAcceptedBuddies(fromUserId, toUserId)) {
+  if (await areAcceptedFriends(fromUserId, toUserId)) {
     throw new ApiError(409, 'already_buddies', 'You are already connected with this member.');
   }
 
@@ -121,7 +121,7 @@ export const createBuddyRequest = async (input: {
     status: 'pending',
   });
   if (reversePending) {
-    return acceptBuddyRequest(reversePending._id, fromUserId);
+    return acceptFriendRequest(reversePending._id, fromUserId);
   }
 
   const existingPending = await requestsCollection().findOne({
@@ -130,11 +130,11 @@ export const createBuddyRequest = async (input: {
     status: 'pending',
   });
   if (existingPending) {
-    throw new ApiError(409, 'buddy_request_pending', 'Buddy request already sent.');
+    throw new ApiError(409, 'friend_request_pending', 'Friend request already sent.');
   }
 
   const now = new Date();
-  const doc: MongoBuddyRequest = {
+  const doc: MongoFriendRequest = {
     _id: newEntityId(),
     fromUserId,
     toUserId,
@@ -149,19 +149,19 @@ export const createBuddyRequest = async (input: {
   return mapRequestDto(doc, users);
 };
 
-export const acceptBuddyRequest = async (
+export const acceptFriendRequest = async (
   requestId: string,
   actorUserId: string
-): Promise<BuddyRequestDTO> => {
+): Promise<FriendRequestDTO> => {
   const request = await requestsCollection().findOne({ _id: requestId });
   if (!request) {
-    throw new ApiError(404, 'buddy_request_not_found', 'Buddy request not found.');
+    throw new ApiError(404, 'friend_request_not_found', 'Friend request not found.');
   }
   if (request.status !== 'pending') {
-    throw new ApiError(409, 'buddy_request_not_pending', 'This buddy request is no longer pending.');
+    throw new ApiError(409, 'friend_request_not_pending', 'This friend request is no longer pending.');
   }
   if (request.toUserId !== actorUserId && request.fromUserId !== actorUserId) {
-    throw new ApiError(403, 'forbidden', 'You cannot respond to this buddy request.');
+    throw new ApiError(403, 'forbidden', 'You cannot respond to this friend request.');
   }
 
   const now = new Date();
@@ -171,12 +171,12 @@ export const acceptBuddyRequest = async (
     { returnDocument: 'after' }
   );
   if (!updated) {
-    throw new ApiError(409, 'buddy_request_not_pending', 'This buddy request is no longer pending.');
+    throw new ApiError(409, 'friend_request_not_pending', 'This friend request is no longer pending.');
   }
 
   await ensurePairForAcceptedRequest(updated);
 
-  // Mutual follow (no follow notification — buddy accept already notifies).
+  // Mutual follow (no follow notification — friend accept already notifies).
   await Promise.all([
     followUser(updated.fromUserId, updated.toUserId),
     followUser(updated.toUserId, updated.fromUserId),
@@ -198,16 +198,16 @@ export const acceptBuddyRequest = async (
   return mapRequestDto(updated, users);
 };
 
-export const declineBuddyRequest = async (
+export const declineFriendRequest = async (
   requestId: string,
   actorUserId: string
-): Promise<BuddyRequestDTO> => {
+): Promise<FriendRequestDTO> => {
   const request = await requestsCollection().findOne({ _id: requestId });
   if (!request) {
-    throw new ApiError(404, 'buddy_request_not_found', 'Buddy request not found.');
+    throw new ApiError(404, 'friend_request_not_found', 'Friend request not found.');
   }
   if (request.status !== 'pending') {
-    throw new ApiError(409, 'buddy_request_not_pending', 'This buddy request is no longer pending.');
+    throw new ApiError(409, 'friend_request_not_pending', 'This friend request is no longer pending.');
   }
   if (request.toUserId !== actorUserId) {
     throw new ApiError(403, 'forbidden', 'Only the recipient can decline this request.');
@@ -220,23 +220,23 @@ export const declineBuddyRequest = async (
     { returnDocument: 'after' }
   );
   if (!updated) {
-    throw new ApiError(409, 'buddy_request_not_pending', 'This buddy request is no longer pending.');
+    throw new ApiError(409, 'friend_request_not_pending', 'This friend request is no longer pending.');
   }
 
   const users = await loadUserMapForRequests([updated]);
   return mapRequestDto(updated, users);
 };
 
-export const cancelBuddyRequest = async (
+export const cancelFriendRequest = async (
   requestId: string,
   actorUserId: string
-): Promise<BuddyRequestDTO> => {
+): Promise<FriendRequestDTO> => {
   const request = await requestsCollection().findOne({ _id: requestId });
   if (!request) {
-    throw new ApiError(404, 'buddy_request_not_found', 'Buddy request not found.');
+    throw new ApiError(404, 'friend_request_not_found', 'Friend request not found.');
   }
   if (request.status !== 'pending') {
-    throw new ApiError(409, 'buddy_request_not_pending', 'This buddy request is no longer pending.');
+    throw new ApiError(409, 'friend_request_not_pending', 'This friend request is no longer pending.');
   }
   if (request.fromUserId !== actorUserId) {
     throw new ApiError(403, 'forbidden', 'Only the sender can cancel this request.');
@@ -249,20 +249,20 @@ export const cancelBuddyRequest = async (
     { returnDocument: 'after' }
   );
   if (!updated) {
-    throw new ApiError(409, 'buddy_request_not_pending', 'This buddy request is no longer pending.');
+    throw new ApiError(409, 'friend_request_not_pending', 'This friend request is no longer pending.');
   }
 
   const users = await loadUserMapForRequests([updated]);
   return mapRequestDto(updated, users);
 };
 
-export const countPendingIncomingBuddyRequests = async (userId: string): Promise<number> =>
+export const countPendingIncomingFriendRequests = async (userId: string): Promise<number> =>
   requestsCollection().countDocuments({ toUserId: userId, status: 'pending' });
 
-export const listBuddyRequestsForUser = async (
+export const listFriendRequestsForUser = async (
   userId: string,
   direction: 'incoming' | 'outgoing' | 'all' = 'all'
-): Promise<BuddyRequestDTO[]> => {
+): Promise<FriendRequestDTO[]> => {
   const query =
     direction === 'incoming'
       ? { toUserId: userId }
@@ -275,28 +275,28 @@ export const listBuddyRequestsForUser = async (
   return docs.map((doc) => mapRequestDto(doc, users));
 };
 
-const BUDDY_ID_LIST_CACHE_CAP = 500;
+const FRIEND_ID_LIST_CACHE_CAP = 500;
 
-export const countBuddyPairsForUser = async (userId: string): Promise<number> =>
+export const countFriendPairsForUser = async (userId: string): Promise<number> =>
   pairsCollection().countDocuments({ userIds: userId });
 
-export const listBuddyIdsForUser = async (userId: string, limit = BUDDY_ID_LIST_CACHE_CAP): Promise<string[]> => {
-  const capped = Math.min(Math.max(limit, 1), BUDDY_ID_LIST_CACHE_CAP);
-  const cached = await readBuddyAdjacencyIds(userId);
+export const listFriendIdsForUser = async (userId: string, limit = FRIEND_ID_LIST_CACHE_CAP): Promise<string[]> => {
+  const capped = Math.min(Math.max(limit, 1), FRIEND_ID_LIST_CACHE_CAP);
+  const cached = await readFriendAdjacencyIds(userId);
   if (cached) return cached.slice(0, capped);
 
   const pairs = await pairsCollection()
     .find({ userIds: userId }, { projection: { userIds: 1 } })
     .sort({ createdAt: -1 })
-    .limit(BUDDY_ID_LIST_CACHE_CAP)
+    .limit(FRIEND_ID_LIST_CACHE_CAP)
     .toArray();
   const ids = pairs.map((pair) => (pair.userIds[0] === userId ? pair.userIds[1] : pair.userIds[0]));
-  await writeBuddyAdjacencyIds(userId, ids);
+  await writeFriendAdjacencyIds(userId, ids);
   return ids.slice(0, capped);
 };
 
-type MutualBuddyRow = {
-  buddyId: string;
+type MutualFriendRow = {
+  friendId: string;
   connectedAt: Date;
 };
 
@@ -304,7 +304,7 @@ export const listMutualBuddiesBetween = async (
   targetUserId: string,
   viewerUserId: string,
   limit: number
-): Promise<{ buddies: BuddySummaryDTO[]; totalMutual: number }> => {
+): Promise<{ buddies: FriendSummaryDTO[]; totalMutual: number }> => {
   if (!targetUserId || !viewerUserId || targetUserId === viewerUserId) {
     return { buddies: [], totalMutual: 0 };
   }
@@ -312,13 +312,13 @@ export const listMutualBuddiesBetween = async (
   const capped = Math.min(Math.max(limit, 1), 200);
   const [facet] = await pairsCollection()
     .aggregate<{
-      items: MutualBuddyRow[];
+      items: MutualFriendRow[];
       total: { n: number }[];
     }>([
       { $match: { userIds: targetUserId } },
       {
         $addFields: {
-          buddyId: {
+          friendId: {
             $cond: {
               if: { $eq: [{ $arrayElemAt: ['$userIds', 0] }, targetUserId] },
               then: { $arrayElemAt: ['$userIds', 1] },
@@ -329,14 +329,14 @@ export const listMutualBuddiesBetween = async (
       },
       {
         $lookup: {
-          from: COLLECTIONS.BUDDY_PAIRS,
-          let: { buddyId: '$buddyId' },
+          from: COLLECTIONS.FRIEND_PAIRS,
+          let: { friendId: '$friendId' },
           pipeline: [
             {
               $match: {
                 $expr: {
                   $and: [
-                    { $in: ['$$buddyId', '$userIds'] },
+                    { $in: ['$$friendId', '$userIds'] },
                     { $in: [viewerUserId, '$userIds'] },
                   ],
                 },
@@ -353,7 +353,7 @@ export const listMutualBuddiesBetween = async (
         $facet: {
           items: [
             { $limit: capped },
-            { $project: { _id: 0, buddyId: 1, connectedAt: '$createdAt' } },
+            { $project: { _id: 0, friendId: 1, connectedAt: '$createdAt' } },
           ],
           total: [{ $count: 'n' }],
         },
@@ -367,47 +367,47 @@ export const listMutualBuddiesBetween = async (
     return { buddies: [], totalMutual };
   }
 
-  const buddyIds = rows.map((row) => row.buddyId);
-  const users = await findAuthUsersByIds(buddyIds);
+  const friendIds = rows.map((row) => row.friendId);
+  const users = await findAuthUsersByIds(friendIds);
   const userMap = new Map(users.map((user) => [user._id, user]));
-  const connectedById = new Map(rows.map((row) => [row.buddyId, row.connectedAt.toISOString()]));
+  const connectedById = new Map(rows.map((row) => [row.friendId, row.connectedAt.toISOString()]));
 
-  const buddies = buddyIds
-    .map((buddyId) => {
-      const user = userMap.get(buddyId);
+  const buddies = friendIds
+    .map((friendId) => {
+      const user = userMap.get(friendId);
       if (!user) return null;
       return {
-        userId: buddyId,
+        userId: friendId,
         displayName: profileDisplayNameFromAuthUser(user),
         avatarUrl: user.profile?.avatarUrl ?? null,
-        connectedAt: connectedById.get(buddyId) ?? new Date(0).toISOString(),
+        connectedAt: connectedById.get(friendId) ?? new Date(0).toISOString(),
       };
     })
-    .filter((item): item is BuddySummaryDTO => item !== null);
+    .filter((item): item is FriendSummaryDTO => item !== null);
 
   return { buddies, totalMutual };
 };
 
-const mapBuddySummaries = (
+const mapFriendSummaries = (
   userId: string,
-  pairs: MongoBuddyPair[],
+  pairs: MongoFriendPair[],
   userMap: Map<string, Awaited<ReturnType<typeof findAuthUserById>>>
-): BuddySummaryDTO[] =>
+): FriendSummaryDTO[] =>
   pairs
     .map((pair) => {
-      const buddyId = pair.userIds[0] === userId ? pair.userIds[1] : pair.userIds[0];
-      const user = userMap.get(buddyId);
+      const friendId = pair.userIds[0] === userId ? pair.userIds[1] : pair.userIds[0];
+      const user = userMap.get(friendId);
       if (!user) return null;
       return {
-        userId: buddyId,
+        userId: friendId,
         displayName: profileDisplayNameFromAuthUser(user),
         avatarUrl: user.profile?.avatarUrl ?? null,
         connectedAt: pair.createdAt.toISOString(),
       };
     })
-    .filter((item): item is BuddySummaryDTO => item !== null);
+    .filter((item): item is FriendSummaryDTO => item !== null);
 
-export const listBuddiesForUser = async (userId: string, limit = 200): Promise<BuddySummaryDTO[]> => {
+export const listFriendsForUser = async (userId: string, limit = 200): Promise<FriendSummaryDTO[]> => {
   const capped = Math.min(Math.max(limit, 1), 200);
   const pairs = await pairsCollection()
     .find({ userIds: userId })
@@ -417,57 +417,57 @@ export const listBuddiesForUser = async (userId: string, limit = 200): Promise<B
 
   if (pairs.length === 0) return [];
 
-  const buddyIds = pairs.map((pair) => (pair.userIds[0] === userId ? pair.userIds[1] : pair.userIds[0]));
-  const users = await findAuthUsersByIds(buddyIds);
+  const friendIds = pairs.map((pair) => (pair.userIds[0] === userId ? pair.userIds[1] : pair.userIds[0]));
+  const users = await findAuthUsersByIds(friendIds);
   const userMap = new Map(users.map((user) => [user._id, user]));
-  return mapBuddySummaries(userId, pairs, userMap);
+  return mapFriendSummaries(userId, pairs, userMap);
 };
 
-export const listBuddySummariesForIds = async (
+export const listFriendSummariesForIds = async (
   ownerUserId: string,
-  buddyIds: string[]
-): Promise<BuddySummaryDTO[]> => {
-  if (buddyIds.length === 0) return [];
-  const pairIds = buddyIds.map((buddyId) => buddyPairKey(ownerUserId, buddyId));
+  friendIds: string[]
+): Promise<FriendSummaryDTO[]> => {
+  if (friendIds.length === 0) return [];
+  const pairIds = friendIds.map((friendId) => friendPairKey(ownerUserId, friendId));
   const [pairs, users] = await Promise.all([
     pairsCollection().find({ _id: { $in: pairIds } }).toArray(),
-    findAuthUsersByIds(buddyIds),
+    findAuthUsersByIds(friendIds),
   ]);
-  const pairByBuddy = new Map(
+  const pairByFriend = new Map(
     pairs.map((pair) => {
-      const buddyId = pair.userIds[0] === ownerUserId ? pair.userIds[1] : pair.userIds[0];
-      return [buddyId, pair.createdAt.toISOString()] as const;
+      const friendId = pair.userIds[0] === ownerUserId ? pair.userIds[1] : pair.userIds[0];
+      return [friendId, pair.createdAt.toISOString()] as const;
     })
   );
   const userMap = new Map(users.map((user) => [user._id, user]));
-  return buddyIds
-    .map((buddyId) => {
-      const user = userMap.get(buddyId);
+  return friendIds
+    .map((friendId) => {
+      const user = userMap.get(friendId);
       if (!user) return null;
       return {
-        userId: buddyId,
+        userId: friendId,
         displayName: profileDisplayNameFromAuthUser(user),
         avatarUrl: user.profile?.avatarUrl ?? null,
-        connectedAt: pairByBuddy.get(buddyId) ?? new Date(0).toISOString(),
+        connectedAt: pairByFriend.get(friendId) ?? new Date(0).toISOString(),
       };
     })
-    .filter((item): item is BuddySummaryDTO => item !== null);
+    .filter((item): item is FriendSummaryDTO => item !== null);
 };
 
-/** Ends a buddy connection for both users. Silent — no notification is sent. */
-/** Remove mutual buddy link — `otherMemberUserId` is the other person's account id (`BuddySummaryDTO.userId`). */
-export const unfriendBuddy = async (actorUserId: string, otherMemberUserId: string): Promise<void> => {
+/** Ends a friend connection for both users. Silent — no notification is sent. */
+/** Remove mutual friend link — `otherMemberUserId` is the other person's account id (`FriendSummaryDTO.userId`). */
+export const unfriendMember = async (actorUserId: string, otherMemberUserId: string): Promise<void> => {
   if (actorUserId === otherMemberUserId) {
-    throw new ApiError(400, 'invalid_buddy_request', 'You cannot unfriend yourself.');
+    throw new ApiError(400, 'invalid_friend_request', 'You cannot unfriend yourself.');
   }
 
-  const pairId = buddyPairKey(actorUserId, otherMemberUserId);
+  const pairId = friendPairKey(actorUserId, otherMemberUserId);
   const result = await pairsCollection().deleteOne({ _id: pairId });
   if (result.deletedCount === 0) {
-    throw new ApiError(404, 'buddy_not_found', 'You are not connected with this member.');
+    throw new ApiError(404, 'friend_not_found', 'You are not connected with this member.');
   }
 
-  void invalidateBuddyIdsCacheForPair(actorUserId, otherMemberUserId);
+  void invalidateFriendIdsCacheForPair(actorUserId, otherMemberUserId);
 
   const now = new Date();
   await requestsCollection().updateMany(
@@ -482,37 +482,37 @@ export const unfriendBuddy = async (actorUserId: string, otherMemberUserId: stri
   );
 };
 
-export const getBuddyRelationship = async (
+export const getFriendRelationship = async (
   viewerUserId: string,
   targetUserId: string
 ): Promise<{
-  areBuddies: boolean;
-  incomingRequest: BuddyRequestDTO | null;
-  outgoingRequest: BuddyRequestDTO | null;
+  areFriends: boolean;
+  incomingRequest: FriendRequestDTO | null;
+  outgoingRequest: FriendRequestDTO | null;
   canSendRequest: boolean;
 }> => {
   if (viewerUserId === targetUserId) {
     return {
-      areBuddies: false,
+      areFriends: false,
       incomingRequest: null,
       outgoingRequest: null,
       canSendRequest: false,
     };
   }
 
-  const areBuddies = await areAcceptedBuddies(viewerUserId, targetUserId);
+  const areFriends = await areAcceptedFriends(viewerUserId, targetUserId);
   const [incomingDoc, outgoingDoc] = await Promise.all([
     requestsCollection().findOne({ fromUserId: targetUserId, toUserId: viewerUserId, status: 'pending' }),
     requestsCollection().findOne({ fromUserId: viewerUserId, toUserId: targetUserId, status: 'pending' }),
   ]);
 
-  const docs = [incomingDoc, outgoingDoc].filter((doc): doc is MongoBuddyRequest => doc !== null);
+  const docs = [incomingDoc, outgoingDoc].filter((doc): doc is MongoFriendRequest => doc !== null);
   const users = await loadUserMapForRequests(docs);
 
   return {
-    areBuddies,
+    areFriends,
     incomingRequest: incomingDoc ? mapRequestDto(incomingDoc, users) : null,
     outgoingRequest: outgoingDoc ? mapRequestDto(outgoingDoc, users) : null,
-    canSendRequest: !areBuddies && !incomingDoc && !outgoingDoc,
+    canSendRequest: !areFriends && !incomingDoc && !outgoingDoc,
   };
 };

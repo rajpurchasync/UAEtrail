@@ -439,14 +439,18 @@ export interface JoinRequestDTO {
 }
 
 export type {
-  BuddyRelationshipDTO,
-  BuddyRequestDTO,
-  BuddyRequestStatus,
-  BuddySummaryDTO,
-  BuddyUserPreviewDTO,
-} from './buddy-connection.js';
+  FriendRelationshipDTO,
+  FriendRequestDTO,
+  FriendRequestStatus,
+  FriendSummaryDTO,
+  FriendUserPreviewDTO,
+} from './friend-connection.js';
 
-export type { NotificationKind, NotificationMeta } from './notification-meta.js';
+export {
+  resolveNotificationActorUserId,
+  type NotificationKind,
+  type NotificationMeta,
+} from './notification-meta.js';
 import type { NotificationMeta } from './notification-meta.js';
 
 export type { MemberFollowStateDTO, MemberFollowSummaryDTO } from './member-follow.js';
@@ -503,10 +507,10 @@ export {
   type RecommendedCrewFeedRowRef,
 } from './recommended-crew-feed.js';
 export type {
-  BuddyActivityPresenceDTO,
-  BuddyActivityPresenceRowDTO,
+  FriendActivityPresenceDTO,
+  FriendActivityPresenceRowDTO,
   ExploreActivityRefDTO,
-} from './buddy-activity-presence.js';
+} from './friend-activity-presence.js';
 export type {
   SocialPeopleDTO,
   SocialPeoplePreviewDTO,
@@ -515,7 +519,7 @@ export type {
   SocialPeopleSegmentCanonical,
   SocialPeopleSegmentWire,
   SocialPeopleRelationship,
-  SocialPersonBuddyRequestState,
+  SocialPersonFriendRequestState,
   SocialPersonRowDTO,
   SocialPersonTripHintDTO,
   SocialPersonTripRole,
@@ -860,7 +864,6 @@ export {
   exploreMapItemIsAvailabilityCatalog,
   exploreMapItemIsHostedActivity,
   exploreMapItemIsLegacySeekingActivity,
-  exploreMapItemIsSeeking,
   isTimeBoundExploreMapItem,
   resolveExploreMapActivityMode,
 } from './explore-activity-mode.js';
@@ -1022,7 +1025,7 @@ export interface ExploreMapItemDTO {
   discoverFeatured?: boolean;
   /** Map browse projection (host vs seek). Null for venue/shop catalog rows. */
   composeIntent?: ExploreMapComposeIntent | null;
-  /** Buddy/activities browse family. Null for venue/shop. */
+  /** Friends/activities browse family. Null for venue/shop. */
   outingCategory?: OutingCategory | null;
   /** Optional subtype within `outingCategory` (derive-on-read until E5 persistence). */
   outingTopic?: OutingTopic | null;
@@ -1140,8 +1143,6 @@ export interface TenantPublicDTO {
   activities: ActivityDTO[];
   /** Preferred shop public id when tenant is a shop. Wire: merchant_profiles._id */
   shopId?: string | null;
-  /** @deprecated Use shopId */
-  merchantId?: string | null;
 }
 
 // ─── Member medical safety (join / host roster) ─────────────────────────────
@@ -2124,13 +2125,17 @@ export {
 } from './social-group-limits.js';
 export type { SocialTeamLabelType } from './social-group-limits.js';
 export {
+  MEMBER_GROUP_INBOUND_LABELS,
   MEMBER_GROUP_INBOUND_TYPES,
   MEMBER_GROUP_KINDS,
   isMemberGroupKind,
+  isMemberGroupTeamRow,
   isOutingCrewGroupRow,
   isOutingCrewMemberGroup,
   memberGroupInboundTypeFromKind,
+  memberGroupInboundTypeLabel,
   memberGroupKindFromInboundType,
+  memberGroupRowLabel,
   memberGroupTeamLabelFromInboundType,
   normalizeMemberGroupKind,
   resolveMemberGroupShape,
@@ -2299,7 +2304,7 @@ export {
   BWL_EXPLORE_MAP_SOURCE,
   BWL_PEOPLE_SEGMENT,
   BWL_USER_ROLES,
-  isBuddyPeopleSegment,
+  isFriendsPeopleSegment,
   normalizePeopleSegment,
 } from './wire-lexicon.js';
 export type { ActivityModeWire } from './wire-lexicon.js';

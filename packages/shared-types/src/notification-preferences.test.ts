@@ -33,7 +33,7 @@ describe('notification preferences', () => {
 
   it('maps kinds to topics', () => {
     expect(resolveNotificationPreferenceTopic('wishlist_match')).toBe('map_alerts');
-    expect(resolveNotificationPreferenceTopic('connection_buddy_request')).toBe('social');
+    expect(resolveNotificationPreferenceTopic('connection_friend_request')).toBe('social');
     expect(resolveNotificationPreferenceTopic('join_request_pending')).toBe('plans');
   });
 

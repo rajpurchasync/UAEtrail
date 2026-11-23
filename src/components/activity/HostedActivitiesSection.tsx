@@ -108,7 +108,7 @@ export const HostedActivitiesSection = ({
   const mapPeekHandlersFor = useCallback(
     (activity: ActivityDTO): ActivityMapPeekActionHandlers => ({
       shareActivity: () =>
-        inviteShare.openShareFromActivity(activity, { canSendBuddyInvites: true }),
+        inviteShare.openShareFromActivity(activity, { canSendFriendInvites: true }),
       manageActivity: () => openManage(activity),
       openCrewChat: () =>
         void hostActions.openGroupChat(activity.id, activity.groupChatId, { returnTo }),
@@ -260,7 +260,7 @@ export const HostedActivitiesSection = ({
         pendingRequests={host.pendingRequests}
         onOpenPublicPage={(a) => navigate(activityDetailPath(a.id), { state: historyReturn })}
         onShare={(a) =>
-          inviteShare.openShareFromActivity(a, { canSendBuddyInvites: true })
+          inviteShare.openShareFromActivity(a, { canSendFriendInvites: true })
         }
         onClose={() => {
           setManageActivity(null);

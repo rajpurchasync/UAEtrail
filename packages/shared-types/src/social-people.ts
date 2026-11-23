@@ -6,7 +6,7 @@ export type {
 
 export type SocialPeopleRelationship = 'friend' | 'following';
 
-export type SocialPersonBuddyRequestState = 'none' | 'incoming' | 'outgoing';
+export type SocialPersonFriendRequestState = 'none' | 'incoming' | 'outgoing';
 
 export type SocialPersonTripRole = 'hosting' | 'joining';
 
@@ -27,9 +27,9 @@ export type SocialPersonRowDTO = {
   cityLabel: string | null;
   activitiesAttended: number;
   relationship: SocialPeopleRelationship;
-  buddyRequestState: SocialPersonBuddyRequestState;
+  friendRequestState: SocialPersonFriendRequestState;
   canMessage: boolean;
-  canSendBuddyRequest: boolean;
+  canSendFriendRequest: boolean;
   upcomingTrip: SocialPersonTripHintDTO | null;
 };
 

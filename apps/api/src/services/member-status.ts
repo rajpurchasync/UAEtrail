@@ -9,7 +9,7 @@ import { resolveMemberProfileRoleLabel } from '../domain/member-profile-label.js
 import { listActiveTenantMembershipsByUser } from '../lib/activities-store.js';
 import { findAuthUserById, type AuthUserRecord } from '../lib/auth-users-store.js';
 import { isCommunityHostByUserId } from '../lib/community-host.js';
-import { ensureBuddyHostTenant, ensureOwnerMembershipForTenant } from '../lib/buddy-host-tenant.js';
+import { ensureFriendHostTenant, ensureOwnerMembershipForTenant } from '../lib/friend-host-tenant.js';
 import { findLatestHostApplicationByApplicant } from '../lib/host-applications-store.js';
 import { countPublishedActivitiesHostedByUserIds } from '../lib/activity-engagement-store.js';
 import { listActiveTenantMembershipsByUserIds } from '../lib/tenant-access.js';
@@ -114,7 +114,7 @@ export const resolveMemberStatus = async (userId: string): Promise<HostStatusDTO
     const mergedPre = mergeActiveTenantsForHostStatus(ownedByOwnerId, memberships);
     const activityPre = pickActivityTenant(mergedPre);
     if (!activityPre) {
-      await ensureBuddyHostTenant(userId);
+      await ensureFriendHostTenant(userId);
       ownedByOwnerId = await listTenantsByOwnerId(userId);
       memberships = await listActiveTenantMembershipsByUser(userId);
     } else {

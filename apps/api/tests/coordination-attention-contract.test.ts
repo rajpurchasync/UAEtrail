@@ -19,10 +19,10 @@ describe('GET /me/coordination-attention contract', () => {
     expect(service).not.toContain('MY_REQUESTS_PATH');
     expect(service).not.toContain('/host/requests');
     expect(service).toContain('countUserUpcomingPendingJoinRequests');
-    expect(service).toContain('countPendingIncomingBuddyRequests');
+    expect(service).toContain('countPendingIncomingFriendRequests');
     expect(service).toContain('countPendingActivityJoinInvitesForUser');
     expect(service).not.toContain('listUserActivityRequestsBasic');
-    expect(service).not.toContain('listBuddyRequestsForUser');
+    expect(service).not.toContain('listFriendRequestsForUser');
     for (const kind of MEMBER_COORDINATION_ATTENTION_KINDS) {
       expect(service).toContain(`'${kind}'`);
     }

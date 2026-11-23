@@ -8,7 +8,7 @@ describe('platform layer api modules (MIG-PLATFORM-LAYER-SPINE)', () => {
       expect(PLATFORM_LAYER_API_MODULES[layer].length).toBeGreaterThan(0);
     }
     expect(PLATFORM_LAYER_API_MODULES.join).toContain('activities');
-    expect(PLATFORM_LAYER_API_MODULES.connect).toContain('buddies');
+    expect(PLATFORM_LAYER_API_MODULES.connect).toContain('friends');
     expect(PLATFORM_LAYER_API_MODULES.plan).toContain('wishlist');
   });
 });

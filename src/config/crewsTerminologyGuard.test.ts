@@ -24,7 +24,7 @@ const collectTs = (dir: string): string[] => {
 const FORBIDDEN: Array<{ pattern: RegExp; label: string }> = [
   { pattern: /\bbuddiesDiscoverSegment\b/, label: 'buddiesDiscoverSegment (use CrewBrowseTab)' },
   { pattern: /\bBUDDIES_SEGMENT_URL_PARAM\b/, label: 'BUDDIES_SEGMENT_URL_PARAM (use PEOPLE_LIST_TAB_URL_PARAM)' },
-  { pattern: /\bapplyBuddiesDiscoverSegment\b/, label: 'applyBuddiesDiscoverSegment (use applyCrewBrowseTab)' },
+  { pattern: /\bapplyBuddiesDiscoverSegment\b/, label: 'applyBuddiesDiscoverSegment (use applyCrewBrowseLane)' },
   { pattern: /\bsetBuddiesDiscoverSegment\b/, label: 'setBuddiesDiscoverSegment' },
   { pattern: /params\.set\(['"]buddies['"]/, label: 'serialize buddies= query (outbound retired)' },
 ];
@@ -94,7 +94,7 @@ describe('crewsTerminologyGuard (Crews / peopleTab — not buddies segment)', ()
     expect(peopleUrl).not.toMatch(/INBOUND_BUDDIES_LIST_TAB_PARAM/);
   });
 
-  it('CREWS-07: My Crews canonical route is /crews with /buddies inbound only', () => {
+  it('CREWS-07: My Crews canonical route is /crews (no /buddies inbound)', () => {
     const surface = readFileSync(join(process.cwd(), 'src/config/surfacePaths.ts'), 'utf8');
     expect(surface).toMatch(/MY_CREWS_PATH = '\/crews'/);
     expect(surface).not.toMatch(/BUDDIES_PATH/);
@@ -130,7 +130,7 @@ describe('crewsTerminologyGuard (Crews / peopleTab — not buddies segment)', ()
       'src/content/upl-glossary.ts',
       'src/content/workspaceProductLanguageGuard.test.ts',
     ]);
-    const wireOk = /value="friends"|value="buddies"|'buddies'\s*\|/;
+    const wireOk = /value="friends"/;
 
     for (const root of scanRoots) {
       const abs = join(process.cwd(), root);

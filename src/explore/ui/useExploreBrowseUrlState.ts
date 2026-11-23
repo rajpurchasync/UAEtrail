@@ -29,7 +29,7 @@ import { useExploreBrowseUrlApplyHandlers } from './useExploreBrowseUrlApplyHand
 import type { CrewBrowseLane, CrewPeopleFacet, CrewProfessionalKind } from '@/crew-discovery/crewBrowseState';
 import type { ExplorePinKindFilter } from '../explorePinKindFilter';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
-import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
+import type { ExploreOthersSubtypeKey } from '../exploreOthersSubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
 import type { PlaceKind } from '@uaetrail/shared-types';
 import type { ExplorePriceFilter } from '../exploreOptionalFilters';
@@ -72,7 +72,7 @@ export const useExploreBrowseUrlState = ({
   const [activityModeFilter, setActivityModeFilter] = useState<ExploreActivityModeFilter>(
     initial.activityModeFilter
   );
-  const [buddySubtype, setBuddySubtype] = useState<ExploreBuddySubtypeKey>(initial.buddySubtype);
+  const [othersSubtype, setOthersSubtype] = useState<ExploreOthersSubtypeKey>(initial.othersSubtype);
   const [outingTopic, setOutingTopic] = useState<ExploreOutingTopicKey>(initial.outingTopic);
   const [pinKind, setPinKind] = useState<ExplorePinKindFilter>(initial.pinKind);
   const [topicPills, setTopicPills] = useState<ExploreMapFilterPillKey[]>(initial.topicPills);
@@ -104,7 +104,7 @@ export const useExploreBrowseUrlState = ({
         geoPath,
         activityDatePreset,
         activityModeFilter,
-        buddySubtype,
+        othersSubtype,
         outingTopic,
         pinKind,
         topicPills,
@@ -137,7 +137,7 @@ export const useExploreBrowseUrlState = ({
       geoPath,
       activityDatePreset,
       activityModeFilter,
-      buddySubtype,
+      othersSubtype,
       outingTopic,
       pinKind,
       topicPills,
@@ -168,7 +168,7 @@ export const useExploreBrowseUrlState = ({
         setPanel,
         setListOpen,
         setBrowseOpen,
-        setBuddySubtype,
+        setOthersSubtype,
         setOutingTopic,
         setPinKind,
         setTopicPills,
@@ -207,7 +207,7 @@ export const useExploreBrowseUrlState = ({
     browseOpen,
     panel,
     mapFilter,
-    buddySubtype,
+    othersSubtype,
     outingTopic,
     topicPills,
     tripMapTopics,
@@ -279,7 +279,7 @@ export const useExploreBrowseUrlState = ({
     activityModeFilter,
     syncExploreUrl,
     browseOpen,
-    buddySubtype,
+    othersSubtype,
     outingTopic,
     searchScope,
     pinKind,

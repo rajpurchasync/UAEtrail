@@ -19,7 +19,7 @@ export type HostingFlowHostProps = {
   hostComposeKind: HostComposeKind | null;
   hostingWizardPrefill: import('../../ui/hostingWizardPrefill').HostingWizardPrefill | null;
   onCreateLinkedRideshare?: (parentActivity: ActivityDTO) => void;
-  planWithBuddyUserId?: string | null;
+  planWithFriendUserId?: string | null;
 };
 
 /** Routes plan hosting compose to one catalog wizard (`composeFlowCatalog` → `hostingFlow`). */
@@ -33,7 +33,7 @@ export const HostingFlowHost = ({
   hostComposeKind,
   hostingWizardPrefill,
   onCreateLinkedRideshare,
-  planWithBuddyUserId = null,
+  planWithFriendUserId = null,
 }: HostingFlowHostProps) => {
   const resolvedKind = hostComposeKind ?? hostingWizardPrefill?.draft.kind ?? null;
 
@@ -46,7 +46,7 @@ export const HostingFlowHost = ({
     signInHref,
     seekingPrefill: hostingWizardPrefill,
     onCreateLinkedRideshare,
-    planWithBuddyUserId,
+    planWithFriendUserId,
   };
 
   switch (resolvedKind) {

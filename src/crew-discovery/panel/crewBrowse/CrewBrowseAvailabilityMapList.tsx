@@ -18,7 +18,7 @@ type Props = {
   loading: boolean;
   onOpenAvailabilityCatalogItem: (item: ExploreMapItemDTO) => void;
   onOfferRideshareForAvailabilityItem?: (item: ExploreMapItemDTO) => void;
-  buddyUserIds?: Set<string>;
+  friendUserIds?: Set<string>;
 };
 
 /** Open/fixed intent on the explore map (`source: availability`) — not calendar marked days. */
@@ -28,7 +28,7 @@ export const CrewBrowseAvailabilityMapList = ({
   loading,
   onOpenAvailabilityCatalogItem,
   onOfferRideshareForAvailabilityItem,
-  buddyUserIds,
+  friendUserIds,
 }: Props) => {
   const cardById = useMemo(() => {
     const map = new Map<string, DiscoveryCardModel>();
@@ -56,7 +56,7 @@ export const CrewBrowseAvailabilityMapList = ({
             <ExploreListRow
               card={cardById.get(item.id)!}
               onClick={() => onOpenAvailabilityCatalogItem(item)}
-              buddyUserIds={buddyUserIds}
+              friendUserIds={friendUserIds}
             />
             {showOffer ? (
               <button

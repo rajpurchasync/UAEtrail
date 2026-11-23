@@ -22,7 +22,7 @@ export type MemberDiscoveryAvailabilityRowDTO = {
 export type MemberDiscoveryRosterDTO = {
   /** Buddies hosting or joining on outings (date filter). */
   friendsGoing: SocialPersonRowDTO[];
-  /** Non-buddy activity hosts on outings (date filter). */
+  /** Non-friend activity hosts on outings (date filter). */
   hostsGoing: SocialPersonRowDTO[];
   /** Fixed crew availability on explore (not coordination “needs you”). */
   availabilityOnMap: MemberDiscoveryAvailabilityRowDTO[];

@@ -452,14 +452,14 @@ export const DiscoveryCardPeopleRow = ({
   const entitlements = card.viewerAccess?.entitlements;
   const isHostViewer = card.viewerAccess?.level === 'host';
   const visibleParticipants =
-    card.source !== 'activity' || !entitlements || entitlements.canViewFullBuddyRoster || isHostViewer
+    card.source !== 'activity' || !entitlements || entitlements.canViewFullFriendRoster || isHostViewer
       ? participants
-      : participants.filter((row) => entitlements.buddyUserIdsOnActivity.includes(row.id));
+      : participants.filter((row) => entitlements.friendUserIdsOnActivity.includes(row.id));
   const showRosterProUpsell =
     !hideProMembershipUpsell &&
     card.source === 'activity' &&
     Boolean(entitlements) &&
-    !entitlements!.canViewFullBuddyRoster &&
+    !entitlements!.canViewFullFriendRoster &&
     !isHostViewer &&
     participants.length > visibleParticipants.length;
   const person = card.featuredPerson;

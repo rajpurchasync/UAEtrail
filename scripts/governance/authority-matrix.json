@@ -373,13 +373,13 @@
       "http": { "method": "GET", "path": "/discover/crew" }
     },
     {
-      "id": "social.buddy_request",
+      "id": "social.friend_request",
       "label": "Send friend connection request",
       "axis": "D_PARTICIPATE",
       "contextId": "social_graph",
-      "resolver": { "module": "apps/api/src/lib/buddy-store.ts", "symbol": "createBuddyRequest" },
-      "http": { "method": "POST", "path": "/me/buddies/requests" },
-      "note": "Product: Friends (`/buddies` route + buddy_* wire). No buddies= list URL segment."
+      "resolver": { "module": "apps/api/src/lib/friend-store.ts", "symbol": "createFriendRequest" },
+      "http": { "method": "POST", "path": "/me/friend-requests" },
+      "note": "Product: Friends (`GET /me/friends`, `friend_*` HTTP). No buddies list URL segment."
     },
     {
       "id": "social.follow",

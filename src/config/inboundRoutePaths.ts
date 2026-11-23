@@ -1,9 +1,7 @@
 /**
- * Bookmark-only URL segments — `App.tsx` redirects to canonical routes in surfacePaths.
- * Do not link these in product UI; use the canonical path helpers instead.
+ * Bookmark-only URL segments — normalize in `notificationRouting` (and auth matchers).
+ * No SPA `<Navigate>` shims (GW-7). Do not link these in product UI.
  */
-
-export const INBOUND_LEGACY_BUDDIES_PATH = '/buddies' as const;
 
 export const INBOUND_BECOME_HOST_PATH = '/become-host' as const;
 export const INBOUND_BECOME_ORGANIZER_PATH = '/become-organizer' as const;

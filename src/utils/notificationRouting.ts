@@ -28,6 +28,7 @@ import {
   NotificationDTO,
   exploreAvailabilityMapItemPath,
   placeDetailPath,
+  resolveNotificationActorUserId,
 } from '@uaetrail/shared-types';
 import { resolveInboundPlanHubPath } from '../member-plan/resolveInboundPlanHubPath';
 
@@ -194,12 +195,8 @@ export const inferNotificationPath = (
     return activityDetailPath(activityId);
   }
   if (kind === 'message') {
-    const actor = toStringValue(meta?.actorUserId) ?? toStringValue(meta?.senderId);
+    const actor = meta ? resolveNotificationActorUserId(meta) : null;
     if (actor) return messagesToUserPath(actor);
-  }
-  const inboundSenderId = toStringValue(meta?.senderId);
-  if (inboundSenderId) {
-    return messagesToUserPath(inboundSenderId);
   }
   if (
     kind === 'join_request_pending' ||
@@ -237,11 +234,8 @@ export const inferNotificationPath = (
   if (kind === 'goal_halfway' || kind === 'goal_complete' || kind === 'goal_behind_pace') {
     return planWishlistTabPath();
   }
-  if (kind === 'connection_buddy_request' || kind === 'connection_buddy_accepted') {
-    const actorUserId =
-      toStringValue(meta?.actorUserId) ??
-      toStringValue(meta?.fromUserId) ??
-      toStringValue(meta?.buddyUserId);
+  if (kind === 'connection_friend_request' || kind === 'connection_friend_accepted') {
+    const actorUserId = meta ? resolveNotificationActorUserId(meta) : null;
     if (actorUserId) return memberProfileLink(actorUserId);
     return MY_CREWS_PATH;
   }
@@ -256,7 +250,7 @@ export const inferNotificationPath = (
   if (kind === 'entity_activity_published' && activityId) {
     return activityDetailPath(activityId);
   }
-  if (kind === 'member_published' || kind === 'friend_published' || kind === 'friend_activity_published') {
+  if (kind === 'member_published' || kind === 'member_activity_published') {
     if (activityId) return activityDetailPath(activityId);
     const availabilityPin =
       toStringValue(meta?.availabilityMapItemId) ?? toStringValue(meta?.exploreItemId);
@@ -285,7 +279,7 @@ export const inferNotificationPath = (
     const slug = toStringValue(meta?.slug);
     if (slug) return communityClubPath(slug);
   }
-  if (kind === 'buddy_request' && toStringValue(meta?.groupId)) {
+  if (kind === 'friend_request' && toStringValue(meta?.groupId)) {
     const inviteToken = toStringValue(meta?.inviteToken);
     if (inviteToken) return groupsPath({ invite: inviteToken });
     return GROUPS_PATH;

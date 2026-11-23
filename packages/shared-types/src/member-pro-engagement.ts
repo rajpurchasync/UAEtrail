@@ -1,5 +1,5 @@
 import type { MemberProfileRoleLabel } from './host-publishing-tier.js';
-import type { SocialPersonBuddyRequestState } from './social-people.js';
+import type { SocialPersonFriendRequestState } from './social-people.js';
 
 /** Public member card in Pro browse / Buddies discovery directory. */
 export interface MemberBrowseCardDTO {
@@ -12,8 +12,8 @@ export interface MemberBrowseCardDTO {
   activitiesAttended?: number;
   profileRoleLabel?: MemberProfileRoleLabel | null;
   canMessage?: boolean;
-  canSendBuddyRequest?: boolean;
-  buddyRequestState?: SocialPersonBuddyRequestState;
+  canSendFriendRequest?: boolean;
+  friendRequestState?: SocialPersonFriendRequestState;
 }
 
 /** Profile view analytics for Pro / business storefront owners. */

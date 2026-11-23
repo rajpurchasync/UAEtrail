@@ -9,7 +9,7 @@ describe('organize catalog flows — registry venue step omit', () => {
   const registryDraft = {
     placeLabelSource: 'registry' as const,
     registryPlaceId: 'place-abc',
-    genericBuddy: false,
+    communityHostFlow: false,
   };
 
   it('hiking omits about_trail when registry trail selected but keeps difficulty', () => {
@@ -43,7 +43,7 @@ describe('organize catalog flows — registry venue step omit', () => {
     const steps = hikingHostingFlow.getSteps({
       placeLabelSource: 'custom',
       registryPlaceId: null,
-      genericBuddy: false,
+      communityHostFlow: false,
     });
     expect(steps).toContain('difficulty');
     expect(steps).toContain('about_trail');

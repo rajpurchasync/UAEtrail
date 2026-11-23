@@ -50,20 +50,20 @@ describe('inferNotificationPath', () => {
     );
   });
 
-  it('routes buddy connection notifications to the acting member profile', () => {
+  it('routes friend connection notifications to the acting member profile', () => {
     expect(
       inferNotificationPath(
-        notif({ kind: 'connection_buddy_request', actorUserId: 'user-a' })
+        notif({ kind: 'connection_friend_request', actorUserId: 'user-a' })
       )
     ).toBe('/member/user-a');
     expect(
       inferNotificationPath(
-        notif({ kind: 'connection_buddy_accepted', actorUserId: 'user-b' })
+        notif({ kind: 'connection_friend_accepted', actorUserId: 'user-b' })
       )
     ).toBe('/member/user-b');
     expect(
       inferNotificationPath(
-        notif({ kind: 'connection_buddy_accepted', buddyUserId: 'legacy-b' })
+        notif({ kind: 'connection_friend_accepted', actorUserId: 'legacy-b' })
       )
     ).toBe('/member/legacy-b');
   });
@@ -174,7 +174,7 @@ describe('inferNotificationPath', () => {
     expect(
       inferNotificationPath(
         notif({
-          kind: 'friend_published',
+          kind: 'member_published',
           intentId: 'int-2',
           seekingActivityId: 'act-seek-2',
         })
@@ -183,11 +183,15 @@ describe('inferNotificationPath', () => {
     expect(
       inferNotificationPath(
         notif({
-          kind: 'friend_published',
+          kind: 'member_published',
           intentId: 'int-legacy',
         })
       )
     ).toBe('/explore?list=1');
+  });
+
+  it('does not rewrite retired /buddies paths (data migrated at source)', () => {
+    expect(inferNotificationPath(notif({ path: '/buddies' }))).toBe('/buddies');
   });
 
   it('rewrites legacy /hosting bookmarks to operator overview', () => {

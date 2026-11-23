@@ -1,7 +1,7 @@
 import type { EntityFollowCheckDTO, EntityFollowDTO } from '@uaetrail/shared-types';
 import { apiRequest } from '../client';
 
-/** Follow a place, shop, or host brand — not member follow (`buddiesApi`). */
+/** Follow a place, shop, or host brand — not member follow (`friendsApi`). */
 export const entityFollowApi = {
   getMeEntityFollows: () => apiRequest<{ data: EntityFollowDTO[] }>('/me/entity-follows', { auth: true }),
 

@@ -8,8 +8,8 @@ import { useAuth } from '../../context/AuthContext';
 export type ActivityInviteShareSheetProps = {
   open: boolean;
   activity: ActivityShareInput | null;
-  canSendBuddyInvites?: boolean;
-  initialSelectedBuddyIds?: string[];
+  canSendFriendInvites?: boolean;
+  initialSelectedFriendIds?: string[];
   onClose: () => void;
 };
 
@@ -17,8 +17,8 @@ export type ActivityInviteShareSheetProps = {
 export const ActivityInviteShareSheet = ({
   open,
   activity,
-  canSendBuddyInvites = false,
-  initialSelectedBuddyIds,
+  canSendFriendInvites = false,
+  initialSelectedFriendIds,
   onClose,
 }: ActivityInviteShareSheetProps) => {
   const { user } = useAuth();
@@ -27,7 +27,7 @@ export const ActivityInviteShareSheet = ({
     [activity]
   );
 
-  if (!canSendBuddyInvites) return null;
+  if (!canSendFriendInvites) return null;
 
   return (
     <ActivityInviteExploreSheet open={open && Boolean(activity)} onClose={onClose}>
@@ -35,7 +35,7 @@ export const ActivityInviteShareSheet = ({
         <ActivityInviteModalBody
           activityId={activity.id}
           messageWithUrl={share.messageWithUrl}
-          initialSelectedBuddyIds={initialSelectedBuddyIds}
+          initialSelectedFriendIds={initialSelectedFriendIds}
           active={open && Boolean(user)}
           onInviteSent={onClose}
         />

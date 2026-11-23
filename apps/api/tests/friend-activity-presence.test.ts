@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import type { BuddySummaryDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { buildBuddyActivityPresenceRows } from '../src/services/buddy-activity-presence.js';
+import type { FriendSummaryDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { buildFriendActivityPresenceRows } from '../src/services/friend-activity-presence.js';
 
-const buddy = (userId: string): BuddySummaryDTO => ({
+const buddy = (userId: string): FriendSummaryDTO => ({
   userId,
   displayName: userId,
   avatarUrl: null,
   connectedAt: new Date().toISOString(),
 });
 
-describe('buildBuddyActivityPresenceRows', () => {
+describe('buildFriendActivityPresenceRows', () => {
   it('links buddies to hosting and participant activities on the map', () => {
     const hosting = {
       id: 'activity:host-trip',
@@ -29,7 +29,7 @@ describe('buildBuddyActivityPresenceRows', () => {
       viewerAccess: { exposure: 'peek', gateReason: null },
     } as ExploreMapItemDTO;
 
-    const rows = buildBuddyActivityPresenceRows(
+    const rows = buildFriendActivityPresenceRows(
       [buddy('buddy-a'), buddy('buddy-b')],
       [hosting, joining],
       'anyday'

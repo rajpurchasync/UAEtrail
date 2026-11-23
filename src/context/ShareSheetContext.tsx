@@ -22,8 +22,8 @@ import {
 } from '../content/shareSheetCopy';
 
 export type ShareFlowOptions = {
-  canSendBuddyInvites?: boolean;
-  initialSelectedBuddyIds?: string[];
+  canSendFriendInvites?: boolean;
+  initialSelectedFriendIds?: string[];
   /** When set, in-app invite opens friends + groups for this outing. */
   activity?: ActivityShareInput | null;
   sheetTitle?: string;
@@ -33,8 +33,8 @@ export type ShareFlowOptions = {
 type ShareFlowState = {
   sharePayload: ActivityOutingSharePayload;
   activity: ActivityShareInput | null;
-  canSendBuddyInvites: boolean;
-  initialSelectedBuddyIds?: string[];
+  canSendFriendInvites: boolean;
+  initialSelectedFriendIds?: string[];
   sheetTitle: string;
   phase: 'menu' | 'invite';
 };
@@ -59,8 +59,8 @@ function useShareSheetState(): ShareSheetApi & { sheet: ReactNode } {
     setState({
       sharePayload: payload,
       activity: options?.activity ?? null,
-      canSendBuddyInvites: options?.canSendBuddyInvites ?? false,
-      initialSelectedBuddyIds: options?.initialSelectedBuddyIds,
+      canSendFriendInvites: options?.canSendFriendInvites ?? false,
+      initialSelectedFriendIds: options?.initialSelectedFriendIds,
       sheetTitle: resolveFlowSheetTitle(options),
       phase: 'menu',
     });
@@ -70,8 +70,8 @@ function useShareSheetState(): ShareSheetApi & { sheet: ReactNode } {
     setState({
       sharePayload: buildActivitySharePayload(input),
       activity: input,
-      canSendBuddyInvites: options?.canSendBuddyInvites ?? false,
-      initialSelectedBuddyIds: options?.initialSelectedBuddyIds,
+      canSendFriendInvites: options?.canSendFriendInvites ?? false,
+      initialSelectedFriendIds: options?.initialSelectedFriendIds,
       sheetTitle: resolveFlowSheetTitle({ ...options, shareSurface: 'activity' }),
       phase: 'invite',
     });
@@ -82,8 +82,8 @@ function useShareSheetState(): ShareSheetApi & { sheet: ReactNode } {
     setState({
       sharePayload: buildActivitySharePayload(activity),
       activity,
-      canSendBuddyInvites: options?.canSendBuddyInvites ?? false,
-      initialSelectedBuddyIds: options?.initialSelectedBuddyIds,
+      canSendFriendInvites: options?.canSendFriendInvites ?? false,
+      initialSelectedFriendIds: options?.initialSelectedFriendIds,
       sheetTitle: resolveFlowSheetTitle({ ...options, shareSurface: 'activity' }),
       phase: 'menu',
     });
@@ -94,8 +94,8 @@ function useShareSheetState(): ShareSheetApi & { sheet: ReactNode } {
     setState({
       sharePayload: buildActivitySharePayload(activity),
       activity,
-      canSendBuddyInvites: options?.canSendBuddyInvites ?? false,
-      initialSelectedBuddyIds: options?.initialSelectedBuddyIds,
+      canSendFriendInvites: options?.canSendFriendInvites ?? false,
+      initialSelectedFriendIds: options?.initialSelectedFriendIds,
       sheetTitle: resolveFlowSheetTitle({ ...options, shareSurface: 'activity' }),
       phase: 'invite',
     });
@@ -116,16 +116,16 @@ function useShareSheetState(): ShareSheetApi & { sheet: ReactNode } {
           open={Boolean(state && state.phase === 'menu')}
           sharePayload={sharePayload}
           title={state?.sheetTitle}
-          showInviteOnApp={Boolean(state?.canSendBuddyInvites && state.activity)}
-          onInviteOnApp={state?.canSendBuddyInvites && state?.activity ? openInviteFromMenu : undefined}
+          showInviteOnApp={Boolean(state?.canSendFriendInvites && state.activity)}
+          onInviteOnApp={state?.canSendFriendInvites && state?.activity ? openInviteFromMenu : undefined}
           onClose={closeInvite}
           zClass={EXPLORE_Z.shareSheet}
         />
         <ActivityInviteShareSheet
           open={Boolean(state && state.phase === 'invite' && state.activity)}
           activity={state?.activity ?? null}
-          canSendBuddyInvites={state?.canSendBuddyInvites ?? false}
-          initialSelectedBuddyIds={state?.initialSelectedBuddyIds}
+          canSendFriendInvites={state?.canSendFriendInvites ?? false}
+          initialSelectedFriendIds={state?.initialSelectedFriendIds}
           onClose={closeInvite}
         />
       </>

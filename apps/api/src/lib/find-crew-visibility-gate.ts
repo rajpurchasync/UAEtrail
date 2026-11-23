@@ -8,7 +8,7 @@ import {
   type ProfileFieldAudience,
 } from '@uaetrail/shared-types';
 import type { AuthUserRecord } from '../lib/auth-users-store.js';
-import { areAcceptedBuddies, listBuddyIdsForUser } from '../lib/buddy-store.js';
+import { areAcceptedFriends, listFriendIdsForUser } from '../lib/friend-store.js';
 
 export const readFindCrewVisibility = (
   profile: AuthUserRecord['profile'] | null | undefined
@@ -23,21 +23,21 @@ export const resolveFindCrewViewerRelation = async (
   viewerUserId: string | null,
   subjectUserId: string,
   opts?: {
-    viewerBuddyIds?: ReadonlySet<string>;
-    subjectBuddyIds?: ReadonlySet<string>;
+    viewerFriendIds?: ReadonlySet<string>;
+    subjectFriendIds?: ReadonlySet<string>;
   }
 ): Promise<FindCrewViewerRelation> => {
   if (!viewerUserId) return 'stranger';
   if (viewerUserId === subjectUserId) return 'self';
 
-  const viewerBuddyIds =
-    opts?.viewerBuddyIds ?? new Set(await listBuddyIdsForUser(viewerUserId));
-  if (viewerBuddyIds.has(subjectUserId)) return 'friend';
+  const viewerFriendIds =
+    opts?.viewerFriendIds ?? new Set(await listFriendIdsForUser(viewerUserId));
+  if (viewerFriendIds.has(subjectUserId)) return 'friend';
 
-  const subjectBuddyIds =
-    opts?.subjectBuddyIds ?? new Set(await listBuddyIdsForUser(subjectUserId));
-  for (const buddyId of viewerBuddyIds) {
-    if (buddyId !== subjectUserId && subjectBuddyIds.has(buddyId)) {
+  const subjectFriendIds =
+    opts?.subjectFriendIds ?? new Set(await listFriendIdsForUser(subjectUserId));
+  for (const friendId of viewerFriendIds) {
+    if (friendId !== subjectUserId && subjectFriendIds.has(friendId)) {
       return 'friend_of_friend';
     }
   }
@@ -48,8 +48,8 @@ export const mayAppearInFindCrew = async (
   subject: Pick<AuthUserRecord, '_id' | 'profile'>,
   viewerUserId: string | null,
   opts?: {
-    viewerBuddyIds?: ReadonlySet<string>;
-    subjectBuddyIds?: ReadonlySet<string>;
+    viewerFriendIds?: ReadonlySet<string>;
+    subjectFriendIds?: ReadonlySet<string>;
   }
 ): Promise<boolean> => {
   const visibility = readFindCrewVisibility(subject.profile);
@@ -58,7 +58,7 @@ export const mayAppearInFindCrew = async (
 };
 
 /**
- * Batch gate for Find Crew surfaces. Preloads viewer buddy ids and subject buddy ids
+ * Batch gate for Find Crew surfaces. Preloads viewer friend ids and subject friend ids
  * only when a subject uses friends_of_friends and is not a direct friend.
  */
 export const filterSubjectsVisibleInFindCrew = async (
@@ -82,10 +82,10 @@ export const filterSubjectsVisibleInFindCrew = async (
 
   if (maybeGraph.length === 0 || !viewerUserId) return visible;
 
-  const viewerBuddyIds = new Set(await listBuddyIdsForUser(viewerUserId));
+  const viewerFriendIds = new Set(await listFriendIdsForUser(viewerUserId));
   const needsSubjectBuddies: string[] = [];
   for (const subject of maybeGraph) {
-    if (viewerBuddyIds.has(subject._id)) {
+    if (viewerFriendIds.has(subject._id)) {
       visible.add(subject._id);
       continue;
     }
@@ -95,16 +95,16 @@ export const filterSubjectsVisibleInFindCrew = async (
 
   if (needsSubjectBuddies.length === 0) return visible;
 
-  const subjectBuddyLists = await Promise.all(
-    needsSubjectBuddies.map(async (id) => [id, new Set(await listBuddyIdsForUser(id))] as const)
+  const subjectFriendLists = await Promise.all(
+    needsSubjectBuddies.map(async (id) => [id, new Set(await listFriendIdsForUser(id))] as const)
   );
-  const subjectBuddyMap = new Map(subjectBuddyLists);
+  const subjectFriendMap = new Map(subjectFriendLists);
 
   for (const subjectId of needsSubjectBuddies) {
-    const subjectBuddyIds = subjectBuddyMap.get(subjectId) ?? new Set<string>();
+    const subjectFriendIds = subjectFriendMap.get(subjectId) ?? new Set<string>();
     let isFof = false;
-    for (const buddyId of viewerBuddyIds) {
-      if (buddyId !== subjectId && subjectBuddyIds.has(buddyId)) {
+    for (const friendId of viewerFriendIds) {
+      if (friendId !== subjectId && subjectFriendIds.has(friendId)) {
         isFof = true;
         break;
       }
@@ -117,12 +117,12 @@ export const filterSubjectsVisibleInFindCrew = async (
 
 /**
  * Whether subject's home/start area may be shown or used for area matching for this viewer.
- * Uses city field privacy + buddy relationship as a stand-in for profile exposure.
+ * Uses city field privacy + friend relationship as a stand-in for profile exposure.
  */
 export const maySeeMemberLocationForViewer = async (
   subject: Pick<AuthUserRecord, '_id' | 'profile'>,
   viewerUserId: string | null,
-  opts?: { isBuddy?: boolean }
+  opts?: { isFriend?: boolean }
 ): Promise<boolean> => {
   const cityAudience = readCityAudience(subject.profile);
   if (!viewerUserId) {
@@ -134,16 +134,16 @@ export const maySeeMemberLocationForViewer = async (
     });
   }
   if (viewerUserId === subject._id) return true;
-  const isBuddy =
-    opts?.isBuddy ?? (await areAcceptedBuddies(viewerUserId, subject._id));
-  const relation = isBuddy
+  const isFriend =
+    opts?.isFriend ?? (await areAcceptedFriends(viewerUserId, subject._id));
+  const relation = isFriend
     ? ('friend' as const)
     : cityAudience === 'friends_of_friends'
       ? await resolveFindCrewViewerRelation(viewerUserId, subject._id)
       : ('stranger' as const);
   return viewerMaySeeMemberLocation({
     cityAudience,
-    exposure: isBuddy ? 'full' : 'public',
+    exposure: isFriend ? 'full' : 'public',
     isSelf: false,
     relation,
   });
@@ -154,7 +154,7 @@ export const resolveCityLabelForViewer = async (
   subject: Pick<AuthUserRecord, '_id' | 'profile'>,
   viewerUserId: string | null,
   cityLabel: string | null,
-  opts?: { isBuddy?: boolean }
+  opts?: { isFriend?: boolean }
 ): Promise<string | null> => {
   if (!cityLabel) return null;
   const maySee = await maySeeMemberLocationForViewer(subject, viewerUserId, opts);
@@ -163,7 +163,7 @@ export const resolveCityLabelForViewer = async (
 
 /**
  * Batch city labels for directory/followed rows.
- * Preloads viewer buddy ids once and subject buddy lists only for FoF city audience.
+ * Preloads viewer friend ids once and subject friend lists only for FoF city audience.
  */
 export const resolveCityLabelsForViewerBatch = async (
   rows: Array<{
@@ -171,14 +171,14 @@ export const resolveCityLabelsForViewerBatch = async (
     cityLabel: string | null;
   }>,
   viewerUserId: string | null,
-  opts?: { viewerBuddyIds?: ReadonlySet<string> }
+  opts?: { viewerFriendIds?: ReadonlySet<string> }
 ): Promise<Map<string, string | null>> => {
   const out = new Map<string, string | null>();
   if (rows.length === 0) return out;
 
-  const viewerBuddyIds =
-    opts?.viewerBuddyIds ??
-    (viewerUserId ? new Set(await listBuddyIdsForUser(viewerUserId)) : new Set<string>());
+  const viewerFriendIds =
+    opts?.viewerFriendIds ??
+    (viewerUserId ? new Set(await listFriendIdsForUser(viewerUserId)) : new Set<string>());
 
   const needsFof: Array<Pick<AuthUserRecord, '_id' | 'profile'>> = [];
   for (const row of rows) {
@@ -200,9 +200,9 @@ export const resolveCityLabelsForViewerBatch = async (
       out.set(subject._id, null);
       continue;
     }
-    const isBuddy = viewerBuddyIds.has(subject._id);
+    const isFriend = viewerFriendIds.has(subject._id);
     if (cityAudience === 'friends') {
-      out.set(subject._id, isBuddy ? cityLabel : null);
+      out.set(subject._id, isFriend ? cityLabel : null);
       continue;
     }
     if (cityAudience === 'public') {
@@ -210,7 +210,7 @@ export const resolveCityLabelsForViewerBatch = async (
       continue;
     }
     // friends_of_friends
-    if (isBuddy) {
+    if (isFriend) {
       out.set(subject._id, cityLabel);
       continue;
     }
@@ -219,16 +219,16 @@ export const resolveCityLabelsForViewerBatch = async (
 
   if (needsFof.length === 0 || !viewerUserId) return out;
 
-  const subjectBuddyLists = await Promise.all(
-    needsFof.map(async (subject) => [subject._id, new Set(await listBuddyIdsForUser(subject._id))] as const)
+  const subjectFriendLists = await Promise.all(
+    needsFof.map(async (subject) => [subject._id, new Set(await listFriendIdsForUser(subject._id))] as const)
   );
-  const subjectBuddyMap = new Map(subjectBuddyLists);
+  const subjectFriendMap = new Map(subjectFriendLists);
 
   for (const subject of needsFof) {
-    const subjectBuddyIds = subjectBuddyMap.get(subject._id) ?? new Set<string>();
+    const subjectFriendIds = subjectFriendMap.get(subject._id) ?? new Set<string>();
     let isFof = false;
-    for (const buddyId of viewerBuddyIds) {
-      if (buddyId !== subject._id && subjectBuddyIds.has(buddyId)) {
+    for (const friendId of viewerFriendIds) {
+      if (friendId !== subject._id && subjectFriendIds.has(friendId)) {
         isFof = true;
         break;
       }

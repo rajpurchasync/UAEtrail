@@ -12,8 +12,8 @@ import type { PlaceMapPin } from '../../components/ui/PlacesMap';
 import { hostedOutingSummariesByPlaceId } from '../exploreHostedPlaceOutings';
 import { resolveExploreMapPinCoverImage } from '../exploreMapPinCaption';
 import { resolveMapPinItemSource } from '../exploreCopy';
-import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
-import { isBuddyOthersMapItem, matchesBuddyOthersSubtype } from '../exploreBuddySubtype';
+import type { ExploreOthersSubtypeKey } from '../exploreOthersSubtype';
+import { isOthersMapCategoryItem, matchesOthersMapSubtype } from '../exploreOthersSubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
 import { matchesOutingTopicFilter } from '../exploreOutingTopic';
 import type { ActivityListFilterKey, ExploreActivityDatePreset, MapFilterKey, VenueListFilterKey } from '../routing';
@@ -37,13 +37,13 @@ export const matchesVenueFilter = (item: ExploreMapItemDTO, venueFilter: VenueLi
 };
 
 export {
-  isBuddyMapItem,
+  isFriendMapItem,
   isCommunityShopMapItem,
   isMerchantShopMapItem,
   isPlacesMapItem,
   isShopListItem,
 } from '../exploreMapItemKind';
-import { isBuddyMapItem, isPlacesMapItem, isShopListItem } from '../exploreMapItemKind';
+import { isFriendMapItem, isPlacesMapItem, isShopListItem } from '../exploreMapItemKind';
 
 export const isPhysicalShopItem = (item: ExploreMapItemDTO): boolean =>
   isShopListItem(item) && item.shopPresence !== 'online' && item.latitude != null && item.longitude != null;
@@ -76,14 +76,14 @@ export const matchesPlacesMapFilter = (item: ExploreMapItemDTO, mapFilter: MapFi
   return matchesVenueFilter(item, mapFilterToVenueListFilter(mapFilter));
 };
 
-/** Buddy up map/list — activities and demand only (no venue catalog). */
-export const matchesBuddyMapFilter = (
+/** Find crew map/list — activities and demand only (no venue catalog). */
+export const matchesOthersMapFilter = (
   item: ExploreMapItemDTO,
   mapFilter: MapFilterKey,
-  othersSubtype: ExploreBuddySubtypeKey = 'all',
+  othersSubtype: ExploreOthersSubtypeKey = 'all',
   outingTopic: ExploreOutingTopicKey = 'all'
 ): boolean => {
-  if (!isBuddyMapItem(item)) return false;
+  if (!isFriendMapItem(item)) return false;
   if (mapFilter === 'all') return true;
   if (mapFilter === 'shops') return false;
 
@@ -93,8 +93,8 @@ export const matchesBuddyMapFilter = (
   if (mapFilter === 'camping') return kind === 'camping';
   if (mapFilter === 'rideshare') return kind === 'rideshare';
   if (mapFilter === 'others') {
-    if (!isBuddyOthersMapItem(item)) return false;
-    if (!matchesBuddyOthersSubtype(item, othersSubtype)) return false;
+    if (!isOthersMapCategoryItem(item)) return false;
+    if (!matchesOthersMapSubtype(item, othersSubtype)) return false;
     return matchesOutingTopicFilter(item, outingTopic);
   }
 
@@ -117,7 +117,7 @@ import { matchesUnifiedTopicFilter } from '../exploreMapTopicFilterMatch';
 export type UnifiedExploreMapFilterInput = {
   mapFilter: MapFilterKey;
   pinKind: ExplorePinKindFilter;
-  buddySubtype?: ExploreBuddySubtypeKey;
+  othersSubtype?: ExploreOthersSubtypeKey;
   outingTopic?: ExploreOutingTopicKey;
   activityDatePreset?: ExploreActivityDatePreset;
   venueRegions?: string[];
@@ -128,20 +128,20 @@ export const matchesUnifiedExploreMapItem = (
   item: ExploreMapItemDTO,
   input: UnifiedExploreMapFilterInput
 ): boolean => {
-  const buddySubtype = input.buddySubtype ?? 'all';
+  const othersSubtype = input.othersSubtype ?? 'all';
   const outingTopic = input.outingTopic ?? 'all';
   const activityDatePreset = input.activityDatePreset ?? 'anyday';
   const venueRegions = input.venueRegions ?? [];
 
   if (!matchesExplorePinKindFilter(item, input.pinKind)) return false;
-  if (!matchesUnifiedTopicFilter(item, input.mapFilter, buddySubtype, outingTopic)) return false;
+  if (!matchesUnifiedTopicFilter(item, input.mapFilter, othersSubtype, outingTopic)) return false;
 
-  if (isBuddyMapItem(item) && !matchesActivityDateFilter(item, activityDatePreset)) {
+  if (isFriendMapItem(item) && !matchesActivityDateFilter(item, activityDatePreset)) {
     return false;
   }
 
   if (venueRegions.length > 0) {
-    if (isBuddyMapItem(item) || isPlacesMapItem(item) || isShopListItem(item)) {
+    if (isFriendMapItem(item) || isPlacesMapItem(item) || isShopListItem(item)) {
       if (!venueItemMatchesRegions(item, venueRegions)) return false;
     }
   }
@@ -163,7 +163,7 @@ export type MobileExploreMapFilterInput = {
   mapFilter: MapFilterKey;
   activityDatePreset: ExploreActivityDatePreset;
   venueRegions: string[];
-  buddySubtype?: ExploreBuddySubtypeKey;
+  othersSubtype?: ExploreOthersSubtypeKey;
   outingTopic?: ExploreOutingTopicKey;
 };
 
@@ -172,13 +172,13 @@ export const matchesMobileExploreMapItem = (
   item: ExploreMapItemDTO,
   input: MobileExploreMapFilterInput
 ): boolean => {
-  const buddySubtype = input.buddySubtype ?? 'all';
+  const othersSubtype = input.othersSubtype ?? 'all';
   const outingTopic = input.outingTopic ?? 'all';
 
-  if (isBuddyMapItem(item)) {
+  if (isFriendMapItem(item)) {
     const topicOk =
       input.mapFilter === 'others'
-        ? matchesBuddyMapFilter(item, 'others', buddySubtype, outingTopic)
+        ? matchesOthersMapFilter(item, 'others', othersSubtype, outingTopic)
         : matchesActivityFilter(item, input.activityFilter);
     if (!topicOk) return false;
     return matchesActivityDateFilter(item, input.activityDatePreset);

@@ -119,3 +119,16 @@ Do **not** put new product semantics only in `experiment/*` phase trackers or de
 1. [`DOCS_INDEX.md`](./DOCS_INDEX.md) → pick **one** Tier-1 file from the table above.
 2. Grep Tier-1 for the old phrase you are replacing.
 3. `npm run verify:system:quick` before merge.
+
+## Corpus diet (avoid the “library” trap)
+
+| Problem | Fix |
+|---------|-----|
+| Tier-1 files grew long (especially `SYSTEM_COHERENCE`, `DOMAIN_CANONICALS`) | **Implement from code + manifest**; edit Tier-1 only for **factual deltas** after guards pass |
+| Duplicate placement stories | **One row per concern:** manifest `contexts[]` + `SYSTEM_COHERENCE` §3 — not new audit markdown |
+| Overlapping FE folders (`src/explore`, `src/list`, `src/discovery`, `src/crew-discovery`) | Same **discovery** context in manifest; **browse UI** = `src/list` + `src/crew-discovery`; **map shell** = `src/explore` — do not add a third people-browse stack |
+| Friends vs crews vs discover | **Friends graph** → `/me/friends`, `MyCrews` (`/crews`); **Find crew discover** → `member_availability` + explore/list people lanes — not `/buddies` or seeking compose |
+| Legacy product URLs | **No runtime shims** for retired paths (e.g. `/buddies`); one-time **Mongo migrations** + `NAVIGATION.md` canonical route only |
+| Superseded docs | One-line stub pointing to canonical file, or `archive/` — `verify:docs` enforces |
+
+**Align docs ↔ code:** When guards fail, fix **code first**, then the **single** Tier-1 row for that topic (table at top of this file). Never “fix” drift by adding a new markdown plan.

@@ -4,7 +4,7 @@ import {
   type ExploreMapItemDTO,
   type OutingTopic,
 } from '@uaetrail/shared-types';
-import type { ExploreBuddySubtypeKey } from './exploreBuddySubtype';
+import type { ExploreOthersSubtypeKey } from './exploreOthersSubtype';
 import type { MapFilterKey } from './routing';
 
 export type ExploreOutingTopicKey = 'all' | OutingTopic;
@@ -20,9 +20,9 @@ export const OUTING_TOPIC_PILLS: ReadonlyArray<{ key: ExploreOutingTopicKey; lab
 export const parseExploreOutingTopic = (
   value: string | null,
   mapFilter: MapFilterKey,
-  buddySubtype: ExploreBuddySubtypeKey
+  othersSubtype: ExploreOthersSubtypeKey
 ): ExploreOutingTopicKey => {
-  if (mapFilter !== 'others' || buddySubtype !== 'activities') return 'all';
+  if (mapFilter !== 'others' || othersSubtype !== 'activities') return 'all';
   const parsed = parseOutingTopic(value);
   if (parsed) return parsed;
   return 'all';
@@ -31,9 +31,9 @@ export const parseExploreOutingTopic = (
 export const serializeExploreOutingTopic = (
   topic: ExploreOutingTopicKey,
   mapFilter: MapFilterKey,
-  buddySubtype: ExploreBuddySubtypeKey
+  othersSubtype: ExploreOthersSubtypeKey
 ): string | null => {
-  if (mapFilter !== 'others' || buddySubtype !== 'activities' || topic === 'all') return null;
+  if (mapFilter !== 'others' || othersSubtype !== 'activities' || topic === 'all') return null;
   return topic;
 };
 

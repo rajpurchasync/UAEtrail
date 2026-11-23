@@ -6,7 +6,7 @@ import {
   countTenantPendingJoinRequests,
   countUserUpcomingPendingJoinRequests,
 } from '../lib/activity-engagement-store.js';
-import { countPendingIncomingBuddyRequests } from '../lib/buddy-store.js';
+import { countPendingIncomingFriendRequests } from '../lib/friend-store.js';
 import { countUnreadNotificationsByMetaKind } from '../lib/notifications-store.js';
 import { resolveMemberStatus } from './member-status.js';
 import {
@@ -24,13 +24,13 @@ export const loadMemberCoordinationAttention = async (
   const [
     hostJoinQueue,
     joinerPendingHost,
-    incomingBuddyCount,
+    incomingFriendCount,
     activityInviteCount,
     unreadByKind,
   ] = await Promise.all([
     tenantId && hostStatus.canPublish ? countTenantPendingJoinRequests(tenantId) : Promise.resolve(0),
     countUserUpcomingPendingJoinRequests(userId),
-    countPendingIncomingBuddyRequests(userId),
+    countPendingIncomingFriendRequests(userId),
     countPendingActivityJoinInvitesForUser(userId),
     countUnreadNotificationsByMetaKind(userId, [
       'request_withdrawal',
@@ -64,8 +64,8 @@ export const loadMemberCoordinationAttention = async (
     items.push({ kind: 'participant_revoked', count: revoked });
   }
 
-  if (incomingBuddyCount > 0) {
-    items.push({ kind: 'buddy_request_incoming', count: incomingBuddyCount });
+  if (incomingFriendCount > 0) {
+    items.push({ kind: 'friend_request_incoming', count: incomingFriendCount });
   }
 
   if (activityInviteCount > 0) {

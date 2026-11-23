@@ -17,7 +17,7 @@ import {
 
 const TOPIC_COPY: Record<NotificationPreferenceTopic, { label: string; hint: string }> = {
   plans: { label: 'Outings & plans', hint: 'Join requests, schedule changes, and invites' },
-  social: { label: 'Friends & chat', hint: 'Buddy requests, groups, and messages' },
+  social: { label: 'Friends & chat', hint: 'Friend requests, groups, and messages' },
   account: { label: 'Account', hint: 'Badges, host applications, and platform updates' },
   map_alerts: { label: 'Saved map matches', hint: 'When new outings match your saved places' },
 };

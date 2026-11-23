@@ -7,7 +7,7 @@ import type { ExploreActivityDatePreset, ExplorePanel, MapFilterKey, VenueListFi
 import type { PlaceKind } from '@uaetrail/shared-types';
 import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
 import type { ExplorePriceFilter } from '../exploreOptionalFilters';
-import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
+import type { ExploreOthersSubtypeKey } from '../exploreOthersSubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
 import type { DesktopBrowseTab } from './exploreBrowsePanelCopy';
 import {
@@ -50,7 +50,7 @@ type UseExploreBrowseListArgs = {
   sidebarPanel: ExplorePanel;
   isDesktop: boolean;
   desktopBrowseTab: DesktopBrowseTab;
-  buddySubtype: ExploreBuddySubtypeKey;
+  othersSubtype: ExploreOthersSubtypeKey;
   outingTopic: ExploreOutingTopicKey;
   activityModeFilter?: ExploreActivityModeFilter;
   priceFilter?: ExplorePriceFilter;
@@ -99,7 +99,7 @@ export const useExploreBrowseList = ({
   sidebarPanel,
   isDesktop,
   desktopBrowseTab,
-  buddySubtype,
+  othersSubtype,
   outingTopic,
   activityModeFilter = 'all',
   priceFilter = 'all',
@@ -133,7 +133,7 @@ export const useExploreBrowseList = ({
       placeMapTopics,
       venueRegions: effectiveVenueRegions,
       activityDatePreset,
-      buddySubtype,
+      othersSubtype,
       outingTopic,
       activityModeFilter,
       priceFilter,
@@ -161,7 +161,7 @@ export const useExploreBrowseList = ({
     placeMapTopics,
     activityDatePreset,
     effectiveVenueRegions,
-    buddySubtype,
+    othersSubtype,
     outingTopic,
     activityModeFilter,
     priceFilter,
@@ -181,7 +181,7 @@ export const useExploreBrowseList = ({
       const selected = selectActivitiesFromMapItems(catalog, {
         mapFilter,
         tripMapTopics,
-        buddySubtype,
+        othersSubtype,
         outingTopic,
         query: '',
         activityDatePreset,
@@ -239,7 +239,7 @@ export const useExploreBrowseList = ({
     isDesktop,
     desktopBrowseTab,
     sidebarPanel,
-    buddySubtype,
+    othersSubtype,
     outingTopic,
     activityModeFilter,
     priceFilter,
@@ -262,7 +262,7 @@ export const useExploreBrowseList = ({
     const activitySearchPool = () => {
       const selected = selectActivitiesFromMapItems(items, {
         mapFilter,
-        buddySubtype,
+        othersSubtype,
         outingTopic,
         query: '',
         activityDatePreset,
@@ -326,7 +326,7 @@ export const useExploreBrowseList = ({
     mapFilter,
     activityDatePreset,
     venueRegions,
-    buddySubtype,
+    othersSubtype,
     outingTopic,
     activityModeFilter,
     isDesktop,

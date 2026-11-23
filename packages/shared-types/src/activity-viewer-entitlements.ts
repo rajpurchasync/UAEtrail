@@ -5,11 +5,11 @@ import type { ActivityViewerAccessLevel } from './activity-viewer-access.js';
 export type ActivityViewerEntitlementsDTO = {
   isProMember: boolean;
   canViewHostProfileBeforeJoin: boolean;
-  canViewFullBuddyRoster: boolean;
+  canViewFullFriendRoster: boolean;
   canOfferTransport: boolean;
   canAddLinkedRide: boolean;
   canMessageHostBeforeJoin: boolean;
-  buddyUserIdsOnActivity: string[];
+  friendUserIdsOnActivity: string[];
 };
 
 export const computeActivityViewerEntitlements = (input: {
@@ -17,7 +17,7 @@ export const computeActivityViewerEntitlements = (input: {
   isFriendOfHost: boolean;
   level: ActivityViewerAccessLevel;
   canAccessCrewSurfaces: boolean;
-  buddyUserIdsOnActivity: string[];
+  friendUserIdsOnActivity: string[];
 }): ActivityViewerEntitlementsDTO => {
   const isHostLevel =
     input.level === 'host' ||
@@ -37,11 +37,11 @@ export const computeActivityViewerEntitlements = (input: {
   return {
     isProMember: input.isProMember,
     canViewHostProfileBeforeJoin,
-    canViewFullBuddyRoster: input.isProMember || isHostLevel,
+    canViewFullFriendRoster: input.isProMember || isHostLevel,
     canOfferTransport: canManageLinkedTransport,
     canAddLinkedRide: canManageLinkedTransport,
     canMessageHostBeforeJoin: canViewHostProfileBeforeJoin,
-    buddyUserIdsOnActivity: input.buddyUserIdsOnActivity,
+    friendUserIdsOnActivity: input.friendUserIdsOnActivity,
   };
 };
 

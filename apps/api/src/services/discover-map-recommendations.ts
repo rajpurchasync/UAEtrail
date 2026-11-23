@@ -6,7 +6,7 @@ import {
   type DiscoverRecommendationSignal,
 } from '@uaetrail/shared-types';
 import { listPublishedActivitiesForExploreMapFromMongo } from '../lib/activity-read-assembler.js';
-import { listBuddiesForUser } from '../lib/buddy-store.js';
+import { listFriendsForUser } from '../lib/friend-store.js';
 import { listActiveLocationsForExploreMap } from '../lib/location-query.js';
 import { rankMapExploreActivity } from './matching/rank-map-explore.js';
 import { rankMapExplorePlace } from './matching/rank-map-explore-place.js';
@@ -33,10 +33,10 @@ export const loadDiscoverMapRecommendations = async (input: {
   const limit = Math.min(Math.max(input.limit ?? DEFAULT_LIMIT, 1), 20);
   const nowMs = Date.now();
 
-  const buddyUserIds = new Set<string>();
+  const friendUserIds = new Set<string>();
   if (input.viewerUserId) {
-    const buddies = await listBuddiesForUser(input.viewerUserId, 200);
-    for (const buddy of buddies) buddyUserIds.add(buddy.userId);
+    const buddies = await listFriendsForUser(input.viewerUserId, 200);
+    for (const buddy of buddies) friendUserIds.add(buddy.userId);
   }
 
   const wishlist = await loadRecommendationWishlistContext(input.viewerUserId);
@@ -50,7 +50,7 @@ export const loadDiscoverMapRecommendations = async (input: {
   for (const activity of activities) {
     const ranked = rankMapExploreActivity({
       activity,
-      buddyUserIds,
+      friendUserIds,
       wishlistLocationIds: wishlist.locationIds,
       wishlistAreaIds: wishlist.areaIds,
       nowMs,

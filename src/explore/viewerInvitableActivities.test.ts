@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import type { ActivityDTO, BuddyActivityPresenceRowDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type { ActivityDTO, FriendActivityPresenceRowDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   buildViewerInvitableActivityRefs,
-  invitableActivitiesForBuddy,
-  listJoinInviteActivitiesForBuddy,
-  pickJoinInviteActivityForBuddy,
+  invitableActivitiesForFriend,
+  listJoinInviteActivitiesForFriend,
+  pickJoinInviteActivityForFriend,
 } from './viewerInvitableActivities';
 
 describe('viewerInvitableActivities', () => {
@@ -31,14 +31,14 @@ describe('viewerInvitableActivities', () => {
     expect(refs.map((r) => r.activityId)).toEqual(['a1']);
   });
 
-  it('skips outings the buddy is already on', () => {
+  it('skips outings the friend is already on', () => {
     const invitable = [{ exploreItemId: 'activity:a1', activityId: 'a1', title: 'Hike' }];
     const row = {
-      buddy: { userId: 'b1', displayName: 'Buddy', avatarUrl: null },
+      friend: { userId: 'b1', displayName: 'Alex', avatarUrl: null },
       hosting: null,
       joining: { exploreItemId: 'activity:a1', activityId: 'a1', title: 'Hike' },
-    } as BuddyActivityPresenceRowDTO;
-    expect(invitableActivitiesForBuddy(invitable, row)).toEqual([]);
+    } as FriendActivityPresenceRowDTO;
+    expect(invitableActivitiesForFriend(invitable, row)).toEqual([]);
   });
 
   it('prefers viewer-hosted outing for invite target', () => {
@@ -57,11 +57,11 @@ describe('viewerInvitableActivities', () => {
       }),
     ];
     const row = {
-      buddy: { userId: 'b1', displayName: 'Buddy', avatarUrl: null },
+      friend: { userId: 'b1', displayName: 'Alex', avatarUrl: null },
       hosting: null,
       joining: null,
-    } as BuddyActivityPresenceRowDTO;
-    const picked = pickJoinInviteActivityForBuddy(invitable, row, items, 'host-me');
+    } as FriendActivityPresenceRowDTO;
+    const picked = pickJoinInviteActivityForFriend(invitable, row, items, 'host-me');
     expect(picked?.activityId).toBe('a2');
   });
 
@@ -81,11 +81,11 @@ describe('viewerInvitableActivities', () => {
       }),
     ];
     const row = {
-      buddy: { userId: 'b1', displayName: 'Buddy', avatarUrl: null },
+      friend: { userId: 'b1', displayName: 'Alex', avatarUrl: null },
       hosting: null,
       joining: null,
-    } as BuddyActivityPresenceRowDTO;
-    const list = listJoinInviteActivitiesForBuddy(invitable, row, items, 'host-me');
+    } as FriendActivityPresenceRowDTO;
+    const list = listJoinInviteActivitiesForFriend(invitable, row, items, 'host-me');
     expect(list.map((r) => r.activityId)).toEqual(['a2', 'a1']);
   });
 });

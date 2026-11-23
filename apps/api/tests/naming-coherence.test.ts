@@ -27,7 +27,7 @@ describe('naming coherence (API)', () => {
       for (const file of collectTsFiles(root)) {
         const content = readFileSync(join(process.cwd(), file), 'utf8');
         if (/buddyUserId\s*:/.test(content)) {
-          violations.push(`${file}: use actorUserId — ids are member user ids, not buddy entities`);
+          violations.push(`${file}: use actorUserId — ids are member user ids, not legacy buddy entities`);
         }
       }
     }
@@ -35,11 +35,11 @@ describe('naming coherence (API)', () => {
     expect(violations).toEqual([]);
   });
 
-  it('buddy notification services set actorUserId on connection payloads', () => {
-    const buddyNotif = readFileSync(join(API_SRC, 'services', 'buddy-notifications.ts'), 'utf8');
-    expect(buddyNotif).toMatch(/actorUserId:/);
-    expect(buddyNotif).not.toMatch(/buddyUserId\s*:/);
-    expect(buddyNotif).not.toMatch(/fromUserId:\s*input/);
+  it('friend notification services set actorUserId on connection payloads', () => {
+    const friendNotif = readFileSync(join(API_SRC, 'services', 'friend-notifications.ts'), 'utf8');
+    expect(friendNotif).toMatch(/actorUserId:/);
+    expect(friendNotif).not.toMatch(/buddyUserId\s*:/);
+    expect(friendNotif).not.toMatch(/fromUserId:\s*input/);
   });
 
   it('activity read assembler batches tenant lookups', () => {

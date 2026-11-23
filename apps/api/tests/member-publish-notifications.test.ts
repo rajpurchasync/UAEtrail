@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
-  listBuddiesForUser: vi.fn(),
+  listFriendsForUser: vi.fn(),
   listFollowerIdsForUser: vi.fn(),
   createNotificationsMany: vi.fn(),
   findAuthUserById: vi.fn(),
 }));
 
-vi.mock('../src/lib/buddy-store.js', () => ({
-  listBuddiesForUser: mocks.listBuddiesForUser,
+vi.mock('../src/lib/friend-store.js', () => ({
+  listFriendsForUser: mocks.listFriendsForUser,
 }));
 
 vi.mock('../src/lib/follow-store.js', () => ({
@@ -44,7 +44,7 @@ describe('notifyMemberPublishSubscribers', () => {
   });
 
   it('notifies buddies and followers when a hosted activity is published', async () => {
-    mocks.listBuddiesForUser.mockResolvedValue([{ userId: 'buddy-1' }]);
+    mocks.listFriendsForUser.mockResolvedValue([{ userId: 'buddy-1' }]);
     mocks.listFollowerIdsForUser.mockResolvedValue(['follower-1']);
 
     await notifyMemberPublishSubscribers('publisher', {
@@ -62,13 +62,13 @@ describe('notifyMemberPublishSubscribers', () => {
     const row = mocks.createNotificationsMany.mock.calls[0]![0]![0] as {
       meta: Record<string, string>;
     };
-    expect(row.meta.kind).toBe('friend_activity_published');
+    expect(row.meta.kind).toBe('member_activity_published');
     expect(row.meta.actorUserId).toBe('publisher');
     expect(row.meta.path).toBe('/activity/act-1');
   });
 
   it('notifies buddies for availability map pins with availability explore path', async () => {
-    mocks.listBuddiesForUser.mockResolvedValue([{ userId: 'buddy-1' }]);
+    mocks.listFriendsForUser.mockResolvedValue([{ userId: 'buddy-1' }]);
 
     await notifyMemberPublishSubscribers('publisher', {
       publishType: 'availability',
@@ -80,7 +80,7 @@ describe('notifyMemberPublishSubscribers', () => {
     const row = mocks.createNotificationsMany.mock.calls[0]![0]![0] as {
       meta: Record<string, string>;
     };
-    expect(row.meta.kind).toBe('friend_published');
+    expect(row.meta.kind).toBe('member_published');
     expect(row.meta.availabilityMapItemId).toBe('availability:pub-1:slot-9');
     expect(row.meta.path).toContain('panel=people');
     expect(row.meta.path).toContain('availability%3Apub-1%3Aslot-9');

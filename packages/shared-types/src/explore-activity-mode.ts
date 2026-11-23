@@ -32,9 +32,6 @@ export const exploreMapItemIsLegacySeekingActivity = (
   item: ExploreMapItemActivityModeFields
 ): boolean => item.source === 'activity' && isRetiredSeekingActivityMode(item);
 
-/** @deprecated Use {@link exploreMapItemIsLegacySeekingActivity} — not for Find crew UX. */
-export const exploreMapItemIsSeeking = exploreMapItemIsLegacySeekingActivity;
-
 /** Fixed crew availability on the explore catalog (`member_availability`, not `activities`). */
 export const exploreMapItemIsAvailabilityCatalog = (
   item: ExploreMapItemActivityModeFields

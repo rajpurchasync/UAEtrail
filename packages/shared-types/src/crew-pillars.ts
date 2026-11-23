@@ -7,7 +7,7 @@
  */
 
 export const CREW_PILLAR_IDS = [
-  /** Mutual friend graph — `/me/buddies`, friend requests, DM eligibility. */
+  /** Mutual friend graph — `/me/friends`, friend requests, DM eligibility. */
   'friends',
   /**
    * People tab **Everyone** — connect lane directory (`segment=connect`).
@@ -62,7 +62,7 @@ export const CREW_PILLAR_SPECS: Record<CrewPillarId, CrewPillarSpec> = {
     id: 'friends',
     boundedContexts: ['social_graph', 'communication'],
     routes: ['/crews', '/chat?to='],
-    wire: ['/me/buddies', '/me/buddy-requests', 'buddy_*', 'segment=buddies'],
+    wire: ['/me/friends', '/me/friend-requests', 'segment=friends'],
     notSameAs: ['teams', 'communities', 'outing_roster', 'directory'],
   },
   directory: {

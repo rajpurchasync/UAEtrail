@@ -46,11 +46,11 @@ describe('demand carpool offer', () => {
             entitlements: {
               isProMember: true,
               canViewHostProfileBeforeJoin: true,
-              canViewFullBuddyRoster: true,
+              canViewFullFriendRoster: true,
               canOfferTransport: true,
               canAddLinkedRide: true,
               canMessageHostBeforeJoin: true,
-              buddyUserIdsOnActivity: [],
+              friendUserIdsOnActivity: [],
             },
           },
         })

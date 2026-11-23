@@ -7,7 +7,7 @@ type DetailHeroShareButtonProps = {
   text?: string;
   path?: string;
   stackAboveModals?: boolean;
-  canSendBuddyInvites?: boolean;
+  canSendFriendInvites?: boolean;
   activityShare?: ActivityShareInput | null;
   gateShareUntilSignedIn?: () => void;
   shareSurface?: ShareSheetSurface;

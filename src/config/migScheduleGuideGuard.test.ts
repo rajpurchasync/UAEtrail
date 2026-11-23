@@ -17,7 +17,7 @@ describe('MIG-SCHEDULE-GUIDE guards', () => {
     expect(paths).toMatch(/PROFILE_GUIDE_PATH\s*=\s*'\/profile\/guide'/);
   });
 
-  it('A2b: availability visibility wire uses friends (legacy buddies normalized)', () => {
+  it('A2b: availability visibility wire uses friends only', () => {
     const shared = readFileSync(
       join(ROOT, 'packages/shared-types/src/member-availability.ts'),
       'utf8'
@@ -32,7 +32,7 @@ describe('MIG-SCHEDULE-GUIDE guards', () => {
       'utf8'
     );
     expect(registrar).toMatch(/'friends'/);
-    expect(registrar).toMatch(/'buddies'/);
+    expect(registrar).not.toMatch(/'buddies'/);
   });
 
   it('B1: slot wire shape + kinds deprecated on availability PUT', () => {

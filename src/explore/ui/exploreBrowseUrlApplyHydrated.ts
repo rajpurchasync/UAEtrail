@@ -10,7 +10,7 @@ import type { ExploreBrowseUrlHydratedState } from '../exploreBrowseUrlHydrate';
 import type { ExploreMapFilterPillKey, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import type { ExploreBrowseListMode } from '../exploreBrowseUrlSync';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
-import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
+import type { ExploreOthersSubtypeKey } from '../exploreOthersSubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
 import type { ExplorePinKindFilter } from '../explorePinKindFilter';
 import type { CrewBrowseLane, CrewPeopleFacet, CrewProfessionalKind } from '@/crew-discovery/crewBrowseState';
@@ -30,7 +30,7 @@ export type ExploreBrowseUrlSetterBundle = {
   setGeoPath: (v: string[]) => void;
   setActivityDatePreset: (v: ExploreActivityDatePreset) => void;
   setActivityModeFilter: (v: ExploreActivityModeFilter) => void;
-  setBuddySubtype: (v: ExploreBuddySubtypeKey) => void;
+  setOthersSubtype: (v: ExploreOthersSubtypeKey) => void;
   setOutingTopic: (v: ExploreOutingTopicKey) => void;
   setPinKind: (v: ExplorePinKindFilter) => void;
   setTopicPills: (v: ExploreMapFilterPillKey[]) => void;
@@ -65,7 +65,7 @@ export const applyExploreBrowseHydratedState = (
   setters.setGeoPath(state.geoPath);
   setters.setActivityDatePreset(state.activityDatePreset);
   setters.setActivityModeFilter(state.activityModeFilter);
-  setters.setBuddySubtype(state.buddySubtype);
+  setters.setOthersSubtype(state.othersSubtype);
   setters.setOutingTopic(state.outingTopic);
   setters.setPinKind(state.pinKind);
   setters.setTopicPills(state.topicPills);

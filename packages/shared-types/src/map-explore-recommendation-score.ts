@@ -18,7 +18,7 @@ export const MAP_EXPLORE_RECOMMEND_WEIGHTS = {
   activityParticipantCap: 8,
   activityParticipantStep: 3,
   activitySlotsOpen: 6,
-  activityBuddyBoost: 24,
+  friendOnOutingBoost: 24,
   activityWishlistPlace: 20,
   activityWishlistArea: 14,
   placeBase: 38,
@@ -62,7 +62,7 @@ export const applyMapExploreGeoBoost = (
 };
 
 export type MapExploreRecommendationBoosts = {
-  buddyOnOuting?: boolean;
+  friendOnOuting?: boolean;
   wishlistPlace?: boolean;
   wishlistArea?: boolean;
   featuredPlace?: boolean;
@@ -118,8 +118,8 @@ export const scoreMapExploreActivityCore = (input: {
     signals.push('spots_open');
   }
 
-  if (boosts?.buddyOnOuting) {
-    score += w.activityBuddyBoost;
+  if (boosts?.friendOnOuting) {
+    score += w.friendOnOutingBoost;
     signals.push('buddies_joining');
   }
   if (boosts?.wishlistPlace) {

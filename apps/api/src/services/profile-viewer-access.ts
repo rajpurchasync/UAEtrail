@@ -8,7 +8,7 @@ import {
   hostHasActiveJoinRequestFromUser,
 } from '../lib/activity-engagement-store.js';
 import { normalizeProfileVisibility, type ProfileVisibility } from '../lib/media-access.js';
-import { areAcceptedBuddies } from '../lib/buddy-store.js';
+import { areAcceptedFriends } from '../lib/friend-store.js';
 import { getOrSetRequestScoped } from '../lib/request-scope-cache.js';
 import { usersShareActiveGroup } from '../lib/social-groups-store.js';
 
@@ -16,7 +16,7 @@ export type ProfileViewerAccessLevel =
   | 'self'
   | 'public'
   | 'group_member'
-  | 'accepted_buddy'
+  | 'accepted_friend'
   | 'activity_participant'
   | 'host_of_activity'
   | 'platform_admin'
@@ -132,7 +132,7 @@ const resolveProfileViewerAccessCore = async (input: {
 
   const [sharesGroup, sharesBuddy, hostOfActivity, sharesAcceptedActivity] = await Promise.all([
     viewerUserId ? usersShareActiveGroup(viewerUserId, targetUserId) : Promise.resolve(false),
-    viewerUserId ? areAcceptedBuddies(viewerUserId, targetUserId) : Promise.resolve(false),
+    viewerUserId ? areAcceptedFriends(viewerUserId, targetUserId) : Promise.resolve(false),
     viewerUserId
       ? viewerIsHostOfTargetOnActivity(viewerUserId, targetUserId)
       : Promise.resolve(false),
@@ -179,7 +179,7 @@ const resolveProfileViewerAccessCore = async (input: {
 
   if (sharesBuddy) {
     return {
-      level: 'accepted_buddy',
+      level: 'accepted_friend',
       canViewFullProfile: true,
       sharesGroup,
       sharesAcceptedActivity,

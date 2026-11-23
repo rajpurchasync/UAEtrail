@@ -27,7 +27,7 @@ afterAll(async () => {
   await cleanupTestUsers();
 });
 
-describe('connections API — buddy requests', () => {
+describe('connections API — friend requests', () => {
   it('supports send, list, accept, relationship, and buddies list', async () => {
     const suffix = `conn-buddy-${Date.now()}`;
     const sender = await registerVerifiedVisitor(app, `${suffix}-from`);
@@ -36,7 +36,7 @@ describe('connections API — buddy requests', () => {
     expect(recipientUser).toBeTruthy();
 
     const sendRes = await request(app)
-      .post('/api/me/buddy-requests')
+      .post('/api/me/friend-requests')
       .set('Authorization', `Bearer ${sender.accessToken}`)
       .send({ targetUserId: recipientUser!._id, message: 'Trail buddies?' });
 
@@ -45,32 +45,32 @@ describe('connections API — buddy requests', () => {
     const requestId = sendRes.body.data.id as string;
 
     const incomingRes = await request(app)
-      .get('/api/me/buddy-requests?direction=incoming')
+      .get('/api/me/friend-requests?direction=incoming')
       .set('Authorization', `Bearer ${recipient.accessToken}`);
     expect(incomingRes.status).toBe(200);
     expect(incomingRes.body.data.some((row: { id: string }) => row.id === requestId)).toBe(true);
 
     const outgoingRes = await request(app)
-      .get('/api/me/buddy-requests?direction=outgoing')
+      .get('/api/me/friend-requests?direction=outgoing')
       .set('Authorization', `Bearer ${sender.accessToken}`);
     expect(outgoingRes.status).toBe(200);
     expect(outgoingRes.body.data.some((row: { id: string }) => row.id === requestId)).toBe(true);
 
     const relBefore = await request(app)
-      .get(`/api/me/buddy-relationship/${recipientUser!._id}`)
+      .get(`/api/me/friend-relationship/${recipientUser!._id}`)
       .set('Authorization', `Bearer ${sender.accessToken}`);
     expect(relBefore.status).toBe(200);
     expect(relBefore.body.data.outgoingRequest?.id).toBe(requestId);
     expect(relBefore.body.data.canSendRequest).toBe(false);
 
     const acceptRes = await request(app)
-      .post(`/api/me/buddy-requests/${requestId}/accept`)
+      .post(`/api/me/friend-requests/${requestId}/accept`)
       .set('Authorization', `Bearer ${recipient.accessToken}`);
     expect(acceptRes.status).toBe(200);
     expect(acceptRes.body.data.status).toBe('accepted');
 
     const buddiesRes = await request(app)
-      .get('/api/me/buddies')
+      .get('/api/me/friends')
       .set('Authorization', `Bearer ${sender.accessToken}`);
     expect(buddiesRes.status).toBe(200);
     expect(buddiesRes.body.data.some((row: { userId: string }) => row.userId === recipientUser!._id)).toBe(
@@ -100,36 +100,36 @@ describe('connections API — buddy requests', () => {
     expect(userB && userC).toBeTruthy();
 
     const toDecline = await request(app)
-      .post('/api/me/buddy-requests')
+      .post('/api/me/friend-requests')
       .set('Authorization', `Bearer ${a.accessToken}`)
       .send({ targetUserId: userB!._id });
     expect(toDecline.status).toBe(201);
 
     const declineRes = await request(app)
-      .post(`/api/me/buddy-requests/${toDecline.body.data.id}/decline`)
+      .post(`/api/me/friend-requests/${toDecline.body.data.id}/decline`)
       .set('Authorization', `Bearer ${b.accessToken}`);
     expect(declineRes.status).toBe(200);
     expect(declineRes.body.data.status).toBe('declined');
 
     const relAfterDecline = await request(app)
-      .get(`/api/me/buddy-relationship/${userB!._id}`)
+      .get(`/api/me/friend-relationship/${userB!._id}`)
       .set('Authorization', `Bearer ${a.accessToken}`);
     expect(relAfterDecline.body.data.canSendRequest).toBe(true);
 
     const toCancel = await request(app)
-      .post('/api/me/buddy-requests')
+      .post('/api/me/friend-requests')
       .set('Authorization', `Bearer ${a.accessToken}`)
       .send({ targetUserId: userC!._id });
     expect(toCancel.status).toBe(201);
 
     const cancelRes = await request(app)
-      .post(`/api/me/buddy-requests/${toCancel.body.data.id}/cancel`)
+      .post(`/api/me/friend-requests/${toCancel.body.data.id}/cancel`)
       .set('Authorization', `Bearer ${a.accessToken}`);
     expect(cancelRes.status).toBe(200);
     expect(cancelRes.body.data.status).toBe('cancelled');
 
     const wrongCancel = await request(app)
-      .post(`/api/me/buddy-requests/${toCancel.body.data.id}/cancel`)
+      .post(`/api/me/friend-requests/${toCancel.body.data.id}/cancel`)
       .set('Authorization', `Bearer ${c.accessToken}`);
     expect(wrongCancel.status).toBe(409);
   });
@@ -142,25 +142,25 @@ describe('connections API — buddy requests', () => {
     expect(userSecond).toBeTruthy();
 
     const initial = await request(app)
-      .post('/api/me/buddy-requests')
+      .post('/api/me/friend-requests')
       .set('Authorization', `Bearer ${first.accessToken}`)
       .send({ targetUserId: userSecond!._id });
     expect(initial.status).toBe(201);
 
     const reciprocal = await request(app)
-      .post('/api/me/buddy-requests')
+      .post('/api/me/friend-requests')
       .set('Authorization', `Bearer ${second.accessToken}`)
       .send({ targetUserId: (await findAuthUserByEmail(first.email))!._id });
     expect(reciprocal.status).toBe(200);
     expect(reciprocal.body.data.status).toBe('accepted');
 
     const unfriendRes = await request(app)
-      .post(`/api/me/buddies/${userSecond!._id}/unfriend`)
+      .post(`/api/me/friends/${userSecond!._id}/unfriend`)
       .set('Authorization', `Bearer ${first.accessToken}`);
     expect(unfriendRes.status).toBe(200);
   });
 
-  it('dispatches buddy request and accepted notifications with expected meta', async () => {
+  it('dispatches friend request and accepted notifications with expected meta', async () => {
     const suffix = `conn-buddy-notif-${Date.now()}`;
     const sender = await registerVerifiedVisitor(app, `${suffix}-from`);
     const recipient = await registerVerifiedVisitor(app, `${suffix}-to`);
@@ -169,25 +169,25 @@ describe('connections API — buddy requests', () => {
     expect(senderUser && recipientUser).toBeTruthy();
 
     const sendRes = await request(app)
-      .post('/api/me/buddy-requests')
+      .post('/api/me/friend-requests')
       .set('Authorization', `Bearer ${sender.accessToken}`)
       .send({ targetUserId: recipientUser!._id });
     expect(sendRes.status).toBe(201);
     const requestId = sendRes.body.data.id as string;
 
     const recipientNotifs = await listNotifications(recipient.accessToken);
-    const requestNotifs = recipientNotifs.filter((n) => n.meta?.kind === 'connection_buddy_request');
+    const requestNotifs = recipientNotifs.filter((n) => n.meta?.kind === 'connection_friend_request');
     expect(requestNotifs.length).toBe(1);
     expect(requestNotifs[0]?.meta?.requestId).toBe(requestId);
     expect(requestNotifs[0]?.meta?.actorUserId).toBe(senderUser!._id);
 
     const acceptRes = await request(app)
-      .post(`/api/me/buddy-requests/${requestId}/accept`)
+      .post(`/api/me/friend-requests/${requestId}/accept`)
       .set('Authorization', `Bearer ${recipient.accessToken}`);
     expect(acceptRes.status).toBe(200);
 
     const senderNotifs = await listNotifications(sender.accessToken);
-    const acceptedNotifs = senderNotifs.filter((n) => n.meta?.kind === 'connection_buddy_accepted');
+    const acceptedNotifs = senderNotifs.filter((n) => n.meta?.kind === 'connection_friend_accepted');
     expect(acceptedNotifs.length).toBe(1);
     expect(acceptedNotifs[0]?.meta?.requestId).toBe(requestId);
     expect(acceptedNotifs[0]?.meta?.actorUserId).toBe(recipientUser!._id);
@@ -242,14 +242,14 @@ describe('connections API — groups', () => {
     const createRes = await request(app)
       .post('/api/me/groups')
       .set('Authorization', `Bearer ${admin.accessToken}`)
-      .send({ type: 'friends', name: `Leave test ${suffix}` });
+      .send({ type: 'friends', name: `Leave ${suffix.slice(-12)}` });
     expect(createRes.status).toBe(201);
     const groupId = createRes.body.data.id as string;
 
     const inviteRes = await request(app)
       .post(`/api/me/groups/${groupId}/invites`)
       .set('Authorization', `Bearer ${admin.accessToken}`)
-      .send({ email: member.email, role: 'buddy' });
+      .send({ email: member.email, role: 'member' });
     expect(inviteRes.status).toBe(201);
 
     const acceptRes = await request(app)

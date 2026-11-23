@@ -1,11 +1,11 @@
 import type {
-  BuddyActivityPresenceDTO,
-  BuddyActivityPresenceRowDTO,
-  BuddySummaryDTO,
+  FriendActivityPresenceDTO,
+  FriendActivityPresenceRowDTO,
+  FriendSummaryDTO,
   ExploreActivityRefDTO,
   ExploreMapItemDTO,
 } from '@uaetrail/shared-types';
-import { listBuddiesForUser } from '../lib/buddy-store.js';
+import { listFriendsForUser } from '../lib/friend-store.js';
 import {
   matchesExploreActivityDateFilter,
   parseExploreActivityDatePreset,
@@ -27,19 +27,19 @@ const toActivityRef = (item: ExploreMapItemDTO): ExploreActivityRefDTO => ({
   title: item.title ?? item.activity?.title ?? 'Outing',
 });
 
-/** Accepted buddies × explore map activities visible to the viewer. */
-export const buildBuddyActivityPresenceRows = (
-  buddies: BuddySummaryDTO[],
+/** Friends × explore map activities visible to the viewer. */
+export const buildFriendActivityPresenceRows = (
+  friends: FriendSummaryDTO[],
   mapItems: ExploreMapItemDTO[],
   datePreset: ExploreActivityDatePreset
-): BuddyActivityPresenceRowDTO[] => {
+): FriendActivityPresenceRowDTO[] => {
   const visibleActivities = mapItems
     .filter((item) => item.source === 'activity' && item.activity)
     .filter((item) => matchesExploreActivityDateFilter(item, datePreset))
     .filter((item) => item.viewerAccess?.exposure !== 'none');
 
-  return buddies.map((buddy) => {
-    const memberUserId = buddy.userId;
+  return friends.map((friend) => {
+    const memberUserId = friend.userId;
     const hostingItem =
       visibleActivities.find((item) => activityHostUserId(item) === memberUserId) ?? null;
     const joiningItem =
@@ -48,27 +48,27 @@ export const buildBuddyActivityPresenceRows = (
       ) ?? null;
 
     return {
-      buddy,
+      friend,
       hosting: hostingItem ? toActivityRef(hostingItem) : null,
       joining: joiningItem ? toActivityRef(joiningItem) : null,
     };
   });
 };
 
-export const loadBuddyActivityPresence = async (input: {
+export const loadFriendActivityPresence = async (input: {
   viewerUserId: string;
   userRole?: string | null;
   datePresetRaw?: string | null;
-}): Promise<BuddyActivityPresenceDTO> => {
+}): Promise<FriendActivityPresenceDTO> => {
   const datePreset = parseExploreActivityDatePreset(input.datePresetRaw);
   const [buddies, mapItems] = await Promise.all([
-    listBuddiesForUser(input.viewerUserId),
+    listFriendsForUser(input.viewerUserId),
     loadExploreMapItemsForMemberEngagement({
       viewerUserId: input.viewerUserId,
       userRole: input.userRole,
     }),
   ]);
 
-  const rows = buildBuddyActivityPresenceRows(buddies, mapItems, datePreset);
+  const rows = buildFriendActivityPresenceRows(buddies, mapItems, datePreset);
   return { rows };
 };

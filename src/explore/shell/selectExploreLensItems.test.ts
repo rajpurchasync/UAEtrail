@@ -17,7 +17,7 @@ describe('selectExploreLensItems', () => {
       placeMapTopics: [],
       venueRegions: [],
       activityDatePreset: 'anyday',
-      buddySubtype: 'all',
+      othersSubtype: 'all',
       outingTopic: 'all',
       activityModeFilter: 'all',
     });
@@ -38,7 +38,7 @@ describe('selectExploreLensItems', () => {
       placeMapTopics: [],
       venueRegions: [],
       activityDatePreset: 'anyday',
-      buddySubtype: 'all',
+      othersSubtype: 'all',
       outingTopic: 'all',
       activityModeFilter: 'all',
     });

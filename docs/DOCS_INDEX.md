@@ -4,6 +4,19 @@
 
 **Checks:** `npm run verify:system` · **Manifest:** `scripts/governance/bounded-context-manifest.json` · **Generated map:** `npm run context:map` → `scripts/dev/context-map.md` · **Program / ops:** [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) **§8.6** (eng migrations closed; staging gates in [`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md)). UPL: `src/content/upl-glossary.ts` · BWL: `packages/shared-types/src/wire-lexicon.ts`. Do not implement from `docs/archive/**` or experiment plan bodies.
 
+### Agent / developer — read this, not the whole corpus
+
+| Step | Source | Skip |
+|------|--------|------|
+| Product voice & outcomes | `NORTHSTAR.md`, `src/content/productNorthStar.ts` | Marketing essays in archive |
+| Where code lives | `bounded-context-manifest.json`, `SYSTEM_COHERENCE.md` **§3 only** | §8 migration history unless you own a MIG |
+| Routes & URLs | `NAVIGATION.md`, `routingCatalog.ts`, `wire-lexicon.ts` | Old redirect tables unless editing redirects |
+| HTTP handlers | `API_ROUTING.md` + `apps/api/src/routes/*` | Duplicating paths in new markdown |
+| Names & DTOs | `DOMAIN_CANONICALS.md` §6–12, §15 | Full entity glossary in `DOMAIN.md` unless entity work |
+| Drift check | `npm run verify:system:quick` | Reading every guard test by hand |
+
+**Truth order:** wire-lexicon → manifest → guards/tests → running code → Tier-1 factual deltas (see `DOCS_GOVERNANCE.md`).
+
 ---
 
 ## Tier 1 — canonical (product & platform)
@@ -21,7 +34,6 @@
 | [`ARCHITECTURE.md`](./ARCHITECTURE.md) | Monorepo, deploy, layers |
 | [`API_ROUTING.md`](./API_ROUTING.md) | `/me/*`, `/publishing/*`, explore, deprecations |
 | [`COMMUNICATION.md`](./COMMUNICATION.md) | Chat inbox (`/messages`), `/chat/*` wire, crew wall |
-| [`COMMUNICATION.md`](./COMMUNICATION.md) | Chat, inbox, crew wall |
 **Vocabulary:** [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md) § Terminology spine — UPL/BWL in code; Tier-1 for routes and entities.
 
 ---

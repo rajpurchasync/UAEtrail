@@ -1,11 +1,11 @@
-/** Member coordination signals (join queues, buddy requests, invites) — not seeking map posts. */
+/** Member coordination signals (join queues, friend requests, invites) — not seeking map posts. */
 export const MEMBER_COORDINATION_ATTENTION_KINDS = [
   'host_join_queue',
   'join_request_withdrawn',
   'joiner_pending_host',
   'join_request_rejected',
   'participant_revoked',
-  'buddy_request_incoming',
+  'friend_request_incoming',
   'activity_join_invite',
 ] as const;
 

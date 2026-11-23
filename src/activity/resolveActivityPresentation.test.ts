@@ -142,11 +142,11 @@ describe('filterActivityMapPeekActionsForViewer', () => {
         entitlements: {
           isProMember: true,
           canViewHostProfileBeforeJoin: true,
-          canViewFullBuddyRoster: false,
+          canViewFullFriendRoster: false,
           canOfferTransport: false,
           canAddLinkedRide: false,
           canMessageHostBeforeJoin: true,
-          buddyUserIdsOnActivity: [],
+          friendUserIdsOnActivity: [],
         },
       }
     );

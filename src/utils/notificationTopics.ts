@@ -18,8 +18,8 @@ export const inferNotificationTopic = (notif: NotificationDTO): Exclude<Notifica
   if (isMessagingNotification(notif)) return 'social';
 
   if (
-    kind === 'connection_buddy_request' ||
-    kind === 'connection_buddy_accepted' ||
+    kind === 'connection_friend_request' ||
+    kind === 'connection_friend_accepted' ||
     kind === 'connection_member_followed' ||
     kind === 'group_invite' ||
     kind === 'group_invite_accepted' ||
@@ -59,8 +59,7 @@ export const inferNotificationTopic = (notif: NotificationDTO): Exclude<Notifica
     kind === 'activity_participant_revoked' ||
     kind.startsWith('demand_join') ||
     kind === 'member_published' ||
-    kind === 'friend_published' ||
-    kind === 'friend_activity_published' ||
+    kind === 'member_activity_published' ||
     kind === 'schedule_change' ||
     kind.startsWith('goal_') ||
     notif.type === 'activity' ||

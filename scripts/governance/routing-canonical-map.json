@@ -45,9 +45,9 @@
       "feDomain": "explore.ts"
     },
     "social_graph": {
-      "spa": ["/buddies", "/groups"],
-      "api": ["/me/buddies", "/me/buddy-requests", "/me/groups", "/me/following"],
-      "feDomain": "buddies.ts"
+      "spa": ["/crews", "/groups"],
+      "api": ["/me/friends", "/me/friend-requests", "/me/groups", "/me/following"],
+      "feDomain": "friends.ts"
     },
     "engagement": {
       "spa": [],

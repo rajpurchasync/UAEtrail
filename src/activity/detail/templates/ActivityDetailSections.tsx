@@ -203,8 +203,8 @@ export const ActivityDetailSections = ({
             rosterParticipants={
               participantSlot === 'roster' ? model.rosterParticipants : rosterPreview
             }
-            buddyUserIdsOnActivity={
-              model.viewerAccess?.entitlements?.buddyUserIdsOnActivity ?? []
+            friendUserIdsOnActivity={
+              model.viewerAccess?.entitlements?.friendUserIdsOnActivity ?? []
             }
             crewPath={
               isHostViewer || canOpenParticipantRoster ? activityCrewPath(model.activity.id) : null
@@ -547,18 +547,18 @@ const ActivityDetailVenueLead = ({
 const ActivityDetailSocialRow = ({
   activity,
   rosterParticipants,
-  buddyUserIdsOnActivity = [],
+  friendUserIdsOnActivity = [],
   crewPath = null,
   pendingReviewCount = 0,
 }: {
   activity: ActivityDetailDTO;
   rosterParticipants: NonNullable<ActivityDetailDTO['participants']>;
-  buddyUserIdsOnActivity?: string[];
+  friendUserIdsOnActivity?: string[];
   crewPath?: string | null;
   pendingReviewCount?: number;
 }) => {
   const countLabel = activityDetailParticipantCountLabel(activity);
-  const friendsGoingLabel = activityDetailFriendsGoingLabel(buddyUserIdsOnActivity);
+  const friendsGoingLabel = activityDetailFriendsGoingLabel(friendUserIdsOnActivity);
   const pendingLabel =
     pendingReviewCount > 0 ? activityCrewPendingReviewLabel(pendingReviewCount) : null;
   const rosterAriaLabel = [countLabel, friendsGoingLabel, pendingLabel, "view who's going"]

@@ -109,7 +109,7 @@ describe('access management', () => {
     const inviteRes = await request(app)
       .post(`/api/me/groups/${groupId}/invites`)
       .set('Authorization', `Bearer ${admin.accessToken}`)
-      .send({ email: member.email, role: 'buddy' });
+      .send({ email: member.email, role: 'member' });
     expect(inviteRes.status).toBe(201);
 
     const acceptRes = await request(app)

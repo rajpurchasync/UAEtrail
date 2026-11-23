@@ -51,7 +51,7 @@ export type CrewBrowseTabContentProps = {
   exploreCatalogLoading: boolean;
   onOpenAvailabilityCatalogItem: (item: ExploreMapItemDTO) => void;
   onOfferRideshareForAvailabilityItem?: (item: ExploreMapItemDTO) => void;
-  buddyUserIds?: Set<string>;
+  friendUserIds?: Set<string>;
   /** Crews list — filter Available combined lanes. */
   crewsOpenLens?: CrewsAvailableOpenLens;
   /** Calendar availability rows — intent `guide` kind filter. */
@@ -89,7 +89,7 @@ export const CrewBrowseTabContent = ({
   exploreCatalogLoading,
   onOpenAvailabilityCatalogItem,
   onOfferRideshareForAvailabilityItem,
-  buddyUserIds,
+  friendUserIds,
   crewsOpenLens = 'all',
   availabilityGuideFilter = 'all',
   onOpenAvailability,
@@ -110,7 +110,7 @@ export const CrewBrowseTabContent = ({
           loading={exploreCatalogLoading}
           onOpenAvailabilityCatalogItem={onOpenAvailabilityCatalogItem}
           onOfferRideshareForAvailabilityItem={onOfferRideshareForAvailabilityItem}
-          buddyUserIds={buddyUserIds}
+          friendUserIds={friendUserIds}
         />
       ) : null;
 

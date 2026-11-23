@@ -89,4 +89,32 @@ export const resolveMemberGroupShape = (row: {
   };
 };
 
+export const MEMBER_GROUP_INBOUND_LABELS: Record<MemberGroupInboundType, string> = {
+  family: 'Family',
+  friends: 'Friends',
+  colleagues: 'Colleagues',
+  activity: 'Outing crew chat',
+  outing_crew: 'Outing crew chat',
+};
+
+export const memberGroupInboundTypeLabel = (type: string): string =>
+  (MEMBER_GROUP_INBOUND_TYPES as readonly string[]).includes(type)
+    ? MEMBER_GROUP_INBOUND_LABELS[type as MemberGroupInboundType]
+    : 'Team';
+
+export const memberGroupRowLabel = (row: {
+  kind?: MemberGroupKind | string | null;
+  teamLabel?: SocialTeamLabelType | null;
+  type: string;
+}): string => {
+  if (isOutingCrewGroupRow(row)) return MEMBER_GROUP_INBOUND_LABELS.outing_crew;
+  return memberGroupInboundTypeLabel(resolveMemberGroupShape(row).inboundType);
+};
+
+/** Persisted team row — not an outing crew chat. */
+export const isMemberGroupTeamRow = (row: {
+  kind?: MemberGroupKind | string | null;
+  type?: string | null;
+}): boolean => !isOutingCrewGroupRow(row);
+
 export { SOCIAL_TEAM_LABEL_TYPES, type SocialTeamLabelType };

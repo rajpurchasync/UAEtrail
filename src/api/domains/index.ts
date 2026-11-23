@@ -22,7 +22,7 @@ export { activitiesApi } from './activities';
 export { accountApi } from './account';
 export { crewDiscoverApi } from './crewDiscover';
 export { discoverRecommendationsApi } from './discoverRecommendations';
-export { buddiesApi } from './buddies';
+export { friendsApi } from './friends';
 export { groupsApi } from './groups';
 export { wishlistApi } from './wishlist';
 export { entityFollowApi } from './entityFollow';

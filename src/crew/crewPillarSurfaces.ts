@@ -5,7 +5,7 @@ import { exploreCrewsPath } from '../config/routingCatalog';
 
 /**
  * FE routing anchors per crew pillar — use for nav, guards, and copy context.
- * Wire/API names stay in domain modules (`buddiesApi`, `member_availability`, …).
+ * Wire/API names stay in domain modules (`friendsApi`, `member_availability`, …).
  */
 export const CREW_PILLAR_SURFACE_PATH: Partial<Record<CrewPillarId, string>> = {
   friends: MY_CREWS_PATH,

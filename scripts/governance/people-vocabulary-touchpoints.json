@@ -113,9 +113,9 @@
       "id": "P7-wire-cleanup",
       "status": "complete",
       "deliverables": [
-        "Single buddies wire GET /me/buddies",
-        "fetchMeBuddies in invite client",
-        "Removed /me/friends alias + friendsApi facade"
+        "Canonical friends wire GET /me/friends",
+        "fetchMeFriends in invite client",
+        "Removed GET /me/friends"
       ]
     }
   ],
@@ -126,7 +126,7 @@
     "intent_guide_kind": "member_availability.kinds includes guide — product label Guide on Available rows.",
     "guides_operators_ui": "Professional tab — profileRoleLabel; crewsGuides rail.",
     "directory_ui": "People tab Everyone — connect lane; not friends mutual graph; not Professional.",
-    "buddy_wire": "HTTP /me/buddies, segment=buddies — UI says Friends.",
+    "friends_wire": "HTTP /me/friends, segment=friends — UI Friends.",
     "intent_compose": "?compose=intent:open|intent:fixed:* → PUT /me/availability.",
     "wishlist_engagement": "POST /me/wishlist on /plan — never compose wire."
   },
@@ -138,7 +138,7 @@
       "route": "/crews",
       "feRoots": ["src/pages/MyCrews.tsx", "src/components/social/SocialHubIndex.tsx"],
       "uiLabels": ["PRODUCT_MY_CREW_SURFACE_TITLE", "PRODUCT_FRIENDS_SURFACE_LABEL"],
-      "wire": ["/me/buddies", "/me/buddy-requests", "/me/following"],
+      "wire": ["/me/friends", "/me/friend-requests", "/me/following"],
       "mustNot": ["Primary render of member-discovery browse/directory roster"]
     },
     {
@@ -170,7 +170,7 @@
       "route": "/chat",
       "feRoots": ["src/pages/Messages.tsx", "src/messaging", "src/utils/notificationRouting.ts"],
       "uiLabels": ["Chat"],
-      "wire": ["/chat", "chat_messages", "chat-policy eligibility via buddy graph"]
+      "wire": ["/chat", "chat_messages", "chat-policy eligibility via friends graph"]
     },
     {
       "id": "surface.guides_directory",
@@ -203,7 +203,7 @@
         "src/hooks/activityInviteClientApi.ts"
       ],
       "uiLabels": ["Friends", "Invite friends"],
-      "wire": ["/activities/:id/invites", "GET /me/buddies"]
+      "wire": ["/activities/:id/invites", "GET /me/friends"]
     },
     {
       "id": "member.public_profile",
@@ -214,7 +214,7 @@
         "src/components/profile/MemberProfileFriendActions.tsx"
       ],
       "uiLabels": ["Add friend", "Friends"],
-      "wire": ["/me/buddies/requests", "member-profile-social-graph"]
+      "wire": ["/me/friend-requests", "member-profile-social-graph"]
     },
     {
       "id": "compose.intent",
@@ -243,7 +243,7 @@
       "matrixRows": ["C-09"],
       "contextIds": ["communication", "social_graph", "participation"],
       "feRoots": ["src/utils/notificationRouting.ts", "src/utils/notificationTopics.ts"],
-      "wire": ["notification-meta buddy_request → /crews"]
+      "wire": ["notification-meta connection_friend_request → /crews"]
     }
   ]
 }

@@ -38,8 +38,8 @@ type HostingPublishSuccessSheetProps = {
   onRideshareLinked: () => void;
   onRideshareLinkError: (message: string) => void;
   onViewOnMap: () => void;
-  /** Buddy from Social “Host an outing” — pre-select on post-publish invite. */
-  planWithBuddyUserId?: string | null;
+  /** Friend from Social “Host an outing” — pre-select on post-publish invite. */
+  planWithFriendUserId?: string | null;
 };
 
 const SuccessDetailRow = ({ label, value }: { label: string; value: string }) => (
@@ -66,7 +66,7 @@ export const HostingPublishSuccessSheet = ({
   onRideshareLinked,
   onRideshareLinkError,
   onViewOnMap,
-  planWithBuddyUserId = null,
+  planWithFriendUserId = null,
 }: HostingPublishSuccessSheetProps) => {
   const { user } = useAuth();
   const shareSheet = useShareSheet();
@@ -98,7 +98,7 @@ export const HostingPublishSuccessSheet = ({
 
   const handleShare = () => {
     shareSheet.openShareFromActivity(publishedActivity, {
-      canSendBuddyInvites: Boolean(user),
+      canSendFriendInvites: Boolean(user),
     });
   };
 
@@ -160,12 +160,12 @@ export const HostingPublishSuccessSheet = ({
           </p>
         ) : null}
 
-        {planWithBuddyUserId ? (
+        {planWithFriendUserId ? (
           <div className="mt-4 min-w-0">
             <ActivityInviteLauncher
               activity={activityShareInputFromActivity(publishedActivity)}
-              canSendBuddyInvites
-              initialSelectedBuddyIds={[planWithBuddyUserId]}
+              canSendFriendInvites
+              initialSelectedFriendIds={[planWithFriendUserId]}
               defaultOpen
             />
           </div>

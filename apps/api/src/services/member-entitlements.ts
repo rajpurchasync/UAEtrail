@@ -14,7 +14,7 @@ import { isConsumerProMember } from '../lib/consumer-pro-membership.js';
 export type ActivityViewEntitlementActivityContext = {
   hostUserId: string | null;
   isFriendOfHost: boolean;
-  buddyUserIdsOnActivity: string[];
+  friendUserIdsOnActivity: string[];
 };
 
 /** Passed to `composeActivityViewerAccess` — loaded inside the composer when viewer is signed in. */
@@ -44,7 +44,7 @@ export const applyActivityViewEntitlements = (
     isFriendOfHost: activityCtx?.isFriendOfHost ?? false,
     level: socialAccess.level,
     canAccessCrewSurfaces: socialAccess.canAccessCrewSurfaces,
-    buddyUserIdsOnActivity: activityCtx?.buddyUserIdsOnActivity ?? [],
+    friendUserIdsOnActivity: activityCtx?.friendUserIdsOnActivity ?? [],
   });
 
   const mapPeekActions =

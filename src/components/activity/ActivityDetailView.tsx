@@ -237,7 +237,7 @@ export const ActivityDetailView = ({
         text={model.sharePayload.text}
         path={model.sharePayload.path}
         activityShare={activityShareInputFromActivity(activity)}
-        canSendBuddyInvites={Boolean(user && canSendJoinInvites)}
+        canSendFriendInvites={Boolean(user && canSendJoinInvites)}
         iconOnly
         light
       />

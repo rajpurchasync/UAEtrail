@@ -41,7 +41,7 @@ export type CreateFlowBridge = {
   /** Fixed availability map post (`availability:fixed`) submitted — reload browse surfaces. */
   onAvailabilityFixedSubmitted?: (result: AvailabilityFixedSubmitResult) => void;
   onAddSubmitted?: (result: AddSubmitResult) => void;
-  planWithBuddyUserId?: string | null;
+  planWithFriendUserId?: string | null;
   composeAreaSlug?: string | null;
   facilityOnPlaceId?: string | null;
   tenantId?: string | null;
@@ -93,7 +93,7 @@ export const CreateFlowProvider = ({ children }: { children: ReactNode }) => {
       prev?.tenantId !== next?.tenantId ||
       prev?.composeAreaSlug !== next?.composeAreaSlug ||
       prev?.facilityOnPlaceId !== next?.facilityOnPlaceId ||
-      prev?.planWithBuddyUserId !== next?.planWithBuddyUserId
+      prev?.planWithFriendUserId !== next?.planWithFriendUserId
     ) {
       setBridgeGeneration((n) => n + 1);
     }
@@ -196,7 +196,7 @@ export const CreateFlowProvider = ({ children }: { children: ReactNode }) => {
         }}
         onCreateLinkedRideshare={bridge?.onCreateLinkedRideshare}
         tenantId={bridge?.tenantId ?? tenantId}
-        planWithBuddyUserId={bridge?.planWithBuddyUserId ?? parsePlanWithUserId(searchParams)}
+        planWithFriendUserId={bridge?.planWithFriendUserId ?? parsePlanWithUserId(searchParams)}
         composeAreaSlug={bridge?.composeAreaSlug ?? parseExploreAreaSlug(searchParams)}
         intentOpenCapacityParam={searchParams.get('capacity')}
         facilityOnPlaceId={bridge?.facilityOnPlaceId ?? parseFacilityOnPlaceId(searchParams)}

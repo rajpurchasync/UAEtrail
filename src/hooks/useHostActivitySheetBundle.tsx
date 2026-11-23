@@ -23,7 +23,7 @@ export const useHostActivitySheetBundle = (input: {
   const shareHostedActivity = useCallback(
     (activity: ActivityDTO) => {
       if (activity.status !== 'published') return;
-      inviteShare.openShareFromActivity(activity, { canSendBuddyInvites: true });
+      inviteShare.openShareFromActivity(activity, { canSendFriendInvites: true });
     },
     [inviteShare]
   );
@@ -39,7 +39,7 @@ export const useHostActivitySheetBundle = (input: {
       onOpenHostManage: input.tenantId ? openHostDesk : undefined,
       onInviteCrew: (activity: ActivityDTO) => {
         if (activity.status !== 'published') return;
-        inviteShare.openShareFromActivity(activity, { canSendBuddyInvites: true });
+        inviteShare.openShareFromActivity(activity, { canSendFriendInvites: true });
       },
       onCreateLinkedRideshare,
     }),

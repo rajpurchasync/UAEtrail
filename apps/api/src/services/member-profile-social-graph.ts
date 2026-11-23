@@ -8,10 +8,10 @@ import {
 import { ApiError } from '../lib/api-error.js';
 import { findAuthUserById, type AuthUserRecord } from '../lib/auth-users-store.js';
 import {
-  countBuddyPairsForUser,
-  listBuddiesForUser,
+  countFriendPairsForUser,
+  listFriendsForUser,
   listMutualBuddiesBetween,
-} from '../lib/buddy-store.js';
+} from '../lib/friend-store.js';
 import { listCommonFollowingBetween } from '../lib/follow-store.js';
 import { resolveFindCrewViewerRelation } from '../lib/find-crew-visibility-gate.js';
 import { normalizeProfileVisibility } from '../lib/media-access.js';
@@ -127,8 +127,8 @@ export const loadMemberProfileSocialGraph = async (input: {
   if (parts.friends) {
     if (context.friendsListVisibility === 'full') {
       const [buddyRows, totalBuddies] = await Promise.all([
-        listBuddiesForUser(context.targetUserId, FRIENDS_LIST_CAP),
-        countBuddyPairsForUser(context.targetUserId),
+        listFriendsForUser(context.targetUserId, FRIENDS_LIST_CAP),
+        countFriendPairsForUser(context.targetUserId),
       ]);
       friends = buddyRows;
       mutualFriendsCount = totalBuddies;
@@ -142,8 +142,8 @@ export const loadMemberProfileSocialGraph = async (input: {
       mutualFriendsCount = mutual.totalMutual;
     } else if (context.isSelf) {
       const [buddyRows, totalBuddies] = await Promise.all([
-        listBuddiesForUser(context.targetUserId, FRIENDS_LIST_CAP),
-        countBuddyPairsForUser(context.targetUserId),
+        listFriendsForUser(context.targetUserId, FRIENDS_LIST_CAP),
+        countFriendPairsForUser(context.targetUserId),
       ]);
       friends = buddyRows;
       mutualFriendsCount = totalBuddies;

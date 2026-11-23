@@ -47,7 +47,7 @@ type CrewsTabBodyProps = {
   onOpenAvailabilityCatalogItem: (item: ExploreMapItemDTO) => void;
   onOfferRideshareForAvailabilityItem?: (item: ExploreMapItemDTO) => void;
   onOpenAvailability: () => void;
-  buddyUserIds?: Set<string>;
+  friendUserIds?: Set<string>;
   crewRecommendationsQuery: DiscoverCrewRecommendationsQueryParams;
 };
 
@@ -75,7 +75,7 @@ export const CrewsTabBody = ({
   onOpenAvailabilityCatalogItem,
   onOfferRideshareForAvailabilityItem,
   onOpenAvailability,
-  buddyUserIds,
+  friendUserIds,
   crewRecommendationsQuery,
 }: CrewsTabBodyProps) => {
   const activeLane = normalizeCrewBrowseLaneForProduct(lane);
@@ -105,7 +105,7 @@ export const CrewsTabBody = ({
     exploreCatalogLoading,
     onOpenAvailabilityCatalogItem,
     onOfferRideshareForAvailabilityItem,
-    buddyUserIds,
+    friendUserIds,
     availabilityPeople,
     availabilityLoading,
     availabilityError,

@@ -7,7 +7,6 @@ import {
   availabilityFixedVisibleOnMap,
   validateAvailabilityPublishArea,
   validateHostingPlaceArea,
-  validateHostingPublishArea,
 } from './hostingPublishArea';
 
 const HATTA_AREA_ID = curatedAreaSeedId('hatta');
@@ -138,14 +137,11 @@ describe('validateHostingPlaceArea', () => {
       toLongitude: 55.2,
     };
     expect(validateHostingPlaceArea(draft, [])).toBeNull();
-    expect(validateHostingPublishArea(draft)).toBeNull();
   });
-});
 
-describe('validateHostingPublishArea (legacy shim)', () => {
-  it('requires registry place id for public outings', () => {
+  it('requires registry place id for public outings without area on draft', () => {
     const draft = { ...emptyCreateActivityDraft(), kind: 'hiking' as const, joinMode: 'open' as const };
-    expect(validateHostingPublishArea(draft)).toMatch(/listed trail/);
+    expect(validateHostingPlaceArea(draft, [])).toMatch(/listed trail/);
   });
 });
 

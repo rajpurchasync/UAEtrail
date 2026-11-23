@@ -19,7 +19,7 @@ import {
 import { addAdminTenantTeamMember, removeAdminTenantTeamMember } from '../../hooks/adminConsoleApi';
 import { AppSelect, ADMIN_FILTER_SELECT_CLASS, ADMIN_INPUT_CLASS } from '../ui/AppSelect';
 import { AdminIconButton } from './AdminIconButton';
-import { USER_TYPE_BADGE, USER_TYPE_LABELS } from '../../constants/userTypes';
+import { MEMBER_TYPE_BADGE, MEMBER_TYPE_LABELS } from '../../constants/userTypes';
 import { formatActivityType } from '../../utils/activityIdentity';
 import { activityHostName } from '../../utils/hostLabels';
 import { tenantBrandPublicPath } from '../../utils/organisationLinks';
@@ -105,8 +105,8 @@ const statusBadge = (status: string) => {
 const typeBadge = (userType?: AdminUserType) => {
   const key = userType ?? 'participant';
   return (
-    <span className={`px-2 py-0.5 rounded text-xs font-medium ${USER_TYPE_BADGE[key]}`}>
-      {USER_TYPE_LABELS[key]}
+    <span className={`px-2 py-0.5 rounded text-xs font-medium ${MEMBER_TYPE_BADGE[key]}`}>
+      {MEMBER_TYPE_LABELS[key]}
     </span>
   );
 };

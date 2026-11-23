@@ -1,7 +1,7 @@
 import type { ActivityListFilterKey, ExploreActivityDatePreset, ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
 import type { ExploreMapFilterPillKey, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
-import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
+import type { ExploreOthersSubtypeKey } from '../exploreOthersSubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
 import type { ExplorePinKindFilter } from '../explorePinKindFilter';
 import type { ExploreBrowseListMode } from '../exploreBrowseUrlSync';
@@ -35,7 +35,7 @@ export type ExploreBrowseUrlPublicApiContext = {
   activityModeFilter: ExploreActivityModeFilter;
   syncExploreUrl: (patch: import('../exploreBrowseUrlSync').ExploreBrowseUrlSyncPatch) => void;
   browseOpen: boolean;
-  buddySubtype: ExploreBuddySubtypeKey;
+  othersSubtype: ExploreOthersSubtypeKey;
   outingTopic: ExploreOutingTopicKey;
   searchScope: ExploreSearchScopeKey | null;
   pinKind: ExplorePinKindFilter;
@@ -100,7 +100,7 @@ export const buildExploreBrowseUrlPublicApi = (ctx: ExploreBrowseUrlPublicApiCon
   placesMode: ctx.placesMode,
   applyVenueRegions: ctx.handlers.applyVenueRegions,
   applyGeoPath: ctx.handlers.applyGeoPath,
-  buddySubtype: ctx.buddySubtype,
+  othersSubtype: ctx.othersSubtype,
   applyBuddySubtype: ctx.handlers.applyBuddySubtype,
   outingTopic: ctx.outingTopic,
   applyOutingTopic: ctx.handlers.applyOutingTopic,
@@ -118,9 +118,6 @@ export const buildExploreBrowseUrlPublicApi = (ctx: ExploreBrowseUrlPublicApiCon
   crewPeopleFacet: ctx.crewPeopleFacet,
   applyCrewBrowseLane: ctx.handlers.applyCrewBrowseLane,
   applyCrewPeopleFacet: ctx.handlers.applyCrewPeopleFacet,
-  /** @deprecated Use applyCrewBrowseLane */
-  crewBrowseTab: ctx.crewBrowseLane,
-  applyCrewBrowseTab: ctx.handlers.applyCrewBrowseLane,
   listMode: ctx.listMode,
   crewsBrowseOpen: ctx.crewsBrowseOpen,
   tripMapTopics: ctx.tripMapTopics,

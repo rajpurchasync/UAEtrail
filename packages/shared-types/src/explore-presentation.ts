@@ -63,9 +63,6 @@ export type DiscoveryCardBuildInput = {
   title: string;
   subtitle?: string | null;
   featuredPerson?: ExploreMapPersonDTO | null;
-  hostName?: string | null;
-  hostAvatar?: string | null;
-  requesterUserId?: string | null;
   date?: string | null;
   time?: string | null;
   endDate?: string | null;
@@ -246,6 +243,7 @@ interface ExploreHeadlineInput extends ExploreFeaturedPersonInput {
   isSeekingPin?: boolean;
   kind: DiscoveryCardKind;
   title: string;
+  /** Headline builder only — map wire uses `activity` + `featuredPerson`. */
   hostName?: string | null;
   tenantName?: string | null;
   location?: string | null;
@@ -681,7 +679,7 @@ const buildExploreListGoingLabel = (
 
 const exploreHostLabel = (input: ExploreHeadlineInput): string =>
   resolveExploreHostLabel({
-    hostName: input.hostName,
+    hostName: input.activity?.hostName ?? input.hostName ?? null,
     participantName: input.participantName,
     tenantName: input.tenantName,
   });
@@ -692,7 +690,7 @@ const resolveHeadlinePerson = (input: ExploreHeadlineInput): ExploreMapPersonDTO
 const activityActorNameInput = (input: ExploreHeadlineInput) => ({
   publishingProfileKind: input.activity?.publishingProfileKind,
   tenantName: input.activity?.tenantName ?? input.tenantName,
-  hostName: input.activity?.hostName ?? input.hostName,
+  hostName: input.activity?.hostName ?? input.hostName ?? null,
   createdByName: input.activity?.createdByName,
   featuredPerson: resolveHeadlinePerson(input),
 });
@@ -702,7 +700,7 @@ const seekingPersonLabel = (input: ExploreHeadlineInput, form: 'peek' | 'headlin
   if (person && !isRolePlaceholderDisplayName(person.displayName)) {
     return form === 'peek' ? explorePersonFirstName(person) : explorePersonHeadlineName(person);
   }
-  const raw = input.activity?.createdByName ?? input.hostName;
+  const raw = input.activity?.createdByName ?? input.activity?.hostName ?? input.hostName ?? null;
   const formatted = formatRequesterDisplayName(raw);
   if (form === 'peek') {
     const first = formatted.split(/\s+/).filter(Boolean)[0];
@@ -1112,7 +1110,6 @@ export const buildDiscoveryCardPresentation = (
     kind,
     title: item.title,
     featuredPerson,
-    hostName: activity?.hostName ?? null,
     tenantName: activity?.tenantName ?? null,
     location,
     subtitle,

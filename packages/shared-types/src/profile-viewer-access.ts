@@ -10,7 +10,7 @@ export type ProfileViewerAccessLevel =
   | 'platform_admin'
   | 'public'
   | 'group_member'
-  | 'accepted_buddy'
+  | 'accepted_friend'
   | 'activity_participant'
   | 'host_of_activity'
   | 'denied';
@@ -29,7 +29,7 @@ const TRUSTED_LEVELS: ReadonlySet<ProfileViewerAccessLevel> = new Set([
   'platform_admin',
   'self',
   'group_member',
-  'accepted_buddy',
+  'accepted_friend',
   'activity_participant',
   'host_of_activity',
 ]);

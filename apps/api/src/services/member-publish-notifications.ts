@@ -1,16 +1,16 @@
 /**
- * Map publish fan-out: notify members who subscribed to a person (buddies + followers).
+ * Map publish fan-out: notify members who subscribed to a person (friends + followers).
  *
  * Domain terms:
  * - **Member** — auth user (subscriptions are always userId → userId).
- * - **Buddy** — mutual connection; notified for hosted activities and map availability.
+ * - **Friend** — mutual connection; notified for hosted activities and map availability.
  * - **Follow** — one-way subscription; notified **only when they host/publish an activity** (not map availability).
  * - **Publish** — activity moved to published, or fixed availability on the map (`member_availability`).
  *
  * **Place / team / shop** subscriptions use `entity_follows` — see `entity-publish-notifications.ts`.
  */
 import { NotificationType } from '../domain/enums.js';
-import { listBuddiesForUser } from '../lib/buddy-store.js';
+import { listFriendsForUser } from '../lib/friend-store.js';
 import { resolveNotificationActorDisplayNamesForRecipients } from './notification-actor-label.js';
 import { listFollowerIdsForUser } from '../lib/follow-store.js';
 import { createNotificationsMany } from '../lib/notifications-store.js';
@@ -33,14 +33,14 @@ const notificationCopy = (
       title: `${actorName} is hosting an outing`,
       body: event.title,
       path: activityDetailPath(event.activityId),
-      kind: 'friend_activity_published',
+      kind: 'member_activity_published',
     };
   }
   return {
     title: `${actorName} posted on the map`,
     body: event.title,
     path: exploreAvailabilityPinNotificationPath(event.availabilityMapItemId),
-    kind: 'friend_published',
+    kind: 'member_published',
   };
 };
 
@@ -48,9 +48,9 @@ const listPublishSubscriberIds = async (
   publisherUserId: string,
   event: MemberPublishEvent
 ): Promise<string[]> => {
-  const buddies = await listBuddiesForUser(publisherUserId);
+  const friends = await listFriendsForUser(publisherUserId);
   const ids = new Set<string>();
-  for (const buddy of buddies) ids.add(buddy.userId);
+  for (const friend of friends) ids.add(friend.userId);
   if (event.publishType === 'activity') {
     const followerIds = await listFollowerIdsForUser(publisherUserId);
     for (const followerId of followerIds) ids.add(followerId);

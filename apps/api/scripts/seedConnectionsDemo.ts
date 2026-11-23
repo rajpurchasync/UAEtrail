@@ -3,10 +3,10 @@
  * Primary tester: visitor@uaetrails.app (Samira Khan).
  */
 import {
-  acceptBuddyRequest,
-  createBuddyRequest,
-  declineBuddyRequest,
-} from '../src/lib/buddy-store.js';
+  acceptFriendRequest,
+  createFriendRequest,
+  declineFriendRequest,
+} from '../src/lib/friend-store.js';
 import { followUser } from '../src/lib/follow-store.js';
 import { COLLECTIONS } from '../src/lib/collections.js';
 import { getMongoClient } from '../src/lib/mongo.js';
@@ -108,10 +108,10 @@ const demoUserIds = (input: ConnectionsDemoInput): string[] => [
 
 export const resetConnectionsDemoData = async (userIds: string[]): Promise<void> => {
   const db = getMongoClient()!.db();
-  await db.collection('buddy_requests').deleteMany({
+  await db.collection('friend_requests').deleteMany({
     $or: [{ fromUserId: { $in: userIds } }, { toUserId: { $in: userIds } }],
   });
-  await db.collection('buddy_pairs').deleteMany({
+  await db.collection('friend_pairs').deleteMany({
     $or: userIds.map((id) => ({ userIds: id })),
   });
   await db.collection(COLLECTIONS.USER_FOLLOWS).deleteMany({
@@ -123,37 +123,37 @@ export const seedConnectionsDemo = async (input: ConnectionsDemoInput): Promise<
   const userIds = demoUserIds(input);
   await resetConnectionsDemoData(userIds);
 
-  const visitorGuide = await createBuddyRequest({
+  const visitorGuide = await createFriendRequest({
     fromUserId: input.visitorId,
     toUserId: input.guideId,
     message: 'See you on the Shawka loop — connect here?',
   });
   if (visitorGuide.status === 'pending') {
-    await acceptBuddyRequest(visitorGuide.id, input.guideId);
+    await acceptFriendRequest(visitorGuide.id, input.guideId);
   }
 
-  const incomingFromMaya = await createBuddyRequest({
+  const incomingFromMaya = await createFriendRequest({
     fromUserId: input.visitor2Id,
     toUserId: input.visitorId,
     message: 'Want to be trail buddies?',
   });
   if (incomingFromMaya.status === 'pending') {
-    await acceptBuddyRequest(incomingFromMaya.id, input.visitorId);
+    await acceptFriendRequest(incomingFromMaya.id, input.visitorId);
   }
 
-  await createBuddyRequest({
+  await createFriendRequest({
     fromUserId: input.visitorId,
     toUserId: input.hostId,
     message: 'Fossil Rock camp — happy to connect!',
   });
 
-  const khalidRequest = await createBuddyRequest({
+  const khalidRequest = await createFriendRequest({
     fromUserId: input.organizerId,
     toUserId: input.visitorId,
     message: 'Jebel Jais crew — add me?',
   });
   if (khalidRequest.status === 'pending') {
-    await declineBuddyRequest(khalidRequest.id, input.visitorId);
+    await declineFriendRequest(khalidRequest.id, input.visitorId);
   }
 
   await followUser(input.visitor2Id, input.visitorId);
@@ -169,13 +169,13 @@ export const seedConnectionsDemo = async (input: ConnectionsDemoInput): Promise<
   await followUser(input.visitorId, input.organizerId);
   await followUser(input.visitorId, input.hostId);
 
-  const hostGuide = await createBuddyRequest({
+  const hostGuide = await createFriendRequest({
     fromUserId: input.hostId,
     toUserId: input.guideId,
     message: 'Shawka crew — connect on UAE Trail?',
   });
   if (hostGuide.status === 'pending') {
-    await acceptBuddyRequest(hostGuide.id, input.guideId);
+    await acceptFriendRequest(hostGuide.id, input.guideId);
   }
 
   await seedPeopleBrowseDemoAvailability(input.visitor2Id, {
@@ -232,10 +232,10 @@ export const logConnectionsDemoPlaybook = (): void => {
       '  • Find your crew → Available: Maya, Fatima, Omar, Samira, Khalid (open slots); Guides filter → Fatima + Khalid\n' +
       '  • Friends going (host@): Fatima hosting Wadi Shawka (+10d) — set date to This month\n' +
       '  • Buddies: Fatima (guide@) + Maya (visitor2@)\n' +
-      '  • Outgoing pending: Omar (host@) — cancel on /buddies (Sent) or his profile\n' +
+      '  • Outgoing pending: Omar (host@) — cancel on /crews (Sent) or his profile\n' +
       '  • Declined history: Khalid (organizer@) — declined in DB; re-request allowed via profile\n' +
       '  • Friends group: Weekend Hikers UAE — log in as guide@ and use Leave group on /groups\n' +
-      '  • Social → Followed: Khalid (organizer@) + Omar (host@); pending buddy request still open to Omar\n' +
+      '  • Social → Followed: Khalid (organizer@) + Omar (host@); pending friend request still open to Omar\n' +
       '  • Notifications: follow alerts from Maya + Priya (shop@)'
   );
 };

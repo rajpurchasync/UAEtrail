@@ -4,10 +4,8 @@
  */
 export type NotificationKind =
   | 'badge'
-  | 'buddy.request'
-  | 'buddy.accepted'
-  | 'connection_buddy_request'
-  | 'connection_buddy_accepted'
+  | 'connection_friend_request'
+  | 'connection_friend_accepted'
   | 'connection_member_followed'
   | 'demand_join_request_pending'
   | 'goal_behind_pace'
@@ -28,8 +26,7 @@ export type NotificationKind =
   | 'location_rejected'
   | 'location_submitted'
   | 'member_published'
-  | 'friend_published'
-  | 'friend_activity_published'
+  | 'member_activity_published'
   | 'message'
   | 'request_withdrawal'
   | 'reward'
@@ -55,12 +52,7 @@ export interface NotificationMeta {
   intentId?: string;
   inviteToken?: string;
   badgeKey?: string;
-  /** @deprecated Use actorUserId */
-  buddyUserId?: string;
-  /** @deprecated Use actorUserId */
-  fromUserId?: string;
-  /** @deprecated Use actorUserId */
-  senderId?: string;
+  /** Actor for follow events — not the same as `actorUserId` on connection requests. */
   followerUserId?: string;
   locationId?: string;
   tenantId?: string;
@@ -70,3 +62,21 @@ export interface NotificationMeta {
   /** Host decision / revoke message (COH-06). */
   hostNote?: string;
 }
+
+const readMetaString = (meta: Record<string, unknown> | null | undefined, key: string): string | null => {
+  const value = meta?.[key];
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
+};
+
+/** Read canonical actor from stored notification meta (legacy keys accepted on read only). */
+export const resolveNotificationActorUserId = (
+  meta: Record<string, unknown> | NotificationMeta | null | undefined
+): string | null => {
+  if (!meta || typeof meta !== 'object') return null;
+  const record = meta as Record<string, unknown>;
+  return (
+    readMetaString(record, 'actorUserId') ??
+    readMetaString(record, 'fromUserId') ??
+    readMetaString(record, 'senderId')
+  );
+};

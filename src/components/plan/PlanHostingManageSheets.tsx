@@ -37,7 +37,7 @@ export const PlanHostingManageSheets = ({
       pendingRequests={pendingRequests}
       initialView="overview"
       onOpenPublicPage={(a) => navigate(activityDetailPath(a.id))}
-      onShare={(a) => inviteShare.openShareFromActivity(a, { canSendBuddyInvites: true })}
+      onShare={(a) => inviteShare.openShareFromActivity(a, { canSendFriendInvites: true })}
       onClose={onManageActivityClose}
       onRequestsChanged={onHostReload}
     />

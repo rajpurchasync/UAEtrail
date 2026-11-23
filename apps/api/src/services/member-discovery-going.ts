@@ -1,5 +1,5 @@
 import type {
-  BuddySummaryDTO,
+  FriendSummaryDTO,
   ExploreMapItemDTO,
   SocialPersonRowDTO,
   SocialPersonTripHintDTO,
@@ -8,7 +8,7 @@ import {
   matchesExploreActivityDateFilter,
   type ExploreActivityDatePreset,
 } from '../lib/explore-activity-date-filter.js';
-import { buildBuddyActivityPresenceRows } from './buddy-activity-presence.js';
+import { buildFriendActivityPresenceRows } from './friend-activity-presence.js';
 import { enrichMemberPersonRows } from './member-people-engagement.js';
 
 const activityHostUserId = (item: ExploreMapItemDTO): string | null => {
@@ -33,15 +33,15 @@ const tripSortRank = (trip: SocialPersonTripHintDTO | null): number => {
   return trip.role === 'hosting' ? 2 : 1;
 };
 
-/** All accepted buddies — those hosting or joining an outing (date filter) sort to the top. */
+/** All accepted friends — those hosting or joining an outing (date filter) sort to the top. */
 export const buildMemberDiscoveryFriendsGoing = async (
   viewerUserId: string,
-  buddies: BuddySummaryDTO[],
+  friends: FriendSummaryDTO[],
   mapItems: ExploreMapItemDTO[],
   datePreset: ExploreActivityDatePreset
 ): Promise<SocialPersonRowDTO[]> => {
-  const buddyIds = new Set(buddies.map((b) => b.userId));
-  const presence = buildBuddyActivityPresenceRows(buddies, mapItems, datePreset);
+  const friendIds = new Set(friends.map((b) => b.userId));
+  const presence = buildFriendActivityPresenceRows(friends, mapItems, datePreset);
 
   const itemByExploreId = new Map(mapItems.map((item) => [item.id, item]));
 
@@ -68,14 +68,14 @@ export const buildMemberDiscoveryFriendsGoing = async (
     }
 
     return {
-      userId: row.buddy.userId,
-      displayName: row.buddy.displayName,
-      avatarUrl: row.buddy.avatarUrl,
+      userId: row.friend.userId,
+      displayName: row.friend.displayName,
+      avatarUrl: row.friend.avatarUrl,
       upcomingTrip,
     };
   });
 
-  const rows = await enrichMemberPersonRows(viewerUserId, buddyIds, seeds);
+  const rows = await enrichMemberPersonRows(viewerUserId, friendIds, seeds);
   return [...rows].sort((a, b) => {
     const rankDiff = tripSortRank(b.upcomingTrip) - tripSortRank(a.upcomingTrip);
     if (rankDiff !== 0) return rankDiff;
@@ -83,10 +83,10 @@ export const buildMemberDiscoveryFriendsGoing = async (
   });
 };
 
-/** Activity hosts on the map (non-buddies) for the date filter. */
+/** Activity hosts on the map (non-friends) for the date filter. */
 export const buildMemberDiscoveryHostsGoing = async (
   viewerUserId: string,
-  buddyIds: Set<string>,
+  friendIds: Set<string>,
   mapItems: ExploreMapItemDTO[],
   datePreset: ExploreActivityDatePreset,
   search?: string
@@ -104,7 +104,7 @@ export const buildMemberDiscoveryHostsGoing = async (
 
   for (const item of visible) {
     const hostId = activityHostUserId(item);
-    if (!hostId || hostId === viewerUserId || buddyIds.has(hostId)) continue;
+    if (!hostId || hostId === viewerUserId || friendIds.has(hostId)) continue;
 
     const displayName = item.featuredPerson?.displayName ?? item.activity?.hostName ?? 'Host';
     if (needle && !displayName.toLowerCase().includes(needle) && !item.title?.toLowerCase().includes(needle)) {
@@ -127,6 +127,6 @@ export const buildMemberDiscoveryHostsGoing = async (
     upcomingTrip: toTripHint(row.item, 'hosting'),
   }));
 
-  const rows = await enrichMemberPersonRows(viewerUserId, buddyIds, seeds);
+  const rows = await enrichMemberPersonRows(viewerUserId, friendIds, seeds);
   return [...rows].sort((a, b) => a.displayName.localeCompare(b.displayName, undefined, { sensitivity: 'base' }));
 };

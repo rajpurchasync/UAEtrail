@@ -90,11 +90,11 @@ describe('resolveActivityEngagementPolicy', () => {
         entitlements: {
           isProMember: true,
           canViewHostProfileBeforeJoin: true,
-          canViewFullBuddyRoster: true,
+          canViewFullFriendRoster: true,
           canOfferTransport: true,
           canAddLinkedRide: false,
           canMessageHostBeforeJoin: true,
-          buddyUserIdsOnActivity: [],
+          friendUserIdsOnActivity: [],
         },
       },
       isHostUser: false,
@@ -128,11 +128,11 @@ describe('resolveActivityEngagementPolicy', () => {
         entitlements: {
           isProMember: true,
           canViewHostProfileBeforeJoin: true,
-          canViewFullBuddyRoster: true,
+          canViewFullFriendRoster: true,
           canOfferTransport: false,
           canAddLinkedRide: false,
           canMessageHostBeforeJoin: true,
-          buddyUserIdsOnActivity: [],
+          friendUserIdsOnActivity: [],
         },
       },
       isHostUser: false,
@@ -147,11 +147,11 @@ describe('resolveActivityEngagementPolicy', () => {
         ? {
             isProMember: true,
             canViewHostProfileBeforeJoin: true,
-            canViewFullBuddyRoster: true,
+            canViewFullFriendRoster: true,
             canOfferTransport: false,
             canAddLinkedRide: false,
             canMessageHostBeforeJoin: true,
-            buddyUserIdsOnActivity: [],
+            friendUserIdsOnActivity: [],
           }
         : null,
       'public'

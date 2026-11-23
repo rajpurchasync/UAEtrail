@@ -41,8 +41,8 @@ export const BWL_COLLECTIONS = {
   /** Target collection name — HTTP is `/me/pro-application` now. */
   PRO_APPLICATIONS: 'pro_applications',
   AUTH_USERS: 'auth_users',
-  BUDDY_REQUESTS: 'buddy_requests',
-  BUDDY_PAIRS: 'buddy_pairs',
+  FRIEND_REQUESTS: 'friend_requests',
+  FRIEND_PAIRS: 'friend_pairs',
   USER_FOLLOWS: 'user_follows',
   ENTITY_FOLLOWS: 'entity_follows',
   MEMBER_AVAILABILITY: 'member_availability',
@@ -155,32 +155,27 @@ export const normalizeExploreMapSource = (source: ExploreMapSourceWire): Explore
   return source;
 };
 
-/** Social graph — never use "friend" in BWL; segment target `buddies`. */
+/** Social graph — member-discovery network roster segment. */
 export const BWL_PEOPLE_SEGMENT = {
   ALL: 'all',
-  BUDDIES_TARGET: 'buddies',
-  FRIENDS_INBOUND: 'friends',
+  FRIENDS_TARGET: 'friends',
   FOLLOWED: 'followed',
 } as const;
 
 export type SocialPeopleSegmentCanonical =
   | typeof BWL_PEOPLE_SEGMENT.ALL
-  | typeof BWL_PEOPLE_SEGMENT.BUDDIES_TARGET
+  | typeof BWL_PEOPLE_SEGMENT.FRIENDS_TARGET
   | typeof BWL_PEOPLE_SEGMENT.FOLLOWED;
 
-/** HTTP query `segment` — `friends` is a read alias of `buddies`. */
-export type SocialPeopleSegmentWire =
-  | SocialPeopleSegmentCanonical
-  | typeof BWL_PEOPLE_SEGMENT.FRIENDS_INBOUND;
+export type SocialPeopleSegmentWire = SocialPeopleSegmentCanonical;
 
-export const isBuddyPeopleSegment = (segment: string | null | undefined): boolean =>
-  segment === BWL_PEOPLE_SEGMENT.BUDDIES_TARGET ||
-  segment === BWL_PEOPLE_SEGMENT.FRIENDS_INBOUND;
+export const isFriendsPeopleSegment = (segment: string | null | undefined): boolean =>
+  segment === BWL_PEOPLE_SEGMENT.FRIENDS_TARGET;
 
 export const normalizePeopleSegment = (
   segment: SocialPeopleSegmentWire | string | null | undefined
 ): SocialPeopleSegmentCanonical => {
-  if (isBuddyPeopleSegment(segment)) return BWL_PEOPLE_SEGMENT.BUDDIES_TARGET;
+  if (isFriendsPeopleSegment(segment)) return BWL_PEOPLE_SEGMENT.FRIENDS_TARGET;
   if (segment === BWL_PEOPLE_SEGMENT.FOLLOWED) return BWL_PEOPLE_SEGMENT.FOLLOWED;
   return BWL_PEOPLE_SEGMENT.ALL;
 };

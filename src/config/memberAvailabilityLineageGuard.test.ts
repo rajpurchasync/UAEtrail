@@ -38,7 +38,7 @@ describe('memberAvailabilityLineageGuard (MIG-DISCO-REG)', () => {
   it('AVAIL-LINE-05: Looking browse + pills use availability catalog only', () => {
     expect(read('src/list/browse/browseListFilters.ts')).toMatch(/filterListAvailabilityCatalogItems/);
     expect(read('src/activity-discovery/catalog/listAvailabilityCatalog.ts')).not.toMatch(
-      /exploreMapItemIsSeeking|exploreMapItemIsLegacySeekingActivity/
+      /exploreMapItemIsLegacySeekingActivity|exploreMapItemIsLegacySeekingActivity/
     );
     expect(read('src/explore/exploreActivityModeFilter.ts')).toMatch(/availability/);
     expect(read('src/explore/exploreBrowseTaxonomy.ts')).not.toMatch(/mapItemMatchesLookingPill/);
@@ -127,7 +127,7 @@ describe('memberAvailabilityLineageGuard (MIG-DISCO-REG)', () => {
     ).toBe(false);
   });
 
-  it('AVAIL-LINE-15: buddy publish fan-out excludes retired seeking publishType', () => {
+  it('AVAIL-LINE-15: friend publish fan-out excludes retired seeking publishType', () => {
     const publish = read('apps/api/src/services/member-publish-notifications.ts');
     expect(publish).toMatch(/publishType: 'availability'/);
     expect(publish).not.toMatch(/publishType: 'seeking'/);

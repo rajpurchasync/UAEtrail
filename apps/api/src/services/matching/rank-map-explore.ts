@@ -6,7 +6,7 @@ import type { ActivityWithPublicRelations } from '../../lib/activity-read-assemb
 
 export type RankMapExploreActivityInput = {
   activity: ActivityWithPublicRelations;
-  buddyUserIds: Set<string>;
+  friendUserIds: Set<string>;
   wishlistLocationIds?: Set<string>;
   wishlistAreaIds?: Set<string>;
   nowMs: number;
@@ -22,7 +22,7 @@ export type RankMapExploreActivityResult = {
 export const rankMapExploreActivity = (
   input: RankMapExploreActivityInput
 ): RankMapExploreActivityResult | null => {
-  const { activity, buddyUserIds, nowMs } = input;
+  const { activity, friendUserIds, nowMs } = input;
   if (activity.activityMode === 'seeking') return null;
   if (!activity.startAt) return null;
 
@@ -33,9 +33,9 @@ export const rankMapExploreActivity = (
   const slotsAvailable = slotsLeft != null && slotsLeft > 0 ? slotsLeft : null;
 
   const hostUserId = activity.hostId ?? activity.createdById ?? null;
-  const buddyOnOuting =
-    (hostUserId != null && buddyUserIds.has(hostUserId)) ||
-    (activity.participants ?? []).some((p) => buddyUserIds.has(p.userId));
+  const friendOnOuting =
+    (hostUserId != null && friendUserIds.has(hostUserId)) ||
+    (activity.participants ?? []).some((p) => friendUserIds.has(p.userId));
 
   const wishlistLocations = input.wishlistLocationIds;
   const wishlistAreas = input.wishlistAreaIds;
@@ -53,7 +53,7 @@ export const rankMapExploreActivity = (
     participantCount: joined,
     slotsAvailable,
     boosts: {
-      buddyOnOuting,
+      friendOnOuting,
       wishlistPlace,
       wishlistArea: !wishlistPlace && wishlistArea,
     },

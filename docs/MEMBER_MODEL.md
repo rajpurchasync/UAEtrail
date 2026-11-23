@@ -185,8 +185,8 @@ Trusted fields (year goal, upcoming list, etc.) appear only on **trusted** expos
 | Public card page | **profile**, `MemberProfile`, `memberProfilePath`, `GET …/public-profile` | Profile, “View profile” |
 | Find crew discover | **`crew-discovery`**, `crewBrowseLane`, `peopleTab` / `peopleFacet` URL params | People · Professional · Community; Recommended + facet pills |
 | List category handoff | `listCat=people` | **Crews** (triad pill / list category) |
-| My crew (social) | **`/crews`**, **`/groups`**, `social_graph`, wire `/me/buddies` | My Crews, Friends, Teams |
-| Relationship | **buddy** / `accepted_buddy` (wire) | Friends |
+| My crew (social) | **`/crews`**, **`/groups`**, `social_graph`, wire `/me/friends` | My Crews, Friends, Teams |
+| Relationship | **buddy** / `accepted_friend` (wire) | Friends |
 | Directory quota | **member discovery**, `discover=1`, `memberDiscoverProfilePath` | Connect / discover |
 
 **Find crew browse (discover — not My Crews):** Primary surface = **list search** (`/list?listCat=people`, desktop drawer `list=1&listCat=people`). State spine: `src/crew-discovery/crewBrowseState.ts` (`CrewBrowseLane` + `CrewPeopleFacet`). Optional map dock: `view=people` + `CrewsBrowsePanel` when explore opens without `list=1` (legacy desktop rail). **My Crews** (`/crews`, `/groups`) is the **social hub** — requests, following, teams; it does **not** replace find-crew directory browse.
@@ -334,7 +334,7 @@ UI labels vs capabilities vs wire — **host/join/buddy slice only**; entity + r
 | **Host / publish (capability)** | Member may create/publish outings | `GET /me/status` → `profileComplete` + `publish.canPublish` |
 | **Profile complete** | DOB, gender, based-in on `/welcome` | `profileComplete` on `/me/status`; `signupProfileComplete` on `/me/profile` only |
 | **Participate** | Join outings as attendee | Auth only; `activity_requests`, `/activities/:id/requests` |
-| **Community tenant (buddy)** | Free individual publish path | `publishingPurpose: community`, auto tenant after profile complete |
+| **Community tenant (friend)** | Free individual publish path | `publishingPurpose: community`, auto tenant after profile complete |
 | **Publishing workspace** | Tenant-scoped publish/manage UI | Wire `/publishing/*`, `x-organisation-id`, `src/console/*` — shell title from `workspaceConsoleLabel(kind)` |
 | **Pro / business publishing** | Agency, shop, professional guide onboarding | `/profile/pro-membership`, HTTP `/me/pro-application` (collection `host_applications` until rename) |
 | **Activity join request** | Join a **published activity** (approval) | `activity_requests` (`note` joiner → host, `hostNote` host decision); `/publishing/requests` |
@@ -356,7 +356,7 @@ UI labels vs capabilities vs wire — **host/join/buddy slice only**; entity + r
 | `api.listActivities` / `listOrganisationActivities` | Tenant-scoped **`listActivities(tenantId)`** (SN-3); consumer browse: `getPublicActivities` / `getMeActivities` |
 | `createOrganisationActivity` / `*OrganisationActivity*` / `*HostActivity*` / `*OperatorActivity*` (client) | Tenant-scoped **`createActivity`**, `publishActivity`, … — see §13.2.1 in `DOMAIN_CANONICALS.md` |
 | `OrganisationActivityCheckInPanel`, `OrganisationActivities` page | `ActivityParticipantsPanel`, `ActivityManageSheet`, `src/pages/publishing/Activities.tsx` |
-| `buddyUserId` in meta/API | `actorUserId` or `otherMemberUserId` |
+| `actorUserId` in meta/API | `actorUserId` or `otherMemberUserId` |
 
 Operator route registrars (legacy `registerHost*` filenames): under `routes/publishing/`. Member status: `registerMemberStatusRoutes` (`routes/user/`).
 

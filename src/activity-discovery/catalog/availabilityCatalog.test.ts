@@ -10,7 +10,7 @@ describe('selectAvailabilityFromMapItems', () => {
     });
     const rows = selectAvailabilityFromMapItems([farFuture], {
       mapFilter: 'all',
-      buddySubtype: 'all',
+      othersSubtype: 'all',
       outingTopic: 'all',
       query: '',
     });
@@ -24,7 +24,7 @@ describe('selectAvailabilityFromMapItems', () => {
     });
     const rows = selectAvailabilityFromMapItems([farFuture], {
       mapFilter: 'all',
-      buddySubtype: 'all',
+      othersSubtype: 'all',
       outingTopic: 'all',
       query: '',
       activityDatePreset: 'today',

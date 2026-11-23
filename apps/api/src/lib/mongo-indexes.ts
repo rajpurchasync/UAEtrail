@@ -154,6 +154,7 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
     db.collection(COLLECTIONS.MEMBER_AVAILABILITY).createIndexes([
       { key: { visibility: 1, areaId: 1 } },
       { key: { kinds: 1, visibility: 1 } },
+      { key: { visibility: 1, updatedAt: -1 }, name: 'visibility_updatedAt_map_pins' },
     ]),
     db.collection(COLLECTIONS.USER_GOALS).createIndexes([{ key: { userId: 1, updatedAt: -1 } }]),
     db.collection(COLLECTIONS.MEMBER_MAP_PINS).createIndexes([
@@ -291,18 +292,18 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { messageId: 1, userId: 1, kind: 1 }, unique: true },
       { key: { groupId: 1, messageId: 1 } }
     ]),
-    db.collection(COLLECTIONS.BUDDY_REQUESTS).createIndexes([
+    db.collection(COLLECTIONS.FRIEND_REQUESTS).createIndexes([
       { key: { fromUserId: 1, toUserId: 1, status: 1 } },
       { key: { toUserId: 1, status: 1, createdAt: -1 } },
       { key: { fromUserId: 1, status: 1, createdAt: -1 } },
       {
         key: { fromUserId: 1, toUserId: 1 },
         unique: true,
-        name: 'buddy_pending_pair_unique',
+        name: 'friend_pending_pair_unique',
         partialFilterExpression: { status: 'pending' }
       }
     ]),
-    db.collection(COLLECTIONS.BUDDY_PAIRS).createIndexes([
+    db.collection(COLLECTIONS.FRIEND_PAIRS).createIndexes([
       { key: { userIds: 1 } },
       { key: { createdAt: -1 } }
     ]),

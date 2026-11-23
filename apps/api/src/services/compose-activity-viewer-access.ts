@@ -1,5 +1,5 @@
 import type { ActivityViewerAccessDTO } from '@uaetrail/shared-types';
-import { listBuddiesForUser } from '../lib/buddy-store.js';
+import { listFriendsForUser } from '../lib/friend-store.js';
 import {
   applyActivityViewEntitlements,
   type ActivityViewEntitlementActivityContext,
@@ -15,16 +15,16 @@ const loadActivityViewEntitlementContext = async (
   viewerUserId: string,
   input: ActivityViewEntitlementLoadInput
 ): Promise<ActivityViewEntitlementActivityContext> => {
-  const buddies = await listBuddiesForUser(viewerUserId);
-  const buddySet = new Set(buddies.map((buddy) => buddy.userId));
+  const friends = await listFriendsForUser(viewerUserId);
+  const friendSet = new Set(friends.map((friend) => friend.userId));
   const hostUserId = input.hostUserId;
   const isFriendOfHost =
-    hostUserId !== null && hostUserId !== undefined && buddySet.has(hostUserId);
+    hostUserId !== null && hostUserId !== undefined && friendSet.has(hostUserId);
 
   return {
     hostUserId,
     isFriendOfHost,
-    buddyUserIdsOnActivity: input.participantUserIds.filter((id) => buddySet.has(id)),
+    friendUserIdsOnActivity: input.participantUserIds.filter((id) => friendSet.has(id)),
   };
 };
 
@@ -34,7 +34,7 @@ const isResolvedEntitlementActivityContext = (
 
 /**
  * Social viewer access (layers 3–6) then entitlement policy (layer 7).
- * Pass `entitlementActivity` with host + participant ids — buddy context loads here (not from routes).
+ * Pass `entitlementActivity` with host + participant ids — friends context loads here (not from routes).
  */
 export const composeActivityViewerAccess = async (
   input: ActivityViewerAccessInput,

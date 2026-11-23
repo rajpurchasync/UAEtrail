@@ -2,15 +2,15 @@ import { EXPLORE_MAP_PATH, messagesToUserPath } from '../config/routingCatalog';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { MessageCircle, UserMinus } from 'lucide-react';
-import type { BuddyRequestDTO, BuddySummaryDTO, MemberFollowSummaryDTO } from '@uaetrail/shared-types';
+import type { FriendRequestDTO, FriendSummaryDTO, MemberFollowSummaryDTO } from '@uaetrail/shared-types';
 import { setMemberFollow } from '../hooks/memberFollowApi';
-import { useMeBuddiesNetwork, useMeFollowingMembers } from '../hooks/useMeBuddiesNetwork';
+import { useMeFriendsNetwork, useMeFollowingMembers } from '../hooks/useMeFriendsNetwork';
 import {
-  acceptMemberBuddyRequest,
-  cancelMemberBuddyRequest,
-  declineMemberBuddyRequest,
+  acceptMemberFriendRequest,
+  cancelMemberFriendRequest,
+  declineMemberFriendRequest,
   searchMembersByQuery,
-  unfriendMemberBuddy,
+  unfriendMember,
 } from '../hooks/memberPeopleClientApi';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';
@@ -89,13 +89,13 @@ export const MyCrewsPage = () => {
   const shellTitle = isHub ? PRODUCT_MY_CREW_SURFACE_TITLE : SECTION_TITLES[activeSection];
 
   const {
-    buddies: friends,
+    friends,
     incomingRequests,
     outgoingRequests,
     loading,
     error: networkError,
     refetch: refetchFriendsNetwork,
-  } = useMeBuddiesNetwork(Boolean(user));
+  } = useMeFriendsNetwork(Boolean(user));
   const {
     following,
     loading: followingLoading,
@@ -104,7 +104,7 @@ export const MyCrewsPage = () => {
   } = useMeFollowingMembers(Boolean(user) && activeSection === 'following');
   const [error, setError] = useState<string | null>(null);
   const [busyRequestId, setBusyRequestId] = useState<string | null>(null);
-  const [unfriendingBuddy, setUnfriendingBuddy] = useState<BuddySummaryDTO | null>(null);
+  const [unfriendingFriend, setUnfriendingFriend] = useState<FriendSummaryDTO | null>(null);
   const [unfriendBusy, setUnfriendBusy] = useState(false);
   const [unfollowBusyId, setUnfollowBusyId] = useState<string | null>(null);
   const [findQuery, setFindQuery] = useState('');
@@ -143,11 +143,11 @@ export const MyCrewsPage = () => {
 
   const requestCount = incomingRequests.length + outgoingRequests.length;
 
-  const handleAcceptRequest = async (request: BuddyRequestDTO) => {
+  const handleAcceptRequest = async (request: FriendRequestDTO) => {
     setBusyRequestId(request.id);
     setError(null);
     try {
-      await acceptMemberBuddyRequest(request.id);
+      await acceptMemberFriendRequest(request.id);
       await loadCore();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not accept request');
@@ -156,11 +156,11 @@ export const MyCrewsPage = () => {
     }
   };
 
-  const handleDeclineRequest = async (request: BuddyRequestDTO) => {
+  const handleDeclineRequest = async (request: FriendRequestDTO) => {
     setBusyRequestId(request.id);
     setError(null);
     try {
-      await declineMemberBuddyRequest(request.id);
+      await declineMemberFriendRequest(request.id);
       await refetchFriendsNetwork();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not decline request');
@@ -169,11 +169,11 @@ export const MyCrewsPage = () => {
     }
   };
 
-  const handleCancelRequest = async (request: BuddyRequestDTO) => {
+  const handleCancelRequest = async (request: FriendRequestDTO) => {
     setBusyRequestId(request.id);
     setError(null);
     try {
-      await cancelMemberBuddyRequest(request.id);
+      await cancelMemberFriendRequest(request.id);
       await refetchFriendsNetwork();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not cancel request');
@@ -183,13 +183,13 @@ export const MyCrewsPage = () => {
   };
 
   const handleUnfriend = async () => {
-    if (!unfriendingBuddy) return;
+    if (!unfriendingFriend) return;
     setUnfriendBusy(true);
     setError(null);
     try {
-      await unfriendMemberBuddy(unfriendingBuddy.userId);
+      await unfriendMember(unfriendingFriend.userId);
       await refetchFriendsNetwork();
-      setUnfriendingBuddy(null);
+      setUnfriendingFriend(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not unfriend this member');
     } finally {
@@ -210,7 +210,7 @@ export const MyCrewsPage = () => {
     }
   };
 
-  const filteredBuddies = useMemo(() => {
+  const filteredFriends = useMemo(() => {
     const q = findQuery.trim().toLowerCase();
     if (!q || activeSection !== 'friends') return friends;
     return friends.filter((friend) => friend.displayName.toLowerCase().includes(q));
@@ -306,7 +306,7 @@ export const MyCrewsPage = () => {
 
                 <section>
                   <p className={FRIEND_SECTION_LABEL}>Your friends</p>
-                  {filteredBuddies.length === 0 ? (
+                  {filteredFriends.length === 0 ? (
                     <GlassCard padding className="text-center">
                       <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-50 text-2xl">
                         <span aria-hidden>👥</span>
@@ -325,32 +325,32 @@ export const MyCrewsPage = () => {
                     </GlassCard>
                   ) : (
                     <div className={FRIEND_LIST}>
-                      {filteredBuddies.map((buddy) => (
-                        <GlassCard key={buddy.userId} padding className={FRIEND_CARD_PAD}>
+                      {filteredFriends.map((friend) => (
+                        <GlassCard key={friend.userId} padding className={FRIEND_CARD_PAD}>
                           <div className={FRIEND_ROW}>
                             <Link
-                              to={memberProfileLink(buddy.userId, 'friends')}
+                              to={memberProfileLink(friend.userId, 'friends')}
                               state={friendsReturn}
                               className={`${FRIEND_ROW_MAIN} rounded-xl outline-offset-2 transition hover:bg-neutral-50/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600`}
-                              aria-label={`View ${buddy.displayName} profile`}
+                              aria-label={`View ${friend.displayName} profile`}
                             >
                               <SecureAvatar
-                                src={buddy.avatarUrl}
-                                name={buddy.displayName}
+                                src={friend.avatarUrl}
+                                name={friend.displayName}
                                 className={FRIEND_AVATAR}
                               />
                               <div className="min-w-0 flex-1">
                                 <p className="truncate font-semibold text-neutral-900 lg:text-sm">
-                                  {buddy.displayName}
+                                  {friend.displayName}
                                 </p>
                                 <p className="text-xs text-neutral-500">
-                                  Friends since {formatConnectedDate(buddy.connectedAt)}
+                                  Friends since {formatConnectedDate(friend.connectedAt)}
                                 </p>
                               </div>
                             </Link>
                             <div className={FRIEND_ACTIONS_TWO}>
                               <Link
-                                to={messagesToUserPath(buddy.userId)}
+                                to={messagesToUserPath(friend.userId)}
                                 state={friendsReturn}
                                 className={`flex-1 lg:flex-none ${friendActionPrimary}`}
                               >
@@ -359,7 +359,7 @@ export const MyCrewsPage = () => {
                               </Link>
                               <button
                                 type="button"
-                                onClick={() => setUnfriendingBuddy(buddy)}
+                                onClick={() => setUnfriendingFriend(friend)}
                                 className={`flex-1 lg:flex-none ${friendActionNeutral}`}
                               >
                                 <UserMinus className="h-3.5 w-3.5 shrink-0" aria-hidden />
@@ -557,22 +557,22 @@ export const MyCrewsPage = () => {
       </div>
 
       <Dialog
-        open={Boolean(unfriendingBuddy)}
+        open={Boolean(unfriendingFriend)}
         onClose={() => {
-          if (!unfriendBusy) setUnfriendingBuddy(null);
+          if (!unfriendBusy) setUnfriendingFriend(null);
         }}
         title="Unfriend?"
       >
         <p className="text-sm text-neutral-600 leading-relaxed">
-          {unfriendingBuddy
-            ? `${unfriendingBuddy.displayName} will not be notified. They will no longer be able to view your private profile or message you unless you connect again or share an activity.`
+          {unfriendingFriend
+            ? `${unfriendingFriend.displayName} will not be notified. They will no longer be able to view your private profile or message you unless you connect again or share an activity.`
             : ''}
         </p>
         <div className="mt-4 flex gap-2">
           <button
             type="button"
             disabled={unfriendBusy}
-            onClick={() => setUnfriendingBuddy(null)}
+            onClick={() => setUnfriendingFriend(null)}
             className="flex-1 rounded-xl border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-700"
           >
             Cancel

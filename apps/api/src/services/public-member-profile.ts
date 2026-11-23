@@ -139,7 +139,7 @@ const toProfileAccessLevel = (level: string): ProfileViewerAccessLevel => {
   if (level === 'platform_admin') return 'platform_admin';
   if (level === 'public') return 'public';
   if (level === 'group_member') return 'group_member';
-  if (level === 'accepted_buddy') return 'accepted_buddy';
+  if (level === 'accepted_friend') return 'accepted_friend';
   if (level === 'activity_participant') return 'activity_participant';
   if (level === 'host_of_activity') return 'host_of_activity';
   return 'denied';
@@ -173,7 +173,7 @@ export type PublicMemberProfileData =
       operatorProfilePath: string | null;
       /** Business operator display name — pairs with `operatorProfilePath` (agency / shop only). */
       linkedOperatorName: string | null;
-      /** Buddy / guide publishing tenant — host reviews and ratings attach here. */
+      /** Community / guide publishing tenant — host reviews and ratings attach here. */
       publishingTenantId: string | null;
       badges: Array<{
         key: string;

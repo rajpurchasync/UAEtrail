@@ -35,7 +35,7 @@
       "route": "/crews",
       "contextIds": ["social_graph", "communication"],
       "feRoots": ["src/pages/MyCrews.tsx", "src/components/social/SocialHubIndex.tsx"],
-      "wire": ["GET /me/buddies"],
+      "wire": ["GET /me/friends"],
       "mustNot": ["Primary member-discovery directory roster"]
     },
     {

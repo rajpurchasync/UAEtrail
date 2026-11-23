@@ -19,7 +19,7 @@ export const coordinationAttentionPath = (item: MemberCoordinationAttentionItemD
     case 'join_request_rejected':
     case 'participant_revoked':
       return MY_REQUESTS_PATH;
-    case 'buddy_request_incoming':
+    case 'friend_request_incoming':
       return socialRequestsPath();
     case 'activity_join_invite':
       if (item.count === 1 && item.activityId) {
@@ -46,7 +46,7 @@ export const coordinationAttentionLabel = (item: MemberCoordinationAttentionItem
       return count === 1
         ? 'A host removed you from an outing'
         : `${count} outings removed you from the crew`;
-    case 'buddy_request_incoming':
+    case 'friend_request_incoming':
       return plural(count, 'friend request', 'friend requests');
     case 'activity_join_invite':
       if (count === 1 && item.inviterDisplayName?.trim()) {

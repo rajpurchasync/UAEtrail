@@ -1,5 +1,5 @@
 import type {
-  BuddyActivityPresenceRowDTO,
+  FriendActivityPresenceRowDTO,
   ExploreActivityRefDTO,
   ExploreMapItemDTO,
 } from '@uaetrail/shared-types';
@@ -44,9 +44,9 @@ export const buildViewerInvitableActivityRefs = (
   return refs;
 };
 
-export const invitableActivitiesForBuddy = (
+export const invitableActivitiesForFriend = (
   invitable: ExploreActivityRefDTO[],
-  row: BuddyActivityPresenceRowDTO
+  row: FriendActivityPresenceRowDTO
 ): ExploreActivityRefDTO[] => {
   const alreadyOn = new Set<string>();
   if (row.hosting) alreadyOn.add(row.hosting.activityId);
@@ -67,21 +67,21 @@ export const sortJoinInviteTargetsForViewer = (
   return [...targets].sort((a, b) => hostScore(a) - hostScore(b));
 };
 
-export const listJoinInviteActivitiesForBuddy = (
+export const listJoinInviteActivitiesForFriend = (
   invitable: ExploreActivityRefDTO[],
-  row: BuddyActivityPresenceRowDTO,
+  row: FriendActivityPresenceRowDTO,
   mapItems: ExploreMapItemDTO[],
   viewerUserId: string
 ): ExploreActivityRefDTO[] =>
-  sortJoinInviteTargetsForViewer(invitableActivitiesForBuddy(invitable, row), mapItems, viewerUserId);
+  sortJoinInviteTargetsForViewer(invitableActivitiesForFriend(invitable, row), mapItems, viewerUserId);
 
 /** Prefer an outing the viewer hosts; otherwise first eligible trip. */
-export const pickJoinInviteActivityForBuddy = (
+export const pickJoinInviteActivityForFriend = (
   invitable: ExploreActivityRefDTO[],
-  row: BuddyActivityPresenceRowDTO,
+  row: FriendActivityPresenceRowDTO,
   mapItems: ExploreMapItemDTO[],
   viewerUserId: string
 ): ExploreActivityRefDTO | null => {
-  const targets = listJoinInviteActivitiesForBuddy(invitable, row, mapItems, viewerUserId);
+  const targets = listJoinInviteActivitiesForFriend(invitable, row, mapItems, viewerUserId);
   return targets[0] ?? null;
 };

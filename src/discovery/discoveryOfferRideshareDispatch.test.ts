@@ -18,11 +18,11 @@ describe('discoveryOfferRideshareDispatch', () => {
         entitlements: {
           isProMember: true,
           canViewHostProfileBeforeJoin: true,
-          canViewFullBuddyRoster: true,
+          canViewFullFriendRoster: true,
           canOfferTransport: true,
           canAddLinkedRide: true,
           canMessageHostBeforeJoin: true,
-          buddyUserIdsOnActivity: [],
+          friendUserIdsOnActivity: [],
         },
       },
     });
@@ -47,11 +47,11 @@ describe('discoveryOfferRideshareDispatch', () => {
             entitlements: {
               isProMember: true,
               canViewHostProfileBeforeJoin: true,
-              canViewFullBuddyRoster: true,
+              canViewFullFriendRoster: true,
               canOfferTransport: true,
               canAddLinkedRide: true,
               canMessageHostBeforeJoin: true,
-              buddyUserIdsOnActivity: [],
+              friendUserIdsOnActivity: [],
             },
           },
         } as Partial<ExploreMapItemDTO>)

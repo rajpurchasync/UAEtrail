@@ -1,44 +1,49 @@
 import { useQuery } from '@tanstack/react-query';
 import type { BuddyRequestDTO, BuddySummaryDTO } from '@uaetrail/shared-types';
-import { fetchMeBuddies, fetchMeBuddyRequests } from './activityInviteClientApi';
+import { fetchMeFriends, fetchMeFriendRequests } from './activityInviteClientApi';
 import { fetchMeFollowingMembers } from './memberPeopleClientApi';
-import { meBuddiesNetworkQueryKey, meFollowingMembersQueryKey } from './clientQueryKeys';
+import { meFriendsNetworkQueryKey, meFollowingMembersQueryKey } from './clientQueryKeys';
 import { useAuth } from '../context/AuthContext';
 
-export type MeBuddiesNetworkData = {
-  buddies: BuddySummaryDTO[];
+export type MeFriendsNetworkData = {
+  friends: BuddySummaryDTO[];
   incomingRequests: BuddyRequestDTO[];
   outgoingRequests: BuddyRequestDTO[];
 };
 
-const fetchMeBuddiesNetwork = async (): Promise<MeBuddiesNetworkData> => {
-  const [buddyList, incoming, outgoing] = await Promise.all([
-    fetchMeBuddies(),
-    fetchMeBuddyRequests('incoming'),
-    fetchMeBuddyRequests('outgoing'),
+const fetchMeFriendsNetwork = async (): Promise<MeFriendsNetworkData> => {
+  const [friendList, incoming, outgoing] = await Promise.all([
+    fetchMeFriends(),
+    fetchMeFriendRequests('incoming'),
+    fetchMeFriendRequests('outgoing'),
   ]);
   return {
-    buddies: buddyList,
+    friends: friendList,
     incomingRequests: incoming.filter((request) => request.status === 'pending'),
     outgoingRequests: outgoing.filter((request) => request.status === 'pending'),
   };
 };
 
-export const useMeBuddiesNetwork = (enabled = true) => {
+export const useMeFriendsNetwork = (enabled = true) => {
   const { user } = useAuth();
   const query = useQuery({
-    queryKey: user ? meBuddiesNetworkQueryKey(user.id) : ['me', 'buddies-network', ''],
-    queryFn: fetchMeBuddiesNetwork,
+    queryKey: user ? meFriendsNetworkQueryKey(user.id) : ['me', 'friends-network', ''],
+    queryFn: fetchMeFriendsNetwork,
     enabled: enabled && Boolean(user),
     staleTime: 30_000,
   });
 
   return {
-    buddies: query.data?.buddies ?? [],
+    friends: query.data?.friends ?? [],
     incomingRequests: query.data?.incomingRequests ?? [],
     outgoingRequests: query.data?.outgoingRequests ?? [],
     loading: query.data === undefined && (query.isPending || query.isFetching),
-    error: query.error instanceof Error ? query.error.message : query.isError ? 'Failed to load friends' : null,
+    error:
+      query.error instanceof Error
+        ? query.error.message
+        : query.isError
+          ? 'Failed to load friends'
+          : null,
     refetch: query.refetch,
   };
 };
@@ -55,7 +60,12 @@ export const useMeFollowingMembers = (enabled = true) => {
   return {
     following: query.data ?? [],
     loading: query.data === undefined && (query.isPending || query.isFetching),
-    error: query.error instanceof Error ? query.error.message : query.isError ? 'Failed to load following' : null,
+    error:
+      query.error instanceof Error
+        ? query.error.message
+        : query.isError
+          ? 'Failed to load following'
+          : null,
     refetch: query.refetch,
   };
 };

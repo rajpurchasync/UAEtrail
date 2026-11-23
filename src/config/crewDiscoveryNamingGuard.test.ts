@@ -26,7 +26,7 @@ const FORBIDDEN: Array<{ pattern: RegExp; label: string }> = [
   { pattern: /\bPeopleBrowsePanel\b/, label: 'PeopleBrowsePanel (use CrewsBrowsePanel)' },
   { pattern: /\bPeopleBrowseTabContent\b/, label: 'PeopleBrowseTabContent (use CrewBrowseTabContent)' },
   { pattern: /\bpeopleBrowseOpen\b/, label: 'peopleBrowseOpen (use crewsBrowseOpen)' },
-  { pattern: /\bapplyPeopleBrowseTab\b/, label: 'applyPeopleBrowseTab (use applyCrewBrowseTab)' },
+  { pattern: /\bapplyPeopleBrowseTab\b/, label: 'applyPeopleBrowseTab (use applyCrewBrowseLane)' },
   { pattern: /\bopenPeopleBrowsePanel\b/, label: 'openPeopleBrowsePanel (use openCrewsBrowsePanel)' },
   {
     pattern: /\busePeopleDiscoveryAvailabilityCatalog\b/,

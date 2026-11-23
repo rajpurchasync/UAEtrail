@@ -27,7 +27,7 @@ describe('activityDetailProSocial', () => {
   it('shows roster Pro upsell when buddies-only mask hides participants', () => {
     expect(
       activityDetailShowRosterProUpsell(
-        { canViewFullBuddyRoster: false } as never,
+        { canViewFullFriendRoster: false } as never,
         true,
         5,
         2
@@ -35,7 +35,7 @@ describe('activityDetailProSocial', () => {
     ).toBe(true);
     expect(
       activityDetailShowRosterProUpsell(
-        { canViewFullBuddyRoster: true } as never,
+        { canViewFullFriendRoster: true } as never,
         true,
         5,
         2

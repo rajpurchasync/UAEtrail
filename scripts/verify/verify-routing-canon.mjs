@@ -93,7 +93,7 @@ if (enforcement === 'phase4' || enforcement === 'strict') {
     fail('routes/index.ts must mount safetyRouter at /safety, not /reports (P4)');
   }
   if (existsSync(join(root, 'src/api/domains/social.ts'))) {
-    fail('social.ts must not exist — use buddies/groups/wishlist/entityFollow/reviews domains (COH-09)');
+    fail('social.ts must not exist — use friends/groups/wishlist/entityFollow/reviews domains (COH-09)');
   }
   const safetyApi = readFileSync(join(root, 'src/api/domains/safety.ts'), 'utf8');
   if (!safetyApi.includes('/safety/reports')) {

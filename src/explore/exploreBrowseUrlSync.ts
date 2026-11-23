@@ -9,9 +9,9 @@ import {
   type VenueListFilterKey,
 } from './routing';
 import {
-  serializeExploreBuddySubtype,
-  type ExploreBuddySubtypeKey,
-} from './exploreBuddySubtype';
+  serializeExploreOthersSubtype,
+  type ExploreOthersSubtypeKey,
+} from './exploreOthersSubtype';
 import {
   serializeExploreOutingTopic,
   type ExploreOutingTopicKey,
@@ -84,7 +84,7 @@ export type ExploreBrowseUrlSyncPatch = {
   geoPath?: string[];
   activityDatePreset?: ExploreActivityDatePreset;
   activityModeFilter?: ExploreActivityModeFilter;
-  buddySubtype?: ExploreBuddySubtypeKey;
+  othersSubtype?: ExploreOthersSubtypeKey;
   outingTopic?: ExploreOutingTopicKey;
   pinKind?: ExplorePinKindFilter;
   topicPills?: ExploreMapFilterPillKey[];
@@ -114,7 +114,7 @@ export type ExploreBrowseUrlSyncState = {
   geoPath: string[];
   activityDatePreset: ExploreActivityDatePreset;
   activityModeFilter: ExploreActivityModeFilter;
-  buddySubtype: ExploreBuddySubtypeKey;
+  othersSubtype: ExploreOthersSubtypeKey;
   outingTopic: ExploreOutingTopicKey;
   pinKind: ExplorePinKindFilter;
   topicPills: ExploreMapFilterPillKey[];
@@ -157,7 +157,7 @@ export const buildExploreBrowseSearchParams = (input: {
     patch.activityDatePreset !== undefined ? patch.activityDatePreset : state.activityDatePreset;
   const activityModeValue =
     patch.activityModeFilter !== undefined ? patch.activityModeFilter : state.activityModeFilter;
-  const subtypeValue = patch.buddySubtype ?? state.buddySubtype;
+  const subtypeValue = patch.othersSubtype ?? state.othersSubtype;
   const topicValue = patch.outingTopic ?? state.outingTopic;
   const pinKindValue = patch.pinKind ?? state.pinKind;
   const topicPillsValue = patch.topicPills ?? state.topicPills;
@@ -205,7 +205,7 @@ export const buildExploreBrowseSearchParams = (input: {
   if (serializedActivityMode) params.set(EXPLORE_ACTIVITY_MODE_FILTER_PARAM, serializedActivityMode);
   else params.delete(EXPLORE_ACTIVITY_MODE_FILTER_PARAM);
 
-  const serializedSubtype = serializeExploreBuddySubtype(subtypeValue, filterValue);
+  const serializedSubtype = serializeExploreOthersSubtype(subtypeValue, filterValue);
   if (serializedSubtype) params.set('subtype', serializedSubtype);
   else params.delete('subtype');
 

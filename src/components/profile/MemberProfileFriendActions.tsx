@@ -1,16 +1,16 @@
 import { MessageCircle, UserPlus } from 'lucide-react';
-import type { BuddyRelationshipDTO } from '@uaetrail/shared-types';
+import type { FriendRelationshipDTO } from '@uaetrail/shared-types';
 import { AppButton } from '../mobile/AppButton';
 
 export type MemberFriendConnectionLabel = 'friends' | 'pending_outgoing' | 'pending_incoming' | 'none';
 
 export const resolveMemberFriendConnectionLabel = (
-  buddyRel: BuddyRelationshipDTO | null
+  friendRel: FriendRelationshipDTO | null
 ): MemberFriendConnectionLabel => {
-  if (!buddyRel) return 'none';
-  if (buddyRel.areBuddies) return 'friends';
-  if (buddyRel.incomingRequest) return 'pending_incoming';
-  if (buddyRel.outgoingRequest) return 'pending_outgoing';
+  if (!friendRel) return 'none';
+  if (friendRel.areFriends) return 'friends';
+  if (friendRel.incomingRequest) return 'pending_incoming';
+  if (friendRel.outgoingRequest) return 'pending_outgoing';
   return 'none';
 };
 
@@ -36,25 +36,25 @@ const FriendStatusPill = ({ label }: { label: MemberFriendConnectionLabel }) => 
 };
 
 type MemberProfileFriendActionsProps = {
-  buddyRel: BuddyRelationshipDTO | null;
-  buddyBusy: boolean;
-  onSendBuddyRequest: () => void;
-  onAcceptBuddyRequest: () => void;
-  onDeclineBuddyRequest: () => void;
-  onCancelBuddyRequest: () => void;
+  friendRel: FriendRelationshipDTO | null;
+  friendActionBusy: boolean;
+  onSendFriendRequest: () => void;
+  onAcceptFriendRequest: () => void;
+  onDeclineFriendRequest: () => void;
+  onCancelFriendRequest: () => void;
   onMessage: () => void;
 };
 
 export const MemberProfileFriendActions = ({
-  buddyRel,
-  buddyBusy,
-  onSendBuddyRequest,
-  onAcceptBuddyRequest,
-  onDeclineBuddyRequest,
-  onCancelBuddyRequest,
+  friendRel,
+  friendActionBusy,
+  onSendFriendRequest,
+  onAcceptFriendRequest,
+  onDeclineFriendRequest,
+  onCancelFriendRequest,
   onMessage,
 }: MemberProfileFriendActionsProps) => {
-  const connectionLabel = resolveMemberFriendConnectionLabel(buddyRel);
+  const connectionLabel = resolveMemberFriendConnectionLabel(friendRel);
 
   return (
     <div className="mt-4 space-y-2 px-1 lg:px-0">
@@ -62,38 +62,38 @@ export const MemberProfileFriendActions = ({
         <FriendStatusPill label={connectionLabel} />
       </div>
 
-      {buddyRel?.areBuddies ? (
+      {friendRel?.areFriends ? (
         <AppButton type="button" fullWidth onClick={onMessage}>
           <MessageCircle className="mr-2 inline h-4 w-4" aria-hidden />
           Message
         </AppButton>
-      ) : buddyRel?.incomingRequest ? (
+      ) : friendRel?.incomingRequest ? (
         <div className="flex gap-2">
-          <AppButton type="button" className="flex-1" disabled={buddyBusy} onClick={onAcceptBuddyRequest}>
+          <AppButton type="button" className="flex-1" disabled={friendActionBusy} onClick={onAcceptFriendRequest}>
             Accept
           </AppButton>
           <AppButton
             type="button"
             variant="secondary"
             className="flex-1"
-            disabled={buddyBusy}
-            onClick={onDeclineBuddyRequest}
+            disabled={friendActionBusy}
+            onClick={onDeclineFriendRequest}
           >
             Decline
           </AppButton>
         </div>
-      ) : buddyRel?.outgoingRequest ? (
+      ) : friendRel?.outgoingRequest ? (
         <AppButton
           type="button"
           variant="secondary"
           fullWidth
-          disabled={buddyBusy}
-          onClick={onCancelBuddyRequest}
+          disabled={friendActionBusy}
+          onClick={onCancelFriendRequest}
         >
           Cancel friend request
         </AppButton>
-      ) : buddyRel?.canSendRequest ? (
-        <AppButton type="button" fullWidth disabled={buddyBusy} onClick={onSendBuddyRequest}>
+      ) : friendRel?.canSendRequest ? (
+        <AppButton type="button" fullWidth disabled={friendActionBusy} onClick={onSendFriendRequest}>
           <UserPlus className="mr-2 inline h-4 w-4" aria-hidden />
           Add as friend
         </AppButton>

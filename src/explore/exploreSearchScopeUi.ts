@@ -20,8 +20,7 @@ export const exploreSearchScopeTitleMatchesQuery = (
   if (!q) return false;
   if (scope === 'people') {
     const discoverAliases = [
-      'buddies',
-      'buddy',
+      'friends',
       'people',
       'person',
       'member',

@@ -13,7 +13,7 @@ import {
   normalizeVenueRegionToken,
 } from '../utils/venueRegionFilter';
 import { OUTING_TOPIC_PILLS } from './exploreOutingTopic';
-import { BUDDY_SUBTYPE_PILLS } from './exploreBuddySubtype';
+import { OTHERS_SUBTYPE_PILLS } from './exploreOthersSubtype';
 import { EXPLORE_SEARCH_SCOPE_COPY } from './exploreBrowseTaxonomy';
 
 const REGION_ALIASES = EXPLORE_EMIRATE_REGION_ALIASES;
@@ -76,7 +76,7 @@ const exploreItemCategorySearchTerms = (item: ExploreMapItemDTO): string[] => {
     push(terms, EXPLORE_SEARCH_SCOPE_COPY.activities.label);
   }
   if (exploreMapItemIsAvailabilityCatalog(item)) {
-    terms.push('availability', 'seeking', 'looking for', 'looking', 'crew', 'buddy', 'people', 'person');
+    terms.push('availability', 'intent', 'looking for', 'looking', 'crew', 'friends', 'people', 'person');
     push(terms, EXPLORE_SEARCH_SCOPE_COPY.people.label);
   }
   if (isGeographyMapSource(item.source)) {
@@ -128,7 +128,7 @@ const exploreItemCategorySearchTerms = (item: ExploreMapItemDTO): string[] => {
     if (pill) push(terms, pill.label);
   }
 
-  for (const pill of BUDDY_SUBTYPE_PILLS) {
+  for (const pill of OTHERS_SUBTYPE_PILLS) {
     if (item.outingCategory === pill.key) push(terms, pill.label);
   }
   if (item.outingCategory === 'events') terms.push('events', 'event');

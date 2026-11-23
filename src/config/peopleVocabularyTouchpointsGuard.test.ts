@@ -80,13 +80,13 @@ describe('peopleVocabularyTouchpointsGuard (MIG-PEOPLE-VOCAB-2026)', () => {
     expect(missing, missing.join('\n')).toEqual([]);
   });
 
-  it('PVOC-03: My Crews hub uses friends network hook + product copy (wire stays /me/buddies)', () => {
+  it('PVOC-03: My Crews hub uses friends network hook + product copy (wire /me/friends)', () => {
     const page = read('src/pages/MyCrews.tsx');
     expect(page).not.toMatch(/CrewBrowseTabContent/);
     expect(page).toMatch(/SocialHubIndex/);
-    expect(page).toMatch(/useMeBuddiesNetwork/);
+    expect(page).toMatch(/useMeFriendsNetwork/);
     expect(page).toMatch(/PRODUCT_MY_CREW_SURFACE_TITLE/);
-    expect(page).not.toMatch(/useMeFriendsNetwork/);
+    expect(page).not.toMatch(/useMeBuddiesNetwork/);
     expect(existsSync(join(ROOT, 'src/pages/Buddies.tsx'))).toBe(false);
   });
 
@@ -100,7 +100,7 @@ describe('peopleVocabularyTouchpointsGuard (MIG-PEOPLE-VOCAB-2026)', () => {
   it('PVOC-05: invite flow labels Friends; buddy fetch stays in invite client', () => {
     const invite = read('src/components/activity/ActivityInviteModalBody.tsx');
     expect(invite).toMatch(/Friends/);
-    expect(read('src/hooks/activityInviteClientApi.ts')).toMatch(/getMeBuddies/);
+    expect(read('src/hooks/activityInviteClientApi.ts')).toMatch(/getMeFriends/);
   });
 
   it('PVOC-06: Intent compose emits intent:* (availability/seek only inbound)', () => {
@@ -125,23 +125,23 @@ describe('peopleVocabularyTouchpointsGuard (MIG-PEOPLE-VOCAB-2026)', () => {
     expect(read('packages/shared-types/src/compose-route.ts')).not.toMatch(/wishlist/);
   });
 
-  it('PVOC-08: bounded contexts — buddy API domain isolated from member_discovery HTTP in other domains', () => {
-    expect(read('src/api/domains/buddies.ts')).toMatch(/\/me\/buddies/);
+  it('PVOC-08: bounded contexts — friends API domain isolated from member_discovery HTTP in other domains', () => {
+    expect(read('src/api/domains/friends.ts')).toMatch(/\/me\/friends/);
     expect(read('src/config/crossContextFoundationsGuard.test.ts')).toMatch(/CTX-FOUND-09/);
   });
 
-  it('PVOC-09b: friends roster — single buddies wire (no /me/friends alias)', () => {
-    expect(read('apps/api/src/routes/user/registerBuddyRoutes.ts')).toMatch(/\/me\/buddies/);
-    expect(read('apps/api/src/routes/user/registerBuddyRoutes.ts')).not.toMatch(/\/me\/friends/);
-    expect(read('src/api/domains/buddies.ts')).toMatch(/getMeBuddies/);
-    expect(read('src/api/domains/buddies.ts')).not.toMatch(/getMeFriends/);
-    expect(read('src/hooks/activityInviteClientApi.ts')).toMatch(/fetchMeBuddies/);
-    expect(read('src/hooks/activityInviteClientApi.ts')).not.toMatch(/fetchMeFriends/);
+  it('PVOC-09b: friends roster — canonical /me/friends (no /me/friends)', () => {
+    expect(read('apps/api/src/routes/user/registerFriendRoutes.ts')).toMatch(/\/me\/friends/);
+    expect(read('apps/api/src/routes/user/registerFriendRoutes.ts')).not.toMatch(/\/me\/buddies/);
+    expect(read('src/api/domains/friends.ts')).toMatch(/getMeFriends/);
+    expect(read('src/api/domains/friends.ts')).not.toMatch(/getMeBuddies/);
+    expect(read('src/hooks/activityInviteClientApi.ts')).toMatch(/fetchMeFriends/);
+    expect(read('src/hooks/activityInviteClientApi.ts')).not.toMatch(/fetchMeBuddies/);
   });
 
-  it('PVOC-09: authority matrix documents Friends product vs buddy wire', () => {
+  it('PVOC-09: authority matrix documents Friends product vs friends wire', () => {
     const matrix = JSON.parse(read('scripts/governance/authority-matrix.json'));
-    const buddy = (matrix.actions ?? []).find((a: { id: string }) => a.id === 'social.buddy_request');
+    const buddy = (matrix.actions ?? []).find((a: { id: string }) => a.id === 'social.friend_request');
     expect(buddy?.note).toMatch(/Friends/);
     const intent = (matrix.actions ?? []).find((a: { id: string }) => a.id === 'compose.emit_intent');
     expect(intent?.wirePrefix).toBe('intent:');

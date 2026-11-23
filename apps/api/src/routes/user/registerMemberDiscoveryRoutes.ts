@@ -22,7 +22,7 @@ const memberBrowseQuerySchema = paginationSchema.extend({
 });
 
 const peopleNetworkSegmentSchema = z.object({
-  segment: z.enum(['all', 'buddies', 'followed', 'friends']).default('all'),
+  segment: z.enum(['all', 'friends', 'followed']).default('all'),
 });
 
 /** Member discovery — directory, network, quota, search (MIG-ROUTING-CANON-P3). Find crew feed: `GET /discover/crew`. */

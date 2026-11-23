@@ -49,7 +49,7 @@ type UseExploreSelectionActionsArgs = {
   setLinkOnlyPeekItems: Dispatch<SetStateAction<ExploreMapItemDTO[]>>;
   onInviteActivity?: (
     activity: ActivityDTO,
-    options?: { canSendBuddyInvites?: boolean }
+    options?: { canSendFriendInvites?: boolean }
   ) => void;
   onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
   onOfferRideshareForAvailability?: () => void;
@@ -184,7 +184,7 @@ export const useExploreSelectionActions = ({
   const handleInviteCrew = useCallback(() => {
     const activity = selected?.activity;
     if (!activity || activity.status !== 'published') return;
-    onInviteActivity?.(activity, { canSendBuddyInvites: true });
+    onInviteActivity?.(activity, { canSendFriendInvites: true });
   }, [onInviteActivity, selected?.activity]);
 
   const handleGuestShareActivity = useCallback(

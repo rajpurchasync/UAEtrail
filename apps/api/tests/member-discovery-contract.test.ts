@@ -27,9 +27,9 @@ describe('member-discovery API contract', () => {
     expect(inviteRegistrar).toMatch(/\/:id\/invites/);
   });
 
-  it('buddy activity presence registers under buddy routes', () => {
-    const buddyRoutes = read('src/routes/user/registerBuddyRoutes.ts');
-    expect(buddyRoutes).toMatch(/\/me\/buddies\/activity-presence/);
+  it('friend activity presence registers under friend routes', () => {
+    const buddyRoutes = read('src/routes/user/registerFriendRoutes.ts');
+    expect(buddyRoutes).toMatch(/\/me\/friends\/activity-presence/);
     expect(buddyRoutes).not.toMatch(/whos-going/i);
   });
 

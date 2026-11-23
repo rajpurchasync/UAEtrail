@@ -28,7 +28,7 @@ describe('memberProfileFieldAccess', () => {
         exposure: 'full',
         canViewFullProfile: true,
         canOpenMemberProfile: true,
-        level: 'accepted_buddy',
+        level: 'accepted_friend',
         gateReason: null,
       })
     ).toBe(true);

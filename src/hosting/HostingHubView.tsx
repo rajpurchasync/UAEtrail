@@ -146,7 +146,7 @@ export const HostingHubView = ({ refreshKey, onCreateNew }: HostingHubViewProps)
   const mapPeekHandlersFor = useCallback(
     (activity: ActivityDTO): ActivityMapPeekActionHandlers => ({
       shareActivity: () =>
-        inviteShare.openShareFromActivity(activity, { canSendBuddyInvites: true }),
+        inviteShare.openShareFromActivity(activity, { canSendFriendInvites: true }),
       manageActivity: () => openManage(activity),
       openCrewChat: () =>
         void hostActions.openGroupChat(activity.id, activity.groupChatId, {

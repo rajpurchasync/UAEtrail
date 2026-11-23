@@ -5,10 +5,10 @@ const ADJACENCY_REDIS_TTL_SEC = 600;
 
 type IdListEntry = { expiresAt: number; ids: string[] };
 
-const buddyIdsByUser = new Map<string, IdListEntry>();
+const friendIdsByUser = new Map<string, IdListEntry>();
 const followingIdsByUser = new Map<string, IdListEntry>();
 
-const buddyRedisKey = (userId: string) => `social:adj:buddies:${userId}`;
+const friendRedisKey = (userId: string) => `social:adj:friends:${userId}`;
 const followingRedisKey = (userId: string) => `social:adj:following:${userId}`;
 
 const readIds = (map: Map<string, IdListEntry>, userId: string, now: number): string[] | undefined => {
@@ -22,20 +22,20 @@ const writeIds = (map: Map<string, IdListEntry>, userId: string, ids: string[], 
 };
 
 export const readCachedBuddyIdsForUser = (userId: string, now = Date.now()): string[] | undefined =>
-  readIds(buddyIdsByUser, userId, now);
+  readIds(friendIdsByUser, userId, now);
 
 export const writeCachedBuddyIdsForUser = (userId: string, ids: string[], now = Date.now()): void => {
-  writeIds(buddyIdsByUser, userId, ids, now);
+  writeIds(friendIdsByUser, userId, ids, now);
 };
 
-export const readBuddyAdjacencyIds = async (userId: string, now = Date.now()): Promise<string[] | undefined> => {
+export const readFriendAdjacencyIds = async (userId: string, now = Date.now()): Promise<string[] | undefined> => {
   const local = readCachedBuddyIdsForUser(userId, now);
   if (local) return local;
 
   const redis = await getRedisClient();
   if (!redis) return undefined;
   try {
-    const raw = await redis.get(buddyRedisKey(userId));
+    const raw = await redis.get(friendRedisKey(userId));
     if (!raw) return undefined;
     const ids = JSON.parse(raw) as string[];
     if (!Array.isArray(ids)) return undefined;
@@ -46,30 +46,30 @@ export const readBuddyAdjacencyIds = async (userId: string, now = Date.now()): P
   }
 };
 
-export const writeBuddyAdjacencyIds = async (userId: string, ids: string[]): Promise<void> => {
+export const writeFriendAdjacencyIds = async (userId: string, ids: string[]): Promise<void> => {
   const now = Date.now();
   writeCachedBuddyIdsForUser(userId, ids, now);
   const redis = await getRedisClient();
   if (!redis) return;
   try {
-    await redis.set(buddyRedisKey(userId), JSON.stringify(ids), { EX: ADJACENCY_REDIS_TTL_SEC });
+    await redis.set(friendRedisKey(userId), JSON.stringify(ids), { EX: ADJACENCY_REDIS_TTL_SEC });
   } catch {
     /* non-fatal */
   }
 };
 
 export const invalidateBuddyIdsCache = async (userId: string): Promise<void> => {
-  buddyIdsByUser.delete(userId);
+  friendIdsByUser.delete(userId);
   const redis = await getRedisClient();
   if (!redis) return;
   try {
-    await redis.del(buddyRedisKey(userId));
+    await redis.del(friendRedisKey(userId));
   } catch {
     /* non-fatal */
   }
 };
 
-export const invalidateBuddyIdsCacheForPair = async (userA: string, userB: string): Promise<void> => {
+export const invalidateFriendIdsCacheForPair = async (userA: string, userB: string): Promise<void> => {
   await Promise.all([invalidateBuddyIdsCache(userA), invalidateBuddyIdsCache(userB)]);
 };
 
@@ -126,6 +126,6 @@ export const invalidateFollowingIdsCache = async (userId: string): Promise<void>
 
 /** Test / admin flush */
 export const clearSocialAdjacencyReadCache = (): void => {
-  buddyIdsByUser.clear();
+  friendIdsByUser.clear();
   followingIdsByUser.clear();
 };

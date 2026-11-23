@@ -20,7 +20,8 @@ import {
 } from './exploreCopy';
 import { resolveExplorePrice } from './explorePriceLabel';
 import { extractExploreRequirementBadges } from './exploreRequirementBadges';
-import { resolveExploreHostLabel, resolveExploreHostPersonName } from '../utils/userDisplay';
+import { resolveHostPersonDisplayName } from '@uaetrail/shared-types';
+import { resolveExploreHostLabel } from '../utils/userDisplay';
 import { availabilityExploreMapItem, seekingExploreMapItem } from './exploreMapItemFixtures';
 
 describe('resolveMapPinEmoji', () => {
@@ -140,8 +141,8 @@ describe('resolveExploreHostLabel', () => {
 
   it('rejects org labels passed as hostName', () => {
     expect(
-      resolveExploreHostPersonName({
-        hostName: 'Desert Explorer',
+      resolveHostPersonDisplayName({
+        guideName: 'Desert Explorer',
         createdByName: 'Omar Al Hosani',
         tenantName: 'Desert Explorer',
       })
@@ -488,7 +489,11 @@ describe('buildDiscoveryCardViewModelCard (explore list copy)', () => {
     latitude: 25.3,
     longitude: 56.1,
     path: '/activity/1',
-    hostName: 'Sarah',
+    featuredPerson: {
+      userId: 'host-1',
+      displayName: 'Sarah',
+      role: 'host',
+    },
     date: '2026-09-12',
     time: '09:00',
     slotsAvailable: 8,
@@ -509,6 +514,8 @@ describe('buildDiscoveryCardViewModelCard (explore list copy)', () => {
       slotsTotal: 20,
       slotsAvailable: 8,
       status: 'published',
+      hostName: 'Sarah',
+      hostUserId: 'host-1',
     },
   };
 

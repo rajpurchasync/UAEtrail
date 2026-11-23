@@ -131,7 +131,7 @@ describe('route handler CQRS guard (MIG-CQRS-ROUTES)', () => {
       'apps/api/src/routes/user/registerPublicFacilityRoutes.ts',
       'apps/api/src/routes/user/registerExploreAvailabilityRoutes.ts',
       'apps/api/src/routes/user/registerPublicMemberRoutes.ts',
-      'apps/api/src/routes/user/registerBuddyRoutes.ts',
+      'apps/api/src/routes/user/registerFriendRoutes.ts',
       'apps/api/src/routes/user/registerMeWishlistRoutes.ts',
       'apps/api/src/routes/user/registerReviewRoutes.ts',
       'apps/api/src/routes/user/registerEntityFollowRoutes.ts',

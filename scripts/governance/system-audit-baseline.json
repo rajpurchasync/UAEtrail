@@ -660,20 +660,20 @@
         "apps/api/src/lib/mongo-indexes.ts"
       ]
     },
-    "BUDDY_REQUESTS": {
-      "mongoName": "buddy_requests",
+    "FRIEND_REQUESTS": {
+      "mongoName": "friend_requests",
       "referencingFiles": 1,
       "writerFiles": 0,
       "sampleFiles": [
         "apps/api/src/lib/mongo-indexes.ts"
       ]
     },
-    "BUDDY_PAIRS": {
-      "mongoName": "buddy_pairs",
+    "FRIEND_PAIRS": {
+      "mongoName": "friend_pairs",
       "referencingFiles": 2,
       "writerFiles": 1,
       "sampleFiles": [
-        "apps/api/src/lib/buddy-store.ts",
+        "apps/api/src/lib/friend-store.ts",
         "apps/api/src/lib/mongo-indexes.ts"
       ]
     },
@@ -896,8 +896,8 @@
     "LEGACY_SOCIAL_GROUP_WALL": 1,
     "LEGACY_SOCIAL_GROUP_WALL_REACTIONS": 1,
     "ACTIVITY_FAMILY_INVITES": 1,
-    "BUDDY_REQUESTS": 0,
-    "BUDDY_PAIRS": 1,
+    "FRIEND_REQUESTS": 0,
+    "FRIEND_PAIRS": 1,
     "USER_FOLLOWS": 1,
     "ENTITY_FOLLOWS": 1,
     "USER_WISHLIST": 3,

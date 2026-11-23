@@ -155,15 +155,15 @@
       "id": "social_graph",
       "label": "Social graph",
       "apiFiles": [
-        "apps/api/src/lib/buddy-store.ts",
-        "apps/api/src/services/buddy-activity-presence.ts"
+        "apps/api/src/lib/friend-store.ts",
+        "apps/api/src/services/friend-activity-presence.ts"
       ],
       "routeRegistrars": [
-        "apps/api/src/routes/user/registerBuddyRoutes.ts",
+        "apps/api/src/routes/user/registerFriendRoutes.ts",
         "apps/api/src/routes/user/registerFollowRoutes.ts",
         "apps/api/src/routes/user/registerGroupRoutes.ts"
       ],
-      "feDomains": ["src/api/domains/buddies.ts", "src/api/domains/groups.ts"],
+      "feDomains": ["src/api/domains/friends.ts", "src/api/domains/groups.ts"],
       "feRoots": ["src/pages/MyCrews.tsx", "src/pages/Groups.tsx"]
     },
     {
@@ -468,7 +468,7 @@
     "areas",
     "availability",
     "badges",
-    "buddies",
+    "friends",
     "chat",
     "entityFollow",
     "explore",

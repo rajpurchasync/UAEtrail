@@ -19,7 +19,7 @@ type Props = {
   activity: ActivityDetailDTO;
   previewMode: boolean;
   showMobileTabs: boolean;
-  mobileBuddiesPanel: string;
+  mobileCrewPanel: string;
   sharePayload: SharePayload;
   sidebarJoin: ReactNode;
   message: string | null;
@@ -55,7 +55,7 @@ export const ActivityDetailPricingSidebar = ({
   activity,
   previewMode,
   showMobileTabs,
-  mobileBuddiesPanel,
+  mobileCrewPanel,
   sharePayload,
   sidebarJoin,
   message,
@@ -102,7 +102,7 @@ export const ActivityDetailPricingSidebar = ({
         variant="section"
         activity={activity}
         previewMode={previewMode}
-        panelClassName={`mt-5 pt-5 border-t border-gray-100 ${showMobileTabs ? mobileBuddiesPanel : ''}`}
+        panelClassName={`mt-5 pt-5 border-t border-gray-100 ${showMobileTabs ? mobileCrewPanel : ''}`}
         hostPath={hostPath}
         hostProfileHint={hostProfileHint}
         canOpenHostProfile={canOpenHostProfile}
@@ -117,20 +117,20 @@ export const ActivityDetailPricingSidebar = ({
         activityId={activity.id}
         rateableCount={hostRateableCount}
         activityEnded={hostActivityEnded}
-        panelClassName={showMobileTabs ? `${mobileBuddiesPanel} mt-5` : 'mt-5'}
+        panelClassName={showMobileTabs ? `${mobileCrewPanel} mt-5` : 'mt-5'}
       />
     ) : null}
 
     {showParticipantReviewPrompts ? (
       <ActivityPostCheckInReviewPrompts
         items={participantReviewPrompts}
-        panelClassName={showMobileTabs ? `${mobileBuddiesPanel} mt-5` : 'mt-5'}
+        panelClassName={showMobileTabs ? `${mobileCrewPanel} mt-5` : 'mt-5'}
         onMobileTabChange={onMobileTabChange}
       />
     ) : null}
 
     {hostCrewChatPolicy && !previewMode ? (
-      <div className={`${showMobileTabs ? mobileBuddiesPanel : ''} mb-4`}>
+      <div className={`${showMobileTabs ? mobileCrewPanel : ''} mb-4`}>
         <ActivityCrewChatPostPolicyCard
           activityId={activity.id}
           tenantId={hostCrewChatPolicy.tenantId}
@@ -142,7 +142,7 @@ export const ActivityDetailPricingSidebar = ({
     ) : null}
 
     {PARTICIPANT_PRIVACY.showPreJoin && !previewMode && canAccessCrewSurfaces && !hideParticipantsRoster && (
-      <div className={`mt-5 pt-5 border-t border-gray-100 ${showMobileTabs ? mobileBuddiesPanel : ''}`}>
+      <div className={`mt-5 pt-5 border-t border-gray-100 ${showMobileTabs ? mobileCrewPanel : ''}`}>
         <Link
           to={activityCrewPath(activity.id)}
           className="text-sm font-semibold text-emerald-700 hover:underline"

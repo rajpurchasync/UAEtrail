@@ -59,7 +59,7 @@ export const updateMeGroupMemberActive = async (
 export const updateMeGroupMemberRole = async (
   groupId: string,
   membershipId: string,
-  role: 'buddy' | 'admin'
+  role: 'member' | 'admin'
 ): Promise<void> => {
   await api.updateMeGroupMemberRole(groupId, membershipId, role);
 };
@@ -70,7 +70,7 @@ export const removeMeGroupMember = async (groupId: string, membershipId: string)
 
 export const createMeGroupInviteLink = async (
   groupId: string,
-  payload: { email: string; role: 'admin' | 'buddy' }
+  payload: { email: string; role: 'admin' | 'member' }
 ): Promise<{ invite: SocialGroupInviteView; inviteLink: string }> => {
   const res = await api.createMeGroupInvite(groupId, payload);
   return { invite: res.data, inviteLink: res.inviteLink };

@@ -1,6 +1,6 @@
 import type {
-  BuddyRelationshipDTO,
-  BuddyRequestDTO,
+  FriendRelationshipDTO,
+  FriendRequestDTO,
   MemberFollowSummaryDTO,
   MemberDiscoveryQuotaDTO,
   MemberBrowseCardDTO,
@@ -61,42 +61,42 @@ export const fetchExplorePeopleAvailability = async (params: {
   to: string;
   kind?: string;
   area?: string;
-  buddiesOnly?: boolean;
+  friendsOnly?: boolean;
 }): Promise<ExploreAvailabilityIndex> => {
   const res = await api.explorePeopleAvailability(params);
   return res.data;
 };
 
-export const sendMemberBuddyRequest = async (
+export const sendMemberFriendRequest = async (
   targetUserId: string,
   message?: string
-): Promise<BuddyRequestDTO> => {
-  const res = await api.sendBuddyRequest({ targetUserId, message });
+): Promise<FriendRequestDTO> => {
+  const res = await api.sendFriendRequest({ targetUserId, message });
   return res.data;
 };
 
-export const fetchBuddyRelationship = async (userId: string): Promise<BuddyRelationshipDTO> => {
-  const res = await api.getBuddyRelationship(userId);
+export const fetchFriendRelationship = async (userId: string): Promise<FriendRelationshipDTO> => {
+  const res = await api.getFriendRelationship(userId);
   return res.data;
 };
 
-export const acceptMemberBuddyRequest = async (requestId: string): Promise<BuddyRequestDTO> => {
-  const res = await api.acceptBuddyRequest(requestId);
+export const acceptMemberFriendRequest = async (requestId: string): Promise<FriendRequestDTO> => {
+  const res = await api.acceptFriendRequest(requestId);
   return res.data;
 };
 
-export const declineMemberBuddyRequest = async (requestId: string): Promise<BuddyRequestDTO> => {
-  const res = await api.declineBuddyRequest(requestId);
+export const declineMemberFriendRequest = async (requestId: string): Promise<FriendRequestDTO> => {
+  const res = await api.declineFriendRequest(requestId);
   return res.data;
 };
 
-export const cancelMemberBuddyRequest = async (requestId: string): Promise<BuddyRequestDTO> => {
-  const res = await api.cancelBuddyRequest(requestId);
+export const cancelMemberFriendRequest = async (requestId: string): Promise<FriendRequestDTO> => {
+  const res = await api.cancelFriendRequest(requestId);
   return res.data;
 };
 
-export const unfriendMemberBuddy = async (userId: string): Promise<void> => {
-  await api.unfriendBuddy(userId);
+export const unfriendMember = async (userId: string): Promise<void> => {
+  await api.unfriendMember(userId);
 };
 
 export const fetchMeFollowingMembers = async (): Promise<MemberFollowSummaryDTO[]> => {

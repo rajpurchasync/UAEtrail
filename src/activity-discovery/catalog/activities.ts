@@ -15,7 +15,7 @@ import {
   exploreItemMatchesPriceFilter,
   type ExplorePriceFilter,
 } from '../../explore/exploreOptionalFilters';
-import { isBuddyMapItem } from '../../explore/ui/exploreMapPinModel';
+import { isFriendMapItem } from '../../explore/ui/exploreMapPinModel';
 import {
   selectAvailabilityFromMapItems,
   type MapAvailabilityFilters,
@@ -45,14 +45,14 @@ export const selectActivitiesFromMapItems = (
 
   return sortExploreActivities(
     mapItems
-      .filter(isBuddyMapItem)
+      .filter(isFriendMapItem)
       .filter((item) => !exploreMapItemIsLegacySeekingActivity(item))
       .filter((item) =>
         matchesTripMapTopicFilter(
           item,
           filters.tripMapTopics ?? [],
           filters.mapFilter,
-          filters.buddySubtype,
+          filters.othersSubtype,
           filters.outingTopic
         )
       )

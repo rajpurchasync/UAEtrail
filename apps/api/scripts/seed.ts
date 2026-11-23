@@ -286,7 +286,7 @@ const seedMobileInboxDemo = async (input: {
   await ensureGroupMember({
     groupId: friendsGroup.id,
     userId: input.agencyGuideId,
-    role: 'buddy',
+    role: 'member',
     createdByUserId: input.participantId,
   });
 

@@ -7,7 +7,7 @@ const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 /**
  * DMCP Phase 7 — product: Teams · outing crew · Friends · /plan hub.
  * Not "social" or "buddies" product copy (`buddies=` URL segment retired — see crewsTerminologyGuard).
- * Wire: `/buddies`, `buddy-store`, `buddiesApi` are stable paths only.
+ * Wire: `/me/friends`, `friend-store` (Mongo), `friendsApi` are stable paths only.
  * Discoverable Communities: MIG-COMMUNITY-DISCOVER (in_progress — API phase 1).
  */
 describe('peopleGraphPlanSpineGuard (DMCP Phase 7)', () => {
@@ -52,12 +52,12 @@ describe('peopleGraphPlanSpineGuard (DMCP Phase 7)', () => {
     expect(read('src/pages/Groups.tsx')).toMatch(/teamLabel|Team/);
   });
 
-  it('PEOPLE-SPINE-05: Friends + Teams client spine (groupsApi; buddy wire only)', () => {
+  it('PEOPLE-SPINE-05: Friends + Teams client spine (groupsApi; friends wire only)', () => {
     expect(read('src/api/domains/messaging.ts')).toMatch(/groupsApi/);
     const matrix = JSON.parse(read('scripts/governance/authority-matrix.json'));
     const byId = new Map((matrix.actions ?? []).map((a: { id: string }) => [a.id, a]));
     expect(byId.get('social.group_create')?.label).toMatch(/team/i);
-    expect(byId.get('social.buddy_request')?.note).toMatch(/Friends/);
+    expect(byId.get('social.friend_request')?.note).toMatch(/Friends/);
     expect(byId.get('people.plan_hub')?.resolver?.symbol).toBe('memberCommitmentHubApi');
   });
 

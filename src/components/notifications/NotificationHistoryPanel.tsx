@@ -47,9 +47,9 @@ const isBadgeNotification = (notif: NotificationDTO): boolean => {
   return kind === 'badge' || kind === 'reward' || kind === 'tier_upgrade';
 };
 
-const isBuddyInviteNotification = (notif: NotificationDTO): boolean => {
+const isFriendInviteNotification = (notif: NotificationDTO): boolean => {
   const kind = notificationKind(notif);
-  return kind === 'connection_buddy_request' || kind === 'connection_buddy_accepted' || kind === 'group_invite';
+  return kind === 'connection_friend_request' || kind === 'connection_friend_accepted' || kind === 'group_invite';
 };
 
 const SETTINGS_CARD =
@@ -196,7 +196,7 @@ export const NotificationHistoryPanel = () => {
                   const wishlistPath = wishlistMatchPathFromMeta(notif);
                   const activityInviteId = activityJoinInviteIdFromMeta(notif);
                   const inviteToken = inviteTokenFromMeta(notif);
-                  const showBuddyActions = isBuddyInviteNotification(notif) && inviteToken;
+                  const showFriendActions = isFriendInviteNotification(notif) && inviteToken;
 
                   const rowActions = (
                     <>
@@ -242,7 +242,7 @@ export const NotificationHistoryPanel = () => {
                           </Link>
                         </div>
                       ) : null}
-                      {showBuddyActions ? (
+                      {showFriendActions ? (
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 pb-3 max-md:pl-2">
                           <button
                             type="button"

@@ -13,7 +13,7 @@ import {
   type MapFilterKey,
   type VenueListFilterKey,
 } from './routing';
-import { parseExploreBuddySubtype, type ExploreBuddySubtypeKey } from './exploreBuddySubtype';
+import { parseExploreOthersSubtype, type ExploreOthersSubtypeKey } from './exploreOthersSubtype';
 import { parseExploreOutingTopic, type ExploreOutingTopicKey } from './exploreOutingTopic';
 import { MAP_FILTERS_BY_BROWSE_TAB, parseDesktopBrowseTab, type DesktopBrowseTab } from './ui/exploreBrowsePanelCopy';
 import { parseListOpen } from './ui/exploreListPanelUrl';
@@ -73,7 +73,7 @@ export type ExploreBrowseUrlHydratedState = {
   geoPath: string[];
   activityDatePreset: ExploreActivityDatePreset;
   activityModeFilter: ExploreActivityModeFilter;
-  buddySubtype: ExploreBuddySubtypeKey;
+  othersSubtype: ExploreOthersSubtypeKey;
   outingTopic: ExploreOutingTopicKey;
   pinKind: ExplorePinKindFilter;
   topicPills: ExploreMapFilterPillKey[];
@@ -143,7 +143,7 @@ export const parseExploreBrowseStateFromSearchParams = (
   } else if (inActivitiesContext && !allowedForActivities.includes(nextMapFilter)) {
     nextMapFilter = 'all';
   }
-  const nextSubtype = parseExploreBuddySubtype(searchParams.get('subtype'), nextMapFilter);
+  const nextSubtype = parseExploreOthersSubtype(searchParams.get('subtype'), nextMapFilter);
 
   return {
     mapFilter: nextMapFilter,
@@ -166,7 +166,7 @@ export const parseExploreBrowseStateFromSearchParams = (
     activityModeFilter: parseExploreActivityModeFilter(
       searchParams.get(EXPLORE_ACTIVITY_MODE_FILTER_PARAM)
     ),
-    buddySubtype: nextSubtype,
+    othersSubtype: nextSubtype,
     outingTopic: parseExploreOutingTopic(searchParams.get('outingTopic'), nextMapFilter, nextSubtype),
     pinKind: parseExplorePinKindFilter(searchParams.get('pinKind')),
     topicPills: parseExploreMapFilterPillsParam(searchParams.get('topics')),

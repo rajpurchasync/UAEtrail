@@ -30,7 +30,7 @@ export type ActivityEngagementCapabilities = {
   joinEngagement: ActivityJoinEngagementKind;
   canAccessCrewSurfaces: boolean;
   canViewHostProfileBeforeJoin: boolean;
-  canViewFullBuddyRoster: boolean;
+  canViewFullFriendRoster: boolean;
   canOfferTransport: boolean;
   canAddLinkedRide: boolean;
   canMessageHostBeforeJoin: boolean;
@@ -128,7 +128,7 @@ const resolveStrips = (
     showOfferRideInLogistics:
       capabilities.canOfferTransport || capabilities.canAddLinkedRide,
     maskRosterToFriendsOnly:
-      !capabilities.isHostUser && !capabilities.canViewFullBuddyRoster,
+      !capabilities.isHostUser && !capabilities.canViewFullFriendRoster,
     pendingJoinInviteCount: canShowPendingInvites ? pendingJoinInviteCount : 0,
   };
 };
@@ -150,7 +150,7 @@ export const resolveActivityEngagementPolicy = (
     joinEngagement: presentation.engagement.joinEngagement,
     canAccessCrewSurfaces: presentation.engagement.canAccessCrewSurfaces,
     canViewHostProfileBeforeJoin: entitlements?.canViewHostProfileBeforeJoin ?? false,
-    canViewFullBuddyRoster: entitlements?.canViewFullBuddyRoster ?? false,
+    canViewFullFriendRoster: entitlements?.canViewFullFriendRoster ?? false,
     canOfferTransport: entitlements?.canOfferTransport ?? false,
     canAddLinkedRide: entitlements?.canAddLinkedRide ?? false,
     canMessageHostBeforeJoin: entitlements?.canMessageHostBeforeJoin ?? false,

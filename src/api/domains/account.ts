@@ -1,9 +1,9 @@
 import { apiRequest, downloadAuthenticatedFile, getStoredSession } from '../client';
 import type {
   ActivityDTO,
-  BuddyActivityPresenceRowDTO,
-  BuddyRequestDTO,
-  BuddySummaryDTO,
+  FriendActivityPresenceRowDTO,
+  FriendRequestDTO,
+  FriendSummaryDTO,
   ChatConversationDTO,
   MemberDiscoveryQuotaDTO,
   MemberInboxGroupDTO,
@@ -36,8 +36,8 @@ export const accountApi = {
             groups: MemberInboxGroupDTO[];
             directConversationsDegraded?: boolean;
           };
-          buddies: BuddySummaryDTO[];
-          incomingBuddyRequests: BuddyRequestDTO[];
+          buddies: FriendSummaryDTO[];
+          incomingBuddyRequests: FriendRequestDTO[];
         };
       }>('/me/participant-hub', { auth: true }),
 
@@ -309,12 +309,12 @@ export const accountApi = {
       );
     },
 
-    getMeBuddyActivityPresence: (options?: { date?: string | null }) => {
+    getMeFriendActivityPresence: (options?: { date?: string | null }) => {
       const params = new URLSearchParams();
       if (options?.date) params.set('date', options.date);
       const qs = params.toString();
-      return apiRequest<{ data: { rows: BuddyActivityPresenceRowDTO[] } }>(
-        `/me/buddies/activity-presence${qs ? `?${qs}` : ''}`,
+      return apiRequest<{ data: { rows: FriendActivityPresenceRowDTO[] } }>(
+        `/me/friends/activity-presence${qs ? `?${qs}` : ''}`,
         { auth: true }
       );
     },

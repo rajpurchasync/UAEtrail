@@ -296,12 +296,12 @@ export const ActivityDetail = () => {
 
   const onHostShareOuting = useCallback(() => {
     if (!activity || activity.status !== 'published') return;
-    inviteShare.openShareFromActivity(activity, { canSendBuddyInvites: true });
+    inviteShare.openShareFromActivity(activity, { canSendFriendInvites: true });
   }, [activity, inviteShare]);
 
   const onParticipantInviteFriends = useCallback(() => {
     if (!activity || activity.status !== 'published') return;
-    inviteShare.openShareFromActivity(activity, { canSendBuddyInvites: true });
+    inviteShare.openShareFromActivity(activity, { canSendFriendInvites: true });
   }, [activity, inviteShare]);
 
   const canInviteFriendsToActivity =
@@ -366,7 +366,7 @@ export const ActivityDetail = () => {
     if (!user) return;
     if (activity.status !== 'published') return;
     resumeInviteHandledRef.current = true;
-    inviteShare.openShareFromActivity(activity, { canSendBuddyInvites: true });
+    inviteShare.openShareFromActivity(activity, { canSendFriendInvites: true });
     const next = new URLSearchParams(searchParams);
     next.delete(AUTH_RESUME_INVITE_FRIENDS_QUERY);
     setSearchParams(next, { replace: true });

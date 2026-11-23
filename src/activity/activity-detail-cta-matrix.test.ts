@@ -41,7 +41,7 @@ describe('activity detail CTA matrix — runtime (AD-CTA-01)', () => {
       isFriendOfHost: false,
       level: 'public',
       canAccessCrewSurfaces: false,
-      buddyUserIdsOnActivity: [],
+      friendUserIdsOnActivity: [],
     });
     const policy = resolveActivityEngagementPolicy({
       ...meeting,
@@ -66,7 +66,7 @@ describe('activity detail CTA matrix — runtime (AD-CTA-01)', () => {
       isFriendOfHost: false,
       level: 'public',
       canAccessCrewSurfaces: false,
-      buddyUserIdsOnActivity: [],
+      friendUserIdsOnActivity: [],
     });
     const policy = resolveActivityEngagementPolicy({
       ...meeting,
@@ -95,7 +95,7 @@ describe('activity detail CTA matrix — runtime (AD-CTA-01)', () => {
       isFriendOfHost: false,
       level: 'participant',
       canAccessCrewSurfaces: true,
-      buddyUserIdsOnActivity: [],
+      friendUserIdsOnActivity: [],
     });
     const policy = resolveActivityEngagementPolicy({
       ...meeting,
@@ -126,7 +126,7 @@ describe('activity detail CTA matrix — runtime (AD-CTA-01)', () => {
       isFriendOfHost: false,
       level: 'host',
       canAccessCrewSurfaces: true,
-      buddyUserIdsOnActivity: [],
+      friendUserIdsOnActivity: [],
     });
     const policy = resolveActivityEngagementPolicy({
       ...meeting,
@@ -156,7 +156,7 @@ describe('activity detail CTA matrix — runtime (AD-CTA-01)', () => {
       isFriendOfHost: false,
       level: 'host',
       canAccessCrewSurfaces: true,
-      buddyUserIdsOnActivity: ['u-joiner'],
+      friendUserIdsOnActivity: ['u-joiner'],
     });
     const policy = resolveActivityEngagementPolicy({
       ...meeting,

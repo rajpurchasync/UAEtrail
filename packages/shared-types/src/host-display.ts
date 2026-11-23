@@ -37,7 +37,7 @@ export const resolveHostPersonDisplayName = (input: HostPersonNameInput): string
     const trimmed = candidate?.trim();
     if (!trimmed || isRolePlaceholderDisplayName(trimmed)) continue;
     if (tenant && trimmed.toLowerCase() === tenant.toLowerCase()) {
-      // Buddy / Find tenants are often named after the member — still show their name on peek cards.
+      // Community / Find tenants are often named after the member — still show their name on peek cards.
       if (createdBy && trimmed.toLowerCase() === createdBy.toLowerCase()) return trimmed;
       continue;
     }

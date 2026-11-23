@@ -69,7 +69,7 @@ export const buildMemberBrowseRowFromAvailability = (
     profileHref: memberProfileLink(person.userId, 'available'),
     displayName: person.displayName,
     avatarUrl: person.avatarUrl ?? null,
-    buddyHighlight: person.isBuddy,
+    buddyHighlight: person.isFriend,
     title: crewBrowseAvailabilitySentence(person.displayName, labels, person.slots),
     dateLine: crewBrowseAvailabilityDateLine(person.slots),
     titleClamp: 'wrap',

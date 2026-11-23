@@ -16,7 +16,7 @@ describe('notificationTopics', () => {
   it('maps to Trips · Social · Account buckets', () => {
     expect(inferNotificationTopic(base({ meta: { kind: 'message' } }))).toBe('social');
     expect(inferNotificationTopic(base({ meta: { kind: 'join_request_pending' } }))).toBe('plans');
-    expect(inferNotificationTopic(base({ meta: { kind: 'connection_buddy_request' } }))).toBe('social');
+    expect(inferNotificationTopic(base({ meta: { kind: 'connection_friend_request' } }))).toBe('social');
     expect(inferNotificationTopic(base({ meta: { kind: 'badge' } }))).toBe('account');
     expect(inferNotificationTopic(base({ meta: { kind: 'host_application_approved' } }))).toBe('account');
   });

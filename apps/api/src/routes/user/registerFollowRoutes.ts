@@ -7,7 +7,7 @@ import {
   loadMeMemberFollowState,
   loadMeProfileEngagementStats,
 } from '../../services/member-follow-read.js';
-import { buddyRelationshipParamSchema } from './schemas.js';
+import { friendRelationshipParamSchema } from './schemas.js';
 
 export const registerFollowRoutes = (router: Router): void => {
   router.get('/me/profile-stats', async (req, res, next) => {
@@ -30,10 +30,10 @@ export const registerFollowRoutes = (router: Router): void => {
 
   router.get(
     '/me/follow-state/:userId',
-    validate({ params: buddyRelationshipParamSchema }),
+    validate({ params: friendRelationshipParamSchema }),
     async (req, res, next) => {
       try {
-        const { userId } = req.params as z.infer<typeof buddyRelationshipParamSchema>;
+        const { userId } = req.params as z.infer<typeof friendRelationshipParamSchema>;
         const data = await loadMeMemberFollowState(req.auth!.userId, userId);
         res.json({ data });
       } catch (error) {
@@ -44,10 +44,10 @@ export const registerFollowRoutes = (router: Router): void => {
 
   router.post(
     '/me/following/:userId',
-    validate({ params: buddyRelationshipParamSchema }),
+    validate({ params: friendRelationshipParamSchema }),
     async (req, res, next) => {
       try {
-        const { userId } = req.params as z.infer<typeof buddyRelationshipParamSchema>;
+        const { userId } = req.params as z.infer<typeof friendRelationshipParamSchema>;
         const data = await followMemberForUser(req.auth!.userId, userId);
         res.status(201).json({ data });
       } catch (error) {
@@ -58,10 +58,10 @@ export const registerFollowRoutes = (router: Router): void => {
 
   router.delete(
     '/me/following/:userId',
-    validate({ params: buddyRelationshipParamSchema }),
+    validate({ params: friendRelationshipParamSchema }),
     async (req, res, next) => {
       try {
-        const { userId } = req.params as z.infer<typeof buddyRelationshipParamSchema>;
+        const { userId } = req.params as z.infer<typeof friendRelationshipParamSchema>;
         const data = await unfollowMemberForUser(req.auth!.userId, userId);
         res.json({ data });
       } catch (error) {

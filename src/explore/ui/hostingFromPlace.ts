@@ -34,7 +34,7 @@ export const createDraftFromRegistryPlace = (
   return {
     ...base,
     kind,
-    genericBuddy: false,
+    communityHostFlow: false,
     ...ladder,
     ...patch,
     registryPlaceAreaId:

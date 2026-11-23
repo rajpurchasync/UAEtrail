@@ -93,14 +93,14 @@ export const resolveNotificationPreferenceTopic = (
   const k = (kind ?? '').toLowerCase();
   if (k === 'wishlist_match' || k.includes('map') || k.includes('wishlist')) return 'map_alerts';
   if (
-    k === 'connection_buddy_request' ||
-    k === 'connection_buddy_accepted' ||
+    k === 'connection_friend_request' ||
+    k === 'connection_friend_accepted' ||
     k === 'connection_member_followed' ||
     k === 'group_invite' ||
     k === 'group_invite_accepted' ||
     k === 'group_message' ||
     k === 'message' ||
-    k.includes('buddy') ||
+    k.includes('friend') ||
     k.includes('comment_')
   ) {
     return 'social';

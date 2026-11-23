@@ -48,7 +48,7 @@ export const ActivityDetailPlanColumn = ({
             date: model.activity.date,
             locationName: model.activity.locationName,
           }}
-          canSendBuddyInvites
+          canSendFriendInvites
         />
       ) : null}
 

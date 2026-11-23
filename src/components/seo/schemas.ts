@@ -4,7 +4,7 @@ import {
   resolveActivityPublisherProfilePath,
 } from '@uaetrail/shared-types';
 import { SITE_ORIGIN, toAbsoluteUrl } from '../../config/seo';
-import type { Place, PlaceAsCamp, PlaceAsEvent, PlaceAsTrail } from '../../types/place';
+import type { Place } from '../../types/place';
 import { placeDetailPath } from '../../utils/placePaths';
 import type { TenantPublicDTO } from '@uaetrail/shared-types';
 import { activityHostName } from '../../utils/hostLabels';
@@ -84,15 +84,6 @@ export const placeSchema = (place: Place) => {
     ].filter(Boolean),
   };
 };
-
-/** @deprecated Use {@link placeSchema} */
-export const trailSchema = (trail: PlaceAsTrail) => placeSchema({ ...trail, activityType: 'hiking' });
-
-/** @deprecated Use {@link placeSchema} */
-export const eventVenueSchema = (event: PlaceAsEvent) => placeSchema({ ...event, activityType: 'event' });
-
-/** @deprecated Use {@link placeSchema} */
-export const campSchema = (camp: PlaceAsCamp) => placeSchema({ ...camp, activityType: 'camping' });
 
 export const activityEventSchema = (activity: ActivityDetailDTO) => {
   const schema = buildActivityEventJsonLd(activity, SITE_ORIGIN) as Record<string, unknown>;

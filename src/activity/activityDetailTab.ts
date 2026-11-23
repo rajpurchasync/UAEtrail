@@ -23,7 +23,6 @@ export const ACTIVITY_DETAIL_TAB_LABELS: Record<ActivityDetailTabId, string> = {
 };
 
 export const parseActivityDetailTabParam = (value: string | null | undefined): ActivityDetailTabId => {
-  if (value === 'buddies') return 'crew';
   if (value === 'place' || value === 'crew' || value === 'transport') return value;
   return 'plan';
 };

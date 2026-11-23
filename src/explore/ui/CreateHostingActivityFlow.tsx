@@ -139,7 +139,7 @@ export interface CreateHostingActivityFlowProps {
   hostingKindFlow?: HostingKindFlow | null;
   seekingPrefill?: HostingWizardPrefill | null;
   onCreateLinkedRideshare?: (parentActivity: ActivityDTO) => void;
-  planWithBuddyUserId?: string | null;
+  planWithFriendUserId?: string | null;
   /** Plan manage / host console — update this outing in place (not a new map publish). */
   editActivity?: ActivityDTO | null;
 }
@@ -154,7 +154,7 @@ export const CreateHostingActivityFlow = ({
   hostComposeKind = null,
   hostingKindFlow = null,
   seekingPrefill = null,
-  planWithBuddyUserId = null,
+  planWithFriendUserId = null,
   editActivity = null,
 }: CreateHostingActivityFlowProps) => {
   const navigate = useNavigate();
@@ -217,13 +217,13 @@ export const CreateHostingActivityFlow = ({
   const [rideshareOfferNotice, setRideshareOfferNotice] = useState<string | null>(null);
 
   const kind = draft.kind ?? selectedKind;
-  const hikingFlow = isHikingHostingFlow(kind, draft.genericBuddy);
-  const campingFlow = isCampingHostingFlow(kind, draft.genericBuddy);
-  const eventFlow = isEventHostingFlow(kind, draft.genericBuddy);
-  const activityFlow = isActivityHostingFlow(kind, draft.genericBuddy);
-  const rideshareFlow = isRideshareHostingFlow(kind, draft.genericBuddy);
-  const goingFromFlow = usesGoingFromHostingStep(kind, draft.genericBuddy);
-  const structuredFlow = isStructuredHostingFlow(kind, draft.genericBuddy);
+  const hikingFlow = isHikingHostingFlow(kind, draft.communityHostFlow);
+  const campingFlow = isCampingHostingFlow(kind, draft.communityHostFlow);
+  const eventFlow = isEventHostingFlow(kind, draft.communityHostFlow);
+  const activityFlow = isActivityHostingFlow(kind, draft.communityHostFlow);
+  const rideshareFlow = isRideshareHostingFlow(kind, draft.communityHostFlow);
+  const goingFromFlow = usesGoingFromHostingStep(kind, draft.communityHostFlow);
+  const structuredFlow = isStructuredHostingFlow(kind, draft.communityHostFlow);
   const registryPlaceType = hostingKindFlow
     ? registryPlaceTypeForHostingKindFlow(hostingKindFlow)
     : kind === 'hiking' || kind === 'camping' || kind === 'event'
@@ -248,14 +248,14 @@ export const CreateHostingActivityFlow = ({
       return hostingKindFlow.getSteps({
         placeLabelSource: draft.placeLabelSource,
         registryPlaceId: draft.registryPlaceId,
-        genericBuddy: draft.genericBuddy,
+        communityHostFlow: draft.communityHostFlow,
       });
     }
-    return getCreateFlowSteps(kind, draft.genericBuddy, {
+    return getCreateFlowSteps(kind, draft.communityHostFlow, {
       placeLabelSource: draft.placeLabelSource,
       registryPlaceId: draft.registryPlaceId,
     });
-  }, [kind, hostingKindFlow, draft.genericBuddy, draft.placeLabelSource, draft.registryPlaceId]);
+  }, [kind, hostingKindFlow, draft.communityHostFlow, draft.placeLabelSource, draft.registryPlaceId]);
   const wizardPages = useMemo(
     () => (isMobile ? flowSteps.map((id) => [id]) : bundleHostingWizardPages(flowSteps)),
     [flowSteps, isMobile]
@@ -269,8 +269,8 @@ export const CreateHostingActivityFlow = ({
     setStep(meetingIdx >= 0 ? flowSteps[meetingIdx] : flowSteps[0] ?? 'title');
   }, [flowSteps, step, kind]);
   const stepTitleOptions = useMemo(
-    () => ({ genericBuddy: draft.genericBuddy }),
-    [draft.genericBuddy]
+    () => ({ communityHostFlow: draft.communityHostFlow }),
+    [draft.communityHostFlow]
   );
   const dateOptions = useMemo(() => buildDateOptions(), []);
 
@@ -322,9 +322,9 @@ export const CreateHostingActivityFlow = ({
         ? hostingKindFlow.getSteps({
             placeLabelSource: wizardPrefill.draft.placeLabelSource,
             registryPlaceId: wizardPrefill.draft.registryPlaceId,
-            genericBuddy: wizardPrefill.draft.genericBuddy,
+            communityHostFlow: wizardPrefill.draft.communityHostFlow,
           })
-        : getCreateFlowSteps(prefillKind, wizardPrefill.draft.genericBuddy);
+        : getCreateFlowSteps(prefillKind, wizardPrefill.draft.communityHostFlow);
       setStep(steps[0] ?? 'title');
       setError(null);
       setPublishStatus(HOSTING_PUBLISH_FLOW_IDLE);
@@ -355,14 +355,14 @@ export const CreateHostingActivityFlow = ({
       const nextDraft: CreateActivityDraft = {
         ...emptyCreateActivityDraft(),
         kind: createKind,
-        genericBuddy: seed.genericBuddy,
+        communityHostFlow: seed.communityHostFlow,
         participationMode,
         capacity: defaultCapacityForKind(createKind),
         joinMode: 'open',
       };
       setDraft(nextDraft);
       setSelectedKind(createKind);
-      setStep(getCreateFlowSteps(createKind, seed.genericBuddy)[0]);
+      setStep(getCreateFlowSteps(createKind, seed.communityHostFlow)[0]);
       setError(null);
       setPublishStatus(HOSTING_PUBLISH_FLOW_IDLE);
       setShowMonthView(false);
@@ -911,7 +911,7 @@ export const CreateHostingActivityFlow = ({
         }}
         onRideshareLinkError={(message) => setRideshareOfferNotice(message)}
         onViewOnMap={handleViewOnMap}
-        planWithBuddyUserId={planWithBuddyUserId}
+        planWithFriendUserId={planWithFriendUserId}
       />
     );
   }
@@ -1050,7 +1050,7 @@ export const CreateHostingActivityFlow = ({
                 return;
               }
               if (isPickupMapOpen || isWhereMapOpen) {
-                if (isPickupMapOpen && kind === 'hiking' && !draft.genericBuddy) {
+                if (isPickupMapOpen && kind === 'hiking' && !draft.communityHostFlow) {
                   const latitude = draft.latitude;
                   const longitude = draft.longitude;
                   if (latitude == null || longitude == null) return;

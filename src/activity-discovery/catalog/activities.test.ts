@@ -8,7 +8,7 @@ import { selectActivitiesFromMapItems } from './activities';
 
 const baseFilters = {
   mapFilter: 'all' as const,
-  buddySubtype: 'all' as const,
+  othersSubtype: 'all' as const,
   outingTopic: 'all' as const,
   query: '',
   activityDatePreset: 'anyday' as const,

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Baby, Copy, Mail, UserPlus, Users } from 'lucide-react';
+import { resolveMemberGroupShape, teamAllowsKidRoster } from '@uaetrail/shared-types';
 import type { SocialGroupInviteView, SocialGroupMemberView, SocialGroupView } from '../api/types';
 import { AppSelect } from '../components/ui/AppSelect';
 import { SecureAvatar } from '../components/ui/SecureAvatar';
@@ -12,7 +13,7 @@ import { KidTripDetailsForm } from './KidTripDetailsForm';
 import { kidFormFromMember, toDateInputValue, type KidFormState } from './groupKidForm';
 
 const MEMBER_ROLE_OPTIONS = [
-  { value: 'buddy' as const, label: 'Member' },
+  { value: 'member' as const, label: 'Member' },
   { value: 'admin' as const, label: 'Admin' },
 ];
 
@@ -27,10 +28,10 @@ type GroupMembersPanelProps = {
   saving: boolean;
   memberActionId: string | null;
   inviteEmail: string;
-  inviteRole: 'buddy' | 'admin';
+  inviteRole: 'member' | 'admin';
   inviteLink: string | null;
   onInviteEmailChange: (value: string) => void;
-  onInviteRoleChange: (role: 'buddy' | 'admin') => void;
+  onInviteRoleChange: (role: 'member' | 'admin') => void;
   onSendInvite: () => void;
   onCopyInviteLink: () => void;
   kidForm: KidFormState;
@@ -43,7 +44,7 @@ type GroupMembersPanelProps = {
   onAddKidRoster: (displayName: string) => void;
   meEmergency: { name: string; phone: string };
   memberRoleLabel: (member: SocialGroupMemberView) => string;
-  onChangeMemberRole: (memberId: string, role: 'buddy' | 'admin') => void;
+  onChangeMemberRole: (memberId: string, role: 'member' | 'admin') => void;
   onToggleMemberAccess: (memberId: string, nextActive: boolean) => void;
   onRemoveMember: (memberId: string) => void;
   focusInvite?: boolean;
@@ -90,7 +91,7 @@ export const GroupMembersPanel = ({
   const inviteRef = useRef<HTMLDivElement>(null);
   const kidRosterRef = useRef<HTMLDivElement>(null);
   const [rosterKidName, setRosterKidName] = useState('');
-  const isFamily = group.type === 'family';
+  const isFamily = teamAllowsKidRoster(resolveMemberGroupShape(group));
   const pendingInvites = invites.filter((invite) => invite.status === 'pending');
 
   const roster = useMemo(() => {

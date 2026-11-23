@@ -8,9 +8,9 @@ import {
   layoutColocatedMapPins,
   matchesUnifiedExploreMapItem,
   matchesPlacesMapFilter,
-  matchesBuddyMapFilter,
+  matchesOthersMapFilter,
   isPlacesMapItem,
-  isBuddyMapItem,
+  isFriendMapItem,
   resolveExploreItemIdFromMapPin,
 } from './exploreMapPinModel';
 
@@ -56,11 +56,11 @@ describe('exploreMapPinModel', () => {
     const venue = venueExploreMapItem({ id: 'venue:v1' });
     const eventVenue = baseItem({ id: 'ev1', source: 'venue', kind: 'event' });
     expect(isPlacesMapItem(activity)).toBe(false);
-    expect(isBuddyMapItem(activity)).toBe(true);
+    expect(isFriendMapItem(activity)).toBe(true);
     expect(matchesPlacesMapFilter(activity, 'hiking')).toBe(false);
     expect(matchesPlacesMapFilter(demand, 'all')).toBe(false);
     expect(matchesPlacesMapFilter(venue, 'hiking')).toBe(true);
-    expect(matchesBuddyMapFilter(venue, 'hiking')).toBe(false);
+    expect(matchesOthersMapFilter(venue, 'hiking')).toBe(false);
     expect(isPlacesMapItem(eventVenue)).toBe(false);
   });
 

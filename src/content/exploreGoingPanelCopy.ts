@@ -24,9 +24,9 @@ export const activityJoinInviteBanner = (inviterDisplayName?: string | null): st
 export const JOIN_ME_INVITE_FINE_PRINT =
   'Your friend still joins or requests a spot on their own; host approval applies where the outing requires it.';
 
-export const EXPLORE_BUDDY_JOIN_ME_INVITE = 'Join me';
-export const EXPLORE_BUDDY_JOIN_ME_INVITE_SENT_LABEL = 'Invited';
-export const exploreBuddyJoinMeInviteSent = (name: string): string =>
+export const EXPLORE_JOIN_ME_INVITE = 'Join me';
+export const EXPLORE_JOIN_ME_INVITE_SENT_LABEL = 'Invited';
+export const exploreJoinMeInviteSent = (name: string): string =>
   `Join invite sent to ${name}.`;
 
 export const JOIN_ME_INVITE_RATE_LIMIT =

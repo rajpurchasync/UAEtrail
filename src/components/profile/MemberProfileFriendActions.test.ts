@@ -5,7 +5,7 @@ describe('resolveMemberFriendConnectionLabel', () => {
   it('returns friends when buddies', () => {
     expect(
       resolveMemberFriendConnectionLabel({
-        areBuddies: true,
+        areFriends: true,
         incomingRequest: null,
         outgoingRequest: null,
         canSendRequest: false,
@@ -16,7 +16,7 @@ describe('resolveMemberFriendConnectionLabel', () => {
   it('returns pending_outgoing when request sent', () => {
     expect(
       resolveMemberFriendConnectionLabel({
-        areBuddies: false,
+        areFriends: false,
         incomingRequest: null,
         outgoingRequest: {
           id: 'r1',

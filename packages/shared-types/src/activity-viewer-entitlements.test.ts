@@ -11,7 +11,7 @@ describe('computeActivityViewerEntitlements', () => {
       isFriendOfHost: false,
       level: 'link_holder',
       canAccessCrewSurfaces: false,
-      buddyUserIdsOnActivity: [],
+      friendUserIdsOnActivity: [],
     });
     expect(ent.canViewHostProfileBeforeJoin).toBe(false);
     expect(ent.canMessageHostBeforeJoin).toBe(false);
@@ -24,7 +24,7 @@ describe('computeActivityViewerEntitlements', () => {
       isFriendOfHost: true,
       level: 'public',
       canAccessCrewSurfaces: false,
-      buddyUserIdsOnActivity: [],
+      friendUserIdsOnActivity: [],
     });
     expect(ent.canViewHostProfileBeforeJoin).toBe(true);
     expect(ent.canMessageHostBeforeJoin).toBe(true);
@@ -36,11 +36,11 @@ describe('computeActivityViewerEntitlements', () => {
       isFriendOfHost: false,
       level: 'participant',
       canAccessCrewSurfaces: true,
-      buddyUserIdsOnActivity: ['b1'],
+      friendUserIdsOnActivity: ['b1'],
     });
     expect(ent.canOfferTransport).toBe(true);
     expect(ent.canAddLinkedRide).toBe(true);
-    expect(ent.canViewFullBuddyRoster).toBe(false);
+    expect(ent.canViewFullFriendRoster).toBe(false);
   });
 
   it('host may offer and link rides without Pro', () => {
@@ -49,7 +49,7 @@ describe('computeActivityViewerEntitlements', () => {
       isFriendOfHost: false,
       level: 'host',
       canAccessCrewSurfaces: true,
-      buddyUserIdsOnActivity: [],
+      friendUserIdsOnActivity: [],
     });
     expect(ent.canOfferTransport).toBe(true);
     expect(ent.canAddLinkedRide).toBe(true);
@@ -63,7 +63,7 @@ describe('mergeActivityMapPeekActionsWithEntitlements', () => {
       isFriendOfHost: false,
       level: 'host',
       canAccessCrewSurfaces: true,
-      buddyUserIdsOnActivity: [],
+      friendUserIdsOnActivity: [],
     });
     const merged = mergeActivityMapPeekActionsWithEntitlements(
       [
@@ -83,7 +83,7 @@ describe('mergeActivityMapPeekActionsWithEntitlements', () => {
       isFriendOfHost: false,
       level: 'link_holder',
       canAccessCrewSurfaces: false,
-      buddyUserIdsOnActivity: [],
+      friendUserIdsOnActivity: [],
     });
     const merged = mergeActivityMapPeekActionsWithEntitlements(
       [

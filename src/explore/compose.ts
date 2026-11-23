@@ -160,7 +160,7 @@ export const COMPOSE_MENU_TITLE = 'I would like to…';
 
 export const COMPOSE_MENU_THINKING_EMOJI = '✨';
 
-export const BUDDY_TITLE_PLACEHOLDER = 'Run, jog, trail run — whatever gets you outside.';
+export const COMMUNITY_HOST_TITLE_PLACEHOLDER = 'Run, jog, trail run — whatever gets you outside.';
 
 export const PARTICIPATION_TOGGLE_QUESTION = 'Do people need my OK to join?';
 
@@ -169,7 +169,7 @@ export const defaultParticipationForHostKind = (kind: ActivityComposeKind): Part
 
 export type HostingPublishSeed = {
   createKind: CreateActivityKind;
-  genericBuddy: boolean;
+  communityHostFlow: boolean;
   participationMode: ParticipationMode;
 };
 
@@ -178,7 +178,7 @@ export const hostCreateActivityKind = (kind: ActivityComposeKind): CreateActivit
 
 export const hostingPublishSeed = (kind: ActivityComposeKind): HostingPublishSeed => ({
   createKind: hostCreateActivityKind(kind),
-  genericBuddy: false,
+  communityHostFlow: false,
   participationMode: defaultParticipationForHostKind(kind),
 });
 

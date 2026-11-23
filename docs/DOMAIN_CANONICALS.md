@@ -206,7 +206,7 @@ Evolve from today’s `GET /places/registry` → **`GET /places/catalog`** (plac
 
 **Communities (program `MIG-COMMUNITY-DISCOVER`):** public/private visibility, join policies (open · request · invite), community home, activities hosted **as** the community; directory under Explore Find crew — same projection discipline as `GET /explore/map` / list (no parallel client catalog merge).
 
-**Do not** call Teams “social groups” in consumer copy. **Do not** overload **Community host** (buddy publish tier in `MEMBER_MODEL.md`) with **Community** (discoverable group).
+**Do not** call Teams “social groups” in consumer copy. **Do not** overload **Community host** (friend publish tier in `MEMBER_MODEL.md`) with **Community** (discoverable group).
 
 ### 1.6b Group primitives (consumer model)
 
@@ -395,7 +395,7 @@ IA detail (pills, topics): [`NAVIGATION.md`](./NAVIGATION.md) · `src/list/`.
 | **shared-types** | `MemberCoordinationAttention*`, `MemberProfileStatsDTO` | No English `label` or consumer `path` on list rows |
 | **SPA** | `PlanNeedsYouStrip`, `coordinationAttentionPresentation.ts` | Labels + `surfacePaths` / `planHostedSchedulePath` |
 
-**Aggregates:** One bounded read-model per hot screen is allowed (e.g. coordination attention for Plan). Kinds must map to existing entities (`activity_requests`, `buddy_requests`, `activity_invites`, `notifications`). Enforced: `api-surface-route-naming.test.ts`, `coordination-attention-contract.test.ts`.
+**Aggregates:** One bounded read-model per hot screen is allowed (e.g. coordination attention for Plan). Kinds must map to existing entities (`activity_requests`, `friend_requests`, `activity_invites`, `notifications`). Enforced: `api-surface-route-naming.test.ts`, `coordination-attention-contract.test.ts`.
 
 ---
 
@@ -490,7 +490,7 @@ When renaming or adding routes:
 |---------|-----------|-----------------|
 | Host tier / publish gate | `memberApi` | `getMemberStatus()` |
 | Map / Find | `exploreApi`, `availabilityApi` | explore map; `/me/availability` |
-| Buddies / groups / follow | `buddiesApi`, `groupsApi` | `/me/buddies`, `/me/groups`, `/me/following` |
+| Buddies / groups / follow | `buddiesApi`, `groupsApi` | `/me/friends`, `/me/groups`, `/me/following` |
 | Wishlist / entity follow / reviews | `wishlistApi`, `entityFollowApi`, `reviewsApi` | `/me/wishlist`, `/me/entity-follows`, `/reviews` |
 | Tenant console | `organisationApi` | organisation profile, team, join queue |
 | Badges | `badgesApi` | `getMemberBadges()` |
@@ -510,7 +510,7 @@ Shared shape: `packages/shared-types` → `NotificationMeta`.
 | `activityId`, `groupId`, `requestId`, `intentId` | Entity pointers |
 | `path` | Optional; prefer catalog constants; FE rewrites legacy wallet paths |
 
-**Do not add:** `buddyUserId`. Buddy request DTO may still use `fromUserId` / `toUserId`; notifications use `actorUserId` for routing. Chat DMs: `kind: 'message'` + `actorUserId` (legacy `senderId` still read by FE).
+**Do not add:** `actorUserId`. Friend request DTO may still use `fromUserId` / `toUserId`; notifications use `actorUserId` for routing. Chat DMs: `kind: 'message'` + `actorUserId` (legacy `senderId` still read by FE).
 
 ---
 
@@ -533,7 +533,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 | **Explore map** | `GET /explore/map` (guest catalog) + `GET /me/discover/overlay` (signed-in peek) | `src/explore/*`, `exploreMapPinModel`, `applyExploreMapOverlay` | `journeyMap*` (wrong surface); mixing viewer engagement into the public map cache |
 | **Area** (curated **name**, not a pin) | `GET /areas`, `GET /areas/:slug` | `areas-store`, `hostingPublishArea.ts`, `/area/:slug`, explore `?area=` | `source: area` map pin; `areaLabel` as a third geo concept; assigning area from meeting-pin polygons |
 | **Place / venue** | `locations` | `place*`, `venue` panel, `Place` in UI | `location` in new routes/components |
-| **Friends** | buddies API | `BUDDIES_PATH`, `buddy*` stores only on API | `buddyUserId`, “buddy entity” |
+| **Friends** | buddies API | `BUDDIES_PATH`, `buddy*` stores only on API | `actorUserId`, “buddy entity” |
 | **Publishing console** | `/publishing/*`, tenant | `src/pages/publishing/*`, `src/console/*`, `useMemberStatus`, `useConsoleHubData`, `tenantActivityClientApi` | `tenant` in consumer UI strings (wire: `x-organisation-id`) |
 
 **Three maps (do not conflate):** (1) **Explore** — public discovery (`source`: activity · place · facility · shop); (2) **Journey map** — `/profile/history/map` + `GET /me/journey-map`; (3) **Place catalog** — Place / Facility / shop layers on Explore. **Area** is a name (`?area=` / `/area/:slug`), not a map.
@@ -992,7 +992,7 @@ ViewerRequestContext
 
 | Layer | Lead with | Examples | Do not |
 |-------|-----------|----------|--------|
-| **HTTP / wire** | Route + DTO field | `GET /activities/:id` → `viewerAccess.entitlements.canViewFullBuddyRoster`; `GET /me/status` → `publish.canPublish` | New public `resolve*` in `src/` that recomputes access |
+| **HTTP / wire** | Route + DTO field | `GET /activities/:id` → `viewerAccess.entitlements.canViewFullFriendRoster`; `GET /me/status` → `publish.canPublish` | New public `resolve*` in `src/` that recomputes access |
 | **Shared policy** | `compute*` / `build*` on inputs → DTO | `computeActivityDetailExposure`, `buildActivityPresentationDTO`, `computeActivityMapPeekActions`, `computeActivityViewerEntitlements` | Export `activityViewerEntitlementsCan*` — use DTO booleans in UI |
 | **API composition** | One composer per surface | `composeActivityViewerAccess` for activity detail + map enrich; buddy/host context loaded **inside** route/composer, not a second public service name | Scatter `resolveActivityView*` loaders imported from routes |
 | **FE presentation** | `map*` / `*Presentation` / `*ToUi` | `mapViewerAccessToUi`, `resolvePeekDetailAccess`, wire `presentation` + `mapPeekActions` → components (shim during Phase 4: `activityDetailPresentation.ts`, `activityPeekEngagement.ts`) | `computeActivityDetailExposure` in `src/`; crew gates from `isHostUser` when `viewerAccess` is present |

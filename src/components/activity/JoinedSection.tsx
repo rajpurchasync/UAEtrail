@@ -163,7 +163,7 @@ export const JoinedSection = ({
                     <ActivityHubInviteIconButton
                       onClick={() =>
                         inviteShare.openShareFromActivity(row.activity, {
-                          canSendBuddyInvites: true,
+                          canSendFriendInvites: true,
                         })
                       }
                     />
@@ -214,7 +214,7 @@ export const JoinedSection = ({
                 menu={
                   <ActivityHubInviteIconButton
                     onClick={() =>
-                      inviteShare.openShareFromActivity(activity, { canSendBuddyInvites: true })
+                      inviteShare.openShareFromActivity(activity, { canSendFriendInvites: true })
                     }
                   />
                 }

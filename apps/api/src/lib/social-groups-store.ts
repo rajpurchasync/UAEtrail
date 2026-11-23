@@ -22,7 +22,7 @@ export { GROUP_WALL_REACTION_KINDS, type GroupWallReactionKind };
 
 /** @deprecated Use {@link MemberGroupKind} + {@link SocialTeamLabelType}. */
 export type GroupType = MemberGroupInboundType;
-export type GroupRole = 'admin' | 'buddy';
+export type GroupRole = 'admin' | 'member';
 export type GroupMemberType = 'adult' | 'kid';
 export type GroupInviteStatus = 'pending' | 'accepted' | 'expired' | 'cancelled';
 
@@ -965,7 +965,7 @@ export const createKidGroupMember = async (input: {
     _id: newEntityId(),
     groupId: input.groupId,
     userId: null,
-    role: input.role ?? 'buddy',
+    role: input.role ?? 'member',
     memberType: 'kid',
     displayName: input.displayName.trim(),
     invitedEmail: null,

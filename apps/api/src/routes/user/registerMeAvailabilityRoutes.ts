@@ -6,7 +6,6 @@ import {
   AVAILABILITY_SLOT_CAPACITIES,
   AVAILABILITY_TOUR_SHAPES,
   SCHEDULE_MODALITIES,
-  normalizeAvailabilityVisibility,
   type AvailabilityKind,
   type ScheduleModality,
 } from '@uaetrail/shared-types';
@@ -74,9 +73,7 @@ const slotSchema = z.object({
 const upsertSchema = z.object({
   /** @deprecated ignored on write — server derives from slots (MIG-SG-B1). */
   kinds: z.array(availabilityKindEnum).optional(),
-  visibility: z
-    .enum(['public', 'friends', 'hidden', 'buddies'])
-    .transform(normalizeAvailabilityVisibility),
+  visibility: z.enum(['public', 'friends', 'hidden']),
   region: z.string().max(80).optional().nullable(),
   areaId: z.string().max(80).optional().nullable(),
   note: z.string().max(500).optional().nullable(),

@@ -253,7 +253,7 @@ describe('list module hygiene', () => {
     expect(browseList).toMatch(/selectActivitiesFromMapItems/);
     expect(browseList).not.toMatch(/selectExploreMapPinCatalog/);
     expect(browseList).not.toMatch(/FromExploreCatalog/);
-    expect(browseList).not.toMatch(/matchesBuddyMapFilter/);
+    expect(browseList).not.toMatch(/matchesOthersMapFilter/);
   });
 
   it('crew Looking for uses availability catalog read hook', () => {
@@ -272,7 +272,7 @@ describe('list module hygiene', () => {
     const filters = readFileSync(join(process.cwd(), 'src/list/browse/browseListFilters.ts'), 'utf8');
     expect(filters).toMatch(/activity-discovery\/catalog\/listAvailabilityCatalog/);
     expect(filters).toMatch(/places-discovery\/catalog\/listCatalog/);
-    expect(filters).not.toMatch(/exploreMapItemIsSeeking/);
+    expect(filters).not.toMatch(/exploreMapItemIsLegacySeekingActivity/);
   });
 
   it('builds enriched cards through buildListFeedCards', () => {

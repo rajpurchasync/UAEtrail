@@ -200,7 +200,7 @@ export const useExploreExperienceModel = () => {
     compose.handleCreateTap(intentOpenCompose());
   }, [compose]);
 
-  const planWithBuddyUserId = parsePlanWithUserId(searchParams);
+  const planWithFriendUserId = parsePlanWithUserId(searchParams);
   const [joinInvitePeekActivityId, setJoinInvitePeekActivityId] = useState<string | null>(null);
 
   const selection = useExploreSelectionActions({
@@ -299,7 +299,7 @@ export const useExploreExperienceModel = () => {
     sidebarPanel: browse.sidebarPanel,
     isDesktop,
     desktopBrowseTab: browse.desktopBrowseTab,
-    buddySubtype: browse.buddySubtype,
+    othersSubtype: browse.othersSubtype,
     outingTopic: browse.outingTopic,
     activityModeFilter: browse.activityModeFilter,
   });
@@ -375,7 +375,7 @@ export const useExploreExperienceModel = () => {
     handleActivityPublished: selection.handleActivityPublished,
     handleAvailabilityFixedSubmitted: selection.handleAvailabilityFixedSubmitted,
     handleAddSubmitted: selection.handleAddSubmitted,
-    planWithBuddyUserId,
+    planWithFriendUserId,
     composeAreaSlug: areaSlug,
     facilityOnPlaceId,
     tenantId,
@@ -417,7 +417,7 @@ export const useExploreExperienceModel = () => {
     handlePrimaryFabTap,
     hostingWizardPrefill: hostingLauncher.hostingWizardPrefill,
     onHostingBackToIntent: hostingLauncher.onHostingBackToIntent,
-    planWithBuddyUserId,
+    planWithFriendUserId,
     facilityOnPlaceId,
     hostRemoveParticipantNotice,
     rideshareLinkAvailability: hostingLauncher.rideshareLinkAvailability,

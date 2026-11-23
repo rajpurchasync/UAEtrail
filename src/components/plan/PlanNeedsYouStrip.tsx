@@ -20,7 +20,7 @@ type PlanNeedsYouStripProps = {
   refreshKey?: number;
 };
 
-/** Compact participation-only strip — not buddy requests or seeking. */
+/** Compact participation-only strip — not friend requests or seeking. */
 export const PlanNeedsYouStrip = ({ refreshKey = 0 }: PlanNeedsYouStripProps) => {
   const { items, loading } = useMemberCoordinationAttention(true, refreshKey);
   const participation = items.filter((item) => PARTICIPATION_KINDS.has(item.kind));

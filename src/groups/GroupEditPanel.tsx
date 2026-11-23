@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AlertTriangle, Trash2 } from 'lucide-react';
-import { SOCIAL_GROUP_NAME_MAX_LENGTH } from '@uaetrail/shared-types';
+import { SOCIAL_GROUP_NAME_MAX_LENGTH, isOutingCrewGroupRow } from '@uaetrail/shared-types';
 import type { SocialGroupView } from '../api/types';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { ProfilePhotoEditorField } from '../components/account/ProfilePhotoEditorField';
@@ -27,8 +27,7 @@ export const GroupEditPanel = ({
   onDeleteClick,
 }: GroupEditPanelProps) => {
   const [nameDraft, setNameDraft] = useState(group.name);
-  const isActivity =
-    group.kind === 'outing_crew' || group.type === 'activity' || group.type === 'outing_crew';
+  const isActivity = isOutingCrewGroupRow(group);
 
   useEffect(() => {
     setNameDraft(group.name);

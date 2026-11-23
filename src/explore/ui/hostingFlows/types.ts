@@ -16,7 +16,7 @@ export type HostingKindFlow = {
   /** Show optional carpool on post-publish success (not on review). */
   postPublishRideshare: boolean;
   getSteps: (
-    draft: Pick<CreateActivityDraft, 'placeLabelSource' | 'registryPlaceId' | 'genericBuddy'>
+    draft: Pick<CreateActivityDraft, 'placeLabelSource' | 'registryPlaceId' | 'communityHostFlow'>
   ) => CreateFlowStepId[];
   validateStep: (step: CreateFlowStepId, draft: CreateActivityDraft) => string | null;
 };

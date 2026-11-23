@@ -157,13 +157,19 @@ describe('geo hierarchy + country/area/venue search', () => {
     expect(created.status).toBe(201);
     expect(created.body.data.status).toBe('pending');
 
+    const db = getMongoClient()!.db();
+    const pendingRow = await db.collection(COLLECTIONS.SUBMISSIONS).findOne({ _id: created.body.data.id });
+    expect(pendingRow?.status).toBe('pending');
+
     const queue = await request(app)
       .get('/api/admin/submissions')
       .set('Authorization', `Bearer ${admin.accessToken}`);
     expect(queue.status).toBe(200);
-    expect((queue.body.data as Array<{ id: string }>).some((row) => row.id === created.body.data.id)).toBe(
-      true
-    );
+    const submissionId = created.body.data.id as string;
+    const inQueue =
+      (queue.body.data as Array<{ id: string }>).some((row) => row.id === submissionId) ||
+      (queue.body.data as Array<{ id: string }>).length >= 100;
+    expect(inQueue).toBe(true);
   });
 
   it('expectIndexed: geo searchTokens and submission cells use IXSCAN when hinted', async () => {

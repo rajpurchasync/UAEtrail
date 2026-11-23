@@ -22,9 +22,9 @@ describe('memberBrowseRowModel', () => {
         cityLabel: null,
         activitiesAttended: 0,
         relationship: 'friend' as const,
-        buddyRequestState: 'none' as const,
+        friendRequestState: 'none' as const,
         canMessage: true,
-        canSendBuddyRequest: false,
+        canSendFriendRequest: false,
         upcomingTrip: null,
       },
     ];
@@ -37,7 +37,7 @@ describe('memberBrowseRowModel', () => {
       displayName: 'Sam',
       kinds: ['hiking'],
       slots: [{ startDate: '2026-10-10', endDate: '2026-10-12' }],
-      isBuddy: false,
+      isFriend: false,
     });
     expect(row.profileHref).toBe('/member/u1?source=available');
     expect(row.profileHref).not.toContain('discover=1');
@@ -57,21 +57,21 @@ describe('memberBrowseRowModel', () => {
             modalities: ['hiking'] as const,
           },
         ],
-        isBuddy: false,
+        isFriend: false,
       },
       {
         userId: 'p1',
         displayName: 'Pat',
         kinds: ['hiking'] as const,
         slots: [{ startDate: '2026-11-02', endDate: '2026-11-02', capacity: 'participant' as const }],
-        isBuddy: false,
+        isFriend: false,
       },
       {
         userId: 'stale',
         displayName: 'Stale kinds',
         kinds: ['guide'] as const,
         slots: [{ startDate: '2026-11-03', endDate: '2026-11-03', capacity: 'participant' as const }],
-        isBuddy: false,
+        isFriend: false,
       },
     ];
     expect(filterAvailabilityByCapacity(people, 'guide').map((p) => p.userId)).toEqual(['g1']);
@@ -111,9 +111,9 @@ describe('memberBrowseRowModel', () => {
       cityLabel: null,
       activitiesAttended: 1,
       relationship: 'friend',
-      buddyRequestState: 'none',
+      friendRequestState: 'none',
       canMessage: true,
-      canSendBuddyRequest: false,
+      canSendFriendRequest: false,
       upcomingTrip: null,
     });
     expect(row.profileHref).toBe('/member/f1?source=friends');

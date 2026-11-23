@@ -119,7 +119,7 @@ describe('mapDetailEngagementParity (RF-02 / R1.4)', () => {
       isFriendOfHost: false,
       level: 'public',
       canAccessCrewSurfaces: false,
-      buddyUserIdsOnActivity: [],
+      friendUserIdsOnActivity: [],
     });
     const viewerAccess: ActivityViewerAccessDTO = {
       exposure: 'redacted',
@@ -144,7 +144,7 @@ describe('mapDetailEngagementParity (RF-02 / R1.4)', () => {
       isFriendOfHost: false,
       level: 'public',
       canAccessCrewSurfaces: false,
-      buddyUserIdsOnActivity: [],
+      friendUserIdsOnActivity: [],
     });
     const viewerAccess: ActivityViewerAccessDTO = {
       exposure: 'redacted',
@@ -169,7 +169,7 @@ describe('mapDetailEngagementParity (RF-02 / R1.4)', () => {
       isFriendOfHost: false,
       level: 'join_request',
       canAccessCrewSurfaces: false,
-      buddyUserIdsOnActivity: [],
+      friendUserIdsOnActivity: [],
     });
     const viewerAccess: ActivityViewerAccessDTO = {
       exposure: 'full',
@@ -208,7 +208,7 @@ describe('mapDetailEngagementParity (RF-02 / R1.4)', () => {
       isFriendOfHost: false,
       level: 'participant',
       canAccessCrewSurfaces: true,
-      buddyUserIdsOnActivity: [],
+      friendUserIdsOnActivity: [],
     });
     const viewerAccess: ActivityViewerAccessDTO = {
       exposure: 'full',
@@ -250,7 +250,7 @@ describe('mapDetailEngagementParity (RF-02 / R1.4)', () => {
       isFriendOfHost: false,
       level: 'host',
       canAccessCrewSurfaces: true,
-      buddyUserIdsOnActivity: [],
+      friendUserIdsOnActivity: [],
     });
     const viewerAccess: ActivityViewerAccessDTO = {
       exposure: 'full',
@@ -289,7 +289,7 @@ describe('mapDetailEngagementParity (RF-02 / R1.4)', () => {
       isFriendOfHost: false,
       level: 'host',
       canAccessCrewSurfaces: true,
-      buddyUserIdsOnActivity: ['u-joiner'],
+      friendUserIdsOnActivity: ['u-joiner'],
     });
     const viewerAccess: ActivityViewerAccessDTO = {
       exposure: 'full',

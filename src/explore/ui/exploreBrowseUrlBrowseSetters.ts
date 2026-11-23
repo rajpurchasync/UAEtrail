@@ -1,7 +1,7 @@
 import type { ActivityListFilterKey, ExploreActivityDatePreset, ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
 import type { ExploreMapFilterPillKey, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
-import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
+import type { ExploreOthersSubtypeKey } from '../exploreOthersSubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
 import type { ExplorePinKindFilter } from '../explorePinKindFilter';
 import type { ExploreBrowseListMode } from '../exploreBrowseUrlSync';
@@ -20,7 +20,7 @@ export const createExploreBrowseUrlBrowseSetters = (input: {
   setPanel: (v: ExplorePanel) => void;
   setListOpen: (v: boolean) => void;
   setBrowseOpen: (v: boolean) => void;
-  setBuddySubtype: (v: ExploreBuddySubtypeKey) => void;
+  setOthersSubtype: (v: ExploreOthersSubtypeKey) => void;
   setOutingTopic: (v: ExploreOutingTopicKey) => void;
   setPinKind: (v: ExplorePinKindFilter) => void;
   setTopicPills: (v: ExploreMapFilterPillKey[]) => void;
@@ -49,7 +49,7 @@ export const createExploreBrowseUrlBrowseSetters = (input: {
   setPanel: input.setPanel,
   setListOpen: input.setListOpen,
   setBrowseOpen: input.setBrowseOpen,
-  setBuddySubtype: input.setBuddySubtype,
+  setOthersSubtype: input.setOthersSubtype,
   setOutingTopic: input.setOutingTopic,
   setPinKind: input.setPinKind,
   setTopicPills: input.setTopicPills,

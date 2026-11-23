@@ -20,9 +20,9 @@ import {
 } from './exploreActivityDateFilter';
 import { serializeExplorePinKindFilter, type ExplorePinKindFilter } from './explorePinKindFilter';
 import {
-  serializeExploreBuddySubtype,
-  type ExploreBuddySubtypeKey,
-} from './exploreBuddySubtype';
+  serializeExploreOthersSubtype,
+  type ExploreOthersSubtypeKey,
+} from './exploreOthersSubtype';
 import {
   serializeExploreOutingTopic,
   type ExploreOutingTopicKey,
@@ -75,7 +75,7 @@ const INBOUND_ACTIVITY_FROM_FILTER: Record<string, ActivityListFilterKey> = {
 export const EXPLORE_PIN_QUERY_KEY = 'pin';
 /** When `1`, activity peek shows join-invite banner (with `pin=activity:…`). */
 export const EXPLORE_JOIN_INVITE_QUERY_KEY = 'invite';
-/** Buddy user id — prefill post-publish invite after Host an outing from Social. */
+/** Friend user id — prefill post-publish invite after Host an outing from Social. */
 export const PLAN_WITH_QUERY_KEY = 'planWith';
 /** When `1`, map/list show only the signed-in member's activities + wishlist pins. */
 export const MY_PLAN_MAP_QUERY_KEY = 'myPlan';
@@ -243,7 +243,7 @@ export const explorePath = (options?: {
   /** Scheduled activity day on the map (`YYYY-MM-DD`). */
   date?: string | null;
   /** Drill-down within `filter=others` on Activities (events vs activities). */
-  subtype?: ExploreBuddySubtypeKey;
+  subtype?: ExploreOthersSubtypeKey;
   /** Drill-down within `filter=others` + `subtype=activities` (climb, run, …). */
   outingTopic?: ExploreOutingTopicKey;
   /** Explore map item id to open on load (`activity:…`, `venue:…`). */
@@ -254,7 +254,7 @@ export const explorePath = (options?: {
   myPlan?: boolean;
   /** Open **Crews** browse panel (`view=people` wire). */
   crews?: boolean;
-  /** Prefill compose — buddy to plan with (post-publish invite). */
+  /** Prefill compose — friend to plan with (post-publish invite). */
   planWith?: string;
   /** Activity join-invite deep link — use with `pin=activity:{id}`. */
   joinInvite?: boolean;
@@ -300,13 +300,13 @@ export const explorePath = (options?: {
     else params.delete('date');
   }
   const filterKey = (options?.filter ?? 'all') as MapFilterKey;
-  const buddySubtype = options?.subtype ?? 'all';
+  const othersSubtype = options?.subtype ?? 'all';
   const serializedSubtype = options?.subtype
-    ? serializeExploreBuddySubtype(options.subtype, filterKey)
+    ? serializeExploreOthersSubtype(options.subtype, filterKey)
     : null;
   if (serializedSubtype) params.set('subtype', serializedSubtype);
   const serializedTopic = options?.outingTopic
-    ? serializeExploreOutingTopic(options.outingTopic, filterKey, buddySubtype)
+    ? serializeExploreOutingTopic(options.outingTopic, filterKey, othersSubtype)
     : null;
   if (serializedTopic) params.set('outingTopic', serializedTopic);
   if (options?.pin?.trim()) {
@@ -362,14 +362,14 @@ export const exploreCrewsPath = (options?: { list?: boolean }): string =>
 /** Full-screen list explorer. */
 export const exploreDiscoverBrowsePath = (): string => LIST_DISCOVERY_PATH;
 
-/** Start create flow with optional buddy to plan with. */
-export const explorePlanWithBuddyPath = (
-  buddyUserId: string,
+/** Start create flow with optional friend to plan with. */
+export const explorePlanWithFriendPath = (
+  actorUserId: string,
   mode: 'host' | 'availability'
 ): string =>
   explorePath({
     list: true,
-    planWith: buddyUserId,
+    planWith: actorUserId,
     compose:
       mode === 'host'
         ? activityCompose('activity')

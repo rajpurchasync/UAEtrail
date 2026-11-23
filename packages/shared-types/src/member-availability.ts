@@ -16,12 +16,9 @@ export type AvailabilityKind = (typeof AVAILABILITY_KINDS)[number];
 
 export type AvailabilityVisibility = 'public' | 'friends' | 'hidden';
 
-/** Inbound legacy wire — normalized to `friends` on read/write (MIG-SCHEDULE-GUIDE A2b). */
-export type BuddiesVisibilityInboundWire = 'buddies';
-
 export const isFriendsOnlyAvailabilityVisibility = (
   visibility: string | null | undefined
-): boolean => visibility === 'friends' || visibility === 'buddies';
+): boolean => visibility === 'friends';
 
 export const normalizeAvailabilityVisibility = (
   visibility: string | null | undefined
@@ -29,7 +26,6 @@ export const normalizeAvailabilityVisibility = (
   if (visibility === 'public' || visibility === 'hidden' || visibility === 'friends') {
     return visibility;
   }
-  if (visibility === 'buddies') return 'friends';
   return 'hidden';
 };
 
@@ -149,7 +145,7 @@ export interface ExploreAvailablePersonDTO {
   areaId?: string | null;
   areaSlug?: string | null;
   slots: MemberAvailabilitySlotDTO[];
-  isBuddy: boolean;
+  isFriend: boolean;
 }
 
 /** Map People layer v1 — cluster per area + kind (not per-user pins). */

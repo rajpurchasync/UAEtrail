@@ -47,11 +47,11 @@ afterAll(async () => {
       });
     await getMongoClient()!
       .db()
-      .collection('buddy_pairs')
+      .collection('friend_pairs')
       .deleteMany({ userIds: { $in: testUserIds } });
     await getMongoClient()!
       .db()
-      .collection('buddy_requests')
+      .collection('friend_requests')
       .deleteMany({
         $or: [{ fromUserId: { $in: testUserIds } }, { toUserId: { $in: testUserIds } }]
       });
@@ -144,21 +144,21 @@ describe('chat messaging policy', () => {
     expect(replyRow).toBeTruthy();
   });
 
-  it('blocks buddy-only messaging after unfriend, even when a thread already exists', async () => {
+  it('blocks friends-only messaging after unfriend, even when a thread already exists', async () => {
     const userA = await findAuthUserByEmail(visitorA.email);
     const userB = await findAuthUserByEmail(visitorB.email);
     expect(userA).toBeTruthy();
     expect(userB).toBeTruthy();
 
     const requestRes = await request(app)
-      .post('/api/me/buddy-requests')
+      .post('/api/me/friend-requests')
       .set('Authorization', `Bearer ${visitorA.accessToken}`)
       .send({ targetUserId: userB!._id });
 
     expect(requestRes.status).toBe(201);
 
     const acceptRes = await request(app)
-      .post(`/api/me/buddy-requests/${requestRes.body.data.id}/accept`)
+      .post(`/api/me/friend-requests/${requestRes.body.data.id}/accept`)
       .set('Authorization', `Bearer ${visitorB.accessToken}`);
 
     expect(acceptRes.status).toBe(200);
@@ -171,7 +171,7 @@ describe('chat messaging policy', () => {
     expect(messageRes.status).toBe(201);
 
     const unfriendRes = await request(app)
-      .post(`/api/me/buddies/${userB!._id}/unfriend`)
+      .post(`/api/me/friends/${userB!._id}/unfriend`)
       .set('Authorization', `Bearer ${visitorA.accessToken}`);
 
     expect(unfriendRes.status).toBe(200);

@@ -77,7 +77,7 @@ export function renderAudienceStep(ctx: HostingWizardContext): ReactNode | null 
                 })}
               </div>
             </div>
-            {!draft.genericBuddy && kind !== 'rideshare' && (
+            {!draft.communityHostFlow && kind !== 'rideshare' && (
               <div className={EXPLORE_FLOW.choiceGrid2}>
                 {([
                   { key: 'open' as JoinMode, title: 'Public', subtitle: 'Listed on the explore map', icon: Users },
@@ -107,13 +107,13 @@ export function renderAudienceStep(ctx: HostingWizardContext): ReactNode | null 
               </div>
             )}
 
-            {!draft.genericBuddy && kind !== 'rideshare' && draft.joinMode === 'private' && (
+            {!draft.communityHostFlow && kind !== 'rideshare' && draft.joinMode === 'private' && (
               <p className="mt-4 rounded-xl bg-neutral-50 px-3 py-2 text-sm text-gray-600">
                 {HIKE_PRIVATE_EVENT_INFO}
               </p>
             )}
 
-            {!draft.genericBuddy && (draft.joinMode === 'open' || kind === 'rideshare') && (
+            {!draft.communityHostFlow && (draft.joinMode === 'open' || kind === 'rideshare') && (
               <div className={`space-y-3 ${kind !== 'rideshare' ? 'mt-4' : ''}`}>
                 {kind === 'rideshare' && (
                   <p className="text-sm text-gray-600">Who can request a seat in your ride?</p>

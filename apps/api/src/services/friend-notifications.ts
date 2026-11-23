@@ -2,7 +2,7 @@ import { NotificationType } from '../domain/enums.js';
 import { scheduleNotification } from './notifications.js';
 import { resolveNotificationActorDisplayName } from './notification-actor-label.js';
 
-export const notifyBuddyRequestReceived = async (input: {
+export const notifyFriendRequestReceived = async (input: {
   requestId: string;
   fromUserId: string;
   toUserId: string;
@@ -12,21 +12,21 @@ export const notifyBuddyRequestReceived = async (input: {
   scheduleNotification(
     {
       userId: input.toUserId,
-      title: 'Buddy request',
+      title: 'Friend request',
       body: `${senderName} wants to connect with you on UAE Trail.`,
       type: NotificationType.SYSTEM,
       meta: {
-        kind: 'connection_buddy_request',
+        kind: 'connection_friend_request',
         requestId: input.requestId,
         actorUserId: input.fromUserId,
         path: `/member/${input.fromUserId}`,
       },
     },
-    'connection_buddy_request'
+    'connection_friend_request'
   );
 };
 
-export const notifyBuddyRequestAccepted = async (input: {
+export const notifyFriendRequestAccepted = async (input: {
   requestId: string;
   fromUserId: string;
   toUserId: string;
@@ -36,16 +36,16 @@ export const notifyBuddyRequestAccepted = async (input: {
   scheduleNotification(
     {
       userId: input.fromUserId,
-      title: 'Buddy request accepted',
-      body: `${accepterName} accepted your buddy request.`,
+      title: 'Friend request accepted',
+      body: `${accepterName} accepted your friend request.`,
       type: NotificationType.SYSTEM,
       meta: {
-        kind: 'connection_buddy_accepted',
+        kind: 'connection_friend_accepted',
         requestId: input.requestId,
         actorUserId: input.toUserId,
         path: `/member/${input.toUserId}`,
       },
     },
-    'connection_buddy_accepted'
+    'connection_friend_accepted'
   );
 };

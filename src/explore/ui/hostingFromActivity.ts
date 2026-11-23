@@ -67,7 +67,7 @@ export const createDraftFromPastActivity = (activity: ActivityDTO): CreateActivi
   return {
     ...base,
     kind,
-    genericBuddy: false,
+    communityHostFlow: false,
     activityTopic,
     participationMode: activity.participationMode ?? base.participationMode,
     title: activity.title.trim(),

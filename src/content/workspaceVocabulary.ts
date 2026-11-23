@@ -40,7 +40,7 @@ export const normalizeWorkspaceBrandKind = (
 
 /**
  * Management shell title — member SPA **`/operator/*`** (HTTP API stays `/publishing/*`).
- * Buddy hosts see community schedule on **`/operator/overview`** (`UPL_OPERATOR_DASHBOARD`).
+ * Community hosts see community schedule on **`/operator/overview`** (`UPL_OPERATOR_DASHBOARD`).
  */
 export const workspaceConsoleLabel = (kind?: WorkspaceBrandKind | null): string => {
   if (kind === 'guide') return 'Guide workspace';

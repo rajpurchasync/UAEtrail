@@ -23,7 +23,7 @@ import {
   buildParticipationRequirementLines,
 } from '../../utils/activityPublishPayload';
 import { OFFLINE_PAYMENT_NOTE } from '../explorePriceLabel';
-import { validateHostingPublishArea } from '../hostingPublishArea';
+import { validateHostingPlaceArea } from '../hostingPublishArea';
 import type { ParticipationMode } from '../compose';
 import {
   todayIso,
@@ -90,7 +90,7 @@ export type ActivityHostingTopic =
 
 export type CreateActivityDraft = {
   kind: CreateActivityKind | null;
-  genericBuddy: boolean;
+  communityHostFlow: boolean;
   /** FLOW-05 — topic chip (stored in requirements until API field exists). */
   activityTopic: ActivityHostingTopic | '';
   participationMode: ParticipationMode;
@@ -228,46 +228,46 @@ export const RIDESHARE_CAPACITY_PRESETS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as con
 
 export const isRideshareHostingFlow = (
   kind: CreateActivityKind | null,
-  genericBuddy = false
-): boolean => kind === 'rideshare' && !genericBuddy;
+  communityHostFlow = false
+): boolean => kind === 'rideshare' && !communityHostFlow;
 
 export const isHikingHostingFlow = (
   kind: CreateActivityKind | null,
-  genericBuddy = false
-): boolean => kind === 'hiking' && !genericBuddy;
+  communityHostFlow = false
+): boolean => kind === 'hiking' && !communityHostFlow;
 
 export const isCampingHostingFlow = (
   kind: CreateActivityKind | null,
-  genericBuddy = false
-): boolean => kind === 'camping' && !genericBuddy;
+  communityHostFlow = false
+): boolean => kind === 'camping' && !communityHostFlow;
 
 export const isEventHostingFlow = (
   kind: CreateActivityKind | null,
-  genericBuddy = false
-): boolean => kind === 'event' && !genericBuddy;
+  communityHostFlow = false
+): boolean => kind === 'event' && !communityHostFlow;
 
 export const isActivityHostingFlow = (
   kind: CreateActivityKind | null,
-  genericBuddy = false
-): boolean => kind === 'activity' && !genericBuddy;
+  communityHostFlow = false
+): boolean => kind === 'activity' && !communityHostFlow;
 
 /** Hiking / camping / event structured wizards (not legacy venue bundle). */
 export const isStructuredHostingFlow = (
   kind: CreateActivityKind | null,
-  genericBuddy = false
+  communityHostFlow = false
 ): boolean =>
-  isHikingHostingFlow(kind, genericBuddy) ||
-  isCampingHostingFlow(kind, genericBuddy) ||
-  isEventHostingFlow(kind, genericBuddy);
+  isHikingHostingFlow(kind, communityHostFlow) ||
+  isCampingHostingFlow(kind, communityHostFlow) ||
+  isEventHostingFlow(kind, communityHostFlow);
 
 /** Steps that include a separate going-from pin (not events-only wizard). */
 export const usesGoingFromHostingStep = (
   kind: CreateActivityKind | null,
-  genericBuddy = false
+  communityHostFlow = false
 ): boolean =>
-  isHikingHostingFlow(kind, genericBuddy) ||
-  isCampingHostingFlow(kind, genericBuddy) ||
-  isActivityHostingFlow(kind, genericBuddy);
+  isHikingHostingFlow(kind, communityHostFlow) ||
+  isCampingHostingFlow(kind, communityHostFlow) ||
+  isActivityHostingFlow(kind, communityHostFlow);
 
 export { usesRegistryCatalogVenue } from './hostingFlows/registry';
 
@@ -275,13 +275,13 @@ export type CreateFlowStepsOptions = Pick<CreateActivityDraft, 'placeLabelSource
 
 export const getCreateFlowSteps = (
   kind: CreateActivityKind,
-  genericBuddy = false,
+  communityHostFlow = false,
   options?: CreateFlowStepsOptions
 ): CreateFlowStepId[] =>
-  getHostingKindFlowSteps(kind, genericBuddy, {
+  getHostingKindFlowSteps(kind, communityHostFlow, {
     placeLabelSource: options?.placeLabelSource ?? 'custom',
     registryPlaceId: options?.registryPlaceId ?? null,
-    genericBuddy,
+    communityHostFlow,
   });
 
 export const usesVenueHostFlow = (kind: CreateActivityKind | null): boolean => kind === 'camping';
@@ -289,7 +289,7 @@ export const usesVenueHostFlow = (kind: CreateActivityKind | null): boolean => k
 export const usesRideshareHostFlow = (kind: CreateActivityKind | null): boolean => kind === 'rideshare';
 
 export type CreateFlowStepTitleOptions = {
-  genericBuddy?: boolean;
+  communityHostFlow?: boolean;
 };
 
 export const createFlowStepTitle = (
@@ -297,25 +297,25 @@ export const createFlowStepTitle = (
   kind: CreateActivityKind,
   options: CreateFlowStepTitleOptions = {}
 ): string => {
-  const { genericBuddy = false } = options;
+  const { communityHostFlow = false } = options;
   if (step === 'route') return 'From & to';
-  const hikingHost = isHikingHostingFlow(kind, genericBuddy);
-  const campingHost = isCampingHostingFlow(kind, genericBuddy);
-  const eventHost = isEventHostingFlow(kind, genericBuddy);
-  const rideshareHost = isRideshareHostingFlow(kind, genericBuddy);
-  const structuredHost = isStructuredHostingFlow(kind, genericBuddy);
-  const activityHost = isActivityHostingFlow(kind, genericBuddy);
+  const hikingHost = isHikingHostingFlow(kind, communityHostFlow);
+  const campingHost = isCampingHostingFlow(kind, communityHostFlow);
+  const eventHost = isEventHostingFlow(kind, communityHostFlow);
+  const rideshareHost = isRideshareHostingFlow(kind, communityHostFlow);
+  const structuredHost = isStructuredHostingFlow(kind, communityHostFlow);
+  const activityHost = isActivityHostingFlow(kind, communityHostFlow);
 
   if (step === 'activity_type') return 'Activity type';
   if (step === 'title') {
-    if (genericBuddy) return 'What do you want to do?';
+    if (communityHostFlow) return 'What do you want to do?';
     if (structuredHost || rideshareHost || activityHost) return 'Give it a title';
     if (kind === 'event') return 'Event title';
     if (kind === 'rideshare') return 'Give it a title';
     return 'Activity title';
   }
   if (step === 'when') {
-    if (genericBuddy) return 'When';
+    if (communityHostFlow) return 'When';
     if (structuredHost || rideshareHost || activityHost) return 'When are you going?';
     return 'Activity date & time';
   }
@@ -328,7 +328,7 @@ export const createFlowStepTitle = (
   }
   if (step === 'to') return rideshareHost || kind === 'rideshare' ? 'Destination' : 'To location';
   if (step === 'audience') {
-    if (genericBuddy) return 'Who can join?';
+    if (communityHostFlow) return 'Who can join?';
     if (structuredHost || rideshareHost || activityHost) return 'Who can join?';
     return 'Who can attend?';
   }
@@ -465,7 +465,7 @@ export const hydrateCreateActivityDraft = (
 
 export const emptyCreateActivityDraft = (): CreateActivityDraft => ({
   kind: null,
-  genericBuddy: false,
+  communityHostFlow: false,
   activityTopic: '',
   participationMode: 'approval',
   title: '',
@@ -556,7 +556,7 @@ export const createTitlePlaceholder = (
   kind: CreateActivityKind,
   options: CreateFlowStepTitleOptions = {}
 ): string => {
-  if (options.genericBuddy) {
+  if (options.communityHostFlow) {
     return 'Run, jog, trail run — whatever gets you outside.';
   }
   switch (kind) {
@@ -677,7 +677,7 @@ export const buildHostingActivityRequirements = (draft: CreateActivityDraft): st
   if (draft.kind === 'event' && draft.trailName.trim()) {
     requirements.push(`Venue: ${draft.trailName.trim()}`);
   }
-  if (draft.kind === 'hiking' && !draft.genericBuddy && draft.fromLabel.trim()) {
+  if (draft.kind === 'hiking' && !draft.communityHostFlow && draft.fromLabel.trim()) {
     requirements.push(`Going from: ${draft.fromLabel.trim()}`);
   }
   if ((draft.kind === 'hiking' || draft.kind === 'camping') && draft.goingFromNotes.trim()) {
@@ -738,12 +738,12 @@ export const buildHostingActivityRequirements = (draft: CreateActivityDraft): st
 
 export const validateDraftStep = (step: CreateFlowStepId, draft: CreateActivityDraft): string | null => {
   if (!draft.kind) return null;
-  if (draft.genericBuddy && step === 'title' && !draft.title.trim()) {
+  if (draft.communityHostFlow && step === 'title' && !draft.title.trim()) {
     return 'Tell us what you want to do.';
   }
   const kindErr = validateHostingKindStep(draft.kind, step, draft);
   if (kindErr) return kindErr;
-  if (step === 'publish') return validateHostingPublishArea(draft);
+  if (step === 'publish') return validateHostingPlaceArea(draft, []);
   return null;
 };
 

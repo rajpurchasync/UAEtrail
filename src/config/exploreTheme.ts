@@ -169,9 +169,6 @@ export const EXPLORE_COMPOSE = {
 
 /** Create / host / seek / add wizard — shared step titles and choice cards. */
 export const EXPLORE_FLOW = {
-  /** @deprecated Use {@link EXPLORE_COMPOSE_FLOW_TITLE_CLASS} */
-  stepTitle: EXPLORE_COMPOSE_FLOW_TITLE_CLASS,
-  sheetTitle: EXPLORE_COMPOSE_FLOW_TITLE_CLASS,
   /** Vertical rhythm around centered step / sheet main title */
   stepHeaderShell: 'relative pt-3 pb-4 mb-3 md:mb-2 md:pb-2 md:pt-2 lg:mb-2 lg:pb-2 lg:pt-2',
   stepTitleBlock: 'flex flex-col items-center px-8 py-1 text-center',

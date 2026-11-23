@@ -9,7 +9,7 @@ export const notificationKind = (notif: NotificationDTO): string => {
   return typeof kind === 'string' ? kind.toLowerCase() : '';
 };
 
-/** DMs, group crew chat, replies, and reactions — not activity join or buddy alerts. */
+/** DMs, group crew chat, replies, and reactions — not activity join or friend-request alerts. */
 export const isMessagingNotification = (notif: NotificationDTO): boolean => {
   const kind = notificationKind(notif);
   const text = `${notif.title} ${notif.body}`.toLowerCase();

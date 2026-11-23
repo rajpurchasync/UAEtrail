@@ -35,7 +35,7 @@ const validateStep = (step: CreateFlowStepId, draft: CreateActivityDraft): strin
   if (step === 'audience') return validateHostingAudienceOthers(draft);
   if (step === 'when') return validateHostingWhenSchedule(draft);
   if (step === 'meeting') {
-    if (draft.genericBuddy) {
+    if (draft.communityHostFlow) {
       if (draft.latitude == null || draft.longitude == null) return 'Drop a pin on the map.';
       return null;
     }
@@ -101,7 +101,7 @@ export const hikingHostingFlow: HostingKindFlow = {
   registryVenue: { placeType: 'hiking', omitWhenRegistry: REGISTRY_OMIT },
   postPublishRideshare: true,
   getSteps: (draft) =>
-    draft.genericBuddy
+    draft.communityHostFlow
       ? ['title', 'when', 'meeting', 'audience', 'price', 'publish']
       : applyRegistryVenueStepOmit(DEFAULT_STEPS, REGISTRY_OMIT, draft),
   validateStep,

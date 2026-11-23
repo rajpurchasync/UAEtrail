@@ -166,7 +166,7 @@ export {
   exploreHostPath,
   exploreCrewsPath,
   exploreDiscoverBrowsePath,
-  explorePlanWithBuddyPath,
+  explorePlanWithFriendPath,
   detailBackPath,
   myActivitiesPath,
   inboundCreateParamToHostPath,

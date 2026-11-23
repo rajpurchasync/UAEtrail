@@ -135,18 +135,6 @@ export const validateCustomVenueDetails = (draft: CreateActivityDraft): string |
   return null;
 };
 
-/** @deprecated Use validateHostingPlaceArea — kept for import stability during migration. */
-export const validateHostingPublishArea = (draft: CreateActivityDraft): string | null => {
-  if (draft.joinMode === 'private') return null;
-  if (draft.kind === 'rideshare') {
-    return validateRideshareDestinationArea(draft);
-  }
-  if (draft.placeLabelSource === 'custom') {
-    return validateCustomVenueDetails(draft);
-  }
-  if (!draft.registryPlaceId?.trim()) return PLACE_AREA_REQUIRED;
-  return null;
-};
 
 export const validateAvailabilityCuratedAreaStep = (draft: AvailabilityFixedDraft): string | null => {
   if (!draft.areaId?.trim()) return SEEKING_AREA_REQUIRED;

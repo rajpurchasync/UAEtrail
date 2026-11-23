@@ -4,12 +4,12 @@ import {
   isGeographyMapSource,
   type ExploreMapItemDTO,
 } from '@uaetrail/shared-types';
-import type { ExploreBuddySubtypeKey } from './exploreBuddySubtype';
-import { isBuddyOthersMapItem, matchesBuddyOthersSubtype } from './exploreBuddySubtype';
+import type { ExploreOthersSubtypeKey } from './exploreOthersSubtype';
+import { isOthersMapCategoryItem, matchesOthersMapSubtype } from './exploreOthersSubtype';
 import type { ExploreOutingTopicKey } from './exploreOutingTopic';
 import { matchesOutingTopicFilter } from './exploreOutingTopic';
 import type { MapFilterKey } from './discoveryUrlParams';
-import { isBuddyMapItem, isPlacesMapItem, isShopListItem } from './exploreMapItemKind';
+import { isFriendMapItem, isPlacesMapItem, isShopListItem } from './exploreMapItemKind';
 
 const isFacilityExploreMapItem = (item: ExploreMapItemDTO): boolean =>
   isFacilityMapSource(item.source) || Boolean(item.placeKind && isFacilityPlaceKind(item.placeKind));
@@ -40,13 +40,13 @@ const matchesPlacesMapFilter = (item: ExploreMapItemDTO, mapFilter: MapFilterKey
   return matchesVenueKindFilter(item, mapFilter);
 };
 
-const matchesBuddyMapFilter = (
+const matchesOthersMapFilter = (
   item: ExploreMapItemDTO,
   mapFilter: MapFilterKey,
-  othersSubtype: ExploreBuddySubtypeKey = 'all',
+  othersSubtype: ExploreOthersSubtypeKey = 'all',
   outingTopic: ExploreOutingTopicKey = 'all'
 ): boolean => {
-  if (!isBuddyMapItem(item)) return false;
+  if (!isFriendMapItem(item)) return false;
   if (mapFilter === 'all') return true;
   if (mapFilter === 'shops') return false;
 
@@ -56,8 +56,8 @@ const matchesBuddyMapFilter = (
   if (mapFilter === 'camping') return kind === 'camping';
   if (mapFilter === 'rideshare') return kind === 'rideshare';
   if (mapFilter === 'others') {
-    if (!isBuddyOthersMapItem(item)) return false;
-    if (!matchesBuddyOthersSubtype(item, othersSubtype)) return false;
+    if (!isOthersMapCategoryItem(item)) return false;
+    if (!matchesOthersMapSubtype(item, othersSubtype)) return false;
     return matchesOutingTopicFilter(item, outingTopic);
   }
 
@@ -68,12 +68,12 @@ const matchesBuddyMapFilter = (
 export const matchesUnifiedTopicFilter = (
   item: ExploreMapItemDTO,
   mapFilter: MapFilterKey,
-  buddySubtype: ExploreBuddySubtypeKey = 'all',
+  othersSubtype: ExploreOthersSubtypeKey = 'all',
   outingTopic: ExploreOutingTopicKey = 'all'
 ): boolean => {
   if (mapFilter === 'all') return true;
-  if (isBuddyMapItem(item)) {
-    return matchesBuddyMapFilter(item, mapFilter, buddySubtype, outingTopic);
+  if (isFriendMapItem(item)) {
+    return matchesOthersMapFilter(item, mapFilter, othersSubtype, outingTopic);
   }
   if (isPlacesMapItem(item) || isShopListItem(item)) {
     return matchesPlacesMapFilter(item, mapFilter);

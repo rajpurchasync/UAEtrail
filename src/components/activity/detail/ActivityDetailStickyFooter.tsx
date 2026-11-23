@@ -79,7 +79,7 @@ export const ActivityDetailStickyFooter = ({
     return wrapMobileFooter(
       <ActivityInviteLauncher
         activity={inviteActivity}
-        canSendBuddyInvites
+        canSendFriendInvites
         className="shadow-lg"
       />,
       showParticipantFooterShortcuts

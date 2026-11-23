@@ -21,7 +21,7 @@ interface ExploreListRowProps {
   multiline?: boolean;
   showJoining?: boolean;
   /** Highlight accepted buddies on participant previews. */
-  buddyUserIds?: Set<string>;
+  friendUserIds?: Set<string>;
 }
 
 const rowShellClass = EXPLORE_LIST_ROW.shell;
@@ -29,10 +29,10 @@ const rowMainClass = EXPLORE_LIST_ROW.main;
 
 const JoiningIndicator = ({
   card,
-  buddyUserIds,
+  friendUserIds,
 }: {
   card: DiscoveryCardModel;
-  buddyUserIds?: Set<string>;
+  friendUserIds?: Set<string>;
 }) => {
   const previews = card.participantPreviews ?? [];
   const joined =
@@ -46,14 +46,14 @@ const JoiningIndicator = ({
       {previews.length > 0 ? (
         <div className="flex -space-x-1.5">
           {previews.slice(0, 4).map((p) => {
-            const isBuddy = buddyUserIds?.has(p.id);
+            const isFriend = friendUserIds?.has(p.id);
             return (
               <Link
                 key={p.id}
                 to={memberProfileLink(p.id)}
                 onClick={(event) => event.stopPropagation()}
-                title={isBuddy ? p.name : `${p.name} — connect to message`}
-                className={`inline-block rounded-full ${isBuddy ? 'ring-2 ring-emerald-500' : 'ring-2 ring-white opacity-90'}`}
+                title={isFriend ? p.name : `${p.name} — connect to message`}
+                className={`inline-block rounded-full ${isFriend ? 'ring-2 ring-emerald-500' : 'ring-2 ring-white opacity-90'}`}
               >
                 <SecureAvatar src={p.avatar} name={p.name} className="h-6 w-6" />
               </Link>
@@ -77,7 +77,7 @@ export const ExploreListRow = ({
   onPointerEnter,
   multiline = false,
   showJoining = false,
-  buddyUserIds,
+  friendUserIds,
 }: ExploreListRowProps) => {
   const titleClamp = multiline ? 'line-clamp-2' : 'truncate';
   const metaClamp = multiline ? 'line-clamp-2' : 'truncate';
@@ -166,7 +166,7 @@ export const ExploreListRow = ({
           ) : (
             <DiscoveryCardDetailList details={details} compact />
           )}
-          {showJoining ? <JoiningIndicator card={card} buddyUserIds={buddyUserIds} /> : null}
+          {showJoining ? <JoiningIndicator card={card} friendUserIds={friendUserIds} /> : null}
         </span>
         <ChevronRight className="h-4 w-4 shrink-0 text-gray-300" aria-hidden />
       </button>

@@ -156,15 +156,15 @@ Community host publish stores the chosen row on the activity `requirements` line
 
 ---
 
-## Buddies (`/me/buddies`)
+## Buddies (`/me/friends`)
 
 | Method | Path | Who |
 |--------|------|-----|
-| GET | `/me/buddies` | List accepted buddy relationships |
-| POST | `/me/buddy-requests/:id/accept` | Accept request — also upserts **mutual** `user_follows` (no follow notification) |
-| GET | `/me/buddies/activity-presence` | Buddies × **published activities** on explore map (hosting / participant previews). Query: `date` (explore date preset). |
+| GET | `/me/friends` | List accepted buddy relationships |
+| POST | `/me/friend-requests/:id/accept` | Accept request — also upserts **mutual** `user_follows` (no follow notification) |
+| GET | `/me/friends/activity-presence` | Buddies × **published activities** on explore map (hosting / participant previews). Query: `date` (explore date preset). |
 
-Registration: `registerBuddyRoutes.ts` · service: `buddy-activity-presence.ts`.
+Registration: `registerFriendRoutes.ts` · service: `friend-activity-presence.ts`.
 
 Explore **people browse panel** (map; URL `view=people`; legacy `view=social` / `view=going`) uses **`GET /me/member-discovery/network`** (see below) — `activity-presence` remains for map-adjacent tooling. **Chat** is `/chat/*` and `/messages` — not these routes.
 
@@ -414,7 +414,7 @@ SPA: `/admin/hosts` → `pages/admin/Organisations` (see [`NAVIGATION.md`](./NAV
 | `explore.ts` | `/explore/map` |
 | `availability.ts` | **`/me/availability`** (+ match-preview) |
 | `groups.ts`, `chat.ts` | Groups, DMs, inbox |
-| `buddies.ts` | `/me/buddies`, `/me/following` |
+| `friends.ts` | `/me/friends`, `/me/following` |
 | `wishlist.ts`, `entityFollow.ts`, `reviews.ts` | `/me/wishlist`, `/me/entity-follows`, `/reviews` |
 | `places.ts` | `/me/places` (canonical); `GET /me/locations` read alias only |
 | `facilities.ts` | `/me/facilities`, `/admin/facilities` |

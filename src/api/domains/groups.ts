@@ -58,7 +58,7 @@ export const groupsApi = {
       body: JSON.stringify(payload),
     }),
 
-  createMeGroupInvite: (groupId: string, payload: { email: string; role: 'admin' | 'buddy' }) =>
+  createMeGroupInvite: (groupId: string, payload: { email: string; role: 'admin' | 'member' }) =>
     apiRequest<{ data: SocialGroupInviteView; inviteLink: string }>(`/me/groups/${groupId}/invites`, {
       method: 'POST',
       auth: true,
@@ -96,7 +96,7 @@ export const groupsApi = {
       body: JSON.stringify({ isActive }),
     }),
 
-  updateMeGroupMemberRole: (groupId: string, membershipId: string, role: 'buddy' | 'admin') =>
+  updateMeGroupMemberRole: (groupId: string, membershipId: string, role: 'member' | 'admin') =>
     apiRequest<{ data: SocialGroupMemberView }>(`/me/groups/${groupId}/members/${membershipId}`, {
       method: 'PATCH',
       auth: true,

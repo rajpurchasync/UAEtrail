@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  isMemberGroupTeamRow,
   isOutingCrewGroupRow,
   memberGroupInboundTypeFromKind,
+  memberGroupRowLabel,
   memberGroupKindFromInboundType,
   resolveMemberGroupShape,
   teamAllowsKidRoster,
@@ -44,5 +46,14 @@ describe('member-group model', () => {
     expect(isOutingCrewGroupRow({ kind: 'outing_crew', type: 'outing_crew' })).toBe(true);
     expect(isOutingCrewGroupRow({ type: 'activity' })).toBe(true);
     expect(isOutingCrewGroupRow({ kind: 'team', type: 'friends' })).toBe(false);
+  });
+
+  it('labels rows without reading legacy type in product code', () => {
+    expect(memberGroupRowLabel({ kind: 'team', teamLabel: 'friends', type: 'friends' })).toBe(
+      'Friends'
+    );
+    expect(memberGroupRowLabel({ type: 'activity' })).toBe('Outing crew chat');
+    expect(isMemberGroupTeamRow({ type: 'friends', kind: 'team' })).toBe(true);
+    expect(isMemberGroupTeamRow({ type: 'activity' })).toBe(false);
   });
 });

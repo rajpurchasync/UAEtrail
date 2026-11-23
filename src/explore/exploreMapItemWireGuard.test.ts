@@ -16,8 +16,8 @@ const ALLOWLIST = new Set([
 ]);
 
 const BANNED = [
-  { pattern: /\bitem\.source\s*===\s*['"]demand['"]/, hint: 'Use exploreMapItemIsSeeking(item)' },
-  { pattern: /\bitem\.source\s*!==\s*['"]demand['"]/, hint: 'Use !exploreMapItemIsSeeking(item) or isTimeBoundExploreMapItem' },
+  { pattern: /\bitem\.source\s*===\s*['"]demand['"]/, hint: 'Use exploreMapItemIsLegacySeekingActivity(item)' },
+  { pattern: /\bitem\.source\s*!==\s*['"]demand['"]/, hint: 'Use !exploreMapItemIsLegacySeekingActivity(item) or isTimeBoundExploreMapItem' },
   { pattern: /\bitem\.hostName\b/, hint: 'Use featuredPerson or activity.hostName' },
   { pattern: /\bitem\.hostAvatar\b/, hint: 'Use featuredPerson.avatarUrl or activity.hostAvatar' },
   { pattern: /\bitem\.requesterUserId\b/, hint: 'Use featuredPerson.userId' },

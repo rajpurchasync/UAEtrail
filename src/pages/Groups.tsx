@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { SOCIAL_GROUP_NAME_MAX_LENGTH } from '@uaetrail/shared-types';
+import {
+  SOCIAL_GROUP_NAME_MAX_LENGTH,
+  isMemberGroupTeamRow,
+  isOutingCrewGroupRow,
+  memberGroupRowLabel,
+  resolveMemberGroupShape,
+  teamAllowsKidRoster,
+} from '@uaetrail/shared-types';
 import {
   Users,
   Baby,
@@ -77,14 +84,6 @@ type GroupDetail = {
   invites: SocialGroupInviteView[];
 };
 
-const typeLabel: Record<string, string> = {
-  family: 'Family',
-  friends: 'Friends',
-  colleagues: 'Colleagues',
-  activity: 'Outing crew chat',
-  outing_crew: 'Outing crew chat',
-};
-
 const GROUP_TYPE_OPTIONS = [
   { value: 'family' as const, label: 'Family' },
   { value: 'friends' as const, label: 'Friends' },
@@ -130,7 +129,7 @@ export const Groups = () => {
   const showLeaveModal = destructiveModal === 'leave';
   const [deleteConfirmed, setDeleteConfirmed] = useState(false);
   const [groupForm, setGroupForm] = useState(emptyGroupForm);
-  const [inviteForm, setInviteForm] = useState({ email: '', role: 'buddy' as 'buddy' | 'admin' });
+  const [inviteForm, setInviteForm] = useState({ email: '', role: 'member' as 'member' | 'admin' });
   const [kidForm, setKidForm] = useState(emptyKidForm);
   const [editingKidId, setEditingKidId] = useState<string | null>(null);
   const [inviteLink, setInviteLink] = useState<string | null>(null);
@@ -317,9 +316,7 @@ export const Groups = () => {
     void loadGroups();
   }, [loadGroups]);
 
-  const isTeamRow = (group: SocialGroupView) =>
-    group.kind === 'team' ||
-    (group.kind == null && group.type !== 'activity');
+  const isTeamRow = (group: SocialGroupView) => isMemberGroupTeamRow(group);
 
   const isOutingCrewRow = (group: SocialGroupView) => isOutingCrewGroupRow(group);
 
@@ -395,7 +392,7 @@ export const Groups = () => {
     }
   };
 
-  const changeMemberRole = async (memberId: string, role: 'buddy' | 'admin') => {
+  const changeMemberRole = async (memberId: string, role: 'member' | 'admin') => {
     if (!detail?.group.id) return;
     setMemberActionId(memberId);
     setError(null);
@@ -513,7 +510,7 @@ export const Groups = () => {
         <div className="min-w-0 flex-1">
           <h2 className="truncate text-[17px] font-semibold text-neutral-900">{detail.group.name}</h2>
           <p className="truncate text-xs text-neutral-500">
-            {typeLabel[detail.group.type]} · {detail.members.length} member
+            {memberGroupRowLabel(detail.group)} · {detail.members.length} member
             {detail.members.length === 1 ? '' : 's'} · {memberRoleLabel(detail.membership)}
           </p>
         </div>
@@ -532,7 +529,7 @@ export const Groups = () => {
         role: inviteForm.role,
       });
       setInviteLink(link);
-      setInviteForm({ email: '', role: 'buddy' });
+      setInviteForm({ email: '', role: 'member' });
       setSuccess(`Invite sent to ${invitedEmail}. Share the link if they need it.`);
       await loadDetail(detail.group.id);
     } catch (err) {
@@ -661,9 +658,7 @@ export const Groups = () => {
   const renderGroupHub = () => {
     if (!detail) return null;
 
-    const isFamily =
-      detail.group.teamLabel === 'family' ||
-      (detail.group.teamLabel == null && detail.group.type === 'family');
+    const isFamily = teamAllowsKidRoster(resolveMemberGroupShape(detail.group));
     const isActivity = isOutingCrewGroupRow(detail.group);
     const showSetupPrompt = isAdmin && setupPromptGroupId === detail.group.id && !isActivity;
 
@@ -765,7 +760,9 @@ export const Groups = () => {
       const isOutingChat = isOutingCrewGroupRow(group);
       const unread = group.chatPreview?.unreadCount ?? 0;
       const subtitle =
-        unread > 0 ? `${unread} unread · ${typeLabel[group.type]}` : typeLabel[group.type];
+        unread > 0
+          ? `${unread} unread · ${memberGroupRowLabel(group)}`
+          : memberGroupRowLabel(group);
       return (
         <SettingsMenuRow
           key={group.id}

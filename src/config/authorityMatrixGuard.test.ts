@@ -118,7 +118,7 @@ describe('authorityMatrixGuard (DMCP Phase 0)', () => {
     expect(matrix.dmcpPhase).toBeGreaterThanOrEqual(7);
     const byId = new Map((matrix.actions ?? []).map((a: { id: string }) => [a.id, a]));
     expect(byId.get('social.group_create')?.note).toMatch(/Team/);
-    expect(byId.get('social.buddy_request')?.note).toMatch(/Friends/);
+    expect(byId.get('social.friend_request')?.note).toMatch(/Friends/);
     expect(byId.get('people.plan_hub')?.note).toMatch(/No Plan aggregate/);
     const program = JSON.parse(read('scripts/governance/platform-governance.json'));
     expect(

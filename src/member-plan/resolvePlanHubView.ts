@@ -21,6 +21,3 @@ export const resolveProfileHistoryContentKey = (input: {
   if (input.role === 'self') return 'self-completed';
   return 'joined-completed';
 };
-
-/** @deprecated Use `resolveProfileHistoryContentKey` — My Plans no longer shares this resolver. */
-export type PlanHubContentKey = ProfileHistoryContentKey;

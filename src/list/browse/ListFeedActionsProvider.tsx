@@ -40,8 +40,6 @@ import type { JoinRequestUiState } from '../../utils/joinRequestUi';
 
 type ListFeedActionsContextValue = {
   isGuest: boolean;
-  /** @deprecated Prefer joinStateLoadingForCard — list rows disable CTAs during join load. */
-  joinStateLoading: boolean;
   joinStateLoadingForCard: (card: DiscoveryCardModel) => boolean;
   joinUiStateForCard: (card: DiscoveryCardModel) => JoinRequestUiState | undefined;
   onPrimaryFooter: (card: DiscoveryCardModel) => void;
@@ -350,7 +348,6 @@ export const ListFeedActionsProvider = ({
   const value = useMemo(
     (): ListFeedActionsContextValue => ({
       isGuest,
-      joinStateLoading: Boolean(joinActivityId && joinStateLoading),
       joinStateLoadingForCard,
       joinUiStateForCard,
       onPrimaryFooter,

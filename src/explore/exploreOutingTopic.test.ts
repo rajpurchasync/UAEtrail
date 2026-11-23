@@ -5,7 +5,7 @@ import {
   parseExploreOutingTopic,
   serializeExploreOutingTopic,
 } from './exploreOutingTopic';
-import { matchesBuddyMapFilter } from './ui/exploreMapPinModel';
+import { matchesOthersMapFilter } from './ui/exploreMapPinModel';
 
 const item = (overrides: Partial<ExploreMapItemDTO>): ExploreMapItemDTO =>
   ({
@@ -46,11 +46,11 @@ describe('exploreOutingTopic', () => {
     expect(matchesOutingTopicFilter(venue, 'trail_run')).toBe(false);
   });
 
-  it('matchesBuddyMapFilter applies topic within others activities', () => {
+  it('matchesOthersMapFilter applies topic within others activities', () => {
     const climb = item({ outingCategory: 'activities', outingTopic: 'climbing' });
     const run = item({ outingCategory: 'activities', outingTopic: 'trail_run' });
-    expect(matchesBuddyMapFilter(climb, 'others', 'activities', 'climbing')).toBe(true);
-    expect(matchesBuddyMapFilter(climb, 'others', 'activities', 'trail_run')).toBe(false);
-    expect(matchesBuddyMapFilter(run, 'others', 'activities', 'all')).toBe(true);
+    expect(matchesOthersMapFilter(climb, 'others', 'activities', 'climbing')).toBe(true);
+    expect(matchesOthersMapFilter(climb, 'others', 'activities', 'trail_run')).toBe(false);
+    expect(matchesOthersMapFilter(run, 'others', 'activities', 'all')).toBe(true);
   });
 });

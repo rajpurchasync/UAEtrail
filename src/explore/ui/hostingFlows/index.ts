@@ -44,9 +44,9 @@ export const hostingFlowForComposeKind = (kind: HostComposeKind): HostingKindFlo
 
 export const hostingFlowForCreateKind = (
   kind: CreateActivityKind,
-  genericBuddy = false
+  communityHostFlow = false
 ): HostingKindFlow => {
-  if (genericBuddy && kind === 'hiking') {
+  if (communityHostFlow && kind === 'hiking') {
     return hikingHostingFlow;
   }
   return CREATE_KIND_TO_FLOW[kind];
@@ -56,11 +56,11 @@ export const hostingFlowForCreateKind = (
 
 export const getHostingKindFlowSteps = (
   kind: CreateActivityKind,
-  genericBuddy: boolean,
-  draft: Pick<CreateActivityDraft, 'placeLabelSource' | 'registryPlaceId' | 'genericBuddy'>
+  communityHostFlow: boolean,
+  draft: Pick<CreateActivityDraft, 'placeLabelSource' | 'registryPlaceId' | 'communityHostFlow'>
 ): CreateFlowStepId[] => {
-  const flow = hostingFlowForCreateKind(kind, genericBuddy);
-  return flow.getSteps({ ...draft, genericBuddy });
+  const flow = hostingFlowForCreateKind(kind, communityHostFlow);
+  return flow.getSteps({ ...draft, communityHostFlow });
 };
 
 
@@ -70,7 +70,7 @@ export const validateHostingKindStep = (
   step: CreateFlowStepId,
   draft: CreateActivityDraft
 ): string | null => {
-  const flow = hostingFlowForCreateKind(kind, draft.genericBuddy);
+  const flow = hostingFlowForCreateKind(kind, draft.communityHostFlow);
   return flow.validateStep(step, draft);
 };
 

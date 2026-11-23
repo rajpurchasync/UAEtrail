@@ -27,6 +27,6 @@ describe('exploreSearchScopeUi', () => {
     expect(exploreSearchScopeTitleMatchesQuery('agencies', 'agen')).toBe(true);
     expect(exploreSearchScopeTitleMatchesQuery('shops', 'trip')).toBe(false);
     expect(exploreSearchScopeTitleMatchesQuery('people', 'host')).toBe(true);
-    expect(exploreSearchScopeTitleMatchesQuery('people', 'buddy')).toBe(true);
+    expect(exploreSearchScopeTitleMatchesQuery('people', 'friends')).toBe(true);
   });
 });

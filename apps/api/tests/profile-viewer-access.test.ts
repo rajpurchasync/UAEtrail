@@ -12,8 +12,8 @@ vi.mock('../src/lib/social-groups-store.js', () => ({
   usersShareActiveGroup: vi.fn(),
 }));
 
-vi.mock('../src/lib/buddy-store.js', () => ({
-  areAcceptedBuddies: vi.fn(),
+vi.mock('../src/lib/friend-store.js', () => ({
+  areAcceptedFriends: vi.fn(),
 }));
 
 import {
@@ -23,7 +23,7 @@ import {
   countPublishedActivitiesHostedByUser,
 } from '../src/lib/activity-engagement-store.js';
 import { usersShareActiveGroup } from '../src/lib/social-groups-store.js';
-import { areAcceptedBuddies } from '../src/lib/buddy-store.js';
+import { areAcceptedFriends } from '../src/lib/friend-store.js';
 import {
   resolveProfileViewerAccess,
   shouldHideFromMapMemberDiscovery,
@@ -40,7 +40,7 @@ describe('resolveProfileViewerAccess', () => {
     vi.mocked(hasParticipantToHostLink).mockResolvedValue(false);
     vi.mocked(hasSharedActivityParticipation).mockResolvedValue(false);
     vi.mocked(usersShareActiveGroup).mockResolvedValue(false);
-    vi.mocked(areAcceptedBuddies).mockResolvedValue(false);
+    vi.mocked(areAcceptedFriends).mockResolvedValue(false);
   });
 
   it('denies unrelated viewers of a private profile', async () => {
@@ -81,7 +81,7 @@ describe('resolveProfileViewerAccess', () => {
   });
 
   it('allows accepted buddies to view a private profile', async () => {
-    vi.mocked(areAcceptedBuddies).mockResolvedValue(true);
+    vi.mocked(areAcceptedFriends).mockResolvedValue(true);
 
     const access = await resolveProfileViewerAccess({
       viewerUserId: attendeeA,
@@ -90,7 +90,7 @@ describe('resolveProfileViewerAccess', () => {
     });
 
     expect(access.canViewFullProfile).toBe(true);
-    expect(access.level).toBe('accepted_buddy');
+    expect(access.level).toBe('accepted_friend');
   });
 
   it('allows the activity host to view a private join requester', async () => {
