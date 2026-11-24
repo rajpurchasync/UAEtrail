@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
@@ -8,7 +8,6 @@ import {
   exploreSearchListPathFromMapSearch,
   exploreSearchMapViewPathFromListSearch,
   exploreSearchResultsPath,
-  exploreInboundHubRedirectTarget,
   isExploreSearchHomeState,
 } from './exploreSearchRouting';
 import { resolveMobileBottomTab } from '../../config/mobileFiveTabNav';
@@ -41,15 +40,10 @@ describe('explore search results', () => {
     expect(read('src/config/exploreHubRetirementGuard.test.ts')).toMatch(/HUB-RET-01/);
   });
 
-  it('redirects legacy /explore/hub bookmarks', () => {
-    expect(exploreInboundHubRedirectTarget('/explore/hub/search', '?q=camp')).toBe(
-      `${EXPLORE_SEARCH_RESULTS_PATH}?q=camp`
-    );
-    expect(exploreInboundHubRedirectTarget('/explore/hub/map', '?searchScope=places&q=camp')).toContain(
-      `${EXPLORE_SEARCH_RESULTS_PATH}?`
-    );
-    expect(exploreInboundHubRedirectTarget('/explore/hub/home', '')).toContain(EXPLORE_SEARCH_COMPOSE_PARAM);
-    expect(exploreInboundHubRedirectTarget('/explore/hub/home', '')).toContain(EXPLORE_SEARCH_RESULTS_PATH);
+  it('does not mount /explore/hub redirect shims (GW-7)', () => {
+    expect(existsSync(join(process.cwd(), 'src/explore/search/ExploreInboundHubRedirect.tsx'))).toBe(false);
+    const routing = read('src/explore/search/exploreSearchRouting.ts');
+    expect(routing).not.toMatch(/exploreInboundHubRedirectTarget/);
   });
 
   it('uses full-page search home on /explore/search', () => {

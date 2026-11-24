@@ -100,7 +100,7 @@ describe('systemCoherenceGuard', () => {
     expect(content).toMatch(/MY_CREWS_PATH/);
     expect(content).toMatch(/GROUPS_PATH/);
     expect(content).toMatch(/messagesGroupPath/);
-    expect(content).toMatch(/INBOUND_PLAN_HUB_TRIPS_MAP_PATH/);
+    expect(content).toMatch(/canonicalizeNotificationBookmarkPath/);
     expect(content).not.toMatch(/return '\/buddies'/);
     expect(content).not.toMatch(/return '\/groups'/);
     expect(content).not.toMatch(/return `\/messages\?group=/);
@@ -375,6 +375,19 @@ describe('systemCoherenceGuard', () => {
     expect(browseHook).toMatch(/parseExploreBrowseStateFromSearchParams/);
     expect(browseHook).toMatch(/useExploreBrowseUrlApplyHandlers/);
     expect(browseHook.split(/\r?\n/).length).toBeLessThan(320);
+  });
+
+  it('GW7-02: API mongo migrations rewrite stale notification bookmarks via shared-types', () => {
+    const migrations = readFileSync(join(API_SRC, 'lib/mongo-migrations.ts'), 'utf8');
+    expect(migrations).toMatch(/migrateStaleNotificationBookmarkPaths/);
+    expect(migrations).toMatch(/notification-bookmark-path-migration/);
+    const impl = readFileSync(join(API_SRC, 'lib/notification-bookmark-path-migration.ts'), 'utf8');
+    expect(impl).toMatch(/canonicalizeNotificationBookmarkPath/);
+    expect(impl).not.toMatch(/resolveInboundPlanHubPath/);
+    expect(migrations).not.toMatch(/migrateRetiredBuddiesInboundPaths/);
+    expect(readFileSync(join(ROOT, 'src/utils/authRedirect.ts'), 'utf8')).toMatch(
+      /canonicalizeNotificationBookmarkPath/
+    );
   });
 
   it('admin console pages guard mount fetches with useSafeAsyncEffect', () => {

@@ -23,6 +23,10 @@ export default defineConfig(({ mode }) => {
           replacement: path.resolve(projectRoot, 'src/components/chat/index.ts'),
         },
         { find: '@', replacement: path.resolve(projectRoot, 'src') },
+        {
+          find: '@uaetrail/shared-types',
+          replacement: path.resolve(projectRoot, 'packages/shared-types/src/index.ts'),
+        },
       ],
     },
     server: {

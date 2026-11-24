@@ -67,12 +67,14 @@ describe('member surfaces §11 acceptance (automated)', () => {
     ).toBe('/plan?view=plans&filter=joined');
   });
 
-  it('G-arch: participant /host bookmarks redirect off host console', () => {
+  it('G-arch: participant stale console bookmarks redirect off host console', () => {
     expect(participantHostBookmarkRedirect('/publishing/overview')).toBe('/profile');
     // Participants bookmarking `/publishing/*` land on consumer surfaces — not `/operator/*` or compose.
     expect(participantHostBookmarkRedirect('/publishing/activities')).toMatch(
       /^\/plan\?.*filter=hosting/
     );
+    expect(participantHostBookmarkRedirect('/host/overview')).toBe('/profile/pro-membership');
+    expect(participantHostBookmarkRedirect('/hosting/messages')).toBe('/chat');
   });
 
   it('G-dmcp-1: member status hook gates workspace from publish slice only', () => {

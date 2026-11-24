@@ -32,13 +32,13 @@ describe('memberAvailabilityLineageGuard (MIG-DISCO-REG)', () => {
     const mode = read('packages/shared-types/src/explore-activity-mode.ts');
     expect(mode).not.toMatch(/item\.participantIntentId/);
     expect(mode).toMatch(/exploreMapItemIsAvailabilityCatalog/);
-    expect(mode).toMatch(/exploreMapItemIsLegacySeekingActivity/);
+    expect(mode).toMatch(/exploreMapItemIsRetiredSeekingActivity/);
   });
 
   it('AVAIL-LINE-05: Looking browse + pills use availability catalog only', () => {
     expect(read('src/list/browse/browseListFilters.ts')).toMatch(/filterListAvailabilityCatalogItems/);
     expect(read('src/activity-discovery/catalog/listAvailabilityCatalog.ts')).not.toMatch(
-      /exploreMapItemIsLegacySeekingActivity|exploreMapItemIsLegacySeekingActivity/
+      /exploreMapItemIsRetiredSeekingActivity/
     );
     expect(read('src/explore/exploreActivityModeFilter.ts')).toMatch(/availability/);
     expect(read('src/explore/exploreBrowseTaxonomy.ts')).not.toMatch(/mapItemMatchesLookingPill/);

@@ -1,4 +1,4 @@
-import { exploreMapItemIsLegacySeekingActivity, type ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { exploreMapItemIsRetiredSeekingActivity, type ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { DiscoveryMapItems } from '@/discovery/discoveryMapPayload';
 import { sortExploreActivities } from '../../explore/exploreListSort';
 import { matchesActivityDateFilter } from '../../explore/exploreActivityDateFilter';
@@ -46,7 +46,7 @@ export const selectActivitiesFromMapItems = (
   return sortExploreActivities(
     mapItems
       .filter(isFriendMapItem)
-      .filter((item) => !exploreMapItemIsLegacySeekingActivity(item))
+      .filter((item) => !exploreMapItemIsRetiredSeekingActivity(item))
       .filter((item) =>
         matchesTripMapTopicFilter(
           item,

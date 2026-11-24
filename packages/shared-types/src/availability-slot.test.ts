@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  deriveLegacyKindsFromSlots,
+  deriveModalitiesFromSlots,
   hydrateMemberAvailabilitySlots,
   normalizeAvailabilitySlot,
   validateMemberAvailabilityWrite,
@@ -67,7 +67,7 @@ describe('availability-slot (MIG-SG-B1)', () => {
       ],
       ['event']
     );
-    expect(deriveLegacyKindsFromSlots(slots).sort()).toEqual(['camping', 'hiking']);
+    expect(deriveModalitiesFromSlots(slots).sort()).toEqual(['camping', 'hiking']);
     expect(
       normalizeAvailabilitySlot(
         { startDate: '2030-06-01', endDate: '2030-06-01' },

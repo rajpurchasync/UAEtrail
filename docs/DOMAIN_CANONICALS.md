@@ -268,7 +268,7 @@ Built only via **`routingCatalog`** or `@uaetrail/shared-types` `entity-path` he
 
 **Parse inbound links:** `parseEntityRefFromPathname(pathname)` → `EntityRef`.
 
-**Stale bookmark paths** (do not link in new UI): legacy `/trips`, `/messages`, `/host/*`, profile-nested settings, etc. — **no SPA redirect routes** (GW-7). Stale links normalize in `inferNotificationPath()` and auth return context only; constants in `src/config/inboundBookmarkPaths.ts`. Table: [`NAVIGATION.md`](./NAVIGATION.md) § Legacy bookmarks.
+**Stale bookmark paths** (do not link in new UI): legacy `/trips`, `/messages`, `/host/*`, profile-nested settings, etc. — **no SPA `<Navigate>` bookmark routes** (GW-7). Stale links normalize via **`canonicalizeNotificationBookmarkPath`** (`packages/shared-types`) from notifications, auth `?redirect=`, and participant console fallbacks; detection literals in `src/config/inboundBookmarkPaths.ts`. Detail: [`NAVIGATION.md`](./NAVIGATION.md) § Stale URLs (GW-7).
 
 ### 3.1 Consumer detail tab wire ids
 
@@ -321,7 +321,7 @@ Map/list **peek** and entity **detail** share one engagement contract per viewer
 
 ### 3.2.2 Member profile — one page, browse lenses
 
-**Route:** `/member/:userId` only (`MemberProfile` → `MemberProfileView`). **`/buddies`**, Explore people panel, activity host rows, chat avatars, and notifications all **link here** — no parallel “friends profile” or “public profile” routes. Self hub stays `/profile`; owner **public preview** uses `/member/:id?view=public` on the same layout. Users linked to a **shop or agency operator** show the **operator display name** on the card (link → `/shop/…` or `/agency/…`); Pro **guides** do not get a separate storefront link — the member card is the individual public surface.
+**Route:** `/member/:userId` only (`MemberProfile` → `MemberProfileView`). **My Crews** (`/crews`), Explore people panel, activity host rows, chat avatars, and notifications all **link here** — no parallel “friends profile” or “public profile” routes (stale `/buddies` rewrites to `/crews`). Self hub stays `/profile`; owner **public preview** uses `/member/:id?view=public` on the same layout. Users linked to a **shop or agency operator** show the **operator display name** on the card (link → `/shop/…` or `/agency/…`); Pro **guides** do not get a separate storefront link — the member card is the individual public surface.
 
 **Path helpers:** Wire URLs — `memberProfilePath(…)` (`packages/shared-types/src/entity-path.ts`), including `{ publicPreview: true }` → `view=public`. Consumer surfaces — **`memberProfileLink(userId, lens)`**; owner preview — **`memberPublicPreviewLink(userId)`** (`src/member/memberProfileLink.ts`) so people browse, friends list, roster chips, notifications, chat avatars, and the self-hub public preview share one builder. `discover=1` + `from=discover` = directory quota on `GET /member/:userId/profile`; other lenses set `source=` only. Public preview is not a browse lens.
 
@@ -329,7 +329,7 @@ Map/list **peek** and entity **detail** share one engagement contract per viewer
 |------------------------|-------------------|-------------------------------|-----------------------------------------------------|
 | **`discover`** (public directory) | People **Connect** / `GET /users/browse` | Members with `profileVisibility: public` in directory | **Signed-in**; discover opens count toward quota (**Pro** = unlimited per `memberHasUnlimitedDiscovery`) |
 | **`host`** | Activity host row, **Looking for**, approved outing context | Participants + hosts on shared / hosted activities | **Signed-in** with `host_of_activity`, `activity_participant`, or public card when visibility allows |
-| **`friends`** | `/buddies`, **Going** / network roster | Accepted buddies (+ followed where shown) | **Accepted buddy** → `exposure: full`; others follow visibility rules |
+| **`friends`** | **My Crews** (`/crews`), **Going** / network roster | Accepted friends (+ followed where shown) | **Accepted friend** → `exposure: full`; others follow visibility rules |
 | **`available`** | People **Available** tab | Members signaling availability | **Any signed-in member** (public card minimum; trusted fields per §15) |
 | **`organic`** (default) | Deep links, search, notifications | N/A | `resolveProfileViewerAccess` + `profileVisibility` |
 
@@ -468,9 +468,9 @@ When renaming or adding routes:
 | `LocationDTO` vs Place | Mongo `locations` + historical API |
 | `tenant` vs Organisation | `x-organisation-id` header (`tenantId` in storage) |
 | `UserRole` vs `HostStatusDTO` | Auth shell vs product capabilities |
-| Retired SPA bookmark redirects | Removed GW-7 — use notification/auth normalization only (`notificationRouting.ts`, `inboundBookmarkPaths.ts`) |
+| Retired SPA bookmark redirects | Removed GW-7 — `canonicalizeNotificationBookmarkPath` + nginx 301s; no duplicate client rewrite tables |
 | `ProProfileApplicationFlow` | Pro guide/agency/shop application wizard (not community Host / publish) |
-| `/activities` route | Bookmark redirect to `/plan` (or history) in `App.tsx` |
+| `/activities` bookmark pathname | Plan hub query rewrite via `canonicalizeNotificationBookmarkPath` — no SPA route |
 
 ---
 

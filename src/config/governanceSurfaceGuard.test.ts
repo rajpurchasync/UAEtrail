@@ -249,6 +249,9 @@ describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
   it('GW7-01: SPA inbound redirect modules and AppRoutes Navigate shims removed', () => {
     expect(existsSync(join(ROOT, 'src/routing/inboundBookmarkRedirects.tsx'))).toBe(false);
     expect(existsSync(join(ROOT, 'src/routing/exploreEntryRedirects.tsx'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/explore/search/ExploreInboundHubRedirect.tsx'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/explore/search/ExploreBookingSearchModalHost.tsx'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/components/auth/DashboardRedirect.tsx'))).toBe(false);
     const routes = read('src/routing/AppRoutes.tsx');
     expect(routes).not.toMatch(/<Navigate\b/);
     expect(routes).not.toMatch(/InboundLegacyProfileSettingsRedirect/);
@@ -261,5 +264,80 @@ describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
     expect(lazy).not.toMatch(/loadInboundRedirects/);
     expect(lazy).not.toMatch(/loadExploreEntryRedirects/);
     expect(lazy).not.toMatch(/DashboardRedirect/);
+  });
+
+  it('GW7-07: nginx inbound bookmark snippet ships in frontend image', () => {
+    expect(existsSync(join(ROOT, 'nginx/snippets/inbound-bookmark-redirects.conf'))).toBe(true);
+    expect(read('nginx/default.conf')).toMatch(/inbound-bookmark-redirects\.conf/);
+    expect(read('nginx/ssl-server.conf.example')).toMatch(/inbound-bookmark-redirects\.conf/);
+    expect(read('Dockerfile.frontend')).toMatch(/COPY nginx\/snippets/);
+  });
+
+  it('GW7-03: Vite and Vitest resolve @uaetrail/shared-types from package src (not stale dist)', () => {
+    expect(read('vite.config.ts')).toMatch(
+      /@uaetrail\/shared-types[\s\S]*packages\/shared-types\/src\/index\.ts/
+    );
+    expect(read('vitest.config.ts')).toMatch(
+      /@uaetrail\/shared-types[\s\S]*packages\/shared-types\/src\/index\.ts/
+    );
+  });
+
+  it('GW7-08: notification bookmark wire module is the single FE re-export surface', () => {
+    expect(existsSync(join(ROOT, 'packages/shared-types/src/notification-bookmark-path.ts'))).toBe(true);
+    expect(read('packages/shared-types/src/index.ts')).toMatch(
+      /canonicalizeNotificationBookmarkPath[\s\S]*notification-bookmark-path/
+    );
+    expect(read('src/config/inboundBookmarkPaths.ts')).toMatch(/INBOUND_CONTRIBUTIONS_PATH/);
+    expect(read('src/config/inboundBookmarkPaths.ts')).toMatch(/INBOUND_BUDDIES_PATH/);
+    expect(read('src/config/inboundBookmarkPaths.ts')).toMatch(/INBOUND_REWARDS_PATH/);
+    expect(read('src/config/inboundBookmarkPaths.ts')).toMatch(/INBOUND_PROFILE_WISHLIST_PATH/);
+    expect(read('src/config/routingCatalog.ts')).toMatch(/INBOUND_TRAIL_POINTS_PATH/);
+  });
+
+  it('GW7-06: community and crews inbound literals are covered by notification bookmark wire', () => {
+    const wire = read('packages/shared-types/src/notification-bookmark-path.ts');
+    expect(read('src/config/inboundBookmarkPaths.ts')).toContain("'/community'");
+    expect(wire).toContain("'/community'");
+    expect(wire).toContain("'/buddies'");
+    expect(wire).toContain("'/become-host'");
+  });
+
+  it('GW7-05: settings inbound literals are covered by notification bookmark wire', () => {
+    const wire = read('packages/shared-types/src/notification-bookmark-path.ts');
+    const fe = read('src/config/inboundBookmarkPaths.ts');
+    for (const segment of [
+      '/profile/settings',
+      '/profile/settings/account',
+      '/profile/settings/notifications',
+    ] as const) {
+      expect(fe).toContain(`'${segment}'`);
+    }
+    expect(wire).toMatch(/PROFILE_SETTINGS_PREFIX/);
+    expect(wire).toMatch(/LEGACY_NOTIFICATIONS_PREFIX/);
+    expect(wire).toContain("'/contributions'");
+  });
+
+  it('GW7-04: plan hub inbound path literals match shared-types wire', () => {
+    const wire = read('packages/shared-types/src/notification-bookmark-path.ts');
+    const fe = read('src/config/inboundBookmarkPaths.ts');
+    for (const segment of [
+      '/trips',
+      '/trips/map',
+      '/activities',
+      '/profile/my-trips',
+      '/profile/my-trips/map',
+    ] as const) {
+      expect(fe).toContain(`'${segment}'`);
+      expect(wire).toContain(`'${segment}'`);
+    }
+  });
+
+  it('GW7-02: stale console prefix list matches shared-types wire', () => {
+    const wire = read('packages/shared-types/src/notification-bookmark-path.ts');
+    const fe = read('src/config/inboundRoutePaths.ts');
+    expect(wire).toMatch(/export const INBOUND_STALE_CONSOLE_PREFIXES/);
+    const prefixLine = (content: string) =>
+      content.match(/INBOUND_STALE_CONSOLE_PREFIXES = \[([\s\S]*?)\] as const/)?.[1] ?? '';
+    expect(prefixLine(fe).replace(/\s/g, '')).toBe(prefixLine(wire).replace(/\s/g, ''));
   });
 });

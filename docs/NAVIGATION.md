@@ -34,13 +34,13 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 ### Profile hub (`/profile`)
 
 - **Priority order:** Consumer hub (identity card + **stats row**, About you bio/speaks, **Goals teaser** → Plan **Wishlist** (`planWishlistTabPath()` / `tab=wishlist`), launcher **tiles**, **My cars** + **Safety & emergency** rows) — not a full settings stack on the hub. **App settings** via launcher or `/settings` (display, account, privacy; `/profile/settings` redirects).
-- **Badges:** `/profile/badges` — earned badges + share (`ProfileBadges.tsx`); launcher tile + badge-earn notifications → `PROFILE_BADGES_PATH`. Legacy `/rewards`, `/trail-points` redirect here. **Not** on Plan.
-- **Submissions:** `/profile/submissions` — places and facilities you submitted + link to **Reviews** (`/profile/reviews`). Leftover **`/contributions`** inbound-redirects here. Launcher tile; back stack → Profile. **Add on the map** on Explore FAB is the create path; inventory lives here, not the Plan tab.
+- **Badges:** `/profile/badges` — earned badges + share (`ProfileBadges.tsx`); launcher tile + badge-earn notifications → `PROFILE_BADGES_PATH`. Legacy `/rewards`, `/my-rewards`, `/trail-points` edge-301 + `canonicalizeNotificationBookmarkPath` → here. **Not** on Plan.
+- **Submissions:** `/profile/submissions` — places and facilities you submitted + link to **Reviews** (`/profile/reviews`). Stale **`/contributions`** notification paths canonicalize here (`canonicalizeNotificationBookmarkPath`). Launcher tile; back stack → Profile. **Add on the map** on Explore FAB is the create path; inventory lives here, not the Plan tab.
 - **Edit profile:** `/profile/edit` — name, gender, bio, speaks, location (no DOB edit on this screen).
 - **Pull-to-refresh** reloads hub data at scroll top.
 - **Sign out:** Profile hub (bottom) and Settings → Account.
-- **Outing history + map:** `/profile/history` — joined / hosted / self **past** outings; **History · My Map** tabs (`PROFILE_HISTORY_MAIN_TABS`). Journey map at `/profile/history/map`. Legacy `/profile/my-trips` redirects; `/trips`, `/trips/map`, `/activities` → `/plan` or history via `resolveInboundTripsHubRedirect`.
-- **Want to go (wishlist):** `/plan?view=plans&tab=wishlist` (`planWishlistTabPath()` / `planSavedPath()`). Catalog venues (`locationId`) sit with **Goals** on that tab and compose onto the journey map. Legacy `lens=saved|goals` and `/profile/wishlist` normalize on load. Profile shows a teaser only — not a second full list ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §6.2 · `src/plan/`).
+- **Outing history + map:** `/profile/history` — joined / hosted / self **past** outings; **History · My Map** tabs (`PROFILE_HISTORY_MAIN_TABS`). Journey map at `/profile/history/map`. Stale plan/history bookmarks rewrite via `canonicalizeNotificationBookmarkPath` (shared-types) and edge **301** (see § Stale URLs); on `/plan` load, `normalizePlanSearchParams` in `planRouting.ts`.
+- **Want to go (wishlist):** `/plan?view=plans&tab=wishlist` (`planWishlistTabPath()` / `planSavedPath()`). Catalog venues (`locationId`) sit with **Goals** on that tab and compose onto the journey map. Stale `lens=` / `role=` on `/plan` are stripped on load (no remap). Profile shows a teaser only — not a second full list ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §6.2 · `src/plan/`).
 - **Cars & safety (profile hub):** **My cars** (`/profile/vehicles`, add/edit under that path) and **Safety & emergency** (`/settings/safety`) open from `/profile`, not the settings index. **App settings:** `/settings` → **Display** (theme, 12/24-hour time, metric/imperial — saved on this device; signed-out pages follow the guest theme, which starts as the system theme), Account, Privacy, **Notifications** (`/settings/notifications` — history, preferences, saved map alerts; legacy `/notifications*` redirects); **iPhone & iPad** (`#ios-install`, Safari steps) and **Android** (`#android-install`, Samsung Internet / Chrome manual steps — no in-app install prompt). Back returns to the screen that opened the page (profile, settings, or the rideshare host step) and restores that screen’s scroll position and the control that was used.
 - **Desktop/tablet shell (`md+`, `src/config/desktopNav.ts`):** Resizable left `DesktopSideNav` for **guests and members**. **Go:** one **Explore** (`/explore`). On desktop the browse list (thumbnails or rows) sits on the left of the map and is resizable and collapsible; outing filters live in that panel. Collapsing it leaves the applied filters visible, with **Show browse** to open it again. Signed-in **My Plans** · Chat. Guests see Explore + Chat only in Go. **People** (signed in): **Find Crew** → `list=1&listCat=people` list drawer (`exploreCrewsListDrawerPath`) — see § Browse — people & crew; **My Crews** (`/crews` + `/groups`). Full-screen discover list: `/list?listCat=people`. **Map:** Search · Post. **You:** outing history (`/profile/history`, past trips — not upcoming My Plans) and the rest of your hub links; **notification history** lives under **Settings** (`/settings/notifications`), reached from the header **bell** (popover footer) or the settings hub — not a duplicate sidebar row. Hosts get **Hosting schedule** under **Hosting**. Slim `Header` — members use the account menu; guests use **Sign in / Join free**. Gated actions open a **right-rail feature explainer** (not a centered “Oops” popup) with sign up / log in. Anonymous **`GET /explore/map`** returns a **preview catalog** (max **3 outings** and **3 places**). Map search omits **People** until signed in. Hosts/operators with `canAccessPublishingWorkspace` get **Hosting schedule** (`planHostedSchedulePath()`) under **Hosting** — not a second My Plans. Map pin summary docks left on desktop. Mobile bottom nav stays Explore · My Plans · Chat.
 - **Hamburger (header, below `lg`):** next to the notifications bell on tab chrome and tablet `Header` — Explore, **My Plans**, **Social**, Outing history, Chat, Profile/Signup, **Install app** → Android (Chrome and Edge `beforeinstallprompt` when the browser offers it; otherwise the settings steps) / iOS (deep-link to the matching settings hash). **Platform admins** (`platform_admin`) also see **Admin console** → `/admin/overview` on consumer surfaces (admin drawer on `/admin/*`). Their identity, contact, bio, units, and time format live at **`/admin/account`**. Full **`/profile`** hub (privacy, cars, history, languages, and the rest) is after **Switch to visitor**. Guests do not see My Plans, Social, or Outing history in the drawer. Notifications are the bell only, not in the drawer.
@@ -187,7 +187,7 @@ Full spec: **[`LANDING.md`](./LANDING.md)** · Voice: **[`NORTHSTAR.md`](./NORTH
 - **Copy:** `src/content/homeMarketing.ts` · fallback cards: `homeLanding.ts` · **Components:** `src/components/home/marketing/**`
 - **Layout:** Guest `/` uses a minimal wrapper in `Layout.tsx` (main + deferred site footer only). Signed-in product chrome (`ProductShell`: header, bottom nav, compose rail) loads only on non-marketing routes.
 
-Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as browse) redirect via `App.tsx` — do not link to them from new UI. Legacy **`/trips`**, **`/activities`**, **`/trips/map`** redirect to **`/plan`**, **`/profile/history`**, or **`/profile/history/map`** (`inboundTripsRedirect.ts`) — canonical active hub is **`/plan`**.
+**GW-7:** New UI links only canonical routes (`/explore`, `/plan`, `/settings`, …). Retired pathnames are not SPA routes. **`/trips`** and **`/trips/map`** get **nginx 301** (see below). Stale notification `meta.path` values are canonicalized in Mongo on API startup and via **`canonicalizeNotificationBookmarkPath`** (`@uaetrail/shared-types`). Active commitments hub: **`/plan`** (`PLAN_PATH`).
 
 ## Source of truth (code)
 
@@ -219,7 +219,7 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 - **Guest join:** tapping Join on an activity opens a signup sheet (returns to map after auth).
 - First map visit shows a 3-step coach (localStorage `uaetrail:explore-coach-seen`); guest join banner appears after coach is dismissed.
 - Pass `list: true` to `explorePath()` for the mobile People sheet and the **desktop** catalog drawer on `/explore`. Mobile catalog list still uses `listDiscoveryPath()` (`/list`).
-- **My plan on map:** `explorePath({ myPlan: true, list: true })` sets `myPlan=1` (legacy `myTrips=1` still parses) and filters pins to the signed-in member’s wishlist + joined/pending **activities**.
+- **My plan on map:** `explorePath({ myPlan: true, list: true })` sets `myPlan=1` and filters pins to the signed-in member’s wishlist + joined/pending **activities**.
 - Filter/panel query params select map context; they do not imply list mode.
 - **Others drill-down (Activities tab):** `filter=others` → optional `subtype=events|activities`; when `subtype=activities`, optional `outingTopic` (`climbing`, `trail_run`, `workshop`, `community`, …). Helpers: `explorePath({ filter: 'others', subtype: 'activities', outingTopic: 'climbing' })`.
 
@@ -297,40 +297,16 @@ Header **Back** walks the in-app stack (`src/utils/backStack.ts`) and pops brows
 | Organizer profile (wire kind) | `'host'` | `/explore` |
 | Generic / 404 | `'explore'` | `/explore` |
 
-## Legacy bookmarks (no SPA redirects — GW-7)
+## Stale URLs (GW-7)
 
-Canonical paths only in **new UI**. Retired bookmark URLs are **not** mounted as routes; stale links normalize in `inferNotificationPath()` / auth return helpers (`src/config/inboundBookmarkPaths.ts`). Do not add new links to legacy paths.
+- **Product UI** must emit canonical paths only (`src/config/routingCatalog.ts`, `src/config/surfacePaths.ts`).
+- **No SPA bookmark routes** — `AppRoutes` does not mount `<Navigate>` shims for retired paths (`productUrlInboundGuard` GW7-01).
+- **Edge 301 (deploy):** `nginx/snippets/inbound-bookmark-redirects.conf` — plan/history (`/trips`, `/trips/map`, `/profile/my-trips`, `/profile/my-trips/map`); explore entry (`/community`, `/map`, `/discovery`); social (`/buddies` → `/crews`); inventory (`/contributions` → `/profile/submissions`); chat (`/messages` → `/chat`); Pro entry (`/become-host`, `/become-organizer` → `/profile/pro-membership`); settings (`/profile/settings/*` → `/settings/*`, `/notifications*` → `/settings/notifications*`); badges (`/rewards`, `/my-rewards`, `/trail-points` → `/profile/badges`); wishlist (`/profile/wishlist` → `/plan?view=plans&tab=wishlist`).
+- **Notification + auth paths:** `canonicalizeNotificationBookmarkPath` in **`packages/shared-types`** — used by **`inferNotificationPath`**, **`resolveAuthRedirect`** (`?redirect=`), **`participantHostBookmarkRedirect`**, and API **`migrateStaleNotificationBookmarkPaths`**. **`inboundBookmarkPaths.ts`** holds detection literals only.
+- **Runtime query hygiene (strip only):** stale plan `lens` / `role` removed on `/plan` load; explore drops duplicate `places` / `activity` keys — see `src/plan/planTab.ts`, `src/explore/routing.ts`.
+- **Pro entry:** `PRO_MEMBERSHIP_PATH` (`/profile/pro-membership`) — no `/become-host` route; stale path literals exist for detection only (`INBOUND_BECOME_HOST_PATH`).
 
-| Legacy path | Redirect target | Removal target |
-|-------------|-----------------|----------------|
-| `/map` | `/explore` | 2026-Q4 |
-| `/discovery` | `/explore` (+ param transform) | 2026-Q4 |
-| `/calendar` | `/explore` | 2026-Q4 |
-| `/shop` (bare) | `/explore?panel=shops` | 2026-Q4 |
-| `/trips`, `/trips/map` | **nginx 301** → `/plan` or `/profile/history/map` (`nginx/snippets/legacy-bookmark-redirects.conf`); `/activities` — notification normalize only (`resolveInboundPlanHubPath`) | — |
-| `/profile/plans` | `/plan` | 2026-Q4 |
-| `/profile/wishlist` | Plan wishlist tab (`planWishlistRedirectPath()` / `InboundProfileWishlistRedirect`) | 2026-Q4 |
-| `/profile/settings`, `/profile/settings/*` | `/settings` + same suffix (`InboundLegacyProfileSettingsRedirect`) | keep (bookmarks) |
-| `/notifications`, `/notifications/settings`, `/notifications/saved` | `/settings/notifications` (+ preferences / saved sub-routes via `InboundLegacyNotificationsRedirect`) | keep (bookmarks) |
-| `/rewards`, `/my-rewards`, `/trail-points` | `/profile/badges` | 2026-Q4 (Trail Points wallet removed; badges kept) |
-| `/community` | **nginx 301** → `/explore` (Q&A feed removed; no SPA route) | — |
-| `/membership` | `/explore` (`App.tsx` bookmark redirect; not product home) | 2026-Q4 |
-| `/organizer/*`, `/host/*`, `/operator/*` (console) | `/publishing/*` (`InboundRetiredPublishingConsoleRedirect`) | 2026-Q4 |
-| `/become-organizer` | `/become-host` | 2026-Q4 |
-| `/become-host` | `/profile/pro-membership` | 2026-Q4 (Pro / agency / shop; buddy Host / publish uses `/welcome` + `canPublish`) |
-| `/dashboard/*` | role-based redirect | 2026-Q4 |
-| `/admin/organizers` | `/admin/hosts` | 2026-Q4 |
-| `/admin/shop` | `/admin/hosts` (shop catalog admin removed) | 2026-Q4 |
-| `/admin/locations` | `/admin/places` | 2026-Q4 |
-| `/product/:id` | `/explore?panel=shops` (product catalog removed) | 2026-Q4 |
-| `/host/locations`, `/host/places` | `/publishing/places` | 2026-Q4 |
-| `/event-spot/:id`, `/community-activity/:id`, `/event/:id` (place) | `/venue/:id` | 2026-Q4 |
-| `/people` | `/explore?…` Crews browse (`exploreCrewsPath`) | 2026-Q4 |
-| `/merchant/:id` | `/shop/:id` | 2026-Q4 |
-| `/shop/manage`, `/agency/manage`, `/merchant/dashboard` | `/organisation/manage?kind=shop` or `?kind=agency` | 2026-Q4 |
-| `/sign-up`, `/sign-in` | auth aliases | keep |
-
-**Personal commitments (active):** canonical **`/plan`** (`PLAN_PATH`). **Outing history:** **`/profile/history`**. Legacy **`TRIPS_PATH`** (`/trips`) redirects only — do not link in new UI.
+**Active hubs:** commitments **`/plan`**; outing history **`/profile/history`**; journey map **`/profile/history/map`**.
 
 ## Mobile tab shell (signed-in, `md:hidden`)
 

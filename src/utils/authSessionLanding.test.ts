@@ -29,9 +29,9 @@ describe('authSessionLanding', () => {
     expect(withSessionExpiredQuery('/explore/search')).toBe('/explore/search?session=expired');
   });
 
-  it('isExploreSearchSessionPreservePath covers search results and legacy hub URLs', () => {
+  it('isExploreSearchSessionPreservePath covers search results only', () => {
     expect(isExploreSearchSessionPreservePath('/explore/search')).toBe(true);
-    expect(isExploreSearchSessionPreservePath('/explore/hub/search')).toBe(true);
+    expect(isExploreSearchSessionPreservePath('/explore/hub/search')).toBe(false);
     expect(isExploreSearchSessionPreservePath('/explore')).toBe(false);
   });
 

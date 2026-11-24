@@ -261,33 +261,14 @@ export const normalizePlanHubSearchParams = (
   }
 
   if (params.get('view') === 'plans') {
-    const planLens = params.get('lens');
-    const skipUpcomingRoleDefault =
-      planLens === 'availability' || planLens === 'saved' || planLens === 'goals';
     const seg = params.get('segment');
     if (seg === 'completed') {
       params.delete('segment');
       changed = true;
     } else if (seg === 'saved' || seg === 'wishlist') {
       params.delete('segment');
-      params.set('view', 'plans');
-      params.set('lens', 'saved');
-      params.delete('role');
-      params.delete('saved');
+      params.set('tab', 'wishlist');
       changed = true;
-    }
-    const plansRole = params.get('role');
-    if (params.get('segment') === 'wishlist' && plansRole) {
-      params.delete('role');
-      changed = true;
-    } else if (params.get('segment') !== 'wishlist') {
-      if (plansRole === 'hosted' && !canHost) {
-        params.set('role', 'all');
-        changed = true;
-      } else if (!plansRole && !skipUpcomingRoleDefault) {
-        params.set('role', 'all');
-        changed = true;
-      }
     }
   }
 
@@ -295,7 +276,8 @@ export const normalizePlanHubSearchParams = (
   if (inboundLayer === 'places' || inboundLayer === 'shops') {
     params.delete('layer');
     params.set('view', 'plans');
-    params.set('role', 'all');
+    params.set('tab', 'wishlist');
+    params.set('saved', inboundLayer);
     changed = true;
   } else if (inboundLayer === 'trips' || inboundLayer === 'activities') {
     params.delete('layer');

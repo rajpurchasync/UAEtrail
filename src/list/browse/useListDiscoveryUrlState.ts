@@ -8,7 +8,6 @@ import {
   EXPLORE_SEARCH_RESULTS_PATH,
   EXPLORE_SEARCH_SCOPE_PARAM,
   EXPLORE_SEARCH_VIEW_PARAM,
-  INBOUND_HUB_SCOPE_PARAM,
   exploreSearchListCatForScope,
   exploreSearchScopeForListCat,
   parseExploreSearchBrowseState,
@@ -86,7 +85,6 @@ const EXPLORE_PRESERVE_PARAM_KEYS = [
   'outingTopic',
   'pin',
   'myPlan',
-  'myTrips',
   'list',
 ] as const;
 
@@ -235,7 +233,6 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
             const scope = exploreSearchScopeForListCat(patchedListCat);
             if (scope === 'join') params.delete(EXPLORE_SEARCH_SCOPE_PARAM);
             else params.set(EXPLORE_SEARCH_SCOPE_PARAM, scope);
-            params.delete(INBOUND_HUB_SCOPE_PARAM);
             const resultsView = searchParams.get(EXPLORE_SEARCH_VIEW_PARAM);
             if (resultsView === 'map') params.set(EXPLORE_SEARCH_VIEW_PARAM, 'map');
             else params.delete(EXPLORE_SEARCH_VIEW_PARAM);

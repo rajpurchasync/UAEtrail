@@ -115,7 +115,9 @@ describe('inferNotificationPath', () => {
 
   it('rewrites legacy rewards wallet paths to badges', () => {
     expect(inferNotificationPath(notif({ path: '/my-rewards' }))).toBe('/profile/badges');
-    expect(inferNotificationPath(notif({ path: '/trail-points?ref=abc' }))).toBe('/profile/badges');
+    expect(inferNotificationPath(notif({ path: '/trail-points?ref=abc' }))).toBe(
+      '/profile/badges?ref=abc'
+    );
   });
 
   it('routes wishlist match alerts via meta.path', () => {
@@ -190,8 +192,8 @@ describe('inferNotificationPath', () => {
     ).toBe('/explore?list=1');
   });
 
-  it('does not rewrite retired /buddies paths (data migrated at source)', () => {
-    expect(inferNotificationPath(notif({ path: '/buddies' }))).toBe('/buddies');
+  it('rewrites retired /buddies bookmark paths to /crews', () => {
+    expect(inferNotificationPath(notif({ path: '/buddies' }))).toBe('/crews');
   });
 
   it('rewrites legacy /hosting bookmarks to operator overview', () => {
@@ -236,8 +238,25 @@ describe('inferNotificationPath', () => {
     ).toBe('/activity/act-at-saved-place');
   });
 
+  it('rewrites stale community and pro entry notification paths', () => {
+    expect(inferNotificationPath(notif({ path: '/community' }))).toBe('/explore');
+    expect(inferNotificationPath(notif({ path: '/become-host' }))).toBe('/profile/pro-membership');
+  });
+
+  it('rewrites stale settings and contributions notification paths', () => {
+    expect(inferNotificationPath(notif({ path: '/profile/settings/notifications' }))).toBe(
+      '/settings/notifications'
+    );
+    expect(inferNotificationPath(notif({ path: '/contributions' }))).toBe('/profile/submissions');
+    expect(inferNotificationPath(notif({ path: '/profile/wishlist' }))).toBe(
+      '/plan?view=plans&tab=wishlist'
+    );
+  });
+
   it('rewrites legacy inbox and stale group chat paths to /chat', () => {
     expect(inferNotificationPath(notif({ path: '/messages?to=u-1' }))).toBe('/chat?to=u-1');
+    expect(inferNotificationPath(notif({ path: '/hosting/messages' }))).toBe('/chat');
+    expect(inferNotificationPath(notif({ path: '/organizer/messages?to=u-2' }))).toBe('/chat?to=u-2');
     expect(inferNotificationPath(notif({ path: '/host/messages?group=g-1' }))).toBe('/chat?group=g-1');
     expect(
       inferNotificationPath(

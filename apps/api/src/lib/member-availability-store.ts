@@ -12,7 +12,7 @@ import { profileDisplayNameFromAuthUser } from '../domain/person-name.js';
 import {
   AVAILABILITY_KINDS,
   availabilitySlotOverlapsRange,
-  deriveLegacyKindsFromSlots,
+  deriveModalitiesFromSlots,
   discoveryKindsFromSlots,
   hydrateMemberAvailabilitySlots,
   isFriendsOnlyAvailabilityVisibility,
@@ -69,7 +69,7 @@ const ensureAvailabilitySlotIds = (slots: MemberAvailabilitySlotDTO[]): MemberAv
   }));
 
 const deriveKindsFromHydratedSlots = (slots: MemberAvailabilitySlotDTO[]): AvailabilityKind[] => {
-  const kinds = [...deriveLegacyKindsFromSlots(slots)] as AvailabilityKind[];
+  const kinds = [...deriveModalitiesFromSlots(slots)] as AvailabilityKind[];
   if (slots.some((slot) => slot.capacity === 'guide') && !kinds.includes('guide')) {
     kinds.push('guide');
   }

@@ -68,7 +68,7 @@ export {
   AVAILABILITY_PRICING_KINDS,
   AVAILABILITY_TOUR_SHAPES,
   assertNoGuideModality,
-  deriveLegacyKindsFromSlots,
+  deriveModalitiesFromSlots,
   hydrateMemberAvailabilitySlots,
   isScheduleModality,
   normalizeAvailabilitySlot,

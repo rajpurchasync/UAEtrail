@@ -1,6 +1,6 @@
 import {
   GROUPS_PATH,
-  INBOUND_RETIRED_CONSOLE_PREFIXES,
+  INBOUND_STALE_CONSOLE_PREFIXES,
   MESSAGES_PATH,
   MY_REQUESTS_PATH,
   APP_SETTINGS_NOTIFICATIONS_PATH,
@@ -8,7 +8,7 @@ import {
   PROFILE_PATH,
   OPERATOR_CONSOLE_PREFIX,
 } from '../config/routingCatalog';
-import type { UserRole } from '@uaetrail/shared-types';
+import { canonicalizeNotificationBookmarkPath, type UserRole } from '@uaetrail/shared-types';
 import type { NavigateFunction } from 'react-router-dom';
 import { navigateBack } from './backStack';
 import { stripSessionExpiredQuery } from './authSessionLanding';
@@ -68,7 +68,7 @@ export const canReturnAfterAuth = (path: string, role: UserRole | string): boole
 
   if (
     pathname.startsWith(OPERATOR_CONSOLE_PREFIX) ||
-    INBOUND_RETIRED_CONSOLE_PREFIXES.some(
+    INBOUND_STALE_CONSOLE_PREFIXES.some(
       (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
     )
   ) {
@@ -102,8 +102,8 @@ export const resolveAuthRedirect = (
   if (!candidate.startsWith('/') || candidate.startsWith('//')) {
     return undefined;
   }
-  // Avoid returning to Explore/Home with the guest “session expired” toast still in the URL.
-  return stripSessionExpiredQuery(candidate);
+  const stripped = stripSessionExpiredQuery(candidate);
+  return canonicalizeNotificationBookmarkPath(stripped);
 };
 
 /** True when `?redirect=` is present but is not a safe in-app path. */

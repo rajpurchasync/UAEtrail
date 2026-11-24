@@ -177,7 +177,7 @@ Explore **people browse panel** (map; URL `view=people`; legacy `view=social` / 
 | Method | Path | Who |
 |--------|------|-----|
 | GET | `/me/member-discovery/network/preview` | Network avatars + counts for explore map people pill |
-| GET | `/me/member-discovery/network` | **Network roster** — Friends (BWL `buddies`) / following. Query: `segment=all\|buddies\|followed` (`friends` alias of `buddies`) |
+| GET | `/me/member-discovery/network` | **Network roster** — Friends / following. Query: `segment=all\|friends\|followed` (`normalizePeopleSegment`) |
 | GET | `/me/member-discovery/browse` | Directory only (paginated public members) |
 | GET | `/me/member-discovery/search` | User search (e.g. new chat) |
 | GET | `/me/member-discovery/quota` | Free vs Pro profile-open quota |

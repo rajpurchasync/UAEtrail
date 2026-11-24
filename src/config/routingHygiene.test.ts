@@ -256,16 +256,41 @@ describe('routingHygiene', () => {
     expect(violations).toEqual([]);
   });
 
-  it('nginx legacy bookmark redirects cover inbound plan hub and community paths', () => {
+  it('retired nginx legacy-bookmark-redirects snippet is removed', () => {
+    expect(
+      existsSync(join(process.cwd(), 'nginx/snippets/legacy-bookmark-redirects.conf'))
+    ).toBe(false);
+  });
+
+  it('nginx inbound bookmark redirects cover stale plan hub and community paths', () => {
     const snippet = readFileSync(
-      join(process.cwd(), 'nginx/snippets/legacy-bookmark-redirects.conf'),
+      join(process.cwd(), 'nginx/snippets/inbound-bookmark-redirects.conf'),
       'utf8'
     );
     expect(snippet).toMatch(/\^\/trips\/map/);
     expect(snippet).toMatch(/\/profile\/history\/map/);
     expect(snippet).toMatch(/\^\/trips/);
     expect(snippet).toMatch(/\/plan/);
+    expect(snippet).toMatch(/\^\/profile\/my-trips\/map/);
+    expect(snippet).toMatch(/\^\/profile\/my-trips/);
     expect(snippet).toMatch(/\^\/community/);
+    expect(snippet).toMatch(/location = \/map/);
+    expect(snippet).toMatch(/location = \/discovery/);
+    expect(snippet).toMatch(/location = \/buddies/);
+    expect(snippet).toMatch(/\/crews/);
+    expect(snippet).toMatch(/location = \/contributions/);
+    expect(snippet).toMatch(/\/profile\/submissions/);
+    expect(snippet).toMatch(/location = \/messages/);
+    expect(snippet).toMatch(/location = \/become-host/);
+    expect(snippet).toMatch(/\/profile\/pro-membership/);
+    expect(snippet).toMatch(/\^\/notifications/);
+    expect(snippet).toMatch(/\/settings\/notifications/);
+    expect(snippet).toMatch(/\^\/profile\/settings/);
+    expect(snippet).toMatch(/location = \/rewards/);
+    expect(snippet).toMatch(/location = \/trail-points/);
+    expect(snippet).toMatch(/\/profile\/badges/);
+    expect(snippet).toMatch(/location = \/profile\/wishlist/);
+    expect(snippet).toMatch(/tab=wishlist/);
     expect(snippet).toMatch(/\/explore/);
     expect(snippet).toMatch(/return 301/);
   });

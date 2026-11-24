@@ -80,16 +80,12 @@ describe('exploreSearchLastSearch', () => {
     expect(readExploreRecentSearches(3, guest)[0]?.query).toBe('Guest spot');
   });
 
-  it('migrates legacy hub session keys and hubMode payload on read', () => {
-    const scope = exploreSearchStorageScope('legacy-member');
+  it('does not read retired hub session keys', () => {
+    const scope = exploreSearchStorageScope('member-x');
     sessionStorage.setItem(
       `uaetrail:hub.lastSearch:${scope}`,
-      JSON.stringify({ query: 'Sharjah', activityDatePreset: 'week', hubMode: 'join' })
+      JSON.stringify({ query: 'Sharjah', activityDatePreset: 'week', searchScope: 'join' })
     );
-    const entry = readExploreSearchLastSearch(scope);
-    expect(entry?.query).toBe('Sharjah');
-    expect(entry?.searchScope).toBe('join');
-    expect(sessionStorage.getItem(`uaetrail:search.lastSearch:${scope}`)).toBeTruthy();
-    expect(sessionStorage.getItem(`uaetrail:hub.lastSearch:${scope}`)).toBeNull();
+    expect(readExploreSearchLastSearch(scope)).toBeNull();
   });
 });

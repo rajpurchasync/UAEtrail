@@ -42,7 +42,7 @@ describe('productDataLineageGuard (system-wide)', () => {
     const filters = read('src/list/browse/browseListFilters.ts');
     expect(filters).toMatch(/activity-discovery\/catalog\/listAvailabilityCatalog/);
     expect(filters).toMatch(/places-discovery\/catalog\/listCatalog/);
-    expect(filters).not.toMatch(/exploreMapItemIsLegacySeekingActivity/);
+    expect(filters).not.toMatch(/exploreMapItemIsRetiredSeekingActivity/);
   });
 
   it('CTX-DATA-03: map catalog assembly never overlays venue JSON at read time', () => {

@@ -47,7 +47,7 @@ describe('MIG-SCHEDULE-GUIDE guards', () => {
       join(ROOT, 'apps/api/src/lib/member-availability-store.ts'),
       'utf8'
     );
-    expect(store).toMatch(/deriveLegacyKindsFromSlots/);
+    expect(store).toMatch(/deriveModalitiesFromSlots/);
     expect(store).toMatch(/hydrateMemberAvailabilitySlots/);
     const commands = readFileSync(
       join(ROOT, 'apps/api/src/services/me-availability-commands.ts'),

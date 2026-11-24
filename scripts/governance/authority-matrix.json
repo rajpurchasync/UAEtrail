@@ -29,6 +29,12 @@
       "module": "src/routing/productUrlInbound.ts",
       "rule": "readPeopleCrewsTabParam inbound; stripRetiredPeopleListTabParams on outbound (peopleTab canonical)",
       "forbidEmitIn": ["src/list", "src/explore", "src/crew-discovery"]
+    },
+    {
+      "id": "notification-bookmark-inbound",
+      "module": "packages/shared-types/src/notification-bookmark-path.ts",
+      "rule": "canonicalizeNotificationBookmarkPath — stale console, plan hub, settings, crews, explore entry, chat/rewards pathnames; FE inferNotificationPath, resolveAuthRedirect, participantHostBookmarkRedirect, and API migration delegate here only",
+      "forbidEmitIn": ["src/utils/notificationRouting.ts", "src/member-plan", "apps/api/src/lib/notification-bookmark-path-migration.ts"]
     }
   ],
   "forbiddenPatterns": [
@@ -330,7 +336,7 @@
       "axis": "B_PUBLISH",
       "contextId": "member_publish_capabilities",
       "resolver": { "module": "src/config/memberRoutes.ts", "symbol": "PRO_MEMBERSHIP_PATH" },
-      "note": "Inbound /become-host redirects only"
+      "note": "Canonical PRO_MEMBERSHIP_PATH; INBOUND_BECOME_HOST_PATH is notification detection only (no SPA route)"
     },
     {
       "id": "member.status_read",

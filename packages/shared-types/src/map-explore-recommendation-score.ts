@@ -3,7 +3,7 @@ import type { ExploreMapItemDTO } from './index.js';
 import {
   exploreMapItemIsAvailabilityCatalog,
   exploreMapItemIsHostedActivity,
-  exploreMapItemIsLegacySeekingActivity,
+  exploreMapItemIsRetiredSeekingActivity,
 } from './explore-activity-mode.js';
 import { isGeographyMapSource } from './wire-lexicon.js';
 
@@ -84,7 +84,7 @@ export const resolveExploreMapItemStartAtMs = (item: ExploreMapItemDTO): number 
 
 export const isExcludedFromMapExploreRecommendations = (item: ExploreMapItemDTO): boolean => {
   if (exploreMapItemIsAvailabilityCatalog(item)) return true;
-  return exploreMapItemIsLegacySeekingActivity(item);
+  return exploreMapItemIsRetiredSeekingActivity(item);
 };
 
 export const scoreMapExploreActivityCore = (input: {

@@ -59,7 +59,7 @@ export type RouteMatchLocationParts = {
 
 /**
  * When pathname diverges between router and the address bar, prefer the deeper path when
- * one is a strict parent of the other so `/explore/hub/home` is not matched as `/explore/hub`.
+ * one is a strict parent of the other (e.g. `/activity/:id` vs `/activity`).
  */
 export const pickRouteMatchLocation = <T extends RouteMatchLocationParts>(
   router: T,

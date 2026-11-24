@@ -23,7 +23,7 @@ export const withSessionExpiredQuery = (pathname: string, search = ''): string =
 };
 
 export const isExploreSearchSessionPreservePath = (pathname: string): boolean =>
-  pathname === EXPLORE_SEARCH_RESULTS_PATH || pathname.startsWith('/explore/hub/');
+  pathname === EXPLORE_SEARCH_RESULTS_PATH;
 
 /** Desktop: guest marketing home. Phone: explore map — preserve `/explore/search` when already there. */
 export const sessionExpiredLandingPath = (): string => {

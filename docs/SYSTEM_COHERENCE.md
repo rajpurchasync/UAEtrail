@@ -504,7 +504,7 @@ Track consolidation here; sub-roadmaps link out but **this table is the system-w
 | **C28** | **Multi-quarter refactor without program spine** | Half-migrations, lost context mid-flight | **`scripts/governance/platform-governance.json`** + §8.6 phase gates; manifest + migration IDs; strangler rules | §8.6 below |
 | **C29** | ~~**Write-surface UI lag**~~ | — | **Done (S14-W5)** — location kit, compose shell, pillar steps, Host bodies, UAE destination modes | **S14** §8.3.6 |
 
-**Not debt (intentional):** legacy `/host/*` → `/publishing/*` SPA rewrite; Mongo `locations` collection name (wire **Place**); `x-organisation-id` header; `getOrganisationProfile` for **storefront** — not activity roster. Leftover inbound URLs: `/trail`·`/camp`·`/venue` → `/place/:id`; `/contributions` → `/profile/submissions`.
+**Not debt (intentional):** legacy `/host/*` → `/publishing/*` SPA rewrite; Mongo `locations` collection name (wire **Place**); `x-organisation-id` header; `getOrganisationProfile` for **storefront** — not activity roster. Stale consumer bookmarks: **nginx** `inbound-bookmark-redirects.conf` (GW-7) + in-app **`canonicalizeNotificationBookmarkPath`**. Entity aliases still redirect in SPA: `/trail`·`/camp`·`/venue` → `/place/:id`.
 
 ---
 
@@ -601,7 +601,7 @@ Work **top to bottom**. Each wave ends with **`npm run verify:system:quick`** (w
 | Wave | ID | Outcome | Primary deliverables | Exit criteria |
 |------|-----|---------|----------------------|---------------|
 | **0** | **S13a** | Charter frozen in Tier-1 | §6.2 (this file), §3.2.2 member lenses, `DOCS_INDEX` | `verify:docs` |
-| **1** | **S13-W1** | **Profile link lenses** | **`memberProfileLink(userId, lens)`** (`src/member/memberProfileLink.ts`) used by people browse, `/buddies`, roster chips, notifications, chat; owner preview **`memberPublicPreviewLink`** (`view=public`, not a lens); wire = `memberProfilePath` in shared-types | `memberProfileLink.test.ts`, `memberSurfacesAcceptance` S13; no duplicate `explore/ui/peopleBrowse` implementations |
+| **1** | **S13-W1** | **Profile link lenses** | **`memberProfileLink(userId, lens)`** (`src/member/memberProfileLink.ts`) used by people browse, **My Crews** (`/crews`), roster chips, notifications, chat; owner preview **`memberPublicPreviewLink`** (`view=public`, not a lens); wire = `memberProfilePath` in shared-types | `memberProfileLink.test.ts`, `memberSurfacesAcceptance` S13; no duplicate `explore/ui/peopleBrowse` implementations |
 | **2** | **S13-W2** | **People browse module unity** | One `CrewBrowseTabContent` import path under `crew-discovery`; `explore/ui/peopleBrowse` re-export **deleted** (EXPLORE-IA); list people browse uses `CrewsBrowsePanel` | `memberSurfacesAcceptance`, `listModuleHygiene` · DISC-METH-11 |
 | **3** | **S13-W3** | **Member browse row VM** | `src/crew-discovery/memberBrowseRowModel.ts` — L1 rows for directory, availability, going, seeking; **not** authorization | `memberBrowseRowModel.test.ts` + panel/list consume VM; C24 closed |
 | **4** | **S13-W4** | **Profile L3 polish** | `MemberProfileView` sections keyed off `viewerAccess` only; activity publisher strip uses `resolveActivityPublisherProfilePath`; owner `?view=public` via `memberPublicPreviewLink` | `detailSurfaceWiringAcceptance`, §15 profile tests |
@@ -1045,13 +1045,13 @@ Gate: **`npm run verify:platform-governance`**. Behavior stays in code + vitest 
 | **GW-4** | Retire `platform-program.json` → **`platform-governance.json`** (ops/phases) · **`platform-migration-archive.json`** (closed MIG ledger) · **`platform-touchpoint-registry.json`** (active schedules) — **complete** | `governanceSurfaceGuard` GW4-01 · `verify:platform-governance` |
 | **GW-5** | **`scripts/` layout** — `governance/` · `verify/` · `lib/` · `ops/` · `dev/` · `archive/`; retire one-off root shims (`verify-platform-program`, `align-routing-imports`, `verify-hero-gutter`, …) — **complete** | `governanceSurfaceGuard` GW5-01 · GW5-02 · `scripts/README.md` |
 | **GW-6** | FE hygiene — dead stubs + retired path/copy/scroll aliases (`messagesGroupChatPath`, `FIND_CREW` FAB copy, place path shims, buddy lazy exports) — **complete** | `governanceSurfaceGuard` GW6-01 · GW6-02 |
-| **GW-7** | Consumer SPA — drop `inboundBookmarkRedirects` / `exploreEntryRedirects`, `AppRoutes` `Navigate` legacy bookmarks, `discoveryListRuntime` facade; canonical `/settings` · `/crews` · `/operator` only — **complete** | `governanceSurfaceGuard` GW7-01 · `appSettingsRoutingGuard` · `productUrlInboundGuard` |
+| **GW-7** | Consumer SPA — drop inbound redirect modules, `AppRoutes` `<Navigate>` bookmark shims; nginx `inbound-bookmark-redirects.conf`; wire `canonicalizeNotificationBookmarkPath` + API `migrateStaleNotificationBookmarkPaths`; Vite/Vitest resolve `@uaetrail/shared-types` from `packages/shared-types/src`; canonical `/settings` · `/crews` · `/operator` only — **complete** | `governanceSurfaceGuard` GW7-01–08 · `appSettingsRoutingGuard` · `productUrlInboundGuard` |
 | **GW-8** | FE/API alias trim — retired browse URL parsers, `formatGroupWallReplyBody`, `HostDetails`/`TenantProfile` FE types, API `member-routes` trip/seeking shims — **complete** | `governanceSurfaceGuard` GW8-01 · list browse URL tests · `groupWallReply.test` |
 | **GW-9** | Member profile wire — `operatorProfilePath` (replaces `hostProfilePath` on `GET /member/:id/profile`) — **complete** | `governanceSurfaceGuard` GW9-01 |
 | **GW-10** | Explore map wire — `featuredPerson` only on `ExploreMapItemDTO`; drop `hostName`/`hostAvatar`/`requesterUserId` item duplicates; `organizerDetails` off tenant public DTO — **complete** | `governanceSurfaceGuard` GW10-01 · `exploreMapItemWireGuard` |
 | **GW-11** | Component props — `MessageMemberButton.memberUserId` only; `ExploreResponsiveSheet.composePresentation` only — **complete** | `governanceSurfaceGuard` GW11-01 · `createFlowModuleGuard` |
 | **GW-12** | Module alias purge — crews stat tab, availability catalog, browse URL handlers, hosting publish shim, admin userTypes, SEO place schemas, list map width, `TenantPublicDTO.merchantId` — **complete** | `governanceSurfaceGuard` GW12-01 · `hostingPublishArea.test` |
-| **GW-13** | Friends/crews UPL — canonical `/crews`; no `/buddies` inbound or notification shims (Mongo migration only); availability map `updatedAt` sort + index — **complete** | `governanceSurfaceGuard` GW13-01 · `crewsTerminologyGuard` |
+| **GW-13** | Friends/crews UPL — canonical `/crews`; `/buddies` rewrites in `canonicalizeNotificationBookmarkPath` + unified notification bookmark migration (no duplicate Mongo step); availability map `updatedAt` sort + index — **complete** | `governanceSurfaceGuard` GW13-01 · `crewsTerminologyGuard` |
 | **GW-14** | Wire hygiene — `resolveNotificationActorUserId`, drop duplicate discovery card person fields, `ListFeedActions` `joinStateLoadingForCard` only, member-group labels (`memberGroupRowLabel`) — **complete** | `governanceSurfaceGuard` GW14-01 · `notification-meta.test` · `member-group.test` |
 | **GW-15** | Client + HTTP friends naming — `GET /me/friends`, `friendsApi`, `useMeFriendsNetwork`, `exploreOthersSubtype`; no `seeking` search haystack — **complete** | `governanceSurfaceGuard` GW15-01 · `exploreOthersSubtype.test` · `people-http-canonical-guard` |
 | **GW-16** | Full friends wire — `friend-store`, `Friend*DTO`, no `segment=buddies`, `friendsOnly` query, group role `member`, notification `connection_friend_*` — **complete** | `governanceSurfaceGuard` GW16-01 · `memberAvailabilityLineageGuard` |
@@ -1216,7 +1216,7 @@ Gate: **`npm run verify:platform-governance`**. Behavior stays in code + vitest 
 | `member_availability`, `user_goals` | Plan commitment (distinct from seeking) |
 | `user_wishlist` (migrated from `user_favorites`) | COH-09 |
 | `/publishing` | Publishing workspace HTTP (COH-04); `x-organisation-id` |
-| `/me/member-discovery/*` | People discovery API (keep this prefix; network `segment=buddies`, alias `friends`) |
+| `/me/member-discovery/*` | People discovery API (keep this prefix; network `segment=friends\|followed\|all`) |
 | `explore_map` sources | `activity` · `place` · `facility` · `shop` · `agency`. Area is not a pin. Retire `demand`; `venue` / `catalog_place` → `place` (COH-02) |
 | `UserRole`, `HostPublishingTier`, `GET /me/status` | RBAC / capabilities — not UPL |
 
@@ -1224,13 +1224,13 @@ Gate: **`npm run verify:platform-governance`**. Behavior stays in code + vitest 
 
 All **17** contexts: `discovery`, `compose`, `participation`, `member_identity`, `member_publish_capabilities`, `publishing_workspace`, `communication`, `social_graph`, `places`, `facilities`, `shop_profiles`, `member_discovery`, `engagement`, `areas`, `availability`, `media`, `platform_ops`.
 
-**Cross-cutting (in PCOH scope):** auth & account lifecycle; notifications & push; check-in; viewer access; side-effect outbox; explore Redis cache; agent/OG; premium place PDF; member discovery quota; coordination attention; journey map pins; legacy SPA redirects; `verify:system` / journey tests.
+**Cross-cutting (in PCOH scope):** auth & account lifecycle; notifications & push; check-in; viewer access; side-effect outbox; explore Redis cache; agent/OG; premium place PDF; member discovery quota; coordination attention; journey map pins; stale bookmark normalization (GW-7 nginx + `canonicalizeNotificationBookmarkPath`); `verify:system` / journey tests.
 
 **Removed products (do not restore):** trail-points wallet, `/host` API/SPA, `/social` graph mount, bare rewards domains (`manifest.removedProducts`), **shop product catalog** (`/shop/products`, `/shop/checkout`, `/admin/shop`, `ProductDetail`, Mongo `products` / `shop_orders` / `order_line_items`).
 
 #### 8.8.4 Canonical API flows (one BWL path each)
 
-Discover map `GET /explore/map` (guest catalog) · overlay `GET /me/discover/overlay` · People `GET /me/member-discovery/*` (`segment=buddies`) · Buddies `/me/friends` · Follow `/me/following` · Goals `/me/goals` · Availability `/me/availability` · Wishlist `/me/wishlist` · Join/RSVP `/activities/:id/requests` · Host queue `/publishing/requests` · Pro apply `/me/pro-application` · Capability `GET /me/status` · Places `/places/*` · Facilities `/facilities/:id` · Areas `/areas` (names, not pins) · Safety `POST /safety/reports` · Chat `/chat` · Reviews `/reviews`.
+Discover map `GET /explore/map` (guest catalog) · overlay `GET /me/discover/overlay` · People `GET /me/member-discovery/*` (`segment=friends\|followed\|all`) · Friends `/me/friends` · Follow `/me/following` · Goals `/me/goals` · Availability `/me/availability` · Wishlist `/me/wishlist` · Join/RSVP `/activities/:id/requests` · Host queue `/publishing/requests` · Pro apply `/me/pro-application` · Capability `GET /me/status` · Places `/places/*` · Facilities `/facilities/:id` · Areas `/areas` (names, not pins) · Safety `POST /safety/reports` · Chat `/chat` · Reviews `/reviews`.
 
 **Delete flows:** participant-intent CRUD/join, `demand:` map ids, dual `/locations` HTTP. `/people` orphan registrar removed (COH-05).
 
@@ -1261,7 +1261,7 @@ Discover map `GET /explore/map` (guest catalog) · overlay `GET /me/discover/ove
 | Decision | Default |
 |----------|---------|
 | People HTTP prefix | Keep `/me/member-discovery/*` (COH-05; not `/me/people/*`) |
-| BWL roster segment | `buddies`; UPL label “Friends” |
+| BWL roster segment | `friends` (wire); UPL label “Friends” |
 | `organizer_note` rename | Done (COH-06): JSON/Mongo `hostNote` only. Not snake `host_note` on the wire |
 | `locations` collection | HTTP first in COH-02; collection rename optional same phase |
 | Publishing HTTP | `/publishing` |
@@ -1269,7 +1269,7 @@ Discover map `GET /explore/map` (guest catalog) · overlay `GET /me/discover/ove
 | Individual public URL | `/member/:userId` (community and Pro). `/guide` is not a surface |
 | Explore map HTTP | Public `GET /explore/map` (default **slim pin**; `?projection=full` for nested DTOs); signed-in peek `GET /me/discover/overlay` (viewerAccess index only) |
 | Explore map cache bust | `scheduleExploreMapCacheInvalidation` (durable outbox in production); direct Redis delete only in processor/tests/seeds |
-| FE social facade | Deleted (COH-09). Use `buddiesApi`, `groupsApi`, `wishlistApi`, `entityFollowApi`, `reviewsApi` — no `socialApi` / `socialRouter` |
+| FE social facade | Deleted (COH-09). Use `friendsApi`, `groupsApi`, `wishlistApi`, `entityFollowApi`, `reviewsApi` — no `socialApi` / `socialRouter` |
 | Wishlist collection | `user_wishlist` (startup migrate from `user_favorites`) |
 | Reviews HTTP | `GET /reviews` public on `userRouter` before `requireAuth`; writes keep per-route auth |
 | Host compose tree | `create/hosting` + `hostingFlowEngine` + `hostingFlows` (COH-10). No `organizeFlow.ts` / `createOrganize` / `CreateActivityFlow` |
@@ -1331,7 +1331,7 @@ These are **rejected** for UAE Trail unless the CEO explicitly reopens platform 
 - **OpenAPI-first** client before route schemas stabilize (after P4b)
 - **SSR/SSG for `/explore`** or the map shell (optional prerender for `/`, `/activity/:id`, place detail only)
 - New **`AUDIT_*` / `PLAN_*` / `ALIGNMENT_*`** Tier-1 markdown (use §8.9 + `platform-governance.json`)
-- Removing **intentional** legacy SPA redirects (`/host/*` → `/publishing/*`, `/trail` → `/place/:id`, inbound `/become-host`)
+- Removing **GW-7** stale bookmark handling (nginx `inbound-bookmark-redirects.conf`, shared-types canonicalize, unified notification migration) without updating guards/docs
 
 #### Horizontal change rule (unchanged)
 

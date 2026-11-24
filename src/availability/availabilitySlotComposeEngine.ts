@@ -113,10 +113,11 @@ export const openEditorStateFromMemberAvailability = (
     ? 'guide'
     : 'participant';
   const fromSlots = discoveryModalitiesFromSlots(openSlots);
-  const legacyKinds = (data?.kinds ?? []).filter(
+  const docModalitiesFallback = (data?.kinds ?? []).filter(
     (kind): kind is ScheduleModality => kind !== 'guide' && isScheduleModality(kind)
   );
-  const modalities = fromSlots.length > 0 ? fromSlots : legacyKinds.length > 0 ? legacyKinds : ['hiking'];
+  const modalities =
+    fromSlots.length > 0 ? fromSlots : docModalitiesFallback.length > 0 ? docModalitiesFallback : ['hiking'];
 
   const sample = openSlots[0];
   const transportMode: AvailabilityOpenLogisticsState['transportMode'] =

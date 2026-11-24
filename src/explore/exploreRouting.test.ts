@@ -128,8 +128,9 @@ describe('exploreRouting navigation contract', () => {
     expect(explorePath({ myPlan: true, list: true })).toBe('/explore?list=1&myPlan=1');
   });
 
-  it('parseExploreMyPlanMapMode accepts leftover myTrips=1', () => {
-    expect(parseExploreMyPlanMapMode(new URLSearchParams('myTrips=1'))).toBe(true);
+  it('parseExploreMyPlanMapMode accepts myPlan=1 only', () => {
+    expect(parseExploreMyPlanMapMode(new URLSearchParams('myPlan=1'))).toBe(true);
+    expect(parseExploreMyPlanMapMode(new URLSearchParams('myTrips=1'))).toBe(false);
   });
 
   it('exploreHostPath opens compose host menu or hosting wizard', () => {

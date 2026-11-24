@@ -17,7 +17,7 @@ import {
   buildDiscoveryCardPresentation,
   canonicalizeMapComposeIntent,
   exploreMapItemIsAvailabilityCatalog,
-  exploreMapItemIsLegacySeekingActivity,
+  exploreMapItemIsRetiredSeekingActivity,
   isGeographyMapSource,
   isPeekOnlyCatalogProfile,
   memberProfilePath,
@@ -175,7 +175,7 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
   const fromLabel = item.fromLabel ?? activity?.meetingPoint ?? null;
   const toLabel = item.toLabel ?? activity?.startPoint ?? activity?.locationName ?? null;
   const routeLabel = presentation.routeLabel ?? buildExploreRouteLabel(fromLabel, toLabel, kind);
-  const retiredSeekingActivity = exploreMapItemIsLegacySeekingActivity(item);
+  const retiredSeekingActivity = exploreMapItemIsRetiredSeekingActivity(item);
   const availability = exploreMapItemIsAvailabilityCatalog(item);
   const whenSuffix = kind === 'rideshare' || availability ? 'fixed' : null;
   const whenLabel =

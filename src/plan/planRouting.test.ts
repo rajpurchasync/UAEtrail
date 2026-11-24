@@ -29,34 +29,27 @@ describe('planRouting', () => {
     expect(planUpcomingPath('hosting')).toBe('/plan?view=plans&filter=hosting');
     expect(planUpcomingPath('joined')).toBe('/plan?view=plans&filter=joined');
     expect(planWishlistTabPath()).toBe('/plan?view=plans&tab=wishlist');
-    expect(planAvailabilityPath()).toBe('/explore?list=1&view=people&compose=intent%3Aopen');
+    expect(planAvailabilityPath()).toBe('/explore?list=1&compose=intent%3Aopen&view=people');
     expect(planHostedSchedulePath()).toBe(OPERATOR_OVERVIEW_PATH);
     expect(planJoinedSchedulePath()).toBe(planUpcomingPath('joined'));
     expect(planPlansRolePath('hosted')).toBe(planHostedSchedulePath());
     expect(planPlansRolePath('wishlist')).toBe(planWishlistTabPath());
   });
 
-  it('normalizes legacy role= into filter=', () => {
+  it('strips stale role= without remapping', () => {
     const params = new URLSearchParams('view=plans&role=hosted');
     const { changed } = normalizePlanSearchParams(params, true);
     expect(changed).toBe(true);
-    expect(params.get('filter')).toBe('hosting');
     expect(params.get('role')).toBeNull();
+    expect(params.get('filter')).toBe('joined');
   });
 
-  it('normalizes lens=goals into tab=wishlist', () => {
+  it('strips stale lens= without remapping', () => {
     const params = new URLSearchParams('view=plans&lens=goals');
     const { changed } = normalizePlanSearchParams(params, false);
     expect(changed).toBe(true);
-    expect(params.get('tab')).toBe('wishlist');
     expect(params.get('lens')).toBeNull();
-  });
-
-  it('strips availability lens (compose lives on explore)', () => {
-    const params = new URLSearchParams('view=plans&lens=availability');
-    const { changed } = normalizePlanSearchParams(params, true);
-    expect(params.get('lens')).toBeNull();
-    expect(changed).toBe(true);
+    expect(params.get('tab')).toBeNull();
   });
 
   it('preserves tab=wishlist when normalizing plan hub params', () => {
@@ -70,5 +63,24 @@ describe('planRouting', () => {
     const { changed } = normalizePlanSearchParams(params, true);
     expect(changed).toBe(true);
     expect(params.get('tab')).toBeNull();
+  });
+
+  it('maps inbound segment=wishlist to canonical tab=wishlist', () => {
+    const params = new URLSearchParams('view=plans&segment=wishlist');
+    const { changed } = normalizePlanSearchParams(params, true);
+    expect(changed).toBe(true);
+    expect(params.get('segment')).toBeNull();
+    expect(params.get('tab')).toBe('wishlist');
+    expect(params.get('lens')).toBeNull();
+    expect(params.get('role')).toBeNull();
+  });
+
+  it('maps inbound layer=places to wishlist saved layer', () => {
+    const params = new URLSearchParams('view=plans&layer=places');
+    const { changed } = normalizePlanSearchParams(params, true);
+    expect(changed).toBe(true);
+    expect(params.get('tab')).toBe('wishlist');
+    expect(params.get('saved')).toBe('places');
+    expect(params.get('role')).toBeNull();
   });
 });

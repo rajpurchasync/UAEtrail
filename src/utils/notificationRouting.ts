@@ -4,9 +4,6 @@ import {
   ADMIN_HOSTS_PATH,
   ADMIN_PLACES_PATH,
   explorePath,
-  INBOUND_PLAN_HUB_ACTIVITIES_PATH,
-  INBOUND_PLAN_HUB_TRIPS_MAP_PATH,
-  INBOUND_PLAN_HUB_TRIPS_PATH,
   memberProfileLink,
   GROUPS_PATH,
   communityClubPath,
@@ -21,16 +18,15 @@ import {
   planJoinedSchedulePath,
   planHostedSchedulePath,
 } from '../config/routingCatalog';
-import { INBOUND_RETIRED_CONSOLE_PREFIXES } from '../config/inboundRoutePaths';
-import { MY_CREWS_PATH, OPERATOR_CONSOLE_PREFIX } from '../config/surfacePaths';
+import { MY_CREWS_PATH } from '../config/surfacePaths';
 import { planWishlistTabPath } from '../plan/planTab';
 import {
   NotificationDTO,
+  canonicalizeNotificationBookmarkPath,
   exploreAvailabilityMapItemPath,
   placeDetailPath,
   resolveNotificationActorUserId,
 } from '@uaetrail/shared-types';
-import { resolveInboundPlanHubPath } from '../member-plan/resolveInboundPlanHubPath';
 
 const toMetaObject = (meta: NotificationDTO['meta']): Record<string, unknown> | null =>
   meta && typeof meta === 'object' ? (meta as Record<string, unknown>) : null;
@@ -45,15 +41,6 @@ const normalizeConsumerChatDeepLinkPath = (
   const queryIndex = path.indexOf('?');
   const pathname = queryIndex === -1 ? path : path.slice(0, queryIndex);
   const search = queryIndex === -1 ? '' : path.slice(queryIndex);
-
-  if (
-    pathname === '/messages' ||
-    pathname === '/operator/messages' ||
-    pathname === '/publishing/messages' ||
-    pathname === '/host/messages'
-  ) {
-    return `${MESSAGES_PATH}${search}`;
-  }
 
   if (pathname === GROUPS_PATH && search) {
     const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search);
@@ -81,54 +68,9 @@ const normalizeDirectNotificationPath = (
   path: string,
   meta: Record<string, unknown> | null
 ): string => {
-  if (
-    path === '/host/overview' ||
-    path.startsWith('/host/overview?')
-  ) {
-    return PRO_MEMBERSHIP_PATH;
-  }
-
-  try {
-    const inboundUrl = new URL(path, 'http://local');
-    const inboundPathname = inboundUrl.pathname;
-    if (
-      (inboundPathname === INBOUND_PLAN_HUB_TRIPS_PATH ||
-        inboundPathname === INBOUND_PLAN_HUB_TRIPS_MAP_PATH ||
-        inboundPathname === INBOUND_PLAN_HUB_ACTIVITIES_PATH) &&
-      inboundUrl.searchParams.get('tab') === 'joined' &&
-      inboundUrl.searchParams.get('segment') === 'upcoming'
-    ) {
-      return planJoinedSchedulePath();
-    }
-  } catch {
-    // ignore malformed paths
-  }
-
-  const queryIndex = path.indexOf('?');
-  const pathname = queryIndex === -1 ? path : path.slice(0, queryIndex);
-  const search = queryIndex === -1 ? '' : path.slice(queryIndex);
-
-  if (
-    pathname === '/messages' ||
-    pathname === '/operator/messages' ||
-    pathname === '/publishing/messages' ||
-    pathname === '/host/messages'
-  ) {
-    return normalizeConsumerChatDeepLinkPath(path, meta);
-  }
-
-  const retiredPrefix = INBOUND_RETIRED_CONSOLE_PREFIXES.find(
-    (candidate) => pathname === candidate || pathname.startsWith(`${candidate}/`)
-  );
-  if (retiredPrefix && !pathname.endsWith('/messages')) {
-    const suffix = pathname.slice(retiredPrefix.length) || '/overview';
-    return `${OPERATOR_CONSOLE_PREFIX}${suffix}${search}`;
-  }
-
-  const resolvedPlanHub = resolveInboundPlanHubPath(pathname, search);
-  if (resolvedPlanHub) return resolvedPlanHub;
-
-  return normalizeConsumerChatDeepLinkPath(path, meta);
+  const canonical = canonicalizeNotificationBookmarkPath(path);
+  if (canonical !== path) return canonical;
+  return normalizeConsumerChatDeepLinkPath(canonical, meta);
 };
 
 export const inferNotificationPath = (
@@ -140,14 +82,6 @@ export const inferNotificationPath = (
   const activityIdFromMeta = toStringValue(meta?.activityId);
   const directPath = toStringValue(meta?.path);
   if (directPath && directPath.startsWith('/')) {
-    if (
-      directPath === '/my-rewards' ||
-      directPath === '/rewards' ||
-      directPath === '/trail-points' ||
-      directPath.startsWith('/trail-points?')
-    ) {
-      return PROFILE_BADGES_PATH;
-    }
     const kindEarly = toStringValue(meta?.kind)?.toLowerCase() ?? '';
     if (
       kindEarly === 'activity_join_invite' &&
@@ -184,7 +118,7 @@ export const inferNotificationPath = (
 
   if (kind === 'join_request_approved') {
     const path = toStringValue(meta?.path);
-    if (path) return path;
+    if (path) return canonicalizeNotificationBookmarkPath(path);
     if (activityId) {
       return `${activityDetailPath(activityId)}?joined=1`;
     }

@@ -6,8 +6,9 @@ const SCAN_ROOT = join(process.cwd(), 'src');
 
 const ALLOWLIST = new Set([
   'src/member-plan/planHubInboundGuard.test.ts',
+  'src/config/productUrlInboundGuard.test.ts',
+  'src/config/systemCoherenceGuard.test.ts',
   'src/plan/planRouting.ts',
-  'src/member-plan/resolveInboundPlanHubPath.ts',
   'src/member-plan/resolvePlanHubView.ts',
   'src/config/inboundBookmarkPaths.ts',
   'src/config/surfacePaths.ts',
@@ -92,6 +93,28 @@ describe('planHubInboundGuard', { timeout: 30_000 }, () => {
 
   it('tripsRouting shim is gone (planRouting / routingCatalog only)', () => {
     expect(existsSync(join(process.cwd(), 'src/member-plan/tripsRouting.ts'))).toBe(false);
+  });
+
+  it('resolveInboundPlanHubPath client rewrite table is removed (shared-types canonicalize)', () => {
+    expect(existsSync(join(process.cwd(), 'src/member-plan/resolveInboundPlanHubPath.ts'))).toBe(
+      false
+    );
+  });
+
+  it('app code does not reference removed plan hub inbound rewrite helpers', () => {
+    const violations: string[] = [];
+    const banned =
+      /\bresolveInboundTripsHubRedirect\b|\bresolveInboundPlanHubPath\b/;
+
+    for (const file of collectSourceFiles(SCAN_ROOT)) {
+      if (ALLOWLIST.has(file)) continue;
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (banned.test(content)) {
+        violations.push(`${file}: use canonicalizeNotificationBookmarkPath or planRouting`);
+      }
+    }
+
+    expect(violations).toEqual([]);
   });
 
   it('app code does not import deleted member-plan/tripsRouting', () => {

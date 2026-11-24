@@ -57,7 +57,6 @@ const LINE_ALLOW_SUBSTRINGS = [
   'canAccessPublishingWorkspace',
   'isCommunityHost',
   'useHostStatus',
-  'hostDashboardRedirect',
   'host_applications',
   'hostProfileType',
   'hostDisplayName',

@@ -2,11 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { UserRole } from '@uaetrail/shared-types';
 import {
   accountRouteByRole,
-  adminDashboardRedirect,
   defaultRouteByRole,
-  hostDashboardRedirect,
-  merchantDashboardRedirect,
-  participantDashboardRedirect,
   participantHostBookmarkRedirect,
 } from './authRouting';
 import { isConsumerProfilePath, isPlatformAdminConsolePath } from './roles';
@@ -55,46 +51,6 @@ describe('auth routing by role', () => {
     }
   });
 
-  it('maps participant dashboard aliases', () => {
-    expect(participantDashboardRedirect('overview')).toBe('/profile');
-    expect(participantDashboardRedirect('requests')).toBe('/my-requests');
-    expect(participantDashboardRedirect('activities')).toBe('/plan');
-    expect(participantDashboardRedirect('messages')).toBe('/chat');
-    expect(participantDashboardRedirect('profile')).toBe('/profile');
-    expect(participantDashboardRedirect('unknown')).toBe('/profile');
-  });
-
-  it('maps host dashboard aliases', () => {
-    expect(hostDashboardRedirect('messages')).toBe('/chat');
-    expect(hostDashboardRedirect('requests')).toBe('/operator/requests');
-    expect(hostDashboardRedirect('activities')).toBe('/operator/activities');
-    expect(hostDashboardRedirect('profile')).toBe('/operator/profile');
-    expect(hostDashboardRedirect('unknown')).toBe('/operator/overview');
-  });
-
-  it('maps admin dashboard aliases', () => {
-    expect(adminDashboardRedirect('users')).toBe('/admin/users');
-    expect(adminDashboardRedirect('activities')).toBe('/admin/activities');
-    expect(adminDashboardRedirect('locations')).toBe('/admin/places');
-    expect(adminDashboardRedirect('places')).toBe('/admin/places');
-    expect(adminDashboardRedirect('hosts')).toBe('/admin/hosts');
-    expect(adminDashboardRedirect('organizers')).toBe('/admin/hosts');
-    expect(adminDashboardRedirect('groups')).toBe('/admin/groups');
-    expect(adminDashboardRedirect('shop')).toBe('/admin/hosts');
-    expect(adminDashboardRedirect('notifications')).toBe('/admin/notifications');
-    expect(adminDashboardRedirect('audit-log')).toBe('/admin/audit-log');
-    expect(adminDashboardRedirect('settings')).toBe('/admin/settings');
-    expect(adminDashboardRedirect('account')).toBe('/admin/account');
-    expect(adminDashboardRedirect('unknown')).toBe('/admin/inbox');
-    expect(adminDashboardRedirect('overview')).toBe('/admin/inbox');
-    expect(adminDashboardRedirect('submissions')).toBe('/admin/inbox/submissions');
-  });
-
-  it('maps merchant dashboard aliases to shop management', () => {
-    expect(merchantDashboardRedirect('overview')).toBe('/organisation/manage?kind=shop');
-    expect(merchantDashboardRedirect('unknown')).toBe('/organisation/manage?kind=shop');
-  });
-
   it('maps /publishing bookmarks to profile, plan, or pro membership (not tenant console or compose)', () => {
     expect(participantHostBookmarkRedirect('/publishing/overview')).toBe('/profile');
     expect(participantHostBookmarkRedirect('/publishing/activities')).toMatch(
@@ -104,5 +60,12 @@ describe('auth routing by role', () => {
     expect(participantHostBookmarkRedirect('/publishing/messages')).toBe('/chat');
     expect(participantHostBookmarkRedirect('/publishing/team')).toBe('/profile/pro-membership');
     expect(participantHostBookmarkRedirect('/publishing/places')).toBe('/organisation/manage');
+  });
+
+  it('maps stale /host console bookmarks via shared-types canonicalize', () => {
+    expect(participantHostBookmarkRedirect('/host/activities')).toMatch(/^\/plan\?.*filter=hosting/);
+    expect(participantHostBookmarkRedirect('/host/overview')).toBe('/profile/pro-membership');
+    expect(participantHostBookmarkRedirect('/hosting/requests')).toBe('/my-requests');
+    expect(participantHostBookmarkRedirect('/hosting/messages')).toBe('/chat');
   });
 });

@@ -18,14 +18,14 @@ describe('routerLocationReconcile', () => {
   });
 
   it('prefers router when it is a child of the address bar path', () => {
-    const router = { pathname: '/explore/hub/home', search: '', hash: '' };
-    const browser = { pathname: '/explore/hub', search: '', hash: '' };
+    const router = { pathname: '/explore/search', search: '?searchHome=1', hash: '' };
+    const browser = { pathname: '/explore', search: '', hash: '' };
     expect(pickRouteMatchLocation(router, browser)).toBe(router);
   });
 
   it('prefers browser when it is a child of the router path', () => {
-    const router = { pathname: '/explore/hub', search: '', hash: '' };
-    const browser = { pathname: '/explore/hub/home', search: '', hash: '' };
+    const router = { pathname: '/activity', search: '', hash: '' };
+    const browser = { pathname: '/activity/act-1', search: '', hash: '' };
     expect(pickRouteMatchLocation(router, browser)).toBe(browser);
   });
 

@@ -1172,7 +1172,7 @@ const migrateOutingCrewKindRename = async (db: Db): Promise<void> => {
 };
 
 /** Bump when adding a new migration step so existing deployments run it once. */
-export const MONGO_MIGRATION_VERSION = 2025112302;
+export const MONGO_MIGRATION_VERSION = 2025112501;
 
 /** One-time migrations for activity terminology and role model alignment. */
 export const runMongoMigrations = async (db: Db): Promise<void> => {
@@ -1245,7 +1245,10 @@ export const runMongoMigrations = async (db: Db): Promise<void> => {
   }
   const { backfillGeoRefOnPins } = await import('./geo-backfill.js');
   await backfillGeoRefOnPins(db);
-  await migrateRetiredBuddiesInboundPaths(db);
+  const { migrateStaleNotificationBookmarkPaths } = await import(
+    './notification-bookmark-path-migration.js'
+  );
+  await migrateStaleNotificationBookmarkPaths(db);
   await migrateMemberAvailabilityBuddiesVisibility(db);
   const { seedCatalogsIfEmpty } = await import('./catalogs-store.js');
   await seedCatalogsIfEmpty();
@@ -1255,45 +1258,6 @@ export const runMongoMigrations = async (db: Db): Promise<void> => {
     { $set: { version: MONGO_MIGRATION_VERSION, appliedAt: new Date() } },
     { upsert: true }
   );
-};
-
-const rewriteBuddiesPathToCrews = (path: string): string | null => {
-  if (!path.includes('/buddies')) return null;
-  return path.replace(/\/buddies(?=\?|$)/g, '/crews');
-};
-
-/** One-time: notification `path` / `meta.path` bookmarks `/buddies` → `/crews` (no runtime shim). */
-const migrateRetiredBuddiesInboundPaths = async (db: Db): Promise<void> => {
-  const notifications = db.collection(COLLECTIONS.NOTIFICATIONS);
-  const rows = await notifications
-    .find({
-      $or: [{ path: /\/buddies/ }, { 'meta.path': /\/buddies/ }],
-    })
-    .project({ _id: 1, path: 1, meta: 1 })
-    .toArray();
-  if (rows.length === 0) return;
-
-  let rewritten = 0;
-  for (const row of rows) {
-    const set: Record<string, string> = {};
-    if (typeof row.path === 'string') {
-      const next = rewriteBuddiesPathToCrews(row.path);
-      if (next && next !== row.path) set.path = next;
-    }
-    const meta =
-      row.meta && typeof row.meta === 'object' ? (row.meta as { path?: unknown }) : null;
-    const metaPath = typeof meta?.path === 'string' ? meta.path : null;
-    if (metaPath) {
-      const next = rewriteBuddiesPathToCrews(metaPath);
-      if (next && next !== metaPath) set['meta.path'] = next;
-    }
-    if (Object.keys(set).length === 0) continue;
-    await notifications.updateOne({ _id: row._id }, { $set: set });
-    rewritten += 1;
-  }
-  if (rewritten > 0) {
-    console.log(`[mongo] Retired /buddies notification path(s): ${rewritten}`);
-  }
 };
 
 /** One-time: stored availability visibility `buddies` → `friends`. */

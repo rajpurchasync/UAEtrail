@@ -16,45 +16,30 @@ export type PlanCalendarScope = PlanCommitmentFilter | 'all';
 
 export type PlanUpcomingLayout = 'list' | 'calendar';
 
-export const parsePlanMainTab = (
-  tabRaw: string | null,
-  lensRaw: string | null
-): PlanMainTab => {
-  if (tabRaw === 'wishlist') return 'wishlist';
-  if (lensRaw === 'saved' || lensRaw === 'goals') return 'wishlist';
-  return 'upcoming';
-};
+export const parsePlanMainTab = (tabRaw: string | null): PlanMainTab =>
+  tabRaw === 'wishlist' ? 'wishlist' : 'upcoming';
 
 export const parsePlanCommitmentFilter = (
   filterRaw: string | null,
-  roleRaw: string | null,
   canHost: boolean
 ): PlanCommitmentFilter => {
   if (filterRaw === 'joined') return 'joined';
   if (filterRaw === 'hosting' && canHost) return 'hosting';
-  if (roleRaw === 'joined') return 'joined';
-  if (roleRaw === 'hosted' && canHost) return 'hosting';
   return 'joined';
 };
 
 export const parsePlanCalendarScope = (
   filterRaw: string | null,
   layout: PlanUpcomingLayout,
-  roleRaw: string | null,
   canHost: boolean
 ): PlanCalendarScope => {
   if (filterRaw === 'all') return 'all';
-  if (layout === 'calendar' && !filterRaw && !roleRaw) return 'all';
-  return parsePlanCommitmentFilter(filterRaw, roleRaw, canHost);
+  if (layout === 'calendar' && !filterRaw) return 'all';
+  return parsePlanCommitmentFilter(filterRaw, canHost);
 };
 
-export const parsePlanUpcomingLayout = (
-  layoutRaw: string | null,
-  lensRaw: string | null
-): PlanUpcomingLayout => {
-  if (layoutRaw === 'calendar' || lensRaw === 'calendar') return 'calendar';
-  return 'list';
-};
+export const parsePlanUpcomingLayout = (layoutRaw: string | null): PlanUpcomingLayout =>
+  layoutRaw === 'calendar' ? 'calendar' : 'list';
 
 export const planMainTabPath = (
   tab: PlanMainTab = 'upcoming',
@@ -91,40 +76,15 @@ export const planJoinedFilterPath = (): string =>
 
 export const planWishlistTabPath = (): string => planMainTabPath('wishlist');
 
-/** Map legacy `?lens=` deep links into tab / layout (mutates params). */
+/** Strip stale query keys; canonical plan uses `tab` / `filter` / `layout` only. */
 export const normalizePlanMobileParams = (
   params: URLSearchParams,
-  canHost: boolean
+  _canHost: boolean
 ): { changed: boolean } => {
   let changed = false;
-  const lens = params.get('lens');
-
-  if (lens === 'saved' || lens === 'goals') {
-    params.set('tab', 'wishlist');
-    params.delete('lens');
-    changed = true;
-  } else if (lens === 'calendar') {
-    params.set('layout', 'calendar');
-    params.delete('lens');
-    changed = true;
-  } else if (lens === 'schedule') {
-    params.delete('lens');
-    changed = true;
-  }
-
-  const role = params.get('role');
-  if (role === 'hosted' && canHost) {
-    params.set('filter', 'hosting');
-    params.delete('role');
-    changed = true;
-  } else if (role === 'joined') {
-    params.set('filter', 'joined');
-    params.delete('role');
-    changed = true;
-  } else if (role === 'all') {
-    params.delete('role');
-    if (!params.get('filter') && params.get('tab') !== 'wishlist') {
-      params.set('filter', 'joined');
+  for (const key of ['lens', 'role'] as const) {
+    if (params.has(key)) {
+      params.delete(key);
       changed = true;
     }
   }
@@ -132,21 +92,21 @@ export const normalizePlanMobileParams = (
   if (
     params.get('view') === 'plans' &&
     params.get('tab') !== 'wishlist' &&
-    !params.get('filter') &&
-    params.get('lens') !== 'availability'
+    !params.get('filter')
   ) {
     params.set('filter', 'joined');
     changed = true;
   }
 
   if (params.get('tab') === 'wishlist') {
-    params.delete('filter');
-    params.delete('layout');
-  }
-
-  if (lens === 'availability') {
-    params.delete('lens');
-    changed = true;
+    if (params.has('filter')) {
+      params.delete('filter');
+      changed = true;
+    }
+    if (params.has('layout')) {
+      params.delete('layout');
+      changed = true;
+    }
   }
 
   return { changed };

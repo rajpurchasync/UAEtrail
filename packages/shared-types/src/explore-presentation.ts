@@ -19,7 +19,7 @@ import {
   resolveParticipationMode,
   type ParticipationMode,
 } from './activity-participation-mode.js';
-import { exploreMapItemIsLegacySeekingActivity } from './explore-activity-mode.js';
+import { exploreMapItemIsRetiredSeekingActivity } from './explore-activity-mode.js';
 import type { ExploreActivityMode } from './explore-activity-mode.js';
 import {
   facilityPlaceKindPinEmoji,
@@ -167,7 +167,7 @@ export const resolveExploreItemSource = (
   item: Pick<DiscoveryCardBuildInput, 'id' | 'source' | 'activityMode' | 'participantIntentId'>
 ): DiscoveryCardSource => {
   const { id, source } = item;
-  if (exploreMapItemIsLegacySeekingActivity(item)) return 'activity';
+  if (exploreMapItemIsRetiredSeekingActivity(item)) return 'activity';
   if (
     source === 'activity' ||
     source === 'availability' ||

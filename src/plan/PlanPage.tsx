@@ -93,20 +93,14 @@ export const PlanPage = () => {
     });
   }, [canHost, navigate, pathname, planSearchKey, setSearchParams, user]);
 
-  const mainTab = parsePlanMainTab(searchParams.get('tab'), searchParams.get('lens'));
-  const commitmentFilter = parsePlanCommitmentFilter(
-    searchParams.get('filter'),
-    searchParams.get('role'),
-    canHost
-  );
-  const upcomingLayout = parsePlanUpcomingLayout(searchParams.get('layout'), searchParams.get('lens'));
+  const mainTab = parsePlanMainTab(searchParams.get('tab'));
+  const commitmentFilter = parsePlanCommitmentFilter(searchParams.get('filter'), canHost);
+  const upcomingLayout = parsePlanUpcomingLayout(searchParams.get('layout'));
   const calendarScope = parsePlanCalendarScope(
     searchParams.get('filter'),
     upcomingLayout,
-    searchParams.get('role'),
     canHost
   );
-  const lensRaw = searchParams.get('lens');
 
   const handleRefresh = useCallback(async () => {
     setRefreshKey((key) => key + 1);
@@ -256,7 +250,6 @@ export const PlanPage = () => {
                     canHost={canHost}
                     calendarScope={calendarScope}
                     layout={upcomingLayout}
-                    lensRaw={lensRaw}
                     onLayoutChange={setUpcomingLayout}
                   />
                 ) : (

@@ -27,7 +27,7 @@ Internet
 
 | Container | Image | Purpose |
 |-----------|-------|---------|
-| `frontend` | nginx:1.25‑alpine | Serves the Vite SPA, reverse-proxies `/api/*` to the API; **301** legacy bookmarks `/trips`, `/trips/map`, `/community` via `nginx/snippets/legacy-bookmark-redirects.conf` (included from `default.conf` and TLS example) |
+| `frontend` | nginx:1.25‑alpine | Serves the Vite SPA, reverse-proxies `/api/*` to the API; **301** stale consumer bookmarks via `nginx/snippets/inbound-bookmark-redirects.conf` (plan/history, explore entry, `/crews`, submissions, `/chat`, Pro entry, settings/notifications, badges, wishlist — see [`NAVIGATION.md`](./NAVIGATION.md) § Stale URLs) |
 | `api` | node:24‑alpine (custom) | Express + MongoDB backend |
 | `minio` | minio/minio:latest | S3‑compatible media storage |
 | `redis` | redis:7‑alpine | Rate limits and SSE tickets |
@@ -231,7 +231,7 @@ git pull origin main
 docker compose up -d --build
 ```
 
-No database migrations are required — schema is managed via MongoDB indexes created at API startup.
+After deploy, the API runs **versioned Mongo migrations** once per environment (`runMongoMigrations` in `apps/api/src/lib/mongo-migrations.ts`, tracked in `schema_meta.migrations`). Latest steps include stale **notification bookmark** rewrites via `canonicalizeNotificationBookmarkPath` (`migrateStaleNotificationBookmarkPaths`). Indexes are still ensured at API startup separately.
 
 ---
 

@@ -52,6 +52,17 @@ describe('resolveAuthRedirect', () => {
     expect(resolveAuthRedirect('/explore?session=expired&list=1', null)).toBe('/explore?list=1');
   });
 
+  it('canonicalizes stale bookmark redirect targets', () => {
+    expect(resolveAuthRedirect(null, '/buddies')).toBe('/crews');
+    expect(resolveAuthRedirect(null, '/map')).toBe('/explore');
+    expect(resolveAuthRedirect(null, '/contributions')).toBe('/profile/submissions');
+    expect(resolveAuthRedirect(null, '/profile/my-trips')).toBe('/profile/history');
+    expect(resolveAuthRedirect(null, '/profile/my-trips/map')).toBe('/profile/history/map');
+    expect(resolveAuthRedirect(null, '/profile/settings/account')).toBe('/settings/account');
+    expect(resolveAuthRedirect(null, '/rewards')).toBe('/profile/badges');
+    expect(resolveAuthRedirect(null, '/profile/wishlist')).toBe('/plan?view=plans&tab=wishlist');
+  });
+
   it('flags unsafe redirect query params', () => {
     expect(isRejectedAuthRedirectParam('/signin')).toBe(true);
     expect(isRejectedAuthRedirectParam('https://evil.com')).toBe(true);

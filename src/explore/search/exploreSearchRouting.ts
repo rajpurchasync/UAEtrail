@@ -14,12 +14,10 @@ import { parseExplorePanel } from '../routing';
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { LIST_DISCOVERY_PATH } from '../../config/platform';
 
-/** Search results route — list + map under one chrome bar (no `/explore/hub`). */
+/** Search results route — list + map under one product chrome bar. */
 export const EXPLORE_SEARCH_RESULTS_PATH = '/explore/search';
 
 export const EXPLORE_SEARCH_SCOPE_PARAM = 'searchScope';
-/** Inbound bookmark query — old `/explore/hub?hubMode=` links; prefer {@link EXPLORE_SEARCH_SCOPE_PARAM}. */
-export const INBOUND_HUB_SCOPE_PARAM = 'hubMode';
 export const EXPLORE_SEARCH_VIEW_PARAM = 'view';
 /**
  * Search home flag on `/explore/search` — not {@link COMPOSE_QUERY_KEY} (`?compose=menu` opens create FAB).
@@ -38,11 +36,8 @@ export const parseExploreSearchScope = (raw: string | null): ExploreSearchScope 
   return 'join';
 };
 
-export const parseExploreSearchScopeFromParams = (params: URLSearchParams): ExploreSearchScope => {
-  const explicit =
-    params.get(EXPLORE_SEARCH_SCOPE_PARAM) ?? params.get(INBOUND_HUB_SCOPE_PARAM);
-  return parseExploreSearchScope(explicit);
-};
+export const parseExploreSearchScopeFromParams = (params: URLSearchParams): ExploreSearchScope =>
+  parseExploreSearchScope(params.get(EXPLORE_SEARCH_SCOPE_PARAM));
 
 export const exploreSearchListCatForScope = (scope: ExploreSearchScope): BrowseMainCategoryKey => {
   switch (scope) {
@@ -120,7 +115,6 @@ const appendSearchBrowseParams = (params: URLSearchParams, state: ExploreSearchB
   } else {
     params.delete(EXPLORE_SEARCH_SCOPE_PARAM);
   }
-  params.delete(INBOUND_HUB_SCOPE_PARAM);
   params.set(LIST_CAT_PARAM, exploreSearchListCatForScope(state.searchScope));
   if (state.query.trim()) {
     params.set('q', state.query.trim());
@@ -149,7 +143,6 @@ const appendSearchHomeBrowseParams = (params: URLSearchParams, state: ExploreSea
   params.set(EXPLORE_SEARCH_COMPOSE_PARAM, '1');
   params.delete('compose');
   params.delete(EXPLORE_SEARCH_VIEW_PARAM);
-  params.delete(INBOUND_HUB_SCOPE_PARAM);
   if (state.searchScope !== 'join') {
     params.set(EXPLORE_SEARCH_SCOPE_PARAM, state.searchScope);
   } else {
@@ -270,40 +263,3 @@ export const exploreSearchJoinListFilters = (
 /** Search results use standard product chrome (not hub identity header). */
 export const isExploreSearchResultsPath = (pathname: string): boolean =>
   pathname === EXPLORE_SEARCH_RESULTS_PATH;
-
-/** Migrate inbound `/explore/hub/*` bookmarks. */
-export const exploreInboundHubRedirectTarget = (pathname: string, search: string): string => {
-  const params = new URLSearchParams(search.replace(/^\?/, ''));
-  if (pathname === '/explore/hub/search') {
-    if (!params.has(EXPLORE_SEARCH_SCOPE_PARAM) && params.has(INBOUND_HUB_SCOPE_PARAM)) {
-      params.set(EXPLORE_SEARCH_SCOPE_PARAM, params.get(INBOUND_HUB_SCOPE_PARAM)!);
-      params.delete(INBOUND_HUB_SCOPE_PARAM);
-    }
-    const qs = params.toString();
-    return qs ? `${EXPLORE_SEARCH_RESULTS_PATH}?${qs}` : EXPLORE_SEARCH_RESULTS_PATH;
-  }
-  if (pathname === '/explore/hub/map') {
-    if (!params.has(EXPLORE_SEARCH_SCOPE_PARAM) && params.has(INBOUND_HUB_SCOPE_PARAM)) {
-      params.set(EXPLORE_SEARCH_SCOPE_PARAM, params.get(INBOUND_HUB_SCOPE_PARAM)!);
-      params.delete(INBOUND_HUB_SCOPE_PARAM);
-    }
-    params.set(EXPLORE_SEARCH_VIEW_PARAM, 'map');
-    const qs = params.toString();
-    return qs ? `${EXPLORE_SEARCH_RESULTS_PATH}?${qs}` : `${EXPLORE_SEARCH_RESULTS_PATH}?view=map`;
-  }
-  if (pathname === '/explore/hub/home') {
-    const scope = parseExploreSearchScopeFromParams(params);
-    const browse = parseExploreSearchBrowseState(params);
-    return exploreSearchHomePath({
-      query: browse.query,
-      activityDatePreset: browse.activityDatePreset,
-      venueRegions: browse.venueRegions,
-      searchScope: scope,
-    });
-  }
-  if (pathname === '/explore/hub') {
-    const qs = params.toString();
-    return qs ? `${EXPLORE_MAP_PATH}?${qs}` : EXPLORE_MAP_PATH;
-  }
-  return EXPLORE_MAP_PATH;
-};

@@ -172,4 +172,18 @@ describe('authorityMatrixGuard (DMCP Phase 0)', () => {
     expect(read('package.json')).toMatch(/verify:authority-matrix/);
     expect(read('scripts/verify/verify-authority-matrix.mjs')).toMatch(/authority-matrix\.json/);
   });
+
+  it('AUTH-14: notification bookmark inbound choke documented in authority matrix (GW-7)', () => {
+    const matrix = JSON.parse(read('scripts/governance/authority-matrix.json'));
+    const choke = (matrix.readCompatChokePoints ?? []).find(
+      (c: { id: string }) => c.id === 'notification-bookmark-inbound'
+    );
+    expect(choke?.module).toBe('packages/shared-types/src/notification-bookmark-path.ts');
+    expect(choke?.rule).toMatch(/canonicalizeNotificationBookmarkPath/);
+    expect(read('src/utils/notificationRouting.ts')).toMatch(/canonicalizeNotificationBookmarkPath/);
+    expect(read('src/utils/authRedirect.ts')).toMatch(/canonicalizeNotificationBookmarkPath/);
+    expect(read('apps/api/src/lib/notification-bookmark-path-migration.ts')).toMatch(
+      /canonicalizeNotificationBookmarkPath/
+    );
+  });
 });

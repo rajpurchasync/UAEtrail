@@ -99,8 +99,8 @@ export const hydrateMemberAvailabilitySlots = (
   docKindsHint?: string[]
 ): MemberAvailabilitySlotWire[] => slots.map((slot) => normalizeAvailabilitySlot(slot, docKindsHint));
 
-/** Index field for legacy readers — modalities only (never `guide`). */
-export const deriveLegacyKindsFromSlots = (slots: MemberAvailabilitySlotWire[]): ScheduleModality[] => {
+/** Derived `kinds` index — unique schedule modalities across slots (never `guide`). */
+export const deriveModalitiesFromSlots = (slots: MemberAvailabilitySlotWire[]): ScheduleModality[] => {
   const set = new Set<ScheduleModality>();
   for (const slot of slots) {
     for (const modality of slot.modalities ?? []) {

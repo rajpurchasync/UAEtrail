@@ -18,6 +18,7 @@ Complete these **on the VPS** when you connect. Use this list to track progress.
 - [ ] Production ops: set `PLATFORM_ADMIN_MFA_SECRET` (base32 TOTP) and use `totp` on `POST /auth/login` for platform-admin accounts (S10g)
 - [ ] First-time dev/staging only (if needed): `SEED_DATA=true docker compose exec -T api npm --workspace @uaetrail/api run seed`
 - [ ] `curl https://uaetrail.com/health` returns OK
+- [ ] After deploy, API startup runs Mongo migrations (`schema_meta.migrations`); confirm logs for stale notification bookmark rewrites if upgrading GW-7 wire (`DEPLOYMENT.md` § Updating)
 
 ## HTTPS
 

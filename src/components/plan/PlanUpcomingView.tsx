@@ -14,7 +14,6 @@ type PlanUpcomingViewProps = {
   canHost: boolean;
   calendarScope: PlanCalendarScope;
   layout: PlanUpcomingLayout;
-  lensRaw: string | null;
   onLayoutChange: (layout: PlanUpcomingLayout) => void;
 };
 
@@ -24,10 +23,8 @@ export const PlanUpcomingView = ({
   canHost,
   calendarScope,
   layout,
-  lensRaw: _lensRaw,
   onLayoutChange,
 }: PlanUpcomingViewProps) => {
-  void _lensRaw;
   const [searchQuery, setSearchQuery] = useState('');
   const listSections = layout === 'list';
   const searchPlaceholder = 'Search joined outings…';

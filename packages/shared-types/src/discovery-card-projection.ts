@@ -1,6 +1,6 @@
 import {
   exploreMapItemIsAvailabilityCatalog,
-  exploreMapItemIsLegacySeekingActivity,
+  exploreMapItemIsRetiredSeekingActivity,
 } from './explore-activity-mode.js';
 import { buildDiscoveryCardPresentation, isGeographyMapSource } from './explore-presentation.js';
 import type { DiscoveryCardKind, DiscoveryCardSource } from './explore-presentation.js';
@@ -78,7 +78,7 @@ export const resolveDiscoveryCardEntityRef = (item: DiscoveryMapItemWire): Disco
       item.featuredPerson?.userId ?? item.activity?.hostUserId ?? null;
     if (userId) return { kind: 'person', userId };
   }
-  if (item.source === 'activity' && !exploreMapItemIsLegacySeekingActivity(item)) {
+  if (item.source === 'activity' && !exploreMapItemIsRetiredSeekingActivity(item)) {
     const activityId = item.activity?.id ?? null;
     if (activityId) return { kind: 'activity', activityId };
   }

@@ -28,7 +28,7 @@ export const resolveExploreMapActivityMode = (
  * Retired catalog row — excluded from `GET /explore/map`.
  * Find crew on the map is {@link exploreMapItemIsAvailabilityCatalog} only.
  */
-export const exploreMapItemIsLegacySeekingActivity = (
+export const exploreMapItemIsRetiredSeekingActivity = (
   item: ExploreMapItemActivityModeFields
 ): boolean => item.source === 'activity' && isRetiredSeekingActivityMode(item);
 
@@ -45,5 +45,5 @@ export const exploreMapItemIsHostedActivity = (item: ExploreMapItemActivityModeF
 /** Hosted activity, fixed availability, or excluded legacy seeking shape — not venues/shops. */
 export const isTimeBoundExploreMapItem = (item: ExploreMapItemActivityModeFields): boolean =>
   exploreMapItemIsHostedActivity(item) ||
-  exploreMapItemIsLegacySeekingActivity(item) ||
+  exploreMapItemIsRetiredSeekingActivity(item) ||
   exploreMapItemIsAvailabilityCatalog(item);

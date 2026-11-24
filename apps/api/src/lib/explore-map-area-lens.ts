@@ -5,7 +5,7 @@ import {
   exploreAreaLensStatsSummary,
   exploreMapItemIsAvailabilityCatalog,
   exploreMapItemIsHostedActivity,
-  exploreMapItemIsLegacySeekingActivity,
+  exploreMapItemIsRetiredSeekingActivity,
   isFacilityMapSource,
   isPlaceMapSource,
   isFacilityPlaceKind,
@@ -38,7 +38,7 @@ const accumulateAreaLensStats = (items: ExploreMapItemDTO[]): Map<string, Explor
     if (!areaId) continue;
     const stats = bucket(areaId);
 
-    if (exploreMapItemIsLegacySeekingActivity(item)) continue;
+    if (exploreMapItemIsRetiredSeekingActivity(item)) continue;
     if (exploreMapItemIsAvailabilityCatalog(item)) {
       stats.availabilityPins += 1;
       continue;

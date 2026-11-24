@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  exploreMapItemIsLegacySeekingActivity,
+  exploreMapItemIsRetiredSeekingActivity,
   resolveExploreMapActivityMode,
 } from '@uaetrail/shared-types';
 import { buildDiscoveryCardViewModelCard } from '../discovery';
@@ -29,7 +29,7 @@ describe('exploreActivityMode (availability catalog)', () => {
     const legacyCard = buildDiscoveryCardViewModelCard(legacy);
     expect(availabilityCard.source).toBe('availability');
     expect(availabilityCard.requirementBadges).toContain('Available');
-    expect(exploreMapItemIsLegacySeekingActivity(legacy)).toBe(true);
+    expect(exploreMapItemIsRetiredSeekingActivity(legacy)).toBe(true);
     expect(legacyCard.requirementBadges).not.toContain('Seeking');
     expect(legacyCard.showJoinActions).toBe(false);
   });

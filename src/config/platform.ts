@@ -27,7 +27,7 @@ import {
 import { INBOUND_BECOME_HOST_PATH, PRO_MEMBERSHIP_PATH } from './memberRoutes';
 import {
   INBOUND_BECOME_ORGANIZER_PATH,
-  INBOUND_RETIRED_CONSOLE_PREFIXES,
+  INBOUND_STALE_CONSOLE_PREFIXES,
 } from './inboundRoutePaths';
 import { SETTINGS_SURFACE_TITLE } from './settingsHub';
 import { AGENCY_PROFILE_PATH_PREFIX } from '@uaetrail/shared-types';
@@ -358,7 +358,7 @@ export const getExploreMapTiles = (style: ExploreMapStyle) => resolveExploreMapT
 const CONSUMER_CHROME_HIDDEN_PREFIXES = [
   '/admin',
   OPERATOR_CONSOLE_PREFIX,
-  ...INBOUND_RETIRED_CONSOLE_PREFIXES,
+  ...INBOUND_STALE_CONSOLE_PREFIXES,
   '/dashboard',
 ] as const;
 

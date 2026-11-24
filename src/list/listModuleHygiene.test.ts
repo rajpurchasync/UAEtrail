@@ -272,7 +272,7 @@ describe('list module hygiene', () => {
     const filters = readFileSync(join(process.cwd(), 'src/list/browse/browseListFilters.ts'), 'utf8');
     expect(filters).toMatch(/activity-discovery\/catalog\/listAvailabilityCatalog/);
     expect(filters).toMatch(/places-discovery\/catalog\/listCatalog/);
-    expect(filters).not.toMatch(/exploreMapItemIsLegacySeekingActivity/);
+    expect(filters).not.toMatch(/exploreMapItemIsRetiredSeekingActivity/);
   });
 
   it('builds enriched cards through buildListFeedCards', () => {

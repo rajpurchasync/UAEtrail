@@ -451,6 +451,11 @@ export {
   type NotificationKind,
   type NotificationMeta,
 } from './notification-meta.js';
+export {
+  canonicalizeNotificationBookmarkPath,
+  rewriteStaleNotificationBookmarkPath,
+  INBOUND_STALE_CONSOLE_PREFIXES,
+} from './notification-bookmark-path.js';
 import type { NotificationMeta } from './notification-meta.js';
 
 export type { MemberFollowStateDTO, MemberFollowSummaryDTO } from './member-follow.js';
@@ -863,7 +868,7 @@ export type { ExploreActivityMode } from './explore-activity-mode.js';
 export {
   exploreMapItemIsAvailabilityCatalog,
   exploreMapItemIsHostedActivity,
-  exploreMapItemIsLegacySeekingActivity,
+  exploreMapItemIsRetiredSeekingActivity,
   isTimeBoundExploreMapItem,
   resolveExploreMapActivityMode,
 } from './explore-activity-mode.js';
@@ -1815,7 +1820,7 @@ export {
   AVAILABILITY_SLOT_CAPACITIES,
   AVAILABILITY_PRICING_KINDS,
   AVAILABILITY_TOUR_SHAPES,
-  deriveLegacyKindsFromSlots,
+  deriveModalitiesFromSlots,
   hydrateMemberAvailabilitySlots,
   normalizeAvailabilitySlot,
   validateMemberAvailabilityWrite,

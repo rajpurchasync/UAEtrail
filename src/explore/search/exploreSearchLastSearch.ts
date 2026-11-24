@@ -6,10 +6,6 @@ export const EXPLORE_SEARCH_LAST_SEARCH_KEY = 'uaetrail:search.lastSearch';
 export const EXPLORE_RECENT_SEARCHES_KEY = 'uaetrail:explore.recentSearches';
 export const EXPLORE_SEARCH_HOME_SCOPE_KEY = 'uaetrail:search.homeScope';
 
-/** Inbound session keys (retired explore hub) — read once and migrate to {@link EXPLORE_SEARCH_*}. */
-const INBOUND_HUB_LAST_SEARCH_KEY = 'uaetrail:hub.lastSearch';
-const INBOUND_HUB_HOME_SCOPE_KEY = 'uaetrail:hub.homeScope';
-
 /** Isolates latest searches — guest vs signed-in member (same browser). */
 export type ExploreSearchStorageScope = 'guest' | `user:${string}`;
 
@@ -19,27 +15,11 @@ export const exploreSearchStorageScope = (
 
 const storageKey = (base: string, scope: ExploreSearchStorageScope): string => `${base}:${scope}`;
 
-const readScopedItem = (base: string, inboundBase: string, scope: ExploreSearchStorageScope): string | null => {
-  const key = storageKey(base, scope);
-  const raw = sessionStorage.getItem(key);
-  if (raw != null) return raw;
-  const inboundKey = storageKey(inboundBase, scope);
-  const inbound = sessionStorage.getItem(inboundKey);
-  if (inbound == null) return null;
-  try {
-    sessionStorage.setItem(key, inbound);
-    sessionStorage.removeItem(inboundKey);
-  } catch {
-    /* ignore quota */
-  }
-  return inbound;
-};
-
 export const readExploreSearchHomeScope = (
   scope: ExploreSearchStorageScope = 'guest'
 ): ExploreSearchScope => {
   try {
-    const raw = readScopedItem(EXPLORE_SEARCH_HOME_SCOPE_KEY, INBOUND_HUB_HOME_SCOPE_KEY, scope);
+    const raw = sessionStorage.getItem(storageKey(EXPLORE_SEARCH_HOME_SCOPE_KEY, scope));
     if (raw === 'places' || raw === 'crew' || raw === 'groups' || raw === 'join') return raw;
   } catch {
     /* ignore */
@@ -53,7 +33,6 @@ export const writeExploreSearchHomeScope = (
 ): void => {
   try {
     sessionStorage.setItem(storageKey(EXPLORE_SEARCH_HOME_SCOPE_KEY, scope), mode);
-    sessionStorage.removeItem(storageKey(INBOUND_HUB_HOME_SCOPE_KEY, scope));
   } catch {
     /* ignore */
   }
@@ -70,7 +49,7 @@ export const readExploreSearchLastSearch = (
   scope: ExploreSearchStorageScope = 'guest'
 ): ExploreSearchLastSearchEntry | null => {
   try {
-    const raw = readScopedItem(EXPLORE_SEARCH_LAST_SEARCH_KEY, INBOUND_HUB_LAST_SEARCH_KEY, scope);
+    const raw = sessionStorage.getItem(storageKey(EXPLORE_SEARCH_LAST_SEARCH_KEY, scope));
     if (!raw) return null;
     return normalizeRecentSearch(JSON.parse(raw) as unknown);
   } catch {
@@ -86,18 +65,14 @@ const recentSearchFingerprint = (entry: ExploreSearchLastSearchEntry): string =>
     (entry.venueRegions ?? []).join(','),
   ].join('|');
 
-const scopeFromRaw = (raw: Record<string, unknown>): ExploreSearchScope | null => {
-  const mode = raw.searchScope ?? raw.hubMode;
-  if (mode === 'join' || mode === 'places' || mode === 'crew' || mode === 'groups') return mode;
-  return null;
-};
-
 const normalizeRecentSearch = (raw: unknown): ExploreSearchLastSearchEntry | null => {
   if (typeof raw !== 'object' || raw === null) return null;
   const entry = raw as Record<string, unknown>;
   if (typeof entry.query !== 'string' || typeof entry.activityDatePreset !== 'string') return null;
-  const searchScope = scopeFromRaw(entry);
-  if (!searchScope) return null;
+  const searchScope = entry.searchScope;
+  if (searchScope !== 'join' && searchScope !== 'places' && searchScope !== 'crew' && searchScope !== 'groups') {
+    return null;
+  }
   return {
     query: entry.query,
     activityDatePreset: entry.activityDatePreset as ExploreActivityDatePreset,
@@ -175,7 +150,6 @@ export const writeExploreSearchLastSearch = (
 ): void => {
   try {
     sessionStorage.setItem(storageKey(EXPLORE_SEARCH_LAST_SEARCH_KEY, scope), JSON.stringify(payload));
-    sessionStorage.removeItem(storageKey(INBOUND_HUB_LAST_SEARCH_KEY, scope));
     pushExploreRecentSearch(payload, scope);
   } catch {
     /* ignore quota */

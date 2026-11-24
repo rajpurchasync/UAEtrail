@@ -85,12 +85,9 @@ export const parseAvailabilitySlotId = (searchParams: Pick<URLSearchParams, 'get
   searchParams.get(AVAILABILITY_SLOT_QUERY_KEY)?.trim() || null;
 /** When `1`, map/list show only the signed-in member's activities + wishlist pins. */
 export const MY_PLAN_MAP_QUERY_KEY = 'myPlan';
-/** Legacy explore query — parse only; do not write in new URLs. */
-const LEGACY_MY_PLAN_MAP_QUERY_KEY = 'myTrips';
 
 export const parseExploreMyPlanMapMode = (searchParams: Pick<URLSearchParams, 'get'>): boolean =>
-  searchParams.get(MY_PLAN_MAP_QUERY_KEY) === '1' ||
-  searchParams.get(LEGACY_MY_PLAN_MAP_QUERY_KEY) === '1';
+  searchParams.get(MY_PLAN_MAP_QUERY_KEY) === '1';
 
 export const parsePlanWithUserId = (searchParams: Pick<URLSearchParams, 'get'>): string | null =>
   searchParams.get(PLAN_WITH_QUERY_KEY)?.trim() || null;
@@ -208,31 +205,14 @@ export const parseActivityListFilter = (
   return 'all';
 };
 
-const inferMapFilterFromLegacySubfilter = (raw: string | null): MapFilterKey | null => {
-  if (!raw || raw === 'all') return null;
-  if (raw === 'event' || raw === 'events') return 'others';
-  if (raw === 'shop' || raw === 'shops') return 'shops';
-  const parsed = parseMapFilter(raw);
-  return parsed === 'all' ? null : parsed;
-};
-
 /**
- * Canonical explore browse query is parent (`panel`) + subfilter (`filter`).
- * Strips duplicate `places` / `activity` keys; promotes them to `filter` when missing.
+ * Canonical explore browse query is parent (`panel`) + subfilter (`filter`) only.
+ * Drops duplicate `places` / `activity` keys (do not read or promote).
  */
 export const compactExploreParentFilterSearchParams = (params: URLSearchParams): boolean => {
   const places = params.get('places');
   const activity = params.get('activity');
   if (places == null && activity == null) return false;
-
-  if (!params.get('filter')) {
-    const panel = parseExplorePanel(params.get('panel'));
-    const preferred =
-      panel === 'venues' || panel === 'shops' ? places ?? activity : activity ?? places;
-    const inferred = inferMapFilterFromLegacySubfilter(preferred);
-    if (inferred) params.set('filter', inferred);
-  }
-
   params.delete('places');
   params.delete('activity');
   return true;
