@@ -17,7 +17,7 @@ import { intentOpenCompose } from '../../explore/compose';
 import type { BrowseListCreateFabHints } from '../browse/browseListCopy';
 import { useHostingFromActivity } from '../../explore/create/hooks/useHostingFromActivity';
 import { useHostingWizardPrefill } from '../../explore/create/hooks/useHostingWizardPrefill';
-import { parsePlanWithUserId } from '../../explore/routing';
+import { parseListPlanWithUserId } from '../browse/listComposeQuery';
 import { resolveBrowseListCreateFabLabel } from '../browse/browseListCopy';
 
 export type ListDiscoveryComposeBridgeInput = {
@@ -86,7 +86,7 @@ export const useListDiscoveryComposeBridgeModel = ({
   });
 
   const [, setListSelectedId] = useState<string | null>(null);
-  const planWithFriendUserId = parsePlanWithUserId(searchParams);
+  const planWithFriendUserId = parseListPlanWithUserId(searchParams);
 
   const hostingLauncher = useHostingWizardPrefill({
     pathname,
