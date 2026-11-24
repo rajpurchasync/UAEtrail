@@ -173,9 +173,10 @@ describe('route handler CQRS guard (MIG-CQRS-ROUTES)', () => {
     }
   });
 
-  it('public area registrar wires area-public-read', () => {
+  it('public area registrar delegates to destination-public-read (legacy alias)', () => {
     const registrar = readRegistrar('apps/api/src/routes/user/registerPublicAreaRoutes.ts');
-    expect(registrar).toMatch(/area-public-read/);
+    expect(registrar).toMatch(/destination-public-read/);
+    expect(registrar).toMatch(/attachLegacyAreasApiDeprecationHeaders/);
     expect(registrar).not.toMatch(/COLLECTIONS\./);
   });
 

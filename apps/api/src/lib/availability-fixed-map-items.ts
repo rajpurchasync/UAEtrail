@@ -17,12 +17,13 @@ import {
 import { COLLECTIONS } from './collections.js';
 import { getMongoClient } from './mongo.js';
 import { findAuthUsersByIds } from './auth-users-store.js';
-import { findPublishedAreaById } from './areas-store.js';
+import { resolveStoredDestinationId } from './destination-id-sync.js';
 
 type MongoMemberAvailability = {
   userId: string;
   kinds: string[];
   visibility: string;
+  destinationId?: string | null;
   areaId?: string | null;
   slots: MemberAvailabilitySlotDTO[];
 };
@@ -89,7 +90,7 @@ export const buildAvailabilityFixedMapItems = async (input: {
       const lng = slot.longitude ?? null;
       if (lat == null || lng == null) continue;
 
-      const areaId = doc.areaId ?? null;
+      const destinationId = resolveStoredDestinationId(doc);
       const { date, time } = formatDateTimeParts(slot.startAt ?? `${slot.startDate}T12:00:00.000Z`);
       const endParts = formatDateTimeParts(slot.endAt);
 
@@ -112,9 +113,11 @@ export const buildAvailabilityFixedMapItems = async (input: {
         time,
         endDate: endParts.date,
         endTime: endParts.time,
-        areaId,
-        areaSlug: areaId ? input.areaSlugById.get(areaId) ?? null : null,
-        areaName: areaId ? input.areaNameById.get(areaId) ?? null : null,
+        destinationId,
+        destinationSlug: destinationId ? input.areaSlugById.get(destinationId) ?? null : null,
+        areaId: destinationId,
+        areaSlug: destinationId ? input.areaSlugById.get(destinationId) ?? null : null,
+        areaName: destinationId ? input.areaNameById.get(destinationId) ?? null : null,
       });
     }
   }

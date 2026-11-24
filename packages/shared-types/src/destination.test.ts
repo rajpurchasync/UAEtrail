@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   destinationHubPath,
   exploreDestinationQueryParam,
+  exploreMapItemMatchesDestinationSlug,
+  filterExploreMapItemsByDestinationSlug,
   resolveDestinationId,
   resolveExploreDestinationSlugQuery,
 } from './destination.js';
@@ -27,5 +29,15 @@ describe('destination wire (MIG-DESTINATION-GEO)', () => {
     expect(resolveExploreDestinationSlugQuery({ destination: 'Hatta', area: 'other' })).toBe('hatta');
     expect(resolveExploreDestinationSlugQuery({ area: 'hatta' })).toBe('hatta');
     expect(resolveExploreDestinationSlugQuery({})).toBeNull();
+  });
+
+  it('filterExploreMapItemsByDestinationSlug matches destinationSlug or legacy areaSlug', () => {
+    const inHatta = { destinationSlug: 'hatta', areaSlug: 'legacy' };
+    const byArea = { destinationSlug: null, areaSlug: 'hatta' };
+    const other = { destinationSlug: 'jebel-jais' };
+    expect(filterExploreMapItemsByDestinationSlug([inHatta, byArea, other], 'hatta')).toHaveLength(2);
+    expect(exploreMapItemMatchesDestinationSlug({ source: 'area', id: 'area:hatta' }, 'hatta')).toBe(
+      true
+    );
   });
 });

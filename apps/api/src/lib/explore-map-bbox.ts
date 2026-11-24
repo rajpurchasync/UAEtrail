@@ -1,4 +1,5 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { filterExploreMapItemsByDestinationSlug } from '@uaetrail/shared-types';
 import { ApiError } from './api-error.js';
 import { filterExploreMapItemsByBboxIndexed } from './explore-map-spatial-index.js';
 import { UAE_LAND_BBOX, type UaeBbox } from './uae-bbox.js';
@@ -86,12 +87,7 @@ export const filterExploreMapItemsByBbox = (
 export const filterExploreMapItemsByAreaSlug = (
   items: ExploreMapItemDTO[],
   areaSlug: string
-): ExploreMapItemDTO[] =>
-  items.filter(
-    (item) =>
-      item.areaSlug === areaSlug ||
-      (item.source === 'area' && item.id === `area:${areaSlug}`)
-  );
+): ExploreMapItemDTO[] => filterExploreMapItemsByDestinationSlug(items, areaSlug);
 
 type CursorPayload = { sortKey: string; id: string };
 

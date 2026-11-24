@@ -15,6 +15,8 @@ describe('GET /api/areas', () => {
   it('lists published curated areas', async () => {
     const res = await request(app).get('/api/areas');
     expect(res.status).toBe(200);
+    expect(res.headers.deprecation).toBe('true');
+    expect(String(res.headers.link ?? '')).toMatch(/\/api\/destinations/);
     const slugs = (res.body.data as Array<{ slug: string }>).map((row) => row.slug);
     expect(slugs).toContain(testAreas.hatta.slug);
     expect(slugs).toContain(testAreas.jebelJais.slug);
@@ -24,6 +26,7 @@ describe('GET /api/areas', () => {
   it('returns area detail card by slug', async () => {
     const res = await request(app).get(`/api/areas/${testAreas.hatta.slug}`);
     expect(res.status).toBe(200);
+    expect(res.headers.deprecation).toBe('true');
     expect(res.body.data.area.slug).toBe(testAreas.hatta.slug);
     expect(res.body.data.counts).toMatchObject({
       activities: expect.any(Number),

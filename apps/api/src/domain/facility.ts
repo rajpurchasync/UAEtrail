@@ -14,6 +14,7 @@ export interface Facility {
   destinationId?: string | null;
   areaId: string;
   facilityKind: FacilityKind;
+  onSiteId?: string | null;
   parentPlaceId?: string | null;
   /** Geo-tree venue node id when the amenity is tagged to a venue. */
   venueId?: string | null;

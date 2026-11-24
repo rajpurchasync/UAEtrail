@@ -2,6 +2,7 @@
 import type { AreaDTO, ExploreAreaLensStatsDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   areaDetailPath,
+  destinationHubPath,
   exploreAreaLensStatsSummary,
   exploreMapItemIsAvailabilityCatalog,
   exploreMapItemIsHostedActivity,
@@ -10,6 +11,7 @@ import {
   isPlaceMapSource,
   isFacilityPlaceKind,
   placeKindFromLocationRow,
+  resolveDestinationId,
 } from '@uaetrail/shared-types';
 
 const emptyStats = (): ExploreAreaLensStatsDTO => ({
@@ -34,7 +36,7 @@ const accumulateAreaLensStats = (items: ExploreMapItemDTO[]): Map<string, Explor
 
   for (const item of items) {
     if (item.source === 'area') continue;
-    const areaId = item.areaId?.trim();
+    const areaId = resolveDestinationId(item);
     if (!areaId) continue;
     const stats = bucket(areaId);
 
@@ -110,7 +112,9 @@ export const buildExploreAreaLensItems = (
       subtitle,
       latitude: area.center.latitude,
       longitude: area.center.longitude,
-      path: areaDetailPath(area.slug),
+      path: destinationHubPath(area.slug),
+      destinationId: area.id,
+      destinationSlug: area.slug,
       areaId: area.id,
       areaSlug: area.slug,
       areaLensStats: stats,

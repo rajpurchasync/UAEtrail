@@ -2,6 +2,7 @@ import {
   approximateAreaBoundsKm2,
   inferEmirateFromLocalityName,
   pointInAreaBounds,
+  resolveDestinationId,
   resolveGroupRegionFromCoordinates,
   type AreaPublicDTO,
   type PlaceDTO,
@@ -45,7 +46,7 @@ export const validateRideshareDestinationArea = (
     const placeId = draft.rideshareDestinationPlaceId?.trim();
     if (!placeId) return RIDESHARE_DESTINATION_REQUIRED;
     const place = registryPlaces.find((row) => row.id === placeId);
-    if (place?.areaId?.trim()) return null;
+    if (resolveDestinationId(place)) return null;
     if (!place) return null;
     return placeAreaError(place, placeId);
   }
@@ -74,7 +75,7 @@ export const validateHostingPlaceArea = (
   const place = draft.registryPlaceId
     ? registryPlaces.find((row) => row.id === draft.registryPlaceId)
     : null;
-  if (place?.areaId?.trim()) return null;
+  if (resolveDestinationId(place)) return null;
   return placeAreaError(place, draft.registryPlaceId);
 };
 
@@ -160,7 +161,7 @@ export const usesAvailabilityCuratedAreaStep = (kind: AvailabilityFixedKind): bo
   kind === 'other';
 
 export const resolveRegistryPlaceAreaId = (place: PlaceDTO | null | undefined): string | null =>
-  place?.areaId?.trim() ? place.areaId.trim() : null;
+  resolveDestinationId(place);
 
 /** Ephemeral activity-anchor places only (e.g. rideshare) — not for hosted trail/camp catalog tagging. */
 export const resolvePublishedAreaForPoint = (

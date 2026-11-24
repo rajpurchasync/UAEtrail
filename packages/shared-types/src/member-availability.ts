@@ -144,6 +144,8 @@ export interface MemberAvailabilityDTO {
   kinds: AvailabilityKind[];
   visibility: AvailabilityVisibility;
   region?: string | null;
+  destinationId?: string | null;
+  /** @deprecated Dual-read with {@link destinationId} until MIG-DESTINATION-GEO cutover. */
   areaId?: string | null;
   note?: string | null;
   slots: MemberAvailabilitySlotDTO[];
@@ -155,6 +157,8 @@ export interface UpsertMemberAvailabilityInput {
   kinds?: AvailabilityKind[];
   visibility: AvailabilityVisibility;
   region?: string | null;
+  destinationId?: string | null;
+  /** @deprecated Dual-write with {@link destinationId} until cutover. */
   areaId?: string | null;
   note?: string | null;
   slots: MemberAvailabilitySlotDTO[];

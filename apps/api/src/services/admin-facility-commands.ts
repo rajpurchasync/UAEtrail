@@ -11,6 +11,9 @@ import {
 } from '../lib/facilities-store.js';
 import { toFacilityDto } from '../lib/facility-mappers.js';
 import { scheduleExploreMapCacheInvalidation } from '../lib/explore-map.js';
+import { mirrorCatalogDestinationIds } from '../lib/destination-id-sync.js';
+import { mirrorCatalogOnSiteIds } from '../lib/facility-on-site-sync.js';
+import { assertActiveListedFacilityHasCatalogGeo } from '../lib/listed-catalog-geo-gate.js';
 
 export type AdminFacilityWriteInput = {
   name: string;
@@ -72,6 +75,9 @@ export const createAdminFacilityRecord = async (input: {
     entityId: facility.id,
   });
   scheduleExploreMapCacheInvalidation('admin.facility_create_map_cache');
+  if (facility.status === LocationStatus.ACTIVE && facility.registryListed !== false) {
+    assertActiveListedFacilityHasCatalogGeo(facility);
+  }
   return toFacilityDto(facility);
 };
 
@@ -85,6 +91,11 @@ export const updateAdminFacilityRecord = async (input: {
   if (!existing) {
     throw new ApiError(404, 'facility_not_found', 'Facility not found.');
   }
+
+  const nextStatus =
+    body.status !== undefined ? toPrismaLocationStatus(body.status) : existing.status;
+  const activating =
+    nextStatus === LocationStatus.ACTIVE && existing.status !== LocationStatus.ACTIVE;
 
   const facilityKind = body.facilityKind ?? existing.facilityKind;
   const areaLabel =
@@ -104,17 +115,22 @@ export const updateAdminFacilityRecord = async (input: {
     ...(body.name !== undefined ? { name: body.name } : {}),
     ...(body.region !== undefined ? { region: body.region } : {}),
     ...(areaLabel !== undefined ? { areaLabel } : {}),
-    ...(body.areaId !== undefined ? { areaId: body.areaId.trim() } : {}),
+    ...(body.areaId !== undefined
+      ? {
+          areaId: body.areaId.trim(),
+          destinationId: mirrorCatalogDestinationIds(body.areaId.trim()).destinationId,
+        }
+      : {}),
     ...(body.facilityKind !== undefined ? { facilityKind: body.facilityKind } : {}),
     ...(body.parentPlaceId !== undefined
-      ? { parentPlaceId: body.parentPlaceId?.trim() || null }
+      ? mirrorCatalogOnSiteIds(body.parentPlaceId?.trim() || null)
       : {}),
     ...(body.description !== undefined ? { description: body.description } : {}),
     ...(body.latitude !== undefined ? { latitude: body.latitude } : {}),
     ...(body.longitude !== undefined ? { longitude: body.longitude } : {}),
     ...(body.images !== undefined ? { images: body.images } : {}),
     ...(body.featured !== undefined ? { featured: body.featured } : {}),
-    ...(body.status !== undefined ? { status: toPrismaLocationStatus(body.status) } : {}),
+    ...(body.status !== undefined ? { status: nextStatus } : {}),
     ...(tags ? { tags } : {}),
     ...(body.countryCode !== undefined ? { countryCode: body.countryCode.toUpperCase() } : {}),
     ...(body.partnerReferralUrl !== undefined
@@ -124,6 +140,10 @@ export const updateAdminFacilityRecord = async (input: {
 
   if (!refreshed) {
     throw new ApiError(404, 'facility_not_found', 'Facility not found.');
+  }
+
+  if (activating) {
+    assertActiveListedFacilityHasCatalogGeo(refreshed);
   }
 
   await createAuditLog({

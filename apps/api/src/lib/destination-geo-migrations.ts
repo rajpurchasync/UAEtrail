@@ -27,11 +27,25 @@ const backfillGeoNodeCatalogDestinationId = async (db: Db): Promise<void> => {
   }
 };
 
-/** P3 — dual-field backfill; ids unchanged (`area-seed-*` = `destinationId`). */
+const backfillFacilityOnSiteId = async (db: Db): Promise<void> => {
+  const col = db.collection(COLLECTIONS.FACILITIES);
+  const result = await col.updateMany(
+    { parentPlaceId: { $exists: true, $type: 'string', $nin: ['', ' '] } },
+    [{ $set: { onSiteId: { $ifNull: ['$onSiteId', '$parentPlaceId'] } } }]
+  );
+  if (result.modifiedCount > 0) {
+    console.log(
+      `[mongo] MIG-DESTINATION-GEO: onSiteId ← parentPlaceId on facilities: ${result.modifiedCount}`
+    );
+  }
+};
+
+/** P3 — dual-field backfill; ids unchanged (`area-seed-*` = `destinationId`). P10 adds `onSiteId`. */
 export const runDestinationGeoMigrations = async (db: Db): Promise<void> => {
   await backfillDestinationIdField(db, COLLECTIONS.LOCATIONS);
   await backfillDestinationIdField(db, COLLECTIONS.FACILITIES);
   await backfillDestinationIdField(db, COLLECTIONS.MEMBER_AVAILABILITY);
   await backfillDestinationIdField(db, COLLECTIONS.ACTIVITIES);
   await backfillGeoNodeCatalogDestinationId(db);
+  await backfillFacilityOnSiteId(db);
 };

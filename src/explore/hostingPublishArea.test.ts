@@ -39,6 +39,11 @@ describe('validateHostingPlaceArea', () => {
         [{ ...placeWithArea('loc-1'), areaId: null }]
       )
     ).toBeNull();
+    expect(
+      validateHostingPlaceArea(draft, [
+        { ...placeWithArea('loc-1'), areaId: null, destinationId: HATTA_AREA_ID },
+      ])
+    ).toBeNull();
   });
 
   it('requires name, pin, emirate, and a published area — no photo', () => {

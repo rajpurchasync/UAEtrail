@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { LocationStatus } from '../src/domain/enums.js';
 import type { Location } from '../src/domain/types.js';
 import { ApiError } from '../src/lib/api-error.js';
-import { assertActiveListedPlaceHasCatalogGeo } from '../src/lib/listed-catalog-geo-gate.js';
+import {
+  assertActiveListedFacilityHasCatalogGeo,
+  assertActiveListedPlaceHasCatalogGeo,
+} from '../src/lib/listed-catalog-geo-gate.js';
+import type { Facility } from '../src/domain/facility.js';
 import { testAreas } from './helpers/test-seed.js';
 
 const baseLocation = (): Location =>
@@ -79,5 +83,47 @@ describe('assertActiveListedPlaceHasCatalogGeo', () => {
   it('skips draft rows', () => {
     const row = { ...baseLocation(), status: LocationStatus.DRAFT, geoRef: null };
     expect(() => assertActiveListedPlaceHasCatalogGeo(row)).not.toThrow();
+  });
+});
+
+const baseFacility = (): Facility =>
+  ({
+    id: 'fac-1',
+    name: 'Toilet',
+    region: 'Dubai',
+    areaLabel: null,
+    destinationId: testAreas.hatta.id,
+    areaId: testAreas.hatta.id,
+    facilityKind: 'toilet',
+    description: '',
+    latitude: 25.0,
+    longitude: 55.0,
+    images: [],
+    tags: [],
+    status: LocationStatus.ACTIVE,
+    moderationStatus: 'approved',
+    publicationStatus: 'published',
+    registeredByUserId: 'u1',
+    countryCode: 'AE',
+    geoRef: baseLocation().geoRef,
+    featured: false,
+    registryListed: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }) as Facility;
+
+describe('assertActiveListedFacilityHasCatalogGeo', () => {
+  it('passes when active listed facility has coords, geoRef, and destination', () => {
+    expect(() => assertActiveListedFacilityHasCatalogGeo(baseFacility())).not.toThrow();
+  });
+
+  it('rejects missing destination on listed activate', () => {
+    const row = { ...baseFacility(), destinationId: null, areaId: '' };
+    expect(() => assertActiveListedFacilityHasCatalogGeo(row)).toThrow(ApiError);
+    try {
+      assertActiveListedFacilityHasCatalogGeo(row);
+    } catch (error) {
+      expect((error as ApiError).code).toBe('facility_destination_required');
+    }
   });
 });

@@ -991,7 +991,7 @@ Legacy shim (one release, no new imports): `placeRegistry.ts`. `placeCatalogApi.
 
 ### 8.5 Program MIG-DESTINATION-GEO-2026 — geography assignment
 
-**Status:** **In progress** — **P0–P1** (canon + shared-types wire). **Track A:** `destinations` logical store (physical Mongo `areas` until P3); **`destinationId`** on catalog rows; **`geoRef`** SoT for country/state (P4+). **Place (site)** = trails, camps, spots (`/place/:id`). **Not in scope:** nested geo URLs; GW-7 inbound choke.
+**Status:** **Eng complete (P0–P10)** — staging `verify:system` + deploy; `areaId`/`parentPlaceId` dual-read until ops cutover. **Track A:** `destinations` logical store (physical Mongo `areas` until P3); **`destinationId`** on catalog rows; **`geoRef`** SoT for country/state (P4+). **Place (site)** = trails, camps, spots (`/place/:id`). **Not in scope:** nested geo URLs; GW-7 inbound choke.
 
 **Read between phases:** this §8.5 · [`DOMAIN.md`](./DOMAIN.md) § Geography · [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §12.1 · `packages/shared-types/src/destination.ts`.
 
@@ -1061,18 +1061,60 @@ Mark `[x]` in the PR that completes the item.
 - [x] `MONGO_MIGRATION_VERSION = 2025112503` + `runDestinationGeoMigrations`
 - [x] Dual-write `mirrorCatalogDestinationIds` on place/facility creates
 - [x] Mappers emit `destinationId` on place/facility DTO reads
-- [ ] All catalog write paths dual-write (extend in P4–P6)
+- [x] Member availability upsert dual-writes `destinationId`
+- [x] Admin facility patch dual-writes `destinationId` on `areaId`
+- [ ] Remaining catalog write paths (audit in P9)
 
 **P4 — AdminGeo authority**
 
 - [x] `resolveExploreDestinationSlugQuery` (API + FE explore filter)
 - [x] `GET /explore/map` accepts `destination` (alias `area`)
 - [x] `assertActiveListedPlaceHasCatalogGeo` on admin place activate
-- [ ] Facility listed publish gate (P6)
+- [x] Facility listed publish gate (`assertActiveListedFacilityHasCatalogGeo`)
 
-**P5–P10** — see plan; unchecked until shipped.
+**P5 — Explore map destination lens**
 
-**Gate:** `npm run verify:system:quick` each PR; **`npm run verify:system`** before P9 close.
+- [x] `destinationId` / `destinationSlug` on catalog map items (`discovery-catalog-builder`)
+- [x] `filterExploreMapItemsByDestinationSlug` shared (API bbox + FE filter)
+- [x] Availability pins dual-emit destination fields
+- [ ] Recommendation scoring uses `destinationId` (extend if needed in P9)
+
+**P6 — Compose / catalog lineage**
+
+- [x] `assertActiveListedFacilityHasCatalogGeo` on admin facility activate/create
+- [x] Admin facility `areaId` patch → `mirrorCatalogDestinationIds`
+- [x] `member-availability` upsert dual-writes `destinationId`
+- [x] Hosting publish validates place via `resolveDestinationId` (dual-read)
+
+**P7 — FE destination hubs**
+
+- [x] `GET /destinations` + hub detail via `destinationsApi` / `areaHubClientApi`
+- [x] SPA `/destination/:slug` (legacy `/area/:slug` mount retained — no `<Navigate>`)
+- [x] `areaDetailPath` emits `/destination/:slug`
+- [x] Explore URL builder dual-writes `destination` + `area` query
+
+**P8 — Inbound**
+
+- [x] `rewriteStaleEntityInboundPath` `/area/:slug` → `/destination/:slug`
+- [x] nginx `inbound-bookmark-redirects.conf` 301 for `/area/*`
+
+**P9 — API cutover (read paths)**
+
+- [x] `GET /api/areas*` → `destination-public-read` + `Deprecation` / `Link` headers
+- [x] `destinations-http-canonical-guard.test.ts`
+- [x] `areaId` dual-read retained on DTOs (remove in post-program ops pass)
+- [x] `onSiteId` dual-write + migration `2025112504` (D0.5)
+
+**P10 — Program close (eng)**
+
+- [x] Explore URLs emit `?destination=` only (legacy `?area=` read path retained)
+- [x] Consumer API: `areasApi` public reads → `/destinations`; `apiClientSurfaceGuard`
+- [ ] `npm run verify:system` on staging (ops sign-off)
+- [ ] Optional: physical Mongo `areas` collection rename
+
+**Program eng status:** **P0–P10 code complete** — ops: staging verify + deploy checklist.
+
+**Gate:** `npm run verify:system:quick` each PR; **`npm run verify:system`** before P10 close.
 
 ### 8.6 Platform program (P0–P6) — CEO-approved Oct 2026
 

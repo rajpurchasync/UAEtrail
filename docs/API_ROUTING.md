@@ -395,8 +395,8 @@ SPA: `/admin/hosts` → `pages/admin/Organisations` (see [`NAVIGATION.md`](./NAV
 | GET/PATCH/DELETE | `/admin/facilities` | Platform admin facility CRUD → `facilities` only | **(today)** |
 | GET | `/destinations` | Public curated **Destinations** (MIG-DESTINATION-GEO) | **(today)** — same data as `/areas`; not a map pin |
 | GET | `/destinations/:slug` | Destination hub payload (`destination` key) | **(today)** |
-| GET | `/areas` | Legacy alias of `/destinations` | **(today)** — deprecate P9 |
-| GET | `/areas/:slug` | Legacy (`area` key) | **(today)** |
+| GET | `/areas` | Legacy alias of `/destinations` | **Deprecated** — `Deprecation: true` + `Link` successor; same list payload |
+| GET | `/areas/:slug` | Legacy alias (`area` key in JSON) | **Deprecated** — use `/destinations/:slug` (`destination` key) |
 | GET | `/shop/shops/:id` | **Operator** shop storefront (`EntityKind.shop`) | **(today)** — not FAB Add |
 
 **Surface model:** Public read, member submit (`/me/*`), and platform admin (`/admin/*`) are **separate registrars** — not one `/facilities` POST gated by profile. See [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §5.1 · §8.4.9.

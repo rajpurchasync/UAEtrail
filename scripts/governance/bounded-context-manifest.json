@@ -327,9 +327,12 @@
         "apps/api/src/lib/geo-write.ts",
         "apps/api/src/lib/geo-worker.ts",
         "apps/api/src/lib/geo-backfill.ts",
+        "apps/api/src/lib/destinations-store.ts",
+        "apps/api/src/services/destination-public-read.ts",
         "apps/api/src/services/geo-hierarchy-read.ts"
       ],
       "routeRegistrars": [
+        "apps/api/src/routes/user/registerPublicDestinationRoutes.ts",
         "apps/api/src/routes/user/registerPublicAreaRoutes.ts",
         "apps/api/src/routes/user/registerPublicGeoHierarchyRoutes.ts",
         "apps/api/src/routes/admin/registerAdminAreaRoutes.ts",
@@ -337,6 +340,7 @@
       ],
       "feDomains": [
         "src/api/domains/areas.ts",
+        "src/api/domains/destinations.ts",
         "src/api/domains/geoHierarchy.ts",
         "src/api/domains/geoSearch.ts"
       ],

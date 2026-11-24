@@ -50,6 +50,10 @@ const BANNED_CALLS: Array<{ pattern: RegExp; hint: string }> = [
   { pattern: /\bapi\.updateAdminUserStatus\b/, hint: 'Use api.updateAdminMemberStatus' },
   { pattern: /\bapi\.getPublicLocations\b/, hint: 'Use api.getPublicPlaces' },
   { pattern: /\bapi\.getPublicLocationDetail\b/, hint: 'Use api.getPublicPlaceDetail' },
+  {
+    pattern: /\bapi\.(listPublishedAreas|getAreaBySlug)\b/,
+    hint: 'Use destinationsApi / fetchPublishedAreas (GET /destinations)',
+  },
   { pattern: /\bapi\.getReviews\s*\(\s*['"]tenant['"]/, hint: 'Use api.getOrganisationReviews' },
   { pattern: /\bapi\.createReview\s*\(/, hint: 'Use api.createPlaceReview or api.createOrganisationReview' },
   { pattern: /\bapi\.getMerchantProfileById\b/, hint: 'Use api.getShopOrganisationProfile' },

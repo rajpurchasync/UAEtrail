@@ -25,6 +25,8 @@ import {
   resolveActivityOutingTopic,
   resolveParticipationMode,
   shopPublicPath,
+  resolveDestinationId,
+  type DestinationAssignableRow,
 } from '@uaetrail/shared-types';
 import type { Facility } from '../domain/facility.js';
 import type { Location } from '../domain/types.js';
@@ -212,25 +214,39 @@ const attachLinkedRideshareMetadata = (items: ExploreMapItemDTO[]): void => {
   }
 };
 
+const catalogDestinationRegion = (
+  region: DestinationAssignableRow | string | null | undefined
+): DestinationAssignableRow | null => {
+  if (region == null) return null;
+  if (typeof region === 'string') return { areaId: region };
+  return region;
+};
+
 const attachExploreItemArea = (
   item: ExploreMapItemDTO,
-  areaId: string | null | undefined,
+  region: DestinationAssignableRow | string | null | undefined,
   areaSlugById: Map<string, string>,
   areaNameById: Map<string, string>,
   placeHubLabel?: string | null
 ): ExploreMapItemDTO => {
   const hubLabel = placeHubLabel?.trim() || item.areaLabel?.trim() || null;
-  const resolvedAreaId = areaId?.trim() || item.areaId?.trim() || null;
-  if (!resolvedAreaId && !hubLabel) return item;
-  const slug = resolvedAreaId
-    ? areaSlugById.get(resolvedAreaId) ?? item.areaSlug ?? null
-    : item.areaSlug ?? null;
-  const curatedAreaName = resolvedAreaId
-    ? areaNameById.get(resolvedAreaId) ?? item.areaName ?? null
+  const resolvedDestinationId =
+    resolveDestinationId(catalogDestinationRegion(region)) ?? resolveDestinationId(item) ?? null;
+  if (!resolvedDestinationId && !hubLabel) return item;
+  const slug = resolvedDestinationId
+    ? areaSlugById.get(resolvedDestinationId) ??
+      item.destinationSlug ??
+      item.areaSlug ??
+      null
+    : item.destinationSlug ?? item.areaSlug ?? null;
+  const curatedAreaName = resolvedDestinationId
+    ? areaNameById.get(resolvedDestinationId) ?? item.areaName ?? null
     : item.areaName ?? null;
   return {
     ...item,
-    areaId: resolvedAreaId,
+    destinationId: resolvedDestinationId,
+    destinationSlug: slug,
+    areaId: resolvedDestinationId,
     areaSlug: slug,
     areaName: curatedAreaName,
     areaLabel: hubLabel,
@@ -341,7 +357,10 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
           groupRegionLevels: activity.groupRegionLevels ?? null,
           ...catalogPostedAtField(event.publishedAt, event.createdAt),
         },
-        event.location?.areaId ?? activity.areaId,
+        {
+          destinationId: event.location?.destinationId ?? null,
+          areaId: event.location?.areaId ?? activity.areaId,
+        },
         areaSlugById,
         areaNameById,
         event.location?.areaLabel ?? null
@@ -384,7 +403,7 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
             geoRef: dto.geoRef ?? null,
             ...catalogUpdatedAtField(location.updatedAt, location.createdAt),
           },
-          dto.areaId,
+          { destinationId: dto.destinationId, areaId: dto.areaId },
           areaSlugById,
           areaNameById,
           catalogAreaLabel
@@ -444,7 +463,7 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
             },
             ...catalogUpdatedAtField(location.updatedAt, location.createdAt),
           },
-          dto.areaId,
+          { destinationId: dto.destinationId, areaId: dto.areaId },
           areaSlugById,
           areaNameById,
           catalogAreaLabel
@@ -502,7 +521,7 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
           },
           ...catalogUpdatedAtField(location.updatedAt, location.createdAt),
         },
-        dto.areaId,
+        { destinationId: dto.destinationId, areaId: dto.areaId },
         areaSlugById,
         areaNameById,
         catalogAreaLabel
@@ -547,7 +566,7 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
           },
           ...catalogUpdatedAtField(facility.updatedAt, facility.createdAt),
         },
-        facility.areaId,
+        { destinationId: facility.destinationId, areaId: facility.areaId },
         areaSlugById,
         areaNameById,
         catalogAreaLabel

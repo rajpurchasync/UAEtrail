@@ -5,6 +5,7 @@ import { findFacilityForDetailView, listFacilitiesPaged } from '../lib/facilitie
 import { getFacilityAmenityReportSummary } from '../lib/amenity-reports-store.js';
 import { findLocationForDetailView } from '../lib/activities-store.js';
 import { buildFacilityViewerAccess } from './facility-viewer-access.js';
+import { resolveStoredOnSiteId } from '../lib/facility-on-site-sync.js';
 
 const resolveParentPlaceName = async (input: {
   parentPlaceId: string | null | undefined;
@@ -56,7 +57,7 @@ export const loadPublicFacilityDetail = async (input: {
   const [amenitySummary, parentPlaceName] = await Promise.all([
     getFacilityAmenityReportSummary(input.facilityId),
     resolveParentPlaceName({
-      parentPlaceId: facility.parentPlaceId,
+      parentPlaceId: resolveStoredOnSiteId(facility),
       viewerUserId: input.viewerUserId,
       viewerRole: input.viewerRole ?? null,
     }),

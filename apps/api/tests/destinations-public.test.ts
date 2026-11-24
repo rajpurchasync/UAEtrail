@@ -15,6 +15,7 @@ describe('GET /api/destinations', () => {
   it('lists published curated destinations (same ids as areas)', async () => {
     const res = await request(app).get('/api/destinations');
     expect(res.status).toBe(200);
+    expect(res.headers.deprecation).toBeUndefined();
     const slugs = (res.body.data as Array<{ slug: string; id: string }>).map((row) => row.slug);
     expect(slugs).toContain(testAreas.hatta.slug);
     const hatta = (res.body.data as Array<{ id: string; slug: string }>).find(

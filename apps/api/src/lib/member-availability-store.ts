@@ -37,14 +37,16 @@ import {
 import { batchResolveMemberProfileRoleLabelsForDirectory } from '../services/member-status.js';
 import { resolveProfileViewerAccess } from '../services/profile-viewer-access.js';
 import { normalizeProfileVisibility } from './media-access.js';
+import { mirrorCatalogDestinationIds } from './destination-id-sync.js';
 
 type MongoMemberAvailability = {
   _id: string;
   userId: string;
   kinds: AvailabilityKind[];
   visibility: AvailabilityVisibility;
-  region: string | null;
+  destinationId?: string | null;
   areaId: string | null;
+  region: string | null;
   note: string | null;
   slots: MemberAvailabilitySlotDTO[];
   updatedAt: Date;
@@ -98,6 +100,7 @@ const mapDto = (doc: MongoMemberAvailability): MemberAvailabilityDTO => {
     kinds,
     visibility: normalizeAvailabilityVisibility(doc.visibility),
     region: doc.region,
+    destinationId: doc.destinationId ?? doc.areaId,
     areaId: doc.areaId,
     note: doc.note,
     slots,
@@ -166,13 +169,16 @@ export const mergeMemberAvailabilityFixedSlotsMigration = async (
   const kinds = deriveKindsFromHydratedSlots(slots);
   const visibility = input.visibility ?? existing?.visibility ?? 'public';
   const now = new Date();
+  const regionIds = mirrorCatalogDestinationIds(
+    input.areaId?.trim() || existing?.destinationId?.trim() || existing?.areaId?.trim() || null
+  );
   const doc: MongoMemberAvailability = {
     _id: userId,
     userId,
     kinds,
     visibility,
     region: input.region?.trim() || existing?.region?.trim() || null,
-    areaId: input.areaId?.trim() || existing?.areaId?.trim() || null,
+    ...regionIds,
     note: input.note?.trim() || existing?.note?.trim() || null,
     slots,
     updatedAt: now,
@@ -198,13 +204,16 @@ export const upsertMemberAvailability = async (
   }
   const now = new Date();
   const visibility = normalizeAvailabilityVisibility(input.visibility);
+  const regionIds = mirrorCatalogDestinationIds(
+    input.destinationId?.trim() || input.areaId?.trim() || null
+  );
   const doc: MongoMemberAvailability = {
     _id: userId,
     userId,
     kinds,
     visibility,
     region: input.region?.trim() || null,
-    areaId: input.areaId?.trim() || null,
+    ...regionIds,
     note: input.note?.trim() || null,
     slots,
     updatedAt: now,

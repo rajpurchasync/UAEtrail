@@ -97,6 +97,8 @@ export interface LocationDTO {
   areaId?: string | null;
   /** Leaf venue grouped under a destination hub place (`locations.id`). */
   parentPlaceId?: string | null;
+  /** Populated on place detail reads when destination resolves to a published hub. */
+  destinationSlug?: string | null;
   /** Populated on place detail reads when `areaId` resolves to a published area. */
   areaSlug?: string | null;
   areaName?: string | null;
@@ -2274,10 +2276,15 @@ export type { DestinationDTO, DestinationPublicDTO } from './destination.js';
 export {
   destinationHubPath,
   exploreDestinationQueryParam,
+  exploreMapItemMatchesAreaSlug,
+  exploreMapItemMatchesDestinationSlug,
+  filterExploreMapItemsByAreaSlug,
+  filterExploreMapItemsByDestinationSlug,
   resolveDestinationId,
   resolveExploreDestinationSlugQuery,
   type DestinationAssignableRow,
   type ExploreDestinationSlugQuery,
+  type ExploreMapDestinationLensItem,
 } from './destination.js';
 
 export {

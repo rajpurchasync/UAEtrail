@@ -99,5 +99,28 @@ describe('geographyTerminologyGuard (Place · Facility · Area)', () => {
     expect(read('packages/shared-types/src/destination.ts')).toMatch(/destinationHubPath/);
     expect(read('packages/shared-types/src/wire-lexicon.ts')).toMatch(/DESTINATIONS/);
   });
+
+  it('GEO-10: explore links emit destination query only (P10)', () => {
+    const routing = read('src/explore/routing.ts');
+    expect(routing).toMatch(/exploreDestinationQueryParam/);
+    expect(routing).not.toMatch(
+      /params\.set\(exploreAreaQueryParam,\s*options\.area/
+    );
+  });
+
+  it('GEO-09: legacy GET /api/areas deprecated toward /destinations (P9)', () => {
+    expect(read('apps/api/src/lib/route-destination-alias.ts')).toMatch(/attachLegacyAreasApiDeprecationHeaders/);
+    expect(read('apps/api/tests/destinations-http-canonical-guard.test.ts')).toMatch(
+      /destinations HTTP canonical guard/
+    );
+  });
+
+  it('GEO-08: destination hub SPA route + inbound rewrite (P7–P8)', () => {
+    expect(read('src/routing/AppRoutes.tsx')).toMatch(/\/destination\/:slug/);
+    expect(read('nginx/snippets/inbound-bookmark-redirects.conf')).toMatch(
+      /\/area\/\(\[\^\/\]\+\)/
+    );
+    expect(read('packages/shared-types/src/entity-path.ts')).toMatch(/STALE_AREA_HUB_PATH_RE/);
+  });
 });
 

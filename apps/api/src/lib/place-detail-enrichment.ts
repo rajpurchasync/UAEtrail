@@ -4,6 +4,7 @@ import { findAreaById } from './areas-store.js';
 import { locationHasRegistryCoverImage } from './catalog-registry-cover.js';
 import { LocationStatus } from '../domain/enums.js';
 import { toLocationDto } from './mappers.js';
+import { resolveStoredDestinationId } from './destination-id-sync.js';
 import { ApiError } from './api-error.js';
 
 export const assertRegistryCoverForPublicPlaceDetail = (location: Location): void => {
@@ -14,17 +15,18 @@ export const assertRegistryCoverForPublicPlaceDetail = (location: Location): voi
   }
 };
 
-/** Attach curated area hub slug/title for consumer links (`areaDetailPath`). */
+/** Attach curated Destination hub slug/title for consumer links (`destinationHubPath`). */
 export const enrichLocationDtoWithAreaHub = async (
   location: Location,
   dto: LocationDTO
 ): Promise<LocationDTO> => {
-  const areaId = location.areaId?.trim();
-  if (!areaId) return dto;
-  const area = await findAreaById(areaId);
+  const destinationId = resolveStoredDestinationId(location);
+  if (!destinationId) return dto;
+  const area = await findAreaById(destinationId);
   if (!area || area.status !== 'published') return dto;
   return {
     ...dto,
+    destinationSlug: area.slug,
     areaSlug: area.slug,
     areaName: area.name,
   };

@@ -23,11 +23,22 @@ export type AreaDetailPayload = {
   };
 };
 
+/** @deprecated Public reads — use `destinationsApi` (`GET /destinations`). Admin CRUD below stays on `/admin/areas`. */
 export const areasApi = {
   listPublishedAreas: () =>
-    apiRequest<{ data: AreaPublicDTO[] }>('/areas'),
-  getAreaBySlug: (slug: string) =>
-    apiRequest<{ data: AreaDetailPayload }>(`/areas/${encodeURIComponent(slug)}`),
+    apiRequest<{ data: AreaPublicDTO[] }>('/destinations'),
+  getAreaBySlug: async (slug: string) => {
+    const res = await apiRequest<{
+      data: { destination: AreaPublicDTO; counts: AreaDetailPayload['counts']; preview: AreaDetailPayload['preview'] };
+    }>(`/destinations/${encodeURIComponent(slug)}`);
+    return {
+      data: {
+        area: res.data.destination,
+        counts: res.data.counts,
+        preview: res.data.preview,
+      },
+    };
+  },
   listAdminAreas: () => apiRequest<{ data: AreaDTO[] }>('/admin/areas', { auth: true }),
   createAdminArea: (
     payload: Omit<AreaDTO, 'id' | 'createdAt' | 'updatedAt' | 'bounds'> & { bounds?: AreaBoundsRing }

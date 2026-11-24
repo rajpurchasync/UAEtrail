@@ -9,6 +9,7 @@ import { withCatalogLifecycleFields } from './catalog-lifecycle-map.js';
 import { emitGeoPinChange, facilityToCountedPin } from './geo-write.js';
 import { resolveGeoRefForPin } from './geo-resolve.js';
 import { mirrorCatalogDestinationIds } from './destination-id-sync.js';
+import { mirrorCatalogOnSiteIds, resolveStoredOnSiteId } from './facility-on-site-sync.js';
 
 export type MongoFacilityDoc = Omit<Facility, 'id'> & { _id: string };
 
@@ -17,9 +18,12 @@ export const facilitiesCollection = (): Collection<MongoFacilityDoc> =>
 
 export const mapMongoFacility = (doc: MongoFacilityDoc): Facility => {
   const { _id, ...rest } = doc;
+  const onSiteId = resolveStoredOnSiteId(rest);
   return {
     id: _id,
     ...rest,
+    onSiteId,
+    parentPlaceId: onSiteId,
     partnerReferralUrl: rest.partnerReferralUrl ?? null,
     areaLabel: rest.areaLabel ?? null,
     registeredByUserId: rest.registeredByUserId ?? rest.submittedById ?? null,
@@ -59,13 +63,21 @@ export const findFacilityForDetailView = async (
   return null;
 };
 
+const facilitySiteScopeFilter = (placeId: string) => ({
+  $or: [{ parentPlaceId: placeId }, { onSiteId: placeId }],
+});
+
+const facilityDestinationScopeFilter = (destinationId: string) => ({
+  $or: [{ areaId: destinationId }, { destinationId }],
+});
+
 export const listFacilitiesByParentPlaceId = async (
   parentPlaceId: string,
   take = 16
 ): Promise<Facility[]> => {
   const items = await facilitiesCollection()
     .find({
-      parentPlaceId,
+      ...facilitySiteScopeFilter(parentPlaceId.trim()),
       status: LocationStatus.ACTIVE,
       publicationStatus: 'listed',
       moderationStatus: 'approved',
@@ -92,8 +104,12 @@ export const listFacilitiesCatalog = async (input: {
     moderationStatus: 'approved',
     publicationStatus: 'listed',
   };
-  if (input.areaId?.trim()) filter.areaId = input.areaId.trim();
-  if (input.parentPlaceId?.trim()) filter.parentPlaceId = input.parentPlaceId.trim();
+  if (input.areaId?.trim()) {
+    Object.assign(filter, facilityDestinationScopeFilter(input.areaId.trim()));
+  }
+  if (input.parentPlaceId?.trim()) {
+    Object.assign(filter, facilitySiteScopeFilter(input.parentPlaceId.trim()));
+  }
   if (input.facilityKind) filter.facilityKind = input.facilityKind;
   if (input.countryCode?.trim()) filter.countryCode = input.countryCode.trim().toUpperCase();
 
@@ -165,7 +181,7 @@ export const createFacilityRecord = async (input: FacilityCreateInput): Promise<
     areaId: input.areaId,
     destinationId: regionIds.destinationId,
     facilityKind: input.facilityKind,
-    parentPlaceId: input.parentPlaceId ?? null,
+    ...mirrorCatalogOnSiteIds(input.parentPlaceId),
     description: input.description,
     latitude: input.latitude,
     longitude: input.longitude,
@@ -244,7 +260,7 @@ export const createAdminFacility = async (input: AdminFacilityCreateInput): Prom
     areaId: input.areaId,
     destinationId: adminRegionIds.destinationId,
     facilityKind: input.facilityKind,
-    parentPlaceId: input.parentPlaceId ?? null,
+    ...mirrorCatalogOnSiteIds(input.parentPlaceId),
     description: input.description,
     latitude: input.latitude ?? null,
     longitude: input.longitude ?? null,
@@ -299,8 +315,10 @@ export type AdminFacilityUpdateInput = Partial<
     | 'region'
     | 'areaLabel'
     | 'areaId'
+    | 'destinationId'
     | 'facilityKind'
     | 'parentPlaceId'
+    | 'onSiteId'
     | 'description'
     | 'latitude'
     | 'longitude'

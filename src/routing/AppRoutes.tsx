@@ -142,6 +142,14 @@ export const AppRoutes = ({ location }: { location: Location }) => (
     <Route path="/facility/:id" element={<FacilityDetailPage />} />
     <Route path="/venue/:id" element={<VenuePlaceDetailPage />} />
     <Route
+      path="/destination/:slug"
+      element={
+        <Suspense fallback={<PageLoader />}>
+          <AreaDetailPage />
+        </Suspense>
+      }
+    />
+    <Route
       path="/area/:slug"
       element={
         <Suspense fallback={<PageLoader />}>

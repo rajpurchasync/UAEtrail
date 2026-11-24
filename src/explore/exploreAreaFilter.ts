@@ -1,7 +1,17 @@
 import type { AreaPublicDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { exploreAreaQueryParam, exploreDestinationQueryParam } from '@uaetrail/shared-types';
+import {
+  exploreAreaQueryParam,
+  exploreDestinationQueryParam,
+  exploreMapItemMatchesAreaSlug,
+  filterExploreMapItemsByAreaSlug,
+} from '@uaetrail/shared-types';
 
-export { exploreAreaQueryParam, exploreDestinationQueryParam };
+export {
+  exploreAreaQueryParam,
+  exploreDestinationQueryParam,
+  exploreMapItemMatchesAreaSlug,
+  filterExploreMapItemsByAreaSlug,
+};
 
 export const parseExploreAreaSlug = (
   searchParams: Pick<URLSearchParams, 'get'>
@@ -9,25 +19,6 @@ export const parseExploreAreaSlug = (
   searchParams.get(exploreDestinationQueryParam)?.trim().toLowerCase() ||
   searchParams.get(exploreAreaQueryParam)?.trim().toLowerCase() ||
   null;
-
-export const exploreMapItemMatchesAreaSlug = (
-  item: ExploreMapItemDTO,
-  areaSlug: string
-): boolean => {
-  const normalized = areaSlug.trim().toLowerCase();
-  if (!normalized) return true;
-  if (item.areaSlug?.toLowerCase() === normalized) return true;
-  if (item.destinationSlug?.toLowerCase() === normalized) return true;
-  return false;
-};
-
-export const filterExploreMapItemsByAreaSlug = (
-  items: ExploreMapItemDTO[],
-  areaSlug: string | null | undefined
-): ExploreMapItemDTO[] => {
-  if (!areaSlug?.trim()) return items;
-  return items.filter((item) => exploreMapItemMatchesAreaSlug(item, areaSlug));
-};
 
 const normalizeAreaSearchQuery = (query: string): string => query.trim().toLowerCase();
 

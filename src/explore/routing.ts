@@ -1,5 +1,6 @@
 import {
   exploreAreaQueryParam,
+  exploreDestinationQueryParam,
   exploreAvailabilityMapItemPath,
   formatExploreEventDateLabel,
   resolveCrewExploreMapItemId as resolveCrewExploreMapItemIdFromWire,
@@ -324,7 +325,7 @@ export const explorePath = (options?: {
     params.set(EXPLORE_JOIN_INVITE_QUERY_KEY, '1');
   }
   if (options?.area?.trim()) {
-    params.set(exploreAreaQueryParam, options.area.trim().toLowerCase());
+    params.set(exploreDestinationQueryParam, options.area.trim().toLowerCase());
   }
   if (options?.pinKind) {
     const serializedPinKind = serializeExplorePinKindFilter(options.pinKind);

@@ -22,6 +22,13 @@ describe('notification bookmark migration (shared canonicalize)', () => {
     expect(canonicalizeInboundProductPath('/contributions')).toBe('/profile/submissions');
   });
 
+  it('rewrites legacy area hub to destination', () => {
+    expect(canonicalizeInboundProductPath('/area/hatta')).toBe('/destination/hatta');
+    expect(canonicalizeInboundProductPath('/area/jebel-jais?tab=goings-on')).toBe(
+      '/destination/jebel-jais?tab=goings-on'
+    );
+  });
+
   it('rewrites stale console and profile history bookmarks', () => {
     expect(canonicalizeInboundProductPath('/publishing/overview')).toBe('/operator/overview');
     expect(canonicalizeInboundProductPath('/profile/my-trips/map')).toBe('/profile/history/map');

@@ -43,3 +43,37 @@ export const resolveDestinationId = (
   const id = row?.destinationId?.trim() || row?.areaId?.trim();
   return id || null;
 };
+
+export type ExploreMapDestinationLensItem = {
+  areaSlug?: string | null;
+  destinationSlug?: string | null;
+  source?: string;
+  id?: string;
+};
+
+/** Explore map / list lens — `destinationSlug` or legacy `areaSlug` (MIG-DESTINATION-GEO P5). */
+export const exploreMapItemMatchesDestinationSlug = (
+  item: ExploreMapDestinationLensItem,
+  slug: string
+): boolean => {
+  const normalized = slug.trim().toLowerCase();
+  if (!normalized) return true;
+  if (item.destinationSlug?.toLowerCase() === normalized) return true;
+  if (item.areaSlug?.toLowerCase() === normalized) return true;
+  if (item.source === 'area' && item.id === `area:${normalized}`) return true;
+  return false;
+};
+
+export const filterExploreMapItemsByDestinationSlug = <T extends ExploreMapDestinationLensItem>(
+  items: T[],
+  slug: string | null | undefined
+): T[] => {
+  if (!slug?.trim()) return items;
+  return items.filter((item) => exploreMapItemMatchesDestinationSlug(item, slug));
+};
+
+/** @deprecated Prefer {@link filterExploreMapItemsByDestinationSlug}. */
+export const filterExploreMapItemsByAreaSlug = filterExploreMapItemsByDestinationSlug;
+
+/** @deprecated Prefer {@link exploreMapItemMatchesDestinationSlug}. */
+export const exploreMapItemMatchesAreaSlug = exploreMapItemMatchesDestinationSlug;

@@ -99,6 +99,7 @@ const joinPath = (pathname: string, search: string, hash: string) => `${pathname
 const STALE_TRAIL_PATH_RE = /^\/trail\/([^/?#]+)\/?$/;
 const STALE_CAMP_PATH_RE = /^\/camp\/([^/?#]+)\/?$/;
 const STALE_EVENT_VENUE_PATH_RE = /^\/event\/([^/?#]+)\/?$/;
+const STALE_AREA_HUB_PATH_RE = /^\/area\/([^/?#]+)\/?$/;
 
 /** `/trail/:id` · `/camp/:id` · `/event/:id` → canonical place/venue URLs (preserve query/hash). */
 export const rewriteStaleEntityInboundPath = (raw: string): string | null => {
@@ -125,6 +126,11 @@ export const rewriteStaleEntityInboundPath = (raw: string): string | null => {
   if (eventVenue) {
     const id = decodeURIComponent(eventVenue[1]);
     return joinPath(`${VENUE_PLACE_PATH_PREFIX}/${encodeURIComponent(id)}`, search, hash);
+  }
+  const areaHub = pathname.match(STALE_AREA_HUB_PATH_RE);
+  if (areaHub) {
+    const slug = decodeURIComponent(areaHub[1]);
+    return joinPath(`/destination/${encodeURIComponent(slug)}`, search, hash);
   }
   return null;
 };

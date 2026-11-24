@@ -1,5 +1,6 @@
 import type { FacilityDTO } from '@uaetrail/shared-types';
 import type { Facility } from '../domain/facility.js';
+import { resolveStoredOnSiteId } from './facility-on-site-sync.js';
 
 export const toFacilityDto = (facility: Facility): FacilityDTO => ({
   id: facility.id,
@@ -10,7 +11,8 @@ export const toFacilityDto = (facility: Facility): FacilityDTO => ({
   areaId: facility.areaId,
   geoRef: facility.geoRef ?? null,
   facilityKind: facility.facilityKind,
-  parentPlaceId: facility.parentPlaceId ?? null,
+  onSiteId: resolveStoredOnSiteId(facility),
+  parentPlaceId: resolveStoredOnSiteId(facility),
   venueId: facility.venueId ?? null,
   description: facility.description,
   latitude: facility.latitude,
