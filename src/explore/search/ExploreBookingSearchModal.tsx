@@ -64,7 +64,7 @@ export const ExploreBookingSearchModal = ({
       {searchBlocked ? (
         <ExploreGuestPreviewLimitPanel />
       ) : (
-        <div className="min-w-0 space-y-4">
+        <div className="min-w-0 space-y-3 pt-0.5">
           <ExploreSearchScopePills
             active={booking.searchScope}
             onChange={(mode) => booking.setSearchScope(mode)}

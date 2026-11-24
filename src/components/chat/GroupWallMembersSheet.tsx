@@ -1,5 +1,6 @@
 import { X } from 'lucide-react';
 import type { SocialGroupMemberView, SocialGroupView } from '../../api/types';
+import { CONSUMER_MODAL_CLOSE } from '../../config/consumerSurfaceTypography';
 import { CHAT_SPLIT_OVERLAY_INSET } from '../../config/consumerOverlayInset';
 import { SecureAvatar } from '../ui/SecureAvatar';
 
@@ -30,7 +31,7 @@ export const GroupWallMembersSheet = ({ open, onClose, group, members }: GroupWa
           <button
             type="button"
             onClick={onClose}
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-neutral-100 text-neutral-600 shadow-sm ring-1 ring-black/5 hover:bg-neutral-200"
+            className={CONSUMER_MODAL_CLOSE.button}
             aria-label="Close"
           >
             <X className="h-5 w-5" />

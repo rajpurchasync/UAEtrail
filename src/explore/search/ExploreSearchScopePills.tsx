@@ -1,25 +1,24 @@
-import type { ExploreSearchScope } from '../search/exploreSearchRouting';
+import { MapPin, Route, Users } from 'lucide-react';
+import type { ExploreSearchScope } from './exploreSearchRouting';
+import { EXPLORE_SEARCH_SCOPE_TAB, EXPLORE_SEARCH_SCOPE_TAB_ROWS } from './exploreSearchScopeTabs';
 
-const SCOPES: ReadonlyArray<{ mode: ExploreSearchScope; label: string }> = [
-  { mode: 'join', label: 'Trips' },
-  { mode: 'places', label: 'Places' },
-  { mode: 'crew', label: 'Go with' },
-];
+const SCOPE_ICONS = {
+  join: Route,
+  places: MapPin,
+  crew: Users,
+} as const satisfies Record<ExploreSearchScope, typeof Route>;
 
 type ExploreSearchScopePillsProps = {
   active: ExploreSearchScope;
   onChange: (mode: ExploreSearchScope) => void;
 };
 
-/** Booking-style product pills — scope before search commit. */
+/** Booking search — equal-width underlined tabs with icons (Trips · Places · Go with). */
 export const ExploreSearchScopePills = ({ active, onChange }: ExploreSearchScopePillsProps) => (
-  <div
-    className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-0.5 scrollbar-none"
-    role="tablist"
-    aria-label="Search scope"
-  >
-    {SCOPES.map(({ mode, label }) => {
+  <div className={EXPLORE_SEARCH_SCOPE_TAB.row} role="tablist" aria-label="Search scope">
+    {EXPLORE_SEARCH_SCOPE_TAB_ROWS.map(({ mode, label }) => {
       const selected = active === mode;
+      const Icon = SCOPE_ICONS[mode];
       return (
         <button
           key={mode}
@@ -27,14 +26,18 @@ export const ExploreSearchScopePills = ({ active, onChange }: ExploreSearchScope
           role="tab"
           aria-selected={selected}
           onClick={() => onChange(mode)}
-          className={[
-            'shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition',
-            selected
-              ? 'bg-emerald-600 text-white shadow-sm'
-              : 'bg-white text-neutral-800 ring-1 ring-neutral-200',
-          ].join(' ')}
+          className={`${EXPLORE_SEARCH_SCOPE_TAB.button} ${
+            selected ? EXPLORE_SEARCH_SCOPE_TAB.active : EXPLORE_SEARCH_SCOPE_TAB.inactive
+          }`}
         >
-          {label}
+          <Icon
+            className={`${EXPLORE_SEARCH_SCOPE_TAB.icon} ${
+              selected ? EXPLORE_SEARCH_SCOPE_TAB.activeIcon : EXPLORE_SEARCH_SCOPE_TAB.inactiveIcon
+            }`}
+            strokeWidth={selected ? 2.25 : 2}
+            aria-hidden
+          />
+          <span className={EXPLORE_SEARCH_SCOPE_TAB.label}>{label}</span>
         </button>
       );
     })}

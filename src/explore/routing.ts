@@ -17,6 +17,7 @@ import {
 import {
   parseExploreActivityDatePreset,
   serializeExploreActivityDatePreset,
+  serializeExploreMapActivityDatePreset,
 } from './exploreActivityDateFilter';
 import { serializeExplorePinKindFilter, type ExplorePinKindFilter } from './explorePinKindFilter';
 import {
@@ -176,9 +177,13 @@ export const exploreHostFromActivityReturnPath = (
 };
 
 export {
+  EXPLORE_MAP_ACTIVITY_DATE_PRESET_OPTIONS,
+  EXPLORE_MAP_DEFAULT_ACTIVITY_DATE_PRESET,
   parseExploreActivityDatePreset,
+  resolveExploreMapActivityDatePreset,
   exploreActivityDatePresetLabel,
   serializeExploreActivityDatePreset,
+  serializeExploreMapActivityDatePreset,
   type ExploreActivityDatePreset,
 } from './exploreActivityDateFilter';
 
@@ -295,7 +300,7 @@ export const explorePath = (options?: {
     params.delete('date');
   } else if (options?.date) {
     const preset = parseExploreActivityDatePreset(options.date);
-    const serialized = serializeExploreActivityDatePreset(preset);
+    const serialized = serializeExploreMapActivityDatePreset(preset);
     if (serialized) params.set('date', serialized);
     else params.delete('date');
   }

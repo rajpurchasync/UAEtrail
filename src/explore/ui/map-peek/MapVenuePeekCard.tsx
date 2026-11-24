@@ -34,7 +34,7 @@ export const MapVenuePeekCard = ({
 
   return (
     <div className={EXPLORE_PEEK.shell} data-map-venue-peek-card data-pin-summary="card">
-      <section className="relative shrink-0 px-4 pb-2 pt-2">
+      <section className="map-peek-summary-scroll relative min-h-0 flex-1 overflow-y-auto overscroll-contain scroll-touch px-4 pb-2 pt-2">
         {card.sharePath ? (
           <div className="absolute right-3 top-2 z-10">
             <ShareButton

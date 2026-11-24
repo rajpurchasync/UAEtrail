@@ -1,3 +1,5 @@
+import { CONSUMER_MODAL_CLOSE } from '../config/consumerSurfaceTypography';
+
 /** Centered explore / product dialogs (md+ sheets + map guest gate). */
 export const exploreCenteredSheetPopupPanelClass =
   'explore-desktop-popup-panel relative mx-auto my-auto flex w-full min-h-0 max-w-md flex-col overflow-hidden rounded-2xl bg-white shadow-2xl';
@@ -9,21 +11,17 @@ export const exploreCenteredSheetPopupBodyClass =
 export const exploreComposeMenuPopupBodyClass =
   'flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-6 pb-6 pt-3';
 
-/** Resting chip on white sheet panels — hover darkens one step. */
-export const EXPLORE_SHEET_CLOSE_BUTTON_SURFACE =
-  'rounded-full bg-neutral-100 text-neutral-600 shadow-sm ring-1 ring-black/5 hover:bg-neutral-200 hover:text-neutral-800';
+/** @deprecated Use {@link CONSUMER_MODAL_CLOSE.button}. */
+export const EXPLORE_SHEET_CLOSE_BUTTON_SURFACE = CONSUMER_MODAL_CLOSE.button;
 
-/** Close control — sits on the white panel surface (not the scrim). */
-export const exploreDesktopPopupCloseButtonClass =
-  `absolute right-2 top-2 z-20 p-2 ${EXPLORE_SHEET_CLOSE_BUTTON_SURFACE}`;
+/** Close control — panel top-right (search modal, guest gate, centered sheets). */
+export const exploreDesktopPopupCloseButtonClass = `${CONSUMER_MODAL_CLOSE.corner} ${CONSUMER_MODAL_CLOSE.button}`;
 
-/** Host · Seek · Add — icon-only close (no chip background). */
-export const exploreComposeFlowCloseIconClass =
-  'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-neutral-600 transition-colors hover:text-neutral-900 pointer-events-auto';
+/** Host · Seek · Add — same subtle dismiss everywhere. */
+export const exploreComposeFlowCloseIconClass = CONSUMER_MODAL_CLOSE.button;
 
 /** FAB compose picker — panel corner. */
-export const exploreComposeMenuCloseButtonClass =
-  `absolute right-3 top-3 z-20 ${exploreComposeFlowCloseIconClass}`;
+export const exploreComposeMenuCloseButtonClass = `${CONSUMER_MODAL_CLOSE.cornerLoose} ${CONSUMER_MODAL_CLOSE.button}`;
 
 export const EXPLORE_DESKTOP_POPUP = {
   scrimShell:

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { ViewerFix } from './placeDistance';
+import { readStoredViewerFix, StoredViewerFix, VIEWER_LOCATION_KEY, writeStoredViewerFix } from './viewerLocationStorage';
 
-const STORAGE_KEY = 'uaetrail:viewer-location';
 const FRESH_MS = 5 * 60 * 1000;
 
 type CachedFix = ViewerFix & { at: number };
@@ -14,9 +14,9 @@ export type BrowseViewerLocationState = {
 
 const readCache = (): CachedFix | null => {
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY);
+    const raw = sessionStorage.getItem(VIEWER_LOCATION_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as CachedFix;
+    const parsed = JSON.parse(raw) as StoredViewerFix;
     if (!Number.isFinite(parsed.lat) || !Number.isFinite(parsed.lng) || !Number.isFinite(parsed.at)) return null;
     return parsed;
   } catch {
@@ -57,11 +57,7 @@ export const useBrowseViewerLocation = (enabled: boolean): BrowseViewerLocationS
           lng: position.coords.longitude,
           at: Date.now(),
         };
-        try {
-          sessionStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-        } catch {
-          /* private mode */
-        }
+        writeStoredViewerFix(next.lat, next.lng);
         setFix({ lat: next.lat, lng: next.lng });
         setPending(false);
       },

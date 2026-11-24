@@ -2,11 +2,14 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  EXPLORE_SEARCH_COMPOSE_PARAM,
   EXPLORE_SEARCH_RESULTS_PATH,
+  exploreSearchHomePath,
   exploreSearchListPathFromMapSearch,
   exploreSearchMapViewPathFromListSearch,
   exploreSearchResultsPath,
   exploreInboundHubRedirectTarget,
+  isExploreSearchHomeState,
 } from './exploreSearchRouting';
 import { resolveMobileBottomTab } from '../../config/mobileFiveTabNav';
 
@@ -45,21 +48,43 @@ describe('explore search results', () => {
     expect(exploreInboundHubRedirectTarget('/explore/hub/map', '?searchScope=places&q=camp')).toContain(
       `${EXPLORE_SEARCH_RESULTS_PATH}?`
     );
-    expect(exploreInboundHubRedirectTarget('/explore/hub/home', '')).toContain('search=1');
+    expect(exploreInboundHubRedirectTarget('/explore/hub/home', '')).toContain(EXPLORE_SEARCH_COMPOSE_PARAM);
+    expect(exploreInboundHubRedirectTarget('/explore/hub/home', '')).toContain(EXPLORE_SEARCH_RESULTS_PATH);
   });
 
-  it('uses booking search modal on map and list', () => {
-    expect(read('src/explore/shell/ExploreMapShell.tsx')).toMatch(/ExploreBookingSearchModal/);
-    expect(read('src/explore/shell/ExploreMapShell.tsx')).toMatch(/overlayContained/);
-    expect(read('src/explore/ui/ExploreMapStage.tsx')).toMatch(/mapSearchOverlay[\s\S]*pointer-events-auto/);
-    expect(read('src/list/BrowseListPage.tsx')).toMatch(/ExploreBookingSearchModalHost/);
-    expect(read('src/explore/search/ExploreBookingSearchModal.tsx')).toMatch(/ExploreSearchScopePills/);
-    expect(read('src/explore/search/ExploreBookingSearchModal.tsx')).toMatch(/ExploreSearchBookingHero/);
-    expect(read('src/explore/search/ExploreBookingSearchModal.tsx')).toMatch(/ExploreBookingRecentSearches/);
-    expect(read('src/explore/search/ExploreBookingSearchModal.tsx')).toMatch(/EXPLORE_SEARCH_MAP_MATCHES_TITLE/);
-    expect(read('src/explore/search/ExploreBookingSearchModal.tsx')).toMatch(/ExploreBookingSearchMapMatches/);
+  it('uses full-page search home on /explore/search', () => {
+    expect(read('src/explore/search/ExploreSearchResultsPage.tsx')).toMatch(/ExploreSearchPageLayout/);
+    expect(read('src/explore/search/ExploreSearchResultsPage.tsx')).toMatch(/ExploreSearchHome/);
+    expect(read('src/explore/search/ExploreSearchHome.tsx')).toMatch(/ExploreSearchRecommendedSection/);
+    expect(read('src/explore/search/ExploreSearchRecommendedSection.tsx')).toMatch(
+      /ExploreSearchRecommendedScopePills/
+    );
+    expect(read('src/explore/search/ExploreSearchRecommendedSection.tsx')).toMatch(
+      /useExploreSearchRecommendedCrew/
+    );
+    expect(read('src/explore/search/ExploreSearchRecommendedSection.tsx')).toMatch(/CrewBrowseMemberRow/);
+    expect(read('src/explore/search/ExploreSearchHome.tsx')).toMatch(/exploreSearchComposeFeedMode/);
+    expect(read('src/explore/search/ExploreSearchRecommendedScopePills.tsx')).toMatch(
+      /EXPLORE_SEARCH_SECTION_GROUPS/
+    );
+    expect(read('src/explore/search/ExploreSearchRecommendedScopePills.tsx')).toMatch(/onChange\('groups'\)/);
+    expect(read('src/explore/search/exploreSearchRouting.ts')).toMatch(/'groups'/);
+    expect(read('src/explore/search/ExploreSearchRecommendedSection.tsx')).not.toMatch(
+      /categories:\s*\['people'\]/
+    );
+    expect(read('src/explore/search/ExploreSearchResults.tsx')).toMatch(/useExploreSearchRecommendedCrew/);
+    expect(read('src/explore/search/ExploreSearchHome.tsx')).toMatch(/ExploreSearchBookingHero/);
+    expect(read('src/explore/search/ExploreSearchHome.tsx')).toMatch(/ExploreBookingRecentSearches/);
+    expect(read('src/explore/search/ExploreSearchHome.tsx')).toMatch(/ExploreSearchRecommendedSection/);
+    expect(read('src/explore/shell/ExploreMapShell.tsx')).not.toMatch(/ExploreBookingSearchModal/);
+    expect(read('src/list/BrowseListPage.tsx')).toMatch(/ExploreSearchInboundRedirectHost/);
     expect(read('src/explore/search/ExploreBookingSearchMapMatches.tsx')).toMatch(/EXPLORE_SEARCH_SECTION_TRIPS/);
     expect(read('src/explore/search/ExploreBookingSearchMapMatches.tsx')).toMatch(/EXPLORE_SEARCH_SECTION_CREW/);
+    expect(isExploreSearchHomeState(EXPLORE_SEARCH_RESULTS_PATH, new URLSearchParams(`${EXPLORE_SEARCH_COMPOSE_PARAM}=1`))).toBe(
+      true
+    );
+    expect(isExploreSearchHomeState(EXPLORE_SEARCH_RESULTS_PATH, new URLSearchParams('q=hike'))).toBe(false);
+    expect(exploreSearchHomePath()).toContain(EXPLORE_SEARCH_COMPOSE_PARAM);
   });
 
   it('embeds unified list on search results', () => {

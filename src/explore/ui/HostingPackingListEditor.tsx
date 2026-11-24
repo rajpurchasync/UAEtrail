@@ -342,7 +342,7 @@ export const HostingPackingListEditor = ({
             {drag.item.emoji}
           </span>
           <span className="min-w-0 flex-1 text-sm font-semibold text-neutral-900">{drag.item.label}</span>
-          <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-800">
+          <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-800">
             {drag.dropRequired ? 'Must' : 'Optional'}
           </span>
         </div>

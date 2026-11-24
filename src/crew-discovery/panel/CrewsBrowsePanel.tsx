@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
+import { CONSUMER_MODAL_CLOSE } from '../../config/consumerSurfaceTypography';
 import { EXPLORE_SHEET, EXPLORE_TYPE } from '../../config/exploreTheme';
 import { EXPLORE_DESKTOP_BROWSE_RAIL_SCROLL_CLASS } from '../../explore/ui/exploreDesktopBrowseRailChrome';
 import type { CrewBrowseLane, CrewPeopleFacet } from '../crewBrowseState';
@@ -117,16 +118,10 @@ export const CrewsBrowsePanel = ({
     <button
       type="button"
       onClick={onClose}
-      className={
-        showMobileDismiss && !isDesktop
-          ? 'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-neutral-800 active:bg-neutral-100'
-          : isDesktop
-            ? 'rounded-full bg-neutral-100 p-2 text-neutral-600 shadow-sm ring-1 ring-black/5 hover:bg-neutral-200 hover:text-neutral-800'
-            : 'inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
-      }
+      className={CONSUMER_MODAL_CLOSE.button}
       aria-label={closePanelAriaLabel}
     >
-      <X className={showMobileDismiss && !isDesktop ? 'h-5 w-5' : 'h-4 w-4'} aria-hidden />
+      <X className={CONSUMER_MODAL_CLOSE.icon} aria-hidden />
     </button>
   );
 

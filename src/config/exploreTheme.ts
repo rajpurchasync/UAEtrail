@@ -463,7 +463,7 @@ export const EXPLORE_PEEK = {
   scrim: 'map-peek-bubble-scrim pointer-events-auto absolute inset-0',
   inner: 'map-peek-bubble pointer-events-auto absolute flex w-[min(100%-1.5rem,23.75rem)] flex-col overflow-hidden',
   shell:
-    'map-peek-bubble-card flex shrink-0 flex-col overflow-hidden rounded-[1.35rem] bg-white shadow-[0_12px_40px_rgba(15,23,42,.22)] ring-1 ring-black/8',
+    'map-peek-bubble-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.35rem] bg-white shadow-[0_12px_40px_rgba(15,23,42,.22)] ring-1 ring-black/8',
   /** Photo/banner chrome — share, close, wishlist, type emoji. */
   mediaIconBtn:
     'inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm hover:bg-black/50 transition-colors',
@@ -477,23 +477,23 @@ export const EXPLORE_PEEK = {
   tripShareBtn:
     'inline-flex h-9 w-9 items-center justify-center text-neutral-600 hover:text-neutral-900',
   venueTypePill:
-    'inline-flex rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-emerald-900 ring-1 ring-emerald-100',
+    'inline-flex rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-emerald-900 ring-1 ring-emerald-100',
   venueTitle: 'text-base font-bold leading-snug tracking-tight text-neutral-950 line-clamp-2',
   venueMeta: 'text-[11px] font-medium leading-snug text-neutral-600 line-clamp-2',
   venueThumbBadge:
-    'absolute bottom-1 left-1 max-w-[calc(100%-0.5rem)] truncate rounded-md bg-black/55 px-1.5 py-0.5 text-[9px] font-semibold text-white',
+    'absolute bottom-1 left-1 max-w-[calc(100%-0.5rem)] truncate rounded-md bg-black/55 px-1.5 py-0.5 text-[11px] font-semibold text-white',
   venueAmenityChip:
-    'inline-flex max-w-full items-center rounded-full px-2 py-0.5 text-[10px] font-semibold leading-tight',
+    'inline-flex max-w-full items-center rounded-full px-2 py-0.5 text-[11px] font-semibold leading-tight',
   tripTitle: 'text-lg font-bold leading-snug tracking-tight text-neutral-950',
   tripHostName: 'text-sm font-semibold text-neutral-950',
   tripSchedule: 'text-xs font-medium text-neutral-600',
   tripMetaRow: 'flex items-center gap-1.5 text-xs font-medium leading-snug text-neutral-700',
   tripEssentials: 'text-xs font-semibold text-neutral-900',
   tripPolicyChip:
-    'inline-flex max-w-full items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-tight',
+    'inline-flex max-w-full items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold leading-tight',
   tripCapacity: 'flex items-center gap-1.5 text-xs font-medium text-neutral-700',
   tripStatChip:
-    'inline-flex max-w-full items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-tight',
+    'inline-flex max-w-full items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold leading-tight',
   tripSituationalBtn:
     'flex w-full min-h-[2.75rem] items-center gap-2 rounded-2xl bg-teal-50 px-3 py-2 text-left text-[11px] font-semibold text-teal-900 ring-1 ring-teal-100 hover:bg-teal-100/80',
 } as const;

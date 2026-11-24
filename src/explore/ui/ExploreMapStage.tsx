@@ -239,14 +239,14 @@ export const ExploreMapStage = ({
   onOpenMapRecommendation,
 }: ExploreMapStageProps) => {
   const [searchParams] = useSearchParams();
-  const [recommendSnap, setRecommendSnap] = useState<ExploreMapRecommendedSheetSnap>('peek');
+  const [recommendSnap, setRecommendSnap] = useState<ExploreMapRecommendedSheetSnap>('half');
   const [guestPreviewDismissed, setGuestPreviewDismissed] = useState(() =>
     readExploreGuestMapPreviewDismissed()
   );
 
   useEffect(() => {
     if (mapRecommendationItems.length > 0) {
-      setRecommendSnap((prev) => (prev === 'hidden' ? prev : 'peek'));
+      setRecommendSnap((prev) => (prev === 'hidden' ? prev : 'half'));
     }
   }, [mapRecommendationItems.length]);
   const [pinAnchor, setPinAnchor] = useState<MapPeekPinAnchor | null>(null);
@@ -419,7 +419,6 @@ export const ExploreMapStage = ({
       {showMapRecommendations ? (
         <ExploreMapRecommendedSheet
           items={mapRecommendationItems}
-          signedIn={Boolean(user)}
           snap={recommendSnap}
           onSnapChange={setRecommendSnap}
           onOpenItem={onOpenMapRecommendation}

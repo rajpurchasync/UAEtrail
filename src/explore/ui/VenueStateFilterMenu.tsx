@@ -3,6 +3,7 @@ import { SlidersHorizontal } from 'lucide-react';
 import { useVenueStateFilterOptions } from '../../config/useVenueStateFilterOptions';
 import { FilterIconButton } from '../../components/mobile/FilterIconButton';
 import { EXPLORE_BROWSE_SHEET_CONTROL } from '../../config/exploreTheme';
+import { CONSUMER_SURFACE_TYPE } from '../../config/consumerSurfaceTypography';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 
 interface VenueStateFilterMenuProps {
@@ -41,7 +42,7 @@ export const VenueStateFilterMenu = ({
       <SlidersHorizontal className="h-5 w-5 shrink-0" strokeWidth={2.25} aria-hidden />
       {active ? (
         <span
-          className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-600 px-1 text-[10px] font-semibold text-white"
+          className={`absolute -right-0.5 -top-0.5 h-4 ${CONSUMER_SURFACE_TYPE.badgeCount}`}
           aria-hidden
         >
           {selected.length}

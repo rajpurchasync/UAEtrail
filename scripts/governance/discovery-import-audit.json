@@ -1,7 +1,7 @@
 {
   "version": 1,
   "dmcpPhase": 3,
-  "generated": "2026-11-23",
+  "generated": "2026-11-24",
   "description": "Cross-import counts from list/discovery/* into sibling folders. GW-7: list imports explore modules directly (no list facade).",
   "sourceRoots": [
     "src/list",
@@ -42,7 +42,7 @@
     },
     "src/crew-discovery": {
       "lib": 6,
-      "..": 19,
+      "..": 20,
       "discover": 1,
       "config": 1,
       "content": 1,
@@ -54,7 +54,7 @@
     }
   },
   "byTarget": {
-    "..": 265,
+    "..": 266,
     "browse": 83,
     "crews": 9,
     "components": 5,

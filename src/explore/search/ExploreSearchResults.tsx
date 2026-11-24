@@ -15,8 +15,11 @@ import {
 import { exploreSearchWhereBrowseQuery } from './exploreSearchWhereQuery';
 import { parseExploreSearchBrowseState, type ExploreSearchBrowseState } from './exploreSearchRouting';
 import { ExploreSearchResultsChrome } from './ExploreSearchResultsChrome';
-import { exploreItemMatchesQuery } from '../exploreItemSearch';
-import { mapItemMatchesSearchScope } from '../exploreBrowseTaxonomy';
+import { useAuth } from '../../context/AuthContext';
+import { useExploreSearchRecommendedCrew } from './useExploreSearchRecommendedCrew';
+import { useCommunityDiscoverList } from '@/crew-discovery/hooks/useCommunityDiscoverList';
+import { countExploreSearchCommunityGroups, ExploreSearchCommunityGroupsPane } from './ExploreSearchCommunityGroupsPane';
+import { FEATURE_FLAGS } from '../../config/platform';
 
 type ExploreSearchResultsProps = {
   state?: ExploreSearchBrowseState;
@@ -39,6 +42,7 @@ const catalogFilters = (): BrowseListFilterState => ({
 });
 
 export const ExploreSearchResults = ({ state: stateProp }: ExploreSearchResultsProps) => {
+  const { user } = useAuth();
   const [searchParams] = useProductSearchParams();
   const searchState = useMemo(
     () => stateProp ?? parseExploreSearchBrowseState(searchParams),
@@ -99,34 +103,51 @@ export const ExploreSearchResults = ({ state: stateProp }: ExploreSearchResultsP
     [geoPath, hubVenueRegions, items, placeScoped, publishedAreas]
   );
 
-  const crewCount = useMemo(() => {
-    const q = exploreSearchWhereBrowseQuery(browseQuery);
-    if (!q.trim()) return 0;
-    let count = 0;
-    for (const item of items) {
-      if (!exploreItemMatchesQuery(item, q)) continue;
-      if (mapItemMatchesSearchScope(item, 'people')) count += 1;
-    }
-    return count;
-  }, [browseQuery, items]);
+  const crewRecommendations = useExploreSearchRecommendedCrew({
+    enabled: searchState.searchScope === 'crew',
+    draftQuery: searchState.query,
+    detectedWhere: searchState.query,
+    activityDatePreset: searchState.activityDatePreset,
+    venueRegions: hubVenueRegions,
+    limit: 48,
+  });
+
+  const crewCount =
+    searchState.searchScope === 'crew' && user ? crewRecommendations.totalCount : 0;
+
+  const communitiesQuery = useCommunityDiscoverList(FEATURE_FLAGS.communityDiscover);
+  const groupsCount = useMemo(() => {
+    if (!FEATURE_FLAGS.communityDiscover) return 0;
+    return countExploreSearchCommunityGroups(
+      communitiesQuery.data ?? [],
+      exploreSearchWhereBrowseQuery(searchState.query),
+      hubVenueRegions
+    );
+  }, [communitiesQuery.data, hubVenueRegions, searchState.query]);
 
   return (
     <div
       data-explore-search-layout="unified"
-      className="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
+      className="flex min-h-0 min-w-0 flex-1 flex-col gap-3 overflow-hidden"
     >
-      <div className="mx-auto w-full max-w-lg shrink-0 px-4 pb-2 pt-0 md:px-5">
-        <ExploreSearchResultsChrome
-          state={searchState}
-          tripCount={tripListingCount}
-          placeCount={placeListingCount}
-          loading={isLoading}
-          crewCount={crewCount}
-        />
-      </div>
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-4 pb-nav-safe md:px-5">
-        <ListDiscoveryExperience surface="exploreSearch" />
-      </div>
+      <ExploreSearchResultsChrome
+        state={searchState}
+        tripCount={tripListingCount}
+        placeCount={placeListingCount}
+        loading={isLoading}
+        crewCount={crewCount}
+        groupsCount={groupsCount}
+        groupsLoading={communitiesQuery.isPending}
+      />
+      {searchState.searchScope === 'groups' ? (
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-4 pb-4">
+          <ExploreSearchCommunityGroupsPane query={searchState.query} venueRegions={hubVenueRegions} />
+        </div>
+      ) : (
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+          <ListDiscoveryExperience surface="exploreSearch" />
+        </div>
+      )}
     </div>
   );
 };

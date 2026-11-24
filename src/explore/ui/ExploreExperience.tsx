@@ -58,10 +58,7 @@ export const ExploreExperience = () => {
               handlePrimaryFabTap={model.handlePrimaryFabTap}
               handleOpenExploreItem={model.handleOpenExploreItem}
               searchScopeCounts={model.searchScopeCounts}
-              setExploreSearchModalOpen={model.setExploreSearchModalOpen}
-              exploreSearchModalOpen={model.exploreSearchModalOpen}
-              closeExploreSearchModal={model.closeExploreSearchModal}
-              handleExploreSearchCommit={model.handleExploreSearchCommit}
+              openExploreSearch={model.openExploreSearch}
               publishedAreas={model.publishedAreas}
               handlePickExploreArea={model.handlePickExploreArea}
               onVisibleMapBoundsChange={model.onVisibleMapBoundsChange}

@@ -13,6 +13,7 @@ import { MobileBackButton } from '../../components/mobile/MobileBackButton';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { useSheetDragDismiss } from '../../hooks/useSheetDragDismiss';
 import { useId, useRef } from 'react';
+import { CONSUMER_MODAL_CLOSE } from '../../config/consumerSurfaceTypography';
 
 type ExploreMobileBrowseOverlayProps = {
   open: boolean;
@@ -120,10 +121,10 @@ export const ExploreMobileBrowseOverlay = ({
             <button
               type="button"
               onClick={onClose}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-700 shadow-sm ring-1 ring-black/5 hover:bg-neutral-200"
+              className={CONSUMER_MODAL_CLOSE.button}
               aria-label="Close"
             >
-              <X className="h-5 w-5" aria-hidden />
+              <X className={CONSUMER_MODAL_CLOSE.icon} aria-hidden />
             </button>
           </div>
         ) : null}

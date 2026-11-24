@@ -15,7 +15,6 @@ export const useExploreMapInteractionHandlers = (
   queryClient: QueryClient,
   selectionItems: ExploreMapItemDTO[],
   selection: Selection,
-  closeExploreSearchModal: () => void,
   navigate: NavigateFunction
 ) => {
   const reloadMap = useCallback(() => {
@@ -33,10 +32,9 @@ export const useExploreMapInteractionHandlers = (
 
   const handlePickExploreArea = useCallback(
     (slug: string) => {
-      closeExploreSearchModal();
       navigate(areaDetailPath(slug));
     },
-    [closeExploreSearchModal, navigate]
+    [navigate]
   );
 
   return { reloadMap, handleMapPinClick, handlePickExploreArea };

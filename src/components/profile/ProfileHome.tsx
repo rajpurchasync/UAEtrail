@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import type { ProfileCompletionItem } from '../../utils/profileCompletion';
 import type { ProfileHubStat } from './ProfileHome.types';
 import type { ProfileHubEditFocus } from './ProfileHubDetailsCard';
@@ -7,7 +6,6 @@ import { ProfileHubDetailsCard } from './ProfileHubDetailsCard';
 import { PRO_MEMBERSHIP_PATH } from '../../config/routingCatalog';
 import { ProfileHubNavMenu } from './ProfileHubNavMenu';
 import { ProfilePlanGoalsTeaser } from './ProfilePlanGoalsTeaser';
-import { ProfileQuickLauncher, buildProfileQuickLauncherItems } from './ProfileQuickLauncher';
 
 /** Profile hub links operators to Pro onboarding (not legacy host overview). */
 const PROFILE_PRO_MEMBERSHIP_PATH = PRO_MEMBERSHIP_PATH;
@@ -37,7 +35,6 @@ type ProfileHomeProps = {
   hubStats: ProfileHubStat[];
   goalsCount?: number;
   badgesEarnedCount?: number;
-  showHostingShortcut?: boolean;
   onSignOut: () => void;
 };
 
@@ -64,18 +61,9 @@ export const ProfileHome = ({
   hubStats,
   goalsCount = 0,
   badgesEarnedCount = 0,
-  showHostingShortcut = false,
   onSignOut,
 }: ProfileHomeProps) => {
   void PROFILE_PRO_MEMBERSHIP_PATH;
-  const launcherItems = useMemo(
-    () =>
-      buildProfileQuickLauncherItems({
-        badgesEarnedCount,
-        showHosting: showHostingShortcut,
-      }),
-    [badgesEarnedCount, showHostingShortcut]
-  );
   const showComplete =
     completionPercent < 100 && completionItems.some((item) => !item.done);
   const nextMissing = completionItems.find((item) => !item.done);
@@ -99,8 +87,6 @@ export const ProfileHome = ({
         cityLabel={cityLabel}
         stats={hubStats}
       />
-
-      <ProfileQuickLauncher items={launcherItems} />
 
       <ProfilePlanGoalsTeaser goalsCount={goalsCount} />
 

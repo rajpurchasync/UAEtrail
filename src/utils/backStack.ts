@@ -4,10 +4,12 @@ import {
   APP_SETTINGS_SAFETY_PATH,
   MY_CREWS_PATH,
   GROUPS_PATH,
-  INBOUND_APP_SETTINGS_PATH,
-  INBOUND_APP_SETTINGS_SAFETY_PATH,
   isNotificationHubPath,
 } from '../config/surfacePaths';
+import {
+  INBOUND_APP_SETTINGS_PATH,
+  INBOUND_APP_SETTINGS_SAFETY_PATH,
+} from '../config/inboundBookmarkPaths';
 import { armViewReturn, peekViewReturnSnapshot, viewReturnPathKey } from './viewReturnMemory';
 
 /**

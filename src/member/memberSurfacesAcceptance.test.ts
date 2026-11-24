@@ -293,10 +293,12 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(sheet).toContain('planHostedActivityManagePath');
   });
 
-  it('G-profile: badges and submissions live on Profile launcher (not Plan)', () => {
-    const launcher = read('src/components/profile/ProfileQuickLauncher.tsx');
-    expect(launcher).toContain('PROFILE_BADGES_PATH');
-    expect(launcher).toContain('PROFILE_SUBMISSIONS_PATH');
+  it('G-profile: badges and submissions live on Profile hub nav (not Plan)', () => {
+    const nav = read('src/components/profile/ProfileHubNavMenu.tsx');
+    expect(nav).toContain('PROFILE_BADGES_PATH');
+    expect(nav).toContain('PROFILE_SUBMISSIONS_PATH');
+    const home = read('src/components/profile/ProfileHome.tsx');
+    expect(home).not.toContain('ProfileQuickLauncher');
     const submissions = read('src/pages/Submissions.tsx');
     expect(submissions).toContain('PROFILE_REVIEWS_PATH');
     const plan = read('src/plan/PlanPage.tsx');
@@ -305,13 +307,12 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('G-profile: hub shortcuts use profile/plan paths (not host shell)', () => {
-    const launcher = read('src/components/profile/ProfileQuickLauncher.tsx');
-    expect(launcher).toContain('MY_CREWS_PATH');
-    expect(launcher).toContain('PROFILE_HISTORY_PATH');
-    expect(launcher).toContain('APP_SETTINGS_PATH');
-    expect(launcher).not.toMatch(/\/profile\/settings/);
-    expect(launcher).toContain('planHostedSchedulePath()');
-    expect(launcher).not.toMatch(/HOST_OVERVIEW_PATH/);
+    const nav = read('src/components/profile/ProfileHubNavMenu.tsx');
+    expect(nav).toContain('PROFILE_HISTORY_PATH');
+    expect(nav).toContain('APP_SETTINGS_PATH');
+    expect(nav).not.toMatch(/\/profile\/settings/);
+    expect(nav).not.toMatch(/HOST_OVERVIEW_PATH/);
+    expect(nav).not.toContain('MY_CREWS_PATH');
     const settings = read('src/components/profile/AppSettingsBody.tsx');
     expect(settings).toMatch(/visibility/i);
   });
@@ -328,9 +329,10 @@ describe('member surfaces §11 acceptance (automated)', () => {
     const hub = read('src/components/profile/ProfileHome.tsx');
     expect(hub).toContain('PRO_MEMBERSHIP_PATH');
     expect(hub).not.toMatch(/\/host\/overview/);
-    const launcher = read('src/components/profile/ProfileQuickLauncher.tsx');
-    expect(launcher).toContain('planHostedSchedulePath()');
-    expect(launcher).not.toMatch(/\/host\//);
+    expect(hub).not.toContain('ProfileQuickLauncher');
+    const nav = read('src/components/profile/ProfileHubNavMenu.tsx');
+    expect(nav).toContain('PRO_MEMBERSHIP_PATH');
+    expect(nav).not.toMatch(/\/host\//);
   });
 
   it('G-arch: org public profile owner CTAs avoid consumer /host/* routes', () => {

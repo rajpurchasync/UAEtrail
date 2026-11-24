@@ -21,12 +21,16 @@ export const EXPLORE_SEARCH_SCOPE_PARAM = 'searchScope';
 /** Inbound bookmark query — old `/explore/hub?hubMode=` links; prefer {@link EXPLORE_SEARCH_SCOPE_PARAM}. */
 export const INBOUND_HUB_SCOPE_PARAM = 'hubMode';
 export const EXPLORE_SEARCH_VIEW_PARAM = 'view';
+/**
+ * Search home flag on `/explore/search` — not {@link COMPOSE_QUERY_KEY} (`?compose=menu` opens create FAB).
+ */
+export const EXPLORE_SEARCH_COMPOSE_PARAM = 'searchHome';
 
 export type ExploreSearchView = 'list' | 'map';
 
-export type ExploreSearchScope = 'join' | 'places' | 'crew';
+export type ExploreSearchScope = 'join' | 'places' | 'crew' | 'groups';
 
-const SEARCH_SCOPES = new Set<ExploreSearchScope>(['join', 'places', 'crew']);
+const SEARCH_SCOPES = new Set<ExploreSearchScope>(['join', 'places', 'crew', 'groups']);
 
 export const parseExploreSearchScope = (raw: string | null): ExploreSearchScope => {
   if (raw === 'deals') return 'join';
@@ -46,6 +50,8 @@ export const exploreSearchListCatForScope = (scope: ExploreSearchScope): BrowseM
       return 'venues';
     case 'crew':
       return 'people';
+    case 'groups':
+      return 'activities';
     case 'join':
     default:
       return 'activities';
@@ -57,6 +63,8 @@ export const exploreSearchScopeForListCat = (listCat: BrowseMainCategoryKey | nu
   if (listCat === 'people') return 'crew';
   return 'join';
 };
+
+export const exploreSearchScopeIsGroups = (scope: ExploreSearchScope): boolean => scope === 'groups';
 
 export type ExploreSearchBrowseState = {
   searchScope: ExploreSearchScope;
@@ -105,6 +113,8 @@ const normalizeSearchPathState = (options?: ExploreSearchPathOptions): ExploreSe
 };
 
 const appendSearchBrowseParams = (params: URLSearchParams, state: ExploreSearchBrowseState) => {
+  params.delete(EXPLORE_SEARCH_COMPOSE_PARAM);
+  params.delete('compose');
   if (state.searchScope !== 'join') {
     params.set(EXPLORE_SEARCH_SCOPE_PARAM, state.searchScope);
   } else {
@@ -127,6 +137,46 @@ const appendSearchBrowseParams = (params: URLSearchParams, state: ExploreSearchB
   else params.delete(EXPLORE_SEARCH_VIEW_PARAM);
 };
 
+/** Search home — scope tabs + where/when before committing `q`. */
+export const isExploreSearchHomeState = (pathname: string, params: URLSearchParams): boolean => {
+  if (pathname !== EXPLORE_SEARCH_RESULTS_PATH) return false;
+  if (params.get(EXPLORE_SEARCH_VIEW_PARAM) === 'map') return false;
+  if (params.get(EXPLORE_SEARCH_COMPOSE_PARAM) === '1') return true;
+  return !params.has('q');
+};
+
+const appendSearchHomeBrowseParams = (params: URLSearchParams, state: ExploreSearchBrowseState) => {
+  params.set(EXPLORE_SEARCH_COMPOSE_PARAM, '1');
+  params.delete('compose');
+  params.delete(EXPLORE_SEARCH_VIEW_PARAM);
+  params.delete(INBOUND_HUB_SCOPE_PARAM);
+  if (state.searchScope !== 'join') {
+    params.set(EXPLORE_SEARCH_SCOPE_PARAM, state.searchScope);
+  } else {
+    params.delete(EXPLORE_SEARCH_SCOPE_PARAM);
+  }
+  if (state.query.trim()) {
+    params.set('q', state.query.trim());
+  } else {
+    params.delete('q');
+  }
+  const serializedDate = serializeExploreActivityDatePreset(state.activityDatePreset);
+  if (serializedDate) params.set('date', serializedDate);
+  else params.delete('date');
+  const regions = state.venueRegions ?? [];
+  if (regions.length > 0) params.set('regions', regions.join(','));
+  else params.delete('regions');
+  params.delete(LIST_CAT_PARAM);
+};
+
+export const exploreSearchHomePath = (options?: ExploreSearchPathOptions): string => {
+  const state = normalizeSearchPathState(options);
+  const params = new URLSearchParams();
+  appendSearchHomeBrowseParams(params, state);
+  const qs = params.toString();
+  return qs ? `${EXPLORE_SEARCH_RESULTS_PATH}?${qs}` : EXPLORE_SEARCH_RESULTS_PATH;
+};
+
 /** Search results — list default; `view: 'map'` for map stage under same chrome. */
 export const exploreSearchResultsPath = (options?: ExploreSearchPathOptions): string => {
   const state = normalizeSearchPathState(options);
@@ -136,25 +186,10 @@ export const exploreSearchResultsPath = (options?: ExploreSearchPathOptions): st
   return qs ? `${EXPLORE_SEARCH_RESULTS_PATH}?${qs}` : EXPLORE_SEARCH_RESULTS_PATH;
 };
 
-/** Open booking search modal — `?search=1` on map (default) or list. */
+/** Edit search — full-page compose with current filters prefilled. */
 export const exploreSearchModalEntryPath = (
-  options?: Pick<ExploreSearchPathOptions, 'query' | 'activityDatePreset' | 'venueRegions' | 'searchScope'> & {
-    /** Where the modal mounts — defaults to explore map. */
-    onPath?: typeof EXPLORE_MAP_PATH | typeof LIST_DISCOVERY_PATH;
-  }
-): string => {
-  const state = normalizeSearchPathState(options);
-  const base = options?.onPath ?? EXPLORE_MAP_PATH;
-  const params = new URLSearchParams();
-  if (state.query.trim()) params.set('q', state.query.trim());
-  const serializedDate = serializeExploreActivityDatePreset(state.activityDatePreset);
-  if (serializedDate) params.set('date', serializedDate);
-  if (state.venueRegions.length > 0) params.set('regions', state.venueRegions.join(','));
-  if (state.searchScope !== 'join') params.set(EXPLORE_SEARCH_SCOPE_PARAM, state.searchScope);
-  params.set('search', '1');
-  const qs = params.toString();
-  return qs ? `${base}?${qs}` : `${base}?search=1`;
-};
+  options?: Pick<ExploreSearchPathOptions, 'query' | 'activityDatePreset' | 'venueRegions' | 'searchScope'>
+): string => exploreSearchHomePath(options);
 
 /** Map handoff from search results list URL. */
 export const exploreSearchMapViewPathFromListSearch = (search: string): string => {
@@ -256,9 +291,14 @@ export const exploreInboundHubRedirectTarget = (pathname: string, search: string
     return qs ? `${EXPLORE_SEARCH_RESULTS_PATH}?${qs}` : `${EXPLORE_SEARCH_RESULTS_PATH}?view=map`;
   }
   if (pathname === '/explore/hub/home') {
-    params.set('search', '1');
-    const qs = params.toString();
-    return qs ? `${EXPLORE_MAP_PATH}?${qs}` : `${EXPLORE_MAP_PATH}?search=1`;
+    const scope = parseExploreSearchScopeFromParams(params);
+    const browse = parseExploreSearchBrowseState(params);
+    return exploreSearchHomePath({
+      query: browse.query,
+      activityDatePreset: browse.activityDatePreset,
+      venueRegions: browse.venueRegions,
+      searchScope: scope,
+    });
   }
   if (pathname === '/explore/hub') {
     const qs = params.toString();

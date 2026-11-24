@@ -1,6 +1,6 @@
 import {
   activityFilterToMapFilter,
-  serializeExploreActivityDatePreset,
+  serializeExploreMapActivityDatePreset,
   venueFilterToMapFilter,
   type ActivityListFilterKey,
   type ExploreActivityDatePreset,
@@ -197,7 +197,7 @@ export const buildExploreBrowseSearchParams = (input: {
   if (queryValue.trim()) params.set('q', queryValue.trim());
   else params.delete('q');
 
-  const serializedDate = serializeExploreActivityDatePreset(dateValue);
+  const serializedDate = serializeExploreMapActivityDatePreset(dateValue);
   if (serializedDate) params.set('date', serializedDate);
   else params.delete('date');
 

@@ -1,21 +1,22 @@
-import { useCallback, useState } from 'react';
-import { ChevronDown, ChevronUp, X } from 'lucide-react';
+import { useCallback, useId } from 'react';
 import type { DiscoverRecommendationSignal, ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { discoverRecommendationSignalLabel } from '../recommend/exploreRecommendationSignalCopy';
-import { formatExploreRelativeScheduleLabel } from '@uaetrail/shared-types';
 import { buildDiscoveryCardViewModelCard } from '../../discovery';
 import {
-  EXPLORE_MAP_RECOMMENDED_SUBTITLE,
-  EXPLORE_MAP_RECOMMENDED_TITLE_GUEST,
-  EXPLORE_MAP_RECOMMENDED_TITLE_SIGNED_IN,
+  EXPLORE_MAP_RECOMMENDED_SHEET_LIMIT,
+  EXPLORE_MAP_RECOMMENDED_TITLE,
+  EXPLORE_MAP_RECOMMENDED_VIEW_ALL_LABEL,
 } from '../recommend/exploreRecommendCopy';
-import { EXPLORE_TYPE } from '../../config/exploreTheme';
+import { exploreSheetPanelClass } from '../../config/exploreTheme';
+import { CONSUMER_SURFACE_TYPE } from '../../config/consumerSurfaceTypography';
+import { SHEET_DRAG_HANDLE_ATTR, useSheetDragDismiss } from '../../hooks/useSheetDragDismiss';
+import { ExploreMapRecommendationRow } from './ExploreMapRecommendationRow';
 
-export type ExploreMapRecommendedSheetSnap = 'hidden' | 'peek' | 'expanded';
+export { RecommendationSignalChips } from './RecommendationSignalChips';
+
+export type ExploreMapRecommendedSheetSnap = 'hidden' | 'half' | 'expanded';
 
 type ExploreMapRecommendedSheetProps = {
   items: ExploreMapItemDTO[];
-  signedIn: boolean;
   snap: ExploreMapRecommendedSheetSnap;
   onSnapChange: (snap: ExploreMapRecommendedSheetSnap) => void;
   onOpenItem: (itemId: string) => void;
@@ -23,66 +24,59 @@ type ExploreMapRecommendedSheetProps = {
   signalsByItemId?: Map<string, DiscoverRecommendationSignal[]>;
 };
 
-const rowFromItem = (
-  item: ExploreMapItemDTO,
-  signalsByItemId?: Map<string, DiscoverRecommendationSignal[]>
-) => {
-  const card = buildDiscoveryCardViewModelCard(item);
-  const when =
-    item.startAt != null
-      ? formatExploreRelativeScheduleLabel(item.startAt)
-      : card.subtitle?.slice(0, 48) ?? null;
-  const signals = signalsByItemId?.get(item.id) ?? [];
-  return { id: item.id, emoji: card.emoji, title: card.listTitle, when, host: card.listHost, signals };
-};
+/** Sheet flush to screen bottom; scroll pad clears tab bar when expanded. */
+const MAP_SHEET_ANCHOR = 'bottom-0 md:bottom-4';
 
-const RecommendationSignalChips = ({ signals }: { signals: DiscoverRecommendationSignal[] }) => {
-  if (signals.length === 0) return null;
-  return (
-    <ul className="mt-1 flex flex-wrap gap-1" aria-label="Why recommended">
-      {signals.slice(0, 3).map((signal) => (
-        <li
-          key={signal}
-          className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 ring-1 ring-emerald-200/80"
-        >
-          {discoverRecommendationSignalLabel(signal)}
-        </li>
-      ))}
-    </ul>
-  );
-};
+const MAP_SHEET_SCROLL_PAD =
+  'pb-[calc(var(--bottom-nav-chrome-height,56px)+var(--safe-bottom,0px)+0.5rem)] md:pb-[max(0.75rem,var(--safe-bottom,0px))]';
+
+/** Half snap hugs card stack; only grows toward half viewport when content needs it. */
+const HALF_HEIGHT_CAP =
+  'max-h-[min(50dvh,calc(100dvh-var(--explore-browse-peek-top)))]';
 
 /**
- * Strava-style map bottom sheet — peek, expand, or hide (Discover recommendations v0).
+ * Map recommendation tray — edge-to-edge on mobile; browse-style row cards.
  */
 export const ExploreMapRecommendedSheet = ({
   items,
-  signedIn,
   snap,
   onSnapChange,
   onOpenItem,
   onOpenList,
   signalsByItemId,
 }: ExploreMapRecommendedSheetProps) => {
-  const [dragHint, setDragHint] = useState(false);
-  const title = signedIn ? EXPLORE_MAP_RECOMMENDED_TITLE_SIGNED_IN : EXPLORE_MAP_RECOMMENDED_TITLE_GUEST;
-  const rows = items.map((item) => rowFromItem(item, signalsByItemId));
-  const peekRow = rows[0];
+  const titleId = useId();
+  const visibleItems = items.slice(0, EXPLORE_MAP_RECOMMENDED_SHEET_LIMIT);
 
-  const close = useCallback(() => onSnapChange('hidden'), [onSnapChange]);
-  const toggleExpand = useCallback(() => {
-    onSnapChange(snap === 'expanded' ? 'peek' : 'expanded');
+  const handleDragDismiss = useCallback(() => {
+    if (snap === 'expanded') {
+      onSnapChange('half');
+      return false;
+    }
+    onSnapChange('hidden');
   }, [onSnapChange, snap]);
 
-  if (snap === 'hidden' || rows.length === 0) {
-    if (rows.length === 0) return null;
+  const dragEnabled = snap !== 'hidden' && visibleItems.length > 0;
+  const { panelRef: dragPanelRef, panelStyle, dragZoneProps } = useSheetDragDismiss(handleDragDismiss, {
+    enabled: dragEnabled,
+    mode: snap === 'half' ? 'peek' : 'default',
+    onExpand: snap === 'half' ? () => onSnapChange('expanded') : undefined,
+  });
+
+  const mergePanelRef = (node: HTMLDivElement | null) => {
+    dragPanelRef.current = node;
+  };
+
+  if (visibleItems.length === 0) return null;
+
+  if (snap === 'hidden') {
     return (
       <button
         type="button"
-        onClick={() => onSnapChange('peek')}
+        onClick={() => onSnapChange('half')}
         className="pointer-events-auto absolute bottom-[calc(var(--bottom-nav-chrome-height,56px)+var(--safe-bottom,0px)+8px)] left-1/2 z-[1095] -translate-x-1/2 rounded-full bg-white px-4 py-2 text-xs font-semibold text-emerald-800 shadow-lg ring-1 ring-emerald-200/80 md:bottom-4 md:left-6 md:translate-x-0"
       >
-        {title}
+        {EXPLORE_MAP_RECOMMENDED_TITLE}
       </button>
     );
   }
@@ -91,106 +85,68 @@ export const ExploreMapRecommendedSheet = ({
 
   return (
     <div
-      className="pointer-events-auto absolute inset-x-0 bottom-[calc(var(--bottom-nav-chrome-height,56px)+var(--safe-bottom,0px))] z-[1095] flex max-h-[min(52dvh,420px)] flex-col px-2 md:bottom-4 md:max-w-md md:px-0 md:pl-4"
-      style={{
-        maxHeight: expanded ? undefined : 'calc(7.75rem + var(--safe-bottom, 0px))',
-      }}
+      className={`pointer-events-none absolute inset-x-0 z-[1095] flex justify-stretch ${MAP_SHEET_ANCHOR} ${
+        expanded ? 'top-[var(--explore-browse-peek-top)]' : ''
+      } md:justify-start md:px-4`}
     >
       <div
-        className={`flex min-h-0 flex-col overflow-hidden rounded-t-2xl bg-white shadow-[0_-8px_32px_rgba(15,23,42,.12)] ring-1 ring-black/5 transition-[max-height] duration-200 md:rounded-2xl ${
-          expanded ? 'flex-1' : ''
+        ref={mergePanelRef}
+        role="dialog"
+        aria-modal="false"
+        aria-labelledby={titleId}
+        style={panelStyle}
+        className={`pointer-events-auto flex w-full flex-col overflow-hidden rounded-b-none border-neutral-200/80 bg-neutral-50 shadow-[0_-12px_48px_rgba(15,23,42,.18)] transition-[height] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] md:max-w-md ${exploreSheetPanelClass} ${
+          expanded ? 'h-full max-h-full min-h-0' : `h-auto ${HALF_HEIGHT_CAP}`
         }`}
-        onTouchStart={() => setDragHint(true)}
-        onTouchEnd={() => setDragHint(false)}
       >
-        <div className="flex shrink-0 items-center gap-2 border-b border-neutral-100 px-3 py-2.5">
-          <button
-            type="button"
-            className="flex min-w-0 flex-1 flex-col items-start text-left"
-            onClick={toggleExpand}
-            aria-expanded={expanded}
-          >
-            <span className="text-sm font-bold text-neutral-900">{title}</span>
-            <span className={`text-[11px] ${EXPLORE_TYPE.muted}`}>{EXPLORE_MAP_RECOMMENDED_SUBTITLE}</span>
-          </button>
-          <button
-            type="button"
-            onClick={toggleExpand}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-600"
-            aria-label={expanded ? 'Collapse recommendations' : 'Expand recommendations'}
-          >
-            {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
-          </button>
-          <button
-            type="button"
-            onClick={close}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-600"
-            aria-label="Hide recommendations"
-          >
-            <X className="h-4 w-4" />
-          </button>
+        <div
+          className="flex w-full shrink-0 touch-none select-none flex-col gap-1 border-b border-emerald-200/60 bg-gradient-to-b from-emerald-50/90 to-white px-4 pb-2 pt-1.5"
+          aria-label={
+            snap === 'expanded'
+              ? 'Drag down for half screen'
+              : 'Drag down to close or drag up for full screen'
+          }
+          {...dragZoneProps}
+          {...{ [SHEET_DRAG_HANDLE_ATTR]: true }}
+        >
+          <div className="sheet-drag-handle-bar shrink-0 self-center" aria-hidden />
+          <h2 id={titleId} className={`${CONSUMER_SURFACE_TYPE.sheetTitle} text-emerald-950`}>
+            {EXPLORE_MAP_RECOMMENDED_TITLE}
+          </h2>
         </div>
 
-        {expanded ? (
-          <ul
-            className={`min-h-0 flex-1 divide-y divide-neutral-100 overflow-y-auto overscroll-contain scroll-touch px-1 py-1 ${
-              dragHint ? 'touch-pan-y' : ''
-            }`}
-          >
-            {rows.map((row) => (
-              <li key={row.id}>
+        <div
+          className={`${
+            expanded ? 'min-h-0 flex-1 overflow-y-auto overscroll-contain scroll-touch' : ''
+          } ${MAP_SHEET_SCROLL_PAD}`}
+        >
+          <ul className="flex flex-col gap-2.5 px-3 pt-3">
+            {visibleItems.map((item) => {
+              const card = buildDiscoveryCardViewModelCard(item);
+              const signals = signalsByItemId?.get(item.id) ?? [];
+              return (
+                <li key={item.id}>
+                  <ExploreMapRecommendationRow
+                    card={card}
+                    signals={signals}
+                    onOpen={() => onOpenItem(item.id)}
+                  />
+                </li>
+              );
+            })}
+            {onOpenList ? (
+              <li className="pt-0.5">
                 <button
                   type="button"
-                  className="flex w-full items-center gap-3 rounded-xl px-2 py-2.5 text-left active:bg-neutral-50"
-                  onClick={() => onOpenItem(row.id)}
+                  onClick={onOpenList}
+                  className="w-full rounded-lg py-2.5 text-center text-sm font-semibold text-emerald-800/90 underline-offset-2 transition active:text-emerald-950 hover:underline"
                 >
-                  <span className="text-lg" aria-hidden>
-                    {row.emoji}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold text-neutral-900">{row.title}</span>
-                    {row.when ? (
-                      <span className={`block truncate text-xs ${EXPLORE_TYPE.muted}`}>{row.when}</span>
-                    ) : null}
-                    {row.host ? (
-                      <span className={`block truncate text-[11px] ${EXPLORE_TYPE.muted}`}>{row.host}</span>
-                    ) : null}
-                    <RecommendationSignalChips signals={row.signals} />
-                  </span>
+                  {EXPLORE_MAP_RECOMMENDED_VIEW_ALL_LABEL}
                 </button>
               </li>
-            ))}
+            ) : null}
           </ul>
-        ) : peekRow ? (
-          <button
-            type="button"
-            className="flex shrink-0 items-center gap-3 px-3 py-2.5 text-left active:bg-neutral-50"
-            onClick={() => onOpenItem(peekRow.id)}
-          >
-            <span className="text-lg" aria-hidden>
-              {peekRow.emoji}
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-semibold text-neutral-900">{peekRow.title}</span>
-              {peekRow.when ? (
-                <span className={`block truncate text-xs ${EXPLORE_TYPE.muted}`}>{peekRow.when}</span>
-              ) : null}
-              <RecommendationSignalChips signals={peekRow.signals} />
-            </span>
-          </button>
-        ) : null}
-
-        {expanded && onOpenList ? (
-          <div className="shrink-0 border-t border-neutral-100 px-3 py-2">
-            <button
-              type="button"
-              onClick={onOpenList}
-              className="w-full rounded-xl bg-emerald-50 py-2 text-center text-xs font-semibold text-emerald-800 ring-1 ring-emerald-200/80"
-            >
-              See all on list
-            </button>
-          </div>
-        ) : null}
+        </div>
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import { X } from 'lucide-react';
+import { CONSUMER_MODAL_CLOSE } from '../../config/consumerSurfaceTypography';
 import { EXPLORE_SHEET, EXPLORE_Z } from '../../config/exploreTheme';
 import { ACTIVITY_DETAIL_TAB_FOOTER_SHARE_OUTING } from '../../content/activityDetailCopy';
 import { ExploreResponsiveSheet } from '../../explore/ui/ExploreResponsiveSheet';
@@ -50,10 +51,10 @@ export const ActivityOutingShareSheet = ({
         <button
           type="button"
           onClick={onClose}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+          className={CONSUMER_MODAL_CLOSE.buttonCompact}
           aria-label="Close"
         >
-          <X className="h-4 w-4" aria-hidden />
+          <X className={CONSUMER_MODAL_CLOSE.iconCompact} aria-hidden />
         </button>
       </header>
       <div className="min-h-0 overflow-y-auto overscroll-contain">

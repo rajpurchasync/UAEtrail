@@ -105,7 +105,8 @@ export const resolveExploreSearchJoinableTripCards = (
   regionHint: string,
   limit = EXPLORE_SEARCH_HOME_UPCOMING_LIMIT,
   geoPath: readonly string[] = [],
-  publishedAreas: readonly AreaPublicDTO[] = []
+  publishedAreas: readonly AreaPublicDTO[] = [],
+  pickStyle: 'recommend' | 'query' = 'query'
 ): ExploreSearchJoinableTripResult & { listingCount: number } => {
   const effectiveRegions = resolveEffectiveBrowseVenueRegions(venueRegions, geoPath, publishedAreas);
   const { pool, relaxation } = resolveExploreSearchTripPool(
@@ -120,7 +121,10 @@ export const resolveExploreSearchJoinableTripCards = (
   const built = buildListFeedCards(pool, user, items);
   const sorted = sortBrowseListCards(built, 'event_asc', null);
   const hint = relaxation === 'where' ? '' : exploreSearchWhereBrowseQuery(regionHint);
-  const cards = pickExploreSearchUpcomingTripCards(sorted, hint, limit);
+  const cards =
+    pickStyle === 'recommend'
+      ? pickExploreSearchUpcomingTripCards(sorted, hint, limit)
+      : sorted.slice(0, limit);
 
   return { cards, relaxation, listingCount: pool.length };
 };

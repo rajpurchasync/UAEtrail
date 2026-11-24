@@ -2,6 +2,10 @@ import { Heart } from 'lucide-react';
 import { UiTooltip } from '../../components/ui/UiTooltip';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { useExploreEntityFollow } from './useExploreEntityFollow';
+import {
+  CONSUMER_FLOATING_NOTICE_POS,
+  CONSUMER_SURFACE_TYPE,
+} from '../../config/consumerSurfaceTypography';
 
 interface ExploreFollowButtonProps {
   card: DiscoveryCardModel;
@@ -47,7 +51,7 @@ export const ExploreFollowButton = ({ card, light = false, bare = false }: Explo
       {notice ? (
         <p
           role="status"
-          className={`pointer-events-none absolute right-0 top-full z-20 mt-1 w-max max-w-[min(240px,72vw)] rounded-lg px-2.5 py-1.5 text-right text-[10px] font-medium leading-snug shadow-md ring-1 ring-black/5 ${
+          className={`${CONSUMER_FLOATING_NOTICE_POS} ${CONSUMER_SURFACE_TYPE.tooltip} ${
             bare || light ? 'bg-white/95 text-neutral-800' : 'bg-white text-neutral-700'
           }`}
         >

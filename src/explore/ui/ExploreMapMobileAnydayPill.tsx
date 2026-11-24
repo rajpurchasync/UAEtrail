@@ -2,7 +2,7 @@ import { createPortal } from 'react-dom';
 import { useId, useState } from 'react';
 import { Check } from 'lucide-react';
 import {
-  EXPLORE_ACTIVITY_DATE_PRESET_OPTIONS,
+  EXPLORE_MAP_ACTIVITY_DATE_PRESET_OPTIONS,
   exploreActivityDatePresetCompactLabel,
   exploreActivityDatePresetLabel,
   parseCustomActivityDateRange,
@@ -71,7 +71,7 @@ export const ExploreMapMobileAnydayPill = ({
               'aria-label': 'Filter outings by date',
             }}
           >
-            {EXPLORE_ACTIVITY_DATE_PRESET_OPTIONS.map((option) => {
+            {EXPLORE_MAP_ACTIVITY_DATE_PRESET_OPTIONS.map((option) => {
               const selected = !hasCustomRange && option.value === activityDatePreset;
               return (
                 <button

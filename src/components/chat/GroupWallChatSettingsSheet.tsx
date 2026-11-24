@@ -5,6 +5,7 @@ import {
   type GroupWallPostPolicy,
   type SocialGroupView,
 } from '../../hooks/socialGroupSettingsApi';
+import { CONSUMER_MODAL_CLOSE } from '../../config/consumerSurfaceTypography';
 import { CHAT_SPLIT_OVERLAY_INSET } from '../../config/consumerOverlayInset';
 import { groupWallPostPolicyLabel } from '../../utils/groupWallPostPolicy';
 
@@ -57,7 +58,7 @@ export const GroupWallChatSettingsSheet = ({
             type="button"
             onClick={onClose}
             disabled={savingPolicy}
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-neutral-100 text-neutral-600 shadow-sm ring-1 ring-black/5 hover:bg-neutral-200 disabled:opacity-40"
+            className={`${CONSUMER_MODAL_CLOSE.button} disabled:opacity-40`}
             aria-label="Close"
           >
             <X className="h-5 w-5" />

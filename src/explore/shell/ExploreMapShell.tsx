@@ -2,11 +2,10 @@ import { useCallback, useMemo } from 'react';
 import type { DiscoverRecommendationSignal } from '@uaetrail/shared-types';
 import { useLocation } from 'react-router-dom';
 import { resolveExploreMapRecommendationItems } from '../recommend/resolveExploreMapRecommendationItems';
+import { EXPLORE_MAP_RECOMMENDED_SHEET_LIMIT } from '../recommend/exploreRecommendCopy';
 import { useDiscoverMapRecommendations } from '../../hooks/useDiscoverMapRecommendations';
 import { ExploreMapStage } from '../ui/ExploreMapStage';
 import { ExploreDesktopGuestGatePanel } from '../ui/ExploreDesktopGuestGatePanel';
-import { ExploreBookingSearchModal } from '../search/ExploreBookingSearchModal';
-import { guestExplorePreviewCanSearch } from '../guestMapPreviewPolicy';
 import {
   ACTIVITY_JOIN_CTA_SELECTOR,
   AUTH_RESUME_JOIN_QUERY,
@@ -46,10 +45,7 @@ type Props = Pick<
   | 'handlePrimaryFabTap'
   | 'handleOpenExploreItem'
   | 'searchScopeCounts'
-  | 'setExploreSearchModalOpen'
-  | 'exploreSearchModalOpen'
-  | 'closeExploreSearchModal'
-  | 'handleExploreSearchCommit'
+  | 'openExploreSearch'
   | 'publishedAreas'
   | 'handlePickExploreArea'
   | 'onVisibleMapBoundsChange'
@@ -83,10 +79,7 @@ export const ExploreMapShell = ({
   handlePrimaryFabTap,
   handleOpenExploreItem,
   searchScopeCounts,
-  setExploreSearchModalOpen,
-  exploreSearchModalOpen,
-  closeExploreSearchModal,
-  handleExploreSearchCommit: _handleExploreSearchCommit,
+  openExploreSearch,
   publishedAreas: _publishedAreas,
   handlePickExploreArea: _handlePickExploreArea,
   onVisibleMapBoundsChange,
@@ -117,10 +110,20 @@ export const ExploreMapShell = ({
     return { lat: viewport.exploreMapCenter.lat, lng: viewport.exploreMapCenter.lng };
   }, [viewport.deviceLocationPointer, viewport.exploreMapCenter]);
 
-  const { data: serverRecommendationRows } = useDiscoverMapRecommendations(true, 8, recommendationViewerGeo);
+  const { data: serverRecommendationRows } = useDiscoverMapRecommendations(
+    Boolean(user),
+    EXPLORE_MAP_RECOMMENDED_SHEET_LIMIT,
+    recommendationViewerGeo
+  );
 
   const mapRecommendationItems = useMemo(
-    () => resolveExploreMapRecommendationItems(mapItems, serverRecommendationRows, 8, recommendationViewerGeo),
+    () =>
+      resolveExploreMapRecommendationItems(
+        mapItems,
+        serverRecommendationRows,
+        EXPLORE_MAP_RECOMMENDED_SHEET_LIMIT,
+        recommendationViewerGeo
+      ),
     [mapItems, serverRecommendationRows, recommendationViewerGeo]
   );
 
@@ -213,13 +216,7 @@ export const ExploreMapShell = ({
       crewsBrowseMapCrewCount={crewsBrowseMapChip?.crewCount ?? 0}
       searchQuery={browse.query}
       onSearchQueryChange={browse.setQuery}
-      onOpenExploreSearch={() => {
-        if (!user && !guestExplorePreviewCanSearch()) {
-          selection.handleGuestPreviewLimitGate();
-          return;
-        }
-        setExploreSearchModalOpen(true);
-      }}
+      onOpenExploreSearch={openExploreSearch}
       searchScopeCounts={searchScopeCounts}
       exploreMapStyle={viewport.exploreMapStyle}
       exploreMapTiles={exploreMapTiles}
@@ -285,19 +282,6 @@ export const ExploreMapShell = ({
       mapRecommendationItems={mapRecommendationItems}
       mapRecommendationSignalsByItemId={mapRecommendationSignalsByItemId}
       onOpenMapRecommendation={handleOpenMapRecommendation}
-      mapSearchOpen={exploreSearchModalOpen}
-      mapSearchOverlay={
-        exploreSearchModalOpen ? (
-          <ExploreBookingSearchModal
-            open
-            overlayContained
-            onClose={closeExploreSearchModal}
-            scopeCounts={searchScopeCounts}
-            signedIn={Boolean(user)}
-            onGuestBlocked={() => selection.handleGuestPreviewLimitGate()}
-          />
-        ) : null
-      }
     />
   );
 };

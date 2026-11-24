@@ -387,7 +387,7 @@ export const DiscoveryCardRequirementBadges = ({
         <span
           key={badge}
           className={`inline-flex rounded-full bg-neutral-100 font-bold ${EXPLORE_TYPE.body} ${
-            compact ? 'px-2 py-0.5 text-[10px] leading-tight' : 'px-2.5 py-1 text-[11px]'
+            compact ? 'px-2 py-0.5 text-[11px] leading-tight' : 'px-2.5 py-1 text-[11px]'
           }`}
         >
           {badge}
@@ -412,7 +412,7 @@ export const ExploreActivityPeekMeta = ({
   if (!hasBadges && !hasPrice) return null;
 
   const badgeClass = compact
-    ? 'inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold leading-tight'
+    ? 'inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold leading-tight'
     : 'inline-flex rounded-full px-3 py-1 text-xs font-semibold';
 
   return (
@@ -516,7 +516,7 @@ export const DiscoveryCardPeopleRow = ({
     : 'text-sm font-semibold text-gray-900 truncate';
   const linkNameClass = `${nameClass}${mapPeekCompact ? '' : ' group-hover:text-emerald-700'}`;
   const subtitleClass = mapPeekCompact
-    ? `text-[10px] font-medium leading-tight ${EXPLORE_TYPE.muted}`
+    ? `text-[11px] font-medium leading-tight ${EXPLORE_TYPE.muted}`
     : `text-xs font-medium ${EXPLORE_TYPE.muted}`;
   const rowGap = mapPeekCompact ? 'gap-2' : 'gap-3';
 
@@ -708,7 +708,7 @@ export const DiscoveryCardCapacityRow = ({
       <span className={`font-semibold ${activity ? '' : 'tabular-nums'}`}>{label}</span>
       {!activity && card.sections.partyLabel ? (
         <span
-          className={`ml-1 ${compact ? 'text-[10px]' : 'ml-1.5 text-xs'} font-medium ${EXPLORE_TYPE.muted}`}
+          className={`ml-1 ${compact ? 'text-[11px]' : 'ml-1.5 text-xs'} font-medium ${EXPLORE_TYPE.muted}`}
         >
           spots
         </span>

@@ -3,6 +3,7 @@ import {
   getExploreMapLocationPreference,
   saveExploreMapLocationPreference,
 } from '../explore/exploreMapLocationPreference';
+import { writeStoredViewerFix } from '../list/browse/viewerLocationStorage';
 
 export type DeviceLocationFix = { lat: number; lng: number };
 
@@ -36,6 +37,7 @@ export const useExploreDeviceLocation = () => {
             lastLat: next.lat,
             lastLng: next.lng,
           });
+          writeStoredViewerFix(next.lat, next.lng);
           setPending(false);
           resolve(next);
         },

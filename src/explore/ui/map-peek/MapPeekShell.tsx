@@ -7,9 +7,10 @@ import { EXPLORE_PEEK } from '../../../config/exploreTheme';
 import {
   layoutMapPeekBottomSheet,
   layoutMapPeekBubble,
-  mapPeekFitScale,
+  resolveMapPeekFit,
   type MapPeekPinAnchor,
 } from '../../mapPeekBubbleLayout';
+import { CONSUMER_MODAL_LAYOUT } from '../../../config/consumerSurfaceTypography';
 import { EnvironmentImage } from '../../../components/ui/EnvironmentImage';
 import { ShareButton } from '../../../components/ui/ShareButton';
 import { ExploreFollowButton } from '../ExploreFollowButton';
@@ -87,7 +88,7 @@ export const MapPeekShell = ({
   const detailLinkState = mapPeekDetailNavState(location);
   const shellClass = embedMode
     ? 'overflow-hidden rounded-2xl bg-white shadow-[0_8px_32px_rgba(15,23,42,.16)] ring-1 ring-black/5'
-    : EXPLORE_PEEK.shell;
+    : `${EXPLORE_PEEK.shell} ${CONSUMER_MODAL_LAYOUT.shell}`;
   const browseBannerPeek = mapSummary && !catalogPlaceSummary && !activityTripMapPeek;
   const showCoverHero =
     !browseBannerPeek && Boolean(card.coverImage) && !catalogPlaceSummary;
@@ -274,7 +275,7 @@ export const MapPeekShell = ({
         className={
           embedMode
             ? 'flex flex-col gap-3 px-4 pt-4 pb-1'
-            : `map-peek-summary-body flex shrink-0 flex-col overflow-hidden px-4 pb-2 ${
+            : `map-peek-summary-body map-peek-summary-scroll ${CONSUMER_MODAL_LAYOUT.scrollBody} px-4 pb-2 ${
                 activityTripMapPeek || placeVenueMapPeek ? 'gap-2 pt-2.5' : 'gap-3 pt-3.5'
               }`
         }
@@ -378,6 +379,8 @@ export const MapPeekOverlay = ({
   const [overlaySize, setOverlaySize] = useState({ width: 0, height: 0 });
   const [cardHeight, setCardHeight] = useState(280);
   const [peekFit, setPeekFit] = useState(1);
+  const [peekScrollBody, setPeekScrollBody] = useState(false);
+  const [peekMaxHeight, setPeekMaxHeight] = useState(0);
   const [insets, setInsets] = useState({ top: 12, bottom: 12 });
   const [mobileDock, setMobileDock] = useState(false);
 
@@ -407,14 +410,17 @@ export const MapPeekOverlay = ({
       setMobileDock(compact);
       const bottom = compact ? 96 : 24;
       const available = Math.max(0, overlay.clientHeight - top - bottom);
+      setPeekMaxHeight(available);
       const fitEl = fitRef.current;
       if (fitEl) {
         fitEl.style.setProperty('--peek-fit', '1');
         const natural = Math.max(fitEl.scrollHeight, 1);
-        const fit = mapPeekFitScale(natural, available);
-        fitEl.style.setProperty('--peek-fit', String(fit));
-        setPeekFit(fit);
-        setCardHeight(natural * fit);
+        const mode = resolveMapPeekFit(natural, available, { mobileDock: compact });
+        fitEl.style.setProperty('--peek-fit', String(mode.fit));
+        setPeekFit(mode.fit);
+        setPeekScrollBody(mode.scrollBody);
+        const height = mode.scrollBody ? available : natural * mode.fit;
+        setCardHeight(height);
       }
       setOverlaySize({ width: overlay.clientWidth, height: overlay.clientHeight });
       setInsets({ top, bottom });
@@ -450,6 +456,9 @@ export const MapPeekOverlay = ({
     '--peek-origin-x': `${layout.originX}px`,
     '--peek-origin-y': `${layout.originY}px`,
     '--peek-fit': String(peekFit),
+    ...(peekScrollBody && peekMaxHeight > 0
+      ? { '--peek-max-height': `${peekMaxHeight}px` }
+      : {}),
   } as CSSProperties;
 
   return (
@@ -465,10 +474,12 @@ export const MapPeekOverlay = ({
       <div
         key={pinKey ?? 'peek'}
         ref={cardRef}
-        className={`${EXPLORE_PEEK.inner} z-10 ${overlaySize.width > 0 ? '' : 'invisible'}`}
+        className={`${EXPLORE_PEEK.inner} z-10 ${peekScrollBody ? 'map-peek-scrollable' : ''} ${
+          overlaySize.width > 0 ? '' : 'invisible'
+        }`}
         style={bubbleStyle}
       >
-        <div ref={fitRef} className="map-peek-fit">
+        <div ref={fitRef} className={`map-peek-fit ${peekScrollBody ? 'map-peek-fit-scroll' : ''}`}>
           {children}
         </div>
       </div>

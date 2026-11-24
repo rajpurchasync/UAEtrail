@@ -1717,12 +1717,41 @@
     zoom: var(--peek-fit);
   }
 
+  .map-peek-bubble.map-peek-scrollable {
+    display: flex;
+    flex-direction: column;
+    max-height: var(--peek-max-height, 70vh);
+  }
+
+  .map-peek-fit-scroll {
+    zoom: 1 !important;
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+  }
+
+  .map-peek-scrollable .map-peek-bubble-card {
+    min-height: 0;
+    flex: 1;
+  }
+
+  .map-peek-scrollable .map-peek-summary-scroll,
+  .map-peek-scrollable [data-map-trip-peek-card] > section,
+  .map-peek-scrollable [data-map-venue-peek-card] > section {
+    min-height: 0;
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
   .map-peek-bubble-card {
     background-color: #fff;
     color: #171717;
   }
 
-  .map-peek-summary-body {
+  .map-peek-summary-body:not(.map-peek-summary-scroll) {
     overflow: hidden;
   }
 

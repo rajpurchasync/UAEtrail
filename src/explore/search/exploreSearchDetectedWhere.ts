@@ -1,35 +1,33 @@
 import { EXPLORE_REGION_PILL_LABELS } from '../../config/regions';
+import { readStoredViewerFix } from '../../list/browse/viewerLocationStorage';
 import { getExploreMapLocationPreference } from '../exploreMapLocationPreference';
 import { inferEmirateFromPin } from '../hostingPublishArea';
-
-const VIEWER_LOCATION_KEY = 'uaetrail:viewer-location';
-
-const readViewerFix = (): { lat: number; lng: number } | null => {
-  try {
-    const raw = sessionStorage.getItem(VIEWER_LOCATION_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as { lat?: number; lng?: number };
-    if (!Number.isFinite(parsed.lat) || !Number.isFinite(parsed.lng)) return null;
-    return { lat: parsed.lat as number, lng: parsed.lng as number };
-  } catch {
-    return null;
-  }
-};
 
 const emirateToSearchQuery = (emirate: string): string =>
   EXPLORE_REGION_PILL_LABELS[emirate] ?? emirate;
 
-/** Best-effort “near you” label for booking search — map pref or session fix; empty when unknown. */
+const whereFromCoords = (lat: number, lng: number): string => {
+  const emirate = inferEmirateFromPin(lat, lng, []);
+  return emirate ? emirateToSearchQuery(emirate) : '';
+};
+
+/**
+ * Best-effort “near you” label for booking search — map last fix, session GPS, then product default map center.
+ * Works for guests (no account). Sign-in only affects search limits, not location detection.
+ */
 export const resolveExploreSearchDetectedWhereQuery = (): string => {
   const pref = getExploreMapLocationPreference();
   if (pref.lastLat != null && pref.lastLng != null) {
-    const emirate = inferEmirateFromPin(pref.lastLat, pref.lastLng, []);
-    if (emirate) return emirateToSearchQuery(emirate);
+    const fromPref = whereFromCoords(pref.lastLat, pref.lastLng);
+    if (fromPref) return fromPref;
   }
-  const viewer = readViewerFix();
+
+  const viewer = readStoredViewerFix();
   if (viewer) {
-    const emirate = inferEmirateFromPin(viewer.lat, viewer.lng, []);
-    if (emirate) return emirateToSearchQuery(emirate);
+    const fromViewer = whereFromCoords(viewer.lat, viewer.lng);
+    if (fromViewer) return fromViewer;
   }
-  return '';
+
+  /** Product-wide default when GPS is off — UAE hub most members search first. */
+  return EXPLORE_REGION_PILL_LABELS.Dubai ?? 'Dubai';
 };

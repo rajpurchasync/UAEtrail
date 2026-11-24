@@ -15,6 +15,11 @@ import {
 } from 'lucide-react';
 import { isDiscoverBrowseRoute } from '../explore/exploreDiscoverBrowse';
 import { explorePath } from '../explore/routing';
+import {
+  EXPLORE_SEARCH_RESULTS_PATH,
+  exploreSearchHomePath,
+  isExploreSearchHomeState,
+} from '../explore/search/exploreSearchRouting';
 import { LIST_CAT_PARAM } from '../list/browse/browseListUrlState';
 import {
   MY_CREWS_PATH,
@@ -175,7 +180,7 @@ export const DESKTOP_MAP_NAV: readonly DesktopNavItem[] = [
   {
     key: 'search',
     label: 'Search',
-    to: `${EXPLORE_MAP_PATH}?search=1`,
+    to: exploreSearchHomePath(),
     icon: Search,
     match: [],
   },
@@ -238,7 +243,7 @@ export const isDesktopNavItemActive = (item: DesktopNavItem, pathname: string, s
     return isExploreCrewsListDrawerRoute(pathname, search);
   }
   if (item.key === 'search') {
-    return pathname === EXPLORE_MAP_PATH && params.get('search') === '1';
+    return pathname === EXPLORE_SEARCH_RESULTS_PATH && isExploreSearchHomeState(pathname, params);
   }
   if (item.key === 'post') {
     return pathname === EXPLORE_MAP_PATH && Boolean(params.get('compose'));

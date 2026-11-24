@@ -5,6 +5,7 @@ import type { ActivityType } from '../../config/activityTypes';
 import { subdivisionNoun, type CountryCode } from '../../config/regions';
 import { AppSelect } from '../../components/ui/AppSelect';
 import { EXPLORE_FLOW } from '../../config/exploreTheme';
+import { CONSUMER_SURFACE_TYPE } from '../../config/consumerSurfaceTypography';
 import {
   HOSTING_DESTINATION_EMPTY_ROUTES_PROMPT,
   HOSTING_DESTINATION_NOT_FOUND,
@@ -205,7 +206,7 @@ export const HostingDestinationCascade = ({
                         onClick={() => onSearchHit(hit)}
                         className="flex w-full flex-col rounded-xl px-3 py-2 text-left hover:bg-emerald-50/80"
                       >
-                        <span className="text-[10px] font-semibold uppercase tracking-wide text-emerald-800">
+                        <span className={`${CONSUMER_SURFACE_TYPE.chip} uppercase tracking-wide text-emerald-800`}>
                           {searchGroupLabel(hit)}
                         </span>
                         <span className="text-sm font-semibold text-neutral-950">{hit.title}</span>

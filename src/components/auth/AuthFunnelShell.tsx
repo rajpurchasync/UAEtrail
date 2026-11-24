@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ChevronLeft, X } from 'lucide-react';
 import { UaeTrailBrandMark } from '../layout/UaeTrailBrandMark';
 import { PRODUCT_TAGLINE } from '../../content/productNorthStar';
+import { CONSUMER_MODAL_CLOSE } from '../../config/consumerSurfaceTypography';
 
 type Props = {
   title: string;
@@ -38,7 +39,7 @@ export const AuthFunnelShell = ({ title, subline, onBack, onClose, children }: P
           <button
             type="button"
             onClick={onClose}
-            className="touch-target-icon inline-flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100/90 text-neutral-600 ring-1 ring-black/5 active:opacity-60 dark:bg-neutral-800 dark:text-neutral-300"
+            className={`touch-target-icon ${CONSUMER_MODAL_CLOSE.buttonCompact} dark:text-neutral-500 dark:hover:text-neutral-200`}
             aria-label="Close"
           >
             <X className="h-5 w-5" strokeWidth={2.25} aria-hidden />

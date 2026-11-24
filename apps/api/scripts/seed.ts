@@ -68,6 +68,10 @@ import {
 import { ensureActivityGroupChat } from '../src/services/activity-group-chat.js';
 import { logConnectionsDemoPlaybook, seedConnectionsDemo } from './seedConnectionsDemo.js';
 import {
+  logCommunityDiscoverPlaybook,
+  seedDemoCommunityDiscover,
+} from './seed-demo-community-discover.js';
+import {
   ensureDemoExploreActivities,
   resolveDemoActivitySeedContext,
   seedDemoScheduledActivities,
@@ -895,6 +899,29 @@ const isSeedConnectionsEnabled = (): boolean => {
   return value === 'true' || value === '1' || value === 'yes';
 };
 
+const runCommunityDiscoverSeed = async (): Promise<boolean> => {
+  const host = await findAuthUserByEmail('host@uaetrails.app');
+  const participant = await findAuthUserByEmail('visitor@uaetrails.app');
+  const visitor2 = await findAuthUserByEmail('visitor2@uaetrails.app');
+  const guide = await findAuthUserByEmail('guide@uaetrails.app');
+  const organizer = await findAuthUserByEmail('organizer@uaetrails.app');
+
+  if (!host || !participant || !visitor2 || !guide || !organizer) {
+    console.warn('[seed] Community discover skipped — run full seed first (missing demo users)');
+    return false;
+  }
+
+  await seedDemoCommunityDiscover({
+    hostId: host._id,
+    visitorId: participant._id,
+    visitor2Id: visitor2._id,
+    guideId: guide._id,
+    organizerId: organizer._id,
+  });
+  logCommunityDiscoverPlaybook();
+  return true;
+};
+
 const runConnectionsDemoSeed = async (): Promise<boolean> => {
   const participant = await findAuthUserByEmail('visitor@uaetrails.app');
   const visitor2 = await findAuthUserByEmail('visitor2@uaetrails.app');
@@ -1022,6 +1049,7 @@ async function main() {
     if (isSeedConnectionsEnabled()) {
       await runConnectionsDemoSeed();
     }
+    await runCommunityDiscoverSeed();
     return;
   }
 
@@ -2115,6 +2143,16 @@ Share your live location and carry extra water in summer months.`
     shopOwnerId: shopOwner._id,
   });
   logConnectionsDemoPlaybook();
+
+  await seedDemoCommunityDiscover({
+    hostId: individualHost._id,
+    visitorId: participant._id,
+    visitor2Id: pendingParticipant._id,
+    guideId: agencyGuide._id,
+    organizerId: agencyOwner._id,
+  });
+  logCommunityDiscoverPlaybook();
+
   logOmarHostQaPlaybook();
 
   const participantRecord = await db().collection('activity_participants').findOne({

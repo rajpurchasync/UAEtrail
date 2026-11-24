@@ -8,6 +8,7 @@ import {
 import { meNotificationsPageQueryKey } from './clientQueryKeys';
 import { sortNotificationsNewestFirst } from '../utils/notificationCategories';
 import { invalidateNotificationUnreadBadge } from '../utils/notificationBadge';
+import { useAuthSessionReady } from './useAuthSessionReady';
 
 type InboxPayload = {
   notifications: NotificationDTO[];
@@ -17,10 +18,11 @@ type InboxPayload = {
 export const useMeNotificationsInbox = (userId: string | undefined, enabled: boolean) => {
   const queryClient = useQueryClient();
   const queryKey = meNotificationsPageQueryKey(1);
+  const authSessionReady = useAuthSessionReady();
 
   const { data, isPending, isFetching, isError, error, refetch } = useQuery({
     queryKey,
-    enabled: enabled && Boolean(userId),
+    enabled: enabled && Boolean(userId) && authSessionReady,
     queryFn: async (): Promise<InboxPayload> => {
       const page = await fetchMeNotificationsPage(1);
       return {

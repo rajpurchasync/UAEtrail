@@ -3,6 +3,26 @@ import { parseExploreBrowseStateFromSearchParams } from './exploreBrowseUrlHydra
 import { buildExploreBrowseSearchParams } from './exploreBrowseUrlSync';
 
 describe('exploreBrowseUrlHydrate', () => {
+  it('defaults map date filter to this week when ?date= is absent', () => {
+    const state = parseExploreBrowseStateFromSearchParams(new URLSearchParams(), true);
+    expect(state.activityDatePreset).toBe('week');
+    const roundTrip = buildExploreBrowseSearchParams({
+      base: new URLSearchParams(),
+      isDesktop: true,
+      state: {
+        ...state,
+        geoPath: state.geoPath,
+        tripMapTopics: state.tripMapTopics,
+        placeMapTopics: state.placeMapTopics,
+        priceFilter: state.priceFilter,
+        hasTrip: state.hasTrip,
+        facilityKinds: state.facilityKinds,
+      },
+      patch: {},
+    });
+    expect(roundTrip.get('date')).toBeNull();
+  });
+
   it('mobile view=people hydrates listMode crews (not legacy people)', () => {
     const state = parseExploreBrowseStateFromSearchParams(
       new URLSearchParams('view=people&list=1'),

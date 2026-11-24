@@ -20,13 +20,15 @@ export type ExploreActivityDateNamedPreset =
 /** Named windows, or a custom inclusive ISO range `YYYY-MM-DD..YYYY-MM-DD`. */
 export type ExploreActivityDatePreset = ExploreActivityDateNamedPreset | (string & {});
 
-export const EXPLORE_ACTIVITY_DATE_PRESET_OPTIONS: ReadonlyArray<{
+/** Explore map default when `?date=` is absent (map chrome date pill). */
+export const EXPLORE_MAP_DEFAULT_ACTIVITY_DATE_PRESET: ExploreActivityDateNamedPreset = 'week';
+
+/** Map date pill menu — excludes Today / Tomorrow. */
+export const EXPLORE_MAP_ACTIVITY_DATE_PRESET_OPTIONS: ReadonlyArray<{
   value: ExploreActivityDatePreset;
   label: string;
 }> = [
   { value: 'anyday', label: 'Anyday' },
-  { value: 'today', label: 'Today' },
-  { value: 'tomorrow', label: 'Tomorrow' },
   { value: 'week', label: 'This week' },
   { value: 'nextweek', label: 'Next week' },
   { value: 'month', label: 'This month' },
@@ -34,6 +36,9 @@ export const EXPLORE_ACTIVITY_DATE_PRESET_OPTIONS: ReadonlyArray<{
   { value: 'thisyear', label: 'This year' },
   { value: 'nextyear', label: 'Next year' },
 ];
+
+/** @deprecated Use {@link EXPLORE_MAP_ACTIVITY_DATE_PRESET_OPTIONS} on explore map. */
+export const EXPLORE_ACTIVITY_DATE_PRESET_OPTIONS = EXPLORE_MAP_ACTIVITY_DATE_PRESET_OPTIONS;
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -157,10 +162,32 @@ export const parseExploreActivityDatePreset = (value: string | null): ExploreAct
   return 'anyday';
 };
 
+/** Hydrate explore map `?date=` — default to {@link EXPLORE_MAP_DEFAULT_ACTIVITY_DATE_PRESET}. */
+export const resolveExploreMapActivityDatePreset = (value: string | null): ExploreActivityDatePreset => {
+  const parsed = parseExploreActivityDatePreset(value);
+  if (parsed === 'anyday') return EXPLORE_MAP_DEFAULT_ACTIVITY_DATE_PRESET;
+  return parsed;
+};
+
+const EXPLORE_ACTIVITY_DATE_PRESET_LABELS: Record<ExploreActivityDateNamedPreset, string> = {
+  anyday: 'Anyday',
+  today: 'Today',
+  tomorrow: 'Tomorrow',
+  week: 'This week',
+  nextweek: 'Next week',
+  month: 'This month',
+  nextmonth: 'Next month',
+  thisyear: 'This year',
+  nextyear: 'Next year',
+};
+
 export const exploreActivityDatePresetLabel = (preset: ExploreActivityDatePreset): string => {
   const custom = parseCustomActivityDateRange(preset);
   if (custom) return formatCustomActivityDateRangeLabel(custom.from, custom.to);
-  return EXPLORE_ACTIVITY_DATE_PRESET_OPTIONS.find((option) => option.value === preset)?.label ?? 'Anyday';
+  if (preset in EXPLORE_ACTIVITY_DATE_PRESET_LABELS) {
+    return EXPLORE_ACTIVITY_DATE_PRESET_LABELS[preset as ExploreActivityDateNamedPreset];
+  }
+  return 'Anyday';
 };
 
 /** Compact tray chip — omit when Anyday (icon only). */
@@ -182,6 +209,12 @@ export const exploreActivityDatePresetCompactLabel = (
 
 export const serializeExploreActivityDatePreset = (preset: ExploreActivityDatePreset): string | null =>
   preset === 'anyday' ? null : preset;
+
+/** Omit canonical map default from explore URLs (same as anyday). */
+export const serializeExploreMapActivityDatePreset = (preset: ExploreActivityDatePreset): string | null => {
+  if (preset === 'anyday' || preset === EXPLORE_MAP_DEFAULT_ACTIVITY_DATE_PRESET) return null;
+  return preset;
+};
 
 /** Inclusive ISO range for Explore People availability (`GET /explore/people/availability`). */
 export const exploreActivityDatePresetToInclusiveRange = (

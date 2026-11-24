@@ -8,6 +8,7 @@ import { parseBrowseListVenueRegions } from '../../list/browse/browseListUrlStat
 import {
   EXPLORE_SEARCH_SCOPE_PARAM,
   exploreSearchResultsPath,
+  isExploreSearchHomeState,
   parseExploreSearchBrowseState,
   type ExploreSearchScope,
 } from './exploreSearchRouting';
@@ -19,18 +20,11 @@ import {
   writeExploreSearchLastSearch,
 } from './exploreSearchLastSearch';
 import { resolveExploreSearchDetectedWhereQuery } from './exploreSearchDetectedWhere';
+import { useBrowseViewerLocation } from '../../list/browse/useBrowseViewerLocation';
 import { exploreSearchWhereEffectiveQuery } from './exploreSearchWhereDisplay';
 import { resolveExploreSearchDefaultVenueRegions } from './exploreSearchVenueState';
 import { useExploreRegionPillOptions } from '../../config/useExploreRegionPillOptions';
-import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
-import { LIST_DISCOVERY_PATH } from '../../config/platform';
-
-type SearchModalPath = typeof EXPLORE_MAP_PATH | typeof LIST_DISCOVERY_PATH;
-
-const isSearchModalPath = (path: string): path is SearchModalPath =>
-  path === EXPLORE_MAP_PATH || path === LIST_DISCOVERY_PATH;
-
-/** Booking search modal — scope, where/when, commit → `/explore/search`. */
+/** Full-page search home — scope, where/when, commit → results on `/explore/search`. */
 export const useExploreBookingSearchState = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -43,8 +37,10 @@ export const useExploreBookingSearchState = () => {
   const [searchParams, setSearchParams] = useProductSearchParams();
   const parsed = useMemo(() => parseExploreSearchBrowseState(searchParams), [searchParams]);
 
-  const modalOpen =
-    searchParams.get('search') === '1' && isSearchModalPath(pathname);
+  const searchHomeActive = isExploreSearchHomeState(pathname, searchParams);
+
+  /** One GPS probe while search home is open — feeds session storage + detected where (guests included). */
+  const { fix: viewerFix } = useBrowseViewerLocation(searchHomeActive);
 
   const hydrateScopeFromParams = useCallback(
     (parsedScope: ExploreSearchScope): ExploreSearchScope => {
@@ -71,7 +67,7 @@ export const useExploreBookingSearchState = () => {
   const modalHydratedRef = useRef(false);
 
   useEffect(() => {
-    if (!modalOpen) {
+    if (!searchHomeActive) {
       modalHydratedRef.current = false;
       return;
     }
@@ -86,9 +82,19 @@ export const useExploreBookingSearchState = () => {
         ? parsed.venueRegions
         : parseBrowseListVenueRegions(searchParams)
     );
-  }, [hydrateScopeFromParams, modalOpen, parsed, searchParams]);
+  }, [hydrateScopeFromParams, parsed, searchHomeActive, searchParams]);
 
-  const detectedWhere = useMemo(() => resolveExploreSearchDetectedWhereQuery(), []);
+  useEffect(() => {
+    if (!searchHomeActive || parsed.query.trim()) return;
+    const detected = resolveExploreSearchDetectedWhereQuery();
+    if (!detected) return;
+    setDraftQuery((current) => (current.trim() ? current : detected));
+  }, [parsed.query, searchHomeActive, viewerFix?.lat, viewerFix?.lng]);
+
+  const detectedWhere = useMemo(
+    () => resolveExploreSearchDetectedWhereQuery(),
+    [searchHomeActive, viewerFix?.lat, viewerFix?.lng]
+  );
   const committedWhere = useMemo(
     () => exploreSearchWhereEffectiveQuery('', parsed.query.trim() || detectedWhere),
     [detectedWhere, parsed.query]
@@ -113,7 +119,7 @@ export const useExploreBookingSearchState = () => {
   const setActivityDatePresetOnUrl = useCallback(
     (preset: ExploreActivityDatePreset) => {
       setActivityDatePreset(preset);
-      if (!isSearchModalPath(pathname)) return;
+      if (!searchHomeActive) return;
       applyProductSearchMutation(
         { pathname, navigate, setSearchParams },
         (params) => {
@@ -123,7 +129,7 @@ export const useExploreBookingSearchState = () => {
         }
       );
     },
-    [navigate, pathname, setSearchParams]
+    [navigate, pathname, searchHomeActive, setSearchParams]
   );
 
   const commitSearch = useCallback(

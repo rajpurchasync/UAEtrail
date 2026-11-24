@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { layoutMapPeekBottomSheet, layoutMapPeekBubble, mapPeekFitScale } from './mapPeekBubbleLayout';
+import {
+  layoutMapPeekBottomSheet,
+  layoutMapPeekBubble,
+  mapPeekFitScale,
+  resolveMapPeekFit,
+} from './mapPeekBubbleLayout';
 
 describe('layoutMapPeekBubble', () => {
   it('centers when the pin is unknown', () => {
@@ -94,11 +99,29 @@ describe('mapPeekFitScale', () => {
     expect(mapPeekFitScale(280, 500)).toBe(1);
   });
 
-  it('shrinks to the available overlay height', () => {
-    expect(mapPeekFitScale(500, 400)).toBeCloseTo(0.8);
+  it('shrinks modestly when still above the readable fit floor', () => {
+    expect(mapPeekFitScale(440, 400)).toBeCloseTo(400 / 440);
   });
 
-  it('keeps shrinking until the card fits the overlay', () => {
-    expect(mapPeekFitScale(2000, 200)).toBeCloseTo(0.1);
+  it('uses scroll instead of unreadable zoom when content is much taller than the viewport', () => {
+    expect(mapPeekFitScale(2000, 200)).toBe(1);
+    expect(resolveMapPeekFit(2000, 200)).toEqual({ fit: 1, scrollBody: true });
+  });
+});
+
+describe('resolveMapPeekFit', () => {
+  it('scrolls on mobile dock when content exceeds available height', () => {
+    expect(resolveMapPeekFit(500, 320, { mobileDock: true })).toEqual({
+      fit: 1,
+      scrollBody: true,
+    });
+    expect(resolveMapPeekFit(280, 400, { mobileDock: true })).toEqual({
+      fit: 1,
+      scrollBody: false,
+    });
+  });
+
+  it('allows modest zoom shrink before switching to scroll', () => {
+    expect(resolveMapPeekFit(500, 450)).toEqual({ fit: 0.9, scrollBody: false });
   });
 });

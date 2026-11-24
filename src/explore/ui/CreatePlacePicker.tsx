@@ -449,7 +449,7 @@ export const CreatePlacePicker = ({
           {coordsEditing ? (
             <div className="mt-2 grid grid-cols-2 gap-2">
               <label className="block">
-                <span className="text-[10px] font-medium text-gray-500">Latitude</span>
+                <span className="text-xs font-medium text-gray-500">Latitude</span>
                 <input
                   value={latInput}
                   onChange={(event) => setLatInput(event.target.value)}
@@ -458,7 +458,7 @@ export const CreatePlacePicker = ({
                 />
               </label>
               <label className="block">
-                <span className="text-[10px] font-medium text-gray-500">Longitude</span>
+                <span className="text-xs font-medium text-gray-500">Longitude</span>
                 <input
                   value={lngInput}
                   onChange={(event) => setLngInput(event.target.value)}

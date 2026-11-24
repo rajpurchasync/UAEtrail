@@ -2,22 +2,23 @@ import { useMemo, useState } from 'react';
 import { X } from 'lucide-react';
 import { LANGUAGE_SUGGESTIONS } from '../../constants/languageSuggestions';
 
-const isSelected = (languages: string[], language: string): boolean =>
-  languages.some((item) => item.toLowerCase() === language.toLowerCase());
+const isSelected = (languages: string[] | undefined, language: string): boolean =>
+  (languages ?? []).some((item) => item.toLowerCase() === language.toLowerCase());
 
-const toggleLanguage = (languages: string[], language: string): string[] => {
-  if (isSelected(languages, language)) {
-    return languages.filter((item) => item.toLowerCase() !== language.toLowerCase());
+const toggleLanguage = (languages: string[] | undefined, language: string): string[] => {
+  const list = languages ?? [];
+  if (isSelected(list, language)) {
+    return list.filter((item) => item.toLowerCase() !== language.toLowerCase());
   }
-  return [...languages, language];
+  return [...list, language];
 };
 
 interface SignupLanguagePickerProps {
-  value: string[];
+  value?: string[];
   onChange: (languages: string[]) => void;
 }
 
-export const SignupLanguagePicker = ({ value, onChange }: SignupLanguagePickerProps) => {
+export const SignupLanguagePicker = ({ value = [], onChange }: SignupLanguagePickerProps) => {
   const [search, setSearch] = useState('');
   const query = search.trim().toLowerCase();
 

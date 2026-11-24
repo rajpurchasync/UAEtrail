@@ -3,9 +3,12 @@ import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   addDaysIso,
   encodeCustomActivityDateRange,
+  EXPLORE_MAP_ACTIVITY_DATE_PRESET_OPTIONS,
   exploreActivityDatePresetToInclusiveRange,
   matchesActivityDateFilter,
   parseExploreActivityDatePreset,
+  resolveExploreMapActivityDatePreset,
+  serializeExploreMapActivityDatePreset,
 } from './exploreActivityDateFilter';
 
 const activityOn = (iso: string): ExploreMapItemDTO =>
@@ -28,6 +31,22 @@ describe('exploreActivityDateFilter', () => {
 
   afterEach(() => {
     vi.useRealTimers();
+  });
+
+  it('map preset menu omits Today and Tomorrow', () => {
+    const values = EXPLORE_MAP_ACTIVITY_DATE_PRESET_OPTIONS.map((o) => o.value);
+    expect(values).not.toContain('today');
+    expect(values).not.toContain('tomorrow');
+    expect(values[0]).toBe('anyday');
+    expect(values).toContain('week');
+  });
+
+  it('resolveExploreMapActivityDatePreset defaults to this week', () => {
+    expect(resolveExploreMapActivityDatePreset(null)).toBe('week');
+    expect(resolveExploreMapActivityDatePreset('month')).toBe('month');
+    expect(resolveExploreMapActivityDatePreset('today')).toBe('today');
+    expect(serializeExploreMapActivityDatePreset('week')).toBeNull();
+    expect(serializeExploreMapActivityDatePreset('month')).toBe('month');
   });
 
   it('parseExploreActivityDatePreset reads presets and legacy iso', () => {

@@ -69,7 +69,6 @@ import {
   kidFullProfilePayload,
   resolveKidEmergencyFromForm,
 } from '../groups/groupKidForm';
-import { isOutingCrewGroupRow } from '@uaetrail/shared-types';
 import { useAuth } from '../context/AuthContext';
 import { useMeProfile } from '../hooks/useMeProfile';
 import type { MobileBackChrome } from '../utils/mobileBackNav';

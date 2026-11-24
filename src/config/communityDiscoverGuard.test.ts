@@ -24,11 +24,18 @@ describe('communityDiscoverGuard (MIG-COMMUNITY-DISCOVER)', () => {
     expect(read('src/hooks/communityDiscoverClientApi.ts')).toMatch(/fetchExploreCommunities/);
     expect(read('src/crew-discovery/hooks/useCommunityDiscoverList.ts')).toMatch(/fetchExploreCommunities/);
     expect(read('src/crew-discovery/hooks/useCommunityDiscoverDetail.ts')).toMatch(/joinDiscoverableCommunity/);
-    expect(read('src/list/crews/CrewsCommunityBody.tsx')).toMatch(/communityClubPath/);
+    expect(read('src/list/crews/CrewsCommunityBody.tsx')).toMatch(/CommunityDiscoverBrowseList/);
+    expect(read('src/list/crews/CommunityDiscoverBrowseList.tsx')).toMatch(/communityClubPath/);
     expect(read('src/config/platform.ts')).toMatch(/VITE_COMMUNITY_DISCOVER/);
     expect(read('src/routing/AppRoutes.tsx')).toMatch(/COMMUNITY_CLUB_PATH_PREFIX/);
     expect(read('src/pages/CommunityClubDetailPage.tsx')).toMatch(/CommunityClubDetailView/);
     expect(existsSync(join(ROOT, 'src/components/community/CommunityClubDetailView.tsx'))).toBe(true);
+  });
+
+  it('MIG-COMM-03: demo seed ships discoverable clubs', () => {
+    expect(read('apps/api/scripts/seed-demo-community-discover.ts')).toMatch(/seedDemoCommunityDiscover/);
+    expect(read('apps/api/scripts/seed-demo-community-discover.ts')).toMatch(/SEED_COMMUNITY_SLUGS/);
+    expect(read('apps/api/scripts/seed.ts')).toMatch(/seedDemoCommunityDiscover/);
   });
 
   it('MIG-COMM-04: admin console list + detail', () => {

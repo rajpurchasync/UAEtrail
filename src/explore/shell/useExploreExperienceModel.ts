@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProductLocation, useProductSearchParams } from '../../routing/useEffectiveLocation';
 import { useExploreCreateFlowBridge } from './useExploreCreateFlowBridge';
-import { useExploreSearchModal } from './useExploreSearchModal';
+import { useExploreSearchParamRedirect } from './useExploreSearchParamRedirect';
+import { exploreSearchHomePath } from '../search/exploreSearchRouting';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
 import { useMemberStatus } from '../../hooks/useMemberStatus';
@@ -25,7 +26,6 @@ import { useExploreMapViewport } from '../ui/useExploreMapViewport';
 import { useExploreSelectionActions } from '../ui/useExploreSelectionActions';
 import { parseFacilityOnPlaceId, parsePlanWithUserId } from '../routing';
 import { activityJoinInviteBanner } from '../../content/exploreGoingPanelCopy';
-import type { ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import { guestExplorePreviewCanSearch } from '../guestMapPreviewPolicy';
 import { useHostActivitySheetBundle } from '../../hooks/useHostActivitySheetBundle';
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
@@ -266,11 +266,18 @@ export const useExploreExperienceModel = () => {
   }, []);
 
   const [searchFocusNonce, setSearchFocusNonce] = useState(0);
-  const { exploreSearchModalOpen, setExploreSearchModalOpen, closeExploreSearchModal } =
-    useExploreSearchModal(searchParams, pathname, navigate, setSearchParams);
+  useExploreSearchParamRedirect(searchParams, pathname, navigate, setSearchParams);
   const publishedAreas = useExplorePublishedAreas(
-    browse.listOpen || browse.browseOpen || exploreSearchModalOpen || Boolean(areaSlug)
+    browse.listOpen || browse.browseOpen || Boolean(areaSlug)
   );
+
+  const openExploreSearch = useCallback(() => {
+    if (!user && !guestExplorePreviewCanSearch()) {
+      selection.handleGuestPreviewLimitGate();
+      return;
+    }
+    navigate(exploreSearchHomePath());
+  }, [navigate, selection, user]);
 
   const openExploreActivityFromRef = useCallback(
     (activity: { exploreItemId: string }) => {
@@ -329,21 +336,7 @@ export const useExploreExperienceModel = () => {
     queryClient,
     selectionItems,
     selection,
-    closeExploreSearchModal,
     navigate
-  );
-
-  const handleExploreSearchCommit = useCallback(
-    (scope?: ExploreSearchScopeKey | null) => {
-      if (!user && !guestExplorePreviewCanSearch()) {
-        selection.handleGuestPreviewLimitGate();
-        closeExploreSearchModal();
-        return;
-      }
-      browse.commitExploreSearch(scope);
-      setSearchFocusNonce((n) => n + 1);
-    },
-    [browse, closeExploreSearchModal, selection, user]
   );
 
   const signInHref = useMemo(
@@ -424,10 +417,7 @@ export const useExploreExperienceModel = () => {
     setRideshareLinkAvailability: hostingLauncher.setRideshareLinkAvailability,
     closeCreateFlow: hostingLauncher.closeCreateFlow,
     refreshHostGate,
-    exploreSearchModalOpen,
-    setExploreSearchModalOpen,
-    closeExploreSearchModal,
-    handleExploreSearchCommit,
+    openExploreSearch,
     searchScopeCounts,
     publishedAreas,
     handlePickExploreArea,

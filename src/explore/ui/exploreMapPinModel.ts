@@ -19,7 +19,10 @@ import { matchesOutingTopicFilter } from '../exploreOutingTopic';
 import type { ActivityListFilterKey, ExploreActivityDatePreset, MapFilterKey, VenueListFilterKey } from '../routing';
 import { mapFilterToVenueListFilter } from '../routing';
 import type { ExplorePinKindFilter } from '../explorePinKindFilter';
-import { matchesActivityDateFilter } from '../exploreActivityDateFilter';
+import {
+  EXPLORE_MAP_DEFAULT_ACTIVITY_DATE_PRESET,
+  matchesActivityDateFilter,
+} from '../exploreActivityDateFilter';
 import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
 
 export const isFacilityExploreMapItem = (item: ExploreMapItemDTO): boolean =>
@@ -130,7 +133,7 @@ export const matchesUnifiedExploreMapItem = (
 ): boolean => {
   const othersSubtype = input.othersSubtype ?? 'all';
   const outingTopic = input.outingTopic ?? 'all';
-  const activityDatePreset = input.activityDatePreset ?? 'anyday';
+  const activityDatePreset = input.activityDatePreset ?? EXPLORE_MAP_DEFAULT_ACTIVITY_DATE_PRESET;
   const venueRegions = input.venueRegions ?? [];
 
   if (!matchesExplorePinKindFilter(item, input.pinKind)) return false;

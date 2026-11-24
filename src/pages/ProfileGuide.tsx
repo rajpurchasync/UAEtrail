@@ -114,7 +114,7 @@ export const ProfileGuide = () => {
         </ProfileFormField>
 
         <ProfileFormField label="Languages">
-          <SignupLanguagePicker languages={languages} onChange={setLanguages} />
+          <SignupLanguagePicker value={languages} onChange={setLanguages} />
         </ProfileFormField>
 
         <ProfileFormField label="Outdoor experience">

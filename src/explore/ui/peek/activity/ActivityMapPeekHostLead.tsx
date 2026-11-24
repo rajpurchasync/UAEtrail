@@ -49,7 +49,7 @@ export const ActivityMapPeekHostLead = ({
           ) : null}
         </div>
         {trustLabels[0] ? (
-          <p className="mt-0.5 truncate text-[10px] font-medium text-emerald-800">{trustLabels[0]}</p>
+          <p className="mt-0.5 truncate text-xs font-medium text-emerald-800">{trustLabels[0]}</p>
         ) : null}
       </div>
     </div>

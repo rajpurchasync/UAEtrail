@@ -40,7 +40,7 @@ export const readExploreSearchHomeScope = (
 ): ExploreSearchScope => {
   try {
     const raw = readScopedItem(EXPLORE_SEARCH_HOME_SCOPE_KEY, INBOUND_HUB_HOME_SCOPE_KEY, scope);
-    if (raw === 'places' || raw === 'crew' || raw === 'join') return raw;
+    if (raw === 'places' || raw === 'crew' || raw === 'groups' || raw === 'join') return raw;
   } catch {
     /* ignore */
   }
@@ -88,7 +88,7 @@ const recentSearchFingerprint = (entry: ExploreSearchLastSearchEntry): string =>
 
 const scopeFromRaw = (raw: Record<string, unknown>): ExploreSearchScope | null => {
   const mode = raw.searchScope ?? raw.hubMode;
-  if (mode === 'join' || mode === 'places' || mode === 'crew') return mode;
+  if (mode === 'join' || mode === 'places' || mode === 'crew' || mode === 'groups') return mode;
   return null;
 };
 

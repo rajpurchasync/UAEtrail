@@ -9,6 +9,7 @@ import {
   exploreSheetPanelClass,
 } from '../../config/exploreTheme';
 import { CONSUMER_MAIN_OVERLAY_INSET } from '../../config/consumerOverlayInset';
+import { CONSUMER_MODAL_LAYOUT } from '../../config/consumerSurfaceTypography';
 import {
   exploreCenteredSheetPopupBodyClass,
   exploreCenteredSheetPopupPanelClass,
@@ -129,12 +130,14 @@ export const ExploreResponsiveSheet = ({
   const showBackdropDismiss = !fullscreen && !composeWizard;
 
   const composeWizardPanelClass = composeWizard
-    ? `relative z-10 flex w-full flex-col overflow-hidden bg-white max-md:compose-sheet-immersive-enter max-md:h-[min(62dvh,720px)] max-md:min-h-[50dvh] max-md:max-h-[min(92dvh,720px)] max-md:rounded-t-3xl max-md:shadow-[0_-8px_40px_rgba(15,23,42,.12)] md:min-h-0 md:max-h-none md:flex-1 md:h-full md:w-full md:max-w-none md:rounded-none md:shadow-none ${maxWidthClass} ${panelClassName}`
+    ? `relative z-10 w-full bg-white max-md:compose-sheet-immersive-enter max-md:h-[min(62dvh,720px)] max-md:min-h-[50dvh] max-md:max-h-[min(92dvh,720px)] max-md:rounded-t-3xl max-md:shadow-[0_-8px_40px_rgba(15,23,42,.12)] md:min-h-0 md:max-h-none md:flex-1 md:h-full md:w-full md:max-w-none md:rounded-none md:shadow-none ${CONSUMER_MODAL_LAYOUT.shell} ${maxWidthClass} ${panelClassName}`
     : '';
 
   const composeMenuPanelClass = composeMenu
     ? `${exploreCenteredSheetPopupPanelClass} w-full shrink-0 ${maxWidthClass} ${panelClassName}`
     : '';
+
+  const exploreSheetPanelShell = `${CONSUMER_MODAL_LAYOUT.shell} ${CONSUMER_MODAL_LAYOUT.panelMaxHeightClass} max-h-[min(90dvh,640px)]`;
 
   const panelSurfaceClass = fullscreen
     ? `relative flex h-[100dvh] max-h-[100dvh] w-full max-w-none flex-col overflow-hidden rounded-none bg-neutral-50 shadow-none ${panelClassName}`
@@ -143,7 +146,7 @@ export const ExploreResponsiveSheet = ({
       : composeMenu
         ? composeMenuPanelClass
         : pullDismissGestures
-          ? `relative flex w-full max-h-[min(90dvh,640px)] flex-col overflow-hidden explore-sheet-panel ${exploreSheetPanelClass} ${maxWidthClass} ${panelClassName} ${
+          ? `relative w-full explore-sheet-panel ${exploreSheetPanelShell} ${exploreSheetPanelClass} ${maxWidthClass} ${panelClassName} ${
               centered
                 ? 'rounded-2xl shadow-2xl'
                 : 'shadow-[0_-8px_40px_rgba(15,23,42,.12)] sm:shadow-2xl'
@@ -151,8 +154,8 @@ export const ExploreResponsiveSheet = ({
           : centered
             ? centeredPopup
               ? `${exploreCenteredSheetPopupPanelClass}${overlayContained ? ' explore-map-pane-popup-panel' : ''} ${maxWidthClass} ${panelClassName}`
-              : `relative mx-auto my-auto flex w-full flex-col overflow-hidden explore-sheet-panel ${exploreSheetPanelClass} ${maxWidthClass} ${centeredPanelMaxHeight} rounded-2xl shadow-2xl ${panelClassName}`
-            : `relative w-full max-h-[min(90dvh,640px)] overflow-y-auto explore-sheet-panel ${exploreSheetPanelClass} ${maxWidthClass} ${panelClassName} shadow-[0_-8px_40px_rgba(15,23,42,.12)] sm:shadow-2xl`;
+              : `relative mx-auto my-auto w-full explore-sheet-panel ${CONSUMER_MODAL_LAYOUT.shell} ${exploreSheetPanelClass} ${maxWidthClass} ${centeredPanelMaxHeight} rounded-2xl shadow-2xl ${panelClassName}`
+            : `relative w-full explore-sheet-panel ${exploreSheetPanelShell} ${exploreSheetPanelClass} ${maxWidthClass} ${panelClassName} shadow-[0_-8px_40px_rgba(15,23,42,.12)] sm:shadow-2xl`;
 
   const centeredBodyScroll =
     centered && !composeWizard && !fullscreen
@@ -160,14 +163,20 @@ export const ExploreResponsiveSheet = ({
         ? exploreComposeMenuPopupBodyClass
         : centeredPopup
           ? exploreCenteredSheetPopupBodyClass
-          : 'min-h-0 flex-1 overflow-y-auto overscroll-contain'
+          : CONSUMER_MODAL_LAYOUT.scrollBody
       : undefined;
 
   const composeScrollClass = composeWizard
-    ? `compose-sheet-scroll compose-form-shell flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-y-auto overscroll-contain ${EXPLORE_COMPOSE.wizardScrollPadX} ${EXPLORE_COMPOSE_IMMERSIVE.scrollPadBottom} md:overflow-y-auto md:flex-1 md:pt-0`
+    ? `compose-sheet-scroll compose-form-shell ${CONSUMER_MODAL_LAYOUT.scrollBody} w-full min-w-0 flex-col ${EXPLORE_COMPOSE.wizardScrollPadX} ${EXPLORE_COMPOSE_IMMERSIVE.scrollPadBottom} md:overflow-y-auto md:flex-1 md:pt-0`
     : pullDismissGestures && !panelClassName.includes('overflow-hidden')
-      ? 'flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overscroll-contain'
+      ? `${CONSUMER_MODAL_LAYOUT.scrollBody} min-w-0 flex-col`
       : undefined;
+
+  const defaultBodyScroll =
+    !fullscreen && !composeFab && !composeScrollClass && !centeredBodyScroll
+      ? CONSUMER_MODAL_LAYOUT.scrollBody
+      : undefined;
+  const panelBodyScrollClass = composeScrollClass ?? centeredBodyScroll ?? defaultBodyScroll;
 
   const dragHandle = pullDismissGestures ? (
     <div className="shrink-0 max-md:block md:hidden">
@@ -243,13 +252,7 @@ export const ExploreResponsiveSheet = ({
           </button>
         ) : null}
         {dragHandle}
-        {composeScrollClass ? (
-          <div className={composeScrollClass}>{children}</div>
-        ) : centeredBodyScroll ? (
-          <div className={centeredBodyScroll}>{children}</div>
-        ) : (
-          children
-        )}
+        {panelBodyScrollClass ? <div className={panelBodyScrollClass}>{children}</div> : children}
       </div>
     </div>
   );

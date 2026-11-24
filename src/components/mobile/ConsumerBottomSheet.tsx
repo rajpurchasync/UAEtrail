@@ -3,6 +3,11 @@ import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { CONSUMER_MAIN_OVERLAY_INSET } from '../../config/consumerOverlayInset';
+import {
+  CONSUMER_MODAL_CLOSE,
+  CONSUMER_MODAL_LAYOUT,
+  CONSUMER_SURFACE_TYPE,
+} from '../../config/consumerSurfaceTypography';
 
 export interface ConsumerBottomSheetProps {
   open: boolean;
@@ -57,7 +62,7 @@ export const ConsumerBottomSheet = ({
       />
       <div
         ref={panelRef}
-        className="relative flex max-h-[min(88dvh,720px)] w-full max-w-md flex-col overflow-hidden rounded-t-[24px] bg-white shadow-2xl animate-fade-up sm:rounded-2xl"
+        className={`relative flex w-full max-w-md ${CONSUMER_MODAL_LAYOUT.shell} ${CONSUMER_MODAL_LAYOUT.panelMaxHeightClass} max-h-[min(88dvh,720px)] rounded-t-[24px] bg-white shadow-2xl animate-fade-up sm:rounded-2xl`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="consumer-bottom-sheet-title"
@@ -75,7 +80,7 @@ export const ConsumerBottomSheet = ({
               <h2
                 id="consumer-bottom-sheet-title"
                 className={
-                  warm ? 'text-lg font-bold leading-snug' : 'text-[15px] font-bold text-neutral-900'
+                  warm ? 'text-lg font-bold leading-snug' : CONSUMER_SURFACE_TYPE.sheetTitle
                 }
               >
                 {title}
@@ -83,7 +88,11 @@ export const ConsumerBottomSheet = ({
               {emphasis ? (
                 <p className="mt-1 text-2xl font-bold leading-tight tracking-tight">{emphasis}</p>
               ) : subtitle ? (
-                <p className={warm ? 'mt-1 text-sm text-white/90' : 'mt-0.5 text-xs text-neutral-500'}>
+                <p
+                  className={
+                    warm ? 'mt-1 text-sm text-white/90' : `mt-0.5 ${CONSUMER_SURFACE_TYPE.sheetSubtitle}`
+                  }
+                >
                   {subtitle}
                 </p>
               ) : null}
@@ -92,23 +101,24 @@ export const ConsumerBottomSheet = ({
             <button
               type="button"
               onClick={onClose}
-              className={
-                warm
-                  ? 'flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20 text-white active:bg-white/30'
-                  : 'flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
-              }
+              className={warm ? CONSUMER_MODAL_CLOSE.buttonOnWarm : CONSUMER_MODAL_CLOSE.buttonCompact}
               aria-label="Close"
             >
-              <X className={warm ? 'h-5 w-5' : 'h-4 w-4'} aria-hidden />
+              <X
+                className={warm ? CONSUMER_MODAL_CLOSE.icon : CONSUMER_MODAL_CLOSE.iconCompact}
+                aria-hidden
+              />
             </button>
           </div>
         </div>
         {toolbar ? (
           <div className="shrink-0 border-b border-neutral-100 bg-white px-4 py-2">{toolbar}</div>
         ) : null}
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain scroll-touch p-4">{children}</div>
+        <div className={`${CONSUMER_MODAL_LAYOUT.scrollBody} p-4`}>{children}</div>
         {footer ? (
-          <div className="shrink-0 border-t border-neutral-100 bg-white px-4 py-3 pb-[calc(var(--safe-bottom)+12px)]">
+          <div
+            className={`${CONSUMER_MODAL_LAYOUT.stickyFooter} px-4 py-3 pb-[calc(var(--safe-bottom)+12px)]`}
+          >
             {footer}
           </div>
         ) : null}

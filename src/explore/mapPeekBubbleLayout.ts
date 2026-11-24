@@ -1,3 +1,5 @@
+import { MAP_PEEK_MIN_READABLE_FIT } from '../config/consumerSurfaceTypography';
+
 export type MapPeekPinAnchor = {
   x: number;
   y: number;
@@ -22,11 +24,42 @@ export const MAP_PEEK_PIN_VISUAL_LIFT = 22;
 const clamp = (value: number, min: number, max: number): number =>
   Math.min(max, Math.max(min, value));
 
-/** Scale the peek card so its natural height fits the overlay without an inner scrollbar. */
-export const mapPeekFitScale = (naturalHeight: number, availableHeight: number): number => {
-  if (!(naturalHeight > 0) || !(availableHeight > 0)) return 1;
-  return Math.min(1, availableHeight / naturalHeight);
+export type MapPeekFitMode = {
+  fit: number;
+  /** When true, keep fit at 1 and scroll inside the peek shell (readable type). */
+  scrollBody: boolean;
 };
+
+/** Fit vs scroll — never zoom text below {@link MAP_PEEK_MIN_READABLE_FIT}. */
+export const resolveMapPeekFit = (
+  naturalHeight: number,
+  availableHeight: number,
+  options?: { mobileDock?: boolean }
+): MapPeekFitMode => {
+  if (!(naturalHeight > 0) || !(availableHeight > 0)) {
+    return { fit: 1, scrollBody: false };
+  }
+
+  const mobileDock = options?.mobileDock === true;
+  if (mobileDock) {
+    return { fit: 1, scrollBody: naturalHeight > availableHeight };
+  }
+
+  if (naturalHeight <= availableHeight) {
+    return { fit: 1, scrollBody: false };
+  }
+
+  const rawFit = availableHeight / naturalHeight;
+  if (rawFit >= MAP_PEEK_MIN_READABLE_FIT) {
+    return { fit: rawFit, scrollBody: false };
+  }
+
+  return { fit: 1, scrollBody: true };
+};
+
+/** @deprecated Prefer {@link resolveMapPeekFit} — zoom-only scale (tests / legacy). */
+export const mapPeekFitScale = (naturalHeight: number, availableHeight: number): number =>
+  resolveMapPeekFit(naturalHeight, availableHeight).fit;
 
 /** Bubble next to a map pin — sized to content, capped by remaining viewport (no inner scroll). */
 export const layoutMapPeekBubble = (input: {

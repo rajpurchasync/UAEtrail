@@ -163,7 +163,7 @@ export const resolveMobileBottomTab = (pathname: string, search = ''): MobileBot
     const params = new URLSearchParams(search.replace(/^\?/, ''));
     const mode = parseExploreSearchScopeFromParams(params);
     if (mode === 'places') return 'venues';
-    if (mode === 'crew') return 'crews';
+    if (mode === 'crew' || mode === 'groups') return 'crews';
     return 'trips';
   }
   if (pathname === PLAN_PATH) return 'plan';

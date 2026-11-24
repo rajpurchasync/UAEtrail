@@ -26,6 +26,9 @@ export const readExploreSearchScopeParam = (
   searchParams: Pick<URLSearchParams, 'get'>
 ): string | null => searchParams.get('searchScope')?.trim() || null;
 
+/** Retired alias for `searchScope` — stripped on browse URL sync only (GW-7). */
+export const INBOUND_SEARCH_SCOPE_FOCUS_PARAM = 'searchFocus' as const;
+
 const CANONICAL_SEARCH_SCOPES = new Set([
   'activities',
   'places',

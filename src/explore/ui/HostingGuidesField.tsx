@@ -185,7 +185,7 @@ export const HostingGuidesField = ({
                   <SecureAvatar
                     src={member.avatarUrl}
                     name={member.displayName}
-                    className="h-7 w-7 shrink-0 text-[10px]"
+                    className="h-7 w-7 shrink-0 text-xs"
                   />
                   <span className="min-w-0 flex-1 truncate text-sm font-medium text-neutral-900">
                     {member.displayName}
@@ -230,7 +230,7 @@ export const HostingGuidesField = ({
                 }}
                 className="flex w-full items-center gap-2 rounded-xl px-2 py-1.5 text-left hover:bg-neutral-50 disabled:opacity-50"
               >
-                <SecureAvatar src={hit.avatarUrl} name={hit.displayName!.trim()} className="h-7 w-7 shrink-0 text-[10px]" />
+                <SecureAvatar src={hit.avatarUrl} name={hit.displayName!.trim()} className="h-7 w-7 shrink-0 text-xs" />
                 <span className="truncate text-sm font-medium text-neutral-900">
                   {hit.displayName!.trim()}
                 </span>

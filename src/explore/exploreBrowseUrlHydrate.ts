@@ -1,7 +1,7 @@
 import {
   activityFilterToMapFilter,
   parseActivityListFilter,
-  parseExploreActivityDatePreset,
+  resolveExploreMapActivityDatePreset,
   parseExplorePanel,
   parseMapFilter,
   parseVenueListFilter,
@@ -162,7 +162,7 @@ export const parseExploreBrowseStateFromSearchParams = (
     venueFilter,
     venueRegions: parseVenueRegionsParam(searchParams),
     geoPath: parseBrowseGeoPath(searchParams.get(BROWSE_GEO_PARAM)),
-    activityDatePreset: parseExploreActivityDatePreset(searchParams.get('date')),
+    activityDatePreset: resolveExploreMapActivityDatePreset(searchParams.get('date')),
     activityModeFilter: parseExploreActivityModeFilter(
       searchParams.get(EXPLORE_ACTIVITY_MODE_FILTER_PARAM)
     ),

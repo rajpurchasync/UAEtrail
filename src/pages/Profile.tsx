@@ -260,7 +260,6 @@ export const Profile = () => {
             hubStats={profileHubStats}
             goalsCount={goals.length}
             badgesEarnedCount={badgesEarnedCount}
-            showHostingShortcut={isActivityHost}
             bio={profileLoaded ? profile.bio : null}
             languages={profileLoaded ? profile.languages : null}
             onSignOut={() => void signOut()}

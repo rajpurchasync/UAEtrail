@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { X } from 'lucide-react';
+import { CONSUMER_MODAL_CLOSE } from '../../config/consumerSurfaceTypography';
 import { EXPLORE_SHEET, EXPLORE_Z } from '../../config/exploreTheme';
 import { ACTIVITY_INVITE_FRIENDS_CTA } from '../../content/activityInviteCopy';
 import { ExploreResponsiveSheet } from '../../explore/ui/ExploreResponsiveSheet';
@@ -37,10 +38,10 @@ export const ActivityInviteExploreSheet = ({
       <button
         type="button"
         onClick={onClose}
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+        className={CONSUMER_MODAL_CLOSE.buttonCompact}
         aria-label="Close"
       >
-        <X className="h-4 w-4" aria-hidden />
+        <X className={CONSUMER_MODAL_CLOSE.iconCompact} aria-hidden />
       </button>
     </header>
     <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-6 pt-1">{children}</div>

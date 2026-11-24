@@ -66,8 +66,8 @@ export const ReviewCardCarousel = ({ reviews }: ReviewCardCarouselProps) => {
         onMouseEnter={() => setHoverPaused(true)}
         onMouseLeave={() => setHoverPaused(false)}
       >
-        {reviews.map((review) => (
-          <div key={`${review.name}-${review.emirate}`} className={wrapClass}>
+        {reviews.map((review, index) => (
+          <div key={`${review.name}-${review.emirate}-${index}`} className={wrapClass}>
             <ReviewCard {...review} className="h-full" />
           </div>
         ))}

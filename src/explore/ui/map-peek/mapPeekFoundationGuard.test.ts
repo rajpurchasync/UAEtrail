@@ -33,4 +33,26 @@ describe('map peek foundation (map surfaces)', () => {
     const layout = read('src/explore/ui/peek/activity/ActivityMapPeekCompactLayout.tsx');
     expect(layout).toMatch(/resolveActivityMapPeekViewModel/);
   });
+
+  it('PEEK-FOUND-05: trip + venue peeks share thumb-aside layout (text kind on photo)', () => {
+    const trip = read('src/explore/ui/peek/activity/ActivityMapPeekCompactLayout.tsx');
+    const venue = read('src/explore/ui/peek/place/PlaceMapPeekHeader.tsx');
+    const thumb = read('src/explore/ui/peek/shared/MapPeekThumbColumn.tsx');
+    expect(thumb).toMatch(/BROWSE_LIST_HERO_TYPE/);
+    expect(thumb).not.toMatch(/DiscoveryCardTypeIcon/);
+    expect(trip).toMatch(/MapPeekThumbColumn/);
+    expect(trip).toMatch(/data-map-peek-media-aside/);
+    expect(venue).toMatch(/MapPeekThumbColumn/);
+    expect(venue).not.toMatch(/venueTypePill/);
+    expect(venue).not.toMatch(/venueThumbBadge/);
+    expect(trip).toMatch(/kindLabel=\{null\}/);
+  });
+
+  it('PEEK-FOUND-06: map peek cards scroll internally instead of zoom-shrinking text', () => {
+    const layout = read('src/explore/mapPeekBubbleLayout.ts');
+    const overlay = read('src/explore/ui/map-peek/MapPeekShell.tsx');
+    expect(layout).toMatch(/resolveMapPeekFit/);
+    expect(overlay).toMatch(/map-peek-scrollable/);
+    expect(read('src/explore/ui/map-peek/MapTripPeekCard.tsx')).toMatch(/map-peek-summary-scroll/);
+  });
 });
