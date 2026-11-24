@@ -319,4 +319,11 @@ describe('list module hygiene', () => {
       /browse\/browseListBucket/
     );
   });
+
+  it('standalone list discovery root fills delegated scroll pane', () => {
+    const model = readFileSync(join(process.cwd(), 'src/list/shell/useListDiscoveryExperienceModel.ts'), 'utf8');
+    expect(model).toMatch(/embeddedOnExplore/);
+    expect(model).toMatch(/hubListRoot = embeddedOnExplore/);
+    expect(model).toMatch(/overflow-hidden/);
+  });
 });

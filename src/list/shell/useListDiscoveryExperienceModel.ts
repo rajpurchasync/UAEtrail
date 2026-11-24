@@ -261,8 +261,10 @@ export const useListDiscoveryExperienceModel = ({
     locationSearch: location.search,
   });
 
-  const hubListRoot =
-    searchResultsChrome ? 'flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden' : undefined;
+  /** Standalone `/list` and `/explore/search` — delegated scroll; embedded explore drawer supplies height. */
+  const hubListRoot = embeddedOnExplore
+    ? undefined
+    : 'flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden';
 
   return {
     surface,
