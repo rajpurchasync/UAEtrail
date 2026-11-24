@@ -10,7 +10,7 @@ import {
 export const createMeWishlistItem = async (input: {
   userId: string;
   locationId?: string;
-  areaId?: string;
+  destinationId?: string;
   activityId?: string;
   alertOnMatch?: boolean;
   watchOutingCategory?: OutingCategory | null;
@@ -19,10 +19,10 @@ export const createMeWishlistItem = async (input: {
 }) => {
   let watchLatitude = input.watchLatitude ?? null;
   let watchLongitude = input.watchLongitude ?? null;
-  if (input.areaId) {
-    const area = await findPublishedAreaById(input.areaId);
+  if (input.destinationId) {
+    const area = await findPublishedAreaById(input.destinationId);
     if (!area) {
-      throw new ApiError(404, 'area_not_found', 'Published area not found.');
+      throw new ApiError(404, 'destination_not_found', 'Published destination not found.');
     }
     if (watchLatitude == null || watchLongitude == null) {
       watchLatitude = area.center.latitude;
@@ -33,7 +33,7 @@ export const createMeWishlistItem = async (input: {
   const item = await createWishlistItem({
     userId: input.userId,
     locationId: input.locationId,
-    areaId: input.areaId,
+    destinationId: input.destinationId,
     activityId: input.activityId,
     alertOnMatch: input.alertOnMatch,
     watchOutingCategory: input.watchOutingCategory ?? null,
@@ -43,7 +43,7 @@ export const createMeWishlistItem = async (input: {
   return {
     id: item.id,
     locationId: item.locationId,
-    areaId: item.areaId,
+    destinationId: item.destinationId,
     activityId: item.activityId,
     alertOnMatch: item.alertOnMatch,
     watchOutingCategory: item.watchOutingCategory,

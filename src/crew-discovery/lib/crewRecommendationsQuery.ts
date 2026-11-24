@@ -5,7 +5,8 @@ export type DiscoverCrewRecommendationsQueryParams = {
   from: string;
   to: string;
   date: string | null;
-  area: string | null;
+  /** Curated destination hub slug (explore `?destination=`) or emirate filter — not geo `GeoRef.areaId`. */
+  destination: string | null;
   kind: AvailabilityKind | null;
   limit?: number;
 };

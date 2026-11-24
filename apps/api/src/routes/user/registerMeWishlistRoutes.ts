@@ -12,13 +12,16 @@ const idParamSchema = z.object({ id: z.string().min(1) });
 
 const outingCategorySchema = z.enum(['hiking', 'camping', 'events', 'rideshare', 'activities']);
 
-const wishlistTargetCount = (d: { locationId?: string; areaId?: string; activityId?: string }) =>
-  [d.locationId, d.areaId, d.activityId].filter(Boolean).length;
+const wishlistTargetCount = (d: {
+  locationId?: string;
+  destinationId?: string;
+  activityId?: string;
+}) => [d.locationId, d.destinationId, d.activityId].filter(Boolean).length;
 
 const wishlistCreateSchema = z
   .object({
     locationId: z.string().optional(),
-    areaId: z.string().optional(),
+    destinationId: z.string().optional(),
     activityId: z.string().optional(),
     alertOnMatch: z.boolean().optional(),
     watchOutingCategory: outingCategorySchema.optional(),
@@ -26,14 +29,15 @@ const wishlistCreateSchema = z
     watchLongitude: z.number().min(-180).max(180).optional(),
   })
   .refine((d) => wishlistTargetCount(d) === 1, {
-    message: 'Wishlist saves a single venue (locationId), area (areaId), or activity (activityId).',
+    message:
+      'Wishlist saves a single venue (locationId), destination (destinationId), or activity (activityId).',
   });
 
 const wishlistPatchSchema = z.object({
   alertOnMatch: z.boolean(),
 });
 
-/** Personal wishlist — venues, areas, and activities (`user_wishlist` Mongo collection). */
+/** Personal wishlist — venues, destinations, and activities (`user_wishlist` Mongo collection). */
 export const registerMeWishlistRoutes = (router: Router): void => {
   router.get('/me/wishlist', async (req, res, next) => {
     try {
@@ -50,7 +54,7 @@ export const registerMeWishlistRoutes = (router: Router): void => {
       const data = await createMeWishlistItem({
         userId: req.auth!.userId,
         locationId: body.locationId,
-        areaId: body.areaId,
+        destinationId: body.destinationId,
         activityId: body.activityId,
         alertOnMatch: body.alertOnMatch,
         watchOutingCategory: body.watchOutingCategory ?? null,
@@ -95,12 +99,12 @@ export const registerMeWishlistRoutes = (router: Router): void => {
   router.get('/me/wishlist/check', async (req, res, next) => {
     try {
       const locationId = req.query.locationId as string | undefined;
-      const areaId = req.query.areaId as string | undefined;
+      const destinationId = req.query.destinationId as string | undefined;
       const activityId = req.query.activityId as string | undefined;
       const data = await checkMeWishlistTarget({
         userId: req.auth!.userId,
         locationId,
-        areaId,
+        destinationId,
         activityId,
       });
       res.json({ data });

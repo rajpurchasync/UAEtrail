@@ -77,7 +77,7 @@ export const useListDiscoveryCrewsCategoryModel = ({
       from: range.from,
       to: range.to,
       date: serializeExploreActivityDatePreset(activityDatePreset),
-      area: destinationSlug?.trim() || null,
+      destination: destinationSlug?.trim() || null,
       kind: null,
     };
   }, [memberAvailability.range, activityDatePreset, destinationSlug]);

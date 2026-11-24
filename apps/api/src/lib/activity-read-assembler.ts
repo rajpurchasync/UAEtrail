@@ -608,7 +608,7 @@ export const listPublishedUpcomingActivitiesByAreaFromMongo = async (
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
   const locationIds = await locationsCollection()
-    .find({ areaId, status: LocationStatus.ACTIVE })
+    .find({ destinationId: areaId, status: LocationStatus.ACTIVE })
     .project({ _id: 1 })
     .limit(500)
     .toArray();

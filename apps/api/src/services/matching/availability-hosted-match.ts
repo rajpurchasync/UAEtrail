@@ -131,13 +131,13 @@ export const notifyMemberOfHostedActivitiesForAvailability = async (input: {
 export const notifyAvailabilityHoldersInAreaOfHostedActivity = async (input: {
   activityId: string;
   hostUserId: string;
-  areaId: string;
+  destinationId: string;
   activityTitle: string;
   activityStartAt: Date;
   activityType: string | null | undefined;
 }): Promise<void> => {
   try {
-    const area = await findAreaById(input.areaId);
+    const area = await findAreaById(input.destinationId);
     const areaName = area?.name ?? 'this area';
     const kindFilter = availabilityKindsForActivityType(input.activityType);
     if (kindFilter.length === 0) return;
@@ -147,7 +147,7 @@ export const notifyAvailabilityHoldersInAreaOfHostedActivity = async (input: {
       .collection(COLLECTIONS.MEMBER_AVAILABILITY)
       .find({
         visibility: 'public',
-        areaId: input.areaId,
+        destinationId: input.destinationId,
         userId: { $ne: input.hostUserId },
         kinds: { $in: kindFilter },
       })
@@ -169,7 +169,7 @@ export const notifyAvailabilityHoldersInAreaOfHostedActivity = async (input: {
         type: NotificationType.ACTIVITY,
         meta: {
           kind: 'availability_area_hosted_match',
-          areaId: input.areaId,
+          destinationId: input.destinationId,
           activityId: input.activityId,
           path: activityDetailPath(input.activityId),
         },

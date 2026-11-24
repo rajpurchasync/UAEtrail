@@ -116,8 +116,8 @@ export const FacilityDetailSections = ({
   const longitude = facility.longitude;
   const hasCoords = latitude != null && longitude != null;
   const backTo = detailBackPath('explore');
-  const parentPath = facility.parentPlaceId
-    ? canonicalPlaceDetailPath(facility.parentPlaceId)
+  const parentPath = facility.onSiteId
+    ? canonicalPlaceDetailPath(facility.onSiteId)
     : null;
   const parentPlaceName = facility.parentPlaceName?.trim() || null;
   const parentHeroLine =

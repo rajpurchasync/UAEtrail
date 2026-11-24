@@ -220,7 +220,7 @@ export interface WeatherForecastResponse {
 export interface LocationDetailResponse {
   data: LocationDTO;
   premium: LocationPremiumSummaryDTO | null;
-  /** Facility POIs in the same curated area as `data` (when `data.areaId` is set). */
+  /** Facility POIs in the same curated destination as `data` (when `data.destinationId` is set). */
   nearbyFacilities?: PlaceNearbyFacilityDTO[];
   /** Signed-in overlay (`GET /places/:id/me/state`); public shell omits this. */
   viewerAccess?: PlaceViewerAccessDTO;
@@ -245,7 +245,8 @@ export interface ActivityDTO {
   locationName: string;
   region?: string;
   groupRegionLevels?: GroupRegionLevels | null;
-  areaId?: string | null;
+  /** Denormalized from place at read time — not written on activity publish. */
+  destinationId?: string | null;
   geoRef?: import('./geo-hierarchy.js').GeoRef | null;
   activityType: ScheduledActivityType;
   title: string;

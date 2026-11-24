@@ -36,8 +36,8 @@ export const useExploreSearchRecommendedCrew = ({
     [detectedWhere, draftQuery]
   );
 
-  /** Emirate / area hint — same UAE venue bands as trips & places; empty = UAE-wide. */
-  const area = useMemo(() => venueRegions[0]?.trim() || null, [venueRegions]);
+  /** Emirate / destination hint — same UAE venue bands as trips & places; empty = UAE-wide. */
+  const destination = useMemo(() => venueRegions[0]?.trim() || null, [venueRegions]);
 
   const roster = useCrewDiscoveryRoster({
     enabled: active,
@@ -50,7 +50,7 @@ export const useExploreSearchRecommendedCrew = ({
     enabled: active,
     search,
     activityDatePreset,
-    destinationSlug: area,
+    destinationSlug: destination,
     mapFilter: 'all',
   });
 
@@ -59,11 +59,11 @@ export const useExploreSearchRecommendedCrew = ({
       from: availability.range.from,
       to: availability.range.to,
       date: serializeExploreActivityDatePreset(activityDatePreset),
-      area,
+      destination,
       kind: null as const,
       limit: Math.max(limit, 12),
     }),
-    [activityDatePreset, area, availability.range.from, availability.range.to, limit]
+    [activityDatePreset, destination, availability.range.from, availability.range.to, limit]
   );
 
   const serverRecommendations = useDiscoverCrewRecommendations(active, crewRecommendationsQuery);

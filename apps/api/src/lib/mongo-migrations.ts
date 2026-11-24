@@ -1172,7 +1172,7 @@ const migrateOutingCrewKindRename = async (db: Db): Promise<void> => {
 };
 
 /** Bump when adding a new migration step so existing deployments run it once. */
-export const MONGO_MIGRATION_VERSION = 2025112505;
+export const MONGO_MIGRATION_VERSION = 2025112506;
 
 /** One-time migrations for activity terminology and role model alignment. */
 export const runMongoMigrations = async (db: Db): Promise<void> => {

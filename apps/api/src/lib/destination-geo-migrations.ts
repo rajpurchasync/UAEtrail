@@ -76,6 +76,8 @@ export const runDestinationGeoMigrations = async (db: Db): Promise<void> => {
   await stripLegacyCatalogFields(db, COLLECTIONS.FACILITIES);
   await stripLegacyCatalogFields(db, COLLECTIONS.MEMBER_AVAILABILITY);
   await stripLegacyCatalogFields(db, COLLECTIONS.ACTIVITIES);
+  await backfillDestinationIdField(db, COLLECTIONS.USER_WISHLIST);
+  await stripLegacyCatalogFields(db, COLLECTIONS.USER_WISHLIST);
   await stripLegacyGeoNodeCatalogAreaId(db);
   await stripLegacyFacilitySiteField(db);
 };

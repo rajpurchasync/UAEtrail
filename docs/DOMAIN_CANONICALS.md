@@ -277,7 +277,7 @@ Query param **`tab`** where noted. **UI labels** may differ from wire ids (activ
 |---------|--------------|-----------------------------------|-----------|
 | Activity | `/activity/:id` | **`presentation.sections`** (no tab bar). **Embed/manage:** same `sections` + `footerByTab` | Legacy `?tab=` → scroll anchors (deprecated). **FE:** `ActivityDetailByKind` → `*ActivityDetailPage` → `ActivityDetailPageShell` → `ActivityDetailSections` |
 | Place (trail/camp/venue) | `/trail`, `/camp`, `/venue` | **Public scroll** (no tab bar). Legacy wire: `overview` · `facts` · `transport` · `guide` (alias `location` → `transport`) | `?tab=` deprecated · `src/place/placeDetailTab.ts`; **FE:** `*PlaceDetailPage` → `PlaceDetailPage` → `PlaceDetailPageShell` → `PlaceDetailSections` — L1 `buildPlaceDetailPageModel`; kind facts `PlaceDetailKindFacts` (trail / camp / event) |
-| Area hub | `/area/:slug` | `overview` · `places` · `activities` (people on overview) | `?tab=` · `src/area/areaDetailTab.ts` |
+| Destination hub | `/destination/:slug` | `overview` · `places` · `activities` (people on overview) | `?tab=` · `src/area/areaDetailTab.ts` |
 | Shop public | `/shop/:id` | `about` · `location` | `?tab=` · `src/shop/shopPublicDetailTab.ts` (inbound `?tab=products` → `about`) |
 | Organisation public | `/agency`, `/partner` | `about` · `outings` · `contact` | `?tab=` · `src/organisation/organisationPublicDetailTab.ts` |
 
@@ -295,9 +295,9 @@ Detail UIs must load from the **canonical read API** for that entity; writes use
 | **Member (person)** | `/member/:userId` | `users` profile | Member `PATCH /me/profile` | `GET /member/:userId/profile` | `memberPublicProfileApi` | ≠ tenant storefront |
 | **Organisation (pro)** | `/agency`, `/partner` | `tenants` storefront | Host onboarding / `organisationConsoleApi` | `GET /tenants/:slug` (public profile bundle) | `organisationConsoleApi` | Shop tenants → `/shop/:id`; individual Pro → `/member/:userId` |
 | **Shop** | `/shop/:id` | `tenants` / merchant (+ optional place pin) | **Operator** Pro onboarding — **not** FAB **Add → Shops** (`add.place.shop` is community **place** submit); see [§1.7](#17-program-cpc--catalog-ontology-fab-compose-wire) | `GET /shop/shops/:id` | `shopPublicClientApi` | `EntityKind.shop` = storefront tenant; no product catalog HTTP |
-| **Place** | `/place/:id` (CPC-6; legacy `/trail`·`/camp`·`/venue`) | `locations` (place rows) | Admin `/admin/places`; member **Add → Place**; host **new spot** (photo + pin; city from coords) stays DRAFT until admin activate (`registryListed` + `activity_venue_live`); operator place submit with `areaId` | `GET /places/:id`; `GET /places/catalog`; linked **facilities** via **`parentPlaceId`** (**CPC-3**) | `placeDetailClientApi` | Place catalog excludes facilities after CPC |
-| **Facility** | `/facility/:id` | **`facilities`** (**CPC-2**) | Admin `/admin/facilities`; member **Add → Facility** | `GET /facilities/:id`; `GET /facilities/catalog` | TBD `facilityDetailClientApi` | `areaId` + optional `parentPlaceId` |
-| **Area** | `/area/:slug` | `areas` curated hubs | **Admin** `/admin/areas` (publish `status`) | `GET /areas/:slug` (preview slices) | `areaHubClientApi` | Previews filter published activities + active places by `areaId` |
+| **Place** | `/place/:id` (CPC-6; legacy `/trail`·`/camp`·`/venue`) | `locations` (place rows) | Admin `/admin/places`; member **Add → Place**; host **new spot** (photo + pin; city from coords) stays DRAFT until admin activate (`registryListed` + `activity_venue_live`); submit **`destinationId`** | `GET /places/:id`; `GET /places/catalog`; linked **facilities** via **`onSiteId`** | `placeDetailClientApi` | Place catalog excludes facilities after CPC |
+| **Facility** | `/facility/:id` | **`facilities`** (**CPC-2**) | Admin `/admin/facilities`; member **Add → Facility** | `GET /facilities/:id`; `GET /facilities/catalog` | TBD `facilityDetailClientApi` | **`destinationId`** + optional **`onSiteId`** |
+| **Destination** | `/destination/:slug` | `areas` store (logical destinations) | **Admin** `/admin/areas` (publish `status`) | `GET /destinations/:slug` (preview slices) | `areaHubClientApi` | Previews filter published activities + active places by **`destinationId`** |
 
 **Registry:** place catalog browse uses `GET /places/registry` (explore map) — detail pages use **per-id** `GET /places/:id`, not the registry blob.
 
@@ -313,7 +313,7 @@ Map/list **peek** and entity **detail** share one engagement contract per viewer
 |---------|-------------|-------------------|------------|-------------------------------|
 | **Activity** | `ActivityMapPeekHost` → `ActivityPeekCard` → `peek/activity/*` | `ActivityDetailByKind` → `*ActivityDetailPage` → scroll body + wire CTAs | `PeekDetailLink` + `view_detail` in `mapPeekActions` | Join/RSVP: `POST /activities/:id/requests`; **public** slots from `presentation.sections` + `mapPeekActions`; embed: `footerByTab`; guest: `ActivityDetailGuestGate` |
 | **Place** | `PlaceMapPeekHost` → `PlacePeekCard` (`PlacePeekHero` · `PlacePeekBody` · `PlacePeekActions`) | `*PlaceDetailPage` → `PlaceDetailPageShell` → `PlaceDetailSections` | **Plan trip** · `PeekDetailLink` **View details** | `PlacePlanList` (page and peek) from `GET /places/:id/activities`; reviews; transport; `nearbyFacilities`; premium guide `PlacePremiumGuidePanel` |
-| **Area** | `mapPeekSlots` → `AreaPeekBody` / `AreaPeekActions` | `AreaDetailPage` → `AreaDetailView` (`MobileDetailShell`) | Links to `/area/:slug`, explore `?area=` | Browse-only hub — join on child **activity** rows |
+| **Destination** | `mapPeekSlots` → `AreaPeekBody` / `AreaPeekActions` | `AreaDetailPage` → `AreaDetailView` (`MobileDetailShell`) | Links to `/destination/:slug`, explore `?destination=` | Browse-only hub — join on child **activity** rows |
 | **Shop** | `ShopPeekActions` + `PeekDetailLink` | `ShopPublic` → `ShopPublicPage` (`EntityPublicDetailShell`) | `/shop/:id`; guest map rows may gate in peek | Reviews on tenant id; outbound **website** link only (no product grid) |
 | **Agency** | Catalog / activity publisher row (not `source: agency` map rows) | `OrganisationProfile` → `OrganisationPublicProfile` (`EntityPublicDetailShell`) | `resolveActivityPublisherProfilePath` from activity | Message/follow; listed outings → `/activity/:id` |
 | **Member** | People browse / roster links | `MemberProfile` (`viewerAccess` on `GET /member/:userId/profile`) | `/member/:userId` | Buddy add, follow, `MessageMemberButton` |
@@ -551,7 +551,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 |------------------|-------------------|----------------------------------|-------------------------|
 | Trails | `hiking` (`activityType: hiking`) | Yes (`source: place`, hiking) | `trailSpots` |
 | Camps / camp spots | `camping` | Yes | `campSpots` |
-| Outdoor spots (“Others” Add) | `outdoor_other` (`event` + `outdoor-other` tag) | Yes (`placeKind: outdoor_other`) | Grouped on `/area/:slug` preview |
+| Outdoor spots (“Others” Add) | `outdoor_other` (`event` + `outdoor-other` tag) | Yes (`placeKind: outdoor_other`) | Grouped on `/destination/:slug` preview |
 | Shops (member Add) | `shop` + `community-shop` tag | Yes — **Shops** lens, `catalogProfileExposure: peek` (map peek only) | Area hub + rollups |
 | Shops (merchant / Pro tenant) | `shop:` tenant rows | Yes — **Shops** lens, `catalogProfileExposure: full` → `/shop/…` | Merchant profile + reviews |
 | Individual Pro / tour agencies | `tenants` + `/member/:userId` · `/agency` | **No map pin** — discover via **hosted activities** + person or agency URL (`catalogProfileExposure: full`) | Area hub `#operators` rail = Pro hosts with outings in this area (not tenant lat/lng) |

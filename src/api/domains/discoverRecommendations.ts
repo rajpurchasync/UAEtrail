@@ -34,7 +34,7 @@ export const discoverRecommendationsApi = {
     params.set('to', options.to);
     if (options.limit != null) params.set('limit', String(options.limit));
     if (options.date) params.set('date', options.date);
-    if (options.area) params.set('area', options.area);
+    if (options.destination) params.set('destination', options.destination);
     if (options.kind) params.set('kind', options.kind);
     return apiRequest<DiscoverCrewRecommendationsResponse>(
       `/discover/recommendations?${params.toString()}`,

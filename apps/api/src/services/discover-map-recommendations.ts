@@ -39,7 +39,9 @@ export const loadDiscoverMapRecommendations = async (input: {
     for (const buddy of buddies) friendUserIds.add(buddy.userId);
   }
 
-  const wishlist = await loadRecommendationWishlistContext(input.viewerUserId);
+  const wishlist = input.viewerUserId
+    ? await loadRecommendationWishlistContext(input.viewerUserId)
+    : { locationIds: new Set<string>(), destinationIds: new Set<string>() };
 
   const [activities, locationPage] = await Promise.all([
     listPublishedActivitiesForExploreMapFromMongo(ACTIVITY_SCAN),
@@ -52,7 +54,7 @@ export const loadDiscoverMapRecommendations = async (input: {
       activity,
       friendUserIds,
       wishlistLocationIds: wishlist.locationIds,
-      wishlistAreaIds: wishlist.areaIds,
+      wishlistDestinationIds: wishlist.destinationIds,
       nowMs,
       viewerGeo: input.viewerGeo,
     });
@@ -72,7 +74,7 @@ export const loadDiscoverMapRecommendations = async (input: {
     const ranked = rankMapExplorePlace({
       location,
       wishlistLocationIds: wishlist.locationIds,
-      wishlistAreaIds: wishlist.areaIds,
+      wishlistDestinationIds: wishlist.destinationIds,
       viewerGeo: input.viewerGeo,
     });
     if (!ranked) continue;

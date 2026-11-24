@@ -67,7 +67,7 @@ export type AvailabilitySlotEditorHandle = {
 export type AvailabilitySlotEditorProps = {
   /** `fab` = explore compose sheet (no duplicate intro). */
   variant?: 'plan' | 'fab';
-  /** Suggested trail area id (e.g. from map `?area=`); does not override saved `destinationId`. */
+  /** Suggested destination id (e.g. from map `?destination=`); does not override saved `destinationId`. */
   prefillAreaId?: string | null;
   /** Compose `intent:open` prefill (`capacity`, default modalities). */
   composePrefill?: OpenAvailabilityComposePrefill | null;

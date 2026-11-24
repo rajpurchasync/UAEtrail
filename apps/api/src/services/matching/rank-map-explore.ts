@@ -8,7 +8,7 @@ export type RankMapExploreActivityInput = {
   activity: ActivityWithPublicRelations;
   friendUserIds: Set<string>;
   wishlistLocationIds?: Set<string>;
-  wishlistAreaIds?: Set<string>;
+  wishlistDestinationIds?: Set<string>;
   nowMs: number;
   viewerGeo?: { lat: number; lng: number } | null;
 };
@@ -38,9 +38,11 @@ export const rankMapExploreActivity = (
     (activity.participants ?? []).some((p) => friendUserIds.has(p.userId));
 
   const wishlistLocations = input.wishlistLocationIds;
-  const wishlistAreas = input.wishlistAreaIds;
+  const wishlistDestinations = input.wishlistDestinationIds;
   const wishlistPlace = Boolean(wishlistLocations?.has(activity.locationId));
-  const wishlistArea = Boolean(activity.areaId && wishlistAreas?.has(activity.areaId));
+  const wishlistArea = Boolean(
+    activity.destinationId && wishlistDestinations?.has(activity.destinationId)
+  );
 
   const pin =
     activity.meetingLat != null && activity.meetingLng != null

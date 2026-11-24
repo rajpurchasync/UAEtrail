@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
-import type { AreaDTO, destinationStatus } from '@uaetrail/shared-types';
+import type { AreaDTO, AreaStatus } from '@uaetrail/shared-types';
 import { Link } from 'react-router-dom';
 import {
   createAdminArea,
@@ -37,7 +37,7 @@ const COUNTRY_OPTIONS = SUPPORTED_COUNTRIES.map((country) => ({
   label: country.label,
 }));
 
-const STATUS_OPTIONS: { value: destinationStatus; label: string }[] = [
+const STATUS_OPTIONS: { value: AreaStatus; label: string }[] = [
   { value: 'draft', label: 'Draft' },
   { value: 'published', label: 'Published (on map & hub)' },
 ];
@@ -57,7 +57,7 @@ type AreaFormState = {
   slug: string;
   summary: string;
   imageUrl: string | null;
-  status: destinationStatus;
+  status: AreaStatus;
   priority: number;
   latitude: number | null;
   longitude: number | null;
@@ -234,7 +234,8 @@ export const Areas = () => {
           <div className="max-w-2xl space-y-1">
             <h1 className="text-xl font-bold text-gray-900">Curated areas</h1>
             <p className="text-sm text-gray-600">
-              Hubs like Hatta or Jebel Jais power the Locations lens, <code className="text-xs">/area/:slug</code>{' '}
+              Hubs like Hatta or Jebel Jais power the Locations lens,{' '}
+              <code className="text-xs">/destination/:slug</code>{' '}
               pages, and place linking. Add country and region first, then summary and hero image. Link places from{' '}
               <strong>Manage places</strong> or on <Link to="/admin/places" className="text-emerald-800 underline">Places</Link>.
             </p>
@@ -517,7 +518,7 @@ export const Areas = () => {
                 <label className="mb-1 block text-sm font-medium text-neutral-700">Status</label>
                 <AppSelect
                   value={form.status}
-                  onChange={(status) => setForm((prev) => ({ ...prev, status: status as destinationStatus }))}
+                  onChange={(status) => setForm((prev) => ({ ...prev, status: status as AreaStatus }))}
                   options={STATUS_OPTIONS}
                   inputClassName={ADMIN_SELECT_CLASS}
                   aria-label="Status"

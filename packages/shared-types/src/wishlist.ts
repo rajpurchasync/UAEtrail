@@ -1,10 +1,10 @@
 import type { OutingCategory } from './explore-plan-projection.js';
 
-/** Private save — venue (place), curated area, or scheduled activity the member wants to join later. */
+/** Private save — venue (place), curated destination hub, or scheduled activity. */
 export interface WishlistItemDTO {
   id: string;
   locationId?: string | null;
-  areaId?: string | null;
+  destinationId?: string | null;
   activityId?: string | null;
   alertOnMatch?: boolean;
   watchOutingCategory?: OutingCategory | null;
@@ -12,7 +12,7 @@ export interface WishlistItemDTO {
   watchLongitude?: number | null;
   createdAt?: string;
   location?: { id: string; name: string; images: string[]; activityType: string } | null;
-  area?: { id: string; slug: string; name: string; imageUrl?: string | null } | null;
+  destination?: { id: string; slug: string; name: string; imageUrl?: string | null } | null;
   activity?: { id: string; title: string; locationName: string | null; activityType: string } | null;
 }
 
@@ -20,4 +20,3 @@ export type WishlistCheckDTO = {
   saved: boolean;
   wishlistItemId: string | null;
 };
-

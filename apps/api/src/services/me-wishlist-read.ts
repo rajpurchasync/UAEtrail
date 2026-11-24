@@ -5,7 +5,7 @@ type WishlistRow = Awaited<ReturnType<typeof listWishlistItemsWithDetails>>[numb
 export const toWishlistItemDto = (row: WishlistRow) => ({
   id: row.id,
   locationId: row.locationId,
-  areaId: row.areaId,
+  destinationId: row.destinationId,
   activityId: row.activityId,
   alertOnMatch: row.alertOnMatch,
   watchOutingCategory: row.watchOutingCategory,
@@ -19,12 +19,12 @@ export const toWishlistItemDto = (row: WishlistRow) => ({
         images: row.location.images,
       }
     : null,
-  area: row.area
+  destination: row.destination
     ? {
-        id: row.area.id,
-        slug: row.area.slug,
-        name: row.area.name,
-        imageUrl: row.area.imageUrl,
+        id: row.destination.id,
+        slug: row.destination.slug,
+        name: row.destination.name,
+        imageUrl: row.destination.imageUrl,
       }
     : null,
   activity: row.activity
@@ -34,19 +34,21 @@ export const toWishlistItemDto = (row: WishlistRow) => ({
 
 export const listMeWishlist = async (userId: string) => {
   const rows = await listWishlistItemsWithDetails(userId);
-  return rows.filter((row) => row.locationId || row.areaId || row.activityId).map(toWishlistItemDto);
+  return rows
+    .filter((row) => row.locationId || row.destinationId || row.activityId)
+    .map(toWishlistItemDto);
 };
 
 export const checkMeWishlistTarget = async (input: {
   userId: string;
   locationId?: string;
-  areaId?: string;
+  destinationId?: string;
   activityId?: string;
 }) => {
   const item = await findWishlistItem({
     userId: input.userId,
     locationId: input.locationId,
-    areaId: input.areaId,
+    destinationId: input.destinationId,
     activityId: input.activityId,
   });
   return {

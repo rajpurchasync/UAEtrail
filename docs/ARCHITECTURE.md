@@ -53,7 +53,7 @@ See [`DOMAIN.md`](./DOMAIN.md) for the full glossary. Summary:
 |---------|---------|------------|-----------------|
 | Place (trail/camp/spot) | `locations` (HTTP `/places`) | `/trail`, `/camp`, `/venue` | Yes (`source: place`) |
 | Facility (amenity) | `facilities` | `/facility/:id` | Yes (`source: facility` — coords for navigation) |
-| Area (admin-curated name) | `areas` | `/area/:slug` | **No** — filter `?area=` and hub page; country/state/region from geography |
+| Destination (curated hub) | `areas` | `/destination/:slug` | **No** — filter `?destination=` and hub page; country/state from **AdminGeo** (`geoRef`) |
 | Activity (hosted outings) | `activities` | `/activity/:id` | Yes (`source: activity`) |
 | Member availability (find crew) | `member_availability` | profile + map pin | Yes (`source: availability`) |
 | Shop (organisation) | `tenants` (SHOP) + `merchant_profiles` | `/shop/:id` | Physical only (`source: shop`) |

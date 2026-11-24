@@ -333,7 +333,6 @@
       ],
       "routeRegistrars": [
         "apps/api/src/routes/user/registerPublicDestinationRoutes.ts",
-        "apps/api/src/routes/user/registerPublicDestinationRoutes.ts",
         "apps/api/src/routes/user/registerPublicGeoHierarchyRoutes.ts",
         "apps/api/src/routes/admin/registerAdminAreaRoutes.ts",
         "apps/api/src/routes/geo-search.ts"

@@ -16,7 +16,7 @@ const scopedExplore = (
   filter?: 'hiking' | 'camping' | 'shops'
 ): string =>
   explorePath({
-    area: destinationSlug,
+    destination: destinationSlug,
     list: true,
     pinKind,
     filter,

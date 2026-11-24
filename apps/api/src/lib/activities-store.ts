@@ -494,7 +494,7 @@ export const publishActivityById = async (activityId: string) => {
     void notifyAvailabilityHoldersInAreaOfHostedActivity({
       activityId,
       hostUserId: actorUserId,
-      areaId: destinationId,
+      destinationId,
       activityTitle: mongoDoc.title,
       activityStartAt: mongoDoc.startAt ?? publishedAt,
       activityType: mongoDoc.activityType,

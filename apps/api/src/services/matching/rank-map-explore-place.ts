@@ -4,7 +4,7 @@ import type { Location } from '../../domain/types.js';
 export type RankMapExplorePlaceInput = {
   location: Location;
   wishlistLocationIds: Set<string>;
-  wishlistAreaIds: Set<string>;
+  wishlistDestinationIds: Set<string>;
   viewerGeo?: { lat: number; lng: number } | null;
 };
 
@@ -22,7 +22,9 @@ export const rankMapExplorePlace = (input: RankMapExplorePlaceInput): RankMapExp
   if (location.latitude == null || location.longitude == null) return null;
 
   const wishlistPlace = input.wishlistLocationIds.has(location.id);
-  const wishlistArea = Boolean(location.areaId && input.wishlistAreaIds.has(location.areaId));
+  const wishlistArea = Boolean(
+    location.destinationId && input.wishlistDestinationIds.has(location.destinationId)
+  );
 
   const ranked = scoreMapExplorePlaceCore({
     boosts: {

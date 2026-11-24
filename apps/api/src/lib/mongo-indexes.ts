@@ -52,8 +52,8 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { status: 1, priority: 1 } },
     ]),
     db.collection(COLLECTIONS.FACILITIES).createIndexes([
-      { key: { areaId: 1, facilityKind: 1, status: 1 }, sparse: true },
-      { key: { parentPlaceId: 1, facilityKind: 1 }, sparse: true },
+      { key: { destinationId: 1, facilityKind: 1, status: 1 }, sparse: true },
+      { key: { onSiteId: 1, facilityKind: 1 }, sparse: true },
       { key: { venueId: 1, facilityKind: 1 }, sparse: true },
       { key: { moderationStatus: 1, publicationStatus: 1 } },
       { key: { registeredByUserId: 1, createdAt: -1 }, sparse: true },
@@ -75,7 +75,7 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
     db.collection(COLLECTIONS.LOCATIONS).createIndexes([
       { key: { status: 1, featured: -1, createdAt: -1 } },
       { key: { submittedById: 1, createdAt: -1 } },
-      { key: { areaId: 1, status: 1 }, sparse: true },
+      { key: { destinationId: 1, status: 1 }, sparse: true },
       { key: { geo: '2dsphere' } },
       { key: { status: 1, groupRegionBrowseKey: 1, featured: -1 }, sparse: true },
       { key: { countryCode: 1, groupRegionBrowseKey: 1, status: 1 }, sparse: true },
@@ -109,15 +109,15 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
         partialFilterExpression: { locationId: { $type: 'string' } }
       },
       {
-        key: { userId: 1, areaId: 1 },
+        key: { userId: 1, destinationId: 1 },
         unique: true,
-        name: 'userId_areaId_unique',
-        partialFilterExpression: { areaId: { $type: 'string' } }
+        name: 'userId_destinationId_unique',
+        partialFilterExpression: { destinationId: { $type: 'string' } }
       },
       {
-        key: { areaId: 1 },
-        name: 'wishlist_areaId',
-        partialFilterExpression: { areaId: { $type: 'string' } }
+        key: { destinationId: 1 },
+        name: 'wishlist_destinationId',
+        partialFilterExpression: { destinationId: { $type: 'string' } }
       },
       {
         key: { watchOutingCategory: 1 },
@@ -152,7 +152,7 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
     db.collection(COLLECTIONS.REWARD_LEDGERS).createIndexes([{ key: { userId: 1, action: 1 } }]),
     db.collection(COLLECTIONS.USER_BADGES).createIndexes([{ key: { userId: 1 } }]),
     db.collection(COLLECTIONS.MEMBER_AVAILABILITY).createIndexes([
-      { key: { visibility: 1, areaId: 1 } },
+      { key: { visibility: 1, destinationId: 1 } },
       { key: { kinds: 1, visibility: 1 } },
       { key: { visibility: 1, updatedAt: -1 }, name: 'visibility_updatedAt_map_pins' },
     ]),
@@ -176,7 +176,7 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { status: 1, activityType: 1, meetingLat: 1 }, name: 'status_activityType_meetingLat' },
       { key: { locationId: 1 } },
       { key: { featured: 1, status: 1, startAt: 1 } },
-      { key: { areaId: 1, status: 1 }, sparse: true },
+      { key: { destinationId: 1, status: 1 }, sparse: true },
       { key: { originLat: 1, originLng: 1 }, name: 'origin_lat_lng', sparse: true },
       { key: { geo: '2dsphere' }, sparse: true },
       { key: { status: 1, groupRegionBrowseKey: 1, startAt: 1 }, sparse: true },
@@ -203,7 +203,7 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
     db.collection(COLLECTIONS.PARTICIPANT_INTENTS).createIndexes([
       { key: { userId: 1, createdAt: -1 } },
       { key: { status: 1, createdAt: -1 } },
-      { key: { areaId: 1, status: 1 }, sparse: true },
+      { key: { destinationId: 1, status: 1 }, sparse: true },
     ]),
     db.collection(COLLECTIONS.ACTIVITY_REQUESTS).createIndexes([
       { key: { activityId: 1, userId: 1 }, unique: true },

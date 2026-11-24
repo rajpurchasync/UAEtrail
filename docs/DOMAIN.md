@@ -15,7 +15,7 @@ Use this lens in docs and APIs — **not** extra product nouns like “destinati
 | Lens | Question | Primary entities | Examples |
 |------|----------|------------------|----------|
 | **What** | What is happening? | **Activity** (+ **activity kind**) | Saturday hike, camping weekend, rideshare, “looking for crew” |
-| **Where** | Where on the ground? | **Area** → **Place** → **Facility** | Hatta · Wadi Shawka trail · rest area on that trail · toilet at trailhead |
+| **Where** | Where on the ground? | **AdminGeo** + **Destination** → **Place** → **Facility** | Hatta hub · Wadi Shawka trail · picnic spot on trail · toilet at trailhead |
 | **Who** | Who is involved? | **Person**, **Host**, **Operator** (tenant workspace) | Member, buddy, guide/agency/shop brand — one **user** account |
 | **How** | How do I take part? *(context only)* | **Participation** (join, RSVP, crew) | Request to join, I’m going, host approves, operator console |
 
@@ -109,16 +109,16 @@ There is **no** `Trip` table, `TripDTO`, or trips API. Everything on the map tha
 | Layer | Who maintains | Assignment rule |
 |-------|----------------|-----------------|
 | **AdminGeo** | Geo resolver on write | **`geoRef`** from lat/lng — not hand-picked emirate as SoT (P4+) |
-| **Destination** | Platform admin (`/admin/areas` today → `/admin/destinations`) | Curated **name** + slug; bounds for hub camera. **`destinationId`** on places/facilities (dual-write `areaId` until P9). **No** explore map pin |
-| **Place (site)** | Admin places + member **Add** | Hostable trail/camp/spot; **`destinationId`** required for listed catalog (P3+). Flat **`/place/:id`** |
-| **Facility** | Admin + member **Add** | **`destinationId`** + optional amenity-on-trail link (`parentPlaceId` → **`onSiteId`** P9) |
-| **Activity** | Host | **`activity.locationId` → place site**; destination derived from place |
+| **Destination** | Platform admin **`/admin/areas`** (logical destinations; Mongo `areas`) | Curated **name** + slug; bounds for hub camera. **`destinationId`** on places/facilities. **No** explore map pin — parallel to **AdminGeo** tree, not a replacement |
+| **Place (site)** | Admin places + member **Add** | Hostable trail/camp/spot; **`destinationId`** required for listed catalog. Flat **`/place/:id`**; optional **`parentPlaceId`** for sub-sites only |
+| **Facility** | Admin + member **Add** | **`destinationId`** + optional **`onSiteId`** (parent place row for on-trail amenities) |
+| **Activity** | Host | **`activity.locationId` → place site**; destination derived from place — **no `activity.destinationId` on write** |
 
-**Legacy during migration:** HTTP **`GET /areas`**, field **`areaId`**, hub **`/area/:slug`**, explore **`?area=`** — aliases until P8–P9. Canonical target: **`/destination/:slug`**, **`?destination=`**, **`resolveDestinationId`**.
+**Consumer wire:** **`GET /api/destinations`**, hub **`/destination/:slug`**, explore **`?destination=`**, **`resolveDestinationId`** (reads **`destinationId` only**). Inbound bookmarks **`/area/*` → `/destination/*`** (nginx). **Geo tree** (`geoRef`, `/geo/n/:id`) stays the integration-facing hierarchy; **Destination** is the curated outdoor hub name.
 
-**Explore map lenses:** unchanged — Activities · Spots (place) · Facilities · **Shops** (operator map pin + `/shop/…`); **Destination** is filter + hub only. Detail: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §12.1.
+**Explore map lenses:** Activities · Spots (place) · Facilities · **Shops**; **Destination** is filter + hub only. Detail: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §12.1.
 
-**Curated destination catalog (seed + tests):** 12 regions in `CURATED_AREA_CATALOG` (ids `area-seed-*` preserved as **`destinationId`**). Rename to Destination vocabulary in shared-types over P9.
+**Curated destination catalog (seed + tests):** 12 regions in `CURATED_AREA_CATALOG` (ids `area-seed-*` preserved as **`destinationId`**).
 
 **My Plans** (`/plan`, UI tab **Plan**) groups **your** forward layer — upcoming schedule (list or **calendar**), wishlist, goals — plus relationships to activities. Past outings and journey map live on **profile history**, not `/plan`.
 
@@ -394,7 +394,7 @@ Every durable entity has a **stable UUID** in Mongo and a **canonical public rou
 | **Host** (publishing tenant) | `tenants` | `tenant.id` | `/agency/:slug`, `/partner/:slug`, `/shop/:id`; individuals `/member/:userId` |
 | **Place** (catalog) | `locations` | `location.id` | `/trail/:id`, `/camp/:id`, `/venue/:id` — map `source: place` |
 | **Facility** (amenity) | `facilities` | `facility.id` | `/facility/:id` — map `source: facility` |
-| **Area** (curated name) | `areas` | `area.id` | `/area/:slug` — **no map pin** |
+| **Destination** (curated hub) | `areas` | `destinationId` (= legacy ids) | `/destination/:slug` — **no map pin** |
 | **Activity** (hosted outing) | `activities` | `activity.id` | `/activity/:id` — map `source: activity` (`activity:{id}`) |
 | **Member availability** (Find crew) | `member_availability` | `userId` + slot id | Map `availability:{userId}:{slotId}` — not `/activity/:id` |
 | **Retired seeking storage** | `participant_intents` (ops backfill/purge only) | — | Not a product path; see runbook |
@@ -416,7 +416,7 @@ Reorganize never updates the source row; venue registry ids are **reused** when 
 
 1. Typed place URLs — `/trail`, `/camp`, `/event`.
 2. Activities stay at `/activity/:id`.
-3. No agency/guide map pins.
+3. No agency/guide map pins; **Shops** (operator storefront) may use **map pins** (Shops lens) + `/shop/:id`.
 4. Shop public path `/shop/:id` — profile, contact, outbound website only; no product catalog or in-app checkout.
 5. API paths may say `locations` / `merchant`; product copy says place / shop.
 6. FAB compose taxonomy and participation — [`CREATE_FLOW.md`](./CREATE_FLOW.md).

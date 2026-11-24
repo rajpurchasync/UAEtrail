@@ -17,7 +17,7 @@ describe('rankMapExplorePlace', () => {
     const ranked = rankMapExplorePlace({
       location: baseLocation(),
       wishlistLocationIds: new Set(['loc-1']),
-      wishlistAreaIds: new Set(),
+      wishlistDestinationIds: new Set(),
     });
     expect(ranked?.signals).toContain('wishlist_place');
     expect(ranked?.exploreItemId).toBe('venue:loc-1');

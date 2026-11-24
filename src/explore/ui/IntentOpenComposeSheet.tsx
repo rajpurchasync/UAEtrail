@@ -29,7 +29,7 @@ type IntentOpenStep = 'schedule' | 'lane' | 'form-days' | 'form-details' | 'prev
 export type IntentOpenComposeSheetProps = {
   open: boolean;
   onClose: () => void;
-  /** Map `?area=` slug — optional area prefill in the editor. */
+  /** Map `?destination=` slug — optional destination prefill in the editor. */
   exploredestinationSlug?: string | null;
   /** Compose URL `capacity=guide` prefill for open slots. */
   intentOpenCapacityParam?: string | null;

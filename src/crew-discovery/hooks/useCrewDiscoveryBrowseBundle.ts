@@ -126,7 +126,7 @@ export const useCrewDiscoveryBrowseBundle = ({
       from: range.from,
       to: range.to,
       date: serializeExploreActivityDatePreset(browse.activityDatePreset),
-      area: destinationSlug?.trim() || null,
+      destination: destinationSlug?.trim() || null,
       kind: mapFilterToAvailabilityKind(browse.mapFilter),
     };
   }, [

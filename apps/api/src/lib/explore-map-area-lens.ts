@@ -1,4 +1,4 @@
-/** Area hub rollups for `/area/:slug` — Area is a label, not an explore map pin. */
+/** Destination hub rollups for `/destination/:slug` — curated hub is a label, not an explore map pin. */
 import type { AreaDTO, ExploreAreaLensStatsDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   destinationHubPath,
@@ -73,10 +73,10 @@ const accumulateAreaLensStats = (items: ExploreMapItemDTO[]): Map<string, Explor
 /** @deprecated CPC-5 — facility rollups come from explore items (`placeKind` on map pins). */
 export const mergeFacilityStatsFromLocations = (
   statsByArea: Map<string, ExploreAreaLensStatsDTO>,
-  locations: Array<{ areaId?: string | null; activityType: string; tags?: string[] | null }>
+  locations: Array<{ destinationId?: string | null; activityType: string; tags?: string[] | null }>
 ): void => {
   for (const location of locations) {
-    const areaId = location.areaId?.trim();
+    const areaId = location.destinationId?.trim();
     if (!areaId) continue;
     const kind = placeKindFromLocationRow({
       activityType: location.activityType,

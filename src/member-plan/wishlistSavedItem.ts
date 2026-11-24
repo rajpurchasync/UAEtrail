@@ -23,7 +23,7 @@ const discoveryKindFromStoredActivityType = (activityType: string): DiscoveryCar
 };
 
 export const wishlistItemPinEmoji = (item: WishlistItemDTO): string => {
-  if (item.areaId) return '🗺️';
+  if (item.destinationId) return '🗺️';
   const stored = item.activityId ? item.activity?.activityType : item.location?.activityType;
   if (!stored) return '';
   const kind = discoveryKindFromStoredActivityType(stored);
@@ -36,14 +36,14 @@ export const wishlistItemTitle = (item: WishlistItemDTO): string => {
   if (fromActivity) return fromActivity;
   const fromPlace = item.location?.name?.trim();
   if (fromPlace) return fromPlace;
-  const fromArea = item.area?.name?.trim();
+  const fromArea = item.destination?.name?.trim();
   if (fromArea) return fromArea;
   return 'Saved item';
 };
 
 export const resolveWishlistItemPath = (item: WishlistItemDTO): string | null => {
   if (item.activityId) return activityDetailPath(item.activityId);
-  if (item.areaId && item.area?.slug) return destinationHubPath(item.area.slug);
+  if (item.destinationId && item.destination?.slug) return destinationHubPath(item.destination.slug);
   if (item.locationId) {
     return placeDetailPathForId(item.locationId, item.location?.activityType);
   }

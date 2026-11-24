@@ -189,7 +189,7 @@ export type CreateActivityDraft = {
   /** New catalog spot — photos for admin review (custom venue). */
   customPlaceImages: string[];
   /** Curated area for a new (non-registry) trail/camp/venue. */
-  customPlacedestinationId: string | null;
+  customPlaceDestinationId: string | null;
   /** Proposed area name when the pin is outside published polygons. */
   customPlaceProposedAreaName: string;
   /** Country for a new spot. Region noun follows this (emirate, province, governorate). */

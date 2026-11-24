@@ -11,5 +11,5 @@ runCliScript(resolveCliScriptName(import.meta.url), async () => {
   console.log(
     `[seed:catalog-facilities] place-stubs=${stubs} upserted=${result.upserted} skipped=${result.skipped} (explore map cache cleared)`
   );
-  console.log('Try: /explore?area=hatta — open Hatta Dam Loop /place/hatta-dam-loop for nearby facilities.');
+  console.log('Try: /explore?destination=hatta — open Hatta Dam Loop /place/hatta-dam-loop for nearby facilities.');
 });

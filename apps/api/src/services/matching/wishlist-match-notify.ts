@@ -11,7 +11,7 @@ import { findActivityPrivateById } from '../../lib/activity-private-store.js';
 import { createNotificationsMany } from '../../lib/notifications-store.js';
 import { findPublishedAreaById } from '../../lib/areas-store.js';
 import {
-  listWishlistSaversForArea,
+  listWishlistSaversForDestination,
   listWishlistSaversForLocation,
   listWishlistWatchCandidates,
 } from '../../lib/wishlist-store.js';
@@ -160,20 +160,20 @@ const fanOutSavedPlaceWishlistNotifications = async (
   }
 };
 
-export const fanOutSavedAreaWishlistNotifications = async (
+export const fanOutSavedDestinationWishlistNotifications = async (
   input: {
     activityId: string;
     title: string;
     hostUserId: string;
-    areaId: string;
+    destinationId: string;
     path: string;
   },
   notified: Set<string>
 ): Promise<void> => {
-  const savers = await listWishlistSaversForArea(input.areaId);
+  const savers = await listWishlistSaversForDestination(input.destinationId);
   if (savers.length === 0) return;
 
-  const area = await findPublishedAreaById(input.areaId);
+  const area = await findPublishedAreaById(input.destinationId);
   if (!area) return;
   const areaName = area.name;
   const recipientIds = savers.map((row) => row.userId).filter((userId) => userId !== input.hostUserId);
@@ -200,7 +200,7 @@ export const fanOutSavedAreaWishlistNotifications = async (
         kind: 'wishlist_match',
         path: input.path,
         activityId: input.activityId,
-        areaId: input.areaId,
+        destinationId: input.destinationId,
         wishlistItemId: saver.wishlistItemId,
         actorUserId: input.hostUserId,
       },
@@ -234,12 +234,12 @@ export const notifyWishlistForPublishedActivity = async (activityId: string): Pr
 
     const activityAreaId = doc.destinationId?.trim() || null;
     if (activityAreaId) {
-      await fanOutSavedAreaWishlistNotifications(
+      await fanOutSavedDestinationWishlistNotifications(
         {
           activityId,
           title: doc.title,
           hostUserId: doc.createdById,
-          areaId: activityAreaId,
+          destinationId: activityAreaId,
           path,
         },
         notified
@@ -293,12 +293,12 @@ export const notifyWishlistForMemberAvailability = async (input: {
     const notified = new Set<string>();
     const destinationId = input.availability.destinationId?.trim() || null;
     if (destinationId) {
-      await fanOutSavedAreaWishlistNotifications(
+      await fanOutSavedDestinationWishlistNotifications(
         {
           activityId: input.availabilityMapItemId,
           title,
           hostUserId: input.userId,
-          areaId: destinationId,
+          destinationId,
           path,
         },
         notified

@@ -385,7 +385,7 @@ describe('systemCoherenceGuard', () => {
     expect(impl).toMatch(/canonicalizeInboundProductPath/);
     expect(impl).not.toMatch(/resolveInboundPlanHubPath/);
     expect(migrations).not.toMatch(/migrateRetiredBuddiesInboundPaths/);
-    expect(migrations).toMatch(/MONGO_MIGRATION_VERSION = 2025112505/);
+    expect(migrations).toMatch(/MONGO_MIGRATION_VERSION = 2025112506/);
     expect(readFileSync(join(ROOT, 'src/utils/authRedirect.ts'), 'utf8')).toMatch(
       /canonicalizeInboundProductPath/
     );

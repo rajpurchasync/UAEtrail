@@ -16,7 +16,7 @@ export { loadRecommendationWishlistContext } from './recommendation-wishlist-con
 
 /** Supply/demand match side effects — wishlist · availability · hosted (not routes). */
 export {
-  fanOutSavedAreaWishlistNotifications,
+  fanOutSavedDestinationWishlistNotifications,
   fanOutWishlistNotifications,
   notifyWishlistForMemberAvailability,
   notifyWishlistForPublishedActivity,

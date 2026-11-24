@@ -397,10 +397,10 @@ const toEventDto = ({
   locationName,
   region,
   groupRegionLevels: groupRegionLevels ?? null,
-  areaId: locationAreaId?.trim()
+  destinationId: locationAreaId?.trim()
     ? locationAreaId.trim()
-    : event.areaId?.trim()
-      ? event.areaId.trim()
+    : event.destinationId?.trim()
+      ? event.destinationId.trim()
       : null,
   geoRef: locationGeoRef ?? event.geoRef ?? null,
   activityType: mapScheduledActivityType(activityType),

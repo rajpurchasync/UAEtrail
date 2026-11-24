@@ -8,7 +8,7 @@ type MongoWishlistDoc = {
   _id: string;
   userId: string;
   locationId: string | null;
-  areaId: string | null;
+  destinationId: string | null;
   activityId: string | null;
   alertOnMatch?: boolean;
   watchOutingCategory?: string | null;
@@ -24,7 +24,7 @@ export type WishlistRecord = {
   id: string;
   userId: string;
   locationId: string | null;
-  areaId: string | null;
+  destinationId: string | null;
   activityId: string | null;
   alertOnMatch: boolean;
   watchOutingCategory: string | null;
@@ -35,7 +35,7 @@ export type WishlistRecord = {
 
 export type WishlistItemWithDetails = WishlistRecord & {
   location: { id: string; name: string; images: string[]; activityType: string } | null;
-  area: { id: string; slug: string; name: string; imageUrl: string | null } | null;
+  destination: { id: string; slug: string; name: string; imageUrl: string | null } | null;
   activity: { id: string; title: string; locationName: string | null; activityType: string } | null;
 };
 
@@ -52,7 +52,7 @@ const mapWishlistRecord = (doc: MongoWishlistDoc): WishlistRecord => ({
   id: doc._id,
   userId: doc.userId,
   locationId: doc.locationId ?? null,
-  areaId: doc.areaId ?? null,
+  destinationId: doc.destinationId ?? null,
   activityId: doc.activityId,
   alertOnMatch: doc.alertOnMatch !== false,
   watchOutingCategory: doc.watchOutingCategory ?? null,
@@ -64,11 +64,11 @@ const mapWishlistRecord = (doc: MongoWishlistDoc): WishlistRecord => ({
 const buildWishlistSelector = (input: {
   userId: string;
   locationId?: string;
-  areaId?: string;
+  destinationId?: string;
   activityId?: string;
 }): Record<string, string> | null => {
   if (input.locationId) return { userId: input.userId, locationId: input.locationId };
-  if (input.areaId) return { userId: input.userId, areaId: input.areaId };
+  if (input.destinationId) return { userId: input.userId, destinationId: input.destinationId };
   if (input.activityId) return { userId: input.userId, activityId: input.activityId };
   return null;
 };
@@ -81,7 +81,7 @@ export const listUserWishlistItems = async (userId: string): Promise<WishlistRec
 export const createWishlistItem = async (input: {
   userId: string;
   locationId?: string;
-  areaId?: string;
+  destinationId?: string;
   activityId?: string;
   alertOnMatch?: boolean;
   watchOutingCategory?: string | null;
@@ -91,7 +91,7 @@ export const createWishlistItem = async (input: {
   const selector = buildWishlistSelector(input);
 
   if (!selector) {
-    throw new Error('Wishlist saves a single venue (locationId), area (areaId), or activity (activityId).');
+    throw new Error('Wishlist saves a single venue (locationId), destination (destinationId), or activity (activityId).');
   }
 
   const existing = await wishlistCollection().findOne(selector);
@@ -103,7 +103,7 @@ export const createWishlistItem = async (input: {
     _id: randomUUID(),
     userId: input.userId,
     locationId: input.locationId ?? null,
-    areaId: input.areaId ?? null,
+    destinationId: input.destinationId ?? null,
     activityId: input.activityId ?? null,
     alertOnMatch: input.alertOnMatch !== false,
     watchOutingCategory: input.watchOutingCategory ?? null,
@@ -141,10 +141,10 @@ export const updateWishlistItem = async (input: {
 export const findWishlistItem = async (input: {
   userId: string;
   locationId?: string;
-  areaId?: string;
+  destinationId?: string;
   activityId?: string;
 }): Promise<WishlistRecord | null> => {
-  if (!input.locationId && !input.areaId && !input.activityId) {
+  if (!input.locationId && !input.destinationId && !input.activityId) {
     return null;
   }
 
@@ -162,7 +162,9 @@ export const listWishlistItemsWithDetails = async (userId: string): Promise<Wish
   }
 
   const locationIds = [...new Set(wishlistRows.map((f) => f.locationId).filter((id): id is string => Boolean(id)))];
-  const areaIds = [...new Set(wishlistRows.map((f) => f.areaId).filter((id): id is string => Boolean(id)))];
+  const destinationIds = [
+    ...new Set(wishlistRows.map((f) => f.destinationId).filter((id): id is string => Boolean(id))),
+  ];
   const activityIds = [...new Set(wishlistRows.map((f) => f.activityId).filter((id): id is string => Boolean(id)))];
 
   const areasCollection = (): Collection<{ _id: string; slug: string; name: string; imageUrl?: string | null }> =>
@@ -174,10 +176,10 @@ export const listWishlistItemsWithDetails = async (userId: string): Promise<Wish
           .find({ _id: { $in: locationIds } }, { projection: { name: 1, images: 1, activityType: 1 } })
           .toArray()
       : Promise.resolve([]),
-    areaIds.length > 0
+    destinationIds.length > 0
       ? areasCollection()
           .find(
-            { _id: { $in: areaIds }, status: 'published' },
+            { _id: { $in: destinationIds }, status: 'published' },
             { projection: { slug: 1, name: 1, imageUrl: 1 } }
           )
           .toArray()
@@ -219,15 +221,15 @@ export const listWishlistItemsWithDetails = async (userId: string): Promise<Wish
             : null;
         })()
       : null,
-    area: item.areaId
+    destination: item.destinationId
       ? (() => {
-          const area = areaMap.get(item.areaId);
-          return area
+          const hub = areaMap.get(item.destinationId);
+          return hub
             ? {
-                id: area._id,
-                slug: area.slug,
-                name: area.name,
-                imageUrl: area.imageUrl ?? null,
+                id: hub._id,
+                slug: hub.slug,
+                name: hub.name,
+                imageUrl: hub.imageUrl ?? null,
               }
             : null;
         })()
@@ -317,14 +319,14 @@ export const listWishlistSaversForLocation = async (
   return rows.map((doc) => ({ userId: doc.userId, wishlistItemId: doc._id }));
 };
 
-/** Members who saved this curated area and want trip alerts (`areaId` on wishlist row). */
-export const listWishlistSaversForArea = async (
-  areaId: string
+/** Members who saved this curated destination and want trip alerts (`destinationId` on wishlist row). */
+export const listWishlistSaversForDestination = async (
+  destinationId: string
 ): Promise<Array<{ userId: string; wishlistItemId: string }>> => {
   const rows = await wishlistCollection()
     .find(
       {
-        areaId,
+        destinationId,
         alertOnMatch: { $ne: false },
       },
       { projection: { userId: 1 } }
