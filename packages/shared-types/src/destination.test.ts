@@ -14,9 +14,8 @@ describe('destination wire (MIG-DESTINATION-GEO)', () => {
     expect(destinationHubPath('wadi shawka')).toBe('/destination/wadi%20shawka');
   });
 
-  it('resolveDestinationId prefers destinationId over areaId', () => {
-    expect(resolveDestinationId({ destinationId: 'd1', areaId: 'a1' })).toBe('d1');
-    expect(resolveDestinationId({ areaId: 'area-seed-hatta' })).toBe('area-seed-hatta');
+  it('resolveDestinationId reads destinationId only', () => {
+    expect(resolveDestinationId({ destinationId: 'd1' })).toBe('d1');
     expect(resolveDestinationId({ destinationId: '  ' })).toBeNull();
     expect(resolveDestinationId(null)).toBeNull();
   });
@@ -25,17 +24,15 @@ describe('destination wire (MIG-DESTINATION-GEO)', () => {
     expect(exploreDestinationQueryParam).toBe('destination');
   });
 
-  it('resolveExploreDestinationSlugQuery prefers destination', () => {
-    expect(resolveExploreDestinationSlugQuery({ destination: 'Hatta', area: 'other' })).toBe('hatta');
-    expect(resolveExploreDestinationSlugQuery({ area: 'hatta' })).toBe('hatta');
+  it('resolveExploreDestinationSlugQuery uses destination param only', () => {
+    expect(resolveExploreDestinationSlugQuery({ destination: 'Hatta' })).toBe('hatta');
     expect(resolveExploreDestinationSlugQuery({})).toBeNull();
   });
 
-  it('filterExploreMapItemsByDestinationSlug matches destinationSlug or legacy areaSlug', () => {
-    const inHatta = { destinationSlug: 'hatta', areaSlug: 'legacy' };
-    const byArea = { destinationSlug: null, areaSlug: 'hatta' };
+  it('filterExploreMapItemsByDestinationSlug matches destinationSlug', () => {
+    const inHatta = { destinationSlug: 'hatta' };
     const other = { destinationSlug: 'jebel-jais' };
-    expect(filterExploreMapItemsByDestinationSlug([inHatta, byArea, other], 'hatta')).toHaveLength(2);
+    expect(filterExploreMapItemsByDestinationSlug([inHatta, other], 'hatta')).toHaveLength(1);
     expect(exploreMapItemMatchesDestinationSlug({ source: 'area', id: 'area:hatta' }, 'hatta')).toBe(
       true
     );

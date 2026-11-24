@@ -33,7 +33,7 @@ export type ListDiscoveryCrewsCategoryModelInput = {
   crewPeopleFacet: CrewBrowseState['facet'];
   crewProfessionalKind: CrewBrowseState['proKind'];
   activityDatePreset: ExploreActivityDatePreset;
-  areaSlug: string | null;
+  destinationSlug: string | null;
 };
 
 export const useListDiscoveryCrewsCategoryModel = ({
@@ -44,7 +44,7 @@ export const useListDiscoveryCrewsCategoryModel = ({
   crewPeopleFacet,
   crewProfessionalKind,
   activityDatePreset,
-  areaSlug,
+  destinationSlug,
 }: ListDiscoveryCrewsCategoryModelInput) => {
   const active = enabled;
   const browseState: CrewBrowseState = {
@@ -67,7 +67,7 @@ export const useListDiscoveryCrewsCategoryModel = ({
     enabled: active && crewsNeedsAvailability,
     search: draftQuery,
     activityDatePreset,
-    areaSlug,
+    destinationSlug,
     mapFilter: 'all',
   });
 
@@ -77,10 +77,10 @@ export const useListDiscoveryCrewsCategoryModel = ({
       from: range.from,
       to: range.to,
       date: serializeExploreActivityDatePreset(activityDatePreset),
-      area: areaSlug?.trim() || null,
+      area: destinationSlug?.trim() || null,
       kind: null,
     };
-  }, [memberAvailability.range, activityDatePreset, areaSlug]);
+  }, [memberAvailability.range, activityDatePreset, destinationSlug]);
 
   return {
     memberRoster,

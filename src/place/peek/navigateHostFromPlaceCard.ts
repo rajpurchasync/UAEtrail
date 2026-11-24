@@ -8,7 +8,7 @@ import {
   createDraftFromRegistryPlace,
   resolveCreateActivityKindFromVenueCardKind,
 } from '../../explore/ui/hostingFromPlace';
-import { fetchPublishedAreas } from '../../hooks/areaHubClientApi';
+import { fetchPublishedDestinations } from '../../hooks/areaHubClientApi';
 import { fetchPublicPlaceDetail } from '../../hooks/placeDetailClientApi';
 import type { Place } from '../../types/place';
 import type { PlaceDetailKind } from '../../pages/placeDetailConfig';
@@ -24,7 +24,7 @@ const launchHostFromPlaceDto = (
   locationId: string,
   place: Awaited<ReturnType<typeof fetchPublicPlaceDetail>>,
   kind: 'hiking' | 'camping' | 'event',
-  areas: Awaited<ReturnType<typeof fetchPublishedAreas>>
+  areas: Awaited<ReturnType<typeof fetchPublishedDestinations>>
 ): void => {
   const composeRoute = activityCompose(kind === 'event' ? 'activity' : kind);
   const flowId = composeFlowIdFromRoute(composeRoute);
@@ -56,7 +56,7 @@ export const navigateHostFromPlaceCard = async (
     rawKind === 'hiking' || rawKind === 'camping' || rawKind === 'event' ? rawKind : 'event';
   const [place, areas] = await Promise.all([
     fetchPublicPlaceDetail(locationId),
-    fetchPublishedAreas(),
+    fetchPublishedDestinations(),
   ]);
   launchHostFromPlaceDto(navigate, locationId, place, kind, areas);
 };
@@ -69,7 +69,7 @@ export const navigateHostFromPlace = async (
   const kind = placeDetailKindToOrganizeKind(detailKind);
   const [placeDto, areas] = await Promise.all([
     fetchPublicPlaceDetail(place.id),
-    fetchPublishedAreas(),
+    fetchPublishedDestinations(),
   ]);
   launchHostFromPlaceDto(navigate, place.id, placeDto, kind, areas);
 };

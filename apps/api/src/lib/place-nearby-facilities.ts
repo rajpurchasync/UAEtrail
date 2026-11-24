@@ -4,7 +4,7 @@ import {
   PLACE_KIND_LABELS,
   type PlaceNearbyFacilityDTO,
 } from '@uaetrail/shared-types';
-import { listFacilitiesByParentPlaceId } from './facilities-store.js';
+import { listFacilitiesByOnSiteId } from './facilities-store.js';
 
 const NEARBY_FACILITY_LIMIT = 16;
 
@@ -12,7 +12,7 @@ const NEARBY_FACILITY_LIMIT = 16;
 export const listNearbyFacilitiesForPlace = async (
   location: Location
 ): Promise<PlaceNearbyFacilityDTO[]> => {
-  const rows = await listFacilitiesByParentPlaceId(location.id, NEARBY_FACILITY_LIMIT);
+  const rows = await listFacilitiesByOnSiteId(location.id, NEARBY_FACILITY_LIMIT);
   return rows.map((row) => ({
     id: row.id,
     name: row.name,

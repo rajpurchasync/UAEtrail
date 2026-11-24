@@ -9,7 +9,7 @@ import { groupRegionTextAtBrowseFilterLevel } from '../config/groupRegionFilter'
 export type ExploreCatalogHubLabelInput = {
   listTitle?: string | null;
   headline?: string | null;
-  areaId?: string | null;
+  destinationId?: string | null;
   areaLabel?: string | null;
   areaName?: string | null;
   subtitle?: string | null;
@@ -72,8 +72,8 @@ export const exploreCatalogHubLabel = (card: ExploreCatalogHubLabelInput): strin
   const fromPlaceHub = reject(card.areaLabel?.trim());
   if (fromPlaceHub && distinctFromRegion(fromPlaceHub, regionPart)) return fromPlaceHub;
 
-  if (!card.areaId?.trim()) {
-    const fromLegacy = reject(card.areaName?.trim());
+  if (!card.destinationId?.trim()) {
+    const fromLegacy = reject(card.destinationName?.trim());
     if (fromLegacy && distinctFromRegion(fromLegacy, regionPart)) return fromLegacy;
   }
 
@@ -101,9 +101,9 @@ export const exploreCatalogHubLabelFromExploreItem = (item: ExploreMapItemDTO): 
   return exploreCatalogHubLabel({
     listTitle: item.presentation?.listTitle ?? item.title,
     headline: item.presentation?.headline ?? item.title,
-    areaId: item.areaId ?? null,
+    destinationId: item.destinationId ?? null,
     areaLabel: item.areaLabel ?? null,
-    areaName: item.areaName ?? null,
+    areaName: item.destinationName ?? null,
     subtitle: item.subtitle ?? item.presentation?.subtitle ?? null,
     venueRegion,
     geoRef: item.geoRef ?? item.activity?.geoRef ?? null,

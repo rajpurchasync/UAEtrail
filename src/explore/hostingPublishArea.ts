@@ -70,7 +70,7 @@ export const validateHostingPlaceArea = (
   if (draft.placeLabelSource === 'custom') {
     return validateCustomVenueDetails(draft);
   }
-  if (draft.registryPlaceAreaId?.trim()) return null;
+  if (draft.registryPlaceDestinationId?.trim()) return null;
 
   const place = draft.registryPlaceId
     ? registryPlaces.find((row) => row.id === draft.registryPlaceId)
@@ -130,7 +130,7 @@ export const validateCustomVenueDetails = (draft: CreateActivityDraft): string |
     ) ||
     '';
   if (!emirate) return EMIRATE_REQUIRED;
-  if (!draft.customPlaceAreaId?.trim() && !draft.registryPlaceAreaId?.trim()) {
+  if (!draft.customPlaceDestinationId?.trim() && !draft.registryPlaceDestinationId?.trim()) {
     return 'Select an area.';
   }
   return null;
@@ -138,13 +138,13 @@ export const validateCustomVenueDetails = (draft: CreateActivityDraft): string |
 
 
 export const validateAvailabilityCuratedAreaStep = (draft: AvailabilityFixedDraft): string | null => {
-  if (!draft.areaId?.trim()) return SEEKING_AREA_REQUIRED;
+  if (!draft.destinationId?.trim()) return SEEKING_AREA_REQUIRED;
   return null;
 };
 
 /** Find posts appear on the map from the going-from pin (rideshare also has a to pin). */
 export const availabilityFixedVisibleOnMap = (draft: AvailabilityFixedDraft): boolean =>
-  Boolean(draft.fromPinPlaced && draft.areaId?.trim() && draft.latitude != null && draft.longitude != null);
+  Boolean(draft.fromPinPlaced && draft.destinationId?.trim() && draft.latitude != null && draft.longitude != null);
 
 export const validateAvailabilityPublishArea = (draft: AvailabilityFixedDraft, kind: AvailabilityFixedKind | null): string | null => {
   if (!kind) return null;
@@ -160,7 +160,7 @@ export const usesAvailabilityCuratedAreaStep = (kind: AvailabilityFixedKind): bo
   kind === 'guide' ||
   kind === 'other';
 
-export const resolveRegistryPlaceAreaId = (place: PlaceDTO | null | undefined): string | null =>
+export const resolveRegistryPlaceDestinationId = (place: PlaceDTO | null | undefined): string | null =>
   resolveDestinationId(place);
 
 /** Ephemeral activity-anchor places only (e.g. rideshare) — not for hosted trail/camp catalog tagging. */
@@ -184,10 +184,10 @@ export const resolvePublishedAreaIdForPoint = (
 ): string | null => resolvePublishedAreaForPoint(latitude, longitude, areas)?.id ?? null;
 
 export const areaLabelForId = (
-  areaId: string | null | undefined,
+  destinationId: string | null | undefined,
   areas: AreaPublicDTO[]
 ): string | null => {
-  if (!areaId?.trim()) return null;
-  const row = areas.find((area) => area.id === areaId);
+  if (!destinationId?.trim()) return null;
+  const row = areas.find((area) => area.id === destinationId);
   return row?.name ?? null;
 };

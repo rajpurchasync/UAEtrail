@@ -39,10 +39,10 @@ export interface Place {
   tags?: string[];
   accessibleBy?: string[];
   status?: 'draft' | 'active' | 'inactive';
-  areaId?: string | null;
+  destinationId?: string | null;
   areaLabel?: string | null;
-  areaSlug?: string | null;
-  areaName?: string | null;
+  destinationSlug?: string | null;
+  destinationName?: string | null;
   geoRef?: GeoRef | null;
 }
 

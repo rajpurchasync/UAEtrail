@@ -199,7 +199,8 @@ export const createSubmission = async (input: {
   const { geoRef } = await resolveGeoRefForPin({
     latitude: input.latitude,
     longitude: input.longitude,
-    areaId: typeof input.payload.areaId === 'string' ? input.payload.areaId : null,
+    destinationId:
+      typeof input.payload.destinationId === 'string' ? input.payload.destinationId : null,
     countryCode: 'AE',
     region: typeof input.payload.region === 'string' ? input.payload.region : null,
     venueName: input.name,
@@ -258,7 +259,7 @@ const materializePlace = async (sub: SubmissionDoc): Promise<string> => {
     name,
     region: String(sub.payload.region ?? sub.geoRef?.names.state ?? 'Dubai'),
     areaLabel: sub.geoRef?.names.area ?? null,
-    areaId: sub.geoRef?.areaId || null,
+    destinationId: sub.geoRef?.areaId || null,
     activityType: activityType as never,
     description: String(sub.payload.description ?? ''),
     difficulty: null,
@@ -316,10 +317,10 @@ const materializeFacility = async (sub: SubmissionDoc): Promise<string> => {
   const created = await createFacilityRecord({
     name: String(sub.payload.name ?? 'Facility'),
     region: String(sub.payload.region ?? sub.geoRef?.names.state ?? 'Dubai'),
-    areaId: sub.geoRef?.areaId || 'unknown',
+    destinationId: sub.geoRef?.areaId || 'unknown',
     areaLabel: sub.geoRef?.names.area ?? null,
     facilityKind: (sub.facilityType ?? 'toilet') as never,
-    parentPlaceId: typeof sub.payload.parentPlaceId === 'string' ? sub.payload.parentPlaceId : null,
+    onSiteId: typeof sub.payload.parentPlaceId === 'string' ? sub.payload.parentPlaceId : null,
     description: String(sub.payload.description ?? ''),
     latitude: lat,
     longitude: lng,

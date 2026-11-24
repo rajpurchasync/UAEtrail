@@ -1,4 +1,4 @@
-import { areaDetailPath, isGeographyMapSource, type GeoRef } from '@uaetrail/shared-types';
+import { destinationHubPath, isGeographyMapSource, type GeoRef } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../discoveryCardModel';
 import { geoNodePath } from '../../config/surfacePaths';
 import { listDiscoveryPath } from '../../list/browse/browseListRouting';
@@ -11,14 +11,14 @@ export const resolveDiscoveryBrowseGeoHubPath = (card: DiscoveryCardModel): stri
   const venueId = card.geoRef?.venueId?.trim();
   if (venueId) return geoNodePath(venueId);
 
-  const slug = card.areaSlug?.trim();
-  if (slug) return areaDetailPath(slug);
+  const slug = card.destinationSlug?.trim();
+  if (slug) return destinationHubPath(slug);
 
   return null;
 };
 
 export const discoveryCardCarriesGeoRef = (geoRef: GeoRef | null | undefined): boolean =>
-  Boolean(geoRef?.venueId?.trim() || geoRef?.areaId?.trim());
+  Boolean(geoRef?.venueId?.trim() || geoRef?.destinationId?.trim());
 
 const geoDrillPathFromRef = (geoRef: GeoRef): string[] => {
   const chain = geoRef.chain?.map((id) => id.trim()).filter(Boolean) ?? [];
@@ -28,7 +28,7 @@ const geoDrillPathFromRef = (geoRef: GeoRef): string[] => {
   }
   const leaf =
     geoRef.venueId?.trim() ||
-    geoRef.areaId?.trim() ||
+    geoRef.destinationId?.trim() ||
     geoRef.stateId?.trim() ||
     null;
   return leaf ? [leaf] : [];

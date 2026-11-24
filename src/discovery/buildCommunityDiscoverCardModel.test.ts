@@ -15,7 +15,7 @@ const row = (): CommunityDiscoverCardDTO => ({
     chain: [],
     countryId: 'ae',
     stateId: 'dubai',
-    areaId: 'dubai',
+    destinationId: 'dubai',
     path: 'United Arab Emirates/Dubai',
     names: { country: 'United Arab Emirates', state: 'Dubai', area: 'Dubai' },
     searchTokens: ['dubai'],

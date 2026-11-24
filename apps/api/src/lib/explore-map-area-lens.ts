@@ -1,7 +1,6 @@
 /** Area hub rollups for `/area/:slug` — Area is a label, not an explore map pin. */
 import type { AreaDTO, ExploreAreaLensStatsDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
-  areaDetailPath,
   destinationHubPath,
   exploreAreaLensStatsSummary,
   exploreMapItemIsAvailabilityCatalog,
@@ -115,8 +114,7 @@ export const buildExploreAreaLensItems = (
       path: destinationHubPath(area.slug),
       destinationId: area.id,
       destinationSlug: area.slug,
-      areaId: area.id,
-      areaSlug: area.slug,
+      destinationName: area.name,
       areaLensStats: stats,
     });
   }

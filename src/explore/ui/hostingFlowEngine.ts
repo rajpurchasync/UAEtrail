@@ -139,7 +139,7 @@ export type CreateActivityDraft = {
   /** Selected venue id from the place registry (catalog). */
   registryPlaceId: string | null;
   /** Curated map area on the registry place (cached for publish validation). */
-  registryPlaceAreaId: string | null;
+  registryPlaceDestinationId: string | null;
   /** Registry pick vs typed venue name. */
   placeLabelSource: PlaceLabelSource;
   /** Map coordinates from the registry place (activity start on map). */
@@ -189,7 +189,7 @@ export type CreateActivityDraft = {
   /** New catalog spot — photos for admin review (custom venue). */
   customPlaceImages: string[];
   /** Curated area for a new (non-registry) trail/camp/venue. */
-  customPlaceAreaId: string | null;
+  customPlacedestinationId: string | null;
   /** Proposed area name when the pin is outside published polygons. */
   customPlaceProposedAreaName: string;
   /** Country for a new spot. Region noun follows this (emirate, province, governorate). */
@@ -485,7 +485,7 @@ export const emptyCreateActivityDraft = (): CreateActivityDraft => ({
   endTime: '12:00',
   trailName: '',
   registryPlaceId: null,
-  registryPlaceAreaId: null,
+  registryPlaceDestinationId: null,
   placeLabelSource: 'registry',
   trailLatitude: null,
   trailLongitude: null,
@@ -537,7 +537,7 @@ export const emptyCreateActivityDraft = (): CreateActivityDraft => ({
   discoverCommunityId: null,
   guideUserIds: [],
   customPlaceImages: [],
-  customPlaceAreaId: null,
+  customPlaceDestinationId: null,
   customPlaceProposedAreaName: '',
   customPlaceCountry: 'AE',
   customPlaceEmirate: '',

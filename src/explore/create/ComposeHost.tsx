@@ -43,8 +43,8 @@ export interface ComposeHostProps {
   onCreateLinkedRideshare?: (parentActivity: ActivityDTO) => void;
   tenantId?: string | null;
   planWithFriendUserId?: string | null;
-  /** When map is scoped with `?area=`, prefill seeking/add curated area steps. */
-  composeAreaSlug?: string | null;
+  /** When map is scoped with `?destination=`, prefill seeking/add curated destination steps. */
+  composeDestinationSlug?: string | null;
   /** `?capacity=guide` on intent open compose. */
   intentOpenCapacityParam?: string | null;
   /** `facilityOnPlace` query — link amenity to trail/camp catalog row. */
@@ -80,7 +80,7 @@ export const ComposeHost = ({
   onCreateLinkedRideshare,
   tenantId = null,
   planWithFriendUserId = null,
-  composeAreaSlug = null,
+  composeDestinationSlug = null,
   intentOpenCapacityParam = null,
   facilityOnPlaceId = null,
   wizardEnteredFromMenu,
@@ -115,7 +115,7 @@ export const ComposeHost = ({
     {placeWizardOpen && addVenueKind === 'facility' && (
       <CreateAddFacilityFlow
         open={placeWizardOpen}
-        exploreAreaSlug={composeAreaSlug}
+        exploreDestinationSlug={composeDestinationSlug}
         facilityOnPlaceId={facilityOnPlaceId}
         onClose={onCloseCompose}
         onBackToIntent={onAddBackToIntent}
@@ -128,7 +128,7 @@ export const ComposeHost = ({
       <CreateAddFlow
         open={placeWizardOpen}
         kind={addVenueKind}
-        exploreAreaSlug={composeAreaSlug}
+        exploreDestinationSlug={composeDestinationSlug}
         onClose={onCloseCompose}
         onBackToIntent={onAddBackToIntent}
         onSubmitted={onAddSubmitted}
@@ -155,7 +155,7 @@ export const ComposeHost = ({
       <IntentOpenComposeSheet
         open={intentOpenWizardOpen}
         onClose={onCloseCompose}
-        exploreAreaSlug={composeAreaSlug}
+        exploreDestinationSlug={composeDestinationSlug}
         intentOpenCapacityParam={intentOpenCapacityParam}
         onComposeRouteChange={onComposeRouteChange}
         onBackToIntent={onAvailabilityBackToIntent}
@@ -167,7 +167,7 @@ export const ComposeHost = ({
         open={intentFixedWizardOpen}
         onClose={onCloseCompose}
         availabilityFixedKind={intentFixedKind ?? null}
-        exploreAreaSlug={composeAreaSlug}
+        exploreDestinationSlug={composeDestinationSlug}
         onBackToIntent={onAvailabilityBackToIntent}
         onSubmitted={onAvailabilityFixedSubmitted}
         signInHref={signInHref}

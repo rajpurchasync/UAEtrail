@@ -4,19 +4,19 @@ import { explorePath } from '../../../routing';
 import type { ExplorePinKindFilter } from '../../../explorePinKindFilter';
 
 export type AreaPeekActionsProps = {
-  areaSlug: string;
+  destinationSlug: string;
   stats?: ExploreAreaLensStatsDTO | null;
   areaPagePath: string;
   onClose: () => void;
 };
 
 const scopedExplore = (
-  areaSlug: string,
+  destinationSlug: string,
   pinKind: ExplorePinKindFilter,
   filter?: 'hiking' | 'camping' | 'shops'
 ): string =>
   explorePath({
-    area: areaSlug,
+    area: destinationSlug,
     list: true,
     pinKind,
     filter,
@@ -27,7 +27,7 @@ const scopedExplore = (
  * `facilities` = amenity pins in this hub (`areaLensStats.facilities`), linked via `#places`.
  */
 export const AreaPeekActions = ({
-  areaSlug,
+  destinationSlug,
   stats,
   areaPagePath,
   onClose,
@@ -46,13 +46,13 @@ export const AreaPeekActions = ({
   return (
     <div className="mt-3 space-y-2">
       {hosted > 0 ? (
-        <Link to={scopedExplore(areaSlug, 'activities')} className={linkClass} onClick={onClose}>
+        <Link to={scopedExplore(destinationSlug, 'activities')} className={linkClass} onClick={onClose}>
           Activities ({hosted})
         </Link>
       ) : null}
       {available > 0 ? (
         <Link
-          to={`${scopedExplore(areaSlug, 'activities')}&activityMode=availability`}
+          to={`${scopedExplore(destinationSlug, 'activities')}&activityMode=availability`}
           className={linkClass}
           onClick={onClose}
         >
@@ -60,12 +60,12 @@ export const AreaPeekActions = ({
         </Link>
       ) : null}
       {trails > 0 ? (
-        <Link to={scopedExplore(areaSlug, 'places', 'hiking')} className={linkClass} onClick={onClose}>
+        <Link to={scopedExplore(destinationSlug, 'places', 'hiking')} className={linkClass} onClick={onClose}>
           Trails ({trails})
         </Link>
       ) : null}
       {spots > 0 ? (
-        <Link to={scopedExplore(areaSlug, 'places')} className={linkClass} onClick={onClose}>
+        <Link to={scopedExplore(destinationSlug, 'places')} className={linkClass} onClick={onClose}>
           Spots ({spots})
         </Link>
       ) : null}
@@ -75,7 +75,7 @@ export const AreaPeekActions = ({
         </Link>
       ) : null}
       {shops > 0 ? (
-        <Link to={scopedExplore(areaSlug, 'shops', 'shops')} className={linkClass} onClick={onClose}>
+        <Link to={scopedExplore(destinationSlug, 'shops', 'shops')} className={linkClass} onClick={onClose}>
           Shops ({shops})
         </Link>
       ) : null}

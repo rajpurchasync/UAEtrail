@@ -14,11 +14,11 @@ export const ADMIN_AREAS_PATH = '/admin/areas' as const;
 
 export const ADMIN_FACILITIES_PATH = '/admin/facilities' as const;
 
-export const adminPlacesPath = (areaId?: string | null): string =>
-  areaId ? `/admin/places?areaId=${encodeURIComponent(areaId)}` : '/admin/places';
+export const adminPlacesPath = (destinationId?: string | null): string =>
+  destinationId ? `/admin/places?destinationId=${encodeURIComponent(destinationId)}` : '/admin/places';
 
-export const adminFacilitiesPath = (areaId?: string | null): string =>
-  areaId ? `${ADMIN_FACILITIES_PATH}?areaId=${encodeURIComponent(areaId)}` : ADMIN_FACILITIES_PATH;
+export const adminFacilitiesPath = (destinationId?: string | null): string =>
+  destinationId ? `${ADMIN_FACILITIES_PATH}?destinationId=${encodeURIComponent(destinationId)}` : ADMIN_FACILITIES_PATH;
 export const ADMIN_GROUPS_PATH = '/admin/groups' as const;
 /** Discoverable clubs (`MIG-COMMUNITY-DISCOVER`) — not {@link ADMIN_GROUPS_PATH} teams. */
 export const ADMIN_COMMUNITIES_PATH = '/admin/communities' as const;

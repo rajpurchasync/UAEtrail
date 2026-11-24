@@ -33,7 +33,7 @@ export const FACILITY_ADD_STEPS: FacilityAddStepId[] = [
 export type FacilityAddDraft = {
   title: string;
   facilityKind: PlaceKind | null;
-  areaId: string | null;
+  destinationId: string | null;
   /** Trail / camp catalog row this amenity sits along (`POST /me/facilities` `parentPlaceId`). */
   parentPlaceId: string | null;
   parentPlaceName: string | null;
@@ -60,7 +60,7 @@ export const FACILITY_ADD_OPTIONS = ADDABLE_FACILITY_PLACE_KINDS.map((kind) => (
 export const emptyFacilityAddDraft = (): FacilityAddDraft => ({
   title: '',
   facilityKind: null,
-  areaId: null,
+  destinationId: null,
   parentPlaceId: null,
   parentPlaceName: null,
   emirate: '',
@@ -73,11 +73,11 @@ export const emptyFacilityAddDraft = (): FacilityAddDraft => ({
 });
 
 export const applyFacilityAddParentPlace = (
-  place: Pick<PlaceDTO, 'id' | 'name' | 'areaId' | 'latitude' | 'longitude'>
+  place: Pick<PlaceDTO, 'id' | 'name' | 'destinationId' | 'latitude' | 'longitude'>
 ): Partial<FacilityAddDraft> => ({
   parentPlaceId: place.id,
   parentPlaceName: place.name.trim(),
-  ...(place.areaId?.trim() ? { areaId: place.areaId.trim() } : {}),
+  ...(place.destinationId?.trim() ? { destinationId: place.destinationId.trim() } : {}),
   ...(place.latitude != null && place.longitude != null
     ? { latitude: place.latitude, longitude: place.longitude }
     : {}),
@@ -118,7 +118,7 @@ export const validateFacilityAddStep = (
       if (!draft.facilityKind) return 'Choose a facility type.';
       return null;
     case 'curatedArea':
-      if (!draft.areaId?.trim()) return 'Choose which area this facility is in.';
+      if (!draft.destinationId?.trim()) return 'Choose which area this facility is in.';
       return null;
     case 'parentPlace':
       return null;

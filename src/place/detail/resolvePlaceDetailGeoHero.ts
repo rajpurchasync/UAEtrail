@@ -15,18 +15,18 @@ export const resolvePlaceDetailGeoHero = (input: {
   const { place } = input;
   const card = buildPlaceDetailDiscoveryCard(input);
   const hubLabel = browseCatalogHubLabel(card);
-  const areaSlug = place.areaSlug?.trim() || null;
+  const destinationSlug = place.destinationSlug?.trim() || null;
   const venueId = place.geoRef?.venueId?.trim();
-  const geoHubPath = venueId && !areaSlug ? geoNodePath(venueId) : null;
+  const geoHubPath = venueId && !destinationSlug ? geoNodePath(venueId) : null;
   const areaLabel =
     hubLabel ||
     place.areaLabel?.trim() ||
-    place.areaName?.trim() ||
+    place.destinationName?.trim() ||
     resolvePlaceAreaLabelFromTags(place.tags) ||
     null;
   return {
     areaLabel,
-    areaSlug,
+    destinationSlug,
     geoHubPath,
     geoRef: place.geoRef ?? null,
     region: place.region,

@@ -142,7 +142,7 @@ export const enrichCatalogEntryFields = (
 
   return {
     areaLabel,
-    areaId,
+    destinationId: areaId,
     difficulty,
     accessibility,
     distance,

@@ -14,7 +14,7 @@ describe('resolveActivityDetailGeoHero', () => {
         chain: ['c', 's', 'a', 'v'],
         countryId: 'c',
         stateId: 's',
-        areaId: 'a',
+        destinationId: 'a',
         venueId: 'v',
         path: 'ae/rak/wadi',
         names: { country: 'UAE', state: 'RAK', area: 'Wadi', venue: 'Wadi Ghalilah' },
@@ -35,6 +35,6 @@ describe('resolveActivityDetailGeoHero', () => {
     } as ActivityDetailDTO);
     expect(hero.areaLabel).toBe('Wadi Ghalilah');
     expect(hero.geoHubPath).toBe('/geo/n/v');
-    expect(hero.areaSlug).toBeNull();
+    expect(hero.destinationSlug).toBeNull();
   });
 });

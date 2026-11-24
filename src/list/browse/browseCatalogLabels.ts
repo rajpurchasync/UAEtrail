@@ -63,8 +63,8 @@ export const browseCatalogHubLabel = (card: DiscoveryCardModel): string | null =
   const fromPlaceHub = reject(card.areaLabel?.trim());
   if (fromPlaceHub && distinctFromRegion(fromPlaceHub, regionPart)) return fromPlaceHub;
 
-  // Legacy wire: `areaName` carried place-hub before `areaLabel`; skip when `areaId` is curated Area.
-  if (!card.areaId?.trim()) {
+  // Legacy wire: `areaName` carried place-hub before `areaLabel`; skip when `destinationId` is curated Area.
+  if (!card.destinationId?.trim()) {
     const fromLegacy = reject(card.areaName?.trim());
     if (fromLegacy && distinctFromRegion(fromLegacy, regionPart)) return fromLegacy;
   }

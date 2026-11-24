@@ -22,7 +22,7 @@ const NEAREST_AREA_KM = 30;
 export type GeoResolveHints = {
   latitude?: number | null;
   longitude?: number | null;
-  areaId?: string | null;
+  destinationId?: string | null;
   countryCode?: string | null;
   region?: string | null;
   venueName?: string | null;
@@ -110,9 +110,9 @@ export const resolveGeoRefFromTree = (
 ): GeoResolveResult => {
   const extra = hints.extraNames ?? [];
   const venueName = hints.venueName ?? null;
-  if (hints.areaId) {
+  if (hints.destinationId) {
     const byCatalog = [...index.byId.values()].find(
-      (n) => n.catalogAreaId === hints.areaId || String(n._id) === hints.areaId
+      (n) => n.catalogAreaId === hints.destinationId || String(n._id) === hints.destinationId
     );
     if (byCatalog?.kind === 'area') {
       const venue = resolveVenueForArea(index, byCatalog, hints);

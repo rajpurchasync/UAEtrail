@@ -16,7 +16,7 @@ export type WishlistSaveVenueInput = {
 
 export type WishlistSaveAreaInput = {
   kind: 'area';
-  areaId: string;
+  destinationId: string;
   alertOnMatch?: boolean;
   watchOutingCategory?: string | null;
 };
@@ -44,7 +44,7 @@ export const wishlistSaveInputToTarget = (input: WishlistSaveInput): WishlistTar
       };
     case 'area':
       return {
-        areaId: input.areaId,
+        destinationId: input.destinationId,
         alertOnMatch: input.alertOnMatch,
         watchOutingCategory: input.watchOutingCategory,
       };

@@ -9,7 +9,7 @@ export type PlaceCatalogSegment = 'place' | 'all';
 export type PlaceCatalogQuery = {
   purpose?: PlaceCatalogPurpose;
   segment?: PlaceCatalogSegment;
-  areaId?: string;
+  destinationId?: string;
   placeKind?: PlaceKind;
   /** Legacy organize picker filter. */
   activityType?: 'hiking' | 'camping' | 'event';
@@ -18,8 +18,8 @@ export type PlaceCatalogQuery = {
 
 export type FacilityCatalogQuery = {
   purpose?: PlaceCatalogPurpose;
-  areaId?: string;
-  parentPlaceId?: string | null;
+  destinationId?: string;
+  onSiteId?: string | null;
   facilityKind?: FacilityKind;
   countryCode?: string;
 };

@@ -93,7 +93,7 @@ export const useExploreExperienceModel = () => {
   /** Side nav + in-map right rail for guest gates (md+), not browse panel layout (lg+). */
   const useDesktopGuestGatePanel = useMinWidthMd() && !user;
 
-  const { myPlanMapMode, areaSlug, mapItems, mapLoading, loadError, mapFetch } =
+  const { myPlanMapMode, destinationSlug, mapItems, mapLoading, loadError, mapFetch } =
     useExploreMapCatalog({ userId: user?.id, searchParams });
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -268,7 +268,7 @@ export const useExploreExperienceModel = () => {
   const [searchFocusNonce] = useState(0);
   useExploreSearchParamRedirect(searchParams, pathname, navigate, setSearchParams);
   const publishedAreas = useExplorePublishedAreas(
-    browse.listOpen || browse.browseOpen || Boolean(areaSlug)
+    browse.listOpen || browse.browseOpen || Boolean(destinationSlug)
   );
 
   const openExploreSearch = useCallback(() => {
@@ -317,7 +317,7 @@ export const useExploreExperienceModel = () => {
       hostStatus,
       browse,
       exploreCatalogItems: mapItems,
-      areaSlug,
+      destinationSlug,
       isDesktop,
       mapLoading,
       onOpenExploreActivity: openExploreActivityFromRef,
@@ -369,7 +369,7 @@ export const useExploreExperienceModel = () => {
     handleAvailabilityFixedSubmitted: selection.handleAvailabilityFixedSubmitted,
     handleAddSubmitted: selection.handleAddSubmitted,
     planWithFriendUserId,
-    composeAreaSlug: areaSlug,
+    composeDestinationSlug: destinationSlug,
     facilityOnPlaceId,
     tenantId,
     refreshHostGate,
@@ -383,7 +383,7 @@ export const useExploreExperienceModel = () => {
     isDesktop,
     useDesktopGuestGatePanel,
     myPlanMapMode,
-    areaSlug,
+    destinationSlug,
     mapItems,
     browse,
     crewsBrowsePanelProps,

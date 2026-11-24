@@ -40,8 +40,8 @@ const ENTITY_DETAIL_QA_MATRIX: Array<{
     automatedGuard: 'placeDetailCore.test.ts',
   },
   {
-    surface: 'Area hub',
-    routePattern: /path="\/area\/:slug"/,
+    surface: 'Destination hub',
+    routePattern: /path="\/destination\/:slug"/,
     pageOrView: 'src/pages/AreaDetailPage.tsx',
     automatedGuard: 'areaDetailAcceptance.test.ts',
   },

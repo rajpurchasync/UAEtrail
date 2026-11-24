@@ -182,7 +182,7 @@ describe('doc coherence (Tier 1)', () => {
     expect(canon).toMatch(/### 12\.1 Geography/);
     expect(canon).toMatch(/MIG-DESTINATION-GEO-2026/);
     expect(canon).toMatch(/destinationId/);
-    expect(canon).toMatch(/No `activity\.areaId` on write/);
+    expect(canon).toMatch(/No `activity\.destinationId` on write/);
     expect(canon).toMatch(/PlaceKind/);
     expect(domain).toMatch(/activity\.locationId.*place site/i);
   });

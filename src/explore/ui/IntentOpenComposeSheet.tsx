@@ -10,7 +10,7 @@ import {
 } from '../../availability/availabilitySlotComposeEngine';
 import { fetchMyAvailabilityMatchPreview } from '../../hooks/memberAvailabilityApi';
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
-import { areaIdForExploreAreaSlug } from '../exploreAreaFilter';
+import { destinationIdForExploreDestinationSlug } from '../exploreAreaFilter';
 import { AvailabilityMatchPreview } from './AvailabilityMatchPreview';
 import { ComposeWizardShell, ComposeWizardStepChrome } from '../create/ComposeWizardShell';
 import { composeWizardErrorFooter } from '../create/composeWizardStepFooter';
@@ -30,7 +30,7 @@ export type IntentOpenComposeSheetProps = {
   open: boolean;
   onClose: () => void;
   /** Map `?area=` slug — optional area prefill in the editor. */
-  exploreAreaSlug?: string | null;
+  exploredestinationSlug?: string | null;
   /** Compose URL `capacity=guide` prefill for open slots. */
   intentOpenCapacityParam?: string | null;
   onComposeRouteChange?: (route: ExploreCompose) => void;
@@ -44,7 +44,7 @@ export type IntentOpenComposeSheetProps = {
 export const IntentOpenComposeSheet = ({
   open,
   onClose,
-  exploreAreaSlug = null,
+  exploreDestinationSlug = null,
   intentOpenCapacityParam = null,
   onComposeRouteChange,
   onBackToIntent,
@@ -82,8 +82,8 @@ export const IntentOpenComposeSheet = ({
   }, [open, urlPrefillCapacity]);
 
   const prefillAreaId = useMemo(
-    () => areaIdForExploreAreaSlug(publishedAreas, exploreAreaSlug),
-    [publishedAreas, exploreAreaSlug]
+    () => destinationIdForExploreDestinationSlug(publishedAreas, exploreDestinationSlug),
+    [publishedAreas, exploreDestinationSlug]
   );
 
   const composePrefill = useMemo(() => {

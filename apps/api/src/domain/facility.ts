@@ -11,11 +11,9 @@ export interface Facility {
   name: string;
   region: string;
   areaLabel: string | null;
-  destinationId?: string | null;
-  areaId: string;
+  destinationId: string | null;
   facilityKind: FacilityKind;
   onSiteId?: string | null;
-  parentPlaceId?: string | null;
   /** Geo-tree venue node id when the amenity is tagged to a venue. */
   venueId?: string | null;
   description: string;

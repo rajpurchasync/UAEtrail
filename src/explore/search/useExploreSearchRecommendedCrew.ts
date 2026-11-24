@@ -50,7 +50,7 @@ export const useExploreSearchRecommendedCrew = ({
     enabled: active,
     search,
     activityDatePreset,
-    areaSlug: area,
+    destinationSlug: area,
     mapFilter: 'all',
   });
 

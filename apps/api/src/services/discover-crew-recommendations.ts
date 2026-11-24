@@ -19,7 +19,7 @@ export const loadDiscoverCrewRecommendations = async (input: {
   rangeStart?: string | null;
   rangeEnd?: string | null;
   datePresetRaw?: string | null;
-  areaSlug?: string | null;
+  destinationSlug?: string | null;
   kind?: AvailabilityKind | null;
 }): Promise<DiscoverCrewRecommendationsDTO> => {
   const from = input.rangeStart?.trim() || todayIso();
@@ -47,7 +47,7 @@ export const loadDiscoverCrewRecommendations = async (input: {
       rangeStart: from,
       rangeEnd: to,
       kind: input.kind ?? null,
-      areaSlug: input.areaSlug ?? null,
+      destinationSlug: input.destinationSlug ?? null,
       region: null,
       friendsOnly: false,
     }),

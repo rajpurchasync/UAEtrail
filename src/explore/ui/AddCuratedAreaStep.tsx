@@ -4,8 +4,8 @@ import { EXPLORE_SHAPE } from '../../config/exploreTheme';
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
 
 type AddCuratedAreaStepProps = {
-  areaId: string | null;
-  onAreaIdChange: (areaId: string | null) => void;
+  destinationId: string | null;
+  onAreaIdChange: (destinationId: string | null) => void;
   proposedAreaName?: string;
   onProposedAreaNameChange?: (name: string) => void;
   allowNewArea?: boolean;
@@ -13,14 +13,14 @@ type AddCuratedAreaStepProps = {
 
 /** Add place — pick a listed hub, or name a new area for admin review. */
 export const AddCuratedAreaStep = ({
-  areaId,
+  destinationId,
   onAreaIdChange,
   proposedAreaName = '',
   onProposedAreaNameChange,
   allowNewArea = true,
 }: AddCuratedAreaStepProps) => {
   const areas = useExplorePublishedAreas();
-  const proposingNew = allowNewArea && proposedAreaName.trim().length >= 2 && !areaId;
+  const proposingNew = allowNewArea && proposedAreaName.trim().length >= 2 && !destinationId;
 
   return (
     <div>
@@ -34,7 +34,7 @@ export const AddCuratedAreaStep = ({
       </label>
       <AppSelect
         className="mt-2 w-full"
-        value={proposingNew ? '' : areaId ?? ''}
+        value={proposingNew ? '' : destinationId ?? ''}
         disabled={areas.length === 0}
         placeholder="Select area…"
         options={[

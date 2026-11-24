@@ -18,7 +18,7 @@ import { ComposeHost } from '../explore/create/ComposeHost';
 import { useComposeRoute } from '../explore/create/hooks/useComposeRoute';
 import { clearComposeWizardSessionForRoute } from '../explore/ui/composeWizardSession';
 import { GuestComposeSignInSheet } from '../explore/ui/GuestComposeSignInSheet';
-import { parseExploreAreaSlug } from '../explore/exploreAreaFilter';
+import { parseExploreDestinationSlug } from '../explore/exploreAreaFilter';
 import { parseFacilityOnPlaceId, parsePlanWithUserId } from '../explore/routing';
 import type { HostingWizardPrefill } from '../explore/ui/hostingWizardPrefill';
 import type { AddSubmitResult } from '../explore/ui/addFlow';
@@ -42,7 +42,7 @@ export type CreateFlowBridge = {
   onAvailabilityFixedSubmitted?: (result: AvailabilityFixedSubmitResult) => void;
   onAddSubmitted?: (result: AddSubmitResult) => void;
   planWithFriendUserId?: string | null;
-  composeAreaSlug?: string | null;
+  composeDestinationSlug?: string | null;
   facilityOnPlaceId?: string | null;
   tenantId?: string | null;
 };
@@ -91,7 +91,7 @@ export const CreateFlowProvider = ({ children }: { children: ReactNode }) => {
       Boolean(prev) !== Boolean(next) ||
       prev?.hostingWizardPrefill !== next?.hostingWizardPrefill ||
       prev?.tenantId !== next?.tenantId ||
-      prev?.composeAreaSlug !== next?.composeAreaSlug ||
+      prev?.composeDestinationSlug !== next?.composeDestinationSlug ||
       prev?.facilityOnPlaceId !== next?.facilityOnPlaceId ||
       prev?.planWithFriendUserId !== next?.planWithFriendUserId
     ) {
@@ -197,7 +197,7 @@ export const CreateFlowProvider = ({ children }: { children: ReactNode }) => {
         onCreateLinkedRideshare={bridge?.onCreateLinkedRideshare}
         tenantId={bridge?.tenantId ?? tenantId}
         planWithFriendUserId={bridge?.planWithFriendUserId ?? parsePlanWithUserId(searchParams)}
-        composeAreaSlug={bridge?.composeAreaSlug ?? parseExploreAreaSlug(searchParams)}
+        composeDestinationSlug={bridge?.composeDestinationSlug ?? parseExploreDestinationSlug(searchParams)}
         intentOpenCapacityParam={searchParams.get('capacity')}
         facilityOnPlaceId={bridge?.facilityOnPlaceId ?? parseFacilityOnPlaceId(searchParams)}
         onOpenHostApplication={() => {

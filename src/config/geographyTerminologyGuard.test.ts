@@ -31,7 +31,7 @@ describe('geographyTerminologyGuard (Place · Facility · Area)', () => {
     expect(read('src/content/upl-glossary.ts')).toMatch(/geographyVocabulary/);
     expect(read('src/list/browse/browseListTaxonomy.ts')).toMatch(/BROWSE_LIST_CATEGORY_PLACES/);
     const canon = read('docs/DOMAIN_CANONICALS.md');
-    expect(canon).toMatch(/12\.1\.1 Explore UI — Place · Facility · Area \(Area is a name, not a pin\)/);
+    expect(canon).toMatch(/12\.1\.1 Explore UI — Place · Facility · Destination \(Destination is a name, not a pin\)/);
     expect(canon).toMatch(/source: facility/);
   });
 
@@ -108,10 +108,12 @@ describe('geographyTerminologyGuard (Place · Facility · Area)', () => {
     );
   });
 
-  it('GEO-09: legacy GET /api/areas deprecated toward /destinations (P9)', () => {
-    expect(read('apps/api/src/lib/route-destination-alias.ts')).toMatch(/attachLegacyAreasApiDeprecationHeaders/);
+  it('GEO-09: GET /api/destinations canonical — no legacy areas registrar (P9)', () => {
     expect(read('apps/api/tests/destinations-http-canonical-guard.test.ts')).toMatch(
       /destinations HTTP canonical guard/
+    );
+    expect(read('apps/api/tests/destinations-http-canonical-guard.test.ts')).toMatch(
+      /legacy GET \/api\/areas registrar removed/
     );
   });
 

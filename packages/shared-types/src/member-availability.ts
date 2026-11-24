@@ -145,8 +145,6 @@ export interface MemberAvailabilityDTO {
   visibility: AvailabilityVisibility;
   region?: string | null;
   destinationId?: string | null;
-  /** @deprecated Dual-read with {@link destinationId} until MIG-DESTINATION-GEO cutover. */
-  areaId?: string | null;
   note?: string | null;
   slots: MemberAvailabilitySlotDTO[];
   updatedAt: string;
@@ -158,8 +156,6 @@ export interface UpsertMemberAvailabilityInput {
   visibility: AvailabilityVisibility;
   region?: string | null;
   destinationId?: string | null;
-  /** @deprecated Dual-write with {@link destinationId} until cutover. */
-  areaId?: string | null;
   note?: string | null;
   slots: MemberAvailabilitySlotDTO[];
 }
@@ -168,7 +164,7 @@ export interface UpsertMemberAvailabilityInput {
 export interface MemberAvailabilityPublicDTO {
   kinds: AvailabilityKind[];
   region?: string | null;
-  areaId?: string | null;
+  destinationId?: string | null;
   note?: string | null;
   slots: MemberAvailabilitySlotDTO[];
 }
@@ -179,8 +175,8 @@ export interface ExploreAvailablePersonDTO {
   avatarUrl?: string | null;
   kinds: AvailabilityKind[];
   region?: string | null;
-  areaId?: string | null;
-  areaSlug?: string | null;
+  destinationId?: string | null;
+  destinationSlug?: string | null;
   slots: MemberAvailabilitySlotDTO[];
   isFriend: boolean;
   /** Publishing / trust tier for Find crew badges (Pro, Verified). */
@@ -191,8 +187,8 @@ export interface ExploreAvailablePersonDTO {
 
 /** Map People layer v1 — cluster per area + kind (not per-user pins). */
 export interface ExploreAvailabilityClusterDTO {
-  areaId?: string | null;
-  areaSlug?: string | null;
+  destinationId?: string | null;
+  destinationSlug?: string | null;
   region?: string | null;
   kind: AvailabilityKind;
   count: number;

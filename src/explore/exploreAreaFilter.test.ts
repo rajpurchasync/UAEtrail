@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { seekingExploreMapItem } from './exploreMapItemFixtures';
 import type { AreaPublicDTO } from '@uaetrail/shared-types';
 import {
-  areaIdForExploreAreaSlug,
-  filterExploreMapItemsByAreaSlug,
-  exploreMapItemMatchesAreaSlug,
+  destinationIdForExploreDestinationSlug,
+  filterExploreMapItemsByDestinationSlug,
+  exploreMapItemMatchesDestinationSlug,
   findPublishedAreaBySlug,
   isStrongPublishedAreaSearchMatch,
   searchPublishedAreasForQuery,
@@ -24,12 +24,12 @@ const hattaArea = (): AreaPublicDTO => ({
 });
 
 describe('exploreAreaFilter', () => {
-  it('filters map rows by areaSlug', () => {
-    const inHatta = { ...seekingExploreMapItem(), areaSlug: 'hatta', areaId: 'a1' };
-    const other = { ...seekingExploreMapItem({ intentId: '2' }), areaSlug: 'jebel-jais', areaId: 'a2' };
-    const filtered = filterExploreMapItemsByAreaSlug([inHatta, other], 'hatta');
+  it('filters map rows by destinationSlug', () => {
+    const inHatta = { ...seekingExploreMapItem(), destinationSlug: 'hatta', destinationId: 'a1' };
+    const other = { ...seekingExploreMapItem({ intentId: '2' }), destinationSlug: 'jebel-jais', destinationId: 'a2' };
+    const filtered = filterExploreMapItemsByDestinationSlug([inHatta, other], 'hatta');
     expect(filtered).toHaveLength(1);
-    expect(exploreMapItemMatchesAreaSlug(inHatta, 'hatta')).toBe(true);
+    expect(exploreMapItemMatchesDestinationSlug(inHatta, 'hatta')).toBe(true);
   });
 
   it('ranks area search matches for explore search (§3.3)', () => {
@@ -42,7 +42,7 @@ describe('exploreAreaFilter', () => {
   it('resolves compose area prefill from published slug', () => {
     const areas = [hattaArea()];
     expect(findPublishedAreaBySlug(areas, 'hatta')?.id).toBe('a1');
-    expect(areaIdForExploreAreaSlug(areas, 'hatta')).toBe('a1');
-    expect(areaIdForExploreAreaSlug(areas, 'missing')).toBeNull();
+    expect(destinationIdForExploreDestinationSlug(areas, 'hatta')).toBe('a1');
+    expect(destinationIdForExploreDestinationSlug(areas, 'missing')).toBeNull();
   });
 });

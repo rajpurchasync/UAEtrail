@@ -47,7 +47,7 @@ export const validateStructuredDestination = (draft: CreateActivityDraft): strin
     return validateCustomVenueDetails(draft);
   }
   if (!draft.venueCascadeState?.trim()) return 'Select a state.';
-  if (!draft.registryPlaceAreaId?.trim()) return 'Select an area.';
+  if (!draft.registryPlaceDestinationId?.trim()) return 'Select an area.';
   if (!draft.venueCascadePlaceGroup?.trim()) return 'Select a place.';
   if (!draft.registryPlaceId?.trim()) {
     if (draft.kind === 'camping') return 'Select a camp spot or add a new one.';

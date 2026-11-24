@@ -405,7 +405,7 @@ export const updateAdminFacility = async (
         ...(payload.name !== undefined ? { name: payload.name.trim() } : {}),
         ...(payload.region !== undefined ? { region: payload.region.trim() } : {}),
         ...(payload.areaLabel !== undefined ? { areaLabel: payload.areaLabel } : {}),
-        ...(payload.areaId != null ? { areaId: payload.areaId.trim() } : {}),
+        ...(payload.destinationId != null ? { destinationId: payload.destinationId.trim() } : {}),
         ...(payload.description !== undefined ? { description: payload.description.trim() } : {}),
         ...(payload.latitude !== undefined ? { latitude: payload.latitude } : {}),
         ...(payload.longitude !== undefined ? { longitude: payload.longitude } : {}),

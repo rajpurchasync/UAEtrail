@@ -16,7 +16,7 @@ describe('buildActivityDetailDiscoveryCard', () => {
         chain: ['c', 's', 'a', 'v'],
         countryId: 'c',
         stateId: 's',
-        areaId: 'a',
+        destinationId: 'a',
         venueId: 'v',
         path: 'ae/rak/wadi',
         names: { country: 'UAE', state: 'RAK', area: 'Wadi', venue: 'Wadi Ghalilah' },

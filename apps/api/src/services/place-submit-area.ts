@@ -23,11 +23,11 @@ const uniqueDraftAreaSlug = async (name: string): Promise<string> => {
   return slug;
 };
 
-/** Published area id, or a new draft area from the host’s proposed name + pin. */
-export const resolvePlaceSubmitArea = async (
+/** Published destination id, or a new draft hub from the host’s proposed name + pin. */
+export const resolvePlaceSubmitDestination = async (
   body: PlaceSubmitBody
-): Promise<{ areaId: string; areaLabel: string }> => {
-  const existingId = body.areaId?.trim() || '';
+): Promise<{ destinationId: string; areaLabel: string }> => {
+  const existingId = body.destinationId?.trim() || '';
   const areaLabelHint = body.areaLabel?.trim() || '';
 
   if (existingId) {
@@ -36,19 +36,19 @@ export const resolvePlaceSubmitArea = async (
     if (!anyArea) {
       throw new ApiError(
         400,
-        'area_not_found',
-        'Choose a published area, or name a new one for this pin.'
+        'destination_not_found',
+        'Choose a published destination, or name a new one for this pin.'
       );
     }
-    return { areaId: anyArea.id, areaLabel: areaLabelHint || anyArea.name };
+    return { destinationId: anyArea.id, areaLabel: areaLabelHint || anyArea.name };
   }
 
   const proposed = body.proposedAreaName?.trim() || '';
   if (!proposed || body.latitude == null || body.longitude == null) {
     throw new ApiError(
       400,
-      'area_not_found',
-      'This pin isn’t in a listed area. Pick an existing area or name a new one.'
+      'destination_not_found',
+      'This pin isn’t in a listed destination. Pick an existing destination or name a new one.'
     );
   }
 
@@ -62,5 +62,5 @@ export const resolvePlaceSubmitArea = async (
     countryCode: body.countryCode?.toUpperCase() || 'AE',
     summary: `Proposed with catalog place “${body.name.trim()}”.`,
   });
-  return { areaId: createdArea.id, areaLabel: createdArea.name };
+  return { destinationId: createdArea.id, areaLabel: createdArea.name };
 };

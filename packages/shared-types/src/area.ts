@@ -46,12 +46,6 @@ export type AreaPublicDTO = Pick<
   | 'imageUrl'
 >;
 
-/** @deprecated Alias of {@link destinationHubPath} — kept for imports during MIG-DESTINATION-GEO P7+. */
-export const areaDetailPath = (slug: string): string =>
-  `/destination/${encodeURIComponent(slug)}`;
-
-export const exploreAreaQueryParam = 'area';
-
 /** Ray-casting point-in-polygon (WGS84 lat/lng). */
 export const pointInAreaBounds = (
   latitude: number,

@@ -32,8 +32,8 @@ export type AddFlowStepId =
 export type AddDraft = {
   kind: AddVenueKind | null;
   title: string;
-  /** Admin-registered area (`locations.areaId`). */
-  areaId: string | null;
+  /** Admin-registered area (`locations.destinationId`). */
+  destinationId: string | null;
   /** Trailhead, wadi, or landmark — list poster location chip (`locations.areaLabel`). */
   areaLabel: string;
   emirate: string;
@@ -155,7 +155,7 @@ export const addDescriptionPlaceholder = (kind: AddVenueKind): string => {
 export const emptyAddDraft = (): AddDraft => ({
   kind: null,
   title: '',
-  areaId: null,
+  destinationId: null,
   areaLabel: '',
   emirate: '',
   countryCode: 'AE',
@@ -202,7 +202,7 @@ export const validateAddStep = (
       if (!draft.title.trim()) return 'Enter a title.';
       return null;
     case 'curatedArea':
-      if (!draft.areaId?.trim() && (draft.areaLabel.trim() || draft.title.trim()).length < 2) {
+      if (!draft.destinationId?.trim() && (draft.areaLabel.trim() || draft.title.trim()).length < 2) {
         return 'Choose a listed area, or name a new one for admin review.';
       }
       return null;

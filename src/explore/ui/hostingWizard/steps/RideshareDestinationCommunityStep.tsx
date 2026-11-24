@@ -9,7 +9,7 @@ import {
 } from '../../../../lib/rideshareDestinationSearch';
 import { submitMemberPlace } from '../../../../hooks/memberCatalogSubmitClientApi';
 import { RideshareLinkedOutingPreviewLines } from '../../hostingPinReview';
-import { fetchPublishedAreas } from '../../../../hooks/areaHubClientApi';
+import { fetchPublishedDestinations } from '../../../../hooks/areaHubClientApi';
 import { resolvePublishedAreaForPoint } from '../../../hostingPublishArea';
 import { ImageUpload } from '../../../../components/ui/ImageUpload';
 
@@ -105,7 +105,7 @@ export const RideshareDestinationCommunityStep = ({
     setSubmittingPlace(true);
     setSubmitError(null);
     try {
-      const areas = await fetchPublishedAreas();
+      const areas = await fetchPublishedDestinations();
       const area = resolvePublishedAreaForPoint(draft.toLatitude, draft.toLongitude, areas);
       const region = area?.region?.trim() ?? '';
       const countryCode = area?.countryCode?.trim() ?? '';
@@ -118,7 +118,7 @@ export const RideshareDestinationCommunityStep = ({
           name,
           countryCode,
           region,
-          areaId: area.id,
+          destinationId: area.id,
           areaLabel: area.name,
           activityType: placeKind,
           description: `Rideshare destination submitted for approval: ${name}.`,

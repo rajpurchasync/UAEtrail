@@ -21,7 +21,7 @@ type MongoParticipantIntent = {
   status: 'active' | 'fulfilled' | 'cancelled';
   activityId?: string | null;
   seekingActivityId?: string | null;
-  areaId?: string | null;
+  destinationId?: string | null;
   createdAt: Date;
 };
 
@@ -105,7 +105,7 @@ export const backfillSeekingActivitiesForActiveIntents = async (options?: {
       await mergeMemberAvailabilityFixedSlotsMigration(doc.userId, {
         kinds: [intentKindToAvailabilityKind(doc.kind)],
         visibility: 'public',
-        areaId: doc.areaId ?? null,
+        destinationId: doc.destinationId ?? null,
         note: doc.comment?.trim() || null,
         fixedSlots: [slot],
       });

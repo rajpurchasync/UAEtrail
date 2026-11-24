@@ -19,7 +19,7 @@ import {
 } from '../createFlowCopy';
 import type { CreateActivityDraft } from './hostingFlowEngine';
 import { applyRegistryPlaceToHostingDraft } from './hostingPlaceRegistryDraft';
-import { fetchPublishedAreas } from '../../hooks/areaHubClientApi';
+import { fetchPublishedDestinations } from '../../hooks/areaHubClientApi';
 import { resolvePublishedAreaIdForPoint } from '../hostingPublishArea';
 
 /** Clear trail slot when changing catalog ladder (registry path). */
@@ -36,13 +36,13 @@ export const patchHostingDestinationClearTrailSlot = (): Partial<CreateActivityD
 
 export const patchHostingDestinationStateChange = (state: string): Partial<CreateActivityDraft> => ({
   venueCascadeState: state,
-  registryPlaceAreaId: null,
+  registryPlaceDestinationId: null,
   venueCascadePlaceGroup: '',
   ...patchHostingDestinationClearTrailSlot(),
 });
 
-export const patchHostingDestinationAreaChange = (areaId: string): Partial<CreateActivityDraft> => ({
-  registryPlaceAreaId: areaId.trim() ? areaId : null,
+export const patchHostingDestinationAreaChange = (destinationId: string): Partial<CreateActivityDraft> => ({
+  registryPlaceDestinationId: destinationId.trim() ? destinationId : null,
   venueCascadePlaceGroup: '',
   ...patchHostingDestinationClearTrailSlot(),
 });
@@ -57,7 +57,7 @@ export const patchHostingDestinationPlaceGroupChange = (
 export const patchHostingDestinationReset = (): Partial<CreateActivityDraft> => ({
   venueCascadeState: '',
   venueCascadePlaceGroup: '',
-  registryPlaceAreaId: null,
+  registryPlaceDestinationId: null,
   ...patchHostingDestinationClearTrailSlot(),
 });
 
@@ -73,13 +73,13 @@ export const patchHostingDestinationCountryChange = (
 export const patchHostingDestinationEnterCustom = (
   draft: Pick<
     CreateActivityDraft,
-    'venueCascadeState' | 'registryPlaceAreaId' | 'customPlaceAreaId' | 'customPlaceEmirate'
+    'venueCascadeState' | 'registryPlaceDestinationId' | 'customPlaceDestinationId' | 'customPlaceEmirate'
   >
 ): Partial<CreateActivityDraft> => ({
   placeLabelSource: 'custom',
   registryPlaceId: null,
   venueCascadePlaceGroup: '',
-  customPlaceAreaId: draft.registryPlaceAreaId ?? draft.customPlaceAreaId,
+  customPlaceDestinationId: draft.registryPlaceDestinationId ?? draft.customPlaceDestinationId,
   customPlaceEmirate: draft.customPlaceEmirate.trim() || draft.venueCascadeState,
   trailName: '',
   trailLatitude: null,
@@ -110,7 +110,7 @@ export const patchHostingDestinationCatalogLeafLadder = (
   const ladder = inferPlaceCatalogLadderFromRow(place, areas, countryCode, catalogPlaces);
   return {
     venueCascadeState: ladder.state,
-    registryPlaceAreaId: ladder.areaId,
+    registryPlaceDestinationId: ladder.destinationId,
     venueCascadePlaceGroup: ladder.placeGroup,
   };
 };
@@ -136,12 +136,12 @@ export const patchPickHostingCatalogPlace = (
   return {
     ...ladder,
     ...basePatch,
-    registryPlaceAreaId:
-      basePatch.registryPlaceAreaId ?? ladder.registryPlaceAreaId ?? draft.registryPlaceAreaId,
+    registryPlaceDestinationId:
+      basePatch.registryPlaceDestinationId ?? ladder.registryPlaceDestinationId ?? draft.registryPlaceDestinationId,
   };
 };
 
-/** Optional `registryPlaceAreaId` when the leaf row lacks a persisted area but has coordinates. */
+/** Optional `registryPlaceDestinationId` when the leaf row lacks a persisted area but has coordinates. */
 export const hostingDestinationSearchHitGroupLabel = (
   hit: PlaceCatalogDestinationSearchHit
 ): string => {
@@ -154,13 +154,13 @@ export const enrichHostingCatalogPlacePick = async (
   place: PlaceDTO,
   patch: Partial<CreateActivityDraft>
 ): Promise<Partial<CreateActivityDraft> | null> => {
-  if (patch.registryPlaceAreaId) return null;
+  if (patch.registryPlaceDestinationId) return null;
   const lat = place.latitude;
   const lng = place.longitude;
   if (lat == null || lng == null) return null;
-  const published = await fetchPublishedAreas();
+  const published = await fetchPublishedDestinations();
   const inferredAreaId = resolvePublishedAreaIdForPoint(lat, lng, published);
-  return inferredAreaId ? { registryPlaceAreaId: inferredAreaId } : null;
+  return inferredAreaId ? { registryPlaceDestinationId: inferredAreaId } : null;
 };
 
 export const applyHostingDestinationSearchHit = (
@@ -172,16 +172,16 @@ export const applyHostingDestinationSearchHit = (
   if (hit.kind === 'place') {
     return {
       venueCascadeState: hit.state,
-      registryPlaceAreaId: hit.areaId,
+      registryPlaceDestinationId: hit.destinationId,
       venueCascadePlaceGroup: hit.placeGroupKey,
       ...patchHostingDestinationClearTrailSlot(),
     };
   }
-  const area = areas.find((row) => row.id === hit.areaId);
+  const area = areas.find((row) => row.id === hit.destinationId);
   const state = area ? resolvePlaceCatalogStateFromArea(area, countryCode, areas) : '';
   return {
     venueCascadeState: state,
-    registryPlaceAreaId: hit.areaId,
+    registryPlaceDestinationId: hit.destinationId,
     venueCascadePlaceGroup: '',
     ...patchHostingDestinationClearTrailSlot(),
   };

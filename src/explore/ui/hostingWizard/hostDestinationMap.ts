@@ -59,14 +59,14 @@ export const hostDestinationCatalogSearch = ({
   areas,
   countryCode,
   state,
-  areaId,
+  destinationId,
   onPickHit,
 }: {
   catalogPlaces: PlaceDTO[];
   areas: AreaPublicDTO[];
   countryCode: CountryCode;
   state?: string;
-  areaId?: string | null;
+  destinationId?: string | null;
   onPickHit: (hit: PlaceCatalogDestinationSearchHit) => void;
 }) => ({
   placeholder: HOSTING_DESTINATION_MAP_SEARCH_PLACEHOLDER,
@@ -74,7 +74,7 @@ export const hostDestinationCatalogSearch = ({
   resolveHits: (query: string) =>
     searchPlaceCatalogDestination(query, catalogPlaces, areas, countryCode, {
       state: state || undefined,
-      areaId: areaId || undefined,
+      destinationId: destinationId || undefined,
     }),
   groupLabel: hostingDestinationSearchHitGroupLabel,
   onPickHit,

@@ -4,7 +4,7 @@ import {
   PENDING_VENUE_PLACE_PREFIX,
   type ActivityDTO,
 } from '@uaetrail/shared-types';
-import { fetchPublishedAreas } from '../hooks/areaHubClientApi';
+import { fetchPublishedDestinations } from '../hooks/areaHubClientApi';
 import { createActivity, publishActivity, updateActivity } from '../hooks/tenantActivityClientApi';
 import { submitMemberPlace } from '../hooks/memberCatalogSubmitClientApi';
 import { HOME_HERO_OG_PATH } from '../config/seo';
@@ -54,7 +54,7 @@ export type OrganizePublishContext = {
   userId: string;
 };
 
-/** Resolve `locationId` for explore organize publish — catalog place with `place.areaId` only. */
+/** Resolve `locationId` for explore organize publish — catalog place with `place.destinationId` only. */
 export const resolveOrganizeActivityLocationId = async (
   ctx: OrganizePublishContext
 ): Promise<string> => {
@@ -84,15 +84,15 @@ export const resolveOrganizeActivityLocationId = async (
     if (about.length < 20) {
       throw new Error('Tell joiners about this spot (at least 20 characters).');
     }
-    const publishedAreas = await fetchPublishedAreas();
+    const publishedAreas = await fetchPublishedDestinations();
     const inferred = resolvePublishedAreaForPoint(
       draft.trailLatitude,
       draft.trailLongitude,
       publishedAreas
     );
-    const areaId =
-      draft.customPlaceAreaId?.trim() || draft.registryPlaceAreaId?.trim() || inferred?.id || '';
-    const area = areaId ? publishedAreas.find((row) => row.id === areaId) ?? inferred : null;
+    const destinationId =
+      draft.customPlaceDestinationId?.trim() || draft.registryPlaceDestinationId?.trim() || inferred?.id || '';
+    const area = destinationId ? publishedAreas.find((row) => row.id === destinationId) ?? inferred : null;
     const proposedName = resolveCustomProposedAreaName(draft);
     if (!area) {
       throw new Error('Select an area.');
@@ -121,7 +121,7 @@ export const resolveOrganizeActivityLocationId = async (
         emirate,
         groupRegion: emirate,
         region: emirate,
-        areaId: area.id,
+        destinationId: area.id,
         areaLabel: area.name,
         activityType,
         description: about.slice(0, 3000),
@@ -152,9 +152,9 @@ export const resolveOrganizeActivityLocationId = async (
     throw new Error(event ? 'Drop a meeting point pin on the map first.' : 'Drop a pin on the map first.');
   }
 
-  const publishedAreas = await fetchPublishedAreas();
-  const areaId = resolvePublishedAreaIdForPoint(anchorLat, anchorLng, publishedAreas);
-  if (!areaId) {
+  const publishedAreas = await fetchPublishedDestinations();
+  const destinationId = resolvePublishedAreaIdForPoint(anchorLat, anchorLng, publishedAreas);
+  if (!destinationId) {
     throw new Error(
       'Could not match a registered area for this pin. Add your spot via Explore → Add (select an area first), then organize from the catalog.'
     );
@@ -181,7 +181,7 @@ export const resolveOrganizeActivityLocationId = async (
       emirate,
       groupRegion: emirate,
       region: emirate,
-      areaId,
+      destinationId,
       activityType,
       description: anchorDescription.slice(0, 3000),
       latitude: lat,

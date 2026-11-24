@@ -127,7 +127,6 @@ describe('route handler CQRS guard (MIG-CQRS-ROUTES)', () => {
 
   it('thin registrars delegate to services (no *-store imports)', () => {
     const thinPublicRegistrars = [
-      'apps/api/src/routes/user/registerPublicAreaRoutes.ts',
       'apps/api/src/routes/user/registerPublicDestinationRoutes.ts',
       'apps/api/src/routes/user/registerPublicFacilityRoutes.ts',
       'apps/api/src/routes/user/registerExploreAvailabilityRoutes.ts',
@@ -171,13 +170,6 @@ describe('route handler CQRS guard (MIG-CQRS-ROUTES)', () => {
     for (const rel of thinPublicRegistrars) {
       expect(listStoreImports(rel), rel).toEqual([]);
     }
-  });
-
-  it('public area registrar delegates to destination-public-read (legacy alias)', () => {
-    const registrar = readRegistrar('apps/api/src/routes/user/registerPublicAreaRoutes.ts');
-    expect(registrar).toMatch(/destination-public-read/);
-    expect(registrar).toMatch(/attachLegacyAreasApiDeprecationHeaders/);
-    expect(registrar).not.toMatch(/COLLECTIONS\./);
   });
 
   it('public destination registrar wires destination-public-read', () => {

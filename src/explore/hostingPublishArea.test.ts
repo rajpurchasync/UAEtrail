@@ -15,7 +15,7 @@ const placeWithArea = (id: string): PlaceDTO =>
   ({
     id,
     name: 'Trail',
-    areaId: HATTA_AREA_ID,
+    destinationId: HATTA_AREA_ID,
     activityType: 'hiking',
     region: 'Dubai',
   }) as PlaceDTO;
@@ -30,18 +30,18 @@ describe('validateHostingPlaceArea', () => {
       registryPlaceId: 'loc-1',
     };
     expect(validateHostingPlaceArea(draft, [placeWithArea('loc-1')])).toBeNull();
-    expect(validateHostingPlaceArea(draft, [{ ...placeWithArea('loc-1'), areaId: null }])).toMatch(
+    expect(validateHostingPlaceArea(draft, [{ ...placeWithArea('loc-1'), destinationId: null }])).toMatch(
       /isn’t linked to a map area/
     );
     expect(
       validateHostingPlaceArea(
-        { ...draft, registryPlaceAreaId: HATTA_AREA_ID },
-        [{ ...placeWithArea('loc-1'), areaId: null }]
+        { ...draft, registryPlaceDestinationId: HATTA_AREA_ID },
+        [{ ...placeWithArea('loc-1'), destinationId: null }]
       )
     ).toBeNull();
     expect(
       validateHostingPlaceArea(draft, [
-        { ...placeWithArea('loc-1'), areaId: null, destinationId: HATTA_AREA_ID },
+        { ...placeWithArea('loc-1'), destinationId: null, destinationId: HATTA_AREA_ID },
       ])
     ).toBeNull();
   });
@@ -69,7 +69,7 @@ describe('validateHostingPlaceArea', () => {
       validateHostingPlaceArea(
         {
           ...draft,
-          customPlaceAreaId: HATTA_AREA_ID,
+          customPlaceDestinationId: HATTA_AREA_ID,
           trailLatitude: 24.8,
           trailLongitude: 56.1,
         },
@@ -105,7 +105,7 @@ describe('validateHostingPlaceArea', () => {
       trailName: 'Offshore pin',
       trailLatitude: 20,
       trailLongitude: 50,
-      customPlaceAreaId: HATTA_AREA_ID,
+      customPlaceDestinationId: HATTA_AREA_ID,
     };
     expect(validateHostingPlaceArea(unmatched, [])).toMatch(/Choose the emirate/);
     expect(validateHostingPlaceArea({ ...unmatched, customPlaceEmirate: 'Sharjah' }, [])).toBeNull();
@@ -119,7 +119,7 @@ describe('validateHostingPlaceArea', () => {
           trailName: 'Wadi Al Helo',
           trailLatitude: 24.978,
           trailLongitude: 56.226,
-          customPlaceAreaId: HATTA_AREA_ID,
+          customPlaceDestinationId: HATTA_AREA_ID,
         },
         []
       )
@@ -155,7 +155,7 @@ describe('validateAvailabilityPublishArea', () => {
     const draft = {
       ...emptyAvailabilityFixedDraft(),
       kind: 'hiking' as const,
-      areaId: null,
+      destinationId: null,
     };
     expect(validateAvailabilityPublishArea(draft, 'hiking')).toMatch(/area you want company in/);
   });
@@ -164,7 +164,7 @@ describe('validateAvailabilityPublishArea', () => {
     const draft = {
       ...emptyAvailabilityFixedDraft(),
       kind: 'hiking' as const,
-      areaId: HATTA_AREA_ID,
+      destinationId: HATTA_AREA_ID,
       fromPinPlaced: true,
       latitude: 25,
       longitude: 55,

@@ -14,7 +14,7 @@ import {
   LocationStatus,
   type Accessibility
 } from '../domain/enums.js';
-import { mirrorCatalogDestinationIds } from './destination-id-sync.js';
+import { catalogDestinationIdUpdate } from './destination-id-sync.js';
 
 const asStringArray = (value: unknown): string[] => (Array.isArray(value) ? value : []);
 
@@ -24,7 +24,7 @@ export type LocationCreateInput = {
   name: string;
   region?: string;
   areaLabel?: string | null;
-  areaId?: string | null;
+  destinationId?: string | null;
   /** Leaf row → place hub (`locations` id). */
   parentPlaceId?: string | null;
   activityType: ActivityType | string;
@@ -125,7 +125,7 @@ export type ActivityCreateInput = {
   /** Discoverable community club that published this outing (`MIG-COMMUNITY-DISCOVER`). */
   discoverCommunityId?: string | null;
   groupChatPostPolicy?: 'all_participants' | 'host_only' | null;
-  areaId?: string | null;
+  destinationId?: string | null;
   groupRegionLevels?: import('@uaetrail/shared-types').GroupRegionLevels | null;
 };
 
@@ -186,7 +186,7 @@ export type ActivityUpdateInput = {
   activityMode?: 'hosted' | null;
   discoverCommunityId?: string | null;
   groupChatPostPolicy?: 'all_participants' | 'host_only' | null;
-  areaId?: string | null;
+  destinationId?: string | null;
   groupRegionLevels?: import('@uaetrail/shared-types').GroupRegionLevels | null;
 };
 
@@ -204,7 +204,7 @@ export const buildLocationFromCreateInput = (data: LocationCreateInput, id: stri
     name: data.name,
     region: data.region ?? '',
     areaLabel: data.areaLabel?.trim() ? data.areaLabel.trim() : null,
-    ...mirrorCatalogDestinationIds(data.areaId),
+    ...catalogDestinationIdUpdate(data.destinationId),
     parentPlaceId: data.parentPlaceId?.trim() ? data.parentPlaceId.trim() : null,
     activityType: data.activityType as Location['activityType'],
     description: data.description ?? '',
@@ -305,7 +305,7 @@ export type MongoActivityDoc = {
   publishedAt: Date | null;
   outingCategory?: string | null;
   outingTopic?: string | null;
-  areaId?: string | null;
+  destinationId?: string | null;
   geoRef?: import('@uaetrail/shared-types').GeoRef | null;
   groupRegionLevels?: import('@uaetrail/shared-types').GroupRegionLevels | null;
   activityMode?: 'hosted' | 'seeking' | null;
@@ -473,7 +473,7 @@ export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: stri
     publishedAt: data.publishedAt ?? null,
     outingCategory: data.outingCategory ?? null,
     outingTopic: data.outingTopic ?? null,
-    ...mirrorCatalogDestinationIds(data.areaId),
+    ...catalogDestinationIdUpdate(data.destinationId),
     groupRegionLevels: data.groupRegionLevels ?? null,
     activityMode: data.activityMode ?? 'hosted',
     discoverCommunityId: data.discoverCommunityId ?? null,

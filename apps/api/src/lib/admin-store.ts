@@ -163,7 +163,7 @@ const mapMongoActivity = (doc: MongoActivityDoc) : Activity => ({
   status: doc.status,
   featured: doc.featured,
   publishedAt: doc.publishedAt,
-  areaId: doc.areaId ?? null,
+  destinationId: doc.destinationId ?? null,
   schemaVersion: doc.schemaVersion,
   summary: doc.summary ?? null,
   itinerarySteps: doc.itinerarySteps,

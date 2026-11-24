@@ -84,11 +84,6 @@ export const filterExploreMapItemsByBbox = (
   bbox: ExploreMapBboxBBox
 ): ExploreMapItemDTO[] => items.filter((item) => exploreMapItemIntersectsBbox(item, bbox));
 
-export const filterExploreMapItemsByAreaSlug = (
-  items: ExploreMapItemDTO[],
-  areaSlug: string
-): ExploreMapItemDTO[] => filterExploreMapItemsByDestinationSlug(items, areaSlug);
-
 type CursorPayload = { sortKey: string; id: string };
 
 const encodeCursor = (payload: CursorPayload): string =>
@@ -150,13 +145,13 @@ export const paginateExploreMapItems = (input: {
 export const buildExploreMapBboxPage = (input: {
   items: ExploreMapItemDTO[];
   bbox: ExploreMapBboxBBox;
-  areaSlug: string | null;
+  destinationSlug: string | null;
   limit: number;
   cursor: string | null | undefined;
 }): ExploreMapBboxPage => {
   let filtered = filterExploreMapItemsByBboxIndexed(input.items, input.bbox);
-  if (input.areaSlug) {
-    filtered = filterExploreMapItemsByAreaSlug(filtered, input.areaSlug);
+  if (input.destinationSlug) {
+    filtered = filterExploreMapItemsByDestinationSlug(filtered, input.destinationSlug);
   }
   const page = paginateExploreMapItems({
     items: filtered,
@@ -166,7 +161,7 @@ export const buildExploreMapBboxPage = (input: {
   return {
     items: page.items,
     nextCursor: page.nextCursor,
-    region: { slug: input.areaSlug, bbox: input.bbox },
+    region: { slug: input.destinationSlug, bbox: input.bbox },
   };
 };
 

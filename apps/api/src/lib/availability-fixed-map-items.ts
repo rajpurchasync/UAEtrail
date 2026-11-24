@@ -24,7 +24,6 @@ type MongoMemberAvailability = {
   kinds: string[];
   visibility: string;
   destinationId?: string | null;
-  areaId?: string | null;
   slots: MemberAvailabilitySlotDTO[];
 };
 
@@ -54,8 +53,8 @@ const formatDateTimeParts = (
 
 /** Public fixed availability slots → activity-shaped explore map items. */
 export const buildAvailabilityFixedMapItems = async (input: {
-  areaSlugById: Map<string, string>;
-  areaNameById: Map<string, string>;
+  destinationSlugById: Map<string, string>;
+  destinationNameById: Map<string, string>;
 }): Promise<ExploreMapItemDTO[]> => {
   const today = todayIsoUtc();
   const rangeEnd = '2099-12-31';
@@ -114,10 +113,8 @@ export const buildAvailabilityFixedMapItems = async (input: {
         endDate: endParts.date,
         endTime: endParts.time,
         destinationId,
-        destinationSlug: destinationId ? input.areaSlugById.get(destinationId) ?? null : null,
-        areaId: destinationId,
-        areaSlug: destinationId ? input.areaSlugById.get(destinationId) ?? null : null,
-        areaName: destinationId ? input.areaNameById.get(destinationId) ?? null : null,
+        destinationSlug: destinationId ? input.destinationSlugById.get(destinationId) ?? null : null,
+        destinationName: destinationId ? input.destinationNameById.get(destinationId) ?? null : null,
       });
     }
   }

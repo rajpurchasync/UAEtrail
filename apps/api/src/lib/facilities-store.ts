@@ -8,8 +8,8 @@ import { newEntityId } from './entity-builders.js';
 import { withCatalogLifecycleFields } from './catalog-lifecycle-map.js';
 import { emitGeoPinChange, facilityToCountedPin } from './geo-write.js';
 import { resolveGeoRefForPin } from './geo-resolve.js';
-import { mirrorCatalogDestinationIds } from './destination-id-sync.js';
-import { mirrorCatalogOnSiteIds, resolveStoredOnSiteId } from './facility-on-site-sync.js';
+import { catalogDestinationIdUpdate } from './destination-id-sync.js';
+import { catalogOnSiteIdUpdate, resolveStoredOnSiteId } from './facility-on-site-sync.js';
 
 export type MongoFacilityDoc = Omit<Facility, 'id'> & { _id: string };
 
@@ -23,7 +23,6 @@ export const mapMongoFacility = (doc: MongoFacilityDoc): Facility => {
     id: _id,
     ...rest,
     onSiteId,
-    parentPlaceId: onSiteId,
     partnerReferralUrl: rest.partnerReferralUrl ?? null,
     areaLabel: rest.areaLabel ?? null,
     registeredByUserId: rest.registeredByUserId ?? rest.submittedById ?? null,
@@ -63,21 +62,13 @@ export const findFacilityForDetailView = async (
   return null;
 };
 
-const facilitySiteScopeFilter = (placeId: string) => ({
-  $or: [{ parentPlaceId: placeId }, { onSiteId: placeId }],
-});
-
-const facilityDestinationScopeFilter = (destinationId: string) => ({
-  $or: [{ areaId: destinationId }, { destinationId }],
-});
-
-export const listFacilitiesByParentPlaceId = async (
-  parentPlaceId: string,
+export const listFacilitiesByOnSiteId = async (
+  onSiteId: string,
   take = 16
 ): Promise<Facility[]> => {
   const items = await facilitiesCollection()
     .find({
-      ...facilitySiteScopeFilter(parentPlaceId.trim()),
+      onSiteId: onSiteId.trim(),
       status: LocationStatus.ACTIVE,
       publicationStatus: 'listed',
       moderationStatus: 'approved',
@@ -93,8 +84,8 @@ export const listFacilitiesForExploreMap = async (take = 1200): Promise<Facility
   listFacilitiesCatalog({ take });
 
 export const listFacilitiesCatalog = async (input: {
-  areaId?: string;
-  parentPlaceId?: string | null;
+  destinationId?: string;
+  onSiteId?: string | null;
   facilityKind?: FacilityKind;
   countryCode?: string;
   take?: number;
@@ -104,11 +95,11 @@ export const listFacilitiesCatalog = async (input: {
     moderationStatus: 'approved',
     publicationStatus: 'listed',
   };
-  if (input.areaId?.trim()) {
-    Object.assign(filter, facilityDestinationScopeFilter(input.areaId.trim()));
+  if (input.destinationId?.trim()) {
+    filter.destinationId = input.destinationId.trim();
   }
-  if (input.parentPlaceId?.trim()) {
-    Object.assign(filter, facilitySiteScopeFilter(input.parentPlaceId.trim()));
+  if (input.onSiteId?.trim()) {
+    filter.onSiteId = input.onSiteId.trim();
   }
   if (input.facilityKind) filter.facilityKind = input.facilityKind;
   if (input.countryCode?.trim()) filter.countryCode = input.countryCode.trim().toUpperCase();
@@ -146,10 +137,10 @@ export const listFacilitiesPaged = async (input: {
 export type FacilityCreateInput = {
   name: string;
   region: string;
-  areaId: string;
+  destinationId: string;
   areaLabel?: string | null;
   facilityKind: FacilityKind;
-  parentPlaceId?: string | null;
+  onSiteId?: string | null;
   description: string;
   latitude: number;
   longitude: number;
@@ -172,16 +163,14 @@ export const createFacilityRecord = async (input: FacilityCreateInput): Promise<
     registeredByUserId: input.registeredByUserId,
   });
 
-  const regionIds = mirrorCatalogDestinationIds(input.areaId);
   const doc: MongoFacilityDoc = {
     _id: id,
     name: input.name,
     region: input.region,
     areaLabel: input.areaLabel ?? null,
-    areaId: input.areaId,
-    destinationId: regionIds.destinationId,
+    destinationId: input.destinationId.trim(),
     facilityKind: input.facilityKind,
-    ...mirrorCatalogOnSiteIds(input.parentPlaceId),
+    ...catalogOnSiteIdUpdate(input.onSiteId),
     description: input.description,
     latitude: input.latitude,
     longitude: input.longitude,
@@ -204,7 +193,7 @@ export const createFacilityRecord = async (input: FacilityCreateInput): Promise<
     const { geoRef } = await resolveGeoRefForPin({
       latitude: mapped.latitude,
       longitude: mapped.longitude,
-      areaId: mapped.areaId,
+      destinationId: mapped.destinationId,
       countryCode: mapped.countryCode,
       region: mapped.region,
       venueName: mapped.name,
@@ -223,10 +212,10 @@ export const createFacilityRecord = async (input: FacilityCreateInput): Promise<
 export type AdminFacilityCreateInput = {
   name: string;
   region: string;
-  areaId: string;
+  destinationId: string;
   areaLabel?: string | null;
   facilityKind: FacilityKind;
-  parentPlaceId?: string | null;
+  onSiteId?: string | null;
   description: string;
   latitude?: number | null;
   longitude?: number | null;
@@ -251,16 +240,14 @@ export const createAdminFacility = async (input: AdminFacilityCreateInput): Prom
     registeredByUserId: input.createdByUserId,
   });
 
-  const adminRegionIds = mirrorCatalogDestinationIds(input.areaId);
   const doc: MongoFacilityDoc = {
     _id: id,
     name: input.name,
     region: input.region,
     areaLabel: input.areaLabel ?? null,
-    areaId: input.areaId,
-    destinationId: adminRegionIds.destinationId,
+    destinationId: input.destinationId.trim(),
     facilityKind: input.facilityKind,
-    ...mirrorCatalogOnSiteIds(input.parentPlaceId),
+    ...catalogOnSiteIdUpdate(input.onSiteId),
     description: input.description,
     latitude: input.latitude ?? null,
     longitude: input.longitude ?? null,
@@ -283,7 +270,7 @@ export const createAdminFacility = async (input: AdminFacilityCreateInput): Prom
     const { geoRef } = await resolveGeoRefForPin({
       latitude: mapped.latitude,
       longitude: mapped.longitude,
-      areaId: mapped.areaId,
+      destinationId: mapped.destinationId,
       countryCode: mapped.countryCode,
       region: mapped.region,
       venueName: mapped.name,
@@ -314,10 +301,8 @@ export type AdminFacilityUpdateInput = Partial<
     | 'name'
     | 'region'
     | 'areaLabel'
-    | 'areaId'
     | 'destinationId'
     | 'facilityKind'
-    | 'parentPlaceId'
     | 'onSiteId'
     | 'description'
     | 'latitude'

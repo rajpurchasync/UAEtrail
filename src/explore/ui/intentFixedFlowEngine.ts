@@ -79,7 +79,7 @@ export type AvailabilityFixedDraft = {
   fromPinPlaced: boolean;
   toPinPlaced: boolean;
   /** Admin-registered area + map pin (Find / looking for). */
-  areaId: string | null;
+  destinationId: string | null;
   capacity: AvailabilitySlotCapacity;
   guideEngagementTerms: AvailabilityEngagementTerms | null;
   /** Emirate labels (OR) — slot `destinationRegions`. */
@@ -218,7 +218,7 @@ export const emptyAvailabilityFixedDraft = (): AvailabilityFixedDraft => ({
   areaPinPlaced: false,
   fromPinPlaced: false,
   toPinPlaced: false,
-  areaId: null,
+  destinationId: null,
   capacity: 'participant',
   guideEngagementTerms: null,
   destinationRegions: [],

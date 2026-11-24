@@ -11,7 +11,7 @@ export const facilityApi = {
   submitUserFacility: (payload: {
     name: string;
     region: string;
-    areaId: string;
+    destinationId: string;
     areaLabel?: string | null;
     facilityKind: FacilityDTO['facilityKind'];
     parentPlaceId?: string | null;

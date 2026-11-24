@@ -2,11 +2,11 @@ import type { FacilityDTO } from '@uaetrail/shared-types';
 
 export const resolveFacilityDetailAreaHero = (
   facility: Pick<FacilityDTO, 'region' | 'areaLabel' | 'geoRef'>,
-  curatedAreaSlug?: string | null
+  curateddestinationSlug?: string | null
 ): {
   region: string;
   areaLabel: string | null;
-  areaSlug: string | null;
+  destinationSlug: string | null;
 } => {
   const region =
     facility.region?.trim() ||
@@ -18,6 +18,6 @@ export const resolveFacilityDetailAreaHero = (
   return {
     region,
     areaLabel,
-    areaSlug: curatedAreaSlug?.trim() || null,
+    destinationSlug: curatedAreaSlug?.trim() || null,
   };
 };

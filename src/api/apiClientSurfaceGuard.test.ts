@@ -52,7 +52,7 @@ const BANNED_CALLS: Array<{ pattern: RegExp; hint: string }> = [
   { pattern: /\bapi\.getPublicLocationDetail\b/, hint: 'Use api.getPublicPlaceDetail' },
   {
     pattern: /\bapi\.(listPublishedAreas|getAreaBySlug)\b/,
-    hint: 'Use destinationsApi / fetchPublishedAreas (GET /destinations)',
+    hint: 'Use destinationsApi / fetchPublishedDestinations (GET /destinations)',
   },
   { pattern: /\bapi\.getReviews\s*\(\s*['"]tenant['"]/, hint: 'Use api.getOrganisationReviews' },
   { pattern: /\bapi\.createReview\s*\(/, hint: 'Use api.createPlaceReview or api.createOrganisationReview' },

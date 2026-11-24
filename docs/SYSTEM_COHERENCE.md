@@ -991,7 +991,7 @@ Legacy shim (one release, no new imports): `placeRegistry.ts`. `placeCatalogApi.
 
 ### 8.5 Program MIG-DESTINATION-GEO-2026 — geography assignment
 
-**Status:** **Eng complete (P0–P10)** — staging `verify:system` + deploy; `areaId`/`parentPlaceId` dual-read until ops cutover. **Track A:** `destinations` logical store (physical Mongo `areas` until P3); **`destinationId`** on catalog rows; **`geoRef`** SoT for country/state (P4+). **Place (site)** = trails, camps, spots (`/place/:id`). **Not in scope:** nested geo URLs; GW-7 inbound choke.
+**Status:** **Cutover complete (P0–P10 + hard wire)** — single path: `destinationId`, `onSiteId`, `GET /api/destinations`, `/destination/:slug`, `?destination=`; Mongo migration **2025112505** unsets legacy `areaId` on catalog rows and `parentPlaceId` on facilities. Physical store remains `areas` collection; **AdminGeo** `geoRef` SoT for country/state. **Not in scope:** nested geo URLs; GW-7 inbound choke.
 
 **Read between phases:** this §8.5 · [`DOMAIN.md`](./DOMAIN.md) § Geography · [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §12.1 · `packages/shared-types/src/destination.ts`.
 
@@ -1002,8 +1002,8 @@ Legacy shim (one release, no new imports): `placeRegistry.ts`. `placeCatalogApi.
 | ID | Decision |
 |----|----------|
 | D0.1 | `destinations` from `areas`; preserve `area-seed-*` ids as `destinationId` |
-| D0.2 | Dual-read `resolveDestinationId`; dual-write `areaId` + `destinationId` until P9 |
-| D0.3 | `/destination/:slug` canonical; `/area/:slug` legacy → 301 (P8) |
+| D0.2 | `resolveDestinationId` reads **`destinationId` only** (no `areaId` wire) |
+| D0.3 | `/destination/:slug` canonical; inbound `/area/*` → `/destination/*` (nginx) |
 | D0.4 | Listed catalog requires `destinationId` + `geoRef` (P4+) |
 | D0.5 | Facility trail scope → `onSiteId` rename from `parentPlaceId` (P9) |
 
@@ -1100,14 +1100,14 @@ Mark `[x]` in the PR that completes the item.
 
 **P9 — API cutover (read paths)**
 
-- [x] `GET /api/areas*` → `destination-public-read` + `Deprecation` / `Link` headers
+- [x] Public reads: **`GET /api/destinations`** only (`registerPublicAreaRoutes` removed)
 - [x] `destinations-http-canonical-guard.test.ts`
-- [x] `areaId` dual-read retained on DTOs (remove in post-program ops pass)
-- [x] `onSiteId` dual-write + migration `2025112504` (D0.5)
+- [x] DTOs / explore lens: **`destinationId`** / **`destinationSlug`** (no consumer `areaId`)
+- [x] `onSiteId` on facilities + migration **2025112505** unset legacy fields (D0.5)
 
 **P10 — Program close (eng)**
 
-- [x] Explore URLs emit `?destination=` only (legacy `?area=` read path retained)
+- [x] Explore URLs emit **`?destination=`** only (no `?area=` read path)
 - [x] Consumer API: `areasApi` public reads → `/destinations`; `apiClientSurfaceGuard`
 - [ ] `npm run verify:system` on staging (ops sign-off)
 - [ ] Optional: physical Mongo `areas` collection rename

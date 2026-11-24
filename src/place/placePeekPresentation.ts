@@ -1,6 +1,6 @@
 /**
  * Place map peek copy/lines — `card.source` is `venue` (wire); product entity is Place.
- * Curated **Area** hub link uses `card.areaSlug` / `card.areaName` (from `place.areaId`), not `source: 'area'`.
+ * Curated **Area** hub link uses `card.destinationSlug` / `card.destinationName` (from `place.destinationId`), not `source: 'area'`.
  * @see docs/DOMAIN_CANONICALS.md §12.1.1
  */
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
@@ -34,7 +34,7 @@ export const resolvePlacePeekLocalLabel = (card: DiscoveryCardModel): string | n
     if (normalize(local) === normalize(region)) return null;
   }
 
-  const curated = card.areaName?.trim();
+  const curated = card.destinationName?.trim();
   if (curated && normalize(local) === normalize(curated)) return null;
   if (normalize(local) === normalize(browseCatalogEntityName(card))) return null;
   return local || null;
@@ -43,8 +43,8 @@ export const resolvePlacePeekLocalLabel = (card: DiscoveryCardModel): string | n
 export const resolvePlacePeekCuratedArea = (
   card: DiscoveryCardModel
 ): { slug: string | null; name: string } | null => {
-  const name = card.areaName?.trim();
+  const name = card.destinationName?.trim();
   if (!name) return null;
-  const slug = card.areaSlug?.trim() || null;
+  const slug = card.destinationSlug?.trim() || null;
   return { slug, name };
 };

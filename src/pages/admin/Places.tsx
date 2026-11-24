@@ -120,7 +120,7 @@ type PlacesProps = {
 /** Admin console for places (trails, camps, event venues). Canonical route: `/admin/places`. */
 export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const filterAreaId = searchParams.get('areaId')?.trim() || null;
+  const filterAreaId = searchParams.get('destinationId')?.trim() || null;
   const [places, setPlaces] = useState<PlaceDTO[]>([]);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
@@ -234,7 +234,7 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
     setEditingId(null);
     setForm({
       ...emptyForm,
-      areaId: filterAreaId ?? undefined,
+      destinationId: filterAreaId ?? undefined,
       region: filterArea?.region ?? emptyForm.region,
       countryCode: (filterArea?.countryCode as CountryCode) ?? emptyForm.countryCode,
     });
@@ -381,7 +381,7 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
   const filtered = places
     .filter((l) => adminCatalogSegmentForRow(l) === catalogSegment)
     .filter((l) => {
-      if (filterAreaId && l.areaId !== filterAreaId) return false;
+      if (filterAreaId && l.destinationId !== filterAreaId) return false;
       if (activeTab === 'pending') return l.status === 'draft';
       if (activeTab === 'all') return true;
       if (catalogSegment === 'facility') return true;
@@ -410,12 +410,12 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
 
   const parentPlaceHubOptions = useMemo(() => {
     if (catalogSegment !== 'outdoor') return [];
-    const areaId = form.areaId?.trim() || null;
+    const destinationId = form.destinationId?.trim() || null;
     return segmentPlaces
       .filter((row) => {
         if (editingId && row.id === editingId) return false;
         if (row.parentPlaceId?.trim()) return false;
-        if (areaId && row.areaId !== areaId) return false;
+        if (destinationId && row.destinationId !== destinationId) return false;
         return true;
       })
       .map((row) => ({
@@ -423,7 +423,7 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
         label: `${row.name} · ${activityTypeLabel(row.activityType)}`,
       }))
       .sort((a, b) => a.label.localeCompare(b.label));
-  }, [catalogSegment, editingId, form.areaId, segmentPlaces]);
+  }, [catalogSegment, editingId, form.destinationId, segmentPlaces]);
 
   const hikingCount = segmentPlaces.filter((l) => l.activityType === 'hiking').length;
   const campingCount = segmentPlaces.filter((l) => l.activityType === 'camping').length;
@@ -622,11 +622,11 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
                   </td>
                   <td className="px-4 py-3 text-gray-700">{loc.region}</td>
                   <td className="px-4 py-3 text-gray-600 text-xs">
-                    {loc.areaId ? (
+                    {loc.destinationId ? (
                       <>
-                        {areaNameById.get(loc.areaId) ?? loc.areaName ?? '—'}
-                        {loc.areaStatus === 'draft' ||
-                        adminAreas.find((area) => area.id === loc.areaId)?.status === 'draft' ? (
+                        {areaNameById.get(loc.destinationId) ?? loc.destinationName ?? '—'}
+                        {loc.destinationStatus === 'draft' ||
+                        adminAreas.find((area) => area.id === loc.destinationId)?.status === 'draft' ? (
                           <span className="ml-1 font-semibold text-amber-800">(new)</span>
                         ) : null}
                       </>
@@ -810,11 +810,11 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
             </p>
             {(confirmAction.type === 'publish' ||
               (confirmAction.type === 'status' && confirmAction.loc.status !== 'active')) &&
-            (confirmAction.loc.areaStatus === 'draft' ||
-              adminAreas.find((area) => area.id === confirmAction.loc.areaId)?.status === 'draft') ? (
+            (confirmAction.loc.destinationStatus === 'draft' ||
+              adminAreas.find((area) => area.id === confirmAction.loc.destinationId)?.status === 'draft') ? (
               <p className="mb-3 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-950">
                 This place is linked to a <span className="font-semibold">new area</span>
-                {confirmAction.loc.areaName ? ` (${confirmAction.loc.areaName})` : ''}. Approving
+                {confirmAction.loc.destinationName ? ` (${confirmAction.loc.destinationName})` : ''}. Approving
                 will also publish that area on Explore.
               </p>
             ) : null}
@@ -974,20 +974,20 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
                     <div className="col-span-2">
                       <label className="text-sm font-medium text-gray-700 mb-1 block">Curated area</label>
                       <AppSelect
-                        value={form.areaId ?? ''}
-                        onChange={(areaId) => {
-                          const nextAreaId = areaId || null;
+                        value={form.destinationId ?? ''}
+                        onChange={(destinationId) => {
+                          const nextAreaId = destinationId || null;
                           const keepParent =
                             !form.parentPlaceId?.trim() ||
                             segmentPlaces.some(
                               (row) =>
                                 row.id === form.parentPlaceId &&
                                 !row.parentPlaceId?.trim() &&
-                                (!nextAreaId || row.areaId === nextAreaId)
+                                (!nextAreaId || row.destinationId === nextAreaId)
                             );
                           setForm({
                             ...form,
-                            areaId: nextAreaId,
+                            destinationId: nextAreaId,
                             parentPlaceId: keepParent ? form.parentPlaceId ?? null : null,
                           });
                         }}
@@ -1001,7 +1001,7 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
                         inputClassName={ADMIN_SELECT_CLASS}
                         aria-label="Curated area"
                       />
-                      {adminAreas.find((area) => area.id === form.areaId)?.status === 'draft' ? (
+                      {adminAreas.find((area) => area.id === form.destinationId)?.status === 'draft' ? (
                         <p className="mt-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-950">
                           This place is linked to a new area. Approving the place will also publish
                           that area on Explore.
@@ -1024,13 +1024,13 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
                           }
                           options={parentPlaceHubOptions}
                           placeholder={
-                            form.areaId
+                            form.destinationId
                               ? 'Group this route under a hub in the same area'
                               : 'Pick a curated area first'
                           }
                           inputClassName={ADMIN_SELECT_CLASS}
                           aria-label="Place hub"
-                          disabled={!form.areaId}
+                          disabled={!form.destinationId}
                         />
                         <p className="mt-1 text-xs text-gray-500">
                           Host destination ladder groups leaf routes (trail, camp, venue) under this hub.

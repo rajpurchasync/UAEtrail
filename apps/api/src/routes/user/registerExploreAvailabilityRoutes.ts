@@ -16,7 +16,7 @@ const exploreAvailabilityQuerySchema = z.object({
   from: isoDate,
   to: isoDate,
   kind: availabilityKindEnum.optional(),
-  area: z.string().trim().max(80).optional(),
+  destination: z.string().trim().max(80).optional(),
   region: z.string().trim().max(80).optional(),
   friendsOnly: z.enum(['0', '1']).optional(),
 });
@@ -38,7 +38,7 @@ export const registerExploreAvailabilityRoutes = (router: Router): void => {
           rangeStart: q.from,
           rangeEnd: q.to,
           kind: q.kind ?? null,
-          areaSlug: q.area ?? null,
+          destinationSlug: q.destination ?? null,
           region: q.region ?? null,
           friendsOnly: q.friendsOnly === '1',
         });

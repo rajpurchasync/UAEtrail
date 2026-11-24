@@ -20,14 +20,14 @@ describe('addFacilityFlow', () => {
       applyFacilityAddParentPlace({
         id: 'trail-1',
         name: 'Wadi loop',
-        areaId: 'area-hatta',
+        destinationId: 'area-hatta',
         latitude: 25.1,
         longitude: 56.2,
       })
     ).toEqual({
       parentPlaceId: 'trail-1',
       parentPlaceName: 'Wadi loop',
-      areaId: 'area-hatta',
+      destinationId: 'area-hatta',
       latitude: 25.1,
       longitude: 56.2,
     });

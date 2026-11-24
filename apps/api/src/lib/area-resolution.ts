@@ -99,21 +99,24 @@ export const resolveEffectiveLocationAreaId = (
   return null;
 };
 
-/** Geography for an activity is the persisted place `areaId`, then the activity row. */
-export const resolveAreaIdForActivity = (
-  activity: Pick<MongoActivityDoc, 'areaId'>,
-  location?: Pick<Location, 'areaId'> | null
+/** Geography for an activity is the persisted place `destinationId`, then the activity row. */
+export const resolveDestinationIdForActivity = (
+  activity: Pick<MongoActivityDoc, 'destinationId'>,
+  location?: Pick<Location, 'destinationId'> | null
 ): string | null => {
-  if (location?.areaId?.trim()) return location.areaId.trim();
-  if (activity.areaId?.trim()) return activity.areaId.trim();
+  if (location?.destinationId?.trim()) return location.destinationId.trim();
+  if (activity.destinationId?.trim()) return activity.destinationId.trim();
   return null;
 };
 
-/** Public publish area — persisted place or activity `areaId` only. */
+/** @deprecated Use {@link resolveDestinationIdForActivity}. */
+export const resolveAreaIdForActivity = resolveDestinationIdForActivity;
+
+/** Public publish destination — persisted place or activity `destinationId` only. */
 export const resolveAreaIdForActivityPublish = async (
   activity: MongoActivityDoc,
   location?: Location | null
-): Promise<string | null> => Promise.resolve(resolveAreaIdForActivity(activity, location));
+): Promise<string | null> => Promise.resolve(resolveDestinationIdForActivity(activity, location));
 
 export const ringFromBBox = (
   south: number,

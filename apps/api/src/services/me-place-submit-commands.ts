@@ -8,7 +8,7 @@ import { toLocationDto } from '../lib/mappers.js';
 import { scheduleSideEffect } from '../lib/schedule-side-effect.js';
 import { findAuthUserById } from '../lib/auth-users-store.js';
 import { notifyAdminsCatalogSubmitted } from './catalog-submit-notifications.js';
-import { resolvePlaceSubmitArea } from './place-submit-area.js';
+import { resolvePlaceSubmitDestination } from './place-submit-area.js';
 import { buildPlaceSubmitPayload } from './place-submit.js';
 import { awardPoints } from './rewards.js';
 
@@ -16,10 +16,10 @@ export const submitMyPlace = async (
   userId: string,
   body: z.infer<typeof locationSubmitBodySchema>
 ) => {
-  const { areaId, areaLabel } = await resolvePlaceSubmitArea(body);
+  const { destinationId, areaLabel } = await resolvePlaceSubmitDestination(body);
 
   const created = await createLocationRecord(
-    buildPlaceSubmitPayload({ ...body, areaId, areaLabel }, userId)
+    buildPlaceSubmitPayload({ ...body, destinationId, areaLabel }, userId)
   );
 
   await createAuditLog({

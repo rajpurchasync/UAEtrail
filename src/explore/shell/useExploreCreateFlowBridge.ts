@@ -17,7 +17,7 @@ type UseExploreCreateFlowBridgeArgs = {
   handleAvailabilityFixedSubmitted: (result: AvailabilityFixedSubmitResult) => void;
   handleAddSubmitted: (result: AddSubmitResult) => void;
   planWithFriendUserId: string | null;
-  composeAreaSlug: string | null;
+  composeDestinationSlug: string | null;
   facilityOnPlaceId: string | null;
   tenantId: string | null | undefined;
   refreshHostGate: () => void;
@@ -38,7 +38,7 @@ export const useExploreCreateFlowBridge = ({
   handleAvailabilityFixedSubmitted,
   handleAddSubmitted,
   planWithFriendUserId,
-  composeAreaSlug,
+  composeDestinationSlug,
   facilityOnPlaceId,
   tenantId,
   refreshHostGate,
@@ -91,7 +91,7 @@ export const useExploreCreateFlowBridge = ({
       },
       onAddSubmitted: (result) => handlersRef.current.handleAddSubmitted(result),
       planWithFriendUserId,
-      composeAreaSlug,
+      composeDestinationSlug,
       facilityOnPlaceId,
       tenantId,
     });
@@ -100,7 +100,7 @@ export const useExploreCreateFlowBridge = ({
     registerBridge,
     hostingWizardPrefill,
     planWithFriendUserId,
-    composeAreaSlug,
+    composeDestinationSlug,
     facilityOnPlaceId,
     tenantId,
     enabled,

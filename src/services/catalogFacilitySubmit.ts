@@ -12,7 +12,7 @@ export const submitCatalogFacilityFromAddDraft = async (
 ): Promise<AddSubmitResult> => {
   const validation = validateFacilityAddDraft(draft);
   if (validation) throw new Error(validation);
-  if (!draft.facilityKind || !draft.areaId) throw new Error('Complete the form before submitting.');
+  if (!draft.facilityKind || !draft.destinationId) throw new Error('Complete the form before submitting.');
 
   const emirate = resolveRequiredEmirate(draft.emirate, draft.latitude, draft.longitude);
   if (!emirate) {
@@ -26,7 +26,7 @@ export const submitCatalogFacilityFromAddDraft = async (
     countryCode: draft.countryCode,
     emirate,
     region: emirate,
-    areaId: draft.areaId.trim(),
+    destinationId: draft.destinationId.trim(),
     parentPlaceId: draft.parentPlaceId?.trim() || undefined,
     activityType: 'event',
     facilityKind: draft.facilityKind,

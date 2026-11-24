@@ -78,11 +78,11 @@ export const resolveExploreMapCatalogItemsForQuery = async (
   if (bboxRaw && isExploreMapBboxEnabled()) {
     const bbox = parseExploreMapBboxParam(bboxRaw);
     const limit = parseExploreMapLimitParam(query.limit);
-    const areaSlug = resolveExploreDestinationSlugQuery(query);
+    const destinationSlug = resolveExploreDestinationSlugQuery(query);
     const page = buildExploreMapBboxPage({
       items,
       bbox,
-      areaSlug,
+      destinationSlug,
       limit,
       cursor: query.cursor?.trim() || null,
     });

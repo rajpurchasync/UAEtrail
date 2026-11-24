@@ -8,8 +8,8 @@ type Props = {
 };
 
 export const AddFacilityPreview = ({ draft, publishedAreas }: Props) => {
-  const areaName = draft.areaId
-    ? publishedAreas.find((area) => area.id === draft.areaId)?.name ?? 'Selected area'
+  const areaName = draft.destinationId
+    ? publishedAreas.find((area) => area.id === draft.destinationId)?.name ?? 'Selected area'
     : '—';
   const kind = draft.facilityKind;
   const kindLabel = kind ? PLACE_KIND_LABELS[kind] : '—';

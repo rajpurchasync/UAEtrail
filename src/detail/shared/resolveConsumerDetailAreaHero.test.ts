@@ -10,7 +10,7 @@ describe('resolveFacilityDetailAreaHero', () => {
         {
           region: 'Dubai',
           areaLabel: 'Al Qudra',
-          areaId: 'area-1',
+          destinationId: 'area-1',
           geoRef: null,
         },
         'al-qudra'
@@ -18,7 +18,7 @@ describe('resolveFacilityDetailAreaHero', () => {
     ).toEqual({
       region: 'Dubai',
       areaLabel: 'Al Qudra',
-      areaSlug: 'al-qudra',
+      destinationSlug: 'al-qudra',
     });
   });
 
@@ -28,12 +28,12 @@ describe('resolveFacilityDetailAreaHero', () => {
         {
           region: '',
           areaLabel: null,
-          areaId: 'x',
+          destinationId: 'x',
           geoRef: {
             chain: [],
             countryId: 'c',
             stateId: 's',
-            areaId: 'a',
+            destinationId: 'a',
             path: 'ae/dubai/foo',
             names: { country: 'UAE', state: 'Dubai', area: 'Hatta' },
             searchTokens: [],
@@ -44,7 +44,7 @@ describe('resolveFacilityDetailAreaHero', () => {
     ).toEqual({
       region: 'Dubai',
       areaLabel: 'Hatta',
-      areaSlug: null,
+      destinationSlug: null,
     });
   });
 });

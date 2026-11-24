@@ -8,7 +8,7 @@ import {
 } from './exploreMapBbox';
 
 /** Viewport-driven bbox for `GET /explore/map?bbox=` when `VITE_EXPLORE_MAP_BBOX=1`. */
-export const useExploreMapFetchScope = (areaSlug: string | null) => {
+export const useExploreMapFetchScope = (destinationSlug: string | null) => {
   const bboxFetchEnabled = isExploreMapBboxEnabled();
   const [bbox, setBbox] = useState(() => defaultExploreMapFetchScope().bbox);
 
@@ -23,8 +23,8 @@ export const useExploreMapFetchScope = (areaSlug: string | null) => {
 
   const scope = useMemo((): ExploreMapFetchScope | null => {
     if (!bboxFetchEnabled) return null;
-    return { bbox, area: areaSlug };
-  }, [bboxFetchEnabled, bbox, areaSlug]);
+    return { bbox, area: destinationSlug };
+  }, [bboxFetchEnabled, bbox, destinationSlug]);
 
   return { bboxFetchEnabled, scope, onVisibleBoundsChange };
 };

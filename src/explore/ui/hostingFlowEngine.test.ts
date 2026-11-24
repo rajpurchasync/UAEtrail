@@ -254,7 +254,7 @@ describe('hostingFlowEngine', () => {
       placeLabelSource: 'registry' as const,
       registryPlaceId: 'trail-1',
       venueCascadeState: 'Dubai',
-      registryPlaceAreaId: 'area-hatta',
+      registryPlaceDestinationId: 'area-hatta',
       venueCascadePlaceGroup: 'Hatta Dam',
       aboutTrail: '',
     };
@@ -320,7 +320,7 @@ describe('hostingFlowEngine', () => {
       meetingLongitude: 56.11,
       placeLabelSource: 'custom' as const,
       trailName: 'Hidden wadi loop',
-      customPlaceAreaId: 'area-hatta',
+      customPlaceDestinationId: 'area-hatta',
       trailLatitude: 24.82,
       trailLongitude: 56.12,
       aboutTrail: 'Quiet sunrise loop with shade and a short scramble near the dam.',
@@ -349,14 +349,14 @@ describe('hostingFlowEngine', () => {
       validateDraftStep('destination', {
         ...draft,
         venueCascadeState: 'Dubai',
-        registryPlaceAreaId: 'area-hatta',
+        registryPlaceDestinationId: 'area-hatta',
       })
     ).toBe('Select a place.');
     expect(
       validateDraftStep('destination', {
         ...draft,
         venueCascadeState: 'Dubai',
-        registryPlaceAreaId: 'area-hatta',
+        registryPlaceDestinationId: 'area-hatta',
         venueCascadePlaceGroup: 'Hatta Dam',
         registryPlaceId: null,
       })
@@ -365,7 +365,7 @@ describe('hostingFlowEngine', () => {
       validateDraftStep('destination', {
         ...draft,
         venueCascadeState: 'Dubai',
-        registryPlaceAreaId: 'area-hatta',
+        registryPlaceDestinationId: 'area-hatta',
         venueCascadePlaceGroup: 'Hatta Dam',
         registryPlaceId: 'place-loop',
       })
@@ -384,7 +384,7 @@ describe('hostingFlowEngine', () => {
       registryPlaceId: 'trail-registry-1',
       placeLabelSource: 'registry' as const,
       venueCascadeState: 'RAK',
-      registryPlaceAreaId: 'area-jais',
+      registryPlaceDestinationId: 'area-jais',
       venueCascadePlaceGroup: 'Summit trail',
       trailName: 'Wadi loop',
       aboutTrail: 'Moderate sunrise loop with steady elevation.',

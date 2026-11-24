@@ -97,7 +97,7 @@ export function renderAddWizardSteps(ctx: AddWizardContext): ReactNode {
               {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
               <div className="mt-5 pb-2">
                 <AddWizardNextButton
-                  disabled={!draft.areaId && (draft.areaLabel.trim() || draft.title.trim()).length < 2}
+                  disabled={!draft.destinationId && (draft.areaLabel.trim() || draft.title.trim()).length < 2}
                   onClick={goNext}
                 />
               </div>
@@ -105,13 +105,13 @@ export function renderAddWizardSteps(ctx: AddWizardContext): ReactNode {
           }
         >
           <AddCuratedAreaStep
-            areaId={draft.areaId}
+            destinationId={draft.destinationId}
             proposedAreaName={draft.areaLabel}
-            onProposedAreaNameChange={(areaLabel) => patchDraft({ areaLabel, areaId: areaLabel.trim() ? null : draft.areaId })}
+            onProposedAreaNameChange={(areaLabel) => patchDraft({ areaLabel, destinationId: areaLabel.trim() ? null : draft.destinationId })}
             onAreaIdChange={(next) => {
               const center = next ? publishedAreas.find((area) => area.id === next)?.center : null;
               patchDraft({
-                areaId: next,
+                destinationId: next,
                 areaLabel: next ? '' : draft.areaLabel,
                 locationPinPlaced: false,
                 ...(center ? { latitude: center.latitude, longitude: center.longitude } : {}),

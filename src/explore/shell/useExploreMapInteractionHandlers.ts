@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import type { QueryClient } from '@tanstack/react-query';
-import { areaDetailPath } from '@uaetrail/shared-types';
+import { destinationHubPath } from '@uaetrail/shared-types';
 import type { PlaceMapPin } from '../../components/ui/PlacesMap';
 import { reloadExploreMap } from '../../hooks/useExploreMap';
 import { resolveExploreItemIdFromMapPin } from '../ui/exploreMapPinModel';
@@ -32,7 +32,7 @@ export const useExploreMapInteractionHandlers = (
 
   const handlePickExploreArea = useCallback(
     (slug: string) => {
-      navigate(areaDetailPath(slug));
+      navigate(destinationHubPath(slug));
     },
     [navigate]
   );

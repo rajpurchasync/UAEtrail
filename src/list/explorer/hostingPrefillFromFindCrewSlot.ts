@@ -30,7 +30,7 @@ const timeFromSlotStartAt = (startAt: string | null | undefined): string | null 
 /** Host wizard prefill from a Find crew availability slot (Propose a plan). */
 export const hostingPrefillFromFindCrewSlot = (
   slot: MemberAvailabilitySlotDTO,
-  options?: { areaId?: string | null; note?: string | null }
+  options?: { destinationId?: string | null; note?: string | null }
 ): HostingWizardPrefill => {
   const modality = slot.modalities?.[0];
   const kind = modalityToHostKind(modality);
@@ -60,7 +60,7 @@ export const hostingPrefillFromFindCrewSlot = (
     toLatitude: slot.destinationLatitude,
     toLongitude: slot.destinationLongitude,
     toLabel: slot.destinationLatitude != null ? 'Their destination pin' : '',
-    registryPlaceAreaId: options?.areaId?.trim() || null,
+    registryPlaceDestinationId: options?.destinationId?.trim() || null,
     description: options?.note?.trim() || '',
     capacity: slot.partySize && slot.partySize > 0 ? Math.min(99, slot.partySize) : 8,
   });

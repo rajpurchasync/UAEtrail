@@ -44,8 +44,8 @@ export const buildPlaceCatalog = async (query: PlaceCatalogBuildQuery = {}): Pro
 
 export const buildFacilityCatalog = async (query: FacilityCatalogQuery = {}): Promise<FacilityDTO[]> => {
   const items = await listFacilitiesCatalog({
-    areaId: query.areaId,
-    parentPlaceId: query.parentPlaceId,
+    destinationId: query.destinationId,
+    onSiteId: query.onSiteId,
     facilityKind: query.facilityKind,
     countryCode: query.countryCode,
     take: 300,

@@ -43,10 +43,10 @@ let shopMerchantId: string | null = null;
 
 const adminAuth = () => ({ Authorization: `Bearer ${adminToken}` });
 
-const placeCreateBody = (areaId: string, name: string) => ({
+const placeCreateBody = (destinationId: string, name: string) => ({
   name,
   region: 'Dubai',
-  areaId,
+  destinationId,
   activityType: 'hiking',
   description: 'Admin catalog trail for detail surface lineage contract test run.',
   season: ['year-round'],
@@ -136,7 +136,7 @@ describe('detail surface lineage (admin catalog → public read)', () => {
     expect(create.status).toBe(201);
     createdAreaId = create.body.data.id as string;
 
-    const draftPublic = await request(app).get(`/api/areas/${areaSlug}`);
+    const draftPublic = await request(app).get(`/api/destinations/${areaSlug}`);
     expect(draftPublic.status).toBe(404);
 
     const publish = await request(app)
@@ -147,16 +147,16 @@ describe('detail surface lineage (admin catalog → public read)', () => {
     expect(publish.status).toBe(200);
     expect(publish.body.data.status).toBe('published');
 
-    const publicDetail = await request(app).get(`/api/areas/${areaSlug}`);
+    const publicDetail = await request(app).get(`/api/destinations/${areaSlug}`);
     expect(publicDetail.status).toBe(200);
-    expect(publicDetail.body.data.area.slug).toBe(areaSlug);
+    expect(publicDetail.body.data.destination.slug).toBe(areaSlug);
     expect(publicDetail.body.data.preview).toMatchObject({
       activities: expect.any(Array),
       places: expect.any(Array),
     });
   });
 
-  it('admin place with areaId is readable on GET /places/:id and listed in area preview', async () => {
+  it('admin place with destinationId is readable on GET /places/:id and listed in destination preview', async () => {
     expect(createdAreaId).toBeTruthy();
     const placeName = `Lineage Trail ${suffix}`;
     const create = await request(app)
@@ -166,15 +166,15 @@ describe('detail surface lineage (admin catalog → public read)', () => {
 
     expect(create.status).toBe(201);
     createdPlaceId = create.body.data.id as string;
-    expect(create.body.data.areaId).toBe(createdAreaId);
+    expect(create.body.data.destinationId).toBe(createdAreaId);
 
     const publicPlace = await request(app).get(`/api/places/${createdPlaceId}`);
     expect(publicPlace.status).toBe(200);
     expect(publicPlace.body.data.id).toBe(createdPlaceId);
     expect(publicPlace.body.data.name).toBe(placeName);
-    expect(publicPlace.body.data.areaId).toBe(createdAreaId);
+    expect(publicPlace.body.data.destinationId).toBe(createdAreaId);
 
-    const areaDetail = await request(app).get(`/api/areas/${areaSlug}`);
+    const areaDetail = await request(app).get(`/api/destinations/${areaSlug}`);
     expect(areaDetail.status).toBe(200);
     const previewIds = (areaDetail.body.data.preview.places as Array<{ id: string }>).map((p) => p.id);
     expect(previewIds).toContain(createdPlaceId);
@@ -182,9 +182,9 @@ describe('detail surface lineage (admin catalog → public read)', () => {
     const facility = await createFacilityRecord({
       name: `Lineage toilet ${suffix}`,
       region: 'Dubai',
-      areaId: createdAreaId!,
+      destinationId: createdAreaId!,
       facilityKind: 'toilet',
-      parentPlaceId: createdPlaceId!,
+      onSiteId: createdPlaceId!,
       description: 'Facility amenity for detail surface lineage public GET contract.',
       latitude: 25.2,
       longitude: 55.27,

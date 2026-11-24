@@ -11,7 +11,7 @@ const areaItem = (): ExploreMapItemDTO => ({
   latitude: 24.8,
   longitude: 56.1,
   path: '/area/hatta',
-  areaSlug: 'hatta',
+  destinationSlug: 'hatta',
 });
 
 describe('Area is not a map pin', () => {

@@ -3,7 +3,6 @@ import { registerAccountLifecycleRoutes } from './registerAccountLifecycleRoutes
 import { registerExploreAvailabilityRoutes } from './registerExploreAvailabilityRoutes.js';
 import { registerPublicActivityRoutes } from './registerPublicActivityRoutes.js';
 import { registerPublicAlertsAndReferralRoutes } from './registerPublicAlertsAndReferralRoutes.js';
-import { registerPublicAreaRoutes } from './registerPublicAreaRoutes.js';
 import { registerPublicDestinationRoutes } from './registerPublicDestinationRoutes.js';
 import { registerPublicFacilityRoutes } from './registerPublicFacilityRoutes.js';
 import { registerPublicMemberRoutes } from './registerPublicMemberRoutes.js';
@@ -23,7 +22,6 @@ export const composeUserPublicRoutes = (userRouter: Router): void => {
   registerPublicVitalsRoutes(userRouter);
   registerPublicAlertsAndReferralRoutes(userRouter);
   registerPublicFacilityRoutes(userRouter);
-  registerPublicAreaRoutes(userRouter);
   registerPublicDestinationRoutes(userRouter);
   registerExploreAvailabilityRoutes(userRouter);
   registerExploreCommunityRoutes(userRouter);

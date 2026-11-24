@@ -86,7 +86,7 @@ type ParentAmenityRollup = { labels: string[]; kinds: PlaceKind[] };
 const collectParentPlaceAmenities = (facilities: Facility[]): Map<string, ParentAmenityRollup> => {
   const byParent = new Map<string, ParentAmenityRollup>();
   for (const facility of facilities) {
-    const parentId = facility.parentPlaceId?.trim();
+    const parentId = facility.onSiteId?.trim();
     if (!parentId) continue;
     const kind = facility.facilityKind;
     const label = amenityChipLabelForFacilityKind(kind);
@@ -218,15 +218,15 @@ const catalogDestinationRegion = (
   region: DestinationAssignableRow | string | null | undefined
 ): DestinationAssignableRow | null => {
   if (region == null) return null;
-  if (typeof region === 'string') return { areaId: region };
+  if (typeof region === 'string') return { destinationId: region };
   return region;
 };
 
 const attachExploreItemArea = (
   item: ExploreMapItemDTO,
   region: DestinationAssignableRow | string | null | undefined,
-  areaSlugById: Map<string, string>,
-  areaNameById: Map<string, string>,
+  destinationSlugById: Map<string, string>,
+  destinationNameById: Map<string, string>,
   placeHubLabel?: string | null
 ): ExploreMapItemDTO => {
   const hubLabel = placeHubLabel?.trim() || item.areaLabel?.trim() || null;
@@ -234,21 +234,16 @@ const attachExploreItemArea = (
     resolveDestinationId(catalogDestinationRegion(region)) ?? resolveDestinationId(item) ?? null;
   if (!resolvedDestinationId && !hubLabel) return item;
   const slug = resolvedDestinationId
-    ? areaSlugById.get(resolvedDestinationId) ??
-      item.destinationSlug ??
-      item.areaSlug ??
-      null
-    : item.destinationSlug ?? item.areaSlug ?? null;
-  const curatedAreaName = resolvedDestinationId
-    ? areaNameById.get(resolvedDestinationId) ?? item.areaName ?? null
-    : item.areaName ?? null;
+    ? destinationSlugById.get(resolvedDestinationId) ?? item.destinationSlug ?? null
+    : item.destinationSlug ?? null;
+  const destinationName = resolvedDestinationId
+    ? destinationNameById.get(resolvedDestinationId) ?? item.destinationName ?? null
+    : item.destinationName ?? null;
   return {
     ...item,
     destinationId: resolvedDestinationId,
     destinationSlug: slug,
-    areaId: resolvedDestinationId,
-    areaSlug: slug,
-    areaName: curatedAreaName,
+    destinationName,
     areaLabel: hubLabel,
     geoRef: item.geoRef ?? item.activity?.geoRef ?? null,
   };
@@ -267,11 +262,11 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
     ]);
 
   const amenitiesByParentId = collectParentPlaceAmenities(facilityRows);
-  const areaSlugById = new Map(publishedAreas.map((area) => [area.id, area.slug]));
-  const areaNameById = new Map(publishedAreas.map((area) => [area.id, area.name]));
+  const destinationSlugById = new Map(publishedAreas.map((area) => [area.id, area.slug]));
+  const destinationNameById = new Map(publishedAreas.map((area) => [area.id, area.name]));
   const availabilityItemsPromise = buildAvailabilityFixedMapItems({
-    areaSlugById,
-    areaNameById,
+    destinationSlugById,
+    destinationNameById,
   });
   const merchantByTenantId = await findMerchantProfilesByTenantIds(shopTenants.map((shop) => shop.id));
 
@@ -359,10 +354,9 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
         },
         {
           destinationId: event.location?.destinationId ?? null,
-          areaId: event.location?.areaId ?? activity.areaId,
         },
-        areaSlugById,
-        areaNameById,
+        destinationSlugById,
+        destinationNameById,
         event.location?.areaLabel ?? null
       )
     );
@@ -403,9 +397,9 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
             geoRef: dto.geoRef ?? null,
             ...catalogUpdatedAtField(location.updatedAt, location.createdAt),
           },
-          { destinationId: dto.destinationId, areaId: dto.areaId },
-          areaSlugById,
-          areaNameById,
+          { destinationId: dto.destinationId },
+          destinationSlugById,
+          destinationNameById,
           catalogAreaLabel
         )
       );
@@ -463,9 +457,9 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
             },
             ...catalogUpdatedAtField(location.updatedAt, location.createdAt),
           },
-          { destinationId: dto.destinationId, areaId: dto.areaId },
-          areaSlugById,
-          areaNameById,
+          { destinationId: dto.destinationId },
+          destinationSlugById,
+          destinationNameById,
           catalogAreaLabel
         )
       );
@@ -521,9 +515,9 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
           },
           ...catalogUpdatedAtField(location.updatedAt, location.createdAt),
         },
-        { destinationId: dto.destinationId, areaId: dto.areaId },
-        areaSlugById,
-        areaNameById,
+        { destinationId: dto.destinationId },
+        destinationSlugById,
+        destinationNameById,
         catalogAreaLabel
       )
     );
@@ -566,9 +560,9 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
           },
           ...catalogUpdatedAtField(facility.updatedAt, facility.createdAt),
         },
-        { destinationId: facility.destinationId, areaId: facility.areaId },
-        areaSlugById,
-        areaNameById,
+        { destinationId: facility.destinationId },
+        destinationSlugById,
+        destinationNameById,
         catalogAreaLabel
       )
     );
@@ -622,8 +616,8 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
           ...catalogUpdatedAtField(shop.updatedAt, shop.createdAt),
         },
         shopAreaId,
-        areaSlugById,
-        areaNameById
+        destinationSlugById,
+        destinationNameById
       )
     );
   }

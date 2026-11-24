@@ -35,10 +35,10 @@ export const MapPeekActionsSlot = ({
   onClose,
   ...rest
 }: MapPeekActionsSlotProps) => {
-  if (card.source === 'area' && card.areaSlug) {
+  if (card.source === 'area' && card.destinationSlug) {
     return (
       <AreaPeekActions
-        areaSlug={card.areaSlug}
+        destinationSlug={card.destinationSlug}
         stats={card.areaLensStats}
         areaPagePath={card.path}
         onClose={onClose}

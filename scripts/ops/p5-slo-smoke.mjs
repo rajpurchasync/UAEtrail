@@ -268,7 +268,7 @@ const main = async () => {
   const latencyTargets = [
     runSeries({ label: 'health', path: '/health' }),
     runSeries({ label: 'explore_map', path: '/api/explore/map' }),
-    runSeries({ label: 'areas_list', path: '/api/areas?page=1&pageSize=10' }),
+    runSeries({ label: 'destinations_list', path: '/api/destinations?page=1&pageSize=10' }),
     runSeries({ label: 'facilities_list', path: '/api/facilities?page=1&pageSize=10' }),
   ];
 

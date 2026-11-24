@@ -150,14 +150,6 @@ export const AppRoutes = ({ location }: { location: Location }) => (
       }
     />
     <Route
-      path="/area/:slug"
-      element={
-        <Suspense fallback={<PageLoader />}>
-          <AreaDetailPage />
-        </Suspense>
-      }
-    />
-    <Route
       path="/plan/today"
       element={
         <ProtectedRoute>

@@ -25,7 +25,7 @@ type Args = {
   enabled: boolean;
   search: string;
   activityDatePreset: ExploreActivityDatePreset;
-  areaSlug?: string | null;
+  destinationSlug?: string | null;
   /** Emirate label for slot destination region filter (`GET /explore/people/availability?region=`). */
   region?: string | null;
   mapFilter?: MapFilterKey;
@@ -36,7 +36,7 @@ export const useCrewDiscoveryAvailability = ({
   enabled,
   search,
   activityDatePreset,
-  areaSlug,
+  destinationSlug,
   region,
   mapFilter = 'all',
 }: Args) => {
@@ -49,7 +49,7 @@ export const useCrewDiscoveryAvailability = ({
   const queryParams: CrewDiscoveryAvailabilityQueryParams = {
     from: range.from,
     to: range.to,
-    area: areaSlug?.trim() || null,
+    area: destinationSlug?.trim() || null,
     region: region?.trim() || null,
     kind: kind ?? null,
   };
@@ -62,7 +62,7 @@ export const useCrewDiscoveryAvailability = ({
       return fetchExplorePeopleAvailability({
         from: range.from,
         to: range.to,
-        area: areaSlug?.trim() || undefined,
+        area: destinationSlug?.trim() || undefined,
         region: region?.trim() || undefined,
         kind: kind ?? undefined,
       });

@@ -406,17 +406,17 @@ export const publishActivityById = async (activityId: string) => {
     draftDoc?.locationId ? await findLocationInMongo(draftDoc.locationId) : null;
   const { resolveAreaIdForActivityPublish } = await import('./area-resolution.js');
   const { resolveJoinMode } = await import('../domain/activity-join-mode.js');
-  const areaId =
+  const destinationId =
     draftDoc && (await resolveAreaIdForActivityPublish(draftDoc, publishLocation));
   const joinMode = draftDoc
     ? resolveJoinMode(draftDoc.joinMode, draftDoc.requirements)
     : 'open';
-  if (joinMode !== 'private' && !areaId) {
+  if (joinMode !== 'private' && !destinationId) {
     const { ApiError } = await import('./api-error.js');
     throw new ApiError(
       400,
-      'activity_area_required',
-      'Set a meeting pin inside a curated UAE outdoor area, or link a place that already has an area, before publishing to the explore map.'
+      'activity_destination_required',
+      'Set a meeting pin inside a curated UAE outdoor destination, or link a place that already has a destination, before publishing to the explore map.'
     );
   }
   const publishGroupRegionLevels =
@@ -437,7 +437,9 @@ export const publishActivityById = async (activityId: string) => {
     {
       status: ActivityStatus.PUBLISHED,
       publishedAt,
-      ...(areaId && !draftDoc?.areaId?.trim() ? { areaId } : {}),
+      ...(destinationId && !draftDoc?.destinationId?.trim()
+        ? { destinationId }
+        : {}),
       ...(publishGroupRegionLevels ? { groupRegionLevels: publishGroupRegionLevels } : {}),
     },
     {
@@ -487,12 +489,12 @@ export const publishActivityById = async (activityId: string) => {
       activityType: mongoDoc.activityType,
     });
   }
-  if (areaId && mongoDoc.activityMode !== 'seeking') {
+  if (destinationId && mongoDoc.activityMode !== 'seeking') {
     const { notifyAvailabilityHoldersInAreaOfHostedActivity } = await import('../services/matching/index.js');
     void notifyAvailabilityHoldersInAreaOfHostedActivity({
       activityId,
       hostUserId: actorUserId,
-      areaId,
+      areaId: destinationId,
       activityTitle: mongoDoc.title,
       activityStartAt: mongoDoc.startAt ?? publishedAt,
       activityType: mongoDoc.activityType,

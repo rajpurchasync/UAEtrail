@@ -25,7 +25,7 @@ export type MapCatalogPlaceWireSource = 'catalog_place';
 
 /**
  * Admin-curated outdoor **Destination** (`destinations` / legacy `areas`).
- * Not a map pin. Wire: `destinationId` + dual-read `areaId` until MIG P9.
+ * Not a map pin. Wire: `destinationId` + dual-read `destinationId` until MIG P9.
  */
 export type GeographyDestinationName = 'destination';
 

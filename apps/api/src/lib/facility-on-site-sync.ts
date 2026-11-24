@@ -1,14 +1,11 @@
-/**
- * MIG-DESTINATION-GEO D0.5 — dual-write `parentPlaceId` + `onSiteId` on facilities until cutover.
- */
-export const mirrorCatalogOnSiteIds = (
-  parentPlaceId: string | null | undefined
-): { parentPlaceId: string | null; onSiteId: string | null } => {
-  const id = parentPlaceId?.trim() || null;
-  return { parentPlaceId: id, onSiteId: id };
+/** MIG-DESTINATION-GEO D0.5 — facility trail scope via `onSiteId` only (no `parentPlaceId` dual-write). */
+
+export const catalogOnSiteIdUpdate = (
+  onSiteId: string | null | undefined
+): { onSiteId: string | null } => {
+  const id = onSiteId?.trim() || null;
+  return { onSiteId: id };
 };
 
-export const resolveStoredOnSiteId = (row: {
-  onSiteId?: string | null;
-  parentPlaceId?: string | null;
-}): string | null => row.onSiteId?.trim() || row.parentPlaceId?.trim() || null;
+export const resolveStoredOnSiteId = (row: { onSiteId?: string | null }): string | null =>
+  row.onSiteId?.trim() || null;

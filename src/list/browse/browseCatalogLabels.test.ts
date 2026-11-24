@@ -13,7 +13,7 @@ const uaqGeoRef = (): GeoRef =>
     chain: ['ae', 'ae-uq', 'ae-uq-coast', 'ae-uq-coast-corniche'],
     countryId: 'ae',
     stateId: 'ae-uq',
-    areaId: 'ae-uq-coast',
+    destinationId: 'ae-uq-coast',
     venueId: 'ae-uq-coast-corniche',
     path: 'uae/umm-al-quwain/uaq-coast/uaq-corniche',
     names: {

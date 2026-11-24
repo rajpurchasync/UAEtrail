@@ -82,7 +82,7 @@ export const placeCatalogPlaceGroupKey = (
   const parent = place.parentPlaceId?.trim();
   if (parent) return parent;
   if (parentHubIds.has(place.id)) return place.id;
-  return place.areaLabel?.trim() || place.areaName?.trim() || '__main__';
+  return place.areaLabel?.trim() || place.destinationName?.trim() || '__main__';
 };
 
 export const placeCatalogRowIsParentHub = (
@@ -155,7 +155,7 @@ export const placeCatalogPlaceGroupLabelFromHub = (
 };
 
 export const placeCatalogPlaceGroupLabel = (place: PlaceDTO): string => {
-  const label = place.areaLabel?.trim() || place.areaName?.trim();
+  const label = place.areaLabel?.trim() || place.destinationName?.trim();
   return label || 'Main trails';
 };
 
@@ -191,9 +191,9 @@ export const resolvePlaceCatalogAreaForRow = (
   place: PlaceDTO,
   areas: AreaPublicDTO[]
 ): AreaPublicDTO | null => {
-  const areaId = place.areaId?.trim();
-  if (areaId) {
-    const hit = areas.find((area) => area.id === areaId);
+  const destinationId = place.destinationId?.trim();
+  if (destinationId) {
+    const hit = areas.find((area) => area.id === destinationId);
     if (hit) return hit;
   }
   return (
@@ -301,12 +301,12 @@ export const inferPlaceCatalogLadderFromRow = (
   areas: AreaPublicDTO[],
   countryCode: CountryCode = DEFAULT_PLACE_CATALOG_COUNTRY,
   catalogPlaces?: PlaceDTO[]
-): { state: string; areaId: string; placeGroup: string } => {
+): { state: string; destinationId: string; placeGroup: string } => {
   const area = resolvePlaceCatalogAreaForRow(place, areas);
   const parentHubIds = collectPlaceCatalogParentHubIds(catalogPlaces ?? [place]);
   return {
     state: resolvePlaceCatalogStateKeyForRow(place, areas, countryCode),
-    areaId: area?.id ?? '',
+    destinationId: area?.id ?? '',
     placeGroup: placeCatalogPlaceGroupKey(place, parentHubIds),
   };
 };
@@ -348,13 +348,13 @@ export type PlaceCatalogDestinationSearchPlaceHit = {
   title: string;
   subtitle: string;
   state: string;
-  areaId: string;
+  destinationId: string;
   trailCount: number;
 };
 
 export type PlaceCatalogDestinationSearchAreaHit = {
   kind: 'area';
-  areaId: string;
+  destinationId: string;
   title: string;
   subtitle: string;
   placeCount: number;
@@ -383,7 +383,7 @@ const trailSearchSubtitle = (place: PlaceDTO, areas: AreaPublicDTO[]): string =>
 
 export type PlaceCatalogDestinationSearchScope = {
   state?: string;
-  areaId?: string;
+  destinationId?: string;
   limitPerGroup?: number;
 };
 
@@ -401,8 +401,8 @@ export const searchPlaceCatalogDestination = (
   const scoped = scopePlaceCatalogDestination(places, areas, countryCode);
   let catalogPlaces = scoped.places;
   let catalogAreas = scoped.areas;
-  if (scope.areaId?.trim()) {
-    catalogAreas = catalogAreas.filter((row) => row.id === scope.areaId);
+  if (scope.destinationId?.trim()) {
+    catalogAreas = catalogAreas.filter((row) => row.id === scope.destinationId);
     const area = catalogAreas[0];
     catalogPlaces = area
       ? filterPlaceCatalogRowsInArea(catalogPlaces, area, scoped.areas)
@@ -459,7 +459,7 @@ export const searchPlaceCatalogDestination = (
         title: group.label,
         subtitle: `${area.name} · ${state}`,
         state,
-        areaId: area.id,
+        destinationId: area.id,
         trailCount: trailsInGroup.length,
       });
     }
@@ -471,7 +471,7 @@ export const searchPlaceCatalogDestination = (
     const placeCount = buildPlaceCatalogPlaceGroupOptions(inArea).length;
     areaHits.push({
       kind: 'area',
-      areaId: area.id,
+      destinationId: area.id,
       title: area.name,
       subtitle: area.region,
       placeCount,

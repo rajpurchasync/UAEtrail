@@ -232,7 +232,7 @@ export const notifyWishlistForPublishedActivity = async (activityId: string): Pr
       );
     }
 
-    const activityAreaId = doc.areaId?.trim() || null;
+    const activityAreaId = doc.destinationId?.trim() || null;
     if (activityAreaId) {
       await fanOutSavedAreaWishlistNotifications(
         {
@@ -291,14 +291,14 @@ export const notifyWishlistForMemberAvailability = async (input: {
     const path = exploreAvailabilityPinNotificationPath(input.availabilityMapItemId);
     const title = input.fixedSlot.title?.trim() || 'On the map';
     const notified = new Set<string>();
-    const areaId = input.availability.areaId?.trim() || null;
-    if (areaId) {
+    const destinationId = input.availability.destinationId?.trim() || null;
+    if (destinationId) {
       await fanOutSavedAreaWishlistNotifications(
         {
           activityId: input.availabilityMapItemId,
           title,
           hostUserId: input.userId,
-          areaId,
+          areaId: destinationId,
           path,
         },
         notified

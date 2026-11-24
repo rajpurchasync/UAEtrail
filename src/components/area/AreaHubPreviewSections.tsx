@@ -24,7 +24,7 @@ export type AreaHubOperatorPreview = {
 export type AreaHubPreviewMode = 'all' | 'activities' | 'places';
 
 type AreaHubPreviewSectionsProps = {
-  areaSlug: string;
+  destinationSlug: string;
   activities: ActivityDTO[];
   places: LocationDTO[];
   operators?: AreaHubOperatorPreview[];
@@ -48,7 +48,7 @@ const shopHrefForPlace = (place: LocationDTO): string => {
 
 /** Curated area hub — upcoming outings + catalog places with explore deep links. */
 export const AreaHubPreviewSections = ({
-  areaSlug,
+  destinationSlug,
   activities,
   places,
   operators = [],
@@ -58,10 +58,10 @@ export const AreaHubPreviewSections = ({
   const showActivities = showAll || mode === 'activities';
   const showPlaces = showAll || mode === 'places';
 
-  const exploreActivities = explorePath({ list: true, area: areaSlug, panel: 'activities' });
-  const exploreToday = explorePath({ list: true, area: areaSlug, panel: 'activities', date: 'today' });
-  const explorePlaces = explorePath({ list: true, area: areaSlug, panel: 'venues' });
-  const exploreShopsInArea = explorePath({ area: areaSlug, panel: 'shops', filter: 'shops' });
+  const exploreActivities = explorePath({ list: true, area: destinationSlug, panel: 'activities' });
+  const exploreToday = explorePath({ list: true, area: destinationSlug, panel: 'activities', date: 'today' });
+  const explorePlaces = explorePath({ list: true, area: destinationSlug, panel: 'venues' });
+  const exploreShopsInArea = explorePath({ area: destinationSlug, panel: 'shops', filter: 'shops' });
   const placeGroups = groupAreaHubPlaces(places);
   const shopsForRail = placeGroups.find((g) => g.key === 'shops')?.places.slice(0, 8) ?? [];
   const facilitiesForRail = placeGroups.find((g) => g.key === 'facilities')?.places.slice(0, 8) ?? [];
@@ -108,7 +108,7 @@ export const AreaHubPreviewSections = ({
                   draggable={false}
                 >
                   <span className="font-medium text-slate-900 line-clamp-2 [overflow-wrap:anywhere]">{place.name}</span>
-                  <span className="mt-1 text-xs text-slate-500">Shop · {areaSlug}</span>
+                  <span className="mt-1 text-xs text-slate-500">Shop · {destinationSlug}</span>
                 </Link>
               </li>
             ))}
@@ -172,7 +172,7 @@ export const AreaHubPreviewSections = ({
             No published outings in this area yet.{' '}
             <Link
               to={explorePath({
-            area: areaSlug,
+            area: destinationSlug,
             compose: activityCompose('hiking'),
           })}
               className="font-semibold text-emerald-800"
@@ -225,7 +225,7 @@ export const AreaHubPreviewSections = ({
             Catalog places in this area will show here once they are linked with an area tag.{' '}
             <Link
               to={explorePath({
-            area: areaSlug,
+            area: destinationSlug,
             compose: placeCompose('hiking'),
           })}
               className="font-semibold text-emerald-800"

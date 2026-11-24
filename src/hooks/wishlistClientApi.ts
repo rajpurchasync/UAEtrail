@@ -5,7 +5,7 @@ import { meWishlistQueryKey, memberJourneyMapQueryKeyPrefix } from './clientQuer
 
 export type WishlistTarget = {
   locationId?: string;
-  areaId?: string;
+  destinationId?: string;
   activityId?: string;
   alertOnMatch?: boolean;
   watchOutingCategory?: string | null;

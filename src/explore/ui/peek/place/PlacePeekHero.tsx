@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { X } from 'lucide-react';
-import { areaDetailPath } from '@uaetrail/shared-types';
+import { destinationHubPath } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../../../discovery/discoveryCardModel';
 import { EnvironmentImage } from '../../../../components/ui/EnvironmentImage';
 import { ShareButton } from '../../../../components/ui/ShareButton';
@@ -86,7 +86,7 @@ export const PlacePeekHero = ({
           <p className="text-sm font-semibold text-white/95 [text-shadow:0_1px_2px_rgba(0,0,0,.5)]">
             {curated.slug ? (
               <Link
-                to={areaDetailPath(curated.slug)}
+                to={destinationHubPath(curated.slug)}
                 onClick={() => onBeforeDetailNavigate?.()}
                 className="pointer-events-auto underline decoration-white/40 underline-offset-2 hover:text-white"
               >

@@ -70,9 +70,8 @@ describe('POST /referrals/click', () => {
     const facility = await createFacilityRecord({
       name: `Contract referral facility ${Date.now()}`,
       region: 'Dubai',
-      areaId: 'area-test-dubai',
+      destinationId: 'area-test-dubai',
       facilityKind: 'outdoor_shop',
-      parentPlaceId: null,
       description: 'Contract test commercial facility for referral click intake.',
       latitude: 25.11,
       longitude: 55.21,
@@ -101,9 +100,8 @@ describe('POST /referrals/click', () => {
     const facility = await createFacilityRecord({
       name: `Contract mismatch facility ${Date.now()}`,
       region: 'Dubai',
-      areaId: 'area-test-dubai',
+      destinationId: 'area-test-dubai',
       facilityKind: 'food',
-      parentPlaceId: null,
       description: 'Contract test facility with mismatched referral target.',
       latitude: 25.12,
       longitude: 55.22,

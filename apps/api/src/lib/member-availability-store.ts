@@ -37,7 +37,7 @@ import {
 import { batchResolveMemberProfileRoleLabelsForDirectory } from '../services/member-status.js';
 import { resolveProfileViewerAccess } from '../services/profile-viewer-access.js';
 import { normalizeProfileVisibility } from './media-access.js';
-import { mirrorCatalogDestinationIds } from './destination-id-sync.js';
+import { catalogDestinationIdUpdate } from './destination-id-sync.js';
 
 type MongoMemberAvailability = {
   _id: string;
@@ -45,7 +45,6 @@ type MongoMemberAvailability = {
   kinds: AvailabilityKind[];
   visibility: AvailabilityVisibility;
   destinationId?: string | null;
-  areaId: string | null;
   region: string | null;
   note: string | null;
   slots: MemberAvailabilitySlotDTO[];
@@ -100,8 +99,7 @@ const mapDto = (doc: MongoMemberAvailability): MemberAvailabilityDTO => {
     kinds,
     visibility: normalizeAvailabilityVisibility(doc.visibility),
     region: doc.region,
-    destinationId: doc.destinationId ?? doc.areaId,
-    areaId: doc.areaId,
+    destinationId: doc.destinationId ?? null,
     note: doc.note,
     slots,
     updatedAt: doc.updatedAt.toISOString(),
@@ -124,7 +122,7 @@ export const getMemberAvailability = async (userId: string): Promise<MemberAvail
       kinds: [],
       visibility: 'hidden',
       region: null,
-      areaId: null,
+      destinationId: null,
       note: null,
       slots: [],
       updatedAt: new Date(0).toISOString(),
@@ -147,7 +145,7 @@ export const mergeMemberAvailabilityFixedSlotsMigration = async (
     kinds: AvailabilityKind[];
     visibility?: AvailabilityVisibility;
     region?: string | null;
-    areaId?: string | null;
+    destinationId?: string | null;
     note?: string | null;
     fixedSlots: MemberAvailabilitySlotDTO[];
   }
@@ -169,8 +167,8 @@ export const mergeMemberAvailabilityFixedSlotsMigration = async (
   const kinds = deriveKindsFromHydratedSlots(slots);
   const visibility = input.visibility ?? existing?.visibility ?? 'public';
   const now = new Date();
-  const regionIds = mirrorCatalogDestinationIds(
-    input.areaId?.trim() || existing?.destinationId?.trim() || existing?.areaId?.trim() || null
+  const regionIds = catalogDestinationIdUpdate(
+    input.destinationId?.trim() || existing?.destinationId?.trim() || null
   );
   const doc: MongoMemberAvailability = {
     _id: userId,
@@ -204,8 +202,8 @@ export const upsertMemberAvailability = async (
   }
   const now = new Date();
   const visibility = normalizeAvailabilityVisibility(input.visibility);
-  const regionIds = mirrorCatalogDestinationIds(
-    input.destinationId?.trim() || input.areaId?.trim() || null
+  const regionIds = catalogDestinationIdUpdate(
+    input.destinationId?.trim() || null
   );
   const doc: MongoMemberAvailability = {
     _id: userId,
@@ -259,7 +257,7 @@ export const getMemberAvailabilityPublicSnapshot = async (
   return {
     kinds: deriveKindsFromHydratedSlots(slots),
     region: maySeeLocation ? doc.region : null,
-    areaId: maySeeLocation ? doc.areaId : null,
+    destinationId: maySeeLocation ? doc.destinationId ?? null : null,
     note: doc.note,
     slots,
   };
@@ -270,7 +268,7 @@ export type ExploreAvailabilityQuery = {
   rangeStart: string;
   rangeEnd: string;
   kind?: AvailabilityKind | null;
-  areaSlug?: string | null;
+  destinationSlug?: string | null;
   /** Emirate label — matches slot `destinationRegions` (OR). */
   region?: string | null;
   friendsOnly?: boolean;
@@ -285,15 +283,15 @@ export const loadExploreAvailabilityIndex = async (
   query: ExploreAvailabilityQuery
 ): Promise<ExploreAvailabilityIndex> => {
   const area =
-    query.areaSlug?.trim()
-      ? await findAreaBySlug(query.areaSlug.trim().toLowerCase())
+    query.destinationSlug?.trim()
+      ? await findAreaBySlug(query.destinationSlug.trim().toLowerCase())
       : null;
-  const areaIdFilter = area?.status === 'published' ? area.id : null;
+  const destinationIdFilter = area?.status === 'published' ? area.id : null;
 
   const docs = await collection()
     .find({
       visibility: { $ne: 'hidden' },
-      ...(areaIdFilter ? { areaId: areaIdFilter } : {}),
+      ...(destinationIdFilter ? { destinationId: destinationIdFilter } : {}),
     })
     .toArray();
 
@@ -333,10 +331,10 @@ export const loadExploreAvailabilityIndex = async (
       isFriend,
     });
     // Area-filtered Find Crew must not match members who hide their start area.
-    if (areaIdFilter && !maySeeLocation) continue;
+    if (destinationIdFilter && !maySeeLocation) continue;
 
     const region = maySeeLocation ? doc.region : null;
-    const areaId = maySeeLocation ? doc.areaId : null;
+    const destinationId = maySeeLocation ? doc.destinationId ?? null : null;
 
     const projectedKinds = discoveryKindsFromSlots(slots, query.rangeStart, query.rangeEnd);
 
@@ -357,7 +355,7 @@ export const loadExploreAvailabilityIndex = async (
       avatarUrl: user.profile?.avatarUrl ?? null,
       kinds: projectedKinds,
       region,
-      areaId,
+      destinationId,
       slots,
       isFriend,
       profileRoleLabel: roleMap.get(doc.userId) ?? 'community_member',
@@ -367,32 +365,32 @@ export const loadExploreAvailabilityIndex = async (
     for (const kind of projectedKinds) {
       if (query.kind && kind !== query.kind) continue;
       if (!maySeeLocation) continue;
-      const clusterKey = `${areaId ?? region ?? 'any'}:${kind}`;
+      const clusterKey = `${destinationId ?? region ?? 'any'}:${kind}`;
       const existing = clusterCounts.get(clusterKey);
       if (existing) {
         existing.count += 1;
       } else {
-        let areaSlug: string | null = null;
-        if (areaId) {
-          const row = await findPublishedAreaById(areaId);
-          areaSlug = row?.slug ?? null;
+        let destinationSlug: string | null = null;
+        if (destinationId) {
+          const row = await findPublishedAreaById(destinationId);
+          destinationSlug = row?.slug ?? null;
         }
         clusterCounts.set(clusterKey, {
-          areaId,
-          areaSlug,
+          destinationId,
+          destinationSlug,
           region,
           kind,
           count: 1,
-          label: `${kind} · ${areaSlug ?? region ?? 'UAE'}`,
+          label: `${kind} · ${destinationSlug ?? region ?? 'UAE'}`,
         });
       }
     }
   }
 
   for (const row of people) {
-    if (row.areaId) {
-      const a = await findPublishedAreaById(row.areaId);
-      row.areaSlug = a?.slug ?? null;
+    if (row.destinationId) {
+      const a = await findPublishedAreaById(row.destinationId);
+      row.destinationSlug = a?.slug ?? null;
     }
   }
 

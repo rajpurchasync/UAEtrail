@@ -81,10 +81,10 @@ export const buildExploreMapItemFromActivity = (
     toLabel: display.toLabel,
     groupRegionLevels: activity.groupRegionLevels ?? location?.groupRegionLevels ?? null,
     geoRef: activity.geoRef ?? location?.geoRef ?? null,
-    areaId: activity.areaId ?? location?.areaId ?? null,
-    areaSlug: location?.areaSlug ?? undefined,
+    destinationId: activity.destinationId ?? location?.destinationId ?? null,
+    destinationSlug: location?.destinationSlug ?? undefined,
     areaLabel: location?.areaLabel ?? undefined,
-    areaName: location?.areaName ?? undefined,
+    areaName: location?.destinationName ?? undefined,
     activity,
     viewerAccess: viewerAccess ?? undefined,
   };

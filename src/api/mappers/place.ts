@@ -38,10 +38,10 @@ export const mapLocationToPlace = (location: LocationDTO): Place => ({
   latitude: location.latitude,
   longitude: location.longitude,
   status: location.status,
-  areaId: location.areaId ?? null,
+  destinationId: location.destinationId ?? null,
   areaLabel: location.areaLabel ?? null,
-  areaSlug: location.areaSlug ?? null,
-  areaName: location.areaName ?? null,
+  destinationSlug: location.destinationSlug ?? null,
+  destinationName: location.destinationName ?? null,
   geoRef: location.geoRef ?? null,
   ...mapLocationFields(location),
 });

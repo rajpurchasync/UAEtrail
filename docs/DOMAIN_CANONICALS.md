@@ -530,22 +530,22 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 | **Member discovery roster** | map + directory compose | `availabilityOnMap[]` (`availabilityTitle`, `exploreItemId`) on `GET /discover/crew` | Wire field `lookingFor`, `demandTitle`, `seekingOnMap` |
 | **Journey map** (`/profile/history/map`) | `GET /me/journey-map`, `POST/PATCH/DELETE /me/map-pins`, `JourneyMapEntryDTO` | `memberJourneyMapApi`, `src/member-plan/journeyMap*` | `GET /me/trips/map`, `outdoorMap*` |
 | **Explore map** | `GET /explore/map` (guest catalog) + `GET /me/discover/overlay` (signed-in peek) | `src/explore/*`, `exploreMapPinModel`, `applyExploreMapOverlay` | `journeyMap*` (wrong surface); mixing viewer engagement into the public map cache |
-| **Area** (curated **name**, not a pin) | `GET /areas`, `GET /areas/:slug` | `areas-store`, `hostingPublishArea.ts`, `/area/:slug`, explore `?area=` | `source: area` map pin; `areaLabel` as a third geo concept; assigning area from meeting-pin polygons |
+| **Destination** (curated **name**, not a pin) | `GET /destinations`, `GET /destinations/:slug` | `destinations-store`, `hostingPublishArea.ts`, `/destination/:slug`, explore `?destination=` | `source: area` map pin; `areaLabel` as a third geo concept; assigning destination from meeting-pin polygons |
 | **Place / venue** | `locations` | `place*`, `venue` panel, `Place` in UI | `location` in new routes/components |
 | **Friends** | buddies API | `BUDDIES_PATH`, `buddy*` stores only on API | `actorUserId`, “buddy entity” |
 | **Publishing console** | `/publishing/*`, tenant | `src/pages/publishing/*`, `src/console/*`, `useMemberStatus`, `useConsoleHubData`, `tenantActivityClientApi` | `tenant` in consumer UI strings (wire: `x-organisation-id`) |
 
-**Three maps (do not conflate):** (1) **Explore** — public discovery (`source`: activity · place · facility · shop); (2) **Journey map** — `/profile/history/map` + `GET /me/journey-map`; (3) **Place catalog** — Place / Facility / shop layers on Explore. **Area** is a name (`?area=` / `/area/:slug`), not a map.
+**Three maps (do not conflate):** (1) **Explore** — public discovery (`source`: activity · place · facility · shop); (2) **Journey map** — `/profile/history/map` + `GET /me/journey-map`; (3) **Place catalog** — Place / Facility / shop layers on Explore. **Destination** is a name (`?destination=` / `/destination/:slug`), not a map.
 
 **`src/utils/` policy:** cross-surface helpers only (`authRedirect`, `notificationRouting`, `authReturnContext`, `routingCatalog` consumers). Domain logic belongs in `src/explore/`, `src/member-plan/`, `src/member/` (`organisationPaths.ts`), `src/content/workspaceVocabulary.ts`, `src/components/<domain>/` — not new `utils/<domain>*.ts`.
 
 ### 12.1 Geography — Destination hub, Place (site) catalog, Activity (authoritative)
 
-**Program MIG-DESTINATION-GEO-2026** ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.5): **AdminGeo** (`geoRef`, auto) → **Destination** (curated `destinationId`, `destinations` store — physical Mongo `areas` until P3) → **Place (site)** / **Facility** → **Activity** via `locationId`. Legacy **Area** / `areaId` / `/area/:slug` / `?area=` remain until P8–P9; wire helper **`resolveDestinationId`**.
+**Program MIG-DESTINATION-GEO-2026** ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.5): **AdminGeo** (`geoRef`, auto) → **Destination** (curated `destinationId`, `GET /api/destinations`) → **Place (site)** / **Facility** (`onSiteId` on facility) → **Activity** via `locationId`. Wire **`destinationId`** / **`resolveDestinationId`**; inbound bookmark `/area/*` → `/destination/*` only.
 
 **Hierarchy (target):** **Country / state / region** (from map geography) → **Destination** (admin-curated name — **not a map pin**) → **Place (site)** / **Facility** (coords) → **Activity** (geography only through a place).
 
-**One Destination, many children (via `destinationId` on catalog rows; dual-read `areaId` until P9):**
+**One Destination, many children (catalog `destinationId`):**
 
 | Child on the hub | `PlaceKind` / wire | Explore **Spots** map pins today | Area lens rollup / hub |
 |------------------|-------------------|----------------------------------|-------------------------|
@@ -560,34 +560,34 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 
 **Assignment rules (write path — do not invert):**
 
-| Entity | Who sets `areaId` | Rule |
-|--------|-------------------|------|
-| **Area** | Admin `/admin/areas` | Curated **name** + optional center/bounds as camera hint for the hub page — **no explore map pin**. Geography labels (country, state, region) come from the map, not from Area. |
-| **Place** | Admin `/admin/places` or member **Add** (`curatedArea` then pin) | **`locations.areaId` required** on submit (`POST /me/places`; legacy location **writes** → 410) |
-| **Hosted activity** | Host publish | **No `activity.areaId` on write.** `activity.locationId` → catalog **place** with **`place.areaId`**. `validateHostingPlaceArea` / publish gate. Meeting / going-from pin does **not** define area. |
-| **Find crew (fixed map slot)** | Find FAB | **`member_availability`** slot with time/place; optional **`areaId`** on slot — not an activity row. |
-| **Availability** | Plan / profile | Member picks **`areaId`** (optional region fallback) — not an activity. |
+| Entity | Who sets `destinationId` | Rule |
+|--------|------------------------|------|
+| **Destination** | Admin `/admin/areas` | Curated **name** + optional center/bounds as camera hint for the hub page — **no explore map pin**. Geography labels (country, state, region) come from the map, not from Destination. |
+| **Place** | Admin `/admin/places` or member **Add** (`curatedDestination` then pin) | **`locations.destinationId` required** on submit (`POST /me/places`) |
+| **Hosted activity** | Host publish | **No `activity.destinationId` on write.** `activity.locationId` → catalog **place** with **`place.destinationId`**. `validateHostingPlaceArea` / publish gate. Meeting / going-from pin does **not** define destination. |
+| **Find crew (fixed map slot)** | Find FAB | **`member_availability`** slot with time/place; optional **`destinationId`** on slot — not an activity row. |
+| **Availability** | Plan / profile | Member picks **`destinationId`** (optional region fallback) — not an activity. |
 
 **Explore map lenses (orthogonal to tagging):**
 
 | Lens (`pinKind`) | What you see | Not this |
 |------------------|--------------|----------|
 | **activities** | One pin per hosted/seeking outing | Area labels |
-| **places** (“Spots”) | Catalog trail/camp Place pins with coords | Area is a filter (`?area=`), not a pin. Facility pins are also on the map (`source: facility`); lens grouping vs Spots is still open. |
+| **places** (“Spots”) | Catalog trail/camp Place pins with coords | Destination is a filter (`?destination=`), not a pin. Facility pins are also on the map (`source: facility`); lens grouping vs Spots is still open. |
 | **locations** (legacy URL) | Alias of **places** | Former synthetic Area hub pins — do not restore |
 | **shops** | Shop layer (catalog + tenant-backed pins) | — |
 
-**Discovery filters:** `?area={slug}` keeps rows whose projected **`areaSlug`** / **`areaId`** match. Area is a name on those rows — not a pin.
+**Discovery filters:** `?destination={slug}` keeps rows whose projected **`destinationSlug`** / **`destinationId`** match. Destination is a name on those rows — not a pin.
 
-#### 12.1.1 Explore UI — Place · Facility · Area (Area is a name, not a pin)
+#### 12.1.1 Explore UI — Place · Facility · Destination (Destination is a name, not a pin)
 
 | Concept | Product meaning | Wire / storage | Map peek UI |
 |---------|-----------------|----------------|-------------|
 | **Place** | Catalog trail, camp, outdoor spot | `GET /places/:id`; map `source: place` (`id` still `venue:{id}` until id prefix migrates) | **`PlacePeekCard`** + `PlacePeekBody` |
 | **Facility** | Registered amenity with coords (toilet, parking, gas, …) so people can navigate on the map | `GET /facilities/:id`; map `source: facility`, `id: facility:{id}` | Shares Place peek chrome until a dedicated facility peek ships |
-| **Area** | Admin-curated name grouping Places/Facilities; hub page `/area/:slug` | `areas`; **`areaId` / `areaSlug` on pin rows** — **no** `source: area` pin | Hub page + “Area · {name}” on Place peek. Peek modules under `peek/area/` are for the hub page, not explore pins. |
+| **Destination** | Admin-curated name grouping Places/Facilities; hub page `/destination/:slug` | `areas` store; **`destinationId` / `destinationSlug` on pin rows** — **no** `source: area` pin | Hub page + “Destination · {name}” on Place peek. Peek modules under `peek/area/` are for the hub page, not explore pins. |
 | **`venue` / `catalog_place`** | Legacy map `source` aliases | Normalize to `place` (`isPlaceMapSource`) | Same as Place |
-| **`place.areaId`** | Links a **Place** to its **Area** name | `locations.areaId` → `areaSlug` / `areaName` on Place rows | **Area · {name}** on **Place** peek |
+| **`place.destinationId`** | Links a **Place** to its **Destination** hub | `locations.destinationId` → `destinationSlug` / `destinationName` on Place rows | **Destination · {name}** on **Place** peek |
 
 **Naming rules (FE):** One shared **`MapPeekShell`**; entity parts **`{Entity}Peek*`** under `peek/{activity|place|area|shop}/`. Do **not** add `Explore*Peek*` modules. Do **not** emit `source: 'area'` on `GET /explore/map`. Helpers: `isPlaceMapSource`, `isFacilityMapSource`, `isGeographyMapSource`.
 
@@ -602,16 +602,16 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 
 Wire: `publishingProfileKind` on `ActivityDTO`; paths via `resolveActivityPublisherProfilePath` (`packages/shared-types/src/activity-publisher-display.ts`). **Explore copy:** headlines always use `resolveActivityHeadlinePersonName` (human); peek/list publisher row uses `resolveActivityPublisherRowPrimaryName` (person vs operator brand); section noun `exploreActivityPublisherSectionNoun` — all in `packages/shared-types/src/activity-actor-display.ts`. **`ActivityDTO.hostName`** is the on-ground **person**, not tenant brand. **Do not** emit `source: agency` explore map rows. List/peek/detail read a denormalized **`tenantLogoUrl`** plus compact **`guides[]` / `acceptedGuideCount`** on `ActivityDTO` (explore map nested activity — no extra profile fetch). Agency/shop assign extra guides without consent; community/pro-guide extras stay `pending` until they accept (`activity_guide_invite`). Public pages omit pending guides. Peek shows a **count** when more than one accepted guide; full `/activity/:id` lists accepted guides with `/member/:id` links.
 
-**Code anchors:** `packages/shared-types/src/place-kind.ts` · `apps/api/src/lib/explore-map-area-lens.ts` · `apps/api/src/lib/explore-map.ts` (`attachExploreItemArea`) · `src/explore/hostingPublishArea.ts` · `GET /areas/:slug` preview · [`DOMAIN.md`](./DOMAIN.md) § Geography.
+**Code anchors:** `packages/shared-types/src/place-kind.ts` · `apps/api/src/lib/explore-map-area-lens.ts` · `apps/api/src/lib/explore-map.ts` (`attachExploreItemArea`) · `src/explore/hostingPublishArea.ts` · `GET /destinations/:slug` preview · [`DOMAIN.md`](./DOMAIN.md) § Geography.
 
-**Known read-path gap (do not confuse with write contract):** legacy or tenant-only shop pins may lack `areaId` on the explore payload until linked/backfilled; **new** catalog places and gated publishes must have **`place.areaId`**.
+**Known read-path gap (do not confuse with write contract):** legacy or tenant-only shop pins may lack `destinationId` on the explore payload until linked/backfilled; **new** catalog places and gated publishes must have **`place.destinationId`**.
 
 #### 12.1.2 Geo tree drill (geo hub — alongside curated Area)
 
 | Layer | Storage | Consumer URL | Role |
 |-------|---------|--------------|------|
 | Country → state → area → **destination** (`geo_nodes` L4 `kind: venue`) | `geoRef` on map pins | **`/geo/n/:id`** (`GeoHubView`) | Rollup browse: places, outings, facilities under the node |
-| Curated **Area guide** | `areas` | **`/area/:slug`** | Editorial hub — parallel to geo area, not a replacement |
+| Curated **Destination guide** | `areas` | **`/destination/:slug`** | Editorial hub — parallel to geo area, not a replacement |
 | Catalog **place** row | `locations` | **`/place/:id`** | Shareable entity; hub rows may group children via `parentPlaceId` |
 | Event outdoor site | `locations` (`event`) | **`/venue/:id`** | Not the same as geo L4 **venue** (destination name in `geoRef`) |
 

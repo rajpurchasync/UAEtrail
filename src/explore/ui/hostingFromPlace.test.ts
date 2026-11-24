@@ -18,7 +18,7 @@ describe('hostingFromPlace', () => {
       id: 'loc-1',
       name: 'Wadi Shawka',
       region: 'Sharjah',
-      areaId: 'area-1',
+      destinationId: 'area-1',
       areaLabel: 'Wadi Shawka',
       activityType: 'hiking',
       description: 'Loop with pools.',
@@ -43,6 +43,6 @@ describe('hostingFromPlace', () => {
     expect(draft.trailName).toBe('Wadi Shawka');
     expect(draft.trailLatitude).toBe(25.1);
     expect(draft.venueCascadePlaceGroup).toBe('Wadi Shawka');
-    expect(draft.registryPlaceAreaId).toBe('area-1');
+    expect(draft.registryPlaceDestinationId).toBe('area-1');
   });
 });

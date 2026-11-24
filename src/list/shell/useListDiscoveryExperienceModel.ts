@@ -83,7 +83,7 @@ export const useListDiscoveryExperienceModel = ({
     listSearchScopeHints,
     draftQuery,
     setDraftQuery,
-    areaSlug,
+    destinationSlug,
     publishedAreas,
     hubVenueRegions,
     filterCount,
@@ -121,7 +121,7 @@ export const useListDiscoveryExperienceModel = ({
     crewPeopleFacet: filters.crewPeopleFacet,
     crewProfessionalKind: filters.crewProfessionalKind,
     activityDatePreset: filters.activityDatePreset,
-    areaSlug,
+    destinationSlug,
   });
   const wasGuestRef = useRef(!user);
   useEffect(() => {

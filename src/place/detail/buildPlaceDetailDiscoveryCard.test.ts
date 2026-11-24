@@ -36,7 +36,7 @@ describe('buildPlaceDetailDiscoveryCard', () => {
       chain: ['c1'],
       countryId: 'c1',
       stateId: 's1',
-      areaId: 'a1',
+      destinationId: 'a1',
       path: 'ae/dubai',
       names: { country: 'UAE', state: 'Dubai', area: 'Hatta' },
       searchTokens: ['hatta'],

@@ -29,7 +29,7 @@ export type LocationCreateData = {
   groupRegionLevels?: import('@uaetrail/shared-types').GroupRegionLevels | null;
   region: string;
   areaLabel?: string | null;
-  areaId?: string | null;
+  destinationId?: string | null;
   childFriendly?: boolean;
   accessibility?: Accessibility;
   activityType: ActivityType;
@@ -106,7 +106,6 @@ export const buildLocationCreateData = (
     stateHint,
     latitude: body.latitude,
     longitude: body.longitude,
-    areaId: body.areaId,
   });
 
   return {
@@ -115,7 +114,7 @@ export const buildLocationCreateData = (
   groupRegionLevels,
   region: body.region,
   areaLabel: body.areaLabel?.trim() || null,
-  areaId: body.areaId?.trim() || '',
+  destinationId: body.destinationId?.trim() || '',
   activityType: facilityKind ? ActivityType.EVENT : toActivityType(body.activityType),
   description: body.description,
   difficulty: shop ? undefined : toDifficulty(body.difficulty),

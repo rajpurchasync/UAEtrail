@@ -17,19 +17,10 @@ export interface FacilityDTO {
   areaLabel?: string | null;
   /** Curated Destination (outdoor region). */
   destinationId?: string | null;
-  /**
-   * @deprecated Dual-read with {@link destinationId} until MIG-DESTINATION-GEO P9.
-   */
-  areaId: string;
   geoRef?: import('./geo-hierarchy.js').GeoRef | null;
   facilityKind: FacilityKind;
   /** Trail/site amenity scope — parent Place id (MIG-DESTINATION-GEO D0.5). */
   onSiteId?: string | null;
-  /**
-   * @deprecated Dual-read with {@link onSiteId} until facility site cutover.
-   * When set, amenity is scoped to a parent Place (trail rest stop, trailhead toilet, …).
-   */
-  parentPlaceId?: string | null;
   /** Resolved parent place title — detail read enrichment when {@link onSiteId} is set. */
   parentPlaceName?: string | null;
   /** Optional geo-tree venue node id (not a catalog place id). */

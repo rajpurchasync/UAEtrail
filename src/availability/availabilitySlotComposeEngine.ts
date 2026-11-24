@@ -45,7 +45,7 @@ export type OpenAvailabilityEditorDraft = {
   note: string;
   locationMode: AvailabilityLocationMode;
   region: string;
-  areaId: string;
+  destinationId: string;
   guideEngagementTerms?: AvailabilityEngagementTerms | null;
   destinationRegions: string[];
   partySize: number;
@@ -201,7 +201,7 @@ export const buildOpenAvailabilityUpsert = (
     visibility: draft.visibility,
     note: draft.note.trim() || null,
     region: draft.locationMode === 'region' ? draft.region.trim() : null,
-    areaId: draft.locationMode === 'area' ? draft.areaId.trim() : null,
+    destinationId: draft.locationMode === 'area' ? draft.destinationId.trim() : null,
     slots: mergeOpenSlotsWithExisting(existing, openSlots),
   };
 };
@@ -334,7 +334,7 @@ export const buildFixedAvailabilityUpsert = (
 ): UpsertMemberAvailabilityInput => ({
   visibility: existing.visibility === 'hidden' ? 'public' : existing.visibility,
   region: draft.preferredArea.trim() || existing.region || null,
-  areaId: draft.areaId?.trim() || existing.areaId || null,
+  destinationId: draft.destinationId?.trim() || existing.destinationId || null,
   note: note?.trim() || existing.note || null,
   slots: [...existing.slots, fixedSlot],
 });

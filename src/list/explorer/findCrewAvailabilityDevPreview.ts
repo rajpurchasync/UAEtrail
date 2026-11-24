@@ -8,7 +8,7 @@ export const FIND_CREW_DEV_PREVIEW_PEOPLE: ExploreAvailablePersonDTO[] = [
     avatarUrl: null,
     kinds: ['hiking', 'camping'],
     region: 'Dubai',
-    areaSlug: 'dubai',
+    destinationSlug: 'dubai',
     slots: [
       {
         startDate: '2026-11-26',
@@ -26,7 +26,7 @@ export const FIND_CREW_DEV_PREVIEW_PEOPLE: ExploreAvailablePersonDTO[] = [
     avatarUrl: null,
     kinds: ['hiking'],
     region: 'Sharjah',
-    areaSlug: 'sharjah',
+    destinationSlug: 'sharjah',
     profileRoleLabel: 'professional_guide',
     slots: [
       {
@@ -47,7 +47,7 @@ export const FIND_CREW_DEV_PREVIEW_PEOPLE: ExploreAvailablePersonDTO[] = [
     avatarUrl: null,
     kinds: ['hiking'],
     region: 'Ras Al Khaimah',
-    areaSlug: null,
+    destinationSlug: null,
     slots: [
       {
         startDate: '2026-11-24',

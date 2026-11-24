@@ -27,7 +27,7 @@ export const UPL_SEEKING = 'Looking for company';
 /**
  * Geography (CPC).
  * Area = admin-curated **name** (hub `/area/:slug`, filter `?area=`) — not a map pin.
- * Country / state / region come from map geography. Place / Facility carry `areaId`.
+ * Country / state / region come from map geography. Place / Facility carry `destinationId`.
  */
 export const UPL_AREA = 'Area';
 export const UPL_PLACE = 'Place';

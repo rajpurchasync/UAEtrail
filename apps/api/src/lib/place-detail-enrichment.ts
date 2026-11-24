@@ -27,8 +27,8 @@ export const enrichLocationDtoWithAreaHub = async (
   return {
     ...dto,
     destinationSlug: area.slug,
-    areaSlug: area.slug,
-    areaName: area.name,
+    destinationName: area.name,
+    destinationStatus: area.status,
   };
 };
 

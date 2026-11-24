@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
-import type { AreaDTO, AreaStatus } from '@uaetrail/shared-types';
+import type { AreaDTO, destinationStatus } from '@uaetrail/shared-types';
 import { Link } from 'react-router-dom';
 import {
   createAdminArea,
@@ -37,7 +37,7 @@ const COUNTRY_OPTIONS = SUPPORTED_COUNTRIES.map((country) => ({
   label: country.label,
 }));
 
-const STATUS_OPTIONS: { value: AreaStatus; label: string }[] = [
+const STATUS_OPTIONS: { value: destinationStatus; label: string }[] = [
   { value: 'draft', label: 'Draft' },
   { value: 'published', label: 'Published (on map & hub)' },
 ];
@@ -57,7 +57,7 @@ type AreaFormState = {
   slug: string;
   summary: string;
   imageUrl: string | null;
-  status: AreaStatus;
+  status: destinationStatus;
   priority: number;
   latitude: number | null;
   longitude: number | null;
@@ -517,7 +517,7 @@ export const Areas = () => {
                 <label className="mb-1 block text-sm font-medium text-neutral-700">Status</label>
                 <AppSelect
                   value={form.status}
-                  onChange={(status) => setForm((prev) => ({ ...prev, status: status as AreaStatus }))}
+                  onChange={(status) => setForm((prev) => ({ ...prev, status: status as destinationStatus }))}
                   options={STATUS_OPTIONS}
                   inputClassName={ADMIN_SELECT_CLASS}
                   aria-label="Status"

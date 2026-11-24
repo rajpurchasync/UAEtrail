@@ -99,9 +99,9 @@ export const HostingDestinationField = ({
       draft.trailName
     );
     const patch: Partial<CreateActivityDraft> = {};
-    if (hit && !draft.customPlaceAreaId?.trim()) {
-      patch.customPlaceAreaId = hit.id;
-      patch.registryPlaceAreaId = hit.id;
+    if (hit && !draft.customPlaceDestinationId?.trim()) {
+      patch.customPlaceDestinationId = hit.id;
+      patch.registryPlaceDestinationId = hit.id;
     }
     if (emirate && !draft.customPlaceEmirate.trim()) {
       patch.customPlaceEmirate = emirate;
@@ -115,7 +115,7 @@ export const HostingDestinationField = ({
     spotPinned,
     draft.trailLatitude,
     draft.trailLongitude,
-    draft.customPlaceAreaId,
+    draft.customPlaceDestinationId,
     draft.customPlaceEmirate,
     draft.venueCascadeState,
     draft.trailName,
@@ -129,23 +129,23 @@ export const HostingDestinationField = ({
     const place = catalogPlaces.find((row) => row.id === draft.registryPlaceId);
     if (!place) return;
     const inferred = inferPlaceCatalogLadderFromRow(place, areas, catalogCountry, catalogPlaces);
-    const nextAreaId = draft.registryPlaceAreaId ?? inferred.areaId ?? null;
+    const nextAreaId = draft.registryPlaceDestinationId ?? inferred.destinationId ?? null;
     if (
       inferred.state === draft.venueCascadeState &&
-      nextAreaId === draft.registryPlaceAreaId &&
+      nextAreaId === draft.registryPlaceDestinationId &&
       inferred.placeGroup === draft.venueCascadePlaceGroup
     ) {
       return;
     }
     patchDraft({
       venueCascadeState: inferred.state,
-      registryPlaceAreaId: nextAreaId,
+      registryPlaceDestinationId: nextAreaId,
       venueCascadePlaceGroup: inferred.placeGroup,
     });
   }, [
     custom,
     draft.registryPlaceId,
-    draft.registryPlaceAreaId,
+    draft.registryPlaceDestinationId,
     draft.venueCascadeState,
     draft.venueCascadePlaceGroup,
     catalogPlaces,
@@ -199,7 +199,7 @@ export const HostingDestinationField = ({
       <div className={custom ? 'mt-3' : undefined}>
         <HostingDestinationCascade
           state={draft.venueCascadeState || draft.customPlaceEmirate}
-          areaId={draft.registryPlaceAreaId ?? draft.customPlaceAreaId ?? ''}
+          destinationId={draft.registryPlaceDestinationId ?? draft.customPlaceDestinationId ?? ''}
           placeGroup={draft.venueCascadePlaceGroup}
           draftRegistryPlaceId={draft.registryPlaceId}
           catalogPlaces={catalogPlaces}
@@ -214,8 +214,8 @@ export const HostingDestinationField = ({
               patchDraft({
                 venueCascadeState: next,
                 customPlaceEmirate: next,
-                registryPlaceAreaId: null,
-                customPlaceAreaId: null,
+                registryPlaceDestinationId: null,
+                customPlaceDestinationId: null,
                 venueCascadePlaceGroup: '',
               });
               return;
@@ -225,8 +225,8 @@ export const HostingDestinationField = ({
           onAreaChange={(next) => {
             if (custom) {
               patchDraft({
-                registryPlaceAreaId: next.trim() ? next : null,
-                customPlaceAreaId: next.trim() ? next : null,
+                registryPlaceDestinationId: next.trim() ? next : null,
+                customPlaceDestinationId: next.trim() ? next : null,
                 venueCascadePlaceGroup: '',
               });
               return;
@@ -280,7 +280,7 @@ export const HostingDestinationField = ({
               {HOSTING_DESTINATION_CATALOG_LEAF_VIEW}
             </Link>
           </p>
-          {!selectedPlace.areaId?.trim() && !draft.registryPlaceAreaId ? (
+          {!selectedplace.destinationId?.trim() && !draft.registryPlaceDestinationId ? (
             <p className="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950">
               This trail isn’t linked to a map area yet. Pick another listed trail, or add a new one.
             </p>

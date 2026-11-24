@@ -41,7 +41,7 @@ describe('mapLocationToPlace', () => {
       chain: ['c1', 's1', 'a1'],
       countryId: 'c1',
       stateId: 's1',
-      areaId: 'a1',
+      destinationId: 'a1',
       path: 'uae/rak/hatta',
       names: { country: 'UAE', state: 'RAK', area: 'Hatta' },
       searchTokens: ['hatta'],

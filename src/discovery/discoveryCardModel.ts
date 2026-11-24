@@ -110,11 +110,11 @@ export interface DiscoveryCardModel {
   /** Guest from `GET /explore/map`; signed-in from `GET /me/discover/overlay`. */
   viewerAccess?: ActivityViewerAccessDTO | null;
   activityMode?: ExploreActivityMode | null;
-  areaId?: string | null;
-  areaSlug?: string | null;
+  destinationId?: string | null;
+  destinationSlug?: string | null;
   /** Catalog place-hub bucket (`locations.areaLabel`). */
   areaLabel?: string | null;
-  /** Curated Area guide name when `areaId` is set. */
+  /** Curated Area guide name when `destinationId` is set. */
   areaName?: string | null;
   areaLensStats?: ExploreAreaLensStatsDTO | null;
   /** Hosted outings at this venue — list venue posters (`buildListFeedCards`). */
@@ -303,10 +303,10 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
       item.latitude ?? activity?.displayLatitude ?? activity?.locationLatitude ?? null,
     mapLongitude:
       item.longitude ?? activity?.displayLongitude ?? activity?.locationLongitude ?? null,
-    areaId: item.areaId ?? null,
-    areaSlug: item.areaSlug ?? null,
+    destinationId: item.destinationId ?? null,
+    destinationSlug: item.destinationSlug ?? null,
     areaLabel: item.areaLabel ?? null,
-    areaName: item.areaName ?? null,
+    areaName: item.destinationName ?? null,
     areaLensStats: item.areaLensStats ?? null,
     geoRef: item.geoRef ?? item.activity?.geoRef ?? null,
     linkedRideshares:
@@ -447,7 +447,7 @@ export const resolveExploreEntityFollowTarget = (
 
 export type ExploreWishlistTarget = {
   locationId?: string;
-  areaId?: string;
+  destinationId?: string;
   activityId?: string;
   alertOnMatch?: boolean;
   watchOutingCategory?: OutingCategory | null;
@@ -475,7 +475,7 @@ export const resolveExploreWishlistTarget = (card: DiscoveryCardModel): ExploreW
   const watch = watchMetaFromCard(card);
   if (discoveryCardIsAvailabilityPin(card)) return null;
   if (card.source === 'activity' && card.activityId) return { activityId: card.activityId, ...watch };
-  if (card.source === 'area' && card.areaId) return { areaId: card.areaId, ...watch };
+  if (card.source === 'area' && card.destinationId) return { destinationId: card.destinationId, ...watch };
   if (isGeographyMapSource(card.source) && card.locationId) return { locationId: card.locationId, ...watch };
   return null;
 };

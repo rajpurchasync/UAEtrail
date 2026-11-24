@@ -88,22 +88,15 @@ export interface LocationDTO {
   region: string;
   /** Trailhead, wadi, or beach zone — list poster location chip (emirate stays in `region`). */
   areaLabel?: string | null;
-  /** Curated **Destination** id (`GET /destinations/:slug` target; today `GET /areas/:slug`). */
+  /** Curated **Destination** id (`GET /destinations/:slug`). */
   destinationId?: string | null;
-  /**
-   * @deprecated Dual-read — same id as {@link destinationId} during MIG-DESTINATION-GEO-2026 (P3–P8).
-   * Curated geographic area (`GET /areas/:slug`).
-   */
-  areaId?: string | null;
   /** Leaf venue grouped under a destination hub place (`locations.id`). */
   parentPlaceId?: string | null;
   /** Populated on place detail reads when destination resolves to a published hub. */
   destinationSlug?: string | null;
-  /** Populated on place detail reads when `areaId` resolves to a published area. */
-  areaSlug?: string | null;
-  areaName?: string | null;
-  /** Area lifecycle when `areaId` is set — `draft` means approving the place also publishes this area. */
-  areaStatus?: 'draft' | 'published' | null;
+  destinationName?: string | null;
+  /** Destination hub lifecycle when `destinationId` is set. */
+  destinationStatus?: 'draft' | 'published' | null;
   /** @deprecated Prefer {@link PlaceKind} in new code — persisted as `activityType` on Mongo today. */
   activityType: PlaceActivityType;
   description: string;
@@ -1005,18 +998,13 @@ export interface ExploreMapItemDTO {
   contactPhone?: string | null;
   /** Time-bound map mode — `hosted` for published outings. */
   activityMode?: 'hosted' | null;
-  /** Curated Destination membership for explore filters (`destination` query; legacy `area`). */
+  /** Curated Destination membership for explore filters (`destination` query). */
   destinationId?: string | null;
   destinationSlug?: string | null;
-  /** @deprecated Dual-read — same as {@link destinationId} until MIG P9. */
-  areaId?: string | null;
-  /** @deprecated Prefer {@link destinationSlug}. */
-  areaSlug?: string | null;
+  destinationName?: string | null;
   geoRef?: import('./geo-hierarchy.js').GeoRef | null;
-  /** Catalog place-hub bucket (`locations.areaLabel`) — under geo venue / curated area; not the leaf spot name. */
+  /** Catalog place-hub bucket (`locations.areaLabel`) — under geo venue / curated destination; not the leaf spot name. */
   areaLabel?: string | null;
-  /** Published curated **Area** guide title when `areaId` is set (`GET /area/:slug`) — not geo L4 venue. */
-  areaName?: string | null;
   groupRegionLevels?: GroupRegionLevels | null;
   /** Set when a host converts this request into a published activity. */
   convertedActivityId?: string | null;
@@ -2265,20 +2253,13 @@ export type {
   AreaPublicDTO,
   AreaStatus,
 } from './area.js';
-export {
-  approximateAreaBoundsKm2,
-  areaDetailPath,
-  exploreAreaQueryParam,
-  pointInAreaBounds,
-} from './area.js';
+export { approximateAreaBoundsKm2, pointInAreaBounds } from './area.js';
 
 export type { DestinationDTO, DestinationPublicDTO } from './destination.js';
 export {
   destinationHubPath,
   exploreDestinationQueryParam,
-  exploreMapItemMatchesAreaSlug,
   exploreMapItemMatchesDestinationSlug,
-  filterExploreMapItemsByAreaSlug,
   filterExploreMapItemsByDestinationSlug,
   resolveDestinationId,
   resolveExploreDestinationSlugQuery,

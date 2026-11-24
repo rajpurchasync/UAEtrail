@@ -31,7 +31,7 @@ const crewQuerySchema = z.object({
   from: isoDay,
   to: isoDay,
   date: z.string().trim().max(32).optional(),
-  area: z.string().trim().max(80).optional(),
+  destination: z.string().trim().max(80).optional(),
   kind: z.enum(['hiking', 'camping', 'rideshare', 'guide']).optional(),
 });
 
@@ -61,7 +61,7 @@ export const registerDiscoverRecommendationsRoutes = (router: Router): void => {
             rangeStart: query.from ?? null,
             rangeEnd: query.to ?? null,
             datePresetRaw: query.date ?? null,
-            areaSlug: query.area ?? null,
+            destinationSlug: query.destination ?? null,
             kind: query.kind ?? null,
           });
           res.json({ data });

@@ -11,17 +11,17 @@ import {
 } from '../lib/facilities-store.js';
 import { toFacilityDto } from '../lib/facility-mappers.js';
 import { scheduleExploreMapCacheInvalidation } from '../lib/explore-map.js';
-import { mirrorCatalogDestinationIds } from '../lib/destination-id-sync.js';
-import { mirrorCatalogOnSiteIds } from '../lib/facility-on-site-sync.js';
+import { catalogDestinationIdUpdate } from '../lib/destination-id-sync.js';
+import { catalogOnSiteIdUpdate } from '../lib/facility-on-site-sync.js';
 import { assertActiveListedFacilityHasCatalogGeo } from '../lib/listed-catalog-geo-gate.js';
 
 export type AdminFacilityWriteInput = {
   name: string;
   region: string;
   areaLabel?: string | null;
-  areaId: string;
+  destinationId: string;
   facilityKind: FacilityKind;
-  parentPlaceId?: string | null;
+  onSiteId?: string | null;
   description: string;
   latitude?: number | null;
   longitude?: number | null;
@@ -53,9 +53,9 @@ export const createAdminFacilityRecord = async (input: {
     name: body.name,
     region: body.region,
     areaLabel,
-    areaId: body.areaId.trim(),
+    destinationId: body.destinationId.trim(),
     facilityKind: body.facilityKind,
-    parentPlaceId: body.parentPlaceId?.trim() || null,
+    onSiteId: body.onSiteId?.trim() || null,
     description: body.description,
     latitude: body.latitude,
     longitude: body.longitude,
@@ -115,16 +115,9 @@ export const updateAdminFacilityRecord = async (input: {
     ...(body.name !== undefined ? { name: body.name } : {}),
     ...(body.region !== undefined ? { region: body.region } : {}),
     ...(areaLabel !== undefined ? { areaLabel } : {}),
-    ...(body.areaId !== undefined
-      ? {
-          areaId: body.areaId.trim(),
-          destinationId: mirrorCatalogDestinationIds(body.areaId.trim()).destinationId,
-        }
-      : {}),
+    ...(body.destinationId !== undefined ? { destinationId: body.destinationId.trim() } : {}),
     ...(body.facilityKind !== undefined ? { facilityKind: body.facilityKind } : {}),
-    ...(body.parentPlaceId !== undefined
-      ? mirrorCatalogOnSiteIds(body.parentPlaceId?.trim() || null)
-      : {}),
+    ...(body.onSiteId !== undefined ? { onSiteId: body.onSiteId?.trim() || null } : {}),
     ...(body.description !== undefined ? { description: body.description } : {}),
     ...(body.latitude !== undefined ? { latitude: body.latitude } : {}),
     ...(body.longitude !== undefined ? { longitude: body.longitude } : {}),

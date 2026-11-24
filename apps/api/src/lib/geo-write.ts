@@ -71,7 +71,7 @@ export const activityToCountedPin = (doc: MongoActivityDoc): GeoCountedPin | nul
 };
 
 export const facilityToCountedPin = (
-  fac: Pick<Facility, 'facilityKind' | 'status' | 'geoRef' | 'parentPlaceId'>
+  fac: Pick<Facility, 'facilityKind' | 'status' | 'geoRef' | 'onSiteId'>
 ): GeoCountedPin | null => {
   if (!fac.geoRef) return null;
   return {
@@ -79,7 +79,7 @@ export const facilityToCountedPin = (
     kind: 'facility',
     facilityType: mapFacilityKindToPlanType(fac.facilityKind) ?? fac.facilityKind,
     geoRef: fac.geoRef,
-    attachedTo: fac.parentPlaceId ? [{ id: fac.parentPlaceId }] : undefined,
+    attachedTo: fac.onSiteId ? [{ id: fac.onSiteId }] : undefined,
     counted: locationIsCounted(String(fac.status ?? '')),
   };
 };
@@ -108,7 +108,7 @@ export const attachGeoRefToLocation = async (
   const resolved = await resolveGeoRefForPin({
     latitude: location.latitude,
     longitude: location.longitude,
-    areaId: location.areaId,
+    destinationId: location.destinationId,
     countryCode: location.countryCode,
     region: location.region,
     venueName: location.name,
@@ -121,12 +121,12 @@ export const attachGeoRefToLocation = async (
 export const attachGeoRefToActivity = async (
   doc: MongoActivityDoc,
   location?: (Pick<Location, 'latitude' | 'longitude'> &
-    Partial<Pick<Location, 'name' | 'areaId' | 'region' | 'countryCode'>>) | null
+    Partial<Pick<Location, 'name' | 'destinationId' | 'region' | 'countryCode'>>) | null
 ): Promise<GeoRef> => {
   const resolved = await resolveGeoRefForPin({
     latitude: doc.meetingLat ?? doc.startLat ?? location?.latitude ?? null,
     longitude: doc.meetingLng ?? doc.startLng ?? location?.longitude ?? null,
-    areaId: doc.areaId ?? location?.areaId,
+    destinationId: doc.destinationId ?? location?.destinationId,
     countryCode: location?.countryCode ?? 'AE',
     region: location?.region ?? null,
     venueName: location?.name ?? doc.meetingPoint,

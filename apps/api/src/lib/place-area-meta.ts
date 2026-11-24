@@ -3,18 +3,18 @@ import { findAreasByIds } from './areas-store.js';
 
 export const withPlaceAreaMetaMany = async (dtos: LocationDTO[]): Promise<LocationDTO[]> => {
   const ids = dtos
-    .map((row) => row.areaId?.trim())
+    .map((row) => row.destinationId?.trim())
     .filter((id): id is string => Boolean(id));
   const areas = await findAreasByIds(ids);
   const byId = new Map(areas.map((area) => [area.id, area]));
   return dtos.map((dto) => {
-    const area = dto.areaId ? byId.get(dto.areaId) : undefined;
+    const area = dto.destinationId ? byId.get(dto.destinationId) : undefined;
     if (!area) return dto;
     return {
       ...dto,
-      areaName: dto.areaName ?? area.name,
-      areaSlug: dto.areaSlug ?? area.slug,
-      areaStatus: area.status,
+      destinationName: dto.destinationName ?? area.name,
+      destinationSlug: dto.destinationSlug ?? area.slug,
+      destinationStatus: area.status,
     };
   });
 };

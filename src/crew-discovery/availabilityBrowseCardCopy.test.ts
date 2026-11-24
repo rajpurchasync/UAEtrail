@@ -29,7 +29,7 @@ describe('availabilityBrowseCardCopy', () => {
     ];
     const detail = crewBrowseAvailabilityDetailFromSlots(slots, [], {
       region: 'Dubai',
-      areaSlug: null,
+      destinationSlug: null,
     });
     expect(detail).not.toBeNull();
     expect(detail!.forLabels).toEqual(['Hiking', 'Camping']);
@@ -49,7 +49,7 @@ describe('availabilityBrowseCardCopy', () => {
     const detail = crewBrowseAvailabilityDetailFromPerson({
       kinds: [],
       region: null,
-      areaSlug: null,
+      destinationSlug: null,
       slots: [
         {
           startDate: '2026-11-01',

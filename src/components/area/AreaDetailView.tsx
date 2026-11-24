@@ -5,7 +5,7 @@ import type { ExploreAvailabilityIndex } from '../../hooks/memberPeopleClientApi
 import { PageMeta } from '../seo/PageMeta';
 import { explorePath } from '../../explore/routing';
 import { intentFixedCompose, activityCompose } from '../../explore/compose';
-import { areaDetailPath } from '@uaetrail/shared-types';
+import { destinationHubPath } from '@uaetrail/shared-types';
 import { type AreaDetailTabId } from '../../area/areaDetailTab';
 import { AreaHubMapStrip } from './AreaHubMapStrip';
 import { AreaHubPreviewSections } from './AreaHubPreviewSections';
@@ -56,14 +56,14 @@ export const AreaDetailView = ({
   onTabChange: _onTabChange,
 }: AreaDetailViewProps) => {
   const location = useLocation();
-  const { area, counts, preview } = data;
+  const { destination: area, counts, preview } = data;
   const headerChrome = resolveAreaConsumerDetailHeaderChrome();
   const backTo = readDetailBackToFromLocation(location.state) ?? detailBackPath('explore');
   const backLabel = parseMobileBackNavState(location.state)?.backLabel ?? 'Explore';
   const summary =
     area.summary?.trim() ||
     'Outings, trails, and people looking for crew in this zone — filter the map to what is happening here.';
-  const detailPath = areaDetailPath(area.slug);
+  const detailPath = destinationHubPath(area.slug);
   const geoLinks = useGeoAncestorLinks({
     region: area.region,
     countryCode: area.countryCode,
@@ -229,7 +229,7 @@ export const AreaDetailView = ({
         defaultExpanded
       >
         <AreaHubMapStrip
-          areaSlug={area.slug}
+          destinationSlug={area.slug}
           areaName={area.name}
           center={area.center}
           boundsRing={area.bounds}
@@ -269,7 +269,7 @@ export const AreaDetailView = ({
       <div id="area-detail-places" className="min-w-0 scroll-mt-28">
         <h2 className="sr-only">Places in this area</h2>
         <AreaHubPreviewSections
-          areaSlug={area.slug}
+          destinationSlug={area.slug}
           activities={preview?.activities ?? []}
           places={preview?.places ?? []}
           operators={preview?.operators ?? []}
@@ -280,7 +280,7 @@ export const AreaDetailView = ({
       <div id="area-detail-activities" className="min-w-0 scroll-mt-28">
         <h2 className="sr-only">Activities</h2>
         <AreaHubPreviewSections
-          areaSlug={area.slug}
+          destinationSlug={area.slug}
           activities={preview?.activities ?? []}
           places={preview?.places ?? []}
           operators={preview?.operators ?? []}

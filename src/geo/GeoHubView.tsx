@@ -5,7 +5,7 @@ import { GuestFeatureUnlockPanel } from '../explore/ui/GuestFeatureUnlockPanel';
 import { Compass, LayoutGrid, Layers, MapPin, Droplets } from 'lucide-react';
 import { facilityDetailPath } from '@uaetrail/shared-types';
 import type { GeoCountsDTO, GeoKind, GeoNodeLite } from '@uaetrail/shared-types';
-import { areaDetailPath } from '@uaetrail/shared-types';
+import { destinationHubPath } from '@uaetrail/shared-types';
 import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
 import { ConsumerEntityTabBar } from '../components/mobile/ConsumerEntityTabBar';
 import { PageMeta } from '../components/seo/PageMeta';
@@ -53,7 +53,7 @@ type GeoHubViewProps = {
   catalogNodeId: string | null;
   catalogNodeKind?: GeoKind | null;
   mapCenter?: { lat: number; lng: number } | null;
-  areaSlug?: string | null;
+  destinationSlug?: string | null;
   activeTab: GeoHubTabId;
   onTabChange: (tab: GeoHubTabId) => void;
   /** Tree root uses "Places", not the catalog node's geo kind. */
@@ -76,7 +76,7 @@ export const GeoHubView = ({
   childrenHeading,
   catalogNodeId,
   catalogNodeKind = null,
-  areaSlug,
+  destinationSlug,
   activeTab,
   onTabChange,
   headerChromeOverride,
@@ -86,7 +86,7 @@ export const GeoHubView = ({
   const member = Boolean(user);
   const location = useLocation();
   const authReturnPath = `${location.pathname}${location.search}`;
-  const areaGuideLabel = areaSlug ? areaGuideLinkLabel(title) : null;
+  const areaGuideLabel = destinationSlug ? areaGuideLinkLabel(title) : null;
   const resolvedBackTo = pinDeclaredBack
     ? backTo
     : (readDetailBackToFromLocation(location.state) ?? backTo);
@@ -242,10 +242,10 @@ export const GeoHubView = ({
                     authReturnPath={authReturnPath}
                   />
                 )}
-                {areaSlug ? (
+                {destinationSlug ? (
                   <GeoGuestDrillLink
-                    to={areaDetailPath(areaSlug)}
-                    authReturnPath={areaDetailPath(areaSlug)}
+                    to={destinationHubPath(destinationSlug)}
+                    authReturnPath={destinationHubPath(destinationSlug)}
                     className="inline-flex min-h-8 items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-900"
                   >
                     {areaGuideLabel}

@@ -1,7 +1,7 @@
 import { useLocation } from 'react-router-dom';
 import { useMemo } from 'react';
 import { consumerDetailChildLinkState } from '../../explore/mapPeekDetailNavState';
-import { areaDetailPath } from '@uaetrail/shared-types';
+import { destinationHubPath } from '@uaetrail/shared-types';
 import type { GeoAncestorLink } from '../../geo/geoAncestorLinks';
 import { GeoAncestorEyebrow } from './GeoAncestorEyebrow';
 import { GeoGuestDrillLink } from '../../geo/GeoGuestDrillLink';
@@ -16,7 +16,7 @@ export const ConsumerDetailHeroGeoLine = ({
   geoLinks,
   regionFallback,
   areaLabel,
-  areaSlug,
+  destinationSlug,
   geoHubPath,
   areaLinkState,
   geoLinkBackLabel = 'Back',
@@ -25,7 +25,7 @@ export const ConsumerDetailHeroGeoLine = ({
   geoLinks: GeoAncestorLink[];
   regionFallback?: string | null;
   areaLabel?: string | null;
-  areaSlug?: string | null;
+  destinationSlug?: string | null;
   /** Geo destination hub when no curated `/area/:slug`. */
   geoHubPath?: string | null;
   /** Router state so area hub back returns to the opener detail. */
@@ -48,8 +48,8 @@ export const ConsumerDetailHeroGeoLine = ({
       ? 'text-sm font-medium text-emerald-900/90'
       : 'text-sm font-medium text-emerald-100/95 md:text-[0.8125rem]';
 
-  const hubPath = areaSlug?.trim()
-    ? areaDetailPath(areaSlug.trim())
+  const hubPath = destinationSlug?.trim()
+    ? destinationHubPath(destinationSlug.trim())
     : geoHubPath?.trim() || null;
   const areaNode = area ? (
     hubPath ? (

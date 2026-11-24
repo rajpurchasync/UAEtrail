@@ -40,13 +40,13 @@ describe('resolveDiscoveryBrowseGeoHubPath', () => {
             chain: ['c', 's', 'a', 'v'],
             countryId: 'c',
             stateId: 's',
-            areaId: 'a',
+            destinationId: 'a',
             venueId: 'geo-venue-hatta',
             path: 'ae/dubai/hatta/hatta-dam',
             names: { country: 'UAE', state: 'Dubai', area: 'Hatta', venue: 'Hatta Dam' },
             searchTokens: [],
           },
-          areaSlug: 'hatta',
+          destinationSlug: 'hatta',
         })
       )
     ).toBe('/geo/n/geo-venue-hatta');
@@ -56,7 +56,7 @@ describe('resolveDiscoveryBrowseGeoHubPath', () => {
     expect(
       resolveDiscoveryBrowseGeoHubPath(
         card({
-          areaSlug: 'mleiha',
+          destinationSlug: 'mleiha',
         })
       )
     ).toBe('/area/mleiha');
@@ -76,7 +76,7 @@ describe('resolveDiscoveryBrowseGeoListPath', () => {
           chain: ['ae', 'dubai', 'hatta', 'geo-venue-hatta'],
           countryId: 'ae',
           stateId: 'dubai',
-          areaId: 'hatta',
+          destinationId: 'hatta',
           venueId: 'geo-venue-hatta',
           path: 'ae/dubai/hatta/hatta-dam',
           names: { country: 'UAE', state: 'Dubai', area: 'Hatta', venue: 'Hatta Dam' },
@@ -96,7 +96,7 @@ describe('resolveDiscoveryBrowseGeoListPath', () => {
           chain: ['ae', 's', 'a', 'v'],
           countryId: 'ae',
           stateId: 's',
-          areaId: 'a',
+          destinationId: 'a',
           venueId: 'v',
           path: 'ae/s/a/v',
           names: { country: 'UAE', state: 'Dubai', area: 'Hatta', venue: 'Spot' },

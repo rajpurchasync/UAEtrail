@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { facilityDetailPath } from '@uaetrail/shared-types';
 import { useAuth } from '../../context/AuthContext';
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
-import { areaIdForExploreAreaSlug } from '../exploreAreaFilter';
+import { destinationIdForExploreDestinationSlug } from '../exploreAreaFilter';
 import { inferEmirateFromPin } from '../hostingPublishArea';
 import { AddSubmitSuccessSheet } from './AddSubmitSuccessSheet';
 import { fetchPublicPlaceDetail } from '../../hooks/placeDetailClientApi';
@@ -56,7 +56,7 @@ type Props = {
   onBackToIntent?: () => void;
   onSubmitted?: (result: AddSubmitResult) => void;
   signInHref: string;
-  exploreAreaSlug?: string | null;
+  exploredestinationSlug?: string | null;
   /** `facilityOnPlace` deep link — prefill `parentPlaceId`. */
   facilityOnPlaceId?: string | null;
 };
@@ -67,7 +67,7 @@ export const CreateAddFacilityFlow = ({
   onBackToIntent,
   onSubmitted,
   signInHref,
-  exploreAreaSlug = null,
+  exploreDestinationSlug = null,
   facilityOnPlaceId = null,
 }: Props) => {
   const navigate = useNavigate();
@@ -105,10 +105,10 @@ export const CreateAddFacilityFlow = ({
         setStep(saved.step as FacilityAddStepId);
       } else {
         setStep('title');
-        const areaId = areaIdForExploreAreaSlug(publishedAreas, exploreAreaSlug);
+        const destinationId = destinationIdForExploreDestinationSlug(publishedAreas, exploreDestinationSlug);
         setDraft({
           ...emptyFacilityAddDraft(),
-          ...(areaId ? { areaId } : {}),
+          ...(destinationId ? { destinationId } : {}),
         });
       }
       setSubmitStatus(COMPOSE_SUBMIT_FLOW_IDLE);
@@ -117,7 +117,7 @@ export const CreateAddFacilityFlow = ({
     if (!user) {
       onClose();
     }
-  }, [open, user, navigate, signInHref, onClose, exploreAreaSlug, publishedAreas]);
+  }, [open, user, navigate, signInHref, onClose, exploreDestinationSlug, publishedAreas]);
 
   useEffect(() => {
     if (!open) initializedRef.current = false;
@@ -247,8 +247,8 @@ export const CreateAddFacilityFlow = ({
     );
   }
 
-  const curatedCenter = draft.areaId
-    ? publishedAreas.find((area) => area.id === draft.areaId)?.center
+  const curatedCenter = draft.destinationId
+    ? publishedAreas.find((area) => area.id === draft.destinationId)?.center
     : null;
   const lat =
     (draft.locationPinPlaced ? draft.latitude : null) ??

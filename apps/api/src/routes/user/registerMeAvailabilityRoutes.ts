@@ -85,7 +85,6 @@ const upsertSchema = z.object({
   visibility: z.enum(['public', 'friends', 'hidden']),
   region: z.string().max(80).optional().nullable(),
   destinationId: z.string().max(80).optional().nullable(),
-  areaId: z.string().max(80).optional().nullable(),
   note: z.string().max(500).optional().nullable(),
   slots: z.array(slotSchema).default([]),
 });

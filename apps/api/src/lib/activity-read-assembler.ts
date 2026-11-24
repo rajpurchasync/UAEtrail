@@ -135,7 +135,7 @@ const mongoEventToEvent = (doc: MongoActivityDoc): Activity => {
   publishedAt: doc.publishedAt,
   outingCategory: (doc.outingCategory as OutingCategory | null | undefined) ?? null,
   outingTopic: (doc.outingTopic as OutingTopic | null | undefined) ?? null,
-  areaId: doc.areaId ?? null,
+  destinationId: doc.destinationId ?? null,
   groupRegionLevels: doc.groupRegionLevels ?? null,
   activityMode: doc.activityMode === 'seeking' ? null : doc.activityMode ?? null,
   groupChatPostPolicy: doc.groupChatPostPolicy ?? null,
@@ -622,7 +622,7 @@ export const listPublishedUpcomingActivitiesByAreaFromMongo = async (
       activityMode: { $ne: 'seeking' },
       $or: [
         { locationId: { $in: locationIdList } },
-        { areaId },
+        { destinationId: areaId },
       ],
     })
     .sort({ startAt: 1 })
@@ -635,14 +635,14 @@ export const listPublishedUpcomingActivitiesByAreaFromMongo = async (
   return assembleEventsWithPublicRelations(visible.slice(0, take));
 };
 
-/** Active catalog places linked to a curated area (`place.areaId`). */
+/** Active catalog places linked to a curated destination (`place.destinationId`). */
 export const listActiveCatalogPlacesByAreaFromMongo = async (
   areaId: string,
   take: number
 ): Promise<Location[]> => {
   const docs = await locationsCollection()
     .find({
-      areaId,
+      destinationId: areaId,
       status: LocationStatus.ACTIVE,
       $or: [{ registryListed: { $exists: false } }, { registryListed: { $ne: false } }],
     })

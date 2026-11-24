@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { areaDetailQueryKey, areaAvailabilityQueryKey } from '../hooks/clientQueryKeys';
-import { fetchAreaDetailBySlug } from '../hooks/areaHubClientApi';
+import { fetchDestinationDetailBySlug } from '../hooks/areaHubClientApi';
 import { fetchExplorePeopleAvailability } from '../hooks/memberPeopleClientApi';
 import { detailBackPath, EXPLORE_MAP_PATH } from '../config/routingCatalog';
 import { PRODUCT_EXPLORE_CTA } from '../content/productNorthStar';
@@ -42,7 +42,7 @@ export const AreaDetailPage = () => {
 
   const { data, isLoading, isError } = useQuery({
     queryKey: areaDetailQueryKey(slug),
-    queryFn: () => fetchAreaDetailBySlug(slug),
+    queryFn: () => fetchDestinationDetailBySlug(slug),
     enabled: Boolean(slug),
   });
 

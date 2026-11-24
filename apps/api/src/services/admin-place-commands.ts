@@ -33,7 +33,7 @@ import {
   updateAdminLocation,
 } from '../lib/admin-store.js';
 import { EXPLORE_VENUES_LIST_PATH } from '../lib/member-routes.js';
-import { mirrorCatalogDestinationIds } from '../lib/destination-id-sync.js';
+import { catalogDestinationIdUpdate } from '../lib/destination-id-sync.js';
 import { assertActiveListedPlaceHasCatalogGeo } from '../lib/listed-catalog-geo-gate.js';
 import { scheduleSideEffect } from '../lib/schedule-side-effect.js';
 import { dispatchNotification } from './notifications.js';
@@ -44,7 +44,7 @@ export type AdminPlaceWriteInput = {
   name: string;
   region: string;
   areaLabel?: string | null;
-  areaId?: string | null;
+  destinationId?: string | null;
   parentPlaceId?: string | null;
   activityType: string;
   description: string;
@@ -144,13 +144,13 @@ export const createAdminPlaceRecord = async (input: { actorId: string; body: Adm
   const baseTags = body.tags ?? [];
   const parentPlaceId = await resolveAdminParentPlaceId({
     parentPlaceId: body.parentPlaceId,
-    areaId: body.areaId?.trim() || null,
+    areaId: body.destinationId?.trim() || null,
   });
   const created = await createAdminLocation({
     name: body.name,
     region: body.region,
     areaLabel,
-    areaId: body.areaId?.trim() || null,
+    destinationId: body.destinationId?.trim() || null,
     parentPlaceId,
     activityType: toPrismaActivityType(body.activityType),
     description: body.description,
@@ -267,7 +267,9 @@ export const updateAdminPlaceRecord = async (input: {
       : undefined;
 
   const nextAreaId =
-    body.areaId !== undefined ? body.areaId?.trim() || null : existing.areaId?.trim() || null;
+    body.destinationId !== undefined
+      ? body.destinationId?.trim() || null
+      : existing.destinationId?.trim() || existing.areaId?.trim() || null;
   const parentPlaceId =
     body.parentPlaceId !== undefined
       ? await resolveAdminParentPlaceId({
@@ -281,7 +283,9 @@ export const updateAdminPlaceRecord = async (input: {
     name: body.name,
     region: body.region,
     areaLabel: body.areaLabel !== undefined ? nextAreaLabel : undefined,
-    ...(body.areaId !== undefined ? mirrorCatalogDestinationIds(body.areaId?.trim() || null) : {}),
+    ...(body.destinationId !== undefined
+      ? catalogDestinationIdUpdate(body.destinationId?.trim() || null)
+      : {}),
     parentPlaceId,
     countryCode: body.countryCode?.toUpperCase(),
     activityType: body.activityType ? toPrismaActivityType(body.activityType) : undefined,

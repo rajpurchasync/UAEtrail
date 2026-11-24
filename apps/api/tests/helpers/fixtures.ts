@@ -73,7 +73,7 @@ export const createPublishedEventFixture = async (suffix: string): Promise<Publi
   const location = await createLocationRecord({
     name: `Test Trail ${suffix}`,
     region: 'Dubai',
-    areaId: defaultTestAreaId(),
+    destinationId: defaultTestAreaId(),
     activityType: ActivityType.HIKING,
     description: 'Integration test location',
     difficulty: Difficulty.EASY,
@@ -83,8 +83,30 @@ export const createPublishedEventFixture = async (suffix: string): Promise<Publi
     surfaceType: [],
     tags: [],
     accessibleBy: [],
+    latitude: 24.82,
+    longitude: 56.12,
     status: LocationStatus.ACTIVE
   });
+  const { getMongoClient } = await import('../../src/lib/mongo.js');
+  const { COLLECTIONS } = await import('../../src/lib/collections.js');
+  await getMongoClient()!
+    .db()
+    .collection(COLLECTIONS.LOCATIONS)
+    .updateOne(
+      { _id: location.id },
+      {
+        $set: {
+          geoRef: {
+            chain: ['ae', 'dubai'],
+            countryId: 'ae',
+            stateId: 'dubai',
+            path: 'ae/dubai',
+            names: { country: 'AE', state: 'Dubai', area: 'Dubai' },
+            searchTokens: ['ae', 'dubai'],
+          },
+        },
+      }
+    );
 
   const startAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
   const event = await createActivityDetailed({

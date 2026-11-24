@@ -1,5 +1,4 @@
 import {
-  exploreAreaQueryParam,
   exploreDestinationQueryParam,
   exploreAvailabilityMapItemPath,
   formatExploreEventDateLabel,
@@ -249,8 +248,8 @@ export const explorePath = (options?: {
   planWith?: string;
   /** Activity join-invite deep link — use with `pin=activity:{id}`. */
   joinInvite?: boolean;
-  /** Curated area slug — constrains map/list rows (`exploreAreaQueryParam`). */
-  area?: string;
+  /** Curated destination slug — constrains map/list rows (`exploreDestinationQueryParam`). */
+  destination?: string;
   /** Map pin-kind row (`activities` | `locations` | `places` | `shops`). */
   pinKind?: ExplorePinKindFilter;
   /** Prefill facility add wizard — links amenity to this place catalog id. */
@@ -324,8 +323,8 @@ export const explorePath = (options?: {
   if (options?.joinInvite) {
     params.set(EXPLORE_JOIN_INVITE_QUERY_KEY, '1');
   }
-  if (options?.area?.trim()) {
-    params.set(exploreDestinationQueryParam, options.area.trim().toLowerCase());
+  if (options?.destination?.trim()) {
+    params.set(exploreDestinationQueryParam, options.destination.trim().toLowerCase());
   }
   if (options?.pinKind) {
     const serializedPinKind = serializeExplorePinKindFilter(options.pinKind);

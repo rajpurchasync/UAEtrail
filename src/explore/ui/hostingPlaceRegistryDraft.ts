@@ -21,7 +21,7 @@ export const applyRegistryPlaceToHostingDraft = (
 ): Partial<CreateActivityDraft> => ({
   placeLabelSource: 'registry',
   registryPlaceId: place.id,
-  registryPlaceAreaId: place.areaId?.trim() || null,
+  registryPlaceDestinationId: place.destinationId?.trim() || null,
   trailName: place.name,
   trailLatitude: place.latitude ?? null,
   trailLongitude: place.longitude ?? null,

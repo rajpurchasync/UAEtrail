@@ -37,7 +37,7 @@ export const createDraftFromRegistryPlace = (
     communityHostFlow: false,
     ...ladder,
     ...patch,
-    registryPlaceAreaId:
-      patch.registryPlaceAreaId ?? ladder.registryPlaceAreaId ?? null,
+    registryPlaceDestinationId:
+      patch.registryPlaceDestinationId ?? ladder.registryPlaceDestinationId ?? null,
   };
 };

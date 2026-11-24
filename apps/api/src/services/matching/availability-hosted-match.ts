@@ -28,7 +28,7 @@ const availabilityFromDoc = (doc: Record<string, unknown>): MemberAvailabilityDT
   kinds: (doc.kinds as AvailabilityKind[]) ?? [],
   visibility: doc.visibility as MemberAvailabilityDTO['visibility'],
   region: doc.region ? String(doc.region) : null,
-  areaId: doc.areaId ? String(doc.areaId) : null,
+  destinationId: doc.destinationId ? String(doc.destinationId) : null,
   note: doc.note ? String(doc.note) : null,
   slots: (doc.slots as MemberAvailabilityDTO['slots']) ?? [],
   updatedAt:

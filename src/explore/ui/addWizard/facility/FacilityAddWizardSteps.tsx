@@ -77,13 +77,13 @@ export function renderFacilityAddWizardSteps(ctx: FacilityAddWizardContext): Rea
       {step === 'curatedArea' && (
         <ComposeWizardStepChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <AddCuratedAreaStep
-            areaId={draft.areaId}
+            destinationId={draft.destinationId}
             allowNewArea={false}
             onAreaIdChange={(next) => {
               const center = next ? publishedAreas.find((area) => area.id === next)?.center : null;
-              const areaChanged = next !== draft.areaId;
+              const areaChanged = next !== draft.destinationId;
               patchDraft({
-                areaId: next,
+                destinationId: next,
                 locationPinPlaced: false,
                 ...(areaChanged ? { parentPlaceId: null, parentPlaceName: null } : {}),
                 ...(center ? { latitude: center.latitude, longitude: center.longitude } : {}),
@@ -92,7 +92,7 @@ export function renderFacilityAddWizardSteps(ctx: FacilityAddWizardContext): Rea
           />
           {composeWizardErrorFooter(
             error,
-            <AddWizardNextButton disabled={!draft.areaId} onClick={goNext} />
+            <AddWizardNextButton disabled={!draft.destinationId} onClick={goNext} />
           )}
         </ComposeWizardStepChrome>
       )}

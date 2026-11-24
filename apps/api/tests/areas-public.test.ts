@@ -11,23 +11,20 @@ beforeAll(async () => {
   await ensureCuratedAreasSeeded();
 });
 
-describe('GET /api/areas', () => {
-  it('lists published curated areas', async () => {
-    const res = await request(app).get('/api/areas');
+describe('GET /api/destinations', () => {
+  it('lists published destinations', async () => {
+    const res = await request(app).get('/api/destinations');
     expect(res.status).toBe(200);
-    expect(res.headers.deprecation).toBe('true');
-    expect(String(res.headers.link ?? '')).toMatch(/\/api\/destinations/);
     const slugs = (res.body.data as Array<{ slug: string }>).map((row) => row.slug);
     expect(slugs).toContain(testAreas.hatta.slug);
     expect(slugs).toContain(testAreas.jebelJais.slug);
     expect(slugs.length).toBeGreaterThanOrEqual(10);
   });
 
-  it('returns area detail card by slug', async () => {
-    const res = await request(app).get(`/api/areas/${testAreas.hatta.slug}`);
+  it('returns destination hub detail by slug', async () => {
+    const res = await request(app).get(`/api/destinations/${testAreas.hatta.slug}`);
     expect(res.status).toBe(200);
-    expect(res.headers.deprecation).toBe('true');
-    expect(res.body.data.area.slug).toBe(testAreas.hatta.slug);
+    expect(res.body.data.destination.slug).toBe(testAreas.hatta.slug);
     expect(res.body.data.counts).toMatchObject({
       activities: expect.any(Number),
       places: expect.any(Number),

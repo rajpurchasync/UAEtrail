@@ -41,7 +41,7 @@ const labelClass = EXPLORE_FLOW.composeFieldLabel;
 
 type Props = {
   state: string;
-  areaId: string;
+  destinationId: string;
   placeGroup: string;
   draftRegistryPlaceId: string | null;
   /** Rows from {@link fetchPlaceCatalog} — place catalog, not a hosting registry. */
@@ -50,7 +50,7 @@ type Props = {
   placeType: ActivityType;
   countryCode?: CountryCode;
   onStateChange: (state: string) => void;
-  onAreaChange: (areaId: string) => void;
+  onAreaChange: (destinationId: string) => void;
   onPlaceGroupChange: (placeGroup: string) => void;
   onPickTrail: (placeId: string) => void;
   onClearTrail: () => void;
@@ -96,7 +96,7 @@ const trailStepCopy = (placeType: ActivityType): { label: string; placeholder: s
 
 export const HostingDestinationCascade = ({
   state,
-  areaId,
+  destinationId,
   placeGroup,
   draftRegistryPlaceId,
   catalogPlaces,
@@ -149,7 +149,7 @@ export const HostingDestinationCascade = ({
     [catalogPlaces, areas, state, countryCode]
   );
 
-  const selectedArea = areaOptions.find((row) => row.id === areaId) ?? null;
+  const selectedArea = areaOptions.find((row) => row.id === destinationId) ?? null;
 
   const placesInArea = useMemo(() => {
     if (!selectedArea) return [];
@@ -169,7 +169,7 @@ export const HostingDestinationCascade = ({
   const trailCopy = trailStepCopy(placeType);
 
   const hasSelection =
-    Boolean(state) || Boolean(areaId) || Boolean(placeGroup) || Boolean(draftRegistryPlaceId);
+    Boolean(state) || Boolean(destinationId) || Boolean(placeGroup) || Boolean(draftRegistryPlaceId);
 
   return (
     <div className="space-y-3">
@@ -197,8 +197,8 @@ export const HostingDestinationCascade = ({
                     hit.kind === 'trail'
                       ? `trail-${hit.placeId}`
                       : hit.kind === 'place'
-                        ? `place-${hit.areaId}-${hit.placeGroupKey}`
-                        : `area-${hit.areaId}`;
+                        ? `place-${hit.destinationId}-${hit.placeGroupKey}`
+                        : `area-${hit.destinationId}`;
                   return (
                     <li key={key}>
                       <button
@@ -261,7 +261,7 @@ export const HostingDestinationCascade = ({
         <span className={labelClass}>{HOSTING_DESTINATION_SELECT_AREA}</span>
         <AppSelect
           className="w-full"
-          value={areaId}
+          value={destinationId}
           disabled={!state || areaOptions.length === 0}
           placeholder="Select area…"
           options={areaOptions.map((row) => ({ value: row.id, label: row.name }))}
@@ -277,7 +277,7 @@ export const HostingDestinationCascade = ({
         <AppSelect
           className="w-full"
           value={placeGroup}
-          disabled={!areaId || placeGroupOptions.length === 0}
+          disabled={!destinationId || placeGroupOptions.length === 0}
           placeholder="Select place…"
           options={placeGroupOptions.map((row) => ({ value: row.key, label: row.label }))}
           onChange={(next) => onPlaceGroupChange(next)}

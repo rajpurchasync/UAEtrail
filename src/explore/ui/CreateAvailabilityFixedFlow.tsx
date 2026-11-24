@@ -37,7 +37,7 @@ import {
 } from './intentFixedFlowEngine';
 import type { LocationPrecision } from './createFlowShared';
 import { intentFixedCompose, type IntentFixedComposeKind } from '../compose';
-import { areaIdForExploreAreaSlug } from '../exploreAreaFilter';
+import { destinationIdForExploreDestinationSlug } from '../exploreAreaFilter';
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
 import { composeFlowIdFromRoute } from '../composeFlowCatalog';
 import {
@@ -70,7 +70,7 @@ interface CreateAvailabilityFixedFlowProps {
   onSubmitted?: (result: AvailabilityFixedSubmitResult) => void;
   signInHref: string;
   availabilityFixedKind?: IntentFixedComposeKind | null;
-  exploreAreaSlug?: string | null;
+  exploredestinationSlug?: string | null;
   tenantId?: string | null;
   onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
 }
@@ -82,7 +82,7 @@ export const CreateAvailabilityFixedFlow = ({
   onSubmitted,
   signInHref,
   availabilityFixedKind = null,
-  exploreAreaSlug = null,
+  exploreDestinationSlug = null,
   tenantId = null,
   onCreateLinkedRideshare,
 }: CreateAvailabilityFixedFlowProps) => {
@@ -196,11 +196,11 @@ export const CreateAvailabilityFixedFlow = ({
         return;
       }
 
-      const areaId = areaIdForExploreAreaSlug(publishedAreas, exploreAreaSlug);
+      const destinationId = destinationIdForExploreDestinationSlug(publishedAreas, exploreDestinationSlug);
       setDraft({
         ...emptyAvailabilityFixedDraft(),
         kind: availabilityFixedKind,
-        ...(areaId ? { areaId } : {}),
+        ...(destinationId ? { destinationId } : {}),
       });
       setSelectedKind(availabilityFixedKind);
       setStep('lane');
@@ -223,7 +223,7 @@ export const CreateAvailabilityFixedFlow = ({
     availabilityFixedKind,
     availabilityFixedFlowId,
     availabilityFixedInitKey,
-    exploreAreaSlug,
+    exploreDestinationSlug,
     publishedAreas,
     closeMap,
   ]);

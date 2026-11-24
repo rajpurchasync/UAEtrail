@@ -37,7 +37,7 @@ export const submitCatalogPlaceFromAddDraft = async (
       `Choose the ${subdivisionNoun(draft.countryCode).toLowerCase()}. Search and Home use this filter.`
     );
   }
-  const listedAreaId = draft.areaId?.trim() || '';
+  const listedAreaId = draft.destinationId?.trim() || '';
   const payload: Record<string, unknown> = {
     name: draft.title.trim(),
     countryCode: draft.countryCode,
@@ -45,7 +45,7 @@ export const submitCatalogPlaceFromAddDraft = async (
     groupRegion: emirate,
     region: emirate,
     ...(listedAreaId
-      ? { areaId: listedAreaId }
+      ? { destinationId: listedAreaId }
       : { proposedAreaName: proposedArea, areaLabel: proposedArea }),
     activityType,
     description: draft.description.trim(),

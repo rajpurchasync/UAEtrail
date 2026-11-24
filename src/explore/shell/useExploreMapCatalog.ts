@@ -12,7 +12,7 @@ import {
   parseTripMapTopicsParam,
 } from '../exploreMapQuickTopicFilters';
 import { useMemberJourneyMapPinIds } from '../../hooks/useMemberJourneyMapPinIds';
-import { filterExploreMapItemsByAreaSlug, parseExploreAreaSlug } from '../exploreAreaFilter';
+import { filterExploreMapItemsByDestinationSlug, parseExploreDestinationSlug } from '../exploreAreaFilter';
 import { parseExploreMyPlanMapMode } from '../routing';
 
 /** Map fetch + area / my-plan map scoping (R2 shell). */
@@ -21,8 +21,8 @@ export const useExploreMapCatalog = (input: {
   searchParams: URLSearchParams;
 }) => {
   const myPlanMapMode = parseExploreMyPlanMapMode(input.searchParams);
-  const areaSlug = parseExploreAreaSlug(input.searchParams);
-  const mapFetch = useExploreMapFetchScope(areaSlug);
+  const destinationSlug = parseExploreDestinationSlug(input.searchParams);
+  const mapFetch = useExploreMapFetchScope(destinationSlug);
   const catalogQuery = exploreMapCatalogQuery({
     pinKind: parseExplorePinKindFilter(input.searchParams.get('pinKind')),
     mapFilter: parseMapFilter(input.searchParams.get('filter')),
@@ -44,18 +44,18 @@ export const useExploreMapCatalog = (input: {
   );
 
   const mapItems = useMemo(() => {
-    const areaScoped = filterExploreMapItemsByAreaSlug(items, areaSlug);
+    const areaScoped = filterExploreMapItemsByDestinationSlug(items, destinationSlug);
     if (!myPlanMapMode) return areaScoped;
     if (!myPlanPinIds) return [];
     return areaScoped.filter((item) => myPlanPinIds.has(item.id));
-  }, [items, myPlanMapMode, myPlanPinIds, areaSlug]);
+  }, [items, myPlanMapMode, myPlanPinIds, destinationSlug]);
 
   const mapLoading = (loading && items.length === 0) || (myPlanMapMode && myPlanPinsLoading);
   const loadError = mapError ? describeExploreMapLoadError(mapError) : null;
 
   return {
     myPlanMapMode,
-    areaSlug,
+    destinationSlug,
     mapItems,
     mapLoading,
     loadError,

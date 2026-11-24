@@ -8,7 +8,7 @@
 import type { DiscoveryCardKind, WishlistItemDTO } from '@uaetrail/shared-types';
 import {
   activityDetailPath,
-  areaDetailPath,
+  destinationHubPath,
   placeDetailPathForId,
   resolveMapPinEmoji,
 } from '@uaetrail/shared-types';
@@ -43,7 +43,7 @@ export const wishlistItemTitle = (item: WishlistItemDTO): string => {
 
 export const resolveWishlistItemPath = (item: WishlistItemDTO): string | null => {
   if (item.activityId) return activityDetailPath(item.activityId);
-  if (item.areaId && item.area?.slug) return areaDetailPath(item.area.slug);
+  if (item.areaId && item.area?.slug) return destinationHubPath(item.area.slug);
   if (item.locationId) {
     return placeDetailPathForId(item.locationId, item.location?.activityType);
   }

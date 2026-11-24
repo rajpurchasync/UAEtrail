@@ -678,13 +678,13 @@
     },
     {
       "method": "GET",
-      "path": "/areas",
-      "registrar": "apps/api/src/routes/user/registerPublicAreaRoutes.ts"
+      "path": "/destinations",
+      "registrar": "apps/api/src/routes/user/registerPublicDestinationRoutes.ts"
     },
     {
       "method": "GET",
-      "path": "/areas/:slug",
-      "registrar": "apps/api/src/routes/user/registerPublicAreaRoutes.ts"
+      "path": "/destinations/:slug",
+      "registrar": "apps/api/src/routes/user/registerPublicDestinationRoutes.ts"
     },
     {
       "method": "GET",
@@ -1298,7 +1298,7 @@
       "platform-alerts-read",
       "referral-click-write"
     ],
-    "apps/api/src/routes/user/registerPublicAreaRoutes.ts": [
+    "apps/api/src/routes/user/registerPublicDestinationRoutes.ts": [
       "area-public-read"
     ],
     "apps/api/src/routes/user/registerPublicFacilityRoutes.ts": [

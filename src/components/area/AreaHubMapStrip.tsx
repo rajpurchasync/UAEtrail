@@ -12,7 +12,7 @@ const LazyPlacesMap = lazy(() =>
 );
 
 type AreaHubMapStripProps = {
-  areaSlug: string;
+  destinationSlug: string;
   areaName: string;
   center: AreaCenter;
   boundsRing: AreaBoundsRing;
@@ -52,14 +52,14 @@ const placeToPin = (place: LocationDTO): PlaceMapPin | null => {
 
 /** Compact map preview — tap opens explore filtered to this area. */
 export const AreaHubMapStrip = ({
-  areaSlug,
+  destinationSlug,
   areaName,
   center,
   boundsRing,
   places,
 }: AreaHubMapStripProps) => {
   const navigate = useNavigate();
-  const exploreInArea = explorePath({ area: areaSlug });
+  const exploreInArea = explorePath({ area: destinationSlug });
   const fallbackBounds = useMemo(() => boundsFromRing(boundsRing), [boundsRing]);
 
   const pins = useMemo(() => {

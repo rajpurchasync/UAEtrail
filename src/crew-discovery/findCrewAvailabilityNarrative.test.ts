@@ -16,7 +16,7 @@ describe('findCrewAvailabilityNarrative', () => {
     const detail = crewBrowseAvailabilityDetailFromPerson({
       kinds: ['hiking'],
       region: 'Ras Al Khaimah',
-      areaSlug: null,
+      destinationSlug: null,
       slots,
     });
     const narrative = findCrewAvailabilityNarrativeFromDetail(detail!, slots);
@@ -40,7 +40,7 @@ describe('findCrewAvailabilityNarrative', () => {
     const detail = crewBrowseAvailabilityDetailFromPerson({
       kinds: ['hiking'],
       region: 'Ajman',
-      areaSlug: null,
+      destinationSlug: null,
       slots,
     });
     const narrative = findCrewAvailabilityNarrativeFromDetail(detail!, slots);
@@ -67,7 +67,7 @@ describe('findCrewAvailabilityNarrative', () => {
     const detail = crewBrowseAvailabilityDetailFromPerson({
       kinds: ['hiking', 'camping'],
       region: 'Dubai',
-      areaSlug: 'sharjah',
+      destinationSlug: 'sharjah',
       slots,
     });
     const narrative = findCrewAvailabilityNarrativeFromDetail(detail!, slots);
@@ -93,7 +93,7 @@ describe('findCrewAvailabilityNarrative', () => {
     const detail = crewBrowseAvailabilityDetailFromPerson({
       kinds: ['hiking'],
       region: 'Dubai',
-      areaSlug: null,
+      destinationSlug: null,
       slots,
     });
     const narrative = findCrewAvailabilityNarrativeFromDetail(detail!, slots);
@@ -114,7 +114,7 @@ describe('findCrewAvailabilityNarrative', () => {
     const detail = crewBrowseAvailabilityDetailFromPerson({
       kinds: ['rideshare'],
       region: 'Dubai',
-      areaSlug: 'dubai',
+      destinationSlug: 'dubai',
       slots,
     });
     const narrative = findCrewAvailabilityNarrativeFromDetail(detail!, slots);

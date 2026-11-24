@@ -1,24 +1,20 @@
 import type { AreaPublicDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
-  exploreAreaQueryParam,
   exploreDestinationQueryParam,
-  exploreMapItemMatchesAreaSlug,
-  filterExploreMapItemsByAreaSlug,
+  filterExploreMapItemsByDestinationSlug,
+  exploreMapItemMatchesDestinationSlug,
 } from '@uaetrail/shared-types';
 
 export {
-  exploreAreaQueryParam,
   exploreDestinationQueryParam,
-  exploreMapItemMatchesAreaSlug,
-  filterExploreMapItemsByAreaSlug,
+  filterExploreMapItemsByDestinationSlug,
+  exploreMapItemMatchesDestinationSlug,
 };
 
-export const parseExploreAreaSlug = (
+export const parseExploreDestinationSlug = (
   searchParams: Pick<URLSearchParams, 'get'>
 ): string | null =>
-  searchParams.get(exploreDestinationQueryParam)?.trim().toLowerCase() ||
-  searchParams.get(exploreAreaQueryParam)?.trim().toLowerCase() ||
-  null;
+  searchParams.get(exploreDestinationQueryParam)?.trim().toLowerCase() || null;
 
 const normalizeAreaSearchQuery = (query: string): string => query.trim().toLowerCase();
 
@@ -36,7 +32,7 @@ const areaMatchScore = (area: AreaPublicDTO, q: string): number => {
   return 3;
 };
 
-/** Strong match — Enter navigates to area guide (§3.3). */
+/** Strong match — Enter navigates to destination hub (§3.3). */
 export const isStrongPublishedAreaSearchMatch = (area: AreaPublicDTO, query: string): boolean => {
   const q = normalizeAreaSearchQuery(query);
   if (!q) return false;
@@ -48,7 +44,7 @@ export const findPublishedAreaByQuery = (
   query: string
 ): AreaPublicDTO | null => searchPublishedAreasForQuery(areas, query, 1)[0] ?? null;
 
-/** Area cards first in explore search — exact name/slug wins, then prefix, then contains. */
+/** Destination cards first in explore search — exact name/slug wins, then prefix, then contains. */
 export const searchPublishedAreasForQuery = (
   areas: AreaPublicDTO[],
   query: string,
@@ -74,7 +70,9 @@ export const findPublishedAreaBySlug = (
   return areas.find((area) => area.slug.toLowerCase() === normalized) ?? null;
 };
 
-export const areaIdForExploreAreaSlug = (
+export const destinationIdForExploreDestinationSlug = (
   areas: AreaPublicDTO[],
   slug: string | null | undefined
 ): string | null => findPublishedAreaBySlug(areas, slug)?.id ?? null;
+
+export type { ExploreMapItemDTO };

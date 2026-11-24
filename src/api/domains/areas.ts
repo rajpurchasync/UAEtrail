@@ -3,12 +3,12 @@ import type {
   ActivityDTO,
   AreaBoundsRing,
   AreaDTO,
-  AreaPublicDTO,
+  DestinationPublicDTO,
   LocationDTO,
 } from '@uaetrail/shared-types';
 
 export type AreaDetailPayload = {
-  area: AreaPublicDTO;
+  destination: DestinationPublicDTO;
   counts: { activities: number; places: number; availability: number };
   preview: {
     activities: ActivityDTO[];
@@ -23,22 +23,8 @@ export type AreaDetailPayload = {
   };
 };
 
-/** @deprecated Public reads — use `destinationsApi` (`GET /destinations`). Admin CRUD below stays on `/admin/areas`. */
+/** Admin destination CRUD (`/admin/areas` store until admin route rename). */
 export const areasApi = {
-  listPublishedAreas: () =>
-    apiRequest<{ data: AreaPublicDTO[] }>('/destinations'),
-  getAreaBySlug: async (slug: string) => {
-    const res = await apiRequest<{
-      data: { destination: AreaPublicDTO; counts: AreaDetailPayload['counts']; preview: AreaDetailPayload['preview'] };
-    }>(`/destinations/${encodeURIComponent(slug)}`);
-    return {
-      data: {
-        area: res.data.destination,
-        counts: res.data.counts,
-        preview: res.data.preview,
-      },
-    };
-  },
   listAdminAreas: () => apiRequest<{ data: AreaDTO[] }>('/admin/areas', { auth: true }),
   createAdminArea: (
     payload: Omit<AreaDTO, 'id' | 'createdAt' | 'updatedAt' | 'bounds'> & { bounds?: AreaBoundsRing }

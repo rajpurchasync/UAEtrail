@@ -41,11 +41,11 @@ describe('explore Place / Facility / Area canon', () => {
 
   it('documents hierarchy in Tier-1 domain canon', () => {
     const canon = read('docs/DOMAIN_CANONICALS.md');
-    expect(canon).toMatch(/12\.1\.1 Explore UI — Place · Facility · Area \(Area is a name, not a pin\)/);
+    expect(canon).toMatch(/12\.1\.1 Explore UI — Place · Facility · Destination \(Destination is a name, not a pin\)/);
     expect(canon).toMatch(/source: place/);
     expect(canon).toMatch(/source: facility/);
     expect(canon).toMatch(/source: area/);
-    expect(canon).toMatch(/place\.areaId/);
+    expect(canon).toMatch(/place\.destinationId/);
   });
 });
 

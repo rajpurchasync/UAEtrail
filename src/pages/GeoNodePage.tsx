@@ -129,7 +129,7 @@ export const GeoNodePage = () => {
       catalogNodeId={summary.node.id}
       catalogNodeKind={summary.node.kind}
       mapCenter={nodeMapCenter(summary.node)}
-      areaSlug={summary.node.kind === 'area' ? summary.node.s : null}
+      destinationSlug={summary.node.kind === 'area' ? summary.node.s : null}
       activeTab={activeTab}
       onTabChange={onTabChange}
     />

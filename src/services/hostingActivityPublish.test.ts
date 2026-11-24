@@ -53,7 +53,7 @@ describe('buildHostingActivityPublishInput', () => {
     expect(input.participationMode).toBe('rsvp');
   });
 
-  it('does not send activity areaId on host payload (area lives on place)', () => {
+  it('does not send activity destinationId on host payload (area lives on place)', () => {
     const draft = {
       ...emptyCreateActivityDraft(),
       kind: 'event' as const,
@@ -69,7 +69,7 @@ describe('buildHostingActivityPublishInput', () => {
       locationId: 'loc-1',
     });
 
-    expect('areaId' in input && input.areaId).toBeFalsy();
+    expect('destinationId' in input && input.destinationId).toBeFalsy();
   });
 
   it('sends endDate only for multi-day host outings', () => {

@@ -18,8 +18,8 @@ const campItem = (overrides: Partial<ExploreMapItemDTO> = {}): ExploreMapItemDTO
     longitude: 55.8,
     path: '/camp/c1',
     subtitle: 'تخييم مليحة · Sharjah',
-    areaId: 'area-mleiha',
-    areaSlug: 'mleiha',
+    destinationId: 'area-mleiha',
+    destinationSlug: 'mleiha',
     areaName: 'Mleiha',
     locationCard: {
       id: 'c1',

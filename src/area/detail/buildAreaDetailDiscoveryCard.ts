@@ -1,5 +1,5 @@
 import type { AreaPublicDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { areaDetailPath } from '@uaetrail/shared-types';
+import { destinationHubPath } from '@uaetrail/shared-types';
 import { buildDiscoveryCardViewModelCard } from '../../discovery';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 
@@ -9,7 +9,7 @@ export const buildAreaDetailDiscoveryCard = (input: {
   shareText?: string | null;
 }): DiscoveryCardModel => {
   const { area } = input;
-  const path = areaDetailPath(area.slug);
+  const path = destinationHubPath(area.slug);
   const item = {
     id: `area:${area.slug}`,
     kind: 'area',
@@ -20,8 +20,8 @@ export const buildAreaDetailDiscoveryCard = (input: {
     longitude: area.center.longitude,
     path,
     image: area.imageUrl ?? null,
-    areaId: area.id,
-    areaSlug: area.slug,
+    destinationId: area.id,
+    destinationSlug: area.slug,
     areaName: area.name,
   } as ExploreMapItemDTO;
   const card = buildDiscoveryCardViewModelCard(item);

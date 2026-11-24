@@ -15,16 +15,17 @@ import { awardPoints } from './rewards.js';
 
 type FacilitySubmitBody = z.infer<typeof locationSubmitBodySchema> & {
   facilityKind?: FacilityKind | null;
-  parentPlaceId?: string | null;
+  onSiteId?: string | null;
 };
 
 export const submitMyFacility = async (userId: string, body: FacilitySubmitBody) => {
-  if (!body.areaId?.trim()) {
-    throw new ApiError(400, 'area_required', 'Choose a published area.');
+  const destinationId = body.destinationId?.trim();
+  if (!destinationId) {
+    throw new ApiError(400, 'destination_required', 'Choose a published destination.');
   }
-  const area = await findPublishedAreaById(body.areaId.trim());
+  const area = await findPublishedAreaById(destinationId);
   if (!area) {
-    throw new ApiError(400, 'area_not_found', 'Choose a published area.');
+    throw new ApiError(400, 'destination_not_found', 'Choose a published destination.');
   }
   if (!body.facilityKind) {
     throw new ApiError(400, 'facility_kind_required', 'facilityKind is required.');
@@ -36,7 +37,7 @@ export const submitMyFacility = async (userId: string, body: FacilitySubmitBody)
       {
         ...body,
         facilityKind,
-        parentPlaceId: body.parentPlaceId ?? null,
+        onSiteId: body.onSiteId ?? null,
       },
       userId
     )

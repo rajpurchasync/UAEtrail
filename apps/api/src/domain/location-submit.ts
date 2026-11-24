@@ -22,8 +22,8 @@ export const locationSubmitBodySchema = z.object({
   emirate: z.string().min(2).max(80).optional(),
   groupRegion: z.string().min(2).max(80).optional(),
   region: z.string().min(2).max(80),
-  /** Admin-registered area — required unless proposing a new area from a pin. */
-  areaId: z.string().min(1).max(80).optional(),
+  /** Curated destination hub — required unless proposing a new hub from a pin. */
+  destinationId: z.string().min(1).max(80).optional(),
   /** Host-proposed area when the pin is outside published area polygons. */
   proposedAreaName: z.string().min(2).max(80).optional(),
   areaLabel: z.string().min(2).max(120).optional(),
@@ -83,22 +83,22 @@ export const locationSubmitBodySchema = z.object({
         path: ['activityType'],
       });
     }
-    if (!body.areaId?.trim()) {
+    if (!body.destinationId?.trim()) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'Choose a published area.',
-        path: ['areaId'],
+        message: 'Choose a published destination.',
+        path: ['destinationId'],
       });
     }
     return;
   }
-  const hasArea = Boolean(body.areaId?.trim());
+  const hasDestination = Boolean(body.destinationId?.trim());
   const proposing = Boolean(body.proposedAreaName?.trim());
-  if (!hasArea && !proposing) {
+  if (!hasDestination && !proposing) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: 'Choose a published area, or name a new one for this pin.',
-      path: ['areaId'],
+      message: 'Choose a published destination, or name a new one for this pin.',
+      path: ['destinationId'],
     });
   }
   if (proposing && (body.latitude == null || body.longitude == null)) {

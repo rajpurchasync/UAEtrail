@@ -43,7 +43,6 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
       const query = req.query as Record<string, string | undefined>;
       const projection = query.projection?.trim();
       const destinationSlug = resolveExploreDestinationSlugQuery({
-        area: query.area,
         destination: query.destination,
       });
       const unscoped =

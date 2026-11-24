@@ -78,7 +78,7 @@ describe('pickGeoRefAncestorLinks', () => {
       chain: ['np', 'bagmati', 'ktm-area', 'thamel-venue'],
       countryId: 'np',
       stateId: 'bagmati',
-      areaId: 'ktm-area',
+      destinationId: 'ktm-area',
       venueId: 'thamel-venue',
       path: 'np/bagmati/kathmandu-valley/thamel',
       names: {

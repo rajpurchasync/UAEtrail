@@ -201,10 +201,10 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
       {step === 'curatedArea' && kind && (
         <ComposeWizardStepChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <AvailabilityCuratedAreaStep
-            areaId={draft.areaId}
+            destinationId={draft.destinationId}
             onAreaIdChange={(next) => {
               patchDraft({
-                areaId: next,
+                destinationId: next,
                 preferredArea: next ? areaLabelForId(next, publishedAreas) ?? '' : '',
               });
             }}
@@ -220,7 +220,7 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
           </div>
           {composeWizardErrorFooter(
             error,
-            <AvailabilityWizardNextButton disabled={!draft.areaId} onClick={goNext} />
+            <AvailabilityWizardNextButton disabled={!draft.destinationId} onClick={goNext} />
           )}
         </ComposeWizardStepChrome>
       )}
@@ -518,10 +518,10 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
                 {draft.title}
               </p>
             )}
-            {draft.areaId && (
+            {draft.destinationId && (
               <p className="mt-2 text-xs text-gray-600">
                 <span className="font-semibold text-gray-700">Area: </span>
-                {areaLabelForId(draft.areaId, publishedAreas) ?? draft.preferredArea}
+                {areaLabelForId(draft.destinationId, publishedAreas) ?? draft.preferredArea}
               </p>
             )}
             {(usesHikingAvailabilityFlow(kind) || usesCampingAvailabilityFlow(kind) || usesEventAvailabilityFlow(kind)) &&

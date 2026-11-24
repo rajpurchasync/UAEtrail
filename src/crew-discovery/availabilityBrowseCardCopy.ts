@@ -75,7 +75,7 @@ export const findCrewTrustBadgesFromProfileRole = (
 
 /** Legacy single-line location under name on map crew rows. */
 export const crewBrowseAvailabilityLocationLabel = (
-  person: Pick<ExploreAvailablePersonDTO, 'region' | 'areaSlug'>
+  person: Pick<ExploreAvailablePersonDTO, 'region' | 'destinationSlug'>
 ): string | null => {
   const areas = crewBrowseAvailabilityAreaLabels(person);
   if (areas.length === 1 && areas[0] === CREW_BROWSE_AREAS_ANY) return null;
@@ -91,12 +91,12 @@ export const crewBrowseDestinationLabelsFromSlots = (
 };
 
 export const crewBrowseAvailabilityAreaLabels = (
-  person: Pick<ExploreAvailablePersonDTO, 'region' | 'areaSlug'>
+  person: Pick<ExploreAvailablePersonDTO, 'region' | 'destinationSlug'>
 ): string[] => {
   const labels = new Set<string>();
   const region = person.region?.trim();
   if (region) labels.add(region);
-  const slug = person.areaSlug?.trim();
+  const slug = person.destinationSlug?.trim();
   if (slug) {
     const fromSlug = slug
       .split('-')
@@ -156,7 +156,7 @@ export const crewBrowseAvailableAsLabels = (slots: MemberAvailabilitySlotDTO[]):
 };
 
 export const crewBrowseAvailabilityDetailFromPerson = (
-  person: Pick<ExploreAvailablePersonDTO, 'kinds' | 'slots' | 'region' | 'areaSlug' | 'profileRoleLabel'>
+  person: Pick<ExploreAvailablePersonDTO, 'kinds' | 'slots' | 'region' | 'destinationSlug' | 'profileRoleLabel'>
 ): CrewBrowseAvailabilityDetail | null => {
   const slots = person.slots ?? [];
   const activity = crewBrowseActivityFit(slots, person.kinds);
@@ -213,13 +213,13 @@ export const crewBrowseAvailabilityDetailFromPerson = (
 export const crewBrowseAvailabilityDetailFromSlots = (
   slots: MemberAvailabilitySlotDTO[],
   personKinds: AvailabilityKind[] = [],
-  person?: Pick<ExploreAvailablePersonDTO, 'region' | 'areaSlug' | 'profileRoleLabel'>
+  person?: Pick<ExploreAvailablePersonDTO, 'region' | 'destinationSlug' | 'profileRoleLabel'>
 ): CrewBrowseAvailabilityDetail | null =>
   crewBrowseAvailabilityDetailFromPerson({
     slots,
     kinds: personKinds,
     region: person?.region ?? null,
-    areaSlug: person?.areaSlug ?? null,
+    destinationSlug: person?.destinationSlug ?? null,
     profileRoleLabel: person?.profileRoleLabel ?? null,
   });
 

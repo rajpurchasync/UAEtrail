@@ -69,15 +69,15 @@ export const FacilityDetailSections = ({
   const headerChrome = resolveFacilityConsumerDetailHeaderChrome(kind);
   const publishedAreas = useExplorePublishedAreas();
   const curatedAreaSlug = useMemo(() => {
-    const id = facility.areaId?.trim();
+    const id = facility.destinationId?.trim();
     if (!id) return null;
     return publishedAreas.find((area) => area.id === id)?.slug ?? null;
-  }, [facility.areaId, publishedAreas]);
-  const { region, areaLabel, areaSlug } = resolveFacilityDetailAreaHero(facility, curatedAreaSlug);
+  }, [facility.destinationId, publishedAreas]);
+  const { region, areaLabel, destinationSlug } = resolveFacilityDetailAreaHero(facility, curatedAreaSlug);
   const geoHubPath = useMemo(() => {
     const venueId = facility.geoRef?.venueId?.trim();
-    return venueId && !areaSlug ? geoNodePath(venueId) : null;
-  }, [areaSlug, facility.geoRef?.venueId]);
+    return venueId && !destinationSlug ? geoNodePath(venueId) : null;
+  }, [destinationSlug, facility.geoRef?.venueId]);
   const geoLinks = useGeoAncestorLinks({ region, geoRef: facility.geoRef ?? null });
   const areaLinkState = useMemo(() => {
     const returnTo = `${location.pathname}${location.search}`;
@@ -89,7 +89,7 @@ export const FacilityDetailSections = ({
         geoLinks={geoLinks}
         regionFallback={region}
         areaLabel={areaLabel}
-        areaSlug={areaSlug}
+        destinationSlug={destinationSlug}
         geoHubPath={geoHubPath}
         areaLinkState={areaLinkState}
         geoLinkBackLabel={headerChrome.label}

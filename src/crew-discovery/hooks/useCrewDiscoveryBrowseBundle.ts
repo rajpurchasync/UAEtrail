@@ -31,7 +31,7 @@ type Args = {
   hostStatus: MemberStatusDTO | null;
   browse: BrowseState;
   exploreCatalogItems: ExploreMapItemDTO[];
-  areaSlug: string | null;
+  destinationSlug: string | null;
   isDesktop: boolean;
   mapLoading: boolean;
   onOpenExploreActivity: (activity: { exploreItemId: string }) => void;
@@ -46,7 +46,7 @@ export const useCrewDiscoveryBrowseBundle = ({
   hostStatus,
   browse,
   exploreCatalogItems,
-  areaSlug,
+  destinationSlug,
   isDesktop,
   mapLoading,
   onOpenExploreActivity,
@@ -80,7 +80,7 @@ export const useCrewDiscoveryBrowseBundle = ({
     enabled: memberAvailabilityEnabled,
     search: browse.query,
     activityDatePreset: browse.activityDatePreset,
-    areaSlug,
+    destinationSlug,
     mapFilter: browse.mapFilter,
   });
 
@@ -126,14 +126,14 @@ export const useCrewDiscoveryBrowseBundle = ({
       from: range.from,
       to: range.to,
       date: serializeExploreActivityDatePreset(browse.activityDatePreset),
-      area: areaSlug?.trim() || null,
+      area: destinationSlug?.trim() || null,
       kind: mapFilterToAvailabilityKind(browse.mapFilter),
     };
   }, [
     crewAvailability.range,
     browse.activityDatePreset,
     browse.mapFilter,
-    areaSlug,
+    destinationSlug,
   ]);
 
   const crewsBrowsePanelProps = {

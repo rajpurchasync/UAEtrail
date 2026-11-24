@@ -67,9 +67,9 @@ export const loadDiscoverCrewAvailabilityRows = async (input: {
   search?: string;
 }): Promise<MemberDiscoveryAvailabilityRowDTO[]> => {
   const publishedAreas = await listPublishedAreas();
-  const areaSlugById = new Map(publishedAreas.map((area) => [area.id, area.slug]));
-  const areaNameById = new Map(publishedAreas.map((area) => [area.id, area.name]));
-  const fixedItems = await buildAvailabilityFixedMapItems({ areaSlugById, areaNameById });
+  const destinationSlugById = new Map(publishedAreas.map((area) => [area.id, area.slug]));
+  const destinationNameById = new Map(publishedAreas.map((area) => [area.id, area.name]));
+  const fixedItems = await buildAvailabilityFixedMapItems({ destinationSlugById, destinationNameById });
   const enriched = await enrichExploreMapPayloadViewerAccess(
     { items: fixedItems },
     { viewerUserId: input.viewerUserId, userRole: input.userRole }

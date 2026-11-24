@@ -489,7 +489,7 @@
       "label": "Published areas for filters",
       "axis": "A_RBAC",
       "contextId": "areas",
-      "resolver": { "module": "apps/api/src/routes/user/registerPublicAreaRoutes.ts", "symbol": "registerPublicAreaRoutes" },
+      "resolver": { "module": "apps/api/src/routes/user/registerPublicDestinationRoutes.ts", "symbol": "registerPublicDestinationRoutes" },
       "http": { "method": "GET", "path": "/areas/published" }
     },
     {
@@ -540,7 +540,7 @@
       "label": "List projection imports discovery via facade",
       "axis": "A_RBAC",
       "contextId": "discovery",
-      "resolver": { "module": "src/explore/exploreAreaFilter.ts", "symbol": "parseExploreAreaSlug" },
+      "resolver": { "module": "src/explore/exploreAreaFilter.ts", "symbol": "parseExploreDestinationSlug" },
       "note": "No deep ../explore in list leaf modules"
     },
     {

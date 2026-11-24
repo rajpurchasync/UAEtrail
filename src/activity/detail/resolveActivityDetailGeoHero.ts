@@ -8,9 +8,9 @@ export const resolveActivityDetailGeoHero = (activity: ActivityDetailDTO) => {
   const location = activity.location;
   const card = buildActivityDetailDiscoveryCard(activity);
   const hubLabel = browseCatalogHubLabel(card);
-  const areaSlug = location?.areaSlug?.trim() || null;
+  const destinationSlug = location?.destinationSlug?.trim() || null;
   const hubPath = resolveDiscoveryBrowseGeoHubPath(card);
-  const geoHubPath = areaSlug ? null : hubPath;
+  const geoHubPath = destinationSlug ? null : hubPath;
   const region =
     activity.region?.trim() ||
     location?.region?.trim() ||
@@ -18,7 +18,7 @@ export const resolveActivityDetailGeoHero = (activity: ActivityDetailDTO) => {
     null;
   return {
     areaLabel: hubLabel,
-    areaSlug,
+    destinationSlug,
     geoHubPath,
     geoRef: activity.geoRef ?? location?.geoRef ?? null,
     region,

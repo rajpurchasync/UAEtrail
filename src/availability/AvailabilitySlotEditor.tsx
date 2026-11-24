@@ -51,9 +51,9 @@ const MODALITY_LABELS: Record<ScheduleModality, string> = {
 
 const locationModeFromData = (
   region: string | null | undefined,
-  areaId: string | null | undefined
+  destinationId: string | null | undefined
 ): AvailabilityLocationMode => {
-  if (areaId?.trim()) return 'area';
+  if (destinationId?.trim()) return 'area';
   if (region?.trim()) return 'region';
   return 'open';
 };
@@ -67,7 +67,7 @@ export type AvailabilitySlotEditorHandle = {
 export type AvailabilitySlotEditorProps = {
   /** `fab` = explore compose sheet (no duplicate intro). */
   variant?: 'plan' | 'fab';
-  /** Suggested trail area id (e.g. from map `?area=`); does not override saved `areaId`. */
+  /** Suggested trail area id (e.g. from map `?area=`); does not override saved `destinationId`. */
   prefillAreaId?: string | null;
   /** Compose `intent:open` prefill (`capacity`, default modalities). */
   composePrefill?: OpenAvailabilityComposePrefill | null;
@@ -102,7 +102,7 @@ export const AvailabilitySlotEditor = forwardRef<AvailabilitySlotEditorHandle, A
   const [selectedDays, setSelectedDays] = useState<Set<string>>(() => new Set());
   const [locationMode, setLocationMode] = useState<AvailabilityLocationMode>('open');
   const [region, setRegion] = useState<string>('');
-  const [areaId, setAreaId] = useState<string>('');
+  const [destinationId, setAreaId] = useState<string>('');
   const { data: publishedAreas = [], isError: publishedAreasError } = useExplorePublishedAreasQuery();
   const areasError = publishedAreasError ? 'Could not load trail areas.' : null;
   const [formError, setFormError] = useState<string | null>(null);
@@ -150,9 +150,9 @@ export const AvailabilitySlotEditor = forwardRef<AvailabilitySlotEditorHandle, A
     setNote(data.note ?? '');
     const picks = data.slots.length ? memberAvailabilitySlotsAsDayPicks(data.slots) : [];
     setSelectedDays(new Set(picks.map((slot) => slot.startDate)));
-    setLocationMode(locationModeFromData(data.region, data.areaId));
+    setLocationMode(locationModeFromData(data.region, data.destinationId));
     setRegion(data.region ?? '');
-    setAreaId(data.areaId ?? '');
+    setAreaId(data.destinationId ?? '');
     const savedTerms = pickGuideEngagementTermsFromSlots(data.slots);
     if (savedTerms) setGuideEngagementTerms(savedTerms);
   }, [data]);
@@ -170,14 +170,14 @@ export const AvailabilitySlotEditor = forwardRef<AvailabilitySlotEditorHandle, A
     if (variant !== 'fab' || !prefillAreaId?.trim()) return;
     const prefillKey = prefillAreaId.trim();
     if (fabAreaPrefillKey.current === prefillKey) return;
-    if (data?.areaId) {
+    if (data?.destinationId) {
       fabAreaPrefillKey.current = prefillKey;
       return;
     }
     fabAreaPrefillKey.current = prefillKey;
     setLocationMode('area');
     setAreaId(prefillKey);
-  }, [variant, prefillAreaId, data?.areaId]);
+  }, [variant, prefillAreaId, data?.destinationId]);
 
   const toggleModality = (modality: ScheduleModality) => {
     setModalities((prev) =>
@@ -222,7 +222,7 @@ export const AvailabilitySlotEditor = forwardRef<AvailabilitySlotEditorHandle, A
         setFormError('Choose a region or switch location to Open.');
         return;
       }
-      if (locationMode === 'area' && !areaId.trim()) {
+      if (locationMode === 'area' && !destinationId.trim()) {
         setFormError('Choose an area or switch location to Open.');
         return;
       }
@@ -254,7 +254,7 @@ export const AvailabilitySlotEditor = forwardRef<AvailabilitySlotEditorHandle, A
           note,
           locationMode,
           region,
-          areaId,
+          destinationId,
           guideEngagementTerms: availableAsGuide ? guideEngagementTerms : null,
           destinationRegions,
           partySize: logistics.partySize,
@@ -414,7 +414,7 @@ export const AvailabilitySlotEditor = forwardRef<AvailabilitySlotEditorHandle, A
             Area
             <select
               className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
-              value={areaId}
+              value={destinationId}
               onChange={(e) => setAreaId(e.target.value)}
             >
               <option value="">Choose area…</option>

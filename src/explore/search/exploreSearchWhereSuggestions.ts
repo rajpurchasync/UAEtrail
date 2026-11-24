@@ -69,7 +69,7 @@ export const buildExploreSearchWhereSuggestions = (
       hit.kind === 'trail'
         ? hit.placeId
         : hit.kind === 'area'
-          ? hit.areaId
+          ? hit.destinationId
           : hit.placeGroupKey;
     const contextLine = catalogHitSubtitle(hit);
     out.push({

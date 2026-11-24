@@ -114,7 +114,7 @@ export const useListDiscoveryComposeBridgeModel = ({
     handleAvailabilityFixedSubmitted: () => void reloadFeed(),
     handleAddSubmitted: () => void reloadFeed(),
     planWithFriendUserId,
-    composeAreaSlug: null,
+    composeDestinationSlug: null,
     facilityOnPlaceId: null,
     tenantId,
     refreshHostGate,

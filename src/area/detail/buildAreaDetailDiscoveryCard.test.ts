@@ -23,9 +23,9 @@ describe('buildAreaDetailDiscoveryCard', () => {
       shareText: 'Outings in Hatta',
     });
     expect(card.source).toBe('area');
-    expect(card.areaId).toBe(sampleArea.id);
+    expect(card.destinationId).toBe(sampleArea.id);
     expect(resolveExploreWishlistTarget(card)).toEqual({
-      areaId: sampleArea.id,
+      destinationId: sampleArea.id,
       alertOnMatch: true,
       watchOutingCategory: null,
       watchLatitude: sampleArea.center.latitude,

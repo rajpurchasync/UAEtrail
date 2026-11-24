@@ -90,7 +90,7 @@ describe('exploreItemMatchesQuery', () => {
         chain: ['geo-country-ae', 'geo-state-ae-dubai'],
         countryId: 'geo-country-ae',
         stateId: 'geo-state-ae-dubai',
-        areaId: 'geo-area-other-geo-state-ae-dubai',
+        destinationId: 'geo-area-other-geo-state-ae-dubai',
         path: 'ae/dubai/hatnub',
         names: {
           country: 'United Arab Emirates',

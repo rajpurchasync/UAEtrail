@@ -7,7 +7,7 @@ export const loadExplorePeopleAvailability = async (input: {
   rangeStart: string;
   rangeEnd: string;
   kind: AvailabilityKind | null;
-  areaSlug: string | null;
+  destinationSlug: string | null;
   region: string | null;
   friendsOnly: boolean;
 }) => {
@@ -16,7 +16,7 @@ export const loadExplorePeopleAvailability = async (input: {
     rangeStart: input.rangeStart,
     rangeEnd: input.rangeEnd,
     kind: input.kind,
-    areaSlug: input.areaSlug,
+    destinationSlug: input.destinationSlug,
     region: input.region,
     friendsOnly: input.friendsOnly,
   });

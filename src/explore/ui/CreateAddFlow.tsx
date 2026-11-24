@@ -21,7 +21,7 @@ import {
 } from './composeFlowClose';
 import type { AddVenueKind } from '../addTypes';
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
-import { areaIdForExploreAreaSlug } from '../exploreAreaFilter';
+import { destinationIdForExploreDestinationSlug } from '../exploreAreaFilter';
 import {
   addFlowStepTitle,
   emptyAddDraft,
@@ -58,7 +58,7 @@ interface CreateAddFlowProps {
   onBackToIntent?: () => void;
   onSubmitted?: (result: AddSubmitResult) => void;
   signInHref: string;
-  exploreAreaSlug?: string | null;
+  exploredestinationSlug?: string | null;
 }
 
 export const CreateAddFlow = ({
@@ -68,7 +68,7 @@ export const CreateAddFlow = ({
   onBackToIntent,
   onSubmitted,
   signInHref,
-  exploreAreaSlug = null,
+  exploreDestinationSlug = null,
 }: CreateAddFlowProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -122,11 +122,11 @@ export const CreateAddFlow = ({
         setStep(saved.step as AddFlowStepId);
       } else {
         setStep('title');
-        const areaId = areaIdForExploreAreaSlug(publishedAreas, exploreAreaSlug);
+        const destinationId = destinationIdForExploreDestinationSlug(publishedAreas, exploreDestinationSlug);
         setDraft({
           ...emptyAddDraft(),
           kind,
-          ...(areaId ? { areaId } : {}),
+          ...(destinationId ? { destinationId } : {}),
         });
       }
       setSubmitStatus(COMPOSE_SUBMIT_FLOW_IDLE);
@@ -135,7 +135,7 @@ export const CreateAddFlow = ({
     if (!user) {
       onClose();
     }
-  }, [open, user, navigate, signInHref, onClose, kind, addInitKey, exploreAreaSlug, publishedAreas]);
+  }, [open, user, navigate, signInHref, onClose, kind, addInitKey, exploreDestinationSlug, publishedAreas]);
 
   useEffect(() => {
     if (!open || composeSubmitFlowBlocksSessionPersist(submitStatus)) return;
@@ -244,8 +244,8 @@ export const CreateAddFlow = ({
   const isParkingMap = mapSession.intent === COMPOSE_MAP_INTENTS.addParking;
   const isLocationMap = mapSession.intent === COMPOSE_MAP_INTENTS.addLocation;
   const addMapOpen = mapSession.open && (isParkingMap || isLocationMap);
-    const curatedCenter = draft.areaId
-      ? publishedAreas.find((area) => area.id === draft.areaId)?.center
+    const curatedCenter = draft.destinationId
+      ? publishedAreas.find((area) => area.id === draft.destinationId)?.center
       : null;
   const lat = isParkingMap
       ? draft.parkingLat ?? MAP_CONFIG.exploreDefaultCenter.lat

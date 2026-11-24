@@ -40,7 +40,7 @@ describe('P5 SLO smoke probes contract (MIG-P5-SLO-SMOKE)', () => {
 
   const consumerReadProbes = [
     '/api/explore/map',
-    '/api/areas?page=1&pageSize=10',
+    '/api/destinations?page=1&pageSize=10',
     '/api/facilities?page=1&pageSize=10',
   ];
 

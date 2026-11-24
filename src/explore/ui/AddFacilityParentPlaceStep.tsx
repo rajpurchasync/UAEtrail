@@ -14,9 +14,9 @@ type Props = {
   onChange: (patch: Partial<FacilityAddDraft>) => void;
 };
 
-const catalogRowsInArea = (places: PlaceDTO[], areaId: string | null): PlaceDTO[] => {
-  if (!areaId?.trim()) return places;
-  return places.filter((row) => row.areaId?.trim() === areaId.trim());
+const catalogRowsInArea = (places: PlaceDTO[], destinationId: string | null): PlaceDTO[] => {
+  if (!destinationId?.trim()) return places;
+  return places.filter((row) => row.destinationId?.trim() === destinationId.trim());
 };
 
 /** Optional link facility to a trail/camp row (`parentPlaceId`). Pin step sets exact coords. */
@@ -44,7 +44,7 @@ export const AddFacilityParentPlaceStep = ({ draft, onChange }: Props) => {
     };
   }, []);
 
-  const rows = useMemo(() => catalogRowsInArea(catalog, draft.areaId), [catalog, draft.areaId]);
+  const rows = useMemo(() => catalogRowsInArea(catalog, draft.destinationId), [catalog, draft.destinationId]);
 
   const selectOptions = useMemo(
     () => [
