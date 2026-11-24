@@ -77,7 +77,7 @@ const isConsumerHamburgerLinkActive = (
   const activeTab = resolveMobileFiveTab(pathname, search);
   if (item.label === 'Trips') {
     if (pathname === LIST_DISCOVERY_PATH && activeTab === 'trips') return true;
-    if ((pathname === EXPLORE_MAP_PATH || pathname === '/discovery') && activeTab === 'trips') {
+    if (pathname === EXPLORE_MAP_PATH && activeTab === 'trips') {
       const params = new URLSearchParams(search);
       if (params.get('list') !== '1' && !isDiscoverBrowseRoute(pathname, search)) return true;
     }
@@ -90,7 +90,7 @@ const isConsumerHamburgerLinkActive = (
   if (item.label === 'Crews' || item.label === 'People') {
     if (pathname === LIST_DISCOVERY_PATH && activeTab === 'crews') return true;
     return (
-      (pathname === EXPLORE_MAP_PATH || pathname === '/discovery') && activeTab === 'crews'
+      pathname === EXPLORE_MAP_PATH && activeTab === 'crews'
     );
   }
   if (item.label === 'Chat') {
@@ -115,7 +115,7 @@ const isMobileLandingUserMenuItemActive = (
   const activeTab = resolveMobileFiveTab(pathname, search);
   if (item.label === 'Trips') {
     if (pathname === LIST_DISCOVERY_PATH && activeTab === 'trips') return true;
-    if ((pathname === EXPLORE_MAP_PATH || pathname === '/discovery') && activeTab === 'trips') {
+    if (pathname === EXPLORE_MAP_PATH && activeTab === 'trips') {
       const params = new URLSearchParams(search);
       if (params.get('list') !== '1' && !isDiscoverBrowseRoute(pathname, search)) return true;
     }
@@ -127,8 +127,7 @@ const isMobileLandingUserMenuItemActive = (
   }
   if (item.label === 'Explore') {
     return (
-      (pathname === EXPLORE_MAP_PATH || pathname === '/discovery') &&
-      !isDiscoverBrowseRoute(pathname, search)
+      pathname === EXPLORE_MAP_PATH && !isDiscoverBrowseRoute(pathname, search)
     );
   }
   if ('match' in item) {
@@ -161,7 +160,6 @@ const resolveConsumerHamburgerLinkState = (
   if (item.label !== 'Plans' && item.label !== 'My Plans') return undefined;
   const onExplore =
     pathname === EXPLORE_MAP_PATH ||
-    pathname === '/discovery' ||
     pathname === LIST_DISCOVERY_PATH ||
     isDiscoverBrowseRoute(pathname, search);
   if (!onExplore) return undefined;

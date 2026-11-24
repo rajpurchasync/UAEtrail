@@ -242,12 +242,11 @@ Built only via **`routingCatalog`** or `@uaetrail/shared-types` `entity-path` he
 
 | Entity | Pattern | Builder |
 |--------|---------|---------|
-| Place (hike) | `/trail/:id` | `placeDetailPath('hiking', id)` |
-| Place (camp) | `/camp/:id` | `placeDetailPath('camping', id)` |
+| Place (hike / camp) | `/place/:id` | `placeDetailPath('hiking'|'camping', id)` · stale `/trail`·`/camp` → wire + nginx |
 | Place (event venue) | `/venue/:id` | `placeDetailPath('event', id)` |
 | Activity (all outing types, incl. `activityType: event`) | `/activity/:id` | `activityDetailPath(id)` |
 | Activity crew (roster, host actions) | `/activity/:id/crew` | `activityCrewPath(id)` |
-| Legacy place URL | `/event/:id` → `/venue/:id` | redirect only |
+| Event venue place | `/venue/:id` | `placeDetailPath('event', id)` · stale `/event/:id` → wire + nginx |
 | Individual (community or Pro) | `/member/:userId` | `memberProfilePath(userId)` · `resolveActivityPublisherProfilePath` |
 | Agency brand | `/agency/:slug` | `agencyProfilePath(slug)` |
 | Partner brand | `/partner/:slug` | `partnerProfilePath(slug)` |
@@ -268,7 +267,7 @@ Built only via **`routingCatalog`** or `@uaetrail/shared-types` `entity-path` he
 
 **Parse inbound links:** `parseEntityRefFromPathname(pathname)` → `EntityRef`.
 
-**Stale bookmark paths** (do not link in new UI): legacy `/trips`, `/messages`, `/host/*`, profile-nested settings, etc. — **no SPA `<Navigate>` bookmark routes** (GW-7). Stale links normalize via **`canonicalizeNotificationBookmarkPath`** (`packages/shared-types`) from notifications, auth `?redirect=`, and participant console fallbacks; detection literals in `src/config/inboundBookmarkPaths.ts`. Detail: [`NAVIGATION.md`](./NAVIGATION.md) § Stale URLs (GW-7).
+**Stale bookmark paths** (do not link in new UI): legacy hubs, `/trail`·`/camp`·`/event`, `/messages`, `/host/*`, profile-nested settings, etc. — **no SPA `<Navigate>` bookmark routes** (GW-7). Stale links normalize via **`canonicalizeInboundProductPath`** (`entity-path` + `notification-bookmark-path`) from notifications, auth `?redirect=`, and participant console fallbacks; detection literals in `src/config/inboundBookmarkPaths.ts`. Detail: [`NAVIGATION.md`](./NAVIGATION.md) § Stale URLs (GW-7).
 
 ### 3.1 Consumer detail tab wire ids
 

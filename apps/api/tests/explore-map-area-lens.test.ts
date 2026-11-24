@@ -38,7 +38,7 @@ describe('buildExploreAreaLensItems', () => {
         title: 'Trail',
         latitude: 1,
         longitude: 2,
-        path: '/trail/1',
+        path: '/place/1',
         areaId: testAreas.hatta.id,
       },
     ];

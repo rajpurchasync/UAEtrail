@@ -285,6 +285,9 @@ describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
   it('GW7-08: notification bookmark wire module is the single FE re-export surface', () => {
     expect(existsSync(join(ROOT, 'packages/shared-types/src/notification-bookmark-path.ts'))).toBe(true);
     expect(read('packages/shared-types/src/index.ts')).toMatch(
+      /canonicalizeInboundProductPath[\s\S]*entity-path/
+    );
+    expect(read('packages/shared-types/src/index.ts')).toMatch(
       /canonicalizeNotificationBookmarkPath[\s\S]*notification-bookmark-path/
     );
     expect(read('src/config/inboundBookmarkPaths.ts')).toMatch(/INBOUND_CONTRIBUTIONS_PATH/);

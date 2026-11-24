@@ -159,6 +159,26 @@ describe('routingHygiene', () => {
     expect(violations).toEqual([]);
   });
 
+  it('GW7-09: consumer UI does not treat stale explore-entry pathnames as active routes', () => {
+    const allow = new Set([
+      'src/config/inboundBookmarkPaths.ts',
+      'src/config/routingCatalog.ts',
+      'src/config/routingHygiene.test.ts',
+    ]);
+    const violations: string[] = [];
+    const pattern =
+      /pathname === ['"]\/(?:discovery|map|community)['"]|=== ['"]\/(?:discovery|map|community)['"]/;
+    for (const file of collectSourceFiles(SCAN_ROOT)) {
+      if (allow.has(file)) continue;
+      if (file.endsWith('.test.ts') || file.endsWith('.test.tsx')) continue;
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (pattern.test(content)) {
+        violations.push(`${file}: stale explore entry is nginx + wire only — use EXPLORE_MAP_PATH`);
+      }
+    }
+    expect(violations).toEqual([]);
+  });
+
   it('app code does not link to /map as browse home (use EXPLORE_MAP_PATH / explorePath)', () => {
     const files = collectSourceFiles(SCAN_ROOT);
     const violations: string[] = [];
@@ -270,6 +290,7 @@ describe('routingHygiene', () => {
     expect(snippet).toMatch(/\^\/trips\/map/);
     expect(snippet).toMatch(/\/profile\/history\/map/);
     expect(snippet).toMatch(/\^\/trips/);
+    expect(snippet).toMatch(/\^\/activities/);
     expect(snippet).toMatch(/\/plan/);
     expect(snippet).toMatch(/\^\/profile\/my-trips\/map/);
     expect(snippet).toMatch(/\^\/profile\/my-trips/);
@@ -291,6 +312,9 @@ describe('routingHygiene', () => {
     expect(snippet).toMatch(/\/profile\/badges/);
     expect(snippet).toMatch(/location = \/profile\/wishlist/);
     expect(snippet).toMatch(/tab=wishlist/);
+    expect(snippet).toMatch(/\^\/trail\//);
+    expect(snippet).toMatch(/\^\/camp\//);
+    expect(snippet).toMatch(/\^\/event\//);
     expect(snippet).toMatch(/\/explore/);
     expect(snippet).toMatch(/return 301/);
   });

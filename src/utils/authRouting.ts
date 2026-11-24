@@ -10,7 +10,7 @@ import {
   messagesToUserPath,
 } from '../config/routingCatalog';
 import { planHostingFilterPath } from '../plan/planRouting';
-import { UserRole, canonicalizeNotificationBookmarkPath } from '@uaetrail/shared-types';
+import { UserRole, canonicalizeInboundProductPath } from '@uaetrail/shared-types';
 
 import { organisationManagePath } from '../config/routingCatalog';
 import { isPlatformAdmin } from './roles';
@@ -31,7 +31,7 @@ export const accountRouteByRole = (role: UserRole): string => {
  * `canAccessPublishingWorkspace`. Consumer equivalents only — not explore compose shims (O0.5).
  */
 export const participantHostBookmarkRedirect = (pathname: string): string => {
-  const canonical = canonicalizeNotificationBookmarkPath(pathname);
+  const canonical = canonicalizeInboundProductPath(pathname);
   const canonicalPathname = canonical.split('?')[0]?.split('#')[0] ?? pathname;
   if (
     canonicalPathname !== pathname &&

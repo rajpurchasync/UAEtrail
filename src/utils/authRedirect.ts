@@ -8,7 +8,7 @@ import {
   PROFILE_PATH,
   OPERATOR_CONSOLE_PREFIX,
 } from '../config/routingCatalog';
-import { canonicalizeNotificationBookmarkPath, type UserRole } from '@uaetrail/shared-types';
+import { canonicalizeInboundProductPath, type UserRole } from '@uaetrail/shared-types';
 import type { NavigateFunction } from 'react-router-dom';
 import { navigateBack } from './backStack';
 import { stripSessionExpiredQuery } from './authSessionLanding';
@@ -103,7 +103,7 @@ export const resolveAuthRedirect = (
     return undefined;
   }
   const stripped = stripSessionExpiredQuery(candidate);
-  return canonicalizeNotificationBookmarkPath(stripped);
+  return canonicalizeInboundProductPath(stripped);
 };
 
 /** True when `?redirect=` is present but is not a safe in-app path. */

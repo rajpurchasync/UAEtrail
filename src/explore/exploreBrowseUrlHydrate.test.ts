@@ -79,7 +79,7 @@ describe('exploreBrowseUrlHydrate', () => {
     });
     expect(next.get('view')).toBeNull();
     expect(next.get('list')).toBe('1');
-    expect(next.get('peopleFacet')).toBe('available');
+    expect(next.get('peopleFacet')).toBeNull();
     const roundTrip = parseExploreBrowseStateFromSearchParams(next, true);
     expect(roundTrip.crewPeopleFacet).toBe('available');
   });

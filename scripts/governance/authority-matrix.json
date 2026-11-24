@@ -33,7 +33,7 @@
     {
       "id": "notification-bookmark-inbound",
       "module": "packages/shared-types/src/notification-bookmark-path.ts",
-      "rule": "canonicalizeNotificationBookmarkPath — stale console, plan hub, settings, crews, explore entry, chat/rewards pathnames; FE inferNotificationPath, resolveAuthRedirect, participantHostBookmarkRedirect, and API migration delegate here only",
+      "rule": "canonicalizeInboundProductPath (entity-path + notification-bookmark-path) — stale place/venue segments, console, plan hub, settings, crews, explore entry, chat/rewards; FE inferNotificationPath, resolveAuthRedirect, participantHostBookmarkRedirect, API migration delegate here only",
       "forbidEmitIn": ["src/utils/notificationRouting.ts", "src/member-plan", "apps/api/src/lib/notification-bookmark-path-migration.ts"]
     }
   ],

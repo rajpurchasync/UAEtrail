@@ -2001,6 +2001,8 @@ export {
   placeDetailPathForId,
   canonicalPlaceDetailPath,
   inboundKindPlaceDetailPath,
+  rewriteStaleEntityInboundPath,
+  canonicalizeInboundProductPath,
   PLACE_CANONICAL_PATH_PREFIX,
   facilityDetailPath,
   resolveEntityPath,

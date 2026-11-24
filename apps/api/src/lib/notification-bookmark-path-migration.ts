@@ -1,5 +1,5 @@
 import type { Db } from 'mongodb';
-import { canonicalizeNotificationBookmarkPath } from '@uaetrail/shared-types';
+import { canonicalizeInboundProductPath } from '@uaetrail/shared-types';
 import { COLLECTIONS } from './collections.js';
 
 /** One-time: notification bookmarks → canonical SPA paths. */
@@ -17,7 +17,7 @@ export const migrateStaleNotificationBookmarkPaths = async (db: Db): Promise<voi
     const set: Record<string, string> = {};
 
     if (typeof row.path === 'string') {
-      const next = canonicalizeNotificationBookmarkPath(row.path);
+      const next = canonicalizeInboundProductPath(row.path);
       if (next !== row.path) set.path = next;
     }
 
@@ -25,7 +25,7 @@ export const migrateStaleNotificationBookmarkPaths = async (db: Db): Promise<voi
       row.meta && typeof row.meta === 'object' ? (row.meta as { path?: unknown }) : null;
     const metaPath = typeof meta?.path === 'string' ? meta.path : null;
     if (metaPath) {
-      const next = canonicalizeNotificationBookmarkPath(metaPath);
+      const next = canonicalizeInboundProductPath(metaPath);
       if (next !== metaPath) set['meta.path'] = next;
     }
 

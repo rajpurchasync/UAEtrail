@@ -48,8 +48,6 @@ export const buildAgentManifest = (siteOrigin: string): AgentManifestDTO => {
       '/activity/',
       '/place/',
       '/facility/',
-      '/trail/',
-      '/camp/',
       '/venue/',
       '/shop/',
       '/faq',

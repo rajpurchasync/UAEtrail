@@ -101,7 +101,6 @@ export const isDesktopExploreNavActive = (pathname: string, search: string): boo
   if (isExploreMapExclusiveNavMode(pathname, search)) return false;
   return (
     pathname === EXPLORE_MAP_PATH ||
-    pathname === '/discovery' ||
     pathname === LIST_DISCOVERY_PATH ||
     isDiscoverBrowseRoute(pathname, search)
   );

@@ -34,7 +34,7 @@ describe('resolveAuthRedirect', () => {
   });
 
   it('uses redirect query when state is missing', () => {
-    expect(resolveAuthRedirect(null, '/trail/abc')).toBe('/trail/abc');
+    expect(resolveAuthRedirect(null, '/trail/abc')).toBe('/place/abc');
   });
 
   it('rejects auth loop paths and external URLs', () => {
@@ -61,6 +61,9 @@ describe('resolveAuthRedirect', () => {
     expect(resolveAuthRedirect(null, '/profile/settings/account')).toBe('/settings/account');
     expect(resolveAuthRedirect(null, '/rewards')).toBe('/profile/badges');
     expect(resolveAuthRedirect(null, '/profile/wishlist')).toBe('/plan?view=plans&tab=wishlist');
+    expect(resolveAuthRedirect(null, '/activities?view=plans')).toBe('/plan?view=plans');
+    expect(resolveAuthRedirect(null, '/trail/place-1')).toBe('/place/place-1');
+    expect(resolveAuthRedirect(null, '/event/venue-2')).toBe('/venue/venue-2');
   });
 
   it('flags unsafe redirect query params', () => {

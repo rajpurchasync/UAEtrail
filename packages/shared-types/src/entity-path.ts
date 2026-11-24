@@ -1,4 +1,5 @@
 import type { PublishingProfileKind } from './publishing-profile-kind.js';
+import { canonicalizeNotificationBookmarkPath } from './notification-bookmark-path.js';
 
 /** Public venue kinds that map to place detail routes. */
 export type PlaceVenueKind = 'hiking' | 'camping' | 'event' | 'shop';
@@ -47,7 +48,10 @@ export const normalizePlaceActivityType = (activityType: string): PlaceVenueKind
   return 'hiking';
 };
 
-/** Kind-specific place URL segments. Event venues are live at `/venue/:id`; trail/camp inbound aliases redirect to `/place/:id`. */
+/**
+ * Legacy inbound segments (`/trail`, `/camp`) for parse/migration only.
+ * Product links must use {@link placeDetailPath} → `/place/:id` or `/venue/:id`.
+ */
 export const inboundKindPlaceDetailPath = (activityType: string, placeId: string): string => {
   const kind = normalizePlaceActivityType(activityType);
   if (kind === 'shop') return `/shop/${encodeURIComponent(placeId)}`;
@@ -78,6 +82,57 @@ export const placeDetailPathForId = (
   const known = placeActivityType?.trim();
   if (known) return placeDetailPath(known, id);
   return canonicalPlaceDetailPath(id);
+};
+
+const splitPathSearchHash = (raw: string) => {
+  const hashIndex = raw.indexOf('#');
+  const withoutHash = hashIndex >= 0 ? raw.slice(0, hashIndex) : raw;
+  const hash = hashIndex >= 0 ? raw.slice(hashIndex) : '';
+  const queryIndex = withoutHash.indexOf('?');
+  const pathname = queryIndex === -1 ? withoutHash : withoutHash.slice(0, queryIndex);
+  const search = queryIndex === -1 ? '' : withoutHash.slice(queryIndex);
+  return { pathname, search, hash };
+};
+
+const joinPath = (pathname: string, search: string, hash: string) => `${pathname}${search}${hash}`;
+
+const STALE_TRAIL_PATH_RE = /^\/trail\/([^/?#]+)\/?$/;
+const STALE_CAMP_PATH_RE = /^\/camp\/([^/?#]+)\/?$/;
+const STALE_EVENT_VENUE_PATH_RE = /^\/event\/([^/?#]+)\/?$/;
+
+/** `/trail/:id` · `/camp/:id` · `/event/:id` → canonical place/venue URLs (preserve query/hash). */
+export const rewriteStaleEntityInboundPath = (raw: string): string | null => {
+  if (!raw.startsWith('/')) return null;
+
+  const { pathname, search, hash } = splitPathSearchHash(raw);
+  const trail = pathname.match(STALE_TRAIL_PATH_RE);
+  if (trail) {
+    return joinPath(
+      canonicalPlaceDetailPath(decodeURIComponent(trail[1])),
+      search,
+      hash
+    );
+  }
+  const camp = pathname.match(STALE_CAMP_PATH_RE);
+  if (camp) {
+    return joinPath(
+      canonicalPlaceDetailPath(decodeURIComponent(camp[1])),
+      search,
+      hash
+    );
+  }
+  const eventVenue = pathname.match(STALE_EVENT_VENUE_PATH_RE);
+  if (eventVenue) {
+    const id = decodeURIComponent(eventVenue[1]);
+    return joinPath(`${VENUE_PLACE_PATH_PREFIX}/${encodeURIComponent(id)}`, search, hash);
+  }
+  return null;
+};
+
+/** Single inbound choke: entity aliases, then hub/console bookmark canonicalize. */
+export const canonicalizeInboundProductPath = (raw: string): string => {
+  const entity = rewriteStaleEntityInboundPath(raw);
+  return canonicalizeNotificationBookmarkPath(entity ?? raw);
 };
 
 /** Public URL for a facility amenity row (Program CPC). */

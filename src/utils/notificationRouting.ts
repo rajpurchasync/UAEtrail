@@ -22,7 +22,7 @@ import { MY_CREWS_PATH } from '../config/surfacePaths';
 import { planWishlistTabPath } from '../plan/planTab';
 import {
   NotificationDTO,
-  canonicalizeNotificationBookmarkPath,
+  canonicalizeInboundProductPath,
   exploreAvailabilityMapItemPath,
   placeDetailPath,
   resolveNotificationActorUserId,
@@ -68,7 +68,7 @@ const normalizeDirectNotificationPath = (
   path: string,
   meta: Record<string, unknown> | null
 ): string => {
-  const canonical = canonicalizeNotificationBookmarkPath(path);
+  const canonical = canonicalizeInboundProductPath(path);
   if (canonical !== path) return canonical;
   return normalizeConsumerChatDeepLinkPath(canonical, meta);
 };
@@ -118,7 +118,7 @@ export const inferNotificationPath = (
 
   if (kind === 'join_request_approved') {
     const path = toStringValue(meta?.path);
-    if (path) return canonicalizeNotificationBookmarkPath(path);
+    if (path) return canonicalizeInboundProductPath(path);
     if (activityId) {
       return `${activityDetailPath(activityId)}?joined=1`;
     }

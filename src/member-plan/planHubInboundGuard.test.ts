@@ -110,7 +110,7 @@ describe('planHubInboundGuard', { timeout: 30_000 }, () => {
       if (ALLOWLIST.has(file)) continue;
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       if (banned.test(content)) {
-        violations.push(`${file}: use canonicalizeNotificationBookmarkPath or planRouting`);
+        violations.push(`${file}: use canonicalizeInboundProductPath or planRouting`);
       }
     }
 

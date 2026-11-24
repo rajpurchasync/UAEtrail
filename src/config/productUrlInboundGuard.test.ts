@@ -49,13 +49,13 @@ describe('productUrlInboundGuard (single inbound alias registry)', () => {
 
   it('INBOUND-07: auth return redirect uses shared-types bookmark canonicalize', () => {
     const authRedirect = read('src/utils/authRedirect.ts');
-    expect(authRedirect).toMatch(/canonicalizeNotificationBookmarkPath/);
+    expect(authRedirect).toMatch(/canonicalizeInboundProductPath/);
     expect(authRedirect).toMatch(/resolveAuthRedirect/);
   });
 
   it('INBOUND-06: notification deep links use shared-types bookmark canonicalize', () => {
     const routing = read('src/utils/notificationRouting.ts');
-    expect(routing).toMatch(/canonicalizeNotificationBookmarkPath/);
+    expect(routing).toMatch(/canonicalizeInboundProductPath/);
     expect(routing).not.toMatch(/resolveInboundPlanHubPath/);
     expect(existsSync(join(process.cwd(), 'packages/shared-types/src/notification-bookmark-path.ts'))).toBe(
       true
@@ -63,7 +63,7 @@ describe('productUrlInboundGuard (single inbound alias registry)', () => {
   });
 
   it('INBOUND-08: publishing workspace gate uses shared-types bookmark canonicalize', () => {
-    expect(read('src/utils/authRouting.ts')).toMatch(/canonicalizeNotificationBookmarkPath/);
+    expect(read('src/utils/authRouting.ts')).toMatch(/canonicalizeInboundProductPath/);
     expect(read('src/components/auth/ProtectedRoute.tsx')).toMatch(/participantHostBookmarkRedirect/);
   });
 });

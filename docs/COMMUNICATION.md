@@ -14,7 +14,7 @@
 | **Plan (My Plans)** | `/plan` | Hosted manage sheet (`ActivityManageSheet`) → same detail shell + **Message crew**; joined peek sheet → full plan / group chat |
 | **Explore** | `/explore` | Map peek **`viewerAccess.mapPeekActions`** (join, pending, participant, …); activity **host user** sees **Chat · Manage** + **View details** on own pins; shops use **`PeekDetailLink`** (View / Rate); cancel/delete via **`HostActivityCancelDialog`**; withdraw on activity detail only |
 
-Stale message deep links (`/messages`, `/host/messages`, `/publishing/messages`, `/hosting/messages`, …) normalize to `/chat` via **`canonicalizeNotificationBookmarkPath`** (`inferNotificationPath`, auth `?redirect=`) — no SPA redirect routes (GW-7; [`NAVIGATION.md`](./NAVIGATION.md)). **Do not** add a second inbox route or host-only messages shell.
+Stale message deep links (`/messages`, `/host/messages`, `/publishing/messages`, `/hosting/messages`, …) normalize to `/chat` via **`canonicalizeInboundProductPath`** (`inferNotificationPath`, auth `?redirect=`) — no SPA redirect routes (GW-7; [`NAVIGATION.md`](./NAVIGATION.md)). **Do not** add a second inbox route or host-only messages shell.
 
 **Open DM affordance (FE):** `MessageMemberButton` (`src/components/chat/MessageMemberButton.tsx`) — `memberUserId` + optional `activityId`; contextual label via `messageLabel`. Not `HostMessageButton` / `OrganizerMessageButton` (deprecated shims).
 

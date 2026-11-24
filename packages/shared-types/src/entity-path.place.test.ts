@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
   canonicalPlaceDetailPath,
+  canonicalizeInboundProductPath,
   inboundKindPlaceDetailPath,
   parseEntityRefFromPathname,
   placeDetailPath,
   placeDetailPathForId,
+  rewriteStaleEntityInboundPath,
 } from './entity-path.js';
 
 describe('place detail paths (CPC-6)', () => {
@@ -23,10 +25,21 @@ describe('place detail paths (CPC-6)', () => {
     expect(placeDetailPathForId('event-hall', 'event')).toBe('/venue/event-hall');
   });
 
-  it('preserves legacy segments for redirects', () => {
+  it('inbound segments are parse/migration only (not product emit)', () => {
     expect(inboundKindPlaceDetailPath('hiking', 'x')).toBe('/trail/x');
     expect(inboundKindPlaceDetailPath('camping', 'x')).toBe('/camp/x');
     expect(inboundKindPlaceDetailPath('event', 'x')).toBe('/venue/x');
+  });
+
+  it('rewrites stale entity bookmarks to canonical URLs', () => {
+    expect(rewriteStaleEntityInboundPath('/trail/foo?tab=overview')).toBe('/place/foo?tab=overview');
+    expect(rewriteStaleEntityInboundPath('/camp/bar')).toBe('/place/bar');
+    expect(rewriteStaleEntityInboundPath('/event/hall-1')).toBe('/venue/hall-1');
+  });
+
+  it('canonicalizeInboundProductPath chains entity then hub rules', () => {
+    expect(canonicalizeInboundProductPath('/trail/foo')).toBe('/place/foo');
+    expect(canonicalizeInboundProductPath('/map')).toBe('/explore');
   });
 
   it('parses canonical place pathname', () => {

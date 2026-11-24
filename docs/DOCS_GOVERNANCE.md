@@ -128,7 +128,7 @@ Do **not** put new product semantics only in `experiment/*` phase trackers or de
 | Duplicate placement stories | **One row per concern:** manifest `contexts[]` + `SYSTEM_COHERENCE` §3 — not new audit markdown |
 | Overlapping FE folders (`src/explore`, `src/list`, `src/discovery`, `src/crew-discovery`) | Same **discovery** context in manifest; **browse UI** = `src/list` + `src/crew-discovery`; **map shell** = `src/explore` — do not add a third people-browse stack |
 | Friends vs crews vs discover | **Friends graph** → `/me/friends`, `MyCrews` (`/crews`); **Find crew discover** → `member_availability` + explore/list people lanes — not `/buddies` or seeking compose |
-| Legacy product URLs | **No runtime shims** for retired paths; **`canonicalizeNotificationBookmarkPath`** (shared-types) + unified notification bookmark **Mongo migration**; auth `?redirect=` uses the same canonicalize |
+| Legacy product URLs | **No runtime shims** for retired paths; **`canonicalizeInboundProductPath`** (shared-types) + unified notification bookmark **Mongo migration**; auth `?redirect=` uses the same canonicalize |
 | Superseded docs | One-line stub pointing to canonical file, or `archive/` — `verify:docs` enforces |
 
 **Align docs ↔ code:** When guards fail, fix **code first**, then the **single** Tier-1 row for that topic (table at top of this file). Never “fix” drift by adding a new markdown plan.

@@ -1,5 +1,5 @@
 /**
- * Stale bookmark path segments — rewrite via `canonicalizeNotificationBookmarkPath` (shared-types)
+ * Stale bookmark path segments — rewrite via `canonicalizeInboundProductPath` (shared-types)
  * and client `inferNotificationPath`; stale console prefixes: `INBOUND_STALE_CONSOLE_PREFIXES` in shared-types.
  * No SPA `<Navigate>` shims (GW-7). Do not link these in product UI.
  */

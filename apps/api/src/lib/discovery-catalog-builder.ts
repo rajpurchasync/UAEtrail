@@ -113,7 +113,7 @@ const resolveLocationAmenities = (
 const resolveShopPresence = (latitude: number | null, longitude: number | null): ShopPresence =>
   latitude != null && longitude != null ? 'physical' : 'online';
 
-/** Map place kind. Wire `hiking` is a trail in product copy (`/trail/:id`). */
+/** Map place kind. Wire `hiking` — product URL `placeDetailPath` → `/place/:id`. */
 const venueKind = (activityType: string): 'hiking' | 'camping' | 'event' => {
   const kind = activityType.toLowerCase();
   if (kind === 'camping') return 'camping';

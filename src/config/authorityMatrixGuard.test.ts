@@ -179,11 +179,14 @@ describe('authorityMatrixGuard (DMCP Phase 0)', () => {
       (c: { id: string }) => c.id === 'notification-bookmark-inbound'
     );
     expect(choke?.module).toBe('packages/shared-types/src/notification-bookmark-path.ts');
-    expect(choke?.rule).toMatch(/canonicalizeNotificationBookmarkPath/);
-    expect(read('src/utils/notificationRouting.ts')).toMatch(/canonicalizeNotificationBookmarkPath/);
-    expect(read('src/utils/authRedirect.ts')).toMatch(/canonicalizeNotificationBookmarkPath/);
+    expect(choke?.rule).toMatch(/canonicalizeInboundProductPath|canonicalizeNotificationBookmarkPath/);
+    expect(read('src/utils/notificationRouting.ts')).toMatch(/canonicalizeInboundProductPath/);
+    expect(read('src/utils/authRedirect.ts')).toMatch(/canonicalizeInboundProductPath/);
     expect(read('apps/api/src/lib/notification-bookmark-path-migration.ts')).toMatch(
-      /canonicalizeNotificationBookmarkPath/
+      /canonicalizeInboundProductPath/
+    );
+    expect(read('packages/shared-types/src/entity-path.ts')).toMatch(
+      /canonicalizeInboundProductPath/
     );
   });
 });
