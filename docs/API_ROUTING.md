@@ -393,8 +393,10 @@ SPA: `/admin/hosts` → `pages/admin/Organisations` (see [`NAVIGATION.md`](./NAV
 | GET | `/facilities/catalog` | Map / admin filters (`areaId`, `parentPlaceId`, `facilityKind`) | **(today)** |
 | POST | `/me/facilities` | Member facility submit → `facilities` only | **(today)** |
 | GET/PATCH/DELETE | `/admin/facilities` | Platform admin facility CRUD → `facilities` only | **(today)** |
-| GET | `/areas` | Public curated **names** | **(today)** — Area is **not** a map pin |
-| GET | `/areas/:slug` | Area hub page payload | **(today)** — camera hint only; pins on the hub are Places |
+| GET | `/destinations` | Public curated **Destinations** (MIG-DESTINATION-GEO) | **(today)** — same data as `/areas`; not a map pin |
+| GET | `/destinations/:slug` | Destination hub payload (`destination` key) | **(today)** |
+| GET | `/areas` | Legacy alias of `/destinations` | **(today)** — deprecate P9 |
+| GET | `/areas/:slug` | Legacy (`area` key) | **(today)** |
 | GET | `/shop/shops/:id` | **Operator** shop storefront (`EntityKind.shop`) | **(today)** — not FAB Add |
 
 **Surface model:** Public read, member submit (`/me/*`), and platform admin (`/admin/*`) are **separate registrars** — not one `/facilities` POST gated by profile. See [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §5.1 · §8.4.9.

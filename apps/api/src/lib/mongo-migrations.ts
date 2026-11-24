@@ -1172,7 +1172,7 @@ const migrateOutingCrewKindRename = async (db: Db): Promise<void> => {
 };
 
 /** Bump when adding a new migration step so existing deployments run it once. */
-export const MONGO_MIGRATION_VERSION = 2025112502;
+export const MONGO_MIGRATION_VERSION = 2025112503;
 
 /** One-time migrations for activity terminology and role model alignment. */
 export const runMongoMigrations = async (db: Db): Promise<void> => {
@@ -1250,6 +1250,8 @@ export const runMongoMigrations = async (db: Db): Promise<void> => {
   );
   await migrateStaleNotificationBookmarkPaths(db);
   await migrateMemberAvailabilityBuddiesVisibility(db);
+  const { runDestinationGeoMigrations } = await import('./destination-geo-migrations.js');
+  await runDestinationGeoMigrations(db);
   const { seedCatalogsIfEmpty } = await import('./catalogs-store.js');
   await seedCatalogsIfEmpty();
 

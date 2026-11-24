@@ -25,7 +25,7 @@ describe('Area is not a map pin', () => {
       title: 'Trail',
       latitude: 1,
       longitude: 2,
-      path: '/trail/1',
+      path: '/place/1',
     };
     expect(matchesExplorePinKindFilter(area, 'places')).toBe(false);
     expect(matchesExplorePinKindFilter(place, 'places')).toBe(true);

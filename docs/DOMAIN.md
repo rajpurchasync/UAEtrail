@@ -100,23 +100,25 @@ There is **no** `Trip` table, `TripDTO`, or trips API. Everything on the map tha
 
 **Retired (ops cleanup only):** modeling Find crew as **`activityMode: seeking`** on `activities`, `/me/seeking-posts`, `participant_intents` map pins, and `demand:` ids. See [`operations/SEEKING_STORAGE_RUNBOOK.md`](./operations/SEEKING_STORAGE_RUNBOOK.md) · dev purge: `npm run purge:seeking-legacy`.
 
-### Geography (Area + Place catalog)
+### Geography (AdminGeo · Destination · Place catalog)
 
-**Country / state / region** (from map geography) → **Area** (admin-curated **name**, e.g. Hatta — **not a map pin**) → **Place** (trail, camp, outdoor spot) + **Facility** (amenity with coords) → **Activity** (scheduled outing; geography only through a place).
+**Program:** [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.5 **MIG-DESTINATION-GEO-2026** — wire: `packages/shared-types/src/destination.ts`.
+
+**Target hierarchy:** **AdminGeo** (country / state / locality from coordinates → **`geoRef`**) → **Destination** (curated outdoor region, e.g. Hatta — **not a map pin**) → **Place (site)** (trail, camp, outdoor spot) + **Facility** (amenity with coords) → **Activity** (geography only through a place).
 
 | Layer | Who maintains | Assignment rule |
 |-------|----------------|-----------------|
-| **Country / state / region** | Map geography | Labels on pins from the map — not from the Area row |
-| **Area** | Platform admin (`/admin/areas`) | Curated **name** + slug; optional `center` / bounds are a **camera hint for the hub page only**. **No** `source: area` pin on Explore |
-| **Place** | Admin `/admin/places` + member **Add** (`curatedArea` then pin) | Every place row has **`place.areaId`**; `POST /me/places` requires **`areaId`** |
-| **Facility** | Admin `/admin/facilities` + member **Add** | Own `facilities` collection; coords so people can navigate; **`areaId`** + optional `parentPlaceId` |
-| **Activity** | Member **Host** (hosted outings only) | **No stored `activity.areaId` on write** (leftover rows may still have one). Geography = **`activity.locationId` → `place.areaId`**. Public publish requires a catalog **place** with **`areaId`**. Find crew uses **`member_availability`**, not Activity |
+| **AdminGeo** | Geo resolver on write | **`geoRef`** from lat/lng — not hand-picked emirate as SoT (P4+) |
+| **Destination** | Platform admin (`/admin/areas` today → `/admin/destinations`) | Curated **name** + slug; bounds for hub camera. **`destinationId`** on places/facilities (dual-write `areaId` until P9). **No** explore map pin |
+| **Place (site)** | Admin places + member **Add** | Hostable trail/camp/spot; **`destinationId`** required for listed catalog (P3+). Flat **`/place/:id`** |
+| **Facility** | Admin + member **Add** | **`destinationId`** + optional amenity-on-trail link (`parentPlaceId` → **`onSiteId`** P9) |
+| **Activity** | Host | **`activity.locationId` → place site**; destination derived from place |
 
-**Explore map lenses:** **Activities** — emoji pin per outing (`source: activity`; host row → **member profile** and/or **operator profile** when published as a business). **Spots** — Place pins (`source: place`). **Facilities** share the map (`source: facility`, coords for navigation; peek still Place chrome until a dedicated facility peek ships). **Shops** — **operator** map pin + `/shop/…` profile. **Area** is a **filter** (`?area=`) and a **hub page** (`/area/:slug`) — never its own pin. Legacy `pinKind=locations` URLs alias to Spots. **Members / Pro guides / agencies** — **no** standalone person or agency pins; find via **search**, **people browse**, **activity peek/detail**, and **operator name** on linked users’ member profiles. Detail: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §12.1.
+**Legacy during migration:** HTTP **`GET /areas`**, field **`areaId`**, hub **`/area/:slug`**, explore **`?area=`** — aliases until P8–P9. Canonical target: **`/destination/:slug`**, **`?destination=`**, **`resolveDestinationId`**.
 
-**Curated area catalog (seed + tests):** 12 published areas in `CURATED_AREA_CATALOG` (`@uaetrail/shared-types`) — Hatta, Jebel Jais, Wadi Shawka, Jebel Hafeet, Al Qudra, Love Lake, Khorfakkan, Jumeirah Coast, Fossil Rock, Dibba, Remah Dunes, Kalba. Each has stable `area-seed-*` id, map bounds, and `summary` (editable in admin; re-seed restores defaults).
+**Explore map lenses:** unchanged — Activities · Spots (place) · Facilities · **Shops** (operator map pin + `/shop/…`); **Destination** is filter + hub only. Detail: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §12.1.
 
-Discovery: **`/area/:slug`** (hub), and explore **`?area=`** filter by **`areaSlug` / `areaId`** on Place, Facility, hosted activities, and availability pins. Private link-only activities skip public map listing.
+**Curated destination catalog (seed + tests):** 12 regions in `CURATED_AREA_CATALOG` (ids `area-seed-*` preserved as **`destinationId`**). Rename to Destination vocabulary in shared-types over P9.
 
 **My Plans** (`/plan`, UI tab **Plan**) groups **your** forward layer — upcoming schedule (list or **calendar**), wishlist, goals — plus relationships to activities. Past outings and journey map live on **profile history**, not `/plan`.
 

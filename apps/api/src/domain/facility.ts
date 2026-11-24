@@ -11,6 +11,7 @@ export interface Facility {
   name: string;
   region: string;
   areaLabel: string | null;
+  destinationId?: string | null;
   areaId: string;
   facilityKind: FacilityKind;
   parentPlaceId?: string | null;

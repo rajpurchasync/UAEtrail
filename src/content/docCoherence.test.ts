@@ -176,14 +176,15 @@ describe('doc coherence (Tier 1)', () => {
     expect(domain).toMatch(/Shops.*map pin/i);
   });
 
-  it('geography canon: Area hub, Place kinds, activity via place.areaId', () => {
+  it('geography canon: Destination hub, Place kinds, activity via place site', () => {
     const canon = readFileSync(join(DOCS, 'DOMAIN_CANONICALS.md'), 'utf8');
     const domain = readFileSync(join(DOCS, 'DOMAIN.md'), 'utf8');
     expect(canon).toMatch(/### 12\.1 Geography/);
-    expect(canon).toMatch(/place\.areaId/);
+    expect(canon).toMatch(/MIG-DESTINATION-GEO-2026/);
+    expect(canon).toMatch(/destinationId/);
     expect(canon).toMatch(/No `activity\.areaId` on write/);
     expect(canon).toMatch(/PlaceKind/);
-    expect(domain).toMatch(/activity\.locationId.*place\.areaId/);
+    expect(domain).toMatch(/activity\.locationId.*place site/i);
   });
 
   it('CREATE_FLOW defers to NORTHSTAR and MEMBER_MODEL for gates', () => {

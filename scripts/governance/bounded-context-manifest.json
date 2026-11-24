@@ -316,7 +316,7 @@
     },
     {
       "id": "areas",
-      "label": "Geographic areas",
+      "label": "Geographic areas (MIG-DESTINATION-GEO-2026 → destinations)",
       "apiFiles": [
         "apps/api/src/lib/areas-store.ts",
         "apps/api/src/lib/area-resolution.ts",

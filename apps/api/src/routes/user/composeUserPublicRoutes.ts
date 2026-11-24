@@ -4,6 +4,7 @@ import { registerExploreAvailabilityRoutes } from './registerExploreAvailability
 import { registerPublicActivityRoutes } from './registerPublicActivityRoutes.js';
 import { registerPublicAlertsAndReferralRoutes } from './registerPublicAlertsAndReferralRoutes.js';
 import { registerPublicAreaRoutes } from './registerPublicAreaRoutes.js';
+import { registerPublicDestinationRoutes } from './registerPublicDestinationRoutes.js';
 import { registerPublicFacilityRoutes } from './registerPublicFacilityRoutes.js';
 import { registerPublicMemberRoutes } from './registerPublicMemberRoutes.js';
 import { registerPublicPlaceRoutes } from './registerPublicPlaceRoutes.js';
@@ -23,6 +24,7 @@ export const composeUserPublicRoutes = (userRouter: Router): void => {
   registerPublicAlertsAndReferralRoutes(userRouter);
   registerPublicFacilityRoutes(userRouter);
   registerPublicAreaRoutes(userRouter);
+  registerPublicDestinationRoutes(userRouter);
   registerExploreAvailabilityRoutes(userRouter);
   registerExploreCommunityRoutes(userRouter);
   registerDiscoverRecommendationsRoutes(userRouter);

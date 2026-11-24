@@ -231,7 +231,7 @@ git pull origin main
 docker compose up -d --build
 ```
 
-After deploy, the API runs **versioned Mongo migrations** once per environment (`runMongoMigrations` in `apps/api/src/lib/mongo-migrations.ts`, tracked in `schema_meta.migrations`). GW-7 bump: **`MONGO_MIGRATION_VERSION = 2025112502`** — stale inbound paths (hubs + entity aliases) via `canonicalizeInboundProductPath` (`migrateStaleNotificationBookmarkPaths`). Rebuild **`frontend`** when `nginx/snippets/inbound-bookmark-redirects.conf` changes. Indexes are still ensured at API startup separately.
+After deploy, the API runs **versioned Mongo migrations** once per environment (`runMongoMigrations` in `apps/api/src/lib/mongo-migrations.ts`, tracked in `schema_meta.migrations`). GW-7 **`2025112502`** — stale inbound paths via `canonicalizeInboundProductPath`. MIG-DESTINATION-GEO **`2025112503`** — backfill `destinationId` from `areaId` on catalog rows (`runDestinationGeoMigrations`). Rebuild **`frontend`** when `nginx/snippets/inbound-bookmark-redirects.conf` changes. Indexes are still ensured at API startup separately.
 
 ---
 

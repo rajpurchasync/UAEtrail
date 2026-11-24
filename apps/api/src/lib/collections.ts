@@ -29,6 +29,8 @@ export const COLLECTIONS = {
   REFERRAL_CLICKS: 'referral_clicks',
   LOCATION_UNLOCKS: 'location_unlocks',
   AREAS: 'areas',
+  /** MIG-DESTINATION-GEO — logical name; physical `areas` until optional rename. */
+  DESTINATIONS: 'areas',
   GEO_NODES: 'geo_nodes',
   GEO_STATS: 'geo_stats',
   GEO_OUTBOX: 'geo_outbox',

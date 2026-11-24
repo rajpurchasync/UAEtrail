@@ -15,6 +15,11 @@ export interface FacilityDTO {
   name: string;
   region: string;
   areaLabel?: string | null;
+  /** Curated Destination (outdoor region). */
+  destinationId?: string | null;
+  /**
+   * @deprecated Dual-read with {@link destinationId} until MIG-DESTINATION-GEO P9.
+   */
   areaId: string;
   geoRef?: import('./geo-hierarchy.js').GeoRef | null;
   facilityKind: FacilityKind;

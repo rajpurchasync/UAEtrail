@@ -14,6 +14,7 @@ import {
   LocationStatus,
   type Accessibility
 } from '../domain/enums.js';
+import { mirrorCatalogDestinationIds } from './destination-id-sync.js';
 
 const asStringArray = (value: unknown): string[] => (Array.isArray(value) ? value : []);
 
@@ -203,7 +204,7 @@ export const buildLocationFromCreateInput = (data: LocationCreateInput, id: stri
     name: data.name,
     region: data.region ?? '',
     areaLabel: data.areaLabel?.trim() ? data.areaLabel.trim() : null,
-    areaId: data.areaId?.trim() ? data.areaId.trim() : null,
+    ...mirrorCatalogDestinationIds(data.areaId),
     parentPlaceId: data.parentPlaceId?.trim() ? data.parentPlaceId.trim() : null,
     activityType: data.activityType as Location['activityType'],
     description: data.description ?? '',
@@ -472,7 +473,7 @@ export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: stri
     publishedAt: data.publishedAt ?? null,
     outingCategory: data.outingCategory ?? null,
     outingTopic: data.outingTopic ?? null,
-    areaId: data.areaId?.trim() ? data.areaId.trim() : null,
+    ...mirrorCatalogDestinationIds(data.areaId),
     groupRegionLevels: data.groupRegionLevels ?? null,
     activityMode: data.activityMode ?? 'hosted',
     discoverCommunityId: data.discoverCommunityId ?? null,

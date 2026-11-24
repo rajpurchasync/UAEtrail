@@ -275,6 +275,7 @@ export const toLocationDto = (location: Location, opts?: { admin?: boolean }): L
   name: location.name,
   region: location.region,
   areaLabel: location.areaLabel ?? null,
+  destinationId: location.destinationId ?? location.areaId ?? null,
   areaId: location.areaId ?? null,
   parentPlaceId: location.parentPlaceId ?? null,
   geoRef: location.geoRef ?? null,

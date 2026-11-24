@@ -24,6 +24,11 @@ export const BWL_COLLECTIONS = {
   /** Partner outbound click telemetry (commercial facilities / shops). */
   REFERRAL_CLICKS: 'referral_clicks',
   AREAS: 'areas',
+  /**
+   * MIG-DESTINATION-GEO-2026 — logical destinations store.
+   * Physical Mongo collection is `areas` until P3 collection rename; ids unchanged (`area-seed-*`).
+   */
+  DESTINATIONS: 'areas',
   GEO_NODES: 'geo_nodes',
   GEO_STATS: 'geo_stats',
   GEO_OUTBOX: 'geo_outbox',

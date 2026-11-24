@@ -18,7 +18,7 @@ Complete these **on the VPS** when you connect. Use this list to track progress.
 - [ ] Production ops: set `PLATFORM_ADMIN_MFA_SECRET` (base32 TOTP) and use `totp` on `POST /auth/login` for platform-admin accounts (S10g)
 - [ ] First-time dev/staging only (if needed): `SEED_DATA=true docker compose exec -T api npm --workspace @uaetrail/api run seed`
 - [ ] `curl https://uaetrail.com/health` returns OK
-- [ ] After deploy, API startup runs Mongo migrations (`schema_meta.migrations`); if upgrading past GW-7, expect version **2025112502** and log line `[mongo] Stale notification bookmark path(s)` (`DEPLOYMENT.md` § Updating)
+- [ ] After deploy, API startup runs Mongo migrations (`schema_meta.migrations`); if upgrading past GW-7, expect version **2025112503** (GW-7 **2025112502** bookmark paths + MIG-DESTINATION-GEO `destinationId` backfill); watch for `[mongo] Stale notification bookmark path(s)` and `MIG-DESTINATION-GEO: destinationId` (`DEPLOYMENT.md` § Updating)
 
 ## HTTPS
 

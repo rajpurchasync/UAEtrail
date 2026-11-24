@@ -989,6 +989,84 @@ Legacy shim (one release, no new imports): `placeRegistry.ts`. `placeCatalogApi.
 
 §3 **Places** / **Facilities** rows and §8.4.9 implementation map are the living alignment source (updated CPC-4).
 
+### 8.5 Program MIG-DESTINATION-GEO-2026 — geography assignment
+
+**Status:** **In progress** — **P0–P1** (canon + shared-types wire). **Track A:** `destinations` logical store (physical Mongo `areas` until P3); **`destinationId`** on catalog rows; **`geoRef`** SoT for country/state (P4+). **Place (site)** = trails, camps, spots (`/place/:id`). **Not in scope:** nested geo URLs; GW-7 inbound choke.
+
+**Read between phases:** this §8.5 · [`DOMAIN.md`](./DOMAIN.md) § Geography · [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §12.1 · `packages/shared-types/src/destination.ts`.
+
+**Vocabulary:** **AdminGeo** (`geoRef`) · **Destination** (curated outdoor region) · **Place (site)** (hostable spot) · **Facility** (amenity). Legacy **Area** = Destination until cutover.
+
+#### 8.5.0 Locked decisions
+
+| ID | Decision |
+|----|----------|
+| D0.1 | `destinations` from `areas`; preserve `area-seed-*` ids as `destinationId` |
+| D0.2 | Dual-read `resolveDestinationId`; dual-write `areaId` + `destinationId` until P9 |
+| D0.3 | `/destination/:slug` canonical; `/area/:slug` legacy → 301 (P8) |
+| D0.4 | Listed catalog requires `destinationId` + `geoRef` (P4+) |
+| D0.5 | Facility trail scope → `onSiteId` rename from `parentPlaceId` (P9) |
+
+#### 8.5.1 Target assignment
+
+```text
+AdminGeo (auto, geoRef) on coords
+Destination (curated destinationId) — not a map pin
+  ├── Place (site) — trail, camp, spot
+  └── Facility — optional onSiteId
+Activity → locationId → Place (site) only
+```
+
+#### 8.5.2 Completion record
+
+| Phase | PR / commit | Date | Gate |
+|-------|-------------|------|------|
+| P0–P1 | | | verify:system:quick |
+| P2–P3 | | | migration + quick |
+| P4 | | | geo contract |
+| P5 | | | map contract |
+| P6 | | | lineage contract |
+| P7–P8 | | | quick + inbound |
+| P9–P10 | | | **verify:system** |
+
+#### 8.5.3 Phase checklist
+
+Mark `[x]` in the PR that completes the item.
+
+**P0 — Canon**
+
+- [x] §8.5 this section (living record)
+- [x] DOMAIN / DOMAIN_CANONICALS §12.1 Destination tree delta
+- [x] NAVIGATION `/destination/:slug` + legacy `/area`
+- [x] `bounded-context-manifest.json` program note
+- [x] `geographyTerminologyGuard` GEO-07 (program wire)
+
+**P1 — Shared types**
+
+- [x] `destination.ts` — `destinationHubPath`, `resolveDestinationId`, DTO aliases
+- [x] `wire-lexicon` `DESTINATIONS`
+- [x] `destinationId` on `LocationDTO` / `FacilityDTO`
+- [x] `destination.test.ts`
+- [x] `npm run verify:system:quick` (pending final run on merge PR)
+
+**P2 — Destinations API**
+
+- [x] `destinations-store.ts` (logical; physical `areas`)
+- [x] `GET /api/destinations`, `GET /api/destinations/:slug`
+- [x] `destination-public-read` + route registrar
+- [x] `destinations-public.test.ts`
+
+**P3 — Data backfill**
+
+- [x] `MONGO_MIGRATION_VERSION = 2025112503` + `runDestinationGeoMigrations`
+- [x] Dual-write `mirrorCatalogDestinationIds` on place/facility creates
+- [x] Mappers emit `destinationId` on place/facility DTO reads
+- [ ] All catalog write paths dual-write (extend in P4–P6)
+
+**P4–P10** — see plan; unchecked until shipped.
+
+**Gate:** `npm run verify:system:quick` each PR; **`npm run verify:system`** before P9 close.
+
 ### 8.6 Platform program (P0–P6) — CEO-approved Oct 2026
 
 **Purpose:** Whole-repo strategic refactor (scalability, performance, debt) **without losing context** between waves. **Engineering work is horizontal** (API registrar + `src/api/domains/*` + UI roots per §3.1) — JSON and gates track it; they do not replace code alignment. **CTO whole-system audit** (12 pillars, greenfield vs brownfield): `scripts/governance/cto-audit-pillars.json` · baseline `npm run system:audit` → `scripts/governance/system-audit-baseline.json`. **This section + machine JSON are the only living roadmap** — do not add `AUDIT_*`, `PLAN_*`, or parallel CTO markdown.

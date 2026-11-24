@@ -46,6 +46,7 @@ export type AreaPublicDTO = Pick<
   | 'imageUrl'
 >;
 
+/** @deprecated Inbound/legacy — prefer {@link destinationHubPath} from `./destination.js` for new links (MIG-DESTINATION-GEO). */
 export const areaDetailPath = (slug: string): string => `/area/${encodeURIComponent(slug)}`;
 
 export const exploreAreaQueryParam = 'area';

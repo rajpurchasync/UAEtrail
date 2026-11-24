@@ -88,7 +88,12 @@ export interface LocationDTO {
   region: string;
   /** Trailhead, wadi, or beach zone — list poster location chip (emirate stays in `region`). */
   areaLabel?: string | null;
-  /** Curated geographic area (`GET /areas/:slug`). */
+  /** Curated **Destination** id (`GET /destinations/:slug` target; today `GET /areas/:slug`). */
+  destinationId?: string | null;
+  /**
+   * @deprecated Dual-read — same id as {@link destinationId} during MIG-DESTINATION-GEO-2026 (P3–P8).
+   * Curated geographic area (`GET /areas/:slug`).
+   */
   areaId?: string | null;
   /** Leaf venue grouped under a destination hub place (`locations.id`). */
   parentPlaceId?: string | null;
@@ -998,8 +1003,12 @@ export interface ExploreMapItemDTO {
   contactPhone?: string | null;
   /** Time-bound map mode — `hosted` for published outings. */
   activityMode?: 'hosted' | null;
-  /** Curated area membership for explore `?area=` filters. */
+  /** Curated Destination membership for explore filters (`destination` query; legacy `area`). */
+  destinationId?: string | null;
+  destinationSlug?: string | null;
+  /** @deprecated Dual-read — same as {@link destinationId} until MIG P9. */
   areaId?: string | null;
+  /** @deprecated Prefer {@link destinationSlug}. */
   areaSlug?: string | null;
   geoRef?: import('./geo-hierarchy.js').GeoRef | null;
   /** Catalog place-hub bucket (`locations.areaLabel`) — under geo venue / curated area; not the leaf spot name. */
@@ -2260,6 +2269,14 @@ export {
   exploreAreaQueryParam,
   pointInAreaBounds,
 } from './area.js';
+
+export type { DestinationDTO, DestinationPublicDTO } from './destination.js';
+export {
+  destinationHubPath,
+  exploreDestinationQueryParam,
+  resolveDestinationId,
+  type DestinationAssignableRow,
+} from './destination.js';
 
 export {
   CURATED_AREA_SEED_IDS,

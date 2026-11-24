@@ -64,7 +64,9 @@ export interface Location {
   region: string;
   /** Trailhead / wadi / beach zone for explore list subtitle and poster location chip. */
   areaLabel: string | null;
-  /** Curated geographic area (`areas` collection). */
+  /** Curated Destination (`destinations` / `areas` collection). */
+  destinationId?: string | null;
+  /** @deprecated Dual-write until MIG-DESTINATION-GEO P9. */
   areaId?: string | null;
   /** Leaf rows grouped under a place hub (CPC — optional until admin seeds hubs). */
   parentPlaceId?: string | null;
@@ -176,7 +178,9 @@ export interface Activity {
   groupRegionLevels?: import('@uaetrail/shared-types').GroupRegionLevels | null;
   outingCategory?: OutingCategory | null;
   outingTopic?: OutingTopic | null;
-  /** Curated area slug target — set on publish from place or point-in-polygon. */
+  /** Curated Destination — set on publish from place or point-in-polygon. */
+  destinationId?: string | null;
+  /** @deprecated Dual-write until MIG-DESTINATION-GEO P9. */
   areaId?: string | null;
   geoRef?: import('@uaetrail/shared-types').GeoRef | null;
   /** Wire omits `seeking`; Mongo may retain until purge. */

@@ -8,6 +8,7 @@ import { newEntityId } from './entity-builders.js';
 import { withCatalogLifecycleFields } from './catalog-lifecycle-map.js';
 import { emitGeoPinChange, facilityToCountedPin } from './geo-write.js';
 import { resolveGeoRefForPin } from './geo-resolve.js';
+import { mirrorCatalogDestinationIds } from './destination-id-sync.js';
 
 export type MongoFacilityDoc = Omit<Facility, 'id'> & { _id: string };
 
@@ -155,12 +156,14 @@ export const createFacilityRecord = async (input: FacilityCreateInput): Promise<
     registeredByUserId: input.registeredByUserId,
   });
 
+  const regionIds = mirrorCatalogDestinationIds(input.areaId);
   const doc: MongoFacilityDoc = {
     _id: id,
     name: input.name,
     region: input.region,
     areaLabel: input.areaLabel ?? null,
     areaId: input.areaId,
+    destinationId: regionIds.destinationId,
     facilityKind: input.facilityKind,
     parentPlaceId: input.parentPlaceId ?? null,
     description: input.description,
@@ -232,12 +235,14 @@ export const createAdminFacility = async (input: AdminFacilityCreateInput): Prom
     registeredByUserId: input.createdByUserId,
   });
 
+  const adminRegionIds = mirrorCatalogDestinationIds(input.areaId);
   const doc: MongoFacilityDoc = {
     _id: id,
     name: input.name,
     region: input.region,
     areaLabel: input.areaLabel ?? null,
     areaId: input.areaId,
+    destinationId: adminRegionIds.destinationId,
     facilityKind: input.facilityKind,
     parentPlaceId: input.parentPlaceId ?? null,
     description: input.description,

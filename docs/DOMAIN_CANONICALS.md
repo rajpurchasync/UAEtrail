@@ -539,11 +539,13 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 
 **`src/utils/` policy:** cross-surface helpers only (`authRedirect`, `notificationRouting`, `authReturnContext`, `routingCatalog` consumers). Domain logic belongs in `src/explore/`, `src/member-plan/`, `src/member/` (`organisationPaths.ts`), `src/content/workspaceVocabulary.ts`, `src/components/<domain>/` — not new `utils/<domain>*.ts`.
 
-### 12.1 Geography — Area hub, Place catalog, Activity (authoritative)
+### 12.1 Geography — Destination hub, Place (site) catalog, Activity (authoritative)
 
-**Hierarchy:** **Country / state / region** (from map geography) → **Area** (admin-curated name, `areas` collection, stable `areaId` — **not a map pin**) → **Place** / **Facility** (coords) → **Activity** (geography only through a place).
+**Program MIG-DESTINATION-GEO-2026** ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.5): **AdminGeo** (`geoRef`, auto) → **Destination** (curated `destinationId`, `destinations` store — physical Mongo `areas` until P3) → **Place (site)** / **Facility** → **Activity** via `locationId`. Legacy **Area** / `areaId` / `/area/:slug` / `?area=` remain until P8–P9; wire helper **`resolveDestinationId`**.
 
-**One Area, many children (all via `place.areaId` on catalog rows):**
+**Hierarchy (target):** **Country / state / region** (from map geography) → **Destination** (admin-curated name — **not a map pin**) → **Place (site)** / **Facility** (coords) → **Activity** (geography only through a place).
+
+**One Destination, many children (via `destinationId` on catalog rows; dual-read `areaId` until P9):**
 
 | Child on the hub | `PlaceKind` / wire | Explore **Spots** map pins today | Area lens rollup / hub |
 |------------------|-------------------|----------------------------------|-------------------------|

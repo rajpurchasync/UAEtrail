@@ -92,5 +92,12 @@ describe('geographyTerminologyGuard (Place · Facility · Area)', () => {
     expect(area).toMatch(/Trails/);
     expect(area).not.toMatch(/venue/i);
   });
+
+  it('GEO-07: MIG-DESTINATION-GEO program wire exists (§8.5 + resolveDestinationId)', () => {
+    expect(read('docs/SYSTEM_COHERENCE.md')).toMatch(/MIG-DESTINATION-GEO-2026/);
+    expect(read('packages/shared-types/src/destination.ts')).toMatch(/resolveDestinationId/);
+    expect(read('packages/shared-types/src/destination.ts')).toMatch(/destinationHubPath/);
+    expect(read('packages/shared-types/src/wire-lexicon.ts')).toMatch(/DESTINATIONS/);
+  });
 });
 

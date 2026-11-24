@@ -17,7 +17,7 @@ const place = (id: string, updatedAt: string): ExploreMapItemDTO =>
     title: id,
     latitude: 25,
     longitude: 55,
-    path: `/trail/${id}`,
+    path: `/place/${id}`,
     catalogUpdatedAt: updatedAt,
   }) as ExploreMapItemDTO;
 

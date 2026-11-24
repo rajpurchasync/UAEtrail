@@ -24,8 +24,13 @@ export type MapVenueWireSource = 'venue';
 export type MapCatalogPlaceWireSource = 'catalog_place';
 
 /**
- * Admin-curated name (`areas` collection). Not a map pin.
- * Country / state / region come from map geography; Places/Facilities carry `areaId`.
+ * Admin-curated outdoor **Destination** (`destinations` / legacy `areas`).
+ * Not a map pin. Wire: `destinationId` + dual-read `areaId` until MIG P9.
+ */
+export type GeographyDestinationName = 'destination';
+
+/**
+ * @deprecated Use {@link GeographyDestinationName} in new copy — still `area` in legacy URLs until P8.
  */
 export type GeographyAreaName = 'area';
 
