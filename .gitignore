@@ -23,6 +23,7 @@ nginx/certs/*.key
 postgress_ca.pem
 qr-local.png
 dev-mobile-qr.png
+.vitest/
 .dev-mobile-tunnel.url
 .dev-mobile-tunnel.url
 
@@ -66,3 +67,6 @@ android/*.keystore
 
 # Advisory locks while Cursor / Claude Desktop share one working tree
 .cursor/agent-file-locks/
+
+# One-off agent bulk-rename scripts (local only)
+.cursor/gw*.mjs
