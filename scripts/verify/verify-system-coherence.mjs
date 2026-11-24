@@ -7,6 +7,7 @@ import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { stripNpmDevdirEnv, stripNpmDevdirFromProcess } from '../lib/strip-npm-devdir-env.mjs';
+import { buildSharedTypesWorkspace } from '../lib/ensure-shared-types-build.mjs';
 
 stripNpmDevdirFromProcess();
 
@@ -50,6 +51,7 @@ if (!quick) {
 }
 
 try {
+  buildSharedTypesWorkspace(root, childEnv(), { force: true, logPrefix: 'verify:system' });
   for (const [label, command] of steps) {
     run(label, command);
   }

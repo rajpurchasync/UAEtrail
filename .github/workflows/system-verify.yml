@@ -39,5 +39,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build shared-types (API vitest imports dist)
+        run: npm run build --workspace @uaetrail/shared-types
+
       - name: System coherence (full)
         run: npm run verify:system

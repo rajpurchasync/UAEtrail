@@ -7,6 +7,7 @@ import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { stripNpmDevdirEnv, stripNpmDevdirFromProcess } from '../lib/strip-npm-devdir-env.mjs';
+import { buildSharedTypesWorkspace } from '../lib/ensure-shared-types-build.mjs';
 
 stripNpmDevdirFromProcess();
 
@@ -19,6 +20,7 @@ const run = (label, command) => {
 };
 
 try {
+  buildSharedTypesWorkspace(root, childEnv(), { logPrefix: 'verify:host-member' });
   run('API typecheck', 'npm run typecheck:api');
   run('API host-member contracts', 'npm --workspace @uaetrail/api run test -- --run tests/host-member-contract.test.ts tests/member-publishing-workspace-access.test.ts');
   run('API member-discovery contracts', 'npm --workspace @uaetrail/api run test -- --run tests/member-discovery-contract.test.ts');

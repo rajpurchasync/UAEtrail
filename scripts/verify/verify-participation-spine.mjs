@@ -7,6 +7,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { stripNpmDevdirEnv, stripNpmDevdirFromProcess } from '../lib/strip-npm-devdir-env.mjs';
+import { buildSharedTypesWorkspace } from '../lib/ensure-shared-types-build.mjs';
 
 stripNpmDevdirFromProcess();
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -25,6 +26,7 @@ console.log(`  dmcpPhase: ${matrix.dmcpPhase ?? 'unknown'}`);
 
 // FE participation guards run via verify:domain:fe (GW-3).
 try {
+  buildSharedTypesWorkspace(root, childEnv(), { logPrefix: 'verify:participation-spine' });
   run(
     'API participation contracts',
     'npm --workspace @uaetrail/api run test -- --run tests/activity-rsvp-flow.test.ts tests/activity-participation-mode.test.ts tests/member-discovery-contract.test.ts tests/activity-engagement-policy-input.test.ts'

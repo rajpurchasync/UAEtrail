@@ -7,6 +7,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { stripNpmDevdirEnv, stripNpmDevdirFromProcess } from '../lib/strip-npm-devdir-env.mjs';
+import { buildSharedTypesWorkspace } from '../lib/ensure-shared-types-build.mjs';
 
 stripNpmDevdirFromProcess();
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -25,6 +26,7 @@ console.log(`  dmcpPhase: ${matrix.dmcpPhase ?? 'unknown'}`);
 
 // FE storefront guards + host-member run via verify:domain:fe / verify:host-member in verify:system (GW-3).
 try {
+  buildSharedTypesWorkspace(root, childEnv(), { logPrefix: 'verify:storefront-spine' });
   run(
     'Detail + shop lineage API',
     'npm --workspace @uaetrail/api run test -- --run tests/detail-surface-lineage-contract.test.ts'

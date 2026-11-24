@@ -7,6 +7,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { stripNpmDevdirEnv, stripNpmDevdirFromProcess } from '../lib/strip-npm-devdir-env.mjs';
+import { buildSharedTypesWorkspace } from '../lib/ensure-shared-types-build.mjs';
 
 stripNpmDevdirFromProcess();
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -31,6 +32,7 @@ try {
     'FE teams · plan · crews guards (delta)',
     'npx vitest run src/config/crewDiscoveryNamingGuard.test.ts src/config/peopleVocabularyTouchpointsGuard.test.ts src/config/crewPillarsAlignmentGuard.test.ts src/config/communityDiscoverGuard.test.ts packages/shared-types/src/member-group.test.ts packages/shared-types/src/crew-pillars.test.ts packages/shared-types/src/community-discover.test.ts src/crew-discovery/buildRecommendedCrewFeed.test.ts src/crew-discovery/crewBrowseFeatureGates.test.ts'
   );
+  buildSharedTypesWorkspace(root, childEnv(), { logPrefix: 'verify:people-graph-plan' });
   run(
     'API member group model',
     'npm --workspace @uaetrail/api run test -- --run tests/member-group-model-guard.test.ts tests/community-discover-contract.test.ts'

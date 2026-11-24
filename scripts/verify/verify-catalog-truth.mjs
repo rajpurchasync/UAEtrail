@@ -7,6 +7,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { stripNpmDevdirEnv, stripNpmDevdirFromProcess } from '../lib/strip-npm-devdir-env.mjs';
+import { buildSharedTypesWorkspace } from '../lib/ensure-shared-types-build.mjs';
 
 stripNpmDevdirFromProcess();
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -34,6 +35,7 @@ try {
     'FE lineage + pin hygiene',
     'npx vitest run src/config/catalogTruthGuard.test.ts src/config/memberAvailabilityLineageGuard.test.ts src/config/seekingPinHygieneGuard.test.ts'
   );
+  buildSharedTypesWorkspace(root, childEnv(), { logPrefix: 'verify:catalog-truth' });
   run(
     'API map + intent residue',
     'npm --workspace @uaetrail/api run test -- --run tests/data-source-coherence-guard.test.ts tests/participant-intent-m2-guards.test.ts tests/explore-seeking-activities-contract.test.ts tests/participant-intent-seeking-dual-write.test.ts tests/explore-map-seeking-discoverability.test.ts tests/participant-intent-residue-guard.test.ts'
