@@ -15,6 +15,21 @@ export const destinationHubPath = (slug: string): string =>
 /** Explore / list filter query key (canonical). Legacy `area` parsed as alias until P7. */
 export const exploreDestinationQueryParam = 'destination' as const;
 
+export type ExploreDestinationSlugQuery = {
+  destination?: string | null;
+  area?: string | null;
+};
+
+/** Curated destination hub slug from explore map URL (`destination` wins over legacy `area`). */
+export const resolveExploreDestinationSlugQuery = (
+  query: ExploreDestinationSlugQuery
+): string | null => {
+  const destination = query.destination?.trim().toLowerCase();
+  if (destination) return destination;
+  const area = query.area?.trim().toLowerCase();
+  return area || null;
+};
+
 export type DestinationAssignableRow = {
   destinationId?: string | null;
   /** @deprecated Dual-read until MIG P9 — prefer {@link destinationId}. */

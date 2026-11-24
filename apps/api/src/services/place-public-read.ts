@@ -35,6 +35,7 @@ export const loadExploreMapForViewer = (input: {
     cursor?: string;
     limit?: string;
     area?: string;
+    destination?: string;
     q?: string;
     country?: string;
     venue?: string;

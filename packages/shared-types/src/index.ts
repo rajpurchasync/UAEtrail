@@ -2275,7 +2275,9 @@ export {
   destinationHubPath,
   exploreDestinationQueryParam,
   resolveDestinationId,
+  resolveExploreDestinationSlugQuery,
   type DestinationAssignableRow,
+  type ExploreDestinationSlugQuery,
 } from './destination.js';
 
 export {

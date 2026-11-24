@@ -1,6 +1,7 @@
 import {
   exploreGeoQueryTokens,
   geoRefMatchesQuery,
+  resolveExploreDestinationSlugQuery,
   type ExploreMapItemDTO,
   type GeoRef,
 } from '@uaetrail/shared-types';
@@ -13,6 +14,7 @@ export type ExploreGeoSearchQuery = {
   q?: string;
   country?: string;
   area?: string;
+  destination?: string;
   venue?: string;
 };
 
@@ -25,7 +27,7 @@ export const exploreMapItemMatchesGeoSearch = (
 ): boolean => {
   const q = query.q?.trim() ?? '';
   const country = query.country?.trim() ?? '';
-  const area = query.area?.trim() ?? '';
+  const area = resolveExploreDestinationSlugQuery(query) ?? '';
   const venue = query.venue?.trim() ?? '';
   if (!q && !country && !area && !venue) return true;
 
@@ -67,7 +69,9 @@ export const filterExploreMapItemsByGeoSearch = (
   items: ExploreMapItemDTO[],
   query: ExploreGeoSearchQuery
 ): ExploreMapItemDTO[] => {
-  if (!query.q && !query.country && !query.area && !query.venue) return items;
+  if (!query.q && !query.country && !resolveExploreDestinationSlugQuery(query) && !query.venue) {
+    return items;
+  }
   return items.filter((item) => exploreMapItemMatchesGeoSearch(item, query));
 };
 
@@ -80,7 +84,7 @@ export const mongoGeoSearchFilter = async (query: ExploreGeoSearchQuery): Promis
   const tree = await loadGeoTree();
   const named = [
     { raw: query.country, kinds: ['country'] },
-    { raw: query.area, kinds: ['area', 'state'] },
+    { raw: resolveExploreDestinationSlugQuery(query) ?? undefined, kinds: ['area', 'state'] },
     { raw: query.venue, kinds: ['venue', 'area'] },
   ];
   for (const { raw, kinds } of named) {

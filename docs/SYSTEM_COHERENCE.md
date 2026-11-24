@@ -1063,7 +1063,14 @@ Mark `[x]` in the PR that completes the item.
 - [x] Mappers emit `destinationId` on place/facility DTO reads
 - [ ] All catalog write paths dual-write (extend in P4–P6)
 
-**P4–P10** — see plan; unchecked until shipped.
+**P4 — AdminGeo authority**
+
+- [x] `resolveExploreDestinationSlugQuery` (API + FE explore filter)
+- [x] `GET /explore/map` accepts `destination` (alias `area`)
+- [x] `assertActiveListedPlaceHasCatalogGeo` on admin place activate
+- [ ] Facility listed publish gate (P6)
+
+**P5–P10** — see plan; unchecked until shipped.
 
 **Gate:** `npm run verify:system:quick` each PR; **`npm run verify:system`** before P9 close.
 

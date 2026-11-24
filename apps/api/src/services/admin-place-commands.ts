@@ -33,6 +33,8 @@ import {
   updateAdminLocation,
 } from '../lib/admin-store.js';
 import { EXPLORE_VENUES_LIST_PATH } from '../lib/member-routes.js';
+import { mirrorCatalogDestinationIds } from '../lib/destination-id-sync.js';
+import { assertActiveListedPlaceHasCatalogGeo } from '../lib/listed-catalog-geo-gate.js';
 import { scheduleSideEffect } from '../lib/schedule-side-effect.js';
 import { dispatchNotification } from './notifications.js';
 import { notifyUserAdminAction } from './admin-notifications.js';
@@ -279,7 +281,7 @@ export const updateAdminPlaceRecord = async (input: {
     name: body.name,
     region: body.region,
     areaLabel: body.areaLabel !== undefined ? nextAreaLabel : undefined,
-    areaId: body.areaId !== undefined ? body.areaId?.trim() || null : undefined,
+    ...(body.areaId !== undefined ? mirrorCatalogDestinationIds(body.areaId?.trim() || null) : {}),
     parentPlaceId,
     countryCode: body.countryCode?.toUpperCase(),
     activityType: body.activityType ? toPrismaActivityType(body.activityType) : undefined,
@@ -314,6 +316,7 @@ export const updateAdminPlaceRecord = async (input: {
   });
 
   if (activating) {
+    assertActiveListedPlaceHasCatalogGeo(updated);
     const linkedAreaId = (updated.areaId ?? existing.areaId)?.trim();
     if (linkedAreaId) {
       const linkedArea = await findAreaById(linkedAreaId);

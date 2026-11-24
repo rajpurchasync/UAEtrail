@@ -1,11 +1,14 @@
 import type { AreaPublicDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { exploreAreaQueryParam } from '@uaetrail/shared-types';
+import { exploreAreaQueryParam, exploreDestinationQueryParam } from '@uaetrail/shared-types';
 
-export { exploreAreaQueryParam };
+export { exploreAreaQueryParam, exploreDestinationQueryParam };
 
 export const parseExploreAreaSlug = (
   searchParams: Pick<URLSearchParams, 'get'>
-): string | null => searchParams.get(exploreAreaQueryParam)?.trim().toLowerCase() || null;
+): string | null =>
+  searchParams.get(exploreDestinationQueryParam)?.trim().toLowerCase() ||
+  searchParams.get(exploreAreaQueryParam)?.trim().toLowerCase() ||
+  null;
 
 export const exploreMapItemMatchesAreaSlug = (
   item: ExploreMapItemDTO,
@@ -14,6 +17,7 @@ export const exploreMapItemMatchesAreaSlug = (
   const normalized = areaSlug.trim().toLowerCase();
   if (!normalized) return true;
   if (item.areaSlug?.toLowerCase() === normalized) return true;
+  if (item.destinationSlug?.toLowerCase() === normalized) return true;
   return false;
 };
 

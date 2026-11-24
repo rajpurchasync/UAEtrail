@@ -28,6 +28,7 @@ import { finishCatalogEtag, readCatalogResponseEtag } from '../../lib/explore-ca
 import { readExploreMapMemoryCache } from '../../lib/explore-map-cache.js';
 import type { ExploreMapRouteResult } from '../../lib/explore-map-route.js';
 import { sendNotModifiedIfMatch } from '../../lib/http-etag.js';
+import { resolveExploreDestinationSlugQuery } from '@uaetrail/shared-types';
 import {
   eventIdParamSchema,
   listFilterSchema,
@@ -41,8 +42,16 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     try {
       const query = req.query as Record<string, string | undefined>;
       const projection = query.projection?.trim();
+      const destinationSlug = resolveExploreDestinationSlugQuery({
+        area: query.area,
+        destination: query.destination,
+      });
       const unscoped =
-        !query.bbox && !query.cursor && !query.limit && !query.area && !query.sources;
+        !query.bbox &&
+        !query.cursor &&
+        !query.limit &&
+        !destinationSlug &&
+        !query.sources;
       const catalogFresh = unscoped && projection !== 'full' && readExploreMapMemoryCache() != null;
       if (catalogFresh && sendNotModifiedIfMatch(req, res, await readCatalogResponseEtag('map'))) return;
       const data = await loadExploreMapForViewer({
@@ -50,7 +59,8 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
           bbox: query.bbox,
           cursor: query.cursor,
           limit: query.limit,
-          area: query.area,
+          area: destinationSlug ?? undefined,
+          destination: query.destination,
           q: query.q,
           country: query.country,
           venue: query.venue,

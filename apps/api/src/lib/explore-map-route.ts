@@ -1,4 +1,8 @@
-import { isPlaceMapSource, type ExploreMapItemDTO } from '@uaetrail/shared-types';
+import {
+  isPlaceMapSource,
+  resolveExploreDestinationSlugQuery,
+  type ExploreMapItemDTO,
+} from '@uaetrail/shared-types';
 import { buildExploreMapPayload } from './explore-map.js';
 import { readExploreMapMemoryCacheGeneration } from './explore-map-cache.js';
 import {
@@ -19,6 +23,8 @@ export type ExploreMapRouteQuery = {
   cursor?: string;
   limit?: string;
   area?: string;
+  /** Curated destination hub slug — canonical; `area` is legacy alias (MIG-DESTINATION-GEO). */
+  destination?: string;
   /** `full` keeps nested activity/venue payloads; default is slim pin projection. */
   projection?: string;
   /** Comma-separated map sources. Omitted = full catalog (list and other readers). */
@@ -72,7 +78,7 @@ export const resolveExploreMapCatalogItemsForQuery = async (
   if (bboxRaw && isExploreMapBboxEnabled()) {
     const bbox = parseExploreMapBboxParam(bboxRaw);
     const limit = parseExploreMapLimitParam(query.limit);
-    const areaSlug = query.area?.trim() || null;
+    const areaSlug = resolveExploreDestinationSlugQuery(query);
     const page = buildExploreMapBboxPage({
       items,
       bbox,
