@@ -1,9 +1,24 @@
 import {
-  discoveryModalitiesFromSlots,
   filterDirectoryBrowseCards,
   guideEngagementTermsBrowseLineFromSlots,
+  isFixedAvailabilitySlot,
+  isOpenAvailabilitySlot,
   memberHasGuideCapacityInSlots,
 } from '@uaetrail/shared-types';
+import {
+  EXPLORE_CREWS_AVAILABILITY_FIXED_LABEL,
+  EXPLORE_CREWS_AVAILABILITY_FLEXIBLE_LABEL,
+} from '../content/exploreCrewsCopy';
+import type { ExploreActivityDatePreset } from '../explore/exploreActivityDateFilter';
+import {
+  availabilityMatchesFindCrewSearchDates,
+  crewBrowseAvailabilityDetailFromPerson,
+  crewBrowseAvailabilityLocationLabel,
+  crewBrowseAvailabilitySocialLabel,
+  sortAvailabilityPeopleNetworkFirst,
+} from './availabilityBrowseCardCopy';
+export { sortAvailabilityPeopleNetworkFirst } from './availabilityBrowseCardCopy';
+import type { CrewsAvailabilityShapeFilter } from '../list/crews/crewsOpenSegment';
 import type {
   DiscoverCrewRecommendationBucket,
   ExploreAvailablePersonDTO,
@@ -16,8 +31,6 @@ import { proMembershipPath } from '../config/routingCatalog';
 import {
   EXPLORE_CREWS_EVERYONE_PRO_LOCK_LABEL,
   EXPLORE_CREWS_FRIEND_NO_OUTING_FOR_FILTER,
-  crewBrowseAvailabilityDateLine,
-  crewBrowseAvailabilitySentence,
   crewBrowseGoingSentence,
 } from '../content/exploreCrewsCopy';
 import { memberProfileLink } from '../member/memberProfileLink';
@@ -25,12 +38,10 @@ import { memberProfileRoleBadgeLabel } from '../member/memberProfileRoleBadge';
 import { memberProfileRoleLabel } from '../member/memberProfileRoleLabel';
 import { exploreMapItemPathFromAvailabilityRow } from '../explore/memberDiscoveryAvailabilityRow';
 import { explorePath } from '../explore/routing';
+import { findCrewAvailabilityNarrativeFromDetail } from './findCrewAvailabilityNarrative';
+import { findCrewProposePlanPath } from '../list/explorer/findCrewProposePlanPath';
+import { pickProposePlanAnchorSlot } from '../list/explorer/pickProposePlanAnchorSlot';
 import type { CrewBrowseMemberRowProps } from './panel/crewBrowse/CrewBrowseMemberRow';
-import {
-  availabilityKindLabels,
-  scheduleModalityLabels,
-} from './panel/crewBrowse/crewBrowseAvailabilityKinds';
-
 /** L1 projection for people-browse list rows (panel + list `listCat=people`). */
 export type MemberBrowseRowVm = CrewBrowseMemberRowProps & {
   key: string;
@@ -52,16 +63,54 @@ export const filterAvailabilityByCapacity = (
 export const availabilityPersonShowsGuideCapacityBadge = (person: ExploreAvailablePersonDTO): boolean =>
   memberHasGuideCapacityInSlots(person.slots ?? []);
 
+export const availabilityShapeLabelForPerson = (person: ExploreAvailablePersonDTO): string | null => {
+  const slots = person.slots ?? [];
+  const hasOpen = slots.some(isOpenAvailabilitySlot);
+  const hasFixed = slots.some(isFixedAvailabilitySlot);
+  if (hasOpen && hasFixed) {
+    return `${EXPLORE_CREWS_AVAILABILITY_FLEXIBLE_LABEL} · ${EXPLORE_CREWS_AVAILABILITY_FIXED_LABEL}`;
+  }
+  if (hasFixed) return EXPLORE_CREWS_AVAILABILITY_FIXED_LABEL;
+  if (hasOpen) return EXPLORE_CREWS_AVAILABILITY_FLEXIBLE_LABEL;
+  return null;
+};
+
+export const filterAvailabilityPeopleByShape = (
+  people: ExploreAvailablePersonDTO[],
+  shape: CrewsAvailabilityShapeFilter
+): ExploreAvailablePersonDTO[] => {
+  if (shape === 'all') return people;
+  return people.filter((person) => {
+    const slots = person.slots ?? [];
+    if (shape === 'flexible') return slots.some(isOpenAvailabilitySlot);
+    return slots.some(isFixedAvailabilitySlot);
+  });
+};
+
+export type BuildMemberBrowseAvailabilityRowOptions = {
+  followedUserIds?: ReadonlySet<string>;
+  findCrewDiscovery?: boolean;
+  activityDatePreset?: ExploreActivityDatePreset;
+};
+
 export const buildMemberBrowseRowFromAvailability = (
-  person: ExploreAvailablePersonDTO
+  person: ExploreAvailablePersonDTO,
+  options?: BuildMemberBrowseAvailabilityRowOptions
 ): MemberBrowseRowVm => {
-  const modalityLabels = scheduleModalityLabels(discoveryModalitiesFromSlots(person.slots ?? []));
-  const labels = modalityLabels.length
-    ? modalityLabels
-    : availabilityKindLabels(person.kinds.filter((k) => k !== 'guide'));
+  const slots = person.slots ?? [];
   const showGuideBadge = availabilityPersonShowsGuideCapacityBadge(person);
   const guideTermsLine = showGuideBadge
-    ? guideEngagementTermsBrowseLineFromSlots(person.slots ?? [])
+    ? guideEngagementTermsBrowseLineFromSlots(slots)
+    : null;
+  const availabilityDetail = crewBrowseAvailabilityDetailFromPerson(person);
+  const findCrew = Boolean(options?.findCrewDiscovery);
+  const findCrewNarrative =
+    findCrew && availabilityDetail
+      ? findCrewAvailabilityNarrativeFromDetail(availabilityDetail, slots)
+      : undefined;
+  const modalities = slots.flatMap((slot) => slot.modalities ?? []);
+  const proposePlanAnchorSlot = findCrew
+    ? pickProposePlanAnchorSlot(slots, options?.activityDatePreset)
     : null;
   return {
     key: person.userId,
@@ -69,12 +118,31 @@ export const buildMemberBrowseRowFromAvailability = (
     profileHref: memberProfileLink(person.userId, 'available'),
     displayName: person.displayName,
     avatarUrl: person.avatarUrl ?? null,
-    buddyHighlight: person.isFriend,
-    title: crewBrowseAvailabilitySentence(person.displayName, labels, person.slots),
-    dateLine: crewBrowseAvailabilityDateLine(person.slots),
-    titleClamp: 'wrap',
-    badge: showGuideBadge ? { label: 'Guide' } : null,
-    footnote: guideTermsLine,
+    friendHighlight: person.isFriend,
+    socialLabel: crewBrowseAvailabilitySocialLabel(person, options?.followedUserIds),
+    title: person.displayName,
+    location: crewBrowseAvailabilityLocationLabel(person),
+    availabilityDetail,
+    findCrewNarrative,
+    proposePlanHref: findCrew
+      ? findCrewProposePlanPath(person.userId, {
+          modalities,
+          availabilitySlotId: proposePlanAnchorSlot?.slotId ?? null,
+        })
+      : undefined,
+    proposePlanAnchorSlot: findCrew ? proposePlanAnchorSlot : undefined,
+    rowPresentation: findCrew ? 'findCrew' : 'default',
+    canMessage: options?.findCrewDiscovery ? person.isFriend : false,
+    canOpenMemberProfile: person.canOpenMemberProfile !== false,
+    matchesSearchDates:
+      options?.findCrewDiscovery && options.activityDatePreset
+        ? availabilityMatchesFindCrewSearchDates(slots, options.activityDatePreset)
+        : false,
+    roleTitle: options?.findCrewDiscovery
+      ? memberProfileRoleLabel(person.profileRoleLabel)
+      : undefined,
+    titleClamp: 'truncate',
+    footnote: findCrew ? null : showGuideBadge ? guideTermsLine : null,
   };
 };
 
@@ -86,7 +154,7 @@ export const buildMemberBrowseRowFromGoing = (person: SocialPersonRowDTO): Membe
     profileHref: memberProfileLink(person.userId, 'friends'),
     displayName: person.displayName,
     avatarUrl: person.avatarUrl,
-    buddyHighlight: true,
+    friendHighlight: true,
     title: hasTrip
       ? crewBrowseGoingSentence(person.displayName, person.upcomingTrip)
       : person.displayName,
@@ -133,7 +201,7 @@ export const buildMemberBrowseRowsFromDirectory = (
         : memberProfileLink(card.id, 'discover'),
       displayName: card.displayName,
       avatarUrl: card.avatarUrl,
-      buddyHighlight: false,
+      friendHighlight: false,
       title: card.displayName,
       location,
       roleTitle,
@@ -152,7 +220,7 @@ export const buildMemberBrowseRowFromRosterAvailability = (
   actionHref: exploreMapItemPathFromAvailabilityRow(row),
   displayName: row.displayName,
   avatarUrl: row.avatarUrl,
-  buddyHighlight: false,
+  friendHighlight: false,
   title: `Available: ${row.availabilityTitle}`,
   titleClamp: 'line-clamp-2',
 });

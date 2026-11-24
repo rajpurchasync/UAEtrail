@@ -38,7 +38,7 @@ export type ListDiscoveryCrewsCategoryModelInput = {
 
 export const useListDiscoveryCrewsCategoryModel = ({
   enabled,
-  user,
+  user: _user,
   draftQuery,
   crewBrowseLane,
   crewPeopleFacet,
@@ -46,8 +46,7 @@ export const useListDiscoveryCrewsCategoryModel = ({
   activityDatePreset,
   areaSlug,
 }: ListDiscoveryCrewsCategoryModelInput) => {
-  const signedIn = Boolean(user);
-  const active = enabled && signedIn;
+  const active = enabled;
   const browseState: CrewBrowseState = {
     lane: crewBrowseLane,
     facet: crewPeopleFacet,
@@ -153,21 +152,15 @@ export const useListDiscoveryCrewsCategoryAugment = ({
   );
 
   const crewsStatCounts = useMemo(() => {
-    const buddiesCount = memberRoster.loading ? null : memberRoster.friendsGoing.length;
     const markedCount = memberAvailability.loading ? 0 : memberAvailability.people.length;
     const mapSignalsCount = exploreCatalogLoading ? 0 : availabilityCatalogItems.length;
     const availableCount = markedCount + mapSignalsCount;
-    const everyoneCount = memberRoster.loading ? null : memberRoster.directory.length;
     return {
-      recommended: null,
-      friends: buddiesCount,
       available:
         memberRoster.loading || memberAvailability.loading || exploreCatalogLoading ? null : availableCount,
-      everyone: everyoneCount,
     };
   }, [
     memberRoster.loading,
-    memberRoster.friendsGoing.length,
     memberRoster.directory.length,
     memberAvailability.loading,
     memberAvailability.people.length,

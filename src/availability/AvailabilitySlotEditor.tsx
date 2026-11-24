@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import {
   type AvailabilityEngagementTerms,
   type AvailabilitySlotCapacity,
@@ -35,6 +35,11 @@ import {
 } from './availabilitySlotComposeEngine';
 import { GuideEngagementTermsFields } from './GuideEngagementTermsFields';
 import { useMemberStatus } from '../hooks/useMemberStatus';
+import { AvailabilityDestinationRegionsField } from './AvailabilityDestinationRegionsField';
+import {
+  AvailabilityOpenLogisticsFields,
+  type AvailabilityOpenLogisticsState,
+} from './AvailabilityOpenLogisticsFields';
 
 const MODALITY_LABELS: Record<ScheduleModality, string> = {
   hiking: 'Hiking',
@@ -53,6 +58,12 @@ const locationModeFromData = (
   return 'open';
 };
 
+export type AvailabilitySlotEditorSection = 'full' | 'days' | 'details';
+
+export type AvailabilitySlotEditorHandle = {
+  validateDaysStep: () => string | null;
+};
+
 export type AvailabilitySlotEditorProps = {
   /** `fab` = explore compose sheet (no duplicate intro). */
   variant?: 'plan' | 'fab';
@@ -60,16 +71,26 @@ export type AvailabilitySlotEditorProps = {
   prefillAreaId?: string | null;
   /** Compose `intent:open` prefill (`capacity`, default modalities). */
   composePrefill?: OpenAvailabilityComposePrefill | null;
+  /** When false, capacity was chosen in the intent compose wizard — hide the guide toggle. */
+  showCapacityChooser?: boolean;
+  /** Split open compose into calendar vs detail steps (`intent:open` wizard). */
+  editorSection?: AvailabilitySlotEditorSection;
   onSaved?: () => void | Promise<void>;
 };
 
 /** Unified open-slot editor — plan lens + `intent:open` compose (MIG-SG-B2). */
-export const AvailabilitySlotEditor = ({
-  variant = 'plan',
-  prefillAreaId = null,
-  composePrefill = null,
-  onSaved,
-}: AvailabilitySlotEditorProps = {}) => {
+export const AvailabilitySlotEditor = forwardRef<AvailabilitySlotEditorHandle, AvailabilitySlotEditorProps>(
+  function AvailabilitySlotEditor(
+    {
+      variant = 'plan',
+      prefillAreaId = null,
+      composePrefill = null,
+      showCapacityChooser = true,
+      editorSection = 'full',
+      onSaved,
+    }: AvailabilitySlotEditorProps = {},
+    ref
+  ) {
   const { data, loading, saving, error, save } = useMemberAvailability(true);
   const { canHostPaidActivities } = useMemberStatus();
   const fabAreaPrefillKey = useRef<string | null>(null);
@@ -89,6 +110,24 @@ export const AvailabilitySlotEditor = ({
   const [guideEngagementTerms, setGuideEngagementTerms] = useState<AvailabilityEngagementTerms>(() =>
     defaultGuideEngagementTerms()
   );
+  const [destinationRegions, setDestinationRegions] = useState<string[]>([]);
+  const [logistics, setLogistics] = useState<AvailabilityOpenLogisticsState>({
+    partySize: 1,
+    transportMode: null,
+    selfVehicleType: null,
+    rideshareSeatsNeeded: 1,
+  });
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      validateDaysStep: () => {
+        if (selectedDays.size === 0) return 'Select at least one day on the calendar.';
+        return null;
+      },
+    }),
+    [selectedDays]
+  );
 
   const regionOptions = useMemo(
     () => mergeVenueStateFilterOptionsWithAreas(publishedAreas, 'AE').map((row) => row.key),
@@ -100,6 +139,13 @@ export const AvailabilitySlotEditor = ({
     const openEditor = openEditorStateFromMemberAvailability(data);
     setCapacity(openEditor.capacity);
     setModalities(openEditor.modalities);
+    setDestinationRegions([...(openEditor.destinationRegions ?? [])]);
+    setLogistics({
+      partySize: openEditor.partySize ?? 1,
+      transportMode: openEditor.transportMode,
+      selfVehicleType: openEditor.selfVehicleType,
+      rideshareSeatsNeeded: openEditor.rideshareSeatsNeeded ?? 1,
+    });
     setVisibility(normalizeAvailabilityVisibility(data.visibility ?? 'friends'));
     setNote(data.note ?? '');
     const picks = data.slots.length ? memberAvailabilitySlotsAsDayPicks(data.slots) : [];
@@ -210,6 +256,11 @@ export const AvailabilitySlotEditor = ({
           region,
           areaId,
           guideEngagementTerms: availableAsGuide ? guideEngagementTerms : null,
+          destinationRegions,
+          partySize: logistics.partySize,
+          transportMode: logistics.transportMode,
+          selfVehicleType: logistics.selfVehicleType,
+          rideshareSeatsNeeded: logistics.rideshareSeatsNeeded,
         },
         data
       );
@@ -239,7 +290,7 @@ export const AvailabilitySlotEditor = ({
 
   return (
     <div className={shellClass}>
-      {variant === 'plan' ? (
+      {variant === 'plan' && editorSection !== 'details' ? (
         <div>
           <h2 className="text-lg font-semibold text-slate-900">{UPL_INTENT_PLAN_SECTION}</h2>
           <p className="mt-1 text-sm text-slate-600">
@@ -249,6 +300,7 @@ export const AvailabilitySlotEditor = ({
         </div>
       ) : null}
 
+      {editorSection === 'full' || editorSection === 'days' ? (
       <fieldset className="space-y-3">
         <legend className="text-sm font-semibold text-slate-900">Select available days</legend>
         <p className="text-xs text-slate-600">Tap days on the calendar — select as many as you like, across months.</p>
@@ -263,25 +315,30 @@ export const AvailabilitySlotEditor = ({
           </p>
         ) : null}
       </fieldset>
+      ) : null}
 
-      <fieldset className="space-y-2">
-        <legend className="text-sm font-semibold text-slate-900">{UPL_INTENT_AVAILABLE_AS_GUIDE}</legend>
-        <p className="text-xs text-slate-600">
-          Optional — show on Find crew when others filter by Guides (intent signal, not a pro directory profile).
-        </p>
-        <button
-          type="button"
-          onClick={() => setAvailableAsGuide(!availableAsGuide)}
-          className={`rounded-full px-3 py-1.5 text-sm font-semibold ${
-            availableAsGuide ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-700'
-          }`}
-          aria-pressed={availableAsGuide}
-        >
-          {UPL_INTENT_AVAILABLE_AS_GUIDE}
-        </button>
-      </fieldset>
+      {editorSection === 'full' || editorSection === 'details' ? (
+      <>
+      {showCapacityChooser ? (
+        <fieldset className="space-y-2">
+          <legend className="text-sm font-semibold text-slate-900">{UPL_INTENT_AVAILABLE_AS_GUIDE}</legend>
+          <p className="text-xs text-slate-600">
+            Optional — show on Find crew when others filter by Guides (intent signal, not a pro directory profile).
+          </p>
+          <button
+            type="button"
+            onClick={() => setAvailableAsGuide(!availableAsGuide)}
+            className={`rounded-full px-3 py-1.5 text-sm font-semibold ${
+              availableAsGuide ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-700'
+            }`}
+            aria-pressed={availableAsGuide}
+          >
+            {UPL_INTENT_AVAILABLE_AS_GUIDE}
+          </button>
+        </fieldset>
+      ) : null}
 
-      {availableAsGuide ? (
+      {(availableAsGuide || (!showCapacityChooser && capacity === 'guide')) ? (
         <GuideEngagementTermsFields
           value={guideEngagementTerms}
           onChange={setGuideEngagementTerms}
@@ -372,6 +429,19 @@ export const AvailabilitySlotEditor = ({
         ) : null}
       </fieldset>
 
+      {locationMode === 'open' ? (
+        <AvailabilityDestinationRegionsField
+          publishedAreas={publishedAreas}
+          selected={destinationRegions}
+          onChange={setDestinationRegions}
+        />
+      ) : null}
+
+      <AvailabilityOpenLogisticsFields
+        value={logistics}
+        onChange={(patch) => setLogistics((prev) => ({ ...prev, ...patch }))}
+      />
+
       <label className="block text-sm font-medium text-slate-700">
         Who can see this
         <select
@@ -406,6 +476,8 @@ export const AvailabilitySlotEditor = ({
       {variant === 'plan' && matchPreview ? (
         <AvailabilityMatchPreview preview={matchPreview} onDone={() => setMatchPreview(null)} />
       ) : null}
+      </>
+      ) : null}
     </div>
   );
-};
+});

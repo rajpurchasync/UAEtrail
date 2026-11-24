@@ -11,23 +11,28 @@ import {
   EXPLORE_CREWS_CONNECT_EMPTY,
   EXPLORE_CREWS_FRIENDS_GOING_EMPTY,
   EXPLORE_CREWS_LOADING,
-  EXPLORE_CREWS_MAP_SIGNALS_TITLE,
 } from '../../../content/exploreCrewsCopy';
-import type { CrewsAvailableOpenLens } from '@/list/crews/crewsOpenSegment';
+import type { ExploreActivityDatePreset } from '@/explore/exploreActivityDateFilter';
+import type { CrewsAvailabilityShapeFilter } from '@/list/crews/crewsOpenSegment';
 import {
   buildMemberBrowseRowFromAvailability,
   buildMemberBrowseRowFromGoing,
   buildMemberBrowseRowsFromDirectory,
   filterAvailabilityByCapacity,
+  filterAvailabilityPeopleByShape,
   filterDirectoryBrowseCards,
+  sortAvailabilityPeopleNetworkFirst,
   type MemberBrowseRowVm,
 } from '../../memberBrowseRowModel';
+import { FIND_CREW_PEOPLE_EMPTY } from '@/list/explorer/findCrewSearchCopy';
 import type { CrewsAvailabilityGuideFilter } from '@/list/crews/crewsOpenSegment';
 import { CREW_BROWSE_LIST_STACK } from './crewBrowseListTheme';
 import { CrewBrowseListEmpty, CrewBrowseListError, CrewBrowseListLoading } from './CrewBrowseListStates';
 import { CrewBrowseMemberRow } from './CrewBrowseMemberRow';
 import { CrewBrowseAvailabilityMapList } from './CrewBrowseAvailabilityMapList';
 import { ExploreGuestSignInCard } from '@/explore/ui/ExploreGuestSignInCard';
+import { crewBrowseHrefForGuest } from '@/crew-discovery/crewGuestBrowse';
+import { messagesToUserPath } from '@/config/routingCatalog';
 
 export type CrewBrowseTabKey = 'available' | 'going' | 'connect';
 
@@ -52,20 +57,42 @@ export type CrewBrowseTabContentProps = {
   onOpenAvailabilityCatalogItem: (item: ExploreMapItemDTO) => void;
   onOfferRideshareForAvailabilityItem?: (item: ExploreMapItemDTO) => void;
   friendUserIds?: Set<string>;
-  /** Crews list — filter Available combined lanes. */
-  crewsOpenLens?: CrewsAvailableOpenLens;
-  /** Calendar availability rows — intent `guide` kind filter. */
+  /** Flexible vs fixed intent — not map vs calendar chrome. */
+  availabilityShape?: CrewsAvailabilityShapeFilter;
   availabilityGuideFilter?: CrewsAvailabilityGuideFilter;
   onOpenAvailability?: () => void;
+  /** Find crew search — member rows only (no `FIXED` map catalog cards). */
+  memberAvailabilityRowsOnly?: boolean;
+  followedUserIds?: ReadonlySet<string>;
+  activityDatePreset?: ExploreActivityDatePreset;
 };
 
-const MemberBrowseRowList = ({ rows }: { rows: MemberBrowseRowVm[] }) => (
+const MemberBrowseRowList = ({
+  rows,
+  isSignedIn,
+}: {
+  rows: MemberBrowseRowVm[];
+  isSignedIn: boolean;
+}) => (
   <ul className={CREW_BROWSE_LIST_STACK}>
     {rows.map((row) => {
-      const { key, userId: _userId, ...props } = row;
+      const { key, userId, profileHref, actionHref, proposePlanHref, ...props } = row;
+      const profile = crewBrowseHrefForGuest(profileHref, isSignedIn);
+      const messageHref = crewBrowseHrefForGuest(messagesToUserPath(userId), isSignedIn);
+      const proposePlan = proposePlanHref
+        ? crewBrowseHrefForGuest(proposePlanHref, isSignedIn)
+        : undefined;
       return (
         <li key={key}>
-          <CrewBrowseMemberRow {...props} />
+          <CrewBrowseMemberRow
+            {...props}
+            userId={userId}
+            profileHref={profile}
+            proposePlanHref={proposePlan}
+            messageHref={messageHref}
+            isSignedIn={isSignedIn}
+            actionHref={actionHref ? crewBrowseHrefForGuest(actionHref, isSignedIn) : undefined}
+          />
         </li>
       );
     })}
@@ -90,20 +117,33 @@ export const CrewBrowseTabContent = ({
   onOpenAvailabilityCatalogItem,
   onOfferRideshareForAvailabilityItem,
   friendUserIds,
-  crewsOpenLens = 'all',
+  availabilityShape = 'all',
   availabilityGuideFilter = 'all',
   onOpenAvailability,
+  memberAvailabilityRowsOnly = false,
+  followedUserIds,
+  activityDatePreset,
 }: CrewBrowseTabContentProps) => {
-  if (tab !== 'available' && !isSignedIn) {
+  if (tab === 'going' && !isSignedIn) {
     return <ExploreGuestSignInCard intent="explore-people-browse" compact />;
   }
 
   if (tab === 'available') {
-    const showMapSignals = crewsOpenLens === 'all' || crewsOpenLens === 'open';
-    const showMarked = crewsOpenLens === 'all' || crewsOpenLens === 'marked';
+    const showFixedCatalog =
+      !memberAvailabilityRowsOnly && (availabilityShape === 'all' || availabilityShape === 'fixed');
+    const rosterSource = memberAvailabilityRowsOnly
+      ? sortAvailabilityPeopleNetworkFirst(availabilityPeople, followedUserIds)
+      : availabilityPeople;
+    const byShape = filterAvailabilityPeopleByShape(rosterSource, availabilityShape);
+    const markedPeople = filterAvailabilityByCapacity(byShape, availabilityGuideFilter);
+    const buildOpts = memberAvailabilityRowsOnly
+      ? { followedUserIds, findCrewDiscovery: true as const, activityDatePreset }
+      : undefined;
+    const markedRows = markedPeople.map((person) => buildMemberBrowseRowFromAvailability(person, buildOpts));
+    const emptyCopy = memberAvailabilityRowsOnly ? FIND_CREW_PEOPLE_EMPTY : EXPLORE_CREWS_AVAILABILITY_EMPTY;
 
     const mapSignalsBlock =
-      showMapSignals ? (
+      showFixedCatalog ? (
         <CrewBrowseAvailabilityMapList
           availabilityCatalogItems={availabilityCatalogItems}
           exploreCatalogItems={exploreCatalogItems}
@@ -114,25 +154,21 @@ export const CrewBrowseTabContent = ({
         />
       ) : null;
 
-    const markedPeople = filterAvailabilityByCapacity(availabilityPeople, availabilityGuideFilter);
-    const markedRows = markedPeople.map(buildMemberBrowseRowFromAvailability);
-    let markedBlock: ReactNode = null;
-    if (showMarked) {
-      if (!isSignedIn) {
-        markedBlock = <ExploreGuestSignInCard intent="explore-people-browse" compact />;
-      } else if (availabilityLoading) {
-        markedBlock = <CrewBrowseListLoading label={EXPLORE_CREWS_LOADING} />;
-      } else if (availabilityError) {
-        if (crewBrowseAuthError(availabilityError)) {
-          markedBlock = <ExploreGuestSignInCard intent="explore-people-browse" compact />;
-        } else {
-          markedBlock = <CrewBrowseListError message={availabilityError} />;
-        }
-      } else if (markedRows.length === 0) {
-        markedBlock = (
+    let peopleBlock: ReactNode = null;
+    if (availabilityLoading) {
+      peopleBlock = <CrewBrowseListLoading label={EXPLORE_CREWS_LOADING} />;
+    } else if (availabilityError) {
+      if (crewBrowseAuthError(availabilityError)) {
+        peopleBlock = <ExploreGuestSignInCard intent="explore-people-browse" compact />;
+      } else {
+        peopleBlock = <CrewBrowseListError message={availabilityError} />;
+      }
+    } else if (markedRows.length === 0) {
+      peopleBlock =
+        showFixedCatalog && availabilityCatalogItems.length > 0 ? null : (
           <CrewBrowseListEmpty>
-            <p>{EXPLORE_CREWS_AVAILABILITY_EMPTY}</p>
-            {onOpenAvailability ? (
+            <p>{emptyCopy}</p>
+            {!memberAvailabilityRowsOnly && onOpenAvailability ? (
               <button
                 type="button"
                 className="mt-3 inline-block font-semibold text-emerald-700"
@@ -143,31 +179,35 @@ export const CrewBrowseTabContent = ({
             ) : null}
           </CrewBrowseListEmpty>
         );
-      } else {
-        markedBlock = <MemberBrowseRowList rows={markedRows} />;
-      }
+    } else {
+      peopleBlock = <MemberBrowseRowList rows={markedRows} isSignedIn={isSignedIn} />;
     }
 
-    if (!showMapSignals) return <>{markedBlock}</>;
-    if (!showMarked) return <>{mapSignalsBlock}</>;
+    const hasMap = showFixedCatalog && availabilityCatalogItems.length > 0;
+    const hasPeople =
+      !availabilityLoading && !availabilityError && markedRows.length > 0;
+
+    if (!hasMap && !hasPeople && !availabilityLoading && !availabilityError) {
+      return (
+        <CrewBrowseListEmpty>
+          <p>{emptyCopy}</p>
+          {!memberAvailabilityRowsOnly && onOpenAvailability ? (
+            <button
+              type="button"
+              className="mt-3 inline-block font-semibold text-emerald-700"
+              onClick={onOpenAvailability}
+            >
+              Add or edit your dates
+            </button>
+          ) : null}
+        </CrewBrowseListEmpty>
+      );
+    }
 
     return (
-      <div className="space-y-6">
-        <section aria-labelledby="crews-map-signals-heading">
-          <h3
-            id="crews-map-signals-heading"
-            className="mb-2 text-sm font-bold uppercase tracking-wide text-neutral-500"
-          >
-            {EXPLORE_CREWS_MAP_SIGNALS_TITLE}
-          </h3>
-          {mapSignalsBlock}
-        </section>
-        <section aria-labelledby="crews-marked-heading">
-          <h3 id="crews-marked-heading" className="mb-2 text-sm font-bold uppercase tracking-wide text-neutral-500">
-            Marked available
-          </h3>
-          {markedBlock}
-        </section>
+      <div className={CREW_BROWSE_LIST_STACK}>
+        {mapSignalsBlock}
+        {peopleBlock}
       </div>
     );
   }
@@ -186,7 +226,9 @@ export const CrewBrowseTabContent = ({
     if (friendsGoing.length === 0) {
       return <CrewBrowseListEmpty>{EXPLORE_CREWS_FRIENDS_GOING_EMPTY}</CrewBrowseListEmpty>;
     }
-    return <MemberBrowseRowList rows={friendsGoing.map(buildMemberBrowseRowFromGoing)} />;
+    return (
+      <MemberBrowseRowList rows={friendsGoing.map(buildMemberBrowseRowFromGoing)} isSignedIn={isSignedIn} />
+    );
   }
 
   const directoryOnly = filterDirectoryBrowseCards(directory, friendsGoing, hostsGoing);
@@ -197,6 +239,7 @@ export const CrewBrowseTabContent = ({
         <CrewBrowseListEmpty>{EXPLORE_CREWS_CONNECT_EMPTY}</CrewBrowseListEmpty>
       ) : (
         <MemberBrowseRowList
+          isSignedIn={isSignedIn}
           rows={buildMemberBrowseRowsFromDirectory({
             directory,
             friendsGoing,

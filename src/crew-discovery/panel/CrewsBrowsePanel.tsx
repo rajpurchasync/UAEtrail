@@ -18,7 +18,6 @@ import type { DiscoverCrewRecommendationsQueryParams } from '../lib/crewRecommen
 import { CrewBrowseSearchField } from './crewBrowse';
 import { CrewsTabBody } from '@/list/crews/CrewsTabBody';
 import { CrewsStatsTabs } from '@/list/crews/CrewsStatsTabs';
-import { crewsStatTabFromFacet, facetFromCrewsStatTab } from '@/list/crews/crewsStatTab';
 
 export interface CrewsBrowsePanelProps {
   isDesktop: boolean;
@@ -163,15 +162,13 @@ export const CrewsBrowsePanel = ({
         <CrewBrowsePanelTabs tab={crewBrowseLane} onTabChange={onCrewBrowseLaneChange} />
         {crewBrowseLane === 'people' ? (
           <CrewsStatsTabs
-            active={crewsStatTabFromFacet(crewPeopleFacet)}
+            activeFacet={crewPeopleFacet}
             counts={{
-              recommended: null,
-              friends: discoveryFriendsGoing.length,
               available: availabilityPeople.length + availabilityCatalogItems.length,
               everyone: discoveryDirectory.length,
             }}
-            onSelect={(tab) => onCrewPeopleFacetChange(facetFromCrewsStatTab(tab))}
-            onClear={() => onCrewPeopleFacetChange(DEFAULT_CREW_PEOPLE_FACET)}
+            onFacetChange={onCrewPeopleFacetChange}
+            onClearToDefault={() => onCrewPeopleFacetChange(DEFAULT_CREW_PEOPLE_FACET)}
           />
         ) : null}
       </div>
@@ -188,8 +185,7 @@ export const CrewsBrowsePanel = ({
         <CrewsTabBody
           lane={crewBrowseLane}
           facet={crewPeopleFacet}
-          crewsOpenLens="all"
-          onCrewsOpenLensChange={() => {}}
+          availabilityShape="all"
           crewsAvailabilityGuideFilter="all"
           onCrewsAvailabilityGuideFilterChange={() => {}}
           isSignedIn={isSignedIn}
@@ -209,7 +205,6 @@ export const CrewsBrowsePanel = ({
           discoveryLoading={discoveryLoading}
           discoveryError={discoveryError}
           onOpenAvailability={onOpenIntentOpen ?? (() => {})}
-          crewRecommendationsQuery={crewRecommendationsQuery}
         />
       </div>
     </div>

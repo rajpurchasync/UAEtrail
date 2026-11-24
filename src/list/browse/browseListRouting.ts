@@ -1,3 +1,9 @@
+import {
+  DEFAULT_CREW_BROWSE_LANE,
+  DEFAULT_CREW_PEOPLE_FACET,
+  DEFAULT_CREW_PROFESSIONAL_KIND,
+} from '@/crew-discovery/crewBrowseState';
+import { DEFAULT_CREW_PEOPLE_SURFACE_WIRE, parseCrewPeopleSurface } from '@/crew-discovery/crewPeopleSurface';
 import { EXPLORE_MAP_PATH, LIST_DISCOVERY_PATH } from '../../config/platform';
 import type { BrowseListFilterState } from './browseListFilters';
 import {
@@ -21,16 +27,53 @@ export type ListDiscoveryPathOptions = Partial<BrowseListFilterState> & {
   listCat?: BrowseMainCategoryKey | null;
 };
 
-/** Full-screen member discovery (`/list?listCat=people`) — not explore map overlay. */
-export const listPeopleDiscoveryPath = (): string =>
+const crewsPeopleListBase = (): ListDiscoveryPathOptions => ({
+  listCat: 'people',
+  categories: ['people'],
+  activityDatePreset: 'anyday',
+  crewBrowseLane: DEFAULT_CREW_BROWSE_LANE,
+  crewPeopleFacet: DEFAULT_CREW_PEOPLE_FACET,
+  crewProfessionalKind: DEFAULT_CREW_PROFESSIONAL_KIND,
+});
+
+/** Mobile Crews tab home — **My crew** page (`crewSurface` omitted). */
+export const crewsHubHomePath = (): string =>
   listDiscoveryPath({
-    listCat: 'people',
-    categories: ['people'],
-    activityDatePreset: 'anyday',
-    crewBrowseLane: 'people',
-    crewPeopleFacet: 'recommended',
-    crewProfessionalKind: 'all',
+    ...crewsPeopleListBase(),
   });
+
+/** Find crew — dedicated list shell (crew search + People · Outings · Communities). */
+export const findCrewDiscoveryListPath = (): string =>
+  listDiscoveryPath({
+    ...crewsPeopleListBase(),
+    crewPeopleSurface: 'find',
+  });
+
+/** Full-screen find crew search — hide product tab header (same as `/explore/search`). */
+export const isFindCrewDiscoveryListPath = (pathname: string, search: string): boolean => {
+  if (pathname !== LIST_DISCOVERY_PATH) return false;
+  const params = new URLSearchParams(search.replace(/^\?/, '').trim());
+  return (
+    parseListCatParam(params.get(LIST_CAT_PARAM)) === 'people' && parseCrewPeopleSurface(params) === 'find'
+  );
+};
+
+/** @deprecated Alias — same as {@link findCrewDiscoveryListPath}. */
+export const findCrewDiscoveryListShellPath = (): string => findCrewDiscoveryListPath();
+
+/** Find crew with Community lane selected — join discoverable clubs. */
+export const findCrewCommunityDiscoveryPath = (): string =>
+  listDiscoveryPath({
+    ...crewsPeopleListBase(),
+    crewPeopleSurface: 'find',
+    crewBrowseLane: 'community',
+  });
+
+/**
+ * @deprecated Prefer {@link findCrewDiscoveryListPath} or {@link crewsHubHomePath}.
+ * Kept for explore/desktop handoffs that mean discover browse.
+ */
+export const listPeopleDiscoveryPath = (): string => findCrewDiscoveryListPath();
 
 /** Scoped list homes — mobile five-tab + drawer (import here, not `platform.ts`, to avoid cycles). */
 export const tripsListHomePath = (): string =>
@@ -50,9 +93,10 @@ export const listDiscoveryPath = (options?: ListDiscoveryPathOptions): string =>
     price: options?.price ?? 'all',
     when: options?.when ?? 'any',
     activityDatePreset: options?.activityDatePreset ?? 'anyday',
-    crewBrowseLane: options?.crewBrowseLane ?? 'people',
-    crewPeopleFacet: options?.crewPeopleFacet ?? 'recommended',
-    crewProfessionalKind: options?.crewProfessionalKind ?? 'all',
+    crewBrowseLane: options?.crewBrowseLane ?? DEFAULT_CREW_BROWSE_LANE,
+    crewPeopleFacet: options?.crewPeopleFacet ?? DEFAULT_CREW_PEOPLE_FACET,
+    crewProfessionalKind: options?.crewProfessionalKind ?? DEFAULT_CREW_PROFESSIONAL_KIND,
+    crewPeopleSurface: options?.crewPeopleSurface ?? DEFAULT_CREW_PEOPLE_SURFACE_WIRE,
     hasTrip: options?.hasTrip ?? false,
     facilityKinds: options?.facilityKinds ?? [],
     audience: options?.audience ?? 'anyone',

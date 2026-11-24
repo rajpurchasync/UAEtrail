@@ -24,6 +24,7 @@ describe('crew pillars lexicon', () => {
 
   it('maps people facets without collapsing directory and guides', () => {
     expect(crewPeopleFacetToPillar('friends')).toBe('friends');
+    expect(crewPeopleFacetToPillar('active')).toBe('friends');
     expect(crewPeopleFacetToPillar('available')).toBe('intent_signal');
     expect(crewPeopleFacetToPillar('everyone')).toBe('directory');
     expect(crewPeopleFacetToPillar('everyone')).not.toBe('guides_operators');

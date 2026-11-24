@@ -18,8 +18,10 @@ import {
   isFriendsOnlyAvailabilityVisibility,
   personMatchesAvailabilityKindQuery,
   normalizeAvailabilityVisibility,
+  computeProfileDetailExposure,
   normalizeMemberAvailabilitySlotsForStorage,
   prunePastAvailabilitySlots,
+  destinationRegionsOverlap,
 } from '@uaetrail/shared-types';
 import { ApiError } from './api-error.js';
 import { COLLECTIONS } from './collections.js';
@@ -32,6 +34,9 @@ import {
   maySeeMemberLocationForViewer,
   readCityAudience,
 } from './find-crew-visibility-gate.js';
+import { batchResolveMemberProfileRoleLabelsForDirectory } from '../services/member-status.js';
+import { resolveProfileViewerAccess } from '../services/profile-viewer-access.js';
+import { normalizeProfileVisibility } from './media-access.js';
 
 type MongoMemberAvailability = {
   _id: string;
@@ -257,6 +262,8 @@ export type ExploreAvailabilityQuery = {
   rangeEnd: string;
   kind?: AvailabilityKind | null;
   areaSlug?: string | null;
+  /** Emirate label — matches slot `destinationRegions` (OR). */
+  region?: string | null;
   friendsOnly?: boolean;
 };
 
@@ -287,12 +294,14 @@ export const loadExploreAvailabilityIndex = async (
   const candidateUserIds = [...new Set(docs.map((doc) => doc.userId))];
   const users = await findAuthUsersByIds(candidateUserIds);
   const userMap = new Map(users.map((u) => [u._id, u]));
+  const roleMap = await batchResolveMemberProfileRoleLabelsForDirectory(users);
   const findCrewVisible = await filterSubjectsVisibleInFindCrew(users, query.viewerUserId);
 
   for (const doc of docs) {
-    const slots = sanitizeSlots(doc.slots).filter((slot) =>
-      availabilitySlotOverlapsRange(slot, query.rangeStart, query.rangeEnd)
-    );
+    const regionFilter = query.region?.trim() || null;
+    const slots = sanitizeSlots(doc.slots)
+      .filter((slot) => availabilitySlotOverlapsRange(slot, query.rangeStart, query.rangeEnd))
+      .filter((slot) => destinationRegionsOverlap(slot.destinationRegions, regionFilter));
     if (slots.length === 0) continue;
     if (query.kind && !personMatchesAvailabilityKindQuery(slots, query.kind, query.rangeStart, query.rangeEnd)) {
       continue;
@@ -322,6 +331,17 @@ export const loadExploreAvailabilityIndex = async (
 
     const projectedKinds = discoveryKindsFromSlots(slots, query.rangeStart, query.rangeEnd);
 
+    const profileAccess = await resolveProfileViewerAccess({
+      viewerUserId: query.viewerUserId,
+      targetUserId: doc.userId,
+      targetVisibility: user.profile?.profileVisibility,
+    });
+    const profileViewerAccess = computeProfileDetailExposure({
+      profileVisibility: normalizeProfileVisibility(user.profile?.profileVisibility),
+      level: profileAccess.level,
+      viewerUserId: query.viewerUserId,
+    });
+
     people.push({
       userId: doc.userId,
       displayName: profileDisplayNameFromAuthUser(user),
@@ -331,6 +351,8 @@ export const loadExploreAvailabilityIndex = async (
       areaId,
       slots,
       isFriend,
+      profileRoleLabel: roleMap.get(doc.userId) ?? 'community_member',
+      canOpenMemberProfile: profileViewerAccess.canOpenMemberProfile,
     });
 
     for (const kind of projectedKinds) {

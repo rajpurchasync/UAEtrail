@@ -1,16 +1,34 @@
-/** Available tab sub-lens — map intent signals vs marked calendar days. */
-export type CrewsAvailableOpenLens = 'all' | 'open' | 'marked';
+/** Available tab — flexible calendar vs fixed time/place (map listing is internal). */
+export type CrewsAvailabilityShapeFilter = 'all' | 'flexible' | 'fixed';
+
+/** @deprecated Use {@link CrewsAvailabilityShapeFilter} */
+export type CrewsAvailableOpenLens = CrewsAvailabilityShapeFilter;
 
 export const CREWS_OPEN_URL_PARAM = 'open';
 
-export const parseCrewsAvailableOpenLens = (raw: string | null): CrewsAvailableOpenLens => {
-  if (raw === 'open' || raw === 'looking') return 'open';
-  if (raw === 'marked') return 'marked';
+export const CREWS_AVAILABILITY_SHAPE_ORDER: CrewsAvailabilityShapeFilter[] = [
+  'all',
+  'flexible',
+  'fixed',
+];
+
+export const parseCrewsAvailabilityShapeFilter = (
+  raw: string | null
+): CrewsAvailabilityShapeFilter => {
+  if (raw === 'flexible' || raw === 'marked') return 'flexible';
+  if (raw === 'fixed' || raw === 'open' || raw === 'looking') return 'fixed';
   return 'all';
 };
 
-export const serializeCrewsAvailableOpenLens = (lens: CrewsAvailableOpenLens): string | null =>
-  lens === 'all' ? null : lens;
+/** @deprecated Use {@link parseCrewsAvailabilityShapeFilter} */
+export const parseCrewsAvailableOpenLens = parseCrewsAvailabilityShapeFilter;
+
+export const serializeCrewsAvailabilityShapeFilter = (
+  filter: CrewsAvailabilityShapeFilter
+): string | null => (filter === 'all' ? null : filter);
+
+/** @deprecated Use {@link serializeCrewsAvailabilityShapeFilter} */
+export const serializeCrewsAvailableOpenLens = serializeCrewsAvailabilityShapeFilter;
 
 /** Legacy deep link — opens availability compose via `ListDiscoveryExperience`. */
 export const CREWS_AVAILABILITY_SHEET_PARAM = 'availability';

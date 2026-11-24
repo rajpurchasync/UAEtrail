@@ -22,6 +22,10 @@ import {
   serializeTripMapTopicsParam,
   type ExploreActivityDatePreset,
 } from '../../explore/discoveryRuntime';
+import {
+  parseCrewPeopleSurface,
+  serializeCrewPeopleSurface,
+} from '@/crew-discovery/crewPeopleSurface';
 import type { BrowseListFilterState, BrowsePriceFilter, BrowseWhenFilter } from './browseListFilters';
 import { isBrowseTripTopicKey, type BrowseTripTopicKey } from './browseListTripTopics';
 import { isListVenuePlaceTopicKey } from './listVenuePlaceTopicFilter';
@@ -185,6 +189,7 @@ export const parseBrowseListFilterState = (
         crewBrowseLane: crew.lane,
         crewPeopleFacet: crew.facet,
         crewProfessionalKind: crew.proKind,
+        crewPeopleSurface: parseCrewPeopleSurface(searchParams),
       };
     })(),
     hasTrip: parseExploreHasTrip(searchParams.get(EXPLORE_HAS_TRIP_PARAM)),
@@ -266,6 +271,10 @@ export const serializeBrowseListSearchParams = (
   else params.delete(PEOPLE_FACET_URL_PARAM);
   if (proKind) params.set('proKind', proKind);
   else params.delete('proKind');
+
+  const crewSurface = serializeCrewPeopleSurface(state.crewPeopleSurface);
+  if (crewSurface) params.set('crewSurface', crewSurface);
+  else params.delete('crewSurface');
 
   return params;
 };

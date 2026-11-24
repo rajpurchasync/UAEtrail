@@ -6,10 +6,12 @@ import {
   filterCrewsProfessionalDirectory,
 } from './crewsProfessionalFilters';
 import { EXPLORE_CREWS_CONNECT_EMPTY } from '@/content/exploreCrewsCopy';
+import { BrowseListSectionHeader } from '@/list/browse/BrowseListSectionHeader';
 import { CrewsGuidesRail } from './CrewsGuidesRail';
 import { CrewsProfessionalAgenciesList } from './CrewsProfessionalAgenciesList';
 
 type Props = {
+  isSignedIn?: boolean;
   directory: MemberBrowseCardDTO[];
   discoveryLoading: boolean;
   agencyItems: ExploreMapItemDTO[];
@@ -20,6 +22,7 @@ type Props = {
 };
 
 export const CrewsProfessionalBody = ({
+  isSignedIn = true,
   directory,
   discoveryLoading,
   agencyItems,
@@ -37,30 +40,26 @@ export const CrewsProfessionalBody = ({
   return (
     <div className="space-y-8">
       {showGuides ? (
-        <section>
-          <h2 className="text-base font-semibold text-neutral-900">Guides &amp; porters</h2>
-          <p className="mt-1 text-sm text-neutral-600">Verified outdoor pros you can message from their profile.</p>
+        <section className="space-y-2">
+          <BrowseListSectionHeader label="Guides &amp; porters" />
+          <p className="text-sm text-neutral-600">Verified outdoor pros you can message from their profile.</p>
           {guides.length > 0 ? (
-            <div className="mt-3">
-              <CrewsGuidesRail guides={guides} />
-            </div>
+            <CrewsGuidesRail guides={guides} isSignedIn={isSignedIn} />
           ) : (
-            <p className="mt-3 text-sm text-neutral-500">{EXPLORE_CREWS_CONNECT_EMPTY}</p>
+            <p className="text-sm text-neutral-500">{EXPLORE_CREWS_CONNECT_EMPTY}</p>
           )}
         </section>
       ) : null}
       {showAgencies ? (
-        <section>
-          <h2 className="text-base font-semibold text-neutral-900">Tour operators &amp; agencies</h2>
-          <p className="mt-1 text-sm text-neutral-600">Licensed operators and experience businesses on the map.</p>
-          <div className="mt-3">
-            <CrewsProfessionalAgenciesList
+        <section className="space-y-2">
+          <BrowseListSectionHeader label="Tour operators &amp; agencies" />
+          <p className="text-sm text-neutral-600">Licensed operators and experience businesses on the map.</p>
+          <CrewsProfessionalAgenciesList
               agencyItems={agencyItems}
               exploreCatalogItems={exploreCatalogItems}
               loading={exploreCatalogLoading}
               onOpenAgencyItem={onOpenAgencyItem}
             />
-          </div>
         </section>
       ) : null}
     </div>

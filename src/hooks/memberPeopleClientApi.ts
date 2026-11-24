@@ -61,6 +61,7 @@ export const fetchExplorePeopleAvailability = async (params: {
   to: string;
   kind?: string;
   area?: string;
+  region?: string;
   friendsOnly?: boolean;
 }): Promise<ExploreAvailabilityIndex> => {
   const res = await api.explorePeopleAvailability(params);

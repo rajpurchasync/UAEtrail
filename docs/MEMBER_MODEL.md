@@ -183,13 +183,13 @@ Trusted fields (year goal, upcoming list, etc.) appear only on **trusted** expos
 |-------|-------------------|-----------------|
 | Account | **member**, `userId`, `/users/:id` | Member, host name on card |
 | Public card page | **profile**, `MemberProfile`, `memberProfilePath`, `GET …/public-profile` | Profile, “View profile” |
-| Find crew discover | **`crew-discovery`**, `crewBrowseLane`, `peopleTab` / `peopleFacet` URL params | People · Professional · Community; Recommended + facet pills |
+| Find crew discover | **`crew-discovery`**, `crewBrowseLane`, `peopleTab` / `peopleFacet` URL params | Lanes **People** · **Professional** · **Community**; People facets **Friends** (default) · Available · Everyone (legacy `recommended` → Friends) |
 | List category handoff | `listCat=people` | **Crews** (triad pill / list category) |
 | My crew (social) | **`/crews`**, **`/groups`**, `social_graph`, wire `/me/friends` | My Crews, Friends, Teams |
 | Relationship | **buddy** / `accepted_friend` (wire) | Friends |
 | Directory quota | **member discovery**, `discover=1`, `memberDiscoverProfilePath` | Connect / discover |
 
-**Find crew browse (discover — not My Crews):** Primary surface = **list search** (`/list?listCat=people`, desktop drawer `list=1&listCat=people`). State spine: `src/crew-discovery/crewBrowseState.ts` (`CrewBrowseLane` + `CrewPeopleFacet`). Optional map dock: `view=people` + `CrewsBrowsePanel` when explore opens without `list=1` (legacy desktop rail). **My Crews** (`/crews`, `/groups`) is the **social hub** — requests, following, teams; it does **not** replace find-crew directory browse.
+**Find crew browse (discover — not My Crews):** Primary surface = **list search** (`/list?listCat=people`, desktop drawer `list=1&listCat=people`). Top split: `crewSurface=find` (default) vs `crewSurface=my` — wire `packages/shared-types/src/crew-people-surfaces.ts`. State spine: `src/crew-discovery/crewBrowseState.ts` (`CrewBrowseLane` + `CrewPeopleFacet`). **My Crews** (`/crews`, `/groups`, or list `crewSurface=my`) is the **social hub** — requests, following, teams; it must **not** host `GET /me/member-discovery/browse` as primary body (guard `PVOC-03a`).
 
 | Param | Values | Default (omit from URL) |
 |-------|--------|-------------------------|

@@ -16,6 +16,12 @@ import { clearComposeWizardSessionForRoute } from '../../ui/composeWizardSession
 import type { HostingWizardPrefill } from '../../ui/hostingWizardPrefill';
 import type { useComposeRoute } from './useComposeRoute';
 import type { useHostingFromActivity } from './useHostingFromActivity';
+import { parseAvailabilitySlotId, parsePlanWithUserId } from '../../routing';
+import {
+  clearFindCrewPlanAnchorSession,
+  readFindCrewPlanAnchorSession,
+} from '@/list/explorer/findCrewPlanAnchor';
+import { hostingPrefillFromFindCrewSlot } from '@/list/explorer/hostingPrefillFromFindCrewSlot';
 
 type Compose = ReturnType<typeof useComposeRoute>;
 type HostingFrom = ReturnType<typeof useHostingFromActivity>;
@@ -36,6 +42,7 @@ export const useHostingWizardPrefill = (input: {
   const {
     pathname,
     search,
+    searchParams,
     user,
     navigate,
     compose,
@@ -84,6 +91,16 @@ export const useHostingWizardPrefill = (input: {
     beginOfferRideshareForAvailabilityItem(selected);
   }, [beginOfferRideshareForAvailabilityItem, selected]);
 
+  const planWithFriendUserId = parsePlanWithUserId(searchParams);
+  const availabilitySlotId = parseAvailabilitySlotId(searchParams);
+
+  const findCrewPlanPrefill = useMemo((): HostingWizardPrefill | null => {
+    if (!planWithFriendUserId || !availabilitySlotId) return null;
+    const slot = readFindCrewPlanAnchorSession(planWithFriendUserId, availabilitySlotId);
+    if (!slot) return null;
+    return hostingPrefillFromFindCrewSlot(slot);
+  }, [availabilitySlotId, planWithFriendUserId]);
+
   const hostingWizardPrefill = useMemo((): HostingWizardPrefill | null => {
     if (rideshareLinkAvailability) {
       const parentActivityId = resolveAvailabilityParentActivityId(rideshareLinkAvailability);
@@ -98,14 +115,25 @@ export const useHostingWizardPrefill = (input: {
         sourceActivityId: hostingFromActivityPrefill.sourceActivityId,
       };
     }
+    if (findCrewPlanPrefill) {
+      return findCrewPlanPrefill;
+    }
     return null;
-  }, [rideshareLinkAvailability, hostingFromActivityPrefill]);
+  }, [findCrewPlanPrefill, rideshareLinkAvailability, hostingFromActivityPrefill]);
 
   const closeCreateFlow = useCallback(() => {
     clearHostingFromActivityPrefill();
     setRideshareLinkAvailability(null);
+    if (planWithFriendUserId && availabilitySlotId) {
+      clearFindCrewPlanAnchorSession(planWithFriendUserId, availabilitySlotId);
+    }
     closeCompose();
-  }, [clearHostingFromActivityPrefill, closeCompose]);
+  }, [
+    availabilitySlotId,
+    clearHostingFromActivityPrefill,
+    closeCompose,
+    planWithFriendUserId,
+  ]);
 
   const onHostingBackToIntent = useCallback(() => {
     clearComposeWizardSessionForRoute(activityComposeRoute);

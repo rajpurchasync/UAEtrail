@@ -46,6 +46,8 @@ export type SocialPeoplePreviewPersonDTO = {
 export type SocialPeoplePreviewDTO = {
   avatars: SocialPeoplePreviewPersonDTO[];
   friendUserIds: string[];
+  /** People you follow who are not friends — for Find crew availability labels. */
+  followedUserIds: string[];
   friendCount: number;
   followedCount: number;
   allCount: number;

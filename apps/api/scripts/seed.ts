@@ -71,6 +71,7 @@ import {
   logCommunityDiscoverPlaybook,
   seedDemoCommunityDiscover,
 } from './seed-demo-community-discover.js';
+import { runFindCrewPublicDirectorySeed } from './seed-find-crew-public-directory.js';
 import {
   ensureDemoExploreActivities,
   resolveDemoActivitySeedContext,
@@ -919,6 +920,7 @@ const runCommunityDiscoverSeed = async (): Promise<boolean> => {
     organizerId: organizer._id,
   });
   logCommunityDiscoverPlaybook();
+  await runFindCrewPublicDirectorySeed();
   return true;
 };
 
@@ -2152,6 +2154,7 @@ Share your live location and carry extra water in summer months.`
     organizerId: agencyOwner._id,
   });
   logCommunityDiscoverPlaybook();
+  await runFindCrewPublicDirectorySeed();
 
   logOmarHostQaPlaybook();
 

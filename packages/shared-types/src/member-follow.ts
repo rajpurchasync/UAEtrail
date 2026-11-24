@@ -3,6 +3,8 @@ export interface MemberFollowSummaryDTO {
   displayName: string;
   avatarUrl: string | null;
   followedAt: string;
+  cityLabel?: string | null;
+  lastActiveAt?: string | null;
 }
 
 export interface MemberFollowStateDTO {

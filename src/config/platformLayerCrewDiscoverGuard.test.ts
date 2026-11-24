@@ -22,6 +22,6 @@ describe('platformLayerCrewDiscoverGuard (PLS-2)', () => {
 
   it('LAYER-11: GET /discover/crew registered on member router', () => {
     expect(read('apps/api/src/routes/user/registerDiscoverCrewRoutes.ts')).toMatch(/\/discover\/crew/);
-    expect(read('apps/api/src/routes/user/composeUserMemberRoutes.ts')).toMatch(/registerDiscoverCrewRoutes/);
+    expect(read('apps/api/src/routes/user/composeUserPublicRoutes.ts')).toMatch(/registerDiscoverCrewRoutes/);
   });
 });

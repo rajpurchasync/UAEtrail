@@ -115,19 +115,22 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(goalBar).not.toMatch(/goalCount === 0.*return null/);
   });
 
-  it('G-avail-map: People browse defaults to People / Recommended', () => {
+  it('G-avail-map: People browse defaults to Recommended lane first', () => {
     expect(parseCrewBrowseState(new URLSearchParams()).lane).toBe('people');
-    expect(read('src/crew-discovery/crewBrowseTab.ts')).toMatch(/people: 'People'/);
+    expect(read('src/crew-discovery/crewBrowseState.ts')).toMatch(/people: 'People'/);
+    expect(read('src/crew-discovery/crewBrowseState.ts')).toMatch(/people: 'People'/);
   });
 
-  it('G-avail-guest: People browse requires sign-in (UI + API)', () => {
+  it('G-avail-guest: guests browse availability lists; friends + profile actions need sign-in', () => {
     const tabContent = read(
       'src/crew-discovery/panel/crewBrowse/CrewBrowseTabContent.tsx'
     );
-    expect(tabContent).toMatch(/!isSignedIn/);
+    expect(tabContent).toMatch(/crewBrowseHrefForGuest/);
+    expect(tabContent).toMatch(/tab === 'going'/);
     const availabilityRoute = read('apps/api/src/routes/user/registerExploreAvailabilityRoutes.ts');
-    expect(availabilityRoute).toMatch(/requireAuth/);
-    expect(availabilityRoute).not.toMatch(/optionalAuth/);
+    expect(availabilityRoute).toMatch(/optionalAuth/);
+    const discoverCrewRoute = read('apps/api/src/routes/user/registerDiscoverCrewRoutes.ts');
+    expect(discoverCrewRoute).toMatch(/optionalAuth/);
   });
 
   it('G-seek: ActivityDTO wire includes activityMode for /activity/:id', () => {

@@ -58,10 +58,14 @@ export const EXPLORE_SEARCH_SCOPE_PEOPLE_DESCRIPTION =
 export const EXPLORE_CREWS_DISCOVER_ON_TRIPS_TITLE = 'On outings';
 export const EXPLORE_CREWS_DISCOVER_FRIENDS_GOING_TITLE = 'Friends';
 export const EXPLORE_CREWS_DISCOVER_HOSTS_GOING_TITLE = 'Hosts';
-/** Available · on-map intent (open + fixed compose), not calendar rows. */
+/** @deprecated Section title removed — use Flexible/Fixed row labels. */
 export const EXPLORE_CREWS_MAP_SIGNALS_TITLE = 'On the map';
 export const EXPLORE_CREWS_EMPTY_MAP_SIGNALS =
-  'No open or fixed availability on the map here — try another filter, zoom out, or share your intent.';
+  'No fixed-time availability here — try another filter or share your intent.';
+
+/** Available list — intent schedule kind (not map vs calendar chrome). */
+export const EXPLORE_CREWS_AVAILABILITY_FLEXIBLE_LABEL = 'Flexible';
+export const EXPLORE_CREWS_AVAILABILITY_FIXED_LABEL = 'Fixed';
 
 export const EXPLORE_CREWS_AVAILABILITY_LOADING = 'Loading…';
 export const EXPLORE_CREWS_AVAILABILITY_EMPTY = 'No one available for these dates.';

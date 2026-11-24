@@ -5,7 +5,6 @@
 import {
   acceptFriendRequest,
   createFriendRequest,
-  declineFriendRequest,
 } from '../src/lib/friend-store.js';
 import { followUser } from '../src/lib/follow-store.js';
 import { COLLECTIONS } from '../src/lib/collections.js';
@@ -132,14 +131,11 @@ export const seedConnectionsDemo = async (input: ConnectionsDemoInput): Promise<
     await acceptFriendRequest(visitorGuide.id, input.guideId);
   }
 
-  const incomingFromMaya = await createFriendRequest({
+  await createFriendRequest({
     fromUserId: input.visitor2Id,
     toUserId: input.visitorId,
     message: 'Want to be trail buddies?',
   });
-  if (incomingFromMaya.status === 'pending') {
-    await acceptFriendRequest(incomingFromMaya.id, input.visitorId);
-  }
 
   await createFriendRequest({
     fromUserId: input.visitorId,
@@ -147,14 +143,17 @@ export const seedConnectionsDemo = async (input: ConnectionsDemoInput): Promise<
     message: 'Fossil Rock camp — happy to connect!',
   });
 
-  const khalidRequest = await createFriendRequest({
+  await createFriendRequest({
     fromUserId: input.organizerId,
     toUserId: input.visitorId,
     message: 'Jebel Jais crew — add me?',
   });
-  if (khalidRequest.status === 'pending') {
-    await declineFriendRequest(khalidRequest.id, input.visitorId);
-  }
+
+  await createFriendRequest({
+    fromUserId: input.shopOwnerId,
+    toUserId: input.visitorId,
+    message: 'Shawka gear run — connect on UAE Trail?',
+  });
 
   await followUser(input.visitor2Id, input.visitorId);
   await notifyMemberFollowed({
@@ -231,9 +230,9 @@ export const logConnectionsDemoPlaybook = (): void => {
     `Connections QA (log in as visitor@uaetrails.app ${passwordHint}):\n` +
       '  • Find your crew → Available: Maya, Fatima, Omar, Samira, Khalid (open slots); Guides filter → Fatima + Khalid\n' +
       '  • Friends going (host@): Fatima hosting Wadi Shawka (+10d) — set date to This month\n' +
-      '  • Buddies: Fatima (guide@) + Maya (visitor2@)\n' +
-      '  • Outgoing pending: Omar (host@) — cancel on /crews (Sent) or his profile\n' +
-      '  • Declined history: Khalid (organizer@) — declined in DB; re-request allowed via profile\n' +
+      '  • Buddies: Fatima (guide@)\n' +
+      '  • Incoming pending: Maya (visitor2@) + Khalid (organizer@) + Priya (shop@) — Accept/Decline on My crew → Friends\n' +
+      '  • Outgoing pending: Omar (host@) — Withdraw on My crew → Friends or cancel on his profile\n' +
       '  • Friends group: Weekend Hikers UAE — log in as guide@ and use Leave group on /groups\n' +
       '  • Social → Followed: Khalid (organizer@) + Omar (host@); pending friend request still open to Omar\n' +
       '  • Notifications: follow alerts from Maya + Priya (shop@)'

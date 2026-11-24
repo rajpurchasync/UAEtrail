@@ -109,9 +109,12 @@ export const useListDiscoveryExperienceModel = ({
       createFabContext,
     });
 
+  const findCrewSearchLed =
+    isPeopleCategory && filters.crewPeopleSurface === 'find' && !embeddedOnExplore;
+
   const { memberRoster, memberAvailability, crewsNeedsAvailability, crewRecommendationsQuery } =
     useListDiscoveryCrewsCategoryModel({
-    enabled: isPeopleCategory,
+    enabled: isPeopleCategory && (embeddedOnExplore || findCrewSearchLed),
     user,
     draftQuery,
     crewBrowseLane: filters.crewBrowseLane,
@@ -151,6 +154,7 @@ export const useListDiscoveryExperienceModel = ({
     geoPath,
     mapEnabled:
       !isPeopleCategory ||
+      findCrewSearchLed ||
       crewsCategoryMapFeedEnabled(
         {
           lane: filters.crewBrowseLane,
@@ -322,5 +326,6 @@ export const useListDiscoveryExperienceModel = ({
     closeListMapColumn,
     handleCreateFabTap,
     createFabLabel,
+    clock,
   };
 };

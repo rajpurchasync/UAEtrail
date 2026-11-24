@@ -17,6 +17,7 @@ import { intentOpenCompose } from '../../explore/compose';
 import type { BrowseListCreateFabHints } from '../browse/browseListCopy';
 import { useHostingFromActivity } from '../../explore/create/hooks/useHostingFromActivity';
 import { useHostingWizardPrefill } from '../../explore/create/hooks/useHostingWizardPrefill';
+import { parsePlanWithUserId } from '../../explore/routing';
 import { resolveBrowseListCreateFabLabel } from '../browse/browseListCopy';
 
 export type ListDiscoveryComposeBridgeInput = {
@@ -35,7 +36,7 @@ export type ListDiscoveryComposeBridgeInput = {
 };
 
 export const useListDiscoveryComposeBridgeModel = ({
-  exploreSearch,
+  exploreSearch: _exploreSearch,
   embeddedOnExplore,
   embeddedOfferRideshare,
   user,
@@ -49,9 +50,6 @@ export const useListDiscoveryComposeBridgeModel = ({
   createFabContext,
 }: ListDiscoveryComposeBridgeInput) => {
   const createFlowCtx = useCreateFlowOptional();
-  if (!createFlowCtx && !exploreSearch) {
-    throw new Error('useCreateFlow must be used under CreateFlowProvider (ProductShell).');
-  }
   const compose = createFlowCtx?.compose ?? listDiscoverySearchComposeStub();
   const registerBridge = createFlowCtx?.registerBridge ?? listDiscoverySearchRegisterBridgeStub;
 
@@ -88,6 +86,8 @@ export const useListDiscoveryComposeBridgeModel = ({
   });
 
   const [, setListSelectedId] = useState<string | null>(null);
+  const planWithFriendUserId = parsePlanWithUserId(searchParams);
+
   const hostingLauncher = useHostingWizardPrefill({
     pathname,
     search,
@@ -113,7 +113,7 @@ export const useListDiscoveryComposeBridgeModel = ({
     handleActivityPublished: reloadFeed,
     handleAvailabilityFixedSubmitted: () => void reloadFeed(),
     handleAddSubmitted: () => void reloadFeed(),
-    planWithFriendUserId: null,
+    planWithFriendUserId,
     composeAreaSlug: null,
     facilityOnPlaceId: null,
     tenantId,

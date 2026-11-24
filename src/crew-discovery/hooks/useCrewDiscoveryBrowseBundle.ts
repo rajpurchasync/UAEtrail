@@ -66,9 +66,10 @@ export const useCrewDiscoveryBrowseBundle = ({
     () => (user ? new Set(networkPreview.preview?.friendUserIds ?? []) : undefined),
     [user, networkPreview.preview?.friendUserIds]
   );
-  const memberAvailabilityEnabled =
-    crewsBrowsePanelOpen && crewBrowseNeedsAvailability(crewState) && Boolean(user);
-  const memberDiscoveryEnabled = crewsBrowsePanelOpen && Boolean(user) && crewState.lane === 'people';
+  const memberAvailabilityEnabled = crewsBrowsePanelOpen && crewBrowseNeedsAvailability(crewState);
+  const memberDiscoveryEnabled =
+    crewsBrowsePanelOpen &&
+    (crewState.lane === 'people' || crewState.lane === 'professional');
   const crewRoster = useCrewDiscoveryRoster({
     enabled: memberDiscoveryEnabled,
     search: browse.query,
@@ -84,13 +85,12 @@ export const useCrewDiscoveryBrowseBundle = ({
   });
 
   const openCrewsBrowsePanel = useCallback(() => {
-    browse.openCrewsBrowsePanel('people');
+    browse.openCrewsBrowsePanel();
   }, [browse]);
 
   const availabilityMapCatalogActive =
     crewsBrowsePanelOpen &&
-    crewState.lane === 'people' &&
-    (crewState.facet === 'available' || crewState.facet === 'recommended');
+    crewState.lane === 'people' && crewState.facet === 'available';
 
   const availabilityDiscovery = useCrewDiscoveryAvailabilityCatalog({
     enabled: availabilityMapCatalogActive,

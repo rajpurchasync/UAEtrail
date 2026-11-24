@@ -147,7 +147,7 @@ Product label **Teams** (`member_groups` with `kind: team` — roster-first, not
 
 ### Find crew list home (`/list?listCat=people`)
 
-Mobile five-tab **Crews** opens **list search** first (`listDiscoveryPath({ listCat: 'people' })`). **Top lanes** (`peopleTab`): People (default) · Professional · Community (feature-gated). **People** facet pills (`peopleFacet`): Recommended (default) · Friends · Available · Everyone. Signed-in **My crew** shortcuts: **Friends** (`/crews?from=crews`), **Teams** (`/groups?from=crews`). Not chat.
+Mobile five-tab **Crews** opens **My crew** hub first (`crewsHubHomePath()` → `/list?listCat=people`; `crewSurface` omitted = `my`). **Find crew** CTA opens a **crew-only** list page (`findCrewDiscoveryListPath()` → `crewSurface=find`): **Find Crew** title, booking-style **where · when · Search** (not Trips/Places/Crews/Groups tabs), optional activity pills, then **People · Outings that fit · Communities**. Global map Search stays `/explore/search`. Desktop **Find Crew** drawer unchanged (`crewSurface=find`). Standalone **`/crews`** remains for notifications; **Teams** (`/groups?from=crews`). Wire: `packages/shared-types/src/crew-people-surfaces.ts`.
 
 **Communities** (discoverable clubs) — `GET /explore/communities`, detail `/clubs/:slug`; not private **Teams** on `/groups`. Opt out UI with `VITE_COMMUNITY_DISCOVER=0`.
 
@@ -227,14 +227,14 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 
 **Job:** who can I go with, who’s going, who’s looking — **not** chat. Chat is [`/chat`](#chat-chat) ([`COMMUNICATION.md`](./COMMUNICATION.md)).
 
-Map pill **Crews** (see `exploreCrewsCopy.ts`); opens **list search** — mobile navigates to `/list?listCat=people`; desktop sets `list=1&listCat=people` on `/explore` (catalog drawer). Desktop sidebar **Find Crew** uses the same list drawer (`exploreCrewsListDrawerPath`). Inbound desktop `view=people` without `list=1` normalizes to the list drawer (no docked map rail). Wire: `peopleTab=people|professional|community` (default **People** omitted); **People** facet `peopleFacet=recommended|friends|available|everyone` (default **Recommended** omitted); **Professional** sub-filter `proKind=guide|porter|agency` (omit = all). Inbound `peopleTab=available|going|connect|hub|buddies|guides|agencies` maps to lane + facet/`proKind`. Available sub-lens `open=` (**On the map** — open/fixed intent signals) vs `marked` (calendar). Panel title **Crews** — list category **Crews** (`listCat=people`). **On the map** rows are public; marked calendar + Friends/Everyone → sign-in when needed.
+Map pill **Crews** (see `exploreCrewsCopy.ts`); opens **list search** — mobile navigates to `/list?listCat=people`; desktop sets `list=1&listCat=people` on `/explore` (catalog drawer). Desktop sidebar **Find Crew** uses the same list drawer (`exploreCrewsListDrawerPath`). Inbound desktop `view=people` without `list=1` normalizes to the list drawer (no docked map rail). Wire: `peopleTab=people|professional|community` (default **People** omitted); **Find crew** People facet `peopleFacet=available|everyone` (default **Available** omitted); inbound `friends`/`recommended`/`going` → **Available**. **Friends** are **My crew** only (`crewSurface` hub). **Professional** sub-filter `proKind=guide|porter|agency` (omit = all). Inbound `peopleTab=available|going|connect|hub|buddies|guides|agencies` maps to lane + facet/`proKind`. Available sub-lens `open=` (**On the map** — open/fixed intent signals) vs `marked` (calendar). Panel title **Crews** — list category **Crews** (`listCat=people`). **On the map** rows are public; marked calendar + Friends/Everyone → sign-in when needed.
 
 **Communities (`MIG-COMMUNITY-DISCOVER` — shipped):** Discoverable clubs (e.g. women’s hiking · Dubai), sorted **country → city**, under Find crew → **Communities** — separate from private **Teams** (`/groups`) and **Operators / Partners**. Join policies (open · request · invite); host manage on `/clubs/:slug`; outings tagged `discoverCommunityId` on publish.
 
 | Lane (`peopleTab`) | Facet (`peopleFacet`) | Data / actions |
 |--------------------|----------------------|----------------|
-| `people` (default) | `recommended` (default) | Blended roster + availability + directory teaser |
-| `people` | `friends` | `GET /discover/crew` — buddies with upcoming outings |
+| `people` (default) | `available` (default) | Intent signals + calendar (`member_availability`, map open pins) |
+| `people` | `everyone` | Directory connect lane (`GET /me/member-discovery/browse`, `peopleFacet=everyone`) |
 | `people` | `available` | Marked calendar + map open/fixed intent catalog |
 | `people` | `everyone` | Directory from browse; Pro quota on profile opens |
 | `professional` | — | Guide/porter directory + **agency** map pins (`source: agency`) |

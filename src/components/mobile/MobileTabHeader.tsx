@@ -6,6 +6,7 @@ import { ConsumerHeaderActions } from '../layout/ConsumerHeaderActions';
 import { MobileUnifiedTabHeader } from './MobileUnifiedTabHeader';
 import { useComposeImmersiveChrome } from '../../explore/create/ComposeImmersiveChromeContext';
 import { isExploreSearchResultsPath } from '../../explore/search/exploreSearchRouting';
+import { isFindCrewDiscoveryListPath } from '../../list/browse/browseListRouting';
 
 /** Layout-mounted tab header — one chrome for Map, Profile, Activities, Messages. */
 export const MobileTabHeader = () => {
@@ -14,6 +15,7 @@ export const MobileTabHeader = () => {
   const { immersiveCompose } = useComposeImmersiveChrome();
   if (immersiveCompose) return null;
   if (isExploreSearchResultsPath(pathname)) return null;
+  if (isFindCrewDiscoveryListPath(pathname, search)) return null;
   const visible = shouldShowMobileUnifiedTabHeader(pathname, search, Boolean(user));
   if (!visible) return null;
 

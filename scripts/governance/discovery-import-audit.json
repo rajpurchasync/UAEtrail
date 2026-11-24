@@ -12,11 +12,12 @@
   ],
   "matrix": {
     "src/list": {
-      "..": 213,
-      "browse": 83,
-      "crews": 9,
+      "..": 209,
+      "browse": 85,
+      "crews": 2,
       "components": 1,
       "config": 1,
+      "create": 1,
       "explore": 1,
       "styles": 1,
       "explorer": 1
@@ -28,10 +29,10 @@
       "..": 11,
       "discoveryCardModel": 3,
       "DiscoveryBrowseThumbnailPoster": 1,
+      "config": 3,
+      "content": 3,
       "list": 11,
       "activity": 2,
-      "content": 2,
-      "config": 2,
       "utils": 1
     },
     "src/activity-discovery": {
@@ -42,39 +43,41 @@
     },
     "src/crew-discovery": {
       "lib": 6,
-      "..": 20,
+      "..": 21,
       "discover": 1,
+      "content": 2,
+      "list": 1,
       "config": 1,
-      "content": 1,
       "member": 3,
       "explore": 2,
       "crewBrowseFeatureGates": 1,
-      "crewBrowseTab": 1,
-      "crewBrowseState": 2
+      "crewBrowseState": 3,
+      "crewBrowseTab": 1
     }
   },
   "byTarget": {
-    "..": 266,
-    "browse": 83,
-    "crews": 9,
+    "..": 263,
+    "browse": 85,
+    "crews": 2,
     "components": 5,
-    "config": 4,
+    "config": 5,
+    "create": 1,
     "explore": 12,
     "styles": 1,
     "explorer": 1,
     "discovery": 4,
     "discoveryCardModel": 3,
     "DiscoveryBrowseThumbnailPoster": 1,
-    "list": 11,
+    "content": 5,
+    "list": 12,
     "activity": 2,
-    "content": 3,
     "utils": 1,
     "lib": 6,
     "discover": 1,
     "member": 3,
     "crewBrowseFeatureGates": 1,
-    "crewBrowseTab": 1,
-    "crewBrowseState": 2
+    "crewBrowseState": 3,
+    "crewBrowseTab": 1
   },
   "limits": {
     "maxListExploreImports": 25,

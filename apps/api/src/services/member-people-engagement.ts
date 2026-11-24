@@ -247,6 +247,7 @@ export const loadMemberPeopleNetworkPreview = async (input: {
   return {
     avatars: merged.slice(0, 3),
     friendUserIds: friends.map((friend) => friend.userId),
+    followedUserIds: followedOnly.map((row) => row.userId),
     friendCount: friends.length,
     followedCount: followedOnly.length,
     allCount: friends.length + followedOnly.length,

@@ -1,9 +1,14 @@
 import type { AreaPublicDTO } from '@uaetrail/shared-types';
 import type { AvailabilityFixedComposeKind } from '../../compose';
 import { COMPOSE_MAP_INTENTS } from '../../create/interactions';
-import type { AvailabilityFixedDraft, AvailabilityFixedFlowStepId, AvailabilityFixedKind } from '../intentFixedFlowEngine';
+import type {
+  AvailabilityFixedDraft,
+  AvailabilityFixedFlowStepId,
+  AvailabilityFixedKind,
+  IntentFixedWizardStepId,
+} from '../intentFixedFlowEngine';
 
-export type AvailabilityWizardFlowStep = 'type' | AvailabilityFixedFlowStepId;
+export type AvailabilityWizardFlowStep = 'type' | IntentFixedWizardStepId;
 
 export type AvailabilityMapOpen = (
   intent: typeof COMPOSE_MAP_INTENTS.seekFrom | typeof COMPOSE_MAP_INTENTS.seekTo
@@ -20,9 +25,10 @@ export type AvailabilityWizardContext = {
   error: string | null;
   submitting: boolean;
   headerTitle: string;
-  widePageSteps: AvailabilityFixedFlowStepId[];
-  pageHas: (id: AvailabilityFixedFlowStepId) => boolean;
-  flowSteps: AvailabilityFixedFlowStepId[];
+  widePageSteps: IntentFixedWizardStepId[];
+  pageHas: (id: IntentFixedWizardStepId) => boolean;
+  flowSteps: IntentFixedWizardStepId[];
+  canHostPaidActivities: boolean;
   dateOptions: Array<{ iso: string; label: string; day: number }>;
   showMonthView: boolean;
   setShowMonthView: (value: boolean | ((prev: boolean) => boolean)) => void;
@@ -30,7 +36,7 @@ export type AvailabilityWizardContext = {
   goNext: () => void;
   goBack: () => void;
   goToFirstStep: () => void;
-  goToStep: (step: AvailabilityFixedFlowStepId) => void;
+  goToStep: (step: IntentFixedWizardStepId) => void;
   requestClose: () => void;
   handleSubmit: () => void;
   openMap: AvailabilityMapOpen;

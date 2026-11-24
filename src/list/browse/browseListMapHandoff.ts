@@ -7,6 +7,10 @@ import {
 import type { BrowseListFilterState } from './browseListFilters';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import {
+  CREW_PEOPLE_SURFACE_URL_PARAM,
+  serializeCrewPeopleSurface,
+} from '@/crew-discovery/crewPeopleSurface';
+import {
   PEOPLE_FACET_URL_PARAM,
   PEOPLE_LIST_TAB_URL_PARAM,
   serializePeopleListBrowseState,
@@ -131,6 +135,9 @@ export const serializeBrowseListToExploreSearchParams = (
     else params.delete(PEOPLE_FACET_URL_PARAM);
     if (proKind) params.set('proKind', proKind);
     else params.delete('proKind');
+    const crewSurface = serializeCrewPeopleSurface(state.crewPeopleSurface);
+    if (crewSurface) params.set(CREW_PEOPLE_SURFACE_URL_PARAM, crewSurface);
+    else params.delete(CREW_PEOPLE_SURFACE_URL_PARAM);
     params.delete('view');
     params.set('list', '1');
     params.set(LIST_CAT_PARAM, 'people');

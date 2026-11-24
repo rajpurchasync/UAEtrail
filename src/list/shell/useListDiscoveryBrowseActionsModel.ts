@@ -102,6 +102,7 @@ export const useListDiscoveryBrowseActionsModel = ({
       crewBrowseLane: filters.crewBrowseLane,
       crewPeopleFacet: filters.crewPeopleFacet,
       crewProfessionalKind: filters.crewProfessionalKind,
+      crewPeopleSurface: filters.crewPeopleSurface,
       hasTrip: false,
       facilityKinds: [],
       audience: 'anyone',

@@ -1,6 +1,8 @@
 import type {
   AvailabilityEngagementTerms,
   AvailabilitySlotCapacity,
+  AvailabilitySlotTransportMode,
+  AvailabilitySlotVehicleType,
   AvailabilityVisibility,
   ExploreComposeWire,
   IntentFixedComposeKind,
@@ -9,6 +11,8 @@ import type {
   ScheduleModality,
   UpsertMemberAvailabilityInput,
 } from '@uaetrail/shared-types';
+import { sanitizeAvailabilitySlotLogistics, sanitizeDestinationRegions } from '@uaetrail/shared-types';
+import type { AvailabilityOpenLogisticsState } from './AvailabilityOpenLogisticsFields';
 import { defaultGuideEngagementTerms, discoveryModalitiesFromSlots } from '@uaetrail/shared-types';
 import {
   isScheduleModality,
@@ -43,24 +47,94 @@ export type OpenAvailabilityEditorDraft = {
   region: string;
   areaId: string;
   guideEngagementTerms?: AvailabilityEngagementTerms | null;
+  destinationRegions: string[];
+  partySize: number;
+  transportMode: AvailabilityOpenLogisticsState['transportMode'];
+  selfVehicleType: AvailabilityOpenLogisticsState['selfVehicleType'];
+  rideshareSeatsNeeded: number;
 };
+
+const mapOpenTransportMode = (
+  mode: AvailabilityOpenLogisticsState['transportMode']
+): AvailabilitySlotTransportMode | null => {
+  if (mode === 'self') return 'has_vehicle';
+  if (mode === 'rideshare') return 'needs_carpool';
+  return null;
+};
+
+const mapOpenVehicleType = (
+  value: AvailabilityOpenLogisticsState['selfVehicleType']
+): AvailabilitySlotVehicleType | null => {
+  if (value === 'sedan' || value === 'suv' || value === '4x4' || value === 'van') return value;
+  return null;
+};
+
+export const resolveOpenSlotDestinationRegions = (
+  draft: Pick<OpenAvailabilityEditorDraft, 'destinationRegions' | 'locationMode' | 'region'>
+): string[] | null => {
+  const fromMulti = sanitizeDestinationRegions(draft.destinationRegions);
+  if (fromMulti?.length) return fromMulti;
+  if (draft.locationMode === 'region' && draft.region.trim()) {
+    return sanitizeDestinationRegions([draft.region.trim()]);
+  }
+  return null;
+};
+
+const openLogisticsFromDraft = (
+  draft: Pick<
+    OpenAvailabilityEditorDraft,
+    'partySize' | 'transportMode' | 'selfVehicleType' | 'rideshareSeatsNeeded'
+  >
+) =>
+  sanitizeAvailabilitySlotLogistics({
+    partySize: draft.partySize,
+    transportMode: mapOpenTransportMode(draft.transportMode),
+    vehicleType:
+      draft.transportMode === 'self' ? mapOpenVehicleType(draft.selfVehicleType) : null,
+    carpoolSeatsNeeded:
+      draft.transportMode === 'rideshare' ? draft.rideshareSeatsNeeded : null,
+  });
 
 /** Hydrate open-editor state from saved availability (slot model, not legacy `kinds`). */
 export const openEditorStateFromMemberAvailability = (
   data: MemberAvailabilityDTO | null | undefined
-): { capacity: AvailabilitySlotCapacity; modalities: ScheduleModality[] } => {
+): Pick<
+  OpenAvailabilityEditorDraft,
+  | 'capacity'
+  | 'modalities'
+  | 'destinationRegions'
+  | 'partySize'
+  | 'transportMode'
+  | 'selfVehicleType'
+  | 'rideshareSeatsNeeded'
+> => {
   const openSlots = (data?.slots ?? []).filter((slot) => slot.scheduleKind !== 'fixed');
   const capacity: AvailabilitySlotCapacity = openSlots.some((slot) => slot.capacity === 'guide')
     ? 'guide'
     : 'participant';
   const fromSlots = discoveryModalitiesFromSlots(openSlots);
-  if (fromSlots.length > 0) return { capacity, modalities: fromSlots };
-  const fromKinds = (data?.kinds ?? []).filter(
+  const legacyKinds = (data?.kinds ?? []).filter(
     (kind): kind is ScheduleModality => kind !== 'guide' && isScheduleModality(kind)
   );
+  const modalities = fromSlots.length > 0 ? fromSlots : legacyKinds.length > 0 ? legacyKinds : ['hiking'];
+
+  const sample = openSlots[0];
+  const transportMode: AvailabilityOpenLogisticsState['transportMode'] =
+    sample?.transportMode === 'has_vehicle'
+      ? 'self'
+      : sample?.transportMode === 'needs_carpool'
+        ? 'rideshare'
+        : null;
+
   return {
     capacity,
-    modalities: fromKinds.length > 0 ? fromKinds : ['hiking'],
+    modalities,
+    destinationRegions: sample?.destinationRegions ?? [],
+    partySize: sample?.partySize ?? 1,
+    transportMode,
+    selfVehicleType:
+      transportMode === 'self' && sample?.vehicleType ? sample.vehicleType : null,
+    rideshareSeatsNeeded: sample?.carpoolSeatsNeeded ?? 1,
   };
 };
 
@@ -72,22 +146,39 @@ export const initialOpenEditorFromPrefill = (
 });
 
 export const buildOpenSlotsFromEditor = (
-  selectedDays: ReadonlySet<string>,
-  modalities: ScheduleModality[],
-  capacity: AvailabilitySlotCapacity,
-  guideEngagementTerms?: AvailabilityEngagementTerms | null
+  draft: Pick<
+    OpenAvailabilityEditorDraft,
+    | 'selectedDays'
+    | 'modalities'
+    | 'capacity'
+    | 'guideEngagementTerms'
+    | 'destinationRegions'
+    | 'locationMode'
+    | 'region'
+    | 'partySize'
+    | 'transportMode'
+    | 'selfVehicleType'
+    | 'rideshareSeatsNeeded'
+  >
 ): MemberAvailabilitySlotDTO[] => {
   const terms =
-    capacity === 'guide' ? guideEngagementTerms ?? defaultGuideEngagementTerms() : null;
+    draft.capacity === 'guide'
+      ? draft.guideEngagementTerms ?? defaultGuideEngagementTerms()
+      : null;
+  const destinationRegions = resolveOpenSlotDestinationRegions(draft);
+  const logistics = openLogisticsFromDraft(draft);
+
   return normalizeMemberAvailabilitySlotsForStorage(
-    [...selectedDays].map((iso) => ({
+    [...draft.selectedDays].map((iso) => ({
       startDate: iso,
       endDate: iso,
       timeBand: 'any' as const,
       scheduleKind: 'open' as const,
-      capacity,
-      modalities,
+      capacity: draft.capacity,
+      modalities: draft.modalities,
       engagementTerms: terms,
+      destinationRegions,
+      ...logistics,
     }))
   );
 };
@@ -104,12 +195,7 @@ export const buildOpenAvailabilityUpsert = (
   draft: OpenAvailabilityEditorDraft,
   existing: MemberAvailabilityDTO | null | undefined
 ): UpsertMemberAvailabilityInput => {
-  const openSlots = buildOpenSlotsFromEditor(
-    draft.selectedDays,
-    draft.modalities,
-    draft.capacity,
-    draft.guideEngagementTerms
-  );
+  const openSlots = buildOpenSlotsFromEditor(draft);
   return {
     visibility: draft.visibility,
     note: draft.note.trim() || null,
@@ -178,6 +264,21 @@ export const writeIntentOpenComposeCapacity = (capacity: AvailabilitySlotCapacit
 const fixedWizardKindToModality = (kind: string): ScheduleModality =>
   intentFixedKindToScheduleModality(kind);
 
+const mapFixedDraftTransportMode = (
+  mode: AvailabilityFixedDraft['transportMode']
+): AvailabilitySlotTransportMode | null => {
+  if (mode === 'self') return 'has_vehicle';
+  if (mode === 'rideshare') return 'needs_carpool';
+  return null;
+};
+
+const mapFixedVehicleType = (
+  value: AvailabilityFixedDraft['selfVehicleType']
+): AvailabilitySlotVehicleType | null => {
+  if (value === 'sedan' || value === 'suv' || value === '4x4' || value === 'van') return value;
+  return null;
+};
+
 export const buildFixedSlotFromDraft = (
   draft: AvailabilityFixedDraft,
   dateIso: string,
@@ -185,6 +286,19 @@ export const buildFixedSlotFromDraft = (
 ): MemberAvailabilitySlotDTO => {
   const kind = draft.kind ?? 'other';
   const modality = fixedWizardKindToModality(kind);
+  const capacity = draft.capacity === 'guide' ? 'guide' : 'participant';
+  const logistics = sanitizeAvailabilitySlotLogistics({
+    partySize: draft.partySize,
+    transportMode: mapFixedDraftTransportMode(draft.transportMode),
+    vehicleType:
+      draft.transportMode === 'self' ? mapFixedVehicleType(draft.selfVehicleType) : null,
+    carpoolSeatsNeeded:
+      draft.transportMode === 'rideshare' ? draft.rideshareSeatsNeeded : null,
+    destinationLatitude: draft.toPinPlaced ? draft.toLatitude : null,
+    destinationLongitude: draft.toPinPlaced ? draft.toLongitude : null,
+    destinationPrecision: draft.toPinPlaced ? draft.locationPrecision : null,
+  });
+
   return {
     scheduleKind: 'fixed',
     startDate: dateIso,
@@ -196,20 +310,31 @@ export const buildFixedSlotFromDraft = (
     longitude: draft.longitude,
     locationPrecision: draft.locationPrecision,
     timeBand: null,
-    capacity: 'participant',
+    capacity,
     modalities: [modality],
+    engagementTerms:
+      capacity === 'guide' ? draft.guideEngagementTerms ?? defaultGuideEngagementTerms() : null,
+    destinationRegions: sanitizeDestinationRegions(
+      draft.destinationRegions.length > 0
+        ? draft.destinationRegions
+        : draft.preferredArea.trim()
+          ? [draft.preferredArea.trim()]
+          : null
+    ),
+    ...logistics,
   };
 };
 
 export const buildFixedAvailabilityUpsert = (
   existing: MemberAvailabilityDTO,
   fixedSlot: MemberAvailabilitySlotDTO,
-  draft: AvailabilityFixedDraft
+  draft: AvailabilityFixedDraft,
+  note: string | null
 ): UpsertMemberAvailabilityInput => ({
   visibility: existing.visibility === 'hidden' ? 'public' : existing.visibility,
   region: draft.preferredArea.trim() || existing.region || null,
   areaId: draft.areaId?.trim() || existing.areaId || null,
-  note: existing.note,
+  note: note?.trim() || existing.note || null,
   slots: [...existing.slots, fixedSlot],
 });
 
@@ -217,8 +342,9 @@ export const buildFixedAvailabilityUpsert = (
 export const saveFixedAvailabilitySlot = async (
   existing: MemberAvailabilityDTO,
   draft: AvailabilityFixedDraft,
-  fixedSlot: MemberAvailabilitySlotDTO
+  fixedSlot: MemberAvailabilitySlotDTO,
+  note: string | null
 ): Promise<MemberAvailabilityDTO> => {
-  const body = buildFixedAvailabilityUpsert(existing, fixedSlot, draft);
+  const body = buildFixedAvailabilityUpsert(existing, fixedSlot, draft, note);
   return saveMemberAvailability(body);
 };

@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildFixedSlotFromDraft,
   buildOpenAvailabilityUpsert,
   mergeOpenSlotsWithExisting,
   openEditorStateFromMemberAvailability,
   prefillFixedIntentCompose,
   prefillOpenIntentCompose,
 } from './availabilitySlotComposeEngine';
+import { emptyAvailabilityFixedDraft } from '../explore/ui/intentFixedFlowEngine';
 
 describe('availabilitySlotComposeEngine (MIG-SG-B2)', () => {
   it('prefills intent:open participant by default', () => {
@@ -61,6 +63,11 @@ describe('availabilitySlotComposeEngine (MIG-SG-B2)', () => {
         locationMode: 'open',
         region: '',
         areaId: '',
+        destinationRegions: [],
+        partySize: 1,
+        transportMode: null,
+        selfVehicleType: null,
+        rideshareSeatsNeeded: 1,
         guideEngagementTerms: {
           pricingKind: 'upon_request',
           tourShape: 'private',
@@ -75,6 +82,54 @@ describe('availabilitySlotComposeEngine (MIG-SG-B2)', () => {
     });
   });
 
+  it('persists logistics + capacity on fixed slots from draft', () => {
+    const slot = buildFixedSlotFromDraft(
+      {
+        ...emptyAvailabilityFixedDraft(),
+        kind: 'hiking',
+        title: 'Trail crew',
+        partySize: 3,
+        transportMode: 'self',
+        selfVehicleType: '4x4',
+        fromPinPlaced: true,
+        latitude: 25.1,
+        longitude: 55.2,
+      },
+      '2030-06-01',
+      '2030-06-01T09:00:00.000Z'
+    );
+    expect(slot.partySize).toBe(3);
+    expect(slot.transportMode).toBe('has_vehicle');
+    expect(slot.vehicleType).toBe('4x4');
+    expect(slot.capacity).toBe('participant');
+  });
+
+  it('stores destination regions + logistics on open slots', () => {
+    const upsert = buildOpenAvailabilityUpsert(
+      {
+        selectedDays: new Set(['2030-01-01', '2030-01-02']),
+        capacity: 'participant',
+        modalities: ['hiking', 'camping'],
+        visibility: 'public',
+        note: '',
+        locationMode: 'open',
+        region: '',
+        areaId: '',
+        destinationRegions: ['Dubai', 'Sharjah'],
+        partySize: 2,
+        transportMode: 'rideshare',
+        selfVehicleType: null,
+        rideshareSeatsNeeded: 2,
+        guideEngagementTerms: null,
+      },
+      null
+    );
+    expect(upsert.slots).toHaveLength(2);
+    expect(upsert.slots[0]?.destinationRegions).toEqual(['Dubai', 'Sharjah']);
+    expect(upsert.slots[0]?.transportMode).toBe('needs_carpool');
+    expect(upsert.slots[0]?.partySize).toBe(2);
+  });
+
   it('merges open writes with existing fixed slots', () => {
     const upsert = buildOpenAvailabilityUpsert(
       {
@@ -86,6 +141,12 @@ describe('availabilitySlotComposeEngine (MIG-SG-B2)', () => {
         locationMode: 'open',
         region: '',
         areaId: '',
+        destinationRegions: [],
+        partySize: 1,
+        transportMode: null,
+        selfVehicleType: null,
+        rideshareSeatsNeeded: 1,
+        guideEngagementTerms: null,
       },
       {
         userId: 'u1',

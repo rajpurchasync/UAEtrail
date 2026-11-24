@@ -18,13 +18,7 @@ const summarizeDays = (count: number): string => {
 export const CrewsAvailabilityStrip = ({ isSignedIn, onEdit }: CrewsAvailabilityStripProps) => {
   const { data, loading } = useMemberAvailability(isSignedIn);
 
-  if (!isSignedIn) {
-    return (
-      <div className="mb-2 rounded-xl bg-white px-3 py-2.5 text-sm text-neutral-600 ring-1 ring-neutral-200/80">
-        Sign in to share when you&apos;re free — others can find you on Find crew.
-      </div>
-    );
-  }
+  if (!isSignedIn) return null;
 
   const dayCount = data?.slots?.length
     ? memberAvailabilitySlotsAsDayPicks(data.slots).length

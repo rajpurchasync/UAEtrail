@@ -67,6 +67,7 @@ describe('buildExploreMemberPeopleMapChip', () => {
       preview: {
         avatars: [{ userId: 'f1', displayName: 'Friend', avatarUrl: null }],
         friendUserIds: ['f1'],
+        followedUserIds: [],
         friendCount: 1,
         followedCount: 0,
         allCount: 1,

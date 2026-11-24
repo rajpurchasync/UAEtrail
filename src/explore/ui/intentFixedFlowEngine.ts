@@ -1,4 +1,9 @@
-import type { AvailabilityKind } from '@uaetrail/shared-types';
+import type {
+  AvailabilityEngagementTerms,
+  AvailabilityKind,
+  AvailabilitySlotCapacity,
+} from '@uaetrail/shared-types';
+import { defaultGuideEngagementTerms } from '@uaetrail/shared-types';
 import { availabilityMapItemId } from '@uaetrail/shared-types';
 import {
   buildFixedSlotFromDraft,
@@ -13,6 +18,8 @@ import { MAP_CONFIG } from '../../config/platform';
 import { buildDateOptions, todayIso, type LocationPrecision, type TimeMode } from './createFlowShared';
 
 export type AvailabilityFixedKind = AvailabilityKind;
+
+export type IntentFixedPreludeStepId = 'lane' | 'engagementTerms';
 
 export type AvailabilityFixedFlowStepId =
   | 'title'
@@ -73,7 +80,13 @@ export type AvailabilityFixedDraft = {
   toPinPlaced: boolean;
   /** Admin-registered area + map pin (Find / looking for). */
   areaId: string | null;
+  capacity: AvailabilitySlotCapacity;
+  guideEngagementTerms: AvailabilityEngagementTerms | null;
+  /** Emirate labels (OR) — slot `destinationRegions`. */
+  destinationRegions: string[];
 };
+
+export type IntentFixedWizardStepId = IntentFixedPreludeStepId | AvailabilityFixedFlowStepId;
 
 /** Same order and labels as FAB `AVAILABILITY_FIXED_COMPOSE_OPTIONS` / compose catalog `find.*`. */
 export const AVAILABILITY_FIXED_TYPE_OPTIONS: Array<{
@@ -206,7 +219,20 @@ export const emptyAvailabilityFixedDraft = (): AvailabilityFixedDraft => ({
   fromPinPlaced: false,
   toPinPlaced: false,
   areaId: null,
+  capacity: 'participant',
+  guideEngagementTerms: null,
+  destinationRegions: [],
 });
+
+export const getIntentFixedWizardSteps = (
+  kind: AvailabilityFixedKind | null,
+  capacity: AvailabilitySlotCapacity
+): IntentFixedWizardStepId[] => {
+  const prelude: IntentFixedWizardStepId[] = ['lane'];
+  if (capacity === 'guide') prelude.push('engagementTerms');
+  if (!kind) return prelude;
+  return [...prelude, ...getAvailabilityFixedFlowSteps(kind)];
+};
 
 export const getAvailabilityFixedFlowSteps = (kind: AvailabilityFixedKind): AvailabilityFixedFlowStepId[] => {
   switch (kind) {
@@ -423,7 +449,24 @@ export const buildAvailabilityFixedComment = (draft: AvailabilityFixedDraft): st
   return combined.length >= 3 ? combined : 'Open to matching plans nearby.';
 };
 
-export const validateAvailabilityFixedStep = (step: AvailabilityFixedFlowStepId, draft: AvailabilityFixedDraft): string | null => {
+export const validateAvailabilityFixedStep = (
+  step: IntentFixedWizardStepId,
+  draft: AvailabilityFixedDraft
+): string | null => {
+  if (step === 'lane') {
+    return draft.capacity === 'participant' || draft.capacity === 'guide'
+      ? null
+      : 'Choose how you want to show up in Find crew.';
+  }
+  if (step === 'engagementTerms') {
+    if (draft.capacity !== 'guide') return null;
+    const terms = draft.guideEngagementTerms ?? defaultGuideEngagementTerms();
+    if (terms.pricingKind === 'paid' && (terms.rate == null || terms.rate <= 0)) {
+      return 'Enter a rate for paid guide availability.';
+    }
+    return null;
+  }
+
   const kind = draft.kind;
   if (!kind) return 'Choose what you are looking for.';
 
@@ -523,7 +566,7 @@ export const validateAvailabilityFixedDraft = (draft: AvailabilityFixedDraft): s
   const kind = draft.kind;
   if (!kind) return 'Choose what you are looking for.';
 
-  for (const step of getAvailabilityFixedFlowSteps(kind)) {
+  for (const step of getIntentFixedWizardSteps(kind, draft.capacity)) {
     if (step === 'review') continue;
     const message = validateAvailabilityFixedStep(step, draft);
     if (message) return message;
@@ -562,7 +605,8 @@ export const publishAvailabilityFixedSlot = async (draft: AvailabilityFixedDraft
   const existing = await fetchMyMemberAvailability();
   const fixedSlot = buildFixedSlotFromDraft(draft, dateIso, startAt);
 
-  const updated = await saveFixedAvailabilitySlot(existing, draft, fixedSlot);
+  const note = buildAvailabilityFixedComment(draft);
+  const updated = await saveFixedAvailabilitySlot(existing, draft, fixedSlot, note);
 
   const fixedSlots = updated.slots.filter((s) => s.scheduleKind === 'fixed');
   const savedSlot =

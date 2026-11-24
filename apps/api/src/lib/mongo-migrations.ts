@@ -1072,10 +1072,48 @@ const ensureRevampCollectionsExist = async (db: Db): Promise<void> => {
   }
 };
 
+const renameUnsupportedOnServer = (error: unknown): boolean => {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.includes('renameCollection') || message.includes('API Version');
+};
+
+/** Rename when allowed; otherwise copy documents and drop source (Atlas apiStrict). */
 const renameCollectionIfExists = async (db: Db, from: string, to: string): Promise<void> => {
   const names = new Set((await db.listCollections().toArray()).map((c) => c.name));
   if (!names.has(from) || names.has(to)) return;
-  await db.collection(from).rename(to);
+
+  try {
+    await db.collection(from).rename(to);
+    return;
+  } catch (error) {
+    if (!renameUnsupportedOnServer(error)) throw error;
+  }
+
+  if (!names.has(to)) {
+    await db.createCollection(to);
+  }
+  const source = db.collection(from);
+  const dest = db.collection(to);
+  const BATCH = 500;
+  let batch: Record<string, unknown>[] = [];
+  for await (const doc of source.find({})) {
+    batch.push(doc as Record<string, unknown>);
+    if (batch.length < BATCH) continue;
+    await dest.insertMany(batch, { ordered: false });
+    batch = [];
+  }
+  if (batch.length > 0) {
+    await dest.insertMany(batch, { ordered: false });
+  }
+  try {
+    await source.drop();
+  } catch (dropError) {
+    console.warn(
+      `[mongo] Could not drop legacy collection ${from} after copy → ${to}: ${
+        dropError instanceof Error ? dropError.message : String(dropError)
+      }`
+    );
+  }
 };
 
 /** Rename legacy buddy_* graph collections → friend_*. */

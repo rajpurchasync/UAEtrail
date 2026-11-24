@@ -2,7 +2,7 @@ import { CREW_DISCOVER_FEED_SCHEMA_VERSION, type CrewDiscoverFeedDTO } from '@ua
 import { loadMemberDiscoveryRoster } from './member-discovery-roster.js';
 
 export const loadDiscoverCrewFeed = async (input: {
-  viewerUserId: string;
+  viewerUserId: string | null;
   userRole?: string | null;
   datePresetRaw?: string | null;
   search?: string;

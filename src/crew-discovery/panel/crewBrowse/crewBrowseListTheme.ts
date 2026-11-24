@@ -1,2 +1,2 @@
-/** People lists use the same stack + row tokens as map plan list (`ExploreListRow`). */
-export const CREW_BROWSE_LIST_STACK = 'flex flex-col gap-2.5';
+/** People / community lists — same vertical rhythm as trips list (`space-y-2`). */
+export const CREW_BROWSE_LIST_STACK = 'space-y-2';

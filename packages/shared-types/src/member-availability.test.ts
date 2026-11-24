@@ -50,10 +50,10 @@ describe('memberAvailabilityCalendarDays', () => {
         { startDate: '2026-10-11', endDate: '2026-10-11', timeBand: 'any' },
       ])
     ).toEqual([
-      { startDate: '2026-10-10', endDate: '2026-10-10', timeBand: 'any' },
-      { startDate: '2026-10-11', endDate: '2026-10-11', timeBand: 'any' },
-      { startDate: '2026-10-12', endDate: '2026-10-12', timeBand: 'any' },
-      { startDate: '2026-10-14', endDate: '2026-10-14', timeBand: 'any' },
+      { startDate: '2026-10-10', endDate: '2026-10-10', timeBand: 'any', scheduleKind: 'open' },
+      { startDate: '2026-10-11', endDate: '2026-10-11', timeBand: 'any', scheduleKind: 'open' },
+      { startDate: '2026-10-12', endDate: '2026-10-12', timeBand: 'any', scheduleKind: 'open' },
+      { startDate: '2026-10-14', endDate: '2026-10-14', timeBand: 'any', scheduleKind: 'open' },
     ]);
   });
 

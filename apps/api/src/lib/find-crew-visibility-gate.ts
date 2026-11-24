@@ -76,11 +76,16 @@ export const filterSubjectsVisibleInFindCrew = async (
     }
     const visibility = readFindCrewVisibility(subject.profile);
     if (visibility === 'none') continue;
-    if (!viewerUserId) continue;
+    if (!viewerUserId) {
+      visible.add(subject._id);
+      continue;
+    }
     maybeGraph.push(subject);
   }
 
-  if (maybeGraph.length === 0 || !viewerUserId) return visible;
+  if (!viewerUserId) return visible;
+
+  if (maybeGraph.length === 0) return visible;
 
   const viewerFriendIds = new Set(await listFriendIdsForUser(viewerUserId));
   const needsSubjectBuddies: string[] = [];

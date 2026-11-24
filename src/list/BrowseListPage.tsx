@@ -1,11 +1,12 @@
 import { PageMeta } from '../components/seo/PageMeta';
 import { LIST_DISCOVERY_PATH } from '../config/platform';
+import { CreateFlowProvider } from '../create/CreateFlowProvider';
 import { ExploreSearchInboundRedirectHost } from '../explore/search/ExploreSearchInboundRedirectHost';
 import { ListDiscoveryExperience } from './ListDiscoveryExperience';
 import '../styles/explore-map-chrome.css';
 
 export const BrowseListPage = () => (
-  <>
+  <CreateFlowProvider>
     <PageMeta
       title="Discover outdoor plans"
       description="Find people and plans to get outside together."
@@ -15,5 +16,5 @@ export const BrowseListPage = () => (
     <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
       <ListDiscoveryExperience surface="standalone" />
     </div>
-  </>
+  </CreateFlowProvider>
 );

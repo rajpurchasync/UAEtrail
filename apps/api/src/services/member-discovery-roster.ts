@@ -5,6 +5,7 @@ import type {
   MemberDiscoveryQuotaDTO,
   MemberDiscoveryRosterDTO,
 } from '@uaetrail/shared-types';
+import { buildMemberDiscoveryQuota } from '@uaetrail/shared-types';
 import { USER_CITY_LABELS, type UserCity } from '../domain/user-profile.js';
 import { findAuthUsersByIds } from '../lib/auth-users-store.js';
 import { listFriendsForUser } from '../lib/friend-store.js';
@@ -55,7 +56,7 @@ const buildFollowedBrowseCards = async (
 };
 
 export const loadMemberDiscoveryRoster = async (input: {
-  viewerUserId: string;
+  viewerUserId: string | null;
   userRole?: string | null;
   datePresetRaw?: string | null;
   search?: string;
@@ -66,6 +67,27 @@ export const loadMemberDiscoveryRoster = async (input: {
   data: MemberDiscoveryRosterDTO & { directory: MemberBrowseCardDTO[] };
   quota: MemberDiscoveryQuotaDTO;
 }> => {
+  if (!input.viewerUserId) {
+    const directory = input.omitDirectory
+      ? ([] as MemberBrowseCardDTO[])
+      : await listBrowsablePublicMembers({
+          excludeUserId: null,
+          search: input.search,
+          skip: input.skip,
+          take: input.take,
+        }).then((raw) => enrichMemberBrowseDirectory(null, raw));
+    return {
+      data: {
+        friendsGoing: [],
+        hostsGoing: [],
+        availabilityOnMap: [],
+        followed: [],
+        directory,
+      },
+      quota: buildMemberDiscoveryQuota(0, false),
+    };
+  }
+
   const datePreset = parseExploreActivityDatePreset(input.datePresetRaw);
   const [hostStatus, mapItems, friends] = await Promise.all([
     resolveMemberStatus(input.viewerUserId),

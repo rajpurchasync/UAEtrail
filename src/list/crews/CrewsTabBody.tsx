@@ -1,4 +1,3 @@
-import type { DiscoverCrewRecommendationsQueryParams } from '@/crew-discovery/lib/crewRecommendationsQuery';
 import type {
   ExploreAvailablePersonDTO,
   ExploreMapItemDTO,
@@ -16,19 +15,16 @@ import { DEFAULT_CREW_PROFESSIONAL_KIND } from '@/crew-discovery/crewBrowseState
 import { normalizeCrewBrowseLaneForProduct } from '@/crew-discovery/crewBrowseFeatureGates';
 import { crewDataLaneFromState } from '@/crew-discovery/crewBrowseState';
 import { CrewBrowseTabContent } from '@/crew-discovery/panel/crewBrowse';
-import { CrewBrowseRecommendedBody } from '@/crew-discovery/panel/crewBrowse/CrewBrowseRecommendedBody';
-import { CrewsAvailableSubChips } from './CrewsAvailableSubChips';
-import { CrewsAvailabilityGuideSubChips } from './CrewsAvailabilityGuideSubChips';
 import { CrewsCommunityBody } from './CrewsCommunityBody';
 import { CrewsProfessionalBody } from './CrewsProfessionalBody';
-import type { CrewsAvailabilityGuideFilter, CrewsAvailableOpenLens } from './crewsOpenSegment';
+import type { ExploreActivityDatePreset } from '@/explore/exploreActivityDateFilter';
+import type { CrewsAvailabilityGuideFilter, CrewsAvailabilityShapeFilter } from './crewsOpenSegment';
 
 type CrewsTabBodyProps = {
   lane: CrewBrowseLane;
   facet: CrewPeopleFacet;
   professionalKind?: CrewProfessionalKind;
-  crewsOpenLens: CrewsAvailableOpenLens;
-  onCrewsOpenLensChange: (lens: CrewsAvailableOpenLens) => void;
+  availabilityShape: CrewsAvailabilityShapeFilter;
   crewsAvailabilityGuideFilter: CrewsAvailabilityGuideFilter;
   onCrewsAvailabilityGuideFilterChange: (filter: CrewsAvailabilityGuideFilter) => void;
   isSignedIn: boolean;
@@ -37,6 +33,7 @@ type CrewsTabBodyProps = {
   availabilityError: string | null;
   friendsGoing: SocialPersonRowDTO[];
   hostsGoing: SocialPersonRowDTO[];
+  followed: MemberBrowseCardDTO[];
   directory: MemberBrowseCardDTO[];
   discoveryQuota: MemberDiscoveryQuotaDTO | null;
   discoveryLoading: boolean;
@@ -48,23 +45,25 @@ type CrewsTabBodyProps = {
   onOfferRideshareForAvailabilityItem?: (item: ExploreMapItemDTO) => void;
   onOpenAvailability: () => void;
   friendUserIds?: Set<string>;
-  crewRecommendationsQuery: DiscoverCrewRecommendationsQueryParams;
+  /** Search-led Find crew — people as {@link CrewBrowseMemberRow}, not map catalog cards. */
+  memberAvailabilityRowsOnly?: boolean;
+  followedUserIds?: ReadonlySet<string>;
+  activityDatePreset?: ExploreActivityDatePreset;
 };
 
 export const CrewsTabBody = ({
   lane,
   facet,
   professionalKind = DEFAULT_CREW_PROFESSIONAL_KIND,
-  crewsOpenLens,
-  onCrewsOpenLensChange,
+  availabilityShape,
   crewsAvailabilityGuideFilter,
-  onCrewsAvailabilityGuideFilterChange,
   isSignedIn,
   availabilityPeople,
   availabilityLoading,
   availabilityError,
   friendsGoing,
   hostsGoing,
+  followed: _followed,
   directory,
   discoveryQuota,
   discoveryLoading,
@@ -76,7 +75,9 @@ export const CrewsTabBody = ({
   onOfferRideshareForAvailabilityItem,
   onOpenAvailability,
   friendUserIds,
-  crewRecommendationsQuery,
+  memberAvailabilityRowsOnly,
+  followedUserIds,
+  activityDatePreset,
 }: CrewsTabBodyProps) => {
   const activeLane = normalizeCrewBrowseLaneForProduct(lane);
 
@@ -84,6 +85,7 @@ export const CrewsTabBody = ({
     const agencyItems = exploreCatalogItems.filter((item) => item.source === 'agency');
     return (
       <CrewsProfessionalBody
+        isSignedIn={isSignedIn}
         directory={directory}
         discoveryLoading={discoveryLoading}
         agencyItems={agencyItems}
@@ -116,40 +118,27 @@ export const CrewsTabBody = ({
     discoveryLoading,
     discoveryError,
     onOpenAvailability,
-    crewsOpenLens,
+    availabilityShape,
     availabilityGuideFilter: crewsAvailabilityGuideFilter,
-    crewRecommendationsQuery,
   };
 
   const isAvailableFacet = facet === 'available';
 
   return (
-    <>
-      {isAvailableFacet ? (
-        <CrewsAvailableSubChips lens={crewsOpenLens} onLensChange={onCrewsOpenLensChange} />
-      ) : null}
-      {isAvailableFacet && (crewsOpenLens === 'all' || crewsOpenLens === 'marked') ? (
-        <CrewsAvailabilityGuideSubChips
-          filter={crewsAvailabilityGuideFilter}
-          onFilterChange={onCrewsAvailabilityGuideFilterChange}
-        />
-      ) : null}
-      {facet === 'recommended' ? (
-        <CrewBrowseRecommendedBody {...contentProps} />
-      ) : (
-        <CrewBrowseTabContent
-          tab={
-            crewDataLaneFromState({
-              lane: activeLane,
-              facet,
-              proKind: professionalKind,
-            } satisfies CrewBrowseState) ?? 'available'
-          }
-          {...contentProps}
-          crewsOpenLens={isAvailableFacet ? crewsOpenLens : undefined}
-          availabilityGuideFilter={isAvailableFacet ? crewsAvailabilityGuideFilter : undefined}
-        />
-      )}
-    </>
+    <CrewBrowseTabContent
+        tab={
+          crewDataLaneFromState({
+            lane: activeLane,
+            facet,
+            proKind: professionalKind,
+          } satisfies CrewBrowseState) ?? 'available'
+        }
+        {...contentProps}
+        availabilityShape={isAvailableFacet ? availabilityShape : undefined}
+        availabilityGuideFilter={isAvailableFacet ? crewsAvailabilityGuideFilter : undefined}
+        memberAvailabilityRowsOnly={memberAvailabilityRowsOnly}
+        followedUserIds={followedUserIds}
+        activityDatePreset={activityDatePreset}
+      />
   );
 };

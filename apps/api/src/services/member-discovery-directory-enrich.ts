@@ -29,7 +29,7 @@ const friendRequestStateForTarget = (
 };
 
 export const enrichMemberBrowseDirectory = async (
-  viewerUserId: string,
+  viewerUserId: string | null,
   cards: MemberBrowseCardDTO[]
 ): Promise<MemberBrowseCardDTO[]> => {
   if (cards.length === 0) return cards;
@@ -38,11 +38,29 @@ export const enrichMemberBrowseDirectory = async (
   const users = await findAuthUsersByIds(userIds);
   const userMap = new Map(users.map((user) => [user._id, user]));
 
-  const [requests, attendedMap, messageablePartnerIds, roleMap] = await Promise.all([
-    listFriendRequestsForUser(viewerUserId, 'all'),
+  const [attendedMap, roleMap] = await Promise.all([
     countCheckedInParticipationsForUserIds(userIds),
-    filterInboxMessageablePartnerIds(viewerUserId, userIds),
     batchResolveMemberProfileRoleLabelsForDirectory(users),
+  ]);
+
+  if (!viewerUserId) {
+    return cards.map((card) => {
+      const user = userMap.get(card.id);
+      return {
+        ...card,
+        bioPreview: trimBio(user?.profile?.bio ?? null),
+        activitiesAttended: attendedMap.get(card.id) ?? 0,
+        profileRoleLabel: (roleMap.get(card.id) ?? 'community_member') as MemberProfileRoleLabel,
+        canMessage: false,
+        canSendFriendRequest: false,
+        friendRequestState: 'none' as const,
+      };
+    });
+  }
+
+  const [requests, messageablePartnerIds] = await Promise.all([
+    listFriendRequestsForUser(viewerUserId, 'all'),
+    filterInboxMessageablePartnerIds(viewerUserId, userIds),
   ]);
   const pendingIncoming = new Set(
     requests

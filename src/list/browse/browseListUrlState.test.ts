@@ -11,11 +11,12 @@ describe('browseListUrlState trip topics', () => {
     expect(parseListCatParam('guides')).toBe('people');
   });
 
-  it('defaults crews list to People Recommended when tab params omitted', () => {
+  it('defaults crews list to My crew hub when surface omitted', () => {
     const params = new URLSearchParams('listCat=people');
     const state = parseBrowseListFilterState(params);
+    expect(state.crewPeopleSurface).toBe('my');
     expect(state.crewBrowseLane).toBe('people');
-    expect(state.crewPeopleFacet).toBe('recommended');
+    expect(state.crewPeopleFacet).toBe('available');
     const serialized = serializeBrowseListSearchParams(state, []);
     expect(serialized.get('buddies')).toBeNull();
     expect(serialized.get('peopleTab')).toBeNull();
@@ -26,18 +27,20 @@ describe('browseListUrlState trip topics', () => {
     const params = new URLSearchParams('listCat=people&buddies=looking');
     const state = parseBrowseListFilterState(params);
     expect(state.crewBrowseLane).toBe('people');
-    expect(state.crewPeopleFacet).toBe('recommended');
+    expect(state.crewPeopleFacet).toBe('available');
     const serialized = serializeBrowseListSearchParams(state, []);
     expect(serialized.get('buddies')).toBeNull();
     expect(serialized.get('peopleFacet')).toBeNull();
   });
 
-  it('round-trips peopleFacet=friends', () => {
-    const params = new URLSearchParams('listCat=people&peopleFacet=friends');
+  it('round-trips peopleFacet=available', () => {
+    const params = new URLSearchParams('listCat=people&peopleFacet=available');
     const state = parseBrowseListFilterState(params);
-    expect(state.crewPeopleFacet).toBe('friends');
+    expect(state.crewBrowseLane).toBe('people');
+    expect(state.crewPeopleFacet).toBe('available');
     const serialized = serializeBrowseListSearchParams(state, []);
-    expect(serialized.get('peopleFacet')).toBe('friends');
+    expect(serialized.get('peopleTab')).toBeNull();
+    expect(serialized.get('peopleFacet')).toBeNull();
     expect(serialized.get('buddies')).toBeNull();
   });
 
@@ -63,8 +66,9 @@ describe('browseListUrlState trip topics', () => {
         when: 'any',
         activityDatePreset: 'anyday',
         crewBrowseLane: 'people',
-        crewPeopleFacet: 'recommended',
+        crewPeopleFacet: 'available',
         crewProfessionalKind: 'all',
+        crewPeopleSurface: 'find',
         hasTrip: false,
         facilityKinds: [],
         audience: 'anyone',
@@ -113,6 +117,8 @@ describe('browseListUrlState trip topics', () => {
         activityDatePreset: 'anyday',
         crewBrowseLane: 'people',
         crewPeopleFacet: 'available',
+        crewProfessionalKind: 'all',
+        crewPeopleSurface: 'find',
         hasTrip: false,
         facilityKinds: [],
         audience: 'anyone',
@@ -120,6 +126,6 @@ describe('browseListUrlState trip topics', () => {
       []
     );
     expect(serialized.get('filter')).toBe('hiking,others');
-    expect(serialized.get('peopleFacet')).toBe('available');
+    expect(serialized.get('peopleFacet')).toBeNull();
   });
 });

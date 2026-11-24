@@ -8,7 +8,11 @@ import {
   cancelMemberFriendRequest,
   declineMemberFriendRequest,
   sendMemberFriendRequest,
+  unfriendMember,
 } from '../hooks/memberPeopleClientApi';
+import { Dialog } from '../components/ui/Dialog';
+import { useQueryClient } from '@tanstack/react-query';
+import { meFriendsNetworkQueryKey } from '../hooks/clientQueryKeys';
 /** Public reads: `memberPublicProfileApi` via {@link useMemberProfilePage}. */
 import { useMemberProfilePage } from '../hooks/useMemberProfilePage';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
@@ -69,8 +73,10 @@ export const MemberProfile = () => {
       }),
     [isSelf, location.state]
   );
+  const queryClient = useQueryClient();
   const [friendActionBusy, setFriendActionBusy] = useState(false);
   const [friendMessage, setFriendMessage] = useState<string | null>(null);
+  const [unfriendConfirm, setUnfriendConfirm] = useState(false);
   const browseLens = useMemo(() => parseMemberProfileBrowseLens(location.search), [location.search]);
   const [presentation, setPresentation] = useState<MemberProfilePresentationMode>('social');
   const [loadSocialGraph, setLoadSocialGraph] = useState(false);
@@ -183,6 +189,27 @@ export const MemberProfile = () => {
       await reloadFriendRel();
     } catch (err) {
       setFriendMessage(err instanceof Error ? err.message : 'Could not cancel request.');
+    } finally {
+      setFriendActionBusy(false);
+    }
+  };
+
+  const handleUnfriend = async () => {
+    if (!userId || !friendRel?.areFriends || friendActionBusy) return;
+    setFriendActionBusy(true);
+    setFriendMessage(null);
+    try {
+      await unfriendMember(userId);
+      setFriendMessage('Removed from friends.');
+      setUnfriendConfirm(false);
+      await reloadFriendRel();
+      setLoadSocialGraph(true);
+      await refreshSocialGraphFriends();
+      if (user?.id) {
+        void queryClient.invalidateQueries({ queryKey: meFriendsNetworkQueryKey(user.id) });
+      }
+    } catch (err) {
+      setFriendMessage(err instanceof Error ? err.message : 'Could not unfriend.');
     } finally {
       setFriendActionBusy(false);
     }
@@ -325,6 +352,7 @@ export const MemberProfile = () => {
           onAcceptFriendRequest={() => void handleAcceptFriendRequest()}
           onDeclineFriendRequest={() => void handleDeclineFriendRequest()}
           onCancelFriendRequest={() => void handleCancelFriendRequest()}
+          onUnfriend={() => setUnfriendConfirm(true)}
           onMessage={() => navigate(messagesRouteForRole(user!.role, fullProfile.id))}
           upcomingActivities={upcomingActivities}
           pastActivities={pastActivities}
@@ -342,6 +370,38 @@ export const MemberProfile = () => {
           showPresentationSwitch={showPresentationSwitch}
         />
       ) : null}
+
+      <Dialog
+        open={unfriendConfirm && Boolean(friendRel?.areFriends)}
+        onClose={() => {
+          if (!friendActionBusy) setUnfriendConfirm(false);
+        }}
+        title="Unfriend?"
+      >
+        <p className="text-sm text-neutral-600">
+          {fullProfile?.displayName
+            ? `${fullProfile.displayName} will not be notified. They will no longer see your private profile or message you unless you connect again.`
+            : 'They will no longer see your private profile or message you unless you connect again.'}
+        </p>
+        <div className="mt-4 flex gap-2">
+          <button
+            type="button"
+            disabled={friendActionBusy}
+            onClick={() => setUnfriendConfirm(false)}
+            className="inline-flex min-h-10 flex-1 items-center justify-center rounded-xl border border-neutral-200 bg-white text-sm font-semibold text-neutral-800"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            disabled={friendActionBusy}
+            onClick={() => void handleUnfriend()}
+            className="inline-flex min-h-10 flex-1 items-center justify-center rounded-xl bg-red-600 text-sm font-semibold text-white hover:bg-red-700"
+          >
+            {friendActionBusy ? 'Unfriending…' : 'Unfriend'}
+          </button>
+        </div>
+      </Dialog>
     </ConsumerShell>
   );
 };

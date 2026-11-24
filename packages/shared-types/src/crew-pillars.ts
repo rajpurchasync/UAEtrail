@@ -129,12 +129,13 @@ export const CREW_PILLAR_SPECS: Record<CrewPillarId, CrewPillarSpec> = {
 export const isCrewPillarId = (value: string): value is CrewPillarId =>
   (CREW_PILLAR_IDS as readonly string[]).includes(value);
 
-export type CrewPeopleFacetWire = 'recommended' | 'friends' | 'available' | 'everyone';
+export type CrewPeopleFacetWire = 'recommended' | 'friends' | 'active' | 'available' | 'everyone';
 
 /** People tab facet → pillar (discover browse). */
 export const crewPeopleFacetToPillar = (facet: CrewPeopleFacetWire): CrewPillarId => {
   switch (facet) {
     case 'friends':
+    case 'active':
       return 'friends';
     case 'available':
       return 'intent_signal';

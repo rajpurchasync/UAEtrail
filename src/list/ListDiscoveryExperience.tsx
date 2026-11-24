@@ -3,6 +3,7 @@ import { ListFeedActionsProvider } from './browse/ListFeedActionsProvider';
 import { browseListCatForBucket, scopeBrowseListStateForListCat } from './browse/browseListMapHandoff';
 import { BrowseListCreateFab } from './explorer/BrowseListCreateFab';
 import { ListCrewsExplorer } from './explorer/ListCrewsExplorer';
+import { ListMyCrewHub } from './explorer/ListMyCrewHub';
 import { ListDiscoveryMapColumn } from './explorer/ListDiscoveryMapColumn';
 import { ListExplorer } from './explorer/ListExplorer';
 import { ListSideMapResizeHandle } from './explorer/ListSideMapResizeHandle';
@@ -41,11 +42,10 @@ export const ListDiscoveryExperience = (props: ListDiscoveryExperienceProps) => 
     mapHref,
     listSearchPlaceholder,
     listSearchScopeHints,
-    crewsOpenLens,
-    crewsAvailabilityGuideFilter,
     handleOpenMarkAvailability,
+    crewsOpenLens,
+    clock,
     filterCount,
-    crewsStatCounts,
     items,
     isLoading,
     exploreSearchMapView,
@@ -119,53 +119,32 @@ export const ListDiscoveryExperience = (props: ListDiscoveryExperienceProps) => 
             onOfferRideshareForAvailabilityItem={offerRideshareForAvailabilityItem}
             crewRecommendationsQuery={crewRecommendationsQuery}
           />
+        ) : filters.crewPeopleSurface === 'my' ? (
+          <ListMyCrewHub />
         ) : (
           <ListCrewsExplorer
-            query={draftQuery}
+            isSignedIn={Boolean(user)}
+            user={user}
+            draftQuery={draftQuery}
+            committedQuery={filters.query}
             onQueryChange={setDraftQuery}
             onQuerySync={commitQuery}
             onSearchCommit={handleSearchCommit}
-            onClearQuery={() => syncUrl({ query: '' })}
-            searchScopeCounts={searchScopeCounts}
-            mapHref={mapHref}
-            suppressSearch={suppressListSearch}
-            searchPlaceholder={listSearchPlaceholder}
-            enableSearchScopeHints={listSearchScopeHints}
-            searchResultsChrome={searchResultsChrome}
-            exploreSearchResults={exploreSearch}
-            crewBrowseLane={filters.crewBrowseLane}
-            crewPeopleFacet={filters.crewPeopleFacet}
-            onCrewBrowseLaneChange={(lane) =>
-              syncUrl({ crewBrowseLane: lane, crewsOpen: null, crewsAvailGuide: null })
-            }
-            onCrewPeopleFacetChange={(facet) =>
-              syncUrl({ crewPeopleFacet: facet, crewsOpen: null, crewsAvailGuide: null })
-            }
-            crewProfessionalKind={filters.crewProfessionalKind}
-            onCrewProfessionalKindChange={(kind) => syncUrl({ crewProfessionalKind: kind })}
-            crewsOpenLens={crewsOpenLens}
-            onCrewsOpenLensChange={(lens) => syncUrl({ crewsOpen: lens })}
-            crewsAvailabilityGuideFilter={crewsAvailabilityGuideFilter}
-            onCrewsAvailabilityGuideFilterChange={(filter) => syncUrl({ crewsAvailGuide: filter })}
+            filters={filters}
+            venueRegions={venueRegions}
+            geoPath={geoPath}
+            activityDatePreset={filters.activityDatePreset}
+            onActivityDatePresetChange={handleActivityDatePresetChange}
+            onVenueRegionsChange={handleVenueRegionsChange}
+            onSyncBrowse={(patch) => syncUrl(patch)}
             onOpenIntentOpen={handleOpenMarkAvailability}
-            isSignedIn={Boolean(user)}
-            filterCount={filterCount}
-            statCounts={crewsStatCounts}
-            availabilityCatalogItems={availabilityCatalogItems}
             exploreCatalogItems={items}
             exploreCatalogLoading={isLoading}
+            availabilityCatalogItems={availabilityCatalogItems}
+            crewsOpenLens={crewsOpenLens}
+            clock={clock}
             onOpenAvailabilityCatalogItem={handleOpenAvailabilityCatalogItem}
             onOfferRideshareForAvailabilityItem={offerRideshareForAvailabilityItem}
-            availabilityPeople={memberAvailability.people}
-            availabilityLoading={memberAvailability.loading}
-            availabilityError={memberAvailability.error}
-            discoveryFriendsGoing={memberRoster.friendsGoing}
-            discoveryHostsGoing={memberRoster.hostsGoing}
-            discoveryDirectory={memberRoster.directory}
-            discoveryQuota={memberRoster.quota}
-            discoveryLoading={memberRoster.loading}
-            discoveryError={memberRoster.error}
-            crewRecommendationsQuery={crewRecommendationsQuery}
           />
         )
       ) : exploreSearch && exploreSearchMapView && !isPeopleCategory ? (
@@ -268,7 +247,10 @@ export const ListDiscoveryExperience = (props: ListDiscoveryExperienceProps) => 
         </ListFeedActionsProvider>
       )}
 
-      {embeddedOnExplore || overlayImmersive || exploreSearch ? null : (
+      {embeddedOnExplore ||
+      overlayImmersive ||
+      exploreSearch ||
+      (isPeopleCategory && filters.crewPeopleSurface === 'find') ? null : (
         <BrowseListCreateFab onClick={handleCreateFabTap} label={createFabLabel} />
       )}
     </div>

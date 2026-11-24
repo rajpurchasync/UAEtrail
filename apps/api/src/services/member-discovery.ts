@@ -14,14 +14,16 @@ const isPublicMemberProfile = (profileVisibility: unknown): boolean => {
 
 /** Paginated directory of members with `profileVisibility: public` (Discover browse). */
 export const listBrowsablePublicMembers = async (input: {
-  excludeUserId: string;
+  excludeUserId: string | null;
   /** Buddies and self — never listed in Discover directory. */
   excludeUserIds?: ReadonlySet<string>;
   search?: string;
   skip: number;
   take: number;
 }): Promise<MemberBrowseCardDTO[]> => {
-  const exclude = input.excludeUserIds ?? new Set<string>([input.excludeUserId]);
+  const exclude =
+    input.excludeUserIds ??
+    new Set(input.excludeUserId ? [input.excludeUserId] : undefined);
   // Over-fetch so find-crew visibility filtering still fills the page.
   const users = await listAuthUsers({
     status: 'ACTIVE',
@@ -34,7 +36,7 @@ export const listBrowsablePublicMembers = async (input: {
   const candidates = users.filter(
     (user) => !exclude.has(user._id) && isPublicMemberProfile(user.profile?.profileVisibility)
   );
-  const visibleIds = await filterSubjectsVisibleInFindCrew(candidates, input.excludeUserId);
+  const visibleIds = await filterSubjectsVisibleInFindCrew(candidates, input.excludeUserId ?? null);
   const visible = candidates.filter((user) => visibleIds.has(user._id)).slice(0, input.take);
 
   const cityByUserId = await resolveCityLabelsForViewerBatch(
@@ -43,7 +45,7 @@ export const listBrowsablePublicMembers = async (input: {
       const cityLabel = rawCity ? USER_CITY_LABELS[rawCity as UserCity] ?? null : null;
       return { subject: user, cityLabel };
     }),
-    input.excludeUserId
+    input.excludeUserId ?? null
   );
 
   return visible.map((user) => ({

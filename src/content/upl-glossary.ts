@@ -77,6 +77,17 @@ export const UPL_INTENT_AVAILABLE_AS_GUIDE = 'Available as Guide';
 /** Intent compose — fixed window on the map (`intent:fixed:*`). */
 export const UPL_INTENT_FIXED_MENU = 'Fixed time and place';
 
+/** Intent compose — schedule shape (open vs fixed). */
+export const UPL_INTENT_SCHEDULE_QUESTION = 'Is your date fixed or flexible?';
+
+/** Intent compose — free participant lane (not paid guide). */
+export const UPL_INTENT_JOIN_FREE = 'Join free';
+
+/** Intent compose — paid guide / professional lane. */
+export const UPL_INTENT_PROFESSIONAL_PAID = 'Professional (paid)';
+
+export const UPL_INTENT_LANE_QUESTION = 'Available to go as';
+
 /** Crew umbrella — distinct pillars (friends · teams · communities · guides · outing roster · intent). */
 export const UPL_CREW_PILLAR_FRIENDS = 'Friends';
 export const UPL_CREW_PILLAR_TEAMS = 'Teams';

@@ -119,6 +119,12 @@ export const friendRelationshipQueryKey = (viewerUserId: string, targetUserId: s
 
 export const meFriendsNetworkQueryKey = (userId: string): QueryKey => ['me', 'friends-network', userId];
 
+export const meFriendActivityPresenceQueryKey = (userId: string): QueryKey => [
+  'me',
+  'friends-activity-presence',
+  userId,
+];
+
 export const meFollowingMembersQueryKey = (userId: string): QueryKey => ['me', 'following-members', userId];
 
 export const activityHostJoinRequestsQueryKey = (tenantId: string, activityId: string): QueryKey => [

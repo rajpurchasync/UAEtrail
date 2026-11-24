@@ -1,179 +1,141 @@
-import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../../explore/exploreBrowseTaxonomy';
 import { APP_SCROLL_BODY_CLASS } from '../../config/layoutScroll';
-import type { DiscoverCrewRecommendationsQueryParams } from '@/crew-discovery/lib/crewRecommendationsQuery';
-import type {
-  ExploreAvailablePersonDTO,
-  ExploreMapItemDTO,
-  MemberDiscoveryQuotaDTO,
-  MemberBrowseCardDTO,
-  SocialPersonRowDTO,
-} from '@uaetrail/shared-types';
+import type { ExploreClockStyle, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type {
   CrewBrowseLane,
   CrewPeopleFacet,
   CrewProfessionalKind,
 } from '@/crew-discovery/crewBrowseState';
-import { ListCrewsExplorerHeader } from './ListCrewsExplorerHeader';
-import { CrewsTabBody } from '../crews/CrewsTabBody';
-import type { CrewsStatCounts } from '../crews/CrewsStatsTabs';
-import type { CrewsAvailabilityGuideFilter, CrewsAvailableOpenLens } from '../crews/crewsOpenSegment';
+import type { ExploreActivityDatePreset } from '@/explore/exploreActivityDateFilter';
+import type { BrowseListFilterState } from '@/list/browse/browseListFilters';
+import { crewsHubHomePath } from '@/list/browse/browseListRouting';
+import { LIST_APP_BAR, LIST_CHROME } from '@/list/browse/listChromeTheme';
+import { FIND_CREW_SEARCH_TITLE } from './findCrewSearchCopy';
+import { EXPLORE_SEARCH_PAGE_COLUMN } from '@/explore/search/ExploreSearchPageLayout';
+import { MobileBackButton } from '@/components/mobile/MobileBackButton';
+import { FindCrewSearchChrome } from './FindCrewSearchChrome';
+import { FindCrewResultsSection } from './FindCrewResultsSection';
+import type { CrewsAvailableOpenLens } from '@/list/crews/crewsOpenSegment';
 
 type ListCrewsExplorerProps = {
-  query: string;
+  isSignedIn: boolean;
+  user: { id: string } | null | undefined;
+  draftQuery: string;
+  committedQuery: string;
   onQueryChange: (value: string) => void;
   onQuerySync: () => void;
-  onSearchCommit: (scope?: ExploreSearchScopeKey | null) => void;
-  onClearQuery: () => void;
-  searchScopeCounts: ExploreSearchScopeCounts;
-  mapHref: string;
-  crewBrowseLane: CrewBrowseLane;
-  crewPeopleFacet: CrewPeopleFacet;
-  onCrewBrowseLaneChange: (lane: CrewBrowseLane) => void;
-  onCrewPeopleFacetChange: (facet: CrewPeopleFacet) => void;
-  crewProfessionalKind: CrewProfessionalKind;
-  onCrewProfessionalKindChange: (kind: CrewProfessionalKind) => void;
-  crewsOpenLens: CrewsAvailableOpenLens;
-  onCrewsOpenLensChange: (lens: CrewsAvailableOpenLens) => void;
-  crewsAvailabilityGuideFilter: CrewsAvailabilityGuideFilter;
-  onCrewsAvailabilityGuideFilterChange: (filter: CrewsAvailabilityGuideFilter) => void;
+  onSearchCommit?: () => void;
+  filters: BrowseListFilterState;
+  venueRegions: string[];
+  geoPath: string[];
+  activityDatePreset: ExploreActivityDatePreset;
+  onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
+  onVenueRegionsChange: (regions: string[]) => void;
+  onSyncBrowse: (patch: {
+    crewBrowseLane?: CrewBrowseLane;
+    crewPeopleFacet?: CrewPeopleFacet;
+    crewProfessionalKind?: CrewProfessionalKind;
+    tripAvailabilityOnly?: boolean;
+  }) => void;
+  /** Intent compose — kept on props for explore drawer parity guards; no top CTA on this surface. */
   onOpenIntentOpen: () => void;
-  isSignedIn: boolean;
-  filterCount: number;
-  statCounts: CrewsStatCounts;
-  availabilityCatalogItems: ExploreMapItemDTO[];
   exploreCatalogItems: ExploreMapItemDTO[];
   exploreCatalogLoading: boolean;
+  availabilityCatalogItems: ExploreMapItemDTO[];
+  crewsOpenLens: CrewsAvailableOpenLens;
+  clock: ExploreClockStyle;
   onOpenAvailabilityCatalogItem: (item: ExploreMapItemDTO) => void;
   onOfferRideshareForAvailabilityItem?: (item: ExploreMapItemDTO) => void;
-  friendUserIds?: Set<string>;
-  availabilityPeople: ExploreAvailablePersonDTO[];
-  availabilityLoading: boolean;
-  availabilityError: string | null;
-  discoveryFriendsGoing: SocialPersonRowDTO[];
-  discoveryHostsGoing: SocialPersonRowDTO[];
-  discoveryDirectory: MemberBrowseCardDTO[];
-  discoveryQuota: MemberDiscoveryQuotaDTO | null;
-  discoveryLoading: boolean;
-  discoveryError: string | null;
-  suppressSearch?: boolean;
-  searchPlaceholder?: string;
-  enableSearchScopeHints?: boolean;
-  searchResultsChrome?: boolean;
-  exploreSearchResults?: boolean;
-  crewRecommendationsQuery: DiscoverCrewRecommendationsQueryParams;
 };
 
+const handleFindCrewSearchSubmit =
+  (onQuerySync: () => void, onSearchCommit?: () => void) => () => {
+    onQuerySync();
+    onSearchCommit?.();
+  };
+
+/** Find crew — booking search + crew-only results (no product tab header). */
 export const ListCrewsExplorer = ({
-  query,
+  user,
+  isSignedIn,
+  draftQuery,
+  committedQuery,
   onQueryChange,
   onQuerySync,
   onSearchCommit,
-  onClearQuery,
-  searchScopeCounts,
-  mapHref,
-  crewBrowseLane,
-  crewPeopleFacet,
-  onCrewBrowseLaneChange,
-  onCrewPeopleFacetChange,
-  crewProfessionalKind,
-  onCrewProfessionalKindChange,
-  crewsOpenLens,
-  onCrewsOpenLensChange,
-  crewsAvailabilityGuideFilter,
-  onCrewsAvailabilityGuideFilterChange,
+  filters,
+  venueRegions,
+  geoPath,
+  activityDatePreset,
+  onActivityDatePresetChange,
+  onVenueRegionsChange,
+  onSyncBrowse,
   onOpenIntentOpen,
-  isSignedIn,
-  filterCount,
-  statCounts,
-  availabilityCatalogItems,
   exploreCatalogItems,
   exploreCatalogLoading,
+  availabilityCatalogItems,
+  crewsOpenLens,
+  clock,
   onOpenAvailabilityCatalogItem,
   onOfferRideshareForAvailabilityItem,
-  friendUserIds,
-  availabilityPeople,
-  availabilityLoading,
-  availabilityError,
-  discoveryFriendsGoing,
-  discoveryHostsGoing,
-  discoveryDirectory,
-  discoveryQuota,
-  discoveryLoading,
-  discoveryError,
-  suppressSearch = false,
-  searchPlaceholder,
-  enableSearchScopeHints = true,
-  searchResultsChrome = false,
-  exploreSearchResults = false,
-  crewRecommendationsQuery,
 }: ListCrewsExplorerProps) => {
-  const stickySearch = query.trim().length > 0;
-
+  void onOpenIntentOpen;
   return (
-    <div className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-neutral-50">
-      <ListCrewsExplorerHeader
-        query={query}
-        onQueryChange={onQueryChange}
-        onQuerySync={onQuerySync}
-        onSearchCommit={onSearchCommit}
-        onClearQuery={onClearQuery}
-        searchScopeCounts={searchScopeCounts}
-        mapHref={mapHref}
-        crewBrowseLane={crewBrowseLane}
-        crewPeopleFacet={crewPeopleFacet}
-        onCrewBrowseLaneChange={onCrewBrowseLaneChange}
-        onCrewPeopleFacetChange={onCrewPeopleFacetChange}
-        crewProfessionalKind={crewProfessionalKind}
-        onCrewProfessionalKindChange={onCrewProfessionalKindChange}
-        stickySearch={stickySearch}
-        isSignedIn={isSignedIn}
-        statCounts={statCounts}
-        onOpenAvailability={onOpenIntentOpen}
-        filterCount={filterCount}
-        suppressSearch={suppressSearch}
-        searchPlaceholder={searchPlaceholder}
-        enableSearchScopeHints={enableSearchScopeHints}
-        searchResultsChrome={searchResultsChrome}
-        exploreSearchResults={exploreSearchResults}
-        mapListResultCount={discoveryDirectory.length}
-      />
-      <div
-        className={`${APP_SCROLL_BODY_CLASS} min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain pb-[calc(var(--bottom-nav-height,56px)+var(--safe-bottom,0px)+24px)]`}
-      >
-        <div
-          className={`mx-auto w-full px-4 py-3 md:py-5 ${
-            searchResultsChrome ? 'max-w-lg md:px-5' : 'max-w-6xl md:px-6'
-          }`}
-        >
-          <CrewsTabBody
-            lane={crewBrowseLane}
-            facet={crewPeopleFacet}
-            professionalKind={crewProfessionalKind}
-            crewsOpenLens={crewsOpenLens}
-            onCrewsOpenLensChange={onCrewsOpenLensChange}
-            crewsAvailabilityGuideFilter={crewsAvailabilityGuideFilter}
-            onCrewsAvailabilityGuideFilterChange={onCrewsAvailabilityGuideFilterChange}
-            isSignedIn={isSignedIn}
-            availabilityCatalogItems={availabilityCatalogItems}
-            exploreCatalogItems={exploreCatalogItems}
-            exploreCatalogLoading={exploreCatalogLoading}
-            onOpenAvailabilityCatalogItem={onOpenAvailabilityCatalogItem}
-            onOfferRideshareForAvailabilityItem={onOfferRideshareForAvailabilityItem}
-            friendUserIds={friendUserIds}
-            availabilityPeople={availabilityPeople}
-            availabilityLoading={availabilityLoading}
-            availabilityError={availabilityError}
-            friendsGoing={discoveryFriendsGoing}
-            hostsGoing={discoveryHostsGoing}
-            directory={discoveryDirectory}
-            discoveryQuota={discoveryQuota}
-            discoveryLoading={discoveryLoading}
-            discoveryError={discoveryError}
-            onOpenAvailability={onOpenIntentOpen}
-            crewRecommendationsQuery={crewRecommendationsQuery}
-          />
+  <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+    <header
+      className={`sticky top-0 z-20 shrink-0 ${LIST_CHROME.chromeBg} ${LIST_CHROME.chromeBorder}`}
+    >
+      <div className={`${EXPLORE_SEARCH_PAGE_COLUMN} ${LIST_CHROME.horizontalPad} py-1.5`}>
+        <div className="grid min-h-10 grid-cols-[minmax(72px,auto)_1fr_minmax(72px,auto)] items-center gap-1">
+          <div className="justify-self-start">
+            <MobileBackButton
+              fallbackTo={crewsHubHomePath()}
+              label="My crew"
+              className="min-h-[36px] py-0 -ml-1"
+            />
+          </div>
+          <h1 className={`${LIST_APP_BAR.title} truncate text-center`}>{FIND_CREW_SEARCH_TITLE}</h1>
+          <span className="min-w-[72px]" aria-hidden />
         </div>
       </div>
+    </header>
+
+    <div
+      className={`${APP_SCROLL_BODY_CLASS} min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain pb-[calc(var(--bottom-nav-height,56px)+var(--safe-bottom,0px)+1rem)]`}
+    >
+      <div
+        className={`${EXPLORE_SEARCH_PAGE_COLUMN} ${LIST_CHROME.horizontalPad} flex flex-col gap-4 pb-4 pt-3`}
+      >
+        <FindCrewSearchChrome
+          query={draftQuery}
+          committedQuery={committedQuery}
+          onQueryChange={onQueryChange}
+          onSearchSubmit={handleFindCrewSearchSubmit(onQuerySync, onSearchCommit)}
+          filters={filters}
+          regions={venueRegions}
+          onActivityDatePresetChange={onActivityDatePresetChange}
+          onVenueRegionsChange={onVenueRegionsChange}
+        />
+        <FindCrewResultsSection
+          user={user}
+          isSignedIn={isSignedIn}
+          draftQuery={draftQuery}
+          committedQuery={committedQuery}
+          filters={filters}
+          activityDatePreset={activityDatePreset}
+          venueRegions={venueRegions}
+          geoPath={geoPath}
+          clock={clock}
+          exploreCatalogItems={exploreCatalogItems}
+          exploreCatalogLoading={exploreCatalogLoading}
+          availabilityCatalogItems={availabilityCatalogItems}
+          crewsOpenLens={crewsOpenLens}
+          onOpenAvailabilityCatalogItem={onOpenAvailabilityCatalogItem}
+          onOfferRideshareForAvailabilityItem={onOfferRideshareForAvailabilityItem}
+          onOpenIntentOpen={onOpenIntentOpen}
+          onSyncBrowse={onSyncBrowse}
+        />
+      </div>
     </div>
+  </div>
   );
 };

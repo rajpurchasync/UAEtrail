@@ -80,6 +80,17 @@ describe('peopleVocabularyTouchpointsGuard (MIG-PEOPLE-VOCAB-2026)', () => {
     expect(missing, missing.join('\n')).toEqual([]);
   });
 
+  it('PVOC-03a: Find crew list must not embed My crew hub body (surface split)', () => {
+    const tabBody = read('src/list/crews/CrewsTabBody.tsx');
+    expect(tabBody).not.toMatch(/CrewBrowseMyCrewBody/);
+    expect(tabBody).not.toMatch(/CrewBrowseGuestDiscoverBody/);
+    expect(read('src/list/explorer/ListMyCrewHub.tsx')).toMatch(/MyCrewHubBody/);
+    expect(read('src/list/crews/CrewsHubAppBar.tsx')).toMatch(/findCrewDiscoveryListPath/);
+    expect(read('src/list/crews/findCrewPeopleFacets.ts')).toMatch(/FIND_CREW_PEOPLE_STAT_ORDER/);
+    expect(read('src/list/crews/CrewsStatsTabs.tsx')).not.toMatch(/friends/);
+    expect(read('packages/shared-types/src/crew-people-surfaces.ts')).toMatch(/CREW_PEOPLE_SURFACE_URL_PARAM/);
+  });
+
   it('PVOC-03: My Crews hub uses friends network hook + product copy (wire /me/friends)', () => {
     const page = read('src/pages/MyCrews.tsx');
     expect(page).not.toMatch(/CrewBrowseTabContent/);

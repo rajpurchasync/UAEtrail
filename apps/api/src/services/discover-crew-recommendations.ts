@@ -48,6 +48,7 @@ export const loadDiscoverCrewRecommendations = async (input: {
       rangeEnd: to,
       kind: input.kind ?? null,
       areaSlug: input.areaSlug ?? null,
+      region: null,
       friendsOnly: false,
     }),
   ]);

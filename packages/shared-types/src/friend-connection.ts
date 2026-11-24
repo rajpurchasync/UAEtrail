@@ -4,6 +4,8 @@ export interface FriendUserPreviewDTO {
   id: string;
   displayName: string;
   avatarUrl: string | null;
+  /** Resolved for viewer (privacy-aware); omit when hidden. */
+  cityLabel?: string | null;
 }
 
 export interface FriendRequestDTO {
@@ -23,6 +25,8 @@ export interface FriendSummaryDTO {
   displayName: string;
   avatarUrl: string | null;
   connectedAt: string;
+  cityLabel?: string | null;
+  lastActiveAt?: string | null;
 }
 
 export interface FriendRelationshipDTO {

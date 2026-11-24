@@ -21,13 +21,13 @@ export const useExploreSearchParamRedirect = (
 ) => {
   const inboundSearchOpen = searchParams.get('search') === '1' && isSearchModalPath(pathname);
 
-  const legacySearchHomeCompose =
+  const inboundRetiredComposeSearchHome =
     pathname === EXPLORE_SEARCH_RESULTS_PATH &&
     searchParams.get('compose') === '1' &&
     searchParams.get(EXPLORE_SEARCH_COMPOSE_PARAM) !== '1';
 
   useEffect(() => {
-    if (!inboundSearchOpen && !legacySearchHomeCompose) return;
+    if (!inboundSearchOpen && !inboundRetiredComposeSearchHome) return;
     const next = new URLSearchParams(searchParams);
     next.delete('search');
     next.delete('compose');
@@ -36,5 +36,5 @@ export const useExploreSearchParamRedirect = (
     navigate(qs ? `${EXPLORE_SEARCH_RESULTS_PATH}?${qs}` : `${EXPLORE_SEARCH_RESULTS_PATH}?${EXPLORE_SEARCH_COMPOSE_PARAM}=1`, {
       replace: true,
     });
-  }, [inboundSearchOpen, legacySearchHomeCompose, navigate, searchParams]);
+  }, [inboundSearchOpen, inboundRetiredComposeSearchHome, navigate, searchParams]);
 };

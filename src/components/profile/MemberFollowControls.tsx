@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import type { MemberFollowStateDTO } from '@uaetrail/shared-types';
 import { fetchMemberFollowState, setMemberFollow } from '../../hooks/memberFollowApi';
+import { meFollowingMembersQueryKey } from '../../hooks/clientQueryKeys';
+import { useAuth } from '../../context/AuthContext';
 import { AppButton } from '../mobile/AppButton';
 
 type MemberFollowControlsProps = {
@@ -17,6 +20,8 @@ export const MemberFollowControls = ({
   className,
   onStatusMessage,
 }: MemberFollowControlsProps) => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [state, setState] = useState<MemberFollowStateDTO | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -41,6 +46,9 @@ export const MemberFollowControls = ({
     try {
       const next = await setMemberFollow(targetUserId, !state.isFollowing);
       setState(next);
+      if (user?.id) {
+        void queryClient.invalidateQueries({ queryKey: meFollowingMembersQueryKey(user.id) });
+      }
       onStatusMessage?.(
         next.isFollowing
           ? 'You will get notified when they host an outing.'
@@ -64,10 +72,16 @@ export const MemberFollowControls = ({
         disabled={busy}
         onClick={() => void toggle()}
       >
-        {state.isFollowing ? 'Following · host alerts on' : 'Follow · host outing alerts'}
+        {busy
+          ? '…'
+          : state.isFollowing
+            ? 'Unfollow'
+            : 'Follow · host outing alerts'}
       </AppButton>
       <p className="mt-2 text-center text-xs text-neutral-500">
-        Get notified when they host an outing on the map — not their find-a-group posts.
+        {state.isFollowing
+          ? 'Stop host outing alerts for this member.'
+          : 'Get notified when they host an outing on the map — not their find-a-group posts.'}
       </p>
     </div>
   );

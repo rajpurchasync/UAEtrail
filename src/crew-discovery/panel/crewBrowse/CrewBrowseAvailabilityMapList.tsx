@@ -3,9 +3,10 @@ import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { buildDiscoveryMapListRowCard } from '@/discovery';
 import type { DiscoveryCardModel } from '@/discovery/discoveryCardModel';
 import { discoverySelectionShowsOfferRideshare } from '@/discovery/discoveryOfferRideshareDispatch';
-import { ExploreListRow } from '@/explore/ui/ExploreListRow';
+import { BrowseCompactRow } from '@/list/browse/BrowseCompactRow';
 import { HOSTING_OFFER_RIDESHARE_LABEL } from '@/explore/createFlowCopy';
 import {
+  EXPLORE_CREWS_AVAILABILITY_FIXED_LABEL,
   EXPLORE_CREWS_EMPTY_MAP_SIGNALS,
   EXPLORE_CREWS_MAP_SIGNALS_LOADING,
 } from '../../../content/exploreCrewsCopy';
@@ -26,16 +27,14 @@ export const CrewBrowseAvailabilityMapList = ({
   availabilityCatalogItems,
   exploreCatalogItems,
   loading,
-  onOpenAvailabilityCatalogItem,
   onOfferRideshareForAvailabilityItem,
-  friendUserIds,
 }: Props) => {
-  const cardById = useMemo(() => {
-    const map = new Map<string, DiscoveryCardModel>();
+  const cards = useMemo(() => {
+    const list: DiscoveryCardModel[] = [];
     for (const item of availabilityCatalogItems) {
-      map.set(item.id, buildDiscoveryMapListRowCard(item, exploreCatalogItems));
+      list.push(buildDiscoveryMapListRowCard(item, exploreCatalogItems));
     }
-    return map;
+    return list;
   }, [availabilityCatalogItems, exploreCatalogItems]);
 
   if (loading && availabilityCatalogItems.length === 0) {
@@ -47,17 +46,17 @@ export const CrewBrowseAvailabilityMapList = ({
   }
 
   return (
-    <div className={CREW_BROWSE_LIST_STACK}>
-      {availabilityCatalogItems.map((item) => {
+    <ul className={CREW_BROWSE_LIST_STACK}>
+      {availabilityCatalogItems.map((item, index) => {
+        const card = cards[index]!;
         const showOffer =
           onOfferRideshareForAvailabilityItem != null && discoverySelectionShowsOfferRideshare(item);
         return (
-          <div key={item.id} className="flex flex-col gap-1.5">
-            <ExploreListRow
-              card={cardById.get(item.id)!}
-              onClick={() => onOpenAvailabilityCatalogItem(item)}
-              friendUserIds={friendUserIds}
-            />
+          <li key={item.id} className="space-y-1.5">
+            <p className="px-1 text-[10px] font-bold uppercase tracking-wide text-neutral-500">
+              {EXPLORE_CREWS_AVAILABILITY_FIXED_LABEL}
+            </p>
+            <BrowseCompactRow card={card} />
             {showOffer ? (
               <button
                 type="button"
@@ -67,9 +66,9 @@ export const CrewBrowseAvailabilityMapList = ({
                 {HOSTING_OFFER_RIDESHARE_LABEL}
               </button>
             ) : null}
-          </div>
+          </li>
         );
       })}
-    </div>
+    </ul>
   );
 };

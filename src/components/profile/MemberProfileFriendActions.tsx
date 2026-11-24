@@ -43,6 +43,7 @@ type MemberProfileFriendActionsProps = {
   onDeclineFriendRequest: () => void;
   onCancelFriendRequest: () => void;
   onMessage: () => void;
+  onUnfriend: () => void;
 };
 
 export const MemberProfileFriendActions = ({
@@ -53,6 +54,7 @@ export const MemberProfileFriendActions = ({
   onDeclineFriendRequest,
   onCancelFriendRequest,
   onMessage,
+  onUnfriend,
 }: MemberProfileFriendActionsProps) => {
   const connectionLabel = resolveMemberFriendConnectionLabel(friendRel);
 
@@ -63,10 +65,22 @@ export const MemberProfileFriendActions = ({
       </div>
 
       {friendRel?.areFriends ? (
-        <AppButton type="button" fullWidth onClick={onMessage}>
-          <MessageCircle className="mr-2 inline h-4 w-4" aria-hidden />
-          Message
-        </AppButton>
+        <>
+          <AppButton type="button" fullWidth onClick={onMessage}>
+            <MessageCircle className="mr-2 inline h-4 w-4" aria-hidden />
+            Message
+          </AppButton>
+          <AppButton
+            type="button"
+            variant="secondary"
+            fullWidth
+            disabled={friendActionBusy}
+            className="!border-red-200 !text-red-700 hover:!bg-red-50"
+            onClick={onUnfriend}
+          >
+            Unfriend
+          </AppButton>
+        </>
       ) : friendRel?.incomingRequest ? (
         <div className="flex gap-2">
           <AppButton type="button" className="flex-1" disabled={friendActionBusy} onClick={onAcceptFriendRequest}>

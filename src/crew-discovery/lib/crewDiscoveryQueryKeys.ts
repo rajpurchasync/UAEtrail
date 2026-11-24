@@ -28,6 +28,7 @@ export type CrewDiscoveryAvailabilityQueryParams = {
   from: string;
   to: string;
   area?: string | null;
+  region?: string | null;
   kind?: string | null;
 };
 

@@ -22,15 +22,38 @@
         "src/crew-discovery/panel/CrewsBrowsePanel.tsx",
         "src/crew-discovery/crewBrowseTab.ts",
         "src/crew-discovery/memberBrowseRowModel.ts",
-        "src/list/explorer/ListCrewsExplorer.tsx"
+        "src/list/explorer/ListCrewsExplorer.tsx",
+        "src/list/explorer/FindCrewSearchChrome.tsx",
+        "src/list/explorer/FindCrewResultsSection.tsx",
+        "src/list/explorer/FindCrewMainTabs.tsx",
+        "src/list/explorer/FindCrewCommunityCard.tsx",
+        "src/list/explorer/findCrewRecommendedTabs.ts",
+        "src/crew-discovery/crewPeopleSurface.ts"
       ],
-      "browseTabs": ["people", "professional", "community"],
-      "peopleFacets": ["recommended", "friends", "available", "everyone"]
+      "urlWire": ["crewSurface=find|my", "packages/shared-types/src/crew-people-surfaces.ts"],
+      "findCrewChromeSearchLed": ["where", "when", "query"],
+      "findCrewResultSections": [
+        "main_tabs",
+        "people_available",
+        "professional_guides_agencies",
+        "community",
+        "trips_hosted_looking"
+      ],
+      "browseTabs": ["people", "groups", "trips"],
+      "mustNot": ["Friends facet pill or friends roster on Find crew"]
     },
     "my_crew": {
-      "routes": ["/crews", "/groups"],
+      "routes": ["/crews", "/groups", "/list?listCat=people&crewSurface=my"],
       "mustNot": ["GET /me/member-discovery/browse as primary hub body"],
-      "feRoots": ["src/pages/MyCrews.tsx", "src/components/social/SocialHubIndex.tsx", "src/pages/Groups.tsx"]
+      "feRoots": [
+        "src/pages/MyCrews.tsx",
+        "src/list/explorer/ListMyCrewHub.tsx",
+        "src/list/crews/CrewsHubAppBar.tsx",
+        "src/components/social/SocialHubIndex.tsx",
+        "src/my-crew/MyCrewHubBody.tsx",
+        "src/my-crew/MyCrewHubHeader.tsx",
+        "src/pages/Groups.tsx"
+      ]
     }
   },
   "crewPillars": [

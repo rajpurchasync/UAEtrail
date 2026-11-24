@@ -78,6 +78,11 @@ export const EXPLORE_PIN_QUERY_KEY = 'pin';
 export const EXPLORE_JOIN_INVITE_QUERY_KEY = 'invite';
 /** Friend user id — prefill post-publish invite after Host an outing from Social. */
 export const PLAN_WITH_QUERY_KEY = 'planWith';
+/** Find crew — availability slot id for host compose prefill (`planWith` required). */
+export const AVAILABILITY_SLOT_QUERY_KEY = 'availabilitySlot';
+
+export const parseAvailabilitySlotId = (searchParams: Pick<URLSearchParams, 'get'>): string | null =>
+  searchParams.get(AVAILABILITY_SLOT_QUERY_KEY)?.trim() || null;
 /** When `1`, map/list show only the signed-in member's activities + wishlist pins. */
 export const MY_PLAN_MAP_QUERY_KEY = 'myPlan';
 /** Legacy explore query — parse only; do not write in new URLs. */

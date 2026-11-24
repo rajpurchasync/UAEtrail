@@ -76,7 +76,30 @@ describe('memberBrowseRowModel', () => {
     ];
     expect(filterAvailabilityByCapacity(people, 'guide').map((p) => p.userId)).toEqual(['g1']);
     const row = buildMemberBrowseRowFromAvailability(people[0]!);
-    expect(row.badge?.label).toBe('Guide');
+    expect(row.title).toBe('Guide');
+    expect(row.availabilityDetail?.as).toBe('Guide');
+
+    const friendRow = buildMemberBrowseRowFromAvailability({ ...people[0]!, isFriend: true });
+    expect(friendRow.friendHighlight).toBe(true);
+    expect(friendRow.socialLabel).toBe('Friend');
+
+    const followedRow = buildMemberBrowseRowFromAvailability(
+      { ...people[1]!, isFriend: false },
+      { followedUserIds: new Set([people[1]!.userId]) }
+    );
+    expect(followedRow.socialLabel).toBe('Followed');
+
+    const findCrewRow = buildMemberBrowseRowFromAvailability(people[0]!, {
+      findCrewDiscovery: true,
+      activityDatePreset: 'week',
+    });
+    expect(findCrewRow.rowPresentation).toBe('findCrew');
+    expect(findCrewRow.canMessage).toBe(false);
+    expect(findCrewRow.roleTitle).toBe('Community member');
+    const friendFindCrew = buildMemberBrowseRowFromAvailability({ ...people[0]!, isFriend: true }, {
+      findCrewDiscovery: true,
+    });
+    expect(friendFindCrew.canMessage).toBe(true);
 
     const withTerms = buildMemberBrowseRowFromAvailability({
       ...people[0]!,

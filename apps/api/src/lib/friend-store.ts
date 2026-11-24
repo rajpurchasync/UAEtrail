@@ -11,7 +11,14 @@ import {
   writeFriendAdjacencyIds,
 } from './social-adjacency-read-cache.js';
 import { profileDisplayNameFromAuthUser } from '../domain/person-name.js';
+import {
+  USER_CITY_LABELS,
+  USER_COUNTRY_LABELS,
+  type UserCity,
+  type UserCountryCode,
+} from '../domain/user-profile.js';
 import { followUser } from './follow-store.js';
+import { resolveCityLabelForViewer } from './find-crew-visibility-gate.js';
 
 const REQUESTS_COLLECTION = 'friend_requests';
 const PAIRS_COLLECTION = 'friend_pairs';
@@ -27,6 +34,20 @@ type MongoFriendRequest = {
   respondedAt: Date | null;
 };
 
+type AuthUserRecord = NonNullable<Awaited<ReturnType<typeof findAuthUserById>>>;
+
+const friendSummaryFromAuthUser = (
+  userId: string,
+  user: AuthUserRecord,
+  connectedAt: string
+): FriendSummaryDTO => ({
+  userId,
+  displayName: profileDisplayNameFromAuthUser(user),
+  avatarUrl: user.profile?.avatarUrl ?? null,
+  connectedAt,
+  lastActiveAt: user.lastActiveAt?.toISOString() ?? null,
+});
+
 type MongoFriendPair = {
   _id: string;
   userIds: [string, string];
@@ -37,14 +58,35 @@ type MongoFriendPair = {
 const requestsCollection = () => getMongoClient()!.db().collection<MongoFriendRequest>(REQUESTS_COLLECTION);
 const pairsCollection = () => getMongoClient()!.db().collection<MongoFriendPair>(PAIRS_COLLECTION);
 
-const mapUserPreview = (user: Awaited<ReturnType<typeof findAuthUserById>>) =>
+const mapUserPreview = (
+  user: Awaited<ReturnType<typeof findAuthUserById>>,
+  cityLabel?: string | null
+) =>
   user
     ? {
         id: user._id,
         displayName: profileDisplayNameFromAuthUser(user),
         avatarUrl: user.profile?.avatarUrl ?? null,
+        cityLabel: cityLabel ?? null,
       }
     : null;
+
+const locationLabelForViewer = async (
+  viewerId: string,
+  targetUser: NonNullable<Awaited<ReturnType<typeof findAuthUserById>>>,
+  isFriend: boolean
+): Promise<string | null> => {
+  const city = targetUser.profile?.city;
+  const rawCityLabel =
+    city && city in USER_CITY_LABELS ? USER_CITY_LABELS[city as UserCity] : null;
+  const cityLabel = await resolveCityLabelForViewer(targetUser, viewerId, rawCityLabel, { isFriend });
+  if (cityLabel) return cityLabel;
+  const countryCode = targetUser.profile?.countryCode;
+  if (countryCode && countryCode in USER_COUNTRY_LABELS) {
+    return USER_COUNTRY_LABELS[countryCode as UserCountryCode];
+  }
+  return null;
+};
 
 const mapRequestDto = (
   doc: MongoFriendRequest,
@@ -61,14 +103,19 @@ const mapRequestDto = (
   toUser: users?.get(doc.toUserId) ?? undefined,
 });
 
-const loadUserMapForRequests = async (docs: MongoFriendRequest[]) => {
+const loadUserMapsForRequests = async (viewerId: string, docs: MongoFriendRequest[]) => {
   const userIds = [...new Set(docs.flatMap((doc) => [doc.fromUserId, doc.toUserId]))];
   const users = await findAuthUsersByIds(userIds);
+  const authById = new Map(users.map((user) => [user._id, user]));
   const map = new Map<string, NonNullable<ReturnType<typeof mapUserPreview>>>();
-  for (const user of users) {
-    const preview = mapUserPreview(user);
-    if (preview) map.set(user._id, preview);
-  }
+  await Promise.all(
+    users.map(async (user) => {
+      const isFriend = await areAcceptedFriends(viewerId, user._id);
+      const cityLabel = await locationLabelForViewer(viewerId, user, isFriend);
+      const preview = mapUserPreview(user, cityLabel);
+      if (preview) map.set(user._id, preview);
+    })
+  );
   return map;
 };
 
@@ -145,7 +192,7 @@ export const createFriendRequest = async (input: {
     respondedAt: null,
   };
   await requestsCollection().insertOne(doc);
-  const users = await loadUserMapForRequests([doc]);
+  const users = await loadUserMapsForRequests(fromUserId, [doc]);
   return mapRequestDto(doc, users);
 };
 
@@ -194,7 +241,7 @@ export const acceptFriendRequest = async (
     { $set: { status: 'cancelled', updatedAt: now, respondedAt: now } }
   );
 
-  const users = await loadUserMapForRequests([updated]);
+  const users = await loadUserMapsForRequests(actorUserId, [updated]);
   return mapRequestDto(updated, users);
 };
 
@@ -223,7 +270,7 @@ export const declineFriendRequest = async (
     throw new ApiError(409, 'friend_request_not_pending', 'This friend request is no longer pending.');
   }
 
-  const users = await loadUserMapForRequests([updated]);
+  const users = await loadUserMapsForRequests(actorUserId, [updated]);
   return mapRequestDto(updated, users);
 };
 
@@ -252,7 +299,7 @@ export const cancelFriendRequest = async (
     throw new ApiError(409, 'friend_request_not_pending', 'This friend request is no longer pending.');
   }
 
-  const users = await loadUserMapForRequests([updated]);
+  const users = await loadUserMapsForRequests(actorUserId, [updated]);
   return mapRequestDto(updated, users);
 };
 
@@ -271,7 +318,7 @@ export const listFriendRequestsForUser = async (
         : { $or: [{ fromUserId: userId }, { toUserId: userId }] };
 
   const docs = await requestsCollection().find(query).sort({ createdAt: -1 }).limit(100).toArray();
-  const users = await loadUserMapForRequests(docs);
+  const users = await loadUserMapsForRequests(userId, docs);
   return docs.map((doc) => mapRequestDto(doc, users));
 };
 
@@ -372,18 +419,17 @@ export const listMutualBuddiesBetween = async (
   const userMap = new Map(users.map((user) => [user._id, user]));
   const connectedById = new Map(rows.map((row) => [row.friendId, row.connectedAt.toISOString()]));
 
-  const buddies = friendIds
-    .map((friendId) => {
-      const user = userMap.get(friendId);
-      if (!user) return null;
-      return {
-        userId: friendId,
-        displayName: profileDisplayNameFromAuthUser(user),
-        avatarUrl: user.profile?.avatarUrl ?? null,
-        connectedAt: connectedById.get(friendId) ?? new Date(0).toISOString(),
-      };
-    })
-    .filter((item): item is FriendSummaryDTO => item !== null);
+  const buddies = friendIds.flatMap((friendId) => {
+    const user = userMap.get(friendId);
+    if (!user) return [];
+    return [
+      friendSummaryFromAuthUser(
+        friendId,
+        user,
+        connectedById.get(friendId) ?? new Date(0).toISOString()
+      ),
+    ];
+  });
 
   return { buddies, totalMutual };
 };
@@ -391,21 +437,14 @@ export const listMutualBuddiesBetween = async (
 const mapFriendSummaries = (
   userId: string,
   pairs: MongoFriendPair[],
-  userMap: Map<string, Awaited<ReturnType<typeof findAuthUserById>>>
+  userMap: Map<string, AuthUserRecord>
 ): FriendSummaryDTO[] =>
-  pairs
-    .map((pair) => {
-      const friendId = pair.userIds[0] === userId ? pair.userIds[1] : pair.userIds[0];
-      const user = userMap.get(friendId);
-      if (!user) return null;
-      return {
-        userId: friendId,
-        displayName: profileDisplayNameFromAuthUser(user),
-        avatarUrl: user.profile?.avatarUrl ?? null,
-        connectedAt: pair.createdAt.toISOString(),
-      };
-    })
-    .filter((item): item is FriendSummaryDTO => item !== null);
+  pairs.flatMap((pair) => {
+    const friendId = pair.userIds[0] === userId ? pair.userIds[1] : pair.userIds[0];
+    const user = userMap.get(friendId);
+    if (!user) return [];
+    return [friendSummaryFromAuthUser(friendId, user, pair.createdAt.toISOString())];
+  });
 
 export const listFriendsForUser = async (userId: string, limit = 200): Promise<FriendSummaryDTO[]> => {
   const capped = Math.min(Math.max(limit, 1), 200);
@@ -420,7 +459,15 @@ export const listFriendsForUser = async (userId: string, limit = 200): Promise<F
   const friendIds = pairs.map((pair) => (pair.userIds[0] === userId ? pair.userIds[1] : pair.userIds[0]));
   const users = await findAuthUsersByIds(friendIds);
   const userMap = new Map(users.map((user) => [user._id, user]));
-  return mapFriendSummaries(userId, pairs, userMap);
+  const summaries = mapFriendSummaries(userId, pairs, userMap);
+  return Promise.all(
+    summaries.map(async (summary) => {
+      const user = userMap.get(summary.userId);
+      if (!user) return summary;
+      const cityLabel = await locationLabelForViewer(userId, user, true);
+      return { ...summary, cityLabel };
+    })
+  );
 };
 
 export const listFriendSummariesForIds = async (
@@ -440,18 +487,17 @@ export const listFriendSummariesForIds = async (
     })
   );
   const userMap = new Map(users.map((user) => [user._id, user]));
-  return friendIds
-    .map((friendId) => {
-      const user = userMap.get(friendId);
-      if (!user) return null;
-      return {
-        userId: friendId,
-        displayName: profileDisplayNameFromAuthUser(user),
-        avatarUrl: user.profile?.avatarUrl ?? null,
-        connectedAt: pairByFriend.get(friendId) ?? new Date(0).toISOString(),
-      };
-    })
-    .filter((item): item is FriendSummaryDTO => item !== null);
+  return friendIds.flatMap((friendId) => {
+    const user = userMap.get(friendId);
+    if (!user) return [];
+    return [
+      friendSummaryFromAuthUser(
+        friendId,
+        user,
+        pairByFriend.get(friendId) ?? new Date(0).toISOString()
+      ),
+    ];
+  });
 };
 
 /** Ends a friend connection for both users. Silent — no notification is sent. */
@@ -507,7 +553,7 @@ export const getFriendRelationship = async (
   ]);
 
   const docs = [incomingDoc, outgoingDoc].filter((doc): doc is MongoFriendRequest => doc !== null);
-  const users = await loadUserMapForRequests(docs);
+  const users = await loadUserMapsForRequests(viewerUserId, docs);
 
   return {
     areFriends,

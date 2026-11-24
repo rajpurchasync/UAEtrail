@@ -1820,6 +1820,13 @@ export {
   normalizeAvailabilitySlot,
   validateMemberAvailabilityWrite,
   isScheduleModality,
+  formatAvailabilitySlotLogisticsLine,
+  formatAvailabilitySlotPartyLine,
+  formatAvailabilitySlotTransportLine,
+  sanitizeAvailabilitySlotLogistics,
+  sanitizeDestinationRegions,
+  destinationRegionsOverlap,
+  MAX_AVAILABILITY_DESTINATION_REGIONS,
 } from './member-availability.js';
 export type { MemberAvailabilityDayBlock } from './member-availability.js';
 export type {
@@ -2222,6 +2229,16 @@ export {
   crewPeopleFacetToPillar,
   isCrewPillarId,
 } from './crew-pillars.js';
+
+export type { CrewPeopleSurfaceManifestId, CrewPeopleSurfaceWire } from './crew-people-surfaces.js';
+export {
+  CREW_PEOPLE_SURFACE_MANIFEST_IDS,
+  CREW_PEOPLE_SURFACE_URL_PARAM,
+  CREW_PEOPLE_SURFACE_WIRE,
+  DEFAULT_CREW_PEOPLE_SURFACE_WIRE,
+  crewPeopleSurfaceWireToManifest,
+  isCrewPeopleSurfaceWire,
+} from './crew-people-surfaces.js';
 
 export type {
   AreaBoundsRing,

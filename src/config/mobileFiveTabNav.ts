@@ -12,7 +12,7 @@ import { MESSAGES_PATH, PLAN_PATH } from './surfacePaths';
 import { explorePath, parseExplorePanel } from '../explore/routing';
 import { parseExplorePinKindFilter } from '../explore/explorePinKindFilter';
 import {
-  listPeopleDiscoveryPath,
+  crewsHubHomePath,
   tripsListHomePath,
   venuesListHomePath,
 } from '../list/browse/browseListRouting';
@@ -103,7 +103,7 @@ export const tripsMapHomePath = (): string =>
 export const venuesMapHomePath = (): string => explorePath({ panel: 'venues', pinKind: 'places' });
 
 /** Crews tab home — people discovery list (aliases to `/list?listCat=people`). */
-export const crewsHomePath = (): string => listPeopleDiscoveryPath();
+export const crewsHomePath = (): string => crewsHubHomePath();
 
 /** Tab tap target respecting remembered map/list projection (Trips/Venues only). */
 export const mobileFiveTabHomePath = (tab: MobileFiveTabId): string => {

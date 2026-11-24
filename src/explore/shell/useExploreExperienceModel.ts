@@ -265,7 +265,7 @@ export const useExploreExperienceModel = () => {
     };
   }, []);
 
-  const [searchFocusNonce, setSearchFocusNonce] = useState(0);
+  const [searchFocusNonce] = useState(0);
   useExploreSearchParamRedirect(searchParams, pathname, navigate, setSearchParams);
   const publishedAreas = useExplorePublishedAreas(
     browse.listOpen || browse.browseOpen || Boolean(areaSlug)

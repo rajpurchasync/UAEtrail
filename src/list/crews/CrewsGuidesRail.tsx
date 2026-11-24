@@ -1,15 +1,21 @@
 import { Link } from 'react-router-dom';
 import type { MemberBrowseCardDTO } from '@uaetrail/shared-types';
 import { memberProfileLink } from '../../member/memberProfileLink';
+import { crewBrowseHrefForGuest } from '@/crew-discovery/crewGuestBrowse';
 import { memberProfileRoleBadgeLabel } from '../../member/memberProfileRoleBadge';
 import { SecureAvatar } from '../../components/ui';
 
 type CrewsGuidesRailProps = {
   guides: MemberBrowseCardDTO[];
   onBrowseEveryone?: () => void;
+  isSignedIn?: boolean;
 };
 
-export const CrewsGuidesRail = ({ guides, onBrowseEveryone }: CrewsGuidesRailProps) => {
+export const CrewsGuidesRail = ({
+  guides,
+  onBrowseEveryone,
+  isSignedIn = true,
+}: CrewsGuidesRailProps) => {
   if (guides.length === 0) return null;
 
   return (
@@ -32,7 +38,7 @@ export const CrewsGuidesRail = ({ guides, onBrowseEveryone }: CrewsGuidesRailPro
         {guides.slice(0, 12).map((guide) => (
           <li key={guide.id} className="w-36 shrink-0">
             <Link
-              to={memberProfileLink(guide.id, 'discover')}
+              to={crewBrowseHrefForGuest(memberProfileLink(guide.id, 'discover'), isSignedIn)}
               className="flex flex-col items-center gap-2 rounded-2xl bg-white p-3 text-center ring-1 ring-neutral-200/80"
             >
               <SecureAvatar

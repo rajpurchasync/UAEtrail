@@ -14,4 +14,5 @@ export {
   discoveryCardIsAvailabilityPin,
   type DiscoveryCardModel,
 } from './discoveryCardModel';
+export { buildDiscoveryCardModelFromCommunityDiscover } from './buildCommunityDiscoverCardModel';
 export { ActivityDiscoveryPublishedBody } from './ActivityDiscoveryPublishedBody';

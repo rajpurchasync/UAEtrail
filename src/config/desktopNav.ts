@@ -150,7 +150,7 @@ export const DESKTOP_PEOPLE_NAV: readonly DesktopNavItem[] = [
   {
     key: 'findCrew',
     label: 'Find Crew',
-    to: `${EXPLORE_MAP_PATH}?list=1&${LIST_CAT_PARAM}=people`,
+    to: `${EXPLORE_MAP_PATH}?list=1&${LIST_CAT_PARAM}=people&crewSurface=find`,
     icon: UserSearch,
     match: [],
     authGate: true,

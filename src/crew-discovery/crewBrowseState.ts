@@ -1,10 +1,13 @@
 import { readPeopleCrewsTabParam } from '@/routing/productUrlInbound';
 
-/** Top-level Find crew tabs (People · Professional · Community). */
-export type CrewBrowseLane = 'people' | 'professional' | 'community';
+/** Top-level Find crew tabs (People · Professional · Community · Trips). */
+export type CrewBrowseLane = 'people' | 'professional' | 'community' | 'trips';
 
-/** People tab facets — default Recommended. */
-export type CrewPeopleFacet = 'recommended' | 'friends' | 'available' | 'everyone';
+/**
+ * People lane URL facets. **Find crew** UI exposes only `available` · `everyone` (see `findCrewPeopleFacets.ts`).
+ * **Friends** wire is legacy/inbound only — maps to `available` on Find crew; friends UX lives on **My crew**.
+ */
+export type CrewPeopleFacet = 'recommended' | 'friends' | 'active' | 'available' | 'everyone';
 
 /** Legacy list content lanes (member-discovery APIs). */
 export type CrewDataLane = 'available' | 'going' | 'connect';
@@ -32,30 +35,33 @@ export const CREW_PROFESSIONAL_KIND_LABELS: Record<CrewProfessionalKind, string>
 
 export const DEFAULT_CREW_PROFESSIONAL_KIND: CrewProfessionalKind = 'all';
 
-export const CREW_BROWSE_LANE_ORDER: CrewBrowseLane[] = ['people', 'professional', 'community'];
+export const CREW_BROWSE_LANE_ORDER: CrewBrowseLane[] = [
+  'people',
+  'professional',
+  'community',
+  'trips',
+];
 
 export const CREW_BROWSE_LANE_LABELS: Record<CrewBrowseLane, string> = {
   people: 'People',
   professional: 'Professional',
   community: 'Community',
+  trips: 'Trips',
 };
 
-export const CREW_PEOPLE_FACET_ORDER: CrewPeopleFacet[] = [
-  'recommended',
-  'friends',
-  'available',
-  'everyone',
-];
+/** @deprecated Find crew UI order — use `FIND_CREW_PEOPLE_STAT_ORDER`. */
+export const CREW_PEOPLE_FACET_ORDER: CrewPeopleFacet[] = ['available', 'everyone'];
 
 export const CREW_PEOPLE_FACET_LABELS: Record<CrewPeopleFacet, string> = {
-  recommended: 'Recommended',
-  friends: 'Friends',
+  recommended: 'Available',
+  friends: 'Available',
+  active: 'Active now',
   available: 'Available',
   everyone: 'Everyone',
 };
 
 export const DEFAULT_CREW_BROWSE_LANE: CrewBrowseLane = 'people';
-export const DEFAULT_CREW_PEOPLE_FACET: CrewPeopleFacet = 'recommended';
+export const DEFAULT_CREW_PEOPLE_FACET: CrewPeopleFacet = 'available';
 
 export const parseCrewProfessionalKind = (raw: string | null): CrewProfessionalKind => {
   if (raw === 'guide' || raw === 'porter' || raw === 'agency' || raw === 'all') return raw;
@@ -63,10 +69,23 @@ export const parseCrewProfessionalKind = (raw: string | null): CrewProfessionalK
 };
 
 export const parseCrewPeopleFacet = (raw: string | null): CrewPeopleFacet => {
-  if (raw === 'friends' || raw === 'available' || raw === 'everyone' || raw === 'recommended') {
-    return raw;
-  }
+  if (raw === 'active' || raw === 'available' || raw === 'everyone') return raw;
+  if (raw === 'friends' || raw === 'recommended') return DEFAULT_CREW_PEOPLE_FACET;
   return DEFAULT_CREW_PEOPLE_FACET;
+};
+
+const inboundPeopleTabToFacet = (rawTab: string): CrewPeopleFacet | null => {
+  if (rawTab === 'available') return 'available';
+  if (rawTab === 'everyone' || rawTab === 'connect') return 'everyone';
+  if (rawTab === 'friends' || rawTab === 'going') return DEFAULT_CREW_PEOPLE_FACET;
+  return null;
+};
+
+const normalizeBrowseLane = (rawTab: string | null): CrewBrowseLane | null => {
+  if (rawTab === 'people') return 'people';
+  if (rawTab === 'professional' || rawTab === 'community' || rawTab === 'trips') return rawTab;
+  if (rawTab === 'recommended') return 'people';
+  return null;
 };
 
 /** Parse lane + facet from explore/list URL params. */
@@ -78,6 +97,34 @@ export const parseCrewBrowseState = (
   const proKindRaw = searchParams.get(PRO_KIND_URL_PARAM)?.trim() ?? null;
   const proKind = parseCrewProfessionalKind(proKindRaw);
 
+  const laneFromTab = normalizeBrowseLane(rawTab);
+  if (laneFromTab === 'professional' || laneFromTab === 'community') {
+    return {
+      lane: laneFromTab,
+      facet: DEFAULT_CREW_PEOPLE_FACET,
+      proKind: laneFromTab === 'professional' ? proKind : DEFAULT_CREW_PROFESSIONAL_KIND,
+    };
+  }
+
+  if (laneFromTab === 'people' || rawTab === 'recommended') {
+    return {
+      lane: 'people',
+      facet: parseCrewPeopleFacet(facetRaw),
+      proKind: DEFAULT_CREW_PROFESSIONAL_KIND,
+    };
+  }
+
+  if (rawTab !== null) {
+    const inboundFacet = inboundPeopleTabToFacet(rawTab);
+    if (inboundFacet) {
+      return {
+        lane: 'people',
+        facet: inboundFacet,
+        proKind: DEFAULT_CREW_PROFESSIONAL_KIND,
+      };
+    }
+  }
+
   if (rawTab === null) {
     return {
       lane: DEFAULT_CREW_BROWSE_LANE,
@@ -86,25 +133,9 @@ export const parseCrewBrowseState = (
     };
   }
 
-  if (rawTab === 'people') {
-    return {
-      lane: 'people',
-      facet: parseCrewPeopleFacet(facetRaw),
-      proKind: DEFAULT_CREW_PROFESSIONAL_KIND,
-    };
-  }
-
-  if (rawTab === 'professional' || rawTab === 'community') {
-    return {
-      lane: rawTab,
-      facet: DEFAULT_CREW_PEOPLE_FACET,
-      proKind: rawTab === 'professional' ? proKind : DEFAULT_CREW_PROFESSIONAL_KIND,
-    };
-  }
-
   return {
     lane: DEFAULT_CREW_BROWSE_LANE,
-    facet: parseCrewPeopleFacet(facetRaw),
+    facet: DEFAULT_CREW_PEOPLE_FACET,
     proKind: DEFAULT_CREW_PROFESSIONAL_KIND,
   };
 };
@@ -118,7 +149,7 @@ export const serializeCrewProfessionalKind = (
 };
 
 export const serializeCrewBrowseLane = (lane: CrewBrowseLane): string | null =>
-  lane === 'people' ? null : lane;
+  lane === DEFAULT_CREW_BROWSE_LANE ? null : lane;
 
 export const serializeCrewPeopleFacet = (
   lane: CrewBrowseLane,
@@ -132,6 +163,9 @@ export const crewDataLaneFromState = (state: CrewBrowseState): CrewDataLane | nu
   if (state.lane !== 'people') return null;
   switch (state.facet) {
     case 'friends':
+    case 'recommended':
+      return 'available';
+    case 'active':
       return 'going';
     case 'available':
       return 'available';
@@ -144,32 +178,28 @@ export const crewDataLaneFromState = (state: CrewBrowseState): CrewDataLane | nu
 
 export const crewBrowseNeedsRoster = (state: CrewBrowseState): boolean => {
   if (state.lane === 'professional') return true;
-  if (state.lane === 'community') return false;
+  if (state.lane === 'community' || state.lane === 'trips') return false;
   return true;
 };
 
 export const crewBrowseNeedsAvailability = (state: CrewBrowseState): boolean => {
   if (state.lane !== 'people') return false;
-  return state.facet === 'recommended' || state.facet === 'available';
+  return state.facet === 'available';
 };
 
 export const crewBrowseOmitDirectory = (state: CrewBrowseState): boolean => {
   if (state.lane === 'professional') return false;
   if (state.lane === 'community') return true;
-  if (state.facet === 'everyone' || state.facet === 'recommended') return false;
+  if (state.facet === 'everyone') return false;
   return true;
 };
 
 export const crewsCategoryMapFeedEnabled = (
   state: CrewBrowseState,
-  crewsOpenLens: 'all' | 'open' | 'marked'
+  availabilityShape: 'all' | 'flexible' | 'fixed'
 ): boolean => {
   if (state.lane === 'professional') return true;
   if (state.lane !== 'people') return false;
-  if (state.facet !== 'available' && state.facet !== 'recommended') return false;
-  return crewsOpenLens === 'all' || crewsOpenLens === 'open';
+  if (state.facet !== 'available') return false;
+  return availabilityShape === 'all' || availabilityShape === 'fixed';
 };
-
-export const filterCrewsProfessionalAgencyItems = <T extends { source: string }>(
-  items: readonly T[]
-): T[] => items.filter((item) => item.source === 'agency');

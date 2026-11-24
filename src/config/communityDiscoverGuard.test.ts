@@ -25,7 +25,10 @@ describe('communityDiscoverGuard (MIG-COMMUNITY-DISCOVER)', () => {
     expect(read('src/crew-discovery/hooks/useCommunityDiscoverList.ts')).toMatch(/fetchExploreCommunities/);
     expect(read('src/crew-discovery/hooks/useCommunityDiscoverDetail.ts')).toMatch(/joinDiscoverableCommunity/);
     expect(read('src/list/crews/CrewsCommunityBody.tsx')).toMatch(/CommunityDiscoverBrowseList/);
-    expect(read('src/list/crews/CommunityDiscoverBrowseList.tsx')).toMatch(/communityClubPath/);
+    expect(read('src/list/crews/CommunityDiscoverBrowseList.tsx')).toMatch(/BrowseCompactRow/);
+    expect(read('src/discovery/buildCommunityDiscoverCardModel.ts')).toMatch(
+      /buildDiscoveryCardModelFromCommunityDiscover/
+    );
     expect(read('src/config/platform.ts')).toMatch(/VITE_COMMUNITY_DISCOVER/);
     expect(read('src/routing/AppRoutes.tsx')).toMatch(/COMMUNITY_CLUB_PATH_PREFIX/);
     expect(read('src/pages/CommunityClubDetailPage.tsx')).toMatch(/CommunityClubDetailView/);

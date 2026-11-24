@@ -11,6 +11,9 @@ export type AvailabilityPricingKind = (typeof AVAILABILITY_PRICING_KINDS)[number
 export const AVAILABILITY_TOUR_SHAPES = ['private', 'group', 'either'] as const;
 export type AvailabilityTourShape = (typeof AVAILABILITY_TOUR_SHAPES)[number];
 
+import { sanitizeAvailabilitySlotLogistics, type AvailabilitySlotLogisticsWire } from './availability-slot-logistics.js';
+import { sanitizeDestinationRegions } from './availability-slot-destinations.js';
+
 export type AvailabilityEngagementTerms = {
   pricingKind: AvailabilityPricingKind;
   rate?: number | null;
@@ -19,7 +22,8 @@ export type AvailabilityEngagementTerms = {
   maxParticipants?: number | null;
 };
 
-export type MemberAvailabilitySlotWire = {
+export type MemberAvailabilitySlotWire = AvailabilitySlotLogisticsWire & {
+  destinationRegions?: string[] | null;
   slotId?: string;
   scheduleKind?: 'open' | 'fixed' | null;
   startDate: string;
@@ -76,12 +80,17 @@ export const normalizeAvailabilitySlot = (
     modalities = ['hiking'];
   }
 
+  const logistics = sanitizeAvailabilitySlotLogistics(slot);
+  const destinationRegions = sanitizeDestinationRegions(slot.destinationRegions ?? undefined);
+
   return {
     ...slot,
     scheduleKind,
     capacity,
     modalities,
     engagementTerms: slot.engagementTerms ?? null,
+    destinationRegions,
+    ...logistics,
   };
 };
 

@@ -189,6 +189,8 @@ export {
 } from '../explore/search/exploreSearchRouting';
 
 export {
+  crewsHubHomePath,
+  findCrewDiscoveryListPath,
   listDiscoveryPath,
   listPeopleDiscoveryPath,
   exploreMapPathFromListSearch,

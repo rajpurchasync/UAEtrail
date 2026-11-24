@@ -19,6 +19,7 @@ const baseState: BrowseListFilterState = {
   crewBrowseLane: 'people',
   crewPeopleFacet: 'available',
   crewProfessionalKind: 'all',
+  crewPeopleSurface: 'find',
   hasTrip: false,
   facilityKinds: [],
   audience: 'anyone',

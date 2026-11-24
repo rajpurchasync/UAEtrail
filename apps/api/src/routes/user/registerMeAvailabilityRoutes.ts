@@ -5,6 +5,7 @@ import {
   AVAILABILITY_PRICING_KINDS,
   AVAILABILITY_SLOT_CAPACITIES,
   AVAILABILITY_TOUR_SHAPES,
+  MAX_AVAILABILITY_DESTINATION_REGIONS,
   SCHEDULE_MODALITIES,
   type AvailabilityKind,
   type ScheduleModality,
@@ -68,6 +69,14 @@ const slotSchema = z.object({
   /** Validated in `validateMemberAvailabilityWrite` (guide is forbidden as modality). */
   modalities: z.array(z.string().max(32)).max(8).optional().nullable(),
   engagementTerms: engagementTermsSchema,
+  destinationRegions: z.array(z.string().max(80)).max(MAX_AVAILABILITY_DESTINATION_REGIONS).optional().nullable(),
+  partySize: z.number().int().min(1).max(99).optional().nullable(),
+  transportMode: z.string().max(32).optional().nullable(),
+  vehicleType: z.string().max(32).optional().nullable(),
+  carpoolSeatsNeeded: z.number().int().min(1).max(20).optional().nullable(),
+  destinationLatitude: z.number().min(-90).max(90).optional().nullable(),
+  destinationLongitude: z.number().min(-180).max(180).optional().nullable(),
+  destinationPrecision: z.enum(['general', 'specific']).optional().nullable(),
 });
 
 const upsertSchema = z.object({

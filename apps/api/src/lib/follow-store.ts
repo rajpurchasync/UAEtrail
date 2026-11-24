@@ -1,4 +1,11 @@
 import type { MemberFollowStateDTO, MemberFollowSummaryDTO } from '@uaetrail/shared-types';
+import {
+  USER_CITY_LABELS,
+  USER_COUNTRY_LABELS,
+  type UserCity,
+  type UserCountryCode,
+} from '../domain/user-profile.js';
+import { resolveCityLabelForViewer } from './find-crew-visibility-gate.js';
 import { profileDisplayNameFromAuthUser } from '../domain/person-name.js';
 import { findAuthUserById, findAuthUsersByIds } from './auth-users-store.js';
 import { COLLECTIONS } from './collections.js';
@@ -75,18 +82,34 @@ export const listFollowingForUser = async (followerId: string): Promise<MemberFo
   const users = await findAuthUsersByIds(userIds);
   const userMap = new Map(users.map((user) => [user._id, user]));
 
-  return docs
-    .map((doc) => {
+  const rows = await Promise.all(
+    docs.map(async (doc): Promise<MemberFollowSummaryDTO | null> => {
       const user = userMap.get(doc.followingId);
       if (!user) return null;
-      return {
+      const city = user.profile?.city;
+      const rawCityLabel =
+        city && city in USER_CITY_LABELS ? USER_CITY_LABELS[city as UserCity] : null;
+      let cityLabel = await resolveCityLabelForViewer(user, followerId, rawCityLabel, {
+        isFriend: false,
+      });
+      if (!cityLabel) {
+        const countryCode = user.profile?.countryCode;
+        if (countryCode && countryCode in USER_COUNTRY_LABELS) {
+          cityLabel = USER_COUNTRY_LABELS[countryCode as UserCountryCode];
+        }
+      }
+      const summary: MemberFollowSummaryDTO = {
         userId: doc.followingId,
         displayName: profileDisplayNameFromAuthUser(user),
         avatarUrl: user.profile?.avatarUrl ?? null,
         followedAt: doc.createdAt.toISOString(),
+        cityLabel: cityLabel ?? null,
+        lastActiveAt: user.lastActiveAt?.toISOString() ?? null,
       };
+      return summary;
     })
-    .filter((row): row is MemberFollowSummaryDTO => row !== null);
+  );
+  return rows.filter((row): row is MemberFollowSummaryDTO => row !== null);
 };
 
 /** Users who follow `userId` (for publish notifications). */

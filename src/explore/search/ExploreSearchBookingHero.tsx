@@ -32,6 +32,9 @@ type ExploreSearchBookingHeroProps = {
   onDatePresetChange: (preset: ExploreActivityDatePreset) => void;
   venueRegions: string[];
   onVenueRegionsChange: (regions: string[]) => void;
+  wherePlaceholder?: string;
+  /** When preset is `anyday`, show this instead of the anyday chip label (Find crew). */
+  whenUnsetLabel?: string;
 };
 
 /** Booking-style single framed block — stacked rows, no extra labels or inner boxes. */
@@ -46,7 +49,13 @@ export const ExploreSearchBookingHero = ({
   onDatePresetChange,
   venueRegions,
   onVenueRegionsChange,
+  wherePlaceholder = EXPLORE_SEARCH_WHERE_PLACEHOLDER,
+  whenUnsetLabel,
 }: ExploreSearchBookingHeroProps) => {
+  const whenLine =
+    whenUnsetLabel && activityDatePreset === 'anyday'
+      ? whenUnsetLabel
+      : exploreSearchWhenSummary(activityDatePreset);
   const regionPillOptions = useExploreRegionPillOptions('AE');
   const placesScope = homeScope === 'places';
   const [whenSheetOpen, setWhenSheetOpen] = useState(false);
@@ -101,7 +110,7 @@ export const ExploreSearchBookingHero = ({
   return (
     <>
       <div className="relative z-30">
-        <div className="rounded-lg border-2 border-emerald-300 bg-white">
+        <div className="overflow-hidden rounded-lg border-2 border-emerald-300 bg-white">
           <form
             onSubmit={(event) => {
               event.preventDefault();
@@ -117,7 +126,7 @@ export const ExploreSearchBookingHero = ({
                 onChange={(event) => handleWhereChange(event.target.value)}
                 onFocus={handleWhereFocus}
                 onBlur={handleWhereBlur}
-                placeholder={whereFocused ? EXPLORE_SEARCH_WHERE_PLACEHOLDER : undefined}
+                placeholder={whereFocused ? wherePlaceholder : undefined}
                 autoComplete="off"
                 autoCorrect="off"
                 spellCheck={false}
@@ -164,7 +173,7 @@ export const ExploreSearchBookingHero = ({
               >
                 <CalendarDays className="h-[22px] w-[22px] shrink-0 text-neutral-800" strokeWidth={2.25} aria-hidden />
                 <span className="min-w-0 flex-1 text-[15px] font-medium leading-snug text-neutral-900">
-                  {exploreSearchWhenSummary(activityDatePreset)}
+                  {whenLine}
                 </span>
                 <span className="shrink-0 text-xs font-medium text-neutral-500">Change</span>
               </button>

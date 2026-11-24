@@ -3,12 +3,32 @@ import {
   exploreMapPathFromListSearch,
   listDiscoveryPath,
   listDiscoveryPathFromExploreSearch,
+  crewsHubHomePath,
+  findCrewDiscoveryListPath,
+  isFindCrewDiscoveryListPath,
   listPeopleDiscoveryPath,
 } from './browseListRouting';
 
 describe('list discovery routing', () => {
-  it('listPeopleDiscoveryPath opens dedicated people category on /list', () => {
-    expect(listPeopleDiscoveryPath()).toBe('/list?listCat=people');
+  it('crewsHubHomePath opens My crew hub on /list', () => {
+    expect(crewsHubHomePath()).toBe('/list?listCat=people');
+  });
+
+  it('findCrewDiscoveryListPath opens Find crew list shell', () => {
+    expect(findCrewDiscoveryListPath()).toContain('listCat=people');
+    expect(findCrewDiscoveryListPath()).toContain('crewSurface=find');
+  });
+
+  it('isFindCrewDiscoveryListPath matches find crew query only', () => {
+    expect(isFindCrewDiscoveryListPath('/list', findCrewDiscoveryListPath().split('?')[1] ?? '')).toBe(
+      true
+    );
+    expect(isFindCrewDiscoveryListPath('/list', 'listCat=people')).toBe(false);
+    expect(isFindCrewDiscoveryListPath('/explore/search', 'searchScope=crew')).toBe(false);
+  });
+
+  it('listPeopleDiscoveryPath aliases find crew discover', () => {
+    expect(listPeopleDiscoveryPath()).toBe(findCrewDiscoveryListPath());
   });
 
   it('listDiscoveryPath maps Trips + venues browse topics', () => {

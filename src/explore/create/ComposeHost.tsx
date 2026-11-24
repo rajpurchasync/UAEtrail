@@ -157,6 +157,8 @@ export const ComposeHost = ({
         onClose={onCloseCompose}
         exploreAreaSlug={composeAreaSlug}
         intentOpenCapacityParam={intentOpenCapacityParam}
+        onComposeRouteChange={onComposeRouteChange}
+        onBackToIntent={onAvailabilityBackToIntent}
       />
     )}
 

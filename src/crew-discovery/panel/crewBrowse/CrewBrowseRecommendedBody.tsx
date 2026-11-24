@@ -13,8 +13,18 @@ import type { CrewsAvailabilityGuideFilter, CrewsAvailableOpenLens } from '@/lis
 import { CrewBrowseAvailabilityMapList } from './CrewBrowseAvailabilityMapList';
 import { CrewBrowseMemberRow } from './CrewBrowseMemberRow';
 import { CREW_BROWSE_LIST_STACK } from './crewBrowseListTheme';
+import { BrowseListSectionHeader } from '@/list/browse/BrowseListSectionHeader';
 import { CrewBrowseListEmpty, CrewBrowseListLoading } from './CrewBrowseListStates';
-import { ExploreGuestSignInCard } from '@/explore/ui/ExploreGuestSignInCard';
+import { useCommunityDiscoverList } from '@/crew-discovery/hooks/useCommunityDiscoverList';
+import { CommunityDiscoverBrowseList } from '@/list/crews/CommunityDiscoverBrowseList';
+import { FEATURE_FLAGS } from '@/config/platform';
+import { filterCrewsGuideDirectoryCards } from '@/list/crews/crewsGuides';
+import { CrewsGuidesRail } from '@/list/crews/CrewsGuidesRail';
+import {
+  buildMemberBrowseRowFromAvailability,
+  filterAvailabilityByCapacity,
+} from '../../memberBrowseRowModel';
+import { crewBrowseHrefForGuest } from '@/crew-discovery/crewGuestBrowse';
 
 type Props = {
   isSignedIn: boolean;
@@ -38,6 +48,26 @@ type Props = {
   crewRecommendationsQuery: DiscoverCrewRecommendationsQueryParams;
 };
 
+const RecommendedCommunitiesSection = () => {
+  if (!FEATURE_FLAGS.communityDiscover) return null;
+  const { data, isPending, error } = useCommunityDiscoverList(true);
+  if (isPending) {
+    return (
+      <section className="space-y-2">
+        <BrowseListSectionHeader label="Communities" />
+        <p className="text-sm text-neutral-500">Loading communities…</p>
+      </section>
+    );
+  }
+  if (error || !data?.length) return null;
+  return (
+    <section className="space-y-2">
+      <BrowseListSectionHeader label="Communities" />
+      <CommunityDiscoverBrowseList rows={data} compact />
+    </section>
+  );
+};
+
 export const CrewBrowseRecommendedBody = ({
   isSignedIn,
   friendsGoing,
@@ -46,6 +76,8 @@ export const CrewBrowseRecommendedBody = ({
   directory,
   discoveryQuota,
   discoveryLoading,
+  availabilityGuideFilter,
+  availabilityLoading,
   availabilityCatalogItems,
   exploreCatalogItems,
   exploreCatalogLoading,
@@ -59,12 +91,60 @@ export const CrewBrowseRecommendedBody = ({
     crewRecommendationsQuery
   );
 
+  const communitiesSection = <RecommendedCommunitiesSection />;
+
   if (!isSignedIn) {
-    return <ExploreGuestSignInCard intent="explore-people-browse" compact />;
+    const availableRows = filterAvailabilityByCapacity(availabilityPeople, availabilityGuideFilter)
+      .slice(0, 12)
+      .map(buildMemberBrowseRowFromAvailability);
+    const guideCards = filterCrewsGuideDirectoryCards(directory);
+
+    return (
+      <div className="space-y-5">
+        {communitiesSection}
+        {availabilityLoading ? (
+          <CrewBrowseListLoading />
+        ) : availableRows.length > 0 ? (
+          <section className="space-y-2">
+            <BrowseListSectionHeader label="Available this week" />
+            <ul className={CREW_BROWSE_LIST_STACK}>
+              {availableRows.map((row) => {
+                const { key, userId: _userId, profileHref, actionHref, ...memberProps } = row;
+                return (
+                  <li key={key}>
+                    <CrewBrowseMemberRow
+                      {...memberProps}
+                      profileHref={crewBrowseHrefForGuest(profileHref, false)}
+                      actionHref={actionHref ? crewBrowseHrefForGuest(actionHref, false) : undefined}
+                    />
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        ) : null}
+        {guideCards.length > 0 ? (
+          <section className="space-y-2">
+            <BrowseListSectionHeader label="Guides &amp; porters" />
+            <CrewsGuidesRail guides={guideCards} isSignedIn={false} />
+          </section>
+        ) : null}
+        {discoveryLoading ? null : (
+          <p className="px-1 text-center text-sm text-neutral-500">
+            Sign in for personalized picks, friend lists, and messaging.
+          </p>
+        )}
+      </div>
+    );
   }
 
   if (discoveryLoading || serverRecommendations.isLoading) {
-    return <CrewBrowseListLoading />;
+    return (
+      <div className="space-y-5">
+        {communitiesSection}
+        <CrewBrowseListLoading />
+      </div>
+    );
   }
 
   const rows = resolveRecommendedCrewFeedRows(serverRecommendations.data, {
@@ -78,24 +158,32 @@ export const CrewBrowseRecommendedBody = ({
   const mapTeaser = availabilityCatalogItems.slice(0, 6);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
+      {communitiesSection}
       {rows.length > 0 ? (
-        <ul className={CREW_BROWSE_LIST_STACK}>
-          {rows.map((row) => {
-            const { key, userId: _userId, ...memberProps } = row;
-            return (
-              <li key={key}>
-                <CrewBrowseMemberRow {...memberProps} />
-              </li>
-            );
-          })}
-        </ul>
+        <section className="space-y-2">
+          <BrowseListSectionHeader label="Picked for you" />
+          <ul className={CREW_BROWSE_LIST_STACK}>
+            {rows.map((row) => {
+              const { key, userId: _userId, profileHref, actionHref, ...memberProps } = row;
+              return (
+                <li key={key}>
+                  <CrewBrowseMemberRow
+                    {...memberProps}
+                    profileHref={profileHref}
+                    actionHref={actionHref}
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        </section>
       ) : (
         <CrewBrowseListEmpty>{EXPLORE_CREWS_FRIENDS_GOING_EMPTY}</CrewBrowseListEmpty>
       )}
       {mapTeaser.length > 0 ? (
-        <section>
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">On the map</h3>
+        <section className="space-y-2">
+          <BrowseListSectionHeader label="On the map" />
           <CrewBrowseAvailabilityMapList
             availabilityCatalogItems={mapTeaser}
             exploreCatalogItems={exploreCatalogItems}

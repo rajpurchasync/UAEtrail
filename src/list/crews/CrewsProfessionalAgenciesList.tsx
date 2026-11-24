@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { buildDiscoveryMapListRowCard } from '@/discovery';
 import type { DiscoveryCardModel } from '@/discovery/discoveryCardModel';
-import { ExploreListRow } from '@/explore/ui/ExploreListRow';
+import { BrowseCompactRow } from '../browse/BrowseCompactRow';
 import { CREW_BROWSE_LIST_STACK } from '@/crew-discovery/panel/crewBrowse/crewBrowseListTheme';
 import { CrewBrowseListEmpty, CrewBrowseListLoading } from '@/crew-discovery/panel/crewBrowse/CrewBrowseListStates';
 
@@ -19,14 +19,13 @@ export const CrewsProfessionalAgenciesList = ({
   agencyItems,
   exploreCatalogItems,
   loading,
-  onOpenAgencyItem,
 }: Props) => {
-  const cardById = useMemo(() => {
-    const map = new Map<string, DiscoveryCardModel>();
+  const cards = useMemo(() => {
+    const list: DiscoveryCardModel[] = [];
     for (const item of agencyItems) {
-      map.set(item.id, buildDiscoveryMapListRowCard(item, exploreCatalogItems));
+      list.push(buildDiscoveryMapListRowCard(item, exploreCatalogItems));
     }
-    return map;
+    return list;
   }, [agencyItems, exploreCatalogItems]);
 
   if (loading && agencyItems.length === 0) {
@@ -38,14 +37,12 @@ export const CrewsProfessionalAgenciesList = ({
   }
 
   return (
-    <div className={CREW_BROWSE_LIST_STACK}>
-      {agencyItems.map((item) => (
-        <ExploreListRow
-          key={item.id}
-          card={cardById.get(item.id)!}
-          onClick={() => onOpenAgencyItem(item)}
-        />
+    <ul className={CREW_BROWSE_LIST_STACK}>
+      {cards.map((card) => (
+        <li key={card.id}>
+          <BrowseCompactRow card={card} />
+        </li>
       ))}
-    </div>
+    </ul>
   );
 };

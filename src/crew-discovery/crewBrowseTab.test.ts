@@ -17,23 +17,36 @@ const stateFromUrl = (
 };
 
 describe('parseCrewBrowseState', () => {
-  it('defaults to People / Recommended', () => {
+  it('defaults to People lane + Available facet', () => {
     expect(parseCrewBrowseState(new URLSearchParams())).toEqual({
       lane: 'people',
-      facet: 'recommended',
+      facet: 'available',
       proKind: 'all',
     });
   });
 
-  it('reads peopleFacet for Available / Friends', () => {
+  it('reads peopleFacet for Available / Everyone on People lane', () => {
     expect(stateFromUrl(null, null, 'available')).toEqual({
       lane: 'people',
       facet: 'available',
       proKind: 'all',
     });
+    expect(stateFromUrl(null, null, 'everyone')).toEqual({
+      lane: 'people',
+      facet: 'everyone',
+      proKind: 'all',
+    });
+  });
+
+  it('migrates peopleFacet=friends and recommended to Available', () => {
     expect(stateFromUrl(null, null, 'friends')).toEqual({
       lane: 'people',
-      facet: 'friends',
+      facet: 'available',
+      proKind: 'all',
+    });
+    expect(stateFromUrl(null, null, 'recommended')).toEqual({
+      lane: 'people',
+      facet: 'available',
       proKind: 'all',
     });
   });
@@ -41,30 +54,40 @@ describe('parseCrewBrowseState', () => {
   it('ignores retired peopleTab lane aliases (GW-7)', () => {
     expect(stateFromUrl('available', null)).toEqual({
       lane: 'people',
-      facet: 'recommended',
+      facet: 'available',
       proKind: 'all',
     });
     expect(stateFromUrl('going', null)).toEqual({
       lane: 'people',
-      facet: 'recommended',
+      facet: 'available',
       proKind: 'all',
     });
     expect(stateFromUrl(null, 'buddies')).toEqual({
       lane: 'people',
-      facet: 'recommended',
+      facet: 'available',
       proKind: 'all',
     });
   });
 
-  it('reads professional and community lanes', () => {
+  it('reads professional, community, and people lanes', () => {
+    expect(stateFromUrl('people', null)).toEqual({
+      lane: 'people',
+      facet: 'available',
+      proKind: 'all',
+    });
+    expect(stateFromUrl('recommended', null)).toEqual({
+      lane: 'people',
+      facet: 'available',
+      proKind: 'all',
+    });
     expect(stateFromUrl('professional', null)).toEqual({
       lane: 'professional',
-      facet: 'recommended',
+      facet: 'available',
       proKind: 'all',
     });
     expect(stateFromUrl('community', null)).toEqual({
       lane: 'community',
-      facet: 'recommended',
+      facet: 'available',
       proKind: 'all',
     });
   });
@@ -72,20 +95,20 @@ describe('parseCrewBrowseState', () => {
   it('parses proKind on professional lane', () => {
     expect(stateFromUrl('professional', null, undefined, 'guide')).toEqual({
       lane: 'professional',
-      facet: 'recommended',
+      facet: 'available',
       proKind: 'guide',
     });
   });
 });
 
 describe('parseCrewBrowseState lane from peopleTab', () => {
-  it('defaults to people / Recommended', () => {
+  it('defaults to people lane', () => {
     expect(parseCrewBrowseState(new URLSearchParams()).lane).toBe('people');
   });
 
   it('ignores non-lane peopleTab tokens (GW-7 canonical only)', () => {
     expect(laneFromPeopleTab('going')).toBe('people');
-    expect(facetFromPeopleTab('going')).toBe('recommended');
+    expect(facetFromPeopleTab('going')).toBe('available');
     expect(laneFromPeopleTab('professional')).toBe('professional');
   });
 });
@@ -107,5 +130,25 @@ describe('serializeCrewBrowseTab', () => {
     expect(serializeCrewBrowseTab('people')).toBeNull();
     expect(serializeCrewBrowseLane('people')).toBeNull();
     expect(serializeCrewBrowseTab('professional')).toBe('professional');
+    expect(serializeCrewBrowseTab('community')).toBe('community');
+    expect(serializeCrewBrowseTab('trips')).toBe('trips');
+  });
+});
+
+describe('peopleFacet active', () => {
+  it('parses and serializes active on people lane', () => {
+    expect(stateFromUrl(null, null, 'active')).toEqual({
+      lane: 'people',
+      facet: 'active',
+      proKind: 'all',
+    });
+  });
+
+  it('reads trips lane', () => {
+    expect(stateFromUrl('trips', null)).toEqual({
+      lane: 'trips',
+      facet: 'available',
+      proKind: 'all',
+    });
   });
 });

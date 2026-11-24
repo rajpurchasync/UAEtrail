@@ -40,15 +40,15 @@ export {
 
 /**
  * Find crew browse lanes (`peopleTab` wire).
- * People facet: `peopleFacet` param — default **Recommended** omitted.
- * Lane labels: people: 'People', professional: 'Professional', community: 'Community'.
+ * Default lane **Recommended** omitted; `peopleTab=people` selects People.
+ * People facet: `peopleFacet` param — default **Friends** omitted.
  */
 export type CrewBrowseTab = CrewBrowseLane;
 
 export const CREW_BROWSE_TAB_ORDER = CREW_BROWSE_LANE_ORDER;
 export const CREW_BROWSE_TAB_LABELS = CREW_BROWSE_LANE_LABELS;
 
-/** URL `peopleTab` — omit default People lane. */
+/** URL `peopleTab` — omit default Recommended lane. */
 export const serializeCrewBrowseTab = (tab: CrewBrowseTab): string | null =>
   serializeCrewBrowseLane(tab);
 

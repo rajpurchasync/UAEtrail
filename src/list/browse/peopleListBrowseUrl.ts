@@ -16,7 +16,7 @@ export type { CrewBrowseState, CrewPeopleFacet };
 
 export { PEOPLE_LIST_TAB_URL_PARAM, PEOPLE_FACET_URL_PARAM, readPeopleCrewsTabParam };
 
-/** Full-screen `/list?listCat=people` — default **People / Recommended** when tab params omitted. */
+/** Full-screen `/list?listCat=people` — default **People** lane + **Available** facet when tab params omitted. */
 export const parsePeopleListBrowseState = (
   searchParams: Pick<URLSearchParams, 'get'>
 ): CrewBrowseState => parseCrewBrowseState(searchParams);

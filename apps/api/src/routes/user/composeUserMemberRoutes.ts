@@ -24,7 +24,6 @@ import { registerMeSubmittedPlaceRoutes } from './registerMeSubmittedPlaceRoutes
 import { registerMeSubmissionRoutes } from './registerMeSubmissionRoutes.js';
 import { registerMeFacilityRoutes } from './registerMeFacilityRoutes.js';
 import { registerMemberDiscoveryRoutes } from './registerMemberDiscoveryRoutes.js';
-import { registerDiscoverCrewRoutes } from './registerDiscoverCrewRoutes.js';
 import { registerMeCommunityDiscoverRoutes } from './registerMeCommunityDiscoverRoutes.js';
 import { registerNotificationRoutes } from './registerNotificationRoutes.js';
 import { registerProfileRoutes } from './registerProfileRoutes.js';
@@ -39,7 +38,6 @@ export const composeUserMemberRoutes = (userRouter: Router): void => {
   registerProfileRoutes(userRouter);
   registerMeParticipantHubRoutes(userRouter);
   registerMemberDiscoveryRoutes(userRouter);
-  registerDiscoverCrewRoutes(userRouter);
   registerMeCommunityDiscoverRoutes(userRouter);
   registerNotificationRoutes(userRouter);
   registerFriendRoutes(userRouter);

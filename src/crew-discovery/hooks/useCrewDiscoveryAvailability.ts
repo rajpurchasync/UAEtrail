@@ -26,6 +26,8 @@ type Args = {
   search: string;
   activityDatePreset: ExploreActivityDatePreset;
   areaSlug?: string | null;
+  /** Emirate label for slot destination region filter (`GET /explore/people/availability?region=`). */
+  region?: string | null;
   mapFilter?: MapFilterKey;
 };
 
@@ -35,16 +37,20 @@ export const useCrewDiscoveryAvailability = ({
   search,
   activityDatePreset,
   areaSlug,
+  region,
   mapFilter = 'all',
 }: Args) => {
   const deferredSearch = useDeferredValue(search.trim().toLowerCase());
-  const range = exploreActivityDatePresetToInclusiveRange(activityDatePreset);
+  /** “Anyday” on Find crew still needs a browse window — use full year so open slots appear. */
+  const browsePreset = activityDatePreset === 'anyday' ? 'thisyear' : activityDatePreset;
+  const range = exploreActivityDatePresetToInclusiveRange(browsePreset);
   const kind = mapFilterToAvailabilityKind(mapFilter);
 
   const queryParams: CrewDiscoveryAvailabilityQueryParams = {
     from: range.from,
     to: range.to,
     area: areaSlug?.trim() || null,
+    region: region?.trim() || null,
     kind: kind ?? null,
   };
 
@@ -57,6 +63,7 @@ export const useCrewDiscoveryAvailability = ({
         from: range.from,
         to: range.to,
         area: areaSlug?.trim() || undefined,
+        region: region?.trim() || undefined,
         kind: kind ?? undefined,
       });
     },

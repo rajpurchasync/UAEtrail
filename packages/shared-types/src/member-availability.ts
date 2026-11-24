@@ -41,6 +41,27 @@ export type {
   ScheduleModality,
 } from './availability-slot.js';
 
+export type {
+  AvailabilitySlotTransportMode,
+  AvailabilitySlotVehicleType,
+  AvailabilitySlotLogisticsWire,
+} from './availability-slot-logistics.js';
+
+export {
+  AVAILABILITY_SLOT_TRANSPORT_MODES,
+  AVAILABILITY_SLOT_VEHICLE_TYPES,
+  formatAvailabilitySlotLogisticsLine,
+  formatAvailabilitySlotPartyLine,
+  formatAvailabilitySlotTransportLine,
+  sanitizeAvailabilitySlotLogistics,
+} from './availability-slot-logistics.js';
+
+export {
+  MAX_AVAILABILITY_DESTINATION_REGIONS,
+  destinationRegionsOverlap,
+  sanitizeDestinationRegions,
+} from './availability-slot-destinations.js';
+
 export {
   SCHEDULE_MODALITIES,
   AVAILABILITY_SLOT_CAPACITIES,
@@ -59,6 +80,7 @@ import type {
   AvailabilitySlotCapacity,
   ScheduleModality,
 } from './availability-slot.js';
+import type { MemberProfileRoleLabel } from './host-publishing-tier.js';
 
 export interface MemberAvailabilitySlotDTO {
   /** Server-issued stable id for map pins and edits. */
@@ -85,6 +107,17 @@ export interface MemberAvailabilitySlotDTO {
   /** Activity types for this block — never includes `guide`. */
   modalities?: ScheduleModality[] | null;
   engagementTerms?: AvailabilityEngagementTerms | null;
+  /** Headcount for this window (default solo when omitted). */
+  partySize?: number | null;
+  transportMode?: import('./availability-slot-logistics.js').AvailabilitySlotTransportMode | null;
+  vehicleType?: import('./availability-slot-logistics.js').AvailabilitySlotVehicleType | null;
+  carpoolSeatsNeeded?: number | null;
+  /** Rideshare / route destination pin (going-from uses latitude/longitude). */
+  destinationLatitude?: number | null;
+  destinationLongitude?: number | null;
+  destinationPrecision?: 'general' | 'specific' | null;
+  /** Emirate / region labels (OR) — empty on wire means open geography on the slot. */
+  destinationRegions?: string[] | null;
 }
 
 export const availabilityMapItemId = (userId: string, slotId: string): string =>
@@ -146,6 +179,10 @@ export interface ExploreAvailablePersonDTO {
   areaSlug?: string | null;
   slots: MemberAvailabilitySlotDTO[];
   isFriend: boolean;
+  /** Publishing / trust tier for Find crew badges (Pro, Verified). */
+  profileRoleLabel?: MemberProfileRoleLabel | null;
+  /** Viewer may open `/member/:id` (public card or trusted relationship). */
+  canOpenMemberProfile?: boolean;
 }
 
 /** Map People layer v1 — cluster per area + kind (not per-user pins). */
@@ -310,12 +347,10 @@ export const memberAvailabilitySlotsAsDayPicks = (
     if (!isValidAvailabilitySlot(slot)) continue;
     for (const day of expandMemberAvailabilitySlotDays(slot)) {
       out.push({
+        ...slot,
         startDate: day,
         endDate: day,
         timeBand: slot.timeBand ?? 'any',
-        capacity: slot.capacity,
-        modalities: slot.modalities,
-        engagementTerms: slot.engagementTerms,
       });
     }
   }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { ViewerFix } from './placeDistance';
-import { readStoredViewerFix, StoredViewerFix, VIEWER_LOCATION_KEY, writeStoredViewerFix } from './viewerLocationStorage';
+import { StoredViewerFix, VIEWER_LOCATION_KEY, writeStoredViewerFix } from './viewerLocationStorage';
 
 const FRESH_MS = 5 * 60 * 1000;
 

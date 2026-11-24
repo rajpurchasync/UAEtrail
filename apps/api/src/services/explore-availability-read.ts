@@ -8,6 +8,7 @@ export const loadExplorePeopleAvailability = async (input: {
   rangeEnd: string;
   kind: AvailabilityKind | null;
   areaSlug: string | null;
+  region: string | null;
   friendsOnly: boolean;
 }) => {
   return loadExploreAvailabilityIndex({
@@ -16,6 +17,7 @@ export const loadExplorePeopleAvailability = async (input: {
     rangeEnd: input.rangeEnd,
     kind: input.kind,
     areaSlug: input.areaSlug,
+    region: input.region,
     friendsOnly: input.friendsOnly,
   });
 };

@@ -234,7 +234,7 @@ describe('list module hygiene', () => {
       join(process.cwd(), 'src/crew-discovery/panel/crewBrowse/CrewBrowseAvailabilityMapList.tsx'),
       'utf8'
     );
-    expect(crewLookingList).toMatch(/ExploreListRow/);
+    expect(crewLookingList).toMatch(/BrowseCompactRow/);
     expect(crewsBrowsePanel).not.toMatch(/buildListFeedCards/);
   });
 

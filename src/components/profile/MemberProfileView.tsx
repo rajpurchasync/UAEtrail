@@ -71,6 +71,7 @@ interface MemberProfileViewProps {
   onAcceptFriendRequest: () => void;
   onDeclineFriendRequest: () => void;
   onCancelFriendRequest: () => void;
+  onUnfriend: () => void;
   onMessage: () => void;
   upcomingActivities?: ActivityDTO[];
   pastActivities?: ActivityDTO[];
@@ -103,6 +104,7 @@ export const MemberProfileView = ({
   onAcceptFriendRequest,
   onDeclineFriendRequest,
   onCancelFriendRequest,
+  onUnfriend,
   onMessage,
   upcomingActivities = [],
   pastActivities = [],
@@ -191,6 +193,7 @@ export const MemberProfileView = ({
               onAcceptFriendRequest={onAcceptFriendRequest}
               onDeclineFriendRequest={onDeclineFriendRequest}
               onCancelFriendRequest={onCancelFriendRequest}
+              onUnfriend={onUnfriend}
               onMessage={onMessage}
             />
             </div>

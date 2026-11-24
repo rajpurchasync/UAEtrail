@@ -1,10 +1,19 @@
-import type { FriendRequestDTO, FriendSummaryDTO } from '@uaetrail/shared-types';
+import type {
+  FriendActivityPresenceRowDTO,
+  FriendRequestDTO,
+  FriendSummaryDTO,
+} from '@uaetrail/shared-types';
 import { api } from '../api/index';
 import { fetchMeGroups } from './groupClientApi';
 
 export const fetchMeFriends = async (): Promise<FriendSummaryDTO[]> => {
   const res = await api.getMeFriends();
   return res.data;
+};
+
+export const fetchMeFriendActivityPresence = async (): Promise<FriendActivityPresenceRowDTO[]> => {
+  const res = await api.getMeFriendActivityPresence();
+  return res.data.rows ?? [];
 };
 
 export const fetchMeFriendRequests = async (

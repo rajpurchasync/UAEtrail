@@ -37,6 +37,10 @@ import {
   availabilityRoutePinRow,
 } from '../AvailabilityWizardChrome';
 import type { AvailabilityWizardContext } from '../availabilityWizardContext';
+import { defaultGuideEngagementTerms } from '@uaetrail/shared-types';
+import { GuideEngagementTermsFields } from '../../../../availability/GuideEngagementTermsFields';
+import { IntentComposeLaneStep } from '../../intentCompose/IntentComposeLaneStep';
+import { AvailabilityDestinationRegionsField } from '../../../../availability/AvailabilityDestinationRegionsField';
 
 const REVIEW_EDIT_LABELS: Partial<Record<AvailabilityFixedFlowStepId, string>> = {
   title: 'Title',
@@ -82,10 +86,45 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
     goToStep,
     requestClose,
     handleSubmit,
+    canHostPaidActivities,
   } = ctx;
 
   return (
     <>
+      {step === 'lane' ? (
+        <IntentComposeLaneStep
+          lane={draft.capacity}
+          onLaneChange={(capacity) =>
+            patchDraft({
+              capacity,
+              guideEngagementTerms:
+                capacity === 'guide'
+                  ? draft.guideEngagementTerms ?? defaultGuideEngagementTerms()
+                  : null,
+            })
+          }
+          error={error}
+          headerTitle={headerTitle}
+          onClose={requestClose}
+          onBack={goBack}
+          onNext={goNext}
+        />
+      ) : null}
+
+      {step === 'engagementTerms' ? (
+        <ComposeWizardStepChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
+          <GuideEngagementTermsFields
+            value={draft.guideEngagementTerms ?? defaultGuideEngagementTerms()}
+            onChange={(guideEngagementTerms) => patchDraft({ guideEngagementTerms })}
+            canHostPaidActivities={canHostPaidActivities}
+          />
+          {composeWizardErrorFooter(
+            error,
+            <AvailabilityWizardNextButton disabled={submitting} onClick={goNext} label="Next" />
+          )}
+        </ComposeWizardStepChrome>
+      ) : null}
+
       {step === 'type' && !availabilityFixedKind && (
         <ComposeWizardStepChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <div className="grid grid-cols-2 gap-3">
@@ -170,6 +209,15 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
               });
             }}
           />
+          <div className="mt-5">
+            <AvailabilityDestinationRegionsField
+              publishedAreas={publishedAreas}
+              selected={draft.destinationRegions}
+              onChange={(destinationRegions) => patchDraft({ destinationRegions })}
+              legend="Destination emirates"
+              hint="Optional — add more emirates beyond the area above."
+            />
+          </div>
           {composeWizardErrorFooter(
             error,
             <AvailabilityWizardNextButton disabled={!draft.areaId} onClick={goNext} />

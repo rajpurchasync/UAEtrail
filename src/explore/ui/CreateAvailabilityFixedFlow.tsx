@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { useAuth } from '../../context/AuthContext';
+import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { fetchPublicActivityDetail } from '../../hooks/publicActivityClientApi';
 import { ComposeWizardShell } from '../create/ComposeWizardShell';
 import { MAP_CONFIG } from '../../config/platform';
@@ -25,10 +26,11 @@ import {
   availabilityFixedFlowStepTitle,
   emptyAvailabilityFixedDraft,
   getAvailabilityFixedFlowSteps,
+  getIntentFixedWizardSteps,
   publishAvailabilityFixedSlot,
   validateAvailabilityFixedDraft,
   validateAvailabilityFixedStep,
-  type AvailabilityFixedFlowStepId,
+  type IntentFixedWizardStepId,
   type AvailabilityFixedSubmitResult,
   type AvailabilityFixedDraft,
   type AvailabilityFixedKind,
@@ -59,7 +61,7 @@ type SeekingMapIntent =
   | typeof COMPOSE_MAP_INTENTS.seekFrom
   | typeof COMPOSE_MAP_INTENTS.seekTo;
 
-type FlowStep = 'type' | AvailabilityFixedFlowStepId;
+type FlowStep = 'type' | IntentFixedWizardStepId;
 
 interface CreateAvailabilityFixedFlowProps {
   open: boolean;
@@ -86,6 +88,7 @@ export const CreateAvailabilityFixedFlow = ({
 }: CreateAvailabilityFixedFlowProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { canHostPaidActivities } = useMemberStatus();
   const isMobile = useIsMobile();
 
   const [step, setStep] = useState<FlowStep>('type');
@@ -122,27 +125,44 @@ export const CreateAvailabilityFixedFlow = ({
   }, [submitResult?.activityId]);
 
   const kind = draft.kind ?? selectedKind;
-  const flowSteps = useMemo(() => (kind ? getAvailabilityFixedFlowSteps(kind) : []), [kind]);
-  const wizardPages = useMemo(
-    () => (isMobile ? flowSteps.map((id) => [id]) : bundleAvailabilityWizardPages(flowSteps)),
-    [flowSteps, isMobile]
+  const flowSteps = useMemo(
+    () => (kind ? getIntentFixedWizardSteps(kind, draft.capacity) : []),
+    [kind, draft.capacity]
   );
+  const wizardPages = useMemo(() => {
+    const tail = kind ? getAvailabilityFixedFlowSteps(kind) : [];
+    const pages =
+      isMobile
+        ? flowSteps.map((id) => [id])
+        : [
+            ...flowSteps
+              .filter((id) => id === 'lane' || id === 'engagementTerms')
+              .map((id) => [id] as IntentFixedWizardStepId[]),
+            ...(tail.length > 0 ? bundleAvailabilityWizardPages(tail) : []),
+          ];
+    return pages.length > 0 ? pages : flowSteps.map((id) => [id]);
+  }, [flowSteps, isMobile, kind]);
   const dateOptions = useMemo(() => buildDateOptions(), []);
-  const currentStepIndex = kind && step !== 'type' ? flowSteps.indexOf(step as AvailabilityFixedFlowStepId) : -1;
+  const currentStepIndex =
+    kind && step !== 'type' ? flowSteps.indexOf(step as IntentFixedWizardStepId) : -1;
   const widePageSteps =
-    kind && step !== 'type' ? wizardPageContaining(wizardPages, step as AvailabilityFixedFlowStepId) : [];
+    kind && step !== 'type' ? wizardPageContaining(wizardPages, step as IntentFixedWizardStepId) : [];
   const currentPageIndex =
     kind && step !== 'type'
-      ? wizardPages.findIndex((page) => page.includes(step as AvailabilityFixedFlowStepId))
+      ? wizardPages.findIndex((page) => page.includes(step as IntentFixedWizardStepId))
       : -1;
-  const pageHas = (id: AvailabilityFixedFlowStepId) => widePageSteps.includes(id);
+  const pageHas = (id: IntentFixedWizardStepId) => widePageSteps.includes(id);
 
   const headerTitle =
     step === 'type' || !kind
       ? 'Find'
       : widePageSteps.length > 1
         ? availabilityFixedFlowStepTitle(widePageSteps[0], kind)
-        : availabilityFixedFlowStepTitle(step as AvailabilityFixedFlowStepId, kind);
+        : step === 'lane' || step === 'engagementTerms'
+          ? step === 'lane'
+            ? 'Available to go as'
+            : 'Guide terms'
+          : availabilityFixedFlowStepTitle(step as AvailabilityFixedFlowStepId, kind);
 
   const availabilityFixedFlowId = useMemo(
     () =>
@@ -183,7 +203,7 @@ export const CreateAvailabilityFixedFlow = ({
         ...(areaId ? { areaId } : {}),
       });
       setSelectedKind(availabilityFixedKind);
-      setStep(getAvailabilityFixedFlowSteps(availabilityFixedKind)[0]);
+      setStep('lane');
       setError(null);
       setSubmitStatus(AVAILABILITY_FIXED_SUBMIT_FLOW_IDLE);
       setShowMonthView(false);
@@ -242,11 +262,11 @@ export const CreateAvailabilityFixedFlow = ({
   const goToFirstStep = () => {
     if (!selectedKind) return;
     patchDraft({ kind: selectedKind });
-    setStep(getAvailabilityFixedFlowSteps(selectedKind)[0]);
+    setStep('lane');
     setError(null);
   };
 
-  const goToStep = (target: AvailabilityFixedFlowStepId) => {
+  const goToStep = (target: IntentFixedWizardStepId) => {
     closeMap();
     setStep(target);
     setError(null);
@@ -429,6 +449,7 @@ export const CreateAvailabilityFixedFlow = ({
           void handleSubmit();
         },
         openMap,
+        canHostPaidActivities,
       } satisfies AvailabilityWizardContext)}
     </ComposeWizardShell>
   );

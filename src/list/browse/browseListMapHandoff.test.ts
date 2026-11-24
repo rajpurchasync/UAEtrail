@@ -18,6 +18,7 @@ const baseState: BrowseListFilterState = {
   crewBrowseLane: 'people',
   crewPeopleFacet: 'available',
   crewProfessionalKind: 'all',
+  crewPeopleSurface: 'find',
   hasTrip: false,
   facilityKinds: [],
   audience: 'anyone',
@@ -58,7 +59,7 @@ describe('browseListMapHandoff', () => {
   it('omits pinKind for Crews list category', () => {
     expect(resolveListBrowseExplorePinKind({ ...baseState, categories: ['people'] }, 'people')).toBeNull();
     const params = serializeBrowseListToExploreSearchParams(
-      { ...baseState, categories: ['people'], crewPeopleFacet: 'recommended' },
+      { ...baseState, categories: ['people'], crewBrowseLane: 'people', crewPeopleFacet: 'available' },
       [],
       { listCat: 'people' }
     );
@@ -72,11 +73,18 @@ describe('browseListMapHandoff', () => {
 
   it('hands off crews peopleTab and clears date on map', () => {
     const params = serializeBrowseListToExploreSearchParams(
-      { ...baseState, categories: ['people'], crewPeopleFacet: 'friends', activityDatePreset: 'today' },
+      {
+        ...baseState,
+        categories: ['people'],
+        crewBrowseLane: 'people',
+        crewPeopleFacet: 'available',
+        activityDatePreset: 'today',
+      },
       [],
       { listCat: 'people' }
     );
-    expect(params.get('peopleFacet')).toBe('friends');
+    expect(params.get('peopleTab')).toBe('people');
+    expect(params.get('peopleFacet')).toBeNull();
     expect(params.get('buddies')).toBeNull();
     expect(params.get('date')).toBeNull();
   });
