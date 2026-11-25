@@ -1,11 +1,13 @@
 {
   "version": 1,
-  "updated": "2026-11-25",
+  "updated": "2026-11-26",
   "description": "Independent shim burn-down lanes for multi-agent / multi-task. One lane per branch; acquire locks per agent-file-lock.mdc.",
   "integrationGate": "npm run verify:system:quick && npm run shim:baseline",
   "lanes": [
     {
       "id": "W4s",
+      "status": "done",
+      "commitSha": "89a1bd7f",
       "title": "discoverySession list hooks facade",
       "branch": "burn-down/w4s-list-hooks",
       "owns": [
@@ -20,6 +22,8 @@
     },
     {
       "id": "W4t",
+      "status": "done",
+      "commitSha": "44d1576a",
       "title": "discoverySession filter types facade (explore search)",
       "branch": "burn-down/w4t-list-filters",
       "owns": [
@@ -32,6 +36,8 @@
     },
     {
       "id": "W4u",
+      "status": "done",
+      "commitSha": "356b7ed4",
       "title": "discoverySession list chrome facade (explore search layout)",
       "branch": "burn-down/w4u-list-chrome",
       "owns": [
@@ -57,7 +63,7 @@
     },
     {
       "id": "W5-push",
-      "title": "publish local main to origin (11 commits)",
+      "title": "publish local main to origin (14 commits)",
       "branch": "main",
       "owns": [],
       "note": "git push origin main only — no code edits"
