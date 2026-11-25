@@ -102,6 +102,6 @@ export {
   type ActivityMapPeekActionLabelContext,
 } from './exploreMapPeekActionCopy';
 
-export { useExplorePublishedAreasQuery } from './useExplorePublishedAreas';
+export { useExplorePublishedDestinationsQuery } from './useExplorePublishedDestinations';
 
 /** Card projections: import from `src/discovery` / `src/discovery/index.ts` (not here — avoids list ↔ discovery cycles). */

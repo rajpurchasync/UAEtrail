@@ -26,7 +26,7 @@ describe('detailSurfaceWiringAcceptance', () => {
 
     const destinationPage = read('src/pages/DestinationDetailPage.tsx');
     expect(destinationPage).toMatch(/destinationHubClientApi/);
-    expect(destinationPage).toMatch(/AreaDetailView/);
+    expect(destinationPage).toMatch(/DestinationDetailView/);
 
     const shopPage = read('src/pages/ShopPublic.tsx');
     expect(shopPage).toMatch(/shopPublicClientApi/);

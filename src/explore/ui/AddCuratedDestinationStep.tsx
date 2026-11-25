@@ -1,9 +1,9 @@
 import type { AreaPublicDTO } from '@uaetrail/shared-types';
 import { AppSelect } from '../../components/ui/AppSelect';
 import { EXPLORE_SHAPE } from '../../config/exploreTheme';
-import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
+import { useExplorePublishedDestinations } from '../useExplorePublishedDestinations';
 
-type AddCuratedAreaStepProps = {
+type AddCuratedDestinationStepProps = {
   destinationId: string | null;
   onAreaIdChange: (destinationId: string | null) => void;
   proposedAreaName?: string;
@@ -12,14 +12,14 @@ type AddCuratedAreaStepProps = {
 };
 
 /** Add place — pick a listed hub, or name a new area for admin review. */
-export const AddCuratedAreaStep = ({
+export const AddCuratedDestinationStep = ({
   destinationId,
   onAreaIdChange,
   proposedAreaName = '',
   onProposedAreaNameChange,
   allowNewArea = true,
-}: AddCuratedAreaStepProps) => {
-  const areas = useExplorePublishedAreas();
+}: AddCuratedDestinationStepProps) => {
+  const areas = useExplorePublishedDestinations();
   const proposingNew = allowNewArea && proposedAreaName.trim().length >= 2 && !destinationId;
 
   return (

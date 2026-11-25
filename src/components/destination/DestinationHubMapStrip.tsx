@@ -5,13 +5,13 @@ import { placeDetailPath } from '@uaetrail/shared-types';
 import type { LocationDTO } from '@uaetrail/shared-types';
 import type { MapBounds, PlaceMapPin } from '../ui/placesMapTypes';
 import { explorePath } from '../../explore/routing';
-import { placeDetailRouteKindForRow } from './areaHubPlaceGroups';
+import { placeDetailRouteKindForRow } from './destinationHubPlaceGroups';
 
 const LazyPlacesMap = lazy(() =>
   import('../ui/PlacesMap').then((module) => ({ default: module.PlacesMap }))
 );
 
-type AreaHubMapStripProps = {
+type DestinationHubMapStripProps = {
   destinationSlug: string;
   areaName: string;
   center: AreaCenter;
@@ -51,13 +51,13 @@ const placeToPin = (place: LocationDTO): PlaceMapPin | null => {
 };
 
 /** Compact map preview — tap opens explore filtered to this area. */
-export const AreaHubMapStrip = ({
+export const DestinationHubMapStrip = ({
   destinationSlug,
   areaName,
   center,
   boundsRing,
   places,
-}: AreaHubMapStripProps) => {
+}: DestinationHubMapStripProps) => {
   const navigate = useNavigate();
   const exploreInArea = explorePath({ area: destinationSlug });
   const fallbackBounds = useMemo(() => boundsFromRing(boundsRing), [boundsRing]);

@@ -10,7 +10,7 @@ import {
 import { submitMemberPlace } from '../../../../hooks/memberCatalogSubmitClientApi';
 import { RideshareLinkedOutingPreviewLines } from '../../hostingPinReview';
 import { fetchPublishedDestinations } from '../../../../hooks/destinationHubClientApi';
-import { resolvePublishedAreaForPoint } from '../../../hostingPublishArea';
+import { resolvePublishedDestinationForPoint } from '../../../hostingPublishDestination';
 import { ImageUpload } from '../../../../components/ui/ImageUpload';
 
 export const RideshareDestinationCommunityStep = ({
@@ -106,7 +106,7 @@ export const RideshareDestinationCommunityStep = ({
     setSubmitError(null);
     try {
       const areas = await fetchPublishedDestinations();
-      const area = resolvePublishedAreaForPoint(draft.toLatitude, draft.toLongitude, areas);
+      const area = resolvePublishedDestinationForPoint(draft.toLatitude, draft.toLongitude, areas);
       const region = area?.region?.trim() ?? '';
       const countryCode = area?.countryCode?.trim() ?? '';
       if (!area || !region || countryCode.length !== 2) {

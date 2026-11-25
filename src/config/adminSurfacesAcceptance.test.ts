@@ -23,7 +23,7 @@ export const ADMIN_PLATFORM_ROUTE_CATALOG: Array<{
   { path: '/admin/alerts', page: 'admin/Alerts.tsx', element: 'AdminAlerts', inSidebar: true },
   { path: '/admin/places', page: 'admin/Places.tsx', element: 'AdminPlaces', inSidebar: true },
   { path: '/admin/facilities', page: 'admin/Places.tsx', element: 'AdminPlaces', inSidebar: true },
-  { path: '/admin/destinations', page: 'admin/Areas.tsx', element: 'AdminAreas', inSidebar: true },
+  { path: '/admin/destinations', page: 'admin/Destinations.tsx', element: 'AdminDestinations', inSidebar: true },
   { path: '/admin/users', page: 'admin/Members.tsx', element: 'AdminMembers', inSidebar: true },
   { path: '/admin/groups', page: 'admin/Groups.tsx', element: 'AdminGroups', inSidebar: true },
   { path: '/admin/communities', page: 'admin/Communities.tsx', element: 'AdminCommunities', inSidebar: true },

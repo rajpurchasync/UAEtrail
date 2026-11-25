@@ -12,7 +12,7 @@ import {
 } from '@uaetrail/shared-types';
 import type { MemberAvailabilityMatchPreviewDTO } from '@uaetrail/shared-types';
 import { fetchMyAvailabilityMatchPreview } from '../hooks/memberAvailabilityApi';
-import { useExplorePublishedAreasQuery } from '../explore/useExplorePublishedAreas';
+import { useExplorePublishedDestinationsQuery } from '../explore/useExplorePublishedDestinations';
 import { AvailabilityMatchPreview } from '../explore/ui/AvailabilityMatchPreview';
 import { mergeVenueStateFilterOptionsWithAreas } from '../config/regions';
 import { AppButton } from '../components/mobile/AppButton';
@@ -103,7 +103,7 @@ export const AvailabilitySlotEditor = forwardRef<AvailabilitySlotEditorHandle, A
   const [locationMode, setLocationMode] = useState<AvailabilityLocationMode>('open');
   const [region, setRegion] = useState<string>('');
   const [destinationId, setAreaId] = useState<string>('');
-  const { data: publishedAreas = [], isError: publishedAreasError } = useExplorePublishedAreasQuery();
+  const { data: publishedAreas = [], isError: publishedAreasError } = useExplorePublishedDestinationsQuery();
   const areasError = publishedAreasError ? 'Could not load trail areas.' : null;
   const [formError, setFormError] = useState<string | null>(null);
   const [matchPreview, setMatchPreview] = useState<MemberAvailabilityMatchPreviewDTO | null>(null);

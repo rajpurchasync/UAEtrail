@@ -1,14 +1,14 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchPlaceCatalogRows } from '../../hooks/placeCatalogReadsClientApi';
-import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
+import { useExplorePublishedDestinations } from '../useExplorePublishedDestinations';
 import { buildExploreSearchWhereSuggestions } from './exploreSearchWhereSuggestions';
 
 /** Catalog + emirate rows for hub home where dropdown (does not touch page filters). */
 export const useExploreSearchWhereSuggestions = (query: string, enabled: boolean) => {
   const trimmed = query.trim();
   const catalogEnabled = enabled && trimmed.length >= 2;
-  const areas = useExplorePublishedAreas(catalogEnabled);
+  const areas = useExplorePublishedDestinations(catalogEnabled);
 
   const { data: places = [] } = useQuery({
     queryKey: ['placeCatalog', 'AE', 'hub-home-where'],

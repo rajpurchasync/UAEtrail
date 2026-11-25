@@ -28,7 +28,7 @@ import {
 } from '../list/browse/listBrowseSort';
 import { countBrowseListFilters, type BrowseListLayout } from '../list/browse/browseListLayout';
 import type { ExploreSearchScopeKey } from '../explore/exploreBrowseTaxonomy';
-import { useExplorePublishedAreasQuery } from '../explore/useExplorePublishedAreas';
+import { useExplorePublishedDestinationsQuery } from '../explore/useExplorePublishedDestinations';
 import { useBrowseGeoScopeHydration } from '../list/browse/useBrowseGeoScopeHydration';
 import '../styles/explore-map-chrome.css';
 
@@ -101,7 +101,7 @@ export const GeoBrowsePane = ({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const sideMapWidth = useListSideMapWidth(desktopMd);
-  const { data: publishedAreas = [] } = useExplorePublishedAreasQuery();
+  const { data: publishedAreas = [] } = useExplorePublishedDestinationsQuery();
 
   const scopedFilters = useMemo<BrowseListFilterState>(
     () => ({

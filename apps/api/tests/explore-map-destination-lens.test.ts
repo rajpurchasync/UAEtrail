@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { AreaDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { buildExploreAreaLensItems } from '../src/lib/explore-map-area-lens.js';
+import { buildExploreDestinationLensItems } from '../src/lib/explore-map-destination-lens.js';
 import { testAreas } from './helpers/test-seed.js';
 
 const area = (slug: string, id: string): AreaDTO => ({
@@ -16,7 +16,7 @@ const area = (slug: string, id: string): AreaDTO => ({
   updatedAt: '2026-01-01T00:00:00.000Z',
 });
 
-describe('buildExploreAreaLensItems', () => {
+describe('buildExploreDestinationLensItems', () => {
   it('rolls up hosted and venue counts per area', () => {
     const areas = [area(testAreas.hatta.slug, testAreas.hatta.id)];
     const catalog: ExploreMapItemDTO[] = [
@@ -43,7 +43,7 @@ describe('buildExploreAreaLensItems', () => {
       },
     ];
 
-    const rows = buildExploreAreaLensItems(areas, catalog);
+    const rows = buildExploreDestinationLensItems(areas, catalog);
     expect(rows).toHaveLength(1);
     expect(rows[0]?.source).toBe('area');
     expect(rows[0]?.areaLensStats?.hostedActivities).toBe(1);
@@ -76,7 +76,7 @@ describe('buildExploreAreaLensItems', () => {
         destinationId: testAreas.hatta.id,
       },
     ];
-    const rows = buildExploreAreaLensItems(areas, catalog);
+    const rows = buildExploreDestinationLensItems(areas, catalog);
     expect(rows[0]?.areaLensStats?.availabilityPins).toBe(1);
     expect(rows[0]?.areaLensStats?.hostedActivities).toBe(0);
     expect(rows[0]?.subtitle).toContain('available');
@@ -97,7 +97,7 @@ describe('buildExploreAreaLensItems', () => {
         placeKind: 'toilet',
       },
     ];
-    const rows = buildExploreAreaLensItems(areas, catalog);
+    const rows = buildExploreDestinationLensItems(areas, catalog);
     expect(rows[0]?.areaLensStats?.facilities).toBe(1);
   });
 });

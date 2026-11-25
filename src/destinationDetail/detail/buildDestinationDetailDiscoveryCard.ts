@@ -4,7 +4,7 @@ import { buildDiscoveryCardViewModelCard } from '../../discovery';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 
 /** Discovery card for area hub — wishlist / trip alerts parity with place detail. */
-export const buildAreaDetailDiscoveryCard = (input: {
+export const buildDestinationDetailDiscoveryCard = (input: {
   area: AreaPublicDTO;
   shareText?: string | null;
 }): DiscoveryCardModel => {

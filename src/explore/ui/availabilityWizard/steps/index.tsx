@@ -5,7 +5,7 @@ import { ComposeWidePageSlot } from '../../../create/ComposeWidePageSlot';
 import { ComposeWizardStepChrome } from '../../../create/ComposeWizardShell';
 import { EXPLORE_FLOW } from '../../../../config/exploreTheme';
 import { GOING_FROM_LABEL } from '../../../createFlowCopy';
-import { areaLabelForId } from '../../../hostingPublishArea';
+import { destinationLabelForId } from '../../../hostingPublishDestination';
 import { MobileMonthCalendar } from '../../../../components/mobile/MobileMonthCalendar';
 import { FlowStepTextArea, FlowStepTextInput } from '../../useFlowSheetPrimaryFieldFocus';
 import {
@@ -24,7 +24,7 @@ import {
   type AvailabilityFixedFlowStepId,
 } from '../../intentFixedFlowEngine';
 import type { TimeMode } from '../../createFlowShared';
-import { AvailabilityCuratedAreaStep } from '../../AvailabilityCuratedAreaStep';
+import { AvailabilityCuratedDestinationStep } from '../../AvailabilityCuratedDestinationStep';
 import {
   AvailabilityAudienceStepBody,
   AvailabilityRideshareDestinationStepBody,
@@ -200,12 +200,12 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
 
       {step === 'curatedArea' && kind && (
         <ComposeWizardStepChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
-          <AvailabilityCuratedAreaStep
+          <AvailabilityCuratedDestinationStep
             destinationId={draft.destinationId}
             onAreaIdChange={(next) => {
               patchDraft({
                 destinationId: next,
-                preferredArea: next ? areaLabelForId(next, publishedAreas) ?? '' : '',
+                preferredArea: next ? destinationLabelForId(next, publishedAreas) ?? '' : '',
               });
             }}
           />
@@ -521,7 +521,7 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
             {draft.destinationId && (
               <p className="mt-2 text-xs text-gray-600">
                 <span className="font-semibold text-gray-700">Area: </span>
-                {areaLabelForId(draft.destinationId, publishedAreas) ?? draft.preferredArea}
+                {destinationLabelForId(draft.destinationId, publishedAreas) ?? draft.preferredArea}
               </p>
             )}
             {(usesHikingAvailabilityFlow(kind) || usesCampingAvailabilityFlow(kind) || usesEventAvailabilityFlow(kind)) &&

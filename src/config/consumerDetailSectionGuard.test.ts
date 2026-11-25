@@ -9,7 +9,7 @@ describe('consumerDetailSectionGuard', () => {
     const surfaces = [
       'src/place/detail/templates/PlaceDetailSections.tsx',
       'src/activity/detail/templates/ActivityDetailSections.tsx',
-      'src/components/area/AreaHubPreviewSections.tsx',
+      'src/components/destination/DestinationHubPreviewSections.tsx',
       'src/components/shop/ShopPublicPage.tsx',
       'src/detail/shell/SectionCard.tsx',
     ];

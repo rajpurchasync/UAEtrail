@@ -28,7 +28,7 @@ import { parseFacilityOnPlaceId, parsePlanWithUserId } from '../routing';
 import { activityJoinInviteBanner } from '../../content/exploreGoingPanelCopy';
 import { guestExplorePreviewCanSearch } from '../guestMapPreviewPolicy';
 import { useHostActivitySheetBundle } from '../../hooks/useHostActivitySheetBundle';
-import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
+import { useExplorePublishedDestinations } from '../useExplorePublishedDestinations';
 import { useCrewDiscoveryBrowseBundle } from '@/crew-discovery/hooks/useCrewDiscoveryBrowseBundle';
 import { useExplorePinDeepLink } from './useExplorePinDeepLink';
 import { useExploreMapCatalog } from './useExploreMapCatalog';
@@ -267,7 +267,7 @@ export const useExploreExperienceModel = () => {
 
   const [searchFocusNonce] = useState(0);
   useExploreSearchParamRedirect(searchParams, pathname, navigate, setSearchParams);
-  const publishedAreas = useExplorePublishedAreas(
+  const publishedAreas = useExplorePublishedDestinations(
     browse.listOpen || browse.browseOpen || Boolean(destinationSlug)
   );
 

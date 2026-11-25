@@ -8,7 +8,7 @@ import {
   findPublishedAreaBySlug,
   isStrongPublishedAreaSearchMatch,
   searchPublishedAreasForQuery,
-} from './exploreAreaFilter';
+} from './exploreDestinationFilter';
 
 const hattaArea = (): AreaPublicDTO => ({
   id: 'a1',
@@ -23,7 +23,7 @@ const hattaArea = (): AreaPublicDTO => ({
   ],
 });
 
-describe('exploreAreaFilter', () => {
+describe('exploreDestinationFilter', () => {
   it('filters map rows by destinationSlug', () => {
     const inHatta = { ...seekingExploreMapItem(), destinationSlug: 'hatta', destinationId: 'a1' };
     const other = { ...seekingExploreMapItem({ intentId: '2' }), destinationSlug: 'jebel-jais', destinationId: 'a2' };

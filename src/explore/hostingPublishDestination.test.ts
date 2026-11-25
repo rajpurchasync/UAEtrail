@@ -5,9 +5,9 @@ import { curatedAreaSeedId, type PlaceDTO } from '@uaetrail/shared-types';
 import {
   inferEmirateFromPin,
   availabilityFixedVisibleOnMap,
-  validateAvailabilityPublishArea,
-  validateHostingPlaceArea,
-} from './hostingPublishArea';
+  validateAvailabilityPublishDestination,
+  validateHostingPlaceDestination,
+} from './hostingPublishDestination';
 
 const HATTA_AREA_ID = curatedAreaSeedId('hatta');
 
@@ -20,7 +20,7 @@ const placeWithArea = (id: string): PlaceDTO =>
     region: 'Dubai',
   }) as PlaceDTO;
 
-describe('validateHostingPlaceArea', () => {
+describe('validateHostingPlaceDestination', () => {
   it('requires registry place with area for public outings', () => {
     const draft = {
       ...emptyCreateActivityDraft(),
@@ -29,18 +29,18 @@ describe('validateHostingPlaceArea', () => {
       placeLabelSource: 'registry' as const,
       registryPlaceId: 'loc-1',
     };
-    expect(validateHostingPlaceArea(draft, [placeWithArea('loc-1')])).toBeNull();
-    expect(validateHostingPlaceArea(draft, [{ ...placeWithArea('loc-1'), destinationId: null }])).toMatch(
+    expect(validateHostingPlaceDestination(draft, [placeWithArea('loc-1')])).toBeNull();
+    expect(validateHostingPlaceDestination(draft, [{ ...placeWithArea('loc-1'), destinationId: null }])).toMatch(
       /isn’t linked to a map area/
     );
     expect(
-      validateHostingPlaceArea(
+      validateHostingPlaceDestination(
         { ...draft, registryPlaceDestinationId: HATTA_AREA_ID },
         [{ ...placeWithArea('loc-1'), destinationId: null }]
       )
     ).toBeNull();
     expect(
-      validateHostingPlaceArea(draft, [
+      validateHostingPlaceDestination(draft, [
         { ...placeWithArea('loc-1'), destinationId: null, destinationId: HATTA_AREA_ID },
       ])
     ).toBeNull();
@@ -54,9 +54,9 @@ describe('validateHostingPlaceArea', () => {
       placeLabelSource: 'custom' as const,
       trailName: 'New wadi loop',
     };
-    expect(validateHostingPlaceArea(draft, [])).toMatch(/Pin the spot/);
+    expect(validateHostingPlaceDestination(draft, [])).toMatch(/Pin the spot/);
     expect(
-      validateHostingPlaceArea(
+      validateHostingPlaceDestination(
         {
           ...draft,
           trailLatitude: 24.8,
@@ -66,7 +66,7 @@ describe('validateHostingPlaceArea', () => {
       )
     ).toBe('Select an area.');
     expect(
-      validateHostingPlaceArea(
+      validateHostingPlaceDestination(
         {
           ...draft,
           customPlaceDestinationId: HATTA_AREA_ID,
@@ -77,7 +77,7 @@ describe('validateHostingPlaceArea', () => {
       )
     ).toBeNull();
     expect(
-      validateHostingPlaceArea(
+      validateHostingPlaceDestination(
         {
           ...draft,
           customPlaceProposedAreaName: 'Wadi Naqab',
@@ -107,10 +107,10 @@ describe('validateHostingPlaceArea', () => {
       trailLongitude: 50,
       customPlaceDestinationId: HATTA_AREA_ID,
     };
-    expect(validateHostingPlaceArea(unmatched, [])).toMatch(/Choose the emirate/);
-    expect(validateHostingPlaceArea({ ...unmatched, customPlaceEmirate: 'Sharjah' }, [])).toBeNull();
+    expect(validateHostingPlaceDestination(unmatched, [])).toMatch(/Choose the emirate/);
+    expect(validateHostingPlaceDestination({ ...unmatched, customPlaceEmirate: 'Sharjah' }, [])).toBeNull();
     expect(
-      validateHostingPlaceArea(
+      validateHostingPlaceDestination(
         {
           ...emptyCreateActivityDraft(),
           kind: 'hiking' as const,
@@ -128,7 +128,7 @@ describe('validateHostingPlaceArea', () => {
 
   it('skips for private link-only outings', () => {
     const draft = { ...emptyCreateActivityDraft(), kind: 'hiking' as const, joinMode: 'private' as const };
-    expect(validateHostingPlaceArea(draft, [])).toBeNull();
+    expect(validateHostingPlaceDestination(draft, [])).toBeNull();
   });
 
   it('accepts rideshare destination from a linked outing meeting point', () => {
@@ -141,23 +141,23 @@ describe('validateHostingPlaceArea', () => {
       toLatitude: 25.1,
       toLongitude: 55.2,
     };
-    expect(validateHostingPlaceArea(draft, [])).toBeNull();
+    expect(validateHostingPlaceDestination(draft, [])).toBeNull();
   });
 
   it('requires registry place id for public outings without area on draft', () => {
     const draft = { ...emptyCreateActivityDraft(), kind: 'hiking' as const, joinMode: 'open' as const };
-    expect(validateHostingPlaceArea(draft, [])).toMatch(/listed trail/);
+    expect(validateHostingPlaceDestination(draft, [])).toMatch(/listed trail/);
   });
 });
 
-describe('validateAvailabilityPublishArea', () => {
+describe('validateAvailabilityPublishDestination', () => {
   it('requires a preferred area on the curated step', () => {
     const draft = {
       ...emptyAvailabilityFixedDraft(),
       kind: 'hiking' as const,
       destinationId: null,
     };
-    expect(validateAvailabilityPublishArea(draft, 'hiking')).toMatch(/area you want company in/);
+    expect(validateAvailabilityPublishDestination(draft, 'hiking')).toMatch(/area you want company in/);
   });
 
   it('passes area without a destination pin; map visibility is going-from', () => {
@@ -170,6 +170,6 @@ describe('validateAvailabilityPublishArea', () => {
       longitude: 55,
     };
     expect(availabilityFixedVisibleOnMap(draft)).toBe(true);
-    expect(validateAvailabilityPublishArea(draft, 'hiking')).toBeNull();
+    expect(validateAvailabilityPublishDestination(draft, 'hiking')).toBeNull();
   });
 });

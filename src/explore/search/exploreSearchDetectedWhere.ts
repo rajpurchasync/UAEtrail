@@ -1,7 +1,7 @@
 import { EXPLORE_REGION_PILL_LABELS } from '../../config/regions';
 import { readStoredViewerFix } from '../../list/browse/viewerLocationStorage';
 import { getExploreMapLocationPreference } from '../exploreMapLocationPreference';
-import { inferEmirateFromPin } from '../hostingPublishArea';
+import { inferEmirateFromPin } from '../hostingPublishDestination';
 
 const emirateToSearchQuery = (emirate: string): string =>
   EXPLORE_REGION_PILL_LABELS[emirate] ?? emirate;

@@ -77,7 +77,7 @@ const emptyForm = (): AreaFormState => ({
 });
 
 /** Platform admin — curated geographic areas (country → region → hub). */
-export const Areas = () => {
+export const AdminDestinations = () => {
   const [areas, setAreas] = useState<AreaDTO[]>([]);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
@@ -562,4 +562,4 @@ export const Areas = () => {
   );
 };
 
-export default Areas;
+export default AdminDestinations;

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { MapPin, X } from 'lucide-react';
 import { geoNodePath } from '../../config/surfacePaths';
 import { formatBrowseGeoPathLabel } from '../browse/browseGeoPath';
-import { useExplorePublishedAreas } from '../../explore/useExplorePublishedAreas';
+import { useExplorePublishedDestinations } from '../../explore/useExplorePublishedDestinations';
 
 type ListExplorerGeoScopeChipProps = {
   geoPath: readonly string[];
@@ -16,7 +16,7 @@ export const ListExplorerGeoScopeChip = ({
   onClear,
   onPopLevel,
 }: ListExplorerGeoScopeChipProps) => {
-  const publishedAreas = useExplorePublishedAreas(geoPath.length > 0);
+  const publishedAreas = useExplorePublishedDestinations(geoPath.length > 0);
   const label = formatBrowseGeoPathLabel(geoPath, publishedAreas);
   if (!label || geoPath.length === 0) return null;
 

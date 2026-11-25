@@ -5,7 +5,7 @@ import { DEFAULT_PHONE_DIAL } from '../../constants/phoneCountries';
 import { ACTIVITY_DIFFICULTY_OPTIONS, type ActivityDifficulty } from './createFlowShared';
 import type { AddVenueKind } from '../addTypes';
 import { isValidNationalPhone } from '../../utils/phone';
-import { inferEmirateFromPin } from '../hostingPublishArea';
+import { inferEmirateFromPin } from '../hostingPublishDestination';
 import { FACILITY_ADD_STEPS } from './addFacilityFlow';
 import { getOutdoorAddFlowSteps, getShopAddFlowSteps } from './addFlows/registry';
 

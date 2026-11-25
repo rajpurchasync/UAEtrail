@@ -1,19 +1,19 @@
 import type { AreaPublicDTO } from '@uaetrail/shared-types';
-import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
+import { useExplorePublishedDestinations } from '../useExplorePublishedDestinations';
 
-type AvailabilityCuratedAreaStepProps = {
+type AvailabilityCuratedDestinationStepProps = {
   destinationId: string | null;
   onAreaIdChange: (destinationId: string | null) => void;
   intro?: string;
 };
 
 /** Find crew: pick the outdoor **Area** you want company in — not a trail pin. */
-export const AvailabilityCuratedAreaStep = ({
+export const AvailabilityCuratedDestinationStep = ({
   destinationId,
   onAreaIdChange,
   intro = 'Choose the area you want to get outside in. Next you’ll pin where you are going from.',
-}: AvailabilityCuratedAreaStepProps) => {
-  const areas = useExplorePublishedAreas();
+}: AvailabilityCuratedDestinationStepProps) => {
+  const areas = useExplorePublishedDestinations();
 
   return (
     <div>

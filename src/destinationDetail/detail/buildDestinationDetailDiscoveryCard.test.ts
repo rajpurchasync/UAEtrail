@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { resolveExploreWishlistTarget } from '../../discovery/discoveryCardModel';
-import { buildAreaDetailDiscoveryCard } from './buildAreaDetailDiscoveryCard';
+import { buildDestinationDetailDiscoveryCard } from './buildDestinationDetailDiscoveryCard';
 
 const sampleArea = {
   id: 'area-test-hatta',
@@ -16,9 +16,9 @@ const sampleArea = {
   priority: 1,
 };
 
-describe('buildAreaDetailDiscoveryCard', () => {
+describe('buildDestinationDetailDiscoveryCard', () => {
   it('resolves area wishlist target for trip alerts', () => {
-    const card = buildAreaDetailDiscoveryCard({
+    const card = buildDestinationDetailDiscoveryCard({
       area: sampleArea,
       shareText: 'Outings in Hatta',
     });

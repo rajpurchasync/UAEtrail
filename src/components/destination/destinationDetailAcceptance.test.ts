@@ -5,18 +5,18 @@ import { join } from 'node:path';
 const read = (relativePath: string) => readFileSync(join(process.cwd(), relativePath), 'utf8');
 
 describe('area detail shell (S9 Phase 4)', () => {
-  it('DestinationDetailPage delegates to AreaDetailView with tab wire ids', () => {
+  it('DestinationDetailPage delegates to DestinationDetailView with tab wire ids', () => {
     const page = read('src/pages/DestinationDetailPage.tsx');
-    expect(page).toMatch(/AreaDetailView/);
-    expect(page).toMatch(/AreaDetailPageShell/);
-    expect(page).toMatch(/areaDetailTab/);
+    expect(page).toMatch(/DestinationDetailView/);
+    expect(page).toMatch(/DestinationDetailPageShell/);
+    expect(page).toMatch(/destinationDetailTab/);
     expect(page).not.toMatch(/<main className="mx-auto max-w-lg px-4 py-8">/);
   });
 
-  it('AreaDetailView uses DetailPageShell scroll-first §5 layout', () => {
-    const view = read('src/components/area/AreaDetailView.tsx');
+  it('DestinationDetailView uses DetailPageShell scroll-first §5 layout', () => {
+    const view = read('src/components/destination/DestinationDetailView.tsx');
     expect(view).toMatch(/DetailPageShell/);
-    expect(view).toMatch(/resolveAreaConsumerDetailHeaderChrome/);
+    expect(view).toMatch(/resolveDestinationConsumerDetailHeaderChrome/);
     expect(view).toMatch(/readDetailBackToFromLocation/);
     expect(view).toMatch(/ConsumerDetailSectionJumpNav/);
     expect(view).toMatch(/DetailHeroPhotoStrip/);
@@ -28,8 +28,8 @@ describe('area detail shell (S9 Phase 4)', () => {
     expect(view).not.toMatch(/MobileDetailShell/);
   });
 
-  it('AreaHubPreviewSections supports tab modes', () => {
-    const sections = read('src/components/area/AreaHubPreviewSections.tsx');
+  it('DestinationHubPreviewSections supports tab modes', () => {
+    const sections = read('src/components/destination/DestinationHubPreviewSections.tsx');
     expect(sections).toMatch(/mode\?: AreaHubPreviewMode/);
   });
 });

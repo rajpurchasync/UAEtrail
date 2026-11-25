@@ -6,10 +6,10 @@ import { PageMeta } from '../seo/PageMeta';
 import { explorePath } from '../../explore/routing';
 import { intentFixedCompose, activityCompose } from '../../explore/compose';
 import { destinationHubPath } from '@uaetrail/shared-types';
-import { type AreaDetailTabId } from '../../area/areaDetailTab';
-import { AreaHubMapStrip } from './AreaHubMapStrip';
-import { AreaHubPreviewSections } from './AreaHubPreviewSections';
-import { collectAreaHeroPhotos } from './collectAreaHeroPhotos';
+import { type DestinationDetailTabId } from '../../destinationDetail/destinationDetailTab';
+import { DestinationHubMapStrip } from './DestinationHubMapStrip';
+import { DestinationHubPreviewSections } from './DestinationHubPreviewSections';
+import { collectDestinationHeroPhotos } from './collectDestinationHeroPhotos';
 import { DetailHeroPhotoStrip } from '../../detail/shared/DetailHeroPhotoStrip';
 import { GeoAncestorEyebrow } from '../../detail/shared/GeoAncestorEyebrow';
 import { useGeoAncestorLinks } from '../../hooks/useGeoAncestorLinks';
@@ -23,41 +23,41 @@ import {
 import { detailBackPath } from '../../config/routingCatalog';
 import { readDetailBackToFromLocation } from '../../explore/mapPeekDetailNavState';
 import { parseMobileBackNavState } from '../../utils/mobileBackNav';
-import { resolveAreaConsumerDetailHeaderChrome } from '../../area/detail/resolveAreaConsumerDetailHeaderChrome';
+import { resolveDestinationConsumerDetailHeaderChrome } from '../../destinationDetail/detail/resolveDestinationConsumerDetailHeaderChrome';
 import { EXPLORE_PEEK_CTA } from '../../config/exploreTheme';
 import { DetailHeroShareButton } from '../../detail/shared/DetailHeroShareButton';
 import { ExploreWishlistSaveButton } from '../../explore/ui/ExploreWishlistSaveButton';
-import { buildAreaDetailDiscoveryCard } from '../../area/detail/buildAreaDetailDiscoveryCard';
+import { buildDestinationDetailDiscoveryCard } from '../../destinationDetail/detail/buildDestinationDetailDiscoveryCard';
 import { CONSUMER_DETAIL_OVERVIEW_LABEL } from '../../content/consumerDetailSectionLabels';
 import { keyFactIconFromLabel } from '../../detail/shell/keyFactIcons';
-import { AreaDetailMobileActionBar } from './AreaDetailMobileActionBar';
+import { DestinationDetailMobileActionBar } from './DestinationDetailMobileActionBar';
 import { placeCompose } from '../../explore/compose';
 import { PlaceDetailWeatherSection } from '../place/PlaceDetailWeatherSection';
 
-const AREA_TAB_SCROLL_ANCHORS: Record<AreaDetailTabId, string> = {
+const AREA_TAB_SCROLL_ANCHORS: Record<DestinationDetailTabId, string> = {
   overview: 'area-detail-overview',
   places: 'area-detail-places',
   activities: 'area-detail-activities',
 };
 
-type AreaDetailViewProps = {
+type DestinationDetailViewProps = {
   slug: string;
   data: DestinationDetailPayload;
   availabilityIndex?: ExploreAvailabilityIndex | null;
-  activeTab: AreaDetailTabId;
-  onTabChange: (tab: AreaDetailTabId) => void;
+  activeTab: DestinationDetailTabId;
+  onTabChange: (tab: DestinationDetailTabId) => void;
 };
 
-export const AreaDetailView = ({
+export const DestinationDetailView = ({
   slug: _slug,
   data,
   availabilityIndex,
   activeTab,
   onTabChange: _onTabChange,
-}: AreaDetailViewProps) => {
+}: DestinationDetailViewProps) => {
   const location = useLocation();
   const { destination: area, counts, preview } = data;
-  const headerChrome = resolveAreaConsumerDetailHeaderChrome();
+  const headerChrome = resolveDestinationConsumerDetailHeaderChrome();
   const backTo = readDetailBackToFromLocation(location.state) ?? detailBackPath('explore');
   const backLabel = parseMobileBackNavState(location.state)?.backLabel ?? 'Explore';
   const summary =
@@ -69,13 +69,13 @@ export const AreaDetailView = ({
     countryCode: area.countryCode,
   });
   const wishlistCard = useMemo(
-    () => buildAreaDetailDiscoveryCard({ area, shareText: summary.slice(0, 160) }),
+    () => buildDestinationDetailDiscoveryCard({ area, shareText: summary.slice(0, 160) }),
     [area, summary]
   );
 
   const heroPhotos = useMemo(
     () =>
-      collectAreaHeroPhotos({
+      collectDestinationHeroPhotos({
         places: preview?.places ?? [],
         activities: preview?.activities ?? [],
         areaImageUrl: area.imageUrl,
@@ -122,7 +122,7 @@ export const AreaDetailView = ({
   });
 
   const mobileFooter = (
-    <AreaDetailMobileActionBar
+    <DestinationDetailMobileActionBar
       findCrewPath={findCrewPath}
       hostPath={hostPath}
       addPlacePath={addPlacePath}
@@ -228,7 +228,7 @@ export const AreaDetailView = ({
         collapsible
         defaultExpanded
       >
-        <AreaHubMapStrip
+        <DestinationHubMapStrip
           destinationSlug={area.slug}
           areaName={area.name}
           center={area.center}
@@ -268,7 +268,7 @@ export const AreaDetailView = ({
 
       <div id="area-detail-places" className="min-w-0 scroll-mt-28">
         <h2 className="sr-only">Places in this area</h2>
-        <AreaHubPreviewSections
+        <DestinationHubPreviewSections
           destinationSlug={area.slug}
           activities={preview?.activities ?? []}
           places={preview?.places ?? []}
@@ -279,7 +279,7 @@ export const AreaDetailView = ({
 
       <div id="area-detail-activities" className="min-w-0 scroll-mt-28">
         <h2 className="sr-only">Activities</h2>
-        <AreaHubPreviewSections
+        <DestinationHubPreviewSections
           destinationSlug={area.slug}
           activities={preview?.activities ?? []}
           places={preview?.places ?? []}

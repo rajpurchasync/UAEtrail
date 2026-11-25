@@ -87,7 +87,7 @@ describe('geographyTerminologyGuard (Place · Facility · Area)', () => {
   });
 
   it('GEO-05: Area hub actions label facility Places distinctly from Spots rollups', () => {
-    const area = read('src/explore/ui/peek/area/AreaPeekActions.tsx');
+    const area = read('src/explore/ui/peek/destination/DestinationPeekActions.tsx');
     expect(area).toMatch(/Facilities/);
     expect(area).toMatch(/Trails/);
     expect(area).not.toMatch(/venue/i);

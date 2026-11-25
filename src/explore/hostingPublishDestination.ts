@@ -29,7 +29,7 @@ const RIDESHARE_DESTINATION_REQUIRED =
   'Choose an outing meeting point or an approved catalog place as your ride destination.';
 
 /** Community / pro rideshare destination — not the hike/camp `registryPlaceId` path. */
-export const validateRideshareDestinationArea = (
+export const validateRideshareDestinationHub = (
   draft: CreateActivityDraft,
   registryPlaces: PlaceDTO[] = []
 ): string | null => {
@@ -59,13 +59,13 @@ export const validateRideshareDestinationArea = (
 };
 
 /** Public organize publish — area lives on the catalog **place**, not the activity row. */
-export const validateHostingPlaceArea = (
+export const validateHostingPlaceDestination = (
   draft: CreateActivityDraft,
   registryPlaces: PlaceDTO[]
 ): string | null => {
   if (draft.joinMode === 'private') return null;
   if (draft.kind === 'rideshare') {
-    return validateRideshareDestinationArea(draft, registryPlaces);
+    return validateRideshareDestinationHub(draft, registryPlaces);
   }
   if (draft.placeLabelSource === 'custom') {
     return validateCustomVenueDetails(draft);
@@ -137,7 +137,7 @@ export const validateCustomVenueDetails = (draft: CreateActivityDraft): string |
 };
 
 
-export const validateAvailabilityCuratedAreaStep = (draft: AvailabilityFixedDraft): string | null => {
+export const validateAvailabilityCuratedDestinationStep = (draft: AvailabilityFixedDraft): string | null => {
   if (!draft.destinationId?.trim()) return SEEKING_AREA_REQUIRED;
   return null;
 };
@@ -146,13 +146,13 @@ export const validateAvailabilityCuratedAreaStep = (draft: AvailabilityFixedDraf
 export const availabilityFixedVisibleOnMap = (draft: AvailabilityFixedDraft): boolean =>
   Boolean(draft.fromPinPlaced && draft.destinationId?.trim() && draft.latitude != null && draft.longitude != null);
 
-export const validateAvailabilityPublishArea = (draft: AvailabilityFixedDraft, kind: AvailabilityFixedKind | null): string | null => {
+export const validateAvailabilityPublishDestination = (draft: AvailabilityFixedDraft, kind: AvailabilityFixedKind | null): string | null => {
   if (!kind) return null;
-  if (!usesAvailabilityCuratedAreaStep(kind)) return null;
-  return validateAvailabilityCuratedAreaStep(draft);
+  if (!usesAvailabilityCuratedDestinationStep(kind)) return null;
+  return validateAvailabilityCuratedDestinationStep(draft);
 };
 
-export const usesAvailabilityCuratedAreaStep = (kind: AvailabilityFixedKind): boolean =>
+export const usesAvailabilityCuratedDestinationStep = (kind: AvailabilityFixedKind): boolean =>
   kind === 'hiking' ||
   kind === 'camping' ||
   kind === 'rideshare' ||
@@ -164,7 +164,7 @@ export const resolveRegistryPlaceDestinationId = (place: PlaceDTO | null | undef
   resolveDestinationId(place);
 
 /** Ephemeral activity-anchor places only (e.g. rideshare) — not for hosted trail/camp catalog tagging. */
-export const resolvePublishedAreaForPoint = (
+export const resolvePublishedDestinationForPoint = (
   latitude: number,
   longitude: number,
   areas: AreaPublicDTO[]
@@ -177,13 +177,13 @@ export const resolvePublishedAreaForPoint = (
   return hits[0] ?? null;
 };
 
-export const resolvePublishedAreaIdForPoint = (
+export const resolvePublishedDestinationIdForPoint = (
   latitude: number,
   longitude: number,
   areas: AreaPublicDTO[]
-): string | null => resolvePublishedAreaForPoint(latitude, longitude, areas)?.id ?? null;
+): string | null => resolvePublishedDestinationForPoint(latitude, longitude, areas)?.id ?? null;
 
-export const areaLabelForId = (
+export const destinationLabelForId = (
   destinationId: string | null | undefined,
   areas: AreaPublicDTO[]
 ): string | null => {

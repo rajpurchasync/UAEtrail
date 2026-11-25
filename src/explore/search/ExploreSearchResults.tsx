@@ -7,7 +7,7 @@ import { ListDiscoveryExperience } from '../../list/ListDiscoveryExperience';
 import { parseBrowseListFilterState, parseBrowseListGeoPath } from '../../list/browse/browseListUrlState';
 import { useBrowseGeoScopeHydration } from '../../list/browse/useBrowseGeoScopeHydration';
 import { resolveEffectiveBrowseVenueRegions } from '../../list/browse/browseGeoPath';
-import { useExplorePublishedAreasQuery } from '../useExplorePublishedAreas';
+import { useExplorePublishedDestinationsQuery } from '../useExplorePublishedDestinations';
 import {
   resolveExploreSearchTripPool,
   resolveExploreSearchVenuePool,
@@ -54,7 +54,7 @@ export const ExploreSearchResults = ({ state: stateProp }: ExploreSearchResultsP
   const venueRegions = searchState.venueRegions;
   const geoPath = useMemo(() => parseBrowseListGeoPath(searchParams), [searchParams]);
   useBrowseGeoScopeHydration(geoPath);
-  const { data: publishedAreas = [] } = useExplorePublishedAreasQuery();
+  const { data: publishedAreas = [] } = useExplorePublishedDestinationsQuery();
   const hubVenueRegions = useMemo(
     () => resolveEffectiveBrowseVenueRegions(venueRegions, geoPath, publishedAreas),
     [venueRegions, geoPath, publishedAreas]

@@ -326,7 +326,7 @@ Track what is **spec** vs **shipped**. Update this table in the same PR that lan
 | Profile Up next unified feed | ✅ | ✅ |
 | Warm copy pass in wizards | ✅ | ✅ |
 | `outingCategory` / `outingTopic` on host publish | ✅ | ✅ (host create; map projection + Others browse filters) |
-| Host **area via place** (registry `place.areaId` only) | ✅ | ✅ (`validateHostingPlaceArea`, publish gate) |
+| Host **area via place** (registry `place.areaId` only) | ✅ | ✅ (`validateHostingPlaceDestination`, publish gate) |
 | Find crew (fixed) **area + pin** step | ✅ | ✅ (`curatedArea`, `member_availability` fixed slot) |
 | Add on map place **area-first** | ✅ | ✅ (`curatedArea`, `areaId` on submit) |
 | Host **custom spot → admin review** (pin + photo; city from coords) | ✅ | ✅ (`PENDING_VENUE_PLACE_PREFIX`; auto-publish on place approve) |

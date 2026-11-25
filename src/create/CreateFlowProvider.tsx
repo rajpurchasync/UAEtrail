@@ -18,7 +18,7 @@ import { ComposeHost } from '../explore/create/ComposeHost';
 import { useComposeRoute } from '../explore/create/hooks/useComposeRoute';
 import { clearComposeWizardSessionForRoute } from '../explore/ui/composeWizardSession';
 import { GuestComposeSignInSheet } from '../explore/ui/GuestComposeSignInSheet';
-import { parseExploreDestinationSlug } from '../explore/exploreAreaFilter';
+import { parseExploreDestinationSlug } from '../explore/exploreDestinationFilter';
 import { parseFacilityOnPlaceId, parsePlanWithUserId } from '../explore/routing';
 import type { HostingWizardPrefill } from '../explore/ui/hostingWizardPrefill';
 import type { AddSubmitResult } from '../explore/ui/addFlow';

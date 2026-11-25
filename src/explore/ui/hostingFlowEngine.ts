@@ -23,7 +23,7 @@ import {
   buildParticipationRequirementLines,
 } from '../../utils/activityPublishPayload';
 import { OFFLINE_PAYMENT_NOTE } from '../explorePriceLabel';
-import { validateHostingPlaceArea } from '../hostingPublishArea';
+import { validateHostingPlaceDestination } from '../hostingPublishDestination';
 import type { ParticipationMode } from '../compose';
 import {
   todayIso,
@@ -743,7 +743,7 @@ export const validateDraftStep = (step: CreateFlowStepId, draft: CreateActivityD
   }
   const kindErr = validateHostingKindStep(draft.kind, step, draft);
   if (kindErr) return kindErr;
-  if (step === 'publish') return validateHostingPlaceArea(draft, []);
+  if (step === 'publish') return validateHostingPlaceDestination(draft, []);
   return null;
 };
 

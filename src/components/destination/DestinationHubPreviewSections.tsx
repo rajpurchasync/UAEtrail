@@ -11,7 +11,7 @@ import {
   groupAreaHubPlaces,
   placeDetailRouteKindForRow,
   placeKindLabelForRow,
-} from './areaHubPlaceGroups';
+} from './destinationHubPlaceGroups';
 
 export type AreaHubOperatorPreview = {
   id: string;
@@ -23,7 +23,7 @@ export type AreaHubOperatorPreview = {
 
 export type AreaHubPreviewMode = 'all' | 'activities' | 'places';
 
-type AreaHubPreviewSectionsProps = {
+type DestinationHubPreviewSectionsProps = {
   destinationSlug: string;
   activities: ActivityDTO[];
   places: LocationDTO[];
@@ -47,13 +47,13 @@ const shopHrefForPlace = (place: LocationDTO): string => {
 };
 
 /** Curated area hub — upcoming outings + catalog places with explore deep links. */
-export const AreaHubPreviewSections = ({
+export const DestinationHubPreviewSections = ({
   destinationSlug,
   activities,
   places,
   operators = [],
   mode = 'all',
-}: AreaHubPreviewSectionsProps) => {
+}: DestinationHubPreviewSectionsProps) => {
   const showAll = mode === 'all';
   const showActivities = showAll || mode === 'activities';
   const showPlaces = showAll || mode === 'places';

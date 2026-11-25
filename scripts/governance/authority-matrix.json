@@ -540,7 +540,7 @@
       "label": "List projection imports discovery via facade",
       "axis": "A_RBAC",
       "contextId": "discovery",
-      "resolver": { "module": "src/explore/exploreAreaFilter.ts", "symbol": "parseExploreDestinationSlug" },
+      "resolver": { "module": "src/explore/exploreDestinationFilter.ts", "symbol": "parseExploreDestinationSlug" },
       "note": "No deep ../explore in list leaf modules"
     },
     {

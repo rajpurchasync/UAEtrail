@@ -3,18 +3,18 @@ import { MapPinPlus, Megaphone, Users } from 'lucide-react';
 import { EXPLORE_PEEK_CTA } from '../../config/exploreTheme';
 import { ActivityPeekFooterIcon } from '../../explore/ui/peek/activity/ActivityPeekFooterIcon';
 
-type AreaDetailMobileActionBarProps = {
+type DestinationDetailMobileActionBarProps = {
   findCrewPath: string;
   hostPath: string;
   addPlacePath: string;
 };
 
 /** Sticky footer — area-level go-together actions (matches map peek icon tiles). */
-export const AreaDetailMobileActionBar = ({
+export const DestinationDetailMobileActionBar = ({
   findCrewPath,
   hostPath,
   addPlacePath,
-}: AreaDetailMobileActionBarProps) => (
+}: DestinationDetailMobileActionBarProps) => (
   <div className="grid grid-cols-3 gap-1.5">
     <Link to={findCrewPath} className={EXPLORE_PEEK_CTA.peekTile} aria-label="Find crew in this area">
       <ActivityPeekFooterIcon icon={Users} />

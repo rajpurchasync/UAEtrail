@@ -1,6 +1,6 @@
-import { AREA_DETAIL_TAB_QUERY } from '../area/areaDetailTab';
+import { DESTINATION_DETAIL_TAB_QUERY } from '../destinationDetail/destinationDetailTab';
 
-export const GEO_HUB_TAB_QUERY = AREA_DETAIL_TAB_QUERY;
+export const GEO_HUB_TAB_QUERY = DESTINATION_DETAIL_TAB_QUERY;
 
 export const GEO_HUB_TABS = ['overview', 'places', 'facilities', 'explore'] as const;
 export type GeoHubTabId = (typeof GEO_HUB_TABS)[number];

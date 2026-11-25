@@ -222,7 +222,7 @@ describe('governanceSurfaceGuard (GW-1 — no duplicate schedules)', () => {
       /ExploreAvailabilityCatalogFilters/
     );
     expect(read('src/explore/ui/exploreBrowseUrlPublicApi.ts')).not.toMatch(/applyCrewBrowseTab/);
-    expect(read('src/explore/hostingPublishArea.ts')).not.toMatch(/validateHostingPublishArea/);
+    expect(read('src/explore/hostingPublishDestination.ts')).not.toMatch(/validateHostingPublishArea/);
     expect(read('src/constants/userTypes.ts')).not.toMatch(/USER_TYPE_LABELS/);
     expect(read('src/utils/userDisplay.ts')).not.toMatch(/resolveExploreHostPersonName/);
     expect(read('src/components/ui/PlaceCard.tsx')).not.toMatch(/export const TrailCard/);

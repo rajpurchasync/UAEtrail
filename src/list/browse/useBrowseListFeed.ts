@@ -11,7 +11,7 @@ import {
   filterExploreMapItemsForList,
   type BrowseListFilterState,
 } from './browseListFilters';
-import { useExplorePublishedAreasQuery } from '../../explore/discoveryRuntime';
+import { useExplorePublishedDestinationsQuery } from '../../explore/discoveryRuntime';
 import { resolveEffectiveBrowseVenueRegions } from './browseGeoPath';
 
 type UseBrowseListFeedArgs = {
@@ -34,7 +34,7 @@ export const useBrowseListFeed = ({
 }: UseBrowseListFeedArgs) => {
   const { user } = useAuth();
   const { clock } = useDisplayPreferences();
-  const { data: publishedAreas = [] } = useExplorePublishedAreasQuery(mapEnabled);
+  const { data: publishedAreas = [] } = useExplorePublishedDestinationsQuery(mapEnabled);
   const effectiveRegions = useMemo(
     () => resolveEffectiveBrowseVenueRegions(venueRegions, geoPath, publishedAreas),
     [venueRegions, geoPath, publishedAreas]

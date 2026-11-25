@@ -3,7 +3,7 @@ import type { ExploreAreaLensStatsDTO } from '@uaetrail/shared-types';
 import { explorePath } from '../../../routing';
 import type { ExplorePinKindFilter } from '../../../explorePinKindFilter';
 
-export type AreaPeekActionsProps = {
+export type DestinationPeekActionsProps = {
   destinationSlug: string;
   stats?: ExploreAreaLensStatsDTO | null;
   areaPagePath: string;
@@ -26,12 +26,12 @@ const scopedExplore = (
  * **Area** hub page actions — Area is a curated name, not an explore map pin.
  * `facilities` = amenity pins in this hub (`areaLensStats.facilities`), linked via `#places`.
  */
-export const AreaPeekActions = ({
+export const DestinationPeekActions = ({
   destinationSlug,
   stats,
   areaPagePath,
   onClose,
-}: AreaPeekActionsProps) => {
+}: DestinationPeekActionsProps) => {
   const hosted = stats?.hostedActivities ?? 0;
   const available = stats?.availabilityPins ?? 0;
   const trails = stats?.trailSpots ?? 0;

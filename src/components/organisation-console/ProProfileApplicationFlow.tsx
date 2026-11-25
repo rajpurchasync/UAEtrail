@@ -11,7 +11,7 @@ import {
 import { fetchMeProfile } from '../../hooks/memberProfileApi';
 import { COUNTRIES } from '../../constants';
 import { DEFAULT_COUNTRY, mergeVenueStateFilterOptionsWithAreas } from '../../config/regions';
-import { useExplorePublishedAreasQuery } from '../../explore/useExplorePublishedAreas';
+import { useExplorePublishedDestinationsQuery } from '../../explore/useExplorePublishedDestinations';
 import { MAP_CONFIG } from '../../config/platform';
 import { CONSUMER_MODAL_CLOSE } from '../../config/consumerSurfaceTypography';
 import { PhoneInput } from '../ui/PhoneInput';
@@ -140,7 +140,7 @@ export const ProProfileApplicationFlow = ({
     [hasGuideProfile, hasAgencyProfile, hasShopProfile]
   );
 
-  const { data: publishedAreas = [] } = useExplorePublishedAreasQuery(open);
+  const { data: publishedAreas = [] } = useExplorePublishedDestinationsQuery(open);
   const emirateOptions = useMemo(
     () => mergeVenueStateFilterOptionsWithAreas(publishedAreas, DEFAULT_COUNTRY),
     [publishedAreas]

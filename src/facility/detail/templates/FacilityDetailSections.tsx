@@ -40,7 +40,7 @@ import { resolveFacilityConsumerDetailHeaderChrome } from '../resolveFacilityCon
 import { ConsumerDetailHeroGeoLine } from '../../../detail/shared/ConsumerDetailHeroGeoLine';
 import { resolveFacilityDetailAreaHero } from '../../../detail/shared/resolveConsumerDetailAreaHero';
 import { useGeoAncestorLinks } from '../../../hooks/useGeoAncestorLinks';
-import { useExplorePublishedAreas } from '../../../explore/useExplorePublishedAreas';
+import { useExplorePublishedDestinations } from '../../../explore/useExplorePublishedDestinations';
 import { consumerDetailChildLinkState } from '../../../explore/mapPeekDetailNavState';
 import { amenityConditionLabel } from '../../amenityConditionLabels';
 import { FacilityDetailHeroParentLine } from '../FacilityDetailHeroParentLine';
@@ -67,7 +67,7 @@ export const FacilityDetailSections = ({
   const kind = facility.facilityKind;
   const label = PLACE_KIND_LABELS[kind];
   const headerChrome = resolveFacilityConsumerDetailHeaderChrome(kind);
-  const publishedAreas = useExplorePublishedAreas();
+  const publishedAreas = useExplorePublishedDestinations();
   const curatedAreaSlug = useMemo(() => {
     const id = facility.destinationId?.trim();
     if (!id) return null;

@@ -4,9 +4,9 @@ import { ComposeWizardStepChrome } from '../../../create/ComposeWizardShell';
 import { ComposeMapEntryRow, formatComposeMapCoord } from '../../../create/interactions';
 import { placeRegionReady } from '../../../../config/regions';
 import { ImageUpload } from '../../../../components/ui/ImageUpload';
-import { inferEmirateFromPin } from '../../../hostingPublishArea';
+import { inferEmirateFromPin } from '../../../hostingPublishDestination';
 import { FACILITY_ADD_OPTIONS } from '../../addFacilityFlow';
-import { AddCuratedAreaStep } from '../../AddCuratedAreaStep';
+import { AddCuratedDestinationStep } from '../../AddCuratedDestinationStep';
 import { AddFacilityParentPlaceStep } from '../../AddFacilityParentPlaceStep';
 import { AddFacilityPreview } from '../../AddFacilityPreview';
 import { EmirateFromPinField } from '../../EmirateFromPinField';
@@ -76,7 +76,7 @@ export function renderFacilityAddWizardSteps(ctx: FacilityAddWizardContext): Rea
 
       {step === 'curatedArea' && (
         <ComposeWizardStepChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
-          <AddCuratedAreaStep
+          <AddCuratedDestinationStep
             destinationId={draft.destinationId}
             allowNewArea={false}
             onAreaIdChange={(next) => {

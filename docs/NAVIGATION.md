@@ -110,7 +110,7 @@ Grouped nav (`ADMIN_NAV_GROUPS` / flat `ADMIN_LINKS`). Legacy `/admin/overview` 
 | `/admin/alerts` | `pages/admin/Alerts` | Safety | Banners + amenity condition queue + host verification |
 | `/admin/places` | `pages/admin/Places` | Places | Trails, camps, event venues (`/admin/locations` → redirect) |
 | `/admin/facilities` | `pages/admin/Places` (`catalogSegment=facility`) | Facilities | Amenity POIs (parking, toilet, …) — `facilities` collection, map `source: facility` |
-| `/admin/destinations` | `pages/admin/Areas` | Destinations | Curated **names** (not map pins); `/admin/areas` compat route |
+| `/admin/destinations` | `pages/admin/Destinations` | Destinations | Curated **names** (not map pins); `/admin/areas` inbound redirect |
 | `/admin/users` | `pages/admin/Members` | Users & Members | Member search, suspend, staff grant (`MEMBER_MODEL.md`) |
 | `/admin/groups` | `pages/admin/Groups` | Groups | Private teams (`member_groups`) |
 | `/admin/communities` | `pages/admin/Communities` | Communities | Discoverable clubs (`community_groups`) — host contact, suspend, pending joins |

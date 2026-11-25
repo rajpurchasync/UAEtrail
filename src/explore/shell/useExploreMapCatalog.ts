@@ -12,7 +12,7 @@ import {
   parseTripMapTopicsParam,
 } from '../exploreMapQuickTopicFilters';
 import { useMemberJourneyMapPinIds } from '../../hooks/useMemberJourneyMapPinIds';
-import { filterExploreMapItemsByDestinationSlug, parseExploreDestinationSlug } from '../exploreAreaFilter';
+import { filterExploreMapItemsByDestinationSlug, parseExploreDestinationSlug } from '../exploreDestinationFilter';
 import { parseExploreMyPlanMapMode } from '../routing';
 
 /** Map fetch + area / my-plan map scoping (R2 shell). */

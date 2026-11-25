@@ -20,7 +20,7 @@ import {
 import type { CreateActivityDraft } from './hostingFlowEngine';
 import { applyRegistryPlaceToHostingDraft } from './hostingPlaceRegistryDraft';
 import { fetchPublishedDestinations } from '../../hooks/destinationHubClientApi';
-import { resolvePublishedAreaIdForPoint } from '../hostingPublishArea';
+import { resolvePublishedDestinationIdForPoint } from '../hostingPublishDestination';
 
 /** Clear trail slot when changing catalog ladder (registry path). */
 export const patchHostingDestinationClearTrailSlot = (): Partial<CreateActivityDraft> => ({
@@ -159,7 +159,7 @@ export const enrichHostingCatalogPlacePick = async (
   const lng = place.longitude;
   if (lat == null || lng == null) return null;
   const published = await fetchPublishedDestinations();
-  const inferredAreaId = resolvePublishedAreaIdForPoint(lat, lng, published);
+  const inferredAreaId = resolvePublishedDestinationIdForPoint(lat, lng, published);
   return inferredAreaId ? { registryPlaceDestinationId: inferredAreaId } : null;
 };
 

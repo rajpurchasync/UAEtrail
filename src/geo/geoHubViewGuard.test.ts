@@ -21,7 +21,7 @@ describe('geo hub tabs', () => {
     expect(hub).toMatch(/showCounts=\{member\}/);
     expect(hub).toMatch(/pinDeclaredBack/);
     expect(hub).toMatch(/GeoBrowsePane/);
-    expect(hub).not.toMatch(/AREA_DETAIL_TABS/);
+    expect(hub).not.toMatch(/DESTINATION_DETAIL_TABS/);
     expect(hub).not.toMatch(/activeTab === 'activities'/);
     expect(hub).not.toMatch(/GEO_HUB_TAB_LABELS\.activities/);
     expect(hub).not.toMatch(/onBucketChange=\{\(next\) => onTabChange/);
@@ -58,6 +58,6 @@ describe('geo hub tabs', () => {
     const tab = read('src/geo/geoHubTab.ts');
     expect(tab).toMatch(/value === 'activities'\) return 'explore'/);
     expect(read('src/geo/useGeoDetailTab.ts')).toMatch(/parseGeoHubTabParam/);
-    expect(read('src/area/areaDetailTab.ts')).toMatch(/'overview', 'places', 'activities'/);
+    expect(read('src/destinationDetail/destinationDetailTab.ts')).toMatch(/'overview', 'places', 'activities'/);
   });
 });

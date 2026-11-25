@@ -40,8 +40,8 @@ import {
   isPastWizardStep,
   requestComposeFlowClose,
 } from './composeFlowClose';
-import { validateHostingPlaceArea } from '../hostingPublishArea';
-import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
+import { validateHostingPlaceDestination } from '../hostingPublishDestination';
+import { useExplorePublishedDestinations } from '../useExplorePublishedDestinations';
 import {
   areaRowInCatalogCountry,
   DEFAULT_PLACE_CATALOG_COUNTRY,
@@ -229,7 +229,7 @@ export const CreateHostingActivityFlow = ({
     : kind === 'hiking' || kind === 'camping' || kind === 'event'
       ? kind
       : undefined;
-  const publishedAreas = useExplorePublishedAreas();
+  const publishedAreas = useExplorePublishedDestinations();
   const catalogCountry = DEFAULT_PLACE_CATALOG_COUNTRY;
   const destinationAreas = useMemo(
     () => publishedAreas.filter((row) => areaRowInCatalogCountry(row, catalogCountry)),
@@ -653,7 +653,7 @@ export const CreateHostingActivityFlow = ({
       setError(validation);
       return;
     }
-    const placeAreaValidation = validateHostingPlaceArea(draft, catalogPlaces);
+    const placeAreaValidation = validateHostingPlaceDestination(draft, catalogPlaces);
     if (placeAreaValidation) {
       setError(placeAreaValidation);
       return;

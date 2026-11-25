@@ -13,8 +13,8 @@ import {
   HOSTING_DESTINATION_CUSTOM_REVIEW_NOTE,
 } from '../createFlowCopy';
 import { type CreateActivityDraft } from './hostingFlowEngine';
-import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
-import { inferEmirateFromPin, resolvePublishedAreaForPoint } from '../hostingPublishArea';
+import { useExplorePublishedDestinations } from '../useExplorePublishedDestinations';
+import { inferEmirateFromPin, resolvePublishedDestinationForPoint } from '../hostingPublishDestination';
 import { HostingDestinationCascade, HostingDestinationUaeChip } from './HostingDestinationCascade';
 import {
   ComposeMapEntryRow,
@@ -69,7 +69,7 @@ export const HostingDestinationField = ({
       : placeType === 'event'
         ? HOSTING_DESTINATION_CATALOG_LEAF_LINK_EVENT
         : HOSTING_DESTINATION_CATALOG_LEAF_LINK_HIKING;
-  const publishedAreas = useExplorePublishedAreas();
+  const publishedAreas = useExplorePublishedDestinations();
   const catalogCountry = DEFAULT_PLACE_CATALOG_COUNTRY;
   const areas = useMemo(
     () => publishedAreas.filter((row) => areaRowInCatalogCountry(row, catalogCountry)),
@@ -78,7 +78,7 @@ export const HostingDestinationField = ({
   const spotPinned = draft.trailLatitude != null && draft.trailLongitude != null;
   const inferredArea =
     custom && spotPinned && draft.trailLatitude != null && draft.trailLongitude != null
-      ? resolvePublishedAreaForPoint(draft.trailLatitude, draft.trailLongitude, areas)
+      ? resolvePublishedDestinationForPoint(draft.trailLatitude, draft.trailLongitude, areas)
       : null;
 
   useEffect(() => {
@@ -91,7 +91,7 @@ export const HostingDestinationField = ({
     if (!custom || !spotPinned || draft.trailLatitude == null || draft.trailLongitude == null) {
       return;
     }
-    const hit = resolvePublishedAreaForPoint(draft.trailLatitude, draft.trailLongitude, areas);
+    const hit = resolvePublishedDestinationForPoint(draft.trailLatitude, draft.trailLongitude, areas);
     const emirate = inferEmirateFromPin(
       draft.trailLatitude,
       draft.trailLongitude,

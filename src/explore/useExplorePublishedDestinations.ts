@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchPublishedDestinations } from '../hooks/destinationHubClientApi';
 import { publishedAreasQueryKey } from '../hooks/clientQueryKeys';
 
-export const useExplorePublishedAreasQuery = (enabled = true) =>
+export const useExplorePublishedDestinationsQuery = (enabled = true) =>
   useQuery({
     queryKey: publishedAreasQueryKey,
     queryFn: fetchPublishedDestinations,
@@ -12,7 +12,7 @@ export const useExplorePublishedAreasQuery = (enabled = true) =>
   });
 
 /** Cached published areas for explore search + area pickers (MIG-CLIENT-QUERY). */
-export const useExplorePublishedAreas = (enabled = true): AreaPublicDTO[] => {
-  const { data } = useExplorePublishedAreasQuery(enabled);
+export const useExplorePublishedDestinations = (enabled = true): AreaPublicDTO[] => {
+  const { data } = useExplorePublishedDestinationsQuery(enabled);
   return data ?? [];
 };

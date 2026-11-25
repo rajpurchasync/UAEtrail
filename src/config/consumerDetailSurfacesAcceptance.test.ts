@@ -22,8 +22,8 @@ describe('consumerDetailSurfacesAcceptance', () => {
         tabChrome: /ConsumerEntityTabBar/,
       },
       {
-        file: 'src/components/area/AreaDetailView.tsx',
-        wire: 'areaDetailTab',
+        file: 'src/components/destination/DestinationDetailView.tsx',
+        wire: 'destinationDetailTab',
         tabChrome: /ConsumerDetailSectionJumpNav/,
       },
       {

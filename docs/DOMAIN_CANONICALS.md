@@ -277,7 +277,7 @@ Query param **`tab`** where noted. **UI labels** may differ from wire ids (activ
 |---------|--------------|-----------------------------------|-----------|
 | Activity | `/activity/:id` | **`presentation.sections`** (no tab bar). **Embed/manage:** same `sections` + `footerByTab` | Legacy `?tab=` → scroll anchors (deprecated). **FE:** `ActivityDetailByKind` → `*ActivityDetailPage` → `ActivityDetailPageShell` → `ActivityDetailSections` |
 | Place (trail/camp/venue) | `/trail`, `/camp`, `/venue` | **Public scroll** (no tab bar). Legacy wire: `overview` · `facts` · `transport` · `guide` (alias `location` → `transport`) | `?tab=` deprecated · `src/place/placeDetailTab.ts`; **FE:** `*PlaceDetailPage` → `PlaceDetailPage` → `PlaceDetailPageShell` → `PlaceDetailSections` — L1 `buildPlaceDetailPageModel`; kind facts `PlaceDetailKindFacts` (trail / camp / event) |
-| Destination hub | `/destination/:slug` | `overview` · `places` · `activities` (people on overview) | `?tab=` · `src/area/areaDetailTab.ts` |
+| Destination hub | `/destination/:slug` | `overview` · `places` · `activities` (people on overview) | `?tab=` · `src/area/destinationDetailTab.ts` |
 | Shop public | `/shop/:id` | `about` · `location` | `?tab=` · `src/shop/shopPublicDetailTab.ts` (inbound `?tab=products` → `about`) |
 | Organisation public | `/agency`, `/partner` | `about` · `outings` · `contact` | `?tab=` · `src/organisation/organisationPublicDetailTab.ts` |
 
@@ -313,7 +313,7 @@ Map/list **peek** and entity **detail** share one engagement contract per viewer
 |---------|-------------|-------------------|------------|-------------------------------|
 | **Activity** | `ActivityMapPeekHost` → `ActivityPeekCard` → `peek/activity/*` | `ActivityDetailByKind` → `*ActivityDetailPage` → scroll body + wire CTAs | `PeekDetailLink` + `view_detail` in `mapPeekActions` | Join/RSVP: `POST /activities/:id/requests`; **public** slots from `presentation.sections` + `mapPeekActions`; embed: `footerByTab`; guest: `ActivityDetailGuestGate` |
 | **Place** | `PlaceMapPeekHost` → `PlacePeekCard` (`PlacePeekHero` · `PlacePeekBody` · `PlacePeekActions`) | `*PlaceDetailPage` → `PlaceDetailPageShell` → `PlaceDetailSections` | **Plan trip** · `PeekDetailLink` **View details** | `PlacePlanList` (page and peek) from `GET /places/:id/activities`; reviews; transport; `nearbyFacilities`; premium guide `PlacePremiumGuidePanel` |
-| **Destination** | `mapPeekSlots` → `AreaPeekBody` / `AreaPeekActions` | `DestinationDetailPage` → `AreaDetailView` (`MobileDetailShell`) | Links to `/destination/:slug`, explore `?destination=` | Browse-only hub — join on child **activity** rows |
+| **Destination** | `mapPeekSlots` → `DestinationPeekBody` / `DestinationPeekActions` | `DestinationDetailPage` → `DestinationDetailView` (`MobileDetailShell`) | Links to `/destination/:slug`, explore `?destination=` | Browse-only hub — join on child **activity** rows |
 | **Shop** | `ShopPeekActions` + `PeekDetailLink` | `ShopPublic` → `ShopPublicPage` (`EntityPublicDetailShell`) | `/shop/:id`; guest map rows may gate in peek | Reviews on tenant id; outbound **website** link only (no product grid) |
 | **Agency** | Catalog / activity publisher row (not `source: agency` map rows) | `OrganisationProfile` → `OrganisationPublicProfile` (`EntityPublicDetailShell`) | `resolveActivityPublisherProfilePath` from activity | Message/follow; listed outings → `/activity/:id` |
 | **Member** | People browse / roster links | `MemberProfile` (`viewerAccess` on `GET /member/:userId/profile`) | `/member/:userId` | Buddy add, follow, `MessageMemberButton` |
@@ -430,7 +430,7 @@ IA detail (pills, topics): [`NAVIGATION.md`](./NAVIGATION.md) · `src/list/`.
 | `CatalogPeekCard`, `CatalogMapPeekHost`, `ShopPeekActions` | `ExploreShopPeekActions` | Shop and area pins |
 | `PlaceMapPeekHost` | `ExplorePlaceMapPreview` | Map **mount** for venue (`Place`) pins — not activity organizer |
 | `PeekDetailLink`, `mapPeekSlots` | `ExplorePeekDetailLink`, `ExploreItemPeekParts` | Peek → detail + source router |
-| `AreaPeekActions`, `AreaPeekBody` | `ExploreAreaPeekActions` | **Area** hub **page** chrome — Area is not a map pin |
+| `DestinationPeekActions`, `DestinationPeekBody` | `ExploreDestinationPeekActions` | **Area** hub **page** chrome — Area is not a map pin |
 | `PlacePeekActions`, `PlacePeekBody` | `PlacePeekActions`, `ExplorePlacePeek*` | **Place** on Spots (`source: 'venue'`) |
 | `ActivityPeekLinkedTransport` | `ExploreLinkedRidesharePeekIndication` | Activity peek transport strip |
 | `DiscoveryCardModel`, `buildDiscoveryCardModel`, `buildDiscoveryCardViewModelCard` | `DiscoveryCardModel`, `buildDiscoveryCardModel` (re-export stub) | Read model for pins + list |
@@ -530,7 +530,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 | **Member discovery roster** | map + directory compose | `availabilityOnMap[]` (`availabilityTitle`, `exploreItemId`) on `GET /discover/crew` | Wire field `lookingFor`, `demandTitle`, `seekingOnMap` |
 | **Journey map** (`/profile/history/map`) | `GET /me/journey-map`, `POST/PATCH/DELETE /me/map-pins`, `JourneyMapEntryDTO` | `memberJourneyMapApi`, `src/member-plan/journeyMap*` | `GET /me/trips/map`, `outdoorMap*` |
 | **Explore map** | `GET /explore/map` (guest catalog) + `GET /me/discover/overlay` (signed-in peek) | `src/explore/*`, `exploreMapPinModel`, `applyExploreMapOverlay` | `journeyMap*` (wrong surface); mixing viewer engagement into the public map cache |
-| **Destination** (curated **name**, not a pin) | `GET /destinations`, `GET /destinations/:slug` | `destinations-store`, `hostingPublishArea.ts`, `/destination/:slug`, explore `?destination=` | `source: area` map pin; `areaLabel` as a third geo concept; assigning destination from meeting-pin polygons |
+| **Destination** (curated **name**, not a pin) | `GET /destinations`, `GET /destinations/:slug` | `destinations-store`, `hostingPublishDestination.ts`, `/destination/:slug`, explore `?destination=` | `source: area` map pin; `areaLabel` as a third geo concept; assigning destination from meeting-pin polygons |
 | **Place / venue** | `locations` | `place*`, `venue` panel, `Place` in UI | `location` in new routes/components |
 | **Friends** | buddies API | `BUDDIES_PATH`, `buddy*` stores only on API | `actorUserId`, “buddy entity” |
 | **Publishing console** | `/publishing/*`, tenant | `src/pages/publishing/*`, `src/console/*`, `useMemberStatus`, `useConsoleHubData`, `tenantActivityClientApi` | `tenant` in consumer UI strings (wire: `x-organisation-id`) |
@@ -564,7 +564,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 |--------|------------------------|------|
 | **Destination** | Admin `/admin/destinations` | Curated **name** + optional center/bounds as camera hint for the hub page — **no explore map pin**. Geography labels (country, state, region) come from the map, not from Destination. |
 | **Place** | Admin `/admin/places` or member **Add** (`curatedDestination` then pin) | **`locations.destinationId` required** on submit (`POST /me/places`) |
-| **Hosted activity** | Host publish | **No `activity.destinationId` on write.** `activity.locationId` → catalog **place** with **`place.destinationId`**. `validateHostingPlaceArea` / publish gate. Meeting / going-from pin does **not** define destination. |
+| **Hosted activity** | Host publish | **No `activity.destinationId` on write.** `activity.locationId` → catalog **place** with **`place.destinationId`**. `validateHostingPlaceDestination` / publish gate. Meeting / going-from pin does **not** define destination. |
 | **Find crew (fixed map slot)** | Find FAB | **`member_availability`** slot with time/place; optional **`destinationId`** on slot — not an activity row. |
 | **Availability** | Plan / profile | Member picks **`destinationId`** (optional region fallback) — not an activity. |
 
@@ -585,7 +585,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 |---------|-----------------|----------------|-------------|
 | **Place** | Catalog trail, camp, outdoor spot | `GET /places/:id`; map `source: place` (`id` still `venue:{id}` until id prefix migrates) | **`PlacePeekCard`** + `PlacePeekBody` |
 | **Facility** | Registered amenity with coords (toilet, parking, gas, …) so people can navigate on the map | `GET /facilities/:id`; map `source: facility`, `id: facility:{id}` | Shares Place peek chrome until a dedicated facility peek ships |
-| **Destination** | Admin-curated name grouping Places/Facilities; hub page `/destination/:slug` | `areas` store; **`destinationId` / `destinationSlug` on pin rows** — **no** `source: area` pin | Hub page + “Destination · {name}” on Place peek. Peek modules under `peek/area/` are for the hub page, not explore pins. |
+| **Destination** | Admin-curated name grouping Places/Facilities; hub page `/destination/:slug` | `areas` store; **`destinationId` / `destinationSlug` on pin rows** — **no** `source: area` pin | Hub page + “Destination · {name}” on Place peek. Peek modules under `peek/destination/` are for the hub page, not explore pins. |
 | **`venue` / `catalog_place`** | Legacy map `source` aliases | Normalize to `place` (`isPlaceMapSource`) | Same as Place |
 | **`place.destinationId`** | Links a **Place** to its **Destination** hub | `locations.destinationId` → `destinationSlug` / `destinationName` on Place rows | **Destination · {name}** on **Place** peek |
 
@@ -602,7 +602,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 
 Wire: `publishingProfileKind` on `ActivityDTO`; paths via `resolveActivityPublisherProfilePath` (`packages/shared-types/src/activity-publisher-display.ts`). **Explore copy:** headlines always use `resolveActivityHeadlinePersonName` (human); peek/list publisher row uses `resolveActivityPublisherRowPrimaryName` (person vs operator brand); section noun `exploreActivityPublisherSectionNoun` — all in `packages/shared-types/src/activity-actor-display.ts`. **`ActivityDTO.hostName`** is the on-ground **person**, not tenant brand. **Do not** emit `source: agency` explore map rows. List/peek/detail read a denormalized **`tenantLogoUrl`** plus compact **`guides[]` / `acceptedGuideCount`** on `ActivityDTO` (explore map nested activity — no extra profile fetch). Agency/shop assign extra guides without consent; community/pro-guide extras stay `pending` until they accept (`activity_guide_invite`). Public pages omit pending guides. Peek shows a **count** when more than one accepted guide; full `/activity/:id` lists accepted guides with `/member/:id` links.
 
-**Code anchors:** `packages/shared-types/src/place-kind.ts` · `apps/api/src/lib/explore-map-area-lens.ts` · `apps/api/src/lib/explore-map.ts` (`attachExploreItemArea`) · `src/explore/hostingPublishArea.ts` · `GET /destinations/:slug` preview · [`DOMAIN.md`](./DOMAIN.md) § Geography.
+**Code anchors:** `packages/shared-types/src/place-kind.ts` · `apps/api/src/lib/explore-map-destination-lens.ts` · `apps/api/src/lib/explore-map.ts` (`attachExploreItemArea`) · `src/explore/hostingPublishDestination.ts` · `GET /destinations/:slug` preview · [`DOMAIN.md`](./DOMAIN.md) § Geography.
 
 **Known read-path gap (do not confuse with write contract):** legacy or tenant-only shop pins may lack `destinationId` on the explore payload until linked/backfilled; **new** catalog places and gated publishes must have **`place.destinationId`**.
 

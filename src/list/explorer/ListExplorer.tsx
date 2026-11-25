@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { useExploreDesktopListDrawerChrome } from '../../explore/ui/ExploreDesktopListDrawer';
-import { useExplorePublishedAreas } from '../../explore/useExplorePublishedAreas';
+import { useExplorePublishedDestinations } from '../../explore/useExplorePublishedDestinations';
 import { buildBrowseCollapsedRailLabels } from '../browse/browseCollapsedRailLabels';
 import { useBrowseGeoScopeHydration } from '../browse/useBrowseGeoScopeHydration';
 import { BrowsePanelCollapsedRail } from './BrowsePanelCollapsedRail';
@@ -256,7 +256,7 @@ export const ListExplorer = ({
   onPopGeoScope,
 }: ListExplorerProps) => {
   const drawer = useExploreDesktopListDrawerChrome();
-  const publishedAreas = useExplorePublishedAreas();
+  const publishedAreas = useExplorePublishedDestinations();
   useBrowseGeoScopeHydration(geoPath);
 
   const collapsedRailLabels = useMemo(

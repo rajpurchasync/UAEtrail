@@ -148,7 +148,7 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
   } | null>(null);
   const [formStep, setFormStep] = useState(0); // 0=type select, 1=form
   const [detailStep, setDetailStep] = useState(0);
-  const [adminAreas, setAdminAreas] = useState<AreaDTO[]>([]);
+  const [adminAreas, setAdminDestinations] = useState<AreaDTO[]>([]);
 
   const loadPlaces = async (isActive: () => boolean = () => true) => {
     setLoading(true);
@@ -212,9 +212,9 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
   useSafeAsyncEffect(async (isActive) => {
     try {
       const areas = await fetchAdminDestinations();
-      if (isActive()) setAdminAreas(areas);
+      if (isActive()) setAdminDestinations(areas);
     } catch {
-      if (isActive()) setAdminAreas([]);
+      if (isActive()) setAdminDestinations([]);
     }
   }, []);
 

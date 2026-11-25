@@ -6,7 +6,7 @@ import {
 } from '@uaetrail/shared-types';
 import { MAP_CONFIG } from '../../config/platform';
 import type { CountryCode } from '../../config/regions';
-import { inferEmirateFromPin } from '../hostingPublishArea';
+import { inferEmirateFromPin } from '../hostingPublishDestination';
 import type { AddSubmitResult } from './addFlow';
 
 export type FacilityAddStepId =

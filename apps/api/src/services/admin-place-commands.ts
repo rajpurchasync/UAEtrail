@@ -18,7 +18,7 @@ import { toLocationDto } from '../lib/mappers.js';
 import { invalidatePublishedDestinationsCache } from '../lib/destination-resolution.js';
 import { findDestinationById, updateAdminDestination } from '../lib/destinations-store.js';
 import { scheduleExploreMapCacheInvalidation } from '../lib/explore-map-cache-schedule.js';
-import { withPlaceAreaMeta } from '../lib/place-area-meta.js';
+import { withPlaceDestinationMeta } from '../lib/place-destination-meta.js';
 import { awardPoints } from './rewards.js';
 import {
   locationHasCatalogImportTag,
@@ -481,7 +481,7 @@ export const updateAdminPlaceRecord = async (input: {
     });
   }
 
-  return withPlaceAreaMeta(toLocationDto(updated, { admin: true }));
+  return withPlaceDestinationMeta(toLocationDto(updated, { admin: true }));
 };
 
 export const deleteAdminPlaceRecord = async (input: { actorId: string; placeId: string }) => {

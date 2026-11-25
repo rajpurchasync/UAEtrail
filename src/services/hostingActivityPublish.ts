@@ -12,9 +12,9 @@ import { subdivisionNoun } from '../config/regions';
 import {
   inferEmirateFromPin,
   resolveCustomProposedAreaName,
-  resolvePublishedAreaForPoint,
-  resolvePublishedAreaIdForPoint,
-} from '../explore/hostingPublishArea';
+  resolvePublishedDestinationForPoint,
+  resolvePublishedDestinationIdForPoint,
+} from '../explore/hostingPublishDestination';
 import {
   buildHostActivityPublishPayload,
   type ActivityPublishInput,
@@ -85,7 +85,7 @@ export const resolveOrganizeActivityLocationId = async (
       throw new Error('Tell joiners about this spot (at least 20 characters).');
     }
     const publishedAreas = await fetchPublishedDestinations();
-    const inferred = resolvePublishedAreaForPoint(
+    const inferred = resolvePublishedDestinationForPoint(
       draft.trailLatitude,
       draft.trailLongitude,
       publishedAreas
@@ -153,7 +153,7 @@ export const resolveOrganizeActivityLocationId = async (
   }
 
   const publishedAreas = await fetchPublishedDestinations();
-  const destinationId = resolvePublishedAreaIdForPoint(anchorLat, anchorLng, publishedAreas);
+  const destinationId = resolvePublishedDestinationIdForPoint(anchorLat, anchorLng, publishedAreas);
   if (!destinationId) {
     throw new Error(
       'Could not match a registered area for this pin. Add your spot via Explore → Add (select an area first), then organize from the catalog.'

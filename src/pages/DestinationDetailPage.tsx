@@ -10,14 +10,14 @@ import { fetchExplorePeopleAvailability } from '../hooks/memberPeopleClientApi';
 import { detailBackPath, EXPLORE_MAP_PATH } from '../config/routingCatalog';
 import { PRODUCT_EXPLORE_CTA } from '../content/productNorthStar';
 import { DetailPageShell } from '../detail/shared/DetailPageShell';
-import { AreaDetailView } from '../components/area/AreaDetailView';
-import { AreaDetailPageShell } from './area/AreaDetailPageShell';
-import { resolveAreaConsumerDetailHeaderChrome } from '../area/detail/resolveAreaConsumerDetailHeaderChrome';
+import { DestinationDetailView } from '../components/destination/DestinationDetailView';
+import { DestinationDetailPageShell } from './destination/DestinationDetailPageShell';
+import { resolveDestinationConsumerDetailHeaderChrome } from '../destinationDetail/detail/resolveDestinationConsumerDetailHeaderChrome';
 import {
-  AREA_DETAIL_TAB_QUERY,
-  parseAreaDetailTabParam,
-  type AreaDetailTabId,
-} from '../area/areaDetailTab';
+  DESTINATION_DETAIL_TAB_QUERY,
+  parseDestinationDetailTabParam,
+  type DestinationDetailTabId,
+} from '../destinationDetail/destinationDetailTab';
 import { DETAIL_LOADING_AREA } from '../content/detailLoadingCopy';
 import { ConsumerEntityDetailLoading } from '../detail/shell/ConsumerEntityDetailLoading';
 import { readDetailBackToFromLocation } from '../explore/mapPeekDetailNavState';
@@ -28,11 +28,11 @@ export const DestinationDetailPage = () => {
   const location = useLocation();
   const { slug = '' } = useParams<{ slug: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = parseAreaDetailTabParam(searchParams.get(AREA_DETAIL_TAB_QUERY));
+  const activeTab = parseDestinationDetailTabParam(searchParams.get(DESTINATION_DETAIL_TAB_QUERY));
 
-  const onTabChange = (tab: AreaDetailTabId) => {
+  const onTabChange = (tab: DestinationDetailTabId) => {
     const next = new URLSearchParams(searchParams);
-    next.set(AREA_DETAIL_TAB_QUERY, tab);
+    next.set(DESTINATION_DETAIL_TAB_QUERY, tab);
     setSearchParams(next, { replace: true });
   };
 
@@ -62,11 +62,11 @@ export const DestinationDetailPage = () => {
   });
 
   const shellBack = detailBackPath('explore');
-  const headerChrome = resolveAreaConsumerDetailHeaderChrome();
+  const headerChrome = resolveDestinationConsumerDetailHeaderChrome();
 
   if (!slug) {
     return (
-      <AreaDetailPageShell>
+      <DestinationDetailPageShell>
         <DetailPageShell backTo={shellBack} backLabel="Explore" headerChrome={headerChrome}>
           <main className="mx-auto max-w-lg px-4 py-10">
             <p className="text-slate-600">Missing destination.</p>
@@ -75,7 +75,7 @@ export const DestinationDetailPage = () => {
             </Link>
           </main>
         </DetailPageShell>
-      </AreaDetailPageShell>
+      </DestinationDetailPageShell>
     );
   }
 
@@ -92,7 +92,7 @@ export const DestinationDetailPage = () => {
 
   if (isError || !data) {
     return (
-      <AreaDetailPageShell>
+      <DestinationDetailPageShell>
         <DetailPageShell backTo={shellBack} backLabel="Explore" headerChrome={headerChrome}>
           <main className="mx-auto max-w-lg px-4 py-10">
             <p className="text-slate-600">We could not find this destination.</p>
@@ -101,20 +101,20 @@ export const DestinationDetailPage = () => {
             </Link>
           </main>
         </DetailPageShell>
-      </AreaDetailPageShell>
+      </DestinationDetailPageShell>
     );
   }
 
   return (
-    <AreaDetailPageShell>
-      <AreaDetailView
+    <DestinationDetailPageShell>
+      <DestinationDetailView
         slug={slug}
         data={data}
         availabilityIndex={availabilityIndex}
         activeTab={activeTab}
         onTabChange={onTabChange}
       />
-    </AreaDetailPageShell>
+    </DestinationDetailPageShell>
   );
 };
 

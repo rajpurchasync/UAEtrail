@@ -9,8 +9,8 @@ import {
   writeIntentOpenComposeCapacity,
 } from '../../availability/availabilitySlotComposeEngine';
 import { fetchMyAvailabilityMatchPreview } from '../../hooks/memberAvailabilityApi';
-import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
-import { destinationIdForExploreDestinationSlug } from '../exploreAreaFilter';
+import { useExplorePublishedDestinations } from '../useExplorePublishedDestinations';
+import { destinationIdForExploreDestinationSlug } from '../exploreDestinationFilter';
 import { AvailabilityMatchPreview } from './AvailabilityMatchPreview';
 import { ComposeWizardShell, ComposeWizardStepChrome } from '../create/ComposeWizardShell';
 import { composeWizardErrorFooter } from '../create/composeWizardStepFooter';
@@ -49,7 +49,7 @@ export const IntentOpenComposeSheet = ({
   onComposeRouteChange,
   onBackToIntent,
 }: IntentOpenComposeSheetProps) => {
-  const publishedAreas = useExplorePublishedAreas();
+  const publishedAreas = useExplorePublishedDestinations();
   const isMobile = useIsMobile();
   const [step, setStep] = useState<IntentOpenStep>('schedule');
   const [preview, setPreview] = useState<MemberAvailabilityMatchPreviewDTO | null>(null);

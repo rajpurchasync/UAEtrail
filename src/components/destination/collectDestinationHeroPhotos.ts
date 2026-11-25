@@ -1,8 +1,8 @@
 import { activityDetailPath, placeDetailPath, type ActivityDTO, type LocationDTO } from '@uaetrail/shared-types';
 import { collectDetailHeroPhotos, type DetailHeroPhoto } from '../../detail/shared/detailHeroPhotos';
-import { placeDetailRouteKindForRow, placeKindLabelForRow } from './areaHubPlaceGroups';
+import { placeDetailRouteKindForRow, placeKindLabelForRow } from './destinationHubPlaceGroups';
 
-export const collectAreaHeroPhotos = ({
+export const collectDestinationHeroPhotos = ({
   places,
   activities,
   areaImageUrl,

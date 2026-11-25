@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { LocationDTO } from '@uaetrail/shared-types';
-import { groupAreaHubPlaces } from './areaHubPlaceGroups';
+import { groupAreaHubPlaces } from './destinationHubPlaceGroups';
 
 const row = (partial: Partial<LocationDTO> & Pick<LocationDTO, 'id' | 'name' | 'activityType'>): LocationDTO =>
   ({

@@ -1,7 +1,7 @@
 import type { LocationDTO } from '@uaetrail/shared-types';
 import { submitMemberFacility } from '../hooks/memberCatalogSubmitClientApi';
 import { subdivisionNoun } from '../config/regions';
-import { resolveRequiredEmirate } from '../explore/hostingPublishArea';
+import { resolveRequiredEmirate } from '../explore/hostingPublishDestination';
 import type { FacilityAddDraft } from '../explore/ui/addFacilityFlow';
 import { validateFacilityAddDraft } from '../explore/ui/addFacilityFlow';
 import type { AddSubmitResult } from '../explore/ui/addFlow';

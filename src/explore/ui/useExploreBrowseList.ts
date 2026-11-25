@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { isTimeBoundExploreMapItem, type ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { deriveVenueRegionSortOrder, sortExploreActivities, sortExploreVenues } from '../exploreListSort';
-import { useExplorePublishedAreasQuery } from '../useExplorePublishedAreas';
+import { useExplorePublishedDestinationsQuery } from '../useExplorePublishedDestinations';
 import { selectExploreLensItems } from '../shell/selectExploreLensItems';
 import type { ExploreActivityDatePreset, ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
 import type { PlaceKind } from '@uaetrail/shared-types';
@@ -107,7 +107,7 @@ export const useExploreBrowseList = ({
   facilityKinds = [],
   geoPath = [],
 }: UseExploreBrowseListArgs) => {
-  const { data: publishedAreas = [] } = useExplorePublishedAreasQuery();
+  const { data: publishedAreas = [] } = useExplorePublishedDestinationsQuery();
   const venueRegionOrder = useMemo(
     () => deriveVenueRegionSortOrder(publishedAreas),
     [publishedAreas]

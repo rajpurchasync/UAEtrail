@@ -5,8 +5,8 @@ import type { ExplorePeekDetailAccess } from '../../../access/resolvePeekDetailA
 import type { MapPeekDetailNavState } from '../../mapPeekDetailNavState';
 import { ActivityPeekActions } from '../peek/activity/ActivityPeekActions';
 import { ActivityPeekBody } from '../peek/activity/ActivityPeekBody';
-import { AreaPeekActions } from '../peek/area/AreaPeekActions';
-import { AreaPeekBody } from '../peek/area/AreaPeekBody';
+import { DestinationPeekActions } from '../peek/destination/DestinationPeekActions';
+import { DestinationPeekBody } from '../peek/destination/DestinationPeekBody';
 import { CatalogPeekBody } from '../peek/catalog/CatalogPeekBody';
 import { ShopPeekActions } from '../peek/shop/ShopPeekActions';
 import { AvailabilityPeekActions } from '../peek/availability/AvailabilityPeekActions';
@@ -37,7 +37,7 @@ export const MapPeekActionsSlot = ({
 }: MapPeekActionsSlotProps) => {
   if (card.source === 'area' && card.destinationSlug) {
     return (
-      <AreaPeekActions
+      <DestinationPeekActions
         destinationSlug={card.destinationSlug}
         stats={card.areaLensStats}
         areaPagePath={card.path}
@@ -101,7 +101,7 @@ export const MapPeekBodySlot = ({
   onBeforeDetailNavigate,
 }: MapPeekBodySlotProps) => {
   if (card.source === 'area') {
-    return <AreaPeekBody card={card} />;
+    return <DestinationPeekBody card={card} />;
   }
 
   if (card.source === 'activity') {

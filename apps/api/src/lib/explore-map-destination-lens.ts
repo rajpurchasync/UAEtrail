@@ -93,7 +93,7 @@ export const mergeFacilityStatsFromLocations = (
  * @deprecated Do not emit onto `GET /explore/map`. Area has no pin.
  * Kept for hub-page stats tests until Area hub reads stats without a synthetic map row.
  */
-export const buildExploreAreaLensItems = (
+export const buildExploreDestinationLensItems = (
   publishedAreas: AreaDTO[],
   catalogItems: ExploreMapItemDTO[]
 ): ExploreMapItemDTO[] => {

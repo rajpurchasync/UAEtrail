@@ -1,8 +1,8 @@
 /** List browse URL state, draft query, and venue/geo read models for the discovery shell. */
 
 import { useEffect, useMemo, useState } from 'react';
-import { parseExploreDestinationSlug } from '../../explore/exploreAreaFilter';
-import { useExplorePublishedAreasQuery } from '../../explore/discoveryRuntime';
+import { parseExploreDestinationSlug } from '../../explore/exploreDestinationFilter';
+import { useExplorePublishedDestinationsQuery } from '../../explore/discoveryRuntime';
 import { useListDiscoveryUrlState } from '../browse/useListDiscoveryUrlState';
 import { resolveEffectiveBrowseVenueRegions } from '../browse/browseGeoPath';
 import { useBrowseGeoScopeHydration } from '../browse/useBrowseGeoScopeHydration';
@@ -66,7 +66,7 @@ export const useListDiscoveryBrowseUrlModel = ({
   }, [filters.query]);
 
   const destinationSlug = parseExploreDestinationSlug(searchParams);
-  const { data: publishedAreas = [] } = useExplorePublishedAreasQuery(!isPeopleCategory);
+  const { data: publishedAreas = [] } = useExplorePublishedDestinationsQuery(!isPeopleCategory);
   const hubVenueRegions = useMemo(
     () => resolveEffectiveBrowseVenueRegions(venueRegions, geoPath, publishedAreas),
     [venueRegions, geoPath, publishedAreas]

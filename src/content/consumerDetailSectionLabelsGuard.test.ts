@@ -7,7 +7,7 @@ const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 const CONSUMER_DETAIL_SURFACES = [
   'src/place/detail/templates/PlaceDetailSections.tsx',
   'src/activity/detail/templates/ActivityDetailSections.tsx',
-  'src/components/area/AreaDetailView.tsx',
+  'src/components/destination/DestinationDetailView.tsx',
   'src/components/shop/ShopPublicPage.tsx',
   'src/facility/detail/templates/FacilityDetailSections.tsx',
   'src/place/detail/buildPlaceConsumerDetailJumpLinks.ts',

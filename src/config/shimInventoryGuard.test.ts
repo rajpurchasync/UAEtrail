@@ -222,6 +222,8 @@ describe('shimInventoryGuard (repo-wide coherence)', () => {
     expect(existsSync(join(ROOT, 'apps/api/src/lib/area-resolution.ts'))).toBe(false);
     expect(existsSync(join(ROOT, 'apps/api/src/lib/areas-store.ts'))).toBe(false);
     expect(existsSync(join(ROOT, 'apps/api/src/routes/admin/registerAdminAreaRoutes.ts'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/components/area'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/pages/area'))).toBe(false);
     expect(existsSync(join(ROOT, 'apps/api/src/lib/destination-resolution.ts'))).toBe(true);
     expect(existsSync(join(ROOT, 'apps/api/src/lib/destinations-store.ts'))).toBe(true);
   });

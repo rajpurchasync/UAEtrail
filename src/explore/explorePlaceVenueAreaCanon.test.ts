@@ -27,7 +27,7 @@ describe('explore Place / Facility / Area canon', () => {
   it('Area hub peek modules stay off Place peek body', () => {
     const slots = read('src/explore/ui/map-peek/mapPeekSlots.tsx');
     expect(slots).toMatch(/card\.source === 'area'/);
-    expect(slots).toMatch(/AreaPeekActions/);
+    expect(slots).toMatch(/DestinationPeekActions/);
     const placeBody = read('src/explore/ui/peek/place/PlacePeekBody.tsx');
     const placeHero = read('src/explore/ui/peek/place/PlacePeekHero.tsx');
     expect(placeBody).not.toMatch(/source === 'area'/);

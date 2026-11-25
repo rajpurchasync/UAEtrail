@@ -2,7 +2,7 @@ import type { CreateActivityDraft, CreateFlowStepId } from '../hostingFlowEngine
 import { validateHostingWhenSchedule } from '../hostingScheduleDraft';
 
 export { validateHostingWhenSchedule };
-import { validateCustomVenueDetails } from '../../hostingPublishArea';
+import { validateCustomVenueDetails } from '../../hostingPublishDestination';
 import { usesRegistryCatalogVenue } from './registry';
 
 export const validateHostingTitle = (draft: CreateActivityDraft, emptyMessage: string): string | null => {

@@ -37,8 +37,8 @@ import {
 } from './intentFixedFlowEngine';
 import type { LocationPrecision } from './createFlowShared';
 import { intentFixedCompose, type IntentFixedComposeKind } from '../compose';
-import { destinationIdForExploreDestinationSlug } from '../exploreAreaFilter';
-import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
+import { destinationIdForExploreDestinationSlug } from '../exploreDestinationFilter';
+import { useExplorePublishedDestinations } from '../useExplorePublishedDestinations';
 import { composeFlowIdFromRoute } from '../composeFlowCatalog';
 import {
   clearAvailabilityWizardSession,
@@ -102,7 +102,7 @@ export const CreateAvailabilityFixedFlow = ({
   const submitResult = availabilityFixedSubmitFlowResult(submitStatus);
   const [error, setError] = useState<string | null>(null);
   const [showMonthView, setShowMonthView] = useState(false);
-  const publishedAreas = useExplorePublishedAreas();
+  const publishedAreas = useExplorePublishedDestinations();
   const mapSession = useComposeMapSession<SeekingMapIntent>();
   const { openMap, closeMap } = mapSession;
 

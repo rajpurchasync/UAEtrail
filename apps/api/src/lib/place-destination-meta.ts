@@ -1,7 +1,7 @@
 import type { LocationDTO } from '@uaetrail/shared-types';
 import { findDestinationsByIds } from './destinations-store.js';
 
-export const withPlaceAreaMetaMany = async (dtos: LocationDTO[]): Promise<LocationDTO[]> => {
+export const withPlaceDestinationMetaMany = async (dtos: LocationDTO[]): Promise<LocationDTO[]> => {
   const ids = dtos
     .map((row) => row.destinationId?.trim())
     .filter((id): id is string => Boolean(id));
@@ -19,7 +19,7 @@ export const withPlaceAreaMetaMany = async (dtos: LocationDTO[]): Promise<Locati
   });
 };
 
-export const withPlaceAreaMeta = async (dto: LocationDTO): Promise<LocationDTO> => {
-  const [row] = await withPlaceAreaMetaMany([dto]);
+export const withPlaceDestinationMeta = async (dto: LocationDTO): Promise<LocationDTO> => {
+  const [row] = await withPlaceDestinationMetaMany([dto]);
   return row ?? dto;
 };

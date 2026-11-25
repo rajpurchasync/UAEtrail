@@ -11,9 +11,9 @@ import {
 } from '../../availability/availabilitySlotComposeEngine';
 import { fetchMyMemberAvailability } from '../../hooks/memberAvailabilityApi';
 import {
-  validateAvailabilityCuratedAreaStep,
-  validateAvailabilityPublishArea,
-} from '../hostingPublishArea';
+  validateAvailabilityCuratedDestinationStep,
+  validateAvailabilityPublishDestination,
+} from '../hostingPublishDestination';
 import { MAP_CONFIG } from '../../config/platform';
 import { buildDateOptions, todayIso, type LocationPrecision, type TimeMode } from './createFlowShared';
 
@@ -525,7 +525,7 @@ export const validateAvailabilityFixedStep = (
     case 'rideshare':
       return null;
     case 'curatedArea':
-      return validateAvailabilityCuratedAreaStep(draft);
+      return validateAvailabilityCuratedDestinationStep(draft);
     case 'area': {
       if (availabilityAreaTextRequired(kind) && !draft.preferredArea.trim()) {
         return kind === 'guide'
@@ -556,7 +556,7 @@ export const validateAvailabilityFixedStep = (
       if (draft.comment.trim().length < 3) return 'Add a short comment (at least 3 characters).';
       return null;
     case 'review':
-      return validateAvailabilityPublishArea(draft, kind);
+      return validateAvailabilityPublishDestination(draft, kind);
     default:
       return null;
   }
@@ -571,7 +571,7 @@ export const validateAvailabilityFixedDraft = (draft: AvailabilityFixedDraft): s
     const message = validateAvailabilityFixedStep(step, draft);
     if (message) return message;
   }
-  return validateAvailabilityPublishArea(draft, kind);
+  return validateAvailabilityPublishDestination(draft, kind);
 };
 
 export type AvailabilityFixedSubmitResult = {

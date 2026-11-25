@@ -52,7 +52,7 @@ export const AdminSubmissions = lazy(() =>
   import('../pages/admin/Submissions').then((m) => ({ default: m.Submissions }))
 );
 export const AdminPlaces = lazy(() => import('../pages/admin/Places').then((m) => ({ default: m.Places })));
-export const AdminAreas = lazy(() => import('../pages/admin/Areas').then((m) => ({ default: m.Areas })));
+export const AdminDestinations = lazy(() => import('../pages/admin/Destinations').then((m) => ({ default: m.AdminDestinations })));
 export const DestinationDetailPage = lazy(() =>
   import('../pages/DestinationDetailPage').then((m) => ({ default: m.DestinationDetailPage }))
 );

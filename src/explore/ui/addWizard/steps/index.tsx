@@ -11,7 +11,7 @@ import {
   ADD_REVIEW_FOOTER_SHOP,
   ADD_REVIEW_FOOTER_TRAIL,
 } from '../../../createFlowCopy';
-import { inferEmirateFromPin } from '../../../hostingPublishArea';
+import { inferEmirateFromPin } from '../../../hostingPublishDestination';
 import type { ActivityDifficulty } from '../../createFlowShared';
 import {
   ACTIVITY_DIFFICULTY_OPTIONS,
@@ -22,7 +22,7 @@ import {
 import { CAMPING_ADD_SURFACE_OPTIONS } from '../../addFlows/surfaces';
 import { SHOP_DELIVERY_RADIUS_KM_OPTIONS } from '../../addFlows/shop';
 import { AddCampingSpotPreview } from '../../AddCampingSpotPreview';
-import { AddCuratedAreaStep } from '../../AddCuratedAreaStep';
+import { AddCuratedDestinationStep } from '../../AddCuratedDestinationStep';
 import { AddHikingTrailPreview } from '../../AddHikingTrailPreview';
 import { AddShopPreview } from '../../AddShopPreview';
 import { EmirateFromPinField } from '../../EmirateFromPinField';
@@ -104,7 +104,7 @@ export function renderAddWizardSteps(ctx: AddWizardContext): ReactNode {
             </>
           }
         >
-          <AddCuratedAreaStep
+          <AddCuratedDestinationStep
             destinationId={draft.destinationId}
             proposedAreaName={draft.areaLabel}
             onProposedAreaNameChange={(areaLabel) => patchDraft({ areaLabel, destinationId: areaLabel.trim() ? null : draft.destinationId })}

@@ -3,9 +3,9 @@ import type { PlaceKind } from '@uaetrail/shared-types';
 import { useNavigate } from 'react-router-dom';
 import { facilityDetailPath } from '@uaetrail/shared-types';
 import { useAuth } from '../../context/AuthContext';
-import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
-import { destinationIdForExploreDestinationSlug } from '../exploreAreaFilter';
-import { inferEmirateFromPin } from '../hostingPublishArea';
+import { useExplorePublishedDestinations } from '../useExplorePublishedDestinations';
+import { destinationIdForExploreDestinationSlug } from '../exploreDestinationFilter';
+import { inferEmirateFromPin } from '../hostingPublishDestination';
 import { AddSubmitSuccessSheet } from './AddSubmitSuccessSheet';
 import { fetchPublicPlaceDetail } from '../../hooks/placeDetailClientApi';
 import type { AddSubmitResult } from './addFlow';
@@ -72,7 +72,7 @@ export const CreateAddFacilityFlow = ({
 }: Props) => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const publishedAreas = useExplorePublishedAreas();
+  const publishedAreas = useExplorePublishedDestinations();
 
   const [step, setStep] = useState<FacilityAddStepId>('title');
   const [draft, setDraft] = useState<FacilityAddDraft>(() => emptyFacilityAddDraft());

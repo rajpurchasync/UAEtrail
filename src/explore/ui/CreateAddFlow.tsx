@@ -20,8 +20,8 @@ import {
   requestComposeFlowClose,
 } from './composeFlowClose';
 import type { AddVenueKind } from '../addTypes';
-import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
-import { destinationIdForExploreDestinationSlug } from '../exploreAreaFilter';
+import { useExplorePublishedDestinations } from '../useExplorePublishedDestinations';
+import { destinationIdForExploreDestinationSlug } from '../exploreDestinationFilter';
 import {
   addFlowStepTitle,
   emptyAddDraft,
@@ -33,7 +33,7 @@ import {
   type AddDraft,
 } from './addFlow';
 import type { LocationPrecision } from './createFlowShared';
-import { inferEmirateFromPin } from '../hostingPublishArea';
+import { inferEmirateFromPin } from '../hostingPublishDestination';
 import { AddSubmitSuccessSheet } from './AddSubmitSuccessSheet';
 import {
   COMPOSE_SUBMIT_FLOW_IDLE,
@@ -73,7 +73,7 @@ export const CreateAddFlow = ({
   const navigate = useNavigate();
   const { user } = useAuth();
   const isMobile = useIsMobile();
-  const publishedAreas = useExplorePublishedAreas();
+  const publishedAreas = useExplorePublishedDestinations();
 
   const [step, setStep] = useState<AddFlowStepId>('title');
   const [draft, setDraft] = useState<AddDraft>(() => ({

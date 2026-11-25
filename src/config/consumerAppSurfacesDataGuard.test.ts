@@ -15,7 +15,7 @@ describe('consumerAppSurfacesDataGuard (in-app hubs — not guest marketing)', (
 
   it('CTX-APP-02: booking + hub where suggestions use place/area catalog APIs', () => {
     expect(read('src/explore/search/useExploreSearchWhereSuggestions.ts')).toMatch(/fetchPlaceCatalogRows/);
-    expect(read('src/explore/search/useExploreSearchWhereSuggestions.ts')).toMatch(/useExplorePublishedAreas/);
+    expect(read('src/explore/search/useExploreSearchWhereSuggestions.ts')).toMatch(/useExplorePublishedDestinations/);
     expect(read('src/explore/search/ExploreSearchResultsChrome.tsx')).toMatch(/useExploreRegionPillOptions/);
   });
 
