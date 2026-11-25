@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -8,6 +8,9 @@ const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
 
 /** MIG-CLIENT-QUERY — hooks migrated off mount-fetch must use TanStack Query + clientQueryKeys. */
 describe('clientQueryMigrationGuard (MIG-CLIENT-QUERY)', () => {
+  it('useSafeAsyncEffect mount-fetch hook is removed', () => {
+    expect(existsSync(join(ROOT, 'src/hooks/useSafeAsyncEffect.ts'))).toBe(false);
+  });
   it('useExplorePublishedDestinations uses publishedDestinationsQueryKey', () => {
     const content = read('src/explore/useExplorePublishedDestinations.ts');
     expect(content).toMatch(/useQuery/);

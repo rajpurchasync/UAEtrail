@@ -155,40 +155,8 @@ describe('systemCoherenceGuard', () => {
     expect(violations).toEqual([]);
   });
 
-  it('member inbox surfaces guard mount fetches with useSafeAsyncEffect', () => {
-    const memberAsyncPages: string[] = [];
-    const missing: string[] = [];
-    for (const rel of memberAsyncPages) {
-      const content = readFileSync(join(ROOT, rel), 'utf8');
-      if (!content.includes('useSafeAsyncEffect')) {
-        missing.push(rel);
-      }
-    }
-    expect(missing).toEqual([]);
-  });
-
-  it('S10a consumer pages guard async mount fetches with useSafeAsyncEffect', () => {
-    const s10aPages: string[] = [];
-    const missing: string[] = [];
-    for (const rel of s10aPages) {
-      const content = readFileSync(join(ROOT, rel), 'utf8');
-      if (!content.includes('useSafeAsyncEffect')) {
-        missing.push(rel);
-      }
-    }
-    expect(missing).toEqual([]);
-  });
-
-  it('explore detail and peek hooks guard mount fetch with useSafeAsyncEffect', () => {
-    const exploreAsyncHooks: string[] = [];
-    const missing: string[] = [];
-    for (const rel of exploreAsyncHooks) {
-      const content = readFileSync(join(ROOT, rel), 'utf8');
-      if (!content.includes('useSafeAsyncEffect')) {
-        missing.push(rel);
-      }
-    }
-    expect(missing).toEqual([]);
+  it('MIG-CLIENT-QUERY: useSafeAsyncEffect hook retired (TanStack Query only)', () => {
+    expect(existsSync(join(ROOT, 'src/hooks/useSafeAsyncEffect.ts'))).toBe(false);
   });
 
   it('ProtectedRoute gates operator console on canAccessPublishingWorkspace', () => {

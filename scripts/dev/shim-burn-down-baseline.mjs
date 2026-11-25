@@ -123,6 +123,7 @@ const countSafeAsyncInTree = (dirRel, fileRe) => {
 
 const componentSafeAsync = countSafeAsyncInTree('src/components', /\.(tsx)$/);
 const exploreUiSafeAsync = countSafeAsyncInTree('src/explore/ui', /\.(tsx)$/);
+const useSafeAsyncEffectHookExists = existsSync(join(feSrc, 'hooks', 'useSafeAsyncEffect.ts'));
 
 const baseline = {
   version: 1,
@@ -166,6 +167,7 @@ const baseline = {
       componentFiles: componentSafeAsync,
       exploreUiFilesUsingUseSafeAsyncEffect: exploreUiSafeAsync.length,
       exploreUiFiles: exploreUiSafeAsync,
+      useSafeAsyncEffectHookRetired: !useSafeAsyncEffectHookExists,
     },
   },
   governance: {
@@ -177,9 +179,8 @@ const baseline = {
       : []),
     ...(!participantIntentOpsAllowlistOnly
       ? ['W1b: participant_intents refs outside ops allowlist — shrink to migration/purge/gate modules only']
-      : participantIntentsRefs > 0
-        ? ['W1 env: run npm run seeking:deploy-gate per environment after migration 2025112509']
-        : []),
+      : []),
+    ...(useSafeAsyncEffectHookExists ? ['W6d: delete src/hooks/useSafeAsyncEffect.ts after MIG-CLIENT-QUERY'] : []),
     ...(browseListUrlStateImportViolations.length > 0
       ? ['W4d: import browseListUrlState only from list/browse or discoverySessionListUrl facade']
       : []),

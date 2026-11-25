@@ -39,13 +39,12 @@
       "componentFilesUsingUseSafeAsyncEffect": 0,
       "componentFiles": [],
       "exploreUiFilesUsingUseSafeAsyncEffect": 0,
-      "exploreUiFiles": []
+      "exploreUiFiles": [],
+      "useSafeAsyncEffectHookRetired": true
     }
   },
   "governance": {
     "guardTestFileCount": 159
   },
-  "nextActions": [
-    "W1 env: run npm run seeking:deploy-gate per environment after migration 2025112509"
-  ]
+  "nextActions": []
 }
