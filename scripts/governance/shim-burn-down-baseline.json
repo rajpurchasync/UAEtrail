@@ -69,10 +69,10 @@
       "exploreBrowseListFiltersViolations": [],
       "exploreImportsListChromeTheme": 0,
       "exploreListChromeThemeViolations": [],
-      "exploreImportsListPeek": 0,
-      "exploreListPeekViolations": [],
       "exploreImportsBrowseListFeed": 0,
-      "exploreBrowseListFeedViolations": []
+      "exploreBrowseListFeedViolations": [],
+      "exploreImportsListPeek": 0,
+      "exploreListPeekViolations": []
     },
     "w6": {
       "pagesUsingUseSafeAsyncEffect": 0,
