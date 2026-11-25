@@ -12,13 +12,11 @@ import { sortBrowseListCards, type BrowseListSortMode } from '../browse/listBrow
 import {
   exploreSearchMapViewPathFromListSearch,
   exploreSearchResultsPath,
+  exploreSearchWhereBrowseQuery,
   parseExploreSearchBrowseState,
-} from '../../explore/search/exploreSearchRouting';
-import {
   resolveExploreSearchTripPool,
   resolveExploreSearchVenuePool,
-} from '../../explore/search/exploreSearchJoinablePools';
-import { exploreSearchWhereBrowseQuery } from '../../explore/search/exploreSearchWhereQuery';
+} from '../../discovery/discoverySessionExploreSearch';
 
 export type ListDiscoveryExploreSearchFeedInput = {
   exploreSearch: boolean;

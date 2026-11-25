@@ -8,13 +8,15 @@ import type { CrewsAvailabilityGuideFilter, CrewsAvailabilityShapeFilter } from 
 import { DEFAULT_CREW_PEOPLE_FACET } from '@/crew-discovery/crewBrowseState';
 import { useCrewDiscoveryAvailability } from '@/crew-discovery/hooks/useCrewDiscoveryAvailability';
 import { BrowseCompactRow } from '@/list/browse/BrowseCompactRow';
-import { resolveExploreSearchJoinableTripCards } from '@/explore/search/exploreSearchJoinablePools';
-import { exploreSearchComposeFeedMode } from '@/explore/search/exploreSearchComposeMode';
-import { exploreSearchWhereBrowseQuery } from '@/explore/search/exploreSearchWhereQuery';
-import { EXPLORE_SEARCH_MATCHES_TITLE } from '@/explore/search/exploreSearchHomeCopy';
-import { resolveExploreSearchDetectedWhereQuery } from '@/explore/search/exploreSearchDetectedWhere';
-import { useExploreSearchCommunityGroups } from '@/explore/search/useExploreSearchCommunityGroups';
-import { ExploreGuestSignInCard } from '@/explore/ui/ExploreGuestSignInCard';
+import {
+  EXPLORE_SEARCH_MATCHES_TITLE,
+  ExploreGuestSignInCard,
+  exploreSearchComposeFeedMode,
+  exploreSearchWhereBrowseQuery,
+  resolveExploreSearchDetectedWhereQuery,
+  resolveExploreSearchJoinableTripCards,
+  useExploreSearchCommunityGroups,
+} from '@/discovery/discoverySessionExploreSearch';
 import { FEATURE_FLAGS } from '@/config/platform';
 import { FindCrewMainTabs } from './FindCrewMainTabs';
 import {

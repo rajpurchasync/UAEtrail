@@ -130,7 +130,12 @@ describe('shimInventoryGuard (repo-wide coherence)', () => {
   });
 
   it('SHIM-INV-02: canonical list + search surfaces use exploreSearchJoinablePools', () => {
-    expect(read('src/list/shell/useListDiscoveryExploreSearchFeedModel.ts')).toMatch(/exploreSearchJoinablePools/);
+    const listSearchFeed = read('src/list/shell/useListDiscoveryExploreSearchFeedModel.ts');
+    expect(
+      /exploreSearchJoinablePools/.test(listSearchFeed) ||
+        /resolveExploreSearch(?:Trip|Venue)Pool/.test(listSearchFeed)
+    ).toBe(true);
+    expect(read('src/discovery/discoverySessionExploreSearch.ts')).toMatch(/exploreSearchJoinablePools/);
     expect(read('src/list/ListDiscoveryExperience.tsx')).not.toMatch(/explore\/hub\/exploreHubJoinableTrips/);
     expect(read('src/explore/search/ExploreSearchResults.tsx')).toMatch(/exploreSearchJoinablePools/);
     expect(read('src/explore/search/ExploreSearchResults.tsx')).not.toMatch(/hub\/exploreHubJoinableTrips/);

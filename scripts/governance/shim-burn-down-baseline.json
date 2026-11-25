@@ -76,7 +76,9 @@
       "exploreImportsBrowseListQuickFilters": 0,
       "exploreBrowseListQuickFilterViolations": [],
       "exploreImportsListPresentation": 0,
-      "exploreListPresentationViolations": []
+      "exploreListPresentationViolations": [],
+      "listImportsExploreSearch": 0,
+      "listExploreSearchImportViolations": []
     },
     "w6": {
       "pagesUsingUseSafeAsyncEffect": 0,

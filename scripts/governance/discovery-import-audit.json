@@ -12,20 +12,20 @@
   ],
   "matrix": {
     "src/list": {
-      "..": 216,
+      "..": 214,
       "browse": 83,
       "crews": 2,
       "components": 1,
       "config": 1,
       "create": 1,
-      "explore": 1,
+      "discovery": 1,
       "styles": 1,
       "explorer": 1
     },
     "src/discovery": {
       "discovery": 4,
       "components": 4,
-      "explore": 9,
+      "explore": 20,
       "..": 10,
       "discoveryCardModel": 3,
       "DiscoveryBrowseThumbnailPoster": 1,
@@ -57,16 +57,16 @@
     }
   },
   "byTarget": {
-    "..": 274,
+    "..": 272,
     "browse": 83,
     "crews": 2,
     "components": 5,
     "config": 5,
     "create": 1,
-    "explore": 15,
+    "discovery": 5,
     "styles": 1,
     "explorer": 1,
-    "discovery": 4,
+    "explore": 25,
     "discoveryCardModel": 3,
     "DiscoveryBrowseThumbnailPoster": 1,
     "discoverySession": 1,
@@ -85,6 +85,6 @@
     "maxListExploreImports": 25,
     "listFacade": "src/explore/discoveryRuntime.ts"
   },
-  "listExploreImports": 1,
+  "listExploreImports": 0,
   "canonicalRuntime": "src/explore/discoveryRuntime.ts"
 }

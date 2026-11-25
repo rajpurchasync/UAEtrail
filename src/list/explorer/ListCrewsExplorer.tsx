@@ -10,7 +10,7 @@ import type { BrowseListFilterState } from '@/list/browse/browseListFilters';
 import { crewsHubHomePath } from '@/discovery/discoverySession';
 import { LIST_APP_BAR, LIST_CHROME } from '@/list/browse/listChromeTheme';
 import { FIND_CREW_SEARCH_TITLE } from './findCrewSearchCopy';
-import { EXPLORE_SEARCH_PAGE_COLUMN } from '@/explore/search/ExploreSearchPageLayout';
+import { EXPLORE_SEARCH_PAGE_COLUMN } from '@/discovery/discoverySessionExploreSearch';
 import { MobileBackButton } from '@/components/mobile/MobileBackButton';
 import { FindCrewSearchChrome } from './FindCrewSearchChrome';
 import { FindCrewResultsSection } from './FindCrewResultsSection';

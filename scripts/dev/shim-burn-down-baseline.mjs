@@ -325,6 +325,15 @@ for (const file of walkFiles(join(feSrc, 'explore'))) {
   }
 }
 
+const listImportsExploreSearch = [];
+for (const file of walkFiles(join(feSrc, 'list'))) {
+  if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
+  const rel = file.slice(root.length + 1).replace(/\\/g, '/');
+  if (/explore\/search\//.test(readFileSync(file, 'utf8'))) {
+    listImportsExploreSearch.push(rel);
+  }
+}
+
 const exploreImportsBrowseGeoOrCopy = [];
 for (const file of walkFiles(join(feSrc, 'explore'))) {
   if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
@@ -459,6 +468,8 @@ const baseline = {
       exploreBrowseListQuickFilterViolations: exploreImportsBrowseListQuickFilters,
       exploreImportsListPresentation: exploreImportsListPresentation.length,
       exploreListPresentationViolations: exploreImportsListPresentation,
+      listImportsExploreSearch: listImportsExploreSearch.length,
+      listExploreSearchImportViolations: listImportsExploreSearch,
     },
     w6: {
       pagesUsingUseSafeAsyncEffect: useSafeAsyncEffectPages.length,
@@ -554,6 +565,9 @@ const baseline = {
       : []),
     ...(exploreImportsListPresentation.length > 0
       ? ['W9: explore imports list explorer/shell via discoverySession list presentation facades']
+      : []),
+    ...(listImportsExploreSearch.length > 0
+      ? ['W10: list imports explore search via discoverySessionExploreSearch']
       : []),
     ...(exploreImportsBrowseListUrlState.length > 0
       ? ['W4: import discovery params from src/discovery/discoverySessionParams.ts not list/']

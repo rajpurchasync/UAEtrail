@@ -279,6 +279,16 @@ describe('discoverySessionParamsGuard', () => {
     expect(read('src/discovery/discoverySession.ts')).toMatch(/discoverySessionListQuickFilters/);
   });
 
+  it('W10 list module imports explore search via discoverySessionExploreSearch facade', () => {
+    const exploreSearchImport = /explore\/search\//;
+    const violations: string[] = [];
+    for (const rel of collectProdTsUnder(join(ROOT, 'src/list'))) {
+      if (exploreSearchImport.test(read(rel))) violations.push(rel);
+    }
+    expect(violations).toEqual([]);
+    expect(read('src/discovery/discoverySessionExploreSearch.ts')).toMatch(/exploreSearchRouting/);
+  });
+
   it('W9 explore imports list explorer / shell / prefill via discoverySession facades', () => {
     const listPresentationImport =
       /list\/(?:explorer\/|ListDiscoveryExperience|crews\/CommunityDiscoverBrowseList)/;

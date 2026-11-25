@@ -147,8 +147,24 @@
         "src/explore/create/hooks/useHostingWizardPrefill.ts"
       ],
       "avoid": ["src/list/** impl"]
+    },
+    {
+      "id": "W10",
+      "status": "done",
+      "title": "discoverySessionExploreSearch — list/find-crew → explore search bridge",
+      "branch": "burn-down/w10-list-explore-search",
+      "owns": [
+        "src/discovery/discoverySessionExploreSearch.ts",
+        "src/list/shell/useListDiscoveryExploreSearchFeedModel.ts",
+        "src/list/browse/useListDiscoveryUrlState.ts",
+        "src/list/explorer/FindCrewResultsSection.tsx",
+        "src/list/explorer/FindCrewSearchChrome.tsx",
+        "src/list/explorer/ListCrewsExplorer.tsx",
+        "src/list/BrowseListPage.tsx"
+      ],
+      "avoid": ["src/explore/**"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }
