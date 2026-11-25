@@ -58,7 +58,10 @@ import { logOmarHostQaPlaybook } from './logOmarHostQaPlaybook.js';
 import { seedCuratedDestinations } from '../src/lib/seed-destinations.js';
 import { curatedDestinationSeedId, type AvailabilityKind } from '@uaetrail/shared-types';
 import { deactivateOrphanActiveLocations } from './cleanup-orphan-activity-anchor-locations.js';
-import { backfillSeedCatalogLocationAreaIds, seedLocationAreaId } from './seed-location-area-map.js';
+import {
+  backfillSeedCatalogLocationDestinationIds,
+  seedLocationAreaId,
+} from './seed-location-area-map.js';
 import {
   createGroupWallMessage,
   createSocialGroup,
@@ -546,9 +549,9 @@ const upsertTenant = async (input: {
 };
 
 const upsertLocation = async (id: string, data: LocationCreateInput) => {
-  const areaId = data.areaId ?? seedLocationAreaId(id) ?? undefined;
+  const destinationId = data.destinationId ?? seedLocationAreaId(id) ?? undefined;
   let location = buildLocationFromCreateInput(
-    { ...data, areaId, status: LocationStatus.ACTIVE },
+    { ...data, destinationId, status: LocationStatus.ACTIVE },
     id
   );
   const existing = await findLocationInMongo(id);
@@ -1031,12 +1034,12 @@ async function main() {
 
   if (!(await shouldRunSeed())) {
     await seedCuratedDestinations();
-    await backfillSeedCatalogLocationAreaIds();
+    await backfillSeedCatalogLocationDestinationIds();
     await deactivateOrphanActiveLocations();
     await restampCatalogGeoIndexFields();
     const { invalidateExploreMapCache } = await import('../src/lib/explore-map-cache.js');
     await invalidateExploreMapCache();
-    console.log('[seed] Curated areas upserted and catalog place areaIds backfilled');
+    console.log('[seed] Curated destinations upserted and catalog place destinationIds backfilled');
     const richCatalog = await seedDevRichCatalog(upsertLocation);
     console.log(
       `[seed] Dev rich catalog: +${richCatalog.hiking} hiking, +${richCatalog.camping} camping rows upserted`
@@ -1976,7 +1979,7 @@ Share your live location and carry extra water in summer months.`
     `[seed] Dev rich catalog: +${richCatalog.hiking} hiking, +${richCatalog.camping} camping rows upserted`
   );
 
-  await backfillSeedCatalogLocationAreaIds();
+  await backfillSeedCatalogLocationDestinationIds();
   await deactivateOrphanActiveLocations();
 
   const facilitySeed = await seedCatalogFacilities();

@@ -231,7 +231,7 @@ git pull origin main
 docker compose up -d --build
 ```
 
-After deploy, the API runs **versioned Mongo migrations** once per environment (`runMongoMigrations` in `apps/api/src/lib/mongo-migrations.ts`, tracked in `schema_meta.migrations`). GW-7 **`2025112502`** — stale inbound paths via `canonicalizeInboundProductPath`. MIG-DESTINATION-GEO **`2025112507`** — Mongo `areas` → `destinations`, catalog `destinationId` / `placeHubLabel`, unset legacy `areaId` / `areaLabel` / `parentPlaceId` / `catalogAreaId` (`runDestinationGeoMigrations`). Stale `/area/*` bookmarks normalize via `canonicalizeInboundProductPath` (no nginx `/area` redirect). Indexes are still ensured at API startup separately.
+After deploy, the API runs **versioned Mongo migrations** once per environment (`runMongoMigrations` in `apps/api/src/lib/mongo-migrations.ts`, tracked in `schema_meta.migrations`). GW-7 **`2025112502`** — stale inbound paths via `canonicalizeInboundProductPath`. MIG-DESTINATION-GEO **`2025112507`** — Mongo `areas` → `destinations`, catalog `destinationId` / `placeHubLabel`, unset legacy `areaId` / `areaLabel` / `parentPlaceId` / `catalogAreaId` (`runDestinationGeoMigrations`). Stale `/area/*` hubs are not rewritten at deploy or in-app — use `/destination/:slug` (no nginx `/area` redirect). Indexes are still ensured at API startup separately.
 
 ---
 

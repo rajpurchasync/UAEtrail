@@ -21,7 +21,7 @@ type SeedFacilityRow = {
   id: string;
   name: string;
   facilityKind: FacilityKind;
-  parentPlaceId: string;
+  onSiteId: string;
   destinationId: string;
   placeHubLabel: string;
   region: string;
@@ -121,7 +121,7 @@ const SEED_FACILITIES: SeedFacilityRow[] = [
     id: 'seed-facility-hatta-dam-toilet',
     name: 'Hatta Dam visitor toilets',
     facilityKind: 'toilet',
-    parentPlaceId: 'hatta-dam-loop',
+    onSiteId: 'hatta-dam-loop',
     destinationId: hattaArea,
     placeHubLabel: 'Hatta Dam visitor park',
     region: 'Dubai',
@@ -134,7 +134,7 @@ const SEED_FACILITIES: SeedFacilityRow[] = [
     id: 'seed-facility-hatta-dam-water',
     name: 'Hatta Dam drinking water',
     facilityKind: 'water_refill',
-    parentPlaceId: 'hatta-dam-loop',
+    onSiteId: 'hatta-dam-loop',
     destinationId: hattaArea,
     placeHubLabel: 'Hatta Dam visitor park',
     region: 'Dubai',
@@ -147,7 +147,7 @@ const SEED_FACILITIES: SeedFacilityRow[] = [
     id: 'seed-facility-hatta-dam-picnic',
     name: 'Hatta Dam picnic lawns',
     facilityKind: 'picnic',
-    parentPlaceId: 'hatta-dam-loop',
+    onSiteId: 'hatta-dam-loop',
     destinationId: hattaArea,
     placeHubLabel: 'Hatta Dam visitor park',
     region: 'Dubai',
@@ -160,7 +160,7 @@ const SEED_FACILITIES: SeedFacilityRow[] = [
     id: 'seed-facility-hatta-wadi-toilet',
     name: 'Hatta Wadi Hub toilets',
     facilityKind: 'toilet',
-    parentPlaceId: 'hatta-wadi-hub-loop',
+    onSiteId: 'hatta-wadi-hub-loop',
     destinationId: hattaArea,
     placeHubLabel: 'Hatta Wadi Hub',
     region: 'Dubai',
@@ -173,7 +173,7 @@ const SEED_FACILITIES: SeedFacilityRow[] = [
     id: 'seed-facility-hatta-wadi-parking',
     name: 'Hatta Wadi Hub parking',
     facilityKind: 'parking',
-    parentPlaceId: 'hatta-wadi-hub-loop',
+    onSiteId: 'hatta-wadi-hub-loop',
     destinationId: hattaArea,
     placeHubLabel: 'Hatta Wadi Hub',
     region: 'Dubai',
@@ -186,7 +186,7 @@ const SEED_FACILITIES: SeedFacilityRow[] = [
     id: 'seed-facility-hatta-hill-toilet',
     name: 'Hatta Hill Park toilets',
     facilityKind: 'toilet',
-    parentPlaceId: 'hatta-hill-park-camp',
+    onSiteId: 'hatta-hill-park-camp',
     destinationId: hattaArea,
     placeHubLabel: 'Hatta Hill Park',
     region: 'Dubai',
@@ -199,7 +199,7 @@ const SEED_FACILITIES: SeedFacilityRow[] = [
     id: 'seed-facility-hatta-hill-picnic',
     name: 'Hatta Hill Park BBQ terraces',
     facilityKind: 'picnic',
-    parentPlaceId: 'hatta-hill-park-camp',
+    onSiteId: 'hatta-hill-park-camp',
     destinationId: hattaArea,
     placeHubLabel: 'Hatta Hill Park',
     region: 'Dubai',
@@ -212,7 +212,7 @@ const SEED_FACILITIES: SeedFacilityRow[] = [
     id: 'seed-facility-shawka-dam-toilet',
     name: 'Wadi Shawka dam toilets',
     facilityKind: 'toilet',
-    parentPlaceId: 'wadi-shawka-loop',
+    onSiteId: 'wadi-shawka-loop',
     destinationId: curatedDestinationSeedId('wadiShawka'),
     placeHubLabel: 'Wadi Shawka Dam',
     region: 'RAK',
@@ -225,7 +225,7 @@ const SEED_FACILITIES: SeedFacilityRow[] = [
     id: 'seed-facility-jais-deck-toilet',
     name: 'Jebel Jais viewing deck toilets',
     facilityKind: 'toilet',
-    parentPlaceId: 'jebel-jais-summit-trail',
+    onSiteId: 'jebel-jais-summit-trail',
     destinationId: curatedDestinationSeedId('jebelJais'),
     placeHubLabel: 'Jebel Jais Viewing Deck',
     region: 'RAK',
@@ -238,7 +238,7 @@ const SEED_FACILITIES: SeedFacilityRow[] = [
     id: 'seed-facility-jais-rest',
     name: 'Jebel Jais rest shelter',
     facilityKind: 'rest_area',
-    parentPlaceId: 'jebel-jais-summit-trail',
+    onSiteId: 'jebel-jais-summit-trail',
     destinationId: curatedDestinationSeedId('jebelJais'),
     placeHubLabel: 'Jebel Jais Viewing Deck',
     region: 'RAK',
@@ -251,7 +251,7 @@ const SEED_FACILITIES: SeedFacilityRow[] = [
     id: 'seed-facility-qudra-toilet',
     name: 'Al Qudra Lakes toilets',
     facilityKind: 'toilet',
-    parentPlaceId: 'al-qudra-cycling-loop',
+    onSiteId: 'al-qudra-cycling-loop',
     destinationId: curatedDestinationSeedId('alQudra'),
     placeHubLabel: 'Al Qudra Lakes',
     region: 'Dubai',
@@ -269,14 +269,14 @@ export const seedCatalogFacilities = async (): Promise<{ upserted: number; skipp
   let skipped = 0;
 
   for (const row of SEED_FACILITIES) {
-    const parent = await findLocationInMongo(row.parentPlaceId);
+    const parent = await findLocationInMongo(row.onSiteId);
     if (!parent) {
-      console.warn(`[seed:catalog-facilities] skip ${row.id} — parent place ${row.parentPlaceId} missing`);
+      console.warn(`[seed:catalog-facilities] skip ${row.id} — parent place ${row.onSiteId} missing`);
       skipped += 1;
       continue;
     }
 
-    const areaId = parent.areaId?.trim() || row.areaId;
+    const destinationId = parent.destinationId?.trim() || row.destinationId;
     const now = new Date();
     const lifecycle = withCatalogLifecycleFields({
       status: LocationStatus.ACTIVE,
@@ -290,14 +290,14 @@ export const seedCatalogFacilities = async (): Promise<{ upserted: number; skipp
       name: row.name,
       region: row.region,
       placeHubLabel: row.placeHubLabel,
-      areaId,
+      destinationId,
       facilityKind: row.facilityKind,
-      parentPlaceId: row.parentPlaceId,
+      onSiteId: row.onSiteId,
       description: row.description,
       latitude: row.latitude,
       longitude: row.longitude,
       images: row.images,
-      tags: ['seed', 'demo', `parent-place:${row.parentPlaceId}`],
+      tags: ['seed', 'demo', `on-site:${row.onSiteId}`],
       featured: false,
       countryCode: 'AE',
       createdAt: now,

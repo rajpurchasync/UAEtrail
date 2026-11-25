@@ -21,7 +21,7 @@ import {
   VENUE_CATALOG_EXTERNAL_SOURCE,
 } from '../src/lib/venue-catalog.js';
 import { fillMissingLocationFields } from '../src/lib/location-field-fill.js';
-import { backfillSeedCatalogLocationAreaIds } from './seed-location-area-map.js';
+import { backfillSeedCatalogLocationDestinationIds } from './seed-location-area-map.js';
 
 const PRESERVE_KEYS: (keyof Location)[] = [
   'guideMarkdown',
@@ -120,7 +120,7 @@ const importVenueCatalog = async () => {
 
   let osmDeactivated = 0;
   if (!dryRun) {
-    await backfillSeedCatalogLocationAreaIds();
+    await backfillSeedCatalogLocationDestinationIds();
   }
 
   if (!keepOsm && !dryRun && collection) {

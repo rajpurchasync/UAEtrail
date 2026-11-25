@@ -22,6 +22,7 @@ import { LocationStatus } from '../domain/enums.js';
 import { newEntityId } from './entity-builders.js';
 import { ApiError } from './api-error.js';
 import { bumpGeoTreeVersion } from './geo-tree.js';
+import { resolveDestinationIdForCoordinates } from './destination-resolution.js';
 
 const col = (): Collection<SubmissionDoc> =>
   getMongoClient()!.db().collection<SubmissionDoc>(COLLECTIONS.SUBMISSIONS);
@@ -254,12 +255,13 @@ const materializePlace = async (sub: SubmissionDoc): Promise<string> => {
   const name = String(sub.payload.name ?? 'Untitled');
   const activityType =
     sub.kind === 'camp_spot' ? 'CAMPING' : sub.kind === 'trail' ? 'HIKING' : 'EVENT';
+  const destinationId = await resolveDestinationIdForCoordinates(lat, lng);
   const location = {
     id,
     name,
     region: String(sub.payload.region ?? sub.geoRef?.names.state ?? 'Dubai'),
     placeHubLabel: sub.geoRef?.names.area ?? null,
-    destinationId: sub.geoRef?.areaId || null,
+    destinationId,
     activityType: activityType as never,
     description: String(sub.payload.description ?? ''),
     difficulty: null,
@@ -314,10 +316,18 @@ const materializePlace = async (sub: SubmissionDoc): Promise<string> => {
 
 const materializeFacility = async (sub: SubmissionDoc): Promise<string> => {
   const [lng, lat] = sub.geo.coordinates;
+  const destinationId = await resolveDestinationIdForCoordinates(lat, lng);
+  if (!destinationId) {
+    throw new ApiError(
+      422,
+      'destination_required',
+      'Approve this pin inside a published Destination boundary before materializing.'
+    );
+  }
   const created = await createFacilityRecord({
     name: String(sub.payload.name ?? 'Facility'),
     region: String(sub.payload.region ?? sub.geoRef?.names.state ?? 'Dubai'),
-    destinationId: sub.geoRef?.areaId || 'unknown',
+    destinationId,
     placeHubLabel: sub.geoRef?.names.area ?? null,
     facilityKind: (sub.facilityType ?? 'toilet') as never,
     onSiteId: typeof sub.payload.parentPlaceId === 'string' ? sub.payload.parentPlaceId : null,

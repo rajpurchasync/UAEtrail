@@ -1005,7 +1005,7 @@ Legacy shim (one release, no new imports): `placeRegistry.ts`. `placeCatalogApi.
 |----|----------|
 | D0.1 | Mongo collection **`destinations`** (renamed from `areas`); preserve `area-seed-*` ids as `destinationId` |
 | D0.2 | `resolveDestinationId` reads **`destinationId` only** (no `areaId` wire) |
-| D0.3 | `/destination/:slug` canonical; inbound `/area/*` → `/destination/*` (`rewriteStaleEntityInboundPath`) |
+| D0.3 | `/destination/:slug` canonical; **no** `/area/*` inbound rewrite (retired with nginx redirect) |
 | D0.4 | Listed catalog requires `destinationId` + `geoRef` (P4+) |
 | D0.5 | Facility trail scope → `onSiteId` rename from `parentPlaceId` (P9) |
 
@@ -1099,8 +1099,7 @@ Mark `[x]` in the PR that completes the item.
 
 **P8 — Inbound**
 
-- [x] `rewriteStaleEntityInboundPath` `/area/:slug` → `/destination/:slug`
-- [x] Stale `/area/*` bookmarks normalized in `rewriteStaleEntityInboundPath` (no nginx `/area` block)
+- [x] Retired `/area/:slug` inbound rewrite — bookmarks must use `/destination/:slug` (no nginx `/area` block)
 
 **P9 — API cutover (read paths)**
 

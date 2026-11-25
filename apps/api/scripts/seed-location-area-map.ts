@@ -50,8 +50,8 @@ export const seedLocationAreaId = (locationId: string): string | null => {
   return key ? curatedDestinationSeedId(key) : null;
 };
 
-/** After seed upserts — fill `areaId` from explicit map or published area polygons. */
-export const backfillSeedCatalogLocationAreaIds = async (): Promise<void> => {
+/** After seed upserts — fill `destinationId` from explicit map or published destination polygons. */
+export const backfillSeedCatalogLocationDestinationIds = async (): Promise<void> => {
   const areas: DestinationDTO[] = await listPublishedDestinations();
   const { getMongoClient } = await import('../src/lib/mongo.js');
   const { COLLECTIONS } = await import('../src/lib/collections.js');
@@ -71,9 +71,9 @@ export const backfillSeedCatalogLocationAreaIds = async (): Promise<void> => {
       lat != null && lng != null
         ? resolveDestinationIdFromPoint(lat, lng, areas, doc.destinationId as string | null)
         : null;
-    const areaId = explicit ?? fromPoint ?? (doc.areaId as string | null) ?? null;
-    if (!areaId) continue;
-    if (doc.areaId === areaId) continue;
-    await collection.updateOne({ _id: doc._id }, { $set: { areaId } });
+    const destinationId = explicit ?? fromPoint ?? (doc.destinationId as string | null) ?? null;
+    if (!destinationId) continue;
+    if (doc.destinationId === destinationId) continue;
+    await collection.updateOne({ _id: doc._id }, { $set: { destinationId } });
   }
 };

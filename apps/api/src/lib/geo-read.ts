@@ -130,7 +130,7 @@ export const listGeoFacilities = async (nodeId: string, type?: string, cursor?: 
     .find(filter)
     .sort({ _id: 1 })
     .limit(geoListPageSize(limit) + 1)
-    .project({ name: 1, facilityKind: 1, latitude: 1, longitude: 1, geoRef: 1, areaId: 1 })
+    .project({ name: 1, facilityKind: 1, latitude: 1, longitude: 1, geoRef: 1, destinationId: 1 })
     .toArray();
   const page = geoListPageSize(limit);
   const next = rows.length > page ? String(rows[page]._id) : null;
@@ -152,7 +152,7 @@ export const listGeoActivities = async (nodeId: string, type?: string, cursor?: 
       activityType: 1,
       startAt: 1,
       geoRef: 1,
-      areaId: 1,
+      destinationId: 1,
       images: { $slice: 2 },
       bannerUrl: 1,
       meetingLat: 1,
@@ -177,7 +177,16 @@ export const listGeoPlaces = async (nodeId: string, kind?: string, cursor?: stri
     .find(filter)
     .sort({ _id: 1 })
     .limit(geoListPageSize(limit) + 1)
-    .project({ name: 1, activityType: 1, latitude: 1, longitude: 1, geoRef: 1, areaId: 1, slug: 1, images: { $slice: 2 } })
+    .project({
+      name: 1,
+      activityType: 1,
+      latitude: 1,
+      longitude: 1,
+      geoRef: 1,
+      destinationId: 1,
+      slug: 1,
+      images: { $slice: 2 },
+    })
     .toArray();
   const page = geoListPageSize(limit);
   const next = rows.length > page ? String(rows[page]._id) : null;

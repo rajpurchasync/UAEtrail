@@ -71,7 +71,7 @@ export const upsertSeedAvailabilityFixedPin = async (input: {
   await mergeMemberAvailabilityFixedSlotsMigration(input.userId, {
     kinds: [...projection.modalities],
     visibility: 'public',
-    destinationId: input.areaId,
+    destinationId: input.destinationId,
     note: input.note?.trim() || null,
     fixedSlots: [slot],
   });

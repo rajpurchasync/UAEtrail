@@ -13,8 +13,8 @@ import {
   toDestinationPublicDto,
 } from '../lib/destinations-store.js';
 import {
-  listActiveCatalogPlacesByArea,
-  listPublishedUpcomingActivitiesByArea,
+  listActiveCatalogPlacesByDestination,
+  listPublishedUpcomingActivitiesByDestination,
 } from '../lib/activities-store.js';
 import { buildActivityDto, toLocationDto } from '../lib/mappers.js';
 import { listProHostStorefrontsForAreaPreview } from '../lib/area-pro-host-preview.js';
@@ -77,8 +77,8 @@ export const loadPublishedDestinationDetailBySlug = async (
   }
   const counts = await countPublishedDestinationPreviewByDestinationId(row.id);
   const [activityRows, placeRows, operators] = await Promise.all([
-    listPublishedUpcomingActivitiesByArea(row.id, DESTINATION_PREVIEW_ACTIVITY_LIMIT),
-    listActiveCatalogPlacesByArea(row.id, DESTINATION_PREVIEW_PLACE_LIMIT),
+    listPublishedUpcomingActivitiesByDestination(row.id, DESTINATION_PREVIEW_ACTIVITY_LIMIT),
+    listActiveCatalogPlacesByDestination(row.id, DESTINATION_PREVIEW_PLACE_LIMIT),
     listProHostStorefrontsForAreaPreview(row.id, DESTINATION_PREVIEW_OPERATOR_LIMIT),
   ]);
   return {

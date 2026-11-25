@@ -33,7 +33,7 @@ type SeekingActivityRow = {
   meetingLng?: number | null;
   displayLatitude?: number | null;
   displayLongitude?: number | null;
-  areaId?: string | null;
+  destinationId?: string | null;
 };
 
 const parseArgs = () => {
@@ -154,7 +154,7 @@ runCliScript(resolveCliScriptName(import.meta.url), async () => {
         kinds,
         visibility: existing?.visibility === 'hidden' ? 'public' : existing?.visibility ?? 'public',
         region: existing?.region ?? null,
-        destinationId: existing?.areaId ?? row.areaId ?? null,
+        destinationId: existing?.destinationId ?? row.destinationId ?? null,
         note: existing?.note ?? null,
         fixedSlots: [slot],
       });

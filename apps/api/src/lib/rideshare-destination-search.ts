@@ -18,7 +18,7 @@ type PlaceDoc = {
   countryCode?: string | null;
   latitude?: number | null;
   longitude?: number | null;
-  areaId?: string | null;
+  destinationId?: string | null;
   activityType?: string | null;
   status?: string;
   submittedById?: string | null;
@@ -152,7 +152,7 @@ const searchCatalogPlaces = async (regex: RegExp): Promise<RideshareDestinationS
         status: LocationStatus.ACTIVE,
         registryListed: { $ne: false },
         ...registryCoverImageMongoFilter(),
-        areaId: { $gt: '' },
+        destinationId: { $gt: '' },
         latitude: { $gte: -90, $lte: 90 },
         longitude: { $gte: -180, $lte: 180 },
         name: { $gt: '' },
@@ -322,7 +322,7 @@ const catalogPlaceRow = async (id: string): Promise<RideshareDestinationSearchRo
   const place = await placesCollection().findOne({
     _id: id,
     status: LocationStatus.ACTIVE,
-    areaId: { $gt: '' },
+    destinationId: { $gt: '' },
     latitude: { $gte: -90, $lte: 90 },
     longitude: { $gte: -180, $lte: 180 },
   });

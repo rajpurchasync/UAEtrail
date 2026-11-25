@@ -600,15 +600,15 @@ export const listPublishedPastActivitiesByMemberFromMongo = async (
   return assembleEventsWithPublicRelations(visible.slice(0, take));
 };
 
-/** Upcoming public map activities tagged with a curated area. */
-export const listPublishedUpcomingActivitiesByAreaFromMongo = async (
-  areaId: string,
+/** Upcoming public map activities tagged with a curated destination. */
+export const listPublishedUpcomingActivitiesByDestinationFromMongo = async (
+  destinationId: string,
   take: number
 ): Promise<ActivityWithPublicRelations[]> => {
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
   const locationIds = await locationsCollection()
-    .find({ destinationId: areaId, status: LocationStatus.ACTIVE })
+    .find({ destinationId, status: LocationStatus.ACTIVE })
     .project({ _id: 1 })
     .limit(500)
     .toArray();
@@ -622,7 +622,7 @@ export const listPublishedUpcomingActivitiesByAreaFromMongo = async (
       activityMode: { $ne: 'seeking' },
       $or: [
         { locationId: { $in: locationIdList } },
-        { destinationId: areaId },
+        { destinationId },
       ],
     })
     .sort({ startAt: 1 })
@@ -636,13 +636,13 @@ export const listPublishedUpcomingActivitiesByAreaFromMongo = async (
 };
 
 /** Active catalog places linked to a curated destination (`place.destinationId`). */
-export const listActiveCatalogPlacesByAreaFromMongo = async (
-  areaId: string,
+export const listActiveCatalogPlacesByDestinationFromMongo = async (
+  destinationId: string,
   take: number
 ): Promise<Location[]> => {
   const docs = await locationsCollection()
     .find({
-      destinationId: areaId,
+      destinationId,
       status: LocationStatus.ACTIVE,
       $or: [{ registryListed: { $exists: false } }, { registryListed: { $ne: false } }],
     })

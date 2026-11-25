@@ -40,8 +40,8 @@ import {
   listPublishedPastActivitiesByMemberFromMongo,
   listPublishedUpcomingActivitiesByDiscoverCommunityFromMongo,
   listPublishedPastActivitiesByDiscoverCommunityFromMongo,
-  listPublishedUpcomingActivitiesByAreaFromMongo,
-  listActiveCatalogPlacesByAreaFromMongo,
+  listPublishedUpcomingActivitiesByDestinationFromMongo,
+  listActiveCatalogPlacesByDestinationFromMongo,
   listTenantActivitiesFromMongo,
   type ActivityWithTenantRelations
 } from './activity-read-assembler.js';
@@ -614,8 +614,10 @@ export const listPublishedUpcomingActivitiesByMember = async (userId: string, ta
 export const listPublishedPastActivitiesByMember = async (userId: string, take = 8) =>
   listPublishedPastActivitiesByMemberFromMongo(userId, take);
 
-export const listPublishedUpcomingActivitiesByArea = async (areaId: string, take = 8) =>
-  listPublishedUpcomingActivitiesByAreaFromMongo(areaId, take);
+export const listPublishedUpcomingActivitiesByDestination = async (
+  destinationId: string,
+  take = 8
+) => listPublishedUpcomingActivitiesByDestinationFromMongo(destinationId, take);
 
 export const listPublishedUpcomingActivitiesByDiscoverCommunity = async (
   communityId: string,
@@ -627,8 +629,8 @@ export const listPublishedPastActivitiesByDiscoverCommunity = async (
   take = 12
 ) => listPublishedPastActivitiesByDiscoverCommunityFromMongo(communityId, take);
 
-export const listActiveCatalogPlacesByArea = async (areaId: string, take = 12) =>
-  listActiveCatalogPlacesByAreaFromMongo(areaId, take);
+export const listActiveCatalogPlacesByDestination = async (destinationId: string, take = 12) =>
+  listActiveCatalogPlacesByDestinationFromMongo(destinationId, take);
 
 export const findActivityTitlesByIds = async (activityIds: string[]): Promise<Map<string, string>> => {
   const unique = [...new Set(activityIds.filter(Boolean))];

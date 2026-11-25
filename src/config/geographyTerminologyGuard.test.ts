@@ -118,12 +118,12 @@ describe('geographyTerminologyGuard (Place · Facility · Destination)', () => {
     );
   });
 
-  it('GEO-08: destination hub SPA route + inbound rewrite (P7–P8)', () => {
+  it('GEO-08: destination hub SPA route — no nginx or inbound /area compat (P7–P8)', () => {
     expect(read('src/routing/AppRoutes.tsx')).toMatch(/\/destination\/:slug/);
     expect(read('nginx/snippets/inbound-bookmark-redirects.conf')).not.toMatch(
       /\/area\/\(\[\^\/\]\+\)/
     );
-    expect(read('packages/shared-types/src/entity-path.ts')).toMatch(/STALE_AREA_HUB_PATH_RE/);
+    expect(read('packages/shared-types/src/entity-path.ts')).not.toMatch(/STALE_AREA_HUB_PATH_RE/);
   });
 
   it('GEO-11: catalog query normalizers live in shared-types (Phase A)', () => {

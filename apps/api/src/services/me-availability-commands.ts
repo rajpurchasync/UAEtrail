@@ -21,7 +21,7 @@ export type UpsertMyMemberAvailabilityInput = {
   kinds?: AvailabilityKind[];
   visibility: AvailabilityVisibility;
   region?: string | null;
-  areaId?: string | null;
+  destinationId?: string | null;
   note?: string | null;
   slots: MemberAvailabilitySlotDTO[];
 };

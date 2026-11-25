@@ -22,10 +22,10 @@ describe('notification bookmark migration (shared canonicalize)', () => {
     expect(canonicalizeInboundProductPath('/contributions')).toBe('/profile/submissions');
   });
 
-  it('rewrites legacy area hub to destination', () => {
-    expect(canonicalizeInboundProductPath('/area/hatta')).toBe('/destination/hatta');
+  it('does not rewrite retired /area hub bookmarks', () => {
+    expect(canonicalizeInboundProductPath('/area/hatta')).toBe('/area/hatta');
     expect(canonicalizeInboundProductPath('/area/jebel-jais?tab=goings-on')).toBe(
-      '/destination/jebel-jais?tab=goings-on'
+      '/area/jebel-jais?tab=goings-on'
     );
   });
 
