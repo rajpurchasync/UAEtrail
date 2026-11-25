@@ -321,8 +321,8 @@ export const resolvePlaceCatalogStateFromDestination = (
     const catalog = normalizeGroupRegionLabel(raw);
     if (catalog) return catalog;
   }
-  const catalogAreas = areas.length > 0 ? areas : [area];
-  const options = buildPlaceCatalogStateOptions(countryCode, catalogAreas);
+  const catalogDestinations = areas.length > 0 ? areas : [area];
+  const options = buildPlaceCatalogStateOptions(countryCode, catalogDestinations);
   const hit = options.find((option) =>
     placeCatalogSubdivisionMatchesState(raw, option.value, countryCode)
   );
@@ -400,21 +400,21 @@ export const searchPlaceCatalogDestination = (
   const limitPerGroup = scope.limitPerGroup ?? 8;
   const scoped = scopePlaceCatalogDestination(places, areas, countryCode);
   let catalogPlaces = scoped.places;
-  let catalogAreas = scoped.areas;
+  let catalogDestinations = scoped.areas;
   if (scope.destinationId?.trim()) {
-    catalogAreas = catalogAreas.filter((row) => row.id === scope.destinationId);
-    const area = catalogAreas[0];
+    catalogDestinations = catalogDestinations.filter((row) => row.id === scope.destinationId);
+    const area = catalogDestinations[0];
     catalogPlaces = area
       ? filterPlaceCatalogRowsInDestination(catalogPlaces, area, scoped.areas)
       : [];
   } else if (scope.state?.trim()) {
-    catalogAreas = catalogAreas.filter(
+    catalogDestinations = catalogDestinations.filter(
       (row) => resolvePlaceCatalogStateFromDestination(row, countryCode, scoped.areas) === scope.state
     );
-    const areaIds = new Set(catalogAreas.map((row) => row.id));
+    const destinationIds = new Set(catalogDestinations.map((row) => row.id));
     catalogPlaces = catalogPlaces.filter((place) => {
       const area = resolvePlaceCatalogDestinationForRow(place, scoped.areas);
-      return Boolean(area && areaIds.has(area.id));
+      return Boolean(area && destinationIds.has(area.id));
     });
   }
   const parentHubIds = collectPlaceCatalogParentHubIds(catalogPlaces);
@@ -434,7 +434,7 @@ export const searchPlaceCatalogDestination = (
   }
 
   const seenPlaceGroups = new Set<string>();
-  for (const area of catalogAreas) {
+  for (const area of catalogDestinations) {
     const inArea = filterPlaceCatalogRowsInDestination(catalogPlaces, area, scoped.areas);
     const groups = buildPlaceCatalogPlaceGroupOptions(inArea);
     for (const group of groups) {
@@ -465,7 +465,7 @@ export const searchPlaceCatalogDestination = (
     }
   }
 
-  for (const area of catalogAreas) {
+  for (const area of catalogDestinations) {
     if (!searchMatches(area.name, q) && !searchMatches(area.region, q)) continue;
     const inArea = filterPlaceCatalogRowsInDestination(catalogPlaces, area, scoped.areas);
     const placeCount = buildPlaceCatalogPlaceGroupOptions(inArea).length;

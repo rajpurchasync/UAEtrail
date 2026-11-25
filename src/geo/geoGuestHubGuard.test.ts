@@ -18,8 +18,8 @@ describe('geo guest hub', () => {
   });
 
   it('links geo area nodes with "{name} guide" copy', () => {
-    expect(read('src/geo/GeoHubView.tsx')).toMatch(/areaGuideLinkLabel/);
-    expect(read('src/geo/areaGuideLinkLabel.ts')).toMatch(/guide/);
+    expect(read('src/geo/GeoHubView.tsx')).toMatch(/destinationGuideLinkLabel/);
+    expect(read('src/geo/destinationGuideLinkLabel.ts')).toMatch(/guide/);
     expect(read('src/geo/GeoHubView.tsx')).not.toMatch(/Open area hub/);
   });
 

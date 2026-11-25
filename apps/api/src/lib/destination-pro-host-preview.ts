@@ -1,10 +1,10 @@
-/** Pro guide/agency storefronts tied to an area via **hosted outings** — not map pins. */
+/** Pro guide/agency storefronts tied to a destination via **hosted outings** — not map pins. */
 import { resolveActivityPublisherProfilePath } from '@uaetrail/shared-types';
 import { TenantBusinessMode } from '../domain/enums.js';
 import { listPublishedUpcomingActivitiesByDestination } from './activities-store.js';
 import { findTenantsByIds } from './tenant-store.js';
 
-export type AreaProHostPreview = {
+export type DestinationProHostPreview = {
   id: string;
   name: string;
   slug: string;
@@ -14,10 +14,10 @@ export type AreaProHostPreview = {
 
 const ACTIVITY_SCAN = 40;
 
-export const listProHostStorefrontsForAreaPreview = async (
+export const listProHostStorefrontsForDestinationPreview = async (
   destinationId: string,
   limit = 8
-): Promise<AreaProHostPreview[]> => {
+): Promise<DestinationProHostPreview[]> => {
   const events = await listPublishedUpcomingActivitiesByDestination(destinationId, ACTIVITY_SCAN);
   const tenantIdsInOrder: string[] = [];
   const seen = new Set<string>();
@@ -30,7 +30,7 @@ export const listProHostStorefrontsForAreaPreview = async (
   }
 
   const tenantsById = await findTenantsByIds(tenantIdsInOrder);
-  const rows: AreaProHostPreview[] = [];
+  const rows: DestinationProHostPreview[] = [];
 
   for (const tenantId of tenantIdsInOrder) {
     const tenant = tenantsById.get(tenantId);

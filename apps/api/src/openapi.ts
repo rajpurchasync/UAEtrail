@@ -205,7 +205,7 @@ export const openApiSpec = swaggerJsdoc({
           tags: ['Engagement', 'Members'],
           summary: 'Add wishlist item',
           description:
-            'Body: exactly one of `locationId`, `areaId`, or `activityId`. Optional match-alert watch fields.',
+            'Body: exactly one of `locationId`, `destinationId`, or `activityId`. Optional match-alert watch fields.',
           security: [{ bearerAuth: [] }],
           responses: { 201: { description: 'Created or existing row.' } }
         }

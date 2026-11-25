@@ -44,7 +44,7 @@ export const SEED_CATALOG_LOCATION_AREA_KEYS: Record<string, CuratedDestinationS
   'rak-beach-camp': 'jebelJais',
 };
 
-export const seedLocationAreaId = (locationId: string): string | null => {
+export const seedLocationDestinationId = (locationId: string): string | null => {
   const key =
     SEED_CATALOG_LOCATION_AREA_KEYS[locationId] ?? resolveCatalogLocationDestinationKey(locationId);
   return key ? curatedDestinationSeedId(key) : null;
@@ -64,7 +64,7 @@ export const backfillSeedCatalogLocationDestinationIds = async (): Promise<void>
 
   for (const doc of docs) {
     const id = String(doc._id);
-    const explicit = seedLocationAreaId(id);
+    const explicit = seedLocationDestinationId(id);
     const lat = doc.latitude as number | null | undefined;
     const lng = doc.longitude as number | null | undefined;
     const fromPoint =

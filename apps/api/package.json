@@ -18,7 +18,7 @@
     "backfill-seeking-activities": "tsx scripts/backfill-seeking-activities.ts",
     "migrate-seeking-to-availability": "tsx scripts/migrate-seeking-to-availability.ts",
     "backfill-rideshare-vehicles": "tsx scripts/backfill-rideshare-vehicles.ts",
-    "backfill-location-area-ids": "tsx scripts/backfill-location-area-ids.ts",
+    "backfill-location-destination-ids": "tsx scripts/backfill-location-destination-ids.ts",
     "backfill-geo-hierarchy": "tsx scripts/backfill-geo-hierarchy.ts",
     "cleanup:orphan-locations": "tsx scripts/run-cleanup-orphan-locations.ts",
     "ensure-demo-explore-activities": "tsx scripts/run-ensure-demo-explore-activities.ts",

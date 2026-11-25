@@ -7,7 +7,7 @@ import { generateReferralCode } from '../src/lib/referral-code.js';
 import bcrypt from 'bcryptjs';
 import { UserRole, UserStatus } from '../src/domain/enums.js';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
-import { buildTestParticipantIntentInput, ensurecuratedDestinationsSeeded, testAreas } from './helpers/test-seed.js';
+import { buildTestParticipantIntentInput, ensurecuratedDestinationsSeeded, testDestinations } from './helpers/test-seed.js';
 import { getMongoClient } from '../src/lib/mongo.js';
 import { COLLECTIONS } from '../src/lib/collections.js';
 import { participantIntentKindToOutingCategory } from '@uaetrail/shared-types';
@@ -61,7 +61,7 @@ describe('backfillSeekingActivitiesForActiveIntents', () => {
         partySize: input.partySize,
         comment: input.comment.trim(),
         status: 'active',
-        areaId: testAreas.hatta.id,
+        areaId: testDestinations.hatta.id,
         createdAt: now,
         updatedAt: now,
       });

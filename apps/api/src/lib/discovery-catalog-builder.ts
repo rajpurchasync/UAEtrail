@@ -367,7 +367,7 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
 
     const dto = toLocationDto(location);
     if (!dto.images?.[0]?.trim()) continue;
-    const catalogAreaLabel = location.placeHubLabel ?? dto.placeHubLabel ?? null;
+    const catalogPlaceHubLabel = location.placeHubLabel ?? dto.placeHubLabel ?? null;
     if (dto.activityType === 'shop') {
       const latitude = dto.latitude ?? null;
       const longitude = dto.longitude ?? null;
@@ -400,7 +400,7 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
           { destinationId: dto.destinationId },
           destinationSlugById,
           destinationNameById,
-          catalogAreaLabel
+          catalogPlaceHubLabel
         )
       );
       continue;
@@ -460,7 +460,7 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
           { destinationId: dto.destinationId },
           destinationSlugById,
           destinationNameById,
-          catalogAreaLabel
+          catalogPlaceHubLabel
         )
       );
       continue;
@@ -473,7 +473,7 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
       dto.name,
       location.tags,
       dto.region,
-      catalogAreaLabel
+      catalogPlaceHubLabel
     );
 
     items.push(
@@ -518,7 +518,7 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
         { destinationId: dto.destinationId },
         destinationSlugById,
         destinationNameById,
-        catalogAreaLabel
+        catalogPlaceHubLabel
       )
     );
   }
@@ -531,7 +531,7 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
     if (!isWithinUaeFocusArea(latitude, longitude)) continue;
 
     const placeKind = facility.facilityKind;
-    const catalogAreaLabel = facility.placeHubLabel?.trim() || null;
+    const catalogPlaceHubLabel = facility.placeHubLabel?.trim() || null;
     items.push(
       attachExploreItemPlaceHub(
         {
@@ -563,7 +563,7 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
         { destinationId: facility.destinationId },
         destinationSlugById,
         destinationNameById,
-        catalogAreaLabel
+        catalogPlaceHubLabel
       )
     );
   }

@@ -114,7 +114,7 @@ There is **no** `Trip` table, `TripDTO`, or trips API. Everything on the map tha
 | **Facility** | Admin + member **Add** | **`destinationId`** + optional **`onSiteId`** (parent place row for on-trail amenities) |
 | **Activity** | Host | **`activity.locationId` → place site**; destination derived from place — **no `activity.destinationId` on write** |
 
-**Consumer wire:** **`GET /api/destinations`**, hub **`/destination/:slug`**, explore **`?destination=`**, **`resolveDestinationId`** (reads **`destinationId` only**). Stale bookmarks **`/area/*` → `/destination/*`** via `canonicalizeInboundProductPath`. **Geo tree** (`geoRef`, `/geo/n/:id`) = country → state → **area (city)** → venue; **Destination** is the separate curated outdoor hub catalog.
+**Consumer wire:** **`GET /api/destinations`**, hub **`/destination/:slug`**, explore **`?destination=`**, **`resolveDestinationId`** (reads **`destinationId` only**). Retired **`/area/*`** hub bookmarks are not rewritten — **`/destination/:slug`** is canonical. **Geo tree** (`geoRef`, `/geo/n/:id`) = country → state → **area (city)** → venue; **Destination** is the separate curated outdoor hub catalog.
 
 **Explore map lenses:** Activities · Spots (place) · Facilities · **Shops**; **Destination** is filter + hub only. Detail: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §12.1.
 

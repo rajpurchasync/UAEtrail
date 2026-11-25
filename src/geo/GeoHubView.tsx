@@ -30,7 +30,7 @@ import {
 } from '../explore/mapPeekDetailNavState';
 import { parseMobileBackNavState } from '../utils/mobileBackNav';
 import { resolveGeoConsumerDetailHeaderChrome } from './resolveGeoConsumerDetailHeaderChrome';
-import { areaGuideLinkLabel } from './areaGuideLinkLabel';
+import { destinationGuideLinkLabel } from './destinationGuideLinkLabel';
 
 const TAB_ICONS = {
   overview: LayoutGrid,
@@ -86,7 +86,7 @@ export const GeoHubView = ({
   const member = Boolean(user);
   const location = useLocation();
   const authReturnPath = `${location.pathname}${location.search}`;
-  const areaGuideLabel = destinationSlug ? areaGuideLinkLabel(title) : null;
+  const destinationGuideLabel = destinationSlug ? destinationGuideLinkLabel(title) : null;
   const resolvedBackTo = pinDeclaredBack
     ? backTo
     : (readDetailBackToFromLocation(location.state) ?? backTo);
@@ -248,7 +248,7 @@ export const GeoHubView = ({
                     authReturnPath={destinationHubPath(destinationSlug)}
                     className="inline-flex min-h-8 items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-900"
                   >
-                    {areaGuideLabel}
+                    {destinationGuideLabel}
                   </GeoGuestDrillLink>
                 ) : null}
                 <GeoChildCards

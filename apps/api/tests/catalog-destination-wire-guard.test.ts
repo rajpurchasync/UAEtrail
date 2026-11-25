@@ -37,6 +37,12 @@ describe('catalog destination wire guard', () => {
     expect(read('packages/shared-types/src/catalog-query-normalize.ts')).not.toMatch(/areaId/);
   });
 
+  it('explore catalog builder does not use retired catalogAreaLabel symbol', () => {
+    const builder = read('apps/api/src/lib/discovery-catalog-builder.ts');
+    expect(builder).not.toMatch(/\bcatalogAreaLabel\b/);
+    expect(builder).toMatch(/\bcatalogPlaceHubLabel\b/);
+  });
+
   it('API tests do not pass areaId into createLocationRecord / createFacilityRecord', () => {
     const violations: string[] = [];
     const pattern =

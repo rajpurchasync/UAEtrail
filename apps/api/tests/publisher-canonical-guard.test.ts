@@ -42,7 +42,7 @@ describe('publisher canonical guard (COH-07)', () => {
     expect(entityPath).not.toMatch(/GUIDE_PROFILE_PATH_PREFIX/);
     expect(entityPath).not.toMatch(/export const guideProfilePath/);
     expect(entityPath).not.toMatch(/LEGACY_OPERATOR_PATH_RE/);
-    const preview = read('apps/api/src/lib/area-pro-host-preview.ts');
+    const preview = read('apps/api/src/lib/destination-pro-host-preview.ts');
     expect(preview).not.toMatch(/\/guide\//);
     const share = read('src/utils/profileShare.ts');
     expect(share).not.toMatch(/guideProfilePath/);

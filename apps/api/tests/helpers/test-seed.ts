@@ -1,6 +1,6 @@
 /**
- * Integration test seed — single entry for curated areas, catalog locations, and submit bodies.
- * Prefer `testAreas.*` / `buildTestLocationSubmitBody` over literal `area-seed-*` strings.
+ * Integration test seed — single entry for curated destinations, catalog locations, and submit bodies.
+ * Prefer `testDestinations.*` / `buildTestLocationSubmitBody` over literal `area-seed-*` strings.
  */
 import {
   CURATED_DESTINATION_CATALOG,
@@ -17,7 +17,7 @@ import { seedCuratedDestinations } from '../../src/lib/seed-destinations.js';
 
 let curatedDestinationsSeeded = false;
 
-/** Idempotent — upserts full curated area catalog for integration tests. */
+/** Idempotent — upserts full curated destination catalog for integration tests. */
 export const ensurecuratedDestinationsSeeded = async (): Promise<void> => {
   if (curatedDestinationsSeeded) return;
   await seedCuratedDestinations();
@@ -26,17 +26,17 @@ export const ensurecuratedDestinationsSeeded = async (): Promise<void> => {
 
 export { CURATED_DESTINATION_SEED_IDS, CURATED_DESTINATION_SEED_SLUGS, curatedDestinationSeedId };
 
-/** Published test areas — ids match `ensurecuratedDestinationsSeeded()`. */
-export const testAreas = Object.fromEntries(
+/** Published test destinations — ids match `ensurecuratedDestinationsSeeded()`. */
+export const testDestinations = Object.fromEntries(
   CURATED_DESTINATION_CATALOG.map((row) => [
     row.key,
     { id: row.id, slug: row.slug, name: row.name },
   ])
 ) as Record<CuratedDestinationSeedKey, { id: string; slug: string; name: string }>;
 
-export const defaultTestAreaId = (): string => testAreas.hatta.id;
+export const defaultTestDestinationId = (): string => testDestinations.hatta.id;
 
-export const testAreaSummary = (key: CuratedDestinationSeedKey): string =>
+export const testDestinationSummary = (key: CuratedDestinationSeedKey): string =>
   CURATED_DESTINATION_CATALOG_BY_KEY[key].summary;
 
 /** Minimal valid `locationSubmitBodySchema` body for unit tests (no DB). */
@@ -51,6 +51,7 @@ type LegacyParticipantIntentSeedInput = {
   latitude: number | null;
   longitude: number | null;
   locationPrecision: 'general' | 'specific' | null;
+  /** Legacy Mongo field on retired `participant_intents` rows (maps to availability `destinationId`). */
   areaId: string | null;
   toLatitude?: number | null;
   toLongitude?: number | null;
@@ -59,21 +60,21 @@ type LegacyParticipantIntentSeedInput = {
 /** Legacy `participant_intents` Mongo row shape for ops backfill tests. */
 export const buildTestParticipantIntentInput = (
   overrides: Partial<LegacyParticipantIntentSeedInput> = {},
-  areaKey: CuratedDestinationSeedKey = 'hatta'
+  destinationKey: CuratedDestinationSeedKey = 'hatta'
 ): LegacyParticipantIntentSeedInput => {
-  const area = testAreas[areaKey];
+  const destination = testDestinations[destinationKey];
   return {
     kind: 'hiking',
-    title: `Find crew ${area.slug} test`,
+    title: `Find crew ${destination.slug} test`,
     date: '2026-12-20',
     time: '07:00',
-    preferredArea: area.name,
+    preferredArea: destination.name,
     partySize: 2,
     comment: 'Integration test seeking post with enough characters.',
     latitude: 24.86,
     longitude: 56.13,
     locationPrecision: 'specific',
-    areaId: area.id,
+    areaId: destination.id,
     ...overrides,
   };
 };
@@ -84,7 +85,7 @@ export const buildTestLocationSubmitBody = (
   name: 'Test trail',
   countryCode: 'AE',
   region: 'Dubai',
-  destinationId: defaultTestAreaId(),
+  destinationId: defaultTestDestinationId(),
   activityType: 'hiking',
   description: 'Integration test trail with enough characters for schema validation.',
   images: ['/media/test.jpg', '/media/test-2.jpg'],
@@ -98,7 +99,7 @@ export const buildTestLocationSubmitBody = (
 
 type TestLocationInput = Parameters<typeof createLocationRecord>[0];
 
-/** Catalog-style location row with `destinationId` wired to seeded areas. */
+/** Catalog-style location row with `destinationId` wired to seeded destinations. */
 export const createTestLocation = async (
   input: TestLocationInput & { name: string }
 ): Promise<Awaited<ReturnType<typeof createLocationRecord>>> => {
@@ -116,7 +117,7 @@ export const createTestLocation = async (
     tags: [],
     accessibleBy: [],
     status: LocationStatus.ACTIVE,
-    destinationId: input.destinationId ?? defaultTestAreaId(),
+    destinationId: input.destinationId ?? defaultTestDestinationId(),
     ...input,
   });
 };

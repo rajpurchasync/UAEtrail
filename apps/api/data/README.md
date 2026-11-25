@@ -17,7 +17,7 @@ Update `uae-outdoor-venue-catalog.json`:
 
 Optional rich fields (same as contribute / place detail): `difficulty`, `distance`, `duration`, `elevation`, `accessibility`, `childFriendly`, `maxGroupSize`, `campingType`, `surfaceType`, `accessibleBy`, `season`, `images`, `placeHubLabel`, `parkingLat` / `parkingLng`.
 
-When those are omitted, **import** fills type-aware defaults (hike stats, camp surfaces, hero image, parking at the pin, curated `areaId` from id prefix rules).
+When those are omitted, **import** fills type-aware defaults (hike stats, camp surfaces, hero image, parking at the pin, curated `destinationId` from id prefix rules).
 
 ## Apply to the database
 
@@ -25,7 +25,7 @@ When those are omitted, **import** fills type-aware defaults (hike stats, camp s
 npm --workspace @uaetrail/api run import-venue-catalog
 ```
 
-This upserts all catalog rows, **fills missing** images/facts/area links on old rows, re-runs curated **areaId** backfill, preserves existing GPX/guides on known seed ids, and **deactivates legacy OSM imports**. Use `--keep-osm` to skip OSM deactivation, or `--dry-run` to print only.
+This upserts all catalog rows, **fills missing** images/facts/area links on old rows, re-runs curated **destinationId** backfill, preserves existing GPX/guides on known seed ids, and **deactivates legacy OSM imports**. Use `--keep-osm` to skip OSM deactivation, or `--dry-run` to print only.
 
 Re-run after deploy when peek cards or place detail look sparse:
 

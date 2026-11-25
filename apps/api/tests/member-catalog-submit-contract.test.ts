@@ -3,7 +3,7 @@ import request from 'supertest';
 import type { Express } from 'express';
 import { bootstrapTestApp, configureTestEnv } from './helpers/bootstrap.js';
 import { registerVerifiedVisitor } from './helpers/fixtures.js';
-import { defaultTestAreaId, ensurecuratedDestinationsSeeded } from './helpers/test-seed.js';
+import { defaultTestDestinationId, ensurecuratedDestinationsSeeded } from './helpers/test-seed.js';
 import { getMongoClient } from '../src/lib/mongo.js';
 
 let app: Express;
@@ -19,7 +19,7 @@ const placeSubmitBody = (suffix: string) => ({
   countryCode: 'AE',
   emirate: 'Dubai',
   region: 'Dubai',
-  destinationId: defaultTestAreaId(),
+  destinationId: defaultTestDestinationId(),
   activityType: 'hiking',
   description: 'Member-submitted hiking place for catalog submit contract coverage.',
   latitude: 25.1,
@@ -74,7 +74,7 @@ describe('member catalog submit (CPC-4)', () => {
         countryCode: 'AE',
         emirate: 'Dubai',
         region: 'Dubai',
-        destinationId: defaultTestAreaId(),
+        destinationId: defaultTestDestinationId(),
         activityType: 'event',
         facilityKind: 'toilet',
         description: 'Member-submitted toilet facility for CPC-4 contract coverage.',

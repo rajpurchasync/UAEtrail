@@ -138,7 +138,7 @@ export const seedDemoCommunityDiscover = async (input: SeedDemoCommunityDiscover
       bannerUrl: null,
       visibility: 'public',
       joinPolicy: spec.joinPolicy,
-      geoRef: demoGeoRef(spec.emirate, spec.areaId),
+      geoRef: demoGeoRef(spec.emirate, spec.destinationId),
       adminUserId: input.hostId,
       status: 'active',
       memberCount: spec.memberCount,

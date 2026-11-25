@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Accessibility, ActivityType } from '../src/domain/enums.js';
 import { locationSubmitBodySchema } from '../src/domain/location-submit.js';
 import { buildLocationCreateData } from '../src/services/location-submit.js';
-import { buildTestLocationSubmitBody, testAreas } from './helpers/test-seed.js';
+import { buildTestLocationSubmitBody, testDestinations } from './helpers/test-seed.js';
 
 describe('buildLocationCreateData', () => {
   it('persists placeHubLabel and syncs area tag for outdoor venues', () => {
@@ -10,7 +10,7 @@ describe('buildLocationCreateData', () => {
       buildTestLocationSubmitBody({
         name: 'Wadi Shawka Loop',
         region: 'RAK',
-        destinationId: testAreas.hatta.id,
+        destinationId: testDestinations.hatta.id,
         placeHubLabel: 'Wadi Shawka Dam',
         difficulty: 'moderate',
         accessibleBy: ['car'],
@@ -19,7 +19,7 @@ describe('buildLocationCreateData', () => {
       'user-1'
     );
 
-    expect(data.destinationId).toBe(testAreas.hatta.id);
+    expect(data.destinationId).toBe(testDestinations.hatta.id);
     expect(data.placeHubLabel).toBe('Wadi Shawka Dam');
     expect(data.childFriendly).toBe(true);
     expect(data.tags).toContain('area:Wadi Shawka Dam');
@@ -49,7 +49,7 @@ describe('buildLocationCreateData', () => {
         region: 'Dubai',
         activityType: 'event',
         facilityKind: 'toilet',
-        destinationId: testAreas.hatta.id,
+        destinationId: testDestinations.hatta.id,
       }),
       'user-facility'
     );

@@ -70,7 +70,7 @@ const KIND_OPTIONS = [
   { value: 'event' as const, label: 'Event venue' },
 ];
 
-/** Catalog review queue: map suggestions + draft places/areas pending approval. */
+/** Catalog review queue: map suggestions + draft places/destinations pending approval. */
 export const Submissions = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedId = searchParams.get('id');

@@ -29,7 +29,7 @@ export const viewerMaySeeInFindCrew = (input: {
 
 /**
  * Whether the subject's home / start area may be shown or used for area matching
- * (city label, availability region/areaId).
+ * (city label, availability region/destinationId).
  */
 export const viewerMaySeeMemberLocation = (input: {
   cityAudience: 'hidden' | 'friends' | 'friends_of_friends' | 'public';

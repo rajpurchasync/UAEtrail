@@ -13,7 +13,7 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`M
 | Prefix | Auth | Purpose |
 |--------|------|---------|
 | **`/activities`** | Public read; tenant write via `/publishing` | Published **hosted** outings (join, RSVP, detail) |
-| **`/explore/map`** | Public | Guest discovery catalog (`source`: activity · place · facility · shop · agency). Home map sends `sources` (default `place,activity`) and `includeRideshare=1` only for the rideshare topic. Omit `sources` for the full catalog (`/list`). Area is a filter (`areaId`), not a pin. Signed-in peek is **`GET /me/discover/overlay`**. |
+| **`/explore/map`** | Public | Guest discovery catalog (`source`: activity · place · facility · shop · agency). Home map sends `sources` (default `place,activity`) and `includeRideshare=1` only for the rideshare topic. Omit `sources` for the full catalog (`/list`). Destination is a filter (`?destination=`), not a pin. Signed-in peek is **`GET /me/discover/overlay`**. |
 | **`/agent/manifest.json`**, **`/agent/discover`** | Public (rate-limited) | **AI / agent** entry manifest and text search over published outings + registry places |
 | **`/me/*`** | Signed-in member | Own profile, intents, groups, inbox, activity participation |
 | **`/publishing/*`** | Verified + **tenant** (`x-organisation-id`) | **Publishing workspace** (any tier): publish, roster, **activity** join queue. |
@@ -390,7 +390,7 @@ SPA: `/admin/hosts` → `pages/admin/Organisations` (see [`NAVIGATION.md`](./NAV
 | GET | `/me/places` | My submitted places | **(today)** |
 | GET | `/facilities` | Listed amenities (paginated) | **(today)** |
 | GET | `/facilities/:id` | Public facility detail + `viewerAccess` | **(today)** — map `source: facility` |
-| GET | `/facilities/catalog` | Map / admin filters (`areaId`, `parentPlaceId`, `facilityKind`) | **(today)** |
+| GET | `/facilities/catalog` | Map / admin filters (`destinationId`, `onSiteId`, `facilityKind`) | **(today)** |
 | POST | `/me/facilities` | Member facility submit → `facilities` only | **(today)** |
 | GET/PATCH/DELETE | `/admin/facilities` | Platform admin facility CRUD → `facilities` only | **(today)** |
 | GET | `/destinations` | Public curated **Destinations** (MIG-DESTINATION-GEO) | **(today)** — same data as `/areas`; not a map pin |

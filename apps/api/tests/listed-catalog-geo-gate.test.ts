@@ -7,7 +7,7 @@ import {
   assertActiveListedPlaceHasCatalogGeo,
 } from '../src/lib/listed-catalog-geo-gate.js';
 import type { Facility } from '../src/domain/facility.js';
-import { testAreas } from './helpers/test-seed.js';
+import { testDestinations } from './helpers/test-seed.js';
 
 const baseLocation = (): Location =>
   ({
@@ -15,7 +15,7 @@ const baseLocation = (): Location =>
     name: 'Trail',
     region: 'Dubai',
     placeHubLabel: null,
-    destinationId: testAreas.hatta.id,
+    destinationId: testDestinations.hatta.id,
     activityType: 'hiking',
     description: '',
     difficulty: null,
@@ -91,7 +91,7 @@ const baseFacility = (): Facility =>
     name: 'Toilet',
     region: 'Dubai',
     placeHubLabel: null,
-    destinationId: testAreas.hatta.id,
+    destinationId: testDestinations.hatta.id,
     facilityKind: 'toilet',
     description: '',
     latitude: 25.0,

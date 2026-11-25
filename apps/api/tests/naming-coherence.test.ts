@@ -49,8 +49,8 @@ describe('naming coherence (API)', () => {
     expect(content).not.toMatch(/findLocationInMongo\(id\)/);
   });
 
-  it('area pro host preview batches tenant lookups', () => {
-    const content = readFileSync(join(API_SRC, 'lib', 'area-pro-host-preview.ts'), 'utf8');
+  it('destination pro host preview batches tenant lookups', () => {
+    const content = readFileSync(join(API_SRC, 'lib', 'destination-pro-host-preview.ts'), 'utf8');
     expect(content).toMatch(/findTenantsByIds/);
     expect(content).not.toMatch(/await findTenantById\(/);
   });

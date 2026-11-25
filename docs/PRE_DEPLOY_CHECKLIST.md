@@ -19,7 +19,7 @@ Complete these **on the VPS** when you connect. Use this list to track progress.
 - [ ] First-time dev/staging only (if needed): `SEED_DATA=true docker compose exec -T api npm --workspace @uaetrail/api run seed`
 - [ ] `curl https://uaetrail.com/health` returns OK
 - [ ] After deploy, API startup runs Mongo migrations (`schema_meta.migrations`); expect version **2025112507** (MIG-DESTINATION-GEO: Mongo `destinations` collection, `destinationId` wire, unset legacy catalog fields) when upgrading; watch for `[mongo] MIG-DESTINATION-GEO` logs (`DEPLOYMENT.md` § Updating)
-- [ ] MIG-DESTINATION-GEO: clients use **`GET /api/destinations`**, hub **`/destination/:slug`**, explore **`?destination=`** only; stale `/area/*` bookmarks normalize in-app (`canonicalizeInboundProductPath`)
+- [ ] MIG-DESTINATION-GEO: clients use **`GET /api/destinations`**, hub **`/destination/:slug`**, explore **`?destination=`** only; no client or nginx `/area/*` hub paths — `/destination/:slug` only
 
 ## HTTPS
 

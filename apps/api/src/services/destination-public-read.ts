@@ -17,7 +17,7 @@ import {
   listPublishedUpcomingActivitiesByDestination,
 } from '../lib/activities-store.js';
 import { buildActivityDto, toLocationDto } from '../lib/mappers.js';
-import { listProHostStorefrontsForAreaPreview } from '../lib/area-pro-host-preview.js';
+import { listProHostStorefrontsForDestinationPreview } from '../lib/destination-pro-host-preview.js';
 
 const DESTINATION_PREVIEW_ACTIVITY_LIMIT = 8;
 const DESTINATION_PREVIEW_PLACE_LIMIT = 40;
@@ -63,7 +63,7 @@ export type PublishedDestinationDetailPayload = {
   preview: {
     activities: ActivityDTO[];
     places: LocationDTO[];
-    operators: Awaited<ReturnType<typeof listProHostStorefrontsForAreaPreview>>;
+    operators: Awaited<ReturnType<typeof listProHostStorefrontsForDestinationPreview>>;
   };
 };
 
@@ -79,7 +79,7 @@ export const loadPublishedDestinationDetailBySlug = async (
   const [activityRows, placeRows, operators] = await Promise.all([
     listPublishedUpcomingActivitiesByDestination(row.id, DESTINATION_PREVIEW_ACTIVITY_LIMIT),
     listActiveCatalogPlacesByDestination(row.id, DESTINATION_PREVIEW_PLACE_LIMIT),
-    listProHostStorefrontsForAreaPreview(row.id, DESTINATION_PREVIEW_OPERATOR_LIMIT),
+    listProHostStorefrontsForDestinationPreview(row.id, DESTINATION_PREVIEW_OPERATOR_LIMIT),
   ]);
   return {
     destination: toDestinationPublicDto(row),

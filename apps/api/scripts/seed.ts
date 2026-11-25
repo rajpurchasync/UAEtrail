@@ -60,7 +60,7 @@ import { curatedDestinationSeedId, type AvailabilityKind } from '@uaetrail/share
 import { deactivateOrphanActiveLocations } from './cleanup-orphan-activity-anchor-locations.js';
 import {
   backfillSeedCatalogLocationDestinationIds,
-  seedLocationAreaId,
+  seedLocationDestinationId,
 } from './seed-location-area-map.js';
 import {
   createGroupWallMessage,
@@ -549,7 +549,7 @@ const upsertTenant = async (input: {
 };
 
 const upsertLocation = async (id: string, data: LocationCreateInput) => {
-  const destinationId = data.destinationId ?? seedLocationAreaId(id) ?? undefined;
+  const destinationId = data.destinationId ?? seedLocationDestinationId(id) ?? undefined;
   let location = buildLocationFromCreateInput(
     { ...data, destinationId, status: LocationStatus.ACTIVE },
     id

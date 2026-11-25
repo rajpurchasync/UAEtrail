@@ -4,7 +4,7 @@ import {
   accumulateDestinationHubStats,
   destinationHubStatsSummaryForDestination,
 } from '../src/lib/explore-map-destination-lens.js';
-import { testAreas } from './helpers/test-seed.js';
+import { testDestinations } from './helpers/test-seed.js';
 
 describe('destination hub stats rollup', () => {
   it('rolls up hosted and venue counts per destination', () => {
@@ -18,7 +18,7 @@ describe('destination hub stats rollup', () => {
         latitude: 1,
         longitude: 2,
         path: '/activity/1',
-        destinationId: testAreas.hatta.id,
+        destinationId: testDestinations.hatta.id,
       },
       {
         id: 'venue:1',
@@ -28,15 +28,15 @@ describe('destination hub stats rollup', () => {
         latitude: 1,
         longitude: 2,
         path: '/place/1',
-        destinationId: testAreas.hatta.id,
+        destinationId: testDestinations.hatta.id,
       },
     ];
 
-    const stats = accumulateDestinationHubStats(catalog).get(testAreas.hatta.id);
+    const stats = accumulateDestinationHubStats(catalog).get(testDestinations.hatta.id);
     expect(stats?.hostedActivities).toBe(1);
     expect(stats?.trailSpots).toBe(1);
 
-    const summary = destinationHubStatsSummaryForDestination(testAreas.hatta.id, catalog);
+    const summary = destinationHubStatsSummaryForDestination(testDestinations.hatta.id, catalog);
     expect(summary.summary).toContain('outing');
   });
 
@@ -50,7 +50,7 @@ describe('destination hub stats rollup', () => {
         latitude: 1,
         longitude: 2,
         path: '/profile/u1',
-        destinationId: testAreas.hatta.id,
+        destinationId: testDestinations.hatta.id,
       },
       {
         id: 'activity:seek',
@@ -61,13 +61,13 @@ describe('destination hub stats rollup', () => {
         latitude: 1,
         longitude: 2,
         path: '/activity/seek',
-        destinationId: testAreas.hatta.id,
+        destinationId: testDestinations.hatta.id,
       },
     ];
-    const stats = accumulateDestinationHubStats(catalog).get(testAreas.hatta.id);
+    const stats = accumulateDestinationHubStats(catalog).get(testDestinations.hatta.id);
     expect(stats?.availabilityPins).toBe(1);
     expect(stats?.hostedActivities).toBe(0);
-    expect(destinationHubStatsSummaryForDestination(testAreas.hatta.id, catalog).summary).toContain(
+    expect(destinationHubStatsSummaryForDestination(testDestinations.hatta.id, catalog).summary).toContain(
       'available'
     );
   });
@@ -82,10 +82,10 @@ describe('destination hub stats rollup', () => {
         latitude: 1,
         longitude: 2,
         path: '/facility/1',
-        destinationId: testAreas.hatta.id,
+        destinationId: testDestinations.hatta.id,
         placeKind: 'toilet',
       },
     ];
-    expect(accumulateDestinationHubStats(catalog).get(testAreas.hatta.id)?.facilities).toBe(1);
+    expect(accumulateDestinationHubStats(catalog).get(testDestinations.hatta.id)?.facilities).toBe(1);
   });
 });

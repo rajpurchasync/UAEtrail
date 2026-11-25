@@ -27,7 +27,7 @@ import {
   registerVerifiedVisitor,
   type PublishedEventFixture,
 } from './helpers/fixtures.js';
-import { defaultTestAreaId, ensurecuratedDestinationsSeeded } from './helpers/test-seed.js';
+import { defaultTestDestinationId, ensurecuratedDestinationsSeeded } from './helpers/test-seed.js';
 import { createFacilityRecord } from '../src/lib/facilities-store.js';
 
 let app: Express;
@@ -264,7 +264,7 @@ describe('detail surface lineage (member profile write → public read)', () => 
     const location = await request(app)
       .post('/api/admin/places')
       .set(adminAuth())
-      .send(placeCreateBody(defaultTestAreaId(), `Baseline Trail ${suffix}`));
+      .send(placeCreateBody(defaultTestDestinationId(), `Baseline Trail ${suffix}`));
 
     expect(location.status).toBe(201);
     const id = location.body.data.id as string;

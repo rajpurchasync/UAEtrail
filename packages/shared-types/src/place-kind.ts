@@ -142,7 +142,7 @@ const ADDABLE_FACILITY_KIND_SET = new Set<PlaceKind>(ADDABLE_FACILITY_PLACE_KIND
 export const isAddableFacilityPlaceKind = (kind: PlaceKind): boolean =>
   ADDABLE_FACILITY_KIND_SET.has(kind);
 
-/** Linked facility POI beside a trail/camp detail page (same `areaId` catalogue). */
+/** Linked facility POI beside a trail/camp detail page (same `destinationId` catalogue). */
 export interface PlaceNearbyFacilityDTO {
   id: string;
   name: string;

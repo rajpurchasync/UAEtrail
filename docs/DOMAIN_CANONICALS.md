@@ -541,7 +541,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 
 ### 12.1 Geography — Destination hub, Place (site) catalog, Activity (authoritative)
 
-**Program MIG-DESTINATION-GEO-2026** ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.5): **AdminGeo** (`geoRef`, auto) → **Destination** (curated `destinationId`, `GET /api/destinations`) → **Place (site)** / **Facility** (`onSiteId` on facility) → **Activity** via `locationId`. Wire **`destinationId`** / **`resolveDestinationId`**; stale bookmark `/area/*` → `/destination/*` via `canonicalizeInboundProductPath` only.
+**Program MIG-DESTINATION-GEO-2026** ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.5): **AdminGeo** (`geoRef`, auto) → **Destination** (curated `destinationId`, `GET /api/destinations`) → **Place (site)** / **Facility** (`onSiteId` on facility) → **Activity** via `locationId`. Wire **`destinationId`** / **`resolveDestinationId`**; hub URL **`/destination/:slug` only** — retired `/area/*` paths are not rewritten.
 
 **Two ladders:** (1) **AdminGeo** — country / state / **area (city)** / optional venue (`geoRef`, auto from coordinates). (2) **Product catalog** — **Destination** (admin-curated hub name — **not a map pin**) → **Place (site)** / **Facility** (map pins with coords) → **Activity** (geography only through `locationId` → place). Spatial discovery uses both: filters by `destinationId`; breadcrumbs and search use AdminGeo names.
 

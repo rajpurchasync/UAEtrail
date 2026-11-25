@@ -20,7 +20,7 @@ import {
 import { newEntityId } from '../../src/lib/entity-builders.js';
 import { createActivityDetailed, createLocationRecord } from '../../src/lib/activities-store.js';
 import { getMongoClient } from '../../src/lib/mongo.js';
-import { defaultTestAreaId, ensurecuratedDestinationsSeeded } from './test-seed.js';
+import { defaultTestDestinationId, ensurecuratedDestinationsSeeded } from './test-seed.js';
 import { generateReferralCode } from '../../src/lib/referral-code.js';
 import { createTenantRecord } from '../../src/lib/tenant-store.js';
 import { upsertTenantMembership } from '../../src/lib/tenant-access.js';
@@ -73,7 +73,7 @@ export const createPublishedEventFixture = async (suffix: string): Promise<Publi
   const location = await createLocationRecord({
     name: `Test Trail ${suffix}`,
     region: 'Dubai',
-    destinationId: defaultTestAreaId(),
+    destinationId: defaultTestDestinationId(),
     activityType: ActivityType.HIKING,
     description: 'Integration test location',
     difficulty: Difficulty.EASY,
