@@ -5,7 +5,7 @@ import type {
   CrewPeopleFacet,
   CrewProfessionalKind,
 } from '@/crew-discovery/crewBrowseState';
-import type { ExploreActivityDatePreset } from '@/explore/exploreActivityDateFilter';
+import type { ExploreActivityDatePreset } from '@/discovery/discoverySessionExploreActivityDate';
 import type { BrowseListFilterState } from '@/list/browse/browseListFilters';
 import { crewsHubHomePath } from '@/discovery/discoverySession';
 import { LIST_APP_BAR, LIST_CHROME } from '@/list/browse/listChromeTheme';

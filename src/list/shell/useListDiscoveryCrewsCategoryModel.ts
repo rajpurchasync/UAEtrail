@@ -7,11 +7,13 @@
  */
 
 import type { DiscoverCrewRecommendationsQueryParams } from '@/crew-discovery/lib/crewRecommendationsQuery';
-import { serializeExploreActivityDatePreset } from '@/explore/exploreActivityDateFilter';
+import {
+  serializeExploreActivityDatePreset,
+  type ExploreActivityDatePreset,
+} from '@/discovery/discoverySessionExploreActivityDate';
 import { useCallback, useMemo } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import type { ExploreActivityDatePreset } from '../../explore/discoveryRuntime';
 import {
   crewBrowseNeedsAvailability,
   crewBrowseNeedsRoster,

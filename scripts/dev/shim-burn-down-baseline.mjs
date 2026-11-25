@@ -325,6 +325,15 @@ for (const file of walkFiles(join(feSrc, 'explore'))) {
   }
 }
 
+const listImportsExploreActivityDate = [];
+for (const file of walkFiles(join(feSrc, 'list'))) {
+  if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
+  const rel = file.slice(root.length + 1).replace(/\\/g, '/');
+  if (/explore\/exploreActivityDateFilter/.test(readFileSync(file, 'utf8'))) {
+    listImportsExploreActivityDate.push(rel);
+  }
+}
+
 const listImportsExploreSearch = [];
 for (const file of walkFiles(join(feSrc, 'list'))) {
   if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
@@ -470,6 +479,8 @@ const baseline = {
       exploreListPresentationViolations: exploreImportsListPresentation,
       listImportsExploreSearch: listImportsExploreSearch.length,
       listExploreSearchImportViolations: listImportsExploreSearch,
+      listImportsExploreActivityDate: listImportsExploreActivityDate.length,
+      listExploreActivityDateImportViolations: listImportsExploreActivityDate,
     },
     w6: {
       pagesUsingUseSafeAsyncEffect: useSafeAsyncEffectPages.length,
@@ -568,6 +579,9 @@ const baseline = {
       : []),
     ...(listImportsExploreSearch.length > 0
       ? ['W10: list imports explore search via discoverySessionExploreSearch']
+      : []),
+    ...(listImportsExploreActivityDate.length > 0
+      ? ['W11: list imports explore activity date via discoverySessionExploreActivityDate']
       : []),
     ...(exploreImportsBrowseListUrlState.length > 0
       ? ['W4: import discovery params from src/discovery/discoverySessionParams.ts not list/']

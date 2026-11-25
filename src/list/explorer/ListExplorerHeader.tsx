@@ -22,7 +22,7 @@ import type { PlaceKind } from '@uaetrail/shared-types';
 import type { ExplorePriceFilter } from '../../explore/exploreOptionalFilters';
 import type { BrowseTripTopicKey } from '../browse/browseListTripTopics';
 import type { ListVenuePlaceTopicKey } from '../browse/listVenuePlaceTopics';
-import type { ExploreActivityDatePreset } from '../../explore/exploreActivityDateFilter';
+import type { ExploreActivityDatePreset } from '../../discovery/discoverySessionExploreActivityDate';
 import { ListExplorerQuickFilters } from './ListExplorerQuickFilters';
 import { ListExplorerFilterFab } from './ListExplorerFilterFab';
 import { ListExplorerGeoScopeChip } from './ListExplorerGeoScopeChip';

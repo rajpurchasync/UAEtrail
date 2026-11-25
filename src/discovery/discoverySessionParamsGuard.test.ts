@@ -279,6 +279,15 @@ describe('discoverySessionParamsGuard', () => {
     expect(read('src/discovery/discoverySession.ts')).toMatch(/discoverySessionListQuickFilters/);
   });
 
+  it('W11 list module imports activity date preset via discoverySessionExploreActivityDate', () => {
+    const violations: string[] = [];
+    for (const rel of collectProdTsUnder(join(ROOT, 'src/list'))) {
+      if (/explore\/exploreActivityDateFilter/.test(read(rel))) violations.push(rel);
+    }
+    expect(violations).toEqual([]);
+    expect(read('src/discovery/discoverySessionExploreActivityDate.ts')).toMatch(/serializeExploreActivityDatePreset/);
+  });
+
   it('W10 list module imports explore search via discoverySessionExploreSearch facade', () => {
     const exploreSearchImport = /explore\/search\//;
     const violations: string[] = [];

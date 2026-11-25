@@ -78,7 +78,9 @@
       "exploreImportsListPresentation": 0,
       "exploreListPresentationViolations": [],
       "listImportsExploreSearch": 0,
-      "listExploreSearchImportViolations": []
+      "listExploreSearchImportViolations": [],
+      "listImportsExploreActivityDate": 0,
+      "listExploreActivityDateImportViolations": []
     },
     "w6": {
       "pagesUsingUseSafeAsyncEffect": 0,
