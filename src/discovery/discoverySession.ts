@@ -26,3 +26,8 @@ export {
   tripsListHomePath,
   venuesListHomePath,
 } from './discoverySessionListRouting';
+export {
+  PEOPLE_FACET_URL_PARAM,
+  PEOPLE_LIST_TAB_URL_PARAM,
+  serializePeopleListBrowseState,
+} from './discoverySessionPeopleUrl';

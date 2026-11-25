@@ -32,7 +32,7 @@
       "discoverySession": 1,
       "config": 3,
       "content": 3,
-      "list": 16,
+      "list": 17,
       "activity": 2,
       "utils": 1
     },
@@ -71,7 +71,7 @@
     "DiscoveryBrowseThumbnailPoster": 1,
     "discoverySession": 1,
     "content": 7,
-    "list": 19,
+    "list": 20,
     "activity": 2,
     "utils": 1,
     "lib": 6,

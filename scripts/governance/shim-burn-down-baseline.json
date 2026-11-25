@@ -39,6 +39,8 @@
       "exploreSearchMapHandoffViolations": [],
       "exploreImportsBrowseListRouting": 0,
       "exploreBrowseListRoutingViolations": [],
+      "exploreImportsPeopleListBrowseUrl": 0,
+      "explorePeopleListBrowseUrlViolations": [],
       "configGeoImportsBrowseListRouting": 0,
       "configGeoBrowseListRoutingViolations": [],
       "consumerImportsBrowseListRoutingOutsideList": 0,

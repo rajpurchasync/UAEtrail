@@ -54,6 +54,7 @@ describe('discoverySessionParamsGuard', () => {
     expect(barrel).toMatch(/discoverySessionGeoUrl/);
     expect(barrel).toMatch(/discoverySessionMapHandoff/);
     expect(barrel).toMatch(/discoverySessionListRouting/);
+    expect(barrel).toMatch(/discoverySessionPeopleUrl/);
     expect(barrel).not.toMatch(/list\/browse\/browseListUrlState/);
   });
 
@@ -157,6 +158,16 @@ describe('discoverySessionParamsGuard', () => {
       if (splitFacade.test(read(rel))) violations.push(rel);
     }
     expect(violations).toEqual([]);
+  });
+
+  it('W4o explore tree imports people list URL via discoverySession barrel', () => {
+    const violations: string[] = [];
+    for (const rel of collectProdTsUnder(join(ROOT, 'src/explore'))) {
+      if (/list\/browse\/peopleListBrowseUrl/.test(read(rel))) violations.push(rel);
+    }
+    expect(violations).toEqual([]);
+    expect(read('src/explore/exploreBrowseUrlSync.ts')).toMatch(/serializePeopleListBrowseState/);
+    expect(read('src/explore/exploreBrowseUrlSync.ts')).toMatch(/discovery\/discoverySession'/);
   });
 
   it('W4m explore tree uses discoverySession barrel (no split facade imports)', () => {

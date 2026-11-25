@@ -213,6 +213,15 @@ for (const file of walkFiles(join(feSrc, 'explore'))) {
   }
 }
 
+const exploreImportsPeopleListBrowseUrl = [];
+for (const file of walkFiles(join(feSrc, 'explore'))) {
+  if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
+  const rel = file.slice(root.length + 1).replace(/\\/g, '/');
+  if (/list\/browse\/peopleListBrowseUrl/.test(readFileSync(file, 'utf8'))) {
+    exploreImportsPeopleListBrowseUrl.push(rel);
+  }
+}
+
 const exploreSearchMapHandoffViolations = [];
 for (const file of walkFiles(join(feSrc, 'explore/search'))) {
   if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
@@ -271,6 +280,8 @@ const baseline = {
       exploreSearchMapHandoffViolations,
       exploreImportsBrowseListRouting: exploreImportsBrowseListRouting.length,
       exploreBrowseListRoutingViolations: exploreImportsBrowseListRouting,
+      exploreImportsPeopleListBrowseUrl: exploreImportsPeopleListBrowseUrl.length,
+      explorePeopleListBrowseUrlViolations: exploreImportsPeopleListBrowseUrl,
       configGeoImportsBrowseListRouting: w4jBrowseListRoutingViolations.length,
       configGeoBrowseListRoutingViolations: w4jBrowseListRoutingViolations,
       consumerImportsBrowseListRoutingOutsideList: consumerBrowseListRoutingViolations.length,
@@ -338,6 +349,9 @@ const baseline = {
       : []),
     ...(listBrowseSplitFacadeViolations.length > 0
       ? ['W4n: list/browse uses discoverySession barrel (browseListUrlState impl exempt)']
+      : []),
+    ...(exploreImportsPeopleListBrowseUrl.length > 0
+      ? ['W4o: explore imports people list URL via discoverySessionPeopleUrl barrel']
       : []),
     ...(exploreImportsBrowseListUrlState.length > 0
       ? ['W4: import discovery params from src/discovery/discoverySessionParams.ts not list/']

@@ -29,8 +29,11 @@ import {
   BROWSE_DISCOVER_PARAM,
   BROWSE_GEO_PARAM,
   LIST_CAT_PARAM,
+  PEOPLE_FACET_URL_PARAM,
+  PEOPLE_LIST_TAB_URL_PARAM,
   parseListCatParam,
   serializeBrowseGeoPath,
+  serializePeopleListBrowseState,
 } from '../discovery/discoverySession';
 import {
   serializeExplorePinKindFilter,
@@ -42,11 +45,6 @@ import {
   type CrewPeopleFacet,
   type CrewProfessionalKind,
 } from '@/crew-discovery/crewBrowseState';
-import {
-  PEOPLE_FACET_URL_PARAM,
-  PEOPLE_LIST_TAB_URL_PARAM,
-  serializePeopleListBrowseState,
-} from '../list/browse/peopleListBrowseUrl';
 import {
   EXPLORE_ACTIVITY_MODE_FILTER_PARAM,
   serializeExploreActivityModeFilter,
