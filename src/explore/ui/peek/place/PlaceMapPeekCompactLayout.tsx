@@ -1,5 +1,5 @@
 import type { DiscoveryCardModel } from '../../../../discovery/discoveryCardModel';
-import type { ViewerFix } from '../../../../list/browse/placeDistance';
+import type { ViewerFix } from '../../../../discovery/discoverySession';
 import { resolvePlaceMapPeekViewModel } from '../../../../place/resolvePlaceMapPeekViewModel';
 import { PlaceMapPeekHeader } from './PlaceMapPeekHeader';
 import { PlaceMapPeekAmenityChips } from './PlaceMapPeekAmenityChips';

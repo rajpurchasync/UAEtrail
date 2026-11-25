@@ -5,7 +5,7 @@ import type { DiscoveryCardModel } from '../../../../discovery/discoveryCardMode
 import { EnvironmentImage } from '../../../../components/ui/EnvironmentImage';
 import { ShareButton } from '../../../../components/ui/ShareButton';
 import { ExploreWishlistSaveButton } from '../../ExploreWishlistSaveButton';
-import { browseCatalogEntityName } from '../../../../list/browse/browseCatalogLabels';
+import { browseCatalogEntityName } from '../../../../discovery/discoverySession';
 import {
   resolvePlacePeekCuratedDestination,
   resolvePlacePeekLocalLabel,

@@ -1,6 +1,6 @@
 import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 import { EXPLORE_TYPE } from '../../../config/exploreTheme';
-import { browseCardTitle } from '../../../list/browse/browseCardMeta';
+import { browseCardTitle } from '../../../discovery/discoverySession';
 import type { ExplorePeekDetailAccess } from '../../../access/resolvePeekDetailAccess';
 import type { MapPeekDetailNavState } from '../../mapPeekDetailNavState';
 import { PeekDetailLink } from './PeekDetailLink';

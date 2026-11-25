@@ -5,7 +5,7 @@ import { MapVenuePeekCard } from '../map-peek/MapVenuePeekCard';
 import { FacilityPeekActions } from '../peek/facility/FacilityPeekActions';
 import { PlacePeekActions } from '../peek/place/PlacePeekActions';
 
-import type { ViewerFix } from '../../../list/browse/placeDistance';
+import type { ViewerFix } from '../../../discovery/discoverySession';
 
 export type PlacePeekCardProps = {
   card: DiscoveryCardModel;

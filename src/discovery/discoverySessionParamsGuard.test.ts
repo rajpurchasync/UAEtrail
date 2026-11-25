@@ -98,6 +98,26 @@ describe('discoverySessionParamsGuard', () => {
     expect(read('src/discovery/discoverySession.ts')).toMatch(/discoverySessionListChrome/);
   });
 
+  it('W7b explore peek imports list/browse chrome via discoverySession barrel', () => {
+    const listPeekImport =
+      /list\/browse\/(?:browseCatalogLabels|browseCardMeta|browsePosterCover|placeDistance|venueBrowseFacts|listFeedFooterActions|tripBrowseCardCopy)/;
+    const discoveryPeekImport =
+      /discovery\/browse\/(?:resolveDiscoveryBrowseListImageChrome|discoveryBrowseListChrome|DiscoveryBrowseCardMetaSlot)/;
+    const peekRoots = [
+      join(ROOT, 'src/explore/ui/peek'),
+      join(ROOT, 'src/explore/ui/map-peek'),
+    ];
+    const violations: string[] = [];
+    for (const root of peekRoots) {
+      for (const rel of collectProdTsUnder(root)) {
+        const content = read(rel);
+        if (listPeekImport.test(content) || discoveryPeekImport.test(content)) violations.push(rel);
+      }
+    }
+    expect(violations).toEqual([]);
+    expect(read('src/discovery/discoverySession.ts')).toMatch(/discoverySessionListPeek/);
+  });
+
   it('W4r explore imports geo + FAB copy via discoverySession barrel', () => {
     const geoCopy = /list\/browse\/(?:browseGeoPath|browseListCopy)/;
     const violations: string[] = [];

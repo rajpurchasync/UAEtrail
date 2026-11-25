@@ -24,7 +24,10 @@ import type { JoinRequestUiState } from '../../../../utils/joinRequestUi';
 import { useLocation } from 'react-router-dom';
 import { PeekDetailLink } from '../../map-peek/PeekDetailLink';
 import { mapPeekDetailNavState } from '../../../mapPeekDetailNavState';
-import { resolveListFeedFooterModel, type ListFeedFooterButton } from '../../../../list/browse/listFeedFooterActions';
+import {
+  resolveListFeedFooterModel,
+  type ListFeedFooterButton,
+} from '../../../../discovery/discoverySession';
 import { PeekDualActionFooter } from '../shared/PeekDualActionFooter';
 
 export type ActivityPeekStandardFooterProps = {

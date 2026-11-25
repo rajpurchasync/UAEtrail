@@ -287,6 +287,22 @@ for (const file of walkFiles(join(feSrc, 'explore'))) {
   }
 }
 
+const listPeekListBrowsePattern =
+  /list\/browse\/(?:browseCatalogLabels|browseCardMeta|browsePosterCover|placeDistance|venueBrowseFacts|listFeedFooterActions|tripBrowseCardCopy)/;
+const listPeekDiscoveryBrowsePattern =
+  /discovery\/browse\/(?:resolveDiscoveryBrowseListImageChrome|discoveryBrowseListChrome|DiscoveryBrowseCardMetaSlot)/;
+const exploreImportsListPeek = [];
+for (const sub of ['explore/ui/peek', 'explore/ui/map-peek']) {
+  for (const file of walkFiles(join(feSrc, sub))) {
+    if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
+    const rel = file.slice(root.length + 1).replace(/\\/g, '/');
+    const text = readFileSync(file, 'utf8');
+    if (listPeekListBrowsePattern.test(text) || listPeekDiscoveryBrowsePattern.test(text)) {
+      exploreImportsListPeek.push(rel);
+    }
+  }
+}
+
 const exploreImportsBrowseGeoOrCopy = [];
 for (const file of walkFiles(join(feSrc, 'explore'))) {
   if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
@@ -415,6 +431,8 @@ const baseline = {
       exploreListChromeThemeViolations: exploreImportsListChromeTheme,
       exploreImportsBrowseListFeed: exploreImportsBrowseListFeed.length,
       exploreBrowseListFeedViolations: exploreImportsBrowseListFeed,
+      exploreImportsListPeek: exploreImportsListPeek.length,
+      exploreListPeekViolations: exploreImportsListPeek,
     },
     w6: {
       pagesUsingUseSafeAsyncEffect: useSafeAsyncEffectPages.length,
@@ -501,6 +519,9 @@ const baseline = {
       : []),
     ...(exploreImportsBrowseListFeed.length > 0
       ? ['W7a: explore imports list feed rows via discoverySessionListFeed (map peek exempt)']
+      : []),
+    ...(exploreImportsListPeek.length > 0
+      ? ['W7b: explore map peek imports list chrome via discoverySessionListPeek']
       : []),
     ...(exploreImportsBrowseListUrlState.length > 0
       ? ['W4: import discovery params from src/discovery/discoverySessionParams.ts not list/']

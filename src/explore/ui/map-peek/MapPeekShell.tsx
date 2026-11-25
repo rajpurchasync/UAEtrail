@@ -24,8 +24,7 @@ import {
 } from '../DiscoveryCardPresentation';
 import { ActivityDiscoveryPublishedBody } from '../../../discovery/ActivityDiscoveryPublishedBody';
 import { DiscoveryBrowsePosterBanner } from '../../../discovery/DiscoveryBrowsePosterBanner';
-import { DiscoveryBrowseCardMetaSlot } from '../../../discovery/browse/DiscoveryBrowseCardMetaSlot';
-import { resolveTripBrowseCardCopy } from '../../../list/browse/tripBrowseCardCopy';
+import { DiscoveryBrowseCardMetaSlot, resolveTripBrowseCardCopy } from '../../../discovery/discoverySession';
 import { MapPeekBrowseTitle } from './MapPeekBrowseTitle';
 import { PlacePeekBody } from '../peek/place/PlacePeekBody';
 import { PlacePeekHero } from '../peek/place/PlacePeekHero';

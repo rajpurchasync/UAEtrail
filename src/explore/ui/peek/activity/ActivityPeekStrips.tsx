@@ -13,7 +13,7 @@ import {
   DiscoveryCardPeopleRow,
 } from '../../DiscoveryCardPresentation';
 import type { JoinRequestUiState } from '../../../../utils/joinRequestUi';
-import { resolveActivityLinkedPlaceLogisticsLabels } from '../../../../list/browse/venueBrowseFacts';
+import { resolveActivityLinkedPlaceLogisticsLabels } from '../../../../discovery/discoverySession';
 
 const stripShell = (compact: boolean) =>
   compact

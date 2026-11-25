@@ -1,11 +1,12 @@
 import type { DiscoveryCardModel } from '../../../../discovery/discoveryCardModel';
 import { EnvironmentImage } from '../../../../components/ui/EnvironmentImage';
-import { resolveBrowsePosterCoverUrl, browsePosterFallbackClass } from '../../../../list/browse/browsePosterCover';
-import { resolveDiscoveryBrowseListTypeLabel } from '../../../../discovery/browse/resolveDiscoveryBrowseListImageChrome';
 import {
   BROWSE_LIST_HERO_TYPE,
   BROWSE_LIST_HERO_TYPE_WRAP,
-} from '../../../../discovery/browse/discoveryBrowseListChrome';
+  browsePosterFallbackClass,
+  resolveBrowsePosterCoverUrl,
+  resolveDiscoveryBrowseListTypeLabel,
+} from '../../../../discovery/discoverySession';
 
 export type MapPeekThumbColumnProps = {
   card: DiscoveryCardModel;

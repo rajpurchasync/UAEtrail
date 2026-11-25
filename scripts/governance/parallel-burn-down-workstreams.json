@@ -87,7 +87,33 @@
         "src/discovery/discoverySessionParamsGuard.test.ts"
       ],
       "avoid": ["**/listPeek*", "**/browsePeek*", "src/list/browse/*Peek*", "src/explore/ui/peek/**", "src/explore/ui/map-peek/**"]
+    },
+    {
+      "id": "W7b",
+      "status": "done",
+      "title": "discoverySession list peek facade (explore map peek)",
+      "branch": "burn-down/w7b-list-peek",
+      "owns": [
+        "src/discovery/discoverySessionListPeek.ts",
+        "src/discovery/discoverySession.ts",
+        "src/explore/ui/peek/**",
+        "src/explore/ui/map-peek/**",
+        "scripts/dev/shim-burn-down-baseline.mjs",
+        "src/discovery/discoverySessionParamsGuard.test.ts"
+      ],
+      "avoid": ["src/explore/search/**", "ExploreMapRecommendationRow.tsx"]
+    },
+    {
+      "id": "W7c",
+      "status": "done",
+      "title": "routing catalog AVAIL-LINE-17 (retire exploreSeekingMapItemPath barrel)",
+      "branch": "burn-down/w7c-routing-catalog",
+      "owns": [
+        "src/config/routingCatalog.ts",
+        "src/config/memberAvailabilityLineageGuard.test.ts"
+      ],
+      "avoid": ["src/discovery/**"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7a"]
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b"]
 }
