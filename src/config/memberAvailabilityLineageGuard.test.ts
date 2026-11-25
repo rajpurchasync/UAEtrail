@@ -141,6 +141,11 @@ describe('memberAvailabilityLineageGuard (MIG-DISCO-REG)', () => {
     expect(routing).not.toMatch(/exploreSeekingMapItemPath\(/);
   });
 
+  it('AVAIL-LINE-17: routing catalog does not re-export retired seeking map path helper', () => {
+    const catalog = read('src/config/routingCatalog.ts');
+    expect(catalog).not.toMatch(/exploreSeekingMapItemPath/);
+  });
+
   it('AVAIL-LINE-13: host prefill uses availability naming (no createDraftFromSeekingMapItem export)', () => {
     const engine = read('src/explore/ui/hostingFlowEngine.ts');
     expect(engine).toMatch(/createDraftFromAvailabilityMapItem/);
