@@ -47,7 +47,9 @@
       "exploreBrowseSpineUsesDiscoverySessionBarrel": true,
       "exploreBrowseSpineBarrelViolations": [],
       "exploreSplitDiscoveryFacadeImports": 0,
-      "exploreSplitFacadeViolations": []
+      "exploreSplitFacadeViolations": [],
+      "listBrowseSplitDiscoveryFacadeImports": 0,
+      "listBrowseSplitFacadeViolations": []
     },
     "w6": {
       "pagesUsingUseSafeAsyncEffect": 0,

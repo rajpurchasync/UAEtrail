@@ -147,6 +147,18 @@ describe('discoverySessionParamsGuard', () => {
     expect(results).not.toMatch(/discoverySessionListUrl/);
   });
 
+  it('W4n list/browse uses discoverySession barrel (except browseListUrlState impl)', () => {
+    const splitFacade =
+      /from ['"][^'"]*discovery\/discoverySession(?:Params|Parsers|ListUrl|GeoUrl|MapHandoff|ListRouting)['"]/;
+    const violations: string[] = [];
+    const allow = new Set(['src/list/browse/browseListUrlState.ts']);
+    for (const rel of collectProdTsUnder(join(ROOT, 'src/list/browse'))) {
+      if (allow.has(rel)) continue;
+      if (splitFacade.test(read(rel))) violations.push(rel);
+    }
+    expect(violations).toEqual([]);
+  });
+
   it('W4m explore tree uses discoverySession barrel (no split facade imports)', () => {
     const splitFacade =
       /from ['"][^'"]*discovery\/discoverySession(?:Params|Parsers|ListUrl|GeoUrl|MapHandoff|ListRouting)['"]/;

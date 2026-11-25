@@ -141,6 +141,17 @@ const browseListUrlStateReexportsSpineKeys = /export \{[^}]*LIST_CAT_PARAM/.test
 
 const exploreSplitFacadeImportRe =
   /from ['"][^'"]*discovery\/discoverySession(?:Params|Parsers|ListUrl|GeoUrl|MapHandoff|ListRouting)['"]/;
+const listBrowseSplitFacadeAllow = new Set(['src/list/browse/browseListUrlState.ts']);
+const listBrowseSplitFacadeViolations = [];
+for (const file of walkFiles(join(feSrc, 'list/browse'))) {
+  if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
+  const rel = file.slice(root.length + 1).replace(/\\/g, '/');
+  if (listBrowseSplitFacadeAllow.has(rel)) continue;
+  if (exploreSplitFacadeImportRe.test(readFileSync(file, 'utf8'))) {
+    listBrowseSplitFacadeViolations.push(rel);
+  }
+}
+
 const exploreSplitFacadeViolations = [];
 for (const file of walkFiles(join(feSrc, 'explore'))) {
   if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
@@ -269,6 +280,8 @@ const baseline = {
       exploreBrowseSpineBarrelViolations,
       exploreSplitDiscoveryFacadeImports: exploreSplitFacadeViolations.length,
       exploreSplitFacadeViolations,
+      listBrowseSplitDiscoveryFacadeImports: listBrowseSplitFacadeViolations.length,
+      listBrowseSplitFacadeViolations,
     },
     w6: {
       pagesUsingUseSafeAsyncEffect: useSafeAsyncEffectPages.length,
@@ -322,6 +335,9 @@ const baseline = {
       : []),
     ...(exploreSplitFacadeViolations.length > 0
       ? ['W4m: explore imports discoverySession barrel only']
+      : []),
+    ...(listBrowseSplitFacadeViolations.length > 0
+      ? ['W4n: list/browse uses discoverySession barrel (browseListUrlState impl exempt)']
       : []),
     ...(exploreImportsBrowseListUrlState.length > 0
       ? ['W4: import discovery params from src/discovery/discoverySessionParams.ts not list/']

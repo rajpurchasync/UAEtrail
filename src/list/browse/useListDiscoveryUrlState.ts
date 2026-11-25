@@ -15,14 +15,15 @@ import {
 import type { BrowseTripTopicKey } from './browseListTripTopics';
 import type { BrowseListFilterState } from './browseListFilters';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
-import { BROWSE_DISCOVER_PARAM, LIST_CAT_PARAM } from '../../discovery/discoverySessionParams';
-import { parseListCatParam } from '../../discovery/discoverySessionParsers';
 import {
+  BROWSE_DISCOVER_PARAM,
+  LIST_CAT_PARAM,
   parseBrowseListFilterState,
   parseBrowseListGeoPath,
   parseBrowseListVenueRegions,
+  parseListCatParam,
   serializeBrowseListSearchParams,
-} from '../../discovery/discoverySessionListUrl';
+} from '../../discovery/discoverySession';
 import { BROWSE_GEO_PARAM } from './browseGeoPath';
 
 import { PEOPLE_LIST_TAB_URL_PARAM } from './peopleListBrowseUrl';

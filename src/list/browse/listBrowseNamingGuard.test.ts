@@ -167,8 +167,7 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/browseListUrlState.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/browseListFilters.ts'))).toBe(false);
     expect(existsSync(join(process.cwd(), 'src/list/browseListUrlState.ts'))).toBe(false);
-    expect(read('src/list/browse/useListDiscoveryUrlState.ts')).toMatch(/discovery\/discoverySessionListUrl/);
-    expect(read('src/list/browse/useListDiscoveryUrlState.ts')).toMatch(/discovery\/discoverySessionParams/);
+    expect(read('src/list/browse/useListDiscoveryUrlState.ts')).toMatch(/discovery\/discoverySession'/);
     expect(read('src/explore/exploreBrowseUrlHydrate.ts')).toMatch(/discovery\/discoverySession'/);
   });
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseListCatParam } from '../../discovery/discoverySessionParsers';
+import { parseListCatParam } from '../../discovery/discoverySession';
 import {
   parseBrowseListFilterState,
   parseBrowseListGeoPath,
