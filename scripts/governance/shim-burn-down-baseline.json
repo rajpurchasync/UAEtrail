@@ -10,7 +10,9 @@
       "participantIntentsRefsInApiSrc": 15,
       "participantIntentOpsAllowlistOnly": true,
       "participantIntentOpsViolations": [],
-      "seekingActivityModeRefsInApiSrc": 23,
+      "seekingActivityModeRefsInApiSrc": 3,
+      "seekingActivityModeLiteralRefsInApiSrc": 0,
+      "seekingActivityModeLiteralViolations": [],
       "deployGateStatus": "ops — run npm run seeking:deploy-gate per environment",
       "opsScripts": [
         "seeking:deploy-gate",
@@ -66,7 +68,7 @@
     }
   },
   "governance": {
-    "guardTestFileCount": 159
+    "guardTestFileCount": 160
   },
   "nextActions": []
 }

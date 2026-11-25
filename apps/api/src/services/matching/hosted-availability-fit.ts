@@ -8,6 +8,7 @@ import {
   memberAvailabilityCalendarDays,
   prunePastAvailabilitySlots,
 } from '@uaetrail/shared-types';
+import { isRetiredSeekingActivityMode } from '../../domain/retired-seeking-activity-mode.js';
 
 export const activityCalendarDay = (startAt: Date): string =>
   new Date(startAt).toISOString().slice(0, 10);
@@ -38,7 +39,7 @@ export const hostedEventFitsMemberAvailability = (
 ): boolean => {
   if (availability.visibility === 'hidden') return false;
   if (availability.kinds.length === 0) return false;
-  if (event.activityMode === 'seeking') return false;
+  if (isRetiredSeekingActivityMode(event.activityMode)) return false;
   if (!event.startAt) return false;
   if (!daySet.has(activityCalendarDay(event.startAt))) return false;
   return availabilityKindMatchesActivityType(availability.kinds, event.activityType);

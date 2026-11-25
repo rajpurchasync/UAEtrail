@@ -2,6 +2,7 @@ import type { Collection } from 'mongodb';
 import type { Location } from '../domain/types.js';
 import { resolveJoinMode } from '../domain/activity-join-mode.js';
 import { resolveParticipationMode } from '../domain/activity-participation-mode.js';
+import { isRetiredSeekingActivityMode } from '../domain/retired-seeking-activity-mode.js';
 import { ActivityStatus, ActivityType, LocationStatus } from '../domain/enums.js';
 import {
   buildActivityFromCreateInput,
@@ -113,7 +114,7 @@ export const listTenantActivitiesDetailed = async (input: {
 };
 
 export const createActivityDetailed = async (data: ActivityCreateInput): Promise<ActivityWithTenantRelations> => {
-  if ((data.activityMode as string | undefined) === 'seeking') {
+  if (isRetiredSeekingActivityMode(data.activityMode)) {
     throw new Error('activity_mode_seeking_retired');
   }
   const activityId = newEntityId();
@@ -140,7 +141,7 @@ export const updateActivityDetailed = async (
   activityId: string,
   data: ActivityUpdateInput
 ): Promise<ActivityWithTenantRelations> => {
-  if ((data.activityMode as string | undefined) === 'seeking') {
+  if (isRetiredSeekingActivityMode(data.activityMode)) {
     throw new Error('activity_mode_seeking_retired');
   }
   const patch: Partial<MongoActivityDoc> = { updatedAt: new Date() };
@@ -471,7 +472,7 @@ export const publishActivityById = async (activityId: string) => {
     locationName: location?.name ?? null,
     tenantName: tenant?.name ?? null,
   });
-  if (mongoDoc.activityMode !== 'seeking') {
+  if (!isRetiredSeekingActivityMode(mongoDoc.activityMode)) {
     const { notifyWishlistForPublishedActivity } = await import('../services/matching/index.js');
     scheduleSideEffect(
       notifyWishlistForPublishedActivity(activityId),
@@ -486,7 +487,7 @@ export const publishActivityById = async (activityId: string) => {
       activityType: mongoDoc.activityType,
     });
   }
-  if (destinationId && mongoDoc.activityMode !== 'seeking') {
+  if (destinationId && !isRetiredSeekingActivityMode(mongoDoc.activityMode)) {
     const { notifyAvailabilityHoldersInAreaOfHostedActivity } = await import('../services/matching/index.js');
     void notifyAvailabilityHoldersInAreaOfHostedActivity({
       activityId,

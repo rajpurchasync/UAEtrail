@@ -21,7 +21,7 @@ describe('discovery-catalog-builder (MIG-DISCO-REG)', () => {
 
   it('skips legacy seeking activities and appends fixed availability', () => {
     const builder = read('src/lib/discovery-catalog-builder.ts');
-    expect(builder).toMatch(/activityMode === 'seeking'\) continue/);
+    expect(builder).toMatch(/isRetiredSeekingActivityMode\(event\.activityMode\)\) continue/);
     expect(builder).toMatch(/buildAvailabilityFixedMapItems/);
     expect(builder).not.toMatch(/participantIntentId/);
   });

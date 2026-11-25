@@ -18,7 +18,7 @@ beforeAll(async () => {
 describe('GET /api/explore/map seeking projection retired (MIG-DISCO-REG)', () => {
   it('catalog builder skips legacy activityMode seeking rows', () => {
     const base = read('apps/api/src/lib/discovery-catalog-builder.ts');
-    expect(base).toMatch(/event\.activityMode === 'seeking'\) continue/);
+    expect(base).toMatch(/isRetiredSeekingActivityMode\(event\.activityMode\)\) continue/);
   });
 
   it('default map payload has no seeking activityMode or demand pins', async () => {

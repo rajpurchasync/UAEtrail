@@ -15,6 +15,7 @@ import {
   type Accessibility
 } from '../domain/enums.js';
 import { catalogDestinationIdUpdate } from '@uaetrail/shared-types';
+import { isRetiredSeekingActivityMode } from '../domain/retired-seeking-activity-mode.js';
 
 const asStringArray = (value: unknown): string[] => (Array.isArray(value) ? value : []);
 
@@ -308,7 +309,7 @@ export type MongoActivityDoc = {
   destinationId?: string | null;
   geoRef?: import('@uaetrail/shared-types').GeoRef | null;
   groupRegionLevels?: import('@uaetrail/shared-types').GroupRegionLevels | null;
-  activityMode?: 'hosted' | 'seeking' | null;
+  activityMode?: 'hosted' | import('../domain/retired-seeking-activity-mode.js').RetiredSeekingActivityMode | null;
   participantIntentId?: string | null;
   /** Discoverable community club that published this outing (`MIG-COMMUNITY-DISCOVER`). */
   discoverCommunityId?: string | null;
@@ -408,7 +409,7 @@ export const buildDetailRevampSnapshotFromLegacy = (input: {
 };
 
 export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: string): MongoActivityDoc => {
-  if ((data.activityMode as string | undefined) === 'seeking') {
+  if (isRetiredSeekingActivityMode(data.activityMode)) {
     throw new Error('activity_mode_seeking_retired');
   }
   const now = new Date();

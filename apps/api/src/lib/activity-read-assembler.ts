@@ -7,6 +7,14 @@ import type { Collection } from 'mongodb';
 import type { Activity, ActivityParticipant, Location } from '../domain/types.js';
 import { resolveJoinMode, shouldHideActivityFromExploreMap } from '../domain/activity-join-mode.js';
 import { ActivityStatus, ActivityType, LocationStatus } from '../domain/enums.js';
+import {
+  isRetiredSeekingActivityMode,
+  mongoExcludeRetiredSeekingActivityMode,
+  mongoOnlyRetiredSeekingActivityMode,
+  mongoPastPublishedExcludeRetiredSeeking,
+  mongoUpcomingPublishedOrRetiredSeeking,
+  publicActivityModeFromStored,
+} from '../domain/retired-seeking-activity-mode.js';
 import { findAuthUsersByIds, type AuthUserRecord } from './auth-users-store.js';
 import type { MongoActivityDoc } from './entity-builders.js';
 import { getMongoClient } from './mongo.js';
@@ -141,7 +149,7 @@ const mongoEventToEvent = (
   outingTopic: (doc.outingTopic as OutingTopic | null | undefined) ?? null,
   destinationId: resolveDestinationId(location) ?? null,
   groupRegionLevels: doc.groupRegionLevels ?? null,
-  activityMode: doc.activityMode === 'seeking' ? null : doc.activityMode ?? null,
+  activityMode: publicActivityModeFromStored(doc.activityMode),
   groupChatPostPolicy: doc.groupChatPostPolicy ?? null,
   discoverCommunityId: doc.discoverCommunityId ?? null,
   guides: doc.guides ?? [],
@@ -316,7 +324,7 @@ const filterPublishedDocs = async (
     if (shouldHideActivityFromExploreMap(doc.joinMode, doc.requirements)) return false;
     if (
       when === 'upcoming' &&
-      doc.activityMode !== 'seeking' &&
+      !isRetiredSeekingActivityMode(doc.activityMode) &&
       doc.startAt < now
     ) {
       return false;
@@ -337,11 +345,11 @@ const buildPublishedActivitiesMongoFilter = (
   if (when === 'upcoming') {
     return {
       ...base,
-      $or: [{ activityMode: 'seeking' }, { startAt: { $gte: now } }],
+      ...mongoUpcomingPublishedOrRetiredSeeking(now),
     };
   }
   if (when === 'past') {
-    return { ...base, startAt: { $lt: now }, activityMode: { $ne: 'seeking' } };
+    return { ...base, ...mongoPastPublishedExcludeRetiredSeeking(now) };
   }
   return base;
 };
@@ -414,7 +422,7 @@ export const listPublishedActivitiesForExploreMapFromMongo = async (
       $or: [
         { startAt: { $gte: startOfToday } },
         /** Member “looking for” stays discoverable while published — not gated like fixed hosted departures. */
-        { activityMode: 'seeking' },
+        mongoOnlyRetiredSeekingActivityMode,
       ],
     })
     .sort({ startAt: 1 })
@@ -545,7 +553,7 @@ const listPublishedActivitiesByDiscoverCommunityFromMongo = async (input: {
   const baseFilter = {
     status: ActivityStatus.PUBLISHED,
     discoverCommunityId: input.communityId,
-    activityMode: { $ne: 'seeking' as const },
+    ...mongoExcludeRetiredSeekingActivityMode,
     joinMode: { $ne: 'private' as const },
   };
   const timeFilter =
@@ -590,7 +598,7 @@ export const listPublishedPastActivitiesByMemberFromMongo = async (
     .find({
       status: ActivityStatus.PUBLISHED,
       startAt: { $lt: now },
-      activityMode: { $ne: 'seeking' },
+      ...mongoExcludeRetiredSeekingActivityMode,
       $or: [{ hostId: userId }, { createdById: userId }],
     })
     .sort({ startAt: -1 })
@@ -623,7 +631,7 @@ export const listPublishedUpcomingActivitiesByDestinationFromMongo = async (
       status: ActivityStatus.PUBLISHED,
       startAt: { $gte: startOfToday },
       joinMode: { $ne: 'private' },
-      activityMode: { $ne: 'seeking' },
+      ...mongoExcludeRetiredSeekingActivityMode,
       locationId: { $in: locationIdList },
     })
     .sort({ startAt: 1 })

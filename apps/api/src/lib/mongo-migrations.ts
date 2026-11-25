@@ -181,10 +181,12 @@ const migrateCarpoolTerminologyToRideshare = async (db: Db): Promise<void> => {
     await renameFieldIfPresent(db, COLLECTIONS.ACTIVITIES, from, to);
   }
 
-  const intents = db.collection('participant_intents');
+  const intents = db.collection(COLLECTIONS.PARTICIPANT_INTENTS);
   const kindResult = await intents.updateMany({ kind: 'carpool' }, { $set: { kind: 'rideshare' } });
   if (kindResult.modifiedCount > 0) {
-    console.log(`[mongo] Migrated participant_intents kind carpool → rideshare (${kindResult.modifiedCount} docs)`);
+    console.log(
+      `[mongo] Migrated ${COLLECTIONS.PARTICIPANT_INTENTS} kind carpool → rideshare (${kindResult.modifiedCount} docs)`
+    );
   }
 };
 
@@ -213,7 +215,7 @@ const migrateActivityJoinModeFromRequirements = async (db: Db): Promise<void> =>
 };
 
 const migrateEmbeddedPersonaParticipantIntentTitles = async (db: Db): Promise<void> => {
-  const collection = db.collection('participant_intents');
+  const collection = db.collection(COLLECTIONS.PARTICIPANT_INTENTS);
   const cursor = collection.find({ title: { $type: 'string' } });
   let updated = 0;
 
@@ -517,7 +519,9 @@ const migrateParticipantIntentIdsToString = async (db: Db): Promise<void> => {
   }
 
   if (migrated > 0) {
-    console.log(`[mongo] Migrated participant_intents _id ObjectId → string UUID (${migrated} docs)`);
+    console.log(
+      `[mongo] Migrated ${COLLECTIONS.PARTICIPANT_INTENTS} _id ObjectId → string UUID (${migrated} docs)`
+    );
   }
 };
 

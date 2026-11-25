@@ -3,6 +3,7 @@ import {
   type DiscoverRecommendationSignal,
 } from '@uaetrail/shared-types';
 import type { ActivityWithPublicRelations } from '../../lib/activity-read-assembler.js';
+import { isRetiredSeekingActivityMode } from '../../domain/retired-seeking-activity-mode.js';
 
 export type RankMapExploreActivityInput = {
   activity: ActivityWithPublicRelations;
@@ -23,7 +24,7 @@ export const rankMapExploreActivity = (
   input: RankMapExploreActivityInput
 ): RankMapExploreActivityResult | null => {
   const { activity, friendUserIds, nowMs } = input;
-  if (activity.activityMode === 'seeking') return null;
+  if (isRetiredSeekingActivityMode(activity.activityMode)) return null;
   if (!activity.startAt) return null;
 
   const startMs = activity.startAt.getTime();

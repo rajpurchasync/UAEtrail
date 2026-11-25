@@ -18,7 +18,7 @@ describe('memberAvailabilityLineageGuard (MIG-DISCO-REG)', () => {
   it('AVAIL-LINE-02: catalog builder projects availability and skips legacy seeking activities', () => {
     const builder = read('apps/api/src/lib/discovery-catalog-builder.ts');
     expect(builder).toMatch(/buildAvailabilityFixedMapItems/);
-    expect(builder).toMatch(/activityMode === 'seeking'\) continue/);
+    expect(builder).toMatch(/isRetiredSeekingActivityMode\(event\.activityMode\)\) continue/);
   });
 
   it('AVAIL-LINE-03: map overlay does not attach demand/intent viewer access', () => {

@@ -1,4 +1,5 @@
 import type { Activity, Location } from '../domain/types.js';
+import { publicActivityModeFromStored } from '../domain/retired-seeking-activity-mode.js';
 import { resolveJoinMode } from '../domain/activity-join-mode.js';
 import { resolveParticipationMode } from '../domain/activity-participation-mode.js';
 import {
@@ -459,7 +460,7 @@ const toEventDto = ({
   displayLongitude: displayCoords.longitude,
   outingCategory: event.outingCategory ?? null,
   outingTopic: event.outingTopic ?? null,
-  activityMode: event.activityMode === 'seeking' ? null : event.activityMode ?? null,
+  activityMode: publicActivityModeFromStored(event.activityMode),
   groupChatPostPolicy: event.groupChatPostPolicy ?? null,
   discoverCommunityId: event.discoverCommunityId ?? null,
 });

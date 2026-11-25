@@ -55,6 +55,19 @@ const feSrc = join(root, 'src');
 const registerPlaceAliasCalls = countPatternInTree(apiSrc, /registerPlaceAlias\s*\(/g);
 const retiredPlaceLocationMounts = countPatternInTree(apiSrc, /mountRetiredPlaceLocationPaths\s*\(/g);
 const participantIntentsRefs = countPatternInTree(apiSrc, /participant_intents|participant-intents/gi);
+const seekingActivityModeLiteralAllow = new Set([
+  'apps/api/src/domain/retired-seeking-activity-mode.ts',
+]);
+const seekingActivityModeLiteralRe = /['"]seeking['"]/;
+const seekingActivityModeLiteralViolations = [];
+for (const file of walkFiles(apiSrc)) {
+  if (!/\.ts$/.test(file) || file.endsWith('.test.ts')) continue;
+  const rel = file.slice(root.length + 1).replace(/\\/g, '/');
+  const text = readFileSync(file, 'utf8');
+  if (!seekingActivityModeLiteralRe.test(text)) continue;
+  if (seekingActivityModeLiteralAllow.has(rel)) continue;
+  seekingActivityModeLiteralViolations.push(rel);
+}
 const seekingActivityModeRefs = countPatternInTree(apiSrc, /activityMode.*seeking|'seeking'/g);
 
 const PARTICIPANT_INTENT_OPS_ALLOWLIST = new Set(
@@ -252,6 +265,8 @@ const baseline = {
       participantIntentOpsAllowlistOnly,
       participantIntentOpsViolations,
       seekingActivityModeRefsInApiSrc: seekingActivityModeRefs,
+      seekingActivityModeLiteralRefsInApiSrc: seekingActivityModeLiteralViolations.length,
+      seekingActivityModeLiteralViolations,
       deployGateStatus: 'ops — run npm run seeking:deploy-gate per environment',
       opsScripts: [
         'seeking:deploy-gate',
@@ -315,6 +330,9 @@ const baseline = {
       : []),
     ...(!participantIntentOpsAllowlistOnly
       ? ['W1b: participant_intents refs outside ops allowlist — shrink to migration/purge/gate modules only']
+      : []),
+    ...(seekingActivityModeLiteralViolations.length > 0
+      ? ['W1c: activityMode seeking literal only in domain/retired-seeking-activity-mode.ts']
       : []),
     ...(useSafeAsyncEffectHookExists ? ['W6d: delete src/hooks/useSafeAsyncEffect.ts after MIG-CLIENT-QUERY'] : []),
     ...(browseListUrlStateImportViolations.length > 0

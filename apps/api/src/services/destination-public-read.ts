@@ -7,6 +7,7 @@ import { ApiError } from '../lib/api-error.js';
 import { COLLECTIONS } from '../lib/collections.js';
 import { getMongoClient } from '../lib/mongo.js';
 import { ActivityStatus, LocationStatus } from '../domain/enums.js';
+import { mongoExcludeRetiredSeekingActivityMode } from '../domain/retired-seeking-activity-mode.js';
 import {
   findDestinationBySlug,
   listPublishedDestinations,
@@ -38,7 +39,7 @@ export const countPublishedDestinationPreviewByDestinationId = async (
     db.collection(COLLECTIONS.ACTIVITIES).countDocuments({
       destinationId,
       status: ActivityStatus.PUBLISHED,
-      activityMode: { $ne: 'seeking' },
+      ...mongoExcludeRetiredSeekingActivityMode,
     }),
     db.collection(COLLECTIONS.LOCATIONS).countDocuments({
       destinationId,

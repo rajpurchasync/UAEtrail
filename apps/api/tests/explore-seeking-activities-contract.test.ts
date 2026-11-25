@@ -13,6 +13,6 @@ describe('explore availability catalog contract', () => {
   it('appends fixed availability to explore map assembler', () => {
     const assembler = read('src/lib/discovery-catalog-builder.ts');
     expect(assembler).toMatch(/buildAvailabilityFixedMapItems/);
-    expect(assembler).toMatch(/activityMode === 'seeking'\) continue/);
+    expect(assembler).toMatch(/isRetiredSeekingActivityMode\(event\.activityMode\)\) continue/);
   });
 });

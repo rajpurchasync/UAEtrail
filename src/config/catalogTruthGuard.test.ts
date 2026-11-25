@@ -11,7 +11,7 @@ describe('catalogTruthGuard (DMCP Phase 2 · MIG-DISCO-REG)', () => {
     expect(exploreMap).not.toMatch(/listActiveParticipantIntentsForMap/);
     const builder = read('apps/api/src/lib/discovery-catalog-builder.ts');
     expect(builder).toMatch(/buildAvailabilityFixedMapItems/);
-    expect(builder).toMatch(/activityMode === 'seeking'\) continue/);
+    expect(builder).toMatch(/isRetiredSeekingActivityMode\(event\.activityMode\)\) continue/);
     expect(builder).not.toMatch(/source:\s*'demand'/);
   });
 

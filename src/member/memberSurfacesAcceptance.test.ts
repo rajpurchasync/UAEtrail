@@ -137,7 +137,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
 
   it('G-seek: ActivityDTO wire includes activityMode for /activity/:id', () => {
     const mappers = read('apps/api/src/lib/mappers.ts');
-    expect(mappers).toContain('activityMode: event.activityMode');
+    expect(mappers).toMatch(/activityMode: publicActivityModeFromStored\(event\.activityMode\)/);
     const dto = read('packages/shared-types/src/index.ts');
     expect(dto).toMatch(/activityMode\?: ExploreActivityMode/);
   });
@@ -147,7 +147,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
     const catalog = read('apps/api/src/lib/discovery-catalog-builder.ts');
     expect(exploreMap).not.toMatch(/listActiveParticipantIntentsForMap\(/);
     expect(catalog).not.toMatch(/listActiveParticipantIntentsForMap\(/);
-    expect(catalog).toMatch(/activityMode === 'seeking'\) continue/);
+    expect(catalog).toMatch(/isRetiredSeekingActivityMode\(event\.activityMode\)\) continue/);
     expect(catalog).toMatch(/buildAvailabilityFixedMapItems/);
     expect(exploreMap).toMatch(/discovery-catalog-builder/);
     expect(exploreMap).not.toMatch(/explore-map-base/);

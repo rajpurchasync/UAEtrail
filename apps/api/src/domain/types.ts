@@ -179,8 +179,8 @@ export interface Activity {
   /** Curated Destination — set on publish from place or point-in-polygon. */
   destinationId?: string | null;
   geoRef?: import('@uaetrail/shared-types').GeoRef | null;
-  /** Wire omits `seeking`; Mongo may retain until purge. */
-  activityMode?: 'hosted' | 'seeking' | null;
+  /** Wire omits retired seeking mode; Mongo may retain until purge. */
+  activityMode?: 'hosted' | import('./retired-seeking-activity-mode.js').RetiredSeekingActivityMode | null;
   participantIntentId?: string | null;
   /** On-ground guides. Pending rows stay off public DTOs. */
   guides?: ActivityGuideRecord[];

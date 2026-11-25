@@ -31,6 +31,7 @@ import {
 import type { Facility } from '../domain/facility.js';
 import type { Location } from '../domain/types.js';
 import { resolveJoinMode } from '../domain/activity-join-mode.js';
+import { isRetiredSeekingActivityMode } from '../domain/retired-seeking-activity-mode.js';
 import { listPublishedActivitiesForExploreMap } from './activities-store.js';
 import { listActiveLocationsForExploreMap } from './location-query.js';
 import { buildActivityDto, toLocationDto } from './mappers.js';
@@ -278,7 +279,7 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
   for (let index = 0; index < activityDtos.length; index += 1) {
     const activity = activityDtos[index];
     const event = activityEvents[index];
-    if (event.activityMode === 'seeking') continue;
+    if (isRetiredSeekingActivityMode(event.activityMode)) continue;
     const activityMode = 'hosted';
     if (resolveJoinMode(event.joinMode, event.requirements) === 'private') continue;
     const rideshare = isRideshareActivity(activity);

@@ -1,5 +1,6 @@
 import type { Db } from 'mongodb';
 import { ActivityStatus } from '../domain/enums.js';
+import { mongoOnlyRetiredSeekingActivityMode } from '../domain/retired-seeking-activity-mode.js';
 import { COLLECTIONS } from './collections.js';
 import { scheduleExploreMapCacheInvalidation } from './explore-map-cache-schedule.js';
 
@@ -52,7 +53,7 @@ export const purgeRetiredSeekingStorage = async (
     }
   }
 
-  const seekingFilter = { activityMode: 'seeking' };
+  const seekingFilter = mongoOnlyRetiredSeekingActivityMode;
   const seekingCount = await activities.countDocuments(seekingFilter);
   if (seekingCount > 0) {
     if (dryRun) {

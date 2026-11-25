@@ -1,4 +1,5 @@
 import { ActivityStatus, RequestStatus } from '../domain/enums.js';
+import { isRetiredSeekingActivityMode } from '../domain/retired-seeking-activity-mode.js';
 import { ApiError } from '../lib/api-error.js';
 import { findPublishedActivityWithPreviewsById, findActivityForRequestViewById } from '../lib/activities-store.js';
 import { findActivityDocInMongo } from '../lib/entity-sync.js';
@@ -87,7 +88,7 @@ export const submitPublicActivityJoinRequest = async (input: {
   });
 
   const activityDoc = await findActivityDocInMongo(input.activityId);
-  if (activityDoc?.activityMode === 'seeking') {
+  if (isRetiredSeekingActivityMode(activityDoc?.activityMode)) {
     throw new ApiError(
       410,
       'legacy_seeking_retired',

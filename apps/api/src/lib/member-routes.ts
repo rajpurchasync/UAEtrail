@@ -71,7 +71,7 @@ export const exploreActivityPinPath = (activityId: string): string =>
 export const exploreAvailabilityPinNotificationPath = (availabilityMapItemId: string): string =>
   exploreAvailabilityMapItemPath(availabilityMapItemId);
 
-/** Deep link for archived `activityMode: seeking` rows (off map — activity detail). */
+/** Deep link for archived retired Find-as-activity rows (off map — activity detail). */
 export const explorePublishedActivityPinPath = (input: {
   intentId: string;
   activityId?: string | null;
