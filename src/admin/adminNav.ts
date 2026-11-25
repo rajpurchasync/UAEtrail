@@ -21,7 +21,7 @@ import {
   ADMIN_ACCOUNT_PATH,
   ADMIN_ACTIVITIES_PATH,
   ADMIN_ALERTS_PATH,
-  ADMIN_AREAS_PATH,
+  ADMIN_DESTINATIONS_PATH,
   ADMIN_AUDIT_LOG_PATH,
   ADMIN_FACILITIES_PATH,
   ADMIN_GROUPS_PATH,
@@ -70,7 +70,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     links: [
       { to: ADMIN_PLACES_PATH, label: 'Places', icon: MapPin },
       { to: ADMIN_FACILITIES_PATH, label: 'Facilities', icon: Building2 },
-      { to: ADMIN_AREAS_PATH, label: 'Areas', icon: MapPinned },
+      { to: ADMIN_DESTINATIONS_PATH, label: 'Destinations', icon: MapPinned },
     ],
   },
   {

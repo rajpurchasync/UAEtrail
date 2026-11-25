@@ -297,7 +297,7 @@ Detail UIs must load from the **canonical read API** for that entity; writes use
 | **Shop** | `/shop/:id` | `tenants` / merchant (+ optional place pin) | **Operator** Pro onboarding — **not** FAB **Add → Shops** (`add.place.shop` is community **place** submit); see [§1.7](#17-program-cpc--catalog-ontology-fab-compose-wire) | `GET /shop/shops/:id` | `shopPublicClientApi` | `EntityKind.shop` = storefront tenant; no product catalog HTTP |
 | **Place** | `/place/:id` (CPC-6; legacy `/trail`·`/camp`·`/venue`) | `locations` (place rows) | Admin `/admin/places`; member **Add → Place**; host **new spot** (photo + pin; city from coords) stays DRAFT until admin activate (`registryListed` + `activity_venue_live`); submit **`destinationId`** | `GET /places/:id`; `GET /places/catalog`; linked **facilities** via **`onSiteId`** | `placeDetailClientApi` | Place catalog excludes facilities after CPC |
 | **Facility** | `/facility/:id` | **`facilities`** (**CPC-2**) | Admin `/admin/facilities`; member **Add → Facility** | `GET /facilities/:id`; `GET /facilities/catalog` | TBD `facilityDetailClientApi` | **`destinationId`** + optional **`onSiteId`** |
-| **Destination** | `/destination/:slug` | `areas` store (logical destinations) | **Admin** `/admin/areas` (publish `status`) | `GET /destinations/:slug` (preview slices) | `areaHubClientApi` | Previews filter published activities + active places by **`destinationId`** |
+| **Destination** | `/destination/:slug` | `areas` store (logical destinations) | **Admin** `/admin/destinations` (publish `status`; `/admin/areas` redirect) | `GET /destinations/:slug` (preview slices) | `areaHubClientApi` | Previews filter published activities + active places by **`destinationId`** |
 
 **Registry:** place catalog browse uses `GET /places/registry` (explore map) — detail pages use **per-id** `GET /places/:id`, not the registry blob.
 
@@ -562,7 +562,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 
 | Entity | Who sets `destinationId` | Rule |
 |--------|------------------------|------|
-| **Destination** | Admin `/admin/areas` | Curated **name** + optional center/bounds as camera hint for the hub page — **no explore map pin**. Geography labels (country, state, region) come from the map, not from Destination. |
+| **Destination** | Admin `/admin/destinations` | Curated **name** + optional center/bounds as camera hint for the hub page — **no explore map pin**. Geography labels (country, state, region) come from the map, not from Destination. |
 | **Place** | Admin `/admin/places` or member **Add** (`curatedDestination` then pin) | **`locations.destinationId` required** on submit (`POST /me/places`) |
 | **Hosted activity** | Host publish | **No `activity.destinationId` on write.** `activity.locationId` → catalog **place** with **`place.destinationId`**. `validateHostingPlaceArea` / publish gate. Meeting / going-from pin does **not** define destination. |
 | **Find crew (fixed map slot)** | Find FAB | **`member_availability`** slot with time/place; optional **`destinationId`** on slot — not an activity row. |

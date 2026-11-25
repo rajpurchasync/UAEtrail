@@ -23,7 +23,7 @@ export const ADMIN_PLATFORM_ROUTE_CATALOG: Array<{
   { path: '/admin/alerts', page: 'admin/Alerts.tsx', element: 'AdminAlerts', inSidebar: true },
   { path: '/admin/places', page: 'admin/Places.tsx', element: 'AdminPlaces', inSidebar: true },
   { path: '/admin/facilities', page: 'admin/Places.tsx', element: 'AdminPlaces', inSidebar: true },
-  { path: '/admin/areas', page: 'admin/Areas.tsx', element: 'AdminAreas', inSidebar: true },
+  { path: '/admin/destinations', page: 'admin/Areas.tsx', element: 'AdminAreas', inSidebar: true },
   { path: '/admin/users', page: 'admin/Members.tsx', element: 'AdminMembers', inSidebar: true },
   { path: '/admin/groups', page: 'admin/Groups.tsx', element: 'AdminGroups', inSidebar: true },
   { path: '/admin/communities', page: 'admin/Communities.tsx', element: 'AdminCommunities', inSidebar: true },
@@ -54,7 +54,11 @@ describe('adminSurfacesAcceptance (S13-W9)', () => {
     const app = `${read('src/App.tsx')}\n${read('src/routing/AppRoutes.tsx')}\n${read('src/routing/appLazyPages.tsx')}`;
     const violations: string[] = [];
     for (const { path, page, element } of ADMIN_PLATFORM_ROUTE_CATALOG) {
-      if (!app.includes(`path="${path}"`)) {
+      const hasPath =
+        app.includes(`path="${path}"`) ||
+        (path === '/admin/destinations' &&
+          (app.includes('path={ADMIN_DESTINATIONS_PATH}') || app.includes('adminDestinationsRoute')));
+      if (!hasPath) {
         violations.push(`missing route ${path}`);
         continue;
       }

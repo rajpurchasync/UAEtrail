@@ -48,7 +48,7 @@ const HIKING_ACCESSIBLE = ['4X4 required', 'Any cars', 'Bike'];
 const CAMPING_ACCESSIBLE = ['4X4 required', 'Any cars'];
 const TAG_OPTIONS = ['Child-free', 'Pet-friendly', 'Family-friendly', 'Solo-friendly', 'Wheelchair-accessible', 'Night-hiking', 'Sunrise spot', 'Sunset spot'];
 import { SUPPORTED_COUNTRIES, DEFAULT_COUNTRY, getRegionsForCountry, CountryCode } from '../../config/regions';
-import { ADMIN_AREAS_PATH, ADMIN_INBOX_SUBMISSIONS_PATH } from '../../config/adminSurfacePaths';
+import { ADMIN_DESTINATIONS_PATH, ADMIN_INBOX_SUBMISSIONS_PATH } from '../../config/adminSurfacePaths';
 import { AdminCatalogWizard } from '../../components/admin/AdminCatalogWizard';
 import { LOCATION_TYPE_LABELS } from '../../config/activityTypes';
 const SEASONS = ['winter', 'spring', 'summer', 'autumn', 'year-round'];
@@ -475,7 +475,7 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
               Showing places in <strong>{filterArea.name}</strong> — link more via Edit → Curated area, or add a new place below.
             </span>
             <div className="flex gap-2">
-              <Link to={ADMIN_AREAS_PATH} className="text-emerald-900 underline font-medium">
+              <Link to={ADMIN_DESTINATIONS_PATH} className="text-emerald-900 underline font-medium">
                 All areas
               </Link>
               <button

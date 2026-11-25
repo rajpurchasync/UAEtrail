@@ -40,9 +40,14 @@ const areaPatchSchema = areaBodySchema.partial();
 
 const idParamSchema = z.object({ id: z.string().min(1) });
 
-/** Platform admin curated areas CRUD. */
-export const registerAdminAreaRoutes = (adminRouter: Router): void => {
-  adminRouter.get('/areas', async (_req, res, next) => {
+type AdminDestinationPath = '/areas' | '/destinations';
+
+/** CRUD for logical destinations (Mongo `areas`). */
+const registerAdminDestinationCrudOnPath = (
+  adminRouter: Router,
+  base: AdminDestinationPath
+): void => {
+  adminRouter.get(base, async (_req, res, next) => {
     try {
       const areas = await listAdminAreasForConsole();
       res.json({ data: areas });
@@ -51,7 +56,7 @@ export const registerAdminAreaRoutes = (adminRouter: Router): void => {
     }
   });
 
-  adminRouter.post('/areas', validate({ body: areaBodySchema }), async (req, res, next) => {
+  adminRouter.post(base, validate({ body: areaBodySchema }), async (req, res, next) => {
     try {
       const body = req.body as z.infer<typeof areaBodySchema>;
       const created = await createAdminAreaRecord(body);
@@ -62,7 +67,7 @@ export const registerAdminAreaRoutes = (adminRouter: Router): void => {
   });
 
   adminRouter.patch(
-    '/areas/:id',
+    `${base}/:id`,
     validate({ params: idParamSchema, body: areaPatchSchema }),
     async (req, res, next) => {
       try {
@@ -77,7 +82,7 @@ export const registerAdminAreaRoutes = (adminRouter: Router): void => {
   );
 
   adminRouter.delete(
-    '/areas/:id',
+    `${base}/:id`,
     validate({ params: idParamSchema }),
     async (req, res, next) => {
       try {
@@ -89,4 +94,10 @@ export const registerAdminAreaRoutes = (adminRouter: Router): void => {
       }
     }
   );
+};
+
+/** Platform admin destinations CRUD (`/admin/destinations` canonical; `/admin/areas` compat). */
+export const registerAdminAreaRoutes = (adminRouter: Router): void => {
+  registerAdminDestinationCrudOnPath(adminRouter, '/destinations');
+  registerAdminDestinationCrudOnPath(adminRouter, '/areas');
 };

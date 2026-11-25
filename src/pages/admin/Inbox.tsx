@@ -16,7 +16,7 @@ import { DashboardLayout } from '../../components/layout';
 import { ADMIN_LINKS } from '../../constants';
 import {
   ADMIN_ALERTS_PATH,
-  ADMIN_AREAS_PATH,
+  ADMIN_DESTINATIONS_PATH,
   ADMIN_HOSTS_PATH,
   ADMIN_INBOX_SUBMISSIONS_PATH,
   ADMIN_REPORTS_PATH,
@@ -258,7 +258,7 @@ export const Inbox = () => {
 
         <AdminQueueCard
           title="Draft areas"
-          viewAllTo={ADMIN_AREAS_PATH}
+          viewAllTo={ADMIN_DESTINATIONS_PATH}
           icon={<MapPinned className="h-4 w-4" aria-hidden />}
           iconClassName="bg-indigo-100 text-indigo-800"
           empty="No draft areas"
@@ -266,7 +266,7 @@ export const Inbox = () => {
           {pendingAreas.map((area) => (
             <Link
               key={area.id}
-              to={ADMIN_AREAS_PATH}
+              to={ADMIN_DESTINATIONS_PATH}
               className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-50"
             >
               {area.imageUrl ? (

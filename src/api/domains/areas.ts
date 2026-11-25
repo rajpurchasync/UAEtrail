@@ -23,23 +23,23 @@ export type AreaDetailPayload = {
   };
 };
 
-/** Admin destination CRUD (`/admin/areas` store until admin route rename). */
+/** Admin destination CRUD (`/admin/destinations`; `/admin/areas` API compat). */
 export const areasApi = {
-  listAdminAreas: () => apiRequest<{ data: AreaDTO[] }>('/admin/areas', { auth: true }),
+  listAdminAreas: () => apiRequest<{ data: AreaDTO[] }>('/admin/destinations', { auth: true }),
   createAdminArea: (
     payload: Omit<AreaDTO, 'id' | 'createdAt' | 'updatedAt' | 'bounds'> & { bounds?: AreaBoundsRing }
   ) =>
-    apiRequest<{ data: AreaDTO }>('/admin/areas', {
+    apiRequest<{ data: AreaDTO }>('/admin/destinations', {
       method: 'POST',
       auth: true,
       body: JSON.stringify(payload),
     }),
   updateAdminArea: (id: string, payload: Partial<AreaDTO>) =>
-    apiRequest<{ data: AreaDTO }>(`/admin/areas/${id}`, {
+    apiRequest<{ data: AreaDTO }>(`/admin/destinations/${id}`, {
       method: 'PATCH',
       auth: true,
       body: JSON.stringify(payload),
     }),
   deleteAdminArea: (id: string) =>
-    apiRequest(`/admin/areas/${id}`, { method: 'DELETE', auth: true }),
+    apiRequest(`/admin/destinations/${id}`, { method: 'DELETE', auth: true }),
 };

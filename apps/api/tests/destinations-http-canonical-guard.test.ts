@@ -18,6 +18,13 @@ describe('destinations HTTP canonical guard (MIG-DESTINATION-GEO)', () => {
     expect(existsSync(join(ROOT, 'apps/api/src/lib/route-destination-alias.ts'))).toBe(false);
   });
 
+  it('admin destinations CRUD mounted at /admin/destinations (areas compat)', () => {
+    const registrar = read('apps/api/src/routes/admin/registerAdminAreaRoutes.ts');
+    expect(registrar).toMatch(/registerAdminDestinationCrudOnPath/);
+    expect(registrar).toMatch(/'\/destinations'/);
+    expect(registrar).toMatch(/'\/areas'/);
+  });
+
   it('catalog query schemas accept canonical destinationId + legacy aliases', () => {
     const schemas = read('apps/api/src/routes/user/schemas.ts');
     expect(schemas).toMatch(/placeCatalogQuerySchema[\s\S]*destinationId:/);

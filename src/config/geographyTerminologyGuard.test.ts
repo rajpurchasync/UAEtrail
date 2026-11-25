@@ -132,6 +132,12 @@ describe('geographyTerminologyGuard (Place · Facility · Area)', () => {
     expect(read('packages/shared-types/src/wire-lexicon.ts')).toMatch(/BWL_CATALOG_GEO_FIELDS/);
   });
 
+  it('GEO-14: admin console uses /admin/destinations (Phase E)', () => {
+    expect(read('src/config/adminSurfacePaths.ts')).toMatch(/ADMIN_DESTINATIONS_PATH/);
+    expect(read('src/routing/AppRoutes.tsx')).toMatch(/ADMIN_DESTINATIONS_PATH/);
+    expect(read('src/api/domains/areas.ts')).toMatch(/\/admin\/destinations/);
+  });
+
   it('GEO-13: Mongo destinations alias documented in collections + BWL (Phase C)', () => {
     expect(read('apps/api/src/lib/collections.ts')).toMatch(/DESTINATIONS: 'areas'/);
     expect(read('apps/api/tests/destination-storage-guard.test.ts')).toMatch(

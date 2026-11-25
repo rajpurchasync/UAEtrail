@@ -114,7 +114,7 @@ afterAll(async () => {
     await request(app).delete(`/api/admin/places/${createdPlaceId}`).set(adminAuth());
   }
   if (createdAreaId) {
-    await request(app).delete(`/api/admin/areas/${createdAreaId}`).set(adminAuth());
+    await request(app).delete(`/api/admin/destinations/${createdAreaId}`).set(adminAuth());
   }
   await cleanupTestUsers();
 });
@@ -122,7 +122,7 @@ afterAll(async () => {
 describe('detail surface lineage (admin catalog → public read)', () => {
   it('draft area is hidden from public detail; publish exposes GET /areas/:slug', async () => {
     const create = await request(app)
-      .post('/api/admin/areas')
+      .post('/api/admin/destinations')
       .set(adminAuth())
       .send({
         slug: areaSlug,
@@ -140,7 +140,7 @@ describe('detail surface lineage (admin catalog → public read)', () => {
     expect(draftPublic.status).toBe(404);
 
     const publish = await request(app)
-      .patch(`/api/admin/areas/${createdAreaId}`)
+      .patch(`/api/admin/destinations/${createdAreaId}`)
       .set(adminAuth())
       .send({ status: 'published' });
 

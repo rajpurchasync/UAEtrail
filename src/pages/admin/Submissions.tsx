@@ -17,7 +17,7 @@ import {
 import { DashboardLayout } from '../../components/layout';
 import { ADMIN_LINKS } from '../../constants';
 import {
-  ADMIN_AREAS_PATH,
+  ADMIN_DESTINATIONS_PATH,
   ADMIN_INBOX_PATH,
   ADMIN_INBOX_SUBMISSIONS_PATH,
 } from '../../config/adminSurfacePaths';
@@ -272,7 +272,7 @@ export const Submissions = () => {
           {selected.source === 'draft_place' ? 'Reject (inactive)' : 'Reject'}
         </button>
       ) : (
-        <Link to={ADMIN_AREAS_PATH} className="rounded-xl border border-neutral-200 px-3 py-2.5 text-center text-sm font-semibold text-neutral-800">
+        <Link to={ADMIN_DESTINATIONS_PATH} className="rounded-xl border border-neutral-200 px-3 py-2.5 text-center text-sm font-semibold text-neutral-800">
           Open in Areas
         </Link>
       )}
