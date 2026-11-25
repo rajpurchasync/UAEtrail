@@ -552,7 +552,7 @@ Treat geography as a **graph**, not one flat “area” field:
 | Graph | Node kinds | Edges / denormalized fields | Consumer surfaces |
 |-------|------------|----------------------------|-------------------|
 | **AdminGeo tree** | `geo_nodes`: country → state → **area (city)** → venue | `parentId` / `ancestors`; pins carry slice as **`geoRef`** (`chain`, `names`, `areaId` = geo node id) | `/geo`, `/geo/n/:id`, search tokens, list `?geo=` drill |
-| **Catalog graph** | **Destination** (hub), **Place**, **Facility**, **Activity** | `destinationId` (hub → site); `onSiteId` (facility → place); `locationId` (activity → place); optional `parentPlaceId` (place hub sub-site) | Map pins, `/destination/:slug`, `?destination=`, host/Add wizards |
+| **Catalog graph** | **Destination** (hub), **Place**, **Facility**, **Activity** | `destinationId` (hub → site); `onSiteId` (facility → place); `locationId` / `placeId` alias (activity → place); optional `parentPlaceId` (place hub sub-site) | Map pins, `/destination/:slug`, `?destination=`, host/Add wizards |
 | **Bridge** | Geo L3/L4 nodes may set **`catalogDestinationId`** | Links a geo rollup node to a curated **`destinations`** row when names align (e.g. JBR) | Geo hub “guide” → `/destination/:slug` |
 
 ```mermaid

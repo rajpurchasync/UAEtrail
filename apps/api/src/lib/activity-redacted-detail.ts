@@ -19,6 +19,7 @@ export const buildActivityRedactedDetail = (event: ActivityDetailSource): Activi
     time: dto.time,
     endTime: dto.endTime,
     locationId: dto.locationId,
+    placeId: dto.placeId,
     locationName: dto.locationName,
     region: dto.region,
     description: '',

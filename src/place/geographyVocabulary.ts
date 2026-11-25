@@ -12,6 +12,12 @@
 /** Catalog entity — trail, camp, outdoor spot (`locations` / HTTP `/places`). */
 export type GeographyPlaceEntity = 'place';
 
+/**
+ * Activity hosted-at link — not a geo tier. Wire: `locationId` (persisted) + `placeId` (DTO alias).
+ * @see `packages/shared-types/src/activity-place-wire.ts`
+ */
+export type ActivityPlaceLinkField = 'locationId' | 'placeId';
+
 /** Amenity entity — toilet, parking, gas (`facilities` / HTTP `/facilities`). Map pin `source: facility`. */
 export type GeographyFacilityEntity = 'facility';
 

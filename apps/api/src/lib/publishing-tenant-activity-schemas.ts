@@ -1,3 +1,4 @@
+import { resolveActivityPlaceLinkId } from '@uaetrail/shared-types';
 import { z } from 'zod';
 import { sharedActivityTypeSchema } from '../domain/activity-type.js';
 
@@ -35,7 +36,10 @@ const outingTopicSchema = z.enum([
 
 const publishingTenantActivityFieldsSchema = z.object({
   activityType: sharedActivityTypeSchema,
-  locationId: z.string().min(1),
+  /** Catalog place id — Mongo `activities.locationId`. */
+  locationId: z.string().min(1).optional(),
+  /** Synonym for `locationId` (prefer in new clients). */
+  placeId: z.string().min(1).optional(),
   title: z.string().min(4).max(120),
   description: z.string().min(1).max(5000),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -95,18 +99,54 @@ const publishingTenantActivityFieldsSchema = z.object({
   privateVehiclePlateNumber: z.string().trim().max(20).optional().nullable(),
 });
 
-export const publishingTenantActivityCreateSchema = publishingTenantActivityFieldsSchema.superRefine((data, ctx) => {
-  if (data.activityType === 'rideshare') return;
-  if (data.description.trim().length < 20) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'Description must be at least 20 characters.',
-      path: ['description'],
-    });
-  }
-});
+export const publishingTenantActivityCreateSchema = publishingTenantActivityFieldsSchema
+  .superRefine((data, ctx) => {
+    const placeLinkId = resolveActivityPlaceLinkId(data);
+    if (!placeLinkId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Provide locationId or placeId (catalog place).',
+        path: ['locationId'],
+      });
+    } else if (data.locationId && data.placeId && data.locationId.trim() !== data.placeId.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'locationId and placeId must match when both are sent.',
+        path: ['placeId'],
+      });
+    }
+    if (data.activityType === 'rideshare') return;
+    if (data.description.trim().length < 20) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Description must be at least 20 characters.',
+        path: ['description'],
+      });
+    }
+  })
+  .transform((data) => ({
+    ...data,
+    locationId: resolveActivityPlaceLinkId(data)!,
+  }));
 
-export const publishingTenantActivityPatchSchema = publishingTenantActivityFieldsSchema.partial();
+export const publishingTenantActivityPatchSchema = publishingTenantActivityFieldsSchema
+  .partial()
+  .superRefine((data, ctx) => {
+    if (!data.locationId && !data.placeId) return;
+    const placeLinkId = resolveActivityPlaceLinkId(data);
+    if (!placeLinkId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'locationId and placeId must match when both are sent.',
+        path: ['placeId'],
+      });
+    }
+  })
+  .transform((data) => {
+    const placeLinkId = resolveActivityPlaceLinkId(data);
+    if (!placeLinkId) return data;
+    return { ...data, locationId: placeLinkId };
+  });
 
 export type OperatorTenantActivityCreateInput = z.infer<typeof publishingTenantActivityCreateSchema>;
 export type OperatorTenantActivityPatchInput = z.infer<typeof publishingTenantActivityPatchSchema>;

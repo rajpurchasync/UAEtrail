@@ -1018,7 +1018,7 @@ AdminGeo (auto, geoRef) on coords
 Destination (curated destinationId) — not a map pin
   ├── Place (site) — trail, camp, spot
   └── Facility — optional onSiteId
-Activity → locationId → Place (site) only
+Activity → `locationId` (wire) / `placeId` (DTO alias) → Place (site) only
 ```
 
 #### 8.5.2 Completion record

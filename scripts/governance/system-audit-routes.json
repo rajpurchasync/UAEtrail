@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-23",
+  "generated": "2026-11-25",
   "endpoints": [
     {
       "method": "GET",
@@ -98,51 +98,6 @@
     },
     {
       "method": "GET",
-      "path": "/me/friends",
-      "registrar": "apps/api/src/routes/user/registerFriendRoutes.ts"
-    },
-    {
-      "method": "GET",
-      "path": "/me/friends/activity-presence",
-      "registrar": "apps/api/src/routes/user/registerFriendRoutes.ts"
-    },
-    {
-      "method": "POST",
-      "path": "/me/friends/:userId/unfriend",
-      "registrar": "apps/api/src/routes/user/registerFriendRoutes.ts"
-    },
-    {
-      "method": "GET",
-      "path": "/me/friend-requests",
-      "registrar": "apps/api/src/routes/user/registerFriendRoutes.ts"
-    },
-    {
-      "method": "POST",
-      "path": "/me/friend-requests",
-      "registrar": "apps/api/src/routes/user/registerFriendRoutes.ts"
-    },
-    {
-      "method": "POST",
-      "path": "/me/friend-requests/:requestId/accept",
-      "registrar": "apps/api/src/routes/user/registerFriendRoutes.ts"
-    },
-    {
-      "method": "POST",
-      "path": "/me/friend-requests/:requestId/decline",
-      "registrar": "apps/api/src/routes/user/registerFriendRoutes.ts"
-    },
-    {
-      "method": "POST",
-      "path": "/me/friend-requests/:requestId/cancel",
-      "registrar": "apps/api/src/routes/user/registerFriendRoutes.ts"
-    },
-    {
-      "method": "GET",
-      "path": "/me/friend-relationship/:userId",
-      "registrar": "apps/api/src/routes/user/registerFriendRoutes.ts"
-    },
-    {
-      "method": "GET",
       "path": "/discover/crew",
       "registrar": "apps/api/src/routes/user/registerDiscoverCrewRoutes.ts"
     },
@@ -215,6 +170,51 @@
       "method": "DELETE",
       "path": "/me/following/:userId",
       "registrar": "apps/api/src/routes/user/registerFollowRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/me/friends",
+      "registrar": "apps/api/src/routes/user/registerFriendRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/me/friends/activity-presence",
+      "registrar": "apps/api/src/routes/user/registerFriendRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/me/friends/:userId/unfriend",
+      "registrar": "apps/api/src/routes/user/registerFriendRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/me/friend-requests",
+      "registrar": "apps/api/src/routes/user/registerFriendRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/me/friend-requests",
+      "registrar": "apps/api/src/routes/user/registerFriendRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/me/friend-requests/:requestId/accept",
+      "registrar": "apps/api/src/routes/user/registerFriendRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/me/friend-requests/:requestId/decline",
+      "registrar": "apps/api/src/routes/user/registerFriendRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/me/friend-requests/:requestId/cancel",
+      "registrar": "apps/api/src/routes/user/registerFriendRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/me/friend-relationship/:userId",
+      "registrar": "apps/api/src/routes/user/registerFriendRoutes.ts"
     },
     {
       "method": "GET",
@@ -1079,10 +1079,6 @@
     "apps/api/src/routes/admin/registerAdminAmenityReportRoutes.ts": [
       "amenity-reports"
     ],
-    "apps/api/src/routes/admin/registerAdminAreaRoutes.ts": [
-      "admin-area-commands",
-      "admin-area-read"
-    ],
     "apps/api/src/routes/admin/registerAdminAuditRoutes.ts": [
       "admin-audit-read"
     ],
@@ -1093,6 +1089,10 @@
     "apps/api/src/routes/admin/registerAdminContentReportRoutes.ts": [
       "admin-content-reports-commands",
       "admin-content-reports-read"
+    ],
+    "apps/api/src/routes/admin/registerAdminDestinationRoutes.ts": [
+      "admin-destination-commands",
+      "admin-destination-read"
     ],
     "apps/api/src/routes/admin/registerAdminFacilityRoutes.ts": [
       "admin-facility-commands",
@@ -1175,10 +1175,6 @@
     "apps/api/src/routes/user/registerActivityJoinInviteRoutes.ts": [
       "activity-invite"
     ],
-    "apps/api/src/routes/user/registerFriendRoutes.ts": [
-      "friend-me-commands",
-      "friend-me-read"
-    ],
     "apps/api/src/routes/user/registerDiscoverCrewRoutes.ts": [
       "discover-crew-feed"
     ],
@@ -1200,6 +1196,10 @@
     "apps/api/src/routes/user/registerFollowRoutes.ts": [
       "member-follow-commands",
       "member-follow-read"
+    ],
+    "apps/api/src/routes/user/registerFriendRoutes.ts": [
+      "friend-me-commands",
+      "friend-me-read"
     ],
     "apps/api/src/routes/user/registerGroupRoutes.ts": [
       "social-groups-me-commands",

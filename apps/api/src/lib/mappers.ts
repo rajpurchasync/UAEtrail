@@ -18,6 +18,7 @@ import {
   type ActivityGuidePublicDTO,
   type PublishingProfileKind,
   type RideshareVehiclePublicDTO,
+  withActivityPlaceIdAlias,
   TenantBusinessMode,
   TenantType,
   UserRole as SharedUserRole
@@ -389,7 +390,7 @@ const toEventDto = ({
     locationLatitude: locationLatitude ?? null,
     locationLongitude: locationLongitude ?? null,
   });
-  return {
+  return withActivityPlaceIdAlias({
   id: event.id,
   tenantId: event.tenantId,
   tenantSlug,
@@ -397,11 +398,7 @@ const toEventDto = ({
   locationName,
   region,
   groupRegionLevels: groupRegionLevels ?? null,
-  destinationId: locationDestinationId?.trim()
-    ? locationDestinationId.trim()
-    : event.destinationId?.trim()
-      ? event.destinationId.trim()
-      : null,
+  destinationId: locationDestinationId?.trim() ? locationDestinationId.trim() : null,
   geoRef: locationGeoRef ?? event.geoRef ?? null,
   activityType: mapScheduledActivityType(activityType),
   title: event.title,
@@ -465,5 +462,5 @@ const toEventDto = ({
   activityMode: event.activityMode === 'seeking' ? null : event.activityMode ?? null,
   groupChatPostPolicy: event.groupChatPostPolicy ?? null,
   discoverCommunityId: event.discoverCommunityId ?? null,
-};
+});
 };

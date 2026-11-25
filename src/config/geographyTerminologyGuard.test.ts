@@ -159,6 +159,13 @@ describe('geographyTerminologyGuard (Place · Facility · Destination)', () => {
     );
   });
 
+  it('GEO-17: activity → place wire documents locationId + placeId alias', () => {
+    expect(read('packages/shared-types/src/activity-place-wire.ts')).toMatch(/BWL_ACTIVITY_PLACE_FIELDS/);
+    expect(read('packages/shared-types/src/wire-lexicon.ts')).toMatch(/BWL_ACTIVITY_PLACE_FIELDS/);
+    expect(read('apps/api/tests/activity-place-wire-guard.test.ts')).toMatch(/activity place wire guard/);
+    expect(read('docs/DOMAIN_CANONICALS.md')).toMatch(/locationId` \/ `placeId` alias/);
+  });
+
   it('GEO-12: public catalog routes call normalizers, not inline alias merge (Phase B)', () => {
     expect(read('apps/api/src/routes/user/registerPublicPlaceRoutes.ts')).toMatch(
       /normalizePlaceCatalogQuery/

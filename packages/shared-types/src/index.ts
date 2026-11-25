@@ -241,7 +241,13 @@ export interface ActivityDTO {
   id: string;
   tenantId: string;
   tenantSlug: string;
+  /**
+   * Catalog **Place (site)** id (`locations` collection). Same value as {@link placeId}.
+   * Activity geography: `locationId` → place → `destinationId`.
+   */
   locationId: string;
+  /** Synonym for {@link locationId} — preferred name in new clients. */
+  placeId: string;
   locationName: string;
   region?: string;
   groupRegionLevels?: GroupRegionLevels | null;
@@ -2261,6 +2267,13 @@ export type {
   DestinationPublicDTO,
   DestinationStatus,
 } from './destination.js';
+export {
+  BWL_ACTIVITY_PLACE_FIELDS,
+  resolveActivityPlaceLinkId,
+  withActivityPlaceIdAlias,
+  type ActivityPlaceLinkWire,
+} from './activity-place-wire.js';
+
 export {
   approximateDestinationBoundsKm2,
   catalogDestinationIdUpdate,

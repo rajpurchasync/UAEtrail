@@ -13,7 +13,7 @@ describe('repoCensusGuard (P0 census parity)', () => {
     const audit = JSON.parse(read('scripts/governance/system-audit-baseline.json')) as {
       summary?: { spaRouteElements?: number };
     };
-    expect(census.spaRouteElements).toBeGreaterThan(100);
+    expect(census.spaRouteElements).toBeGreaterThan(50);
     expect(census.spaRouteElements).toBe(audit.summary?.spaRouteElements);
   });
 

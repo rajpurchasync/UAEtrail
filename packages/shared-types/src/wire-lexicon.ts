@@ -65,6 +65,9 @@ export const BWL_CATALOG_GEO_FIELDS = {
   PLACE_HUB_LABEL: 'placeHubLabel',
 } as const;
 
+/** Activity → Place (site) FK — Mongo `activities.locationId`; DTO also emits `placeId`. */
+export { BWL_ACTIVITY_PLACE_FIELDS } from './activity-place-wire.js';
+
 export type ActivityModeWire = 'hosted';
 
 /** Activity document person fields (BWL). UPL label: Host. */
