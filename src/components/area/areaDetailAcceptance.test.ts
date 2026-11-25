@@ -5,8 +5,8 @@ import { join } from 'node:path';
 const read = (relativePath: string) => readFileSync(join(process.cwd(), relativePath), 'utf8');
 
 describe('area detail shell (S9 Phase 4)', () => {
-  it('AreaDetailPage delegates to AreaDetailView with tab wire ids', () => {
-    const page = read('src/pages/AreaDetailPage.tsx');
+  it('DestinationDetailPage delegates to AreaDetailView with tab wire ids', () => {
+    const page = read('src/pages/DestinationDetailPage.tsx');
     expect(page).toMatch(/AreaDetailView/);
     expect(page).toMatch(/AreaDetailPageShell/);
     expect(page).toMatch(/areaDetailTab/);

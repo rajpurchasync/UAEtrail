@@ -132,6 +132,12 @@ describe('geographyTerminologyGuard (Place · Facility · Area)', () => {
     expect(read('packages/shared-types/src/wire-lexicon.ts')).toMatch(/BWL_CATALOG_GEO_FIELDS/);
   });
 
+  it('GEO-15: FE hub facade + detail route (Phase D)', () => {
+    expect(read('src/hooks/destinationHubClientApi.ts')).toMatch(/fetchDestinationDetailBySlug/);
+    expect(read('src/config/destinationFeWireGuard.test.ts')).toMatch(/destinationFeWireGuard/);
+    expect(read('src/pages/DestinationDetailPage.tsx')).toMatch(/DestinationDetailPage/);
+  });
+
   it('GEO-14: admin console uses /admin/destinations (Phase E)', () => {
     expect(read('src/config/adminSurfacePaths.ts')).toMatch(/ADMIN_DESTINATIONS_PATH/);
     expect(read('src/routing/AppRoutes.tsx')).toMatch(/ADMIN_DESTINATIONS_PATH/);

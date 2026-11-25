@@ -56,7 +56,7 @@ import {
   AdminSubmissions,
   AdminPlaces,
   AdminAreas,
-  AreaDetailPage,
+  DestinationDetailPage,
   AdminOrganisations,
   AdminActivities,
   AdminMembers,
@@ -154,7 +154,7 @@ export const AppRoutes = ({ location }: { location: Location }) => (
       path="/destination/:slug"
       element={
         <Suspense fallback={<PageLoader />}>
-          <AreaDetailPage />
+          <DestinationDetailPage />
         </Suspense>
       }
     />

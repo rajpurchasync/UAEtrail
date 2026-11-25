@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import type { AreaDetailPayload } from '../../hooks/areaHubClientApi';
+import type { DestinationDetailPayload } from '../../hooks/destinationHubClientApi';
 import type { ExploreAvailabilityIndex } from '../../hooks/memberPeopleClientApi';
 import { PageMeta } from '../seo/PageMeta';
 import { explorePath } from '../../explore/routing';
@@ -42,7 +42,7 @@ const AREA_TAB_SCROLL_ANCHORS: Record<AreaDetailTabId, string> = {
 
 type AreaDetailViewProps = {
   slug: string;
-  data: AreaDetailPayload;
+  data: DestinationDetailPayload;
   availabilityIndex?: ExploreAvailabilityIndex | null;
   activeTab: AreaDetailTabId;
   onTabChange: (tab: AreaDetailTabId) => void;

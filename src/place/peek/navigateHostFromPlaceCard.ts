@@ -8,7 +8,7 @@ import {
   createDraftFromRegistryPlace,
   resolveCreateActivityKindFromVenueCardKind,
 } from '../../explore/ui/hostingFromPlace';
-import { fetchPublishedDestinations } from '../../hooks/areaHubClientApi';
+import { fetchPublishedDestinations } from '../../hooks/destinationHubClientApi';
 import { fetchPublicPlaceDetail } from '../../hooks/placeDetailClientApi';
 import type { Place } from '../../types/place';
 import type { PlaceDetailKind } from '../../pages/placeDetailConfig';

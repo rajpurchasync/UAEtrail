@@ -24,9 +24,9 @@ describe('detailSurfaceWiringAcceptance', () => {
       expect(existsSync(join(process.cwd(), kindPage))).toBe(false);
     }
 
-    const areaPage = read('src/pages/AreaDetailPage.tsx');
-    expect(areaPage).toMatch(/areaHubClientApi/);
-    expect(areaPage).toMatch(/AreaDetailView/);
+    const destinationPage = read('src/pages/DestinationDetailPage.tsx');
+    expect(destinationPage).toMatch(/destinationHubClientApi/);
+    expect(destinationPage).toMatch(/AreaDetailView/);
 
     const shopPage = read('src/pages/ShopPublic.tsx');
     expect(shopPage).toMatch(/shopPublicClientApi/);

@@ -297,7 +297,7 @@ describe('activity detail program — wiring', () => {
       expect(existsSync(join(process.cwd(), file))).toBe(false);
     }
     expect(read('src/pages/PlaceDetailPage.tsx')).toMatch(/PlaceDetailPageShell/);
-    expect(read('src/pages/AreaDetailPage.tsx')).toMatch(/AreaDetailView/);
+    expect(read('src/pages/DestinationDetailPage.tsx')).toMatch(/AreaDetailView/);
   });
 
   it('AD-PAGE-MODEL-01 (S13-W7): L1 page model drives tab bar + plan facts', () => {

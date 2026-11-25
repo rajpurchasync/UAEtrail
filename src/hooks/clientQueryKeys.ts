@@ -204,13 +204,19 @@ export const participantHubQueryKey = (userId: string): QueryKey => ['participan
 /** Published destinations (`GET /destinations` public list) — explore search + hub pickers. */
 export const publishedAreasQueryKey = ['areas', 'published'] as const;
 
-export const areaDetailQueryKey = (slug: string): QueryKey => ['area', slug];
+export const destinationDetailQueryKey = (slug: string): QueryKey => ['destination', slug];
 
-export const areaAvailabilityQueryKey = (slug: string, weekFrom: string): QueryKey => [
-  'area-availability',
+/** @deprecated Use {@link destinationDetailQueryKey}. */
+export const areaDetailQueryKey = destinationDetailQueryKey;
+
+export const destinationAvailabilityQueryKey = (slug: string, weekFrom: string): QueryKey => [
+  'destination-availability',
   slug,
   weekFrom,
 ];
+
+/** @deprecated Use {@link destinationAvailabilityQueryKey}. */
+export const areaAvailabilityQueryKey = destinationAvailabilityQueryKey;
 
 export const inboxUnreadQueryKey = (userId: string): QueryKey => ['inbox-unread', userId];
 

@@ -344,9 +344,9 @@
         "src/api/domains/geoSearch.ts"
       ],
       "feRoots": [
-        "src/pages/AreaDetailPage.tsx",
+        "src/pages/DestinationDetailPage.tsx",
         "src/components/area/AreaDetailView.tsx",
-        "src/hooks/areaHubClientApi.ts",
+        "src/hooks/destinationHubClientApi.ts",
         "src/hooks/geoHierarchyClientApi.ts",
         "src/explore/exploreAreaFilter.ts",
         "src/geo",

@@ -9,7 +9,7 @@ import {
 } from '../../../../lib/rideshareDestinationSearch';
 import { submitMemberPlace } from '../../../../hooks/memberCatalogSubmitClientApi';
 import { RideshareLinkedOutingPreviewLines } from '../../hostingPinReview';
-import { fetchPublishedDestinations } from '../../../../hooks/areaHubClientApi';
+import { fetchPublishedDestinations } from '../../../../hooks/destinationHubClientApi';
 import { resolvePublishedAreaForPoint } from '../../../hostingPublishArea';
 import { ImageUpload } from '../../../../components/ui/ImageUpload';
 

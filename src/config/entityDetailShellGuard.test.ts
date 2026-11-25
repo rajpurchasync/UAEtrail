@@ -6,7 +6,7 @@ const read = (relativePath: string) => readFileSync(join(process.cwd(), relative
 
 /** Entity detail routes must compose through allowlisted shells (S9 Phase 7). */
 const ENTITY_DETAIL_PAGES: Array<{ path: string; mustMatch: RegExp }> = [
-  { path: 'src/pages/AreaDetailPage.tsx', mustMatch: /AreaDetailPageShell/ },
+  { path: 'src/pages/DestinationDetailPage.tsx', mustMatch: /AreaDetailPageShell/ },
   { path: 'src/pages/PlaceDetailPage.tsx', mustMatch: /PlaceDetailPageShell/ },
   {
     path: 'src/pages/ActivityDetail.tsx',

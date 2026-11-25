@@ -1088,7 +1088,7 @@ Mark `[x]` in the PR that completes the item.
 
 **P7 — FE destination hubs**
 
-- [x] `GET /destinations` + hub detail via `destinationsApi` / `areaHubClientApi`
+- [x] `GET /destinations` + hub detail via `destinationsApi` / `destinationHubClientApi`
 - [x] SPA `/destination/:slug` (legacy `/area/:slug` mount retained — no `<Navigate>`)
 - [x] `areaDetailPath` emits `/destination/:slug`
 - [x] Explore URL builder dual-writes `destination` + `area` query

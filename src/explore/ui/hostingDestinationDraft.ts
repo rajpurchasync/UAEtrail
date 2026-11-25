@@ -19,7 +19,7 @@ import {
 } from '../createFlowCopy';
 import type { CreateActivityDraft } from './hostingFlowEngine';
 import { applyRegistryPlaceToHostingDraft } from './hostingPlaceRegistryDraft';
-import { fetchPublishedDestinations } from '../../hooks/areaHubClientApi';
+import { fetchPublishedDestinations } from '../../hooks/destinationHubClientApi';
 import { resolvePublishedAreaIdForPoint } from '../hostingPublishArea';
 
 /** Clear trail slot when changing catalog ladder (registry path). */

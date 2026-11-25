@@ -11,7 +11,7 @@ const read = (relativePath: string) => readFileSync(join(process.cwd(), relative
 const DETAIL_SURFACE_LINEAGE: Array<{ page: string; facadePattern: RegExp }> = [
   { page: 'src/pages/ActivityDetail.tsx', facadePattern: /usePublicActivityDetail/ },
   { page: 'src/pages/PlaceDetailPage.tsx', facadePattern: /usePlaceDetailCore/ },
-  { page: 'src/pages/AreaDetailPage.tsx', facadePattern: /areaHubClientApi/ },
+  { page: 'src/pages/DestinationDetailPage.tsx', facadePattern: /destinationHubClientApi/ },
   { page: 'src/pages/ShopPublic.tsx', facadePattern: /shopPublicClientApi/ },
   { page: 'src/pages/OrganisationProfile.tsx', facadePattern: /organisationConsoleApi/ },
   { page: 'src/pages/MemberProfile.tsx', facadePattern: /memberPublicProfileApi/ },

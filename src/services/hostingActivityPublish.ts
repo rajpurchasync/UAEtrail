@@ -4,7 +4,7 @@ import {
   PENDING_VENUE_PLACE_PREFIX,
   type ActivityDTO,
 } from '@uaetrail/shared-types';
-import { fetchPublishedDestinations } from '../hooks/areaHubClientApi';
+import { fetchPublishedDestinations } from '../hooks/destinationHubClientApi';
 import { createActivity, publishActivity, updateActivity } from '../hooks/tenantActivityClientApi';
 import { submitMemberPlace } from '../hooks/memberCatalogSubmitClientApi';
 import { HOME_HERO_OG_PATH } from '../config/seo';

@@ -1,6 +1,6 @@
 import type { AreaPublicDTO } from '@uaetrail/shared-types';
 import { useQuery } from '@tanstack/react-query';
-import { fetchPublishedDestinations } from '../hooks/areaHubClientApi';
+import { fetchPublishedDestinations } from '../hooks/destinationHubClientApi';
 import { publishedAreasQueryKey } from '../hooks/clientQueryKeys';
 
 export const useExplorePublishedAreasQuery = (enabled = true) =>
