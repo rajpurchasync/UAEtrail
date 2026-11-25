@@ -1,14 +1,13 @@
 import { useMemo } from 'react';
 import { useProductSearchParams } from '../../routing/useEffectiveLocation';
-import { useBrowseListFeed } from '../../list/browse/useBrowseListFeed';
 import type { BrowseListFilterState } from '../../list/browse/browseListFilters';
+import { useBrowseGeoScopeHydration, useBrowseListFeed } from '../../discovery/discoverySession';
 import {
   parseBrowseListFilterState,
   parseBrowseListGeoPath,
   scopeBrowseListStateForListCat,
 } from '../../discovery/discoverySession';
 import { ListDiscoveryExperience } from '../../list/ListDiscoveryExperience';
-import { useBrowseGeoScopeHydration } from '../../list/browse/useBrowseGeoScopeHydration';
 import { resolveEffectiveBrowseVenueRegions } from '../../discovery/discoverySession';
 import { useExplorePublishedDestinationsQuery } from '../useExplorePublishedDestinations';
 import {

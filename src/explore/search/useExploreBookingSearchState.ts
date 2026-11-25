@@ -20,7 +20,7 @@ import {
   writeExploreSearchLastSearch,
 } from './exploreSearchLastSearch';
 import { resolveExploreSearchDetectedWhereQuery } from './exploreSearchDetectedWhere';
-import { useBrowseViewerLocation } from '../../list/browse/useBrowseViewerLocation';
+import { useBrowseViewerLocation } from '../../discovery/discoverySession';
 import { exploreSearchWhereEffectiveQuery } from './exploreSearchWhereDisplay';
 import { resolveExploreSearchDefaultVenueRegions } from './exploreSearchVenueState';
 import { useExploreRegionPillOptions } from '../../config/useExploreRegionPillOptions';

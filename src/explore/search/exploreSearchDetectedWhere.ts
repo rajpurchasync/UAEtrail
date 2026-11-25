@@ -1,5 +1,5 @@
 import { EXPLORE_REGION_PILL_LABELS } from '../../config/regions';
-import { readStoredViewerFix } from '../../list/browse/viewerLocationStorage';
+import { readStoredViewerFix } from '../../discovery/discoverySession';
 import { getExploreMapLocationPreference } from '../exploreMapLocationPreference';
 import { inferEmirateFromPin } from '../hostingPublishDestination';
 

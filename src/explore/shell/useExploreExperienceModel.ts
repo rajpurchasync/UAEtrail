@@ -39,7 +39,7 @@ import {
   resolveExploreMapCreateFabHints,
 } from '../create/composeFabEntry';
 import { intentOpenCompose } from '../compose';
-import { useBrowseGeoScopeHydration } from '../../list/browse/useBrowseGeoScopeHydration';
+import { useBrowseGeoScopeHydration } from '../../discovery/discoverySession';
 import { reloadExploreMap } from '../../hooks/useExploreMap';
 
 /** Explore map + browse + compose + selection orchestration (R2). */

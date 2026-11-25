@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "updated": "2026-11-25",
+  "description": "Independent shim burn-down lanes for multi-agent / multi-task. One lane per branch; acquire locks per agent-file-lock.mdc.",
+  "integrationGate": "npm run verify:system:quick && npm run shim:baseline",
+  "lanes": [
+    {
+      "id": "W4s",
+      "title": "discoverySession list hooks facade",
+      "branch": "burn-down/w4s-list-hooks",
+      "owns": [
+        "src/discovery/discoverySessionListHooks.ts",
+        "src/discovery/discoverySession.ts",
+        "src/explore/shell/useExploreExperienceModel.ts",
+        "src/explore/search/ExploreSearchResults.tsx",
+        "src/explore/search/useExploreBookingSearchState.ts",
+        "src/explore/search/exploreSearchDetectedWhere.ts"
+      ],
+      "avoid": ["src/explore/search/*Chrome*", "src/list/browse/*"]
+    },
+    {
+      "id": "W4t",
+      "title": "discoverySession filter types facade (explore search)",
+      "branch": "burn-down/w4t-list-filters",
+      "owns": [
+        "src/discovery/discoverySessionListFilters.ts",
+        "src/explore/ui/exploreMapQuickFiltersState.ts",
+        "src/explore/search/ExploreSearchRecommendedSection.tsx",
+        "src/explore/search/exploreSearchUpcomingTrips.ts"
+      ],
+      "avoid": ["src/discovery/discoverySessionListHooks.ts", "src/list/browse/browseListUrlState.ts"]
+    },
+    {
+      "id": "W4u",
+      "title": "discoverySession list chrome facade (explore search layout)",
+      "branch": "burn-down/w4u-list-chrome",
+      "owns": [
+        "src/discovery/discoverySessionListChrome.ts",
+        "src/explore/search/ExploreSearchPageLayout.tsx",
+        "src/explore/search/ExploreSearchResultsPage.tsx",
+        "src/explore/search/ExploreSearchResultsChrome.tsx",
+        "src/explore/search/ExploreSearchRecommendedScopePills.tsx",
+        "src/explore/ui/ExploreMapProjectionToggle.tsx"
+      ],
+      "avoid": ["W4s", "W4t files"]
+    },
+    {
+      "id": "W1e",
+      "title": "participant_intents ops allowlist single module (API)",
+      "branch": "burn-down/w1e-ops-allowlist",
+      "owns": [
+        "apps/api/src/lib/participant-intent-ops-allowlist.ts",
+        "apps/api/tests/participant-intent-ops-surface-guard.test.ts",
+        "scripts/dev/shim-burn-down-baseline.mjs"
+      ],
+      "avoid": ["src/**", "packages/shared-types/**"]
+    },
+    {
+      "id": "W5-push",
+      "title": "publish local main to origin (11 commits)",
+      "branch": "main",
+      "owns": [],
+      "note": "git push origin main only — no code edits"
+    }
+  ],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push"]
+}

@@ -68,6 +68,16 @@ describe('discoverySessionParamsGuard', () => {
     }
   });
 
+  it('W4s explore imports list hooks via discoverySession barrel', () => {
+    const hookImport =
+      /list\/browse\/(?:useBrowseGeoScopeHydration|useBrowseListFeed|useBrowseViewerLocation|viewerLocationStorage)/;
+    const violations: string[] = [];
+    for (const rel of collectProdTsUnder(join(ROOT, 'src/explore'))) {
+      if (hookImport.test(read(rel))) violations.push(rel);
+    }
+    expect(violations).toEqual([]);
+  });
+
   it('W4r explore imports geo + FAB copy via discoverySession barrel', () => {
     const geoCopy = /list\/browse\/(?:browseGeoPath|browseListCopy)/;
     const violations: string[] = [];

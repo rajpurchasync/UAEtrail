@@ -61,7 +61,9 @@
       "exploreImportsBrowseListTaxonomy": 0,
       "exploreBrowseListTaxonomyViolations": [],
       "exploreImportsBrowseGeoOrCopy": 0,
-      "exploreBrowseGeoOrCopyViolations": []
+      "exploreBrowseGeoOrCopyViolations": [],
+      "exploreImportsBrowseListHooks": 0,
+      "exploreBrowseListHooksViolations": []
     },
     "w6": {
       "pagesUsingUseSafeAsyncEffect": 0,

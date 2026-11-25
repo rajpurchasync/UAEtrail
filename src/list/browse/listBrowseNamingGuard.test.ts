@@ -114,7 +114,8 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/useBrowseListFeed.ts'))).toBe(false);
     expect(existsSync(join(process.cwd(), 'src/list/useListDiscoveryUrlState.ts'))).toBe(false);
     expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(/browse\/useBrowseListFeed/);
-    expect(read('src/explore/search/ExploreSearchResults.tsx')).toMatch(/list\/browse\/useBrowseListFeed/);
+    expect(read('src/explore/search/ExploreSearchResults.tsx')).toMatch(/discovery\/discoverySession/);
+    expect(read('src/explore/search/ExploreSearchResults.tsx')).not.toMatch(/list\/browse\/useBrowseListFeed/);
   });
 
   it('BROWSE-NAME-01u: list routing + discovery layout live under browse', () => {
