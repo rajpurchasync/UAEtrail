@@ -68,6 +68,15 @@ describe('discoverySessionParamsGuard', () => {
     }
   });
 
+  it('W4q explore browse/search spine imports listCat type via discoverySession barrel', () => {
+    const violations: string[] = [];
+    for (const rel of collectProdTsUnder(join(ROOT, 'src/explore'))) {
+      if (/list\/browse\/browseListTaxonomy/.test(read(rel))) violations.push(rel);
+    }
+    expect(violations).toEqual([]);
+    expect(read('src/discovery/discoverySession.ts')).toMatch(/discoverySessionTaxonomy/);
+  });
+
   it('W4p my-crew and list shell import list routing via discoverySession barrel', () => {
     const violations: string[] = [];
     for (const rel of collectProdTsUnder(join(ROOT, 'src/my-crew'))) {

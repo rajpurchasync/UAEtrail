@@ -32,3 +32,4 @@ export {
   PEOPLE_LIST_TAB_URL_PARAM,
   serializePeopleListBrowseState,
 } from './discoverySessionPeopleUrl';
+export type { BrowseMainCategoryKey } from './discoverySessionTaxonomy';

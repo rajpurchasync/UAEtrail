@@ -24,7 +24,7 @@ import {
   type ExploreMapFilterPillKey,
   type ExploreSearchScopeKey,
 } from '../exploreBrowseTaxonomy';
-import type { BrowseMainCategoryKey } from '../../list/browse/browseListTaxonomy';
+import type { BrowseMainCategoryKey } from '../../discovery/discoverySession';
 import type { ExploreBrowseUrlSyncPatch } from '../exploreBrowseUrlSync';
 import type { CrewBrowseLane, CrewPeopleFacet } from '@/crew-discovery/crewBrowseState';
 import { DEFAULT_CREW_BROWSE_LANE, DEFAULT_CREW_PEOPLE_FACET } from '@/crew-discovery/crewBrowseState';

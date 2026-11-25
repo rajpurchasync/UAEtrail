@@ -176,7 +176,8 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browseListTaxonomy.ts'))).toBe(false);
     expect(existsSync(join(process.cwd(), 'src/list/browse/useBrowseGeoScopeHydration.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/useBrowseGeoScopeHydration.ts'))).toBe(false);
-    expect(read('src/explore/exploreBrowseUrlSync.ts')).toMatch(/browse\/browseListTaxonomy/);
+    expect(read('src/explore/exploreBrowseUrlSync.ts')).toMatch(/discovery\/discoverySession/);
+    expect(read('src/explore/exploreBrowseUrlSync.ts')).not.toMatch(/browse\/browseListTaxonomy/);
     expect(read('src/list/browse/browseListFilters.ts')).toMatch(/listVenuePlaceTopics/);
   });
 

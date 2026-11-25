@@ -1,4 +1,4 @@
-import type { BrowseMainCategoryKey } from '../list/browse/browseListTaxonomy';
+import type { BrowseMainCategoryKey } from './discoverySessionTaxonomy';
 
 /** Parse `listCat` query — accepts legacy aliases (`shops`, `trips`, `guides`). */
 export const parseListCatParam = (value: string | null): BrowseMainCategoryKey | null => {

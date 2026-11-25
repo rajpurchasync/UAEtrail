@@ -24,7 +24,7 @@ import {
 } from './exploreBrowseTaxonomy';
 import type { ProductSearchMutationContext } from '../routing/productSearchMutation';
 import { applyProductSearchMutation } from '../routing/productSearchMutation';
-import type { BrowseMainCategoryKey } from '../list/browse/browseListTaxonomy';
+import type { BrowseMainCategoryKey } from '../discovery/discoverySession';
 import {
   BROWSE_DISCOVER_PARAM,
   BROWSE_GEO_PARAM,
