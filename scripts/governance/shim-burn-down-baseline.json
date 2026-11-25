@@ -7,7 +7,8 @@
       "note": "seeking:deploy-gate green when Mongo reachable (npm run seeking:deploy-gate or w1:local-gate)"
     },
     "w1": {
-      "participantIntentsRefsInApiSrc": 15,
+      "participantIntentsRefsInApiSrc": 18,
+      "participantIntentOpsAllowlistFileCount": 6,
       "participantIntentOpsAllowlistOnly": true,
       "participantIntentOpsViolations": [],
       "seekingActivityModeRefsInApiSrc": 3,

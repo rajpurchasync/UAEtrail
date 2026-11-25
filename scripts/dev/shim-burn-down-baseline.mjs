@@ -81,15 +81,21 @@ for (const file of walkFiles(feSrc)) {
   }
 }
 
-const PARTICIPANT_INTENT_OPS_ALLOWLIST = new Set(
-  [
-    'apps/api/src/lib/collections.ts',
-    'apps/api/src/lib/mongo-migrations.ts',
-    'apps/api/src/lib/participant-intents-store.ts',
-    'apps/api/src/lib/retired-seeking-storage-purge.ts',
-    'apps/api/src/lib/seeking-storage-ops.ts',
-  ].map((p) => p.replace(/\\/g, '/'))
-);
+const loadParticipantIntentOpsAllowlistRepoRel = () => {
+  const allowlistTs = join(root, 'apps/api/src/lib/participant-intent-ops-allowlist.ts');
+  const text = readFileSync(allowlistTs, 'utf8');
+  const block = text.match(
+    /PARTICIPANT_INTENT_OPS_ALLOWLIST_API_REL\s*=\s*\[([\s\S]*?)\]\s*as\s+const/
+  );
+  if (!block) {
+    throw new Error('W1e: parse PARTICIPANT_INTENT_OPS_ALLOWLIST_API_REL from participant-intent-ops-allowlist.ts');
+  }
+  return new Set(
+    [...block[1].matchAll(/'([^']+)'/g)].map((m) => `apps/api/${m[1]}`.replace(/\\/g, '/'))
+  );
+};
+
+const PARTICIPANT_INTENT_OPS_ALLOWLIST = loadParticipantIntentOpsAllowlistRepoRel();
 const participantIntentPattern = /participant_intents|participant-intent|PARTICIPANT_INTENT/i;
 const participantIntentOpsViolations = [];
 for (const file of walkFiles(apiSrc)) {
@@ -333,6 +339,7 @@ const baseline = {
     },
     w1: {
       participantIntentsRefsInApiSrc: participantIntentsRefs,
+      participantIntentOpsAllowlistFileCount: PARTICIPANT_INTENT_OPS_ALLOWLIST.size,
       participantIntentOpsAllowlistOnly,
       participantIntentOpsViolations,
       seekingActivityModeRefsInApiSrc: seekingActivityModeRefs,
