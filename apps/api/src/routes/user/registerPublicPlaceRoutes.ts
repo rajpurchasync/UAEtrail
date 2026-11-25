@@ -28,7 +28,10 @@ import { finishCatalogEtag, readCatalogResponseEtag } from '../../lib/explore-ca
 import { readExploreMapMemoryCache } from '../../lib/explore-map-cache.js';
 import type { ExploreMapRouteResult } from '../../lib/explore-map-route.js';
 import { sendNotModifiedIfMatch } from '../../lib/http-etag.js';
-import { resolveExploreDestinationSlugQuery } from '@uaetrail/shared-types';
+import {
+  normalizePlaceCatalogQuery,
+  resolveExploreDestinationSlugQuery,
+} from '@uaetrail/shared-types';
 import {
   eventIdParamSchema,
   listFilterSchema,
@@ -132,7 +135,8 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     validate({ query: placeCatalogQuerySchema }),
     async (req, res, next) => {
       try {
-        const filters = req.query as z.infer<typeof placeCatalogQuerySchema>;
+        const raw = req.query as z.infer<typeof placeCatalogQuerySchema>;
+        const filters = normalizePlaceCatalogQuery(raw);
         const data = await loadPublicPlaceCatalog({
           ...filters,
           userId: req.auth?.userId ?? null,

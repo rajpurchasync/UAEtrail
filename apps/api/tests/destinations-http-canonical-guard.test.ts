@@ -17,4 +17,11 @@ describe('destinations HTTP canonical guard (MIG-DESTINATION-GEO)', () => {
     expect(existsSync(join(ROOT, 'apps/api/src/routes/user/registerPublicAreaRoutes.ts'))).toBe(false);
     expect(existsSync(join(ROOT, 'apps/api/src/lib/route-destination-alias.ts'))).toBe(false);
   });
+
+  it('catalog query schemas accept canonical destinationId + legacy aliases', () => {
+    const schemas = read('apps/api/src/routes/user/schemas.ts');
+    expect(schemas).toMatch(/placeCatalogQuerySchema[\s\S]*destinationId:/);
+    expect(schemas).toMatch(/facilityCatalogQuerySchema[\s\S]*destinationId:/);
+    expect(schemas).toMatch(/facilityCatalogQuerySchema[\s\S]*onSiteId:/);
+  });
 });

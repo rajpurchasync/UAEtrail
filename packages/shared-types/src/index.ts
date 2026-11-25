@@ -2061,6 +2061,15 @@ export type {
   PlaceCatalogSegment,
 } from './catalog-query.js';
 
+export {
+  CATALOG_DESTINATION_QUERY_ALIASES,
+  CATALOG_ON_SITE_QUERY_ALIASES,
+  normalizeFacilityCatalogQuery,
+  normalizePlaceCatalogQuery,
+  type InboundFacilityCatalogQuery,
+  type InboundPlaceCatalogQuery,
+} from './catalog-query-normalize.js';
+
 export { FACILITY_KINDS, isFacilityKind, type FacilityKind } from './facility-kind.js';
 
 export type {
@@ -2330,6 +2339,7 @@ export type {
 
 export {
   BWL_COLLECTIONS,
+  BWL_CATALOG_GEO_FIELDS,
   BWL_ACTIVITY_PERSON_FIELDS,
   BWL_JOIN_REQUEST_FIELDS,
   resolveHostNote,

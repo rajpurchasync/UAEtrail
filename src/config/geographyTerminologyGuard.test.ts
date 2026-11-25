@@ -124,5 +124,24 @@ describe('geographyTerminologyGuard (Place · Facility · Area)', () => {
     );
     expect(read('packages/shared-types/src/entity-path.ts')).toMatch(/STALE_AREA_HUB_PATH_RE/);
   });
+
+  it('GEO-11: catalog query normalizers live in shared-types (Phase A)', () => {
+    expect(read('packages/shared-types/src/catalog-query-normalize.ts')).toMatch(
+      /normalizePlaceCatalogQuery/
+    );
+    expect(read('packages/shared-types/src/wire-lexicon.ts')).toMatch(/BWL_CATALOG_GEO_FIELDS/);
+  });
+
+  it('GEO-12: public catalog routes call normalizers, not inline alias merge (Phase B)', () => {
+    expect(read('apps/api/src/routes/user/registerPublicPlaceRoutes.ts')).toMatch(
+      /normalizePlaceCatalogQuery/
+    );
+    expect(read('apps/api/src/routes/user/registerPublicFacilityRoutes.ts')).toMatch(
+      /normalizeFacilityCatalogQuery/
+    );
+    expect(read('apps/api/tests/catalog-destination-wire-guard.test.ts')).toMatch(
+      /catalog destination wire guard/
+    );
+  });
 });
 

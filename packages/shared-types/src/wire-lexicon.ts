@@ -59,6 +59,14 @@ export const BWL_COLLECTIONS = {
   SIDE_EFFECT_OUTBOX: 'side_effect_outbox',
 } as const;
 
+/** Catalog query/submit wire keys (MIG-DESTINATION-GEO). Normalize legacy aliases at HTTP boundary. */
+export const BWL_CATALOG_GEO_FIELDS = {
+  DESTINATION_ID: 'destinationId',
+  ON_SITE_ID: 'onSiteId',
+  LEGACY_DESTINATION_QUERY: 'areaId',
+  LEGACY_ON_SITE_QUERY: 'parentPlaceId',
+} as const;
+
 export type ActivityModeWire = 'hosted';
 
 /** Activity document person fields (BWL). UPL label: Host. */
