@@ -19,7 +19,7 @@ import { formatExploreSearchWhereDisplay } from './exploreSearchWhereDisplay';
 import { exploreSearchStateSummary } from './exploreSearchVenueState';
 import { useExploreRegionPillOptions } from '../../config/useExploreRegionPillOptions';
 import { ProductNavLink } from '../../components/navigation/ProductNavLink';
-import { listChipClass } from '../../list/browse/listChromeTheme';
+import { listChipClass } from '../../discovery/discoverySession';
 import { FEATURE_FLAGS } from '../../config/platform';
 
 type ExploreSearchResultsChromeProps = {

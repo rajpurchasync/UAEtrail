@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { APP_SCROLL_BODY_CLASS } from '../../config/layoutScroll';
-import { LIST_CHROME } from '../../list/browse/listChromeTheme';
+import { LIST_CHROME } from '../../discovery/discoverySession';
 import { MobileBackButton } from '../../components/mobile/MobileBackButton';
 
 /** Centered column — search home + results share one width. */

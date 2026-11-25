@@ -88,6 +88,16 @@ describe('discoverySessionParamsGuard', () => {
     expect(violations).toEqual([]);
   });
 
+  it('W4u explore imports list chrome via discoverySession barrel', () => {
+    const chromeImport = /list\/browse\/listChromeTheme/;
+    const violations: string[] = [];
+    for (const rel of collectProdTsUnder(join(ROOT, 'src/explore'))) {
+      if (chromeImport.test(read(rel))) violations.push(rel);
+    }
+    expect(violations).toEqual([]);
+    expect(read('src/discovery/discoverySession.ts')).toMatch(/discoverySessionListChrome/);
+  });
+
   it('W4r explore imports geo + FAB copy via discoverySession barrel', () => {
     const geoCopy = /list\/browse\/(?:browseGeoPath|browseListCopy)/;
     const violations: string[] = [];

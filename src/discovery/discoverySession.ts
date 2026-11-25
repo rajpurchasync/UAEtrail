@@ -51,6 +51,7 @@ export {
   useBrowseListFeed,
   useBrowseViewerLocation,
 } from './discoverySessionListHooks';
+export { LIST_CHROME, LIST_HUB_SEARCH_ROW, listChipClass } from './discoverySessionListChrome';
 export type {
   BrowseAudienceFilter,
   BrowseListFilterState,
@@ -58,4 +59,3 @@ export type {
   BrowseWhenFilter,
 } from './discoverySessionListFilters';
 export { filterExploreMapItemsForList } from './discoverySessionListFilters';
-export { LIST_CHROME, LIST_HUB_SEARCH_ROW, listChipClass } from './discoverySessionListChrome';

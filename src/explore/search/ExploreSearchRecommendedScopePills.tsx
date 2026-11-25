@@ -5,7 +5,7 @@ import {
   EXPLORE_SEARCH_SECTION_SPOTS,
   EXPLORE_SEARCH_SECTION_TRIPS,
 } from './exploreSearchHomeCopy';
-import { listChipClass } from '../../list/browse/listChromeTheme';
+import { listChipClass } from '../../discovery/discoverySession';
 import { FEATURE_FLAGS } from '../../config/platform';
 
 const RECOMMENDED_SCOPE_PILLS: ReadonlyArray<{ mode: ExploreSearchScope; label: string }> = [

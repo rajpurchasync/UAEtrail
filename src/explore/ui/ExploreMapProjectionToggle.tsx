@@ -1,7 +1,7 @@
 import { Map, List } from 'lucide-react';
 import { exploreMapScopeSegmentClass } from '../../config/exploreTheme';
 import { EXPLORE_MAP_CHROME_FROST } from '../../config/exploreTheme';
-import { LIST_HUB_SEARCH_ROW } from '../../list/browse/listChromeTheme';
+import { LIST_HUB_SEARCH_ROW } from '../../discovery/discoverySession';
 
 type ExploreMapProjectionToggleProps = {
   mode: 'map' | 'list';

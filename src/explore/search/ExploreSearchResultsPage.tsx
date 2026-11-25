@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { PageMeta } from '../../components/seo/PageMeta';
-import { LIST_CHROME } from '../../list/browse/listChromeTheme';
+import { LIST_CHROME } from '../../discovery/discoverySession';
 import { useProductSearchParams } from '../../routing/useEffectiveLocation';
 import {
   EXPLORE_SEARCH_RESULTS_PATH,
