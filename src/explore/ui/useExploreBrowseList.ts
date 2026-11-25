@@ -25,7 +25,10 @@ import {
 import type { ExploreBrowseListMode } from './useExploreBrowseUrlState';
 import { selectActivitiesFromMapItems } from '@/activity-discovery/catalog/activities';
 import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
-import { exploreItemMatchesBrowseGeoPath, resolveEffectiveBrowseVenueRegions } from '../../list/browse/browseGeoPath';
+import {
+  exploreItemMatchesBrowseGeoPath,
+  resolveEffectiveBrowseVenueRegions,
+} from '../../discovery/discoverySession';
 import {
   selectPlacesFromMapItems,
   selectShopsFromMapItems,

@@ -3,6 +3,8 @@
  */
 export {
   BROWSE_GEO_PARAM,
+  exploreItemMatchesBrowseGeoPath,
   parseBrowseGeoPath,
+  resolveEffectiveBrowseVenueRegions,
   serializeBrowseGeoPath,
 } from '../list/browse/browseGeoPath';

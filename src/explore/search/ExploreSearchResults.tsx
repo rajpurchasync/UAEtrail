@@ -9,7 +9,7 @@ import {
 } from '../../discovery/discoverySession';
 import { ListDiscoveryExperience } from '../../list/ListDiscoveryExperience';
 import { useBrowseGeoScopeHydration } from '../../list/browse/useBrowseGeoScopeHydration';
-import { resolveEffectiveBrowseVenueRegions } from '../../list/browse/browseGeoPath';
+import { resolveEffectiveBrowseVenueRegions } from '../../discovery/discoverySession';
 import { useExplorePublishedDestinationsQuery } from '../useExplorePublishedDestinations';
 import {
   resolveExploreSearchTripPool,

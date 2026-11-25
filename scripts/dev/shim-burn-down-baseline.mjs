@@ -237,6 +237,15 @@ for (const file of walkFiles(join(feSrc, 'explore'))) {
   }
 }
 
+const exploreImportsBrowseGeoOrCopy = [];
+for (const file of walkFiles(join(feSrc, 'explore'))) {
+  if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
+  const rel = file.slice(root.length + 1).replace(/\\/g, '/');
+  if (/list\/browse\/(?:browseGeoPath|browseListCopy)/.test(readFileSync(file, 'utf8'))) {
+    exploreImportsBrowseGeoOrCopy.push(rel);
+  }
+}
+
 const exploreImportsBrowseListTaxonomy = [];
 for (const file of walkFiles(join(feSrc, 'explore'))) {
   if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
@@ -345,6 +354,8 @@ const baseline = {
       myCrewListShellBrowseListRoutingViolations: w4pBrowseListRoutingViolations,
       exploreImportsBrowseListTaxonomy: exploreImportsBrowseListTaxonomy.length,
       exploreBrowseListTaxonomyViolations: exploreImportsBrowseListTaxonomy,
+      exploreImportsBrowseGeoOrCopy: exploreImportsBrowseGeoOrCopy.length,
+      exploreBrowseGeoOrCopyViolations: exploreImportsBrowseGeoOrCopy,
     },
     w6: {
       pagesUsingUseSafeAsyncEffect: useSafeAsyncEffectPages.length,
@@ -416,6 +427,9 @@ const baseline = {
       : []),
     ...(exploreImportsBrowseListTaxonomy.length > 0
       ? ['W4q: explore imports BrowseMainCategoryKey via discoverySessionTaxonomy']
+      : []),
+    ...(exploreImportsBrowseGeoOrCopy.length > 0
+      ? ['W4r: explore imports browse geo/FAB copy via discoverySession facades']
       : []),
     ...(exploreImportsBrowseListUrlState.length > 0
       ? ['W4: import discovery params from src/discovery/discoverySessionParams.ts not list/']

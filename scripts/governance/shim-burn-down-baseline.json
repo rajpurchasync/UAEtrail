@@ -59,7 +59,9 @@
       "myCrewListShellBrowseListRoutingImports": 0,
       "myCrewListShellBrowseListRoutingViolations": [],
       "exploreImportsBrowseListTaxonomy": 0,
-      "exploreBrowseListTaxonomyViolations": []
+      "exploreBrowseListTaxonomyViolations": [],
+      "exploreImportsBrowseGeoOrCopy": 0,
+      "exploreBrowseGeoOrCopyViolations": []
     },
     "w6": {
       "pagesUsingUseSafeAsyncEffect": 0,

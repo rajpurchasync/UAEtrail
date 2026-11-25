@@ -6,7 +6,7 @@ import {
   filterExploreMapItemsForList,
   type BrowseListFilterState,
 } from '../../list/browse/browseListFilters';
-import { resolveEffectiveBrowseVenueRegions } from '../../list/browse/browseGeoPath';
+import { resolveEffectiveBrowseVenueRegions } from '../../discovery/discoverySession';
 import { sortBrowseListCards } from '../../list/browse/listBrowseSort';
 import { exploreSearchWhereBrowseQuery } from './exploreSearchWhereQuery';
 import {

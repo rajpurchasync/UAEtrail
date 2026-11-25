@@ -68,6 +68,16 @@ describe('discoverySessionParamsGuard', () => {
     }
   });
 
+  it('W4r explore imports geo + FAB copy via discoverySession barrel', () => {
+    const geoCopy = /list\/browse\/(?:browseGeoPath|browseListCopy)/;
+    const violations: string[] = [];
+    for (const rel of collectProdTsUnder(join(ROOT, 'src/explore'))) {
+      if (geoCopy.test(read(rel))) violations.push(rel);
+    }
+    expect(violations).toEqual([]);
+    expect(read('src/discovery/discoverySession.ts')).toMatch(/discoverySessionListCopy/);
+  });
+
   it('W4q explore browse/search spine imports listCat type via discoverySession barrel', () => {
     const violations: string[] = [];
     for (const rel of collectProdTsUnder(join(ROOT, 'src/explore'))) {

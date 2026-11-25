@@ -1,5 +1,5 @@
 import { resolveMobileFiveTab } from '../../config/mobileFiveTabNav';
-import type { BrowseListCreateFabHints } from '../../list/browse/browseListCopy';
+import type { BrowseListCreateFabHints } from '../../discovery/discoverySession';
 import { intentOpenCompose, type ExploreCompose } from '../compose';
 import type { ExplorePinKindFilter } from '../explorePinKindFilter';
 import type { ExploreBrowseListMode } from '../exploreBrowseUrlSync';

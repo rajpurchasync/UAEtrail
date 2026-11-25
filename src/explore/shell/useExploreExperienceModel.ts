@@ -33,7 +33,7 @@ import { useCrewDiscoveryBrowseBundle } from '@/crew-discovery/hooks/useCrewDisc
 import { useExplorePinDeepLink } from './useExplorePinDeepLink';
 import { useExploreMapCatalog } from './useExploreMapCatalog';
 import { useExploreMapInteractionHandlers } from './useExploreMapInteractionHandlers';
-import { resolveBrowseListCreateFabLabel } from '../../list/browse/browseListCopy';
+import { resolveBrowseListCreateFabLabel } from '../../discovery/discoverySession';
 import {
   resolveCreateEntryPreset,
   resolveExploreMapCreateFabHints,

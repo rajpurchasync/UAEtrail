@@ -13,7 +13,13 @@ export {
   parseBrowseListVenueRegions,
   serializeBrowseListSearchParams,
 } from './discoverySessionListUrl';
-export { BROWSE_GEO_PARAM, parseBrowseGeoPath, serializeBrowseGeoPath } from './discoverySessionGeoUrl';
+export {
+  BROWSE_GEO_PARAM,
+  exploreItemMatchesBrowseGeoPath,
+  parseBrowseGeoPath,
+  resolveEffectiveBrowseVenueRegions,
+  serializeBrowseGeoPath,
+} from './discoverySessionGeoUrl';
 export { scopeBrowseListStateForListCat } from './discoverySessionMapHandoff';
 export {
   crewsHubHomePath,
@@ -33,3 +39,9 @@ export {
   serializePeopleListBrowseState,
 } from './discoverySessionPeopleUrl';
 export type { BrowseMainCategoryKey } from './discoverySessionTaxonomy';
+export {
+  BROWSE_LIST_CREATE_TRIP,
+  BROWSE_LIST_CREATE_VENUE,
+  resolveBrowseListCreateFabLabel,
+  type BrowseListCreateFabHints,
+} from './discoverySessionListCopy';
