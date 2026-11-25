@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  catalogDestinationIdUpdate,
   destinationHubPath,
   exploreDestinationQueryParam,
   exploreMapItemMatchesDestinationSlug,
@@ -8,7 +9,7 @@ import {
   resolveExploreDestinationSlugQuery,
 } from './destination.js';
 
-describe('destination wire (MIG-DESTINATION-GEO)', () => {
+describe('destination wire', () => {
   it('destinationHubPath encodes slug', () => {
     expect(destinationHubPath('hatta')).toBe('/destination/hatta');
     expect(destinationHubPath('wadi shawka')).toBe('/destination/wadi%20shawka');
@@ -18,6 +19,12 @@ describe('destination wire (MIG-DESTINATION-GEO)', () => {
     expect(resolveDestinationId({ destinationId: 'd1' })).toBe('d1');
     expect(resolveDestinationId({ destinationId: '  ' })).toBeNull();
     expect(resolveDestinationId(null)).toBeNull();
+  });
+
+  it('catalogDestinationIdUpdate writes destinationId only', () => {
+    const id = 'area-seed-hatta';
+    expect(catalogDestinationIdUpdate(id)).toEqual({ destinationId: id });
+    expect(catalogDestinationIdUpdate(null)).toEqual({ destinationId: null });
   });
 
   it('exploreDestinationQueryParam is stable', () => {

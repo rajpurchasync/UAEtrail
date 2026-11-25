@@ -33,7 +33,7 @@ import {
   updateAdminLocation,
 } from '../lib/admin-store.js';
 import { EXPLORE_VENUES_LIST_PATH } from '../lib/member-routes.js';
-import { catalogDestinationIdUpdate } from '../lib/destination-id-sync.js';
+import { catalogDestinationIdUpdate } from '@uaetrail/shared-types';
 import { assertActiveListedPlaceHasCatalogGeo } from '../lib/listed-catalog-geo-gate.js';
 import { scheduleSideEffect } from '../lib/schedule-side-effect.js';
 import { dispatchNotification } from './notifications.js';

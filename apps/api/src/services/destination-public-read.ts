@@ -4,47 +4,89 @@ import type {
   LocationDTO,
 } from '@uaetrail/shared-types';
 import { ApiError } from '../lib/api-error.js';
-import {
-  countPublishedAreaPreviewByAreaId,
-  listPublishedAreasForPublic,
-  loadPublishedAreaDetailBySlug,
-  type PublishedAreaDetailPayload,
-  type PublishedAreaPreviewCounts,
-} from './area-public-read.js';
+import { COLLECTIONS } from '../lib/collections.js';
+import { getMongoClient } from '../lib/mongo.js';
+import { ActivityStatus, LocationStatus } from '../domain/enums.js';
+import { findAreaBySlug, listPublishedAreas } from '../lib/areas-store.js';
 import { toDestinationPublicDto } from '../lib/destinations-store.js';
+import {
+  listActiveCatalogPlacesByArea,
+  listPublishedUpcomingActivitiesByArea,
+} from '../lib/activities-store.js';
+import { buildActivityDto, toLocationDto } from '../lib/mappers.js';
+import { listProHostStorefrontsForAreaPreview } from '../lib/area-pro-host-preview.js';
 
-export type PublishedDestinationPreviewCounts = PublishedAreaPreviewCounts;
+const DESTINATION_PREVIEW_ACTIVITY_LIMIT = 8;
+const DESTINATION_PREVIEW_PLACE_LIMIT = 40;
+const DESTINATION_PREVIEW_OPERATOR_LIMIT = 8;
+
+export type PublishedDestinationPreviewCounts = {
+  activities: number;
+  places: number;
+  /** Public `member_availability` rows scoped to this hub. */
+  availability: number;
+};
+
+export const countPublishedDestinationPreviewByDestinationId = async (
+  destinationId: string
+): Promise<PublishedDestinationPreviewCounts> => {
+  const db = getMongoClient()!.db();
+  const [activities, places, availability] = await Promise.all([
+    db.collection(COLLECTIONS.ACTIVITIES).countDocuments({
+      destinationId,
+      status: ActivityStatus.PUBLISHED,
+      activityMode: { $ne: 'seeking' },
+    }),
+    db.collection(COLLECTIONS.LOCATIONS).countDocuments({
+      destinationId,
+      status: LocationStatus.ACTIVE,
+    }),
+    db.collection(COLLECTIONS.MEMBER_AVAILABILITY).countDocuments({
+      destinationId,
+      visibility: 'public',
+    }),
+  ]);
+  return { activities, places, availability };
+};
+
+export const listPublishedDestinationsForPublic = async (): Promise<DestinationPublicDTO[]> => {
+  const areas = await listPublishedAreas();
+  return areas.map((row) => toDestinationPublicDto(row));
+};
 
 export type PublishedDestinationDetailPayload = {
   destination: DestinationPublicDTO;
   counts: PublishedDestinationPreviewCounts;
-  preview: PublishedAreaDetailPayload['preview'];
-};
-
-export const listPublishedDestinationsForPublic = async (): Promise<DestinationPublicDTO[]> => {
-  const rows = await listPublishedAreasForPublic();
-  return rows.map((row) => toDestinationPublicDto(row));
+  preview: {
+    activities: ActivityDTO[];
+    places: LocationDTO[];
+    operators: Awaited<ReturnType<typeof listProHostStorefrontsForAreaPreview>>;
+  };
 };
 
 /** Public destination hub (`GET /destinations/:slug`). */
 export const loadPublishedDestinationDetailBySlug = async (
   slug: string
 ): Promise<PublishedDestinationDetailPayload> => {
-  try {
-    const payload = await loadPublishedAreaDetailBySlug(slug);
-    return {
-      destination: toDestinationPublicDto(payload.area),
-      counts: payload.counts,
-      preview: payload.preview,
-    };
-  } catch (error) {
-    if (error instanceof ApiError && error.code === 'area_not_found') {
-      throw new ApiError(404, 'destination_not_found', 'Destination not found.');
-    }
-    throw error;
+  const row = await findAreaBySlug(slug);
+  if (!row || row.status !== 'published') {
+    throw new ApiError(404, 'destination_not_found', 'Destination not found.');
   }
+  const counts = await countPublishedDestinationPreviewByDestinationId(row.id);
+  const [activityRows, placeRows, operators] = await Promise.all([
+    listPublishedUpcomingActivitiesByArea(row.id, DESTINATION_PREVIEW_ACTIVITY_LIMIT),
+    listActiveCatalogPlacesByArea(row.id, DESTINATION_PREVIEW_PLACE_LIMIT),
+    listProHostStorefrontsForAreaPreview(row.id, DESTINATION_PREVIEW_OPERATOR_LIMIT),
+  ]);
+  return {
+    destination: toDestinationPublicDto(row),
+    counts,
+    preview: {
+      activities: activityRows.map((event) => buildActivityDto(event)),
+      places: placeRows.map((place) => toLocationDto(place)),
+      operators,
+    },
+  };
 };
-
-export const countPublishedDestinationPreviewByDestinationId = countPublishedAreaPreviewByAreaId;
 
 export type { ActivityDTO, LocationDTO };

@@ -3,7 +3,7 @@ import { ApiError } from './api-error.js';
 import { LocationStatus } from '../domain/enums.js';
 import type { Facility } from '../domain/facility.js';
 import type { Location } from '../domain/types.js';
-import { resolveStoredDestinationId } from './destination-id-sync.js';
+import { resolveDestinationId } from '@uaetrail/shared-types';
 
 const geoRefReadyForListedCatalog = (geoRef: GeoRef | null | undefined): boolean =>
   Boolean(geoRef?.countryId?.trim() && geoRef?.stateId?.trim());
@@ -41,7 +41,7 @@ const assertActiveListedCatalogHasGeo = (row: ListedCatalogGeoRow, entity: Liste
       `Listed ${entity === 'place' ? 'places' : 'facilities'} need resolved geography (geoRef) before publish — save coordinates and retry.`
     );
   }
-  if (!resolveStoredDestinationId(row)) {
+  if (!resolveDestinationId(row)) {
     throw new ApiError(
       400,
       `${prefix}_destination_required`,

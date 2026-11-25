@@ -2258,6 +2258,7 @@ export { approximateAreaBoundsKm2, pointInAreaBounds } from './area.js';
 
 export type { DestinationDTO, DestinationPublicDTO } from './destination.js';
 export {
+  catalogDestinationIdUpdate,
   destinationHubPath,
   exploreDestinationQueryParam,
   exploreMapItemMatchesDestinationSlug,

@@ -767,7 +767,7 @@
         "apps/api/src/lib/availability-fixed-map-items.ts",
         "apps/api/src/lib/member-availability-store.ts",
         "apps/api/src/lib/mongo-indexes.ts",
-        "apps/api/src/services/area-public-read.ts",
+        "apps/api/src/services/destination-public-read.ts",
         "apps/api/src/services/matching/availability-hosted-match.ts"
       ]
     },

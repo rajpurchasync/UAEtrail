@@ -37,7 +37,7 @@ import {
 import { batchResolveMemberProfileRoleLabelsForDirectory } from '../services/member-status.js';
 import { resolveProfileViewerAccess } from '../services/profile-viewer-access.js';
 import { normalizeProfileVisibility } from './media-access.js';
-import { catalogDestinationIdUpdate } from './destination-id-sync.js';
+import { catalogDestinationIdUpdate } from '@uaetrail/shared-types';
 
 type MongoMemberAvailability = {
   _id: string;

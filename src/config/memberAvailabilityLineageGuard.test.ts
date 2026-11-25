@@ -45,11 +45,11 @@ describe('memberAvailabilityLineageGuard (MIG-DISCO-REG)', () => {
     expect(read('src/discovery/discoveryCardModel.ts')).toMatch(/discoveryCardIsAvailabilityPin/);
   });
 
-  it('AVAIL-LINE-06: area public read counts member_availability (not seeking activities)', () => {
-    const area = read('apps/api/src/services/area-public-read.ts');
-    expect(area).toMatch(/MEMBER_AVAILABILITY/);
-    expect(area).toMatch(/availability: number/);
-    expect(area).not.toMatch(/activityMode: 'seeking'/);
+  it('AVAIL-LINE-06: destination public read counts member_availability (not seeking activities)', () => {
+    const destination = read('apps/api/src/services/destination-public-read.ts');
+    expect(destination).toMatch(/MEMBER_AVAILABILITY/);
+    expect(destination).toMatch(/availability: number/);
+    expect(destination).not.toMatch(/activityMode: 'seeking'/);
   });
 
   it('AVAIL-LINE-07b: member-facing intent open action uses UPL', () => {

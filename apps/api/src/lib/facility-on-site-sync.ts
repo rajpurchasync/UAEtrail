@@ -1,4 +1,4 @@
-/** MIG-DESTINATION-GEO D0.5 — facility trail scope via `onSiteId` only (no `parentPlaceId` dual-write). */
+/** Facility trail scope via `onSiteId` (parent place on site, not destination hub). */
 
 export const catalogOnSiteIdUpdate = (
   onSiteId: string | null | undefined

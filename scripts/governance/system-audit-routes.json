@@ -1299,7 +1299,7 @@
       "referral-click-write"
     ],
     "apps/api/src/routes/user/registerPublicDestinationRoutes.ts": [
-      "area-public-read"
+      "destination-public-read"
     ],
     "apps/api/src/routes/user/registerPublicFacilityRoutes.ts": [
       "facility-public-read",

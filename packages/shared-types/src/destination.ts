@@ -1,7 +1,4 @@
-/**
- * Curated outdoor **Destination** (program MIG-DESTINATION-GEO-2026).
- * Target: `destinations` API + `destinationId` on catalog rows; physical Mongo `areas` until P3 rename.
- */
+/** Curated outdoor **Destination** — public `/destinations`, catalog `destinationId`. */
 import type { AreaDTO, AreaPublicDTO } from './area.js';
 
 export type DestinationDTO = AreaDTO;
@@ -33,6 +30,13 @@ export type DestinationAssignableRow = {
 export const resolveDestinationId = (
   row: DestinationAssignableRow | null | undefined
 ): string | null => row?.destinationId?.trim() || null;
+
+/** Mongo/catalog patch shape for assigning a destination on create or update. */
+export const catalogDestinationIdUpdate = (
+  destinationId: string | null | undefined
+): { destinationId: string | null } => ({
+  destinationId: destinationId?.trim() || null,
+});
 
 export type ExploreMapDestinationLensItem = {
   destinationSlug?: string | null;

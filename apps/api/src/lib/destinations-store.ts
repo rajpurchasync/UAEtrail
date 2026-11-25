@@ -1,7 +1,4 @@
-/**
- * Curated outdoor **Destination** store (MIG-DESTINATION-GEO-2026).
- * Physical Mongo collection is still `areas` until optional rename (P3+).
- */
+/** Curated outdoor **Destination** store (Mongo collection `areas`). */
 import type { AreaDTO, AreaPublicDTO, AreaStatus, DestinationPublicDTO } from '@uaetrail/shared-types';
 
 export {

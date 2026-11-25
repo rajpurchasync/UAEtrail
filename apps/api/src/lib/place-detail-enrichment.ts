@@ -4,7 +4,7 @@ import { findAreaById } from './areas-store.js';
 import { locationHasRegistryCoverImage } from './catalog-registry-cover.js';
 import { LocationStatus } from '../domain/enums.js';
 import { toLocationDto } from './mappers.js';
-import { resolveStoredDestinationId } from './destination-id-sync.js';
+import { resolveDestinationId } from '@uaetrail/shared-types';
 import { ApiError } from './api-error.js';
 
 export const assertRegistryCoverForPublicPlaceDetail = (location: Location): void => {
@@ -20,7 +20,7 @@ export const enrichLocationDtoWithAreaHub = async (
   location: Location,
   dto: LocationDTO
 ): Promise<LocationDTO> => {
-  const destinationId = resolveStoredDestinationId(location);
+  const destinationId = resolveDestinationId(location);
   if (!destinationId) return dto;
   const area = await findAreaById(destinationId);
   if (!area || area.status !== 'published') return dto;

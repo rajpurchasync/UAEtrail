@@ -14,7 +14,7 @@ import {
   LocationStatus,
   type Accessibility
 } from '../domain/enums.js';
-import { catalogDestinationIdUpdate } from './destination-id-sync.js';
+import { catalogDestinationIdUpdate } from '@uaetrail/shared-types';
 
 const asStringArray = (value: unknown): string[] => (Array.isArray(value) ? value : []);
 

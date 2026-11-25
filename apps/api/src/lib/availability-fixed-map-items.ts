@@ -17,7 +17,7 @@ import {
 import { COLLECTIONS } from './collections.js';
 import { getMongoClient } from './mongo.js';
 import { findAuthUsersByIds } from './auth-users-store.js';
-import { resolveStoredDestinationId } from './destination-id-sync.js';
+import { resolveDestinationId } from '@uaetrail/shared-types';
 
 type MongoMemberAvailability = {
   userId: string;
@@ -89,7 +89,7 @@ export const buildAvailabilityFixedMapItems = async (input: {
       const lng = slot.longitude ?? null;
       if (lat == null || lng == null) continue;
 
-      const destinationId = resolveStoredDestinationId(doc);
+      const destinationId = resolveDestinationId(doc);
       const { date, time } = formatDateTimeParts(slot.startAt ?? `${slot.startDate}T12:00:00.000Z`);
       const endParts = formatDateTimeParts(slot.endAt);
 
