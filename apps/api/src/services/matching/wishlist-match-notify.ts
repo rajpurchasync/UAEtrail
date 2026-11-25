@@ -232,18 +232,21 @@ export const notifyWishlistForPublishedActivity = async (activityId: string): Pr
       );
     }
 
-    const activityAreaId = doc.destinationId?.trim() || null;
-    if (activityAreaId) {
-      await fanOutSavedDestinationWishlistNotifications(
-        {
-          activityId,
-          title: doc.title,
-          hostUserId: doc.createdById,
-          destinationId: activityAreaId,
-          path,
-        },
-        notified
-      );
+    if (doc.locationId) {
+      const place = await findLocationInMongo(doc.locationId);
+      const destinationId = place?.destinationId?.trim() || null;
+      if (destinationId) {
+        await fanOutSavedDestinationWishlistNotifications(
+          {
+            activityId,
+            title: doc.title,
+            hostUserId: doc.createdById,
+            destinationId,
+            path,
+          },
+          notified
+        );
+      }
     }
 
     const priv = await findActivityPrivateById(activityId);

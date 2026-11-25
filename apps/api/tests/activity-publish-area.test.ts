@@ -40,15 +40,13 @@ describe('resolveDestinationIdForActivityPublish', () => {
     );
   });
 
-  it('uses persisted activity.destinationId when the place has none', async () => {
+  it('does not use activity.destinationId when the place has none', async () => {
     const activity = { ...baseActivity(), destinationId: 'dest-persisted-hatta' };
     const location = { id: 'hatta-dam-loop', destinationId: null } as Location;
-    await expect(resolveDestinationIdForActivityPublish(activity, location)).resolves.toBe(
-      'dest-persisted-hatta'
-    );
+    await expect(resolveDestinationIdForActivityPublish(activity, location)).resolves.toBeNull();
   });
 
-  it('does not invent a destination when neither row has destinationId', async () => {
+  it('does not invent a destination when place has no destinationId', async () => {
     const activity = baseActivity();
     const location = {
       id: 'hatta-dam-loop',

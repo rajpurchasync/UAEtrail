@@ -262,7 +262,9 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
     ]);
 
   const amenitiesByParentId = collectParentPlaceAmenities(facilityRows);
-  const destinationSlugById = new Map(publishedDestinations.map((area) => [area.id, area.slug]));
+  const destinationSlugById = new Map(
+    publishedDestinations.map((destination) => [destination.id, destination.slug])
+  );
   const destinationNameById = new Map(publishedDestinations.map((area) => [area.id, area.name]));
   const availabilityItemsPromise = buildAvailabilityFixedMapItems({
     destinationSlugById,

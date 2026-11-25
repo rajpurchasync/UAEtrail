@@ -52,16 +52,7 @@ export const loadExploreMapForViewer = (input: {
   });
 
 export const listPublicPlacesPaged = async (filters: LocationListFilters) => {
-  const { items, total } = await listActiveLocations({
-    activityType: filters.activityType,
-    featured: filters.featured,
-    countryCode: filters.countryCode,
-    lat: filters.lat,
-    lng: filters.lng,
-    radius: filters.radius,
-    page: filters.page,
-    pageSize: filters.pageSize,
-  });
+  const { items, total } = await listActiveLocations(filters);
   return { items: items.map((l) => toLocationDto(l)), total };
 };
 

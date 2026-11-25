@@ -40,8 +40,9 @@ export const rankMapExploreActivity = (
   const wishlistLocations = input.wishlistLocationIds;
   const wishlistDestinations = input.wishlistDestinationIds;
   const wishlistPlace = Boolean(wishlistLocations?.has(activity.locationId));
+  const placeDestinationId = activity.location?.destinationId?.trim() || null;
   const wishlistDestination = Boolean(
-    activity.destinationId && wishlistDestinations?.has(activity.destinationId)
+    placeDestinationId && wishlistDestinations?.has(placeDestinationId)
   );
 
   const pin =

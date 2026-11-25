@@ -620,10 +620,7 @@ export const listPublishedUpcomingActivitiesByDestinationFromMongo = async (
       startAt: { $gte: startOfToday },
       joinMode: { $ne: 'private' },
       activityMode: { $ne: 'seeking' },
-      $or: [
-        { locationId: { $in: locationIdList } },
-        { destinationId },
-      ],
+      locationId: { $in: locationIdList },
     })
     .sort({ startAt: 1 })
     .limit(Math.max(take, 1) * 3)

@@ -15,7 +15,7 @@ import { useMemberJourneyMapPinIds } from '../../hooks/useMemberJourneyMapPinIds
 import { filterExploreMapItemsByDestinationSlug, parseExploreDestinationSlug } from '../exploreDestinationFilter';
 import { parseExploreMyPlanMapMode } from '../routing';
 
-/** Map fetch + area / my-plan map scoping (R2 shell). */
+/** Map fetch + destination lens / my-plan map scoping (R2 shell). */
 export const useExploreMapCatalog = (input: {
   userId: string | undefined;
   searchParams: URLSearchParams;
@@ -44,10 +44,10 @@ export const useExploreMapCatalog = (input: {
   );
 
   const mapItems = useMemo(() => {
-    const areaScoped = filterExploreMapItemsByDestinationSlug(items, destinationSlug);
-    if (!myPlanMapMode) return areaScoped;
+    const destinationScoped = filterExploreMapItemsByDestinationSlug(items, destinationSlug);
+    if (!myPlanMapMode) return destinationScoped;
     if (!myPlanPinIds) return [];
-    return areaScoped.filter((item) => myPlanPinIds.has(item.id));
+    return destinationScoped.filter((item) => myPlanPinIds.has(item.id));
   }, [items, myPlanMapMode, myPlanPinIds, destinationSlug]);
 
   const mapLoading = (loading && items.length === 0) || (myPlanMapMode && myPlanPinsLoading);

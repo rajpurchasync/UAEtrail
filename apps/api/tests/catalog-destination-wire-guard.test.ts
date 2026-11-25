@@ -43,6 +43,15 @@ describe('catalog destination wire guard', () => {
     expect(builder).toMatch(/\bcatalogPlaceHubLabel\b/);
   });
 
+  it('mongo geo search does not map curated destination slug to geo_nodes', () => {
+    const geo = read('apps/api/src/lib/explore-geo-search.ts');
+    expect(geo).toMatch(/mongoCatalogDestinationFilter/);
+    expect(geo).not.toMatch(
+      /resolveExploreDestinationSlugQuery\(query\)[\s\S]{0,120}kinds:\s*\['area',\s*'state'\]/
+    );
+    expect(geo).toMatch(/exploreMapItemMatchesDestinationSlug/);
+  });
+
   it('API tests do not pass areaId into createLocationRecord / createFacilityRecord', () => {
     const violations: string[] = [];
     const pattern =

@@ -1,6 +1,7 @@
 import {
   approximateDestinationBoundsKm2,
   pointInDestinationBounds,
+  resolveDestinationId,
   type DestinationBoundsRing,
   type DestinationDTO,
 } from '@uaetrail/shared-types';
@@ -99,15 +100,11 @@ export const resolveEffectiveCatalogDestinationId = (
   return null;
 };
 
-/** Geography for an activity is the persisted place `destinationId`, then the activity row. */
+/** Geography for an activity is the host place row only (`location.destinationId`). */
 export const resolveDestinationIdForActivity = (
-  activity: Pick<MongoActivityDoc, 'destinationId'>,
+  _activity: Pick<MongoActivityDoc, 'destinationId'>,
   location?: Pick<Location, 'destinationId'> | null
-): string | null => {
-  if (location?.destinationId?.trim()) return location.destinationId.trim();
-  if (activity.destinationId?.trim()) return activity.destinationId.trim();
-  return null;
-};
+): string | null => resolveDestinationId(location);
 
 /** Public publish destination — persisted place or activity `destinationId` only. */
 export const resolveDestinationIdForActivityPublish = async (

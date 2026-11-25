@@ -8,7 +8,7 @@ import { radiusKmToRadians, withLocationGeoFields } from './location-geo.js';
 import { withQueryTiming } from './query-timing.js';
 import { registryCoverImageMongoFilter } from './catalog-registry-cover.js';
 import { enrichLocationsWithHeavyReadsBatch } from './place-heavy-store.js';
-import { mongoGeoSearchFilter } from './explore-geo-search.js';
+import { mongoCatalogDestinationFilter, mongoGeoSearchFilter } from './explore-geo-search.js';
 
 export interface LocationListFilters {
   activityType?: 'hiking' | 'camping' | 'event';
@@ -77,14 +77,17 @@ const mergeGeoSearch = async (
   query: Record<string, unknown>,
   filters: LocationListFilters
 ): Promise<Record<string, unknown>> => {
+  const parts: Record<string, unknown>[] = [query];
   const geo = await mongoGeoSearchFilter({
     q: filters.q,
     country: filters.country,
-    destination: filters.destination,
     venue: filters.venue,
   });
-  if (!geo) return query;
-  return { $and: [query, geo] };
+  if (geo) parts.push(geo);
+  const catalog = await mongoCatalogDestinationFilter(filters.destination);
+  if (catalog) parts.push(catalog);
+  if (parts.length === 1) return query;
+  return { $and: parts };
 };
 
 export const appendLocationRegionKeysToFilter = (
