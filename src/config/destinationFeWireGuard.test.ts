@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const ROOT = process.cwd();
@@ -24,19 +24,19 @@ const collectProductionSources = (): string[] => {
   return files;
 };
 
-const SHIM_ALLOWLIST = new Set([
-  'src/hooks/areaHubClientApi.ts',
-  'src/pages/AreaDetailPage.tsx',
-  'src/config/destinationFeWireGuard.test.ts',
-]);
-
-/** MIG-DESTINATION-GEO Phase D — hub client + detail route naming. */
+/** MIG-DESTINATION-GEO Phase F — FE destination geo shims removed. */
 describe('destinationFeWireGuard', () => {
+  it('retired shim modules stay deleted', () => {
+    expect(existsSync(join(ROOT, 'src/hooks/areaHubClientApi.ts'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/pages/AreaDetailPage.tsx'))).toBe(false);
+    expect(read('src/routing/appLazyPages.tsx')).not.toMatch(/export const AreaDetailPage/);
+  });
+
   it('production imports destinationHubClientApi, not areaHubClientApi', () => {
     const pattern = /from\s+['"][^'"]*areaHubClientApi['"]/;
     const violations: string[] = [];
     for (const file of collectProductionSources()) {
-      if (SHIM_ALLOWLIST.has(file)) continue;
+      if (file === 'src/config/destinationFeWireGuard.test.ts') continue;
       if (pattern.test(read(file))) violations.push(file);
     }
     expect(violations).toEqual([]);

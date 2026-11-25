@@ -7,8 +7,11 @@ import { ApiError } from '../lib/api-error.js';
 import { COLLECTIONS } from '../lib/collections.js';
 import { getMongoClient } from '../lib/mongo.js';
 import { ActivityStatus, LocationStatus } from '../domain/enums.js';
-import { findAreaBySlug, listPublishedAreas } from '../lib/areas-store.js';
-import { toDestinationPublicDto } from '../lib/destinations-store.js';
+import {
+  findDestinationBySlug,
+  listPublishedDestinations,
+  toDestinationPublicDto,
+} from '../lib/destinations-store.js';
 import {
   listActiveCatalogPlacesByArea,
   listPublishedUpcomingActivitiesByArea,
@@ -50,8 +53,8 @@ export const countPublishedDestinationPreviewByDestinationId = async (
 };
 
 export const listPublishedDestinationsForPublic = async (): Promise<DestinationPublicDTO[]> => {
-  const areas = await listPublishedAreas();
-  return areas.map((row) => toDestinationPublicDto(row));
+  const destinations = await listPublishedDestinations();
+  return destinations.map((row) => toDestinationPublicDto(row));
 };
 
 export type PublishedDestinationDetailPayload = {
@@ -68,7 +71,7 @@ export type PublishedDestinationDetailPayload = {
 export const loadPublishedDestinationDetailBySlug = async (
   slug: string
 ): Promise<PublishedDestinationDetailPayload> => {
-  const row = await findAreaBySlug(slug);
+  const row = await findDestinationBySlug(slug);
   if (!row || row.status !== 'published') {
     throw new ApiError(404, 'destination_not_found', 'Destination not found.');
   }

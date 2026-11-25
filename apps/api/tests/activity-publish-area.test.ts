@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveAreaIdForActivityPublish as resolveDestinationIdForActivityPublish } from '../src/lib/area-resolution.js';
+import { resolveDestinationIdForActivityPublish } from '../src/lib/destination-resolution.js';
 import type { MongoActivityDoc } from '../src/lib/entity-builders.js';
 import type { Location } from '../src/domain/types.js';
 

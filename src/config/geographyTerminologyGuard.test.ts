@@ -132,6 +132,13 @@ describe('geographyTerminologyGuard (Place · Facility · Area)', () => {
     expect(read('packages/shared-types/src/wire-lexicon.ts')).toMatch(/BWL_CATALOG_GEO_FIELDS/);
   });
 
+  it('GEO-16: destination geo shims removed (Phase F)', () => {
+    expect(read('apps/api/tests/destination-shim-inventory-guard.test.ts')).toMatch(
+      /destination shim inventory guard/
+    );
+    expect(read('src/config/destinationFeWireGuard.test.ts')).toMatch(/retired shim modules stay deleted/);
+  });
+
   it('GEO-15: FE hub facade + detail route (Phase D)', () => {
     expect(read('src/hooks/destinationHubClientApi.ts')).toMatch(/fetchDestinationDetailBySlug/);
     expect(read('src/config/destinationFeWireGuard.test.ts')).toMatch(/destinationFeWireGuard/);

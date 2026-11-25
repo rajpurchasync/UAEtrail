@@ -404,10 +404,10 @@ export const publishActivityById = async (activityId: string) => {
   const draftDoc = await findActivityDocInMongo(activityId);
   const publishLocation =
     draftDoc?.locationId ? await findLocationInMongo(draftDoc.locationId) : null;
-  const { resolveAreaIdForActivityPublish } = await import('./area-resolution.js');
+  const { resolveDestinationIdForActivityPublish } = await import('./destination-resolution.js');
   const { resolveJoinMode } = await import('../domain/activity-join-mode.js');
   const destinationId =
-    draftDoc && (await resolveAreaIdForActivityPublish(draftDoc, publishLocation));
+    draftDoc && (await resolveDestinationIdForActivityPublish(draftDoc, publishLocation));
   const joinMode = draftDoc
     ? resolveJoinMode(draftDoc.joinMode, draftDoc.requirements)
     : 'open';

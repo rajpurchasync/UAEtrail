@@ -1,7 +1,7 @@
 import { curatedAreaSeedId, type CuratedAreaSeedKey } from '@uaetrail/shared-types';
 import type { AreaDTO } from '@uaetrail/shared-types';
 import { LocationStatus } from '../src/domain/enums.js';
-import { resolveAreaIdFromPoint } from '../src/lib/area-resolution.js';
+import { resolveDestinationIdFromPoint } from '../src/lib/destination-resolution.js';
 import { listPublishedAreas } from '../src/lib/areas-store.js';
 import { resolveCatalogLocationAreaKey } from '../src/lib/venue-catalog-enrichment.js';
 
@@ -69,7 +69,7 @@ export const backfillSeedCatalogLocationAreaIds = async (): Promise<void> => {
     const lng = doc.longitude as number | null | undefined;
     const fromPoint =
       lat != null && lng != null
-        ? resolveAreaIdFromPoint(lat, lng, areas, doc.areaId as string | null)
+        ? resolveDestinationIdFromPoint(lat, lng, areas, doc.destinationId as string | null)
         : null;
     const areaId = explicit ?? fromPoint ?? (doc.areaId as string | null) ?? null;
     if (!areaId) continue;

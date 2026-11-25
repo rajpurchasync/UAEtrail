@@ -4,7 +4,7 @@ import {
   pointInAreaBounds,
   type AreaBoundsRing,
 } from '@uaetrail/shared-types';
-import { resolveAreaIdFromPoint, ringFromBBox } from '../src/lib/area-resolution.js';
+import { resolveDestinationIdFromPoint, ringFromBBox } from '../src/lib/destination-resolution.js';
 import type { AreaDTO } from '@uaetrail/shared-types';
 
 const box = ringFromBBox(24.78, 56.0, 24.88, 56.18);
@@ -16,8 +16,8 @@ describe('pointInAreaBounds', () => {
   });
 });
 
-describe('resolveAreaIdFromPoint', () => {
-  const areas: AreaDTO[] = [
+describe('resolveDestinationIdFromPoint', () => {
+  const destinations: AreaDTO[] = [
     {
       id: 'large',
       slug: 'large',
@@ -44,12 +44,12 @@ describe('resolveAreaIdFromPoint', () => {
     },
   ];
 
-  it('prefers place.areaId when set', () => {
-    expect(resolveAreaIdFromPoint(24.83, 56.09, areas, 'place-area')).toBe('place-area');
+  it('prefers persisted destinationId when set', () => {
+    expect(resolveDestinationIdFromPoint(24.83, 56.09, destinations, 'place-dest')).toBe('place-dest');
   });
 
   it('picks smallest priority then smallest polygon', () => {
-    expect(resolveAreaIdFromPoint(24.83, 56.09, areas, null)).toBe('small');
+    expect(resolveDestinationIdFromPoint(24.83, 56.09, destinations, null)).toBe('small');
   });
 });
 

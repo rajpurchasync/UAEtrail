@@ -215,6 +215,13 @@ describe('shimInventoryGuard (repo-wide coherence)', () => {
     expect(read('src/list/browse/listBrowseSort.ts')).toMatch(/export const sortBrowseListCards/);
   });
 
+  it('SHIM-INV-11: MIG-DESTINATION-GEO retired FE/API resolution shims stay deleted', () => {
+    expect(existsSync(join(ROOT, 'src/hooks/areaHubClientApi.ts'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/pages/AreaDetailPage.tsx'))).toBe(false);
+    expect(existsSync(join(ROOT, 'apps/api/src/lib/area-resolution.ts'))).toBe(false);
+    expect(existsSync(join(ROOT, 'apps/api/src/lib/destination-resolution.ts'))).toBe(true);
+  });
+
   it('SHIM-INV-10: list subtree (except explorer shell) does not import retired explorer browse modules', () => {
     const violations: string[] = [];
     const pattern =

@@ -1,6 +1,6 @@
 import { ApiError } from '../lib/api-error.js';
 import { boundsRingFromCenter } from '../lib/area-bounds.js';
-import { invalidatePublishedAreasCache } from '../lib/area-resolution.js';
+import { invalidatePublishedDestinationsCache } from '../lib/destination-resolution.js';
 import {
   createAdminArea,
   deleteAdminArea,
@@ -25,7 +25,7 @@ export type AdminAreaWriteInput = {
 };
 
 const invalidateAreaDiscoveryCaches = () => {
-  invalidatePublishedAreasCache();
+  invalidatePublishedDestinationsCache();
   scheduleExploreMapCacheInvalidation('admin.area_map_cache');
 };
 

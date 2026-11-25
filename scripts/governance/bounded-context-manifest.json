@@ -319,7 +319,7 @@
       "label": "Geographic destinations (curated hubs)",
       "apiFiles": [
         "apps/api/src/lib/areas-store.ts",
-        "apps/api/src/lib/area-resolution.ts",
+        "apps/api/src/lib/destination-resolution.ts",
         "apps/api/src/lib/geo-tree.ts",
         "apps/api/src/lib/geo-resolve.ts",
         "apps/api/src/lib/geo-read.ts",

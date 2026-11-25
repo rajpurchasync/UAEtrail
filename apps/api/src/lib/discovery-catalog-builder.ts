@@ -47,7 +47,7 @@ import { isWithinUaeFocusArea } from './uae-bbox.js';
 import { listPublishedAreas } from './areas-store.js';
 import { buildAvailabilityFixedMapItems } from './availability-fixed-map-items.js';
 import { listFacilitiesForExploreMap } from './facilities-store.js';
-import { resolveAreaIdFromPoint } from './area-resolution.js';
+import { resolveDestinationIdFromPoint } from './destination-resolution.js';
 
 const catalogTimestampIso = (
   ...candidates: Array<Date | string | null | undefined>
@@ -584,7 +584,7 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
 
     const shopAreaId =
       latitude != null && longitude != null
-        ? resolveAreaIdFromPoint(latitude, longitude, publishedAreas, null)
+        ? resolveDestinationIdFromPoint(latitude, longitude, publishedAreas, null)
         : null;
     items.push(
       attachExploreItemArea(

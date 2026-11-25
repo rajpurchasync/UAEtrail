@@ -206,17 +206,11 @@ export const publishedAreasQueryKey = ['areas', 'published'] as const;
 
 export const destinationDetailQueryKey = (slug: string): QueryKey => ['destination', slug];
 
-/** @deprecated Use {@link destinationDetailQueryKey}. */
-export const areaDetailQueryKey = destinationDetailQueryKey;
-
 export const destinationAvailabilityQueryKey = (slug: string, weekFrom: string): QueryKey => [
   'destination-availability',
   slug,
   weekFrom,
 ];
-
-/** @deprecated Use {@link destinationAvailabilityQueryKey}. */
-export const areaAvailabilityQueryKey = destinationAvailabilityQueryKey;
 
 export const inboxUnreadQueryKey = (userId: string): QueryKey => ['inbox-unread', userId];
 

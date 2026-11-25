@@ -2,7 +2,7 @@ import {
   CURATED_AREA_CATALOG,
   CURATED_AREA_SEED_IDS,
 } from '@uaetrail/shared-types';
-import { ringFromBBox } from './area-resolution.js';
+import { ringFromBBox } from './destination-resolution.js';
 import { upsertAreaBySlug } from './areas-store.js';
 
 /** @deprecated Prefer `CURATED_AREA_SEED_IDS` from `@uaetrail/shared-types` — same values. */

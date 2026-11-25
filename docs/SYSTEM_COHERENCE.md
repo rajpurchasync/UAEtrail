@@ -426,7 +426,7 @@ One **person account**; **one consumer profile page** (`/member/:userId` — `Me
 |---------|--------------|-----------------|----------------------|
 | Activity (hosted + seeking) | `discoveryCardModel` | `peek/activity/*` | Kind **page composers** (`*ActivityDetailPage` → shell) — **not** one `ActivityDetailBody` with kind `if` chains |
 | Place | L1 place slice | `peek/place/*` (`PlacePeekHero`, `PlacePeekBody`, …) | `buildPlaceDetailPageModel` → `PlaceDetailPage` → `PlaceDetailPageShell` → `PlaceDetailSections` |
-| Area | **Not a pin** — `areaId` / `areaSlug` on Place/Facility (and activity via place) | Hub chrome / `peek/area/*` (hub page only — do not emit `source: area` on the map) | `AreaDetailPage` sections/tabs |
+| Destination | **Not a pin** — `destinationId` / slug on Place/Facility (and activity via place) | Hub chrome / `peek/area/*` (hub page only — do not emit `source: area` on the map) | `DestinationDetailPage` sections/tabs |
 | Shop | L1 shop pin | `peek/shop/*` | `ShopPublicPage` |
 | Member (browse) | `memberPeople*` row VM | Optional mini-card in people panel | `MemberProfile` |
 | Tenant storefront | Org list cards (browse) | — | `OrganisationPublicProfile` |

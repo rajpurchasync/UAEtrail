@@ -56,8 +56,6 @@ export const AdminAreas = lazy(() => import('../pages/admin/Areas').then((m) => 
 export const DestinationDetailPage = lazy(() =>
   import('../pages/DestinationDetailPage').then((m) => ({ default: m.DestinationDetailPage }))
 );
-/** @deprecated Lazy alias — prefer `DestinationDetailPage`. */
-export const AreaDetailPage = DestinationDetailPage;
 export const AdminOrganisations = lazy(() =>
   import('../pages/admin/Organisations').then((m) => ({ default: m.Organisations }))
 );

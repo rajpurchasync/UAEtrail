@@ -3,7 +3,7 @@ import { normalizeGroupRegionLabel, stampGroupRegionLevelsFromGeo } from '@uaetr
 import type { Location } from '../domain/types.js';
 import type { MongoActivityDoc } from './entity-builders.js';
 import { listPublishedAreas } from './areas-store.js';
-import { resolveActivityAnchorCoordinates } from './area-resolution.js';
+import { resolveActivityAnchorCoordinates } from './destination-resolution.js';
 import { reversePlaceLocality } from './place-search.js';
 import type { TenantRecord } from './tenant-store.js';
 

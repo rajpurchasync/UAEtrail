@@ -8,7 +8,7 @@ import { listPublishedAreas } from '../src/lib/areas-store.js';
 import { locationHasRegistryCoverImage } from '../src/lib/catalog-registry-cover.js';
 import { listAdminPlacesPaged } from '../src/lib/admin-store.js';
 import { LocationStatus } from '../src/domain/enums.js';
-import { resolveEffectiveLocationAreaId } from '../src/lib/area-resolution.js';
+import { resolveEffectiveCatalogDestinationId } from '../src/lib/destination-resolution.js';
 import type { AreaDTO } from '@uaetrail/shared-types';
 
 type HostingReadiness = {
@@ -49,9 +49,10 @@ const auditPlace = (
   const areaId = place.areaId?.trim() || null;
   const publishAreaId =
     hasCoords && place.latitude != null && place.longitude != null
-      ? resolveEffectiveLocationAreaId(
+      ? resolveEffectiveCatalogDestinationId(
           {
             id: place.id,
+            destinationId: place.destinationId,
             areaId: place.areaId,
             latitude: place.latitude,
             longitude: place.longitude,

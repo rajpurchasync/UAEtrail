@@ -6,36 +6,36 @@ import {
 } from '@uaetrail/shared-types';
 import type { Location } from '../domain/types.js';
 import type { MongoActivityDoc } from './entity-builders.js';
-import { listPublishedAreas } from './areas-store.js';
+import { listPublishedDestinations } from './destinations-store.js';
 import { resolveCatalogLocationAreaId } from './venue-catalog-enrichment.js';
 
-let publishedAreasCache: AreaDTO[] | null = null;
-let publishedAreasCacheAt = 0;
+let publishedDestinationsCache: AreaDTO[] | null = null;
+let publishedDestinationsCacheAt = 0;
 const CACHE_MS = 60_000;
 
-const loadPublishedAreas = async (): Promise<AreaDTO[]> => {
+const loadPublishedDestinations = async (): Promise<AreaDTO[]> => {
   const now = Date.now();
-  if (publishedAreasCache && now - publishedAreasCacheAt < CACHE_MS) {
-    return publishedAreasCache;
+  if (publishedDestinationsCache && now - publishedDestinationsCacheAt < CACHE_MS) {
+    return publishedDestinationsCache;
   }
-  publishedAreasCache = await listPublishedAreas();
-  publishedAreasCacheAt = now;
-  return publishedAreasCache;
+  publishedDestinationsCache = await listPublishedDestinations();
+  publishedDestinationsCacheAt = now;
+  return publishedDestinationsCache;
 };
 
-export const invalidatePublishedAreasCache = (): void => {
-  publishedAreasCache = null;
-  publishedAreasCacheAt = 0;
+export const invalidatePublishedDestinationsCache = (): void => {
+  publishedDestinationsCache = null;
+  publishedDestinationsCacheAt = 0;
 };
 
-export const resolveAreaIdFromPoint = (
+export const resolveDestinationIdFromPoint = (
   latitude: number,
   longitude: number,
-  areas: AreaDTO[],
-  placeAreaId?: string | null
+  destinations: AreaDTO[],
+  preferredDestinationId?: string | null
 ): string | null => {
-  if (placeAreaId) return placeAreaId;
-  const hits = areas.filter((area) => pointInAreaBounds(latitude, longitude, area.bounds));
+  if (preferredDestinationId) return preferredDestinationId;
+  const hits = destinations.filter((row) => pointInAreaBounds(latitude, longitude, row.bounds));
   if (hits.length === 0) return null;
   hits.sort((a, b) => {
     const priorityDiff = a.priority - b.priority;
@@ -45,13 +45,13 @@ export const resolveAreaIdFromPoint = (
   return hits[0].id;
 };
 
-export const resolveAreaIdForCoordinates = async (
+export const resolveDestinationIdForCoordinates = async (
   latitude: number,
   longitude: number,
-  placeAreaId?: string | null
+  preferredDestinationId?: string | null
 ): Promise<string | null> => {
-  const areas = await loadPublishedAreas();
-  return resolveAreaIdFromPoint(latitude, longitude, areas, placeAreaId);
+  const destinations = await loadPublishedDestinations();
+  return resolveDestinationIdFromPoint(latitude, longitude, destinations, preferredDestinationId);
 };
 
 export const resolveActivityAnchorCoordinates = (
@@ -83,18 +83,19 @@ export const resolveActivityAnchorCoordinates = (
 };
 
 /**
- * Audit-only: persisted `areaId`, then seed map, then point-in-polygon.
- * Request and publish paths must not call this — missing `areaId` is a data fix (`backfill-location-area-ids`).
+ * Audit-only: persisted `destinationId`, legacy `areaId`, seed map, then point-in-polygon.
+ * Request and publish paths must not call this — missing `destinationId` is a data fix.
  */
-export const resolveEffectiveLocationAreaId = (
-  location: Pick<Location, 'id' | 'areaId' | 'latitude' | 'longitude'>,
-  areas: AreaDTO[]
+export const resolveEffectiveCatalogDestinationId = (
+  location: Pick<Location, 'id' | 'destinationId' | 'areaId' | 'latitude' | 'longitude'>,
+  destinations: AreaDTO[]
 ): string | null => {
+  if (location.destinationId?.trim()) return location.destinationId.trim();
   if (location.areaId?.trim()) return location.areaId.trim();
-  const catalogAreaId = resolveCatalogLocationAreaId(location.id);
-  if (catalogAreaId) return catalogAreaId;
+  const catalogDestinationId = resolveCatalogLocationAreaId(location.id);
+  if (catalogDestinationId) return catalogDestinationId;
   if (location.latitude != null && location.longitude != null) {
-    return resolveAreaIdFromPoint(location.latitude, location.longitude, areas, null);
+    return resolveDestinationIdFromPoint(location.latitude, location.longitude, destinations, null);
   }
   return null;
 };
@@ -109,11 +110,8 @@ export const resolveDestinationIdForActivity = (
   return null;
 };
 
-/** @deprecated Use {@link resolveDestinationIdForActivity}. */
-export const resolveAreaIdForActivity = resolveDestinationIdForActivity;
-
 /** Public publish destination — persisted place or activity `destinationId` only. */
-export const resolveAreaIdForActivityPublish = async (
+export const resolveDestinationIdForActivityPublish = async (
   activity: MongoActivityDoc,
   location?: Location | null
 ): Promise<string | null> => Promise.resolve(resolveDestinationIdForActivity(activity, location));

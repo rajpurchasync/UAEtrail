@@ -15,7 +15,7 @@ import { activityDetailPath } from '../lib/member-routes.js';
 import { createAuditLog } from '../lib/audit.js';
 import { ApiError } from '../lib/api-error.js';
 import { toLocationDto } from '../lib/mappers.js';
-import { invalidatePublishedAreasCache } from '../lib/area-resolution.js';
+import { invalidatePublishedDestinationsCache } from '../lib/destination-resolution.js';
 import { findAreaById, updateAdminArea } from '../lib/areas-store.js';
 import { scheduleExploreMapCacheInvalidation } from '../lib/explore-map-cache-schedule.js';
 import { withPlaceAreaMeta } from '../lib/place-area-meta.js';
@@ -326,7 +326,7 @@ export const updateAdminPlaceRecord = async (input: {
       const linkedArea = await findAreaById(linkedAreaId);
       if (linkedArea?.status === 'draft') {
         await updateAdminArea(linkedArea.id, { status: 'published' });
-        invalidatePublishedAreasCache();
+        invalidatePublishedDestinationsCache();
       }
     }
   }
