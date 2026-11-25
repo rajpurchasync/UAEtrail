@@ -18,8 +18,8 @@ Complete these **on the VPS** when you connect. Use this list to track progress.
 - [ ] Production ops: set `PLATFORM_ADMIN_MFA_SECRET` (base32 TOTP) and use `totp` on `POST /auth/login` for platform-admin accounts (S10g)
 - [ ] First-time dev/staging only (if needed): `SEED_DATA=true docker compose exec -T api npm --workspace @uaetrail/api run seed`
 - [ ] `curl https://uaetrail.com/health` returns OK
-- [ ] After deploy, API startup runs Mongo migrations (`schema_meta.migrations`); if upgrading past GW-7, expect version **2025112506** (MIG-DESTINATION-GEO hard cutover: `destinationId` wire + unset legacy catalog `areaId` / facility `parentPlaceId`) or **2025112504** if stopping earlier; watch for `[mongo] Stale notification bookmark path(s)` and `MIG-DESTINATION-GEO: destinationId` (`DEPLOYMENT.md` § Updating)
-- [ ] MIG-DESTINATION-GEO: rebuild **frontend** when `nginx/snippets/inbound-bookmark-redirects.conf` changes (`/area/*` → `/destination/*` 301); clients use **`GET /api/destinations`** and explore **`?destination=`** only
+- [ ] After deploy, API startup runs Mongo migrations (`schema_meta.migrations`); expect version **2025112507** (MIG-DESTINATION-GEO: Mongo `destinations` collection, `destinationId` wire, unset legacy catalog fields) when upgrading; watch for `[mongo] MIG-DESTINATION-GEO` logs (`DEPLOYMENT.md` § Updating)
+- [ ] MIG-DESTINATION-GEO: clients use **`GET /api/destinations`**, hub **`/destination/:slug`**, explore **`?destination=`** only; stale `/area/*` bookmarks normalize in-app (`canonicalizeInboundProductPath`)
 
 ## HTTPS
 

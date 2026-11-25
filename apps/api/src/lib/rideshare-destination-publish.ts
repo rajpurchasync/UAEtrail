@@ -52,7 +52,7 @@ export const assertCommunityRideshareCanPublish = async (
       throw new Error('Rideshare destination place is missing.');
     }
     const place = await findLocationInMongo(placeId);
-    if (!place || place.status !== LocationStatus.ACTIVE || !place.areaId?.trim()) {
+    if (!place || place.status !== LocationStatus.ACTIVE || !place.destinationId?.trim()) {
       throw new Error(
         'This ride stays in review until your destination place is approved on the map.'
       );
@@ -89,7 +89,7 @@ export const assertCommunityRideshareCanPublish = async (
   const placeId = rideshareDestinationPlaceId(event.requirements ?? []);
   if (placeId) {
     const place = await findLocationInMongo(placeId);
-    if (!place || place.status !== LocationStatus.ACTIVE || !place.areaId?.trim()) {
+    if (!place || place.status !== LocationStatus.ACTIVE || !place.destinationId?.trim()) {
       throw new Error('Choose an approved catalog place as the ride destination.');
     }
     if (

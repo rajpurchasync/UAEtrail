@@ -108,7 +108,7 @@ const toPrismaLocationStatus = (status?: 'draft' | 'active' | 'inactive'): Locat
 const resolveAdminParentPlaceId = async (input: {
   parentPlaceId?: string | null;
   placeId?: string;
-  areaId?: string | null;
+  destinationId?: string | null;
 }): Promise<string | null> => {
   const trimmed = input.parentPlaceId?.trim() || null;
   if (!trimmed) return null;
@@ -126,13 +126,13 @@ const resolveAdminParentPlaceId = async (input: {
       'Place hub must be a top-level hub row (no parent hub on the hub row).'
     );
   }
-  const areaId = input.areaId?.trim() || null;
-  const parentArea = parent.areaId?.trim() || null;
-  if (areaId && parentArea && areaId !== parentArea) {
+  const destinationId = input.destinationId?.trim() || null;
+  const parentDestinationId = parent.destinationId?.trim() || null;
+  if (destinationId && parentDestinationId && destinationId !== parentDestinationId) {
     throw new ApiError(
       400,
-      'parent_area_mismatch',
-      'Place hub must be in the same curated area as this route.'
+      'parent_destination_mismatch',
+      'Place hub must be in the same curated destination as this route.'
     );
   }
   return trimmed;
@@ -144,7 +144,7 @@ export const createAdminPlaceRecord = async (input: { actorId: string; body: Adm
   const baseTags = body.tags ?? [];
   const parentPlaceId = await resolveAdminParentPlaceId({
     parentPlaceId: body.parentPlaceId,
-    areaId: body.destinationId?.trim() || null,
+    destinationId: body.destinationId?.trim() || null,
   });
   const created = await createAdminLocation({
     name: body.name,
@@ -266,16 +266,16 @@ export const updateAdminPlaceRecord = async (input: {
       ? tagsWithArea
       : undefined;
 
-  const nextAreaId =
+  const nextDestinationId =
     body.destinationId !== undefined
       ? body.destinationId?.trim() || null
-      : existing.destinationId?.trim() || existing.areaId?.trim() || null;
+      : existing.destinationId?.trim() || null;
   const parentPlaceId =
     body.parentPlaceId !== undefined
       ? await resolveAdminParentPlaceId({
           parentPlaceId: body.parentPlaceId,
           placeId,
-          areaId: nextAreaId,
+          destinationId: nextDestinationId,
         })
       : undefined;
 

@@ -109,12 +109,12 @@ There is **no** `Trip` table, `TripDTO`, or trips API. Everything on the map tha
 | Layer | Who maintains | Assignment rule |
 |-------|----------------|-----------------|
 | **AdminGeo** | Geo resolver on write | **`geoRef`** from lat/lng — not hand-picked emirate as SoT (P4+) |
-| **Destination** | Platform admin **`/admin/destinations`** (logical destinations; Mongo `areas`) | Curated **name** + slug; bounds for hub camera. **`destinationId`** on places/facilities. **No** explore map pin — parallel to **AdminGeo** tree, not a replacement |
+| **Destination** | Platform admin **`/admin/destinations`** (Mongo **`destinations`**) | Curated **name** + slug; bounds for hub camera. **`destinationId`** on places/facilities. **No** explore map pin — editorial grouping under the same country/state/city labels as pins (`geoRef`), not a replacement for the geo tree |
 | **Place (site)** | Admin places + member **Add** | Hostable trail/camp/spot; **`destinationId`** required for listed catalog. Flat **`/place/:id`**; optional **`parentPlaceId`** for sub-sites only |
 | **Facility** | Admin + member **Add** | **`destinationId`** + optional **`onSiteId`** (parent place row for on-trail amenities) |
 | **Activity** | Host | **`activity.locationId` → place site**; destination derived from place — **no `activity.destinationId` on write** |
 
-**Consumer wire:** **`GET /api/destinations`**, hub **`/destination/:slug`**, explore **`?destination=`**, **`resolveDestinationId`** (reads **`destinationId` only**). Inbound bookmarks **`/area/*` → `/destination/*`** (nginx). **Geo tree** (`geoRef`, `/geo/n/:id`) stays the integration-facing hierarchy; **Destination** is the curated outdoor hub name.
+**Consumer wire:** **`GET /api/destinations`**, hub **`/destination/:slug`**, explore **`?destination=`**, **`resolveDestinationId`** (reads **`destinationId` only**). Stale bookmarks **`/area/*` → `/destination/*`** via `canonicalizeInboundProductPath`. **Geo tree** (`geoRef`, `/geo/n/:id`) = country → state → **area (city)** → venue; **Destination** is the separate curated outdoor hub catalog.
 
 **Explore map lenses:** Activities · Spots (place) · Facilities · **Shops**; **Destination** is filter + hub only. Detail: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §12.1.
 
@@ -176,12 +176,12 @@ Wall post policy (`all_members` | `admins_only`) applies to group/crew threads. 
 
 | Field | Meaning |
 |-------|---------|
-| `areaId` | Required — curated area (Hatta, …) |
-| `parentPlaceId` | Optional — amenity **on** a trail/camp (rest stop along route); `null` = area-scoped only |
+| `destinationId` | Required — published Destination (Hatta, …) |
+| `onSiteId` | Optional — amenity **on** a trail/camp (rest stop along route); `null` = destination-scoped only |
 | `facilityKind` | `toilet`, `rest_area`, `parking`, `outdoor_shop`, … |
 | `registeredByUserId` | Member or admin provenance (no “contribute API”) |
 
-**Place detail** lists facilities with **`parentPlaceId = this place`** first — not “every facility in the same `areaId`” (`apps/api/src/lib/place-nearby-facilities.ts` is legacy area-sibling behavior until **CPC-3**).
+**Place detail** lists facilities with **`onSiteId = this place`** first — not “every facility in the same `destinationId`” when scoped by parent site (`apps/api/src/lib/place-nearby-facilities.ts`).
 
 **Public URL (target):** `/facility/:id`. **FAB:** **Add → Facility** ([`CREATE_FLOW.md`](./CREATE_FLOW.md)).
 

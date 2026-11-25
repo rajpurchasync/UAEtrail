@@ -16,7 +16,6 @@ const baseLocation = (): Location =>
     region: 'Dubai',
     placeHubLabel: null,
     destinationId: testAreas.hatta.id,
-    areaId: testAreas.hatta.id,
     activityType: 'hiking',
     description: '',
     difficulty: null,
@@ -93,7 +92,6 @@ const baseFacility = (): Facility =>
     region: 'Dubai',
     placeHubLabel: null,
     destinationId: testAreas.hatta.id,
-    areaId: testAreas.hatta.id,
     facilityKind: 'toilet',
     description: '',
     latitude: 25.0,
@@ -118,7 +116,7 @@ describe('assertActiveListedFacilityHasCatalogGeo', () => {
   });
 
   it('rejects missing destination on listed activate', () => {
-    const row = { ...baseFacility(), destinationId: null, areaId: '' };
+    const row = { ...baseFacility(), destinationId: null };
     expect(() => assertActiveListedFacilityHasCatalogGeo(row)).toThrow(ApiError);
     try {
       assertActiveListedFacilityHasCatalogGeo(row);

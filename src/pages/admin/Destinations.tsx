@@ -76,7 +76,7 @@ const emptyForm = (): AreaFormState => ({
   longitude: 55.2708,
 });
 
-/** Platform admin — curated geographic areas (country → region → hub). */
+/** Platform admin — curated outdoor Destination hubs (`destinations` store; catalog graph). */
 export const AdminDestinations = () => {
   const [areas, setAreas] = useState<DestinationDTO[]>([]);
   const [page, setPage] = useState(1);
@@ -346,7 +346,7 @@ export const AdminDestinations = () => {
                             <span>
                               <span className="block font-medium text-gray-900">{area.name}</span>
                               <span className="block text-xs text-gray-500">
-                                /area/{area.slug} · p{area.priority}
+                                /destination/{area.slug} · p{area.priority}
                               </span>
                             </span>
                           </span>

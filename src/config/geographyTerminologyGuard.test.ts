@@ -20,12 +20,13 @@ const collectTsxUnder = (dir: string): string[] => {
   return files;
 };
 
-describe('geographyTerminologyGuard (Place · Facility · Area)', () => {
-  it('GEO-01: vocabulary module documents Place vs Facility vs Area', () => {
+describe('geographyTerminologyGuard (Place · Facility · Destination)', () => {
+  it('GEO-01: vocabulary module documents Place vs Facility vs Destination', () => {
     const vocab = read('src/place/geographyVocabulary.ts');
     expect(vocab).toMatch(/MapPlaceWireSource/);
     expect(vocab).toMatch(/MapFacilityWireSource/);
-    expect(vocab).toMatch(/GeographyAreaHubWireSource/);
+    expect(vocab).toMatch(/GeographyDestinationName/);
+    expect(vocab).toMatch(/AdminGeo/);
     expect(vocab).toMatch(/facilities/);
     expect(read('src/explore/explorePinKindFilter.ts')).toMatch(/MAP_LENS_SPOTS_LABEL/);
     expect(read('src/content/upl-glossary.ts')).toMatch(/geographyVocabulary/);
@@ -119,10 +120,10 @@ describe('geographyTerminologyGuard (Place · Facility · Area)', () => {
 
   it('GEO-08: destination hub SPA route + inbound rewrite (P7–P8)', () => {
     expect(read('src/routing/AppRoutes.tsx')).toMatch(/\/destination\/:slug/);
-    expect(read('nginx/snippets/inbound-bookmark-redirects.conf')).toMatch(
+    expect(read('nginx/snippets/inbound-bookmark-redirects.conf')).not.toMatch(
       /\/area\/\(\[\^\/\]\+\)/
     );
-    expect(read('nginx/snippets/inbound-bookmark-redirects.conf')).toMatch(/\/area\//);
+    expect(read('packages/shared-types/src/entity-path.ts')).toMatch(/STALE_AREA_HUB_PATH_RE/);
   });
 
   it('GEO-11: catalog query normalizers live in shared-types (Phase A)', () => {
@@ -152,7 +153,7 @@ describe('geographyTerminologyGuard (Place · Facility · Area)', () => {
   });
 
   it('GEO-13: Mongo destinations alias documented in collections + BWL (Phase C)', () => {
-    expect(read('apps/api/src/lib/collections.ts')).toMatch(/DESTINATIONS: 'areas'/);
+    expect(read('apps/api/src/lib/collections.ts')).toMatch(/DESTINATIONS: 'destinations'/);
     expect(read('apps/api/tests/destination-storage-guard.test.ts')).toMatch(
       /destination storage guard/
     );

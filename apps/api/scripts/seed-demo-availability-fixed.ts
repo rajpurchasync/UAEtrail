@@ -36,7 +36,7 @@ const seedFixedKindProjection = (
 export const upsertSeedAvailabilityFixedPin = async (input: {
   slotId: string;
   userId: string;
-  areaId: string;
+  destinationId: string;
   kind: AvailabilityKind;
   title: string;
   date: string;
@@ -71,7 +71,7 @@ export const upsertSeedAvailabilityFixedPin = async (input: {
   await mergeMemberAvailabilityFixedSlotsMigration(input.userId, {
     kinds: [...projection.modalities],
     visibility: 'public',
-    areaId: input.areaId,
+    destinationId: input.areaId,
     note: input.note?.trim() || null,
     fixedSlots: [slot],
   });

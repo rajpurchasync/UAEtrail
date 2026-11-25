@@ -126,7 +126,7 @@ Each context has **one write path** and **one public read model** where possible
 | **Social graph** | Relationship **writes** & group metadata (not browse roster UI) | `MyCrews.tsx`, `Groups.tsx`, `/crews` | `registerFriendRoutes`, `friend-activity-presence.ts`, `registerGroupRoutes`, `registerFollowRoutes` | `friend_*`, `user_follows`, `member_groups*` |
 | **Places** | Place catalog read, place detail, **member place submit** | `src/places-discovery/*`, `PlaceDetail*`, FAB Add→place wizard (`compose` UI) | `place-catalog`, `place-submit`, `GET /places/catalog`, `POST /me/places` | `locations` (place rows) |
 | **Facilities** | Facility catalog read, facility detail, **member facility submit** | FAB Add→facility wizard; `adminFacilityPlaceAdapter` | `place-catalog` (facility half), `GET /facilities/catalog`, `POST /me/facilities`, `GET/PATCH /admin/facilities` | **`facilities`** |
-| **Destinations** (bounded id `destinations`) | Admin-curated outdoor hub (`areas` Mongo store, stable ids → **`destinationId`**). **Not a map pin** — country / state / region come from **AdminGeo** (`geoRef`). Hub `/destination/:slug` + filter `?destination=`. Children via **`place.destinationId`** / **`facility.destinationId`**; facilities on trail via **`onSiteId`**. | `/destination/:slug`, compose **Destination then site**, admin **Destinations** console | `destinations-store`, `explore-map-destination-lens.ts` (hub rollups), `hostingPublishDestination.ts` | `areas`; **`locations.destinationId`**; **`facilities.destinationId`** + **`onSiteId`**; hosted geography = **`activity.locationId` → `place.destinationId`** |
+| **Destinations** (bounded id `destinations`) | Admin-curated outdoor hub (Mongo **`destinations`**, stable ids → **`destinationId`**). **Not a map pin** — country / state / city labels come from **AdminGeo** (`geoRef`). Hub `/destination/:slug` + filter `?destination=`. Children via **`place.destinationId`** / **`facility.destinationId`**; facilities on trail via **`onSiteId`**. | `/destination/:slug`, compose **Destination then site**, admin **Destinations** console | `destinations-store`, `explore-map-destination-lens.ts` (hub rollups), `hostingPublishDestination.ts` | **`destinations`**; **`locations.destinationId`**; **`facilities.destinationId`** + **`onSiteId`**; hosted geography = **`activity.locationId` → `place.destinationId`** |
 | **Shop profiles** | Operator shop public page + merchant manage (no product catalog) | `ShopPublic`, `/organisation/manage?kind=shop` | `registerShopPublicRoutes` · `registerShopMerchantManageRoutes` | `merchant_profiles`, `tenants` (SHOP) |
 | **Engagement** | Goals, map pins, wishlist, follow | explore wishlist save, entity/member follow | `registerMeGoalsRoutes`, `registerMeWishlistRoutes`, `registerEntityFollowRoutes`, … | `user_goals`, `user_wishlist`, `entity_follows`, `user_follows` |
 | **Platform ops** | Admin console, audit, applications, master-granted staff | `src/pages/admin/*` (`/admin/users` **Users** nav) | `routes/admin.ts` + `routes/admin/registerAdmin*` | `host_applications`, `audit_logs`, `auth_users` (staff role) |
@@ -153,7 +153,7 @@ Pick a **context id** when changing code; touch registrar + `src/api/domains/*` 
 | social_graph | `buddy_*` (Mongo), `user_follows`, `social_groups*` | `/me/friends`, `/me/friend-requests`, `/me/groups`, `/me/following`, … | `friendsApi`, `groupsApi` | `MyCrews`, `Groups` — relationship admin; **not** the explore people browse panel |
 | places | `locations` (places), `submissions` | `GET /places/catalog`, `/places/:id`, `POST /me/places`, `POST /me/submissions` | `placeApi`, `placeCatalogClient`, `memberCatalogSubmitClientApi`, `geoHierarchyApi` | `PlaceDetail*`, `/profile/submissions` suggest form |
 | facilities | `facilities` | `GET /facilities/catalog`, `/facilities/:id`, `POST /me/facilities`, `/admin/facilities` | `facilityApi`, `memberCatalogSubmitClientApi` | Facility submit wizard, `AdminPlaces` (`catalogSegment=facility`) |
-| destinations | `areas`, `geo_nodes`, `geo_stats`, `geo_outbox` | `GET /destinations/:slug`, `GET /geo/tree`, `GET /geo/:id/summary`, `GET /geo/resolve` | `destinationsApi`, `geoHierarchyApi` | `/destination/:slug`, `/geo` tree, `/geo/n/:id` summaries, IndexedDB + Redis/in-process geo cache, explore country/state/destination/venue search |
+| destinations | `destinations`, `geo_nodes`, `geo_stats`, `geo_outbox` | `GET /destinations/:slug`, `GET /geo/tree`, `GET /geo/:id/summary`, `GET /geo/resolve` | `destinationsApi`, `geoHierarchyApi` | `/destination/:slug`, `/geo` tree, `/geo/n/:id` summaries, IndexedDB + Redis/in-process geo cache, explore country/state/destination/venue search |
 | shop_profiles | `merchant_profiles` | `/shop/*` | `shopApi` | `ShopPublic`, shop UI |
 | engagement | `user_badges`, `user_goals`, `user_wishlist`, `entity_follows`, `social_reviews`, … | `/me/badges`, `/me/goals`, `/me/wishlist`, `/me/entity-follows`, `/reviews` | `badgesApi`, `goalsApi`, `wishlistApi`, `entityFollowApi`, `reviewsApi` | `ProfileBadges`, goals, `entityFollowApi`, wishlist guards |
 | platform_ops | `host_applications`, `audit_logs` | `/admin/*`, `POST/DELETE /admin/platform-admins` (master) | `adminApi` | `src/pages/admin/*`, `DashboardLayout`, `ADMIN_LINKS` — **ops tables**, not discovery L1/L2 |
@@ -268,7 +268,7 @@ Detail: [`API_ROUTING.md`](./API_ROUTING.md).
 | **L0 Wire** | Map/list DTO from API | `ExploreMapItemDTO` (`shared-types`), `GET /explore/map` + overlay `GET /me/discover/overlay` |
 | **L1 Card VM** | Projection for peek + list + poster | `src/discovery/discoveryCardModel.ts`, `buildDiscoveryCardViewModel`. Headlines come from map `presentation`; the client reapplies clock strings. |
 | **L2 Map peek** | Minimized card on map/list | `MapPeekShell` + `peek/{entity}/*` + `*PeekCard` |
-| **L3 Entity detail** | Marketing depth, join, tabs | `src/activity/detail/*`, `*PlaceDetailPage`, `/area/:slug` |
+| **L3 Entity detail** | Marketing depth, join, tabs | `src/activity/detail/*`, `*PlaceDetailPage`, `/destination/:slug` |
 
 **Naming (L2):** One shared shell — **`MapPeekShell`**. Per entity — **`{Entity}PeekCard`**, **`{Entity}PeekBody`**, **`{Entity}PeekActions`**. Activity membership buttons are **`ActivityPeekStandardFooter`**, the same resolver as the activity page (`resolveActivityDetailStandardFooter`). Do **not** stack extra prefixes (`PinSummary`, `Explore`) on entity parts.
 
@@ -280,7 +280,7 @@ Detail: [`API_ROUTING.md`](./API_ROUTING.md).
 
 **Folder rule:** `src/explore/ui/Explore*.tsx` remaining files are **map chrome** (stage, pills, sheets) until a dedicated pass. **Do not add** new `Explore*` files for entity lists, follows, or people rows — those belong in `crew-discovery` / `discovery`. Folder is the namespace.
 
-**Geography vocabulary (do not mix):** **Place** = catalog entity (`locations`, HTTP `/places`, map `source: place`). **Facility** = amenity with coords (`facilities`, HTTP `/facilities`, map `source: facility`). **Area** = admin-curated **name** (`areas`, `areaId` on Place/Facility) — **not a map pin**. Country / state / region come from map geography. Legacy map aliases: `venue` / `catalog_place` → `place`; `source: area` retired. FE anchor: `src/place/geographyVocabulary.ts` · BWL: `BWL_EXPLORE_MAP_SOURCE` · guards: `geographyTerminologyGuard.test.ts`.
+**Geography vocabulary (do not mix):** **AdminGeo** = automatic ladder country → state → **area (city)** → optional venue (`geoRef`, `/geo/n/:id`). **Destination** = admin-curated outdoor hub name (Mongo `destinations`, wire **`destinationId`**) — **not a map pin**, parallel to AdminGeo for editorial grouping. **Place (site)** = trail, camp, spot, event venue (`locations`, map `source: place`). **Facility** = amenity pin (`facilities`, map `source: facility`). Do **not** use “area” for curated hubs — that word is **geo L3 city** in `geoRef.names.area`. Legacy map aliases: `venue` / `catalog_place` → `place`; `source: area` retired; stale bookmark `/area/:slug` → `/destination/:slug` via `canonicalizeInboundProductPath`. FE anchor: `src/place/geographyVocabulary.ts` · guards: `geographyTerminologyGuard.test.ts`.
 
 Canon table: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) (Discovery UI file names). Guards: `mapPeekNaming.test.ts`, `discoveryUiMethodologyGuard.test.ts`, `geographyTerminologyGuard.test.ts`.
 
@@ -525,7 +525,7 @@ Ordered for **coherence**, not feature count:
 | **S7b** | **Activity detail tabs** (Plan · Place · Buddies · Transport) + unified engagement policy | **Done** — program `complete`; wire footers + `activityDetailAcceptance` / AD-CTA matrix |
 | **S7c** | **Viewer access naming** (wire-first, collapse resolver soup) | **Done (NA-1–NA-6)** — plan §22; API `buildActivityViewerAccess`; [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15.11 |
 | **S8** | **Discovery architecture** — card VM, explore shell, seeking read cleanup, map bbox spec | **Wave closed (R0–R6, R4 read, R8)** — R5 bbox **promote** via [`EXPLORE_MAP_RUNBOOK.md`](./operations/EXPLORE_MAP_RUNBOOK.md); §3 metrics (seeking branches, slim map default) = optional follow-up |
-| **S9** | **Consumer detail shell alignment** — place/area/shop/agency IA + shared chrome vs activity reference | **Eng complete** — shells Phases 1–7; lineage **§3.2** + API `detail-surface-lineage-contract`; §8.1 `consumerDetailQaMatrixGuard`; §15.3 `consumerDetailAntiDriftGuard`. **Pending:** S10f manual (`npm run s10f:ops:print-routes`) |
+| **S9** | **Consumer detail shell alignment** — place/destination/shop/agency IA + shared chrome vs activity reference | **Eng complete** — shells Phases 1–7; lineage **§3.2** + API `detail-surface-lineage-contract`; §8.1 `consumerDetailQaMatrixGuard`; §15.3 `consumerDetailAntiDriftGuard`. **Pending:** S10f manual (`npm run s10f:ops:print-routes`) |
 | **S10** | **Production hygiene audit (Oct 2026)** — security, trust, perf, stability (not new audit markdown) | **Eng complete** — **§8.1** waves **core + S10a–d** shipped; **S10e/f** = ops/human gates ([`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md)); **S10g** deferred. **Out of scope:** **C18** rewrite; **C19** prod default = staging promote only |
 | **S11** | **Structural module naming (P5 SN-1–SN-8)** — context folders, not synonym renames | **SN-1–SN-8 done** — `useMemberStatus`, `tenantActivityClientApi`, `/publishing` mount, `moduleNamingGuard` SN-6 | §8.8 (this doc) P5 |
 | **S12** | **Hosted + seeking activity coherence** (one host, one map pin, linked transport) | **S12a–d done** | [`CREATE_FLOW.md`](./CREATE_FLOW.md) § Coherence program |
@@ -621,7 +621,7 @@ Work **top to bottom**. Each wave ends with **`npm run verify:system:quick`** (w
 | Old label | S13 wave |
 |-----------|----------|
 | consumer-detail Phase 2 (activity kind) | **W7** |
-| consumer-detail Phase 3–4 (place/area tabs) | **W8** |
+| consumer-detail Phase 3–4 (place/destination tabs) | **W8** |
 | consumer-detail Phase 6 (people clarity) | **W1–W4** |
 | member-surfaces people panel | **baseline**; W2–W3 |
 | S13b–g (prior table) | W2–W3 (b), W4 (c), W7 (d), W9 (e), W6 (f), W5 (g) |
@@ -683,16 +683,16 @@ Phases **S0–S4** (guards), **S6–S8** (core), and **S7/S7b/S7c** are in place
 
 #### 8.4.1 Architecture snapshot (agreed)
 
-**Lens:** **What** = Activity · **Where** = Area / Place / Facility · **Who** = Person / Host / Operator · **How** = participate (**context only** — gates, join/RSVP; not a fourth entity) — [`DOMAIN.md`](./DOMAIN.md). Never “destination place”; trails and camps **are** Places.
+**Lens:** **What** = Activity · **Where** = Destination (hub) / Place / Facility · **Who** = Person / Host / Operator · **How** = participate (**context only** — gates, join/RSVP; not a fourth entity) — [`DOMAIN.md`](./DOMAIN.md). Never “destination place”; trails and camps **are** Places.
 
 | Layer | Decision |
 |-------|----------|
 | **North star** | People + plans + outdoors together — catalog supports *where* and *comfort*; activities support *who + when* ([`NORTHSTAR.md`](./NORTHSTAR.md)). |
 | **Auth actor** | One **person** (`users`); capabilities `GET /me/status`; **operator** = tenant-scoped **`/publishing/*`** workspace (guide, agency, shop owner) — not a separate login entity ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)). |
 | **Place** | Trail, camp, venue, outdoor spot (**place kind**). Storage: `locations` (place rows after CPC). Host registry picks **places only**. |
-| **Facility** | **Amenity** POI (toilet, rest_area, parking, …; member **outdoor_shop** pin ≠ operator shop). Storage: **`facilities` collection** (target). Optional **`parentPlaceId`** (rest stop on a trail); required **`areaId`**. |
+| **Facility** | **Amenity** POI (toilet, rest_area, parking, …; member **outdoor_shop** pin ≠ operator shop). Storage: **`facilities` collection**. Optional **`onSiteId`** (rest stop on a trail); required **`destinationId`**. |
 | **Activity** | Scheduled outing; `activityMode: hosted` only (new writes). **Find crew** = **`member_availability`** fixed slots · **Host** on explore FAB (no separate legacy **Find** menu). |
-| **Area** | Curated hub; places and facilities link via `areaId`; activity geography via `activity.locationId → place.areaId`. |
+| **Destination** | Curated outdoor hub (not a map pin); places and facilities link via **`destinationId`**; activity geography via `activity.locationId → place.destinationId` only (no `activity.destinationId` on write). |
 | **Shop profiles** | **Operator tenant** + `/shop/:id` + `/publishing/*` — **not** the same as FAB **Add → Shops** (`add.place.shop` community place submit). No product catalog or shop checkout HTTP. |
 | **Add / submit** | **Not** an API or table — **provenance** `registeredByUserId` (alias `submittedById` during migration) on place/facility rows. |
 | **Registry** | **Named catalog queries** — `GET /places/catalog` (places), `GET /facilities/catalog` — not separate Mongo “registry” collections. |
@@ -705,15 +705,17 @@ Phases **S0–S4** (guards), **S6–S8** (core), and **S7/S7b/S7c** are in place
 #### 8.4.2 Geography (why Facility is separate)
 
 ```text
-Region → Area (areaId)
+Destination (curated destinationId) — parallel to AdminGeo; not a pin
   ├── Place: Trail X                    ← where; host anchor
-  │     ├── Facility (parentPlaceId=X)  ← rest @ km 3, toilet @ trailhead
+  │     ├── Facility (onSiteId=X)       ← rest @ km 3, toilet @ trailhead
   │     └── …
   ├── Place: Camp Y
-  └── Facility (parentPlaceId=null)     ← area-scoped gas, etc.
+  └── Facility (onSiteId=null)          ← destination-scoped gas, etc.
+
+AdminGeo tree (geoRef on coords): country → state → area (city) → optional venue
 ```
 
-**Retire:** `listNearbyFacilitiesForPlace` **area-sibling-only** semantics as the primary rule — **CPC-3** queries `parentPlaceId` first.
+**Retire:** facility queries that only matched **destination siblings** — **CPC-3** queries **`onSiteId`** first. **Graph model:** [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §12.1.0.
 
 #### 8.4.3 Shop — three layers (do not merge)
 
@@ -742,8 +744,8 @@ Region → Area (areaId)
 |----|----------|
 | D1 | Facilities in **`facilities` collection** |
 | D2 | Member gear pin = **facility `outdoor_shop`**, not `EntityKind.shop` |
-| D3 | `parentPlaceId` when amenity belongs to a trail; optional for area-only |
-| D4 | Trail detail amenities: query **`parentPlaceId`**, not area siblings only |
+| D3 | `onSiteId` when amenity belongs to a trail; optional for destination-only amenities |
+| D4 | Trail detail amenities: query **`onSiteId`**, not destination siblings only |
 | D5 | Operator = **workspace**; all tenant kinds → `/publishing/*` |
 | D6 | Pending catalog UX: **submissions list**, no public draft URL for unlisted rows |
 | D7 | Cutover: optional `CATALOG_V2` read flag → single deploy → redirects **CPC-6** |
@@ -788,7 +790,7 @@ Mark `[x]` in the PR that completes the item. **Gate:** `npm run verify:system:q
 *Depends: CPC-1. Context: migrate from `locations` where `isFacilityPlaceKind`.*
 
 - [x] `facilities` schema in API domain types + `collections.ts`
-- [x] Mongo migration M1: create collection + indexes (`areaId`, `parentPlaceId`, `facilityKind`, moderation/publication)
+- [x] Mongo migration M1: create collection + indexes (`destinationId`, `onSiteId`, `facilityKind`, moderation/publication)
 - [x] M2: backfill from facility rows in `locations`
 - [x] M3: backfill `community-shop` → `outdoor_shop` facilities
 - [x] M4: backfill `moderationStatus` / `publicationStatus` on places (and facilities)
@@ -805,7 +807,7 @@ Mark `[x]` in the PR that completes the item. **Gate:** `npm run verify:system:q
 - [x] `GET /facilities/catalog`
 - [x] `buildPlaceViewerAccess` + wire on `GET /places/:id`
 - [x] `buildFacilityViewerAccess` + wire on `GET /facilities/:id`
-- [x] Place detail: `nearbyFacilities[]` by `parentPlaceId` (`facilities` collection)
+- [x] Place detail: `nearbyFacilities[]` by `onSiteId` (`facilities` collection)
 - [x] `apps/api/tests/place-viewer-access-contract.test.ts` (new)
 - [x] `apps/api/tests/facility-catalog-contract.test.ts` (new)
 - [x] Extend `detail-surface-lineage-contract.test.ts` for facility activate → public GET
@@ -817,7 +819,7 @@ Mark `[x]` in the PR that completes the item. **Gate:** `npm run verify:system:q
 *Depends: CPC-3 (or parallel after CPC-1 for places-only).*
 
 - [x] All member place submits → `POST /me/places` only (remove new `/me/locations` clients)
-- [x] Facility submit → `POST /me/facilities` with `areaId`, optional `parentPlaceId`, `facilityKind`
+- [x] Facility submit → `POST /me/facilities` with `destinationId`, optional `onSiteId`, `facilityKind`
 - [x] Admin: `/admin/facilities` uses facility store (not `locations` segment only)
 - [x] Audit actions: `place.submit`, `facility.submit` (keep `location.submit` alias one release)
 - [x] `notifyAdminsLocationSubmitted` → generic catalog submit copy (`notifyAdminsCatalogSubmitted`)
@@ -991,23 +993,25 @@ Legacy shim (one release, no new imports): `placeRegistry.ts`. `placeCatalogApi.
 
 ### 8.5 Program MIG-DESTINATION-GEO-2026 — geography assignment
 
-**Status:** **Cutover complete (P0–P10 + hard wire)** — single path: `destinationId`, `onSiteId`, `GET /api/destinations`, `/destination/:slug`, `?destination=`; Mongo migration **2025112506** unsets legacy `areaId` on catalog rows and `parentPlaceId` on facilities. Physical store remains `areas` collection; **AdminGeo** `geoRef` SoT for country/state. **Not in scope:** nested geo URLs; GW-7 inbound choke.
+**Status:** **Cutover complete (P0–P10 + hard wire)** — single path: `destinationId`, `onSiteId`, `GET /api/destinations`, `/destination/:slug`, `?destination=`; Mongo **`2025112507`** renames store **`areas` → `destinations`**, backfills `placeHubLabel`, unsets legacy `areaId` / `areaLabel` / `parentPlaceId` / `catalogAreaId` on catalog rows. **AdminGeo** `geoRef` is SoT for country / state / **geo area (city)**. **Not in scope:** nested geo URLs; GW-7 inbound choke (`canonicalizeInboundProductPath`, not duplicate nginx tables for `/area`).
 
 **Read between phases:** this §8.5 · [`DOMAIN.md`](./DOMAIN.md) § Geography · [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §12.1 · `packages/shared-types/src/destination.ts`.
 
-**Vocabulary:** **AdminGeo** (`geoRef`) · **Destination** (curated outdoor region) · **Place (site)** (hostable spot) · **Facility** (amenity). Legacy **Area** = Destination until cutover.
+**Vocabulary:** **AdminGeo** (`geoRef`) · **Destination** (curated hub) · **Place (site)** (hostable spot on map) · **Facility** (amenity pin). **Geo “area”** = city/municipality tier only — never the curated hub.
 
 #### 8.5.0 Locked decisions
 
 | ID | Decision |
 |----|----------|
-| D0.1 | `destinations` from `areas`; preserve `area-seed-*` ids as `destinationId` |
+| D0.1 | Mongo collection **`destinations`** (renamed from `areas`); preserve `area-seed-*` ids as `destinationId` |
 | D0.2 | `resolveDestinationId` reads **`destinationId` only** (no `areaId` wire) |
-| D0.3 | `/destination/:slug` canonical; inbound `/area/*` → `/destination/*` (nginx) |
+| D0.3 | `/destination/:slug` canonical; inbound `/area/*` → `/destination/*` (`rewriteStaleEntityInboundPath`) |
 | D0.4 | Listed catalog requires `destinationId` + `geoRef` (P4+) |
 | D0.5 | Facility trail scope → `onSiteId` rename from `parentPlaceId` (P9) |
 
-#### 8.5.1 Target assignment
+#### 8.5.1 Target assignment (catalog graph)
+
+**Graph reference:** AdminGeo **tree** + catalog **edges** — [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §12.1.0 (mermaid).
 
 ```text
 AdminGeo (auto, geoRef) on coords
@@ -1051,7 +1055,7 @@ Mark `[x]` in the PR that completes the item.
 
 **P2 — Destinations API**
 
-- [x] `destinations-store.ts` (logical; physical `areas`)
+- [x] `destinations-store.ts` → Mongo `destinations`
 - [x] `GET /api/destinations`, `GET /api/destinations/:slug`
 - [x] `destination-public-read` + route registrar
 - [x] `destinations-public.test.ts`
@@ -1059,16 +1063,16 @@ Mark `[x]` in the PR that completes the item.
 **P3 — Data backfill**
 
 - [x] `MONGO_MIGRATION_VERSION = 2025112503` + `runDestinationGeoMigrations`
-- [x] Dual-write `mirrorCatalogDestinationIds` on place/facility creates
+- [x] Catalog writes use `catalogDestinationIdUpdate` (`destinationId` only)
 - [x] Mappers emit `destinationId` on place/facility DTO reads
 - [x] Member availability upsert dual-writes `destinationId`
-- [x] Admin facility patch dual-writes `destinationId` on `areaId`
+- [x] Admin facility patch sets `destinationId` only (`catalogDestinationIdUpdate`)
 - [ ] Remaining catalog write paths (audit in P9)
 
 **P4 — AdminGeo authority**
 
 - [x] `resolveExploreDestinationSlugQuery` (API + FE explore filter)
-- [x] `GET /explore/map` accepts `destination` (alias `area`)
+- [x] `GET /explore/map` accepts `destination` query only
 - [x] `assertActiveListedPlaceHasCatalogGeo` on admin place activate
 - [x] Facility listed publish gate (`assertActiveListedFacilityHasCatalogGeo`)
 
@@ -1082,21 +1086,21 @@ Mark `[x]` in the PR that completes the item.
 **P6 — Compose / catalog lineage**
 
 - [x] `assertActiveListedFacilityHasCatalogGeo` on admin facility activate/create
-- [x] Admin facility `areaId` patch → `mirrorCatalogDestinationIds`
+- [x] Admin facility patch sets `destinationId` via `catalogDestinationIdUpdate`
 - [x] `member-availability` upsert dual-writes `destinationId`
-- [x] Hosting publish validates place via `resolveDestinationId` (dual-read)
+- [x] Hosting publish validates place via `resolveDestinationId` (`destinationId` only)
 
 **P7 — FE destination hubs**
 
 - [x] `GET /destinations` + hub detail via `destinationsApi` / `destinationHubClientApi`
-- [x] SPA `/destination/:slug` (legacy `/area/:slug` mount retained — no `<Navigate>`)
-- [x] `areaDetailPath` emits `/destination/:slug`
-- [x] Explore URL builder dual-writes `destination` + `area` query
+- [x] SPA `/destination/:slug` only (no `/area/:slug` route)
+- [x] `destinationHubPath` is the product emit helper
+- [x] Explore URL builder emits `?destination=` only
 
 **P8 — Inbound**
 
 - [x] `rewriteStaleEntityInboundPath` `/area/:slug` → `/destination/:slug`
-- [x] nginx `inbound-bookmark-redirects.conf` 301 for `/area/*`
+- [x] Stale `/area/*` bookmarks normalized in `rewriteStaleEntityInboundPath` (no nginx `/area` block)
 
 **P9 — API cutover (read paths)**
 
@@ -1110,7 +1114,7 @@ Mark `[x]` in the PR that completes the item.
 - [x] Explore URLs emit **`?destination=`** only (no `?area=` read path)
 - [x] Consumer API: `destinationsApi` public + admin reads → `/destinations`; `apiClientSurfaceGuard`
 - [ ] `npm run verify:system` on staging (ops sign-off)
-- [ ] Optional: physical Mongo `areas` collection rename
+- [x] Mongo `areas` → `destinations` collection rename (**2025112507**)
 
 **Program eng status:** **P0–P10 code complete** — ops: staging verify + deploy checklist.
 
@@ -1308,7 +1312,7 @@ Gate: **`npm run verify:platform-governance`**. Behavior stays in code + vitest 
 | Hosted by | Card/detail attribution |
 | Host an outing | Create/publish on map (FAB Host + Host / publish capability) |
 | Looking for company | Seeking mode on map (not availability calendar) |
-| Area | Admin-curated name grouping Places/Facilities (hub `/area/:slug`); **not a map pin**. Country / state / region come from map geography |
+| Destination | Admin-curated hub grouping Places/Facilities (hub `/destination/:slug`); **not a map pin**. Country / state / city come from AdminGeo `geoRef` |
 | Place | Trail, camp, or event venue in catalog |
 | Facility | Amenity POI |
 | Spots | Map lens for Place pins |
@@ -1334,7 +1338,7 @@ Gate: **`npm run verify:platform-governance`**. Behavior stays in code + vitest 
 | `activity_requests` / `note` / `hostNote` | Join queue; joiner message vs host decision |
 | `host_id`, `created_by_id` | Activity person ids (keep; UPL “Host”) |
 | `locations` (+ HTTP `/places` only after COH-02) | Place catalog |
-| `facilities`, `areas` | CPC |
+| `facilities`, `destinations` | CPC |
 | `tenants`, `tenant_memberships` | Business orgs |
 | `pro_applications` | Target collection rename; HTTP is `/me/pro-application` now (COH-03). Collection still `host_applications` |
 | `auth_users` | Members |
@@ -1357,7 +1361,7 @@ All **17** contexts: `discovery`, `compose`, `participation`, `member_identity`,
 
 #### 8.8.4 Canonical API flows (one BWL path each)
 
-Discover map `GET /explore/map` (guest catalog) · overlay `GET /me/discover/overlay` · People `GET /me/member-discovery/*` (`segment=friends\|followed\|all`) · Friends `/me/friends` · Follow `/me/following` · Goals `/me/goals` · Availability `/me/availability` · Wishlist `/me/wishlist` · Join/RSVP `/activities/:id/requests` · Host queue `/publishing/requests` · Pro apply `/me/pro-application` · Capability `GET /me/status` · Places `/places/*` · Facilities `/facilities/:id` · Areas `/areas` (names, not pins) · Safety `POST /safety/reports` · Chat `/chat` · Reviews `/reviews`.
+Discover map `GET /explore/map` (guest catalog) · overlay `GET /me/discover/overlay` · People `GET /me/member-discovery/*` (`segment=friends\|followed\|all`) · Friends `/me/friends` · Follow `/me/following` · Goals `/me/goals` · Availability `/me/availability` · Wishlist `/me/wishlist` · Join/RSVP `/activities/:id/requests` · Host queue `/publishing/requests` · Pro apply `/me/pro-application` · Capability `GET /me/status` · Places `/places/*` · Facilities `/facilities/:id` · Destinations `GET /destinations` (hub names, not pins) · Safety `POST /safety/reports` · Chat `/chat` · Reviews `/reviews`.
 
 **Delete flows:** participant-intent CRUD/join, `demand:` map ids, dual `/locations` HTTP. `/people` orphan registrar removed (COH-05).
 

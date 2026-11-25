@@ -247,7 +247,7 @@ export const seedGeoNodesFromCatalog = async (db: Db): Promise<void> => {
       childCount: 0,
       sort: Number(area.priority ?? i),
       status: 'active',
-      catalogAreaId: id,
+      catalogDestinationId: id,
     });
   }
 
@@ -296,7 +296,7 @@ const seedExtraGeoAreasAndVenues = async (db: Db, countryId: string): Promise<vo
       childCount: 0,
       sort: curated.priority,
       status: 'active',
-      catalogAreaId: curated.id,
+      catalogDestinationId: curated.id,
     });
   }
 
@@ -607,7 +607,7 @@ const clusterAndSeedVenuesFromPins = async (db: Db): Promise<number> => {
       latitude: { $type: 'number' },
       longitude: { $type: 'number' },
     })
-    .project({ name: 1, placeHubLabel: 1, areaId: 1, latitude: 1, longitude: 1, geoRef: 1 })
+    .project({ name: 1, placeHubLabel: 1, destinationId: 1, latitude: 1, longitude: 1, geoRef: 1 })
     .toArray();
 
   const used = new Set<string>();
@@ -624,7 +624,7 @@ const clusterAndSeedVenuesFromPins = async (db: Db): Promise<number> => {
     const hints = {
       latitude: lat,
       longitude: lng,
-      areaId: (loc.areaId as string) ?? null,
+      destinationId: (loc.destinationId as string) ?? null,
       countryCode: 'AE',
       region: null,
       venueName: (loc.name as string) ?? null,
@@ -789,7 +789,7 @@ export const backfillGeoRefOnPins = async (
     (doc) => ({
       latitude: doc.latitude as number | null,
       longitude: doc.longitude as number | null,
-      areaId: (doc.areaId as string) ?? null,
+      destinationId: (doc.destinationId as string) ?? null,
       countryCode: (doc.countryCode as string) ?? 'AE',
       region: (doc.region as string) ?? null,
       venueName: (doc.name as string) ?? null,
@@ -803,7 +803,7 @@ export const backfillGeoRefOnPins = async (
     (doc) => ({
       latitude: (doc.meetingLat ?? doc.startLat) as number | null,
       longitude: (doc.meetingLng ?? doc.startLng) as number | null,
-      areaId: (doc.areaId as string) ?? null,
+      destinationId: (doc.destinationId as string) ?? null,
       countryCode: 'AE',
       region: null,
       venueName: (doc.meetingPoint as string) ?? (doc.title as string) ?? null,
@@ -817,7 +817,7 @@ export const backfillGeoRefOnPins = async (
     (doc) => ({
       latitude: doc.latitude as number | null,
       longitude: doc.longitude as number | null,
-      areaId: (doc.areaId as string) ?? null,
+      destinationId: (doc.destinationId as string) ?? null,
       countryCode: (doc.countryCode as string) ?? 'AE',
       region: (doc.region as string) ?? null,
       venueName: (doc.name as string) ?? null,

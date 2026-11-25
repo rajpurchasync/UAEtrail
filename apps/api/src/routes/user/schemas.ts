@@ -326,18 +326,12 @@ export const placeRegistryQuerySchema = listFilterSchema.pick({
 export const placeCatalogQuerySchema = placeRegistryQuerySchema.extend({
   segment: z.enum(['place', 'all']).optional(),
   destinationId: z.string().min(1).max(80).optional(),
-  /** @deprecated inbound alias — use `destinationId`. */
-  areaId: z.string().min(1).max(80).optional(),
   purpose: z.enum(['organize_picker', 'map', 'admin_queue', 'detail']).optional(),
 });
 
 export const facilityCatalogQuerySchema = z.object({
   destinationId: z.string().min(1).max(80).optional(),
   onSiteId: z.string().min(1).max(80).optional(),
-  /** @deprecated inbound alias — use `destinationId`. */
-  areaId: z.string().min(1).max(80).optional(),
-  /** @deprecated inbound alias — use `onSiteId`. */
-  parentPlaceId: z.string().min(1).max(80).optional(),
   facilityKind: z.enum(FACILITY_KINDS as unknown as [string, ...string[]]).optional(),
   countryCode: z.string().length(2).optional(),
   purpose: z.enum(['organize_picker', 'map', 'admin_queue', 'detail']).optional(),

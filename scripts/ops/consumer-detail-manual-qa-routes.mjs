@@ -36,7 +36,7 @@ const ROUTES = [
   },
   { surface: 'Place trail', path: '/trail/:id' },
   { surface: 'Place camp', path: '/camp/:id' },
-  { surface: 'Area hub', path: '/area/hatta?tab=overview', note: 'tabs: overview | places | activities' },
+  { surface: 'Destination hub', path: '/destination/hatta?tab=overview', note: 'tabs: overview | places | activities' },
   { surface: 'Member (guest)', path: '/member/:userId', note: 'ExploreGuestSignInCard intent=member-profile' },
   {
     surface: 'Member (public card)',

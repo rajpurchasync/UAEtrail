@@ -158,7 +158,6 @@ const EXPLORE_MAP_LOCATION_PROJECTION = {
   description: 1,
   region: 1,
   groupRegionLevels: 1,
-  areaId: 1,
   placeHubLabel: 1,
   tags: 1,
   featured: 1,

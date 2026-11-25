@@ -12,7 +12,7 @@ describe('place hub label wire guard', () => {
     expect(mappers).not.toMatch(/\bareaLabel\b/);
   });
 
-  it('shared-types documents mongo legacy read in place-hub-label', () => {
+  it('shared-types exports place hub label helpers', () => {
     expect(read('packages/shared-types/src/place-hub-label.ts')).toMatch(/readPlaceHubLabel/);
     expect(read('packages/shared-types/src/wire-lexicon.ts')).toMatch(/PLACE_HUB_LABEL/);
   });

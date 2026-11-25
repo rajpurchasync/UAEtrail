@@ -49,8 +49,8 @@ export type GeoNodeDoc = {
   sort: number;
   status: GeoNodeStatus;
   isoCode?: string;
-  /** Existing curated `areas` id when this node mirrors a catalog area. */
-  catalogAreaId?: string;
+  /** Curated `destinations` row id when this geo node mirrors a Destination hub. */
+  catalogDestinationId?: string;
   dedupe?: DedupeKeys;
   aliases?: string[];
   createdAt: Date | string;

@@ -2,6 +2,10 @@
  * Geography vocabulary for discovery + detail UI.
  * Authoritative product copy: `docs/DOMAIN_CANONICALS.md` §12.1 · §12.1.1.
  *
+ * **Two ladders (do not mix):**
+ * - **AdminGeo** — country → state → area (city) → optional venue (`geoRef`, `/geo/n/:id`).
+ * - **Product catalog** — **Destination** (curated hub, not a pin) → **Place (site)** / **Facility** (map pins).
+ *
  * Use these terms consistently in modules, props, and user-facing labels.
  */
 
@@ -23,19 +27,8 @@ export type MapVenueWireSource = 'venue';
 /** @deprecated Brief COH-02 name — use `place`. */
 export type MapCatalogPlaceWireSource = 'catalog_place';
 
-/**
- * Admin-curated outdoor **Destination** (`destinations` / legacy `areas`).
- * Not a map pin. Wire: `destinationId` + dual-read `destinationId` until MIG P9.
- */
+/** Admin-curated outdoor **Destination** (`destinations` collection; wire `destinationId`). Not a map pin. */
 export type GeographyDestinationName = 'destination';
-
-/**
- * @deprecated Use {@link GeographyDestinationName} in new copy — still `area` in legacy URLs until P8.
- */
-export type GeographyAreaName = 'area';
-
-/** @deprecated Synthetic hub pin — do not emit. */
-export type GeographyAreaHubWireSource = 'area';
 
 /**
  * Amenity kinds on Facility rows (toilet, parking, gas, …).

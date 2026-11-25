@@ -246,7 +246,7 @@ export const buildActivityDto = (event: ActivityWithRelations, opts?: ActivityDt
     countryCode: event.location.countryCode ?? event.tenant.countryCode ?? 'AE',
     locationLatitude: event.location.latitude ?? null,
     locationLongitude: event.location.longitude ?? null,
-    locationAreaId: event.location.areaId ?? null,
+    locationDestinationId: event.location.destinationId ?? null,
     locationGeoRef: event.geoRef ?? event.location.geoRef ?? null,
   });
 
@@ -349,7 +349,7 @@ const toEventDto = ({
   countryCode = 'AE',
   locationLatitude,
   locationLongitude,
-  locationAreaId,
+  locationDestinationId,
   locationGeoRef,
 }: {
   event: Activity;
@@ -374,7 +374,7 @@ const toEventDto = ({
   countryCode?: string;
   locationLatitude?: number | null;
   locationLongitude?: number | null;
-  locationAreaId?: string | null;
+  locationDestinationId?: string | null;
   locationGeoRef?: import('@uaetrail/shared-types').GeoRef | null;
 }): ActivityDTO => {
   const local = formatActivityLocal(event.startAt, countryCode);
@@ -397,8 +397,8 @@ const toEventDto = ({
   locationName,
   region,
   groupRegionLevels: groupRegionLevels ?? null,
-  destinationId: locationAreaId?.trim()
-    ? locationAreaId.trim()
+  destinationId: locationDestinationId?.trim()
+    ? locationDestinationId.trim()
     : event.destinationId?.trim()
       ? event.destinationId.trim()
       : null,

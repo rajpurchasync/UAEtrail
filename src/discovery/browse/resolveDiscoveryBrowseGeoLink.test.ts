@@ -59,7 +59,7 @@ describe('resolveDiscoveryBrowseGeoHubPath', () => {
           destinationSlug: 'mleiha',
         })
       )
-    ).toBe('/area/mleiha');
+    ).toBe('/destination/mleiha');
   });
 
   it('returns null when no geo or area slug', () => {

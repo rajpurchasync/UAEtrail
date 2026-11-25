@@ -384,7 +384,7 @@ export const isMobileDetailRoute = (pathname: string): boolean =>
 /** Public entity detail — own header + sticky CTA (MobileDetailShell). */
 export const isEntityDetailRoute = (pathname: string): boolean =>
   isMobileDetailRoute(pathname) ||
-  pathname.startsWith('/area/') ||
+  pathname.startsWith('/destination/') ||
   pathname === '/geo' ||
   pathname.startsWith('/geo/') ||
   pathname === '/plan/today' ||

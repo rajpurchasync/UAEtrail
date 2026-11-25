@@ -24,9 +24,9 @@ export const BWL_COLLECTIONS = {
   /** Partner outbound click telemetry (commercial facilities / shops). */
   REFERRAL_CLICKS: 'referral_clicks',
   /**
-   * Curated destinations store — physical Mongo collection `areas`; document ids e.g. `area-seed-*`.
+   * Curated destinations store — Mongo collection `destinations`; document ids e.g. `area-seed-*`.
    */
-  DESTINATIONS: 'areas',
+  DESTINATIONS: 'destinations',
   GEO_NODES: 'geo_nodes',
   GEO_STATS: 'geo_stats',
   GEO_OUTBOX: 'geo_outbox',
@@ -113,8 +113,8 @@ export const BWL_API_MOUNTS = {
  * Explore map item `source` — one lexicon for presentation, person, and plan projection.
  *
  * Canonical emit: activity · place · facility · shop · agency.
- * Area is **not** a pin — admin-curated name; country/state/region come from map geography.
- * Leftover read-only: venue / catalog_place → place; area → drop from map.
+ * Destination is **not** a pin — admin-curated hub (`destinationId` on rows); AdminGeo names from `geoRef`.
+ * Leftover read-only: venue / catalog_place → place; retired `source: area` → drop from map.
  */
 export const BWL_EXPLORE_MAP_SOURCE = {
   ACTIVITY: 'activity',

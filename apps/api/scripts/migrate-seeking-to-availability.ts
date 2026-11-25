@@ -154,7 +154,7 @@ runCliScript(resolveCliScriptName(import.meta.url), async () => {
         kinds,
         visibility: existing?.visibility === 'hidden' ? 'public' : existing?.visibility ?? 'public',
         region: existing?.region ?? null,
-        areaId: existing?.areaId ?? row.areaId ?? null,
+        destinationId: existing?.areaId ?? row.areaId ?? null,
         note: existing?.note ?? null,
         fixedSlots: [slot],
       });

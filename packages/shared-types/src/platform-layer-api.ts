@@ -13,7 +13,7 @@ export const PLATFORM_LAYER_API_MODULES: Record<PlatformLayer, readonly string[]
     'account',
     'organisation',
     'shop',
-    'areas',
+    'destinations',
     'weather',
     'crewDiscover',
     'discoverRecommendations',

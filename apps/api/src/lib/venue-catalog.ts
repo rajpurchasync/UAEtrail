@@ -41,7 +41,7 @@ export type VenueCatalogEntry = {
   description?: string;
   featured?: boolean;
   placeHubLabel?: string;
-  areaId?: string;
+  destinationId?: string;
   difficulty?: 'easy' | 'moderate' | 'hard';
   distance?: number;
   duration?: number;

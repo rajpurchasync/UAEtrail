@@ -7,7 +7,7 @@ import {
 import type { Location } from '../domain/types.js';
 import type { MongoActivityDoc } from './entity-builders.js';
 import { listPublishedDestinations } from './destinations-store.js';
-import { resolveCatalogLocationAreaId } from './venue-catalog-enrichment.js';
+import { resolveCatalogLocationDestinationId } from './venue-catalog-enrichment.js';
 
 let publishedDestinationsCache: DestinationDTO[] | null = null;
 let publishedDestinationsCacheAt = 0;
@@ -83,16 +83,15 @@ export const resolveActivityAnchorCoordinates = (
 };
 
 /**
- * Audit-only: persisted `destinationId`, legacy `areaId`, seed map, then point-in-polygon.
+ * Audit-only: persisted `destinationId`, seed map, then point-in-polygon.
  * Request and publish paths must not call this — missing `destinationId` is a data fix.
  */
 export const resolveEffectiveCatalogDestinationId = (
-  location: Pick<Location, 'id' | 'destinationId' | 'areaId' | 'latitude' | 'longitude'>,
+  location: Pick<Location, 'id' | 'destinationId' | 'latitude' | 'longitude'>,
   destinations: DestinationDTO[]
 ): string | null => {
   if (location.destinationId?.trim()) return location.destinationId.trim();
-  if (location.areaId?.trim()) return location.areaId.trim();
-  const catalogDestinationId = resolveCatalogLocationAreaId(location.id);
+  const catalogDestinationId = resolveCatalogLocationDestinationId(location.id);
   if (catalogDestinationId) return catalogDestinationId;
   if (location.latitude != null && location.longitude != null) {
     return resolveDestinationIdFromPoint(location.latitude, location.longitude, destinations, null);

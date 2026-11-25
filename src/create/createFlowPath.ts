@@ -28,7 +28,7 @@ export const createFlowPath = (
     pathname.startsWith('/place') ||
     pathname.startsWith('/venue') ||
     pathname.startsWith('/shop') ||
-    pathname.startsWith('/area')
+    pathname.startsWith('/destination')
   ) {
     return buildComposeAuthReturnPath(pathname, search, route);
   }

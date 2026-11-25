@@ -35,12 +35,12 @@ describe('place detail paths (CPC-6)', () => {
     expect(rewriteStaleEntityInboundPath('/trail/foo?tab=overview')).toBe('/place/foo?tab=overview');
     expect(rewriteStaleEntityInboundPath('/camp/bar')).toBe('/place/bar');
     expect(rewriteStaleEntityInboundPath('/event/hall-1')).toBe('/venue/hall-1');
-    expect(rewriteStaleEntityInboundPath('/area/hatta?tab=spots')).toBeNull();
+    expect(rewriteStaleEntityInboundPath('/area/hatta?tab=spots')).toBe('/destination/hatta?tab=spots');
   });
 
   it('canonicalizeInboundProductPath chains entity then hub rules', () => {
     expect(canonicalizeInboundProductPath('/trail/foo')).toBe('/place/foo');
-    expect(canonicalizeInboundProductPath('/area/hatta')).toBe('/area/hatta');
+    expect(canonicalizeInboundProductPath('/area/hatta')).toBe('/destination/hatta');
     expect(canonicalizeInboundProductPath('/map')).toBe('/explore');
   });
 

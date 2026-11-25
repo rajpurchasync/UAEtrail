@@ -38,13 +38,13 @@ const inferPlaceHubLabel = (entry: VenueCatalogEntry): string | null => {
   return null;
 };
 
-export const resolveCatalogLocationAreaId = (locationId: string): string | null => {
-  const key = resolveCatalogLocationAreaKey(locationId);
+export const resolveCatalogLocationDestinationId = (locationId: string): string | null => {
+  const key = resolveCatalogLocationDestinationKey(locationId);
   return key ? curatedDestinationSeedId(key) : null;
 };
 
 /** Prefix / explicit map for catalog venue ids → curated area seeds. */
-export const resolveCatalogLocationAreaKey = (locationId: string): CuratedDestinationSeedKey | null => {
+export const resolveCatalogLocationDestinationKey = (locationId: string): CuratedDestinationSeedKey | null => {
   const explicit: Record<string, CuratedDestinationSeedKey> = {
     'jebel-jais-summit-trail': 'jebelJais',
     'wadi-shawka-loop': 'wadiShawka',
@@ -133,7 +133,8 @@ export const enrichCatalogEntryFields = (
   const parkingLat = entry.parkingLat ?? entry.latitude;
   const parkingLng = entry.parkingLng ?? entry.longitude;
 
-  const areaId = entry.areaId ?? resolveCatalogLocationAreaId(entry.id) ?? undefined;
+  const destinationId =
+    entry.destinationId ?? resolveCatalogLocationDestinationId(entry.id) ?? undefined;
 
   const tags = [...(entry.tags ?? [])];
   if (placeHubLabel && !tags.some((t) => t.startsWith('area:'))) {
@@ -142,7 +143,7 @@ export const enrichCatalogEntryFields = (
 
   return {
     placeHubLabel,
-    destinationId: areaId,
+    destinationId,
     difficulty,
     accessibility,
     distance,

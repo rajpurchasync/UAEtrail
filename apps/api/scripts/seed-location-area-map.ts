@@ -3,7 +3,7 @@ import type { DestinationDTO } from '@uaetrail/shared-types';
 import { LocationStatus } from '../src/domain/enums.js';
 import { resolveDestinationIdFromPoint } from '../src/lib/destination-resolution.js';
 import { listPublishedDestinations } from '../src/lib/destinations-store.js';
-import { resolveCatalogLocationAreaKey } from '../src/lib/venue-catalog-enrichment.js';
+import { resolveCatalogLocationDestinationKey } from '../src/lib/venue-catalog-enrichment.js';
 
 /** Explicit catalog place → curated area (overrides point-in-polygon when set). */
 export const SEED_CATALOG_LOCATION_AREA_KEYS: Record<string, CuratedDestinationSeedKey> = {
@@ -46,7 +46,7 @@ export const SEED_CATALOG_LOCATION_AREA_KEYS: Record<string, CuratedDestinationS
 
 export const seedLocationAreaId = (locationId: string): string | null => {
   const key =
-    SEED_CATALOG_LOCATION_AREA_KEYS[locationId] ?? resolveCatalogLocationAreaKey(locationId);
+    SEED_CATALOG_LOCATION_AREA_KEYS[locationId] ?? resolveCatalogLocationDestinationKey(locationId);
   return key ? curatedDestinationSeedId(key) : null;
 };
 
@@ -59,7 +59,7 @@ export const backfillSeedCatalogLocationAreaIds = async (): Promise<void> => {
 
   const docs = await collection
     .find({ status: { $in: [LocationStatus.ACTIVE, 'active', 'ACTIVE'] } })
-    .project({ _id: 1, latitude: 1, longitude: 1, areaId: 1 })
+    .project({ _id: 1, latitude: 1, longitude: 1, destinationId: 1 })
     .toArray();
 
   for (const doc of docs) {

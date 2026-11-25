@@ -112,7 +112,7 @@ export const resolveGeoRefFromTree = (
   const venueName = hints.venueName ?? null;
   if (hints.destinationId) {
     const byCatalog = [...index.byId.values()].find(
-      (n) => n.catalogAreaId === hints.destinationId || String(n._id) === hints.destinationId
+      (n) => n.catalogDestinationId === hints.destinationId || String(n._id) === hints.destinationId
     );
     if (byCatalog?.kind === 'area') {
       const venue = resolveVenueForArea(index, byCatalog, hints);

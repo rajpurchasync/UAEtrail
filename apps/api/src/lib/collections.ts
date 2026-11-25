@@ -29,11 +29,10 @@ export const COLLECTIONS = {
   REFERRAL_CLICKS: 'referral_clicks',
   LOCATION_UNLOCKS: 'location_unlocks',
   /**
-   * Logical destinations (MIG-DESTINATION-GEO). Physical Mongo collection stays `areas`;
-   * document ids remain `area-seed-*`. Prefer this key in new read/write paths.
+   * Curated destinations (`destinations` collection; stable ids `area-seed-*`).
    * @see BWL_COLLECTIONS.DESTINATIONS in `packages/shared-types/src/wire-lexicon.ts`
    */
-  DESTINATIONS: 'areas',
+  DESTINATIONS: 'destinations',
   GEO_NODES: 'geo_nodes',
   GEO_STATS: 'geo_stats',
   GEO_OUTBOX: 'geo_outbox',

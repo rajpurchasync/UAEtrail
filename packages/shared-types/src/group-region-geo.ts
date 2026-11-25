@@ -164,10 +164,10 @@ const resolveFromPublishedDestinations = (
   latitude: number,
   longitude: number,
   publishedDestinations: Pick<DestinationDTO, 'id' | 'region' | 'bounds' | 'priority'>[],
-  placeAreaId?: string | null
+  placeDestinationId?: string | null
 ): UaeGroupRegionCatalogLabel | null => {
-  if (placeAreaId?.trim()) {
-    const linked = publishedDestinations.find((area) => area.id === placeAreaId.trim());
+  if (placeDestinationId?.trim()) {
+    const linked = publishedDestinations.find((area) => area.id === placeDestinationId.trim());
     const fromLinked = normalizeGroupRegionLabel(linked?.region ?? null);
     if (fromLinked) return fromLinked;
   }
@@ -265,14 +265,19 @@ export const resolveGroupRegionFromCoordinates = (
   latitude: number,
   longitude: number,
   options?: {
-    placeAreaId?: string | null;
+    placeDestinationId?: string | null;
     publishedDestinations?: Pick<DestinationDTO, 'id' | 'region' | 'bounds' | 'priority'>[];
   }
 ): UaeGroupRegionCatalogLabel | null => {
   const fromExclave = resolveFromExclaves(latitude, longitude);
   if (fromExclave) return fromExclave;
   const fromAreas = options?.publishedDestinations?.length
-    ? resolveFromPublishedDestinations(latitude, longitude, options.publishedDestinations, options.placeAreaId)
+    ? resolveFromPublishedDestinations(
+        latitude,
+        longitude,
+        options.publishedDestinations,
+        options.placeDestinationId
+      )
     : null;
   if (fromAreas) return fromAreas;
   return resolveFromStaticZones(latitude, longitude);
@@ -284,7 +289,8 @@ export type GroupRegionResolutionInput = {
   region?: string | null;
   latitude?: number | null;
   longitude?: number | null;
-  areaId?: string | null;
+  /** Curated destination id for emirate fallback (not AdminGeo `geoRef.areaId`). */
+  destinationId?: string | null;
   publishedDestinations?: Pick<DestinationDTO, 'id' | 'region' | 'bounds' | 'priority'>[];
 };
 
@@ -303,7 +309,7 @@ export const resolveGroupRegionLabel = (
   if (latitude == null || longitude == null) return null;
 
   return resolveGroupRegionFromCoordinates(latitude, longitude, {
-    placeAreaId: input.areaId,
+    placeDestinationId: input.destinationId,
     publishedDestinations: input.publishedDestinations,
   });
 };

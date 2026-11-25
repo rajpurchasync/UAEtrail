@@ -1,5 +1,5 @@
 /**
- * Audit catalog places for public outing publish (registry picker + area linkage).
+ * Audit catalog places for public outing publish (registry picker + destination linkage).
  * Run: npm --workspace @uaetrail/api exec tsx scripts/audit-catalog-places-for-hosting.ts
  */
 import { resolveCliScriptName, runCliScript } from './cli-script-runner.js';
@@ -19,8 +19,8 @@ type HostingReadiness = {
   inRegistryPicker: boolean;
   hasCover: boolean;
   hasCoords: boolean;
-  areaId: string | null;
-  inferredAreaId: string | null;
+  destinationId: string | null;
+  inferredDestinationId: string | null;
   readyForPublicOuting: boolean;
   blockers: string[];
   warnings: string[];
@@ -37,27 +37,26 @@ const auditPlace = (
     images?: string[];
     latitude?: number | null;
     longitude?: number | null;
-    areaId?: string | null;
+    destinationId?: string | null;
   },
   registryIds: Set<string>,
-  areas: DestinationDTO[]
+  destinations: DestinationDTO[]
 ): HostingReadiness => {
   const blockers: string[] = [];
   const warnings: string[] = [];
   const hasCover = locationHasRegistryCoverImage(place);
   const hasCoords = place.latitude != null && place.longitude != null;
-  const areaId = place.areaId?.trim() || null;
-  const publishAreaId =
+  const destinationId = place.destinationId?.trim() || null;
+  const publishDestinationId =
     hasCoords && place.latitude != null && place.longitude != null
       ? resolveEffectiveCatalogDestinationId(
           {
             id: place.id,
             destinationId: place.destinationId,
-            areaId: place.areaId,
             latitude: place.latitude,
             longitude: place.longitude,
           },
-          areas
+          destinations
         )
       : null;
   const inRegistryPicker = registryIds.has(place.id);
@@ -68,11 +67,11 @@ const auditPlace = (
       blockers.push(`status_${place.status}`);
     }
   }
-  if (!publishAreaId) blockers.push('no_area_link');
-  if (!areaId && publishAreaId) warnings.push('areaId_not_persisted_in_db');
+  if (!publishDestinationId) blockers.push('no_destination_link');
+  if (!destinationId && publishDestinationId) warnings.push('destinationId_not_persisted_in_db');
   if (!hasCoords) blockers.push('no_coordinates');
 
-  const readyForPublicOuting = inRegistryPicker && hasCoords && Boolean(publishAreaId);
+  const readyForPublicOuting = inRegistryPicker && hasCoords && Boolean(publishDestinationId);
 
   return {
     id: place.id,
@@ -82,9 +81,8 @@ const auditPlace = (
     inRegistryPicker,
     hasCover,
     hasCoords,
-    areaId,
-    publishAreaId,
-    areaIdPersisted: Boolean(areaId),
+    destinationId,
+    inferredDestinationId: publishDestinationId,
     readyForPublicOuting,
     blockers,
     warnings,
@@ -92,7 +90,7 @@ const auditPlace = (
 };
 
 const main = async () => {
-  const areas = await listPublishedDestinations();
+  const destinations = await listPublishedDestinations();
 
   const registryByType = new Map<string, Set<string>>();
   for (const type of HOSTING_TYPES) {
@@ -128,10 +126,10 @@ const main = async () => {
         images: place.images,
         latitude: place.latitude,
         longitude: place.longitude,
-        areaId: place.areaId,
+        destinationId: place.destinationId,
       },
       allRegistryIds,
-      areas
+      destinations
     )
   );
 
@@ -139,27 +137,27 @@ const main = async () => {
   const notReady = rows.filter((row) => !row.readyForPublicOuting);
 
   console.log('\n=== Catalog places — public outing readiness ===\n');
-  console.log(`Published areas in DB: ${areas.length}`);
+  console.log(`Published destinations in DB: ${destinations.length}`);
   console.log(`All location documents: ${locationCount}`);
   console.log(`Active hiking/camp/event rows: ${hostingCandidates.length}`);
   console.log(`In organize picker (merged): ${allRegistryIds.size}`);
   console.log(`Ready for public map outing: ${ready.length}`);
   console.log(`Blocked: ${notReady.length}\n`);
 
-  const needsBackfill = rows.filter((row) => row.warnings.includes('areaId_not_persisted_in_db'));
+  const needsBackfill = rows.filter((row) => row.warnings.includes('destinationId_not_persisted_in_db'));
   if (needsBackfill.length > 0) {
-    console.log('--- Data hygiene (publish works; run seed backfill to persist areaId) ---');
+    console.log('--- Data hygiene (publish works; persist destinationId on location) ---');
     for (const row of needsBackfill.sort((a, b) => a.name.localeCompare(b.name))) {
-      console.log(`  ! ${row.id} · ${row.name} · resolved ${row.publishAreaId}`);
+      console.log(`  ! ${row.id} · ${row.name} · resolved ${row.inferredDestinationId}`);
     }
     console.log('');
   }
 
   if (ready.length > 0) {
-    console.log('--- Ready (picker + coords + area) ---');
+    console.log('--- Ready (picker + coords + destination) ---');
     for (const row of ready.sort((a, b) => a.name.localeCompare(b.name))) {
-      const area = row.publishAreaId;
-      console.log(`  ✓ ${row.id} · ${row.name} (${row.activityType}) · area ${area}`);
+      const dest = row.inferredDestinationId;
+      console.log(`  ✓ ${row.id} · ${row.name} (${row.activityType}) · destination ${dest}`);
     }
     console.log('');
   }
@@ -175,14 +173,14 @@ const main = async () => {
     console.log('');
   }
 
-  const missingAreaOnly = notReady.filter(
-    (row) => row.blockers.includes('no_area_link') && row.inRegistryPicker && row.hasCoords
+  const missingDestinationOnly = notReady.filter(
+    (row) => row.blockers.includes('no_destination_link') && row.inRegistryPicker && row.hasCoords
   );
-  if (missingAreaOnly.length > 0) {
-    console.log('--- Fix: run seed backfill (sets areaId on locations) ---');
-    console.log('  npm run seed   # includes backfillSeedCatalogLocationAreaIds');
-    console.log(`  Places needing areaId backfill: ${missingAreaOnly.length}`);
-    for (const row of missingAreaOnly) {
+  if (missingDestinationOnly.length > 0) {
+    console.log('--- Fix: run migrations / seed backfill (sets destinationId on locations) ---');
+    console.log('  npm run seed   # includes catalog destination backfill where applicable');
+    console.log(`  Places needing destinationId backfill: ${missingDestinationOnly.length}`);
+    for (const row of missingDestinationOnly) {
       console.log(`    - ${row.id} (${row.name})`);
     }
   }
@@ -198,11 +196,10 @@ const main = async () => {
     console.log('\n--- Other active catalog rows (not outing venue types) ---');
     for (const place of otherActive.sort((a, b) => a.name.localeCompare(b.name))) {
       const cover = locationHasRegistryCoverImage(place) ? 'cover' : 'no_cover';
-      const area = place.areaId?.trim() || 'no_area';
-      console.log(`  · ${place.id} · ${place.name} (${place.activityType}) · ${cover} · ${area}`);
+      const dest = place.destinationId?.trim() || 'no_destination';
+      console.log(`  · ${place.id} · ${place.name} (${place.activityType}) · ${cover} · ${dest}`);
     }
   }
-
 };
 
 runCliScript(resolveCliScriptName(import.meta.url), main);

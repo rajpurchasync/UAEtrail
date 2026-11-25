@@ -34,7 +34,7 @@ const stampLevels = async (input: {
   stateHint?: string | null;
   latitude?: number | null;
   longitude?: number | null;
-  areaId?: string | null;
+  destinationId?: string | null;
 }): Promise<GroupRegionLevels> => {
   const publishedDestinations = await loadPublishedDestinationsCached();
   const stamped = stampGroupRegionLevelsFromGeo({
@@ -69,7 +69,7 @@ export const stampLocationGroupRegionLevels = async (location: Location): Promis
     existing: location.groupRegionLevels,
     latitude: location.latitude,
     longitude: location.longitude,
-    areaId: location.areaId,
+    destinationId: location.destinationId,
   });
   return { ...location, groupRegionLevels };
 };
@@ -81,7 +81,7 @@ export const resolveGroupRegionLevelsForActivityDoc = async (
   >,
   location?: Pick<
     Location,
-    'latitude' | 'longitude' | 'groupRegionLevels' | 'region' | 'areaId' | 'placeHubLabel' | 'countryCode'
+    'latitude' | 'longitude' | 'groupRegionLevels' | 'region' | 'destinationId' | 'placeHubLabel' | 'countryCode'
   > | null
 ): Promise<GroupRegionLevels> => {
   const anchor = resolveActivityAnchorCoordinates(doc, location);
@@ -92,7 +92,7 @@ export const resolveGroupRegionLevelsForActivityDoc = async (
     existing: doc.groupRegionLevels ?? location?.groupRegionLevels,
     latitude: anchor?.latitude ?? location?.latitude,
     longitude: anchor?.longitude ?? location?.longitude,
-    areaId: location?.areaId,
+    destinationId: location?.destinationId,
   });
 };
 

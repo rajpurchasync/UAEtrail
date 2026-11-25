@@ -9,7 +9,7 @@ const baseLocation = (): Location =>
     featured: false,
     latitude: 25,
     longitude: 55,
-    areaId: 'area-1',
+    destinationId: 'area-1',
   }) as Location;
 
 describe('rankMapExplorePlace', () => {

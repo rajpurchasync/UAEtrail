@@ -1,4 +1,4 @@
-/** Curated **Destination** rows (Mongo collection `areas`; stable ids `area-seed-*`). */
+/** Curated **Destination** rows (Mongo `destinations`; stable ids `area-seed-*`). */
 import type { Collection } from 'mongodb';
 import type {
   DestinationBoundsRing,

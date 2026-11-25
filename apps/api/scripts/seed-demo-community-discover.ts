@@ -36,11 +36,11 @@ type SeedCommunitySpec = {
   description: string;
   joinPolicy: CommunityJoinPolicy;
   emirate: string;
-  areaId: string;
+  destinationId: string;
   memberCount: number;
 };
 
-const demoGeoRef = (emirate: string, areaId: string): GeoRef => ({
+const demoGeoRef = (emirate: string, destinationId: string): GeoRef => ({
   chain: [],
   countryId: 'ae',
   stateId: emirate.toLowerCase().replace(/\s+/g, '-'),
@@ -64,7 +64,7 @@ const SEED_COMMUNITIES: SeedCommunitySpec[] = [
       'We post weekly hikes on the map. Open join — show up, say hi, and find your pace group at the trailhead.',
     joinPolicy: 'open',
     emirate: 'Dubai',
-    areaId: curatedDestinationSeedId('hatta'),
+    destinationId: curatedDestinationSeedId('hatta'),
     memberCount: 24,
   },
   {
@@ -76,7 +76,7 @@ const SEED_COMMUNITIES: SeedCommunitySpec[] = [
       'Small crew focused on trail etiquette and steady pacing. Host approves new members to keep group size manageable.',
     joinPolicy: 'request',
     emirate: 'Abu Dhabi',
-    areaId: curatedDestinationSeedId('jebelHafeet'),
+    destinationId: curatedDestinationSeedId('jebelHafeet'),
     memberCount: 18,
   },
   {
@@ -88,7 +88,7 @@ const SEED_COMMUNITIES: SeedCommunitySpec[] = [
       'Weekend family camps with early bedtimes and shared gear lists. Join via invite from a member or host.',
     joinPolicy: 'invite',
     emirate: 'Dubai',
-    areaId: curatedDestinationSeedId('alQudra'),
+    destinationId: curatedDestinationSeedId('alQudra'),
     memberCount: 11,
   },
 ];

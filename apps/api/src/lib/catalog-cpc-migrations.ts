@@ -14,7 +14,7 @@ type LocationRow = {
   name?: string;
   region?: string;
   placeHubLabel?: string | null;
-  areaId?: string | null;
+  destinationId?: string | null;
   activityType?: string;
   description?: string;
   latitude?: number | null;
@@ -73,14 +73,17 @@ const buildFacilityDocFromLocation = (doc: LocationRow, facilityKind: FacilityKi
   });
   const registeredByUserId = doc.registeredByUserId ?? doc.submittedById ?? null;
   const now = new Date();
-  const areaId = typeof doc.areaId === 'string' && doc.areaId.trim() ? doc.areaId.trim() : '';
+  const destinationId =
+    typeof doc.destinationId === 'string' && doc.destinationId.trim()
+      ? doc.destinationId.trim()
+      : '';
 
   return {
     _id: doc._id,
     name: doc.name ?? 'Facility',
     region: doc.region ?? 'UAE',
     placeHubLabel: doc.placeHubLabel ?? null,
-    areaId,
+    destinationId,
     facilityKind,
     parentPlaceId: parentPlaceIdFromLocationRow(doc),
     description: doc.description ?? '',
@@ -105,7 +108,7 @@ const buildFacilityDocFromLocation = (doc: LocationRow, facilityKind: FacilityKi
 /** M1 — indexes for `facilities` (idempotent). */
 export const ensureFacilitiesCollectionIndexes = async (db: Db): Promise<void> => {
   await db.collection(COLLECTIONS.FACILITIES).createIndexes([
-    { key: { areaId: 1, facilityKind: 1, status: 1 }, sparse: true },
+    { key: { destinationId: 1, facilityKind: 1, status: 1 }, sparse: true },
     { key: { parentPlaceId: 1, facilityKind: 1 }, sparse: true },
     { key: { moderationStatus: 1, publicationStatus: 1 } },
     { key: { registeredByUserId: 1, createdAt: -1 }, sparse: true },

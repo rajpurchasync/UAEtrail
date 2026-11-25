@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CURATED_DESTINATION_CATALOG_BY_SLUG } from '@uaetrail/shared-types';
 
-/** Geo-only urban areas must have published `/area/:slug` hubs (no 404 on "JBR guide"). */
+/** Geo-only urban areas must have published `/destination/:slug` hubs (no 404 on "JBR guide"). */
 const EXTRA_GEO_AREA_SLUGS = ['jbr', 'downtown', 'dubai-marina', 'warsan-4', 'al-ain'] as const;
 
 describe('geo extra areas ↔ curated catalog', () => {

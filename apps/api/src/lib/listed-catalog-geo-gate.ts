@@ -17,7 +17,6 @@ type ListedCatalogGeoRow = {
   longitude: number | null;
   geoRef?: GeoRef | null;
   destinationId?: string | null;
-  areaId?: string | null;
 };
 
 const assertActiveListedCatalogHasGeo = (row: ListedCatalogGeoRow, entity: ListedCatalogGeoEntity): void => {

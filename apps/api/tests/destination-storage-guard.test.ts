@@ -22,14 +22,14 @@ const collectApiLibTs = (): string[] => {
   return files;
 };
 
-/** MIG-DESTINATION-GEO — one Mongo story: logical DESTINATIONS → physical `areas`. */
+/** MIG-DESTINATION-GEO — curated rows live in Mongo `destinations`. */
 describe('destination storage guard (Phase C)', () => {
   it('COLLECTIONS.DESTINATIONS matches BWL', () => {
     const collections = read('apps/api/src/lib/collections.ts');
     const lexicon = read('packages/shared-types/src/wire-lexicon.ts');
-    expect(collections).toMatch(/DESTINATIONS: 'areas'/);
+    expect(collections).toMatch(/DESTINATIONS: 'destinations'/);
     expect(collections).not.toMatch(/AREAS: 'areas'/);
-    expect(lexicon).toMatch(/DESTINATIONS: 'areas'/);
+    expect(lexicon).toMatch(/DESTINATIONS: 'destinations'/);
     expect(lexicon).not.toMatch(/AREAS: 'areas'/);
   });
 

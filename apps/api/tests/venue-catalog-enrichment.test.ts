@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   enrichCatalogEntryFields,
-  resolveCatalogLocationAreaId,
+  resolveCatalogLocationDestinationId,
 } from '../src/lib/venue-catalog-enrichment.js';
 import { mapCatalogEntryToLocationCreateInput } from '../src/lib/venue-catalog.js';
 import { ActivityType } from '../src/domain/enums.js';
@@ -24,7 +24,7 @@ describe('venue-catalog-enrichment', () => {
     expect(enriched.campingType).toBe('self-guided');
     expect(enriched.maxGroupSize).toBe(12);
     expect(enriched.parkingLat).toBe(25.089);
-    expect(enriched.destinationId).toBe(resolveCatalogLocationAreaId('mleiha-desert-camp'));
+    expect(enriched.destinationId).toBe(resolveCatalogLocationDestinationId('mleiha-desert-camp'));
     expect(enriched.placeHubLabel).toBe('Mleiha dunes');
   });
 

@@ -145,7 +145,7 @@ Any signed-in member — no host approval; writes **`PUT /me/availability`** (fi
 |--------|----------|--------------|
 | **Place** | Trail, camp, outdoor other | `POST /me/places` |
 | **Place (gear shop)** | FAB **Shops** (`add.place.shop`) — name, pin, about, keywords, delivery, phone, email | `POST /me/places` with shop metadata (`catalogPlaceSubmit.ts`); wizard steps in `addFlows/shop.ts` — **no** product-catalog step |
-| **Facility** | Toilet, rest area, parking, water, viewpoint, amenity-only pins (incl. legacy `outdoor_shop`) | `POST /me/facilities` with `facilityKind`, `areaId`, optional `parentPlaceId` |
+| **Facility** | Toilet, rest area, parking, water, viewpoint, amenity-only pins (incl. legacy `outdoor_shop`) | `POST /me/facilities` with `facilityKind`, `destinationId`, optional `onSiteId` |
 
 **Not Add on map:** **Operator shop storefront** (Pro tenant, `/publishing/*` console, `EntityKind.shop` tenant) — separate **Pro membership** onboarding ([`DOMAIN.md`](./DOMAIN.md) § Shop layers C).
 
@@ -286,25 +286,25 @@ Deep link: `exploreHostFromActivityPath(activityId, kind)` in `src/explore/routi
 
 Validation: cannot continue without a placed pin (and label where applicable).
 
-### Area (registry — not the meeting pin)
+### Destination (registry — not the meeting pin)
 
-Host **does not** infer area from meeting or going-from pins. **Area** is an admin-registered row (`areaId`). **Place** rows carry **`place.areaId`**. Activities inherit geography only through **`locationId` → place**.
+Host **does not** infer **Destination** from meeting or going-from pins. **Destination** is admin-published (`destinationId`). **Place** rows carry **`place.destinationId`**. **AdminGeo** (`geoRef`) comes from coordinates. Activities inherit curated geography through **`locationId` → place**.
 
 | Host | Rule |
 |------|------|
-| **Public map** | Pick a **catalog place** from the registry; that place must have **`place.areaId`** (admin links in `/admin/places`). No separate area field on publish. |
+| **Public map** | Pick a **catalog place** from the registry; that place must have **`place.destinationId`** (admin links in `/admin/places`). No separate destination field on activity publish. |
 | **Custom trail name** (no registry row) | Host submits a **DRAFT** place (`POST /me/places`) with **pin**, **a photo**, and description. Destination is inferred from the pin; if none matches, host picks an existing destination or names a new one (`proposedDestinationName` → draft destination). City is stamped from the pin. Outing stays draft until admin approves the spot (and publishes a linked new destination); then the place is `registryListed`, the outing publishes, and host/company/guides are notified (`activity_venue_live`). |
-| **Private** link-only | Not on public explore map; place area optional |
+| **Private** link-only | Not on public explore map; destination optional |
 
-Publish gate (API): `activity_area_required` when the linked place and the activity row both lack a persisted **`areaId`**. Catalog gaps are filled by seed / `scripts/backfill-location-area-ids.ts`, not by guessing an area on each read. Rideshare anchors still **write** `areaId` onto the place from the pin when the host publishes.
+Publish gate (API): listed catalog requires **`destinationId`** + **`geoRef`** on the linked place (`assertActiveListedPlaceHasCatalogGeo`). Catalog gaps are filled by seed / geo migrations, not by inferring destination on each read.
 
-**Add (place/facility):** **Area** step first (`curatedDestination`), then country + region (emirate, province, governorate, or municipality) and map pin; API **`POST /me/places`** / **`POST /me/facilities`** with **`countryCode`** (required — no default) and **`areaId`** (published area validated server-side). **Lifecycle:** one member **submit** → pending on `/profile/submissions` — **not** draft + publish like hosted activities ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4.10).
+**Add (place/facility):** **Destination** step first (`curatedDestination`), then country + region (emirate, province, governorate, or municipality) and map pin; API **`POST /me/places`** / **`POST /me/facilities`** with **`countryCode`** (required — no default) and **`destinationId`** (published destination validated server-side). **Lifecycle:** one member **submit** → pending on `/profile/submissions` — **not** draft + publish like hosted activities ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4.10).
 
 ### Find (looking for)
 
-Dedicated step **Area & map pin**: choose registered **Area**, drop a pin → fixed slot on **`PUT /me/availability`** (`areaId` + coordinates when set).
+Dedicated step **Destination & map pin**: choose published **Destination**, drop a pin → fixed slot on **`PUT /me/availability`** (`destinationId` + coordinates when set).
 
-**`preferredArea`** (emirate chip on hiking/camp) is region copy only — not the **Area** registry id. Area + pin enables matching hosted outings in the same area (notifications phased).
+**`preferredArea`** (emirate chip on hiking/camp) is region copy only — not the **Destination** registry id. Destination + pin enables matching hosted outings in the same hub (notifications phased).
 
 ---
 
@@ -326,15 +326,15 @@ Track what is **spec** vs **shipped**. Update this table in the same PR that lan
 | Profile Up next unified feed | ✅ | ✅ |
 | Warm copy pass in wizards | ✅ | ✅ |
 | `outingCategory` / `outingTopic` on host publish | ✅ | ✅ (host create; map projection + Others browse filters) |
-| Host **area via place** (registry `place.areaId` only) | ✅ | ✅ (`validateHostingPlaceDestination`, publish gate) |
-| Find crew (fixed) **area + pin** step | ✅ | ✅ (`curatedDestination`, `member_availability` fixed slot) |
-| Add on map place **area-first** | ✅ | ✅ (`curatedDestination`, `areaId` on submit) |
+| Host **destination via place** (registry `place.destinationId` only) | ✅ | ✅ (`validateHostingPlaceDestination`, publish gate) |
+| Find crew (fixed) **destination + pin** step | ✅ | ✅ (`curatedDestination`, `member_availability` fixed slot) |
+| Add on map place **destination-first** | ✅ | ✅ (`curatedDestination`, `destinationId` on submit) |
 | Host **custom spot → admin review** (pin + photo; city from coords) | ✅ | ✅ (`PENDING_VENUE_PLACE_PREFIX`; auto-publish on place approve) |
 | Intent **open** (`intent:open`) FAB sheet | ✅ | ✅ (`IntentOpenComposeSheet`, `PlanAvailabilitySection` variant `fab`) |
 | Plan **Available** lens — hosted outing hint after save | ✅ | ✅ (`PlanAvailabilitySection` + `match-preview` when outings align) |
 | Host publish — Find crew availability count notice (explore map banner; operator activities list) | ✅ | ✅ (`hostPublishAvailabilityNoticeMessage` + `GET /explore/people/availability`) |
 | Compose shell (`ComposeHost` — activity + place + intent wizards) | ✅ | ✅ (single `CreateFlowProvider`; crews FAB → `intent:open`) |
-| Explore **Locations** lens (legacy URL) | Alias of **Spots** — Area is **not** a pin | ✅ (`pinKind=locations` → places) |
+| Explore **Locations** lens (legacy URL) | Alias of **Spots** — Destination is **not** a pin | ✅ (`pinKind=locations` → places) |
 | Area match notifications (availability ↔ hosted in area) | ✅ | ✅ (`services/matching/availability-hosted-match.ts` — `notifyAvailabilityHoldersInAreaOfHostedActivity`) |
 | Availability ↔ hosted (date + activity type; notify + FAB hosted preview) | ✅ | ✅ (`services/matching/availability-hosted-match.ts`, `GET /me/availability/match-preview` → `hostedOutings` only) |
 | **Find crew → Available** tab (all members with future slots in range) | ✅ | ✅ (`GET /explore/people/availability` — not match-preview) |

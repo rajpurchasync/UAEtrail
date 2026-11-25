@@ -125,7 +125,7 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 | Wire / storage | Product | FAB | Notes |
 |----------------|---------|-----|--------|
 | `locations` (places) | **Place** | **Add on map** → Place | `PLACE_CATALOG_KINDS` after CPC amenity split |
-| `facilities` (**CPC-2**) | **Facility** | **Add on map** → Facility | `parentPlaceId?`, `areaId`, `facilityKind` |
+| `facilities` (**CPC-2**) | **Facility** | **Add on map** → Facility | `onSiteId?`, `destinationId`, `facilityKind` |
 | `activities` | **Activity** | **Host** \| **Find crew** (fixed map post) | Not catalog |
 | `member_availability` | **Availability** | **Find crew** → flexible | No map pin; **Find crew → Available** lists members with future slots (`GET /explore/people/availability`); day+type **notify** + FAB hosted preview only |
 | `areas` | **Area** | — | Hub |
@@ -171,9 +171,9 @@ Redirects: `/trail`, `/camp` → `/place/:id`. Event aliases (`/event`, `/event-
 #### Catalog reads (target)
 
 - `GET /places/catalog` — **places** only (`segment=place`); `purpose=organize_picker` \| `map` \| …
-- `GET /facilities/catalog` — amenities; filters `areaId`, `parentPlaceId`, `facilityKind`
+- `GET /facilities/catalog` — amenities; filters `destinationId`, `onSiteId`, `facilityKind`
 - `GET /explore/map?q=&country=&area=&venue=` — find spots/events by country, area, and venue **name** (`geoRef` + title text)
-- `GET /geo/tree` — hierarchy for explore search hints and **`/geo`** tree page; country URLs at `/geo/country/:code`; area hubs stay `/area/:slug`; geo node pages at `/geo/n/:id` (country / state / venue summaries). Event-venue consumer URL is **`/venue/:id`** (`placeDetailPath('event', id)`); `/place/:id` remains a working hub for all place kinds.
+- `GET /geo/tree` — hierarchy for explore search hints and **`/geo`** tree page; country URLs at `/geo/country/:code`; curated hubs **`/destination/:slug`** (not geo nodes); geo node pages at `/geo/n/:id` (country / state / venue summaries). Event-venue consumer URL is **`/venue/:id`** (`placeDetailPath('event', id)`); `/place/:id` remains a working hub for all place kinds.
 
 Evolve from today’s `GET /places/registry` → **`GET /places/catalog`** (places only). Implementation map: `SYSTEM_COHERENCE.md` §8.4.9.
 
@@ -277,7 +277,7 @@ Query param **`tab`** where noted. **UI labels** may differ from wire ids (activ
 |---------|--------------|-----------------------------------|-----------|
 | Activity | `/activity/:id` | **`presentation.sections`** (no tab bar). **Embed/manage:** same `sections` + `footerByTab` | Legacy `?tab=` → scroll anchors (deprecated). **FE:** `ActivityDetailByKind` → `*ActivityDetailPage` → `ActivityDetailPageShell` → `ActivityDetailSections` |
 | Place (trail/camp/venue) | `/trail`, `/camp`, `/venue` | **Public scroll** (no tab bar). Legacy wire: `overview` · `facts` · `transport` · `guide` (alias `location` → `transport`) | `?tab=` deprecated · `src/place/placeDetailTab.ts`; **FE:** `*PlaceDetailPage` → `PlaceDetailPage` → `PlaceDetailPageShell` → `PlaceDetailSections` — L1 `buildPlaceDetailPageModel`; kind facts `PlaceDetailKindFacts` (trail / camp / event) |
-| Destination hub | `/destination/:slug` | `overview` · `places` · `activities` (people on overview) | `?tab=` · `src/area/destinationDetailTab.ts` |
+| Destination hub | `/destination/:slug` | `overview` · `places` · `activities` (people on overview) | `?tab=` · `src/destinationDetail/destinationDetailTab.ts` |
 | Shop public | `/shop/:id` | `about` · `location` | `?tab=` · `src/shop/shopPublicDetailTab.ts` (inbound `?tab=products` → `about`) |
 | Organisation public | `/agency`, `/partner` | `about` · `outings` · `contact` | `?tab=` · `src/organisation/organisationPublicDetailTab.ts` |
 
@@ -297,7 +297,7 @@ Detail UIs must load from the **canonical read API** for that entity; writes use
 | **Shop** | `/shop/:id` | `tenants` / merchant (+ optional place pin) | **Operator** Pro onboarding — **not** FAB **Add → Shops** (`add.place.shop` is community **place** submit); see [§1.7](#17-program-cpc--catalog-ontology-fab-compose-wire) | `GET /shop/shops/:id` | `shopPublicClientApi` | `EntityKind.shop` = storefront tenant; no product catalog HTTP |
 | **Place** | `/place/:id` (CPC-6; legacy `/trail`·`/camp`·`/venue`) | `locations` (place rows) | Admin `/admin/places`; member **Add → Place**; host **new spot** (photo + pin; city from coords) stays DRAFT until admin activate (`registryListed` + `activity_venue_live`); submit **`destinationId`** | `GET /places/:id`; `GET /places/catalog`; linked **facilities** via **`onSiteId`** | `placeDetailClientApi` | Place catalog excludes facilities after CPC |
 | **Facility** | `/facility/:id` | **`facilities`** (**CPC-2**) | Admin `/admin/facilities`; member **Add → Facility** | `GET /facilities/:id`; `GET /facilities/catalog` | TBD `facilityDetailClientApi` | **`destinationId`** + optional **`onSiteId`** |
-| **Destination** | `/destination/:slug` | `areas` store (logical destinations) | **Admin** `/admin/destinations` (publish `status`; `/admin/areas` redirect) | `GET /destinations/:slug` (preview slices) | `destinationHubClientApi` | Previews filter published activities + active places by **`destinationId`** |
+| **Destination** | `/destination/:slug` | `destinations` store | **Admin** `/admin/destinations` | `GET /destinations/:slug` (preview slices) | `destinationHubClientApi` | Previews filter published activities + active places by **`destinationId`** |
 
 **Registry:** place catalog browse uses `GET /places/registry` (explore map) — detail pages use **per-id** `GET /places/:id`, not the registry blob.
 
@@ -541,20 +541,56 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 
 ### 12.1 Geography — Destination hub, Place (site) catalog, Activity (authoritative)
 
-**Program MIG-DESTINATION-GEO-2026** ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.5): **AdminGeo** (`geoRef`, auto) → **Destination** (curated `destinationId`, `GET /api/destinations`) → **Place (site)** / **Facility** (`onSiteId` on facility) → **Activity** via `locationId`. Wire **`destinationId`** / **`resolveDestinationId`**; inbound bookmark `/area/*` → `/destination/*` only.
+**Program MIG-DESTINATION-GEO-2026** ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.5): **AdminGeo** (`geoRef`, auto) → **Destination** (curated `destinationId`, `GET /api/destinations`) → **Place (site)** / **Facility** (`onSiteId` on facility) → **Activity** via `locationId`. Wire **`destinationId`** / **`resolveDestinationId`**; stale bookmark `/area/*` → `/destination/*` via `canonicalizeInboundProductPath` only.
 
-**Hierarchy (target):** **Country / state / region** (from map geography) → **Destination** (admin-curated name — **not a map pin**) → **Place (site)** / **Facility** (coords) → **Activity** (geography only through a place).
+**Two ladders:** (1) **AdminGeo** — country / state / **area (city)** / optional venue (`geoRef`, auto from coordinates). (2) **Product catalog** — **Destination** (admin-curated hub name — **not a map pin**) → **Place (site)** / **Facility** (map pins with coords) → **Activity** (geography only through `locationId` → place). Spatial discovery uses both: filters by `destinationId`; breadcrumbs and search use AdminGeo names.
+
+#### 12.1.0 Geography graph (reference model)
+
+Treat geography as a **graph**, not one flat “area” field:
+
+| Graph | Node kinds | Edges / denormalized fields | Consumer surfaces |
+|-------|------------|----------------------------|-------------------|
+| **AdminGeo tree** | `geo_nodes`: country → state → **area (city)** → venue | `parentId` / `ancestors`; pins carry slice as **`geoRef`** (`chain`, `names`, `areaId` = geo node id) | `/geo`, `/geo/n/:id`, search tokens, list `?geo=` drill |
+| **Catalog graph** | **Destination** (hub), **Place**, **Facility**, **Activity** | `destinationId` (hub → site); `onSiteId` (facility → place); `locationId` (activity → place); optional `parentPlaceId` (place hub sub-site) | Map pins, `/destination/:slug`, `?destination=`, host/Add wizards |
+| **Bridge** | Geo L3/L4 nodes may set **`catalogDestinationId`** | Links a geo rollup node to a curated **`destinations`** row when names align (e.g. JBR) | Geo hub “guide” → `/destination/:slug` |
+
+```mermaid
+flowchart TB
+  subgraph adminGeo [AdminGeo tree]
+    C[country]
+    S[state]
+    A[area city]
+    V[venue L4]
+    C --> S --> A --> V
+  end
+
+  subgraph catalog [Catalog graph]
+    D[Destination hub]
+    P[Place site]
+    F[Facility]
+    ACT[Activity]
+    D -->|destinationId| P
+    D -->|destinationId| F
+    P -->|onSiteId| F
+    ACT -->|locationId| P
+  end
+
+  P -.->|geoRef from coords| adminGeo
+  F -.->|geoRef from coords| adminGeo
+  V -.->|catalogDestinationId optional| D
+```
 
 **One Destination, many children (catalog `destinationId`):**
 
-| Child on the hub | `PlaceKind` / wire | Explore **Spots** map pins today | Area lens rollup / hub |
+| Child on the hub | `PlaceKind` / wire | Explore **Spots** map pins today | Destination lens rollup / hub |
 |------------------|-------------------|----------------------------------|-------------------------|
 | Trails | `hiking` (`activityType: hiking`) | Yes (`source: place`, hiking) | `trailSpots` |
 | Camps / camp spots | `camping` | Yes | `campSpots` |
 | Outdoor spots (“Others” Add) | `outdoor_other` (`event` + `outdoor-other` tag) | Yes (`placeKind: outdoor_other`) | Grouped on `/destination/:slug` preview |
-| Shops (member Add) | `shop` + `community-shop` tag | Yes — **Shops** lens, `catalogProfileExposure: peek` (map peek only) | Area hub + rollups |
+| Shops (member Add) | `shop` + `community-shop` tag | Yes — **Shops** lens, `catalogProfileExposure: peek` (map peek only) | Destination hub + rollups |
 | Shops (merchant / Pro tenant) | `shop:` tenant rows | Yes — **Shops** lens, `catalogProfileExposure: full` → `/shop/…` | Merchant profile + reviews |
-| Individual Pro / tour agencies | `tenants` + `/member/:userId` · `/agency` | **No map pin** — discover via **hosted activities** + person or agency URL (`catalogProfileExposure: full`) | Area hub `#operators` rail = Pro hosts with outings in this area (not tenant lat/lng) |
+| Individual Pro / tour agencies | `tenants` + `/member/:userId` · `/agency` | **No map pin** — discover via **hosted activities** + person or agency URL (`catalogProfileExposure: full`) | Destination hub `#operators` rail = Pro hosts with outings in this destination (not tenant lat/lng) |
 | Facilities (toilet, parking, gas, water, viewpoint, picnic, …) | `facilities` collection · `facilityKind` | Yes (`source: facility`, `id: facility:{id}`, coords for navigation) | `facilities` in `destinationLensStats`; list on destination hub `#places`. Peek still shares Place chrome until a facility peek ships. |
 | Hosted outings · Find crew (fixed) | **Activity** · **`member_availability`** | **Activities** lens · **`source: availability`** pins | Legacy `activityMode: seeking` on map |
 
@@ -572,7 +608,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 
 | Lens (`pinKind`) | What you see | Not this |
 |------------------|--------------|----------|
-| **activities** | One pin per hosted/seeking outing | Area labels |
+| **activities** | One pin per hosted/seeking outing | Destination hub labels (on cards, not pins) |
 | **places** (“Spots”) | Catalog trail/camp Place pins with coords | Destination is a filter (`?destination=`), not a pin. Facility pins are also on the map (`source: facility`); lens grouping vs Spots is still open. |
 | **locations** (legacy URL) | Alias of **places** | Former synthetic Area hub pins — do not restore |
 | **shops** | Shop layer (catalog + tenant-backed pins) | — |
@@ -585,11 +621,11 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 |---------|-----------------|----------------|-------------|
 | **Place** | Catalog trail, camp, outdoor spot | `GET /places/:id`; map `source: place` (`id` still `venue:{id}` until id prefix migrates) | **`PlacePeekCard`** + `PlacePeekBody` |
 | **Facility** | Registered amenity with coords (toilet, parking, gas, …) so people can navigate on the map | `GET /facilities/:id`; map `source: facility`, `id: facility:{id}` | Shares Place peek chrome until a dedicated facility peek ships |
-| **Destination** | Admin-curated name grouping Places/Facilities; hub page `/destination/:slug` | `areas` store; **`destinationId` / `destinationSlug` on pin rows** — **no** `source: area` pin | Hub page + “Destination · {name}” on Place peek. Peek modules under `peek/destination/` are for the hub page, not explore pins. |
+| **Destination** | Admin-curated name grouping Places/Facilities; hub page `/destination/:slug` | `destinations` store; **`destinationId` / `destinationSlug` on pin rows** — **no** `source: area` pin | Hub page + “Destination · {name}” on Place peek. Peek modules under `peek/destination/` are for the hub page, not explore pins. |
 | **`venue` / `catalog_place`** | Legacy map `source` aliases | Normalize to `place` (`isPlaceMapSource`) | Same as Place |
 | **`place.destinationId`** | Links a **Place** to its **Destination** hub | `locations.destinationId` → `destinationSlug` / `destinationName` on Place rows | **Destination · {name}** on **Place** peek |
 
-**Naming rules (FE):** One shared **`MapPeekShell`**; entity parts **`{Entity}Peek*`** under `peek/{activity|place|area|shop}/`. Do **not** add `Explore*Peek*` modules. Do **not** emit `source: 'area'` on `GET /explore/map`. Helpers: `isPlaceMapSource`, `isFacilityMapSource`, `isGeographyMapSource`.
+**Naming rules (FE):** One shared **`MapPeekShell`**; entity parts **`{Entity}Peek*`** under `peek/{activity|place|facility|destination|shop}/`. Do **not** add `Explore*Peek*` modules. Do **not** emit `source: 'area'` on `GET /explore/map`. Helpers: `isPlaceMapSource`, `isFacilityMapSource`, `isGeographyMapSource`.
 
 **Pro account storefronts (one user, optional tenant per subtype)** — each has a **public profile URL**; map and People discovery differ by subtype:
 
@@ -606,16 +642,16 @@ Wire: `publishingProfileKind` on `ActivityDTO`; paths via `resolveActivityPublis
 
 **Known read-path gap (do not confuse with write contract):** legacy or tenant-only shop pins may lack `destinationId` on the explore payload until linked/backfilled; **new** catalog places and gated publishes must have **`place.destinationId`**.
 
-#### 12.1.2 Geo tree drill (geo hub — alongside curated Area)
+#### 12.1.2 Geo tree drill (geo hub — alongside curated Destination)
 
 | Layer | Storage | Consumer URL | Role |
 |-------|---------|--------------|------|
 | Country → state → area → **destination** (`geo_nodes` L4 `kind: venue`) | `geoRef` on map pins | **`/geo/n/:id`** (`GeoHubView`) | Rollup browse: places, outings, facilities under the node |
-| Curated **Destination guide** | `areas` | **`/destination/:slug`** | Editorial hub — parallel to geo area, not a replacement |
+| Curated **Destination guide** | `destinations` | **`/destination/:slug`** | Editorial hub — parallel to **AdminGeo** city/venue rollups, not a replacement |
 | Catalog **place** row | `locations` | **`/place/:id`** | Shareable entity; hub rows may group children via `parentPlaceId` |
 | Event outdoor site | `locations` (`event`) | **`/venue/:id`** | Not the same as geo L4 **venue** (destination name in `geoRef`) |
 
-**L2 list/peek location tail:** `resolveDiscoveryBrowseGeoHubPath` — tap **geo L4** when `geoRef.venueId` is set, else **curated area** when `areaSlug` is set. Full breadcrumbs stay on hub + detail pages, not on thumbnails.
+**L2 list/peek location tail:** `resolveDiscoveryBrowseGeoHubPath` — tap **geo L4** when `geoRef.venueId` is set, else **curated destination** when `destinationSlug` is set. Full breadcrumbs stay on hub + detail pages, not on thumbnails.
 
 **Canonical hub browse:** `/geo/n/{venueNodeId}` for destination marketing; deep links remain `/activity/:id`, `/place/:id`, `/facility/:id`.
 
