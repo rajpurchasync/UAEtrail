@@ -75,16 +75,16 @@ describe('explore-map-bbox', () => {
     expect(second.nextCursor).toBeNull();
   });
 
-  it('buildExploreMapBboxPage applies bbox and area slug', () => {
+  it('buildExploreMapBboxPage applies bbox and destination slug', () => {
     const items = [
-      { ...pin('activity:dxb', 25.2, 55.2), areaSlug: 'dubai' } as ExploreMapItemDTO,
-      { ...pin('activity:other', 25.2, 55.2), areaSlug: 'fujairah' } as ExploreMapItemDTO,
+      { ...pin('activity:dxb', 25.2, 55.2), destinationSlug: 'dubai' } as ExploreMapItemDTO,
+      { ...pin('activity:other', 25.2, 55.2), destinationSlug: 'fujairah' } as ExploreMapItemDTO,
     ];
     const bbox = parseExploreMapBboxParam('55,25,56,26');
     const page = buildExploreMapBboxPage({
       items,
       bbox,
-      areaSlug: 'dubai',
+      destinationSlug: 'dubai',
       limit: 50,
       cursor: null,
     });

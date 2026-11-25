@@ -85,7 +85,7 @@ describe('GET /api/explore/map layer separation', () => {
     const facility = await createFacilityRecord({
       name: `Trail toilet ${suffix}`,
       region: 'Dubai',
-      areaId: 'area-test-dubai',
+      destinationId: 'area-test-dubai',
       facilityKind: 'toilet',
       description: 'Trailhead toilet amenity for explore map layer contract test.',
       latitude: 25.135,
