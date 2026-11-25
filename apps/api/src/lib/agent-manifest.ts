@@ -58,7 +58,6 @@ export const buildAgentManifest = (siteOrigin: string): AgentManifestDTO => {
       '/api/places',
       '/api/facilities',
       '/api/explore/map',
-      '/api/locations',
     ],
     disallowed_paths: [
       '/admin/',

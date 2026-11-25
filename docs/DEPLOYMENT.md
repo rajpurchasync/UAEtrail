@@ -231,7 +231,7 @@ git pull origin main
 docker compose up -d --build
 ```
 
-After deploy, the API runs **versioned Mongo migrations** once per environment (`runMongoMigrations` in `apps/api/src/lib/mongo-migrations.ts`, tracked in `schema_meta.migrations`). GW-7 **`2025112502`** — stale inbound paths via `canonicalizeInboundProductPath`. MIG-DESTINATION-GEO **`2025112507`** — Mongo `areas` → `destinations`, catalog `destinationId` / `placeHubLabel`, unset legacy `areaId` / `areaLabel` / `parentPlaceId` / `catalogAreaId` (`runDestinationGeoMigrations`). **`2025112508`** — unset denormalized `activities.destinationId` (geography via `locationId` → place only). Stale `/area/*` hubs are not rewritten at deploy or in-app — use `/destination/:slug` (no nginx `/area` redirect). Indexes are still ensured at API startup separately.
+After deploy, the API runs **versioned Mongo migrations** once per environment (`runMongoMigrations` in `apps/api/src/lib/mongo-migrations.ts`, tracked in `schema_meta.migrations`). GW-7 **`2025112502`** — stale inbound paths via `canonicalizeInboundProductPath`. MIG-DESTINATION-GEO **`2025112507`** — Mongo `areas` → `destinations`, catalog `destinationId` / `placeHubLabel`, unset legacy `areaId` / `areaLabel` / `parentPlaceId` / `catalogAreaId` (`runDestinationGeoMigrations`). **`2025112508`** — unset denormalized `activities.destinationId` (geography via `locationId` → place only). **`2025112509`** — drop empty retired `participant_intents` / `participant_intent_requests` (W1b; skipped when docs remain). Stale `/area/*` hubs are not rewritten at deploy or in-app — use `/destination/:slug` (no nginx `/area` redirect). Indexes are still ensured at API startup separately.
 
 ---
 

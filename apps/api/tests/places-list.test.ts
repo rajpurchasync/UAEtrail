@@ -9,10 +9,10 @@ beforeAll(async () => {
   app = await bootstrapTestApp();
 });
 
-describe('GET /api/locations', () => {
-  it('returns active locations with hiking/camping activity types', async () => {
+describe('GET /api/places', () => {
+  it('returns active places with hiking activity type', async () => {
     const response = await request(app)
-      .get('/api/locations')
+      .get('/api/places')
       .query({ pageSize: 100, activityType: 'hiking' });
 
     expect(response.status).toBe(200);
@@ -23,5 +23,15 @@ describe('GET /api/locations', () => {
       expect(row.activityType).toBe('hiking');
       expect(row.status).toBe('active');
     }
+  });
+
+  it('returns 410 for retired GET /api/locations', async () => {
+    const legacy = await request(app)
+      .get('/api/locations')
+      .query({ pageSize: 5, activityType: 'hiking' });
+
+    expect(legacy.status).toBe(410);
+    expect(legacy.headers.deprecation).toBe('true');
+    expect(legacy.body.message).toMatch(/GET \/locations is retired; use GET \/places/);
   });
 });

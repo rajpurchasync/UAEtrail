@@ -1,19 +1,12 @@
 import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import type {
-  AdminSubmissionDTO,
-  DestinationDTO,
-  LocationDTO,
-  SubmissionCandidate,
-} from '@uaetrail/shared-types';
-import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
-import { fetchAdminSubmissions, reviewAdminSubmission } from '../../hooks/geoHierarchyClientApi';
+import { reviewAdminSubmission } from '../../hooks/geoHierarchyClientApi';
+import { updateAdminDestination, updateAdminPlace } from '../../hooks/adminConsoleApi';
 import {
-  fetchAdminDestinations,
-  fetchAdminPlacesCatalog,
-  updateAdminDestination,
-  updateAdminPlace,
-} from '../../hooks/adminConsoleApi';
+  type AdminSubmissionsQueueRow,
+  type AdminSubmissionsQueueSource,
+  useAdminSubmissionsQueue,
+} from '../../hooks/useAdminConsoleQueries';
 import { DashboardLayout } from '../../components/layout';
 import { ADMIN_LINKS } from '../../constants';
 import {
@@ -32,27 +25,8 @@ import { AppSelect, ADMIN_FILTER_SELECT_CLASS, ADMIN_INPUT_CLASS } from '../../c
 import { formatAdminDate } from '../../utils/formatAdminDate';
 import { buildGoogleMapsSearchUrl } from '../../utils/mapLinks';
 
-type QueueSource = 'suggestion' | 'draft_place' | 'draft_area';
-
-type QueueRow = {
-  id: string;
-  source: QueueSource;
-  kind: string;
-  name: string;
-  status: string;
-  description?: string | null;
-  latitude?: number | null;
-  longitude?: number | null;
-  images?: string[];
-  proposedDestinationName?: string | null;
-  facilityType?: string | null;
-  candidates?: SubmissionCandidate[];
-  insisted?: { reason: string };
-  submittedBy?: string;
-  seconded?: number;
-  region?: string;
-  createdAt?: string;
-};
+type QueueSource = AdminSubmissionsQueueSource;
+type QueueRow = AdminSubmissionsQueueRow;
 
 const SOURCE_OPTIONS = [
   { value: 'suggestion' as const, label: 'Map suggestions' },
@@ -75,100 +49,22 @@ export const Submissions = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedId = searchParams.get('id');
   const selectedSource = (searchParams.get('source') as QueueSource | null) ?? null;
-  const [rows, setRows] = useState<QueueRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const {
+    data: rows = [],
+    isPending: loading,
+    error: loadError,
+    refetch: refetchQueue,
+  } = useAdminSubmissionsQueue();
+  const error =
+    actionError ??
+    (loadError instanceof Error ? loadError.message : loadError ? 'Could not load review queue' : null);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [search, setSearch] = useState('');
   const [sourceFilter, setSourceFilter] = useState('');
   const [kindFilter, setKindFilter] = useState('');
-
-  const load = async (isActive: () => boolean = () => true) => {
-    setLoading(true);
-    try {
-      const [subs, places, areas] = await Promise.all([
-        fetchAdminSubmissions().catch(() => ({ data: [] as AdminSubmissionDTO[] })),
-        fetchAdminPlacesCatalog(1, 100).catch(() => ({ items: [] as LocationDTO[], total: 0 })),
-        fetchAdminDestinations().catch(() => [] as DestinationDTO[]),
-      ]);
-      if (!isActive()) return;
-
-      const suggestionRows: QueueRow[] = subs.data.map((row) => ({
-        id: row.id,
-        source: 'suggestion',
-        kind: row.kind,
-        name: row.name || 'Untitled',
-        status: row.status,
-        description: row.description,
-        latitude: row.latitude,
-        longitude: row.longitude,
-        images: row.images,
-        proposeddestinationName: row.proposedDestinationName,
-        facilityType: row.facilityType ?? null,
-        candidates: row.candidates,
-        insisted: row.insisted,
-        submittedBy: row.submittedBy,
-        seconded: row.seconded,
-        createdAt: row.createdAt,
-      }));
-
-      // Fetch more place pages if needed for drafts
-      const placeItems: LocationDTO[] = [...places.items];
-      let placePage = 2;
-      let placeTotal = places.total;
-      while (placeItems.length < placeTotal && placePage <= 10) {
-        const next = await fetchAdminPlacesCatalog(placePage, 100).catch(() => null);
-        if (!next || next.items.length === 0) break;
-        placeItems.push(...next.items);
-        placeTotal = next.total;
-        placePage += 1;
-      }
-
-      const draftPlaces: QueueRow[] = placeItems
-        .filter((p) => p.status === 'draft')
-        .map((p) => ({
-          id: p.id,
-          source: 'draft_place' as const,
-          kind: p.activityType ?? 'place',
-          name: p.name || 'Untitled place',
-          status: 'draft',
-          description: p.description || null,
-          latitude: p.latitude ?? null,
-          longitude: p.longitude ?? null,
-          images: p.images ?? [],
-          region: p.region || undefined,
-          submittedBy: p.registeredByUserId ?? p.submittedById ?? undefined,
-        }));
-
-      const draftAreas: QueueRow[] = areas
-        .filter((a) => a.status === 'draft')
-        .map((a) => ({
-          id: a.id,
-          source: 'draft_area' as const,
-          kind: 'area',
-          name: a.name || 'Untitled area',
-          status: 'draft',
-          description: a.summary ?? null,
-          latitude: a.center?.latitude ?? null,
-          longitude: a.center?.longitude ?? null,
-          images: a.imageUrl ? [a.imageUrl] : [],
-          region: a.region || undefined,
-          createdAt: a.createdAt,
-        }));
-
-      setRows([...suggestionRows, ...draftPlaces, ...draftAreas]);
-      setError(null);
-    } catch (err) {
-      if (!isActive()) return;
-      setError(err instanceof Error ? err.message : 'Could not load review queue');
-    } finally {
-      if (isActive()) setLoading(false);
-    }
-  };
-
-  useSafeAsyncEffect((isActive) => load(isActive), []);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -214,9 +110,10 @@ export const Submissions = () => {
         await updateAdminDestination(selected.id, { status: 'published' });
       }
       select(null);
-      await load();
+      setActionError(null);
+      await refetchQueue();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Approve failed');
+      setActionError(err instanceof Error ? err.message : 'Approve failed');
     } finally {
       setBusy(false);
     }
@@ -232,14 +129,15 @@ export const Submissions = () => {
         await updateAdminPlace(selected.id, { status: 'inactive' });
       } else {
         // Draft areas: keep as draft; reject = leave unpublished (no hard delete from queue UX)
-        setError('Reject leaves draft areas unpublished. Delete from Areas if needed.');
+        setActionError('Reject leaves draft areas unpublished. Delete from Areas if needed.');
       }
       setRejectOpen(false);
       setRejectReason('');
       select(null);
-      await load();
+      setActionError(null);
+      await refetchQueue();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Reject failed');
+      setActionError(err instanceof Error ? err.message : 'Reject failed');
     } finally {
       setBusy(false);
     }

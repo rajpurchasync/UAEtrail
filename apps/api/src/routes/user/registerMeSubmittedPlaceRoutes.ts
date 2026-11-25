@@ -1,7 +1,7 @@
 import type { Router } from 'express';
 import { z } from 'zod';
 import { locationSubmitBodySchema } from '../../domain/location-submit.js';
-import { registerPlaceAlias } from '../../lib/route-place-alias.js';
+import { mountRetiredPlaceLocationPaths } from '../../lib/retired-place-location-paths.js';
 import { validate } from '../../middleware/validate.js';
 import { submitMyPlace } from '../../services/me-place-submit-commands.js';
 import { listMySubmittedPlaces } from '../../services/me-place-submit-read.js';
@@ -22,7 +22,9 @@ const placeSubmitBodySchema = locationSubmitBodySchema.superRefine((body, ctx) =
  * Domain: `place-submit` + `locations` place row (`SYSTEM_COHERENCE` §8.4.9).
  */
 export const registerMeSubmittedPlaceRoutes = (router: Router): void => {
-  registerPlaceAlias(router, 'get', '/me/places', async (req, res, next) => {
+  mountRetiredPlaceLocationPaths(router);
+
+  router.get('/me/places', async (req, res, next) => {
     try {
       const data = await listMySubmittedPlaces(req.auth!.userId);
       res.json({ data });
@@ -31,9 +33,7 @@ export const registerMeSubmittedPlaceRoutes = (router: Router): void => {
     }
   });
 
-  registerPlaceAlias(
-    router,
-    'post',
+  router.post(
     '/me/places',
     validate({ body: placeSubmitBodySchema }),
     async (req, res, next) => {

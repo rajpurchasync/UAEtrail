@@ -1,13 +1,12 @@
-import { useState } from 'react';
-import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
+import { useMemo, useState } from 'react';
 import { AdminUserType } from '@uaetrail/shared-types';
 import {
   fetchAdminMemberDetail,
-  fetchAdminMembers,
   grantPlatformAdminByEmail,
   revokePlatformAdminByUserId,
   updateAdminMemberStatus,
 } from '../../hooks/adminConsoleApi';
+import { useAdminMembersList } from '../../hooks/useAdminConsoleQueries';
 import { UserDetail, UserDetailPanel } from '../../components/admin/UserDetailPanel';
 import { AdminTablePager, DEFAULT_ADMIN_PAGE_SIZE, type AdminPageSize } from '../../components/admin/AdminTablePager';
 import { DashboardLayout } from '../../components/layout';
@@ -60,8 +59,6 @@ interface MemberRow {
 export const Members = () => {
   const { user: authUser } = useAuth();
   const isMasterAdmin = authUser?.platformMasterAdmin === true;
-  const [members, setMembers] = useState<MemberRow[]>([]);
-  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
   const [roleFilter, setRoleFilter] = useState('');
@@ -69,8 +66,29 @@ export const Members = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [search, setSearch] = useState('');
   const [searchApplied, setSearchApplied] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const membersQueryInput = useMemo(
+    () => ({
+      page,
+      pageSize,
+      role: roleFilter,
+      userType: userTypeFilter,
+      status: statusFilter,
+      search: searchApplied,
+    }),
+    [page, pageSize, roleFilter, userTypeFilter, statusFilter, searchApplied]
+  );
+  const {
+    data: membersPayload,
+    isPending: loading,
+    error: loadError,
+    refetch: refetchMembers,
+  } = useAdminMembersList(membersQueryInput);
+  const members = (membersPayload?.data ?? []) as unknown as MemberRow[];
+  const total = membersPayload?.total ?? 0;
+  const error =
+    actionError ??
+    (loadError instanceof Error ? loadError.message : loadError ? 'Failed to load members' : null);
   const [selectedUser, setSelectedUser] = useState<UserDetail | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [confirmTarget, setConfirmTarget] = useState<MemberRow | null>(null);
@@ -79,31 +97,6 @@ export const Members = () => {
   const [grantEmail, setGrantEmail] = useState('');
   const [grantLoading, setGrantLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-  const loadUsers = async (isActive: () => boolean = () => true) => {
-    setLoading(true);
-    try {
-      const res = await fetchAdminMembers({
-        role: roleFilter || undefined,
-        userType: userTypeFilter || undefined,
-        status: statusFilter || undefined,
-        search: searchApplied || undefined,
-        page,
-        pageSize
-      });
-      if (!isActive()) return;
-      setError(null);
-      setMembers(res.data as unknown as MemberRow[]);
-      setTotal(res.total ?? 0);
-    } catch (e) {
-      if (!isActive()) return;
-      setError(e instanceof Error ? e.message : 'Failed to load members');
-    } finally {
-      if (isActive()) setLoading(false);
-    }
-  };
-
-  useSafeAsyncEffect((isActive) => loadUsers(isActive), [page, pageSize, roleFilter, userTypeFilter, statusFilter, searchApplied]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -115,7 +108,7 @@ export const Members = () => {
     if (!confirmTarget) return;
     const newStatus = confirmTarget.status === 'active' ? 'suspended' : 'active';
     if (newStatus === 'suspended' && !suspendComment.trim()) {
-      setError('A comment is required when suspending an account.');
+      setActionError('A comment is required when suspending an account.');
       return;
     }
     setActionLoading(true);
@@ -127,9 +120,10 @@ export const Members = () => {
       );
       setConfirmTarget(null);
       setSuspendComment('');
-      await loadUsers();
+      setActionError(null);
+      await refetchMembers();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to update user status');
+      setActionError(e instanceof Error ? e.message : 'Failed to update user status');
     } finally {
       setActionLoading(false);
     }
@@ -140,15 +134,15 @@ export const Members = () => {
     const email = grantEmail.trim();
     if (!email) return;
     setGrantLoading(true);
-    setError(null);
+    setActionError(null);
     setSuccessMessage(null);
     try {
       await grantPlatformAdminByEmail(email);
       setGrantEmail('');
       setSuccessMessage(`Platform admin access granted to ${email}.`);
-      await loadUsers();
+      await refetchMembers();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to grant platform admin');
+      setActionError(err instanceof Error ? err.message : 'Failed to grant platform admin');
     } finally {
       setGrantLoading(false);
     }
@@ -157,14 +151,14 @@ export const Members = () => {
   const revokePlatformAdmin = async (row: MemberRow) => {
     if (!window.confirm(`Remove platform admin access for ${row.displayName || row.email}?`)) return;
     setActionLoading(true);
-    setError(null);
+    setActionError(null);
     setSuccessMessage(null);
     try {
       await revokePlatformAdminByUserId(row.id);
       setSuccessMessage('Platform admin access removed.');
-      await loadUsers();
+      await refetchMembers();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to revoke platform admin');
+      setActionError(err instanceof Error ? err.message : 'Failed to revoke platform admin');
     } finally {
       setActionLoading(false);
     }
@@ -176,7 +170,7 @@ export const Members = () => {
       setSelectedUser(detail as unknown as UserDetail);
       setDetailOpen(true);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load member details');
+      setActionError(e instanceof Error ? e.message : 'Failed to load member details');
     }
   };
 

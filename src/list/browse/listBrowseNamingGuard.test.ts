@@ -168,7 +168,9 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browseListFilters.ts'))).toBe(false);
     expect(existsSync(join(process.cwd(), 'src/list/browseListUrlState.ts'))).toBe(false);
     expect(read('src/list/browse/useListDiscoveryUrlState.ts')).toMatch(/from '\.\/browseListUrlState'/);
-    expect(read('src/explore/exploreBrowseUrlHydrate.ts')).toMatch(/browse\/browseListUrlState/);
+    expect(read('src/explore/exploreBrowseUrlHydrate.ts')).toMatch(
+      /discovery\/discoverySession(Params|Parsers)/
+    );
   });
 
   it('BROWSE-NAME-01n: taxonomy, venue topics, and geo hydration live under browse', () => {

@@ -1,9 +1,9 @@
 import swaggerJsdoc from 'swagger-jsdoc';
 import { env } from './config/env.js';
 
-/** Domain-facing tag names for Swagger UI grouping. HTTP paths stay stable (e.g. `/locations`). */
+/** Domain-facing tag names for Swagger UI grouping. Canonical public paths: `/places`. */
 export const openApiTags = [
-  { name: 'Places', description: 'Trails, camps, and event spots (`/locations`, `/admin/places`).' },
+  { name: 'Places', description: 'Trails, camps, and event spots (`/places`, `/admin/places`). Legacy `/locations` → 410.' },
   { name: 'Activities', description: 'Scheduled activities and join requests.' },
   {
     name: 'Operator',
@@ -29,7 +29,7 @@ export const openApiSpec = swaggerJsdoc({
       version: '1.0.0',
       description:
         'REST API for UAE Trails — places, activities, hosts (guides, agencies, shops), and members. ' +
-        'Domain-facing tags group endpoints by product concept; legacy path segments (`/locations`, `/organizer`, `/merchant`) remain stable for existing clients.'
+        'Domain-facing tags group endpoints by product concept. Public place catalog uses `/places` (legacy `/locations` returns 410). `/organizer` and `/merchant` aliases may still exist on older clients.'
     },
     servers: [
       {

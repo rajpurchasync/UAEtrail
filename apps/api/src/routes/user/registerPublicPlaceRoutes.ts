@@ -1,7 +1,7 @@
 import type { Router } from 'express';
 import { z } from 'zod';
 import { ApiError } from '../../lib/api-error.js';
-import { registerPlaceAlias } from '../../lib/route-place-alias.js';
+import { mountRetiredPlaceLocationPaths } from '../../lib/retired-place-location-paths.js';
 import { paginatedResponse } from '../../lib/pagination.js';
 import { requireAuth, requireVerifiedEmail } from '../../middleware/auth.js';
 import { optionalAuth } from '../../middleware/optional-auth.js';
@@ -39,8 +39,10 @@ import {
   placeRegistryQuerySchema,
 } from './schemas.js';
 
-/** Public explore map + place catalog (`/places`; `/locations` legacy alias). */
+/** Public explore map + place catalog (`/places`; `/locations` → 410). */
 export const registerPublicPlaceRoutes = (router: Router): void => {
+  mountRetiredPlaceLocationPaths(router);
+
   router.get('/explore/map', async (req, res, next) => {
     try {
       const query = req.query as Record<string, string | undefined>;
@@ -80,7 +82,7 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     }
   });
 
-  registerPlaceAlias(router, 'get', '/places', validate({ query: listFilterSchema }), async (req, res, next) => {
+    router.get('/places', validate({ query: listFilterSchema }), async (req, res, next) => {
     try {
       const filters = req.query as unknown as z.infer<typeof listFilterSchema>;
       const pg = { page: filters.page ?? 1, pageSize: filters.pageSize ?? 20 };
@@ -104,9 +106,7 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     }
   });
 
-  registerPlaceAlias(
-    router,
-    'get',
+  router.get(
     '/places/registry',
     optionalAuth,
     validate({ query: placeRegistryQuerySchema }),
@@ -126,9 +126,7 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     }
   );
 
-  registerPlaceAlias(
-    router,
-    'get',
+  router.get(
     '/places/catalog',
     optionalAuth,
     validate({ query: placeCatalogQuerySchema }),
@@ -148,7 +146,7 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     }
   );
 
-  registerPlaceAlias(router, 'get', '/places/popular', async (req, res, next) => {
+  router.get('/places/popular', async (req, res, next) => {
     try {
       const limit = Math.min(Number(req.query.limit) || 6, 20);
       const data = await listPopularPublicPlaces(limit);
@@ -158,9 +156,7 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     }
   });
 
-  registerPlaceAlias(
-    router,
-    'get',
+  router.get(
     '/places/:id/activities',
     validate({ params: eventIdParamSchema }),
     async (req, res, next) => {
@@ -174,9 +170,7 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     }
   );
 
-  registerPlaceAlias(
-    router,
-    'get',
+  router.get(
     '/places/:id/reachable-rides',
     validate({ params: eventIdParamSchema }),
     async (req, res, next) => {
@@ -192,9 +186,7 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     }
   );
 
-  registerPlaceAlias(
-    router,
-    'get',
+  router.get(
     '/places/:id/track',
     optionalAuth,
     validate({ params: eventIdParamSchema }),
@@ -213,9 +205,7 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     }
   );
 
-  registerPlaceAlias(
-    router,
-    'get',
+  router.get(
     '/places/:id/me/state',
     requireAuth,
     validate({ params: eventIdParamSchema }),
@@ -235,9 +225,7 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     }
   );
 
-  registerPlaceAlias(
-    router,
-    'get',
+  router.get(
     '/places/:id',
     optionalAuth,
     validate({ params: eventIdParamSchema }),
@@ -257,9 +245,7 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     }
   );
 
-  registerPlaceAlias(
-    router,
-    'get',
+  router.get(
     '/places/:id/premium/guide',
     requireAuth,
     validate({ params: eventIdParamSchema }),
@@ -278,9 +264,7 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     }
   );
 
-  registerPlaceAlias(
-    router,
-    'get',
+  router.get(
     '/places/:id/premium/map/download',
     requireAuth,
     validate({ params: eventIdParamSchema }),
@@ -301,9 +285,7 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     }
   );
 
-  registerPlaceAlias(
-    router,
-    'get',
+  router.get(
     '/places/:id/premium/guide/pdf',
     requireAuth,
     validate({ params: eventIdParamSchema }),
@@ -324,9 +306,7 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     }
   );
 
-  registerPlaceAlias(
-    router,
-    'post',
+  router.post(
     '/places/:id/premium/checkout',
     requireAuth,
     requireVerifiedEmail,
@@ -371,9 +351,7 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
   );
 
   /** @deprecated Use POST /locations/:id/premium/checkout */
-  registerPlaceAlias(
-    router,
-    'post',
+  router.post(
     '/places/:id/premium/unlock',
     requireAuth,
     requireVerifiedEmail,
@@ -389,9 +367,7 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     }
   );
 
-  registerPlaceAlias(
-    router,
-    'post',
+  router.post(
     '/places/:id/view',
     viewLimiter,
     validate({ params: eventIdParamSchema }),

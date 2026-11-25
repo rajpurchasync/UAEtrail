@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "generated": "2026-11-25",
+  "description": "Shim burn-down metrics. Regenerate: npm run shim:baseline",
+  "waves": {
+    "w0": {
+      "note": "seeking:deploy-gate green when Mongo reachable (npm run seeking:deploy-gate or w1:local-gate)"
+    },
+    "w1": {
+      "participantIntentsRefsInApiSrc": 15,
+      "participantIntentOpsAllowlistOnly": true,
+      "participantIntentOpsViolations": [],
+      "seekingActivityModeRefsInApiSrc": 23,
+      "deployGateStatus": "ops — run npm run seeking:deploy-gate per environment",
+      "opsScripts": [
+        "seeking:deploy-gate",
+        "w1:local-gate",
+        "mig-disco-reg:ops:preflight",
+        "purge:seeking-legacy"
+      ]
+    },
+    "w2": {
+      "registerPlaceAliasCallSites": 0,
+      "retiredPlaceLocationMountSites": 3
+    },
+    "w4": {
+      "exploreFilesImportingBrowseListUrlState": 0,
+      "exploreImportList": [],
+      "configFilesImportingBrowseListUrlState": 0,
+      "configImportList": [],
+      "browseListUrlStateImportsOutsideListBrowse": 0,
+      "browseListUrlStateImportViolations": []
+    },
+    "w6": {
+      "pagesUsingUseSafeAsyncEffect": 0,
+      "pageFiles": [],
+      "consoleFilesUsingUseSafeAsyncEffect": 0,
+      "consoleFiles": [],
+      "componentFilesUsingUseSafeAsyncEffect": 0,
+      "componentFiles": [],
+      "exploreUiFilesUsingUseSafeAsyncEffect": 0,
+      "exploreUiFiles": []
+    }
+  },
+  "governance": {
+    "guardTestFileCount": 159
+  },
+  "nextActions": [
+    "W1 env: run npm run seeking:deploy-gate per environment after migration 2025112509"
+  ]
+}

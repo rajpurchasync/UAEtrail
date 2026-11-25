@@ -1,14 +1,14 @@
 import { useMemo, useState } from 'react';
-import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Bell } from 'lucide-react';
 import { NotificationDTO } from '@uaetrail/shared-types';
+import { markAllMeNotificationsRead, markNotificationReadById } from '../../hooks/notificationInboxApi';
 import {
-  fetchMeNotificationsPage,
-  markAllMeNotificationsRead,
-  markNotificationReadById,
-} from '../../hooks/notificationInboxApi';
+  useAdminNotificationsConsole,
+  type AdminNotificationsConsolePayload,
+} from '../../hooks/useAdminConsoleQueries';
+import { adminNotificationsConsoleQueryKey } from '../../hooks/clientQueryKeys';
 import { DashboardLayout } from '../../components/layout';
 import { ADMIN_LINKS } from '../../constants';
 import { useAuth } from '../../context/AuthContext';
@@ -31,13 +31,19 @@ export const Notifications = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { clock } = useDisplayPreferences();
-  const [notifications, setNotifications] = useState<NotificationDTO[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
-  const [total, setTotal] = useState(0);
+  const {
+    data: inbox,
+    isPending: loading,
+    error: loadError,
+  } = useAdminNotificationsConsole(page, pageSize);
+  const notifications = inbox?.notifications ?? [];
+  const total = inbox?.total ?? 0;
+  const unreadCount = inbox?.unreadCount ?? 0;
+  const error =
+    loadError instanceof Error ? loadError.message : loadError ? 'Failed to load notifications' : null;
+  const queryKey = adminNotificationsConsoleQueryKey(page, pageSize);
   const [search, setSearch] = useState('');
   const [readFilter, setReadFilter] = useState('');
 
@@ -46,24 +52,12 @@ export const Notifications = () => {
     void invalidateNotificationUnreadBadge(queryClient, user.id);
   };
 
-  const load = async (isActive: () => boolean = () => true) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await fetchMeNotificationsPage(page, pageSize);
-      if (!isActive()) return;
-      setNotifications(result.data);
-      setTotal(result.total);
-      setUnreadCount(result.unreadCount ?? result.data.filter((item) => !item.isRead).length);
-    } catch (err) {
-      if (!isActive()) return;
-      setError(err instanceof Error ? err.message : 'Failed to load notifications');
-    } finally {
-      if (isActive()) setLoading(false);
-    }
+  const patchInbox = (updater: (prev: AdminNotificationsConsolePayload) => AdminNotificationsConsolePayload) => {
+    queryClient.setQueryData<AdminNotificationsConsolePayload>(queryKey, (prev) => {
+      const base = prev ?? { notifications: [], total: 0, unreadCount: 0 };
+      return updater(base);
+    });
   };
-
-  useSafeAsyncEffect((isActive) => load(isActive), [page, pageSize]);
 
   const filtered = useMemo(() => {
     return notifications.filter((notif) => {
@@ -81,15 +75,23 @@ export const Notifications = () => {
 
   const markRead = async (id: string) => {
     await markNotificationReadById(id).catch(() => undefined);
-    setNotifications((prev) => prev.map((item) => (item.id === id ? { ...item, isRead: true } : item)));
-    setUnreadCount((count) => Math.max(0, count - 1));
+    patchInbox((prev) => ({
+      ...prev,
+      notifications: prev.notifications.map((item) =>
+        item.id === id ? { ...item, isRead: true } : item
+      ),
+      unreadCount: Math.max(0, prev.unreadCount - 1),
+    }));
     syncUnreadBadge();
   };
 
   const markAllRead = async () => {
     await markAllMeNotificationsRead().catch(() => undefined);
-    setNotifications((prev) => prev.map((item) => ({ ...item, isRead: true })));
-    setUnreadCount(0);
+    patchInbox((prev) => ({
+      ...prev,
+      notifications: prev.notifications.map((item) => ({ ...item, isRead: true })),
+      unreadCount: 0,
+    }));
     syncUnreadBadge();
   };
 

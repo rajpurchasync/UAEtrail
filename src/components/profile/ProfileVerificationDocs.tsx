@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import type { VerificationDocumentType } from '@uaetrail/shared-types';
-import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
+import { useQueryClient } from '@tanstack/react-query';
 import {
-  fetchMyVerificationDocuments,
   submitMyVerificationDocument,
-  type MemberVerificationDocumentDTO,
 } from '../../hooks/memberVerificationClientApi';
+import { useMyVerificationDocuments } from '../../hooks/useMyVerificationDocuments';
+import { myVerificationDocumentsQueryKey } from '../../hooks/clientQueryKeys';
 import { GlassCard } from '../mobile/GlassCard';
 import { AppButton } from '../mobile/AppButton';
 import { AppSelect } from '../ui/AppSelect';
@@ -31,28 +31,23 @@ export const ProfileVerificationDocs = ({
   embedded = false,
   flush = false,
 }: ProfileVerificationDocsProps) => {
-  const [rows, setRows] = useState<MemberVerificationDocumentDTO[]>([]);
+  const queryClient = useQueryClient();
+  const { data: rows = [], error: loadError, isLoading } = useMyVerificationDocuments();
   const [docType, setDocType] = useState<VerificationDocumentType>('trade_licence');
-  const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  useSafeAsyncEffect(async (isActive) => {
-    try {
-      const data = await fetchMyVerificationDocuments();
-      if (isActive()) setRows(data);
-    } catch (err) {
-      if (isActive()) setError(err instanceof Error ? err.message : 'Could not load documents');
-    }
-  }, []);
+  const error =
+    actionError ?? (loadError instanceof Error ? loadError.message : loadError ? 'Could not load documents' : null);
 
   const submit = async () => {
     setSaving(true);
     try {
-      const created = await submitMyVerificationDocument({ docType });
-      setRows((prev) => [created, ...prev]);
-      setError(null);
+      await submitMyVerificationDocument({ docType });
+      await queryClient.invalidateQueries({ queryKey: myVerificationDocumentsQueryKey });
+      setActionError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Submit failed');
+      setActionError(err instanceof Error ? err.message : 'Submit failed');
     } finally {
       setSaving(false);
     }
@@ -65,7 +60,7 @@ export const ProfileVerificationDocs = ({
         Paid outings need a verified business profile. Submit a licence or permit for ops review.
       </p>
       <AppSelect value={docType} onChange={(v) => setDocType(v as VerificationDocumentType)} options={DOC_TYPES} />
-      <AppButton type="button" disabled={saving} onClick={() => void submit()} className="w-full">
+      <AppButton type="button" disabled={saving || isLoading} onClick={() => void submit()} className="w-full">
         {saving ? 'Submitting…' : 'Submit for review'}
       </AppButton>
       {error ? <p className="text-sm text-red-600">{error}</p> : null}

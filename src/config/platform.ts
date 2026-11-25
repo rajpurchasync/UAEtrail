@@ -76,7 +76,8 @@ export const DOMAIN_GLOSSARY = {
       'One map/catalog POI (trail, camp, shop, outdoor spot; future toilet, gas, …) — typed by PlaceKind; stored in locations.',
     storage: 'Location',
     api: '/places',
-    inboundApiPath: '/locations',
+    /** Retired HTTP alias (410); bookmarks and old clients must use `api`. */
+    inboundApiPath: '/places',
     publicRoutes: ['/place/:id', '/venue/:id', '/shop/:id'],
     adminRoute: ADMIN_PLACES_PATH,
     hostRoute: OPERATOR_PLACES_PATH,

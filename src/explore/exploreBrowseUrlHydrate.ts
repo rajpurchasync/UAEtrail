@@ -23,7 +23,8 @@ import {
   type ExploreMapFilterPillKey,
   type ExploreSearchScopeKey,
 } from './exploreBrowseTaxonomy';
-import { BROWSE_DISCOVER_PARAM, LIST_CAT_PARAM, parseListCatParam } from '../list/browse/browseListUrlState';
+import { BROWSE_DISCOVER_PARAM, LIST_CAT_PARAM } from '../discovery/discoverySessionParams';
+import { parseListCatParam } from '../discovery/discoverySessionParsers';
 import type { ExploreBrowseListMode } from './exploreBrowseUrlSync';
 import { readExploreSearchScopeParam } from '../routing/productUrlInbound';
 import { parseExplorePinKindFilter, type ExplorePinKindFilter } from './explorePinKindFilter';

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import type { AdminSocialGroupDetail, AdminSocialGroupListItem } from '../../api/types';
-import { fetchAdminSocialGroups, updateAdminSocialGroupStatus } from '../../hooks/adminConsoleApi';
+import { updateAdminSocialGroupStatus } from '../../hooks/adminConsoleApi';
+import { useAdminSocialGroupsCatalog } from '../../hooks/useAdminConsoleQueries';
 import { fetchAdminGroupDetail } from '../../hooks/adminDrilldownApi';
 import { DashboardLayout } from '../../components/layout';
 import { ADMIN_LINKS } from '../../constants';
@@ -33,7 +33,12 @@ const inviteStatusClass: Record<string, string> = {
 
 /** Platform social groups moderation. */
 export const Groups = () => {
-  const [groups, setGroups] = useState<AdminSocialGroupListItem[]>([]);
+  const {
+    data: groups = [],
+    isPending: loading,
+    error: loadError,
+    refetch: refetchGroups,
+  } = useAdminSocialGroupsCatalog();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
   const [search, setSearch] = useState('');
@@ -42,38 +47,14 @@ export const Groups = () => {
   const [creatorFilter, setCreatorFilter] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const error =
+    actionError ??
+    (loadError instanceof Error ? loadError.message : loadError ? 'Failed to load groups' : null);
   const [detail, setDetail] = useState<AdminSocialGroupDetail | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [confirmTarget, setConfirmTarget] = useState<AdminSocialGroupListItem | null>(null);
   const [suspendComment, setSuspendComment] = useState('');
-
-  const loadGroups = async (isActive: () => boolean = () => true) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const all: AdminSocialGroupListItem[] = [];
-      let nextPage = 1;
-      let catalogTotal = Number.POSITIVE_INFINITY;
-      while (all.length < catalogTotal && nextPage <= 50) {
-        const res = await fetchAdminSocialGroups({ page: nextPage, pageSize: 100 });
-        if (!isActive()) return;
-        all.push(...res.data);
-        catalogTotal = res.meta.total;
-        if (res.data.length === 0) break;
-        nextPage += 1;
-      }
-      setGroups(all);
-    } catch (err) {
-      if (!isActive()) return;
-      setError(err instanceof Error ? err.message : 'Failed to load groups');
-    } finally {
-      if (isActive()) setLoading(false);
-    }
-  };
-
-  useSafeAsyncEffect((isActive) => loadGroups(isActive), []);
 
   const visibleGroups = groups.filter((group) => {
     if (search.trim()) {
@@ -104,13 +85,13 @@ export const Groups = () => {
   };
 
   const openDetail = async (id: string) => {
-    setError(null);
+    setActionError(null);
     try {
       const groupDetail = await fetchAdminGroupDetail(id);
       setDetail(groupDetail);
       setDetailOpen(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load group details');
+      setActionError(err instanceof Error ? err.message : 'Failed to load group details');
     }
   };
 
@@ -129,7 +110,7 @@ export const Groups = () => {
     if (!confirmTarget) return;
     const newStatus = (confirmTarget.status ?? 'active') === 'active' ? 'suspended' : 'active';
     if (newStatus === 'suspended' && !suspendComment.trim()) {
-      setError('A comment is required when suspending a group.');
+      setActionError('A comment is required when suspending a group.');
       return;
     }
     try {
@@ -146,9 +127,9 @@ export const Groups = () => {
           group: { ...detail.group, status: newStatus }
         });
       }
-      await loadGroups();
+      await refetchGroups();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update group status');
+      setActionError(err instanceof Error ? err.message : 'Failed to update group status');
     }
   };
 

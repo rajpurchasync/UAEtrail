@@ -1,5 +1,5 @@
 import { EXPLORE_MAP_PATH } from '../config/platform';
-import { BROWSE_DISCOVER_PARAM, LIST_CAT_PARAM } from '../list/browse/browseListUrlState';
+import { BROWSE_DISCOVER_PARAM, LIST_CAT_PARAM } from '../discovery/discoverySessionParams';
 import {
   PEOPLE_LIST_TAB_URL_PARAM,
   stripRetiredPeopleListTabParams,

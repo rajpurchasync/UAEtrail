@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
+import { useAdminAlertsSafetyData } from '../../hooks/useAdminAlertsSafetyData';
 import { DashboardLayout } from '../../components/layout';
 import { ADMIN_LINKS } from '../../constants';
 import { ADMIN_FILTER_SELECT_CLASS, ADMIN_INPUT_CLASS, AppSelect } from '../../components/ui/AppSelect';
@@ -10,9 +10,6 @@ import {
   confirmAdminAmenityReport,
   createAdminPlatformAlert,
   expireAdminPlatformAlert,
-  fetchAdminAmenityReports,
-  fetchAdminPlatformAlerts,
-  fetchAdminVerificationDocuments,
   reviewAdminVerificationDocument,
 } from '../../hooks/adminAlertsClientApi';
 
@@ -53,21 +50,18 @@ export const Alerts = () => {
   const tab: SafetyTab =
     tabParam === 'amenity' || tabParam === 'verification' || tabParam === 'banners' ? tabParam : 'banners';
 
-  const [rows, setRows] = useState<AdminPlatformAlertDTO[]>([]);
-  const [reports, setReports] = useState<
-    Array<{
-      id: string;
-      facilityId: string;
-      amenityState: AmenityState;
-      note?: string;
-      photoUrl?: string;
-      createdAt: string;
-    }>
-  >([]);
-  const [verification, setVerification] = useState<
-    Array<{ id: string; organizerId: string; docType: string; status: string; createdAt: string }>
-  >([]);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: safetyData,
+    error: loadError,
+    refetch,
+  } = useAdminAlertsSafetyData();
+  const rows = safetyData?.alerts ?? [];
+  const reports = safetyData?.amenityReports ?? [];
+  const verification = safetyData?.verificationDocuments ?? [];
+  const [mutationError, setMutationError] = useState<string | null>(null);
+  const error =
+    mutationError ??
+    (loadError instanceof Error ? loadError.message : loadError ? 'Failed to load alerts' : null);
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [severity, setSeverity] = useState<'info' | 'warning' | 'critical'>('warning');
@@ -140,28 +134,9 @@ export const Alerts = () => {
     setSearchParams(params, { replace: true });
   };
 
-  const reload = async (isActive: () => boolean = () => true) => {
-    try {
-      const [alerts, amenity, docs] = await Promise.all([
-        fetchAdminPlatformAlerts(),
-        fetchAdminAmenityReports(),
-        fetchAdminVerificationDocuments(),
-      ]);
-      if (!isActive()) return;
-      setRows(alerts);
-      setReports(amenity);
-      setVerification(docs);
-      setError(null);
-    } catch (err) {
-      if (!isActive()) return;
-      setError(err instanceof Error ? err.message : 'Failed to load alerts');
-    }
-  };
-
-  useSafeAsyncEffect((isActive) => reload(isActive), []);
-
   const create = async () => {
     try {
+      setMutationError(null);
       await createAdminPlatformAlert({
         title,
         body,
@@ -176,9 +151,9 @@ export const Alerts = () => {
       });
       setTitle('');
       setBody('');
-      await reload();
+      await refetch();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Create failed');
+      setMutationError(err instanceof Error ? err.message : 'Create failed');
     }
   };
 
@@ -308,7 +283,13 @@ export const Alerts = () => {
                       <button
                         type="button"
                         className="shrink-0 text-sm font-semibold text-red-700"
-                        onClick={() => void expireAdminPlatformAlert(row.id).then(() => reload())}
+                        onClick={() =>
+                          void expireAdminPlatformAlert(row.id)
+                            .then(() => refetch())
+                            .catch((err) =>
+                              setMutationError(err instanceof Error ? err.message : 'Expire failed')
+                            )
+                        }
                       >
                         Expire
                       </button>
@@ -368,7 +349,13 @@ export const Alerts = () => {
                   <button
                     type="button"
                     className="shrink-0 rounded-xl bg-emerald-700 px-3 py-1.5 text-sm font-semibold text-white"
-                    onClick={() => void confirmAdminAmenityReport(row.id).then(() => reload())}
+                    onClick={() =>
+                      void confirmAdminAmenityReport(row.id)
+                        .then(() => refetch())
+                        .catch((err) =>
+                          setMutationError(err instanceof Error ? err.message : 'Confirm failed')
+                        )
+                    }
                   >
                     Confirm
                   </button>
@@ -422,14 +409,26 @@ export const Alerts = () => {
                     <button
                       type="button"
                       className="rounded-xl bg-emerald-700 px-3 py-1.5 text-sm font-semibold text-white"
-                      onClick={() => void reviewAdminVerificationDocument(row.id, 'accepted').then(() => reload())}
+                      onClick={() =>
+                        void reviewAdminVerificationDocument(row.id, 'accepted')
+                          .then(() => refetch())
+                          .catch((err) =>
+                            setMutationError(err instanceof Error ? err.message : 'Review failed')
+                          )
+                      }
                     >
                       Accept
                     </button>
                     <button
                       type="button"
                       className="rounded-xl border border-neutral-200 px-3 py-1.5 text-sm font-semibold text-red-700"
-                      onClick={() => void reviewAdminVerificationDocument(row.id, 'rejected').then(() => reload())}
+                      onClick={() =>
+                        void reviewAdminVerificationDocument(row.id, 'rejected')
+                          .then(() => refetch())
+                          .catch((err) =>
+                            setMutationError(err instanceof Error ? err.message : 'Review failed')
+                          )
+                      }
                     >
                       Reject
                     </button>

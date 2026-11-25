@@ -1,5 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
-import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
+import { useState, useMemo, useEffect } from 'react';
 import {
   type DestinationDTO,
   type CatalogEditRankingDTO,
@@ -22,13 +21,14 @@ import {
   createAdminPlace,
   deleteAdminFacility,
   deleteAdminPlace,
-  fetchAdminDestinations,
-  fetchAdminFacilitiesCatalog,
-  fetchAdminMemberDetail,
-  fetchAdminPlacesCatalog,
   updateAdminFacility,
   updateAdminPlace,
 } from '../../hooks/adminConsoleApi';
+import {
+  useAdminCatalogSubmitterPreview,
+  useAdminDestinationsCatalog,
+  useAdminPlacesCatalogAll,
+} from '../../hooks/useAdminConsoleQueries';
 import { AdminTablePager, DEFAULT_ADMIN_PAGE_SIZE, paginateRows, type AdminPageSize } from '../../components/admin/AdminTablePager';
 import { AdminIconButton } from '../../components/admin/AdminIconButton';
 import { AdminPlaceRidesLinkPanel } from '../../components/admin/AdminPlaceRidesLinkPanel';
@@ -121,7 +121,6 @@ type PlacesProps = {
 export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const filterAreaId = searchParams.get('destinationId')?.trim() || null;
-  const [places, setPlaces] = useState<PlaceDTO[]>([]);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
   const [form, setForm] = useState<Partial<PlaceDTO>>(emptyForm);
@@ -130,9 +129,18 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
   const [elevationInput, setElevationInput] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const {
+    data: places = [],
+    isPending: loading,
+    error: loadError,
+    refetch: refetchPlaces,
+  } = useAdminPlacesCatalogAll(catalogSegment);
+  const { data: adminAreas = [] } = useAdminDestinationsCatalog();
+  const error =
+    actionError ??
+    (loadError instanceof Error ? loadError.message : loadError ? 'Failed to load places' : null);
   const [highlightInput, setHighlightInput] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'hiking' | 'camping' | 'event'>('all');
   const [search, setSearch] = useState('');
@@ -141,82 +149,14 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
   const [featuredFilter, setFeaturedFilter] = useState('');
   const [confirmAction, setConfirmAction] = useState<{ type: 'status' | 'delete' | 'publish'; loc: PlaceDTO } | null>(null);
   const [previewLoc, setPreviewLoc] = useState<PlaceDTO | null>(null);
-  const [previewSubmitter, setPreviewSubmitter] = useState<{
-    id: string;
-    displayName: string | null;
-    ranking: CatalogEditRankingDTO | null;
-  } | null>(null);
   const [formStep, setFormStep] = useState(0); // 0=type select, 1=form
   const [detailStep, setDetailStep] = useState(0);
-  const [adminAreas, setAdminDestinations] = useState<DestinationDTO[]>([]);
-
-  const loadPlaces = async (isActive: () => boolean = () => true) => {
-    setLoading(true);
-    try {
-      const all: PlaceDTO[] = [];
-      let nextPage = 1;
-      let catalogTotal = Number.POSITIVE_INFINITY;
-      while (all.length < catalogTotal && nextPage <= 50) {
-        const catalog =
-          catalogSegment === 'facility'
-            ? await fetchAdminFacilitiesCatalog(nextPage, 100)
-            : await fetchAdminPlacesCatalog(nextPage, 100);
-        if (!isActive()) return;
-        all.push(...catalog.items);
-        catalogTotal = catalog.total;
-        if (catalog.items.length === 0) break;
-        nextPage += 1;
-      }
-      setError(null);
-      setPlaces(all);
-    } catch (err) {
-      if (!isActive()) return;
-      setError(err instanceof Error ? err.message : 'Failed to load places');
-    } finally {
-      if (isActive()) setLoading(false);
-    }
-  };
+  const submitterId = previewLoc ? resolveCatalogSubmitterUserId(previewLoc) : null;
+  const { data: previewSubmitter = null } = useAdminCatalogSubmitterPreview(submitterId);
 
   useEffect(() => {
     setPage(1);
   }, [catalogSegment, activeTab, search, filterAreaId]);
-
-  useSafeAsyncEffect((isActive) => loadPlaces(isActive), [catalogSegment]);
-
-  useSafeAsyncEffect(
-    async (isActive) => {
-      const submitterId = previewLoc ? resolveCatalogSubmitterUserId(previewLoc) : null;
-      if (!submitterId) {
-        if (isActive()) setPreviewSubmitter(null);
-        return;
-      }
-      try {
-        const detail = await fetchAdminMemberDetail(submitterId);
-        if (!isActive()) return;
-        const profile = detail.profile as { displayName?: string | null } | null | undefined;
-        const ranking = detail.catalogEditRanking as CatalogEditRankingDTO | null | undefined;
-        setPreviewSubmitter({
-          id: submitterId,
-          displayName: profile?.displayName?.trim() || null,
-          ranking: ranking ?? null,
-        });
-      } catch {
-        if (isActive()) {
-          setPreviewSubmitter({ id: submitterId, displayName: null, ranking: null });
-        }
-      }
-    },
-    [previewLoc?.id]
-  );
-
-  useSafeAsyncEffect(async (isActive) => {
-    try {
-      const areas = await fetchAdminDestinations();
-      if (isActive()) setAdminDestinations(areas);
-    } catch {
-      if (isActive()) setAdminDestinations([]);
-    }
-  }, []);
 
   const resetTrailStatInputs = (distance?: number | null, elevation?: number | null) => {
     setDistanceInput(distance != null && Number.isFinite(distance) ? String(distance) : '');
@@ -258,7 +198,7 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
     setModalOpen(false);
     setEditingId(null);
     setDetailStep(0);
-    setError(null);
+    setActionError(null);
   };
 
   const selectType = (type: 'hiking' | 'camping' | 'event') => {
@@ -281,8 +221,8 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.images || form.images.length === 0) { setError('At least 1 photo is required'); return; }
-    setSaving(true); setError(null);
+    if (!form.images || form.images.length === 0) { setActionError('At least 1 photo is required'); return; }
+    setSaving(true); setActionError(null);
     try {
       const distance = parseOptionalNumberInput(distanceInput);
       const elevation = parseOptionalNumberInput(elevationInput);
@@ -307,9 +247,10 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
       } else {
         await createAdminPlace(payload);
       }
-      closeModal(); await loadPlaces();
+      closeModal(); setActionError(null);
+      await refetchPlaces();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save place');
+      setActionError(err instanceof Error ? err.message : 'Failed to save place');
     } finally {
       setSaving(false);
     }
@@ -327,7 +268,7 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
     try {
       if (confirmAction.type === 'publish') {
         if (!canApprove(confirmAction.loc)) {
-          setError('Complete difficulty (hikes), parking link or map pin before approving.');
+          setActionError('Complete difficulty (hikes), parking link or map pin before approving.');
           setConfirmAction(null);
           openEdit(confirmAction.loc);
           return;
@@ -349,8 +290,9 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
       } else {
         await deleteAdminPlace(confirmAction.loc.id);
       }
-      setConfirmAction(null); await loadPlaces();
-    } catch (err) { setError(err instanceof Error ? err.message : 'Action failed'); setConfirmAction(null); }
+      setConfirmAction(null); setActionError(null);
+      await refetchPlaces();
+    } catch (err) { setActionError(err instanceof Error ? err.message : 'Action failed'); setConfirmAction(null); }
   };
 
   const handleMapChange = useCallback((lat: number | null, lng: number | null) => {

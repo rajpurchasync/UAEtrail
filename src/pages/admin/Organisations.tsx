@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Ban, Building2, Eye, EyeOff, FileText, UserMinus } from 'lucide-react';
-import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import { Link } from 'react-router-dom';
 import { TenantListDTO } from '@uaetrail/shared-types';
 import type { OrganisationApplication, TenantDetail } from '../../api/types';
 import {
-  fetchAdminOrganisationApplications,
-  fetchAdminTenants,
+  useAdminOrganisationsCatalog,
+  useAdminTenantDetail,
+} from '../../hooks/useAdminConsoleQueries';
+import {
   reviewAdminOrganisationApplication,
   addAdminTenantTeamMember,
   patchAdminTenantTeamMember,
@@ -40,18 +41,28 @@ const TEAM_ROLE_OPTIONS = [
 export const Organisations = () => {
   const [tab, setTab] = useState<Tab>('applications');
   const [tenantFilter, setTenantFilter] = useState<TenantFilter>('all');
-  const [applications, setApplications] = useState<OrganisationApplication[]>([]);
-  const [tenants, setTenants] = useState<TenantListDTO[]>([]);
   const [appsPage, setAppsPage] = useState(1);
   const [appsPageSize, setAppsPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
   const [tenantsPage, setTenantsPage] = useState(1);
   const [tenantsPageSize, setTenantsPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const {
+    data: organisationsCatalog,
+    isPending: loading,
+    error: loadError,
+    refetch: refetchOrganisationsCatalog,
+  } = useAdminOrganisationsCatalog();
+  const applications = organisationsCatalog?.applications ?? [];
+  const tenants = organisationsCatalog?.tenants ?? [];
+  const error =
+    actionError ??
+    (loadError instanceof Error ? loadError.message : loadError ? 'Failed to load data' : null);
   const [noteModal, setNoteModal] = useState<{ id: string; action: 'approved' | 'rejected' } | null>(null);
   const [reviewNote, setReviewNote] = useState('');
   const [applicationDetail, setApplicationDetail] = useState<OrganisationApplication | null>(null);
-  const [applicationTenant, setApplicationTenant] = useState<TenantDetail | null>(null);
+  const { data: applicationTenant = null, refetch: refetchApplicationTenant } = useAdminTenantDetail(
+    applicationDetail?.requestedTenantId
+  );
   const [tenantDetail, setTenantDetail] = useState<TenantDetail | null>(null);
   const [confirmTarget, setConfirmTarget] = useState<TenantListDTO | null>(null);
   const [suspendComment, setSuspendComment] = useState('');
@@ -72,58 +83,6 @@ export const Organisations = () => {
   const [tenantSearch, setTenantSearch] = useState('');
   const [tenantType, setTenantType] = useState('');
   const [tenantVisibility, setTenantVisibility] = useState('');
-
-  const loadData = async (isActive: () => boolean = () => true) => {
-    setLoading(true);
-    try {
-      const applicationsAll: OrganisationApplication[] = [];
-      const tenantsAll: TenantListDTO[] = [];
-      let appsNext = 1;
-      let appsCatalogTotal = Number.POSITIVE_INFINITY;
-      while (applicationsAll.length < appsCatalogTotal && appsNext <= 50) {
-        const apps = await fetchAdminOrganisationApplications(appsNext, 100);
-        if (!isActive()) return;
-        applicationsAll.push(...apps.items);
-        appsCatalogTotal = apps.total;
-        if (apps.items.length === 0) break;
-        appsNext += 1;
-      }
-      let tenantsNext = 1;
-      let tenantsCatalogTotal = Number.POSITIVE_INFINITY;
-      while (tenantsAll.length < tenantsCatalogTotal && tenantsNext <= 50) {
-        const tenantList = await fetchAdminTenants(tenantsNext, 100);
-        if (!isActive()) return;
-        tenantsAll.push(...tenantList.items);
-        tenantsCatalogTotal = tenantList.total;
-        if (tenantList.items.length === 0) break;
-        tenantsNext += 1;
-      }
-      setError(null);
-      setApplications(applicationsAll);
-      setTenants(tenantsAll);
-    } catch (err) {
-      if (!isActive()) return;
-      setError(err instanceof Error ? err.message : 'Failed to load data');
-    } finally {
-      if (isActive()) setLoading(false);
-    }
-  };
-
-  useSafeAsyncEffect((isActive) => loadData(isActive), []);
-
-  useSafeAsyncEffect(async (isActive) => {
-    const tenantId = applicationDetail?.requestedTenantId;
-    if (!tenantId) {
-      if (isActive()) setApplicationTenant(null);
-      return;
-    }
-    try {
-      const detail = await fetchAdminTenantDetail(tenantId);
-      if (isActive()) setApplicationTenant(detail);
-    } catch {
-      if (isActive()) setApplicationTenant(null);
-    }
-  }, [applicationDetail?.requestedTenantId]);
 
   const filteredApplications = useMemo(() => {
     return applications.filter((app) => {
@@ -184,9 +143,10 @@ export const Organisations = () => {
       setNoteModal(null);
       setReviewNote('');
       setApplicationDetail(null);
-      await loadData();
+      setActionError(null);
+      await refetchOrganisationsCatalog();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not update application');
+      setActionError(err instanceof Error ? err.message : 'Could not update application');
     }
   };
 
@@ -195,7 +155,7 @@ export const Organisations = () => {
     if (!target) return;
     const newStatus = target.status === 'active' ? 'suspended' : 'active';
     if (newStatus === 'suspended' && !suspendComment.trim()) {
-      setError('A comment is required when suspending a host.');
+      setActionError('A comment is required when suspending a host.');
       return;
     }
     try {
@@ -209,9 +169,10 @@ export const Organisations = () => {
       if (tenantDetail?.id === target.id) {
         setTenantDetail({ ...tenantDetail, status: newStatus });
       }
-      await loadData();
+      setActionError(null);
+      await refetchOrganisationsCatalog();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update tenant status');
+      setActionError(err instanceof Error ? err.message : 'Failed to update tenant status');
     }
   };
 
@@ -223,7 +184,7 @@ export const Organisations = () => {
       setActivityPage(1);
       setTeamPage(1);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load tenant details');
+      setActionError(err instanceof Error ? err.message : 'Failed to load tenant details');
     }
   };
 
@@ -236,29 +197,32 @@ export const Organisations = () => {
         setTenantDetail({ ...tenantDetail, hiddenFromPublic: next });
       }
       setHideTarget(null);
-      await loadData();
+      setActionError(null);
+      await refetchOrganisationsCatalog();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update visibility');
+      setActionError(err instanceof Error ? err.message : 'Failed to update visibility');
     }
   };
 
   const refreshTenantViews = async (tenantId: string) => {
     const detail = await fetchAdminTenantDetail(tenantId);
     if (tenantDetail?.id === tenantId) setTenantDetail(detail);
-    if (applicationTenant?.id === tenantId) setApplicationTenant(detail);
+    if (applicationDetail?.requestedTenantId === tenantId) {
+      await refetchApplicationTenant();
+    }
     return detail;
   };
 
   const addBusinessSubUser = async (event: React.FormEvent, tenantId: string) => {
     event.preventDefault();
     setTeamBusy(true);
-    setError(null);
+    setActionError(null);
     try {
       await addAdminTenantTeamMember(tenantId, { email: teamEmail.trim(), role: teamRole });
       setTeamEmail('');
       await refreshTenantViews(tenantId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add team member');
+      setActionError(err instanceof Error ? err.message : 'Failed to add team member');
     } finally {
       setTeamBusy(false);
     }
@@ -266,12 +230,12 @@ export const Organisations = () => {
 
   const changeTeamRole = async (tenantId: string, membershipId: string, role: TeamRole) => {
     setTeamBusy(true);
-    setError(null);
+    setActionError(null);
     try {
       await patchAdminTenantTeamMember(tenantId, membershipId, { role });
       await refreshTenantViews(tenantId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update role');
+      setActionError(err instanceof Error ? err.message : 'Failed to update role');
     } finally {
       setTeamBusy(false);
     }
@@ -280,12 +244,12 @@ export const Organisations = () => {
   const removeBusinessSubUser = async (tenantId: string, membershipId: string) => {
     if (!window.confirm('Remove this guide or manager from the operator?')) return;
     setTeamBusy(true);
-    setError(null);
+    setActionError(null);
     try {
       await removeAdminTenantTeamMember(tenantId, membershipId);
       await refreshTenantViews(tenantId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to remove team member');
+      setActionError(err instanceof Error ? err.message : 'Failed to remove team member');
     } finally {
       setTeamBusy(false);
     }
@@ -391,7 +355,7 @@ export const Organisations = () => {
       await setAdminTenantDiscoverFeatured(tenantDetail.id, next);
       setTenantDetail({ ...tenantDetail, discoverFeatured: next });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update discover featuring');
+      setActionError(err instanceof Error ? err.message : 'Failed to update discover featuring');
     } finally {
       setDiscoverFeaturedSaving(false);
     }

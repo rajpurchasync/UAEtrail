@@ -1,13 +1,12 @@
-import { useCallback, useMemo, useState } from 'react';
-import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
+import { useMemo, useState } from 'react';
 import type { DestinationDTO, DestinationStatus } from '@uaetrail/shared-types';
 import { Link } from 'react-router-dom';
 import {
   createAdminDestination,
   deleteAdminDestination,
-  fetchAdminDestinations,
   updateAdminDestination,
 } from '../../hooks/adminConsoleApi';
+import { useAdminDestinationsCatalog } from '../../hooks/useAdminConsoleQueries';
 import { DashboardLayout } from '../../components/layout';
 import { ADMIN_LINKS } from '../../constants';
 import { MapPinPicker } from '../../components/ui/MapPinPicker';
@@ -78,11 +77,18 @@ const emptyForm = (): AreaFormState => ({
 
 /** Platform admin — curated outdoor Destination hubs (`destinations` store; catalog graph). */
 export const AdminDestinations = () => {
-  const [areas, setAreas] = useState<DestinationDTO[]>([]);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const {
+    data: areas = [],
+    isPending: loading,
+    error: loadError,
+    refetch: refetchAreas,
+  } = useAdminDestinationsCatalog();
+  const error =
+    actionError ??
+    (loadError instanceof Error ? loadError.message : loadError ? 'Could not load areas.' : null);
   const [modalOpen, setModalOpen] = useState(false);
   const [wizardStep, setWizardStep] = useState(0);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -117,23 +123,6 @@ export const AdminDestinations = () => {
     });
   }, [areas, search, statusFilter, countryFilter, regionFilter]);
 
-  const load = useCallback(async (isActive: () => boolean = () => true) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const list = await fetchAdminDestinations();
-      if (!isActive()) return;
-      setAreas(list);
-    } catch {
-      if (!isActive()) return;
-      setError('Could not load areas.');
-    } finally {
-      if (isActive()) setLoading(false);
-    }
-  }, []);
-
-  useSafeAsyncEffect((isActive) => load(isActive), [load]);
-
   const openCreate = () => {
     setEditingId(null);
     setForm(emptyForm());
@@ -165,7 +154,7 @@ export const AdminDestinations = () => {
     setModalOpen(false);
     setEditingId(null);
     setWizardStep(0);
-    setError(null);
+    setActionError(null);
   };
 
   const handleNameBlur = () => {
@@ -176,17 +165,17 @@ export const AdminDestinations = () => {
 
   const handleSave = async () => {
     if (!form.region.trim() || !form.name.trim() || !form.slug.trim()) {
-      setError('Country, region, name, and slug are required.');
+      setActionError('Country, region, name, and slug are required.');
       setWizardStep(0);
       return;
     }
     if (form.latitude == null || form.longitude == null) {
-      setError('Drop a map pin for the area center.');
+      setActionError('Drop a map pin for the area center.');
       setWizardStep(1);
       return;
     }
     setSaving(true);
-    setError(null);
+    setActionError(null);
     try {
       const payload = {
         slug: form.slug.trim().toLowerCase(),
@@ -205,9 +194,9 @@ export const AdminDestinations = () => {
         await createAdminDestination(payload);
       }
       closeModal();
-      await load();
+      await refetchAreas();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not save area.');
+      setActionError(err instanceof Error ? err.message : 'Could not save area.');
     } finally {
       setSaving(false);
     }
@@ -218,9 +207,9 @@ export const AdminDestinations = () => {
     try {
       await deleteAdminDestination(confirmDelete.id);
       setConfirmDelete(null);
-      await load();
+      await refetchAreas();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not delete area.');
+      setActionError(err instanceof Error ? err.message : 'Could not delete area.');
       setConfirmDelete(null);
     }
   };

@@ -1,8 +1,6 @@
-import { useCallback, useState } from 'react';
-import { useSafeAsyncEffect, type IsActiveGuard } from '../../hooks/useSafeAsyncEffect';
+import { useMemo, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { persistAuthSessionTokens, switchMeRoleSession } from '../../hooks/accountSessionApi';
-import { fetchMyTenantMemberships } from '../../hooks/tenantMembershipApi';
 import { getActiveTenantId } from '../../api/tenant';
 import { useAuth } from '../../context/AuthContext';
 import { TenantSwitcher } from '../../components/ui';
@@ -11,42 +9,21 @@ import { ConsoleShell } from '../../console/ConsoleShell';
 import { GlassCard } from '../../components/mobile/GlassCard';
 import { OPERATOR_PROFILE_PATH, signInPath } from '../../config/routingCatalog';
 import { navigateToVisitorHome } from '../../hosting/navigateHostRoleHome';
+import { useMyTenantMemberships } from '../../hooks/usePublishingConsoleQueries';
 
 export const PublicProfileEdit = () => {
   const { user, initializing, refreshUser } = useAuth();
   const navigate = useNavigate();
-  const [tenantSlug, setTenantSlug] = useState('');
-  const [loadingTenants, setLoadingTenants] = useState(true);
+  const [activeTenantId, setActiveTenantId] = useState(getActiveTenantId());
+  const { data: memberships, isPending: loadingTenants } = useMyTenantMemberships();
   const [switchingRole, setSwitchingRole] = useState(false);
   const [switchMessage, setSwitchMessage] = useState<string | null>(null);
 
-  const resolveSlug = useCallback(async (tenantId?: string, isActive: IsActiveGuard = () => true) => {
-    if (isActive()) {
-      setLoadingTenants(true);
-    }
-    try {
-      const memberships = await fetchMyTenantMemberships();
-      if (!isActive()) return;
-      const activeId = tenantId || getActiveTenantId();
-      const match = memberships.find((t) => t.tenantId === activeId) ?? memberships[0];
-      setTenantSlug(match?.tenantSlug ?? '');
-    } catch {
-      if (isActive()) {
-        setTenantSlug('');
-      }
-    } finally {
-      if (isActive()) {
-        setLoadingTenants(false);
-      }
-    }
-  }, []);
-
-  useSafeAsyncEffect(
-    async (isActive) => {
-      await resolveSlug(undefined, isActive);
-    },
-    [resolveSlug]
-  );
+  const tenantSlug = useMemo(() => {
+    if (!memberships?.length) return '';
+    const match = memberships.find((t) => t.tenantId === activeTenantId) ?? memberships[0];
+    return match?.tenantSlug ?? '';
+  }, [memberships, activeTenantId]);
 
   const switchToVisitorMode = async () => {
     setSwitchMessage(null);
@@ -84,7 +61,7 @@ export const PublicProfileEdit = () => {
   return (
     <ConsoleShell
       title="Public profile"
-      headerExtra={<TenantSwitcher onChange={(id) => void resolveSlug(id)} />}
+      headerExtra={<TenantSwitcher onChange={setActiveTenantId} />}
     >
       <GlassCard padding className="mb-3 border border-emerald-100/80">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

@@ -1,7 +1,5 @@
-import { useState } from 'react';
-import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
-import type { AuditLogEntry } from '../../api/types';
-import { fetchAdminAuditLogs } from '../../hooks/adminConsoleApi';
+import { useMemo, useState } from 'react';
+import { useAdminAuditLogs } from '../../hooks/useAdminConsoleQueries';
 import { DashboardLayout } from '../../components/layout';
 import { AdminTablePager, DEFAULT_ADMIN_PAGE_SIZE, type AdminPageSize } from '../../components/admin/AdminTablePager';
 import { ADMIN_LINKS } from '../../constants';
@@ -46,12 +44,8 @@ const datetimeLocalToIso = (value: string, endOfDay: boolean): string | undefine
 };
 
 export const AuditLog = () => {
-  const [logs, setLogs] = useState<AuditLogEntry[]>([]);
-  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [actionFilter, setActionFilter] = useState('');
   const [entityFilter, setEntityFilter] = useState('');
   const [actorQuery, setActorQuery] = useState('');
@@ -60,38 +54,28 @@ export const AuditLog = () => {
   const [toDate, setToDate] = useState('');
   const { clock } = useDisplayPreferences();
 
-  const loadLogs = async (isActive: () => boolean = () => true) => {
-    setLoading(true);
-    try {
-      const res = await fetchAdminAuditLogs({
-        page,
-        pageSize,
-        action: actionFilter || undefined,
-        entityType: entityFilter || undefined,
-        actor: actorApplied || undefined,
-        from: datetimeLocalToIso(fromDate, false),
-        to: datetimeLocalToIso(toDate, true),
-      });
-      if (!isActive()) return;
-      setLogs(res.data);
-      setTotal(res.pagination?.total ?? 0);
-    } catch (err) {
-      if (!isActive()) return;
-      setError(err instanceof Error ? err.message : 'Failed to load audit logs');
-    } finally {
-      if (isActive()) setLoading(false);
-    }
-  };
+  const auditQueryInput = useMemo(
+    () => ({
+      page,
+      pageSize,
+      action: actionFilter,
+      entityType: entityFilter,
+      actor: actorApplied,
+      from: datetimeLocalToIso(fromDate, false) ?? '',
+      to: datetimeLocalToIso(toDate, true) ?? '',
+    }),
+    [page, pageSize, actionFilter, entityFilter, actorApplied, fromDate, toDate]
+  );
 
-  useSafeAsyncEffect((isActive) => loadLogs(isActive), [
-    page,
-    pageSize,
-    actionFilter,
-    entityFilter,
-    actorApplied,
-    fromDate,
-    toDate,
-  ]);
+  const {
+    data: auditPayload,
+    isPending: loading,
+    error: loadError,
+  } = useAdminAuditLogs(auditQueryInput);
+  const logs = auditPayload?.data ?? [];
+  const total = auditPayload?.total ?? 0;
+  const error =
+    loadError instanceof Error ? loadError.message : loadError ? 'Failed to load audit logs' : null;
 
   const actionBadge = (action: string) => {
     const colors: Record<string, string> = {

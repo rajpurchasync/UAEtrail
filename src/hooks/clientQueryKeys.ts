@@ -204,6 +204,140 @@ export const participantHubQueryKey = (userId: string): QueryKey => ['participan
 /** Published destinations (`GET /destinations` public list) — explore search + hub pickers. */
 export const publishedDestinationsQueryKey = ['destinations', 'published'] as const;
 
+/** Admin Safety console — banners, amenity reports, verification docs (W6). */
+export const adminAlertsSafetyQueryKey = ['admin', 'alerts-safety'] as const;
+
+export const adminNotificationBroadcastsQueryKey = ['admin', 'notification-broadcasts'] as const;
+
+export const adminNotificationsConsoleQueryKey = (page: number, pageSize: number): QueryKey => [
+  'admin',
+  'notifications-console',
+  page,
+  pageSize,
+];
+
+export const adminStaffProfileQueryKey = ['admin', 'staff-profile'] as const;
+
+export type AdminAuditLogsQueryKeyInput = {
+  page: number;
+  pageSize: number;
+  action: string;
+  entityType: string;
+  actor: string;
+  from: string;
+  to: string;
+};
+
+export const adminAuditLogsQueryKey = (input: AdminAuditLogsQueryKeyInput): QueryKey => [
+  'admin',
+  'audit-logs',
+  input,
+];
+
+export const adminCommunitiesListQueryKey = ['admin', 'communities-list'] as const;
+
+export const adminSocialGroupsCatalogQueryKey = ['admin', 'social-groups-catalog'] as const;
+
+export type AdminContentReportsQueryKeyInput = {
+  page: number;
+  pageSize: number;
+  reason: string;
+  targetType: string;
+  status: string;
+  reporter: string;
+  from: string;
+  to: string;
+};
+
+export const adminContentReportsQueryKey = (input: AdminContentReportsQueryKeyInput): QueryKey => [
+  'admin',
+  'content-reports',
+  input,
+];
+
+export const adminInboxDashboardQueryKey = ['admin', 'inbox-dashboard'] as const;
+
+/** Best-effort nav badge counts for admin shell sidebar. */
+export const adminInboxNavBadgesQueryKey = ['admin', 'inbox-nav-badges'] as const;
+
+export const adminSubmissionsQueueQueryKey = ['admin', 'submissions-queue'] as const;
+
+export const adminDestinationsCatalogQueryKey = ['admin', 'destinations-catalog'] as const;
+
+export type AdminMembersQueryKeyInput = {
+  page: number;
+  pageSize: number;
+  role: string;
+  userType: string;
+  status: string;
+  search: string;
+};
+
+export const adminMembersQueryKey = (input: AdminMembersQueryKeyInput): QueryKey => [
+  'admin',
+  'members',
+  input,
+];
+
+export const adminOrganisationsCatalogQueryKey = ['admin', 'organisations-catalog'] as const;
+
+export const adminModerationActivitiesCatalogQueryKey = ['admin', 'moderation-activities-catalog'] as const;
+
+export type AdminCatalogSegment = 'outdoor' | 'facility';
+
+export const adminPlacesCatalogAllQueryKey = (segment: AdminCatalogSegment): QueryKey => [
+  'admin',
+  'places-catalog-all',
+  segment,
+];
+
+export const adminTenantDetailQueryKey = (tenantId: string): QueryKey => ['admin', 'tenant-detail', tenantId];
+
+export const adminGroupDetailQueryKey = (groupId: string): QueryKey => ['admin', 'group-detail', groupId];
+
+export const adminModerationActivityDetailQueryKey = (activityId: string): QueryKey => [
+  'admin',
+  'moderation-activity-detail',
+  activityId,
+];
+
+/** Map peek — published activity count at a place (lightweight list endpoint). */
+export const placePublishedActivitiesCountQueryKey = (placeId: string): QueryKey => [
+  'place',
+  'published-activities-count',
+  placeId,
+];
+
+export const myVerificationDocumentsQueryKey = ['me', 'verification-documents'] as const;
+
+export const adminCatalogSubmitterPreviewQueryKey = (userId: string): QueryKey => [
+  'admin',
+  'catalog-submitter-preview',
+  userId,
+];
+
+export const adminActivityPreviewVenueQueryKey = (locationId: string): QueryKey => [
+  'admin',
+  'activity-preview-venue',
+  locationId,
+];
+
+export const organisationSubmittedPlacesQueryKey = (tenantId: string): QueryKey => [
+  'publishing',
+  'submitted-places',
+  tenantId,
+];
+
+export const organisationTeamQueryKey = (tenantId: string): QueryKey => ['publishing', 'team', tenantId];
+
+export const organisationConsoleRatingQueryKey = (tenantId: string): QueryKey => [
+  'publishing',
+  'console-rating',
+  tenantId,
+];
+
+export const myTenantMembershipsQueryKey = ['me', 'tenant-memberships'] as const;
+
 export const destinationDetailQueryKey = (slug: string): QueryKey => ['destination', slug];
 
 export const destinationAvailabilityQueryKey = (slug: string, weekFrom: string): QueryKey => [

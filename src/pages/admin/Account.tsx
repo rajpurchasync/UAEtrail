@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { DashboardLayout } from '../../components/layout';
 import { ADMIN_LINKS } from '../../constants';
@@ -7,11 +7,8 @@ import { PhoneInput } from '../../components/ui/PhoneInput';
 import { ProfilePhotoEditorField } from '../../components/account/ProfilePhotoEditorField';
 import { DisplayPreferencesSection } from '../../components/profile/DisplayPreferencesSection';
 import { useAuth } from '../../context/AuthContext';
-import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
-import {
-  fetchAdminStaffProfile,
-  updateAdminStaffProfile,
-} from '../../hooks/adminConsoleApi';
+import { updateAdminStaffProfile } from '../../hooks/adminConsoleApi';
+import { useAdminStaffProfile } from '../../hooks/useAdminConsoleQueries';
 import { meProfileQueryKey } from '../../hooks/clientQueryKeys';
 import {
   formatDisplayNameFromParts,
@@ -24,7 +21,11 @@ import { formatE164Phone, isValidNationalPhone, splitStoredPhone } from '../../u
 export const Account = () => {
   const { user, refreshUser } = useAuth();
   const queryClient = useQueryClient();
-  const [loading, setLoading] = useState(true);
+  const {
+    data: profile,
+    isPending: loading,
+    error: loadError,
+  } = useAdminStaffProfile(Boolean(user));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -35,31 +36,23 @@ export const Account = () => {
   const [nationalNumber, setNationalNumber] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
 
-  useSafeAsyncEffect(async (isActive) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const profile = await fetchAdminStaffProfile();
-      if (!isActive()) return;
-      const names =
-        profile.givenName && profile.surname
-          ? { givenName: profile.givenName, surname: profile.surname }
-          : splitUndelimitedDisplayName(profile.displayName ?? user?.displayName ?? '');
-      setGivenName(names.givenName);
-      setSurname(names.surname);
-      setBio(profile.bio ?? '');
-      setAvatarUrl(profile.avatarUrl ?? '');
-      const phone = splitStoredPhone(profile.phone);
-      setDialCode(phone.dial);
-      setNationalNumber(phone.national);
-    } catch (err) {
-      if (isActive()) {
-        setError(err instanceof Error ? err.message : 'Could not load account.');
-      }
-    } finally {
-      if (isActive()) setLoading(false);
-    }
-  }, [user?.displayName]);
+  useEffect(() => {
+    if (!profile) return;
+    const names =
+      profile.givenName && profile.surname
+        ? { givenName: profile.givenName, surname: profile.surname }
+        : splitUndelimitedDisplayName(profile.displayName ?? user?.displayName ?? '');
+    setGivenName(names.givenName);
+    setSurname(names.surname);
+    setBio(profile.bio ?? '');
+    setAvatarUrl(profile.avatarUrl ?? '');
+    const phone = splitStoredPhone(profile.phone);
+    setDialCode(phone.dial);
+    setNationalNumber(phone.national);
+  }, [profile, user?.displayName]);
+
+  const loadErrorMessage =
+    loadError instanceof Error ? loadError.message : loadError ? 'Could not load account.' : null;
 
   const saveAvatar = async (url: string) => {
     setError(null);
@@ -147,7 +140,9 @@ export const Account = () => {
 
             <form className="space-y-4 rounded-2xl border border-neutral-200 bg-white p-6" onSubmit={(e) => void onSubmit(e)}>
               <h3 className="font-medium text-neutral-900">Profile</h3>
-              {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded">{error}</p>}
+              {(error || loadErrorMessage) && (
+                <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded">{error ?? loadErrorMessage}</p>
+              )}
               {success && <p className="text-sm text-emerald-700 bg-emerald-50 px-3 py-2 rounded">{success}</p>}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import type { AdminContentReportEntry } from '../../api/types';
-import { fetchAdminContentReports, resolveAdminContentReport } from '../../hooks/adminConsoleApi';
+import { resolveAdminContentReport } from '../../hooks/adminConsoleApi';
+import { useAdminContentReports } from '../../hooks/useAdminConsoleQueries';
 import { DashboardLayout } from '../../components/layout';
 import { AdminTablePager, DEFAULT_ADMIN_PAGE_SIZE, type AdminPageSize } from '../../components/admin/AdminTablePager';
 import { AdminFilterBar } from '../../components/admin/AdminFilterBar';
@@ -47,12 +47,9 @@ const dateToIso = (value: string, endOfDay: boolean): string | undefined => {
 };
 
 export const Reports = () => {
-  const [reports, setReports] = useState<AdminContentReportEntry[]>([]);
-  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [reason, setReason] = useState('');
   const [targetType, setTargetType] = useState('');
   const [status, setStatus] = useState('open');
@@ -67,41 +64,31 @@ export const Reports = () => {
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
 
-  const loadReports = async (isActive: () => boolean = () => true) => {
-    setLoading(true);
-    try {
-      const res = await fetchAdminContentReports({
-        page,
-        pageSize,
-        reason: reason || undefined,
-        targetType: targetType || undefined,
-        status: status || undefined,
-        reporter: reporterApplied || undefined,
-        from: dateToIso(fromDate, false),
-        to: dateToIso(toDate, true),
-      });
-      if (!isActive()) return;
-      setReports(res.data);
-      setTotal(res.pagination?.total ?? 0);
-      setError(null);
-    } catch (err) {
-      if (!isActive()) return;
-      setError(err instanceof Error ? err.message : 'Failed to load reports');
-    } finally {
-      if (isActive()) setLoading(false);
-    }
-  };
+  const reportsQueryInput = useMemo(
+    () => ({
+      page,
+      pageSize,
+      reason,
+      targetType,
+      status,
+      reporter: reporterApplied,
+      from: dateToIso(fromDate, false) ?? '',
+      to: dateToIso(toDate, true) ?? '',
+    }),
+    [page, pageSize, reason, targetType, status, reporterApplied, fromDate, toDate]
+  );
 
-  useSafeAsyncEffect((isActive) => loadReports(isActive), [
-    page,
-    pageSize,
-    reason,
-    targetType,
-    status,
-    reporterApplied,
-    fromDate,
-    toDate,
-  ]);
+  const {
+    data: reportsPayload,
+    isPending: loading,
+    error: loadError,
+    refetch: refetchReports,
+  } = useAdminContentReports(reportsQueryInput);
+  const reports = reportsPayload?.data ?? [];
+  const total = reportsPayload?.total ?? 0;
+  const error =
+    actionError ??
+    (loadError instanceof Error ? loadError.message : loadError ? 'Failed to load reports' : null);
 
   const applyResolve = async () => {
     if (!actionTarget) return;
@@ -110,9 +97,10 @@ export const Reports = () => {
       await resolveAdminContentReport(actionTarget.report.id, actionTarget.next, note || undefined);
       setActionTarget(null);
       setNote('');
-      await loadReports();
+      setActionError(null);
+      await refetchReports();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not update report');
+      setActionError(err instanceof Error ? err.message : 'Could not update report');
     } finally {
       setBusy(false);
     }

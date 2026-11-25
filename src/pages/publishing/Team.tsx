@@ -1,13 +1,11 @@
-import { useCallback, useState } from 'react';
-import { useSafeAsyncEffect, type IsActiveGuard } from '../../hooks/useSafeAsyncEffect';
-import type { TeamMember } from '../../api/types';
+import { useEffect, useState } from 'react';
 import {
   createOrganisationTeamMember,
-  fetchOrganisationTeam,
   removeOrganisationTeamMember,
   toggleOrganisationTeamMemberStatus,
   updateOrganisationTeamMemberRole,
 } from '../../hooks/organisationConsoleApi';
+import { useOrganisationTeam } from '../../hooks/usePublishingConsoleQueries';
 import { getActiveTenantId } from '../../api/tenant';
 import { ConsoleShell } from '../../console/ConsoleShell';
 import { AppSelect } from '../../components/ui/AppSelect';
@@ -20,65 +18,45 @@ const HOST_TEAM_ROLE_OPTIONS = [
 
 export const Team = () => {
   const [tenantId, setTenantId] = useState(getActiveTenantId());
-  const [members, setMembers] = useState<TeamMember[]>([]);
+  const {
+    data: members = [],
+    isPending: loading,
+    error: loadError,
+    refetch: refetchTeam,
+  } = useOrganisationTeam(tenantId);
   const [roleDrafts, setRoleDrafts] = useState<Record<string, 'tenant_admin' | 'tenant_guide'>>({});
   const [savingMemberId, setSavingMemberId] = useState<string | null>(null);
   const [busyActionMemberId, setBusyActionMemberId] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [role, setRole] = useState<'tenant_admin' | 'tenant_guide'>('tenant_guide');
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const error =
+    actionError ??
+    (loadError instanceof Error ? loadError.message : loadError ? 'Failed to load team' : null);
 
-  const loadMembers = useCallback(
-    async (activeTenantId: string, isActive: IsActiveGuard = () => true) => {
-      if (!activeTenantId) {
-        if (isActive()) setLoading(false);
-        return;
+  useEffect(() => {
+    const drafts: Record<string, 'tenant_admin' | 'tenant_guide'> = {};
+    members.forEach((member) => {
+      if (member.role === 'tenant_admin' || member.role === 'tenant_guide') {
+        drafts[member.id] = member.role;
       }
-      if (isActive()) setLoading(true);
-      try {
-        const team = await fetchOrganisationTeam(activeTenantId);
-        if (!isActive()) return;
-        setMembers(team);
-        const drafts: Record<string, 'tenant_admin' | 'tenant_guide'> = {};
-        team.forEach((member: TeamMember) => {
-          if (member.role === 'tenant_admin' || member.role === 'tenant_guide') {
-            drafts[member.id] = member.role;
-          }
-        });
-        setRoleDrafts(drafts);
-        setError(null);
-      } catch (loadError) {
-        if (isActive()) {
-          setError(loadError instanceof Error ? loadError.message : 'Failed to load team');
-        }
-      } finally {
-        if (isActive()) setLoading(false);
-      }
-    },
-    []
-  );
-
-  useSafeAsyncEffect(
-    async (isActive) => {
-      await loadMembers(tenantId, isActive);
-    },
-    [tenantId, loadMembers]
-  );
+    });
+    setRoleDrafts(drafts);
+  }, [members]);
 
   const addMember = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!tenantId) return;
-    setError(null);
+    setActionError(null);
     try {
       await createOrganisationTeamMember(tenantId, { email, displayName, role });
       setEmail('');
       setDisplayName('');
       setRole('tenant_guide');
-      await loadMembers(tenantId);
+      await refetchTeam();
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : 'Failed to add member');
+      setActionError(submitError instanceof Error ? submitError.message : 'Failed to add member');
     }
   };
 
@@ -86,13 +64,13 @@ export const Team = () => {
     if (!tenantId) return;
     const nextRole = roleDrafts[memberId];
     if (!nextRole) return;
-    setError(null);
+    setActionError(null);
     setSavingMemberId(memberId);
     try {
       await updateOrganisationTeamMemberRole(tenantId, memberId, nextRole);
-      await loadMembers(tenantId);
+      await refetchTeam();
     } catch (updateError) {
-      setError(updateError instanceof Error ? updateError.message : 'Failed to update member role');
+      setActionError(updateError instanceof Error ? updateError.message : 'Failed to update member role');
     } finally {
       setSavingMemberId(null);
     }
@@ -100,13 +78,13 @@ export const Team = () => {
 
   const toggleMemberStatus = async (memberId: string, nextActive: boolean) => {
     if (!tenantId) return;
-    setError(null);
+    setActionError(null);
     setBusyActionMemberId(memberId);
     try {
       await toggleOrganisationTeamMemberStatus(tenantId, memberId, nextActive);
-      await loadMembers(tenantId);
+      await refetchTeam();
     } catch (updateError) {
-      setError(updateError instanceof Error ? updateError.message : 'Failed to update member access');
+      setActionError(updateError instanceof Error ? updateError.message : 'Failed to update member access');
     } finally {
       setBusyActionMemberId(null);
     }
@@ -114,13 +92,13 @@ export const Team = () => {
 
   const removeMember = async (memberId: string) => {
     if (!tenantId) return;
-    setError(null);
+    setActionError(null);
     setBusyActionMemberId(memberId);
     try {
       await removeOrganisationTeamMember(tenantId, memberId);
-      await loadMembers(tenantId);
+      await refetchTeam();
     } catch (updateError) {
-      setError(updateError instanceof Error ? updateError.message : 'Failed to remove member');
+      setActionError(updateError instanceof Error ? updateError.message : 'Failed to remove member');
     } finally {
       setBusyActionMemberId(null);
     }

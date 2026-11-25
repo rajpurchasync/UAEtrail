@@ -1,17 +1,5 @@
-import { useState } from 'react';
-import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import { Link } from 'react-router-dom';
-import type { DestinationDTO, LocationDTO } from '@uaetrail/shared-types';
-import type { AdminMetrics, HostApplication } from '../../api/types';
-import {
-  fetchAdminDestinations,
-  fetchAdminMetrics,
-  fetchAdminOrganisationApplications,
-  fetchAdminPlacesCatalog,
-} from '../../hooks/adminConsoleApi';
-import { fetchAdminSubmissions } from '../../hooks/geoHierarchyClientApi';
-import { fetchAdminAmenityReports, fetchAdminVerificationDocuments } from '../../hooks/adminAlertsClientApi';
-import { fetchAdminContentReports } from '../../hooks/adminConsoleApi';
+import { useAdminInboxDashboard } from '../../hooks/useAdminConsoleQueries';
 import { DashboardLayout } from '../../components/layout';
 import { ADMIN_LINKS } from '../../constants';
 import {
@@ -27,65 +15,18 @@ import { AdminQueueCard } from '../../components/admin/AdminQueueCard';
 import { Briefcase, Flag, MapPin, MapPinned, ShieldAlert } from 'lucide-react';
 import { formatAdminDate } from '../../utils/formatAdminDate';
 
-type SubmissionRow = {
-  id: string;
-  kind: string;
-  name: string;
-  insisted?: { reason: string };
-  createdAt?: string;
-};
-
-const PENDING_PREVIEW = 5;
-
 /** Admin home — real intervention queues only (no draft-outing false positives). */
 export const Inbox = () => {
-  const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
-  const [recentApps, setRecentApps] = useState<HostApplication[]>([]);
-  const [submissions, setSubmissions] = useState<SubmissionRow[]>([]);
-  const [pendingPlaces, setPendingPlaces] = useState<LocationDTO[]>([]);
-  const [pendingAreas, setPendingAreas] = useState<DestinationDTO[]>([]);
-  const [reportCount, setReportCount] = useState(0);
-  const [safetyCount, setSafetyCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const loadData = async (isActive: () => boolean = () => true) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [metricsRes, apps, places, areas, subs, reports, amenity, verification] = await Promise.all([
-        fetchAdminMetrics(),
-        fetchAdminOrganisationApplications(1, 20),
-        fetchAdminPlacesCatalog(1, 50).catch(() => ({ items: [] as LocationDTO[] })),
-        fetchAdminDestinations().catch(() => [] as DestinationDTO[]),
-        fetchAdminSubmissions().catch(() => ({ data: [] as SubmissionRow[] })),
-        fetchAdminContentReports({ page: 1, pageSize: 1, status: 'open' }).catch(() => ({
-          data: [],
-          pagination: { total: 0, page: 1, pageSize: 1, totalPages: 0 },
-        })),
-        fetchAdminAmenityReports().catch(() => []),
-        fetchAdminVerificationDocuments().catch(() => [] as Array<{ status: string }>),
-      ]);
-      if (!isActive()) return;
-      setMetrics(metricsRes);
-      setRecentApps(apps.items.filter((a) => a.status === 'pending').slice(0, PENDING_PREVIEW));
-      setPendingPlaces(places.items.filter((p) => p.status === 'draft').slice(0, PENDING_PREVIEW));
-      setPendingAreas(areas.filter((a) => a.status === 'draft').slice(0, PENDING_PREVIEW));
-      setSubmissions((subs.data ?? []).slice(0, PENDING_PREVIEW));
-      setReportCount(reports.pagination?.total ?? 0);
-      setSafetyCount(
-        amenity.length +
-          verification.filter((d) => d.status === 'pending' || d.status === 'submitted').length
-      );
-    } catch (err) {
-      if (!isActive()) return;
-      setError(err instanceof Error ? err.message : 'Failed to load inbox');
-    } finally {
-      if (isActive()) setLoading(false);
-    }
-  };
-
-  useSafeAsyncEffect((isActive) => loadData(isActive), []);
+  const { data, isPending: loading, error: loadError } = useAdminInboxDashboard();
+  const metrics = data?.metrics ?? null;
+  const recentApps = data?.recentApps ?? [];
+  const submissions = data?.submissions ?? [];
+  const pendingPlaces = data?.pendingPlaces ?? [];
+  const pendingAreas = data?.pendingAreas ?? [];
+  const reportCount = data?.reportCount ?? 0;
+  const safetyCount = data?.safetyCount ?? 0;
+  const error =
+    loadError instanceof Error ? loadError.message : loadError ? 'Failed to load inbox' : null;
 
   const metricCards = [
     {

@@ -57,14 +57,17 @@ describe('pagesApiGuard (R8.1)', () => {
 
     for (const file of adminPages) {
       const source = readFileSync(join(process.cwd(), file), 'utf8');
+      const usesAdminQueryHooks = /useAdminConsoleQueries|useAdminAlertsSafetyData/.test(source);
       const facadePattern = file.endsWith('admin/Notifications.tsx')
         ? /notificationInboxApi/
         : file.endsWith('admin/Alerts.tsx')
-          ? /adminAlertsClientApi/
-            : file.endsWith('admin/Submissions.tsx')
-              ? /geoHierarchyClientApi/
-              : /adminConsoleApi/;
-      expect(source, `${file} must import hooks facade`).toMatch(facadePattern);
+          ? /adminAlertsClientApi|useAdminAlertsSafetyData/
+          : file.endsWith('admin/Submissions.tsx')
+            ? /geoHierarchyClientApi|useAdminConsoleQueries/
+            : /adminConsoleApi|useAdminConsoleQueries/;
+      if (!usesAdminQueryHooks) {
+        expect(source, `${file} must import hooks facade`).toMatch(facadePattern);
+      }
       expect(source, `${file} must not call api.*`).not.toMatch(/\bapi\./);
     }
   });

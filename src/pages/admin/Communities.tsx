@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import type { AdminCommunityDetail, AdminCommunityListItem } from '../../api/types';
 import {
   approveAdminCommunityMemberRequest,
   createAdminCommunityInvite,
-  fetchAdminCommunities,
   updateAdminCommunityStatus,
 } from '../../hooks/adminConsoleApi';
+import { useAdminCommunitiesList } from '../../hooks/useAdminConsoleQueries';
 import { fetchAdminCommunityDetail } from '../../hooks/adminDrilldownApi';
 import { DashboardLayout } from '../../components/layout';
 import { ADMIN_LINKS } from '../../constants';
@@ -26,15 +25,20 @@ const joinPolicyLabel: Record<string, string> = {
 
 /** Discoverable clubs (`MIG-COMMUNITY-DISCOVER`) — not private Teams on `/admin/groups`. */
 export const Communities = () => {
-  const [rows, setRows] = useState<AdminCommunityListItem[]>([]);
+  const {
+    data: rows = [],
+    isPending: loading,
+    error: loadError,
+    refetch: refetchCommunities,
+  } = useAdminCommunitiesList();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [joinFilter, setJoinFilter] = useState('');
   const [hostFilter, setHostFilter] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const error =
+    loadError instanceof Error ? loadError.message : loadError ? 'Failed to load communities' : null;
   const [detail, setDetail] = useState<AdminCommunityDetail | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [confirmTarget, setConfirmTarget] = useState<AdminCommunityListItem | null>(null);
@@ -42,23 +46,6 @@ export const Communities = () => {
   const [approvingUserId, setApprovingUserId] = useState<string | null>(null);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteSending, setInviteSending] = useState(false);
-
-  const loadCommunities = async (isActive: () => boolean = () => true) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await fetchAdminCommunities();
-      if (!isActive()) return;
-      setRows(data);
-    } catch (err) {
-      if (!isActive()) return;
-      setError(err instanceof Error ? err.message : 'Failed to load communities');
-    } finally {
-      if (isActive()) setLoading(false);
-    }
-  };
-
-  useSafeAsyncEffect((isActive) => loadCommunities(isActive), []);
 
   const visibleRows = rows.filter((row) => {
     if (search.trim()) {
@@ -125,7 +112,7 @@ export const Communities = () => {
           community: { ...detail.community, status: updated.status },
         });
       }
-      await loadCommunities();
+      await refetchCommunities();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update community status');
     }
@@ -158,7 +145,7 @@ export const Communities = () => {
       await approveAdminCommunityMemberRequest(communityId, userId);
       const refreshed = await fetchAdminCommunityDetail(communityId);
       setDetail(refreshed);
-      await loadCommunities();
+      await refetchCommunities();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to approve member');
     } finally {

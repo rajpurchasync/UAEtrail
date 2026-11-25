@@ -1,9 +1,6 @@
 import { useMemo, useState } from 'react';
-import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
-import {
-  fetchAdminNotificationBroadcasts,
-  sendAdminNotificationBroadcast,
-} from '../../hooks/adminConsoleApi';
+import { sendAdminNotificationBroadcast } from '../../hooks/adminConsoleApi';
+import { useAdminNotificationBroadcasts } from '../../hooks/useAdminConsoleQueries';
 import { DashboardLayout } from '../../components/layout';
 import { ADMIN_LINKS } from '../../constants';
 import { AppSelect, ADMIN_FILTER_SELECT_CLASS, ADMIN_INPUT_CLASS, ADMIN_SELECT_CLASS } from '../../components/ui/AppSelect';
@@ -19,15 +16,6 @@ const BROADCAST_TARGET_OPTIONS = [
   { value: 'tenant_guide' as const, label: 'Guides Only' },
 ];
 
-interface BroadcastHistory {
-  id: string;
-  title: string;
-  body: string;
-  targetRole: string;
-  sentAt: string;
-  recipientCount: number;
-}
-
 /** Platform broadcast ops (sidebar label: Broadcast). */
 export const Settings = () => {
   const [title, setTitle] = useState('');
@@ -36,37 +24,16 @@ export const Settings = () => {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [history, setHistory] = useState<BroadcastHistory[]>([]);
-  const [loadingHistory, setLoadingHistory] = useState(true);
+  const {
+    data: history = [],
+    isPending: loadingHistory,
+    refetch: refetchHistory,
+  } = useAdminNotificationBroadcasts();
   const [confirmSend, setConfirmSend] = useState(false);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
   const [historySearch, setHistorySearch] = useState('');
   const [historyAudience, setHistoryAudience] = useState('');
-
-  const loadHistory = async (isActive: () => boolean = () => true) => {
-    setLoadingHistory(true);
-    try {
-      const rows = await fetchAdminNotificationBroadcasts();
-      if (!isActive()) return;
-      setHistory(
-        rows.map((row) => ({
-          id: row.id,
-          title: row.title,
-          body: row.body,
-          targetRole: row.targetRole ?? 'all',
-          sentAt: row.createdAt,
-          recipientCount: row.recipientCount,
-        }))
-      );
-    } catch {
-      /* silent fail for history */
-    } finally {
-      if (isActive()) setLoadingHistory(false);
-    }
-  };
-
-  useSafeAsyncEffect((isActive) => loadHistory(isActive), []);
 
   const handleSend = async () => {
     setSending(true);
@@ -83,7 +50,7 @@ export const Settings = () => {
       setBody('');
       setTargetRole('all');
       setConfirmSend(false);
-      await loadHistory();
+      await refetchHistory();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send notification');
       setConfirmSend(false);

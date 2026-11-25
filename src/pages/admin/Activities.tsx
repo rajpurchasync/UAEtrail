@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState, Fragment } from 'react';
-import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import { useNavigate } from 'react-router-dom';
-import { ActivityDTO, isPublishedActivityStatus, LocationDTO } from '@uaetrail/shared-types';
+import { ActivityDTO, isPublishedActivityStatus } from '@uaetrail/shared-types';
+import {
+  useAdminActivityPreviewVenue,
+  useAdminModerationActivitiesCatalog,
+} from '../../hooks/useAdminConsoleQueries';
 import { AdminTablePager, DEFAULT_ADMIN_PAGE_SIZE, paginateRows, type AdminPageSize } from '../../components/admin/AdminTablePager';
 import {
   fetchAdminActivityEngagement,
@@ -15,7 +18,6 @@ import {
   publishActivity,
 } from '../../hooks/tenantActivityClientApi';
 import { ActivityActionsMenu, ActivityListPreview, buildAdminActivityMenuItems, openPublishedActivityPreview } from '../../components/activities';
-import { fetchPublicPlaceDetail } from '../../hooks/placeDetailClientApi';
 import { useReloadExploreMap } from '../../hooks/useReloadExploreMap';
 import { Link } from 'react-router-dom';
 import { ADMIN_PLACES_PATH } from '../../config/surfacePaths';
@@ -42,12 +44,18 @@ type Tab = 'active' | 'past';
 
 export const Activities = () => {
   const navigate = useNavigate();
-  const [events, setEvents] = useState<ActivityDTO[]>([]);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
-  const [previewVenue, setPreviewVenue] = useState<LocationDTO | undefined>(undefined);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const {
+    data: events = [],
+    isPending: loading,
+    error: loadError,
+    refetch: refetchEvents,
+  } = useAdminModerationActivitiesCatalog();
+  const error =
+    actionError ??
+    (loadError instanceof Error ? loadError.message : loadError ? 'Could not load events' : null);
   const [tab, setTab] = useState<Tab>('active');
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
@@ -84,50 +92,10 @@ export const Activities = () => {
   const [confirmDelete, setConfirmDelete] = useState<ActivityDTO | null>(null);
   const [confirmCancel, setConfirmCancel] = useState<ActivityDTO | null>(null);
   const [previewActivity, setPreviewActivity] = useState<ActivityDTO | null>(null);
+  const { data: previewVenue } = useAdminActivityPreviewVenue(previewActivity?.locationId);
   const [previewPublishing, setPreviewPublishing] = useState(false);
   const [suspendComment, setSuspendComment] = useState('');
   const reloadExploreMap = useReloadExploreMap();
-
-  const loadEvents = async (isActive: () => boolean = () => true) => {
-    setLoading(true);
-    try {
-      const all: ActivityDTO[] = [];
-      let nextPage = 1;
-      let catalogTotal = Number.POSITIVE_INFINITY;
-      while (all.length < catalogTotal && nextPage <= 50) {
-        const list = await fetchAdminModerationActivities(nextPage, 100);
-        if (!isActive()) return;
-        all.push(...list.items);
-        catalogTotal = list.total;
-        if (list.items.length === 0) break;
-        nextPage += 1;
-      }
-      setError(null);
-      setEvents(all);
-    } catch (err) {
-      if (!isActive()) return;
-      setError(err instanceof Error ? err.message : 'Could not load events');
-    } finally {
-      if (isActive()) setLoading(false);
-    }
-  };
-
-  useSafeAsyncEffect(async (isActive) => {
-    await loadEvents(isActive);
-  }, []);
-
-  useSafeAsyncEffect(async (isActive) => {
-    if (!previewActivity?.locationId) {
-      if (isActive()) setPreviewVenue(undefined);
-      return;
-    }
-    try {
-      const venue = await fetchPublicPlaceDetail(previewActivity.locationId);
-      if (isActive()) setPreviewVenue(venue);
-    } catch {
-      if (isActive()) setPreviewVenue(undefined);
-    }
-  }, [previewActivity?.locationId]);
 
   const loadEngagement = async (activityId: string) => {
     if (engagementByActivityId[activityId]) return;
@@ -154,7 +122,7 @@ export const Activities = () => {
   const executeModerate = async () => {
     if (!confirmTarget) return;
     if (confirmTarget.action === 'suspend' && !suspendComment.trim()) {
-      setError('A comment is required when suspending an event.');
+      setActionError('A comment is required when suspending an event.');
       return;
     }
     try {
@@ -165,9 +133,10 @@ export const Activities = () => {
       );
       setConfirmTarget(null);
       setSuspendComment('');
-      await loadEvents();
+      setActionError(null);
+      await refetchEvents();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update event');
+      setActionError(err instanceof Error ? err.message : 'Failed to update event');
     }
   };
 
@@ -249,9 +218,10 @@ export const Activities = () => {
   const toggleFeatured = async (activityId: string) => {
     try {
       await toggleAdminActivityFeatured(activityId);
-      await loadEvents();
+      setActionError(null);
+      await refetchEvents();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to toggle featured');
+      setActionError(err instanceof Error ? err.message : 'Failed to toggle featured');
     }
   };
 
@@ -260,9 +230,10 @@ export const Activities = () => {
     try {
       await publishActivity(event.tenantId, event.id);
       await reloadExploreMap();
-      await loadEvents();
+      setActionError(null);
+      await refetchEvents();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to publish activity');
+      setActionError(err instanceof Error ? err.message : 'Failed to publish activity');
     }
   };
 
@@ -270,10 +241,11 @@ export const Activities = () => {
     if (!event.tenantId) return;
     try {
       const duplicate = await apiDuplicateActivity(event.tenantId, event.id);
-      await loadEvents();
+      setActionError(null);
+      await refetchEvents();
       navigateToHostFromExistingActivity(navigate, duplicate);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to duplicate activity');
+      setActionError(err instanceof Error ? err.message : 'Failed to duplicate activity');
     }
   };
 
@@ -286,9 +258,10 @@ export const Activities = () => {
     try {
       await apiCancelActivity(confirmDelete.tenantId, confirmDelete.id);
       setConfirmDelete(null);
-      await loadEvents();
+      setActionError(null);
+      await refetchEvents();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete draft');
+      setActionError(err instanceof Error ? err.message : 'Failed to delete draft');
       setConfirmDelete(null);
     }
   };
@@ -298,9 +271,10 @@ export const Activities = () => {
     try {
       await apiCancelActivity(confirmCancel.tenantId, confirmCancel.id);
       setConfirmCancel(null);
-      await loadEvents();
+      setActionError(null);
+      await refetchEvents();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to cancel activity');
+      setActionError(err instanceof Error ? err.message : 'Failed to cancel activity');
       setConfirmCancel(null);
     }
   };
@@ -320,9 +294,10 @@ export const Activities = () => {
       await publishActivity(event.tenantId, event.id);
       await reloadExploreMap();
       setPreviewActivity(null);
-      await loadEvents();
+      setActionError(null);
+      await refetchEvents();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to publish activity');
+      setActionError(err instanceof Error ? err.message : 'Failed to publish activity');
     } finally {
       setPreviewPublishing(false);
     }

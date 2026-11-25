@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { CheckCircle2 } from 'lucide-react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
-import { fetchPublicActivityDetail } from '../../hooks/publicActivityClientApi';
-import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
+import { usePublicActivityDetail } from '../../hooks/usePublicActivityDetail';
 import { EXPLORE_Z } from '../../config/exploreTheme';
 import {
   DEMAND_SUBMIT_SUCCESS_BODY_OFF_MAP,
@@ -65,27 +64,12 @@ export const AvailabilityFixedSubmitSuccessSheet = ({
   onRideshareLinked,
   onRideshareLinkError,
 }: AvailabilityFixedSubmitSuccessSheetProps) => {
-  const [canAddLinkedRide, setCanAddLinkedRide] = useState(false);
   const [rideLinked, setRideLinked] = useState(Boolean(publishedActivity?.linkedRideshareActivityId));
   const [rideshareNotice, setRideshareNotice] = useState<string | null>(null);
 
-  useSafeAsyncEffect(
-    async (isActive) => {
-      if (!open || !publishedActivity?.id) {
-        if (isActive()) setCanAddLinkedRide(false);
-        return;
-      }
-      try {
-        const detail = await fetchPublicActivityDetail(publishedActivity.id);
-        if (isActive()) {
-          setCanAddLinkedRide(detail.viewerAccess?.entitlements?.canAddLinkedRide ?? false);
-        }
-      } catch {
-        if (isActive()) setCanAddLinkedRide(false);
-      }
-    },
-    [open, publishedActivity?.id]
-  );
+  const activityIdForEntitlements = open && publishedActivity?.id ? publishedActivity.id : undefined;
+  const { viewerAccess } = usePublicActivityDetail(activityIdForEntitlements);
+  const canAddLinkedRide = viewerAccess?.entitlements?.canAddLinkedRide ?? false;
 
   const typeLabel = AVAILABILITY_FIXED_TYPE_OPTIONS.find((option) => option.key === kind)?.title ?? kind;
   const destination = draft.preferredArea.trim() ? draft.preferredArea.trim() : null;

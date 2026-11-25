@@ -3,10 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import type { SetURLSearchParams } from 'react-router-dom';
 import { applyProductSearchMutation } from '../../routing/productSearchMutation';
 import { listDiscoveryPathFromExploreSearch } from '../../list/browse/browseListRouting';
-import {
-  BROWSE_DISCOVER_PARAM,
-  parseBrowseDiscoverOpen,
-} from '../../list/browse/browseListUrlState';
+import { BROWSE_DISCOVER_PARAM, parseBrowseDiscoverOpen } from '../../discovery/discoverySessionParams';
 import { compactExploreParentFilterSearchParams, EXPLORE_PIN_QUERY_KEY } from '../routing';
 import {
   sanitizeInboundExplorePinId,

@@ -1171,8 +1171,28 @@ const migrateOutingCrewKindRename = async (db: Db): Promise<void> => {
   );
 };
 
+/** Drop retired seeking collections when empty (post MIG-DISCO-REG gate). */
+const dropEmptyRetiredSeekingCollections = async (db: Db): Promise<void> => {
+  for (const name of [COLLECTIONS.PARTICIPANT_INTENTS, COLLECTIONS.PARTICIPANT_INTENT_REQUESTS]) {
+    const col = db.collection(name);
+    const count = await col.countDocuments();
+    if (count > 0) {
+      console.log(`[mongo] W1b: keep ${name} (${count} doc(s) — purge/backfill first)`);
+      continue;
+    }
+    try {
+      await col.drop();
+      console.log(`[mongo] W1b: dropped empty retired collection ${name}`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes('ns not found')) continue;
+      throw error;
+    }
+  }
+};
+
 /** Bump when adding a new migration step so existing deployments run it once. */
-export const MONGO_MIGRATION_VERSION = 2025112508;
+export const MONGO_MIGRATION_VERSION = 2025112509;
 
 /** One-time migrations for activity terminology and role model alignment. */
 export const runMongoMigrations = async (db: Db): Promise<void> => {
@@ -1255,6 +1275,7 @@ export const runMongoMigrations = async (db: Db): Promise<void> => {
   );
   await runDestinationGeoMigrations(db);
   await unsetDenormalizedActivityDestinationId(db);
+  await dropEmptyRetiredSeekingCollections(db);
   const { seedCatalogsIfEmpty } = await import('./catalogs-store.js');
   await seedCatalogsIfEmpty();
 

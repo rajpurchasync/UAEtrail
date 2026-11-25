@@ -50,6 +50,7 @@ export const COLLECTIONS = {
   ACTIVITY_PARTICIPANTS: 'activity_participants',
   /** Exact meeting pin, emergency contact — `_id` = activity id (plan §13.4). */
   ACTIVITY_PRIVATE: 'activity_private',
+  /** Retired Find-crew store — ops backfill/purge only; dropped when empty (W1b migration). */
   PARTICIPANT_INTENTS: 'participant_intents',
   PARTICIPANT_INTENT_REQUESTS: 'participant_intent_requests',
 

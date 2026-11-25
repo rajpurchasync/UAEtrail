@@ -19,7 +19,8 @@ import {
 
 export { tripsListHomePath, venuesListHomePath } from '../list/browse/browseListRouting';
 import { PRODUCT_CREWS_TAB_LABEL } from '../content/productNorthStar';
-import { LIST_CAT_PARAM, parseListCatParam } from '../list/browse/browseListUrlState';
+import { LIST_CAT_PARAM } from '../discovery/discoverySessionParams';
+import { parseListCatParam } from '../discovery/discoverySessionParsers';
 import {
   EXPLORE_SEARCH_RESULTS_PATH,
   parseExploreSearchScopeFromParams,

@@ -52,26 +52,16 @@ import {
   serializeBrowseGeoPath,
 } from './browseGeoPath';
 import { listFilterMeansAvailabilityOnly } from '../../routing/productUrlInbound';
+import {
+  BROWSE_DISCOVER_PARAM,
+  LIST_CAT_PARAM,
+  parseBrowseDiscoverOpen,
+} from '../../discovery/discoverySessionParams';
+import { parseListCatParam } from '../../discovery/discoverySessionParsers';
+
+export { BROWSE_DISCOVER_PARAM, LIST_CAT_PARAM, parseBrowseDiscoverOpen, parseListCatParam };
 
 const WHEN_PARAM = 'when';
-
-/** List-only: dedicated category page (decoupled from map `topics` pills). */
-export const LIST_CAT_PARAM = 'listCat';
-
-/** Legacy inbound `browse=1` on `/explore` — rewritten to `/list`. */
-export const BROWSE_DISCOVER_PARAM = 'browse';
-
-export const parseBrowseDiscoverOpen = (value: string | null): boolean => value === '1';
-
-export const parseListCatParam = (value: string | null): BrowseMainCategoryKey | null => {
-  if (value === 'shops') return 'venues';
-  if (value === 'activities' || value === 'trips') return 'activities';
-  if (value === 'guides') return 'people';
-  if (value === 'venues' || value === 'people' || value === 'agencies') {
-    return value;
-  }
-  return null;
-};
 
 export const parseBrowseListPriceParam = (value: string | null): BrowsePriceFilter =>
   parseExplorePriceFilter(value);

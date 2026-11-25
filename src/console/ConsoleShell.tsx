@@ -1,8 +1,7 @@
-import { ReactNode, useState } from 'react';
-import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
+import { ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { fetchOrganisationReviews } from '../hooks/organisationConsoleApi';
 import { getActiveTenantId } from '../api/tenant';
+import { useOrganisationConsoleRating } from '../hooks/usePublishingConsoleQueries';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { ConsumerHeaderActions } from '../components/layout/ConsumerHeaderActions';
 import { FilterChips } from '../components/mobile/FilterChips';
@@ -24,8 +23,10 @@ export const ConsoleShell = ({ title, children, cta, headerExtra }: ConsoleShell
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [avgRating, setAvgRating] = useState<number | null>(null);
-  const [reviewCount, setReviewCount] = useState(0);
+  const tenantId = getActiveTenantId();
+  const { data: rating } = useOrganisationConsoleRating(tenantId);
+  const avgRating = rating?.avgRating ?? null;
+  const reviewCount = rating?.reviewCount ?? 0;
 
   const navOptions = OPERATOR_CONSOLE_LINKS.map((link) => ({
     key: link.to,
@@ -36,21 +37,6 @@ export const ConsoleShell = ({ title, children, cta, headerExtra }: ConsoleShell
     OPERATOR_CONSOLE_LINKS.find((link) => location.pathname === link.to)?.to ??
     OPERATOR_CONSOLE_LINKS.find((link) => location.pathname.startsWith(`${link.to}/`))?.to ??
     location.pathname;
-
-  useSafeAsyncEffect(async (isActive) => {
-    const tenantId = getActiveTenantId();
-    if (!tenantId) return;
-    try {
-      const reviews = await fetchOrganisationReviews(tenantId);
-      if (!isActive()) return;
-      setReviewCount(reviews.length);
-      if (reviews.length > 0) {
-        setAvgRating(reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length);
-      }
-    } catch {
-      // omit rating chip when reviews fail to load
-    }
-  }, []);
 
   return (
     <ConsumerShell

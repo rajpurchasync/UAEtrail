@@ -1,11 +1,10 @@
-import { useCallback, useState } from 'react';
-import { useSafeAsyncEffect, type IsActiveGuard } from '../../hooks/useSafeAsyncEffect';
+import { useState } from 'react';
 import { PlaceDTO } from '@uaetrail/shared-types';
-import { fetchOrganisationSubmittedPlaces } from '../../hooks/organisationConsoleApi';
 import { getActiveTenantId } from '../../api/tenant';
 import { ConsoleShell } from '../../console/ConsoleShell';
 import { TenantSwitcher, SubmitPlaceForm, ShareButton } from '../../components/ui';
 import { placeSharePath } from '../../utils/share';
+import { useOrganisationSubmittedPlaces } from '../../hooks/usePublishingConsoleQueries';
 
 const statusLabel = (status: PlaceDTO['status']) => {
   if (status === 'draft') return 'Pending review';
@@ -16,39 +15,11 @@ const statusLabel = (status: PlaceDTO['status']) => {
 /** Organisation console for submitting places. Canonical route: `/publishing/places`. */
 export const Places = () => {
   const [tenantId, setTenantId] = useState(getActiveTenantId());
-  const [submitted, setSubmitted] = useState<PlaceDTO[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  const loadSubmitted = useCallback(
-    async (isActive: IsActiveGuard = () => true) => {
-      if (!tenantId) return;
-      if (isActive()) {
-        setLoading(true);
-      }
-      try {
-        const places = await fetchOrganisationSubmittedPlaces(tenantId);
-        if (isActive()) {
-          setSubmitted(places);
-        }
-      } catch {
-        if (isActive()) {
-          setSubmitted([]);
-        }
-      } finally {
-        if (isActive()) {
-          setLoading(false);
-        }
-      }
-    },
-    [tenantId]
-  );
-
-  useSafeAsyncEffect(
-    async (isActive) => {
-      await loadSubmitted(isActive);
-    },
-    [loadSubmitted]
-  );
+  const {
+    data: submitted = [],
+    isPending: loading,
+    refetch: refetchSubmitted,
+  } = useOrganisationSubmittedPlaces(tenantId);
 
   return (
     <ConsoleShell title="Places">
@@ -66,7 +37,7 @@ export const Places = () => {
           <div className="bg-white border rounded-xl p-6">
             <SubmitPlaceForm
               tenantId={tenantId}
-              onSubmitted={() => void loadSubmitted()}
+              onSubmitted={() => void refetchSubmitted()}
             />
           </div>
         ) : (
@@ -111,16 +82,16 @@ export const Places = () => {
                     />
                   )}
                   <span
-                  className={`px-2 py-0.5 rounded text-xs font-medium shrink-0 ${
-                    loc.status === 'active'
-                      ? 'bg-green-100 text-green-800'
-                      : loc.status === 'draft'
-                        ? 'bg-amber-100 text-amber-800'
-                        : 'bg-gray-100 text-gray-600'
-                  }`}
-                >
-                  {statusLabel(loc.status)}
-                </span>
+                    className={`px-2 py-0.5 rounded text-xs font-medium shrink-0 ${
+                      loc.status === 'active'
+                        ? 'bg-green-100 text-green-800'
+                        : loc.status === 'draft'
+                          ? 'bg-amber-100 text-amber-800'
+                          : 'bg-gray-100 text-gray-600'
+                    }`}
+                  >
+                    {statusLabel(loc.status)}
+                  </span>
                 </div>
               </div>
             ))}
@@ -130,5 +101,3 @@ export const Places = () => {
     </ConsoleShell>
   );
 };
-
-

@@ -25,6 +25,7 @@ describe('agent discover contract', () => {
     expect(manifest.allowed_scrape_paths).toContain('/facility/');
     expect(manifest.allowed_scrape_paths).toContain('/api/places');
     expect(manifest.allowed_scrape_paths).toContain('/api/facilities');
+    expect(manifest.allowed_scrape_paths).not.toContain('/api/locations');
   });
 
   it('llms.txt documents agent discover API', () => {

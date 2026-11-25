@@ -2,13 +2,13 @@ import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
 import { parseExploreActivityDatePreset, serializeExploreActivityDatePreset } from '../routing';
 import { parseExplorePriceFilter, type ExplorePriceFilter } from '../exploreOptionalFilters';
 import type { BrowseMainCategoryKey } from '../../list/browse/browseListTaxonomy';
+import { LIST_CAT_PARAM } from '../../discovery/discoverySessionParams';
 import {
-  LIST_CAT_PARAM,
   parseBrowseListFilterState,
   parseBrowseListGeoPath,
   parseBrowseListVenueRegions,
   serializeBrowseListSearchParams,
-} from '../../list/browse/browseListUrlState';
+} from '../../discovery/discoverySessionListUrl';
 import { scopeBrowseListStateForListCat } from '../../list/browse/browseListMapHandoff';
 import { parseExplorePanel } from '../routing';
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';

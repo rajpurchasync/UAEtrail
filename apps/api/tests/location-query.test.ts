@@ -57,9 +57,9 @@ afterAll(async () => {
     .deleteMany({ _id: { $in: [nearId, farId] } });
 });
 
-describe('location geo filter', () => {
-  it('returns only locations within the requested radius', async () => {
-    const response = await request(app).get('/api/locations').query({
+describe('place geo filter', () => {
+  it('returns only places within the requested radius', async () => {
+    const response = await request(app).get('/api/places').query({
       lat: 25.08,
       lng: 55.14,
       radius: 15,

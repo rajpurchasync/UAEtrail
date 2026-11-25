@@ -4,7 +4,7 @@ import { useBrowseListFeed } from '../../list/browse/useBrowseListFeed';
 import type { BrowseListFilterState } from '../../list/browse/browseListFilters';
 import { scopeBrowseListStateForListCat } from '../../list/browse/browseListMapHandoff';
 import { ListDiscoveryExperience } from '../../list/ListDiscoveryExperience';
-import { parseBrowseListFilterState, parseBrowseListGeoPath } from '../../list/browse/browseListUrlState';
+import { parseBrowseListFilterState, parseBrowseListGeoPath } from '../../discovery/discoverySessionListUrl';
 import { useBrowseGeoScopeHydration } from '../../list/browse/useBrowseGeoScopeHydration';
 import { resolveEffectiveBrowseVenueRegions } from '../../list/browse/browseGeoPath';
 import { useExplorePublishedDestinationsQuery } from '../useExplorePublishedDestinations';

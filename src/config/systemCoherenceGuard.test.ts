@@ -199,21 +199,23 @@ describe('systemCoherenceGuard', () => {
     expect(content).not.toMatch(/pathname\.startsWith\(['"]\/host['"]\)/);
   });
 
-  it('S10b host console guards mount fetches with useSafeAsyncEffect', () => {
-    const hostPages = [
-      'src/pages/publishing/Places.tsx',
-      'src/pages/publishing/Team.tsx',
-      'src/pages/publishing/PublicProfileEdit.tsx',
+  it('S10b publishing console catalog pages use TanStack Query (MIG-CLIENT-QUERY)', () => {
+    const catalogPages: [string, string][] = [
+      ['src/pages/publishing/Places.tsx', 'useOrganisationSubmittedPlaces'],
+      ['src/pages/publishing/Team.tsx', 'useOrganisationTeam'],
+      ['src/pages/publishing/PublicProfileEdit.tsx', 'useMyTenantMemberships'],
     ];
-    const hostShell = ['src/console/ConsoleShell.tsx'];
-    const missing: string[] = [];
-    for (const rel of [...hostPages, ...hostShell]) {
+    const violations: string[] = [];
+    for (const [rel, hook] of catalogPages) {
       const content = readFileSync(join(ROOT, rel), 'utf8');
-      if (!content.includes('useSafeAsyncEffect')) {
-        missing.push(rel);
+      if (!content.includes('usePublishingConsoleQueries') || !content.includes(hook)) {
+        violations.push(`${rel}: missing ${hook} from usePublishingConsoleQueries`);
+      }
+      if (content.includes('useSafeAsyncEffect')) {
+        violations.push(`${rel}: still uses useSafeAsyncEffect`);
       }
     }
-    expect(missing).toEqual([]);
+    expect(violations).toEqual([]);
   });
 
   it('S10b host console pages on TanStack Query read through publishingWorkspaceQueries (no ad-hoc mount fetch)', () => {
@@ -385,24 +387,24 @@ describe('systemCoherenceGuard', () => {
     expect(impl).toMatch(/canonicalizeInboundProductPath/);
     expect(impl).not.toMatch(/resolveInboundPlanHubPath/);
     expect(migrations).not.toMatch(/migrateRetiredBuddiesInboundPaths/);
-    expect(migrations).toMatch(/MONGO_MIGRATION_VERSION = 2025112508/);
+    expect(migrations).toMatch(/MONGO_MIGRATION_VERSION = 2025112509/);
     expect(migrations).toMatch(/unsetDenormalizedActivityDestinationId/);
     expect(readFileSync(join(ROOT, 'src/utils/authRedirect.ts'), 'utf8')).toMatch(
       /canonicalizeInboundProductPath/
     );
   });
 
-  it('admin console pages guard mount fetches with useSafeAsyncEffect', () => {
+  it('admin console pages do not mount-fetch with useSafeAsyncEffect (MIG-CLIENT-QUERY)', () => {
     const pagesDir = join(SRC, 'pages', 'admin');
     const adminPages = readdirSync(pagesDir).filter((name) => name.endsWith('.tsx'));
-    const missing: string[] = [];
+    const offenders: string[] = [];
     for (const name of adminPages) {
       const rel = `src/pages/admin/${name}`;
       const content = readFileSync(join(ROOT, rel), 'utf8');
-      if (!content.includes('useSafeAsyncEffect')) {
-        missing.push(rel);
+      if (content.includes('useSafeAsyncEffect')) {
+        offenders.push(rel);
       }
     }
-    expect(missing).toEqual([]);
+    expect(offenders).toEqual([]);
   });
 });

@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import { Link } from 'react-router-dom';
 import { UserMinus, UserPlus } from 'lucide-react';
 import {
@@ -9,13 +8,12 @@ import {
   formatCatalogEditRankingSummary,
   memberProfilePath,
 } from '@uaetrail/shared-types';
+import type { AdminSocialGroupDetail, TenantDetail } from '../../hooks/adminDrilldownApi';
 import {
-  fetchAdminActivityDetail,
-  fetchAdminGroupDetail,
-  fetchAdminTenantDetail,
-  type AdminSocialGroupDetail,
-  type TenantDetail,
-} from '../../hooks/adminDrilldownApi';
+  useAdminGroupDetail,
+  useAdminModerationActivityDetail,
+  useAdminTenantDetail,
+} from '../../hooks/useAdminConsoleQueries';
 import { addAdminTenantTeamMember, removeAdminTenantTeamMember } from '../../hooks/adminConsoleApi';
 import { AppSelect, ADMIN_FILTER_SELECT_CLASS, ADMIN_INPUT_CLASS } from '../ui/AppSelect';
 import { AdminIconButton } from './AdminIconButton';
@@ -472,11 +470,30 @@ export const UserDetailPanel = ({
 }) => {
   const [tab, setTab] = useState<Tab>('overview');
   const [drillDown, setDrillDown] = useState<DrillDown | null>(null);
-  const [tenantDetail, setTenantDetail] = useState<TenantDetail | null>(null);
-  const [groupDetail, setGroupDetail] = useState<AdminSocialGroupDetail | null>(null);
-  const [activityDetail, setActivityDetail] = useState<ActivityDTO | null>(null);
-  const [drillLoading, setDrillLoading] = useState(false);
-  const [drillError, setDrillError] = useState<string | null>(null);
+  const tenantDrillId = drillDown?.type === 'tenant' ? drillDown.id : null;
+  const groupDrillId = drillDown?.type === 'group' ? drillDown.id : null;
+  const activityDrillId = drillDown?.type === 'activity' ? drillDown.id : null;
+  const tenantDetailQuery = useAdminTenantDetail(tenantDrillId);
+  const groupDetailQuery = useAdminGroupDetail(groupDrillId);
+  const activityDetailQuery = useAdminModerationActivityDetail(activityDrillId);
+
+  const tenantDetail = tenantDetailQuery.data ?? null;
+  const groupDetail = groupDetailQuery.data ?? null;
+  const activityDetail = activityDetailQuery.data ?? null;
+  const drillLoading =
+    (drillDown?.type === 'tenant' && tenantDetailQuery.isLoading) ||
+    (drillDown?.type === 'group' && groupDetailQuery.isLoading) ||
+    (drillDown?.type === 'activity' && activityDetailQuery.isLoading);
+  const queryErrorMessage = (error: unknown): string | null =>
+    error instanceof Error ? error.message : error ? 'Failed to load details' : null;
+  const drillError =
+    drillDown?.type === 'tenant'
+      ? queryErrorMessage(tenantDetailQuery.error)
+      : drillDown?.type === 'group'
+        ? queryErrorMessage(groupDetailQuery.error)
+        : drillDown?.type === 'activity'
+          ? queryErrorMessage(activityDetailQuery.error)
+          : null;
 
   const createdGroups = useMemo(() => user.groups?.filter((g) => g.isCreator) ?? [], [user.groups]);
   const memberGroups = useMemo(() => user.groups?.filter((g) => !g.isCreator) ?? [], [user.groups]);
@@ -489,40 +506,6 @@ export const UserDetailPanel = ({
     { key: 'participated', label: 'Joined', count: user.joinedActivities?.length },
     { key: 'requests', label: 'Requests', count: user.requests?.length }
   ];
-
-  useSafeAsyncEffect(async (isActive) => {
-    if (!drillDown) {
-      setTenantDetail(null);
-      setGroupDetail(null);
-      setActivityDetail(null);
-      setDrillError(null);
-      return;
-    }
-
-    setDrillLoading(true);
-    setDrillError(null);
-
-    try {
-      if (drillDown.type === 'tenant') {
-        const detail = await fetchAdminTenantDetail(drillDown.id);
-        if (!isActive()) return;
-        setTenantDetail(detail);
-      } else if (drillDown.type === 'group') {
-        const detail = await fetchAdminGroupDetail(drillDown.id);
-        if (!isActive()) return;
-        setGroupDetail(detail);
-      } else {
-        const detail = await fetchAdminActivityDetail(drillDown.id);
-        if (!isActive()) return;
-        setActivityDetail(detail);
-      }
-    } catch (err) {
-      if (!isActive()) return;
-      setDrillError(err instanceof Error ? err.message : 'Failed to load details');
-    } finally {
-      if (isActive()) setDrillLoading(false);
-    }
-  }, [drillDown]);
 
   const drillTitle = drillDown?.type === 'tenant'
     ? tenantDetail?.name ?? 'Publishing profile'
@@ -823,10 +806,7 @@ export const UserDetailPanel = ({
                   tenant={tenantDetail}
                   loading={drillLoading}
                   onOpenUser={onOpenUser}
-                  onReload={async () => {
-                    const detail = await fetchAdminTenantDetail(drillDown.id);
-                    setTenantDetail(detail);
-                  }}
+                  onReload={() => void tenantDetailQuery.refetch()}
                 />
               )}
               {drillDown.type === 'group' && <GroupDrillDown detail={groupDetail} loading={drillLoading} />}

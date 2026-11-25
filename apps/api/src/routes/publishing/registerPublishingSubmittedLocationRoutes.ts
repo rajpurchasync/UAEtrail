@@ -1,7 +1,7 @@
 import type { Router } from 'express';
 import { z } from 'zod';
 import { locationSubmitBodySchema } from '../../domain/location-submit.js';
-import { registerPlaceAlias } from '../../lib/route-place-alias.js';
+import { mountRetiredPlaceLocationPaths } from '../../lib/retired-place-location-paths.js';
 import { ORG_ACTIVITY_EDIT_ROLES } from '../../lib/org-permissions.js';
 import { requireOrgRole } from '../../middleware/tenant.js';
 import { validate } from '../../middleware/validate.js';
@@ -10,7 +10,9 @@ import { listPublishingSubmittedLocations } from '../../services/publishing-subm
 
 /** Tenant host: list and submit venue/place drafts (organisation console). */
 export const registerPublishingSubmittedLocationRoutes = (publishingRouter: Router): void => {
-  registerPlaceAlias(publishingRouter, 'get', '/places', async (req, res, next) => {
+  mountRetiredPlaceLocationPaths(publishingRouter);
+
+  publishingRouter.get('/places', async (req, res, next) => {
     try {
       const data = await listPublishingSubmittedLocations(req.auth!.userId);
       res.json({ data });
@@ -19,9 +21,7 @@ export const registerPublishingSubmittedLocationRoutes = (publishingRouter: Rout
     }
   });
 
-  registerPlaceAlias(
-    publishingRouter,
-    'post',
+  publishingRouter.post(
     '/places',
     requireOrgRole(ORG_ACTIVITY_EDIT_ROLES),
     validate({ body: locationSubmitBodySchema }),

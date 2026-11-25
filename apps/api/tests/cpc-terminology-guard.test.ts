@@ -45,7 +45,7 @@ describe('CPC terminology guard (API)', () => {
       'utf8'
     );
     const commands = readFileSync(join(API_SRC, 'services/me-place-submit-commands.ts'), 'utf8');
-    expect(registrar).toMatch(/registerPlaceAlias\([\s\S]*'\/me\/places'/);
+    expect(registrar).toMatch(/router\.(get|post)\([\s\S]*'\/me\/places'/);
     expect(registrar).toMatch(/me-place-submit-commands/);
     expect(commands).toMatch(/place\.submit/);
   });

@@ -200,11 +200,6 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { status: 1 } },
       { key: { applicantId: 1, createdAt: -1 } }
     ]),
-    db.collection(COLLECTIONS.PARTICIPANT_INTENTS).createIndexes([
-      { key: { userId: 1, createdAt: -1 } },
-      { key: { status: 1, createdAt: -1 } },
-      { key: { destinationId: 1, status: 1 }, sparse: true },
-    ]),
     db.collection(COLLECTIONS.ACTIVITY_REQUESTS).createIndexes([
       { key: { activityId: 1, userId: 1 }, unique: true },
       { key: { activityId: 1, status: 1, createdAt: 1 } },

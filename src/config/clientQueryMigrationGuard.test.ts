@@ -136,4 +136,84 @@ describe('clientQueryMigrationGuard (MIG-CLIENT-QUERY)', () => {
     expect(content).toMatch(/usePublicFacilityDetail/);
     expect(content).not.toMatch(/useSafeAsyncEffect/);
   });
+
+  it('Admin Alerts uses useAdminAlertsSafetyData', () => {
+    const content = read('src/pages/admin/Alerts.tsx');
+    expect(content).toMatch(/useAdminAlertsSafetyData/);
+    expect(content).not.toMatch(/useSafeAsyncEffect/);
+    expect(read('src/hooks/useAdminAlertsSafetyData.ts')).toMatch(/adminAlertsSafetyQueryKey/);
+  });
+
+  const adminConsolePageAssertions: Array<{ page: string; hook: string; queryKey: string }> = [
+    { page: 'src/pages/admin/Settings.tsx', hook: 'useAdminNotificationBroadcasts', queryKey: 'adminNotificationBroadcastsQueryKey' },
+    { page: 'src/pages/admin/Notifications.tsx', hook: 'useAdminNotificationsConsole', queryKey: 'adminNotificationsConsoleQueryKey' },
+    { page: 'src/pages/admin/Account.tsx', hook: 'useAdminStaffProfile', queryKey: 'adminStaffProfileQueryKey' },
+    { page: 'src/pages/admin/AuditLog.tsx', hook: 'useAdminAuditLogs', queryKey: 'adminAuditLogsQueryKey' },
+    { page: 'src/pages/admin/Communities.tsx', hook: 'useAdminCommunitiesList', queryKey: 'adminCommunitiesListQueryKey' },
+    { page: 'src/pages/admin/Groups.tsx', hook: 'useAdminSocialGroupsCatalog', queryKey: 'adminSocialGroupsCatalogQueryKey' },
+    { page: 'src/pages/admin/Reports.tsx', hook: 'useAdminContentReports', queryKey: 'adminContentReportsQueryKey' },
+    { page: 'src/pages/admin/Inbox.tsx', hook: 'useAdminInboxDashboard', queryKey: 'adminInboxDashboardQueryKey' },
+    { page: 'src/pages/admin/Submissions.tsx', hook: 'useAdminSubmissionsQueue', queryKey: 'adminSubmissionsQueueQueryKey' },
+    { page: 'src/pages/admin/Destinations.tsx', hook: 'useAdminDestinationsCatalog', queryKey: 'adminDestinationsCatalogQueryKey' },
+    { page: 'src/pages/admin/Members.tsx', hook: 'useAdminMembersList', queryKey: 'adminMembersQueryKey' },
+    { page: 'src/pages/admin/Organisations.tsx', hook: 'useAdminOrganisationsCatalog', queryKey: 'adminOrganisationsCatalogQueryKey' },
+    { page: 'src/pages/admin/Activities.tsx', hook: 'useAdminModerationActivitiesCatalog', queryKey: 'adminModerationActivitiesCatalogQueryKey' },
+    { page: 'src/pages/admin/Places.tsx', hook: 'useAdminPlacesCatalogAll', queryKey: 'adminPlacesCatalogAllQueryKey' },
+  ];
+
+  for (const { page, hook, queryKey } of adminConsolePageAssertions) {
+    it(`${page} uses ${hook}`, () => {
+      const content = read(page);
+      expect(content).toMatch(new RegExp(hook));
+      expect(content).not.toMatch(/useSafeAsyncEffect/);
+      expect(read('src/hooks/clientQueryKeys.ts')).toMatch(new RegExp(queryKey));
+    });
+  }
+
+  const publishingConsolePageAssertions: Array<{ page: string; hook: string; queryKey: string }> = [
+    { page: 'src/pages/publishing/Places.tsx', hook: 'useOrganisationSubmittedPlaces', queryKey: 'organisationSubmittedPlacesQueryKey' },
+    { page: 'src/pages/publishing/Team.tsx', hook: 'useOrganisationTeam', queryKey: 'organisationTeamQueryKey' },
+    { page: 'src/pages/publishing/PublicProfileEdit.tsx', hook: 'useMyTenantMemberships', queryKey: 'myTenantMembershipsQueryKey' },
+  ];
+
+  for (const { page, hook, queryKey } of publishingConsolePageAssertions) {
+    it(`${page} uses ${hook}`, () => {
+      const content = read(page);
+      expect(content).toMatch(new RegExp(hook));
+      expect(content).not.toMatch(/useSafeAsyncEffect/);
+      expect(read('src/hooks/clientQueryKeys.ts')).toMatch(new RegExp(queryKey));
+    });
+  }
+
+  it('useAdminInboxBadges uses TanStack Query', () => {
+    const content = read('src/hooks/useAdminInboxBadges.ts');
+    expect(content).toMatch(/useQuery/);
+    expect(content).toMatch(/adminInboxNavBadgesQueryKey/);
+    expect(content).not.toMatch(/useSafeAsyncEffect/);
+  });
+
+  it('ConsoleShell loads rating via useOrganisationConsoleRating', () => {
+    const content = read('src/console/ConsoleShell.tsx');
+    expect(content).toMatch(/useOrganisationConsoleRating/);
+    expect(content).not.toMatch(/useSafeAsyncEffect/);
+    expect(read('src/hooks/usePublishingConsoleQueries.ts')).toMatch(/organisationConsoleRatingQueryKey/);
+  });
+
+  it('W6c surfaces use TanStack Query (no mount useSafeAsyncEffect)', () => {
+    const cases: Array<{ file: string; pattern: RegExp }> = [
+      { file: 'src/components/admin/UserDetailPanel.tsx', pattern: /useAdminTenantDetail/ },
+      { file: 'src/components/profile/ProfileVerificationDocs.tsx', pattern: /useMyVerificationDocuments/ },
+      { file: 'src/explore/ui/AvailabilityFixedSubmitSuccessSheet.tsx', pattern: /usePublicActivityDetail/ },
+      { file: 'src/explore/ui/peek/place/PlacePeekBody.tsx', pattern: /usePlacePublishedActivitiesCount/ },
+      { file: 'src/explore/ui/peek/place/PlaceMapPeekScheduledRow.tsx', pattern: /usePlacePublishedActivitiesCount/ },
+    ];
+    for (const { file, pattern } of cases) {
+      const content = read(file);
+      expect(content).toMatch(pattern);
+      expect(content).not.toMatch(/useSafeAsyncEffect/);
+    }
+    expect(read('src/hooks/clientQueryKeys.ts')).toMatch(/placePublishedActivitiesCountQueryKey/);
+    expect(read('src/hooks/clientQueryKeys.ts')).toMatch(/myVerificationDocumentsQueryKey/);
+    expect(read('src/hooks/clientQueryKeys.ts')).toMatch(/adminGroupDetailQueryKey/);
+  });
 });

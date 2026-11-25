@@ -18,7 +18,7 @@ Complete these **on the VPS** when you connect. Use this list to track progress.
 - [ ] Production ops: set `PLATFORM_ADMIN_MFA_SECRET` (base32 TOTP) and use `totp` on `POST /auth/login` for platform-admin accounts (S10g)
 - [ ] First-time dev/staging only (if needed): `SEED_DATA=true docker compose exec -T api npm --workspace @uaetrail/api run seed`
 - [ ] `curl https://uaetrail.com/health` returns OK
-- [ ] After deploy, API startup runs Mongo migrations (`schema_meta.migrations`); expect version **2025112508** (MIG-DESTINATION-GEO through **2025112507** + **2025112508** unset denormalized `activities.destinationId`) when upgrading; watch for `[mongo] MIG-DESTINATION-GEO` logs (`DEPLOYMENT.md` § Updating)
+- [ ] After deploy, API startup runs Mongo migrations (`schema_meta.migrations`); expect version **2025112509** (through **2025112508** unset denormalized `activities.destinationId` + **2025112509** drop empty retired `participant_intents` / `participant_intent_requests`) when upgrading; watch for `[mongo] MIG-DESTINATION-GEO` logs (`DEPLOYMENT.md` § Updating)
 - [ ] MIG-DESTINATION-GEO: clients use **`GET /api/destinations`**, hub **`/destination/:slug`**, explore **`?destination=`** only; no client or nginx `/area/*` hub paths — `/destination/:slug` only
 
 ## HTTPS

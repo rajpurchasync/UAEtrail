@@ -1,16 +1,12 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { DiscoveryCardModel } from '../../../../discovery/discoveryCardModel';
 import { EXPLORE_TYPE } from '../../../../config/exploreTheme';
-import { fetchPlaceActivities } from '../../../../hooks/placeDetailClientApi';
-import { useSafeAsyncEffect } from '../../../../hooks/useSafeAsyncEffect';
+import { usePlacePublishedActivitiesCount } from '../../../../hooks/usePlacePublishedActivitiesCount';
 import { placePeekScheduledActivitiesCountLabel } from '../../../../content/placePeekCopy';
 import { RatingStatTile, StatGrid } from '../../../../detail/shell';
 import { PlacePeekKindFacts } from './PlacePeekKindFacts';
 
 const PLACE_DETAIL_SCHEDULED_SECTION_ID = 'place-detail-scheduled';
-
-type PlacePeekScheduledLoadState = 'idle' | 'loading' | 'ready';
 
 const PlacePeekScheduledCount = ({
   locationId,
@@ -21,27 +17,7 @@ const PlacePeekScheduledCount = ({
   detailPath: string;
   onNavigate?: () => void;
 }) => {
-  const [loadState, setLoadState] = useState<PlacePeekScheduledLoadState>('idle');
-  const [count, setCount] = useState(0);
-
-  useSafeAsyncEffect(
-    async (isActive) => {
-      const id = locationId?.trim();
-      if (!id) {
-        if (isActive()) {
-          setCount(0);
-          setLoadState('idle');
-        }
-        return;
-      }
-      if (isActive()) setLoadState('loading');
-      const rows = await fetchPlaceActivities(id).catch(() => []);
-      if (!isActive()) return;
-      setCount(rows.filter((row) => row.status === 'published').length);
-      setLoadState('ready');
-    },
-    [locationId]
-  );
+  const { count, loadState } = usePlacePublishedActivitiesCount(locationId);
 
   if (loadState === 'idle') return null;
 
