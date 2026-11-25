@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const ROOT = join(process.cwd(), '..', '..');
 const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
+const exists = (rel: string) => existsSync(join(ROOT, rel));
 
 const collectApiLibTs = (): string[] => {
   const root = join(ROOT, 'apps/api/src');
@@ -21,7 +22,7 @@ const collectApiLibTs = (): string[] => {
   return files;
 };
 
-/** MIG-DESTINATION-GEO Phase C — one Mongo story: logical DESTINATIONS → physical `areas`. */
+/** MIG-DESTINATION-GEO — one Mongo story: logical DESTINATIONS → physical `areas`. */
 describe('destination storage guard (Phase C)', () => {
   it('COLLECTIONS.DESTINATIONS matches BWL and aliases AREAS', () => {
     const collections = read('apps/api/src/lib/collections.ts');
@@ -32,17 +33,21 @@ describe('destination storage guard (Phase C)', () => {
     expect(lexicon).toMatch(/AREAS: 'areas'/);
   });
 
-  it('areas-store uses COLLECTIONS.DESTINATIONS', () => {
-    expect(read('apps/api/src/lib/areas-store.ts')).toMatch(/COLLECTIONS\.DESTINATIONS/);
-    expect(read('apps/api/src/lib/areas-store.ts')).not.toMatch(/COLLECTIONS\.AREAS/);
+  it('destinations-store is the single curated-destination module', () => {
+    expect(exists('apps/api/src/lib/destinations-store.ts')).toBe(true);
+    expect(exists('apps/api/src/lib/areas-store.ts')).toBe(false);
+    expect(read('apps/api/src/lib/destinations-store.ts')).toMatch(/COLLECTIONS\.DESTINATIONS/);
+    expect(read('apps/api/src/lib/destinations-store.ts')).toMatch(/listPublishedDestinations/);
   });
 
-  it('API src prefers COLLECTIONS.DESTINATIONS over COLLECTIONS.AREAS', () => {
+  it('API src does not import areas-store or legacy area-* store paths', () => {
     const violations: string[] = [];
+    const patterns = [/\bareas-store\b/, /\barea-bounds\b/, /\bseed-areas\b/];
     for (const file of collectApiLibTs()) {
-      if (file === 'apps/api/src/lib/collections.ts') continue;
       const src = read(file);
-      if (/\bCOLLECTIONS\.AREAS\b/.test(src)) violations.push(file);
+      for (const pattern of patterns) {
+        if (pattern.test(src)) violations.push(`${file}: ${pattern}`);
+      }
     }
     expect(violations).toEqual([]);
   });

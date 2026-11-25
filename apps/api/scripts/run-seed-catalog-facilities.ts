@@ -1,10 +1,10 @@
 import { invalidateExploreMapCache } from '../src/lib/explore-map-cache.js';
 import { ensureFacilityParentPlaces, seedCatalogFacilities } from './seed-catalog-facilities.js';
-import { seedCuratedAreas } from '../src/lib/seed-areas.js';
+import { seedCuratedDestinations } from '../src/lib/seed-destinations.js';
 import { resolveCliScriptName, runCliScript } from './cli-script-runner.js';
 
 runCliScript(resolveCliScriptName(import.meta.url), async () => {
-  await seedCuratedAreas();
+  await seedCuratedDestinations();
   const stubs = await ensureFacilityParentPlaces();
   const result = await seedCatalogFacilities();
   await invalidateExploreMapCache();

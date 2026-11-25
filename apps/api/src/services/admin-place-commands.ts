@@ -16,7 +16,7 @@ import { createAuditLog } from '../lib/audit.js';
 import { ApiError } from '../lib/api-error.js';
 import { toLocationDto } from '../lib/mappers.js';
 import { invalidatePublishedDestinationsCache } from '../lib/destination-resolution.js';
-import { findAreaById, updateAdminArea } from '../lib/areas-store.js';
+import { findDestinationById, updateAdminDestination } from '../lib/destinations-store.js';
 import { scheduleExploreMapCacheInvalidation } from '../lib/explore-map-cache-schedule.js';
 import { withPlaceAreaMeta } from '../lib/place-area-meta.js';
 import { awardPoints } from './rewards.js';
@@ -321,11 +321,11 @@ export const updateAdminPlaceRecord = async (input: {
 
   if (activating) {
     assertActiveListedPlaceHasCatalogGeo(updated);
-    const linkedAreaId = (updated.areaId ?? existing.areaId)?.trim();
-    if (linkedAreaId) {
-      const linkedArea = await findAreaById(linkedAreaId);
-      if (linkedArea?.status === 'draft') {
-        await updateAdminArea(linkedArea.id, { status: 'published' });
+    const linkedDestinationId = (updated.destinationId ?? existing.destinationId)?.trim();
+    if (linkedDestinationId) {
+      const linkedDestination = await findDestinationById(linkedDestinationId);
+      if (linkedDestination?.status === 'draft') {
+        await updateAdminDestination(linkedDestination.id, { status: 'published' });
         invalidatePublishedDestinationsCache();
       }
     }

@@ -3,7 +3,7 @@ import type { z } from 'zod';
 import type { locationSubmitBodySchema } from '../domain/location-submit.js';
 import { RewardAction } from '../domain/enums.js';
 import { ApiError } from '../lib/api-error.js';
-import { findPublishedAreaById } from '../lib/areas-store.js';
+import { findPublishedDestinationById } from '../lib/destinations-store.js';
 import { createAuditLog } from '../lib/audit.js';
 import { createFacilityRecord } from '../lib/facilities-store.js';
 import { toFacilityDto } from '../lib/facility-mappers.js';
@@ -23,7 +23,7 @@ export const submitMyFacility = async (userId: string, body: FacilitySubmitBody)
   if (!destinationId) {
     throw new ApiError(400, 'destination_required', 'Choose a published destination.');
   }
-  const area = await findPublishedAreaById(destinationId);
+  const area = await findPublishedDestinationById(destinationId);
   if (!area) {
     throw new ApiError(400, 'destination_not_found', 'Choose a published destination.');
   }

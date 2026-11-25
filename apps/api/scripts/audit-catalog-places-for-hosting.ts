@@ -4,7 +4,7 @@
  */
 import { resolveCliScriptName, runCliScript } from './cli-script-runner.js';
 import { buildPlaceRegistry } from '../src/services/place-registry.js';
-import { listPublishedAreas } from '../src/lib/areas-store.js';
+import { listPublishedDestinations } from '../src/lib/destinations-store.js';
 import { locationHasRegistryCoverImage } from '../src/lib/catalog-registry-cover.js';
 import { listAdminPlacesPaged } from '../src/lib/admin-store.js';
 import { LocationStatus } from '../src/domain/enums.js';
@@ -92,7 +92,7 @@ const auditPlace = (
 };
 
 const main = async () => {
-  const areas = await listPublishedAreas();
+  const areas = await listPublishedDestinations();
 
   const registryByType = new Map<string, Set<string>>();
   for (const type of HOSTING_TYPES) {

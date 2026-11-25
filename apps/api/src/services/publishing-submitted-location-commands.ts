@@ -6,7 +6,7 @@ import { createAuditLog } from '../lib/audit.js';
 import { toLocationDto } from '../lib/mappers.js';
 import { scheduleSideEffect } from '../lib/schedule-side-effect.js';
 import { buildLocationCreateData } from './location-submit.js';
-import { resolvePlaceSubmitDestination } from './place-submit-area.js';
+import { resolvePlaceSubmitDestination } from './place-submit-destination.js';
 import { awardPoints } from './rewards.js';
 
 export const submitPublishingLocation = async (input: {

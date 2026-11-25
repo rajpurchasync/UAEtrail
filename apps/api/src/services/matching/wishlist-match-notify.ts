@@ -9,7 +9,7 @@ import { NotificationType } from '../../domain/enums.js';
 import { findActivityDocInMongo, findLocationInMongo } from '../../lib/entity-sync.js';
 import { findActivityPrivateById } from '../../lib/activity-private-store.js';
 import { createNotificationsMany } from '../../lib/notifications-store.js';
-import { findPublishedAreaById } from '../../lib/areas-store.js';
+import { findPublishedDestinationById } from '../../lib/destinations-store.js';
 import {
   listWishlistSaversForDestination,
   listWishlistSaversForLocation,
@@ -173,7 +173,7 @@ export const fanOutSavedDestinationWishlistNotifications = async (
   const savers = await listWishlistSaversForDestination(input.destinationId);
   if (savers.length === 0) return;
 
-  const area = await findPublishedAreaById(input.destinationId);
+  const area = await findPublishedDestinationById(input.destinationId);
   if (!area) return;
   const areaName = area.name;
   const recipientIds = savers.map((row) => row.userId).filter((userId) => userId !== input.hostUserId);

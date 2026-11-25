@@ -3,15 +3,15 @@ import {
   CURATED_AREA_SEED_IDS,
 } from '@uaetrail/shared-types';
 import { ringFromBBox } from './destination-resolution.js';
-import { upsertAreaBySlug } from './areas-store.js';
+import { upsertDestinationBySlug } from './destinations-store.js';
 
 /** @deprecated Prefer `CURATED_AREA_SEED_IDS` from `@uaetrail/shared-types` — same values. */
-export const SEED_AREA_IDS = CURATED_AREA_SEED_IDS;
+export const SEED_DESTINATION_IDS = CURATED_AREA_SEED_IDS;
 
-/** Curated UAE outdoor areas — idempotent on `npm run seed`. */
-export const seedCuratedAreas = async (): Promise<void> => {
+/** Curated UAE destinations — idempotent on `npm run seed`. */
+export const seedCuratedDestinations = async (): Promise<void> => {
   for (const row of CURATED_AREA_CATALOG) {
-    await upsertAreaBySlug({
+    await upsertDestinationBySlug({
       id: row.id,
       slug: row.slug,
       name: row.name,

@@ -44,7 +44,7 @@ import { getReviewStatsByTargets } from './social-reviews-store.js';
 import { ReviewTargetType } from '../domain/enums.js';
 import { resolveVenueExploreLabels } from './venue-display-names.js';
 import { isWithinUaeFocusArea } from './uae-bbox.js';
-import { listPublishedAreas } from './areas-store.js';
+import { listPublishedDestinations } from './destinations-store.js';
 import { buildAvailabilityFixedMapItems } from './availability-fixed-map-items.js';
 import { listFacilitiesForExploreMap } from './facilities-store.js';
 import { resolveDestinationIdFromPoint } from './destination-resolution.js';
@@ -258,7 +258,7 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
       listActiveLocationsForExploreMap(800),
       listFacilitiesForExploreMap(800),
       listPublicShopTenantsForExplore(250),
-      listPublishedAreas(),
+      listPublishedDestinations(),
     ]);
 
   const amenitiesByParentId = collectParentPlaceAmenities(facilityRows);

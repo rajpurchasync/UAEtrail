@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import type { AreaDTO, LocationDTO } from '@uaetrail/shared-types';
 import type { AdminMetrics, HostApplication } from '../../api/types';
 import {
-  fetchAdminAreas,
+  fetchAdminDestinations,
   fetchAdminMetrics,
   fetchAdminOrganisationApplications,
   fetchAdminPlacesCatalog,
@@ -57,7 +57,7 @@ export const Inbox = () => {
         fetchAdminMetrics(),
         fetchAdminOrganisationApplications(1, 20),
         fetchAdminPlacesCatalog(1, 50).catch(() => ({ items: [] as LocationDTO[] })),
-        fetchAdminAreas().catch(() => [] as AreaDTO[]),
+        fetchAdminDestinations().catch(() => [] as AreaDTO[]),
         fetchAdminSubmissions().catch(() => ({ data: [] as SubmissionRow[] })),
         fetchAdminContentReports({ page: 1, pageSize: 1, status: 'open' }).catch(() => ({
           data: [],

@@ -27,7 +27,7 @@ import { ApiError } from './api-error.js';
 import { COLLECTIONS } from './collections.js';
 import { getMongoClient } from './mongo.js';
 import { findAuthUsersByIds } from './auth-users-store.js';
-import { findAreaBySlug, findPublishedAreaById } from './areas-store.js';
+import { findDestinationBySlug, findPublishedDestinationById } from './destinations-store.js';
 import { areAcceptedFriends } from './friend-store.js';
 import {
   filterSubjectsVisibleInFindCrew,
@@ -284,7 +284,7 @@ export const loadExploreAvailabilityIndex = async (
 ): Promise<ExploreAvailabilityIndex> => {
   const area =
     query.destinationSlug?.trim()
-      ? await findAreaBySlug(query.destinationSlug.trim().toLowerCase())
+      ? await findDestinationBySlug(query.destinationSlug.trim().toLowerCase())
       : null;
   const destinationIdFilter = area?.status === 'published' ? area.id : null;
 
@@ -372,7 +372,7 @@ export const loadExploreAvailabilityIndex = async (
       } else {
         let destinationSlug: string | null = null;
         if (destinationId) {
-          const row = await findPublishedAreaById(destinationId);
+          const row = await findPublishedDestinationById(destinationId);
           destinationSlug = row?.slug ?? null;
         }
         clusterCounts.set(clusterKey, {
@@ -389,7 +389,7 @@ export const loadExploreAvailabilityIndex = async (
 
   for (const row of people) {
     if (row.destinationId) {
-      const a = await findPublishedAreaById(row.destinationId);
+      const a = await findPublishedDestinationById(row.destinationId);
       row.destinationSlug = a?.slug ?? null;
     }
   }

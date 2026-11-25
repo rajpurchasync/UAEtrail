@@ -13,14 +13,14 @@ import {
 import type { LocationSubmitBody } from '../../src/domain/location-submit.js';
 import { ActivityType, Difficulty, LocationStatus } from '../../src/domain/enums.js';
 import { createLocationRecord } from '../../src/lib/activities-store.js';
-import { seedCuratedAreas } from '../../src/lib/seed-areas.js';
+import { seedCuratedDestinations } from '../../src/lib/seed-destinations.js';
 
 let curatedAreasSeeded = false;
 
 /** Idempotent — upserts full curated area catalog for integration tests. */
 export const ensureCuratedAreasSeeded = async (): Promise<void> => {
   if (curatedAreasSeeded) return;
-  await seedCuratedAreas();
+  await seedCuratedDestinations();
   curatedAreasSeeded = true;
 };
 

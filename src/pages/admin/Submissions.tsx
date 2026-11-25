@@ -9,9 +9,9 @@ import type {
 import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import { fetchAdminSubmissions, reviewAdminSubmission } from '../../hooks/geoHierarchyClientApi';
 import {
-  fetchAdminAreas,
+  fetchAdminDestinations,
   fetchAdminPlacesCatalog,
-  updateAdminArea,
+  updateAdminDestination,
   updateAdminPlace,
 } from '../../hooks/adminConsoleApi';
 import { DashboardLayout } from '../../components/layout';
@@ -91,7 +91,7 @@ export const Submissions = () => {
       const [subs, places, areas] = await Promise.all([
         fetchAdminSubmissions().catch(() => ({ data: [] as AdminSubmissionDTO[] })),
         fetchAdminPlacesCatalog(1, 100).catch(() => ({ items: [] as LocationDTO[], total: 0 })),
-        fetchAdminAreas().catch(() => [] as AreaDTO[]),
+        fetchAdminDestinations().catch(() => [] as AreaDTO[]),
       ]);
       if (!isActive()) return;
 
@@ -211,7 +211,7 @@ export const Submissions = () => {
       } else if (selected.source === 'draft_place') {
         await updateAdminPlace(selected.id, { status: 'active' });
       } else {
-        await updateAdminArea(selected.id, { status: 'published' });
+        await updateAdminDestination(selected.id, { status: 'published' });
       }
       select(null);
       await load();

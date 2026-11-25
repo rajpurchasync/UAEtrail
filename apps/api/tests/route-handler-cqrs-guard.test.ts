@@ -157,7 +157,7 @@ describe('route handler CQRS guard (MIG-CQRS-ROUTES)', () => {
       'apps/api/src/routes/admin/registerAdminAuditRoutes.ts',
       'apps/api/src/routes/admin/registerAdminMetricsRoutes.ts',
       'apps/api/src/routes/admin/registerAdminContentReportRoutes.ts',
-      'apps/api/src/routes/admin/registerAdminAreaRoutes.ts',
+      'apps/api/src/routes/admin/registerAdminDestinationRoutes.ts',
       'apps/api/src/routes/admin/registerAdminHostApplicationRoutes.ts',
       'apps/api/src/routes/admin/registerAdminNotificationRoutes.ts',
       'apps/api/src/routes/admin/registerAdminFacilityRoutes.ts',
@@ -344,11 +344,11 @@ describe('route handler CQRS guard (MIG-CQRS-ROUTES)', () => {
     expect(listStoreImports('apps/api/src/routes/admin/registerAdminContentReportRoutes.ts')).toEqual([]);
   });
 
-  it('admin area registrar wires admin-area read and commands', () => {
-    const registrar = readRegistrar('apps/api/src/routes/admin/registerAdminAreaRoutes.ts');
-    expect(registrar).toMatch(/admin-area-read/);
-    expect(registrar).toMatch(/admin-area-commands/);
-    expect(listStoreImports('apps/api/src/routes/admin/registerAdminAreaRoutes.ts')).toEqual([]);
+  it('admin destination registrar wires admin-destination read and commands', () => {
+    const registrar = readRegistrar('apps/api/src/routes/admin/registerAdminDestinationRoutes.ts');
+    expect(registrar).toMatch(/admin-destination-read/);
+    expect(registrar).toMatch(/admin-destination-commands/);
+    expect(listStoreImports('apps/api/src/routes/admin/registerAdminDestinationRoutes.ts')).toEqual([]);
   });
 
   it('admin host application registrar wires admin-host-application read and commands', () => {

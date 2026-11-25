@@ -1,6 +1,5 @@
 export { placeApi } from './places';
 export { facilityApi } from './facilities';
-export { areasApi } from './areas';
 export { destinationsApi } from './destinations';
 export { fetchPlaceCatalog, type PlaceCatalogQuery } from './placeCatalogClient';
 export { exploreApi, buildExploreMapQueryString, exploreMapHttpPath, type ExploreMapQueryParams } from './explore';

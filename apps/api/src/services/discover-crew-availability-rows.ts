@@ -1,7 +1,7 @@
 import { exploreMapItemIsAvailabilityCatalog } from '@uaetrail/shared-types';
 import type { ExploreMapItemDTO, MemberDiscoveryAvailabilityRowDTO } from '@uaetrail/shared-types';
 import { buildAvailabilityFixedMapItems } from '../lib/availability-fixed-map-items.js';
-import { listPublishedAreas } from '../lib/areas-store.js';
+import { listPublishedDestinations } from '../lib/destinations-store.js';
 import {
   matchesExploreActivityDateFilter,
   type ExploreActivityDatePreset,
@@ -66,7 +66,7 @@ export const loadDiscoverCrewAvailabilityRows = async (input: {
   datePreset: ExploreActivityDatePreset;
   search?: string;
 }): Promise<MemberDiscoveryAvailabilityRowDTO[]> => {
-  const publishedAreas = await listPublishedAreas();
+  const publishedAreas = await listPublishedDestinations();
   const destinationSlugById = new Map(publishedAreas.map((area) => [area.id, area.slug]));
   const destinationNameById = new Map(publishedAreas.map((area) => [area.id, area.name]));
   const fixedItems = await buildAvailabilityFixedMapItems({ destinationSlugById, destinationNameById });

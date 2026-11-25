@@ -148,7 +148,7 @@ describe('geographyTerminologyGuard (Place · Facility · Area)', () => {
   it('GEO-14: admin console uses /admin/destinations (Phase E)', () => {
     expect(read('src/config/adminSurfacePaths.ts')).toMatch(/ADMIN_DESTINATIONS_PATH/);
     expect(read('src/routing/AppRoutes.tsx')).toMatch(/ADMIN_DESTINATIONS_PATH/);
-    expect(read('src/api/domains/areas.ts')).toMatch(/\/admin\/destinations/);
+    expect(read('src/api/domains/destinations.ts')).toMatch(/listAdminDestinations/);
   });
 
   it('GEO-13: Mongo destinations alias documented in collections + BWL (Phase C)', () => {

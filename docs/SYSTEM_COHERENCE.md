@@ -126,7 +126,7 @@ Each context has **one write path** and **one public read model** where possible
 | **Social graph** | Relationship **writes** & group metadata (not browse roster UI) | `MyCrews.tsx`, `Groups.tsx`, `/crews` | `registerFriendRoutes`, `friend-activity-presence.ts`, `registerGroupRoutes`, `registerFollowRoutes` | `friend_*`, `user_follows`, `member_groups*` |
 | **Places** | Place catalog read, place detail, **member place submit** | `src/places-discovery/*`, `PlaceDetail*`, FAB Add→place wizard (`compose` UI) | `place-catalog`, `place-submit`, `GET /places/catalog`, `POST /me/places` | `locations` (place rows) |
 | **Facilities** | Facility catalog read, facility detail, **member facility submit** | FAB Add→facility wizard; `adminFacilityPlaceAdapter` | `place-catalog` (facility half), `GET /facilities/catalog`, `POST /me/facilities`, `GET/PATCH /admin/facilities` | **`facilities`** |
-| **Destinations** (bounded id `areas`) | Admin-curated outdoor hub (`areas` store, stable ids → **`destinationId`**). **Not a map pin** — country / state / region come from **AdminGeo** (`geoRef`). Hub `/destination/:slug` + filter `?destination=`. Children via **`place.destinationId`** / **`facility.destinationId`**; facilities on trail via **`onSiteId`**. | `/destination/:slug`, compose **Destination then site**, admin **Areas** console | `destinations-store`, `explore-map-area-lens.ts` (hub rollups), `hostingPublishArea.ts` | `areas`; **`locations.destinationId`**; **`facilities.destinationId`** + **`onSiteId`**; hosted geography = **`activity.locationId` → `place.destinationId`** |
+| **Destinations** (bounded id `destinations`) | Admin-curated outdoor hub (`areas` Mongo store, stable ids → **`destinationId`**). **Not a map pin** — country / state / region come from **AdminGeo** (`geoRef`). Hub `/destination/:slug` + filter `?destination=`. Children via **`place.destinationId`** / **`facility.destinationId`**; facilities on trail via **`onSiteId`**. | `/destination/:slug`, compose **Destination then site**, admin **Destinations** console | `destinations-store`, `explore-map-area-lens.ts` (hub rollups), `hostingPublishArea.ts` | `areas`; **`locations.destinationId`**; **`facilities.destinationId`** + **`onSiteId`**; hosted geography = **`activity.locationId` → `place.destinationId`** |
 | **Shop profiles** | Operator shop public page + merchant manage (no product catalog) | `ShopPublic`, `/organisation/manage?kind=shop` | `registerShopPublicRoutes` · `registerShopMerchantManageRoutes` | `merchant_profiles`, `tenants` (SHOP) |
 | **Engagement** | Goals, map pins, wishlist, follow | explore wishlist save, entity/member follow | `registerMeGoalsRoutes`, `registerMeWishlistRoutes`, `registerEntityFollowRoutes`, … | `user_goals`, `user_wishlist`, `entity_follows`, `user_follows` |
 | **Platform ops** | Admin console, audit, applications, master-granted staff | `src/pages/admin/*` (`/admin/users` **Users** nav) | `routes/admin.ts` + `routes/admin/registerAdmin*` | `host_applications`, `audit_logs`, `auth_users` (staff role) |
@@ -153,7 +153,7 @@ Pick a **context id** when changing code; touch registrar + `src/api/domains/*` 
 | social_graph | `buddy_*` (Mongo), `user_follows`, `social_groups*` | `/me/friends`, `/me/friend-requests`, `/me/groups`, `/me/following`, … | `friendsApi`, `groupsApi` | `MyCrews`, `Groups` — relationship admin; **not** the explore people browse panel |
 | places | `locations` (places), `submissions` | `GET /places/catalog`, `/places/:id`, `POST /me/places`, `POST /me/submissions` | `placeApi`, `placeCatalogClient`, `memberCatalogSubmitClientApi`, `geoHierarchyApi` | `PlaceDetail*`, `/profile/submissions` suggest form |
 | facilities | `facilities` | `GET /facilities/catalog`, `/facilities/:id`, `POST /me/facilities`, `/admin/facilities` | `facilityApi`, `memberCatalogSubmitClientApi` | Facility submit wizard, `AdminPlaces` (`catalogSegment=facility`) |
-| areas | `areas`, `geo_nodes`, `geo_stats`, `geo_outbox` | `GET /destinations/:slug`, `GET /geo/tree`, `GET /geo/:id/summary`, `GET /geo/resolve` | `destinationsApi`, `geoHierarchyApi` | `/destination/:slug`, `/geo` tree, `/geo/n/:id` summaries, IndexedDB + Redis/in-process geo cache, explore country/state/destination/venue search |
+| destinations | `areas`, `geo_nodes`, `geo_stats`, `geo_outbox` | `GET /destinations/:slug`, `GET /geo/tree`, `GET /geo/:id/summary`, `GET /geo/resolve` | `destinationsApi`, `geoHierarchyApi` | `/destination/:slug`, `/geo` tree, `/geo/n/:id` summaries, IndexedDB + Redis/in-process geo cache, explore country/state/destination/venue search |
 | shop_profiles | `merchant_profiles` | `/shop/*` | `shopApi` | `ShopPublic`, shop UI |
 | engagement | `user_badges`, `user_goals`, `user_wishlist`, `entity_follows`, `social_reviews`, … | `/me/badges`, `/me/goals`, `/me/wishlist`, `/me/entity-follows`, `/reviews` | `badgesApi`, `goalsApi`, `wishlistApi`, `entityFollowApi`, `reviewsApi` | `ProfileBadges`, goals, `entityFollowApi`, wishlist guards |
 | platform_ops | `host_applications`, `audit_logs` | `/admin/*`, `POST/DELETE /admin/platform-admins` (master) | `adminApi` | `src/pages/admin/*`, `DashboardLayout`, `ADMIN_LINKS` — **ops tables**, not discovery L1/L2 |
@@ -1108,7 +1108,7 @@ Mark `[x]` in the PR that completes the item.
 **P10 — Program close (eng)**
 
 - [x] Explore URLs emit **`?destination=`** only (no `?area=` read path)
-- [x] Consumer API: `areasApi` public reads → `/destinations`; `apiClientSurfaceGuard`
+- [x] Consumer API: `destinationsApi` public + admin reads → `/destinations`; `apiClientSurfaceGuard`
 - [ ] `npm run verify:system` on staging (ops sign-off)
 - [ ] Optional: physical Mongo `areas` collection rename
 
@@ -1349,7 +1349,7 @@ Gate: **`npm run verify:platform-governance`**. Behavior stays in code + vitest 
 
 #### 8.8.3 Bounded contexts — topics covered (manifest §3)
 
-All **17** contexts: `discovery`, `compose`, `participation`, `member_identity`, `member_publish_capabilities`, `publishing_workspace`, `communication`, `social_graph`, `places`, `facilities`, `shop_profiles`, `member_discovery`, `engagement`, `areas`, `availability`, `media`, `platform_ops`.
+All **17** contexts: `discovery`, `compose`, `participation`, `member_identity`, `member_publish_capabilities`, `publishing_workspace`, `communication`, `social_graph`, `places`, `facilities`, `shop_profiles`, `member_discovery`, `engagement`, `destinations`, `availability`, `media`, `platform_ops`.
 
 **Cross-cutting (in PCOH scope):** auth & account lifecycle; notifications & push; check-in; viewer access; side-effect outbox; explore Redis cache; agent/OG; premium place PDF; member discovery quota; coordination attention; journey map pins; stale bookmark normalization (GW-7 nginx + `canonicalizeNotificationBookmarkPath`); `verify:system` / journey tests.
 

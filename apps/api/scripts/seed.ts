@@ -55,7 +55,7 @@ import {
 } from '../src/lib/tenant-store.js';
 import { DEMO_ACCOUNTS, resolveDemoAccountPassword } from '../src/lib/demo-accounts.js';
 import { logOmarHostQaPlaybook } from './logOmarHostQaPlaybook.js';
-import { seedCuratedAreas } from '../src/lib/seed-areas.js';
+import { seedCuratedDestinations } from '../src/lib/seed-destinations.js';
 import { curatedAreaSeedId, type AvailabilityKind } from '@uaetrail/shared-types';
 import { deactivateOrphanActiveLocations } from './cleanup-orphan-activity-anchor-locations.js';
 import { backfillSeedCatalogLocationAreaIds, seedLocationAreaId } from './seed-location-area-map.js';
@@ -1030,7 +1030,7 @@ async function main() {
   }
 
   if (!(await shouldRunSeed())) {
-    await seedCuratedAreas();
+    await seedCuratedDestinations();
     await backfillSeedCatalogLocationAreaIds();
     await deactivateOrphanActiveLocations();
     await restampCatalogGeoIndexFields();
@@ -1055,7 +1055,7 @@ async function main() {
     return;
   }
 
-  await seedCuratedAreas();
+  await seedCuratedDestinations();
 
   const admin = await upsertDemoUser('admin@uaetrails.app');
   await updateAuthUserProfile(admin._id, { platformMasterAdmin: true });

@@ -1,22 +1,22 @@
 import type { z } from 'zod';
 import type { locationSubmitBodySchema } from '../domain/location-submit.js';
 import { ApiError } from '../lib/api-error.js';
-import { boundsRingFromCenter } from '../lib/area-bounds.js';
+import { boundsRingFromCenter } from '../lib/destination-bounds.js';
 import {
-  createAdminArea,
-  findAreaById,
-  findAreaBySlug,
-  findPublishedAreaById,
-} from '../lib/areas-store.js';
+  createAdminDestination,
+  findDestinationById,
+  findDestinationBySlug,
+  findPublishedDestinationById,
+} from '../lib/destinations-store.js';
 import { slugify } from '../lib/slug.js';
 
 type PlaceSubmitBody = z.infer<typeof locationSubmitBodySchema>;
 
-const uniqueDraftAreaSlug = async (name: string): Promise<string> => {
-  const base = slugify(name) || 'area';
+const uniqueDraftDestinationSlug = async (name: string): Promise<string> => {
+  const base = slugify(name) || 'destination';
   let slug = base;
   let n = 0;
-  while (await findAreaBySlug(slug)) {
+  while (await findDestinationBySlug(slug)) {
     n += 1;
     slug = `${base}-${n}`;
   }
@@ -31,16 +31,16 @@ export const resolvePlaceSubmitDestination = async (
   const areaLabelHint = body.areaLabel?.trim() || '';
 
   if (existingId) {
-    const published = await findPublishedAreaById(existingId);
-    const anyArea = published ?? (await findAreaById(existingId));
-    if (!anyArea) {
+    const published = await findPublishedDestinationById(existingId);
+    const anyRow = published ?? (await findDestinationById(existingId));
+    if (!anyRow) {
       throw new ApiError(
         400,
         'destination_not_found',
         'Choose a published destination, or name a new one for this pin.'
       );
     }
-    return { destinationId: anyArea.id, areaLabel: areaLabelHint || anyArea.name };
+    return { destinationId: anyRow.id, areaLabel: areaLabelHint || anyRow.name };
   }
 
   const proposed = body.proposedAreaName?.trim() || '';
@@ -52,8 +52,8 @@ export const resolvePlaceSubmitDestination = async (
     );
   }
 
-  const createdArea = await createAdminArea({
-    slug: await uniqueDraftAreaSlug(proposed),
+  const created = await createAdminDestination({
+    slug: await uniqueDraftDestinationSlug(proposed),
     name: proposed,
     region: body.region.trim(),
     status: 'draft',
@@ -62,5 +62,5 @@ export const resolvePlaceSubmitDestination = async (
     countryCode: body.countryCode?.toUpperCase() || 'AE',
     summary: `Proposed with catalog place “${body.name.trim()}”.`,
   });
-  return { destinationId: createdArea.id, areaLabel: createdArea.name };
+  return { destinationId: created.id, areaLabel: created.name };
 };

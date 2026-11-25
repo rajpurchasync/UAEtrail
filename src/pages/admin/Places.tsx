@@ -22,7 +22,7 @@ import {
   createAdminPlace,
   deleteAdminFacility,
   deleteAdminPlace,
-  fetchAdminAreas,
+  fetchAdminDestinations,
   fetchAdminFacilitiesCatalog,
   fetchAdminMemberDetail,
   fetchAdminPlacesCatalog,
@@ -211,7 +211,7 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
 
   useSafeAsyncEffect(async (isActive) => {
     try {
-      const areas = await fetchAdminAreas();
+      const areas = await fetchAdminDestinations();
       if (isActive()) setAdminAreas(areas);
     } catch {
       if (isActive()) setAdminAreas([]);

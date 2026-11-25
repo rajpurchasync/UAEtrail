@@ -8,7 +8,7 @@ import { toLocationDto } from '../lib/mappers.js';
 import { scheduleSideEffect } from '../lib/schedule-side-effect.js';
 import { findAuthUserById } from '../lib/auth-users-store.js';
 import { notifyAdminsCatalogSubmitted } from './catalog-submit-notifications.js';
-import { resolvePlaceSubmitDestination } from './place-submit-area.js';
+import { resolvePlaceSubmitDestination } from './place-submit-destination.js';
 import { buildPlaceSubmitPayload } from './place-submit.js';
 import { awardPoints } from './rewards.js';
 

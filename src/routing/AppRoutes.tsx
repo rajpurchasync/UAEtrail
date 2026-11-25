@@ -29,7 +29,7 @@ import {
   SIGNUP_PATH,
   MY_CREWS_PATH,
 } from '../config/surfacePaths';
-import { ADMIN_AREAS_PATH, ADMIN_DESTINATIONS_PATH } from '../config/adminSurfacePaths';
+import { ADMIN_DESTINATIONS_PATH } from '../config/adminSurfacePaths';
 import { ORGANISATION_MANAGE_PATH } from '../member/organisationPaths';
 import {
   ProtectedRoute,
@@ -486,7 +486,6 @@ export const AppRoutes = ({ location }: { location: Location }) => (
       }
     />
     <Route path={ADMIN_DESTINATIONS_PATH} element={adminDestinationsRoute} />
-    <Route path={ADMIN_AREAS_PATH} element={adminDestinationsRoute} />
     <Route
       path="/admin/hosts"
       element={

@@ -26,7 +26,7 @@ describe('wishlist destination trip alerts', () => {
 
   it('validates published destination on create', () => {
     const commands = read('src/services/me-wishlist-commands.ts');
-    expect(commands).toMatch(/findPublishedAreaById/);
+    expect(commands).toMatch(/findPublishedDestinationById/);
     expect(commands).toMatch(/destination_not_found/);
   });
 });

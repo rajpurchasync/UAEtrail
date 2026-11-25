@@ -2,7 +2,7 @@ import { curatedAreaSeedId, type CuratedAreaSeedKey } from '@uaetrail/shared-typ
 import type { AreaDTO } from '@uaetrail/shared-types';
 import { LocationStatus } from '../src/domain/enums.js';
 import { resolveDestinationIdFromPoint } from '../src/lib/destination-resolution.js';
-import { listPublishedAreas } from '../src/lib/areas-store.js';
+import { listPublishedDestinations } from '../src/lib/destinations-store.js';
 import { resolveCatalogLocationAreaKey } from '../src/lib/venue-catalog-enrichment.js';
 
 /** Explicit catalog place → curated area (overrides point-in-polygon when set). */
@@ -52,7 +52,7 @@ export const seedLocationAreaId = (locationId: string): string | null => {
 
 /** After seed upserts — fill `areaId` from explicit map or published area polygons. */
 export const backfillSeedCatalogLocationAreaIds = async (): Promise<void> => {
-  const areas: AreaDTO[] = await listPublishedAreas();
+  const areas: AreaDTO[] = await listPublishedDestinations();
   const { getMongoClient } = await import('../src/lib/mongo.js');
   const { COLLECTIONS } = await import('../src/lib/collections.js');
   const collection = getMongoClient()!.db().collection(COLLECTIONS.LOCATIONS);

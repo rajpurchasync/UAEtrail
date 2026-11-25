@@ -1,6 +1,6 @@
 import type { LocationDTO } from '@uaetrail/shared-types';
 import type { Location } from '../domain/types.js';
-import { findAreaById } from './areas-store.js';
+import { findDestinationById } from './destinations-store.js';
 import { locationHasRegistryCoverImage } from './catalog-registry-cover.js';
 import { LocationStatus } from '../domain/enums.js';
 import { toLocationDto } from './mappers.js';
@@ -22,7 +22,7 @@ export const enrichLocationDtoWithAreaHub = async (
 ): Promise<LocationDTO> => {
   const destinationId = resolveDestinationId(location);
   if (!destinationId) return dto;
-  const area = await findAreaById(destinationId);
+  const area = await findDestinationById(destinationId);
   if (!area || area.status !== 'published') return dto;
   return {
     ...dto,

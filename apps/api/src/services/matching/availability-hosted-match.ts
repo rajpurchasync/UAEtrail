@@ -5,7 +5,7 @@ import { getMongoClient } from '../../lib/mongo.js';
 import { listPublishedActivitiesForExploreMapFromMongo } from '../../lib/activity-read-assembler.js';
 import { createNotificationsMany } from '../../lib/notifications-store.js';
 import { activityDetailPath } from '../../lib/member-routes.js';
-import { findAreaById } from '../../lib/areas-store.js';
+import { findDestinationById } from '../../lib/destinations-store.js';
 import { isFixedAvailabilitySlot } from '@uaetrail/shared-types';
 import { logger } from '../../lib/logger.js';
 import type { AvailabilityKind, MemberAvailabilityDTO } from '@uaetrail/shared-types';
@@ -137,7 +137,7 @@ export const notifyAvailabilityHoldersInAreaOfHostedActivity = async (input: {
   activityType: string | null | undefined;
 }): Promise<void> => {
   try {
-    const area = await findAreaById(input.destinationId);
+    const area = await findDestinationById(input.destinationId);
     const areaName = area?.name ?? 'this area';
     const kindFilter = availabilityKindsForActivityType(input.activityType);
     if (kindFilter.length === 0) return;

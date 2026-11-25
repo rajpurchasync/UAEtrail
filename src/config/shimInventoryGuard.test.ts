@@ -218,8 +218,12 @@ describe('shimInventoryGuard (repo-wide coherence)', () => {
   it('SHIM-INV-11: MIG-DESTINATION-GEO retired FE/API resolution shims stay deleted', () => {
     expect(existsSync(join(ROOT, 'src/hooks/areaHubClientApi.ts'))).toBe(false);
     expect(existsSync(join(ROOT, 'src/pages/AreaDetailPage.tsx'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/api/domains/areas.ts'))).toBe(false);
     expect(existsSync(join(ROOT, 'apps/api/src/lib/area-resolution.ts'))).toBe(false);
+    expect(existsSync(join(ROOT, 'apps/api/src/lib/areas-store.ts'))).toBe(false);
+    expect(existsSync(join(ROOT, 'apps/api/src/routes/admin/registerAdminAreaRoutes.ts'))).toBe(false);
     expect(existsSync(join(ROOT, 'apps/api/src/lib/destination-resolution.ts'))).toBe(true);
+    expect(existsSync(join(ROOT, 'apps/api/src/lib/destinations-store.ts'))).toBe(true);
   });
 
   it('SHIM-INV-10: list subtree (except explorer shell) does not import retired explorer browse modules', () => {

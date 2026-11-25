@@ -3,10 +3,10 @@ import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import type { AreaDTO, AreaStatus } from '@uaetrail/shared-types';
 import { Link } from 'react-router-dom';
 import {
-  createAdminArea,
-  deleteAdminArea,
-  fetchAdminAreas,
-  updateAdminArea,
+  createAdminDestination,
+  deleteAdminDestination,
+  fetchAdminDestinations,
+  updateAdminDestination,
 } from '../../hooks/adminConsoleApi';
 import { DashboardLayout } from '../../components/layout';
 import { ADMIN_LINKS } from '../../constants';
@@ -121,7 +121,7 @@ export const Areas = () => {
     setLoading(true);
     setError(null);
     try {
-      const list = await fetchAdminAreas();
+      const list = await fetchAdminDestinations();
       if (!isActive()) return;
       setAreas(list);
     } catch {
@@ -200,9 +200,9 @@ export const Areas = () => {
         center: { latitude: form.latitude, longitude: form.longitude },
       };
       if (editingId) {
-        await updateAdminArea(editingId, payload);
+        await updateAdminDestination(editingId, payload);
       } else {
-        await createAdminArea(payload);
+        await createAdminDestination(payload);
       }
       closeModal();
       await load();
@@ -216,7 +216,7 @@ export const Areas = () => {
   const executeDelete = async () => {
     if (!confirmDelete) return;
     try {
-      await deleteAdminArea(confirmDelete.id);
+      await deleteAdminDestination(confirmDelete.id);
       setConfirmDelete(null);
       await load();
     } catch (err) {

@@ -485,10 +485,10 @@
       "http": { "method": "POST", "path": "/media/presign" }
     },
     {
-      "id": "areas.published_read",
+      "id": "destinations.published_read",
       "label": "Published areas for filters",
       "axis": "A_RBAC",
-      "contextId": "areas",
+      "contextId": "destinations",
       "resolver": { "module": "apps/api/src/routes/user/registerPublicDestinationRoutes.ts", "symbol": "registerPublicDestinationRoutes" },
       "http": { "method": "GET", "path": "/areas/published" }
     },

@@ -1,6 +1,6 @@
 import type { OutingCategory } from '@uaetrail/shared-types';
 import { ApiError } from '../lib/api-error.js';
-import { findPublishedAreaById } from '../lib/areas-store.js';
+import { findPublishedDestinationById } from '../lib/destinations-store.js';
 import {
   createWishlistItem,
   deleteWishlistItemById,
@@ -20,7 +20,7 @@ export const createMeWishlistItem = async (input: {
   let watchLatitude = input.watchLatitude ?? null;
   let watchLongitude = input.watchLongitude ?? null;
   if (input.destinationId) {
-    const area = await findPublishedAreaById(input.destinationId);
+    const area = await findPublishedDestinationById(input.destinationId);
     if (!area) {
       throw new ApiError(404, 'destination_not_found', 'Published destination not found.');
     }

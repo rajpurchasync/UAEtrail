@@ -345,27 +345,30 @@ export const approveAdminCommunityMemberRequest = async (
   await api.approveAdminCommunityMember(communityId, userId);
 };
 
-export const fetchAdminAreas = async (): Promise<AreaDTO[]> => {
-  const res = await api.listAdminAreas();
+export const fetchAdminDestinations = async (): Promise<AreaDTO[]> => {
+  const res = await api.listAdminDestinations();
   return res.data;
 };
 
-export const createAdminArea = async (
+export const createAdminDestination = async (
   payload: Omit<AreaDTO, 'id' | 'bounds' | 'createdAt' | 'updatedAt'> & {
     bounds?: AreaDTO['bounds'];
   }
 ): Promise<AreaDTO> => {
-  const res = await api.createAdminArea(payload);
+  const res = await api.createAdminDestination(payload);
   return res.data;
 };
 
-export const updateAdminArea = async (id: string, payload: Partial<AreaDTO>): Promise<AreaDTO> => {
-  const res = await api.updateAdminArea(id, payload);
+export const updateAdminDestination = async (
+  id: string,
+  payload: Partial<AreaDTO>
+): Promise<AreaDTO> => {
+  const res = await api.updateAdminDestination(id, payload);
   return res.data;
 };
 
-export const deleteAdminArea = async (id: string): Promise<void> => {
-  await api.deleteAdminArea(id);
+export const deleteAdminDestination = async (id: string): Promise<void> => {
+  await api.deleteAdminDestination(id);
 };
 
 export const createAdminPlace = async (payload: Partial<PlaceDTO>): Promise<PlaceDTO> => {

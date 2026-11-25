@@ -1,11 +1,11 @@
 import type { LocationDTO } from '@uaetrail/shared-types';
-import { findAreasByIds } from './areas-store.js';
+import { findDestinationsByIds } from './destinations-store.js';
 
 export const withPlaceAreaMetaMany = async (dtos: LocationDTO[]): Promise<LocationDTO[]> => {
   const ids = dtos
     .map((row) => row.destinationId?.trim())
     .filter((id): id is string => Boolean(id));
-  const areas = await findAreasByIds(ids);
+  const areas = await findDestinationsByIds(ids);
   const byId = new Map(areas.map((area) => [area.id, area]));
   return dtos.map((dto) => {
     const area = dto.destinationId ? byId.get(dto.destinationId) : undefined;

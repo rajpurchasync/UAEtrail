@@ -3,11 +3,11 @@ import { z } from 'zod';
 import { mediaUrlSchema } from '../../domain/location-submit.js';
 import { validate } from '../../middleware/validate.js';
 import {
-  createAdminAreaRecord,
-  deleteAdminAreaRecord,
-  updateAdminAreaRecord,
-} from '../../services/admin-area-commands.js';
-import { listAdminAreasForConsole } from '../../services/admin-area-read.js';
+  createAdminDestinationRecord,
+  deleteAdminDestinationRecord,
+  updateAdminDestinationRecord,
+} from '../../services/admin-destination-commands.js';
+import { listAdminDestinationsForConsole } from '../../services/admin-destination-read.js';
 
 const centerSchema = z.object({
   latitude: z.number().min(-90).max(90),
@@ -23,7 +23,7 @@ const boundsSchema = z
   )
   .min(3);
 
-const areaBodySchema = z.object({
+const destinationBodySchema = z.object({
   slug: z.string().min(2).max(80),
   name: z.string().min(2).max(120),
   region: z.string().min(2).max(80),
@@ -36,44 +36,43 @@ const areaBodySchema = z.object({
   imageUrl: z.union([mediaUrlSchema, z.literal(''), z.null()]).optional(),
 });
 
-const areaPatchSchema = areaBodySchema.partial();
+const destinationPatchSchema = destinationBodySchema.partial();
 
 const idParamSchema = z.object({ id: z.string().min(1) });
 
-type AdminDestinationPath = '/areas' | '/destinations';
-
-/** CRUD for logical destinations (Mongo `areas`). */
-const registerAdminDestinationCrudOnPath = (
-  adminRouter: Router,
-  base: AdminDestinationPath
-): void => {
-  adminRouter.get(base, async (_req, res, next) => {
+/** Platform admin destinations CRUD (`/admin/destinations`). */
+export const registerAdminDestinationRoutes = (adminRouter: Router): void => {
+  adminRouter.get('/destinations', async (_req, res, next) => {
     try {
-      const areas = await listAdminAreasForConsole();
-      res.json({ data: areas });
+      const rows = await listAdminDestinationsForConsole();
+      res.json({ data: rows });
     } catch (error) {
       next(error);
     }
   });
 
-  adminRouter.post(base, validate({ body: areaBodySchema }), async (req, res, next) => {
-    try {
-      const body = req.body as z.infer<typeof areaBodySchema>;
-      const created = await createAdminAreaRecord(body);
-      res.status(201).json({ data: created });
-    } catch (error) {
-      next(error);
+  adminRouter.post(
+    '/destinations',
+    validate({ body: destinationBodySchema }),
+    async (req, res, next) => {
+      try {
+        const body = req.body as z.infer<typeof destinationBodySchema>;
+        const created = await createAdminDestinationRecord(body);
+        res.status(201).json({ data: created });
+      } catch (error) {
+        next(error);
+      }
     }
-  });
+  );
 
   adminRouter.patch(
-    `${base}/:id`,
-    validate({ params: idParamSchema, body: areaPatchSchema }),
+    '/destinations/:id',
+    validate({ params: idParamSchema, body: destinationPatchSchema }),
     async (req, res, next) => {
       try {
         const { id } = req.params as z.infer<typeof idParamSchema>;
-        const body = req.body as z.infer<typeof areaPatchSchema>;
-        const updated = await updateAdminAreaRecord(id, body);
+        const body = req.body as z.infer<typeof destinationPatchSchema>;
+        const updated = await updateAdminDestinationRecord(id, body);
         res.json({ data: updated });
       } catch (error) {
         next(error);
@@ -82,22 +81,16 @@ const registerAdminDestinationCrudOnPath = (
   );
 
   adminRouter.delete(
-    `${base}/:id`,
+    '/destinations/:id',
     validate({ params: idParamSchema }),
     async (req, res, next) => {
       try {
         const { id } = req.params as z.infer<typeof idParamSchema>;
-        await deleteAdminAreaRecord(id);
+        await deleteAdminDestinationRecord(id);
         res.status(204).send();
       } catch (error) {
         next(error);
       }
     }
   );
-};
-
-/** Platform admin destinations CRUD (`/admin/destinations` canonical; `/admin/areas` compat). */
-export const registerAdminAreaRoutes = (adminRouter: Router): void => {
-  registerAdminDestinationCrudOnPath(adminRouter, '/destinations');
-  registerAdminDestinationCrudOnPath(adminRouter, '/areas');
 };

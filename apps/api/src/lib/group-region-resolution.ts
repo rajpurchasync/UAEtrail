@@ -2,7 +2,7 @@ import type { AreaDTO, GroupRegionLevels } from '@uaetrail/shared-types';
 import { normalizeGroupRegionLabel, stampGroupRegionLevelsFromGeo } from '@uaetrail/shared-types';
 import type { Location } from '../domain/types.js';
 import type { MongoActivityDoc } from './entity-builders.js';
-import { listPublishedAreas } from './areas-store.js';
+import { listPublishedDestinations } from './destinations-store.js';
 import { resolveActivityAnchorCoordinates } from './destination-resolution.js';
 import { reversePlaceLocality } from './place-search.js';
 import type { TenantRecord } from './tenant-store.js';
@@ -16,7 +16,7 @@ const loadPublishedAreasCached = async (): Promise<AreaDTO[]> => {
   if (publishedAreasCache && now - publishedAreasCacheAt < CACHE_MS) {
     return publishedAreasCache;
   }
-  publishedAreasCache = await listPublishedAreas();
+  publishedAreasCache = await listPublishedDestinations();
   publishedAreasCacheAt = now;
   return publishedAreasCache;
 };

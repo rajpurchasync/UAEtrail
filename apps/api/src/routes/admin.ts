@@ -12,7 +12,7 @@ import { registerAdminMetricsRoutes } from './admin/registerAdminMetricsRoutes.j
 import { registerAdminNotificationRoutes } from './admin/registerAdminNotificationRoutes.js';
 import { registerAdminPlaceRoutes } from './admin/registerAdminPlaceRoutes.js';
 import { registerAdminFacilityRoutes } from './admin/registerAdminFacilityRoutes.js';
-import { registerAdminAreaRoutes } from './admin/registerAdminAreaRoutes.js';
+import { registerAdminDestinationRoutes } from './admin/registerAdminDestinationRoutes.js';
 import { registerAdminSubmissionRoutes } from './admin/registerAdminSubmissionRoutes.js';
 import { registerAdminAlertRoutes } from './admin/registerAdminAlertRoutes.js';
 import { registerAdminAmenityReportRoutes } from './admin/registerAdminAmenityReportRoutes.js';
@@ -28,7 +28,7 @@ adminRouter.use(requireAuth, requireVerifiedEmail, requireRole([UserRole.PLATFOR
 registerAdminHostApplicationRoutes(adminRouter);
 registerAdminPlaceRoutes(adminRouter);
 registerAdminFacilityRoutes(adminRouter);
-registerAdminAreaRoutes(adminRouter);
+registerAdminDestinationRoutes(adminRouter);
 registerAdminSubmissionRoutes(adminRouter);
 registerAdminAlertRoutes(adminRouter);
 registerAdminAmenityReportRoutes(adminRouter);

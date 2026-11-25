@@ -19,8 +19,11 @@ describe('destination shim inventory guard (Phase F)', () => {
     );
   });
 
-  it('API src does not import area-resolution', () => {
+  it('API src does not import area-resolution or areas-store', () => {
     expect(read('apps/api/src/lib/activities-store.ts')).not.toMatch(/area-resolution/);
     expect(read('apps/api/src/lib/discovery-catalog-builder.ts')).not.toMatch(/area-resolution/);
+    expect(exists('apps/api/src/lib/areas-store.ts')).toBe(false);
+    expect(exists('apps/api/src/services/place-submit-area.ts')).toBe(false);
+    expect(exists('apps/api/src/services/admin-area-commands.ts')).toBe(false);
   });
 });
