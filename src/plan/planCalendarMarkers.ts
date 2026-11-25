@@ -4,6 +4,7 @@ import {
   formatExploreEventDateLabel,
   isFixedAvailabilitySlot,
   isOpenAvailabilitySlot,
+  isRetiredSeekingActivityModeValue,
 } from '@uaetrail/shared-types';
 import type { AvailabilitySlotCapacity, ScheduleModality } from '@uaetrail/shared-types';
 import type { ActivityRequestView } from '../api/types';
@@ -153,7 +154,7 @@ export const buildPlanCalendarMaps = (input: BuildPlanCalendarInput) => {
 
   for (const activity of input.hostedActivities) {
     if (activity.status === 'draft') continue;
-    if (activity.activityMode === 'seeking') continue;
+    if (isRetiredSeekingActivityModeValue(activity.activityMode)) continue;
     const day = activityScheduleDay(activity.date);
     if (!day) continue;
     ensureDay(markers, details, day);

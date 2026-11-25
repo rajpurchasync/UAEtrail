@@ -1,6 +1,7 @@
 import {
   exploreGeoQueryTokens,
   exploreMapItemIsAvailabilityCatalog,
+  exploreMapItemIsRetiredSeekingActivity,
   geoRefMatchesQuery,
   isTimeBoundExploreMapItem,
   type ExploreMapItemDTO,
@@ -89,7 +90,7 @@ const exploreItemCategorySearchTerms = (item: ExploreMapItemDTO): string[] => {
   }
   if (
     item.source === 'activity' &&
-    item.activityMode !== 'seeking' &&
+    !exploreMapItemIsRetiredSeekingActivity(item) &&
     item.activity?.publishingProfileKind === 'agency'
   ) {
     terms.push('agency', 'agencies', 'operator', 'operators', 'tour');

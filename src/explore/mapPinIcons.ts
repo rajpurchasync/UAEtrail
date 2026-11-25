@@ -1,4 +1,5 @@
 import {
+  isRetiredSeekingActivityModeValue,
   resolveMapPinEmoji,
   type ExploreActivityMode,
   type DiscoveryCardKind,
@@ -172,7 +173,7 @@ export const buildMapPinFaceHtml = ({
   const selectedClass = selected ? ' uaetrail-map-pin-marker--selected' : '';
   const iconHtml = hidePinIcon
     ? ''
-    : resolveMapPinIconHtml(kind, source, fontSizePx, placeKind, activityMode === 'seeking');
+    : resolveMapPinIconHtml(kind, source, fontSizePx, placeKind, isRetiredSeekingActivityModeValue(activityMode));
   const faceClass = hidePinIcon ? ' uaetrail-map-pin-face--dot' : '';
   const dataAttr = exploreItemId ? ` data-explore-item-id="${exploreItemId}"` : '';
   const countBadge = venueStackCountBadgeHtml(stackCount);
@@ -354,7 +355,7 @@ export const buildMapCollidedPinIconHtml = (
         entry.source,
         layout.emojiPx,
         undefined,
-        entry.activityMode === 'seeking'
+        isRetiredSeekingActivityModeValue(entry.activityMode)
       );
       return `<span class="uaetrail-map-collided-glyph" style="${glyphBoxStyle}">${icon}</span>`;
     })

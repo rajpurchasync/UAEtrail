@@ -1,4 +1,4 @@
-import type { PlaceKind } from '@uaetrail/shared-types';
+import type { PlaceKind, RetiredSeekingActivityModeWire } from '@uaetrail/shared-types';
 import type { MapPinKind, MapPinSource } from './mapPinTypes';
 
 export interface PlaceMapPin {
@@ -10,7 +10,7 @@ export interface PlaceMapPin {
   path: string;
   hostAvatar?: string | null;
   source?: MapPinSource;
-  activityMode?: 'hosted' | 'seeking';
+  activityMode?: 'hosted' | RetiredSeekingActivityModeWire;
   exploreItemId?: string;
   rideshareEndpoint?: 'from' | 'to';
   stackExploreItemIds?: string[];
@@ -32,7 +32,7 @@ export interface PlaceMapPin {
 export interface ColocatedMapPinEntry {
   activityType: MapPinKind;
   source?: MapPinSource;
-  activityMode?: 'hosted' | 'seeking';
+  activityMode?: 'hosted' | RetiredSeekingActivityModeWire;
   exploreItemId: string;
   stackExploreItemIds?: string[];
   stackCount?: number;

@@ -4,7 +4,11 @@ import type {
   ExploreMapItemDTO,
   PlaceKind,
 } from '@uaetrail/shared-types';
-import { PLACE_KIND_LABELS } from '@uaetrail/shared-types';
+import {
+  isRetiredSeekingActivityModeValue,
+  PLACE_KIND_LABELS,
+  type RetiredSeekingActivityModeWire,
+} from '@uaetrail/shared-types';
 import { exploreCatalogHubLabelFromExploreItem } from './exploreCatalogHubLabel';
 import { resolveExploreCoverImage } from './exploreCoverImage';
 import { formatExploreMapPinDateShort, isScheduledActivityMapPin } from './exploreMapPinTooltip';
@@ -93,9 +97,9 @@ export const resolveExploreMapPinPlaceHub = (item: ExploreMapItemDTO): string | 
 
 export const resolveMapPinActivityKindLabel = (
   kind: DiscoveryCardKind,
-  activityMode?: 'hosted' | 'seeking' | null
+  activityMode?: 'hosted' | RetiredSeekingActivityModeWire | null
 ): string | null => {
-  if (activityMode === 'seeking') return null;
+  if (isRetiredSeekingActivityModeValue(activityMode)) return null;
   return MAP_PIN_KIND_LABEL[kind] ?? 'Trip';
 };
 
@@ -159,7 +163,7 @@ export const resolveMapPinPlaceCaption = (options: {
 export const resolveMapPinActivityCaption = (options: {
   kind: DiscoveryCardKind;
   scheduleDate?: string | null;
-  activityMode?: 'hosted' | 'seeking' | null;
+  activityMode?: 'hosted' | RetiredSeekingActivityModeWire | null;
   source?: DiscoveryCardSource;
   mapZoom: number;
   mapStyle?: 'satellite' | 'map';

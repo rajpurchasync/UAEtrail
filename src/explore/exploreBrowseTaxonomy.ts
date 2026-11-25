@@ -1,4 +1,5 @@
 import {
+  exploreMapItemIsRetiredSeekingActivity,
   isGeographyMapSource,
   isTimeBoundExploreMapItem,
   type ExploreMapItemDTO,
@@ -118,7 +119,7 @@ export { mapItemMatchesShopsPill } from './exploreMapItemKind';
 /** Agency storefronts are not map pins — match hosted activities they publish. */
 export const mapItemIsAgencyHostedActivity = (item: ExploreMapItemDTO): boolean =>
   item.source === 'activity' &&
-  item.activityMode !== 'seeking' &&
+  !exploreMapItemIsRetiredSeekingActivity(item) &&
   item.activity?.publishingProfileKind === 'agency';
 
 /** Hosted activities + fixed availability pins (excludes legacy `activityMode: seeking` activities). */

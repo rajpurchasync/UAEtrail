@@ -70,6 +70,17 @@ for (const file of walkFiles(apiSrc)) {
 }
 const seekingActivityModeRefs = countPatternInTree(apiSrc, /activityMode.*seeking|'seeking'/g);
 
+const feActivityModeSeekingLiteralRe =
+  /activityMode\s*(?:===|!==)\s*'seeking'|activityMode\s*\?\s*'[^']*'\s*:\s*[^;]*'seeking'/;
+const feActivityModeSeekingLiteralViolations = [];
+for (const file of walkFiles(feSrc)) {
+  if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
+  const rel = file.slice(root.length + 1).replace(/\\/g, '/');
+  if (feActivityModeSeekingLiteralRe.test(readFileSync(file, 'utf8'))) {
+    feActivityModeSeekingLiteralViolations.push(rel);
+  }
+}
+
 const PARTICIPANT_INTENT_OPS_ALLOWLIST = new Set(
   [
     'apps/api/src/lib/collections.ts',
@@ -267,6 +278,8 @@ const baseline = {
       seekingActivityModeRefsInApiSrc: seekingActivityModeRefs,
       seekingActivityModeLiteralRefsInApiSrc: seekingActivityModeLiteralViolations.length,
       seekingActivityModeLiteralViolations,
+      feActivityModeSeekingLiteralRefs: feActivityModeSeekingLiteralViolations.length,
+      feActivityModeSeekingLiteralViolations,
       deployGateStatus: 'ops — run npm run seeking:deploy-gate per environment',
       opsScripts: [
         'seeking:deploy-gate',
@@ -333,6 +346,9 @@ const baseline = {
       : []),
     ...(seekingActivityModeLiteralViolations.length > 0
       ? ['W1c: activityMode seeking literal only in domain/retired-seeking-activity-mode.ts']
+      : []),
+    ...(feActivityModeSeekingLiteralViolations.length > 0
+      ? ['W1d: FE uses isRetiredSeekingActivityModeValue / exploreMapItemIsRetiredSeekingActivity']
       : []),
     ...(useSafeAsyncEffectHookExists ? ['W6d: delete src/hooks/useSafeAsyncEffect.ts after MIG-CLIENT-QUERY'] : []),
     ...(browseListUrlStateImportViolations.length > 0

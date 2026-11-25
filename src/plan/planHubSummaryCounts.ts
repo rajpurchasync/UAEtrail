@@ -5,7 +5,7 @@ import type {
   MyActivityDTO,
   WishlistItemDTO,
 } from '@uaetrail/shared-types';
-import { isFixedAvailabilitySlot } from '@uaetrail/shared-types';
+import { isFixedAvailabilitySlot, isRetiredSeekingActivityModeValue } from '@uaetrail/shared-types';
 import type { ActivityRequestView } from '../api/types';
 import { buildUpcomingPlanRows } from '../utils/activityHubSections';
 import { aggregateMemberGoals } from '../utils/memberGoalsAggregate';
@@ -22,7 +22,7 @@ export const countHostingUpcomingCommitments = (
   let count = 0;
   for (const event of activities) {
     if (event.status !== 'published') continue;
-    if (event.activityMode === 'seeking') continue;
+    if (isRetiredSeekingActivityModeValue(event.activityMode)) continue;
     if (new Date(event.date) < today) continue;
     count += 1;
   }

@@ -2,6 +2,7 @@ import type { ActivityDTO, AvailabilityKind } from '@uaetrail/shared-types';
 import {
   availabilityKindsForActivityType,
   isPublishedActivityStatus,
+  isRetiredSeekingActivityModeValue,
 } from '@uaetrail/shared-types';
 import { fetchExplorePeopleAvailability } from '../hooks/memberPeopleClientApi';
 
@@ -13,7 +14,7 @@ export const buildHostPublishAvailabilityNotice = async (
   activity: ActivityDTO,
   hostUserId: string
 ): Promise<string | null> => {
-  if ((activity as { activityMode?: string | null }).activityMode === 'seeking') return null;
+  if (isRetiredSeekingActivityModeValue(activity.activityMode)) return null;
   const day = activity.date?.trim();
   if (!day) return null;
   const kind = primaryAvailabilityKind(activity.activityType);

@@ -7,7 +7,11 @@
  * Places (trails, camps, shops, …) are a separate catalog — `PlaceActivityType` on `LocationDTO`.
  */
 
-import type { ScheduledActivityType } from '@uaetrail/shared-types';
+import {
+  isRetiredSeekingActivityModeValue,
+  type RetiredSeekingActivityModeWire,
+  type ScheduledActivityType,
+} from '@uaetrail/shared-types';
 import { EXPLORE_MAP_PATH } from './platform';
 import { PRODUCT_ACTIVITIES_EXPLORE_BLURB } from '../content/productNorthStar';
 
@@ -117,9 +121,9 @@ export const activityDetailEyebrow = (type: ScheduledActivityType): string =>
 /** Banner eyebrow when `activityMode` is on the wire (retired seeking posts use archive label). */
 export const activityDetailEyebrowForActivity = (
   type: ScheduledActivityType,
-  activityMode?: 'hosted' | 'seeking' | null
+  activityMode?: 'hosted' | RetiredSeekingActivityModeWire | null
 ): string => {
-  if (activityMode === 'seeking') return 'Archived find post';
+  if (isRetiredSeekingActivityModeValue(activityMode)) return 'Archived find post';
   return activityDetailEyebrow(type);
 };
 

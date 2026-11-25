@@ -13,6 +13,8 @@
       "seekingActivityModeRefsInApiSrc": 3,
       "seekingActivityModeLiteralRefsInApiSrc": 0,
       "seekingActivityModeLiteralViolations": [],
+      "feActivityModeSeekingLiteralRefs": 0,
+      "feActivityModeSeekingLiteralViolations": [],
       "deployGateStatus": "ops — run npm run seeking:deploy-gate per environment",
       "opsScripts": [
         "seeking:deploy-gate",
@@ -68,7 +70,7 @@
     }
   },
   "governance": {
-    "guardTestFileCount": 160
+    "guardTestFileCount": 161
   },
   "nextActions": []
 }

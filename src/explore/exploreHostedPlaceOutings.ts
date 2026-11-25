@@ -1,4 +1,8 @@
-import { isTimeBoundExploreMapItem, type ExploreMapItemDTO } from '@uaetrail/shared-types';
+import {
+  exploreMapItemIsRetiredSeekingActivity,
+  isTimeBoundExploreMapItem,
+  type ExploreMapItemDTO,
+} from '@uaetrail/shared-types';
 
 const catalogLocationId = (item: ExploreMapItemDTO): string | null => {
   const fromCard = item.locationCard?.id?.trim();
@@ -32,7 +36,7 @@ export const hostedPlaceLocationIdsFromCatalog = (catalog: readonly ExploreMapIt
   const ids = new Set<string>();
   for (const item of catalog) {
     if (!isTimeBoundExploreMapItem(item)) continue;
-    if (item.activityMode === 'seeking') continue;
+    if (exploreMapItemIsRetiredSeekingActivity(item)) continue;
     const locationId = catalogLocationId(item);
     if (locationId) ids.add(locationId);
   }
@@ -46,7 +50,7 @@ export const hostedOutingSummariesByPlaceId = (
   const byPlace = new Map<string, HostedOutingPlaceSummary>();
   for (const item of catalog) {
     if (!isTimeBoundExploreMapItem(item)) continue;
-    if (item.activityMode === 'seeking') continue;
+    if (exploreMapItemIsRetiredSeekingActivity(item)) continue;
     const locationId = catalogLocationId(item);
     if (!locationId) continue;
     const dateIso = outingDateIso(item);

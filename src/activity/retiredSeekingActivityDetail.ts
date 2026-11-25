@@ -1,4 +1,4 @@
-import type { ActivityDetailDTO } from '@uaetrail/shared-types';
+import { isRetiredSeekingActivityModeValue, type ActivityDetailDTO } from '@uaetrail/shared-types';
 
 /** Retired `activityMode: seeking` outings are off the map; detail is read-only archive. */
 export const RETIRED_SEEKING_ACTIVITY_DETAIL_HEADER = 'Archived find post';
@@ -8,4 +8,4 @@ export const RETIRED_SEEKING_ACTIVITY_DETAIL_NOTICE =
 
 export const activityDetailIsRetiredSeekingPost = (
   activity: Pick<ActivityDetailDTO, 'activityMode'>
-): boolean => activity.activityMode === 'seeking';
+): boolean => isRetiredSeekingActivityModeValue(activity.activityMode);

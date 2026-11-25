@@ -10,9 +10,17 @@ export type ExploreMapItemActivityModeFields = {
   id?: string;
 };
 
+/** Legacy Mongo value — not product wire; centralized for guards and purge residue checks. */
+export const RETIRED_SEEKING_ACTIVITY_MODE = 'seeking' as const;
+
+export type RetiredSeekingActivityModeWire = typeof RETIRED_SEEKING_ACTIVITY_MODE;
+
+export const isRetiredSeekingActivityModeValue = (mode: unknown): mode is RetiredSeekingActivityModeWire =>
+  mode === RETIRED_SEEKING_ACTIVITY_MODE;
+
 /** Legacy DB rows may still store `activityMode: seeking` until purge migration runs. */
 const isRetiredSeekingActivityMode = (item: { activityMode?: string | null }) =>
-  item.activityMode === 'seeking';
+  isRetiredSeekingActivityModeValue(item.activityMode);
 
 /** Resolve mode from wire fields — does not infer seeking from legacy ids. */
 export const resolveExploreMapActivityMode = (

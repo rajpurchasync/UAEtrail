@@ -1,4 +1,4 @@
-import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { RETIRED_SEEKING_ACTIVITY_MODE, type ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { activityDetailPath } from '../config/routingCatalog';
 
 const base = (
@@ -35,7 +35,7 @@ export const excludedSeekingActivityMapItem = (
     id: partial.id ?? `activity:${activityId}`,
     kind: 'hiking',
     source: 'activity',
-    activityMode: 'seeking' as ExploreMapItemDTO['activityMode'],
+    activityMode: RETIRED_SEEKING_ACTIVITY_MODE as ExploreMapItemDTO['activityMode'],
     path: activityDetailPath(activityId),
     ...partial,
   });

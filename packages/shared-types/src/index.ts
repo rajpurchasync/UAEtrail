@@ -876,9 +876,12 @@ export {
   exploreMapItemIsAvailabilityCatalog,
   exploreMapItemIsHostedActivity,
   exploreMapItemIsRetiredSeekingActivity,
+  isRetiredSeekingActivityModeValue,
   isTimeBoundExploreMapItem,
   resolveExploreMapActivityMode,
+  RETIRED_SEEKING_ACTIVITY_MODE,
 } from './explore-activity-mode.js';
+export type { RetiredSeekingActivityModeWire } from './explore-activity-mode.js';
 
 export type ParticipantIntentKind = 'hiking' | 'camping' | 'event' | 'guide' | 'rideshare' | 'other';
 

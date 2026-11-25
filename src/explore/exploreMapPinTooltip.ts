@@ -1,4 +1,9 @@
-import { isGeographyMapSource, type DiscoveryCardKind, type DiscoveryCardSource } from '@uaetrail/shared-types';
+import {
+  isGeographyMapSource,
+  isRetiredSeekingActivityModeValue,
+  type DiscoveryCardKind,
+  type DiscoveryCardSource,
+} from '@uaetrail/shared-types';
 import type { PlaceMapPin } from '../components/ui/placesMapTypes';
 
 const CLUSTER_TOOLTIP_BUCKET_ORDER = ['hike', 'camping', 'other'] as const;
@@ -64,7 +69,7 @@ export const isScheduledActivityMapPin = (pin: {
   source?: DiscoveryCardSource;
   activityMode?: PlaceMapPin['activityMode'];
 }): boolean => {
-  if (pin.activityMode === 'hosted' || pin.activityMode === 'seeking') return true;
+  if (pin.activityMode === 'hosted' || isRetiredSeekingActivityModeValue(pin.activityMode)) return true;
   const source = pin.source;
   if (!source) return false;
   if (source === 'availability') return true;
