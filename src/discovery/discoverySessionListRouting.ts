@@ -4,6 +4,7 @@
 export {
   crewsHubHomePath,
   exploreMapPathFromListSearch,
+  findCrewCommunityDiscoveryPath,
   findCrewDiscoveryListPath,
   isFindCrewDiscoveryListPath,
   listDiscoveryPath,

@@ -18,7 +18,7 @@ import {
   findCrewCommunityDiscoveryPath,
   findCrewDiscoveryListPath,
   tripsListHomePath,
-} from '@/list/browse/browseListRouting';
+} from '@/discovery/discoverySession';
 import { CREW_BROWSE_LIST_STACK } from '@/crew-discovery/panel/crewBrowse/crewBrowseListTheme';
 import { useMeCommunityDiscoverList } from '@/crew-discovery/hooks/useMeCommunityDiscoverList';
 import { useLeaveDiscoverableCommunity } from '@/crew-discovery/hooks/useCommunityDiscoverDetail';
@@ -42,7 +42,7 @@ import { navigateToGroupChatFromSocial } from '@/utils/activityGroupChatNav';
 import { useNavigate } from 'react-router-dom';
 import { MESSAGES_CHAT_RETURN_TO_KEY } from '@/utils/activityGroupChatNav';
 import { mobileBackNavState } from '@/utils/mobileBackNav';
-import { crewsHubHomePath } from '@/list/browse/browseListRouting';
+import { crewsHubHomePath } from '@/discovery/discoverySession';
 import { PRODUCT_FRIENDS_SURFACE_LABEL } from '@/content/productNorthStar';
 import { MyCrewMemberRow } from './MyCrewMemberRow';
 import { formatFollowingSince, formatFriendSince, friendPresenceFootnote } from './friendPresenceCopy';

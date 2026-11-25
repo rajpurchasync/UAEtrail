@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { browseListBucketTabClass } from '@/list/browse/listChromeTheme';
 import { CREW_FIND_SURFACE_LABEL } from '@/crew-discovery/ui/crewHubNavCopy';
 import { PRODUCT_MY_CREW_SURFACE_TITLE } from '@/content/productNorthStar';
-import { crewsHubHomePath, findCrewDiscoveryListPath } from '@/list/browse/browseListRouting';
+import { crewsHubHomePath, findCrewDiscoveryListPath } from '@/discovery/discoverySession';
 import { parseCrewPeopleSurface } from '@/crew-discovery/crewPeopleSurface';
 
 /** My crew ↔ Find crew — same segmented control pattern as Trips / Places bucket toggle. */

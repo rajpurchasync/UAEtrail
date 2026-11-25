@@ -237,6 +237,17 @@ for (const file of walkFiles(join(feSrc, 'explore'))) {
   }
 }
 
+const w4pBrowseListRoutingViolations = [];
+for (const dir of ['my-crew', 'list/shell', 'list/explorer', 'list/crews']) {
+  for (const file of walkFiles(join(feSrc, dir))) {
+    if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
+    const rel = file.slice(root.length + 1).replace(/\\/g, '/');
+    if (/list\/browse\/browseListRouting/.test(readFileSync(file, 'utf8'))) {
+      w4pBrowseListRoutingViolations.push(rel);
+    }
+  }
+}
+
 const exploreImportsPeopleListBrowseUrl = [];
 for (const file of walkFiles(join(feSrc, 'explore'))) {
   if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
@@ -321,6 +332,8 @@ const baseline = {
       exploreSplitFacadeViolations,
       listBrowseSplitDiscoveryFacadeImports: listBrowseSplitFacadeViolations.length,
       listBrowseSplitFacadeViolations,
+      myCrewListShellBrowseListRoutingImports: w4pBrowseListRoutingViolations.length,
+      myCrewListShellBrowseListRoutingViolations: w4pBrowseListRoutingViolations,
     },
     w6: {
       pagesUsingUseSafeAsyncEffect: useSafeAsyncEffectPages.length,
@@ -386,6 +399,9 @@ const baseline = {
       : []),
     ...(exploreImportsPeopleListBrowseUrl.length > 0
       ? ['W4o: explore imports people list URL via discoverySessionPeopleUrl barrel']
+      : []),
+    ...(w4pBrowseListRoutingViolations.length > 0
+      ? ['W4p: my-crew/list shell routes via discoverySession barrel']
       : []),
     ...(exploreImportsBrowseListUrlState.length > 0
       ? ['W4: import discovery params from src/discovery/discoverySessionParams.ts not list/']

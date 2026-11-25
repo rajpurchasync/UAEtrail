@@ -6,8 +6,7 @@ import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import type { BrowseListFilterState } from '../browse/browseListFilters';
 import type { BrowseMainCategoryKey } from '../browse/browseListTaxonomy';
-import { scopeBrowseListStateForListCat } from '../browse/browseListMapHandoff';
-import { exploreMapPathFromListSearch } from '../browse/browseListRouting';
+import { exploreMapPathFromListSearch, scopeBrowseListStateForListCat } from '../../discovery/discoverySession';
 import { buildListFeedCards } from '../browse/buildListFeedCards';
 import { sortBrowseListCards, type BrowseListSortMode } from '../browse/listBrowseSort';
 import {

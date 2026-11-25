@@ -68,6 +68,22 @@ describe('discoverySessionParamsGuard', () => {
     }
   });
 
+  it('W4p my-crew and list shell import list routing via discoverySession barrel', () => {
+    const violations: string[] = [];
+    for (const rel of collectProdTsUnder(join(ROOT, 'src/my-crew'))) {
+      if (/list\/browse\/browseListRouting/.test(read(rel))) violations.push(rel);
+    }
+    for (const rel of [
+      'src/list/shell/useListDiscoveryExploreSearchFeedModel.ts',
+      'src/list/explorer/FindCrewHubBackLink.tsx',
+      'src/list/explorer/ListCrewsExplorer.tsx',
+      'src/list/crews/CrewsHubAppBar.tsx',
+    ]) {
+      if (/list\/browse\/browseListRouting/.test(read(rel))) violations.push(rel);
+    }
+    expect(violations).toEqual([]);
+  });
+
   it('routingCatalog and geo browse import list paths via discoverySession barrel', () => {
     for (const rel of ['src/config/routingCatalog.ts', 'src/geo/GeoBrowsePane.tsx']) {
       const content = read(rel);

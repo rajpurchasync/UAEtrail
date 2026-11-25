@@ -18,6 +18,7 @@ export { scopeBrowseListStateForListCat } from './discoverySessionMapHandoff';
 export {
   crewsHubHomePath,
   exploreMapPathFromListSearch,
+  findCrewCommunityDiscoveryPath,
   findCrewDiscoveryListPath,
   isFindCrewDiscoveryListPath,
   listDiscoveryPath,

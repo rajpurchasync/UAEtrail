@@ -7,7 +7,7 @@ import type {
 } from '@/crew-discovery/crewBrowseState';
 import type { ExploreActivityDatePreset } from '@/explore/exploreActivityDateFilter';
 import type { BrowseListFilterState } from '@/list/browse/browseListFilters';
-import { crewsHubHomePath } from '@/list/browse/browseListRouting';
+import { crewsHubHomePath } from '@/discovery/discoverySession';
 import { LIST_APP_BAR, LIST_CHROME } from '@/list/browse/listChromeTheme';
 import { FIND_CREW_SEARCH_TITLE } from './findCrewSearchCopy';
 import { EXPLORE_SEARCH_PAGE_COLUMN } from '@/explore/search/ExploreSearchPageLayout';

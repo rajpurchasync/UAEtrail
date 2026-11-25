@@ -55,7 +55,9 @@
       "exploreSplitDiscoveryFacadeImports": 0,
       "exploreSplitFacadeViolations": [],
       "listBrowseSplitDiscoveryFacadeImports": 0,
-      "listBrowseSplitFacadeViolations": []
+      "listBrowseSplitFacadeViolations": [],
+      "myCrewListShellBrowseListRoutingImports": 0,
+      "myCrewListShellBrowseListRoutingViolations": []
     },
     "w6": {
       "pagesUsingUseSafeAsyncEffect": 0,

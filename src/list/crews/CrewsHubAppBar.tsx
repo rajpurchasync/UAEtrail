@@ -2,7 +2,7 @@ import { UserSearch } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PRODUCT_MY_CREW_SURFACE_TITLE } from '@/content/productNorthStar';
 import { CREW_FIND_SURFACE_LABEL } from '@/crew-discovery/ui/crewHubNavCopy';
-import { findCrewDiscoveryListPath } from '@/list/browse/browseListRouting';
+import { findCrewDiscoveryListPath } from '@/discovery/discoverySession';
 import { LIST_APP_BAR, LIST_CHROME, LIST_SEARCH } from '../browse/listChromeTheme';
 
 /** My crew hub page — separate route from Find crew; matches list identity chrome. */
