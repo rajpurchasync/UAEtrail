@@ -24,7 +24,7 @@ const baseActivity = (): MongoActivityDoc =>
   }) as MongoActivityDoc;
 
 describe('resolveDestinationIdForActivityPublish', () => {
-  it('prefers place.destinationId over activity.destinationId', async () => {
+  it('uses place.destinationId only (ignores legacy activity.destinationId)', async () => {
     const activity = { ...baseActivity(), destinationId: 'legacy-activity-dest' };
     const location = { destinationId: 'place-dest' } as Location;
     await expect(resolveDestinationIdForActivityPublish(activity, location)).resolves.toBe(

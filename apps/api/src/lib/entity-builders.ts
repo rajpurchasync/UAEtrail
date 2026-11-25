@@ -473,7 +473,6 @@ export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: stri
     publishedAt: data.publishedAt ?? null,
     outingCategory: data.outingCategory ?? null,
     outingTopic: data.outingTopic ?? null,
-    ...catalogDestinationIdUpdate(data.destinationId),
     groupRegionLevels: data.groupRegionLevels ?? null,
     activityMode: data.activityMode ?? 'hosted',
     discoverCommunityId: data.discoverCommunityId ?? null,

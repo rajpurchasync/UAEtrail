@@ -104,15 +104,27 @@ export const runDestinationGeoMigrations = async (db: Db): Promise<void> => {
   await backfillDestinationIdField(db, COLLECTIONS.LOCATIONS);
   await backfillDestinationIdField(db, COLLECTIONS.FACILITIES);
   await backfillDestinationIdField(db, COLLECTIONS.MEMBER_AVAILABILITY);
-  await backfillDestinationIdField(db, COLLECTIONS.ACTIVITIES);
   await backfillGeoNodeCatalogDestinationId(db);
   await backfillFacilityOnSiteId(db);
   await stripLegacyCatalogFields(db, COLLECTIONS.LOCATIONS);
   await stripLegacyCatalogFields(db, COLLECTIONS.FACILITIES);
   await stripLegacyCatalogFields(db, COLLECTIONS.MEMBER_AVAILABILITY);
-  await stripLegacyCatalogFields(db, COLLECTIONS.ACTIVITIES);
   await backfillDestinationIdField(db, COLLECTIONS.USER_WISHLIST);
   await stripLegacyCatalogFields(db, COLLECTIONS.USER_WISHLIST);
   await stripLegacyGeoNodeCatalogAreaId(db);
   await stripLegacyFacilitySiteField(db);
+};
+
+/** Hosted activities take catalog destination from linked place only — drop denormalized field. */
+export const unsetDenormalizedActivityDestinationId = async (db: Db): Promise<void> => {
+  const col = db.collection(COLLECTIONS.ACTIVITIES);
+  const result = await col.updateMany(
+    { destinationId: { $exists: true } },
+    { $unset: { destinationId: '' } }
+  );
+  if (result.modifiedCount > 0) {
+    console.log(
+      `[mongo] MIG-DESTINATION-GEO: removed denormalized destinationId on activities: ${result.modifiedCount}`
+    );
+  }
 };

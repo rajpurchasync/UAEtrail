@@ -126,7 +126,7 @@ export const attachGeoRefToActivity = async (
   const resolved = await resolveGeoRefForPin({
     latitude: doc.meetingLat ?? doc.startLat ?? location?.latitude ?? null,
     longitude: doc.meetingLng ?? doc.startLng ?? location?.longitude ?? null,
-    destinationId: doc.destinationId ?? location?.destinationId,
+    destinationId: location?.destinationId ?? null,
     countryCode: location?.countryCode ?? 'AE',
     region: location?.region ?? null,
     venueName: location?.name ?? doc.meetingPoint,

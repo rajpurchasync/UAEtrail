@@ -106,7 +106,7 @@ export const resolveDestinationIdForActivity = (
   location?: Pick<Location, 'destinationId'> | null
 ): string | null => resolveDestinationId(location);
 
-/** Public publish destination — persisted place or activity `destinationId` only. */
+/** Public publish destination — `place.destinationId` only (no denormalized activity field). */
 export const resolveDestinationIdForActivityPublish = async (
   activity: MongoActivityDoc,
   location?: Location | null

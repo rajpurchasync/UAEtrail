@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   exploreMapItemMatchesGeoSearch,
+  mongoActivityGeoSearchFilter,
   mongoGeoSearchFilter,
 } from '../src/lib/explore-geo-search.js';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
@@ -36,5 +37,24 @@ describe('explore geo search contract', () => {
     expect(filter).toBeTruthy();
     const empty = await mongoGeoSearchFilter({});
     expect(empty).toBeNull();
+  });
+
+  it('mongoActivityGeoSearchFilter scopes destination via locationId, not activities.destinationId', async () => {
+    const destOnly = await mongoActivityGeoSearchFilter(
+      { destination: 'hatta' },
+      ['place-a', 'place-b']
+    );
+    expect(destOnly).toEqual({ locationId: { $in: ['place-a', 'place-b'] } });
+
+    const destPlusGeo = await mongoActivityGeoSearchFilter(
+      { destination: 'hatta', q: 'dubai' },
+      ['place-a']
+    );
+    expect(destPlusGeo).toEqual({
+      $and: [{ locationId: { $in: ['place-a'] } }, { 'geoRef.searchTokens': { $all: ['dubai'] } }],
+    });
+
+    const noPlaces = await mongoActivityGeoSearchFilter({ destination: 'hatta' }, []);
+    expect(noPlaces).toEqual({ locationId: { $in: [] } });
   });
 });

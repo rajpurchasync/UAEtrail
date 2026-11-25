@@ -81,7 +81,7 @@ export const buildExploreMapItemFromActivity = (
     toLabel: display.toLabel,
     groupRegionLevels: activity.groupRegionLevels ?? location?.groupRegionLevels ?? null,
     geoRef: activity.geoRef ?? location?.geoRef ?? null,
-    destinationId: activity.destinationId ?? location?.destinationId ?? null,
+    destinationId: location?.destinationId ?? null,
     destinationSlug: location?.destinationSlug ?? undefined,
     placeHubLabel: location?.placeHubLabel ?? undefined,
     destinationName: location?.destinationName ?? undefined,

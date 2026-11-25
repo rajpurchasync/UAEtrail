@@ -50,6 +50,18 @@ describe('catalog destination wire guard', () => {
       /resolveExploreDestinationSlugQuery\(query\)[\s\S]{0,120}kinds:\s*\['area',\s*'state'\]/
     );
     expect(geo).toMatch(/exploreMapItemMatchesDestinationSlug/);
+    expect(geo).toMatch(/mongoActivityGeoSearchFilter/);
+    expect(geo).toMatch(/locationId: \{ \$in:/);
+  });
+
+  it('hosted activities do not persist destinationId on create or publish', () => {
+    const builders = read('apps/api/src/lib/entity-builders.ts');
+    const publish = read('apps/api/src/lib/activities-store.ts');
+    const createBlock = builders.match(/buildActivityFromCreateInput[\s\S]{0,2200}/);
+    expect(createBlock?.[0]).toBeTruthy();
+    expect(createBlock![0]).not.toMatch(/catalogDestinationIdUpdate\(data\.destinationId\)/);
+    expect(publish).not.toMatch(/\?\s*\{\s*destinationId\s*\}/);
+    expect(publish).not.toMatch(/destinationId && !draftDoc/);
   });
 
   it('API tests do not pass areaId into createLocationRecord / createFacilityRecord', () => {

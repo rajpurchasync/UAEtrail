@@ -1,4 +1,5 @@
 import {
+  resolveDestinationId,
   type OutingCategory,
   type OutingTopic,
 } from '@uaetrail/shared-types';
@@ -83,7 +84,10 @@ type RetiredRideshareMongoFields = {
   linkedCarpoolActivityId?: string | null;
 };
 
-const mongoEventToEvent = (doc: MongoActivityDoc): Activity => {
+const mongoEventToEvent = (
+  doc: MongoActivityDoc,
+  location?: Pick<Location, 'destinationId'> | null
+): Activity => {
   const retired = doc as MongoActivityDoc & RetiredRideshareMongoFields;
   return {
   id: doc._id,
@@ -135,7 +139,7 @@ const mongoEventToEvent = (doc: MongoActivityDoc): Activity => {
   publishedAt: doc.publishedAt,
   outingCategory: (doc.outingCategory as OutingCategory | null | undefined) ?? null,
   outingTopic: (doc.outingTopic as OutingTopic | null | undefined) ?? null,
-  destinationId: doc.destinationId ?? null,
+  destinationId: resolveDestinationId(location) ?? null,
   groupRegionLevels: doc.groupRegionLevels ?? null,
   activityMode: doc.activityMode === 'seeking' ? null : doc.activityMode ?? null,
   groupChatPostPolicy: doc.groupChatPostPolicy ?? null,
@@ -282,7 +286,7 @@ const assembleEventsWithPublicRelations = async (
 
     return [
       {
-        ...mongoEventToEvent(doc),
+        ...mongoEventToEvent(doc, location),
         location,
         tenant: toPublicActivityTenant(tenant),
         guide: doc.hostId ? toGuidePreview(userMap.get(doc.hostId)) : { profile: null },
@@ -732,7 +736,7 @@ const assembleEventsForExploreMap = async (
 
     return [
       {
-        ...mongoEventToEvent(doc),
+        ...mongoEventToEvent(doc, location),
         location,
         tenant: toPublicActivityTenant(tenant),
         guide: doc.hostId ? toGuidePreview(userMap.get(doc.hostId)) : { profile: null },
@@ -785,7 +789,7 @@ const assembleTenantEventsWithRelations = async (
 
     return [
       {
-        ...mongoEventToEvent(doc),
+        ...mongoEventToEvent(doc, location),
         location,
         tenant,
         guide: doc.hostId ? toGuidePreview(userMap.get(doc.hostId)) : { profile: null },

@@ -437,9 +437,6 @@ export const publishActivityById = async (activityId: string) => {
     {
       status: ActivityStatus.PUBLISHED,
       publishedAt,
-      ...(destinationId && !draftDoc?.destinationId?.trim()
-        ? { destinationId }
-        : {}),
       ...(publishGroupRegionLevels ? { groupRegionLevels: publishGroupRegionLevels } : {}),
     },
     {

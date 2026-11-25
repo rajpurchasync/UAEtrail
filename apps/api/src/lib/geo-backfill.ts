@@ -803,7 +803,7 @@ export const backfillGeoRefOnPins = async (
     (doc) => ({
       latitude: (doc.meetingLat ?? doc.startLat) as number | null,
       longitude: (doc.meetingLng ?? doc.startLng) as number | null,
-      destinationId: (doc.destinationId as string) ?? null,
+      destinationId: null,
       countryCode: 'AE',
       region: null,
       venueName: (doc.meetingPoint as string) ?? (doc.title as string) ?? null,

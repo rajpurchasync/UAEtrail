@@ -123,23 +123,66 @@ export const mongoCatalogDestinationFilter = async (
   return { destinationId: row.id };
 };
 
+const locationGeoSearchFilter = async (
+  query: ExploreGeoSearchQuery
+): Promise<Filter<Document> | null> => {
+  const adminFilter = await mongoGeoSearchFilter(query);
+  const catalogFilter = await mongoCatalogDestinationFilter(query.destination);
+  const parts = [adminFilter, catalogFilter].filter(Boolean) as Filter<Document>[];
+  if (parts.length === 0) return null;
+  return parts.length === 1 ? parts[0]! : { $and: parts };
+};
+
+/** Activities inherit catalog destination via `locationId` → place row (no `activities.destinationId`). */
+export const mongoActivityGeoSearchFilter = async (
+  query: ExploreGeoSearchQuery,
+  locationIdsInDestination: string[] | null
+): Promise<Filter<Document> | null> => {
+  const adminFilter = await mongoGeoSearchFilter(query);
+  const destinationSlug = resolveExploreDestinationSlugQuery(query);
+  if (!adminFilter && !destinationSlug) return null;
+
+  if (destinationSlug) {
+    if (!locationIdsInDestination?.length) {
+      return { locationId: { $in: [] as string[] } } as unknown as Filter<Document>;
+    }
+    const byPlace = { locationId: { $in: locationIdsInDestination } } as unknown as Filter<Document>;
+    return adminFilter ? { $and: [byPlace, adminFilter] } : byPlace;
+  }
+
+  return adminFilter;
+};
+
 export const findPinIdsMatchingGeoSearch = async (
   query: ExploreGeoSearchQuery,
   limit = 400
 ): Promise<{ locationIds: string[]; activityIds: string[]; facilityIds: string[] }> => {
-  const adminFilter = await mongoGeoSearchFilter(query);
-  const catalogFilter = await mongoCatalogDestinationFilter(query.destination);
-  const parts = [adminFilter, catalogFilter].filter(Boolean) as Filter<Document>[];
-  if (parts.length === 0) {
+  const locationFilter = await locationGeoSearchFilter(query);
+  if (!locationFilter) {
     return { locationIds: [], activityIds: [], facilityIds: [] };
   }
-  const filter = parts.length === 1 ? parts[0]! : { $and: parts };
 
   const db = getMongoClient()!.db();
-  const [locations, activities, facilities] = await Promise.all([
-    db.collection(COLLECTIONS.LOCATIONS).find(filter as never).project({ _id: 1 }).limit(limit).toArray(),
-    db.collection(COLLECTIONS.ACTIVITIES).find(filter as never).project({ _id: 1 }).limit(limit).toArray(),
-    db.collection(COLLECTIONS.FACILITIES).find(filter as never).project({ _id: 1 }).limit(limit).toArray(),
+  const catalogFilter = await mongoCatalogDestinationFilter(query.destination);
+  let locationIdsForActivities: string[] | null = null;
+  if (catalogFilter) {
+    const destPlaces = await db
+      .collection(COLLECTIONS.LOCATIONS)
+      .find(catalogFilter as never)
+      .project({ _id: 1 })
+      .limit(limit)
+      .toArray();
+    locationIdsForActivities = destPlaces.map((d) => String(d._id));
+  }
+
+  const activityFilter = await mongoActivityGeoSearchFilter(query, locationIdsForActivities);
+
+  const [locations, facilities, activities] = await Promise.all([
+    db.collection(COLLECTIONS.LOCATIONS).find(locationFilter as never).project({ _id: 1 }).limit(limit).toArray(),
+    db.collection(COLLECTIONS.FACILITIES).find(locationFilter as never).project({ _id: 1 }).limit(limit).toArray(),
+    activityFilter
+      ? db.collection(COLLECTIONS.ACTIVITIES).find(activityFilter as never).project({ _id: 1 }).limit(limit).toArray()
+      : Promise.resolve([]),
   ]);
   return {
     locationIds: locations.map((d) => String(d._id)),

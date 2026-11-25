@@ -21,6 +21,7 @@ import { findTenantById } from './tenant-store.js';
 import { syncTenantMembershipStatusForTenant } from './tenant-access.js';
 import { normalizeSearchRegexInput } from './regex-search.js';
 import { enrichLocationsWithHeavyReadsBatch } from './place-heavy-store.js';
+import { resolveDestinationId } from '@uaetrail/shared-types';
 
 type MongoAuditLog = {
   _id: string;
@@ -117,7 +118,10 @@ const mapMongoTenant = (doc: MongoTenantDoc): Tenant => {
   return { id: _id, ...rest };
 };
 
-const mapMongoActivity = (doc: MongoActivityDoc) : Activity => ({
+const mapMongoActivity = (
+  doc: MongoActivityDoc,
+  location?: Pick<Location, 'destinationId'> | null
+): Activity => ({
   id: doc._id,
   tenantId: doc.tenantId,
   locationId: doc.locationId,
@@ -163,7 +167,7 @@ const mapMongoActivity = (doc: MongoActivityDoc) : Activity => ({
   status: doc.status,
   featured: doc.featured,
   publishedAt: doc.publishedAt,
-  destinationId: doc.destinationId ?? null,
+  destinationId: resolveDestinationId(location) ?? null,
   schemaVersion: doc.schemaVersion,
   summary: doc.summary ?? null,
   itinerarySteps: doc.itinerarySteps,
@@ -246,7 +250,7 @@ const loadEventsWithRelations = async (eventDocs: MongoActivityDoc[]) => {
     }
 
     return [{
-      ...mapMongoActivity(eventDoc),
+      ...mapMongoActivity(eventDoc, location),
       location,
       tenant: {
         slug: tenant.slug,
@@ -442,7 +446,7 @@ export const createAdminPublishedActivity = async (input: {
   }
 
   return {
-    ...mapMongoActivity(doc),
+    ...mapMongoActivity(doc, location),
     location,
     tenant
   };
@@ -576,10 +580,13 @@ export const listActivitiesForAdminRequests = async (eventIds: string[]) => {
   const docs = await activitiesCollection().find({ _id: { $in: eventIds } }).toArray();
   const locationMap = await loadLocationsByIds([...new Set(docs.map((doc) => doc.locationId))]);
 
-  return docs.map((doc) => ({
-    ...mapMongoActivity(doc),
-    location: locationMap.get(doc.locationId)!
-  }));
+  return docs.map((doc) => {
+    const location = locationMap.get(doc.locationId)!;
+    return {
+      ...mapMongoActivity(doc, location),
+      location,
+    };
+  });
 };
 
 export const listActivitiesForAdminByIds = async (eventIds: string[]) => {
@@ -591,11 +598,14 @@ export const listActivitiesForAdminByIds = async (eventIds: string[]) => {
     loadTenantsByIds([...new Set(docs.map((doc) => doc.tenantId))])
   ]);
 
-  return docs.map((doc) => ({
-    ...mapMongoActivity(doc),
-    location: locationMap.get(doc.locationId)!,
-    tenant: tenantMap.get(doc.tenantId)!
-  }));
+  return docs.map((doc) => {
+    const location = locationMap.get(doc.locationId)!;
+    return {
+      ...mapMongoActivity(doc, location),
+      location,
+      tenant: tenantMap.get(doc.tenantId)!,
+    };
+  });
 };
 
 export const listUserHostedActivitiesBasic = async (userId: string, limit = 20) => {
@@ -750,9 +760,10 @@ export const findAdminTenantDetailedById = async (id: string): Promise<AdminTena
     }),
     activities: eventDocs.map((eventDoc) => {
       const guide = eventDoc.hostId ? guideUserMap.get(eventDoc.hostId) : null;
+      const location = locationMap.get(eventDoc.locationId)!;
       return {
-        ...mapMongoActivity(eventDoc),
-        location: locationMap.get(eventDoc.locationId)!,
+        ...mapMongoActivity(eventDoc, location),
+        location,
         participants: participantsByActivity.get(eventDoc._id) ?? [],
         guide: guide
           ? { profile: { displayName: guide.profile.displayName } }
