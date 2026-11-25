@@ -69,11 +69,11 @@ export const HostingDestinationField = ({
       : placeType === 'event'
         ? HOSTING_DESTINATION_CATALOG_LEAF_LINK_EVENT
         : HOSTING_DESTINATION_CATALOG_LEAF_LINK_HIKING;
-  const publishedAreas = useExplorePublishedDestinations();
+  const publishedDestinations = useExplorePublishedDestinations();
   const catalogCountry = DEFAULT_PLACE_CATALOG_COUNTRY;
   const areas = useMemo(
-    () => publishedAreas.filter((row) => areaRowInCatalogCountry(row, catalogCountry)),
-    [publishedAreas, catalogCountry]
+    () => publishedDestinations.filter((row) => areaRowInCatalogCountry(row, catalogCountry)),
+    [publishedDestinations, catalogCountry]
   );
   const spotPinned = draft.trailLatitude != null && draft.trailLongitude != null;
   const inferredArea =

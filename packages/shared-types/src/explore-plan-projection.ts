@@ -64,10 +64,10 @@ export type ExploreMapKindForPlan =
   | 'agency';
 
 export const exploreMapKindToPlanMapKind = (
-  kind: ExploreMapKindForPlan | 'area'
+  kind: ExploreMapPlanActivityKind | 'agency' | 'destination'
 ): ExploreMapPlanActivityKind => {
   if (kind === 'agency' || kind === 'shop') return 'shop';
-  if (kind === 'area') return 'hiking';
+  if (kind === 'destination') return 'hiking';
   return kind;
 };
 

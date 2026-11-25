@@ -13,7 +13,7 @@ export type DiscoveryMapItemWire = DiscoveryCardBuildInput & {
   image?: string | null;
   presentation?: DiscoveryCardPresentationDTO;
   locationCard?: { id?: string; images?: string[] } | null;
-  areaSlug?: string | null;
+  destinationSlug?: string | null;
   merchantId?: string;
   tenantId?: string | null;
   activity?: DiscoveryCardBuildInput['activity'] & {
@@ -33,7 +33,7 @@ export type DiscoveryCardEntityRef =
   | { kind: 'activity'; activityId: string }
   | { kind: 'place'; locationId: string }
   | { kind: 'shop'; merchantId?: string | null; tenantId?: string | null }
-  | { kind: 'area'; areaSlug: string }
+  | { kind: 'destination'; destinationSlug: string }
   | { kind: 'person'; userId: string };
 
 /** Slim read model for discovery UI — no embedded `ActivityDTO`. */
@@ -59,8 +59,9 @@ const resolveCoverImageUrl = (item: DiscoveryMapItemWire): string | null =>
   null;
 
 export const resolveDiscoveryCardEntityRef = (item: DiscoveryMapItemWire): DiscoveryCardEntityRef => {
-  if (item.source === 'area' && item.areaSlug) {
-    return { kind: 'area', areaSlug: item.areaSlug };
+  const destinationSlug = item.destinationSlug?.trim();
+  if ((item.kind === 'destination' || item.id.startsWith('destination:')) && destinationSlug) {
+    return { kind: 'destination', destinationSlug };
   }
   if (item.source === 'shop' || item.source === 'agency') {
     return {

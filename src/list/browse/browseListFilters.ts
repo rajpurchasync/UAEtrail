@@ -1,4 +1,4 @@
-import type { AreaPublicDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type { DestinationPublicDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { isGeographyMapSource } from '@uaetrail/shared-types';
 import { filterListAvailabilityCatalogItems } from '@/activity-discovery/catalog/listAvailabilityCatalog';
 import {
@@ -108,7 +108,7 @@ export const filterExploreMapItemsForList = (
   state: BrowseListFilterState,
   venueRegions: string[],
   geoIds: readonly string[] = [],
-  publishedAreas: readonly AreaPublicDTO[] = []
+  publishedDestinations: readonly DestinationPublicDTO[] = []
 ): ExploreMapItemDTO[] => {
   let pool = items;
 
@@ -172,11 +172,11 @@ export const filterExploreMapItemsForList = (
   }
 
   if (geoIds.length > 0) {
-    pool = pool.filter((item) => exploreItemMatchesBrowseGeoPath(item, geoIds, publishedAreas));
+    pool = pool.filter((item) => exploreItemMatchesBrowseGeoPath(item, geoIds, publishedDestinations));
   }
 
   pool = filterListCatalogByVenueRegions(pool, venueRegions);
 
-  const venueRegionOrder = deriveVenueRegionSortOrder(publishedAreas);
+  const venueRegionOrder = deriveVenueRegionSortOrder(publishedDestinations);
   return mergeListCatalogPlansAndPlaces(pool, venueRegionOrder);
 };

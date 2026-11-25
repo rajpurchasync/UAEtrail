@@ -44,7 +44,7 @@ export function renderAddWizardSteps(ctx: AddWizardContext): ReactNode {
     widePageSteps,
     pageHas,
     flowSteps,
-    publishedAreas,
+    publishedDestinations,
     goNext,
     goToStep,
     requestClose,
@@ -109,7 +109,7 @@ export function renderAddWizardSteps(ctx: AddWizardContext): ReactNode {
             proposedAreaName={draft.areaLabel}
             onProposedAreaNameChange={(areaLabel) => patchDraft({ areaLabel, destinationId: areaLabel.trim() ? null : draft.destinationId })}
             onAreaIdChange={(next) => {
-              const center = next ? publishedAreas.find((area) => area.id === next)?.center : null;
+              const center = next ? publishedDestinations.find((area) => area.id === next)?.center : null;
               patchDraft({
                 destinationId: next,
                 areaLabel: next ? '' : draft.areaLabel,
@@ -139,7 +139,7 @@ export function renderAddWizardSteps(ctx: AddWizardContext): ReactNode {
                     !placeRegionReady(
                       draft.countryCode,
                       draft.emirate,
-                      inferEmirateFromPin(draft.latitude, draft.longitude, publishedAreas)
+                      inferEmirateFromPin(draft.latitude, draft.longitude, publishedDestinations)
                     )
                   }
                   onClick={goNext}
@@ -191,7 +191,7 @@ export function renderAddWizardSteps(ctx: AddWizardContext): ReactNode {
           />
           <EmirateFromPinField
             pinned={draft.locationPinPlaced}
-            inferred={inferEmirateFromPin(draft.latitude, draft.longitude, publishedAreas)}
+            inferred={inferEmirateFromPin(draft.latitude, draft.longitude, publishedDestinations)}
             countryCode={draft.countryCode}
             onCountryChange={(countryCode) => patchDraft({ countryCode })}
             value={draft.emirate}

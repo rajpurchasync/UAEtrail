@@ -202,7 +202,7 @@ export const meFamilyPartyPickerMembersQueryKey = (groupId: string): QueryKey =>
 export const participantHubQueryKey = (userId: string): QueryKey => ['participant-hub', userId];
 
 /** Published destinations (`GET /destinations` public list) — explore search + hub pickers. */
-export const publishedAreasQueryKey = ['areas', 'published'] as const;
+export const publishedDestinationsQueryKey = ['destinations', 'published'] as const;
 
 export const destinationDetailQueryKey = (slug: string): QueryKey => ['destination', slug];
 

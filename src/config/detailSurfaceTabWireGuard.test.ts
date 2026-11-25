@@ -13,7 +13,7 @@ describe('detailSurfaceTabWireGuard (DOMAIN_CANONICALS §3.1)', () => {
   it('tab wire modules match canonical ids per surface', () => {
     tabIdsEqual(ACTIVITY_DETAIL_TABS, CONSUMER_DETAIL_TAB_WIRE_CANON.activity);
     tabIdsEqual(PLACE_DETAIL_TABS, CONSUMER_DETAIL_TAB_WIRE_CANON.place);
-    tabIdsEqual(DESTINATION_DETAIL_TABS, CONSUMER_DETAIL_TAB_WIRE_CANON.area);
+    tabIdsEqual(DESTINATION_DETAIL_TABS, CONSUMER_DETAIL_TAB_WIRE_CANON.destination);
     tabIdsEqual(SHOP_PUBLIC_TABS, CONSUMER_DETAIL_TAB_WIRE_CANON.shop);
     tabIdsEqual(ORGANISATION_PUBLIC_TABS, CONSUMER_DETAIL_TAB_WIRE_CANON.organisation);
   });

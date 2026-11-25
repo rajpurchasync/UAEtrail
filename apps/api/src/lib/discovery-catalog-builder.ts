@@ -252,7 +252,7 @@ const attachExploreItemArea = (
 /** Shared catalog assembly (cacheable). Viewer access is applied in `explore-map-viewer-access.ts`. */
 /** Assemble hosted activities, catalog geography, shops, and fixed availability for `GET /explore/map`. */
 export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: ExploreMapItemDTO[] }> => {
-  const [activityEvents, locationsResult, facilityRows, shopTenants, publishedAreas] =
+  const [activityEvents, locationsResult, facilityRows, shopTenants, publishedDestinations] =
     await Promise.all([
       listPublishedActivitiesForExploreMap(250),
       listActiveLocationsForExploreMap(800),
@@ -262,8 +262,8 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
     ]);
 
   const amenitiesByParentId = collectParentPlaceAmenities(facilityRows);
-  const destinationSlugById = new Map(publishedAreas.map((area) => [area.id, area.slug]));
-  const destinationNameById = new Map(publishedAreas.map((area) => [area.id, area.name]));
+  const destinationSlugById = new Map(publishedDestinations.map((area) => [area.id, area.slug]));
+  const destinationNameById = new Map(publishedDestinations.map((area) => [area.id, area.name]));
   const availabilityItemsPromise = buildAvailabilityFixedMapItems({
     destinationSlugById,
     destinationNameById,
@@ -584,7 +584,7 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
 
     const shopAreaId =
       latitude != null && longitude != null
-        ? resolveDestinationIdFromPoint(latitude, longitude, publishedAreas, null)
+        ? resolveDestinationIdFromPoint(latitude, longitude, publishedDestinations, null)
         : null;
     items.push(
       attachExploreItemArea(
@@ -675,7 +675,7 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
 
   for (const item of items) {
     item.presentation = buildDiscoveryCardPresentation(item);
-    if (item.source === 'area') continue;
+    if (item.kind === 'destination') continue;
     if (isPlaceMapSource(item.source)) {
       const id = item.locationCard?.id ?? item.id.replace(/^(venue|place):/, '');
       const stat = locationStats.get(id);

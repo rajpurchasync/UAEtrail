@@ -101,7 +101,7 @@ export const GeoBrowsePane = ({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const sideMapWidth = useListSideMapWidth(desktopMd);
-  const { data: publishedAreas = [] } = useExplorePublishedDestinationsQuery();
+  const { data: publishedDestinations = [] } = useExplorePublishedDestinationsQuery();
 
   const scopedFilters = useMemo<BrowseListFilterState>(
     () => ({
@@ -121,8 +121,8 @@ export const GeoBrowsePane = ({
     [lockGeoIds.length]
   );
   const filteredItems = useMemo(
-    () => filterExploreMapItemsForList(items, scopedFilters, regions, drillGeoIds, publishedAreas),
-    [items, scopedFilters, regions, drillGeoIds, publishedAreas]
+    () => filterExploreMapItemsForList(items, scopedFilters, regions, drillGeoIds, publishedDestinations),
+    [items, scopedFilters, regions, drillGeoIds, publishedDestinations]
   );
 
   const cards = useMemo(() => {

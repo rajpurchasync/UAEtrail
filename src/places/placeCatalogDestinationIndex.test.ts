@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { AreaPublicDTO, PlaceDTO } from '@uaetrail/shared-types';
+import type { DestinationPublicDTO, PlaceDTO } from '@uaetrail/shared-types';
 import {
   applyHostingDestinationSearchHit,
   patchHostingDestinationCatalogLeafLadder,
@@ -24,7 +24,7 @@ import {
   scopePlaceCatalogDestination,
 } from './placeCatalogDestinationIndex';
 
-const area = (partial: Partial<AreaPublicDTO> & Pick<AreaPublicDTO, 'id' | 'name' | 'region'>): AreaPublicDTO => ({
+const area = (partial: Partial<DestinationPublicDTO> & Pick<DestinationPublicDTO, 'id' | 'name' | 'region'>): DestinationPublicDTO => ({
   slug: partial.slug ?? partial.id,
   center: { latitude: 25, longitude: 55 },
   bounds: [

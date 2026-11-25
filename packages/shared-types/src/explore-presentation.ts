@@ -28,6 +28,7 @@ import {
   type PlaceKind,
 } from './place-kind.js';
 import {
+  BWL_EXPLORE_MAP_SOURCE,
   FACILITY_MAP_SOURCE,
   PLACE_MAP_SOURCE,
   isFacilityMapSource,
@@ -52,7 +53,14 @@ export {
 export const CATALOG_PLACE_MAP_SOURCE = PLACE_MAP_SOURCE;
 /** @deprecated Use {@link isGeographyMapSource} (place + facility) or {@link isPlaceMapSource}. */
 export const isCatalogPlaceMapSource = isGeographyMapSource;
-export type DiscoveryCardKind = 'hiking' | 'camping' | 'event' | 'rideshare' | 'shop' | 'agency' | 'area';
+export type DiscoveryCardKind =
+  | 'hiking'
+  | 'camping'
+  | 'event'
+  | 'rideshare'
+  | 'shop'
+  | 'agency'
+  | 'destination';
 
 export type DiscoveryCardBuildInput = {
   id: string;
@@ -173,12 +181,10 @@ export const resolveExploreItemSource = (
     source === 'availability' ||
     isGeographyMapSource(source) ||
     source === 'shop' ||
-    source === 'agency' ||
-    source === 'area'
+    source === 'agency'
   ) {
     return normalizeExploreMapSource(source);
   }
-  if (id.startsWith('area:')) return 'area';
   if (id.startsWith('facility:')) return FACILITY_MAP_SOURCE;
   if (id.startsWith('place:') || id.startsWith('venue:')) return PLACE_MAP_SOURCE;
   if (id.startsWith('shop:')) return 'shop';
@@ -192,7 +198,6 @@ export const resolveMapPinItemSource = (
   item: Pick<DiscoveryCardBuildInput, 'id' | 'source' | 'activityMode' | 'participantIntentId'>
 ): DiscoveryCardSource => {
   const { id } = item;
-  if (id.startsWith('area:')) return 'area';
   if (id.startsWith('facility:')) return FACILITY_MAP_SOURCE;
   if (id.startsWith('place:') || id.startsWith('venue:')) return PLACE_MAP_SOURCE;
   if (id.startsWith('shop:')) return 'shop';
@@ -1051,12 +1056,11 @@ const resolveDiscoveryCardKind = (item: DiscoveryCardBuildInput): DiscoveryCardK
 export const buildDiscoveryCardPresentation = (
   item: DiscoveryCardBuildInput
 ): DiscoveryCardPresentationDTO => {
-  const source = resolveExploreItemSource(item);
-  if (source === 'area') {
+  if (item.kind === 'destination' || item.id.startsWith('destination:')) {
     const subtitle = item.subtitle?.trim() || null;
     return {
-      kind: 'area',
-      source: 'area',
+      kind: 'destination',
+      source: BWL_EXPLORE_MAP_SOURCE.ACTIVITY,
       emoji: '🗺️',
       headline: item.title,
       listTitle: item.title,
@@ -1065,7 +1069,7 @@ export const buildDiscoveryCardPresentation = (
       spotsLabel: null,
       venueHint: null,
       primaryCta: 'See outings',
-      secondaryCta: 'Area page',
+      secondaryCta: 'Destination page',
       shareText: null,
       routeLabel: null,
       whenLabel: null,
@@ -1077,6 +1081,7 @@ export const buildDiscoveryCardPresentation = (
       },
     };
   }
+  const source = resolveExploreItemSource(item);
   const kind = resolveDiscoveryCardKind(item);
   const isAvailabilityPin = item.source === 'availability';
   const isCrewHeadlinePin = isAvailabilityPin;

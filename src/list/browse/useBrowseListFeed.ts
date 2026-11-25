@@ -34,10 +34,10 @@ export const useBrowseListFeed = ({
 }: UseBrowseListFeedArgs) => {
   const { user } = useAuth();
   const { clock } = useDisplayPreferences();
-  const { data: publishedAreas = [] } = useExplorePublishedDestinationsQuery(mapEnabled);
+  const { data: publishedDestinations = [] } = useExplorePublishedDestinationsQuery(mapEnabled);
   const effectiveRegions = useMemo(
-    () => resolveEffectiveBrowseVenueRegions(venueRegions, geoPath, publishedAreas),
-    [venueRegions, geoPath, publishedAreas]
+    () => resolveEffectiveBrowseVenueRegions(venueRegions, geoPath, publishedDestinations),
+    [venueRegions, geoPath, publishedDestinations]
   );
   const useExternalCatalog = catalogItems !== undefined && mapEnabled;
   const { data: fetchedItems = [], isError, error, refetch, isFetching, isPending } = useExploreMap({
@@ -50,9 +50,9 @@ export const useBrowseListFeed = ({
   const filteredItems = useMemo(
     () =>
       mapEnabled
-        ? filterExploreMapItemsForList(items, filters, effectiveRegions, geoPath, publishedAreas)
+        ? filterExploreMapItemsForList(items, filters, effectiveRegions, geoPath, publishedDestinations)
         : [],
-    [mapEnabled, items, filters, effectiveRegions, geoPath, publishedAreas]
+    [mapEnabled, items, filters, effectiveRegions, geoPath, publishedDestinations]
   );
 
   const cards: DiscoveryCardModel[] = useMemo(() => {

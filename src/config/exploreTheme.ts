@@ -550,7 +550,7 @@ export const exploreMapPinRingColor = (
       return '#e11d48';
     case 'agency':
       return '#4f46e5';
-    case 'area':
+    case 'destination':
       return '#64748b';
     default:
       return '#047857';

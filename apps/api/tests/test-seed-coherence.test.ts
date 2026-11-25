@@ -19,7 +19,7 @@ const collectTestFiles = (dir: string): string[] => {
 };
 
 describe('test-seed coherence', () => {
-  it('vitest files do not hardcode area-seed-* ids (use test-seed / curatedAreaSeedId)', () => {
+  it('vitest files do not hardcode area-seed-* ids (use test-seed / curatedDestinationSeedId)', () => {
     const violations: string[] = [];
     for (const file of collectTestFiles(TESTS_DIR)) {
       const content = readFileSync(file, 'utf8');

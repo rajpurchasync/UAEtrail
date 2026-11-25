@@ -84,7 +84,7 @@ export const useListDiscoveryExperienceModel = ({
     draftQuery,
     setDraftQuery,
     destinationSlug,
-    publishedAreas,
+    publishedDestinations,
     hubVenueRegions,
     filterCount,
   } = useListDiscoveryBrowseUrlModel({
@@ -180,7 +180,7 @@ export const useListDiscoveryExperienceModel = ({
     items,
     hubVenueRegions,
     geoPath,
-    publishedAreas,
+    publishedDestinations,
     clock,
     sort,
     user,

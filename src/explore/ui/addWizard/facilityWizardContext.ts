@@ -1,4 +1,4 @@
-import type { AreaPublicDTO, PlaceKind } from '@uaetrail/shared-types';
+import type { DestinationPublicDTO, PlaceKind } from '@uaetrail/shared-types';
 import type { FacilityAddDraft, FacilityAddStepId } from '../addFacilityFlow';
 
 export type FacilityAddWizardContext = {
@@ -8,7 +8,7 @@ export type FacilityAddWizardContext = {
   patchDraft: (patch: Partial<FacilityAddDraft>) => void;
   error: string | null;
   submitting: boolean;
-  publishedAreas: AreaPublicDTO[];
+  publishedDestinations: DestinationPublicDTO[];
   goNext: () => void;
   goBack: () => void;
   requestClose: () => void;

@@ -267,7 +267,7 @@ export const useExploreExperienceModel = () => {
 
   const [searchFocusNonce] = useState(0);
   useExploreSearchParamRedirect(searchParams, pathname, navigate, setSearchParams);
-  const publishedAreas = useExplorePublishedDestinations(
+  const publishedDestinations = useExplorePublishedDestinations(
     browse.listOpen || browse.browseOpen || Boolean(destinationSlug)
   );
 
@@ -419,7 +419,7 @@ export const useExploreExperienceModel = () => {
     refreshHostGate,
     openExploreSearch,
     searchScopeCounts,
-    publishedAreas,
+    publishedDestinations,
     handlePickExploreArea,
     signInHref,
     onOpenHostApplication,

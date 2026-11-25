@@ -1,10 +1,10 @@
 import {
-  approximateAreaBoundsKm2,
+  approximateDestinationBoundsKm2,
   inferEmirateFromLocalityName,
-  pointInAreaBounds,
+  pointInDestinationBounds,
   resolveDestinationId,
   resolveGroupRegionFromCoordinates,
-  type AreaPublicDTO,
+  type DestinationPublicDTO,
   type PlaceDTO,
   type UaeGroupRegionCatalogLabel,
 } from '@uaetrail/shared-types';
@@ -83,12 +83,12 @@ export const validateHostingPlaceDestination = (
 export const inferEmirateFromPin = (
   latitude: number | null | undefined,
   longitude: number | null | undefined,
-  areas: Pick<AreaPublicDTO, 'id' | 'region' | 'bounds' | 'priority'>[] = [],
+  areas: Pick<DestinationPublicDTO, 'id' | 'region' | 'bounds' | 'priority'>[] = [],
   localityName?: string | null
 ): UaeGroupRegionCatalogLabel | null => {
   const fromGeo =
     latitude != null && longitude != null
-      ? resolveGroupRegionFromCoordinates(latitude, longitude, { publishedAreas: areas })
+      ? resolveGroupRegionFromCoordinates(latitude, longitude, { publishedDestinations: areas })
       : null;
   return fromGeo || inferEmirateFromLocalityName(localityName);
 };
@@ -97,7 +97,7 @@ export const resolveRequiredEmirate = (
   explicit: string | null | undefined,
   latitude: number | null | undefined,
   longitude: number | null | undefined,
-  areas: Pick<AreaPublicDTO, 'id' | 'region' | 'bounds' | 'priority'>[] = [],
+  areas: Pick<DestinationPublicDTO, 'id' | 'region' | 'bounds' | 'priority'>[] = [],
   localityName?: string | null
 ): string =>
   explicit?.trim() || inferEmirateFromPin(latitude, longitude, areas, localityName) || '';
@@ -167,12 +167,12 @@ export const resolveRegistryPlaceDestinationId = (place: PlaceDTO | null | undef
 export const resolvePublishedDestinationForPoint = (
   latitude: number,
   longitude: number,
-  areas: AreaPublicDTO[]
-): AreaPublicDTO | null => {
-  const hits = areas.filter((area) => pointInAreaBounds(latitude, longitude, area.bounds));
+  areas: DestinationPublicDTO[]
+): DestinationPublicDTO | null => {
+  const hits = areas.filter((area) => pointInDestinationBounds(latitude, longitude, area.bounds));
   if (hits.length === 0) return null;
   hits.sort(
-    (a, b) => approximateAreaBoundsKm2(a.bounds) - approximateAreaBoundsKm2(b.bounds)
+    (a, b) => approximateDestinationBoundsKm2(a.bounds) - approximateDestinationBoundsKm2(b.bounds)
   );
   return hits[0] ?? null;
 };
@@ -180,12 +180,12 @@ export const resolvePublishedDestinationForPoint = (
 export const resolvePublishedDestinationIdForPoint = (
   latitude: number,
   longitude: number,
-  areas: AreaPublicDTO[]
+  areas: DestinationPublicDTO[]
 ): string | null => resolvePublishedDestinationForPoint(latitude, longitude, areas)?.id ?? null;
 
 export const destinationLabelForId = (
   destinationId: string | null | undefined,
-  areas: AreaPublicDTO[]
+  areas: DestinationPublicDTO[]
 ): string | null => {
   if (!destinationId?.trim()) return null;
   const row = areas.find((area) => area.id === destinationId);

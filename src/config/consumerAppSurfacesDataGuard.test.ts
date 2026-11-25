@@ -76,7 +76,7 @@ describe('consumerAppSurfacesDataGuard (in-app hubs — not guest marketing)', (
     expect(read('src/list/browse/useListDiscoveryUrlState.ts')).toMatch(/serializeBrowseListSearchParams/);
     expect(read('src/explore/exploreBrowseUrlSync.ts')).toMatch(/BROWSE_GEO_PARAM/);
     expect(read('src/explore/ui/useExploreBrowseUrlState.ts')).toMatch(/geoPath/);
-    expect(read('src/list/browse/browseListFilters.ts')).toMatch(/deriveVenueRegionSortOrder\(publishedAreas\)/);
+    expect(read('src/list/browse/browseListFilters.ts')).toMatch(/deriveVenueRegionSortOrder\(publishedDestinations\)/);
   });
 
   it('CTX-APP-16: venue region filter defers alias matching to locationSearch', () => {

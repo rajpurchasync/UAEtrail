@@ -43,7 +43,7 @@ const ENTITY_DETAIL_QA_MATRIX: Array<{
     surface: 'Destination hub',
     routePattern: /path="\/destination\/:slug"/,
     pageOrView: 'src/pages/DestinationDetailPage.tsx',
-    automatedGuard: 'areaDetailAcceptance.test.ts',
+    automatedGuard: 'destinationDetailAcceptance.test.ts',
   },
   {
     surface: 'Shop',

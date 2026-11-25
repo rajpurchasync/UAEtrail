@@ -54,10 +54,10 @@ export const ExploreSearchResults = ({ state: stateProp }: ExploreSearchResultsP
   const venueRegions = searchState.venueRegions;
   const geoPath = useMemo(() => parseBrowseListGeoPath(searchParams), [searchParams]);
   useBrowseGeoScopeHydration(geoPath);
-  const { data: publishedAreas = [] } = useExplorePublishedDestinationsQuery();
+  const { data: publishedDestinations = [] } = useExplorePublishedDestinationsQuery();
   const hubVenueRegions = useMemo(
-    () => resolveEffectiveBrowseVenueRegions(venueRegions, geoPath, publishedAreas),
-    [venueRegions, geoPath, publishedAreas]
+    () => resolveEffectiveBrowseVenueRegions(venueRegions, geoPath, publishedDestinations),
+    [venueRegions, geoPath, publishedDestinations]
   );
   const browseQuery = searchState.query.trim() || parsedFilters.query;
 
@@ -95,13 +95,13 @@ export const ExploreSearchResults = ({ state: stateProp }: ExploreSearchResultsP
   );
 
   const tripListingCount = useMemo(
-    () => resolveExploreSearchTripPool(items, tripScoped, hubVenueRegions, geoPath, publishedAreas).pool.length,
-    [geoPath, hubVenueRegions, items, publishedAreas, tripScoped]
+    () => resolveExploreSearchTripPool(items, tripScoped, hubVenueRegions, geoPath, publishedDestinations).pool.length,
+    [geoPath, hubVenueRegions, items, publishedDestinations, tripScoped]
   );
 
   const placeListingCount = useMemo(
-    () => resolveExploreSearchVenuePool(items, placeScoped, hubVenueRegions, geoPath, publishedAreas).pool.length,
-    [geoPath, hubVenueRegions, items, placeScoped, publishedAreas]
+    () => resolveExploreSearchVenuePool(items, placeScoped, hubVenueRegions, geoPath, publishedDestinations).pool.length,
+    [geoPath, hubVenueRegions, items, placeScoped, publishedDestinations]
   );
 
   const crewRecommendations = useExploreSearchRecommendedCrew({

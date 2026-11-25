@@ -23,7 +23,7 @@ export function renderFacilityAddWizardSteps(ctx: FacilityAddWizardContext): Rea
     patchDraft,
     error,
     submitting,
-    publishedAreas,
+    publishedDestinations,
     goNext,
     goBack,
     requestClose,
@@ -80,7 +80,7 @@ export function renderFacilityAddWizardSteps(ctx: FacilityAddWizardContext): Rea
             destinationId={draft.destinationId}
             allowNewArea={false}
             onAreaIdChange={(next) => {
-              const center = next ? publishedAreas.find((area) => area.id === next)?.center : null;
+              const center = next ? publishedDestinations.find((area) => area.id === next)?.center : null;
               const areaChanged = next !== draft.destinationId;
               patchDraft({
                 destinationId: next,
@@ -114,7 +114,7 @@ export function renderFacilityAddWizardSteps(ctx: FacilityAddWizardContext): Rea
           />
           <EmirateFromPinField
             pinned={draft.locationPinPlaced}
-            inferred={inferEmirateFromPin(draft.latitude, draft.longitude, publishedAreas)}
+            inferred={inferEmirateFromPin(draft.latitude, draft.longitude, publishedDestinations)}
             countryCode={draft.countryCode}
             onCountryChange={(countryCode) => patchDraft({ countryCode })}
             value={draft.emirate}
@@ -129,7 +129,7 @@ export function renderFacilityAddWizardSteps(ctx: FacilityAddWizardContext): Rea
                 !placeRegionReady(
                   draft.countryCode,
                   draft.emirate,
-                  inferEmirateFromPin(draft.latitude, draft.longitude, publishedAreas)
+                  inferEmirateFromPin(draft.latitude, draft.longitude, publishedDestinations)
                 )
               }
               onClick={goNext}
@@ -171,7 +171,7 @@ export function renderFacilityAddWizardSteps(ctx: FacilityAddWizardContext): Rea
 
       {step === 'review' && (
         <ComposeWizardStepChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
-          <AddFacilityPreview draft={draft} publishedAreas={publishedAreas} />
+          <AddFacilityPreview draft={draft} publishedDestinations={publishedDestinations} />
           {composeWizardErrorFooter(
             error,
             <AddWizardNextButton loading={submitting} label="Submit for review" onClick={handleSubmit} />,

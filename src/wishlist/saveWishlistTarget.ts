@@ -42,7 +42,7 @@ export const wishlistSaveInputToTarget = (input: WishlistSaveInput): WishlistTar
         watchLatitude: input.watchLatitude,
         watchLongitude: input.watchLongitude,
       };
-    case 'area':
+    case 'destination':
       return {
         destinationId: input.destinationId,
         alertOnMatch: input.alertOnMatch,

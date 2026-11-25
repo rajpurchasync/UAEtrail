@@ -107,14 +107,14 @@ export const useExploreBrowseList = ({
   facilityKinds = [],
   geoPath = [],
 }: UseExploreBrowseListArgs) => {
-  const { data: publishedAreas = [] } = useExplorePublishedDestinationsQuery();
+  const { data: publishedDestinations = [] } = useExplorePublishedDestinationsQuery();
   const venueRegionOrder = useMemo(
-    () => deriveVenueRegionSortOrder(publishedAreas),
-    [publishedAreas]
+    () => deriveVenueRegionSortOrder(publishedDestinations),
+    [publishedDestinations]
   );
   const effectiveVenueRegions = useMemo(
-    () => resolveEffectiveBrowseVenueRegions(venueRegions, geoPath, publishedAreas),
-    [venueRegions, geoPath, publishedAreas]
+    () => resolveEffectiveBrowseVenueRegions(venueRegions, geoPath, publishedDestinations),
+    [venueRegions, geoPath, publishedDestinations]
   );
   const mapItems = useMemo(() => {
     const itemIds = new Set(items.map((entry) => entry.id));
@@ -145,7 +145,7 @@ export const useExploreBrowseList = ({
       pool = pool.filter((item) => exploreItemMatchesQuery(item, query));
     }
     if (geoPath.length > 0) {
-      pool = pool.filter((item) => exploreItemMatchesBrowseGeoPath(item, geoPath, publishedAreas));
+      pool = pool.filter((item) => exploreItemMatchesBrowseGeoPath(item, geoPath, publishedDestinations));
     }
     return pool;
   }, [
@@ -169,7 +169,7 @@ export const useExploreBrowseList = ({
     facilityKinds,
     venueRegionOrder,
     geoPath,
-    publishedAreas,
+    publishedDestinations,
   ]);
 
   const browseListMode: ExploreBrowseListMode = isDesktop ? 'default' : listMode;

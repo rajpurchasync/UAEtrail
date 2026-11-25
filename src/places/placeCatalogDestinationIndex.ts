@@ -13,7 +13,7 @@
  * Pure catalog + areas read model (no hosting / activity draft imports).
  */
 import { normalizeGroupRegionLabel } from '@uaetrail/shared-types';
-import type { AreaPublicDTO, PlaceDTO } from '@uaetrail/shared-types';
+import type { DestinationPublicDTO, PlaceDTO } from '@uaetrail/shared-types';
 import {
   DEFAULT_COUNTRY,
   getSubdivisionOptionsForCountry,
@@ -48,15 +48,15 @@ export const placeRowInCatalogCountry = (
 ): boolean => resolvePlaceCatalogCountryCode(place.countryCode) === countryCode;
 
 export const areaRowInCatalogCountry = (
-  area: Pick<AreaPublicDTO, 'countryCode'>,
+  area: Pick<DestinationPublicDTO, 'countryCode'>,
   countryCode: CountryCode = DEFAULT_PLACE_CATALOG_COUNTRY
 ): boolean => resolvePlaceCatalogCountryCode(area.countryCode) === countryCode;
 
 export const scopePlaceCatalogDestination = (
   places: PlaceDTO[],
-  areas: AreaPublicDTO[],
+  areas: DestinationPublicDTO[],
   countryCode: CountryCode = DEFAULT_PLACE_CATALOG_COUNTRY
-): { places: PlaceDTO[]; areas: AreaPublicDTO[] } => ({
+): { places: PlaceDTO[]; areas: DestinationPublicDTO[] } => ({
   places: places.filter((place) => placeRowInCatalogCountry(place, countryCode)),
   areas: areas.filter((area) => areaRowInCatalogCountry(area, countryCode)),
 });
@@ -189,8 +189,8 @@ export const placeCatalogRegionsMatch = (left: string, right: string): boolean =
 
 export const resolvePlaceCatalogAreaForRow = (
   place: PlaceDTO,
-  areas: AreaPublicDTO[]
-): AreaPublicDTO | null => {
+  areas: DestinationPublicDTO[]
+): DestinationPublicDTO | null => {
   const destinationId = place.destinationId?.trim();
   if (destinationId) {
     const hit = areas.find((area) => area.id === destinationId);
@@ -205,8 +205,8 @@ export const resolvePlaceCatalogAreaForRow = (
 
 export const placeCatalogRowBelongsToArea = (
   place: PlaceDTO,
-  area: AreaPublicDTO,
-  areas: AreaPublicDTO[]
+  area: DestinationPublicDTO,
+  areas: DestinationPublicDTO[]
 ): boolean => {
   const linked = resolvePlaceCatalogAreaForRow(place, areas);
   return linked?.id === area.id;
@@ -214,7 +214,7 @@ export const placeCatalogRowBelongsToArea = (
 
 export const buildPlaceCatalogStateOptions = (
   countryCode: CountryCode = DEFAULT_PLACE_CATALOG_COUNTRY,
-  areas: readonly AreaPublicDTO[] = []
+  areas: readonly DestinationPublicDTO[] = []
 ): CountrySubdivisionOption[] => {
   if (countryCode === 'AE') {
     return mergeVenueStateFilterOptionsWithAreas(areas, countryCode).map((row) => ({
@@ -227,10 +227,10 @@ export const buildPlaceCatalogStateOptions = (
 
 export const buildPlaceCatalogAreaOptions = (
   places: PlaceDTO[],
-  areas: AreaPublicDTO[],
+  areas: DestinationPublicDTO[],
   state: string,
   countryCode: CountryCode = DEFAULT_PLACE_CATALOG_COUNTRY
-): AreaPublicDTO[] => {
+): DestinationPublicDTO[] => {
   if (!state.trim()) return [];
   const scoped = scopePlaceCatalogDestination(places, areas, countryCode);
   return scoped.areas
@@ -240,8 +240,8 @@ export const buildPlaceCatalogAreaOptions = (
 
 export const filterPlaceCatalogRowsInArea = (
   places: PlaceDTO[],
-  area: AreaPublicDTO,
-  areas: AreaPublicDTO[]
+  area: DestinationPublicDTO,
+  areas: DestinationPublicDTO[]
 ): PlaceDTO[] =>
   places
     .filter((place) => placeCatalogRowBelongsToArea(place, area, areas))
@@ -280,7 +280,7 @@ export const filterPlaceCatalogTrailRowsInGroup = (
 
 export const resolvePlaceCatalogStateKeyForRow = (
   place: PlaceDTO,
-  areas: AreaPublicDTO[],
+  areas: DestinationPublicDTO[],
   countryCode: CountryCode = DEFAULT_PLACE_CATALOG_COUNTRY
 ): string => {
   const area = resolvePlaceCatalogAreaForRow(place, areas);
@@ -298,7 +298,7 @@ export const resolvePlaceCatalogStateKeyForRow = (
 
 export const inferPlaceCatalogLadderFromRow = (
   place: PlaceDTO,
-  areas: AreaPublicDTO[],
+  areas: DestinationPublicDTO[],
   countryCode: CountryCode = DEFAULT_PLACE_CATALOG_COUNTRY,
   catalogPlaces?: PlaceDTO[]
 ): { state: string; destinationId: string; placeGroup: string } => {
@@ -312,9 +312,9 @@ export const inferPlaceCatalogLadderFromRow = (
 };
 
 export const resolvePlaceCatalogStateFromArea = (
-  area: AreaPublicDTO,
+  area: DestinationPublicDTO,
   countryCode: CountryCode = DEFAULT_PLACE_CATALOG_COUNTRY,
-  areas: readonly AreaPublicDTO[] = []
+  areas: readonly DestinationPublicDTO[] = []
 ): string => {
   const raw = area.region;
   if (countryCode === 'AE') {
@@ -374,7 +374,7 @@ const searchMatches = (haystack: string | null | undefined, needle: string): boo
   return h.includes(n);
 };
 
-const trailSearchSubtitle = (place: PlaceDTO, areas: AreaPublicDTO[]): string => {
+const trailSearchSubtitle = (place: PlaceDTO, areas: DestinationPublicDTO[]): string => {
   const area = resolvePlaceCatalogAreaForRow(place, areas);
   const placeLabel = placeCatalogPlaceGroupLabel(place);
   const parts = [place.name, placeLabel, area?.name, area?.region ?? place.region].filter(Boolean);
@@ -390,7 +390,7 @@ export type PlaceCatalogDestinationSearchScope = {
 export const searchPlaceCatalogDestination = (
   query: string,
   places: PlaceDTO[],
-  areas: AreaPublicDTO[],
+  areas: DestinationPublicDTO[],
   countryCode: CountryCode = DEFAULT_PLACE_CATALOG_COUNTRY,
   scope: PlaceCatalogDestinationSearchScope = {}
 ): PlaceCatalogDestinationSearchHit[] => {

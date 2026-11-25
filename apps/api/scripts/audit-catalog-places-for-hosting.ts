@@ -9,7 +9,7 @@ import { locationHasRegistryCoverImage } from '../src/lib/catalog-registry-cover
 import { listAdminPlacesPaged } from '../src/lib/admin-store.js';
 import { LocationStatus } from '../src/domain/enums.js';
 import { resolveEffectiveCatalogDestinationId } from '../src/lib/destination-resolution.js';
-import type { AreaDTO } from '@uaetrail/shared-types';
+import type { DestinationDTO } from '@uaetrail/shared-types';
 
 type HostingReadiness = {
   id: string;
@@ -40,7 +40,7 @@ const auditPlace = (
     areaId?: string | null;
   },
   registryIds: Set<string>,
-  areas: AreaDTO[]
+  areas: DestinationDTO[]
 ): HostingReadiness => {
   const blockers: string[] = [];
   const warnings: string[] = [];

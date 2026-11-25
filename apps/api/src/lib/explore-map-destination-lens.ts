@@ -1,7 +1,6 @@
 /** Destination hub rollups for `/destination/:slug` — curated hub is a label, not an explore map pin. */
-import type { AreaDTO, ExploreAreaLensStatsDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type { ExploreAreaLensStatsDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
-  destinationHubPath,
   exploreAreaLensStatsSummary,
   exploreMapItemIsAvailabilityCatalog,
   exploreMapItemIsHostedActivity,
@@ -22,7 +21,9 @@ const emptyStats = (): ExploreAreaLensStatsDTO => ({
   shops: 0,
 });
 
-const accumulateAreaLensStats = (items: ExploreMapItemDTO[]): Map<string, ExploreAreaLensStatsDTO> => {
+export const accumulateDestinationHubStats = (
+  items: ExploreMapItemDTO[]
+): Map<string, ExploreAreaLensStatsDTO> => {
   const byArea = new Map<string, ExploreAreaLensStatsDTO>();
 
   const bucket = (areaId: string): ExploreAreaLensStatsDTO => {
@@ -34,7 +35,7 @@ const accumulateAreaLensStats = (items: ExploreMapItemDTO[]): Map<string, Explor
   };
 
   for (const item of items) {
-    if (item.source === 'area') continue;
+    if (item.kind === 'destination') continue;
     const areaId = resolveDestinationId(item);
     if (!areaId) continue;
     const stats = bucket(areaId);
@@ -89,35 +90,10 @@ export const mergeFacilityStatsFromLocations = (
   }
 };
 
-/**
- * @deprecated Do not emit onto `GET /explore/map`. Area has no pin.
- * Kept for hub-page stats tests until Area hub reads stats without a synthetic map row.
- */
-export const buildExploreDestinationLensItems = (
-  publishedAreas: AreaDTO[],
+export const destinationHubStatsSummaryForDestination = (
+  destinationId: string,
   catalogItems: ExploreMapItemDTO[]
-): ExploreMapItemDTO[] => {
-  const statsByArea = accumulateAreaLensStats(catalogItems);
-  const rows: ExploreMapItemDTO[] = [];
-
-  for (const area of publishedAreas) {
-    const stats = statsByArea.get(area.id) ?? emptyStats();
-    const subtitle = exploreAreaLensStatsSummary(stats);
-    rows.push({
-      id: `area:${area.slug}`,
-      kind: 'area',
-      source: 'area',
-      title: area.name,
-      subtitle,
-      latitude: area.center.latitude,
-      longitude: area.center.longitude,
-      path: destinationHubPath(area.slug),
-      destinationId: area.id,
-      destinationSlug: area.slug,
-      destinationName: area.name,
-      areaLensStats: stats,
-    });
-  }
-
-  return rows;
+): { stats: ExploreAreaLensStatsDTO; summary: string } => {
+  const stats = accumulateDestinationHubStats(catalogItems).get(destinationId) ?? emptyStats();
+  return { stats, summary: exploreAreaLensStatsSummary(stats) };
 };

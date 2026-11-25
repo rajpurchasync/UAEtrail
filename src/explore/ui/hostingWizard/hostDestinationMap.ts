@@ -1,4 +1,4 @@
-import type { AreaPublicDTO, PlaceDTO } from '@uaetrail/shared-types';
+import type { DestinationPublicDTO, PlaceDTO } from '@uaetrail/shared-types';
 import type { CountryCode } from '../../../config/regions';
 import { MAP_CONFIG } from '../../../config/platform';
 import {
@@ -63,7 +63,7 @@ export const hostDestinationCatalogSearch = ({
   onPickHit,
 }: {
   catalogPlaces: PlaceDTO[];
-  areas: AreaPublicDTO[];
+  areas: DestinationPublicDTO[];
   countryCode: CountryCode;
   state?: string;
   destinationId?: string | null;

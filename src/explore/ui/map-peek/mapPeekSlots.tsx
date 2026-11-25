@@ -35,7 +35,7 @@ export const MapPeekActionsSlot = ({
   onClose,
   ...rest
 }: MapPeekActionsSlotProps) => {
-  if (card.source === 'area' && card.destinationSlug) {
+  if (card.kind === 'destination' && card.destinationSlug) {
     return (
       <DestinationPeekActions
         destinationSlug={card.destinationSlug}
@@ -100,7 +100,7 @@ export const MapPeekBodySlot = ({
   detailLinkState,
   onBeforeDetailNavigate,
 }: MapPeekBodySlotProps) => {
-  if (card.source === 'area') {
+  if (card.kind === 'destination') {
     return <DestinationPeekBody card={card} />;
   }
 

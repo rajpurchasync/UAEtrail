@@ -1,4 +1,4 @@
-import type { AreaPublicDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type { DestinationPublicDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { consumerEmirateKeys, getRegionsForCountry } from '../config/regions';
 import { resolveVenueItemRegion } from '../utils/venueRegionFilter';
 
@@ -55,7 +55,7 @@ const venuePopularityScore = (item: ExploreMapItemDTO): number => {
 };
 
 /** Published-area region order for list sorting — falls back to static UAE when empty. */
-export const deriveVenueRegionSortOrder = (areas: readonly AreaPublicDTO[]): string[] =>
+export const deriveVenueRegionSortOrder = (areas: readonly DestinationPublicDTO[]): string[] =>
   consumerEmirateKeys(areas, 'AE');
 
 const venueRegionSortIndex = (item: ExploreMapItemDTO, regionOrder: readonly string[]): number => {

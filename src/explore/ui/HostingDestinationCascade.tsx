@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { MapPin, Search } from 'lucide-react';
-import type { AreaPublicDTO, PlaceDTO } from '@uaetrail/shared-types';
+import type { DestinationPublicDTO, PlaceDTO } from '@uaetrail/shared-types';
 import type { ActivityType } from '../../config/activityTypes';
 import { subdivisionNoun, type CountryCode } from '../../config/regions';
 import { AppSelect } from '../../components/ui/AppSelect';
@@ -46,7 +46,7 @@ type Props = {
   draftRegistryPlaceId: string | null;
   /** Rows from {@link fetchPlaceCatalog} — place catalog, not a hosting registry. */
   catalogPlaces: PlaceDTO[];
-  areas: AreaPublicDTO[];
+  areas: DestinationPublicDTO[];
   placeType: ActivityType;
   countryCode?: CountryCode;
   onStateChange: (state: string) => void;

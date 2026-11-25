@@ -3,7 +3,7 @@
  * Owner: host@uaetrails.app (Omar) — three join-policy variants.
  */
 import type { CommunityJoinPolicy, GeoRef } from '@uaetrail/shared-types';
-import { curatedAreaSeedId } from '@uaetrail/shared-types';
+import { curatedDestinationSeedId } from '@uaetrail/shared-types';
 import { COLLECTIONS } from '../src/lib/collections.js';
 import { getMongoClient } from '../src/lib/mongo.js';
 import { findCommunityBySlug } from '../src/lib/community-groups-store.js';
@@ -64,7 +64,7 @@ const SEED_COMMUNITIES: SeedCommunitySpec[] = [
       'We post weekly hikes on the map. Open join — show up, say hi, and find your pace group at the trailhead.',
     joinPolicy: 'open',
     emirate: 'Dubai',
-    areaId: curatedAreaSeedId('hatta'),
+    areaId: curatedDestinationSeedId('hatta'),
     memberCount: 24,
   },
   {
@@ -76,7 +76,7 @@ const SEED_COMMUNITIES: SeedCommunitySpec[] = [
       'Small crew focused on trail etiquette and steady pacing. Host approves new members to keep group size manageable.',
     joinPolicy: 'request',
     emirate: 'Abu Dhabi',
-    areaId: curatedAreaSeedId('jebelHafeet'),
+    areaId: curatedDestinationSeedId('jebelHafeet'),
     memberCount: 18,
   },
   {
@@ -88,7 +88,7 @@ const SEED_COMMUNITIES: SeedCommunitySpec[] = [
       'Weekend family camps with early bedtimes and shared gear lists. Join via invite from a member or host.',
     joinPolicy: 'invite',
     emirate: 'Dubai',
-    areaId: curatedAreaSeedId('alQudra'),
+    areaId: curatedDestinationSeedId('alQudra'),
     memberCount: 11,
   },
 ];

@@ -1,4 +1,4 @@
-import type { AreaPublicDTO, PlaceDTO } from '@uaetrail/shared-types';
+import type { DestinationPublicDTO, PlaceDTO } from '@uaetrail/shared-types';
 import type { DiscoveryCardKind } from '../../discovery/discoveryCardModel';
 import type { HostComposeKind } from '../compose';
 import type { CountryCode } from '../../config/regions';
@@ -25,7 +25,7 @@ export const resolveCreateActivityKindFromVenueCardKind = (
 export const createDraftFromRegistryPlace = (
   place: PlaceDTO,
   kind: CreateActivityKind,
-  areas: AreaPublicDTO[] = [],
+  areas: DestinationPublicDTO[] = [],
   countryCode: CountryCode = DEFAULT_PLACE_CATALOG_COUNTRY
 ): CreateActivityDraft => {
   const base = emptyCreateActivityDraft();

@@ -1,6 +1,6 @@
 import type {
   ActivityDTO,
-  AreaDTO,
+  DestinationDTO,
   FacilityDTO,
   LocationDTO,
   PlaceDTO,
@@ -345,24 +345,24 @@ export const approveAdminCommunityMemberRequest = async (
   await api.approveAdminCommunityMember(communityId, userId);
 };
 
-export const fetchAdminDestinations = async (): Promise<AreaDTO[]> => {
+export const fetchAdminDestinations = async (): Promise<DestinationDTO[]> => {
   const res = await api.listAdminDestinations();
   return res.data;
 };
 
 export const createAdminDestination = async (
-  payload: Omit<AreaDTO, 'id' | 'bounds' | 'createdAt' | 'updatedAt'> & {
-    bounds?: AreaDTO['bounds'];
+  payload: Omit<DestinationDTO, 'id' | 'bounds' | 'createdAt' | 'updatedAt'> & {
+    bounds?: DestinationDTO['bounds'];
   }
-): Promise<AreaDTO> => {
+): Promise<DestinationDTO> => {
   const res = await api.createAdminDestination(payload);
   return res.data;
 };
 
 export const updateAdminDestination = async (
   id: string,
-  payload: Partial<AreaDTO>
-): Promise<AreaDTO> => {
+  payload: Partial<DestinationDTO>
+): Promise<DestinationDTO> => {
   const res = await api.updateAdminDestination(id, payload);
   return res.data;
 };

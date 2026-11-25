@@ -24,13 +24,13 @@ const collectApiLibTs = (): string[] => {
 
 /** MIG-DESTINATION-GEO — one Mongo story: logical DESTINATIONS → physical `areas`. */
 describe('destination storage guard (Phase C)', () => {
-  it('COLLECTIONS.DESTINATIONS matches BWL and aliases AREAS', () => {
+  it('COLLECTIONS.DESTINATIONS matches BWL', () => {
     const collections = read('apps/api/src/lib/collections.ts');
     const lexicon = read('packages/shared-types/src/wire-lexicon.ts');
     expect(collections).toMatch(/DESTINATIONS: 'areas'/);
-    expect(collections).toMatch(/AREAS: 'areas'/);
+    expect(collections).not.toMatch(/AREAS: 'areas'/);
     expect(lexicon).toMatch(/DESTINATIONS: 'areas'/);
-    expect(lexicon).toMatch(/AREAS: 'areas'/);
+    expect(lexicon).not.toMatch(/AREAS: 'areas'/);
   });
 
   it('destinations-store is the single curated-destination module', () => {

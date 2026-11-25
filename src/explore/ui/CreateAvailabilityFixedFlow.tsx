@@ -102,7 +102,7 @@ export const CreateAvailabilityFixedFlow = ({
   const submitResult = availabilityFixedSubmitFlowResult(submitStatus);
   const [error, setError] = useState<string | null>(null);
   const [showMonthView, setShowMonthView] = useState(false);
-  const publishedAreas = useExplorePublishedDestinations();
+  const publishedDestinations = useExplorePublishedDestinations();
   const mapSession = useComposeMapSession<SeekingMapIntent>();
   const { openMap, closeMap } = mapSession;
 
@@ -196,7 +196,7 @@ export const CreateAvailabilityFixedFlow = ({
         return;
       }
 
-      const destinationId = destinationIdForExploreDestinationSlug(publishedAreas, exploreDestinationSlug);
+      const destinationId = destinationIdForExploreDestinationSlug(publishedDestinations, exploreDestinationSlug);
       setDraft({
         ...emptyAvailabilityFixedDraft(),
         kind: availabilityFixedKind,
@@ -224,7 +224,7 @@ export const CreateAvailabilityFixedFlow = ({
     availabilityFixedFlowId,
     availabilityFixedInitKey,
     exploreDestinationSlug,
-    publishedAreas,
+    publishedDestinations,
     closeMap,
   ]);
 
@@ -439,7 +439,7 @@ export const CreateAvailabilityFixedFlow = ({
         dateOptions,
         showMonthView,
         setShowMonthView,
-        publishedAreas,
+        publishedDestinations,
         goNext,
         goBack,
         goToFirstStep,

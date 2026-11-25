@@ -1,24 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import type { AreaDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { buildExploreDestinationLensItems } from '../src/lib/explore-map-destination-lens.js';
+import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import {
+  accumulateDestinationHubStats,
+  destinationHubStatsSummaryForDestination,
+} from '../src/lib/explore-map-destination-lens.js';
 import { testAreas } from './helpers/test-seed.js';
 
-const area = (slug: string, id: string): AreaDTO => ({
-  id,
-  slug,
-  name: slug === 'hatta' ? 'Hatta' : 'Jebel Jais',
-  region: 'Dubai',
-  status: 'published',
-  center: { latitude: 24.8, longitude: 56.1 },
-  bounds: [],
-  priority: 1,
-  createdAt: '2026-01-01T00:00:00.000Z',
-  updatedAt: '2026-01-01T00:00:00.000Z',
-});
-
-describe('buildExploreDestinationLensItems', () => {
-  it('rolls up hosted and venue counts per area', () => {
-    const areas = [area(testAreas.hatta.slug, testAreas.hatta.id)];
+describe('destination hub stats rollup', () => {
+  it('rolls up hosted and venue counts per destination', () => {
     const catalog: ExploreMapItemDTO[] = [
       {
         id: 'activity:1',
@@ -43,16 +32,15 @@ describe('buildExploreDestinationLensItems', () => {
       },
     ];
 
-    const rows = buildExploreDestinationLensItems(areas, catalog);
-    expect(rows).toHaveLength(1);
-    expect(rows[0]?.source).toBe('area');
-    expect(rows[0]?.areaLensStats?.hostedActivities).toBe(1);
-    expect(rows[0]?.areaLensStats?.trailSpots).toBe(1);
-    expect(rows[0]?.subtitle).toContain('outing');
+    const stats = accumulateDestinationHubStats(catalog).get(testAreas.hatta.id);
+    expect(stats?.hostedActivities).toBe(1);
+    expect(stats?.trailSpots).toBe(1);
+
+    const summary = destinationHubStatsSummaryForDestination(testAreas.hatta.id, catalog);
+    expect(summary.summary).toContain('outing');
   });
 
   it('counts member_availability pins in availabilityPins rollup field', () => {
-    const areas = [area(testAreas.hatta.slug, testAreas.hatta.id)];
     const catalog: ExploreMapItemDTO[] = [
       {
         id: 'availability:u1:s1',
@@ -76,14 +64,15 @@ describe('buildExploreDestinationLensItems', () => {
         destinationId: testAreas.hatta.id,
       },
     ];
-    const rows = buildExploreDestinationLensItems(areas, catalog);
-    expect(rows[0]?.areaLensStats?.availabilityPins).toBe(1);
-    expect(rows[0]?.areaLensStats?.hostedActivities).toBe(0);
-    expect(rows[0]?.subtitle).toContain('available');
+    const stats = accumulateDestinationHubStats(catalog).get(testAreas.hatta.id);
+    expect(stats?.availabilityPins).toBe(1);
+    expect(stats?.hostedActivities).toBe(0);
+    expect(destinationHubStatsSummaryForDestination(testAreas.hatta.id, catalog).summary).toContain(
+      'available'
+    );
   });
 
   it('counts facility pins from explore map items (facilities collection)', () => {
-    const areas = [area(testAreas.hatta.slug, testAreas.hatta.id)];
     const catalog: ExploreMapItemDTO[] = [
       {
         id: 'facility:1',
@@ -97,7 +86,6 @@ describe('buildExploreDestinationLensItems', () => {
         placeKind: 'toilet',
       },
     ];
-    const rows = buildExploreDestinationLensItems(areas, catalog);
-    expect(rows[0]?.areaLensStats?.facilities).toBe(1);
+    expect(accumulateDestinationHubStats(catalog).get(testAreas.hatta.id)?.facilities).toBe(1);
   });
 });

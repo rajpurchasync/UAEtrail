@@ -57,7 +57,7 @@ export const isOnlineShopItem = (item: ExploreMapItemDTO): boolean =>
 const isMapPin = (item: ExploreMapItemDTO): boolean => {
   if (item.latitude == null || item.longitude == null) return false;
   if (!isShopListItem(item) && item.source === 'shop' && item.id.startsWith('product:')) return false;
-  if (item.source === 'area') return true;
+  if (item.kind === 'destination') return true;
   return true;
 };
 
@@ -104,7 +104,8 @@ export const matchesOthersMapFilter = (
   return false;
 };
 
-export const isAreaLensMapItem = (item: ExploreMapItemDTO): boolean => item.source === 'area';
+export const isDestinationHubMapItem = (item: ExploreMapItemDTO): boolean =>
+  item.kind === 'destination';
 
 export const matchesExplorePinKindFilter = (item: ExploreMapItemDTO, pinKind: ExplorePinKindFilter): boolean => {
   if (pinKind === 'all') return true;
@@ -213,7 +214,7 @@ export const resolveExploreItemScheduleWindow = (
 };
 
 const mapPinKind = (item: ExploreMapItemDTO): MapPinKind => {
-  if (item.source === 'area') return 'area';
+  if (item.kind === 'destination') return 'destination';
   if (exploreMapItemIsAvailabilityCatalog(item)) {
     return item.kind === 'rideshare' ? 'rideshare' : (item.kind as MapPinKind);
   }

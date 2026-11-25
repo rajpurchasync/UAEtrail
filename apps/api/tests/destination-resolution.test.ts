@@ -1,23 +1,23 @@
 import { describe, expect, it } from 'vitest';
 import {
-  approximateAreaBoundsKm2,
-  pointInAreaBounds,
-  type AreaBoundsRing,
+  approximateDestinationBoundsKm2,
+  pointInDestinationBounds,
+  type DestinationBoundsRing,
 } from '@uaetrail/shared-types';
 import { resolveDestinationIdFromPoint, ringFromBBox } from '../src/lib/destination-resolution.js';
-import type { AreaDTO } from '@uaetrail/shared-types';
+import type { DestinationDTO } from '@uaetrail/shared-types';
 
 const box = ringFromBBox(24.78, 56.0, 24.88, 56.18);
 
-describe('pointInAreaBounds', () => {
+describe('pointInDestinationBounds', () => {
   it('detects interior and exterior points', () => {
-    expect(pointInAreaBounds(24.83, 56.09, box)).toBe(true);
-    expect(pointInAreaBounds(25.5, 56.09, box)).toBe(false);
+    expect(pointInDestinationBounds(24.83, 56.09, box)).toBe(true);
+    expect(pointInDestinationBounds(25.5, 56.09, box)).toBe(false);
   });
 });
 
 describe('resolveDestinationIdFromPoint', () => {
-  const destinations: AreaDTO[] = [
+  const destinations: DestinationDTO[] = [
     {
       id: 'large',
       slug: 'large',
@@ -53,9 +53,9 @@ describe('resolveDestinationIdFromPoint', () => {
   });
 });
 
-describe('approximateAreaBoundsKm2', () => {
+describe('approximateDestinationBoundsKm2', () => {
   it('returns positive area for a box', () => {
-    const ring: AreaBoundsRing = ringFromBBox(0, 0, 1, 1);
-    expect(approximateAreaBoundsKm2(ring)).toBeGreaterThan(0);
+    const ring: DestinationBoundsRing = ringFromBBox(0, 0, 1, 1);
+    expect(approximateDestinationBoundsKm2(ring)).toBeGreaterThan(0);
   });
 });

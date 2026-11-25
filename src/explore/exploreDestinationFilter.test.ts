@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { seekingExploreMapItem } from './exploreMapItemFixtures';
-import type { AreaPublicDTO } from '@uaetrail/shared-types';
+import type { DestinationPublicDTO } from '@uaetrail/shared-types';
 import {
   destinationIdForExploreDestinationSlug,
   filterExploreMapItemsByDestinationSlug,
@@ -10,7 +10,7 @@ import {
   searchPublishedAreasForQuery,
 } from './exploreDestinationFilter';
 
-const hattaArea = (): AreaPublicDTO => ({
+const hattaArea = (): DestinationPublicDTO => ({
   id: 'a1',
   slug: 'hatta',
   name: 'Hatta',

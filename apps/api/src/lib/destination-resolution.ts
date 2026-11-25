@@ -1,19 +1,19 @@
 import {
-  approximateAreaBoundsKm2,
-  pointInAreaBounds,
-  type AreaBoundsRing,
-  type AreaDTO,
+  approximateDestinationBoundsKm2,
+  pointInDestinationBounds,
+  type DestinationBoundsRing,
+  type DestinationDTO,
 } from '@uaetrail/shared-types';
 import type { Location } from '../domain/types.js';
 import type { MongoActivityDoc } from './entity-builders.js';
 import { listPublishedDestinations } from './destinations-store.js';
 import { resolveCatalogLocationAreaId } from './venue-catalog-enrichment.js';
 
-let publishedDestinationsCache: AreaDTO[] | null = null;
+let publishedDestinationsCache: DestinationDTO[] | null = null;
 let publishedDestinationsCacheAt = 0;
 const CACHE_MS = 60_000;
 
-const loadPublishedDestinations = async (): Promise<AreaDTO[]> => {
+const loadPublishedDestinations = async (): Promise<DestinationDTO[]> => {
   const now = Date.now();
   if (publishedDestinationsCache && now - publishedDestinationsCacheAt < CACHE_MS) {
     return publishedDestinationsCache;
@@ -31,16 +31,16 @@ export const invalidatePublishedDestinationsCache = (): void => {
 export const resolveDestinationIdFromPoint = (
   latitude: number,
   longitude: number,
-  destinations: AreaDTO[],
+  destinations: DestinationDTO[],
   preferredDestinationId?: string | null
 ): string | null => {
   if (preferredDestinationId) return preferredDestinationId;
-  const hits = destinations.filter((row) => pointInAreaBounds(latitude, longitude, row.bounds));
+  const hits = destinations.filter((row) => pointInDestinationBounds(latitude, longitude, row.bounds));
   if (hits.length === 0) return null;
   hits.sort((a, b) => {
     const priorityDiff = a.priority - b.priority;
     if (priorityDiff !== 0) return priorityDiff;
-    return approximateAreaBoundsKm2(a.bounds) - approximateAreaBoundsKm2(b.bounds);
+    return approximateDestinationBoundsKm2(a.bounds) - approximateDestinationBoundsKm2(b.bounds);
   });
   return hits[0].id;
 };
@@ -88,7 +88,7 @@ export const resolveActivityAnchorCoordinates = (
  */
 export const resolveEffectiveCatalogDestinationId = (
   location: Pick<Location, 'id' | 'destinationId' | 'areaId' | 'latitude' | 'longitude'>,
-  destinations: AreaDTO[]
+  destinations: DestinationDTO[]
 ): string | null => {
   if (location.destinationId?.trim()) return location.destinationId.trim();
   if (location.areaId?.trim()) return location.areaId.trim();
@@ -121,7 +121,7 @@ export const ringFromBBox = (
   west: number,
   north: number,
   east: number
-): AreaBoundsRing => [
+): DestinationBoundsRing => [
   { latitude: south, longitude: west },
   { latitude: south, longitude: east },
   { latitude: north, longitude: east },

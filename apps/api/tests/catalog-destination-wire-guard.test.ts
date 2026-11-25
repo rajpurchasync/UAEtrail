@@ -30,13 +30,11 @@ describe('catalog destination wire guard', () => {
     expect(facilities).not.toMatch(/destinationId \?\? filters\.areaId/);
   });
 
-  it('shared-types exports catalog query normalizers + alias constants', () => {
+  it('shared-types exports catalog query normalizers', () => {
     const index = read('packages/shared-types/src/index.ts');
     expect(index).toMatch(/normalizePlaceCatalogQuery/);
     expect(index).toMatch(/normalizeFacilityCatalogQuery/);
-    expect(read('packages/shared-types/src/catalog-query-normalize.ts')).toMatch(
-      /CATALOG_DESTINATION_QUERY_ALIASES/
-    );
+    expect(read('packages/shared-types/src/catalog-query-normalize.ts')).not.toMatch(/areaId/);
   });
 
   it('API tests do not pass areaId into createLocationRecord / createFacilityRecord', () => {

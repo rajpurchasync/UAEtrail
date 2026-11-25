@@ -1,12 +1,11 @@
 /** Curated **Destination** rows (Mongo collection `areas`; stable ids `area-seed-*`). */
 import type { Collection } from 'mongodb';
 import type {
-  AreaBoundsRing,
-  AreaCenter,
-  AreaDTO,
-  AreaPublicDTO,
-  AreaStatus,
+  DestinationBoundsRing,
+  DestinationCenter,
+  DestinationDTO,
   DestinationPublicDTO,
+  DestinationStatus,
 } from '@uaetrail/shared-types';
 import { COLLECTIONS } from './collections.js';
 import { getMongoClient } from './mongo.js';
@@ -17,9 +16,9 @@ type MongoDestinationDoc = {
   slug: string;
   name: string;
   region: string;
-  status: AreaStatus;
-  center: AreaCenter;
-  bounds: AreaBoundsRing;
+  status: DestinationStatus;
+  center: DestinationCenter;
+  bounds: DestinationBoundsRing;
   priority: number;
   summary?: string | null;
   countryCode?: string | null;
@@ -31,7 +30,7 @@ type MongoDestinationDoc = {
 const collection = (): Collection<MongoDestinationDoc> =>
   getMongoClient()!.db().collection<MongoDestinationDoc>(COLLECTIONS.DESTINATIONS);
 
-const mapDestinationDto = (doc: MongoDestinationDoc): AreaDTO => ({
+const mapDestinationDto = (doc: MongoDestinationDoc): DestinationDTO => ({
   id: doc._id,
   slug: doc.slug,
   name: doc.name,
@@ -47,7 +46,7 @@ const mapDestinationDto = (doc: MongoDestinationDoc): AreaDTO => ({
   updatedAt: doc.updatedAt.toISOString(),
 });
 
-const toPublicSlice = (row: AreaDTO): AreaPublicDTO => ({
+const toPublicSlice = (row: DestinationDTO): DestinationPublicDTO => ({
   id: row.id,
   slug: row.slug,
   name: row.name,
@@ -60,10 +59,10 @@ const toPublicSlice = (row: AreaDTO): AreaPublicDTO => ({
   imageUrl: row.imageUrl ?? null,
 });
 
-export const toDestinationPublicDto = (row: AreaDTO | AreaPublicDTO): DestinationPublicDTO =>
+export const toDestinationPublicDto = (row: DestinationDTO | DestinationPublicDTO): DestinationPublicDTO =>
   'status' in row ? toPublicSlice(row) : row;
 
-export const listPublishedDestinations = async (): Promise<AreaDTO[]> => {
+export const listPublishedDestinations = async (): Promise<DestinationDTO[]> => {
   const docs = await collection()
     .find({ status: 'published' })
     .sort({ priority: 1, name: 1 })
@@ -71,27 +70,27 @@ export const listPublishedDestinations = async (): Promise<AreaDTO[]> => {
   return docs.map(mapDestinationDto);
 };
 
-export const listAdminDestinations = async (): Promise<AreaDTO[]> => {
+export const listAdminDestinations = async (): Promise<DestinationDTO[]> => {
   const docs = await collection().find({}).sort({ priority: 1, name: 1 }).toArray();
   return docs.map(mapDestinationDto);
 };
 
-export const findDestinationBySlug = async (slug: string): Promise<AreaDTO | null> => {
+export const findDestinationBySlug = async (slug: string): Promise<DestinationDTO | null> => {
   const doc = await collection().findOne({ slug });
   return doc ? mapDestinationDto(doc) : null;
 };
 
-export const findDestinationById = async (destinationId: string): Promise<AreaDTO | null> => {
+export const findDestinationById = async (destinationId: string): Promise<DestinationDTO | null> => {
   const doc = await collection().findOne({ _id: destinationId });
   return doc ? mapDestinationDto(doc) : null;
 };
 
-export const findPublishedDestinationById = async (destinationId: string): Promise<AreaDTO | null> => {
+export const findPublishedDestinationById = async (destinationId: string): Promise<DestinationDTO | null> => {
   const doc = await collection().findOne({ _id: destinationId, status: 'published' });
   return doc ? mapDestinationDto(doc) : null;
 };
 
-export const findDestinationsByIds = async (destinationIds: string[]): Promise<AreaDTO[]> => {
+export const findDestinationsByIds = async (destinationIds: string[]): Promise<DestinationDTO[]> => {
   const ids = [...new Set(destinationIds.map((id) => id.trim()).filter(Boolean))];
   if (ids.length === 0) return [];
   const docs = await collection().find({ _id: { $in: ids } }).toArray();
@@ -102,16 +101,16 @@ export type AdminDestinationInput = {
   slug: string;
   name: string;
   region: string;
-  status: AreaStatus;
-  center: AreaCenter;
-  bounds: AreaBoundsRing;
+  status: DestinationStatus;
+  center: DestinationCenter;
+  bounds: DestinationBoundsRing;
   priority?: number;
   summary?: string | null;
   countryCode?: string | null;
   imageUrl?: string | null;
 };
 
-export const createAdminDestination = async (input: AdminDestinationInput): Promise<AreaDTO> => {
+export const createAdminDestination = async (input: AdminDestinationInput): Promise<DestinationDTO> => {
   const now = new Date();
   const id = newEntityId();
   const doc: MongoDestinationDoc = {
@@ -136,7 +135,7 @@ export const createAdminDestination = async (input: AdminDestinationInput): Prom
 export const updateAdminDestination = async (
   destinationId: string,
   patch: Partial<AdminDestinationInput>
-): Promise<AreaDTO | null> => {
+): Promise<DestinationDTO | null> => {
   const update: Partial<MongoDestinationDoc> = { updatedAt: new Date() };
   if (patch.slug !== undefined) update.slug = patch.slug.trim().toLowerCase();
   if (patch.name !== undefined) update.name = patch.name.trim();
@@ -165,7 +164,7 @@ export const deleteAdminDestination = async (destinationId: string): Promise<boo
 /** Idempotent upsert for seed + tests. */
 export const upsertDestinationBySlug = async (
   input: AdminDestinationInput & { id?: string }
-): Promise<AreaDTO> => {
+): Promise<DestinationDTO> => {
   const slug = input.slug.trim().toLowerCase();
   const existing = await collection().findOne({ slug });
   const now = new Date();
@@ -207,4 +206,4 @@ export const upsertDestinationBySlug = async (
   return mapDestinationDto(doc);
 };
 
-export type { AreaStatus as DestinationStatus };
+export type { DestinationStatus as DestinationStatus };

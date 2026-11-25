@@ -1,8 +1,8 @@
 import { mergeVenueStateFilterOptionsWithAreas } from '../config/regions';
-import type { AreaPublicDTO } from '@uaetrail/shared-types';
+import type { DestinationPublicDTO } from '@uaetrail/shared-types';
 
 type AvailabilityDestinationRegionsFieldProps = {
-  publishedAreas: readonly AreaPublicDTO[];
+  publishedDestinations: readonly DestinationPublicDTO[];
   selected: readonly string[];
   onChange: (regions: string[]) => void;
   legend?: string;
@@ -11,13 +11,13 @@ type AvailabilityDestinationRegionsFieldProps = {
 
 /** Multi emirate pick — slot `destinationRegions` (OR). Empty = open to any. */
 export const AvailabilityDestinationRegionsField = ({
-  publishedAreas,
+  publishedDestinations,
   selected,
   onChange,
   legend = 'Destination',
   hint = 'Pick one or more emirates, or leave empty for anywhere in the UAE.',
 }: AvailabilityDestinationRegionsFieldProps) => {
-  const options = mergeVenueStateFilterOptionsWithAreas(publishedAreas, 'AE').map((row) => row.key);
+  const options = mergeVenueStateFilterOptionsWithAreas(publishedDestinations, 'AE').map((row) => row.key);
 
   const toggle = (key: string) => {
     if (selected.includes(key)) {

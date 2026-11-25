@@ -256,7 +256,7 @@ export const ListExplorer = ({
   onPopGeoScope,
 }: ListExplorerProps) => {
   const drawer = useExploreDesktopListDrawerChrome();
-  const publishedAreas = useExplorePublishedDestinations();
+  const publishedDestinations = useExplorePublishedDestinations();
   useBrowseGeoScopeHydration(geoPath);
 
   const collapsedRailLabels = useMemo(
@@ -266,9 +266,9 @@ export const ListExplorer = ({
         regions,
         geoPath,
         bucket,
-        publishedAreas,
+        publishedDestinations,
       }),
-    [bucket, filters, geoPath, publishedAreas, regions]
+    [bucket, filters, geoPath, publishedDestinations, regions]
   );
 
   const [scrollElement, setScrollElement] = useState<HTMLElement | null>(null);

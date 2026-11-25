@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import type {
   AdminSubmissionDTO,
-  AreaDTO,
+  DestinationDTO,
   LocationDTO,
   SubmissionCandidate,
 } from '@uaetrail/shared-types';
@@ -91,7 +91,7 @@ export const Submissions = () => {
       const [subs, places, areas] = await Promise.all([
         fetchAdminSubmissions().catch(() => ({ data: [] as AdminSubmissionDTO[] })),
         fetchAdminPlacesCatalog(1, 100).catch(() => ({ items: [] as LocationDTO[], total: 0 })),
-        fetchAdminDestinations().catch(() => [] as AreaDTO[]),
+        fetchAdminDestinations().catch(() => [] as DestinationDTO[]),
       ]);
       if (!isActive()) return;
 

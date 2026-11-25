@@ -1,4 +1,4 @@
-import type { AreaPublicDTO } from '@uaetrail/shared-types';
+import type { DestinationPublicDTO } from '@uaetrail/shared-types';
 import { EXPLORE_REGION_PILL_LABELS } from '../../config/regions';
 import { formatBrowseGeoPathLabel } from './browseGeoPath';
 import type { BrowseListFilterState } from './browseListFilters';
@@ -13,17 +13,17 @@ export const buildBrowseCollapsedRailLabels = ({
   regions,
   geoPath,
   bucket,
-  publishedAreas,
+  publishedDestinations,
 }: {
   filters: BrowseListFilterState;
   regions: readonly string[];
   geoPath: readonly string[];
   bucket: BrowseListBucket;
-  publishedAreas: readonly AreaPublicDTO[];
+  publishedDestinations: readonly DestinationPublicDTO[];
 }): string[] => {
   const labels: string[] = [];
 
-  const geoLabel = formatBrowseGeoPathLabel(geoPath, publishedAreas);
+  const geoLabel = formatBrowseGeoPathLabel(geoPath, publishedDestinations);
   if (geoLabel) labels.push(geoLabel);
 
   for (const region of regions) {

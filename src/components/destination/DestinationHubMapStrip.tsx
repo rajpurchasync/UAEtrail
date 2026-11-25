@@ -1,6 +1,6 @@
 import { lazy, Suspense, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import type { AreaCenter, AreaBoundsRing } from '@uaetrail/shared-types';
+import type { DestinationCenter, DestinationBoundsRing } from '@uaetrail/shared-types';
 import { placeDetailPath } from '@uaetrail/shared-types';
 import type { LocationDTO } from '@uaetrail/shared-types';
 import type { MapBounds, PlaceMapPin } from '../ui/placesMapTypes';
@@ -14,12 +14,12 @@ const LazyPlacesMap = lazy(() =>
 type DestinationHubMapStripProps = {
   destinationSlug: string;
   areaName: string;
-  center: AreaCenter;
-  boundsRing: AreaBoundsRing;
+  center: DestinationCenter;
+  boundsRing: DestinationBoundsRing;
   places: LocationDTO[];
 };
 
-const boundsFromRing = (ring: AreaBoundsRing): MapBounds => {
+const boundsFromRing = (ring: DestinationBoundsRing): MapBounds => {
   if (ring.length === 0) {
     return { west: 54, south: 22, east: 56, north: 26 };
   }

@@ -2,24 +2,24 @@
  * Canonical curated UAE outdoor areas — ids, slugs, map anchors, and copy for seed + tests.
  * Admin may edit live rows; re-run `seedCuratedAreas` to restore defaults.
  */
-import { CURATED_AREA_SEED_IDS, type CuratedAreaSeedKey } from './curated-area-seeds.js';
+import { CURATED_DESTINATION_SEED_IDS, type CuratedDestinationSeedKey } from './curated-destination-seeds.js';
 
-export type CuratedAreaBBox = {
+export type CuratedDestinationBBox = {
   south: number;
   west: number;
   north: number;
   east: number;
 };
 
-export type CuratedAreaCatalogEntry = {
-  key: CuratedAreaSeedKey;
+export type CuratedDestinationCatalogEntry = {
+  key: CuratedDestinationSeedKey;
   id: string;
   slug: string;
   name: string;
   region: string;
   priority: number;
   center: { latitude: number; longitude: number };
-  bbox: CuratedAreaBBox;
+  bbox: CuratedDestinationBBox;
   /** Short hub / map peek blurb. */
   summary: string;
   countryCode: string;
@@ -30,18 +30,18 @@ const DEFAULT_AREA_HERO =
   'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200';
 
 const entry = (
-  key: CuratedAreaSeedKey,
+  key: CuratedDestinationSeedKey,
   slug: string,
   name: string,
   region: string,
   priority: number,
   center: { latitude: number; longitude: number },
-  bbox: CuratedAreaBBox,
+  bbox: CuratedDestinationBBox,
   summary: string,
   imageUrl?: string | null
-): CuratedAreaCatalogEntry => ({
+): CuratedDestinationCatalogEntry => ({
   key,
-  id: CURATED_AREA_SEED_IDS[key],
+  id: CURATED_DESTINATION_SEED_IDS[key],
   slug,
   name,
   region,
@@ -54,7 +54,7 @@ const entry = (
 });
 
 /** Published area registry used by `seedCuratedAreas` and integration tests. */
-export const CURATED_AREA_CATALOG: readonly CuratedAreaCatalogEntry[] = [
+export const CURATED_DESTINATION_CATALOG: readonly CuratedDestinationCatalogEntry[] = [
   entry(
     'hatta',
     'hatta',
@@ -227,15 +227,15 @@ export const CURATED_AREA_CATALOG: readonly CuratedAreaCatalogEntry[] = [
   ),
 ];
 
-export const CURATED_AREA_CATALOG_BY_KEY: Record<CuratedAreaSeedKey, CuratedAreaCatalogEntry> =
-  Object.fromEntries(CURATED_AREA_CATALOG.map((row) => [row.key, row])) as Record<
-    CuratedAreaSeedKey,
-    CuratedAreaCatalogEntry
+export const CURATED_DESTINATION_CATALOG_BY_KEY: Record<CuratedDestinationSeedKey, CuratedDestinationCatalogEntry> =
+  Object.fromEntries(CURATED_DESTINATION_CATALOG.map((row) => [row.key, row])) as Record<
+    CuratedDestinationSeedKey,
+    CuratedDestinationCatalogEntry
   >;
 
-export const CURATED_AREA_CATALOG_BY_SLUG: Record<string, CuratedAreaCatalogEntry> = Object.fromEntries(
-  CURATED_AREA_CATALOG.map((row) => [row.slug, row])
+export const CURATED_DESTINATION_CATALOG_BY_SLUG: Record<string, CuratedDestinationCatalogEntry> = Object.fromEntries(
+  CURATED_DESTINATION_CATALOG.map((row) => [row.slug, row])
 );
 
-export const listCuratedAreaSeedKeys = (): CuratedAreaSeedKey[] =>
-  CURATED_AREA_CATALOG.map((row) => row.key);
+export const listCuratedDestinationSeedKeys = (): CuratedDestinationSeedKey[] =>
+  CURATED_DESTINATION_CATALOG.map((row) => row.key);

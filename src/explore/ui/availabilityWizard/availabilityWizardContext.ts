@@ -1,4 +1,4 @@
-import type { AreaPublicDTO } from '@uaetrail/shared-types';
+import type { DestinationPublicDTO } from '@uaetrail/shared-types';
 import type { AvailabilityFixedComposeKind } from '../../compose';
 import { COMPOSE_MAP_INTENTS } from '../../create/interactions';
 import type {
@@ -32,7 +32,7 @@ export type AvailabilityWizardContext = {
   dateOptions: Array<{ iso: string; label: string; day: number }>;
   showMonthView: boolean;
   setShowMonthView: (value: boolean | ((prev: boolean) => boolean)) => void;
-  publishedAreas: AreaPublicDTO[];
+  publishedDestinations: DestinationPublicDTO[];
   goNext: () => void;
   goBack: () => void;
   goToFirstStep: () => void;

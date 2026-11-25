@@ -23,10 +23,8 @@ export const BWL_COLLECTIONS = {
   PLATFORM_ALERTS: 'platform_alerts',
   /** Partner outbound click telemetry (commercial facilities / shops). */
   REFERRAL_CLICKS: 'referral_clicks',
-  AREAS: 'areas',
   /**
-   * MIG-DESTINATION-GEO-2026 — logical destinations store.
-   * Physical Mongo collection is `areas` until P3 collection rename; ids unchanged (`area-seed-*`).
+   * Curated destinations store — physical Mongo collection `areas`; document ids e.g. `area-seed-*`.
    */
   DESTINATIONS: 'areas',
   GEO_NODES: 'geo_nodes',
@@ -59,12 +57,10 @@ export const BWL_COLLECTIONS = {
   SIDE_EFFECT_OUTBOX: 'side_effect_outbox',
 } as const;
 
-/** Catalog query/submit wire keys (MIG-DESTINATION-GEO). Normalize legacy aliases at HTTP boundary. */
+/** Catalog query/submit wire keys (MIG-DESTINATION-GEO). */
 export const BWL_CATALOG_GEO_FIELDS = {
   DESTINATION_ID: 'destinationId',
   ON_SITE_ID: 'onSiteId',
-  LEGACY_DESTINATION_QUERY: 'areaId',
-  LEGACY_ON_SITE_QUERY: 'parentPlaceId',
 } as const;
 
 export type ActivityModeWire = 'hosted';
@@ -130,8 +126,6 @@ export const BWL_EXPLORE_MAP_SOURCE = {
   VENUE_INBOUND: 'venue',
   /** Inbound wire — brief COH-02 target; use `place`. */
   CATALOG_PLACE_INBOUND: 'catalog_place',
-  /** Inbound wire — synthetic hub pin; Area is a label, not a map source. */
-  AREA_INBOUND: 'area',
 } as const;
 
 export type ExploreMapSourceCanonical =
@@ -145,8 +139,7 @@ export type ExploreMapSourceCanonical =
 export type ExploreMapSourceWire =
   | ExploreMapSourceCanonical
   | typeof BWL_EXPLORE_MAP_SOURCE.VENUE_INBOUND
-  | typeof BWL_EXPLORE_MAP_SOURCE.CATALOG_PLACE_INBOUND
-  | typeof BWL_EXPLORE_MAP_SOURCE.AREA_INBOUND;
+  | typeof BWL_EXPLORE_MAP_SOURCE.CATALOG_PLACE_INBOUND;
 
 export const PLACE_MAP_SOURCE = BWL_EXPLORE_MAP_SOURCE.PLACE;
 export const FACILITY_MAP_SOURCE = BWL_EXPLORE_MAP_SOURCE.FACILITY;

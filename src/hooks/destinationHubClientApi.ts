@@ -1,11 +1,11 @@
-import type { AreaPublicDTO } from '@uaetrail/shared-types';
+import type { DestinationPublicDTO } from '@uaetrail/shared-types';
 import { api } from '../api/index';
 import type { DestinationDetailPayload } from '../api/domains/destinations';
 
 export type { DestinationDetailPayload };
 
 /** Published destination list (`GET /destinations`). */
-export const fetchPublishedDestinations = async (): Promise<AreaPublicDTO[]> => {
+export const fetchPublishedDestinations = async (): Promise<DestinationPublicDTO[]> => {
   const res = await api.listPublishedDestinations();
   return res.data;
 };

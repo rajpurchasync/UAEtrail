@@ -16,8 +16,8 @@ export const ListExplorerGeoScopeChip = ({
   onClear,
   onPopLevel,
 }: ListExplorerGeoScopeChipProps) => {
-  const publishedAreas = useExplorePublishedDestinations(geoPath.length > 0);
-  const label = formatBrowseGeoPathLabel(geoPath, publishedAreas);
+  const publishedDestinations = useExplorePublishedDestinations(geoPath.length > 0);
+  const label = formatBrowseGeoPathLabel(geoPath, publishedDestinations);
   if (!label || geoPath.length === 0) return null;
 
   const leaf = geoPath[geoPath.length - 1]!;

@@ -5,44 +5,34 @@ import {
 } from './catalog-query-normalize.js';
 
 describe('catalog-query-normalize', () => {
-  it('normalizePlaceCatalogQuery prefers destinationId over areaId', () => {
+  it('normalizePlaceCatalogQuery trims destinationId', () => {
     expect(
       normalizePlaceCatalogQuery({
-        destinationId: 'dest-a',
-        areaId: 'legacy-b',
+        destinationId: '  dest-a ',
         segment: 'place',
       })
     ).toEqual({ destinationId: 'dest-a', segment: 'place' });
   });
 
-  it('normalizePlaceCatalogQuery maps areaId when destinationId absent', () => {
-    expect(normalizePlaceCatalogQuery({ areaId: 'area-seed-hatta' })).toEqual({
-      destinationId: 'area-seed-hatta',
-    });
-  });
-
-  it('normalizeFacilityCatalogQuery maps parentPlaceId to onSiteId', () => {
-    expect(
-      normalizeFacilityCatalogQuery({
-        areaId: 'area-test-dubai',
-        parentPlaceId: 'place-abc',
-        facilityKind: 'toilet',
-      })
-    ).toEqual({
-      destinationId: 'area-test-dubai',
-      onSiteId: 'place-abc',
-      facilityKind: 'toilet',
-    });
-  });
-
-  it('normalizeFacilityCatalogQuery prefers canonical keys', () => {
+  it('normalizeFacilityCatalogQuery trims destinationId and onSiteId', () => {
     expect(
       normalizeFacilityCatalogQuery({
         destinationId: 'd1',
         onSiteId: 's1',
-        areaId: 'legacy',
-        parentPlaceId: 'legacy-site',
+        facilityKind: 'toilet',
       })
-    ).toEqual({ destinationId: 'd1', onSiteId: 's1' });
+    ).toEqual({
+      destinationId: 'd1',
+      onSiteId: 's1',
+      facilityKind: 'toilet',
+    });
+  });
+
+  it('normalizeFacilityCatalogQuery nullifies blank onSiteId', () => {
+    expect(
+      normalizeFacilityCatalogQuery({
+        onSiteId: '  ',
+      })
+    ).toEqual({ onSiteId: null });
   });
 });

@@ -1,8 +1,8 @@
 /**
  * Stable Mongo `_id`s for curated areas — used by `seedCuratedAreas`, local seed, and vitest.
- * Catalog metadata: `curated-area-catalog.ts`.
+ * Catalog metadata: `curated-destination-catalog.ts`.
  */
-export const CURATED_AREA_SEED_IDS = {
+export const CURATED_DESTINATION_SEED_IDS = {
   hatta: 'area-seed-hatta',
   jebelJais: 'area-seed-jebel-jais',
   wadiShawka: 'area-seed-wadi-shawka',
@@ -22,11 +22,11 @@ export const CURATED_AREA_SEED_IDS = {
   alAin: 'geo-area-ae-abu-dhabi-al-ain',
 } as const;
 
-export type CuratedAreaSeedKey = keyof typeof CURATED_AREA_SEED_IDS;
+export type CuratedDestinationSeedKey = keyof typeof CURATED_DESTINATION_SEED_IDS;
 
-export const curatedAreaSeedId = (key: CuratedAreaSeedKey): string => CURATED_AREA_SEED_IDS[key];
+export const curatedDestinationSeedId = (key: CuratedDestinationSeedKey): string => CURATED_DESTINATION_SEED_IDS[key];
 
-export const CURATED_AREA_SEED_SLUGS: Record<CuratedAreaSeedKey, string> = {
+export const CURATED_DESTINATION_SEED_SLUGS: Record<CuratedDestinationSeedKey, string> = {
   hatta: 'hatta',
   jebelJais: 'jebel-jais',
   wadiShawka: 'wadi-shawka',

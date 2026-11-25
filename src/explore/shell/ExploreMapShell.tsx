@@ -46,7 +46,7 @@ type Props = Pick<
   | 'handleOpenExploreItem'
   | 'searchScopeCounts'
   | 'openExploreSearch'
-  | 'publishedAreas'
+  | 'publishedDestinations'
   | 'handlePickExploreArea'
   | 'onVisibleMapBoundsChange'
 >;
@@ -80,7 +80,7 @@ export const ExploreMapShell = ({
   handleOpenExploreItem,
   searchScopeCounts,
   openExploreSearch,
-  publishedAreas: _publishedAreas,
+  publishedDestinations: _publishedDestinations,
   handlePickExploreArea: _handlePickExploreArea,
   onVisibleMapBoundsChange,
 }: Props) => {

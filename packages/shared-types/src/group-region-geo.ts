@@ -1,9 +1,9 @@
 import {
-  approximateAreaBoundsKm2,
-  pointInAreaBounds,
-  type AreaBoundsRing,
-  type AreaDTO,
-} from './area.js';
+  approximateDestinationBoundsKm2,
+  pointInDestinationBounds,
+  type DestinationBoundsRing,
+  type DestinationDTO,
+} from './destination.js';
 import {
   buildGroupRegionLevels,
   type GroupRegionLevels,
@@ -21,7 +21,7 @@ export type UaeGroupRegionCatalogLabel =
 
 type GroupRegionGeoZone = {
   label: UaeGroupRegionCatalogLabel;
-  bounds: AreaBoundsRing;
+  bounds: DestinationBoundsRing;
   priority: number;
 };
 
@@ -30,7 +30,7 @@ const ringFromBBox = (
   west: number,
   north: number,
   east: number
-): AreaBoundsRing => [
+): DestinationBoundsRing => [
   { latitude: south, longitude: west },
   { latitude: south, longitude: east },
   { latitude: north, longitude: east },
@@ -160,25 +160,25 @@ export const inferEmirateFromLocalityName = (
   return best?.label ?? null;
 };
 
-const resolveFromPublishedAreas = (
+const resolveFromPublishedDestinations = (
   latitude: number,
   longitude: number,
-  publishedAreas: Pick<AreaDTO, 'id' | 'region' | 'bounds' | 'priority'>[],
+  publishedDestinations: Pick<DestinationDTO, 'id' | 'region' | 'bounds' | 'priority'>[],
   placeAreaId?: string | null
 ): UaeGroupRegionCatalogLabel | null => {
   if (placeAreaId?.trim()) {
-    const linked = publishedAreas.find((area) => area.id === placeAreaId.trim());
+    const linked = publishedDestinations.find((area) => area.id === placeAreaId.trim());
     const fromLinked = normalizeGroupRegionLabel(linked?.region ?? null);
     if (fromLinked) return fromLinked;
   }
 
-  const hits = publishedAreas.filter((area) => pointInAreaBounds(latitude, longitude, area.bounds));
+  const hits = publishedDestinations.filter((area) => pointInDestinationBounds(latitude, longitude, area.bounds));
   if (hits.length === 0) return null;
 
   hits.sort((a, b) => {
     const priorityDiff = a.priority - b.priority;
     if (priorityDiff !== 0) return priorityDiff;
-    return approximateAreaBoundsKm2(a.bounds) - approximateAreaBoundsKm2(b.bounds);
+    return approximateDestinationBoundsKm2(a.bounds) - approximateDestinationBoundsKm2(b.bounds);
   });
 
   return normalizeGroupRegionLabel(hits[0].region);
@@ -188,10 +188,10 @@ const sortZones = (zones: GroupRegionGeoZone[]): GroupRegionGeoZone[] =>
   [...zones].sort((a, b) => {
     const priorityDiff = a.priority - b.priority;
     if (priorityDiff !== 0) return priorityDiff;
-    return approximateAreaBoundsKm2(a.bounds) - approximateAreaBoundsKm2(b.bounds);
+    return approximateDestinationBoundsKm2(a.bounds) - approximateDestinationBoundsKm2(b.bounds);
   });
 
-const boundsCenter = (bounds: AreaBoundsRing): { latitude: number; longitude: number } => {
+const boundsCenter = (bounds: DestinationBoundsRing): { latitude: number; longitude: number } => {
   const latitude = bounds.reduce((sum, point) => sum + point.latitude, 0) / bounds.length;
   const longitude = bounds.reduce((sum, point) => sum + point.longitude, 0) / bounds.length;
   return { latitude, longitude };
@@ -202,7 +202,7 @@ const matchingStaticZone = (
   longitude: number
 ): GroupRegionGeoZone | null => {
   const hits = UAE_GROUP_REGION_GEO_ZONES.filter((zone) =>
-    pointInAreaBounds(latitude, longitude, zone.bounds)
+    pointInDestinationBounds(latitude, longitude, zone.bounds)
   );
   return sortZones(hits)[0] ?? null;
 };
@@ -245,7 +245,7 @@ export const groupRegionAnchorForLabel = (
 ): GroupRegionAreaAnchor => {
   const zones = UAE_GROUP_REGION_GEO_ZONES.filter((zone) => zone.label === label);
   const largest = [...zones].sort(
-    (a, b) => approximateAreaBoundsKm2(b.bounds) - approximateAreaBoundsKm2(a.bounds)
+    (a, b) => approximateDestinationBoundsKm2(b.bounds) - approximateDestinationBoundsKm2(a.bounds)
   )[0];
   if (!largest) throw new Error(`No geo zone for ${label}`);
   return { label, ...boundsCenter(largest.bounds) };
@@ -256,7 +256,7 @@ const resolveFromExclaves = (
   longitude: number
 ): UaeGroupRegionCatalogLabel | null => {
   const hits = UAE_GROUP_REGION_EXCLAVES.filter((zone) =>
-    pointInAreaBounds(latitude, longitude, zone.bounds)
+    pointInDestinationBounds(latitude, longitude, zone.bounds)
   );
   return sortZones(hits)[0]?.label ?? null;
 };
@@ -266,13 +266,13 @@ export const resolveGroupRegionFromCoordinates = (
   longitude: number,
   options?: {
     placeAreaId?: string | null;
-    publishedAreas?: Pick<AreaDTO, 'id' | 'region' | 'bounds' | 'priority'>[];
+    publishedDestinations?: Pick<DestinationDTO, 'id' | 'region' | 'bounds' | 'priority'>[];
   }
 ): UaeGroupRegionCatalogLabel | null => {
   const fromExclave = resolveFromExclaves(latitude, longitude);
   if (fromExclave) return fromExclave;
-  const fromAreas = options?.publishedAreas?.length
-    ? resolveFromPublishedAreas(latitude, longitude, options.publishedAreas, options.placeAreaId)
+  const fromAreas = options?.publishedDestinations?.length
+    ? resolveFromPublishedDestinations(latitude, longitude, options.publishedDestinations, options.placeAreaId)
     : null;
   if (fromAreas) return fromAreas;
   return resolveFromStaticZones(latitude, longitude);
@@ -285,7 +285,7 @@ export type GroupRegionResolutionInput = {
   latitude?: number | null;
   longitude?: number | null;
   areaId?: string | null;
-  publishedAreas?: Pick<AreaDTO, 'id' | 'region' | 'bounds' | 'priority'>[];
+  publishedDestinations?: Pick<DestinationDTO, 'id' | 'region' | 'bounds' | 'priority'>[];
 };
 
 /** Resolve UAE level-2 (state/emirate) label from hint, locality, or coordinates. */
@@ -304,7 +304,7 @@ export const resolveGroupRegionLabel = (
 
   return resolveGroupRegionFromCoordinates(latitude, longitude, {
     placeAreaId: input.areaId,
-    publishedAreas: input.publishedAreas,
+    publishedDestinations: input.publishedDestinations,
   });
 };
 

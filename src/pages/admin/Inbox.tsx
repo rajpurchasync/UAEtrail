@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import { Link } from 'react-router-dom';
-import type { AreaDTO, LocationDTO } from '@uaetrail/shared-types';
+import type { DestinationDTO, LocationDTO } from '@uaetrail/shared-types';
 import type { AdminMetrics, HostApplication } from '../../api/types';
 import {
   fetchAdminDestinations,
@@ -43,7 +43,7 @@ export const Inbox = () => {
   const [recentApps, setRecentApps] = useState<HostApplication[]>([]);
   const [submissions, setSubmissions] = useState<SubmissionRow[]>([]);
   const [pendingPlaces, setPendingPlaces] = useState<LocationDTO[]>([]);
-  const [pendingAreas, setPendingAreas] = useState<AreaDTO[]>([]);
+  const [pendingAreas, setPendingAreas] = useState<DestinationDTO[]>([]);
   const [reportCount, setReportCount] = useState(0);
   const [safetyCount, setSafetyCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -57,7 +57,7 @@ export const Inbox = () => {
         fetchAdminMetrics(),
         fetchAdminOrganisationApplications(1, 20),
         fetchAdminPlacesCatalog(1, 50).catch(() => ({ items: [] as LocationDTO[] })),
-        fetchAdminDestinations().catch(() => [] as AreaDTO[]),
+        fetchAdminDestinations().catch(() => [] as DestinationDTO[]),
         fetchAdminSubmissions().catch(() => ({ data: [] as SubmissionRow[] })),
         fetchAdminContentReports({ page: 1, pageSize: 1, status: 'open' }).catch(() => ({
           data: [],

@@ -229,11 +229,11 @@ export const CreateHostingActivityFlow = ({
     : kind === 'hiking' || kind === 'camping' || kind === 'event'
       ? kind
       : undefined;
-  const publishedAreas = useExplorePublishedDestinations();
+  const publishedDestinations = useExplorePublishedDestinations();
   const catalogCountry = DEFAULT_PLACE_CATALOG_COUNTRY;
   const destinationAreas = useMemo(
-    () => publishedAreas.filter((row) => areaRowInCatalogCountry(row, catalogCountry)),
-    [publishedAreas, catalogCountry]
+    () => publishedDestinations.filter((row) => areaRowInCatalogCountry(row, catalogCountry)),
+    [publishedDestinations, catalogCountry]
   );
 
   const catalogPlaces = usePlaceRegistry({

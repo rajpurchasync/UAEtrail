@@ -287,7 +287,7 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
     requirementBadges: [
       ...(availability ? ['Available'] : []),
       ...enrichExploreActivityRequirementBadges(activity?.requirements, {
-        kind: kind === 'area' ? 'event' : kind,
+        kind: kind === 'destination' ? 'event' : kind,
         rideshareEnabled: Boolean(
           source === 'activity' &&
             kind !== 'rideshare' &&
@@ -326,7 +326,7 @@ export const discoveryCardToneClass: Record<DiscoveryCardTone, string> = {
   shop: 'bg-rose-50 text-rose-900',
   agency: 'bg-indigo-50 text-indigo-900',
   rideshare: 'bg-sky-50 text-sky-900',
-  area: 'bg-slate-50 text-slate-900',
+  destination: 'bg-slate-50 text-slate-900',
 };
 
 export const discoveryCardToneTextClass: Record<DiscoveryCardTone, string> = {
@@ -336,7 +336,7 @@ export const discoveryCardToneTextClass: Record<DiscoveryCardTone, string> = {
   shop: 'text-rose-800',
   agency: 'text-indigo-800',
   rideshare: 'text-sky-800',
-  area: 'text-slate-800',
+  destination: 'text-slate-800',
 };
 
 export const discoveryCardHasMapCoords = (card: DiscoveryCardModel): boolean =>
@@ -475,7 +475,7 @@ export const resolveExploreWishlistTarget = (card: DiscoveryCardModel): ExploreW
   const watch = watchMetaFromCard(card);
   if (discoveryCardIsAvailabilityPin(card)) return null;
   if (card.source === 'activity' && card.activityId) return { activityId: card.activityId, ...watch };
-  if (card.source === 'area' && card.destinationId) return { destinationId: card.destinationId, ...watch };
+  if (card.kind === 'destination' && card.destinationId) return { destinationId: card.destinationId, ...watch };
   if (isGeographyMapSource(card.source) && card.locationId) return { locationId: card.locationId, ...watch };
   return null;
 };

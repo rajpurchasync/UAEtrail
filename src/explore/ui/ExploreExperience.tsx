@@ -59,7 +59,7 @@ export const ExploreExperience = () => {
               handleOpenExploreItem={model.handleOpenExploreItem}
               searchScopeCounts={model.searchScopeCounts}
               openExploreSearch={model.openExploreSearch}
-              publishedAreas={model.publishedAreas}
+              publishedDestinations={model.publishedDestinations}
               handlePickExploreArea={model.handlePickExploreArea}
               onVisibleMapBoundsChange={model.onVisibleMapBoundsChange}
               catalogListCount={model.catalogListCount}

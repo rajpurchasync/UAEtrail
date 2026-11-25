@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
-import type { AreaDTO, AreaStatus } from '@uaetrail/shared-types';
+import type { DestinationDTO, DestinationStatus } from '@uaetrail/shared-types';
 import { Link } from 'react-router-dom';
 import {
   createAdminDestination,
@@ -37,7 +37,7 @@ const COUNTRY_OPTIONS = SUPPORTED_COUNTRIES.map((country) => ({
   label: country.label,
 }));
 
-const STATUS_OPTIONS: { value: AreaStatus; label: string }[] = [
+const STATUS_OPTIONS: { value: DestinationStatus; label: string }[] = [
   { value: 'draft', label: 'Draft' },
   { value: 'published', label: 'Published (on map & hub)' },
 ];
@@ -57,7 +57,7 @@ type AreaFormState = {
   slug: string;
   summary: string;
   imageUrl: string | null;
-  status: AreaStatus;
+  status: DestinationStatus;
   priority: number;
   latitude: number | null;
   longitude: number | null;
@@ -78,7 +78,7 @@ const emptyForm = (): AreaFormState => ({
 
 /** Platform admin — curated geographic areas (country → region → hub). */
 export const AdminDestinations = () => {
-  const [areas, setAreas] = useState<AreaDTO[]>([]);
+  const [areas, setAreas] = useState<DestinationDTO[]>([]);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
   const [loading, setLoading] = useState(true);
@@ -89,7 +89,7 @@ export const AdminDestinations = () => {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<AreaFormState>(emptyForm);
   const [slugTouched, setSlugTouched] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState<AreaDTO | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<DestinationDTO | null>(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [countryFilter, setCountryFilter] = useState('');
@@ -142,7 +142,7 @@ export const AdminDestinations = () => {
     setModalOpen(true);
   };
 
-  const openEdit = (area: AreaDTO) => {
+  const openEdit = (area: DestinationDTO) => {
     setEditingId(area.id);
     setSlugTouched(true);
     setForm({
@@ -518,7 +518,7 @@ export const AdminDestinations = () => {
                 <label className="mb-1 block text-sm font-medium text-neutral-700">Status</label>
                 <AppSelect
                   value={form.status}
-                  onChange={(status) => setForm((prev) => ({ ...prev, status: status as AreaStatus }))}
+                  onChange={(status) => setForm((prev) => ({ ...prev, status: status as DestinationStatus }))}
                   options={STATUS_OPTIONS}
                   inputClassName={ADMIN_SELECT_CLASS}
                   aria-label="Status"

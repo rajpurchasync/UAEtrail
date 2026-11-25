@@ -2,7 +2,7 @@ import type { Collection } from 'mongodb';
 import {
   GEO_COUNTRY_AE_ID,
   canonicalGeoNodeId,
-  pointInAreaBounds,
+  pointInDestinationBounds,
   type GeoKind,
   type GeoLevel,
   type GeoNodeDoc,
@@ -172,9 +172,9 @@ const nodeContainsPoint = (node: GeoNodeDoc, lat: number, lng: number): boolean 
       longitude: x,
       latitude: y,
     }));
-    return pointInAreaBounds(lat, lng, ring);
+    return pointInDestinationBounds(lat, lng, ring);
   }
-  if (node.bbox) return pointInAreaBounds(lat, lng, ringFromBbox(node.bbox));
+  if (node.bbox) return pointInDestinationBounds(lat, lng, ringFromBbox(node.bbox));
   if (node.radiusM && node.center) {
     const [lng0, lat0] = node.center.coordinates;
     const dLat = (lat - lat0) * 111_320;

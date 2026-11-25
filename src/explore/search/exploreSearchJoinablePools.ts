@@ -1,5 +1,5 @@
 import { setExploreClockStyle, type ExploreClockStyle } from '@uaetrail/shared-types';
-import type { AreaPublicDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type { DestinationPublicDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { buildListFeedCards } from '../../list/browse/buildListFeedCards';
 import {
@@ -26,9 +26,9 @@ const tripPoolFromFilters = (
   filters: BrowseListFilterState,
   venueRegions: string[],
   geoPath: readonly string[] = [],
-  publishedAreas: readonly AreaPublicDTO[] = []
+  publishedDestinations: readonly DestinationPublicDTO[] = []
 ): ExploreMapItemDTO[] =>
-  filterExploreMapItemsForList(items, filters, venueRegions, geoPath, publishedAreas);
+  filterExploreMapItemsForList(items, filters, venueRegions, geoPath, publishedDestinations);
 
 /** Same widen logic as trip list — counts must match visible cards. */
 export const resolveExploreSearchTripPool = (
@@ -36,12 +36,12 @@ export const resolveExploreSearchTripPool = (
   filters: BrowseListFilterState,
   venueRegions: string[],
   geoPath: readonly string[] = [],
-  publishedAreas: readonly AreaPublicDTO[] = []
+  publishedDestinations: readonly DestinationPublicDTO[] = []
 ): { pool: ExploreMapItemDTO[]; relaxation: ExploreSearchTripRelaxation } => {
   const browseQuery = exploreSearchWhereBrowseQuery(filters.query);
   const strict: BrowseListFilterState = { ...filters, query: browseQuery };
 
-  let pool = tripPoolFromFilters(items, strict, venueRegions, geoPath, publishedAreas);
+  let pool = tripPoolFromFilters(items, strict, venueRegions, geoPath, publishedDestinations);
   let relaxation: ExploreSearchTripRelaxation = false;
 
   if (pool.length === 0 && strict.activityDatePreset !== 'anyday') {
@@ -50,7 +50,7 @@ export const resolveExploreSearchTripPool = (
       { ...strict, activityDatePreset: 'anyday' },
       venueRegions,
       geoPath,
-      publishedAreas
+      publishedDestinations
     );
     if (pool.length > 0) relaxation = 'date';
   }
@@ -61,7 +61,7 @@ export const resolveExploreSearchTripPool = (
       { ...strict, query: '', activityDatePreset: 'anyday' },
       venueRegions,
       geoPath,
-      publishedAreas
+      publishedDestinations
     );
     if (pool.length > 0) relaxation = 'where';
   }
@@ -74,15 +74,15 @@ export const resolveExploreSearchVenuePool = (
   filters: BrowseListFilterState,
   venueRegions: string[],
   geoPath: readonly string[] = [],
-  publishedAreas: readonly AreaPublicDTO[] = []
+  publishedDestinations: readonly DestinationPublicDTO[] = []
 ): { pool: ExploreMapItemDTO[]; relaxed: boolean } => {
   const browseQuery = exploreSearchWhereBrowseQuery(filters.query);
   const strict: BrowseListFilterState = { ...filters, query: browseQuery };
-  let pool = tripPoolFromFilters(items, strict, venueRegions, geoPath, publishedAreas);
+  let pool = tripPoolFromFilters(items, strict, venueRegions, geoPath, publishedDestinations);
   let relaxed = false;
 
   if (pool.length === 0 && browseQuery.trim()) {
-    pool = tripPoolFromFilters(items, { ...strict, query: '' }, venueRegions, geoPath, publishedAreas);
+    pool = tripPoolFromFilters(items, { ...strict, query: '' }, venueRegions, geoPath, publishedDestinations);
     relaxed = pool.length > 0;
   }
 
@@ -105,16 +105,16 @@ export const resolveExploreSearchJoinableTripCards = (
   regionHint: string,
   limit = EXPLORE_SEARCH_HOME_UPCOMING_LIMIT,
   geoPath: readonly string[] = [],
-  publishedAreas: readonly AreaPublicDTO[] = [],
+  publishedDestinations: readonly DestinationPublicDTO[] = [],
   pickStyle: 'recommend' | 'query' = 'query'
 ): ExploreSearchJoinableTripResult & { listingCount: number } => {
-  const effectiveRegions = resolveEffectiveBrowseVenueRegions(venueRegions, geoPath, publishedAreas);
+  const effectiveRegions = resolveEffectiveBrowseVenueRegions(venueRegions, geoPath, publishedDestinations);
   const { pool, relaxation } = resolveExploreSearchTripPool(
     items,
     filters,
     effectiveRegions,
     geoPath,
-    publishedAreas
+    publishedDestinations
   );
 
   setExploreClockStyle(clock);
@@ -137,15 +137,15 @@ export const resolveExploreSearchVenueCards = (
   venueRegions: string[],
   limit = 10,
   geoPath: readonly string[] = [],
-  publishedAreas: readonly AreaPublicDTO[] = []
+  publishedDestinations: readonly DestinationPublicDTO[] = []
 ): { cards: DiscoveryCardModel[]; relaxed: boolean; listingCount: number } => {
-  const effectiveRegions = resolveEffectiveBrowseVenueRegions(venueRegions, geoPath, publishedAreas);
+  const effectiveRegions = resolveEffectiveBrowseVenueRegions(venueRegions, geoPath, publishedDestinations);
   const { pool, relaxed } = resolveExploreSearchVenuePool(
     items,
     filters,
     effectiveRegions,
     geoPath,
-    publishedAreas
+    publishedDestinations
   );
 
   setExploreClockStyle(clock);

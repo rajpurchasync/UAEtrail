@@ -79,7 +79,7 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
     dateOptions,
     showMonthView,
     setShowMonthView,
-    publishedAreas,
+    publishedDestinations,
     goNext,
     goBack,
     goToFirstStep,
@@ -205,13 +205,13 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
             onAreaIdChange={(next) => {
               patchDraft({
                 destinationId: next,
-                preferredArea: next ? destinationLabelForId(next, publishedAreas) ?? '' : '',
+                preferredArea: next ? destinationLabelForId(next, publishedDestinations) ?? '' : '',
               });
             }}
           />
           <div className="mt-5">
             <AvailabilityDestinationRegionsField
-              publishedAreas={publishedAreas}
+              publishedDestinations={publishedDestinations}
               selected={draft.destinationRegions}
               onChange={(destinationRegions) => patchDraft({ destinationRegions })}
               legend="Destination emirates"
@@ -521,7 +521,7 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
             {draft.destinationId && (
               <p className="mt-2 text-xs text-gray-600">
                 <span className="font-semibold text-gray-700">Area: </span>
-                {destinationLabelForId(draft.destinationId, publishedAreas) ?? draft.preferredArea}
+                {destinationLabelForId(draft.destinationId, publishedDestinations) ?? draft.preferredArea}
               </p>
             )}
             {(usesHikingAvailabilityFlow(kind) || usesCampingAvailabilityFlow(kind) || usesEventAvailabilityFlow(kind)) &&

@@ -136,7 +136,7 @@ export const parentMapKindMayOfferLinkedRideshare = (
     | undefined
 ): boolean => {
   if (!kind || kind === 'rideshare') return false;
-  if (kind === 'guide' || kind === 'shop' || kind === 'agency' || kind === 'area') return false;
+  if (kind === 'guide' || kind === 'shop' || kind === 'agency' || kind === 'destination') return false;
   return kind === 'hiking' || kind === 'camping' || kind === 'event';
 };
 

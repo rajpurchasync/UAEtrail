@@ -49,7 +49,7 @@ export const IntentOpenComposeSheet = ({
   onComposeRouteChange,
   onBackToIntent,
 }: IntentOpenComposeSheetProps) => {
-  const publishedAreas = useExplorePublishedDestinations();
+  const publishedDestinations = useExplorePublishedDestinations();
   const isMobile = useIsMobile();
   const [step, setStep] = useState<IntentOpenStep>('schedule');
   const [preview, setPreview] = useState<MemberAvailabilityMatchPreviewDTO | null>(null);
@@ -82,8 +82,8 @@ export const IntentOpenComposeSheet = ({
   }, [open, urlPrefillCapacity]);
 
   const prefillAreaId = useMemo(
-    () => destinationIdForExploreDestinationSlug(publishedAreas, exploreDestinationSlug),
-    [publishedAreas, exploreDestinationSlug]
+    () => destinationIdForExploreDestinationSlug(publishedDestinations, exploreDestinationSlug),
+    [publishedDestinations, exploreDestinationSlug]
   );
 
   const composePrefill = useMemo(() => {

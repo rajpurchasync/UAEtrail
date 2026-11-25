@@ -72,7 +72,7 @@ export const CreateAddFacilityFlow = ({
 }: Props) => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const publishedAreas = useExplorePublishedDestinations();
+  const publishedDestinations = useExplorePublishedDestinations();
 
   const [step, setStep] = useState<FacilityAddStepId>('title');
   const [draft, setDraft] = useState<FacilityAddDraft>(() => emptyFacilityAddDraft());
@@ -105,7 +105,7 @@ export const CreateAddFacilityFlow = ({
         setStep(saved.step as FacilityAddStepId);
       } else {
         setStep('title');
-        const destinationId = destinationIdForExploreDestinationSlug(publishedAreas, exploreDestinationSlug);
+        const destinationId = destinationIdForExploreDestinationSlug(publishedDestinations, exploreDestinationSlug);
         setDraft({
           ...emptyFacilityAddDraft(),
           ...(destinationId ? { destinationId } : {}),
@@ -117,7 +117,7 @@ export const CreateAddFacilityFlow = ({
     if (!user) {
       onClose();
     }
-  }, [open, user, navigate, signInHref, onClose, exploreDestinationSlug, publishedAreas]);
+  }, [open, user, navigate, signInHref, onClose, exploreDestinationSlug, publishedDestinations]);
 
   useEffect(() => {
     if (!open) initializedRef.current = false;
@@ -248,7 +248,7 @@ export const CreateAddFacilityFlow = ({
   }
 
   const curatedCenter = draft.destinationId
-    ? publishedAreas.find((area) => area.id === draft.destinationId)?.center
+    ? publishedDestinations.find((area) => area.id === draft.destinationId)?.center
     : null;
   const lat =
     (draft.locationPinPlaced ? draft.latitude : null) ??
@@ -274,7 +274,7 @@ export const CreateAddFacilityFlow = ({
         onBack={goBack}
         onClose={requestClose}
             onConfirm={(confirmLat: number, confirmLng: number) => {
-          const inferred = inferEmirateFromPin(confirmLat, confirmLng, publishedAreas);
+          const inferred = inferEmirateFromPin(confirmLat, confirmLng, publishedDestinations);
           patchDraft({
             latitude: confirmLat,
             longitude: confirmLng,
@@ -304,7 +304,7 @@ export const CreateAddFacilityFlow = ({
         patchDraft,
         error,
         submitting,
-        publishedAreas,
+        publishedDestinations,
         goNext,
         goBack,
         requestClose,

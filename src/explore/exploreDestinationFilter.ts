@@ -1,4 +1,4 @@
-import type { AreaPublicDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type { DestinationPublicDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   exploreDestinationQueryParam,
   filterExploreMapItemsByDestinationSlug,
@@ -18,14 +18,14 @@ export const parseExploreDestinationSlug = (
 
 const normalizeAreaSearchQuery = (query: string): string => query.trim().toLowerCase();
 
-const areaMatchesQuery = (area: AreaPublicDTO, q: string): boolean =>
+const areaMatchesQuery = (area: DestinationPublicDTO, q: string): boolean =>
   area.slug === q ||
   area.name.toLowerCase() === q ||
   area.name.toLowerCase().includes(q) ||
   area.slug.includes(q) ||
   area.region.toLowerCase().includes(q);
 
-const areaMatchScore = (area: AreaPublicDTO, q: string): number => {
+const areaMatchScore = (area: DestinationPublicDTO, q: string): number => {
   if (area.slug === q || area.name.toLowerCase() === q) return 0;
   if (area.name.toLowerCase().startsWith(q)) return 1;
   if (area.slug.startsWith(q)) return 2;
@@ -33,23 +33,23 @@ const areaMatchScore = (area: AreaPublicDTO, q: string): number => {
 };
 
 /** Strong match — Enter navigates to destination hub (§3.3). */
-export const isStrongPublishedAreaSearchMatch = (area: AreaPublicDTO, query: string): boolean => {
+export const isStrongPublishedAreaSearchMatch = (area: DestinationPublicDTO, query: string): boolean => {
   const q = normalizeAreaSearchQuery(query);
   if (!q) return false;
   return area.slug === q || area.name.toLowerCase() === q;
 };
 
 export const findPublishedAreaByQuery = (
-  areas: AreaPublicDTO[],
+  areas: DestinationPublicDTO[],
   query: string
-): AreaPublicDTO | null => searchPublishedAreasForQuery(areas, query, 1)[0] ?? null;
+): DestinationPublicDTO | null => searchPublishedAreasForQuery(areas, query, 1)[0] ?? null;
 
 /** Destination cards first in explore search — exact name/slug wins, then prefix, then contains. */
 export const searchPublishedAreasForQuery = (
-  areas: AreaPublicDTO[],
+  areas: DestinationPublicDTO[],
   query: string,
   limit = 4
-): AreaPublicDTO[] => {
+): DestinationPublicDTO[] => {
   const q = normalizeAreaSearchQuery(query);
   if (!q) return [];
   const matches = areas.filter((area) => areaMatchesQuery(area, q));
@@ -62,16 +62,16 @@ export const searchPublishedAreasForQuery = (
 };
 
 export const findPublishedAreaBySlug = (
-  areas: AreaPublicDTO[],
+  areas: DestinationPublicDTO[],
   slug: string | null | undefined
-): AreaPublicDTO | null => {
+): DestinationPublicDTO | null => {
   const normalized = slug?.trim().toLowerCase();
   if (!normalized) return null;
   return areas.find((area) => area.slug.toLowerCase() === normalized) ?? null;
 };
 
 export const destinationIdForExploreDestinationSlug = (
-  areas: AreaPublicDTO[],
+  areas: DestinationPublicDTO[],
   slug: string | null | undefined
 ): string | null => findPublishedAreaBySlug(areas, slug)?.id ?? null;
 

@@ -118,7 +118,7 @@ There is **no** `Trip` table, `TripDTO`, or trips API. Everything on the map tha
 
 **Explore map lenses:** Activities · Spots (place) · Facilities · **Shops**; **Destination** is filter + hub only. Detail: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §12.1.
 
-**Curated destination catalog (seed + tests):** 12 regions in `CURATED_AREA_CATALOG` (ids `area-seed-*` preserved as **`destinationId`**).
+**Curated destination catalog (seed + tests):** 12 regions in `CURATED_DESTINATION_CATALOG` (ids `area-seed-*` preserved as **`destinationId`**).
 
 **My Plans** (`/plan`, UI tab **Plan**) groups **your** forward layer — upcoming schedule (list or **calendar**), wishlist, goals — plus relationships to activities. Past outings and journey map live on **profile history**, not `/plan`.
 

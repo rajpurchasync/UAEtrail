@@ -57,10 +57,10 @@ describe('group-region-geo', () => {
         ],
       },
     ];
-    expect(resolveGroupRegionFromCoordinates(24.813, 56.052, { publishedAreas: fatHatta })).toBe(
+    expect(resolveGroupRegionFromCoordinates(24.813, 56.052, { publishedDestinations: fatHatta })).toBe(
       'Ajman'
     );
-    expect(resolveGroupRegionFromCoordinates(24.82, 56.13, { publishedAreas: fatHatta })).toBe(
+    expect(resolveGroupRegionFromCoordinates(24.82, 56.13, { publishedDestinations: fatHatta })).toBe(
       'Dubai'
     );
   });

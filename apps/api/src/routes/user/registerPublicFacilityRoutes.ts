@@ -10,11 +10,7 @@ import {
   listPublicFacilitiesPaged,
   loadPublicFacilityDetail,
 } from '../../services/facility-public-read.js';
-import {
-  normalizeFacilityCatalogQuery,
-  type FacilityCatalogQuery,
-  type InboundFacilityCatalogQuery,
-} from '@uaetrail/shared-types';
+import { normalizeFacilityCatalogQuery, type FacilityCatalogQuery } from '@uaetrail/shared-types';
 import {
   eventIdParamSchema,
   facilityCatalogQuerySchema,
@@ -49,11 +45,10 @@ export const registerPublicFacilityRoutes = (router: Router): void => {
     async (req, res, next) => {
       try {
         const raw = req.query as z.infer<typeof facilityCatalogQuerySchema>;
-        const inbound: InboundFacilityCatalogQuery = {
+        const filters = normalizeFacilityCatalogQuery({
           ...raw,
           facilityKind: raw.facilityKind as FacilityCatalogQuery['facilityKind'],
-        };
-        const filters = normalizeFacilityCatalogQuery(inbound);
+        });
         const data = await buildFacilityCatalog(filters);
         res.json({ data });
       } catch (error) {

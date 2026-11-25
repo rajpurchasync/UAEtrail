@@ -47,7 +47,7 @@ describe('discoveryUiMethodologyGuard', () => {
 
   it('DISC-METH-03: source branching for activity pin host lives in mapPeekSlots', () => {
     const slots = read('src/explore/ui/map-peek/mapPeekSlots.tsx');
-    expect(slots).toMatch(/card\.source === 'area'/);
+    expect(slots).toMatch(/card\.kind === 'destination'/);
     expect(slots).toMatch(/card\.source === 'shop'/);
     expect(slots).toMatch(/card\.source === 'activity'/);
     const actions = read('src/explore/ui/peek/activity/ActivityPeekActions.tsx');

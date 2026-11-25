@@ -1,4 +1,4 @@
-import type { AreaPublicDTO, PlaceDTO } from '@uaetrail/shared-types';
+import type { DestinationPublicDTO, PlaceDTO } from '@uaetrail/shared-types';
 import type { PlaceCatalogDestinationSearchHit } from '../../places/placeCatalogDestinationIndex';
 import { mergeExploreRegionPillOptionsWithAreas } from '../../config/regions';
 import {
@@ -39,7 +39,7 @@ const catalogHitSubtitle = (hit: PlaceCatalogDestinationSearchHit): string => {
 export const buildExploreSearchWhereSuggestions = (
   rawQuery: string,
   places: PlaceDTO[],
-  areas: AreaPublicDTO[]
+  areas: DestinationPublicDTO[]
 ): ExploreSearchWhereSuggestion[] => {
   const q = rawQuery.trim();
   if (!q) return [];

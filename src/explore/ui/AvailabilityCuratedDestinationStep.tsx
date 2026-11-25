@@ -1,4 +1,4 @@
-import type { AreaPublicDTO } from '@uaetrail/shared-types';
+import type { DestinationPublicDTO } from '@uaetrail/shared-types';
 import { useExplorePublishedDestinations } from '../useExplorePublishedDestinations';
 
 type AvailabilityCuratedDestinationStepProps = {
@@ -29,7 +29,7 @@ export const AvailabilityCuratedDestinationStep = ({
         onChange={(event) => onAreaIdChange(event.target.value.trim() ? event.target.value : null)}
       >
         <option value="">Select area…</option>
-        {areas.map((area: AreaPublicDTO) => (
+        {areas.map((area: DestinationPublicDTO) => (
           <option key={area.id} value={area.id}>
             {area.name} · {area.region}
           </option>

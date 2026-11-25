@@ -858,7 +858,7 @@ export type MerchantPublicDTO = MerchantProfileDTO;
 /** Domain alias — public shop page payload. */
 export type ShopPublicDTO = MerchantPublicDTO;
 
-export type ExploreMapKind = ActivityType | 'shop' | 'agency' | 'area';
+export type ExploreMapKind = ActivityType | 'shop' | 'agency' | 'destination';
 export type { ExploreMapSourceCanonical, ExploreMapSourceWire } from './wire-lexicon.js';
 export type ExploreMapSource = ExploreMapSourceWire;
 
@@ -2061,14 +2061,7 @@ export type {
   PlaceCatalogSegment,
 } from './catalog-query.js';
 
-export {
-  CATALOG_DESTINATION_QUERY_ALIASES,
-  CATALOG_ON_SITE_QUERY_ALIASES,
-  normalizeFacilityCatalogQuery,
-  normalizePlaceCatalogQuery,
-  type InboundFacilityCatalogQuery,
-  type InboundPlaceCatalogQuery,
-} from './catalog-query-normalize.js';
+export { normalizeFacilityCatalogQuery, normalizePlaceCatalogQuery } from './catalog-query-normalize.js';
 
 export { FACILITY_KINDS, isFacilityKind, type FacilityKind } from './facility-kind.js';
 
@@ -2257,21 +2250,20 @@ export {
 } from './crew-people-surfaces.js';
 
 export type {
-  AreaBoundsRing,
-  AreaCenter,
-  AreaDTO,
-  AreaPublicDTO,
-  AreaStatus,
-} from './area.js';
-export { approximateAreaBoundsKm2, pointInAreaBounds } from './area.js';
-
-export type { DestinationDTO, DestinationPublicDTO } from './destination.js';
+  DestinationBoundsRing,
+  DestinationCenter,
+  DestinationDTO,
+  DestinationPublicDTO,
+  DestinationStatus,
+} from './destination.js';
 export {
+  approximateDestinationBoundsKm2,
   catalogDestinationIdUpdate,
   destinationHubPath,
   exploreDestinationQueryParam,
   exploreMapItemMatchesDestinationSlug,
   filterExploreMapItemsByDestinationSlug,
+  pointInDestinationBounds,
   resolveDestinationId,
   resolveExploreDestinationSlugQuery,
   type DestinationAssignableRow,
@@ -2280,20 +2272,20 @@ export {
 } from './destination.js';
 
 export {
-  CURATED_AREA_SEED_IDS,
-  CURATED_AREA_SEED_SLUGS,
-  curatedAreaSeedId,
-  type CuratedAreaSeedKey,
-} from './curated-area-seeds.js';
+  CURATED_DESTINATION_SEED_IDS,
+  CURATED_DESTINATION_SEED_SLUGS,
+  curatedDestinationSeedId,
+  type CuratedDestinationSeedKey,
+} from './curated-destination-seeds.js';
 
 export {
-  CURATED_AREA_CATALOG,
-  CURATED_AREA_CATALOG_BY_KEY,
-  CURATED_AREA_CATALOG_BY_SLUG,
-  listCuratedAreaSeedKeys,
-  type CuratedAreaCatalogEntry,
-  type CuratedAreaBBox,
-} from './curated-area-catalog.js';
+  CURATED_DESTINATION_CATALOG,
+  CURATED_DESTINATION_CATALOG_BY_KEY,
+  CURATED_DESTINATION_CATALOG_BY_SLUG,
+  listCuratedDestinationSeedKeys,
+  type CuratedDestinationCatalogEntry,
+  type CuratedDestinationBBox,
+} from './curated-destination-catalog.js';
 
 export type { MemberInboxGroupDTO, MemberInboxGroupType } from './member-inbox.js';
 

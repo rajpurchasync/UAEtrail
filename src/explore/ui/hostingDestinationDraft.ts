@@ -3,7 +3,7 @@
  * `registryPlaceId` = chosen leaf row id; `venueCascadePlaceGroup` = place hub bucket key.
  * Facilities are not patched here.
  */
-import type { AreaPublicDTO } from '@uaetrail/shared-types';
+import type { DestinationPublicDTO } from '@uaetrail/shared-types';
 import type { CountryCode } from '../../config/regions';
 import type { PlaceDTO } from '@uaetrail/shared-types';
 import {
@@ -103,7 +103,7 @@ export const patchHostingDestinationBackToListed = (): Partial<CreateActivityDra
 /** Ladder fields when picking a catalog leaf row (search or trail dropdown). */
 export const patchHostingDestinationCatalogLeafLadder = (
   place: PlaceDTO,
-  areas: AreaPublicDTO[],
+  areas: DestinationPublicDTO[],
   countryCode: CountryCode = DEFAULT_PLACE_CATALOG_COUNTRY,
   catalogPlaces?: PlaceDTO[]
 ): Partial<CreateActivityDraft> => {
@@ -121,7 +121,7 @@ export const patchPickHostingCatalogPlace = (
   draft: CreateActivityDraft,
   placeId: string,
   catalogPlaces: PlaceDTO[],
-  areas: AreaPublicDTO[],
+  areas: DestinationPublicDTO[],
   countryCode: CountryCode = DEFAULT_PLACE_CATALOG_COUNTRY
 ): Partial<CreateActivityDraft> => {
   const place = catalogPlaces.find((item) => item.id === placeId);
@@ -165,7 +165,7 @@ export const enrichHostingCatalogPlacePick = async (
 
 export const applyHostingDestinationSearchHit = (
   hit: PlaceCatalogDestinationSearchHit,
-  areas: AreaPublicDTO[],
+  areas: DestinationPublicDTO[],
   countryCode: CountryCode = DEFAULT_PLACE_CATALOG_COUNTRY
 ): Partial<CreateActivityDraft> | null => {
   if (hit.kind === 'trail') return null;

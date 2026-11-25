@@ -12,7 +12,7 @@ describe('explore map place + facility wire (COH-02)', () => {
     expect(base).toMatch(/FACILITY_MAP_SOURCE/);
     expect(base).not.toMatch(/source: 'venue'/);
     expect(base).not.toMatch(/source: 'catalog_place'/);
-    expect(base).not.toMatch(/buildExploreDestinationLensItems/);
+    expect(base).not.toMatch(/accumulateDestinationHubStats/);
     expect(base).toMatch(/id: `facility:\$\{facility\.id\}`/);
     expect(base).toMatch(/resolveLocationAmenities/);
     expect(base).toMatch(/collectParentPlaceAmenities/);

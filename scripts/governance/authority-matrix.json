@@ -490,7 +490,7 @@
       "axis": "A_RBAC",
       "contextId": "destinations",
       "resolver": { "module": "apps/api/src/routes/user/registerPublicDestinationRoutes.ts", "symbol": "registerPublicDestinationRoutes" },
-      "http": { "method": "GET", "path": "/areas/published" }
+      "http": { "method": "GET", "path": "/destinations" }
     },
     {
       "id": "client.member_status_hook",

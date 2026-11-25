@@ -69,7 +69,11 @@ export const DestinationDetailView = ({
     countryCode: area.countryCode,
   });
   const wishlistCard = useMemo(
-    () => buildDestinationDetailDiscoveryCard({ area, shareText: summary.slice(0, 160) }),
+    () =>
+      buildDestinationDetailDiscoveryCard({
+        destination: area,
+        shareText: summary.slice(0, 160),
+      }),
     [area, summary]
   );
 

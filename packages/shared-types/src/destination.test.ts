@@ -40,8 +40,7 @@ describe('destination wire', () => {
     const inHatta = { destinationSlug: 'hatta' };
     const other = { destinationSlug: 'jebel-jais' };
     expect(filterExploreMapItemsByDestinationSlug([inHatta, other], 'hatta')).toHaveLength(1);
-    expect(exploreMapItemMatchesDestinationSlug({ source: 'area', id: 'area:hatta' }, 'hatta')).toBe(
-      true
-    );
+    expect(exploreMapItemMatchesDestinationSlug({ destinationSlug: 'hatta' }, 'hatta')).toBe(true);
+    expect(exploreMapItemMatchesDestinationSlug({ destinationSlug: 'other' }, 'hatta')).toBe(false);
   });
 });

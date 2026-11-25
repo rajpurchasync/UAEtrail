@@ -1,15 +1,15 @@
 import { PLACE_KIND_LABELS, facilityPlaceKindPinEmoji } from '@uaetrail/shared-types';
-import type { AreaPublicDTO } from '@uaetrail/shared-types';
+import type { DestinationPublicDTO } from '@uaetrail/shared-types';
 import type { FacilityAddDraft } from './addFacilityFlow';
 
 type Props = {
   draft: FacilityAddDraft;
-  publishedAreas: AreaPublicDTO[];
+  publishedDestinations: DestinationPublicDTO[];
 };
 
-export const AddFacilityPreview = ({ draft, publishedAreas }: Props) => {
+export const AddFacilityPreview = ({ draft, publishedDestinations }: Props) => {
   const areaName = draft.destinationId
-    ? publishedAreas.find((area) => area.id === draft.destinationId)?.name ?? 'Selected area'
+    ? publishedDestinations.find((area) => area.id === draft.destinationId)?.name ?? 'Selected area'
     : '—';
   const kind = draft.facilityKind;
   const kindLabel = kind ? PLACE_KIND_LABELS[kind] : '—';

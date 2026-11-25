@@ -66,10 +66,10 @@ export const useListDiscoveryBrowseUrlModel = ({
   }, [filters.query]);
 
   const destinationSlug = parseExploreDestinationSlug(searchParams);
-  const { data: publishedAreas = [] } = useExplorePublishedDestinationsQuery(!isPeopleCategory);
+  const { data: publishedDestinations = [] } = useExplorePublishedDestinationsQuery(!isPeopleCategory);
   const hubVenueRegions = useMemo(
-    () => resolveEffectiveBrowseVenueRegions(venueRegions, geoPath, publishedAreas),
-    [venueRegions, geoPath, publishedAreas]
+    () => resolveEffectiveBrowseVenueRegions(venueRegions, geoPath, publishedDestinations),
+    [venueRegions, geoPath, publishedDestinations]
   );
 
   const filterCount = isPeopleCategory
@@ -96,7 +96,7 @@ export const useListDiscoveryBrowseUrlModel = ({
     draftQuery,
     setDraftQuery,
     destinationSlug,
-    publishedAreas,
+    publishedDestinations,
     hubVenueRegions,
     filterCount,
   };

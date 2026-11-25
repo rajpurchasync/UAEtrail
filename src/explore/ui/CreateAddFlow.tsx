@@ -73,7 +73,7 @@ export const CreateAddFlow = ({
   const navigate = useNavigate();
   const { user } = useAuth();
   const isMobile = useIsMobile();
-  const publishedAreas = useExplorePublishedDestinations();
+  const publishedDestinations = useExplorePublishedDestinations();
 
   const [step, setStep] = useState<AddFlowStepId>('title');
   const [draft, setDraft] = useState<AddDraft>(() => ({
@@ -122,7 +122,7 @@ export const CreateAddFlow = ({
         setStep(saved.step as AddFlowStepId);
       } else {
         setStep('title');
-        const destinationId = destinationIdForExploreDestinationSlug(publishedAreas, exploreDestinationSlug);
+        const destinationId = destinationIdForExploreDestinationSlug(publishedDestinations, exploreDestinationSlug);
         setDraft({
           ...emptyAddDraft(),
           kind,
@@ -135,7 +135,7 @@ export const CreateAddFlow = ({
     if (!user) {
       onClose();
     }
-  }, [open, user, navigate, signInHref, onClose, kind, addInitKey, exploreDestinationSlug, publishedAreas]);
+  }, [open, user, navigate, signInHref, onClose, kind, addInitKey, exploreDestinationSlug, publishedDestinations]);
 
   useEffect(() => {
     if (!open || composeSubmitFlowBlocksSessionPersist(submitStatus)) return;
@@ -245,7 +245,7 @@ export const CreateAddFlow = ({
   const isLocationMap = mapSession.intent === COMPOSE_MAP_INTENTS.addLocation;
   const addMapOpen = mapSession.open && (isParkingMap || isLocationMap);
     const curatedCenter = draft.destinationId
-      ? publishedAreas.find((area) => area.id === draft.destinationId)?.center
+      ? publishedDestinations.find((area) => area.id === draft.destinationId)?.center
       : null;
   const lat = isParkingMap
       ? draft.parkingLat ?? MAP_CONFIG.exploreDefaultCenter.lat
@@ -279,7 +279,7 @@ export const CreateAddFlow = ({
                   parkingPinPlaced: true,
                 });
               } else {
-                const inferred = inferEmirateFromPin(confirmLat, confirmLng, publishedAreas);
+                const inferred = inferEmirateFromPin(confirmLat, confirmLng, publishedDestinations);
                 patchDraft({
                   latitude: confirmLat,
                   longitude: confirmLng,
@@ -324,7 +324,7 @@ export const CreateAddFlow = ({
         widePageSteps,
         pageHas,
         flowSteps,
-        publishedAreas,
+        publishedDestinations,
         goNext,
         goBack,
         goToStep,

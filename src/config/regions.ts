@@ -1,4 +1,4 @@
-import type { AreaPublicDTO } from '@uaetrail/shared-types';
+import type { DestinationPublicDTO } from '@uaetrail/shared-types';
 
 /** GCC country catalog — extend as platform expands beyond UAE. */
 export const SUPPORTED_COUNTRIES = [
@@ -78,7 +78,7 @@ export const getVenueStateFilterOptions = (code: CountryCode = DEFAULT_COUNTRY) 
   }));
 
 const venueStateOptionsFromPublishedAreas = (
-  areas: readonly AreaPublicDTO[]
+  areas: readonly DestinationPublicDTO[]
 ): Array<{ key: string; label: string }> => {
   const byKey = new Map<string, { key: string; label: string }>();
   for (const area of areas) {
@@ -93,7 +93,7 @@ const venueStateOptionsFromPublishedAreas = (
 
 /** Consumer emirate keys — `GET /areas` when published rows exist; static UAE list only when empty. */
 export const mergeVenueStateFilterOptionsWithAreas = (
-  areas: readonly AreaPublicDTO[],
+  areas: readonly DestinationPublicDTO[],
   code: CountryCode = DEFAULT_COUNTRY
 ): Array<{ key: string; label: string }> => {
   if (code === 'AE' && areas.length > 0) {
@@ -104,12 +104,12 @@ export const mergeVenueStateFilterOptionsWithAreas = (
 
 /** Canonical emirate/region keys for browse filters and text matching — DB-first when areas exist. */
 export const consumerEmirateKeys = (
-  areas: readonly AreaPublicDTO[],
+  areas: readonly DestinationPublicDTO[],
   code: CountryCode = DEFAULT_COUNTRY
 ): string[] => mergeVenueStateFilterOptionsWithAreas(areas, code).map((row) => row.key);
 
 export const mergeExploreRegionPillOptionsWithAreas = (
-  areas: readonly AreaPublicDTO[],
+  areas: readonly DestinationPublicDTO[],
   code: CountryCode = DEFAULT_COUNTRY
 ): Array<{ key: string; label: string }> => {
   const allLabel = code === 'AE' ? 'All UAE' : 'All';
@@ -118,7 +118,7 @@ export const mergeExploreRegionPillOptionsWithAreas = (
 };
 
 /** Geo/list helpers — union of static UAE keys + any published area regions (sync-safe). */
-export const resolveVenueStateFilterKeys = (areas: readonly AreaPublicDTO[]): string[] => {
+export const resolveVenueStateFilterKeys = (areas: readonly DestinationPublicDTO[]): string[] => {
   const keys = new Set(getVenueStateFilterOptions('AE').map((row) => row.key));
   for (const area of areas) {
     const region = area.region?.trim();

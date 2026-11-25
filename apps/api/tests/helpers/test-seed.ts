@@ -3,12 +3,12 @@
  * Prefer `testAreas.*` / `buildTestLocationSubmitBody` over literal `area-seed-*` strings.
  */
 import {
-  CURATED_AREA_CATALOG,
-  CURATED_AREA_CATALOG_BY_KEY,
-  CURATED_AREA_SEED_IDS,
-  CURATED_AREA_SEED_SLUGS,
-  curatedAreaSeedId,
-  type CuratedAreaSeedKey,
+  CURATED_DESTINATION_CATALOG,
+  CURATED_DESTINATION_CATALOG_BY_KEY,
+  CURATED_DESTINATION_SEED_IDS,
+  CURATED_DESTINATION_SEED_SLUGS,
+  curatedDestinationSeedId,
+  type CuratedDestinationSeedKey,
 } from '@uaetrail/shared-types';
 import type { LocationSubmitBody } from '../../src/domain/location-submit.js';
 import { ActivityType, Difficulty, LocationStatus } from '../../src/domain/enums.js';
@@ -24,20 +24,20 @@ export const ensureCuratedAreasSeeded = async (): Promise<void> => {
   curatedAreasSeeded = true;
 };
 
-export { CURATED_AREA_SEED_IDS, CURATED_AREA_SEED_SLUGS, curatedAreaSeedId };
+export { CURATED_DESTINATION_SEED_IDS, CURATED_DESTINATION_SEED_SLUGS, curatedDestinationSeedId };
 
 /** Published test areas — ids match `ensureCuratedAreasSeeded()`. */
 export const testAreas = Object.fromEntries(
-  CURATED_AREA_CATALOG.map((row) => [
+  CURATED_DESTINATION_CATALOG.map((row) => [
     row.key,
     { id: row.id, slug: row.slug, name: row.name },
   ])
-) as Record<CuratedAreaSeedKey, { id: string; slug: string; name: string }>;
+) as Record<CuratedDestinationSeedKey, { id: string; slug: string; name: string }>;
 
 export const defaultTestAreaId = (): string => testAreas.hatta.id;
 
-export const testAreaSummary = (key: CuratedAreaSeedKey): string =>
-  CURATED_AREA_CATALOG_BY_KEY[key].summary;
+export const testAreaSummary = (key: CuratedDestinationSeedKey): string =>
+  CURATED_DESTINATION_CATALOG_BY_KEY[key].summary;
 
 /** Minimal valid `locationSubmitBodySchema` body for unit tests (no DB). */
 type LegacyParticipantIntentSeedInput = {
@@ -59,7 +59,7 @@ type LegacyParticipantIntentSeedInput = {
 /** Legacy `participant_intents` Mongo row shape for ops backfill tests. */
 export const buildTestParticipantIntentInput = (
   overrides: Partial<LegacyParticipantIntentSeedInput> = {},
-  areaKey: CuratedAreaSeedKey = 'hatta'
+  areaKey: CuratedDestinationSeedKey = 'hatta'
 ): LegacyParticipantIntentSeedInput => {
   const area = testAreas[areaKey];
   return {

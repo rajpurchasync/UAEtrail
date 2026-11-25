@@ -1,4 +1,4 @@
-import type { AreaPublicDTO } from '@uaetrail/shared-types';
+import type { DestinationPublicDTO } from '@uaetrail/shared-types';
 import { AppSelect } from '../../components/ui/AppSelect';
 import { EXPLORE_SHAPE } from '../../config/exploreTheme';
 import { useExplorePublishedDestinations } from '../useExplorePublishedDestinations';
@@ -39,7 +39,7 @@ export const AddCuratedDestinationStep = ({
         placeholder="Select area…"
         options={[
           { value: '', label: 'Select area…' },
-          ...areas.map((area: AreaPublicDTO) => ({
+          ...areas.map((area: DestinationPublicDTO) => ({
             value: area.id,
             label: `${area.name} · ${area.region}`,
           })),

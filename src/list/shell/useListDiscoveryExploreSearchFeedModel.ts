@@ -31,7 +31,7 @@ export type ListDiscoveryExploreSearchFeedInput = {
   items: ExploreMapItemDTO[];
   hubVenueRegions: string[];
   geoPath: string[];
-  publishedAreas: Parameters<typeof resolveExploreSearchTripPool>[4];
+  publishedDestinations: Parameters<typeof resolveExploreSearchTripPool>[4];
   clock: Parameters<typeof setExploreClockStyle>[0];
   sort: BrowseListSortMode;
   user: { id: string } | null | undefined;
@@ -49,7 +49,7 @@ export const useListDiscoveryExploreSearchFeedModel = ({
   items,
   hubVenueRegions,
   geoPath,
-  publishedAreas,
+  publishedDestinations,
   clock,
   sort,
   user,
@@ -80,8 +80,8 @@ export const useListDiscoveryExploreSearchFeedModel = ({
             'activities'
           );
     return listCat === 'venues'
-      ? resolveExploreSearchVenuePool(items, scopedFilters, hubVenueRegions, geoPath, publishedAreas).pool
-      : resolveExploreSearchTripPool(items, scopedFilters, hubVenueRegions, geoPath, publishedAreas).pool;
+      ? resolveExploreSearchVenuePool(items, scopedFilters, hubVenueRegions, geoPath, publishedDestinations).pool
+      : resolveExploreSearchTripPool(items, scopedFilters, hubVenueRegions, geoPath, publishedDestinations).pool;
   }, [
     exploreSearch,
     filters,
@@ -90,7 +90,7 @@ export const useListDiscoveryExploreSearchFeedModel = ({
     isPeopleCategory,
     items,
     listCat,
-    publishedAreas,
+    publishedDestinations,
     searchParams,
     searchResultsBrowse,
   ]);

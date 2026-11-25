@@ -1,4 +1,4 @@
-import type { AreaPublicDTO } from '@uaetrail/shared-types';
+import type { DestinationPublicDTO } from '@uaetrail/shared-types';
 import type { LucideIcon } from 'lucide-react';
 import { COMPOSE_MAP_INTENTS } from '../../create/interactions';
 import type { AddVenueKind } from '../../addTypes';
@@ -20,7 +20,7 @@ export type AddWizardContext = {
   widePageSteps: AddFlowStepId[];
   pageHas: (id: AddFlowStepId) => boolean;
   flowSteps: AddFlowStepId[];
-  publishedAreas: AreaPublicDTO[];
+  publishedDestinations: DestinationPublicDTO[];
   goNext: () => void;
   goBack: () => void;
   goToStep: (step: AddFlowStepId) => void;

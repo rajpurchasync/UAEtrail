@@ -3,7 +3,7 @@
  * Idempotent — safe on every `npm run seed`.
  */
 import type { FacilityKind } from '@uaetrail/shared-types';
-import { curatedAreaSeedId } from '@uaetrail/shared-types';
+import { curatedDestinationSeedId } from '@uaetrail/shared-types';
 import type { Document } from 'mongodb';
 import { ActivityType, Accessibility, Difficulty, LocationStatus } from '../src/domain/enums.js';
 import {
@@ -31,7 +31,7 @@ type SeedFacilityRow = {
   images: string[];
 };
 
-const hattaArea = curatedAreaSeedId('hatta');
+const hattaArea = curatedDestinationSeedId('hatta');
 
 /** Minimal catalog rows so facility seed works when full `npm run seed` was skipped. */
 const FACILITY_PARENT_PLACE_STUBS: Array<{ id: string; data: LocationCreateInput }> = [
@@ -79,7 +79,7 @@ const FACILITY_PARENT_PLACE_STUBS: Array<{ id: string; data: LocationCreateInput
       name: 'Al Qudra Cycling Loop',
       region: 'Dubai',
       areaLabel: 'Al Qudra Lakes',
-      areaId: curatedAreaSeedId('alQudra'),
+      areaId: curatedDestinationSeedId('alQudra'),
       activityType: ActivityType.HIKING,
       difficulty: Difficulty.EASY,
       accessibility: Accessibility.CAR_ACCESSIBLE,
@@ -213,7 +213,7 @@ const SEED_FACILITIES: SeedFacilityRow[] = [
     name: 'Wadi Shawka dam toilets',
     facilityKind: 'toilet',
     parentPlaceId: 'wadi-shawka-loop',
-    areaId: curatedAreaSeedId('wadiShawka'),
+    areaId: curatedDestinationSeedId('wadiShawka'),
     areaLabel: 'Wadi Shawka Dam',
     region: 'RAK',
     description: 'Toilets at the dam car park — last stop before the wadi loop.',
@@ -226,7 +226,7 @@ const SEED_FACILITIES: SeedFacilityRow[] = [
     name: 'Jebel Jais viewing deck toilets',
     facilityKind: 'toilet',
     parentPlaceId: 'jebel-jais-summit-trail',
-    areaId: curatedAreaSeedId('jebelJais'),
+    areaId: curatedDestinationSeedId('jebelJais'),
     areaLabel: 'Jebel Jais Viewing Deck',
     region: 'RAK',
     description: 'Facilities at the viewing deck car park before the summit push.',
@@ -239,7 +239,7 @@ const SEED_FACILITIES: SeedFacilityRow[] = [
     name: 'Jebel Jais rest shelter',
     facilityKind: 'rest_area',
     parentPlaceId: 'jebel-jais-summit-trail',
-    areaId: curatedAreaSeedId('jebelJais'),
+    areaId: curatedDestinationSeedId('jebelJais'),
     areaLabel: 'Jebel Jais Viewing Deck',
     region: 'RAK',
     description: 'Sheltered rest stop on the approach — wind break and benches.',
@@ -252,7 +252,7 @@ const SEED_FACILITIES: SeedFacilityRow[] = [
     name: 'Al Qudra Lakes toilets',
     facilityKind: 'toilet',
     parentPlaceId: 'al-qudra-cycling-loop',
-    areaId: curatedAreaSeedId('alQudra'),
+    areaId: curatedDestinationSeedId('alQudra'),
     areaLabel: 'Al Qudra Lakes',
     region: 'Dubai',
     description: 'Toilets at the main lake car park on the cycling loop.',

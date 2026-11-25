@@ -1,12 +1,12 @@
-import { curatedAreaSeedId, type CuratedAreaSeedKey } from '@uaetrail/shared-types';
-import type { AreaDTO } from '@uaetrail/shared-types';
+import { curatedDestinationSeedId, type CuratedDestinationSeedKey } from '@uaetrail/shared-types';
+import type { DestinationDTO } from '@uaetrail/shared-types';
 import { LocationStatus } from '../src/domain/enums.js';
 import { resolveDestinationIdFromPoint } from '../src/lib/destination-resolution.js';
 import { listPublishedDestinations } from '../src/lib/destinations-store.js';
 import { resolveCatalogLocationAreaKey } from '../src/lib/venue-catalog-enrichment.js';
 
 /** Explicit catalog place → curated area (overrides point-in-polygon when set). */
-export const SEED_CATALOG_LOCATION_AREA_KEYS: Record<string, CuratedAreaSeedKey> = {
+export const SEED_CATALOG_LOCATION_AREA_KEYS: Record<string, CuratedDestinationSeedKey> = {
   'jebel-jais-summit-trail': 'jebelJais',
   'wadi-shawka-loop': 'wadiShawka',
   'fossil-rock-desert-camp': 'fossilRock',
@@ -47,12 +47,12 @@ export const SEED_CATALOG_LOCATION_AREA_KEYS: Record<string, CuratedAreaSeedKey>
 export const seedLocationAreaId = (locationId: string): string | null => {
   const key =
     SEED_CATALOG_LOCATION_AREA_KEYS[locationId] ?? resolveCatalogLocationAreaKey(locationId);
-  return key ? curatedAreaSeedId(key) : null;
+  return key ? curatedDestinationSeedId(key) : null;
 };
 
 /** After seed upserts — fill `areaId` from explicit map or published area polygons. */
 export const backfillSeedCatalogLocationAreaIds = async (): Promise<void> => {
-  const areas: AreaDTO[] = await listPublishedDestinations();
+  const areas: DestinationDTO[] = await listPublishedDestinations();
   const { getMongoClient } = await import('../src/lib/mongo.js');
   const { COLLECTIONS } = await import('../src/lib/collections.js');
   const collection = getMongoClient()!.db().collection(COLLECTIONS.LOCATIONS);

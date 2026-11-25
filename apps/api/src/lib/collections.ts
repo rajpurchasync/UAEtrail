@@ -34,8 +34,6 @@ export const COLLECTIONS = {
    * @see BWL_COLLECTIONS.DESTINATIONS in `packages/shared-types/src/wire-lexicon.ts`
    */
   DESTINATIONS: 'areas',
-  /** @deprecated Use {@link COLLECTIONS.DESTINATIONS} — same physical name until optional rename. */
-  AREAS: 'areas',
   GEO_NODES: 'geo_nodes',
   GEO_STATS: 'geo_stats',
   GEO_OUTBOX: 'geo_outbox',

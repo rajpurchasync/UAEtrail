@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { emptyAvailabilityFixedDraft } from './ui/intentFixedFlowEngine';
 import { emptyCreateActivityDraft } from './ui/hostingFlowEngine';
-import { curatedAreaSeedId, type PlaceDTO } from '@uaetrail/shared-types';
+import { curatedDestinationSeedId, type PlaceDTO } from '@uaetrail/shared-types';
 import {
   inferEmirateFromPin,
   availabilityFixedVisibleOnMap,
@@ -9,7 +9,7 @@ import {
   validateHostingPlaceDestination,
 } from './hostingPublishDestination';
 
-const HATTA_AREA_ID = curatedAreaSeedId('hatta');
+const HATTA_AREA_ID = curatedDestinationSeedId('hatta');
 
 const placeWithArea = (id: string): PlaceDTO =>
   ({

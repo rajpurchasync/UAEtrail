@@ -67,12 +67,12 @@ export const FacilityDetailSections = ({
   const kind = facility.facilityKind;
   const label = PLACE_KIND_LABELS[kind];
   const headerChrome = resolveFacilityConsumerDetailHeaderChrome(kind);
-  const publishedAreas = useExplorePublishedDestinations();
+  const publishedDestinations = useExplorePublishedDestinations();
   const curatedAreaSlug = useMemo(() => {
     const id = facility.destinationId?.trim();
     if (!id) return null;
-    return publishedAreas.find((area) => area.id === id)?.slug ?? null;
-  }, [facility.destinationId, publishedAreas]);
+    return publishedDestinations.find((area) => area.id === id)?.slug ?? null;
+  }, [facility.destinationId, publishedDestinations]);
   const { region, areaLabel, destinationSlug } = resolveFacilityDetailAreaHero(facility, curatedAreaSlug);
   const geoHubPath = useMemo(() => {
     const venueId = facility.geoRef?.venueId?.trim();

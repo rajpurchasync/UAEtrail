@@ -12,7 +12,7 @@ export const resolveShareSheetTitle = (surface?: ShareSheetSurface): string => {
   switch (surface) {
     case 'activity':
       return SHARE_SHEET_TITLE_OUTING;
-    case 'area':
+    case 'destination':
       return SHARE_SHEET_TITLE_AREA;
     case 'place':
       return SHARE_SHEET_TITLE_PLACE;

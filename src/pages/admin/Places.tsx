@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import {
-  type AreaDTO,
+  type DestinationDTO,
   type CatalogEditRankingDTO,
   FACILITY_PLACE_KINDS,
   PLACE_KIND_LABELS,
@@ -148,7 +148,7 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
   } | null>(null);
   const [formStep, setFormStep] = useState(0); // 0=type select, 1=form
   const [detailStep, setDetailStep] = useState(0);
-  const [adminAreas, setAdminDestinations] = useState<AreaDTO[]>([]);
+  const [adminAreas, setAdminDestinations] = useState<DestinationDTO[]>([]);
 
   const loadPlaces = async (isActive: () => boolean = () => true) => {
     setLoading(true);

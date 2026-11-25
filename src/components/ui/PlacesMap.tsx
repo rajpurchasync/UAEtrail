@@ -71,7 +71,7 @@ const toMapPinRingSource = (source: MapPinSource): MapPinRingSource | undefined 
       return 'shop';
     case 'agency':
       return 'agency';
-    case 'area':
+    case 'destination':
       return 'venue';
     default:
       return undefined;
@@ -186,8 +186,7 @@ const resolvePinSource = (pin: Pick<PlaceMapPin, 'id' | 'source'>): MapPinSource
     pin.source === 'activity' ||
     isGeographyMapSource(pin.source) ||
     pin.source === 'shop' ||
-    pin.source === 'agency' ||
-    pin.source === 'area'
+    pin.source === 'agency'
   ) {
     return pin.source ?? 'activity';
   }
@@ -320,15 +319,15 @@ const pinIcon = (
   }
 
   const source = resolvePinSource(pin);
-  if (source === 'area' || kind === 'area') {
+  if (kind === 'destination') {
     const layout = buildPlacesMapLabelPinLayout(
       pin,
-      kind === 'area' ? 'area' : 'event',
+      'destination',
       source,
       { selected, mapZoom, exploreMapStyle }
     );
     return leafDivIcon(
-      'uaetrail-map-pin uaetrail-map-venue-pin-wrap uaetrail-map-area-pin-wrap',
+      'uaetrail-map-pin uaetrail-map-venue-pin-wrap uaetrail-map-destination-pin-wrap',
       layout.html,
       layout.width,
       layout.height,

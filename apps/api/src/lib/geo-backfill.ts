@@ -1,6 +1,6 @@
 import type { AnyBulkWriteOperation, Db, Document } from 'mongodb';
 import {
-  CURATED_AREA_CATALOG,
+  CURATED_DESTINATION_CATALOG,
   GEO_AREA_AE_AL_AIN_ID,
   GEO_COUNTRY_AE_ID,
   GEO_LEGACY_AREA_OTHER_AL_AIN_ID,
@@ -266,7 +266,7 @@ export const seedGeoNodesFromCatalog = async (db: Db): Promise<void> => {
 
 const seedExtraGeoAreasAndVenues = async (db: Db, countryId: string): Promise<void> => {
   const nodes = db.collection<GeoNodeDoc>(COLLECTIONS.GEO_NODES);
-  for (const curated of CURATED_AREA_CATALOG) {
+  for (const curated of CURATED_DESTINATION_CATALOG) {
     const stateSlug = stateSlugForRegion(curated.region);
     const stateId = `geo-state-ae-${stateSlug}`;
     const existing = await db.collection(COLLECTIONS.GEO_NODES).findOne({
@@ -300,7 +300,7 @@ const seedExtraGeoAreasAndVenues = async (db: Db, countryId: string): Promise<vo
     });
   }
 
-  const catalogSlugs = new Set(CURATED_AREA_CATALOG.map((row) => row.slug));
+  const catalogSlugs = new Set(CURATED_DESTINATION_CATALOG.map((row) => row.slug));
   for (const area of EXTRA_GEO_AREAS) {
     if (catalogSlugs.has(area.slug)) continue;
     const stateId = `geo-state-ae-${area.stateSlug}`;

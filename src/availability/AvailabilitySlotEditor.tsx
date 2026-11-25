@@ -103,8 +103,8 @@ export const AvailabilitySlotEditor = forwardRef<AvailabilitySlotEditorHandle, A
   const [locationMode, setLocationMode] = useState<AvailabilityLocationMode>('open');
   const [region, setRegion] = useState<string>('');
   const [destinationId, setAreaId] = useState<string>('');
-  const { data: publishedAreas = [], isError: publishedAreasError } = useExplorePublishedDestinationsQuery();
-  const areasError = publishedAreasError ? 'Could not load trail areas.' : null;
+  const { data: publishedDestinations = [], isError: publishedDestinationsError } = useExplorePublishedDestinationsQuery();
+  const areasError = publishedDestinationsError ? 'Could not load trail areas.' : null;
   const [formError, setFormError] = useState<string | null>(null);
   const [matchPreview, setMatchPreview] = useState<MemberAvailabilityMatchPreviewDTO | null>(null);
   const [guideEngagementTerms, setGuideEngagementTerms] = useState<AvailabilityEngagementTerms>(() =>
@@ -130,8 +130,8 @@ export const AvailabilitySlotEditor = forwardRef<AvailabilitySlotEditorHandle, A
   );
 
   const regionOptions = useMemo(
-    () => mergeVenueStateFilterOptionsWithAreas(publishedAreas, 'AE').map((row) => row.key),
-    [publishedAreas]
+    () => mergeVenueStateFilterOptionsWithAreas(publishedDestinations, 'AE').map((row) => row.key),
+    [publishedDestinations]
   );
 
   useEffect(() => {
@@ -418,7 +418,7 @@ export const AvailabilitySlotEditor = forwardRef<AvailabilitySlotEditorHandle, A
               onChange={(e) => setAreaId(e.target.value)}
             >
               <option value="">Choose area…</option>
-              {publishedAreas.map((area) => (
+              {publishedDestinations.map((area) => (
                 <option key={area.id} value={area.id}>
                   {area.name} ({area.region})
                 </option>
@@ -431,7 +431,7 @@ export const AvailabilitySlotEditor = forwardRef<AvailabilitySlotEditorHandle, A
 
       {locationMode === 'open' ? (
         <AvailabilityDestinationRegionsField
-          publishedAreas={publishedAreas}
+          publishedDestinations={publishedDestinations}
           selected={destinationRegions}
           onChange={setDestinationRegions}
         />

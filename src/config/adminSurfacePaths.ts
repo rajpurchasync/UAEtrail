@@ -12,8 +12,6 @@ export const ADMIN_HOSTS_PATH = '/admin/hosts' as const;
 export const ADMIN_ACTIVITIES_PATH = '/admin/activities' as const;
 /** Canonical admin destinations console (MIG-DESTINATION-GEO Phase E). */
 export const ADMIN_DESTINATIONS_PATH = '/admin/destinations' as const;
-/** Inbound bookmark — SPA redirects to {@link ADMIN_DESTINATIONS_PATH}. */
-export const ADMIN_AREAS_PATH = '/admin/areas' as const;
 
 export const ADMIN_FACILITIES_PATH = '/admin/facilities' as const;
 

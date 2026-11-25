@@ -1,7 +1,7 @@
 import { Accessibility, Difficulty } from '../domain/enums.js';
 import type { LocationCreateInput } from './entity-builders.js';
 import type { VenueCatalogEntry } from './venue-catalog.js';
-import { curatedAreaSeedId, type CuratedAreaSeedKey } from '@uaetrail/shared-types';
+import { curatedDestinationSeedId, type CuratedDestinationSeedKey } from '@uaetrail/shared-types';
 
 const HIKING_HERO =
   'https://images.unsplash.com/photo-1501555088652-021faa106b9b?w=800';
@@ -40,12 +40,12 @@ const inferAreaLabel = (entry: VenueCatalogEntry): string | null => {
 
 export const resolveCatalogLocationAreaId = (locationId: string): string | null => {
   const key = resolveCatalogLocationAreaKey(locationId);
-  return key ? curatedAreaSeedId(key) : null;
+  return key ? curatedDestinationSeedId(key) : null;
 };
 
 /** Prefix / explicit map for catalog venue ids → curated area seeds. */
-export const resolveCatalogLocationAreaKey = (locationId: string): CuratedAreaSeedKey | null => {
-  const explicit: Record<string, CuratedAreaSeedKey> = {
+export const resolveCatalogLocationAreaKey = (locationId: string): CuratedDestinationSeedKey | null => {
+  const explicit: Record<string, CuratedDestinationSeedKey> = {
     'jebel-jais-summit-trail': 'jebelJais',
     'wadi-shawka-loop': 'wadiShawka',
     'fossil-rock-desert-camp': 'fossilRock',

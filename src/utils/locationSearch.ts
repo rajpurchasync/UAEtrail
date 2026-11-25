@@ -1,4 +1,4 @@
-import type { AreaPublicDTO } from '@uaetrail/shared-types';
+import type { DestinationPublicDTO } from '@uaetrail/shared-types';
 import { EXPLORE_EMIRATE_REGION_ALIASES } from '../config/exploreRegionAliases';
 import { consumerEmirateKeys, DEFAULT_COUNTRY } from '../config/regions';
 
@@ -9,18 +9,18 @@ const regionAliasGroups = (): string[][] =>
     ...aliases,
   ]);
 
-const canonicalRegions = (publishedAreas: readonly AreaPublicDTO[] = []): string[] =>
-  consumerEmirateKeys(publishedAreas, DEFAULT_COUNTRY);
+const canonicalRegions = (publishedDestinations: readonly DestinationPublicDTO[] = []): string[] =>
+  consumerEmirateKeys(publishedDestinations, DEFAULT_COUNTRY);
 
 /** Map a URL region/query token to a filter checkbox value (e.g. "RAK"). */
 export const resolveRegionFilter = (
   raw: string,
-  publishedAreas: readonly AreaPublicDTO[] = []
+  publishedDestinations: readonly DestinationPublicDTO[] = []
 ): string | null => {
   const token = raw.trim().toLowerCase();
   if (!token) return null;
 
-  const regions = canonicalRegions(publishedAreas);
+  const regions = canonicalRegions(publishedDestinations);
   const direct = regions.find((r) => r.toLowerCase() === token);
   if (direct) return direct;
 
@@ -40,7 +40,7 @@ export const resolveRegionFilter = (
 const regionMatchesToken = (
   region: string,
   token: string,
-  _publishedAreas: readonly AreaPublicDTO[] = []
+  _publishedDestinations: readonly DestinationPublicDTO[] = []
 ): boolean => {
   const regionLower = region.toLowerCase();
   if (regionLower.includes(token) || token.includes(regionLower)) return true;
@@ -57,7 +57,7 @@ const regionMatchesToken = (
 export const matchesLocationSearch = (
   item: { name: string; region: string; description?: string; tags?: string[] },
   query: string,
-  publishedAreas: readonly AreaPublicDTO[] = []
+  publishedDestinations: readonly DestinationPublicDTO[] = []
 ): boolean => {
   const q = query.trim().toLowerCase();
   if (!q) return true;
@@ -68,14 +68,14 @@ export const matchesLocationSearch = (
 
   if (haystack.includes(q)) return true;
 
-  return regionMatchesToken(item.region, q, publishedAreas);
+  return regionMatchesToken(item.region, q, publishedDestinations);
 };
 
 /** Match a catalog region filter against a location region label (handles RAK ↔ Ras Al Khaimah, etc.). */
 export const matchesRegionLabel = (
   region: string | null | undefined,
   filter: string | null,
-  publishedAreas: readonly AreaPublicDTO[] = []
+  publishedDestinations: readonly DestinationPublicDTO[] = []
 ): boolean => {
   if (!filter) return true;
   const value = region?.trim();
@@ -84,5 +84,5 @@ export const matchesRegionLabel = (
   if (!token) return true;
   if (value.toLowerCase() === token) return true;
   if (value.toLowerCase().includes(token) || token.includes(value.toLowerCase())) return true;
-  return regionMatchesToken(value, token, publishedAreas);
+  return regionMatchesToken(value, token, publishedDestinations);
 };

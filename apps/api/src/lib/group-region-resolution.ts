@@ -1,4 +1,4 @@
-import type { AreaDTO, GroupRegionLevels } from '@uaetrail/shared-types';
+import type { DestinationDTO, GroupRegionLevels } from '@uaetrail/shared-types';
 import { normalizeGroupRegionLabel, stampGroupRegionLevelsFromGeo } from '@uaetrail/shared-types';
 import type { Location } from '../domain/types.js';
 import type { MongoActivityDoc } from './entity-builders.js';
@@ -7,23 +7,23 @@ import { resolveActivityAnchorCoordinates } from './destination-resolution.js';
 import { reversePlaceLocality } from './place-search.js';
 import type { TenantRecord } from './tenant-store.js';
 
-let publishedAreasCache: AreaDTO[] | null = null;
-let publishedAreasCacheAt = 0;
+let publishedDestinationsCache: DestinationDTO[] | null = null;
+let publishedDestinationsCacheAt = 0;
 const CACHE_MS = 60_000;
 
-const loadPublishedAreasCached = async (): Promise<AreaDTO[]> => {
+const loadPublishedAreasCached = async (): Promise<DestinationDTO[]> => {
   const now = Date.now();
-  if (publishedAreasCache && now - publishedAreasCacheAt < CACHE_MS) {
-    return publishedAreasCache;
+  if (publishedDestinationsCache && now - publishedDestinationsCacheAt < CACHE_MS) {
+    return publishedDestinationsCache;
   }
-  publishedAreasCache = await listPublishedDestinations();
-  publishedAreasCacheAt = now;
-  return publishedAreasCache;
+  publishedDestinationsCache = await listPublishedDestinations();
+  publishedDestinationsCacheAt = now;
+  return publishedDestinationsCache;
 };
 
 export const invalidatePublishedAreasGroupRegionCache = (): void => {
-  publishedAreasCache = null;
-  publishedAreasCacheAt = 0;
+  publishedDestinationsCache = null;
+  publishedDestinationsCacheAt = 0;
 };
 
 const stampLevels = async (input: {
@@ -36,11 +36,11 @@ const stampLevels = async (input: {
   longitude?: number | null;
   areaId?: string | null;
 }): Promise<GroupRegionLevels> => {
-  const publishedAreas = await loadPublishedAreasCached();
+  const publishedDestinations = await loadPublishedAreasCached();
   const stamped = stampGroupRegionLevelsFromGeo({
     ...input,
     countryCode: input.countryCode?.trim() ? input.countryCode : 'AE',
-    publishedAreas,
+    publishedDestinations,
   });
   const lat = input.latitude;
   const lng = input.longitude;

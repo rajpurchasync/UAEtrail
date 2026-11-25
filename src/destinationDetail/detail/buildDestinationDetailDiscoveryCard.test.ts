@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { resolveExploreWishlistTarget } from '../../discovery/discoveryCardModel';
 import { buildDestinationDetailDiscoveryCard } from './buildDestinationDetailDiscoveryCard';
 
-const sampleArea = {
-  id: 'area-test-hatta',
+const sampleDestination = {
+  id: 'area-seed-hatta',
   slug: 'hatta',
   name: 'Hatta',
   region: 'Dubai',
@@ -17,19 +17,19 @@ const sampleArea = {
 };
 
 describe('buildDestinationDetailDiscoveryCard', () => {
-  it('resolves area wishlist target for trip alerts', () => {
+  it('resolves destination wishlist target for trip alerts', () => {
     const card = buildDestinationDetailDiscoveryCard({
-      area: sampleArea,
+      destination: sampleDestination,
       shareText: 'Outings in Hatta',
     });
-    expect(card.source).toBe('area');
-    expect(card.destinationId).toBe(sampleArea.id);
+    expect(card.kind).toBe('destination');
+    expect(card.destinationId).toBe(sampleDestination.id);
     expect(resolveExploreWishlistTarget(card)).toEqual({
-      destinationId: sampleArea.id,
+      destinationId: sampleDestination.id,
       alertOnMatch: true,
       watchOutingCategory: null,
-      watchLatitude: sampleArea.center.latitude,
-      watchLongitude: sampleArea.center.longitude,
+      watchLatitude: sampleDestination.center.latitude,
+      watchLongitude: sampleDestination.center.longitude,
     });
   });
 });

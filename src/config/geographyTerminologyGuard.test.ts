@@ -43,7 +43,7 @@ describe('geographyTerminologyGuard (Place · Facility · Area)', () => {
       /resolvePlacePeekCuratedArea/
     );
     expect(read('src/explore/ui/map-peek/mapPeekSlots.tsx')).toMatch(
-      /card\.source === 'area'/
+      /card\.kind === 'destination'/
     );
     expect(read('src/explore/ui/map-peek/mapPeekSlots.tsx')).not.toMatch(
       /card\.source === 'venue'/
@@ -75,7 +75,7 @@ describe('geographyTerminologyGuard (Place · Facility · Area)', () => {
     const lexicon = read('packages/shared-types/src/wire-lexicon.ts');
     expect(lexicon).toMatch(/PLACE: 'place'/);
     expect(lexicon).toMatch(/FACILITY: 'facility'/);
-    expect(lexicon).toMatch(/AREA_INBOUND: 'area'/);
+    expect(lexicon).not.toMatch(/AREA_INBOUND/);
     expect(lexicon).toMatch(/isGeographyMapSource/);
     expect(lexicon).not.toMatch(/CATALOG_PLACE_TARGET/);
     const person = read('packages/shared-types/src/explore-person.ts');
@@ -122,7 +122,7 @@ describe('geographyTerminologyGuard (Place · Facility · Area)', () => {
     expect(read('nginx/snippets/inbound-bookmark-redirects.conf')).toMatch(
       /\/area\/\(\[\^\/\]\+\)/
     );
-    expect(read('packages/shared-types/src/entity-path.ts')).toMatch(/STALE_AREA_HUB_PATH_RE/);
+    expect(read('nginx/snippets/inbound-bookmark-redirects.conf')).toMatch(/\/area\//);
   });
 
   it('GEO-11: catalog query normalizers live in shared-types (Phase A)', () => {

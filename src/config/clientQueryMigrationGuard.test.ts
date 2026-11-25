@@ -8,10 +8,10 @@ const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
 
 /** MIG-CLIENT-QUERY — hooks migrated off mount-fetch must use TanStack Query + clientQueryKeys. */
 describe('clientQueryMigrationGuard (MIG-CLIENT-QUERY)', () => {
-  it('useExplorePublishedDestinations uses publishedAreasQueryKey', () => {
+  it('useExplorePublishedDestinations uses publishedDestinationsQueryKey', () => {
     const content = read('src/explore/useExplorePublishedDestinations.ts');
     expect(content).toMatch(/useQuery/);
-    expect(content).toMatch(/publishedAreasQueryKey/);
+    expect(content).toMatch(/publishedDestinationsQueryKey/);
     expect(content).not.toMatch(/useSafeAsyncEffect/);
   });
 

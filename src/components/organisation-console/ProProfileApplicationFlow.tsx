@@ -140,10 +140,10 @@ export const ProProfileApplicationFlow = ({
     [hasGuideProfile, hasAgencyProfile, hasShopProfile]
   );
 
-  const { data: publishedAreas = [] } = useExplorePublishedDestinationsQuery(open);
+  const { data: publishedDestinations = [] } = useExplorePublishedDestinationsQuery(open);
   const emirateOptions = useMemo(
-    () => mergeVenueStateFilterOptionsWithAreas(publishedAreas, DEFAULT_COUNTRY),
-    [publishedAreas]
+    () => mergeVenueStateFilterOptionsWithAreas(publishedDestinations, DEFAULT_COUNTRY),
+    [publishedDestinations]
   );
 
   const [step, setStep] = useState<HostFlowStep>('pick');

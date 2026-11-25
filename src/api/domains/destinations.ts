@@ -1,8 +1,8 @@
 import { apiRequest } from '../client';
 import type {
   ActivityDTO,
-  AreaBoundsRing,
-  AreaDTO,
+  DestinationBoundsRing,
+  DestinationDTO,
   DestinationPublicDTO,
   LocationDTO,
 } from '@uaetrail/shared-types';
@@ -30,17 +30,17 @@ export const destinationsApi = {
     apiRequest<{ data: DestinationDetailPayload }>(
       `/destinations/${encodeURIComponent(slug)}`
     ),
-  listAdminDestinations: () => apiRequest<{ data: AreaDTO[] }>('/admin/destinations', { auth: true }),
+  listAdminDestinations: () => apiRequest<{ data: DestinationDTO[] }>('/admin/destinations', { auth: true }),
   createAdminDestination: (
-    payload: Omit<AreaDTO, 'id' | 'createdAt' | 'updatedAt' | 'bounds'> & { bounds?: AreaBoundsRing }
+    payload: Omit<DestinationDTO, 'id' | 'createdAt' | 'updatedAt' | 'bounds'> & { bounds?: DestinationBoundsRing }
   ) =>
-    apiRequest<{ data: AreaDTO }>('/admin/destinations', {
+    apiRequest<{ data: DestinationDTO }>('/admin/destinations', {
       method: 'POST',
       auth: true,
       body: JSON.stringify(payload),
     }),
-  updateAdminDestination: (id: string, payload: Partial<AreaDTO>) =>
-    apiRequest<{ data: AreaDTO }>(`/admin/destinations/${id}`, {
+  updateAdminDestination: (id: string, payload: Partial<DestinationDTO>) =>
+    apiRequest<{ data: DestinationDTO }>(`/admin/destinations/${id}`, {
       method: 'PATCH',
       auth: true,
       body: JSON.stringify(payload),

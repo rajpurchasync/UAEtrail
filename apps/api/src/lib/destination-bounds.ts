@@ -1,10 +1,10 @@
-import type { AreaBoundsRing, AreaCenter } from '@uaetrail/shared-types';
+import type { DestinationBoundsRing, DestinationCenter } from '@uaetrail/shared-types';
 
 /** Default map footprint when admin only supplies a center pin. */
 export const boundsRingFromCenter = (
-  center: AreaCenter,
+  center: DestinationCenter,
   deltaDegrees = 0.045
-): AreaBoundsRing => {
+): DestinationBoundsRing => {
   const { latitude: lat, longitude: lng } = center;
   return [
     { latitude: lat - deltaDegrees, longitude: lng - deltaDegrees },

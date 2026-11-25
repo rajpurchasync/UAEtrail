@@ -84,15 +84,15 @@ export const resolveOrganizeActivityLocationId = async (
     if (about.length < 20) {
       throw new Error('Tell joiners about this spot (at least 20 characters).');
     }
-    const publishedAreas = await fetchPublishedDestinations();
+    const publishedDestinations = await fetchPublishedDestinations();
     const inferred = resolvePublishedDestinationForPoint(
       draft.trailLatitude,
       draft.trailLongitude,
-      publishedAreas
+      publishedDestinations
     );
     const destinationId =
       draft.customPlaceDestinationId?.trim() || draft.registryPlaceDestinationId?.trim() || inferred?.id || '';
-    const area = destinationId ? publishedAreas.find((row) => row.id === destinationId) ?? inferred : null;
+    const area = destinationId ? publishedDestinations.find((row) => row.id === destinationId) ?? inferred : null;
     const proposedName = resolveCustomProposedAreaName(draft);
     if (!area) {
       throw new Error('Select an area.');
@@ -103,7 +103,7 @@ export const resolveOrganizeActivityLocationId = async (
       inferEmirateFromPin(
         draft.trailLatitude,
         draft.trailLongitude,
-        publishedAreas,
+        publishedDestinations,
         `${draft.trailName} ${proposedName}`
       ) ||
       '';
@@ -152,8 +152,8 @@ export const resolveOrganizeActivityLocationId = async (
     throw new Error(event ? 'Drop a meeting point pin on the map first.' : 'Drop a pin on the map first.');
   }
 
-  const publishedAreas = await fetchPublishedDestinations();
-  const destinationId = resolvePublishedDestinationIdForPoint(anchorLat, anchorLng, publishedAreas);
+  const publishedDestinations = await fetchPublishedDestinations();
+  const destinationId = resolvePublishedDestinationIdForPoint(anchorLat, anchorLng, publishedDestinations);
   if (!destinationId) {
     throw new Error(
       'Could not match a registered area for this pin. Add your spot via Explore → Add (select an area first), then organize from the catalog.'
@@ -167,7 +167,7 @@ export const resolveOrganizeActivityLocationId = async (
   const anchorDescription =
     (activityHost ? draft.joinKit.trim() : draft.description.trim()) || defaultDescription(draft.kind);
 
-  const emirate = inferEmirateFromPin(lat, lng, publishedAreas);
+  const emirate = inferEmirateFromPin(lat, lng, publishedDestinations);
   if (!emirate) {
     throw new Error(
       'Could not match an emirate for this pin. Move the pin, or add the spot from Explore → Add and choose Dubai, Ras Al Khaimah, Sharjah, or another filter.'

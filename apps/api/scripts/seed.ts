@@ -56,7 +56,7 @@ import {
 import { DEMO_ACCOUNTS, resolveDemoAccountPassword } from '../src/lib/demo-accounts.js';
 import { logOmarHostQaPlaybook } from './logOmarHostQaPlaybook.js';
 import { seedCuratedDestinations } from '../src/lib/seed-destinations.js';
-import { curatedAreaSeedId, type AvailabilityKind } from '@uaetrail/shared-types';
+import { curatedDestinationSeedId, type AvailabilityKind } from '@uaetrail/shared-types';
 import { deactivateOrphanActiveLocations } from './cleanup-orphan-activity-anchor-locations.js';
 import { backfillSeedCatalogLocationAreaIds, seedLocationAreaId } from './seed-location-area-map.js';
 import {
@@ -1591,7 +1591,7 @@ Wind shelter notes, BBQ etiquette, and nearby shop stops.`
         name: 'Hatta Dam Loop',
         region: 'Dubai',
         areaLabel: 'Hatta Dam visitor park',
-        areaId: curatedAreaSeedId('hatta'),
+        areaId: curatedDestinationSeedId('hatta'),
         activityType: ActivityType.HIKING,
         difficulty: Difficulty.EASY,
         accessibility: Accessibility.CAR_ACCESSIBLE,
@@ -1632,7 +1632,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
         name: 'Hatta Wadi Hub Trail',
         region: 'Dubai',
         areaLabel: 'Hatta Wadi Hub',
-        areaId: curatedAreaSeedId('hatta'),
+        areaId: curatedDestinationSeedId('hatta'),
         activityType: ActivityType.HIKING,
         difficulty: Difficulty.MODERATE,
         accessibility: Accessibility.CAR_ACCESSIBLE,
@@ -1665,7 +1665,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
         name: 'Hatta Hill Park Camp',
         region: 'Dubai',
         areaLabel: 'Hatta Hill Park',
-        areaId: curatedAreaSeedId('hatta'),
+        areaId: curatedDestinationSeedId('hatta'),
         activityType: ActivityType.CAMPING,
         description:
           'Terraced hill park with designated BBQ and overnight camp zones overlooking Hatta — family-friendly with sunset views.',
@@ -1696,7 +1696,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
         name: 'Hatta Wadi Gear Shop',
         region: 'Dubai',
         areaLabel: 'Hatta Wadi Hub',
-        areaId: curatedAreaSeedId('hatta'),
+        areaId: curatedDestinationSeedId('hatta'),
         activityType: ActivityType.SHOP,
         description:
           'Trail snacks, hydration, and basic camp kit at the Wadi Hub — last-minute supplies before dam or wadi loops.',
@@ -1723,7 +1723,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
         name: 'Hatta Dam ADNOC',
         region: 'Dubai',
         areaLabel: 'Hatta Dam visitor park',
-        areaId: curatedAreaSeedId('hatta'),
+        areaId: curatedDestinationSeedId('hatta'),
         activityType: ActivityType.SHOP,
         description: 'Fuel and convenience stop on the approach to Hatta Dam — handy before early-morning hikes.',
         season: ['year-round'],
@@ -1748,7 +1748,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
         name: 'Al Qudra Cycling Loop',
         region: 'Dubai',
         areaLabel: 'Al Qudra Lakes',
-        areaId: curatedAreaSeedId('alQudra'),
+        areaId: curatedDestinationSeedId('alQudra'),
         activityType: ActivityType.HIKING,
         difficulty: Difficulty.EASY,
         accessibility: Accessibility.CAR_ACCESSIBLE,
@@ -1780,7 +1780,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
         name: 'Love Lake Walk',
         region: 'Dubai',
         areaLabel: 'Love Lake',
-        areaId: curatedAreaSeedId('loveLake'),
+        areaId: curatedDestinationSeedId('loveLake'),
         activityType: ActivityType.HIKING,
         difficulty: Difficulty.EASY,
         accessibility: Accessibility.CAR_ACCESSIBLE,
@@ -1810,7 +1810,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
         name: 'Jumeirah Kite Beach Track',
         region: 'Dubai',
         areaLabel: 'Kite Beach',
-        areaId: curatedAreaSeedId('jumeirah'),
+        areaId: curatedDestinationSeedId('jumeirah'),
         activityType: ActivityType.HIKING,
         difficulty: Difficulty.EASY,
         accessibility: Accessibility.CAR_ACCESSIBLE,
@@ -1842,7 +1842,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
         name: 'Khorfakkan Beach Walk',
         region: 'Sharjah',
         areaLabel: 'Khorfakkan corniche',
-        areaId: curatedAreaSeedId('khorfakkan'),
+        areaId: curatedDestinationSeedId('khorfakkan'),
         activityType: ActivityType.HIKING,
         difficulty: Difficulty.EASY,
         accessibility: Accessibility.CAR_ACCESSIBLE,
@@ -1872,7 +1872,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
         name: 'Jebel Hafeet Summit Walk',
         region: 'Abu Dhabi',
         areaLabel: 'Jebel Hafeet summit',
-        areaId: curatedAreaSeedId('jebelHafeet'),
+        areaId: curatedDestinationSeedId('jebelHafeet'),
         activityType: ActivityType.HIKING,
         difficulty: Difficulty.MODERATE,
         accessibility: Accessibility.CAR_ACCESSIBLE,
@@ -1903,7 +1903,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
         name: 'Kalba Mangrove Kayak',
         region: 'Sharjah',
         areaLabel: 'Kalba mangroves',
-        areaId: curatedAreaSeedId('kalba'),
+        areaId: curatedDestinationSeedId('kalba'),
         activityType: ActivityType.HIKING,
         difficulty: Difficulty.EASY,
         accessibility: Accessibility.CAR_ACCESSIBLE,
@@ -2211,7 +2211,7 @@ Share your live location and carry extra water in summer months.`
   await seedAvailabilityPin({
     slotId: seedDemandId('demand-hike-hatta'),
     userId: participant._id,
-    areaId: curatedAreaSeedId('hatta'),
+    areaId: curatedDestinationSeedId('hatta'),
     kind: 'hiking',
     title: 'Hiking buddies near Hatta',
     date: seedSeekingDate(5),
@@ -2224,7 +2224,7 @@ Share your live location and carry extra water in summer months.`
   await seedAvailabilityPin({
     slotId: seedDemandId('demand-camp-fossil-rock'),
     userId: individualHost._id,
-    areaId: curatedAreaSeedId('fossilRock'),
+    areaId: curatedDestinationSeedId('fossilRock'),
     kind: 'camping',
     title: 'Weekend desert camp at Fossil Rock',
     date: seedSeekingDate(8),
@@ -2237,7 +2237,7 @@ Share your live location and carry extra water in summer months.`
   await seedAvailabilityPin({
     slotId: seedDemandId('demand-event-kite-beach'),
     userId: agencyGuide._id,
-    areaId: curatedAreaSeedId('jumeirah'),
+    areaId: curatedDestinationSeedId('jumeirah'),
     kind: 'event',
     title: 'Sunrise yoga at Kite Beach',
     date: seedSeekingDate(6),
@@ -2250,7 +2250,7 @@ Share your live location and carry extra water in summer months.`
   await seedAvailabilityPin({
     slotId: seedDemandId('demand-rideshare-dxb-rak'),
     userId: pendingParticipant._id,
-    areaId: curatedAreaSeedId('jebelJais'),
+    areaId: curatedDestinationSeedId('jebelJais'),
     kind: 'rideshare',
     title: 'Ride to Jebel Jais hike',
     date: seedSeekingDate(3),
@@ -2263,7 +2263,7 @@ Share your live location and carry extra water in summer months.`
   await seedAvailabilityPin({
     slotId: seedDemandId('demand-guide-wadi-shawka'),
     userId: agencyOwner._id,
-    areaId: curatedAreaSeedId('wadiShawka'),
+    areaId: curatedDestinationSeedId('wadiShawka'),
     kind: 'guide',
     title: 'Licensed guide for Wadi Shawka loop',
     date: seedSeekingDate(7),
