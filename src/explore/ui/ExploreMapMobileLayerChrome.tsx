@@ -9,8 +9,10 @@ import {
   type ExploreVenueFilterPatch,
 } from '../exploreOptionalFilters';
 import type { BrowseTripTopicKey, ListVenuePlaceTopicKey } from '../../discovery/discoverySession';
-import { ListExplorerGeoScopeChip } from '../../list/explorer/ListExplorerGeoScopeChip';
-import { ListExplorerQuickFilters } from '../../list/explorer/ListExplorerQuickFilters';
+import {
+  ListExplorerGeoScopeChip,
+  ListExplorerQuickFilters,
+} from '../../discovery/discoverySessionListExplorer';
 import { EXPLORE_MAP_CHROME_FROST } from '../../config/exploreTheme';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import {

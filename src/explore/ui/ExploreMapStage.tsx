@@ -23,7 +23,7 @@ import { ExploreDismissibleNotice } from './ExploreDismissibleNotice';
 import { ExploreGuestPreviewLimitBanner } from './ExploreGuestPreviewLimitBanner';
 import { ActivityMapPeekHost } from './ActivityMapPeekHost';
 import { ExploreMapChromeBar } from './ExploreMapChromeBar';
-import { ListExplorerGeoScopeChip } from '../../list/explorer/ListExplorerGeoScopeChip';
+import { ListExplorerGeoScopeChip } from '../../discovery/discoverySessionListExplorer';
 import { ExploreMapLoadErrorBoundary } from './ExploreMapLoadErrorBoundary';
 import { ExploreMapLoadingSkeleton } from './ExploreMapLoadingSkeleton';
 import { ExploreMapLocationPrompt } from './ExploreMapLocationPrompt';

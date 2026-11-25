@@ -279,6 +279,19 @@ describe('discoverySessionParamsGuard', () => {
     expect(read('src/discovery/discoverySession.ts')).toMatch(/discoverySessionListQuickFilters/);
   });
 
+  it('W9 explore imports list explorer / shell / prefill via discoverySession facades', () => {
+    const listPresentationImport =
+      /list\/(?:explorer\/|ListDiscoveryExperience|crews\/CommunityDiscoverBrowseList)/;
+    const violations: string[] = [];
+    for (const rel of collectProdTsUnder(join(ROOT, 'src/explore'))) {
+      if (listPresentationImport.test(read(rel))) violations.push(rel);
+    }
+    expect(violations).toEqual([]);
+    expect(read('src/discovery/discoverySessionListExplorer.ts')).toMatch(/ListExplorerGeoScopeChip/);
+    expect(read('src/discovery/discoverySessionListExperience.ts')).toMatch(/ListDiscoveryExperience/);
+    expect(read('src/discovery/discoverySessionFindCrewPrefill.ts')).toMatch(/findCrewPlanAnchor/);
+  });
+
   it('W4m explore tree uses discoverySession barrel (no split facade imports)', () => {
     const splitFacade =
       /from ['"][^'"]*discovery\/discoverySession(?:Params|Parsers|ListUrl|GeoUrl|MapHandoff|ListRouting)['"]/;

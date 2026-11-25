@@ -19,9 +19,9 @@ import type { useHostingFromActivity } from './useHostingFromActivity';
 import { parseAvailabilitySlotId, parsePlanWithUserId } from '../../routing';
 import {
   clearFindCrewPlanAnchorSession,
+  hostingPrefillFromFindCrewSlot,
   readFindCrewPlanAnchorSession,
-} from '@/list/explorer/findCrewPlanAnchor';
-import { hostingPrefillFromFindCrewSlot } from '@/list/explorer/hostingPrefillFromFindCrewSlot';
+} from '@/discovery/discoverySessionFindCrewPrefill';
 
 type Compose = ReturnType<typeof useComposeRoute>;
 type HostingFrom = ReturnType<typeof useHostingFromActivity>;

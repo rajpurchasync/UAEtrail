@@ -128,7 +128,27 @@
         "src/explore/search/ExploreSearchPickSheets.tsx"
       ],
       "avoid": ["src/list/explorer/**"]
+    },
+    {
+      "id": "W9",
+      "status": "done",
+      "title": "list explorer / discovery shell / find-crew prefill facades (explore batch)",
+      "branch": "burn-down/w9-list-presentation",
+      "owns": [
+        "src/discovery/discoverySessionListExplorer.ts",
+        "src/discovery/discoverySessionListExperience.ts",
+        "src/discovery/discoverySessionFindCrewPrefill.ts",
+        "src/explore/ui/ExploreMapStage.tsx",
+        "src/explore/ui/ExploreMapMobileLayerChrome.tsx",
+        "src/explore/search/ExploreSearchResults.tsx",
+        "src/explore/search/ExploreSearchRecommendedSection.tsx",
+        "src/explore/search/ExploreSearchCommunityGroupsPane.tsx",
+        "src/explore/shell/ExploreExperienceBrowsePanels.tsx",
+        "src/explore/create/hooks/useHostingWizardPrefill.ts"
+      ],
+      "avoid": ["src/list/** impl"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8"]
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9"],
+  "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }
