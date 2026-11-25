@@ -12,15 +12,15 @@ import { MESSAGES_PATH, PLAN_PATH } from './surfacePaths';
 import { explorePath, parseExplorePanel } from '../explore/routing';
 import { parseExplorePinKindFilter } from '../explore/explorePinKindFilter';
 import {
+  LIST_CAT_PARAM,
   crewsHubHomePath,
+  parseListCatParam,
   tripsListHomePath,
   venuesListHomePath,
-} from '../list/browse/browseListRouting';
+} from '../discovery/discoverySession';
 
-export { tripsListHomePath, venuesListHomePath } from '../list/browse/browseListRouting';
+export { tripsListHomePath, venuesListHomePath } from '../discovery/discoverySession';
 import { PRODUCT_CREWS_TAB_LABEL } from '../content/productNorthStar';
-import { LIST_CAT_PARAM } from '../discovery/discoverySessionParams';
-import { parseListCatParam } from '../discovery/discoverySessionParsers';
 import {
   EXPLORE_SEARCH_RESULTS_PATH,
   parseExploreSearchScopeFromParams,

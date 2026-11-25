@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { parseListCatParam } from '../../discovery/discoverySessionParsers';
 import {
   parseBrowseListFilterState,
   parseBrowseListGeoPath,
-  parseListCatParam,
   serializeBrowseListSearchParams,
 } from './browseListUrlState';
 

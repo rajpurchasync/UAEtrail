@@ -23,8 +23,13 @@ import {
   type ExploreMapFilterPillKey,
   type ExploreSearchScopeKey,
 } from './exploreBrowseTaxonomy';
-import { BROWSE_DISCOVER_PARAM, LIST_CAT_PARAM } from '../discovery/discoverySessionParams';
-import { parseListCatParam } from '../discovery/discoverySessionParsers';
+import {
+  BROWSE_DISCOVER_PARAM,
+  BROWSE_GEO_PARAM,
+  LIST_CAT_PARAM,
+  parseBrowseGeoPath,
+  parseListCatParam,
+} from '../discovery/discoverySession';
 import type { ExploreBrowseListMode } from './exploreBrowseUrlSync';
 import { readExploreSearchScopeParam } from '../routing/productUrlInbound';
 import { parseExplorePinKindFilter, type ExplorePinKindFilter } from './explorePinKindFilter';
@@ -57,8 +62,6 @@ import {
   type ExplorePriceFilter,
 } from './exploreOptionalFilters';
 import type { PlaceKind } from '@uaetrail/shared-types';
-import { BROWSE_GEO_PARAM, parseBrowseGeoPath } from '../list/browse/browseGeoPath';
-
 const isCrewsBrowseListView = (view: string | null): boolean =>
   view === 'people' || view === 'social' || view === 'going';
 

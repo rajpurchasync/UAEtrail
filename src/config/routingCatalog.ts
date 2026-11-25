@@ -203,7 +203,7 @@ export {
   listPeopleDiscoveryPath,
   exploreMapPathFromListSearch,
   listDiscoveryPathFromExploreSearch,
-} from '../list/browse/browseListRouting';
+} from '../discovery/discoverySession';
 
 export {
   MOBILE_FIVE_TAB_DEFAULTS,

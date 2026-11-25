@@ -12,14 +12,14 @@ import {
   serializeBrowseListToExploreSearchParams,
 } from './browseListMapHandoff';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
+import { LIST_CAT_PARAM } from '../../discovery/discoverySessionParams';
+import { parseListCatParam } from '../../discovery/discoverySessionParsers';
 import {
-  LIST_CAT_PARAM,
   parseBrowseListFilterState,
   parseBrowseListGeoPath,
   parseBrowseListVenueRegions,
-  parseListCatParam,
   serializeBrowseListSearchParams,
-} from './browseListUrlState';
+} from '../../discovery/discoverySessionListUrl';
 
 export type ListDiscoveryPathOptions = Partial<BrowseListFilterState> & {
   regions?: string[];

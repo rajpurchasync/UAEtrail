@@ -121,7 +121,7 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/browseListRouting.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/browse/listDiscoverySurface.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/routing.ts'))).toBe(false);
-    expect(read('src/config/routingCatalog.ts')).toMatch(/browse\/browseListRouting/);
+    expect(read('src/config/routingCatalog.ts')).toMatch(/discovery\/discoverySession'/);
     expect(read('src/explore/routing.ts')).toBeTruthy();
     expect(read('src/explore/exploreBrowseUrlSync.ts')).toMatch(/from '\.\/routing'/);
     expect(read('src/explore/exploreBrowseUrlSync.ts')).not.toMatch(/browse\/browseListRouting/);
@@ -167,10 +167,9 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/browseListUrlState.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/browseListFilters.ts'))).toBe(false);
     expect(existsSync(join(process.cwd(), 'src/list/browseListUrlState.ts'))).toBe(false);
-    expect(read('src/list/browse/useListDiscoveryUrlState.ts')).toMatch(/from '\.\/browseListUrlState'/);
-    expect(read('src/explore/exploreBrowseUrlHydrate.ts')).toMatch(
-      /discovery\/discoverySession(Params|Parsers)/
-    );
+    expect(read('src/list/browse/useListDiscoveryUrlState.ts')).toMatch(/discovery\/discoverySessionListUrl/);
+    expect(read('src/list/browse/useListDiscoveryUrlState.ts')).toMatch(/discovery\/discoverySessionParams/);
+    expect(read('src/explore/exploreBrowseUrlHydrate.ts')).toMatch(/discovery\/discoverySession'/);
   });
 
   it('BROWSE-NAME-01n: taxonomy, venue topics, and geo hydration live under browse', () => {
@@ -187,7 +186,8 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browseGeoPath.ts'))).toBe(false);
     expect(existsSync(join(process.cwd(), 'src/list/browse/browseListTripTopics.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/browse/browsePosterCover.ts'))).toBe(true);
-    expect(read('src/explore/exploreBrowseUrlHydrate.ts')).toMatch(/list\/browse\/browseGeoPath/);
+    expect(read('src/explore/exploreBrowseUrlHydrate.ts')).toMatch(/discovery\/discoverySession'/);
+    expect(read('src/explore/exploreBrowseUrlSync.ts')).toMatch(/discovery\/discoverySession'/);
     expect(read('src/list/browse/buildListFeedCards.ts')).toMatch(/browsePosterCover/);
   });
 

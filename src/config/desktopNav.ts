@@ -20,7 +20,7 @@ import {
   exploreSearchHomePath,
   isExploreSearchHomeState,
 } from '../explore/search/exploreSearchRouting';
-import { LIST_CAT_PARAM } from '../discovery/discoverySessionParams';
+import { LIST_CAT_PARAM } from '../discovery/discoverySession';
 import {
   MY_CREWS_PATH,
   EXPLORE_DISCOVER_BROWSE_PATH,

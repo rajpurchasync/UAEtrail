@@ -25,8 +25,13 @@ import {
 import type { ProductSearchMutationContext } from '../routing/productSearchMutation';
 import { applyProductSearchMutation } from '../routing/productSearchMutation';
 import type { BrowseMainCategoryKey } from '../list/browse/browseListTaxonomy';
-import { BROWSE_DISCOVER_PARAM, LIST_CAT_PARAM } from '../discovery/discoverySessionParams';
-import { parseListCatParam } from '../discovery/discoverySessionParsers';
+import {
+  BROWSE_DISCOVER_PARAM,
+  BROWSE_GEO_PARAM,
+  LIST_CAT_PARAM,
+  parseListCatParam,
+  serializeBrowseGeoPath,
+} from '../discovery/discoverySession';
 import {
   serializeExplorePinKindFilter,
   type ExplorePinKindFilter,
@@ -65,7 +70,6 @@ import {
   type ExplorePriceFilter,
 } from './exploreOptionalFilters';
 import type { PlaceKind } from '@uaetrail/shared-types';
-import { BROWSE_GEO_PARAM, serializeBrowseGeoPath } from '../list/browse/browseGeoPath';
 import {
   INBOUND_SEARCH_SCOPE_FOCUS_PARAM,
   stripRetiredExploreOverlayParams,

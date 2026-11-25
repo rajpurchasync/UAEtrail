@@ -1,6 +1,8 @@
 /**
- * W4c — explore/list URL state facade. Implementations stay in `list/browse/*` until unified.
+ * W4 — explore/list URL state facade. Heavy parsers stay in `list/browse/*`; spine keys here.
  */
+export { BROWSE_DISCOVER_PARAM, LIST_CAT_PARAM, parseBrowseDiscoverOpen } from './discoverySessionParams';
+export { parseListCatParam } from './discoverySessionParsers';
 export {
   parseBrowseListFilterState,
   parseBrowseListGeoPath,

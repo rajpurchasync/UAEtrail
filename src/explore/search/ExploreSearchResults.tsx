@@ -2,9 +2,12 @@ import { useMemo } from 'react';
 import { useProductSearchParams } from '../../routing/useEffectiveLocation';
 import { useBrowseListFeed } from '../../list/browse/useBrowseListFeed';
 import type { BrowseListFilterState } from '../../list/browse/browseListFilters';
-import { scopeBrowseListStateForListCat } from '../../list/browse/browseListMapHandoff';
+import {
+  parseBrowseListFilterState,
+  parseBrowseListGeoPath,
+  scopeBrowseListStateForListCat,
+} from '../../discovery/discoverySession';
 import { ListDiscoveryExperience } from '../../list/ListDiscoveryExperience';
-import { parseBrowseListFilterState, parseBrowseListGeoPath } from '../../discovery/discoverySessionListUrl';
 import { useBrowseGeoScopeHydration } from '../../list/browse/useBrowseGeoScopeHydration';
 import { resolveEffectiveBrowseVenueRegions } from '../../list/browse/browseGeoPath';
 import { useExplorePublishedDestinationsQuery } from '../useExplorePublishedDestinations';

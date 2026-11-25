@@ -2,14 +2,14 @@ import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
 import { parseExploreActivityDatePreset, serializeExploreActivityDatePreset } from '../routing';
 import { parseExplorePriceFilter, type ExplorePriceFilter } from '../exploreOptionalFilters';
 import type { BrowseMainCategoryKey } from '../../list/browse/browseListTaxonomy';
-import { LIST_CAT_PARAM } from '../../discovery/discoverySessionParams';
 import {
+  LIST_CAT_PARAM,
   parseBrowseListFilterState,
   parseBrowseListGeoPath,
   parseBrowseListVenueRegions,
+  scopeBrowseListStateForListCat,
   serializeBrowseListSearchParams,
-} from '../../discovery/discoverySessionListUrl';
-import { scopeBrowseListStateForListCat } from '../../list/browse/browseListMapHandoff';
+} from '../../discovery/discoverySession';
 import { parseExplorePanel } from '../routing';
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { LIST_DISCOVERY_PATH } from '../../config/platform';

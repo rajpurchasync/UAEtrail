@@ -1,6 +1,6 @@
 import { useAuth } from '@/context/AuthContext';
 import { useMeFriendsNetwork } from '@/hooks/useMeFriendsNetwork';
-import { crewsHubHomePath } from '@/list/browse/browseListRouting';
+import { crewsHubHomePath } from '@/discovery/discoverySession';
 import { ExploreGuestSignInCard } from '@/explore/ui/ExploreGuestSignInCard';
 import { SocialHubIndex } from './SocialHubIndex';
 

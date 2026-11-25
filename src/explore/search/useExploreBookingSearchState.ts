@@ -4,7 +4,7 @@ import { useProductSearchParams } from '../../routing/useEffectiveLocation';
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
 import { serializeExploreActivityDatePreset } from '../routing';
 import { applyProductSearchMutation } from '../../routing/productSearchMutation';
-import { parseBrowseListVenueRegions } from '../../discovery/discoverySessionListUrl';
+import { parseBrowseListVenueRegions } from '../../discovery/discoverySession';
 import {
   EXPLORE_SEARCH_SCOPE_PARAM,
   exploreSearchResultsPath,

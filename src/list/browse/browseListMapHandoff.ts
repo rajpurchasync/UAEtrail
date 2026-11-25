@@ -15,10 +15,8 @@ import {
   PEOPLE_LIST_TAB_URL_PARAM,
   serializePeopleListBrowseState,
 } from './peopleListBrowseUrl';
-import {
-  LIST_CAT_PARAM,
-  serializeBrowseListSearchParams,
-} from './browseListUrlState';
+import { LIST_CAT_PARAM } from '../../discovery/discoverySessionParams';
+import { serializeBrowseListSearchParams } from '../../discovery/discoverySessionListUrl';
 import { stripRetiredPeopleListTabParams } from '../../routing/productUrlInbound';
 
 /** Explore `pinKind` when opening the map from list browse state. */

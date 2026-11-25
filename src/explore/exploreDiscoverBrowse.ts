@@ -1,5 +1,5 @@
 import { EXPLORE_MAP_PATH, LIST_DISCOVERY_PATH } from '../config/platform';
-import { BROWSE_DISCOVER_PARAM, parseBrowseDiscoverOpen } from '../discovery/discoverySessionParams';
+import { BROWSE_DISCOVER_PARAM, parseBrowseDiscoverOpen } from '../discovery/discoverySession';
 
 /** True on `/list` or `/explore?browse=1` (visual discover — not map-only explore). */
 export const isDiscoverBrowseRoute = (pathname: string, search: string): boolean => {

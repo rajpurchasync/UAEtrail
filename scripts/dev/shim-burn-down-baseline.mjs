@@ -78,6 +78,16 @@ for (const file of walkFiles(apiSrc)) {
 const participantIntentOpsAllowlistOnly = participantIntentOpsViolations.length === 0;
 
 const listBrowseUrlStateImportRe = /from ['"].*list\/browse\/browseListUrlState['"]/;
+const listBrowseSpineFromUrlStateReexport = [];
+const spineImportRe =
+  /import\s*\{[^}]*(?:LIST_CAT_PARAM|BROWSE_DISCOVER_PARAM|parseListCatParam)[^}]*\}\s*from\s*['"]\.\/browseListUrlState['"]/;
+for (const file of walkFiles(join(root, 'src/list/browse'))) {
+  if (!/\.tsx?$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
+  const rel = file.slice(root.length + 1).replace(/\\/g, '/');
+  if (rel === 'src/list/browse/browseListUrlState.ts') continue;
+  if (spineImportRe.test(readFileSync(file, 'utf8'))) listBrowseSpineFromUrlStateReexport.push(rel);
+}
+
 const browseListUrlStateImportViolations = [];
 for (const file of walkFiles(feSrc)) {
   if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
@@ -124,6 +134,90 @@ const countSafeAsyncInTree = (dirRel, fileRe) => {
 const componentSafeAsync = countSafeAsyncInTree('src/components', /\.(tsx)$/);
 const exploreUiSafeAsync = countSafeAsyncInTree('src/explore/ui', /\.(tsx)$/);
 const useSafeAsyncEffectHookExists = existsSync(join(feSrc, 'hooks', 'useSafeAsyncEffect.ts'));
+const browseListUrlStateSource = existsSync(join(feSrc, 'list/browse/browseListUrlState.ts'))
+  ? readFileSync(join(feSrc, 'list/browse/browseListUrlState.ts'), 'utf8')
+  : '';
+const browseListUrlStateReexportsSpineKeys = /export \{[^}]*LIST_CAT_PARAM/.test(browseListUrlStateSource);
+
+const exploreSplitFacadeImportRe =
+  /from ['"][^'"]*discovery\/discoverySession(?:Params|Parsers|ListUrl|GeoUrl|MapHandoff|ListRouting)['"]/;
+const exploreSplitFacadeViolations = [];
+for (const file of walkFiles(join(feSrc, 'explore'))) {
+  if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
+  const rel = file.slice(root.length + 1).replace(/\\/g, '/');
+  if (exploreSplitFacadeImportRe.test(readFileSync(file, 'utf8'))) {
+    exploreSplitFacadeViolations.push(rel);
+  }
+}
+
+const exploreBrowseSpineBarrelViolations = [];
+for (const rel of [
+  'src/explore/exploreBrowseUrlHydrate.ts',
+  'src/explore/exploreBrowseUrlSync.ts',
+  'src/explore/search/exploreSearchRouting.ts',
+  'src/config/desktopNav.ts',
+  'src/config/mobileFiveTabNav.ts',
+]) {
+  const file = join(root, rel);
+  if (!existsSync(file)) continue;
+  const text = readFileSync(file, 'utf8');
+  if (!/discovery\/discoverySession['"]/.test(text) && !/discovery\/discoverySession\b/.test(text)) {
+    exploreBrowseSpineBarrelViolations.push(rel);
+  }
+  if (/discoverySessionParams['"]|discoverySessionParsers['"]|discoverySessionGeoUrl['"]/.test(text)) {
+    exploreBrowseSpineBarrelViolations.push(`${rel} (split discovery import)`);
+  }
+}
+
+const nonListBrowseListRoutingAllowPrefix = [
+  'src/list/',
+  'src/my-crew/',
+  'src/discovery/discoverySessionListRouting.ts',
+];
+const consumerBrowseListRoutingViolations = [];
+for (const file of walkFiles(feSrc)) {
+  if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
+  const rel = file.slice(root.length + 1).replace(/\\/g, '/');
+  if (nonListBrowseListRoutingAllowPrefix.some((p) => rel.startsWith(p) || rel === p)) continue;
+  if (/list\/browse\/browseListRouting/.test(readFileSync(file, 'utf8'))) {
+    consumerBrowseListRoutingViolations.push(rel);
+  }
+}
+
+const w4jBrowseListRoutingViolations = [];
+for (const rel of ['src/config/routingCatalog.ts', 'src/geo/GeoBrowsePane.tsx']) {
+  const file = join(root, rel);
+  if (!existsSync(file)) continue;
+  if (/list\/browse\/browseListRouting/.test(readFileSync(file, 'utf8'))) {
+    w4jBrowseListRoutingViolations.push(rel);
+  }
+}
+
+const exploreImportsBrowseListRouting = [];
+for (const file of walkFiles(join(feSrc, 'explore'))) {
+  if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
+  const rel = file.slice(root.length + 1).replace(/\\/g, '/');
+  if (/list\/browse\/browseListRouting/.test(readFileSync(file, 'utf8'))) {
+    exploreImportsBrowseListRouting.push(rel);
+  }
+}
+
+const exploreSearchMapHandoffViolations = [];
+for (const file of walkFiles(join(feSrc, 'explore/search'))) {
+  if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
+  const rel = file.slice(root.length + 1).replace(/\\/g, '/');
+  if (/browseListMapHandoff/.test(readFileSync(file, 'utf8'))) {
+    exploreSearchMapHandoffViolations.push(rel);
+  }
+}
+
+const exploreUrlSpineGeoViolations = [];
+for (const rel of ['src/explore/exploreBrowseUrlHydrate.ts', 'src/explore/exploreBrowseUrlSync.ts']) {
+  const file = join(root, rel);
+  if (!existsSync(file)) continue;
+  const text = readFileSync(file, 'utf8');
+  if (/list\/browse\/browseGeoPath/.test(text)) exploreUrlSpineGeoViolations.push(rel);
+}
 
 const baseline = {
   version: 1,
@@ -157,6 +251,24 @@ const baseline = {
       configImportList: configImportsBrowseListUrlState,
       browseListUrlStateImportsOutsideListBrowse: browseListUrlStateImportViolations.length,
       browseListUrlStateImportViolations,
+      listBrowseSpineImportsViaUrlStateReexport: listBrowseSpineFromUrlStateReexport.length,
+      listBrowseSpineImportViolations: listBrowseSpineFromUrlStateReexport,
+      browseListUrlStateReexportsSpineKeys,
+      exploreUrlSpineImportsBrowseGeoPath: exploreUrlSpineGeoViolations.length,
+      exploreUrlSpineGeoViolations,
+      exploreSearchImportsBrowseListMapHandoff: exploreSearchMapHandoffViolations.length,
+      exploreSearchMapHandoffViolations,
+      exploreImportsBrowseListRouting: exploreImportsBrowseListRouting.length,
+      exploreBrowseListRoutingViolations: exploreImportsBrowseListRouting,
+      configGeoImportsBrowseListRouting: w4jBrowseListRoutingViolations.length,
+      configGeoBrowseListRoutingViolations: w4jBrowseListRoutingViolations,
+      consumerImportsBrowseListRoutingOutsideList: consumerBrowseListRoutingViolations.length,
+      consumerBrowseListRoutingViolations,
+      discoverySessionBarrelExists: existsSync(join(feSrc, 'discovery/discoverySession.ts')),
+      exploreBrowseSpineUsesDiscoverySessionBarrel: exploreBrowseSpineBarrelViolations.length === 0,
+      exploreBrowseSpineBarrelViolations,
+      exploreSplitDiscoveryFacadeImports: exploreSplitFacadeViolations.length,
+      exploreSplitFacadeViolations,
     },
     w6: {
       pagesUsingUseSafeAsyncEffect: useSafeAsyncEffectPages.length,
@@ -183,6 +295,33 @@ const baseline = {
     ...(useSafeAsyncEffectHookExists ? ['W6d: delete src/hooks/useSafeAsyncEffect.ts after MIG-CLIENT-QUERY'] : []),
     ...(browseListUrlStateImportViolations.length > 0
       ? ['W4d: import browseListUrlState only from list/browse or discoverySessionListUrl facade']
+      : []),
+    ...(listBrowseSpineFromUrlStateReexport.length > 0
+      ? ['W4e: list/browse must import spine keys from discoverySessionParams/Parsers']
+      : []),
+    ...(browseListUrlStateReexportsSpineKeys
+      ? ['W4f: stop re-exporting spine keys from browseListUrlState — use discoverySessionListUrl']
+      : []),
+    ...(exploreUrlSpineGeoViolations.length > 0
+      ? ['W4g: explore browse URL hydrate/sync import geo via discoverySessionGeoUrl']
+      : []),
+    ...(exploreSearchMapHandoffViolations.length > 0
+      ? ['W4h: explore/search uses discoverySessionMapHandoff for list state scoping']
+      : []),
+    ...(exploreImportsBrowseListRouting.length > 0
+      ? ['W4i: explore imports /list routing via discoverySessionListRouting']
+      : []),
+    ...(w4jBrowseListRoutingViolations.length > 0
+      ? ['W4j: routingCatalog + GeoBrowsePane use discoverySessionListRouting']
+      : []),
+    ...(consumerBrowseListRoutingViolations.length > 0
+      ? ['W4k: list/browse routing only in list|my-crew — use discoverySession* facades elsewhere']
+      : []),
+    ...(exploreBrowseSpineBarrelViolations.length > 0
+      ? ['W4l: explore browse URL spine imports discoverySession barrel']
+      : []),
+    ...(exploreSplitFacadeViolations.length > 0
+      ? ['W4m: explore imports discoverySession barrel only']
       : []),
     ...(exploreImportsBrowseListUrlState.length > 0
       ? ['W4: import discovery params from src/discovery/discoverySessionParams.ts not list/']

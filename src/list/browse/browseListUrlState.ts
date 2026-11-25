@@ -52,14 +52,8 @@ import {
   serializeBrowseGeoPath,
 } from './browseGeoPath';
 import { listFilterMeansAvailabilityOnly } from '../../routing/productUrlInbound';
-import {
-  BROWSE_DISCOVER_PARAM,
-  LIST_CAT_PARAM,
-  parseBrowseDiscoverOpen,
-} from '../../discovery/discoverySessionParams';
+import { LIST_CAT_PARAM } from '../../discovery/discoverySessionParams';
 import { parseListCatParam } from '../../discovery/discoverySessionParsers';
-
-export { BROWSE_DISCOVER_PARAM, LIST_CAT_PARAM, parseBrowseDiscoverOpen, parseListCatParam };
 
 const WHEN_PARAM = 'when';
 

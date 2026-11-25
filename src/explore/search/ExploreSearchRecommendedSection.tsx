@@ -6,7 +6,7 @@ import { useExploreMap } from '../../hooks/useExploreMap';
 import { useDisplayPreferences } from '../../preferences/useDisplayPreferences';
 import { BrowseCompactRow } from '../../list/browse/BrowseCompactRow';
 import type { BrowseListFilterState } from '../../list/browse/browseListFilters';
-import { scopeBrowseListStateForListCat } from '../../list/browse/browseListMapHandoff';
+import { scopeBrowseListStateForListCat } from '../../discovery/discoverySession';
 import {
   exploreSearchTripRelaxationCopy,
   resolveExploreSearchJoinableTripCards,

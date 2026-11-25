@@ -6,7 +6,7 @@ import { useMinWidthMd } from '../hooks/useMinWidthMd';
 import { countExploreSearchScopes } from '../explore/exploreSearchMatches';
 import { Link } from 'react-router-dom';
 import { explorePath } from '../explore/routing';
-import { listDiscoveryPath } from '../list/browse/browseListRouting';
+import { listDiscoveryPath } from '../discovery/discoverySession';
 import { buildListFeedCards } from '../list/browse/buildListFeedCards';
 import {
   cardMatchesBrowsePrice,
