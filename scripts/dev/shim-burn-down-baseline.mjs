@@ -303,6 +303,17 @@ for (const sub of ['explore/ui/peek', 'explore/ui/map-peek']) {
   }
 }
 
+const exploreListQuickFilterImportRe =
+  /list\/browse\/(?:browseListBucket|browseListTripTopics|listVenuePlaceTopics|listQuickFilterPills|listBrowseFilterModal)/;
+const exploreImportsBrowseListQuickFilters = [];
+for (const file of walkFiles(join(feSrc, 'explore'))) {
+  if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
+  const rel = file.slice(root.length + 1).replace(/\\/g, '/');
+  if (exploreListQuickFilterImportRe.test(readFileSync(file, 'utf8'))) {
+    exploreImportsBrowseListQuickFilters.push(rel);
+  }
+}
+
 const exploreImportsBrowseGeoOrCopy = [];
 for (const file of walkFiles(join(feSrc, 'explore'))) {
   if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
@@ -433,6 +444,8 @@ const baseline = {
       exploreBrowseListFeedViolations: exploreImportsBrowseListFeed,
       exploreImportsListPeek: exploreImportsListPeek.length,
       exploreListPeekViolations: exploreImportsListPeek,
+      exploreImportsBrowseListQuickFilters: exploreImportsBrowseListQuickFilters.length,
+      exploreBrowseListQuickFilterViolations: exploreImportsBrowseListQuickFilters,
     },
     w6: {
       pagesUsingUseSafeAsyncEffect: useSafeAsyncEffectPages.length,
@@ -522,6 +535,9 @@ const baseline = {
       : []),
     ...(exploreImportsListPeek.length > 0
       ? ['W7b: explore map peek imports list chrome via discoverySessionListPeek']
+      : []),
+    ...(exploreImportsBrowseListQuickFilters.length > 0
+      ? ['W8: explore imports list quick filters via discoverySessionListQuickFilters']
       : []),
     ...(exploreImportsBrowseListUrlState.length > 0
       ? ['W4: import discovery params from src/discovery/discoverySessionParams.ts not list/']

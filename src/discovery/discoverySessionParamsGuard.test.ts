@@ -268,6 +268,17 @@ describe('discoverySessionParamsGuard', () => {
     expect(read('src/discovery/discoverySession.ts')).toMatch(/discoverySessionListFeed/);
   });
 
+  it('W8 explore imports list quick filters via discoverySession barrel', () => {
+    const quickFilterImport =
+      /list\/browse\/(?:browseListBucket|browseListTripTopics|listVenuePlaceTopics|listQuickFilterPills|listBrowseFilterModal)/;
+    const violations: string[] = [];
+    for (const rel of collectProdTsUnder(join(ROOT, 'src/explore'))) {
+      if (quickFilterImport.test(read(rel))) violations.push(rel);
+    }
+    expect(violations).toEqual([]);
+    expect(read('src/discovery/discoverySession.ts')).toMatch(/discoverySessionListQuickFilters/);
+  });
+
   it('W4m explore tree uses discoverySession barrel (no split facade imports)', () => {
     const splitFacade =
       /from ['"][^'"]*discovery\/discoverySession(?:Params|Parsers|ListUrl|GeoUrl|MapHandoff|ListRouting)['"]/;

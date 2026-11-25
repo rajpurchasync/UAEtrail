@@ -1,6 +1,6 @@
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
 import { exploreActivityDatePresetLabel } from '../exploreActivityDateFilter';
-import { LIST_BROWSE_DATE_FILTER_OPTIONS } from '../../list/browse/listBrowseFilterModal';
+import { LIST_BROWSE_DATE_FILTER_OPTIONS } from '../../discovery/discoverySession';
 
 export const exploreSearchWhenSummary = (preset: ExploreActivityDatePreset): string => {
   const fromList = LIST_BROWSE_DATE_FILTER_OPTIONS.find((option) => option.value === preset);

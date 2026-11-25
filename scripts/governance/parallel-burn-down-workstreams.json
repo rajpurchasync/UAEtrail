@@ -113,7 +113,22 @@
         "src/config/memberAvailabilityLineageGuard.test.ts"
       ],
       "avoid": ["src/discovery/**"]
+    },
+    {
+      "id": "W8",
+      "status": "done",
+      "title": "discoverySession list quick filters (explore map + search pick sheets)",
+      "branch": "burn-down/w8-list-quick-filters",
+      "owns": [
+        "src/discovery/discoverySessionListQuickFilters.ts",
+        "src/explore/ui/exploreMapQuickFiltersState.ts",
+        "src/explore/ui/ExploreMapMobileLayerChrome.tsx",
+        "src/explore/ui/ExploreOptionalFilterRow.tsx",
+        "src/explore/search/exploreSearchWhenLabel.ts",
+        "src/explore/search/ExploreSearchPickSheets.tsx"
+      ],
+      "avoid": ["src/list/explorer/**"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b"]
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8"]
 }

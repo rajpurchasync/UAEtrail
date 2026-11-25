@@ -146,7 +146,8 @@ describe('listBrowseNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/list/browse/listQuickFilterPills.ts'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/list/browseListCopy.ts'))).toBe(false);
     expect(read('src/list/shell/useListDiscoveryBrowseUrlModel.ts')).toMatch(/browse\/browseListCopy/);
-    expect(read('src/explore/ui/ExploreOptionalFilterRow.tsx')).toMatch(/browse\/listQuickFilterPills/);
+    expect(read('src/explore/ui/ExploreOptionalFilterRow.tsx')).toMatch(/discovery\/discoverySession'/);
+    expect(read('src/explore/ui/ExploreOptionalFilterRow.tsx')).not.toMatch(/browse\/listQuickFilterPills/);
   });
 
   it('BROWSE-NAME-01q: people list URL + browse filter modal live under browse', () => {

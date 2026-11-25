@@ -59,6 +59,13 @@ export type {
   BrowseWhenFilter,
 } from './discoverySessionListFilters';
 export { filterExploreMapItemsForList } from './discoverySessionListFilters';
+export type { BrowseListBucket, BrowseTripTopicKey, ListVenuePlaceTopicKey } from './discoverySessionListQuickFilters';
+export {
+  LIST_BROWSE_DATE_FILTER_OPTIONS,
+  LIST_QUICK_FILTER_REGION_LABEL,
+  LIST_QUICK_TRIP_TOPIC_PILLS,
+  LIST_QUICK_VENUE_TOPIC_PILLS,
+} from './discoverySessionListQuickFilters';
 export {
   BROWSE_CARD_CHIP,
   BrowseCompactRow,

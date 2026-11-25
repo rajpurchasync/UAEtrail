@@ -72,7 +72,9 @@
       "exploreImportsBrowseListFeed": 0,
       "exploreBrowseListFeedViolations": [],
       "exploreImportsListPeek": 0,
-      "exploreListPeekViolations": []
+      "exploreListPeekViolations": [],
+      "exploreImportsBrowseListQuickFilters": 0,
+      "exploreBrowseListQuickFilterViolations": []
     },
     "w6": {
       "pagesUsingUseSafeAsyncEffect": 0,

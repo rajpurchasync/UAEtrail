@@ -1,7 +1,7 @@
 import { Check } from 'lucide-react';
 import { ConsumerBottomSheet } from '../../components/mobile/ConsumerBottomSheet';
 import { useExploreRegionPillOptions } from '../../config/useExploreRegionPillOptions';
-import { LIST_BROWSE_DATE_FILTER_OPTIONS } from '../../list/browse/listBrowseFilterModal';
+import { LIST_BROWSE_DATE_FILTER_OPTIONS } from '../../discovery/discoverySession';
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
 import { EXPLORE_BOOKING_SEARCH_PICK_SHEET_Z } from '../../config/exploreTheme';
 

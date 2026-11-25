@@ -5,9 +5,11 @@ import {
 } from '@/crew-discovery/crewBrowseState';
 import { DEFAULT_CREW_PEOPLE_SURFACE_WIRE } from '@/crew-discovery/crewPeopleSurface';
 import type { PlaceKind } from '@uaetrail/shared-types';
-import type { BrowseListFilterState } from '../../discovery/discoverySession';
-import type { BrowseListBucket } from '../../list/browse/browseListBucket';
-import type { ListVenuePlaceTopicKey } from '../../list/browse/listVenuePlaceTopics';
+import type {
+  BrowseListBucket,
+  BrowseListFilterState,
+  ListVenuePlaceTopicKey,
+} from '../../discovery/discoverySession';
 import type { ExploreActivityDatePreset, ExplorePanel } from '../routing';
 import type { PlaceMapTopicKey, TripMapTopicKey } from '../exploreMapQuickTopicFilters';
 import { aliasPlaceMapTopicToList, type ExplorePriceFilter } from '../exploreOptionalFilters';
