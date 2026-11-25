@@ -1,5 +1,5 @@
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import type { BrowseListFilterState } from '../../list/browse/browseListFilters';
+import type { BrowseListFilterState } from '../../discovery/discoverySession';
 import { browseCardDateIso } from '../../list/browse/browseCardMeta';
 import { sortBrowseListCards } from '../../list/browse/listBrowseSort';
 import { todayIso } from '../exploreActivityDateFilter';

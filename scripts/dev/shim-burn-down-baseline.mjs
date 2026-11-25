@@ -250,6 +250,24 @@ for (const file of walkFiles(join(feSrc, 'explore'))) {
   }
 }
 
+const exploreImportsBrowseListFilters = [];
+for (const file of walkFiles(join(feSrc, 'explore'))) {
+  if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
+  const rel = file.slice(root.length + 1).replace(/\\/g, '/');
+  if (/list\/browse\/browseListFilters/.test(readFileSync(file, 'utf8'))) {
+    exploreImportsBrowseListFilters.push(rel);
+  }
+}
+
+const exploreImportsListChromeTheme = [];
+for (const file of walkFiles(join(feSrc, 'explore'))) {
+  if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
+  const rel = file.slice(root.length + 1).replace(/\\/g, '/');
+  if (/list\/browse\/listChromeTheme/.test(readFileSync(file, 'utf8'))) {
+    exploreImportsListChromeTheme.push(rel);
+  }
+}
+
 const exploreImportsBrowseGeoOrCopy = [];
 for (const file of walkFiles(join(feSrc, 'explore'))) {
   if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
@@ -371,6 +389,10 @@ const baseline = {
       exploreBrowseGeoOrCopyViolations: exploreImportsBrowseGeoOrCopy,
       exploreImportsBrowseListHooks: exploreImportsBrowseListHooks.length,
       exploreBrowseListHooksViolations: exploreImportsBrowseListHooks,
+      exploreImportsBrowseListFilters: exploreImportsBrowseListFilters.length,
+      exploreBrowseListFiltersViolations: exploreImportsBrowseListFilters,
+      exploreImportsListChromeTheme: exploreImportsListChromeTheme.length,
+      exploreListChromeThemeViolations: exploreImportsListChromeTheme,
     },
     w6: {
       pagesUsingUseSafeAsyncEffect: useSafeAsyncEffectPages.length,
@@ -448,6 +470,12 @@ const baseline = {
       : []),
     ...(exploreImportsBrowseListHooks.length > 0
       ? ['W4s: explore imports list browse hooks via discoverySessionListHooks']
+      : []),
+    ...(exploreImportsBrowseListFilters.length > 0
+      ? ['W4t: explore imports browse list filter types via discoverySessionListFilters']
+      : []),
+    ...(exploreImportsListChromeTheme.length > 0
+      ? ['W4u: explore imports list chrome via discoverySessionListChrome']
       : []),
     ...(exploreImportsBrowseListUrlState.length > 0
       ? ['W4: import discovery params from src/discovery/discoverySessionParams.ts not list/']

@@ -5,8 +5,10 @@ import { useAuth } from '../../context/AuthContext';
 import { useExploreMap } from '../../hooks/useExploreMap';
 import { useDisplayPreferences } from '../../preferences/useDisplayPreferences';
 import { BrowseCompactRow } from '../../list/browse/BrowseCompactRow';
-import type { BrowseListFilterState } from '../../list/browse/browseListFilters';
-import { scopeBrowseListStateForListCat } from '../../discovery/discoverySession';
+import {
+  scopeBrowseListStateForListCat,
+  type BrowseListFilterState,
+} from '../../discovery/discoverySession';
 import {
   exploreSearchTripRelaxationCopy,
   resolveExploreSearchJoinableTripCards,

@@ -1,7 +1,10 @@
 import { useMemo } from 'react';
 import { useProductSearchParams } from '../../routing/useEffectiveLocation';
-import type { BrowseListFilterState } from '../../list/browse/browseListFilters';
-import { useBrowseGeoScopeHydration, useBrowseListFeed } from '../../discovery/discoverySession';
+import {
+  useBrowseGeoScopeHydration,
+  useBrowseListFeed,
+  type BrowseListFilterState,
+} from '../../discovery/discoverySession';
 import {
   parseBrowseListFilterState,
   parseBrowseListGeoPath,

@@ -4,9 +4,9 @@ import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { buildListFeedCards } from '../../list/browse/buildListFeedCards';
 import {
   filterExploreMapItemsForList,
+  resolveEffectiveBrowseVenueRegions,
   type BrowseListFilterState,
-} from '../../list/browse/browseListFilters';
-import { resolveEffectiveBrowseVenueRegions } from '../../discovery/discoverySession';
+} from '../../discovery/discoverySession';
 import { sortBrowseListCards } from '../../list/browse/listBrowseSort';
 import { exploreSearchWhereBrowseQuery } from './exploreSearchWhereQuery';
 import {

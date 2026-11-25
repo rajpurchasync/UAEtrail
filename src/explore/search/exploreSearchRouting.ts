@@ -1,7 +1,7 @@
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
 import { parseExploreActivityDatePreset, serializeExploreActivityDatePreset } from '../routing';
 import { parseExplorePriceFilter, type ExplorePriceFilter } from '../exploreOptionalFilters';
-import type { BrowseMainCategoryKey } from '../../discovery/discoverySession';
+import type { BrowseListFilterState, BrowseMainCategoryKey } from '../../discovery/discoverySession';
 import {
   LIST_CAT_PARAM,
   parseBrowseListFilterState,
@@ -244,7 +244,7 @@ export const exploreSearchListPathFromMapSearch = (search: string): string => {
 
 export const exploreSearchJoinListFilters = (
   state: ExploreSearchBrowseState
-): Omit<import('../../list/browse/browseListFilters').BrowseListFilterState, 'categories'> => ({
+): Omit<BrowseListFilterState, 'categories'> => ({
   query: state.query,
   tripTopics: [],
   tripAvailabilityOnly: false,

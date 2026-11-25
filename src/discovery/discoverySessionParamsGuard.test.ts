@@ -68,6 +68,16 @@ describe('discoverySessionParamsGuard', () => {
     }
   });
 
+  it('W4t explore filter types import via discoverySession barrel', () => {
+    const filterImport = /list\/browse\/browseListFilters/;
+    const violations: string[] = [];
+    for (const rel of collectProdTsUnder(join(ROOT, 'src/explore'))) {
+      if (filterImport.test(read(rel))) violations.push(rel);
+    }
+    expect(violations).toEqual([]);
+    expect(read('src/discovery/discoverySession.ts')).toMatch(/discoverySessionListFilters/);
+  });
+
   it('W4s explore imports list hooks via discoverySession barrel', () => {
     const hookImport =
       /list\/browse\/(?:useBrowseGeoScopeHydration|useBrowseListFeed|useBrowseViewerLocation|viewerLocationStorage)/;

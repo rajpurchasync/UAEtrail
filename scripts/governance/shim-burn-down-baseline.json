@@ -63,7 +63,11 @@
       "exploreImportsBrowseGeoOrCopy": 0,
       "exploreBrowseGeoOrCopyViolations": [],
       "exploreImportsBrowseListHooks": 0,
-      "exploreBrowseListHooksViolations": []
+      "exploreBrowseListHooksViolations": [],
+      "exploreImportsBrowseListFilters": 0,
+      "exploreBrowseListFiltersViolations": [],
+      "exploreImportsListChromeTheme": 0,
+      "exploreListChromeThemeViolations": []
     },
     "w6": {
       "pagesUsingUseSafeAsyncEffect": 0,

@@ -5,7 +5,7 @@ import {
 } from '@/crew-discovery/crewBrowseState';
 import { DEFAULT_CREW_PEOPLE_SURFACE_WIRE } from '@/crew-discovery/crewPeopleSurface';
 import type { PlaceKind } from '@uaetrail/shared-types';
-import type { BrowseListFilterState } from '../../list/browse/browseListFilters';
+import type { BrowseListFilterState } from '../../discovery/discoverySession';
 import type { BrowseListBucket } from '../../list/browse/browseListBucket';
 import type { ListVenuePlaceTopicKey } from '../../list/browse/listVenuePlaceTopics';
 import type { ExploreActivityDatePreset, ExplorePanel } from '../routing';
