@@ -207,7 +207,9 @@ describe('shimInventoryGuard (repo-wide coherence)', () => {
     const usesBrowseSort = (rel: string) => {
       const content = read(rel);
       return (
-        /list\/browse\/listBrowseSort/.test(content) || /from ['"].*browse\/listBrowseSort['"]/.test(content)
+        /list\/browse\/listBrowseSort/.test(content) ||
+        /from ['"].*browse\/listBrowseSort['"]/.test(content) ||
+        (/discovery\/discoverySession['"]/.test(content) && /sortBrowseListCards/.test(content))
       );
     };
     expect(usesBrowseSort('src/explore/search/exploreSearchJoinablePools.ts')).toBe(true);

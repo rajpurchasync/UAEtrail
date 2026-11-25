@@ -70,7 +70,24 @@
       "branch": "main",
       "owns": [],
       "note": "Pushed 17 commits 58ec09d7..25027758 to https://github.com/uaetrail/main.git (origin main)"
+    },
+    {
+      "id": "W7a",
+      "status": "done",
+      "title": "discoverySession list feed facade (explore search + map rows)",
+      "branch": "burn-down/w7a-list-feed",
+      "owns": [
+        "src/discovery/discoverySessionListFeed.ts",
+        "src/discovery/discoverySession.ts",
+        "src/explore/ui/ExploreMapRecommendationRow.tsx",
+        "src/explore/search/exploreSearchUpcomingTrips.ts",
+        "src/explore/search/exploreSearchJoinablePools.ts",
+        "src/explore/search/ExploreSearchRecommendedSection.tsx",
+        "scripts/dev/shim-burn-down-baseline.mjs",
+        "src/discovery/discoverySessionParamsGuard.test.ts"
+      ],
+      "avoid": ["**/listPeek*", "**/browsePeek*", "src/list/browse/*Peek*", "src/explore/ui/peek/**", "src/explore/ui/map-peek/**"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push"]
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7a"]
 }

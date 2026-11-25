@@ -235,6 +235,19 @@ describe('discoverySessionParamsGuard', () => {
     expect(read('src/explore/exploreBrowseUrlSync.ts')).toMatch(/discovery\/discoverySession'/);
   });
 
+  it('W7a explore (non-peek) imports list feed via discoverySession barrel', () => {
+    const feedImport =
+      /list\/browse\/(?:buildListFeedCards|listBrowseSort|BrowseCompactRow|browseCardMeta|browseCardChrome)/;
+    const peekPrefix = /^src\/explore\/ui\/(?:peek|map-peek)\//;
+    const violations: string[] = [];
+    for (const rel of collectProdTsUnder(join(ROOT, 'src/explore'))) {
+      if (peekPrefix.test(rel)) continue;
+      if (feedImport.test(read(rel))) violations.push(rel);
+    }
+    expect(violations).toEqual([]);
+    expect(read('src/discovery/discoverySession.ts')).toMatch(/discoverySessionListFeed/);
+  });
+
   it('W4m explore tree uses discoverySession barrel (no split facade imports)', () => {
     const splitFacade =
       /from ['"][^'"]*discovery\/discoverySession(?:Params|Parsers|ListUrl|GeoUrl|MapHandoff|ListRouting)['"]/;

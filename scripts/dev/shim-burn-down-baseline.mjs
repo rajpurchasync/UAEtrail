@@ -274,6 +274,19 @@ for (const file of walkFiles(join(feSrc, 'explore'))) {
   }
 }
 
+const exploreListFeedImportRe =
+  /list\/browse\/(?:buildListFeedCards|listBrowseSort|BrowseCompactRow|browseCardMeta|browseCardChrome)/;
+const exploreMapPeekPathRe = /^src\/explore\/ui\/(?:peek|map-peek)\//;
+const exploreImportsBrowseListFeed = [];
+for (const file of walkFiles(join(feSrc, 'explore'))) {
+  if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
+  const rel = file.slice(root.length + 1).replace(/\\/g, '/');
+  if (exploreMapPeekPathRe.test(rel)) continue;
+  if (exploreListFeedImportRe.test(readFileSync(file, 'utf8'))) {
+    exploreImportsBrowseListFeed.push(rel);
+  }
+}
+
 const exploreImportsBrowseGeoOrCopy = [];
 for (const file of walkFiles(join(feSrc, 'explore'))) {
   if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
@@ -400,6 +413,8 @@ const baseline = {
       exploreBrowseListFiltersViolations: exploreImportsBrowseListFilters,
       exploreImportsListChromeTheme: exploreImportsListChromeTheme.length,
       exploreListChromeThemeViolations: exploreImportsListChromeTheme,
+      exploreImportsBrowseListFeed: exploreImportsBrowseListFeed.length,
+      exploreBrowseListFeedViolations: exploreImportsBrowseListFeed,
     },
     w6: {
       pagesUsingUseSafeAsyncEffect: useSafeAsyncEffectPages.length,
@@ -483,6 +498,9 @@ const baseline = {
       : []),
     ...(exploreImportsListChromeTheme.length > 0
       ? ['W4u: explore imports list chrome via discoverySessionListChrome']
+      : []),
+    ...(exploreImportsBrowseListFeed.length > 0
+      ? ['W7a: explore imports list feed rows via discoverySessionListFeed (map peek exempt)']
       : []),
     ...(exploreImportsBrowseListUrlState.length > 0
       ? ['W4: import discovery params from src/discovery/discoverySessionParams.ts not list/']

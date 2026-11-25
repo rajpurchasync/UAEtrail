@@ -2,9 +2,13 @@ import { Clock, MapPin } from 'lucide-react';
 import type { DiscoverRecommendationSignal } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { SecureAvatar } from '../../components/ui/SecureAvatar';
-import { browseCardMeta, browseCardTitle, browseRowWhenDisplay } from '../../list/browse/browseCardMeta';
+import {
+  BROWSE_CARD_CHIP,
+  browseCardMeta,
+  browseCardTitle,
+  browseRowWhenDisplay,
+} from '../../discovery/discoverySession';
 import { EXPLORE_TYPE } from '../../config/exploreTheme';
-import { BROWSE_CARD_CHIP } from '../../list/browse/browseCardChrome';
 import { MapPeekThumbColumn } from './peek/shared/MapPeekThumbColumn';
 import { RecommendationSignalChips } from './RecommendationSignalChips';
 

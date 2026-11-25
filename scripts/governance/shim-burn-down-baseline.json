@@ -68,7 +68,9 @@
       "exploreImportsBrowseListFilters": 0,
       "exploreBrowseListFiltersViolations": [],
       "exploreImportsListChromeTheme": 0,
-      "exploreListChromeThemeViolations": []
+      "exploreListChromeThemeViolations": [],
+      "exploreImportsBrowseListFeed": 0,
+      "exploreBrowseListFeedViolations": []
     },
     "w6": {
       "pagesUsingUseSafeAsyncEffect": 0,

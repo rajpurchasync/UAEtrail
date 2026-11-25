@@ -4,8 +4,8 @@ import type { ExploreSearchScope } from './exploreSearchRouting';
 import { useAuth } from '../../context/AuthContext';
 import { useExploreMap } from '../../hooks/useExploreMap';
 import { useDisplayPreferences } from '../../preferences/useDisplayPreferences';
-import { BrowseCompactRow } from '../../list/browse/BrowseCompactRow';
 import {
+  BrowseCompactRow,
   scopeBrowseListStateForListCat,
   type BrowseListFilterState,
 } from '../../discovery/discoverySession';

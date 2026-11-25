@@ -1,13 +1,13 @@
 import { setExploreClockStyle, type ExploreClockStyle } from '@uaetrail/shared-types';
 import type { DestinationPublicDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import { buildListFeedCards } from '../../list/browse/buildListFeedCards';
 import {
+  buildListFeedCards,
   filterExploreMapItemsForList,
   resolveEffectiveBrowseVenueRegions,
+  sortBrowseListCards,
   type BrowseListFilterState,
 } from '../../discovery/discoverySession';
-import { sortBrowseListCards } from '../../list/browse/listBrowseSort';
 import { exploreSearchWhereBrowseQuery } from './exploreSearchWhereQuery';
 import {
   EXPLORE_SEARCH_HOME_UPCOMING_LIMIT,
