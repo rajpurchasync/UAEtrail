@@ -18,6 +18,9 @@ const main = async (): Promise<void> => {
   const uri = env.MONGODB_URI;
   console.log(`[check] Mongo target: ${redactMongoUri(uri)}`);
   console.log(`[check] Code expects migration version: ${CODE_VERSION}`);
+  console.log(
+    `[check] Destinations store: COLLECTIONS.DESTINATIONS -> "${COLLECTIONS.DESTINATIONS}" (logical name; optional physical rename deferred)`
+  );
 
   const client = new MongoClient(uri);
   await client.connect();

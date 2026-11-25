@@ -168,7 +168,7 @@ export const listWishlistItemsWithDetails = async (userId: string): Promise<Wish
   const activityIds = [...new Set(wishlistRows.map((f) => f.activityId).filter((id): id is string => Boolean(id)))];
 
   const areasCollection = (): Collection<{ _id: string; slug: string; name: string; imageUrl?: string | null }> =>
-    getMongoClient()!.db().collection(COLLECTIONS.AREAS);
+    getMongoClient()!.db().collection(COLLECTIONS.DESTINATIONS);
 
   const [locationDocs, areaDocs, activityDocs] = await Promise.all([
     locationIds.length > 0

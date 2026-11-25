@@ -132,6 +132,13 @@ describe('geographyTerminologyGuard (Place · Facility · Area)', () => {
     expect(read('packages/shared-types/src/wire-lexicon.ts')).toMatch(/BWL_CATALOG_GEO_FIELDS/);
   });
 
+  it('GEO-13: Mongo destinations alias documented in collections + BWL (Phase C)', () => {
+    expect(read('apps/api/src/lib/collections.ts')).toMatch(/DESTINATIONS: 'areas'/);
+    expect(read('apps/api/tests/destination-storage-guard.test.ts')).toMatch(
+      /destination storage guard/
+    );
+  });
+
   it('GEO-12: public catalog routes call normalizers, not inline alias merge (Phase B)', () => {
     expect(read('apps/api/src/routes/user/registerPublicPlaceRoutes.ts')).toMatch(
       /normalizePlaceCatalogQuery/

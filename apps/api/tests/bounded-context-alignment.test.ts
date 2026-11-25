@@ -57,6 +57,8 @@ describe('boundedContextAlignment (API + manifest)', () => {
     expect(collections).toMatch(/ACTIVITIES/);
     expect(collections).toMatch(/PARTICIPANT_INTENTS/);
     expect(collections).toMatch(/USER_BADGES/);
+    expect(collections).toMatch(/DESTINATIONS: 'areas'/);
+    expect(collections).toMatch(/AREAS: 'areas'/);
   });
 
   it('user route registrars follow register* surface-first modules (no orphan handlers)', () => {

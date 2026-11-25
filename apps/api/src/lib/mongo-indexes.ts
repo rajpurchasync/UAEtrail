@@ -47,7 +47,7 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { tenantId: 1, userId: 1 }, unique: true },
       { key: { userId: 1 } }
     ]),
-    db.collection(COLLECTIONS.AREAS).createIndexes([
+    db.collection(COLLECTIONS.DESTINATIONS).createIndexes([
       { key: { slug: 1 }, unique: true },
       { key: { status: 1, priority: 1 } },
     ]),

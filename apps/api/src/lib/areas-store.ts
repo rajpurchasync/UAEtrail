@@ -21,7 +21,7 @@ type MongoAreaDoc = {
 };
 
 const collection = (): Collection<MongoAreaDoc> =>
-  getMongoClient()!.db().collection<MongoAreaDoc>(COLLECTIONS.AREAS);
+  getMongoClient()!.db().collection<MongoAreaDoc>(COLLECTIONS.DESTINATIONS);
 
 const mapAreaDto = (doc: MongoAreaDoc): AreaDTO => ({
   id: doc._id,

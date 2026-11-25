@@ -201,7 +201,7 @@ export const seedGeoNodesFromCatalog = async (db: Db): Promise<void> => {
   }
 
   const areas = await db
-    .collection(COLLECTIONS.AREAS)
+    .collection(COLLECTIONS.DESTINATIONS)
     .find({ status: 'published' })
     .toArray();
   for (const [i, area] of areas.entries()) {
@@ -525,7 +525,7 @@ const demoteLegacyAlAinState = async (db: Db, countryId: string): Promise<number
     { $set: { status: 'hidden', kind: 'state', updatedAt: new Date() } }
   );
 
-  await db.collection(COLLECTIONS.AREAS).updateMany(
+  await db.collection(COLLECTIONS.DESTINATIONS).updateMany(
     { region: { $in: ['Al Ain', 'al ain', 'alain'] } },
     { $set: { region: 'Abu Dhabi' } }
   );

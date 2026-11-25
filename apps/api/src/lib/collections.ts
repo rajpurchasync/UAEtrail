@@ -28,9 +28,14 @@ export const COLLECTIONS = {
   /** Fire-and-forget partner / referral outbound clicks (commercial facilities). */
   REFERRAL_CLICKS: 'referral_clicks',
   LOCATION_UNLOCKS: 'location_unlocks',
-  AREAS: 'areas',
-  /** MIG-DESTINATION-GEO — logical name; physical `areas` until optional rename. */
+  /**
+   * Logical destinations (MIG-DESTINATION-GEO). Physical Mongo collection stays `areas`;
+   * document ids remain `area-seed-*`. Prefer this key in new read/write paths.
+   * @see BWL_COLLECTIONS.DESTINATIONS in `packages/shared-types/src/wire-lexicon.ts`
+   */
   DESTINATIONS: 'areas',
+  /** @deprecated Use {@link COLLECTIONS.DESTINATIONS} — same physical name until optional rename. */
+  AREAS: 'areas',
   GEO_NODES: 'geo_nodes',
   GEO_STATS: 'geo_stats',
   GEO_OUTBOX: 'geo_outbox',
