@@ -30,7 +30,7 @@ describe('GET /places/:id/track (public track preview)', () => {
       images: ['https://example.com/trail-track.jpg'],
       tags: [],
       registryListed: true,
-      areaId: 'area-test-dubai',
+      destinationId: 'area-test-dubai',
       description: 'Contract place for public track preview.',
       gpxKey: 'places/test-route.gpx',
     });

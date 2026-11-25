@@ -45,7 +45,13 @@ export const registerPublicFacilityRoutes = (router: Router): void => {
     async (req, res, next) => {
       try {
         const filters = req.query as z.infer<typeof facilityCatalogQuerySchema>;
-        const data = await buildFacilityCatalog(filters as FacilityCatalogQuery);
+        const data = await buildFacilityCatalog({
+          destinationId: filters.destinationId ?? filters.areaId,
+          onSiteId: filters.onSiteId ?? filters.parentPlaceId,
+          facilityKind: filters.facilityKind as FacilityCatalogQuery['facilityKind'],
+          countryCode: filters.countryCode,
+          purpose: filters.purpose,
+        });
         res.json({ data });
       } catch (error) {
         next(error);

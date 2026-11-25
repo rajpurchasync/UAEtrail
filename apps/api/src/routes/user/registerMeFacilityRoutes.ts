@@ -7,6 +7,8 @@ import { submitMyFacility } from '../../services/me-facility-submit-commands.js'
 
 const facilitySubmitBodySchema = locationSubmitBodySchema
   .extend({
+    onSiteId: z.string().min(1).max(80).optional(),
+    /** @deprecated inbound alias — use `onSiteId`. */
     parentPlaceId: z.string().min(1).max(80).optional(),
   })
   .superRefine((body, ctx) => {
@@ -34,6 +36,7 @@ export const registerMeFacilityRoutes = (router: Router): void => {
         const data = await submitMyFacility(req.auth!.userId, {
           ...body,
           facilityKind: body.facilityKind as FacilityKind,
+          onSiteId: body.onSiteId ?? body.parentPlaceId ?? null,
         });
         res.status(201).json({ data });
       } catch (error) {

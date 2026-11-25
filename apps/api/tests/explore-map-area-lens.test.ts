@@ -29,7 +29,7 @@ describe('buildExploreAreaLensItems', () => {
         latitude: 1,
         longitude: 2,
         path: '/activity/1',
-        areaId: testAreas.hatta.id,
+        destinationId: testAreas.hatta.id,
       },
       {
         id: 'venue:1',
@@ -39,7 +39,7 @@ describe('buildExploreAreaLensItems', () => {
         latitude: 1,
         longitude: 2,
         path: '/place/1',
-        areaId: testAreas.hatta.id,
+        destinationId: testAreas.hatta.id,
       },
     ];
 
@@ -62,7 +62,7 @@ describe('buildExploreAreaLensItems', () => {
         latitude: 1,
         longitude: 2,
         path: '/profile/u1',
-        areaId: testAreas.hatta.id,
+        destinationId: testAreas.hatta.id,
       },
       {
         id: 'activity:seek',
@@ -73,7 +73,7 @@ describe('buildExploreAreaLensItems', () => {
         latitude: 1,
         longitude: 2,
         path: '/activity/seek',
-        areaId: testAreas.hatta.id,
+        destinationId: testAreas.hatta.id,
       },
     ];
     const rows = buildExploreAreaLensItems(areas, catalog);
@@ -93,7 +93,7 @@ describe('buildExploreAreaLensItems', () => {
         latitude: 1,
         longitude: 2,
         path: '/facility/1',
-        areaId: testAreas.hatta.id,
+        destinationId: testAreas.hatta.id,
         placeKind: 'toilet',
       },
     ];

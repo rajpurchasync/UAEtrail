@@ -84,7 +84,7 @@ export const buildTestLocationSubmitBody = (
   name: 'Test trail',
   countryCode: 'AE',
   region: 'Dubai',
-  areaId: defaultTestAreaId(),
+  destinationId: defaultTestAreaId(),
   activityType: 'hiking',
   description: 'Integration test trail with enough characters for schema validation.',
   images: ['/media/test.jpg', '/media/test-2.jpg'],
@@ -98,7 +98,7 @@ export const buildTestLocationSubmitBody = (
 
 type TestLocationInput = Parameters<typeof createLocationRecord>[0];
 
-/** Catalog-style location row with `areaId` wired to seeded areas. */
+/** Catalog-style location row with `destinationId` wired to seeded areas. */
 export const createTestLocation = async (
   input: TestLocationInput & { name: string }
 ): Promise<Awaited<ReturnType<typeof createLocationRecord>>> => {
@@ -116,7 +116,7 @@ export const createTestLocation = async (
     tags: [],
     accessibleBy: [],
     status: LocationStatus.ACTIVE,
-    areaId: input.areaId ?? defaultTestAreaId(),
+    destinationId: input.destinationId ?? defaultTestAreaId(),
     ...input,
   });
 };

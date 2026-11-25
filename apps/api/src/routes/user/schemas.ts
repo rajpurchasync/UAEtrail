@@ -330,7 +330,11 @@ export const placeCatalogQuerySchema = placeRegistryQuerySchema.extend({
 });
 
 export const facilityCatalogQuerySchema = z.object({
+  destinationId: z.string().min(1).max(80).optional(),
+  onSiteId: z.string().min(1).max(80).optional(),
+  /** @deprecated inbound alias — use `destinationId`. */
   areaId: z.string().min(1).max(80).optional(),
+  /** @deprecated inbound alias — use `onSiteId`. */
   parentPlaceId: z.string().min(1).max(80).optional(),
   facilityKind: z.enum(FACILITY_KINDS as unknown as [string, ...string[]]).optional(),
   countryCode: z.string().length(2).optional(),

@@ -24,7 +24,7 @@ describe('venue-catalog-enrichment', () => {
     expect(enriched.campingType).toBe('self-guided');
     expect(enriched.maxGroupSize).toBe(12);
     expect(enriched.parkingLat).toBe(25.089);
-    expect(enriched.areaId).toBe(resolveCatalogLocationAreaId('mleiha-desert-camp'));
+    expect(enriched.destinationId).toBe(resolveCatalogLocationAreaId('mleiha-desert-camp'));
     expect(enriched.areaLabel).toBe('Mleiha dunes');
   });
 
@@ -44,6 +44,6 @@ describe('venue-catalog-enrichment', () => {
     expect(seed.duration).toBeGreaterThan(0);
     expect(seed.elevation).toBeGreaterThan(0);
     expect(seed.difficulty).toBeTruthy();
-    expect(seed.areaId).toBeTruthy();
+    expect(seed.destinationId).toBeTruthy();
   });
 });

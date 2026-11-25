@@ -31,7 +31,7 @@ describe('venue-catalog', () => {
     });
     expect(seed.images?.length).toBeGreaterThan(0);
     expect(seed.distance).toBeGreaterThan(0);
-    expect(seed.areaId).toBeTruthy();
+    expect(seed.destinationId).toBeTruthy();
     expect(buildCatalogLocationTags({
       id: 'wadi-al-abadilah',
       name: 'Wadi Shawka Dam Trail',
@@ -62,7 +62,7 @@ describe('venue-catalog', () => {
       externalId: 'jebel-jais-base-camp',
     };
     const merged = overlayCatalogDefaultsOnLocation(sparse);
-    expect(merged.areaId).toBeTruthy();
+    expect(merged.destinationId).toBeTruthy();
     expect(merged.campingType).toBe('self-guided');
     expect(merged.surfaceType).toContain('sand');
     expect(merged.images?.length).toBeGreaterThan(0);

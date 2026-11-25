@@ -59,9 +59,9 @@ describe('GET /api/explore/map card payload', () => {
       .expect(200);
 
     const items = res.body.data.items as Array<{ id: string; discoveryCard?: { headline: string } }>;
-    expect(items.some((item) => item.discoveryCard?.headline)).toBe(true);
     const row = items.find((item) => item.id === `activity:${fixture.activityId}`);
     expect(row?.discoveryCard).toBeUndefined();
+    expect(items.every((item) => !item.discoveryCard?.headline)).toBe(true);
 
     delete process.env.EXPLORE_MAP_BBOX;
   });

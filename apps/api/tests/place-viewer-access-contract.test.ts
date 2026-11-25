@@ -27,7 +27,7 @@ describe('place viewerAccess (CPC-3)', () => {
       images: ['https://example.com/trail-viewer.jpg'],
       tags: [],
       registryListed: true,
-      areaId: 'area-test-dubai',
+      destinationId: 'area-test-dubai',
       description: 'Contract trail for place viewerAccess on public place detail reads.',
     });
 

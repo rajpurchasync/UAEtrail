@@ -27,16 +27,16 @@ describe('facility catalog API (CPC-3)', () => {
       countryCode: 'AE',
       images: ['https://example.com/anchor-trail.jpg'],
       registryListed: true,
-      areaId: 'area-test-dubai',
-      description: 'Anchor place for facility catalog contract test on parentPlaceId reads.',
+      destinationId: 'area-test-dubai',
+      description: 'Anchor place for facility catalog contract test on onSiteId reads.',
     });
 
     const facility = await createFacilityRecord({
       name: `Trail toilet ${suffix}`,
       region: 'Dubai',
-      areaId: 'area-test-dubai',
+      destinationId: 'area-test-dubai',
       facilityKind: 'toilet',
-      parentPlaceId: anchor.id,
+      onSiteId: anchor.id,
       description: 'Public toilet facility linked to the anchor trail for contract coverage.',
       latitude: 25.121,
       longitude: 55.221,

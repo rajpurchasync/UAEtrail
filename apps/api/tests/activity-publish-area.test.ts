@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveAreaIdForActivityPublish } from '../src/lib/area-resolution.js';
+import { resolveAreaIdForActivityPublish as resolveDestinationIdForActivityPublish } from '../src/lib/area-resolution.js';
 import type { MongoActivityDoc } from '../src/lib/entity-builders.js';
 import type { Location } from '../src/domain/types.js';
 
@@ -23,35 +23,39 @@ const baseActivity = (): MongoActivityDoc =>
     priceAed: 0,
   }) as MongoActivityDoc;
 
-describe('resolveAreaIdForActivityPublish', () => {
-  it('prefers place.areaId over legacy activity.areaId', async () => {
-    const activity = { ...baseActivity(), areaId: 'legacy-activity-area' };
-    const location = { areaId: 'place-area' } as Location;
-    await expect(resolveAreaIdForActivityPublish(activity, location)).resolves.toBe('place-area');
-  });
-
-  it('uses place.areaId when activity has none', async () => {
-    const activity = baseActivity();
-    const location = { areaId: 'place-area' } as Location;
-    await expect(resolveAreaIdForActivityPublish(activity, location)).resolves.toBe('place-area');
-  });
-
-  it('uses persisted activity.areaId when the place has none', async () => {
-    const activity = { ...baseActivity(), areaId: 'area-persisted-hatta' };
-    const location = { id: 'hatta-dam-loop', areaId: null } as Location;
-    await expect(resolveAreaIdForActivityPublish(activity, location)).resolves.toBe(
-      'area-persisted-hatta'
+describe('resolveDestinationIdForActivityPublish', () => {
+  it('prefers place.destinationId over activity.destinationId', async () => {
+    const activity = { ...baseActivity(), destinationId: 'legacy-activity-dest' };
+    const location = { destinationId: 'place-dest' } as Location;
+    await expect(resolveDestinationIdForActivityPublish(activity, location)).resolves.toBe(
+      'place-dest'
     );
   });
 
-  it('does not invent an area when neither row has areaId', async () => {
+  it('uses place.destinationId when activity has none', async () => {
+    const activity = baseActivity();
+    const location = { destinationId: 'place-dest' } as Location;
+    await expect(resolveDestinationIdForActivityPublish(activity, location)).resolves.toBe(
+      'place-dest'
+    );
+  });
+
+  it('uses persisted activity.destinationId when the place has none', async () => {
+    const activity = { ...baseActivity(), destinationId: 'dest-persisted-hatta' };
+    const location = { id: 'hatta-dam-loop', destinationId: null } as Location;
+    await expect(resolveDestinationIdForActivityPublish(activity, location)).resolves.toBe(
+      'dest-persisted-hatta'
+    );
+  });
+
+  it('does not invent a destination when neither row has destinationId', async () => {
     const activity = baseActivity();
     const location = {
       id: 'hatta-dam-loop',
-      areaId: null,
+      destinationId: null,
       latitude: 24.78,
       longitude: 56.12,
     } as Location;
-    await expect(resolveAreaIdForActivityPublish(activity, location)).resolves.toBeNull();
+    await expect(resolveDestinationIdForActivityPublish(activity, location)).resolves.toBeNull();
   });
 });

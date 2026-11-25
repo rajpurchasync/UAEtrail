@@ -36,7 +36,7 @@ describe('explore featured person', () => {
       })
     ).toMatchObject({
       userId: 'u2',
-      displayName: 'Sarah Host',
+      displayName: 'Sarah',
       role: 'host',
     });
   });

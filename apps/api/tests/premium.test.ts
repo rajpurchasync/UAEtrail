@@ -51,7 +51,7 @@ beforeAll(async () => {
 describe('premium unlock security', () => {
   it('rejects direct unlock without checkout', async () => {
     const response = await request(app)
-      .post(`/api/locations/${locationId}/premium/unlock`)
+      .post(`/api/places/${locationId}/premium/unlock`)
       .set('Authorization', `Bearer ${accessToken}`);
 
     expect(response.status).toBe(402);

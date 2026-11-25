@@ -25,7 +25,7 @@ describe('facility condition reports', () => {
     const facility = await createFacilityRecord({
       name: `Trail toilet ${suffix}`,
       region: 'Dubai',
-      areaId: 'area-test-dubai',
+      destinationId: 'area-test-dubai',
       facilityKind: 'toilet',
       description: 'Contract facility for amenity condition reports.',
       latitude: 25.121,

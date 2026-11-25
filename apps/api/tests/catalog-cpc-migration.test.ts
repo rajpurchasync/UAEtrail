@@ -48,7 +48,7 @@ describe('catalog CPC migrations', () => {
       images: ['https://example.com/facility.jpg'],
       tags: ['place-kind:rest_area'],
       registryListed: true,
-      areaId: 'area-test-dubai',
+      destinationId: 'area-test-dubai',
       description: 'Shaded rest area with benches for hikers in the UAE outdoors.',
     });
 
@@ -64,7 +64,7 @@ describe('catalog CPC migrations', () => {
       images: ['https://example.com/shop.jpg'],
       tags: ['community-shop'],
       registryListed: true,
-      areaId: 'area-test-dubai',
+      destinationId: 'area-test-dubai',
       description: 'Community outdoor gear pin contributed by a member on the map.',
     });
 

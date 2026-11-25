@@ -10,7 +10,7 @@ describe('buildLocationCreateData', () => {
       buildTestLocationSubmitBody({
         name: 'Wadi Shawka Loop',
         region: 'RAK',
-        areaId: testAreas.hatta.id,
+        destinationId: testAreas.hatta.id,
         areaLabel: 'Wadi Shawka Dam',
         difficulty: 'moderate',
         accessibleBy: ['car'],
@@ -19,7 +19,7 @@ describe('buildLocationCreateData', () => {
       'user-1'
     );
 
-    expect(data.areaId).toBe(testAreas.hatta.id);
+    expect(data.destinationId).toBe(testAreas.hatta.id);
     expect(data.areaLabel).toBe('Wadi Shawka Dam');
     expect(data.childFriendly).toBe(true);
     expect(data.tags).toContain('area:Wadi Shawka Dam');
@@ -49,7 +49,7 @@ describe('buildLocationCreateData', () => {
         region: 'Dubai',
         activityType: 'event',
         facilityKind: 'toilet',
-        areaId: testAreas.hatta.id,
+        destinationId: testAreas.hatta.id,
       }),
       'user-facility'
     );
@@ -83,7 +83,7 @@ describe('locationSubmitBodySchema outdoor photos', () => {
   it('accepts a proposed area name instead of a published area id', () => {
     const parsed = locationSubmitBodySchema.safeParse(
       buildTestLocationSubmitBody({
-        areaId: undefined,
+        destinationId: undefined,
         proposedAreaName: 'Wadi Naqab',
         latitude: 25.7,
         longitude: 56.1,
