@@ -52,6 +52,8 @@
     },
     {
       "id": "W1e",
+      "status": "done",
+      "commitSha": "a192e7bd",
       "title": "participant_intents ops allowlist single module (API)",
       "branch": "burn-down/w1e-ops-allowlist",
       "owns": [
