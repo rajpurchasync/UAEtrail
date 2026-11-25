@@ -46,7 +46,7 @@ export const browseCatalogRegionLabel = (card: DiscoveryCardModel): string | nul
 };
 
 /**
- * Geo destination for L2 browse (geo L4 venue → L3 area → catalog `areaLabel`).
+ * Geo destination for L2 browse (geo L4 venue → L3 area → catalog `placeHubLabel`).
  * Never trail/camp **spot** title (`listTitle` / activity `locationName`).
  * @see `docs/DOMAIN_CANONICALS.md` §12.1.2 · `geo-hierarchy.ts`
  */
@@ -60,12 +60,12 @@ export const browseCatalogHubLabel = (card: DiscoveryCardModel): string | null =
   const fromGeoArea = reject(card.geoRef?.names.area);
   if (fromGeoArea && distinctFromRegion(fromGeoArea, regionPart)) return fromGeoArea;
 
-  const fromPlaceHub = reject(card.areaLabel?.trim());
+  const fromPlaceHub = reject(card.placeHubLabel?.trim());
   if (fromPlaceHub && distinctFromRegion(fromPlaceHub, regionPart)) return fromPlaceHub;
 
-  // Legacy wire: `areaName` carried place-hub before `areaLabel`; skip when `destinationId` is curated Area.
+  // Legacy wire: `destinationName` once doubled as place-hub; skip when `destinationId` is curated.
   if (!card.destinationId?.trim()) {
-    const fromLegacy = reject(card.areaName?.trim());
+    const fromLegacy = reject(card.destinationName?.trim());
     if (fromLegacy && distinctFromRegion(fromLegacy, regionPart)) return fromLegacy;
   }
 

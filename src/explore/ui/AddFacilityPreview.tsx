@@ -8,8 +8,8 @@ type Props = {
 };
 
 export const AddFacilityPreview = ({ draft, publishedDestinations }: Props) => {
-  const areaName = draft.destinationId
-    ? publishedDestinations.find((area) => area.id === draft.destinationId)?.name ?? 'Selected area'
+  const destinationLine = draft.destinationId
+    ? publishedDestinations.find((d) => d.id === draft.destinationId)?.name ?? 'Selected destination'
     : '—';
   const kind = draft.facilityKind;
   const kindLabel = kind ? PLACE_KIND_LABELS[kind] : '—';
@@ -23,7 +23,7 @@ export const AddFacilityPreview = ({ draft, publishedDestinations }: Props) => {
       <div>
         <p className="text-lg font-bold text-neutral-900">{draft.title.trim() || 'Untitled'}</p>
         <p className="mt-1 text-neutral-600">
-          <span className="font-emoji" aria-hidden>{emoji}</span> {kindLabel} · {areaName}
+          <span className="font-emoji" aria-hidden>{emoji}</span> {kindLabel} · {destinationLine}
           {draft.parentPlaceName?.trim() ? ` · along ${draft.parentPlaceName.trim()}` : ''}
         </p>
       </div>

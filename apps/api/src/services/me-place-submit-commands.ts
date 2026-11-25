@@ -16,10 +16,10 @@ export const submitMyPlace = async (
   userId: string,
   body: z.infer<typeof locationSubmitBodySchema>
 ) => {
-  const { destinationId, areaLabel } = await resolvePlaceSubmitDestination(body);
+  const { destinationId, placeHubLabel } = await resolvePlaceSubmitDestination(body);
 
   const created = await createLocationRecord(
-    buildPlaceSubmitPayload({ ...body, destinationId, areaLabel }, userId)
+    buildPlaceSubmitPayload({ ...body, destinationId, placeHubLabel }, userId)
   );
 
   await createAuditLog({

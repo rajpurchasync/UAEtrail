@@ -40,7 +40,7 @@ export const rankMapExploreActivity = (
   const wishlistLocations = input.wishlistLocationIds;
   const wishlistDestinations = input.wishlistDestinationIds;
   const wishlistPlace = Boolean(wishlistLocations?.has(activity.locationId));
-  const wishlistArea = Boolean(
+  const wishlistDestination = Boolean(
     activity.destinationId && wishlistDestinations?.has(activity.destinationId)
   );
 
@@ -57,7 +57,7 @@ export const rankMapExploreActivity = (
     boosts: {
       friendOnOuting,
       wishlistPlace,
-      wishlistArea: !wishlistPlace && wishlistArea,
+      wishlistDestination: !wishlistPlace && wishlistDestination,
     },
     pin,
     viewerGeo: input.viewerGeo,

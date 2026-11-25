@@ -21,13 +21,13 @@ describe('consumerAppSurfacesDataGuard (in-app hubs — not guest marketing)', (
 
   it('CTX-APP-03: plan + host destination pickers merge published areas for emirates', () => {
     expect(read('src/availability/AvailabilitySlotEditor.tsx')).toMatch(
-      /mergeVenueStateFilterOptionsWithAreas/
+      /mergeVenueStateFilterOptionsWithDestinations/
     );
     expect(read('src/explore/ui/HostingDestinationCascade.tsx')).toMatch(
       /buildPlaceCatalogStateOptions\(countryCode, areas\)/
     );
     expect(read('src/places/placeCatalogDestinationIndex.ts')).toMatch(
-      /mergeVenueStateFilterOptionsWithAreas/
+      /mergeVenueStateFilterOptionsWithDestinations/
     );
   });
 
@@ -90,7 +90,7 @@ describe('consumerAppSurfacesDataGuard (in-app hubs — not guest marketing)', (
     expect(read('src/utils/locationSearch.ts')).toMatch(/consumerEmirateKeys/);
     expect(read('src/explore/exploreListSort.ts')).toMatch(/consumerEmirateKeys/);
     expect(read('src/availability/AvailabilitySlotEditor.tsx')).toMatch(
-      /mergeVenueStateFilterOptionsWithAreas/
+      /mergeVenueStateFilterOptionsWithDestinations/
     );
   });
 
@@ -126,7 +126,7 @@ describe('consumerAppSurfacesDataGuard (in-app hubs — not guest marketing)', (
     expect(read('src/explore/exploreListSort.ts')).toMatch(/deriveVenueRegionSortOrder/);
     expect(read('src/explore/ui/useExploreBrowseList.ts')).toMatch(/deriveVenueRegionSortOrder/);
     expect(read('src/components/organisation-console/ProProfileApplicationFlow.tsx')).toMatch(
-      /mergeVenueStateFilterOptionsWithAreas/
+      /mergeVenueStateFilterOptionsWithDestinations/
     );
     expect(read('src/components/organisation-console/ProProfileApplicationFlow.tsx')).not.toMatch(
       /getRegionsForCountry\(DEFAULT_COUNTRY\)/

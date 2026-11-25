@@ -19,7 +19,7 @@ export const buildFacilitySubmitInput = (
     name: body.name.trim(),
     region: body.region.trim(),
     destinationId,
-    areaLabel: body.areaLabel?.trim() || null,
+    placeHubLabel: body.placeHubLabel?.trim() || null,
     facilityKind: body.facilityKind,
     onSiteId: body.onSiteId?.trim() || null,
     description: body.description.trim(),

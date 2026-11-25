@@ -10,8 +10,8 @@ export type ExploreCatalogHubLabelInput = {
   listTitle?: string | null;
   headline?: string | null;
   destinationId?: string | null;
-  areaLabel?: string | null;
-  areaName?: string | null;
+  placeHubLabel?: string | null;
+  destinationName?: string | null;
   subtitle?: string | null;
   venueRegion?: string | null;
   geoRef?: GeoRef | null;
@@ -69,7 +69,7 @@ export const exploreCatalogHubLabel = (card: ExploreCatalogHubLabelInput): strin
   const fromGeoArea = reject(card.geoRef?.names.area);
   if (fromGeoArea && distinctFromRegion(fromGeoArea, regionPart)) return fromGeoArea;
 
-  const fromPlaceHub = reject(card.areaLabel?.trim());
+  const fromPlaceHub = reject(card.placeHubLabel?.trim());
   if (fromPlaceHub && distinctFromRegion(fromPlaceHub, regionPart)) return fromPlaceHub;
 
   if (!card.destinationId?.trim()) {
@@ -102,8 +102,8 @@ export const exploreCatalogHubLabelFromExploreItem = (item: ExploreMapItemDTO): 
     listTitle: item.presentation?.listTitle ?? item.title,
     headline: item.presentation?.headline ?? item.title,
     destinationId: item.destinationId ?? null,
-    areaLabel: item.areaLabel ?? null,
-    areaName: item.destinationName ?? null,
+    placeHubLabel: item.placeHubLabel ?? null,
+    destinationName: item.destinationName ?? null,
     subtitle: item.subtitle ?? item.presentation?.subtitle ?? null,
     venueRegion,
     geoRef: item.geoRef ?? item.activity?.geoRef ?? null,

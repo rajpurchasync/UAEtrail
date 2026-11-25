@@ -45,8 +45,8 @@ import { AvailabilityDestinationRegionsField } from '../../../../availability/Av
 const REVIEW_EDIT_LABELS: Partial<Record<AvailabilityFixedFlowStepId, string>> = {
   title: 'Title',
   destination: 'Destination',
-  area: 'Where',
-  curatedArea: 'Area',
+  where: 'Where',
+  curatedDestination: 'Destination',
   when: 'When',
   from: 'Going from',
   to: 'Destination',
@@ -198,11 +198,11 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
         </ComposeWidePageSlot>
       )}
 
-      {step === 'curatedArea' && kind && (
+      {step === 'curatedDestination' && kind && (
         <ComposeWizardStepChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <AvailabilityCuratedDestinationStep
             destinationId={draft.destinationId}
-            onAreaIdChange={(next) => {
+            onDestinationIdChange={(next) => {
               patchDraft({
                 destinationId: next,
                 preferredArea: next ? destinationLabelForId(next, publishedDestinations) ?? '' : '',
@@ -574,7 +574,7 @@ export function renderAvailabilityWizardSteps(ctx: AvailabilityWizardContext): R
                 const editLabel =
                   target === 'destination'
                     ? 'Destination'
-                    : target === 'area'
+                    : target === 'where'
                       ? 'Where'
                       : REVIEW_EDIT_LABELS[target] ?? target;
                 return (

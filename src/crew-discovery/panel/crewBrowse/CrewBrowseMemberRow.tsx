@@ -12,7 +12,7 @@ import type {
   FindCrewTrustBadge,
 } from '../../availabilityBrowseCardCopy';
 import {
-  CREW_BROWSE_AVAILABILITY_LABEL_AREAS,
+  CREW_BROWSE_AVAILABILITY_LABEL_DESTINATIONS,
   CREW_BROWSE_AVAILABILITY_LABEL_AS,
   CREW_BROWSE_AVAILABILITY_LABEL_DATES,
   CREW_BROWSE_AVAILABILITY_LABEL_FOR,
@@ -65,8 +65,8 @@ const DefaultAvailabilityBlock = ({ detail }: { detail: CrewBrowseAvailabilityDe
   <div className="mt-1 space-y-0.5" aria-label={CREW_BROWSE_AVAILABILITY_SECTION_TITLE}>
     <p className="text-xs font-semibold text-neutral-800">{CREW_BROWSE_AVAILABILITY_SECTION_TITLE}</p>
     <p className="line-clamp-2 text-xs leading-snug text-neutral-600">
-      <span className="font-medium text-neutral-700">{CREW_BROWSE_AVAILABILITY_LABEL_AREAS}:</span>{' '}
-      {detail.areaLabels.join(', ')}
+      <span className="font-medium text-neutral-700">{CREW_BROWSE_AVAILABILITY_LABEL_DESTINATIONS}:</span>{' '}
+      {detail.destinationLabels.join(', ')}
     </p>
     <p className="line-clamp-2 text-xs leading-snug text-neutral-600">
       <span className="font-medium text-neutral-700">{CREW_BROWSE_AVAILABILITY_LABEL_FOR}:</span> {detail.for}

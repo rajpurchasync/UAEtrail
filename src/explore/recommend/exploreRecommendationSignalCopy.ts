@@ -6,7 +6,7 @@ const LABELS: Record<DiscoverRecommendationSignal, string> = {
   spots_open: 'Spots open',
   popular: 'Popular',
   wishlist_place: 'On your wishlist',
-  wishlist_area: 'Your area watch',
+  wishlist_destination: 'Your destination watch',
   near_you: 'Near you',
 };
 

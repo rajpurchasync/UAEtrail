@@ -11,7 +11,7 @@ export const registerMeDiscoverOverlayRoutes = (router: Router): void => {
           bbox: query.bbox,
           cursor: query.cursor,
           limit: query.limit,
-          area: query.area,
+          destination: query.destination,
         },
         viewerUserId: req.auth!.userId,
         userRole: req.auth!.role ?? null,

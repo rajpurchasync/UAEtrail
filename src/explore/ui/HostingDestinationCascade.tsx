@@ -10,12 +10,12 @@ import {
   HOSTING_DESTINATION_EMPTY_ROUTES_PROMPT,
   HOSTING_DESTINATION_NOT_FOUND,
   HOSTING_DESTINATION_FIND_PLACEHOLDER,
-  HOSTING_DESTINATION_SEARCH_GROUP_AREA,
+  HOSTING_DESTINATION_SEARCH_GROUP_DESTINATION,
   HOSTING_DESTINATION_SEARCH_GROUP_PLACE,
   HOSTING_DESTINATION_SEARCH_GROUP_ROUTE,
   HOSTING_DESTINATION_RESET_LABEL,
   HOSTING_DESTINATION_SEARCH_TOGGLE,
-  HOSTING_DESTINATION_SELECT_AREA,
+  HOSTING_DESTINATION_SELECT_DESTINATION,
   HOSTING_DESTINATION_SELECT_PLACE,
   HOSTING_DESTINATION_SELECT_TRAIL_CAMP_LABEL,
   HOSTING_DESTINATION_SELECT_TRAIL_EVENT_LABEL,
@@ -24,10 +24,10 @@ import {
 } from '../createFlowCopy';
 import {
   DEFAULT_PLACE_CATALOG_COUNTRY,
-  buildPlaceCatalogAreaOptions,
+  buildPlaceCatalogDestinationOptions,
   buildPlaceCatalogPlaceGroupOptions,
   buildPlaceCatalogStateOptions,
-  filterPlaceCatalogRowsInArea,
+  filterPlaceCatalogRowsInDestination,
   filterPlaceCatalogTrailRowsInGroup,
   scopePlaceCatalogDestination,
   searchPlaceCatalogDestination,
@@ -72,7 +72,7 @@ export const HostingDestinationUaeChip = () => (
 const searchGroupLabel = (hit: PlaceCatalogDestinationSearchHit): string => {
   if (hit.kind === 'trail') return HOSTING_DESTINATION_SEARCH_GROUP_ROUTE;
   if (hit.kind === 'place') return HOSTING_DESTINATION_SEARCH_GROUP_PLACE;
-  return HOSTING_DESTINATION_SEARCH_GROUP_AREA;
+  return HOSTING_DESTINATION_SEARCH_GROUP_DESTINATION;
 };
 
 const trailStepCopy = (placeType: ActivityType): { label: string; placeholder: string } => {
@@ -145,7 +145,7 @@ export const HostingDestinationCascade = ({
   );
 
   const areaOptions = useMemo(
-    () => buildPlaceCatalogAreaOptions(catalogPlaces, areas, state, countryCode),
+    () => buildPlaceCatalogDestinationOptions(catalogPlaces, areas, state, countryCode),
     [catalogPlaces, areas, state, countryCode]
   );
 
@@ -153,7 +153,7 @@ export const HostingDestinationCascade = ({
 
   const placesInArea = useMemo(() => {
     if (!selectedArea) return [];
-    return filterPlaceCatalogRowsInArea(catalog.places, selectedArea, catalog.areas);
+    return filterPlaceCatalogRowsInDestination(catalog.places, selectedArea, catalog.areas);
   }, [catalog.places, catalog.areas, selectedArea]);
 
   const placeGroupOptions = useMemo(
@@ -258,7 +258,7 @@ export const HostingDestinationCascade = ({
       </label>
 
       <label className="block border-t border-neutral-100 px-3 py-2.5">
-        <span className={labelClass}>{HOSTING_DESTINATION_SELECT_AREA}</span>
+        <span className={labelClass}>{HOSTING_DESTINATION_SELECT_DESTINATION}</span>
         <AppSelect
           className="w-full"
           value={destinationId}
@@ -267,7 +267,7 @@ export const HostingDestinationCascade = ({
           options={areaOptions.map((row) => ({ value: row.id, label: row.name }))}
           onChange={(next) => onAreaChange(next)}
           inputClassName={fieldClass}
-          aria-label={HOSTING_DESTINATION_SELECT_AREA}
+          aria-label={HOSTING_DESTINATION_SELECT_DESTINATION}
         />
       </label>
 

@@ -26,9 +26,9 @@ const uniqueDraftDestinationSlug = async (name: string): Promise<string> => {
 /** Published destination id, or a new draft hub from the host’s proposed name + pin. */
 export const resolvePlaceSubmitDestination = async (
   body: PlaceSubmitBody
-): Promise<{ destinationId: string; areaLabel: string }> => {
+): Promise<{ destinationId: string; placeHubLabel: string }> => {
   const existingId = body.destinationId?.trim() || '';
-  const areaLabelHint = body.areaLabel?.trim() || '';
+  const placeHubLabelHint = body.placeHubLabel?.trim() || '';
 
   if (existingId) {
     const published = await findPublishedDestinationById(existingId);
@@ -40,10 +40,10 @@ export const resolvePlaceSubmitDestination = async (
         'Choose a published destination, or name a new one for this pin.'
       );
     }
-    return { destinationId: anyRow.id, areaLabel: areaLabelHint || anyRow.name };
+    return { destinationId: anyRow.id, placeHubLabel: placeHubLabelHint || anyRow.name };
   }
 
-  const proposed = body.proposedAreaName?.trim() || '';
+  const proposed = body.proposedDestinationName?.trim() || '';
   if (!proposed || body.latitude == null || body.longitude == null) {
     throw new ApiError(
       400,
@@ -62,5 +62,5 @@ export const resolvePlaceSubmitDestination = async (
     countryCode: body.countryCode?.toUpperCase() || 'AE',
     summary: `Proposed with catalog place “${body.name.trim()}”.`,
   });
-  return { destinationId: created.id, areaLabel: created.name };
+  return { destinationId: created.id, placeHubLabel: created.name };
 };

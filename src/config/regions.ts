@@ -77,7 +77,7 @@ export const getVenueStateFilterOptions = (code: CountryCode = DEFAULT_COUNTRY) 
     label: EXPLORE_REGION_PILL_LABELS[region] ?? region,
   }));
 
-const venueStateOptionsFromPublishedAreas = (
+const venueStateOptionsFromPublishedDestinations = (
   areas: readonly DestinationPublicDTO[]
 ): Array<{ key: string; label: string }> => {
   const byKey = new Map<string, { key: string; label: string }>();
@@ -91,29 +91,29 @@ const venueStateOptionsFromPublishedAreas = (
   return [...byKey.values()].sort((a, b) => a.label.localeCompare(b.label));
 };
 
-/** Consumer emirate keys — `GET /areas` when published rows exist; static UAE list only when empty. */
-export const mergeVenueStateFilterOptionsWithAreas = (
-  areas: readonly DestinationPublicDTO[],
+/** Consumer emirate keys — `GET /destinations` when published rows exist; static UAE list only when empty. */
+export const mergeVenueStateFilterOptionsWithDestinations = (
+  destinations: readonly DestinationPublicDTO[],
   code: CountryCode = DEFAULT_COUNTRY
 ): Array<{ key: string; label: string }> => {
-  if (code === 'AE' && areas.length > 0) {
-    return venueStateOptionsFromPublishedAreas(areas);
+  if (code === 'AE' && destinations.length > 0) {
+    return venueStateOptionsFromPublishedDestinations(destinations);
   }
   return getVenueStateFilterOptions(code);
 };
 
-/** Canonical emirate/region keys for browse filters and text matching — DB-first when areas exist. */
+/** Canonical emirate/region keys for browse filters and text matching — DB-first when destinations exist. */
 export const consumerEmirateKeys = (
-  areas: readonly DestinationPublicDTO[],
+  destinations: readonly DestinationPublicDTO[],
   code: CountryCode = DEFAULT_COUNTRY
-): string[] => mergeVenueStateFilterOptionsWithAreas(areas, code).map((row) => row.key);
+): string[] => mergeVenueStateFilterOptionsWithDestinations(destinations, code).map((row) => row.key);
 
-export const mergeExploreRegionPillOptionsWithAreas = (
-  areas: readonly DestinationPublicDTO[],
+export const mergeExploreRegionPillOptionsWithDestinations = (
+  destinations: readonly DestinationPublicDTO[],
   code: CountryCode = DEFAULT_COUNTRY
 ): Array<{ key: string; label: string }> => {
   const allLabel = code === 'AE' ? 'All UAE' : 'All';
-  const states = mergeVenueStateFilterOptionsWithAreas(areas, code);
+  const states = mergeVenueStateFilterOptionsWithDestinations(destinations, code);
   return [{ key: 'all', label: allLabel }, ...states.map((row) => ({ key: row.key, label: row.label }))];
 };
 

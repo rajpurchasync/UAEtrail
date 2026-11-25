@@ -49,7 +49,7 @@ export const useCrewDiscoveryAvailability = ({
   const queryParams: CrewDiscoveryAvailabilityQueryParams = {
     from: range.from,
     to: range.to,
-    area: destinationSlug?.trim() || null,
+    destination: destinationSlug?.trim() || null,
     region: region?.trim() || null,
     kind: kind ?? null,
   };
@@ -62,7 +62,7 @@ export const useCrewDiscoveryAvailability = ({
       return fetchExplorePeopleAvailability({
         from: range.from,
         to: range.to,
-        area: destinationSlug?.trim() || undefined,
+        destination: destinationSlug?.trim() || undefined,
         region: region?.trim() || undefined,
         kind: kind ?? undefined,
       });

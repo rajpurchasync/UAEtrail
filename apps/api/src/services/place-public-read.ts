@@ -34,7 +34,6 @@ export const loadExploreMapForViewer = (input: {
     bbox?: string;
     cursor?: string;
     limit?: string;
-    area?: string;
     destination?: string;
     q?: string;
     country?: string;

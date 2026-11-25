@@ -2,8 +2,8 @@
  * Place catalog destination index — organize-picker ladder only (`GET /places/catalog`).
  *
  * **Product tree (host “where” step):**
- * - **Area** — curated map region (Hatta, Jebel Jais, …)
- * - **Place hub** — named bucket under an area (e.g. Wadi Shawka); today `areaLabel` / `areaName`
+ * - **Destination** — curated map region (Hatta, Jebel Jais, …)
+ * - **Place hub** — named bucket under a destination (e.g. Wadi Shawka); wire field `placeHubLabel`
  *   on leaf rows until dedicated hub rows + `parentPlaceId` ship on place catalog rows
  * - **Catalog leaf** — one row you host on: trail (`hiking`), camp spot (`camping`), event venue (`event`)
  *
@@ -17,7 +17,7 @@ import type { DestinationPublicDTO, PlaceDTO } from '@uaetrail/shared-types';
 import {
   DEFAULT_COUNTRY,
   getSubdivisionOptionsForCountry,
-  mergeVenueStateFilterOptionsWithAreas,
+  mergeVenueStateFilterOptionsWithDestinations,
   SUPPORTED_COUNTRIES,
   type CountryCode,
   type CountrySubdivisionOption,
@@ -82,7 +82,7 @@ export const placeCatalogPlaceGroupKey = (
   const parent = place.parentPlaceId?.trim();
   if (parent) return parent;
   if (parentHubIds.has(place.id)) return place.id;
-  return place.areaLabel?.trim() || place.destinationName?.trim() || '__main__';
+  return place.placeHubLabel?.trim() || place.destinationName?.trim() || '__main__';
 };
 
 export const placeCatalogRowIsParentHub = (
@@ -155,7 +155,7 @@ export const placeCatalogPlaceGroupLabelFromHub = (
 };
 
 export const placeCatalogPlaceGroupLabel = (place: PlaceDTO): string => {
-  const label = place.areaLabel?.trim() || place.destinationName?.trim();
+  const label = place.placeHubLabel?.trim() || place.destinationName?.trim();
   return label || 'Main trails';
 };
 
@@ -187,7 +187,7 @@ export const placeCatalogRegionsMatch = (left: string, right: string): boolean =
   return false;
 };
 
-export const resolvePlaceCatalogAreaForRow = (
+export const resolvePlaceCatalogDestinationForRow = (
   place: PlaceDTO,
   areas: DestinationPublicDTO[]
 ): DestinationPublicDTO | null => {
@@ -203,12 +203,12 @@ export const resolvePlaceCatalogAreaForRow = (
   );
 };
 
-export const placeCatalogRowBelongsToArea = (
+export const placeCatalogRowBelongsToDestination = (
   place: PlaceDTO,
   area: DestinationPublicDTO,
   areas: DestinationPublicDTO[]
 ): boolean => {
-  const linked = resolvePlaceCatalogAreaForRow(place, areas);
+  const linked = resolvePlaceCatalogDestinationForRow(place, areas);
   return linked?.id === area.id;
 };
 
@@ -217,7 +217,7 @@ export const buildPlaceCatalogStateOptions = (
   areas: readonly DestinationPublicDTO[] = []
 ): CountrySubdivisionOption[] => {
   if (countryCode === 'AE') {
-    return mergeVenueStateFilterOptionsWithAreas(areas, countryCode).map((row) => ({
+    return mergeVenueStateFilterOptionsWithDestinations(areas, countryCode).map((row) => ({
       value: row.key,
       label: row.label,
     }));
@@ -225,7 +225,7 @@ export const buildPlaceCatalogStateOptions = (
   return getSubdivisionOptionsForCountry(countryCode);
 };
 
-export const buildPlaceCatalogAreaOptions = (
+export const buildPlaceCatalogDestinationOptions = (
   places: PlaceDTO[],
   areas: DestinationPublicDTO[],
   state: string,
@@ -238,13 +238,13 @@ export const buildPlaceCatalogAreaOptions = (
     .sort((a, b) => a.name.localeCompare(b.name));
 };
 
-export const filterPlaceCatalogRowsInArea = (
+export const filterPlaceCatalogRowsInDestination = (
   places: PlaceDTO[],
   area: DestinationPublicDTO,
   areas: DestinationPublicDTO[]
 ): PlaceDTO[] =>
   places
-    .filter((place) => placeCatalogRowBelongsToArea(place, area, areas))
+    .filter((place) => placeCatalogRowBelongsToDestination(place, area, areas))
     .sort((a, b) => a.name.localeCompare(b.name));
 
 export const buildPlaceCatalogPlaceGroupOptions = (
@@ -283,7 +283,7 @@ export const resolvePlaceCatalogStateKeyForRow = (
   areas: DestinationPublicDTO[],
   countryCode: CountryCode = DEFAULT_PLACE_CATALOG_COUNTRY
 ): string => {
-  const area = resolvePlaceCatalogAreaForRow(place, areas);
+  const area = resolvePlaceCatalogDestinationForRow(place, areas);
   const raw = area?.region ?? place.region;
   if (countryCode === 'AE') {
     const catalog = normalizeGroupRegionLabel(raw);
@@ -302,7 +302,7 @@ export const inferPlaceCatalogLadderFromRow = (
   countryCode: CountryCode = DEFAULT_PLACE_CATALOG_COUNTRY,
   catalogPlaces?: PlaceDTO[]
 ): { state: string; destinationId: string; placeGroup: string } => {
-  const area = resolvePlaceCatalogAreaForRow(place, areas);
+  const area = resolvePlaceCatalogDestinationForRow(place, areas);
   const parentHubIds = collectPlaceCatalogParentHubIds(catalogPlaces ?? [place]);
   return {
     state: resolvePlaceCatalogStateKeyForRow(place, areas, countryCode),
@@ -311,7 +311,7 @@ export const inferPlaceCatalogLadderFromRow = (
   };
 };
 
-export const resolvePlaceCatalogStateFromArea = (
+export const resolvePlaceCatalogStateFromDestination = (
   area: DestinationPublicDTO,
   countryCode: CountryCode = DEFAULT_PLACE_CATALOG_COUNTRY,
   areas: readonly DestinationPublicDTO[] = []
@@ -352,8 +352,8 @@ export type PlaceCatalogDestinationSearchPlaceHit = {
   trailCount: number;
 };
 
-export type PlaceCatalogDestinationSearchAreaHit = {
-  kind: 'area';
+export type PlaceCatalogDestinationSearchDestinationHit = {
+  kind: 'destination';
   destinationId: string;
   title: string;
   subtitle: string;
@@ -363,7 +363,7 @@ export type PlaceCatalogDestinationSearchAreaHit = {
 export type PlaceCatalogDestinationSearchHit =
   | PlaceCatalogDestinationSearchTrailHit
   | PlaceCatalogDestinationSearchPlaceHit
-  | PlaceCatalogDestinationSearchAreaHit;
+  | PlaceCatalogDestinationSearchDestinationHit;
 
 const normalizeSearchToken = (value: string): string => value.trim().toLowerCase();
 
@@ -375,7 +375,7 @@ const searchMatches = (haystack: string | null | undefined, needle: string): boo
 };
 
 const trailSearchSubtitle = (place: PlaceDTO, areas: DestinationPublicDTO[]): string => {
-  const area = resolvePlaceCatalogAreaForRow(place, areas);
+  const area = resolvePlaceCatalogDestinationForRow(place, areas);
   const placeLabel = placeCatalogPlaceGroupLabel(place);
   const parts = [place.name, placeLabel, area?.name, area?.region ?? place.region].filter(Boolean);
   return [...new Set(parts)].slice(0, 3).join(' · ');
@@ -405,22 +405,22 @@ export const searchPlaceCatalogDestination = (
     catalogAreas = catalogAreas.filter((row) => row.id === scope.destinationId);
     const area = catalogAreas[0];
     catalogPlaces = area
-      ? filterPlaceCatalogRowsInArea(catalogPlaces, area, scoped.areas)
+      ? filterPlaceCatalogRowsInDestination(catalogPlaces, area, scoped.areas)
       : [];
   } else if (scope.state?.trim()) {
     catalogAreas = catalogAreas.filter(
-      (row) => resolvePlaceCatalogStateFromArea(row, countryCode, scoped.areas) === scope.state
+      (row) => resolvePlaceCatalogStateFromDestination(row, countryCode, scoped.areas) === scope.state
     );
     const areaIds = new Set(catalogAreas.map((row) => row.id));
     catalogPlaces = catalogPlaces.filter((place) => {
-      const area = resolvePlaceCatalogAreaForRow(place, scoped.areas);
+      const area = resolvePlaceCatalogDestinationForRow(place, scoped.areas);
       return Boolean(area && areaIds.has(area.id));
     });
   }
   const parentHubIds = collectPlaceCatalogParentHubIds(catalogPlaces);
   const trails: PlaceCatalogDestinationSearchTrailHit[] = [];
   const placeHits: PlaceCatalogDestinationSearchPlaceHit[] = [];
-  const areaHits: PlaceCatalogDestinationSearchAreaHit[] = [];
+  const destinationHits: PlaceCatalogDestinationSearchDestinationHit[] = [];
 
   for (const place of catalogPlaces) {
     if (!placeCatalogRowIsHostingLeaf(place, parentHubIds)) continue;
@@ -435,7 +435,7 @@ export const searchPlaceCatalogDestination = (
 
   const seenPlaceGroups = new Set<string>();
   for (const area of catalogAreas) {
-    const inArea = filterPlaceCatalogRowsInArea(catalogPlaces, area, scoped.areas);
+    const inArea = filterPlaceCatalogRowsInDestination(catalogPlaces, area, scoped.areas);
     const groups = buildPlaceCatalogPlaceGroupOptions(inArea);
     for (const group of groups) {
       const key = `${area.id}::${group.key}`;
@@ -452,7 +452,7 @@ export const searchPlaceCatalogDestination = (
       const sample = trailsInGroup[0];
       const state = sample
         ? inferPlaceCatalogLadderFromRow(sample, scoped.areas, countryCode, catalogPlaces).state
-        : resolvePlaceCatalogStateFromArea(area, countryCode, scoped.areas);
+        : resolvePlaceCatalogStateFromDestination(area, countryCode, scoped.areas);
       placeHits.push({
         kind: 'place',
         placeGroupKey: group.key,
@@ -467,10 +467,10 @@ export const searchPlaceCatalogDestination = (
 
   for (const area of catalogAreas) {
     if (!searchMatches(area.name, q) && !searchMatches(area.region, q)) continue;
-    const inArea = filterPlaceCatalogRowsInArea(catalogPlaces, area, scoped.areas);
+    const inArea = filterPlaceCatalogRowsInDestination(catalogPlaces, area, scoped.areas);
     const placeCount = buildPlaceCatalogPlaceGroupOptions(inArea).length;
-    areaHits.push({
-      kind: 'area',
+    destinationHits.push({
+      kind: 'destination',
       destinationId: area.id,
       title: area.name,
       subtitle: area.region,
@@ -484,6 +484,6 @@ export const searchPlaceCatalogDestination = (
   return [
     ...sortByTitle(trails).slice(0, limitPerGroup),
     ...sortByTitle(placeHits).slice(0, limitPerGroup),
-    ...sortByTitle(areaHits).slice(0, limitPerGroup),
+    ...sortByTitle(destinationHits).slice(0, limitPerGroup),
   ];
 };

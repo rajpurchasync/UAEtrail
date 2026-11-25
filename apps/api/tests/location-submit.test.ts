@@ -5,13 +5,13 @@ import { buildLocationCreateData } from '../src/services/location-submit.js';
 import { buildTestLocationSubmitBody, testAreas } from './helpers/test-seed.js';
 
 describe('buildLocationCreateData', () => {
-  it('persists areaLabel and syncs area tag for outdoor venues', () => {
+  it('persists placeHubLabel and syncs area tag for outdoor venues', () => {
     const data = buildLocationCreateData(
       buildTestLocationSubmitBody({
         name: 'Wadi Shawka Loop',
         region: 'RAK',
         destinationId: testAreas.hatta.id,
-        areaLabel: 'Wadi Shawka Dam',
+        placeHubLabel: 'Wadi Shawka Dam',
         difficulty: 'moderate',
         accessibleBy: ['car'],
         childFriendly: true,
@@ -20,7 +20,7 @@ describe('buildLocationCreateData', () => {
     );
 
     expect(data.destinationId).toBe(testAreas.hatta.id);
-    expect(data.areaLabel).toBe('Wadi Shawka Dam');
+    expect(data.placeHubLabel).toBe('Wadi Shawka Dam');
     expect(data.childFriendly).toBe(true);
     expect(data.tags).toContain('area:Wadi Shawka Dam');
     expect(data.accessibility).toBe(Accessibility.CAR_ACCESSIBLE);
@@ -84,7 +84,7 @@ describe('locationSubmitBodySchema outdoor photos', () => {
     const parsed = locationSubmitBodySchema.safeParse(
       buildTestLocationSubmitBody({
         destinationId: undefined,
-        proposedAreaName: 'Wadi Naqab',
+        proposedDestinationName: 'Wadi Naqab',
         latitude: 25.7,
         longitude: 56.1,
       })

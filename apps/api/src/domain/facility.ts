@@ -10,7 +10,7 @@ export interface Facility {
   id: string;
   name: string;
   region: string;
-  areaLabel: string | null;
+  placeHubLabel: string | null;
   destinationId: string | null;
   facilityKind: FacilityKind;
   onSiteId?: string | null;

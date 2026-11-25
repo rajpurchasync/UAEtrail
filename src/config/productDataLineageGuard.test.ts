@@ -85,9 +85,9 @@ describe('productDataLineageGuard (system-wide)', () => {
     expect(read('src/hooks/useHomeLandingActivities.ts')).toMatch(/getFeaturedActivities/);
   });
 
-  it('CTX-DATA-08: published areas drive consumer emirate options when rows exist', () => {
-    expect(read('src/config/regions.ts')).toMatch(/venueStateOptionsFromPublishedAreas/);
-    expect(read('src/config/regions.ts')).toMatch(/areas\.length > 0/);
+  it('CTX-DATA-08: published destinations drive consumer emirate options when rows exist', () => {
+    expect(read('src/config/regions.ts')).toMatch(/venueStateOptionsFromPublishedDestinations/);
+    expect(read('src/config/regions.ts')).toMatch(/destinations\.length > 0/);
     expect(read('src/config/regions.ts')).toMatch(/consumerEmirateKeys/);
   });
 
@@ -115,7 +115,7 @@ describe('productDataLineageGuard (system-wide)', () => {
     expect(existsSync(join(ROOT, 'src/config/useExploreRegionPillOptions.ts'))).toBe(true);
     expect(read('src/explore/search/ExploreSearchPickSheets.tsx')).toMatch(/useExploreRegionPillOptions/);
     expect(read('src/explore/ui/ExploreMapMobileUaePill.tsx')).toMatch(/useVenueStateFilterOptions/);
-    expect(read('src/explore/search/exploreSearchWhereSuggestions.ts')).toMatch(/mergeExploreRegionPillOptionsWithAreas/);
+    expect(read('src/explore/search/exploreSearchWhereSuggestions.ts')).toMatch(/mergeExploreRegionPillOptionsWithDestinations/);
     expect(read('src/explore/search/ExploreSearchResultsChrome.tsx')).toMatch(/useExploreRegionPillOptions/);
     expect(read('src/explore/ui/EmirateFromPinField.tsx')).toMatch(/useVenueStateFilterOptions/);
   });

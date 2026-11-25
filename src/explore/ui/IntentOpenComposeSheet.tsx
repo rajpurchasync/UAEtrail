@@ -81,7 +81,7 @@ export const IntentOpenComposeSheet = ({
     setStep('schedule');
   }, [open, urlPrefillCapacity]);
 
-  const prefillAreaId = useMemo(
+  const prefillDestinationId = useMemo(
     () => destinationIdForExploreDestinationSlug(publishedDestinations, exploreDestinationSlug),
     [publishedDestinations, exploreDestinationSlug]
   );
@@ -237,7 +237,7 @@ export const IntentOpenComposeSheet = ({
           <AvailabilitySlotEditor
             ref={openEditorRef}
             variant="fab"
-            prefillAreaId={prefillAreaId}
+            prefillDestinationId={prefillDestinationId}
             composePrefill={composePrefill}
             showCapacityChooser={false}
             editorSection={step === 'form-days' ? 'days' : 'details'}

@@ -6,7 +6,7 @@ export const facilityDtoToAdminPlaceRow = (facility: FacilityDTO): PlaceDTO => (
   id: facility.id,
   name: facility.name,
   region: facility.region,
-  areaLabel: facility.areaLabel ?? null,
+  placeHubLabel: facility.placeHubLabel ?? null,
   destinationId: facility.destinationId,
   activityType: 'event',
   description: facility.description ?? '',
@@ -31,7 +31,7 @@ export const adminPlaceFormToFacilityPayload = (
 ): Partial<FacilityDTO> & { facilityKind: FacilityDTO['facilityKind'] } => ({
   name: form.name?.trim() ?? '',
   region: form.region?.trim() ?? '',
-  areaLabel: form.areaLabel ?? null,
+  placeHubLabel: form.placeHubLabel ?? null,
   destinationId: form.destinationId?.trim() ?? '',
   facilityKind: facilityKind as FacilityDTO['facilityKind'],
   description: form.description?.trim() ?? '',

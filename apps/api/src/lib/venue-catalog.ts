@@ -40,7 +40,7 @@ export type VenueCatalogEntry = {
   longitude: number;
   description?: string;
   featured?: boolean;
-  areaLabel?: string;
+  placeHubLabel?: string;
   areaId?: string;
   difficulty?: 'easy' | 'moderate' | 'hard';
   distance?: number;

@@ -27,8 +27,8 @@ export type AvailabilityFixedFlowStepId =
   | 'destination'
   | 'to'
   | 'from'
-  | 'area'
-  | 'curatedArea'
+  | 'where'
+  | 'curatedDestination'
   | 'route'
   | 'persons'
   | 'audience'
@@ -123,7 +123,7 @@ export const AVAILABILITY_FIXED_VEHICLE_OPTIONS: Array<{ value: AvailabilityFixe
 const HIKING_DEMAND_STEPS: AvailabilityFixedFlowStepId[] = [
   'title',
   'when',
-  'curatedArea',
+  'curatedDestination',
   'persons',
   'audience',
   'from',
@@ -135,7 +135,7 @@ const HIKING_DEMAND_STEPS: AvailabilityFixedFlowStepId[] = [
 const CAMPING_DEMAND_STEPS: AvailabilityFixedFlowStepId[] = [
   'title',
   'when',
-  'curatedArea',
+  'curatedDestination',
   'persons',
   'audience',
   'from',
@@ -147,7 +147,7 @@ const CAMPING_DEMAND_STEPS: AvailabilityFixedFlowStepId[] = [
 const RIDESHARE_DEMAND_STEPS: AvailabilityFixedFlowStepId[] = [
   'title',
   'when',
-  'curatedArea',
+  'curatedDestination',
   'from',
   'to',
   'persons',
@@ -159,7 +159,7 @@ const RIDESHARE_DEMAND_STEPS: AvailabilityFixedFlowStepId[] = [
 const EVENT_DEMAND_STEPS: AvailabilityFixedFlowStepId[] = [
   'title',
   'when',
-  'curatedArea',
+  'curatedDestination',
   'persons',
   'audience',
   'from',
@@ -243,11 +243,11 @@ export const getAvailabilityFixedFlowSteps = (kind: AvailabilityFixedKind): Avai
     case 'event':
       return EVENT_DEMAND_STEPS;
     case 'guide':
-      return ['title', 'curatedArea', 'when', 'persons', 'comment', 'review'];
+      return ['title', 'curatedDestination', 'when', 'persons', 'comment', 'review'];
     case 'rideshare':
       return RIDESHARE_DEMAND_STEPS;
     case 'other':
-      return ['title', 'curatedArea', 'persons', 'comment', 'review'];
+      return ['title', 'curatedDestination', 'persons', 'comment', 'review'];
     default:
       return ['title', 'comment', 'review'];
   }
@@ -255,8 +255,8 @@ export const getAvailabilityFixedFlowSteps = (kind: AvailabilityFixedKind): Avai
 
 /** Sheet heading for each step (shown under the header). */
 export const availabilityFixedFlowStepTitle = (step: AvailabilityFixedFlowStepId, kind: AvailabilityFixedKind): string => {
-  if (step === 'curatedArea') return 'Preferred area';
-  if (step === 'destination') return 'Preferred area';
+  if (step === 'curatedDestination') return 'Preferred destination';
+  if (step === 'destination') return 'Preferred destination';
   if (step === 'audience') return 'Looking for';
   if (step === 'transport') return 'Transport';
 
@@ -287,7 +287,7 @@ export const availabilityFixedFlowStepTitle = (step: AvailabilityFixedFlowStepId
         return 'Title';
       case 'when':
         return 'Preferred date & time';
-      case 'area':
+      case 'where':
         return 'Where';
       case 'from':
         return 'Going from';
@@ -324,7 +324,7 @@ export const availabilityFixedFlowStepTitle = (step: AvailabilityFixedFlowStepId
   switch (step) {
     case 'title':
       return 'What are you looking for?';
-    case 'area':
+    case 'where':
       if (kind === 'event') return 'What would you like to do?';
       if (kind === 'guide') return 'What are you looking for?';
       return 'Where would you like to go?';
@@ -386,7 +386,7 @@ export const availabilityAreaPlaceholder = (kind: AvailabilityFixedKind): string
 export const availabilityAreaUsesMap = (kind: AvailabilityFixedKind): boolean =>
   kind === 'camping' || kind === 'guide' || kind === 'other';
 
-export const availabilityAreaTextRequired = (kind: AvailabilityFixedKind): boolean =>
+export const availabilityWhereTextRequired = (kind: AvailabilityFixedKind): boolean =>
   kind === 'hiking' || kind === 'guide';
 
 export const availabilityGoingFromPlaceholder = (kind: AvailabilityFixedKind): string => {
@@ -524,10 +524,10 @@ export const validateAvailabilityFixedStep = (
       return null;
     case 'rideshare':
       return null;
-    case 'curatedArea':
+    case 'curatedDestination':
       return validateAvailabilityCuratedDestinationStep(draft);
-    case 'area': {
-      if (availabilityAreaTextRequired(kind) && !draft.preferredArea.trim()) {
+    case 'where': {
+      if (availabilityWhereTextRequired(kind) && !draft.preferredArea.trim()) {
         return kind === 'guide'
           ? 'Describe what you are looking for.'
           : 'Enter where you would like to go.';

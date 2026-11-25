@@ -47,7 +47,7 @@ describe('composeWideWizard', () => {
       bundleAvailabilityWizardPages([
         'title',
         'when',
-        'curatedArea',
+        'curatedDestination',
         'persons',
         'audience',
         'from',
@@ -57,7 +57,7 @@ describe('composeWideWizard', () => {
       ])
     ).toEqual([
       ['title', 'when', 'persons', 'audience', 'info', 'transport'],
-      ['curatedArea'],
+      ['curatedDestination'],
       ['destination'],
       ['from'],
       ['review'],
@@ -68,7 +68,7 @@ describe('composeWideWizard', () => {
     expect(
       bundleAddWizardPages([
         'title',
-        'curatedArea',
+        'curatedDestination',
         'location',
         'description',
         'parking',
@@ -76,7 +76,7 @@ describe('composeWideWizard', () => {
         'review',
       ])
     ).toEqual([
-      ['title', 'curatedArea', 'description', 'parking'],
+      ['title', 'curatedDestination', 'description', 'parking'],
       ['location'],
       ['image'],
       ['review'],

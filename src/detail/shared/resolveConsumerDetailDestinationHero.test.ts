@@ -1,39 +1,35 @@
 import { describe, expect, it } from 'vitest';
-import {
-  resolveFacilityDetailAreaHero,
-} from './resolveConsumerDetailAreaHero';
+import { resolveFacilityDetailDestinationHero } from './resolveConsumerDetailDestinationHero';
 
-describe('resolveFacilityDetailAreaHero', () => {
-  it('prefers curated area label and resolves slug from published areas list', () => {
+describe('resolveFacilityDetailDestinationHero', () => {
+  it('prefers place-hub label and resolves slug from published destinations', () => {
     expect(
-      resolveFacilityDetailAreaHero(
+      resolveFacilityDetailDestinationHero(
         {
           region: 'Dubai',
-          areaLabel: 'Al Qudra',
-          destinationId: 'area-1',
+          placeHubLabel: 'Al Qudra',
           geoRef: null,
         },
         'al-qudra'
       )
     ).toEqual({
       region: 'Dubai',
-      areaLabel: 'Al Qudra',
+      placeHubLabel: 'Al Qudra',
       destinationSlug: 'al-qudra',
     });
   });
 
   it('falls back to geoRef names when region labels are sparse', () => {
     expect(
-      resolveFacilityDetailAreaHero(
+      resolveFacilityDetailDestinationHero(
         {
           region: '',
-          areaLabel: null,
-          destinationId: 'x',
+          placeHubLabel: null,
           geoRef: {
             chain: [],
             countryId: 'c',
             stateId: 's',
-            destinationId: 'a',
+            areaId: 'a',
             path: 'ae/dubai/foo',
             names: { country: 'UAE', state: 'Dubai', area: 'Hatta' },
             searchTokens: [],
@@ -43,7 +39,7 @@ describe('resolveFacilityDetailAreaHero', () => {
       )
     ).toEqual({
       region: 'Dubai',
-      areaLabel: 'Hatta',
+      placeHubLabel: 'Hatta',
       destinationSlug: null,
     });
   });

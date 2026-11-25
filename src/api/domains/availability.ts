@@ -29,13 +29,13 @@ export const availabilityApi = {
     from: string;
     to: string;
     kind?: string;
-    area?: string;
+    destination?: string;
     region?: string;
     friendsOnly?: boolean;
   }) => {
     const search = new URLSearchParams({ from: params.from, to: params.to });
     if (params.kind) search.set('kind', params.kind);
-    if (params.area) search.set('area', params.area);
+    if (params.destination) search.set('destination', params.destination);
     if (params.region) search.set('region', params.region);
     if (params.friendsOnly) search.set('friendsOnly', '1');
     return apiRequest<{ data: ExploreAvailabilityIndex }>(

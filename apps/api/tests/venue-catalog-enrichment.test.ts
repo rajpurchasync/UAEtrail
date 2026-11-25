@@ -25,7 +25,7 @@ describe('venue-catalog-enrichment', () => {
     expect(enriched.maxGroupSize).toBe(12);
     expect(enriched.parkingLat).toBe(25.089);
     expect(enriched.destinationId).toBe(resolveCatalogLocationAreaId('mleiha-desert-camp'));
-    expect(enriched.areaLabel).toBe('Mleiha dunes');
+    expect(enriched.placeHubLabel).toBe('Mleiha dunes');
   });
 
   it('enriches hiking rows with distance, elevation, and difficulty', () => {

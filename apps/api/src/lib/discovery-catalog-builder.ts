@@ -222,14 +222,14 @@ const catalogDestinationRegion = (
   return region;
 };
 
-const attachExploreItemArea = (
+const attachExploreItemPlaceHub = (
   item: ExploreMapItemDTO,
   region: DestinationAssignableRow | string | null | undefined,
   destinationSlugById: Map<string, string>,
   destinationNameById: Map<string, string>,
   placeHubLabel?: string | null
 ): ExploreMapItemDTO => {
-  const hubLabel = placeHubLabel?.trim() || item.areaLabel?.trim() || null;
+  const hubLabel = placeHubLabel?.trim() || item.placeHubLabel?.trim() || null;
   const resolvedDestinationId =
     resolveDestinationId(catalogDestinationRegion(region)) ?? resolveDestinationId(item) ?? null;
   if (!resolvedDestinationId && !hubLabel) return item;
@@ -244,7 +244,7 @@ const attachExploreItemArea = (
     destinationId: resolvedDestinationId,
     destinationSlug: slug,
     destinationName,
-    areaLabel: hubLabel,
+    placeHubLabel: hubLabel,
     geoRef: item.geoRef ?? item.activity?.geoRef ?? null,
   };
 };
@@ -309,7 +309,7 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
         : null;
     const display = buildExploreActivityDisplay(activity);
     items.push(
-      attachExploreItemArea(
+      attachExploreItemPlaceHub(
         {
           id: `activity:${activity.id}`,
           kind: rideshare ? 'rideshare' : activity.activityType,
@@ -357,7 +357,7 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
         },
         destinationSlugById,
         destinationNameById,
-        event.location?.areaLabel ?? null
+        event.location?.placeHubLabel ?? null
       )
     );
   }
@@ -367,7 +367,7 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
 
     const dto = toLocationDto(location);
     if (!dto.images?.[0]?.trim()) continue;
-    const catalogAreaLabel = location.areaLabel ?? dto.areaLabel ?? null;
+    const catalogAreaLabel = location.placeHubLabel ?? dto.placeHubLabel ?? null;
     if (dto.activityType === 'shop') {
       const latitude = dto.latitude ?? null;
       const longitude = dto.longitude ?? null;
@@ -380,7 +380,7 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
       }
 
       items.push(
-        attachExploreItemArea(
+        attachExploreItemPlaceHub(
           {
             id: `venue:${dto.id}`,
             kind: 'shop',
@@ -429,7 +429,7 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
     if (catalogPlaceKind === 'outdoor_other') {
       if (latitude == null || longitude == null) continue;
       items.push(
-        attachExploreItemArea(
+        attachExploreItemPlaceHub(
           {
             id: `venue:${dto.id}`,
             kind: 'event',
@@ -477,7 +477,7 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
     );
 
     items.push(
-      attachExploreItemArea(
+      attachExploreItemPlaceHub(
         {
           id: `venue:${dto.id}`,
           kind,
@@ -531,9 +531,9 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
     if (!isWithinUaeFocusArea(latitude, longitude)) continue;
 
     const placeKind = facility.facilityKind;
-    const catalogAreaLabel = facility.areaLabel?.trim() || null;
+    const catalogAreaLabel = facility.placeHubLabel?.trim() || null;
     items.push(
-      attachExploreItemArea(
+      attachExploreItemPlaceHub(
         {
           id: `facility:${facility.id}`,
           kind: 'event',
@@ -587,7 +587,7 @@ export const buildDiscoveryCatalogMapPayload = async (): Promise<{ items: Explor
         ? resolveDestinationIdFromPoint(latitude, longitude, publishedDestinations, null)
         : null;
     items.push(
-      attachExploreItemArea(
+      attachExploreItemPlaceHub(
         {
           id: `shop:${shop.id}`,
           kind: 'shop',

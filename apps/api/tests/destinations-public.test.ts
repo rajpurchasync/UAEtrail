@@ -2,13 +2,13 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import type { Express } from 'express';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
-import { ensureCuratedAreasSeeded, testAreas } from './helpers/test-seed.js';
+import { ensurecuratedDestinationsSeeded, testAreas } from './helpers/test-seed.js';
 
 let app: Express;
 
 beforeAll(async () => {
   app = await bootstrapTestApp();
-  await ensureCuratedAreasSeeded();
+  await ensurecuratedDestinationsSeeded();
 });
 
 describe('GET /api/destinations', () => {

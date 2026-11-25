@@ -5,9 +5,9 @@ import {
   destinationIdForExploreDestinationSlug,
   filterExploreMapItemsByDestinationSlug,
   exploreMapItemMatchesDestinationSlug,
-  findPublishedAreaBySlug,
-  isStrongPublishedAreaSearchMatch,
-  searchPublishedAreasForQuery,
+  findPublishedDestinationBySlug,
+  isStrongPublishedDestinationSearchMatch,
+  searchPublishedDestinationsForQuery,
 } from './exploreDestinationFilter';
 
 const hattaArea = (): DestinationPublicDTO => ({
@@ -34,14 +34,14 @@ describe('exploreDestinationFilter', () => {
 
   it('ranks area search matches for explore search (§3.3)', () => {
     const areas = [hattaArea(), { ...hattaArea(), id: 'a2', slug: 'hatta-dam', name: 'Hatta Dam', region: 'Dubai' }];
-    const matches = searchPublishedAreasForQuery(areas, 'hatta');
+    const matches = searchPublishedDestinationsForQuery(areas, 'hatta');
     expect(matches[0]?.slug).toBe('hatta');
-    expect(isStrongPublishedAreaSearchMatch(hattaArea(), 'Hatta')).toBe(true);
+    expect(isStrongPublishedDestinationSearchMatch(hattaArea(), 'Hatta')).toBe(true);
   });
 
   it('resolves compose area prefill from published slug', () => {
     const areas = [hattaArea()];
-    expect(findPublishedAreaBySlug(areas, 'hatta')?.id).toBe('a1');
+    expect(findPublishedDestinationBySlug(areas, 'hatta')?.id).toBe('a1');
     expect(destinationIdForExploreDestinationSlug(areas, 'hatta')).toBe('a1');
     expect(destinationIdForExploreDestinationSlug(areas, 'missing')).toBeNull();
   });

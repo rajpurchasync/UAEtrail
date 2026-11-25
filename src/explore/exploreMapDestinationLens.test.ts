@@ -3,21 +3,21 @@ import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { matchesExplorePinKindFilter } from './ui/exploreMapPinModel';
 import { parseExplorePinKindFilter } from './explorePinKindFilter';
 
-const areaItem = (): ExploreMapItemDTO => ({
-  id: 'area:hatta',
-  kind: 'area',
-  source: 'area',
+const destinationItem = (): ExploreMapItemDTO => ({
+  id: 'destination:hatta',
+  kind: 'destination',
+  source: 'destination',
   title: 'Hatta',
   latitude: 24.8,
   longitude: 56.1,
-  path: '/area/hatta',
+  path: '/destination/hatta',
   destinationSlug: 'hatta',
 });
 
-describe('Area is not a map pin', () => {
-  it('legacy pinKind=locations maps to Spots, not area hub rows', () => {
+describe('Destination is not a map pin', () => {
+  it('legacy pinKind=locations maps to Spots, not destination hub rows', () => {
     expect(parseExplorePinKindFilter('locations')).toBe('places');
-    const area = areaItem();
+    const destination = destinationItem();
     const place: ExploreMapItemDTO = {
       id: 'venue:1',
       kind: 'hiking',
@@ -27,9 +27,9 @@ describe('Area is not a map pin', () => {
       longitude: 2,
       path: '/place/1',
     };
-    expect(matchesExplorePinKindFilter(area, 'places')).toBe(false);
+    expect(matchesExplorePinKindFilter(destination, 'places')).toBe(false);
     expect(matchesExplorePinKindFilter(place, 'places')).toBe(true);
-    expect(matchesExplorePinKindFilter(area, 'locations')).toBe(false);
+    expect(matchesExplorePinKindFilter(destination, 'locations')).toBe(false);
     expect(matchesExplorePinKindFilter(place, 'locations')).toBe(true);
   });
 });

@@ -9,13 +9,13 @@ export type ConditionalCatalog<T> =
   | { notModified: false; etag: string | null; data: T };
 
 export const fetchExploreMapOverlayIfSignedIn = async (
-  params?: Pick<ExploreMapQueryParams, 'bbox' | 'area'>
+  params?: Pick<ExploreMapQueryParams, 'bbox' | 'destination'>
 ): Promise<ExploreMapOverlayDTO | null> => {
   if (!getStoredSession()) return null;
   try {
     const res = await api.getExploreMapOverlay({
       bbox: params?.bbox,
-      area: params?.area ?? undefined,
+      destination: params?.destination ?? undefined,
     });
     return res.data;
   } catch {
@@ -28,7 +28,7 @@ export const fetchExploreMapItems = async (
   etag?: string | null
 ): Promise<ConditionalCatalog<ExploreMapItemDTO[]>> => {
   const path = exploreMapHttpPath(params);
-  const unscoped = !params?.bbox && !params?.area && !params?.projection && !params?.sources;
+  const unscoped = !params?.bbox && !params?.destination && !params?.projection && !params?.sources;
   // Bearer required for optionalAuth — without it the API keeps the guest 3+3 catalog cap.
   const mapPromise = apiRequestConditional<{ data: { items: ExploreMapItemDTO[] } }>(path, {
     etag: unscoped ? etag : null,

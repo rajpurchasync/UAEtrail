@@ -310,7 +310,7 @@ export const resolveGroupRegionLabel = (
 
 export type StampGroupRegionLevelsGeoInput = GroupRegionResolutionInput & {
   countryCode: string;
-  areaLabel?: string | null;
+  placeHubLabel?: string | null;
   existing?: GroupRegionLevels | null;
 };
 
@@ -321,7 +321,7 @@ export const stampGroupRegionLevelsFromGeo = (
   buildGroupRegionLevels({
     countryCode: input.countryCode,
     region: input.region,
-    areaLabel: input.areaLabel,
+    placeHubLabel: input.placeHubLabel,
     existing: input.existing,
     stateHint: input.stateHint,
     resolvedState: resolveGroupRegionLabel(input),

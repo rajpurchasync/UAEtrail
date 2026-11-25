@@ -8,10 +8,10 @@ export const buildActivityDetailDiscoveryCard = (activity: ActivityDetailDTO): D
   const location = activity.location;
   const item = buildExploreMapItemFromActivity(activity);
   const withSubtitle =
-    location?.areaLabel?.trim() || activity.region?.trim()
+    location?.placeHubLabel?.trim() || activity.region?.trim()
       ? {
           ...item,
-          subtitle: location?.areaLabel?.trim() || activity.region || item.subtitle,
+          subtitle: location?.placeHubLabel?.trim() || activity.region || item.subtitle,
         }
       : item;
   return buildDiscoveryCardViewModelCard(withSubtitle, [withSubtitle]);

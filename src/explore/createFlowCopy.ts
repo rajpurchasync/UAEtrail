@@ -168,13 +168,13 @@ export const HOSTING_DESTINATION_MAP_SEARCH_TITLE = 'Find on map';
 
 export const HOSTING_DESTINATION_MAP_SEARCH_SUBTITLE = 'Search the catalog';
 
-export const HOSTING_DESTINATION_MAP_SEARCH_PLACEHOLDER = 'Trail, wadi, area…';
+export const HOSTING_DESTINATION_MAP_SEARCH_PLACEHOLDER = 'Trail, wadi, destination…';
 
 export const HOSTING_DESTINATION_SELECT_STATE = 'State';
 
 export const HOSTING_DESTINATION_SELECT_COUNTRY = 'Country';
 
-export const HOSTING_DESTINATION_SELECT_AREA = 'Area';
+export const HOSTING_DESTINATION_SELECT_DESTINATION = 'Destination';
 
 export const HOSTING_DESTINATION_SELECT_PLACE = 'Place';
 
@@ -210,7 +210,7 @@ export const HOSTING_DESTINATION_CATALOG_LEAF_VIEW = 'View on map';
 
 export const HOSTING_DESTINATION_SEARCH_GROUP_ROUTE = 'Route';
 export const HOSTING_DESTINATION_SEARCH_GROUP_PLACE = 'Place hub';
-export const HOSTING_DESTINATION_SEARCH_GROUP_AREA = 'Area';
+export const HOSTING_DESTINATION_SEARCH_GROUP_DESTINATION = 'Destination';
 export const HOSTING_DESTINATION_EMPTY_ROUTES_PROMPT =
   'No routes listed under this place yet. Use Not found? Add new if you are leading a new trail.';
 

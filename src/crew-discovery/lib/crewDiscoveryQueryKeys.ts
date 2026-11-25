@@ -27,7 +27,7 @@ export const crewDiscoveryNetworkPreviewQueryKey = () =>
 export type CrewDiscoveryAvailabilityQueryParams = {
   from: string;
   to: string;
-  area?: string | null;
+  destination?: string | null;
   region?: string | null;
   kind?: string | null;
 };

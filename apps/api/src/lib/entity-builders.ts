@@ -23,7 +23,7 @@ export type RelationConnect = { connect?: { id?: string }; disconnect?: true };
 export type LocationCreateInput = {
   name: string;
   region?: string;
-  areaLabel?: string | null;
+  placeHubLabel?: string | null;
   destinationId?: string | null;
   /** Leaf row → place hub (`locations` id). */
   parentPlaceId?: string | null;
@@ -203,7 +203,7 @@ export const buildLocationFromCreateInput = (data: LocationCreateInput, id: stri
     id,
     name: data.name,
     region: data.region ?? '',
-    areaLabel: data.areaLabel?.trim() ? data.areaLabel.trim() : null,
+    placeHubLabel: data.placeHubLabel?.trim() ? data.placeHubLabel.trim() : null,
     ...catalogDestinationIdUpdate(data.destinationId),
     parentPlaceId: data.parentPlaceId?.trim() ? data.parentPlaceId.trim() : null,
     activityType: data.activityType as Location['activityType'],

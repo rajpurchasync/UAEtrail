@@ -27,7 +27,7 @@ import {
   registerVerifiedVisitor,
   type PublishedEventFixture,
 } from './helpers/fixtures.js';
-import { defaultTestAreaId, ensureCuratedAreasSeeded } from './helpers/test-seed.js';
+import { defaultTestAreaId, ensurecuratedDestinationsSeeded } from './helpers/test-seed.js';
 import { createFacilityRecord } from '../src/lib/facilities-store.js';
 
 let app: Express;
@@ -56,7 +56,7 @@ const placeCreateBody = (destinationId: string, name: string) => ({
 
 beforeAll(async () => {
   app = await bootstrapTestApp();
-  await ensureCuratedAreasSeeded();
+  await ensurecuratedDestinationsSeeded();
   const admin = await registerVerifiedPlatformAdmin(app, suffix);
   adminToken = admin.accessToken;
   hostFixture = await createPublishedEventFixture(hostFixtureSuffix);
@@ -120,7 +120,7 @@ afterAll(async () => {
 });
 
 describe('detail surface lineage (admin catalog → public read)', () => {
-  it('draft area is hidden from public detail; publish exposes GET /areas/:slug', async () => {
+  it('draft destination is hidden from public detail; publish exposes GET /destinations/:slug', async () => {
     const create = await request(app)
       .post('/api/admin/destinations')
       .set(adminAuth())

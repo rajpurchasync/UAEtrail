@@ -5,7 +5,7 @@ describe('addFlow steps', () => {
   it('add trail matches hiking place wizard', () => {
     expect(getAddFlowSteps('hiking')).toEqual([
       'title',
-      'curatedArea',
+      'curatedDestination',
       'image',
       'location',
       'trail_stats',
@@ -19,7 +19,7 @@ describe('addFlow steps', () => {
   it('add camp matches camping place wizard', () => {
     expect(getAddFlowSteps('camping')).toEqual([
       'title',
-      'curatedArea',
+      'curatedDestination',
       'image',
       'location',
       'surface',
@@ -32,7 +32,7 @@ describe('addFlow steps', () => {
   it('add shop matches shop wizard', () => {
     expect(getAddFlowSteps('shop')).toEqual([
       'title',
-      'curatedArea',
+      'curatedDestination',
       'location',
       'about',
       'shop_keywords',
@@ -48,7 +48,7 @@ describe('addFlow steps', () => {
     expect(getAddFlowSteps('facility')).toEqual([
       'title',
       'facilityType',
-      'curatedArea',
+      'curatedDestination',
       'parentPlace',
       'location',
       'image',
@@ -60,7 +60,7 @@ describe('addFlow steps', () => {
   it('add spot (others) matches event venue kind', () => {
     expect(getAddFlowSteps('event')).toEqual([
       'title',
-      'curatedArea',
+      'curatedDestination',
       'location',
       'image',
       'description',

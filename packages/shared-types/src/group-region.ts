@@ -79,7 +79,7 @@ export const groupRegionLevelTexts = (levels: GroupRegionLevels | null | undefin
 export type BuildGroupRegionLevelsInput = {
   countryCode: string;
   region?: string | null;
-  areaLabel?: string | null;
+  placeHubLabel?: string | null;
   existing?: GroupRegionLevels | null;
   /** Level-2 hint (e.g. UAE emirate from form or legacy field). */
   stateHint?: string | null;
@@ -108,7 +108,7 @@ export const buildGroupRegionLevels = (input: BuildGroupRegionLevelsInput): Grou
     (regionTrim && regionAsState !== l2 && regionTrim !== l2 ? regionTrim : null) ||
     null;
 
-  const l4 = input.existing?.l4?.trim() || input.areaLabel?.trim() || null;
+  const l4 = input.existing?.l4?.trim() || input.placeHubLabel?.trim() || null;
 
   return { l1, l2, l3, l4 };
 };

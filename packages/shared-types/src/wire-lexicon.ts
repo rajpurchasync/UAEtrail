@@ -61,6 +61,8 @@ export const BWL_COLLECTIONS = {
 export const BWL_CATALOG_GEO_FIELDS = {
   DESTINATION_ID: 'destinationId',
   ON_SITE_ID: 'onSiteId',
+  /** Place-hub bucket name on catalog rows — not curated destination title. */
+  PLACE_HUB_LABEL: 'placeHubLabel',
 } as const;
 
 export type ActivityModeWire = 'hosted';

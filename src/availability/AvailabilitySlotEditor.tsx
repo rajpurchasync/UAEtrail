@@ -14,7 +14,7 @@ import type { MemberAvailabilityMatchPreviewDTO } from '@uaetrail/shared-types';
 import { fetchMyAvailabilityMatchPreview } from '../hooks/memberAvailabilityApi';
 import { useExplorePublishedDestinationsQuery } from '../explore/useExplorePublishedDestinations';
 import { AvailabilityMatchPreview } from '../explore/ui/AvailabilityMatchPreview';
-import { mergeVenueStateFilterOptionsWithAreas } from '../config/regions';
+import { mergeVenueStateFilterOptionsWithDestinations } from '../config/regions';
 import { AppButton } from '../components/mobile/AppButton';
 import { useMemberAvailability } from '../hooks/useMemberAvailability';
 import { PlanAvailabilityDaysCalendar } from '../components/plan/PlanAvailabilityDaysCalendar';
@@ -53,7 +53,7 @@ const locationModeFromData = (
   region: string | null | undefined,
   destinationId: string | null | undefined
 ): AvailabilityLocationMode => {
-  if (destinationId?.trim()) return 'area';
+  if (destinationId?.trim()) return 'destination';
   if (region?.trim()) return 'region';
   return 'open';
 };
@@ -68,7 +68,7 @@ export type AvailabilitySlotEditorProps = {
   /** `fab` = explore compose sheet (no duplicate intro). */
   variant?: 'plan' | 'fab';
   /** Suggested destination id (e.g. from map `?destination=`); does not override saved `destinationId`. */
-  prefillAreaId?: string | null;
+  prefillDestinationId?: string | null;
   /** Compose `intent:open` prefill (`capacity`, default modalities). */
   composePrefill?: OpenAvailabilityComposePrefill | null;
   /** When false, capacity was chosen in the intent compose wizard — hide the guide toggle. */
@@ -83,7 +83,7 @@ export const AvailabilitySlotEditor = forwardRef<AvailabilitySlotEditorHandle, A
   function AvailabilitySlotEditor(
     {
       variant = 'plan',
-      prefillAreaId = null,
+      prefillDestinationId = null,
       composePrefill = null,
       showCapacityChooser = true,
       editorSection = 'full',
@@ -102,7 +102,7 @@ export const AvailabilitySlotEditor = forwardRef<AvailabilitySlotEditorHandle, A
   const [selectedDays, setSelectedDays] = useState<Set<string>>(() => new Set());
   const [locationMode, setLocationMode] = useState<AvailabilityLocationMode>('open');
   const [region, setRegion] = useState<string>('');
-  const [destinationId, setAreaId] = useState<string>('');
+  const [destinationId, setDestinationId] = useState<string>('');
   const { data: publishedDestinations = [], isError: publishedDestinationsError } = useExplorePublishedDestinationsQuery();
   const areasError = publishedDestinationsError ? 'Could not load trail areas.' : null;
   const [formError, setFormError] = useState<string | null>(null);
@@ -130,7 +130,7 @@ export const AvailabilitySlotEditor = forwardRef<AvailabilitySlotEditorHandle, A
   );
 
   const regionOptions = useMemo(
-    () => mergeVenueStateFilterOptionsWithAreas(publishedDestinations, 'AE').map((row) => row.key),
+    () => mergeVenueStateFilterOptionsWithDestinations(publishedDestinations, 'AE').map((row) => row.key),
     [publishedDestinations]
   );
 
@@ -152,7 +152,7 @@ export const AvailabilitySlotEditor = forwardRef<AvailabilitySlotEditorHandle, A
     setSelectedDays(new Set(picks.map((slot) => slot.startDate)));
     setLocationMode(locationModeFromData(data.region, data.destinationId));
     setRegion(data.region ?? '');
-    setAreaId(data.destinationId ?? '');
+    setDestinationId(data.destinationId ?? '');
     const savedTerms = pickGuideEngagementTermsFromSlots(data.slots);
     if (savedTerms) setGuideEngagementTerms(savedTerms);
   }, [data]);
@@ -167,17 +167,17 @@ export const AvailabilitySlotEditor = forwardRef<AvailabilitySlotEditorHandle, A
   }, [composePrefill, data]);
 
   useEffect(() => {
-    if (variant !== 'fab' || !prefillAreaId?.trim()) return;
-    const prefillKey = prefillAreaId.trim();
+    if (variant !== 'fab' || !prefillDestinationId?.trim()) return;
+    const prefillKey = prefillDestinationId.trim();
     if (fabAreaPrefillKey.current === prefillKey) return;
     if (data?.destinationId) {
       fabAreaPrefillKey.current = prefillKey;
       return;
     }
     fabAreaPrefillKey.current = prefillKey;
-    setLocationMode('area');
-    setAreaId(prefillKey);
-  }, [variant, prefillAreaId, data?.destinationId]);
+    setLocationMode('destination');
+    setDestinationId(prefillKey);
+  }, [variant, prefillDestinationId, data?.destinationId]);
 
   const toggleModality = (modality: ScheduleModality) => {
     setModalities((prev) =>
@@ -222,7 +222,7 @@ export const AvailabilitySlotEditor = forwardRef<AvailabilitySlotEditorHandle, A
         setFormError('Choose a region or switch location to Open.');
         return;
       }
-      if (locationMode === 'area' && !destinationId.trim()) {
+      if (locationMode === 'destination' && !destinationId.trim()) {
         setFormError('Choose an area or switch location to Open.');
         return;
       }
@@ -375,7 +375,7 @@ export const AvailabilitySlotEditor = forwardRef<AvailabilitySlotEditorHandle, A
             [
               ['open', 'Open — anywhere in UAE'],
               ['region', 'Region (emirate)'],
-              ['area', 'Specific area'],
+              ['destination', 'Specific destination'],
             ] as const
           ).map(([mode, label]) => (
             <button
@@ -409,15 +409,15 @@ export const AvailabilitySlotEditor = forwardRef<AvailabilitySlotEditorHandle, A
             </select>
           </label>
         ) : null}
-        {locationMode === 'area' ? (
+        {locationMode === 'destination' ? (
           <label className="block text-sm font-medium text-slate-700">
-            Area
+            Destination
             <select
               className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
               value={destinationId}
-              onChange={(e) => setAreaId(e.target.value)}
+              onChange={(e) => setDestinationId(e.target.value)}
             >
-              <option value="">Choose area…</option>
+              <option value="">Choose destination…</option>
               {publishedDestinations.map((area) => (
                 <option key={area.id} value={area.id}>
                   {area.name} ({area.region})

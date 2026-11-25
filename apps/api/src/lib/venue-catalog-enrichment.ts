@@ -20,8 +20,8 @@ const inferEasyHike = (entry: VenueCatalogEntry): boolean =>
 const inferHardHike = (entry: VenueCatalogEntry): boolean =>
   /summit|stairway|heaven|mountain trail|ridge|abadilah/i.test(textBlob(entry));
 
-const inferAreaLabel = (entry: VenueCatalogEntry): string | null => {
-  if (entry.areaLabel?.trim()) return entry.areaLabel.trim();
+const inferPlaceHubLabel = (entry: VenueCatalogEntry): string | null => {
+  if (entry.placeHubLabel?.trim()) return entry.placeHubLabel.trim();
   const id = entry.id;
   if (id.includes('jebel-jais')) return 'Jebel Jais';
   if (id.includes('wadi-shawka')) return 'Wadi Shawka';
@@ -107,7 +107,7 @@ export const enrichCatalogEntryFields = (
     entry.elevation ??
     (hiking ? (hard ? 450 : easy ? 80 : 220) : undefined);
 
-  const areaLabel = inferAreaLabel(entry);
+  const placeHubLabel = inferPlaceHubLabel(entry);
   const images =
     entry.images && entry.images.length > 0
       ? entry.images
@@ -136,12 +136,12 @@ export const enrichCatalogEntryFields = (
   const areaId = entry.areaId ?? resolveCatalogLocationAreaId(entry.id) ?? undefined;
 
   const tags = [...(entry.tags ?? [])];
-  if (areaLabel && !tags.some((t) => t.startsWith('area:'))) {
-    tags.push(`area:${areaLabel}`);
+  if (placeHubLabel && !tags.some((t) => t.startsWith('area:'))) {
+    tags.push(`area:${placeHubLabel}`);
   }
 
   return {
-    areaLabel,
+    placeHubLabel,
     destinationId: areaId,
     difficulty,
     accessibility,

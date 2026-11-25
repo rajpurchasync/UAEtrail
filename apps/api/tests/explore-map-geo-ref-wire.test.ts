@@ -6,10 +6,10 @@ const ROOT = join(process.cwd(), '..', '..');
 const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
 
 describe('explore map geoRef wire', () => {
-  it('catalog builder attaches geoRef and areaLabel on explore items', () => {
+  it('catalog builder attaches geoRef and placeHubLabel on explore items', () => {
     const base = read('apps/api/src/lib/discovery-catalog-builder.ts');
-    expect(base).toMatch(/attachExploreItemArea/);
-    expect(base).toMatch(/areaLabel: hubLabel/);
+    expect(base).toMatch(/attachExploreItemPlaceHub/);
+    expect(base).toMatch(/placeHubLabel: hubLabel/);
     expect(base).toMatch(/geoRef: item\.geoRef \?\? item\.activity\?\.geoRef/);
     expect(base).toMatch(/geoRef: dto\.geoRef/);
     expect(base).toMatch(/geoRef: facility\.geoRef/);

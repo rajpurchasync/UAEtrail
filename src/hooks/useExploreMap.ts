@@ -57,7 +57,7 @@ export const useExploreMap = (options?: UseExploreMapOptions) => {
           ? fetchExploreMapItems(
               {
                 bbox: scope.bbox,
-                area: scope.area ?? undefined,
+                destination: scope.destination ?? undefined,
                 projection,
                 sources,
                 includeRideshare,

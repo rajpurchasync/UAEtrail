@@ -19,7 +19,7 @@ describe('hostingFromPlace', () => {
       name: 'Wadi Shawka',
       region: 'Sharjah',
       destinationId: 'area-1',
-      areaLabel: 'Wadi Shawka',
+      placeHubLabel: 'Wadi Shawka',
       activityType: 'hiking',
       description: 'Loop with pools.',
       difficulty: 'easy',

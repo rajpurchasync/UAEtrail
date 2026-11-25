@@ -11,7 +11,7 @@ import { HOME_HERO_OG_PATH } from '../config/seo';
 import { subdivisionNoun } from '../config/regions';
 import {
   inferEmirateFromPin,
-  resolveCustomProposedAreaName,
+  resolveCustomproposedDestinationName,
   resolvePublishedDestinationForPoint,
   resolvePublishedDestinationIdForPoint,
 } from '../explore/hostingPublishDestination';
@@ -93,7 +93,7 @@ export const resolveOrganizeActivityLocationId = async (
     const destinationId =
       draft.customPlaceDestinationId?.trim() || draft.registryPlaceDestinationId?.trim() || inferred?.id || '';
     const area = destinationId ? publishedDestinations.find((row) => row.id === destinationId) ?? inferred : null;
-    const proposedName = resolveCustomProposedAreaName(draft);
+    const proposedName = resolveCustomproposedDestinationName(draft);
     if (!area) {
       throw new Error('Select an area.');
     }
@@ -122,7 +122,7 @@ export const resolveOrganizeActivityLocationId = async (
         groupRegion: emirate,
         region: emirate,
         destinationId: area.id,
-        areaLabel: area.name,
+        placeHubLabel: area.name,
         activityType,
         description: about.slice(0, 3000),
         latitude: draft.trailLatitude,

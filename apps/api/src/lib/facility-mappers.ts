@@ -6,7 +6,7 @@ export const toFacilityDto = (facility: Facility): FacilityDTO => ({
   id: facility.id,
   name: facility.name,
   region: facility.region,
-  areaLabel: facility.areaLabel,
+  placeHubLabel: facility.placeHubLabel,
   destinationId: facility.destinationId ?? null,
   geoRef: facility.geoRef ?? null,
   facilityKind: facility.facilityKind,

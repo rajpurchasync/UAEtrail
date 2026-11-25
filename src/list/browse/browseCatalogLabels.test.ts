@@ -38,9 +38,9 @@ const baseCard = (overrides: Partial<DiscoveryCardModel>): DiscoveryCardModel =>
 describe('browseCatalogLabels browse catalog geography', () => {
   it('never uses catalog leaf title as hub', () => {
     const card = baseCard({
-      areaName: 'Umm Al Quwain Beach Camp',
+      destinationName: 'Umm Al Quwain Beach Camp',
       subtitle: 'Umm Al Quwain Beach Camp',
-      areaLabel: 'UAQ corniche',
+      placeHubLabel: 'UAQ corniche',
     });
     expect(browseCatalogEntityName(card)).toBe('Umm Al Quwain Beach Camp');
     expect(browseCatalogHubLabel(card)).toBe('UAQ corniche');
@@ -50,7 +50,7 @@ describe('browseCatalogLabels browse catalog geography', () => {
   it('prefers geo L4 venue over catalog fields', () => {
     const card = baseCard({
       geoRef: uaqGeoRef(),
-      areaLabel: 'Wrong bucket',
+      placeHubLabel: 'Wrong bucket',
     });
     expect(browseCatalogHubLabel(card)).toBe('UAQ corniche');
     expect(browseCatalogHeaderLocationLine(card)).toBe('Umm Al Quwain · UAQ corniche');
@@ -67,7 +67,7 @@ describe('browseCatalogLabels browse catalog geography', () => {
         latitude: 1,
         longitude: 1,
         path: '/activity/1',
-        areaLabel: 'UAQ corniche',
+        placeHubLabel: 'UAQ corniche',
         geoRef: uaqGeoRef(),
       } as Parameters<typeof browseCatalogHubLabelFromExploreItem>[0])
     ).toBe('UAQ corniche');

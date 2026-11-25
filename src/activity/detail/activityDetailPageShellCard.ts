@@ -51,7 +51,7 @@ export const buildActivityDetailPageShellCard = (input: {
   const exploreDisplay = buildExploreActivityDisplay(activity);
   const location = activity.location;
   const browseSubtitle =
-    location?.areaLabel?.trim() ||
+    location?.placeHubLabel?.trim() ||
     activity.geoRef?.names.venue?.trim() ||
     activity.geoRef?.names.area?.trim() ||
     activity.region?.trim() ||

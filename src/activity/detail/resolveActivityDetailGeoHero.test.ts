@@ -30,10 +30,10 @@ describe('resolveActivityDetailGeoHero', () => {
         featured: false,
         childFriendly: false,
         season: [],
-        areaLabel: 'Wadi Ghalilah',
+        placeHubLabel: 'Wadi Ghalilah',
       },
     } as ActivityDetailDTO);
-    expect(hero.areaLabel).toBe('Wadi Ghalilah');
+    expect(hero.placeHubLabel).toBe('Wadi Ghalilah');
     expect(hero.geoHubPath).toBe('/geo/n/v');
     expect(hero.destinationSlug).toBeNull();
   });

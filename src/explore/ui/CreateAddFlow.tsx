@@ -154,7 +154,7 @@ export const CreateAddFlow = ({
   const hasComposeDraft = composeWizardHasDraftContent({
     title: draft.title,
     description: draft.description,
-    placeLabel: draft.areaLabel,
+    placeLabel: draft.placeHubLabel,
   });
   const composeInProgress = isPastWizardStep(currentStepIndex) || hasComposeDraft;
 

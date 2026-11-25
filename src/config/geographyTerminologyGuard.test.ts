@@ -40,7 +40,7 @@ describe('geographyTerminologyGuard (Place · Facility · Area)', () => {
       /source === 'area'/
     );
     expect(read('src/explore/ui/peek/place/PlacePeekHero.tsx')).toMatch(
-      /resolvePlacePeekCuratedArea/
+      /resolvePlacePeekCuratedDestination/
     );
     expect(read('src/explore/ui/map-peek/mapPeekSlots.tsx')).toMatch(
       /card\.kind === 'destination'/

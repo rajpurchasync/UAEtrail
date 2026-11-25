@@ -24,7 +24,7 @@ export const DEV_RICH_HIKING_LOCATIONS: Array<{ id: string; data: LocationCreate
     data: {
       name: 'Stairway to Heaven (Wadi Ghalilah)',
       region: 'RAK',
-      areaLabel: 'Wadi Ghalilah',
+      placeHubLabel: 'Wadi Ghalilah',
       areaId: curatedDestinationSeedId('wadiShawka'),
       activityType: ActivityType.HIKING,
       difficulty: Difficulty.HARD,
@@ -56,7 +56,7 @@ export const DEV_RICH_HIKING_LOCATIONS: Array<{ id: string; data: LocationCreate
     data: {
       name: 'Wadi Ghalilah Loop',
       region: 'RAK',
-      areaLabel: 'Wadi Ghalilah',
+      placeHubLabel: 'Wadi Ghalilah',
       areaId: curatedDestinationSeedId('wadiShawka'),
       activityType: ActivityType.HIKING,
       difficulty: Difficulty.MODERATE,
@@ -85,7 +85,7 @@ export const DEV_RICH_HIKING_LOCATIONS: Array<{ id: string; data: LocationCreate
     data: {
       name: 'Mleiha Fossil Rock Hike',
       region: 'Sharjah',
-      areaLabel: 'Mleiha dunes',
+      placeHubLabel: 'Mleiha dunes',
       areaId: curatedDestinationSeedId('fossilRock'),
       activityType: ActivityType.HIKING,
       difficulty: Difficulty.MODERATE,
@@ -116,7 +116,7 @@ export const DEV_RICH_HIKING_LOCATIONS: Array<{ id: string; data: LocationCreate
     data: {
       name: 'Wadi Wurayah Lower Trail',
       region: 'Fujairah',
-      areaLabel: 'Wadi Wurayah',
+      placeHubLabel: 'Wadi Wurayah',
       areaId: curatedDestinationSeedId('khorfakkan'),
       activityType: ActivityType.HIKING,
       difficulty: Difficulty.MODERATE,
@@ -146,7 +146,7 @@ export const DEV_RICH_HIKING_LOCATIONS: Array<{ id: string; data: LocationCreate
     data: {
       name: 'Nad Al Sheba Dune Ridge Walk',
       region: 'Dubai',
-      areaLabel: 'Nad Al Sheba',
+      placeHubLabel: 'Nad Al Sheba',
       areaId: curatedDestinationSeedId('alQudra'),
       activityType: ActivityType.HIKING,
       difficulty: Difficulty.EASY,
@@ -175,7 +175,7 @@ export const DEV_RICH_HIKING_LOCATIONS: Array<{ id: string; data: LocationCreate
     data: {
       name: 'Al Rabi Summit Trail',
       region: 'Sharjah',
-      areaLabel: 'Khorfakkan',
+      placeHubLabel: 'Khorfakkan',
       areaId: curatedDestinationSeedId('khorfakkan'),
       activityType: ActivityType.HIKING,
       difficulty: Difficulty.MODERATE,
@@ -207,7 +207,7 @@ export const DEV_RICH_HIKING_LOCATIONS: Array<{ id: string; data: LocationCreate
     data: {
       name: 'Jebel Jais Zipline Plateau Walk',
       region: 'RAK',
-      areaLabel: 'Jebel Jais Viewing Deck',
+      placeHubLabel: 'Jebel Jais Viewing Deck',
       areaId: curatedDestinationSeedId('jebelJais'),
       activityType: ActivityType.HIKING,
       difficulty: Difficulty.EASY,
@@ -236,7 +236,7 @@ export const DEV_RICH_HIKING_LOCATIONS: Array<{ id: string; data: LocationCreate
     data: {
       name: 'Umm Al Quwain Mangrove Walk',
       region: 'UAQ',
-      areaLabel: 'Seneyah Island mangroves',
+      placeHubLabel: 'Seneyah Island mangroves',
       activityType: ActivityType.HIKING,
       difficulty: Difficulty.EASY,
       accessibility: Accessibility.CAR_ACCESSIBLE,
@@ -264,7 +264,7 @@ export const DEV_RICH_HIKING_LOCATIONS: Array<{ id: string; data: LocationCreate
     data: {
       name: 'Lehbab Platinum Dunes Walk',
       region: 'Dubai',
-      areaLabel: 'Lehbab dunes',
+      placeHubLabel: 'Lehbab dunes',
       areaId: curatedDestinationSeedId('fossilRock'),
       activityType: ActivityType.HIKING,
       difficulty: Difficulty.MODERATE,
@@ -293,7 +293,7 @@ export const DEV_RICH_HIKING_LOCATIONS: Array<{ id: string; data: LocationCreate
     data: {
       name: 'Sir Bani Yas Salt Dome Walk',
       region: 'Abu Dhabi',
-      areaLabel: 'Sir Bani Yas Island',
+      placeHubLabel: 'Sir Bani Yas Island',
       areaId: curatedDestinationSeedId('jebelHafeet'),
       activityType: ActivityType.HIKING,
       difficulty: Difficulty.EASY,
@@ -326,7 +326,7 @@ export const DEV_RICH_CAMPING_LOCATIONS: Array<{ id: string; data: LocationCreat
     data: {
       name: 'Mleiha Desert Camp',
       region: 'Sharjah',
-      areaLabel: 'Mleiha dunes',
+      placeHubLabel: 'Mleiha dunes',
       areaId: curatedDestinationSeedId('fossilRock'),
       activityType: ActivityType.CAMPING,
       description: 'Dune camp near Mleiha with dark skies and Fossil Rock day hikes nearby.',
@@ -353,7 +353,7 @@ export const DEV_RICH_CAMPING_LOCATIONS: Array<{ id: string; data: LocationCreat
     data: {
       name: 'Al Badayer Desert Camp',
       region: 'Sharjah',
-      areaLabel: 'Al Badayer',
+      placeHubLabel: 'Al Badayer',
       areaId: curatedDestinationSeedId('fossilRock'),
       activityType: ActivityType.CAMPING,
       description: 'High red dunes camping on the Dubai–Sharjah border — popular dune bashing base.',
@@ -381,7 +381,7 @@ export const DEV_RICH_CAMPING_LOCATIONS: Array<{ id: string; data: LocationCreat
     data: {
       name: 'Liwa Dunes Overnight',
       region: 'Abu Dhabi',
-      areaLabel: 'Rub al Khali edge',
+      placeHubLabel: 'Rub al Khali edge',
       areaId: curatedDestinationSeedId('remahDunes'),
       activityType: ActivityType.CAMPING,
       description: 'Deep Empty Quarter edge dunes — remote overnight for experienced desert campers.',
@@ -408,7 +408,7 @@ export const DEV_RICH_CAMPING_LOCATIONS: Array<{ id: string; data: LocationCreat
     data: {
       name: 'Wadi Shawka Dam Camp',
       region: 'RAK',
-      areaLabel: 'Wadi Shawka Dam',
+      placeHubLabel: 'Wadi Shawka Dam',
       areaId: curatedDestinationSeedId('wadiShawka'),
       activityType: ActivityType.CAMPING,
       description: 'Flat camp zones near Shawka dam — wadi hikes by day, cool air at night.',
@@ -435,7 +435,7 @@ export const DEV_RICH_CAMPING_LOCATIONS: Array<{ id: string; data: LocationCreat
     data: {
       name: 'Lehbab Red Dunes Camp',
       region: 'Dubai',
-      areaLabel: 'Lehbab',
+      placeHubLabel: 'Lehbab',
       areaId: curatedDestinationSeedId('alQudra'),
       activityType: ActivityType.CAMPING,
       description: 'Weekend dune camping within an hour of Dubai — popular with 4×4 crews.',
@@ -462,7 +462,7 @@ export const DEV_RICH_CAMPING_LOCATIONS: Array<{ id: string; data: LocationCreat
     data: {
       name: 'Umm Al Quwain Beach Camp',
       region: 'UAQ',
-      areaLabel: 'UAQ corniche',
+      placeHubLabel: 'UAQ corniche',
       activityType: ActivityType.CAMPING,
       description: 'Quiet emirate beach camping north of Dubai — calm water and mangrove sunsets.',
       season: ['winter', 'year-round'],
@@ -488,7 +488,7 @@ export const DEV_RICH_CAMPING_LOCATIONS: Array<{ id: string; data: LocationCreat
     data: {
       name: 'Fujairah Sandy Beach Camp',
       region: 'Fujairah',
-      areaLabel: 'Sandy Beach',
+      placeHubLabel: 'Sandy Beach',
       areaId: curatedDestinationSeedId('dibba'),
       activityType: ActivityType.CAMPING,
       description: 'East-coast beach camp between Dibba and Fujairah city — mountain backdrop.',
@@ -515,7 +515,7 @@ export const DEV_RICH_CAMPING_LOCATIONS: Array<{ id: string; data: LocationCreat
     data: {
       name: 'Kalba Creek Camp',
       region: 'Sharjah',
-      areaLabel: 'Kalba mangroves',
+      placeHubLabel: 'Kalba mangroves',
       areaId: curatedDestinationSeedId('kalba'),
       activityType: ActivityType.CAMPING,
       description: 'Mangrove-edge camp near Kalba — kayaks by day, calm nights.',
@@ -542,7 +542,7 @@ export const DEV_RICH_CAMPING_LOCATIONS: Array<{ id: string; data: LocationCreat
     data: {
       name: 'Jebel Jais Base Camp',
       region: 'RAK',
-      areaLabel: 'Jebel Jais',
+      placeHubLabel: 'Jebel Jais',
       areaId: curatedDestinationSeedId('jebelJais'),
       activityType: ActivityType.CAMPING,
       description: 'Cool mountain camp near Jebel Jais — layers required year-round.',
@@ -570,7 +570,7 @@ export const DEV_RICH_CAMPING_LOCATIONS: Array<{ id: string; data: LocationCreat
     data: {
       name: 'Ajman Mangrove Camp',
       region: 'Ajman',
-      areaLabel: 'Al Zorah mangroves',
+      placeHubLabel: 'Al Zorah mangroves',
       activityType: ActivityType.CAMPING,
       description: 'Lagoon-edge camp near Al Zorah — paddle tours and bird hides.',
       season: ['winter'],
@@ -596,7 +596,7 @@ export const DEV_RICH_CAMPING_LOCATIONS: Array<{ id: string; data: LocationCreat
     data: {
       name: 'RAK Beach Camp',
       region: 'RAK',
-      areaLabel: 'Al Hamra beach',
+      placeHubLabel: 'Al Hamra beach',
       areaId: curatedDestinationSeedId('jebelJais'),
       activityType: ActivityType.CAMPING,
       description: 'West coast beach camp near Al Hamra — sunset over the Arabian Gulf.',

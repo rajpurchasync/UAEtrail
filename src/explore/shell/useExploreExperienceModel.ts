@@ -332,7 +332,7 @@ export const useExploreExperienceModel = () => {
     [viewport.exploreMapStyle]
   );
 
-  const { reloadMap, handleMapPinClick, handlePickExploreArea } = useExploreMapInteractionHandlers(
+  const { reloadMap, handleMapPinClick, handlePickExploreDestination } = useExploreMapInteractionHandlers(
     queryClient,
     selectionItems,
     selection,
@@ -420,7 +420,7 @@ export const useExploreExperienceModel = () => {
     openExploreSearch,
     searchScopeCounts,
     publishedDestinations,
-    handlePickExploreArea,
+    handlePickExploreDestination,
     signInHref,
     onOpenHostApplication,
     handleOpenExploreItem,

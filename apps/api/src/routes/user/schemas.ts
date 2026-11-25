@@ -311,7 +311,7 @@ export const listFilterSchema = z.object({
   countryCode: z.string().length(2).optional(),
   q: z.string().max(120).optional(),
   country: z.string().max(80).optional(),
-  area: z.string().max(80).optional(),
+  destination: z.string().max(80).optional(),
   venue: z.string().max(80).optional(),
   page: z.coerce.number().int().min(1).default(1).optional(),
   pageSize: z.coerce.number().int().min(1).max(100).default(20).optional()

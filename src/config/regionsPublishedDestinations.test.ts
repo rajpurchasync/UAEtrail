@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { mergeVenueStateFilterOptionsWithAreas } from './regions';
+import { mergeVenueStateFilterOptionsWithDestinations } from './regions';
 
-describe('mergeVenueStateFilterOptionsWithAreas', () => {
+describe('mergeVenueStateFilterOptionsWithDestinations', () => {
   it('uses published area regions when rows exist (static list only when empty)', () => {
-    const fromDb = mergeVenueStateFilterOptionsWithAreas([
+    const fromDb = mergeVenueStateFilterOptionsWithDestinations([
       {
         id: 'a1',
         slug: 'liwa',
@@ -17,7 +17,7 @@ describe('mergeVenueStateFilterOptionsWithAreas', () => {
     expect(fromDb).toEqual([{ key: 'Abu Dhabi', label: 'Abu Dhabi' }]);
     expect(fromDb.some((row) => row.key === 'Dubai')).toBe(false);
 
-    const bootstrap = mergeVenueStateFilterOptionsWithAreas([]);
+    const bootstrap = mergeVenueStateFilterOptionsWithDestinations([]);
     expect(bootstrap.some((row) => row.key === 'Dubai')).toBe(true);
   });
 });

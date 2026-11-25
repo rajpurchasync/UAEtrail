@@ -83,8 +83,8 @@ export const buildExploreMapItemFromActivity = (
     geoRef: activity.geoRef ?? location?.geoRef ?? null,
     destinationId: activity.destinationId ?? location?.destinationId ?? null,
     destinationSlug: location?.destinationSlug ?? undefined,
-    areaLabel: location?.areaLabel ?? undefined,
-    areaName: location?.destinationName ?? undefined,
+    placeHubLabel: location?.placeHubLabel ?? undefined,
+    destinationName: location?.destinationName ?? undefined,
     activity,
     viewerAccess: viewerAccess ?? undefined,
   };

@@ -6,7 +6,7 @@ describe('intentFixedFlowEngine steps', () => {
     expect(getAvailabilityFixedFlowSteps('hiking')).toEqual([
       'title',
       'when',
-      'curatedArea',
+      'curatedDestination',
       'persons',
       'audience',
       'from',
@@ -20,7 +20,7 @@ describe('intentFixedFlowEngine steps', () => {
     expect(getAvailabilityFixedFlowSteps('camping')).toEqual([
       'title',
       'when',
-      'curatedArea',
+      'curatedDestination',
       'persons',
       'audience',
       'from',
@@ -34,7 +34,7 @@ describe('intentFixedFlowEngine steps', () => {
     expect(getAvailabilityFixedFlowSteps('rideshare')).toEqual([
       'title',
       'when',
-      'curatedArea',
+      'curatedDestination',
       'from',
       'to',
       'persons',
@@ -48,7 +48,7 @@ describe('intentFixedFlowEngine steps', () => {
     expect(getAvailabilityFixedFlowSteps('event')).toEqual([
       'title',
       'when',
-      'curatedArea',
+      'curatedDestination',
       'persons',
       'audience',
       'from',

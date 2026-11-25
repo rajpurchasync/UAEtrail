@@ -22,8 +22,7 @@ export type ExploreMapRouteQuery = {
   bbox?: string;
   cursor?: string;
   limit?: string;
-  area?: string;
-  /** Curated destination hub slug — canonical; `area` is legacy alias (MIG-DESTINATION-GEO). */
+  /** Curated destination hub slug — constrains bbox explore fetch. */
   destination?: string;
   /** `full` keeps nested activity/venue payloads; default is slim pin projection. */
   projection?: string;

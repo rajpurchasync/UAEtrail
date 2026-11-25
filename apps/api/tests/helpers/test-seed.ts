@@ -15,18 +15,18 @@ import { ActivityType, Difficulty, LocationStatus } from '../../src/domain/enums
 import { createLocationRecord } from '../../src/lib/activities-store.js';
 import { seedCuratedDestinations } from '../../src/lib/seed-destinations.js';
 
-let curatedAreasSeeded = false;
+let curatedDestinationsSeeded = false;
 
 /** Idempotent — upserts full curated area catalog for integration tests. */
-export const ensureCuratedAreasSeeded = async (): Promise<void> => {
-  if (curatedAreasSeeded) return;
+export const ensurecuratedDestinationsSeeded = async (): Promise<void> => {
+  if (curatedDestinationsSeeded) return;
   await seedCuratedDestinations();
-  curatedAreasSeeded = true;
+  curatedDestinationsSeeded = true;
 };
 
 export { CURATED_DESTINATION_SEED_IDS, CURATED_DESTINATION_SEED_SLUGS, curatedDestinationSeedId };
 
-/** Published test areas — ids match `ensureCuratedAreasSeeded()`. */
+/** Published test areas — ids match `ensurecuratedDestinationsSeeded()`. */
 export const testAreas = Object.fromEntries(
   CURATED_DESTINATION_CATALOG.map((row) => [
     row.key,
@@ -102,7 +102,7 @@ type TestLocationInput = Parameters<typeof createLocationRecord>[0];
 export const createTestLocation = async (
   input: TestLocationInput & { name: string }
 ): Promise<Awaited<ReturnType<typeof createLocationRecord>>> => {
-  await ensureCuratedAreasSeeded();
+  await ensurecuratedDestinationsSeeded();
   return createLocationRecord({
     region: 'Dubai',
     countryCode: 'AE',

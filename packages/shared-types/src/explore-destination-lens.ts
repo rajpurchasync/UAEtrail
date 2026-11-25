@@ -1,6 +1,6 @@
-/** Explore **Locations** lens — one map pin per curated area (not per catalog place). */
+/** Destination hub rollups — curated destination is a label, not an explore map pin. */
 
-export interface ExploreAreaLensStatsDTO {
+export interface ExploreDestinationLensStatsDTO {
   hostedActivities: number;
   /** Fixed `member_availability` pins in this hub (not legacy seeking activities). */
   availabilityPins: number;
@@ -11,7 +11,7 @@ export interface ExploreAreaLensStatsDTO {
   shops: number;
 }
 
-export const exploreAreaLensStatsSummary = (stats: ExploreAreaLensStatsDTO): string => {
+export const exploreDestinationLensStatsSummary = (stats: ExploreDestinationLensStatsDTO): string => {
   const parts: string[] = [];
   if (stats.hostedActivities > 0) {
     parts.push(`${stats.hostedActivities} outing${stats.hostedActivities === 1 ? '' : 's'}`);
@@ -29,5 +29,5 @@ export const exploreAreaLensStatsSummary = (stats: ExploreAreaLensStatsDTO): str
   if (stats.shops > 0) {
     parts.push(`${stats.shops} shop${stats.shops === 1 ? '' : 's'}`);
   }
-  return parts.length > 0 ? parts.join(' · ') : 'Explore this area';
+  return parts.length > 0 ? parts.join(' · ') : 'Explore this destination';
 };

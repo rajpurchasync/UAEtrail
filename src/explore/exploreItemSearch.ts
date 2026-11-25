@@ -160,7 +160,7 @@ export const exploreItemSearchHaystack = (item: ExploreMapItemDTO): string => {
     item.priceDisplay,
     item.destinationSlug,
     item.destinationName,
-    item.areaLabel,
+    item.placeHubLabel,
     item.geoRef?.names.country,
     item.geoRef?.names.state,
     item.geoRef?.names.area,

@@ -28,7 +28,7 @@ import {
 } from './findCrewSearchCopy';
 import { useCrewDiscoveryNetworkPreview } from '@/crew-discovery/hooks/useCrewDiscoveryNetworkPreview';
 import { FIND_CREW_DEV_PREVIEW_PEOPLE } from './findCrewAvailabilityDevPreview';
-import { mergeVenueStateFilterOptionsWithAreas } from '@/config/regions';
+import { mergeVenueStateFilterOptionsWithDestinations } from '@/config/regions';
 import { FindCrewCommunityList } from './FindCrewCommunityCard';
 import type { FindCrewRecommendedTab } from './findCrewRecommendedTabs';
 
@@ -94,7 +94,7 @@ export const FindCrewResultsSection = ({
   const regionFilter = useMemo(() => {
     const key = venueRegions[0]?.trim();
     if (!key) return null;
-    const option = mergeVenueStateFilterOptionsWithAreas([], 'AE').find(
+    const option = mergeVenueStateFilterOptionsWithDestinations([], 'AE').find(
       (entry) => entry.key.toLowerCase() === key.toLowerCase()
     );
     return option?.label ?? key;

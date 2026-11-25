@@ -43,7 +43,7 @@ import { recordCatalogEditOutcome } from './catalog-edit-ranking.js';
 export type AdminPlaceWriteInput = {
   name: string;
   region: string;
-  areaLabel?: string | null;
+  placeHubLabel?: string | null;
   destinationId?: string | null;
   parentPlaceId?: string | null;
   activityType: string;
@@ -140,7 +140,7 @@ const resolveAdminParentPlaceId = async (input: {
 
 export const createAdminPlaceRecord = async (input: { actorId: string; body: AdminPlaceWriteInput }) => {
   const body = input.body;
-  const areaLabel = body.areaLabel?.trim() || null;
+  const placeHubLabel = body.placeHubLabel?.trim() || null;
   const baseTags = body.tags ?? [];
   const parentPlaceId = await resolveAdminParentPlaceId({
     parentPlaceId: body.parentPlaceId,
@@ -149,7 +149,7 @@ export const createAdminPlaceRecord = async (input: { actorId: string; body: Adm
   const created = await createAdminLocation({
     name: body.name,
     region: body.region,
-    areaLabel,
+    placeHubLabel,
     destinationId: body.destinationId?.trim() || null,
     parentPlaceId,
     activityType: toPrismaActivityType(body.activityType),
@@ -170,7 +170,7 @@ export const createAdminPlaceRecord = async (input: { actorId: string; body: Adm
     longitude: body.longitude,
     highlights: body.highlights ?? [],
     surfaceType: body.surfaceType ?? [],
-    tags: mergeVenueAreaTag(baseTags, areaLabel),
+    tags: mergeVenueAreaTag(baseTags, placeHubLabel),
     parkingLink: body.parkingLink,
     parkingLat: body.parkingLat ?? undefined,
     parkingLng: body.parkingLng ?? undefined,
@@ -256,13 +256,13 @@ export const updateAdminPlaceRecord = async (input: {
   const isCatalogVenue =
     existing.externalSource === VENUE_CATALOG_EXTERNAL_SOURCE || locationHasCatalogImportTag(existing.tags);
   const nextAreaLabel =
-    body.areaLabel !== undefined ? body.areaLabel?.trim() || null : existing.areaLabel ?? null;
+    body.placeHubLabel !== undefined ? body.placeHubLabel?.trim() || null : existing.placeHubLabel ?? null;
   const baseTagsForUpdate = body.tags !== undefined ? body.tags : existing.tags;
   const tagsWithArea =
-    body.areaLabel !== undefined ? mergeVenueAreaTag(baseTagsForUpdate, nextAreaLabel) : baseTagsForUpdate;
+    body.placeHubLabel !== undefined ? mergeVenueAreaTag(baseTagsForUpdate, nextAreaLabel) : baseTagsForUpdate;
   const tagsForUpdate = isCatalogVenue
     ? withCatalogAdminEditedTag(tagsWithArea)
-    : body.tags !== undefined || body.areaLabel !== undefined
+    : body.tags !== undefined || body.placeHubLabel !== undefined
       ? tagsWithArea
       : undefined;
 
@@ -282,7 +282,7 @@ export const updateAdminPlaceRecord = async (input: {
   const updated = await updateAdminLocation(placeId, {
     name: body.name,
     region: body.region,
-    areaLabel: body.areaLabel !== undefined ? nextAreaLabel : undefined,
+    placeHubLabel: body.placeHubLabel !== undefined ? nextAreaLabel : undefined,
     ...(body.destinationId !== undefined
       ? catalogDestinationIdUpdate(body.destinationId?.trim() || null)
       : {}),

@@ -11,7 +11,7 @@ export const loadExploreMapOverlayForViewer = async (input: {
     bbox?: string;
     cursor?: string;
     limit?: string;
-    area?: string;
+    destination?: string;
   };
   viewerUserId: string;
   userRole?: string | null;

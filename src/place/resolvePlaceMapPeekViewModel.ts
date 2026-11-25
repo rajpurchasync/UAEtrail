@@ -2,7 +2,7 @@ import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import { discoveryCardHasMapCoords } from '../discovery/discoveryCardModel';
 import { browseCatalogEntityName } from '../list/browse/browseCatalogLabels';
 import { resolvePlaceRegistryCoverUrl } from './peek/resolvePlaceRegistryCoverImage';
-import { resolvePlacePeekCuratedArea } from './placePeekPresentation';
+import { resolvePlacePeekCuratedDestination } from './placePeekPresentation';
 import type { ViewerFix } from '../list/browse/placeDistance';
 import { resolvePlaceMapPeekKindLabel } from './resolvePlaceMapPeekKindLabel';
 import { resolvePlaceMapPeekMetaLine } from './resolvePlaceMapPeekMetaLine';
@@ -18,7 +18,7 @@ export const resolvePlaceMapPeekViewModel = (
     card.mapLatitude != null &&
     card.mapLongitude != null;
 
-  const curated = resolvePlacePeekCuratedArea(card);
+  const curated = resolvePlacePeekCuratedDestination(card);
 
   return {
     title: browseCatalogEntityName(card),

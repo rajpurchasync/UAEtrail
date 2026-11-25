@@ -7,7 +7,7 @@ const isEmpty = (value: unknown): boolean => {
 };
 
 const FILLABLE_KEYS: (keyof Location)[] = [
-  'areaLabel',
+  'placeHubLabel',
   'destinationId',
   'difficulty',
   'distance',

@@ -16,7 +16,7 @@ export type DiscoverRecommendationSignal =
   | 'spots_open'
   | 'popular'
   | 'wishlist_place'
-  | 'wishlist_area'
+  | 'wishlist_destination'
   | 'near_you';
 
 /** One ranked row for a Discover surface — refs map catalog ids (`activity:…`). */

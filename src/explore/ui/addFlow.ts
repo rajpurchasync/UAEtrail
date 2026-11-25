@@ -12,7 +12,7 @@ import { getOutdoorAddFlowSteps, getShopAddFlowSteps } from './addFlows/registry
 export type AddFlowStepId =
   | 'title'
   | 'facilityType'
-  | 'curatedArea'
+  | 'curatedDestination'
   | 'location'
   | 'image'
   | 'description'
@@ -34,8 +34,8 @@ export type AddDraft = {
   title: string;
   /** Admin-registered area (`locations.destinationId`). */
   destinationId: string | null;
-  /** Trailhead, wadi, or landmark — list poster location chip (`locations.areaLabel`). */
-  areaLabel: string;
+  /** Trailhead, wadi, or landmark — list poster location chip (`locations.placeHubLabel`). */
+  placeHubLabel: string;
   emirate: string;
   countryCode: CountryCode;
   latitude: number | null;
@@ -67,7 +67,7 @@ export type AddSubmitResult = { kind: 'location'; location: LocationDTO };
 
 const EVENT_ADD_STEPS: AddFlowStepId[] = [
   'title',
-  'curatedArea',
+  'curatedDestination',
   'location',
   'image',
   'description',
@@ -98,7 +98,7 @@ export const addFlowStepTitle = (
   switch (step) {
     case 'title':
       return 'Title';
-    case 'curatedArea':
+    case 'curatedDestination':
       return 'Area';
     case 'location':
       if (kind === 'hiking') return 'Starting point';
@@ -156,7 +156,7 @@ export const emptyAddDraft = (): AddDraft => ({
   kind: null,
   title: '',
   destinationId: null,
-  areaLabel: '',
+  placeHubLabel: '',
   emirate: '',
   countryCode: 'AE',
   latitude: MAP_CONFIG.exploreDefaultCenter.lat,
@@ -201,8 +201,8 @@ export const validateAddStep = (
     case 'title':
       if (!draft.title.trim()) return 'Enter a title.';
       return null;
-    case 'curatedArea':
-      if (!draft.destinationId?.trim() && (draft.areaLabel.trim() || draft.title.trim()).length < 2) {
+    case 'curatedDestination':
+      if (!draft.destinationId?.trim() && (draft.placeHubLabel.trim() || draft.title.trim()).length < 2) {
         return 'Choose a listed area, or name a new one for admin review.';
       }
       return null;
@@ -213,7 +213,7 @@ export const validateAddStep = (
           draft.latitude,
           draft.longitude,
           [],
-          `${draft.title} ${draft.areaLabel}`
+          `${draft.title} ${draft.placeHubLabel}`
         )
       ) {
         return 'Choose the emirate (Dubai, Ras Al Khaimah, Sharjah, …). Search and Home use this filter.';

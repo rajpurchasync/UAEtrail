@@ -7,8 +7,8 @@ export const isExploreMapBboxEnabled = (): boolean =>
 export type ExploreMapFetchScope = {
   /** `west,south,east,north` degrees (bbox-scoped map fetch). */
   bbox: string;
-  /** Optional curated area slug — server filter when bbox API flag is on. */
-  area?: string | null;
+  /** Optional curated destination slug — server filter when bbox API flag is on. */
+  destination?: string | null;
 };
 
 const roundBboxCoord = (value: number): number => Math.round(value * 10_000) / 10_000;
@@ -24,5 +24,5 @@ export const formatExploreMapBboxParam = (bounds: MapBounds): string =>
 
 export const defaultExploreMapFetchScope = (): ExploreMapFetchScope => ({
   bbox: formatExploreMapBboxParam(getMapBounds()),
-  area: null,
+  destination: null,
 });

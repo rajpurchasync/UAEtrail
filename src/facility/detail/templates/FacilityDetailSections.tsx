@@ -38,7 +38,7 @@ import { PlaceDetailWeatherSection } from '../../../components/place/PlaceDetail
 import { parseMobileBackNavState } from '../../../utils/mobileBackNav';
 import { resolveFacilityConsumerDetailHeaderChrome } from '../resolveFacilityConsumerDetailHeaderChrome';
 import { ConsumerDetailHeroGeoLine } from '../../../detail/shared/ConsumerDetailHeroGeoLine';
-import { resolveFacilityDetailAreaHero } from '../../../detail/shared/resolveConsumerDetailAreaHero';
+import { resolveFacilityDetailDestinationHero } from '../../../detail/shared/resolveConsumerDetailDestinationHero';
 import { useGeoAncestorLinks } from '../../../hooks/useGeoAncestorLinks';
 import { useExplorePublishedDestinations } from '../../../explore/useExplorePublishedDestinations';
 import { consumerDetailChildLinkState } from '../../../explore/mapPeekDetailNavState';
@@ -68,12 +68,15 @@ export const FacilityDetailSections = ({
   const label = PLACE_KIND_LABELS[kind];
   const headerChrome = resolveFacilityConsumerDetailHeaderChrome(kind);
   const publishedDestinations = useExplorePublishedDestinations();
-  const curatedAreaSlug = useMemo(() => {
+  const curatedDestinationSlug = useMemo(() => {
     const id = facility.destinationId?.trim();
     if (!id) return null;
     return publishedDestinations.find((area) => area.id === id)?.slug ?? null;
   }, [facility.destinationId, publishedDestinations]);
-  const { region, areaLabel, destinationSlug } = resolveFacilityDetailAreaHero(facility, curatedAreaSlug);
+  const { region, placeHubLabel, destinationSlug } = resolveFacilityDetailDestinationHero(
+    facility,
+    curatedDestinationSlug
+  );
   const geoHubPath = useMemo(() => {
     const venueId = facility.geoRef?.venueId?.trim();
     return venueId && !destinationSlug ? geoNodePath(venueId) : null;
@@ -84,11 +87,11 @@ export const FacilityDetailSections = ({
     return consumerDetailChildLinkState(returnTo, headerChrome.label);
   }, [headerChrome.label, location.pathname, location.search]);
   const heroGeoLine: ReactNode =
-    region || areaLabel ? (
+    region || placeHubLabel ? (
       <ConsumerDetailHeroGeoLine
         geoLinks={geoLinks}
         regionFallback={region}
-        areaLabel={areaLabel}
+        placeHubLabel={placeHubLabel}
         destinationSlug={destinationSlug}
         geoHubPath={geoHubPath}
         areaLinkState={areaLinkState}

@@ -177,7 +177,7 @@ const boundsFromPins = (pins: PlaceMapPin[], fallback: MapBounds): MapBounds => 
 };
 
 const resolvePinSource = (pin: Pick<PlaceMapPin, 'id' | 'source'>): MapPinSource => {
-  if (pin.id.startsWith('area:')) return 'area';
+  if (pin.id.startsWith('destination:')) return 'destination';
   if (pin.id.startsWith('venue:')) return 'venue';
   if (pin.id.startsWith('shop:')) return 'shop';
   if (pin.id.startsWith('agency:')) return 'agency';

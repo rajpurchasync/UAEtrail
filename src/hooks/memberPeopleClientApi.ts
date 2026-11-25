@@ -60,7 +60,7 @@ export const fetchExplorePeopleAvailability = async (params: {
   from: string;
   to: string;
   kind?: string;
-  area?: string;
+  destination?: string;
   region?: string;
   friendsOnly?: boolean;
 }): Promise<ExploreAvailabilityIndex> => {

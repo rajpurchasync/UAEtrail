@@ -39,7 +39,7 @@ describe('group-region levels', () => {
       countryCode: 'AE',
       stateHint: 'Sharjah',
       region: 'Kalba',
-      areaLabel: 'Beach',
+      placeHubLabel: 'Beach',
       normalizeState: (raw) => raw,
     });
     expect(levels.l2).toBe('Sharjah');

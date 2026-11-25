@@ -24,7 +24,7 @@ export const submitCatalogPlaceFromAddDraft = async (
 
   const activityType =
     draft.kind === 'event' ? 'event' : draft.kind === 'shop' ? 'shop' : draft.kind;
-  const proposedArea = (draft.areaLabel.trim() || draft.title.trim());
+  const proposedArea = (draft.placeHubLabel.trim() || draft.title.trim());
   const emirate = resolveRequiredEmirate(
     draft.emirate,
     draft.latitude,
@@ -46,7 +46,7 @@ export const submitCatalogPlaceFromAddDraft = async (
     region: emirate,
     ...(listedAreaId
       ? { destinationId: listedAreaId }
-      : { proposedAreaName: proposedArea, areaLabel: proposedArea }),
+      : { proposeddestinationName: proposedArea, placeHubLabel: proposedArea }),
     activityType,
     description: draft.description.trim(),
     latitude: draft.latitude ?? undefined,
@@ -56,9 +56,9 @@ export const submitCatalogPlaceFromAddDraft = async (
     images: draft.images,
   };
 
-  const trimmedArea = draft.areaLabel.trim();
+  const trimmedArea = draft.placeHubLabel.trim();
   if (trimmedArea.length >= 2) {
-    payload.areaLabel = trimmedArea;
+    payload.placeHubLabel = trimmedArea;
   }
 
   if (draft.kind === 'hiking' && draft.difficulty) {

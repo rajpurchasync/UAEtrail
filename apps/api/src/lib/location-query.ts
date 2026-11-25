@@ -1,4 +1,5 @@
 import type { Collection, Filter } from 'mongodb';
+import { readPlaceHubLabel } from '@uaetrail/shared-types';
 import type { Location } from '../domain/types.js';
 import { LocationStatus } from '../domain/enums.js';
 import { getMongoClient } from './mongo.js';
@@ -15,7 +16,7 @@ export interface LocationListFilters {
   countryCode?: string;
   q?: string;
   country?: string;
-  area?: string;
+  destination?: string;
   venue?: string;
   lat?: number;
   lng?: number;
@@ -35,7 +36,7 @@ const locationsCollection = (): Collection<MongoLocationDoc> =>
 
 const mapMongoLocation = (item: MongoLocationDoc): Location => {
   const { _id, geo: _geo, groupRegionBrowseKey: _browseKey, ...rest } = item;
-  return { id: _id, ...rest, areaLabel: rest.areaLabel ?? null };
+  return { id: _id, ...rest, placeHubLabel: readPlaceHubLabel(rest) };
 };
 
 export const locationDocForMongo = (location: Location): MongoLocationDoc => {
@@ -79,7 +80,7 @@ const mergeGeoSearch = async (
   const geo = await mongoGeoSearchFilter({
     q: filters.q,
     country: filters.country,
-    area: filters.area,
+    destination: filters.destination,
     venue: filters.venue,
   });
   if (!geo) return query;
@@ -158,7 +159,7 @@ const EXPLORE_MAP_LOCATION_PROJECTION = {
   region: 1,
   groupRegionLevels: 1,
   areaId: 1,
-  areaLabel: 1,
+  placeHubLabel: 1,
   tags: 1,
   featured: 1,
   childFriendly: 1,

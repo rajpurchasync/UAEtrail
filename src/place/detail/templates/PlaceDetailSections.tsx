@@ -214,7 +214,7 @@ export const PlaceDetailSections = ({
               <ConsumerDetailHeroGeoLine
                 geoLinks={geoLinks}
                 regionFallback={geoHero.region}
-                areaLabel={geoHero.areaLabel}
+                placeHubLabel={geoHero.placeHubLabel}
                 destinationSlug={geoHero.destinationSlug}
                 geoHubPath={geoHero.geoHubPath}
                 areaLinkState={areaLinkState}

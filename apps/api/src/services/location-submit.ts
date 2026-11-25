@@ -28,7 +28,7 @@ export type LocationCreateData = {
   countryCode: string;
   groupRegionLevels?: import('@uaetrail/shared-types').GroupRegionLevels | null;
   region: string;
-  areaLabel?: string | null;
+  placeHubLabel?: string | null;
   destinationId?: string | null;
   childFriendly?: boolean;
   accessibility?: Accessibility;
@@ -92,7 +92,7 @@ export const buildLocationCreateData = (
   const shopHighlights = body.highlights ?? [];
 
   const baseTags = shop ? shopTags : body.tags ?? [];
-  let tags = shop ? baseTags : mergeVenueAreaTag(baseTags, body.areaLabel);
+  let tags = shop ? baseTags : mergeVenueAreaTag(baseTags, body.placeHubLabel);
   if (facilityKind) {
     const kindTags = tagsForPlaceKind(facilityKind);
     tags = [...new Set([...tags, ...kindTags])];
@@ -102,7 +102,7 @@ export const buildLocationCreateData = (
   const groupRegionLevels = stampGroupRegionLevelsFromGeo({
     countryCode: body.countryCode.toUpperCase(),
     region: body.region,
-    areaLabel: body.areaLabel,
+    placeHubLabel: body.placeHubLabel,
     stateHint,
     latitude: body.latitude,
     longitude: body.longitude,
@@ -113,7 +113,7 @@ export const buildLocationCreateData = (
   countryCode: body.countryCode.toUpperCase(),
   groupRegionLevels,
   region: body.region,
-  areaLabel: body.areaLabel?.trim() || null,
+  placeHubLabel: body.placeHubLabel?.trim() || null,
   destinationId: body.destinationId?.trim() || '',
   activityType: facilityKind ? ActivityType.EVENT : toActivityType(body.activityType),
   description: body.description,

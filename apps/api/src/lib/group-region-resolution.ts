@@ -11,7 +11,7 @@ let publishedDestinationsCache: DestinationDTO[] | null = null;
 let publishedDestinationsCacheAt = 0;
 const CACHE_MS = 60_000;
 
-const loadPublishedAreasCached = async (): Promise<DestinationDTO[]> => {
+const loadPublishedDestinationsCached = async (): Promise<DestinationDTO[]> => {
   const now = Date.now();
   if (publishedDestinationsCache && now - publishedDestinationsCacheAt < CACHE_MS) {
     return publishedDestinationsCache;
@@ -21,7 +21,7 @@ const loadPublishedAreasCached = async (): Promise<DestinationDTO[]> => {
   return publishedDestinationsCache;
 };
 
-export const invalidatePublishedAreasGroupRegionCache = (): void => {
+export const invalidatePublishedDestinationsGroupRegionCache = (): void => {
   publishedDestinationsCache = null;
   publishedDestinationsCacheAt = 0;
 };
@@ -29,14 +29,14 @@ export const invalidatePublishedAreasGroupRegionCache = (): void => {
 const stampLevels = async (input: {
   countryCode: string;
   region?: string | null;
-  areaLabel?: string | null;
+  placeHubLabel?: string | null;
   existing?: GroupRegionLevels | null;
   stateHint?: string | null;
   latitude?: number | null;
   longitude?: number | null;
   areaId?: string | null;
 }): Promise<GroupRegionLevels> => {
-  const publishedDestinations = await loadPublishedAreasCached();
+  const publishedDestinations = await loadPublishedDestinationsCached();
   const stamped = stampGroupRegionLevelsFromGeo({
     ...input,
     countryCode: input.countryCode?.trim() ? input.countryCode : 'AE',
@@ -65,7 +65,7 @@ export const stampLocationGroupRegionLevels = async (location: Location): Promis
   const groupRegionLevels = await stampLevels({
     countryCode: location.countryCode,
     region: location.region,
-    areaLabel: location.areaLabel,
+    placeHubLabel: location.placeHubLabel,
     existing: location.groupRegionLevels,
     latitude: location.latitude,
     longitude: location.longitude,
@@ -81,14 +81,14 @@ export const resolveGroupRegionLevelsForActivityDoc = async (
   >,
   location?: Pick<
     Location,
-    'latitude' | 'longitude' | 'groupRegionLevels' | 'region' | 'areaId' | 'areaLabel' | 'countryCode'
+    'latitude' | 'longitude' | 'groupRegionLevels' | 'region' | 'areaId' | 'placeHubLabel' | 'countryCode'
   > | null
 ): Promise<GroupRegionLevels> => {
   const anchor = resolveActivityAnchorCoordinates(doc, location);
   return stampLevels({
     countryCode: location?.countryCode ?? 'AE',
     region: location?.region,
-    areaLabel: location?.areaLabel,
+    placeHubLabel: location?.placeHubLabel,
     existing: doc.groupRegionLevels ?? location?.groupRegionLevels,
     latitude: anchor?.latitude ?? location?.latitude,
     longitude: anchor?.longitude ?? location?.longitude,

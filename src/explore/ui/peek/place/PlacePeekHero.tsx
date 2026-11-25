@@ -7,7 +7,7 @@ import { ShareButton } from '../../../../components/ui/ShareButton';
 import { ExploreWishlistSaveButton } from '../../ExploreWishlistSaveButton';
 import { browseCatalogEntityName } from '../../../../list/browse/browseCatalogLabels';
 import {
-  resolvePlacePeekCuratedArea,
+  resolvePlacePeekCuratedDestination,
   resolvePlacePeekLocalLabel,
 } from '../../../../place/placePeekPresentation';
 import {
@@ -34,7 +34,7 @@ export const PlacePeekHero = ({
 }: PlacePeekHeroProps) => {
   const coverUrl = resolvePlaceRegistryCoverUrl(card);
   const title = browseCatalogEntityName(card);
-  const curated = resolvePlacePeekCuratedArea(card);
+  const curated = resolvePlacePeekCuratedDestination(card);
   const localLabel = resolvePlacePeekLocalLabel(card);
   const emoji = card.emoji?.trim() || '📍';
   const isFacility = card.source === 'facility';

@@ -13,7 +13,6 @@ import { loadGeoTree } from './geo-tree.js';
 export type ExploreGeoSearchQuery = {
   q?: string;
   country?: string;
-  area?: string;
   destination?: string;
   venue?: string;
 };
@@ -27,16 +26,16 @@ export const exploreMapItemMatchesGeoSearch = (
 ): boolean => {
   const q = query.q?.trim() ?? '';
   const country = query.country?.trim() ?? '';
-  const area = resolveExploreDestinationSlugQuery(query) ?? '';
+  const destinationSlug = resolveExploreDestinationSlugQuery(query) ?? '';
   const venue = query.venue?.trim() ?? '';
-  if (!q && !country && !area && !venue) return true;
+  if (!q && !country && !destinationSlug && !venue) return true;
 
   const ref = itemGeoRef(item);
   const hay = [
     item.title,
     item.subtitle,
     item.destinationName,
-    item.areaLabel,
+    item.placeHubLabel,
     item.destinationSlug,
     item.locationCard?.region,
     item.activity?.locationName,
@@ -59,7 +58,7 @@ export const exploreMapItemMatchesGeoSearch = (
   };
 
   if (country && !matchNamed(country)) return false;
-  if (area && !matchNamed(area)) return false;
+  if (destinationSlug && !matchNamed(destinationSlug)) return false;
   if (venue && !matchNamed(venue)) return false;
   if (q && !matchNamed(q)) return false;
   return true;

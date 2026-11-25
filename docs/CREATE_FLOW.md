@@ -293,12 +293,12 @@ Host **does not** infer area from meeting or going-from pins. **Area** is an adm
 | Host | Rule |
 |------|------|
 | **Public map** | Pick a **catalog place** from the registry; that place must have **`place.areaId`** (admin links in `/admin/places`). No separate area field on publish. |
-| **Custom trail name** (no registry row) | Host submits a **DRAFT** place (`POST /me/places`) with **pin**, **a photo**, and description. Area is inferred from the pin; if none matches, host picks an existing area or names a new one (`proposedAreaName` → draft area). City is stamped from the pin. Outing stays draft until admin approves the spot (and publishes a linked new area); then the place is `registryListed`, the outing publishes, and host/company/guides are notified (`activity_venue_live`). |
+| **Custom trail name** (no registry row) | Host submits a **DRAFT** place (`POST /me/places`) with **pin**, **a photo**, and description. Destination is inferred from the pin; if none matches, host picks an existing destination or names a new one (`proposedDestinationName` → draft destination). City is stamped from the pin. Outing stays draft until admin approves the spot (and publishes a linked new destination); then the place is `registryListed`, the outing publishes, and host/company/guides are notified (`activity_venue_live`). |
 | **Private** link-only | Not on public explore map; place area optional |
 
 Publish gate (API): `activity_area_required` when the linked place and the activity row both lack a persisted **`areaId`**. Catalog gaps are filled by seed / `scripts/backfill-location-area-ids.ts`, not by guessing an area on each read. Rideshare anchors still **write** `areaId` onto the place from the pin when the host publishes.
 
-**Add (place/facility):** **Area** step first (`curatedArea`), then country + region (emirate, province, governorate, or municipality) and map pin; API **`POST /me/places`** / **`POST /me/facilities`** with **`countryCode`** (required — no default) and **`areaId`** (published area validated server-side). **Lifecycle:** one member **submit** → pending on `/profile/submissions` — **not** draft + publish like hosted activities ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4.10).
+**Add (place/facility):** **Area** step first (`curatedDestination`), then country + region (emirate, province, governorate, or municipality) and map pin; API **`POST /me/places`** / **`POST /me/facilities`** with **`countryCode`** (required — no default) and **`areaId`** (published area validated server-side). **Lifecycle:** one member **submit** → pending on `/profile/submissions` — **not** draft + publish like hosted activities ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4.10).
 
 ### Find (looking for)
 
@@ -327,8 +327,8 @@ Track what is **spec** vs **shipped**. Update this table in the same PR that lan
 | Warm copy pass in wizards | ✅ | ✅ |
 | `outingCategory` / `outingTopic` on host publish | ✅ | ✅ (host create; map projection + Others browse filters) |
 | Host **area via place** (registry `place.areaId` only) | ✅ | ✅ (`validateHostingPlaceDestination`, publish gate) |
-| Find crew (fixed) **area + pin** step | ✅ | ✅ (`curatedArea`, `member_availability` fixed slot) |
-| Add on map place **area-first** | ✅ | ✅ (`curatedArea`, `areaId` on submit) |
+| Find crew (fixed) **area + pin** step | ✅ | ✅ (`curatedDestination`, `member_availability` fixed slot) |
+| Add on map place **area-first** | ✅ | ✅ (`curatedDestination`, `areaId` on submit) |
 | Host **custom spot → admin review** (pin + photo; city from coords) | ✅ | ✅ (`PENDING_VENUE_PLACE_PREFIX`; auto-publish on place approve) |
 | Intent **open** (`intent:open`) FAB sheet | ✅ | ✅ (`IntentOpenComposeSheet`, `PlanAvailabilitySection` variant `fab`) |
 | Plan **Available** lens — hosted outing hint after save | ✅ | ✅ (`PlanAvailabilitySection` + `match-preview` when outings align) |

@@ -813,7 +813,7 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
             (confirmAction.loc.destinationStatus === 'draft' ||
               adminAreas.find((area) => area.id === confirmAction.loc.destinationId)?.status === 'draft') ? (
               <p className="mb-3 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-950">
-                This place is linked to a <span className="font-semibold">new area</span>
+                This place is linked to a <span className="font-semibold">new destination</span>
                 {confirmAction.loc.destinationName ? ` (${confirmAction.loc.destinationName})` : ''}. Approving
                 will also publish that area on Explore.
               </p>
@@ -1003,7 +1003,7 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
                       />
                       {adminAreas.find((area) => area.id === form.destinationId)?.status === 'draft' ? (
                         <p className="mt-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-950">
-                          This place is linked to a new area. Approving the place will also publish
+                          This place is linked to a new destination. Approving the place will also publish
                           that area on Explore.
                         </p>
                       ) : (

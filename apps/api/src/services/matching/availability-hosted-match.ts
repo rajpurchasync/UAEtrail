@@ -138,7 +138,7 @@ export const notifyAvailabilityHoldersInAreaOfHostedActivity = async (input: {
 }): Promise<void> => {
   try {
     const area = await findDestinationById(input.destinationId);
-    const areaName = area?.name ?? 'this area';
+    const destinationName = area?.name ?? 'this destination';
     const kindFilter = availabilityKindsForActivityType(input.activityType);
     if (kindFilter.length === 0) return;
 
@@ -164,7 +164,7 @@ export const notifyAvailabilityHoldersInAreaOfHostedActivity = async (input: {
       if (!availabilityKindMatchesActivityType(availability.kinds, input.activityType)) continue;
       rows.push({
         userId: availability.userId,
-        title: `An outing in ${areaName} fits your availability`,
+        title: `An outing in ${destinationName} fits your availability`,
         body: input.activityTitle,
         type: NotificationType.ACTIVITY,
         meta: {

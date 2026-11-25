@@ -102,9 +102,9 @@ export const resolveRequiredEmirate = (
 ): string =>
   explicit?.trim() || inferEmirateFromPin(latitude, longitude, areas, localityName) || '';
 
-/** New spot name doubles as the new area name when the pin is outside listed hubs. */
-export const resolveCustomProposedAreaName = (draft: CreateActivityDraft): string =>
-  draft.customPlaceProposedAreaName.trim() || draft.trailName.trim();
+/** New spot name doubles as the proposed destination name when the pin is outside listed hubs. */
+export const resolveCustomproposedDestinationName = (draft: CreateActivityDraft): string =>
+  draft.customPlaceproposedDestinationName.trim() || draft.trailName.trim();
 
 const EMIRATE_REQUIRED =
   'Choose the emirate (Dubai, Ras Al Khaimah, Sharjah, …). Search and Home use this filter.';
@@ -126,7 +126,7 @@ export const validateCustomVenueDetails = (draft: CreateActivityDraft): string |
       draft.trailLatitude,
       draft.trailLongitude,
       [],
-      `${draft.trailName} ${draft.customPlaceProposedAreaName}`
+      `${draft.trailName} ${draft.customPlaceproposedDestinationName}`
     ) ||
     '';
   if (!emirate) return EMIRATE_REQUIRED;

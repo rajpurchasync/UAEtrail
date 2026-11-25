@@ -39,7 +39,7 @@ export const mapLocationToPlace = (location: LocationDTO): Place => ({
   longitude: location.longitude,
   status: location.status,
   destinationId: location.destinationId ?? null,
-  areaLabel: location.areaLabel ?? null,
+  placeHubLabel: location.placeHubLabel ?? null,
   destinationSlug: location.destinationSlug ?? null,
   destinationName: location.destinationName ?? null,
   geoRef: location.geoRef ?? null,

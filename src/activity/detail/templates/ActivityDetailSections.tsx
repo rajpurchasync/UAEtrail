@@ -141,7 +141,7 @@ export const ActivityDetailSections = ({
     <ConsumerDetailHeroGeoLine
       geoLinks={geoLinks}
       regionFallback={activityGeoHero.region}
-      areaLabel={activityGeoHero.areaLabel}
+      placeHubLabel={activityGeoHero.placeHubLabel}
       destinationSlug={activityGeoHero.destinationSlug}
       geoHubPath={activityGeoHero.geoHubPath}
       areaLinkState={areaLinkState}

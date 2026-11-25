@@ -16,7 +16,7 @@ const facilityKindSchema = z.enum(FACILITY_KINDS as [FacilityKind, ...FacilityKi
 const facilityFieldsSchema = z.object({
   name: z.string().min(2),
   region: z.string().min(2),
-  areaLabel: z.string().min(2).max(120).optional().nullable(),
+  placeHubLabel: z.string().min(2).max(120).optional().nullable(),
   destinationId: z.string().min(1).max(80),
   facilityKind: facilityKindSchema,
   onSiteId: z.string().min(1).max(80).optional().nullable(),

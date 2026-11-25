@@ -70,7 +70,7 @@ export const isScheduledActivityMapPin = (pin: {
   if (source === 'availability') return true;
   if (source === 'activity') return true;
   if (isGeographyMapSource(source)) return false;
-  if (source === 'shop' || source === 'agency' || source === 'area') return false;
+  if (source === 'shop' || source === 'agency' || source === 'destination') return false;
   return false;
 };
 

@@ -44,7 +44,7 @@ type QueueRow = {
   latitude?: number | null;
   longitude?: number | null;
   images?: string[];
-  proposedAreaName?: string | null;
+  proposedDestinationName?: string | null;
   facilityType?: string | null;
   candidates?: SubmissionCandidate[];
   insisted?: { reason: string };
@@ -105,7 +105,7 @@ export const Submissions = () => {
         latitude: row.latitude,
         longitude: row.longitude,
         images: row.images,
-        proposedAreaName: row.proposedAreaName,
+        proposeddestinationName: row.proposedDestinationName,
         facilityType: row.facilityType ?? null,
         candidates: row.candidates,
         insisted: row.insisted,
@@ -414,10 +414,10 @@ export const Submissions = () => {
                   <dd className="font-medium text-neutral-900">{selected.region}</dd>
                 </div>
               ) : null}
-              {selected.proposedAreaName ? (
+              {selected.proposedDestinationName ? (
                 <div>
                   <dt className="text-xs text-neutral-500">Proposed area</dt>
-                  <dd className="font-medium text-neutral-900">{selected.proposedAreaName}</dd>
+                  <dd className="font-medium text-neutral-900">{selected.proposedDestinationName}</dd>
                 </div>
               ) : null}
             </dl>

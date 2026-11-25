@@ -64,7 +64,7 @@ export const applyMapExploreGeoBoost = (
 export type MapExploreRecommendationBoosts = {
   friendOnOuting?: boolean;
   wishlistPlace?: boolean;
-  wishlistArea?: boolean;
+  wishlistDestination?: boolean;
   featuredPlace?: boolean;
 };
 
@@ -125,9 +125,9 @@ export const scoreMapExploreActivityCore = (input: {
   if (boosts?.wishlistPlace) {
     score += w.activityWishlistPlace;
     signals.push('wishlist_place');
-  } else if (boosts?.wishlistArea) {
+  } else if (boosts?.wishlistDestination) {
     score += w.activityWishlistArea;
-    signals.push('wishlist_area');
+    signals.push('wishlist_destination');
   }
 
   return applyMapExploreGeoBoost({ score, signals: [...new Set(signals)] }, input.pin, input.viewerGeo);
@@ -155,9 +155,9 @@ export const scoreMapExplorePlaceCore = (input: {
   if (input.boosts?.wishlistPlace) {
     score += w.placeWishlistPlace;
     signals.push('wishlist_place');
-  } else if (input.boosts?.wishlistArea) {
+  } else if (input.boosts?.wishlistDestination) {
     score += w.placeWishlistArea;
-    signals.push('wishlist_area');
+    signals.push('wishlist_destination');
   }
 
   if (signals.length === 0 && !input.boosts?.featuredPlace) return null;

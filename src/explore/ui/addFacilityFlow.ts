@@ -12,7 +12,7 @@ import type { AddSubmitResult } from './addFlow';
 export type FacilityAddStepId =
   | 'title'
   | 'facilityType'
-  | 'curatedArea'
+  | 'curatedDestination'
   | 'parentPlace'
   | 'location'
   | 'image'
@@ -22,7 +22,7 @@ export type FacilityAddStepId =
 export const FACILITY_ADD_STEPS: FacilityAddStepId[] = [
   'title',
   'facilityType',
-  'curatedArea',
+  'curatedDestination',
   'parentPlace',
   'location',
   'image',
@@ -89,7 +89,7 @@ export const facilityAddStepTitle = (step: FacilityAddStepId): string => {
       return 'Title';
     case 'facilityType':
       return 'Facility type';
-    case 'curatedArea':
+    case 'curatedDestination':
       return 'Area';
     case 'parentPlace':
       return FACILITY_ADD_PARENT_PLACE_TITLE;
@@ -117,7 +117,7 @@ export const validateFacilityAddStep = (
     case 'facilityType':
       if (!draft.facilityKind) return 'Choose a facility type.';
       return null;
-    case 'curatedArea':
+    case 'curatedDestination':
       if (!draft.destinationId?.trim()) return 'Choose which area this facility is in.';
       return null;
     case 'parentPlace':

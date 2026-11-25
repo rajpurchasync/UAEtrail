@@ -1,7 +1,7 @@
 import type { MemberAvailabilitySlotDTO } from '@uaetrail/shared-types';
 import { formatAvailabilitySlotLogisticsLine, isFixedAvailabilitySlot } from '@uaetrail/shared-types';
 import {
-  CREW_BROWSE_AREAS_ANY,
+  CREW_BROWSE_DESTINATIONS_ANY,
   type CrewBrowseAvailabilityDetail,
 } from './availabilityBrowseCardCopy';
 import {
@@ -73,7 +73,7 @@ const capacitySuffix = (kind: FindCrewAvailabilityCapacityKind): string => {
 const destinationValuesFromDetail = (
   detail: CrewBrowseAvailabilityDetail
 ): { values: string[]; moreCount: number } => {
-  const areas = detail.areaLabels.filter((label) => label !== CREW_BROWSE_AREAS_ANY);
+  const areas = detail.destinationLabels.filter((label) => label !== CREW_BROWSE_DESTINATIONS_ANY);
   if (areas.length === 0) return { values: ['Open to areas'], moreCount: 0 };
   const shown = areas.slice(0, MAX_DESTINATIONS_LIST);
   const moreCount = Math.max(0, areas.length - shown.length);

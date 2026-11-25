@@ -10,7 +10,7 @@ import {
 } from '../../hooks/organisationConsoleApi';
 import { fetchMeProfile } from '../../hooks/memberProfileApi';
 import { COUNTRIES } from '../../constants';
-import { DEFAULT_COUNTRY, mergeVenueStateFilterOptionsWithAreas } from '../../config/regions';
+import { DEFAULT_COUNTRY, mergeVenueStateFilterOptionsWithDestinations } from '../../config/regions';
 import { useExplorePublishedDestinationsQuery } from '../../explore/useExplorePublishedDestinations';
 import { MAP_CONFIG } from '../../config/platform';
 import { CONSUMER_MODAL_CLOSE } from '../../config/consumerSurfaceTypography';
@@ -142,7 +142,7 @@ export const ProProfileApplicationFlow = ({
 
   const { data: publishedDestinations = [] } = useExplorePublishedDestinationsQuery(open);
   const emirateOptions = useMemo(
-    () => mergeVenueStateFilterOptionsWithAreas(publishedDestinations, DEFAULT_COUNTRY),
+    () => mergeVenueStateFilterOptionsWithDestinations(publishedDestinations, DEFAULT_COUNTRY),
     [publishedDestinations]
   );
 

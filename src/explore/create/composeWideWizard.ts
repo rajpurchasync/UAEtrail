@@ -16,7 +16,7 @@ const HOSTING_SOLO = new Set<string>([
 ]);
 
 const SEEKING_SOLO = new Set<string>([
-  'curatedArea',
+  'curatedDestination',
   'destination',
   'to',
   'from',

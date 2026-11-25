@@ -34,7 +34,7 @@ describe('availabilityBrowseCardCopy', () => {
     expect(detail).not.toBeNull();
     expect(detail!.forLabels).toEqual(['Hiking', 'Camping']);
     expect(detail!.forLabels).not.toContain('Open');
-    expect(detail!.areaLabels).toEqual(['Dubai']);
+    expect(detail!.destinationLabels).toEqual(['Dubai']);
     expect(detail!.dateWindows).toHaveLength(2);
     expect(detail!.dateWindows[0]?.text).toMatch(/^Flexible · /);
   });
@@ -61,7 +61,7 @@ describe('availabilityBrowseCardCopy', () => {
     });
     expect(detail?.activityOpen).toBe(true);
     expect(detail?.for).toBe('Any activity');
-    expect(detail?.areaLabels).toEqual(['Open to areas']);
+    expect(detail?.destinationLabels).toEqual(['Open to destinations']);
   });
 
   it('builds one date line per distinct slot window', () => {

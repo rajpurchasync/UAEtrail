@@ -11,7 +11,7 @@ export type ExploreMapQueryParams = {
   bbox?: string;
   cursor?: string | null;
   limit?: number;
-  area?: string | null;
+  destination?: string | null;
   q?: string | null;
   country?: string | null;
   venue?: string | null;
@@ -29,7 +29,7 @@ export const buildExploreMapQueryString = (params?: ExploreMapQueryParams): stri
   if (params?.bbox) search.set('bbox', params.bbox);
   if (params?.cursor) search.set('cursor', params.cursor);
   if (params?.limit != null) search.set('limit', String(params.limit));
-  if (params?.area) search.set('area', params.area);
+  if (params?.destination) search.set('destination', params.destination);
   if (params?.q) search.set('q', params.q);
   if (params?.country) search.set('country', params.country);
   if (params?.venue) search.set('venue', params.venue);

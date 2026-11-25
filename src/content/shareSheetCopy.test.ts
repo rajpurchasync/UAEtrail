@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  SHARE_SHEET_TITLE_AREA,
+  SHARE_SHEET_TITLE_DESTINATION,
   SHARE_SHEET_TITLE_OUTING,
   resolveShareSheetTitle,
   shareSurfaceFromDiscoveryCard,
@@ -8,13 +8,13 @@ import {
 
 describe('shareSheetCopy', () => {
   it('resolves sheet titles by surface', () => {
-    expect(resolveShareSheetTitle('area')).toBe(SHARE_SHEET_TITLE_AREA);
+    expect(resolveShareSheetTitle('destination')).toBe(SHARE_SHEET_TITLE_DESTINATION);
     expect(resolveShareSheetTitle('activity')).toBe(SHARE_SHEET_TITLE_OUTING);
   });
 
-  it('maps area discovery cards to area share surface', () => {
+  it('maps destination discovery cards to destination share surface', () => {
     expect(
-      shareSurfaceFromDiscoveryCard({ kind: 'area', source: 'area_catalog', activity: undefined })
-    ).toBe('area');
+      shareSurfaceFromDiscoveryCard({ kind: 'destination', source: 'destination', activity: undefined })
+    ).toBe('destination');
   });
 });

@@ -18,14 +18,14 @@ export const resolvePlaceDetailGeoHero = (input: {
   const destinationSlug = place.destinationSlug?.trim() || null;
   const venueId = place.geoRef?.venueId?.trim();
   const geoHubPath = venueId && !destinationSlug ? geoNodePath(venueId) : null;
-  const areaLabel =
+  const placeHubLabel =
     hubLabel ||
-    place.areaLabel?.trim() ||
+    place.placeHubLabel?.trim() ||
     place.destinationName?.trim() ||
     resolvePlaceAreaLabelFromTags(place.tags) ||
     null;
   return {
-    areaLabel,
+    placeHubLabel,
     destinationSlug,
     geoHubPath,
     geoRef: place.geoRef ?? null,

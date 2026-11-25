@@ -87,7 +87,7 @@ export interface LocationDTO {
   name: string;
   region: string;
   /** Trailhead, wadi, or beach zone — list poster location chip (emirate stays in `region`). */
-  areaLabel?: string | null;
+  placeHubLabel?: string | null;
   /** Curated **Destination** id (`GET /destinations/:slug`). */
   destinationId?: string | null;
   /** Leaf venue grouped under a destination hub place (`locations.id`). */
@@ -862,8 +862,8 @@ export type ExploreMapKind = ActivityType | 'shop' | 'agency' | 'destination';
 export type { ExploreMapSourceCanonical, ExploreMapSourceWire } from './wire-lexicon.js';
 export type ExploreMapSource = ExploreMapSourceWire;
 
-export type { ExploreAreaLensStatsDTO } from './explore-area-lens.js';
-export { exploreAreaLensStatsSummary } from './explore-area-lens.js';
+export type { ExploreDestinationLensStatsDTO } from './explore-destination-lens.js';
+export { exploreDestinationLensStatsSummary } from './explore-destination-lens.js';
 
 export type { ExploreActivityMode } from './explore-activity-mode.js';
 export {
@@ -1004,8 +1004,8 @@ export interface ExploreMapItemDTO {
   destinationSlug?: string | null;
   destinationName?: string | null;
   geoRef?: import('./geo-hierarchy.js').GeoRef | null;
-  /** Catalog place-hub bucket (`locations.areaLabel`) — under geo venue / curated destination; not the leaf spot name. */
-  areaLabel?: string | null;
+  /** Catalog place-hub bucket — under geo venue / curated destination; not the leaf spot name. */
+  placeHubLabel?: string | null;
   groupRegionLevels?: GroupRegionLevels | null;
   /** Set when a host converts this request into a published activity. */
   convertedActivityId?: string | null;
@@ -1038,8 +1038,8 @@ export interface ExploreMapItemDTO {
   participationMode?: ParticipationMode | null;
   /** Rideshare activities linked to this parent plan (parent rows only). */
   linkedRideshareActivities?: ExploreLinkedRideshareDTO[];
-  /** Area hub rollups (place/facility counts). Not a map pin — Area is an admin-curated name. */
-  areaLensStats?: import('./explore-area-lens.js').ExploreAreaLensStatsDTO | null;
+  /** Destination hub rollups (place/facility counts). Not a map pin — destination is an admin-curated name. */
+  destinationLensStats?: import('./explore-destination-lens.js').ExploreDestinationLensStatsDTO | null;
   /**
    * Peek/detail hints. Public `GET /explore/map` is guest-level; signed-in members
    * replace this from `GET /me/discover/overlay`. Not stored in Redis payload.
@@ -2062,6 +2062,11 @@ export type {
 } from './catalog-query.js';
 
 export { normalizeFacilityCatalogQuery, normalizePlaceCatalogQuery } from './catalog-query-normalize.js';
+export {
+  readPlaceHubLabel,
+  placeHubLabelMongoPatch,
+  type PlaceHubLabelDoc,
+} from './place-hub-label.js';
 
 export { FACILITY_KINDS, isFacilityKind, type FacilityKind } from './facility-kind.js';
 

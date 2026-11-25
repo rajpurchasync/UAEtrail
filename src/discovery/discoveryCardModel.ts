@@ -1,7 +1,7 @@
 import type {
   ActivityViewerAccessDTO,
   ExploreActivityMode,
-  ExploreAreaLensStatsDTO,
+  ExploreDestinationLensStatsDTO,
   DiscoveryCardKind,
   DiscoveryCardSource,
   ExploreLinkedRideshareDTO,
@@ -112,11 +112,12 @@ export interface DiscoveryCardModel {
   activityMode?: ExploreActivityMode | null;
   destinationId?: string | null;
   destinationSlug?: string | null;
-  /** Catalog place-hub bucket (`locations.areaLabel`). */
-  areaLabel?: string | null;
+  /** Curated destination display name when `destinationId` is set. */
+  destinationName?: string | null;
+  /** Catalog place-hub bucket (`locations.placeHubLabel`). */
+  placeHubLabel?: string | null;
   /** Curated Area guide name when `destinationId` is set. */
-  areaName?: string | null;
-  areaLensStats?: ExploreAreaLensStatsDTO | null;
+  destinationLensStats?: ExploreDestinationLensStatsDTO | null;
   /** Hosted outings at this venue — list venue posters (`buildListFeedCards`). */
   venueUpcomingOutingCount?: number;
   venueNextOutingIso?: string | null;
@@ -305,9 +306,9 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
       item.longitude ?? activity?.displayLongitude ?? activity?.locationLongitude ?? null,
     destinationId: item.destinationId ?? null,
     destinationSlug: item.destinationSlug ?? null,
-    areaLabel: item.areaLabel ?? null,
-    areaName: item.destinationName ?? null,
-    areaLensStats: item.areaLensStats ?? null,
+    destinationName: item.destinationName ?? null,
+    placeHubLabel: item.placeHubLabel ?? null,
+    destinationLensStats: item.destinationLensStats ?? null,
     geoRef: item.geoRef ?? item.activity?.geoRef ?? null,
     linkedRideshares:
       item.linkedRideshareActivities && item.linkedRideshareActivities.length > 0

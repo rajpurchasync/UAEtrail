@@ -13,13 +13,13 @@ export const readVenueAreaFromTags = (tags?: string[] | null): string | null => 
   return value.length >= 2 ? value : null;
 };
 
-export const formatVenueAreaTag = (areaLabel: string): string =>
-  `${VENUE_AREA_TAG_PREFIX}${areaLabel.trim()}`;
+export const formatVenueAreaTag = (placeHubLabel: string): string =>
+  `${VENUE_AREA_TAG_PREFIX}${placeHubLabel.trim()}`;
 
-/** Persist `areaLabel` on the location and keep `area:` tag in sync for legacy readers. */
-export const mergeVenueAreaTag = (tags: readonly string[], areaLabel?: string | null): string[] => {
+/** Persist `placeHubLabel` on the location and keep `area:` tag in sync for tag-only readers. */
+export const mergeVenueAreaTag = (tags: readonly string[], placeHubLabel?: string | null): string[] => {
   const withoutArea = tags.filter((tag) => !tag.startsWith(VENUE_AREA_TAG_PREFIX));
-  const trimmed = areaLabel?.trim();
+  const trimmed = placeHubLabel?.trim();
   if (!trimmed || trimmed.length < 2) return [...withoutArea];
   const tag = formatVenueAreaTag(trimmed);
   return [...withoutArea, tag];
@@ -95,7 +95,7 @@ export const resolveVenueExploreLabels = (
   storedName: string,
   tags?: string[] | null,
   region?: string | null,
-  areaLabel?: string | null
+  placeHubLabel?: string | null
 ): { title: string; subtitle: string | null } => {
   const trimmed = storedName.trim() || 'Place';
   const nameEn = readVenueEnglishNameFromTags(tags);
@@ -112,7 +112,7 @@ export const resolveVenueExploreLabels = (
         : null;
 
   const regionPart = region?.trim() || null;
-  const areaLine = areaLabel?.trim() || readVenueAreaFromTags(tags) || null;
+  const areaLine = placeHubLabel?.trim() || readVenueAreaFromTags(tags) || null;
 
   const subtitle = arabicLine
     ? regionPart

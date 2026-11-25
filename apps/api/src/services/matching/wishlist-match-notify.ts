@@ -175,7 +175,7 @@ export const fanOutSavedDestinationWishlistNotifications = async (
 
   const area = await findPublishedDestinationById(input.destinationId);
   if (!area) return;
-  const areaName = area.name;
+  const destinationName = area.name;
   const recipientIds = savers.map((row) => row.userId).filter((userId) => userId !== input.hostUserId);
   if (recipientIds.length === 0) return;
 
@@ -193,7 +193,7 @@ export const fanOutSavedDestinationWishlistNotifications = async (
     if (!actorName) continue;
     rows.push({
       userId: saver.userId,
-      title: `New outing in ${areaName}`,
+      title: `New outing in ${destinationName}`,
       body: `${actorName}: ${input.title}`,
       type: NotificationType.ACTIVITY,
       meta: {

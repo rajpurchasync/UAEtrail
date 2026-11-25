@@ -63,7 +63,7 @@ export interface Location {
   name: string;
   region: string;
   /** Trailhead / wadi / beach zone for explore list subtitle and poster location chip. */
-  areaLabel: string | null;
+  placeHubLabel: string | null;
   /** Curated Destination (`destinations` / `areas` collection). */
   destinationId?: string | null;
   /** @deprecated Dual-write until MIG-DESTINATION-GEO P9. */

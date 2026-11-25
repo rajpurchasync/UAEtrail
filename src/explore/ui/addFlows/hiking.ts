@@ -1,6 +1,6 @@
 export const HIKING_ADD_STEPS = [
   'title',
-  'curatedArea',
+  'curatedDestination',
   'image',
   'location',
   'trail_stats',

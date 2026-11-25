@@ -12,8 +12,8 @@ export const submitMemberPlace = async (
   tenantId?: string
 ): Promise<PlaceDTO> => {
   const proposing = Boolean(
-    typeof (payload as { proposedAreaName?: string }).proposedAreaName === 'string' &&
-      (payload as { proposedAreaName?: string }).proposedAreaName?.trim()
+    typeof (payload as { proposedDestinationName?: string }).proposedDestinationName === 'string' &&
+      (payload as { proposedDestinationName?: string }).proposedDestinationName?.trim()
   );
   const res =
     tenantId && !proposing

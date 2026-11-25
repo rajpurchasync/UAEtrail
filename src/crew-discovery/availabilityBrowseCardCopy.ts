@@ -19,12 +19,12 @@ import {
 import { availabilityKindLabels, scheduleModalityLabels } from './panel/crewBrowse/crewBrowseAvailabilityKinds';
 
 export const CREW_BROWSE_AVAILABILITY_SECTION_TITLE = 'Available';
-export const CREW_BROWSE_AVAILABILITY_LABEL_AREAS = 'Areas';
+export const CREW_BROWSE_AVAILABILITY_LABEL_DESTINATIONS = 'Destinations';
 export const CREW_BROWSE_AVAILABILITY_LABEL_FOR = 'For';
 export const CREW_BROWSE_AVAILABILITY_LABEL_AS = 'As';
 export const CREW_BROWSE_AVAILABILITY_LABEL_DATES = 'Dates';
 export const CREW_BROWSE_ACTIVITY_ANY = 'Any activity';
-export const CREW_BROWSE_AREAS_ANY = 'Open to areas';
+export const CREW_BROWSE_DESTINATIONS_ANY = 'Open to destinations';
 export const CREW_BROWSE_DATES_FLEXIBLE_NOTE = EXPLORE_CREWS_AVAILABILITY_FLEXIBLE_LABEL;
 export const CREW_BROWSE_DATES_FIXED_NOTE = EXPLORE_CREWS_AVAILABILITY_FIXED_LABEL;
 
@@ -44,7 +44,7 @@ export type CrewBrowseAvailabilityDateWindow = {
 };
 
 export type CrewBrowseAvailabilityDetail = {
-  areaLabels: string[];
+  destinationLabels: string[];
   trustBadges: FindCrewTrustBadge[];
   forLabels: string[];
   activityOpen: boolean;
@@ -77,8 +77,8 @@ export const findCrewTrustBadgesFromProfileRole = (
 export const crewBrowseAvailabilityLocationLabel = (
   person: Pick<ExploreAvailablePersonDTO, 'region' | 'destinationSlug'>
 ): string | null => {
-  const areas = crewBrowseAvailabilityAreaLabels(person);
-  if (areas.length === 1 && areas[0] === CREW_BROWSE_AREAS_ANY) return null;
+  const areas = crewBrowseAvailabilityDestinationLabels(person);
+  if (areas.length === 1 && areas[0] === CREW_BROWSE_DESTINATIONS_ANY) return null;
   return areas.join(' · ');
 };
 
@@ -90,7 +90,7 @@ export const crewBrowseDestinationLabelsFromSlots = (
   return sanitized?.length ? sanitized : null;
 };
 
-export const crewBrowseAvailabilityAreaLabels = (
+export const crewBrowseAvailabilityDestinationLabels = (
   person: Pick<ExploreAvailablePersonDTO, 'region' | 'destinationSlug'>
 ): string[] => {
   const labels = new Set<string>();
@@ -105,7 +105,7 @@ export const crewBrowseAvailabilityAreaLabels = (
       .join(' ');
     if (fromSlug && fromSlug !== region) labels.add(fromSlug);
   }
-  if (labels.size === 0) return [CREW_BROWSE_AREAS_ANY];
+  if (labels.size === 0) return [CREW_BROWSE_DESTINATIONS_ANY];
   return [...labels];
 };
 
@@ -161,8 +161,8 @@ export const crewBrowseAvailabilityDetailFromPerson = (
   const slots = person.slots ?? [];
   const activity = crewBrowseActivityFit(slots, person.kinds);
   const asLabels = crewBrowseAvailableAsLabels(slots);
-  const areaLabels =
-    crewBrowseDestinationLabelsFromSlots(slots) ?? crewBrowseAvailabilityAreaLabels(person);
+  const destinationLabels =
+    crewBrowseDestinationLabelsFromSlots(slots) ?? crewBrowseAvailabilityDestinationLabels(person);
   const allDateWindows = crewBrowseAvailabilityDateWindows(slots);
   const dateWindows = allDateWindows.slice(0, MAX_LIST_ITEMS);
   const dateMoreCount = Math.max(0, allDateWindows.length - MAX_LIST_ITEMS);
@@ -175,7 +175,7 @@ export const crewBrowseAvailabilityDetailFromPerson = (
     null;
 
   if (
-    areaLabels.length === 0 &&
+    destinationLabels.length === 0 &&
     !activity.activityOpen &&
     activity.labels.length === 0 &&
     asLabels.length === 0 &&
@@ -196,7 +196,7 @@ export const crewBrowseAvailabilityDetailFromPerson = (
       : datesFallback;
 
   return {
-    areaLabels,
+    destinationLabels,
     trustBadges,
     forLabels: activity.activityOpen ? [] : activity.labels,
     activityOpen: activity.activityOpen,

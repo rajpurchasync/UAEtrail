@@ -31,7 +31,7 @@ describe('exploreMapPinCaption', () => {
         latitude: 1,
         longitude: 1,
         path: '/a',
-        areaLabel: 'Hatta',
+        placeHubLabel: 'Hatta',
         geoRef: {
           names: { country: 'UAE', state: 'Dubai', area: 'Hatta', venue: 'Hatta' },
         } as ExploreMapItemDTO['geoRef'],
@@ -47,7 +47,7 @@ describe('exploreMapPinCaption', () => {
         latitude: 1,
         longitude: 1,
         path: '/a',
-        areaLabel: 'Shawka',
+        placeHubLabel: 'Shawka',
         presentation: { venueHint: 'Hiking trail location', listTitle: 'Wadi Ghalilah Trail #3' },
         locationCard: { id: 'loc-1', name: 'Wadi Ghalilah Trail #3' },
       } as ExploreMapItemDTO)

@@ -55,7 +55,7 @@ export const DestinationDetailPage = () => {
       return fetchExplorePeopleAvailability({
         from: weekRange.from,
         to: weekRange.to,
-        area: slug,
+        destination: slug,
       });
     },
     enabled: Boolean(slug),

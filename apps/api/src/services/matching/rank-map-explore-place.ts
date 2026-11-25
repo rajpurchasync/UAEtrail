@@ -22,7 +22,7 @@ export const rankMapExplorePlace = (input: RankMapExplorePlaceInput): RankMapExp
   if (location.latitude == null || location.longitude == null) return null;
 
   const wishlistPlace = input.wishlistLocationIds.has(location.id);
-  const wishlistArea = Boolean(
+  const wishlistDestination = Boolean(
     location.destinationId && input.wishlistDestinationIds.has(location.destinationId)
   );
 
@@ -30,7 +30,7 @@ export const rankMapExplorePlace = (input: RankMapExplorePlaceInput): RankMapExp
     boosts: {
       featuredPlace: Boolean(location.featured),
       wishlistPlace,
-      wishlistArea: !wishlistPlace && wishlistArea,
+      wishlistDestination: !wishlistPlace && wishlistDestination,
     },
     pin: { lat: location.latitude, lng: location.longitude },
     viewerGeo: input.viewerGeo,

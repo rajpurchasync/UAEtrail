@@ -6,13 +6,13 @@ export const collectDestinationHeroPhotos = ({
   places,
   activities,
   areaImageUrl,
-  areaName,
+  destinationName,
   areaHref,
 }: {
   places: LocationDTO[];
   activities: ActivityDTO[];
   areaImageUrl?: string | null;
-  areaName: string;
+  destinationName: string;
   areaHref: string;
 }): DetailHeroPhoto[] =>
   collectDetailHeroPhotos([
@@ -30,7 +30,7 @@ export const collectDestinationHeroPhotos = ({
     })),
     {
       srcs: [areaImageUrl],
-      title: areaName,
+      title: destinationName,
       kindLabel: 'Area',
       href: areaHref,
     },

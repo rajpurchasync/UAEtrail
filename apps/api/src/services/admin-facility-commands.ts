@@ -18,7 +18,7 @@ import { assertActiveListedFacilityHasCatalogGeo } from '../lib/listed-catalog-g
 export type AdminFacilityWriteInput = {
   name: string;
   region: string;
-  areaLabel?: string | null;
+  placeHubLabel?: string | null;
   destinationId: string;
   facilityKind: FacilityKind;
   onSiteId?: string | null;
@@ -43,16 +43,16 @@ export const createAdminFacilityRecord = async (input: {
   body: AdminFacilityWriteInput;
 }) => {
   const body = input.body;
-  const areaLabel = body.areaLabel?.trim() || null;
+  const placeHubLabel = body.placeHubLabel?.trim() || null;
   const tags = mergeVenueAreaTag(
     [...tagsForPlaceKind(body.facilityKind), ...(body.tags ?? [])],
-    areaLabel
+    placeHubLabel
   );
 
   const facility = await createAdminFacility({
     name: body.name,
     region: body.region,
-    areaLabel,
+    placeHubLabel,
     destinationId: body.destinationId.trim(),
     facilityKind: body.facilityKind,
     onSiteId: body.onSiteId?.trim() || null,
@@ -98,8 +98,8 @@ export const updateAdminFacilityRecord = async (input: {
     nextStatus === LocationStatus.ACTIVE && existing.status !== LocationStatus.ACTIVE;
 
   const facilityKind = body.facilityKind ?? existing.facilityKind;
-  const areaLabel =
-    body.areaLabel !== undefined ? body.areaLabel?.trim() || null : existing.areaLabel;
+  const placeHubLabel =
+    body.placeHubLabel !== undefined ? body.placeHubLabel?.trim() || null : existing.placeHubLabel;
   const tags =
     body.facilityKind || body.tags
       ? mergeVenueAreaTag(
@@ -107,14 +107,14 @@ export const updateAdminFacilityRecord = async (input: {
             ...tagsForPlaceKind(facilityKind),
             ...(body.tags ?? existing.tags ?? []).filter((t) => !t.startsWith('place-kind:')),
           ],
-          areaLabel
+          placeHubLabel
         )
       : undefined;
 
   const refreshed = await updateAdminFacility(facilityId, {
     ...(body.name !== undefined ? { name: body.name } : {}),
     ...(body.region !== undefined ? { region: body.region } : {}),
-    ...(areaLabel !== undefined ? { areaLabel } : {}),
+    ...(placeHubLabel !== undefined ? { placeHubLabel } : {}),
     ...(body.destinationId !== undefined ? { destinationId: body.destinationId.trim() } : {}),
     ...(body.facilityKind !== undefined ? { facilityKind: body.facilityKind } : {}),
     ...(body.onSiteId !== undefined ? { onSiteId: body.onSiteId?.trim() || null } : {}),

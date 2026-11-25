@@ -3,7 +3,7 @@ import { buildDiscoveryCardViewModelCard } from '../discovery';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { resolveVenueCatalogFactLabels } from '../list/browse/venueBrowseFacts';
 import {
-  resolvePlacePeekCuratedArea,
+  resolvePlacePeekCuratedDestination,
   resolvePlacePeekLocalLabel,
   resolvePlacePeekRegionLabel,
 } from './placePeekPresentation';
@@ -20,7 +20,7 @@ const campItem = (overrides: Partial<ExploreMapItemDTO> = {}): ExploreMapItemDTO
     subtitle: 'تخييم مليحة · Sharjah',
     destinationId: 'area-mleiha',
     destinationSlug: 'mleiha',
-    areaName: 'Mleiha',
+    destinationName: 'Mleiha',
     locationCard: {
       id: 'c1',
       activityType: 'camping',
@@ -44,7 +44,7 @@ describe('place peek presentation', () => {
   it('shows emirate, curated area link metadata, and local Arabic without duplicating region', () => {
     const card = buildDiscoveryCardViewModelCard(campItem());
     expect(resolvePlacePeekRegionLabel(card)).toBe('Sharjah');
-    expect(resolvePlacePeekCuratedArea(card)).toEqual({ slug: 'mleiha', name: 'Mleiha' });
+    expect(resolvePlacePeekCuratedDestination(card)).toEqual({ slug: 'mleiha', name: 'Mleiha' });
     expect(resolvePlacePeekLocalLabel(card)).toBe('تخييم مليحة');
   });
 

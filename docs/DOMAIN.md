@@ -109,7 +109,7 @@ There is **no** `Trip` table, `TripDTO`, or trips API. Everything on the map tha
 | Layer | Who maintains | Assignment rule |
 |-------|----------------|-----------------|
 | **AdminGeo** | Geo resolver on write | **`geoRef`** from lat/lng — not hand-picked emirate as SoT (P4+) |
-| **Destination** | Platform admin **`/admin/areas`** (logical destinations; Mongo `areas`) | Curated **name** + slug; bounds for hub camera. **`destinationId`** on places/facilities. **No** explore map pin — parallel to **AdminGeo** tree, not a replacement |
+| **Destination** | Platform admin **`/admin/destinations`** (logical destinations; Mongo `areas`) | Curated **name** + slug; bounds for hub camera. **`destinationId`** on places/facilities. **No** explore map pin — parallel to **AdminGeo** tree, not a replacement |
 | **Place (site)** | Admin places + member **Add** | Hostable trail/camp/spot; **`destinationId`** required for listed catalog. Flat **`/place/:id`**; optional **`parentPlaceId`** for sub-sites only |
 | **Facility** | Admin + member **Add** | **`destinationId`** + optional **`onSiteId`** (parent place row for on-trail amenities) |
 | **Activity** | Host | **`activity.locationId` → place site**; destination derived from place — **no `activity.destinationId` on write** |

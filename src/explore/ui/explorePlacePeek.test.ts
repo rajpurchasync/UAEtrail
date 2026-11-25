@@ -18,7 +18,7 @@ describe('place map peek', () => {
     expect(shell).toMatch(/showPlaceCatalogHero/);
     expect(shell).toMatch(/catalogPlaceSummary/);
     expect(kindFacts).toMatch(/resolvePlacePeekTrailFactsFromCard/);
-    expect(hero).toMatch(/resolvePlacePeekCuratedArea/);
+    expect(hero).toMatch(/resolvePlacePeekCuratedDestination/);
     expect(body).toMatch(/fetchPlaceActivities/);
     expect(body).toMatch(/placePeekScheduledActivitiesCountLabel/);
     expect(body).toMatch(/loadState === 'loading'/);

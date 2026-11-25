@@ -14,8 +14,8 @@ export type WishlistSaveVenueInput = {
   watchLongitude?: number | null;
 };
 
-export type WishlistSaveAreaInput = {
-  kind: 'area';
+export type WishlistSaveDestinationInput = {
+  kind: 'destination';
   destinationId: string;
   alertOnMatch?: boolean;
   watchOutingCategory?: string | null;
@@ -29,7 +29,7 @@ export type WishlistSaveActivityInput = {
 
 export type WishlistSaveInput =
   | WishlistSaveVenueInput
-  | WishlistSaveAreaInput
+  | WishlistSaveDestinationInput
   | WishlistSaveActivityInput;
 
 export const wishlistSaveInputToTarget = (input: WishlistSaveInput): WishlistTarget => {

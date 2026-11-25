@@ -13,7 +13,7 @@ import {
   type PlaceCatalogDestinationSearchHit,
 } from '../../places/placeCatalogDestinationIndex';
 import {
-  HOSTING_DESTINATION_SEARCH_GROUP_AREA,
+  HOSTING_DESTINATION_SEARCH_GROUP_DESTINATION,
   HOSTING_DESTINATION_SEARCH_GROUP_PLACE,
   HOSTING_DESTINATION_SEARCH_GROUP_ROUTE,
 } from '../createFlowCopy';
@@ -93,7 +93,7 @@ export const patchHostingDestinationBackToListed = (): Partial<CreateActivityDra
   placeLabelSource: 'registry',
   trailName: '',
   customPlaceImages: [],
-  customPlaceProposedAreaName: '',
+  customPlaceProposeddestinationName: '',
   trailLatitude: null,
   trailLongitude: null,
   registryPlaceId: null,
@@ -147,7 +147,7 @@ export const hostingDestinationSearchHitGroupLabel = (
 ): string => {
   if (hit.kind === 'trail') return HOSTING_DESTINATION_SEARCH_GROUP_ROUTE;
   if (hit.kind === 'place') return HOSTING_DESTINATION_SEARCH_GROUP_PLACE;
-  return HOSTING_DESTINATION_SEARCH_GROUP_AREA;
+  return HOSTING_DESTINATION_SEARCH_GROUP_DESTINATION;
 };
 
 export const enrichHostingCatalogPlacePick = async (

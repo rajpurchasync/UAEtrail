@@ -11,11 +11,11 @@ const HERO_CRUMB_ON_DARK =
 const HERO_CRUMB_ON_LIGHT =
   'underline decoration-emerald-400/50 underline-offset-[3px] hover:text-emerald-950';
 
-/** Region / geo trail plus curated area link — consumer detail hero subtitle. */
+/** Region / geo trail plus place hub link — consumer detail hero subtitle. */
 export const ConsumerDetailHeroGeoLine = ({
   geoLinks,
   regionFallback,
-  areaLabel,
+  placeHubLabel,
   destinationSlug,
   geoHubPath,
   areaLinkState,
@@ -24,11 +24,11 @@ export const ConsumerDetailHeroGeoLine = ({
 }: {
   geoLinks: GeoAncestorLink[];
   regionFallback?: string | null;
-  areaLabel?: string | null;
+  placeHubLabel?: string | null;
   destinationSlug?: string | null;
-  /** Geo destination hub when no curated `/area/:slug`. */
+  /** Geo destination hub when no curated `/destination/:slug`. */
   geoHubPath?: string | null;
-  /** Router state so area hub back returns to the opener detail. */
+  /** Router state so destination hub back returns to the opener detail. */
   areaLinkState?: object;
   geoLinkBackLabel?: string;
   tone?: 'onDark' | 'onLight';
@@ -39,7 +39,7 @@ export const ConsumerDetailHeroGeoLine = ({
     return consumerDetailChildLinkState(returnTo, geoLinkBackLabel);
   }, [geoLinkBackLabel, location.pathname, location.search]);
   const region = regionFallback?.trim() ?? '';
-  const area = areaLabel?.trim() ?? '';
+  const area = placeHubLabel?.trim() ?? '';
   if (!region && !area && geoLinks.length === 0) return null;
 
   const crumbClass = tone === 'onLight' ? HERO_CRUMB_ON_LIGHT : HERO_CRUMB_ON_DARK;

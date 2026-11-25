@@ -191,7 +191,7 @@ export type CreateActivityDraft = {
   /** Curated area for a new (non-registry) trail/camp/venue. */
   customPlaceDestinationId: string | null;
   /** Proposed area name when the pin is outside published polygons. */
-  customPlaceProposedAreaName: string;
+  customPlaceProposeddestinationName: string;
   /** Country for a new spot. Region noun follows this (emirate, province, governorate). */
   customPlaceCountry: CountryCode;
   /** Region for search/Home filters — inferred from the pin, else picked. */
@@ -425,7 +425,7 @@ export const createDraftFromAvailabilityMapItem = (item: ExploreMapItemDTO): Cre
   const hasPin = item.latitude != null && item.longitude != null;
   const structured = kind === 'hiking' || kind === 'camping';
   const activityHost = kind === 'activity';
-  const areaLabel = subtitle || fromLabel;
+  const placeHubLabel = subtitle || fromLabel;
 
   return {
     ...base,
@@ -450,7 +450,7 @@ export const createDraftFromAvailabilityMapItem = (item: ExploreMapItemDTO): Cre
     meetingLongitude: activityHost && hasPin ? item.longitude : base.meetingLongitude,
     placeLabelSource: structured && hasPin ? 'custom' : base.placeLabelSource,
     registryPlaceId: structured && hasPin ? null : base.registryPlaceId,
-    trailName: structured && hasPin ? areaLabel.slice(0, 120) : base.trailName,
+    trailName: structured && hasPin ? placeHubLabel.slice(0, 120) : base.trailName,
   };
 };
 
@@ -538,7 +538,7 @@ export const emptyCreateActivityDraft = (): CreateActivityDraft => ({
   guideUserIds: [],
   customPlaceImages: [],
   customPlaceDestinationId: null,
-  customPlaceProposedAreaName: '',
+  customPlaceProposeddestinationName: '',
   customPlaceCountry: 'AE',
   customPlaceEmirate: '',
   venueCascadeState: '',

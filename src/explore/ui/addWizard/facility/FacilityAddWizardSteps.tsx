@@ -74,12 +74,12 @@ export function renderFacilityAddWizardSteps(ctx: FacilityAddWizardContext): Rea
         </ComposeWizardStepChrome>
       )}
 
-      {step === 'curatedArea' && (
+      {step === 'curatedDestination' && (
         <ComposeWizardStepChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <AddCuratedDestinationStep
             destinationId={draft.destinationId}
-            allowNewArea={false}
-            onAreaIdChange={(next) => {
+            allowNewDestination={false}
+            onDestinationIdChange={(next) => {
               const center = next ? publishedDestinations.find((area) => area.id === next)?.center : null;
               const areaChanged = next !== draft.destinationId;
               patchDraft({

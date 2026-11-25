@@ -40,7 +40,7 @@ export interface Place {
   accessibleBy?: string[];
   status?: 'draft' | 'active' | 'inactive';
   destinationId?: string | null;
-  areaLabel?: string | null;
+  placeHubLabel?: string | null;
   destinationSlug?: string | null;
   destinationName?: string | null;
   geoRef?: GeoRef | null;

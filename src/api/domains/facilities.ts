@@ -12,7 +12,7 @@ export const facilityApi = {
     name: string;
     region: string;
     destinationId: string;
-    areaLabel?: string | null;
+    placeHubLabel?: string | null;
     facilityKind: FacilityDTO['facilityKind'];
     parentPlaceId?: string | null;
     description: string;

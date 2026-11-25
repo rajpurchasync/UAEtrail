@@ -23,7 +23,7 @@ export const useExploreMapFetchScope = (destinationSlug: string | null) => {
 
   const scope = useMemo((): ExploreMapFetchScope | null => {
     if (!bboxFetchEnabled) return null;
-    return { bbox, area: destinationSlug };
+    return { bbox, destination: destinationSlug };
   }, [bboxFetchEnabled, bbox, destinationSlug]);
 
   return { bboxFetchEnabled, scope, onVisibleBoundsChange };

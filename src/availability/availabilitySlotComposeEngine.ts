@@ -35,7 +35,7 @@ export type FixedAvailabilityComposePrefill = {
   modalities: ScheduleModality[];
 };
 
-export type AvailabilityLocationMode = 'open' | 'region' | 'area';
+export type AvailabilityLocationMode = 'open' | 'region' | 'destination';
 
 export type OpenAvailabilityEditorDraft = {
   selectedDays: ReadonlySet<string>;
@@ -201,7 +201,7 @@ export const buildOpenAvailabilityUpsert = (
     visibility: draft.visibility,
     note: draft.note.trim() || null,
     region: draft.locationMode === 'region' ? draft.region.trim() : null,
-    destinationId: draft.locationMode === 'area' ? draft.destinationId.trim() : null,
+    destinationId: draft.locationMode === 'destination' ? draft.destinationId.trim() : null,
     slots: mergeOpenSlotsWithExisting(existing, openSlots),
   };
 };

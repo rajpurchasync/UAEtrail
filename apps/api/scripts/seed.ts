@@ -1411,7 +1411,7 @@ async function main() {
       data: {
         name: 'Jebel Jais Summit Trail',
         region: 'RAK',
-        areaLabel: 'Jebel Jais Viewing Deck',
+        placeHubLabel: 'Jebel Jais Viewing Deck',
         activityType: ActivityType.HIKING,
         difficulty: Difficulty.HARD,
         accessibility: Accessibility.REMOTE,
@@ -1462,7 +1462,7 @@ Your unlock includes access to our guide support line during your hike window (s
       data: {
         name: 'Wadi Shawka Loop',
         region: 'RAK',
-        areaLabel: 'Wadi Shawka Dam',
+        placeHubLabel: 'Wadi Shawka Dam',
         activityType: ActivityType.HIKING,
         difficulty: Difficulty.MODERATE,
         accessibility: Accessibility.CAR_ACCESSIBLE,
@@ -1514,7 +1514,7 @@ Unlock includes same-day guide support while you're on the trail.`
       data: {
         name: 'Fossil Rock Desert Camp',
         region: 'Sharjah',
-        areaLabel: 'Fossil Rock dunes',
+        placeHubLabel: 'Fossil Rock dunes',
         activityType: ActivityType.CAMPING,
         description:
           'Popular desert camping location for group overnights near the iconic Fossil Rock formation. Perfect for stargazing and exploring the surrounding desert landscape.',
@@ -1552,7 +1552,7 @@ Overnight checklist, emergency contacts, and best months for clear skies.`
       data: {
         name: 'Dibba Beach Camp',
         region: 'Fujairah',
-        areaLabel: 'Dibba public beach',
+        placeHubLabel: 'Dibba public beach',
         activityType: ActivityType.CAMPING,
         description:
           'Beach camping on the Gulf of Oman with the Hajar Mountains as a backdrop. Popular weekend spot for swimming, snorkelling, and stargazing.',
@@ -1590,7 +1590,7 @@ Wind shelter notes, BBQ etiquette, and nearby shop stops.`
       data: {
         name: 'Hatta Dam Loop',
         region: 'Dubai',
-        areaLabel: 'Hatta Dam visitor park',
+        placeHubLabel: 'Hatta Dam visitor park',
         areaId: curatedDestinationSeedId('hatta'),
         activityType: ActivityType.HIKING,
         difficulty: Difficulty.EASY,
@@ -1631,7 +1631,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
       data: {
         name: 'Hatta Wadi Hub Trail',
         region: 'Dubai',
-        areaLabel: 'Hatta Wadi Hub',
+        placeHubLabel: 'Hatta Wadi Hub',
         areaId: curatedDestinationSeedId('hatta'),
         activityType: ActivityType.HIKING,
         difficulty: Difficulty.MODERATE,
@@ -1664,7 +1664,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
       data: {
         name: 'Hatta Hill Park Camp',
         region: 'Dubai',
-        areaLabel: 'Hatta Hill Park',
+        placeHubLabel: 'Hatta Hill Park',
         areaId: curatedDestinationSeedId('hatta'),
         activityType: ActivityType.CAMPING,
         description:
@@ -1695,7 +1695,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
       data: {
         name: 'Hatta Wadi Gear Shop',
         region: 'Dubai',
-        areaLabel: 'Hatta Wadi Hub',
+        placeHubLabel: 'Hatta Wadi Hub',
         areaId: curatedDestinationSeedId('hatta'),
         activityType: ActivityType.SHOP,
         description:
@@ -1722,7 +1722,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
       data: {
         name: 'Hatta Dam ADNOC',
         region: 'Dubai',
-        areaLabel: 'Hatta Dam visitor park',
+        placeHubLabel: 'Hatta Dam visitor park',
         areaId: curatedDestinationSeedId('hatta'),
         activityType: ActivityType.SHOP,
         description: 'Fuel and convenience stop on the approach to Hatta Dam — handy before early-morning hikes.',
@@ -1747,7 +1747,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
       data: {
         name: 'Al Qudra Cycling Loop',
         region: 'Dubai',
-        areaLabel: 'Al Qudra Lakes',
+        placeHubLabel: 'Al Qudra Lakes',
         areaId: curatedDestinationSeedId('alQudra'),
         activityType: ActivityType.HIKING,
         difficulty: Difficulty.EASY,
@@ -1779,7 +1779,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
       data: {
         name: 'Love Lake Walk',
         region: 'Dubai',
-        areaLabel: 'Love Lake',
+        placeHubLabel: 'Love Lake',
         areaId: curatedDestinationSeedId('loveLake'),
         activityType: ActivityType.HIKING,
         difficulty: Difficulty.EASY,
@@ -1809,7 +1809,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
       data: {
         name: 'Jumeirah Kite Beach Track',
         region: 'Dubai',
-        areaLabel: 'Kite Beach',
+        placeHubLabel: 'Kite Beach',
         areaId: curatedDestinationSeedId('jumeirah'),
         activityType: ActivityType.HIKING,
         difficulty: Difficulty.EASY,
@@ -1841,7 +1841,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
       data: {
         name: 'Khorfakkan Beach Walk',
         region: 'Sharjah',
-        areaLabel: 'Khorfakkan corniche',
+        placeHubLabel: 'Khorfakkan corniche',
         areaId: curatedDestinationSeedId('khorfakkan'),
         activityType: ActivityType.HIKING,
         difficulty: Difficulty.EASY,
@@ -1871,7 +1871,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
       data: {
         name: 'Jebel Hafeet Summit Walk',
         region: 'Abu Dhabi',
-        areaLabel: 'Jebel Hafeet summit',
+        placeHubLabel: 'Jebel Hafeet summit',
         areaId: curatedDestinationSeedId('jebelHafeet'),
         activityType: ActivityType.HIKING,
         difficulty: Difficulty.MODERATE,
@@ -1902,7 +1902,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
       data: {
         name: 'Kalba Mangrove Kayak',
         region: 'Sharjah',
-        areaLabel: 'Kalba mangroves',
+        placeHubLabel: 'Kalba mangroves',
         areaId: curatedDestinationSeedId('kalba'),
         activityType: ActivityType.HIKING,
         difficulty: Difficulty.EASY,
@@ -1932,7 +1932,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
       data: {
         name: 'Al Ain Desert Camp',
         region: 'Abu Dhabi',
-        areaLabel: 'Remah dune field',
+        placeHubLabel: 'Remah dune field',
         activityType: ActivityType.CAMPING,
         description:
           'Open desert camping south of Al Ain among rolling dunes. Quiet overnight spot for stargazing away from city lights.',

@@ -14,7 +14,7 @@ export interface FacilityDTO {
   id: string;
   name: string;
   region: string;
-  areaLabel?: string | null;
+  placeHubLabel?: string | null;
   /** Curated Destination (outdoor region). */
   destinationId?: string | null;
   geoRef?: import('./geo-hierarchy.js').GeoRef | null;

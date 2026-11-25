@@ -1,7 +1,7 @@
 /** Destination hub rollups for `/destination/:slug` — curated hub is a label, not an explore map pin. */
-import type { ExploreAreaLensStatsDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type { ExploreDestinationLensStatsDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
-  exploreAreaLensStatsSummary,
+  exploreDestinationLensStatsSummary,
   exploreMapItemIsAvailabilityCatalog,
   exploreMapItemIsHostedActivity,
   exploreMapItemIsRetiredSeekingActivity,
@@ -12,7 +12,7 @@ import {
   resolveDestinationId,
 } from '@uaetrail/shared-types';
 
-const emptyStats = (): ExploreAreaLensStatsDTO => ({
+const emptyStats = (): ExploreDestinationLensStatsDTO => ({
   hostedActivities: 0,
   availabilityPins: 0,
   trailSpots: 0,
@@ -23,22 +23,22 @@ const emptyStats = (): ExploreAreaLensStatsDTO => ({
 
 export const accumulateDestinationHubStats = (
   items: ExploreMapItemDTO[]
-): Map<string, ExploreAreaLensStatsDTO> => {
-  const byArea = new Map<string, ExploreAreaLensStatsDTO>();
+): Map<string, ExploreDestinationLensStatsDTO> => {
+  const byDestinationId = new Map<string, ExploreDestinationLensStatsDTO>();
 
-  const bucket = (areaId: string): ExploreAreaLensStatsDTO => {
-    const existing = byArea.get(areaId);
+  const bucket = (destinationId: string): ExploreDestinationLensStatsDTO => {
+    const existing = byDestinationId.get(destinationId);
     if (existing) return existing;
     const stats = emptyStats();
-    byArea.set(areaId, stats);
+    byDestinationId.set(destinationId, stats);
     return stats;
   };
 
   for (const item of items) {
     if (item.kind === 'destination') continue;
-    const areaId = resolveDestinationId(item);
-    if (!areaId) continue;
-    const stats = bucket(areaId);
+    const destinationId = resolveDestinationId(item);
+    if (!destinationId) continue;
+    const stats = bucket(destinationId);
 
     if (exploreMapItemIsRetiredSeekingActivity(item)) continue;
     if (exploreMapItemIsAvailabilityCatalog(item)) {
@@ -68,32 +68,32 @@ export const accumulateDestinationHubStats = (
     }
   }
 
-  return byArea;
+  return byDestinationId;
 };
 
 /** @deprecated CPC-5 — facility rollups come from explore items (`placeKind` on map pins). */
 export const mergeFacilityStatsFromLocations = (
-  statsByArea: Map<string, ExploreAreaLensStatsDTO>,
+  statsByDestinationId: Map<string, ExploreDestinationLensStatsDTO>,
   locations: Array<{ destinationId?: string | null; activityType: string; tags?: string[] | null }>
 ): void => {
   for (const location of locations) {
-    const areaId = location.destinationId?.trim();
-    if (!areaId) continue;
+    const destinationId = location.destinationId?.trim();
+    if (!destinationId) continue;
     const kind = placeKindFromLocationRow({
       activityType: location.activityType,
       tags: location.tags,
     });
     if (!isFacilityPlaceKind(kind)) continue;
-    const stats = statsByArea.get(areaId) ?? emptyStats();
+    const stats = statsByDestinationId.get(destinationId) ?? emptyStats();
     stats.facilities += 1;
-    statsByArea.set(areaId, stats);
+    statsByDestinationId.set(destinationId, stats);
   }
 };
 
 export const destinationHubStatsSummaryForDestination = (
   destinationId: string,
   catalogItems: ExploreMapItemDTO[]
-): { stats: ExploreAreaLensStatsDTO; summary: string } => {
+): { stats: ExploreDestinationLensStatsDTO; summary: string } => {
   const stats = accumulateDestinationHubStats(catalogItems).get(destinationId) ?? emptyStats();
-  return { stats, summary: exploreAreaLensStatsSummary(stats) };
+  return { stats, summary: exploreDestinationLensStatsSummary(stats) };
 };

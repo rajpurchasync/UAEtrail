@@ -6,7 +6,7 @@ describe('addFacilityFlow', () => {
     expect(FACILITY_ADD_STEPS).toEqual([
       'title',
       'facilityType',
-      'curatedArea',
+      'curatedDestination',
       'parentPlace',
       'location',
       'image',

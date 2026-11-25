@@ -1,8 +1,8 @@
 import type { DestinationPublicDTO, PlaceDTO } from '@uaetrail/shared-types';
 import type { PlaceCatalogDestinationSearchHit } from '../../places/placeCatalogDestinationIndex';
-import { mergeExploreRegionPillOptionsWithAreas } from '../../config/regions';
+import { mergeExploreRegionPillOptionsWithDestinations } from '../../config/regions';
 import {
-  HOSTING_DESTINATION_SEARCH_GROUP_AREA,
+  HOSTING_DESTINATION_SEARCH_GROUP_DESTINATION,
   HOSTING_DESTINATION_SEARCH_GROUP_PLACE,
   HOSTING_DESTINATION_SEARCH_GROUP_ROUTE,
 } from '../createFlowCopy';
@@ -13,16 +13,16 @@ export type ExploreSearchWhereSuggestion =
   | { id: string; kind: 'emirate'; label: string; query: string; subtitle?: string }
   | { id: string; kind: 'catalog'; label: string; query: string; subtitle: string };
 
-const catalogGroupLabel = (kind: 'trail' | 'place' | 'area'): string => {
+const catalogGroupLabel = (kind: 'trail' | 'place' | 'destination'): string => {
   if (kind === 'trail') return HOSTING_DESTINATION_SEARCH_GROUP_ROUTE;
   if (kind === 'place') return HOSTING_DESTINATION_SEARCH_GROUP_PLACE;
-  return HOSTING_DESTINATION_SEARCH_GROUP_AREA;
+  return HOSTING_DESTINATION_SEARCH_GROUP_DESTINATION;
 };
 
 const normalize = (value: string) => value.trim().toLowerCase();
 
 const catalogHitSubtitle = (hit: PlaceCatalogDestinationSearchHit): string => {
-  if (hit.kind === 'area') {
+  if (hit.kind === 'destination') {
     return formatExploreSearchStateWithCountry(hit.subtitle);
   }
   if (hit.kind === 'place') {
@@ -45,7 +45,7 @@ export const buildExploreSearchWhereSuggestions = (
   if (!q) return [];
 
   const out: ExploreSearchWhereSuggestion[] = [];
-  const emirates = mergeExploreRegionPillOptionsWithAreas(areas, 'AE');
+  const emirates = mergeExploreRegionPillOptionsWithDestinations(areas, 'AE');
   for (const row of emirates) {
     if (row.key === 'all') continue;
     const matches =
@@ -68,7 +68,7 @@ export const buildExploreSearchWhereSuggestions = (
     const hitId =
       hit.kind === 'trail'
         ? hit.placeId
-        : hit.kind === 'area'
+        : hit.kind === 'destination'
           ? hit.destinationId
           : hit.placeGroupKey;
     const contextLine = catalogHitSubtitle(hit);

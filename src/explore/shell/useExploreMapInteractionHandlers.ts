@@ -30,12 +30,12 @@ export const useExploreMapInteractionHandlers = (
     [selectionItems, selection]
   );
 
-  const handlePickExploreArea = useCallback(
+  const handlePickExploreDestination = useCallback(
     (slug: string) => {
       navigate(destinationHubPath(slug));
     },
     [navigate]
   );
 
-  return { reloadMap, handleMapPinClick, handlePickExploreArea };
+  return { reloadMap, handleMapPinClick, handlePickExploreDestination };
 };

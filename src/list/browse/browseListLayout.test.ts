@@ -183,7 +183,7 @@ describe('list explorer thumbnail copy', () => {
       headline: 'Wadi Shawka',
       subtitle: 'Wadi Ghalilah',
       venueRegion: 'RAK',
-      areaName: 'Wadi Ghalilah',
+      destinationName: 'Wadi Ghalilah',
       venueHint: 'Hiking trail location',
       sections: { details: [] },
     } as DiscoveryCardModel;

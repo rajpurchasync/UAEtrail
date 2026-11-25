@@ -16,63 +16,66 @@ export const parseExploreDestinationSlug = (
 ): string | null =>
   searchParams.get(exploreDestinationQueryParam)?.trim().toLowerCase() || null;
 
-const normalizeAreaSearchQuery = (query: string): string => query.trim().toLowerCase();
+const normalizeDestinationSearchQuery = (query: string): string => query.trim().toLowerCase();
 
-const areaMatchesQuery = (area: DestinationPublicDTO, q: string): boolean =>
-  area.slug === q ||
-  area.name.toLowerCase() === q ||
-  area.name.toLowerCase().includes(q) ||
-  area.slug.includes(q) ||
-  area.region.toLowerCase().includes(q);
+const destinationMatchesQuery = (destination: DestinationPublicDTO, q: string): boolean =>
+  destination.slug === q ||
+  destination.name.toLowerCase() === q ||
+  destination.name.toLowerCase().includes(q) ||
+  destination.slug.includes(q) ||
+  destination.region.toLowerCase().includes(q);
 
-const areaMatchScore = (area: DestinationPublicDTO, q: string): number => {
-  if (area.slug === q || area.name.toLowerCase() === q) return 0;
-  if (area.name.toLowerCase().startsWith(q)) return 1;
-  if (area.slug.startsWith(q)) return 2;
+const destinationMatchScore = (destination: DestinationPublicDTO, q: string): number => {
+  if (destination.slug === q || destination.name.toLowerCase() === q) return 0;
+  if (destination.name.toLowerCase().startsWith(q)) return 1;
+  if (destination.slug.startsWith(q)) return 2;
   return 3;
 };
 
 /** Strong match — Enter navigates to destination hub (§3.3). */
-export const isStrongPublishedAreaSearchMatch = (area: DestinationPublicDTO, query: string): boolean => {
-  const q = normalizeAreaSearchQuery(query);
+export const isStrongPublishedDestinationSearchMatch = (
+  destination: DestinationPublicDTO,
+  query: string
+): boolean => {
+  const q = normalizeDestinationSearchQuery(query);
   if (!q) return false;
-  return area.slug === q || area.name.toLowerCase() === q;
+  return destination.slug === q || destination.name.toLowerCase() === q;
 };
 
-export const findPublishedAreaByQuery = (
-  areas: DestinationPublicDTO[],
+export const findPublishedDestinationByQuery = (
+  destinations: DestinationPublicDTO[],
   query: string
-): DestinationPublicDTO | null => searchPublishedAreasForQuery(areas, query, 1)[0] ?? null;
+): DestinationPublicDTO | null => searchPublishedDestinationsForQuery(destinations, query, 1)[0] ?? null;
 
 /** Destination cards first in explore search — exact name/slug wins, then prefix, then contains. */
-export const searchPublishedAreasForQuery = (
-  areas: DestinationPublicDTO[],
+export const searchPublishedDestinationsForQuery = (
+  destinations: DestinationPublicDTO[],
   query: string,
   limit = 4
 ): DestinationPublicDTO[] => {
-  const q = normalizeAreaSearchQuery(query);
+  const q = normalizeDestinationSearchQuery(query);
   if (!q) return [];
-  const matches = areas.filter((area) => areaMatchesQuery(area, q));
+  const matches = destinations.filter((destination) => destinationMatchesQuery(destination, q));
   matches.sort((a, b) => {
-    const scoreDiff = areaMatchScore(a, q) - areaMatchScore(b, q);
+    const scoreDiff = destinationMatchScore(a, q) - destinationMatchScore(b, q);
     if (scoreDiff !== 0) return scoreDiff;
     return a.name.localeCompare(b.name);
   });
   return matches.slice(0, limit);
 };
 
-export const findPublishedAreaBySlug = (
-  areas: DestinationPublicDTO[],
+export const findPublishedDestinationBySlug = (
+  destinations: DestinationPublicDTO[],
   slug: string | null | undefined
 ): DestinationPublicDTO | null => {
   const normalized = slug?.trim().toLowerCase();
   if (!normalized) return null;
-  return areas.find((area) => area.slug.toLowerCase() === normalized) ?? null;
+  return destinations.find((destination) => destination.slug.toLowerCase() === normalized) ?? null;
 };
 
 export const destinationIdForExploreDestinationSlug = (
-  areas: DestinationPublicDTO[],
+  destinations: DestinationPublicDTO[],
   slug: string | null | undefined
-): string | null => findPublishedAreaBySlug(areas, slug)?.id ?? null;
+): string | null => findPublishedDestinationBySlug(destinations, slug)?.id ?? null;
 
 export type { ExploreMapItemDTO };

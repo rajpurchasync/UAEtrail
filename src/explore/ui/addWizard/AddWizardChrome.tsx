@@ -14,7 +14,7 @@ export const ADD_KIND_LABELS: Record<AddVenueKind, { title: string; icon: typeof
 
 export const ADD_REVIEW_EDIT_LABELS: Partial<Record<AddFlowStepId, string>> = {
   title: 'Title',
-  curatedArea: 'Area',
+  curatedDestination: 'Destination',
   location: 'Location',
   surface: 'Surface',
   image: 'Photos',

@@ -607,7 +607,7 @@ const clusterAndSeedVenuesFromPins = async (db: Db): Promise<number> => {
       latitude: { $type: 'number' },
       longitude: { $type: 'number' },
     })
-    .project({ name: 1, areaLabel: 1, areaId: 1, latitude: 1, longitude: 1, geoRef: 1 })
+    .project({ name: 1, placeHubLabel: 1, areaId: 1, latitude: 1, longitude: 1, geoRef: 1 })
     .toArray();
 
   const used = new Set<string>();
@@ -646,7 +646,7 @@ const clusterAndSeedVenuesFromPins = async (db: Db): Promise<number> => {
       if (!Number.isFinite(olat) || !Number.isFinite(olng)) return false;
       return distanceKm(lat, lng, olat, olng) <= 0.7;
     });
-    const seedName = cleanVenueName(String(loc.areaLabel || loc.name || ''));
+    const seedName = cleanVenueName(String(loc.placeHubLabel || loc.name || ''));
     const named = VENUE_NAME_HINT.test(seedName) || VENUE_NAME_HINT.test(String(loc.name ?? ''));
     if (cluster.length < 2 && !named) continue;
 
@@ -793,7 +793,7 @@ export const backfillGeoRefOnPins = async (
       countryCode: (doc.countryCode as string) ?? 'AE',
       region: (doc.region as string) ?? null,
       venueName: (doc.name as string) ?? null,
-      extraNames: [doc.name, doc.areaLabel].filter(Boolean) as string[],
+      extraNames: [doc.name, doc.placeHubLabel].filter(Boolean) as string[],
     }),
     { force: opts.force }
   );

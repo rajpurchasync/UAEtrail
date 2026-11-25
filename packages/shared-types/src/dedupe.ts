@@ -229,7 +229,7 @@ export type AdminSubmissionDTO = SubmissionPublicDTO & {
   latitude: number | null;
   longitude: number | null;
   images: string[];
-  proposedAreaName: string | null;
+  proposedDestinationName: string | null;
   insisted?: { reason: string; note?: string; at?: string };
   submittedBy: string;
   /** Count of other members who seconded this suggestion. */

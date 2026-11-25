@@ -84,11 +84,11 @@ export function renderAddWizardSteps(ctx: AddWizardContext): ReactNode {
         </ComposeWidePageSlot>
       )}
 
-      {pageHas('curatedArea') && (
+      {pageHas('curatedDestination') && (
         <ComposeWidePageSlot
-          stepId="curatedArea"
+          stepId="curatedDestination"
           pageSteps={widePageSteps}
-          title={addFlowStepTitle('curatedArea', kind)}
+          title={addFlowStepTitle('curatedDestination', kind)}
           pageTitle={headerTitle}
           onClose={requestClose}
           onBack={goBack}
@@ -97,7 +97,7 @@ export function renderAddWizardSteps(ctx: AddWizardContext): ReactNode {
               {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
               <div className="mt-5 pb-2">
                 <AddWizardNextButton
-                  disabled={!draft.destinationId && (draft.areaLabel.trim() || draft.title.trim()).length < 2}
+                  disabled={!draft.destinationId && (draft.placeHubLabel.trim() || draft.title.trim()).length < 2}
                   onClick={goNext}
                 />
               </div>
@@ -106,13 +106,13 @@ export function renderAddWizardSteps(ctx: AddWizardContext): ReactNode {
         >
           <AddCuratedDestinationStep
             destinationId={draft.destinationId}
-            proposedAreaName={draft.areaLabel}
-            onProposedAreaNameChange={(areaLabel) => patchDraft({ areaLabel, destinationId: areaLabel.trim() ? null : draft.destinationId })}
-            onAreaIdChange={(next) => {
+            proposedDestinationName={draft.placeHubLabel}
+            onproposedDestinationNameChange={(placeHubLabel) => patchDraft({ placeHubLabel, destinationId: placeHubLabel.trim() ? null : draft.destinationId })}
+            onDestinationIdChange={(next) => {
               const center = next ? publishedDestinations.find((area) => area.id === next)?.center : null;
               patchDraft({
                 destinationId: next,
-                areaLabel: next ? '' : draft.areaLabel,
+                placeHubLabel: next ? '' : draft.placeHubLabel,
                 locationPinPlaced: false,
                 ...(center ? { latitude: center.latitude, longitude: center.longitude } : {}),
               });
@@ -154,8 +154,8 @@ export function renderAddWizardSteps(ctx: AddWizardContext): ReactNode {
                 Area or landmark <span className="font-normal text-neutral-500">(optional)</span>
               </span>
               <FlowStepTextInput
-                value={draft.areaLabel}
-                onChange={(event) => patchDraft({ areaLabel: event.target.value })}
+                value={draft.placeHubLabel}
+                onChange={(event) => patchDraft({ placeHubLabel: event.target.value })}
                 placeholder="e.g. Wadi Shawka Dam, Hatta visitor park"
                 className={exploreFlowComposeFieldClass()}
                 maxLength={120}

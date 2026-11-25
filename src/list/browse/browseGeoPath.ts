@@ -1,6 +1,6 @@
 import type { ExploreMapItemDTO, GeoKind, GeoNodeLite } from '@uaetrail/shared-types';
 import type { DestinationPublicDTO } from '@uaetrail/shared-types';
-import { mergeVenueStateFilterOptionsWithAreas } from '../../config/regions';
+import { mergeVenueStateFilterOptionsWithDestinations } from '../../config/regions';
 import { geoStore } from '../../geo/geoStore';
 import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
 
@@ -17,7 +17,7 @@ export const serializeBrowseGeoPath = (ids: readonly string[]): string | null =>
 };
 
 const venueStateOptionsForGeo = (areas: readonly DestinationPublicDTO[] = []) =>
-  mergeVenueStateFilterOptionsWithAreas(areas, 'AE');
+  mergeVenueStateFilterOptionsWithDestinations(areas, 'AE');
 
 export const geoStateToRegionKey = (
   node: GeoNodeLite,

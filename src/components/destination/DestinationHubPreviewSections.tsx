@@ -58,10 +58,10 @@ export const DestinationHubPreviewSections = ({
   const showActivities = showAll || mode === 'activities';
   const showPlaces = showAll || mode === 'places';
 
-  const exploreActivities = explorePath({ list: true, area: destinationSlug, panel: 'activities' });
-  const exploreToday = explorePath({ list: true, area: destinationSlug, panel: 'activities', date: 'today' });
-  const explorePlaces = explorePath({ list: true, area: destinationSlug, panel: 'venues' });
-  const exploreShopsInArea = explorePath({ area: destinationSlug, panel: 'shops', filter: 'shops' });
+  const exploreActivities = explorePath({ list: true, destination: destinationSlug, panel: 'activities' });
+  const exploreToday = explorePath({ list: true, destination: destinationSlug, panel: 'activities', date: 'today' });
+  const explorePlaces = explorePath({ list: true, destination: destinationSlug, panel: 'venues' });
+  const exploreShopsInDestination = explorePath({ destination: destinationSlug, panel: 'shops', filter: 'shops' });
   const placeGroups = groupAreaHubPlaces(places);
   const shopsForRail = placeGroups.find((g) => g.key === 'shops')?.places.slice(0, 8) ?? [];
   const facilitiesForRail = placeGroups.find((g) => g.key === 'facilities')?.places.slice(0, 8) ?? [];
@@ -92,7 +92,7 @@ export const DestinationHubPreviewSections = ({
         <ConsumerDetailSection title="Gear & shops" tone="amber" collapsible defaultExpanded>
           <p className="mb-3 text-end">
             <Link
-              to={exploreShopsInArea}
+              to={exploreShopsInDestination}
               className="text-xs font-semibold text-amber-900 underline-offset-2 hover:underline dark:text-amber-100"
             >
               On the map
@@ -169,10 +169,10 @@ export const DestinationHubPreviewSections = ({
         </p>
         {activities.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-slate-200 px-4 py-6 text-sm text-slate-600">
-            No published outings in this area yet.{' '}
+            No published outings in this destination yet.{' '}
             <Link
               to={explorePath({
-            area: destinationSlug,
+            destination: destinationSlug,
             compose: activityCompose('hiking'),
           })}
               className="font-semibold text-emerald-800"
@@ -206,7 +206,7 @@ export const DestinationHubPreviewSections = ({
       {showPlaces ? (
       <ConsumerDetailSection
         id="places-list"
-        title="Places in this area"
+        title="Places in this destination"
         tone="sky"
         collapsible
         defaultExpanded
@@ -222,10 +222,10 @@ export const DestinationHubPreviewSections = ({
         <div className="space-y-5">
         {placeGroups.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-slate-200 px-4 py-6 text-sm text-slate-600">
-            Catalog places in this area will show here once they are linked with an area tag.{' '}
+            Catalog places in this destination will show here once they are linked to the hub.{' '}
             <Link
               to={explorePath({
-            area: destinationSlug,
+            destination: destinationSlug,
             compose: placeCompose('hiking'),
           })}
               className="font-semibold text-emerald-800"

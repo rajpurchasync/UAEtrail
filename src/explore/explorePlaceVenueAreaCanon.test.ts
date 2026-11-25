@@ -31,7 +31,7 @@ describe('explore Place / Facility / Area canon', () => {
     const placeBody = read('src/explore/ui/peek/place/PlacePeekBody.tsx');
     const placeHero = read('src/explore/ui/peek/place/PlacePeekHero.tsx');
     expect(placeBody).not.toMatch(/source === 'area'/);
-    expect(placeHero).toMatch(/resolvePlacePeekCuratedArea/);
+    expect(placeHero).toMatch(/resolvePlacePeekCuratedDestination/);
   });
 
   it('GEO: vocabulary module names Place and Facility wire sources', () => {

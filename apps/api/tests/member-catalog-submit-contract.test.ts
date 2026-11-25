@@ -3,7 +3,7 @@ import request from 'supertest';
 import type { Express } from 'express';
 import { bootstrapTestApp, configureTestEnv } from './helpers/bootstrap.js';
 import { registerVerifiedVisitor } from './helpers/fixtures.js';
-import { defaultTestAreaId, ensureCuratedAreasSeeded } from './helpers/test-seed.js';
+import { defaultTestAreaId, ensurecuratedDestinationsSeeded } from './helpers/test-seed.js';
 import { getMongoClient } from '../src/lib/mongo.js';
 
 let app: Express;
@@ -11,7 +11,7 @@ let app: Express;
 beforeAll(async () => {
   configureTestEnv();
   app = await bootstrapTestApp();
-  await ensureCuratedAreasSeeded();
+  await ensurecuratedDestinationsSeeded();
 });
 
 const placeSubmitBody = (suffix: string) => ({

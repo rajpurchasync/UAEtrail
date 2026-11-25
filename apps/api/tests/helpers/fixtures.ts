@@ -20,7 +20,7 @@ import {
 import { newEntityId } from '../../src/lib/entity-builders.js';
 import { createActivityDetailed, createLocationRecord } from '../../src/lib/activities-store.js';
 import { getMongoClient } from '../../src/lib/mongo.js';
-import { defaultTestAreaId, ensureCuratedAreasSeeded } from './test-seed.js';
+import { defaultTestAreaId, ensurecuratedDestinationsSeeded } from './test-seed.js';
 import { generateReferralCode } from '../../src/lib/referral-code.js';
 import { createTenantRecord } from '../../src/lib/tenant-store.js';
 import { upsertTenantMembership } from '../../src/lib/tenant-access.js';
@@ -35,7 +35,7 @@ export interface PublishedEventFixture {
 const db = () => getMongoClient()!.db();
 
 export const createPublishedEventFixture = async (suffix: string): Promise<PublishedEventFixture> => {
-  await ensureCuratedAreasSeeded();
+  await ensurecuratedDestinationsSeeded();
   const passwordHash = await bcrypt.hash('TestPass1', 10);
   const organizer = await createAuthUser({
     email: `org-${suffix}@test.local`,

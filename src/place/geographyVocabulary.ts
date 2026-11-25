@@ -39,7 +39,7 @@ export type GeographyAreaHubWireSource = 'area';
 
 /**
  * Amenity kinds on Facility rows (toilet, parking, gas, …).
- * Counted as `areaLensStats.facilities` on the Area hub page.
+ * Counted as `destinationLensStats.facilities` on the destination hub page.
  */
 export type GeographyFacilityPlaceKinds = 'amenity';
 

@@ -16,7 +16,7 @@ export const DestinationDetailMobileActionBar = ({
   addPlacePath,
 }: DestinationDetailMobileActionBarProps) => (
   <div className="grid grid-cols-3 gap-1.5">
-    <Link to={findCrewPath} className={EXPLORE_PEEK_CTA.peekTile} aria-label="Find crew in this area">
+    <Link to={findCrewPath} className={EXPLORE_PEEK_CTA.peekTile} aria-label="Find crew in this destination">
       <ActivityPeekFooterIcon icon={Users} />
       <span className="max-w-full px-0.5">Find crew</span>
     </Link>

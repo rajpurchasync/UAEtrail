@@ -112,7 +112,7 @@ export const attachGeoRefToLocation = async (
     countryCode: location.countryCode,
     region: location.region,
     venueName: location.name,
-    extraNames: [location.areaLabel, location.name].filter(Boolean) as string[],
+    extraNames: [location.placeHubLabel, location.name].filter(Boolean) as string[],
   });
   location.geoRef = resolved.geoRef;
   return resolved;

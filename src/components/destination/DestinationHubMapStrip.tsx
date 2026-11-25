@@ -13,7 +13,7 @@ const LazyPlacesMap = lazy(() =>
 
 type DestinationHubMapStripProps = {
   destinationSlug: string;
-  areaName: string;
+  destinationName: string;
   center: DestinationCenter;
   boundsRing: DestinationBoundsRing;
   places: LocationDTO[];
@@ -50,16 +50,16 @@ const placeToPin = (place: LocationDTO): PlaceMapPin | null => {
   };
 };
 
-/** Compact map preview — tap opens explore filtered to this area. */
+/** Compact map preview — tap opens explore filtered to this destination. */
 export const DestinationHubMapStrip = ({
   destinationSlug,
-  areaName,
+  destinationName,
   center,
   boundsRing,
   places,
 }: DestinationHubMapStripProps) => {
   const navigate = useNavigate();
-  const exploreInArea = explorePath({ area: destinationSlug });
+  const exploreInDestination = explorePath({ destination: destinationSlug });
   const fallbackBounds = useMemo(() => boundsFromRing(boundsRing), [boundsRing]);
 
   const pins = useMemo(() => {
@@ -95,10 +95,10 @@ export const DestinationHubMapStrip = ({
         />
       </Suspense>
       <Link
-        to={exploreInArea}
+        to={exploreInDestination}
         className="absolute inset-x-0 bottom-0 flex items-center justify-center bg-gradient-to-t from-slate-900/70 to-transparent px-4 py-3 text-sm font-semibold text-white"
       >
-        Open map in {areaName}
+        Open map in {destinationName}
       </Link>
     </section>
   );

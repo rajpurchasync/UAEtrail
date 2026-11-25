@@ -29,8 +29,8 @@ export const registerAdminSubmissionRoutes = (router: Router): void => {
             images: Array.isArray(payload.images)
               ? payload.images.filter((u): u is string => typeof u === 'string')
               : [],
-            proposedAreaName:
-              typeof payload.proposedAreaName === 'string' ? payload.proposedAreaName : null,
+            proposedDestinationName:
+              typeof payload.proposedDestinationName === 'string' ? payload.proposedDestinationName : null,
             candidates: s.candidates,
             insisted: s.insisted
               ? {

@@ -22,7 +22,7 @@ describe('venue-display-names', () => {
     expect(labels.subtitle).toBe('Wadi Shawka Dam');
   });
 
-  it('prefers persisted areaLabel over legacy area tag', () => {
+  it('prefers persisted placeHubLabel over legacy area tag', () => {
     const labels = resolveVenueExploreLabels(
       'Hatta Dam Walk',
       ['area:Old tag'],

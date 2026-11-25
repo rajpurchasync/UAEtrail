@@ -94,7 +94,7 @@ describe('venue browse presentation', () => {
         kind: 'camping',
         title: 'Mleiha Desert Camp',
         subtitle: 'تخييم مليحة · Sharjah',
-        areaLabel: 'Mleiha',
+        placeHubLabel: 'Mleiha',
         presentation: {
           kind: 'camping',
           source: 'venue',
@@ -152,7 +152,7 @@ describe('venue browse presentation', () => {
   it('listing copy introduces title, emirate, hub, rating, and capped labels', () => {
     const card = buildDiscoveryCardViewModelCard(
       venueItem({
-        areaLabel: 'Wadi Ghalilah',
+        placeHubLabel: 'Wadi Ghalilah',
         averageRating: 4.8,
         reviewCount: 12,
       })
@@ -203,7 +203,7 @@ describe('venue browse presentation', () => {
         kind: 'camping',
         title: 'Mleiha Desert Camp',
         subtitle: 'تخييم مليحة · Sharjah',
-        areaLabel: 'Mleiha',
+        placeHubLabel: 'Mleiha',
         presentation: {
           kind: 'camping',
           source: 'venue',

@@ -7,14 +7,14 @@ import { generateReferralCode } from '../src/lib/referral-code.js';
 import bcrypt from 'bcryptjs';
 import { UserRole, UserStatus } from '../src/domain/enums.js';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
-import { buildTestParticipantIntentInput, ensureCuratedAreasSeeded, testAreas } from './helpers/test-seed.js';
+import { buildTestParticipantIntentInput, ensurecuratedDestinationsSeeded, testAreas } from './helpers/test-seed.js';
 import { getMongoClient } from '../src/lib/mongo.js';
 import { COLLECTIONS } from '../src/lib/collections.js';
 import { participantIntentKindToOutingCategory } from '@uaetrail/shared-types';
 
 beforeAll(async () => {
   await bootstrapTestApp();
-  await ensureCuratedAreasSeeded();
+  await ensurecuratedDestinationsSeeded();
 });
 
 describe('backfillSeekingActivitiesForActiveIntents', () => {

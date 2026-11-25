@@ -5,7 +5,7 @@ import { resolveDiscoveryBrowseGeoHubPath } from '../../discovery/browse/resolve
 import { buildActivityDetailDiscoveryCard } from './buildActivityDetailDiscoveryCard';
 
 describe('buildActivityDetailDiscoveryCard', () => {
-  it('feeds browse hub label + href from geoRef and location areaLabel', () => {
+  it('feeds browse hub label + href from geoRef and location placeHubLabel', () => {
     const activity = {
       id: 'act-1',
       activityType: 'hiking',
@@ -32,7 +32,7 @@ describe('buildActivityDetailDiscoveryCard', () => {
         featured: false,
         childFriendly: false,
         season: [],
-        areaLabel: 'Wadi Ghalilah',
+        placeHubLabel: 'Wadi Ghalilah',
       },
     } as ActivityDetailDTO;
 

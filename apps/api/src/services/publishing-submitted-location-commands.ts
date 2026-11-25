@@ -14,10 +14,10 @@ export const submitPublishingLocation = async (input: {
   tenantId: string;
   body: z.infer<typeof locationSubmitBodySchema>;
 }) => {
-  const { destinationId, areaLabel } = await resolvePlaceSubmitDestination(input.body);
+  const { destinationId, placeHubLabel } = await resolvePlaceSubmitDestination(input.body);
 
   const created = await createLocationRecord(
-    buildLocationCreateData({ ...input.body, destinationId, areaLabel }, input.userId)
+    buildLocationCreateData({ ...input.body, destinationId, placeHubLabel }, input.userId)
   );
 
   await createAuditLog({

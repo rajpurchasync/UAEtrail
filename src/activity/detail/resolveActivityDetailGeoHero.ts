@@ -17,7 +17,7 @@ export const resolveActivityDetailGeoHero = (activity: ActivityDetailDTO) => {
     activity.geoRef?.names.state?.trim() ||
     null;
   return {
-    areaLabel: hubLabel,
+    placeHubLabel: hubLabel,
     destinationSlug,
     geoHubPath,
     geoRef: activity.geoRef ?? location?.geoRef ?? null,

@@ -83,7 +83,7 @@ export const DestinationDetailView = ({
         places: preview?.places ?? [],
         activities: preview?.activities ?? [],
         areaImageUrl: area.imageUrl,
-        areaName: area.name,
+        destinationName: area.name,
         areaHref: detailPath,
       }),
     [preview?.places, preview?.activities, area.imageUrl, area.name, detailPath]
@@ -113,15 +113,15 @@ export const DestinationDetailView = ({
   }, [activeTab, area.slug]);
 
   const findCrewPath = explorePath({
-    area: area.slug,
+    destination: area.slug,
     compose: intentFixedCompose('hiking'),
   });
   const hostPath = explorePath({
-    area: area.slug,
+    destination: area.slug,
     compose: activityCompose('hiking'),
   });
   const addPlacePath = explorePath({
-    area: area.slug,
+    destination: area.slug,
     compose: placeCompose('hiking'),
   });
 
@@ -234,7 +234,7 @@ export const DestinationDetailView = ({
       >
         <DestinationHubMapStrip
           destinationSlug={area.slug}
-          areaName={area.name}
+          destinationName={area.name}
           center={area.center}
           boundsRing={area.bounds}
           places={preview?.places ?? []}
@@ -261,7 +261,7 @@ export const DestinationDetailView = ({
               ))}
             </ul>
             <Link
-              to={explorePath({ crews: true, area: area.slug, list: true })}
+              to={explorePath({ crews: true, destination: area.slug, list: true })}
               className="text-sm font-semibold text-emerald-800"
             >
               Browse people on the map
@@ -271,7 +271,7 @@ export const DestinationDetailView = ({
       </ConsumerDetailSection>
 
       <div id="area-detail-places" className="min-w-0 scroll-mt-28">
-        <h2 className="sr-only">Places in this area</h2>
+        <h2 className="sr-only">Places in this destination</h2>
         <DestinationHubPreviewSections
           destinationSlug={area.slug}
           activities={preview?.activities ?? []}

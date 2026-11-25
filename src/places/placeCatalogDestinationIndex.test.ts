@@ -9,7 +9,7 @@ import {
 } from '../explore/ui/hostingDestinationDraft';
 import { emptyCreateActivityDraft } from '../explore/ui/hostingFlowEngine';
 import {
-  buildPlaceCatalogAreaOptions,
+  buildPlaceCatalogDestinationOptions,
   buildPlaceCatalogPlaceGroupOptions,
   buildPlaceCatalogStateOptions,
   collectPlaceCatalogParentHubIds,
@@ -64,14 +64,14 @@ describe('placeCatalogDestinationIndex', () => {
         region: 'Dubai',
         destinationId: 'a-hatta',
         parentPlaceId: hubId,
-        areaLabel: 'ignored when parent set',
+        placeHubLabel: 'ignored when parent set',
       }),
       place({
         id: hubId,
         name: 'Wadi Shawka',
         region: 'Dubai',
         destinationId: 'a-hatta',
-        areaLabel: 'Wadi Shawka',
+        placeHubLabel: 'Wadi Shawka',
       }),
     ];
     expect(placeCatalogPlaceGroupKey(places[0])).toBe(hubId);
@@ -96,20 +96,20 @@ describe('placeCatalogDestinationIndex', () => {
         name: 'Hatta Dam loop',
         region: 'Dubai',
         destinationId: 'a-hatta',
-        areaLabel: 'Hatta Dam visitor park',
+        placeHubLabel: 'Hatta Dam visitor park',
       }),
       place({
         id: 't-2',
         name: 'Hatta hike B',
         region: 'Dubai',
         destinationId: 'a-hatta',
-        areaLabel: 'Hatta Dam visitor park',
+        placeHubLabel: 'Hatta Dam visitor park',
       }),
-      place({ id: 't-3', name: 'Jais summit', region: 'RAK', destinationId: 'a-jais', areaLabel: 'Summit trail' }),
+      place({ id: 't-3', name: 'Jais summit', region: 'RAK', destinationId: 'a-jais', placeHubLabel: 'Summit trail' }),
     ];
 
     expect(buildPlaceCatalogStateOptions('AE', areas).map((row) => row.value)).toContain('Dubai');
-    const dubaiAreas = buildPlaceCatalogAreaOptions(places, areas, 'Dubai');
+    const dubaiAreas = buildPlaceCatalogDestinationOptions(places, areas, 'Dubai');
     expect(dubaiAreas.map((row) => row.id)).toEqual(['a-hatta']);
 
     const inHatta = places.filter((row) => row.destinationId === 'a-hatta');
@@ -164,14 +164,14 @@ describe('placeCatalogDestinationIndex', () => {
         name: 'Wadi Shawka loop',
         region: 'Dubai',
         destinationId: 'a-hatta',
-        areaLabel: 'Wadi Shawka',
+        placeHubLabel: 'Wadi Shawka',
       }),
       place({
         id: 't-short',
         name: 'Wadi Shawka short route',
         region: 'Dubai',
         destinationId: 'a-hatta',
-        areaLabel: 'Wadi Shawka',
+        placeHubLabel: 'Wadi Shawka',
       }),
     ];
     const trailHits = searchPlaceCatalogDestination('loop', places, areas, 'AE');
@@ -212,7 +212,7 @@ describe('placeCatalogDestinationIndex', () => {
       name: 'Dam loop',
       region: 'Dubai',
       destinationId: 'a-1',
-      areaLabel: 'Hatta Dam',
+      placeHubLabel: 'Hatta Dam',
     });
     expect(patchHostingDestinationCatalogLeafLadder(row, areas, 'AE')).toEqual({
       venueCascadeState: 'Dubai',
@@ -228,7 +228,7 @@ describe('placeCatalogDestinationIndex', () => {
       name: 'Dam loop',
       region: 'Dubai',
       destinationId: 'a-1',
-      areaLabel: 'Hatta Dam',
+      placeHubLabel: 'Hatta Dam',
     });
     expect(inferPlaceCatalogLadderFromRow(row, areas, 'AE')).toEqual({
       state: 'Dubai',
@@ -244,7 +244,7 @@ describe('placeCatalogDestinationIndex', () => {
       name: 'Dam loop',
       region: 'Dubai',
       destinationId: 'a-1',
-      areaLabel: 'Hatta Dam',
+      placeHubLabel: 'Hatta Dam',
       latitude: 24.8,
       longitude: 56.1,
     });

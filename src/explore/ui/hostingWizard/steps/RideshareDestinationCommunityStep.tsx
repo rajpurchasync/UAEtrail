@@ -119,7 +119,7 @@ export const RideshareDestinationCommunityStep = ({
           countryCode,
           region,
           destinationId: area.id,
-          areaLabel: area.name,
+          placeHubLabel: area.name,
           activityType: placeKind,
           description: `Rideshare destination submitted for approval: ${name}.`,
           latitude: draft.toLatitude,

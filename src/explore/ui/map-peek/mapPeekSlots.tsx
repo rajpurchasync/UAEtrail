@@ -39,7 +39,7 @@ export const MapPeekActionsSlot = ({
     return (
       <DestinationPeekActions
         destinationSlug={card.destinationSlug}
-        stats={card.areaLensStats}
+        stats={card.destinationLensStats}
         areaPagePath={card.path}
         onClose={onClose}
       />

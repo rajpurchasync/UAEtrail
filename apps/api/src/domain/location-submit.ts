@@ -24,9 +24,9 @@ export const locationSubmitBodySchema = z.object({
   region: z.string().min(2).max(80),
   /** Curated destination hub — required unless proposing a new hub from a pin. */
   destinationId: z.string().min(1).max(80).optional(),
-  /** Host-proposed area when the pin is outside published area polygons. */
-  proposedAreaName: z.string().min(2).max(80).optional(),
-  areaLabel: z.string().min(2).max(120).optional(),
+  /** Host-proposed destination when the pin is outside published destination polygons. */
+  proposedDestinationName: z.string().min(2).max(80).optional(),
+  placeHubLabel: z.string().min(2).max(120).optional(),
   childFriendly: z.boolean().optional(),
   accessibility: z.enum(['car-accessible', 'remote']).optional(),
   activityType: z.enum(['hiking', 'camping', 'event', 'shop', 'rideshare']),
@@ -93,7 +93,7 @@ export const locationSubmitBodySchema = z.object({
     return;
   }
   const hasDestination = Boolean(body.destinationId?.trim());
-  const proposing = Boolean(body.proposedAreaName?.trim());
+  const proposing = Boolean(body.proposedDestinationName?.trim());
   if (!hasDestination && !proposing) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
@@ -104,7 +104,7 @@ export const locationSubmitBodySchema = z.object({
   if (proposing && (body.latitude == null || body.longitude == null)) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: 'Pin the spot on the map to propose a new area.',
+      message: 'Pin the spot on the map to propose a new destination.',
       path: ['latitude'],
     });
   }

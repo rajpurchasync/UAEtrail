@@ -13,7 +13,7 @@ type LocationRow = {
   _id: string;
   name?: string;
   region?: string;
-  areaLabel?: string | null;
+  placeHubLabel?: string | null;
   areaId?: string | null;
   activityType?: string;
   description?: string;
@@ -79,7 +79,7 @@ const buildFacilityDocFromLocation = (doc: LocationRow, facilityKind: FacilityKi
     _id: doc._id,
     name: doc.name ?? 'Facility',
     region: doc.region ?? 'UAE',
-    areaLabel: doc.areaLabel ?? null,
+    placeHubLabel: doc.placeHubLabel ?? null,
     areaId,
     facilityKind,
     parentPlaceId: parentPlaceIdFromLocationRow(doc),

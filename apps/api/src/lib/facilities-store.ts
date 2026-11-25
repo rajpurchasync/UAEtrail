@@ -24,7 +24,7 @@ export const mapMongoFacility = (doc: MongoFacilityDoc): Facility => {
     ...rest,
     onSiteId,
     partnerReferralUrl: rest.partnerReferralUrl ?? null,
-    areaLabel: rest.areaLabel ?? null,
+    placeHubLabel: rest.placeHubLabel ?? null,
     registeredByUserId: rest.registeredByUserId ?? rest.submittedById ?? null,
   };
 };
@@ -138,7 +138,7 @@ export type FacilityCreateInput = {
   name: string;
   region: string;
   destinationId: string;
-  areaLabel?: string | null;
+  placeHubLabel?: string | null;
   facilityKind: FacilityKind;
   onSiteId?: string | null;
   description: string;
@@ -167,7 +167,7 @@ export const createFacilityRecord = async (input: FacilityCreateInput): Promise<
     _id: id,
     name: input.name,
     region: input.region,
-    areaLabel: input.areaLabel ?? null,
+    placeHubLabel: input.placeHubLabel ?? null,
     destinationId: input.destinationId.trim(),
     facilityKind: input.facilityKind,
     ...catalogOnSiteIdUpdate(input.onSiteId),
@@ -213,7 +213,7 @@ export type AdminFacilityCreateInput = {
   name: string;
   region: string;
   destinationId: string;
-  areaLabel?: string | null;
+  placeHubLabel?: string | null;
   facilityKind: FacilityKind;
   onSiteId?: string | null;
   description: string;
@@ -244,7 +244,7 @@ export const createAdminFacility = async (input: AdminFacilityCreateInput): Prom
     _id: id,
     name: input.name,
     region: input.region,
-    areaLabel: input.areaLabel ?? null,
+    placeHubLabel: input.placeHubLabel ?? null,
     destinationId: input.destinationId.trim(),
     facilityKind: input.facilityKind,
     ...catalogOnSiteIdUpdate(input.onSiteId),
@@ -300,7 +300,7 @@ export type AdminFacilityUpdateInput = Partial<
     Facility,
     | 'name'
     | 'region'
-    | 'areaLabel'
+    | 'placeHubLabel'
     | 'destinationId'
     | 'facilityKind'
     | 'onSiteId'

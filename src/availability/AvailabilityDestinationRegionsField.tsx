@@ -1,4 +1,4 @@
-import { mergeVenueStateFilterOptionsWithAreas } from '../config/regions';
+import { mergeVenueStateFilterOptionsWithDestinations } from '../config/regions';
 import type { DestinationPublicDTO } from '@uaetrail/shared-types';
 
 type AvailabilityDestinationRegionsFieldProps = {
@@ -17,7 +17,7 @@ export const AvailabilityDestinationRegionsField = ({
   legend = 'Destination',
   hint = 'Pick one or more emirates, or leave empty for anywhere in the UAE.',
 }: AvailabilityDestinationRegionsFieldProps) => {
-  const options = mergeVenueStateFilterOptionsWithAreas(publishedDestinations, 'AE').map((row) => row.key);
+  const options = mergeVenueStateFilterOptionsWithDestinations(publishedDestinations, 'AE').map((row) => row.key);
 
   const toggle = (key: string) => {
     if (selected.includes(key)) {

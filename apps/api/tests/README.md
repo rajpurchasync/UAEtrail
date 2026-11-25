@@ -4,7 +4,7 @@ Use **`helpers/test-seed.ts`** as the single entry for geography and catalog row
 
 | Helper | Use when |
 |--------|----------|
-| `ensureCuratedAreasSeeded()` | Before tests that need published areas in Mongo |
+| `ensurecuratedDestinationsSeeded()` | Before tests that need published areas in Mongo |
 | `testAreas.hatta` (etc.) | Stable `{ id, slug, name }` from `CURATED_DESTINATION_CATALOG` |
 | `defaultTestAreaId()` | Default Hatta id for locations / activities |
 | `buildTestLocationSubmitBody()` | Unit tests for `locationSubmitBodySchema` (no DB) |
@@ -13,4 +13,4 @@ Use **`helpers/test-seed.ts`** as the single entry for geography and catalog row
 
 Do **not** paste literal `area-seed-*` strings in test files — import `curatedDestinationSeedId` from `@uaetrail/shared-types` only in seed scripts, or use `testAreas` here.
 
-`helpers/fixtures.ts` calls `ensureCuratedAreasSeeded()` for published event fixtures.
+`helpers/fixtures.ts` calls `ensurecuratedDestinationsSeeded()` for published event fixtures.
