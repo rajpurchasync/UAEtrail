@@ -65,10 +65,11 @@
     },
     {
       "id": "W5-push",
-      "title": "publish local main to origin (14 commits)",
+      "status": "done",
+      "title": "publish local main to origin",
       "branch": "main",
       "owns": [],
-      "note": "git push origin main only — no code edits"
+      "note": "Pushed 17 commits 58ec09d7..25027758 to https://github.com/uaetrail/main.git (origin main)"
     }
   ],
   "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push"]
