@@ -2,7 +2,7 @@ import { UserSearch } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { CREW_FIND_SURFACE_LABEL } from '@/crew-discovery/ui/crewHubNavCopy';
 import { findCrewDiscoveryListPath } from '@/discovery/discoverySession';
-import { LIST_CHROME, LIST_SEARCH } from '@/discovery/discoveryPortListChrome';
+import { LIST_CHROME, LIST_SEARCH } from '@/discovery/discoveryPortListBrowseCard';
 import type { MyCrewGroupPill, MyCrewMainTab, MyCrewPeoplePill } from './myCrewHubWire';
 import { MyCrewMainTabs } from './MyCrewMainTabs';
 import { MyCrewGroupPills, MyCrewPeoplePills, type MyCrewPeoplePillCounts } from './MyCrewSubPills';

@@ -601,7 +601,7 @@ const baseline = {
       ? ['W4t: explore imports browse list filter types via discoveryPortListBrowseFilters']
       : []),
     ...(exploreImportsListChromeTheme.length > 0
-      ? ['W4u: explore imports list chrome via discoveryPortListChrome']
+      ? ['W4u: explore imports list chrome via discoveryPortListBrowseCard']
       : []),
     ...(exploreImportsBrowseListFeed.length > 0
       ? ['W7a: explore imports list feed rows via discoveryPortListFeed (map peek exempt)']

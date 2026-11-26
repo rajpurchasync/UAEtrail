@@ -8,7 +8,7 @@ import type {
 import type { ExploreActivityDatePreset } from '@/discovery/discoveryPortExploreActivityDate';
 import type { BrowseListFilterState } from '@/discovery/discoveryPortListBrowseFilters';
 import { crewsHubHomePath } from '@/discovery/discoverySession';
-import { LIST_APP_BAR, LIST_CHROME } from '@/discovery/discoveryPortListChrome';
+import { LIST_APP_BAR, LIST_CHROME } from '@/discovery/discoveryPortListBrowseCard';
 import { FIND_CREW_SEARCH_TITLE } from './findCrewSearchCopy';
 import { EXPLORE_SEARCH_PAGE_COLUMN } from '@/discovery/discoveryPortExploreSearch';
 import { MobileBackButton } from '@/components/mobile/MobileBackButton';

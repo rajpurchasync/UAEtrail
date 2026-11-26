@@ -1,5 +1,5 @@
 import { Search, SquarePen, X } from 'lucide-react';
-import { LIST_SEARCH, listFilterIconButtonClass } from '../../discovery/discoveryPortListChrome';
+import { LIST_SEARCH, listFilterIconButtonClass } from '../../discovery/discoveryPortListBrowseCard';
 import {
   emptyInboxFilterCounts,
   type InboxFilter,

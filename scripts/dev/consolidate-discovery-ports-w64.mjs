@@ -9,7 +9,7 @@ const discoveryDir = join(root, 'src/discovery');
 const DELETE = ['discoveryPortListCopy.ts', 'discoveryPortListRouting.ts'];
 
 const REPLACEMENTS = [
-  ['discoveryPortListCopy', 'discoveryPortListChrome'],
+  ['discoveryPortListCopy', 'discoveryPortListBrowseCard'],
   ['discoveryPortListRouting', 'discoveryPortListUrl'],
 ];
 

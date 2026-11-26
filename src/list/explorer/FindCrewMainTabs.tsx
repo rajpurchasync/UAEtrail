@@ -1,4 +1,4 @@
-import { listChipClass } from '@/discovery/discoveryPortListChrome';
+import { listChipClass } from '@/discovery/discoveryPortListBrowseCard';
 import type { CrewBrowseLane } from '@/crew-discovery/crewBrowseState';
 import {
   FIND_CREW_RECOMMENDED_TABS,

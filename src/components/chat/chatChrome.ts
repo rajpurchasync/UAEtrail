@@ -1,4 +1,4 @@
-import { LIST_CHROME } from '../../discovery/discoveryPortListChrome';
+import { LIST_CHROME } from '../../discovery/discoveryPortListBrowseCard';
 
 /** Chat hub + thread chrome — align with standalone list discovery (`/list` Trips/Venues). */
 

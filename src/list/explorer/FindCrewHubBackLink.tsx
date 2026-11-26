@@ -2,7 +2,7 @@ import { ChevronLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PRODUCT_MY_CREW_SURFACE_TITLE } from '@/content/productNorthStar';
 import { crewsHubHomePath } from '@/discovery/discoverySession';
-import { LIST_SEARCH } from '@/discovery/discoveryPortListChrome';
+import { LIST_SEARCH } from '@/discovery/discoveryPortListBrowseCard';
 
 /** Mirror of My crew hub “Find crew” CTA — returns to My crew. */
 export const FindCrewHubBackLink = () => (

@@ -1,7 +1,7 @@
 import { Search, Users, X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { ConsumerBottomSheet } from '../mobile/ConsumerBottomSheet';
-import { LIST_SEARCH } from '../../discovery/discoveryPortListChrome';
+import { LIST_SEARCH } from '../../discovery/discoveryPortListBrowseCard';
 import { MessageAvatar } from './ChatMessageAvatar';
 import { ChatLoadingState } from './ChatLoadingState';
 

@@ -40,6 +40,7 @@ export {
 } from './discoverySessionPeopleUrl';
 export type { BrowseMainCategoryKey } from './discoverySessionTaxonomy';
 export {
+  BROWSE_CARD_CHIP,
   BROWSE_LIST_CREATE_TRIP,
   BROWSE_LIST_CREATE_VENUE,
   LIST_CHROME,
@@ -47,7 +48,7 @@ export {
   listChipClass,
   resolveBrowseListCreateFabLabel,
   type BrowseListCreateFabHints,
-} from './discoveryPortListChrome';
+} from './discoveryPortListBrowseCard';
 export {
   readStoredViewerFix,
   useBrowseGeoScopeHydration,
@@ -70,7 +71,6 @@ export {
   LIST_QUICK_VENUE_TOPIC_PILLS,
   filterExploreMapItemsForList,
 } from './discoveryPortListBrowseFilters';
-export { BROWSE_CARD_CHIP } from './discoveryPortListBrowseCard';
 export {
   BrowseCompactRow,
   buildListFeedCards,

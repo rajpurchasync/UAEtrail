@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { UPL_INTENT_OPEN_ACTION } from '../content/upl-glossary';
-import { BROWSE_LIST_CREATE_CREW } from '../discovery/discoveryPortListChrome';
+import { BROWSE_LIST_CREATE_CREW } from '../discovery/discoveryPortListBrowseCard';
 
 const ROOT = process.cwd();
 const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');

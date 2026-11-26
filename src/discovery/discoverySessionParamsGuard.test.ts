@@ -95,7 +95,7 @@ describe('discoverySessionParamsGuard', () => {
       if (chromeImport.test(read(rel))) violations.push(rel);
     }
     expect(violations).toEqual([]);
-    expect(read('src/discovery/discoverySession.ts')).toMatch(/discoveryPortListChrome/);
+    expect(read('src/discovery/discoverySession.ts')).toMatch(/discoveryPortListBrowseCard/);
   });
 
   it('W7b explore peek imports list/browse chrome via discoverySession barrel', () => {
@@ -125,7 +125,7 @@ describe('discoverySessionParamsGuard', () => {
       if (geoCopy.test(read(rel))) violations.push(rel);
     }
     expect(violations).toEqual([]);
-    expect(read('src/discovery/discoverySession.ts')).toMatch(/discoveryPortListChrome/);
+    expect(read('src/discovery/discoverySession.ts')).toMatch(/discoveryPortListBrowseCard/);
   });
 
   it('W4q explore browse/search spine imports listCat type via discoverySession barrel', () => {
