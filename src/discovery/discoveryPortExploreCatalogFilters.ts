@@ -6,9 +6,13 @@ export {
   parseExploreDestinationSlug,
 } from '../explore/exploreDestinationFilter';
 export {
+  EXPLORE_SEARCH_PROMPT,
+  EXPLORE_SEARCH_SCOPES_SHIPPED,
   parseExploreMapFilterPillsParam,
   serializeExploreMapFilterPillsParam,
   type ExploreMapFilterPillKey,
+  type ExploreSearchScopeCounts,
+  type ExploreSearchScopeKey,
 } from '../explore/exploreBrowseTaxonomy';
 export { exploreCatalogHubLabelFromExploreItem } from '../explore/exploreCatalogHubLabel';
 export { EXPLORE_PLACE_TOPIC_OPTIONS, aliasPlaceMapTopicToList } from '../explore/exploreMapTopicUrlParams';

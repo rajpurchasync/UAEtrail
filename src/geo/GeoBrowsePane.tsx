@@ -27,7 +27,7 @@ import {
   type BrowseListLayout,
   type BrowseListSortMode,
 } from '../discovery/discoveryPortListGeoBrowse';
-import type { ExploreSearchScopeKey } from '../discovery/discoveryPortExploreSearchRouting';
+import type { ExploreSearchScopeKey } from '../discovery/discoveryPortExploreCatalogFilters';
 import { useExplorePublishedDestinationsQuery } from '../discovery/discoveryPortExploreBrowseHooks';
 import { useBrowseGeoScopeHydration } from '../discovery/discoveryPortListBrowseHooks';
 import '../styles/explore-map-chrome.css';

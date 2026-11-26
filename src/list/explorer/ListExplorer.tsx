@@ -11,7 +11,7 @@ import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import type {
   ExploreSearchScopeCounts,
   ExploreSearchScopeKey,
-} from '../../discovery/discoveryPortExploreSearchRouting';
+} from '../../discovery/discoveryPortExploreCatalogFilters';
 import { BROWSE_LIST_CLEAR_FILTERS, BROWSE_LIST_EMPTY } from '../browse/browseListCopy';
 import type { BrowseListFilterState } from '../browse/browseListFilters';
 import type { PlaceKind } from '@uaetrail/shared-types';

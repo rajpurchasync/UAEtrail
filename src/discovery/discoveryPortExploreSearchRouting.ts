@@ -18,10 +18,4 @@ export {
 } from '../explore/search/exploreSearchRouting';
 export { countExploreSearchScopes, exploreItemMatchesQuery } from '../explore/exploreSearchMatches';
 export { exploreSearchScopesForQuery } from '../explore/exploreSearchScopeUi';
-export {
-  EXPLORE_SEARCH_OPEN_PLACEHOLDER,
-  EXPLORE_SEARCH_PROMPT,
-  EXPLORE_SEARCH_SCOPES_SHIPPED,
-  type ExploreSearchScopeCounts,
-  type ExploreSearchScopeKey,
-} from '../explore/exploreBrowseTaxonomy';
+export { EXPLORE_SEARCH_OPEN_PLACEHOLDER } from '../explore/exploreBrowseTaxonomy';

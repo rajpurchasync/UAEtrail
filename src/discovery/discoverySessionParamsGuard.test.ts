@@ -315,7 +315,7 @@ describe('discoverySessionParamsGuard', () => {
       },
       {
         rel: 'src/list/explorer/ListDiscoverySearchField.tsx',
-        facade: /discoveryPortExploreSearchRouting/,
+        facade: /discoveryPortExploreSearch(Routing)?|discoveryPortExploreCatalogFilters/,
         avoidDirect: /explore\/exploreBrowseTaxonomy|explore\/exploreSearchScopeUi/,
       },
       {
@@ -433,7 +433,9 @@ describe('discoverySessionParamsGuard', () => {
     expect(read('src/discovery/discoveryPortExploreBrowseUrl.ts')).not.toMatch(/EXPLORE_DESKTOP_BROWSE_RAIL/);
     expect(read('src/discovery/discoveryPortExploreCatalogFilters.ts')).toMatch(/parseExploreMapFilterPillsParam/);
     expect(read('src/discovery/discoveryPortExploreMapChrome.ts')).toMatch(/EXPLORE_DESKTOP_BROWSE_RAIL_SCROLL_CLASS/);
-    expect(read('src/discovery/discoveryPortExploreSearchRouting.ts')).toMatch(/ExploreSearchScopeCounts/);
+    expect(read('src/discovery/discoveryPortExploreCatalogFilters.ts')).toMatch(/ExploreSearchScopeCounts/);
+    expect(read('src/discovery/discoveryPortExploreSearchRouting.ts')).not.toMatch(/ExploreSearchScopeCounts/);
+    expect(read('src/list/explorer/ListDiscoverySearchField.tsx')).toMatch(/discoveryPortExploreCatalogFilters/);
     expect(read('src/list/browse/browseListTaxonomy.ts')).toMatch(/discoveryPortExploreCatalogFilters/);
     expect(read('src/list/browse/listVenuePlaceTopics.ts')).toMatch(/discoveryPortExploreRouting/);
     expect(read('src/list/browse/listVenuePlaceTopics.ts')).not.toMatch(/routingCatalog/);
