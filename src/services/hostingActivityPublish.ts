@@ -14,7 +14,7 @@ import {
   resolveCustomproposedDestinationName,
   resolvePublishedDestinationForPoint,
   resolvePublishedDestinationIdForPoint,
-} from '../discovery/discoveryPortExploreHostingPublish';
+} from '../discovery/discoveryPortExploreHosting';
 import {
   buildHostActivityPublishPayload,
   type ActivityPublishInput,
@@ -31,8 +31,8 @@ import {
   resolveActivityType,
   usesGoingFromHostingStep,
   type CreateActivityDraft,
-} from '../discovery/discoveryPortExploreHostingPublish';
-import { normalizeHostingEndDate } from '../discovery/discoveryPortExploreHostingPublish';
+} from '../discovery/discoveryPortExploreHosting';
+import { normalizeHostingEndDate } from '../discovery/discoveryPortExploreHosting';
 import { linkParentToRideshareActivity } from '../discovery/discoveryPortExploreHosting';
 
 const formatCoord = (value: number): string => Number(value.toFixed(6)).toString();

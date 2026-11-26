@@ -6,7 +6,7 @@ import {
   type FacilityAddDraft,
 } from '../discovery/discoveryPortExploreCreateFlow';
 import type { AddSubmitResult } from '../discovery/discoveryPortExploreCreateFlow';
-import { resolveRequiredEmirate } from '../discovery/discoveryPortExploreHostingPublish';
+import { resolveRequiredEmirate } from '../discovery/discoveryPortExploreHosting';
 
 /** Member facility submit from Add on map — single `POST /me/facilities`. */
 export const submitCatalogFacilityFromAddDraft = async (

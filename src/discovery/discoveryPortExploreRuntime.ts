@@ -48,7 +48,6 @@ export {
   serializeExplorePriceFilter,
   serializePlaceMapTopicsParam,
   serializeTripMapTopicsParam,
-  useExplorePublishedDestinationsQuery,
   type ActivityMapPeekActionLabelContext,
   type ExploreActivityDatePreset,
   type ExploreMapFilterPillKey,

@@ -7,8 +7,8 @@ import {
   type AddDraft,
   type AddSubmitResult,
 } from '../discovery/discoveryPortExploreCreateFlow';
-import { resolveRequiredEmirate } from '../discovery/discoveryPortExploreHostingPublish';
-import type { ActivityDifficulty } from '../discovery/discoveryPortExploreHostingPublish';
+import { resolveRequiredEmirate } from '../discovery/discoveryPortExploreHosting';
+import type { ActivityDifficulty } from '../discovery/discoveryPortExploreHosting';
 import { formatE164Phone } from '../utils/phone';
 
 const toApiDifficulty = (value: ActivityDifficulty): 'easy' | 'moderate' | 'hard' =>

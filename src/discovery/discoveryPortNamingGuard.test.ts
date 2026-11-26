@@ -46,7 +46,6 @@ describe('discoveryPortNamingGuard', () => {
       'discoveryPortExploreCardChrome.ts',
       'discoveryPortExploreCreateFlow.ts',
       'discoveryPortExploreHosting.ts',
-      'discoveryPortExploreHostingPublish.ts',
       'discoveryPortExploreBrowse.ts',
       'discoveryPortExploreListChrome.ts',
       'discoveryPortExploreSearch.ts',

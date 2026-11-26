@@ -10,8 +10,8 @@ const DELETE = [
   'discoveryPortExploreHostingPrefill.ts',
   'discoveryPortExploreHostingActivityUi.ts',
   'discoveryPortExploreHostingFromPlace.ts',
-  'discoveryPortExploreHostingPublishTenants.ts',
-  'discoveryPortExploreHostingPublishDestination.ts',
+  'discoveryPortExploreHostingTenants.ts',
+  'discoveryPortExploreHostingDestination.ts',
   'discoveryPortExploreHostingScheduleDraft.ts',
   'discoveryPortExploreHostingFlowEngine.ts',
 ];
@@ -20,10 +20,10 @@ const REPLACEMENTS = [
   ['discoveryPortExploreHostingPrefill', 'discoveryPortExploreHosting'],
   ['discoveryPortExploreHostingActivityUi', 'discoveryPortExploreHosting'],
   ['discoveryPortExploreHostingFromPlace', 'discoveryPortExploreHosting'],
-  ['discoveryPortExploreHostingPublishTenants', 'discoveryPortExploreHosting'],
-  ['discoveryPortExploreHostingPublishDestination', 'discoveryPortExploreHostingPublish'],
-  ['discoveryPortExploreHostingScheduleDraft', 'discoveryPortExploreHostingPublish'],
-  ['discoveryPortExploreHostingFlowEngine', 'discoveryPortExploreHostingPublish'],
+  ['discoveryPortExploreHostingTenants', 'discoveryPortExploreHosting'],
+  ['discoveryPortExploreHostingDestination', 'discoveryPortExploreHosting'],
+  ['discoveryPortExploreHostingScheduleDraft', 'discoveryPortExploreHosting'],
+  ['discoveryPortExploreHostingFlowEngine', 'discoveryPortExploreHosting'],
 ];
 
 for (const name of DELETE) {

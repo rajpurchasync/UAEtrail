@@ -455,9 +455,9 @@
         "src/services/catalogFacilitySubmit.ts",
         "src/routing/AppRoutes.tsx",
         "src/routing/planBrowseRoute.tsx",
-        "src/discovery/discoveryPortExploreHostingPublish.ts",
-        "src/discovery/discoveryPortExploreHostingPublish.ts",
-        "src/discovery/discoveryPortExploreHostingPublish.ts",
+        "src/discovery/discoveryPortExploreHosting.ts",
+        "src/discovery/discoveryPortExploreHosting.ts",
+        "src/discovery/discoveryPortExploreHosting.ts",
         "src/discovery/discoveryPortExploreCreateFlow.ts"
       ],
       "avoid": ["src/activity-discovery/**", "src/places-discovery/**"]
@@ -558,7 +558,7 @@
       "branch": "burn-down/w40-hosting-ports",
       "owns": [
         "src/discovery/discoveryPortExploreHosting.ts",
-        "src/discovery/discoveryPortExploreHostingPublish.ts",
+        "src/discovery/discoveryPortExploreHosting.ts",
         "scripts/dev/consolidate-discovery-ports-w40.mjs"
       ],
       "avoid": ["re-run consolidate-discovery-ports-w40 on clean tree"]
@@ -710,8 +710,26 @@
         "src/discovery/discoveryOfferRideshareDispatch.ts"
       ],
       "avoid": ["re-run consolidate-discovery-ports-w49 on clean tree"]
+    },
+    {
+      "id": "W50",
+      "status": "done",
+      "title": "HostingPublish into Hosting; destinations hook via Browse not Runtime",
+      "branch": "burn-down/w50-hosting-publish-browse",
+      "owns": [
+        "src/discovery/discoveryPortExploreHosting.ts",
+        "src/discovery/discoveryPortExploreRuntime.ts",
+        "scripts/dev/consolidate-discovery-ports-w50.mjs",
+        "src/services/hostingActivityPublish.ts",
+        "src/services/catalogPlaceSubmit.ts",
+        "src/services/catalogFacilitySubmit.ts",
+        "src/geo/GeoBrowsePane.tsx",
+        "src/list/browse/useBrowseListFeed.ts",
+        "src/list/shell/useListDiscoveryBrowseUrlModel.ts"
+      ],
+      "avoid": ["re-run consolidate-discovery-ports-w50 on clean tree"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41", "W42", "W43", "W44", "W45", "W46", "W47", "W48", "W49"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41", "W42", "W43", "W44", "W45", "W46", "W47", "W48", "W49", "W50"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }

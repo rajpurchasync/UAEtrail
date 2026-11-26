@@ -26,7 +26,7 @@ import {
 import { DEFAULT_BROWSE_LIST_SORT, type BrowseListSortMode } from '../discovery/discoveryPortListSort';
 import { countBrowseListFilters, type BrowseListLayout } from '../discovery/discoveryPortListLayout';
 import type { ExploreSearchScopeKey } from '../discovery/discoveryPortExploreBrowse';
-import { useExplorePublishedDestinationsQuery } from '../discovery/discoveryPortExploreRuntime';
+import { useExplorePublishedDestinationsQuery } from '../discovery/discoveryPortExploreBrowse';
 import { useBrowseGeoScopeHydration } from '../discovery/discoveryPortListHooks';
 import '../styles/explore-map-chrome.css';
 
