@@ -1,7 +1,15 @@
 {
   "version": 1,
-  "updated": "2026-11-26",
-  "description": "Independent shim burn-down lanes for multi-agent / multi-task. One lane per branch; acquire locks per agent-file-lock.mdc.",
+  "updated": "2026-11-27",
+  "programStatus": "closed",
+  "closedAt": "2026-11-27",
+  "closureSummary": "FE discovery graph: shim:baseline nextActions []; discovery-import-audit listExploreImports 0; twenty discoveryPortExplore* ports (W97); DISC-03-01–16 guards. Do not open W106+ micro-lanes unless metrics regress.",
+  "reactivateWhen": [
+    "shim:baseline nextActions is non-empty",
+    "discovery-import-audit listExploreImports > 0",
+    "new guarded-root import of src/explore or src/list without discoveryPort*"
+  ],
+  "description": "Historical shim burn-down lane ledger (program closed 2026-11-27). Enforcement: verify:discovery-graph + discoveryGraphGuard + npm run shim:baseline.",
   "integrationGate": "npm run verify:system:quick && npm run shim:baseline",
   "facadeNaming": {
     "purpose": "Cross-context import ports — not product rename, compat re-exports, or second implementations.",
@@ -1587,5 +1595,5 @@
     }
   ],
   "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41", "W42", "W43", "W44", "W45", "W46", "W47", "W48", "W49", "W50", "W51", "W52", "W53", "W54", "W55", "W56", "W57", "W58", "W59", "W60", "W61", "W62", "W63", "W64", "W65", "W66", "W67", "W68", "W69", "W70", "W71", "W72", "W73", "W74", "W75", "W76", "W77", "W78", "W79", "W80", "W81", "W82", "W83", "W84", "W85", "W86", "W87", "W88", "W89", "W90", "W91", "W92", "W93", "W94", "W95", "W96", "W97", "W98", "W99", "W100", "W101", "W102", "W103", "W104", "W105"],
-  "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
+  "verifyPolicy": "Program closed — run npm run shim:baseline (expect nextActions: []); verify:system:quick on any discoveryPort* or cross-context routing edit. No new lane IDs without reactivateWhen trigger."
 }

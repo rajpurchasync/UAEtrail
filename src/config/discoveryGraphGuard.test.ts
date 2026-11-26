@@ -554,6 +554,15 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(violations).toEqual([]);
   });
 
+  it('DISC-03-17: FE discovery burn-down program closed (ledger + shim)', () => {
+    const ws = JSON.parse(read('scripts/governance/parallel-burn-down-workstreams.json'));
+    expect(ws.programStatus).toBe('closed');
+    const audit = JSON.parse(read('scripts/governance/discovery-import-audit.json'));
+    expect(audit.listExploreImports).toBe(0);
+    const baseline = JSON.parse(read('scripts/governance/shim-burn-down-baseline.json'));
+    expect(baseline.nextActions ?? []).toEqual([]);
+  });
+
   it('DISC-03-05: verify:discovery-graph wired', () => {
     expect(read('package.json')).toMatch(/verify:discovery-graph/);
     expect(existsSync(join(process.cwd(), 'scripts/verify/verify-discovery-graph.mjs'))).toBe(true);

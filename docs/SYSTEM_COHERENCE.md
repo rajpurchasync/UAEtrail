@@ -1271,7 +1271,7 @@ Gate: **`npm run verify:platform-governance`**. Behavior stays in code + vitest 
 - [x] DMCP Phase 0 — `scripts/governance/authority-matrix.json` + `verify:authority-matrix` in `verify:system` (five capability axes → sole resolvers)
 - [x] DMCP Phase 1 — `resolvePublishingWorkspaceAccess` (no `UserRole` broaden) + `publish.isPlatformStaff` on `GET /me/status`
 - [x] DMCP Phase 2 — `verify:catalog-truth` (single `GET /explore/map` catalog; find crew = `member_availability`; seeking/demand product paths guarded)
-- [x] DMCP Phase 3 — `src/list/browse/discoveryListRuntime.ts` + `verify:discovery-graph` (list→explore import budget ≤25; shell-only deep explore)
+- [x] DMCP Phase 3 — `verify:discovery-graph` + **twenty** `discoveryPortExplore*` ports (`discoveryPortNamingGuard` W97); `listExploreImports` **0** (budget ≤25); retired `discoveryListRuntime` list facade; UI/wire split (Search · SearchFeed · SearchRouting · GuestWire · CatalogFilters); burn-down program **closed** 2026-11-27 (`scripts/governance/parallel-burn-down-workstreams.json` `programStatus: closed`)
 - [x] DMCP Phase 4 — `verify:compose-spine` (host · availability · add wire; FAB + plan → `CreateFlowProvider`; `composeSpineGuard` + COMPOSE-LINE-06)
 - [x] DMCP Phase 5 — `verify:participation-spine` (`activityJoinClientApi` · `publishingJoinQueueClientApi`; L3/peek presentation; S10f bridge guards; human sign-off still `s10f:ops:print-routes`)
 - [x] DMCP Phase 6 — `verify:storefront-spine` (`PublishingProfileKind` · `/publishing` console · shop/agency facades · `PRO_MEMBERSHIP_PATH`; `operatorStorefrontSpineGuard`)
