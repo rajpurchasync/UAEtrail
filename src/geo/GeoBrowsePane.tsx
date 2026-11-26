@@ -17,7 +17,7 @@ import { ListDiscoveryMapColumn, ListExplorer } from '../discovery/discoveryPort
 import {
   ListSideMapResizeHandle,
   useListSideMapWidth,
-} from '../discovery/discoveryPortListExplorerMapShell';
+} from '../discovery/discoveryPortListMapShell';
 import {
   browseListBucketCategories,
   browseListFilterPatchForSearchScope,

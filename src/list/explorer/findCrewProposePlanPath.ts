@@ -4,7 +4,7 @@ import { activityCompose, formatComposeQuery } from '@/discovery/discoveryPortEx
 import {
   LIST_AVAILABILITY_SLOT_QUERY_KEY,
   LIST_PLAN_WITH_QUERY_KEY,
-} from '@/discovery/discoveryPortListComposeQuery';
+} from '@/discovery/discoveryPortListCompose';
 
 const defaultComposeKind = (modalities: string[] | undefined): ActivityComposeKind => {
   const first = modalities?.[0]?.toLowerCase();
