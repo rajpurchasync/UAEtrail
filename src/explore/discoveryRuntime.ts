@@ -78,12 +78,12 @@ export {
 export {
   EXPLORE_SEARCH_OPEN_PLACEHOLDER,
   EXPLORE_SEARCH_SCOPES_SHIPPED,
-  EXPLORE_GUEST_MAP_PREVIEW_NOTICE,
   parseExploreMapFilterPillsParam,
   serializeExploreMapFilterPillsParam,
   type ExploreMapFilterPillKey,
   type ExploreSearchScopeKey,
 } from './exploreBrowseTaxonomy';
+export { EXPLORE_GUEST_MAP_PREVIEW_NOTICE } from './guestMapPreviewCopy';
 
 export { exploreItemMatchesQuery, countExploreSearchScopes } from './exploreSearchMatches';
 

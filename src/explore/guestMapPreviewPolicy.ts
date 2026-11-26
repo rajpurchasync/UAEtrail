@@ -1,4 +1,4 @@
-import { EXPLORE_GUEST_MAP_PREVIEW_MAX_MATCHES } from './exploreBrowseTaxonomy';
+import { EXPLORE_GUEST_MAP_PREVIEW_MAX_MATCHES } from './guestMapPreviewCopy';
 
 /** Guest peek limits — map shows all pins; guests may open at most 3 unique items per visit. */
 export const isGuestMapCatalogPreviewLimited = (): boolean => true;

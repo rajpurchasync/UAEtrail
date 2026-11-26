@@ -13,4 +13,4 @@ export {
 export {
   EXPLORE_GUEST_MAP_PREVIEW_MAX_MATCHES,
   EXPLORE_GUEST_MAP_PREVIEW_NOTICE,
-} from '../explore/exploreBrowseTaxonomy';
+} from '../explore/guestMapPreviewCopy';

@@ -1,5 +1,5 @@
+import { EXPLORE_GUEST_MAP_PREVIEW_MAX_MATCHES } from '../guestMapPreviewCopy';
 import {
-  EXPLORE_GUEST_MAP_PREVIEW_MAX_MATCHES,
   EXPLORE_SEARCH_SCOPE_COPY,
   type ExploreSearchScopeCounts,
   type ExploreSearchScopeKey,
