@@ -9,6 +9,26 @@
     "discovery-import-audit listExploreImports > 0",
     "new guarded-root import of src/explore or src/list without discoveryPort*"
   ],
+  "activePrograms": [
+    {
+      "id": "OPS-STAGING",
+      "status": "open",
+      "title": "Human / staging gates after DMCP eng complete",
+      "gates": [
+        "S10f staging QA (s10f:ops:print-routes)",
+        "P5 SLO smoke",
+        "MIG-DISCO-REG migrate + strict storage gate per environment"
+      ],
+      "note": "Not code burn-down — ops sign-off on platform-governance authorization line."
+    },
+    {
+      "id": "W1-SEEKING-STORAGE",
+      "status": "eng-complete",
+      "title": "Seeking residue + deploy gate",
+      "verify": ["npm run w1:local-gate", "npm run shim:baseline"],
+      "note": "participant_intent refs confined to ops allowlist (W1e); local gate green 2026-11-27."
+    }
+  ],
   "description": "Historical shim burn-down lane ledger (program closed 2026-11-27). Enforcement: verify:discovery-graph + discoveryGraphGuard + npm run shim:baseline.",
   "integrationGate": "npm run verify:system:quick && npm run shim:baseline",
   "facadeNaming": {

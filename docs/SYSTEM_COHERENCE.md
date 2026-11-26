@@ -1284,7 +1284,7 @@ Gate: **`npm run verify:platform-governance`**. Behavior stays in code + vitest 
 - [x] Tier-1 dedupe policy — no duplicate phase schedules in `experiment/*` ([`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md))
 - [x] Living experiment plans ≤ **12** files (excl. `README.md`; enforced by `verify:docs`)
 - [x] **MIG-PLAN-HUB** + **MIG-W0-SYSTEM-AUDIT** → P0 `complete` in `platform-governance.json`
-- [ ] **S10f** human QA + **S10e** ops promote (release gates for P2+; track in §8.1)
+- [ ] **S10f** human QA + **S10e** ops promote (release gates for P2+; track in §8.1) — **next after FE discovery burn-down closed** (2026-11-27; `parallel-burn-down-workstreams.json` `activePrograms`)
 
 ### 8.8 Coherence program 2026 (PCOH) — sole implementation schedule
 
