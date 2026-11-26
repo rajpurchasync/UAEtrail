@@ -377,6 +377,15 @@ describe('discoverySessionParamsGuard', () => {
     expect(read('src/discovery/discoveryPortExploreMapClient.ts')).toMatch(/serializeExplorePinKindFilter/);
     expect(read('src/discovery/discoveryPortExploreMapClient.ts')).toMatch(/exploreMapItemPathFromAvailabilityRow/);
     expect(read('src/discovery/discoveryPortExploreFlowChrome.ts')).toMatch(/AvailabilityMatchPreview/);
+    expect(read('src/discovery/discoveryPortExploreMapPin.ts')).not.toMatch(/ExploreJoinOverlays/);
+    expect(read('src/discovery/discoveryPortExploreCardChrome.ts')).not.toMatch(
+      /ActivityPeekLinkedTransport/
+    );
+    expect(read('src/discovery/discoveryPortExploreFlowChrome.ts')).toMatch(/ActivityPeekLinkedTransport/);
+    expect(read('src/discovery/discoveryPortExploreFlowChrome.ts')).not.toMatch(/ExploreJoinOverlays/);
+    expect(read('src/list/browse/ListFeedActionsProvider.tsx')).toMatch(
+      /from '\.\.\/\.\.\/explore\/ui\/ExploreJoinOverlays'/
+    );
     expect(read('src/discovery/discoveryPortExploreSearchRouting.ts')).toMatch(/exploreItemMatchesQuery/);
     expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(
       /discoveryPortExploreSearch(Routing)?/

@@ -1,4 +1,4 @@
-/** Discovery card chrome outside explore — directions, type icon, peek body blocks. */
+/** Discovery card chrome — directions, badges, wishlist (not map-peek transport; see FlowChrome). */
 export { DiscoveryCardDirectionsButton } from '../explore/ui/DiscoveryCardPresentation';
 export { DiscoveryCardTypeIcon } from '../explore/ui/DiscoveryCardTypeIcon';
 export {

@@ -1,7 +1,7 @@
 import type { ActivityDetailDTO } from '@uaetrail/shared-types';
 import { buildDiscoveryCardViewModelCard } from '../../discovery';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import { buildExploreMapItemFromActivity } from '@/discovery/discoveryPortExplorePeekBody';
+import { buildExploreMapItemFromActivity } from '@/discovery/discoveryPortExploreMapClient';
 
 /** L1 card for activity detail geography (browse tail + hub href). */
 export const buildActivityDetailDiscoveryCard = (activity: ActivityDetailDTO): DiscoveryCardModel => {

@@ -1,5 +1,6 @@
 /** W32+W76 — map client wire + availability row deep link. */
 export { exploreMapItemPathFromAvailabilityRow } from '../explore/memberDiscoveryAvailabilityRow';
+export { buildExploreMapItemFromActivity } from '../explore/privateActivityExploreItem';
 export {
   defaultExploreMapFetchScope,
   formatExploreMapBboxParam,

@@ -19,7 +19,7 @@ import {
   withAuthResumeQuery,
 } from '../../utils/authReturnContext';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import { ExploreJoinOverlays } from '../../discovery/discoveryPortExplorePeekBody';
+import { ExploreJoinOverlays } from '../../explore/ui/ExploreJoinOverlays';
 import { openActivityGroupChat } from '../../utils/openActivityGroupChat';
 import { messagesRouteForRole } from '../../utils/authRouting';
 import { navigateToMessagesWithReturn } from '../../utils/activityGroupChatNav';
