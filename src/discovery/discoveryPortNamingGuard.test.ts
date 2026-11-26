@@ -57,6 +57,38 @@ describe('discoveryPortNamingGuard', () => {
     expect(listPorts).toEqual(expected);
   });
 
+  it('W97: explore discoveryPortExplore inventory locked at twenty ports', () => {
+    const root = join(process.cwd(), 'src/discovery');
+    const explorePorts = readdirSync(root)
+      .filter((f) => f.startsWith('discoveryPortExplore') && f.endsWith('.ts') && !f.endsWith('.test.ts'))
+      .sort();
+    const expected = [
+      'discoveryPortExploreBrowseHooks.ts',
+      'discoveryPortExploreBrowseUrl.ts',
+      'discoveryPortExploreCardChrome.ts',
+      'discoveryPortExploreCatalogFilters.ts',
+      'discoveryPortExploreCompose.ts',
+      'discoveryPortExploreComposeSurface.ts',
+      'discoveryPortExploreCreateFlow.ts',
+      'discoveryPortExploreFlowChrome.ts',
+      'discoveryPortExploreGuest.ts',
+      'discoveryPortExploreGuestWire.ts',
+      'discoveryPortExploreHosting.ts',
+      'discoveryPortExploreMapChrome.ts',
+      'discoveryPortExploreMapClient.ts',
+      'discoveryPortExploreMapPin.ts',
+      'discoveryPortExploreOptionalFilterWire.ts',
+      'discoveryPortExploreOptionalFilters.ts',
+      'discoveryPortExploreRouting.ts',
+      'discoveryPortExploreSearch.ts',
+      'discoveryPortExploreSearchFeed.ts',
+      'discoveryPortExploreSearchRouting.ts',
+    ];
+    expect(explorePorts).toEqual(expected);
+    expect(existsSync(join(root, 'discoveryPortExploreBrowse.ts'))).toBe(false);
+    expect(existsSync(join(root, 'discoveryPortExploreRuntime.ts'))).toBe(false);
+  });
+
   it('W28 map publish ports use discoveryPortExplore prefix', () => {
     const root = join(process.cwd(), 'src/discovery');
     const ports = [
@@ -77,6 +109,7 @@ describe('discoveryPortNamingGuard', () => {
       'discoveryPortExploreSearchRouting.ts',
       'discoveryPortExploreOptionalFilterWire.ts',
       'discoveryPortExploreOptionalFilters.ts',
+      'discoveryPortExploreRouting.ts',
       'discoveryPortExploreMapClient.ts',
       'discoveryPortExploreCatalogFilters.ts',
     ];
