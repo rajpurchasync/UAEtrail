@@ -38,13 +38,11 @@ describe('discoveryPortNamingGuard', () => {
   it('W28 map publish ports use discoveryPortExplore prefix', () => {
     const root = join(process.cwd(), 'src/discovery');
     const ports = [
-      'discoveryPortExploreMapPinCopy.ts',
-      'discoveryPortExploreMapPinIcons.ts',
-      'discoveryPortExploreMapPinCaption.ts',
-      'discoveryPortExploreMapPinTooltip.ts',
+      'discoveryPortExploreMapPin.ts',
       'discoveryPortExploreMapCluster.ts',
       'discoveryPortExploreMapStyleToggle.ts',
-      'discoveryPortExploreCardDirections.ts',
+      'discoveryPortExploreCardChrome.ts',
+      'discoveryPortExploreCreateFlow.ts',
       'discoveryPortExploreNavigateHost.ts',
       'discoveryPortExploreHostingPublishTenants.ts',
     ];

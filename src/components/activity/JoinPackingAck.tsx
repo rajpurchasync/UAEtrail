@@ -6,7 +6,7 @@ import {
   PACKING_NICE_LABEL,
   PACKING_SIGNATURE_HINT,
   PACKING_SIGNATURE_LABEL,
-} from '@/discovery/discoveryPortExploreCreateFlowCopy';
+} from '@/discovery/discoveryPortExploreCreateFlow';
 
 type JoinPackingAckProps = {
   mode: PackingAckMode;

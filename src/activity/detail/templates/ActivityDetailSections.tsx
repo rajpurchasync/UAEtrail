@@ -73,7 +73,7 @@ import {
   ActivityPeekLinkedTransport,
   activityPeekHasLinkedTransportAffordance,
 } from '@/discovery/discoveryPortExplorePeekLinkedTransport';
-import { EXPLORE_RIDESHARE_AVAILABLE_LABEL } from '@/discovery/discoveryPortExploreCreateFlowCopy';
+import { EXPLORE_RIDESHARE_AVAILABLE_LABEL } from '@/discovery/discoveryPortExploreCreateFlow';
 import { capitalize } from '../../../utils';
 import { activityRegistryPlacePath } from '../../../utils/activityRegistryPlacePath';
 import { activityHostAvatar, showTenantBrand } from '../../../utils/hostLabels';

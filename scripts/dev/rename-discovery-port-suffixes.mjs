@@ -11,9 +11,9 @@ const discoveryDir = join(root, 'src/discovery');
 
 /** Old basename → new basename (under src/discovery). */
 const RENAME_MAP = {
-  'discoveryPortExploreDiscoveryCardDirections.ts': 'discoveryPortExploreCardDirections.ts',
-  'discoveryPortExploreDiscoveryCardPresentation.ts': 'discoveryPortExploreCardPeekBody.ts',
-  'discoveryPortExploreDiscoveryCardTypeIcon.ts': 'discoveryPortExploreCardTypeIcon.ts',
+  'discoveryPortExploreDiscoveryCardDirections.ts': 'discoveryPortExploreCardChrome.ts',
+  'discoveryPortExploreDiscoveryCardPresentation.ts': 'discoveryPortExploreCardChrome.ts',
+  'discoveryPortExploreDiscoveryCardTypeIcon.ts': 'discoveryPortExploreCardChrome.ts',
   'discoveryPortExploreDiscoverBrowse.ts': 'discoveryPortExploreBrowsePosters.ts',
   'discoveryPortExploreMemberDiscoveryRow.ts': 'discoveryPortExploreAvailabilityRowPath.ts',
   'discoveryPortExploreGuestComposeResume.ts': 'discoveryPortExploreComposeGuestResume.ts',
@@ -30,9 +30,9 @@ const MERGE_DELETE = [
 ];
 
 const IMPORT_REPLACEMENTS = [
-  ['discoveryPortExploreDiscoveryCardDirections', 'discoveryPortExploreCardDirections'],
-  ['discoveryPortExploreDiscoveryCardPresentation', 'discoveryPortExploreCardPeekBody'],
-  ['discoveryPortExploreDiscoveryCardTypeIcon', 'discoveryPortExploreCardTypeIcon'],
+  ['discoveryPortExploreDiscoveryCardDirections', 'discoveryPortExploreCardChrome'],
+  ['discoveryPortExploreDiscoveryCardPresentation', 'discoveryPortExploreCardChrome'],
+  ['discoveryPortExploreDiscoveryCardTypeIcon', 'discoveryPortExploreCardChrome'],
   ['discoveryPortExploreDiscoverBrowse', 'discoveryPortExploreBrowsePosters'],
   ['discoveryPortExploreMemberDiscoveryRow', 'discoveryPortExploreAvailabilityRowPath'],
   ['discoveryPortExploreGuestComposeResume', 'discoveryPortExploreComposeGuestResume'],

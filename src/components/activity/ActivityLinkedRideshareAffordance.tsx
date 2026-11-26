@@ -3,7 +3,7 @@ import { activityDetailPath } from '../../config/routingCatalog';
 import {
   EXPLORE_RIDESHARE_AVAILABLE_LABEL,
   EXPLORE_VIEW_LINKED_PLAN_CTA,
-} from '@/discovery/discoveryPortExploreCreateFlowCopy';
+} from '@/discovery/discoveryPortExploreCreateFlow';
 import type { ActivityLinkagePlanSummary } from '../../activity/resolveActivityLinkageSummaries';
 import { formatActivityDetailLeadDate } from '../../activity/formatActivityDetailLead';
 import { ActivityLinkageAffordanceBody } from './activityLinkageAffordanceLayout';

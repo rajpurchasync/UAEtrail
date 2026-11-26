@@ -18,7 +18,7 @@ import { PhoneInput } from '../ui/PhoneInput';
 import { AppSelect } from '../ui/AppSelect';
 import { ImageUpload } from '../ui/ImageUpload';
 import { AppButton } from '../mobile/AppButton';
-import type { LocationPrecision } from '@/discovery/discoveryPortExploreCreateFlowShared';
+import type { LocationPrecision } from '@/discovery/discoveryPortExploreCreateFlow';
 import {
   buildProProfileApplicationFormPrefill,
   buildHostApplicationPayload,
@@ -48,7 +48,7 @@ import {
   COMPOSE_MAP_INTENTS,
   formatComposeMapCoord,
   useComposeMapSession,
-} from '@/discovery/discoveryPortExploreCreateInteractions';
+} from '@/discovery/discoveryPortExploreCreateFlow';
 
 const fieldClass =
   'w-full rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-base text-neutral-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20';

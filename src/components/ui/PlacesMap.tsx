@@ -16,7 +16,7 @@ import {
   CAMPING_VENUE_EMOJI,
   HIKING_VENUE_EMOJI,
   MAP_FILTER_EMOJI,
-} from '@/discovery/discoveryPortExploreMapPinCopy';
+} from '@/discovery/discoveryPortExploreMapPin';
 import {
   buildActivityMapPinLayout,
   buildMapClusterIconHtml,
@@ -27,11 +27,11 @@ import {
   resolveClusterClickExploreItemId,
   resolveColocatedExploreItemIdFromPointer,
   type ColocatedPinIconEntry,
-} from '@/discovery/discoveryPortExploreMapPinIcons';
+} from '@/discovery/discoveryPortExploreMapPin';
 import {
   resolveMapPinActivityCaption,
   resolveMapPinPlaceCaption,
-} from '@/discovery/discoveryPortExploreMapPinCaption';
+} from '@/discovery/discoveryPortExploreMapPin';
 import { MapTileLayers } from './MapTileLayers';
 import { mapTileLoadOptions } from './mapTileLoadOptions';
 import {
@@ -63,7 +63,7 @@ import {
 import {
   formatExploreMapClusterTooltipLabel,
   formatExploreMapPinTooltipLabel,
-} from '@/discovery/discoveryPortExploreMapPinTooltip';
+} from '@/discovery/discoveryPortExploreMapPin';
 
 const toMapPinRingSource = (source: MapPinSource): MapPinRingSource | undefined => {
   if (source === 'availability') return 'availability';

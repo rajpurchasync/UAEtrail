@@ -30,7 +30,7 @@ import { useAuth } from '../../context/AuthContext';
 import {
   ADD_PLACE_PENDING_BANNER_BODY,
   ADD_PLACE_PENDING_BANNER_TITLE,
-} from '@/discovery/discoveryPortExploreCreateFlowCopy';
+} from '@/discovery/discoveryPortExploreCreateFlow';
 import { EXPLORE_PEEK_CTA } from '../../config/exploreTheme';
 
 export type ShopPublicView = {

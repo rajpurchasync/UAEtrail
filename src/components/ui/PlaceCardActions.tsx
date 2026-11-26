@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Star } from 'lucide-react';
-import { DiscoveryCardDirectionsButton } from '@/discovery/discoveryPortExploreCardDirections';
+import { DiscoveryCardDirectionsButton } from '@/discovery/discoveryPortExploreCardChrome';
 
 export type PlaceCardAccent = 'emerald' | 'amber' | 'violet';
 

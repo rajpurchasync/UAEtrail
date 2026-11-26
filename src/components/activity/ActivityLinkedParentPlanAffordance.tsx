@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { activityDetailPath } from '../../config/routingCatalog';
-import { EXPLORE_VIEW_LINKED_PLAN_CTA } from '@/discovery/discoveryPortExploreCreateFlowCopy';
+import { EXPLORE_VIEW_LINKED_PLAN_CTA } from '@/discovery/discoveryPortExploreCreateFlow';
 import { linkedParentRidesharePeekCopy } from '@/discovery/discoveryPortExploreLinkRideshare';
 import { formatActivityDetailLeadDate } from '../../activity/formatActivityDetailLead';
 import type { ActivityLinkagePlanSummary } from '../../activity/resolveActivityLinkageSummaries';

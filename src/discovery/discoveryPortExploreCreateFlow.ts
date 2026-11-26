@@ -1,4 +1,4 @@
-/** W20/W23 — hosting / create flow labels for cross-context detail surfaces. */
+/** Create / hosting flow copy, map picker wire, and shared draft types for cross-context UI. */
 export {
   ADD_PLACE_PENDING_BANNER_BODY,
   ADD_PLACE_PENDING_BANNER_TITLE,
@@ -15,3 +15,11 @@ export {
   PACKING_SIGNATURE_LABEL,
   packingChipClassName,
 } from '../explore/createFlowCopy';
+export type { LocationPrecision } from '../explore/ui/createFlowShared';
+export {
+  ComposeMapEntryRow,
+  ComposePlacePickerOverlay,
+  COMPOSE_MAP_INTENTS,
+  formatComposeMapCoord,
+  useComposeMapSession,
+} from '../explore/create/interactions';
