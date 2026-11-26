@@ -9,19 +9,19 @@ import type { DiscoverCrewRecommendationsQueryParams } from '../../lib/crewRecom
 import { useDiscoverCrewRecommendations } from '@/hooks/useDiscoverCrewRecommendations';
 import { resolveRecommendedCrewFeedRows } from '../../resolveRecommendedCrewFeedRows';
 import { EXPLORE_CREWS_FRIENDS_GOING_EMPTY } from '@/content/exploreCrewsCopy';
-import type { CrewsAvailabilityGuideFilter, CrewsAvailableOpenLens } from '@/discovery/discoveryPortListCrewsOpen';
+import type { CrewsAvailabilityGuideFilter, CrewsAvailableOpenLens } from '@/discovery/discoveryPortListFindCrew';
 import { CrewBrowseAvailabilityMapList } from './CrewBrowseAvailabilityMapList';
 import { CrewBrowseMemberRow } from './CrewBrowseMemberRow';
 import { CREW_BROWSE_LIST_STACK } from './crewBrowseListTheme';
-import { BrowseListSectionHeader } from '@/discovery/discoveryPortListCrewsPresentation';
+import { BrowseListSectionHeader } from '@/discovery/discoveryPortListFindCrew';
 import { CrewBrowseListEmpty, CrewBrowseListLoading } from './CrewBrowseListStates';
 import { useCommunityDiscoverList } from '@/crew-discovery/hooks/useCommunityDiscoverList';
-import { CommunityDiscoverBrowseList } from '@/discovery/discoveryPortListCrewsPresentation';
+import { CommunityDiscoverBrowseList } from '@/discovery/discoveryPortListFindCrew';
 import { FEATURE_FLAGS } from '@/config/platform';
 import {
   CrewsGuidesRail,
   filterCrewsGuideDirectoryCards,
-} from '@/discovery/discoveryPortListCrewsPresentation';
+} from '@/discovery/discoveryPortListFindCrew';
 import {
   buildMemberBrowseRowFromAvailability,
   filterAvailabilityByCapacity,

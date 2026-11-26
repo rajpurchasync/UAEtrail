@@ -14,7 +14,7 @@ import { EXPLORE_SEARCH_PAGE_COLUMN } from '@/discovery/discoveryPortExploreSear
 import { MobileBackButton } from '@/components/mobile/MobileBackButton';
 import { FindCrewSearchChrome } from './FindCrewSearchChrome';
 import { FindCrewResultsSection } from './FindCrewResultsSection';
-import type { CrewsAvailableOpenLens } from '@/discovery/discoveryPortListCrewsOpen';
+import type { CrewsAvailableOpenLens } from '@/discovery/discoveryPortListFindCrew';
 
 type ListCrewsExplorerProps = {
   isSignedIn: boolean;

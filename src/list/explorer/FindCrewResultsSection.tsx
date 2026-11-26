@@ -3,8 +3,8 @@ import type { ExploreClockStyle, ExploreMapItemDTO } from '@uaetrail/shared-type
 import type { ExploreActivityDatePreset } from '@/discovery/discoveryPortExploreActivityDate';
 import type { CrewBrowseLane, CrewPeopleFacet, CrewProfessionalKind } from '@/crew-discovery/crewBrowseState';
 import type { BrowseListFilterState } from '@/discovery/discoveryPortListFilters';
-import { CrewsTabBody } from '@/discovery/discoveryPortListCrewsPresentation';
-import type { CrewsAvailabilityGuideFilter, CrewsAvailabilityShapeFilter } from '@/discovery/discoveryPortListCrewsOpen';
+import { CrewsTabBody } from '@/discovery/discoveryPortListFindCrew';
+import type { CrewsAvailabilityGuideFilter, CrewsAvailabilityShapeFilter } from '@/discovery/discoveryPortListFindCrew';
 import { DEFAULT_CREW_PEOPLE_FACET } from '@/crew-discovery/crewBrowseState';
 import { useCrewDiscoveryAvailability } from '@/crew-discovery/hooks/useCrewDiscoveryAvailability';
 import { BrowseCompactRow } from '@/discovery/discoveryPortListFeed';

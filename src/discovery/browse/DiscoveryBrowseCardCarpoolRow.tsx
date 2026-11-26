@@ -1,5 +1,5 @@
 import { Car, ChevronRight } from 'lucide-react';
-import { BrowseItemLink } from '../discoveryPortListBrowseLink';
+import { BrowseItemLink } from '../discoveryPortListBrowseCard';
 
 export type DiscoveryBrowseCardCarpoolRowProps = {
   label: string;

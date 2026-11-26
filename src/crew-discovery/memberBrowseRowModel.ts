@@ -18,7 +18,7 @@ import {
   sortAvailabilityPeopleNetworkFirst,
 } from './availabilityBrowseCardCopy';
 export { sortAvailabilityPeopleNetworkFirst } from './availabilityBrowseCardCopy';
-import type { CrewsAvailabilityShapeFilter } from '../discovery/discoveryPortListCrewsOpen';
+import type { CrewsAvailabilityShapeFilter } from '../discovery/discoveryPortListFindCrew';
 import type {
   DiscoverCrewRecommendationBucket,
   ExploreAvailablePersonDTO,

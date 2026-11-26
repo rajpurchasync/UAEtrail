@@ -1,5 +1,5 @@
 import { CalendarDays } from 'lucide-react';
-import { BrowseItemLink } from '../discoveryPortListBrowseLink';
+import { BrowseItemLink } from '../discoveryPortListBrowseCard';
 
 type DiscoveryBrowseCardScheduleRowProps = {
   hint: string;

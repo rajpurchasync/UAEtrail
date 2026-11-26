@@ -27,7 +27,7 @@ import {
   FIND_CREW_CTA_PROPOSE_PLAN,
   FIND_CREW_MATCHES_YOUR_DATES,
   FIND_CREW_PROFILE_PRIVATE,
-} from '@/discovery/discoveryPortListFindCrewCopy';
+} from '@/discovery/discoveryPortListFindCrew';
 import { memberProfileRoleLabel } from '../../../member/memberProfileRoleLabel';
 import type { MemberAvailabilitySlotDTO } from '@uaetrail/shared-types';
 import { writeFindCrewPlanAnchorSession } from '@/discovery/discoverySessionFindCrewPrefill';

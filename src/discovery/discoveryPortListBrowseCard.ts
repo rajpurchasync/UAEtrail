@@ -1,4 +1,5 @@
-/** W15 — browse card shell tokens + photo share for discovery browse posters. */
+/** W58 — browse card link + shell chrome for discovery browse posters. */
+export { BrowseItemLink } from '../list/browse/BrowseItemLink';
 export {
   BROWSE_CARD_CHIP,
   BROWSE_CARD_FOOTER,
