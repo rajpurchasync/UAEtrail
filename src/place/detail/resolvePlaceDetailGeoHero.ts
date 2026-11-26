@@ -1,7 +1,7 @@
 import type { PlaceDetailKind } from '../../pages/placeDetailConfig';
 import type { Place } from '../../types/place';
 import { geoNodePath } from '../../config/routingCatalog';
-import { browseCatalogHubLabel } from '../../list/browse/browseCatalogLabels';
+import { browseCatalogHubLabel } from '../../discovery/discoverySessionListCatalogLabels';
 import { buildPlaceDetailDiscoveryCard } from './buildPlaceDetailDiscoveryCard';
 import { resolvePlaceAreaLabelFromTags } from './resolvePlaceAreaFromTags';
 

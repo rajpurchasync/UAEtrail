@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { LIST_CHIP_SCROLL, listCategoryPillClass } from '../../list/browse/listChromeTheme';
+import { LIST_CHIP_SCROLL, listCategoryPillClass } from '../../discovery/discoverySessionListChrome';
 import { useHorizontalDragScroll } from '../../hooks/useHorizontalDragScroll';
 import { PRODUCT_CREWS_TAB_LABEL } from '../../content/productNorthStar';
 import { MY_CREW_SUB_NAV_ROW, myCrewSubNavTabClass } from '@/my-crew/myCrewHubChrome';

@@ -17,10 +17,9 @@ import {
   GUEST_GATED_THREE_COLUMN_MIN_PX,
 } from './guestGatedLayout';
 import { GuestPreviewCatalogList } from './GuestPreviewCatalogList';
-import { useListSideMapWidth } from '../../list/explorer/useListSideMapWidth';
-import { LIST_BROWSE_MAX_PX } from '../../list/browse/listDiscoverySideMapSplit';
+import { useListSideMapWidth, ListSideMapResizeHandle } from '../../discovery/discoverySessionListExplorerMapShell';
+import { LIST_BROWSE_MAX_PX } from '../../discovery/discoverySessionListMapSplit';
 import { GuestPreviewMapColumn } from './GuestPreviewMapColumn';
-import { ListSideMapResizeHandle } from '../../list/explorer/ListSideMapResizeHandle';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 
 type GuestGatedSurfaceLayoutProps = {

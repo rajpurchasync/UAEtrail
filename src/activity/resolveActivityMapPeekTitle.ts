@@ -1,5 +1,5 @@
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
-import { browseCardTitle } from '../list/browse/browseCardMeta';
+import { browseCardTitle } from '../discovery/discoverySessionListFeed';
 
 /** Map trip peek — host-provided outing title, not the social list headline. */
 export const resolveActivityMapPeekTitle = (card: DiscoveryCardModel): string =>

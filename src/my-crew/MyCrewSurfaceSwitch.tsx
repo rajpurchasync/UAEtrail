@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { browseListBucketTabClass } from '@/list/browse/listChromeTheme';
+import { browseListBucketTabClass } from '@/discovery/discoverySessionListChrome';
 import { CREW_FIND_SURFACE_LABEL } from '@/crew-discovery/ui/crewHubNavCopy';
 import { PRODUCT_MY_CREW_SURFACE_TITLE } from '@/content/productNorthStar';
 import { crewsHubHomePath, findCrewDiscoveryListPath } from '@/discovery/discoverySession';

@@ -50,6 +50,34 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(read('src/discovery/discoverySessionExploreRuntime.ts')).toMatch(/discoveryRuntime/);
   });
 
+  it('W16 consumer peek/chat surfaces route list browse via discoverySessionList facades', () => {
+    const allowDirect = /list\//;
+    const roots = [
+      'src/activity',
+      'src/place',
+      'src/components/chat',
+      'src/components/auth',
+      'src/components/activity',
+      'src/content',
+      'src/my-crew',
+    ];
+    const violations: string[] = [];
+    const walk = (dir: string) => {
+      for (const ent of readdirSync(join(process.cwd(), dir), { withFileTypes: true })) {
+        const full = join(dir, ent.name);
+        if (ent.isDirectory()) {
+          if (ent.name === 'node_modules') continue;
+          walk(full);
+        } else if (/\.(ts|tsx)$/.test(ent.name) && !ent.name.endsWith('.test.ts')) {
+          const rel = relative(process.cwd(), full).replace(/\\/g, '/');
+          if (allowDirect.test(read(rel))) violations.push(rel);
+        }
+      }
+    };
+    for (const root of roots) walk(root);
+    expect(violations).toEqual([]);
+  });
+
   it('DISC-03-05: verify:discovery-graph wired', () => {
     expect(read('package.json')).toMatch(/verify:discovery-graph/);
     expect(existsSync(join(process.cwd(), 'scripts/verify/verify-discovery-graph.mjs'))).toBe(true);

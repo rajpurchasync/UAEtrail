@@ -4,4 +4,4 @@
 export { useBrowseGeoScopeHydration } from '../list/browse/useBrowseGeoScopeHydration';
 export { useBrowseListFeed } from '../list/browse/useBrowseListFeed';
 export { useBrowseViewerLocation } from '../list/browse/useBrowseViewerLocation';
-export { readStoredViewerFix } from '../list/browse/viewerLocationStorage';
+export { readStoredViewerFix, writeStoredViewerFix } from '../list/browse/viewerLocationStorage';

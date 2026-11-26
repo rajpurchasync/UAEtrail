@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { activityCrewPath } from '../config/routingCatalog';
-import type { ListFeedHostActivityActions } from '../list/browse/ListFeedActionsProvider';
+import type { ListFeedHostActivityActions } from '../discovery/discoverySessionListHostFeedActions';
 import { launchLinkedRideshareFromParentActivity } from '../create/launchLinkedRideshareFromParentActivity';
 import { useActivityInviteShareSheet } from './useActivityInviteShareSheet';
 

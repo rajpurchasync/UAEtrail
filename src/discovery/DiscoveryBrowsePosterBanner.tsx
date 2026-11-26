@@ -3,7 +3,7 @@ import { Clock, MapPin } from 'lucide-react';
 import type { DiscoveryCardModel } from './discoveryCardModel';
 import { EnvironmentImage } from '../components/ui/EnvironmentImage';
 import { SecureAvatar } from '../components/ui/SecureAvatar';
-import { DiscoveryCardTypeIcon } from '../explore/ui/DiscoveryCardTypeIcon';
+import { DiscoveryCardTypeIcon } from './discoverySessionExploreDiscoveryCardTypeIcon';
 import { browseCardMeta } from './discoverySessionListFeed';
 import { resolveBrowsePosterCoverUrl, browsePosterFallbackClass } from './discoverySessionListPeek';
 import { DiscoveryCardHostProfileNav } from './DiscoveryCardHostProfileNav';

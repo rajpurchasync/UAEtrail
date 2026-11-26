@@ -208,8 +208,16 @@
       "branch": "burn-down/w15-discovery-list-facades",
       "owns": ["src/discovery/discoverySessionList*.ts", "src/discovery/**"],
       "avoid": ["src/list/** impl"]
+    },
+    {
+      "id": "W16",
+      "status": "done",
+      "title": "Consumer peek/chat/auth — discoverySessionList facades",
+      "branch": "burn-down/w16-consumer-list-facades",
+      "owns": ["src/discovery/discoverySessionList*.ts", "src/activity/**", "src/place/**", "src/components/chat/**"],
+      "avoid": ["src/list/**"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }

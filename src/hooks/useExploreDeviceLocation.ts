@@ -3,7 +3,7 @@ import {
   getExploreMapLocationPreference,
   saveExploreMapLocationPreference,
 } from '../explore/exploreMapLocationPreference';
-import { writeStoredViewerFix } from '../list/browse/viewerLocationStorage';
+import { writeStoredViewerFix } from '../discovery/discoverySessionListHooks';
 
 export type DeviceLocationFix = { lat: number; lng: number };
 

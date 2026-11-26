@@ -5,7 +5,7 @@ import { getExploreMapTiles, readExploreMapStyle } from '../../config/platform';
 import { useExploreMap } from '../../hooks/useExploreMap';
 import { expandMapPins, layoutColocatedMapPins } from '../../explore/ui/exploreMapPinModel';
 import { ExploreMapLoadingSkeleton } from '../../explore/ui/ExploreMapLoadingSkeleton';
-import { LIST_SIDE_MAP_MIN_PX } from '../../list/browse/listDiscoverySideMapSplit';
+import { LIST_SIDE_MAP_MIN_PX } from '../../discovery/discoverySessionListMapSplit';
 
 const PlacesMap = lazy(() =>
   import('../ui/PlacesMap').then((module) => ({ default: module.PlacesMap }))
