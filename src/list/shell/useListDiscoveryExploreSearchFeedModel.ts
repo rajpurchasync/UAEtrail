@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { setExploreClockStyle, type ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
+import { EXPLORE_MAP_PATH } from '../../config/platform';
 import type { BrowseListFilterState } from '../browse/browseListFilters';
 import type { BrowseMainCategoryKey } from '../browse/browseListTaxonomy';
 import { exploreMapPathFromListSearch, scopeBrowseListStateForListCat } from '../../discovery/discoverySession';

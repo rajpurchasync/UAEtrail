@@ -28,3 +28,8 @@ export {
   isFriendMapItem,
   matchesOthersMapFilter,
 } from '../explore/ui/exploreMapPinModel';
+export {
+  isPlacesMapItem,
+  isShopListItem,
+  mapItemMatchesShopsPill,
+} from '../explore/exploreMapItemKind';

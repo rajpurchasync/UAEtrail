@@ -12,7 +12,7 @@ import {
   hostedPlaceLocationIdsFromCatalog,
 } from '../../discovery/discoveryPortExploreOptionalFilterWire';
 import type { MapFilterKey, VenueListFilterKey } from '../../discovery/discoveryPortExploreRouting';
-import { isPlacesMapItem, isShopListItem } from '../../discovery/discoveryPortExploreBrowse';
+import { isPlacesMapItem, isShopListItem } from '../../discovery/discoveryPortExploreMapPin';
 import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
 
 export type MapPlaceFilters = {

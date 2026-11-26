@@ -13,7 +13,7 @@ import {
   deriveVenueRegionSortOrder,
   resolveExploreItemScheduleDate,
 } from '../../discovery/discoveryPortExploreCatalogFilters';
-import { isPlacesMapItem, isShopListItem } from '../../discovery/discoveryPortExploreBrowse';
+import { isPlacesMapItem, isShopListItem } from '../../discovery/discoveryPortExploreMapPin';
 import {
   EXPLORE_PRICE_FILTER_OPTIONS,
   exploreItemMatchesFacilityKinds,
