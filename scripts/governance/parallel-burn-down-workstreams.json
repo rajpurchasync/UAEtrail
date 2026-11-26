@@ -472,11 +472,8 @@
         "src/places-discovery/catalog/places.ts",
         "src/places-discovery/catalog/listCatalog.ts",
         "src/discovery/discoveryPortExploreCatalogFilters.ts",
-        "src/discovery/discoveryPortExploreCatalogFilters.ts",
         "src/discovery/discoveryPortExploreOptionalFilters.ts",
-        "src/discovery/discoveryPortExploreMapPin.ts",
-        "src/discovery/discoveryPortExploreCatalogFilters.ts",
-        "src/discovery/discoveryPortExploreCatalogFilters.ts"
+        "src/discovery/discoveryPortExploreMapPin.ts"
       ],
       "avoid": ["src/explore/** impl", "exploreMapItemFixtures in tests"]
     },
@@ -605,7 +602,7 @@
       "owns": [
         "src/discovery/discoveryPortExploreCompose.ts",
         "src/discovery/discoveryPortExploreFlowChrome.ts",
-        "src/discovery/discoveryPortExploreListCatalog.ts",
+        "src/discovery/discoveryPortExploreCatalogFilters.ts",
         "scripts/dev/consolidate-discovery-ports-w43.mjs",
         "src/create/**",
         "src/list/browse/browseCatalogLabels.ts",
@@ -1036,8 +1033,24 @@
         "re-run consolidate-discovery-ports-w71 on clean tree",
         "merge activity-date re-exports into OptionalFilters UI barrel"
       ]
+    },
+    {
+      "id": "W72",
+      "status": "done",
+      "title": "ListCatalog into CatalogFilters (explore)",
+      "branch": "burn-down/w72-list-catalog-catalog-filters",
+      "owns": [
+        "src/discovery/discoveryPortExploreCatalogFilters.ts",
+        "scripts/dev/consolidate-discovery-ports-w72.mjs",
+        "src/list/browse/browseCatalogLabels.ts",
+        "src/list/browse/listVenuePlaceTopics.ts"
+      ],
+      "avoid": [
+        "re-run consolidate-discovery-ports-w72 on clean tree",
+        "merge CatalogFilters into OptionalFilters UI barrel"
+      ]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41", "W42", "W43", "W44", "W45", "W46", "W47", "W48", "W49", "W50", "W51", "W52", "W53", "W54", "W55", "W56", "W57", "W58", "W59", "W60", "W61", "W62", "W63", "W64", "W65", "W66", "W67", "W68", "W69", "W70", "W71"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41", "W42", "W43", "W44", "W45", "W46", "W47", "W48", "W49", "W50", "W51", "W52", "W53", "W54", "W55", "W56", "W57", "W58", "W59", "W60", "W61", "W62", "W63", "W64", "W65", "W66", "W67", "W68", "W69", "W70", "W71", "W72"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }

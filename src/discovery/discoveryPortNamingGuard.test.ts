@@ -74,7 +74,6 @@ describe('discoveryPortNamingGuard', () => {
       'discoveryPortExploreOptionalFilterWire.ts',
       'discoveryPortExploreOptionalFilters.ts',
       'discoveryPortExploreFlowChrome.ts',
-      'discoveryPortExploreListCatalog.ts',
       'discoveryPortExploreMapClient.ts',
       'discoveryPortExplorePeekBody.ts',
       'discoveryPortExploreCatalogFilters.ts',

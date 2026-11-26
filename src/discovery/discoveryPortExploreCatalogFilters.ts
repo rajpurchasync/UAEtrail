@@ -1,4 +1,6 @@
-/** Discovery catalog wire — sort, activity mode, outing/others topic keys. */
+/** W46+W72 — catalog wire: sort, mode, topics, hub labels, venue topic URL params. */
+export { exploreCatalogHubLabelFromExploreItem } from '../explore/exploreCatalogHubLabel';
+export { EXPLORE_PLACE_TOPIC_OPTIONS, aliasPlaceMapTopicToList } from '../explore/exploreMapTopicUrlParams';
 export {
   deriveVenueRegionSortOrder,
   sortExploreActivities,
