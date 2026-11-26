@@ -6,3 +6,9 @@ export {
   DiscoveryCardRequirementBadges,
   ExploreActivityPeekMeta,
 } from '../explore/ui/DiscoveryCardPresentation';
+export {
+  EXPLORE_RIDESHARE_AVAILABLE_BADGE,
+  enrichExploreActivityRequirementBadges,
+  extractExploreRequirementBadges,
+} from '../explore/exploreRequirementBadges';
+export { ExploreWishlistSaveButton } from '../explore/ui/ExploreWishlistSaveButton';

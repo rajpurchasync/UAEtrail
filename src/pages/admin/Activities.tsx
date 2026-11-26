@@ -21,7 +21,7 @@ import { ActivityActionsMenu, ActivityListPreview, buildAdminActivityMenuItems, 
 import { useReloadExploreMap } from '../../hooks/useReloadExploreMap';
 import { Link } from 'react-router-dom';
 import { ADMIN_PLACES_PATH } from '../../config/surfacePaths';
-import { navigateToExploreHost } from '@/discovery/discoveryPortExploreNavigateHost';
+import { navigateToExploreHost } from '@/discovery/discoveryPortExploreHosting';
 import { DashboardLayout } from '../../components/layout';
 import { ADMIN_LINKS } from '../../constants';
 import {
@@ -33,7 +33,7 @@ import {
   resolveActivityLocationState,
   resolveActivityTitle,
 } from '../../utils/activityIdentity';
-import { navigateToHostFromExistingActivity } from '@/discovery/discoveryPortExploreNavigateHost';
+import { navigateToHostFromExistingActivity } from '@/discovery/discoveryPortExploreHosting';
 import { AppSelect, ADMIN_FILTER_SELECT_CLASS, ADMIN_INPUT_CLASS } from '../../components/ui/AppSelect';
 import { AdminFilterBar } from '../../components/admin/AdminFilterBar';
 import { ACTIVITY_TYPE_LABELS, SCHEDULED_ACTIVITY_TYPES } from '../../config/activityTypes';

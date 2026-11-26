@@ -18,3 +18,8 @@ export {
   listHostingPublishProfiles,
   resolveHostingPublishingProfileKind,
 } from '../explore/hostingPublishTenants';
+export {
+  activityTypeToHostComposeKind,
+  navigateToExploreHost,
+} from '../explore/navigateExploreHost';
+export { navigateToHostFromExistingActivity } from '../explore/navigateHostFromExistingActivity';

@@ -4,8 +4,8 @@ import { subdivisionNoun } from '../config/regions';
 import {
   validateFacilityAddDraft,
   type FacilityAddDraft,
-} from '../discovery/discoveryPortExploreAddFacilityFlow';
-import type { AddSubmitResult } from '../discovery/discoveryPortExploreAddFlow';
+} from '../discovery/discoveryPortExploreCreateFlow';
+import type { AddSubmitResult } from '../discovery/discoveryPortExploreCreateFlow';
 import { resolveRequiredEmirate } from '../discovery/discoveryPortExploreHostingPublish';
 
 /** Member facility submit from Add on map — single `POST /me/facilities`. */

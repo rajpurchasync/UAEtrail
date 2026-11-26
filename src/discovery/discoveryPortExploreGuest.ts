@@ -6,3 +6,8 @@ export {
   readExploreGuestMapPreviewDismissed,
   writeExploreGuestMapPreviewDismissed,
 } from '../explore/guestMapPreviewPolicy';
+export {
+  EXPLORE_WELCOME_FINISH_STATE,
+  POST_SIGNUP_EXPLORE_PATH,
+  resolveWelcomeFinishExplorePath,
+} from '../explore/exploreWelcomeNavigation';

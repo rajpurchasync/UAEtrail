@@ -6,7 +6,7 @@ import {
   validateAddDraft,
   type AddDraft,
   type AddSubmitResult,
-} from '../discovery/discoveryPortExploreAddFlow';
+} from '../discovery/discoveryPortExploreCreateFlow';
 import { resolveRequiredEmirate } from '../discovery/discoveryPortExploreHostingPublish';
 import type { ActivityDifficulty } from '../discovery/discoveryPortExploreHostingPublish';
 import { formatE164Phone } from '../utils/phone';

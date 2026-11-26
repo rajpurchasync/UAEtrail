@@ -33,7 +33,7 @@ import {
   type DiscoveryCardSections,
   type ExplorePriceInfo,
 } from '@uaetrail/shared-types';
-import { enrichExploreActivityRequirementBadges } from './discoveryPortExploreRequirementBadges';
+import { enrichExploreActivityRequirementBadges } from './discoveryPortExploreCardChrome';
 import { exploreMapItemSharePath } from './discoveryPortExploreRouting';
 import { resolveExploreCoverImage } from './discoveryPortExploreRuntime';
 

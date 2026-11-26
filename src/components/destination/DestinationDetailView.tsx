@@ -26,7 +26,7 @@ import { parseMobileBackNavState } from '../../utils/mobileBackNav';
 import { resolveDestinationConsumerDetailHeaderChrome } from '../../destinationDetail/detail/resolveDestinationConsumerDetailHeaderChrome';
 import { EXPLORE_PEEK_CTA } from '../../config/exploreTheme';
 import { DetailHeroShareButton } from '../../detail/shared/DetailHeroShareButton';
-import { ExploreWishlistSaveButton } from '@/discovery/discoveryPortExploreWishlistSave';
+import { ExploreWishlistSaveButton } from '@/discovery/discoveryPortExploreCardChrome';
 import { buildDestinationDetailDiscoveryCard } from '../../destinationDetail/detail/buildDestinationDetailDiscoveryCard';
 import { CONSUMER_DETAIL_OVERVIEW_LABEL } from '../../content/consumerDetailSectionLabels';
 import { keyFactIconFromLabel } from '../../detail/shell/keyFactIcons';

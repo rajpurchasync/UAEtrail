@@ -17,7 +17,7 @@ import {
 import {
   activityTypeToHostComposeKind,
   navigateToExploreHost,
-} from '@/discovery/discoveryPortExploreNavigateHost';
+} from '@/discovery/discoveryPortExploreHosting';
 import { ConsoleShell } from '../../console/ConsoleShell';
 import { TenantSwitcher } from '../../components/ui';
 import { ActivityMapPeekWireFooter } from '../../components/activity/ActivityMapPeekWireFooter';

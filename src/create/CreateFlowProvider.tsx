@@ -13,7 +13,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { useAuth } from '../context/AuthContext';
 import { EXPLORE_MAP_PATH } from '../config/platform';
-import type { AddSubmitResult } from '../discovery/discoveryPortExploreAddFlow';
+import type { AddSubmitResult } from '../discovery/discoveryPortExploreCreateFlow';
 import {
   addVenueKindFromRoute,
   isComposeWizardRoute,
@@ -24,7 +24,7 @@ import { clearComposeWizardSessionForRoute } from '../discovery/discoveryPortExp
 import { parseExploreDestinationSlug } from '../discovery/discoveryPortExploreBrowse';
 import { GuestComposeSignInSheet } from '../discovery/discoveryPortExploreComposeGuest';
 import type { HostingWizardPrefill } from '../discovery/discoveryPortExploreHosting';
-import type { AvailabilityFixedSubmitResult } from '../discovery/discoveryPortExploreIntentFixedFlow';
+import type { AvailabilityFixedSubmitResult } from '../discovery/discoveryPortExploreCreateFlow';
 import {
   parseFacilityOnPlaceId,
   parsePlanWithUserId,

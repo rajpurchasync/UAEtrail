@@ -7,7 +7,7 @@ import { TenantSwitcher } from '../../components/ui';
 import { GlassCard } from '../../components/mobile/GlassCard';
 import { FloatingActionButton } from '../../components/mobile/FloatingActionButton';
 import { LoadingRing } from '../../components/ui/loadingPrimitives';
-import { navigateToExploreHost } from '@/discovery/discoveryPortExploreNavigateHost';
+import { navigateToExploreHost } from '@/discovery/discoveryPortExploreHosting';
 import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { HostingHubView } from '../../hosting/HostingHubView';
 import { resolveHostingPublishingProfileKind } from '@/discovery/discoveryPortExploreHosting';

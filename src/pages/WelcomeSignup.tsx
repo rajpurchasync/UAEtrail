@@ -11,7 +11,7 @@ import { PRODUCT_SIGNUP_FINISH_TITLE } from '../content/productNorthStar';
 import {
   EXPLORE_WELCOME_FINISH_STATE,
   resolveWelcomeFinishExplorePath,
-} from '@/discovery/discoveryPortExploreWelcomeNavigation';
+} from '@/discovery/discoveryPortExploreGuest';
 import { persistAuthReturnContextForPath } from '../utils/authPostLoginNavigation';
 
 type WelcomeLocationState = {

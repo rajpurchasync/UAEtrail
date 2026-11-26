@@ -379,7 +379,7 @@
         "src/pages/publishing/**",
         "src/pages/admin/Activities.tsx",
         "src/discovery/discoveryPortExploreMapPin*.ts",
-        "src/discovery/discoveryPortExploreNavigateHost.ts"
+        "src/discovery/discoveryPortExploreHosting.ts"
       ],
       "avoid": ["src/explore/mapPinIcons impl churn"]
     },
@@ -418,7 +418,7 @@
         "src/discovery/discoveryPortExploreComposeSurface.ts",
         "src/discovery/discoveryPortExploreComposeGuest.ts",
         "src/discovery/discoveryPortExploreComposeGuest.ts",
-        "src/discovery/discoveryPortExploreAddFlow.ts",
+        "src/discovery/discoveryPortExploreCreateFlow.ts",
         "src/discovery/discoveryPortExploreLinkRideshare.ts"
       ],
       "avoid": ["src/explore/** impl churn", "src/hooks/exploreMap*"]
@@ -458,7 +458,7 @@
         "src/discovery/discoveryPortExploreHostingPublish.ts",
         "src/discovery/discoveryPortExploreHostingPublish.ts",
         "src/discovery/discoveryPortExploreHostingPublish.ts",
-        "src/discovery/discoveryPortExploreAddFacilityFlow.ts"
+        "src/discovery/discoveryPortExploreCreateFlow.ts"
       ],
       "avoid": ["src/activity-discovery/**", "src/places-discovery/**"]
     },
@@ -662,8 +662,26 @@
         "src/availability/AvailabilitySlotEditor.tsx"
       ],
       "avoid": ["re-run consolidate-discovery-ports-w46 on clean tree", "merge ActivityDate into crew bundle"]
+    },
+    {
+      "id": "W47",
+      "status": "done",
+      "title": "Fold badge/wishlist, add drafts, navigate host, welcome into domain bundles",
+      "branch": "burn-down/w47-domain-bundles",
+      "owns": [
+        "src/discovery/discoveryPortExploreCardChrome.ts",
+        "src/discovery/discoveryPortExploreCreateFlow.ts",
+        "src/discovery/discoveryPortExploreHosting.ts",
+        "src/discovery/discoveryPortExploreGuest.ts",
+        "scripts/dev/consolidate-discovery-ports-w47.mjs",
+        "src/pages/SignIn.tsx",
+        "src/pages/WelcomeSignup.tsx",
+        "src/pages/publishing/**",
+        "src/create/CreateFlowProvider.tsx"
+      ],
+      "avoid": ["re-run consolidate-discovery-ports-w47 on clean tree"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41", "W42", "W43", "W44", "W45", "W46"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41", "W42", "W43", "W44", "W45", "W46", "W47"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }

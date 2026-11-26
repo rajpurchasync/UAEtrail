@@ -32,7 +32,7 @@ describe('map peek naming', () => {
     expect(model).toMatch(/buildDiscoveryCardModel/);
     expect(model).toMatch(/export type \{ DiscoveryCardKind, DiscoveryCardSource \}/);
     expect(model).toMatch(/export type DiscoveryCardTone = DiscoveryCardKind/);
-    expect(model).not.toMatch(/ExploreCard/);
+    expect(model).not.toMatch(/ExploreCard(?!Chrome)/);
     expect(model).not.toMatch(/@deprecated/);
   });
 

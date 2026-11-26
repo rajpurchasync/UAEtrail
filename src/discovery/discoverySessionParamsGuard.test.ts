@@ -301,7 +301,7 @@ describe('discoverySessionParamsGuard', () => {
       },
       {
         rel: 'src/list/browse/tripBrowseCardCopy.ts',
-        facade: /discoveryPortExploreRequirementBadges/,
+        facade: /discoveryPortExploreCardChrome/,
       },
       {
         rel: 'src/list/browse/ListFeedActionsProvider.tsx',

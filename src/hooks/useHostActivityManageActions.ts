@@ -9,7 +9,7 @@ import {
   suspendActivity as suspendTenantActivity,
 } from './tenantActivityClientApi';
 import { launchLinkedRideshareFromParentActivity } from '../create/launchLinkedRideshareFromParentActivity';
-import { navigateToHostFromExistingActivity } from '@/discovery/discoveryPortExploreNavigateHost';
+import { navigateToHostFromExistingActivity } from '@/discovery/discoveryPortExploreHosting';
 import { openPublishedActivityPreview } from '../components/activities';
 import { useInvalidatePublishingWorkspace } from './publishingWorkspaceQueries';
 import { useReloadExploreMap } from './useReloadExploreMap';

@@ -5,7 +5,7 @@ import {
   AVAILABILITY_FIXED_VEHICLE_OPTIONS,
   type AvailabilityFixedTransportMode,
   type AvailabilityFixedVehicleType,
-} from '@/discovery/discoveryPortExploreIntentFixedFlow';
+} from '@/discovery/discoveryPortExploreCreateFlow';
 
 export type AvailabilityOpenLogisticsState = {
   partySize: number;
