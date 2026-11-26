@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EXPLORE_SEARCH_RESULTS_PATH } from '../explore/search/exploreSearchRouting';
+import { EXPLORE_SEARCH_RESULTS_PATH } from '../discovery/discoverySessionExploreSearchRouting';
 import { isLayoutMobileUnifiedHeaderRoute } from './mobileTabHeader';
 import {
   hasConsumerSelfHeader,

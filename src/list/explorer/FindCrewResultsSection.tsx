@@ -2,12 +2,12 @@ import { useMemo } from 'react';
 import type { ExploreClockStyle, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { ExploreActivityDatePreset } from '@/discovery/discoverySessionExploreActivityDate';
 import type { CrewBrowseLane, CrewPeopleFacet, CrewProfessionalKind } from '@/crew-discovery/crewBrowseState';
-import type { BrowseListFilterState } from '@/list/browse/browseListFilters';
-import { CrewsTabBody } from '@/list/crews/CrewsTabBody';
-import type { CrewsAvailabilityGuideFilter, CrewsAvailabilityShapeFilter } from '@/list/crews/crewsOpenSegment';
+import type { BrowseListFilterState } from '@/discovery/discoverySessionListFilters';
+import { CrewsTabBody } from '@/discovery/discoverySessionListCrewsPresentation';
+import type { CrewsAvailabilityGuideFilter, CrewsAvailabilityShapeFilter } from '@/discovery/discoverySessionListCrewsOpen';
 import { DEFAULT_CREW_PEOPLE_FACET } from '@/crew-discovery/crewBrowseState';
 import { useCrewDiscoveryAvailability } from '@/crew-discovery/hooks/useCrewDiscoveryAvailability';
-import { BrowseCompactRow } from '@/list/browse/BrowseCompactRow';
+import { BrowseCompactRow } from '@/discovery/discoverySessionListFeed';
 import {
   EXPLORE_SEARCH_MATCHES_TITLE,
   ExploreGuestSignInCard,

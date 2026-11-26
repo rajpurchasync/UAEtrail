@@ -1,4 +1,4 @@
-import { listChipClass } from '@/list/browse/listChromeTheme';
+import { listChipClass } from '@/discovery/discoverySessionListChrome';
 import type { CrewBrowseLane } from '@/crew-discovery/crewBrowseState';
 import {
   FIND_CREW_RECOMMENDED_TABS,

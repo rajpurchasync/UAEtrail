@@ -32,11 +32,14 @@ import {
 import { SETTINGS_SURFACE_TITLE } from './settingsHub';
 import { AGENCY_PROFILE_PATH_PREFIX } from '@uaetrail/shared-types';
 import { PRODUCT_CREWS_TAB_LABEL } from '../content/productNorthStar';
-import { resolveEsriExploreStylePreset, resolveExploreMapTiles } from '../explore/exploreMapBasemap';
-import type { ExploreMapStyle } from '../explore/exploreMapBasemap';
+import {
+  resolveEsriExploreStylePreset,
+  resolveExploreMapTiles,
+  type ExploreMapStyle,
+} from '../discovery/discoverySessionExploreMapBasemap';
 
-export type { ExploreMapStyle, ExploreMapTileSet } from '../explore/exploreMapBasemap';
-export { resolveExploreMapTiles } from '../explore/exploreMapBasemap';
+export type { ExploreMapStyle, ExploreMapTileSet } from '../discovery/discoverySessionExploreMapBasemap';
+export { resolveExploreMapTiles } from '../discovery/discoverySessionExploreMapBasemap';
 
 export {
   ADMIN_PLACES_PATH,

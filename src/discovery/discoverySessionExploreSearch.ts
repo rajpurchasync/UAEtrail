@@ -5,12 +5,15 @@ export {
   EXPLORE_SEARCH_RESULTS_PATH,
   EXPLORE_SEARCH_SCOPE_PARAM,
   EXPLORE_SEARCH_VIEW_PARAM,
+  exploreSearchHomePath,
   exploreSearchListCatForScope,
   exploreSearchMapViewPathFromListSearch,
   exploreSearchResultsPath,
   exploreSearchScopeForListCat,
+  isExploreSearchHomeState,
   parseExploreSearchBrowseState,
-} from '../explore/search/exploreSearchRouting';
+  parseExploreSearchScopeFromParams,
+} from './discoverySessionExploreSearchRouting';
 export {
   resolveExploreSearchJoinableTripCards,
   resolveExploreSearchTripPool,

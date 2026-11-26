@@ -232,8 +232,16 @@
       "branch": "burn-down/w18-geo-explore-facades",
       "owns": ["src/discovery/discoverySessionExplore*.ts", "src/geo/**", "src/config/use*Explore*"],
       "avoid": ["src/explore/routing.ts impl churn"]
+    },
+    {
+      "id": "W19",
+      "status": "done",
+      "title": "Config nav + find-crew chrome via discoverySessionExplore/List facades",
+      "branch": "burn-down/w19-config-nav-facades",
+      "owns": ["src/config/desktopNav.ts", "src/config/mobileFiveTabNav.ts", "src/list/explorer/FindCrew*"],
+      "avoid": ["src/config/routingCatalog.ts aggregate"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }

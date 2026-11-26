@@ -1,2 +1,2 @@
-/** W18 — explore path builder for geo hub deep links. */
-export { explorePath } from '../explore/routing';
+/** W18 — explore path builders for cross-context nav. */
+export { explorePath, explorePlacesPath, parseExplorePanel } from '../explore/routing';

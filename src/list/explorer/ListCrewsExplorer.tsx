@@ -6,15 +6,15 @@ import type {
   CrewProfessionalKind,
 } from '@/crew-discovery/crewBrowseState';
 import type { ExploreActivityDatePreset } from '@/discovery/discoverySessionExploreActivityDate';
-import type { BrowseListFilterState } from '@/list/browse/browseListFilters';
+import type { BrowseListFilterState } from '@/discovery/discoverySessionListFilters';
 import { crewsHubHomePath } from '@/discovery/discoverySession';
-import { LIST_APP_BAR, LIST_CHROME } from '@/list/browse/listChromeTheme';
+import { LIST_APP_BAR, LIST_CHROME } from '@/discovery/discoverySessionListChrome';
 import { FIND_CREW_SEARCH_TITLE } from './findCrewSearchCopy';
 import { EXPLORE_SEARCH_PAGE_COLUMN } from '@/discovery/discoverySessionExploreSearch';
 import { MobileBackButton } from '@/components/mobile/MobileBackButton';
 import { FindCrewSearchChrome } from './FindCrewSearchChrome';
 import { FindCrewResultsSection } from './FindCrewResultsSection';
-import type { CrewsAvailableOpenLens } from '@/list/crews/crewsOpenSegment';
+import type { CrewsAvailableOpenLens } from '@/discovery/discoverySessionListCrewsOpen';
 
 type ListCrewsExplorerProps = {
   isSignedIn: boolean;

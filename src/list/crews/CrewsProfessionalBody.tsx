@@ -6,7 +6,7 @@ import {
   filterCrewsProfessionalDirectory,
 } from './crewsProfessionalFilters';
 import { EXPLORE_CREWS_CONNECT_EMPTY } from '@/content/exploreCrewsCopy';
-import { BrowseListSectionHeader } from '@/list/browse/BrowseListSectionHeader';
+import { BrowseListSectionHeader } from '@/discovery/discoverySessionListCrewsPresentation';
 import { CrewsGuidesRail } from './CrewsGuidesRail';
 import { CrewsProfessionalAgenciesList } from './CrewsProfessionalAgenciesList';
 
