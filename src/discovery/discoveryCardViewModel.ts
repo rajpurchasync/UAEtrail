@@ -8,7 +8,7 @@ import {
   buildDiscoveryCardModel,
   type DiscoveryCardModel,
 } from './discoveryCardModel';
-import { finalizeDiscoveryCardLinkedRideshare } from '../explore/linkedRideshareExplore';
+import { finalizeDiscoveryCardLinkedRideshare } from './discoveryPortExploreLinkedRideshareExplore';
 
 /** Peek, list, and poster card. Same shape as {@link DiscoveryCardModel}. */
 export type DiscoveryCardViewModel = DiscoveryCardModel;

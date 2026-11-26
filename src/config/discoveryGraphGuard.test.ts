@@ -102,6 +102,36 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(violations).toEqual([]);
   });
 
+  it('W35 plan, utils, member, hosting, discovery engagement via ports', () => {
+    const directExplore = /from ['"][^'"]*explore\//;
+    const roots = ['src/plan', 'src/member', 'src/hosting'];
+    const violations: string[] = [];
+    const walk = (dir: string) => {
+      for (const ent of readdirSync(join(process.cwd(), dir), { withFileTypes: true })) {
+        const full = join(dir, ent.name);
+        if (ent.isDirectory()) walk(full);
+        else if (/\.(ts|tsx)$/.test(ent.name) && !ent.name.endsWith('.test.ts')) {
+          const rel = relative(process.cwd(), full).replace(/\\/g, '/');
+          if (directExplore.test(read(rel))) violations.push(rel);
+        }
+      }
+    };
+    for (const root of roots) walk(root);
+    const utilsTargets = ['src/utils/authSessionLanding.ts', 'src/utils/mobileBackNav.ts'];
+    for (const rel of utilsTargets) {
+      if (directExplore.test(read(rel))) violations.push(rel);
+    }
+    const discoveryTargets = [
+      'src/discovery/discoveryOfferRideshareDispatch.ts',
+      'src/discovery/discoveryCardViewModel.ts',
+      'src/discovery/ActivityDiscoveryPublishedBody.tsx',
+    ];
+    for (const rel of discoveryTargets) {
+      if (directExplore.test(read(rel))) violations.push(rel);
+    }
+    expect(violations).toEqual([]);
+  });
+
   it('W34 activity-discovery and places-discovery catalogs via discoveryPortExplore', () => {
     const directExplore = /from ['"][^'"]*explore\//;
     const roots = ['src/activity-discovery', 'src/places-discovery'];

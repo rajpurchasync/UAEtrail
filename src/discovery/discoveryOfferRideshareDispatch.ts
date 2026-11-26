@@ -2,7 +2,7 @@ import type { ActivityDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   canOfferRideshareForAvailabilityItem,
   canShowAvailabilityLinkRideshareOffer,
-} from '../explore/linkActivityRideshareOffer';
+} from './discoveryPortExploreLinkRideshareOffer';
 
 /**
  * Discovery engagement — handle wire `offer_rideshare` for a selected catalog pin.

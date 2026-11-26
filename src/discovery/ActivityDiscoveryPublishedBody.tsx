@@ -5,10 +5,10 @@ import {
 } from '../discovery/discoveryCardModel';
 import { PlaceDirectionLinks } from '../components/ui/PlaceDirectionLinks';
 import {
-  ExploreActivityPeekMeta,
   DiscoveryCardDetailList,
   DiscoveryCardRequirementBadges,
-} from '../explore/ui/DiscoveryCardPresentation';
+  ExploreActivityPeekMeta,
+} from './discoveryPortExploreDiscoveryCardPresentation';
 
 type ActivityDiscoveryPublishedBodyProps = {
   card: DiscoveryCardModel;

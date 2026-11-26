@@ -3,6 +3,7 @@ export {
   detailBackPath,
   discoveryToExploreSearch,
   exploreAddFacilityOnPlacePath,
+  exploreActivityInvitePathFromRouting,
   exploreActivitiesPath,
   exploreCrewsPath,
   exploreDiscoverBrowsePath,

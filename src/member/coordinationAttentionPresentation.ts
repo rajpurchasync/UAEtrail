@@ -1,5 +1,5 @@
 import type { MemberCoordinationAttentionItemDTO } from '@uaetrail/shared-types';
-import { exploreActivityInvitePathFromRouting } from '../explore/routing';
+import { exploreActivityInvitePathFromRouting } from '../discovery/discoveryPortExploreRouting';
 import { planHostedSchedulePath } from '../plan/planRouting';
 import {
   APP_SETTINGS_NOTIFICATIONS_PATH,

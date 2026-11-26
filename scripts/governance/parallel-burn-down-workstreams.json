@@ -478,8 +478,28 @@
         "src/discovery/discoveryPortExploreOutingTopic.ts"
       ],
       "avoid": ["src/explore/** impl", "exploreMapItemFixtures in tests"]
+    },
+    {
+      "id": "W35",
+      "status": "done",
+      "title": "Plan, utils back-nav, member/hosting routing, discovery peek body",
+      "branch": "burn-down/w35-plan-utils-discovery",
+      "owns": [
+        "src/plan/**",
+        "src/utils/authSessionLanding.ts",
+        "src/utils/mobileBackNav.ts",
+        "src/member/coordinationAttentionPresentation.ts",
+        "src/hosting/hostingHubRouting.ts",
+        "src/discovery/discoveryOfferRideshareDispatch.ts",
+        "src/discovery/discoveryCardViewModel.ts",
+        "src/discovery/ActivityDiscoveryPublishedBody.tsx",
+        "src/discovery/discoveryPortExploreBrowseReturnPath.ts",
+        "src/discovery/discoveryPortExploreDiscoveryCardPresentation.ts",
+        "src/discovery/discoveryPortExploreLinkedRideshareExplore.ts"
+      ],
+      "avoid": ["discoverySessionExplore legacy duplicates", "src/explore/** impl"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }

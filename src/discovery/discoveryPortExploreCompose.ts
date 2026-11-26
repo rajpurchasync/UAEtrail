@@ -2,6 +2,7 @@
 export {
   activityCompose,
   addVenueKindFromRoute,
+  clearExploreComposeParams,
   formatComposeQuery,
   intentFixedCompose,
   intentOpenCompose,

@@ -10,7 +10,7 @@ import { EXPLORE_MAP_PATH, MESSAGES_PATH, PLAN_PATH, PROFILE_PATH } from '../con
 import { resolveMobileTabHeaderTitle } from '../config/mobileTabHeader';
 import { SETTINGS_SURFACE_TITLE } from '../config/settingsHub';
 import { isTransientBackPath, navigateBack } from './backStack';
-import { exploreMapPathAfterPeopleFullScreen } from '../explore/exploreBrowseReturnPath';
+import { exploreMapPathAfterPeopleFullScreen } from '../discovery/discoveryPortExploreBrowseReturnPath';
 import { crewsHomePath } from '../config/mobileFiveTabNav';
 import { isMobileBottomNavTabPath } from '../config/platform';
 import {

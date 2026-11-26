@@ -6,8 +6,8 @@
  */
 import { INBOUND_PLAN_HUB_TRIPS_MAP_PATH } from '../config/inboundBookmarkPaths';
 import { HOSTING_HUB_PATH, OPERATOR_OVERVIEW_PATH, PLAN_PATH, JOURNEY_MAP_PATH, PROFILE_HISTORY_PATH, isJourneyMapPath, isProfileHistoryListPath } from '../config/surfacePaths';
-import { explorePath } from '../explore/routing';
-import { intentOpenCompose } from '../explore/compose';
+import { intentOpenCompose } from '../discovery/discoveryPortExploreCompose';
+import { explorePath } from '../discovery/discoveryPortExploreRouting';
 import {
   normalizePlanMobileParams,
   planHostingFilterPath,

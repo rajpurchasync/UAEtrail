@@ -4,7 +4,7 @@ import {
   SESSION_EXPIRED_QUERY_VALUE,
   sessionExpiredHomePath,
 } from '../config/surfacePaths';
-import { EXPLORE_SEARCH_RESULTS_PATH } from '../explore/search/exploreSearchRouting';
+import { EXPLORE_SEARCH_RESULTS_PATH } from '../discovery/discoveryPortExploreSearchRouting';
 
 const MOBILE_VIEWPORT_QUERY = '(max-width: 767px)';
 
