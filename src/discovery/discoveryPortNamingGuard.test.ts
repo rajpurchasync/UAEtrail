@@ -35,6 +35,28 @@ describe('discoveryPortNamingGuard', () => {
     expect(violations).toEqual([]);
   });
 
+  it('W70: list discoveryPortList* inventory locked at twelve ports', () => {
+    const root = join(process.cwd(), 'src/discovery');
+    const listPorts = readdirSync(root)
+      .filter((f) => f.startsWith('discoveryPortList') && f.endsWith('.ts') && !f.endsWith('.test.ts'))
+      .sort();
+    const expected = [
+      'discoveryPortListBrowseCard.ts',
+      'discoveryPortListBrowseFilters.ts',
+      'discoveryPortListBrowseHooks.ts',
+      'discoveryPortListEmbed.ts',
+      'discoveryPortListFeed.ts',
+      'discoveryPortListFeedActions.ts',
+      'discoveryPortListFindCrew.ts',
+      'discoveryPortListGeoBrowse.ts',
+      'discoveryPortListGeoHub.ts',
+      'discoveryPortListMapShell.ts',
+      'discoveryPortListPeek.ts',
+      'discoveryPortListUrl.ts',
+    ];
+    expect(listPorts).toEqual(expected);
+  });
+
   it('W28 map publish ports use discoveryPortExplore prefix', () => {
     const root = join(process.cwd(), 'src/discovery');
     const ports = [

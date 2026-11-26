@@ -29,7 +29,7 @@ import {
 } from '../discovery/discoveryPortListGeoBrowse';
 import type { ExploreSearchScopeKey } from '../discovery/discoveryPortExploreBrowse';
 import { useExplorePublishedDestinationsQuery } from '../discovery/discoveryPortExploreBrowse';
-import { useBrowseGeoScopeHydration } from '../discovery/discoveryPortListGeoHub';
+import { useBrowseGeoScopeHydration } from '../discovery/discoveryPortListBrowseHooks';
 import '../styles/explore-map-chrome.css';
 
 const EMPTY_GEO_IDS: string[] = [];
