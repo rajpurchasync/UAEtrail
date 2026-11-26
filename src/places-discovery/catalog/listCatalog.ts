@@ -8,7 +8,7 @@ import {
 import {
   sortExploreActivities,
   sortExploreVenues,
-} from '../../discovery/discoveryPortExploreListSort';
+} from '../../discovery/discoveryPortExploreCatalogFilters';
 import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
 
 const isFacilityCatalogItem = (item: ExploreMapItemDTO): boolean =>

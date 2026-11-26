@@ -4,13 +4,13 @@ import {
   matchesActivityDateFilter,
   type ExploreActivityDatePreset,
 } from '../../discovery/discoveryPortExploreActivityDate';
-import { sortExploreActivities } from '../../discovery/discoveryPortExploreListSort';
+import { sortExploreActivities } from '../../discovery/discoveryPortExploreCatalogFilters';
 import {
   isFriendMapItem,
   matchesOthersMapFilter,
 } from '../../discovery/discoveryPortExploreMapPin';
-import type { ExploreOthersSubtypeKey } from '../../discovery/discoveryPortExploreOthersSubtype';
-import type { ExploreOutingTopicKey } from '../../discovery/discoveryPortExploreOutingTopic';
+import type { ExploreOthersSubtypeKey } from '../../discovery/discoveryPortExploreCatalogFilters';
+import type { ExploreOutingTopicKey } from '../../discovery/discoveryPortExploreCatalogFilters';
 import type { MapFilterKey } from '../../discovery/discoveryPortExploreRouting';
 import { exploreItemMatchesQuery } from '../../discovery/discoveryPortExploreRuntime';
 

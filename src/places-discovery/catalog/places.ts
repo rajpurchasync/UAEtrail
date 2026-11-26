@@ -1,6 +1,6 @@
 import type { ExploreMapItemDTO, PlaceKind } from '@uaetrail/shared-types';
 import type { DiscoveryMapItems } from '@/discovery/discoveryMapPayload';
-import { sortExploreVenues } from '../../discovery/discoveryPortExploreListSort';
+import { sortExploreVenues } from '../../discovery/discoveryPortExploreCatalogFilters';
 import {
   matchesPlaceMapTopicFilter,
   type PlaceMapTopicKey,

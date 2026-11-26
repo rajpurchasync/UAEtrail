@@ -3,11 +3,11 @@ import type { DiscoveryMapItems } from '@/discovery/discoveryMapPayload';
 import {
   exploreMapItemMatchesActivityModeFilter,
   type ExploreActivityModeFilter,
-} from '../../discovery/discoveryPortExploreActivityModeFilter';
+} from '../../discovery/discoveryPortExploreCatalogFilters';
 import {
   matchesActivityDateFilter,
 } from '../../discovery/discoveryPortExploreActivityDate';
-import { sortExploreActivities } from '../../discovery/discoveryPortExploreListSort';
+import { sortExploreActivities } from '../../discovery/discoveryPortExploreCatalogFilters';
 import {
   matchesTripMapTopicFilter,
   type TripMapTopicKey,

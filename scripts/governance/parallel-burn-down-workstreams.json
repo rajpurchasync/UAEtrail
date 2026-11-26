@@ -472,12 +472,12 @@
         "src/activity-discovery/catalog/availabilityCatalog.ts",
         "src/places-discovery/catalog/places.ts",
         "src/places-discovery/catalog/listCatalog.ts",
-        "src/discovery/discoveryPortExploreListSort.ts",
-        "src/discovery/discoveryPortExploreActivityModeFilter.ts",
+        "src/discovery/discoveryPortExploreCatalogFilters.ts",
+        "src/discovery/discoveryPortExploreCatalogFilters.ts",
         "src/discovery/discoveryPortExploreOptionalFilters.ts",
         "src/discovery/discoveryPortExploreMapPin.ts",
-        "src/discovery/discoveryPortExploreOthersSubtype.ts",
-        "src/discovery/discoveryPortExploreOutingTopic.ts"
+        "src/discovery/discoveryPortExploreCatalogFilters.ts",
+        "src/discovery/discoveryPortExploreCatalogFilters.ts"
       ],
       "avoid": ["src/explore/** impl", "exploreMapItemFixtures in tests"]
     },
@@ -510,7 +510,7 @@
         "scripts/dev/rename-discovery-port-suffixes.mjs",
         "src/discovery/discoveryPortExploreLinkRideshare.ts",
         "src/discovery/discoveryPortExploreBrowse.ts",
-        "src/discovery/discoveryPortExploreAvailabilityRowPath.ts"
+        "src/discovery/discoveryPortExploreCrewAvailability.ts"
       ],
       "avoid": ["re-run rename-discovery-port-suffixes on clean tree"]
     },
@@ -646,8 +646,24 @@
         "src/list/browse/ListFeedActionsProvider.tsx"
       ],
       "avoid": ["re-run consolidate-discovery-ports-w45 on clean tree", "MapPeekNav merge"]
+    },
+    {
+      "id": "W46",
+      "status": "done",
+      "title": "Catalog filter ports + crew availability wire",
+      "branch": "burn-down/w46-catalog-crew",
+      "owns": [
+        "src/discovery/discoveryPortExploreCatalogFilters.ts",
+        "src/discovery/discoveryPortExploreCrewAvailability.ts",
+        "scripts/dev/consolidate-discovery-ports-w46.mjs",
+        "src/activity-discovery/catalog/**",
+        "src/places-discovery/catalog/**",
+        "src/crew-discovery/memberBrowseRowModel.ts",
+        "src/availability/AvailabilitySlotEditor.tsx"
+      ],
+      "avoid": ["re-run consolidate-discovery-ports-w46 on clean tree", "merge ActivityDate into crew bundle"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41", "W42", "W43", "W44", "W45"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27", "W28", "W29", "W30", "W31", "W32", "W33", "W34", "W35", "W36", "W37", "W38", "W39", "W40", "W41", "W42", "W43", "W44", "W45", "W46"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }
