@@ -50,8 +50,8 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(read('src/discovery/discoverySessionExploreRuntime.ts')).toMatch(/discoveryRuntime/);
   });
 
-  it('W19 config nav (excl routingCatalog) routes explore via discoverySessionExplore facades', () => {
-    const allow = new Set(['src/config/routingCatalog.ts', 'src/config/routingCatalogLite.ts']);
+  it('W20 config prod routes explore via discoverySessionExplore facades (incl routingCatalog)', () => {
+    const allow = new Set(['src/config/routingCatalogLite.ts']);
     const directExplore = /from ['"][^'"]*explore\//;
     const violations: string[] = [];
     for (const ent of readdirSync(join(process.cwd(), 'src/config'), { withFileTypes: true })) {

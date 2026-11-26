@@ -8,7 +8,7 @@ import { MobileUnifiedTabHeader } from '../mobile/MobileUnifiedTabHeader';
 import { useMinWidthMd } from '../../hooks/useMinWidthMd';
 import { useMinWidthPx } from '../../hooks/useMinWidthPx';
 import { useExploreMap } from '../../hooks/useExploreMap';
-import { GuestFeatureUnlockPanel } from '../../explore/ui/GuestFeatureUnlockPanel';
+import { GuestFeatureUnlockPanel } from '../../discovery/discoverySessionExploreGuestUnlock';
 import type { GuestFeatureUnlockKey } from '../../content/guestFeatureUnlockCopy';
 import { APP_PAGE_MIN_H_CLASS } from '../../config/layoutScroll';
 import { collapseDesktopSideNav } from '../../hooks/useDesktopSideNavExpanded';

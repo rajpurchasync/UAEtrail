@@ -9,7 +9,7 @@ import {
   EXPLORE_CREWS_AVAILABILITY_FIXED_LABEL,
   EXPLORE_CREWS_AVAILABILITY_FLEXIBLE_LABEL,
 } from '../content/exploreCrewsCopy';
-import type { ExploreActivityDatePreset } from '../explore/exploreActivityDateFilter';
+import type { ExploreActivityDatePreset } from '../discovery/discoverySessionExploreActivityDate';
 import {
   availabilityMatchesFindCrewSearchDates,
   crewBrowseAvailabilityDetailFromPerson,
@@ -36,8 +36,8 @@ import {
 import { memberProfileLink } from '../member/memberProfileLink';
 import { memberProfileRoleBadgeLabel } from '../member/memberProfileRoleBadge';
 import { memberProfileRoleLabel } from '../member/memberProfileRoleLabel';
-import { exploreMapItemPathFromAvailabilityRow } from '../explore/memberDiscoveryAvailabilityRow';
-import { explorePath } from '../explore/routing';
+import { exploreMapItemPathFromAvailabilityRow } from '../discovery/discoverySessionExploreMemberDiscoveryRow';
+import { explorePath } from '../discovery/discoverySessionExploreRouting';
 import { findCrewAvailabilityNarrativeFromDetail } from './findCrewAvailabilityNarrative';
 import { findCrewProposePlanPath, pickProposePlanAnchorSlot } from '../discovery/discoverySessionListFindCrewPlan';
 import type { CrewBrowseMemberRowProps } from './panel/crewBrowse/CrewBrowseMemberRow';

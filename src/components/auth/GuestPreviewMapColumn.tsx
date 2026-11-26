@@ -3,8 +3,11 @@ import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { getMapBounds } from '../../config/regions';
 import { getExploreMapTiles, readExploreMapStyle } from '../../config/platform';
 import { useExploreMap } from '../../hooks/useExploreMap';
-import { expandMapPins, layoutColocatedMapPins } from '../../explore/ui/exploreMapPinModel';
-import { ExploreMapLoadingSkeleton } from '../../explore/ui/ExploreMapLoadingSkeleton';
+import {
+  expandMapPins,
+  layoutColocatedMapPins,
+  ExploreMapLoadingSkeleton,
+} from '../../discovery/discoverySessionExploreMapColumn';
 import { LIST_SIDE_MAP_MIN_PX } from '../../discovery/discoverySessionListMapSplit';
 
 const PlacesMap = lazy(() =>

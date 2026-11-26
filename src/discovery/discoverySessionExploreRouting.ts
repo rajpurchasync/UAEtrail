@@ -1,2 +1,22 @@
-/** W18 — explore path builders for cross-context nav. */
-export { explorePath, explorePlacesPath, parseExplorePanel } from '../explore/routing';
+/** W18–W20 — explore path builders aggregated for routingCatalog. */
+export {
+  detailBackPath,
+  discoveryToExploreSearch,
+  exploreActivitiesPath,
+  exploreCrewsPath,
+  exploreDiscoverBrowsePath,
+  exploreHostPath,
+  explorePath,
+  explorePlacesPath,
+  explorePlanWithFriendPath,
+  exploreSavedPinPath,
+  exploreShopsPath,
+  inboundCreateParamToHostPath,
+  myActivitiesPath,
+  parseActivityListFilter,
+  type ActivityListFilterKey,
+  type DetailBackKind,
+  type ExplorePanel,
+  type MapFilterKey,
+  type VenueListFilterKey,
+} from '../explore/routing';

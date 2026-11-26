@@ -4,7 +4,7 @@ import {
   resolveBrowsePosterActivityTypeLabel,
   resolveListFeedPosterRequirementLabels,
 } from '../discoverySessionListPosterPresentation';
-import { EXPLORE_RIDESHARE_AVAILABLE_BADGE } from '../../explore/exploreRequirementBadges';
+import { EXPLORE_RIDESHARE_AVAILABLE_BADGE } from '../discoverySessionExploreRequirementBadges';
 
 const POLICY_CHIP_CAP = 4;
 

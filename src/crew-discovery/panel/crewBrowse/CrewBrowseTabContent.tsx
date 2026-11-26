@@ -12,7 +12,7 @@ import {
   EXPLORE_CREWS_FRIENDS_GOING_EMPTY,
   EXPLORE_CREWS_LOADING,
 } from '../../../content/exploreCrewsCopy';
-import type { ExploreActivityDatePreset } from '@/explore/exploreActivityDateFilter';
+import type { ExploreActivityDatePreset } from '@/discovery/discoverySessionExploreActivityDate';
 import type { CrewsAvailabilityShapeFilter } from '@/discovery/discoverySessionListCrewsOpen';
 import {
   buildMemberBrowseRowFromAvailability,
@@ -30,7 +30,7 @@ import { CREW_BROWSE_LIST_STACK } from './crewBrowseListTheme';
 import { CrewBrowseListEmpty, CrewBrowseListError, CrewBrowseListLoading } from './CrewBrowseListStates';
 import { CrewBrowseMemberRow } from './CrewBrowseMemberRow';
 import { CrewBrowseAvailabilityMapList } from './CrewBrowseAvailabilityMapList';
-import { ExploreGuestSignInCard } from '@/explore/ui/ExploreGuestSignInCard';
+import { ExploreGuestSignInCard } from '@/discovery/discoverySessionExploreGuestSignIn';
 import { crewBrowseHrefForGuest } from '@/crew-discovery/crewGuestBrowse';
 import { messagesToUserPath } from '@/config/routingCatalog';
 

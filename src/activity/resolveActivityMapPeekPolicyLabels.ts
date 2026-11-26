@@ -1,6 +1,6 @@
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import { resolveListFeedPosterRequirementLabels } from '../discovery/discoverySessionListPosterPresentation';
-import { EXPLORE_RIDESHARE_AVAILABLE_BADGE } from '../explore/exploreRequirementBadges';
+import { EXPLORE_RIDESHARE_AVAILABLE_BADGE } from '../discovery/discoverySessionExploreRequirementBadges';
 
 const MAP_PEEK_POLICY_CAP = 5;
 
