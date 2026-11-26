@@ -37,7 +37,7 @@
       "content": 3,
       "activity": 2,
       "explore": 121,
-      "list": 69,
+      "list": 70,
       "utils": 1
     },
     "src/activity-discovery": {
@@ -79,7 +79,7 @@
     "content": 7,
     "activity": 2,
     "explore": 121,
-    "list": 69,
+    "list": 70,
     "utils": 1,
     "lib": 6,
     "discover": 1,

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/** W60 — GeoExplorer → GeoHub; feed hooks stay on discoveryPortListBrowseHooks (session barrel cycle). */
+/** W60 — GeoExplorer → GeoHub; feed hooks stay on discoveryPortListFeed (session barrel cycle). */
 import { existsSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
@@ -10,7 +10,7 @@ const DELETE = ['discoveryPortListGeoExplorer.ts', 'discoveryPortListHooks.ts'];
 
 const REPLACEMENTS = [
   ['discoveryPortListGeoExplorer', 'discoveryPortListGeoHub'],
-  ['discoveryPortListHooks', 'discoveryPortListBrowseHooks'],
+  ['discoveryPortListHooks', 'discoveryPortListFeed'],
 ];
 
 for (const name of DELETE) {

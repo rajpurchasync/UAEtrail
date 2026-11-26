@@ -9,7 +9,7 @@ const discoveryDir = join(root, 'src/discovery');
 const DELETE = ['discoveryPortListFeedCta.ts', 'discoveryPortListFeedEngagement.ts'];
 
 const REPLACEMENTS = [
-  ['discoveryPortListFeedEngagement', 'discoveryPortListFeedActions'],
+  ['discoveryPortListFeedEngagement', 'discoveryPortListFeed'],
   ['discoveryPortListFeedCta', 'discoveryPortListPeek'],
 ];
 
