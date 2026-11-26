@@ -9,14 +9,14 @@ import { DEFAULT_CREW_PEOPLE_FACET } from '@/crew-discovery/crewBrowseState';
 import { useCrewDiscoveryAvailability } from '@/crew-discovery/hooks/useCrewDiscoveryAvailability';
 import { BrowseCompactRow } from '@/discovery/discoveryPortListFeed';
 import { ExploreGuestSignInCard } from '@/discovery/discoveryPortExploreGuest';
+import { useExploreSearchCommunityGroups } from '@/discovery/discoveryPortExploreSearch';
 import {
   EXPLORE_SEARCH_MATCHES_TITLE,
   exploreSearchComposeFeedMode,
   exploreSearchWhereBrowseQuery,
   resolveExploreSearchDetectedWhereQuery,
   resolveExploreSearchJoinableTripCards,
-  useExploreSearchCommunityGroups,
-} from '@/discovery/discoveryPortExploreSearch';
+} from '@/discovery/discoveryPortExploreSearchFeed';
 import { FEATURE_FLAGS } from '@/config/platform';
 import { FindCrewMainTabs } from './FindCrewMainTabs';
 import {

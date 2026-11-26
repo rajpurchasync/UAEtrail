@@ -1,9 +1,7 @@
 import { useMemo } from 'react';
 import type { ExploreActivityDatePreset } from '@/discovery/discoveryPortExploreOptionalFilterWire';
-import {
-  ExploreSearchBookingHero,
-  resolveExploreSearchDetectedWhereQuery,
-} from '@/discovery/discoveryPortExploreSearch';
+import { ExploreSearchBookingHero } from '@/discovery/discoveryPortExploreSearch';
+import { resolveExploreSearchDetectedWhereQuery } from '@/discovery/discoveryPortExploreSearchFeed';
 import type { BrowseListFilterState } from '@/discovery/discoveryPortListBrowseFilters';
 import { FIND_CREW_WHERE_PLACEHOLDER, FIND_CREW_WHEN_PICK_LABEL } from './findCrewSearchCopy';
 

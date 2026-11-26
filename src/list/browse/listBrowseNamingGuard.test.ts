@@ -170,7 +170,7 @@ describe('listBrowseNamingGuard', () => {
     );
     expect(read('src/list/browse/browseListUrlState.ts')).toMatch(/discovery\/discoveryPortExploreRouting/);
     expect(read('src/list/shell/useListDiscoveryExperienceModel.ts')).toMatch(
-      /discovery\/discoveryPortExploreSearch(Routing)?/
+      /discovery\/discoveryPortExploreSearch(Routing|Feed)?/
     );
   });
 

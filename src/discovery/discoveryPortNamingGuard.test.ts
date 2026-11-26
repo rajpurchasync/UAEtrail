@@ -72,6 +72,7 @@ describe('discoveryPortNamingGuard', () => {
       'discoveryPortExploreBrowse.ts',
       'discoveryPortExploreFlowChrome.ts',
       'discoveryPortExploreSearch.ts',
+      'discoveryPortExploreSearchFeed.ts',
       'discoveryPortExploreSearchRouting.ts',
       'discoveryPortExploreOptionalFilterWire.ts',
       'discoveryPortExploreOptionalFilters.ts',

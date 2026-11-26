@@ -322,6 +322,15 @@ describe('discoverySessionParamsGuard', () => {
         rel: 'src/list/shell/useListDiscoveryBrowseUrlModel.ts',
         facade: /discoveryPortExploreBrowse|discoveryPortExploreCatalogFilters/,
       },
+      {
+        rel: 'src/list/shell/useListDiscoveryExploreSearchFeedModel.ts',
+        facade: /discoveryPortExploreSearch(Feed|Routing)/,
+      },
+      {
+        rel: 'src/list/explorer/FindCrewResultsSection.tsx',
+        facade: /discoveryPortExploreSearch(Feed)?/,
+        avoidDirect: /explore\/search\/exploreSearchJoinablePools/,
+      },
     ];
     for (const { rel, facade, avoidDirect } of expectations) {
       const content = read(rel);
@@ -427,6 +436,17 @@ describe('discoverySessionParamsGuard', () => {
     expect(read('src/list/explorer/FindCrewCommunityCard.tsx')).not.toMatch(/routingCatalog/);
     expect(read('src/discovery/discoveryPortExploreSearchRouting.ts')).toMatch(/exploreSearchScopesForQuery/);
     expect(read('src/list/explorer/ListDiscoverySearchField.tsx')).toMatch(/exploreSearchScopesForQuery/);
+    expect(read('src/discovery/discoveryPortExploreSearchFeed.ts')).toMatch(/resolveExploreSearchTripPool/);
+    expect(read('src/discovery/discoveryPortExploreSearch.ts')).not.toMatch(/resolveExploreSearchTripPool/);
+    expect(read('src/list/shell/useListDiscoveryExploreSearchFeedModel.ts')).toMatch(
+      /discoveryPortExploreSearchFeed/
+    );
+    expect(read('src/list/shell/useListDiscoveryExploreSearchFeedModel.ts')).toMatch(
+      /discoveryPortExploreSearchRouting/
+    );
+    expect(read('src/list/shell/useListDiscoveryExploreSearchFeedModel.ts')).not.toMatch(
+      /discoveryPortExploreSearch['"]/
+    );
     expect(read('src/discovery/discoveryPortExploreOptionalFilterWire.ts')).toMatch(/exploreItemMatchesPriceFilter/);
     expect(read('src/discovery/discoveryPortExploreMapClient.ts')).toMatch(/serializeExplorePinKindFilter/);
     expect(read('src/discovery/discoveryPortExploreMapClient.ts')).toMatch(/exploreMapItemPathFromAvailabilityRow/);

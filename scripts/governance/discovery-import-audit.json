@@ -12,7 +12,7 @@
   ],
   "matrix": {
     "src/list": {
-      "..": 220,
+      "..": 221,
       "browse": 83,
       "crews": 2,
       "components": 1,
@@ -36,7 +36,7 @@
       "config": 3,
       "content": 3,
       "activity": 2,
-      "explore": 120,
+      "explore": 119,
       "list": 69,
       "utils": 1
     },
@@ -60,7 +60,7 @@
     }
   },
   "byTarget": {
-    "..": 270,
+    "..": 271,
     "browse": 83,
     "crews": 2,
     "components": 5,
@@ -78,7 +78,7 @@
     "discoveryPortExploreCardChrome": 1,
     "content": 7,
     "activity": 2,
-    "explore": 120,
+    "explore": 119,
     "list": 69,
     "utils": 1,
     "lib": 6,
