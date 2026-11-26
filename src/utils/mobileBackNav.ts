@@ -6,11 +6,12 @@ import {
   PRODUCT_MY_CREW_SURFACE_TITLE,
 } from '../content/productNorthStar';
 import { planWishlistTabPath } from '../plan/planTab';
-import { EXPLORE_MAP_PATH, MESSAGES_PATH, PLAN_PATH, PROFILE_PATH } from '../config/routingCatalog';
+import { EXPLORE_MAP_PATH } from '../config/platform';
+import { MESSAGES_PATH, PLAN_PATH, PROFILE_PATH } from '../config/surfacePaths';
 import { resolveMobileTabHeaderTitle } from '../config/mobileTabHeader';
 import { SETTINGS_SURFACE_TITLE } from '../config/settingsHub';
 import { isTransientBackPath, navigateBack } from './backStack';
-import { exploreMapPathAfterPeopleFullScreen } from '../discovery/discoveryPortExploreBrowse';
+import { exploreMapPathAfterPeopleFullScreen } from '../discovery/discoveryPortExploreRouting';
 import { crewsHomePath } from '../config/mobileFiveTabNav';
 import { isMobileBottomNavTabPath } from '../config/platform';
 import {

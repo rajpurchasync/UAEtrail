@@ -10,7 +10,6 @@ export {
 export type { useExploreBrowseUrlState } from '../explore/ui/useExploreBrowseUrlState';
 export { isDiscoverBrowseRoute } from '../explore/exploreDiscoverBrowse';
 export { EXPLORE_DESKTOP_BROWSE_RAIL_SCROLL_CLASS } from '../explore/ui/exploreDesktopBrowseRailChrome';
-export { exploreMapPathAfterPeopleFullScreen } from '../explore/exploreBrowseReturnPath';
 export {
   useExplorePublishedDestinations,
   useExplorePublishedDestinationsQuery,
