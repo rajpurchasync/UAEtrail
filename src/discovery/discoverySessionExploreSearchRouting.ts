@@ -11,6 +11,7 @@ export {
   exploreSearchResultsPath,
   exploreSearchScopeForListCat,
   isExploreSearchHomeState,
+  isExploreSearchResultsPath,
   parseExploreSearchBrowseState,
   parseExploreSearchScopeFromParams,
   type ExploreSearchScope,

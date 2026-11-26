@@ -4,8 +4,8 @@ import { shouldShowMobileUnifiedTabHeader } from '../../config/mobileTabHeader';
 import { resolveMobileTabHeaderLeadingBack } from '../../utils/mobileBackNav';
 import { ConsumerHeaderActions } from '../layout/ConsumerHeaderActions';
 import { MobileUnifiedTabHeader } from './MobileUnifiedTabHeader';
-import { useComposeImmersiveChrome } from '../../explore/create/ComposeImmersiveChromeContext';
-import { isExploreSearchResultsPath } from '../../explore/search/exploreSearchRouting';
+import { useComposeImmersiveChrome } from '@/discovery/discoverySessionExploreComposeImmersiveChrome';
+import { isExploreSearchResultsPath } from '@/discovery/discoverySessionExploreSearchRouting';
 import { isFindCrewDiscoveryListPath } from '../../discovery/discoverySession';
 
 /** Layout-mounted tab header — one chrome for Map, Profile, Activities, Messages. */

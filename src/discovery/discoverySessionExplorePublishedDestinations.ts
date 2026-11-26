@@ -1,2 +1,5 @@
-/** W14 — published destinations hook for list geo scope. */
-export { useExplorePublishedDestinations } from '../explore/useExplorePublishedDestinations';
+/** W14/W26 — published destinations hooks for list geo + availability editor. */
+export {
+  useExplorePublishedDestinations,
+  useExplorePublishedDestinationsQuery,
+} from '../explore/useExplorePublishedDestinations';

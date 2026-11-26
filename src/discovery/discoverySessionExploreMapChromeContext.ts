@@ -1,2 +1,6 @@
-/** W14 — explore map chrome context for list browse / map split. */
-export { useExploreMapChrome, useBindExploreListMapHover } from '../explore/ExploreMapChromeContext';
+/** W14/W26 — explore map chrome context for list browse / product shell. */
+export {
+  ExploreMapChromeProvider,
+  useBindExploreListMapHover,
+  useExploreMapChrome,
+} from '../explore/ExploreMapChromeContext';

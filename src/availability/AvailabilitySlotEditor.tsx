@@ -12,8 +12,8 @@ import {
 } from '@uaetrail/shared-types';
 import type { MemberAvailabilityMatchPreviewDTO } from '@uaetrail/shared-types';
 import { fetchMyAvailabilityMatchPreview } from '../hooks/memberAvailabilityApi';
-import { useExplorePublishedDestinationsQuery } from '../explore/useExplorePublishedDestinations';
-import { AvailabilityMatchPreview } from '../explore/ui/AvailabilityMatchPreview';
+import { useExplorePublishedDestinationsQuery } from '@/discovery/discoverySessionExplorePublishedDestinations';
+import { AvailabilityMatchPreview } from '@/discovery/discoverySessionExploreAvailabilityMatchPreview';
 import { mergeVenueStateFilterOptionsWithDestinations } from '../config/regions';
 import { AppButton } from '../components/mobile/AppButton';
 import { useMemberAvailability } from '../hooks/useMemberAvailability';

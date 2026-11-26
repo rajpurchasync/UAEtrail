@@ -7,7 +7,7 @@ import {
   prefillFixedIntentCompose,
   prefillOpenIntentCompose,
 } from './availabilitySlotComposeEngine';
-import { emptyAvailabilityFixedDraft } from '../explore/ui/intentFixedFlowEngine';
+import { emptyAvailabilityFixedDraft } from '@/discovery/discoverySessionExploreIntentFixedFlow';
 
 describe('availabilitySlotComposeEngine (MIG-SG-B2)', () => {
   it('prefills intent:open participant by default', () => {
