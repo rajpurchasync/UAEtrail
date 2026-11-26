@@ -7,7 +7,7 @@ import { ConsumerEntityDetailLoading } from '../detail/shell/ConsumerEntityDetai
 import { DETAIL_LOADING_GEO } from '../content/detailLoadingCopy';
 import { GEO_TREE_HEADER_CHROME } from '../geo/resolveGeoConsumerDetailHeaderChrome';
 import { parseMobileBackNavState } from '../utils/mobileBackNav';
-import { readDetailBackToFromLocation } from '../explore/mapPeekDetailNavState';
+import { readDetailBackToFromLocation } from '@/discovery/discoverySessionExploreMapPeekNav';
 
 /** Dedicated country URL `/geo/country/:code` — resolves UUID from the geo tree, then the node page. */
 export const GeoCountryPage = () => {

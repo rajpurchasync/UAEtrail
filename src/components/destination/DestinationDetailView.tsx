@@ -3,8 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import type { DestinationDetailPayload } from '../../hooks/destinationHubClientApi';
 import type { ExploreAvailabilityIndex } from '../../hooks/memberPeopleClientApi';
 import { PageMeta } from '../seo/PageMeta';
-import { explorePath } from '../../explore/routing';
-import { intentFixedCompose, activityCompose } from '../../explore/compose';
+import { activityCompose, intentFixedCompose, placeCompose } from '@/discovery/discoverySessionExploreCompose';
+import { explorePath } from '@/discovery/discoverySessionExploreRouting';
 import { destinationHubPath } from '@uaetrail/shared-types';
 import { type DestinationDetailTabId } from '../../destinationDetail/destinationDetailTab';
 import { DestinationHubMapStrip } from './DestinationHubMapStrip';
@@ -21,17 +21,16 @@ import {
   StatTile,
 } from '../../detail/shell';
 import { detailBackPath } from '../../config/routingCatalog';
-import { readDetailBackToFromLocation } from '../../explore/mapPeekDetailNavState';
+import { readDetailBackToFromLocation } from '@/discovery/discoverySessionExploreMapPeekNav';
 import { parseMobileBackNavState } from '../../utils/mobileBackNav';
 import { resolveDestinationConsumerDetailHeaderChrome } from '../../destinationDetail/detail/resolveDestinationConsumerDetailHeaderChrome';
 import { EXPLORE_PEEK_CTA } from '../../config/exploreTheme';
 import { DetailHeroShareButton } from '../../detail/shared/DetailHeroShareButton';
-import { ExploreWishlistSaveButton } from '../../explore/ui/ExploreWishlistSaveButton';
+import { ExploreWishlistSaveButton } from '@/discovery/discoverySessionExploreWishlistSave';
 import { buildDestinationDetailDiscoveryCard } from '../../destinationDetail/detail/buildDestinationDetailDiscoveryCard';
 import { CONSUMER_DETAIL_OVERVIEW_LABEL } from '../../content/consumerDetailSectionLabels';
 import { keyFactIconFromLabel } from '../../detail/shell/keyFactIcons';
 import { DestinationDetailMobileActionBar } from './DestinationDetailMobileActionBar';
-import { placeCompose } from '../../explore/compose';
 import { PlaceDetailWeatherSection } from '../place/PlaceDetailWeatherSection';
 
 const AREA_TAB_SCROLL_ANCHORS: Record<DestinationDetailTabId, string> = {

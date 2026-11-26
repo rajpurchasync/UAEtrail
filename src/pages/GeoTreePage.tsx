@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { fetchGeoCounts, fetchGeoTreeIntoStore } from '../hooks/geoHierarchyClientApi';
 import { geoStore } from '../geo/geoStore';
 import { GEO_TREE_PATH } from '../config/routingCatalog';
-import { explorePath } from '../explore/routing';
+import { explorePath } from '@/discovery/discoverySessionExploreRouting';
 import { PageMeta } from '../components/seo/PageMeta';
 import type { GeoCountsDTO, GeoNodeLite } from '@uaetrail/shared-types';
 import { GeoHubView } from '../geo/GeoHubView';

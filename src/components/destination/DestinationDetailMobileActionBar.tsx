@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { MapPinPlus, Megaphone, Users } from 'lucide-react';
 import { EXPLORE_PEEK_CTA } from '../../config/exploreTheme';
-import { ActivityPeekFooterIcon } from '../../explore/ui/peek/activity/ActivityPeekFooterIcon';
+import { ActivityPeekFooterIcon } from '@/discovery/discoverySessionExploreActivityPeekFooterIcon';
 
 type DestinationDetailMobileActionBarProps = {
   findCrewPath: string;

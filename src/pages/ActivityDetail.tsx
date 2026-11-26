@@ -12,7 +12,7 @@ import { activityReviewsQueryKey } from '../hooks/clientQueryKeys';
 import { useActivityReviews } from '../hooks/useActivityReviews';
 import { useActivityHostJoinRequests } from '../hooks/useActivityHostJoinRequests';
 import { activityCrewPath, activityDetailPath, detailBackPath } from '../config/routingCatalog';
-import { readDetailBackToFromLocation } from '../explore/mapPeekDetailNavState';
+import { readDetailBackToFromLocation } from '@/discovery/discoverySessionExploreMapPeekNav';
 import { MobileBackButton } from '../components/mobile/MobileBackButton';
 import {
   ACTIVITY_JOIN_CTA_SELECTOR,
@@ -73,8 +73,8 @@ import {
   activityDetailIsRetiredSeekingPost,
   RETIRED_SEEKING_ACTIVITY_DETAIL_NOTICE,
 } from '../activity/retiredSeekingActivityDetail';
-import { intentFixedCompose } from '../explore/compose';
-import { explorePath } from '../explore/routing';
+import { intentFixedCompose } from '@/discovery/discoverySessionExploreCompose';
+import { explorePath } from '@/discovery/discoverySessionExploreRouting';
 
 /**
  * Activity detail **route loader** (`/activity/:id`): fetch, join modals, SEO, host sheets.

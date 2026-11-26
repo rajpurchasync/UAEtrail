@@ -323,8 +323,23 @@
         "src/components/layout/ProductShell.tsx"
       ],
       "avoid": ["src/components/ui/PlacesMap", "src/components/destination"]
+    },
+    {
+      "id": "W27",
+      "status": "done",
+      "title": "Destination hub, detail pages, auth welcome via discoverySessionExplore facades",
+      "branch": "burn-down/w27-destination-detail-facades",
+      "owns": [
+        "src/components/destination/**",
+        "src/detail/shared/**",
+        "src/pages/*Detail*.tsx",
+        "src/pages/Geo*.tsx",
+        "src/pages/Sign*.tsx",
+        "src/pages/WelcomeSignup.tsx"
+      ],
+      "avoid": ["src/components/ui/PlacesMap", "src/pages/publishing", "src/pages/admin"]
     }
   ],
-  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26"],
+  "mergeOrder": ["W4s", "W4t", "W4u", "W1e", "W5-push", "W7c", "W7a", "W7b", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W24", "W25", "W26", "W27"],
   "verifyPolicy": "Batch related lanes: run targeted vitest + shim:baseline while editing; npm run verify:system:quick once per batch before commit."
 }

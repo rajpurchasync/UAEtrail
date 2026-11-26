@@ -1,2 +1,8 @@
-/** W14 — compose route helpers for find-crew / list flows. */
-export { activityCompose, formatComposeQuery, intentOpenCompose } from '../explore/compose';
+/** W14/W27 — compose route helpers for find-crew, list, and destination hub CTAs. */
+export {
+  activityCompose,
+  formatComposeQuery,
+  intentFixedCompose,
+  intentOpenCompose,
+  placeCompose,
+} from '../explore/compose';

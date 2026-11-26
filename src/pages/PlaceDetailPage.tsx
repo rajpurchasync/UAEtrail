@@ -4,7 +4,7 @@ import { PageMeta } from '../components/seo/PageMeta';
 import { PlaceDetailPageShell } from './place/PlaceDetailPageShell';
 import { usePlaceDetailCore } from '../hooks/usePlaceDetailPage';
 import { canonicalPlaceDetailPath, detailBackPath, placeDetailPath } from '../config/routingCatalog';
-import { readDetailBackToFromLocation } from '../explore/mapPeekDetailNavState';
+import { readDetailBackToFromLocation } from '@/discovery/discoverySessionExploreMapPeekNav';
 import { parseMobileBackNavState } from '../utils/mobileBackNav';
 import { MobileBackButton } from '../components/mobile/MobileBackButton';
 import { PLACE_DETAIL_CONFIG, type PlaceDetailKind } from './placeDetailConfig';
