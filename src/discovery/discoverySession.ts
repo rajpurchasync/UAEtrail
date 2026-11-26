@@ -50,7 +50,7 @@ export {
   useBrowseGeoScopeHydration,
   useBrowseListFeed,
   useBrowseViewerLocation,
-} from './discoveryPortListHooks';
+} from './discoveryPortListBrowseHooks';
 export { LIST_CHROME, LIST_HUB_SEARCH_ROW, listChipClass } from './discoveryPortListChrome';
 export type {
   BrowseAudienceFilter,

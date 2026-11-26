@@ -3,7 +3,7 @@ import {
   getExploreMapLocationPreference,
   saveExploreMapLocationPreference,
 } from '../discovery/discoveryPortExploreMapClient';
-import { writeStoredViewerFix } from '../discovery/discoveryPortListHooks';
+import { writeStoredViewerFix } from '../discovery/discoveryPortListBrowseHooks';
 
 export type DeviceLocationFix = { lat: number; lng: number };
 

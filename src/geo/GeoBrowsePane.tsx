@@ -13,7 +13,7 @@ import {
   filterExploreMapItemsForList,
   type BrowseListFilterState,
 } from '../discovery/discoveryPortListFilters';
-import { ListDiscoveryMapColumn, ListExplorer } from '../discovery/discoveryPortListGeoExplorer';
+import { ListDiscoveryMapColumn, ListExplorer } from '../discovery/discoveryPortListGeoHub';
 import {
   ListSideMapResizeHandle,
   useListSideMapWidth,
@@ -29,7 +29,7 @@ import {
 } from '../discovery/discoveryPortListGeoBrowse';
 import type { ExploreSearchScopeKey } from '../discovery/discoveryPortExploreBrowse';
 import { useExplorePublishedDestinationsQuery } from '../discovery/discoveryPortExploreBrowse';
-import { useBrowseGeoScopeHydration } from '../discovery/discoveryPortListHooks';
+import { useBrowseGeoScopeHydration } from '../discovery/discoveryPortListGeoHub';
 import '../styles/explore-map-chrome.css';
 
 const EMPTY_GEO_IDS: string[] = [];
