@@ -1,4 +1,4 @@
-import { EXPLORE_SEARCH_GUEST_WHERE_PLACEHOLDER } from '../guestMapPreviewCopy';
+import { EXPLORE_SEARCH_GUEST_WHERE_PLACEHOLDER } from '../../discovery/discoveryPortExploreGuestWire';
 
 /** Consumer explore landing — where/when search (booking-style). */
 export const EXPLORE_SEARCH_WHERE_LABEL = 'Where';

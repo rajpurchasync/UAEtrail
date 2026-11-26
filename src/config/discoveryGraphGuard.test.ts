@@ -90,7 +90,30 @@ describe('discoveryGraphGuard (DMCP Phase 3)', () => {
     expect(read('src/explore/search/ExploreBookingSearchModal.tsx')).toMatch(
       /resolveExploreSearchBookingWherePlaceholder/
     );
-    expect(read('src/explore/search/exploreSearchHomeCopy.ts')).toMatch(/EXPLORE_SEARCH_GUEST_WHERE_PLACEHOLDER/);
+    expect(read('src/explore/search/exploreSearchHomeCopy.ts')).toMatch(/discoveryPortExploreGuestWire/);
+  });
+
+  it('DISC-03-11: W100 explore search/ui guest copy via GuestWire (not guestMapPreviewCopy)', () => {
+    const directGuestCopy = /from ['"][^'"]*guestMapPreviewCopy['"]/;
+    const roots = ['src/explore/ui', 'src/explore/search'];
+    const violations: string[] = [];
+    const walk = (dir: string) => {
+      if (!existsSync(join(process.cwd(), dir))) return;
+      for (const ent of readdirSync(join(process.cwd(), dir), { withFileTypes: true })) {
+        const full = join(dir, ent.name);
+        if (ent.isDirectory()) {
+          if (ent.name === 'node_modules') continue;
+          walk(full);
+        } else if (/\.(ts|tsx)$/.test(ent.name) && !ent.name.endsWith('.test.ts')) {
+          const rel = full.replace(/\\/g, '/');
+          if (directGuestCopy.test(read(rel))) violations.push(rel);
+        }
+      }
+    };
+    for (const root of roots) walk(root);
+    expect(violations).toEqual([]);
+    expect(read('src/explore/ui/ExploreSearchScopeHints.tsx')).toMatch(/discoveryPortExploreGuestWire/);
+    expect(read('src/explore/ui/GuestCatalogPreviewBanner.tsx')).toMatch(/discoveryPortExploreGuestWire/);
   });
 
   it('DISC-03-09: W77 list direct explore/ui import allowlist (join overlays only)', () => {

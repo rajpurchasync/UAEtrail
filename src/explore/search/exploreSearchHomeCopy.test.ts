@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EXPLORE_SEARCH_GUEST_WHERE_PLACEHOLDER } from '../guestMapPreviewCopy';
+import { EXPLORE_SEARCH_GUEST_WHERE_PLACEHOLDER } from '../../discovery/discoveryPortExploreGuestWire';
 import {
   EXPLORE_SEARCH_WHERE_PLACEHOLDER,
   resolveExploreSearchBookingWherePlaceholder,

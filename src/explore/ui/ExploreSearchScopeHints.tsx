@@ -1,4 +1,4 @@
-import { EXPLORE_GUEST_MAP_PREVIEW_MAX_MATCHES } from '../guestMapPreviewCopy';
+import { EXPLORE_GUEST_MAP_PREVIEW_MAX_MATCHES } from '../../discovery/discoveryPortExploreGuestWire';
 import {
   EXPLORE_SEARCH_SCOPE_COPY,
   type ExploreSearchScopeCounts,

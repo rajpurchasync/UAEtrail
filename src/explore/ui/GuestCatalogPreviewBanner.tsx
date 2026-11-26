@@ -5,7 +5,7 @@ import {
   EXPLORE_GUEST_MAP_PREVIEW_ALERT_EMOJI,
   EXPLORE_GUEST_MAP_PREVIEW_CTA_SUFFIX,
   EXPLORE_GUEST_MAP_PREVIEW_LEAD,
-} from '../guestMapPreviewCopy';
+} from '../../discovery/discoveryPortExploreGuestWire';
 import { buildAuthGateUrls } from '../../utils/authReturnContext';
 
 type GuestCatalogPreviewBannerProps = {

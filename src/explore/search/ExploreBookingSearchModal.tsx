@@ -6,9 +6,7 @@ import { ExploreGuestPreviewLimitPanel } from '../ui/ExploreGuestPreviewLimitPan
 import { ExploreSearchScopePills } from './ExploreSearchScopePills';
 import { ExploreSearchBookingHero } from './ExploreSearchBookingHero';
 import { ExploreBookingSearchMapMatches } from './ExploreBookingSearchMapMatches';
-import {
-  EXPLORE_SEARCH_GUEST_PREVIEW_NOTICE,
-} from '../guestMapPreviewCopy';
+import { EXPLORE_SEARCH_GUEST_PREVIEW_NOTICE } from '../../discovery/discoveryPortExploreGuestWire';
 import {
   EXPLORE_SEARCH_MAP_MATCHES_TITLE,
   resolveExploreSearchBookingWherePlaceholder,

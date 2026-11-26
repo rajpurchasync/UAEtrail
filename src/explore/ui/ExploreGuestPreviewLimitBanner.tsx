@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { PRODUCT_JOIN_CTA } from '../../content/productNorthStar';
-import { EXPLORE_GUEST_MAP_PREVIEW_MAX_MATCHES } from '../guestMapPreviewCopy';
+import { EXPLORE_GUEST_MAP_PREVIEW_MAX_MATCHES } from '../../discovery/discoveryPortExploreGuestWire';
 import { buildAuthGateUrls } from '../../utils/authReturnContext';
 import { EXPLORE_MOBILE_MAP_CHROME } from '../../config/exploreTheme';
 
