@@ -380,6 +380,11 @@ describe('discoverySessionParamsGuard', () => {
     expect(read('src/discovery/discoveryPortExploreBrowse.ts')).not.toMatch(
       /exploreMapPathAfterPeopleFullScreen/
     );
+    expect(read('src/discovery/discoveryPortExploreGuest.ts')).not.toMatch(/resolveWelcomeFinishExplorePath/);
+    expect(read('src/discovery/discoveryPortExploreGuestWire.ts')).toMatch(/resolveWelcomeFinishExplorePath/);
+    expect(read('src/explore/exploreWelcomeNavigation.ts')).not.toMatch(/config\/routingCatalog/);
+    expect(read('src/components/auth/ProtectedRoute.tsx')).toMatch(/discoveryPortExploreGuestWire/);
+    expect(read('src/components/auth/ProtectedRoute.tsx')).not.toMatch(/discoveryPortExploreGuest['"]/);
     expect(read('src/discovery/discoveryPortExploreBrowse.ts')).toMatch(/useExplorePublishedDestinationsQuery/);
     expect(read('src/discovery/discoveryPortExploreOptionalFilterWire.ts')).toMatch(/exploreItemMatchesPriceFilter/);
     expect(read('src/discovery/discoveryPortExploreMapClient.ts')).toMatch(/serializeExplorePinKindFilter/);

@@ -1,4 +1,5 @@
-import { EXPLORE_MAP_PATH, PLAN_PATH } from '../config/routingCatalog';
+import { EXPLORE_MAP_PATH } from '../config/platform';
+import { PLAN_PATH } from '../config/surfacePaths';
 import { shouldShowExploreLocationPrompt } from './exploreMapLocationPreference';
 
 /** Trips map home — default landing after signup profile wizard. */

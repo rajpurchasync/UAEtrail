@@ -1,9 +1,9 @@
 import { useState } from 'react';
+import { GuestCatalogPreviewBanner } from '../../discovery/discoveryPortExploreGuest';
 import {
-  GuestCatalogPreviewBanner,
   readExploreGuestMapPreviewDismissed,
   writeExploreGuestMapPreviewDismissed,
-} from '../../discovery/discoveryPortExploreGuest';
+} from '../../discovery/discoveryPortExploreGuestWire';
 
 type Props = {
   className?: string;
