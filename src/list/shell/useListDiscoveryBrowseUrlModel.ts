@@ -1,7 +1,7 @@
 /** List browse URL state, draft query, and venue/geo read models for the discovery shell. */
 
 import { useEffect, useMemo, useState } from 'react';
-import { parseExploreDestinationSlug } from '../../explore/exploreDestinationFilter';
+import { parseExploreDestinationSlug } from '../../discovery/discoverySessionExploreDestination';
 import { useExplorePublishedDestinationsQuery } from '../../discovery/discoverySessionExploreRuntime';
 import { useListDiscoveryUrlState } from '../browse/useListDiscoveryUrlState';
 import { resolveEffectiveBrowseVenueRegions } from '../browse/browseGeoPath';

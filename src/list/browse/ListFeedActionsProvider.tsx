@@ -23,7 +23,10 @@ import { ExploreJoinOverlays } from '../../explore/ui/ExploreJoinOverlays';
 import { openActivityGroupChat } from '../../utils/openActivityGroupChat';
 import { messagesRouteForRole } from '../../utils/authRouting';
 import { navigateToMessagesWithReturn } from '../../utils/activityGroupChatNav';
-import { buildMapPeekReturnPath, mapPeekDetailNavState } from '../../explore/mapPeekDetailNavState';
+import {
+  buildMapPeekReturnPath,
+  mapPeekDetailNavState,
+} from '../../discovery/discoverySessionExploreMapPeekNav';
 import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useActivityJoinFlow';
 import { useActivityJoinGuardMessage } from '../../hooks/useActivityJoinGuardMessage';
 import { executeActivityMapPeekAction } from '../../activity/executeActivityMapPeekAction';

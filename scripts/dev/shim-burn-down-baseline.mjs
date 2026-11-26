@@ -325,6 +325,16 @@ for (const file of walkFiles(join(feSrc, 'explore'))) {
   }
 }
 
+const listDirectExploreImportRe = /from ['"][^'"]*explore\//;
+const listImportsExploreDirect = [];
+for (const file of walkFiles(join(feSrc, 'list'))) {
+  if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
+  const rel = file.slice(root.length + 1).replace(/\\/g, '/');
+  if (listDirectExploreImportRe.test(readFileSync(file, 'utf8'))) {
+    listImportsExploreDirect.push(rel);
+  }
+}
+
 const listImportsDiscoveryRuntime = [];
 for (const file of walkFiles(join(feSrc, 'list'))) {
   if (!/\.(ts|tsx)$/.test(file) || /\.test\.(ts|tsx)$/.test(file)) continue;
@@ -492,6 +502,8 @@ const baseline = {
       listExploreActivityDateImportViolations: listImportsExploreActivityDate,
       listImportsDiscoveryRuntime: listImportsDiscoveryRuntime.length,
       listDiscoveryRuntimeImportViolations: listImportsDiscoveryRuntime,
+      listImportsExploreDirect: listImportsExploreDirect.length,
+      listExploreDirectImportViolations: listImportsExploreDirect,
     },
     w6: {
       pagesUsingUseSafeAsyncEffect: useSafeAsyncEffectPages.length,
@@ -596,6 +608,11 @@ const baseline = {
       : []),
     ...(listImportsDiscoveryRuntime.length > 0
       ? ['W12: list imports map catalog via discoverySessionExploreRuntime']
+      : []),
+    ...(listImportsExploreDirect.length > 0
+      ? [
+          'W14: list UI/compose/map-chrome explore imports — split facades (no discoverySession barrel); W13 wire done',
+        ]
       : []),
     ...(exploreImportsBrowseListUrlState.length > 0
       ? ['W4: import discovery params from src/discovery/discoverySessionParams.ts not list/']

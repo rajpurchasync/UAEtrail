@@ -7,8 +7,8 @@ import {
   EXPLORE_SEARCH_PROMPT,
   type ExploreSearchScopeCounts,
   type ExploreSearchScopeKey,
-} from '../../explore/exploreBrowseTaxonomy';
-import { exploreSearchScopesForQuery } from '../../explore/exploreSearchScopeUi';
+} from '../../discovery/discoverySessionExploreBrowseTaxonomy';
+import { exploreSearchScopesForQuery } from '../../discovery/discoverySessionExploreSearchUi';
 import { ExploreSearchScopeHints } from '../../explore/ui/ExploreSearchScopeHints';
 import { BROWSE_LIST_MAP_CTA } from '../browse/browseListCopy';
 import { LIST_SEARCH } from '../browse/listChromeTheme';

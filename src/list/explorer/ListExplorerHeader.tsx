@@ -5,7 +5,10 @@ import { useExploreDesktopListDrawerChrome } from '../../explore/ui/ExploreDeskt
 import { Link, useNavigate } from 'react-router-dom';
 import { ExploreMapProjectionToggle } from '../../explore/ui/ExploreMapProjectionToggle';
 import { EXPLORE_MAP_CHROME_FROST } from '../../config/exploreTheme';
-import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../../explore/exploreBrowseTaxonomy';
+import type {
+  ExploreSearchScopeCounts,
+  ExploreSearchScopeKey,
+} from '../../discovery/discoverySessionExploreBrowseTaxonomy';
 import { LIST_APP_BAR, LIST_CHROME, LIST_SEARCH } from '../browse/listChromeTheme';
 import { ListDiscoverySearchField } from './ListDiscoverySearchField';
 import { ListExplorerBucketToggle } from './ListExplorerBucketToggle';
@@ -19,7 +22,7 @@ import type { BrowseListSortMode } from '../browse/listBrowseSort';
 import { ListExplorerSortControl } from './ListExplorerSortControl';
 import type { BrowseListFilterState } from '../browse/browseListFilters';
 import type { PlaceKind } from '@uaetrail/shared-types';
-import type { ExplorePriceFilter } from '../../explore/exploreOptionalFilters';
+import type { ExplorePriceFilter } from '../../discovery/discoverySessionExploreOptionalFilters';
 import type { BrowseTripTopicKey } from '../browse/browseListTripTopics';
 import type { ListVenuePlaceTopicKey } from '../browse/listVenuePlaceTopics';
 import type { ExploreActivityDatePreset } from '../../discovery/discoverySessionExploreActivityDate';

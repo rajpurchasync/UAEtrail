@@ -279,6 +279,58 @@ describe('discoverySessionParamsGuard', () => {
     expect(read('src/discovery/discoverySession.ts')).toMatch(/discoverySessionListQuickFilters/);
   });
 
+  it('W13 list wire imports explore via discoverySessionExplore* facades', () => {
+    const expectations: Array<{ rel: string; facade: RegExp; avoidDirect?: RegExp }> = [
+      {
+        rel: 'src/list/browse/browseCatalogLabels.ts',
+        facade: /discoverySessionExploreCatalogLabel/,
+        avoidDirect: /explore\/exploreCatalogHubLabel|exploreCatalogLabel/,
+      },
+      {
+        rel: 'src/list/browse/browseListBucket.ts',
+        facade: /discoverySessionExploreBrowseTaxonomy/,
+        avoidDirect: /from ['"][^'"]*explore\/exploreBrowseTaxonomy/,
+      },
+      {
+        rel: 'src/list/browse/browseListNavState.ts',
+        facade: /discoverySessionExploreMapPeekNav/,
+      },
+      {
+        rel: 'src/list/browse/listVenuePlaceTopics.ts',
+        facade: /discoverySessionExploreMapTopicUrl/,
+      },
+      {
+        rel: 'src/list/browse/tripBrowseCardCopy.ts',
+        facade: /discoverySessionExploreRequirementBadges/,
+      },
+      {
+        rel: 'src/list/browse/ListFeedActionsProvider.tsx',
+        facade: /discoverySessionExploreMapPeekNav/,
+        avoidDirect: /explore\/mapPeekDetailNavState/,
+      },
+      {
+        rel: 'src/list/explorer/ListExplorerFilterPop.tsx',
+        facade: /discoverySessionExploreOptionalFilters/,
+      },
+      {
+        rel: 'src/list/explorer/ListDiscoverySearchField.tsx',
+        facade: /discoverySessionExploreBrowseTaxonomy/,
+        avoidDirect: /explore\/exploreBrowseTaxonomy|explore\/exploreSearchScopeUi/,
+      },
+      {
+        rel: 'src/list/shell/useListDiscoveryBrowseUrlModel.ts',
+        facade: /discoverySessionExploreDestination/,
+      },
+    ];
+    for (const { rel, facade, avoidDirect } of expectations) {
+      const content = read(rel);
+      expect(content, rel).toMatch(facade);
+      if (avoidDirect) {
+        expect(content, rel).not.toMatch(avoidDirect);
+      }
+    }
+  });
+
   it('W12 list module imports discoveryRuntime via discoverySessionExploreRuntime', () => {
     const violations: string[] = [];
     for (const rel of collectProdTsUnder(join(ROOT, 'src/list'))) {

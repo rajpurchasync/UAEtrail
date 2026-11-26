@@ -12,7 +12,7 @@
   ],
   "matrix": {
     "src/list": {
-      "..": 213,
+      "..": 212,
       "browse": 83,
       "crews": 2,
       "components": 1,
@@ -25,7 +25,7 @@
     "src/discovery": {
       "discovery": 4,
       "components": 4,
-      "explore": 23,
+      "explore": 32,
       "..": 10,
       "discoveryCardModel": 3,
       "DiscoveryBrowseThumbnailPoster": 1,
@@ -57,7 +57,7 @@
     }
   },
   "byTarget": {
-    "..": 271,
+    "..": 270,
     "browse": 83,
     "crews": 2,
     "components": 5,
@@ -66,7 +66,7 @@
     "discovery": 5,
     "styles": 1,
     "explorer": 1,
-    "explore": 28,
+    "explore": 37,
     "discoveryCardModel": 3,
     "DiscoveryBrowseThumbnailPoster": 1,
     "discoverySession": 1,

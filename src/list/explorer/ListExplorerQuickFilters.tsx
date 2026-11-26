@@ -1,13 +1,14 @@
 import type { PlaceKind } from '@uaetrail/shared-types';
 import { ExploreOptionalFilterRow } from '../../explore/ui/ExploreOptionalFilterRow';
 import type { ExploreActivityDatePreset } from '../../discovery/discoverySessionExploreActivityDate';
-import type { PlaceMapTopicKey, TripMapTopicKey } from '../../explore/exploreMapQuickTopicFilters';
 import {
   aliasListPlaceTopicToMap,
   aliasPlaceMapTopicToList,
   type ExplorePriceFilter,
   type ExploreVenueFilterPatch,
-} from '../../explore/exploreOptionalFilters';
+  type PlaceMapTopicKey,
+  type TripMapTopicKey,
+} from '../../discovery/discoverySessionExploreOptionalFilters';
 import type { BrowseListFilterState } from '../browse/browseListFilters';
 import type { BrowseTripTopicKey } from '../browse/browseListTripTopics';
 import type { ListVenuePlaceTopicKey } from '../browse/listVenuePlaceTopics';

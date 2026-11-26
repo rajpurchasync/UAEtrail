@@ -82,7 +82,25 @@
       "listImportsExploreActivityDate": 0,
       "listExploreActivityDateImportViolations": [],
       "listImportsDiscoveryRuntime": 0,
-      "listDiscoveryRuntimeImportViolations": []
+      "listDiscoveryRuntimeImportViolations": [],
+      "listImportsExploreDirect": 15,
+      "listExploreDirectImportViolations": [
+        "src/list/browse/BrowseCompactRow.tsx",
+        "src/list/browse/BrowseItemLink.tsx",
+        "src/list/browse/listDiscoverySearchCreateFlowStub.ts",
+        "src/list/browse/ListFeedActionsProvider.tsx",
+        "src/list/explorer/findCrewProposePlanPath.ts",
+        "src/list/explorer/hostingPrefillFromFindCrewSlot.ts",
+        "src/list/explorer/ListDiscoveryMapColumn.tsx",
+        "src/list/explorer/ListDiscoverySearchField.tsx",
+        "src/list/explorer/ListExplorer.tsx",
+        "src/list/explorer/ListExplorerGeoScopeChip.tsx",
+        "src/list/explorer/ListExplorerHeader.tsx",
+        "src/list/explorer/ListExplorerQuickFilters.tsx",
+        "src/list/explorer/ListGuestCatalogPreviewNotice.tsx",
+        "src/list/shell/useListDiscoveryComposeBridgeModel.ts",
+        "src/list/shell/useListDiscoveryMapSplitModel.ts"
+      ]
     },
     "w6": {
       "pagesUsingUseSafeAsyncEffect": 0,
@@ -99,5 +117,7 @@
   "governance": {
     "guardTestFileCount": 161
   },
-  "nextActions": []
+  "nextActions": [
+    "W14: list UI/compose/map-chrome explore imports — split facades (no discoverySession barrel); W13 wire done"
+  ]
 }

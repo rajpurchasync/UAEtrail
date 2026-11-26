@@ -80,7 +80,7 @@ export const browseCatalogHubLabel = (card: DiscoveryCardModel): string | null =
   return null;
 };
 
-export { exploreCatalogHubLabelFromExploreItem as browseCatalogHubLabelFromExploreItem } from '../../explore/exploreCatalogHubLabel';
+export { exploreCatalogHubLabelFromExploreItem as browseCatalogHubLabelFromExploreItem } from '../../discovery/discoverySessionExploreCatalogLabel';
 
 /** State · geo destination — never spot title or generic venue hint. */
 export const browseCatalogHeaderLocationLine = (card: DiscoveryCardModel): string | null => {
